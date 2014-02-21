@@ -68,7 +68,7 @@ PassRefPtr<HTMLOptionElement> HTMLOptionElement::createForJSConstructor(Document
 
     element->appendChild(text.release(), exceptionState);
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     if (!value.isNull())
         element->setValue(value);

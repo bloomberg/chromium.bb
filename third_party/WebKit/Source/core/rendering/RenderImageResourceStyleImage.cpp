@@ -65,7 +65,7 @@ PassRefPtr<Image> RenderImageResourceStyleImage::image(int width, int height) co
 {
     // Generated content may trigger calls to image() while we're still pending, don't assert but gracefully exit.
     if (m_styleImage->isPendingImage())
-        return 0;
+        return nullptr;
     return m_styleImage->image(m_renderer, IntSize(width, height));
 }
 

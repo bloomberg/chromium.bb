@@ -63,7 +63,7 @@ PassRefPtr<DocumentThreadableLoader> DocumentThreadableLoader::create(Document* 
 {
     RefPtr<DocumentThreadableLoader> loader = adoptRef(new DocumentThreadableLoader(document, client, LoadAsynchronously, request, options));
     if (!loader->resource())
-        loader = 0;
+        loader = nullptr;
     return loader.release();
 }
 

@@ -95,7 +95,7 @@ PassRefPtr<SVGFilterBuilder> RenderSVGResourceFilter::buildPrimitives(SVGFilter*
         RefPtr<FilterEffect> effect = effectElement->build(builder.get(), filter);
         if (!effect) {
             builder->clearEffects();
-            return 0;
+            return nullptr;
         }
         builder->appendEffectToEffectReferences(effect, effectElement->renderer());
         effectElement->setStandardAttributes(effect.get());

@@ -108,7 +108,7 @@ public:
 
     enum TileRule { StretchTile, RoundTile, SpaceTile, RepeatTile };
 
-    virtual PassRefPtr<NativeImageSkia> nativeImageForCurrentFrame() { return 0; }
+    virtual PassRefPtr<NativeImageSkia> nativeImageForCurrentFrame() { return nullptr; }
 
     virtual void drawPattern(GraphicsContext*, const FloatRect&,
         const FloatSize&, const FloatPoint& phase, CompositeOperator,

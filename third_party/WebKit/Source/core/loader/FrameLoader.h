@@ -228,7 +228,7 @@ private:
     void closeAndRemoveChild(Frame*);
     void detachClient();
 
-    void setHistoryItemStateForCommit(HistoryCommitType, bool isPushOrReplaceState = false, PassRefPtr<SerializedScriptValue> = 0);
+    void setHistoryItemStateForCommit(HistoryCommitType, bool isPushOrReplaceState = false, PassRefPtr<SerializedScriptValue> = nullptr);
 
     void loadInSameDocument(const KURL&, PassRefPtr<SerializedScriptValue> stateObject, UpdateBackForwardListPolicy, ClientRedirectPolicy);
 

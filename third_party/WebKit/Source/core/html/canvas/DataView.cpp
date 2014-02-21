@@ -47,19 +47,19 @@ PassRefPtr<DataView> DataView::create(unsigned length)
 {
     RefPtr<ArrayBuffer> buffer = ArrayBuffer::create(length, sizeof(uint8_t));
     if (!buffer.get())
-        return 0;
+        return nullptr;
     return create(buffer, 0, length);
 }
 
 PassRefPtr<DataView> DataView::create(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned byteLength)
 {
     if (byteOffset > buffer->byteLength())
-        return 0;
+        return nullptr;
     CheckedInt<uint32_t> checkedOffset(byteOffset);
     CheckedInt<uint32_t> checkedLength(byteLength);
     CheckedInt<uint32_t> checkedMax = checkedOffset + checkedLength;
     if (!checkedMax.isValid() || checkedMax.value() > buffer->byteLength())
-        return 0;
+        return nullptr;
     return adoptRef(new DataView(buffer, byteOffset, byteLength));
 }
 

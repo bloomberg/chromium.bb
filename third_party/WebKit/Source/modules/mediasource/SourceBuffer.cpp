@@ -163,7 +163,7 @@ PassRefPtr<TimeRanges> SourceBuffer::buffered(ExceptionState& exceptionState) co
     //    InvalidStateError exception and abort these steps.
     if (isRemoved()) {
         exceptionState.throwDOMException(InvalidStateError, "This SourceBuffer has been removed from the parent media source.");
-        return 0;
+        return nullptr;
     }
 
     // 2. Return a new static normalized TimeRanges object for the media segments buffered.
@@ -430,7 +430,7 @@ void SourceBuffer::removedFromMediaSource()
 
     m_webSourceBuffer->removedFromMediaSource();
     m_webSourceBuffer.clear();
-    m_source = 0;
+    m_source = nullptr;
     m_asyncEventQueue = 0;
 }
 
@@ -677,7 +677,7 @@ void SourceBuffer::clearAppendStreamState()
     m_streamMaxSizeValid = false;
     m_streamMaxSize = 0;
     m_loader.clear();
-    m_stream = 0;
+    m_stream = nullptr;
 }
 
 void SourceBuffer::didStartLoading()

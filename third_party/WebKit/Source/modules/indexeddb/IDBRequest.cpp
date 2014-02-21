@@ -64,7 +64,7 @@ IDBRequest::IDBRequest(ExecutionContext* context, PassRefPtr<IDBAny> source, IDB
     , m_hasPendingActivity(true)
     , m_cursorType(IndexedDB::CursorKeyAndValue)
     , m_cursorDirection(blink::WebIDBCursor::Next)
-    , m_pendingCursor(0)
+    , m_pendingCursor(nullptr)
     , m_didFireUpgradeNeededEvent(false)
     , m_preventPropagation(false)
     , m_resultDirty(true)
@@ -92,7 +92,7 @@ PassRefPtr<DOMError> IDBRequest::error(ExceptionState& exceptionState) const
 {
     if (m_readyState != DONE) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::requestNotFinishedErrorMessage);
-        return 0;
+        return nullptr;
     }
     return m_error;
 }
@@ -158,7 +158,7 @@ void IDBRequest::setPendingCursor(PassRefPtr<IDBCursor> cursor)
 
     m_hasPendingActivity = true;
     m_pendingCursor = cursor;
-    setResult(PassRefPtr<IDBAny>(0));
+    setResult(PassRefPtr<IDBAny>(nullptr));
     m_readyState = PENDING;
     m_error.clear();
     m_transaction->registerRequest(this);
@@ -292,7 +292,7 @@ static PassRefPtr<IDBObjectStore> effectiveObjectStore(PassRefPtr<IDBAny> source
         return source->idbIndex()->objectStore();
 
     ASSERT_NOT_REACHED();
-    return 0;
+    return nullptr;
 }
 #endif
 

@@ -42,7 +42,7 @@ public:
 
     StyleSheetContents* parentStyleSheet() const { return m_parentStyleSheet; }
     void setParentStyleSheet(StyleSheetContents* sheet) { ASSERT(sheet); m_parentStyleSheet = sheet; }
-    void clearParentStyleSheet() { m_parentStyleSheet = 0; }
+    void clearParentStyleSheet() { m_parentStyleSheet = nullptr; }
 
     String href() const { return m_strHref; }
     StyleSheetContents* styleSheet() const { return m_styleSheet.get(); }

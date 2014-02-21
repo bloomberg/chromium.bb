@@ -258,7 +258,7 @@ PassRefPtr<TypeBuilder::Runtime::RemoteObject> InjectedScript::wrapObject(const 
     bool hadException = false;
     ScriptValue r = callFunctionWithEvalEnabled(wrapFunction, hadException);
     if (hadException)
-        return 0;
+        return nullptr;
     RefPtr<JSONObject> rawResult = r.toJSONValue(scriptState())->asObject();
     return TypeBuilder::Runtime::RemoteObject::runtimeCast(rawResult);
 }
@@ -276,7 +276,7 @@ PassRefPtr<TypeBuilder::Runtime::RemoteObject> InjectedScript::wrapTable(const S
     bool hadException = false;
     ScriptValue r = callFunctionWithEvalEnabled(wrapFunction, hadException);
     if (hadException)
-        return 0;
+        return nullptr;
     RefPtr<JSONObject> rawResult = r.toJSONValue(scriptState())->asObject();
     return TypeBuilder::Runtime::RemoteObject::runtimeCast(rawResult);
 }

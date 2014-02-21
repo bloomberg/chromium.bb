@@ -67,8 +67,8 @@ public:
 
 private:
     Pair()
-        : m_first(0)
-        , m_second(0)
+        : m_first(nullptr)
+        , m_second(nullptr)
         , m_identicalValuesPolicy(DropIdenticalValues) { }
 
     Pair(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> first, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> second, IdenticalValuesPolicy identicalValuesPolicy)

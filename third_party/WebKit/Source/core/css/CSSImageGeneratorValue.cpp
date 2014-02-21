@@ -122,7 +122,7 @@ PassRefPtr<Image> CSSImageGeneratorValue::image(RenderObject* renderer, const In
     default:
         ASSERT_NOT_REACHED();
     }
-    return 0;
+    return nullptr;
 }
 
 bool CSSImageGeneratorValue::isFixedSize() const

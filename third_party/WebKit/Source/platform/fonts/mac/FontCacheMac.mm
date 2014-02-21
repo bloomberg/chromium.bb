@@ -116,11 +116,11 @@ PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDes
     if (!substituteFont && codeUnitsLength == 1)
         substituteFont = [NSFont findFontLike:nsFont forCharacter:codeUnits[0] inLanguage:nil];
     if (!substituteFont)
-        return 0;
+        return nullptr;
 
     // Chromium can't render AppleColorEmoji.
     if ([[substituteFont familyName] isEqual:@"Apple Color Emoji"])
-        return 0;
+        return nullptr;
 
     // Use the family name from the AppKit-supplied substitute font, requesting the
     // traits, weight, and size we want. One way this does better than the original

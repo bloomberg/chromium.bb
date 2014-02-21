@@ -1128,7 +1128,7 @@ PassRefPtr<Range> TextIterator::range() const
     if (m_endContainer)
         return Range::create(m_endContainer->document(), m_endContainer, m_endOffset, m_endContainer, m_endOffset);
 
-    return 0;
+    return nullptr;
 }
 
 Node* TextIterator::node() const

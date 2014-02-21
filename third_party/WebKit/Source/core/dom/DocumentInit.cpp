@@ -142,7 +142,7 @@ DocumentInit& DocumentInit::withNewRegistrationContext()
 PassRefPtr<CustomElementRegistrationContext> DocumentInit::registrationContext(Document* document) const
 {
     if (!document->isHTMLDocument() && !document->isXHTMLDocument())
-        return 0;
+        return nullptr;
 
     if (m_createNewRegistrationContext)
         return CustomElementRegistrationContext::create();

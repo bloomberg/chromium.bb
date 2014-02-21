@@ -193,11 +193,11 @@ void SVGImage::drawForContainer(GraphicsContext* context, const FloatSize contai
 PassRefPtr<NativeImageSkia> SVGImage::nativeImageForCurrentFrame()
 {
     if (!m_page)
-        return 0;
+        return nullptr;
 
     OwnPtr<ImageBuffer> buffer = ImageBuffer::create(size());
     if (!buffer)
-        return 0;
+        return nullptr;
 
     drawForContainer(buffer->context(), size(), 1, rect(), rect(), CompositeSourceOver, blink::WebBlendModeNormal);
 

@@ -798,7 +798,7 @@ public:
 
     static int s_aliveCount;
 private:
-    PointsBack() : m_backPointer(0)
+    PointsBack() : m_backPointer(nullptr)
     {
         ++s_aliveCount;
     }
@@ -1818,7 +1818,7 @@ TEST(HeapTest, HeapWeakCollectionSimple)
         EXPECT_EQ(4u, weakSet->size());
     }
 
-    keepNumbersAlive[0] = 0;
+    keepNumbersAlive[0] = nullptr;
 
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
 
@@ -1902,7 +1902,7 @@ TEST(HeapTest, HeapWeakCollectionTypes)
             }
 
             for (int i = 0; i < 128; i += 3)
-                keepNumbersAlive[i] = 0;
+                keepNumbersAlive[i] = nullptr;
 
             if (collectionNumber != weakStrongIndex)
                 weakStrong->clear();
@@ -1993,7 +1993,7 @@ TEST(HeapTest, HeapWeakCollectionTypes)
                 SetIteratorCheck(it4, weakSet->end(), (collectionNumber == weakSetIndex ? count : 0) + added);
             }
             for (unsigned i = 0; i < 128 + added; i++)
-                keepNumbersAlive[i] = 0;
+                keepNumbersAlive[i] = nullptr;
             Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
             EXPECT_EQ(added, weakStrong->size());
             EXPECT_EQ(added, strongWeak->size());
@@ -2207,7 +2207,7 @@ TEST(HeapTest, VisitOffHeapCollections)
     Persistent<OffHeapContainer> container = OffHeapContainer::create();
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     EXPECT_EQ(0, IntWrapper::s_destructorCalls);
-    container = 0;
+    container = nullptr;
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     EXPECT_EQ(7, IntWrapper::s_destructorCalls);
 }

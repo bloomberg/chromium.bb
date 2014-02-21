@@ -74,7 +74,7 @@ PassRefPtr<DatabaseBackendBase> DatabaseServer::createDatabase(RefPtr<DatabaseCo
     }
 
     if (!database->openAndVerifyVersion(setVersionInNewDatabase, error, errorMessage))
-        return 0;
+        return nullptr;
     return database.release();
 }
 

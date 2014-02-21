@@ -133,7 +133,7 @@ private:
     virtual PassRefPtr<FilterOperation> blend(const FilterOperation* from, double progress) const OVERRIDE
     {
         ASSERT_NOT_REACHED();
-        return 0;
+        return nullptr;
     }
 
     virtual bool operator==(const FilterOperation& o) const OVERRIDE

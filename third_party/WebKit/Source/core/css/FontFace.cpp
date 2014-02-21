@@ -93,7 +93,7 @@ private:
 static PassRefPtrWillBeRawPtr<CSSValue> parseCSSValue(const Document* document, const String& s, CSSPropertyID propertyID)
 {
     if (s.isEmpty())
-        return 0;
+        return nullptr;
     RefPtr<MutableStylePropertySet> parsedStyle = MutableStylePropertySet::create();
     BisonCSSParser::parseValue(parsedStyle.get(), propertyID, s, true, *document);
     return parsedStyle->getPropertyCSSValue(propertyID);
@@ -104,44 +104,44 @@ PassRefPtr<FontFace> FontFace::create(ExecutionContext* context, const AtomicStr
     RefPtrWillBeRawPtr<CSSValue> src = parseCSSValue(toDocument(context), source, CSSPropertySrc);
     if (!src || !src->isValueList()) {
         exceptionState.throwDOMException(SyntaxError, "The source provided ('" + source + "') could not be parsed as a value list.");
-        return 0;
+        return nullptr;
     }
 
     RefPtr<FontFace> fontFace = adoptRef<FontFace>(new FontFace(src));
     fontFace->setFamily(context, family, exceptionState);
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     String value;
     if (descriptors.get("style", value)) {
         fontFace->setStyle(context, value, exceptionState);
         if (exceptionState.hadException())
-            return 0;
+            return nullptr;
     }
     if (descriptors.get("weight", value)) {
         fontFace->setWeight(context, value, exceptionState);
         if (exceptionState.hadException())
-            return 0;
+            return nullptr;
     }
     if (descriptors.get("stretch", value)) {
         fontFace->setStretch(context, value, exceptionState);
         if (exceptionState.hadException())
-            return 0;
+            return nullptr;
     }
     if (descriptors.get("unicodeRange", value)) {
         fontFace->setUnicodeRange(context, value, exceptionState);
         if (exceptionState.hadException())
-            return 0;
+            return nullptr;
     }
     if (descriptors.get("variant", value)) {
         fontFace->setVariant(context, value, exceptionState);
         if (exceptionState.hadException())
-            return 0;
+            return nullptr;
     }
     if (descriptors.get("featureSettings", value)) {
         fontFace->setFeatureSettings(context, value, exceptionState);
         if (exceptionState.hadException())
-            return 0;
+            return nullptr;
     }
 
     fontFace->initCSSFontFace(toDocument(context));
@@ -155,10 +155,10 @@ PassRefPtr<FontFace> FontFace::create(Document* document, const StyleRuleFontFac
     // Obtain the font-family property and the src property. Both must be defined.
     RefPtrWillBeRawPtr<CSSValue> family = properties->getPropertyCSSValue(CSSPropertyFontFamily);
     if (!family || !family->isValueList())
-        return 0;
+        return nullptr;
     RefPtrWillBeRawPtr<CSSValue> src = properties->getPropertyCSSValue(CSSPropertySrc);
     if (!src || !src->isValueList())
-        return 0;
+        return nullptr;
 
     RefPtr<FontFace> fontFace = adoptRef<FontFace>(new FontFace(src));
 
@@ -174,7 +174,7 @@ PassRefPtr<FontFace> FontFace::create(Document* document, const StyleRuleFontFac
         fontFace->initCSSFontFace(document);
         return fontFace;
     }
-    return 0;
+    return nullptr;
 }
 
 FontFace::FontFace(PassRefPtrWillBeRawPtr<CSSValue> src)

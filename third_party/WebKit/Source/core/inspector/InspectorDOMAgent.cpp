@@ -275,7 +275,7 @@ void InspectorDOMAgent::clearFrontend()
 void InspectorDOMAgent::restore()
 {
     // Reset document to avoid early return from setDocument.
-    m_document = 0;
+    m_document = nullptr;
     setDocument(m_pageAgent->mainFrame()->document());
 }
 
@@ -295,7 +295,7 @@ void InspectorDOMAgent::reset()
 {
     discardFrontendBindings();
     discardBackendBindings();
-    m_document = 0;
+    m_document = nullptr;
 }
 
 void InspectorDOMAgent::setDOMListener(DOMListener* listener)
@@ -1009,7 +1009,7 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
             Document* document = *it;
             ASSERT(document);
             TrackExceptionState exceptionState;
-            RefPtrWillBeRawPtr<XPathResult> result = DocumentXPathEvaluator::evaluate(*document, whitespaceTrimmedQuery, document, 0, XPathResult::ORDERED_NODE_SNAPSHOT_TYPE, 0, exceptionState);
+            RefPtrWillBeRawPtr<XPathResult> result = DocumentXPathEvaluator::evaluate(*document, whitespaceTrimmedQuery, document, nullptr, XPathResult::ORDERED_NODE_SNAPSHOT_TYPE, 0, exceptionState);
             if (exceptionState.hadException() || !result)
                 continue;
 
@@ -1618,7 +1618,7 @@ PassRefPtr<TypeBuilder::DOM::EventListener> InspectorDOMAgent::buildObjectForEve
     String scriptId;
     int lineNumber;
     if (!eventListenerHandlerLocation(&node->document(), eventListener.get(), sourceName, scriptId, lineNumber))
-        return 0;
+        return nullptr;
 
     Document& document = node->document();
     RefPtr<TypeBuilder::Debugger::Location> location = TypeBuilder::Debugger::Location::create()
@@ -1655,7 +1655,7 @@ PassRefPtr<TypeBuilder::DOM::EventListener> InspectorDOMAgent::buildObjectForEve
 PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > InspectorDOMAgent::buildArrayForPseudoElements(Element* element, NodeToIdMap* nodesMap)
 {
     if (!element->pseudoElement(BEFORE) && !element->pseudoElement(AFTER))
-        return 0;
+        return nullptr;
 
     RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > pseudoElements = TypeBuilder::Array<TypeBuilder::DOM::Node>::create();
     if (element->pseudoElement(BEFORE))
@@ -2037,11 +2037,11 @@ PassRefPtr<TypeBuilder::Runtime::RemoteObject> InspectorDOMAgent::resolveNode(No
     Document* document = node->isDocumentNode() ? &node->document() : node->ownerDocument();
     Frame* frame = document ? document->frame() : 0;
     if (!frame)
-        return 0;
+        return nullptr;
 
     InjectedScript injectedScript = m_injectedScriptManager->injectedScriptFor(mainWorldScriptState(frame));
     if (injectedScript.hasNoValue())
-        return 0;
+        return nullptr;
 
     return injectedScript.wrapNode(node, objectGroup);
 }

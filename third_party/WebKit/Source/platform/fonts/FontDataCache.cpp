@@ -48,7 +48,7 @@ const unsigned cTargetInactiveFontData = 200;
 PassRefPtr<SimpleFontData> FontDataCache::get(const FontPlatformData* platformData, ShouldRetain shouldRetain)
 {
     if (!platformData)
-        return 0;
+        return nullptr;
 
     Cache::iterator result = m_cache.find(*platformData);
     if (result == m_cache.end()) {

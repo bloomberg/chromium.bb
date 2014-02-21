@@ -33,7 +33,7 @@
 namespace WebCore {
 
 FocusEventInit::FocusEventInit()
-    : relatedTarget(0)
+    : relatedTarget(nullptr)
 {
 }
 

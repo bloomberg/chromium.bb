@@ -293,7 +293,7 @@ void FrameLoaderClientImpl::detachedFromParent()
     client->frameDetached(m_webFrame);
     // Clear our reference to WebCore::Frame at the very end, in case the client
     // refers to it.
-    m_webFrame->setWebCoreFrame(0);
+    m_webFrame->setWebCoreFrame(nullptr);
 }
 
 void FrameLoaderClientImpl::dispatchWillRequestAfterPreconnect(ResourceRequest& request)
@@ -625,7 +625,7 @@ PassRefPtr<Widget> FrameLoaderClientImpl::createPlugin(
     bool loadManually)
 {
     if (!m_webFrame->client())
-        return 0;
+        return nullptr;
 
     WebPluginParams params;
     params.url = url;
@@ -636,18 +636,18 @@ PassRefPtr<Widget> FrameLoaderClientImpl::createPlugin(
 
     WebPlugin* webPlugin = m_webFrame->client()->createPlugin(m_webFrame, params);
     if (!webPlugin)
-        return 0;
+        return nullptr;
 
     // The container takes ownership of the WebPlugin.
     RefPtr<WebPluginContainerImpl> container =
         WebPluginContainerImpl::create(element, webPlugin);
 
     if (!webPlugin->initialize(container.get()))
-        return 0;
+        return nullptr;
 
     // The element might have been removed during plugin initialization!
     if (!element->renderer())
-        return 0;
+        return nullptr;
 
     return container;
 }

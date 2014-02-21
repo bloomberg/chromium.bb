@@ -198,11 +198,11 @@ PassRefPtr<DatabaseBackendBase> DatabaseManager::openDatabaseBackend(ExecutionCo
         switch (error) {
         case DatabaseError::GenericSecurityError:
             logOpenDatabaseError(context, name);
-            return 0;
+            return nullptr;
 
         case DatabaseError::InvalidDatabaseState:
             logErrorMessage(context, errorMessage);
-            return 0;
+            return nullptr;
 
         default:
             ASSERT_NOT_REACHED();
@@ -223,7 +223,7 @@ PassRefPtr<Database> DatabaseManager::openDatabase(ExecutionContext* context,
     RefPtr<DatabaseBackendBase> backend = openDatabaseBackend(context, DatabaseType::Async, name,
         expectedVersion, displayName, estimatedSize, setVersionInNewDatabase, error, errorMessage);
     if (!backend)
-        return 0;
+        return nullptr;
 
     RefPtr<Database> database = Database::create(context, backend);
 
@@ -252,7 +252,7 @@ PassRefPtr<DatabaseSync> DatabaseManager::openDatabaseSync(ExecutionContext* con
     RefPtr<DatabaseBackendBase> backend = openDatabaseBackend(context, DatabaseType::Sync, name,
         expectedVersion, displayName, estimatedSize, setVersionInNewDatabase, error, errorMessage);
     if (!backend)
-        return 0;
+        return nullptr;
 
     RefPtr<DatabaseSync> database = DatabaseSync::create(context, backend);
 

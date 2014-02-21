@@ -142,7 +142,7 @@ struct CStringTranslator {
 PassRefPtr<StringImpl> AtomicString::add(const LChar* c)
 {
     if (!c)
-        return 0;
+        return nullptr;
     if (!*c)
         return StringImpl::empty();
 
@@ -276,7 +276,7 @@ struct HashAndUTF8CharactersTranslator {
 PassRefPtr<StringImpl> AtomicString::add(const UChar* s, unsigned length)
 {
     if (!s)
-        return 0;
+        return nullptr;
 
     if (!length)
         return StringImpl::empty();
@@ -300,7 +300,7 @@ PassRefPtr<StringImpl> AtomicString::add(const UChar* s, unsigned length, unsign
 PassRefPtr<StringImpl> AtomicString::add(const UChar* s)
 {
     if (!s)
-        return 0;
+        return nullptr;
 
     unsigned length = 0;
     while (s[length] != UChar(0))
@@ -345,7 +345,7 @@ struct SubstringTranslator {
 PassRefPtr<StringImpl> AtomicString::add(StringImpl* baseString, unsigned start, unsigned length)
 {
     if (!baseString)
-        return 0;
+        return nullptr;
 
     if (!length || start >= baseString->length())
         return StringImpl::empty();
@@ -404,7 +404,7 @@ struct CharBufferFromLiteralDataTranslator {
 PassRefPtr<StringImpl> AtomicString::add(const LChar* s, unsigned length)
 {
     if (!s)
-        return 0;
+        return nullptr;
 
     if (!length)
         return StringImpl::empty();

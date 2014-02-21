@@ -56,17 +56,17 @@ PassRefPtrWillBeRawPtr<XPathResult> XPathEvaluator::evaluate(const String& expre
 {
     if (!contextNode) {
         exceptionState.throwDOMException(NotSupportedError, "The context node provided is null.");
-        return 0;
+        return nullptr;
     }
 
     if (!isValidContextNode(contextNode)) {
         exceptionState.throwDOMException(NotSupportedError, "The node provided is '" + contextNode->nodeName() + "', which is not a valid context node type.");
-        return 0;
+        return nullptr;
     }
 
     RefPtrWillBeRawPtr<XPathExpression> expr = createExpression(expression, resolver, exceptionState);
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     return expr->evaluate(contextNode, type, result, exceptionState);
 }

@@ -188,7 +188,7 @@ void RenderTheme::adjustStyle(RenderStyle* style, Element* e, const CachedUAStyl
 
             // Now update our font.
             if (style->setFontDescription(controlFont))
-                style->font().update(0);
+                style->font().update(nullptr);
         }
     }
     default:

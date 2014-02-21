@@ -77,7 +77,7 @@ public:
     virtual PassRefPtr<NativeImageSkia> nativeImageForCurrentFrame() OVERRIDE
     {
         if (m_size.isZero())
-            return 0;
+            return nullptr;
 
         return m_nativeImage;
     }

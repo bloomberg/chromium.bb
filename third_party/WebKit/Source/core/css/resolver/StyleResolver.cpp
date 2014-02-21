@@ -818,26 +818,26 @@ PassRefPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded(Element& pa
 {
     RenderObject* parentRenderer = parent.renderer();
     if (!parentRenderer)
-        return 0;
+        return nullptr;
 
     if (pseudoId < FIRST_INTERNAL_PSEUDOID && !parentRenderer->style()->hasPseudoStyle(pseudoId))
-        return 0;
+        return nullptr;
 
     if (pseudoId == BACKDROP && !parent.isInTopLayer())
-        return 0;
+        return nullptr;
 
     if (!parentRenderer->canHaveGeneratedChildren())
-        return 0;
+        return nullptr;
 
     RenderStyle* parentStyle = parentRenderer->style();
     StyleResolverState state(document(), &parent, parentStyle);
     if (!pseudoStyleForElementInternal(parent, pseudoId, parentStyle, state))
-        return 0;
+        return nullptr;
     RefPtr<RenderStyle> style = state.takeStyle();
     ASSERT(style);
 
     if (!pseudoElementRendererIsNeeded(style.get()))
-        return 0;
+        return nullptr;
 
     parentStyle->addCachedPseudoStyle(style.release());
     RefPtr<PseudoElement> pseudo = PseudoElement::create(&parent, pseudoId);
@@ -908,11 +908,11 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* element, c
 {
     ASSERT(parentStyle);
     if (!element)
-        return 0;
+        return nullptr;
 
     StyleResolverState state(document(), element, parentStyle);
     if (!pseudoStyleForElementInternal(*element, pseudoStyleRequest, parentStyle, state))
-        return 0;
+        return nullptr;
 
     if (PseudoElement* pseudoElement = element->pseudoElement(pseudoStyleRequest.pseudoId))
         setAnimationUpdateIfNeeded(state, *pseudoElement);

@@ -84,10 +84,10 @@ static PassRefPtr<AnimatableValue> createFromLength(const Length& length, const 
     case DeviceWidth:
     case DeviceHeight:
         ASSERT_NOT_REACHED();
-        return 0;
+        return nullptr;
     }
     ASSERT_NOT_REACHED();
-    return 0;
+    return nullptr;
 }
 
 static PassRefPtr<AnimatableValue> createFromLineHeight(const Length& length, const RenderStyle& style)
@@ -171,7 +171,7 @@ inline static PassRefPtr<AnimatableValue> createFromFillSize(const FillSize& fil
         return AnimatableUnknown::create(CSSPrimitiveValue::create(fillSize.type));
     default:
         ASSERT_NOT_REACHED();
-        return 0;
+        return nullptr;
     }
 }
 
@@ -462,7 +462,7 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
     default:
         ASSERT_NOT_REACHED();
         // This return value is to avoid a release crash if possible.
-        return AnimatableUnknown::create(0);
+        return AnimatableUnknown::create(nullptr);
     }
 }
 

@@ -74,7 +74,7 @@ static PassRefPtr<AudioBus> getConcatenatedImpulseResponsesForSubject(const Stri
         RefPtr<AudioBus> concatenatedImpulseResponses(AudioBus::loadPlatformResource(subjectName.utf8().data(), ResponseSampleRate));
         ASSERT(concatenatedImpulseResponses);
         if (!concatenatedImpulseResponses)
-            return 0;
+            return nullptr;
 
         bus = concatenatedImpulseResponses;
         audioBusMap.set(subjectName, bus);
@@ -88,7 +88,7 @@ static PassRefPtr<AudioBus> getConcatenatedImpulseResponsesForSubject(const Stri
     bool isBusGood = responseLength == expectedLength && bus->numberOfChannels() == 2;
     ASSERT(isBusGood);
     if (!isBusGood)
-        return 0;
+        return nullptr;
 
     return bus;
 }

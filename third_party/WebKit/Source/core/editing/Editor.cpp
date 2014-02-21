@@ -722,7 +722,7 @@ void Editor::unappliedEditing(PassRefPtr<EditCommandComposition> cmd)
     VisibleSelection newSelection(cmd->startingSelection());
     changeSelectionAfterCommand(newSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle);
 
-    m_lastEditCommand = 0;
+    m_lastEditCommand = nullptr;
     if (UndoStack* undoStack = this->undoStack())
         undoStack->registerRedoStep(cmd);
     respondToChangedContents(newSelection);
@@ -738,7 +738,7 @@ void Editor::reappliedEditing(PassRefPtr<EditCommandComposition> cmd)
     VisibleSelection newSelection(cmd->endingSelection());
     changeSelectionAfterCommand(newSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle);
 
-    m_lastEditCommand = 0;
+    m_lastEditCommand = nullptr;
     if (UndoStack* undoStack = this->undoStack())
         undoStack->registerUndoStep(cmd);
     respondToChangedContents(newSelection);
@@ -1131,7 +1131,7 @@ PassRefPtr<Range> Editor::findStringAndScrollToVisible(const String& target, Ran
 {
     RefPtr<Range> nextMatch = rangeOfString(target, previousMatch, options);
     if (!nextMatch)
-        return 0;
+        return nullptr;
 
     nextMatch->firstNode()->renderer()->scrollRectToVisible(nextMatch->boundingBox(),
         ScrollAlignment::alignCenterIfNeeded, ScrollAlignment::alignCenterIfNeeded);
@@ -1142,7 +1142,7 @@ PassRefPtr<Range> Editor::findStringAndScrollToVisible(const String& target, Ran
 PassRefPtr<Range> Editor::rangeOfString(const String& target, Range* referenceRange, FindOptions options)
 {
     if (target.isEmpty())
-        return 0;
+        return nullptr;
 
     // Start from an edge of the reference range, if there's a reference range that's not in shadow content. Which edge
     // is used depends on whether we're searching forward or backward, and whether startInSelection is set.
@@ -1207,7 +1207,7 @@ PassRefPtr<Range> Editor::rangeOfString(const String& target, Range* referenceRa
         // this should be a success case instead, so we'll just fall through in that case.
     }
 
-    return resultRange->collapsed(ASSERT_NO_EXCEPTION) ? 0 : resultRange.release();
+    return resultRange->collapsed(ASSERT_NO_EXCEPTION) ? nullptr : resultRange.release();
 }
 
 void Editor::setMarkedTextMatchesAreHighlighted(bool flag)

@@ -109,7 +109,7 @@ static bool getSVGElementColorSpace(SVGElement* svgElement, ColorSpace& cs)
 PassRefPtr<FilterEffect> ReferenceFilterBuilder::build(Filter* parentFilter, RenderObject* renderer, FilterEffect* previousEffect, const ReferenceFilterOperation* filterOperation)
 {
     if (!renderer)
-        return 0;
+        return nullptr;
 
     Document* document = &renderer->document();
 
@@ -123,7 +123,7 @@ PassRefPtr<FilterEffect> ReferenceFilterBuilder::build(Filter* parentFilter, Ren
     }
 
     if (!document)
-        return 0;
+        return nullptr;
 
     Element* filter = document->getElementById(filterOperation->fragment());
 
@@ -131,11 +131,11 @@ PassRefPtr<FilterEffect> ReferenceFilterBuilder::build(Filter* parentFilter, Ren
         // Although we did not find the referenced filter, it might exist later
         // in the document
         document->accessSVGExtensions()->addPendingResource(filterOperation->fragment(), toElement(renderer->node()));
-        return 0;
+        return nullptr;
     }
 
     if (!filter->isSVGElement() || !filter->hasTagName(SVGNames::filterTag))
-        return 0;
+        return nullptr;
 
     SVGFilterElement* filterElement = toSVGFilterElement(toSVGElement(filter));
 

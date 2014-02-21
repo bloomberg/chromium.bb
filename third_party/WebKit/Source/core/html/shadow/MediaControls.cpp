@@ -59,7 +59,7 @@ MediaControls::MediaControls(Document& document)
 PassRefPtr<MediaControls> MediaControls::create(Document& document)
 {
     if (!document.page())
-        return 0;
+        return nullptr;
 
     RefPtr<MediaControls> controls;
 #if OS(ANDROID)
@@ -71,7 +71,7 @@ PassRefPtr<MediaControls> MediaControls::create(Document& document)
     if (controls->initializeControls(document))
         return controls.release();
 
-    return 0;
+    return nullptr;
 }
 
 bool MediaControls::initializeControls(Document& document)

@@ -42,12 +42,12 @@ namespace WebCore {
 
 void AudioParamTimeline::setValueAtTime(float value, double time)
 {
-    insertEvent(ParamEvent(ParamEvent::SetValue, value, time, 0, 0, 0));
+    insertEvent(ParamEvent(ParamEvent::SetValue, value, time, 0, 0, nullptr));
 }
 
 void AudioParamTimeline::linearRampToValueAtTime(float value, double time)
 {
-    insertEvent(ParamEvent(ParamEvent::LinearRampToValue, value, time, 0, 0, 0));
+    insertEvent(ParamEvent(ParamEvent::LinearRampToValue, value, time, 0, 0, nullptr));
 }
 
 void AudioParamTimeline::exponentialRampToValueAtTime(float value, double time, ExceptionState& exceptionState)
@@ -60,12 +60,12 @@ void AudioParamTimeline::exponentialRampToValueAtTime(float value, double time, 
         return;
     }
 
-    insertEvent(ParamEvent(ParamEvent::ExponentialRampToValue, value, time, 0, 0, 0));
+    insertEvent(ParamEvent(ParamEvent::ExponentialRampToValue, value, time, 0, 0, nullptr));
 }
 
 void AudioParamTimeline::setTargetAtTime(float target, double time, double timeConstant)
 {
-    insertEvent(ParamEvent(ParamEvent::SetTarget, target, time, timeConstant, 0, 0));
+    insertEvent(ParamEvent(ParamEvent::SetTarget, target, time, timeConstant, 0, nullptr));
 }
 
 void AudioParamTimeline::setValueCurveAtTime(Float32Array* curve, double time, double duration)

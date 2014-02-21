@@ -284,18 +284,18 @@ String SVGElement::title() const
 PassRefPtrWillBeRawPtr<CSSValue> SVGElement::getPresentationAttribute(const AtomicString& name)
 {
     if (!hasAttributesWithoutUpdate())
-        return 0;
+        return nullptr;
 
     QualifiedName attributeName(nullAtom, name, nullAtom);
     const Attribute* attr = getAttributeItem(attributeName);
     if (!attr)
-        return 0;
+        return nullptr;
 
     RefPtr<MutableStylePropertySet> style = MutableStylePropertySet::create(SVGAttributeMode);
     CSSPropertyID propertyID = SVGElement::cssPropertyIdForSVGAttributeName(attr->name());
     style->setProperty(propertyID, attr->value());
     RefPtrWillBeRawPtr<CSSValue> cssValue = style->getPropertyCSSValue(propertyID);
-    return cssValue ? cssValue->cloneForCSSOM() : 0;
+    return cssValue ? cssValue->cloneForCSSOM() : nullptr;
 }
 
 

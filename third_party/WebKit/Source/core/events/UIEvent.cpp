@@ -27,7 +27,7 @@
 namespace WebCore {
 
 UIEventInit::UIEventInit()
-    : view(0)
+    : view(nullptr)
     , detail(0)
 {
 }

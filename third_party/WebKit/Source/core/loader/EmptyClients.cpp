@@ -125,17 +125,17 @@ PassRefPtr<DocumentLoader> EmptyFrameLoaderClient::createDocumentLoader(Frame* f
 
 PassRefPtr<Frame> EmptyFrameLoaderClient::createFrame(const KURL&, const AtomicString&, const Referrer&, HTMLFrameOwnerElement*)
 {
-    return 0;
+    return nullptr;
 }
 
 PassRefPtr<Widget> EmptyFrameLoaderClient::createPlugin(const IntSize&, HTMLPlugInElement*, const KURL&, const Vector<String>&, const Vector<String>&, const String&, bool)
 {
-    return 0;
+    return nullptr;
 }
 
 PassRefPtr<Widget> EmptyFrameLoaderClient::createJavaAppletWidget(const IntSize&, HTMLAppletElement*, const KURL&, const Vector<String>&, const Vector<String>&)
 {
-    return 0;
+    return nullptr;
 }
 
 void EmptyTextCheckerClient::requestCheckingOfString(PassRefPtr<TextCheckingRequest>)

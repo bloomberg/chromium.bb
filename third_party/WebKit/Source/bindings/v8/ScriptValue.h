@@ -52,7 +52,7 @@ public:
 
     ScriptValue(v8::Handle<v8::Value> value, v8::Isolate* isolate)
         : m_isolate(isolate)
-        , m_value(value.IsEmpty() ? 0 : SharedPersistent<v8::Value>::create(value, isolate))
+        , m_value(value.IsEmpty() ? nullptr : SharedPersistent<v8::Value>::create(value, isolate))
     {
     }
 
@@ -151,7 +151,7 @@ public:
 
     void clear()
     {
-        m_value = 0;
+        m_value = nullptr;
     }
 
     v8::Handle<v8::Value> v8Value() const

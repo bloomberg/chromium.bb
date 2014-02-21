@@ -125,7 +125,7 @@ ApplyStyleCommand::ApplyStyleCommand(Document& document, const EditingStyle* sty
     , m_start(endingSelection().start().downstream())
     , m_end(endingSelection().end().upstream())
     , m_useEndingSelection(true)
-    , m_styledInlineElement(0)
+    , m_styledInlineElement(nullptr)
     , m_removeOnly(false)
     , m_isInlineElementToRemoveFunction(0)
 {
@@ -139,7 +139,7 @@ ApplyStyleCommand::ApplyStyleCommand(Document& document, const EditingStyle* sty
     , m_start(start)
     , m_end(end)
     , m_useEndingSelection(false)
-    , m_styledInlineElement(0)
+    , m_styledInlineElement(nullptr)
     , m_removeOnly(false)
     , m_isInlineElementToRemoveFunction(0)
 {
@@ -167,7 +167,7 @@ ApplyStyleCommand::ApplyStyleCommand(Document& document, const EditingStyle* sty
     , m_start(endingSelection().start().downstream())
     , m_end(endingSelection().end().upstream())
     , m_useEndingSelection(true)
-    , m_styledInlineElement(0)
+    , m_styledInlineElement(nullptr)
     , m_removeOnly(true)
     , m_isInlineElementToRemoveFunction(isInlineElementToRemoveFunction)
 {
@@ -536,8 +536,8 @@ static Node* highestEmbeddingAncestor(Node* startNode, Node* enclosingNode)
 
 void ApplyStyleCommand::applyInlineStyle(EditingStyle* style)
 {
-    RefPtr<Node> startDummySpanAncestor = 0;
-    RefPtr<Node> endDummySpanAncestor = 0;
+    RefPtr<Node> startDummySpanAncestor = nullptr;
+    RefPtr<Node> endDummySpanAncestor = nullptr;
 
     // update document layout once before removing styles
     // so that we avoid the expense of updating before each and every call

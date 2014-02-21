@@ -44,8 +44,11 @@ namespace WTF {
 
 template<typename T>
 class RawPtr {
+    WTF_DISALLOW_CONSTRUCTION_FROM_ZERO(RawPtr);
+    WTF_DISALLOW_ZERO_ASSIGNMENT(RawPtr);
 public:
     RawPtr() : m_ptr(0) { }
+    RawPtr(std::nullptr_t) : m_ptr(0) { }
     RawPtr(T* ptr) : m_ptr(ptr) { }
     RawPtr(const RawPtr& other)
         : m_ptr(other.get())
@@ -84,6 +87,12 @@ public:
     RawPtr& operator=(RawPtr<U> ptr)
     {
         m_ptr = ptr.get();
+        return *this;
+    }
+
+    RawPtr& operator=(std::nullptr_t)
+    {
+        m_ptr = 0;
         return *this;
     }
 

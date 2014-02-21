@@ -68,11 +68,11 @@ static PassRefPtr<JSONValue> v8ToJSONValue(v8::Handle<v8::Value> value, int maxD
 {
     if (value.IsEmpty()) {
         ASSERT_NOT_REACHED();
-        return 0;
+        return nullptr;
     }
 
     if (!maxDepth)
-        return 0;
+        return nullptr;
     maxDepth--;
 
     if (value->IsNull() || value->IsUndefined())
@@ -91,7 +91,7 @@ static PassRefPtr<JSONValue> v8ToJSONValue(v8::Handle<v8::Value> value, int maxD
             v8::Local<v8::Value> value = array->Get(v8::Int32::New(isolate, i));
             RefPtr<JSONValue> element = v8ToJSONValue(value, maxDepth, isolate);
             if (!element)
-                return 0;
+                return nullptr;
             inspectorArray->pushValue(element);
         }
         return inspectorArray;
@@ -108,14 +108,14 @@ static PassRefPtr<JSONValue> v8ToJSONValue(v8::Handle<v8::Value> value, int maxD
                 continue;
             RefPtr<JSONValue> propertyValue = v8ToJSONValue(object->Get(name), maxDepth, isolate);
             if (!propertyValue)
-                return 0;
-            V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<WithNullCheck>, nameString, name, 0);
+                return nullptr;
+            V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<WithNullCheck>, nameString, name, nullptr);
             jsonObject->setValue(nameString, propertyValue);
         }
         return jsonObject;
     }
     ASSERT_NOT_REACHED();
-    return 0;
+    return nullptr;
 }
 
 PassRefPtr<JSONValue> ScriptValue::toJSONValue(ScriptState* scriptState) const

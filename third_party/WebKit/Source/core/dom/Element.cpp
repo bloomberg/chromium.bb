@@ -974,7 +974,7 @@ ALWAYS_INLINE void Element::setAttributeInternal(size_t index, const QualifiedNa
         // If there is an Attr node hooked to this attribute, the Attr::setValue() call below
         // will write into the ElementData.
         // FIXME: Refactor this so it makes some sense.
-        if (RefPtr<Attr> attrNode = inSynchronizationOfLazyAttribute ? 0 : attrIfExists(existingAttributeName))
+        if (RefPtr<Attr> attrNode = inSynchronizationOfLazyAttribute ? nullptr : attrIfExists(existingAttributeName))
             attrNode->setValue(newValue);
         else
             ensureUniqueElementData()->attributeItem(index)->setValue(newValue);
@@ -1743,7 +1743,7 @@ PassRefPtr<ShadowRoot> Element::createShadowRoot(ExceptionState& exceptionState)
     // flag is provided for testing how author shadows interact on these elements.
     if (!areAuthorShadowsAllowed() && !RuntimeEnabledFeatures::authorShadowDOMForAnyElementEnabled()) {
         exceptionState.throwDOMException(HierarchyRequestError, "Author-created shadow roots are disabled for this element.");
-        return 0;
+        return nullptr;
     }
 
     return PassRefPtr<ShadowRoot>(ensureShadow().addShadowRoot(*this, ShadowRoot::AuthorShadowRoot));
@@ -1946,7 +1946,7 @@ PassRefPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionState& excep
 {
     if (!attrNode) {
         exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "Attr"));
-        return 0;
+        return nullptr;
     }
 
     RefPtr<Attr> oldAttrNode = attrIfExists(attrNode->qualifiedName());
@@ -1957,7 +1957,7 @@ PassRefPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionState& excep
     // The DOM user must explicitly clone Attr nodes to re-use them in other elements.
     if (attrNode->ownerElement()) {
         exceptionState.throwDOMException(InUseAttributeError, "The node provided is an attribute node that is already an attribute of another Element; attribute nodes must be explicitly cloned.");
-        return 0;
+        return nullptr;
     }
 
     synchronizeAllAttributes();
@@ -1984,11 +1984,11 @@ PassRefPtr<Attr> Element::removeAttributeNode(Attr* attr, ExceptionState& except
 {
     if (!attr) {
         exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "Attr"));
-        return 0;
+        return nullptr;
     }
     if (attr->ownerElement() != this) {
         exceptionState.throwDOMException(NotFoundError, "The node provided is owned by another element.");
-        return 0;
+        return nullptr;
     }
 
     ASSERT(document() == attr->document());
@@ -1998,7 +1998,7 @@ PassRefPtr<Attr> Element::removeAttributeNode(Attr* attr, ExceptionState& except
     size_t index = elementData()->getAttrIndex(attr);
     if (index == kNotFound) {
         exceptionState.throwDOMException(NotFoundError, "The attribute was not found on this element.");
-        return 0;
+        return nullptr;
     }
 
     RefPtr<Attr> guard(attr);
@@ -2088,23 +2088,23 @@ void Element::removeAttributeNS(const AtomicString& namespaceURI, const AtomicSt
 PassRefPtr<Attr> Element::getAttributeNode(const AtomicString& localName)
 {
     if (!elementData())
-        return 0;
+        return nullptr;
     synchronizeAttribute(localName);
     const Attribute* attribute = elementData()->getAttributeItem(localName, shouldIgnoreAttributeCase());
     if (!attribute)
-        return 0;
+        return nullptr;
     return ensureAttr(attribute->name());
 }
 
 PassRefPtr<Attr> Element::getAttributeNodeNS(const AtomicString& namespaceURI, const AtomicString& localName)
 {
     if (!elementData())
-        return 0;
+        return nullptr;
     QualifiedName qName(nullAtom, localName, namespaceURI);
     synchronizeAttribute(qName);
     const Attribute* attribute = elementData()->getAttributeItem(qName);
     if (!attribute)
-        return 0;
+        return nullptr;
     return ensureAttr(attribute->name());
 }
 
@@ -2195,7 +2195,7 @@ void Element::blur()
         if (doc.page())
             doc.page()->focusController().setFocusedElement(0, doc.frame());
         else
-            doc.setFocusedElement(0);
+            doc.setFocusedElement(nullptr);
     }
 }
 
@@ -2718,7 +2718,7 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change)
         // when RenderObject::isChildAllowed on our parent returns false for the
         // PseudoElement's renderer for each style recalc.
         if (!renderer() || !pseudoElementRendererIsNeeded(renderer()->getCachedPseudoStyle(pseudoId)))
-            elementRareData()->setPseudoElement(pseudoId, 0);
+            elementRareData()->setPseudoElement(pseudoId, nullptr);
     } else if (change >= UpdatePseudoElements) {
         createPseudoElementIfNeeded(pseudoId);
     }
@@ -3142,7 +3142,7 @@ PassRefPtr<Attr> Element::attrIfExists(const QualifiedName& name)
 {
     if (AttrNodeList* attrNodeList = attrNodeListForElement(this))
         return findAttrNodeInList(*attrNodeList, name);
-    return 0;
+    return nullptr;
 }
 
 PassRefPtr<Attr> Element::ensureAttr(const QualifiedName& name)
@@ -3202,7 +3202,7 @@ void Element::didRecalcStyle(StyleRecalcChange)
 PassRefPtr<RenderStyle> Element::customStyleForRenderer()
 {
     ASSERT(hasCustomStyleCallbacks());
-    return 0;
+    return nullptr;
 }
 
 void Element::cloneAttributesFromElement(const Element& other)

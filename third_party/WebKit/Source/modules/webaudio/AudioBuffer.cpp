@@ -53,12 +53,12 @@ float AudioBuffer::maxAllowedSampleRate()
 PassRefPtr<AudioBuffer> AudioBuffer::create(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate)
 {
     if (sampleRate < minAllowedSampleRate() || sampleRate > maxAllowedSampleRate() || numberOfChannels > AudioContext::maxNumberOfChannels() || !numberOfFrames)
-        return 0;
+        return nullptr;
 
     RefPtr<AudioBuffer> buffer = adoptRef(new AudioBuffer(numberOfChannels, numberOfFrames, sampleRate));
 
     if (!buffer->createdSuccessfully(numberOfChannels))
-        return 0;
+        return nullptr;
     return buffer;
 }
 
@@ -71,7 +71,7 @@ PassRefPtr<AudioBuffer> AudioBuffer::createFromAudioFileData(const void* data, s
             return buffer;
     }
 
-    return 0;
+    return nullptr;
 }
 
 bool AudioBuffer::createdSuccessfully(unsigned desiredNumberOfChannels) const
@@ -126,7 +126,7 @@ PassRefPtr<Float32Array> AudioBuffer::getChannelData(unsigned channelIndex, Exce
 {
     if (channelIndex >= m_channels.size()) {
         exceptionState.throwDOMException(IndexSizeError, "channel index (" + String::number(channelIndex) + ") exceeds number of channels (" + String::number(m_channels.size()) + ")");
-        return 0;
+        return nullptr;
     }
 
     Float32Array* channelData = m_channels[channelIndex].get();

@@ -90,7 +90,7 @@ PassRefPtr<Image> CSSCanvasValue::image(RenderObject* renderer, const IntSize& /
     ASSERT(clients().contains(renderer));
     HTMLCanvasElement* elt = element(&renderer->document());
     if (!elt || !elt->buffer())
-        return 0;
+        return nullptr;
     return elt->copiedImage();
 }
 

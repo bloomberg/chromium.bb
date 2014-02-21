@@ -35,15 +35,15 @@ namespace WebCore {
 
 PopStateEvent::PopStateEvent()
     : Event(EventTypeNames::popstate, false, true)
-    , m_serializedState(0)
-    , m_history(0)
+    , m_serializedState(nullptr)
+    , m_history(nullptr)
 {
     ScriptWrappable::init(this);
 }
 
 PopStateEvent::PopStateEvent(const AtomicString& type, const PopStateEventInit& initializer)
     : Event(type, initializer)
-    , m_history(0)
+    , m_history(nullptr)
 {
     ScriptWrappable::init(this);
 }

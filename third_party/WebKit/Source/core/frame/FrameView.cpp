@@ -186,7 +186,7 @@ FrameView::~FrameView()
     ASSERT(m_frame->view() != this || !m_frame->contentRenderer());
     RenderPart* renderer = m_frame->ownerRenderer();
     if (renderer && renderer->widget() == this)
-        renderer->setWidget(0);
+        renderer->setWidget(nullptr);
 }
 
 void FrameView::reset()
@@ -221,7 +221,7 @@ void FrameView::reset()
     m_visuallyNonEmptyPixelCount = 0;
     m_isVisuallyNonEmpty = false;
     m_firstVisuallyNonEmptyLayoutCallbackPending = true;
-    m_maintainScrollPositionAnchor = 0;
+    m_maintainScrollPositionAnchor = nullptr;
     m_partialLayout.reset();
     m_viewportConstrainedObjects.clear();
 }
@@ -1609,7 +1609,7 @@ void FrameView::scrollElementToRect(Element* element, const IntRect& rect)
 void FrameView::setScrollPosition(const IntPoint& scrollPoint)
 {
     TemporaryChange<bool> changeInProgrammaticScroll(m_inProgrammaticScroll, true);
-    m_maintainScrollPositionAnchor = 0;
+    m_maintainScrollPositionAnchor = nullptr;
 
     IntPoint newScrollPosition = adjustScrollPositionWithinRange(scrollPoint);
 
@@ -2642,7 +2642,7 @@ void FrameView::setWasScrolledByUser(bool wasScrolledByUser)
 {
     if (m_inProgrammaticScroll)
         return;
-    m_maintainScrollPositionAnchor = 0;
+    m_maintainScrollPositionAnchor = nullptr;
     m_wasScrolledByUser = wasScrolledByUser;
 }
 

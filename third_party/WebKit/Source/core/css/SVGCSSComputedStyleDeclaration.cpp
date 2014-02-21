@@ -42,7 +42,7 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> glyphOrientationToCSSPrimitiveV
         case GO_270DEG:
             return CSSPrimitiveValue::create(270.0f, CSSPrimitiveValue::CSS_DEG);
         default:
-            return 0;
+            return nullptr;
     }
 }
 
@@ -95,7 +95,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getSVGPropertyCSSV
 {
     Node* node = m_node.get();
     if (!node)
-        return 0;
+        return nullptr;
 
     // Make sure our layout is up to date before we allow a query on these attributes.
     if (updateLayout)
@@ -103,11 +103,11 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getSVGPropertyCSSV
 
     RenderStyle* style = node->computedStyle();
     if (!style)
-        return 0;
+        return nullptr;
 
     const SVGRenderStyle* svgStyle = style->svgStyle();
     if (!svgStyle)
-        return 0;
+        return nullptr;
 
     switch (propertyID) {
         case CSSPropertyClipRule:
@@ -198,7 +198,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getSVGPropertyCSSV
                     return SVGLength::toCSSPrimitiveValue(svgStyle->baselineShiftValue());
             }
             ASSERT_NOT_REACHED();
-            return 0;
+            return nullptr;
         }
         case CSSPropertyBufferedRendering:
             return CSSPrimitiveValue::create(svgStyle->bufferedRendering());
@@ -211,7 +211,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getSVGPropertyCSSV
             if (svgStyle->glyphOrientationVertical() == GO_AUTO)
                 return CSSPrimitiveValue::createIdentifier(CSSValueAuto);
 
-            return 0;
+            return nullptr;
         }
         case CSSPropertyPaintOrder:
             return paintOrderToCSSValueList(svgStyle->paintOrder());
@@ -230,7 +230,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getSVGPropertyCSSV
         ASSERT_WITH_MESSAGE(0, "unimplemented propertyID: %d", propertyID);
     }
     WTF_LOG_ERROR("unimplemented propertyID: %d", propertyID);
-    return 0;
+    return nullptr;
 }
 
 }

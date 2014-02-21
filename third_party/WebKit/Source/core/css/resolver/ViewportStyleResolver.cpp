@@ -96,7 +96,7 @@ void ViewportStyleResolver::resolve()
 
     if (!m_propertySet || (!m_hasAuthorStyle && m_document->hasLegacyViewportTag())) {
         ASSERT(!m_hasAuthorStyle);
-        m_propertySet = 0;
+        m_propertySet = nullptr;
         m_document->setViewportDescription(ViewportDescription());
         return;
     }
@@ -115,7 +115,7 @@ void ViewportStyleResolver::resolve()
 
     m_document->setViewportDescription(description);
 
-    m_propertySet = 0;
+    m_propertySet = nullptr;
     m_hasAuthorStyle = false;
 }
 

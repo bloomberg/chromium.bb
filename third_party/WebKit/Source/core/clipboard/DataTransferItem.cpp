@@ -84,7 +84,7 @@ void DataTransferItem::getAsString(ExecutionContext* context, PassOwnPtr<StringC
 PassRefPtr<Blob> DataTransferItem::getAsFile() const
 {
     if (!m_clipboard->canReadData())
-        return 0;
+        return nullptr;
 
     return m_item->getAsFile();
 }

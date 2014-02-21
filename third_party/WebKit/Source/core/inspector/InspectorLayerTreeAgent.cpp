@@ -185,7 +185,7 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > InspectorLayerTre
 {
     RenderLayerCompositor* compositor = renderLayerCompositor();
     if (!compositor || !compositor->inCompositingMode())
-        return 0;
+        return nullptr;
     LayerIdToNodeIdMap layerIdToNodeIdMap;
     RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > layers = TypeBuilder::Array<TypeBuilder::LayerTree::Layer>::create();
     buildLayerIdToNodeIdMap(compositor->rootRenderLayer(), layerIdToNodeIdMap);

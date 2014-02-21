@@ -45,7 +45,7 @@ inline ArchiveResource::ArchiveResource(PassRefPtr<SharedBuffer> data, const KUR
 PassRefPtr<ArchiveResource> ArchiveResource::create(PassRefPtr<SharedBuffer> data, const KURL& url, const AtomicString& mimeType, const AtomicString& textEncoding, const String& frameName, const ResourceResponse& response)
 {
     if (!data)
-        return 0;
+        return nullptr;
     if (response.isNull()) {
         unsigned dataSize = data->size();
         return adoptRef(new ArchiveResource(data, url, mimeType, textEncoding, frameName,

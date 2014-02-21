@@ -291,7 +291,7 @@ void MainThreadWebSocketChannel::didCloseSocketStream(SocketStreamHandle* handle
         WebSocketChannelClient* client = m_client;
         m_client = 0;
         clearDocument();
-        m_handle = 0;
+        m_handle = nullptr;
         if (client)
             client->didClose(m_unhandledBufferedAmount, m_receivedClosingHandshake ? WebSocketChannelClient::ClosingHandshakeComplete : WebSocketChannelClient::ClosingHandshakeIncomplete, m_closeEventCode, m_closeEventReason);
     }

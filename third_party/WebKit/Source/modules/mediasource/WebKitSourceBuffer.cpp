@@ -79,7 +79,7 @@ PassRefPtr<TimeRanges> WebKitSourceBuffer::buffered(ExceptionState& exceptionSta
     // 1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an
     //    InvalidStateError exception and abort these steps.
     if (throwExceptionIfRemoved(isRemoved(), exceptionState))
-        return 0;
+        return nullptr;
 
     // 2. Return a new static normalized TimeRanges object for the media segments buffered.
     return TimeRanges::create(m_webSourceBuffer->buffered());

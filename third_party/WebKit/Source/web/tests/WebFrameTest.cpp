@@ -4634,7 +4634,7 @@ TEST_F(WebFrameTest, SimulateFragmentAnchorMiddleClick)
     destination.setFragmentIdentifier("test");
 
     RefPtr<WebCore::Event> event = WebCore::MouseEvent::create(WebCore::EventTypeNames::click, false, false,
-        document->domWindow(), 0, 0, 0, 0, 0, 0, 0, false, false, false, false, 1, 0, 0);
+        document->domWindow(), 0, 0, 0, 0, 0, 0, 0, false, false, false, false, 1, nullptr, nullptr);
     WebCore::FrameLoadRequest frameRequest(document, WebCore::ResourceRequest(destination));
     frameRequest.setTriggeringEvent(event);
     webViewHelper.webViewImpl()->page()->mainFrame()->loader().load(frameRequest);

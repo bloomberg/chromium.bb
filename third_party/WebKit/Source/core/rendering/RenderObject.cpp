@@ -152,7 +152,7 @@ RenderObject* RenderObject::createObject(Element* element, RenderStyle* style)
             image->setIsGeneratedContent();
         } else
             image->setImageResource(RenderImageResource::create());
-        image->setStyleInternal(0);
+        image->setStyleInternal(nullptr);
         return image;
     }
 
@@ -202,7 +202,7 @@ DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, renderObjectCounter, ("Rend
 
 RenderObject::RenderObject(Node* node)
     : ImageResourceClient()
-    , m_style(0)
+    , m_style(nullptr)
     , m_node(node)
     , m_parent(0)
     , m_previous(0)
@@ -2861,13 +2861,13 @@ static PassRefPtr<RenderStyle> firstLineStyleForCachedUncachedType(StyleCacheSta
             return rendererForFirstLineStyle->getUncachedPseudoStyle(PseudoStyleRequest(FIRST_LINE_INHERITED), parentStyle, style);
         }
     }
-    return 0;
+    return nullptr;
 }
 
 PassRefPtr<RenderStyle> RenderObject::uncachedFirstLineStyle(RenderStyle* style) const
 {
     if (!document().styleEngine()->usesFirstLineRules())
-        return 0;
+        return nullptr;
 
     ASSERT(!isText());
 
@@ -2902,7 +2902,7 @@ RenderStyle* RenderObject::getCachedPseudoStyle(PseudoId pseudo, RenderStyle* pa
 PassRefPtr<RenderStyle> RenderObject::getUncachedPseudoStyle(const PseudoStyleRequest& pseudoStyleRequest, RenderStyle* parentStyle, RenderStyle* ownStyle) const
 {
     if (pseudoStyleRequest.pseudoId < FIRST_INTERNAL_PSEUDOID && !ownStyle && !style()->hasPseudoStyle(pseudoStyleRequest.pseudoId))
-        return 0;
+        return nullptr;
 
     if (!parentStyle) {
         ASSERT(!ownStyle);
@@ -2914,7 +2914,7 @@ PassRefPtr<RenderStyle> RenderObject::getUncachedPseudoStyle(const PseudoStyleRe
     while (n && !n->isElementNode())
         n = n->parentNode();
     if (!n)
-        return 0;
+        return nullptr;
     Element* element = toElement(n);
 
     if (pseudoStyleRequest.pseudoId == FIRST_LINE_INHERITED) {

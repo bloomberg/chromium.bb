@@ -30,7 +30,7 @@
 namespace WebCore {
 
 MediaStreamEventInit::MediaStreamEventInit()
-    : stream(0)
+    : stream(nullptr)
 {
 }
 

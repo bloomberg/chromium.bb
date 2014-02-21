@@ -57,7 +57,7 @@ private:
         , m_fillRule(RULE_NONZERO)
         , m_textDrawingMode(TextModeFill)
         , m_alpha(1)
-        , m_xferMode(0)
+        , m_xferMode(nullptr)
         , m_compositeOperator(CompositeSourceOver)
         , m_blendMode(blink::WebBlendModeNormal)
 #if USE(LOW_QUALITY_IMAGE_INTERPOLATION)

@@ -296,7 +296,7 @@ void Player::cancel()
 
     ASSERT(m_content->player() == this);
     m_content->detach();
-    m_content = 0;
+    m_content = nullptr;
 }
 
 void Player::pauseForTesting(double pauseTime)

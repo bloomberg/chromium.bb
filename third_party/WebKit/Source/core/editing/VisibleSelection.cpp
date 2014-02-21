@@ -132,7 +132,7 @@ void VisibleSelection::setExtent(const VisiblePosition& visiblePosition)
 PassRefPtr<Range> VisibleSelection::firstRange() const
 {
     if (isNone())
-        return 0;
+        return nullptr;
     Position start = m_start.parentAnchoredEquivalent();
     Position end = m_end.parentAnchoredEquivalent();
     return Range::create(*start.document(), start, end);
@@ -141,7 +141,7 @@ PassRefPtr<Range> VisibleSelection::firstRange() const
 PassRefPtr<Range> VisibleSelection::toNormalizedRange() const
 {
     if (isNone())
-        return 0;
+        return nullptr;
 
     // Make sure we have an updated layout since this function is called
     // in the course of running edit commands which modify the DOM.
@@ -151,7 +151,7 @@ PassRefPtr<Range> VisibleSelection::toNormalizedRange() const
 
     // Check again, because updating layout can clear the selection.
     if (isNone())
-        return 0;
+        return nullptr;
 
     Position s, e;
     if (isCaret()) {
@@ -187,7 +187,7 @@ PassRefPtr<Range> VisibleSelection::toNormalizedRange() const
     }
 
     if (!s.containerNode() || !e.containerNode())
-        return 0;
+        return nullptr;
 
     // VisibleSelections are supposed to always be valid.  This constructor will ASSERT
     // if a valid range could not be created, which is fine for this callsite.
@@ -207,14 +207,14 @@ static PassRefPtr<Range> makeSearchRange(const Position& pos)
 {
     Node* n = pos.deprecatedNode();
     if (!n)
-        return 0;
+        return nullptr;
     Document& d = n->document();
     Node* de = d.documentElement();
     if (!de)
-        return 0;
+        return nullptr;
     Node* boundary = n->enclosingBlockFlowElement();
     if (!boundary)
-        return 0;
+        return nullptr;
 
     RefPtr<Range> searchRange(Range::create(d));
     TrackExceptionState exceptionState;
@@ -225,7 +225,7 @@ static PassRefPtr<Range> makeSearchRange(const Position& pos)
 
     ASSERT(!exceptionState.hadException());
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     return searchRange.release();
 }

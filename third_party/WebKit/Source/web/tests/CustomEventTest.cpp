@@ -79,7 +79,7 @@ public:
 
 private:
     TestListener(v8::Isolate* isolate)
-        : V8AbstractEventListener(false, 0, isolate)
+        : V8AbstractEventListener(false, nullptr, isolate)
     {
     }
 

@@ -55,7 +55,7 @@ namespace WebCore {
 static PassRefPtr<SkSurface> createSkSurface(GrContext* gr, const IntSize& size, int msaaSampleCount = 0)
 {
     if (!gr)
-        return 0;
+        return nullptr;
     gr->resetContext();
     SkImageInfo info;
     info.fWidth = size.width();
@@ -70,10 +70,10 @@ PassRefPtr<Canvas2DLayerBridge> Canvas2DLayerBridge::create(const IntSize& size,
     TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation");
     OwnPtr<blink::WebGraphicsContext3DProvider> contextProvider = adoptPtr(blink::Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
     if (!contextProvider)
-        return 0;
+        return nullptr;
     RefPtr<SkSurface> surface(createSkSurface(contextProvider->grContext(), size, msaaSampleCount));
     if (!surface)
-        return 0;
+        return nullptr;
     RefPtr<Canvas2DLayerBridge> layerBridge;
     OwnPtr<SkDeferredCanvas> canvas = adoptPtr(SkDeferredCanvas::Create(surface.get()));
     layerBridge = adoptRef(new Canvas2DLayerBridge(contextProvider.release(), canvas.release(), msaaSampleCount, opacityMode));

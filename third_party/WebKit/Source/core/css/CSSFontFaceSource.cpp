@@ -130,7 +130,7 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
 {
     // If the font hasn't loaded or an error occurred, then we've got nothing.
     if (!isValid())
-        return 0;
+        return nullptr;
 
     if (isLocal()) {
         // We're local. Just return a SimpleFontData from the normal cache.
@@ -144,7 +144,7 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
     AtomicString emptyFontFamily = "";
     FontCacheKey key = fontDescription.cacheKey(emptyFontFamily);
 
-    RefPtr<SimpleFontData>& fontData = m_fontDataTable.add(key.hash(), 0).storedValue->value;
+    RefPtr<SimpleFontData>& fontData = m_fontDataTable.add(key.hash(), nullptr).storedValue->value;
     if (fontData)
         return fontData; // No release, because fontData is a reference to a RefPtr that is held in the m_fontDataTable.
 
@@ -155,7 +155,7 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
             if (m_hasExternalSVGFont) {
                 // For SVG fonts parse the external SVG document, and extract the <font> element.
                 if (!m_font->ensureSVGFontData())
-                    return 0;
+                    return nullptr;
 
                 if (!m_externalSVGFontElement) {
                     String fragmentIdentifier;
@@ -166,7 +166,7 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
                 }
 
                 if (!m_externalSVGFontElement)
-                    return 0;
+                    return nullptr;
 
                 SVGFontFaceElement* fontFaceElement = 0;
 
@@ -196,7 +196,7 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
             {
                 // Create new FontPlatformData from our CGFontRef, point size and ATSFontRef.
                 if (!m_font->ensureCustomFontData())
-                    return 0;
+                    return nullptr;
 
                 fontData = SimpleFontData::create(
                     m_font->platformDataFromCustomData(fontDescription.effectiveFontSize(),
@@ -221,7 +221,7 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
         SimpleFontData* temporaryFont = FontCache::fontCache()->getNonRetainedLastResortFallbackFont(fontDescription);
         if (!temporaryFont) {
             ASSERT_NOT_REACHED();
-            return 0;
+            return nullptr;
         }
         RefPtr<CSSCustomFontData> cssFontData = CSSCustomFontData::create(true);
         cssFontData->setCSSFontFaceSource(this);

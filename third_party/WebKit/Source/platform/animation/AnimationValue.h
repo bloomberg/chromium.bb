@@ -42,7 +42,7 @@ namespace WebCore {
 class AnimationValue {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    explicit AnimationValue(double keyTime, PassRefPtr<TimingFunction> timingFunction = 0)
+    explicit AnimationValue(double keyTime, PassRefPtr<TimingFunction> timingFunction = nullptr)
         : m_keyTime(keyTime)
         , m_timingFunction(timingFunction)
     {
@@ -62,7 +62,7 @@ private:
 // Used to store one float value of an animation.
 class FloatAnimationValue FINAL : public AnimationValue {
 public:
-    FloatAnimationValue(double keyTime, float value, PassRefPtr<TimingFunction> timingFunction = 0)
+    FloatAnimationValue(double keyTime, float value, PassRefPtr<TimingFunction> timingFunction = nullptr)
         : AnimationValue(keyTime, timingFunction)
         , m_value(value)
     {
@@ -78,7 +78,7 @@ private:
 // Used to store one transform value in a keyframe list.
 class TransformAnimationValue FINAL : public AnimationValue {
 public:
-    explicit TransformAnimationValue(double keyTime, const TransformOperations* value = 0, PassRefPtr<TimingFunction> timingFunction = 0)
+    explicit TransformAnimationValue(double keyTime, const TransformOperations* value = 0, PassRefPtr<TimingFunction> timingFunction = nullptr)
         : AnimationValue(keyTime, timingFunction)
     {
         if (value)
@@ -95,7 +95,7 @@ private:
 // Used to store one filter value in a keyframe list.
 class FilterAnimationValue FINAL : public AnimationValue {
 public:
-    explicit FilterAnimationValue(double keyTime, const FilterOperations* value = 0, PassRefPtr<TimingFunction> timingFunction = 0)
+    explicit FilterAnimationValue(double keyTime, const FilterOperations* value = 0, PassRefPtr<TimingFunction> timingFunction = nullptr)
         : AnimationValue(keyTime, timingFunction)
     {
         if (value)

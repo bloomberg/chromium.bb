@@ -333,7 +333,7 @@ void SVGSMILElement::removedFrom(ContainerNode* rootParent)
         setTargetElement(0);
         setAttributeName(anyQName());
         animationAttributeChanged();
-        m_timeContainer = 0;
+        m_timeContainer = nullptr;
     }
 
     SVGElement::removedFrom(rootParent);
@@ -588,7 +588,7 @@ void SVGSMILElement::connectSyncBaseConditions()
             ASSERT(!condition.m_baseID.isEmpty());
             condition.m_syncbase = treeScope().getElementById(AtomicString(condition.m_baseID));
             if (!condition.m_syncbase || !isSVGSMILElement(*condition.m_syncbase)) {
-                condition.m_syncbase = 0;
+                condition.m_syncbase = nullptr;
                 continue;
             }
             toSVGSMILElement(condition.m_syncbase.get())->addSyncBaseDependent(this);
@@ -606,7 +606,7 @@ void SVGSMILElement::disconnectSyncBaseConditions()
         if (condition.m_type == Condition::Syncbase) {
             if (condition.m_syncbase)
                 toSVGSMILElement(condition.m_syncbase.get())->removeSyncBaseDependent(this);
-            condition.m_syncbase = 0;
+            condition.m_syncbase = nullptr;
         }
     }
 }
@@ -649,7 +649,7 @@ void SVGSMILElement::disconnectEventBaseConditions()
             if (eventBase)
                 eventBase->removeEventListener(AtomicString(condition.m_name), condition.m_eventListener.get(), false);
             condition.m_eventListener->disconnectAnimation();
-            condition.m_eventListener = 0;
+            condition.m_eventListener = nullptr;
         }
     }
 }

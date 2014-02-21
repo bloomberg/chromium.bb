@@ -57,7 +57,7 @@ enum Pitch { UnknownPitch, FixedPitch, VariablePitch };
 class PLATFORM_EXPORT SimpleFontData : public FontData {
 public:
     // Used to create platform fonts.
-    static PassRefPtr<SimpleFontData> create(const FontPlatformData& platformData, PassRefPtr<CustomFontData> customData = 0, bool isTextOrientationFallback = false)
+    static PassRefPtr<SimpleFontData> create(const FontPlatformData& platformData, PassRefPtr<CustomFontData> customData = nullptr, bool isTextOrientationFallback = false)
     {
         return adoptRef(new SimpleFontData(platformData, customData, isTextOrientationFallback));
     }

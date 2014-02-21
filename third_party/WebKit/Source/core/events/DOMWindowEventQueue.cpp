@@ -102,8 +102,8 @@ void DOMWindowEventQueue::pendingEventTimerFired()
     ASSERT(!m_queuedEvents.isEmpty());
 
     // Insert a marker for where we should stop.
-    ASSERT(!m_queuedEvents.contains(0));
-    bool wasAdded = m_queuedEvents.add(0).isNewEntry;
+    ASSERT(!m_queuedEvents.contains(nullptr));
+    bool wasAdded = m_queuedEvents.add(nullptr).isNewEntry;
     ASSERT_UNUSED(wasAdded, wasAdded); // It should not have already been in the list.
 
     RefPtr<DOMWindowEventQueue> protector(this);
@@ -122,7 +122,7 @@ void DOMWindowEventQueue::dispatchEvent(PassRefPtr<Event> event)
 {
     EventTarget* eventTarget = event->target();
     if (eventTarget->toDOMWindow())
-        eventTarget->toDOMWindow()->dispatchEvent(event, 0);
+        eventTarget->toDOMWindow()->dispatchEvent(event, nullptr);
     else
         eventTarget->dispatchEvent(event);
 }

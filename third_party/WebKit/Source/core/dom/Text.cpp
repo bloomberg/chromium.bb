@@ -109,7 +109,7 @@ PassRefPtr<Text> Text::splitText(unsigned offset, ExceptionState& exceptionState
     // the number of 16-bit units in data.
     if (offset > length()) {
         exceptionState.throwDOMException(IndexSizeError, "The offset " + String::number(offset) + " is larger than the Text node's length.");
-        return 0;
+        return nullptr;
     }
 
     EventQueueScope scope;
@@ -122,7 +122,7 @@ PassRefPtr<Text> Text::splitText(unsigned offset, ExceptionState& exceptionState
     if (parentNode())
         parentNode()->insertBefore(newText.get(), nextSibling(), exceptionState);
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     if (renderer())
         toRenderText(renderer())->setTextWithOffset(dataImpl(), 0, oldStr.length());
@@ -218,7 +218,7 @@ PassRefPtr<Text> Text::replaceWholeText(const String& newText)
     if (newText.isEmpty()) {
         if (parent && parentNode() == parent)
             parent->removeChild(this, IGNORE_EXCEPTION);
-        return 0;
+        return nullptr;
     }
 
     setData(newText);

@@ -72,17 +72,17 @@ PassRefPtr<ScriptProcessorNode> ScriptProcessorNode::create(AudioContext* contex
     case 16384:
         break;
     default:
-        return 0;
+        return nullptr;
     }
 
     if (!numberOfInputChannels && !numberOfOutputChannels)
-        return 0;
+        return nullptr;
 
     if (numberOfInputChannels > AudioContext::maxNumberOfChannels())
-        return 0;
+        return nullptr;
 
     if (numberOfOutputChannels > AudioContext::maxNumberOfChannels())
-        return 0;
+        return nullptr;
 
     return adoptRef(new ScriptProcessorNode(context, sampleRate, bufferSize, numberOfInputChannels, numberOfOutputChannels));
 }
@@ -128,8 +128,8 @@ void ScriptProcessorNode::initialize()
     // Create double buffers on both the input and output sides.
     // These AudioBuffers will be directly accessed in the main thread by JavaScript.
     for (unsigned i = 0; i < 2; ++i) {
-        RefPtr<AudioBuffer> inputBuffer = m_numberOfInputChannels ? AudioBuffer::create(m_numberOfInputChannels, bufferSize(), sampleRate) : 0;
-        RefPtr<AudioBuffer> outputBuffer = m_numberOfOutputChannels ? AudioBuffer::create(m_numberOfOutputChannels, bufferSize(), sampleRate) : 0;
+        RefPtr<AudioBuffer> inputBuffer = m_numberOfInputChannels ? AudioBuffer::create(m_numberOfInputChannels, bufferSize(), sampleRate) : nullptr;
+        RefPtr<AudioBuffer> outputBuffer = m_numberOfOutputChannels ? AudioBuffer::create(m_numberOfOutputChannels, bufferSize(), sampleRate) : nullptr;
 
         m_inputBuffers.append(inputBuffer);
         m_outputBuffers.append(outputBuffer);

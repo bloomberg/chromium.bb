@@ -150,7 +150,7 @@ bool IDBOpenDBRequest::dispatchEvent(PassRefPtr<Event> event)
     // an "error" event should be fired instead.
     if (event->type() == EventTypeNames::success && resultAsAny()->type() == IDBAny::IDBDatabaseType && resultAsAny()->idbDatabase()->isClosePending()) {
         dequeueEvent(event.get());
-        setResult(0);
+        setResult(nullptr);
         onError(DOMError::create(AbortError, "The connection was closed."));
         return false;
     }

@@ -135,7 +135,7 @@ PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::createPropertyFor
     };
 
     ASSERT_NOT_REACHED();
-    return 0;
+    return nullptr;
 }
 
 PassOwnPtr<SVGAnimatedType> SVGAnimatedNewPropertyAnimator::constructFromString(const String& value)

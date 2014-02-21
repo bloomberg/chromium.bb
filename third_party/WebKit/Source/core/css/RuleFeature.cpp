@@ -210,7 +210,7 @@ bool RuleFeatureSet::classInvalidationRequiresSubtreeRecalc(const AtomicString& 
 
 DescendantInvalidationSet& RuleFeatureSet::ensureClassInvalidationSet(const AtomicString& className)
 {
-    InvalidationSetMap::AddResult addResult = m_classInvalidationSets.add(className, 0);
+    InvalidationSetMap::AddResult addResult = m_classInvalidationSets.add(className, nullptr);
     if (addResult.isNewEntry)
         addResult.storedValue->value = DescendantInvalidationSet::create();
     return *addResult.storedValue->value;

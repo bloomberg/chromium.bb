@@ -56,11 +56,11 @@ void WebGLProgram::deleteObjectImpl(blink::WebGraphicsContext3D* context3d, Plat
     context3d->deleteProgram(obj);
     if (m_vertexShader) {
         m_vertexShader->onDetached(context3d);
-        m_vertexShader = 0;
+        m_vertexShader = nullptr;
     }
     if (m_fragmentShader) {
         m_fragmentShader->onDetached(context3d);
-        m_fragmentShader = 0;
+        m_fragmentShader = nullptr;
     }
 }
 
@@ -146,12 +146,12 @@ bool WebGLProgram::detachShader(WebGLShader* shader)
     case GL_VERTEX_SHADER:
         if (m_vertexShader != shader)
             return false;
-        m_vertexShader = 0;
+        m_vertexShader = nullptr;
         return true;
     case GL_FRAGMENT_SHADER:
         if (m_fragmentShader != shader)
             return false;
-        m_fragmentShader = 0;
+        m_fragmentShader = nullptr;
         return true;
     default:
         return false;

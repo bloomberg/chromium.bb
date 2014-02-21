@@ -104,7 +104,7 @@ PassRefPtr<SQLTransactionBackend> DatabaseBackend::runTransaction(PassRefPtr<SQL
 {
     MutexLocker locker(m_transactionInProgressMutex);
     if (!m_isTransactionQueueEnabled)
-        return 0;
+        return nullptr;
 
     RefPtr<SQLTransactionWrapper> wrapper;
     if (data)

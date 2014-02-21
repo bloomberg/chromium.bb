@@ -105,7 +105,7 @@ WorkerScriptController::~WorkerScriptController()
 
     RELEASE_ASSERT(m_world->hasOneRef());
     // ~DOMWrapperWorld() must be called before disposing the isolate.
-    m_world = 0;
+    m_world = nullptr;
 
     // The corresponding call to didStartWorkerRunLoop is in
     // WorkerThread::workerThread().
@@ -226,12 +226,12 @@ void WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode, RefPtr
     if (state.hadException) {
         if (errorEvent) {
             *errorEvent = m_workerGlobalScope.shouldSanitizeScriptError(state.sourceURL, NotSharableCrossOrigin) ?
-                ErrorEvent::createSanitizedError(0) : ErrorEvent::create(state.errorMessage, state.sourceURL, state.lineNumber, state.columnNumber, 0);
+                ErrorEvent::createSanitizedError(nullptr) : ErrorEvent::create(state.errorMessage, state.sourceURL, state.lineNumber, state.columnNumber, nullptr);
             V8ErrorHandler::storeExceptionOnErrorEventWrapper(errorEvent->get(), state.exception.v8Value(), isolate());
         } else {
             ASSERT(!m_workerGlobalScope.shouldSanitizeScriptError(state.sourceURL, NotSharableCrossOrigin));
-            RefPtr<ErrorEvent> event = m_errorEventFromImportedScript ? m_errorEventFromImportedScript.release() : ErrorEvent::create(state.errorMessage, state.sourceURL, state.lineNumber, state.columnNumber, 0);
-            m_workerGlobalScope.reportException(event, 0, NotSharableCrossOrigin);
+            RefPtr<ErrorEvent> event = m_errorEventFromImportedScript ? m_errorEventFromImportedScript.release() : ErrorEvent::create(state.errorMessage, state.sourceURL, state.lineNumber, state.columnNumber, nullptr);
+            m_workerGlobalScope.reportException(event, nullptr, NotSharableCrossOrigin);
         }
     }
 }

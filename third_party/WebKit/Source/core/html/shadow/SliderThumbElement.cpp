@@ -318,7 +318,7 @@ void SliderThumbElement::stopDragging()
         return;
 
     if (Frame* frame = document().frame())
-        frame->eventHandler().setCapturingMouseEventsNode(0);
+        frame->eventHandler().setCapturingMouseEventsNode(nullptr);
     m_inDragMode = false;
     if (renderer())
         renderer()->setNeedsLayout();
@@ -385,7 +385,7 @@ void SliderThumbElement::detach(const AttachContext& context)
 {
     if (m_inDragMode) {
         if (Frame* frame = document().frame())
-            frame->eventHandler().setCapturingMouseEventsNode(0);
+            frame->eventHandler().setCapturingMouseEventsNode(nullptr);
     }
     HTMLDivElement::detach(context);
 }

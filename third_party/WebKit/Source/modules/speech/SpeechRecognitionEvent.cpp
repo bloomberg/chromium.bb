@@ -57,7 +57,7 @@ PassRefPtr<SpeechRecognitionEvent> SpeechRecognitionEvent::createNoMatch(PassRef
         return adoptRef(new SpeechRecognitionEvent(EventTypeNames::nomatch, 0, SpeechRecognitionResultList::create(results)));
     }
 
-    return adoptRef(new SpeechRecognitionEvent(EventTypeNames::nomatch, 0, 0));
+    return adoptRef(new SpeechRecognitionEvent(EventTypeNames::nomatch, 0, nullptr));
 }
 
 const AtomicString& SpeechRecognitionEvent::interfaceName() const

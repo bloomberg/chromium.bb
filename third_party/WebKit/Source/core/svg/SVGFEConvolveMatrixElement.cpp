@@ -198,7 +198,7 @@ PassRefPtr<FilterEffect> SVGFEConvolveMatrixElement::build(SVGFilterBuilder* fil
     FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
 
     if (!input1)
-        return 0;
+        return nullptr;
 
     int orderXValue = orderX()->currentValue()->value();
     int orderYValue = orderY()->currentValue()->value();
@@ -208,22 +208,22 @@ PassRefPtr<FilterEffect> SVGFEConvolveMatrixElement::build(SVGFilterBuilder* fil
     }
     // Spec says order must be > 0. Bail if it is not.
     if (orderXValue < 1 || orderYValue < 1)
-        return 0;
+        return nullptr;
     RefPtr<SVGNumberList> kernelMatrix = this->m_kernelMatrix->currentValue();
     size_t kernelMatrixSize = kernelMatrix->numberOfItems();
     // The spec says this is a requirement, and should bail out if fails
     if (orderXValue * orderYValue != static_cast<int>(kernelMatrixSize))
-        return 0;
+        return nullptr;
 
     int targetXValue = m_targetX->currentValue()->value();
     int targetYValue = m_targetY->currentValue()->value();
     if (hasAttribute(SVGNames::targetXAttr) && (targetXValue < 0 || targetXValue >= orderXValue))
-        return 0;
+        return nullptr;
     // The spec says the default value is: targetX = floor ( orderX / 2 ))
     if (!hasAttribute(SVGNames::targetXAttr))
         targetXValue = static_cast<int>(floorf(orderXValue / 2));
     if (hasAttribute(SVGNames::targetYAttr) && (targetYValue < 0 || targetYValue >= orderYValue))
-        return 0;
+        return nullptr;
     // The spec says the default value is: targetY = floor ( orderY / 2 ))
     if (!hasAttribute(SVGNames::targetYAttr))
         targetYValue = static_cast<int>(floorf(orderYValue / 2));
@@ -237,11 +237,11 @@ PassRefPtr<FilterEffect> SVGFEConvolveMatrixElement::build(SVGFilterBuilder* fil
         kernelUnitLengthYValue = 1;
     }
     if (kernelUnitLengthXValue <= 0 || kernelUnitLengthYValue <= 0)
-        return 0;
+        return nullptr;
 
     float divisorValue = m_divisor->currentValue()->value();
     if (hasAttribute(SVGNames::divisorAttr) && !divisorValue)
-        return 0;
+        return nullptr;
     if (!hasAttribute(SVGNames::divisorAttr)) {
         for (size_t i = 0; i < kernelMatrixSize; ++i)
             divisorValue += kernelMatrix->at(i)->value();

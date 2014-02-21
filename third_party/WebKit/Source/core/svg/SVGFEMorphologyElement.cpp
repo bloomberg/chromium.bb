@@ -149,10 +149,10 @@ PassRefPtr<FilterEffect> SVGFEMorphologyElement::build(SVGFilterBuilder* filterB
     float yRadius = radiusY()->currentValue()->value();
 
     if (!input1)
-        return 0;
+        return nullptr;
 
     if (xRadius < 0 || yRadius < 0)
-        return 0;
+        return nullptr;
 
     RefPtr<FilterEffect> effect = FEMorphology::create(filter, m_svgOperator->currentValue()->enumValue(), xRadius, yRadius);
     effect->inputEffects().append(input1);

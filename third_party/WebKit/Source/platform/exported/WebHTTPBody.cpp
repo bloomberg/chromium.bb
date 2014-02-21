@@ -143,7 +143,7 @@ void WebHTTPBody::appendFileSystemURLRange(const WebURL& url, long long start, l
 void WebHTTPBody::appendBlob(const WebString& uuid)
 {
     ensureMutable();
-    m_private->appendBlob(uuid, 0);
+    m_private->appendBlob(uuid, nullptr);
 }
 
 long long WebHTTPBody::identifier() const

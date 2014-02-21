@@ -71,7 +71,7 @@ PassRefPtrWillBeRawPtr<MIDIAccessPromise> NavigatorWebMIDI::requestMIDIAccess(Na
 PassRefPtrWillBeRawPtr<MIDIAccessPromise> NavigatorWebMIDI::requestMIDIAccess(const Dictionary& options)
 {
     if (!frame())
-        return 0;
+        return nullptr;
 
     ExecutionContext* context = frame()->document();
     ASSERT(context);

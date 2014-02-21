@@ -126,7 +126,7 @@ PassRefPtr<SVGPointTearOff> SVGTextContentElement::getStartPositionOfChar(unsign
 
     if (charnum > getNumberOfChars()) {
         exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("charnum", charnum, getNumberOfChars()));
-        return 0;
+        return nullptr;
     }
 
     FloatPoint point = SVGTextQuery(renderer()).startPositionOfCharacter(charnum);
@@ -139,7 +139,7 @@ PassRefPtr<SVGPointTearOff> SVGTextContentElement::getEndPositionOfChar(unsigned
 
     if (charnum > getNumberOfChars()) {
         exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("charnum", charnum, getNumberOfChars()));
-        return 0;
+        return nullptr;
     }
 
     FloatPoint point = SVGTextQuery(renderer()).endPositionOfCharacter(charnum);
@@ -152,7 +152,7 @@ PassRefPtr<SVGRectTearOff> SVGTextContentElement::getExtentOfChar(unsigned charn
 
     if (charnum > getNumberOfChars()) {
         exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("charnum", charnum, getNumberOfChars()));
-        return 0;
+        return nullptr;
     }
 
     FloatRect rect = SVGTextQuery(renderer()).extentOfCharacter(charnum);

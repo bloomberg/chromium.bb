@@ -84,7 +84,7 @@ inline Editor& InputMethodController::editor() const
 
 void InputMethodController::clear()
 {
-    m_compositionNode = 0;
+    m_compositionNode = nullptr;
     m_customCompositionUnderlines.clear();
 }
 
@@ -211,7 +211,7 @@ bool InputMethodController::finishComposition(const String& text, FinishComposit
         TypingCommand::deleteSelection(*m_frame.document(), 0);
     }
 
-    m_compositionNode = 0;
+    m_compositionNode = nullptr;
     m_customCompositionUnderlines.clear();
 
     insertTextForConfirmedComposition(text);
@@ -279,7 +279,7 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
         TypingCommand::deleteSelection(*m_frame.document(), TypingCommand::PreventSpellChecking);
     }
 
-    m_compositionNode = 0;
+    m_compositionNode = nullptr;
     m_customCompositionUnderlines.clear();
 
     if (!text.isEmpty()) {
@@ -321,7 +321,7 @@ void InputMethodController::setCompositionFromExistingText(const Vector<Composit
     Position base = m_frame.selection().base().downstream();
     Node* baseNode = base.anchorNode();
     if (editable->firstChild() == baseNode && editable->lastChild() == baseNode && baseNode->isTextNode()) {
-        m_compositionNode = 0;
+        m_compositionNode = nullptr;
         m_customCompositionUnderlines.clear();
 
         if (base.anchorType() != Position::PositionIsOffsetInAnchor)
@@ -352,12 +352,12 @@ void InputMethodController::setCompositionFromExistingText(const Vector<Composit
 PassRefPtr<Range> InputMethodController::compositionRange() const
 {
     if (!hasComposition())
-        return 0;
+        return nullptr;
     unsigned length = m_compositionNode->length();
     unsigned start = std::min(m_compositionStart, length);
     unsigned end = std::min(std::max(start, m_compositionEnd), length);
     if (start >= end)
-        return 0;
+        return nullptr;
     return Range::create(m_compositionNode->document(), m_compositionNode.get(), start, m_compositionNode.get(), end);
 }
 

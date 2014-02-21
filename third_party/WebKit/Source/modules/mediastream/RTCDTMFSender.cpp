@@ -50,7 +50,7 @@ PassRefPtr<RTCDTMFSender> RTCDTMFSender::create(ExecutionContext* context, blink
     OwnPtr<blink::WebRTCDTMFSenderHandler> handler = adoptPtr(peerConnectionHandler->createDTMFSender(track->component()));
     if (!handler) {
         exceptionState.throwDOMException(NotSupportedError, "The MediaStreamTrack provided is not an element of a MediaStream that's currently in the local streams set.");
-        return 0;
+        return nullptr;
     }
 
     RefPtr<RTCDTMFSender> dtmfSender = adoptRef(new RTCDTMFSender(context, track, handler.release()));

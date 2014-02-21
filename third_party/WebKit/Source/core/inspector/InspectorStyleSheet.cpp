@@ -125,7 +125,7 @@ void ParsedStyleSheet::setSourceData(PassOwnPtr<RuleSourceDataList> sourceData)
 PassRefPtr<WebCore::CSSRuleSourceData> ParsedStyleSheet::ruleSourceDataAt(unsigned index) const
 {
     if (!hasSourceData() || index >= m_sourceData->size())
-        return 0;
+        return nullptr;
 
     return m_sourceData->at(index);
 }
@@ -437,7 +437,7 @@ enum MediaListSource {
 static PassRefPtr<TypeBuilder::CSS::SourceRange> buildSourceRangeObject(const SourceRange& range, Vector<unsigned>* lineEndings)
 {
     if (!lineEndings)
-        return 0;
+        return nullptr;
     TextPosition start = TextPosition::fromOffsetAndLineEndings(range.start, *lineEndings);
     TextPosition end = TextPosition::fromOffsetAndLineEndings(range.end, *lineEndings);
 
@@ -452,7 +452,7 @@ static PassRefPtr<TypeBuilder::CSS::SourceRange> buildSourceRangeObject(const So
 static PassRefPtr<CSSRuleList> asCSSRuleList(CSSStyleSheet* styleSheet)
 {
     if (!styleSheet)
-        return 0;
+        return nullptr;
 
     RefPtr<StaticCSSRuleList> list = StaticCSSRuleList::create();
     Vector<RefPtr<CSSRule> >& listRules = list->rules();
@@ -468,7 +468,7 @@ static PassRefPtr<CSSRuleList> asCSSRuleList(CSSStyleSheet* styleSheet)
 static PassRefPtr<CSSRuleList> asCSSRuleList(CSSRule* rule)
 {
     if (!rule)
-        return 0;
+        return nullptr;
 
     if (rule->type() == CSSRule::MEDIA_RULE)
         return toCSSMediaRule(rule)->cssRules();
@@ -479,7 +479,7 @@ static PassRefPtr<CSSRuleList> asCSSRuleList(CSSRule* rule)
     if (rule->type() == CSSRule::SUPPORTS_RULE)
         return toCSSSupportsRule(rule)->cssRules();
 
-    return 0;
+    return nullptr;
 }
 
 PassRefPtr<InspectorStyle> InspectorStyle::create(const InspectorCSSId& styleId, PassRefPtr<CSSStyleDeclaration> style, InspectorStyleSheet* parentStyleSheet)
@@ -753,7 +753,7 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties() con
 PassRefPtr<CSSRuleSourceData> InspectorStyle::extractSourceData() const
 {
     if (!m_parentStyleSheet || !m_parentStyleSheet->ensureParsedDataReady())
-        return 0;
+        return nullptr;
     return m_parentStyleSheet->ruleSourceDataFor(m_style.get());
 }
 
@@ -1128,7 +1128,7 @@ PassRefPtr<TypeBuilder::CSS::CSSStyleSheetHeader> InspectorStyleSheet::buildObje
 {
     CSSStyleSheet* styleSheet = pageStyleSheet();
     if (!styleSheet)
-        return 0;
+        return nullptr;
 
     Document* document = styleSheet->ownerDocument();
     Frame* frame = document ? document->frame() : 0;
@@ -1205,7 +1205,7 @@ PassRefPtr<TypeBuilder::CSS::CSSRule> InspectorStyleSheet::buildObjectForRule(CS
 {
     CSSStyleSheet* styleSheet = pageStyleSheet();
     if (!styleSheet)
-        return 0;
+        return nullptr;
 
     RefPtr<TypeBuilder::CSS::CSSRule> result = TypeBuilder::CSS::CSSRule::create()
         .setSelectorList(buildObjectForSelectorList(rule))
@@ -1319,11 +1319,11 @@ void InspectorStyleSheet::fireStyleSheetChanged()
 PassRefPtr<TypeBuilder::CSS::SourceRange> InspectorStyleSheet::ruleHeaderSourceRange(const CSSRule* rule)
 {
     if (!ensureParsedDataReady())
-        return 0;
+        return nullptr;
 
     RefPtr<CSSRuleSourceData> sourceData = m_parsedStyleSheet->ruleSourceDataAt(ruleIndexByRule(rule));
     if (!sourceData)
-        return 0;
+        return nullptr;
     return buildSourceRangeObject(sourceData->ruleHeaderRange, lineEndings().get());
 }
 
@@ -1331,7 +1331,7 @@ PassRefPtr<InspectorStyle> InspectorStyleSheet::inspectorStyleForId(const Inspec
 {
     CSSStyleDeclaration* style = styleForId(id);
     if (!style)
-        return 0;
+        return nullptr;
 
     return InspectorStyle::create(id, style, this);
 }
@@ -1618,9 +1618,9 @@ PassRefPtr<InspectorStyleSheetForInlineStyle> InspectorStyleSheetForInlineStyle:
 }
 
 InspectorStyleSheetForInlineStyle::InspectorStyleSheetForInlineStyle(InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent, const String& id, PassRefPtr<Element> element, TypeBuilder::CSS::StyleSheetOrigin::Enum origin, Listener* listener)
-    : InspectorStyleSheet(pageAgent, resourceAgent, id, 0, origin, "", listener)
+    : InspectorStyleSheet(pageAgent, resourceAgent, id, nullptr, origin, "", listener)
     , m_element(element)
-    , m_ruleSourceData(0)
+    , m_ruleSourceData(nullptr)
     , m_isStyleTextValid(false)
 {
     ASSERT(m_element);
@@ -1728,7 +1728,7 @@ const String& InspectorStyleSheetForInlineStyle::elementStyleText() const
 PassRefPtr<CSSRuleSourceData> InspectorStyleSheetForInlineStyle::getStyleAttributeData() const
 {
     if (!m_element->isStyledElement())
-        return 0;
+        return nullptr;
 
     if (m_styleText.isEmpty()) {
         RefPtr<CSSRuleSourceData> result = CSSRuleSourceData::create(CSSRuleSourceData::STYLE_RULE);

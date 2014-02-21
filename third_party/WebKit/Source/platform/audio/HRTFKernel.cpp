@@ -113,7 +113,7 @@ PassRefPtr<HRTFKernel> HRTFKernel::createInterpolatedKernel(HRTFKernel* kernel1,
 {
     ASSERT(kernel1 && kernel2);
     if (!kernel1 || !kernel2)
-        return 0;
+        return nullptr;
 
     ASSERT(x >= 0.0 && x < 1.0);
     x = min(1.0f, max(0.0f, x));
@@ -122,7 +122,7 @@ PassRefPtr<HRTFKernel> HRTFKernel::createInterpolatedKernel(HRTFKernel* kernel1,
     float sampleRate2 = kernel2->sampleRate();
     ASSERT(sampleRate1 == sampleRate2);
     if (sampleRate1 != sampleRate2)
-        return 0;
+        return nullptr;
 
     float frameDelay = (1 - x) * kernel1->frameDelay() + x * kernel2->frameDelay();
 

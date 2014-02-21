@@ -94,7 +94,7 @@ void CSSMatrix::setMatrixValue(const String& string, ExceptionState& exceptionSt
 PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::multiply(CSSMatrix* secondMatrix) const
 {
     if (!secondMatrix)
-        return 0;
+        return nullptr;
 
     return CSSMatrix::create(TransformationMatrix(m_matrix).multiply(secondMatrix->m_matrix));
 }
@@ -103,7 +103,7 @@ PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::inverse(ExceptionState& exceptionSt
 {
     if (!m_matrix.isInvertible()) {
         exceptionState.throwDOMException(NotSupportedError, "The matrix is not invertable.");
-        return 0;
+        return nullptr;
     }
 
     return CSSMatrix::create(m_matrix.inverse());

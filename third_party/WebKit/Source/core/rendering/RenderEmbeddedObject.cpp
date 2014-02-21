@@ -176,7 +176,7 @@ bool RenderEmbeddedObject::getReplacementTextGeometry(const LayoutPoint& accumul
         return false;
     fontDescription.setComputedSize(fontDescription.specifiedSize());
     font = Font(fontDescription);
-    font.update(0);
+    font.update(nullptr);
 
     run = TextRun(m_unavailablePluginReplacementText);
     textWidth = font.width(run);

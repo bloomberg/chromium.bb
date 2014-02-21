@@ -170,7 +170,7 @@ PassRefPtr<File> DOMFileSystemSync::createFile(const FileEntrySync* fileEntry, E
     fileSystem()->createSnapshotFileAndReadMetadata(fileSystemURL, CreateFileHelper::create(result, fileEntry->name(), fileSystemURL, type()));
     if (result->m_failed) {
         exceptionState.throwDOMException(result->m_code, "Could not create '" + fileEntry->name() + "'.");
-        return 0;
+        return nullptr;
     }
     return result->m_file;
 }
@@ -233,7 +233,7 @@ PassRefPtr<FileWriterSync> DOMFileSystemSync::createWriter(const FileEntrySync* 
     fileSystem()->createFileWriter(createFileSystemURL(fileEntry), fileWriter.get(), callbacks.release());
     if (errorCode != FileError::OK) {
         FileError::throwDOMException(exceptionState, errorCode);
-        return 0;
+        return nullptr;
     }
     return fileWriter.release();
 }

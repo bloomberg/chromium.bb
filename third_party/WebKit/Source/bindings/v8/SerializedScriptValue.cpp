@@ -1730,9 +1730,9 @@ private:
     {
         uint32_t byteLength;
         if (!doReadUint32(&byteLength))
-            return 0;
+            return nullptr;
         if (m_position + byteLength > m_length)
-            return 0;
+            return nullptr;
         const void* bufferStart = m_buffer + m_position;
         RefPtr<ArrayBuffer> arrayBuffer = ArrayBuffer::create(bufferStart, byteLength);
         arrayBuffer->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instanceTemplate());
@@ -1909,7 +1909,7 @@ private:
     PassRefPtr<File> doReadFileHelper()
     {
         if (m_version < 3)
-            return 0;
+            return nullptr;
         String path;
         String name;
         String relativePath;
@@ -1919,22 +1919,22 @@ private:
         uint64_t size = 0;
         double lastModified = 0;
         if (!readWebCoreString(&path))
-            return 0;
+            return nullptr;
         if (m_version >= 4 && !readWebCoreString(&name))
-            return 0;
+            return nullptr;
         if (m_version >= 4 && !readWebCoreString(&relativePath))
-            return 0;
+            return nullptr;
         if (!readWebCoreString(&uuid))
-            return 0;
+            return nullptr;
         if (!readWebCoreString(&type))
-            return 0;
+            return nullptr;
         if (m_version >= 4 && !doReadUint32(&hasSnapshot))
-            return 0;
+            return nullptr;
         if (hasSnapshot) {
             if (!doReadUint64(&size))
-                return 0;
+                return nullptr;
             if (!doReadNumber(&lastModified))
-                return 0;
+                return nullptr;
         }
         return File::create(path, name, relativePath, hasSnapshot > 0, size, lastModified, getOrCreateBlobDataHandle(uuid, type));
     }

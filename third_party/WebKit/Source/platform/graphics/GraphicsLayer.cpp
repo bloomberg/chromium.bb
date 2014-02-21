@@ -984,7 +984,7 @@ void GraphicsLayer::setContentsRect(const IntRect& rect)
 
 void GraphicsLayer::setContentsToImage(Image* image)
 {
-    RefPtr<NativeImageSkia> nativeImage = image ? image->nativeImageForCurrentFrame() : 0;
+    RefPtr<NativeImageSkia> nativeImage = image ? image->nativeImageForCurrentFrame() : nullptr;
     if (nativeImage) {
         if (!m_imageLayer) {
             m_imageLayer = adoptPtr(Platform::current()->compositorSupport()->createImageLayer());
@@ -1009,7 +1009,7 @@ void GraphicsLayer::setContentsToNinePatch(Image* image, const IntRect& aperture
         unregisterContentsLayer(m_ninePatchLayer->layer());
         m_ninePatchLayer.clear();
     }
-    RefPtr<NativeImageSkia> nativeImage = image ? image->nativeImageForCurrentFrame() : 0;
+    RefPtr<NativeImageSkia> nativeImage = image ? image->nativeImageForCurrentFrame() : nullptr;
     if (nativeImage) {
         m_ninePatchLayer = adoptPtr(Platform::current()->compositorSupport()->createNinePatchLayer());
         m_ninePatchLayer->setBitmap(nativeImage->bitmap(), aperture);

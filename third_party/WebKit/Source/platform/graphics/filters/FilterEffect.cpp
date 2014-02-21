@@ -552,7 +552,7 @@ FloatRect FilterEffect::determineFilterPrimitiveSubregion(DetermineSubregionFlag
 
 PassRefPtr<SkImageFilter> FilterEffect::createImageFilter(SkiaImageFilterBuilder* builder)
 {
-    return 0;
+    return nullptr;
 }
 
 SkImageFilter::CropRect FilterEffect::getCropRect(const FloatSize& cropOffset) const

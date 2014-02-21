@@ -187,7 +187,7 @@ PassRefPtr<StyleRuleBase> StyleRuleBase::copy() const
     case Import:
         // FIXME: Copy import rules.
         ASSERT_NOT_REACHED();
-        return 0;
+        return nullptr;
     case Keyframes:
         return toStyleRuleKeyframes(this)->copy();
     case Viewport:
@@ -198,10 +198,10 @@ PassRefPtr<StyleRuleBase> StyleRuleBase::copy() const
     case Charset:
     case Keyframe:
         ASSERT_NOT_REACHED();
-        return 0;
+        return nullptr;
     }
     ASSERT_NOT_REACHED();
-    return 0;
+    return nullptr;
 }
 
 PassRefPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet* parentSheet, CSSRule* parentRule) const
@@ -240,7 +240,7 @@ PassRefPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet* parentSheet
     case Charset:
     case Keyframe:
         ASSERT_NOT_REACHED();
-        return 0;
+        return nullptr;
     }
     if (parentRule)
         rule->setParentRule(parentRule);

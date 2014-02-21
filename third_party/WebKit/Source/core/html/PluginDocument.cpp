@@ -54,7 +54,7 @@ public:
 private:
     PluginDocumentParser(Document* document)
         : RawDataDocumentParser(document)
-        , m_embedElement(0)
+        , m_embedElement(nullptr)
     {
     }
 
@@ -134,7 +134,7 @@ void PluginDocumentParser::finish()
             view->didFinishLoading();
         else
             view->didFailLoading(error);
-        m_embedElement = 0;
+        m_embedElement = nullptr;
     }
     RawDataDocumentParser::finish();
 }
@@ -178,7 +178,7 @@ Node* PluginDocument::pluginNode()
 void PluginDocument::detach(const AttachContext& context)
 {
     // Release the plugin node so that we don't have a circular reference.
-    m_pluginNode = 0;
+    m_pluginNode = nullptr;
     HTMLDocument::detach(context);
 }
 

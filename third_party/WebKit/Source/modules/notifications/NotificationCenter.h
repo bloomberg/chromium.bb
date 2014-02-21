@@ -63,7 +63,7 @@ public:
     {
         if (!client()) {
             exceptionState.throwDOMException(InvalidStateError, "The notification client is null.");
-            return 0;
+            return nullptr;
         }
         return WebKitNotification::create(title, body, iconUrl, executionContext(), exceptionState, this);
     }

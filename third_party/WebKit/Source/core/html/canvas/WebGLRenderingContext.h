@@ -615,7 +615,7 @@ public:
         {
             if (m_extensionField) {
                 m_extensionField->lose(true);
-                m_extensionField = 0;
+                m_extensionField = nullptr;
             }
         }
 
@@ -642,7 +642,7 @@ public:
             if (m_extensionField) {
                 m_extensionField->lose(false);
                 if (m_extensionField->isLost())
-                    m_extensionField = 0;
+                    m_extensionField = nullptr;
             }
         }
 

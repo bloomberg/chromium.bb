@@ -42,7 +42,7 @@ PassRefPtr<EventListener> V8EventListenerList::getEventListener(v8::Local<v8::Va
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::Handle<v8::Context> context = isolate->GetCurrentContext();
     if (context.IsEmpty())
-        return 0;
+        return nullptr;
     if (lookup == ListenerFindOnly) {
         // Used by EventTarget::removeEventListener, specifically
         // EventTargetV8Internal::removeEventListenerMethod

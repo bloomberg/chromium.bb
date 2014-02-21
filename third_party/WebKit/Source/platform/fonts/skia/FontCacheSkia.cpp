@@ -55,7 +55,7 @@ PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDes
     FontCache::SimpleFontFamily family;
     FontCache::getFontFamilyForCharacter(c, locale.getLanguage(), &family);
     if (family.name.isEmpty())
-        return 0;
+        return nullptr;
 
     AtomicString atomicFamily(family.name);
     // Changes weight and/or italic of given FontDescription depends on
@@ -79,7 +79,7 @@ PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDes
 
     FontPlatformData* substitutePlatformData = getFontPlatformData(description, atomicFamily);
     if (!substitutePlatformData)
-        return 0;
+        return nullptr;
     FontPlatformData platformData = FontPlatformData(*substitutePlatformData);
     platformData.setSyntheticBold(shouldSetSyntheticBold);
     platformData.setSyntheticItalic(shouldSetSyntheticItalic);

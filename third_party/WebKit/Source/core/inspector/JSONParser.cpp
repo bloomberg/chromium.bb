@@ -341,7 +341,7 @@ template<typename CharType>
 PassRefPtr<JSONValue> buildValue(const CharType* start, const CharType* end, const CharType** valueTokenEnd, int depth)
 {
     if (depth > stackLimit)
-        return 0;
+        return nullptr;
 
     RefPtr<JSONValue> result;
     const CharType* tokenStart;
@@ -349,7 +349,7 @@ PassRefPtr<JSONValue> buildValue(const CharType* start, const CharType* end, con
     Token token = parseToken(start, end, &tokenStart, &tokenEnd);
     switch (token) {
     case InvalidToken:
-        return 0;
+        return nullptr;
     case NullToken:
         result = JSONValue::null();
         break;
@@ -363,7 +363,7 @@ PassRefPtr<JSONValue> buildValue(const CharType* start, const CharType* end, con
         bool ok;
         double value = charactersToDouble(tokenStart, tokenEnd - tokenStart, &ok);
         if (!ok)
-            return 0;
+            return nullptr;
         result = JSONBasicValue::create(value);
         break;
     }
@@ -371,7 +371,7 @@ PassRefPtr<JSONValue> buildValue(const CharType* start, const CharType* end, con
         String value;
         bool ok = decodeString(tokenStart + 1, tokenEnd - 1, &value);
         if (!ok)
-            return 0;
+            return nullptr;
         result = JSONString::create(value);
         break;
     }
@@ -382,7 +382,7 @@ PassRefPtr<JSONValue> buildValue(const CharType* start, const CharType* end, con
         while (token != ArrayEnd) {
             RefPtr<JSONValue> arrayNode = buildValue(start, end, &tokenEnd, depth + 1);
             if (!arrayNode)
-                return 0;
+                return nullptr;
             array->pushValue(arrayNode);
 
             // After a list value, we expect a comma or the end of the list.
@@ -392,14 +392,14 @@ PassRefPtr<JSONValue> buildValue(const CharType* start, const CharType* end, con
                 start = tokenEnd;
                 token = parseToken(start, end, &tokenStart, &tokenEnd);
                 if (token == ArrayEnd)
-                    return 0;
+                    return nullptr;
             } else if (token != ArrayEnd) {
                 // Unexpected value after list value. Bail out.
-                return 0;
+                return nullptr;
             }
         }
         if (token != ArrayEnd)
-            return 0;
+            return nullptr;
         result = array.release();
         break;
     }
@@ -409,20 +409,20 @@ PassRefPtr<JSONValue> buildValue(const CharType* start, const CharType* end, con
         token = parseToken(start, end, &tokenStart, &tokenEnd);
         while (token != ObjectEnd) {
             if (token != StringLiteral)
-                return 0;
+                return nullptr;
             String key;
             if (!decodeString(tokenStart + 1, tokenEnd - 1, &key))
-                return 0;
+                return nullptr;
             start = tokenEnd;
 
             token = parseToken(start, end, &tokenStart, &tokenEnd);
             if (token != ObjectPairSeparator)
-                return 0;
+                return nullptr;
             start = tokenEnd;
 
             RefPtr<JSONValue> value = buildValue(start, end, &tokenEnd, depth + 1);
             if (!value)
-                return 0;
+                return nullptr;
             object->setValue(key, value);
             start = tokenEnd;
 
@@ -433,21 +433,21 @@ PassRefPtr<JSONValue> buildValue(const CharType* start, const CharType* end, con
                 start = tokenEnd;
                 token = parseToken(start, end, &tokenStart, &tokenEnd);
                 if (token == ObjectEnd)
-                    return 0;
+                    return nullptr;
             } else if (token != ObjectEnd) {
                 // Unexpected value after last object value. Bail out.
-                return 0;
+                return nullptr;
             }
         }
         if (token != ObjectEnd)
-            return 0;
+            return nullptr;
         result = object.release();
         break;
     }
 
     default:
         // We got a token that's not a value.
-        return 0;
+        return nullptr;
     }
     *valueTokenEnd = tokenEnd;
     return result.release();
@@ -460,7 +460,7 @@ PassRefPtr<JSONValue> parseJSONInternal(const CharType* start, unsigned length)
     const CharType *tokenEnd;
     RefPtr<JSONValue> value = buildValue(start, end, &tokenEnd, 0);
     if (!value || tokenEnd != end)
-        return 0;
+        return nullptr;
     return value.release();
 }
 
@@ -469,7 +469,7 @@ PassRefPtr<JSONValue> parseJSONInternal(const CharType* start, unsigned length)
 PassRefPtr<JSONValue> parseJSON(const String& json)
 {
     if (json.isEmpty())
-        return 0;
+        return nullptr;
     if (json.is8Bit())
         return parseJSONInternal(json.characters8(), json.length());
     return parseJSONInternal(json.characters16(), json.length());

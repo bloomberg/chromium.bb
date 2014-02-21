@@ -585,12 +585,12 @@ void Document::dispose()
     ASSERT_WITH_SECURITY_IMPLICATION(!m_deletionHasBegun);
     // We must make sure not to be retaining any of our children through
     // these extra pointers or we will create a reference cycle.
-    m_docType = 0;
-    m_focusedElement = 0;
-    m_hoverNode = 0;
-    m_activeHoverElement = 0;
-    m_titleElement = 0;
-    m_documentElement = 0;
+    m_docType = nullptr;
+    m_focusedElement = nullptr;
+    m_hoverNode = nullptr;
+    m_activeHoverElement = nullptr;
+    m_titleElement = nullptr;
+    m_documentElement = nullptr;
     m_contextFeatures = ContextFeatures::defaultSwitch();
     m_userActionElements.documentDidRemoveLastRef();
     m_associatedFormControls.clear();
@@ -714,7 +714,7 @@ PassRefPtr<Element> Document::createElement(const AtomicString& name, ExceptionS
 {
     if (!isValidName(name)) {
         exceptionState.throwDOMException(InvalidCharacterError, "The tag name provided ('" + name + "') is not a valid name.");
-        return 0;
+        return nullptr;
     }
 
     if (isXHTMLDocument() || isHTMLDocument())
@@ -727,7 +727,7 @@ PassRefPtr<Element> Document::createElement(const AtomicString& localName, const
 {
     if (!isValidName(localName)) {
         exceptionState.throwDOMException(InvalidCharacterError, "The tag name provided ('" + localName + "') is not a valid name.");
-        return 0;
+        return nullptr;
     }
 
     RefPtr<Element> element;
@@ -737,7 +737,7 @@ PassRefPtr<Element> Document::createElement(const AtomicString& localName, const
     } else {
         element = createElement(localName, exceptionState);
         if (exceptionState.hadException())
-            return 0;
+            return nullptr;
     }
 
     if (!typeExtension.isEmpty())
@@ -765,7 +765,7 @@ PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, 
 {
     QualifiedName qName(createQualifiedName(namespaceURI, qualifiedName, exceptionState));
     if (qName == nullQName())
-        return 0;
+        return nullptr;
 
     return createElement(qName, false);
 }
@@ -774,7 +774,7 @@ PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, 
 {
     QualifiedName qName(createQualifiedName(namespaceURI, qualifiedName, exceptionState));
     if (qName == nullQName())
-        return 0;
+        return nullptr;
 
     RefPtr<Element> element;
     if (CustomElement::isValidName(qName.localName()) && registrationContext())
@@ -857,11 +857,11 @@ PassRefPtr<CDATASection> Document::createCDATASection(const String& data, Except
 {
     if (isHTMLDocument()) {
         exceptionState.throwDOMException(NotSupportedError, "This operation is not supported for HTML documents.");
-        return 0;
+        return nullptr;
     }
     if (data.contains("]]>")) {
         exceptionState.throwDOMException(InvalidCharacterError, "String cannot contain ']]>' since that is the end delimiter of a CData section.");
-        return 0;
+        return nullptr;
     }
     return CDATASection::create(*this, data);
 }
@@ -870,11 +870,11 @@ PassRefPtr<ProcessingInstruction> Document::createProcessingInstruction(const St
 {
     if (!isValidName(target)) {
         exceptionState.throwDOMException(InvalidCharacterError, "The target provided ('" + target + "') is not a valid name.");
-        return 0;
+        return nullptr;
     }
     if (data.contains("?>")) {
         exceptionState.throwDOMException(InvalidCharacterError, "The data provided ('" + data + "') contains '?>'.");
-        return 0;
+        return nullptr;
     }
     return ProcessingInstruction::create(*this, target, data);
 }
@@ -888,7 +888,7 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionSt
 {
     if (!importedNode) {
         exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
-        return 0;
+        return nullptr;
     }
 
     switch (importedNode->nodeType()) {
@@ -910,7 +910,7 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionSt
         // oldElement has mismatched prefix/namespace?
         if (!hasValidNamespaceForElements(oldElement->tagQName())) {
             exceptionState.throwDOMException(NamespaceError, "The imported node has an invalid namespace.");
-            return 0;
+            return nullptr;
         }
         RefPtr<Element> newElement = createElement(oldElement->tagQName(), false);
 
@@ -920,10 +920,10 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionSt
             for (Node* oldChild = oldElement->firstChild(); oldChild; oldChild = oldChild->nextSibling()) {
                 RefPtr<Node> newChild = importNode(oldChild, true, exceptionState);
                 if (exceptionState.hadException())
-                    return 0;
+                    return nullptr;
                 newElement->appendChild(newChild.release(), exceptionState);
                 if (exceptionState.hadException())
-                    return 0;
+                    return nullptr;
             }
         }
 
@@ -936,7 +936,7 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionSt
             // ShadowRoot nodes should not be explicitly importable.
             // Either they are imported along with their host node, or created implicitly.
             exceptionState.throwDOMException(NotSupportedError, "The node provided is a shadow root, which may not be imported.");
-            return 0;
+            return nullptr;
         }
         DocumentFragment* oldFragment = toDocumentFragment(importedNode);
         RefPtr<DocumentFragment> newFragment = createDocumentFragment();
@@ -944,10 +944,10 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionSt
             for (Node* oldChild = oldFragment->firstChild(); oldChild; oldChild = oldChild->nextSibling()) {
                 RefPtr<Node> newChild = importNode(oldChild, true, exceptionState);
                 if (exceptionState.hadException())
-                    return 0;
+                    return nullptr;
                 newFragment->appendChild(newChild.release(), exceptionState);
                 if (exceptionState.hadException())
-                    return 0;
+                    return nullptr;
             }
         }
 
@@ -955,18 +955,18 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionSt
     }
     case DOCUMENT_NODE:
         exceptionState.throwDOMException(NotSupportedError, "The node provided is a document, which may not be imported.");
-        return 0;
+        return nullptr;
     }
 
     ASSERT_NOT_REACHED();
-    return 0;
+    return nullptr;
 }
 
 PassRefPtr<Node> Document::adoptNode(PassRefPtr<Node> source, ExceptionState& exceptionState)
 {
     if (!source) {
         exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
-        return 0;
+        return nullptr;
     }
 
     EventQueueScope scope;
@@ -975,7 +975,7 @@ PassRefPtr<Node> Document::adoptNode(PassRefPtr<Node> source, ExceptionState& ex
     case DOCUMENT_NODE:
     case DOCUMENT_TYPE_NODE:
         exceptionState.throwDOMException(NotSupportedError, "The node provided is of type '" + source->nodeName() + "', which may not be adopted.");
-        return 0;
+        return nullptr;
     case ATTRIBUTE_NODE: {
         Attr* attr = toAttr(source.get());
         if (attr->ownerElement())
@@ -986,20 +986,20 @@ PassRefPtr<Node> Document::adoptNode(PassRefPtr<Node> source, ExceptionState& ex
         if (source->isShadowRoot()) {
             // ShadowRoot cannot disconnect itself from the host node.
             exceptionState.throwDOMException(HierarchyRequestError, "The node provided is a shadow root, which may not be adopted.");
-            return 0;
+            return nullptr;
         }
 
         if (source->isFrameOwnerElement()) {
             HTMLFrameOwnerElement* frameOwnerElement = toHTMLFrameOwnerElement(source.get());
             if (frame() && frame()->tree().isDescendantOf(frameOwnerElement->contentFrame())) {
                 exceptionState.throwDOMException(HierarchyRequestError, "The node provided is a frame which contains this document.");
-                return 0;
+                return nullptr;
             }
         }
         if (source->parentNode()) {
             source->parentNode()->removeChild(source.get(), exceptionState);
             if (exceptionState.hadException())
-                return 0;
+                return nullptr;
         }
     }
 
@@ -1219,11 +1219,11 @@ Element* Document::elementFromPoint(int x, int y) const
 PassRefPtr<Range> Document::caretRangeFromPoint(int x, int y)
 {
     if (!renderView())
-        return 0;
+        return nullptr;
     HitTestResult result = hitTestInDocument(this, x, y);
     RenderObject* renderer = result.renderer();
     if (!renderer)
-        return 0;
+        return nullptr;
 
     Node* node = renderer->node();
     Node* shadowAncestorNode = ancestorInThisScope(node);
@@ -1235,7 +1235,7 @@ PassRefPtr<Range> Document::caretRangeFromPoint(int x, int y)
 
     PositionWithAffinity positionWithAffinity = renderer->positionForPoint(result.localPoint());
     if (positionWithAffinity.position().isNull())
-        return 0;
+        return nullptr;
 
     Position rangeCompliantPosition = positionWithAffinity.position().parentAnchoredEquivalent();
     return Range::create(*this, rangeCompliantPosition, rangeCompliantPosition);
@@ -1322,7 +1322,7 @@ void Document::setTitle(const String& title)
     // Title set by JavaScript -- overrides any title elements.
     m_titleSetExplicitly = true;
     if (!isHTMLDocument() && !isXHTMLDocument())
-        m_titleElement = 0;
+        m_titleElement = nullptr;
     else if (!m_titleElement) {
         if (HTMLElement* headElement = head()) {
             m_titleElement = HTMLTitleElement::create(*this);
@@ -1353,7 +1353,7 @@ void Document::removeTitle(Element* titleElement)
     if (m_titleElement != titleElement)
         return;
 
-    m_titleElement = 0;
+    m_titleElement = nullptr;
     m_titleSetExplicitly = false;
 
     // FIXME: This is broken for SVG.
@@ -1478,7 +1478,7 @@ PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, ExceptionState
     // FIXME: Probably this should be handled within the bindings layer and TypeError should be thrown.
     if (!root) {
         exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
-        return 0;
+        return nullptr;
     }
     return NodeIterator::create(root, NodeFilter::SHOW_ALL, PassRefPtr<NodeFilter>());
 }
@@ -1487,7 +1487,7 @@ PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatT
 {
     if (!root) {
         exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
-        return 0;
+        return nullptr;
     }
     // FIXME: It might be a good idea to emit a warning if |whatToShow| contains a bit that is not defined in
     // NodeFilter.
@@ -1498,7 +1498,7 @@ PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatT
 {
     if (!root) {
         exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
-        return 0;
+        return nullptr;
     }
     // FIXME: Ditto.
     return NodeIterator::create(root, whatToShow, filter);
@@ -1508,7 +1508,7 @@ PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, ExceptionState& ex
 {
     if (!root) {
         exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
-        return 0;
+        return nullptr;
     }
     return TreeWalker::create(root, NodeFilter::SHOW_ALL, PassRefPtr<NodeFilter>());
 }
@@ -1517,7 +1517,7 @@ PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToSho
 {
     if (!root) {
         exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
-        return 0;
+        return nullptr;
     }
     return TreeWalker::create(root, whatToShow, PassRefPtr<NodeFilter>());
 }
@@ -1526,7 +1526,7 @@ PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToSho
 {
     if (!root) {
         exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
-        return 0;
+        return nullptr;
     }
     return TreeWalker::create(root, whatToShow, filter);
 }
@@ -1882,7 +1882,7 @@ void Document::clearFocusedElementTimerFired(Timer<Document>*)
     m_clearFocusedElementTimer.stop();
 
     if (m_focusedElement && !m_focusedElement->isFocusable())
-        setFocusedElement(0);
+        setFocusedElement(nullptr);
 }
 
 void Document::recalcStyleForLayoutIgnoringPendingStylesheets()
@@ -2124,10 +2124,10 @@ void Document::detach(const AttachContext& context)
     setRenderer(0);
     m_renderView = 0;
 
-    m_hoverNode = 0;
-    m_focusedElement = 0;
-    m_activeHoverElement = 0;
-    m_autofocusElement = 0;
+    m_hoverNode = nullptr;
+    m_focusedElement = nullptr;
+    m_activeHoverElement = nullptr;
+    m_autofocusElement = nullptr;
 
     ContainerNode::detach(context);
 
@@ -3343,7 +3343,7 @@ void Document::removeFocusedElementOfSubtree(Node* node, bool amongChildrenOnly)
         return;
     bool contains = node->containsIncludingShadowDOM(m_focusedElement.get());
     if (contains && (m_focusedElement != node || !amongChildrenOnly))
-        setFocusedElement(0);
+        setFocusedElement(nullptr);
 }
 
 void Document::hoveredNodeDetached(Node* node)
@@ -3412,7 +3412,7 @@ bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedElement, Focus
 
     bool focusChangeBlocked = false;
     RefPtr<Element> oldFocusedElement = m_focusedElement;
-    m_focusedElement = 0;
+    m_focusedElement = nullptr;
 
     // Remove focus from the existing focus node (if any)
     if (oldFocusedElement) {
@@ -3431,7 +3431,7 @@ bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedElement, Focus
             if (m_focusedElement) {
                 // handler shifted focus
                 focusChangeBlocked = true;
-                newFocusedElement = 0;
+                newFocusedElement = nullptr;
             }
 
             oldFocusedElement->dispatchFocusOutEvent(EventTypeNames::focusout, newFocusedElement.get()); // DOM level 3 name for the bubbling blur event.
@@ -3442,7 +3442,7 @@ bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedElement, Focus
             if (m_focusedElement) {
                 // handler shifted focus
                 focusChangeBlocked = true;
-                newFocusedElement = 0;
+                newFocusedElement = nullptr;
             }
         }
 
@@ -3740,14 +3740,14 @@ PassRefPtr<Event> Document::createEvent(const String& eventType, ExceptionState&
         return event.release();
 
     exceptionState.throwDOMException(NotSupportedError, "The provided event type ('" + eventType + "') is invalid.");
-    return 0;
+    return nullptr;
 }
 
 PassRefPtr<Event> Document::createEvent(ExceptionState& exceptionState)
 {
     if (!isSVGDocument()) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, 0));
-        return 0;
+        return nullptr;
     }
 
     UseCounter::count(this, UseCounter::DocumentCreateEventOptionalArgument);
@@ -4325,14 +4325,14 @@ WeakPtr<Document> Document::contextDocument()
         return m_contextDocument;
     if (m_frame)
         return m_weakFactory.createWeakPtr();
-    return WeakPtr<Document>(0);
+    return WeakPtr<Document>(nullptr);
 }
 
 PassRefPtr<Attr> Document::createAttribute(const AtomicString& name, ExceptionState& exceptionState)
 {
     AtomicString prefix, localName;
     if (!parseQualifiedName(name, prefix, localName, exceptionState))
-        return 0;
+        return nullptr;
 
     QualifiedName qName(prefix, localName, nullAtom);
 
@@ -4474,7 +4474,7 @@ Vector<IconURL> Document::iconURLs(int iconTypesMask)
     Vector<IconURL> secondaryIcons;
 
     // Start from the last child node so that icons seen later take precedence as required by the spec.
-    RefPtr<HTMLCollection> children = head() ? head()->children() : 0;
+    RefPtr<HTMLCollection> children = head() ? head()->children() : nullptr;
     unsigned length = children ? children->length() : 0;
     for (unsigned i = 0; i < length; i++) {
         Element* child = children->item(i);
@@ -4719,7 +4719,7 @@ CanvasRenderingContext* Document::getCSSCanvasContext(const String& type, const 
 
 HTMLCanvasElement* Document::getCSSCanvasElement(const String& name)
 {
-    RefPtr<HTMLCanvasElement>& element = m_cssCanvasElements.add(name, 0).storedValue->value;
+    RefPtr<HTMLCanvasElement>& element = m_cssCanvasElements.add(name, nullptr).storedValue->value;
     if (!element) {
         element = HTMLCanvasElement::create(*this);
         element->setAccelerationDisabled(true);
@@ -4759,7 +4759,7 @@ void Document::reportBlockedScriptExecutionToInspector(const String& directiveTe
 
 void Document::addMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber, ScriptState* state)
 {
-    internalAddMessage(source, level, message, sourceURL, lineNumber, 0, state);
+    internalAddMessage(source, level, message, sourceURL, lineNumber, nullptr, state);
 }
 
 void Document::internalAddMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtr<ScriptCallStack> callStack, ScriptState* state)
@@ -4792,7 +4792,7 @@ void Document::addConsoleMessageWithRequestIdentifier(MessageSource source, Mess
     }
 
     if (FrameHost* host = frameHost())
-        host->console().addMessage(source, level, message, String(), 0, 0, 0, 0, requestIdentifier);
+        host->console().addMessage(source, level, message, String(), 0, 0, nullptr, 0, requestIdentifier);
 }
 
 // FIXME(crbug.com/305497): This should be removed after ExecutionContext-DOMWindow migration.
@@ -5169,7 +5169,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
                 m_userActionElements.setInActiveChain(curr->node(), false);
             }
         }
-        setActiveHoverElement(0);
+        setActiveHoverElement(nullptr);
     } else {
         Element* newActiveElement = innerElementInDocument;
         if (!oldActiveElement && newActiveElement && request.active() && !request.touchMove()) {
@@ -5400,7 +5400,7 @@ FastTextAutosizer* Document::fastTextAutosizer()
 void Document::setAutofocusElement(Element* element)
 {
     if (!element) {
-        m_autofocusElement = 0;
+        m_autofocusElement = nullptr;
         return;
     }
     if (m_hasAutofocused)

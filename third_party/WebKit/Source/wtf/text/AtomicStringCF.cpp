@@ -36,7 +36,7 @@ namespace WTF {
 PassRefPtr<StringImpl> AtomicString::add(CFStringRef string)
 {
     if (!string)
-        return 0;
+        return nullptr;
 
     CFIndex length = CFStringGetLength(string);
 

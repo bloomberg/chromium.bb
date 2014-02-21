@@ -111,7 +111,7 @@ bool XMLHttpRequestProgressEventThrottle::flushDeferredProgressEvent()
     if (m_deferEvents && m_deferredProgressEvent) {
         // Move the progress event to the queue, to get it in the right order on resume.
         m_deferredEvents.append(m_deferredProgressEvent);
-        m_deferredProgressEvent = 0;
+        m_deferredProgressEvent = nullptr;
         return true;
     }
     return false;
@@ -143,7 +143,7 @@ void XMLHttpRequestProgressEventThrottle::dispatchDeferredEvents(Timer<XMLHttpRe
     m_deferredEvents.swap(deferredEvents);
 
     RefPtr<Event> deferredProgressEvent = m_deferredProgressEvent;
-    m_deferredProgressEvent = 0;
+    m_deferredProgressEvent = nullptr;
 
     Vector<RefPtr<Event> >::const_iterator it = deferredEvents.begin();
     const Vector<RefPtr<Event> >::const_iterator end = deferredEvents.end();

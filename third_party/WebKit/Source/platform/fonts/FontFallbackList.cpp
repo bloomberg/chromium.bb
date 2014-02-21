@@ -40,7 +40,7 @@ namespace WebCore {
 FontFallbackList::FontFallbackList()
     : m_pageZero(0)
     , m_cachedPrimarySimpleFontData(0)
-    , m_fontSelector(0)
+    , m_fontSelector(nullptr)
     , m_fontSelectorVersion(0)
     , m_familyIndex(0)
     , m_generation(FontCache::fontCache()->generation())

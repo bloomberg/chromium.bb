@@ -51,7 +51,7 @@ namespace WebCore {
 
 SVGPathSegListBuilder::SVGPathSegListBuilder()
     : m_pathElement(0)
-    , m_pathSegList(0)
+    , m_pathSegList(nullptr)
     , m_pathSegRole(PathSegUndefinedRole)
 {
 }

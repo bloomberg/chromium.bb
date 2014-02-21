@@ -102,11 +102,11 @@ public:
     {
         HashMap<EventTarget*, EventListenerAsyncCallChainVectorHashMap>::iterator it = m_eventTargetCallChains.find(eventTarget);
         if (it == m_eventTargetCallChains.end())
-            return 0;
+            return nullptr;
         EventListenerAsyncCallChainVectorHashMap& map = it->value;
         EventListenerAsyncCallChainVectorHashMap::iterator it2 = map.find(eventType);
         if (it2 == map.end())
-            return 0;
+            return nullptr;
         RefPtr<AsyncCallChain> result;
         EventListenerAsyncCallChainVector& vector = it2->value;
         for (size_t i = 0; i < vector.size(); ++i) {
@@ -216,7 +216,7 @@ void AsyncCallStackTracker::willFireTimer(ExecutionContext* context, int timerId
         else
             setCurrentAsyncCallChain(data->m_timerCallChains.take(timerId));
     } else {
-        setCurrentAsyncCallChain(0);
+        setCurrentAsyncCallChain(nullptr);
     }
 }
 
@@ -250,7 +250,7 @@ void AsyncCallStackTracker::willFireAnimationFrame(ExecutionContext* context, in
     if (ExecutionContextData* data = m_executionContextDataMap.get(context))
         setCurrentAsyncCallChain(data->m_animationFrameCallChains.take(callbackId));
     else
-        setCurrentAsyncCallChain(0);
+        setCurrentAsyncCallChain(nullptr);
 }
 
 void AsyncCallStackTracker::didAddEventListener(EventTarget* eventTarget, const AtomicString& eventType, EventListener* listener, bool useCapture, const ScriptValue& callFrames)
@@ -304,7 +304,7 @@ void AsyncCallStackTracker::willHandleEvent(EventTarget* eventTarget, const Atom
     if (ExecutionContextData* data = m_executionContextDataMap.get(eventTarget->executionContext()))
         setCurrentAsyncCallChain(data->findEventListenerData(eventTarget, eventType, RegisteredEventListener(listener, useCapture)));
     else
-        setCurrentAsyncCallChain(0);
+        setCurrentAsyncCallChain(nullptr);
 }
 
 void AsyncCallStackTracker::willLoadXHR(XMLHttpRequest* xhr, const ScriptValue& callFrames)
@@ -328,7 +328,7 @@ void AsyncCallStackTracker::willHandleXHREvent(XMLHttpRequest* xhr, EventTarget*
         else
             setCurrentAsyncCallChain(data->m_xhrCallChains.get(xhr));
     } else {
-        setCurrentAsyncCallChain(0);
+        setCurrentAsyncCallChain(nullptr);
     }
 }
 
@@ -366,7 +366,7 @@ void AsyncCallStackTracker::willDeliverMutationRecords(ExecutionContext* context
     if (ExecutionContextData* data = m_executionContextDataMap.get(context))
         setCurrentAsyncCallChain(data->m_mutationObserverCallChains.take(observer));
     else
-        setCurrentAsyncCallChain(0);
+        setCurrentAsyncCallChain(nullptr);
 }
 
 void AsyncCallStackTracker::didPostPromiseTask(ExecutionContext* context, ExecutionContextTask* task, bool isResolved, const ScriptValue& callFrames)
@@ -390,7 +390,7 @@ void AsyncCallStackTracker::willPerformPromiseTask(ExecutionContext* context, Ex
     if (ExecutionContextData* data = m_executionContextDataMap.get(context))
         setCurrentAsyncCallChain(data->m_promiseTaskCallChains.take(task));
     else
-        setCurrentAsyncCallChain(0);
+        setCurrentAsyncCallChain(nullptr);
 }
 
 void AsyncCallStackTracker::didFireAsyncCall()

@@ -740,7 +740,7 @@ void RenderThemeChromiumMac::setFontFromControlSize(RenderStyle* style, NSContro
     style->setLineHeight(RenderStyle::initialLineHeight());
 
     if (style->setFontDescription(fontDescription))
-        style->font().update(0);
+        style->font().update(nullptr);
 }
 
 NSControlSize RenderThemeChromiumMac::controlSizeForSystemFont(RenderStyle* style) const

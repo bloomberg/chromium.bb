@@ -251,7 +251,7 @@ PassRefPtr<WebSocket> WebSocket::create(ExecutionContext* context, const String&
 {
     if (url.isNull()) {
         exceptionState.throwDOMException(SyntaxError, "Failed to create a WebSocket: the provided URL is invalid.");
-        return 0;
+        return nullptr;
     }
 
     RefPtr<WebSocket> webSocket(adoptRef(new WebSocket(context)));
@@ -259,7 +259,7 @@ PassRefPtr<WebSocket> WebSocket::create(ExecutionContext* context, const String&
 
     webSocket->connect(context->completeURL(url), protocols, exceptionState);
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     return webSocket.release();
 }
@@ -389,7 +389,7 @@ void WebSocket::releaseChannel()
 {
     ASSERT(m_channel);
     m_channel->disconnect();
-    m_channel = 0;
+    m_channel = nullptr;
 }
 
 void WebSocket::send(const String& message, ExceptionState& exceptionState)

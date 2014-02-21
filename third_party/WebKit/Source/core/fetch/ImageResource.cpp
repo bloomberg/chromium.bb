@@ -44,7 +44,7 @@ namespace WebCore {
 ImageResource::ImageResource(const ResourceRequest& resourceRequest)
     : Resource(resourceRequest, Image)
     , m_devicePixelRatioHeaderValue(1.0)
-    , m_image(0)
+    , m_image(nullptr)
     , m_loadingMultipartContent(false)
     , m_hasDevicePixelRatioHeaderValue(false)
 {
@@ -128,7 +128,7 @@ bool ImageResource::isSafeToUnlock() const
 void ImageResource::destroyDecodedDataIfPossible()
 {
     if (isSafeToUnlock() && !hasClients() && !isLoading()) {
-        m_image = 0;
+        m_image = nullptr;
         setDecodedSize(0);
     } else if (m_image && !errorOccurred()) {
         m_image->destroyDecodedData(true);

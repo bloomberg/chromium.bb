@@ -30,7 +30,7 @@
 namespace WebCore {
 
 RenderTextFragment::RenderTextFragment(Node* node, StringImpl* str, int startOffset, int length)
-    : RenderText(node, str ? str->substring(startOffset, length) : PassRefPtr<StringImpl>(0))
+    : RenderText(node, str ? str->substring(startOffset, length) : PassRefPtr<StringImpl>(nullptr))
     , m_start(startOffset)
     , m_end(length)
     , m_firstLetter(0)
@@ -64,7 +64,7 @@ PassRefPtr<StringImpl> RenderTextFragment::originalText() const
     Node* e = node();
     RefPtr<StringImpl> result = ((e && e->isTextNode()) ? toText(e)->dataImpl() : contentString());
     if (!result)
-        return 0;
+        return nullptr;
     return result->substring(start(), end());
 }
 

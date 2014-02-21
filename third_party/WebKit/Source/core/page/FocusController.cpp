@@ -355,8 +355,8 @@ bool FocusController::advanceFocusInDocumentOrder(FocusType type, bool initialFo
     if (!node) {
         // We didn't find a node to focus, so we should try to pass focus to Chrome.
         if (!initialFocus && m_page->chrome().canTakeFocus(type)) {
-            document->setFocusedElement(0);
-            setFocusedFrame(0);
+            document->setFocusedElement(nullptr);
+            setFocusedFrame(nullptr);
             m_page->chrome().takeFocus(type);
             return true;
         }
@@ -387,7 +387,7 @@ bool FocusController::advanceFocusInDocumentOrder(FocusType type, bool initialFo
         if (!owner->contentFrame())
             return false;
 
-        document->setFocusedElement(0);
+        document->setFocusedElement(nullptr);
         setFocusedFrame(owner->contentFrame());
         return true;
     }
@@ -399,7 +399,7 @@ bool FocusController::advanceFocusInDocumentOrder(FocusType type, bool initialFo
 
     if (&newDocument != document) {
         // Focus is going away from this document, so clear the focused node.
-        document->setFocusedElement(0);
+        document->setFocusedElement(nullptr);
     }
 
     setFocusedFrame(newDocument.frame());
@@ -650,10 +650,10 @@ bool FocusController::setFocusedElement(Element* element, PassRefPtr<Frame> newF
     clearSelectionIfNeeded(oldFocusedFrame.get(), newFocusedFrame.get(), element);
 
     if (oldDocument && oldDocument != newDocument)
-        oldDocument->setFocusedElement(0);
+        oldDocument->setFocusedElement(nullptr);
 
     if (newFocusedFrame && !newFocusedFrame->page()) {
-        setFocusedFrame(0);
+        setFocusedFrame(nullptr);
         return false;
     }
     setFocusedFrame(newFocusedFrame);

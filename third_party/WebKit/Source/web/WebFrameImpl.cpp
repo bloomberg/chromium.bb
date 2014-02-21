@@ -756,7 +756,7 @@ WebFrame* WebFrameImpl::findChildByExpression(const WebString& xpath) const
     Document* document = frame()->document();
     ASSERT(document);
 
-    RefPtrWillBeRawPtr<XPathResult> xpathResult = DocumentXPathEvaluator::evaluate(*document, xpath, document, 0, XPathResult::ORDERED_NODE_ITERATOR_TYPE, 0, IGNORE_EXCEPTION);
+    RefPtrWillBeRawPtr<XPathResult> xpathResult = DocumentXPathEvaluator::evaluate(*document, xpath, document, nullptr, XPathResult::ORDERED_NODE_ITERATOR_TYPE, 0, IGNORE_EXCEPTION);
     if (!xpathResult)
         return 0;
 
@@ -1501,7 +1501,7 @@ bool WebFrameImpl::find(int identifier, const WebString& searchText, const WebFi
         setMarkerActive(m_activeMatch.get(), false);
 
     if (m_activeMatch && &m_activeMatch->ownerDocument() != frame()->document())
-        m_activeMatch = 0;
+        m_activeMatch = nullptr;
 
     // If the user has selected something since the last Find operation we want
     // to start from there. Otherwise, we start searching from where the last Find
@@ -1540,7 +1540,7 @@ bool WebFrameImpl::find(int identifier, const WebString& searchText, const WebFi
     mainFrameImpl->m_currentActiveMatchFrame = this;
 
     // Make sure no node is focused. See http://crbug.com/38700.
-    frame()->document()->setFocusedElement(0);
+    frame()->document()->setFocusedElement(nullptr);
 
     if (!options.findNext || activeSelection) {
         // This is either a Find operation or a Find-next from a new start point
@@ -1610,7 +1610,7 @@ void WebFrameImpl::scopeStringMatches(int identifier, const WebString& searchTex
         m_lastMatchCount = 0;
         m_nextInvalidateAfter = 0;
 
-        m_resumeScopingFromRange = 0;
+        m_resumeScopingFromRange = nullptr;
 
         // The view might be null on detached frames.
         if (frame() && frame()->page())
@@ -1839,7 +1839,7 @@ void WebFrameImpl::sendOrientationChangeEvent(int orientation)
 void WebFrameImpl::dispatchMessageEventWithOriginCheck(const WebSecurityOrigin& intendedTargetOrigin, const WebDOMEvent& event)
 {
     ASSERT(!event.isNull());
-    frame()->domWindow()->dispatchMessageEventWithOriginCheck(intendedTargetOrigin.get(), event, 0);
+    frame()->domWindow()->dispatchMessageEventWithOriginCheck(intendedTargetOrigin.get(), event, nullptr);
 }
 
 int WebFrameImpl::findMatchMarkersVersion() const
@@ -2005,7 +2005,7 @@ int WebFrameImpl::selectFindMatch(unsigned index, WebRect* selectionRect)
         frame()->selection().clear();
 
         // Make sure no node is focused. See http://crbug.com/38700.
-        frame()->document()->setFocusedElement(0);
+        frame()->document()->setFocusedElement(nullptr);
     }
 
     IntRect activeMatchRect;
@@ -2132,7 +2132,7 @@ WebFrameImpl::WebFrameImpl(WebFrameClient* client, long long embedderIdentifier)
     , m_currentActiveMatchFrame(0)
     , m_activeMatchIndexInCurrentFrame(-1)
     , m_locatingActiveRect(false)
-    , m_resumeScopingFromRange(0)
+    , m_resumeScopingFromRange(nullptr)
     , m_lastMatchCount(-1)
     , m_totalMatchCount(-1)
     , m_framesScopingCount(-1)
@@ -2176,7 +2176,7 @@ PassRefPtr<Frame> WebFrameImpl::createChildFrame(const FrameLoadRequest& request
     ASSERT(m_client);
     WebFrameImpl* webframe = toWebFrameImpl(m_client->createChildFrame(this, request.frameName()));
     if (!webframe)
-        return 0;
+        return nullptr;
 
     webframe->m_frameInit->setFrameHost(frame()->host());
     webframe->m_frameInit->setOwnerElement(ownerElement);
@@ -2198,7 +2198,7 @@ PassRefPtr<Frame> WebFrameImpl::createChildFrame(const FrameLoadRequest& request
     // (b:791612)
     childFrame->init(); // create an empty document
     if (!childFrame->tree().parent())
-        return 0;
+        return nullptr;
 
     // If we're moving in the back/forward list, we might want to replace the content
     // of this child frame with whatever was there at that point.
@@ -2216,7 +2216,7 @@ PassRefPtr<Frame> WebFrameImpl::createChildFrame(const FrameLoadRequest& request
     // script in the page.
     // NOTE: m_client will be null if this frame has been detached.
     if (!childFrame->tree().parent())
-        return 0;
+        return nullptr;
 
     return childFrame.release();
 }
@@ -2335,7 +2335,7 @@ void WebFrameImpl::setFindEndstateFocusAndSelection()
         // we have nothing focused (otherwise you might have text selected but
         // a link focused, which is weird).
         frame()->selection().setSelection(m_activeMatch.get());
-        frame()->document()->setFocusedElement(0);
+        frame()->document()->setFocusedElement(nullptr);
 
         // Finally clear the active match, for two reasons:
         // We just finished the find 'session' and we don't want future (potentially
@@ -2343,7 +2343,7 @@ void WebFrameImpl::setFindEndstateFocusAndSelection()
         // The WebFrameImpl could get reused and the m_activeMatch could end up pointing
         // to a document that is no longer valid. Keeping an invalid reference around
         // is just asking for trouble.
-        m_activeMatch = 0;
+        m_activeMatch = nullptr;
     }
 }
 

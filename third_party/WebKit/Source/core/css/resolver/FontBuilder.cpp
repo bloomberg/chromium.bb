@@ -93,7 +93,7 @@ void FontBuilder::setInitial(float effectiveZoom)
     const AtomicString& standardFontFamily = m_document->settings()->genericFontFamilySettings().standard();
     if (!standardFontFamily.isEmpty()) {
         scope.fontDescription().firstFamily().setFamily(standardFontFamily);
-        scope.fontDescription().firstFamily().appendFamily(0);
+        scope.fontDescription().firstFamily().appendFamily(nullptr);
     }
     scope.fontDescription().setKeywordSize(CSSValueMedium - CSSValueXxSmall + 1);
     setSize(scope.fontDescription(), effectiveZoom, FontSize::fontSizeForKeyword(m_document, CSSValueMedium, false));
@@ -219,7 +219,7 @@ void FontBuilder::setFontFamilyValue(CSSValue* value, float effectiveZoom)
             if (!currFamily) {
                 // Filling in the first family.
                 firstFamily.setFamily(face);
-                firstFamily.appendFamily(0); // Remove any inherited family-fallback list.
+                firstFamily.appendFamily(nullptr); // Remove any inherited family-fallback list.
                 currFamily = &firstFamily;
                 scope.fontDescription().setIsSpecifiedFont(scope.fontDescription().genericFamily() == FontDescription::NoFamily);
             } else {
@@ -654,7 +654,7 @@ void FontBuilder::createFontForDocument(PassRefPtr<FontSelector> fontSelector, R
         if (!standardFont.isEmpty()) {
             fontDescription.setGenericFamily(FontDescription::StandardFamily);
             fontDescription.firstFamily().setFamily(standardFont);
-            fontDescription.firstFamily().appendFamily(0);
+            fontDescription.firstFamily().appendFamily(nullptr);
         }
         fontDescription.setKeywordSize(CSSValueMedium - CSSValueXxSmall + 1);
         int size = FontSize::fontSizeForKeyword(m_document, CSSValueMedium, false);

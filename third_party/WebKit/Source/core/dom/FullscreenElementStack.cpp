@@ -126,7 +126,7 @@ void FullscreenElementStack::documentWasDetached()
 
 void FullscreenElementStack::documentWasDisposed()
 {
-    m_fullScreenElement = 0;
+    m_fullScreenElement = nullptr;
     m_fullScreenElementStack.clear();
 }
 
@@ -433,7 +433,7 @@ void FullscreenElementStack::webkitDidExitFullScreenForElement(Element*)
     if (m_fullScreenRenderer)
         m_fullScreenRenderer->unwrapRenderer();
 
-    m_fullScreenElement = 0;
+    m_fullScreenElement = nullptr;
     document()->setNeedsStyleRecalc(SubtreeStyleChange);
 
     // When webkitCancelFullScreen is called, we call webkitExitFullScreen on the topDocument(). That

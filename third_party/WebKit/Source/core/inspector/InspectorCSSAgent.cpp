@@ -428,7 +428,7 @@ void InspectorCSSAgent::discardAgent()
 void InspectorCSSAgent::restore()
 {
     if (m_state->getBoolean(CSSAgentState::cssAgentEnabled))
-        wasEnabled(0);
+        wasEnabled(nullptr);
 }
 
 void InspectorCSSAgent::reset()
@@ -737,7 +737,7 @@ void InspectorCSSAgent::getInlineStylesForNode(ErrorString* errorString, int nod
 
     inlineStyle = styleSheet->buildObjectForStyle(element->style());
     RefPtr<TypeBuilder::CSS::CSSStyle> attributes = buildObjectForAttributesStyle(element);
-    attributesStyle = attributes ? attributes.release() : 0;
+    attributesStyle = attributes ? attributes.release() : nullptr;
 }
 
 void InspectorCSSAgent::getComputedStyleForNode(ErrorString* errorString, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty> >& style)
@@ -962,7 +962,7 @@ PassRefPtr<TypeBuilder::CSS::CSSMedia> InspectorCSSAgent::buildMediaObject(const
 PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia> > InspectorCSSAgent::buildMediaListChain(CSSRule* rule)
 {
     if (!rule)
-        return 0;
+        return nullptr;
     RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia> > mediaArray = TypeBuilder::Array<TypeBuilder::CSS::CSSMedia>::create();
     bool hasItems = false;
     MediaList* mediaList;
@@ -1021,7 +1021,7 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSMedia> > InspectorCSSAgent::b
             }
         }
     }
-    return hasItems ? mediaArray : 0;
+    return hasItems ? mediaArray : nullptr;
 }
 
 InspectorStyleSheetForInlineStyle* InspectorCSSAgent::asInspectorStyleSheet(Element* element)
@@ -1184,7 +1184,7 @@ TypeBuilder::CSS::StyleSheetOrigin::Enum InspectorCSSAgent::detectOrigin(CSSStyl
 PassRefPtr<TypeBuilder::CSS::CSSRule> InspectorCSSAgent::buildObjectForRule(CSSStyleRule* rule)
 {
     if (!rule)
-        return 0;
+        return nullptr;
 
     // CSSRules returned by StyleResolver::pseudoCSSRulesForElement lack parent pointers if they are coming from
     // user agent stylesheets. To work around this issue, we use CSSOM wrapper created by inspector.
@@ -1245,12 +1245,12 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch> > InspectorCSSAgent::
 PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorCSSAgent::buildObjectForAttributesStyle(Element* element)
 {
     if (!element->isStyledElement())
-        return 0;
+        return nullptr;
 
     // FIXME: Ugliness below.
     StylePropertySet* attributeStyle = const_cast<StylePropertySet*>(element->presentationAttributeStyle());
     if (!attributeStyle)
-        return 0;
+        return nullptr;
 
     MutableStylePropertySet* mutableAttributeStyle = toMutableStylePropertySet(attributeStyle);
 

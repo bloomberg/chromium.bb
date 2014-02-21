@@ -193,7 +193,7 @@ PassRefPtr<DocumentType> DOMImplementation::createDocumentType(const AtomicStrin
 {
     AtomicString prefix, localName;
     if (!Document::parseQualifiedName(qualifiedName, prefix, localName, exceptionState))
-        return 0;
+        return nullptr;
 
     return DocumentType::create(&m_document, qualifiedName, publicId, systemId);
 }
@@ -225,7 +225,7 @@ PassRefPtr<XMLDocument> DOMImplementation::createDocument(const AtomicString& na
     if (!qualifiedName.isEmpty()) {
         documentElement = doc->createElementNS(namespaceURI, qualifiedName, exceptionState);
         if (exceptionState.hadException())
-            return 0;
+            return nullptr;
     }
 
     if (doctype)

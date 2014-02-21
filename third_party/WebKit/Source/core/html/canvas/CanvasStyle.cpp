@@ -134,10 +134,10 @@ PassRefPtr<CanvasStyle> CanvasStyle::createFromString(const String& color, Docum
     case ParsedCurrentColor:
         return adoptRef(new CanvasStyle(CurrentColor));
     case ParseFailed:
-        return 0;
+        return nullptr;
     default:
         ASSERT_NOT_REACHED();
-        return 0;
+        return nullptr;
     }
 }
 
@@ -151,23 +151,24 @@ PassRefPtr<CanvasStyle> CanvasStyle::createFromStringWithOverrideAlpha(const Str
     case ParsedCurrentColor:
         return adoptRef(new CanvasStyle(CurrentColorWithOverrideAlpha, alpha));
     case ParseFailed:
-        return 0;
+        return nullptr;
     default:
         ASSERT_NOT_REACHED();
-        return 0;
+        return nullptr;
     }
 }
 
 PassRefPtr<CanvasStyle> CanvasStyle::createFromGradient(PassRefPtr<CanvasGradient> gradient)
 {
     if (!gradient)
-        return 0;
+        return nullptr;
     return adoptRef(new CanvasStyle(gradient));
 }
+
 PassRefPtr<CanvasStyle> CanvasStyle::createFromPattern(PassRefPtr<CanvasPattern> pattern)
 {
     if (!pattern)
-        return 0;
+        return nullptr;
     return adoptRef(new CanvasStyle(pattern));
 }
 

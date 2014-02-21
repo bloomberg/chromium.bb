@@ -422,7 +422,7 @@ static inline void setContainerAndOffsetForRange(Node* node, int offset, Node*& 
 PassRefPtr<Range> HTMLTextFormControlElement::selection() const
 {
     if (!renderer() || !isTextFormControl() || !hasCachedSelection())
-        return 0;
+        return nullptr;
 
     int start = m_cachedSelectionStart;
     int end = m_cachedSelectionEnd;
@@ -430,7 +430,7 @@ PassRefPtr<Range> HTMLTextFormControlElement::selection() const
     ASSERT(start <= end);
     HTMLElement* innerText = innerTextElement();
     if (!innerText)
-        return 0;
+        return nullptr;
 
     if (!innerText->firstChild())
         return Range::create(document(), innerText, 0, innerText, 0);
@@ -455,7 +455,7 @@ PassRefPtr<Range> HTMLTextFormControlElement::selection() const
     }
 
     if (!startNode || !endNode)
-        return 0;
+        return nullptr;
 
     return Range::create(document(), startNode, start, endNode, end);
 }

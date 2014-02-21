@@ -99,7 +99,7 @@ void ProgressTracker::reset()
     m_lastNotifiedProgressTime = 0;
     m_finalProgressChangedSent = false;
     m_numProgressTrackedFrames = 0;
-    m_originatingProgressFrame = 0;
+    m_originatingProgressFrame = nullptr;
 }
 
 void ProgressTracker::progressStarted(Frame* frame)

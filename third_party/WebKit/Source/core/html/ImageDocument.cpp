@@ -162,7 +162,7 @@ void ImageDocumentParser::finish()
 
 ImageDocument::ImageDocument(const DocumentInit& initializer)
     : HTMLDocument(initializer, ImageDocumentClass)
-    , m_imageElement(0)
+    , m_imageElement(nullptr)
     , m_imageSizeIsKnown(false)
     , m_didShrinkImage(false)
     , m_shouldShrinkImage(shouldShrinkToFit())
@@ -365,7 +365,7 @@ bool ImageDocument::shouldShrinkToFit() const
 
 void ImageDocument::dispose()
 {
-    m_imageElement = 0;
+    m_imageElement = nullptr;
     HTMLDocument::dispose();
 }
 

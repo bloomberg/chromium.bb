@@ -160,7 +160,7 @@ void ConsoleBase::groupCollapsed(ScriptState* state, PassRefPtr<ScriptArguments>
 
 void ConsoleBase::groupEnd()
 {
-    InspectorInstrumentation::addMessageToConsole(context(), ConsoleAPIMessageSource, EndGroupMessageType, LogMessageLevel, String(), 0);
+    InspectorInstrumentation::addMessageToConsole(context(), ConsoleAPIMessageSource, EndGroupMessageType, LogMessageLevel, String(), nullptr);
 }
 
 void ConsoleBase::internalAddMessage(MessageType type, MessageLevel level, ScriptState* state, PassRefPtr<ScriptArguments> scriptArguments, bool acceptNoArguments, bool printTrace)

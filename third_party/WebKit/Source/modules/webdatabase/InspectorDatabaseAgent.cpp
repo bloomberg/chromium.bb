@@ -64,7 +64,7 @@ void reportTransactionFailed(ExecuteSQLCallback* requestCallback, SQLError* erro
     RefPtr<TypeBuilder::Database::Error> errorObject = TypeBuilder::Database::Error::create()
         .setMessage(error->message())
         .setCode(error->code());
-    requestCallback->sendSuccess(0, 0, errorObject.release());
+    requestCallback->sendSuccess(nullptr, nullptr, errorObject.release());
 }
 
 class StatementCallback FINAL : public SQLStatementCallback {
@@ -95,7 +95,7 @@ public:
             case SQLValue::NullValue: values->addItem(JSONValue::null()); break;
             }
         }
-        m_requestCallback->sendSuccess(columnNames.release(), values.release(), 0);
+        m_requestCallback->sendSuccess(columnNames.release(), values.release(), nullptr);
         return true;
     }
 

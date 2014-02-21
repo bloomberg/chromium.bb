@@ -480,7 +480,7 @@ namespace WebCore {
     if (value->isPrimitiveValue()) {
         CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
         if (primitiveValue->getValueID() == CSSValueAuto)
-            {{ set_value(property) }}(0);
+            {{ set_value(property) }}(nullptr);
         else if (primitiveValue->getValueID() == CSSValueMarginBox
             || primitiveValue->getValueID() == CSSValueBorderBox
             || primitiveValue->getValueID() == CSSValuePaddingBox

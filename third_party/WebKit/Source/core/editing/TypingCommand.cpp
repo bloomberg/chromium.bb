@@ -233,7 +233,7 @@ PassRefPtr<TypingCommand> TypingCommand::lastTypingCommandIfStillOpenForTyping(F
 
     RefPtr<CompositeEditCommand> lastEditCommand = frame->editor().lastEditCommand();
     if (!lastEditCommand || !lastEditCommand->isTypingCommand() || !static_cast<TypingCommand*>(lastEditCommand.get())->isOpenForMoreTyping())
-        return 0;
+        return nullptr;
 
     return static_cast<TypingCommand*>(lastEditCommand.get());
 }

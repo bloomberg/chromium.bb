@@ -207,7 +207,7 @@ static void messageHandlerInWorker(v8::Handle<v8::Message> message, v8::Handle<v
         AccessControlStatus corsStatus = message->IsSharedCrossOrigin() ? SharableCrossOrigin : NotSharableCrossOrigin;
 
         V8ErrorHandler::storeExceptionOnErrorEventWrapper(event.get(), data, isolate);
-        context->reportException(event.release(), 0, corsStatus);
+        context->reportException(event.release(), nullptr, corsStatus);
     }
 
     isReportingException = false;

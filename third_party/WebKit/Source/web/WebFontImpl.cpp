@@ -54,7 +54,7 @@ WebFont* WebFont::create(const WebFontDescription& desc)
 WebFontImpl::WebFontImpl(const FontDescription& desc)
     : m_font(desc)
 {
-    m_font.update(0);
+    m_font.update(nullptr);
 }
 
 WebFontDescription WebFontImpl::fontDescription() const

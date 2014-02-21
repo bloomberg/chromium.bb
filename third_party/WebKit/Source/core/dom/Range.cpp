@@ -677,11 +677,11 @@ PassRefPtr<DocumentFragment> Range::processContents(ActionType action, Exception
     if (collapsed(exceptionState))
         return fragment.release();
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     RefPtr<Node> commonRoot = commonAncestorContainer(exceptionState);
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
     ASSERT(commonRoot);
 
     if (m_start.container() == m_end.container()) {
@@ -719,13 +719,13 @@ PassRefPtr<DocumentFragment> Range::processContents(ActionType action, Exception
 
     RefPtr<Node> leftContents;
     if (originalStart.container() != commonRoot && commonRoot->contains(originalStart.container())) {
-        leftContents = processContentsBetweenOffsets(action, 0, originalStart.container(), originalStart.offset(), lengthOfContentsInNode(originalStart.container()), exceptionState);
+        leftContents = processContentsBetweenOffsets(action, nullptr, originalStart.container(), originalStart.offset(), lengthOfContentsInNode(originalStart.container()), exceptionState);
         leftContents = processAncestorsAndTheirSiblings(action, originalStart.container(), ProcessContentsForward, leftContents, commonRoot.get(), exceptionState);
     }
 
     RefPtr<Node> rightContents;
     if (m_end.container() != commonRoot && commonRoot->contains(originalEnd.container())) {
-        rightContents = processContentsBetweenOffsets(action, 0, originalEnd.container(), 0, originalEnd.offset(), exceptionState);
+        rightContents = processContentsBetweenOffsets(action, nullptr, originalEnd.container(), 0, originalEnd.offset(), exceptionState);
         rightContents = processAncestorsAndTheirSiblings(action, originalEnd.container(), ProcessContentsBackward, rightContents, commonRoot.get(), exceptionState);
     }
 
@@ -747,7 +747,7 @@ PassRefPtr<DocumentFragment> Range::processContents(ActionType action, Exception
             setStart(partialEnd->parentNode(), partialEnd->nodeIndex(), exceptionState);
         }
         if (exceptionState.hadException())
-            return 0;
+            return nullptr;
         m_end = m_start;
     }
 
@@ -927,7 +927,7 @@ PassRefPtr<DocumentFragment> Range::extractContents(ExceptionState& exceptionSta
 {
     checkDeleteExtract(exceptionState);
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     return processContents(EXTRACT_CONTENTS, exceptionState);
 }
@@ -936,7 +936,7 @@ PassRefPtr<DocumentFragment> Range::cloneContents(ExceptionState& exceptionState
 {
     if (!m_start.container()) {
         exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detatch()' has been invoked on this object?");
-        return 0;
+        return nullptr;
     }
 
     return processContents(CLONE_CONTENTS, exceptionState);
@@ -1098,18 +1098,18 @@ PassRefPtr<DocumentFragment> Range::createContextualFragment(const String& marku
 {
     if (!m_start.container()) {
         exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detatch()' has been invoked on this object?");
-        return 0;
+        return nullptr;
     }
 
     Node* element = m_start.container()->isElementNode() ? m_start.container() : m_start.container()->parentNode();
     if (!element || !element->isHTMLElement()) {
         exceptionState.throwDOMException(NotSupportedError, "The range's container must be an HTML element.");
-        return 0;
+        return nullptr;
     }
 
     RefPtr<DocumentFragment> fragment = WebCore::createContextualFragment(markup, toHTMLElement(element), AllowScriptingContentAndDoNotMarkAlreadyStarted, exceptionState);
     if (!fragment)
-        return 0;
+        return nullptr;
 
     return fragment.release();
 }
@@ -1221,7 +1221,7 @@ PassRefPtr<Range> Range::cloneRange(ExceptionState& exceptionState) const
 {
     if (!m_start.container()) {
         exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detatch()' has been invoked on this object?");
-        return 0;
+        return nullptr;
     }
 
     return Range::create(*m_ownerDocument.get(), m_start.container(), m_start.offset(), m_end.container(), m_end.offset());

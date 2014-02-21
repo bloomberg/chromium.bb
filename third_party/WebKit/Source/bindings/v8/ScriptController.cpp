@@ -318,11 +318,11 @@ PassRefPtr<SharedPersistent<v8::Object> > ScriptController::createPluginWrapper(
     ASSERT(widget);
 
     if (!widget->isPluginView())
-        return 0;
+        return nullptr;
 
     NPObject* npObject = toPluginView(widget)->scriptableObject();
     if (!npObject)
-        return 0;
+        return nullptr;
 
     // Frame Memory Management for NPObjects
     // -------------------------------------

@@ -368,7 +368,7 @@ void SVGUseElement::clearResourceReferences()
 
     if (m_targetElementInstance) {
         m_targetElementInstance->detach();
-        m_targetElementInstance = 0;
+        m_targetElementInstance = nullptr;
     }
 
     m_needsShadowTreeRecreation = false;

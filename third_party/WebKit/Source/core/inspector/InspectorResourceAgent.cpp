@@ -157,7 +157,7 @@ public:
 private:
     void dispose()
     {
-        m_loader = 0;
+        m_loader = nullptr;
         delete this;
     }
 
@@ -231,8 +231,7 @@ static PassRefPtr<TypeBuilder::Network::Request> buildObjectForResourceRequest(c
 static PassRefPtr<TypeBuilder::Network::Response> buildObjectForResourceResponse(const ResourceResponse& response, DocumentLoader* loader)
 {
     if (response.isNull())
-        return 0;
-
+        return nullptr;
 
     double status;
     String statusText;

@@ -59,7 +59,7 @@ class XMLHttpRequest FINAL : public RefCountedWillBeRefCountedGarbageCollected<X
     DECLARE_GC_INFO;
     DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<XMLHttpRequest>);
 public:
-    static PassRefPtrWillBeRawPtr<XMLHttpRequest> create(ExecutionContext*, PassRefPtr<SecurityOrigin> = 0);
+    static PassRefPtrWillBeRawPtr<XMLHttpRequest> create(ExecutionContext*, PassRefPtr<SecurityOrigin> = nullptr);
     virtual ~XMLHttpRequest();
 
     // These exact numeric values are important because JS expects them.

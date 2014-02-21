@@ -37,7 +37,7 @@ PassRefPtr<ImageData> ImageData::create(const IntSize& size)
     dataSize *= size.width();
     dataSize *= size.height();
     if (dataSize.hasOverflowed())
-        return 0;
+        return nullptr;
 
     return adoptRef(new ImageData(size));
 }
@@ -48,11 +48,11 @@ PassRefPtr<ImageData> ImageData::create(const IntSize& size, PassRefPtr<Uint8Cla
     dataSize *= size.width();
     dataSize *= size.height();
     if (dataSize.hasOverflowed())
-        return 0;
+        return nullptr;
 
     if (dataSize.unsafeGet() < 0
         || static_cast<unsigned>(dataSize.unsafeGet()) > byteArray->length())
-        return 0;
+        return nullptr;
 
     return adoptRef(new ImageData(size, byteArray));
 }

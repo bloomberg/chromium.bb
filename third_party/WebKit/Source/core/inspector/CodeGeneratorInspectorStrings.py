@@ -91,7 +91,7 @@ callback_failure_method = (
     if (error) {
         errorDataValue = $argument;
     }
-    sendIfActive(0, error, errorDataValue.release());
+    sendIfActive(nullptr, error, errorDataValue.release());
 }
 """)
 
@@ -496,7 +496,7 @@ InspectorBackendDispatcher::CallbackBase::~CallbackBase() {}
 void InspectorBackendDispatcher::CallbackBase::sendFailure(const ErrorString& error)
 {
     ASSERT(error.length());
-    sendIfActive(0, error, PassRefPtr<JSONValue>());
+    sendIfActive(nullptr, error, PassRefPtr<JSONValue>());
 }
 
 bool InspectorBackendDispatcher::CallbackBase::isActive()

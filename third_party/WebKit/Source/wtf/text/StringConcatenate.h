@@ -405,13 +405,13 @@ PassRefPtr<StringImpl> makeString(StringType1 string1, StringType2 string2)
     unsigned length = adapter1.length();
     sumWithOverflow(length, adapter2.length(), overflow);
     if (overflow)
-        return 0;
+        return nullptr;
 
     if (adapter1.is8Bit() && adapter2.is8Bit()) {
         LChar* buffer;
         RefPtr<StringImpl> resultImpl = StringImpl::createUninitialized(length, buffer);
         if (!resultImpl)
-            return 0;
+            return nullptr;
 
         LChar* result = buffer;
         adapter1.writeTo(result);
@@ -424,7 +424,7 @@ PassRefPtr<StringImpl> makeString(StringType1 string1, StringType2 string2)
     UChar* buffer;
     RefPtr<StringImpl> resultImpl = StringImpl::createUninitialized(length, buffer);
     if (!resultImpl)
-        return 0;
+        return nullptr;
 
     UChar* result = buffer;
     adapter1.writeTo(result);

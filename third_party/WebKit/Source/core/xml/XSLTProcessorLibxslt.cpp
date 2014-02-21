@@ -280,7 +280,7 @@ bool XSLTProcessor::transformToString(Node* sourceNode, String& mimeType, String
     xsltStylesheetPtr sheet = xsltStylesheetPointer(m_stylesheet, m_stylesheetRootNode.get());
     if (!sheet) {
         setXSLTLoadCallBack(0, 0, 0);
-        m_stylesheet = 0;
+        m_stylesheet = nullptr;
         return false;
     }
     m_stylesheet->clearDocuments();
@@ -339,7 +339,7 @@ bool XSLTProcessor::transformToString(Node* sourceNode, String& mimeType, String
     sheet->method = origMethod;
     setXSLTLoadCallBack(0, 0, 0);
     xsltFreeStylesheet(sheet);
-    m_stylesheet = 0;
+    m_stylesheet = nullptr;
 
     return success;
 }

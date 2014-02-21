@@ -47,7 +47,7 @@ PassRefPtrWillBeRawPtr<TextDecoder> TextDecoder::create(const String& label, con
     WTF::TextEncoding encoding(encodingLabel);
     if (!encoding.isValid()) {
         exceptionState.throwTypeError("The encoding label provided ('" + encodingLabel + "') is invalid.");
-        return 0;
+        return nullptr;
     }
 
     bool fatal = false;

@@ -124,7 +124,7 @@ Page::Page(PageClients& pageClients)
     , m_defersLoading(false)
     , m_pageScaleFactor(1)
     , m_deviceScaleFactor(1)
-    , m_group(0)
+    , m_group(nullptr)
     , m_timerAlignmentInterval(DOMTimer::visiblePageAlignmentInterval())
     , m_visibilityState(PageVisibilityStateVisible)
     , m_isCursorVisible(true)
@@ -145,7 +145,7 @@ Page::Page(PageClients& pageClients)
 
 Page::~Page()
 {
-    m_mainFrame->setView(0);
+    m_mainFrame->setView(nullptr);
     clearPageGroup();
     allPages().remove(this);
 
@@ -229,7 +229,7 @@ void Page::clearPageGroup()
     if (!m_group)
         return;
     m_group->removePage(this);
-    m_group = 0;
+    m_group = nullptr;
 }
 
 void Page::setGroupType(PageGroupType type)
@@ -287,7 +287,7 @@ void Page::refreshPlugins(bool reload)
 
         // Clear out the page's plug-in data.
         if (page->m_pluginData)
-            page->m_pluginData = 0;
+            page->m_pluginData = nullptr;
 
         if (!reload)
             continue;

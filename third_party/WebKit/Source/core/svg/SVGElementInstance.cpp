@@ -118,7 +118,7 @@ SVGElementInstance::~SVGElementInstance()
     instanceCounter.decrement();
 #endif
 
-    m_element = 0;
+    m_element = nullptr;
 }
 
 // It's important not to inline removedLastRef, because we don't want to inline the code to
@@ -144,7 +144,7 @@ void SVGElementInstance::detach()
         m_element->removeInstanceMapping(this);
     // DO NOT clear ref to m_element because JavaScriptCore uses it for garbage collection
 
-    m_shadowTreeElement = 0;
+    m_shadowTreeElement = nullptr;
 
     m_directUseElement = 0;
     m_correspondingUseElement = 0;

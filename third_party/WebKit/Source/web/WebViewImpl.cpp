@@ -1416,7 +1416,7 @@ void WebViewImpl::popupOpened(PopupContainer* popupContainer)
 void WebViewImpl::popupClosed(PopupContainer* popupContainer)
 {
     ASSERT(m_selectPopup);
-    m_selectPopup = 0;
+    m_selectPopup = nullptr;
     ASSERT(mainFrameImpl()->frame()->document());
     Document& document = *mainFrameImpl()->frame()->document();
     WheelController::from(document)->didRemoveWheelEventHandler(document);
@@ -1434,7 +1434,7 @@ PagePopup* WebViewImpl::openPagePopup(PagePopupClient* client, const IntRect& or
     m_pagePopup = toWebPagePopupImpl(popupWidget);
     if (!m_pagePopup->initialize(this, client, originBoundsInRootView)) {
         m_pagePopup->closePopup();
-        m_pagePopup = 0;
+        m_pagePopup = nullptr;
     }
     return m_pagePopup.get();
 }
@@ -1447,7 +1447,7 @@ void WebViewImpl::closePagePopup(PagePopup* popup)
     if (m_pagePopup.get() != popupImpl)
         return;
     m_pagePopup->closePopup();
-    m_pagePopup = 0;
+    m_pagePopup = nullptr;
 }
 
 WebHelperPlugin* WebViewImpl::createHelperPlugin(const WebString& pluginType, const WebDocument& hostDocument)
@@ -1864,7 +1864,7 @@ void WebViewImpl::setCursorVisibilityState(bool isVisible)
 void WebViewImpl::mouseCaptureLost()
 {
     TRACE_EVENT_ASYNC_END0("input", "capturing mouse", this);
-    m_mouseCaptureNode = 0;
+    m_mouseCaptureNode = nullptr;
 }
 
 void WebViewImpl::setFocus(bool enable)
@@ -2505,7 +2505,7 @@ void WebViewImpl::setInitialFocus(bool reverse)
         return;
     Frame* frame = page()->focusController().focusedOrMainFrame();
     if (Document* document = frame->document())
-        document->setFocusedElement(0);
+        document->setFocusedElement(nullptr);
     page()->focusController().setInitialFocus(reverse ? FocusTypeBackward : FocusTypeForward);
 }
 
@@ -2522,7 +2522,7 @@ void WebViewImpl::clearFocusedNode()
     RefPtr<Element> oldFocusedElement = document->focusedElement();
 
     // Clear the focused node.
-    document->setFocusedElement(0);
+    document->setFocusedElement(nullptr);
 
     if (!oldFocusedElement)
         return;
@@ -3168,7 +3168,7 @@ void WebViewImpl::dragTargetDragLeave()
     // FIXME: why is the drag scroll timer not stopped here?
 
     m_dragOperation = WebDragOperationNone;
-    m_currentDragData = 0;
+    m_currentDragData = nullptr;
 }
 
 void WebViewImpl::dragTargetDrop(const WebPoint& clientPoint,
@@ -3199,7 +3199,7 @@ void WebViewImpl::dragTargetDrop(const WebPoint& clientPoint,
     m_page->dragController().performDrag(&dragData);
 
     m_dragOperation = WebDragOperationNone;
-    m_currentDragData = 0;
+    m_currentDragData = nullptr;
 }
 
 void WebViewImpl::spellingMarkers(WebVector<uint32_t>* markers)

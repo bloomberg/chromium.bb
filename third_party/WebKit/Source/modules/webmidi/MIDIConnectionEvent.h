@@ -38,7 +38,7 @@ namespace WebCore {
 
 struct MIDIConnectionEventInit : public EventInit {
     MIDIConnectionEventInit()
-        : port(0)
+        : port(nullptr)
     {
     };
 

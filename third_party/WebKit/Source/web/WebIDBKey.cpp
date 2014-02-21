@@ -187,7 +187,6 @@ void WebIDBKey::assignInvalid()
 
 void WebIDBKey::assignNull()
 {
-    // FIXME: replace reset() with nullptr assignment (cf. https://codereview.chromium.org/170603003/ )
     m_private.reset();
 }
 

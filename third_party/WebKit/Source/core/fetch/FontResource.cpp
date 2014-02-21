@@ -116,7 +116,7 @@ bool FontResource::ensureSVGFontData()
             m_externalSVGDocument->setContent(svgSource);
 
             if (decoder->sawError())
-                m_externalSVGDocument = 0;
+                m_externalSVGDocument = nullptr;
         }
         if (!m_externalSVGDocument)
             setStatus(DecodeError);

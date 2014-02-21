@@ -49,13 +49,13 @@ PassRefPtrWillBeRawPtr<MediaKeys> MediaKeys::create(ExecutionContext* context, c
     // 1. If keySystem is null or an empty string, throw an InvalidAccessError exception and abort these steps.
     if (keySystem.isEmpty()) {
         exceptionState.throwDOMException(InvalidAccessError, "The key system provided is invalid.");
-        return 0;
+        return nullptr;
     }
 
     // 2. If keySystem is not one of the user agent's supported Key Systems, throw a NotSupportedError and abort these steps.
     if (!ContentDecryptionModule::supportsKeySystem(keySystem)) {
         exceptionState.throwDOMException(NotSupportedError, "The '" + keySystem + "' key system is not supported.");
-        return 0;
+        return nullptr;
     }
 
     // 3. Let cdm be the content decryption module corresponding to keySystem.
@@ -63,7 +63,7 @@ PassRefPtrWillBeRawPtr<MediaKeys> MediaKeys::create(ExecutionContext* context, c
     OwnPtr<ContentDecryptionModule> cdm = ContentDecryptionModule::create(keySystem);
     if (!cdm) {
         exceptionState.throwDOMException(NotSupportedError, "A content decryption module could not be loaded for the '" + keySystem + "' key system.");
-        return 0;
+        return nullptr;
     }
 
     // 5. Create a new MediaKeys object.
@@ -98,19 +98,19 @@ PassRefPtrWillBeRawPtr<MediaKeySession> MediaKeys::createSession(ExecutionContex
 
     if (contentType.isEmpty()) {
         exceptionState.throwDOMException(InvalidAccessError, "The contentType provided ('" + contentType + "') is empty.");
-        return 0;
+        return nullptr;
     }
 
     if (!initData || !initData->length()) {
         exceptionState.throwDOMException(InvalidAccessError, "The initData provided is null or empty.");
-        return 0;
+        return nullptr;
     }
 
     // 1. If type contains a MIME type that is not supported or is not supported by the keySystem,
     // throw a NOT_SUPPORTED_ERR exception and abort these steps.
     if (!m_cdm->supportsMIMEType(contentType)) {
         exceptionState.throwDOMException(NotSupportedError, "The type provided ('" + contentType + "') is unsupported.");
-        return 0;
+        return nullptr;
     }
 
     // 2. Create a new MediaKeySession object.

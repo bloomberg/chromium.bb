@@ -103,7 +103,7 @@ public:
         FontDescription fontDescription;
         fontDescription.setComputedSize(12.0);
         Font font(fontDescription);
-        font.update(0);
+        font.update(nullptr);
         return PopupMenuStyle(Color::black, Color::white, font, true, false, Length(), TextDirection(), false /* has text direction override */);
     }
     virtual PopupMenuStyle menuStyle() const { return itemStyle(0); }
@@ -123,7 +123,7 @@ public:
     virtual FontSelector* fontSelector() const { return 0; }
     virtual HostWindow* hostWindow() const { return 0; }
 
-    virtual PassRefPtr<Scrollbar> createScrollbar(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize) { return 0; }
+    virtual PassRefPtr<Scrollbar> createScrollbar(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize) { return nullptr; }
 
     void setDisabledIndex(unsigned index) { m_disabledIndexSet.insert(index); }
     void setFocusedNode(Node* node) { m_node = node; }
@@ -190,7 +190,7 @@ protected:
 
     virtual void TearDown()
     {
-        m_popupMenu = 0;
+        m_popupMenu = nullptr;
         Platform::current()->unitTestSupport()->unregisterAllMockedURLs();
     }
 

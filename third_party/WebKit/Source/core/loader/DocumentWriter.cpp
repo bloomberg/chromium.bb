@@ -117,7 +117,7 @@ void DocumentWriter::end()
         return;
 
     m_parser->finish();
-    m_parser = 0;
+    m_parser = nullptr;
     m_document = 0;
 }
 

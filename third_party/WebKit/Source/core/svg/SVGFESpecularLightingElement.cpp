@@ -184,15 +184,15 @@ PassRefPtr<FilterEffect> SVGFESpecularLightingElement::build(SVGFilterBuilder* f
     FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
 
     if (!input1)
-        return 0;
+        return nullptr;
 
     RefPtr<LightSource> lightSource = SVGFELightElement::findLightSource(this);
     if (!lightSource)
-        return 0;
+        return nullptr;
 
     RenderObject* renderer = this->renderer();
     if (!renderer)
-        return 0;
+        return nullptr;
 
     ASSERT(renderer->style());
     Color color = renderer->style()->svgStyle()->lightingColor();

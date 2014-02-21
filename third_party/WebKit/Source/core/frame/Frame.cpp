@@ -136,9 +136,9 @@ PassRefPtr<Frame> Frame::create(PassRefPtr<FrameInit> frameInit)
 
 Frame::~Frame()
 {
-    setView(0);
+    setView(nullptr);
     loader().clear();
-    setDOMWindow(0);
+    setDOMWindow(nullptr);
 
     // FIXME: We should not be doing all this work inside the destructor
 
@@ -355,7 +355,7 @@ void Frame::willDetachFrameHost()
     // FIXME: It's unclear as to why this is called more than once, but it is,
     // so page() could be NULL.
     if (page() && page()->focusController().focusedFrame() == this)
-        page()->focusController().setFocusedFrame(0);
+        page()->focusController().setFocusedFrame(nullptr);
 
     if (page() && page()->scrollingCoordinator() && m_view)
         page()->scrollingCoordinator()->willDestroyScrollableArea(m_view.get());
@@ -438,7 +438,7 @@ PassRefPtr<Range> Frame::rangeForPoint(const IntPoint& framePoint)
 {
     VisiblePosition position = visiblePositionForPoint(framePoint);
     if (position.isNull())
-        return 0;
+        return nullptr;
 
     VisiblePosition previous = position.previous();
     if (previous.isNotNull()) {
@@ -455,7 +455,7 @@ PassRefPtr<Range> Frame::rangeForPoint(const IntPoint& framePoint)
             return nextCharacterRange.release();
     }
 
-    return 0;
+    return nullptr;
 }
 
 void Frame::createView(const IntSize& viewportSize, const Color& backgroundColor, bool transparent,
@@ -470,7 +470,7 @@ void Frame::createView(const IntSize& viewportSize, const Color& backgroundColor
     if (isMainFrame && view())
         view()->setParentVisible(false);
 
-    setView(0);
+    setView(nullptr);
 
     RefPtr<FrameView> frameView;
     if (isMainFrame) {

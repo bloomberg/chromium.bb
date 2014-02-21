@@ -221,7 +221,7 @@ void HistoryItem::setFormInfoFromRequest(const ResourceRequest& request)
         m_formData = request.httpBody();
         m_formContentType = request.httpContentType();
     } else {
-        m_formData = 0;
+        m_formData = nullptr;
         m_formContentType = nullAtom;
     }
 }

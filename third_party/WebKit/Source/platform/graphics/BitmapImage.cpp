@@ -332,7 +332,7 @@ bool BitmapImage::ensureFrameIsCached(size_t index)
 PassRefPtr<NativeImageSkia> BitmapImage::frameAtIndex(size_t index)
 {
     if (!ensureFrameIsCached(index))
-        return 0;
+        return nullptr;
     return m_frames[index].m_frame;
 }
 

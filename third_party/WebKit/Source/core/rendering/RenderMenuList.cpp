@@ -70,7 +70,7 @@ RenderMenuList::~RenderMenuList()
 {
     if (m_popup)
         m_popup->disconnectClient();
-    m_popup = 0;
+    m_popup = nullptr;
 }
 
 // FIXME: Instead of this hack we should add a ShadowRoot to <select> with no insertion point

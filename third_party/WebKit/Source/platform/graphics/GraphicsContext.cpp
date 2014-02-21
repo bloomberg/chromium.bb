@@ -1908,7 +1908,7 @@ PassRefPtr<SkColorFilter> GraphicsContext::WebCoreColorFilterToSkiaColorFilter(C
         break;
     }
 
-    return 0;
+    return nullptr;
 }
 
 #if OS(MACOSX)

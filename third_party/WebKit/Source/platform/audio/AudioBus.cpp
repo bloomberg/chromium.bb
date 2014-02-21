@@ -54,7 +54,7 @@ PassRefPtr<AudioBus> AudioBus::create(unsigned numberOfChannels, size_t length, 
 {
     ASSERT(numberOfChannels <= MaxBusChannels);
     if (numberOfChannels > MaxBusChannels)
-        return 0;
+        return nullptr;
 
     return adoptRef(new AudioBus(numberOfChannels, length, allocate));
 }
@@ -180,7 +180,7 @@ PassRefPtr<AudioBus> AudioBus::createBufferFromRange(const AudioBus* sourceBuffe
     bool isRangeSafe = startFrame < endFrame && endFrame <= numberOfSourceFrames;
     ASSERT(isRangeSafe);
     if (!isRangeSafe)
-        return 0;
+        return nullptr;
 
     size_t rangeLength = endFrame - startFrame;
 
@@ -530,7 +530,7 @@ PassRefPtr<AudioBus> AudioBus::createBySampleRateConverting(const AudioBus* sour
     // sourceBus's sample-rate must be known.
     ASSERT(sourceBus && sourceBus->sampleRate());
     if (!sourceBus || !sourceBus->sampleRate())
-        return 0;
+        return nullptr;
 
     double sourceSampleRate = sourceBus->sampleRate();
     double destinationSampleRate = newSampleRate;
@@ -617,7 +617,7 @@ PassRefPtr<AudioBus> AudioBus::createByMixingToMono(const AudioBus* sourceBus)
     }
 
     ASSERT_NOT_REACHED();
-    return 0;
+    return nullptr;
 }
 
 bool AudioBus::isSilent() const
@@ -640,20 +640,20 @@ PassRefPtr<AudioBus> decodeAudioFileData(const char* data, size_t size, double s
     blink::WebAudioBus webAudioBus;
     if (blink::Platform::current()->loadAudioResource(&webAudioBus, data, size, sampleRate))
         return webAudioBus.release();
-    return 0;
+    return nullptr;
 }
 
 PassRefPtr<AudioBus> AudioBus::loadPlatformResource(const char* name, float sampleRate)
 {
     const blink::WebData& resource = blink::Platform::current()->loadResource(name);
     if (resource.isEmpty())
-        return 0;
+        return nullptr;
 
     // FIXME: the sampleRate parameter is ignored. It should be removed from the API.
     RefPtr<AudioBus> audioBus = decodeAudioFileData(resource.data(), resource.size(), sampleRate);
 
     if (!audioBus.get())
-        return 0;
+        return nullptr;
 
     // If the bus is already at the requested sample-rate then return as is.
     if (audioBus->sampleRate() == sampleRate)
@@ -667,7 +667,7 @@ PassRefPtr<AudioBus> createBusFromInMemoryAudioFile(const void* data, size_t dat
     // FIXME: the sampleRate parameter is ignored. It should be removed from the API.
     RefPtr<AudioBus> audioBus = decodeAudioFileData(static_cast<const char*>(data), dataSize, sampleRate);
     if (!audioBus.get())
-        return 0;
+        return nullptr;
 
     // If the bus needs no conversion then return as is.
     if ((!mixToMono || audioBus->numberOfChannels() == 1) && audioBus->sampleRate() == sampleRate)

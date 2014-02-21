@@ -431,7 +431,7 @@ PassRefPtr<ArrayBuffer> SharedBuffer::getAsArrayBuffer() const
     if (position != arrayBuffer->byteLength()) {
         ASSERT_NOT_REACHED();
         // Don't return the incomplete ArrayBuffer.
-        return 0;
+        return nullptr;
     }
 
     return arrayBuffer;
@@ -451,7 +451,7 @@ PassRefPtr<SkData> SharedBuffer::getAsSkData() const
     if (position != bufferLength) {
         ASSERT_NOT_REACHED();
         // Don't return the incomplete SkData.
-        return 0;
+        return nullptr;
     }
     return adoptRef(SkData::NewFromMalloc(buffer, bufferLength));
 }

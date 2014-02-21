@@ -334,7 +334,7 @@ AXObject* AXObjectCache::getOrCreate(Widget* widget)
     if (AXObject* obj = get(widget))
         return obj;
 
-    RefPtr<AXObject> newObj = 0;
+    RefPtr<AXObject> newObj = nullptr;
     if (widget->isFrameView())
         newObj = AXScrollView::create(toScrollView(widget));
     else if (widget->isScrollbar())
@@ -452,7 +452,7 @@ AXObject* AXObjectCache::rootObject()
 
 AXObject* AXObjectCache::getOrCreate(AccessibilityRole role)
 {
-    RefPtr<AXObject> obj = 0;
+    RefPtr<AXObject> obj = nullptr;
 
     // will be filled in...
     switch (role) {
@@ -484,7 +484,7 @@ AXObject* AXObjectCache::getOrCreate(AccessibilityRole role)
         obj = AXSpinButtonPart::create();
         break;
     default:
-        obj = 0;
+        obj = nullptr;
     }
 
     if (obj)

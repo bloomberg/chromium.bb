@@ -65,7 +65,7 @@ public:
 
     void TearDown()
     {
-        m_resolver = 0;
+        m_resolver = nullptr;
         m_promise.clear();
         m_perContextData.clear();
     }

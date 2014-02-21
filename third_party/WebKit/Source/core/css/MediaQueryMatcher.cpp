@@ -101,7 +101,7 @@ bool MediaQueryMatcher::evaluate(const MediaQuerySet* media)
 PassRefPtr<MediaQueryList> MediaQueryMatcher::matchMedia(const String& query)
 {
     if (!m_document)
-        return 0;
+        return nullptr;
 
     RefPtr<MediaQuerySet> media = MediaQuerySet::create(query);
     // Add warning message to inspector whenever dpi/dpcm values are used for "screen" media.

@@ -44,7 +44,7 @@ using namespace HTMLNames;
 
 AXTable::AXTable(RenderObject* renderer)
     : AXRenderObject(renderer)
-    , m_headerContainer(0)
+    , m_headerContainer(nullptr)
     , m_isAXTable(true)
 {
 }
@@ -314,7 +314,7 @@ void AXTable::clearChildren()
 
     if (m_headerContainer) {
         m_headerContainer->detachFromParent();
-        m_headerContainer = 0;
+        m_headerContainer = nullptr;
     }
 }
 

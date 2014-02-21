@@ -230,7 +230,7 @@ void HistoryController::setDefersLoading(bool defer)
     m_defersLoading = defer;
     if (!defer && m_deferredItem) {
         goToItem(m_deferredItem.get(), m_deferredCachePolicy);
-        m_deferredItem = 0;
+        m_deferredItem = nullptr;
         m_deferredCachePolicy = UseProtocolCachePolicy;
     }
 }
@@ -278,14 +278,14 @@ static PassRefPtr<HistoryItem> itemForExport(HistoryNode* historyNode)
 PassRefPtr<HistoryItem> HistoryController::currentItemForExport()
 {
     if (!m_currentEntry)
-        return 0;
+        return nullptr;
     return itemForExport(m_currentEntry->rootHistoryNode());
 }
 
 PassRefPtr<HistoryItem> HistoryController::previousItemForExport()
 {
     if (!m_previousEntry)
-        return 0;
+        return nullptr;
     return itemForExport(m_previousEntry->rootHistoryNode());
 }
 

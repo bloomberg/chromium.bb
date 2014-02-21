@@ -339,8 +339,8 @@ inline void ReplaceSelectionCommand::InsertedNodes::willRemoveNodePreservingChil
 inline void ReplaceSelectionCommand::InsertedNodes::willRemoveNode(Node& node)
 {
     if (m_firstNodeInserted == node && m_lastNodeInserted == node) {
-        m_firstNodeInserted = 0;
-        m_lastNodeInserted = 0;
+        m_firstNodeInserted = nullptr;
+        m_lastNodeInserted = nullptr;
     } else if (m_firstNodeInserted == node) {
         m_firstNodeInserted = NodeTraversal::nextSkippingChildren(*m_firstNodeInserted);
     } else if (m_lastNodeInserted == node) {
@@ -1115,7 +1115,7 @@ void ReplaceSelectionCommand::doApply()
     // Scripts specified in javascript protocol may remove |insertionBlock|
     // during insertion, e.g. <iframe src="javascript:...">
     if (insertionBlock && !insertionBlock->inDocument())
-        insertionBlock = 0;
+        insertionBlock = nullptr;
 
     VisiblePosition startOfInsertedContent = firstPositionInOrBeforeNode(insertedNodes.firstNodeInserted());
 
@@ -1354,7 +1354,7 @@ void ReplaceSelectionCommand::mergeTextNodesAroundPosition(Position& position, P
 {
     bool positionIsOffsetInAnchor = position.anchorType() == Position::PositionIsOffsetInAnchor;
     bool positionOnlyToBeUpdatedIsOffsetInAnchor = positionOnlyToBeUpdated.anchorType() == Position::PositionIsOffsetInAnchor;
-    RefPtr<Text> text = 0;
+    RefPtr<Text> text = nullptr;
     if (positionIsOffsetInAnchor && position.containerNode() && position.containerNode()->isTextNode())
         text = toText(position.containerNode());
     else {

@@ -177,7 +177,7 @@ void setOnFillLayers(FillLayer* fillLayer, const AnimatableValue* value, StyleRe
                 fillLayer->setImage(toAnimatableImage(layerValue)->toStyleImage());
             } else {
                 ASSERT(toAnimatableUnknown(layerValue)->toCSSValueID() == CSSValueNone);
-                fillLayer->setImage(0);
+                fillLayer->setImage(nullptr);
             }
             break;
         case CSSPropertyBackgroundPositionX:

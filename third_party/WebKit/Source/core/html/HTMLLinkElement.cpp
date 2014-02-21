@@ -458,7 +458,7 @@ void LinkStyle::clearSheet()
     ASSERT(m_sheet);
     ASSERT(m_sheet->ownerNode() == m_owner);
     m_sheet->clearOwnerNode();
-    m_sheet = 0;
+    m_sheet = nullptr;
 }
 
 bool LinkStyle::styleSheetIsLoading() const

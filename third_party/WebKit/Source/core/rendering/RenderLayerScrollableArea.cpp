@@ -824,7 +824,7 @@ void RenderLayerScrollableArea::destroyScrollbar(ScrollbarOrientation orientatio
 
     scrollbar->removeFromParent();
     scrollbar->disconnectFromScrollableArea();
-    scrollbar = 0;
+    scrollbar = nullptr;
 }
 
 void RenderLayerScrollableArea::setHasHorizontalScrollbar(bool hasScrollbar)
@@ -937,7 +937,7 @@ bool RenderLayerScrollableArea::scrollsOverflow() const
 void RenderLayerScrollableArea::updateScrollCornerStyle()
 {
     RenderObject* actualRenderer = rendererForScrollbar(m_box);
-    RefPtr<RenderStyle> corner = m_box->hasOverflowClip() ? actualRenderer->getUncachedPseudoStyle(PseudoStyleRequest(SCROLLBAR_CORNER), actualRenderer->style()) : PassRefPtr<RenderStyle>(0);
+    RefPtr<RenderStyle> corner = m_box->hasOverflowClip() ? actualRenderer->getUncachedPseudoStyle(PseudoStyleRequest(SCROLLBAR_CORNER), actualRenderer->style()) : PassRefPtr<RenderStyle>(nullptr);
     if (corner) {
         if (!m_scrollCorner) {
             m_scrollCorner = RenderScrollbarPart::createAnonymous(&m_box->document());
@@ -1202,7 +1202,7 @@ void RenderLayerScrollableArea::updateResizerAreaSet()
 void RenderLayerScrollableArea::updateResizerStyle()
 {
     RenderObject* actualRenderer = rendererForScrollbar(m_box);
-    RefPtr<RenderStyle> resizer = m_box->hasOverflowClip() ? actualRenderer->getUncachedPseudoStyle(PseudoStyleRequest(RESIZER), actualRenderer->style()) : PassRefPtr<RenderStyle>(0);
+    RefPtr<RenderStyle> resizer = m_box->hasOverflowClip() ? actualRenderer->getUncachedPseudoStyle(PseudoStyleRequest(RESIZER), actualRenderer->style()) : PassRefPtr<RenderStyle>(nullptr);
     if (resizer) {
         if (!m_resizer) {
             m_resizer = RenderScrollbarPart::createAnonymous(&m_box->document());

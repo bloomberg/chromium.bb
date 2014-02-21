@@ -64,7 +64,7 @@ static FunctionMap* gFunctionMap;
 
 MediaQueryEvaluator::MediaQueryEvaluator(bool mediaFeatureResult)
     : m_frame(0)
-    , m_style(0)
+    , m_style(nullptr)
     , m_expResult(mediaFeatureResult)
 {
 }
@@ -72,7 +72,7 @@ MediaQueryEvaluator::MediaQueryEvaluator(bool mediaFeatureResult)
 MediaQueryEvaluator::MediaQueryEvaluator(const AtomicString& acceptedMediaType, bool mediaFeatureResult)
     : m_mediaType(acceptedMediaType)
     , m_frame(0)
-    , m_style(0)
+    , m_style(nullptr)
     , m_expResult(mediaFeatureResult)
 {
 }
@@ -80,7 +80,7 @@ MediaQueryEvaluator::MediaQueryEvaluator(const AtomicString& acceptedMediaType, 
 MediaQueryEvaluator::MediaQueryEvaluator(const char* acceptedMediaType, bool mediaFeatureResult)
     : m_mediaType(acceptedMediaType)
     , m_frame(0)
-    , m_style(0)
+    , m_style(nullptr)
     , m_expResult(mediaFeatureResult)
 {
 }

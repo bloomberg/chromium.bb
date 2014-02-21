@@ -873,7 +873,7 @@ PassRefPtrWillBeRawPtr<RGBColor> CSSPrimitiveValue::getRGBColorValue(ExceptionSt
 {
     if (m_primitiveUnitType != CSS_RGBCOLOR) {
         exceptionState.throwDOMException(InvalidAccessError, "This object is not an RGB color value.");
-        return 0;
+        return nullptr;
     }
 
     // FIMXE: This should not return a new object for each invocation.

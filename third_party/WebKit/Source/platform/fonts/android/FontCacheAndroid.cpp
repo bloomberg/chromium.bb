@@ -72,7 +72,7 @@ PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDes
 {
     AtomicString familyName = getFamilyNameForCharacter(c, fontDescription.script());
     if (familyName.isEmpty())
-        return 0;
+        return nullptr;
     return fontDataFromFontPlatformData(getFontPlatformData(fontDescription, familyName), DoNotRetain);
 }
 

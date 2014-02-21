@@ -299,7 +299,7 @@ public:
         }
         Vector<RefPtr<Node> >& nodeVector = *m_childNodes;
         if (m_currentIndex >= nodeVector.size())
-            return 0;
+            return nullptr;
         return nodeVector[m_currentIndex++];
     }
 

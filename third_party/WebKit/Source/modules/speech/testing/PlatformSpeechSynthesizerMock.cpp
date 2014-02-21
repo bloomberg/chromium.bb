@@ -54,7 +54,7 @@ void PlatformSpeechSynthesizerMock::speakingFinished(Timer<PlatformSpeechSynthes
 {
     ASSERT(m_utterance.get());
     client()->didFinishSpeaking(m_utterance);
-    m_utterance = 0;
+    m_utterance = nullptr;
 }
 
 void PlatformSpeechSynthesizerMock::initializeVoiceList()
@@ -86,7 +86,7 @@ void PlatformSpeechSynthesizerMock::cancel()
 
     m_speakingFinishedTimer.stop();
     client()->speakingErrorOccurred(m_utterance);
-    m_utterance = 0;
+    m_utterance = nullptr;
 }
 
 void PlatformSpeechSynthesizerMock::pause()

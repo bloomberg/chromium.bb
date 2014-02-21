@@ -138,7 +138,7 @@ PassRefPtr<FilterEffect> SVGFEColorMatrixElement::build(SVGFilterBuilder* filter
     FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
 
     if (!input1)
-        return 0;
+        return nullptr;
 
     Vector<float> filterValues;
     ColorMatrixType filterType = m_type->currentValue()->enumValue();
@@ -166,7 +166,7 @@ PassRefPtr<FilterEffect> SVGFEColorMatrixElement::build(SVGFilterBuilder* filter
         if ((filterType == FECOLORMATRIX_TYPE_MATRIX && size != 20)
             || (filterType == FECOLORMATRIX_TYPE_HUEROTATE && size != 1)
             || (filterType == FECOLORMATRIX_TYPE_SATURATE && size != 1))
-            return 0;
+            return nullptr;
 
         filterValues = values->toFloatVector();
     }

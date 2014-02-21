@@ -50,7 +50,7 @@ public:
     {
         ASSERT(isolate->InContext());
         if (!value->IsObject())
-            return 0;
+            return nullptr;
 
         v8::Handle<v8::String> wrapperProperty = getHiddenProperty(false, isolate);
         return doFindWrapper(v8::Local<v8::Object>::Cast(value), wrapperProperty, isolate);
@@ -91,7 +91,7 @@ PassRefPtr<V8EventListener> V8EventListenerList::findOrCreateWrapper(v8::Local<v
     if (!value->IsObject()
         // Non-callable attribute setter input is treated as null (no wrapper)
         || (isAttribute && !value->IsFunction()))
-        return 0;
+        return nullptr;
 
     v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
     v8::Handle<v8::String> wrapperProperty = getHiddenProperty(isAttribute, isolate);

@@ -135,12 +135,12 @@ bool JSONValue::asArray(RefPtr<JSONArray>*)
 
 PassRefPtr<JSONObject> JSONValue::asObject()
 {
-    return 0;
+    return nullptr;
 }
 
 PassRefPtr<JSONArray> JSONValue::asArray()
 {
-    return 0;
+    return nullptr;
 }
 
 String JSONValue::toJSONString() const
@@ -290,7 +290,7 @@ PassRefPtr<JSONObject> JSONObjectBase::getObject(const String& name) const
 {
     RefPtr<JSONValue> value = get(name);
     if (!value)
-        return 0;
+        return nullptr;
     return value->asObject();
 }
 
@@ -298,7 +298,7 @@ PassRefPtr<JSONArray> JSONObjectBase::getArray(const String& name) const
 {
     RefPtr<JSONValue> value = get(name);
     if (!value)
-        return 0;
+        return nullptr;
     return value->asArray();
 }
 
@@ -306,7 +306,7 @@ PassRefPtr<JSONValue> JSONObjectBase::get(const String& name) const
 {
     Dictionary::const_iterator it = m_data.find(name);
     if (it == m_data.end())
-        return 0;
+        return nullptr;
     return it->value;
 }
 

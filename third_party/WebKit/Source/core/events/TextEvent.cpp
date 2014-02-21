@@ -43,7 +43,7 @@ PassRefPtr<TextEvent> TextEvent::create(PassRefPtr<AbstractView> view, const Str
 
 PassRefPtr<TextEvent> TextEvent::createForPlainTextPaste(PassRefPtr<AbstractView> view, const String& data, bool shouldSmartReplace)
 {
-    return adoptRef(new TextEvent(view, data, 0, shouldSmartReplace, false));
+    return adoptRef(new TextEvent(view, data, nullptr, shouldSmartReplace, false));
 }
 
 PassRefPtr<TextEvent> TextEvent::createForFragmentPaste(PassRefPtr<AbstractView> view, PassRefPtr<DocumentFragment> data, bool shouldSmartReplace, bool shouldMatchStyle)
@@ -68,7 +68,7 @@ TextEvent::TextEvent(PassRefPtr<AbstractView> view, const String& data, TextEven
     : UIEvent(EventTypeNames::textInput, true, true, view, 0)
     , m_inputType(inputType)
     , m_data(data)
-    , m_pastingFragment(0)
+    , m_pastingFragment(nullptr)
     , m_shouldSmartReplace(false)
     , m_shouldMatchStyle(false)
 {

@@ -64,7 +64,7 @@ void AXInlineTextBox::init()
 
 void AXInlineTextBox::detach()
 {
-    m_inlineTextBox = 0;
+    m_inlineTextBox = nullptr;
     m_axObjectCache = 0;
     AXObject::detach();
 }

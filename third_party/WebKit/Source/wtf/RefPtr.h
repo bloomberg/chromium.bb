@@ -33,8 +33,11 @@ namespace WTF {
     template<typename T> class PassRefPtr;
 
     template<typename T> class RefPtr {
+        WTF_DISALLOW_CONSTRUCTION_FROM_ZERO(RefPtr);
+        WTF_DISALLOW_ZERO_ASSIGNMENT(RefPtr);
     public:
         ALWAYS_INLINE RefPtr() : m_ptr(0) { }
+        ALWAYS_INLINE RefPtr(std::nullptr_t) : m_ptr(0) { }
         ALWAYS_INLINE RefPtr(T* ptr) : m_ptr(ptr) { refIfNotNull(ptr); }
         template<typename U> RefPtr(const RawPtr<U>& ptr, EnsurePtrConvertibleArgDecl(U, T)) : m_ptr(ptr.get()) { refIfNotNull(m_ptr); }
         ALWAYS_INLINE explicit RefPtr(T& ref) : m_ptr(&ref) { m_ptr->ref(); }
@@ -67,9 +70,8 @@ namespace WTF {
         RefPtr& operator=(const RefPtr&);
         RefPtr& operator=(T*);
         RefPtr& operator=(const PassRefPtr<T>&);
-#if !COMPILER_SUPPORTS(CXX_NULLPTR)
         RefPtr& operator=(std::nullptr_t) { clear(); return *this; }
-#endif
+
         template<typename U> RefPtr<T>& operator=(const RefPtr<U>&);
         template<typename U> RefPtr<T>& operator=(const PassRefPtr<U>&);
         template<typename U> RefPtr<T>& operator=(const RawPtr<U>&);

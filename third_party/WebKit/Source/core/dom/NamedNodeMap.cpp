@@ -60,7 +60,7 @@ PassRefPtr<Node> NamedNodeMap::removeNamedItem(const AtomicString& name, Excepti
     size_t index = m_element->hasAttributes() ? m_element->getAttributeItemIndex(name, m_element->shouldIgnoreAttributeCase()) : kNotFound;
     if (index == kNotFound) {
         exceptionState.throwDOMException(NotFoundError, "No item with name '" + name + "' was found.");
-        return 0;
+        return nullptr;
     }
     return m_element->detachAttribute(index);
 }
@@ -70,7 +70,7 @@ PassRefPtr<Node> NamedNodeMap::removeNamedItemNS(const AtomicString& namespaceUR
     size_t index = m_element->hasAttributes() ? m_element->getAttributeItemIndex(QualifiedName(nullAtom, localName, namespaceURI)) : kNotFound;
     if (index == kNotFound) {
         exceptionState.throwDOMException(NotFoundError, "No item with name '" + namespaceURI + "::" + localName + "' was found.");
-        return 0;
+        return nullptr;
     }
     return m_element->detachAttribute(index);
 }
@@ -79,13 +79,13 @@ PassRefPtr<Node> NamedNodeMap::setNamedItem(Node* node, ExceptionState& exceptio
 {
     if (!node) {
         exceptionState.throwDOMException(NotFoundError, "The node provided was null.");
-        return 0;
+        return nullptr;
     }
 
     // Not mentioned in spec: throw a HIERARCHY_REQUEST_ERROR if the user passes in a non-attribute node
     if (!node->isAttributeNode()) {
         exceptionState.throwDOMException(HierarchyRequestError, "The node provided is not an attribute node.");
-        return 0;
+        return nullptr;
     }
 
     return m_element->setAttributeNode(toAttr(node), exceptionState);
@@ -99,7 +99,7 @@ PassRefPtr<Node> NamedNodeMap::setNamedItemNS(Node* node, ExceptionState& except
 PassRefPtr<Node> NamedNodeMap::item(unsigned index) const
 {
     if (index >= length())
-        return 0;
+        return nullptr;
     return m_element->ensureAttr(m_element->attributeItem(index)->name());
 }
 

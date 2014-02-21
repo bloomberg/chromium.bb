@@ -44,7 +44,7 @@ private:
         if (m_resolveType == Rejected)
             m_observer->reportError(value);
         m_observer->decrementPendingActivity();
-        m_observer = 0;
+        m_observer = nullptr;
         return value;
     }
 

@@ -44,7 +44,7 @@ PassRefPtrWillBeRawPtr<SpeechSynthesis> SpeechSynthesis::create(ExecutionContext
 SpeechSynthesis::SpeechSynthesis(ExecutionContext* context)
     : ContextLifecycleObserver(context)
     , m_platformSpeechSynthesizer(PlatformSpeechSynthesizer::create(this))
-    , m_currentSpeechUtterance(0)
+    , m_currentSpeechUtterance(nullptr)
     , m_isPaused(false)
 {
     ScriptWrappable::init(this);
@@ -130,7 +130,7 @@ void SpeechSynthesis::cancel()
     RefPtrWillBeMember<SpeechSynthesisUtterance> current = m_currentSpeechUtterance;
     m_utteranceQueue.clear();
     m_platformSpeechSynthesizer->cancel();
-    current = 0;
+    current = nullptr;
 
     // The platform should have called back immediately and cleared the current utterance.
     ASSERT(!m_currentSpeechUtterance);
@@ -159,7 +159,7 @@ void SpeechSynthesis::handleSpeakingCompleted(SpeechSynthesisUtterance* utteranc
 {
     ASSERT(utterance);
     ASSERT(m_currentSpeechUtterance);
-    m_currentSpeechUtterance = 0;
+    m_currentSpeechUtterance = nullptr;
 
     fireEvent(errorOccurred ? EventTypeNames::error : EventTypeNames::end, utterance, 0, String());
 

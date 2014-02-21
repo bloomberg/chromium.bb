@@ -395,7 +395,7 @@ String HTMLCanvasElement::toDataURL(const String& mimeType, const double* qualit
 PassRefPtr<ImageData> HTMLCanvasElement::getImageData()
 {
     if (!m_context || !m_context->is3d())
-       return 0;
+        return nullptr;
     return toWebGLRenderingContext(m_context.get())->paintRenderingResultsToImageData();
 }
 

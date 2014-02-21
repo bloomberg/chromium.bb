@@ -289,7 +289,7 @@ EventHandler::EventHandler(Frame* frame)
     , m_widgetIsLatched(false)
     , m_originatingTouchPointTargetKey(0)
     , m_touchPressed(false)
-    , m_scrollGestureHandlingNode(0)
+    , m_scrollGestureHandlingNode(nullptr)
     , m_lastHitTestResultOverWidget(false)
     , m_maxMouseMovedDuration(0)
     , m_baseEventType(PlatformEvent::NoType)
@@ -319,34 +319,34 @@ void EventHandler::clear()
     m_fakeMouseMoveEventTimer.stop();
     m_activeIntervalTimer.stop();
     m_resizeScrollableArea = 0;
-    m_nodeUnderMouse = 0;
-    m_lastNodeUnderMouse = 0;
-    m_instanceUnderMouse = 0;
-    m_lastInstanceUnderMouse = 0;
-    m_lastMouseMoveEventSubframe = 0;
-    m_lastScrollbarUnderMouse = 0;
+    m_nodeUnderMouse = nullptr;
+    m_lastNodeUnderMouse = nullptr;
+    m_instanceUnderMouse = nullptr;
+    m_lastInstanceUnderMouse = nullptr;
+    m_lastMouseMoveEventSubframe = nullptr;
+    m_lastScrollbarUnderMouse = nullptr;
     m_clickCount = 0;
-    m_clickNode = 0;
-    m_frameSetBeingResized = 0;
-    m_dragTarget = 0;
+    m_clickNode = nullptr;
+    m_frameSetBeingResized = nullptr;
+    m_dragTarget = nullptr;
     m_shouldOnlyFireDragOverEvent = false;
     m_mousePositionIsUnknown = true;
     m_lastKnownMousePosition = IntPoint();
     m_lastKnownMouseGlobalPosition = IntPoint();
     m_lastMouseDownUserGestureToken.clear();
-    m_mousePressNode = 0;
+    m_mousePressNode = nullptr;
     m_mousePressed = false;
     m_capturesDragging = false;
-    m_capturingMouseEventsNode = 0;
-    m_latchedWheelEventNode = 0;
-    m_previousWheelScrolledNode = 0;
+    m_capturingMouseEventsNode = nullptr;
+    m_latchedWheelEventNode = nullptr;
+    m_previousWheelScrolledNode = nullptr;
     m_originatingTouchPointTargets.clear();
     m_originatingTouchPointDocument.clear();
     m_originatingTouchPointTargetKey = 0;
-    m_scrollGestureHandlingNode = 0;
+    m_scrollGestureHandlingNode = nullptr;
     m_lastHitTestResultOverWidget = false;
-    m_previousGestureScrolledNode = 0;
-    m_scrollbarHandlingScrollGesture = 0;
+    m_previousGestureScrolledNode = nullptr;
+    m_scrollbarHandlingScrollGesture = nullptr;
     m_maxMouseMovedDuration = 0;
     m_baseEventType = PlatformEvent::NoType;
     m_didStartDrag = false;
@@ -354,7 +354,7 @@ void EventHandler::clear()
     m_mouseDownMayStartSelect = false;
     m_mouseDownMayStartDrag = false;
     m_lastShowPressTimestamp = 0;
-    m_lastDeferredTapElement = 0;
+    m_lastDeferredTapElement = nullptr;
 }
 
 void EventHandler::nodeWillBeRemoved(Node& nodeToBeRemoved)
@@ -366,7 +366,7 @@ void EventHandler::nodeWillBeRemoved(Node& nodeToBeRemoved)
     } else {
         // We don't dispatch click events if the mousedown node is removed
         // before a mouseup event. It is compatible with IE and Firefox.
-        m_clickNode = 0;
+        m_clickNode = nullptr;
     }
 }
 
@@ -614,7 +614,7 @@ static inline bool canMouseDownStartSelect(Node* node)
 bool EventHandler::handleMousePressEvent(const MouseEventWithHitTestResults& event)
 {
     // Reset drag state.
-    dragState().m_dragSrc = 0;
+    dragState().m_dragSrc = nullptr;
 
     cancelFakeMouseMoveEvent();
 
@@ -1288,7 +1288,7 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
 
     cancelFakeMouseMoveEvent();
     if (m_eventHandlerWillResetCapturingMouseEventsNode)
-        m_capturingMouseEventsNode = 0;
+        m_capturingMouseEventsNode = nullptr;
     m_mousePressed = true;
     m_capturesDragging = true;
     setLastKnownMousePosition(mouseEvent);
@@ -1373,7 +1373,7 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
         HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent);
         mev = m_frame->document()->prepareMouseEvent(request, documentPoint, mouseEvent);
         if (wasLastScrollBar && mev.scrollbar() != m_lastScrollbarUnderMouse.get())
-            m_lastScrollbarUnderMouse = 0;
+            m_lastScrollbarUnderMouse = nullptr;
     }
 
     if (swallowEvent) {
@@ -1589,7 +1589,7 @@ bool EventHandler::handleMouseMoveOrLeaveEvent(const PlatformMouseEvent& mouseEv
 void EventHandler::invalidateClick()
 {
     m_clickCount = 0;
-    m_clickNode = 0;
+    m_clickNode = nullptr;
 }
 
 static Node* parentForClickEvent(const Node& node)
@@ -1650,7 +1650,7 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
     MouseEventWithHitTestResults mev = prepareMouseEvent(request, mouseEvent);
     Frame* subframe = m_capturingMouseEventsNode.get() ? subframeForTargetNode(m_capturingMouseEventsNode.get()) : subframeForHitTestResult(mev);
     if (m_eventHandlerWillResetCapturingMouseEventsNode)
-        m_capturingMouseEventsNode = 0;
+        m_capturingMouseEventsNode = nullptr;
     if (subframe && passMouseReleaseEventToSubframe(mev, subframe))
         return true;
 
@@ -1728,7 +1728,7 @@ bool EventHandler::dispatchDragEvent(const AtomicString& eventType, Node* dragTa
         0, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(),
         event.movementDelta().x(), event.movementDelta().y(),
         event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(),
-        0, 0, clipboard);
+        0, nullptr, clipboard);
 
     dragTarget->dispatchEvent(me.get(), IGNORE_EXCEPTION);
     return me->defaultPrevented();
@@ -1884,8 +1884,8 @@ bool EventHandler::performDragAndDrop(const PlatformMouseEvent& event, Clipboard
 void EventHandler::clearDragState()
 {
     stopAutoscroll();
-    m_dragTarget = 0;
-    m_capturingMouseEventsNode = 0;
+    m_dragTarget = nullptr;
+    m_capturingMouseEventsNode = nullptr;
     m_shouldOnlyFireDragOverEvent = false;
 }
 
@@ -1996,9 +1996,9 @@ void EventHandler::updateMouseEventTargetNode(Node* targetNode, const PlatformMo
         }
 
         if (m_lastNodeUnderMouse && m_lastNodeUnderMouse->document() != m_frame->document()) {
-            m_lastNodeUnderMouse = 0;
-            m_lastScrollbarUnderMouse = 0;
-            m_lastInstanceUnderMouse = 0;
+            m_lastNodeUnderMouse = nullptr;
+            m_lastScrollbarUnderMouse = nullptr;
+            m_lastInstanceUnderMouse = nullptr;
         }
 
         if (m_lastNodeUnderMouse != m_nodeUnderMouse) {
@@ -2150,9 +2150,9 @@ bool EventHandler::handleWheelEvent(const PlatformWheelEvent& e)
         isOverWidget = m_widgetIsLatched;
     } else {
         if (m_latchedWheelEventNode)
-            m_latchedWheelEventNode = 0;
+            m_latchedWheelEventNode = nullptr;
         if (m_previousWheelScrolledNode)
-            m_previousWheelScrolledNode = 0;
+            m_previousWheelScrolledNode = nullptr;
 
         isOverWidget = result.isOverWidget();
     }
@@ -2239,7 +2239,7 @@ bool EventHandler::handleGestureShowPress()
 bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
 {
     IntPoint adjustedPoint = gestureEvent.position();
-    RefPtr<Frame> subframe = 0;
+    RefPtr<Frame> subframe = nullptr;
     switch (gestureEvent.type()) {
     case PlatformEvent::GestureScrollBegin:
     case PlatformEvent::GestureScrollUpdate:
@@ -2328,7 +2328,7 @@ bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
         } else if (gestureEvent.type() == PlatformEvent::GestureScrollEnd
             || gestureEvent.type() == PlatformEvent::GestureFlingStart
             || !eventSwallowed) {
-            m_scrollbarHandlingScrollGesture = 0;
+            m_scrollbarHandlingScrollGesture = nullptr;
         }
 
         if (eventSwallowed)
@@ -2435,7 +2435,7 @@ bool EventHandler::handleGestureLongPress(const PlatformGestureEvent& gestureEve
         MouseEventWithHitTestResults mev = prepareMouseEvent(request, mouseDragEvent);
         m_didStartDrag = false;
         m_mouseDownMayStartDrag = true;
-        dragState().m_dragSrc = 0;
+        dragState().m_dragSrc = nullptr;
         m_mouseDownPos = m_frame->view()->windowToContents(mouseDragEvent.position());
         RefPtr<FrameView> protector(m_frame->view());
         handleDrag(mev, DontCheckDragHysteresis);
@@ -2556,7 +2556,7 @@ bool EventHandler::handleGestureScrollBegin(const PlatformGestureEvent& gestureE
 
     m_lastHitTestResultOverWidget = result.isOverWidget();
     m_scrollGestureHandlingNode = result.innerNode();
-    m_previousGestureScrolledNode = 0;
+    m_previousGestureScrolledNode = nullptr;
 
     // If there's no renderer on the node, send the event to the nearest ancestor with a renderer.
     // Needed for <option> and <optgroup> elements so we can touch scroll <select>s
@@ -2656,8 +2656,8 @@ Frame* EventHandler::getSubFrameForGestureEvent(const IntPoint& touchAdjustedPoi
 
 void EventHandler::clearGestureScrollNodes()
 {
-    m_scrollGestureHandlingNode = 0;
-    m_previousGestureScrolledNode = 0;
+    m_scrollGestureHandlingNode = nullptr;
+    m_previousGestureScrolledNode = nullptr;
 }
 
 bool EventHandler::isScrollbarHandlingGestures() const
@@ -3006,7 +3006,7 @@ void EventHandler::activeIntervalTimerFired(Timer<EventHandler>*)
         HitTestRequest request(HitTestRequest::TouchEvent | HitTestRequest::Release);
         m_frame->document()->updateHoverActiveState(request, m_lastDeferredTapElement.get());
     }
-    m_lastDeferredTapElement = 0;
+    m_lastDeferredTapElement = nullptr;
 }
 
 void EventHandler::notifyElementActivated()
@@ -3014,7 +3014,7 @@ void EventHandler::notifyElementActivated()
     // Since another element has been set to active, stop current timer and clear reference.
     if (m_activeIntervalTimer.isActive())
         m_activeIntervalTimer.stop();
-    m_lastDeferredTapElement = 0;
+    m_lastDeferredTapElement = nullptr;
 }
 
 bool EventHandler::handleAccessKey(const PlatformKeyboardEvent& evt)
@@ -3239,7 +3239,7 @@ void EventHandler::dragSourceEndedAt(const PlatformMouseEvent& event, DragOperat
         dispatchDragSrcEvent(EventTypeNames::dragend, event);
     }
     freeClipboard();
-    dragState().m_dragSrc = 0;
+    dragState().m_dragSrc = nullptr;
     // In case the drag was ended due to an escape key press we need to ensure
     // that consecutive mousemove events don't reinitiate the drag and drop.
     m_mouseDownMayStartDrag = false;
@@ -3288,7 +3288,7 @@ bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event, CheckDr
                 : DragController::ImmediateSelectionDragResolution;
             dragState().m_dragSrc = m_frame->page()->dragController().draggableNode(m_frame, node, m_mouseDownPos, selectionDragPolicy, dragState().m_dragType);
         } else {
-            dragState().m_dragSrc = 0;
+            dragState().m_dragSrc = nullptr;
         }
 
         if (!dragState().m_dragSrc)
@@ -3311,7 +3311,7 @@ bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event, CheckDr
     if (!tryStartDrag(event)) {
         // Something failed to start the drag, clean up.
         freeClipboard();
-        dragState().m_dragSrc = 0;
+        dragState().m_dragSrc = nullptr;
     }
 
     m_mouseDownMayStartDrag = false;

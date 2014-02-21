@@ -76,10 +76,10 @@ PassRefPtr<IDBRequest> IDBFactory::getDatabaseNames(ExecutionContext* context, E
 {
     IDB_TRACE("IDBFactory::getDatabaseNames");
     if (!isContextValid(context))
-        return 0;
+        return nullptr;
     if (!context->securityOrigin()->canAccessDatabase()) {
         exceptionState.throwSecurityError("access to the Indexed Database API is denied in this context.");
-        return 0;
+        return nullptr;
     }
 
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::createNull(), 0);
@@ -98,7 +98,7 @@ PassRefPtr<IDBOpenDBRequest> IDBFactory::open(ExecutionContext* context, const S
     IDB_TRACE("IDBFactory::open");
     if (!version) {
         exceptionState.throwTypeError("The version provided must not be 0.");
-        return 0;
+        return nullptr;
     }
     return openInternal(context, name, version, exceptionState);
 }
@@ -109,13 +109,13 @@ PassRefPtr<IDBOpenDBRequest> IDBFactory::openInternal(ExecutionContext* context,
     ASSERT(version >= 1 || version == IDBDatabaseMetadata::NoIntVersion);
     if (name.isNull()) {
         exceptionState.throwTypeError("The name provided must not be empty.");
-        return 0;
+        return nullptr;
     }
     if (!isContextValid(context))
-        return 0;
+        return nullptr;
     if (!context->securityOrigin()->canAccessDatabase()) {
         exceptionState.throwSecurityError("access to the Indexed Database API is denied in this context.");
-        return 0;
+        return nullptr;
     }
 
     RefPtr<IDBDatabaseCallbacks> databaseCallbacks = IDBDatabaseCallbacks::create();
@@ -143,16 +143,16 @@ PassRefPtr<IDBOpenDBRequest> IDBFactory::deleteDatabase(ExecutionContext* contex
     blink::Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBDeleteDatabaseCall, IDBMethodsMax);
     if (name.isNull()) {
         exceptionState.throwTypeError("The name provided must not be empty.");
-        return 0;
+        return nullptr;
     }
     if (!isContextValid(context))
-        return 0;
+        return nullptr;
     if (!context->securityOrigin()->canAccessDatabase()) {
         exceptionState.throwSecurityError("access to the Indexed Database API is denied in this context.");
-        return 0;
+        return nullptr;
     }
 
-    RefPtr<IDBOpenDBRequest> request = IDBOpenDBRequest::create(context, 0, 0, IDBDatabaseMetadata::DefaultIntVersion);
+    RefPtr<IDBOpenDBRequest> request = IDBOpenDBRequest::create(context, nullptr, 0, IDBDatabaseMetadata::DefaultIntVersion);
 
     if (!m_permissionClient->allowIndexedDB(context, name)) {
         request->onError(DOMError::create(UnknownError, permissionDeniedErrorMessage));

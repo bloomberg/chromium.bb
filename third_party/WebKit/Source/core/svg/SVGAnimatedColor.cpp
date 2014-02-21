@@ -37,7 +37,7 @@ PassRefPtr<NewSVGPropertyBase> SVGColorProperty::cloneForAnimation(const String&
 {
     // SVGAnimatedColor is deprecated. So No SVG DOM animation.
     ASSERT_NOT_REACHED();
-    return 0;
+    return nullptr;
 }
 
 static inline Color fallbackColorForCurrentColor(SVGElement* targetElement)

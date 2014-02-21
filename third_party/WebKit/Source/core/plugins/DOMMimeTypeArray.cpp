@@ -51,10 +51,10 @@ PassRefPtrWillBeRawPtr<DOMMimeType> DOMMimeTypeArray::item(unsigned index)
 {
     PluginData* data = getPluginData();
     if (!data)
-        return 0;
+        return nullptr;
     const Vector<MimeClassInfo>& mimes = data->mimes();
     if (index >= mimes.size())
-        return 0;
+        return nullptr;
     return DOMMimeType::create(data, m_frame, index).get();
 }
 
@@ -75,13 +75,13 @@ PassRefPtrWillBeRawPtr<DOMMimeType> DOMMimeTypeArray::namedItem(const AtomicStri
 {
     PluginData *data = getPluginData();
     if (!data)
-        return 0;
+        return nullptr;
     const Vector<MimeClassInfo>& mimes = data->mimes();
     for (unsigned i = 0; i < mimes.size(); ++i) {
         if (mimes[i].type == propertyName)
             return DOMMimeType::create(data, m_frame, i).get();
     }
-    return 0;
+    return nullptr;
 }
 
 PluginData* DOMMimeTypeArray::getPluginData() const

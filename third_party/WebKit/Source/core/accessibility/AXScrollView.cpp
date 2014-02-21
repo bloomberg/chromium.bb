@@ -103,14 +103,14 @@ void AXScrollView::updateScrollbars()
         m_horizontalScrollbar = addChildScrollbar(m_scrollView->horizontalScrollbar());
     } else if (!m_scrollView->horizontalScrollbar() && m_horizontalScrollbar) {
         removeChildScrollbar(m_horizontalScrollbar.get());
-        m_horizontalScrollbar = 0;
+        m_horizontalScrollbar = nullptr;
     }
 
     if (m_scrollView->verticalScrollbar() && !m_verticalScrollbar) {
         m_verticalScrollbar = addChildScrollbar(m_scrollView->verticalScrollbar());
     } else if (!m_scrollView->verticalScrollbar() && m_verticalScrollbar) {
         removeChildScrollbar(m_verticalScrollbar.get());
-        m_verticalScrollbar = 0;
+        m_verticalScrollbar = nullptr;
     }
 }
 
@@ -137,8 +137,8 @@ AXScrollbar* AXScrollView::addChildScrollbar(Scrollbar* scrollbar)
 void AXScrollView::clearChildren()
 {
     AXObject::clearChildren();
-    m_verticalScrollbar = 0;
-    m_horizontalScrollbar = 0;
+    m_verticalScrollbar = nullptr;
+    m_horizontalScrollbar = nullptr;
 }
 
 bool AXScrollView::computeAccessibilityIsIgnored() const

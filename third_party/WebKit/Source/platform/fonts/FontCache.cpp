@@ -145,7 +145,7 @@ PassRefPtr<SimpleFontData> FontCache::getFontData(const FontDescription& fontDes
     if (FontPlatformData* platformData = getFontPlatformData(fontDescription, adjustFamilyNameToAvoidUnsupportedFonts(family), checkingAlternateName))
         return fontDataFromFontPlatformData(platformData, shouldRetain);
 
-    return 0;
+    return nullptr;
 }
 
 PassRefPtr<SimpleFontData> FontCache::fontDataFromFontPlatformData(const FontPlatformData* platformData, ShouldRetain shouldRetain)

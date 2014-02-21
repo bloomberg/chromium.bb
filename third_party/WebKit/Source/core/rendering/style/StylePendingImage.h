@@ -62,7 +62,7 @@ public:
     virtual PassRefPtr<Image> image(RenderObject*, const IntSize&) const OVERRIDE
     {
         ASSERT_NOT_REACHED();
-        return 0;
+        return nullptr;
     }
     virtual bool knownToBeOpaque(const RenderObject*) const OVERRIDE { return false; }
 

@@ -74,12 +74,12 @@ PassRefPtr<SharedWorker> SharedWorker::create(ExecutionContext* context, const S
     Document* document = toDocument(context);
     if (!document->securityOrigin()->canAccessSharedWorkers()) {
         exceptionState.throwSecurityError("Access to shared workers is denied to origin '" + document->securityOrigin()->toString() + "'.");
-        return 0;
+        return nullptr;
     }
 
     KURL scriptURL = worker->resolveURL(url, exceptionState);
     if (scriptURL.isEmpty())
-        return 0;
+        return nullptr;
 
     if (document->frame()->loader().client()->sharedWorkerRepositoryClient())
         document->frame()->loader().client()->sharedWorkerRepositoryClient()->connect(worker.get(), remotePort.release(), scriptURL, name, exceptionState);

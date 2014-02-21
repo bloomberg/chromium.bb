@@ -122,12 +122,12 @@ template<typename CharType>
 PassRefPtr<SVGTransform> parseTransformOfType(unsigned type, const CharType*& ptr, const CharType* end)
 {
     if (type == SVG_TRANSFORM_UNKNOWN)
-        return 0;
+        return nullptr;
 
     int valueCount = 0;
     float values[] = {0, 0, 0, 0, 0, 0};
     if ((valueCount = parseTransformParamList(ptr, end, values, requiredValuesForType[type], optionalValuesForType[type])) < 0) {
-        return 0;
+        return nullptr;
     }
 
     RefPtr<SVGTransform> transform = SVGTransform::create();
@@ -259,7 +259,7 @@ void SVGTransformList::setValueAsString(const String& value, ExceptionState& exc
 PassRefPtr<NewSVGPropertyBase> SVGTransformList::cloneForAnimation(const String& value) const
 {
     ASSERT_NOT_REACHED();
-    return 0;
+    return nullptr;
 }
 
 PassRefPtr<SVGTransformList> SVGTransformList::create(SVGTransformType transformType, const String& value)

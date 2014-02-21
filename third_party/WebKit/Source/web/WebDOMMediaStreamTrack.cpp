@@ -47,12 +47,11 @@ WebDOMMediaStreamTrack WebDOMMediaStreamTrack::fromV8Value(v8::Handle<v8::Value>
         v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
         return WebDOMMediaStreamTrack(WebCore::V8MediaStreamTrack::toNative(object));
     }
-    return WebDOMMediaStreamTrack(0);
+    return WebDOMMediaStreamTrack(nullptr);
 }
 
 void WebDOMMediaStreamTrack::reset()
 {
-    // FIXME: replace reset() with nullptr assignment (cf. https://codereview.chromium.org/170603003/ )
     m_private.reset();
 }
 

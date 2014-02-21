@@ -204,8 +204,8 @@ public:
         enum GroupKind { CaptionsAndSubtitles, Description, Chapter, Metadata, Other };
 
         TrackGroup(GroupKind kind)
-            : visibleTrack(0)
-            , defaultTrack(0)
+            : visibleTrack(nullptr)
+            , defaultTrack(nullptr)
             , kind(kind)
             , hasSrcLang(false)
         {

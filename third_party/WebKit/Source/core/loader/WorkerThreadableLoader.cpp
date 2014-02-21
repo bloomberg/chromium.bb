@@ -156,7 +156,7 @@ void WorkerThreadableLoader::MainThreadBridge::mainThreadCancel(ExecutionContext
     if (!thisPtr->m_mainThreadLoader)
         return;
     thisPtr->m_mainThreadLoader->cancel();
-    thisPtr->m_mainThreadLoader = 0;
+    thisPtr->m_mainThreadLoader = nullptr;
 }
 
 void WorkerThreadableLoader::MainThreadBridge::cancel()

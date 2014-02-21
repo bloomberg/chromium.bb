@@ -75,7 +75,7 @@ size_t DataObject::length() const
 PassRefPtr<DataObjectItem> DataObject::item(unsigned long index)
 {
     if (index >= length())
-        return 0;
+        return nullptr;
     return m_itemList[index];
 }
 
@@ -95,14 +95,14 @@ PassRefPtr<DataObjectItem> DataObject::add(const String& data, const String& typ
 {
     RefPtr<DataObjectItem> item = DataObjectItem::createFromString(type, data);
     if (!internalAddStringItem(item))
-        return 0;
+        return nullptr;
     return item;
 }
 
 PassRefPtr<DataObjectItem> DataObject::add(PassRefPtr<File> file)
 {
     if (!file)
-        return 0;
+        return nullptr;
 
     RefPtr<DataObjectItem> item = DataObjectItem::createFromFile(file);
     m_itemList.append(item);
@@ -245,7 +245,7 @@ PassRefPtr<DataObjectItem> DataObject::findStringItem(const String& type) const
         if (m_itemList[i]->kind() == DataObjectItem::StringKind && m_itemList[i]->type() == type)
             return m_itemList[i];
     }
-    return 0;
+    return nullptr;
 }
 
 bool DataObject::internalAddStringItem(PassRefPtr<DataObjectItem> item)

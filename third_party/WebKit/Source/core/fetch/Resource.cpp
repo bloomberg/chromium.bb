@@ -432,7 +432,7 @@ void Resource::setCacheLiveResourcePriority(CacheLiveResourcePriority priority)
 
 void Resource::clearLoader()
 {
-    m_loader = 0;
+    m_loader = nullptr;
 }
 
 void Resource::addClient(ResourceClient* client)

@@ -251,7 +251,7 @@ void WorkerGlobalScope::addMessage(MessageSource source, MessageLevel level, con
         return;
     }
     thread()->workerReportingProxy().reportConsoleMessage(source, level, message, lineNumber, sourceURL);
-    addMessageToWorkerConsole(source, level, message, sourceURL, lineNumber, 0, state);
+    addMessageToWorkerConsole(source, level, message, sourceURL, lineNumber, nullptr, state);
 }
 
 void WorkerGlobalScope::addMessageToWorkerConsole(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtr<ScriptCallStack> callStack, ScriptState* state)

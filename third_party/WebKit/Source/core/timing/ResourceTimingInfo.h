@@ -63,9 +63,9 @@ public:
 
     void clearLoadTimings()
     {
-        m_finalResponse.setResourceLoadTiming(0);
+        m_finalResponse.setResourceLoadTiming(nullptr);
         for (size_t i = 0; i < m_redirectChain.size(); ++i)
-            m_redirectChain[i].setResourceLoadTiming(0);
+            m_redirectChain[i].setResourceLoadTiming(nullptr);
     }
 
 private:

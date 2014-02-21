@@ -617,7 +617,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForPositionOffset(RenderStyle& styl
             l = style.bottom();
             break;
         default:
-            return 0;
+            return nullptr;
     }
 
     if (l.isPercent() && renderer && renderer->isBox()) {
@@ -868,7 +868,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> specifiedValueForGridTrackSize(const Gri
         return CSSFunctionValue::create("minmax(", minMaxTrackBreadths);
     }
     ASSERT_NOT_REACHED();
-    return 0;
+    return nullptr;
 }
 
 static void addValuesForNamedGridLinesAtIndex(const OrderedNamedGridLines& orderedNamedGridLines, size_t i, CSSValueList& list)
@@ -1006,7 +1006,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> createTimingFunctionValue(const TimingFu
                     break;
                 default:
                     ASSERT_NOT_REACHED();
-                    return 0;
+                    return nullptr;
                 }
                 return cssValuePool().createIdentifierValue(valueId);
             }
@@ -1028,7 +1028,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> createTimingFunctionValue(const TimingFu
                 break;
             default:
                 ASSERT_NOT_REACHED();
-                return 0;
+                return nullptr;
             }
             return cssValuePool().createIdentifierValue(valueId);
         }
@@ -1063,7 +1063,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForAnimationFillMode(unsigned fillM
         return cssValuePool().createIdentifierValue(CSSValueBoth);
     default:
         ASSERT_NOT_REACHED();
-        return 0;
+        return nullptr;
     }
 }
 
@@ -1080,7 +1080,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForAnimationDirection(CSSAnimationD
         return cssValuePool().createIdentifierValue(CSSValueAlternateReverse);
     default:
         ASSERT_NOT_REACHED();
-        return 0;
+        return nullptr;
     }
 }
 
@@ -1163,13 +1163,13 @@ static CSSValueID cssIdentifierForFontSizeKeyword(int keywordSize)
 PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getFontSizeCSSValuePreferringKeyword() const
 {
     if (!m_node)
-        return 0;
+        return nullptr;
 
     m_node->document().updateLayoutIgnorePendingStylesheets();
 
     RefPtr<RenderStyle> style = m_node->computedStyle(m_pseudoElementSpecifier);
     if (!style)
-        return 0;
+        return nullptr;
 
     if (int keywordSize = style->fontDescription().keywordSize())
         return cssValuePool().createIdentifierValue(cssIdentifierForFontSizeKeyword(keywordSize));
@@ -1305,7 +1305,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForFillSourceType(EMaskSourceType t
 
     ASSERT_NOT_REACHED();
 
-    return 0;
+    return nullptr;
 }
 
 static PassRefPtrWillBeRawPtr<CSSValue> valueForFillSize(const FillSize& fillSize, const RenderStyle& style)
@@ -1347,7 +1347,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForCounterDirectives(const RenderSt
 {
     const CounterDirectiveMap* map = style.counterDirectives();
     if (!map)
-        return 0;
+        return nullptr;
 
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     for (CounterDirectiveMap::const_iterator it = map->begin(); it != map->end(); ++it) {
@@ -1525,7 +1525,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
 {
     Node* styledNode = this->styledNode();
     if (!styledNode)
-        return 0;
+        return nullptr;
     RenderObject* renderer = styledNode->renderer();
     RefPtr<RenderStyle> style;
 
@@ -1561,7 +1561,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
     }
 
     if (!style)
-        return 0;
+        return nullptr;
 
     propertyID = CSSProperty::resolveDirectionAwareProperty(propertyID, style->direction(), style->writingMode());
 
@@ -1798,7 +1798,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         case CSSPropertyColumnFill:
             if (RuntimeEnabledFeatures::regionBasedColumnsEnabled())
                 return cssValuePool().createValue(style->columnFill());
-            return 0;
+            return nullptr;
         case CSSPropertyWebkitColumnGap:
             if (style->hasNormalColumnGap())
                 return cssValuePool().createIdentifierValue(CSSValueNormal);
@@ -2135,7 +2135,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
             EPageBreak pageBreak = style->pageBreakInside();
             ASSERT(pageBreak != PBALWAYS);
             if (pageBreak == PBALWAYS)
-                return 0;
+                return nullptr;
             return cssValuePool().createValue(style->pageBreakInside());
         }
         case CSSPropertyPosition:
@@ -2250,7 +2250,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
                     return cssValuePool().createValue(style->verticalAlignLength());
             }
             ASSERT_NOT_REACHED();
-            return 0;
+            return nullptr;
         case CSSPropertyVisibility:
             return cssValuePool().createValue(style->visibility());
         case CSSPropertyWhiteSpace:
@@ -2669,7 +2669,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
                                         CSSPropertyBorderLeft };
             for (size_t i = 0; i < WTF_ARRAY_LENGTH(properties); ++i) {
                 if (!compareCSSValuePtr<CSSValue>(value, getPropertyCSSValue(properties[i], DoNotUpdateLayout)))
-                    return 0;
+                    return nullptr;
             }
             return value.release();
         }
@@ -2709,7 +2709,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
             break;
         case CSSPropertyInternalCallback:
             // This property is hidden from the web.
-            return 0;
+            return nullptr;
 
         /* Unimplemented CSS 3 properties (including CSS3 shorthand properties) */
         case CSSPropertyWebkitTextEmphasis:
@@ -2801,7 +2801,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         case CSSPropertyInternalMarqueeSpeed:
         case CSSPropertyInternalMarqueeStyle:
             ASSERT_NOT_REACHED();
-            return 0;
+            return nullptr;
 
         case CSSPropertyBufferedRendering:
         case CSSPropertyClipPath:
@@ -2849,7 +2849,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
     }
 
     logUnimplementedPropertyID(propertyID);
-    return 0;
+    return nullptr;
 }
 
 String CSSComputedStyleDeclaration::getPropertyValue(CSSPropertyID propertyID) const
@@ -2924,7 +2924,7 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSComputedStyleDeclaration::valuesForSides
 
     // All 4 properties must be specified.
     if (!topValue || !rightValue || !bottomValue || !leftValue)
-        return 0;
+        return nullptr;
 
     bool showLeft = !compareCSSValuePtr(rightValue, leftValue);
     bool showBottom = !compareCSSValuePtr(topValue, bottomValue) || showLeft;
@@ -2972,9 +2972,9 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
     if (!propertyID)
-        return 0;
+        return nullptr;
     RefPtrWillBeRawPtr<CSSValue> value = getPropertyCSSValue(propertyID);
-    return value ? value->cloneForCSSOM() : 0;
+    return value ? value->cloneForCSSOM() : nullptr;
 }
 
 String CSSComputedStyleDeclaration::getPropertyValue(const String& propertyName)

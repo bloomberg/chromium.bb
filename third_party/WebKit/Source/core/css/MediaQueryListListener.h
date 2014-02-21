@@ -35,7 +35,7 @@ public:
     static PassRefPtr<MediaQueryListListener> create(const ScriptValue& value)
     {
         if (!value.isFunction())
-            return 0;
+            return nullptr;
         return adoptRef(new MediaQueryListListener(value));
     }
     void queryChanged(ScriptState*, MediaQueryList*);

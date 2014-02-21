@@ -76,13 +76,13 @@ PassRefPtr<EventSource> EventSource::create(ExecutionContext* context, const Str
 {
     if (url.isEmpty()) {
         exceptionState.throwDOMException(SyntaxError, "Cannot open an EventSource to an empty URL.");
-        return 0;
+        return nullptr;
     }
 
     KURL fullURL = context->completeURL(url);
     if (!fullURL.isValid()) {
         exceptionState.throwDOMException(SyntaxError, "Cannot open an EventSource to '" + url + "'. The URL is invalid.");
-        return 0;
+        return nullptr;
     }
 
     // FIXME: Convert this to check the isolated world's Content Security Policy once webkit.org/b/104520 is solved.
@@ -94,7 +94,7 @@ PassRefPtr<EventSource> EventSource::create(ExecutionContext* context, const Str
     if (!shouldBypassMainWorldContentSecurityPolicy && !context->contentSecurityPolicy()->allowConnectToSource(fullURL)) {
         // We can safely expose the URL to JavaScript, as this exception is generate synchronously before any redirects take place.
         exceptionState.throwSecurityError("Refused to connect to '" + fullURL.elidedString() + "' because it violates the document's Content Security Policy.");
-        return 0;
+        return nullptr;
     }
 
     RefPtr<EventSource> source = adoptRef(new EventSource(context, fullURL, eventSourceInit));

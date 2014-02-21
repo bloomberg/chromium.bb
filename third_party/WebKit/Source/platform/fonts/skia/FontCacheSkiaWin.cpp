@@ -155,7 +155,7 @@ PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDes
     if (i <= numFonts)
         return fontDataFromFontPlatformData(data, DoNotRetain);
 
-    return 0;
+    return nullptr;
 }
 
 static inline bool equalIgnoringCase(const AtomicString& a, const SkString& b)

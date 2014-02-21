@@ -76,7 +76,7 @@ PassRefPtr<ShadowList> ShadowList::blend(const ShadowList* from, const ShadowLis
     size_t fromLength = from ? from->shadows().size() : 0;
     size_t toLength = to ? to->shadows().size() : 0;
     if (!fromLength && !toLength)
-        return 0;
+        return nullptr;
 
     ShadowDataVector shadows;
 

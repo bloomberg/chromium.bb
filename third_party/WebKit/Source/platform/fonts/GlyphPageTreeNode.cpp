@@ -259,7 +259,7 @@ void GlyphPageTreeNode::initializePage(const FontData* fontData, unsigned pageNu
             }
 
             if (!haveGlyphs)
-                m_page = 0;
+                m_page = nullptr;
         } else if (parentPage && parentPage->owner() != m_parent) {
             // The page we're overriding may not be owned by our parent node.
             // This happens when our parent node provides no useful overrides

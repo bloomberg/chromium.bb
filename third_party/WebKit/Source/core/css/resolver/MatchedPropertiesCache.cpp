@@ -49,8 +49,8 @@ void CachedMatchedProperties::set(const RenderStyle* style, const RenderStyle* p
 void CachedMatchedProperties::clear()
 {
     matchedProperties.clear();
-    renderStyle = 0;
-    parentRenderStyle = 0;
+    renderStyle = nullptr;
+    parentRenderStyle = nullptr;
 }
 
 MatchedPropertiesCache::MatchedPropertiesCache()

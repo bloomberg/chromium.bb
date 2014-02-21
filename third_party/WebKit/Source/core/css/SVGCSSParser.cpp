@@ -320,7 +320,7 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
             // FIXME calc() http://webkit.org/b/16662 : actually create a CSSPrimitiveValue here, ie
             // parsedValue = CSSPrimitiveValue::create(m_parsedCalculation.release());
             m_parsedCalculation.release();
-            parsedValue = 0;
+            parsedValue = nullptr;
         }
         m_valueList->next();
     }
@@ -349,7 +349,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSVGStrokeDasharray()
             value = m_valueList->next();
     }
     if (!valid_primitive)
-        return 0;
+        return nullptr;
     return ret.release();
 }
 
@@ -365,7 +365,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSVGColor()
 {
     RGBA32 c = Color::transparent;
     if (!parseColorFromValue(m_valueList->current(), c))
-        return 0;
+        return nullptr;
     return SVGColor::createFromColor(Color(c));
 }
 
@@ -373,11 +373,11 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSVGColor()
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parsePaintOrder() const
 {
     if (m_valueList->size() > 3)
-        return 0;
+        return nullptr;
 
     CSSParserValue* value = m_valueList->current();
     if (!value)
-        return 0;
+        return nullptr;
 
     RefPtrWillBeRawPtr<CSSValueList> parsedValues = CSSValueList::createSpaceSeparated();
 
@@ -390,27 +390,27 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parsePaintOrder() const
         switch (value->id) {
         case CSSValueNormal:
             // normal inside [fill || stroke || markers] not valid
-            return 0;
+            return nullptr;
         case CSSValueFill:
             if (seenFill)
-                return 0;
+                return nullptr;
 
             seenFill = true;
             break;
         case CSSValueStroke:
             if (seenStroke)
-                return 0;
+                return nullptr;
 
             seenStroke = true;
             break;
         case CSSValueMarkers:
             if (seenMarkers)
-                return 0;
+                return nullptr;
 
             seenMarkers = true;
             break;
         default:
-            return 0;
+            return nullptr;
         }
 
         parsedValues->append(CSSPrimitiveValue::createIdentifier(value->id));

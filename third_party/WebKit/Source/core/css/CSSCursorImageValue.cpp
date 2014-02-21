@@ -181,7 +181,7 @@ String CSSCursorImageValue::cachedImageURL()
 
 void CSSCursorImageValue::clearImageResource()
 {
-    m_image = 0;
+    m_image = nullptr;
     m_accessedImage = false;
 }
 

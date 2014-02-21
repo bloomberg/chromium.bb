@@ -91,7 +91,7 @@ static PassRefPtr<RenderStyle> createFullScreenStyle()
     fullscreenStyle->setZIndex(INT_MAX);
 
     fullscreenStyle->setFontDescription(FontDescription());
-    fullscreenStyle->font().update(0);
+    fullscreenStyle->font().update(nullptr);
 
     fullscreenStyle->setDisplay(FLEX);
     fullscreenStyle->setJustifyContent(JustifyCenter);

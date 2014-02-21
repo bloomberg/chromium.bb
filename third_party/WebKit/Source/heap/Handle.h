@@ -209,8 +209,11 @@ private:
 // the garbage collector.
 template<typename T, typename RootsAccessor /* = ThreadLocalPersistents<ThreadingTrait<T>::Affinity > */ >
 class Persistent : public PersistentBase<RootsAccessor, Persistent<T, RootsAccessor> > {
+    WTF_DISALLOW_CONSTRUCTION_FROM_ZERO(Persistent);
+    WTF_DISALLOW_ZERO_ASSIGNMENT(Persistent);
 public:
     Persistent() : m_raw(0) { }
+    Persistent(std::nullptr_t) : m_raw(0) { }
 
     Persistent(T* raw) : m_raw(raw) { }
 
@@ -231,6 +234,13 @@ public:
         m_raw = other;
         return *this;
     }
+
+    Persistent& operator=(std::nullptr_t)
+    {
+        m_raw = 0;
+        return *this;
+    }
+
     void clear() { m_raw = 0; }
 
     virtual ~Persistent()
@@ -330,8 +340,11 @@ class PersistentHeapVector : public PersistentHeapCollectionBase<HeapVector<T, i
 // all Member fields of a live object will be traced marked as live as well.
 template<typename T>
 class Member {
+    WTF_DISALLOW_CONSTRUCTION_FROM_ZERO(Member);
+    WTF_DISALLOW_ZERO_ASSIGNMENT(Member);
 public:
     Member() : m_raw(0) { }
+    Member(std::nullptr_t) : m_raw(0) { }
 
     Member(T* raw) : m_raw(raw) { }
 
@@ -396,6 +409,12 @@ public:
         return *this;
     }
 
+    Member& operator=(std::nullptr_t)
+    {
+        m_raw = 0;
+        return *this;
+    }
+
     void swap(Member<T>& other) { std::swap(m_raw, other.m_raw); }
 
     T* get() const { return m_raw; }
@@ -436,8 +455,11 @@ public:
 // time of GC the weak pointers will automatically be set to null.
 template<typename T>
 class WeakMember : public Member<T> {
+    WTF_DISALLOW_CONSTRUCTION_FROM_ZERO(WeakMember);
+    WTF_DISALLOW_ZERO_ASSIGNMENT(WeakMember);
 public:
     WeakMember() : Member<T>() { }
+    WeakMember(std::nullptr_t) : Member<T>(nullptr) { }
 
     WeakMember(T* raw) : Member<T>(raw) { }
 
@@ -474,6 +496,12 @@ public:
     WeakMember& operator=(const RawPtr<U>& other)
     {
         this->m_raw = other;
+        return *this;
+    }
+
+    WeakMember& operator=(std::nullptr_t)
+    {
+        this->m_raw = 0;
         return *this;
     }
 
@@ -620,8 +648,8 @@ template<typename T> struct HashTraits<WebCore::Member<T> > : SimpleClassHashTra
     // types can be merged into PassInType.
     // FIXME: Implement proper const'ness for iterator types. Requires support
     // in the marking Visitor.
-    typedef T* PeekInType;
-    typedef T* PassInType;
+    typedef RawPtr<T> PeekInType;
+    typedef RawPtr<T> PassInType;
     typedef WebCore::Member<T>* IteratorGetType;
     typedef const WebCore::Member<T>* IteratorConstGetType;
     typedef T* IteratorReferenceType;
@@ -648,8 +676,8 @@ template<typename T> struct HashTraits<WebCore::WeakMember<T> > : SimpleClassHas
     // types can be merged into PassInType.
     // FIXME: Implement proper const'ness for iterator types. Requires support
     // in the marking Visitor.
-    typedef T* PeekInType;
-    typedef T* PassInType;
+    typedef RawPtr<T> PeekInType;
+    typedef RawPtr<T> PassInType;
     typedef WebCore::WeakMember<T>* IteratorGetType;
     typedef const WebCore::WeakMember<T>* IteratorConstGetType;
     typedef T* IteratorReferenceType;

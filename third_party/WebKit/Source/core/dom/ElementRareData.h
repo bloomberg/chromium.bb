@@ -107,7 +107,7 @@ public:
 
     RenderStyle* computedStyle() const { return m_computedStyle.get(); }
     void setComputedStyle(PassRefPtr<RenderStyle> computedStyle) { m_computedStyle = computedStyle; }
-    void clearComputedStyle() { m_computedStyle = 0; }
+    void clearComputedStyle() { m_computedStyle = nullptr; }
 
     ClassList* classList() const { return m_classList.get(); }
     void setClassList(PassOwnPtr<ClassList> classList) { m_classList = classList; }
@@ -233,9 +233,9 @@ inline bool ElementRareData::hasPseudoElements() const
 
 inline void ElementRareData::clearPseudoElements()
 {
-    setPseudoElement(BEFORE, 0);
-    setPseudoElement(AFTER, 0);
-    setPseudoElement(BACKDROP, 0);
+    setPseudoElement(BEFORE, nullptr);
+    setPseudoElement(AFTER, nullptr);
+    setPseudoElement(BACKDROP, nullptr);
 }
 
 inline void ElementRareData::setPseudoElement(PseudoId pseudoId, PassRefPtr<PseudoElement> element)

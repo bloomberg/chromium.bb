@@ -73,7 +73,7 @@ protected:
         Timing timing;
         timing.iterationDuration = duration;
         timing.playbackRate = playbackRate;
-        return Animation::create(0, 0, timing);
+        return Animation::create(nullptr, nullptr, timing);
     }
 
     bool updateTimeline(double time)
@@ -452,7 +452,7 @@ TEST_F(AnimationPlayerTest, FinishRaisesException)
     Timing timing;
     timing.iterationDuration = 1;
     timing.iterationCount = std::numeric_limits<double>::infinity();
-    player->setSource(Animation::create(0, 0, timing).get());
+    player->setSource(Animation::create(nullptr, nullptr, timing).get());
     player->setCurrentTime(10);
 
     player->finish(exceptionState);
@@ -621,7 +621,7 @@ TEST_F(AnimationPlayerTest, PlayersReturnTimeToNextEffect)
     timing.startDelay = 1;
     timing.iterationDuration = 1;
     timing.endDelay = 1;
-    RefPtr<Animation> animation = Animation::create(0, 0, timing);
+    RefPtr<Animation> animation = Animation::create(nullptr, nullptr, timing);
     player = timeline->createPlayer(animation.get());
     player->setStartTime(0);
 
@@ -670,7 +670,7 @@ TEST_F(AnimationPlayerTest, AttachedPlayers)
     RefPtr<Element> element = document->createElement("foo", ASSERT_NO_EXCEPTION);
 
     Timing timing;
-    RefPtr<Animation> animation = Animation::create(element, 0, timing);
+    RefPtr<Animation> animation = Animation::create(element, nullptr, timing);
     RefPtr<Player> player = timeline->createPlayer(animation.get());
     timeline->serviceAnimations();
     EXPECT_EQ(1U, element->activeAnimations()->players().find(player.get())->value);

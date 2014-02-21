@@ -87,20 +87,20 @@ static bool throwExceptionIfSignalingStateClosed(RTCPeerConnection::SignalingSta
 PassRefPtr<RTCConfiguration> RTCPeerConnection::parseConfiguration(const Dictionary& configuration, ExceptionState& exceptionState)
 {
     if (configuration.isUndefinedOrNull())
-        return 0;
+        return nullptr;
 
     ArrayValue iceServers;
     bool ok = configuration.get("iceServers", iceServers);
     if (!ok || iceServers.isUndefinedOrNull()) {
         exceptionState.throwTypeError("Malformed RTCConfiguration");
-        return 0;
+        return nullptr;
     }
 
     size_t numberOfServers;
     ok = iceServers.length(numberOfServers);
     if (!ok) {
         exceptionState.throwTypeError("Malformed RTCConfiguration");
-        return 0;
+        return nullptr;
     }
 
     RefPtr<RTCConfiguration> rtcConfiguration = RTCConfiguration::create();
@@ -110,7 +110,7 @@ PassRefPtr<RTCConfiguration> RTCPeerConnection::parseConfiguration(const Diction
         ok = iceServers.get(i, iceServer);
         if (!ok) {
             exceptionState.throwTypeError("Malformed RTCIceServer");
-            return 0;
+            return nullptr;
         }
 
         Vector<String> names;
@@ -124,7 +124,7 @@ PassRefPtr<RTCConfiguration> RTCPeerConnection::parseConfiguration(const Diction
                     urlStrings.append(urlString);
                 } else {
                     exceptionState.throwTypeError("Malformed RTCIceServer");
-                    return 0;
+                    return nullptr;
                 }
             }
         } else if (names.contains("url")) {
@@ -133,11 +133,11 @@ PassRefPtr<RTCConfiguration> RTCPeerConnection::parseConfiguration(const Diction
                 urlStrings.append(urlString);
             } else {
                 exceptionState.throwTypeError("Malformed RTCIceServer");
-                return 0;
+                return nullptr;
             }
         } else {
             exceptionState.throwTypeError("Malformed RTCIceServer");
-            return 0;
+            return nullptr;
         }
 
         String username, credential;
@@ -148,7 +148,7 @@ PassRefPtr<RTCConfiguration> RTCPeerConnection::parseConfiguration(const Diction
             KURL url(KURL(), *iter);
             if (!url.isValid() || !(url.protocolIs("turn") || url.protocolIs("turns") || url.protocolIs("stun"))) {
                 exceptionState.throwTypeError("Malformed URL");
-                return 0;
+                return nullptr;
             }
 
             rtcConfiguration->appendServer(RTCIceServer::create(url, username, credential));
@@ -162,16 +162,16 @@ PassRefPtr<RTCPeerConnection> RTCPeerConnection::create(ExecutionContext* contex
 {
     RefPtr<RTCConfiguration> configuration = parseConfiguration(rtcConfiguration, exceptionState);
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     blink::WebMediaConstraints constraints = MediaConstraintsImpl::create(mediaConstraints, exceptionState);
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     RefPtr<RTCPeerConnection> peerConnection = adoptRef(new RTCPeerConnection(context, configuration.release(), constraints, exceptionState));
     peerConnection->suspendIfNeeded();
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     return peerConnection.release();
 }
@@ -266,7 +266,7 @@ PassRefPtr<RTCSessionDescription> RTCPeerConnection::localDescription(ExceptionS
 {
     blink::WebRTCSessionDescription webSessionDescription = m_peerHandler->localDescription();
     if (webSessionDescription.isNull())
-        return 0;
+        return nullptr;
 
     RefPtr<RTCSessionDescription> sessionDescription = RTCSessionDescription::create(webSessionDescription);
     return sessionDescription.release();
@@ -291,7 +291,7 @@ PassRefPtr<RTCSessionDescription> RTCPeerConnection::remoteDescription(Exception
 {
     blink::WebRTCSessionDescription webSessionDescription = m_peerHandler->remoteDescription();
     if (webSessionDescription.isNull())
-        return 0;
+        return nullptr;
 
     RefPtr<RTCSessionDescription> desc = RTCSessionDescription::create(webSessionDescription);
     return desc.release();
@@ -495,7 +495,7 @@ void RTCPeerConnection::getStats(PassOwnPtr<RTCStatsCallback> successCallback, P
 PassRefPtr<RTCDataChannel> RTCPeerConnection::createDataChannel(String label, const Dictionary& options, ExceptionState& exceptionState)
 {
     if (throwExceptionIfSignalingStateClosed(m_signalingState, exceptionState))
-        return 0;
+        return nullptr;
 
     blink::WebRTCDataChannelInit init;
     options.get("ordered", init.ordered);
@@ -515,7 +515,7 @@ PassRefPtr<RTCDataChannel> RTCPeerConnection::createDataChannel(String label, co
 
     RefPtr<RTCDataChannel> channel = RTCDataChannel::create(executionContext(), m_peerHandler.get(), label, init, exceptionState);
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
     m_dataChannels.append(channel);
     return channel.release();
 }
@@ -532,23 +532,23 @@ bool RTCPeerConnection::hasLocalStreamWithTrackId(const String& trackId)
 PassRefPtr<RTCDTMFSender> RTCPeerConnection::createDTMFSender(PassRefPtr<MediaStreamTrack> prpTrack, ExceptionState& exceptionState)
 {
     if (throwExceptionIfSignalingStateClosed(m_signalingState, exceptionState))
-        return 0;
+        return nullptr;
 
     if (!prpTrack) {
         exceptionState.throwTypeError(ExceptionMessages::argumentNullOrIncorrectType(1, "MediaStreamTrack"));
-        return 0;
+        return nullptr;
     }
 
     RefPtr<MediaStreamTrack> track = prpTrack;
 
     if (!hasLocalStreamWithTrackId(track->id())) {
         exceptionState.throwDOMException(SyntaxError, "No local stream is available for the track provided.");
-        return 0;
+        return nullptr;
     }
 
     RefPtr<RTCDTMFSender> dtmfSender = RTCDTMFSender::create(executionContext(), m_peerHandler.get(), track.release(), exceptionState);
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
     return dtmfSender.release();
 }
 
@@ -573,7 +573,7 @@ void RTCPeerConnection::didGenerateICECandidate(const blink::WebRTCICECandidate&
 {
     ASSERT(executionContext()->isContextThread());
     if (webCandidate.isNull())
-        scheduleDispatchEvent(RTCIceCandidateEvent::create(false, false, 0));
+        scheduleDispatchEvent(RTCIceCandidateEvent::create(false, false, nullptr));
     else {
         RefPtr<RTCIceCandidate> iceCandidate = RTCIceCandidate::create(webCandidate);
         scheduleDispatchEvent(RTCIceCandidateEvent::create(false, false, iceCandidate.release()));

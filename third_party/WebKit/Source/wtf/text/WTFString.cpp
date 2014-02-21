@@ -45,7 +45,7 @@ using namespace std;
 
 // Construct a string with UTF-16 data.
 String::String(const UChar* characters, unsigned length)
-    : m_impl(characters ? StringImpl::create(characters, length) : 0)
+    : m_impl(characters ? StringImpl::create(characters, length) : nullptr)
 {
 }
 
@@ -59,23 +59,23 @@ String::String(const UChar* str)
 
 // Construct a string with latin1 data.
 String::String(const LChar* characters, unsigned length)
-    : m_impl(characters ? StringImpl::create(characters, length) : 0)
+    : m_impl(characters ? StringImpl::create(characters, length) : nullptr)
 {
 }
 
 String::String(const char* characters, unsigned length)
-    : m_impl(characters ? StringImpl::create(reinterpret_cast<const LChar*>(characters), length) : 0)
+    : m_impl(characters ? StringImpl::create(reinterpret_cast<const LChar*>(characters), length) : nullptr)
 {
 }
 
 // Construct a string with latin1 data, from a null-terminated source.
 String::String(const LChar* characters)
-    : m_impl(characters ? StringImpl::create(characters) : 0)
+    : m_impl(characters ? StringImpl::create(characters) : nullptr)
 {
 }
 
 String::String(const char* characters)
-    : m_impl(characters ? StringImpl::create(reinterpret_cast<const LChar*>(characters)) : 0)
+    : m_impl(characters ? StringImpl::create(reinterpret_cast<const LChar*>(characters)) : nullptr)
 {
 }
 

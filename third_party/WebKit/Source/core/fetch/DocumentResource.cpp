@@ -73,7 +73,7 @@ PassRefPtr<Document> DocumentResource::createDocument(const KURL& url)
     default:
         // FIXME: We'll add more types to support HTMLImports.
         ASSERT_NOT_REACHED();
-        return 0;
+        return nullptr;
     }
 }
 

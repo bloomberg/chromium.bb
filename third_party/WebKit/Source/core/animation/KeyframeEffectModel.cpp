@@ -334,7 +334,7 @@ void KeyframeEffectModel::PropertySpecificKeyframeGroup::addSyntheticKeyframeIfR
     if (!offset)
         appendKeyframe(m_keyframes.first()->cloneWithOffset(1.0));
     else
-        m_keyframes.insert(0, adoptPtr(new PropertySpecificKeyframe(0.0, 0, AnimatableValue::neutralValue(), CompositeAdd)));
+        m_keyframes.insert(0, adoptPtr(new PropertySpecificKeyframe(0.0, nullptr, AnimatableValue::neutralValue(), CompositeAdd)));
 }
 
 PassRefPtr<AnimationEffect::CompositableValue> KeyframeEffectModel::PropertySpecificKeyframeGroup::sample(int iteration, double offset) const

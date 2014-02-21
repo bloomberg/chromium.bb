@@ -81,7 +81,7 @@ void ScrollView::setHasHorizontalScrollbar(bool hasBar)
     } else if (!hasBar && m_horizontalScrollbar) {
         willRemoveScrollbar(m_horizontalScrollbar.get(), HorizontalScrollbar);
         removeChild(m_horizontalScrollbar.get());
-        m_horizontalScrollbar = 0;
+        m_horizontalScrollbar = nullptr;
     }
 }
 
@@ -95,7 +95,7 @@ void ScrollView::setHasVerticalScrollbar(bool hasBar)
     } else if (!hasBar && m_verticalScrollbar) {
         willRemoveScrollbar(m_verticalScrollbar.get(), VerticalScrollbar);
         removeChild(m_verticalScrollbar.get());
-        m_verticalScrollbar = 0;
+        m_verticalScrollbar = nullptr;
     }
 }
 

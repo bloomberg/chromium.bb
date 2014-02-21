@@ -43,9 +43,9 @@ namespace WebCore {
 PassRefPtr<Database> DOMWindowWebDatabase::openDatabase(DOMWindow& window, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback, ExceptionState& exceptionState)
 {
     if (!window.isCurrentlyDisplayedInFrame())
-        return 0;
+        return nullptr;
 
-    RefPtr<Database> database = 0;
+    RefPtr<Database> database = nullptr;
     DatabaseManager& dbManager = DatabaseManager::manager();
     DatabaseError error = DatabaseError::None;
     if (RuntimeEnabledFeatures::databaseEnabled() && window.document()->securityOrigin()->canAccessDatabase()) {

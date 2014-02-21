@@ -99,12 +99,12 @@ PassRefPtr<MHTMLArchive> MHTMLArchive::create(const KURL& url, SharedBuffer* dat
 {
     // For security reasons we only load MHTML pages from local URLs.
     if (!SchemeRegistry::shouldTreatURLSchemeAsLocal(url.protocol()))
-        return 0;
+        return nullptr;
 
     MHTMLParser parser(data);
     RefPtr<MHTMLArchive> mainArchive = parser.parseArchive();
     if (!mainArchive)
-        return 0; // Invalid MHTML file.
+        return nullptr; // Invalid MHTML file.
 
     // Since MHTML is a flat format, we need to make all frames aware of all resources.
     for (size_t i = 0; i < parser.frameCount(); ++i) {

@@ -106,7 +106,7 @@ v8::Local<v8::String> StringCache::createStringAndInsertIntoCache(StringImpl* st
 void StringCache::setWeakCallback(const v8::WeakCallbackData<v8::String, StringImpl>& data)
 {
     StringCache* stringCache = V8PerIsolateData::from(data.GetIsolate())->stringCache();
-    stringCache->m_lastStringImpl = 0;
+    stringCache->m_lastStringImpl = nullptr;
     stringCache->m_lastV8String.clear();
     ASSERT(stringCache->m_stringCache.contains(data.GetParameter()));
     stringCache->m_stringCache.get(data.GetParameter()).dispose();

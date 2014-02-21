@@ -41,12 +41,12 @@ namespace WebCore {
 PassRefPtr<SharedBuffer> OpenTypeSanitizer::sanitize()
 {
     if (!m_buffer)
-        return 0;
+        return nullptr;
 
     // This is the largest web font size which we'll try to transcode.
     static const size_t maxWebFontSize = 30 * 1024 * 1024; // 30 MB
     if (m_buffer->size() > maxWebFontSize)
-        return 0;
+        return nullptr;
 
     if (RuntimeEnabledFeatures::woff2Enabled())
         ots::EnableWOFF2();
@@ -60,7 +60,7 @@ PassRefPtr<SharedBuffer> OpenTypeSanitizer::sanitize()
 
     ots::ExpandingMemoryStream output(m_buffer->size(), maxWebFontSize);
     if (!ots::Process(&output, reinterpret_cast<const uint8_t*>(m_buffer->data()), m_buffer->size()))
-        return 0;
+        return nullptr;
 
     const size_t transcodeLen = output.Tell();
     return SharedBuffer::create(static_cast<unsigned char*>(output.get()), transcodeLen);

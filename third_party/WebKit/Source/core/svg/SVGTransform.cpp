@@ -74,7 +74,7 @@ PassRefPtr<NewSVGPropertyBase> SVGTransform::cloneForAnimation(const String&) co
 {
     // SVGTransform is never animated.
     ASSERT_NOT_REACHED();
-    return 0;
+    return nullptr;
 }
 
 void SVGTransform::setMatrix(const AffineTransform& matrix)

@@ -158,7 +158,7 @@ PassRefPtr<DocumentFragment> DragData::asFragment(Frame* frame, PassRefPtr<Range
             return fragment.release();
     }
 
-    return 0;
+    return nullptr;
 }
 
 String DragData::droppedFileSystemId() const

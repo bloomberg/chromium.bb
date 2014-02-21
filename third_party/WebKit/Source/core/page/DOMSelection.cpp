@@ -352,11 +352,11 @@ void DOMSelection::extend(Node* node, int offset, ExceptionState& exceptionState
 PassRefPtr<Range> DOMSelection::getRangeAt(int index, ExceptionState& exceptionState)
 {
     if (!m_frame)
-        return 0;
+        return nullptr;
 
     if (index < 0 || index >= rangeCount()) {
         exceptionState.throwDOMException(IndexSizeError, String::number(index) + " is not a valid index.");
-        return 0;
+        return nullptr;
     }
 
     // If you're hitting this, you've added broken multi-range selection support

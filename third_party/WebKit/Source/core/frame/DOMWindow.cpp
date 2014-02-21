@@ -358,7 +358,7 @@ void DOMWindow::clearDocument()
     clearEventQueue();
 
     m_document->clearDOMWindow();
-    m_document = 0;
+    m_document = nullptr;
 }
 
 void DOMWindow::clearEventQueue()
@@ -531,7 +531,7 @@ DOMWindow* DOMWindow::toDOMWindow()
 
 PassRefPtr<MediaQueryList> DOMWindow::matchMedia(const String& media)
 {
-    return document() ? document()->mediaQueryMatcher().matchMedia(media) : 0;
+    return document() ? document()->mediaQueryMatcher().matchMedia(media) : nullptr;
 }
 
 Page* DOMWindow::page()
@@ -590,22 +590,22 @@ void DOMWindow::resetDOMWindowProperties()
 {
     m_properties.clear();
 
-    m_screen = 0;
-    m_history = 0;
-    m_locationbar = 0;
-    m_menubar = 0;
-    m_personalbar = 0;
-    m_scrollbars = 0;
-    m_statusbar = 0;
-    m_toolbar = 0;
-    m_console = 0;
-    m_navigator = 0;
-    m_performance = 0;
-    m_location = 0;
-    m_media = 0;
-    m_sessionStorage = 0;
-    m_localStorage = 0;
-    m_applicationCache = 0;
+    m_screen = nullptr;
+    m_history = nullptr;
+    m_locationbar = nullptr;
+    m_menubar = nullptr;
+    m_personalbar = nullptr;
+    m_scrollbars = nullptr;
+    m_statusbar = nullptr;
+    m_toolbar = nullptr;
+    m_console = nullptr;
+    m_navigator = nullptr;
+    m_performance = nullptr;
+    m_location = nullptr;
+    m_media = nullptr;
+    m_sessionStorage = nullptr;
+    m_localStorage = nullptr;
+    m_applicationCache = nullptr;
 }
 
 bool DOMWindow::isCurrentlyDisplayedInFrame() const
@@ -1314,7 +1314,7 @@ Document* DOMWindow::document() const
 PassRefPtr<StyleMedia> DOMWindow::styleMedia() const
 {
     if (!isCurrentlyDisplayedInFrame())
-        return 0;
+        return nullptr;
     if (!m_media)
         m_media = StyleMedia::create(m_frame);
     return m_media.get();
@@ -1323,7 +1323,7 @@ PassRefPtr<StyleMedia> DOMWindow::styleMedia() const
 PassRefPtr<CSSStyleDeclaration> DOMWindow::getComputedStyle(Element* elt, const String& pseudoElt) const
 {
     if (!elt)
-        return 0;
+        return nullptr;
 
     return CSSComputedStyleDeclaration::create(elt, false, pseudoElt);
 }
@@ -1332,15 +1332,15 @@ PassRefPtr<CSSRuleList> DOMWindow::getMatchedCSSRules(Element* element, const St
 {
     UseCounter::count(document(), UseCounter::GetMatchedCSSRules);
     if (!element)
-        return 0;
+        return nullptr;
 
     if (!isCurrentlyDisplayedInFrame())
-        return 0;
+        return nullptr;
 
     unsigned colonStart = pseudoElement[0] == ':' ? (pseudoElement[1] == ':' ? 2 : 1) : 0;
     CSSSelector::PseudoType pseudoType = CSSSelector::parsePseudoType(AtomicString(pseudoElement.substring(colonStart)));
     if (pseudoType == CSSSelector::PseudoUnknown && !pseudoElement.isEmpty())
-        return 0;
+        return nullptr;
 
     unsigned rulesToInclude = StyleResolver::AuthorCSSRules;
     PseudoId pseudoId = CSSSelector::pseudoId(pseudoType);
@@ -1350,10 +1350,10 @@ PassRefPtr<CSSRuleList> DOMWindow::getMatchedCSSRules(Element* element, const St
 PassRefPtr<DOMPoint> DOMWindow::webkitConvertPointFromNodeToPage(Node* node, const DOMPoint* p) const
 {
     if (!node || !p)
-        return 0;
+        return nullptr;
 
     if (!document())
-        return 0;
+        return nullptr;
 
     document()->updateLayoutIgnorePendingStylesheets();
 
@@ -1365,10 +1365,10 @@ PassRefPtr<DOMPoint> DOMWindow::webkitConvertPointFromNodeToPage(Node* node, con
 PassRefPtr<DOMPoint> DOMWindow::webkitConvertPointFromPageToNode(Node* node, const DOMPoint* p) const
 {
     if (!node || !p)
-        return 0;
+        return nullptr;
 
     if (!document())
-        return 0;
+        return nullptr;
 
     document()->updateLayoutIgnorePendingStylesheets();
 
@@ -1793,19 +1793,19 @@ PassRefPtr<DOMWindow> DOMWindow::open(const String& urlString, const AtomicStrin
     DOMWindow* callingWindow, DOMWindow* enteredWindow)
 {
     if (!isCurrentlyDisplayedInFrame())
-        return 0;
+        return nullptr;
     Document* activeDocument = callingWindow->document();
     if (!activeDocument)
-        return 0;
+        return nullptr;
     Frame* firstFrame = enteredWindow->frame();
     if (!firstFrame)
-        return 0;
+        return nullptr;
 
     if (!enteredWindow->allowPopUp()) {
         // Because FrameTree::find() returns true for empty strings, we must check for empty frame names.
         // Otherwise, illegitimate window.open() calls with no name will pass right through the popup blocker.
         if (frameName.isEmpty() || !m_frame->tree().find(frameName))
-            return 0;
+            return nullptr;
     }
 
     // Get the target frame for the special cases of _top and _parent.
@@ -1821,7 +1821,7 @@ PassRefPtr<DOMWindow> DOMWindow::open(const String& urlString, const AtomicStrin
     }
     if (targetFrame) {
         if (!activeDocument->canNavigate(targetFrame))
-            return 0;
+            return nullptr;
 
         KURL completedURL = firstFrame->document()->completeURL(urlString);
 

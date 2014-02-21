@@ -55,10 +55,10 @@ public:
 protected:
     RectBase() { }
     RectBase(const RectBase& cloneFrom)
-        : m_top(cloneFrom.m_top ? cloneFrom.m_top->cloneForCSSOM() : 0)
-        , m_right(cloneFrom.m_right ? cloneFrom.m_right->cloneForCSSOM() : 0)
-        , m_bottom(cloneFrom.m_bottom ? cloneFrom.m_bottom->cloneForCSSOM() : 0)
-        , m_left(cloneFrom.m_left ? cloneFrom.m_left->cloneForCSSOM() : 0)
+        : m_top(cloneFrom.m_top ? cloneFrom.m_top->cloneForCSSOM() : nullptr)
+        , m_right(cloneFrom.m_right ? cloneFrom.m_right->cloneForCSSOM() : nullptr)
+        , m_bottom(cloneFrom.m_bottom ? cloneFrom.m_bottom->cloneForCSSOM() : nullptr)
+        , m_left(cloneFrom.m_left ? cloneFrom.m_left->cloneForCSSOM() : nullptr)
     {
     }
 

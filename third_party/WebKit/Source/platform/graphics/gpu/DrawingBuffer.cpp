@@ -786,7 +786,7 @@ void DrawingBuffer::paintRenderingResultsToCanvas(ImageBuffer* imageBuffer)
 PassRefPtr<Uint8ClampedArray> DrawingBuffer::paintRenderingResultsToImageData(int& width, int& height)
 {
     if (m_attributes.premultipliedAlpha)
-        return 0;
+        return nullptr;
 
     width = size().width();
     height = size().height();
@@ -795,7 +795,7 @@ PassRefPtr<Uint8ClampedArray> DrawingBuffer::paintRenderingResultsToImageData(in
     dataSize *= width;
     dataSize *= height;
     if (dataSize.hasOverflowed())
-        return 0;
+        return nullptr;
 
     RefPtr<Uint8ClampedArray> pixels = Uint8ClampedArray::createUninitialized(width * height * 4);
 

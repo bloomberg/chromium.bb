@@ -224,7 +224,7 @@ void FileReader::readInternal(Blob* blob, FileReaderLoader::ReadType type, Excep
     m_readType = type;
     m_state = LOADING;
     m_loadingState = LoadingStatePending;
-    m_error = 0;
+    m_error = nullptr;
     throttlingController()->pushReader(this);
 }
 
@@ -365,7 +365,7 @@ ThreadSpecific<FileReader::ThrottlingController>& FileReader::throttlingControll
 PassRefPtr<ArrayBuffer> FileReader::arrayBufferResult() const
 {
     if (!m_loader || m_error)
-        return 0;
+        return nullptr;
     return m_loader->arrayBufferResult();
 }
 

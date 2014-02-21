@@ -37,7 +37,7 @@ PassRefPtr<Document> DOMParser::parseFromString(const String& str, const String&
         && contentType != "application/xhtml+xml"
         && contentType != "image/svg+xml") {
         exceptionState.throwDOMException(TypeError, "Unsupported mime-type specified.");
-        return 0;
+        return nullptr;
     }
 
     RefPtr<Document> doc = DOMImplementation::createDocument(contentType, 0, KURL(), false);

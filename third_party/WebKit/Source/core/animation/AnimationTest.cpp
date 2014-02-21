@@ -666,7 +666,7 @@ TEST_F(AnimationAnimationTest, TimeToEffectChange)
     timing.startDelay = 100;
     timing.endDelay = 100;
     timing.fillMode = Timing::FillModeNone;
-    RefPtr<Animation> animation = Animation::create(0, 0, timing);
+    RefPtr<Animation> animation = Animation::create(nullptr, nullptr, timing);
     RefPtr<Player> player = document->timeline()->play(animation.get());
     double inf = std::numeric_limits<double>::infinity();
 
@@ -699,7 +699,7 @@ TEST_F(AnimationAnimationTest, TimeToEffectChangeWithPlaybackRate)
     timing.endDelay = 100;
     timing.playbackRate = 2;
     timing.fillMode = Timing::FillModeNone;
-    RefPtr<Animation> animation = Animation::create(0, 0, timing);
+    RefPtr<Animation> animation = Animation::create(nullptr, nullptr, timing);
     RefPtr<Player> player = document->timeline()->play(animation.get());
     double inf = std::numeric_limits<double>::infinity();
 
@@ -732,7 +732,7 @@ TEST_F(AnimationAnimationTest, TimeToEffectChangeWithNegativePlaybackRate)
     timing.endDelay = 100;
     timing.playbackRate = -2;
     timing.fillMode = Timing::FillModeNone;
-    RefPtr<Animation> animation = Animation::create(0, 0, timing);
+    RefPtr<Animation> animation = Animation::create(nullptr, nullptr, timing);
     RefPtr<Player> player = document->timeline()->play(animation.get());
     double inf = std::numeric_limits<double>::infinity();
 

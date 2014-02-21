@@ -32,7 +32,7 @@
 namespace WebCore {
 
 FrameData::FrameData()
-    : m_frame(0)
+    : m_frame(nullptr)
     , m_orientation(DefaultImageOrientation)
     , m_duration(0)
     , m_haveMetadata(false)

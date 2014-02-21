@@ -143,7 +143,7 @@ void FontDescription::setTraitsMask(FontTraitsMask traitsMask)
 FontDescription FontDescription::makeNormalFeatureSettings() const
 {
     FontDescription normalDescription(*this);
-    normalDescription.setFeatureSettings(0);
+    normalDescription.setFeatureSettings(nullptr);
     return normalDescription;
 }
 

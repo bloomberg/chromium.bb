@@ -54,7 +54,7 @@ public:
         }
         enum MarkerEntryType { MarkerEntry };
         explicit Entry(MarkerEntryType)
-            : m_item(0)
+            : m_item(nullptr)
         {
         }
         ~Entry() {}

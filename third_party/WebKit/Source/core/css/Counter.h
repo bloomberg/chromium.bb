@@ -53,9 +53,9 @@ public:
 
     PassRefPtrWillBeRawPtr<Counter> cloneForCSSOM() const
     {
-        return create(m_identifier ? m_identifier->cloneForCSSOM() : 0
-            , m_listStyle ? m_listStyle->cloneForCSSOM() : 0
-            , m_separator ? m_separator->cloneForCSSOM() : 0);
+        return create(m_identifier ? m_identifier->cloneForCSSOM() : nullptr
+            , m_listStyle ? m_listStyle->cloneForCSSOM() : nullptr
+            , m_separator ? m_separator->cloneForCSSOM() : nullptr);
     }
 
     void trace(Visitor*);

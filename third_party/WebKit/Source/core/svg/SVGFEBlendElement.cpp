@@ -137,7 +137,7 @@ PassRefPtr<FilterEffect> SVGFEBlendElement::build(SVGFilterBuilder* filterBuilde
     FilterEffect* input2 = filterBuilder->getEffectById(AtomicString(m_in2->currentValue()->value()));
 
     if (!input1 || !input2)
-        return 0;
+        return nullptr;
 
     RefPtr<FilterEffect> effect = FEBlend::create(filter, m_mode->currentValue()->enumValue());
     FilterEffectVector& inputEffects = effect->inputEffects();

@@ -43,7 +43,7 @@ class WebDOMEventPrivate : public WebCore::Event {
 
 void WebDOMEvent::reset()
 {
-    assign(0);
+    assign(nullptr);
 }
 
 void WebDOMEvent::assign(const WebDOMEvent& other)

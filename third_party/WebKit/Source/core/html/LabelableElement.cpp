@@ -42,7 +42,7 @@ LabelableElement::~LabelableElement()
 PassRefPtr<NodeList> LabelableElement::labels()
 {
     if (!supportLabels())
-        return 0;
+        return nullptr;
 
     return ensureRareData().ensureNodeLists().addCache<LabelsNodeList>(this, LabelsNodeListType);
 }

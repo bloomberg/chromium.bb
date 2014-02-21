@@ -129,7 +129,7 @@ bool PopupListBox::handleMouseReleaseEvent(const PlatformMouseEvent& event)
 {
     if (m_capturingScrollbar) {
         m_capturingScrollbar->mouseUp(event);
-        m_capturingScrollbar = 0;
+        m_capturingScrollbar = nullptr;
         return true;
     }
 
@@ -142,7 +142,7 @@ bool PopupListBox::handleMouseReleaseEvent(const PlatformMouseEvent& event)
 
         // Clear m_focusedElement here, because we cannot clear in hidePopup()
         // which is called before dispatchMouseEvent() is called.
-        m_focusedElement = 0;
+        m_focusedElement = nullptr;
     }
 
     return true;
@@ -472,7 +472,7 @@ Font PopupListBox::getRowFont(int rowIndex)
         FontDescription d = itemFont.fontDescription();
         d.setWeight(FontWeightBold);
         Font font(d);
-        font.update(0);
+        font.update(nullptr);
         return font;
     }
 

@@ -55,7 +55,7 @@ PassRefPtr<V8LazyEventListener> createAttributeEventListener(Node* node, const Q
 {
     ASSERT(node);
     if (value.isNull())
-        return 0;
+        return nullptr;
 
     // FIXME: Very strange: we initialize zero-based number with '1'.
     TextPosition position(OrdinalNumber::fromZeroBasedInt(1), OrdinalNumber::first());
@@ -66,7 +66,7 @@ PassRefPtr<V8LazyEventListener> createAttributeEventListener(Node* node, const Q
         isolate = toIsolate(frame);
         ScriptController& scriptController = frame->script();
         if (!scriptController.canExecuteScripts(AboutToExecuteScript))
-            return 0;
+            return nullptr;
         position = scriptController.eventHandlerPosition();
         sourceURL = node->document().url().string();
     } else {
@@ -79,14 +79,14 @@ PassRefPtr<V8LazyEventListener> createAttributeEventListener(Node* node, const Q
 PassRefPtr<V8LazyEventListener> createAttributeEventListener(Frame* frame, const QualifiedName& name, const AtomicString& value)
 {
     if (!frame)
-        return 0;
+        return nullptr;
 
     if (value.isNull())
-        return 0;
+        return nullptr;
 
     ScriptController& scriptController = frame->script();
     if (!scriptController.canExecuteScripts(AboutToExecuteScript))
-        return 0;
+        return nullptr;
 
     TextPosition position = scriptController.eventHandlerPosition();
     String sourceURL = frame->document()->url().string();

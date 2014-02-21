@@ -188,7 +188,7 @@ PassRefPtr<FontData> CSSFontSelector::getFontData(const FontDescription& fontDes
     // Try to return the correct font based off our settings, in case we were handed the generic font family name.
     AtomicString settingsFamilyName = familyNameFromSettings(m_genericFontFamilySettings, fontDescription, familyName);
     if (settingsFamilyName.isEmpty())
-        return 0;
+        return nullptr;
 
     return FontCache::fontCache()->getFontData(fontDescription, settingsFamilyName);
 }

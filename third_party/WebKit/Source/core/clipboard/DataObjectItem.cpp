@@ -103,7 +103,7 @@ DataObjectItem::DataObjectItem(Kind kind, const String& type, uint64_t sequenceN
 PassRefPtr<Blob> DataObjectItem::getAsFile() const
 {
     if (kind() != FileKind)
-        return 0;
+        return nullptr;
 
     if (m_source == InternalSource) {
         if (m_file)
@@ -112,7 +112,7 @@ PassRefPtr<Blob> DataObjectItem::getAsFile() const
         // FIXME: This code is currently impossible--we never populate m_sharedBuffer when dragging
         // in. At some point though, we may need to support correctly converting a shared buffer
         // into a file.
-        return 0;
+        return nullptr;
     }
 
     ASSERT(m_source == PasteboardSource);
@@ -135,7 +135,7 @@ PassRefPtr<Blob> DataObjectItem::getAsFile() const
         return Blob::create(BlobDataHandle::create(blobData.release(), data->size()));
     }
 
-    return 0;
+    return nullptr;
 }
 
 String DataObjectItem::getAsString() const

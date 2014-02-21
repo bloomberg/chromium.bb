@@ -902,12 +902,12 @@ PassRefPtr<Element> ContainerNode::querySelector(const AtomicString& selectors, 
 {
     if (selectors.isEmpty()) {
         exceptionState.throwDOMException(SyntaxError, "The provided selector is empty.");
-        return 0;
+        return nullptr;
     }
 
     SelectorQuery* selectorQuery = document().selectorQueryCache().add(selectors, document(), exceptionState);
     if (!selectorQuery)
-        return 0;
+        return nullptr;
     return selectorQuery->queryFirst(*this);
 }
 
@@ -915,12 +915,12 @@ PassRefPtr<NodeList> ContainerNode::querySelectorAll(const AtomicString& selecto
 {
     if (selectors.isEmpty()) {
         exceptionState.throwDOMException(SyntaxError, "The provided selector is empty.");
-        return 0;
+        return nullptr;
     }
 
     SelectorQuery* selectorQuery = document().selectorQueryCache().add(selectors, document(), exceptionState);
     if (!selectorQuery)
-        return 0;
+        return nullptr;
     return selectorQuery->queryAll(*this);
 }
 
@@ -989,7 +989,7 @@ void ContainerNode::updateTreeAfterInsertion(Node& child)
 PassRefPtr<HTMLCollection> ContainerNode::getElementsByTagName(const AtomicString& localName)
 {
     if (localName.isNull())
-        return 0;
+        return nullptr;
 
     if (document().isHTMLDocument())
         return ensureRareData().ensureNodeLists().addCache<HTMLTagCollection>(this, HTMLTagCollectionType, localName);
@@ -999,7 +999,7 @@ PassRefPtr<HTMLCollection> ContainerNode::getElementsByTagName(const AtomicStrin
 PassRefPtr<HTMLCollection> ContainerNode::getElementsByTagNameNS(const AtomicString& namespaceURI, const AtomicString& localName)
 {
     if (localName.isNull())
-        return 0;
+        return nullptr;
 
     if (namespaceURI == starAtom)
         return getElementsByTagName(localName);

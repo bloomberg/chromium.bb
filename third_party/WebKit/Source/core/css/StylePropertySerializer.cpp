@@ -570,9 +570,11 @@ String StylePropertySerializer::getLayeredShorthandValue(const StylePropertyShor
                     // Color only belongs in the last layer.
                     if (shorthand.properties()[j] == CSSPropertyBackgroundColor) {
                         if (i != numLayers - 1)
-                            value = 0;
-                    } else if (i) // Other singletons only belong in the first layer.
-                        value = 0;
+                            value = nullptr;
+                    } else if (i) {
+                        // Other singletons only belong in the first layer.
+                        value = nullptr;
+                    }
                 }
             }
 

@@ -54,10 +54,10 @@ size_t DataTransferItemList::length() const
 PassRefPtr<DataTransferItem> DataTransferItemList::item(unsigned long index)
 {
     if (!m_clipboard->canReadTypes())
-        return 0;
+        return nullptr;
     RefPtr<DataObjectItem> item = m_dataObject->item(index);
     if (!item)
-        return 0;
+        return nullptr;
 
     return DataTransferItem::create(m_clipboard, item);
 }
@@ -81,11 +81,11 @@ void DataTransferItemList::clear()
 PassRefPtr<DataTransferItem> DataTransferItemList::add(const String& data, const String& type, ExceptionState& exceptionState)
 {
     if (!m_clipboard->canWriteData())
-        return 0;
+        return nullptr;
     RefPtr<DataObjectItem> item = m_dataObject->add(data, type);
     if (!item) {
         exceptionState.throwDOMException(NotSupportedError, "An item already exists for type '" + type + "'.");
-        return 0;
+        return nullptr;
     }
     return DataTransferItem::create(m_clipboard, item);
 }
@@ -93,10 +93,10 @@ PassRefPtr<DataTransferItem> DataTransferItemList::add(const String& data, const
 PassRefPtr<DataTransferItem> DataTransferItemList::add(PassRefPtr<File> file)
 {
     if (!m_clipboard->canWriteData())
-        return 0;
+        return nullptr;
     RefPtr<DataObjectItem> item = m_dataObject->add(file);
     if (!item)
-        return 0;
+        return nullptr;
     return DataTransferItem::create(m_clipboard, item);
 }
 

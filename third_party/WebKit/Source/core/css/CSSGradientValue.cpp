@@ -52,12 +52,12 @@ void CSSGradientColorStop::trace(Visitor* visitor)
 PassRefPtr<Image> CSSGradientValue::image(RenderObject* renderer, const IntSize& size)
 {
     if (size.isEmpty())
-        return 0;
+        return nullptr;
 
     bool cacheable = isCacheable();
     if (cacheable) {
         if (!clients().contains(renderer))
-            return 0;
+            return nullptr;
 
         // Need to look up our size.  Create a string of width*height to use as a hash key.
         Image* result = getImage(renderer, size);
@@ -131,7 +131,7 @@ PassRefPtrWillBeRawPtr<CSSGradientValue> CSSGradientValue::gradientWithStylesRes
         result = toCSSRadialGradientValue(this)->clone();
     else {
         ASSERT_NOT_REACHED();
-        return 0;
+        return nullptr;
     }
 
     for (unsigned i = 0; i < result->m_stops.size(); i++)

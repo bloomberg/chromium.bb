@@ -397,7 +397,7 @@ PassRefPtr<JSONObject> InspectorDOMDebuggerAgent::preparePauseOnNativeEventData(
     else {
         RefPtr<JSONObject> eventListenerBreakpoints = m_state->getObject(DOMDebuggerAgentState::eventListenerBreakpoints);
         if (eventListenerBreakpoints->find(fullEventName) == eventListenerBreakpoints->end())
-            return 0;
+            return nullptr;
     }
 
     RefPtr<JSONObject> eventData = JSONObject::create();

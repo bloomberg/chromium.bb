@@ -58,7 +58,7 @@ PassRefPtr<SVGMatrixTearOff> SVGGraphicsElement::getTransformToElement(SVGElemen
         AffineTransform targetCTM = toSVGGraphicsElement(target)->getCTM(AllowStyleUpdate);
         if (!targetCTM.isInvertible()) {
             exceptionState.throwDOMException(InvalidStateError, "The target transformation is not invertable.");
-            return 0;
+            return nullptr;
         }
         ctm = targetCTM.inverse() * ctm;
     }

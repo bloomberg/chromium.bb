@@ -189,8 +189,8 @@ static bool findPlaceForCounter(RenderObject& counterOwner, const AtomicString& 
     // towards the begining of the document for counters with the same identifier as the one
     // we are trying to find a place for. This is the next renderer to be checked.
     RenderObject* currentRenderer = previousInPreOrder(counterOwner);
-    previousSibling = 0;
-    RefPtr<CounterNode> previousSiblingProtector = 0;
+    previousSibling = nullptr;
+    RefPtr<CounterNode> previousSiblingProtector = nullptr;
 
     while (currentRenderer) {
         CounterNode* currentCounter = makeCounterNode(*currentRenderer, identifier, false);
@@ -216,7 +216,7 @@ static bool findPlaceForCounter(RenderObject& counterOwner, const AtomicString& 
                         // In these cases the identified previousSibling will be invalid as its parent is different from
                         // our identified parent.
                         if (previousSiblingProtector->parent() != currentCounter)
-                            previousSiblingProtector = 0;
+                            previousSiblingProtector = nullptr;
 
                         previousSibling = previousSiblingProtector.get();
                         return true;
@@ -307,8 +307,8 @@ static CounterNode* makeCounterNode(RenderObject& object, const AtomicString& id
     if (!planCounter(object, identifier, isReset, value) && !alwaysCreateCounter)
         return 0;
 
-    RefPtr<CounterNode> newParent = 0;
-    RefPtr<CounterNode> newPreviousSibling = 0;
+    RefPtr<CounterNode> newParent = nullptr;
+    RefPtr<CounterNode> newPreviousSibling = nullptr;
     RefPtr<CounterNode> newNode = CounterNode::create(object, isReset, value);
     if (findPlaceForCounter(object, identifier, isReset, newParent, newPreviousSibling))
         newParent->insertAfter(newNode.get(), newPreviousSibling.get(), identifier);
@@ -385,9 +385,9 @@ PassRefPtr<StringImpl> RenderCounter::originalText() const
         RenderObject* beforeAfterContainer = parent();
         while (true) {
             if (!beforeAfterContainer)
-                return 0;
+                return nullptr;
             if (!beforeAfterContainer->isAnonymous() && !beforeAfterContainer->isPseudoElement())
-                return 0; // RenderCounters are restricted to before and after pseudo elements
+                return nullptr; // RenderCounters are restricted to before and after pseudo elements
             PseudoId containerStyle = beforeAfterContainer->style()->styleType();
             if ((containerStyle == BEFORE) || (containerStyle == AFTER))
                 break;
@@ -515,8 +515,8 @@ static void updateCounters(RenderObject& renderer)
             makeCounterNode(renderer, it->key, false);
             continue;
         }
-        RefPtr<CounterNode> newParent = 0;
-        RefPtr<CounterNode> newPreviousSibling = 0;
+        RefPtr<CounterNode> newParent = nullptr;
+        RefPtr<CounterNode> newPreviousSibling = nullptr;
 
         findPlaceForCounter(renderer, it->key, node->hasResetType(), newParent, newPreviousSibling);
         if (node != counterMap->get(it->key))

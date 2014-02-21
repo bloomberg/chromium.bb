@@ -187,13 +187,13 @@ PassRefPtr<HTMLElement> HTMLTableElement::insertRow(int index, ExceptionState& e
 {
     if (index < -1) {
         exceptionState.throwDOMException(IndexSizeError, "The index provided (" + String::number(index) + ") is less than -1.");
-        return 0;
+        return nullptr;
     }
 
     RefPtr<Node> protectFromMutationEvents(this);
 
-    RefPtr<HTMLTableRowElement> lastRow = 0;
-    RefPtr<HTMLTableRowElement> row = 0;
+    RefPtr<HTMLTableRowElement> lastRow = nullptr;
+    RefPtr<HTMLTableRowElement> row = nullptr;
     if (index == -1)
         lastRow = HTMLTableRowsCollection::lastRow(this);
     else {
@@ -202,7 +202,7 @@ PassRefPtr<HTMLElement> HTMLTableElement::insertRow(int index, ExceptionState& e
             if (!row) {
                 if (i != index) {
                     exceptionState.throwDOMException(IndexSizeError, "The index provided (" + String::number(index) + ") is greater than the number of rows in the table (" + String::number(i) + ").");
-                    return 0;
+                    return nullptr;
                 }
                 break;
             }
@@ -396,7 +396,7 @@ void HTMLTableElement::parseAttribute(const QualifiedName& name, const AtomicStr
         HTMLElement::parseAttribute(name, value);
 
     if (bordersBefore != cellBorders() || oldPadding != m_padding) {
-        m_sharedCellStyle = 0;
+        m_sharedCellStyle = nullptr;
         setNeedsTableStyleRecalc();
     }
 }

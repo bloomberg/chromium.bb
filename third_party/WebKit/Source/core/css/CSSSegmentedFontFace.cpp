@@ -133,13 +133,13 @@ static void appendFontData(SegmentedFontData* newFontData, PassRefPtr<SimpleFont
 PassRefPtr<FontData> CSSSegmentedFontFace::getFontData(const FontDescription& fontDescription)
 {
     if (!isValid())
-        return 0;
+        return nullptr;
 
     FontTraitsMask desiredTraitsMask = fontDescription.traitsMask();
     AtomicString emptyFontFamily = "";
     FontCacheKey key = fontDescription.cacheKey(emptyFontFamily, desiredTraitsMask);
 
-    RefPtr<SegmentedFontData>& fontData = m_fontDataTable.add(key.hash(), 0).storedValue->value;
+    RefPtr<SegmentedFontData>& fontData = m_fontDataTable.add(key.hash(), nullptr).storedValue->value;
     if (fontData && fontData->numRanges())
         return fontData; // No release, we have a reference to an object in the cache which should retain the ref count it has.
 
@@ -168,7 +168,7 @@ PassRefPtr<FontData> CSSSegmentedFontFace::getFontData(const FontDescription& fo
     if (fontData->numRanges())
         return fontData; // No release, we have a reference to an object in the cache which should retain the ref count it has.
 
-    return 0;
+    return nullptr;
 }
 
 bool CSSSegmentedFontFace::isLoading() const

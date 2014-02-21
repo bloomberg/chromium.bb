@@ -50,7 +50,7 @@ PassRefPtr<ArrayBuffer> FileReaderSync::readAsArrayBuffer(ExecutionContext* exec
 {
     if (!blob) {
         exceptionState.throwDOMException(NotFoundError, FileError::notFoundErrorMessage);
-        return 0;
+        return nullptr;
     }
 
     FileReaderLoader loader(FileReaderLoader::ReadAsArrayBuffer, 0);

@@ -87,7 +87,7 @@ void CSSFontFace::fontLoaded(CSSFontFaceSource* source)
 PassRefPtr<SimpleFontData> CSSFontFace::getFontData(const FontDescription& fontDescription)
 {
     if (!isValid())
-        return 0;
+        return nullptr;
 
     while (!m_sources.isEmpty()) {
         OwnPtr<CSSFontFaceSource>& source = m_sources.first();
@@ -105,7 +105,7 @@ PassRefPtr<SimpleFontData> CSSFontFace::getFontData(const FontDescription& fontD
         setLoadStatus(FontFace::Loading);
     if (loadStatus() == FontFace::Loading)
         setLoadStatus(FontFace::Error);
-    return 0;
+    return nullptr;
 }
 
 void CSSFontFace::willUseFontData(const FontDescription& fontDescription)

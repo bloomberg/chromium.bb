@@ -104,7 +104,7 @@ public:
 
         // Switch to new passed in value type & new wrappers list. The new wrappers list must be created for the new value.
         if (!newAnimVal->isEmpty())
-            m_animatedWrappers.fill(0, newAnimVal->size());
+            m_animatedWrappers.fill(nullptr, newAnimVal->size());
 
         ListProperty* animVal = static_cast<ListProperty*>(this->animVal());
         animVal->setValuesAndWrappers(newAnimVal, &m_animatedWrappers, shouldOwnValues);
@@ -174,7 +174,7 @@ protected:
         , m_values(values)
     {
         if (!values.isEmpty())
-            m_wrappers.fill(0, values.size());
+            m_wrappers.fill(nullptr, values.size());
     }
 
     PropertyType& m_values;

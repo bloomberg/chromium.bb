@@ -1357,7 +1357,7 @@ void FrameSelection::selectAll()
         }
     }
 
-    RefPtr<Node> root = 0;
+    RefPtr<Node> root = nullptr;
     Node* selectStartTarget = 0;
     if (isContentEditable()) {
         root = highestEditableRoot(m_selection.start());
@@ -1654,7 +1654,7 @@ void FrameSelection::setFocusedNodeIfNeeded()
             }
             target = target->parentOrShadowHostElement();
         }
-        m_frame->document()->setFocusedElement(0);
+        m_frame->document()->setFocusedElement(nullptr);
     }
 
     if (caretBrowsing)

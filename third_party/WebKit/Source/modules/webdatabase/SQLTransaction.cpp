@@ -174,7 +174,7 @@ SQLTransactionState SQLTransaction::deliverTransactionErrorCallback()
         ASSERT(m_transactionError);
         errorCallback->handleEvent(m_transactionError.get());
 
-        m_transactionError = 0;
+        m_transactionError = nullptr;
     }
 
     clearCallbackWrappers();

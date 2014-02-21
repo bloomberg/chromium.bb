@@ -56,7 +56,7 @@ PassRefPtr<SVGTransformTearOff> SVGTransformListTearOff::consolidate(ExceptionSt
 {
     if (isImmutable()) {
         exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
-        return 0;
+        return nullptr;
     }
 
     return createItemTearOff(target()->consolidate());

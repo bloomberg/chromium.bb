@@ -90,7 +90,7 @@ PassRefPtr<Node> NodeIterator::nextNode(ScriptState* state, ExceptionState& exce
 {
     if (m_detached) {
         exceptionState.throwDOMException(InvalidStateError, "The iterator is detached.");
-        return 0;
+        return nullptr;
     }
 
     RefPtr<Node> result;
@@ -119,7 +119,7 @@ PassRefPtr<Node> NodeIterator::previousNode(ScriptState* state, ExceptionState& 
 {
     if (m_detached) {
         exceptionState.throwDOMException(InvalidStateError, "The iterator is detached.");
-        return 0;
+        return nullptr;
     }
 
     RefPtr<Node> result;

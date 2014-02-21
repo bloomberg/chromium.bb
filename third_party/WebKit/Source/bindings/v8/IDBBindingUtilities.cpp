@@ -187,9 +187,9 @@ static PassRefPtr<IDBKey> createIDBKeyFromValue(v8::Handle<v8::Value> value, Vec
         v8::Handle<v8::Array> array = v8::Handle<v8::Array>::Cast(value);
 
         if (stack.contains(array))
-            return 0;
+            return nullptr;
         if (stack.size() >= maximumDepth)
-            return 0;
+            return nullptr;
         stack.append(array);
 
         IDBKey::KeyArray subkeys;
@@ -206,7 +206,7 @@ static PassRefPtr<IDBKey> createIDBKeyFromValue(v8::Handle<v8::Value> value, Vec
         stack.removeLast();
         return IDBKey::createArray(subkeys);
     }
-    return 0;
+    return nullptr;
 }
 
 static PassRefPtr<IDBKey> createIDBKeyFromValue(v8::Handle<v8::Value> value, v8::Isolate* isolate, bool allowExperimentalTypes = false)
@@ -317,7 +317,7 @@ static PassRefPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPath(const ScriptValu
     v8::Handle<v8::Value> v8Value(value.v8Value());
     v8::Handle<v8::Value> v8Key(getNthValueOnKeyPath(v8Value, keyPathElements, keyPathElements.size(), isolate));
     if (v8Key.IsEmpty())
-        return 0;
+        return nullptr;
     return createIDBKeyFromValue(v8Key, isolate, allowExperimentalTypes);
 }
 
@@ -331,7 +331,7 @@ static PassRefPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPath(const ScriptValu
         for (size_t i = 0; i < array.size(); ++i) {
             RefPtr<IDBKey> key = createIDBKeyFromScriptValueAndKeyPath(value, array[i], isolate, allowExperimentalTypes);
             if (!key)
-                return 0;
+                return nullptr;
             result.append(key);
         }
         return IDBKey::createArray(result);

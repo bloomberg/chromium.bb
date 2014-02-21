@@ -68,7 +68,7 @@ PassRefPtr<Animation> Animation::create(Element* element, Vector<Dictionary> key
     // FIXME: This test will not be neccessary once resolution of keyframe values occurs at
     // animation application time.
     if (!checkDocumentAndRenderer(element))
-        return 0;
+        return nullptr;
 
     return createUnsafe(element, keyframeDictionaryVector, timingInput);
 }
@@ -80,7 +80,7 @@ PassRefPtr<Animation> Animation::create(Element* element, Vector<Dictionary> key
     // FIXME: This test will not be neccessary once resolution of keyframe values occurs at
     // animation application time.
     if (!checkDocumentAndRenderer(element))
-        return 0;
+        return nullptr;
 
     return createUnsafe(element, keyframeDictionaryVector, timingInput);
 }
@@ -92,7 +92,7 @@ PassRefPtr<Animation> Animation::create(Element* element, Vector<Dictionary> key
     // FIXME: This test will not be neccessary once resolution of keyframe values occurs at
     // animation application time.
     if (!checkDocumentAndRenderer(element))
-        return 0;
+        return nullptr;
 
     return createUnsafe(element, keyframeDictionaryVector);
 }

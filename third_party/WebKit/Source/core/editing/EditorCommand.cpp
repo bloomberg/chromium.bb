@@ -1667,7 +1667,7 @@ Editor::Command::Command()
 Editor::Command::Command(const EditorInternalCommand* command, EditorCommandSource source, PassRefPtr<Frame> frame)
     : m_command(command)
     , m_source(source)
-    , m_frame(command ? frame : 0)
+    , m_frame(command ? frame : nullptr)
 {
     // Use separate assertions so we can tell which bad thing happened.
     if (!command)

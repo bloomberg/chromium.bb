@@ -125,7 +125,7 @@ void MediaControlPanelElement::endDrag()
     if (!frame)
         return;
 
-    frame->eventHandler().setCapturingMouseEventsNode(0);
+    frame->eventHandler().setCapturingMouseEventsNode(nullptr);
 }
 
 void MediaControlPanelElement::startTimer()

@@ -67,13 +67,13 @@ PassRefPtr<DOMFileSystemSync> WorkerGlobalScopeFileSystem::webkitRequestFileSyst
     ExecutionContext* secureContext = worker.executionContext();
     if (!secureContext->securityOrigin()->canAccessFileSystem()) {
         exceptionState.throwSecurityError(FileError::securityErrorMessage);
-        return 0;
+        return nullptr;
     }
 
     FileSystemType fileSystemType = static_cast<FileSystemType>(type);
     if (!DOMFileSystemBase::isValidType(fileSystemType)) {
         exceptionState.throwDOMException(InvalidModificationError, "the type must be TEMPORARY or PERSISTENT.");
-        return 0;
+        return nullptr;
     }
 
     FileSystemSyncCallbackHelper helper;
@@ -107,12 +107,12 @@ PassRefPtr<EntrySync> WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemS
     ExecutionContext* secureContext = worker.executionContext();
     if (!secureContext->securityOrigin()->canAccessFileSystem() || !secureContext->securityOrigin()->canRequest(completedURL)) {
         exceptionState.throwSecurityError(FileError::securityErrorMessage);
-        return 0;
+        return nullptr;
     }
 
     if (!completedURL.isValid()) {
         exceptionState.throwDOMException(EncodingError, "the URL '" + url + "' is invalid.");
-        return 0;
+        return nullptr;
     }
 
     EntrySyncCallbackHelper resolveURLHelper;
@@ -123,7 +123,7 @@ PassRefPtr<EntrySync> WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemS
 
     RefPtr<EntrySync> entry = resolveURLHelper.getResult(exceptionState);
     if (!entry)
-        return 0;
+        return nullptr;
     return entry.release();
 }
 

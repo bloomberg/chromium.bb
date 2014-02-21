@@ -44,7 +44,7 @@ protected:
     virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue* value, double fraction) const OVERRIDE
     {
         ASSERT_NOT_REACHED();
-        return 0;
+        return nullptr;
     }
 
 private:

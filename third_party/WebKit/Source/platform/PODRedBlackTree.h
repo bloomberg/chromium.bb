@@ -150,7 +150,7 @@ public:
     void clear()
     {
         markFree(m_root);
-        m_arena = 0;
+        m_arena = nullptr;
         m_root = 0;
     }
 

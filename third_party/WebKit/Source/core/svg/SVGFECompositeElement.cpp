@@ -172,7 +172,7 @@ PassRefPtr<FilterEffect> SVGFECompositeElement::build(SVGFilterBuilder* filterBu
     FilterEffect* input2 = filterBuilder->getEffectById(AtomicString(m_in2->currentValue()->value()));
 
     if (!input1 || !input2)
-        return 0;
+        return nullptr;
 
     RefPtr<FilterEffect> effect = FEComposite::create(filter, m_svgOperator->currentValue()->enumValue(), m_k1->currentValue()->value(), m_k2->currentValue()->value(), m_k3->currentValue()->value(), m_k4->currentValue()->value());
     FilterEffectVector& inputEffects = effect->inputEffects();

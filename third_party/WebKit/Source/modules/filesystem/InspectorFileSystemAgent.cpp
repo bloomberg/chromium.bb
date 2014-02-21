@@ -131,7 +131,7 @@ private:
 
     bool didGetEntry(Entry*);
 
-    void reportResult(FileError::ErrorCode errorCode, PassRefPtr<TypeBuilder::FileSystem::Entry> entry = 0)
+    void reportResult(FileError::ErrorCode errorCode, PassRefPtr<TypeBuilder::FileSystem::Entry> entry = nullptr)
     {
         m_requestCallback->sendSuccess(static_cast<int>(errorCode), entry);
     }
@@ -202,7 +202,7 @@ private:
     bool didGetEntry(Entry*);
     bool didReadDirectoryEntries(const EntryVector&);
 
-    void reportResult(FileError::ErrorCode errorCode, PassRefPtr<Array<TypeBuilder::FileSystem::Entry> > entries = 0)
+    void reportResult(FileError::ErrorCode errorCode, PassRefPtr<Array<TypeBuilder::FileSystem::Entry> > entries = nullptr)
     {
         m_requestCallback->sendSuccess(static_cast<int>(errorCode), entries);
     }
@@ -323,7 +323,7 @@ private:
     bool didGetEntry(Entry*);
     bool didGetMetadata(Metadata*);
 
-    void reportResult(FileError::ErrorCode errorCode, PassRefPtr<TypeBuilder::FileSystem::Metadata> metadata = 0)
+    void reportResult(FileError::ErrorCode errorCode, PassRefPtr<TypeBuilder::FileSystem::Metadata> metadata = nullptr)
     {
         m_requestCallback->sendSuccess(static_cast<int>(errorCode), metadata);
     }

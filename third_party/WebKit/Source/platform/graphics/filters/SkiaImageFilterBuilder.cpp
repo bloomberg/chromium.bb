@@ -67,7 +67,7 @@ SkiaImageFilterBuilder::~SkiaImageFilterBuilder()
 PassRefPtr<SkImageFilter> SkiaImageFilterBuilder::build(FilterEffect* effect, ColorSpace colorSpace)
 {
     if (!effect)
-        return 0;
+        return nullptr;
 
     FilterColorSpacePair key(effect, colorSpace);
     FilterBuilderHashMap::iterator it = m_map.find(key);

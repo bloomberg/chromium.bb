@@ -88,7 +88,7 @@ static PassRefPtr<StyleImage> doLoadPendingImage(ResourceFetcher* fetcher, Style
     if (CSSImageSetValue* imageSetValue = pendingImage->cssImageSetValue())
         return imageSetValue->cachedImageSet(fetcher, deviceScaleFactor, options);
 
-    return 0;
+    return nullptr;
 }
 
 PassRefPtr<StyleImage> StyleResourceLoader::loadPendingImage(StylePendingImage* pendingImage, float deviceScaleFactor)

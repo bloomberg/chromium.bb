@@ -53,7 +53,7 @@ PageConsole::PageConsole(FrameHost& frameHost)
 
 void PageConsole::addMessage(MessageSource source, MessageLevel level, const String& message)
 {
-    addMessage(source, level, message, String(), 0, 0, 0, 0, 0);
+    addMessage(source, level, message, String(), 0, 0, nullptr, 0, 0);
 }
 
 void PageConsole::addMessage(MessageSource source, MessageLevel level, const String& message, PassRefPtr<ScriptCallStack> callStack)

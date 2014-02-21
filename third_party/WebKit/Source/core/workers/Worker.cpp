@@ -65,7 +65,7 @@ PassRefPtr<Worker> Worker::create(ExecutionContext* context, const String& url, 
 
     KURL scriptURL = worker->resolveURL(url, exceptionState);
     if (scriptURL.isEmpty())
-        return 0;
+        return nullptr;
 
     // The worker context does not exist while loading, so we must ensure that the worker object is not collected, nor are its event listeners.
     worker->setPendingActivity(worker.get());

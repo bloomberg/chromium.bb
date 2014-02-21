@@ -61,7 +61,7 @@ PassRefPtr<FilterEffect> SVGFEFloodElement::build(SVGFilterBuilder*, Filter* fil
 {
     RenderObject* renderer = this->renderer();
     if (!renderer)
-        return 0;
+        return nullptr;
 
     ASSERT(renderer->style());
     const SVGRenderStyle* svgStyle = renderer->style()->svgStyle();

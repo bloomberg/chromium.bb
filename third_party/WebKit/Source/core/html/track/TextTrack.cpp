@@ -97,8 +97,8 @@ const AtomicString& TextTrack::showingKeyword()
 
 TextTrack::TextTrack(Document& document, TextTrackClient* client, const AtomicString& kind, const AtomicString& label, const AtomicString& language, const AtomicString& id, TextTrackType type)
     : TrackBase(TrackBase::TextTrack, label, language, id)
-    , m_cues(0)
-    , m_regions(0)
+    , m_cues(nullptr)
+    , m_regions(nullptr)
     , m_document(&document)
     , m_trackList(0)
     , m_mode(disabledKeyword())
@@ -202,7 +202,7 @@ void TextTrack::removeAllCues()
     for (size_t i = 0; i < m_cues->length(); ++i)
         m_cues->item(i)->setTrack(0);
 
-    m_cues = 0;
+    m_cues = nullptr;
 }
 
 TextTrackCueList* TextTrack::activeCues() const

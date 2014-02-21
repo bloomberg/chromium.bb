@@ -49,7 +49,7 @@ PassRefPtrWillBeRawPtr<XPathExpression> XPathExpression::createExpression(const 
 
     expr->m_topExpression = parser.parseStatement(expression, resolver, exceptionState);
     if (!expr->m_topExpression)
-        return 0;
+        return nullptr;
 
     return expr.release();
 }
@@ -63,12 +63,12 @@ PassRefPtrWillBeRawPtr<XPathResult> XPathExpression::evaluate(Node* contextNode,
 {
     if (!contextNode) {
         exceptionState.throwDOMException(NotSupportedError, "The context node provided is null.");
-        return 0;
+        return nullptr;
     }
 
     if (!isValidContextNode(contextNode)) {
         exceptionState.throwDOMException(NotSupportedError, "The node provided is '" + contextNode->nodeName() + "', which is not a valid context node type.");
-        return 0;
+        return nullptr;
     }
 
     EvaluationContext& evaluationContext = Expression::evaluationContext();
@@ -77,18 +77,18 @@ PassRefPtrWillBeRawPtr<XPathResult> XPathExpression::evaluate(Node* contextNode,
     evaluationContext.position = 1;
     evaluationContext.hadTypeConversionError = false;
     RefPtrWillBeRawPtr<XPathResult> result = XPathResult::create(&contextNode->document(), m_topExpression->evaluate());
-    evaluationContext.node = 0; // Do not hold a reference to the context node, as this may prevent the whole document from being destroyed in time.
+    evaluationContext.node = nullptr; // Do not hold a reference to the context node, as this may prevent the whole document from being destroyed in time.
 
     if (evaluationContext.hadTypeConversionError) {
         // It is not specified what to do if type conversion fails while evaluating an expression.
         exceptionState.throwDOMException(SyntaxError, "Type conversion failed while evaluating the expression.");
-        return 0;
+        return nullptr;
     }
 
     if (type != XPathResult::ANY_TYPE) {
         result->convertTo(type, exceptionState);
         if (exceptionState.hadException())
-            return 0;
+            return nullptr;
     }
 
     return result;

@@ -51,7 +51,7 @@ FrameTree::~FrameTree()
 {
     // FIXME: Why is this here? Doesn't this parallel what we already do in ~Frame?
     for (Frame* child = firstChild(); child; child = child->tree().nextSibling())
-        child->setView(0);
+        child->setView(nullptr);
 }
 
 void FrameTree::setName(const AtomicString& name)

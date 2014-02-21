@@ -54,7 +54,7 @@ bool GenericEventQueue::enqueueEvent(PassRefPtr<Event> event)
         return false;
 
     if (event->target() == m_owner)
-        event->setTarget(0);
+        event->setTarget(nullptr);
 
     TRACE_EVENT_ASYNC_BEGIN1("event", "GenericEventQueue:enqueueEvent", event.get(), "type", event->type().ascii());
     m_pendingEvents.append(event);

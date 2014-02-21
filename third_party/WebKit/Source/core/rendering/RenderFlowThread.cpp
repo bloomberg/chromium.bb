@@ -67,7 +67,7 @@ PassRefPtr<RenderStyle> RenderFlowThread::createFlowThreadStyle(RenderStyle* par
     newStyle->setTop(Length(0, Fixed));
     newStyle->setWidth(Length(100, Percent));
     newStyle->setHeight(Length(100, Percent));
-    newStyle->font().update(0);
+    newStyle->font().update(nullptr);
 
     return newStyle.release();
 }

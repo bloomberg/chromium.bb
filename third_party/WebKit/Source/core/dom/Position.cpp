@@ -288,7 +288,7 @@ PassRefPtr<CSSComputedStyleDeclaration> Position::computedStyle() const
 {
     Element* elem = element();
     if (!elem)
-        return 0;
+        return nullptr;
     return CSSComputedStyleDeclaration::create(elem);
 }
 

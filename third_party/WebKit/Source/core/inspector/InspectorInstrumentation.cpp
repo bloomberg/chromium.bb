@@ -56,7 +56,7 @@ int FrontendCounter::s_frontendCounter = 0;
 }
 
 InspectorInstrumentationCookie::InspectorInstrumentationCookie()
-    : m_instrumentingAgents(0)
+    : m_instrumentingAgents(nullptr)
     , m_timelineAgentId(0)
 {
 }

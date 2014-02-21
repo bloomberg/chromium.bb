@@ -157,7 +157,7 @@ private:
     static PassRefPtr<Derived> toDerived(PassRefPtr<NewSVGPropertyBase> passBase)
     {
         if (!passBase)
-            return 0;
+            return nullptr;
 
         RefPtr<NewSVGPropertyBase> base = passBase;
         ASSERT(base->type() == Derived::classType());
@@ -212,7 +212,7 @@ template<typename Derived, typename ItemProperty>
 PassRefPtr<ItemProperty> NewSVGListPropertyHelper<Derived, ItemProperty>::getItem(size_t index, ExceptionState& exceptionState)
 {
     if (!checkIndexBound(index, exceptionState))
-        return 0;
+        return nullptr;
 
     ASSERT(index < m_values.size());
     ASSERT(m_values.at(index)->ownerList() == this);
@@ -247,7 +247,7 @@ PassRefPtr<ItemProperty> NewSVGListPropertyHelper<Derived, ItemProperty>::remove
 {
     if (index >= m_values.size()) {
         exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("index", index, m_values.size()));
-        return 0;
+        return nullptr;
     }
     ASSERT(m_values.at(index)->ownerList() == this);
     RefPtr<ItemPropertyType> oldItem = m_values.at(index);
@@ -274,7 +274,7 @@ template<typename Derived, typename ItemProperty>
 PassRefPtr<ItemProperty> NewSVGListPropertyHelper<Derived, ItemProperty>::replaceItem(PassRefPtr<ItemProperty> passNewItem, size_t index, ExceptionState& exceptionState)
 {
     if (!checkIndexBound(index, exceptionState))
-        return 0;
+        return nullptr;
 
     RefPtr<ItemPropertyType> newItem = passNewItem;
 
@@ -288,7 +288,7 @@ PassRefPtr<ItemProperty> NewSVGListPropertyHelper<Derived, ItemProperty>::replac
     if (m_values.isEmpty()) {
         // 'newItem' already lived in our list, we removed it, and now we're empty, which means there's nothing to replace.
         exceptionState.throwDOMException(IndexSizeError, String::format("Failed to replace the provided item at index %zu.", index));
-        return 0;
+        return nullptr;
     }
 
     // Update the value at the desired position 'index'.

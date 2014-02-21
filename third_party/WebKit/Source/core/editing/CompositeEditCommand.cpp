@@ -812,7 +812,7 @@ void CompositeEditCommand::deleteInsignificantTextDownstream(const Position& pos
 PassRefPtr<Node> CompositeEditCommand::appendBlockPlaceholder(PassRefPtr<Element> container)
 {
     if (!container)
-        return 0;
+        return nullptr;
 
     document().updateLayoutIgnorePendingStylesheets();
 
@@ -827,7 +827,7 @@ PassRefPtr<Node> CompositeEditCommand::appendBlockPlaceholder(PassRefPtr<Element
 PassRefPtr<Node> CompositeEditCommand::insertBlockPlaceholder(const Position& pos)
 {
     if (pos.isNull())
-        return 0;
+        return nullptr;
 
     // Should assert isRenderBlockFlow || isInlineFlow when deletion improves. See 4244964.
     ASSERT(pos.deprecatedNode()->renderer());
@@ -840,13 +840,13 @@ PassRefPtr<Node> CompositeEditCommand::insertBlockPlaceholder(const Position& po
 PassRefPtr<Node> CompositeEditCommand::addBlockPlaceholderIfNeeded(Element* container)
 {
     if (!container)
-        return 0;
+        return nullptr;
 
     document().updateLayoutIgnorePendingStylesheets();
 
     RenderObject* renderer = container->renderer();
     if (!renderer || !renderer->isRenderBlockFlow())
-        return 0;
+        return nullptr;
 
     // append the placeholder to make sure it follows
     // any unrendered blocks
@@ -854,7 +854,7 @@ PassRefPtr<Node> CompositeEditCommand::addBlockPlaceholderIfNeeded(Element* cont
     if (block->height() == 0 || (block->isListItem() && block->isEmpty()))
         return appendBlockPlaceholder(container);
 
-    return 0;
+    return nullptr;
 }
 
 // Assumes that the position is at a placeholder and does the removal without much checking.
@@ -884,7 +884,7 @@ PassRefPtr<Node> CompositeEditCommand::insertNewDefaultParagraphElementAt(const 
 PassRefPtr<Node> CompositeEditCommand::moveParagraphContentsToNewBlockIfNecessary(const Position& pos)
 {
     if (pos.isNull())
-        return 0;
+        return nullptr;
 
     document().updateLayoutIgnorePendingStylesheets();
 
@@ -902,7 +902,7 @@ PassRefPtr<Node> CompositeEditCommand::moveParagraphContentsToNewBlockIfNecessar
     // If there are no VisiblePositions in the same block as pos then
     // upstreamStart will be outside the paragraph
     if (comparePositions(pos, upstreamStart) < 0)
-        return 0;
+        return nullptr;
 
     // Perform some checks to see if we need to perform work in this function.
     if (isBlock(upstreamStart.deprecatedNode())) {
@@ -917,16 +917,16 @@ PassRefPtr<Node> CompositeEditCommand::moveParagraphContentsToNewBlockIfNecessar
             if (!upstreamEnd.deprecatedNode()->isDescendantOf(upstreamStart.deprecatedNode())) {
                 // If the paragraph end is a descendant of paragraph start, then we need to run
                 // the rest of this function. If not, we can bail here.
-                return 0;
+                return nullptr;
             }
         } else if (enclosingBlock(upstreamEnd.deprecatedNode()) != upstreamStart.deprecatedNode()) {
             // The visibleEnd.  It must be an ancestor of the paragraph start.
             // We can bail as we have a full block to work with.
             ASSERT(upstreamStart.deprecatedNode()->isDescendantOf(enclosingBlock(upstreamEnd.deprecatedNode())));
-            return 0;
+            return nullptr;
         } else if (isEndOfEditableOrNonEditableContent(visibleEnd)) {
             // At the end of the editable region. We can bail here as well.
-            return 0;
+            return nullptr;
         }
     }
 
@@ -1177,7 +1177,7 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
     // FIXME: This is an inefficient way to preserve style on nodes in the paragraph to move. It
     // shouldn't matter though, since moved paragraphs will usually be quite small.
     RefPtr<DocumentFragment> fragment = startOfParagraphToMove != endOfParagraphToMove ?
-        createFragmentFromMarkup(document(), createMarkup(range.get(), 0, DoNotAnnotateForInterchange, true, DoNotResolveURLs, constrainingAncestor), "") : 0;
+        createFragmentFromMarkup(document(), createMarkup(range.get(), 0, DoNotAnnotateForInterchange, true, DoNotResolveURLs, constrainingAncestor), "") : nullptr;
 
     // A non-empty paragraph's style is moved when we copy and move it.  We don't move
     // anything if we're given an empty paragraph, but an empty paragraph can have style
@@ -1264,7 +1264,7 @@ bool CompositeEditCommand::breakOutOfEmptyListItem()
         || listNode == emptyListItem->rootEditableElement())
         return false;
 
-    RefPtr<Element> newBlock = 0;
+    RefPtr<Element> newBlock = nullptr;
     if (ContainerNode* blockEnclosingList = listNode->parentNode()) {
         if (blockEnclosingList->hasTagName(liTag)) { // listNode is inside another list item
             if (visiblePositionAfterNode(blockEnclosingList) == visiblePositionAfterNode(listNode.get())) {

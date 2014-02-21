@@ -253,7 +253,7 @@ bool CSSStyleSheet::canAccessRules() const
 PassRefPtr<CSSRuleList> CSSStyleSheet::rules()
 {
     if (!canAccessRules())
-        return 0;
+        return nullptr;
     // IE behavior.
     RefPtr<StaticCSSRuleList> nonCharsetRules = StaticCSSRuleList::create();
     unsigned ruleCount = length();
@@ -344,7 +344,7 @@ int CSSStyleSheet::addRule(const String& selector, const String& style, Exceptio
 PassRefPtr<CSSRuleList> CSSStyleSheet::cssRules()
 {
     if (!canAccessRules())
-        return 0;
+        return nullptr;
     if (!m_ruleListCSSOMWrapper)
         m_ruleListCSSOMWrapper = adoptPtr(new StyleSheetCSSRuleList(this));
     return m_ruleListCSSOMWrapper.get();

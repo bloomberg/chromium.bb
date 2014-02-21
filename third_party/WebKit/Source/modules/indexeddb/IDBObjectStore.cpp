@@ -82,22 +82,22 @@ PassRefPtr<IDBRequest> IDBObjectStore::get(ExecutionContext* context, const Scri
     IDB_TRACE("IDBObjectStore::get");
     if (isDeleted()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::objectStoreDeletedErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (m_transaction->isFinished()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (!m_transaction->isActive()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
-        return 0;
+        return nullptr;
     }
     RefPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, key, exceptionState);
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
     if (!keyRange) {
         exceptionState.throwDOMException(DataError, IDBDatabase::noKeyOrKeyRangeErrorMessage);
-        return 0;
+        return nullptr;
     }
 
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
@@ -144,7 +144,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::put(WebIDBDatabase::PutMode putMode, Pass
 {
     ExecutionContext* context = state->executionContext();
     DOMRequestState requestState(context);
-    RefPtr<IDBKey> key = keyValue.isUndefined() ? 0 : scriptValueToIDBKey(&requestState, keyValue);
+    RefPtr<IDBKey> key = keyValue.isUndefined() ? nullptr : scriptValueToIDBKey(&requestState, keyValue);
     return put(putMode, source, state, value, key.release(), exceptionState);
 }
 
@@ -153,29 +153,29 @@ PassRefPtr<IDBRequest> IDBObjectStore::put(WebIDBDatabase::PutMode putMode, Pass
     RefPtr<IDBKey> key = prpKey;
     if (isDeleted()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::objectStoreDeletedErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (m_transaction->isFinished()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (!m_transaction->isActive()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (m_transaction->isReadOnly()) {
         exceptionState.throwDOMException(ReadOnlyError, IDBDatabase::transactionReadOnlyErrorMessage);
-        return 0;
+        return nullptr;
     }
 
     RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValue::create(value, exceptionState, state);
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     if (serializedValue->containsBlobs()) {
         // FIXME: Add Blob/File/FileList support
         exceptionState.throwDOMException(DataCloneError, "The object store currently does not support blob values.");
-        return 0;
+        return nullptr;
     }
 
     const IDBKeyPath& keyPath = m_metadata.keyPath;
@@ -187,26 +187,26 @@ PassRefPtr<IDBRequest> IDBObjectStore::put(WebIDBDatabase::PutMode putMode, Pass
 
     if (putMode != WebIDBDatabase::CursorUpdate && usesInLineKeys && key) {
         exceptionState.throwDOMException(DataError, "The object store uses in-line keys and the key parameter was provided.");
-        return 0;
+        return nullptr;
     }
     if (!usesInLineKeys && !hasKeyGenerator && !key) {
         exceptionState.throwDOMException(DataError, "The object store uses out-of-line keys and has no key generator and the key parameter was not provided.");
-        return 0;
+        return nullptr;
     }
     if (usesInLineKeys) {
         RefPtr<IDBKey> keyPathKey = createIDBKeyFromScriptValueAndKeyPath(&requestState, value, keyPath);
         if (keyPathKey && !keyPathKey->isValid()) {
             exceptionState.throwDOMException(DataError, "Evaluating the object store's key path yielded a value that is not a valid key.");
-            return 0;
+            return nullptr;
         }
         if (!hasKeyGenerator && !keyPathKey) {
             exceptionState.throwDOMException(DataError, "Evaluating the object store's key path did not yield a value.");
-            return 0;
+            return nullptr;
         }
         if (hasKeyGenerator && !keyPathKey) {
             if (!canInjectIDBKeyIntoScriptValue(&requestState, value, keyPath)) {
                 exceptionState.throwDOMException(DataError, "A generated key could not be inserted into the value.");
-                return 0;
+                return nullptr;
             }
         }
         if (keyPathKey)
@@ -214,7 +214,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::put(WebIDBDatabase::PutMode putMode, Pass
     }
     if (key && !key->isValid()) {
         exceptionState.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
-        return 0;
+        return nullptr;
     }
 
     Vector<int64_t> indexIds;
@@ -239,27 +239,27 @@ PassRefPtr<IDBRequest> IDBObjectStore::deleteFunction(ExecutionContext* context,
     IDB_TRACE("IDBObjectStore::delete");
     if (isDeleted()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::objectStoreDeletedErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (m_transaction->isFinished()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (!m_transaction->isActive()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (m_transaction->isReadOnly()) {
         exceptionState.throwDOMException(ReadOnlyError, IDBDatabase::transactionReadOnlyErrorMessage);
-        return 0;
+        return nullptr;
     }
 
     RefPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, key, exceptionState);
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
     if (!keyRange) {
         exceptionState.throwDOMException(DataError, IDBDatabase::noKeyOrKeyRangeErrorMessage);
-        return 0;
+        return nullptr;
     }
 
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
@@ -272,19 +272,19 @@ PassRefPtr<IDBRequest> IDBObjectStore::clear(ExecutionContext* context, Exceptio
     IDB_TRACE("IDBObjectStore::clear");
     if (isDeleted()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::objectStoreDeletedErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (m_transaction->isFinished()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (!m_transaction->isActive()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (m_transaction->isReadOnly()) {
         exceptionState.throwDOMException(ReadOnlyError, IDBDatabase::transactionReadOnlyErrorMessage);
-        return 0;
+        return nullptr;
     }
 
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
@@ -378,36 +378,36 @@ PassRefPtr<IDBIndex> IDBObjectStore::createIndex(ExecutionContext* context, cons
     IDB_TRACE("IDBObjectStore::createIndex");
     if (!m_transaction->isVersionChange()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::notVersionChangeTransactionErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (isDeleted()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::objectStoreDeletedErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (m_transaction->isFinished()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (!m_transaction->isActive()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (!keyPath.isValid()) {
         exceptionState.throwDOMException(SyntaxError, "The keyPath argument contains an invalid key path.");
-        return 0;
+        return nullptr;
     }
     if (name.isNull()) {
         exceptionState.throwTypeError("The name provided is null.");
-        return 0;
+        return nullptr;
     }
     if (containsIndex(name)) {
         exceptionState.throwDOMException(ConstraintError, "An index with the specified name already exists.");
-        return 0;
+        return nullptr;
     }
 
     if (keyPath.type() == IDBKeyPath::ArrayType && multiEntry) {
         exceptionState.throwDOMException(InvalidAccessError, "The keyPath argument was an array and the multiEntry option is true.");
-        return 0;
+        return nullptr;
     }
 
     int64_t indexId = m_metadata.maxIndexId + 1;
@@ -423,7 +423,7 @@ PassRefPtr<IDBIndex> IDBObjectStore::createIndex(ExecutionContext* context, cons
 
     ASSERT(!exceptionState.hadException());
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     RefPtr<IDBRequest> indexRequest = openCursor(context, static_cast<IDBKeyRange*>(0), blink::WebIDBCursor::Next, WebIDBDatabase::PreemptiveTask);
     indexRequest->preventPropagation();
@@ -440,11 +440,11 @@ PassRefPtr<IDBIndex> IDBObjectStore::index(const String& name, ExceptionState& e
     IDB_TRACE("IDBObjectStore::index");
     if (isDeleted()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::objectStoreDeletedErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (m_transaction->isFinished()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::transactionFinishedErrorMessage);
-        return 0;
+        return nullptr;
     }
 
     IDBIndexMap::iterator it = m_indexMap.find(name);
@@ -454,7 +454,7 @@ PassRefPtr<IDBIndex> IDBObjectStore::index(const String& name, ExceptionState& e
     int64_t indexId = findIndexId(name);
     if (indexId == IDBIndexMetadata::InvalidId) {
         exceptionState.throwDOMException(NotFoundError, IDBDatabase::noSuchIndexErrorMessage);
-        return 0;
+        return nullptr;
     }
 
     const IDBIndexMetadata* indexMetadata(0);
@@ -513,24 +513,24 @@ PassRefPtr<IDBRequest> IDBObjectStore::openCursor(ExecutionContext* context, con
     IDB_TRACE("IDBObjectStore::openCursor");
     if (isDeleted()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::objectStoreDeletedErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (m_transaction->isFinished()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (!m_transaction->isActive()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
-        return 0;
+        return nullptr;
     }
 
     WebIDBCursor::Direction direction = IDBCursor::stringToDirection(directionString, exceptionState);
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     RefPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, range, exceptionState);
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     return openCursor(context, keyRange, direction, WebIDBDatabase::NormalTask);
 }
@@ -549,24 +549,24 @@ PassRefPtr<IDBRequest> IDBObjectStore::openKeyCursor(ExecutionContext* context, 
     IDB_TRACE("IDBObjectStore::openKeyCursor");
     if (isDeleted()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::objectStoreDeletedErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (m_transaction->isFinished()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (!m_transaction->isActive()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
-        return 0;
+        return nullptr;
     }
 
     WebIDBCursor::Direction direction = IDBCursor::stringToDirection(directionString, exceptionState);
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     RefPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, range, exceptionState);
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
     request->setCursorDetails(IndexedDB::CursorKeyOnly, direction);
@@ -580,20 +580,20 @@ PassRefPtr<IDBRequest> IDBObjectStore::count(ExecutionContext* context, const Sc
     IDB_TRACE("IDBObjectStore::count");
     if (isDeleted()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::objectStoreDeletedErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (m_transaction->isFinished()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (!m_transaction->isActive()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
-        return 0;
+        return nullptr;
     }
 
     RefPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, range, exceptionState);
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
     backendDB()->count(m_transaction->id(), id(), IDBIndexMetadata::InvalidId, keyRange.release(), WebIDBCallbacksImpl::create(request).leakPtr());

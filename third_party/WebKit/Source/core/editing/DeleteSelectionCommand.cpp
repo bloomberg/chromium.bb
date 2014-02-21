@@ -76,10 +76,10 @@ DeleteSelectionCommand::DeleteSelectionCommand(Document& document, bool smartDel
     , m_pruneStartBlockIfNecessary(false)
     , m_startsAtEmptyLine(false)
     , m_sanitizeMarkup(sanitizeMarkup)
-    , m_startBlock(0)
-    , m_endBlock(0)
-    , m_typingStyle(0)
-    , m_deleteIntoBlockquoteStyle(0)
+    , m_startBlock(nullptr)
+    , m_endBlock(nullptr)
+    , m_typingStyle(nullptr)
+    , m_deleteIntoBlockquoteStyle(nullptr)
 {
 }
 
@@ -94,10 +94,10 @@ DeleteSelectionCommand::DeleteSelectionCommand(const VisibleSelection& selection
     , m_startsAtEmptyLine(false)
     , m_sanitizeMarkup(sanitizeMarkup)
     , m_selectionToDelete(selection)
-    , m_startBlock(0)
-    , m_endBlock(0)
-    , m_typingStyle(0)
-    , m_deleteIntoBlockquoteStyle(0)
+    , m_startBlock(nullptr)
+    , m_endBlock(nullptr)
+    , m_typingStyle(nullptr)
+    , m_deleteIntoBlockquoteStyle(nullptr)
 {
 }
 
@@ -297,7 +297,7 @@ void DeleteSelectionCommand::saveTypingStyleState()
     if (enclosingNodeOfType(m_selectionToDelete.start(), isMailBlockquote))
         m_deleteIntoBlockquoteStyle = EditingStyle::create(m_selectionToDelete.end());
     else
-        m_deleteIntoBlockquoteStyle = 0;
+        m_deleteIntoBlockquoteStyle = nullptr;
 }
 
 bool DeleteSelectionCommand::handleSpecialCaseBRDelete()
@@ -512,7 +512,7 @@ void DeleteSelectionCommand::handleGeneralDelete()
         while (node && node != m_downstreamEnd.deprecatedNode()) {
             if (comparePositions(firstPositionInOrBeforeNode(node.get()), m_downstreamEnd) >= 0) {
                 // NodeTraversal::nextSkippingChildren just blew past the end position, so stop deleting
-                node = 0;
+                node = nullptr;
             } else if (!m_downstreamEnd.deprecatedNode()->isDescendantOf(node.get())) {
                 RefPtr<Node> nextNode = NodeTraversal::nextSkippingChildren(*node);
                 // if we just removed a node from the end container, update end position so the
@@ -524,7 +524,7 @@ void DeleteSelectionCommand::handleGeneralDelete()
                 Node& n = node->lastDescendant();
                 if (m_downstreamEnd.deprecatedNode() == n && m_downstreamEnd.deprecatedEditingOffset() >= caretMaxOffset(&n)) {
                     removeNode(node.get());
-                    node = 0;
+                    node = nullptr;
                 } else {
                     node = NodeTraversal::next(*node);
                 }
@@ -728,11 +728,11 @@ void DeleteSelectionCommand::calculateTypingStyleAfterDelete()
     // If we deleted into a blockquote, but are now no longer in a blockquote, use the alternate typing style
     if (m_deleteIntoBlockquoteStyle && !enclosingNodeOfType(m_endingPosition, isMailBlockquote, CanCrossEditingBoundary))
         m_typingStyle = m_deleteIntoBlockquoteStyle;
-    m_deleteIntoBlockquoteStyle = 0;
+    m_deleteIntoBlockquoteStyle = nullptr;
 
     m_typingStyle->prepareToApplyAt(m_endingPosition);
     if (m_typingStyle->isEmpty())
-        m_typingStyle = 0;
+        m_typingStyle = nullptr;
     // This is where we've deleted all traces of a style but not a whole paragraph (that's handled above).
     // In this case if we start typing, the new characters should have the same style as the just deleted ones,
     // but, if we change the selection, come back and start typing that style should be lost.  Also see

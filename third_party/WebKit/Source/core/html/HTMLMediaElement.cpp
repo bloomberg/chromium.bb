@@ -302,7 +302,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_haveVisibleTextTrack(false)
     , m_processingPreferenceChange(false)
     , m_lastTextTrackUpdateTime(-1)
-    , m_textTracks(0)
+    , m_textTracks(nullptr)
     , m_ignoreTrackDisplayUpdate(0)
 #if ENABLE(WEB_AUDIO)
     , m_audioSourceNode(0)
@@ -344,7 +344,7 @@ HTMLMediaElement::~HTMLMediaElement()
 
     if (m_mediaController) {
         m_mediaController->removeMediaElement(this);
-        m_mediaController = 0;
+        m_mediaController = nullptr;
     }
 
     closeMediaSource();
@@ -646,7 +646,7 @@ void HTMLMediaElement::prepareForLoad()
 
     // 1 - Abort any already-running instance of the resource selection algorithm for this element.
     m_loadState = WaitingForSource;
-    m_currentSourceNode = 0;
+    m_currentSourceNode = nullptr;
 
     // 2 - If there are any tasks from the media element's media element event task source in
     // one of the task queues, then remove those tasks.
@@ -680,7 +680,7 @@ void HTMLMediaElement::prepareForLoad()
     setPlaybackRate(defaultPlaybackRate());
 
     // 6 - Set the error attribute to null and the autoplaying flag to true.
-    m_error = 0;
+    m_error = nullptr;
     m_autoplaying = true;
 
     // 7 - Invoke the media element's resource selection algorithm.
@@ -749,7 +749,7 @@ void HTMLMediaElement::selectMediaResource()
         if (element) {
             mode = children;
             m_nextChildNodeToConsider = element;
-            m_currentSourceNode = 0;
+            m_currentSourceNode = nullptr;
         } else {
             // Otherwise the media element has neither a src attribute nor a source element
             // child: set the networkState to NETWORK_EMPTY, and abort these steps; the
@@ -870,7 +870,7 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
                 if (!m_mediaSource->attachToElement(this)) {
                     // Forget our reference to the MediaSource, so we leave it alone
                     // while processing remainder of load failure.
-                    m_mediaSource = 0;
+                    m_mediaSource = nullptr;
                     attemptLoad = false;
                 }
             }
@@ -1353,7 +1353,7 @@ void HTMLMediaElement::noneSupported()
 
     stopPeriodicTimers();
     m_loadState = WaitingForSource;
-    m_currentSourceNode = 0;
+    m_currentSourceNode = nullptr;
 
     // 4.8.10.5
     // 6 - Reaching this step indicates that the media resource failed to load or that the given
@@ -1411,7 +1411,7 @@ void HTMLMediaElement::mediaEngineError(PassRefPtr<MediaError> err)
     setShouldDelayLoadEvent(false);
 
     // 6 - Abort the overall resource selection algorithm.
-    m_currentSourceNode = 0;
+    m_currentSourceNode = nullptr;
 }
 
 void HTMLMediaElement::cancelPendingEventsAndCallbacks()
@@ -2190,7 +2190,7 @@ void HTMLMediaElement::closeMediaSource()
         return;
 
     m_mediaSource->close();
-    m_mediaSource = 0;
+    m_mediaSource = nullptr;
 }
 
 void HTMLMediaElement::webkitGenerateKeyRequest(const String& keySystem, PassRefPtr<Uint8Array> initData, ExceptionState& exceptionState)
@@ -2552,7 +2552,7 @@ PassRefPtr<TextTrack> HTMLMediaElement::addTextTrack(const AtomicString& kind, c
     // 1. If kind is not one of the following strings, then throw a SyntaxError exception and abort these steps
     if (!TextTrack::isValidKindKeyword(kind)) {
         exceptionState.throwDOMException(SyntaxError, "The 'kind' provided ('" + kind + "') is invalid.");
-        return 0;
+        return nullptr;
     }
 
     // 2. If the label argument was omitted, let label be the empty string.
@@ -2923,8 +2923,8 @@ check_again:
         m_currentSourceNode = source;
         m_nextChildNodeToConsider = source->nextSibling();
     } else {
-        m_currentSourceNode = 0;
-        m_nextChildNodeToConsider = 0;
+        m_currentSourceNode = nullptr;
+        m_nextChildNodeToConsider = nullptr;
     }
 
 #if !LOG_DISABLED
@@ -3004,7 +3004,7 @@ void HTMLMediaElement::sourceWasRemoved(HTMLSourceElement* source)
         // Clear the current source node pointer, but don't change the movie as the spec says:
         // 4.8.8 - Dynamically modifying a source element and its attribute when the element is already
         // inserted in a video or audio element will have no effect.
-        m_currentSourceNode = 0;
+        m_currentSourceNode = nullptr;
         WTF_LOG(Media, "HTMLMediaElement::sourceRemoved - m_currentSourceNode set to 0");
     }
 }
@@ -3365,7 +3365,7 @@ void HTMLMediaElement::userCancelledLoad()
     setShouldDelayLoadEvent(false);
 
     // 6 - Abort the overall resource selection algorithm.
-    m_currentSourceNode = 0;
+    m_currentSourceNode = nullptr;
 
     // Reset m_readyState since m_player is gone.
     m_readyState = HAVE_NOTHING;
@@ -3747,7 +3747,7 @@ void HTMLMediaElement::setMediaGroup(const AtomicString& group)
     // attribute is set, changed, or removed, the user agent must run the following steps:
     // 1. Let m [this] be the media element in question.
     // 2. Let m have no current media controller, if it currently has one.
-    setControllerInternal(0);
+    setControllerInternal(nullptr);
 
     // 3. If m's mediagroup attribute is being removed, then abort these steps.
     if (group.isNull() || group.isEmpty())

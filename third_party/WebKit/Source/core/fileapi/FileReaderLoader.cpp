@@ -135,7 +135,7 @@ void FileReaderLoader::start(ExecutionContext* executionContext, const Stream& s
     }
 
     m_urlForReadingIsStream = true;
-    startInternal(executionContext, &stream, 0);
+    startInternal(executionContext, &stream, nullptr);
 }
 
 void FileReaderLoader::cancel()
@@ -154,7 +154,7 @@ void FileReaderLoader::terminate()
 
 void FileReaderLoader::cleanup()
 {
-    m_loader = 0;
+    m_loader = nullptr;
 
     // If we get any error, we do not need to keep a buffer around.
     if (m_errorCode) {
@@ -304,7 +304,7 @@ PassRefPtr<ArrayBuffer> FileReaderLoader::arrayBufferResult() const
 
     // If the loading is not started or an error occurs, return an empty result.
     if (!m_rawData || m_errorCode)
-        return 0;
+        return nullptr;
 
     return m_rawData->toArrayBuffer();
 }

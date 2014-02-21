@@ -129,7 +129,7 @@ bool ShadowRoot::isOldestAuthorShadowRoot() const
 PassRefPtr<Node> ShadowRoot::cloneNode(bool, ExceptionState& exceptionState)
 {
     exceptionState.throwDOMException(DataCloneError, "ShadowRoot nodes are not clonable.");
-    return 0;
+    return nullptr;
 }
 
 String ShadowRoot::innerHTML() const

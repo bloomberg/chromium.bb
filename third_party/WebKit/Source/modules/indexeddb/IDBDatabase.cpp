@@ -132,7 +132,7 @@ void IDBDatabase::transactionFinished(const IDBTransaction* transaction)
 
     if (transaction->isVersionChange()) {
         ASSERT(m_versionChangeTransaction == transaction);
-        m_versionChangeTransaction = 0;
+        m_versionChangeTransaction = nullptr;
     }
 
     if (m_closePending && m_transactions.isEmpty())
@@ -194,30 +194,30 @@ PassRefPtr<IDBObjectStore> IDBDatabase::createObjectStore(const String& name, co
     blink::Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBCreateObjectStoreCall, IDBMethodsMax);
     if (!m_versionChangeTransaction) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::notVersionChangeTransactionErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (m_versionChangeTransaction->isFinished()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (!m_versionChangeTransaction->isActive()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
-        return 0;
+        return nullptr;
     }
 
     if (containsObjectStore(name)) {
         exceptionState.throwDOMException(ConstraintError, "An object store with the specified name already exists.");
-        return 0;
+        return nullptr;
     }
 
     if (!keyPath.isNull() && !keyPath.isValid()) {
         exceptionState.throwDOMException(SyntaxError, "The keyPath option is not a valid key path.");
-        return 0;
+        return nullptr;
     }
 
     if (autoIncrement && ((keyPath.type() == IDBKeyPath::StringType && keyPath.string().isEmpty()) || keyPath.type() == IDBKeyPath::ArrayType)) {
         exceptionState.throwDOMException(InvalidAccessError, "The autoIncrement option was set but the keyPath option was empty or an array.");
-        return 0;
+        return nullptr;
     }
 
     int64_t objectStoreId = m_metadata.maxObjectStoreId + 1;
@@ -266,21 +266,21 @@ PassRefPtr<IDBTransaction> IDBDatabase::transaction(ExecutionContext* context, c
     blink::Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBTransactionCall, IDBMethodsMax);
     if (!scope.size()) {
         exceptionState.throwDOMException(InvalidAccessError, "The storeNames parameter was empty.");
-        return 0;
+        return nullptr;
     }
 
     blink::WebIDBDatabase::TransactionMode mode = IDBTransaction::stringToMode(modeString, exceptionState);
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     if (m_versionChangeTransaction) {
         exceptionState.throwDOMException(InvalidStateError, "A version change transaction is running.");
-        return 0;
+        return nullptr;
     }
 
     if (m_closePending) {
         exceptionState.throwDOMException(InvalidStateError, "The database connection is closing.");
-        return 0;
+        return nullptr;
     }
 
     Vector<int64_t> objectStoreIds;
@@ -288,7 +288,7 @@ PassRefPtr<IDBTransaction> IDBDatabase::transaction(ExecutionContext* context, c
         int64_t objectStoreId = findObjectStoreId(scope[i]);
         if (objectStoreId == IDBObjectStoreMetadata::InvalidId) {
             exceptionState.throwDOMException(NotFoundError, "One of the specified object stores was not found.");
-            return 0;
+            return nullptr;
         }
         objectStoreIds.append(objectStoreId);
     }

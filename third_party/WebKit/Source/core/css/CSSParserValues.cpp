@@ -158,11 +158,11 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSParserValue::createCSSValue()
     case CSSPrimitiveValue::CSS_CALC:
     case CSSPrimitiveValue::CSS_CALC_PERCENTAGE_WITH_NUMBER:
     case CSSPrimitiveValue::CSS_CALC_PERCENTAGE_WITH_LENGTH:
-        return 0;
+        return nullptr;
     }
 
     ASSERT_NOT_REACHED();
-    return 0;
+    return nullptr;
 }
 
 CSSParserSelector::CSSParserSelector()

@@ -210,7 +210,7 @@ VTTCue::VTTCue(Document& document, double startTime, double endTime, const Strin
     , m_cueSize(100)
     , m_writingDirection(Horizontal)
     , m_cueAlignment(Middle)
-    , m_vttNodeTree(0)
+    , m_vttNodeTree(nullptr)
     , m_cueBackgroundBox(HTMLDivElement::create(document))
     , m_displayDirection(CSSValueLtr)
     , m_displaySize(undefinedSize)
@@ -408,7 +408,7 @@ void VTTCue::setText(const String& text)
     cueWillChange();
     // Clear the document fragment but don't bother to create it again just yet as we can do that
     // when it is requested.
-    m_vttNodeTree = 0;
+    m_vttNodeTree = nullptr;
     m_text = text;
     cueDidChange();
 }

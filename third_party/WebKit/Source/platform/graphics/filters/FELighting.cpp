@@ -423,7 +423,7 @@ PassRefPtr<SkImageFilter> FELighting::createImageFilter(SkiaImageFilterBuilder* 
 {
     SkImageFilter::CropRect rect = getCropRect(builder ? builder->cropOffset() : FloatSize());
     Color lightColor = adaptColorToOperatingColorSpace(m_lightingColor);
-    RefPtr<SkImageFilter> input(builder ? builder->build(inputEffect(0), operatingColorSpace()) : 0);
+    RefPtr<SkImageFilter> input(builder ? builder->build(inputEffect(0), operatingColorSpace()) : nullptr);
     switch (m_lightSource->type()) {
     case LS_DISTANT: {
         DistantLightSource* distantLightSource = static_cast<DistantLightSource*>(m_lightSource.get());
@@ -458,7 +458,7 @@ PassRefPtr<SkImageFilter> FELighting::createImageFilter(SkiaImageFilterBuilder* 
     }
     default:
         ASSERT_NOT_REACHED();
-        return 0;
+        return nullptr;
     }
 }
 

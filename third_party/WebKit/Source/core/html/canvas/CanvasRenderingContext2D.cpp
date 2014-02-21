@@ -1678,7 +1678,7 @@ PassRefPtr<CanvasGradient> CanvasRenderingContext2D::createLinearGradient(float 
         exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(y1, "y1"));
 
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     RefPtr<CanvasGradient> gradient = CanvasGradient::create(FloatPoint(x0, y0), FloatPoint(x1, y1));
     return gradient.release();
@@ -1702,7 +1702,7 @@ PassRefPtr<CanvasGradient> CanvasRenderingContext2D::createRadialGradient(float 
         exceptionState.throwDOMException(IndexSizeError, String::format("The %s provided is less than 0.", r0 < 0 ? "r0" : "r1"));
 
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     RefPtr<CanvasGradient> gradient = CanvasGradient::create(FloatPoint(x0, y0), r0, FloatPoint(x1, y1), r1);
     return gradient.release();
@@ -1713,15 +1713,15 @@ PassRefPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(HTMLImageEleme
 {
     if (!image) {
         exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "HTMLImageElement"));
-        return 0;
+        return nullptr;
     }
     bool repeatX, repeatY;
     CanvasPattern::parseRepetitionType(repetitionType, repeatX, repeatY, exceptionState);
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     if (!image->complete())
-        return 0;
+        return nullptr;
 
     ImageResource* cachedImage = image->cachedImage();
     Image* imageForRendering = cachedImage ? cachedImage->imageForRenderer(image->renderer()) : 0;
@@ -1745,12 +1745,12 @@ PassRefPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(HTMLCanvasElem
         exceptionState.throwDOMException(InvalidStateError, String::format("The canvas %s is 0.", canvas->width() ? "height" : "width"));
 
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     bool repeatX, repeatY;
     CanvasPattern::parseRepetitionType(repetitionType, repeatX, repeatY, exceptionState);
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
     return CanvasPattern::create(canvas->copiedImage(), repeatX, repeatY, canvas->originClean());
 }
 
@@ -1813,7 +1813,7 @@ static PassRefPtr<ImageData> createEmptyImageData(const IntSize& size)
     dataSize *= size.width();
     dataSize *= size.height();
     if (dataSize.hasOverflowed())
-        return 0;
+        return nullptr;
 
     RefPtr<ImageData> data = ImageData::create(size);
     data->data()->zeroFill();
@@ -1824,7 +1824,7 @@ PassRefPtr<ImageData> CanvasRenderingContext2D::createImageData(PassRefPtr<Image
 {
     if (!imageData) {
         exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "ImageData"));
-        return 0;
+        return nullptr;
     }
 
     return createEmptyImageData(imageData->size());
@@ -1840,11 +1840,11 @@ PassRefPtr<ImageData> CanvasRenderingContext2D::createImageData(float sw, float 
         exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(sh, "source height"));
 
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     FloatSize logicalSize(fabs(sw), fabs(sh));
     if (!logicalSize.isExpressibleAsIntSize())
-        return 0;
+        return nullptr;
 
     IntSize size = expandedIntSize(logicalSize);
     if (size.width() < 1)
@@ -1876,7 +1876,7 @@ PassRefPtr<ImageData> CanvasRenderingContext2D::getImageData(float sx, float sy,
         exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(sh, "source height"));
 
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     if (sw < 0) {
         sx += sw;
@@ -1893,7 +1893,7 @@ PassRefPtr<ImageData> CanvasRenderingContext2D::getImageData(float sx, float sy,
     if (logicalRect.height() < 1)
         logicalRect.setHeight(1);
     if (!logicalRect.isExpressibleAsIntRect())
-        return 0;
+        return nullptr;
 
     IntRect imageDataRect = enclosingIntRect(logicalRect);
     ImageBuffer* buffer = canvas()->buffer();
@@ -1902,7 +1902,7 @@ PassRefPtr<ImageData> CanvasRenderingContext2D::getImageData(float sx, float sy,
 
     RefPtr<Uint8ClampedArray> byteArray = buffer->getUnmultipliedImageData(imageDataRect);
     if (!byteArray)
-        return 0;
+        return nullptr;
 
     return ImageData::create(imageDataRect.size(), byteArray.release());
 }
@@ -2007,7 +2007,7 @@ String CanvasRenderingContext2D::font() const
 void CanvasRenderingContext2D::setFont(const String& newFont)
 {
     MutableStylePropertyMap::iterator i = m_fetchedFonts.find(newFont);
-    RefPtr<MutableStylePropertySet> parsedStyle = i != m_fetchedFonts.end() ? i->value : 0;
+    RefPtr<MutableStylePropertySet> parsedStyle = i != m_fetchedFonts.end() ? i->value : nullptr;
 
     if (!parsedStyle) {
         parsedStyle = MutableStylePropertySet::create();

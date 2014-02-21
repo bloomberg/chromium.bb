@@ -169,7 +169,7 @@ PassRefPtrWillBeRawPtr<CSSValue> AbstractPropertySetCSSStyleDeclaration::getProp
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
     if (!propertyID)
-        return 0;
+        return nullptr;
     return cloneAndCacheForCSSOM(propertySet()->getPropertyCSSValue(propertyID).get());
 }
 

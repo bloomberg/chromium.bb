@@ -140,7 +140,7 @@ void WorkerThread::workerThread()
 
     // The below assignment will destroy the context, which will in turn notify messaging proxy.
     // We cannot let any objects survive past thread exit, because no other thread will run GC or otherwise destroy them.
-    m_workerGlobalScope = 0;
+    m_workerGlobalScope = nullptr;
 
     // Cleanup thread heap which causes all objects to be finalized.
     // After this call thread heap must be empty.

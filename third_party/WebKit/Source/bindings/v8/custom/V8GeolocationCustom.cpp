@@ -61,13 +61,13 @@ static PassRefPtrWillBeRawPtr<PositionOptions> createPositionOptions(v8::Local<v
     v8::Local<v8::Value> enableHighAccuracyValue = object->Get(v8AtomicString(isolate, "enableHighAccuracy"));
     if (enableHighAccuracyValue.IsEmpty()) {
         succeeded = false;
-        return 0;
+        return nullptr;
     }
     if (!enableHighAccuracyValue->IsUndefined()) {
         v8::Local<v8::Boolean> enableHighAccuracyBoolean = enableHighAccuracyValue->ToBoolean();
         if (enableHighAccuracyBoolean.IsEmpty()) {
             succeeded = false;
-            return 0;
+            return nullptr;
         }
         options->setEnableHighAccuracy(enableHighAccuracyBoolean->Value());
     }
@@ -75,13 +75,13 @@ static PassRefPtrWillBeRawPtr<PositionOptions> createPositionOptions(v8::Local<v
     v8::Local<v8::Value> timeoutValue = object->Get(v8AtomicString(isolate, "timeout"));
     if (timeoutValue.IsEmpty()) {
         succeeded = false;
-        return 0;
+        return nullptr;
     }
     if (!timeoutValue->IsUndefined()) {
         v8::Local<v8::Number> timeoutNumber = timeoutValue->ToNumber();
         if (timeoutNumber.IsEmpty()) {
             succeeded = false;
-            return 0;
+            return nullptr;
         }
         double timeoutDouble = timeoutNumber->Value();
         // If the value is positive infinity, there's nothing to do.
@@ -89,7 +89,7 @@ static PassRefPtrWillBeRawPtr<PositionOptions> createPositionOptions(v8::Local<v
             v8::Local<v8::Int32> timeoutInt32 = timeoutValue->ToInt32();
             if (timeoutInt32.IsEmpty()) {
                 succeeded = false;
-                return 0;
+                return nullptr;
             }
             // Wrap to int32 and force non-negative to match behavior of window.setTimeout.
             options->setTimeout(max(0, timeoutInt32->Value()));
@@ -99,13 +99,13 @@ static PassRefPtrWillBeRawPtr<PositionOptions> createPositionOptions(v8::Local<v
     v8::Local<v8::Value> maximumAgeValue = object->Get(v8AtomicString(isolate, "maximumAge"));
     if (maximumAgeValue.IsEmpty()) {
         succeeded = false;
-        return 0;
+        return nullptr;
     }
     if (!maximumAgeValue->IsUndefined()) {
         v8::Local<v8::Number> maximumAgeNumber = maximumAgeValue->ToNumber();
         if (maximumAgeNumber.IsEmpty()) {
             succeeded = false;
-            return 0;
+            return nullptr;
         }
         double maximumAgeDouble = maximumAgeNumber->Value();
         if (std::isinf(maximumAgeDouble) && maximumAgeDouble > 0) {
@@ -115,7 +115,7 @@ static PassRefPtrWillBeRawPtr<PositionOptions> createPositionOptions(v8::Local<v
             v8::Local<v8::Int32> maximumAgeInt32 = maximumAgeValue->ToInt32();
             if (maximumAgeInt32.IsEmpty()) {
                 succeeded = false;
-                return 0;
+                return nullptr;
             }
             // Wrap to int32 and force non-negative to match behavior of window.setTimeout.
             options->setMaximumAge(max(0, maximumAgeInt32->Value()));

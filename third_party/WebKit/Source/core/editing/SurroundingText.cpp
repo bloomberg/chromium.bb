@@ -77,7 +77,7 @@ SurroundingText::SurroundingText(const VisiblePosition& visiblePosition, unsigne
 PassRefPtr<Range> SurroundingText::rangeFromContentOffsets(unsigned startOffsetInContent, unsigned endOffsetInContent)
 {
     if (startOffsetInContent >= endOffsetInContent || endOffsetInContent > content().length())
-        return 0;
+        return nullptr;
 
     CharacterIterator iterator(m_contentRange.get());
 

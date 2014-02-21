@@ -170,7 +170,7 @@ private:
 struct EmptyType : public RefCounted<EmptyType> {
     static PassRefPtr<EmptyType> create(EmptyType*)
     {
-        return 0;
+        return nullptr;
     }
 };
 

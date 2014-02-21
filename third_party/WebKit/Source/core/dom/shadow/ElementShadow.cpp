@@ -389,7 +389,7 @@ void ElementShadow::clearDistribution()
     m_nodeToInsertionPoints.clear();
 
     for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot())
-        root->setShadowInsertionPointOfYoungerShadowRoot(0);
+        root->setShadowInsertionPointOfYoungerShadowRoot(nullptr);
 }
 
 } // namespace

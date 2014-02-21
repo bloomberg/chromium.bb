@@ -942,7 +942,7 @@ void RenderListBox::destroyScrollbar()
         ScrollableArea::willRemoveScrollbar(m_vBar.get(), VerticalScrollbar);
     m_vBar->removeFromParent();
     m_vBar->disconnectFromScrollableArea();
-    m_vBar = 0;
+    m_vBar = nullptr;
 }
 
 void RenderListBox::setHasVerticalScrollbar(bool hasScrollbar)

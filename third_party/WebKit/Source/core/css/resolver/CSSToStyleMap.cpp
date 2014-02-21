@@ -481,7 +481,7 @@ PassRefPtr<TimingFunction> CSSToStyleMap::animationTimingFunction(CSSValue* valu
         default:
             break;
         }
-        return 0;
+        return nullptr;
     }
 
     if (value->isCubicBezierTimingFunctionValue()) {
@@ -492,7 +492,7 @@ PassRefPtr<TimingFunction> CSSToStyleMap::animationTimingFunction(CSSValue* valu
         return StepsTimingFunction::create(stepsTimingFunction->numberOfSteps(), stepsTimingFunction->stepAtStart());
     }
 
-    return 0;
+    return nullptr;
 }
 
 void CSSToStyleMap::mapAnimationTimingFunction(CSSAnimationData* animation, CSSValue* value) const

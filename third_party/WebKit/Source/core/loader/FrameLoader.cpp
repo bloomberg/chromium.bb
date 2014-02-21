@@ -581,7 +581,7 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
         m_provisionalDocumentLoader->stopLoading();
         if (m_provisionalDocumentLoader)
             m_provisionalDocumentLoader->detachFromFrame();
-        m_provisionalDocumentLoader = 0;
+        m_provisionalDocumentLoader = nullptr;
     }
     saveDocumentAndScrollState();
 
@@ -594,7 +594,7 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
     }
     m_documentLoader->setIsClientRedirect(clientRedirect == ClientRedirect);
     m_documentLoader->setReplacesCurrentHistoryItem(updateBackForwardList == DoNotUpdateBackForwardList);
-    updateForSameDocumentNavigation(url, SameDocumentNavigationDefault, 0, updateBackForwardList);
+    updateForSameDocumentNavigation(url, SameDocumentNavigationDefault, nullptr, updateBackForwardList);
 
     // It's important to model this as a load that starts and immediately finishes.
     // Otherwise, the parent frame may think we never finished loading.
@@ -737,7 +737,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
     const KURL& url = request.resourceRequest().url();
     if (shouldPerformFragmentNavigation(request.formState(), request.resourceRequest().httpMethod(), newLoadType, url)) {
         m_documentLoader->setTriggeringAction(action);
-        loadInSameDocument(url, 0, newLoadType == FrameLoadTypeStandard ? UpdateBackForwardList : DoNotUpdateBackForwardList, request.clientRedirect());
+        loadInSameDocument(url, nullptr, newLoadType == FrameLoadTypeStandard ? UpdateBackForwardList : DoNotUpdateBackForwardList, request.clientRedirect());
         return;
     }
     bool sameURL = shouldTreatURLAsSameAsCurrent(url);
@@ -795,7 +795,7 @@ void FrameLoader::reload(ReloadPolicy reloadPolicy, const KURL& overrideURL, con
     }
 
     FrameLoadType type = reloadPolicy == EndToEndReload ? FrameLoadTypeReloadFromOrigin : FrameLoadTypeReload;
-    loadWithNavigationAction(NavigationAction(request, type), type, 0, SubstituteData(), NotClientRedirect, overrideEncoding);
+    loadWithNavigationAction(NavigationAction(request, type), type, nullptr, SubstituteData(), NotClientRedirect, overrideEncoding);
 }
 
 void FrameLoader::stopAllLoaders()
@@ -822,7 +822,7 @@ void FrameLoader::stopAllLoaders()
 
     if (m_provisionalDocumentLoader)
         m_provisionalDocumentLoader->detachFromFrame();
-    m_provisionalDocumentLoader = 0;
+    m_provisionalDocumentLoader = nullptr;
 
     m_checkTimer.stop();
 
@@ -952,7 +952,7 @@ void FrameLoader::checkLoadCompleteForThisFrame()
         if (loader != m_provisionalDocumentLoader)
             return;
         m_provisionalDocumentLoader->detachFromFrame();
-        m_provisionalDocumentLoader = 0;
+        m_provisionalDocumentLoader = nullptr;
         m_progressTracker->progressCompleted();
         m_state = FrameStateComplete;
     }
@@ -1034,7 +1034,7 @@ void FrameLoader::detachChildren()
 
 void FrameLoader::closeAndRemoveChild(Frame* child)
 {
-    child->setView(0);
+    child->setView(nullptr);
     if (child->ownerElement() && child->page())
         child->page()->decrementSubframeCount();
     child->willDetachFrameHost();
@@ -1107,7 +1107,7 @@ void FrameLoader::detachFromParent()
 
     if (m_documentLoader)
         m_documentLoader->detachFromFrame();
-    m_documentLoader = 0;
+    m_documentLoader = nullptr;
 
     if (!m_client)
         return;
@@ -1117,7 +1117,7 @@ void FrameLoader::detachFromParent()
         parent->loader().closeAndRemoveChild(m_frame);
         parent->loader().scheduleCheckCompleted();
     } else {
-        m_frame->setView(0);
+        m_frame->setView(nullptr);
         m_frame->willDetachFrameHost();
         detachClient();
     }
@@ -1298,7 +1298,7 @@ void FrameLoader::loadWithNavigationAction(const NavigationAction& action, Frame
     RefPtr<Frame> protect(m_frame);
     if ((!m_policyDocumentLoader->shouldContinueForNavigationPolicy(request) || !shouldClose()) && m_policyDocumentLoader) {
         m_policyDocumentLoader->detachFromFrame();
-        m_policyDocumentLoader = 0;
+        m_policyDocumentLoader = nullptr;
         return;
     }
 
@@ -1413,7 +1413,7 @@ void FrameLoader::loadHistoryItem(HistoryItem* item, HistoryLoadType historyLoad
         restoreScrollPositionAndViewState(ForcedRestoreForSameDocumentHistoryNavigation);
         return;
     }
-    loadWithNavigationAction(NavigationAction(requestFromHistoryItem(item, cachePolicy), FrameLoadTypeBackForward), FrameLoadTypeBackForward, 0, SubstituteData());
+    loadWithNavigationAction(NavigationAction(requestFromHistoryItem(item, cachePolicy), FrameLoadTypeBackForward), FrameLoadTypeBackForward, nullptr, SubstituteData());
 }
 
 void FrameLoader::dispatchDocumentElementAvailable()

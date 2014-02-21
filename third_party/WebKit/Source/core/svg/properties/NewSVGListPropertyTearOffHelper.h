@@ -102,12 +102,12 @@ public:
 
         if (toDerived()->isImmutable()) {
             exceptionState.throwDOMException(NoModificationAllowedError, "The object is read-only.");
-            return 0;
+            return nullptr;
         }
 
         if (!item) {
             exceptionState.throwTypeError("Lists must be initialized with a valid item.");
-            return 0;
+            return nullptr;
         }
 
         RefPtr<ItemPropertyType> value = toDerived()->target()->initialize(getValueForInsertionFromTearOff(item));
@@ -128,12 +128,12 @@ public:
 
         if (toDerived()->isImmutable()) {
             exceptionState.throwDOMException(NoModificationAllowedError, "The object is read-only.");
-            return 0;
+            return nullptr;
         }
 
         if (!item) {
             exceptionState.throwTypeError("An invalid item cannot be inserted to a list.");
-            return 0;
+            return nullptr;
         }
 
         RefPtr<ItemPropertyType> value = toDerived()->target()->insertItemBefore(getValueForInsertionFromTearOff(item), index);
@@ -148,12 +148,12 @@ public:
 
         if (toDerived()->isImmutable()) {
             exceptionState.throwDOMException(NoModificationAllowedError, "The object is read-only.");
-            return 0;
+            return nullptr;
         }
 
         if (!item) {
             exceptionState.throwTypeError("An invalid item cannot be replaced with an existing list item.");
-            return 0;
+            return nullptr;
         }
 
         RefPtr<ItemPropertyType> value = toDerived()->target()->replaceItem(getValueForInsertionFromTearOff(item), index, exceptionState);
@@ -176,12 +176,12 @@ public:
 
         if (toDerived()->isImmutable()) {
             exceptionState.throwDOMException(NoModificationAllowedError, "The object is read-only.");
-            return 0;
+            return nullptr;
         }
 
         if (!item) {
             exceptionState.throwTypeError("An invalid item cannot be appended to a list.");
-            return 0;
+            return nullptr;
         }
 
         RefPtr<ItemPropertyType> value = toDerived()->target()->appendItem(getValueForInsertionFromTearOff(item));
@@ -204,7 +204,7 @@ protected:
     PassRefPtr<ItemTearOffType> createItemTearOff(PassRefPtr<ItemPropertyType> value)
     {
         if (!value)
-            return 0;
+            return nullptr;
 
         return ItemTraits::createTearOff(value, toDerived()->contextElement(), toDerived()->propertyIsAnimVal(), toDerived()->attributeName());
     }

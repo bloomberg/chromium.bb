@@ -374,7 +374,7 @@ void SQLTransactionBackend::doCleanup()
 {
     if (!m_frontend)
         return;
-    m_frontend = 0; // Break the reference cycle. See comment about the life-cycle above.
+    m_frontend = nullptr; // Break the reference cycle. See comment about the life-cycle above.
 
     ASSERT(database()->databaseContext()->databaseThread()->isDatabaseThread());
 
@@ -417,7 +417,7 @@ void SQLTransactionBackend::doCleanup()
     // SQLTransactionBackend is guaranteed to not destruct until the frontend
     // is also destructing.
 
-    m_wrapper = 0;
+    m_wrapper = nullptr;
 }
 
 AbstractSQLStatement* SQLTransactionBackend::currentStatement()
@@ -645,7 +645,7 @@ SQLTransactionState SQLTransactionBackend::runStatements()
 
 void SQLTransactionBackend::getNextStatement()
 {
-    m_currentStatementBackend = 0;
+    m_currentStatementBackend = nullptr;
 
     MutexLocker locker(m_statementMutex);
     if (!m_statementQueue.isEmpty())

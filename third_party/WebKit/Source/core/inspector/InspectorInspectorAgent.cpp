@@ -158,8 +158,8 @@ void InspectorInspectorAgent::inspect(PassRefPtr<TypeBuilder::Runtime::RemoteObj
 {
     if (m_state->getBoolean(InspectorAgentState::inspectorAgentEnabled) && m_frontend) {
         m_frontend->inspector()->inspect(objectToInspect, hints);
-        m_pendingInspectData.first = 0;
-        m_pendingInspectData.second = 0;
+        m_pendingInspectData.first = nullptr;
+        m_pendingInspectData.second = nullptr;
         return;
     }
     m_pendingInspectData.first = objectToInspect;

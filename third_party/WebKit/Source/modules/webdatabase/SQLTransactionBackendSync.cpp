@@ -78,17 +78,17 @@ PassRefPtr<SQLResultSet> SQLTransactionBackendSync::executeSQL(const String& sql
     if (!m_database->opened()) {
         m_database->setLastErrorMessage("cannot executeSQL because the database is not open");
         exceptionState.throwDOMException(UnknownError, SQLError::unknownErrorMessage);
-        return 0;
+        return nullptr;
     }
 
     if (m_hasVersionMismatch) {
         m_database->setLastErrorMessage("cannot executeSQL because there is a version mismatch");
         exceptionState.throwDOMException(VersionError, SQLError::versionErrorMessage);
-        return 0;
+        return nullptr;
     }
 
     if (sqlStatement.isEmpty())
-        return 0;
+        return nullptr;
 
     int permissions = DatabaseAuthorizer::ReadWriteMask;
     if (!m_database->databaseContext()->allowDatabaseAccess())
@@ -106,7 +106,7 @@ PassRefPtr<SQLResultSet> SQLTransactionBackendSync::executeSQL(const String& sql
         resultSet = statement.execute(m_database.get(), exceptionState);
         if (!resultSet) {
             if (m_sqliteTransaction->wasRolledBackBySqlite())
-                return 0;
+                return nullptr;
 
             if (exceptionState.code() == QuotaExceededError) {
                 if (m_transactionClient->didExceedQuota(database())) {
@@ -114,7 +114,7 @@ PassRefPtr<SQLResultSet> SQLTransactionBackendSync::executeSQL(const String& sql
                     retryStatement = true;
                 } else {
                     m_database->setLastErrorMessage("there was not enough remaining storage space");
-                    return 0;
+                    return nullptr;
                 }
             }
         }

@@ -41,7 +41,7 @@ AbstractInlineTextBox::InlineToAbstractInlineTextBoxHashMap* AbstractInlineTextB
 PassRefPtr<AbstractInlineTextBox> AbstractInlineTextBox::getOrCreate(RenderText* renderText, InlineTextBox* inlineTextBox)
 {
     if (!inlineTextBox)
-        return 0;
+        return nullptr;
 
     if (!gAbstractInlineTextBoxMap)
         gAbstractInlineTextBoxMap = new InlineToAbstractInlineTextBoxHashMap();
@@ -76,7 +76,7 @@ void AbstractInlineTextBox::detach()
 PassRefPtr<AbstractInlineTextBox> AbstractInlineTextBox::nextInlineTextBox() const
 {
     if (!m_inlineTextBox)
-        return 0;
+        return nullptr;
 
     return getOrCreate(m_renderText, m_inlineTextBox->nextTextBox());
 }

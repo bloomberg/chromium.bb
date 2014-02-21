@@ -84,7 +84,7 @@ TreeScope::~TreeScope()
 
     if (m_selection) {
         m_selection->clearTreeScope();
-        m_selection = 0;
+        m_selection = nullptr;
     }
 
     if (m_parentTreeScope)

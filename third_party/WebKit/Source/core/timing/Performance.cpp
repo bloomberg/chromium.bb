@@ -52,7 +52,7 @@ Performance::Performance(Frame* frame)
     : DOMWindowProperty(frame)
     , m_resourceTimingBufferSize(defaultResourceTimingBufferSize)
     , m_referenceTime(frame->document()->loader()->timing()->referenceMonotonicTime())
-    , m_userTiming(0)
+    , m_userTiming(nullptr)
 {
     ASSERT(m_referenceTime);
     ScriptWrappable::init(this);

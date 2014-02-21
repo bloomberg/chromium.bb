@@ -147,7 +147,7 @@ PassRefPtr<Range> PlainTextRange::createRangeFor(const ContainerNode& scope, Get
     }
 
     if (!startRangeFound)
-        return 0;
+        return nullptr;
 
     if (length() && end() > docTextPosition) { // end() is out of bounds
         resultRange->setEnd(textRunRange->endContainer(), textRunRange->endOffset(), IGNORE_EXCEPTION);

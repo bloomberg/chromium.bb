@@ -57,7 +57,7 @@ PassRefPtr<AudioBufferSourceNode> AudioBufferSourceNode::create(AudioContext* co
 
 AudioBufferSourceNode::AudioBufferSourceNode(AudioContext* context, float sampleRate)
     : AudioScheduledSourceNode(context, sampleRate)
-    , m_buffer(0)
+    , m_buffer(nullptr)
     , m_isLooping(false)
     , m_loopStart(0)
     , m_loopEnd(0)

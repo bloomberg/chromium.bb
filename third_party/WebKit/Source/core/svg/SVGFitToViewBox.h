@@ -82,8 +82,8 @@ public:
 protected:
     explicit SVGFitToViewBox(SVGElement*, PropertyMapPolicy = PropertyMapPolicyAdd);
     void updateViewBox(const FloatRect&);
-    void clearViewBox() { m_viewBox = 0; }
-    void clearPreserveAspectRatio() { m_preserveAspectRatio = 0; }
+    void clearViewBox() { m_viewBox = nullptr; }
+    void clearPreserveAspectRatio() { m_preserveAspectRatio = nullptr; }
 
 private:
     RefPtr<SVGAnimatedRect> m_viewBox;

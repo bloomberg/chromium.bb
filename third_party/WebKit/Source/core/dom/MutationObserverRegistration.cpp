@@ -94,7 +94,7 @@ void MutationObserverRegistration::clearTransientRegistrations()
     m_transientRegistrationNodes.clear();
 
     ASSERT(m_registrationNodeKeepAlive);
-    m_registrationNodeKeepAlive = 0; // Balanced in observeSubtreeNodeWillDetach.
+    m_registrationNodeKeepAlive = nullptr; // Balanced in observeSubtreeNodeWillDetach.
 }
 
 void MutationObserverRegistration::unregister()

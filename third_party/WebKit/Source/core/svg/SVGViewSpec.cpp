@@ -76,7 +76,7 @@ SVGElement* SVGViewSpec::viewTarget() const
 
 void SVGViewSpec::detachContextElement()
 {
-    m_transform = 0;
+    m_transform = nullptr;
     clearViewBox();
     clearPreserveAspectRatio();
     m_contextElement = 0;

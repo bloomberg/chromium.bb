@@ -118,10 +118,10 @@ PassRefPtr<MemoryActivatedFont> loadFontFromBrowserProcess(NSFont* nsFont)
         // font due to being blocked by the sandbox.
         // This by definition shouldn't happen if there is no sandbox support.
         ASSERT_NOT_REACHED();
-        return 0;
+        return nullptr;
     }
     if (!sandboxSupport->loadFont(nsFont, &tmpCGFont, &fontID))
-        return 0;
+        return nullptr;
 
     RetainPtr<CGFontRef> cgFont(tmpCGFont);
     // Now that we have the fontID from the browser process, we can consult

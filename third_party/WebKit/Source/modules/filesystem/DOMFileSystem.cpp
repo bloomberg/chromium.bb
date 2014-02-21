@@ -64,7 +64,7 @@ PassRefPtr<DOMFileSystem> DOMFileSystem::create(ExecutionContext* context, const
 PassRefPtr<DOMFileSystem> DOMFileSystem::createIsolatedFileSystem(ExecutionContext* context, const String& filesystemId)
 {
     if (filesystemId.isEmpty())
-        return 0;
+        return nullptr;
 
     StringBuilder filesystemName;
     filesystemName.append(createDatabaseIdentifierFromSecurityOrigin(context->securityOrigin()));

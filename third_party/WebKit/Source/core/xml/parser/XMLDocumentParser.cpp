@@ -320,7 +320,7 @@ void XMLDocumentParser::clearCurrentNodeStack()
     if (m_currentNode && m_currentNode != document())
         m_currentNode->deref();
     m_currentNode = 0;
-    m_leafTextNode = 0;
+    m_leafTextNode = nullptr;
 
     if (m_currentNodeStack.size()) { // Aborted parsing.
         for (size_t i = m_currentNodeStack.size() - 1; i != 0; --i)
@@ -390,7 +390,7 @@ void XMLDocumentParser::exitText()
 
     m_leafTextNode->appendData(toString(m_bufferedText.data(), m_bufferedText.size()));
     m_bufferedText.clear();
-    m_leafTextNode = 0;
+    m_leafTextNode = nullptr;
 }
 
 void XMLDocumentParser::detach()
@@ -460,7 +460,7 @@ void XMLDocumentParser::notifyFinished(Resource* unusedResource)
     m_pendingScript = 0;
 
     RefPtr<Element> e = m_scriptElement;
-    m_scriptElement = 0;
+    m_scriptElement = nullptr;
 
     ScriptLoader* scriptLoader = toScriptLoaderIfPossible(e.get());
     ASSERT(scriptLoader);
@@ -475,7 +475,7 @@ void XMLDocumentParser::notifyFinished(Resource* unusedResource)
         scriptLoader->dispatchLoadEvent();
     }
 
-    m_scriptElement = 0;
+    m_scriptElement = nullptr;
 
     if (!isDetached() && !m_requestingScript)
         resumeParsing();
@@ -733,7 +733,7 @@ PassRefPtr<XMLParserContext> XMLParserContext::createMemoryParser(xmlSAXHandlerP
     xmlParserCtxtPtr parser = xmlCreateMemoryParserCtxt(chunk.data(), chunk.length());
 
     if (!parser)
-        return 0;
+        return nullptr;
 
     // Copy the sax handler
     memcpy(parser->sax, handlers, sizeof(xmlSAXHandler));
@@ -765,7 +765,7 @@ bool XMLDocumentParser::supportsXMLVersion(const String& version)
 XMLDocumentParser::XMLDocumentParser(Document* document, FrameView* frameView)
     : ScriptableDocumentParser(document)
     , m_view(frameView)
-    , m_context(0)
+    , m_context(nullptr)
     , m_currentNode(document)
     , m_isCurrentlyParsing8BitChunk(false)
     , m_sawError(false)
@@ -788,7 +788,7 @@ XMLDocumentParser::XMLDocumentParser(Document* document, FrameView* frameView)
 XMLDocumentParser::XMLDocumentParser(DocumentFragment* fragment, Element* parentElement, ParserContentPolicy parserContentPolicy)
     : ScriptableDocumentParser(&fragment->document(), parserContentPolicy)
     , m_view(0)
-    , m_context(0)
+    , m_context(nullptr)
     , m_currentNode(fragment)
     , m_isCurrentlyParsing8BitChunk(false)
     , m_sawError(false)
@@ -1072,7 +1072,7 @@ void XMLDocumentParser::endElementNs()
             if (m_pendingScript)
                 pauseParsing();
         } else {
-            m_scriptElement = 0;
+            m_scriptElement = nullptr;
         }
 
         // JavaScript may have detached the parser
@@ -1453,7 +1453,7 @@ void XMLDocumentParser::doEnd()
                 finishParsing(context());
             }
 
-            m_context = 0;
+            m_context = nullptr;
         }
     }
 

@@ -251,7 +251,7 @@ Document* XMLHttpRequest::responseXML(ExceptionState& exceptionState)
         if ((m_response.isHTTP() && !responseIsXML() && !isHTML)
             || (isHTML && m_responseTypeCode == ResponseTypeDefault)
             || executionContext()->isWorkerGlobalScope()) {
-            m_responseDocument = 0;
+            m_responseDocument = nullptr;
         } else {
             DocumentInit init = DocumentInit::fromContext(document()->contextDocument(), m_url);
             if (isHTML)
@@ -263,7 +263,7 @@ Document* XMLHttpRequest::responseXML(ExceptionState& exceptionState)
             m_responseDocument->setSecurityOrigin(securityOrigin());
             m_responseDocument->setContextFeatures(document()->contextFeatures());
             if (!m_responseDocument->wellFormed())
-                m_responseDocument = 0;
+                m_responseDocument = nullptr;
         }
         m_createdDocument = true;
     }
@@ -767,7 +767,7 @@ void XMLHttpRequest::sendBytesData(const void* data, size_t length, ExceptionSta
 
 void XMLHttpRequest::sendForInspectorXHRReplay(PassRefPtr<FormData> formData, ExceptionState& exceptionState)
 {
-    m_requestEntityBody = formData ? formData->deepCopy() : 0;
+    m_requestEntityBody = formData ? formData->deepCopy() : nullptr;
     createRequest(exceptionState);
     m_exceptionCode = exceptionState.code();
 }
@@ -808,7 +808,7 @@ void XMLHttpRequest::createRequest(ExceptionState& exceptionState)
     if (responseTypeCode() == ResponseTypeBlob)
         request.setDownloadToFile(true);
 
-    InspectorInstrumentation::willLoadXHR(executionContext(), this, this, m_method, m_url, m_async, m_requestEntityBody ? m_requestEntityBody->deepCopy() : 0, m_requestHeaders, m_includeCredentials);
+    InspectorInstrumentation::willLoadXHR(executionContext(), this, this, m_method, m_url, m_async, m_requestEntityBody ? m_requestEntityBody->deepCopy() : nullptr, m_requestHeaders, m_includeCredentials);
 
     if (m_requestEntityBody) {
         ASSERT(m_method != "GET");
@@ -958,11 +958,11 @@ void XMLHttpRequest::clearResponse()
     m_responseText.clear();
 
     m_createdDocument = false;
-    m_responseDocument = 0;
+    m_responseDocument = nullptr;
 
-    m_responseBlob = 0;
+    m_responseBlob = nullptr;
 
-    m_responseStream = 0;
+    m_responseStream = nullptr;
 
     // These variables may referred by the response accessors. So, we can clear
     // this only when we clear the response holder variables above.
@@ -973,7 +973,7 @@ void XMLHttpRequest::clearResponse()
 void XMLHttpRequest::clearRequest()
 {
     m_requestHeaders.clear();
-    m_requestEntityBody = 0;
+    m_requestEntityBody = nullptr;
 }
 
 void XMLHttpRequest::handleDidFailGeneric()
@@ -1269,7 +1269,7 @@ void XMLHttpRequest::didFinishLoading(unsigned long identifier, double)
     RefPtrWillBeRawPtr<XMLHttpRequest> protect(this);
 
     if (m_loader) {
-        m_loader = 0;
+        m_loader = nullptr;
         dropProtection();
     }
 

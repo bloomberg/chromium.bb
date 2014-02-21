@@ -38,7 +38,7 @@ PassRefPtrWillBeRawPtr<StyleRuleImport> StyleRuleImport::create(const String& hr
 
 StyleRuleImport::StyleRuleImport(const String& href, PassRefPtr<MediaQuerySet> media)
     : StyleRuleBase(Import)
-    , m_parentStyleSheet(0)
+    , m_parentStyleSheet(nullptr)
     , m_styleSheetClient(this)
     , m_strHref(href)
     , m_mediaQueries(media)

@@ -291,7 +291,7 @@ PassRefPtrWillBeRawPtr<CSSValue> HTMLAttributeEquivalent::attributeValueAsCSSVal
 {
     ASSERT(element);
     if (!element->hasAttribute(m_attrName))
-        return 0;
+        return nullptr;
 
     RefPtr<MutableStylePropertySet> dummyStyle;
     dummyStyle = MutableStylePropertySet::create();
@@ -320,10 +320,10 @@ PassRefPtrWillBeRawPtr<CSSValue> HTMLFontSizeEquivalent::attributeValueAsCSSValu
 {
     ASSERT(element);
     if (!element->hasAttribute(m_attrName))
-        return 0;
+        return nullptr;
     CSSValueID size;
     if (!HTMLFontElement::cssValueFromFontSizeNumber(element->getAttribute(m_attrName), size))
-        return 0;
+        return nullptr;
     return CSSPrimitiveValue::createIdentifier(size);
 }
 
@@ -350,7 +350,7 @@ EditingStyle::EditingStyle(const Position& position, PropertiesToInclude propert
 }
 
 EditingStyle::EditingStyle(const StylePropertySet* style)
-    : m_mutableStyle(style ? style->mutableCopy() : 0)
+    : m_mutableStyle(style ? style->mutableCopy() : nullptr)
     , m_shouldUseFixedDefaultFontSize(false)
     , m_fontSizeDelta(NoFontDelta)
 {
@@ -358,7 +358,7 @@ EditingStyle::EditingStyle(const StylePropertySet* style)
 }
 
 EditingStyle::EditingStyle(CSSPropertyID propertyID, const String& value)
-    : m_mutableStyle(0)
+    : m_mutableStyle(nullptr)
     , m_shouldUseFixedDefaultFontSize(false)
     , m_fontSizeDelta(NoFontDelta)
 {
@@ -1002,7 +1002,7 @@ static inline bool elementMatchesAndPropertyIsNotInInlineStyleDecl(const HTMLEle
 static PassRefPtr<MutableStylePropertySet> extractEditingProperties(const StylePropertySet* style, EditingStyle::PropertiesToInclude propertiesToInclude)
 {
     if (!style)
-        return 0;
+        return nullptr;
 
     switch (propertiesToInclude) {
     case EditingStyle::AllProperties:
@@ -1013,7 +1013,7 @@ static PassRefPtr<MutableStylePropertySet> extractEditingProperties(const StyleP
     }
 
     ASSERT_NOT_REACHED();
-    return 0;
+    return nullptr;
 }
 
 void EditingStyle::mergeInlineAndImplicitStyleOfElement(Element* element, CSSPropertyOverrideMode mode, PropertiesToInclude propertiesToInclude)
@@ -1104,7 +1104,7 @@ void EditingStyle::mergeStyle(const StylePropertySet* style, CSSPropertyOverride
                 mergeTextDecorationValues(toCSSValueList(value.get()), toCSSValueList(property.value()));
                 continue;
             }
-            value = 0; // text-decoration: none is equivalent to not having the property
+            value = nullptr; // text-decoration: none is equivalent to not having the property
         }
 
         if (mode == OverrideValues || (mode == DoNotOverrideValues && !value))
@@ -1232,7 +1232,7 @@ int EditingStyle::legacyFontSize(Document* document) const
 PassRefPtr<EditingStyle> EditingStyle::styleAtSelectionStart(const VisibleSelection& selection, bool shouldUseBackgroundColorInEffect)
 {
     if (selection.isNone())
-        return 0;
+        return nullptr;
 
     Position position = adjustedSelectionStartForStyleComputation(selection);
 
@@ -1246,7 +1246,7 @@ PassRefPtr<EditingStyle> EditingStyle::styleAtSelectionStart(const VisibleSelect
 
     Element* element = position.element();
     if (!element)
-        return 0;
+        return nullptr;
 
     RefPtr<EditingStyle> style = EditingStyle::create(element, EditingStyle::AllProperties);
     style->mergeTypingStyle(&element->document());
@@ -1635,7 +1635,7 @@ PassRefPtrWillBeRawPtr<CSSValue> backgroundColorInEffect(Node* node)
         if (!hasTransparentBackgroundColor(ancestorStyle.get()))
             return ancestorStyle->getPropertyCSSValue(CSSPropertyBackgroundColor);
     }
-    return 0;
+    return nullptr;
 }
 
 }

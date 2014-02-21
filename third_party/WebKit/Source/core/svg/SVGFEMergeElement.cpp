@@ -48,13 +48,13 @@ PassRefPtr<FilterEffect> SVGFEMergeElement::build(SVGFilterBuilder* filterBuilde
         if (element->hasTagName(SVGNames::feMergeNodeTag)) {
             FilterEffect* mergeEffect = filterBuilder->getEffectById(AtomicString(toSVGFEMergeNodeElement(element)->in1()->currentValue()->value()));
             if (!mergeEffect)
-                return 0;
+                return nullptr;
             mergeInputs.append(mergeEffect);
         }
     }
 
     if (mergeInputs.isEmpty())
-        return 0;
+        return nullptr;
 
     return effect.release();
 }

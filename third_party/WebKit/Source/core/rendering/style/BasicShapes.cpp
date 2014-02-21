@@ -405,7 +405,7 @@ PassRefPtr<BasicShape> BasicShapeInset::blend(const BasicShape* other, double) c
 {
     ASSERT(type() == other->type());
     // FIXME: Implement blend for BasicShapeInset.
-    return 0;
+    return nullptr;
 }
 
 bool BasicShapeInset::operator==(const BasicShape& o) const

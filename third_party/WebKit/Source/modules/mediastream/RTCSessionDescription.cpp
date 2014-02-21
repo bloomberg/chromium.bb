@@ -54,7 +54,7 @@ PassRefPtr<RTCSessionDescription> RTCSessionDescription::create(const Dictionary
     bool ok = descriptionInitDict.get("type", type);
     if (ok && !verifyType(type)) {
         exceptionState.throwDOMException(TypeMismatchError, constructIllegalTypeExceptionMessage(type));
-        return 0;
+        return nullptr;
     }
 
     String sdp;

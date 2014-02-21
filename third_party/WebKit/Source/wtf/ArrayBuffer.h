@@ -104,7 +104,7 @@ PassRefPtr<ArrayBuffer> ArrayBuffer::create(const void* source, unsigned byteLen
 {
     ArrayBufferContents contents(byteLength, 1, ArrayBufferContents::ZeroInitialize);
     if (!contents.data())
-        return 0;
+        return nullptr;
     RefPtr<ArrayBuffer> buffer = adoptRef(new ArrayBuffer(contents));
     memcpy(buffer->data(), source, byteLength);
     return buffer.release();
@@ -124,7 +124,7 @@ PassRefPtr<ArrayBuffer> ArrayBuffer::create(unsigned numElements, unsigned eleme
 {
     ArrayBufferContents contents(numElements, elementByteSize, policy);
     if (!contents.data())
-        return 0;
+        return nullptr;
     return adoptRef(new ArrayBuffer(contents));
 }
 

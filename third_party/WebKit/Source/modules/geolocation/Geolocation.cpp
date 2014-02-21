@@ -45,7 +45,7 @@ static const char framelessDocumentErrorMessage[] = "Geolocation cannot be used 
 static PassRefPtrWillBeRawPtr<Geoposition> createGeoposition(GeolocationPosition* position)
 {
     if (!position)
-        return 0;
+        return nullptr;
 
     RefPtrWillBeRawPtr<Coordinates> coordinates = Coordinates::create(
         position->latitude(),

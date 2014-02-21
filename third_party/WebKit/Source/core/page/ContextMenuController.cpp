@@ -60,7 +60,7 @@ void ContextMenuController::clearContextMenu()
     m_contextMenu.clear();
     if (m_menuProvider)
         m_menuProvider->contextMenuCleared();
-    m_menuProvider = 0;
+    m_menuProvider = nullptr;
     m_hitTestResult = HitTestResult();
     m_client->clearContextMenu();
 }

@@ -70,7 +70,7 @@ PassRefPtrWillBeRawPtr<DOMPlugin> DOMMimeType::enabledPlugin() const
     // to bounce through the page or mainframe or loader to get there.
     // Something like: m_frame->host()->client()->allowPlugins().
     if (!m_frame || !m_frame->page() || !m_frame->page()->mainFrame()->loader().allowPlugins(NotAboutToInstantiatePlugin))
-        return 0;
+        return nullptr;
 
     return DOMPlugin::create(m_pluginData.get(), m_frame, m_pluginData->mimePluginIndices()[m_index]);
 }

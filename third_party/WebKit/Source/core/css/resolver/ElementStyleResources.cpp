@@ -54,7 +54,7 @@ PassRefPtr<StyleImage> ElementStyleResources::styleImage(const TextLinkColors& t
     if (value->isCursorImageValue())
         return cursorOrPendingFromValue(property, toCSSCursorImageValue(value));
 
-    return 0;
+    return nullptr;
 }
 
 PassRefPtr<StyleImage> ElementStyleResources::generatedOrPendingFromValue(CSSPropertyID property, CSSImageGeneratorValue* value)

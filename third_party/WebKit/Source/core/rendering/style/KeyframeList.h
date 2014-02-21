@@ -71,8 +71,8 @@ public:
     KeyframeList(RenderObject&, const AtomicString& animationName)
         : m_animationName(animationName)
     {
-        insert(KeyframeValue(0, 0));
-        insert(KeyframeValue(1, 0));
+        insert(KeyframeValue(0, nullptr));
+        insert(KeyframeValue(1, nullptr));
     }
     ~KeyframeList();
 

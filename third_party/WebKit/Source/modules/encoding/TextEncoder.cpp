@@ -48,13 +48,13 @@ PassRefPtrWillBeRawPtr<TextEncoder> TextEncoder::create(const String& utfLabel, 
     WTF::TextEncoding encoding(encodingLabel);
     if (!encoding.isValid()) {
         exceptionState.throwTypeError("The encoding label provided ('" + encodingLabel + "') is invalid.");
-        return 0;
+        return nullptr;
     }
 
     String name(encoding.name());
     if (name != "UTF-8" && name != "UTF-16LE" && name != "UTF-16BE") {
         exceptionState.throwTypeError("The encoding provided ('" + encodingLabel + "') is not one of 'utf-8', 'utf-16', or 'utf-16be'.");
-        return 0;
+        return nullptr;
     }
 
     return adoptRefWillBeNoop(new TextEncoder(encoding.name()));

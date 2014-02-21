@@ -41,7 +41,7 @@ AXScrollbar::AXScrollbar(Scrollbar* scrollbar)
 
 void AXScrollbar::detachFromParent()
 {
-    m_scrollbar = 0;
+    m_scrollbar = nullptr;
     AXMockObject::detachFromParent();
 }
 

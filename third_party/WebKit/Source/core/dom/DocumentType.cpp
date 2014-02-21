@@ -71,7 +71,7 @@ Node::InsertionNotificationRequest DocumentType::insertedInto(ContainerNode* ins
 
 void DocumentType::removedFrom(ContainerNode* insertionPoint)
 {
-    document().setDoctype(0);
+    document().setDoctype(nullptr);
     Node::removedFrom(insertionPoint);
 }
 

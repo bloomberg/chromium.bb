@@ -477,7 +477,7 @@ static bool needInterchangeNewlineAfter(const VisiblePosition& v)
 static PassRefPtr<EditingStyle> styleFromMatchedRulesAndInlineDecl(const Node* node)
 {
     if (!node->isHTMLElement())
-        return 0;
+        return nullptr;
 
     // FIXME: Having to const_cast here is ugly, but it is quite a bit of work to untangle
     // the non-const-ness of styleFromMatchedRulesForElement.
@@ -710,7 +710,7 @@ PassRefPtr<DocumentFragment> createFragmentFromMarkupWithContext(Document& docum
     RefPtr<Node> nodeBeforeContext;
     RefPtr<Node> nodeAfterContext;
     if (!findNodesSurroundingContext(taggedDocument.get(), nodeBeforeContext, nodeAfterContext))
-        return 0;
+        return nullptr;
 
     RefPtr<Range> range = Range::create(*taggedDocument.get(),
         positionAfterNode(nodeBeforeContext.get()).parentAnchoredEquivalent(),
@@ -815,7 +815,7 @@ static bool shouldPreserveNewline(const Range& range)
 PassRefPtr<DocumentFragment> createFragmentFromText(Range* context, const String& text)
 {
     if (!context)
-        return 0;
+        return nullptr;
 
     Document& document = context->ownerDocument();
     RefPtr<DocumentFragment> fragment = document.createDocumentFragment();
@@ -921,7 +921,7 @@ PassRefPtr<DocumentFragment> createFragmentForInnerOuterHTML(const String& marku
     bool wasValid = fragment->parseXML(markup, contextElement, parserContentPolicy);
     if (!wasValid) {
         exceptionState.throwDOMException(SyntaxError, "The provided markup is invalid XML, and therefore cannot be inserted into an XML document.");
-        return 0;
+        return nullptr;
     }
     return fragment.release();
 }
@@ -942,7 +942,7 @@ PassRefPtr<DocumentFragment> createFragmentForTransformToFragment(const String& 
     } else {
         bool successfulParse = fragment->parseXML(sourceString, 0);
         if (!successfulParse)
-            return 0;
+            return nullptr;
     }
 
     // FIXME: Do we need to mess with URLs here?
@@ -967,12 +967,12 @@ PassRefPtr<DocumentFragment> createContextualFragment(const String& markup, HTML
     if (element->ieForbidsInsertHTML() || element->hasLocalName(colTag) || element->hasLocalName(colgroupTag) || element->hasLocalName(framesetTag)
         || element->hasLocalName(headTag) || element->hasLocalName(styleTag) || element->hasLocalName(titleTag)) {
         exceptionState.throwDOMException(NotSupportedError, "The range's container is '" + element->localName() + "', which is not supported.");
-        return 0;
+        return nullptr;
     }
 
     RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(markup, element, parserContentPolicy, "createContextualFragment", exceptionState);
     if (!fragment)
-        return 0;
+        return nullptr;
 
     // We need to pop <html> and <body> elements and remove <head> to
     // accommodate folks passing complete HTML documents to make the

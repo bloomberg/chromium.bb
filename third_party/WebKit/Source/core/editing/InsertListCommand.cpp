@@ -65,7 +65,7 @@ PassRefPtr<HTMLElement> InsertListCommand::mergeWithNeighboringLists(PassRefPtr<
         mergeIdenticalElements(previousList, list);
 
     if (!list)
-        return 0;
+        return nullptr;
 
     Element* nextSibling = ElementTraversal::nextSibling(*list);
     if (!nextSibling || !nextSibling->isHTMLElement())
@@ -333,7 +333,7 @@ PassRefPtr<HTMLElement> InsertListCommand::listifyParagraph(const VisiblePositio
     VisiblePosition end = endOfParagraph(start, CanSkipOverEditingBoundary);
 
     if (start.isNull() || end.isNull())
-        return 0;
+        return nullptr;
 
     // Check for adjoining lists.
     RefPtr<HTMLElement> listItemElement = createListItemElement(document());

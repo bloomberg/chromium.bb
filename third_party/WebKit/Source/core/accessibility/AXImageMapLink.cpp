@@ -37,8 +37,8 @@ namespace WebCore {
 using namespace HTMLNames;
 
 AXImageMapLink::AXImageMapLink()
-    : m_areaElement(0)
-    , m_mapElement(0)
+    : m_areaElement(nullptr)
+    , m_mapElement(nullptr)
 {
 }
 
@@ -49,8 +49,8 @@ AXImageMapLink::~AXImageMapLink()
 void AXImageMapLink::detachFromParent()
 {
     AXMockObject::detachFromParent();
-    m_areaElement = 0;
-    m_mapElement = 0;
+    m_areaElement = nullptr;
+    m_mapElement = nullptr;
 }
 
 PassRefPtr<AXImageMapLink> AXImageMapLink::create()

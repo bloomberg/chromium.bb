@@ -86,12 +86,12 @@ CSSDefaultStyleSheets::CSSDefaultStyleSheets()
     , m_defaultPrintStyle(0)
     , m_defaultViewSourceStyle(0)
     , m_defaultXHTMLMobileProfileStyle(0)
-    , m_defaultStyleSheet(0)
-    , m_viewportStyleSheet(0)
-    , m_quirksStyleSheet(0)
-    , m_svgStyleSheet(0)
-    , m_mediaControlsStyleSheet(0)
-    , m_fullscreenStyleSheet(0)
+    , m_defaultStyleSheet(nullptr)
+    , m_viewportStyleSheet(nullptr)
+    , m_quirksStyleSheet(nullptr)
+    , m_svgStyleSheet(nullptr)
+    , m_mediaControlsStyleSheet(nullptr)
+    , m_fullscreenStyleSheet(nullptr)
 {
     m_defaultStyle = RuleSet::create().leakPtr();
     m_defaultViewportStyle = RuleSet::create().leakPtr();

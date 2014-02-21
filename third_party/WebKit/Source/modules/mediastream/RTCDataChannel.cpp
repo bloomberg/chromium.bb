@@ -63,7 +63,7 @@ PassRefPtr<RTCDataChannel> RTCDataChannel::create(ExecutionContext* context, bli
     OwnPtr<blink::WebRTCDataChannelHandler> handler = adoptPtr(peerConnectionHandler->createDataChannel(label, init));
     if (!handler) {
         exceptionState.throwDOMException(NotSupportedError, "RTCDataChannel is not supported");
-        return 0;
+        return nullptr;
     }
     return adoptRef(new RTCDataChannel(context, handler.release()));
 }

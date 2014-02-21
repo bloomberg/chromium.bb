@@ -85,7 +85,7 @@ StyleEngine::StyleEngine(Document& document)
     , m_didCalculateResolver(false)
     // We don't need to create CSSFontSelector for imported document or
     // HTMLTemplateElement's document, because those documents have no frame.
-    , m_fontSelector(document.frame() ? CSSFontSelector::create(&document) : 0)
+    , m_fontSelector(document.frame() ? CSSFontSelector::create(&document) : nullptr)
 {
 }
 

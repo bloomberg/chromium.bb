@@ -252,7 +252,7 @@ TEST_F(AnimationDocumentTimelineTest, DelayBeforeAnimationStart)
     timing.iterationDuration = 2;
     timing.startDelay = 5;
 
-    RefPtr<Animation> anim = Animation::create(element.get(), 0, timing);
+    RefPtr<Animation> anim = Animation::create(element.get(), nullptr, timing);
 
     timeline->play(anim.get());
 
@@ -276,10 +276,10 @@ TEST_F(AnimationDocumentTimelineTest, PlayAfterDocumentDeref)
     timing.startDelay = 5;
 
     timeline = document->timeline();
-    element = 0;
-    document = 0;
+    element = nullptr;
+    document = nullptr;
 
-    RefPtr<Animation> anim = Animation::create(0, 0, timing);
+    RefPtr<Animation> anim = Animation::create(nullptr, nullptr, timing);
     // Test passes if this does not crash.
     timeline->play(anim.get());
 }

@@ -103,27 +103,27 @@ PassRefPtr<IDBRequest> IDBCursor::update(ScriptState* state, ScriptValue& value,
 
     if (!m_gotValue) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::noValueErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (isKeyCursor()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::isKeyCursorErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (isDeleted()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::sourceDeletedErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (m_transaction->isFinished()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (!m_transaction->isActive()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (m_transaction->isReadOnly()) {
         exceptionState.throwDOMException(ReadOnlyError, "The record may not be updated inside a read-only transaction.");
-        return 0;
+        return nullptr;
     }
 
     RefPtr<IDBObjectStore> objectStore = effectiveObjectStore();
@@ -133,7 +133,7 @@ PassRefPtr<IDBRequest> IDBCursor::update(ScriptState* state, ScriptValue& value,
         RefPtr<IDBKey> keyPathKey = createIDBKeyFromScriptValueAndKeyPath(m_request->requestState(), value, keyPath);
         if (!keyPathKey || !keyPathKey->isEqual(m_primaryKey.get())) {
             exceptionState.throwDOMException(DataError, "The effective object store of this cursor uses in-line keys and evaluating the key path of the value parameter results in a different value than the cursor's effective key.");
-            return 0;
+            return nullptr;
         }
     }
 
@@ -174,12 +174,12 @@ void IDBCursor::continueFunction(ExecutionContext* context, const ScriptValue& k
 {
     IDB_TRACE("IDBCursor::continue");
     DOMRequestState requestState(context);
-    RefPtr<IDBKey> key = keyValue.isUndefined() || keyValue.isNull() ? 0 : scriptValueToIDBKey(&requestState, keyValue);
+    RefPtr<IDBKey> key = keyValue.isUndefined() || keyValue.isNull() ? nullptr : scriptValueToIDBKey(&requestState, keyValue);
     if (key && !key->isValid()) {
         exceptionState.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
         return;
     }
-    continueFunction(key.release(), 0, exceptionState);
+    continueFunction(key.release(), nullptr, exceptionState);
 }
 
 void IDBCursor::continuePrimaryKey(ExecutionContext* context, const ScriptValue& keyValue, const ScriptValue& primaryKeyValue, ExceptionState& exceptionState)
@@ -250,28 +250,28 @@ PassRefPtr<IDBRequest> IDBCursor::deleteFunction(ExecutionContext* context, Exce
     IDB_TRACE("IDBCursor::delete");
     if (m_transaction->isFinished()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (!m_transaction->isActive()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (m_transaction->isReadOnly()) {
         exceptionState.throwDOMException(ReadOnlyError, "The record may not be deleted inside a read-only transaction.");
-        return 0;
+        return nullptr;
     }
 
     if (!m_gotValue) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::noValueErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (isKeyCursor()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::isKeyCursorErrorMessage);
-        return 0;
+        return nullptr;
     }
     if (isDeleted()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::sourceDeletedErrorMessage);
-        return 0;
+        return nullptr;
     }
 
     RefPtr<IDBKeyRange> keyRange = IDBKeyRange::only(m_primaryKey, exceptionState);

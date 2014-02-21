@@ -67,14 +67,14 @@ PassRefPtr<UserMediaRequest> UserMediaRequest::create(ExecutionContext* context,
 {
     blink::WebMediaConstraints audio = parseOptions(options, "audio", exceptionState);
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     blink::WebMediaConstraints video = parseOptions(options, "video", exceptionState);
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     if (audio.isNull() && video.isNull())
-        return 0;
+        return nullptr;
 
     return adoptRef(new UserMediaRequest(context, controller, audio, video, successCallback, errorCallback));
 }

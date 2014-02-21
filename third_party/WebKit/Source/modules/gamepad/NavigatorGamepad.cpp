@@ -56,7 +56,7 @@ static void sampleGamepads(GamepadList* into)
             gamepad->buttons(webGamepad.buttonsLength, webGamepad.buttons);
             into->set(i, gamepad);
         } else {
-            into->set(i, 0);
+            into->set(i, nullptr);
         }
     }
 }

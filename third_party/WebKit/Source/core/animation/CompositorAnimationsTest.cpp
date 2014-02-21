@@ -182,7 +182,7 @@ public:
         return frames;
     }
 
-    PassRefPtr<KeyframeEffectModel> createKeyframeEffectModel(PassRefPtr<Keyframe> prpFrom, PassRefPtr<Keyframe> prpTo, PassRefPtr<Keyframe> prpC = 0, PassRefPtr<Keyframe> prpD = 0)
+    PassRefPtr<KeyframeEffectModel> createKeyframeEffectModel(PassRefPtr<Keyframe> prpFrom, PassRefPtr<Keyframe> prpTo, PassRefPtr<Keyframe> prpC = nullptr, PassRefPtr<Keyframe> prpD = nullptr)
     {
         RefPtr<Keyframe> from = prpFrom;
         RefPtr<Keyframe> to = prpTo;

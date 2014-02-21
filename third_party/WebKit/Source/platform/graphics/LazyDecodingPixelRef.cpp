@@ -50,7 +50,7 @@ SkData* LazyDecodingPixelRef::onRefEncodedData()
 {
     // If the image has been clipped or scaled, do not return the original encoded data, since
     // on playback it will not be known how the clipping/scaling was done.
-    RefPtr<SharedBuffer> buffer = 0;
+    RefPtr<SharedBuffer> buffer = nullptr;
     bool allDataReceived = false;
     m_frameGenerator->copyData(&buffer, &allDataReceived);
     if (buffer && allDataReceived) {

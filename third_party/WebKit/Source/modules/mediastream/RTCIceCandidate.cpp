@@ -45,7 +45,7 @@ PassRefPtr<RTCIceCandidate> RTCIceCandidate::create(const Dictionary& dictionary
     bool ok = dictionary.get("candidate", candidate);
     if (!ok || !candidate.length()) {
         exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::incorrectPropertyType("candidate", "is not a string, or is empty."));
-        return 0;
+        return nullptr;
     }
 
     String sdpMid;

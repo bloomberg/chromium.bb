@@ -792,7 +792,7 @@ PassRefPtr<HTMLElement> createDefaultParagraphElement(Document& document)
     }
 
     ASSERT_NOT_REACHED();
-    return 0;
+    return nullptr;
 }
 
 PassRefPtr<HTMLElement> createBreakElement(Document& document)

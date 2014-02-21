@@ -276,7 +276,7 @@ PassRefPtr<GCObservation> Internals::observeGC(ScriptValue scriptValue)
     ASSERT(!observedValue.IsEmpty());
     if (observedValue->IsNull() || observedValue->IsUndefined()) {
         V8ThrowException::throwTypeError("value to observe is null or undefined", v8::Isolate::GetCurrent());
-        return 0;
+        return nullptr;
     }
 
     return GCObservation::create(observedValue);
@@ -601,7 +601,7 @@ PassRefPtr<CSSComputedStyleDeclaration> Internals::computedStyleIncludingVisited
 {
     if (!node) {
         exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
-        return 0;
+        return nullptr;
     }
 
     bool allowVisitedStyle = true;
@@ -866,7 +866,7 @@ PassRefPtr<Range> Internals::markerRangeForNode(Node* node, const String& marker
 {
     DocumentMarker* marker = markerAt(node, markerType, index, exceptionState);
     if (!marker)
-        return 0;
+        return nullptr;
     return Range::create(node->document(), node, marker->startOffset(), node, marker->endOffset());
 }
 
@@ -1069,7 +1069,7 @@ PassRefPtr<Range> Internals::rangeFromLocationAndLength(Element* scope, int rang
 {
     if (!scope) {
         exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
-        return 0;
+        return nullptr;
     }
 
     // TextIterator depends on Layout information, make sure layout it up to date.
@@ -1118,7 +1118,7 @@ PassRefPtr<DOMPoint> Internals::touchPositionAdjustedToBestClickableNode(long x,
 {
     if (!document || !document->frame()) {
         exceptionState.throwDOMException(InvalidAccessError, document ? "The document's frame cannot be retrieved." : "The document provided is invalid.");
-        return 0;
+        return nullptr;
     }
 
     document->updateLayout();
@@ -1133,7 +1133,7 @@ PassRefPtr<DOMPoint> Internals::touchPositionAdjustedToBestClickableNode(long x,
     if (foundNode)
         return DOMPoint::create(adjustedPoint.x(), adjustedPoint.y());
 
-    return 0;
+    return nullptr;
 }
 
 Node* Internals::touchNodeAdjustedToBestClickableNode(long x, long y, long width, long height, Document* document, ExceptionState& exceptionState)
@@ -1158,7 +1158,7 @@ PassRefPtr<DOMPoint> Internals::touchPositionAdjustedToBestContextMenuNode(long 
 {
     if (!document || !document->frame()) {
         exceptionState.throwDOMException(InvalidAccessError, document ? "The document's frame cannot be retrieved." : "The document provided is invalid.");
-        return 0;
+        return nullptr;
     }
 
     document->updateLayout();
@@ -1198,7 +1198,7 @@ PassRefPtr<ClientRect> Internals::bestZoomableAreaForTouchPoint(long x, long y, 
 {
     if (!document || !document->frame()) {
         exceptionState.throwDOMException(InvalidAccessError, document ? "The document's frame cannot be retrieved." : "The document provided is invalid.");
-        return 0;
+        return nullptr;
     }
 
     document->updateLayout();
@@ -1212,7 +1212,7 @@ PassRefPtr<ClientRect> Internals::bestZoomableAreaForTouchPoint(long x, long y, 
     if (foundNode)
         return ClientRect::create(zoomableArea);
 
-    return 0;
+    return nullptr;
 }
 
 
@@ -1388,14 +1388,14 @@ PassRefPtr<LayerRectList> Internals::touchEventTargetLayerRects(Document* docume
 {
     if (!document || !document->view() || !document->page() || document != contextDocument()) {
         exceptionState.throwDOMException(InvalidAccessError, "The document provided is invalid.");
-        return 0;
+        return nullptr;
     }
 
     // Do any pending layout and compositing update (which may call touchEventTargetRectsChange) to ensure this
     // really takes any previous changes into account.
     forceCompositingUpdate(document, exceptionState);
     if (exceptionState.hadException())
-        return 0;
+        return nullptr;
 
     if (RenderView* view = document->renderView()) {
         if (RenderLayerCompositor* compositor = view->compositor()) {
@@ -1407,7 +1407,7 @@ PassRefPtr<LayerRectList> Internals::touchEventTargetLayerRects(Document* docume
         }
     }
 
-    return 0;
+    return nullptr;
 }
 
 PassRefPtr<NodeList> Internals::nodesFromRect(Document* document, int centerX, int centerY, unsigned topPadding, unsigned rightPadding,
@@ -1415,7 +1415,7 @@ PassRefPtr<NodeList> Internals::nodesFromRect(Document* document, int centerX, i
 {
     if (!document || !document->frame() || !document->frame()->view()) {
         exceptionState.throwDOMException(InvalidAccessError, "No view can be obtained from the provided document.");
-        return 0;
+        return nullptr;
     }
 
     Frame* frame = document->frame();
@@ -1423,7 +1423,7 @@ PassRefPtr<NodeList> Internals::nodesFromRect(Document* document, int centerX, i
     RenderView* renderView = document->renderView();
 
     if (!renderView)
-        return 0;
+        return nullptr;
 
     float zoomFactor = frame->pageZoomFactor();
     LayoutPoint point = roundedLayoutPoint(FloatPoint(centerX * zoomFactor + frameView->scrollX(), centerY * zoomFactor + frameView->scrollY()));
@@ -1440,7 +1440,7 @@ PassRefPtr<NodeList> Internals::nodesFromRect(Document* document, int centerX, i
 
     // When ignoreClipping is false, this method returns null for coordinates outside of the viewport.
     if (!request.ignoreClipping() && !frameView->visibleContentRect().intersects(HitTestLocation::rectForPoint(point, topPadding, rightPadding, bottomPadding, leftPadding)))
-        return 0;
+        return nullptr;
 
     Vector<RefPtr<Node> > matches;
 
@@ -1639,7 +1639,7 @@ static PassRefPtr<NodeList> paintOrderList(Element* element, ExceptionState& exc
 {
     if (!element) {
         exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
-        return 0;
+        return nullptr;
     }
 
     element->document().updateLayout();
@@ -1647,13 +1647,13 @@ static PassRefPtr<NodeList> paintOrderList(Element* element, ExceptionState& exc
     RenderObject* renderer = element->renderer();
     if (!renderer || !renderer->isBox()) {
         exceptionState.throwDOMException(InvalidAccessError, renderer ? "The provided element's renderer is not a box." : "The provided element has no renderer.");
-        return 0;
+        return nullptr;
     }
 
     RenderLayer* layer = toRenderBox(renderer)->layer();
     if (!layer) {
         exceptionState.throwDOMException(InvalidAccessError, "No render layer can be obtained from the provided element.");
-        return 0;
+        return nullptr;
     }
 
     Vector<RefPtr<Node> > nodes;
@@ -1834,7 +1834,7 @@ PassRefPtr<ClientRectList> Internals::repaintRects(Element* element, ExceptionSt
 {
     if (!element) {
         exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
-        return 0;
+        return nullptr;
     }
 
     if (RenderLayer* layer = getRenderLayerForElement(element, exceptionState)) {
@@ -1849,7 +1849,7 @@ PassRefPtr<ClientRectList> Internals::repaintRects(Element* element, ExceptionSt
     }
 
     exceptionState.throwDOMException(InvalidAccessError, "The provided element is not composited.");
-    return 0;
+    return nullptr;
 }
 
 String Internals::scrollingStateTreeAsText(Document* document, ExceptionState& exceptionState) const
@@ -1881,12 +1881,12 @@ PassRefPtr<ClientRectList> Internals::nonFastScrollableRects(Document* document,
 {
     if (!document || !document->frame()) {
         exceptionState.throwDOMException(InvalidAccessError, document ? "The document's frame cannot be retrieved." : "The document provided is invalid.");
-        return 0;
+        return nullptr;
     }
 
     Page* page = document->page();
     if (!page)
-        return 0;
+        return nullptr;
 
     return page->nonFastScrollableRects(document->frame());
 }
@@ -2234,7 +2234,7 @@ PassRefPtr<ClientRect> Internals::selectionBounds(ExceptionState& exceptionState
     Document* document = contextDocument();
     if (!document || !document->frame()) {
         exceptionState.throwDOMException(InvalidAccessError, document ? "The document's frame cannot be retrieved." : "No context document can be obtained.");
-        return 0;
+        return nullptr;
     }
 
     return ClientRect::create(document->frame()->selection().bounds());

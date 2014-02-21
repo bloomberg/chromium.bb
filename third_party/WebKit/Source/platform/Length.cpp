@@ -149,7 +149,7 @@ public:
         CalculationValue* value = m_map.get(index);
         if (value->hasOneRef()) {
             // Force the CalculationValue destructor early to avoid a potential recursive call inside HashMap remove().
-            m_map.set(index, 0);
+            m_map.set(index, nullptr);
             m_map.remove(index);
         } else {
             value->deref();

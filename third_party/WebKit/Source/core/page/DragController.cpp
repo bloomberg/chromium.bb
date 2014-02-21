@@ -129,9 +129,9 @@ static PassRefPtr<Clipboard> createDraggingClipboard(ClipboardAccessPolicy polic
 DragController::DragController(Page* page, DragClient* client)
     : m_page(page)
     , m_client(client)
-    , m_documentUnderMouse(0)
-    , m_dragInitiator(0)
-    , m_fileInputElementUnderMouse(0)
+    , m_documentUnderMouse(nullptr)
+    , m_dragInitiator(nullptr)
+    , m_fileInputElementUnderMouse(nullptr)
     , m_documentIsHandlingDrag(false)
     , m_dragDestinationAction(DragDestinationActionNone)
     , m_didInitiateDrag(false)
@@ -185,7 +185,7 @@ static PassRefPtr<DocumentFragment> documentFragmentFromDragData(DragData* dragD
         return createFragmentFromText(context.get(), dragData->asPlainText()).get();
     }
 
-    return 0;
+    return nullptr;
 }
 
 bool DragController::dragIsMove(FrameSelection& selection, DragData* dragData)
@@ -201,7 +201,7 @@ void DragController::cancelDrag()
 
 void DragController::dragEnded()
 {
-    m_dragInitiator = 0;
+    m_dragInitiator = nullptr;
     m_didInitiateDrag = false;
     m_page->dragCaretController().clear();
 }
@@ -226,7 +226,7 @@ void DragController::dragExited(DragData* dragData)
     mouseMovedIntoDocument(0);
     if (m_fileInputElementUnderMouse)
         m_fileInputElementUnderMouse->setCanReceiveDroppedFiles(false);
-    m_fileInputElementUnderMouse = 0;
+    m_fileInputElementUnderMouse = nullptr;
 }
 
 DragSession DragController::dragUpdated(DragData* dragData)
@@ -249,17 +249,17 @@ bool DragController::performDrag(DragData* dragData)
             clipboard->setAccessPolicy(ClipboardNumb); // Invalidate clipboard here for security
         }
         if (preventedDefault) {
-            m_documentUnderMouse = 0;
+            m_documentUnderMouse = nullptr;
             return true;
         }
     }
 
     if ((m_dragDestinationAction & DragDestinationActionEdit) && concludeEditDrag(dragData)) {
-        m_documentUnderMouse = 0;
+        m_documentUnderMouse = nullptr;
         return true;
     }
 
-    m_documentUnderMouse = 0;
+    m_documentUnderMouse = nullptr;
 
     if (operationForLoad(dragData) == DragOperationNone)
         return false;
@@ -410,7 +410,7 @@ bool DragController::tryDocumentDrag(DragData* dragData, DragDestinationAction a
     m_page->dragCaretController().clear();
     if (m_fileInputElementUnderMouse)
         m_fileInputElementUnderMouse->setCanReceiveDroppedFiles(false);
-    m_fileInputElementUnderMouse = 0;
+    m_fileInputElementUnderMouse = nullptr;
     return false;
 }
 
@@ -450,7 +450,7 @@ bool DragController::concludeEditDrag(DragData* dragData)
     RefPtr<HTMLInputElement> fileInput = m_fileInputElementUnderMouse;
     if (m_fileInputElementUnderMouse) {
         m_fileInputElementUnderMouse->setCanReceiveDroppedFiles(false);
-        m_fileInputElementUnderMouse = 0;
+        m_fileInputElementUnderMouse = nullptr;
     }
 
     if (!m_documentUnderMouse)

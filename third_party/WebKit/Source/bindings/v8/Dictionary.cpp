@@ -525,7 +525,7 @@ bool Dictionary::get(const String& key, RefPtr<EventTarget>& value) const
     if (!getKey(key, v8Value))
         return false;
 
-    value = 0;
+    value = nullptr;
     // We need to handle a DOMWindow specially, because a DOMWindow wrapper
     // exists on a prototype chain of v8Value.
     if (v8Value->IsObject()) {

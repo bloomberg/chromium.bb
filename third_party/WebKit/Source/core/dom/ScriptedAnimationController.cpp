@@ -110,7 +110,7 @@ void ScriptedAnimationController::dispatchEvents()
         // special casting window.
         // FIXME: We should not fire events for nodes that are no longer in the tree.
         if (DOMWindow* window = eventTarget->toDOMWindow())
-            window->dispatchEvent(events[i], 0);
+            window->dispatchEvent(events[i], nullptr);
         else
             eventTarget->dispatchEvent(events[i]);
     }

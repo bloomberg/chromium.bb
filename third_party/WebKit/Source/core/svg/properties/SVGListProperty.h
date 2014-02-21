@@ -64,7 +64,7 @@ public:
 
         // Reinitialize the wrapper cache to be equal to the new values size, after the XML DOM changed the list.
         if (newListSize)
-            wrappers->fill(0, newListSize);
+            wrappers->fill(nullptr, newListSize);
         else
             wrappers->clear();
     }
@@ -136,12 +136,12 @@ public:
     {
         ASSERT(m_wrappers);
         if (!canAlterList(exceptionState))
-            return 0;
+            return nullptr;
 
         // Not specified, but FF/Opera do it this way, and it's just sane.
         if (!passNewItem) {
             exceptionState.throwTypeError("The PassListItemType provided is invalid.");
-            return 0;
+            return nullptr;
         }
 
         RefPtr<ListItemTearOff> newItem = passNewItem;
@@ -185,7 +185,7 @@ public:
     {
         ASSERT(m_wrappers);
         if (!canGetItem(index, exceptionState))
-            return 0;
+            return nullptr;
 
         // Spec: Returns the specified item from the list. The returned item is the item itself and not a copy.
         // Any changes made to the item are immediately reflected in the list.
@@ -230,12 +230,12 @@ public:
     {
         ASSERT(m_wrappers);
         if (!canAlterList(exceptionState))
-            return 0;
+            return nullptr;
 
         // Not specified, but FF/Opera do it this way, and it's just sane.
         if (!passNewItem) {
             exceptionState.throwTypeError("The PassListItemType provided is invalid.");
-            return 0;
+            return nullptr;
         }
 
         // Spec: If the index is greater than or equal to numberOfItems, then the new item is appended to the end of the list.
@@ -303,12 +303,12 @@ public:
     {
         ASSERT(m_wrappers);
         if (!canReplaceItem(index, exceptionState))
-            return 0;
+            return nullptr;
 
         // Not specified, but FF/Opera do it this way, and it's just sane.
         if (!passNewItem) {
             exceptionState.throwTypeError("The PassListItemType provided is invalid.");
-            return 0;
+            return nullptr;
         }
 
         ASSERT(m_values->size() == m_wrappers->size());
@@ -323,7 +323,7 @@ public:
             ASSERT(m_wrappers->isEmpty());
             // 'passNewItem' already lived in our list, we removed it, and now we're empty, which means there's nothing to replace.
             exceptionState.throwDOMException(IndexSizeError, "The new item lived in this list, and has been removed.");
-            return 0;
+            return nullptr;
         }
 
         // Detach the existing wrapper.
@@ -369,7 +369,7 @@ public:
     {
         ASSERT(m_wrappers);
         if (!canRemoveItem(index, exceptionState))
-            return 0;
+            return nullptr;
 
         ASSERT(m_values->size() == m_wrappers->size());
 
@@ -406,12 +406,12 @@ public:
     {
         ASSERT(m_wrappers);
         if (!canAlterList(exceptionState))
-            return 0;
+            return nullptr;
 
         // Not specified, but FF/Opera do it this way, and it's just sane.
         if (!passNewItem) {
             exceptionState.throwTypeError("The PassListItemType provided is invalid.");
-            return 0;
+            return nullptr;
         }
 
         RefPtr<ListItemTearOff> newItem = passNewItem;

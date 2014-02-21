@@ -117,7 +117,7 @@ DocumentMarker::DocumentMarker(MarkerType type, unsigned startOffset, unsigned e
     : m_type(type)
     , m_startOffset(startOffset)
     , m_endOffset(endOffset)
-    , m_details(description.isEmpty() ? 0 : DocumentMarkerDescription::create(description))
+    , m_details(description.isEmpty() ? nullptr : DocumentMarkerDescription::create(description))
     , m_hash(0)
 {
 }
@@ -126,7 +126,7 @@ DocumentMarker::DocumentMarker(MarkerType type, unsigned startOffset, unsigned e
     : m_type(type)
     , m_startOffset(startOffset)
     , m_endOffset(endOffset)
-    , m_details(description.isEmpty() ? 0 : DocumentMarkerDescription::create(description))
+    , m_details(description.isEmpty() ? nullptr : DocumentMarkerDescription::create(description))
     , m_hash(hash)
 {
 }
