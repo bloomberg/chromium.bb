@@ -109,17 +109,17 @@ PassRefPtr<SVGFilterBuilder> RenderSVGResourceFilter::buildPrimitives(SVGFilter*
 
 bool RenderSVGResourceFilter::fitsInMaximumImageSize(const FloatSize& size, FloatSize& scale)
 {
-    bool matchesFilterSize = true;
-    if (size.width() * scale.width() > kMaxFilterSize) {
-        scale.setWidth(kMaxFilterSize / size.width());
-        matchesFilterSize = false;
-    }
-    if (size.height() * scale.height() > kMaxFilterSize) {
-        scale.setHeight(kMaxFilterSize / size.height());
-        matchesFilterSize = false;
-    }
+    FloatSize scaledSize(size);
+    scaledSize.scale(scale.width(), scale.height());
+    float scaledArea = scaledSize.width() * scaledSize.height();
 
-    return matchesFilterSize;
+    if (scaledArea <= FilterEffect::maxFilterArea())
+        return true;
+
+    // If area of scaled size is bigger than the upper limit, adjust the scale
+    // to fit.
+    scale.scale(sqrt(FilterEffect::maxFilterArea() / scaledArea));
+    return false;
 }
 
 static bool createImageBuffer(const Filter* filter, OwnPtr<ImageBuffer>& imageBuffer, bool accelerated)

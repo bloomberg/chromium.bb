@@ -66,14 +66,6 @@ static inline void lastMatrixRow(Vector<float>& parameters)
     parameters.append(0);
 }
 
-inline bool isFilterSizeValid(FloatRect rect)
-{
-    if (rect.width() < 0 || rect.width() > kMaxFilterSize
-        || rect.height() < 0 || rect.height() > kMaxFilterSize)
-        return false;
-    return true;
-}
-
 FilterEffectRenderer::FilterEffectRenderer()
     : Filter(AffineTransform())
     , m_graphicsBufferAttached(false)
@@ -266,7 +258,7 @@ bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations&
 bool FilterEffectRenderer::updateBackingStoreRect(const FloatRect& floatFilterRect)
 {
     IntRect filterRect = enclosingIntRect(floatFilterRect);
-    if (!filterRect.isEmpty() && isFilterSizeValid(filterRect)) {
+    if (!filterRect.isEmpty() && FilterEffect::isFilterSizeValid(filterRect)) {
         FloatRect currentSourceRect = sourceImageRect();
         if (filterRect != currentSourceRect) {
             setSourceImageRect(filterRect);
@@ -377,7 +369,7 @@ GraphicsContext* FilterEffectRendererHelper::beginFilterEffect(GraphicsContext* 
     filter->allocateBackingStoreIfNeeded();
     // Paint into the context that represents the SourceGraphic of the filter.
     GraphicsContext* sourceGraphicsContext = filter->inputContext();
-    if (!sourceGraphicsContext || !isFilterSizeValid(filter->absoluteFilterRegion())) {
+    if (!sourceGraphicsContext || !FilterEffect::isFilterSizeValid(filter->absoluteFilterRegion())) {
         // Disable the filters and continue.
         m_haveFilterEffect = false;
         return oldContext;
