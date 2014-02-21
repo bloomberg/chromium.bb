@@ -501,6 +501,9 @@ class AndroidMkWriter(object):
     self.WriteLn('LOCAL_C_INCLUDES := $(GYP_COPIED_SOURCE_ORIGIN_DIRS) '
                                      '$(LOCAL_C_INCLUDES_$(GYP_CONFIGURATION))')
     self.WriteLn('LOCAL_CPPFLAGS := $(LOCAL_CPPFLAGS_$(GYP_CONFIGURATION))')
+    # Android uses separate flags for assembly file invocations, but gyp expects
+    # the same CFLAGS to be applied:
+    self.WriteLn('LOCAL_ASFLAGS := $(LOCAL_CFLAGS)')
 
 
   def WriteSources(self, spec, configs, extra_sources):
