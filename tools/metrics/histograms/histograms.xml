@@ -7908,6 +7908,358 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="NaCl.Client.Helper.InitState" enum="NaClHelperStatus">
+  <summary>
+    When the browser started, what happened with the NaCl helper process?
+  </summary>
+</histogram>
+
+<histogram name="NaCl.Client.Helper.StateOnFork" enum="NaClHelperStatus">
+  <summary>
+    When a NaCl application process was created, what had happened with the NaCl
+    helper process when the browser was started?
+  </summary>
+</histogram>
+
+<histogram name="NaCl.Client.OSArch" enum="NaClOSArchEnum">
+  <summary>The OS/Architecture of a nexe that was loaded.</summary>
+</histogram>
+
+<histogram name="NaCl.HttpStatusCodeClass.Manifest.InstalledApp"
+    enum="NaClHttpStatusCodeClass">
+  <summary>
+    The status code returned when trying to load a manifest inside an installed
+    app.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.HttpStatusCodeClass.Manifest.NotInstalledApp"
+    enum="NaClHttpStatusCodeClass">
+  <summary>
+    The status code returned when trying to load a manifest from a source other
+    than an installed app.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.HttpStatusCodeClass.Nexe.InstalledApp"
+    enum="NaClHttpStatusCodeClass">
+  <summary>
+    The status code returned when trying to load a NaCl executable inside an
+    installed app.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.HttpStatusCodeClass.Nexe.NotInstalledApp"
+    enum="NaClHttpStatusCodeClass">
+  <summary>
+    The status code returned when trying to load a NaCl executable from a source
+    other than an installed app.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.LoadStatus.Plugin" enum="NaClPluginErrorCode">
+  <summary>The error code returned by NaCl's Chrome plugin.</summary>
+</histogram>
+
+<histogram name="NaCl.LoadStatus.Plugin.InstalledApp"
+    enum="NaClPluginErrorCode">
+  <summary>
+    The error code returned by NaCl's Chrome plugin, but only for installed
+    apps.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.LoadStatus.Plugin.NotInstalledApp"
+    enum="NaClPluginErrorCode">
+  <summary>
+    The error code returned by NaCl's Chrome plugin, but excluding installed
+    apps.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.LoadStatus.SelLdr" enum="NaClSelLdrErrorCode">
+  <summary>The error code returned by NaCl's sel_ldr.</summary>
+</histogram>
+
+<histogram name="NaCl.LoadStatus.SelLdr.InstalledApp"
+    enum="NaClSelLdrErrorCode">
+  <summary>
+    The error code returned by NaCl's sel_ldr, but only for installed apps.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.LoadStatus.SelLdr.NotInstalledApp"
+    enum="NaClSelLdrErrorCode">
+  <summary>
+    The error code returned by NaCl's sel_ldr, but excluding installed apps.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.Manifest.IsDataURI" enum="NaClManifestType">
+  <summary>
+    Was the manifest specified as a data URI rather than a .nmf file?
+  </summary>
+</histogram>
+
+<histogram name="NaCl.ManifestDownloadTime" units="milliseconds">
+  <obsolete>
+    Deprecated 6/2011, renamed.
+  </obsolete>
+  <summary>
+    The time it took to download the manifset file for a Native Client module.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.ModuleUptime.Crash" units="milliseconds">
+  <summary>The time a NaCl module ran before it crashed.</summary>
+</histogram>
+
+<histogram name="NaCl.ModuleUptime.Normal" units="milliseconds">
+  <summary>The time a NaCl module ran without crashing, at shutdown.</summary>
+</histogram>
+
+<histogram name="NaCl.NexeDownloadTime" units="milliseconds">
+  <obsolete>
+    Deprecated 6/2011, renamed.
+  </obsolete>
+  <summary>
+    The time it took to download the main .nexe for a Native Client module.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.NexeSize" units="KB">
+  <obsolete>
+    Deprecated 6/2011, renamed.
+  </obsolete>
+  <summary>
+    The size of the main .nexe file downloaded for a Native Client module.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.NexeStartupTime" units="milliseconds">
+  <obsolete>
+    Deprecated 6/2011, renamed.
+  </obsolete>
+  <summary>
+    The time it took between the Native Client plugin initialization and when
+    proxied execution of the NaCl module begins. This is the general startup
+    overhead of running as a NaCl module vs a trusted PPAPI plugin.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.NexeStartupTimePerMB" units="milliseconds/MB">
+  <obsolete>
+    Deprecated 6/2011, renamed.
+  </obsolete>
+  <summary>
+    The time it took between the Native Client plugin initialization and when
+    proxied execution of the NaCl module begins. This is the general startup
+    overhead of running as a NaCl module vs a trusted PPAPI plugin.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.Options.PNaCl.OptLevel" enum="PNaClOptionsOptLevelEnum">
+  <summary>
+    The optimization level set for the initial Portable Native Client
+    translation from bitcode to native code.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.OSArch" enum="NaClOSArchEnum">
+  <obsolete>
+    Deprecated 6/2011, renamed.
+  </obsolete>
+  <summary>The OS/Architecture of a nexe that was loaded.</summary>
+</histogram>
+
+<histogram name="NaCl.Perf.PNaClCache.IsHit" enum="PNaClTranslationCacheEnum">
+  <summary>
+    Did the Portable Native Client translation cache find an executable
+    translated from bitcode?
+  </summary>
+</histogram>
+
+<histogram name="NaCl.Perf.PNaClLoadTime.CompileKBPerSec" units="KB/s">
+  <summary>
+    The rate for compiling a Portable Native Client bitcode file to an object
+    file in Kilobytes per second.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.Perf.PNaClLoadTime.CompileTime" units="milliseconds">
+  <summary>
+    The time it took to compile a Portable Native Client bitcode file to an
+    object file.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.Perf.PNaClLoadTime.LinkTime" units="milliseconds">
+  <summary>
+    The time it took to link a Portable Native Client generated object file into
+    a Native Client executable.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.Perf.PNaClLoadTime.LoadCompiler" units="milliseconds">
+  <summary>
+    The time it took to load and validate the Portable Native Client compiler.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.Perf.PNaClLoadTime.LoadLinker" units="milliseconds">
+  <summary>
+    The time it took to load and validate the Portable Native Client linker.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.Perf.PNaClLoadTime.PctCompiledWhenFullyDownloaded"
+    units="%">
+  <summary>
+    The percentage of a Portable Native Client application that is compiled by
+    the time the application is fully downloaded (compile and download happen in
+    parallel).
+  </summary>
+</histogram>
+
+<histogram name="NaCl.Perf.PNaClLoadTime.TotalUncachedKBPerSec" units="KB/s">
+  <summary>
+    The rate for completely translating a Portable Native Client bitcode file
+    into a Native Client executable and caching the result in Kilobytes per
+    second.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.Perf.PNaClLoadTime.TotalUncachedTime"
+    units="milliseconds">
+  <summary>
+    The total time it took to completely translate a Portable Native Client
+    bitcode file into a Native Client executable, and cache the result.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.Perf.Size.Manifest" units="KB">
+  <summary>The size of the manifest file.</summary>
+</histogram>
+
+<histogram name="NaCl.Perf.Size.Nexe" units="KB">
+  <summary>
+    The size of the main .nexe file downloaded for a Native Client module.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.Perf.Size.Pexe" units="KB">
+  <summary>
+    The size of the main .pexe bitcode file downloaded for a Portable Native
+    Client module.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.Perf.Size.PexeNexeSizePct" units="%">
+  <summary>
+    The size of the main .pexe bitcode file divided by the size of the .nexe
+    that is the result of translating the bitcode file, times 100.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.Perf.Size.PNaClTranslatedNexe" units="KB">
+  <summary>
+    The size of the main .nexe file that is the result of translating a Portable
+    Native Client .pexe bitcode file.  This reflects the amount of cache
+    consumed.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.Perf.StartupTime.LoadModule" units="milliseconds">
+  <summary>The time it took to load the NaCl module into sel_ldr.</summary>
+</histogram>
+
+<histogram name="NaCl.Perf.StartupTime.LoadModulePerMB" units="milliseconds/MB">
+  <summary>
+    The time it took to load the NaCl module into sel_ldr.  Normalized by the
+    size of the .nexe, in megabytes.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.Perf.StartupTime.ManifestDownload" units="milliseconds">
+  <summary>
+    The time it took to download the manifset file for a Native Client module.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.Perf.StartupTime.NaClOverhead" units="milliseconds">
+  <summary>
+    The time it took between the Native Client plugin initialization and when
+    proxied execution of the NaCl module begins. This is the general startup
+    overhead of running as a NaCl module vs a trusted PPAPI plugin.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.Perf.StartupTime.NaClOverheadPerMB"
+    units="milliseconds/MB">
+  <summary>
+    The time it took between the Native Client plugin initialization and when
+    proxied execution of the NaCl module begins. This is the general startup
+    overhead of running as a NaCl module vs a trusted PPAPI plugin.  Normalized
+    by the size of the .nexe, in megabytes.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.Perf.StartupTime.NexeDownload" units="milliseconds">
+  <summary>
+    The time it took to download the main .nexe for a Native Client module.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.Perf.StartupTime.NexeDownloadPerMB"
+    units="milliseconds/MB">
+  <summary>
+    The time it took to download the main .nexe for a Native Client module.
+    Normalized by the size of the .nexe, in megabytes.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.Perf.StartupTime.Total" units="milliseconds">
+  <summary>
+    The time it took between the Native Client plugin initialization and when
+    the NaCl module is ready to be used.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.Perf.StartupTime.TotalPerMB" units="milliseconds/MB">
+  <summary>
+    The time it took between the Native Client plugin initialization and when
+    the NaCl module is ready to be used.  Normalized by the size of the .nexe,
+    in megabytes.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.ShutdownTime.Total" units="milliseconds">
+  <summary>The time it took the NaCl module to shut down.</summary>
+</histogram>
+
+<histogram name="NaCl.Startups" enum="NaClStartupEnum">
+  <obsolete>
+    Deprecated 5/2011, data is duplicated by NaCl.NexeStartupTime, and
+    normalizing to 'tab opens' is unusual.
+  </obsolete>
+  <summary>
+    The number of times that Native Client has been started by loading a .nexe
+    compared to the number of times that a tab has been opened.
+  </summary>
+</histogram>
+
+<histogram name="NaCl.ValidationCache.Query" enum="NaClValidationCacheEnum">
+  <summary>
+    Did a validation cache query find a previously known validation result?
+  </summary>
+</histogram>
+
+<histogram name="NaCl.ValidationCache.Set" enum="NaClValidationCacheEnum">
+  <summary>
+    Was the validation cache updated with a new validation result?
+  </summary>
+</histogram>
+
 <histogram name="Navigation.MainFrameScheme" enum="NavigationScheme">
   <summary>The scheme of the URL for each main-frame navigation.</summary>
 </histogram>
@@ -28712,6 +29064,198 @@ other types of suffix sets.
   <int value="6" label="Unknown"/>
 </enum>
 
+<enum name="NaClHelperStatus" type="int">
+  <int value="0" label="Helper not initialized"/>
+  <int value="1" label="Helper executable missing"/>
+  <int value="2" label="Helper bootstrap executable missing"/>
+  <int value="3" label="Browser running under Valgrind"/>
+  <int value="4" label="Helper failed to launch"/>
+  <int value="5" label="Helper failed to ACK"/>
+  <int value="6" label="Helper started correctly"/>
+</enum>
+
+<enum name="NaClHttpStatusCodeClass" type="int">
+  <int value="0" label="0XX"/>
+  <int value="1" label="1XX"/>
+  <int value="2" label="2XX"/>
+  <int value="3" label="3XX"/>
+  <int value="4" label="4XX"/>
+  <int value="5" label="5XX"/>
+  <int value="6" label="No status"/>
+</enum>
+
+<enum name="NaClManifestType" type="int">
+  <int value="0" label="File"/>
+  <int value="1" label="DataURI"/>
+</enum>
+
+<enum name="NaClOSArchEnum" type="int">
+  <int value="0" label="Linux x86-32"/>
+  <int value="1" label="Linux x86-64"/>
+  <int value="2" label="Linux ARM"/>
+  <int value="3" label="Mac x86-32"/>
+  <int value="4" label="Mac x86-64"/>
+  <int value="5" label="Mac ARM"/>
+  <int value="6" label="Windows x86-32"/>
+  <int value="7" label="Windows x86-64"/>
+  <int value="8" label="Windows ARM"/>
+  <int value="9" label="Linux Mips32"/>
+</enum>
+
+<enum name="NaClPluginErrorCode" type="int">
+  <int value="0" label="ERROR_LOAD_SUCCESS"/>
+  <int value="1" label="ERROR_LOAD_ABORTED"/>
+  <int value="2" label="ERROR_UNKNOWN"/>
+  <int value="3" label="ERROR_MANIFEST_RESOLVE_URL"/>
+  <int value="4" label="ERROR_MANIFEST_LOAD_URL"/>
+  <int value="5" label="ERROR_MANIFEST_STAT"/>
+  <int value="6" label="ERROR_MANIFEST_TOO_LARGE"/>
+  <int value="7" label="ERROR_MANIFEST_OPEN"/>
+  <int value="8" label="ERROR_MANIFEST_MEMORY_ALLOC"/>
+  <int value="9" label="ERROR_MANIFEST_READ"/>
+  <int value="10" label="ERROR_MANIFEST_PARSING"/>
+  <int value="11" label="ERROR_MANIFEST_SCHEMA_VALIDATE"/>
+  <int value="12" label="ERROR_MANIFEST_GET_NEXE_URL"/>
+  <int value="13" label="ERROR_NEXE_LOAD_URL"/>
+  <int value="14" label="ERROR_NEXE_ORIGIN_PROTOCOL"/>
+  <int value="15" label="ERROR_NEXE_FH_DUP"/>
+  <int value="16" label="ERROR_NEXE_STAT"/>
+  <int value="17" label="ERROR_ELF_CHECK_IO"/>
+  <int value="18" label="ERROR_ELF_CHECK_FAIL"/>
+  <int value="19" label="ERROR_SEL_LDR_INIT"/>
+  <int value="20" label="ERROR_SEL_LDR_CREATE_LAUNCHER"/>
+  <int value="21" label="ERROR_SEL_LDR_FD"/>
+  <int value="22" label="ERROR_SEL_LDR_LAUNCH"/>
+  <int value="23" label="ERROR_SEL_LDR_COMMUNICATION"/>
+  <int value="24" label="ERROR_SEL_LDR_SEND_NEXE"/>
+  <int value="25" label="ERROR_SEL_LDR_HANDLE_PASSING"/>
+  <int value="26" label="ERROR_SEL_LDR_START_MODULE"/>
+  <int value="27" label="ERROR_SEL_LDR_START_STATUS"/>
+  <int value="28" label="ERROR_SRPC_CONNECTION_FAIL"/>
+  <int value="29" label="ERROR_START_PROXY_CHECK_PPP"/>
+  <int value="30" label="ERROR_START_PROXY_ALLOC"/>
+  <int value="31" label="ERROR_START_PROXY_MODULE"/>
+  <int value="32" label="ERROR_START_PROXY_INSTANCE"/>
+  <int value="33" label="ERROR_SEL_LDR_COMMUNICATION_CMD_CHANNEL"/>
+  <int value="34" label="ERROR_SEL_LDR_COMMUNICATION_REV_SETUP"/>
+  <int value="35" label="ERROR_SEL_LDR_COMMUNICATION_WRAPPER"/>
+  <int value="36" label="ERROR_SEL_LDR_COMMUNICATION_REV_SERVICE"/>
+  <int value="37" label="ERROR_START_PROXY_CRASH"/>
+  <int value="38" label="ERROR_MANIFEST_PROGRAM_MISSING_ARCH"/>
+  <int value="39" label="ERROR_PNACL_CACHE_OPEN_INPROGRESS"/>
+  <int value="40" label="ERROR_PNACL_CACHE_OPEN_NOACCESS"/>
+  <int value="41" label="ERROR_PNACL_CACHE_OPEN_NOQUOTA"/>
+  <int value="42" label="ERROR_PNACL_CACHE_OPEN_NOSPACE"/>
+  <int value="43" label="ERROR_PNACL_CACHE_OPEN_OTHER"/>
+  <int value="44" label="ERROR_PNACL_CACHE_DIRECTORY_CREATE"/>
+  <int value="45" label="ERROR_PNACL_CACHE_FILEOPEN_NOACCESS"/>
+  <int value="46" label="ERROR_PNACL_CACHE_FILEOPEN_NOQUOTA"/>
+  <int value="47" label="ERROR_PNACL_CACHE_FILEOPEN_NOSPACE"/>
+  <int value="48" label="ERROR_PNACL_CACHE_FILEOPEN_NOTAFILE"/>
+  <int value="49" label="ERROR_PNACL_CACHE_FILEOPEN_OTHER"/>
+  <int value="50" label="ERROR_PNACL_CACHE_FETCH_NOACCESS"/>
+  <int value="51" label="ERROR_PNACL_CACHE_FETCH_NOTFOUND"/>
+  <int value="52" label="ERROR_PNACL_CACHE_FETCH_OTHER"/>
+  <int value="53" label="ERROR_PNACL_CACHE_FINALIZE_COPY_NOQUOTA"/>
+  <int value="54" label="ERROR_PNACL_CACHE_FINALIZE_COPY_NOSPACE"/>
+  <int value="55" label="ERROR_PNACL_CACHE_FINALIZE_COPY_OTHER"/>
+  <int value="56" label="ERROR_PNACL_CACHE_FINALIZE_RENAME_NOACCESS"/>
+  <int value="57" label="ERROR_PNACL_CACHE_FINALIZE_RENAME_OTHER"/>
+  <int value="58" label="ERROR_PNACL_RESOURCE_FETCH"/>
+  <int value="59" label="ERROR_PNACL_PEXE_FETCH_ABORTED"/>
+  <int value="60" label="ERROR_PNACL_PEXE_FETCH_NOACCESS"/>
+  <int value="61" label="ERROR_PNACL_PEXE_FETCH_OTHER"/>
+  <int value="62" label="ERROR_PNACL_THREAD_CREATE"/>
+  <int value="63" label="ERROR_PNACL_LLC_SETUP"/>
+  <int value="64" label="ERROR_PNACL_LD_SETUP"/>
+  <int value="65" label="ERROR_PNACL_LLC_INTERNAL"/>
+  <int value="66" label="ERROR_PNACL_LD_INTERNAL"/>
+  <int value="67" label="ERROR_PNACL_CREATE_TEMP"/>
+  <int value="68" label="ERROR_PNACL_NOT_ENABLED"/>
+  <int value="69" label="ERROR_MANIFEST_NOACCESS_URL"/>
+  <int value="70" label="ERROR_NEXE_NOACCESS_URL"/>
+</enum>
+
+<enum name="NaClSelLdrErrorCode" type="int">
+  <int value="0" label="LOAD_OK"/>
+  <int value="1" label="LOAD_STATUS_UNKNOWN"/>
+  <int value="2" label="LOAD_UNSUPPORTED_OS_PLATFORM"/>
+  <int value="3" label="LOAD_DEP_UNSUPPORTED"/>
+  <int value="4" label="LOAD_INTERNAL"/>
+  <int value="5" label="LOAD_DUP_LOAD_MODULE"/>
+  <int value="6" label="LOAD_DUP_START_MODULE"/>
+  <int value="7" label="LOAD_OPEN_ERROR"/>
+  <int value="8" label="LOAD_READ_ERROR"/>
+  <int value="9" label="LOAD_TOO_MANY_PROG_HDRS"/>
+  <int value="10" label="LOAD_BAD_PHENTSIZE"/>
+  <int value="11" label="LOAD_BAD_ELF_MAGIC"/>
+  <int value="12" label="LOAD_NOT_32_BIT"/>
+  <int value="13" label="LOAD_NOT_64_BIT"/>
+  <int value="14" label="LOAD_BAD_ABI"/>
+  <int value="15" label="LOAD_NOT_EXEC"/>
+  <int value="16" label="LOAD_BAD_MACHINE"/>
+  <int value="17" label="LOAD_BAD_ELF_VERS"/>
+  <int value="18" label="LOAD_TOO_MANY_SECT"/>
+  <int value="19" label="LOAD_BAD_SECT"/>
+  <int value="20" label="LOAD_NO_MEMORY"/>
+  <int value="21" label="LOAD_SECT_HDR"/>
+  <int value="22" label="LOAD_ADDR_SPACE_TOO_SMALL"/>
+  <int value="23" label="LOAD_ADDR_SPACE_TOO_BIG"/>
+  <int value="24" label="LOAD_DATA_OVERLAPS_STACK_SECTION"/>
+  <int value="25" label="LOAD_RODATA_OVERLAPS_DATA"/>
+  <int value="26" label="LOAD_DATA_NOT_LAST_SEGMENT"/>
+  <int value="27" label="LOAD_NO_DATA_BUT_RODATA_NOT_LAST_SEGMENT"/>
+  <int value="28" label="LOAD_TEXT_OVERLAPS_RODATA"/>
+  <int value="29" label="LOAD_TEXT_OVERLAPS_DATA"/>
+  <int value="30" label="LOAD_BAD_RODATA_ALIGNMENT"/>
+  <int value="31" label="LOAD_BAD_DATA_ALIGNMENT"/>
+  <int value="32" label="LOAD_UNLOADABLE"/>
+  <int value="33" label="LOAD_BAD_ELF_TEXT"/>
+  <int value="34" label="LOAD_TEXT_SEG_TOO_BIG"/>
+  <int value="35" label="LOAD_DATA_SEG_TOO_BIG"/>
+  <int value="36" label="LOAD_MPROTECT_FAIL"/>
+  <int value="37" label="LOAD_MADVISE_FAIL"/>
+  <int value="38" label="LOAD_TOO_MANY_SYMBOL_STR"/>
+  <int value="39" label="LOAD_SYMTAB_ENTRY_TOO_SMALL"/>
+  <int value="40" label="LOAD_NO_SYMTAB"/>
+  <int value="41" label="LOAD_NO_SYMTAB_STRINGS"/>
+  <int value="42" label="LOAD_SYMTAB_ENTRY"/>
+  <int value="43" label="LOAD_UNKNOWN_SYMBOL_TYPE"/>
+  <int value="44" label="LOAD_SYMTAB_DUP"/>
+  <int value="45" label="LOAD_REL_ERROR"/>
+  <int value="46" label="LOAD_REL_UNIMPL"/>
+  <int value="47" label="LOAD_UNDEF_SYMBOL"/>
+  <int value="48" label="LOAD_BAD_SYMBOL_DATA"/>
+  <int value="49" label="LOAD_BAD_FILE"/>
+  <int value="50" label="LOAD_BAD_ENTRY"/>
+  <int value="51" label="LOAD_SEGMENT_OUTSIDE_ADDRSPACE"/>
+  <int value="52" label="LOAD_DUP_SEGMENT"/>
+  <int value="53" label="LOAD_SEGMENT_BAD_LOC"/>
+  <int value="54" label="LOAD_BAD_SEGMENT"/>
+  <int value="55" label="LOAD_REQUIRED_SEG_MISSING"/>
+  <int value="56" label="LOAD_SEGMENT_BAD_PARAM"/>
+  <int value="57" label="LOAD_VALIDATION_FAILED"/>
+  <int value="58" label="LOAD_UNIMPLEMENTED"/>
+  <int value="59" label="SRT_NO_SEG_SEL"/>
+  <int value="60" label="LOAD_BAD_EHSIZE"/>
+  <int value="61" label="LOAD_EHDR_OVERFLOW"/>
+  <int value="62" label="LOAD_PHDR_OVERFLOW"/>
+  <int value="63" label="LOAD_UNSUPPORTED_CPU"/>
+  <int value="64" label="LOAD_NO_MEMORY_FOR_DYNAMIC_TEXT"/>
+  <int value="65" label="LOAD_NO_MEMORY_FOR_ADDRESS_SPACE"/>
+</enum>
+
+<enum name="NaClStartupEnum" type="int">
+  <int value="0" label="Default tab opened"/>
+  <int value="1" label="New tab opened"/>
+  <int value="2" label="NaCl sel_ldr started"/>
+</enum>
+
+<enum name="NaClValidationCacheEnum" type="int">
+  <int value="0" label="Miss"/>
+  <int value="1" label="Hit"/>
+</enum>
+
 <enum name="NavigationScheme" type="int">
   <int value="0" label="(Unknown)"/>
   <int value="1" label="http"/>
@@ -30203,6 +30747,19 @@ other types of suffix sets.
   <int value="1" label="LOAD_FAILED"/>
   <int value="2" label="ENTRY_POINT_MISSING"/>
   <int value="3" label="INIT_FAILED"/>
+</enum>
+
+<enum name="PNaClOptionsOptLevelEnum" type="int">
+  <int value="0" label="0"/>
+  <int value="1" label="1"/>
+  <int value="2" label="2"/>
+  <int value="3" label="3"/>
+  <int value="4" label="Default / Unknown"/>
+</enum>
+
+<enum name="PNaClTranslationCacheEnum" type="int">
+  <int value="0" label="Miss"/>
+  <int value="1" label="Hit"/>
 </enum>
 
 <enum name="PointerSensitivity" type="int">
