@@ -8,7 +8,7 @@
 #include "base/sys_info.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
-#include "ui/compositor/test/default_context_factory.h"
+#include "ui/compositor/test/in_process_context_factory.h"
 #include "ui/compositor/test/test_context_factory.h"
 #include "ui/gl/gl_implementation.h"
 
@@ -42,8 +42,8 @@ void InitializeContextFactoryForTests(bool enable_pixel_output) {
     g_implicit_factory = new ui::TestContextFactory;
   } else {
     DCHECK_NE(gfx::kGLImplementationNone, gfx::GetGLImplementation());
-    DVLOG(1) << "Using DefaultContextFactory";
-    g_implicit_factory = new ui::DefaultContextFactory();
+    DVLOG(1) << "Using InProcessContextFactory";
+    g_implicit_factory = new ui::InProcessContextFactory();
   }
   ContextFactory::SetInstance(g_implicit_factory);
 }

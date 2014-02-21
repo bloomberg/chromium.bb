@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/compositor/test/default_context_factory.h"
+#include "ui/compositor/test/in_process_context_factory.h"
 
 #include "cc/output/output_surface.h"
 #include "ui/compositor/reflector.h"
@@ -14,15 +14,15 @@
 
 namespace ui {
 
-DefaultContextFactory::DefaultContextFactory() {
+InProcessContextFactory::InProcessContextFactory() {
   DCHECK_NE(gfx::GetGLImplementation(), gfx::kGLImplementationNone);
 }
 
-DefaultContextFactory::~DefaultContextFactory() {
-}
+InProcessContextFactory::~InProcessContextFactory() {}
 
-scoped_ptr<cc::OutputSurface> DefaultContextFactory::CreateOutputSurface(
-    Compositor* compositor, bool software_fallback) {
+scoped_ptr<cc::OutputSurface> InProcessContextFactory::CreateOutputSurface(
+    Compositor* compositor,
+    bool software_fallback) {
   DCHECK(!software_fallback);
   blink::WebGraphicsContext3D::Attributes attrs;
   attrs.depth = false;
@@ -38,24 +38,22 @@ scoped_ptr<cc::OutputSurface> DefaultContextFactory::CreateOutputSurface(
 
   using webkit::gpu::ContextProviderInProcess;
   scoped_refptr<ContextProviderInProcess> context_provider =
-      ContextProviderInProcess::Create(context3d.Pass(),
-                                       "UICompositor");
+      ContextProviderInProcess::Create(context3d.Pass(), "UICompositor");
 
   return make_scoped_ptr(new cc::OutputSurface(context_provider));
 }
 
-scoped_refptr<Reflector> DefaultContextFactory::CreateReflector(
+scoped_refptr<Reflector> InProcessContextFactory::CreateReflector(
     Compositor* mirroed_compositor,
     Layer* mirroring_layer) {
-  return NULL;
+  return new Reflector();
 }
 
-void DefaultContextFactory::RemoveReflector(
-    scoped_refptr<Reflector> reflector) {
-}
+void InProcessContextFactory::RemoveReflector(
+    scoped_refptr<Reflector> reflector) {}
 
 scoped_refptr<cc::ContextProvider>
-DefaultContextFactory::OffscreenCompositorContextProvider() {
+InProcessContextFactory::OffscreenCompositorContextProvider() {
   if (!offscreen_compositor_contexts_.get() ||
       !offscreen_compositor_contexts_->DestroyedOnMainThread()) {
     offscreen_compositor_contexts_ =
@@ -65,7 +63,7 @@ DefaultContextFactory::OffscreenCompositorContextProvider() {
 }
 
 scoped_refptr<cc::ContextProvider>
-DefaultContextFactory::SharedMainThreadContextProvider() {
+InProcessContextFactory::SharedMainThreadContextProvider() {
   if (shared_main_thread_contexts_ &&
       !shared_main_thread_contexts_->DestroyedOnMainThread())
     return shared_main_thread_contexts_;
@@ -85,9 +83,8 @@ DefaultContextFactory::SharedMainThreadContextProvider() {
   return shared_main_thread_contexts_;
 }
 
-void DefaultContextFactory::RemoveCompositor(Compositor* compositor) {
-}
+void InProcessContextFactory::RemoveCompositor(Compositor* compositor) {}
 
-bool DefaultContextFactory::DoesCreateTestContexts() { return false; }
+bool InProcessContextFactory::DoesCreateTestContexts() { return false; }
 
 }  // namespace ui

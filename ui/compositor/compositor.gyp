@@ -93,10 +93,10 @@
       'sources': [
         'test/context_factories_for_test.cc',
         'test/context_factories_for_test.h',
-        'test/default_context_factory.cc',
-        'test/default_context_factory.h',
         'test/draw_waiter_for_test.cc',
         'test/draw_waiter_for_test.h',
+        'test/in_process_context_factory.cc',
+        'test/in_process_context_factory.h',
         'test/layer_animator_test_controller.cc',
         'test/layer_animator_test_controller.h',
         'test/test_compositor_host.h',
