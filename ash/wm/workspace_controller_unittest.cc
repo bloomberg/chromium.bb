@@ -312,6 +312,7 @@ TEST_F(WorkspaceControllerTest, MinimizeSingleWindow) {
 
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
   EXPECT_FALSE(w1->layer()->IsDrawn());
+  EXPECT_TRUE(w1->layer()->GetTargetTransform().IsIdentity());
 
   // Show the window.
   w1->Show();

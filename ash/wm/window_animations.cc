@@ -56,8 +56,6 @@ const float kWindowAnimation_ShowBrightnessGrayscale = 0.f;
 
 const float kWindowAnimation_HideOpacity = 0.f;
 const float kWindowAnimation_ShowOpacity = 1.f;
-// TODO(sky): if we end up sticking with 0, nuke the code doing the rotation.
-const float kWindowAnimation_MinimizeRotate = 0.f;
 
 // Scales for AshWindow above/below current workspace.
 const float kLayerScaleAboveSize = 1.1f;
@@ -117,25 +115,15 @@ void AddLayerAnimationsForMinimize(aura::Window* window, bool show) {
           gfx::Point(target_bounds.x() - bounds.x(),
                      target_bounds.y() - bounds.y())));
 
-  scoped_ptr<ui::InterpolatedTransform> rotation(
-      new ui::InterpolatedRotation(0, kWindowAnimation_MinimizeRotate));
-
-  scoped_ptr<ui::InterpolatedTransform> rotation_about_pivot(
-      new ui::InterpolatedTransformAboutPivot(
-          gfx::Point(bounds.width() * 0.5, bounds.height() * 0.5),
-          rotation.release()));
-
   scale->SetChild(translation.release());
-  rotation_about_pivot->SetChild(scale.release());
-
-  rotation_about_pivot->SetReversed(show);
+  scale->SetReversed(show);
 
   base::TimeDelta duration = window->layer()->GetAnimator()->
       GetTransitionDuration();
 
   scoped_ptr<ui::LayerAnimationElement> transition(
       ui::LayerAnimationElement::CreateInterpolatedTransformElement(
-          rotation_about_pivot.release(), duration));
+          scale.release(), duration));
 
   transition->set_tween_type(
       show ? gfx::Tween::EASE_IN : gfx::Tween::EASE_IN_OUT);
@@ -156,6 +144,13 @@ void AddLayerAnimationsForMinimize(aura::Window* window, bool show) {
       new ui::LayerAnimationSequence(
           ui::LayerAnimationElement::CreateOpacityElement(
               opacity, duration / 4)));
+
+  // Reset the transform to identity when the minimize animation is completed.
+  window->layer()->GetAnimator()->ScheduleAnimation(
+      new ui::LayerAnimationSequence(
+          ui::LayerAnimationElement::CreateTransformElement(
+              gfx::Transform(),
+              base::TimeDelta())));
 }
 
 void AnimateShowWindow_Minimize(aura::Window* window) {
