@@ -97,8 +97,30 @@ def ProcessGypDefinesItems(items):
       result += [(key, '1')]
   return result
 
+
 def GetGypVarsForGN(supplemental_files):
   """Returns a dictionary of all GYP vars that we will be passing to GN."""
+  # Find the .gyp directory in the user's home directory.
+  home_dot_gyp = os.environ.get('GYP_CONFIG_DIR', None)
+  if home_dot_gyp:
+    home_dot_gyp = os.path.expanduser(home_dot_gyp)
+  if not home_dot_gyp:
+    home_vars = ['HOME']
+    if sys.platform in ('cygwin', 'win32'):
+      home_vars.append('USERPROFILE')
+    for home_var in home_vars:
+      home = os.getenv(home_var)
+      if home != None:
+        home_dot_gyp = os.path.join(home, '.gyp')
+        if not os.path.exists(home_dot_gyp):
+          home_dot_gyp = None
+        else:
+          break
+
+  if home_dot_gyp:
+    include_gypi = os.path.join(home_dot_gyp, "include.gypi")
+    if os.path.exists(include_gypi):
+      supplemental_files += [include_gypi]
 
   # GYP defines from the supplemental.gypi files.
   supp_items = []
@@ -128,7 +150,13 @@ def GetGypVarsForGN(supplemental_files):
         cmdline_input_items += [sys.argv[i][2:]]
   cmdline_items = ProcessGypDefinesItems(cmdline_input_items)
 
-  return dict(supp_items + env_items + cmdline_items)
+  vars_dict = dict(supp_items + env_items + cmdline_items)
+  # It's not possible to set a default value for cpu_arch in GN, so do it here
+  # for now (http://crbug.com/344767).
+  if vars_dict.get('OS') == 'android' and not 'target_arch' in vars_dict:
+    vars_dict['target_arch'] = 'arm'
+  return vars_dict
+
 
 def GetOutputDirectory():
   """Returns the output directory that GYP will use."""
@@ -148,38 +176,10 @@ def GetOutputDirectory():
 
   return "out"
 
-def GetArgsStringForGN(supplemental_files):
+
+def GetArgsStringForGN(vars_dict):
   """Returns the args to pass to GN.
   Based on a subset of the GYP variables that have been rewritten a bit."""
-
-  # Find the .gyp directory in the user's home directory.
-  home_dot_gyp = os.environ.get('GYP_CONFIG_DIR', None)
-  if home_dot_gyp:
-    home_dot_gyp = os.path.expanduser(home_dot_gyp)
-  if not home_dot_gyp:
-    home_vars = ['HOME']
-    if sys.platform in ('cygwin', 'win32'):
-      home_vars.append('USERPROFILE')
-    for home_var in home_vars:
-      home = os.getenv(home_var)
-      if home != None:
-        home_dot_gyp = os.path.join(home, '.gyp')
-        if not os.path.exists(home_dot_gyp):
-          home_dot_gyp = None
-        else:
-          break
-
-  if home_dot_gyp:
-    include_gypi = os.path.join(home_dot_gyp, "include.gypi")
-    if os.path.exists(include_gypi):
-      supplemental_files += [include_gypi]
-
-  vars_dict = GetGypVarsForGN(supplemental_files)
-  # It's not possible to let set a default value for cpu_arch in GN, so do it
-  # here for now (http://crbug.com/344767).
-  if vars_dict.get('OS') == 'android' and not 'target_arch' in vars_dict:
-    vars_dict['target_arch'] = 'arm'
-
   gn_args = ''
 
   # Note: These are the additional flags passed to various builds by builders
@@ -298,7 +298,7 @@ def additional_include_files(supplemental_files, args=[]):
   return result
 
 
-def RunGN(supplemental_includes):
+def RunGN(vars_dict):
   """Runs GN, returning True if it succeeded, printing an error and returning
   false if not."""
 
@@ -325,7 +325,7 @@ def RunGN(supplemental_includes):
   # to know they're being run under GYP.
   args = [gnpath, 'gyp', '-q',
           '--root=' + chrome_src,
-          '--args=' + GetArgsStringForGN(supplemental_includes),
+          '--args=' + GetArgsStringForGN(vars_dict),
           '--output=//' + GetOutputDirectory() + '/gn_build/']
   return subprocess.call(args) == 0
 
@@ -482,7 +482,17 @@ if __name__ == '__main__':
     args.append('--check')
 
   supplemental_includes = GetSupplementalFiles()
-  if not RunGN(supplemental_includes):
+  gn_vars_dict = GetGypVarsForGN(supplemental_includes)
+
+  # Automatically turn on crosscompile support for platforms that need it.
+  # (The Chrome OS build sets CC_host / CC_target which implicitly enables
+  # this mode.)
+  if all(('ninja' in os.environ.get('GYP_GENERATORS', ''),
+          gn_vars_dict.get('OS') in ['android', 'ios'],
+          'GYP_CROSSCOMPILE' not in os.environ)):
+    os.environ['GYP_CROSSCOMPILE'] = '1'
+
+  if not RunGN(gn_vars_dict):
     sys.exit(1)
   args.extend(
       ['-I' + i for i in additional_include_files(supplemental_includes, args)])

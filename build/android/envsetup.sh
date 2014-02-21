@@ -87,14 +87,9 @@ export GYP_DEFINES="${DEFINES}"
 # Source a bunch of helper functions
 . ${CHROME_SRC}/build/android/adb_device_functions.sh
 
-# Declare Android are cross compile.
-export GYP_CROSSCOMPILE=1
-
 # Performs a gyp_chromium run to convert gyp->Makefile for android code.
 android_gyp() {
   # This is just a simple wrapper of gyp_chromium, please don't add anything
   # in this function.
-  (
-    "${CHROME_SRC}/build/gyp_chromium" --depth="${CHROME_SRC}" --check "$@"
-  )
+  "${CHROME_SRC}/build/gyp_chromium" --depth="${CHROME_SRC}" --check "$@"
 }
