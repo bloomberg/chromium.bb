@@ -29,8 +29,7 @@ namespace media {
 
 // Test fixture which allows us to override the default enumeration API on
 // Windows.
-class AudioManagerTest
-    : public ::testing::Test {
+class AudioManagerTest : public ::testing::Test {
  protected:
   AudioManagerTest()
       : audio_manager_(AudioManager::CreateForTesting())
@@ -45,6 +44,8 @@ class AudioManagerTest
         &base::WaitableEvent::Signal, base::Unretained(&event)));
     event.Wait();
   }
+
+  AudioManager* audio_manager() { return audio_manager_.get(); };
 
 #if defined(OS_WIN)
   bool SetMMDeviceEnumeration() {
@@ -129,6 +130,29 @@ class AudioManagerTest
   }
 #endif
 
+  // Synchronously runs the provided callback/closure on the audio thread.
+  void RunOnAudioThread(const base::Closure& closure) {
+    if (!audio_manager()->GetTaskRunner()->BelongsToCurrentThread()) {
+      base::WaitableEvent event(false, false);
+      audio_manager_->GetTaskRunner()->PostTask(
+          FROM_HERE,
+          base::Bind(&AudioManagerTest::RunOnAudioThreadImpl,
+                     base::Unretained(this),
+                     closure,
+                     &event));
+      event.Wait();
+    } else {
+      closure.Run();
+    }
+  }
+
+  void RunOnAudioThreadImpl(const base::Closure& closure,
+                            base::WaitableEvent* event) {
+    DCHECK(audio_manager()->GetTaskRunner()->BelongsToCurrentThread());
+    closure.Run();
+    event->Signal();
+  }
+
   FakeAudioLogFactory fake_audio_log_factory_;
   scoped_ptr<AudioManager> audio_manager_;
 
@@ -144,7 +168,10 @@ TEST_F(AudioManagerTest, EnumerateInputDevices) {
     return;
 
   AudioDeviceNames device_names;
-  audio_manager_->GetAudioInputDeviceNames(&device_names);
+  RunOnAudioThread(
+      base::Bind(&AudioManager::GetAudioInputDeviceNames,
+                 base::Unretained(audio_manager()),
+                 &device_names));
   CheckDeviceNames(device_names);
 }
 
@@ -154,7 +181,10 @@ TEST_F(AudioManagerTest, EnumerateOutputDevices) {
     return;
 
   AudioDeviceNames device_names;
-  audio_manager_->GetAudioOutputDeviceNames(&device_names);
+  RunOnAudioThread(
+      base::Bind(&AudioManager::GetAudioOutputDeviceNames,
+                 base::Unretained(audio_manager()),
+                 &device_names));
   CheckDeviceNames(device_names);
 }
 

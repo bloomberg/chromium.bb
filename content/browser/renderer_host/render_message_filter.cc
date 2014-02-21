@@ -460,11 +460,9 @@ base::TaskRunner* RenderMessageFilter::OverrideTaskRunnerForMessage(
   if (message.type() == ViewHostMsg_GetMonitorColorProfile::ID)
     return BrowserThread::GetBlockingPool();
 #endif
-#if defined(OS_MACOSX)
-  // OSX CoreAudio calls must all happen on the main thread.
+  // Always query audio device parameters on the audio thread.
   if (message.type() == ViewHostMsg_GetAudioHardwareConfig::ID)
     return audio_manager_->GetTaskRunner().get();
-#endif
   return NULL;
 }
 

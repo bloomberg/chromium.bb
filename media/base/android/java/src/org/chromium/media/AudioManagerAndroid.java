@@ -40,6 +40,36 @@ class AudioManagerAndroid {
     // NOTE: always check in as false.
     private static final boolean DEBUG = false;
 
+    /**
+     * NonThreadSafe is a helper class used to help verify that methods of a
+     * class are called from the same thread.
+     * Inspired by class in package com.google.android.apps.chrome.utilities.
+     * Is only utilized when DEBUG is set to true.
+     */
+    private static class NonThreadSafe {
+        private final Long mThreadId;
+
+        public NonThreadSafe() {
+            if (DEBUG) {
+                mThreadId = Thread.currentThread().getId();
+            } else {
+                // Avoids "Unread field" issue reported by findbugs.
+                mThreadId = 0L;
+            }
+        }
+
+        /**
+         * Checks if the method is called on the valid thread.
+         * Assigns the current thread if no thread was assigned.
+         */
+        public boolean calledOnValidThread() {
+            if (DEBUG) {
+                return mThreadId.equals(Thread.currentThread().getId());
+            }
+            return true;
+        }
+    }
+
     private static boolean runningOnJellyBeanOrHigher() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN;
     }
@@ -135,6 +165,11 @@ class AudioManagerAndroid {
     // call to setDevice().
     private int mRequestedAudioDevice = DEVICE_INVALID;
 
+    // This class should be created, initialized and closed on the audio thread
+    // in the audio manager. We use |mNonThreadSafe| to ensure that this is
+    // the case. Only active when |DEBUG| is set to true.
+    private final NonThreadSafe mNonThreadSafe = new NonThreadSafe();
+
     // Lock to protect |mAudioDevices| and |mRequestedAudioDevice| which can
     // be accessed from the main thread and the audio manager thread.
     private final Object mLock = new Object();
@@ -180,18 +215,14 @@ class AudioManagerAndroid {
      */
     @CalledByNative
     private void init() {
+        checkIfCalledOnValidThread();
         if (DEBUG) logd("init");
         if (mIsInitialized)
             return;
 
-        for (int i = 0; i < DEVICE_COUNT; ++i) {
-            mAudioDevices[i] = false;
-        }
-
         // Initialize audio device list with things we know is always available.
-        if (hasEarpiece()) {
-            mAudioDevices[DEVICE_EARPIECE] = true;
-        }
+        mAudioDevices[DEVICE_EARPIECE] = hasEarpiece();
+        mAudioDevices[DEVICE_WIRED_HEADSET] = hasWiredHeadset();
         mAudioDevices[DEVICE_SPEAKERPHONE] = true;
 
         // Register receivers for broadcast intents related to Bluetooth device
@@ -218,6 +249,7 @@ class AudioManagerAndroid {
         }
 
         mIsInitialized = true;
+
         if (DEBUG) reportUpdate();
     }
 
@@ -227,6 +259,7 @@ class AudioManagerAndroid {
      */
     @CalledByNative
     private void close() {
+        checkIfCalledOnValidThread();
         if (DEBUG) logd("close");
         if (!mIsInitialized)
             return;
@@ -354,6 +387,7 @@ class AudioManagerAndroid {
      */
     @CalledByNative
     private AudioDeviceName[] getAudioInputDeviceNames() {
+        if (DEBUG) logd("getAudioInputDeviceNames");
         if (!mIsInitialized)
             return null;
         boolean devices[] = null;
@@ -442,7 +476,7 @@ class AudioManagerAndroid {
     }
 
     @CalledByNative
-    public static boolean shouldUseAcousticEchoCanceler() {
+    private static boolean shouldUseAcousticEchoCanceler() {
         // AcousticEchoCanceler was added in API level 16 (Jelly Bean).
         if (!runningOnJellyBeanOrHigher()) {
             return false;
@@ -450,20 +484,30 @@ class AudioManagerAndroid {
 
         // Next is a list of device models which have been vetted for good
         // quality platform echo cancellation.
-        if (!Build.MODEL.equals("SM-T310R") &&  // Galaxy Tab 3 7.0
-            !Build.MODEL.equals("GT-I9300") &&  // Galaxy S3
+        if (!Build.MODEL.equals("GT-I9300") &&  // Galaxy S3
             !Build.MODEL.equals("GT-I9500") &&  // Galaxy S4
             !Build.MODEL.equals("GT-N7105") &&  // Galaxy Note 2
-            !Build.MODEL.equals("SM-N9005") &&  // Galaxy Note 3
             !Build.MODEL.equals("Nexus 4") &&
             !Build.MODEL.equals("Nexus 5") &&
-            !Build.MODEL.equals("Nexus 7")) {
+            !Build.MODEL.equals("Nexus 7") &&
+            !Build.MODEL.equals("SM-N9005") &&  // Galaxy Note 3
+            !Build.MODEL.equals("SM-T310R")) {  // Galaxy Tab 3 7.0
             return false;
         }
 
         // As a final check, verify that the device supports acoustic echo
         // cancellation.
         return AcousticEchoCanceler.isAvailable();
+    }
+
+    /**
+     * Helper method for debugging purposes. Logs message if method is not
+     * called on same thread as this object was created on.
+     */
+    private void checkIfCalledOnValidThread() {
+        if (DEBUG && !mNonThreadSafe.calledOnValidThread()) {
+            Log.wtf(TAG, "Method is not called on valid thread!");
+        }
     }
 
     /**
@@ -483,9 +527,7 @@ class AudioManagerAndroid {
         if (!mHasBluetoothPermission) {
             return;
         }
-        if (hasBluetoothHeadset()) {
-            mAudioDevices[DEVICE_BLUETOOTH_HEADSET] = true;
-        }
+        mAudioDevices[DEVICE_BLUETOOTH_HEADSET] = hasBluetoothHeadset();
 
         // Register receivers for broadcast intents related to changes in
         // Bluetooth headset availability and usage of the SCO channel.
@@ -525,10 +567,22 @@ class AudioManagerAndroid {
         return mAudioManager.isMicrophoneMute();
     }
 
-    /** Gets the current earpice state. */
+    /** Gets the current earpiece state. */
     private boolean hasEarpiece() {
         return mContext.getPackageManager().hasSystemFeature(
             PackageManager.FEATURE_TELEPHONY);
+    }
+
+    /**
+     * Checks whether a wired headset is connected or not.
+     * This is not a valid indication that audio playback is actually over
+     * the wired headset as audio routing depends on other conditions. We
+     * only use it as an early indicator (during initialization) of an attached
+     * wired headset.
+     */
+    @Deprecated
+    private boolean hasWiredHeadset() {
+        return mAudioManager.isWiredHeadsetOn();
     }
 
     /** Checks if the process has BLUETOOTH permission or not. */
