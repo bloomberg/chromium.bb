@@ -428,9 +428,10 @@ int QuicCryptoClientStream::DoLoadQuicServerInfo(
   // the first request send InchoateClientHello. Fix the code to handle multiple
   // requests. A possible solution is to wait for the first request to finish
   // and use the data from the disk cache for all requests.
-  // quic_server_info->Persist requires quic_server_info to be ready. We might
-  // have already initialized |cached| config from a the cached state for a
-  // canonical hostname.
+  // We may need to call quic_server_info->Persist later.
+  // quic_server_info->Persist requires quic_server_info to be ready, so we
+  // always call WaitForDataReady, even though we might have initialized
+  // |cached| config from the cached state for a canonical hostname.
   int rv = quic_server_info->WaitForDataReady(
       base::Bind(&QuicCryptoClientStream::OnIOComplete,
                  base::Unretained(this)));
@@ -447,11 +448,8 @@ void QuicCryptoClientStream::DoLoadQuicServerInfoComplete(
 
   // If someone else already saved a server config, we don't want to overwrite
   // it. Also, if someone else saved a server config and then cleared it (so
-  // cached->IsEmpty() is true, but the generation counter changed), we still
-  // want to load from QuicServerInfo.
+  // cached->IsEmpty() is true), we still want to load from QuicServerInfo.
   if (!cached->IsEmpty()) {
-    // Someone else has already saved a server config received from the network
-    // or the canonical server config.
     return;
   }
 
