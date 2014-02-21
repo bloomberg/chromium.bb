@@ -254,6 +254,9 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     FOR_EACH_OBSERVER(DBusThreadManagerObserver, observers_,
                       OnDBusThreadManagerDestroying(this));
 
+    // PowerPolicyController's destructor depends on PowerManagerClient.
+    power_policy_controller_.reset();
+
     // Delete all D-Bus clients before shutting down the system bus.
     client_bundle_.reset();
 
