@@ -13,6 +13,17 @@
 
 namespace content {
 
+// Prefixed EME API only supports prefixed (webkit-) key system name for
+// certain key systems. But internally only unprefixed key systems are
+// supported. The following two functions help convert between prefixed and
+// unprefixed key system names.
+
+// Gets the unprefixed key system name for |key_system|.
+std::string GetUnprefixedKeySystemName(const std::string& key_system);
+
+// Gets the prefixed key system name for |key_system|.
+std::string GetPrefixedKeySystemName(const std::string& key_system);
+
 // Returns whether |key_system| is a real supported key system that can be
 // instantiated.
 // Abstract parent |key_system| strings will return false.

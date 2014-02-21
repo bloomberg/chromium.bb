@@ -13,16 +13,15 @@ namespace media {
 
 // TODO(jrummell): Change other uses of Clear Key to use this common value.
 
-// The key system names for Clear Key.
-MEDIA_EXPORT extern const char kPrefixedClearKey[];
-MEDIA_EXPORT extern const char kUnprefixedClearKey[];
+// The key system name for Clear Key.
+MEDIA_EXPORT extern const char kClearKey[];
 
 // The key system name for External Clear Key.
 MEDIA_EXPORT extern const char kExternalClearKey[];
 
 // Returns true if |key_system| is Clear Key, false otherwise.
 MEDIA_EXPORT inline bool IsClearKey(const std::string& key_system) {
-  return key_system == kPrefixedClearKey || key_system == kUnprefixedClearKey;
+  return key_system == kClearKey;
 }
 
 // Returns true if |key_system| is External Clear Key, false otherwise.

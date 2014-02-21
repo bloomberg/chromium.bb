@@ -43,8 +43,8 @@ static const char kUsesAesParent[] = "org.example";  // Not registered.
 static const char kExternal[] = "com.example.test";
 static const char kExternalParent[] = "com.example";
 
+static const char kClearKey[] = "org.w3.clearkey";
 static const char kPrefixedClearKey[] = "webkit-org.w3.clearkey";
-static const char kUnprefixedClearKey[] = "org.w3.clearkey";
 static const char kExternalClearKey[] = "org.chromium.externalclearkey";
 
 static const char kAudioWebM[] = "audio/webm";
@@ -206,17 +206,17 @@ TEST_F(KeySystemsTest, EmptyKeySystem) {
 
 // Clear Key is the only key system registered in content.
 TEST_F(KeySystemsTest, ClearKey) {
-  EXPECT_TRUE(IsConcreteSupportedKeySystem(kPrefixedClearKey));
+  EXPECT_TRUE(IsConcreteSupportedKeySystem(kClearKey));
   EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
-      kVideoWebM, no_codecs(), kPrefixedClearKey));
+      kVideoWebM, no_codecs(), kClearKey));
 
-  EXPECT_EQ("ClearKey", KeySystemNameForUMA(kPrefixedClearKey));
+  EXPECT_EQ("ClearKey", KeySystemNameForUMA(kClearKey));
 
-  // Not yet out from behind the vendor prefix.
-  EXPECT_FALSE(IsConcreteSupportedKeySystem(kUnprefixedClearKey));
+  // Prefixed Clear Key is not supported internally.
+  EXPECT_FALSE(IsConcreteSupportedKeySystem(kPrefixedClearKey));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
-      kVideoWebM, no_codecs(), kUnprefixedClearKey));
-  EXPECT_EQ("Unknown", KeySystemNameForUMA(kUnprefixedClearKey));
+      kVideoWebM, no_codecs(), kPrefixedClearKey));
+  EXPECT_EQ("Unknown", KeySystemNameForUMA(kPrefixedClearKey));
 }
 
 // The key system is not registered and therefore is unrecognized.
@@ -595,9 +595,9 @@ TEST_F(KeySystemsTest, GetUUID_Unrecognized) {
 #endif  // defined(OS_ANDROID)
 
 TEST_F(KeySystemsTest, KeySystemNameForUMA) {
-  EXPECT_EQ("ClearKey", KeySystemNameForUMA(kPrefixedClearKey));
-  // Unprefixed is not yet supported.
-  EXPECT_EQ("Unknown", KeySystemNameForUMA(kUnprefixedClearKey));
+  EXPECT_EQ("ClearKey", KeySystemNameForUMA(kClearKey));
+  // Prefixed is not supported internally.
+  EXPECT_EQ("Unknown", KeySystemNameForUMA(kPrefixedClearKey));
 
   // External Clear Key never has a UMA name.
   EXPECT_EQ("Unknown", KeySystemNameForUMA(kExternalClearKey));
@@ -607,8 +607,7 @@ TEST_F(KeySystemsTest, KeySystemNameForUMA) {
 #else
   const char* const kTestWidevineUmaName = "Unknown";
 #endif
-  EXPECT_EQ(kTestWidevineUmaName,
-            KeySystemNameForUMA("com.widevine.alpha"));
+  EXPECT_EQ(kTestWidevineUmaName, KeySystemNameForUMA("com.widevine.alpha"));
 }
 
 }  // namespace content

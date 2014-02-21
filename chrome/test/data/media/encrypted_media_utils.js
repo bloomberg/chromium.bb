@@ -99,8 +99,8 @@ function loadEncryptedMedia(video, mediaFile, keySystem, key, useMSE,
 
   function onKeyMessage(message) {
     video.receivedKeyMessage = true;
-    if (!message.keySystem) {
-      failTest('Message without a keySystem: ' + message.keySystem);
+    if (!message.keySystem || message.keySystem != keySystem) {
+      failTest('Message with unexpected keySystem: ' + message.keySystem);
       return;
     }
 

@@ -27,8 +27,7 @@ bool CdmSessionAdapter::Initialize(const std::string& key_system) {
   base::WeakPtr<CdmSessionAdapter> weak_this = weak_ptr_factory_.GetWeakPtr();
   media_keys_ =
       ContentDecryptionModuleFactory::Create(
-          // TODO(ddorwin): Address lower in the stack: http://crbug.com/252065
-          "webkit-" + key_system,
+          key_system,
 #if defined(ENABLE_PEPPER_CDMS)
           // TODO(ddorwin): Support Pepper-based CDMs: http://crbug.com/250049
           NULL,

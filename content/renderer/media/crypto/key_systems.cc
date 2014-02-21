@@ -20,7 +20,9 @@
 
 namespace content {
 
-const char kClearKeyKeySystem[] = "webkit-org.w3.clearkey";
+const char kClearKeyKeySystem[] = "org.w3.clearkey";
+const char kPrefixedClearKeyKeySystem[] = "webkit-org.w3.clearkey";
+const char kUnsupportedClearKeyKeySystem[] = "unsupported-org.w3.clearkey";
 
 const char kAudioWebM[] = "audio/webm";
 const char kVideoWebM[] = "video/webm";
@@ -332,6 +334,25 @@ std::vector<uint8> KeySystems::GetUUID(const std::string& concrete_key_system) {
 #endif
 
 //------------------------------------------------------------------------------
+
+std::string GetUnprefixedKeySystemName(const std::string& key_system) {
+  if (key_system == kClearKeyKeySystem)
+    return kUnsupportedClearKeyKeySystem;
+
+  if (key_system == kPrefixedClearKeyKeySystem)
+    return kClearKeyKeySystem;
+
+  return key_system;
+}
+
+std::string GetPrefixedKeySystemName(const std::string& key_system) {
+  DCHECK_NE(key_system, kPrefixedClearKeyKeySystem);
+
+  if (key_system == kClearKeyKeySystem)
+    return kPrefixedClearKeyKeySystem;
+
+  return key_system;
+}
 
 bool IsConcreteSupportedKeySystem(const std::string& key_system) {
   return KeySystems::GetInstance().IsConcreteSupportedKeySystem(key_system);

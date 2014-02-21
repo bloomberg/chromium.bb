@@ -269,19 +269,17 @@ class WebMediaPlayerAndroid
 
   // Actually do the work for generateKeyRequest/addKey so they can easily
   // report results to UMA.
-  MediaKeyException GenerateKeyRequestInternal(
-      const std::string& key_system,
-      const unsigned char* init_data,
-      unsigned init_data_length);
+  MediaKeyException GenerateKeyRequestInternal(const std::string& key_system,
+                                               const unsigned char* init_data,
+                                               unsigned init_data_length);
   MediaKeyException AddKeyInternal(const std::string& key_system,
                                    const unsigned char* key,
                                    unsigned key_length,
                                    const unsigned char* init_data,
                                    unsigned init_data_length,
                                    const std::string& session_id);
-  MediaKeyException CancelKeyRequestInternal(
-      const std::string& key_system,
-      const std::string& session_id);
+  MediaKeyException CancelKeyRequestInternal(const std::string& key_system,
+                                             const std::string& session_id);
 
   // Requests that this object notifies when a decryptor is ready through the
   // |decryptor_ready_cb| provided.

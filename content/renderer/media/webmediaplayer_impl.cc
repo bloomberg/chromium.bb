@@ -718,10 +718,9 @@ static MediaKeyException MediaKeyExceptionForUMA(
 
 // Helper for converting |key_system| name and exception |e| to a pair of enum
 // values from above, for reporting to UMA.
-static void ReportMediaKeyExceptionToUMA(
-    const std::string& method,
-    const std::string& key_system,
-    WebMediaPlayer::MediaKeyException e) {
+static void ReportMediaKeyExceptionToUMA(const std::string& method,
+                                         const std::string& key_system,
+                                         WebMediaPlayer::MediaKeyException e) {
   MediaKeyException result_id = MediaKeyExceptionForUMA(e);
   DCHECK_NE(result_id, kUnknownResultId) << e;
   EmeUMAHistogramEnumeration(
@@ -742,7 +741,8 @@ WebMediaPlayerImpl::generateKeyRequest(const WebString& key_system,
            << std::string(reinterpret_cast<const char*>(init_data),
                           static_cast<size_t>(init_data_length));
 
-  std::string ascii_key_system = ToASCIIOrEmpty(key_system);
+  std::string ascii_key_system =
+      GetUnprefixedKeySystemName(ToASCIIOrEmpty(key_system));
 
   WebMediaPlayer::MediaKeyException e =
       GenerateKeyRequestInternal(ascii_key_system, init_data, init_data_length);
@@ -751,10 +751,9 @@ WebMediaPlayerImpl::generateKeyRequest(const WebString& key_system,
 }
 
 WebMediaPlayer::MediaKeyException
-WebMediaPlayerImpl::GenerateKeyRequestInternal(
-    const std::string& key_system,
-    const unsigned char* init_data,
-    unsigned init_data_length) {
+WebMediaPlayerImpl::GenerateKeyRequestInternal(const std::string& key_system,
+                                               const unsigned char* init_data,
+                                               unsigned init_data_length) {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
   if (!IsConcreteSupportedKeySystem(key_system))
@@ -773,8 +772,7 @@ WebMediaPlayerImpl::GenerateKeyRequestInternal(
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnKeyMessage)));
     }
 
-    if (!proxy_decryptor_->InitializeCDM(key_system,
-                                         frame_->document().url()))
+    if (!proxy_decryptor_->InitializeCDM(key_system, frame_->document().url()))
       return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
     if (proxy_decryptor_ && !decryptor_ready_cb_.is_null()) {
@@ -810,10 +808,11 @@ WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::addKey(
            << std::string(reinterpret_cast<const char*>(key),
                           static_cast<size_t>(key_length)) << ", "
            << std::string(reinterpret_cast<const char*>(init_data),
-                          static_cast<size_t>(init_data_length))
-           << " [" << base::string16(session_id) << "]";
+                          static_cast<size_t>(init_data_length)) << " ["
+           << base::string16(session_id) << "]";
 
-  std::string ascii_key_system = ToASCIIOrEmpty(key_system);
+  std::string ascii_key_system =
+      GetUnprefixedKeySystemName(ToASCIIOrEmpty(key_system));
   std::string ascii_session_id = ToASCIIOrEmpty(session_id);
 
   WebMediaPlayer::MediaKeyException e = AddKeyInternal(ascii_key_system,
@@ -853,7 +852,8 @@ WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::cancelKeyRequest(
   DVLOG(1) << "cancelKeyRequest: " << base::string16(key_system) << ": "
            << " [" << base::string16(session_id) << "]";
 
-  std::string ascii_key_system = ToASCIIOrEmpty(key_system);
+  std::string ascii_key_system =
+      GetUnprefixedKeySystemName(ToASCIIOrEmpty(key_system));
   std::string ascii_session_id = ToASCIIOrEmpty(session_id);
 
   WebMediaPlayer::MediaKeyException e =
@@ -862,8 +862,7 @@ WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::cancelKeyRequest(
   return e;
 }
 
-WebMediaPlayer::MediaKeyException
-WebMediaPlayerImpl::CancelKeyRequestInternal(
+WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::CancelKeyRequestInternal(
     const std::string& key_system,
     const std::string& session_id) {
   if (!IsConcreteSupportedKeySystem(key_system))
@@ -1001,8 +1000,9 @@ void WebMediaPlayerImpl::OnDemuxerOpened() {
 void WebMediaPlayerImpl::OnKeyAdded(const std::string& session_id) {
   DCHECK(main_loop_->BelongsToCurrentThread());
   EmeUMAHistogramCounts(current_key_system_, "KeyAdded", 1);
-  client_->keyAdded(WebString::fromUTF8(current_key_system_),
-                    WebString::fromUTF8(session_id));
+  client_->keyAdded(
+      WebString::fromUTF8(GetPrefixedKeySystemName(current_key_system_)),
+      WebString::fromUTF8(session_id));
 }
 
 void WebMediaPlayerImpl::OnNeedKey(const std::string& type,
@@ -1059,7 +1059,7 @@ void WebMediaPlayerImpl::OnKeyError(const std::string& session_id,
                              error_code, media::MediaKeys::kMaxKeyError);
 
   client_->keyError(
-      WebString::fromUTF8(current_key_system_),
+      WebString::fromUTF8(GetPrefixedKeySystemName(current_key_system_)),
       WebString::fromUTF8(session_id),
       static_cast<blink::WebMediaPlayerClient::MediaKeyErrorCode>(error_code),
       system_code);
@@ -1074,11 +1074,12 @@ void WebMediaPlayerImpl::OnKeyMessage(const std::string& session_id,
   DLOG_IF(WARNING, !default_url.empty() && !default_url_gurl.is_valid())
       << "Invalid URL in default_url: " << default_url;
 
-  client_->keyMessage(WebString::fromUTF8(current_key_system_),
-                      WebString::fromUTF8(session_id),
-                      message.empty() ? NULL : &message[0],
-                      message.size(),
-                      default_url_gurl);
+  client_->keyMessage(
+      WebString::fromUTF8(GetPrefixedKeySystemName(current_key_system_)),
+      WebString::fromUTF8(session_id),
+      message.empty() ? NULL : &message[0],
+      message.size(),
+      default_url_gurl);
 }
 
 void WebMediaPlayerImpl::SetOpaque(bool opaque) {
