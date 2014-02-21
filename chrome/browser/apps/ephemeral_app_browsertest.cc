@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/stl_util.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
@@ -264,7 +265,7 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest, StickyNotificationSettings) {
 // Verify that only running ephemeral apps will appear in the Notification
 // Settings UI. Inactive, cached ephemeral apps should not appear.
 IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
-                       IncludeRunningEphmeralAppsInNotifiers) {
+                       IncludeRunningEphemeralAppsInNotifiers) {
   message_center::NotifierSettingsProvider* settings_provider =
       message_center::MessageCenter::Get()->GetNotifierSettingsProvider();
   // TODO(tmdiep): Remove once notifications settings are supported across
@@ -280,15 +281,17 @@ IN_PROC_BROWSER_TEST_F(EphemeralAppBrowserTest,
   // Since the ephemeral app is running, it should be included in the list
   // of notifiers to show in the UI.
   NotifierList notifiers;
+  STLElementDeleter<NotifierList> notifier_deleter(&notifiers);
+
   settings_provider->GetNotifierList(&notifiers);
   EXPECT_TRUE(IsNotifierInList(notifier_id, notifiers));
+  STLDeleteElements(&notifiers);
 
   // Close the ephemeral app.
   CloseApp(app->id());
 
   // Inactive ephemeral apps should not be included in the list of notifiers to
   // show in the UI.
-  notifiers.clear();
   settings_provider->GetNotifierList(&notifiers);
   EXPECT_FALSE(IsNotifierInList(notifier_id, notifiers));
 }
