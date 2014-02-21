@@ -8,10 +8,9 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/sequenced_task_runner.h"
-#include "chrome/browser/extensions/api/storage/local_storage_backend.h"
+#include "chrome/browser/extensions/api/storage/settings_backend.h"
 #include "chrome/browser/extensions/api/storage/settings_frontend.h"
 #include "chrome/browser/extensions/api/storage/settings_storage_quota_enforcer.h"
-#include "chrome/browser/extensions/api/storage/sync_storage_backend.h"
 #include "chrome/browser/extensions/api/storage/weak_unlimited_settings_storage.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -29,7 +28,7 @@ SyncOrLocalValueStoreCache::SyncOrLocalValueStoreCache(
     const SettingsStorageQuotaEnforcer::Limits& quota,
     const scoped_refptr<SettingsObserverList>& observers,
     const base::FilePath& profile_path)
-    : settings_namespace_(settings_namespace), initialized_(false) {
+    : settings_namespace_(settings_namespace) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(settings_namespace_ == settings_namespace::LOCAL ||
          settings_namespace_ == settings_namespace::SYNC);
@@ -48,27 +47,24 @@ SyncOrLocalValueStoreCache::~SyncOrLocalValueStoreCache() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
 
-syncer::SyncableService* SyncOrLocalValueStoreCache::GetSyncableService(
-    syncer::ModelType type) const {
+SettingsBackend* SyncOrLocalValueStoreCache::GetAppBackend() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(initialized_);
-  switch (type) {
-    case syncer::APP_SETTINGS:
-      return app_backend_->GetAsSyncableService();
-    case syncer::EXTENSION_SETTINGS:
-      return extension_backend_->GetAsSyncableService();
-    default:
-      NOTREACHED();
-      return NULL;
-  }
+  DCHECK(app_backend_.get());
+  return app_backend_.get();
+}
+
+SettingsBackend* SyncOrLocalValueStoreCache::GetExtensionBackend() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(extension_backend_.get());
+  return extension_backend_.get();
 }
 
 void SyncOrLocalValueStoreCache::RunWithValueStoreForExtension(
     const StorageCallback& callback,
     scoped_refptr<const Extension> extension) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(initialized_);
-
+  DCHECK(app_backend_.get());
+  DCHECK(extension_backend_.get());
   SettingsBackend* backend =
       extension->is_app() ? app_backend_.get() : extension_backend_.get();
   ValueStore* storage = backend->GetStorage(extension->id());
@@ -93,7 +89,6 @@ void SyncOrLocalValueStoreCache::RunWithValueStoreForExtension(
 void SyncOrLocalValueStoreCache::DeleteStorageSoon(
     const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(initialized_);
   app_backend_->DeleteStorage(extension_id);
   extension_backend_->DeleteStorage(extension_id);
 }
@@ -104,39 +99,23 @@ void SyncOrLocalValueStoreCache::InitOnFileThread(
     const scoped_refptr<SettingsObserverList>& observers,
     const base::FilePath& profile_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(!initialized_);
-  switch (settings_namespace_) {
-    case settings_namespace::LOCAL:
-      app_backend_.reset(new LocalStorageBackend(
-          factory,
-          profile_path.AppendASCII(kLocalAppSettingsDirectoryName),
-          quota));
-      extension_backend_.reset(new LocalStorageBackend(
-          factory,
-          profile_path.AppendASCII(kLocalExtensionSettingsDirectoryName),
-          quota));
-      break;
-    case settings_namespace::SYNC:
-      app_backend_.reset(new SyncStorageBackend(
-          factory,
-          profile_path.AppendASCII(kSyncAppSettingsDirectoryName),
-          quota,
-          observers,
-          syncer::APP_SETTINGS,
-          sync_start_util::GetFlareForSyncableService(profile_path)));
-      extension_backend_.reset(new SyncStorageBackend(
-          factory,
-          profile_path.AppendASCII(kSyncExtensionSettingsDirectoryName),
-          quota,
-          observers,
-          syncer::EXTENSION_SETTINGS,
-          sync_start_util::GetFlareForSyncableService(profile_path)));
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  initialized_ = true;
+  DCHECK(!app_backend_.get());
+  DCHECK(!extension_backend_.get());
+  const bool local = settings_namespace_ == settings_namespace::LOCAL;
+  const base::FilePath app_path = profile_path.AppendASCII(
+      local ? extensions::kLocalAppSettingsDirectoryName
+            : extensions::kSyncAppSettingsDirectoryName);
+  const base::FilePath extension_path = profile_path.AppendASCII(
+      local ? extensions::kLocalExtensionSettingsDirectoryName
+            : extensions::kSyncExtensionSettingsDirectoryName);
+  app_backend_.reset(new SettingsBackend(
+      factory, app_path, syncer::APP_SETTINGS,
+      sync_start_util::GetFlareForSyncableService(profile_path),
+      quota, observers));
+  extension_backend_.reset(new SettingsBackend(
+      factory, extension_path, syncer::EXTENSION_SETTINGS,
+      sync_start_util::GetFlareForSyncableService(profile_path),
+      quota, observers));
 }
 
 }  // namespace extensions

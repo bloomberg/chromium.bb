@@ -77,10 +77,6 @@ class ValueStore {
 
     bool HasError() const { return error_; }
 
-    bool IsCorrupted() const {
-      return error_.get() && error_->code == CORRUPTION;
-    }
-
     // Gets the settings read from the storage. Note that this represents
     // the root object. If you request the value for key "foo", that value will
     // be in |settings|.|foo|.
@@ -195,27 +191,6 @@ class ValueStore {
 
   // Clears the storage.
   virtual WriteResult Clear() = 0;
-
-  // In the event of corruption, the ValueStore should be able to restore
-  // itself. This means deleting local corrupted files. If only a few keys are
-  // corrupted, then some of the database may be saved. If the full database is
-  // corrupted, this will erase it in its entirety.
-  // Returns true on success, false on failure. The only way this will fail is
-  // if we also cannot delete the database file.
-  // Note: This method may be expensive; some implementations may need to read
-  // the entire database to restore. Use sparingly.
-  // Note: This method (and the following RestoreKey()) are rude, and do not
-  // make any logs, track changes, or other generally polite things. Please do
-  // not use these as substitutes for Clear() and Remove().
-  virtual bool Restore() = 0;
-
-  // Similar to Restore(), but for only a particular key. If the key is corrupt,
-  // this will forcefully remove the key. It does not look at the database on
-  // the whole, which makes it faster, but does not guarantee there is no
-  // additional corruption.
-  // Returns true on success, and false on failure. If false, the next step is
-  // probably to Restore() the whole database.
-  virtual bool RestoreKey(const std::string& key) = 0;
 };
 
 #endif  // CHROME_BROWSER_VALUE_STORE_VALUE_STORE_H_

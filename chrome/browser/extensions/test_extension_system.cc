@@ -152,11 +152,9 @@ TestExtensionSystem::lazy_background_task_queue() {
   return NULL;
 }
 
-void TestExtensionSystem::SetEventRouter(scoped_ptr<EventRouter> event_router) {
-  event_router_.reset(event_router.release());
+EventRouter* TestExtensionSystem::event_router() {
+  return NULL;
 }
-
-EventRouter* TestExtensionSystem::event_router() { return event_router_.get(); }
 
 ExtensionWarningService* TestExtensionSystem::warning_service() {
   return NULL;

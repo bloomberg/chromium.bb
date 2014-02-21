@@ -162,12 +162,6 @@ ValueStore* ScopedSettingsStorageFactory::Create(
   return delegate_->Create(base_path, extension_id);
 }
 
-void ScopedSettingsStorageFactory::DeleteDatabaseIfExists(
-    const base::FilePath& base_path,
-    const std::string& extension_id) {
-  delegate_->DeleteDatabaseIfExists(base_path, extension_id);
-}
-
 }  // namespace settings_test_util
 
 }  // namespace extensions

@@ -49,8 +49,6 @@ class SyncableSettingsStorage : public ValueStore {
   virtual WriteResult Remove(const std::string& key) OVERRIDE;
   virtual WriteResult Remove(const std::vector<std::string>& keys) OVERRIDE;
   virtual WriteResult Clear() OVERRIDE;
-  virtual bool Restore() OVERRIDE;
-  virtual bool RestoreKey(const std::string& key) OVERRIDE;
 
   // Sync-related methods, analogous to those on SyncableService (handled by
   // ExtensionSettings), but with looser guarantees about when the methods

@@ -15,9 +15,6 @@ class LeveldbSettingsStorageFactory : public SettingsStorageFactory {
   virtual ValueStore* Create(const base::FilePath& base_path,
                              const std::string& extension_id) OVERRIDE;
 
-  virtual void DeleteDatabaseIfExists(const base::FilePath& base_path,
-                                      const std::string& extension_id) OVERRIDE;
-
  private:
   // SettingsStorageFactory is refcounted.
   virtual ~LeveldbSettingsStorageFactory() {}

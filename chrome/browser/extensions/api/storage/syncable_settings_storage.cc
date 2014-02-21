@@ -122,28 +122,6 @@ ValueStore::WriteResult SyncableSettingsStorage::Clear() {
   return result.Pass();
 }
 
-bool SyncableSettingsStorage::Restore() {
-  // If we're syncing, stop - we don't want to push the deletion of any data.
-  // At next startup, when we start up the sync service, we'll get back any
-  // data which was stored intact on Sync.
-  // TODO (rdevlin.cronin): Investigate if there's a way we can trigger
-  // MergeDataAndStartSyncing() to immediately get back any data we can,
-  // and continue syncing.
-  StopSyncing();
-  return delegate_->Restore();
-}
-
-bool SyncableSettingsStorage::RestoreKey(const std::string& key) {
-  // If we're syncing, stop - we don't want to push the deletion of any data.
-  // At next startup, when we start up the sync service, we'll get back any
-  // data which was stored intact on Sync.
-  // TODO (rdevlin.cronin): Investigate if there's a way we can trigger
-  // MergeDataAndStartSyncing() to immediately get back any data we can,
-  // and continue syncing.
-  StopSyncing();
-  return delegate_->RestoreKey(key);
-}
-
 void SyncableSettingsStorage::SyncResultIfEnabled(
     const ValueStore::WriteResult& result) {
   if (result->changes().empty())

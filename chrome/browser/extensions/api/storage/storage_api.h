@@ -30,42 +30,23 @@ class SettingsFunction : public ChromeAsyncExtensionFunction {
   // may return false to imply failure.
   virtual bool RunWithStorage(ValueStore* storage) = 0;
 
-  // Handles the |result| of a read function.
-  // - If the result succeeded, this will set |result_| and return.
-  // - If |result| failed with a ValueStore::CORRUPTION error, this will call
-  //   RestoreStorageAndRetry(), and return that result.
-  // - If the |result| failed with a different error, this will set |error_|
-  //   and return.
-  bool UseReadResult(ValueStore::ReadResult result, ValueStore* storage);
+  // Sets error_ or result_ depending on the value of a storage ReadResult, and
+  // returns whether the result implies success (i.e. !error).
+  bool UseReadResult(ValueStore::ReadResult result);
 
-  // Handles the |result| of a write function.
-  // - If the result succeeded, this will set |result_| and return.
-  // - If |result| failed with a ValueStore::CORRUPTION error, this will call
-  //   RestoreStorageAndRetry(), and return that result.
-  // - If the |result| failed with a different error, this will set |error_|
-  //   and return.
-  // This will also send out a change notification, if appropriate.
-  bool UseWriteResult(ValueStore::WriteResult result, ValueStore* storage);
+  // Sets error_ depending on the value of a storage WriteResult, sends a
+  // change notification if needed, and returns whether the result implies
+  // success (i.e. !error).
+  bool UseWriteResult(ValueStore::WriteResult result);
 
  private:
   // Called via PostTask from RunImpl.  Calls RunWithStorage and then
   // SendResponse with its success value.
   void AsyncRunWithStorage(ValueStore* storage);
 
-  // Called if we encounter a ValueStore error. If the error is due to
-  // corruption, tries to restore the ValueStore and re-run the API function.
-  // If the storage cannot be restored or was due to some other error, then sets
-  // error and returns. This also sets the |tried_restoring_storage_| flag to
-  // ensure we don't enter a loop.
-  bool HandleError(const ValueStore::Error& error, ValueStore* storage);
-
   // The settings namespace the call was for.  For example, SYNC if the API
   // call was chrome.settings.experimental.sync..., LOCAL if .local, etc.
   settings_namespace::Namespace settings_namespace_;
-
-  // A flag indicating whether or not we have tried to restore storage. We
-  // should only ever try once (per API call) in order to avoid entering a loop.
-  bool tried_restoring_storage_;
 
   // Observers, cached so that it's only grabbed from the UI thread.
   scoped_refptr<SettingsObserverList> observers_;

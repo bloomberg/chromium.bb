@@ -45,12 +45,6 @@ class LeveldbValueStore : public ValueStore {
   virtual WriteResult Remove(const std::string& key) OVERRIDE;
   virtual WriteResult Remove(const std::vector<std::string>& keys) OVERRIDE;
   virtual WriteResult Clear() OVERRIDE;
-  virtual bool Restore() OVERRIDE;
-  virtual bool RestoreKey(const std::string& key) OVERRIDE;
-
-  // Write directly to the backing levelDB. Only used for testing to cause
-  // corruption in the database.
-  bool WriteToDbForTest(leveldb::WriteBatch* batch);
 
  private:
   // Tries to open the database if it hasn't been opened already.

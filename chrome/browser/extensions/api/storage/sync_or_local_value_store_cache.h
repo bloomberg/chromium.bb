@@ -12,14 +12,9 @@
 #include "chrome/browser/extensions/api/storage/settings_observer.h"
 #include "chrome/browser/extensions/api/storage/settings_storage_quota_enforcer.h"
 #include "chrome/browser/extensions/api/storage/value_store_cache.h"
-#include "sync/api/syncable_service.h"
 
 namespace base {
 class FilePath;
-}
-
-namespace syncer {
-class SyncableService;
 }
 
 namespace extensions {
@@ -40,7 +35,8 @@ class SyncOrLocalValueStoreCache : public ValueStoreCache {
       const base::FilePath& profile_path);
   virtual ~SyncOrLocalValueStoreCache();
 
-  syncer::SyncableService* GetSyncableService(syncer::ModelType type) const;
+  SettingsBackend* GetAppBackend() const;
+  SettingsBackend* GetExtensionBackend() const;
 
   // ValueStoreCache implementation:
 
@@ -57,7 +53,6 @@ class SyncOrLocalValueStoreCache : public ValueStoreCache {
                         const base::FilePath& profile_path);
 
   settings_namespace::Namespace settings_namespace_;
-  bool initialized_;
   scoped_ptr<SettingsBackend> app_backend_;
   scoped_ptr<SettingsBackend> extension_backend_;
 
