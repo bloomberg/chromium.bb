@@ -146,7 +146,7 @@ namespace WTF {
         typedef typename OwnPtr<P>::PtrType IteratorGetType;
         typedef const IteratorGetType IteratorConstGetType;
         typedef typename OwnPtr<P>::ValueType& IteratorReferenceType;
-        typedef const IteratorReferenceType IteratorConstReferenceType;
+        typedef const typename OwnPtr<P>::ValueType& IteratorConstReferenceType;
         static IteratorReferenceType getToReferenceConversion(IteratorGetType x) { return *x; }
         static IteratorConstReferenceType getToReferenceConstConversion(IteratorConstGetType x) { return *x; }
         typedef PassOwnPtr<P> PassInType;
