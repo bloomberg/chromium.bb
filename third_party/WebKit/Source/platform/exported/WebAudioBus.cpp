@@ -144,7 +144,7 @@ PassRefPtr<AudioBus> WebAudioBus::release()
     return audioBus;
 #else
     ASSERT_NOT_REACHED();
-    return 0;
+    return nullptr;
 #endif
 }
 
