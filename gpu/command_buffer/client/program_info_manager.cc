@@ -383,6 +383,7 @@ CachedProgramInfoManager::~CachedProgramInfoManager() {
 CachedProgramInfoManager::Program*
     CachedProgramInfoManager::GetProgramInfo(
         GLES2Implementation* gl, GLuint program) {
+  lock_.AssertAcquired();
   ProgramInfoMap::iterator it = program_infos_.find(program);
   if (it == program_infos_.end()) {
     return NULL;
@@ -394,7 +395,7 @@ CachedProgramInfoManager::Program*
 
 void CachedProgramInfoManager::CreateInfo(GLuint program) {
   base::AutoLock auto_lock(lock_);
-  DeleteInfo(program);
+  program_infos_.erase(program);
   std::pair<ProgramInfoMap::iterator, bool> result =
       program_infos_.insert(std::make_pair(program, Program()));
 
@@ -402,6 +403,7 @@ void CachedProgramInfoManager::CreateInfo(GLuint program) {
 }
 
 void CachedProgramInfoManager::DeleteInfo(GLuint program) {
+  base::AutoLock auto_lock(lock_);
   program_infos_.erase(program);
 }
 
