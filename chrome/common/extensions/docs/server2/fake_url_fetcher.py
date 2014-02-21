@@ -106,6 +106,12 @@ class FakeURLFSFetcher(object):
     return _Response(self._file_system.ReadSingle(
         posixpath.join(self._base_path, url)).Get())
 
+  def UpdateFS(self, file_system, base_path=None):
+    '''Replace the underlying FileSystem used to reslove URLs.
+    '''
+    self._file_system = file_system
+    self._base_path = base_path or self._base_path
+
 
 class MockURLFetcher(object):
   def __init__(self, fetcher):
