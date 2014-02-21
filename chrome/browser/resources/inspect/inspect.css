@@ -145,9 +145,12 @@ img {
 }
 
 .row {
-  display: flex;
   padding: 6px 0;
   position: relative;
+}
+
+.properties-box {
+  display: flex;
 }
 
 .subrow-box {
@@ -215,7 +218,7 @@ img {
 }
 
 .list:not(.pages) .subrow {
-  height: 19px;
+  min-height: 19px;
 }
 
 .action.disabled {
