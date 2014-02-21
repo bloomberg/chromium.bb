@@ -481,7 +481,7 @@ crbug.com/318431 [ Linux ] fast/dom/shadow/transition-on-shadow-host-with-distri
 
 crbug.com/340206 [ Win ] http/tests/security/cross-origin-css.html [ Pass Timeout ]
 
-crbug.com/284734 svg/custom/getsvgdocument.html [ Pass Failure ]
+crbug.com/284734 svg/custom/getsvgdocument.html [ Pass ImageOnlyFailure ]
 crbug.com/326881 [ Mac Debug ] svg/carto.net/window.svg [ Pass ImageOnlyFailure ]
 
 crbug.com/283723 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass Timeout ]
