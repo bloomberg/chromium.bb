@@ -492,10 +492,11 @@ There are certain constraints on the local image path:
         help='Do not reboot after update. Default is always reboot.')
     update.add_argument(
         '--no-wipe', action='store_false', dest='wipe', default=True,
-        help='Do not wipe the temporary working directory.')
+        help='Do not wipe the temporary working directory. Default '
+        'is always wipe.')
     update.add_argument(
         '--no-stateful-update', action='store_false', dest='stateful_update',
-        help='Do not update the stateful partition on the device.'
+        help='Do not update the stateful partition on the device. '
         'Default is always update.')
     update.add_argument(
         '--no-rootfs-update', action='store_false', dest='rootfs_update',
