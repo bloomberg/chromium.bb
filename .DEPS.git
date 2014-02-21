@@ -152,7 +152,7 @@ deps = {
     'src/tools/page_cycler/acid3':
         Var('git_url') + '/chromium/deps/acid3.git@6be0a66a1ebd7ebc5abc1b2f405a945f6d871521',
     'src/tools/swarming_client':
-        Var('git_url') + '/external/swarming.client.git@5b47578a4c25b1447172c78bcfce8c1fc7a69839',
+        Var('git_url') + '/external/swarming.client.git@4196cfcee5becb6003174661b6af40cb5b1af126',
     'src/v8':
         Var('git_url') + '/external/v8.git@3a9c5d9b20b1897a1acd41dbad9e724c504a4db9',
 }
