@@ -620,8 +620,10 @@ void ExtensionService::MaybeBootstrapVerifier() {
     // signature's timestamp, we need to bootstrap because our signature may
     // be missing valid extensions.
     base::Time timestamp = verifier->SignatureTimestamp();
-    for (extensions::ExtensionSet::const_iterator i = extensions()->begin();
-         i != extensions()->end();
+    scoped_ptr<extensions::ExtensionSet> extensions =
+        GenerateInstalledExtensionsSet();
+    for (extensions::ExtensionSet::const_iterator i = extensions->begin();
+         i != extensions->end();
          ++i) {
       const Extension& extension = **i;
       base::Time install_time =
