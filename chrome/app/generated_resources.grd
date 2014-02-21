@@ -6619,6 +6619,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_SCREEN_CAPTURE_DESCRIPTION" desc="Description of flag to enable screen capture.">
         Allow web pages to request access to the screen contents via the getUserMedia() API.
       </message>
+      <message name="IDS_FLAGS_DISABLE_AVFOUNDATION_NAME" desc="Name of the flag to disable Mac AVFoundation.">
+        Disable use of Mac OS X AV Foundation APIs (use QTKit instead).
+      </message>
+      <message name="IDS_FLAGS_DISABLE_AVFOUNDATION_DESCRIPTION" desc="Description of flag to disable Mac AVFoundation.">
+        Disable AV Foundation use for video capture and video device monitoring on OS X >= 10.7. Instead QTKit will be used.
+      </message>
       <message name="IDS_FLAGS_ENABLE_APPS_DEVTOOL_APP_NAME" desc="Name of the flag to enable apps-devtools app.">
         Enable apps-devtool app.
       </message>

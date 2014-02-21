@@ -1395,6 +1395,15 @@ const Experiment kExperiments[] = {
     kOsDesktop,
     SINGLE_VALUE_TYPE(switches::kEnableUserMediaScreenCapturing)
   },
+#if defined(OS_MACOSX)
+  {
+    "disable-avfoundation",
+    IDS_FLAGS_DISABLE_AVFOUNDATION_NAME,
+    IDS_FLAGS_DISABLE_AVFOUNDATION_DESCRIPTION,
+    kOsMac,
+    SINGLE_VALUE_TYPE(switches::kDisableAVFoundation)
+  },
+#endif
   {
     "impl-side-painting",
     IDS_FLAGS_IMPL_SIDE_PAINTING_NAME,
