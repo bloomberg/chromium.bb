@@ -20,13 +20,22 @@ body {
 }
 
 kb-keyboard.ctrl-active kb-modifier-key[char=Ctrl],
-kb-keyboard.alt-active kb-modifier-key[char=Alt],
+kb-keyboard.alt-active kb-modifier-key[char=Alt] {
+  color: lightblue;
+}
+
+/** TODO(rsadam@): Use different assets for caps-lock and highlight **/
+.caps-locked kb-shift-key.dark [part=key],
 /**
 * Controls whether the shift key should be highlighted or not.
 * Only highlights if we are in the upper keyset, but not capslocked.
 */
-kb-keyboard:not(.caps-locked)[keyset=upper] kb-shift-key {
-  color: lightblue;
+kb-keyboard:not(.caps-locked)[keyset=upper] kb-shift-key [part=key]{
+  background-image: url('images/shift-filled.svg');
+}
+
+kb-keyboard:not(.caps-locked)[keyset=lower] kb-shift-key [part=key]{
+  background-image: url('images/shift.svg');
 }
 
 .dark {
@@ -40,7 +49,6 @@ kb-keyboard:not(.caps-locked)[keyset=upper] kb-shift-key {
   border-top-color: #4f4f4f;
 }
 
-.caps-locked kb-shift-key.dark,
 :not(kb-altkey-set) > .active {
   -webkit-box-shadow: inset 0px 1px #969696, inset 0px -1px #6f6f6f;
   background-image: -webkit-linear-gradient(#8b8b8b, #7d7d7d);
@@ -60,10 +68,4 @@ kb-keyboard:not(.caps-locked)[keyset=upper] kb-shift-key {
 
 .audio .microphone [part=key] {
   background-image: url('images/microphone-green.svg');
-}
-
-kb-key.search [part=key]{
-  margin-left: 0px;
-  padding-left: 0px;
-  width: 2em;
 }

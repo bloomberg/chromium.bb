@@ -45,6 +45,8 @@ content::WebUIDataSource* CreateKeyboardUIDataSource() {
                           IDR_KEYBOARD_ELEMENTS_SHIFT_KEY);
   source->AddResourcePath("images/back.svg",
                           IDR_KEYBOARD_IMAGES_BACK);
+  source->AddResourcePath("images/backspace.svg",
+                          IDR_KEYBOARD_IMAGES_BACKSPACE);
   source->AddResourcePath("images/brightness-down.svg",
                           IDR_KEYBOARD_IMAGES_BRIGHTNESS_DOWN);
   source->AddResourcePath("images/brightness-up.svg",
@@ -67,12 +69,20 @@ content::WebUIDataSource* CreateKeyboardUIDataSource() {
                           IDR_KEYBOARD_IMAGES_MUTE);
   source->AddResourcePath("images/reload.svg",
                           IDR_KEYBOARD_IMAGES_RELOAD);
+  source->AddResourcePath("images/return.svg",
+                          IDR_KEYBOARD_IMAGES_RETURN);
   source->AddResourcePath("images/right.svg",
                           IDR_KEYBOARD_IMAGES_RIGHT);
   source->AddResourcePath("images/search.svg",
                           IDR_KEYBOARD_IMAGES_SEARCH);
+  source->AddResourcePath("images/shift.svg",
+                          IDR_KEYBOARD_IMAGES_SHIFT);
+  source->AddResourcePath("images/shift-filled.svg",
+                          IDR_KEYBOARD_IMAGES_SHIFT_FILLED);
   source->AddResourcePath("images/shutdown.svg",
                           IDR_KEYBOARD_IMAGES_SHUTDOWN);
+  source->AddResourcePath("images/tab.svg",
+                          IDR_KEYBOARD_IMAGES_TAB);
   source->AddResourcePath("images/up.svg",
                           IDR_KEYBOARD_IMAGES_UP);
   source->AddResourcePath("images/volume-down.svg",

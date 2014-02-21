@@ -38,9 +38,22 @@
         top: 0;
       }
 
+      kb-shift-key::part(key),
       :host[image]::part(key) {
-        height: 2em;
-        width: 1em;
+        height: 70%;
+        width: auto;
+      }
+
+      :host[image].cursor::part(key) {
+        height: 85%;
+      }
+
+      :host[image].hide-keyboard::part(key) {
+        height: 100%;
+      }
+
+      :host[image].search::part(key) {
+        height: 80%;
       }
 
       ::part(hint) {

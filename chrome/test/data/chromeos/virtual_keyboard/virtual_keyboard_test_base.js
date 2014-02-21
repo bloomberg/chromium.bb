@@ -65,7 +65,8 @@ var Keyset = {
  */
 var Alignment = {
   LEFT: 'left',
-  RIGHT: 'right'
+  RIGHT: 'right',
+  CENTER: 'center'
 };
 
 var EventType = {
