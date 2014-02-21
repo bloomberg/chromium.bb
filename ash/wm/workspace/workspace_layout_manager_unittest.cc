@@ -361,6 +361,23 @@ TEST_F(WorkspaceLayoutManagerTest, ChildBoundsResetOnMaximize) {
   EXPECT_EQ("5,6 7x8", child_window->bounds().ToString());
 }
 
+// Verifies a window created with maximized state has the maximized
+// bounds.
+TEST_F(WorkspaceLayoutManagerTest, MaximizeWithEmptySize) {
+  scoped_ptr<aura::Window> window(
+      aura::test::CreateTestWindowWithBounds(gfx::Rect(0, 0, 0, 0),
+                                             NULL));
+  wm::GetWindowState(window.get())->Maximize();
+  aura::Window* default_container = Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(),
+      internal::kShellWindowId_DefaultContainer);
+  default_container->AddChild(window.get());
+  window->Show();
+  gfx::Rect work_area(
+      Shell::GetScreen()->GetPrimaryDisplay().work_area());
+  EXPECT_EQ(work_area.ToString(), window->GetBoundsInScreen().ToString());
+}
+
 TEST_F(WorkspaceLayoutManagerTest, WindowShouldBeOnScreenWhenAdded) {
   // Normal window bounds shouldn't be changed.
   gfx::Rect window_bounds(100, 100, 200, 200);

@@ -67,6 +67,31 @@ int64 Round64(float f) {
   return static_cast<int64>(f + 0.5f);
 }
 
+base::TimeDelta GetCrossFadeDuration(aura::Window* window,
+                                     const gfx::Rect& old_bounds,
+                                     const gfx::Rect& new_bounds) {
+  if (views::corewm::WindowAnimationsDisabled(window))
+    return base::TimeDelta();
+
+  int old_area = old_bounds.width() * old_bounds.height();
+  int new_area = new_bounds.width() * new_bounds.height();
+  int max_area = std::max(old_area, new_area);
+  // Avoid divide by zero.
+  if (max_area == 0)
+    return base::TimeDelta::FromMilliseconds(kCrossFadeDurationMS);
+
+  int delta_area = std::abs(old_area - new_area);
+  // If the area didn't change, the animation is instantaneous.
+  if (delta_area == 0)
+    return base::TimeDelta::FromMilliseconds(kCrossFadeDurationMS);
+
+  float factor =
+      static_cast<float>(delta_area) / static_cast<float>(max_area);
+  const float kRange = kCrossFadeDurationMaxMs - kCrossFadeDurationMinMs;
+  return base::TimeDelta::FromMilliseconds(
+      Round64(kCrossFadeDurationMinMs + (factor * kRange)));
+}
+
 }  // namespace
 
 const int kCrossFadeDurationMS = 200;
@@ -308,14 +333,9 @@ class CrossFadeObserver : public ui::CompositorObserver,
   DISALLOW_COPY_AND_ASSIGN(CrossFadeObserver);
 };
 
-// Implementation of cross fading. Window is the window being cross faded. It
-// should be at the target bounds. |old_layer| the previous layer from |window|.
-// This takes ownership of |old_layer| and deletes when the animation is done.
-// |pause_duration| is the duration to pause at the current bounds before
-// animating. Returns the duration of the fade.
-base::TimeDelta CrossFadeImpl(aura::Window* window,
-                              ui::Layer* old_layer,
-                              gfx::Tween::Type tween_type) {
+base::TimeDelta CrossFadeAnimation(aura::Window* window,
+                                   ui::Layer* old_layer,
+                                   gfx::Tween::Type tween_type) {
   const gfx::Rect old_bounds(old_layer->bounds());
   const gfx::Rect new_bounds(window->bounds());
   const bool old_on_top = (old_bounds.width() > new_bounds.width());
@@ -380,63 +400,6 @@ base::TimeDelta CrossFadeImpl(aura::Window* window,
     }
   }
   return duration;
-}
-
-void CrossFadeToBounds(aura::Window* window, const gfx::Rect& new_bounds) {
-  // Some test results in invoking CrossFadeToBounds when window is not visible.
-  // No animation is necessary in that case, thus just change the bounds and
-  // quit.
-  if (!window->TargetVisibility()) {
-    window->SetBounds(new_bounds);
-    return;
-  }
-
-  const gfx::Rect old_bounds = window->bounds();
-
-  // Create fresh layers for the window and all its children to paint into.
-  // Takes ownership of the old layer and all its children, which will be
-  // cleaned up after the animation completes.
-  // Specify |set_bounds| to true here to keep the old bounds in the child
-  // windows of |window|.
-  ui::Layer* old_layer = views::corewm::RecreateWindowLayers(window, true);
-  ui::Layer* new_layer = window->layer();
-
-  // Resize the window to the new size, which will force a layout and paint.
-  window->SetBounds(new_bounds);
-
-  // Ensure the higher-resolution layer is on top.
-  bool old_on_top = (old_bounds.width() > new_bounds.width());
-  if (old_on_top)
-    old_layer->parent()->StackBelow(new_layer, old_layer);
-  else
-    old_layer->parent()->StackAbove(new_layer, old_layer);
-
-  CrossFadeImpl(window, old_layer, gfx::Tween::EASE_OUT);
-}
-
-base::TimeDelta GetCrossFadeDuration(aura::Window* window,
-                                     const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) {
-  if (views::corewm::WindowAnimationsDisabled(window))
-    return base::TimeDelta();
-
-  int old_area = old_bounds.width() * old_bounds.height();
-  int new_area = new_bounds.width() * new_bounds.height();
-  int max_area = std::max(old_area, new_area);
-  // Avoid divide by zero.
-  if (max_area == 0)
-    return base::TimeDelta::FromMilliseconds(kCrossFadeDurationMS);
-
-  int delta_area = std::abs(old_area - new_area);
-  // If the area didn't change, the animation is instantaneous.
-  if (delta_area == 0)
-    return base::TimeDelta::FromMilliseconds(kCrossFadeDurationMS);
-
-  float factor =
-      static_cast<float>(delta_area) / static_cast<float>(max_area);
-  const float kRange = kCrossFadeDurationMaxMs - kCrossFadeDurationMinMs;
-  return base::TimeDelta::FromMilliseconds(
-      Round64(kCrossFadeDurationMinMs + (factor * kRange)));
 }
 
 bool AnimateOnChildWindowVisibilityChanged(aura::Window* window, bool visible) {

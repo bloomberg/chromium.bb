@@ -459,6 +459,9 @@ TEST_F(WorkspaceControllerTest, ShelfStateUpdated) {
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
   EXPECT_EQ("0,1 101x102", w1->bounds().ToString());
+  EXPECT_EQ(ScreenUtil::GetMaximizedWindowBoundsInParent(
+                w2->parent()).ToString(),
+            w2->bounds().ToString());
 
   // Switch to w1.
   wm::ActivateWindow(w1.get());

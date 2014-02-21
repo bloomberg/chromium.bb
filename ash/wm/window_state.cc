@@ -9,6 +9,7 @@
 #include "ash/screen_util.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/default_state.h"
+#include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_observer.h"
@@ -213,6 +214,10 @@ void WindowState::SnapRight(const gfx::Rect& bounds) {
   SnapWindow(SHOW_TYPE_RIGHT_SNAPPED, bounds);
 }
 
+void WindowState::RequestBounds(const gfx::Rect& requested_bounds) {
+  current_state_->RequestBounds(this, requested_bounds);
+}
+
 void WindowState::Minimize() {
   window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
 }
@@ -313,6 +318,14 @@ void WindowState::SetAndClearRestoreBounds() {
   ClearRestoreBounds();
 }
 
+void WindowState::OnWindowPropertyChanged(aura::Window* window,
+                                          const void* key,
+                                          intptr_t old) {
+  DCHECK_EQ(window, window_);
+  if (key == aura::client::kShowStateKey && !ignore_property_change_)
+    OnWMEvent(WMEventFromShowState(GetShowState()));
+}
+
 void WindowState::AdjustSnappedBounds(gfx::Rect* bounds) {
   if (is_dragged() || !IsSnapped())
     return;
@@ -324,14 +337,6 @@ void WindowState::AdjustSnappedBounds(gfx::Rect* bounds) {
     bounds->set_x(maximized_bounds.right() - bounds->width());
   bounds->set_y(maximized_bounds.y());
   bounds->set_height(maximized_bounds.height());
-}
-
-void WindowState::OnWindowPropertyChanged(aura::Window* window,
-                                          const void* key,
-                                          intptr_t old) {
-  DCHECK_EQ(window, window_);
-  if (key == aura::client::kShowStateKey && !ignore_property_change_)
-    OnWMEvent(WMEventFromShowState(GetShowState()));
 }
 
 void WindowState::SnapWindow(WindowShowType left_or_right,
@@ -392,6 +397,14 @@ void WindowState::SetBoundsDirect(const gfx::Rect& bounds) {
   BoundsSetter().SetBounds(window_, bounds);
 }
 
+void WindowState::SetBoundsConstrained(const gfx::Rect& bounds) {
+  gfx::Rect work_area_in_parent =
+      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_);
+  gfx::Rect child_bounds(bounds);
+  AdjustBoundsSmallerThan(work_area_in_parent.size(), &child_bounds);
+  SetBoundsDirect(child_bounds);
+}
+
 void WindowState::SetBoundsDirectAnimated(const gfx::Rect& bounds) {
   const int kBoundsChangeSlideDurationMs = 120;
 
@@ -402,6 +415,38 @@ void WindowState::SetBoundsDirectAnimated(const gfx::Rect& bounds) {
   slide_settings.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(kBoundsChangeSlideDurationMs));
   SetBoundsDirect(bounds);
+}
+
+void WindowState::SetBoundsDirectCrossFade(const gfx::Rect& new_bounds) {
+  // Some test results in invoking CrossFadeToBounds when window is not visible.
+  // No animation is necessary in that case, thus just change the bounds and
+  // quit.
+  if (!window_->TargetVisibility()) {
+    SetBoundsConstrained(new_bounds);
+    return;
+  }
+
+  const gfx::Rect old_bounds = window_->bounds();
+
+  // Create fresh layers for the window and all its children to paint into.
+  // Takes ownership of the old layer and all its children, which will be
+  // cleaned up after the animation completes.
+  // Specify |set_bounds| to true here to keep the old bounds in the child
+  // windows of |window|.
+  ui::Layer* old_layer = views::corewm::RecreateWindowLayers(window_, true);
+  ui::Layer* new_layer = window_->layer();
+
+  // Resize the window to the new size, which will force a layout and paint.
+  SetBoundsDirect(new_bounds);
+
+  // Ensure the higher-resolution layer is on top.
+  bool old_on_top = (old_bounds.width() > new_bounds.width());
+  if (old_on_top)
+    old_layer->parent()->StackBelow(new_layer, old_layer);
+  else
+    old_layer->parent()->StackAbove(new_layer, old_layer);
+
+  CrossFadeAnimation(window_, old_layer, gfx::Tween::EASE_OUT);
 }
 
 WindowState* GetActiveWindowState() {

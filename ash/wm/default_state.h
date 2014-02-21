@@ -19,14 +19,24 @@ class DefaultState : public WindowState::State {
   // WindowState::State overrides:
   virtual void OnWMEvent(WindowState* window_state, WMEvent event) OVERRIDE;
 
+  // See WindowState::RequestBounds.
+  virtual void RequestBounds(WindowState* window_state,
+                             const gfx::Rect& requested_bounds) OVERRIDE;
+
  private:
   // Process stete dependent events, such as TOGGLE_MAXIMIZED,
   // TOGGLE_FULLSCREEN.
   static bool ProcessCompoundEvents(WindowState* window_state, WMEvent event);
 
+  // Process workspace related events, such as DISPLAY_BOUNDS_CHANGED.
+  static bool ProcessWorkspaceEvents(WindowState* window_state, WMEvent event);
+
   // Animates to new window bounds based on the current and previous show type.
   static void UpdateBoundsFromShowType(wm::WindowState* window_state,
                                        wm::WindowShowType old_show_type);
+
+  // Set the fullscreen/maximized bounds without animation.
+  static bool SetMaximizedOrFullscreenBounds(wm::WindowState* window_state);
 
   DISALLOW_COPY_AND_ASSIGN(DefaultState);
 };

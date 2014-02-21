@@ -9,6 +9,7 @@
 #include "ash/wm/drag_details.h"
 #include "ash/wm/wm_types.h"
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "ui/aura/window_observer.h"
@@ -56,6 +57,10 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
     // Update WindowState based on |event|.
     virtual void OnWMEvent(WindowState* state, WMEvent event) = 0;
+
+    // See WindowState::RequestBounds.
+    virtual void RequestBounds(WindowState* state,
+                               const gfx::Rect& requested_bounds)  = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(State);
@@ -117,6 +122,12 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   void ToggleFullscreen();
   void SnapLeft(const gfx::Rect& bounds);
   void SnapRight(const gfx::Rect& bounds);
+
+  // A window is requested to be the given bounds. The request may or
+  // may not be fulfilled depending on the requested bounds and window's
+  // state.
+  // TODO(oshima): Convert this to a WMEvent.
+  void RequestBounds(const gfx::Rect& bounds);
 
   // Invoked when a WMevent occurs, which drives the internal
   // state machine.
@@ -274,10 +285,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // Sets the currently stored restore bounds and clears the restore bounds.
   void SetAndClearRestoreBounds();
 
-  // Adjusts the |bounds| so that they are flush with the edge of the
-  // workspace if the window represented by |window_state| is side snapped.
-  void AdjustSnappedBounds(gfx::Rect* bounds);
-
   // Returns a pointer to DragDetails during drag operations.
   const DragDetails* drag_details() const { return drag_details_.get(); }
   DragDetails* drag_details() { return drag_details_.get(); }
@@ -289,11 +296,13 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
  private:
   friend class DefaultState;
-  // TODO(oshima): Move more logic from WLM to this class and remove
-  // this friend.
-  friend class internal::WorkspaceLayoutManager;
+  FRIEND_TEST_ALL_PREFIXES(WindowAnimationsTest, CrossFadeToBounds);
 
   WindowStateDelegate* delegate() { return delegate_.get(); }
+
+  // Adjusts the |bounds| so that they are flush with the edge of the
+  // workspace if the window represented by |window_state| is side snapped.
+  void AdjustSnappedBounds(gfx::Rect* bounds);
 
   // Snaps the window to left or right of the desktop with given bounds.
   void SnapWindow(WindowShowType left_or_right,
@@ -306,8 +315,20 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   void NotifyPreShowTypeChange(WindowShowType old_window_show_type);
   void NotifyPostShowTypeChange(WindowShowType old_window_show_type);
 
+  // Sets |bounds| as is.
   void SetBoundsDirect(const gfx::Rect& bounds);
+
+  // Sets the window's |bounds| with constraint where the size of the
+  // new bounds will not exceeds the size of the work area.
+  void SetBoundsConstrained(const gfx::Rect& bounds);
+
+  // Sets the wndow's |bounds| and transitions to the new bounds with
+  // a scale animation.
   void SetBoundsDirectAnimated(const gfx::Rect& bounds);
+
+  // Sets the window's |bounds| and transition to the new bounds with
+  // a cross fade animation.
+  void SetBoundsDirectCrossFade(const gfx::Rect& bounds);
 
   // The owner of this window settings.
   aura::Window* window_;

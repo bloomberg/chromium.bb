@@ -83,27 +83,14 @@ class ASH_EXPORT WorkspaceLayoutManager
  private:
   typedef std::set<aura::Window*> WindowSet;
 
-  enum AdjustWindowReason {
-    ADJUST_WINDOW_DISPLAY_SIZE_CHANGED,
-    ADJUST_WINDOW_WORK_AREA_INSETS_CHANGED,
-  };
-
-  // Adjusts the window's bounds when the display area changes for given
-  // window. This happens when the display size, work area insets or
-  // the display on which the window exists has changed.
-  // If this is called for a display size change (i.e. |reason|
-  // is ADJUST_WINDOW_DISPLAY_SIZE_CHANGED), the non-maximized/non-fullscreen
+  // Adjusts the bounds of all managed windows when the display area changes.
+  // This happens when the display size, work area insets has changed.
+  // If this is called for a display size change (i.e. |event|
+  // is DISPLAY_RESIZED), the non-maximized/non-fullscreen
   // windows are readjusted to make sure the window is completely within the
   // display region. Otherwise, it makes sure at least some parts of the window
   // is on display.
-  void AdjustAllWindowsBoundsForWorkAreaChange(AdjustWindowReason reason);
-
-  // Adjusts the sizes of the specific window in respond to a screen change or
-  // display-area size change.
-  void AdjustWindowBoundsForWorkAreaChange(wm::WindowState* window_state,
-                                           AdjustWindowReason reason);
-
-  void AdjustWindowBoundsWhenAdded(wm::WindowState* window_state);
+  void AdjustAllWindowsBoundsForWorkAreaChange(wm::WMEvent event);
 
   // Updates the visibility state of the shelf.
   void UpdateShelfVisibility();

@@ -22,8 +22,6 @@ using aura::Window;
 using ui::Layer;
 
 namespace ash {
-namespace internal {
-
 class WindowAnimationsTest : public ash::test::AshTestBase {
  public:
   WindowAnimationsTest() {}
@@ -113,6 +111,8 @@ TEST_F(WindowAnimationsTest, LayerTargetVisibility) {
   EXPECT_TRUE(window->layer()->GetTargetVisibility());
 }
 
+namespace wm {
+
 TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
   ui::ScopedAnimationDurationScaleMode normal_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
@@ -125,7 +125,8 @@ TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
   EXPECT_EQ(1.0f, old_layer->GetTargetOpacity());
 
   // Cross fade to a larger size, as in a maximize animation.
-  CrossFadeToBounds(window.get(), gfx::Rect(0, 0, 640, 480));
+  GetWindowState(window.get())->SetBoundsDirectCrossFade(
+      gfx::Rect(0, 0, 640, 480));
   // Window's layer has been replaced.
   EXPECT_NE(old_layer, window->layer());
   // Original layer stays opaque and stretches to new size.
@@ -147,7 +148,8 @@ TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
 
   // Cross fade to a smaller size, as in a restore animation.
   old_layer = window->layer();
-  CrossFadeToBounds(window.get(), gfx::Rect(5, 10, 320, 240));
+  GetWindowState(window.get())->SetBoundsDirectCrossFade(
+      gfx::Rect(5, 10, 320, 240));
   // Again, window layer has been replaced.
   EXPECT_NE(old_layer, window->layer());
   // Original layer fades out and stretches down to new size.
@@ -166,6 +168,8 @@ TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
   static_cast<gfx::AnimationContainerElement*>(window->layer()->GetAnimator())->
       Step(base::TimeTicks::Now() + base::TimeDelta::FromSeconds(1));
 }
+
+}  // namespace wm
 
 TEST_F(WindowAnimationsTest, LockAnimationDuration) {
   ui::ScopedAnimationDurationScaleMode normal_duration_mode(
@@ -239,5 +243,4 @@ TEST_F(WindowAnimationsTest, LockAnimationDuration) {
   }
 }
 
-}  // namespace internal
 }  // namespace ash

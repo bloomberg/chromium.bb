@@ -41,7 +41,7 @@ enum WindowShowType {
   SHOW_TYPE_AUTO_POSITIONED,
 };
 
-// Set of operations that can change the window's state.
+// Set of operations that can change the window's state type and bounds.
 enum WMEvent {
   // Following events are the request to become corresponding state.
   // Note that this does not mean the window will be in corresponding
@@ -80,6 +80,20 @@ enum WMEvent {
   // TODO(oshima): Investigate if this can be removed from ash.
   // Widget requested to show in inactive state.
   SHOW_INACTIVE,
+
+  // Following events are generated when the workspace envrionment has changed.
+  // The window's state type will not be changed by these events.
+
+  // The window is added to the workspace, either as a new window, due to
+  // display disconnection or dragging.
+  ADDED_TO_WORKSPACE,
+
+  // Bounds of the display has changed.
+  DISPLAY_BOUNDS_CHANGED,
+
+  // Bounds of the work area has changed. This will not occur when the work
+  // area has changed as a result of DISPLAY_BOUNDS_CHANGED.
+  WORKAREA_BOUNDS_CHANGED,
 };
 
 // Utility functions to convert WindowShowType <-> ui::WindowShowState.

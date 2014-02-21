@@ -6,6 +6,7 @@
 #define ASH_WM_WINDOW_ANIMATIONS_H_
 
 #include "ash/ash_export.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/corewm/window_animations.h"
 
@@ -40,15 +41,13 @@ enum LayerScaleAnimationDirection {
 // Amount of time for the cross fade animation.
 extern const int kCrossFadeDurationMS;
 
-// Animate a cross-fade of |window| from its current bounds to |new_bounds|.
-ASH_EXPORT void CrossFadeToBounds(aura::Window* window,
-                                  const gfx::Rect& new_bounds);
-
-// Returns the duration of the cross-fade animation based on the |old_bounds|
-// and |new_bounds| of the |window|.
-ASH_EXPORT base::TimeDelta GetCrossFadeDuration(aura::Window* window,
-                                                const gfx::Rect& old_bounds,
-                                                const gfx::Rect& new_bounds);
+// Implementation of cross fading. Window is the window being cross faded. It
+// should be at the target bounds. |old_layer| the previous layer from |window|.
+// This takes ownership of |old_layer| and deletes when the animation is done.
+// |tween_type| specifies the tween type of the cross fade animation.
+ASH_EXPORT base::TimeDelta CrossFadeAnimation(aura::Window* window,
+                                              ui::Layer* old_layer,
+                                              gfx::Tween::Type tween_type);
 
 ASH_EXPORT bool AnimateOnChildWindowVisibilityChanged(aura::Window* window,
                                                       bool visible);

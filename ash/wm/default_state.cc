@@ -24,6 +24,10 @@ namespace ash {
 namespace wm {
 namespace {
 
+// This specifies how much percent (30%) of a window rect
+// must be visible when the window is added to the workspace.
+const float kMinimumPercentOnScreenArea = 0.3f;
+
 bool IsPanel(aura::Window* window) {
   return window->parent() &&
       window->parent()->id() == internal::kShellWindowId_DockedContainer;
@@ -79,6 +83,9 @@ DefaultState::~DefaultState() {}
 
 void DefaultState::OnWMEvent(WindowState* window_state,
                              WMEvent event) {
+  if (ProcessWorkspaceEvents(window_state, event))
+    return;
+
   if (ProcessCompoundEvents(window_state, event))
     return;
 
@@ -112,6 +119,11 @@ void DefaultState::OnWMEvent(WindowState* window_state,
     case TOGGLE_FULLSCREEN:
       NOTREACHED() << "Compound event should not reach here:" << event;
       return;
+    case ADDED_TO_WORKSPACE:
+    case WORKAREA_BOUNDS_CHANGED:
+    case DISPLAY_BOUNDS_CHANGED:
+      NOTREACHED() << "Workspace event should not reach here:" << event;
+      return;
   }
 
   WindowShowType current = window_state->window_show_type();
@@ -124,6 +136,22 @@ void DefaultState::OnWMEvent(WindowState* window_state,
     window_state->NotifyPostShowTypeChange(current);
   }
 };
+
+void DefaultState::RequestBounds(WindowState* window_state,
+                                 const gfx::Rect& requested_bounds) {
+  if (window_state->is_dragged()) {
+    window_state->SetBoundsDirect(requested_bounds);
+  } else if (window_state->IsSnapped()) {
+    gfx::Rect work_area_in_parent =
+        ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_state->window());
+    gfx::Rect child_bounds(requested_bounds);
+    AdjustBoundsSmallerThan(work_area_in_parent.size(), &child_bounds);
+    window_state->AdjustSnappedBounds(&child_bounds);
+    window_state->SetBoundsDirect(child_bounds);
+  } else if (!SetMaximizedOrFullscreenBounds(window_state)) {
+    window_state->SetBoundsConstrained(requested_bounds);
+  }
+}
 
 // static
 bool DefaultState::ProcessCompoundEvents(WindowState* window_state,
@@ -239,6 +267,94 @@ bool DefaultState::ProcessCompoundEvents(WindowState* window_state,
     case SNAP_RIGHT:
     case SHOW_INACTIVE:
       break;
+    case ADDED_TO_WORKSPACE:
+    case WORKAREA_BOUNDS_CHANGED:
+    case DISPLAY_BOUNDS_CHANGED:
+      NOTREACHED() << "Workspace event should not reach here:" << event;
+      break;
+  }
+  return false;
+}
+
+bool DefaultState::ProcessWorkspaceEvents(WindowState* window_state,
+                                          WMEvent event) {
+  switch (event) {
+    case ADDED_TO_WORKSPACE: {
+      // When a window is dragged and dropped onto a different
+      // root window, the bounds will be updated after they are added
+      // to the root window.
+      // If a window is opened as maximized or fullscreen, its bounds may be
+      // empty, so update the bounds now before checking empty.
+      if (window_state->is_dragged() ||
+          SetMaximizedOrFullscreenBounds(window_state)) {
+        return true;
+      }
+
+      aura::Window* window = window_state->window();
+      gfx::Rect bounds = window->bounds();
+
+      // Don't adjust window bounds if the bounds are empty as this
+      // happens when a new views::Widget is created.
+      if (bounds.IsEmpty())
+        return true;
+
+      // Use entire display instead of workarea because the workarea can
+      // be further shrunk by the docked area. The logic ensures 30%
+      // visibility which should be enough to see where the window gets
+      // moved.
+      gfx::Rect display_area = ScreenUtil::GetDisplayBoundsInParent(window);
+      int min_width = bounds.width() * kMinimumPercentOnScreenArea;
+      int min_height = bounds.height() * kMinimumPercentOnScreenArea;
+      AdjustBoundsToEnsureWindowVisibility(
+          display_area, min_width, min_height, &bounds);
+      window_state->AdjustSnappedBounds(&bounds);
+      if (window->bounds() != bounds)
+        window_state->SetBoundsConstrained(bounds);
+      return true;
+    }
+    case DISPLAY_BOUNDS_CHANGED: {
+      if (window_state->is_dragged() ||
+          SetMaximizedOrFullscreenBounds(window_state)) {
+        return true;
+      }
+      gfx::Rect work_area_in_parent =
+          ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_state->window());
+      gfx::Rect bounds = window_state->window()->bounds();
+      // When display bounds has changed, make sure the entire window is fully
+      // visible.
+      bounds.AdjustToFit(work_area_in_parent);
+      window_state->AdjustSnappedBounds(&bounds);
+      if (window_state->window()->bounds() != bounds)
+        window_state->SetBoundsDirectAnimated(bounds);
+      return true;
+    }
+    case WORKAREA_BOUNDS_CHANGED: {
+      if (window_state->is_dragged() ||
+          SetMaximizedOrFullscreenBounds(window_state)) {
+        return true;
+      }
+      gfx::Rect work_area_in_parent =
+          ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_state->window());
+      gfx::Rect bounds = window_state->window()->bounds();
+      AdjustBoundsToEnsureMinimumWindowVisibility(work_area_in_parent, &bounds);
+      window_state->AdjustSnappedBounds(&bounds);
+      if (window_state->window()->bounds() != bounds)
+        window_state->SetBoundsDirectAnimated(bounds);
+      return true;
+    }
+    case TOGGLE_MAXIMIZE_CAPTION:
+    case TOGGLE_MAXIMIZE:
+    case TOGGLE_VERTICAL_MAXIMIZE:
+    case TOGGLE_HORIZONTAL_MAXIMIZE:
+    case TOGGLE_FULLSCREEN:
+    case NORMAL:
+    case MAXIMIZE:
+    case MINIMIZE:
+    case FULLSCREEN:
+    case SNAP_LEFT:
+    case SNAP_RIGHT:
+    case SHOW_INACTIVE:
+      break;
   }
   return false;
 }
@@ -292,8 +408,7 @@ void DefaultState::UpdateBoundsFromShowType(WindowState* window_state,
       AdjustBoundsToEnsureMinimumWindowVisibility(
           work_area_in_parent, &bounds_in_parent);
 
-      if (show_type == SHOW_TYPE_LEFT_SNAPPED ||
-          show_type == SHOW_TYPE_RIGHT_SNAPPED) {
+      if (window_state->IsSnapped()) {
         window_state->AdjustSnappedBounds(&bounds_in_parent);
       } else {
         bounds_in_parent = BoundsWithScreenEdgeVisible(
@@ -326,7 +441,7 @@ void DefaultState::UpdateBoundsFromShowType(WindowState* window_state,
       window_state->SetBoundsDirect(bounds_in_parent);
     } else if (window_state->IsMaximizedOrFullscreen() ||
                IsMaximizedOrFullscreenWindowShowType(old_show_type)) {
-      CrossFadeToBounds(window, bounds_in_parent);
+      window_state->SetBoundsDirectCrossFade(bounds_in_parent);
     } else {
       window_state->SetBoundsDirectAnimated(bounds_in_parent);
     }
@@ -362,6 +477,21 @@ void DefaultState::UpdateBoundsFromShowType(WindowState* window_state,
   // Set the restore rectangle to the previously set restore rectangle.
   if (!restore.IsEmpty())
     window_state->SetRestoreBoundsInScreen(restore);
+}
+
+bool DefaultState::SetMaximizedOrFullscreenBounds(WindowState* window_state) {
+  DCHECK(!window_state->is_dragged());
+  if (window_state->IsMaximized()) {
+    window_state->SetBoundsDirect(
+        ScreenUtil::GetMaximizedWindowBoundsInParent(window_state->window()));
+    return true;
+  }
+  if (window_state->IsFullscreen()) {
+    window_state->SetBoundsDirect(
+        ScreenUtil::GetDisplayBoundsInParent(window_state->window()));
+    return true;
+  }
+  return false;
 }
 
 }  // namespace wm
