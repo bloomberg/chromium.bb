@@ -5,35 +5,45 @@
 package org.chromium.chrome.browser;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.ObserverList;
 
 /**
  * Watches for when Chrome is told to restart itself.
  */
 public class ApplicationLifetime {
+    /**
+     * Interface to be implemented to be notified of application termination.
+     */
     public interface Observer {
+        /**
+         * Called when the application should be terminated.
+         * @param restart Whether or not to restart Chrome.
+         */
         void onTerminate(boolean restart);
     }
-    private static Observer sObserver = null;
+
+    private static ObserverList<Observer> sObservers = new ObserverList<Observer>();
 
     /**
-     * Sets the observer that monitors for ApplicationLifecycle events.
-     * We only allow one observer to be set to avoid race conditions for shutdown events.
+     * Adds an observer to watch for application termination.
+     * @param observer The observer to add.
      */
-    public static void setObserver(Observer observer) {
-        assert sObserver == null;
-        sObserver = observer;
+    public static void addObserver(Observer observer) {
+        sObservers.addObserver(observer);
     }
 
     /**
-     * Removes whatever observer is currently watching this class.
+     * Removes an observer from watching for application termination.
+     * @oparam observer The observer to remove.
      */
-    public static void removeObserver() {
-        sObserver = null;
+    public static void removeObserver(Observer observer) {
+        sObservers.removeObserver(observer);
     }
 
     @CalledByNative
     public static void terminate(boolean restart) {
-        if (sObserver != null)
-            sObserver.onTerminate(restart);
+        for (Observer observer : sObservers) {
+            observer.onTerminate(restart);
+        }
     }
 }
