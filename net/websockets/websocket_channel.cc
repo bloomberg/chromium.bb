@@ -262,7 +262,8 @@ WebSocketChannel::WebSocketChannel(
       notification_sender_(new HandshakeNotificationSender(this)),
       sending_text_message_(false),
       receiving_text_message_(false),
-      expecting_to_handle_continuation_(false) {}
+      expecting_to_handle_continuation_(false),
+      initial_frame_forwarded_(false) {}
 
 WebSocketChannel::~WebSocketChannel() {
   // The stream may hold a pointer to read_frames_, and so it needs to be
@@ -742,7 +743,7 @@ ChannelState WebSocketChannel::HandleFrameByState(
 }
 
 ChannelState WebSocketChannel::HandleDataFrame(
-    const WebSocketFrameHeader::OpCode opcode,
+    WebSocketFrameHeader::OpCode opcode,
     bool final,
     const scoped_refptr<IOBuffer>& data_buffer,
     size_t size) {
@@ -765,6 +766,13 @@ ChannelState WebSocketChannel::HandleDataFrame(
     return FailChannel(console_log, kWebSocketErrorProtocolError, reason);
   }
   expecting_to_handle_continuation_ = !final;
+  WebSocketFrameHeader::OpCode opcode_to_send = opcode;
+  if (!initial_frame_forwarded_ &&
+      opcode == WebSocketFrameHeader::kOpCodeContinuation) {
+    opcode_to_send = receiving_text_message_
+                         ? WebSocketFrameHeader::kOpCodeText
+                         : WebSocketFrameHeader::kOpCodeBinary;
+  }
   if (opcode == WebSocketFrameHeader::kOpCodeText ||
       (opcode == WebSocketFrameHeader::kOpCodeContinuation &&
        receiving_text_message_)) {
@@ -781,6 +789,10 @@ ChannelState WebSocketChannel::HandleDataFrame(
     receiving_text_message_ = !final;
     DCHECK(!final || state == StreamingUtf8Validator::VALID_ENDPOINT);
   }
+  if (size == 0U && !final)
+    return CHANNEL_ALIVE;
+
+  initial_frame_forwarded_ = !final;
   // TODO(ricea): Can this copy be eliminated?
   const char* const data_begin = size ? data_buffer->data() : NULL;
   const char* const data_end = data_begin + size;
@@ -791,7 +803,7 @@ ChannelState WebSocketChannel::HandleDataFrame(
   // cause of receiving very large chunks.
 
   // Sends the received frame to the renderer process.
-  return event_interface_->OnDataFrame(final, opcode, data);
+  return event_interface_->OnDataFrame(final, opcode_to_send, data);
 }
 
 ChannelState WebSocketChannel::SendIOBuffer(

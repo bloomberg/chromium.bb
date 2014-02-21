@@ -2892,6 +2892,28 @@ TEST_F(WebSocketChannelEventInterfaceTest, MessageStartingWithContinuation) {
   CreateChannelAndConnectSuccessfully();
 }
 
+// A frame passed to the renderer must be either non-empty or have the final bit
+// set.
+TEST_F(WebSocketChannelEventInterfaceTest, DataFramesNonEmptyOrFinal) {
+  scoped_ptr<ReadableFakeWebSocketStream> stream(
+      new ReadableFakeWebSocketStream);
+  static const InitFrame frames[] = {
+      {NOT_FINAL_FRAME, WebSocketFrameHeader::kOpCodeText, NOT_MASKED, ""},
+      {NOT_FINAL_FRAME, WebSocketFrameHeader::kOpCodeContinuation,
+       NOT_MASKED, ""},
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeContinuation, NOT_MASKED, ""}};
+  stream->PrepareReadFrames(ReadableFakeWebSocketStream::SYNC, OK, frames);
+  set_stream(stream.Pass());
+
+  EXPECT_CALL(*event_interface_, OnAddChannelResponse(false, _, _));
+  EXPECT_CALL(*event_interface_, OnFlowControl(kDefaultInitialQuota));
+  EXPECT_CALL(
+      *event_interface_,
+      OnDataFrame(true, WebSocketFrameHeader::kOpCodeText, AsVector("")));
+
+  CreateChannelAndConnectSuccessfully();
+}
+
 // If we receive another frame after Close, it is not valid. It is not
 // completely clear what behaviour is required from the standard in this case,
 // but the current implementation fails the connection. Since a Close has

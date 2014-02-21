@@ -209,10 +209,10 @@ class NET_EXPORT WebSocketChannel {
   // Forward a received data frame to the renderer, if connected. If
   // |expecting_continuation| is not equal to |expecting_to_read_continuation_|,
   // will fail the channel. Also checks the UTF-8 validity of text frames.
-  ChannelState HandleDataFrame(const WebSocketFrameHeader::OpCode opcode,
+  ChannelState HandleDataFrame(WebSocketFrameHeader::OpCode opcode,
                                bool final,
                                const scoped_refptr<IOBuffer>& data_buffer,
-                               size_t size);
+                               size_t size) WARN_UNUSED_RESULT;
 
   // Low-level method to send a single frame. Used for both data and control
   // frames. Either sends the frame immediately or buffers it to be scheduled
@@ -335,6 +335,10 @@ class NET_EXPORT WebSocketChannel {
 
   // True if we are in the middle of receiving a message.
   bool expecting_to_handle_continuation_;
+
+  // True if we have already sent the type (Text or Binary) of the current
+  // message to the renderer. This can be false if the message is empty so far.
+  bool initial_frame_forwarded_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketChannel);
 };
