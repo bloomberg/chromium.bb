@@ -36,7 +36,7 @@ from webkitpy.layout_tests.servers.lighttpd import Lighttpd
 from webkitpy.layout_tests.servers.server_base import ServerError
 
 
-class TestHttpServer(unittest.TestCase):
+class TestLighttpdServer(unittest.TestCase):
     def test_start_cmd(self):
         # Fails on win - see https://bugs.webkit.org/show_bug.cgi?id=84726
         if sys.platform in ('cygwin', 'win32'):
@@ -45,21 +45,16 @@ class TestHttpServer(unittest.TestCase):
         host = MockHost()
         test_port = test.TestPort(host)
         host.filesystem.write_text_file(
-            "/mock-checkout/third_party/WebKit/Tools/Scripts/webkitpy/layout_tests/servers/lighttpd.conf", "Mock Config\n")
+            "/test.checkout/LayoutTests/http/conf/lighttpd.conf", "Mock Config\n")
         host.filesystem.write_text_file(
             "/usr/lib/lighttpd/liblightcomp.dylib", "Mock dylib")
 
-        server = Lighttpd(test_port, "/mock/output_dir",
-                          additional_dirs={
-                              "/mock/one-additional-dir": "/mock-checkout/one-additional-dir",
-                              "/mock/another-additional-dir": "/mock-checkout/one-additional-dir"})
+        server = Lighttpd(test_port, "/mock/output_dir")
         self.assertRaises(ServerError, server.start)
 
         config_file = host.filesystem.read_text_file("/mock/output_dir/lighttpd.conf")
         self.assertEqual(re.findall(r"alias.url.+", config_file), [
             'alias.url = ( "/js-test-resources" => "/test.checkout/LayoutTests/resources" )',
-            'alias.url += ( "/mock/one-additional-dir" => "/mock-checkout/one-additional-dir" )',
-            'alias.url += ( "/mock/another-additional-dir" => "/mock-checkout/one-additional-dir" )',
             'alias.url += ( "/media-resources" => "/test.checkout/LayoutTests/media" )',
         ])
 
@@ -67,17 +62,14 @@ class TestHttpServer(unittest.TestCase):
         host = MockHost()
         test_port = test.TestPort(host)
         host.filesystem.write_text_file(
-            "/mock-checkout/third_party/WebKit/Tools/Scripts/webkitpy/layout_tests/servers/lighttpd.conf", "Mock Config\n")
+            "/test.checkout/LayoutTests/http/conf/lighttpd.conf", "Mock Config\n")
         host.filesystem.write_text_file(
             "/usr/lib/lighttpd/liblightcomp.dylib", "Mock dylib")
 
         host.platform.is_win = lambda: True
         host.platform.is_cygwin = lambda: False
 
-        server = Lighttpd(test_port, "/mock/output_dir",
-                          additional_dirs={
-                              "/mock/one-additional-dir": "/mock-checkout/one-additional-dir",
-                              "/mock/another-additional-dir": "/mock-checkout/one-additional-dir"})
+        server = Lighttpd(test_port, "/mock/output_dir")
         server._check_that_all_ports_are_available = lambda: True
         server._is_server_running_on_all_ports = lambda: True
 
@@ -96,5 +88,4 @@ class TestHttpServer(unittest.TestCase):
 
         host.executive.check_running_pid = mock_returns([True, False])
         server._wait_for_action = wait_for_action
-
         server.stop()
