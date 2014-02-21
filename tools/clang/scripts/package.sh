@@ -6,6 +6,8 @@
 # This script will check out llvm and clang, and then package the results up
 # to a tgz file.
 
+gcc_toolchain=
+
 # Parse command line options.
 while [[ $# > 0 ]]; do
   case $1 in
@@ -114,17 +116,23 @@ fi
 # Copy built-in headers (lib/clang/3.2/include).
 # libcompiler-rt puts all kinds of libraries there too, but we want only some.
 if [ "$(uname -s)" = "Darwin" ]; then
-  # Keep only
-  # Release+Asserts/lib/clang/*/lib/darwin/libclang_rt.{asan,profile}_osx*
+  # Keep only the OSX (ASan and profile) and iossim (ASan) runtime libraries:
+  # Release+Asserts/lib/clang/*/lib/darwin/libclang_rt.{asan,profile}_*
   find "${LLVM_LIB_DIR}/clang" -type f -path '*lib/darwin*' \
-       ! -name '*asan_osx*' ! -name '*profile_osx*' | xargs rm
-  # Fix LC_ID_DYLIB for the ASan dynamic library to be relative to
+       ! -name '*asan_osx*' ! -name '*asan_iossim*' ! -name '*profile_osx*' | \
+      xargs rm
+  # Fix LC_ID_DYLIB for the ASan dynamic libraries to be relative to
   # @executable_path.
   # TODO(glider): this is transitional. We'll need to fix the dylib name
-  # either in our build system, or in Clang. See also http://crbug.com/170629.
-  ASAN_DYLIB_NAME=libclang_rt.asan_osx_dynamic.dylib
-  ASAN_DYLIB=$(find "${LLVM_LIB_DIR}/clang" -type f -path "*${ASAN_DYLIB_NAME}")
-  install_name_tool -id @executable_path/${ASAN_DYLIB_NAME} "${ASAN_DYLIB}"
+  # either in our build system, or in Clang. See also http://crbug.com/344836.
+  ASAN_DYLIB_NAMES="libclang_rt.asan_osx_dynamic.dylib
+    libclang_rt.asan_iossim_dynamic.dylib"
+  for ASAN_DYLIB_NAME in $ASAN_DYLIB_NAMES
+  do
+    ASAN_DYLIB=$(find "${LLVM_LIB_DIR}/clang" \
+                      -type f -path "*${ASAN_DYLIB_NAME}")
+    install_name_tool -id @executable_path/${ASAN_DYLIB_NAME} "${ASAN_DYLIB}"
+  done
 else
   # Keep only
   # Release+Asserts/lib/clang/*/lib/linux/libclang_rt.{[atm]san,profile,ubsan}-*.a
