@@ -217,12 +217,6 @@ class IPC_EXPORT Channel : public Sender {
   ChannelImpl *channel_impl_;
 };
 
-#if defined(OS_POSIX)
-// SocketPair() creates a pair of socket FDs suitable for using with
-// IPC::Channel.
-IPC_EXPORT bool SocketPair(int* fd1, int* fd2);
-#endif
-
 }  // namespace IPC
 
 #endif  // IPC_IPC_CHANNEL_H_

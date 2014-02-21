@@ -1,10 +1,9 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ppapi/proxy/plugin_main_irt.h"
-
 #include <unistd.h>
+
 #include <map>
 #include <set>
 
@@ -14,7 +13,6 @@
 // IPC_MESSAGE_MACROS_LOG_ENABLED so ppapi_messages.h will generate the
 // ViewMsgLog et al. functions.
 
-#include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -25,8 +23,11 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message.h"
+#include "native_client/src/public/chrome_main.h"
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/c/ppp_instance.h"
+#include "ppapi/native_client/src/shared/ppapi_proxy/ppruntime.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/plugin_message_filter.h"
@@ -34,11 +35,6 @@
 #include "ppapi/proxy/resource_reply_thread_registrar.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "ppapi/shared_impl/ppb_audio_shared.h"
-
-#if defined(__native_client__)
-#include "native_client/src/public/chrome_main.h"
-#include "native_client/src/shared/srpc/nacl_srpc.h"
-#endif
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
 #include "base/containers/hash_tables.h"
@@ -59,19 +55,6 @@ using ppapi::proxy::ProxyChannel;
 using ppapi::proxy::SerializedHandle;
 
 namespace {
-
-#if defined(__native_client__)
-// In SFI mode, the FDs of IPC channels are NACL_CHROME_DESC_BASE and its
-// successor, which is set in nacl_listener.cc.
-int g_nacl_ipc_browser_fd = NACL_CHROME_DESC_BASE;
-int g_nacl_ipc_renderer_fd = NACL_CHROME_DESC_BASE + 1;
-#else
-// In non-SFI mode, the FDs of IPC channels are different from the hard coded
-// ones. These values will be set by SetIPCFileDescriptors() below.
-// At first, both are initialized to invalid FD number (-1).
-int g_nacl_ipc_browser_fd = -1;
-int g_nacl_ipc_renderer_fd = -1;
-#endif
 
 // This class manages communication between the plugin and the browser, and
 // manages the PluginDispatcher instances for communication between the plugin
@@ -130,10 +113,10 @@ PpapiDispatcher::PpapiDispatcher(scoped_refptr<base::MessageLoopProxy> io_loop)
     : next_plugin_dispatcher_id_(0),
       message_loop_(io_loop),
       shutdown_event_(true, false) {
-  DCHECK_NE(g_nacl_ipc_browser_fd, -1)
-      << "g_nacl_ipc_browser_fd must be initialized before the plugin starts";
+  // The first FD (based on NACL_CHROME_DESC_BASE) is the IPC channel to the
+  // browser.
   IPC::ChannelHandle channel_handle(
-      "NaCl IPC", base::FileDescriptor(g_nacl_ipc_browser_fd, false));
+      "NaCl IPC", base::FileDescriptor(NACL_CHROME_DESC_BASE, false));
 
   // Delay initializing the SyncChannel until after we add filters. This
   // ensures that the filters won't miss any messages received by
@@ -266,10 +249,10 @@ void PpapiDispatcher::OnMsgInitializeNaClDispatcher(
       new PluginDispatcher(::PPP_GetInterface, args.permissions,
                            args.off_the_record);
   // The channel handle's true name is not revealed here.
-  DCHECK_NE(g_nacl_ipc_renderer_fd, -1)
-      << "g_nacl_ipc_renderer_fd must be initialized before the plugin starts";
+  // The second FD (based on NACL_CHROME_DESC_BASE) is the IPC channel to the
+  // renderer.
   IPC::ChannelHandle channel_handle(
-      "nacl", base::FileDescriptor(g_nacl_ipc_renderer_fd, false));
+      "nacl", base::FileDescriptor(NACL_CHROME_DESC_BASE + 1, false));
   if (!dispatcher->InitPluginWithChannel(this, base::kNullProcessId,
                                          channel_handle, false)) {
     delete dispatcher;
@@ -308,40 +291,23 @@ void PpapiDispatcher::SetPpapiKeepAliveThrottleFromCommandLine() {
 
 }  // namespace
 
-void SetIPCFileDescriptors(int ipc_browser_fd, int ipc_renderer_fd) {
-  g_nacl_ipc_browser_fd = ipc_browser_fd;
-  g_nacl_ipc_renderer_fd = ipc_renderer_fd;
-}
-
 void PpapiPluginRegisterThreadCreator(
     const struct PP_ThreadFunctions* thread_functions) {
-#if defined(__native_client__)
-  // TODO(hidehiko): The thread creation for the PPB_Audio is not yet
-  // implemented on non-SFI mode. Support this. Now, this function invocation
-  // is just ignored.
-
   // Initialize all classes that need to create threads that call back into
   // user code.
   ppapi::PPB_Audio_Shared::SetThreadFunctions(thread_functions);
-#endif
 }
 
 int PpapiPluginMain() {
   // Though it isn't referenced here, we must instantiate an AtExitManager.
   base::AtExitManager exit_manager;
   base::MessageLoop loop;
-#if defined(IPC_MESSAGE_LOG_ENABLED)
   IPC::Logging::set_log_function_map(&g_log_function_mapping);
-#endif
   ppapi::proxy::PluginGlobals plugin_globals;
   base::Thread io_thread("Chrome_NaClIOThread");
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_IO;
   io_thread.StartWithOptions(options);
-
-#if defined(__native_client__)
-  // Currently on non-SFI mode, we don't use SRPC server on plugin.
-  // TODO(hidehiko): Make sure this SRPC is actually used on SFI-mode.
 
   // Start up the SRPC server on another thread. Otherwise, when it blocks
   // on an RPC, the PPAPI proxy will hang. Do this before we initialize the
@@ -351,7 +317,6 @@ int PpapiPluginMain() {
   if (!NaClSrpcAcceptClientOnThread(srpc_methods)) {
     return 1;
   }
-#endif
 
   PpapiDispatcher ppapi_dispatcher(io_thread.message_loop_proxy());
   plugin_globals.set_plugin_proxy_delegate(&ppapi_dispatcher);

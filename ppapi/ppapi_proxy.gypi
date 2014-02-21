@@ -112,6 +112,7 @@
           'proxy/plugin_dispatcher.h',
           'proxy/plugin_globals.cc',
           'proxy/plugin_globals.h',
+          'proxy/plugin_main_nacl.cc',
           'proxy/plugin_message_filter.cc',
           'proxy/plugin_message_filter.h',
           'proxy/plugin_resource.cc',
@@ -243,8 +244,6 @@
           ['>(nacl_untrusted_build)==1', {
             'sources': [
               'proxy/irt_ppapi.c',
-              'proxy/plugin_main_irt.cc',
-              'proxy/plugin_main_irt.h',
             ],
             'sources!': [
               'proxy/audio_input_resource.cc',

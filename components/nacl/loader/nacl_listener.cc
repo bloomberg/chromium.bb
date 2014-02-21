@@ -35,7 +35,6 @@
 #if defined(OS_LINUX)
 #include "components/nacl/loader/nonsfi/nonsfi_main.h"
 #include "content/public/common/child_process_sandbox_support_linux.h"
-#include "ppapi/proxy/plugin_main_irt.h"
 #endif
 
 #if defined(OS_WIN)
@@ -280,54 +279,19 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
   }
 
   if (params.enable_ipc_proxy) {
+    // Create the PPAPI IPC channels between the NaCl IRT and the hosts
+    // (browser/renderer) processes. The IRT uses these channels to communicate
+    // with the host and to initialize the IPC dispatchers.
     IPC::ChannelHandle browser_handle =
         IPC::Channel::GenerateVerifiedChannelID("nacl");
+    SetUpIPCAdapter(&browser_handle, io_thread_.message_loop_proxy(),
+                    nap, NACL_CHROME_DESC_BASE);
+
     IPC::ChannelHandle renderer_handle =
         IPC::Channel::GenerateVerifiedChannelID("nacl");
+    SetUpIPCAdapter(&renderer_handle, io_thread_.message_loop_proxy(),
+                    nap, NACL_CHROME_DESC_BASE + 1);
 
-#if defined(OS_LINUX)
-    if (params.enable_nonsfi_mode) {
-      // In non-SFI mode, we neither intercept nor rewrite the message using
-      // NaClIPCAdapter, and the channels are connected between the plugin and
-      // the hosts directly. So, the IPC::Channel instances will be created in
-      // the plugin side, because the IPC::Listener needs to live on the
-      // plugin's main thread. However, on initialization (i.e. before loading
-      // the plugin binary), the FD needs to be passed to the hosts. So, here
-      // we create raw FD pairs, and pass the client side FDs to the hosts,
-      // and the server side FDs to the plugin.
-      int browser_server_ppapi_fd;
-      int browser_client_ppapi_fd;
-      int renderer_server_ppapi_fd;
-      int renderer_client_ppapi_fd;
-      if (!IPC::SocketPair(
-              &browser_server_ppapi_fd, &browser_client_ppapi_fd) ||
-          !IPC::SocketPair(
-              &renderer_server_ppapi_fd, &renderer_client_ppapi_fd)) {
-        LOG(ERROR) << "Failed to create sockets for IPC.";
-        return;
-      }
-
-      // Set the plugin IPC channel FDs.
-      SetIPCFileDescriptors(
-          browser_server_ppapi_fd, renderer_server_ppapi_fd);
-
-      // Send back to the client side IPC channel FD to the host.
-      browser_handle.socket =
-          base::FileDescriptor(browser_client_ppapi_fd, true);
-      renderer_handle.socket =
-          base::FileDescriptor(renderer_client_ppapi_fd, true);
-    } else {
-#endif
-      // Create the PPAPI IPC channels between the NaCl IRT and the host
-      // (browser/renderer) processes. The IRT uses these channels to
-      // communicate with the host and to initialize the IPC dispatchers.
-      SetUpIPCAdapter(&browser_handle, io_thread_.message_loop_proxy(),
-                      nap, NACL_CHROME_DESC_BASE);
-      SetUpIPCAdapter(&renderer_handle, io_thread_.message_loop_proxy(),
-                      nap, NACL_CHROME_DESC_BASE + 1);
-#if defined(OS_LINUX)
-    }
-#endif
     if (!Send(new NaClProcessHostMsg_PpapiChannelsCreated(
             browser_handle, renderer_handle)))
       LOG(ERROR) << "Failed to send IPC channel handle to NaClProcessHost.";
