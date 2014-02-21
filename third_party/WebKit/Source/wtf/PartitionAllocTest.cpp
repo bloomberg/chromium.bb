@@ -587,6 +587,56 @@ TEST(WTF_PartitionAlloc, GenericAllocSizes)
     TestShutdown();
 }
 
+// Test that we can fetch the real allocated size after an allocation.
+TEST(WTF_PartitionAlloc, GenericAllocGetSize)
+{
+    TestSetup();
+
+    void* ptr;
+    size_t requestedSize, actualSize;
+
+    EXPECT_TRUE(partitionAllocSupportsGetSize());
+
+    // Allocate something small.
+    requestedSize = 511 - kExtraAllocSize;
+    ptr = partitionAllocGeneric(genericAllocator.root(), requestedSize);
+    EXPECT_TRUE(ptr);
+    actualSize = partitionAllocGetSize(ptr);
+    EXPECT_LT(requestedSize, actualSize);
+    partitionFreeGeneric(genericAllocator.root(), ptr);
+
+    // Allocate a size that should be a perfect match for a bucket, because it
+    // is an exact power of 2.
+    requestedSize = (256 * 1024) - kExtraAllocSize;
+    ptr = partitionAllocGeneric(genericAllocator.root(), requestedSize);
+    EXPECT_TRUE(ptr);
+    actualSize = partitionAllocGetSize(ptr);
+    EXPECT_EQ(requestedSize, actualSize);
+    partitionFreeGeneric(genericAllocator.root(), ptr);
+
+    // Allocate a size that is a system page smaller than a bucket. GetSize()
+    // should return a larger size than we asked for now.
+    requestedSize = (256 * 1024) - WTF::kSystemPageSize - kExtraAllocSize;
+    ptr = partitionAllocGeneric(genericAllocator.root(), requestedSize);
+    EXPECT_TRUE(ptr);
+    actualSize = partitionAllocGetSize(ptr);
+    EXPECT_EQ(requestedSize + WTF::kSystemPageSize, actualSize);
+    // Check that we can write at the end of the reported size too.
+    char* charPtr = reinterpret_cast<char*>(ptr);
+    *(charPtr + (actualSize - 1)) = 'A';
+    partitionFreeGeneric(genericAllocator.root(), ptr);
+
+    // Allocate something very large, and uneven.
+    requestedSize = 512 * 1024 * 1024 - 1;
+    ptr = partitionAllocGeneric(genericAllocator.root(), requestedSize);
+    EXPECT_TRUE(ptr);
+    actualSize = partitionAllocGetSize(ptr);
+    EXPECT_LT(requestedSize, actualSize);
+    partitionFreeGeneric(genericAllocator.root(), ptr);
+
+    TestShutdown();
+}
+
 // Test the realloc() contract.
 TEST(WTF_PartitionAlloc, Realloc)
 {

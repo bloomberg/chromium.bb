@@ -565,6 +565,27 @@ ALWAYS_INLINE void partitionFreeGeneric(PartitionRootGeneric* root, void* ptr)
 #endif
 }
 
+ALWAYS_INLINE bool partitionAllocSupportsGetSize()
+{
+#if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
+    return false;
+#else
+    return true;
+#endif
+}
+
+ALWAYS_INLINE size_t partitionAllocGetSize(void* ptr)
+{
+    // No need to lock here. Only 'ptr' being freed by another thread could
+    // cause trouble, and the caller is responsible for that not happening.
+    ASSERT(partitionAllocSupportsGetSize());
+    ptr = partitionCookieFreePointerAdjust(ptr);
+    ASSERT(partitionPointerIsValid(ptr));
+    PartitionPage* page = partitionPointerToPage(ptr);
+    size_t size = page->bucket->slotSize;
+    return partitionCookieSizeAdjustSubtract(size);
+}
+
 // N (or more accurately, N - sizeof(void*)) represents the largest size in
 // bytes that will be handled by a SizeSpecificPartitionAllocator.
 // Attempts to partitionAlloc() more than this amount will fail.
@@ -602,5 +623,7 @@ using WTF::partitionFree;
 using WTF::partitionAllocGeneric;
 using WTF::partitionFreeGeneric;
 using WTF::partitionReallocGeneric;
+using WTF::partitionAllocSupportsGetSize;
+using WTF::partitionAllocGetSize;
 
 #endif // WTF_PartitionAlloc_h
