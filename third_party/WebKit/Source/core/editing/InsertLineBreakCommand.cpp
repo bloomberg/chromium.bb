@@ -103,7 +103,7 @@ void InsertLineBreakCommand::doApply()
         insertNodeAt(nodeToInsert.get(), pos);
 
         // Insert an extra br or '\n' if the just inserted one collapsed.
-        if (!isStartOfParagraph(positionBeforeNode(nodeToInsert.get())))
+        if (!isStartOfParagraph(VisiblePosition(positionBeforeNode(nodeToInsert.get()))))
             insertNodeBefore(nodeToInsert->cloneNode(false).get(), nodeToInsert.get());
 
         setEndingSelection(VisibleSelection(positionInParentAfterNode(nodeToInsert.get()), DOWNSTREAM, endingSelection().isDirectional()));

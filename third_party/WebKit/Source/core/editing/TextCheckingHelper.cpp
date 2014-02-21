@@ -101,8 +101,8 @@ static void findMisspellings(TextCheckerClient& client, const UChar* text, int s
 static PassRefPtr<Range> expandToParagraphBoundary(PassRefPtr<Range> range)
 {
     RefPtr<Range> paragraphRange = range->cloneRange(IGNORE_EXCEPTION);
-    setStart(paragraphRange.get(), startOfParagraph(range->startPosition()));
-    setEnd(paragraphRange.get(), endOfParagraph(range->endPosition()));
+    setStart(paragraphRange.get(), startOfParagraph(VisiblePosition(range->startPosition())));
+    setEnd(paragraphRange.get(), endOfParagraph(VisiblePosition(range->endPosition())));
     return paragraphRange;
 }
 
@@ -130,7 +130,7 @@ TextCheckingParagraph::~TextCheckingParagraph()
 void TextCheckingParagraph::expandRangeToNextEnd()
 {
     ASSERT(m_checkingRange);
-    setEnd(paragraphRange().get(), endOfParagraph(startOfNextParagraph(paragraphRange()->startPosition())));
+    setEnd(paragraphRange().get(), endOfParagraph(startOfNextParagraph(VisiblePosition(paragraphRange()->startPosition()))));
     invalidateParagraphRangeValues();
 }
 
@@ -307,9 +307,9 @@ String TextCheckingHelper::findFirstMisspellingOrBadGrammar(bool checkGrammar, b
     // Determine the character offset from the start of the paragraph to the start of the original search range,
     // since we will want to ignore results in this area.
     RefPtr<Range> paragraphRange = m_range->cloneRange(IGNORE_EXCEPTION);
-    setStart(paragraphRange.get(), startOfParagraph(m_range->startPosition()));
+    setStart(paragraphRange.get(), startOfParagraph(VisiblePosition(m_range->startPosition())));
     int totalRangeLength = TextIterator::rangeLength(paragraphRange.get());
-    setEnd(paragraphRange.get(), endOfParagraph(m_range->startPosition()));
+    setEnd(paragraphRange.get(), endOfParagraph(VisiblePosition(m_range->startPosition())));
 
     RefPtr<Range> offsetAsRange = Range::create(paragraphRange->startContainer()->document(), paragraphRange->startPosition(), m_range->startPosition());
     int rangeStartOffset = TextIterator::rangeLength(offsetAsRange.get());
@@ -322,7 +322,7 @@ String TextCheckingHelper::findFirstMisspellingOrBadGrammar(bool checkGrammar, b
         int currentLength = TextIterator::rangeLength(paragraphRange.get());
         int currentStartOffset = firstIteration ? rangeStartOffset : 0;
         int currentEndOffset = currentLength;
-        if (inSameParagraph(paragraphRange->startPosition(), m_range->endPosition())) {
+        if (inSameParagraph(VisiblePosition(paragraphRange->startPosition()), VisiblePosition(m_range->endPosition()))) {
             // Determine the character offset from the end of the original search range to the end of the paragraph,
             // since we will want to ignore results in this area.
             RefPtr<Range> endOffsetAsRange = Range::create(paragraphRange->startContainer()->document(), paragraphRange->startPosition(), m_range->endPosition());
@@ -401,7 +401,7 @@ String TextCheckingHelper::findFirstMisspellingOrBadGrammar(bool checkGrammar, b
         }
         if (lastIteration || totalLengthProcessed + currentLength >= totalRangeLength)
             break;
-        VisiblePosition newParagraphStart = startOfNextParagraph(paragraphRange->endPosition());
+        VisiblePosition newParagraphStart = startOfNextParagraph(VisiblePosition(paragraphRange->endPosition()));
         setStart(paragraphRange.get(), newParagraphStart);
         setEnd(paragraphRange.get(), endOfParagraph(newParagraphStart));
         firstIteration = false;

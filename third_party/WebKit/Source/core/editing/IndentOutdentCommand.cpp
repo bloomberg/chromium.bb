@@ -79,9 +79,9 @@ bool IndentOutdentCommand::tryIndentingAsListItem(const Position& start, const P
     // selection does not encompass all its children, we need to explicitally handle the same. The original
     // list item too would require proper deletion in that case.
     if (end.anchorNode() == selectedListItem.get() || end.anchorNode()->isDescendantOf(selectedListItem->lastChild())) {
-        moveParagraphWithClones(start, end, newList.get(), selectedListItem.get());
+        moveParagraphWithClones(VisiblePosition(start), VisiblePosition(end), newList.get(), selectedListItem.get());
     } else {
-        moveParagraphWithClones(start, positionAfterNode(selectedListItem->lastChild()), newList.get(), selectedListItem.get());
+        moveParagraphWithClones(VisiblePosition(start), VisiblePosition(positionAfterNode(selectedListItem->lastChild())), newList.get(), selectedListItem.get());
         removeNode(selectedListItem.get());
     }
 
@@ -109,7 +109,7 @@ void IndentOutdentCommand::indentIntoBlockquote(const Position& start, const Pos
 
     RefPtr<Node> outerBlock = (start.containerNode() == nodeToSplitTo) ? start.containerNode() : splitTreeToNode(start.containerNode(), nodeToSplitTo);
 
-    VisiblePosition startOfContents = start;
+    VisiblePosition startOfContents(start);
     if (!targetBlockquote) {
         // Create a new blockquote and insert it as a child of the root editable element. We accomplish
         // this by splitting all parents of the current paragraph up to that point.
@@ -118,10 +118,10 @@ void IndentOutdentCommand::indentIntoBlockquote(const Position& start, const Pos
             insertNodeAt(targetBlockquote, start);
         else
             insertNodeBefore(targetBlockquote, outerBlock);
-        startOfContents = positionInParentAfterNode(targetBlockquote.get());
+        startOfContents = VisiblePosition(positionInParentAfterNode(targetBlockquote.get()));
     }
 
-    moveParagraphWithClones(startOfContents, end, targetBlockquote.get(), outerBlock.get());
+    moveParagraphWithClones(startOfContents, VisiblePosition(end), targetBlockquote.get(), outerBlock.get());
 }
 
 void IndentOutdentCommand::outdentParagraph()
@@ -187,7 +187,7 @@ void IndentOutdentCommand::outdentParagraph()
     }
     RefPtr<Node> placeholder = createBreakElement(document());
     insertNodeBefore(placeholder, splitBlockquoteNode);
-    moveParagraph(startOfParagraph(visibleStartOfParagraph), endOfParagraph(visibleEndOfParagraph), positionBeforeNode(placeholder.get()), true);
+    moveParagraph(startOfParagraph(visibleStartOfParagraph), endOfParagraph(visibleEndOfParagraph), VisiblePosition(positionBeforeNode(placeholder.get())), true);
 }
 
 // FIXME: We should merge this function with ApplyBlockElementCommand::formatSelection
@@ -220,7 +220,7 @@ void IndentOutdentCommand::outdentRegion(const VisiblePosition& startOfSelection
             break;
 
         if (endOfNextParagraph.isNotNull() && !endOfNextParagraph.deepEquivalent().inDocument()) {
-            endOfCurrentParagraph = endingSelection().end();
+            endOfCurrentParagraph = VisiblePosition(endingSelection().end());
             endOfNextParagraph = endOfParagraph(endOfCurrentParagraph.next());
         }
         endOfCurrentParagraph = endOfNextParagraph;

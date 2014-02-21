@@ -148,7 +148,7 @@ static void adjustEndpointsAtBidiBoundary(VisiblePosition& visibleBase, VisibleP
     if (base.atLeftBoundaryOfBidiRun()) {
         if (!extent.atRightBoundaryOfBidiRun(base.bidiLevelOnRight())
             && base.isEquivalent(extent.leftBoundaryOfBidiRun(base.bidiLevelOnRight()))) {
-            visibleBase = base.positionAtLeftBoundaryOfBiDiRun();
+            visibleBase = VisiblePosition(base.positionAtLeftBoundaryOfBiDiRun());
             return;
         }
         return;
@@ -157,19 +157,19 @@ static void adjustEndpointsAtBidiBoundary(VisiblePosition& visibleBase, VisibleP
     if (base.atRightBoundaryOfBidiRun()) {
         if (!extent.atLeftBoundaryOfBidiRun(base.bidiLevelOnLeft())
             && base.isEquivalent(extent.rightBoundaryOfBidiRun(base.bidiLevelOnLeft()))) {
-            visibleBase = base.positionAtRightBoundaryOfBiDiRun();
+            visibleBase = VisiblePosition(base.positionAtRightBoundaryOfBiDiRun());
             return;
         }
         return;
     }
 
     if (extent.atLeftBoundaryOfBidiRun() && extent.isEquivalent(base.leftBoundaryOfBidiRun(extent.bidiLevelOnRight()))) {
-        visibleExtent = extent.positionAtLeftBoundaryOfBiDiRun();
+        visibleExtent = VisiblePosition(extent.positionAtLeftBoundaryOfBiDiRun());
         return;
     }
 
     if (extent.atRightBoundaryOfBidiRun() && extent.isEquivalent(base.rightBoundaryOfBidiRun(extent.bidiLevelOnLeft()))) {
-        visibleExtent = extent.positionAtRightBoundaryOfBiDiRun();
+        visibleExtent = VisiblePosition(extent.positionAtRightBoundaryOfBiDiRun());
         return;
     }
 }
@@ -584,7 +584,7 @@ VisiblePosition FrameSelection::nextWordPositionForPlatform(const VisiblePositio
 static void adjustPositionForUserSelectAll(VisiblePosition& pos, bool isForward)
 {
     if (Node* rootUserSelectAll = Position::rootUserSelectAllForNode(pos.deepEquivalent().anchorNode()))
-        pos = isForward ? positionAfterNode(rootUserSelectAll).downstream(CanCrossEditingBoundary) : positionBeforeNode(rootUserSelectAll).upstream(CanCrossEditingBoundary);
+        pos = VisiblePosition(isForward ? positionAfterNode(rootUserSelectAll).downstream(CanCrossEditingBoundary) : positionBeforeNode(rootUserSelectAll).upstream(CanCrossEditingBoundary));
 }
 
 VisiblePosition FrameSelection::modifyExtendingRight(TextGranularity granularity)
@@ -932,7 +932,7 @@ bool FrameSelection::modify(EAlteration alter, SelectionDirection direction, Tex
     willBeModified(alter, direction);
 
     bool wasRange = m_selection.isRange();
-    Position originalStartPosition = m_selection.start();
+    VisiblePosition originalStartPosition = m_selection.visibleStart();
     VisiblePosition position;
     switch (direction) {
     case DirectionRight:
@@ -991,7 +991,7 @@ bool FrameSelection::modify(EAlteration alter, SelectionDirection direction, Tex
             VisibleSelection newSelection = m_selection;
             newSelection.setExtent(position);
             if (m_selection.isBaseFirst() != newSelection.isBaseFirst())
-                position = m_selection.base();
+                position = m_selection.visibleBase();
         }
 
         // Standard Mac behavior when extending to a boundary is grow the selection rather than leaving the

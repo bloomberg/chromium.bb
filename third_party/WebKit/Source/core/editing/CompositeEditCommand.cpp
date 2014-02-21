@@ -1445,8 +1445,8 @@ PassRefPtr<Node> CompositeEditCommand::splitTreeToNode(Node* start, Node* end, b
         if (!node->parentNode()->isElementNode())
             break;
         // Do not split a node when doing so introduces an empty node.
-        VisiblePosition positionInParent = firstPositionInNode(node->parentNode());
-        VisiblePosition positionInNode = firstPositionInOrBeforeNode(node.get());
+        VisiblePosition positionInParent(firstPositionInNode(node->parentNode()));
+        VisiblePosition positionInNode(firstPositionInOrBeforeNode(node.get()));
         if (positionInParent != positionInNode)
             splitElement(toElement(node->parentNode()), node);
     }

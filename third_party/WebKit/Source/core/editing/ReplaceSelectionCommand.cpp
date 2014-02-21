@@ -639,8 +639,8 @@ void ReplaceSelectionCommand::moveNodeOutOfAncestor(PassRefPtr<Node> prpNode, Pa
     if (!ancestor->parentNode()->rendererIsEditable())
         return;
 
-    VisiblePosition positionAtEndOfNode = lastPositionInOrAfterNode(node.get());
-    VisiblePosition lastPositionInParagraph = lastPositionInNode(ancestor.get());
+    VisiblePosition positionAtEndOfNode(lastPositionInOrAfterNode(node.get()));
+    VisiblePosition lastPositionInParagraph(lastPositionInNode(ancestor.get()));
     if (positionAtEndOfNode == lastPositionInParagraph) {
         removeNode(node);
         if (ancestor->nextSibling())
@@ -686,12 +686,12 @@ VisiblePosition ReplaceSelectionCommand::positionAtEndOfInsertedContent() const
 {
     // FIXME: Why is this hack here?  What's special about <select> tags?
     Node* enclosingSelect = enclosingNodeWithTag(m_endOfInsertedContent, selectTag);
-    return enclosingSelect ? lastPositionInOrAfterNode(enclosingSelect) : m_endOfInsertedContent;
+    return VisiblePosition(enclosingSelect ? lastPositionInOrAfterNode(enclosingSelect) : m_endOfInsertedContent);
 }
 
 VisiblePosition ReplaceSelectionCommand::positionAtStartOfInsertedContent() const
 {
-    return m_startOfInsertedContent;
+    return VisiblePosition(m_startOfInsertedContent);
 }
 
 static void removeHeadContents(ReplacementFragment& fragment)
@@ -1117,7 +1117,7 @@ void ReplaceSelectionCommand::doApply()
     if (insertionBlock && !insertionBlock->inDocument())
         insertionBlock = nullptr;
 
-    VisiblePosition startOfInsertedContent = firstPositionInOrBeforeNode(insertedNodes.firstNodeInserted());
+    VisiblePosition startOfInsertedContent(firstPositionInOrBeforeNode(insertedNodes.firstNodeInserted()));
 
     // We inserted before the insertionBlock to prevent nesting, and the content before the insertionBlock wasn't in its own block and
     // didn't have a br after it, so the inserted content ended up in the same paragraph.
@@ -1420,8 +1420,8 @@ Node* ReplaceSelectionCommand::insertAsListItems(PassRefPtr<HTMLElement> prpList
     while (listElement->hasChildren() && isListElement(listElement->firstChild()) && listElement->hasOneChild())
         listElement = toHTMLElement(listElement->firstChild());
 
-    bool isStart = isStartOfParagraph(insertPos);
-    bool isEnd = isEndOfParagraph(insertPos);
+    bool isStart = isStartOfParagraph(VisiblePosition(insertPos));
+    bool isEnd = isEndOfParagraph(VisiblePosition(insertPos));
     bool isMiddle = !isStart && !isEnd;
     Node* lastNode = insertionBlock;
 
@@ -1489,7 +1489,7 @@ bool ReplaceSelectionCommand::performTrivialReplace(const ReplacementFragment& f
         return false;
 
     if (nodeAfterInsertionPos && nodeAfterInsertionPos->parentNode() && nodeAfterInsertionPos->hasTagName(brTag)
-        && shouldRemoveEndBR(nodeAfterInsertionPos.get(), positionBeforeNode(nodeAfterInsertionPos.get())))
+        && shouldRemoveEndBR(nodeAfterInsertionPos.get(), VisiblePosition(positionBeforeNode(nodeAfterInsertionPos.get()))))
         removeNodeAndPruneAncestors(nodeAfterInsertionPos.get());
 
     VisibleSelection selectionAfterReplace(m_selectReplacement ? start : end, end);

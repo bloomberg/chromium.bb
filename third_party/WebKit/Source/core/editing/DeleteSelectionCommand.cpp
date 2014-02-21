@@ -158,15 +158,9 @@ void DeleteSelectionCommand::initializeStartEnd(Position& start, Position& end)
 
 void DeleteSelectionCommand::setStartingSelectionOnSmartDelete(const Position& start, const Position& end)
 {
-    VisiblePosition newBase;
-    VisiblePosition newExtent;
-    if (startingSelection().isBaseFirst()) {
-        newBase = start;
-        newExtent = end;
-    } else {
-        newBase = end;
-        newExtent = start;
-    }
+    bool isBaseFirst = startingSelection().isBaseFirst();
+    VisiblePosition newBase(isBaseFirst ? start : end);
+    VisiblePosition newExtent(isBaseFirst ? end : start);
     setStartingSelection(VisibleSelection(newBase, newExtent, startingSelection().isDirectional()));
 }
 
@@ -321,7 +315,7 @@ bool DeleteSelectionCommand::handleSpecialCaseBRDelete()
 
     // FIXME: This code doesn't belong in here.
     // We detect the case where the start is an empty line consisting of BR not wrapped in a block element.
-    if (upstreamStartIsBR && downstreamStartIsBR && !(isStartOfBlock(positionBeforeNode(nodeAfterUpstreamStart)) && isEndOfBlock(positionAfterNode(nodeAfterUpstreamStart)))) {
+    if (upstreamStartIsBR && downstreamStartIsBR && !(isStartOfBlock(VisiblePosition(positionBeforeNode(nodeAfterUpstreamStart))) && isEndOfBlock(VisiblePosition(positionAfterNode(nodeAfterUpstreamStart))))) {
         m_startsAtEmptyLine = true;
         m_endingPosition = m_downstreamEnd;
     }

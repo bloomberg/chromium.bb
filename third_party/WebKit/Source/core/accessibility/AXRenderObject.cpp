@@ -1836,8 +1836,8 @@ AXObject::PlainTextRange AXRenderObject::ariaSelectedTextRange() const
     if (!currentSelectionRange || !currentSelectionRange->intersectsNode(node, IGNORE_EXCEPTION))
         return PlainTextRange();
 
-    int start = indexForVisiblePosition(visibleSelection.start());
-    int end = indexForVisiblePosition(visibleSelection.end());
+    int start = indexForVisiblePosition(visibleSelection.visibleStart());
+    int end = indexForVisiblePosition(visibleSelection.visibleEnd());
 
     return PlainTextRange(start, end - start);
 }

@@ -259,7 +259,7 @@ VisiblePosition firstEditablePositionAfterPositionInRoot(const Position& positio
 {
     // position falls before highestRoot.
     if (comparePositions(position, firstPositionInNode(highestRoot)) == -1 && highestRoot->rendererIsEditable())
-        return firstPositionInNode(highestRoot);
+        return VisiblePosition(firstPositionInNode(highestRoot));
 
     Position p = position;
 
@@ -284,7 +284,7 @@ VisiblePosition lastEditablePositionBeforePositionInRoot(const Position& positio
 {
     // When position falls after highestRoot, the result is easy to compute.
     if (comparePositions(position, lastPositionInNode(highestRoot)) == 1)
-        return lastPositionInNode(highestRoot);
+        return VisiblePosition(lastPositionInNode(highestRoot));
 
     Position p = position;
 
@@ -507,7 +507,7 @@ VisiblePosition visiblePositionBeforeNode(Node* node)
         return VisiblePosition(firstPositionInOrBeforeNode(node), DOWNSTREAM);
     ASSERT(node->parentNode());
     ASSERT(!node->parentNode()->isShadowRoot());
-    return positionInParentBeforeNode(node);
+    return VisiblePosition(positionInParentBeforeNode(node));
 }
 
 // Returns the visible position at the ending of a node
@@ -518,7 +518,7 @@ VisiblePosition visiblePositionAfterNode(Node* node)
         return VisiblePosition(lastPositionInOrAfterNode(node), DOWNSTREAM);
     ASSERT(node->parentNode());
     ASSERT(!node->parentNode()->isShadowRoot());
-    return positionInParentAfterNode(node);
+    return VisiblePosition(positionInParentAfterNode(node));
 }
 
 // Create a range object with two visible positions, start and end.
@@ -1052,11 +1052,11 @@ bool isNodeVisiblyContainedWithin(Node* node, const Range* selectedRange)
     if (selectedRange->compareNode(node, IGNORE_EXCEPTION) == Range::NODE_INSIDE)
         return true;
 
-    bool startIsVisuallySame = visiblePositionBeforeNode(node) == selectedRange->startPosition();
+    bool startIsVisuallySame = visiblePositionBeforeNode(node) == VisiblePosition(selectedRange->startPosition());
     if (startIsVisuallySame && comparePositions(positionInParentAfterNode(node), selectedRange->endPosition()) < 0)
         return true;
 
-    bool endIsVisuallySame = visiblePositionAfterNode(node) == selectedRange->endPosition();
+    bool endIsVisuallySame = visiblePositionAfterNode(node) == VisiblePosition(selectedRange->endPosition());
     if (endIsVisuallySame && comparePositions(selectedRange->startPosition(), positionInParentBeforeNode(node)) < 0)
         return true;
 
@@ -1106,7 +1106,7 @@ Position adjustedSelectionStartForStyleComputation(const VisibleSelection& selec
     // It is important to skip certain irrelevant content at the start of the selection, so we do not wind up
     // with a spurious "mixed" style.
 
-    VisiblePosition visiblePosition = selection.start();
+    VisiblePosition visiblePosition(selection.start());
     if (visiblePosition.isNull())
         return Position();
 

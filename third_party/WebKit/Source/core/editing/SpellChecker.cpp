@@ -376,7 +376,7 @@ void SpellChecker::markMisspellingsAfterTypingToWord(const VisiblePosition &word
         m_frame.editor().replaceSelectionWithText(autocorrectedString, false, false);
 
         // Reset the charet one character further.
-        m_frame.selection().moveTo(m_frame.selection().end());
+        m_frame.selection().moveTo(m_frame.selection().selection().visibleEnd());
         m_frame.selection().modify(FrameSelection::AlterationMove, DirectionForward, CharacterGranularity);
     }
 
@@ -498,8 +498,8 @@ void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(TextCheckingTypeMask
 
     for (int iter = 0; iter < kNumChunksToCheck; ++iter) {
         checkRange = fullParagraphToCheck.subrange(currentChunkStart, kChunkSize);
-        setStart(checkRange.get(), startOfSentence(checkRange->startPosition()));
-        setEnd(checkRange.get(), endOfSentence(checkRange->endPosition()));
+        setStart(checkRange.get(), startOfSentence(VisiblePosition(checkRange->startPosition())));
+        setEnd(checkRange.get(), endOfSentence(VisiblePosition(checkRange->endPosition())));
 
         int checkingLength = 0;
         markAllMisspellingsAndBadGrammarInRanges(textCheckingOptions, checkRange.get(), checkRange.get(), asynchronous, iter, &checkingLength);
@@ -598,7 +598,7 @@ void SpellChecker::markAndReplaceFor(PassRefPtr<SpellCheckRequest> request, cons
                 m_frame.selection().modify(FrameSelection::AlterationMove, DirectionForward, CharacterGranularity);
         } else {
             // If this fails for any reason, the fallback is to go one position beyond the last replacement
-            m_frame.selection().moveTo(m_frame.selection().end());
+            m_frame.selection().moveTo(m_frame.selection().selection().visibleEnd());
             m_frame.selection().modify(FrameSelection::AlterationMove, DirectionForward, CharacterGranularity);
         }
     }
@@ -639,8 +639,8 @@ void SpellChecker::updateMarkersForWordsAffectedByEditing(bool doNotRemoveIfSele
     // Of course, if current selection is a range, we potentially will edit two words that fall on the boundaries of
     // selection, and remove words between the selection boundaries.
     //
-    VisiblePosition startOfSelection = m_frame.selection().selection().start();
-    VisiblePosition endOfSelection = m_frame.selection().selection().end();
+    VisiblePosition startOfSelection = m_frame.selection().selection().visibleStart();
+    VisiblePosition endOfSelection = m_frame.selection().selection().visibleEnd();
     if (startOfSelection.isNull())
         return;
     // First word is the word that ends after or on the start of selection.
