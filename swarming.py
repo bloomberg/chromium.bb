@@ -99,13 +99,14 @@ class Manifest(object):
     self._tasks = []
 
   def add_task(self, task_name, actions, time_out=600):
-    """Appends a new task to the swarming manifest file.
+    """Appends a new task as a TestObject to the swarming manifest file.
 
     Tasks cannot be added once the manifest was uploaded.
+
+    See TestObject in services/swarming/src/common/test_request_message.py for
+    the valid format.
     """
     assert not self._isolate_item
-    # See swarming/src/common/test_request_message.py TestObject constructor for
-    # the valid flags.
     self._tasks.append(
         {
           'action': actions,
@@ -117,11 +118,15 @@ class Manifest(object):
   def to_json(self):
     """Exports the current configuration into a swarm-readable manifest file.
 
+    The actual serialization format is defined as a TestCase object as described
+    in services/swarming/src/common/test_request_message.py
+
     This function doesn't mutate the object.
     """
     request = {
       'cleanup': 'root',
       'configurations': [
+        # Is a TestConfiguration.
         {
           'config_name': 'isolated',
           'dimensions': self._dimensions,
@@ -247,6 +252,10 @@ def yield_results(swarm_base_url, task_keys, timeout, max_threads):
   max_threads is optional and is used to limit the number of parallel fetches
   done. Since in general the number of task_keys is in the range <=10, it's not
   worth normally to limit the number threads. Mostly used for testing purposes.
+
+  Yields:
+    (index, result). In particular, 'result' is defined as the
+    GetRunnerResults() function in services/swarming/server/test_runner.py.
   """
   shards_remaining = range(len(task_keys))
   number_threads = (
