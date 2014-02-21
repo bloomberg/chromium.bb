@@ -257,8 +257,6 @@ deps_os = {
             None,
         'src/third_party/sfntly/cpp/src':
             None,
-        'src/third_party/smhasher/src':
-            None,
         'src/third_party/swig/Lib':
             None,
         'src/third_party/undoview':
