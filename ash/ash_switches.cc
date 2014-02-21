@@ -61,11 +61,6 @@ const char kAshDisableAudioDeviceMenu[] =
 // Disable auto window maximization logic.
 const char kAshDisableAutoMaximizing[] = "ash-disable-auto-maximizing";
 
-// Disables the limitter to throttle how quickly a user
-// can change display settings.
-const char kAshDisableDisplayChangeLimiter[] =
-    "ash-disable-display-change-limiter";
-
 // Disable ability to dock windows at the desktop edge.
 const char kAshDisableDockedWindows[] = "ash-disable-docked-windows";
 

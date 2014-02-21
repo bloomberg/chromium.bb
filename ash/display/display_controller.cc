@@ -231,9 +231,7 @@ DisplayController::DisplayController()
       virtual_keyboard_window_controller_(
           new internal::VirtualKeyboardWindowController) {
 #if defined(OS_CHROMEOS)
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kAshDisableDisplayChangeLimiter) &&
-      base::SysInfo::IsRunningOnChromeOS())
+  if (base::SysInfo::IsRunningOnChromeOS())
     limiter_.reset(new DisplayChangeLimiter);
 #endif
   // Reset primary display to make sure that tests don't use
