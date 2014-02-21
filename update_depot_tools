@@ -11,10 +11,18 @@ then
   exit
 fi
 
-base_dir=$(dirname "$0")
-if [ -L "$base_dir" ]
-then
+# Test if this script is running under a MSys install.  If it is, we will
+# hardcode the paths to SVN and Git where possible.
+OUTPUT="$(uname | grep 'MINGW')"
+MINGW=$?
+
+if [ $MINGW = 0 ]; then
+  base_dir="${0%\\*}"
+else
+  base_dir=$(dirname "$0")
+  if [ -L "$base_dir" ]; then
     base_dir=`cd "$base_dir" && pwd -P`
+  fi
 fi
 
 # Don't try to use Cygwin tools.  Get real win32 tools using the batch script.
@@ -24,11 +32,6 @@ if [ $CYGWIN = 0 ]; then
   cmd /c `cygpath -w "$base_dir/bootstrap/win/win_tools.bat"` force
 fi
 
-# Test if this script is running under a MSys install.  If it is, we will
-# hardcode the paths to SVN and Git where possible.
-OUTPUT="$(uname | grep 'MINGW')"
-MINGW=$?
-
 CANONICAL_GIT_URL="https://chromium.googlesource.com/chromium/tools/depot_tools.git"
 
 SVN="svn"
@@ -37,14 +40,14 @@ if [ -d "$base_dir/svn_bin" -a $MINGW = 0 ]; then
 fi
 
 GIT="git"
-if [ -d "$base_dir/git-1.8.0_bin" -a $MINGW = 0 ]; then
-  GIT="$base_dir/git-1.8.0_bin/bin/git.exe"
+if [ -e "$base_dir/git.bat" -a $MINGW = 0 ]; then
+  GIT="cmd.exe //c \"$base_dir\\git.bat\""
 fi
 
 # Test git and git --version.
 function test_git {
   local GITV
-  GITV="$("$GIT" --version)" || {
+  GITV="$(eval "$GIT" --version)" || {
     echo "git isn't installed, please install it"
     exit 1
   }
@@ -60,7 +63,7 @@ function test_git {
 # Test git svn and git svn --version.
 function test_git_svn {
   local GITV
-  GITV="$("$GIT" svn --version)" || {
+  GITV="$(eval "$GIT" svn --version)" || {
     echo "git-svn isn't installed, please install it"
     exit 1
   }
@@ -75,11 +78,11 @@ function test_git_svn {
 }
 
 function is_git_clone_repo {
-  "$GIT" config remote.origin.fetch > /dev/null
+  eval "$GIT" config remote.origin.fetch > /dev/null
 }
 
 function update_git_repo {
-  remote_url=$("$GIT" config --get remote.origin.url)
+  remote_url=$(eval "$GIT" config --get remote.origin.url)
   if [ -n "$remote_url" -a "$remote_url" != "$CANONICAL_GIT_URL" ]; then
     echo "Your copy of depot_tools is configured to fetch from an obsolete URL:"
     echo
@@ -91,7 +94,7 @@ function update_git_repo {
     if [[ $STATUS -ne 0 ]]; then
       echo "Timeout; not updating remote URL."
     elif [ -z "$REPLY" -o "$REPLY" = "Y" -o "$REPLY" = "y" ]; then
-      "$GIT" config remote.origin.url "$CANONICAL_GIT_URL"
+      eval "$GIT" config remote.origin.url "$CANONICAL_GIT_URL"
       echo "Remote URL updated."
     fi
   fi
@@ -111,7 +114,7 @@ function update_git_repo {
 
   test_git_svn
   # work around a git-svn --quiet bug
-  OUTPUT=`"$GIT" svn rebase -q -q`
+  OUTPUT=`eval "$GIT" svn rebase -q -q`
   if [[ ! "$OUTPUT" == *Current.branch* ]]; then
     echo $OUTPUT 1>&2
   fi
