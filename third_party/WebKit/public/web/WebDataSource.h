@@ -102,9 +102,6 @@ public:
     virtual ExtraData* extraData() const = 0;
     virtual void setExtraData(ExtraData*) = 0;
 
-    // The application cache host associated with this datasource.
-    virtual WebApplicationCacheHost* applicationCacheHost() = 0;
-
     // Sets the navigation start time for this datasource. Ordinarily,
     // navigation start is determined in WebCore. But, in some situations,
     // the embedder might have a better value and can override it here. This

@@ -1274,7 +1274,6 @@
             'loader/appcache/ApplicationCache.h',
             'loader/appcache/ApplicationCacheHost.cpp',
             'loader/appcache/ApplicationCacheHost.h',
-            'loader/appcache/ApplicationCacheHostInternal.h',
             'page/AutoscrollController.cpp',
             'page/AutoscrollController.h',
             'page/BackForwardClient.h',

@@ -39,8 +39,9 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "core/loader/appcache/ApplicationCache.h"
-#include "core/loader/appcache/ApplicationCacheHostInternal.h"
+#include "core/page/FrameTree.h"
 #include "core/page/Page.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/exported/WrappedResourceResponse.h"
@@ -79,24 +80,22 @@ void ApplicationCacheHost::willStartLoadingMainResource(ResourceRequest& request
     if (!isApplicationCacheEnabled())
         return;
 
-    m_internal = adoptPtr(new ApplicationCacheHostInternal(this));
-    if (m_internal->m_outerHost) {
+    ASSERT(m_documentLoader->frame());
+    Frame& frame = *m_documentLoader->frame();
+    m_host = frame.loader().client()->createApplicationCacheHost(this);
+    if (m_host) {
         WrappedResourceRequest wrapped(request);
 
         const WebApplicationCacheHost* spawningHost = 0;
-        if (Frame* frame = m_documentLoader->frame()) {
-            Frame* spawningFrame = frame->tree().parent();
-            if (!spawningFrame)
-                spawningFrame = frame->loader().opener();
-            if (!spawningFrame)
-                spawningFrame = frame;
-            if (DocumentLoader* spawningDocLoader = spawningFrame->loader().documentLoader())
-                spawningHost = ApplicationCacheHostInternal::toWebApplicationCacheHost(spawningDocLoader->applicationCacheHost());
-        }
+        Frame* spawningFrame = frame.tree().parent();
+        if (!spawningFrame)
+            spawningFrame = frame.loader().opener();
+        if (!spawningFrame)
+            spawningFrame = &frame;
+        if (DocumentLoader* spawningDocLoader = spawningFrame->loader().documentLoader())
+            spawningHost = spawningDocLoader->applicationCacheHost() ? spawningDocLoader->applicationCacheHost()->m_host.get() : 0;
 
-        m_internal->m_outerHost->willStartMainResourceRequest(wrapped, spawningHost);
-    } else {
-        m_internal.clear();
+        m_host->willStartMainResourceRequest(wrapped, spawningHost);
     }
 
     // NOTE: The semantics of this method, and others in this interface, are subtly different
@@ -107,58 +106,54 @@ void ApplicationCacheHost::willStartLoadingMainResource(ResourceRequest& request
 
 void ApplicationCacheHost::selectCacheWithoutManifest()
 {
-    if (m_internal)
-        m_internal->m_outerHost->selectCacheWithoutManifest();
+    if (m_host)
+        m_host->selectCacheWithoutManifest();
 }
 
 void ApplicationCacheHost::selectCacheWithManifest(const KURL& manifestURL)
 {
-    if (m_internal) {
-        if (!m_internal->m_outerHost->selectCacheWithManifest(manifestURL)) {
-            // It's a foreign entry, restart the current navigation from the top
-            // of the navigation algorithm. The navigation will not result in the
-            // same resource being loaded, because "foreign" entries are never picked
-            // during navigation.
-            // see WebCore::ApplicationCacheGroup::selectCache()
-            Frame* frame = m_documentLoader->frame();
-            frame->navigationScheduler().scheduleLocationChange(frame->document(),
-                frame->document()->url(), Referrer(frame->document()->referrer(), frame->document()->referrerPolicy()));
-        }
+    if (m_host && !m_host->selectCacheWithManifest(manifestURL)) {
+        // It's a foreign entry, restart the current navigation from the top
+        // of the navigation algorithm. The navigation will not result in the
+        // same resource being loaded, because "foreign" entries are never picked
+        // during navigation.
+        // see WebCore::ApplicationCacheGroup::selectCache()
+        Frame* frame = m_documentLoader->frame();
+        frame->navigationScheduler().scheduleLocationChange(frame->document(), frame->document()->url(), Referrer(frame->document()->referrer(), frame->document()->referrerPolicy()));
     }
 }
 
 void ApplicationCacheHost::didReceiveResponseForMainResource(const ResourceResponse& response)
 {
-    if (m_internal) {
+    if (m_host) {
         WrappedResourceResponse wrapped(response);
-        m_internal->m_outerHost->didReceiveResponseForMainResource(wrapped);
+        m_host->didReceiveResponseForMainResource(wrapped);
     }
 }
 
 void ApplicationCacheHost::mainResourceDataReceived(const char* data, int length)
 {
-    if (m_internal)
-        m_internal->m_outerHost->didReceiveDataForMainResource(data, length);
+    if (m_host)
+        m_host->didReceiveDataForMainResource(data, length);
 }
 
 void ApplicationCacheHost::failedLoadingMainResource()
 {
-    if (m_internal)
-        m_internal->m_outerHost->didFinishLoadingMainResource(false);
+    if (m_host)
+        m_host->didFinishLoadingMainResource(false);
 }
 
 void ApplicationCacheHost::finishedLoadingMainResource()
 {
-    if (m_internal)
-        m_internal->m_outerHost->didFinishLoadingMainResource(true);
+    if (m_host)
+        m_host->didFinishLoadingMainResource(true);
 }
 
 void ApplicationCacheHost::willStartLoadingResource(ResourceRequest& request)
 {
-    // FIXME: look into the purpose of the unused KURL& originalURL parameter
-    if (m_internal) {
+    if (m_host) {
         WrappedResourceRequest wrapped(request);
-        m_internal->m_outerHost->willStartSubResourceRequest(wrapped);
+        m_host->willStartSubResourceRequest(wrapped);
     }
 }
 
@@ -183,21 +178,21 @@ void ApplicationCacheHost::notifyApplicationCache(EventID id, int total, int don
 
 ApplicationCacheHost::CacheInfo ApplicationCacheHost::applicationCacheInfo()
 {
-    if (!m_internal)
+    if (!m_host)
         return CacheInfo(KURL(), 0, 0, 0);
 
     blink::WebApplicationCacheHost::CacheInfo webInfo;
-    m_internal->m_outerHost->getAssociatedCacheInfo(&webInfo);
+    m_host->getAssociatedCacheInfo(&webInfo);
     return CacheInfo(webInfo.manifestURL, webInfo.creationTime, webInfo.updateTime, webInfo.totalSize);
 }
 
 void ApplicationCacheHost::fillResourceList(ResourceInfoList* resources)
 {
-    if (!m_internal)
+    if (!m_host)
         return;
 
     blink::WebVector<blink::WebApplicationCacheHost::ResourceInfo> webResources;
-    m_internal->m_outerHost->getResourceList(&webResources);
+    m_host->getResourceList(&webResources);
     for (size_t i = 0; i < webResources.size(); ++i) {
         resources->append(ResourceInfo(
             webResources[i].url, webResources[i].isMaster, webResources[i].isManifest, webResources[i].isFallback,
@@ -231,17 +226,17 @@ void ApplicationCacheHost::dispatchDOMEvent(EventID id, int total, int done)
 
 ApplicationCacheHost::Status ApplicationCacheHost::status() const
 {
-    return m_internal ? static_cast<Status>(m_internal->m_outerHost->status()) : UNCACHED;
+    return m_host ? static_cast<Status>(m_host->status()) : UNCACHED;
 }
 
 bool ApplicationCacheHost::update()
 {
-    return m_internal ? m_internal->m_outerHost->startUpdate() : false;
+    return m_host ? m_host->startUpdate() : false;
 }
 
 bool ApplicationCacheHost::swapCache()
 {
-    bool success = m_internal ? m_internal->m_outerHost->swapCache() : false;
+    bool success = m_host ? m_host->swapCache() : false;
     if (success)
         InspectorInstrumentation::updateApplicationCacheStatus(m_documentLoader->frame());
     return success;
@@ -249,14 +244,29 @@ bool ApplicationCacheHost::swapCache()
 
 void ApplicationCacheHost::abort()
 {
-    if (m_internal)
-        m_internal->m_outerHost->abort();
+    if (m_host)
+        m_host->abort();
 }
 
 bool ApplicationCacheHost::isApplicationCacheEnabled()
 {
     ASSERT(m_documentLoader->frame());
     return m_documentLoader->frame()->settings() && m_documentLoader->frame()->settings()->offlineWebApplicationCacheEnabled();
+}
+
+void ApplicationCacheHost::didChangeCacheAssociation()
+{
+    // FIXME: Prod the inspector to update its notion of what cache the page is using.
+}
+
+void ApplicationCacheHost::notifyEventListener(blink::WebApplicationCacheHost::EventID eventID)
+{
+    notifyApplicationCache(static_cast<ApplicationCacheHost::EventID>(eventID), 0, 0);
+}
+
+void ApplicationCacheHost::notifyProgressEventListener(const blink::WebURL&, int progressTotal, int progressDone)
+{
+    notifyApplicationCache(PROGRESS_EVENT, progressTotal, progressDone);
 }
 
 } // namespace WebCore

@@ -35,7 +35,6 @@
 
 #include "WebAXEnums.h"
 #include "WebAXObject.h"
-#include "WebApplicationCacheHost.h"
 #include "WebConsoleMessage.h"
 #include "WebContentSecurityPolicy.h"
 #include "WebFontDescription.h"
@@ -97,6 +96,7 @@
 #include "platform/text/TextChecking.h"
 #include "platform/text/TextDecoration.h"
 #include "platform/weborigin/ReferrerPolicy.h"
+#include "public/platform/WebApplicationCacheHost.h"
 #include "public/platform/WebClipboard.h"
 #include "public/platform/WebCursorInfo.h"
 #include "public/platform/WebFileError.h"

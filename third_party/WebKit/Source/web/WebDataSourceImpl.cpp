@@ -32,8 +32,6 @@
 #include "WebDataSourceImpl.h"
 
 #include "core/dom/Document.h"
-#include "core/loader/FrameLoader.h"
-#include "core/loader/appcache/ApplicationCacheHostInternal.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebVector.h"
@@ -124,11 +122,6 @@ void WebDataSourceImpl::setExtraData(ExtraData* extraData)
 {
     // extraData can't be a PassOwnPtr because setExtraData is a WebKit API function.
     m_extraData = adoptPtr(extraData);
-}
-
-WebApplicationCacheHost* WebDataSourceImpl::applicationCacheHost()
-{
-    return ApplicationCacheHostInternal::toWebApplicationCacheHost(DocumentLoader::applicationCacheHost());
 }
 
 void WebDataSourceImpl::setNavigationStartTime(double navigationStart)

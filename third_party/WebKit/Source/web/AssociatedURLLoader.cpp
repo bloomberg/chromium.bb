@@ -31,7 +31,6 @@
 #include "config.h"
 #include "AssociatedURLLoader.h"
 
-#include "WebApplicationCacheHost.h"
 #include "WebDataSource.h"
 #include "WebFrameImpl.h"
 #include "core/fetch/CrossOriginAccessControl.h"

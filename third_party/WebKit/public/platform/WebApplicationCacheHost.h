@@ -38,7 +38,6 @@
 namespace blink {
 
 class WebApplicationCacheHostClient;
-class WebFrame;
 class WebURL;
 class WebURLRequest;
 class WebURLResponse;
@@ -76,9 +75,6 @@ public:
     // Called for every request made within the context.
     virtual void willStartMainResourceRequest(WebURLRequest& r, const WebApplicationCacheHost* spawningHost) { }
     virtual void willStartSubResourceRequest(WebURLRequest&) { }
-
-    // FIXME: Only needed to keep clang happy until Chromium stops overriding it.
-    virtual void willStartMainResourceRequest(WebURLRequest& r, const WebFrame*) { }
 
     // One or the other selectCache methods is called after having parsed the <html> tag.
     // The latter returns false if the current document has been identified as a "foreign"

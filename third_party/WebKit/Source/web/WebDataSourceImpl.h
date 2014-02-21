@@ -68,7 +68,6 @@ public:
     virtual double triggeringEventTime() const OVERRIDE;
     virtual ExtraData* extraData() const OVERRIDE;
     virtual void setExtraData(ExtraData*) OVERRIDE;
-    virtual WebApplicationCacheHost* applicationCacheHost() OVERRIDE;
     virtual void setNavigationStartTime(double) OVERRIDE;
 
     static WebNavigationType toWebNavigationType(WebCore::NavigationType type);

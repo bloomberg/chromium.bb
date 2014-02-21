@@ -32,6 +32,7 @@
 #define ApplicationCacheHost_h
 
 #include "platform/weborigin/KURL.h"
+#include "public/platform/WebApplicationCacheHostClient.h"
 #include "wtf/Deque.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -47,10 +48,9 @@ namespace WebCore {
     class ResourceRequest;
     class ResourceResponse;
     class SubstituteData;
-    class ApplicationCacheHostInternal;
 
-    class ApplicationCacheHost {
-        WTF_MAKE_NONCOPYABLE(ApplicationCacheHost); WTF_MAKE_FAST_ALLOCATED;
+    class ApplicationCacheHost : public blink::WebApplicationCacheHostClient {
+        WTF_MAKE_NONCOPYABLE(ApplicationCacheHost);
     public:
         // The Status numeric values are specified in the HTML5 spec.
         enum Status {
@@ -105,8 +105,8 @@ namespace WebCore {
 
         typedef Vector<ResourceInfo> ResourceInfoList;
 
-        ApplicationCacheHost(DocumentLoader*);
-        ~ApplicationCacheHost();
+        explicit ApplicationCacheHost(DocumentLoader*);
+        virtual ~ApplicationCacheHost();
 
         void selectCacheWithoutManifest();
         void selectCacheWithManifest(const KURL& manifestURL);
@@ -133,6 +133,11 @@ namespace WebCore {
         CacheInfo applicationCacheInfo();
 
     private:
+        // WebApplicationCacheHostClient implementation
+        virtual void didChangeCacheAssociation() OVERRIDE FINAL;
+        virtual void notifyEventListener(blink::WebApplicationCacheHost::EventID) OVERRIDE FINAL;
+        virtual void notifyProgressEventListener(const blink::WebURL&, int progressTotal, int progressDone) OVERRIDE FINAL;
+
         bool isApplicationCacheEnabled();
         DocumentLoader* documentLoader() const { return m_documentLoader; }
 
@@ -150,8 +155,7 @@ namespace WebCore {
 
         void dispatchDOMEvent(EventID, int progressTotal, int progressDone);
 
-        friend class ApplicationCacheHostInternal;
-        OwnPtr<ApplicationCacheHostInternal> m_internal;
+        OwnPtr<blink::WebApplicationCacheHost> m_host;
     };
 
 }  // namespace WebCore
