@@ -49,6 +49,24 @@ AddMathTest(errno_env, 'float_math.c', testname='float_math_errno',
 AddMathTest(noerrno_env, 'float_math.c', testname='float_math_noerrno',
             exit_status='55')
 
+AddMathTest(errno_env, 'float_remainder.c', testname='float_remainder_fmod')
+if env.Bit('bitcode') and env.Bit('pnacl_generate_pexe'):
+  # Only run this test for bitcode, since it uses the LLVM assembler
+  # to assemble a .ll file. When pnacl_generate_pexe is false, the
+  # assembler is assumed to be operating on architecture specific .S files.
+  bitcode_env = env.Clone()
+  bitcode_env.Append(CPPDEFINES=['TEST_LLVM_IR'])
+  obj1 = bitcode_env.ComponentObject('float_remainder_frem',
+                                     'float_remainder.c')
+  obj2 = bitcode_env.Command(target='frem.bc', source=['frem.ll'],
+                             action=[Action('${ASCOM}', '${ASCOMSTR}')])
+  nexe = bitcode_env.ComponentProgram(
+      'float_remainder_frem',
+      [obj1, obj2], EXTRA_LIBS=['${NONIRT_LIBS}'])
+  node = bitcode_env.CommandSelLdrTestNacl('float_remainder_frem.out', nexe)
+  bitcode_env.AddNodeToTestSuite(node, ['small_tests'],
+                                 'run_float_remainder_frem_test')
+
 AddMathTest(errno_env, 'c_pow.c', testname='c_pow_errno',
             golden_filename='common_pow.stdout')
 AddMathTest(noerrno_env, 'c_pow.c', testname='c_pow_noerrno',
