@@ -1543,17 +1543,20 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
     if (inline_autocomplete_offset != base::string16::npos)
       ++inline_autocomplete_offset;
   }
-  if (!input_.prevent_inline_autocomplete() &&
-      (inline_autocomplete_offset != base::string16::npos)) {
+  if (inline_autocomplete_offset != base::string16::npos) {
     DCHECK(inline_autocomplete_offset <= match.fill_into_edit.length());
-    // A navsuggestion can only be the default match when there is no
-    // keyword provider active, lest it appear first and break the user
-    // out of keyword mode.
-    match.allowed_to_be_default_match =
-        (providers_.GetKeywordProviderURL() == NULL);
     match.inline_autocompletion =
         match.fill_into_edit.substr(inline_autocomplete_offset);
   }
+  // An inlineable navsuggestion can only be the default match when there
+  // is no keyword provider active, lest it appear first and break the user
+  // out of keyword mode.  It can also only be default when we're not
+  // preventing inline autocompletion (unless the inline autocompletion
+  // would be empty).
+  match.allowed_to_be_default_match = navigation.IsInlineable(input) &&
+      (providers_.GetKeywordProviderURL() == NULL) &&
+      (!input_.prevent_inline_autocomplete() ||
+       match.inline_autocompletion.empty());
 
   match.contents = navigation.match_contents();
   match.contents_class = navigation.match_contents_class();

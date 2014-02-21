@@ -209,8 +209,8 @@ void BaseSearchProvider::NavigationResult::CalculateAndClassifyMatchContents(
   // scheme.
   const URLPrefix* prefix =
       URLPrefix::BestURLPrefix(formatted_url_, input_text);
-  size_t match_start = (prefix == NULL) ? formatted_url_.find(input_text)
-                                        : prefix->prefix.length();
+  size_t match_start = (prefix == NULL) ?
+      formatted_url_.find(input_text) : prefix->prefix.length();
   bool trim_http = !AutocompleteInput::HasHTTPScheme(input_text) &&
                    (!prefix || (match_start != 0));
   const net::FormatUrlTypes format_types =
@@ -235,7 +235,8 @@ void BaseSearchProvider::NavigationResult::CalculateAndClassifyMatchContents(
 
 bool BaseSearchProvider::NavigationResult::IsInlineable(
     const base::string16& input) const {
-  return URLPrefix::BestURLPrefix(formatted_url_, input) != NULL;
+  return
+      URLPrefix::BestURLPrefix(base::UTF8ToUTF16(url_.spec()), input) != NULL;
 }
 
 int BaseSearchProvider::NavigationResult::CalculateRelevance(
