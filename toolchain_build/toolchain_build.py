@@ -35,7 +35,7 @@ GIT_REVISIONS = {
         'upstream-base': '237df3fa4a1d939e6fd1af0c3e5029a25a137310',
         },
     'gcc': {
-        'rev': '145a627d95b98f54915d037dddbcbb0f7b283494',
+        'rev': 'a2e4a3140c035233409598487c56b76108f8c74d',
         'upstream-branch': 'upstream/gcc-4_8-branch',
         'upstream-name': 'gcc-4.8.2',
          # Upstream tag gcc-4_8_2-release:
