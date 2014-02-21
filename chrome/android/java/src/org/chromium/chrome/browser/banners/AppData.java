@@ -5,7 +5,10 @@
 package org.chromium.chrome.browser.banners;
 
 import android.app.PendingIntent;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.os.Looper;
 
 /**
  * Stores information about a particular app.
@@ -32,6 +35,9 @@ public class AppData {
     private Drawable mIcon;
     private int mInstallState;
 
+    // Task that watches the package manager for installation progress.
+    private InstallerDelegate mInstallTask;
+
     /**
      * Creates a new AppData for the given page and package.
      * @param siteUrl     URL for the site requesting the banner.
@@ -44,7 +50,24 @@ public class AppData {
     }
 
     /**
-     * Returns the title to display for the app.
+     * Returns the URL of the website requesting the banner.
+     * @return The URL of the website.
+     */
+    String siteUrl() {
+        return mSiteUrl;
+    }
+
+    /**
+     * Returns the package name of the app.
+     * @return The String containing the package name.
+     */
+    public String packageName() {
+        return mPackageName;
+    }
+
+    /**
+     * Returns the title to display for the app in the banner.
+     * @return The String to display.
      */
     String title() {
         return mTitle;
@@ -52,6 +75,7 @@ public class AppData {
 
     /**
      * Returns the URL where the app icon can be retrieved from.
+     * @return The URL to grab the icon from.
      */
     String imageUrl() {
         return mImageUrl;
@@ -108,6 +132,14 @@ public class AppData {
     }
 
     /**
+     * Returns the task tracking the installation.
+     * @return The InstallerDelegate that is tracking the app's installation.
+     */
+    InstallerDelegate installTask() {
+        return mInstallTask;
+    }
+
+    /**
      * Stores all of the data about the given app after it's been retrieved.
      * @param title             App title.
      * @param imageUrl          URL where the icon is located.
@@ -116,8 +148,8 @@ public class AppData {
      * @param detailsIntent     Intent to fire to launch the details page for the app
      * @param installIntent     Intent to fire to trigger the purchase/install process.
      */
-    void setPackageInfo(String title, String imageUrl, float rating, String installButtonText,
-            PendingIntent detailsIntent, PendingIntent installIntent) {
+    public void setPackageInfo(String title, String imageUrl, float rating,
+            String installButtonText, PendingIntent detailsIntent, PendingIntent installIntent) {
         mTitle = title;
         mImageUrl = imageUrl;
         mRating = rating;
@@ -132,5 +164,35 @@ public class AppData {
      */
     void setIcon(Drawable icon) {
         mIcon = icon;
+    }
+
+    /**
+     * Sets the install state.
+     * @param installState Current state of the installation.
+     */
+    void setInstallState(int installState) {
+        mInstallState = installState;
+    }
+
+    /**
+     * Begins tracking the installation of the package.
+     * @param context  Context to grab the PackageManager from.
+     * @param observer Observer to notify when the app has finished installing.
+     */
+    void beginTrackingInstallation(Context context, InstallerDelegate.Observer observer) {
+        PackageManager pm = context.getPackageManager();
+        mInstallTask = new InstallerDelegate(Looper.getMainLooper(), pm, observer, mPackageName);
+        mInstallTask.start();
+        mInstallState = AppData.INSTALL_STATE_INSTALLING;
+    }
+
+    /**
+     * Clean up any pending operations.
+     */
+    void destroy() {
+        if (mInstallTask != null) {
+            mInstallTask.cancel();
+            mInstallTask = null;
+        }
     }
 }
