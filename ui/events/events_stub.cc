@@ -4,6 +4,7 @@
 
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/vector2d.h"
@@ -22,10 +23,12 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
   return ET_UNKNOWN;
 }
 
+#if !defined(OS_MACOSX)
 int EventFlagsFromNative(const base::NativeEvent& native_event) {
   NOTIMPLEMENTED();
   return 0;
 }
+#endif
 
 base::TimeDelta EventTimeFromNative(const base::NativeEvent& native_event) {
   NOTIMPLEMENTED();

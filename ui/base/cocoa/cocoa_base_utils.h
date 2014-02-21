@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_COCOA_COCOA_EVENT_UTILS_H_
-#define UI_BASE_COCOA_COCOA_EVENT_UTILS_H_
+#ifndef UI_BASE_COCOA_COCOA_BASE_UTILS_H_
+#define UI_BASE_COCOA_COCOA_BASE_UTILS_H_
 
 #import <Cocoa/Cocoa.h>
 
@@ -11,20 +11,6 @@
 #include "ui/base/window_open_disposition.h"
 
 namespace ui {
-
-// Retrieves a bitsum of ui::EventFlags represented by |event|,
-UI_BASE_EXPORT int EventFlagsFromNSEvent(NSEvent* event);
-
-// Converts the Cocoa |modifiers| bitsum into a ui::EventFlags bitsum.
-UI_BASE_EXPORT int EventFlagsFromModifiers(NSUInteger modifiers);
-
-// Retrieves a bitsum of ui::EventFlags represented by |event|,
-// but instead use the modifier flags given by |modifiers|,
-// which is the same format as |-NSEvent modifierFlags|. This allows
-// substitution of the modifiers without having to create a new event from
-// scratch.
-UI_BASE_EXPORT int EventFlagsFromNSEventWithModifiers(NSEvent* event,
-                                                      NSUInteger modifiers);
 
 // Retrieves the WindowOpenDisposition used to open a link from a user gesture
 // represented by |event|. For example, a Cmd+Click would mean open the
@@ -42,4 +28,4 @@ UI_BASE_EXPORT WindowOpenDisposition
 
 }  // namespace ui
 
-#endif  // UI_BASE_COCOA_COCOA_EVENT_UTILS_H_
+#endif  // UI_BASE_COCOA_COCOA_BASE_UTILS_H_

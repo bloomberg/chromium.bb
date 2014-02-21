@@ -48,13 +48,14 @@
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/zlib/zlib.gyp:zlib',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
+        '../ui/events/events.gyp:events',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/message_center/message_center.gyp:message_center',
         '../ui/native_theme/native_theme.gyp:native_theme',
+        '../ui/resources/ui_resources.gyp:ui_resources',
         '../ui/snapshot/snapshot.gyp:snapshot',
         '../ui/ui.gyp:ui',
-        '../ui/resources/ui_resources.gyp:ui_resources',
         '../webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
       ],
       'include_dirs': [
@@ -2788,7 +2789,6 @@
         }],
         ['toolkit_views == 1', {
           'dependencies': [
-            '../ui/events/events.gyp:events',
             '../ui/wm/wm.gyp:wm_public',
           ],
           'sources!': [

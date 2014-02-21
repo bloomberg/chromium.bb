@@ -8,9 +8,9 @@
 #include "base/strings/sys_string_conversions.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/platform_accelerator_cocoa.h"
-#import "ui/base/cocoa/cocoa_event_utils.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/models/simple_menu_model.h"
+#import "ui/events/event_utils.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/text_elider.h"
@@ -204,7 +204,7 @@
           [[sender representedObject] pointerValue]);
   DCHECK(model);
   if (model) {
-    int event_flags = ui::EventFlagsFromNSEvent([NSApp currentEvent]);
+    int event_flags = ui::EventFlagsFromNative([NSApp currentEvent]);
     model->ActivatedAt(modelIndex, event_flags);
   }
 }

@@ -79,6 +79,8 @@
         'EVENTS_IMPLEMENTATION',
       ],
       'sources': [
+        'cocoa/cocoa_event_utils.h',
+        'cocoa/cocoa_event_utils.mm',
         'event.cc',
         'event.h',
         'event_constants.h',
@@ -210,6 +212,7 @@
         'events_test_support',
       ],
       'sources': [
+        'cocoa/cocoa_event_utils_unittest.mm',
         'event_dispatcher_unittest.cc',
         'event_processor_unittest.cc',
         'event_unittest.cc',

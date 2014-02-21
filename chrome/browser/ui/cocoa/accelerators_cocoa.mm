@@ -10,7 +10,7 @@
 #include "base/memory/singleton.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "ui/base/accelerators/platform_accelerator_cocoa.h"
-#import "ui/base/cocoa/cocoa_event_utils.h"
+#import "ui/events/cocoa/cocoa_event_utils.h"
 #import "ui/events/keycodes/keyboard_code_conversion_mac.h"
 
 namespace {
