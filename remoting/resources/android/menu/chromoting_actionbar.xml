@@ -11,8 +11,4 @@
             android:title="@string/actionbar_directoryrefresh"
             android:icon="@android:drawable/ic_popup_sync"
             android:showAsAction="ifRoom"/>
-    <item android:id="@+id/actionbar_accountswitcher"
-            android:title="@string/actionbar_accountswitcher"
-            android:icon="@android:drawable/ic_menu_more"
-            android:showAsAction="ifRoom|withText"/>
 </menu>

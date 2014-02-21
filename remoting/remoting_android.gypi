@@ -54,6 +54,8 @@
             {
               'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/layout',
               'files': [
+                'resources/android/layout/account_dropdown.xml',
+                'resources/android/layout/account_selected.xml',
                 'resources/android/layout/desktop.xml',
                 'resources/android/layout/host.xml',
                 'resources/android/layout/main.xml',
@@ -70,7 +72,15 @@
             {
               'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/values',
               'files': [
+                'resources/android/values/dimens.xml',
                 'resources/android/values/strings.xml',
+                'resources/android/values/styles.xml',
+              ],
+            },
+            {
+              'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/values-land',
+              'files': [
+                'resources/android/values-land/dimens.xml',
               ],
             },
           ],

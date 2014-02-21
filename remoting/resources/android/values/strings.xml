@@ -22,7 +22,6 @@
 
     <!--Action bar buttons-->
     <string name="actionbar_directoryrefresh">Refresh</string>
-    <string name="actionbar_accountswitcher">Accounts</string>
     <string name="actionbar_disconnect">Disconnect</string>
     <string name="actionbar_hide">Hide</string>
     <string name="actionbar_keyboard">Keyboard</string>

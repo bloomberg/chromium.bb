@@ -10,11 +10,13 @@ import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -34,7 +36,8 @@ import java.util.Arrays;
  * also requests and renews authentication tokens using the system account manager.
  */
 public class Chromoting extends Activity implements JniInterface.ConnectionListener,
-        AccountManagerCallback<Bundle>, HostListLoader.Callback {
+        AccountManagerCallback<Bundle>, ActionBar.OnNavigationListener,
+        HostListLoader.Callback {
     /** Only accounts of this type will be selectable for authentication. */
     private static final String ACCOUNT_TYPE = "com.google";
 
@@ -44,6 +47,9 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
 
     /** User's account details. */
     private Account mAccount;
+
+    /** List of accounts on the system. */
+    private Account[] mAccounts;
 
     /** Account auth token. */
     private String mToken;
@@ -56,9 +62,6 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
 
     /** Refresh button. */
     private MenuItem mRefreshButton;
-
-    /** Account switcher. */
-    private MenuItem mAccountSwitcher;
 
     /** Greeting at the top of the displayed list. */
     private TextView mGreeting;
@@ -74,7 +77,7 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
      * this flag is set and a fresh authentication token is fetched from the AccountsService, and
      * used to request the host list a second time.
      */
-    boolean mAlreadyTried;
+    boolean mTriedNewAuthToken;
 
     /**
      * Called when the activity is first created. Loads the native library and requests an
@@ -85,7 +88,7 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
-        mAlreadyTried = false;
+        mTriedNewAuthToken = false;
         mHostListLoader = new HostListLoader();
 
         // Get ahold of our view widgets.
@@ -95,21 +98,40 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
         // Bring native components online.
         JniInterface.loadLibrary(this);
 
+        mAccounts = AccountManager.get(this).getAccountsByType(ACCOUNT_TYPE);
+        if (mAccounts.length == 0) {
+            // TODO(lambroslambrou): Show a dialog with message: "To use <App Name>, you'll need
+            // to add a Google Account to your device." and two buttons: "Close", "Add account".
+            // The "Add account" button should navigate to the system "Add a Google Account"
+            // screen.
+            return;
+        }
+
         SharedPreferences prefs = getPreferences(MODE_PRIVATE);
+        int index = -1;
         if (prefs.contains("account_name") && prefs.contains("account_type")) {
-            // Perform authentication using saved account selection.
             mAccount = new Account(prefs.getString("account_name", null),
                     prefs.getString("account_type", null));
-            AccountManager.get(this).getAuthToken(mAccount, TOKEN_SCOPE, null, this, this, null);
-            if (mAccountSwitcher != null) {
-                mAccountSwitcher.setTitle(mAccount.name);
-            }
-        } else {
-            // Request auth callback once user has chosen an account.
-            Log.i("auth", "Requesting auth token from system");
-            AccountManager.get(this).getAuthTokenByFeatures(ACCOUNT_TYPE, TOKEN_SCOPE, null, this,
-                    null, null, this, null);
+            index = Arrays.asList(mAccounts).indexOf(mAccount);
         }
+        if (index == -1) {
+            // Preference not loaded, or does not correspond to a valid account, so just pick the
+            // first account arbitrarily.
+            index = 0;
+            mAccount = mAccounts[0];
+        }
+
+        if (mAccounts.length == 1) {
+            getActionBar().setDisplayShowTitleEnabled(true);
+            getActionBar().setSubtitle(mAccount.name);
+        } else {
+            AccountsAdapter adapter = new AccountsAdapter(this, mAccounts);
+            getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+            getActionBar().setListNavigationCallbacks(adapter, this);
+            getActionBar().setSelectedNavigationItem(index);
+        }
+
+        refreshHostList();
     }
 
     /** Called when the activity is finally finished. */
@@ -119,26 +141,28 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
         JniInterface.disconnectFromHost();
     }
 
+    /** Called when the display is rotated (as registered in the manifest). */
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        // Reload the spinner resources, since the font sizes are dependent on the screen
+        // orientation.
+        if (mAccounts.length != 1) {
+            AccountsAdapter adapter = new AccountsAdapter(this, mAccounts);
+            getActionBar().setListNavigationCallbacks(adapter, this);
+        }
+    }
+
     /** Called to initialize the action bar. */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.chromoting_actionbar, menu);
         mRefreshButton = menu.findItem(R.id.actionbar_directoryrefresh);
-        mAccountSwitcher = menu.findItem(R.id.actionbar_accountswitcher);
-
-        Account[] usableAccounts = AccountManager.get(this).getAccountsByType(ACCOUNT_TYPE);
-        if (usableAccounts.length == 1 && usableAccounts[0].equals(mAccount)) {
-            // If we're using the only available account, don't offer account switching.
-            // (If there are *no* accounts available, clicking this allows you to add a new one.)
-            mAccountSwitcher.setEnabled(false);
-        }
 
         if (mAccount == null) {
-            // If no account has been chosen, don't allow the user to refresh the listing.
+            // If there is no account, don't allow the user to refresh the listing.
             mRefreshButton.setEnabled(false);
-        } else {
-            // If the user has picked an account, show its name directly on the account switcher.
-            mAccountSwitcher.setTitle(mAccount.name);
         }
 
         return super.onCreateOptionsMenu(menu);
@@ -147,16 +171,7 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
     /** Called whenever an action bar button is pressed. */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        mAlreadyTried = false;
-        if (item == mAccountSwitcher) {
-            // The account switcher triggers a listing of all available accounts.
-            AccountManager.get(this).getAuthTokenByFeatures(ACCOUNT_TYPE, TOKEN_SCOPE, null, this,
-                    null, null, this, null);
-        } else {
-            // The refresh button simply makes use of the currently-chosen account.
-            AccountManager.get(this).getAuthToken(mAccount, TOKEN_SCOPE, null, this, this, null);
-        }
-
+        refreshHostList();
         return true;
     }
 
@@ -174,6 +189,13 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
                 this);
     }
 
+    private void refreshHostList() {
+        mTriedNewAuthToken = false;
+
+        // The refresh button simply makes use of the currently-chosen account.
+        AccountManager.get(this).getAuthToken(mAccount, TOKEN_SCOPE, null, this, this, null);
+    }
+
     @Override
     public void run(AccountManagerFuture<Bundle> future) {
         Log.i("auth", "User finished with auth dialogs");
@@ -182,6 +204,12 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
         try {
             // Here comes our auth token from the Android system.
             result = future.getResult();
+            String authToken = result.getString(AccountManager.KEY_AUTHTOKEN);
+            Log.i("auth", "Received an auth token from system");
+
+            mToken = authToken;
+
+            mHostListLoader.retrieveHostList(authToken, this);
         } catch (OperationCanceledException ex) {
             explanation = getString(R.string.error_auth_canceled);
         } catch (AuthenticatorException ex) {
@@ -195,17 +223,23 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
             return;
         }
 
-        String accountName = result.getString(AccountManager.KEY_ACCOUNT_NAME);
-        String accountType = result.getString(AccountManager.KEY_ACCOUNT_TYPE);
         String authToken = result.getString(AccountManager.KEY_AUTHTOKEN);
         Log.i("auth", "Received an auth token from system");
 
-        mAccount = new Account(accountName, accountType);
         mToken = authToken;
-        getPreferences(MODE_PRIVATE).edit().putString("account_name", accountName).
-                putString("account_type", accountType).apply();
 
         mHostListLoader.retrieveHostList(authToken, this);
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(int itemPosition, long itemId) {
+        mAccount = mAccounts[itemPosition];
+
+        getPreferences(MODE_PRIVATE).edit().putString("account_name", mAccount.name).
+                    putString("account_type", mAccount.type).apply();
+
+        refreshHostList();
+        return true;
     }
 
     @Override
@@ -244,11 +278,11 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
 
         // This is the AUTH_FAILED case.
 
-        if (!mAlreadyTried) {
+        if (!mTriedNewAuthToken) {
             // This was our first connection attempt.
 
             AccountManager authenticator = AccountManager.get(this);
-            mAlreadyTried = true;
+            mTriedNewAuthToken = true;
 
             Log.w("auth", "Requesting renewal of rejected auth token");
             authenticator.invalidateAuthToken(mAccount.type, mToken);
@@ -270,9 +304,6 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
      */
     private void updateUi() {
         mRefreshButton.setEnabled(mAccount != null);
-        if (mAccount != null) {
-            mAccountSwitcher.setTitle(mAccount.name);
-        }
 
         if (mHosts == null) {
             mGreeting.setText(getString(R.string.inst_empty_list));

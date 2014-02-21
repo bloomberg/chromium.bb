@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Copyright 2014 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+-->
+
+<resources>
+    <style name="MainTheme" parent="@android:style/Theme.DeviceDefault">
+        <item name="android:actionBarStyle">@style/MainActionBar</item>
+    </style>
+    <style name="MainActionBar" parent="@android:style/Widget.DeviceDefault.ActionBar">
+        <item name="android:displayOptions">showHome</item>
+    </style>
+</resources>
