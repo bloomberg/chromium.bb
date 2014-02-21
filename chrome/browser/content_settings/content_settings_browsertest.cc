@@ -488,7 +488,7 @@ class PepperContentSettingsTest : public ContentSettingsTest {
         kLibraryName, "Clear Key CDM", kExternalClearKeyMimeType);
 #if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
     // The CDM must be registered when it is a component.
-    pepper_plugins.append(",");
+    pepper_plugins.append(FILE_PATH_LITERAL(","));
     pepper_plugins.append(
         BuildPepperPluginRegistration(kWidevineCdmAdapterFileName,
                                       kWidevineCdmDisplayName,
