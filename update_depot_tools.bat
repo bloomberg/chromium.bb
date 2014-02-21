@@ -30,8 +30,7 @@ if errorlevel 1 goto :EOF
 :: Now clear errorlevel so it can be set by other programs later.
 set errorlevel=
 
-:: Opt-in for now.
-IF "%DEPOT_TOOLS_WIN_TOOLCHAIN%" == "" GOTO :NOTOOLCHAIN
+IF "%DEPOT_TOOLS_WIN_TOOLCHAIN%" == "0" GOTO :NOTOOLCHAIN
 call python %~dp0win_toolchain\get_toolchain_if_necessary.py
 if errorlevel 1 goto :EOF
 set errorlevel=
