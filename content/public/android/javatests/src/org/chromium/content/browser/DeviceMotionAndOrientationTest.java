@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser;
 
+import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
@@ -26,7 +27,7 @@ public class DeviceMotionAndOrientationTest extends AndroidTestCase {
     public void setUp() throws Exception {
         super.setUp();
         mMockSensorManager = new MockSensorManager();
-        mDeviceMotionAndOrientation = DeviceMotionAndOrientationForTests.getInstance();
+        mDeviceMotionAndOrientation = DeviceMotionAndOrientationForTests.getInstance(getContext());
         mDeviceMotionAndOrientation.setSensorManagerProxy(mMockSensorManager);
     }
 
@@ -320,11 +321,12 @@ public class DeviceMotionAndOrientationTest extends AndroidTestCase {
         private double value3 = 0;
         private String mCalls = "";
 
-        private DeviceMotionAndOrientationForTests(){
+        private DeviceMotionAndOrientationForTests(Context context) {
+            super(context);
         }
 
-        static DeviceMotionAndOrientationForTests getInstance() {
-            return new DeviceMotionAndOrientationForTests();
+        static DeviceMotionAndOrientationForTests getInstance(Context context) {
+            return new DeviceMotionAndOrientationForTests(context);
         }
 
         private void verifyValues(double v1, double v2, double v3) {

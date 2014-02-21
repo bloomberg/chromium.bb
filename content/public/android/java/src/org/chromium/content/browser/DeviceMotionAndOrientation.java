@@ -18,11 +18,12 @@ import com.google.common.annotations.VisibleForTesting;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.JNINamespace;
-import org.chromium.base.WeakContext;
+import org.chromium.base.ThreadUtils;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 /**
  * Android implementation of the device motion and orientation APIs.
@@ -35,6 +36,9 @@ class DeviceMotionAndOrientation implements SensorEventListener {
     // These fields are lazily initialized by getHandler().
     private Thread mThread;
     private Handler mHandler;
+
+    // A reference to the application context in order to acquire the SensorService.
+    private final Context mAppContext;
 
     // The lock to access the mHandler.
     private final Object mHandlerLock = new Object();
@@ -76,7 +80,8 @@ class DeviceMotionAndOrientation implements SensorEventListener {
     boolean mDeviceMotionIsActive = false;
     boolean mDeviceOrientationIsActive = false;
 
-    protected DeviceMotionAndOrientation() {
+    protected DeviceMotionAndOrientation(Context context) {
+        mAppContext = context.getApplicationContext();
     }
 
     /**
@@ -311,8 +316,15 @@ class DeviceMotionAndOrientation implements SensorEventListener {
         if (mSensorManagerProxy != null) {
             return mSensorManagerProxy;
         }
-        SensorManager sensorManager = (SensorManager) WeakContext.getSystemService(
-                Context.SENSOR_SERVICE);
+
+        SensorManager sensorManager = ThreadUtils.runOnUiThreadBlockingNoException(
+                new Callable<SensorManager>() {
+            @Override
+            public SensorManager call() {
+                return (SensorManager) mAppContext.getSystemService(Context.SENSOR_SERVICE);
+            }
+        });
+
         if (sensorManager != null) {
             mSensorManagerProxy = new SensorManagerProxyImpl(sensorManager);
         }
@@ -428,10 +440,10 @@ class DeviceMotionAndOrientation implements SensorEventListener {
     }
 
     @CalledByNative
-    static DeviceMotionAndOrientation getInstance() {
+    static DeviceMotionAndOrientation getInstance(Context appContext) {
         synchronized (sSingletonLock) {
             if (sSingleton == null) {
-                sSingleton = new DeviceMotionAndOrientation();
+                sSingleton = new DeviceMotionAndOrientation(appContext);
             }
             return sSingleton;
         }

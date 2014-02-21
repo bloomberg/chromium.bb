@@ -32,7 +32,9 @@ SensorManagerAndroid::SensorManagerAndroid()
       is_orientation_buffer_ready_(false) {
   memset(received_motion_data_, 0, sizeof(received_motion_data_));
   device_orientation_.Reset(
-      Java_DeviceMotionAndOrientation_getInstance(AttachCurrentThread()));
+      Java_DeviceMotionAndOrientation_getInstance(
+          AttachCurrentThread(),
+          base::android::GetApplicationContext()));
 }
 
 SensorManagerAndroid::~SensorManagerAndroid() {
