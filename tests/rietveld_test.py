@@ -8,11 +8,13 @@
 import logging
 import os
 import sys
+import traceback
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from testing_support.patches_data import GIT, RAW
+from testing_support import auto_stub
 
 import patch
 import rietveld
@@ -420,6 +422,46 @@ class CachingRietveldTest(BaseFixture):
     self.assertEqual(expected, self.rietveld.get_patchset_properties(1, 2))
     self.assertEqual(expected, self.rietveld.get_patchset_properties(1, 2))
 
+
+class ProbeException(Exception):
+  """Deep-probe a value."""
+  value = None
+
+  def __init__(self, value):
+    super(ProbeException, self).__init__()
+    self.value = value
+
+
+def MockSend(request_path, payload=None,
+             content_type="application/octet-stream",
+             timeout=None,
+             extra_headers=None,
+             **kwargs):
+  """Mock upload.py's Send() to probe the timeout value"""
+  raise ProbeException(timeout)
+
+
+class DefaultTimeoutTest(auto_stub.TestCase):
+  TESTED_CLASS = rietveld.Rietveld
+
+  def setUp(self):
+    super(DefaultTimeoutTest, self).setUp()
+    self.rietveld = self.TESTED_CLASS('url', 'email', 'password')
+    self.mock(self.rietveld.rpc_server, 'Send', MockSend)
+
+  def test_timeout_get(self):
+    with self.assertRaises(ProbeException) as cm:
+      self.rietveld.get('/api/1234')
+
+    self.assertIsNotNone(cm.exception.value, 'Rietveld timeout was not set: %s'
+                         % traceback.format_exc())
+
+  def test_timeout_post(self):
+    with self.assertRaises(ProbeException) as cm:
+      self.rietveld.post('/api/1234', [('key', 'data')])
+
+    self.assertIsNotNone(cm.exception.value, 'Rietveld timeout was not set: %s'
+                         % traceback.format_exc())
 
 
 if __name__ == '__main__':
