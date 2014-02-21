@@ -19,7 +19,6 @@
 namespace gfx {
 
 class Rect;
-class Font;
 class FontList;
 class Point;
 class Size;
