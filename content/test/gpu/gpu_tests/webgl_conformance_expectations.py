@@ -24,7 +24,7 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     # self.Fail('gl-enable-vertex-attrib.html',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
 
-    # Win7/Intel failures
+    # Win7 / Intel failures
     self.Fail('conformance/rendering/gl-scissor-test.html',
         ['win7', 'intel'], bug=314997)
     self.Fail('conformance/context/premultiplyalpha-test.html',
@@ -32,27 +32,28 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     self.Fail('conformance/textures/copy-tex-image-and-sub-image-2d.html',
         ['win7', 'intel'])
 
-    # Mac/Intel failures
+    # Mac / Intel failures
     # Radar 13499466
     self.Fail('conformance/limits/gl-max-texture-dimensions.html',
         ['mac', 'intel'], bug=225642)
     # Radar 13499623
     self.Fail('conformance/textures/texture-size.html',
         ['mac', 'intel'], bug=225642)
+
+    # Mac / Intel HD 3000 failures
     self.Skip('conformance/ogles/GL/control_flow/control_flow_009_to_010.html',
-        ['mac', 'intel'], bug=322795)
+        ['mac', ('intel', 0x116)], bug=322795)
+    # Radar 13499677
+    self.Fail('conformance/glsl/functions/glsl-function-smoothstep-gentype.html',
+        ['mac', ('intel', 0x116)], bug=225642)
 
     # Mac 10.8 / Intel HD 3000 failures
     self.Fail('conformance/rendering/gl-scissor-test.html',
         ['mountainlion', ('intel', 0x116)], bug=314997)
-    # Radar 13499677
-    self.Fail(
-        'conformance/glsl/functions/glsl-function-smoothstep-gentype.html',
-        ['mountainlion', ('intel', 0x116)], bug=225642)
     self.Fail('conformance/ogles/GL/operators/operators_009_to_016.html',
         ['mountainlion', ('intel', 0x116)], bug=322795)
 
-    # Mac/Intel failures on 10.7
+    # Mac / Intel failures on 10.7
     self.Skip('conformance/glsl/functions/glsl-function-asin.html',
         ['lion', 'intel'])
     self.Skip('conformance/glsl/functions/glsl-function-dot.html',
@@ -71,8 +72,6 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['lion', 'intel'])
     self.Skip('conformance/ogles/GL/control_flow/control_flow_001_to_008.html',
         ['lion', 'intel'], bug=345575)
-    self.Skip('conformance/ogles/GL/control_flow/control_flow_009_to_010.html',
-        ['lion'], bug=322795)
     self.Skip('conformance/ogles/GL/dot/dot_001_to_006.html',
         ['lion', 'intel'], bug=323736)
     self.Skip('conformance/ogles/GL/faceforward/faceforward_001_to_006.html',
@@ -88,7 +87,7 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     self.Skip('conformance/ogles/GL/tan/tan_001_to_006.html',
         ['lion', 'intel'], bug=323736)
 
-    # Mac/ATI failures
+    # Mac / ATI failures
     self.Fail('conformance/extensions/oes-texture-float-with-image-data.html',
         ['mac', 'amd'], bug=308328)
     self.Fail('conformance/rendering/gl-clear.html',
