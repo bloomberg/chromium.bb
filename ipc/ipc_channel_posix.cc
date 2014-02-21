@@ -327,7 +327,7 @@ bool Channel::ChannelImpl::CreatePipe(
 
 bool Channel::ChannelImpl::Connect() {
   if (server_listen_pipe_ == -1 && pipe_ == -1) {
-    DLOG(INFO) << "Channel creation failed: " << pipe_name_;
+    DLOG(WARNING) << "Channel creation failed: " << pipe_name_;
     return false;
   }
 
@@ -464,15 +464,19 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
       CloseFileDescriptors(msg);
 
     if (bytes_written < 0 && !SocketWriteErrorIsRecoverable()) {
+      // We can't close the pipe here, because calling OnChannelError
+      // may destroy this object, and that would be bad if we are
+      // called from Send(). Instead, we return false and hope the
+      // caller will close the pipe. If they do not, the pipe will
+      // still be closed next time OnFileCanReadWithoutBlocking is
+      // called.
 #if defined(OS_MACOSX)
       // On OSX writing to a pipe with no listener returns EPERM.
       if (errno == EPERM) {
-        Close();
         return false;
       }
 #endif  // OS_MACOSX
       if (errno == EPIPE) {
-        Close();
         return false;
       }
       PLOG(ERROR) << "pipe error on "
@@ -680,7 +684,7 @@ void Channel::ChannelImpl::OnFileCanReadWithoutBlocking(int fd) {
   // If we're a server and handshaking, then we want to make sure that we
   // only send our handshake message after we've processed the client's.
   // This gives us a chance to kill the client if the incoming handshake
-  // is invalid. This also flushes any closefd messagse.
+  // is invalid. This also flushes any closefd messages.
   if (!is_blocked_on_write_) {
     if (!ProcessOutgoingMessages()) {
       ClosePipeOnError();
