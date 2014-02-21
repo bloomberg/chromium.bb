@@ -13,11 +13,11 @@
     ['disable_nacl==0 and disable_nacl_untrusted==0', {
       'targets': [
         {
-          'target_name': 'shared_memory_support_untrusted',
+          'target_name': 'shared_memory_support_nacl',
           'type': 'none',
           'variables': {
             'nacl_untrusted_build': 1,
-            'nlib_target': 'libshared_memory_support_untrusted.a',
+            'nlib_target': 'libshared_memory_support_nacl.a',
             'build_glibc': 0,
             'build_newlib': 0,
             'build_irt': 1,
@@ -38,7 +38,7 @@
           'sources': [
             '<@(shared_memory_support_sources)',
           ],
-        },
+        },  # end of target 'shared_memory_support_nacl'
         {
           'target_name': 'media_yuv_nacl',
           'type': 'none',
