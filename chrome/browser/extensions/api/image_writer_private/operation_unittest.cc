@@ -77,20 +77,9 @@ class ImageWriterOperationTest : public ImageWriterUnitTestBase {
 
     zip_file_ = temp_dir_.path().AppendASCII("test_image.zip");
     ASSERT_TRUE(zip::Zip(image_dir, zip_file_, true));
-
-    // Operation setup.
-    operation_ = new OperationForTest(manager_.AsWeakPtr(),
-                                      kDummyExtensionId,
-                                      test_device_path_.AsUTF8Unsafe());
-    client_ = FakeImageWriterClient::Create();
-    operation_->SetImagePath(test_image_path_);
   }
 
   virtual void TearDown() OVERRIDE {
-    // Ensure all callbacks have been destroyed and cleanup occurs.
-    client_->Shutdown();
-    operation_->Cancel();
-
     ImageWriterUnitTestBase::TearDown();
   }
 
@@ -98,31 +87,36 @@ class ImageWriterOperationTest : public ImageWriterUnitTestBase {
   base::FilePath zip_file_;
 
   MockOperationManager manager_;
-  scoped_refptr<FakeImageWriterClient> client_;
-  scoped_refptr<OperationForTest> operation_;
 };
 
 } // namespace
 
-// Unizpping a non-zip should do nothing.
 TEST_F(ImageWriterOperationTest, UnzipNonZipFile) {
+  scoped_refptr<OperationForTest> operation(
+      new OperationForTest(manager_.AsWeakPtr(),
+                           kDummyExtensionId,
+                           test_device_path_.AsUTF8Unsafe()));
+
   EXPECT_CALL(manager_, OnProgress(kDummyExtensionId, _, _)).Times(0);
 
-  EXPECT_CALL(manager_, OnError(kDummyExtensionId, _, _, _)).Times(0);
-  EXPECT_CALL(manager_, OnProgress(kDummyExtensionId, _, _)).Times(0);
-  EXPECT_CALL(manager_, OnComplete(kDummyExtensionId)).Times(0);
+  operation->SetImagePath(test_image_path_);
 
-  operation_->Start();
+  operation->Start();
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE,
       FROM_HERE,
       base::Bind(
-          &OperationForTest::Unzip, operation_, base::Bind(&base::DoNothing)));
+          &OperationForTest::Unzip, operation, base::Bind(&base::DoNothing)));
 
   base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ImageWriterOperationTest, UnzipZipFile) {
+  scoped_refptr<OperationForTest> operation(
+      new OperationForTest(manager_.AsWeakPtr(),
+                           kDummyExtensionId,
+                           test_device_path_.AsUTF8Unsafe()));
+
   EXPECT_CALL(manager_, OnError(kDummyExtensionId, _, _, _)).Times(0);
   EXPECT_CALL(manager_,
               OnProgress(kDummyExtensionId, image_writer_api::STAGE_UNZIP, _))
@@ -134,25 +128,27 @@ TEST_F(ImageWriterOperationTest, UnzipZipFile) {
               OnProgress(kDummyExtensionId, image_writer_api::STAGE_UNZIP, 100))
       .Times(AtLeast(1));
 
-  operation_->SetImagePath(zip_file_);
+  operation->SetImagePath(zip_file_);
 
-  operation_->Start();
+  operation->Start();
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE,
       FROM_HERE,
       base::Bind(
-          &OperationForTest::Unzip, operation_, base::Bind(&base::DoNothing)));
+          &OperationForTest::Unzip, operation, base::Bind(&base::DoNothing)));
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(base::ContentsEqual(image_path_, operation_->GetImagePath()));
+  EXPECT_TRUE(base::ContentsEqual(image_path_, operation->GetImagePath()));
 }
 
 #if defined(OS_LINUX)
 TEST_F(ImageWriterOperationTest, WriteImageToDevice) {
-#if !defined(OS_CHROMEOS)
-  operation_->SetUtilityClientForTesting(client_);
-#endif
+
+  scoped_refptr<OperationForTest> operation(
+      new OperationForTest(manager_.AsWeakPtr(),
+                           kDummyExtensionId,
+                           test_device_path_.AsUTF8Unsafe()));
 
   EXPECT_CALL(manager_, OnError(kDummyExtensionId, _, _, _)).Times(0);
   EXPECT_CALL(manager_,
@@ -165,32 +161,34 @@ TEST_F(ImageWriterOperationTest, WriteImageToDevice) {
               OnProgress(kDummyExtensionId, image_writer_api::STAGE_WRITE, 100))
       .Times(AtLeast(1));
 
-  operation_->Start();
+  operation->SetImagePath(test_image_path_);
+
+  operation->Start();
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE,
       FROM_HERE,
       base::Bind(
-          &OperationForTest::Write, operation_, base::Bind(&base::DoNothing)));
+          &OperationForTest::Write, operation, base::Bind(&base::DoNothing)));
 
   base::RunLoop().RunUntilIdle();
 
 #if !defined(OS_CHROMEOS)
-  client_->Progress(0);
-  client_->Progress(kTestFileSize / 2);
-  client_->Progress(kTestFileSize);
-  client_->Success();
-
-  base::RunLoop().RunUntilIdle();
+  // Chrome OS tests don't actually write to the disk because that's handled by
+  // the DBUS process.
+  EXPECT_TRUE(base::ContentsEqual(test_image_path_, test_device_path_));
 #endif
 }
 #endif
 
-#if !defined(OS_CHROMEOS)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // Chrome OS doesn't support verification in the ImageBurner, so these two tests
 // are skipped.
 
 TEST_F(ImageWriterOperationTest, VerifyFileSuccess) {
-  operation_->SetUtilityClientForTesting(client_);
+  scoped_refptr<OperationForTest> operation(
+      new OperationForTest(manager_.AsWeakPtr(),
+                           kDummyExtensionId,
+                           test_device_path_.AsUTF8Unsafe()));
 
   EXPECT_CALL(manager_, OnError(kDummyExtensionId, _, _, _)).Times(0);
   EXPECT_CALL(
@@ -207,27 +205,28 @@ TEST_F(ImageWriterOperationTest, VerifyFileSuccess) {
       .Times(AtLeast(1));
 
   FillFile(test_device_path_, kImagePattern, kTestFileSize);
+  operation->SetImagePath(test_image_path_);
 
-  operation_->Start();
+  operation->Start();
   content::BrowserThread::PostTask(content::BrowserThread::FILE,
                                    FROM_HERE,
                                    base::Bind(&OperationForTest::VerifyWrite,
-                                              operation_,
+                                              operation,
                                               base::Bind(&base::DoNothing)));
-
-  base::RunLoop().RunUntilIdle();
-
-  client_->Progress(0);
-  client_->Progress(kTestFileSize / 2);
-  client_->Progress(kTestFileSize);
-  client_->Success();
 
   base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ImageWriterOperationTest, VerifyFileFailure) {
-  operation_->SetUtilityClientForTesting(client_);
+  scoped_refptr<OperationForTest> operation(
+      new OperationForTest(manager_.AsWeakPtr(),
+                           kDummyExtensionId,
+                           test_device_path_.AsUTF8Unsafe()));
 
+  EXPECT_CALL(
+      manager_,
+      OnError(kDummyExtensionId, image_writer_api::STAGE_VERIFYWRITE, _, _))
+      .Times(1);
   EXPECT_CALL(
       manager_,
       OnProgress(kDummyExtensionId, image_writer_api::STAGE_VERIFYWRITE, _))
@@ -236,35 +235,30 @@ TEST_F(ImageWriterOperationTest, VerifyFileFailure) {
       manager_,
       OnProgress(kDummyExtensionId, image_writer_api::STAGE_VERIFYWRITE, 100))
       .Times(0);
-  EXPECT_CALL(manager_, OnComplete(kDummyExtensionId)).Times(0);
-  EXPECT_CALL(
-      manager_,
-      OnError(kDummyExtensionId, image_writer_api::STAGE_VERIFYWRITE, _, _))
-      .Times(1);
 
   FillFile(test_device_path_, kDevicePattern, kTestFileSize);
+  operation->SetImagePath(test_image_path_);
 
-  operation_->Start();
+  operation->Start();
   content::BrowserThread::PostTask(content::BrowserThread::FILE,
                                    FROM_HERE,
                                    base::Bind(&OperationForTest::VerifyWrite,
-                                              operation_,
+                                              operation,
                                               base::Bind(&base::DoNothing)));
-
-  base::RunLoop().RunUntilIdle();
-
-  client_->Progress(0);
-  client_->Progress(kTestFileSize / 2);
-  client_->Error(error::kVerificationFailed);
 
   base::RunLoop().RunUntilIdle();
 }
 #endif
 
-// Tests that on creation the operation_ has the expected state.
+// Tests that on creation the operation has the expected state.
 TEST_F(ImageWriterOperationTest, Creation) {
-  EXPECT_EQ(0, operation_->GetProgress());
-  EXPECT_EQ(image_writer_api::STAGE_UNKNOWN, operation_->GetStage());
+  scoped_refptr<Operation> op(
+      new OperationForTest(manager_.AsWeakPtr(),
+                           kDummyExtensionId,
+                           test_device_path_.AsUTF8Unsafe()));
+
+  EXPECT_EQ(0, op->GetProgress());
+  EXPECT_EQ(image_writer_api::STAGE_UNKNOWN, op->GetStage());
 }
 
 }  // namespace image_writer

@@ -5,7 +5,6 @@
 #include "base/file_util.h"
 #include "chrome/browser/extensions/api/image_writer_private/destroy_partitions_operation.h"
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace extensions {
 namespace image_writer {
@@ -38,12 +37,7 @@ void DestroyPartitionsOperation::StartImpl() {
     return;
   }
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&DestroyPartitionsOperation::Write,
-                 this,
-                 base::Bind(&DestroyPartitionsOperation::Finish, this)));
+  Write(base::Bind(&DestroyPartitionsOperation::Finish, this));
 }
 
 }  // namespace image_writer
