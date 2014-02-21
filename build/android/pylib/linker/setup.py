@@ -6,19 +6,17 @@
 
 import os
 import sys
-import types
-
-import test_case
-import test_runner
 
 from pylib import constants
+from pylib.linker import test_case
+from pylib.linker import test_runner
 
 sys.path.insert(0,
                 os.path.join(constants.DIR_SOURCE_ROOT, 'build', 'util', 'lib',
                              'common'))
-import unittest_util
+import unittest_util # pylint: disable=F0401
 
-def Setup(options, devices):
+def Setup(options, _devices):
   """Creates a list of test cases and a runner factory.
 
   Returns:
@@ -39,7 +37,7 @@ def Setup(options, devices):
     all_tests = [t for t in all_tests \
                  if t.qualified_name in filtered_test_names]
 
-  def TestRunnerFactory(device, shard_index):
+  def TestRunnerFactory(device, _shard_index):
     return test_runner.LinkerTestRunner(
         device, options.tool, options.push_deps,
         options.cleanup_test_files)

@@ -33,36 +33,34 @@
      build/android/test_runner.py linker
 
 """
+# pylint: disable=R0201
 
 import logging
 import os
 import re
-import StringIO
-import subprocess
-import tempfile
 import time
 
 from pylib import constants
 from pylib import android_commands
-from pylib import flag_changer
 from pylib.base import base_test_result
+
 
 ResultType = base_test_result.ResultType
 
-_PACKAGE_NAME='org.chromium.chromium_linker_test_apk'
-_ACTIVITY_NAME='.ChromiumLinkerTestActivity'
-_COMMAND_LINE_FILE='/data/local/tmp/chromium-linker-test-command-line'
+_PACKAGE_NAME = 'org.chromium.chromium_linker_test_apk'
+_ACTIVITY_NAME = '.ChromiumLinkerTestActivity'
+_COMMAND_LINE_FILE = '/data/local/tmp/chromium-linker-test-command-line'
 
 # Path to the Linker.java source file.
-_LINKER_JAVA_SOURCE_PATH = \
-    'base/android/java/src/org/chromium/base/library_loader/Linker.java'
+_LINKER_JAVA_SOURCE_PATH = (
+    'base/android/java/src/org/chromium/base/library_loader/Linker.java')
 
 # A regular expression used to extract the browser shared RELRO configuration
 # from the Java source file above.
-_RE_LINKER_BROWSER_CONFIG = \
-    re.compile(r'.*BROWSER_SHARED_RELRO_CONFIG\s+=\s+' + \
-               'BROWSER_SHARED_RELRO_CONFIG_(\S+)\s*;.*',
-               re.MULTILINE | re.DOTALL)
+_RE_LINKER_BROWSER_CONFIG = re.compile(
+    r'.*BROWSER_SHARED_RELRO_CONFIG\s+=\s+' +
+        'BROWSER_SHARED_RELRO_CONFIG_(\S+)\s*;.*',
+    re.MULTILINE | re.DOTALL)
 
 # Logcat filters used during each test. Only the 'chromium' one is really
 # needed, but the logs are added to the TestResult in case of error, and
@@ -148,19 +146,6 @@ def _CheckLinkerTestStatus(logcat):
 
   # Didn't find anything.
   return (False, None, None)
-
-
-def _WaitForLinkerTestStatus(adb, timeout):
-  """Wait up to |timeout| seconds until the full linker test status lines appear
-     in the logcat being recorded with |adb|.
-  Args:
-    adb: An AndroidCommands instance. This assumes adb.StartRecordingLogcat()
-         was called previously.
-    timeout: Timeout in seconds.
-  Returns:
-    ResultType.TIMEOUT in case of timeout, ResulType.PASS if both status lines
-    report 'SUCCESS', or ResulType.FAIL otherwise.
-  """
 
 
 def _StartActivityAndWaitForLinkerTestStatus(adb, timeout):
@@ -276,7 +261,6 @@ def _CheckLoadAddressRandomization(lib_map_list, process_type):
 
   # For each library, check the randomness of its load addresses.
   bad_libs = {}
-  success = True
   for lib_name, lib_address_list in lib_addr_map.iteritems():
     # If all addresses are different, skip to next item.
     lib_address_set = set(lib_address_list)
@@ -304,17 +288,17 @@ class LinkerTestCaseBase(object):
     """
     self.is_low_memory = is_low_memory
     if is_low_memory:
-        test_suffix = 'ForLowMemoryDevice'
+      test_suffix = 'ForLowMemoryDevice'
     else:
-        test_suffix = 'ForRegularDevice'
+      test_suffix = 'ForRegularDevice'
     class_name = self.__class__.__name__
     self.qualified_name = '%s.%s' % (class_name, test_suffix)
     self.tagged_name = self.qualified_name
 
-  def _RunTest(self, adb):
+  def _RunTest(self, _adb):
     """Run the test, must be overriden.
     Args:
-      adb: An AndroidCommands instance to the device.
+      _adb: An AndroidCommands instance to the device.
     Returns:
       A (status, log) tuple, where <status> is a ResultType constant, and <log>
       is the logcat output captured during the test in case of error, or None
@@ -499,7 +483,7 @@ class LinkerRandomizationTest(LinkerTestCaseBase):
     browser_lib_map_list = []
     renderer_lib_map_list = []
     logs_list = []
-    for loop in range(max_loops):
+    for _ in range(max_loops):
       # Start the activity.
       result, logs = _StartActivityAndWaitForLinkerTestStatus(adb, timeout=30)
       if result == ResultType.TIMEOUT:
