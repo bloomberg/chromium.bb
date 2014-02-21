@@ -233,18 +233,20 @@ int main(int argc, char** argv) {
 
   scoped_ptr<base::TickClock> clock(new base::DefaultTickClock());
 
-  // Enable receiver side threads, and disable logging.
-  // Running transport on main thread.
+  // Enable main and receiver side threads only. Enable raw event logging.
+  // Running transport on the main thread.
+  media::cast::CastLoggingConfig logging_config;
+  logging_config.enable_raw_data_collection = true;
+
   scoped_refptr<media::cast::CastEnvironment> cast_environment(
-      new media::cast::CastEnvironment(
-          clock.Pass(),
-          main_message_loop.message_loop_proxy(),
-          NULL,
-          audio_thread.message_loop_proxy(),
-          NULL,
-          video_thread.message_loop_proxy(),
-          main_message_loop.message_loop_proxy(),
-          media::cast::GetDefaultCastReceiverLoggingConfig()));
+      new media::cast::CastEnvironment(clock.Pass(),
+                                       main_message_loop.message_loop_proxy(),
+                                       NULL,
+                                       audio_thread.message_loop_proxy(),
+                                       NULL,
+                                       video_thread.message_loop_proxy(),
+                                       main_message_loop.message_loop_proxy(),
+                                       logging_config));
 
   media::cast::AudioReceiverConfig audio_config =
       media::cast::GetAudioReceiverConfig();
