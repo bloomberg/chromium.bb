@@ -88,6 +88,8 @@ private:
 
     HTMLTableSectionElement* lastBody() const;
 
+    void setNeedsTableStyleRecalc() const;
+
     bool m_borderAttr;          // Sets a precise border width and creates an outset border for the table and for its cells.
     bool m_borderColorAttr;     // Overrides the outset border and makes it solid for the table and cells instead.
     bool m_frameAttr;           // Implies a thin border width if no border is set and then a certain set of solid/hidden borders based off the value.

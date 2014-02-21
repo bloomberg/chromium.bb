@@ -34,6 +34,7 @@
 #include "core/css/CSSValuePool.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Attribute.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/HTMLTableCaptionElement.h"
 #include "core/html/HTMLTableRowElement.h"
@@ -253,29 +254,16 @@ void HTMLTableElement::deleteRow(int index, ExceptionState& exceptionState)
     row->remove(exceptionState);
 }
 
-static inline bool isTableCellAncestor(Node* n)
+void HTMLTableElement::setNeedsTableStyleRecalc() const
 {
-    return n->hasTagName(theadTag) || n->hasTagName(tbodyTag) ||
-           n->hasTagName(tfootTag) || n->hasTagName(trTag) ||
-           n->hasTagName(thTag);
-}
-
-static bool setTableCellsChanged(Node* n)
-{
-    ASSERT(n);
-    bool cellChanged = false;
-
-    if (n->hasTagName(tdTag))
-        cellChanged = true;
-    else if (isTableCellAncestor(n)) {
-        for (Node* child = n->firstChild(); child; child = child->nextSibling())
-            cellChanged |= setTableCellsChanged(child);
+    Element* element = ElementTraversal::next(*this, this);
+    while (element) {
+        element->setNeedsStyleRecalc(LocalStyleChange);
+        if (element->hasTagName(tdTag) || element->hasTagName(thTag))
+            element = ElementTraversal::nextSkippingChildren(*element, this);
+        else
+            element = ElementTraversal::next(*element, this);
     }
-
-    if (cellChanged)
-        n->setNeedsStyleRecalc(SubtreeStyleChange);
-
-    return cellChanged;
 }
 
 static bool getBordersFromFrameAttributeValue(const AtomicString& value, bool& borderTop, bool& borderRight, bool& borderBottom, bool& borderLeft)
@@ -409,11 +397,7 @@ void HTMLTableElement::parseAttribute(const QualifiedName& name, const AtomicStr
 
     if (bordersBefore != cellBorders() || oldPadding != m_padding) {
         m_sharedCellStyle = 0;
-        bool cellChanged = false;
-        for (Node* child = firstChild(); child; child = child->nextSibling())
-            cellChanged |= setTableCellsChanged(child);
-        if (cellChanged)
-            setNeedsStyleRecalc(SubtreeStyleChange);
+        setNeedsTableStyleRecalc();
     }
 }
 
