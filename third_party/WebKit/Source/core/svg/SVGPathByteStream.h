@@ -40,7 +40,7 @@ public:
         return adoptPtr(new SVGPathByteStream);
     }
 
-    PassOwnPtr<SVGPathByteStream> copy()
+    PassOwnPtr<SVGPathByteStream> copy() const
     {
         return adoptPtr(new SVGPathByteStream(m_data));
     }
@@ -48,8 +48,8 @@ public:
     typedef Vector<unsigned char> Data;
     typedef Data::const_iterator DataIterator;
 
-    DataIterator begin() { return m_data.begin(); }
-    DataIterator end() { return m_data.end(); }
+    DataIterator begin() const { return m_data.begin(); }
+    DataIterator end() const { return m_data.end(); }
     void append(unsigned char byte) { m_data.append(byte); }
     void append(SVGPathByteStream* other) { m_data.appendVector(other->m_data); }
     void clear() { m_data.clear(); }
@@ -58,12 +58,9 @@ public:
     bool isEmpty() const { return m_data.isEmpty(); }
     unsigned size() const { return m_data.size(); }
 
-    // Only defined to let SVGAnimatedPathAnimator use the standard list code paths - this method is never called.
-    void resize(unsigned) { }
-
 private:
     SVGPathByteStream() { }
-    SVGPathByteStream(Data& data)
+    SVGPathByteStream(const Data& data)
         : m_data(data)
     {
     }

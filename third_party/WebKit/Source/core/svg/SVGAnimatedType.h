@@ -26,25 +26,17 @@
 
 namespace WebCore {
 
-class SVGPathByteStream;
 
 class SVGAnimatedType FINAL {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     ~SVGAnimatedType();
 
-    static PassOwnPtr<SVGAnimatedType> createPath(PassOwnPtr<SVGPathByteStream>);
     // Temporary compatibility layer. This shouldn't be needed after all properties are switched to NewSVGAnimatedProperty impl.
     static PassOwnPtr<SVGAnimatedType> createNewProperty(PassRefPtr<NewSVGPropertyBase>);
     static bool supportsAnimVal(AnimatedPropertyType);
 
     AnimatedPropertyType type() const { return m_type; }
-
-    SVGPathByteStream* path()
-    {
-        ASSERT(m_type == AnimatedPath);
-        return m_data.path;
-    }
 
     RefPtr<NewSVGPropertyBase>& newProperty()
     {
@@ -59,14 +51,6 @@ private:
     SVGAnimatedType(AnimatedPropertyType);
 
     AnimatedPropertyType m_type;
-
-    union DataUnion {
-        DataUnion()
-        {
-        }
-
-        SVGPathByteStream* path;
-    } m_data;
     RefPtr<NewSVGPropertyBase> m_newProperty;
 };
 

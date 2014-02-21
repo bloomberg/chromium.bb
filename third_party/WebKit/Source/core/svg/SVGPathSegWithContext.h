@@ -20,56 +20,20 @@
 #ifndef SVGPathSegWithContext_h
 #define SVGPathSegWithContext_h
 
-#include "core/svg/properties/SVGAnimatedPathSegListPropertyTearOff.h"
+#include "core/svg/SVGPathSeg.h"
 
 namespace WebCore {
 
+class SVGElement;
+
+// FIXME: This should be deprecated.
 class SVGPathSegWithContext : public SVGPathSeg {
 public:
-    SVGPathSegWithContext(SVGPathElement* element, SVGPathSegRole role)
-        : m_role(role)
-        , m_element(element)
+    // FIXME: remove second unused argument from all derived classes.
+    SVGPathSegWithContext(SVGPathElement* contextElement, SVGPathSegRole)
+        : SVGPathSeg(contextElement)
     {
     }
-
-    SVGAnimatedProperty* animatedProperty() const
-    {
-        switch (m_role) {
-        case PathSegUndefinedRole:
-            return 0;
-        case PathSegUnalteredRole:
-            return SVGAnimatedProperty::lookupWrapper<SVGPathElement, SVGAnimatedPathSegListPropertyTearOff>(m_element, SVGPathElement::dPropertyInfo());
-        case PathSegNormalizedRole:
-            // FIXME: https://bugs.webkit.org/show_bug.cgi?id=15412 - Implement normalized path segment lists!
-            return 0;
-        };
-
-        return 0;
-    }
-
-    SVGPathElement* contextElement() const { return m_element; }
-    SVGPathSegRole role() const { return m_role; }
-
-    void setContextAndRole(SVGPathElement* element, SVGPathSegRole role)
-    {
-        m_role = role;
-        m_element = element;
-    }
-
-protected:
-    void commitChange()
-    {
-        if (!m_element) {
-            ASSERT(m_role == PathSegUndefinedRole);
-            return;
-        }
-
-        m_element->pathSegListChanged(m_role);
-    }
-
-private:
-    SVGPathSegRole m_role;
-    SVGPathElement* m_element;
 };
 
 class SVGPathSegSingleCoordinate : public SVGPathSegWithContext {

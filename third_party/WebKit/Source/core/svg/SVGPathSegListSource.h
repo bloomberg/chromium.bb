@@ -29,16 +29,13 @@
 
 namespace WebCore {
 
+class SVGPathSegList;
+
 class SVGPathSegListSource FINAL : public SVGPathSource {
 public:
-    static PassOwnPtr<SVGPathSegListSource> create(const SVGPathSegList& pathSegList)
-    {
-        return adoptPtr(new SVGPathSegListSource(pathSegList));
-    }
+    SVGPathSegListSource(SVGPathSegList::ConstIterator, SVGPathSegList::ConstIterator);
 
 private:
-    SVGPathSegListSource(const SVGPathSegList&);
-
     virtual bool hasMoreData() const OVERRIDE;
     virtual bool moveToNextToken() OVERRIDE { return true; }
     virtual bool parseSVGSegmentType(SVGPathSegType&) OVERRIDE;
@@ -54,10 +51,9 @@ private:
     virtual bool parseCurveToQuadraticSmoothSegment(FloatPoint&) OVERRIDE;
     virtual bool parseArcToSegment(float&, float&, float&, bool&, bool&, FloatPoint&) OVERRIDE;
 
-    const SVGPathSegList& m_pathSegList;
     RefPtr<SVGPathSeg> m_segment;
-    int m_itemCurrent;
-    int m_itemEnd;
+    SVGPathSegList::ConstIterator m_itCurrent;
+    SVGPathSegList::ConstIterator m_itEnd;
 };
 
 } // namespace WebCore

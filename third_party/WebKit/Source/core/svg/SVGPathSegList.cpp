@@ -25,22 +25,215 @@
 #include "core/svg/SVGPathSegList.h"
 
 #include "SVGNames.h"
+#include "core/svg/SVGAnimationElement.h"
+#include "core/svg/SVGPathBlender.h"
+#include "core/svg/SVGPathByteStreamBuilder.h"
+#include "core/svg/SVGPathByteStreamSource.h"
 #include "core/svg/SVGPathElement.h"
+#include "core/svg/SVGPathParser.h"
+#include "core/svg/SVGPathSegListBuilder.h"
+#include "core/svg/SVGPathSegListSource.h"
 #include "core/svg/SVGPathUtilities.h"
 
 namespace WebCore {
 
-String SVGPathSegList::valueAsString() const
-{
-    String pathString;
-    buildStringFromSVGPathSegList(*this, pathString, UnalteredParsing);
-    return pathString;
-}
-
-void SVGPathSegList::commitChange(SVGElement* contextElement, ListModification listModification)
+SVGPathSegList::SVGPathSegList(SVGPathElement* contextElement, SVGPathSegRole role)
+    : m_contextElement(contextElement)
+    , m_role(role)
+    , m_listSyncedToByteStream(true)
 {
     ASSERT(contextElement);
-    toSVGPathElement(contextElement)->pathSegListChanged(m_role, listModification);
+}
+
+SVGPathSegList::SVGPathSegList(SVGPathElement* contextElement, SVGPathSegRole role, PassOwnPtr<SVGPathByteStream> byteStream)
+    : m_contextElement(contextElement)
+    , m_role(role)
+    , m_byteStream(byteStream)
+    , m_listSyncedToByteStream(true)
+{
+    ASSERT(contextElement);
+}
+
+SVGPathSegList::~SVGPathSegList()
+{
+}
+
+PassRefPtr<SVGPathSegList> SVGPathSegList::clone()
+{
+    RefPtr<SVGPathSegList> svgPathSegList = adoptRef(new SVGPathSegList(m_contextElement, m_role, byteStream()->copy()));
+    svgPathSegList->invalidateList();
+    return svgPathSegList.release();
+}
+
+PassRefPtr<NewSVGPropertyBase> SVGPathSegList::cloneForAnimation(const String& value) const
+{
+    RefPtr<SVGPathSegList> svgPathSegList = SVGPathSegList::create(m_contextElement);
+    svgPathSegList->setValueAsString(value, IGNORE_EXCEPTION);
+    return svgPathSegList;
+}
+
+const SVGPathByteStream* SVGPathSegList::byteStream() const
+{
+    if (!m_byteStream) {
+        m_byteStream = SVGPathByteStream::create();
+
+        if (!Base::isEmpty()) {
+            SVGPathByteStreamBuilder builder;
+            builder.setCurrentByteStream(m_byteStream.get());
+
+            SVGPathSegListSource source(begin(), end());
+
+            SVGPathParser parser;
+            parser.setCurrentConsumer(&builder);
+            parser.setCurrentSource(&source);
+            parser.parsePathDataFromSource(UnalteredParsing);
+        }
+    }
+
+    return m_byteStream.get();
+}
+
+void SVGPathSegList::updateListFromByteStream()
+{
+    if (m_listSyncedToByteStream)
+        return;
+
+    Base::clear();
+
+    if (m_byteStream && !m_byteStream->isEmpty()) {
+        SVGPathSegListBuilder builder;
+        builder.setCurrentSVGPathElement(m_contextElement);
+        builder.setCurrentSVGPathSegList(this);
+        builder.setCurrentSVGPathSegRole(PathSegUnalteredRole);
+
+        SVGPathByteStreamSource source(m_byteStream.get());
+
+        SVGPathParser parser;
+        parser.setCurrentConsumer(&builder);
+        parser.setCurrentSource(&source);
+        parser.parsePathDataFromSource(UnalteredParsing);
+    }
+
+    m_listSyncedToByteStream = true;
+}
+
+void SVGPathSegList::invalidateList()
+{
+    m_listSyncedToByteStream = false;
+    Base::clear();
+}
+
+PassRefPtr<SVGPathSeg> SVGPathSegList::appendItem(PassRefPtr<SVGPathSeg> passItem)
+{
+    updateListFromByteStream();
+    RefPtr<SVGPathSeg> item = Base::appendItem(passItem);
+
+    if (m_byteStream) {
+        SVGPathByteStreamBuilder builder;
+        builder.setCurrentByteStream(m_byteStream.get());
+
+        SVGPathSegListSource source(lastAppended(), end());
+
+        SVGPathParser parser;
+        parser.setCurrentConsumer(&builder);
+        parser.setCurrentSource(&source);
+        parser.parsePathDataFromSource(UnalteredParsing, false);
+    }
+
+    return item.release();
+}
+
+String SVGPathSegList::valueAsString() const
+{
+    String string;
+    buildStringFromByteStream(byteStream(), string, UnalteredParsing);
+    return string;
+}
+
+void SVGPathSegList::setValueAsString(const String& string, ExceptionState& exceptionState)
+{
+    invalidateList();
+    if (!m_byteStream)
+        m_byteStream = SVGPathByteStream::create();
+    if (!buildSVGPathByteStreamFromString(string, m_byteStream.get(), UnalteredParsing))
+        exceptionState.throwDOMException(SyntaxError, "Problem parsing path \"" + string + "\"");
+}
+
+void SVGPathSegList::add(PassRefPtr<NewSVGPropertyBase> other, SVGElement*)
+{
+    RefPtr<SVGPathSegList> otherList = toSVGPathSegList(other);
+    if (numberOfItems() != otherList->numberOfItems())
+        return;
+
+    byteStream(); // create |m_byteStream| if not exist.
+    addToSVGPathByteStream(m_byteStream.get(), otherList->byteStream());
+    invalidateList();
+}
+
+void SVGPathSegList::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> fromValue, PassRefPtr<NewSVGPropertyBase> toValue, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement*)
+{
+    invalidateList();
+
+    ASSERT(animationElement);
+    bool isToAnimation = animationElement->animationMode() == ToAnimation;
+
+    const RefPtr<SVGPathSegList> from = toSVGPathSegList(fromValue);
+    const RefPtr<SVGPathSegList> to = toSVGPathSegList(toValue);
+    const RefPtr<SVGPathSegList> toAtEndOfDuration = toSVGPathSegList(toAtEndOfDurationValue);
+
+    const SVGPathByteStream* toStream = to->byteStream();
+    const SVGPathByteStream* fromStream = from->byteStream();
+    OwnPtr<SVGPathByteStream> copy;
+
+    // If no 'to' value is given, nothing to animate.
+    if (!toStream->size())
+        return;
+
+    if (isToAnimation) {
+        copy = byteStream()->copy();
+        fromStream = copy.get();
+    }
+
+    // If the 'from' value is given and it's length doesn't match the 'to' value list length, fallback to a discrete animation.
+    if (fromStream->size() != toStream->size() && fromStream->size()) {
+        if (percentage < 0.5) {
+            if (!isToAnimation) {
+                m_byteStream = fromStream->copy();
+                return;
+            }
+        } else {
+            m_byteStream = toStream->copy();
+            return;
+        }
+    }
+
+    OwnPtr<SVGPathByteStream> lastAnimatedStream = m_byteStream.release();
+
+    m_byteStream = SVGPathByteStream::create();
+    SVGPathByteStreamBuilder builder;
+    builder.setCurrentByteStream(m_byteStream.get());
+
+    SVGPathByteStreamSource fromSource(fromStream);
+    SVGPathByteStreamSource toSource(toStream);
+
+    SVGPathBlender blender;
+    blender.blendAnimatedPath(percentage, &fromSource, &toSource, &builder);
+
+    // Handle additive='sum'.
+    if (!fromStream->size() || (animationElement->isAdditive() && !isToAnimation))
+        addToSVGPathByteStream(m_byteStream.get(), lastAnimatedStream.get());
+
+    // Handle accumulate='sum'.
+    if (animationElement->isAccumulated() && repeatCount) {
+        const SVGPathByteStream* toAtEndOfDurationStream = toAtEndOfDuration->byteStream();
+        addToSVGPathByteStream(m_byteStream.get(), toAtEndOfDurationStream, repeatCount);
+    }
+}
+
+float SVGPathSegList::calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement*)
+{
+    // FIXME: Support paced animations.
+    return -1;
 }
 
 }

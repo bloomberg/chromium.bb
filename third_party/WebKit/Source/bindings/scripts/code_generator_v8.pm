@@ -240,6 +240,7 @@ my %svgTypeNewPropertyImplementation = (
     "SVGLengthList" => 1,
     "SVGNumber" => 1,
     "SVGNumberList" => 1,
+    "SVGPathSegList" => 1,
     "SVGPoint" => 1,
     "SVGPointList" => 1,
     "SVGPreserveAspectRatio" => 1,
@@ -251,7 +252,9 @@ my %svgTypeNewPropertyImplementation = (
 );
 
 my %svgTypeNeedingTearOff = (
-    "SVGPathSegList" => "SVGPathSegListPropertyTearOff",
+);
+
+my %svgTypeWithWritablePropertiesNeedingTearOff = (
 );
 
 # Default license header
@@ -613,9 +616,6 @@ sub GetSVGPropertyTypes
     } elsif ($svgNativeType =~ /SVGListPropertyTearOff/ or $svgNativeType =~ /SVGStaticListPropertyTearOff/ or $svgNativeType =~ /SVGTransformListPropertyTearOff/) {
         $svgListPropertyType = $svgWrappedNativeType;
         AddToHeaderIncludes("core/svg/properties/SVGAnimatedListPropertyTearOff.h");
-    } elsif ($svgNativeType =~ /SVGPathSegListPropertyTearOff/) {
-        $svgListPropertyType = $svgWrappedNativeType;
-        AddToHeaderIncludes("core/svg/properties/SVGPathSegListPropertyTearOff.h");
     }
 
     return ($svgPropertyType, $svgListPropertyType, $svgNativeType);
@@ -1707,8 +1707,6 @@ END
         my $wrappedValue;
         if ($tearOffType =~ /SVGStaticListPropertyTearOff/) {
                 $wrappedValue = "WTF::getPtr(${tearOffType}::create(imp, $expression))";
-        } elsif ($tearOffType =~ /SVG(Point|PathSeg)List/) {
-                $wrappedValue = "WTF::getPtr($expression)";
         } else {
                 $wrappedValue = "WTF::getPtr(${tearOffType}::create($expression))";
         }

@@ -24,7 +24,6 @@
 #include "core/svg/SVGAnimatedColor.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGAnimatedNewPropertyAnimator.h"
-#include "core/svg/SVGAnimatedPath.h"
 #include "core/svg/SVGAnimatedPreserveAspectRatio.h"
 #include "core/svg/SVGAnimatedRect.h"
 #include "core/svg/SVGAnimatedString.h"
@@ -42,8 +41,6 @@ public:
         ASSERT(contextElement);
 
         switch (attributeType) {
-        case AnimatedPath:
-            return adoptPtr(new SVGAnimatedPathAnimator(animationElement, contextElement));
         // Below properties have migrated to new property implementation.
         case AnimatedAngle:
         case AnimatedEnumeration:
@@ -56,6 +53,7 @@ public:
         case AnimatedNumberOptionalNumber:
         case AnimatedLength:
         case AnimatedLengthList:
+        case AnimatedPath:
         case AnimatedPoints:
         case AnimatedPreserveAspectRatio:
         case AnimatedRect:

@@ -27,6 +27,14 @@
 
 namespace WebCore {
 
+enum ListModification {
+    ListModificationUnknown = 0,
+    ListModificationInsert = 1,
+    ListModificationReplace = 2,
+    ListModificationRemove = 3,
+    ListModificationAppend = 4
+};
+
 enum SVGPathSegType {
     PathSegUnknown = 0,
     PathSegClosePath = 1,
@@ -56,12 +64,17 @@ enum SVGPathSegRole {
     PathSegUndefinedRole = 2
 };
 
+class NewSVGPropertyBase;
+class SVGPathElement;
+class SVGElement;
+
 class SVGPathSeg : public RefCounted<SVGPathSeg>, public ScriptWrappable {
 public:
-    SVGPathSeg()
-    {
-        ScriptWrappable::init(this);
-    }
+    // SVGPathSeg itself is used as a tear-off type.
+    // FIXME: A tear-off type should be introduced to distinguish animVal/baseVal
+    typedef SVGPathSeg TearOffType;
+
+    explicit SVGPathSeg(SVGPathElement* contextElement);
 
     virtual ~SVGPathSeg() { }
 
@@ -91,6 +104,32 @@ public:
 
     virtual unsigned short pathSegType() const = 0;
     virtual String pathSegTypeAsLetter() const = 0;
+
+    NewSVGPropertyBase* ownerList() const
+    {
+        return m_ownerList;
+    }
+
+    void setOwnerList(NewSVGPropertyBase* ownerList)
+    {
+        // Previous owner list must be cleared before setting new owner list.
+        ASSERT((!ownerList && m_ownerList) || (ownerList && !m_ownerList));
+
+        m_ownerList = ownerList;
+    }
+
+    void setContextElement(SVGElement* contextElement)
+    {
+        m_contextElement = contextElement;
+    }
+
+protected:
+    void commitChange();
+
+private:
+    // FIXME: oilpan: These are kept as raw ptrs to break reference cycle. Should be Member in oilpan.
+    NewSVGPropertyBase* m_ownerList;
+    SVGElement* m_contextElement;
 };
 
 } // namespace WebCore

@@ -35,26 +35,21 @@ class SVGPathSegList;
 
 // String/SVGPathByteStream -> Path
 bool buildPathFromString(const String&, Path&);
-bool buildPathFromByteStream(SVGPathByteStream*, Path&);
+bool buildPathFromByteStream(const SVGPathByteStream*, Path&);
 
 // SVGPathSegList/String -> SVGPathByteStream
-bool buildSVGPathByteStreamFromSVGPathSegList(const SVGPathSegList&, SVGPathByteStream*, PathParsingMode);
 bool appendSVGPathByteStreamFromSVGPathSeg(PassRefPtr<SVGPathSeg>, SVGPathByteStream*, PathParsingMode);
 bool buildSVGPathByteStreamFromString(const String&, SVGPathByteStream*, PathParsingMode);
 
 // SVGPathByteStream/SVGPathSegList -> String
-bool buildStringFromByteStream(SVGPathByteStream*, String&, PathParsingMode);
-bool buildStringFromSVGPathSegList(const SVGPathSegList&, String&, PathParsingMode);
+bool buildStringFromByteStream(const SVGPathByteStream*, String&, PathParsingMode);
+bool buildStringFromSVGPathSegList(PassRefPtr<SVGPathSegList>, String&, PathParsingMode);
 
-// SVGPathByteStream -> SVGPathSegList
-bool buildSVGPathSegListFromByteStream(SVGPathByteStream*, SVGPathElement*, SVGPathSegList&, PathParsingMode);
+bool addToSVGPathByteStream(SVGPathByteStream*, const SVGPathByteStream*, unsigned repeatCount = 1);
 
-bool buildAnimatedSVGPathByteStream(SVGPathByteStream*, SVGPathByteStream*, SVGPathByteStream*, float);
-bool addToSVGPathByteStream(SVGPathByteStream*, SVGPathByteStream*, unsigned repeatCount = 1);
-
-bool getSVGPathSegAtLengthFromSVGPathByteStream(SVGPathByteStream*, float length, unsigned& pathSeg);
-bool getTotalLengthOfSVGPathByteStream(SVGPathByteStream*, float& totalLength);
-bool getPointAtLengthOfSVGPathByteStream(SVGPathByteStream*, float length, FloatPoint&);
+bool getSVGPathSegAtLengthFromSVGPathByteStream(const SVGPathByteStream*, float length, unsigned& pathSeg);
+bool getTotalLengthOfSVGPathByteStream(const SVGPathByteStream*, float& totalLength);
+bool getPointAtLengthOfSVGPathByteStream(const SVGPathByteStream*, float length, FloatPoint&);
 
 } // namespace WebCore
 

@@ -28,14 +28,6 @@
 
 namespace WebCore {
 
-enum ListModification {
-    ListModificationUnknown = 0,
-    ListModificationInsert = 1,
-    ListModificationReplace = 2,
-    ListModificationRemove = 3,
-    ListModificationAppend = 4
-};
-
 template<typename PropertyType>
 class SVGAnimatedListPropertyTearOff;
 

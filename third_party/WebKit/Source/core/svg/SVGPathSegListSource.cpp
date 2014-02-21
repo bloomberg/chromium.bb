@@ -30,31 +30,30 @@
 
 namespace WebCore {
 
-SVGPathSegListSource::SVGPathSegListSource(const SVGPathSegList& pathSegList)
-    : m_pathSegList(pathSegList)
+SVGPathSegListSource::SVGPathSegListSource(SVGPathSegList::ConstIterator itBegin, SVGPathSegList::ConstIterator itEnd)
+    : m_itCurrent(itBegin)
+    , m_itEnd(itEnd)
 {
-    m_itemCurrent = 0;
-    m_itemEnd = m_pathSegList.size();
 }
 
 bool SVGPathSegListSource::hasMoreData() const
 {
-    return m_itemCurrent < m_itemEnd;
+    return m_itCurrent != m_itEnd;
 }
 
 bool SVGPathSegListSource::parseSVGSegmentType(SVGPathSegType& pathSegType)
 {
-    m_segment = m_pathSegList.at(m_itemCurrent);
+    m_segment = *m_itCurrent;
     pathSegType = static_cast<SVGPathSegType>(m_segment->pathSegType());
-    ++m_itemCurrent;
+    ++m_itCurrent;
     return true;
 }
 
 SVGPathSegType SVGPathSegListSource::nextCommand(SVGPathSegType)
 {
-    m_segment = m_pathSegList.at(m_itemCurrent);
+    m_segment = *m_itCurrent;
     SVGPathSegType pathSegType = static_cast<SVGPathSegType>(m_segment->pathSegType());
-    ++m_itemCurrent;
+    ++m_itCurrent;
     return pathSegType;
 }
 

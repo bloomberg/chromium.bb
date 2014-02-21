@@ -37,7 +37,7 @@ public:
     SVGPathSegListBuilder();
 
     void setCurrentSVGPathElement(SVGPathElement* pathElement) { m_pathElement = pathElement; }
-    void setCurrentSVGPathSegList(SVGPathSegList& pathSegList) { m_pathSegList = &pathSegList; }
+    void setCurrentSVGPathSegList(PassRefPtr<SVGPathSegList> pathSegList) { m_pathSegList = pathSegList; }
     void setCurrentSVGPathSegRole(SVGPathSegRole pathSegRole) { m_pathSegRole = pathSegRole; }
 
 private:
@@ -65,7 +65,7 @@ private:
     virtual void arcTo(float, float, float, bool largeArcFlag, bool sweepFlag, const FloatPoint&, PathCoordinateMode) OVERRIDE;
 
     SVGPathElement* m_pathElement;
-    SVGPathSegList* m_pathSegList;
+    RefPtr<SVGPathSegList> m_pathSegList;
     SVGPathSegRole m_pathSegRole;
 };
 

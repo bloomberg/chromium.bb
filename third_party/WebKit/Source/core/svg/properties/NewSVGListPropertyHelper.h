@@ -98,6 +98,11 @@ public:
         return ConstIterator(m_values.begin());
     }
 
+    ConstIterator lastAppended() const
+    {
+        return ConstIterator(m_values.begin() + m_values.size() - 1);
+    }
+
     ConstIterator end() const
     {
         return ConstIterator(m_values.end());
@@ -156,7 +161,7 @@ private:
 
         RefPtr<NewSVGPropertyBase> base = passBase;
         ASSERT(base->type() == Derived::classType());
-        return static_pointer_cast<Derived>(base.release());
+        return static_pointer_cast<Derived>(base);
     }
 };
 

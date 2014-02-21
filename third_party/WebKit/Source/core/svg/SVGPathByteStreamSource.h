@@ -29,14 +29,9 @@ namespace WebCore {
 
 class SVGPathByteStreamSource FINAL : public SVGPathSource {
 public:
-    static PassOwnPtr<SVGPathByteStreamSource> create(SVGPathByteStream* stream)
-    {
-        return adoptPtr(new SVGPathByteStreamSource(stream));
-    }
+    explicit SVGPathByteStreamSource(const SVGPathByteStream*);
 
 private:
-    SVGPathByteStreamSource(SVGPathByteStream*);
-
     virtual bool hasMoreData() const OVERRIDE;
     virtual bool moveToNextToken() OVERRIDE { return true; }
     virtual bool parseSVGSegmentType(SVGPathSegType&) OVERRIDE;

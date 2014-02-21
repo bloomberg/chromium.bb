@@ -34,8 +34,41 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/svg/properties/NewSVGPropertyTearOff.h"
 #include "wtf/HashMap.h"
+#include "wtf/TypeTraits.h"
 
 namespace WebCore {
+
+template<typename ItemProperty>
+class ListItemPropertyTraits {
+public:
+    typedef ItemProperty ItemPropertyType;
+    typedef typename ItemPropertyType::TearOffType ItemTearOffType;
+
+    static PassRefPtr<ItemPropertyType> getValueForInsertionFromTearOff(PassRefPtr<ItemTearOffType> passNewItem)
+    {
+        RefPtr<ItemTearOffType> newItem = passNewItem;
+
+        // |newItem| is immutable, OR
+        // |newItem| belongs to a SVGElement, but it does not belong to an animated list
+        // (for example: "textElement.x.baseVal.appendItem(rectElement.width.baseVal)")
+        if (newItem->isImmutable()
+            || (newItem->contextElement() && !newItem->target()->ownerList())) {
+            // We have to copy the incoming |newItem|,
+            // Otherwise we'll end up having two tearoffs that operate on the same SVGProperty. Consider the example above:
+            // SVGRectElements SVGAnimatedLength 'width' property baseVal points to the same tear off object
+            // that's inserted into SVGTextElements SVGAnimatedLengthList 'x'. textElement.x.baseVal.getItem(0).value += 150 would
+            // mutate the rectElement width _and_ the textElement x list. That's obviously wrong, take care of that.
+            return newItem->target()->clone();
+        }
+
+        return newItem->target();
+    }
+
+    static PassRefPtr<ItemTearOffType> createTearOff(PassRefPtr<ItemPropertyType> value, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
+    {
+        return ItemTearOffType::create(value, contextElement, propertyIsAnimVal, attributeName);
+    }
+};
 
 template<typename Derived, typename ListProperty>
 class NewSVGListPropertyTearOffHelper : public NewSVGPropertyTearOff<ListProperty> {
@@ -43,6 +76,7 @@ public:
     typedef ListProperty ListPropertyType;
     typedef typename ListPropertyType::ItemPropertyType ItemPropertyType;
     typedef typename ItemPropertyType::TearOffType ItemTearOffType;
+    typedef ListItemPropertyTraits<ItemPropertyType> ItemTraits;
 
     // SVG*List DOM interface:
 
@@ -76,7 +110,7 @@ public:
             return 0;
         }
 
-        RefPtr<ItemPropertyType> value = toDerived()->target()->initialize(cloneTargetIfNeeded(item));
+        RefPtr<ItemPropertyType> value = toDerived()->target()->initialize(getValueForInsertionFromTearOff(item));
         toDerived()->commitChange();
 
         return createItemTearOff(value.release());
@@ -102,7 +136,7 @@ public:
             return 0;
         }
 
-        RefPtr<ItemPropertyType> value = toDerived()->target()->insertItemBefore(cloneTargetIfNeeded(item), index);
+        RefPtr<ItemPropertyType> value = toDerived()->target()->insertItemBefore(getValueForInsertionFromTearOff(item), index);
         toDerived()->commitChange();
 
         return createItemTearOff(value.release());
@@ -122,7 +156,7 @@ public:
             return 0;
         }
 
-        RefPtr<ItemPropertyType> value = toDerived()->target()->replaceItem(cloneTargetIfNeeded(item), index, exceptionState);
+        RefPtr<ItemPropertyType> value = toDerived()->target()->replaceItem(getValueForInsertionFromTearOff(item), index, exceptionState);
         toDerived()->commitChange();
 
         return createItemTearOff(value.release());
@@ -150,7 +184,7 @@ public:
             return 0;
         }
 
-        RefPtr<ItemPropertyType> value = toDerived()->target()->appendItem(cloneTargetIfNeeded(item));
+        RefPtr<ItemPropertyType> value = toDerived()->target()->appendItem(getValueForInsertionFromTearOff(item));
         toDerived()->commitChange();
 
         return createItemTearOff(value.release());
@@ -162,24 +196,9 @@ protected:
     {
     }
 
-    PassRefPtr<ItemPropertyType> cloneTargetIfNeeded(PassRefPtr<ItemTearOffType> passNewItem)
+    static PassRefPtr<ItemPropertyType> getValueForInsertionFromTearOff(PassRefPtr<ItemTearOffType> passNewItem)
     {
-        RefPtr<ItemTearOffType> newItem = passNewItem;
-
-        // |newItem| is immutable, OR
-        // |newItem| belongs to a SVGElement, but it does not belong to an animated list
-        // (for example: "textElement.x.baseVal.appendItem(rectElement.width.baseVal)")
-        if (newItem->isImmutable()
-            || (newItem->contextElement() && !newItem->target()->ownerList())) {
-            // We have to copy the incoming |newItem|, as we're not allowed to insert this tear off as is into our wrapper cache.
-            // Otherwise we'll end up having two tearoffs that operate on the same SVGProperty. Consider the example above:
-            // SVGRectElements SVGAnimatedLength 'width' property baseVal points to the same tear off object
-            // that's inserted into SVGTextElements SVGAnimatedLengthList 'x'. textElement.x.baseVal.getItem(0).value += 150 would
-            // mutate the rectElement width _and_ the textElement x list. That's obviously wrong, take care of that.
-            return newItem->target()->clone();
-        }
-
-        return newItem->target();
+        return ItemTraits::getValueForInsertionFromTearOff(passNewItem);
     }
 
     PassRefPtr<ItemTearOffType> createItemTearOff(PassRefPtr<ItemPropertyType> value)
@@ -187,7 +206,7 @@ protected:
         if (!value)
             return 0;
 
-        return ItemTearOffType::create(value, toDerived()->contextElement(), toDerived()->propertyIsAnimVal(), toDerived()->attributeName());
+        return ItemTraits::createTearOff(value, toDerived()->contextElement(), toDerived()->propertyIsAnimVal(), toDerived()->attributeName());
     }
 
 private:

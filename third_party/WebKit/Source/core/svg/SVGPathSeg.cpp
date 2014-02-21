@@ -28,29 +28,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGAnimatedPath_h
-#define SVGAnimatedPath_h
+#include "config.h"
+#include "core/svg/SVGPathSeg.h"
 
-#include "core/svg/SVGPathSegListTearOff.h"
-#include "core/svg/properties/NewSVGAnimatedProperty.h"
+#include "core/svg/SVGPathElement.h"
 
 namespace WebCore {
 
-class SVGPathElement;
+SVGPathSeg::SVGPathSeg(SVGPathElement* contextElement)
+    : m_ownerList(0)
+    , m_contextElement(contextElement)
+{
+    ScriptWrappable::init(this);
+}
 
-class SVGAnimatedPath : public NewSVGAnimatedProperty<SVGPathSegList> {
-public:
-    virtual ~SVGAnimatedPath();
+void SVGPathSeg::commitChange()
+{
+    if (m_contextElement)
+        toSVGPathElement(m_contextElement)->pathSegListChanged();
+}
 
-    static PassRefPtr<SVGAnimatedPath> create(SVGPathElement* contextElement, const QualifiedName& attributeName)
-    {
-        return adoptRef(new SVGAnimatedPath(contextElement, attributeName));
-    }
-
-protected:
-    SVGAnimatedPath(SVGPathElement*, const QualifiedName&);
-};
-
-} // namespace WebCore
-
-#endif // SVGAnimatedPath_h
+}
