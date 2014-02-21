@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "mojo/system/constants.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {
@@ -129,6 +128,9 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   }
 
  private:
+  // To allow us to make assertions about |Header| in the .cc file.
+  struct PrivateStructForCompileAsserts;
+
   // "Header" for the data. Must be a multiple of |kMessageAlignment| bytes in
   // size. Must be POD.
   struct Header {
@@ -146,15 +148,6 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
     uint32_t reserved0;
     uint32_t reserved1;
   };
-  // The size of |Header| must be appropriate to maintain alignment of the
-  // following data.
-  COMPILE_ASSERT(sizeof(Header) % kMessageAlignment == 0,
-                 sizeof_MessageInTransit_Header_not_a_multiple_of_alignment);
-  // Avoid dangerous situations, but making sure that the size of the "header" +
-  // the size of the data fits into a 31-bit number.
-  COMPILE_ASSERT(static_cast<uint64_t>(sizeof(Header)) + kMaxMessageNumBytes <=
-                     0x7fffffffULL,
-                 kMaxMessageNumBytes_too_big);
 
   const Header* header() const {
     return static_cast<const Header*>(main_buffer_);

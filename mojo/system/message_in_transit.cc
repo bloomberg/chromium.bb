@@ -11,9 +11,22 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/aligned_memory.h"
+#include "mojo/system/constants.h"
 
 namespace mojo {
 namespace system {
+
+struct MessageInTransit::PrivateStructForCompileAsserts {
+  // The size of |Header| must be appropriate to maintain alignment of the
+  // following data.
+  COMPILE_ASSERT(sizeof(Header) % kMessageAlignment == 0,
+                 sizeof_MessageInTransit_Header_not_a_multiple_of_alignment);
+  // Avoid dangerous situations, but making sure that the size of the "header" +
+  // the size of the data fits into a 31-bit number.
+  COMPILE_ASSERT(static_cast<uint64_t>(sizeof(Header)) + kMaxMessageNumBytes <=
+                     0x7fffffffULL,
+                 kMaxMessageNumBytes_too_big);
+};
 
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
     MessageInTransit::kTypeMessagePipeEndpoint;
