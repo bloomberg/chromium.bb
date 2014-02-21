@@ -38,7 +38,6 @@
 
 #if defined(USE_AURA)
 #include "content/browser/compositor/image_transport_factory.h"
-#include "ui/compositor/test/test_context_factory.h"
 #endif
 
 namespace content {
