@@ -38,15 +38,7 @@ InspectorTest.Output = {   // override in window.initialize_yourName
 
 InspectorTest.completeTest = function()
 {
-    function testDispatchQueueIsEmpty() {
-        if (!WebInspector.dispatchQueueIsEmpty()) {
-            // Wait for unprocessed messages.
-            setTimeout(testDispatchQueueIsEmpty, 10);
-            return;
-        }
-        InspectorTest.Output.testComplete();
-    }
-    testDispatchQueueIsEmpty();
+    InspectorTest.Output.testComplete();
 }
 
 InspectorTest.evaluateInConsole = function(code, callback)
