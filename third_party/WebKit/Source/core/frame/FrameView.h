@@ -70,6 +70,7 @@ public:
     virtual bool scheduleAnimation() OVERRIDE;
 
     Frame& frame() const { return *m_frame; }
+    Page* page() const;
 
     RenderView* renderView() const;
 
@@ -106,8 +107,6 @@ public:
     bool layoutSizeFixedToFrameSize() { return m_layoutSizeFixedToFrameSize; }
 
     bool needsFullRepaint() const { return m_doFullRepaint; }
-
-    void serviceScriptedAnimations(double monotonicAnimationStartTime);
 
     void updateCompositingLayersAfterStyleChange();
     void updateCompositingLayersAfterLayout();
@@ -209,8 +208,6 @@ public:
     bool isPainting() const;
     bool hasEverPainted() const { return m_lastPaintTime; }
     void setNodeToDraw(Node*);
-
-    bool isServicingAnimations() const { return m_servicingAnimations; }
 
     virtual void paintOverhangAreas(GraphicsContext*, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect) OVERRIDE;
     virtual void paintScrollCorner(GraphicsContext*, const IntRect& cornerRect) OVERRIDE;
@@ -495,8 +492,6 @@ private:
     OwnPtr<ViewportConstrainedObjectSet> m_viewportConstrainedObjects;
 
     bool m_hasSoftwareFilters;
-
-    bool m_servicingAnimations;
 
     float m_visibleContentScaleFactor;
     IntSize m_inputEventsOffsetForEmulation;

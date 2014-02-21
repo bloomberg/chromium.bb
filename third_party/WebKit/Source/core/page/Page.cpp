@@ -102,6 +102,7 @@ float deviceScaleFactor(Frame* frame)
 
 Page::Page(PageClients& pageClients)
     : SettingsDelegate(Settings::create())
+    , m_animator(this)
     , m_autoscrollController(AutoscrollController::create(*this))
     , m_chrome(Chrome::create(this, pageClients.chromeClient))
     , m_dragCaretController(DragCaretController::create())

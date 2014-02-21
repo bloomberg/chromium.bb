@@ -63,7 +63,7 @@ void PageWidgetDelegate::animate(Page* page, double monotonicFrameBeginTime)
     if (!view)
         return;
     page->autoscrollController().animate(monotonicFrameBeginTime);
-    view->serviceScriptedAnimations(monotonicFrameBeginTime);
+    page->animator().serviceScriptedAnimations(monotonicFrameBeginTime);
 }
 
 void PageWidgetDelegate::layout(Page* page)

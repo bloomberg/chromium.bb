@@ -30,7 +30,6 @@
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "core/accessibility/AXObjectCache.h"
-#include "core/animation/DocumentAnimations.h"
 #include "core/css/FontFaceSet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DocumentMarkerController.h"
@@ -128,7 +127,6 @@ FrameView::FrameView(Frame* frame)
     , m_inAutoSize(false)
     , m_didRunAutosize(false)
     , m_hasSoftwareFilters(false)
-    , m_servicingAnimations(false)
     , m_visibleContentScaleFactor(1)
     , m_inputEventsScaleFactorForEmulation(1)
     , m_partialLayout()
@@ -383,6 +381,11 @@ bool FrameView::scheduleAnimation()
         return true;
     }
     return false;
+}
+
+Page* FrameView::page() const
+{
+    return frame().page();
 }
 
 RenderView* FrameView::renderView() const
@@ -1797,7 +1800,7 @@ void FrameView::scheduleRelayout()
     if (m_hasPendingLayout)
         return;
     m_hasPendingLayout = true;
-    if (!isServicingAnimations())
+    if (!page()->animator().isServicingAnimations())
         scheduleAnimation();
 }
 
@@ -1847,7 +1850,7 @@ void FrameView::scheduleRelayoutOfSubtree(RenderObject* relayoutRoot)
         ASSERT(!m_layoutSubtreeRoot->container() || !m_layoutSubtreeRoot->container()->needsLayout());
         InspectorInstrumentation::didInvalidateLayout(m_frame.get());
         m_hasPendingLayout = true;
-        if (!isServicingAnimations())
+        if (!page()->animator().isServicingAnimations())
             scheduleAnimation();
     }
 }
@@ -1879,23 +1882,6 @@ void FrameView::setNeedsLayout()
 {
     if (RenderView* renderView = this->renderView())
         renderView->setNeedsLayout();
-}
-
-void FrameView::serviceScriptedAnimations(double monotonicAnimationStartTime)
-{
-    TemporaryChange<bool> servicing(m_servicingAnimations, true);
-
-    for (RefPtr<Frame> frame = m_frame; frame; frame = frame->tree().traverseNext()) {
-        frame->view()->serviceScrollAnimations();
-        DocumentAnimations::serviceOnAnimationFrame(*frame->document(), monotonicAnimationStartTime);
-    }
-
-    Vector<RefPtr<Document> > documents;
-    for (Frame* frame = m_frame.get(); frame; frame = frame->tree().traverseNext())
-        documents.append(frame->document());
-
-    for (size_t i = 0; i < documents.size(); ++i)
-        documents[i]->serviceScriptedAnimations(monotonicAnimationStartTime);
 }
 
 bool FrameView::isTransparent() const

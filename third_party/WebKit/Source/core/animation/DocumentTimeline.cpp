@@ -35,6 +35,7 @@
 #include "core/animation/AnimationClock.h"
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
+#include "core/page/Page.h"
 
 namespace WebCore {
 
@@ -156,7 +157,7 @@ void DocumentTimeline::setOutdatedPlayer(Player* player)
 {
     m_playersNeedingUpdate.add(player);
     m_hasOutdatedPlayer = true;
-    if (m_document && m_document->view() && !m_document->view()->isServicingAnimations())
+    if (m_document && m_document->page() && !m_document->page()->animator().isServicingAnimations())
         m_timing->serviceOnNextFrame();
 }
 
