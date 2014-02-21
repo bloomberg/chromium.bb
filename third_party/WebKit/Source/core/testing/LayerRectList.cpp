@@ -37,6 +37,8 @@
 
 namespace WebCore {
 
+DEFINE_GC_INFO(LayerRectList);
+
 LayerRectList::LayerRectList()
 {
 }
@@ -61,6 +63,11 @@ LayerRect* LayerRectList::item(unsigned index)
 void LayerRectList::append(PassRefPtr<Node> layerRootNode, const String& layerType, PassRefPtr<ClientRect> layerRelativeRect)
 {
     m_list.append(LayerRect::create(layerRootNode, layerType, layerRelativeRect));
+}
+
+void LayerRectList::trace(Visitor* visitor)
+{
+    visitor->trace(m_list);
 }
 
 } // namespace WebCore

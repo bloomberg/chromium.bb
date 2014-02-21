@@ -32,9 +32,13 @@
 
 namespace WebCore {
 
-class TypeConversions : public RefCounted<TypeConversions> {
+class TypeConversions : public RefCountedWillBeGarbageCollected<TypeConversions> {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<TypeConversions> create() { return adoptRef(new TypeConversions()); }
+    static PassRefPtrWillBeRawPtr<TypeConversions> create()
+    {
+        return adoptRefWillBeNoop(new TypeConversions());
+    }
 
     long testLong() { return m_long; }
     void setTestLong(long value) { m_long = value; }
@@ -55,6 +59,8 @@ public:
     void setTestShort(int16_t value) { m_short = value; }
     uint16_t testUnsignedShort() { return m_unsignedShort; }
     void setTestUnsignedShort(uint16_t value) { m_unsignedShort = value; }
+
+    void trace(Visitor*) { }
 
 private:
     TypeConversions()

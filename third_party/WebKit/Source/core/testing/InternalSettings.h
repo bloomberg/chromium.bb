@@ -29,6 +29,7 @@
 
 #include "InternalSettingsGenerated.h"
 #include "core/editing/EditingBehaviorTypes.h"
+#include "heap/Handle.h"
 #include "platform/geometry/IntSize.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -72,9 +73,9 @@ public:
         bool m_originalPasswordGenerationDecorationEnabled;
     };
 
-    static PassRefPtr<InternalSettings> create(Page& page)
+    static PassRefPtrWillBeRawPtr<InternalSettings> create(Page& page)
     {
-        return adoptRef(new InternalSettings(page));
+        return adoptRefWillBeNoop(new InternalSettings(page));
     }
     static InternalSettings* from(Page&);
     void hostDestroyed() { m_page = 0; }
@@ -120,6 +121,8 @@ public:
     void setOverlayScrollbarsEnabled(bool);
     void setStyleScopedEnabled(bool);
     void setExperimentalContentSecurityPolicyFeaturesEnabled(bool);
+
+    virtual void trace(Visitor* visitor) OVERRIDE { InternalSettingsGenerated::trace(visitor); }
 
 private:
     explicit InternalSettings(Page&);

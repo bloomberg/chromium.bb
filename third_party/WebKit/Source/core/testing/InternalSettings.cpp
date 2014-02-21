@@ -122,7 +122,7 @@ public:
     InternalSettings* internalSettings() const { return m_internalSettings.get(); }
 
 private:
-    RefPtr<InternalSettings> m_internalSettings;
+    RefPtrWillBePersistent<InternalSettings> m_internalSettings;
 };
 
 const char* InternalSettings::supplementName()

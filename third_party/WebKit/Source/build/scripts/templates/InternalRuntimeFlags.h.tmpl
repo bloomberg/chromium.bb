@@ -5,17 +5,19 @@
 #define InternalRuntimeFlags_h
 
 #include "RuntimeEnabledFeatures.h"
+#include "heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class InternalRuntimeFlags : public RefCounted<InternalRuntimeFlags> {
+class InternalRuntimeFlags : public RefCountedWillBeGarbageCollected<InternalRuntimeFlags> {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<InternalRuntimeFlags> create()
+    static PassRefPtrWillBeRawPtr<InternalRuntimeFlags> create()
     {
-        return adoptRef(new InternalRuntimeFlags);
+        return adoptRefWillBeNoop(new InternalRuntimeFlags);
     }
 
 {#-
@@ -29,6 +31,8 @@ public:
     bool {{feature.first_lowered_name}}Enabled() { return RuntimeEnabledFeatures::{{feature.first_lowered_name}}Enabled(); }
 {%- endcall %}
 {% endfor %}
+
+    void trace(Visitor*) { }
 
 private:
     InternalRuntimeFlags() { }

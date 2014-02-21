@@ -24,6 +24,7 @@
  */
 
 [
+    WillBeGarbageCollected,
     NoInterfaceObject,  // testing interfaces do not appear on global objects
 ] interface MallocStatistics {
     readonly attribute unsigned long reservedVMBytes;

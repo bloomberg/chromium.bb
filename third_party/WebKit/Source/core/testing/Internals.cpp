@@ -135,6 +135,13 @@
 
 namespace WebCore {
 
+// FIXME: oilpan: These will be removed soon.
+DEFINE_GC_INFO(InternalRuntimeFlags);
+DEFINE_GC_INFO(TypeConversions);
+DEFINE_GC_INFO(MallocStatistics);
+DEFINE_GC_INFO(LayerRect);
+DEFINE_GC_INFO(Internals);
+
 static MockPagePopupDriver* s_pagePopupDriver = 0;
 
 using namespace HTMLNames;
@@ -184,9 +191,9 @@ static SpellCheckRequester* spellCheckRequester(Document* document)
 
 const char* Internals::internalsId = "internals";
 
-PassRefPtr<Internals> Internals::create(Document* document)
+PassRefPtrWillBeRawPtr<Internals> Internals::create(Document* document)
 {
-    return adoptRef(new Internals(document));
+    return adoptRefWillBeNoop(new Internals(document));
 }
 
 Internals::~Internals()
@@ -270,7 +277,7 @@ String Internals::address(Node* node)
     return String(buf);
 }
 
-PassRefPtr<GCObservation> Internals::observeGC(ScriptValue scriptValue)
+PassRefPtrWillBeRawPtr<GCObservation> Internals::observeGC(ScriptValue scriptValue)
 {
     v8::Handle<v8::Value> observedValue = scriptValue.v8Value();
     ASSERT(!observedValue.IsEmpty());
@@ -1384,7 +1391,7 @@ static void accumulateLayerRectList(RenderLayerCompositor* compositor, GraphicsL
         accumulateLayerRectList(compositor, graphicsLayer->children()[i], rects);
 }
 
-PassRefPtr<LayerRectList> Internals::touchEventTargetLayerRects(Document* document, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<LayerRectList> Internals::touchEventTargetLayerRects(Document* document, ExceptionState& exceptionState)
 {
     if (!document || !document->view() || !document->page() || document != contextDocument()) {
         exceptionState.throwDOMException(InvalidAccessError, "The document provided is invalid.");
@@ -1400,7 +1407,7 @@ PassRefPtr<LayerRectList> Internals::touchEventTargetLayerRects(Document* docume
     if (RenderView* view = document->renderView()) {
         if (RenderLayerCompositor* compositor = view->compositor()) {
             if (GraphicsLayer* rootLayer = compositor->rootGraphicsLayer()) {
-                RefPtr<LayerRectList> rects = LayerRectList::create();
+                RefPtrWillBeRawPtr<LayerRectList> rects = LayerRectList::create();
                 accumulateLayerRectList(compositor, rootLayer, rects.get());
                 return rects;
             }
@@ -2037,12 +2044,12 @@ void Internals::removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(const 
     SchemeRegistry::removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(scheme);
 }
 
-PassRefPtr<MallocStatistics> Internals::mallocStatistics() const
+PassRefPtrWillBeRawPtr<MallocStatistics> Internals::mallocStatistics() const
 {
     return MallocStatistics::create();
 }
 
-PassRefPtr<TypeConversions> Internals::typeConversions() const
+PassRefPtrWillBeRawPtr<TypeConversions> Internals::typeConversions() const
 {
     return TypeConversions::create();
 }
@@ -2367,6 +2374,12 @@ private:
 ScriptPromise Internals::addOneToPromise(ExecutionContext* context, ScriptPromise promise)
 {
     return promise.then(AddOneFunction::create(context));
+}
+
+void Internals::trace(Visitor* visitor)
+{
+    visitor->trace(m_runtimeFlags);
+    visitor->trace(m_profilers);
 }
 
 }

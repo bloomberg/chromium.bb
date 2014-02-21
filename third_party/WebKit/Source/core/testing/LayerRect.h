@@ -33,6 +33,7 @@
 
 #include "core/dom/ClientRect.h"
 
+#include "heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -42,16 +43,19 @@ namespace WebCore {
 
 class Node;
 
-class LayerRect : public RefCounted<LayerRect> {
+class LayerRect : public RefCountedWillBeGarbageCollectedFinalized<LayerRect> {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<LayerRect> create(PassRefPtr<Node> node, const String& layerType, PassRefPtr<ClientRect> rect)
+    static PassRefPtrWillBeRawPtr<LayerRect> create(PassRefPtr<Node> node, const String& layerType, PassRefPtr<ClientRect> rect)
     {
-        return adoptRef(new LayerRect(node, layerType, rect));
+        return adoptRefWillBeNoop(new LayerRect(node, layerType, rect));
     }
 
     Node* layerRootNode() const { return m_layerRootNode.get(); }
     String layerType() const { return m_layerType; }
     ClientRect* layerRelativeRect() const { return m_rect.get(); }
+
+    void trace(Visitor*) { }
 
 private:
     LayerRect(PassRefPtr<Node> node, const String& layerName, PassRefPtr<ClientRect> rect)

@@ -26,19 +26,26 @@
 #ifndef MallocStatistics_h
 #define MallocStatistics_h
 
+#include "heap/Handle.h"
 #include "wtf/FastMalloc.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class MallocStatistics : public RefCounted<MallocStatistics> {
+class MallocStatistics : public RefCountedWillBeGarbageCollected<MallocStatistics> {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<MallocStatistics> create() { return adoptRef(new MallocStatistics()); }
+    static PassRefPtrWillBeRawPtr<MallocStatistics> create()
+    {
+        return adoptRefWillBeNoop(new MallocStatistics());
+    }
 
     size_t reservedVMBytes() const { return m_stats.reservedVMBytes; }
     size_t committedVMBytes() const { return m_stats.committedVMBytes; }
     size_t freeListBytes() const { return m_stats.freeListBytes; }
+
+    void trace(Visitor*) { }
 
 private:
     MallocStatistics()

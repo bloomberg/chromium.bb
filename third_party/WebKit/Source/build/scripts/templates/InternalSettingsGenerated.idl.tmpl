@@ -2,6 +2,7 @@
 {{ license() }}
 
 [
+    WillBeGarbageCollected,
     NoInterfaceObject, // testing interfaces do not appear on global objects
 ] interface InternalSettingsGenerated {
 {%- for setting in settings if setting.type|to_idl_type %}

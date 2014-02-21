@@ -24,6 +24,7 @@
  */
 
 [
+    WillBeGarbageCollected,
     NoInterfaceObject,  // testing interfaces do not appear on global objects
 ] interface InternalSettings : InternalSettingsGenerated {
     // All methods which access Page::settings() can raise an exception

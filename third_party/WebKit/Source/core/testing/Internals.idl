@@ -25,6 +25,7 @@
  */
 
 [
+    WillBeGarbageCollected,
     DoNotCheckConstants,
     NoInterfaceObject,  // testing interfaces do not appear on global objects
 ] interface Internals {

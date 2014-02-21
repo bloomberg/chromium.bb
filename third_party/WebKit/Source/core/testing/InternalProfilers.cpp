@@ -38,6 +38,8 @@
 
 namespace WebCore {
 
+DEFINE_GC_INFO(InternalProfilers);
+
 void InternalProfilers::startHeapProfiling(const String& prefix)
 {
     blink::Platform::current()->startHeapProfiling(prefix);

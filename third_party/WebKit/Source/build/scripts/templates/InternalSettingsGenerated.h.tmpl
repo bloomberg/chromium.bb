@@ -4,6 +4,7 @@
 #ifndef InternalSettingsGenerated_h
 #define InternalSettingsGenerated_h
 
+#include "heap/Handle.h"
 #include "platform/RefCountedSupplement.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -13,7 +14,8 @@ namespace WebCore {
 
 class Page;
 
-class InternalSettingsGenerated : public RefCounted<InternalSettingsGenerated> {
+class InternalSettingsGenerated : public RefCountedWillBeGarbageCollectedFinalized<InternalSettingsGenerated> {
+    DECLARE_GC_INFO;
 public:
     explicit InternalSettingsGenerated(Page*);
     virtual ~InternalSettingsGenerated();
@@ -21,6 +23,8 @@ public:
 {%- for setting in settings if setting.type|to_idl_type %}
     void set{{setting.name|upper_first}}({{setting.type|to_passing_type}} {{setting.name}});
 {%- endfor %}
+
+    virtual void trace(Visitor*) { }
 
 private:
     Page* m_page;

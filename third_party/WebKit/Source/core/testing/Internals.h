@@ -34,6 +34,7 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/NodeList.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "heap/Handle.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -67,10 +68,10 @@ class SerializedScriptValue;
 class ShadowRoot;
 class TypeConversions;
 
-class Internals FINAL : public RefCounted<Internals>
-    , public ContextLifecycleObserver {
+class Internals FINAL : public RefCountedWillBeGarbageCollectedFinalized<Internals>, public ContextLifecycleObserver {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<Internals> create(Document*);
+    static PassRefPtrWillBeRawPtr<Internals> create(Document*);
     virtual ~Internals();
 
     static void resetToConsistentState(Page*);
@@ -79,7 +80,7 @@ public:
 
     String address(Node*);
 
-    PassRefPtr<GCObservation> observeGC(ScriptValue);
+    PassRefPtrWillBeRawPtr<GCObservation> observeGC(ScriptValue);
 
     bool isPreloaded(const String& url);
     bool isLoadingFromMemoryCache(const String& url);
@@ -184,7 +185,7 @@ public:
 
     unsigned wheelEventHandlerCount(Document*, ExceptionState&);
     unsigned touchEventHandlerCount(Document*, ExceptionState&);
-    PassRefPtr<LayerRectList> touchEventTargetLayerRects(Document*, ExceptionState&);
+    PassRefPtrWillBeRawPtr<LayerRectList> touchEventTargetLayerRects(Document*, ExceptionState&);
 
     // This is used to test rect based hit testing like what's done on touch screens.
     PassRefPtr<NodeList> nodesFromRect(Document*, int x, int y, unsigned topPadding, unsigned rightPadding,
@@ -270,8 +271,8 @@ public:
     void registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme);
     void removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(const String& scheme);
 
-    PassRefPtr<MallocStatistics> mallocStatistics() const;
-    PassRefPtr<TypeConversions> typeConversions() const;
+    PassRefPtrWillBeRawPtr<MallocStatistics> mallocStatistics() const;
+    PassRefPtrWillBeRawPtr<TypeConversions> typeConversions() const;
 
     Vector<String> getReferencedFilePaths() const;
 
@@ -311,6 +312,8 @@ public:
 
     ScriptPromise addOneToPromise(ExecutionContext*, ScriptPromise);
 
+    void trace(Visitor*);
+
 private:
     explicit Internals(Document*);
     Document* contextDocument() const;
@@ -321,8 +324,8 @@ private:
     DocumentMarker* markerAt(Node*, const String& markerType, unsigned index, ExceptionState&);
     RefPtr<DOMWindow> m_frontendWindow;
     OwnPtr<InspectorFrontendChannelDummy> m_frontendChannel;
-    RefPtr<InternalRuntimeFlags> m_runtimeFlags;
-    RefPtr<InternalProfilers> m_profilers;
+    RefPtrWillBeMember<InternalRuntimeFlags> m_runtimeFlags;
+    RefPtrWillBeMember<InternalProfilers> m_profilers;
 };
 
 } // namespace WebCore
