@@ -33,10 +33,10 @@
   </head>
   <body>
     <h3>Test Run: {{ test_run }}</h3>
-    {% if can_rebaseline and comparisons %}
+    {% if can_rebaseline %}
       <form action="/rebaseline" method="post" onsubmit="return confirmSubmit();">
         <input type="hidden" name="test_run" value="{{ test_run }}"/>
-        <input type="submit" value="This Chrome version looks good!"/>
+        <input type="submit" value="Set as LKGR"/>
       </form>
       <br>
     {% endif %}
