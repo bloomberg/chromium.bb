@@ -237,6 +237,11 @@ void DriverGL::InitializeNullDrawBindings() {
   null_draw_bindings_enabled = true;
 }
 
+bool DriverGL::HasInitializedNullDrawBindings() {
+  return orig_fn.glClearFn != NULL && orig_fn.glDrawArraysFn != NULL &&
+         orig_fn.glDrawElementsFn != NULL;
+}
+
 bool DriverGL::SetNullDrawBindingsEnabled(bool enabled) {
   DCHECK(orig_fn.glClearFn != NULL);
   DCHECK(orig_fn.glDrawArraysFn != NULL);
@@ -288,6 +293,10 @@ void InitializeDebugGLBindingsGL() {
 
 void InitializeNullDrawGLBindingsGL() {
   g_driver_gl.InitializeNullDrawBindings();
+}
+
+bool HasInitializedNullDrawGLBindingsGL() {
+  return g_driver_gl.HasInitializedNullDrawBindings();
 }
 
 bool SetNullDrawGLBindingsEnabledGL(bool enabled) {

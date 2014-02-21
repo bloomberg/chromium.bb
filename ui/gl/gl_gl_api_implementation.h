@@ -23,6 +23,8 @@ void InitializeStaticGLBindingsGL();
 void InitializeDynamicGLBindingsGL(GLContext* context);
 void InitializeDebugGLBindingsGL();
 void InitializeNullDrawGLBindingsGL();
+// TODO(danakj): Remove this when all test suites are using null-draw.
+bool HasInitializedNullDrawGLBindingsGL();
 bool SetNullDrawGLBindingsEnabledGL(bool enabled);
 void ClearGLBindingsGL();
 void SetGLToRealGLApi();

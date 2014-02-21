@@ -75,7 +75,8 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
 
   // Unit tests should call these instead of InitializeOneOff() to set up
   // GL bindings appropriate for tests.
-  static void InitializeOneOffForTests();
+  // TODO(danakj): Once all callers pass true, remove the argument.
+  static void InitializeOneOffForTests(bool disable_drawing = false);
   static void InitializeOneOffWithMockBindingsForTests();
   static void InitializeDynamicMockBindingsForTests(GLContext* context);
 
