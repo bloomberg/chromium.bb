@@ -63,50 +63,6 @@ std::vector<gfx::Display> GetFallbackDisplayList() {
   return std::vector<gfx::Display>(1, gfx_display);
 }
 
-// Helper class to GetWindowAtScreenPoint() which returns the topmost window at
-// the location passed to FindAt(). NULL is returned if a window which does not
-// belong to Chromium is topmost at the passed in location.
-class ToplevelWindowFinder : public ui::EnumerateWindowsDelegate {
- public:
-  ToplevelWindowFinder() : toplevel_(NULL) {
-  }
-
-  virtual ~ToplevelWindowFinder() {
-  }
-
-  aura::Window* FindAt(const gfx::Point& screen_loc) {
-    screen_loc_ = screen_loc;
-    ui::EnumerateTopLevelWindows(this);
-    return toplevel_;
-  }
-
- protected:
-  virtual bool ShouldStopIterating(XID xid) OVERRIDE {
-    aura::Window* window =
-        views::DesktopWindowTreeHostX11::GetContentWindowForXID(xid);
-    if (window) {
-      if (window->IsVisible() &&
-          window->GetBoundsInScreen().Contains(screen_loc_)) {
-        toplevel_ = window;
-        return true;
-      }
-      return false;
-    }
-
-    if (ui::IsWindowVisible(xid) &&
-        ui::WindowContainsPoint(xid, screen_loc_)) {
-      // toplevel_ = NULL
-      return true;
-    }
-    return false;
-  }
-
-  gfx::Point screen_loc_;
-  aura::Window* toplevel_;
-
-  DISALLOW_COPY_AND_ASSIGN(ToplevelWindowFinder);
-};
-
 }  // namespace
 
 namespace views {
@@ -226,8 +182,16 @@ gfx::NativeWindow DesktopScreenX11::GetWindowUnderCursor() {
 
 gfx::NativeWindow DesktopScreenX11::GetWindowAtScreenPoint(
     const gfx::Point& point) {
-  ToplevelWindowFinder finder;
-  return finder.FindAt(point);
+  std::vector<aura::Window*> windows =
+      DesktopWindowTreeHostX11::GetAllOpenWindows();
+
+  for (std::vector<aura::Window*>::const_iterator it = windows.begin();
+       it != windows.end(); ++it) {
+    if ((*it)->GetBoundsInScreen().Contains(point))
+      return *it;
+  }
+
+  return NULL;
 }
 
 int DesktopScreenX11::GetNumDisplays() const {
