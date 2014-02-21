@@ -100,6 +100,7 @@ static void memio_buffer_destroy(struct memio_buffer *mb)
 {
     free(mb->buf);
     mb->buf = NULL;
+    mb->bufsize = 0;
     mb->head = 0;
     mb->tail = 0;
 }
