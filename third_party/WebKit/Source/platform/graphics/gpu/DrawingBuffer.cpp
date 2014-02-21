@@ -167,7 +167,7 @@ bool DrawingBuffer::prepareMailbox(blink::WebExternalTextureMailbox* outMailbox,
     m_context->makeContextCurrent();
 
     // Resolve the multisampled buffer into m_colorBuffer texture.
-    if (multisample())
+    if (m_multisampleMode != None)
         commit();
 
     if (bitmap) {
@@ -204,12 +204,15 @@ bool DrawingBuffer::prepareMailbox(blink::WebExternalTextureMailbox* outMailbox,
         // If this stops being true at some point, we should track the current framebuffer binding in the DrawingBuffer and restore
         // it after attaching the new back buffer here.
         m_context->bindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-        m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer, 0);
+        if (m_multisampleMode == ImplicitResolve)
+            m_context->framebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer, 0, m_sampleCount);
+        else
+            m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer, 0);
     } else {
         m_context->copyTextureCHROMIUM(GL_TEXTURE_2D, m_colorBuffer, frontColorBufferMailbox->textureId, 0, GL_RGBA, GL_UNSIGNED_BYTE);
     }
 
-    if (multisample() && !m_framebufferBinding)
+    if (m_multisampleMode != None && !m_framebufferBinding)
         bind();
     else
         restoreFramebufferBinding();
@@ -276,6 +279,7 @@ void DrawingBuffer::initialize(const IntSize& size)
 {
     ASSERT(m_context);
     m_attributes = m_context->getContextAttributes();
+    Extensions3DUtil extensionsUtil(m_context);
 
     if (m_attributes.alpha) {
         m_internalColorFormat = GL_RGBA;
@@ -290,15 +294,23 @@ void DrawingBuffer::initialize(const IntSize& size)
     m_context->getIntegerv(GL_MAX_TEXTURE_SIZE, &m_maxTextureSize);
 
     int maxSampleCount = 0;
-    if (multisample())
+    m_multisampleMode = None;
+    if (m_attributes.antialias && m_multisampleExtensionSupported) {
         m_context->getIntegerv(GL_MAX_SAMPLES_ANGLE, &maxSampleCount);
+        m_multisampleMode = ExplicitResolve;
+        if (extensionsUtil.supportsExtension("GL_EXT_multisampled_render_to_texture"))
+            m_multisampleMode = ImplicitResolve;
+    }
     m_sampleCount = std::min(4, maxSampleCount);
 
     m_fbo = m_context->createFramebuffer();
 
     m_context->bindFramebuffer(GL_FRAMEBUFFER, m_fbo);
     m_colorBuffer = createColorTexture();
-    m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer, 0);
+    if (m_multisampleMode == ImplicitResolve)
+        m_context->framebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer, 0, m_sampleCount);
+    else
+        m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer, 0);
     createSecondaryBuffers();
     reset(size);
 }
@@ -308,7 +320,7 @@ bool DrawingBuffer::copyToPlatformTexture(blink::WebGraphicsContext3D* context, 
     if (!m_context || !m_context->makeContextCurrent())
         return false;
     if (m_contentsChanged) {
-        if (multisample()) {
+        if (m_multisampleMode != None) {
             commit();
             if (!m_framebufferBinding)
                 bind();
@@ -488,7 +500,7 @@ unsigned DrawingBuffer::createColorTexture(const IntSize& size)
 void DrawingBuffer::createSecondaryBuffers()
 {
     // create a multisample FBO
-    if (multisample()) {
+    if (m_multisampleMode == ExplicitResolve) {
         m_multisampleFBO = m_context->createFramebuffer();
         m_context->bindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO);
         m_multisampleColorBuffer = m_context->createRenderbuffer();
@@ -504,11 +516,14 @@ bool DrawingBuffer::resizeFramebuffer(const IntSize& size)
 
     texImage2DResourceSafe(GL_TEXTURE_2D, 0, m_internalColorFormat, size.width(), size.height(), 0, m_colorFormat, GL_UNSIGNED_BYTE);
 
-    m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer, 0);
+    if (m_multisampleMode == ImplicitResolve)
+        m_context->framebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer, 0, m_sampleCount);
+    else
+        m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorBuffer, 0);
 
     m_context->bindTexture(GL_TEXTURE_2D, 0);
 
-    if (!multisample())
+    if (m_multisampleMode != ExplicitResolve)
         resizeDepthStencil(size);
     if (m_context->checkFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         return false;
@@ -518,7 +533,7 @@ bool DrawingBuffer::resizeFramebuffer(const IntSize& size)
 
 bool DrawingBuffer::resizeMultisampleFramebuffer(const IntSize& size)
 {
-    if (multisample()) {
+    if (m_multisampleMode == ExplicitResolve) {
         m_context->bindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO);
 
         m_context->bindRenderbuffer(GL_RENDERBUFFER, m_multisampleColorBuffer);
@@ -542,7 +557,9 @@ void DrawingBuffer::resizeDepthStencil(const IntSize& size)
         if (!m_depthStencilBuffer)
             m_depthStencilBuffer = m_context->createRenderbuffer();
         m_context->bindRenderbuffer(GL_RENDERBUFFER, m_depthStencilBuffer);
-        if (multisample())
+        if (m_multisampleMode == ImplicitResolve)
+            m_context->renderbufferStorageMultisampleEXT(GL_RENDERBUFFER, m_sampleCount, GL_DEPTH24_STENCIL8_OES, size.width(), size.height());
+        else if (m_multisampleMode == ExplicitResolve)
             m_context->renderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, m_sampleCount, GL_DEPTH24_STENCIL8_OES, size.width(), size.height());
         else
             m_context->renderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES, size.width(), size.height());
@@ -553,7 +570,9 @@ void DrawingBuffer::resizeDepthStencil(const IntSize& size)
             if (!m_depthBuffer)
                 m_depthBuffer = m_context->createRenderbuffer();
             m_context->bindRenderbuffer(GL_RENDERBUFFER, m_depthBuffer);
-            if (multisample())
+            if (m_multisampleMode == ImplicitResolve)
+                m_context->renderbufferStorageMultisampleEXT(GL_RENDERBUFFER, m_sampleCount, GL_DEPTH_COMPONENT16, size.width(), size.height());
+            else if (m_multisampleMode == ExplicitResolve)
                 m_context->renderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, m_sampleCount, GL_DEPTH_COMPONENT16, size.width(), size.height());
             else
                 m_context->renderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, size.width(), size.height());
@@ -563,7 +582,9 @@ void DrawingBuffer::resizeDepthStencil(const IntSize& size)
             if (!m_stencilBuffer)
                 m_stencilBuffer = m_context->createRenderbuffer();
             m_context->bindRenderbuffer(GL_RENDERBUFFER, m_stencilBuffer);
-            if (multisample())
+            if (m_multisampleMode == ImplicitResolve)
+                m_context->renderbufferStorageMultisampleEXT(GL_RENDERBUFFER, m_sampleCount, GL_STENCIL_INDEX8, size.width(), size.height());
+            else if (m_multisampleMode == ExplicitResolve)
                 m_context->renderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, m_sampleCount, GL_STENCIL_INDEX8, size.width(), size.height());
             else
                 m_context->renderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8, size.width(), size.height());
@@ -580,7 +601,7 @@ void DrawingBuffer::clearFramebuffers(GLbitfield clearMask)
     if (!m_context)
         return;
 
-    // We will clear the multisample FBO, but we also need to clear the non-multisampled buffer too.
+    // We will clear the multisample FBO, but we also need to clear the non-multisampled buffer.
     if (m_multisampleFBO) {
         m_context->bindFramebuffer(GL_FRAMEBUFFER, m_fbo);
         m_context->clear(GL_COLOR_BUFFER_BIT);
@@ -741,7 +762,7 @@ void DrawingBuffer::restoreFramebufferBinding()
 
 bool DrawingBuffer::multisample() const
 {
-    return m_attributes.antialias && m_multisampleExtensionSupported;
+    return m_multisampleMode != None;
 }
 
 void DrawingBuffer::bind()

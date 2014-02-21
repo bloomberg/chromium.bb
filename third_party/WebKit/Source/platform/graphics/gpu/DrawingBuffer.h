@@ -225,6 +225,14 @@ private:
     bool m_contentsChangeCommitted;
     bool m_layerComposited;
 
+    enum MultisampleMode {
+        None,
+        ImplicitResolve,
+        ExplicitResolve,
+    };
+
+    MultisampleMode m_multisampleMode;
+
     blink::WebGraphicsContext3D::Attributes m_attributes;
     unsigned m_internalColorFormat;
     unsigned m_colorFormat;
