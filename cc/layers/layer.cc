@@ -68,9 +68,8 @@ Layer::Layer()
       replica_layer_(NULL),
       raster_scale_(0.f),
       client_(NULL) {
-  if (layer_id_ < 0) {
+  if (layer_id_ == INT_MAX) {
     s_next_layer_id = 1;
-    layer_id_ = s_next_layer_id++;
   }
 
   layer_animation_controller_ = LayerAnimationController::Create(layer_id_);
