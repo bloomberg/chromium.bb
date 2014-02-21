@@ -279,11 +279,6 @@ void WebRuntimeFeatures::enableOverlayScrollbars(bool enable)
     RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableInputModeAttribute(bool enable)
-{
-    RuntimeEnabledFeatures::setInputModeAttributeEnabled(enable);
-}
-
 void WebRuntimeFeatures::enableOverlayFullscreenVideo(bool enable)
 {
     RuntimeEnabledFeatures::setOverlayFullscreenVideoEnabled(enable);

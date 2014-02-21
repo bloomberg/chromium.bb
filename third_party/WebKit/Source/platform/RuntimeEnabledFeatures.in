@@ -62,7 +62,7 @@ HTMLImports status=test
 HighResolutionTimeInWorkers status=stable
 IMEAPI status=experimental
 IndexedDBExperimental status=experimental
-InputModeAttribute status=test
+InputModeAttribute status=experimental
 LangAttributeAwareFormControlUI
 PrefixedEncryptedMedia status=stable
 LocalStorage status=stable
