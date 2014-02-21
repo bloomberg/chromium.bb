@@ -99,6 +99,8 @@ public:
         data->setNumber("identifier", identifier);
         return data.release();
     }
+
+    static PassRefPtr<JSONObject> createEmbedderCallbackData(const String& callbackName);
 private:
     TimelineRecordFactory() { }
 };

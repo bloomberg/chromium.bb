@@ -239,6 +239,7 @@ const char RequestMainThreadFrame[] = "RequestMainThreadFrame";
 const char BeginFrame[] = "BeginFrame";
 const char ActivateLayerTree[] = "ActivateLayerTree";
 const char DrawFrame[] = "DrawFrame";
+const char EmbedderCallback[] = "EmbedderCallback";
 };
 
 namespace InstrumentationEventArguments {
@@ -246,6 +247,7 @@ const char FrameId[] = "frameId";
 const char LayerId[] = "layerId";
 const char LayerTreeId[] = "layerTreeId";
 const char PageId[] = "pageId";
+const char CallbackName[] = "callbackName";
 };
 
 InstrumentingAgents* instrumentationForPage(Page* page)

@@ -129,6 +129,7 @@ extern const char RequestMainThreadFrame[];
 extern const char BeginFrame[];
 extern const char DrawFrame[];
 extern const char ActivateLayerTree[];
+extern const char EmbedderCallback[];
 };
 
 namespace InstrumentationEventArguments {
@@ -136,6 +137,7 @@ extern const char FrameId[];
 extern const char LayerId[];
 extern const char LayerTreeId[];
 extern const char PageId[];
+extern const char CallbackName[];
 };
 
 namespace InspectorInstrumentation {

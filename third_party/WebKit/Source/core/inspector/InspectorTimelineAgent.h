@@ -260,6 +260,8 @@ private:
     void onActivateLayerTree(const TraceEventDispatcher::TraceEvent&);
     void onDrawFrame(const TraceEventDispatcher::TraceEvent&);
     void onLazyPixelRefDeleted(const TraceEventDispatcher::TraceEvent&);
+    void onEmbedderCallbackBegin(const TraceEventDispatcher::TraceEvent&);
+    void onEmbedderCallbackEnd(const TraceEventDispatcher::TraceEvent&);
 
     void didFinishLoadingResource(unsigned long, bool didFail, double finishTime);
 

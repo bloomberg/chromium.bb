@@ -303,5 +303,12 @@ void TimelineRecordFactory::setImageDetails(JSONObject* data, long long imageEle
         data->setString("url", url);
 }
 
+PassRefPtr<JSONObject> TimelineRecordFactory::createEmbedderCallbackData(const String& callbackName)
+{
+    RefPtr<JSONObject> data = JSONObject::create();
+    data->setString("callbackName", callbackName);
+    return data.release();
+}
+
 } // namespace WebCore
 

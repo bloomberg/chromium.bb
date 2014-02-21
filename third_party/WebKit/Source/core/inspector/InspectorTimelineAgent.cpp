@@ -132,6 +132,8 @@ static const char DecodeImage[] = "DecodeImage";
 static const char GPUTask[] = "GPUTask";
 static const char Rasterize[] = "Rasterize";
 static const char PaintSetup[] = "PaintSetup";
+
+static const char EmbedderCallback[] = "EmbedderCallback";
 }
 
 namespace {
@@ -375,6 +377,8 @@ void InspectorTimelineAgent::innerStart()
         dispatcher->addListener(PlatformInstrumentation::DecodeLazyPixelRefEvent, TRACE_EVENT_PHASE_BEGIN, this, &InspectorTimelineAgent::onDecodeLazyPixelRefBegin, m_client);
         dispatcher->addListener(PlatformInstrumentation::DecodeLazyPixelRefEvent, TRACE_EVENT_PHASE_END, this, &InspectorTimelineAgent::onDecodeLazyPixelRefEnd, m_client);
         dispatcher->addListener(PlatformInstrumentation::LazyPixelRef, TRACE_EVENT_PHASE_DELETE_OBJECT, this, &InspectorTimelineAgent::onLazyPixelRefDeleted, m_client);
+        dispatcher->addListener(InstrumentationEvents::EmbedderCallback, TRACE_EVENT_PHASE_BEGIN, this, &InspectorTimelineAgent::onEmbedderCallbackBegin, m_client);
+        dispatcher->addListener(InstrumentationEvents::EmbedderCallback, TRACE_EVENT_PHASE_END, this, &InspectorTimelineAgent::onEmbedderCallbackEnd, m_client);
 
         if (m_state->getBoolean(TimelineAgentState::includeGPUEvents)) {
             m_pendingGPURecord.clear();
@@ -1050,6 +1054,21 @@ void InspectorTimelineAgent::processGPUEvent(const GPUEvent& event)
         }
         sendEvent(m_pendingGPURecord.release());
     }
+}
+
+void InspectorTimelineAgent::onEmbedderCallbackBegin(const TraceEventDispatcher::TraceEvent& event)
+{
+    TimelineThreadState& state = threadState(event.threadIdentifier());
+    double timestamp = m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp());
+    RefPtr<JSONObject> data = TimelineRecordFactory::createEmbedderCallbackData(event.asString(InstrumentationEventArguments::CallbackName));
+    RefPtr<TimelineEvent> record = TimelineRecordFactory::createGenericRecord(timestamp, 0, TimelineRecordType::EmbedderCallback, data);
+    state.recordStack.addScopedRecord(record, TimelineRecordType::EmbedderCallback);
+}
+
+void InspectorTimelineAgent::onEmbedderCallbackEnd(const TraceEventDispatcher::TraceEvent& event)
+{
+    TimelineThreadState& state = threadState(event.threadIdentifier());
+    state.recordStack.closeScopedRecord(m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp()));
 }
 
 void InspectorTimelineAgent::addRecordToTimeline(PassRefPtr<TimelineEvent> record)
