@@ -40,9 +40,6 @@ class GCM_EXPORT RegistrationRequest : public net::URLFetcherDelegate {
     AUTHENTICATION_FAILED,      // Authentication failed.
     DEVICE_REGISTRATION_ERROR,  // Chrome is not properly registered.
     UNKNOWN_ERROR,              // Unknown error.
-    URL_FETCHING_FAILED,        // URL fetching failed.
-    HTTP_NOT_OK,                // HTTP status was not OK.
-    RESPONSE_PARSING_FAILED,    // Registration response parsing failed.
     // NOTE: always keep this entry at the end. Add new status types only
     // immediately above this line. Make sure to update the corresponding
     // histogram enum accordingly.
@@ -93,10 +90,6 @@ class GCM_EXPORT RegistrationRequest : public net::URLFetcherDelegate {
   // Schedules a retry attempt, informs the backoff of a previous request's
   // failure, when |update_backoff| is true.
   void RetryWithBackoff(bool update_backoff);
-
-  // Parse the response returned by the URL fetcher into token, and returns the
-  // status.
-  Status ParseResponse(const net::URLFetcher* source, std::string* token);
 
   RegistrationCallback callback_;
   RequestInfo request_info_;

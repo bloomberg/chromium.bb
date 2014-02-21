@@ -70,10 +70,7 @@ RegistrationRequest::Status GetStatusFromError(const std::string& error) {
 bool ShouldRetryWithStatus(RegistrationRequest::Status status) {
   return status == RegistrationRequest::UNKNOWN_ERROR ||
          status == RegistrationRequest::AUTHENTICATION_FAILED ||
-         status == RegistrationRequest::DEVICE_REGISTRATION_ERROR ||
-         status == RegistrationRequest::HTTP_NOT_OK ||
-         status == RegistrationRequest::URL_FETCHING_FAILED ||
-         status == RegistrationRequest::RESPONSE_PARSING_FAILED;
+         status == RegistrationRequest::DEVICE_REGISTRATION_ERROR;
 }
 
 void RecordRegistrationStatusToUMA(RegistrationRequest::Status status) {
@@ -178,45 +175,43 @@ void RegistrationRequest::RetryWithBackoff(bool update_backoff) {
   Start();
 }
 
-RegistrationRequest::Status RegistrationRequest::ParseResponse(
-    const net::URLFetcher* source, std::string* token) {
-  if (!source->GetStatus().is_success()) {
-    LOG(ERROR) << "URL fetching failed.";
-    return URL_FETCHING_FAILED;
-  }
-  if (source->GetResponseCode() != net::HTTP_OK) {
-    LOG(ERROR) << "URL fetching HTTP response code is not OK. It is "
-               << source->GetResponseCode();
-    return HTTP_NOT_OK;
-  }
+void RegistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
   std::string response;
-  if (!source->GetResponseAsString(&response)) {
-    LOG(ERROR) << "Failed to parse registration response as a string.";
-    return RESPONSE_PARSING_FAILED;
+  if (!source->GetStatus().is_success() ||
+      source->GetResponseCode() != net::HTTP_OK ||
+      !source->GetResponseAsString(&response)) {
+    LOG(ERROR) << "Failed to get registration response: "
+               << source->GetStatus().is_success() << " "
+               << source->GetResponseCode();
+    RetryWithBackoff(true);
+    return;
   }
 
   DVLOG(1) << "Parsing registration response: " << response;
   size_t token_pos = response.find(kTokenPrefix);
   if (token_pos != std::string::npos) {
-    *token = response.substr(token_pos + arraysize(kTokenPrefix) - 1);
-    return SUCCESS;
+    std::string token =
+        response.substr(token_pos + arraysize(kTokenPrefix) - 1);
+    RecordRegistrationStatusToUMA(SUCCESS);
+    callback_.Run(SUCCESS, token);
+    return;
   }
 
   size_t error_pos = response.find(kErrorPrefix);
-  if (error_pos == std::string::npos)
-    return UNKNOWN_ERROR;
-  std::string error = response.substr(error_pos + arraysize(kErrorPrefix) - 1);
-  return GetStatusFromError(error);
-}
+  Status status = UNKNOWN_ERROR;
+  if (error_pos != std::string::npos) {
+    std::string error =
+        response.substr(error_pos + arraysize(kErrorPrefix) - 1);
+    status = GetStatusFromError(error);
+  }
+  RecordRegistrationStatusToUMA(status);
 
-void RegistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
-  std::string token;
-  Status status = ParseResponse(source, &token);
-  RecordRegistrationStatusToUMA(status );
-  if (ShouldRetryWithStatus(status))
+  if (ShouldRetryWithStatus(status)) {
     RetryWithBackoff(true);
-  else
-    callback_.Run(status, token);
+    return;
+  }
+
+  callback_.Run(status, std::string());
 }
 
 }  // namespace gcm

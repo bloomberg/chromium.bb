@@ -10,7 +10,6 @@
 #include "base/strings/string_tokenizer.h"
 #include "google_apis/gcm/engine/registration_request.h"
 #include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -310,48 +309,6 @@ TEST_F(RegistrationRequestTest, ResponseInvalidSender) {
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(RegistrationRequest::INVALID_SENDER, status_);
   EXPECT_EQ(std::string(), registration_id_);
-}
-
-TEST_F(RegistrationRequestTest, RequestNotSucessful) {
-  CreateRequest("sender1,sender2");
-  request_->Start();
-
-  net::URLRequestStatus request_status(net::URLRequestStatus::FAILED, 1);
-  SetResponseStatusAndString(net::HTTP_OK, "token=2501");
-  net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_status(request_status);
-  CompleteFetch();
-
-  EXPECT_FALSE(callback_called_);
-
-  // Ensuring a retry happened and succeeded.
-  request_status.set_status(net::URLRequestStatus::SUCCESS);
-  SetResponseStatusAndString(net::HTTP_OK, "token=2501");
-  fetcher->set_status(request_status);
-  CompleteFetch();
-
-  EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(RegistrationRequest::SUCCESS, status_);
-  EXPECT_EQ("2501", registration_id_);
-}
-
-TEST_F(RegistrationRequestTest, ResponseHttpNotOk) {
-  CreateRequest("sender1,sender2");
-  request_->Start();
-
-  SetResponseStatusAndString(net::HTTP_GATEWAY_TIMEOUT, "token=2501");
-  CompleteFetch();
-
-  EXPECT_FALSE(callback_called_);
-
-  // Ensuring a retry happened and succeeded.
-  SetResponseStatusAndString(net::HTTP_OK, "token=2501");
-  CompleteFetch();
-
-  EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(RegistrationRequest::SUCCESS, status_);
-  EXPECT_EQ("2501", registration_id_);
 }
 
 }  // namespace gcm
