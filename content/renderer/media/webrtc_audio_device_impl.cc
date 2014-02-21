@@ -121,11 +121,11 @@ void WebRtcAudioDeviceImpl::OnSetFormat(
   DVLOG(1) << "WebRtcAudioDeviceImpl::OnSetFormat()";
 }
 
-void WebRtcAudioDeviceImpl::RenderData(uint8* audio_data,
-                                       int number_of_channels,
-                                       int number_of_frames,
+void WebRtcAudioDeviceImpl::RenderData(media::AudioBus* audio_bus,
+                                       int sample_rate,
                                        int audio_delay_milliseconds) {
-  DCHECK_LE(number_of_frames, output_buffer_size());
+  render_buffer_.resize(audio_bus->frames() * audio_bus->channels());
+
   {
     base::AutoLock auto_lock(lock_);
     DCHECK(audio_transport_callback_);
@@ -133,37 +133,42 @@ void WebRtcAudioDeviceImpl::RenderData(uint8* audio_data,
     output_delay_ms_ = audio_delay_milliseconds;
   }
 
-  const int channels = number_of_channels;
-  DCHECK_LE(channels, output_channels());
-
-  int samples_per_sec = output_sample_rate();
-  int samples_per_10_msec = (samples_per_sec / 100);
-  int bytes_per_sample = output_audio_parameters_.bits_per_sample() / 8;
+  int samples_per_10_msec = (sample_rate / 100);
+  int bytes_per_sample = sizeof(render_buffer_[0]);
   const int bytes_per_10_msec =
-      channels * samples_per_10_msec * bytes_per_sample;
-
-  uint32_t num_audio_samples = 0;
-  int accumulated_audio_samples = 0;
+      audio_bus->channels() * samples_per_10_msec * bytes_per_sample;
+  DCHECK_EQ(audio_bus->frames() % samples_per_10_msec, 0);
 
   // Get audio samples in blocks of 10 milliseconds from the registered
   // webrtc::AudioTransport source. Keep reading until our internal buffer
   // is full.
-  while (accumulated_audio_samples < number_of_frames) {
+  uint32_t num_audio_samples = 0;
+  int accumulated_audio_samples = 0;
+  int16* audio_data = &render_buffer_[0];
+  while (accumulated_audio_samples < audio_bus->frames()) {
     // Get 10ms and append output to temporary byte buffer.
     audio_transport_callback_->NeedMorePlayData(samples_per_10_msec,
                                                 bytes_per_sample,
-                                                channels,
-                                                samples_per_sec,
+                                                audio_bus->channels(),
+                                                sample_rate,
                                                 audio_data,
                                                 num_audio_samples);
     accumulated_audio_samples += num_audio_samples;
     audio_data += bytes_per_10_msec;
   }
-}
 
-void WebRtcAudioDeviceImpl::SetRenderFormat(const AudioParameters& params) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  output_audio_parameters_ = params;
+  // De-interleave each channel and convert to 32-bit floating-point
+  // with nominal range -1.0 -> +1.0 to match the callback format.
+  audio_bus->FromInterleaved(&render_buffer_[0],
+                             audio_bus->frames(),
+                             bytes_per_sample);
+
+  // Pass the render data to the playout sinks.
+  base::AutoLock auto_lock(lock_);
+  for (PlayoutDataSinkList::const_iterator it = playout_sinks_.begin();
+       it != playout_sinks_.end(); ++it) {
+    (*it)->OnPlayoutData(audio_bus, sample_rate, audio_delay_milliseconds);
+  }
 }
 
 void WebRtcAudioDeviceImpl::RemoveAudioRenderer(WebRtcAudioRenderer* renderer) {
@@ -369,7 +374,7 @@ int32_t WebRtcAudioDeviceImpl::MinMicrophoneVolume(uint32_t* min_volume) const {
 
 int32_t WebRtcAudioDeviceImpl::StereoPlayoutIsAvailable(bool* available) const {
   DCHECK(initialized_);
-  *available = (output_channels() == 2);
+  *available = renderer_ && renderer_->channels() == 2;
   return 0;
 }
 
@@ -412,7 +417,7 @@ int32_t WebRtcAudioDeviceImpl::RecordingSampleRate(
 
 int32_t WebRtcAudioDeviceImpl::PlayoutSampleRate(
     uint32_t* samples_per_sec) const {
-  *samples_per_sec = static_cast<uint32_t>(output_sample_rate());
+  *samples_per_sec = renderer_ ? renderer_->sample_rate() : 0;
   return 0;
 }
 
@@ -463,6 +468,24 @@ WebRtcAudioDeviceImpl::GetDefaultCapturer() const {
   }
 
   return NULL;
+}
+
+void WebRtcAudioDeviceImpl::AddPlayoutSink(
+    WebRtcPlayoutDataSource::Sink* sink) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sink);
+  base::AutoLock auto_lock(lock_);
+  DCHECK(std::find(playout_sinks_.begin(), playout_sinks_.end(), sink) ==
+      playout_sinks_.end());
+  playout_sinks_.push_back(sink);
+}
+
+void WebRtcAudioDeviceImpl::RemovePlayoutSink(
+    WebRtcPlayoutDataSource::Sink* sink) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sink);
+  base::AutoLock auto_lock(lock_);
+  playout_sinks_.remove(sink);
 }
 
 bool WebRtcAudioDeviceImpl::GetAuthorizedDeviceInfoForAudioRenderer(

@@ -200,8 +200,9 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(
       start_ref_count_(0),
       audio_delay_milliseconds_(0),
       fifo_delay_milliseconds_(0),
-      sample_rate_(sample_rate),
-      frames_per_buffer_(frames_per_buffer) {
+      sink_params_(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                   media::CHANNEL_LAYOUT_STEREO, sample_rate, 16,
+                   frames_per_buffer) {
   WebRtcLogMessage(base::StringPrintf(
       "WAR::WAR. source_render_view_id=%d"
       ", session_id=%d, sample_rate=%d, frames_per_buffer=%d",
@@ -214,7 +215,6 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(
 WebRtcAudioRenderer::~WebRtcAudioRenderer() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(state_, UNINITIALIZED);
-  buffer_.reset();
 }
 
 bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
@@ -226,20 +226,14 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
   DCHECK(!sink_.get());
   DCHECK(!source_);
 
-  // Use stereo output on all platforms.
-  media::ChannelLayout channel_layout = media::CHANNEL_LAYOUT_STEREO;
-
-  // TODO(tommi,henrika): Maybe we should just change |sample_rate_| to be
-  // immutable and change its value instead of using a temporary?
-  int sample_rate = sample_rate_;
-  DVLOG(1) << "Audio output hardware sample rate: " << sample_rate;
-
   // WebRTC does not yet support higher rates than 96000 on the client side
   // and 48000 is the preferred sample rate. Therefore, if 192000 is detected,
   // we change the rate to 48000 instead. The consequence is that the native
   // layer will be opened up at 192kHz but WebRTC will provide data at 48kHz
   // which will then be resampled by the audio converted on the browser side
   // to match the native audio layer.
+  int sample_rate = sink_params_.sample_rate();
+  DVLOG(1) << "Audio output hardware sample rate: " << sample_rate;
   if (sample_rate == 192000) {
     DVLOG(1) << "Resampling from 48000 to 192000 is required";
     sample_rate = 48000;
@@ -249,7 +243,8 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
     UMA_HISTOGRAM_ENUMERATION(
         "WebRTC.AudioOutputSampleRate", asr, media::kUnexpectedAudioSampleRate);
   } else {
-    UMA_HISTOGRAM_COUNTS("WebRTC.AudioOutputSampleRateUnexpected", sample_rate);
+    UMA_HISTOGRAM_COUNTS("WebRTC.AudioOutputSampleRateUnexpected",
+                         sample_rate);
   }
 
   // Verify that the reported output hardware sample rate is supported
@@ -267,50 +262,47 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
   // The WebRTC client only supports multiples of 10ms as buffer size where
   // 10ms is preferred for lowest possible delay.
   media::AudioParameters source_params;
-  int buffer_size = (sample_rate / 100);
-  DVLOG(1) << "Using WebRTC output buffer size: " << buffer_size;
+  const int frames_per_10ms = (sample_rate / 100);
+  DVLOG(1) << "Using WebRTC output buffer size: " << frames_per_10ms;
 
-  int channels = ChannelLayoutToChannelCount(channel_layout);
   source_params.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                      channel_layout, channels, 0,
-                      sample_rate, 16, buffer_size);
+                      sink_params_.channel_layout(), sink_params_.channels(), 0,
+                      sample_rate, 16, frames_per_10ms);
 
-  // Set up audio parameters for the sink, i.e., the native audio output stream.
+  // Update audio parameters for the sink, i.e., the native audio output stream.
   // We strive to open up using native parameters to achieve best possible
   // performance and to ensure that no FIFO is needed on the browser side to
   // match the client request. Any mismatch between the source and the sink is
   // taken care of in this class instead using a pull FIFO.
 
-  media::AudioParameters sink_params;
-
-  // Use native output siz as default.
-  buffer_size = frames_per_buffer_;
+  // Use native output size as default.
+  int frames_per_buffer = sink_params_.frames_per_buffer();
 #if defined(OS_ANDROID)
   // TODO(henrika): Keep tuning this scheme and espcicially for low-latency
   // cases. Might not be possible to come up with the perfect solution using
   // the render side only.
-  const int frames_per_10ms = (sample_rate / 100);
-  if (buffer_size < 2 * frames_per_10ms) {
+  if (frames_per_buffer < 2 * frames_per_10ms) {
     // Examples of low-latency frame sizes and the resulting |buffer_size|:
     //  Nexus 7     : 240 audio frames => 2*480 = 960
     //  Nexus 10    : 256              => 2*441 = 882
     //  Galaxy Nexus: 144              => 2*441 = 882
-    buffer_size = 2 * frames_per_10ms;
+    frames_per_buffer = 2 * frames_per_10ms;
     DVLOG(1) << "Low-latency output detected on Android";
   }
 #endif
-  DVLOG(1) << "Using sink output buffer size: " << buffer_size;
+  DVLOG(1) << "Using sink output buffer size: " << frames_per_buffer;
 
-  sink_params.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                    channel_layout, channels, 0, sample_rate, 16, buffer_size);
+  sink_params_.Reset(sink_params_.format(), sink_params_.channel_layout(),
+                     sink_params_.channels(), 0, sample_rate, 16,
+                     frames_per_buffer);
 
   // Create a FIFO if re-buffering is required to match the source input with
   // the sink request. The source acts as provider here and the sink as
   // consumer.
   fifo_delay_milliseconds_ = 0;
-  if (source_params.frames_per_buffer() != sink_params.frames_per_buffer()) {
+  if (source_params.frames_per_buffer() != sink_params_.frames_per_buffer()) {
     DVLOG(1) << "Rebuffering from " << source_params.frames_per_buffer()
-             << " to " << sink_params.frames_per_buffer();
+             << " to " << sink_params_.frames_per_buffer();
     audio_fifo_.reset(new media::AudioPullFifo(
         source_params.channels(),
         source_params.frames_per_buffer(),
@@ -318,23 +310,15 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
             &WebRtcAudioRenderer::SourceCallback,
             base::Unretained(this))));
 
-    if (sink_params.frames_per_buffer() > source_params.frames_per_buffer()) {
+    if (sink_params_.frames_per_buffer() > source_params.frames_per_buffer()) {
       int frame_duration_milliseconds = base::Time::kMillisecondsPerSecond /
           static_cast<double>(source_params.sample_rate());
-      fifo_delay_milliseconds_ = (sink_params.frames_per_buffer() -
+      fifo_delay_milliseconds_ = (sink_params_.frames_per_buffer() -
         source_params.frames_per_buffer()) * frame_duration_milliseconds;
     }
   }
 
-  // Allocate local audio buffers based on the parameters above.
-  // It is assumed that each audio sample contains 16 bits and each
-  // audio frame contains one or two audio samples depending on the
-  // number of channels.
-  buffer_.reset(
-      new int16[source_params.frames_per_buffer() * source_params.channels()]);
-
   source_ = source;
-  source->SetRenderFormat(source_params);
 
   // Configure the audio rendering client and start rendering.
   sink_ = AudioDeviceFactory::NewOutputDevice(
@@ -343,7 +327,7 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
   // TODO(tommi): Rename InitializeUnifiedStream to rather reflect association
   // with a session.
   DCHECK_GE(session_id_, 0);
-  sink_->InitializeUnifiedStream(sink_params, this, session_id_);
+  sink_->InitializeUnifiedStream(sink_params_, this, session_id_);
 
   sink_->Start();
 
@@ -515,22 +499,13 @@ void WebRtcAudioRenderer::SourceCallback(
 
   // We need to keep render data for the |source_| regardless of |state_|,
   // otherwise the data will be buffered up inside |source_|.
-  source_->RenderData(reinterpret_cast<uint8*>(buffer_.get()),
-                      audio_bus->channels(), audio_bus->frames(),
+  source_->RenderData(audio_bus, sink_params_.sample_rate(),
                       output_delay_milliseconds);
 
   // Avoid filling up the audio bus if we are not playing; instead
   // return here and ensure that the returned value in Render() is 0.
-  if (state_ != PLAYING) {
+  if (state_ != PLAYING)
     audio_bus->Zero();
-    return;
-  }
-
-  // De-interleave each channel and convert to 32-bit floating-point
-  // with nominal range -1.0 -> +1.0 to match the callback format.
-  audio_bus->FromInterleaved(buffer_.get(),
-                             audio_bus->frames(),
-                             sizeof(buffer_[0]));
 }
 
 void WebRtcAudioRenderer::UpdateSourceVolume(

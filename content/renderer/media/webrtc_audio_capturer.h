@@ -82,7 +82,6 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   int Volume() const;
   int MaxVolume() const;
 
-
   // Audio parameters utilized by the source of the audio capturer.
   // TODO(phoglund): Think over the implications of this accessor and if we can
   // remove it.
@@ -108,14 +107,6 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   // TODO(xians): Remove after moving APM from WebRtc to Chrome.
   void GetAudioProcessingParams(base::TimeDelta* delay, int* volume,
                                 bool* key_pressed);
-
-  // Called by the WebRtcAudioDeviceImpl to push the render audio to
-  // audio processor for echo cancellation analysis.
-  void FeedRenderDataToAudioProcessor(const int16* render_audio,
-                                      int sample_rate,
-                                      int number_of_channels,
-                                      int number_of_frames,
-                                      base::TimeDelta render_delay);
 
   // Use by the unittests to inject their own source to the capturer.
   void SetCapturerSourceForTesting(

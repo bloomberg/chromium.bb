@@ -297,7 +297,8 @@ void WebRtcAudioCapturer::SetCapturerSource(
                                 channel_layout, 0, sample_rate,
                                 16, buffer_size, effects);
   scoped_refptr<MediaStreamAudioProcessor> new_audio_processor(
-      new MediaStreamAudioProcessor(params, constraints, effects));
+      new MediaStreamAudioProcessor(params, constraints, effects,
+                                    audio_device_));
   {
     base::AutoLock auto_lock(lock_);
     audio_processor_ = new_audio_processor;
@@ -554,27 +555,6 @@ void WebRtcAudioCapturer::GetAudioProcessingParams(
   *delay = audio_delay_;
   *volume = volume_;
   *key_pressed = key_pressed_;
-}
-
-void WebRtcAudioCapturer::FeedRenderDataToAudioProcessor(
-    const int16* render_audio,
-    int sample_rate,
-    int number_of_channels,
-    int number_of_frames,
-    base::TimeDelta render_delay) {
-  scoped_refptr<MediaStreamAudioProcessor> audio_processor;
-  {
-    base::AutoLock auto_lock(lock_);
-    if (!running_)
-      return;
-
-    audio_processor = audio_processor_;
-  }
-
-  audio_processor->PushRenderData(render_audio, sample_rate,
-                                  number_of_channels,
-                                  number_of_frames,
-                                  render_delay);
 }
 
 void WebRtcAudioCapturer::SetCapturerSourceForTesting(

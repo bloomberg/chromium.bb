@@ -10,6 +10,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
+#include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "media/base/audio_converter.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
 #include "third_party/webrtc/modules/interface/module_common_types.h"
@@ -38,26 +39,20 @@ class RTCMediaConstraints;
 // on the getUserMedia constraints, processes the data and outputs it in a unit
 // of 10 ms data chunk.
 class CONTENT_EXPORT MediaStreamAudioProcessor :
-    public base::RefCountedThreadSafe<MediaStreamAudioProcessor> {
+    public base::RefCountedThreadSafe<MediaStreamAudioProcessor>,
+    NON_EXPORTED_BASE(public WebRtcPlayoutDataSource::Sink) {
  public:
+  // |playout_data_source| is used to register this class as a sink to the
+  // WebRtc playout data for processing AEC. If clients do not enable AEC,
+  // |playout_data_source| won't be used.
   MediaStreamAudioProcessor(const media::AudioParameters& source_params,
                             const blink::WebMediaConstraints& constraints,
-                            int effects);
+                            int effects,
+                            WebRtcPlayoutDataSource* playout_data_source);
 
   // Pushes capture data in |audio_source| to the internal FIFO.
   // Called on the capture audio thread.
   void PushCaptureData(media::AudioBus* audio_source);
-
-  // Push the render audio to webrtc::AudioProcessing for analysis. This is
-  // needed iff echo processing is enabled.
-  // |render_audio| is the pointer to the render audio data, its format
-  // is specified by |sample_rate|, |number_of_channels| and |number_of_frames|.
-  // Called on the render audio thread.
-  void PushRenderData(const int16* render_audio,
-                      int sample_rate,
-                      int number_of_channels,
-                      int number_of_frames,
-                      base::TimeDelta render_delay);
 
   // Processes a block of 10 ms data from the internal FIFO and outputs it via
   // |out|. |out| is the address of the pointer that will be pointed to
@@ -96,6 +91,11 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   friend class MediaStreamAudioProcessorTest;
 
   class MediaStreamAudioConverter;
+
+  // WebRtcPlayoutDataSource::Sink implementation.
+  virtual void OnPlayoutData(media::AudioBus* audio_bus,
+                             int sample_rate,
+                             int audio_delay_milliseconds) OVERRIDE;
 
   // Helper to initialize the WebRtc AudioProcessing.
   void InitializeAudioProcessingModule(
@@ -144,7 +144,11 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   // Data bus to help converting interleaved data to an AudioBus.
   scoped_ptr<media::AudioBus> render_data_bus_;
 
-  // Used to DCHECK that some methods are called on the main render thread.
+  // Raw pointer to the WebRtcPlayoutDataSource, which is valid for the
+  // lifetime of RenderThread.
+  WebRtcPlayoutDataSource* const playout_data_source_;
+
+  // Used to DCHECK that the destructor is called on the main render thread.
   base::ThreadChecker main_thread_checker_;
 
   // Used to DCHECK that some methods are called on the capture audio thread.

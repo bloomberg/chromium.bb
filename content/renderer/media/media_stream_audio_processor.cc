@@ -142,8 +142,10 @@ class MediaStreamAudioProcessor::MediaStreamAudioConverter
 MediaStreamAudioProcessor::MediaStreamAudioProcessor(
     const media::AudioParameters& source_params,
     const blink::WebMediaConstraints& constraints,
-    int effects)
+    int effects,
+    WebRtcPlayoutDataSource* playout_data_source)
     : render_delay_ms_(0),
+      playout_data_source_(playout_data_source),
       audio_mirroring_(false),
       typing_detected_(false) {
   capture_thread_checker_.DetachFromThread();
@@ -162,42 +164,11 @@ void MediaStreamAudioProcessor::PushCaptureData(media::AudioBus* audio_source) {
   capture_converter_->Push(audio_source);
 }
 
-void MediaStreamAudioProcessor::PushRenderData(
-    const int16* render_audio, int sample_rate, int number_of_channels,
-    int number_of_frames, base::TimeDelta render_delay) {
-  DCHECK(render_thread_checker_.CalledOnValidThread());
-
-  // Return immediately if the echo cancellation is off.
-  if (!audio_processing_ ||
-      !audio_processing_->echo_cancellation()->is_enabled()) {
-    return;
-  }
-
-  TRACE_EVENT0("audio",
-               "MediaStreamAudioProcessor::FeedRenderDataToAudioProcessing");
-  int64 new_render_delay_ms = render_delay.InMilliseconds();
-  DCHECK_LT(new_render_delay_ms,
-            std::numeric_limits<base::subtle::Atomic32>::max());
-  base::subtle::Release_Store(&render_delay_ms_, new_render_delay_ms);
-
-  InitializeRenderConverterIfNeeded(sample_rate, number_of_channels,
-                                    number_of_frames);
-
-  // TODO(xians): Avoid this extra interleave/deinterleave.
-  render_data_bus_->FromInterleaved(render_audio,
-                                    render_data_bus_->frames(),
-                                    sizeof(render_audio[0]));
-  render_converter_->Push(render_data_bus_.get());
-  while (render_converter_->Convert(&render_frame_))
-    audio_processing_->AnalyzeReverseStream(&render_frame_);
-}
-
 bool MediaStreamAudioProcessor::ProcessAndConsumeData(
     base::TimeDelta capture_delay, int volume, bool key_pressed,
     int* new_volume, int16** out) {
   DCHECK(capture_thread_checker_.CalledOnValidThread());
-  TRACE_EVENT0("audio",
-               "MediaStreamAudioProcessor::ProcessAndConsumeData");
+  TRACE_EVENT0("audio", "MediaStreamAudioProcessor::ProcessAndConsumeData");
 
   if (!capture_converter_->Convert(&capture_frame_))
     return false;
@@ -215,6 +186,29 @@ const media::AudioParameters& MediaStreamAudioProcessor::InputFormat() const {
 
 const media::AudioParameters& MediaStreamAudioProcessor::OutputFormat() const {
   return capture_converter_->sink_parameters();
+}
+
+void MediaStreamAudioProcessor::OnPlayoutData(media::AudioBus* audio_bus,
+                                              int sample_rate,
+                                              int audio_delay_milliseconds) {
+  DCHECK(render_thread_checker_.CalledOnValidThread());
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  DCHECK(audio_processing_->echo_control_mobile()->is_enabled());
+#else
+  DCHECK(audio_processing_->echo_cancellation()->is_enabled());
+#endif
+
+  TRACE_EVENT0("audio", "MediaStreamAudioProcessor::OnPlayoutData");
+  DCHECK_LT(audio_delay_milliseconds,
+            std::numeric_limits<base::subtle::Atomic32>::max());
+  base::subtle::Release_Store(&render_delay_ms_, audio_delay_milliseconds);
+
+  InitializeRenderConverterIfNeeded(sample_rate, audio_bus->channels(),
+                                    audio_bus->frames());
+
+  render_converter_->Push(audio_bus);
+  while (render_converter_->Convert(&render_frame_))
+    audio_processing_->AnalyzeReverseStream(&render_frame_);
 }
 
 void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
@@ -279,6 +273,9 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     EnableEchoCancellation(audio_processing_.get());
     if (enable_experimental_aec)
       EnableExperimentalEchoCancellation(audio_processing_.get());
+
+    if (playout_data_source_)
+      playout_data_source_->AddPlayoutSink(this);
   }
 
   if (enable_ns)
@@ -422,6 +419,9 @@ int MediaStreamAudioProcessor::ProcessData(webrtc::AudioFrame* audio_frame,
 void MediaStreamAudioProcessor::StopAudioProcessing() {
   if (!audio_processing_.get())
     return;
+
+  if (playout_data_source_)
+    playout_data_source_->RemovePlayoutSink(this);
 
   audio_processing_.reset();
 }

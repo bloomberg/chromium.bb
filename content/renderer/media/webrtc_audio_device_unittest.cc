@@ -250,19 +250,14 @@ class MockWebRtcAudioRendererSource : public WebRtcAudioRendererSource {
   virtual ~MockWebRtcAudioRendererSource() {}
 
   // WebRtcAudioRendererSource implementation.
-  virtual void RenderData(uint8* audio_data,
-                          int number_of_channels,
-                          int number_of_frames,
+  virtual void RenderData(media::AudioBus* audio_bus,
+                          int sample_rate,
                           int audio_delay_milliseconds) OVERRIDE {
     // Signal that a callback has been received.
     // Initialize the memory to zero to avoid uninitialized warning from
     // Valgrind.
-    memset(audio_data, 0,
-           sizeof(int16) * number_of_channels * number_of_frames);
+    audio_bus->Zero();
     event_->Signal();
-  }
-
-  virtual void SetRenderFormat(const media::AudioParameters& params) OVERRIDE {
   }
 
   virtual void RemoveAudioRenderer(WebRtcAudioRenderer* renderer) OVERRIDE {};
@@ -332,8 +327,8 @@ int RunWebRtcLoopbackTimeTest(media::AudioManager* manager,
   int err = base->Init(webrtc_audio_device.get());
   EXPECT_EQ(0, err);
 
-  // We use OnSetFormat() and SetRenderFormat() to configure the audio
-  // parameters so that this test can run on machine without hardware device.
+  // We use OnSetFormat() to configure the audio parameters so that this
+  // test can run on machine without hardware device.
   const media::AudioParameters params = media::AudioParameters(
       media::AudioParameters::AUDIO_PCM_LOW_LATENCY, CHANNEL_LAYOUT_STEREO,
       48000, 2, 480);
@@ -341,7 +336,6 @@ int RunWebRtcLoopbackTimeTest(media::AudioManager* manager,
       static_cast<PeerConnectionAudioSink*>(webrtc_audio_device.get());
   WebRtcAudioRendererSource* renderer_source =
       static_cast<WebRtcAudioRendererSource*>(webrtc_audio_device.get());
-  renderer_source->SetRenderFormat(params);
 
   // Turn on/off all the signal processing components like AGC, AEC and NS.
   ScopedWebRTCPtr<webrtc::VoEAudioProcessing> audio_processing(engine.get());
@@ -367,15 +361,12 @@ int RunWebRtcLoopbackTimeTest(media::AudioManager* manager,
   // Read speech data from a speech test file.
   const int input_packet_size =
       params.frames_per_buffer() * 2 * params.channels();
-  const int num_output_channels = webrtc_audio_device->output_channels();
-  const int output_packet_size = webrtc_audio_device->output_buffer_size() * 2 *
-      num_output_channels;
   const size_t length = input_packet_size * kNumberOfPacketsForLoopbackTest;
   scoped_ptr<char[]> capture_data(new char[length]);
   ReadDataFromSpeechFile(capture_data.get(), length);
 
   // Start the timer.
-  scoped_ptr<uint8[]> buffer(new uint8[output_packet_size]);
+  scoped_ptr<media::AudioBus> render_audio_bus(media::AudioBus::Create(params));
   base::Time start_time = base::Time::Now();
   int delay = 0;
   std::vector<int> voe_channels;
@@ -395,8 +386,7 @@ int RunWebRtcLoopbackTimeTest(media::AudioManager* manager,
 
     // Receiving data from WebRtc.
     renderer_source->RenderData(
-        reinterpret_cast<uint8*>(buffer.get()),
-        num_output_channels, webrtc_audio_device->output_buffer_size(),
+        render_audio_bus.get(), params.sample_rate(),
         kHardwareLatencyInMs + delay);
     delay = (base::Time::Now() - start_time).InMilliseconds();
   }
