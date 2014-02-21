@@ -91,7 +91,7 @@ class NativeAppWindowViews : public apps::NativeAppWindow,
 
   void OnViewWasResized();
 
-  bool ShouldUseChromeStyleFrame() const;
+  bool ShouldUseNativeFrame() const;
 
   // Installs an EasyResizeWindowTargeter on the containing window, which
   // allows the window to be resized from within |kResizeInsideBoundsSize|
@@ -188,6 +188,8 @@ class NativeAppWindowViews : public apps::NativeAppWindow,
   virtual void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual bool IsFrameless() const OVERRIDE;
+  virtual bool HasFrameColor() const OVERRIDE;
+  virtual SkColor FrameColor() const OVERRIDE;
   virtual gfx::Insets GetFrameInsets() const OVERRIDE;
   virtual void HideWithApp() OVERRIDE;
   virtual void ShowWithApp() OVERRIDE;
@@ -216,6 +218,8 @@ class NativeAppWindowViews : public apps::NativeAppWindow,
   scoped_ptr<SkRegion> draggable_region_;
 
   bool frameless_;
+  bool has_frame_color_;
+  SkColor frame_color_;
   bool transparent_background_;
   gfx::Size preferred_size_;
   bool resizable_;

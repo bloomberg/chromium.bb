@@ -146,6 +146,16 @@ appWindow.registerCustomHook(function(bindingsAPI) {
       return appWindowData.id;
     }});
 
+    // These properties are for testing.
+    Object.defineProperty(
+        AppWindow.prototype, 'hasFrameColor', {get: function() {
+      return appWindowData.hasFrameColor;
+    }});
+
+    Object.defineProperty(AppWindow.prototype, 'frameColor', {get: function() {
+      return appWindowData.frameColor;
+    }});
+
     appWindowData = {
       id: params.id || '',
       bounds: { left: params.bounds.left, top: params.bounds.top,
@@ -157,7 +167,9 @@ appWindow.registerCustomHook(function(bindingsAPI) {
       fullscreen: params.fullscreen,
       minimized: params.minimized,
       maximized: params.maximized,
-      alwaysOnTop: params.alwaysOnTop
+      alwaysOnTop: params.alwaysOnTop,
+      hasFrameColor: params.hasFrameColor,
+      frameColor: params.frameColor
     };
     currentAppWindow = new AppWindow;
   });

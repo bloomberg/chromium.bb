@@ -211,6 +211,8 @@ void NativeAppWindowViews::Init(apps::AppWindow* app_window,
                                 const AppWindow::CreateParams& create_params) {
   app_window_ = app_window;
   frameless_ = create_params.frame == AppWindow::FRAME_NONE;
+  has_frame_color_ = create_params.has_frame_color;
+  frame_color_ = create_params.frame_color;
   transparent_background_ = create_params.transparent_background;
   resizable_ = create_params.resizable;
   Observe(web_contents());
@@ -232,7 +234,7 @@ void NativeAppWindowViews::Init(apps::AppWindow* app_window,
   window_->AddObserver(this);
 
 #if defined(OS_WIN)
-  if (ShouldUseChromeStyleFrame() &&
+  if (ShouldUseNativeFrame() &&
       chrome::GetHostDesktopTypeForNativeWindow(window_->GetNativeWindow()) !=
       chrome::HOST_DESKTOP_TYPE_ASH) {
     InstallEasyResizeTargeterOnContainer();
@@ -255,7 +257,7 @@ void NativeAppWindowViews::InitializeDefaultWindow(
 
   views::Widget::InitParams init_params(views::Widget::InitParams::TYPE_WINDOW);
   init_params.delegate = this;
-  init_params.remove_standard_frame = ShouldUseChromeStyleFrame();
+  init_params.remove_standard_frame = !ShouldUseNativeFrame();
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // On Linux, remove the standard frame. Instead, we will use CustomFrameView
   // to draw a native-like frame.
@@ -376,17 +378,8 @@ void NativeAppWindowViews::InitializePanelWindow(
 #endif
 }
 
-bool NativeAppWindowViews::ShouldUseChromeStyleFrame() const {
-  if (frameless_)
-    return true;
-
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  // Linux always uses native style frames.
-  return false;
-#endif
-
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAppsUseNativeFrame);
+bool NativeAppWindowViews::ShouldUseNativeFrame() const {
+  return !frameless_ & !has_frame_color_;
 }
 
 void NativeAppWindowViews::InstallEasyResizeTargeterOnContainer() const {
@@ -415,6 +408,7 @@ apps::AppWindowFrameView* NativeAppWindowViews::CreateAppWindowFrameView() {
 #endif
   apps::AppWindowFrameView* frame_view = new apps::AppWindowFrameView(this);
   frame_view->Init(window_,
+                   frame_color_,
                    resize_inside_bounds_size,
                    resize_outside_bounds_size,
                    resize_outside_scale_for_touch,
@@ -638,7 +632,7 @@ bool NativeAppWindowViews::CanMaximize() const {
 }
 
 base::string16 NativeAppWindowViews::GetWindowTitle() const {
-  return app_window_->GetTitle();
+  return base::string16();
 }
 
 bool NativeAppWindowViews::ShouldShowWindowTitle() const {
@@ -730,7 +724,7 @@ views::NonClientFrameView* NativeAppWindowViews::CreateNonClientFrameView(
     }
   }
 #endif
-  if (ShouldUseChromeStyleFrame())
+  if (!ShouldUseNativeFrame())
     return CreateAppWindowFrameView();
   return views::WidgetDelegateView::CreateNonClientFrameView(widget);
 }
@@ -971,6 +965,10 @@ void NativeAppWindowViews::HandleKeyboardEvent(
 bool NativeAppWindowViews::IsFrameless() const {
   return frameless_;
 }
+
+bool NativeAppWindowViews::HasFrameColor() const { return has_frame_color_; }
+
+SkColor NativeAppWindowViews::FrameColor() const { return frame_color_; }
 
 gfx::Insets NativeAppWindowViews::GetFrameInsets() const {
   if (frameless_)

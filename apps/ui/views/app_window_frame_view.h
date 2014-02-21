@@ -44,6 +44,7 @@ class AppWindowFrameView : public views::NonClientFrameView,
   // which a click is interpreted as a resize for the inner and outer border of
   // the window and the lower-right corner resize handle.
   void Init(views::Widget* frame,
+            const SkColor& frame_color,
             int resize_inside_bounds_size,
             int resize_outside_bounds_size,
             int resize_outside_scale_for_touch,
@@ -75,6 +76,7 @@ class AppWindowFrameView : public views::NonClientFrameView,
 
   NativeAppWindow* window_;
   views::Widget* frame_;
+  SkColor frame_color_;
   views::ImageButton* close_button_;
   views::ImageButton* maximize_button_;
   views::ImageButton* restore_button_;

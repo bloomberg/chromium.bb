@@ -7,6 +7,7 @@
 
 #include "apps/app_window.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/base_window.h"
 #include "ui/gfx/insets.h"
 
@@ -56,6 +57,10 @@ class NativeAppWindow : public ui::BaseWindow,
   // Returns true if the window has no frame, as for a window opened by
   // chrome.app.window.create with the option 'frame' set to 'none'.
   virtual bool IsFrameless() const = 0;
+
+  // Returns information about the window's frame.
+  virtual bool HasFrameColor() const = 0;
+  virtual SkColor FrameColor() const = 0;
 
   // Returns the difference between the window bounds (including titlebar and
   // borders) and the content bounds, if any.

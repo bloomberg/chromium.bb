@@ -668,6 +668,14 @@ bool NativeAppWindowGtk::IsFrameless() const {
   return frameless_;
 }
 
+bool NativeAppWindowGtk::HasFrameColor() const {
+  return false;
+}
+
+SkColor NativeAppWindowGtk::FrameColor() const {
+  return SkColor();
+}
+
 gfx::Insets NativeAppWindowGtk::GetFrameInsets() const {
   if (frameless_)
     return gfx::Insets();

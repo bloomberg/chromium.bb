@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 var callbackPass = chrome.test.callbackPass;
+var callbackFail = chrome.test.callbackFail;
 var defaultFuzzFactor = 1;
 
 function assertFuzzyEq(expected, actual, fuzzFactor, message) {
@@ -556,6 +557,117 @@ function testBadging() {
             'WaitForRoundTrip', callbackPass(function(reply) {}));
       }));
     },
+  ]);
+}
+
+function testFrameColors() {
+  chrome.test.runTests([
+    function testWithNoColor() {
+      chrome.app.window.create('test.html', callbackPass(function(win) {
+        chrome.test.assertEq(false, win.hasFrameColor);
+        win.close();
+      }));
+    },
+
+    function testWithFrameNone() {
+      chrome.app.window.create('test.html', {
+        frame: 'none'
+      },
+      callbackPass(function(win) {
+        chrome.test.assertEq(false, win.hasFrameColor);
+        win.close();
+      }));
+    },
+
+    function testWithBlack() {
+      chrome.app.window.create('test.html', {
+        frameOptions: {
+          type: 'chrome',
+          color: '#000000'
+        }
+      },
+      callbackPass(function(win) {
+        chrome.test.assertEq(true, win.hasFrameColor);
+        chrome.test.assertEq(-16777216, win.frameColor);
+        win.close();
+      }));
+    },
+
+    function testWithWhite() {
+      chrome.app.window.create('test.html', {
+        frameOptions: {
+          color: '#FFFFFF'
+        }
+      },
+      callbackPass(function(win) {
+        chrome.test.assertEq(true, win.hasFrameColor);
+        chrome.test.assertEq(-1, win.frameColor);
+        win.close();
+      }));
+    },
+
+    function testWithWhiteShorthand() {
+      chrome.app.window.create('test.html', {
+        frameOptions: {
+          color: '#FFF'
+        }
+      },
+      callbackPass(function(win) {
+        chrome.test.assertEq(true, win.hasFrameColor);
+        chrome.test.assertEq(-1, win.frameColor);
+        win.close();
+      }));
+    },
+
+    function testWithFrameAndFrameOptions() {
+      chrome.app.window.create('test.html', {
+        frame: 'chrome',
+        frameOptions: {
+          color: '#FFF'
+        }
+      },
+      callbackFail('Only one of frame and frameOptions can be supplied.'));
+    },
+
+    function testWithFrameNoneAndColor() {
+      chrome.app.window.create('test.html', {
+        frameOptions: {
+          type: 'none',
+          color: '#FFF'
+        }
+      },
+      callbackFail('Windows with no frame cannot have a color.'));
+    },
+
+    function testWithInvalidColor() {
+      chrome.app.window.create('test.html', {
+        frameOptions: {
+          color: 'DontWorryBeHappy'
+        }
+      },
+      callbackFail('The color specification could not be parsed.'));
+    }
+  ]);
+}
+
+function testFrameColorsInStable() {
+  chrome.test.runTests([
+    function testWithNoColor() {
+      chrome.app.window.create('test.html', callbackPass(function(win) {
+        chrome.test.assertEq(true, win.hasFrameColor);
+        chrome.test.assertEq(-1, win.frameColor);
+        win.close();
+      }));
+    },
+
+    function testWithOptionsGivesError() {
+      chrome.app.window.create('test.html', {
+        frameOptions: {
+          color: '#FFF'
+        }
+      },
+      callbackFail('frameOptions is only available in dev channel.'));
+    }
   ]);
 }
 

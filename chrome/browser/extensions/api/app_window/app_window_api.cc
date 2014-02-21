@@ -9,10 +9,12 @@
 #include "apps/app_window_registry.h"
 #include "apps/ui/native_app_window.h"
 #include "base/command_line.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/devtools/devtools_window.h"
+#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/apps/chrome_app_window_delegate.h"
@@ -26,6 +28,7 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/switches.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
 #include "url/gurl.h"
@@ -46,9 +49,17 @@ namespace extensions {
 namespace app_window_constants {
 const char kInvalidWindowId[] =
     "The window id can not be more than 256 characters long.";
-}
+const char kInvalidColorSpecification[] =
+    "The color specification could not be parsed.";
+const char kInvalidChannelForFrameOptions[] =
+    "frameOptions is only available in dev channel.";
+const char kFrameOptionsAndFrame[] =
+    "Only one of frame and frameOptions can be supplied.";
+const char kColorWithFrameNone[] = "Windows with no frame cannot have a color.";
+}  // namespace app_window_constants
 
 const char kNoneFrameOption[] = "none";
+  // TODO(benwells): Remove HTML titlebar injection.
 const char kHtmlFrameOption[] = "experimental-html";
 
 namespace {
@@ -84,6 +95,9 @@ class DevToolsRestorer : public base::RefCounted<DevToolsRestorer> {
 
 }  // namespace
 
+AppWindowCreateFunction::AppWindowCreateFunction()
+    : inject_html_titlebar_(false) {}
+
 void AppWindowCreateFunction::SendDelayedResponse() {
   SendResponse(true);
 }
@@ -104,8 +118,6 @@ bool AppWindowCreateFunction::RunImpl() {
     if (absolute.has_scheme())
       url = absolute;
   }
-
-  bool inject_html_titlebar = false;
 
   // TODO(jeremya): figure out a way to pass the opening WebContents through to
   // AppWindow::Create so we can set the opener at create time rather than
@@ -152,6 +164,7 @@ bool AppWindowCreateFunction::RunImpl() {
           result->Set("viewId", new base::FundamentalValue(view_id));
           window->GetSerializedState(result);
           result->SetBoolean("existingWindow", true);
+          // TODO(benwells): Remove HTML titlebar injection.
           result->SetBoolean("injectTitlebar", false);
           SetResult(result);
           SendResponse(true);
@@ -199,19 +212,8 @@ bool AppWindowCreateFunction::RunImpl() {
       }
     }
 
-    if (options->frame.get()) {
-      if (*options->frame == kHtmlFrameOption &&
-          (GetExtension()->HasAPIPermission(APIPermission::kExperimental) ||
-           CommandLine::ForCurrentProcess()->HasSwitch(
-               switches::kEnableExperimentalExtensionApis))) {
-        create_params.frame = AppWindow::FRAME_NONE;
-        inject_html_titlebar = true;
-      } else if (*options->frame == kNoneFrameOption) {
-        create_params.frame = AppWindow::FRAME_NONE;
-      } else {
-        create_params.frame = AppWindow::FRAME_CHROME;
-      }
-    }
+    if (!GetFrameOptions(*options, &create_params))
+      return false;
 
     if (options->transparent_background.get() &&
         (GetExtension()->HasAPIPermission(APIPermission::kExperimental) ||
@@ -262,6 +264,8 @@ bool AppWindowCreateFunction::RunImpl() {
     }
   }
 
+  UpdateFrameOptionsForChannel(&create_params);
+
   create_params.creator_process_id =
       render_view_host_->GetProcess()->GetID();
 
@@ -282,7 +286,7 @@ bool AppWindowCreateFunction::RunImpl() {
   base::DictionaryValue* result = new base::DictionaryValue;
   result->Set("viewId", new base::FundamentalValue(view_id));
   result->Set("injectTitlebar",
-      new base::FundamentalValue(inject_html_titlebar));
+      new base::FundamentalValue(inject_html_titlebar_));
   result->Set("id", new base::StringValue(app_window->window_key()));
   app_window->GetSerializedState(result);
   SetResult(result);
@@ -295,6 +299,76 @@ bool AppWindowCreateFunction::RunImpl() {
 
   SendResponse(true);
   return true;
+}
+
+AppWindow::Frame AppWindowCreateFunction::GetFrameFromString(
+    const std::string& frame_string) {
+   if (frame_string == kHtmlFrameOption &&
+       (GetExtension()->HasAPIPermission(APIPermission::kExperimental) ||
+        CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableExperimentalExtensionApis))) {
+     inject_html_titlebar_ = true;
+     return AppWindow::FRAME_NONE;
+   }
+
+   if (frame_string == kNoneFrameOption)
+    return AppWindow::FRAME_NONE;
+
+  return AppWindow::FRAME_CHROME;
+}
+
+bool AppWindowCreateFunction::GetFrameOptions(
+    const app_window::CreateWindowOptions& options,
+    AppWindow::CreateParams* create_params) {
+  if (options.frame.get() && options.frame_options.get()) {
+    error_ = app_window_constants::kFrameOptionsAndFrame;
+    return false;
+  }
+
+  if (options.frame.get())
+    create_params->frame = GetFrameFromString(*options.frame);
+
+  if (options.frame_options.get()) {
+    if (GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV) {
+      app_window::FrameOptions* frame_options = options.frame_options.get();
+
+      if (frame_options->type.get())
+        create_params->frame = GetFrameFromString(*frame_options->type);
+
+      if (frame_options->color.get()) {
+        if (create_params->frame != AppWindow::FRAME_CHROME) {
+          error_ = app_window_constants::kColorWithFrameNone;
+          return false;
+        }
+
+        if (ExtensionActionFunction::ParseCSSColorString(
+                *frame_options->color,
+                &create_params->frame_color)) {
+          create_params->has_frame_color = true;
+        } else {
+          error_ = app_window_constants::kInvalidColorSpecification;
+          return false;
+        }
+      }
+    } else {
+      error_ = app_window_constants::kInvalidChannelForFrameOptions;
+      return false;
+    }
+  }
+
+  return true;
+}
+
+void AppWindowCreateFunction::UpdateFrameOptionsForChannel(
+    apps::AppWindow::CreateParams* create_params) {
+  if (create_params->frame == AppWindow::FRAME_CHROME &&
+      GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV) {
+    // If not on trunk or dev channel, always use the standard white frame.
+    // TODO(benwells): Remove this code once we get agreement to use the new
+    // native style frame.
+    create_params->has_frame_color = true;
+    create_params->frame_color = SK_ColorWHITE;
+  }
 }
 
 }  // namespace extensions

@@ -51,11 +51,13 @@ AppWindowFrameView::AppWindowFrameView(NativeAppWindow* window)
 AppWindowFrameView::~AppWindowFrameView() {}
 
 void AppWindowFrameView::Init(views::Widget* frame,
+                              const SkColor& frame_color,
                               int resize_inside_bounds_size,
                               int resize_outside_bounds_size,
                               int resize_outside_scale_for_touch,
                               int resize_area_corner_size) {
   frame_ = frame;
+  frame_color_ = frame_color;
   resize_inside_bounds_size_ = resize_inside_bounds_size;
   resize_outside_bounds_size_ = resize_outside_bounds_size;
   resize_area_corner_size_ = resize_area_corner_size;
@@ -156,11 +158,12 @@ int AppWindowFrameView::NonClientHitTest(const gfx::Point& point) {
     return HTCLIENT;
 
   gfx::Rect expanded_bounds = bounds();
-  if (resize_outside_bounds_size_)
+  if (resize_outside_bounds_size_) {
     expanded_bounds.Inset(gfx::Insets(-resize_outside_bounds_size_,
                                       -resize_outside_bounds_size_,
                                       -resize_outside_bounds_size_,
                                       -resize_outside_bounds_size_));
+  }
   // Points outside the (possibly expanded) bounds can be discarded.
   if (!expanded_bounds.Contains(point))
     return HTNOWHERE;
@@ -297,7 +300,7 @@ void AppWindowFrameView::OnPaint(gfx::Canvas* canvas) {
   SkPaint paint;
   paint.setAntiAlias(false);
   paint.setStyle(SkPaint::kFill_Style);
-  paint.setColor(SK_ColorWHITE);
+  paint.setColor(frame_color_);
   gfx::Path path;
   path.moveTo(0, 0);
   path.lineTo(width(), 0);

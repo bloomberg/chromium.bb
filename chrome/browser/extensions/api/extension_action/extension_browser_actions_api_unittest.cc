@@ -49,4 +49,8 @@ TEST(ExtensionBrowserActionsApiTest, ChangeBadgeBackgroundCSSInvalid) {
   RunFailTest("#-22128");
 }
 
+TEST(ExtensionBrowserActionsApiTest, ChangeBadgeBackgroundCSSInvalidWithPlus) {
+  RunFailTest("#+22128");
+}
+
 }  // namespace extensions

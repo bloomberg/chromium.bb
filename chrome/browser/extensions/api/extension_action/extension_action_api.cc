@@ -638,36 +638,31 @@ void ExtensionActionFunction::NotifySystemIndicatorChange() {
 bool ExtensionActionFunction::ParseCSSColorString(
     const std::string& color_string,
     SkColor* result) {
-  std::string formatted_color = "#";
+  std::string formatted_color;
   // Check the string for incorrect formatting.
-  if (color_string[0] != '#')
+  if (color_string.empty() || color_string[0] != '#')
     return false;
 
   // Convert the string from #FFF format to #FFFFFF format.
   if (color_string.length() == 4) {
-    for (size_t i = 1; i < color_string.length(); i++) {
+    for (size_t i = 1; i < 4; ++i) {
       formatted_color += color_string[i];
       formatted_color += color_string[i];
     }
+  } else if (color_string.length() == 7) {
+    formatted_color = color_string.substr(1, 6);
   } else {
-    formatted_color = color_string;
-  }
-
-  if (formatted_color.length() != 7)
     return false;
+  }
 
   // Convert the string to an integer and make sure it is in the correct value
   // range.
-  int color_ints[3] = {0};
-  for (int i = 0; i < 3; i++) {
-    if (!base::HexStringToInt(formatted_color.substr(1 + (2 * i), 2),
-                              color_ints + i))
-      return false;
-    if (color_ints[i] > 255 || color_ints[i] < 0)
-      return false;
-  }
+  std::vector<uint8> color_bytes;
+  if (!base::HexStringToBytes(formatted_color, &color_bytes))
+    return false;
 
-  *result = SkColorSetARGB(255, color_ints[0], color_ints[1], color_ints[2]);
+  DCHECK_EQ(3u, color_bytes.size());
+  *result = SkColorSetARGB(255, color_bytes[0], color_bytes[1], color_bytes[2]);
   return true;
 }
 

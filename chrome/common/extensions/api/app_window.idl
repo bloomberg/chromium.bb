@@ -13,6 +13,12 @@ namespace app.window {
     long? height;
   };
 
+  // TODO(benwells): document this once we are happy with it.
+  [nodoc] dictionary FrameOptions {
+    DOMString? type;
+    DOMString? color;
+  };
+
   // State of a window: normal, fullscreen, maximized, minimized.
   enum State { normal, fullscreen, maximized, minimized };
 
@@ -75,6 +81,10 @@ namespace app.window {
     // can be used to mark regions draggable. <code>no-drag</code> can be used
     // to disable this style on nested elements.
     DOMString? frame;
+
+    // TODO(benwells): Fix the IDL parsing so this can be:
+    // (DOMString or FrameOptions)? frame.
+    [nodoc] FrameOptions? frameOptions;
 
     // Size and position of the content in the window (excluding the titlebar).
     // If an id is also specified and a window with a matching id has been shown
@@ -231,6 +241,10 @@ namespace app.window {
 
     // Is the window always on top?
     static boolean isAlwaysOnTop();
+
+    // Accessors for testing.
+    [nodoc] boolean hasFrameColor;
+    [nodoc] long frameColor;
 
     // Set whether the window should stay above most other windows. Requires the
     // <code>"alwaysOnTopWindows"</code> permission.

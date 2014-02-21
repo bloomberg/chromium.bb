@@ -157,6 +157,9 @@ class AppWindow : public content::NotificationObserver,
 
     WindowType window_type;
     Frame frame;
+
+    bool has_frame_color;
+    SkColor frame_color;
     bool transparent_background;  // Only supported on ash.
 
     // Specify the initial content bounds of the window (excluding any window

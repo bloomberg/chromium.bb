@@ -835,6 +835,16 @@ bool NativeAppWindowCocoa::IsFrameless() const {
   return !has_frame_;
 }
 
+bool NativeAppWindowCocoa::HasFrameColor() const {
+  // TODO(benwells): Implement this.
+  return false;
+}
+
+SkColor NativeAppWindowCocoa::FrameColor() const {
+  // TODO(benwells): Implement this.
+  return SkColor();
+}
+
 gfx::Insets NativeAppWindowCocoa::GetFrameInsets() const {
   if (!has_frame_)
     return gfx::Insets();

@@ -123,6 +123,7 @@ void AppWindow::SizeConstraints::set_maximum_size(const gfx::Size& max_size) {
 AppWindow::CreateParams::CreateParams()
     : window_type(AppWindow::WINDOW_TYPE_DEFAULT),
       frame(AppWindow::FRAME_CHROME),
+      has_frame_color(false),
       transparent_background(false),
       bounds(INT_MIN, INT_MIN, 0, 0),
       creator_process_id(0),
@@ -610,6 +611,8 @@ void AppWindow::GetSerializedState(base::DictionaryValue* properties) const {
   boundsValue->SetInteger("width", bounds.width());
   boundsValue->SetInteger("height", bounds.height());
   properties->Set("bounds", boundsValue.release());
+  properties->SetBoolean("hasFrameColor", native_app_window_->HasFrameColor());
+  properties->SetInteger("frameColor", native_app_window_->FrameColor());
 
   const SizeConstraints& constraints = size_constraints();
   gfx::Size min_size = constraints.GetMinimumSize();

@@ -215,3 +215,15 @@ IN_PROC_BROWSER_TEST_F(AppWindowAPITest, TestBadging) {
   ASSERT_TRUE(
       RunAppWindowAPITestAndWaitForRoundTrip("testBadging")) << message_;
 }
+
+// TODO(benwells): Implement on Mac.
+#if defined(USE_AURA)
+IN_PROC_BROWSER_TEST_F(AppWindowAPITest, TestFrameColors) {
+  ASSERT_TRUE(RunAppWindowAPITest("testFrameColors")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(AppWindowAPITest, TestFrameColorsInStable) {
+  extensions::ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_STABLE);
+  ASSERT_TRUE(RunAppWindowAPITest("testFrameColorsInStable")) << message_;
+}
+#endif
