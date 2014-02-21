@@ -70,7 +70,8 @@ class GPU_EXPORT GpuControlList {
   //    "crBugs": [1234],
   //    "webkitBugs": []
   // }
-  void GetReasons(base::ListValue* problem_list) const;
+  void GetReasons(
+      base::ListValue* problem_list, const std::string& tag) const;
 
   // Return the largest entry id.  This is used for histogramming.
   uint32 max_entry_id() const;
@@ -320,6 +321,11 @@ class GPU_EXPORT GpuControlList {
 
     // Returns the blacklisted features in this entry.
     const std::set<int>& features() const;
+
+    // Returns a list of blacklisted feature names in this entry.
+    void GetFeatureNames(base::ListValue* feature_names,
+                         const FeatureMap& feature_map,
+                         bool supports_feature_type_all) const;
 
    private:
     friend class base::RefCounted<GpuControlListEntry>;

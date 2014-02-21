@@ -1172,6 +1172,22 @@ const std::set<int>& GpuControlList::GpuControlListEntry::features() const {
   return features_;
 }
 
+void GpuControlList::GpuControlListEntry::GetFeatureNames(
+    base::ListValue* feature_names,
+    const FeatureMap& feature_map,
+    bool supports_feature_type_all) const {
+  DCHECK(feature_names);
+  if (supports_feature_type_all && features_.size() == feature_map.size()) {
+    feature_names->AppendString("all");
+    return;
+  }
+  for (FeatureMap::const_iterator iter = feature_map.begin();
+       iter != feature_map.end(); ++iter) {
+    if (features_.count(iter->second) > 0)
+      feature_names->AppendString(iter->first);
+  }
+}
+
 // static
 bool GpuControlList::GpuControlListEntry::StringToFeature(
     const std::string& feature_name, int* feature_id,
@@ -1300,7 +1316,8 @@ void GpuControlList::GetDecisionEntries(
   }
 }
 
-void GpuControlList::GetReasons(base::ListValue* problem_list) const {
+void GpuControlList::GetReasons(base::ListValue* problem_list,
+                                const std::string& tag) const {
   DCHECK(problem_list);
   for (size_t i = 0; i < active_entries_.size(); ++i) {
     GpuControlListEntry* entry = active_entries_[i].get();
@@ -1320,6 +1337,13 @@ void GpuControlList::GetReasons(base::ListValue* problem_list) const {
       webkit_bugs->Append(new base::FundamentalValue(entry->webkit_bugs()[j]));
     }
     problem->Set("webkitBugs", webkit_bugs);
+
+    base::ListValue* features = new base::ListValue();
+    entry->GetFeatureNames(features, feature_map_, supports_feature_type_all_);
+    problem->Set("affectedGpuSettings", features);
+
+    DCHECK(tag == "workarounds" || tag == "disabledFeatures");
+    problem->SetString("tag", tag);
 
     problem_list->Append(problem);
   }

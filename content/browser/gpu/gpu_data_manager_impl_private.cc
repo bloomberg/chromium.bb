@@ -832,7 +832,9 @@ std::string GpuDataManagerImplPrivate::GetDriverBugListVersion() const {
 void GpuDataManagerImplPrivate::GetBlacklistReasons(
     base::ListValue* reasons) const {
   if (gpu_blacklist_)
-    gpu_blacklist_->GetReasons(reasons);
+    gpu_blacklist_->GetReasons(reasons, "disabledFeatures");
+  if (gpu_driver_bug_list_)
+    gpu_driver_bug_list_->GetReasons(reasons, "workarounds");
 }
 
 void GpuDataManagerImplPrivate::GetDriverBugWorkarounds(

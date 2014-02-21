@@ -303,6 +303,35 @@ cr.define('gpu', function() {
         nbugs++;
       }
 
+      if (problem.affectedGpuSettings.length > 0) {
+        var brNode = document.createElement('br');
+        problemEl.appendChild(brNode);
+
+        var iNode = document.createElement('i');
+        problemEl.appendChild(iNode);
+
+        var headNode = document.createElement('span');
+        if (problem.tag == 'disabledFeatures')
+          headNode.textContent = 'Disabled Features: ';
+        else  // problem.tag == 'workarounds'
+          headNode.textContent = 'Applied Workarounds: ';
+        iNode.appendChild(headNode);
+        for (j = 0; j < problem.affectedGpuSettings.length; ++j) {
+          if (j > 0) {
+            var separateNode = document.createElement('span');
+            separateNode.textContent = ', ';
+            iNode.appendChild(separateNode);
+          }
+          var nameNode = document.createElement('span');
+          if (problem.tag == 'disabledFeatures')
+            nameNode.classList.add('feature-red');
+          else  // problem.tag == 'workarounds'
+            nameNode.classList.add('feature-yellow');
+          nameNode.textContent = problem.affectedGpuSettings[j];
+          iNode.appendChild(nameNode);
+        }
+      }
+
       return problemEl;
     },
 

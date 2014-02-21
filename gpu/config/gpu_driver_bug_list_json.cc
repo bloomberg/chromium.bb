@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "3.11",
+  "version": "4.0",
   "entries": [
     {
       "id": 1,
@@ -51,19 +51,21 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 3,
+      "description": "glGenerateMipmap leaks vram without setting texture filters on some drivers",
       "features": [
         "set_texture_filter_before_generating_mipmap"
       ]
     },
     {
       "id": 4,
-      "description": "Need to set the alpha to 255",
+      "description": "glReadPixels incorrectly sets alpha to 0 on some drivers from a drawing buffer without alpha channel",
       "features": [
         "clear_alpha_in_readpixels"
       ]
     },
     {
       "id": 5,
+      "description": "Always call glUseProgram after a successful link to avoid a driver bug",
       "vendor_id": "0x10de",
       "features": [
         "use_current_program_after_successful_link"
@@ -71,6 +73,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 6,
+      "description": "Restore scissor on FBO change with Qualcomm GPUs on older versions of Android",
       "cr_bugs": [165493, 222018],
       "os": {
         "type": "android",
@@ -90,6 +93,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     {
       "id": 7,
       "cr_bugs": [89557],
+      "description": "Work around a bug in offscreen buffers on NVIDIA GPUs on Macs",
       "os": {
         "type": "macosx"
       },
@@ -100,6 +104,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 8,
+      "description": "A few built-in glsl functions on Mac behave incorrectly",
       "os": {
         "type": "macosx"
       },
@@ -110,7 +115,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 9,
-      "description": "Mac AMD drivers get gl_PointCoord backward on OSX 10.8 or earlier",
+      "description": "AMD drivers get gl_PointCoord backward on OS X 10.8 or earlier",
       "cr_bugs": [256349],
       "os": {
         "type": "macosx",
@@ -126,7 +131,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 10,
-      "description": "Mac Intel drivers get gl_PointCoord backward on OSX 10.8 or earlier",
+      "description": "Intel drivers get gl_PointCoord backward on OS X 10.8 or earlier",
       "cr_bugs": [256349],
       "os": {
         "type": "macosx",
@@ -142,6 +147,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 11,
+      "description": "Limit max texure size to 4096 on Macs with Intel GPUs",
       "os": {
         "type": "macosx"
       },
@@ -152,6 +158,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 12,
+      "description": "Limit max cube map texure size to 1024 on Macs with Intel GPUs",
       "os": {
         "type": "macosx"
       },
@@ -162,6 +169,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 13,
+      "description": "Limit max cube map texure size to 512 on older Macs with Intel GPUs",
       "os": {
         "type": "macosx",
         "version": {
@@ -176,6 +184,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 14,
+      "description": "Limit max texure size and cube map texture size to 4096 on Macs with AMD GPUs",
       "os": {
         "type": "macosx"
       },
@@ -187,7 +196,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 16,
-      "description": "Intel drivers on Linux appear to be buggy",
+      "description": "EXT_occlusion_query appears to be buggy with Intel GPUs on Linux",
       "os": {
         "type": "linux"
       },
@@ -222,6 +231,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 19,
+      "description": "Disable depth textures on Android with Qualcomm GPUs",
       "os": {
         "type": "android"
       },
@@ -235,7 +245,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 20,
-      "description": "Disable EXT_draw_buffers on GeForce GT 650M on Mac OS X due to driver bugs.",
+      "description": "Disable EXT_draw_buffers on GeForce GT 650M on Mac OS X due to driver bugs",
       "os": {
         "type": "macosx"
       },
@@ -248,7 +258,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 21,
-      "description": "Vivante GPUs are buggy with context switching.",
+      "description": "Vivante GPUs are buggy with context switching",
       "cr_bugs": [179250, 235935],
       "os": {
         "type": "android"
@@ -263,7 +273,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 22,
-      "description": "Imagination drivers are buggy with context switching.",
+      "description": "Imagination drivers are buggy with context switching",
       "cr_bugs": [230896],
       "os": {
         "type": "android"
@@ -279,7 +289,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     {
       "id": 23,
       "cr_bugs": [243038],
-      "description": "Disable OES_standard_derivative on Intel Pineview M Gallium drivers.",
+      "description": "Disable OES_standard_derivative on Intel Pineview M Gallium drivers",
       "os": {
         "type": "chromeos"
       },
@@ -292,7 +302,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     {
       "id": 24,
       "cr_bugs": [231082],
-      "description": "Mali-400 drivers throw an error when a buffer object's size is set to 0.",
+      "description": "Mali-400 drivers throw an error when a buffer object's size is set to 0",
       "os": {
         "type": "android"
       },
@@ -311,8 +321,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     {
       "id": 25,
       "cr_bugs": [152225],
-      "description":
-          "PBO + Readpixels + intel gpu doesn't work on OSX 10.7.",
+      "description": "PBO + Readpixels don't work on Intel GPUs on OS X 10.7",
       "os": {
         "type": "macosx",
         "version": {
@@ -327,7 +336,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 26,
-      "description": "Disable use of Direct3D 11 on Windows Vista and lower.",
+      "description": "Disable use of Direct3D 11 on Windows Vista and lower",
       "os": {
         "type": "win",
         "version": {
@@ -342,7 +351,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     {
       "id": 27,
       "cr_bugs": [265115],
-      "description": "Async Readpixels with GL_BGRA format is broken on Haswell chipset on Mac.",
+      "description": "Async Readpixels with GL_BGRA format is broken on Haswell chipset on Macs",
       "os": {
         "type": "macosx"
       },
@@ -356,7 +365,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     {
       "id": 29,
       "cr_bugs": [278606],
-      "description": "Testing fences is broken on QualComm.",
+      "description": "Testing fences is broken on QualComm",
       "os": {
         "type": "android",
         "version": {
@@ -386,7 +395,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     {
       "id": 31,
       "cr_bugs": [154715, 10068, 269829, 294779, 285292],
-      "description": "The Mali-Txxx driver does not guarantee flush ordering.",
+      "description": "The Mali-Txxx driver does not guarantee flush ordering",
       "gl_vendor": {
         "op": "beginwith",
         "value": "ARM"
@@ -402,7 +411,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     {
       "id": 32,
       "cr_bugs": [179815],
-      "description": "Share groups are not working on (older?) Broadcom drivers.",
+      "description": "Share groups are not working on (older?) Broadcom drivers",
       "os": {
         "type": "android"
       },
@@ -416,7 +425,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 33,
-      "description": "Share group-related crashes and poor context switching perf on Galaxy Nexus.",
+      "description": "Share group-related crashes and poor context switching perf on Galaxy Nexus",
       "os": {
         "type": "android"
       },
@@ -431,7 +440,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     {
       "id": 34,
       "cr_bugs": [179250, 229643, 230896],
-      "description": "Share groups are not working on (older?) Vivante drivers.",
+      "description": "Share groups are not working on (older?) Vivante drivers",
       "os": {
         "type": "android"
       },
@@ -446,7 +455,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     {
       "id": 35,
       "cr_bugs": [163464],
-      "description": "Share-group related crashes on older NVIDIA drivers.",
+      "description": "Share-group related crashes on older NVIDIA drivers",
       "os": {
         "type": "android",
         "version": {
@@ -465,7 +474,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     {
       "id": 36,
       "cr_bugs": [163464, 233612],
-      "description": "Share-group related crashes on Qualcomm drivers.",
+      "description": "Share-group related crashes on Qualcomm drivers",
       "os": {
         "type": "android",
         "version": {
@@ -541,7 +550,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     {
       "id": 42,
       "cr_bugs": [290876],
-      "description": "Framebuffer discarding causes flickering on older IMG drivers.",
+      "description": "Framebuffer discarding causes flickering on older IMG drivers",
       "os": {
         "type": "android"
       },
@@ -560,7 +569,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     {
       "id": 43,
       "cr_bugs": [299494],
-      "description": "Framebuffer discarding doesn't accept trivial attachments on Vivante.",
+      "description": "Framebuffer discarding doesn't accept trivial attachments on Vivante",
       "os": {
         "type": "android"
       },
@@ -586,7 +595,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     {
       "id": 45,
       "cr_bugs": [307751],
-      "description": "Unfold short circuit on MacOSX.",
+      "description": "Unfold short circuit on Mac OS X",
       "os": {
         "type": "macosx"
       },
@@ -596,7 +605,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 46,
-      "description": "Using D3D11 causes browser crashes on certain Intel GPUs.",
+      "description": "Using D3D11 causes browser crashes on certain Intel GPUs",
       "cr_bugs": [310808],
       "os": {
         "type": "win"
@@ -608,7 +617,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 48,
-      "description": "Force to use discrete GPU on older MacBookPro models.",
+      "description": "Force to use discrete GPU on older MacBookPro models",
       "cr_bugs": [113703],
       "os": {
         "type": "macosx",
@@ -638,7 +647,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     {
       "id": 49,
       "cr_bugs": [309734],
-      "description": "The first draw operation from an idle state is slow.",
+      "description": "The first draw operation from an idle state is slow",
       "os": {
         "type": "android"
       },
@@ -666,7 +675,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 51,
-      "description": "TexSubImage2D() is faster for full uploads on ANGLE.",
+      "description": "TexSubImage2D() is faster for full uploads on ANGLE",
       "os": {
         "type": "win"
       },
@@ -680,7 +689,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 52,
-      "description": "ES3 MSAA is broken on Qualcomm.",
+      "description": "ES3 MSAA is broken on Qualcomm",
       "os": {
         "type": "android"
       },
@@ -695,7 +704,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     {
       "id": 53,
       "cr_bugs": [321701],
-      "description": "ES3 multisampling is too slow to be usable on Mali.",
+      "description": "ES3 multisampling is too slow to be usable on Mali",
       "gl_vendor": {
         "op": "beginwith",
         "value": "ARM"
@@ -759,7 +768,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 58,
-      "description": "Multisampling is buggy in ATI cards on older MacOSX",
+      "description": "Multisampling is buggy in ATI cards on older Mac OS X",
       "cr_bugs": [67752, 83153],
       "os": {
         "type": "macosx",
