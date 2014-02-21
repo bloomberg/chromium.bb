@@ -14,6 +14,8 @@ enum WebScreenOrientation {
     WebScreenOrientationLandscapeSecondary = 1 << 3,
 };
 
+typedef unsigned char WebScreenOrientations;
+
 } // namespace blink
 
 #endif // WebScreenOrientation_h

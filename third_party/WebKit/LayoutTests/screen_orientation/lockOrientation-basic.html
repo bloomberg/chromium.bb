@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../resources/js-test.js"></script>
+<script>
+description("Basic screen.lockOrientation() / screen.unlockOrientation() testing");
+
+shouldBeEqualToString("screen.orientation", "portrait-primary");
+shouldNotThrow("screen.unlockOrientation()");
+shouldBeTrue("screen.lockOrientation('landscape-primary')");
+shouldBeEqualToString("screen.orientation", "portrait-primary"); // Should update asynchronously.
+shouldBeTrue("screen.lockOrientation('landscape-secondary')"); // Consecutive locking.
+shouldNotThrow("screen.unlockOrientation()");
+</script>
+</body>
+</html>

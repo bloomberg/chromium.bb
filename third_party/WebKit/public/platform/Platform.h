@@ -41,6 +41,7 @@
 #include "WebGamepads.h"
 #include "WebGraphicsContext3D.h"
 #include "WebLocalizedString.h"
+#include "WebScreenOrientation.h"
 #include "WebSpeechSynthesizer.h"
 #include "WebStorageQuotaCallbacks.h"
 #include "WebStorageQuotaType.h"
@@ -609,6 +610,8 @@ public:
     // Screen Orientation -------------------------------------------------
 
     virtual void setScreenOrientationListener(blink::WebScreenOrientationListener*) { }
+    virtual void lockOrientation(WebScreenOrientations) { }
+    virtual void unlockOrientation() { }
 
 
     // Quota -----------------------------------------------------------

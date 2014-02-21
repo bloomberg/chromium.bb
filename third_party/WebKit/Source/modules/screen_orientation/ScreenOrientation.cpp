@@ -9,9 +9,11 @@
 #include "core/frame/Frame.h"
 #include "core/frame/Screen.h"
 #include "modules/screen_orientation/ScreenOrientationController.h"
-#include "public/platform/WebScreenOrientation.h"
+#include "public/platform/Platform.h"
 
 namespace WebCore {
+
+static const unsigned WebScreenOrientationDefault = 0;
 
 struct ScreenOrientationInfo {
     const AtomicString& name;
@@ -49,9 +51,47 @@ static const AtomicString& orientationToString(blink::WebScreenOrientation orien
     return nullAtom;
 }
 
+static blink::WebScreenOrientations stringToOrientations(const AtomicString& orientationString)
+{
+    DEFINE_STATIC_LOCAL(const AtomicString, portrait, ("portrait", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, landscape, ("landscape", AtomicString::ConstructFromLiteral));
+
+    if (orientationString == portrait)
+        return blink::WebScreenOrientationPortraitPrimary | blink::WebScreenOrientationPortraitSecondary;
+    if (orientationString == landscape)
+        return blink::WebScreenOrientationLandscapePrimary | blink::WebScreenOrientationLandscapeSecondary;
+
+    unsigned length = 0;
+    ScreenOrientationInfo* orientationMap = orientationsMap(length);
+    for (unsigned i = 0; i < length; ++i) {
+        if (orientationMap[i].name == orientationString)
+            return orientationMap[i].orientation;
+    }
+    return 0;
+}
+
 ScreenOrientation::ScreenOrientation(Screen& screen)
     : DOMWindowProperty(screen.frame())
+    , m_orientationLockTimer(this, &ScreenOrientation::orientationLockTimerFired)
+    , m_lockedOrientations(WebScreenOrientationDefault)
 {
+}
+
+void ScreenOrientation::lockOrientationAsync(blink::WebScreenOrientations orientations)
+{
+    if (m_lockedOrientations == orientations)
+        return;
+    m_lockedOrientations = orientations;
+    if (!m_orientationLockTimer.isActive())
+        m_orientationLockTimer.startOneShot(0);
+}
+
+void ScreenOrientation::orientationLockTimerFired(Timer<ScreenOrientation>*)
+{
+    if (m_lockedOrientations == WebScreenOrientationDefault)
+        blink::Platform::current()->unlockOrientation();
+    else
+        blink::Platform::current()->lockOrientation(m_lockedOrientations);
 }
 
 const char* ScreenOrientation::supplementName()
@@ -87,21 +127,33 @@ const AtomicString& ScreenOrientation::orientation(Screen& screen)
     return orientationToString(controller.orientation());
 }
 
-bool ScreenOrientation::lockOrientation(Screen& screen, const Vector<String>& orientations)
+bool ScreenOrientation::lockOrientation(Screen& screen, const Vector<String>& orientationsVector)
 {
-    // FIXME: Implement.
-    return false;
+    blink::WebScreenOrientations orientations = 0;
+    for (size_t i = 0; i < orientationsVector.size(); ++i) {
+        blink::WebScreenOrientations currentOrientation = stringToOrientations(AtomicString(orientationsVector[i]));
+        if (!currentOrientation)
+            return false;
+        orientations |= currentOrientation;
+    }
+    if (!orientations)
+        return false;
+    ScreenOrientation::from(screen).lockOrientationAsync(orientations);
+    return true;
 }
 
-bool ScreenOrientation::lockOrientation(Screen& screen, const AtomicString& orientation)
+bool ScreenOrientation::lockOrientation(Screen& screen, const AtomicString& orientationString)
 {
-    // FIXME: Implement.
-    return false;
+    blink::WebScreenOrientations orientations = stringToOrientations(orientationString);
+    if (!orientations)
+        return false;
+    ScreenOrientation::from(screen).lockOrientationAsync(orientations);
+    return true;
 }
 
 void ScreenOrientation::unlockOrientation(Screen& screen)
 {
-    // FIXME: Implement.
+    ScreenOrientation::from(screen).lockOrientationAsync(WebScreenOrientationDefault);
 }
 
 } // namespace WebCore

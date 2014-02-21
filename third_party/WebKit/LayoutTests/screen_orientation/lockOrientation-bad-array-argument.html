@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../resources/js-test.js"></script>
+<script>
+description("Validates that lockOrientation() returns false on bad orientation value in array argument.");
+window.jsTestIsAsync = true;
+
+function onOrientationChangeEvent(ev) {
+    testFailed("Unexpected 'orientationchange' event");
+}
+ 
+function completeTest() {
+    shouldBeEqualToString("screen.orientation", "portrait-primary");
+    screen.unlockOrientation();
+    finishJSTest();
+}
+
+screen.addEventListener("orientationchange", onOrientationChangeEvent);
+
+shouldBeEqualToString("screen.orientation", "portrait-primary");
+// Bad argument to lockOrientation(), we should not get locked.
+shouldBeFalse("screen.lockOrientation(['portrait-primary', 'invalid-orientation'])");
+shouldBeFalse("screen.lockOrientation(['portrait-primary', null])");
+shouldBeFalse("screen.lockOrientation(['portrait-primary', undefined])");
+shouldBeFalse("screen.lockOrientation(['portrait-primary', 123])");
+shouldBeFalse("screen.lockOrientation(['portrait-primary', window])");
+
+// Finish asynchronously to give events a chance to fire.
+setTimeout(completeTest, 0);
+</script>
+</body>
+</html>
+

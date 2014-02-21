@@ -1,0 +1,15 @@
+Basic screen.lockOrientation() / screen.unlockOrientation() testing
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS screen.orientation is "portrait-primary"
+PASS screen.unlockOrientation() did not throw exception.
+PASS screen.lockOrientation('landscape-primary') is true
+PASS screen.orientation is "portrait-primary"
+PASS screen.lockOrientation('landscape-secondary') is true
+PASS screen.unlockOrientation() did not throw exception.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

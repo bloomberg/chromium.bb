@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../resources/js-test.js"></script>
+<script>
+description("Validates that lockOrientation() can take an array as argument.");
+
+shouldBeEqualToString("screen.orientation", "portrait-primary");
+debug("locking orientation to ['portrait-primary', 'landscape-primary'].");
+shouldBeTrue("screen.lockOrientation(['portrait-primary', 'landscape-primary'])");
+</script>
+</body>
+</html>
+

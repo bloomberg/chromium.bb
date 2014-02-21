@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../resources/js-test.js"></script>
+<script>
+description("Validates that screen.lockOrientation() returns false on bad input");
+window.jsTestIsAsync = true;
+
+function onOrientationChangeEvent(ev) {
+    testFailed("Unexpected 'orientationchange' event");
+}
+ 
+function completeTest() {
+    shouldBeEqualToString("screen.orientation", "portrait-primary");
+    screen.unlockOrientation();
+    finishJSTest();
+}
+
+screen.addEventListener("orientationchange", onOrientationChangeEvent);
+
+shouldBeEqualToString("screen.orientation", "portrait-primary");
+shouldBeFalse("screen.lockOrientation('invalid-orientation')");
+shouldBeEqualToString("screen.orientation", "portrait-primary");
+shouldBeFalse("screen.lockOrientation(null)");
+shouldBeEqualToString("screen.orientation", "portrait-primary");
+shouldBeFalse("screen.lockOrientation(undefined)");
+shouldBeEqualToString("screen.orientation", "portrait-primary");
+shouldBeFalse("screen.lockOrientation(123)");
+shouldBeEqualToString("screen.orientation", "portrait-primary");
+shouldBeFalse("screen.lockOrientation(window)");
+shouldBeEqualToString("screen.orientation", "portrait-primary");
+shouldThrow("screen.lockOrientation()", '"TypeError: Failed to execute \'lockOrientation\' on \'Screen\': 1 argument required, but only 0 present."');
+
+// Finish asynchronously to give events a chance to fire.
+setTimeout(completeTest, 0);
+</script>
+</body>
+</html>
+
