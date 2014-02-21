@@ -8,6 +8,7 @@
 #include <winspool.h>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_bstr.h"
@@ -42,10 +43,15 @@ void GetDeviceCapabilityArray(const wchar_t* printer,
   int count = DeviceCapabilities(printer, port, id, NULL, NULL);
   if (count <= 0)
     return;
-  result->resize(count);
-  CHECK_EQ(count,
-           DeviceCapabilities(printer, port, id,
-                              reinterpret_cast<LPTSTR>(result->data()), NULL));
+  std::vector<T> tmp;
+  tmp.resize(count * 2);
+  count = DeviceCapabilities(printer, port, id,
+                             reinterpret_cast<LPTSTR>(tmp.data()), NULL);
+  if (count <= 0)
+    return;
+  CHECK_LE(count, base::checked_cast<int>(tmp.size()));
+  tmp.resize(count);
+  result->swap(tmp);
 }
 
 void LoadPaper(const wchar_t* printer,
