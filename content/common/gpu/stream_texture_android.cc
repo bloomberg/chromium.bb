@@ -133,7 +133,9 @@ void StreamTexture::WillUseTexImage() {
       const gpu::gles2::TextureUnit& active_unit =
           state->texture_units[state->active_texture_unit];
       glBindTexture(GL_TEXTURE_EXTERNAL_OES,
-                    active_unit.bound_texture_external_oes->service_id());
+                    active_unit.bound_texture_external_oes
+                        ? active_unit.bound_texture_external_oes->service_id()
+                        : 0);
     }
   }
 
