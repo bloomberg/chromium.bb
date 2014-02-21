@@ -118,17 +118,6 @@ void AppWindowFrameView::Init(views::Widget* frame,
         l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MINIMIZE));
     AddChildView(minimize_button_);
   }
-
-#if defined(USE_AURA)
-  aura::Window* window = frame->GetNativeWindow();
-  // Ensure we get resize cursors just inside our bounds as well.
-  // TODO(jeremya): do we need to update these when in fullscreen/maximized?
-  window->set_hit_test_bounds_override_inner(
-      gfx::Insets(resize_inside_bounds_size_,
-                  resize_inside_bounds_size_,
-                  resize_inside_bounds_size_,
-                  resize_inside_bounds_size_));
-#endif
 }
 
 // views::NonClientFrameView implementation.

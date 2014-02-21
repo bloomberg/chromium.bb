@@ -34,6 +34,7 @@
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
+#include "ui/wm/public/easy_resize_window_targeter.h"
 
 #if defined(OS_LINUX)
 #include "chrome/browser/shell_integration_linux.h"
@@ -229,6 +230,14 @@ void NativeAppWindowViews::Init(apps::AppWindow* app_window,
 
   OnViewWasResized();
   window_->AddObserver(this);
+
+#if defined(OS_WIN)
+  if (ShouldUseChromeStyleFrame() &&
+      chrome::GetHostDesktopTypeForNativeWindow(window_->GetNativeWindow()) !=
+      chrome::HOST_DESKTOP_TYPE_ASH) {
+    InstallEasyResizeTargeterOnContainer();
+  }
+#endif
 }
 
 NativeAppWindowViews::~NativeAppWindowViews() {
@@ -378,6 +387,14 @@ bool NativeAppWindowViews::ShouldUseChromeStyleFrame() const {
 
   return !CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAppsUseNativeFrame);
+}
+
+void NativeAppWindowViews::InstallEasyResizeTargeterOnContainer() const {
+  aura::Window* root_window = window_->GetNativeWindow()->GetRootWindow();
+  gfx::Insets inset(kResizeInsideBoundsSize, kResizeInsideBoundsSize,
+                    kResizeInsideBoundsSize, kResizeInsideBoundsSize);
+  root_window->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
+      new wm::EasyResizeWindowTargeter(root_window, inset, inset)));
 }
 
 apps::AppWindowFrameView* NativeAppWindowViews::CreateAppWindowFrameView() {

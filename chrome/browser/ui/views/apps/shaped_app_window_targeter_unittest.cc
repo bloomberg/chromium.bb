@@ -149,3 +149,55 @@ TEST_F(ShapedAppWindowTargeterTest, HitTestOnlyForShapedWindow) {
     EXPECT_EQ(window, move.target());
   }
 }
+
+// Tests targeting of events on a window with an EasyResizeWindowTargeter
+// installed on its container.
+TEST_F(ShapedAppWindowTargeterTest, ResizeInsetsWithinBounds) {
+  aura::Window* window = widget()->GetNativeWindow();
+  {
+    // An event in the center of the window should always have
+    // |window| as its target.
+    ui::MouseEvent move(ui::ET_MOUSE_MOVED,
+                        gfx::Point(80, 80), gfx::Point(80, 80),
+                        ui::EF_NONE, ui::EF_NONE);
+    ui::EventDispatchDetails details = dispatcher()->OnEventFromSource(&move);
+    ASSERT_FALSE(details.dispatcher_destroyed);
+    EXPECT_EQ(window, move.target());
+  }
+  {
+    // Without an EasyResizeTargeter on the container, an event
+    // inside the window and within 5px of an edge should have
+    // |window| as its target.
+    ui::MouseEvent move(ui::ET_MOUSE_MOVED,
+                        gfx::Point(32, 37), gfx::Point(32, 37),
+                        ui::EF_NONE, ui::EF_NONE);
+    ui::EventDispatchDetails details = dispatcher()->OnEventFromSource(&move);
+    ASSERT_FALSE(details.dispatcher_destroyed);
+    EXPECT_EQ(window, move.target());
+  }
+
+  // The EasyResizeTargeter specifies an inset of 5px within the window.
+  app_window_views()->InstallEasyResizeTargeterOnContainer();
+
+  {
+    // An event in the center of the window should always have
+    // |window| as its target.
+    ui::MouseEvent move(ui::ET_MOUSE_MOVED,
+                        gfx::Point(80, 80), gfx::Point(80, 80),
+                        ui::EF_NONE, ui::EF_NONE);
+    ui::EventDispatchDetails details = dispatcher()->OnEventFromSource(&move);
+    ASSERT_FALSE(details.dispatcher_destroyed);
+    EXPECT_EQ(window, move.target());
+  }
+  {
+    // With an EasyResizeTargeter on the container, an event
+    // inside the window and within 5px of an edge should have
+    // root_window() as its target.
+    ui::MouseEvent move(ui::ET_MOUSE_MOVED,
+                        gfx::Point(32, 37), gfx::Point(32, 37),
+                        ui::EF_NONE, ui::EF_NONE);
+    ui::EventDispatchDetails details = dispatcher()->OnEventFromSource(&move);
+    ASSERT_FALSE(details.dispatcher_destroyed);
+    EXPECT_EQ(root_window(), move.target());
+  }
+}

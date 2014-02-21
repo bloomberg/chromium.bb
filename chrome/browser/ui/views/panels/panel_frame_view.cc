@@ -314,6 +314,7 @@ void PanelFrameView::Init() {
 #if defined(USE_AURA)
   // Compute the thickness of the client area that needs to be counted towards
   // mouse resizing.
+  // TODO(tdanderson): Remove this if possible (crbug.com/344924).
   int thickness_for_mouse_resizing =
       PanelView::kResizeInsideBoundsSize - BorderThickness();
   aura::Window* window = panel_view_->GetNativePanelWindow();

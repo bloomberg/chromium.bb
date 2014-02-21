@@ -86,10 +86,17 @@ class NativeAppWindowViews : public apps::NativeAppWindow,
 
  private:
   friend class ShapedAppWindowTargeterTest;
+  FRIEND_TEST_ALL_PREFIXES(ShapedAppWindowTargeterTest,
+                           ResizeInsetsWithinBounds);
 
   void OnViewWasResized();
 
   bool ShouldUseChromeStyleFrame() const;
+
+  // Installs an EasyResizeWindowTargeter on the containing window, which
+  // allows the window to be resized from within |kResizeInsideBoundsSize|
+  // pixels inside the window bounds.
+  void InstallEasyResizeTargeterOnContainer() const;
 
   // Caller owns the returned object.
   apps::AppWindowFrameView* CreateAppWindowFrameView();
