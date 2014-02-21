@@ -6,9 +6,17 @@
 
 import logging
 import os
+import sys
 
 from pylib.host_driven import tests_annotations
 
+from pylib import constants
+
+sys.path.insert(0,
+                os.path.join(constants.DIR_SOURCE_ROOT,
+                             'build', 'util', 'lib', 'common'))
+
+import unittest_util
 
 class TestInfo(object):
   """An object containing and representing a test function, plus metadata."""
@@ -98,9 +106,13 @@ class TestInfoCollection(object):
       excluded_tests = [t for t in available_tests if
                         self._AnnotationIncludesTest(t, exclude_annotations)]
       available_tests = list(set(available_tests) - set(excluded_tests))
-    available_tests = [t for t in available_tests if
-                       self._NameFilterIncludesTest(t, name_filter)]
 
+    if name_filter:
+      available_test_names = unittest_util.FilterTestNames(
+          [t.qualified_name for t in available_tests], name_filter)
+      available_tests = [
+          t for t in available_tests if
+          t.qualified_name in available_test_names]
     return available_tests
 
   @staticmethod
@@ -130,18 +142,3 @@ class TestInfoCollection(object):
         return True
     return False
 
-  @staticmethod
-  def _NameFilterIncludesTest(test_info, name_filter):
-    """Checks whether a name filter matches a given test_info's method name.
-
-    This is a case-sensitive, substring comparison: 'Foo' will match methods
-    Foo.testBar and Bar.testFoo. 'foo' would not match either.
-
-    Args:
-      test_info: TestInfo object representing the test
-      name_filter: substring to check for in the qualified name of the test
-
-    Returns:
-      True if no name filter supplied or it matches; False otherwise.
-    """
-    return not name_filter or name_filter in test_info.qualified_name
