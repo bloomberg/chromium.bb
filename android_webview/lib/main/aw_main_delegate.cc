@@ -26,6 +26,7 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/service/in_process_command_buffer.h"
+#include "media/base/media_switches.h"
 #include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 namespace android_webview {
@@ -79,6 +80,11 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 
   // Disable WebRTC.
   cl->AppendSwitch(switches::kDisableWebRTC);
+
+#if defined(VIDEO_HOLE)
+  // Support EME/L1 with hole-punching.
+  cl->AppendSwitch(switches::kMediaDrmEnableNonCompositing);
+#endif
 
   return false;
 }

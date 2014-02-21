@@ -1278,6 +1278,9 @@
     # Force disable libstdc++ debug mode.
     'disable_glibcxx_debug%': 0,
 
+    # Set to 1 to compile with the hole punching for the protected video.
+    'video_hole%': 0,
+
     'conditions': [
       # The version of GCC in use, set later in platforms that use GCC and have
       # not explicitly chosen to build with clang. Currently, this means all
@@ -2513,6 +2516,9 @@
           # to ensure that certain calls go through it.
           '<(DEPTH)/chrome_elf/chrome_elf.gyp:chrome_redirects',
          ],
+      }],
+      ['video_hole==1', {
+        'defines': ['VIDEO_HOLE=1'],
       }],
     ],  # conditions for 'target_defaults'
     'target_conditions': [

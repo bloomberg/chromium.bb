@@ -35,6 +35,7 @@
 #include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/android/external_video_surface_container.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/favicon_status.h"
@@ -495,6 +496,12 @@ void ContentViewCoreImpl::UpdateFrameInfo(
       controls_offset.y(),
       content_offset.y(),
       overdraw_bottom_height);
+#if defined(VIDEO_HOLE)
+  ExternalVideoSurfaceContainer* surface_container =
+      ExternalVideoSurfaceContainer::FromWebContents(web_contents_);
+  if (surface_container)
+    surface_container->OnFrameInfoUpdated();
+#endif  // defined(VIDEO_HOLE)
 }
 
 void ContentViewCoreImpl::SetTitle(const base::string16& title) {
@@ -742,25 +749,6 @@ ScopedJavaLocalRef<jobject> ContentViewCoreImpl::CreateTouchEventSynthesizer() {
   if (obj.is_null())
     return ScopedJavaLocalRef<jobject>();
   return Java_ContentViewCore_createTouchEventSynthesizer(env, obj.obj());
-}
-
-void ContentViewCoreImpl::NotifyExternalSurface(
-    int player_id, bool is_request, const gfx::RectF& rect) {
-  JNIEnv* env = AttachCurrentThread();
-
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return;
-
-  Java_ContentViewCore_notifyExternalSurface(
-      env,
-      obj.obj(),
-      static_cast<jint>(player_id),
-      static_cast<jboolean>(is_request),
-      static_cast<jfloat>(rect.x()),
-      static_cast<jfloat>(rect.y()),
-      static_cast<jfloat>(rect.width()),
-      static_cast<jfloat>(rect.height()));
 }
 
 ScopedJavaLocalRef<jobject> ContentViewCoreImpl::GetContentVideoViewClient() {
@@ -1499,33 +1487,6 @@ void ContentViewCoreImpl::ShowInterstitialPage(
 jboolean ContentViewCoreImpl::IsShowingInterstitialPage(JNIEnv* env,
                                                         jobject obj) {
   return web_contents_->ShowingInterstitialPage();
-}
-
-void ContentViewCoreImpl::AttachExternalVideoSurface(JNIEnv* env,
-                                                     jobject obj,
-                                                     jint player_id,
-                                                     jobject jsurface) {
-#if defined(VIDEO_HOLE)
-  RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
-      web_contents_->GetRenderViewHost());
-  if (rvhi && rvhi->media_player_manager()) {
-    rvhi->media_player_manager()->AttachExternalVideoSurface(
-        static_cast<int>(player_id), jsurface);
-  }
-#endif  // defined(VIDEO_HOLE)
-}
-
-void ContentViewCoreImpl::DetachExternalVideoSurface(JNIEnv* env,
-                                                     jobject obj,
-                                                     jint player_id) {
-#if defined(VIDEO_HOLE)
-  RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
-      web_contents_->GetRenderViewHost());
-  if (rvhi && rvhi->media_player_manager()) {
-    rvhi->media_player_manager()->DetachExternalVideoSurface(
-        static_cast<int>(player_id));
-  }
-#endif  // defined(VIDEO_HOLE)
 }
 
 jboolean ContentViewCoreImpl::IsRenderWidgetHostViewReady(JNIEnv* env,

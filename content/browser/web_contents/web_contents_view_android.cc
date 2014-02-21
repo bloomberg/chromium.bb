@@ -54,14 +54,6 @@ void WebContentsViewAndroid::SetContentViewCore(
   }
 }
 
-#if defined(VIDEO_HOLE)
-void WebContentsViewAndroid::NotifyExternalSurface(
-    int player_id, bool is_request, const gfx::RectF& rect) {
-  if (content_view_core_)
-    content_view_core_->NotifyExternalSurface(player_id, is_request, rect);
-}
-#endif  // defined(VIDEO_HOLE)
-
 gfx::NativeView WebContentsViewAndroid::GetNativeView() const {
   return content_view_core_ ? content_view_core_->GetViewAndroid() : NULL;
 }

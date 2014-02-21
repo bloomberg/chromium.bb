@@ -40,6 +40,7 @@
     'public/browser/android/content_view_layer_renderer.h',
     'public/browser/android/devtools_auth.h',
     'public/browser/android/download_controller_android.h',
+    'public/browser/android/external_video_surface_container.h',
     'public/browser/android/synchronous_compositor_client.h',
     'public/browser/android/synchronous_compositor.cc',
     'public/browser/android/synchronous_compositor.h',

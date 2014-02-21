@@ -81,6 +81,14 @@
         'state_serializer.cc',
         'state_serializer.h',
       ],
+      'conditions': [
+        ['video_hole==1', {
+          'sources': [
+            'external_video_surface_container_impl.cc',
+            'external_video_surface_container_impl.h',
+          ],
+        }],
+      ],
     },
     {
       'target_name': 'input_stream_android_jar_jni_headers',
@@ -119,6 +127,7 @@
           '../java/src/org/chromium/android_webview/AwResource.java',
           '../java/src/org/chromium/android_webview/AwSettings.java',
           '../java/src/org/chromium/android_webview/AwWebContentsDelegate.java',
+          '../java/src/org/chromium/android_webview/ExternalVideoSurfaceContainer.java',
           '../java/src/org/chromium/android_webview/InterceptedRequestData.java',
           '../java/src/org/chromium/android_webview/JavaBrowserViewRendererHelper.java',
       ],

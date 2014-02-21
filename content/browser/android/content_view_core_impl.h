@@ -216,11 +216,6 @@ class ContentViewCoreImpl : public ContentViewCore,
                             jint delegate);
   jboolean IsShowingInterstitialPage(JNIEnv* env, jobject obj);
 
-  void AttachExternalVideoSurface(JNIEnv* env,
-                                  jobject obj,
-                                  jint player_id,
-                                  jobject jsurface);
-  void DetachExternalVideoSurface(JNIEnv* env, jobject obj, jint player_id);
   void SetAccessibilityEnabled(JNIEnv* env, jobject obj, bool enabled);
   void SendActionAfterDoubleTapUma(JNIEnv* env,
                                    jobject obj,
@@ -289,11 +284,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   // Creates a java-side touch event, used for injecting touch event for
   // testing/benchmarking purposes
   base::android::ScopedJavaLocalRef<jobject> CreateTouchEventSynthesizer();
-
-  // Notifies the java object about the external surface, requesting for one if
-  // necessary.
-  void NotifyExternalSurface(
-      int player_id, bool is_request, const gfx::RectF& rect);
 
   base::android::ScopedJavaLocalRef<jobject> GetContentVideoViewClient();
 

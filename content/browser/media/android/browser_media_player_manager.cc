@@ -12,6 +12,7 @@
 #include "content/browser/web_contents/web_contents_view_android.h"
 #include "content/common/media/media_player_messages_android.h"
 #include "content/public/browser/android/content_view_core.h"
+#include "content/public/browser/android/external_video_surface_container.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -326,7 +327,12 @@ void BrowserMediaPlayerManager::RequestMediaResources(int player_id) {
 }
 
 void BrowserMediaPlayerManager::ReleaseMediaResources(int player_id) {
-  // Nothing needs to be done.
+#if defined(VIDEO_HOLE)
+  ExternalVideoSurfaceContainer* surface_container =
+      ExternalVideoSurfaceContainer::FromWebContents(web_contents_);
+  if (surface_container)
+    surface_container->ReleaseExternalVideoSurface(player_id);
+#endif  // defined(VIDEO_HOLE)
 }
 
 media::MediaResourceGetter*
@@ -464,10 +470,23 @@ void BrowserMediaPlayerManager::OnNotifyExternalSurface(
   if (!web_contents_)
     return;
 
-  WebContentsViewAndroid* view =
-      static_cast<WebContentsViewAndroid*>(web_contents_->GetView());
-  if (view)
-    view->NotifyExternalSurface(player_id, is_request, rect);
+  ExternalVideoSurfaceContainer::CreateForWebContents(web_contents_);
+  ExternalVideoSurfaceContainer* surface_container =
+      ExternalVideoSurfaceContainer::FromWebContents(web_contents_);
+  if (!surface_container)
+    return;
+
+  if (is_request) {
+    // It's safe to use base::Unretained(this), because the callbacks will not
+    // be called after running ReleaseExternalVideoSurface().
+    surface_container->RequestExternalVideoSurface(
+        player_id,
+        base::Bind(&BrowserMediaPlayerManager::AttachExternalVideoSurface,
+                   base::Unretained(this)),
+        base::Bind(&BrowserMediaPlayerManager::DetachExternalVideoSurface,
+                   base::Unretained(this)));
+  }
+  surface_container->OnExternalVideoSurfacePositionChanged(player_id, rect);
 }
 #endif  // defined(VIDEO_HOLE)
 
@@ -492,6 +511,12 @@ void BrowserMediaPlayerManager::OnEnterFullscreen(int player_id) {
     return;
   }
 
+#if defined(VIDEO_HOLE)
+  ExternalVideoSurfaceContainer* surface_container =
+      ExternalVideoSurfaceContainer::FromWebContents(web_contents_);
+  if (surface_container)
+    surface_container->ReleaseExternalVideoSurface(player_id);
+#endif  // defined(VIDEO_HOLE)
   if (video_view_.get()) {
     fullscreen_player_id_ = player_id;
     video_view_->OpenVideo();
@@ -570,13 +595,6 @@ void BrowserMediaPlayerManager::OnReleaseResources(int player_id) {
     player->Release();
   if (player_id == fullscreen_player_id_)
     fullscreen_player_is_released_ = true;
-
-#if defined(VIDEO_HOLE)
-  WebContentsViewAndroid* view =
-      static_cast<WebContentsViewAndroid*>(web_contents_->GetView());
-  if (view)
-    view->NotifyExternalSurface(player_id, false, gfx::RectF());
-#endif  // defined(VIDEO_HOLE)
 }
 
 void BrowserMediaPlayerManager::OnDestroyPlayer(int player_id) {

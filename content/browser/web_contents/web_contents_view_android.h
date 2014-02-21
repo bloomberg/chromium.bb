@@ -29,12 +29,6 @@ class WebContentsViewAndroid : public WebContentsViewPort,
   // by the UI frontend.
   void SetContentViewCore(ContentViewCoreImpl* content_view_core);
 
-#if defined(VIDEO_HOLE)
-  void NotifyExternalSurface(int player_id,
-                             bool is_request,
-                             const gfx::RectF& rect);
-#endif  // defined(VIDEO_HOLE)
-
   // WebContentsView implementation --------------------------------------------
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
   virtual gfx::NativeView GetContentNativeView() const OVERRIDE;

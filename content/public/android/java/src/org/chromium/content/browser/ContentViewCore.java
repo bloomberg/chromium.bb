@@ -16,7 +16,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Rect;
-import android.graphics.RectF;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -2553,9 +2552,6 @@ public class ContentViewCore
         if (mBrowserAccessibilityManager != null) {
             mBrowserAccessibilityManager.notifyFrameInfoInitialized();
         }
-
-        // Update geometry for external video surface.
-        getContentViewClient().onGeometryChanged(-1, null);
     }
 
     @CalledByNative
@@ -3225,18 +3221,6 @@ public class ContentViewCore
         return new Rect(x, y, right, bottom);
     }
 
-    public void attachExternalVideoSurface(int playerId, Surface surface) {
-        if (mNativeContentViewCore != 0) {
-            nativeAttachExternalVideoSurface(mNativeContentViewCore, playerId, surface);
-        }
-    }
-
-    public void detachExternalVideoSurface(int playerId) {
-        if (mNativeContentViewCore != 0) {
-            nativeDetachExternalVideoSurface(mNativeContentViewCore, playerId);
-        }
-    }
-
     private boolean onAnimate(long frameTimeMicros) {
         if (mNativeContentViewCore == 0) return false;
         return nativeOnAnimate(mNativeContentViewCore, frameTimeMicros);
@@ -3247,13 +3231,6 @@ public class ContentViewCore
             mNeedAnimate = onAnimate(frameTimeMicros);
             if (!mNeedAnimate) removeVSyncSubscriber();
         }
-    }
-
-    @CalledByNative
-    private void notifyExternalSurface(
-            int playerId, boolean isRequest, float x, float y, float width, float height) {
-        if (isRequest) getContentViewClient().onExternalVideoSurfaceRequested(playerId);
-        getContentViewClient().onGeometryChanged(playerId, new RectF(x, y, x + width, y + height));
     }
 
     public void extractSmartClipData(int x, int y, int width, int height) {
@@ -3464,12 +3441,6 @@ public class ContentViewCore
             boolean enableHiding, boolean enableShowing, boolean animate);
 
     private native void nativeShowImeIfNeeded(long nativeContentViewCoreImpl);
-
-    private native void nativeAttachExternalVideoSurface(
-            long nativeContentViewCoreImpl, int playerId, Surface surface);
-
-    private native void nativeDetachExternalVideoSurface(
-            long nativeContentViewCoreImpl, int playerId);
 
     private native void nativeSetAccessibilityEnabled(
             long nativeContentViewCoreImpl, boolean enabled);
