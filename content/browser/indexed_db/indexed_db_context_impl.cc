@@ -312,8 +312,8 @@ void IndexedDBContextImpl::DeleteForOrigin(const GURL& origin_url) {
 
   base::FilePath idb_directory = GetFilePath(origin_url);
   EnsureDiskUsageCacheInitialized(origin_url);
-  bool deleted = LevelDBDatabase::Destroy(idb_directory);
-  if (!deleted) {
+  leveldb::Status s = LevelDBDatabase::Destroy(idb_directory);
+  if (!s.ok()) {
     LOG(WARNING) << "Failed to delete LevelDB database: "
                  << idb_directory.AsUTF8Unsafe();
   } else {
@@ -325,7 +325,7 @@ void IndexedDBContextImpl::DeleteForOrigin(const GURL& origin_url) {
   }
 
   QueryDiskAndUpdateQuotaUsage(origin_url);
-  if (deleted) {
+  if (s.ok()) {
     RemoveFromOriginSet(origin_url);
     origin_size_map_.erase(origin_url);
     space_available_map_.erase(origin_url);

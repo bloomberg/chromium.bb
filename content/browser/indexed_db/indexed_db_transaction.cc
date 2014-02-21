@@ -237,7 +237,7 @@ void IndexedDBTransaction::Commit() {
 
   state_ = FINISHED;
 
-  bool committed = !used_ || transaction_->Commit();
+  bool committed = !used_ || transaction_->Commit().ok();
 
   // Backing store resources (held via cursors) must be released
   // before script callbacks are fired, as the script callbacks may

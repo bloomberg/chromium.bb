@@ -241,7 +241,7 @@ class CONTENT_EXPORT IndexedDBDatabase
   ~IndexedDBDatabase();
 
   bool IsOpenConnectionBlocked() const;
-  bool OpenInternal();
+  leveldb::Status OpenInternal();
   void RunVersionChangeTransaction(scoped_refptr<IndexedDBCallbacks> callbacks,
                                    scoped_ptr<IndexedDBConnection> connection,
                                    int64 transaction_id,

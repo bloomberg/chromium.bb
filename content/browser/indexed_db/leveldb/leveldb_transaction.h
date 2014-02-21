@@ -27,8 +27,10 @@ class CONTENT_EXPORT LevelDBTransaction
 
   void Put(const base::StringPiece& key, std::string* value);
   void Remove(const base::StringPiece& key);
-  bool Get(const base::StringPiece& key, std::string* value, bool* found);
-  bool Commit();
+  leveldb::Status Get(const base::StringPiece& key,
+                      std::string* value,
+                      bool* found);
+  leveldb::Status Commit();
   void Rollback();
 
   scoped_ptr<LevelDBIterator> CreateIterator();
@@ -139,7 +141,7 @@ class LevelDBWriteOnlyTransaction {
 
   ~LevelDBWriteOnlyTransaction();
   void Remove(const base::StringPiece& key);
-  bool Commit();
+  leveldb::Status Commit();
 
  private:
   explicit LevelDBWriteOnlyTransaction(LevelDBDatabase* db);

@@ -13,98 +13,104 @@ IndexedDBFakeBackingStore::~IndexedDBFakeBackingStore() {}
 std::vector<base::string16> IndexedDBFakeBackingStore::GetDatabaseNames() {
   return std::vector<base::string16>();
 }
-bool IndexedDBFakeBackingStore::GetIDBDatabaseMetaData(
+leveldb::Status IndexedDBFakeBackingStore::GetIDBDatabaseMetaData(
     const base::string16& name,
     IndexedDBDatabaseMetadata*,
     bool* found) {
-  return true;
+  return leveldb::Status::OK();
 }
 
-bool IndexedDBFakeBackingStore::CreateIDBDatabaseMetaData(
+leveldb::Status IndexedDBFakeBackingStore::CreateIDBDatabaseMetaData(
     const base::string16& name,
     const base::string16& version,
     int64 int_version,
     int64* row_id) {
-  return true;
+  return leveldb::Status::OK();
 }
 bool IndexedDBFakeBackingStore::UpdateIDBDatabaseIntVersion(Transaction*,
                                                             int64 row_id,
                                                             int64 version) {
   return false;
 }
-bool IndexedDBFakeBackingStore::DeleteDatabase(const base::string16& name) {
-  return true;
+leveldb::Status IndexedDBFakeBackingStore::DeleteDatabase(
+    const base::string16& name) {
+  return leveldb::Status::OK();
 }
 
-bool IndexedDBFakeBackingStore::CreateObjectStore(Transaction*,
-                                                  int64 database_id,
-                                                  int64 object_store_id,
-                                                  const base::string16& name,
-                                                  const IndexedDBKeyPath&,
-                                                  bool auto_increment) {
-  return false;
+leveldb::Status IndexedDBFakeBackingStore::CreateObjectStore(
+    Transaction*,
+    int64 database_id,
+    int64 object_store_id,
+    const base::string16& name,
+    const IndexedDBKeyPath&,
+    bool auto_increment) {
+  return leveldb::Status::IOError("test error");
 }
 
-bool IndexedDBFakeBackingStore::ClearObjectStore(Transaction*,
-                                                 int64 database_id,
-                                                 int64 object_store_id) {
-  return false;
+leveldb::Status IndexedDBFakeBackingStore::ClearObjectStore(
+    Transaction*,
+    int64 database_id,
+    int64 object_store_id) {
+  return leveldb::Status::IOError("test error");
 }
-bool IndexedDBFakeBackingStore::DeleteRecord(Transaction*,
-                                             int64 database_id,
-                                             int64 object_store_id,
-                                             const RecordIdentifier&) {
-  return false;
+leveldb::Status IndexedDBFakeBackingStore::DeleteRecord(
+    Transaction*,
+    int64 database_id,
+    int64 object_store_id,
+    const RecordIdentifier&) {
+  return leveldb::Status::IOError("test error");
 }
-bool IndexedDBFakeBackingStore::GetKeyGeneratorCurrentNumber(
+leveldb::Status IndexedDBFakeBackingStore::GetKeyGeneratorCurrentNumber(
     Transaction*,
     int64 database_id,
     int64 object_store_id,
     int64* current_number) {
-  return true;
+  return leveldb::Status::OK();
 }
-bool IndexedDBFakeBackingStore::MaybeUpdateKeyGeneratorCurrentNumber(
+leveldb::Status IndexedDBFakeBackingStore::MaybeUpdateKeyGeneratorCurrentNumber(
     Transaction*,
     int64 database_id,
     int64 object_store_id,
     int64 new_number,
     bool check_current) {
-  return true;
+  return leveldb::Status::OK();
 }
-bool IndexedDBFakeBackingStore::KeyExistsInObjectStore(
+leveldb::Status IndexedDBFakeBackingStore::KeyExistsInObjectStore(
     Transaction*,
     int64 database_id,
     int64 object_store_id,
     const IndexedDBKey&,
     RecordIdentifier* found_record_identifier,
     bool* found) {
-  return true;
+  return leveldb::Status::OK();
 }
 
-bool IndexedDBFakeBackingStore::CreateIndex(Transaction*,
-                                            int64 database_id,
-                                            int64 object_store_id,
-                                            int64 index_id,
-                                            const base::string16& name,
-                                            const IndexedDBKeyPath&,
-                                            bool is_unique,
-                                            bool is_multi_entry) {
-  return false;
+leveldb::Status IndexedDBFakeBackingStore::CreateIndex(
+    Transaction*,
+    int64 database_id,
+    int64 object_store_id,
+    int64 index_id,
+    const base::string16& name,
+    const IndexedDBKeyPath&,
+    bool is_unique,
+    bool is_multi_entry) {
+  return leveldb::Status::IOError("test error");
 }
 
-bool IndexedDBFakeBackingStore::DeleteIndex(Transaction*,
-                                            int64 database_id,
-                                            int64 object_store_id,
-                                            int64 index_id) {
-  return false;
+leveldb::Status IndexedDBFakeBackingStore::DeleteIndex(Transaction*,
+                                                       int64 database_id,
+                                                       int64 object_store_id,
+                                                       int64 index_id) {
+  return leveldb::Status::IOError("test error");
 }
-bool IndexedDBFakeBackingStore::PutIndexDataForRecord(Transaction*,
-                                                      int64 database_id,
-                                                      int64 object_store_id,
-                                                      int64 index_id,
-                                                      const IndexedDBKey&,
-                                                      const RecordIdentifier&) {
-  return false;
+leveldb::Status IndexedDBFakeBackingStore::PutIndexDataForRecord(
+    Transaction*,
+    int64 database_id,
+    int64 object_store_id,
+    int64 index_id,
+    const IndexedDBKey&,
+    const RecordIdentifier&) {
+  return leveldb::Status::IOError("test error");
 }
 
 scoped_ptr<IndexedDBBackingStore::Cursor>
@@ -149,7 +155,12 @@ IndexedDBFakeBackingStore::OpenIndexCursor(
 IndexedDBFakeBackingStore::FakeTransaction::FakeTransaction(bool result)
     : IndexedDBBackingStore::Transaction(NULL), result_(result) {}
 void IndexedDBFakeBackingStore::FakeTransaction::Begin() {}
-bool IndexedDBFakeBackingStore::FakeTransaction::Commit() { return result_; }
+leveldb::Status IndexedDBFakeBackingStore::FakeTransaction::Commit() {
+  if (result_)
+    return leveldb::Status::OK();
+  else
+    return leveldb::Status::IOError("test error");
+}
 void IndexedDBFakeBackingStore::FakeTransaction::Rollback() {}
 
 }  // namespace content

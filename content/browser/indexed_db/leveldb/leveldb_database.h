@@ -53,18 +53,18 @@ class CONTENT_EXPORT LevelDBDatabase {
                               bool* is_disk_full = 0);
   static scoped_ptr<LevelDBDatabase> OpenInMemory(
       const LevelDBComparator* comparator);
-  static bool Destroy(const base::FilePath& file_name);
+  static leveldb::Status Destroy(const base::FilePath& file_name);
   static scoped_ptr<LevelDBLock> LockForTesting(
       const base::FilePath& file_name);
   virtual ~LevelDBDatabase();
 
-  bool Put(const base::StringPiece& key, std::string* value);
-  bool Remove(const base::StringPiece& key);
-  virtual bool Get(const base::StringPiece& key,
-                   std::string* value,
-                   bool* found,
-                   const LevelDBSnapshot* = 0);
-  bool Write(const LevelDBWriteBatch& write_batch);
+  leveldb::Status Put(const base::StringPiece& key, std::string* value);
+  leveldb::Status Remove(const base::StringPiece& key);
+  virtual leveldb::Status Get(const base::StringPiece& key,
+                              std::string* value,
+                              bool* found,
+                              const LevelDBSnapshot* = 0);
+  leveldb::Status Write(const LevelDBWriteBatch& write_batch);
   scoped_ptr<LevelDBIterator> CreateIterator(const LevelDBSnapshot* = 0);
   const LevelDBComparator* Comparator() const;
   void Compact(const base::StringPiece& start, const base::StringPiece& stop);

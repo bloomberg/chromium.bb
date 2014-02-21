@@ -73,15 +73,16 @@ void IndexWriter::WriteIndexKeys(
   int64 index_id = index_metadata_.id;
   DCHECK_EQ(index_id, index_keys_.first);
   for (size_t i = 0; i < index_keys_.second.size(); ++i) {
-    bool ok = backing_store->PutIndexDataForRecord(transaction,
-                                                   database_id,
-                                                   object_store_id,
-                                                   index_id,
-                                                   index_keys_.second[i],
-                                                   record_identifier);
+    leveldb::Status s =
+        backing_store->PutIndexDataForRecord(transaction,
+                                             database_id,
+                                             object_store_id,
+                                             index_id,
+                                             index_keys_.second[i],
+                                             record_identifier);
     // This should have already been verified as a valid write during
     // verify_index_keys.
-    DCHECK(ok);
+    DCHECK(s.ok());
   }
 }
 
@@ -102,14 +103,14 @@ bool IndexWriter::AddingKeyAllowed(
 
   scoped_ptr<IndexedDBKey> found_primary_key;
   bool found = false;
-  bool ok = backing_store->KeyExistsInIndex(transaction,
-                                            database_id,
-                                            object_store_id,
-                                            index_id,
-                                            index_key,
-                                            &found_primary_key,
-                                            &found);
-  if (!ok)
+  leveldb::Status s = backing_store->KeyExistsInIndex(transaction,
+                                                      database_id,
+                                                      object_store_id,
+                                                      index_id,
+                                                      index_key,
+                                                      &found_primary_key,
+                                                      &found);
+  if (!s.ok())
     return false;
   if (!found ||
       (primary_key.IsValid() && found_primary_key->IsEqual(primary_key)))

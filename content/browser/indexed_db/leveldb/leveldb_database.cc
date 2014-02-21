@@ -110,13 +110,11 @@ static leveldb::Status OpenDB(leveldb::Comparator* comparator,
   return leveldb::DB::Open(options, path.AsUTF8Unsafe(), db);
 }
 
-bool LevelDBDatabase::Destroy(const base::FilePath& file_name) {
+leveldb::Status LevelDBDatabase::Destroy(const base::FilePath& file_name) {
   leveldb::Options options;
   options.env = leveldb::IDBEnv();
   // ChromiumEnv assumes UTF8, converts back to FilePath before using.
-  const leveldb::Status s =
-      leveldb::DestroyDB(file_name.AsUTF8Unsafe(), options);
-  return s.ok();
+  return leveldb::DestroyDB(file_name.AsUTF8Unsafe(), options);
 }
 
 namespace {
@@ -319,35 +317,32 @@ scoped_ptr<LevelDBDatabase> LevelDBDatabase::OpenInMemory(
   return result.Pass();
 }
 
-bool LevelDBDatabase::Put(const StringPiece& key, std::string* value) {
+leveldb::Status LevelDBDatabase::Put(const StringPiece& key,
+                                     std::string* value) {
   leveldb::WriteOptions write_options;
   write_options.sync = kSyncWrites;
 
   const leveldb::Status s =
       db_->Put(write_options, MakeSlice(key), MakeSlice(*value));
-  if (s.ok())
-    return true;
-  LOG(ERROR) << "LevelDB put failed: " << s.ToString();
-  return false;
+  if (!s.ok())
+    LOG(ERROR) << "LevelDB put failed: " << s.ToString();
+  return s;
 }
 
-bool LevelDBDatabase::Remove(const StringPiece& key) {
+leveldb::Status LevelDBDatabase::Remove(const StringPiece& key) {
   leveldb::WriteOptions write_options;
   write_options.sync = kSyncWrites;
 
   const leveldb::Status s = db_->Delete(write_options, MakeSlice(key));
-  if (s.ok())
-    return true;
-  if (s.IsNotFound())
-    return false;
-  LOG(ERROR) << "LevelDB remove failed: " << s.ToString();
-  return false;
+  if (!s.IsNotFound())
+    LOG(ERROR) << "LevelDB remove failed: " << s.ToString();
+  return s;
 }
 
-bool LevelDBDatabase::Get(const StringPiece& key,
-                          std::string* value,
-                          bool* found,
-                          const LevelDBSnapshot* snapshot) {
+leveldb::Status LevelDBDatabase::Get(const StringPiece& key,
+                                     std::string* value,
+                                     bool* found,
+                                     const LevelDBSnapshot* snapshot) {
   *found = false;
   leveldb::ReadOptions read_options;
   read_options.verify_checksums = true;  // TODO(jsbell): Disable this if the
@@ -357,26 +352,26 @@ bool LevelDBDatabase::Get(const StringPiece& key,
   const leveldb::Status s = db_->Get(read_options, MakeSlice(key), value);
   if (s.ok()) {
     *found = true;
-    return true;
+    return s;
   }
   if (s.IsNotFound())
-    return true;
+    return leveldb::Status::OK();
   HistogramLevelDBError("WebCore.IndexedDB.LevelDBReadErrors", s);
   LOG(ERROR) << "LevelDB get failed: " << s.ToString();
-  return false;
+  return s;
 }
 
-bool LevelDBDatabase::Write(const LevelDBWriteBatch& write_batch) {
+leveldb::Status LevelDBDatabase::Write(const LevelDBWriteBatch& write_batch) {
   leveldb::WriteOptions write_options;
   write_options.sync = kSyncWrites;
 
   const leveldb::Status s =
       db_->Write(write_options, write_batch.write_batch_.get());
-  if (s.ok())
-    return true;
-  HistogramLevelDBError("WebCore.IndexedDB.LevelDBWriteErrors", s);
-  LOG(ERROR) << "LevelDB write failed: " << s.ToString();
-  return false;
+  if (!s.ok()) {
+    HistogramLevelDBError("WebCore.IndexedDB.LevelDBWriteErrors", s);
+    LOG(ERROR) << "LevelDB write failed: " << s.ToString();
+  }
+  return s;
 }
 
 namespace {
