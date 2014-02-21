@@ -1503,6 +1503,9 @@ WebViewImpl* WebViewImpl::fromPage(Page* page)
 void WebViewImpl::close()
 {
     if (m_page) {
+        // Disable all agents prior to deleting the page.
+        m_page->inspectorController().inspectedPageDestroyed();
+
         // Initiate shutdown for the entire frameset.  This will cause a lot of
         // notifications to be sent.
         if (m_page->mainFrame())
