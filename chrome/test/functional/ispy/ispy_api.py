@@ -8,12 +8,12 @@ import os
 from distutils.version import LooseVersion
 from PIL import Image
 
-import cloud_bucket
-import ispy_utils
+from common import cloud_bucket
+from common import ispy_utils
 
 
-class ChromeUtils(object):
-  """A utility for using ISpy with Chrome."""
+class ISpyApi(object):
+  """The public API for interacting with ISpy."""
 
   def __init__(self, cloud_bucket):
     """Initializes the utility class.

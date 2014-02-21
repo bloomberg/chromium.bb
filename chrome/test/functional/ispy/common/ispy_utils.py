@@ -4,7 +4,7 @@
 
 """Internal utilities for managing I-Spy test results in Google Cloud Storage.
 
-See the ispy.client.chrome_utils module for the external API.
+See the ispy.ispy_api module for the external API.
 """
 
 import collections

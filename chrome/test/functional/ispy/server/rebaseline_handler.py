@@ -6,8 +6,8 @@
 
 import webapp2
 
+import ispy_api
 from common import constants
-from common import chrome_utils
 
 import gs_bucket
 
@@ -31,10 +31,10 @@ class RebaselineHandler(webapp2.RequestHandler):
       return
     # Otherwise, set up the utilities.
     bucket = gs_bucket.GoogleCloudStorageBucket(constants.BUCKET)
-    chrome_util = chrome_utils.ChromeUtils(bucket)
+    ispy = ispy_api.ISpyApi(bucket)
     # Update versions file.
     try:
-      chrome_util.RebaselineToTestRun(test_run)
+      ispy.RebaselineToTestRun(test_run)
     except:
       self.response.header['Content-Type'] = 'json/application'
       self.response.write(json.dumps(
