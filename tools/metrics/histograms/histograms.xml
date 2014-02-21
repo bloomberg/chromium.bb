@@ -21401,7 +21401,7 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="SyncedNotification.Actions"
+<histogram name="SyncedNotifications.Actions"
     enum="SyncedNotificationActionType">
   <summary>
     The actions taken on synced notifications, recorded every time they happen.
