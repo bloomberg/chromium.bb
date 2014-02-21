@@ -24,7 +24,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/webdata/encryptor/encryptor.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/test/test_browser_thread_bundle.h"

@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_WEBDATA_ENCRYPTOR_ENCRYPTOR_H_
-#define COMPONENTS_WEBDATA_ENCRYPTOR_ENCRYPTOR_H_
+#ifndef COMPONENTS_ENCRYPTOR_ENCRYPTOR_H_
+#define COMPONENTS_ENCRYPTOR_ENCRYPTOR_H_
 
 #include <string>
 
@@ -48,4 +48,4 @@ class Encryptor {
   DISALLOW_IMPLICIT_CONSTRUCTORS(Encryptor);
 };
 
-#endif  // COMPONENTS_WEBDATA_ENCRYPTOR_ENCRYPTOR_H_
+#endif  // COMPONENTS_ENCRYPTOR_ENCRYPTOR_H_

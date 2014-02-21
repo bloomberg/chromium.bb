@@ -10,7 +10,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
-#include "components/webdata/encryptor/encryptor.h"
+#include "components/encryptor/encryptor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::win::RegKey;

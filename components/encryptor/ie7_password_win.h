@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_WEBDATA_ENCRYPTOR_IE7_PASSWORD_H_
-#define COMPONENTS_WEBDATA_ENCRYPTOR_IE7_PASSWORD_H_
+#ifndef COMPONENTS_ENCRYPTOR_IE7_PASSWORD_WIN_H_
+#define COMPONENTS_ENCRYPTOR_IE7_PASSWORD_WIN_H_
 
 #include <windows.h>
 #include <string>
@@ -51,4 +51,4 @@ std::wstring GetUrlHash(const std::wstring& url);
 
 }  // namespace ie7_password
 
-#endif  // COMPONENTS_WEBDATA_ENCRYPTOR_IE7_PASSWORD_H_
+#endif  // COMPONENTS_ENCRYPTOR_IE7_PASSWORD_WIN_H_

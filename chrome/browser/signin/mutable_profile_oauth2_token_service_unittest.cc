@@ -18,7 +18,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_MACOSX)
-#include "components/webdata/encryptor/encryptor.h"
+#include "components/encryptor/encryptor.h"
 #endif
 
 // Defining constant here to handle backward compatiblity tests, but this

@@ -5,42 +5,6 @@
 {
   'targets': [
     {
-      'target_name': 'encryptor',
-      'type': 'static_library',
-      'include_dirs': [
-        '..',
-      ],
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../crypto/crypto.gyp:crypto',
-      ],
-      'sources': [
-        'webdata/encryptor/encryptor.h',
-        'webdata/encryptor/encryptor_mac.mm',
-        'webdata/encryptor/encryptor_password_mac.h',
-        'webdata/encryptor/encryptor_password_mac.mm',
-        'webdata/encryptor/encryptor_posix.cc',
-        'webdata/encryptor/encryptor_win.cc',
-        'webdata/encryptor/ie7_password_win.cc',
-        'webdata/encryptor/ie7_password_win.h',
-      ],
-      'conditions': [
-        ['OS=="mac"', {
-          'sources!': [
-            'webdata/encryptor/encryptor_posix.cc',
-          ],
-        }],
-      ],
-      'target_conditions': [
-        ['OS=="ios"', {
-          'sources/': [
-            ['include', '^webdata/encryptor/encryptor_mac\\.mm$'],
-            ['include', '^webdata/encryptor/encryptor_password_mac\\.mm$'],
-          ],
-        }],
-      ],
-    },
-    {
       'target_name': 'webdata_common',
       'type': '<(component)',
       'include_dirs': [

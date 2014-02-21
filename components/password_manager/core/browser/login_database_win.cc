@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/strings/string_util.h"
+#include "components/encryptor/encryptor.h"
 #include "components/password_manager/core/browser/login_database.h"
-#include "components/webdata/encryptor/encryptor.h"
 
 LoginDatabase::EncryptionResult LoginDatabase::EncryptedString(
     const base::string16& plain_text,

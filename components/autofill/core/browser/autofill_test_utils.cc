@@ -16,9 +16,9 @@
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/encryptor/encryptor.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "components/user_prefs/user_prefs.h"
-#include "components/webdata/encryptor/encryptor.h"
 #include "content/public/browser/browser_context.h"
 
 using base::ASCIIToUTF16;

@@ -3,5 +3,5 @@ include_rules = [
   # component since it is currently in the same component as
   # UserPrefs, which uses content::BrowserContext.
   "+components/user_prefs/pref_registry_syncable.h",
-  "+components/webdata/encryptor",
+  "+components/encryptor",
 ]

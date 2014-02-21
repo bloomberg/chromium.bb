@@ -10,11 +10,12 @@
     'chromium_code': 1,
   },
   'includes': [
-    'autofill.gypi',
     'auto_login_parser.gypi',
+    'autofill.gypi',
     'breakpad.gypi',
     'cloud_devices.gypi',
     'dom_distiller.gypi',
+    'encryptor.gypi',
     'json_schema.gypi',
     'language_usage_metrics.gypi',
     'metrics.gypi',

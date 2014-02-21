@@ -1,7 +1,7 @@
 include_rules = [
   "+components/autofill/core/common",
+  "+components/encryptor",
   "+components/password_manager/core",
-  "+components/webdata/encryptor",
   "+net/base",
   "+sql",
   "+sync/api",
