@@ -282,7 +282,7 @@
     }
   ],
   "screenlockPrivate": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types":["platform_app"],
     "whitelist": [
       "lkegkdgachcnekllcdfkijonogckdnjo",  // API test
