@@ -34,7 +34,7 @@ class SVGAnimateTransformElement FINAL : public SVGAnimateElement {
 public:
     static PassRefPtr<SVGAnimateTransformElement> create(Document&);
 
-    SVGTransform::SVGTransformType transformType() const { return m_type; }
+    SVGTransformType transformType() const { return m_type; }
 
 private:
     explicit SVGAnimateTransformElement(Document&);
@@ -44,7 +44,7 @@ private:
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
 
-    SVGTransform::SVGTransformType m_type;
+    SVGTransformType m_type;
 };
 
 DEFINE_NODE_TYPE_CASTS(SVGAnimateTransformElement, hasTagName(SVGNames::animateTransformTag));

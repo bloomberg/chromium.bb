@@ -28,16 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface SVGGraphicsElement : SVGElement {
+[
+    StrictTypeChecking,
+] interface SVGGraphicsElement : SVGElement {
     readonly attribute SVGAnimatedTransformList transform;
 
     [MeasureAs=SVGLocatableNearestViewportElement] readonly attribute SVGElement nearestViewportElement;
     [MeasureAs=SVGLocatableFarthestViewportElement] readonly attribute SVGElement farthestViewportElement;
 
     [ImplementedAs=getBBoxFromJavascript] SVGRect getBBox();
-    SVGMatrix getCTM();
-    SVGMatrix getScreenCTM();
-    [RaisesException] SVGMatrix getTransformToElement([Default=Undefined] optional SVGElement element);
+    [ImplementedAs=getCTMFromJavascript] SVGMatrix getCTM();
+    [ImplementedAs=getScreenCTMFromJavascript] SVGMatrix getScreenCTM();
+    [RaisesException] SVGMatrix getTransformToElement(SVGElement element);
 };
 
 SVGGraphicsElement implements SVGTests;

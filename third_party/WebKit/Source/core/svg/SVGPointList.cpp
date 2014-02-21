@@ -105,7 +105,6 @@ bool SVGPointList::parse(const CharType*& ptr, const CharType* end)
         }
 
         // check end of list
-        skipOptionalSVGSpaces(ptr, end);
         if (ptr >= end)
             return true;
     }

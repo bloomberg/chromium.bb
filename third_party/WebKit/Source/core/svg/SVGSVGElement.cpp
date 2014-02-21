@@ -51,6 +51,7 @@
 #include "core/svg/SVGRectTearOff.h"
 #include "core/svg/SVGTransform.h"
 #include "core/svg/SVGTransformList.h"
+#include "core/svg/SVGTransformTearOff.h"
 #include "core/svg/SVGViewElement.h"
 #include "core/svg/SVGViewSpec.h"
 #include "core/svg/animation/SMILTimeContainer.h"
@@ -399,9 +400,9 @@ PassRefPtr<SVGPointTearOff> SVGSVGElement::createSVGPoint()
     return SVGPointTearOff::create(SVGPoint::create(), 0, PropertyIsNotAnimVal);
 }
 
-SVGMatrix SVGSVGElement::createSVGMatrix()
+PassRefPtr<SVGMatrixTearOff> SVGSVGElement::createSVGMatrix()
 {
-    return SVGMatrix();
+    return SVGMatrixTearOff::create(AffineTransform());
 }
 
 PassRefPtr<SVGRectTearOff> SVGSVGElement::createSVGRect()
@@ -409,14 +410,14 @@ PassRefPtr<SVGRectTearOff> SVGSVGElement::createSVGRect()
     return SVGRectTearOff::create(SVGRect::create(), 0, PropertyIsNotAnimVal);
 }
 
-SVGTransform SVGSVGElement::createSVGTransform()
+PassRefPtr<SVGTransformTearOff> SVGSVGElement::createSVGTransform()
 {
-    return SVGTransform(SVGTransform::SVG_TRANSFORM_MATRIX);
+    return SVGTransformTearOff::create(SVGTransform::create(SVG_TRANSFORM_MATRIX), 0, PropertyIsNotAnimVal);
 }
 
-SVGTransform SVGSVGElement::createSVGTransformFromMatrix(const SVGMatrix& matrix)
+PassRefPtr<SVGTransformTearOff> SVGSVGElement::createSVGTransformFromMatrix(PassRefPtr<SVGMatrixTearOff> matrix)
 {
-    return SVGTransform(static_cast<const AffineTransform&>(matrix));
+    return SVGTransformTearOff::create(SVGTransform::create(matrix->value()), 0, PropertyIsNotAnimVal);
 }
 
 AffineTransform SVGSVGElement::localCoordinateSpaceTransform(SVGElement::CTMScope mode) const
@@ -675,12 +676,12 @@ AffineTransform SVGSVGElement::viewBoxToViewTransform(float viewWidth, float vie
         return SVGFitToViewBox::viewBoxToViewTransform(currentViewBoxRect(), preserveAspectRatio()->currentValue(), viewWidth, viewHeight);
 
     AffineTransform ctm = SVGFitToViewBox::viewBoxToViewTransform(currentViewBoxRect(), m_viewSpec->preserveAspectRatio()->currentValue(), viewWidth, viewHeight);
-    const SVGTransformList& transformList = m_viewSpec->transformBaseValue();
-    if (transformList.isEmpty())
+    RefPtr<SVGTransformList> transformList = m_viewSpec->transform();
+    if (transformList->isEmpty())
         return ctm;
 
     AffineTransform transform;
-    if (transformList.concatenate(transform))
+    if (transformList->concatenate(transform))
         ctm *= transform;
 
     return ctm;

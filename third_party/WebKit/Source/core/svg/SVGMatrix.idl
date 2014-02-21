@@ -21,28 +21,29 @@
  */
 
 [
-    SetWrapperReferenceTo(SVGTransform parent),
     StrictTypeChecking,
+    ImplementedAs=SVGMatrixTearOff,
+    SetWrapperReferenceTo(SVGTransform contextTransform)
 ] interface SVGMatrix {
     // FIXME: these attributes should all be floats but since we implement
     // AffineTransform with doubles setting these as doubles makes more sense.
-    attribute double a;
-    attribute double b;
-    attribute double c;
-    attribute double d;
-    attribute double e;
-    attribute double f;
+    [RaisesException=Setter] attribute double a;
+    [RaisesException=Setter] attribute double b;
+    [RaisesException=Setter] attribute double c;
+    [RaisesException=Setter] attribute double d;
+    [RaisesException=Setter] attribute double e;
+    [RaisesException=Setter] attribute double f;
 
     SVGMatrix multiply(SVGMatrix secondMatrix);
     [RaisesException] SVGMatrix inverse();
-    [Immutable] SVGMatrix translate(float x, float y);
-    [Immutable] SVGMatrix scale(float scaleFactor);
-    [Immutable] SVGMatrix scaleNonUniform(float scaleFactorX, float scaleFactorY);
-    [Immutable] SVGMatrix rotate(float angle);
+    SVGMatrix translate(float x, float y);
+    SVGMatrix scale(float scaleFactor);
+    SVGMatrix scaleNonUniform(float scaleFactorX, float scaleFactorY);
+    SVGMatrix rotate(float angle);
     [RaisesException] SVGMatrix rotateFromVector(float x, float y);
-    [Immutable] SVGMatrix flipX();
-    [Immutable] SVGMatrix flipY();
-    [Immutable] SVGMatrix skewX(float angle);
-    [Immutable] SVGMatrix skewY(float angle);
+    SVGMatrix flipX();
+    SVGMatrix flipY();
+    SVGMatrix skewX(float angle);
+    SVGMatrix skewY(float angle);
 };
 

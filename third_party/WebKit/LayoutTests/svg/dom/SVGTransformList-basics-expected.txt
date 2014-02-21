@@ -122,7 +122,7 @@ PASS circle1.transform.baseVal.appendItem(circle1) threw exception TypeError: Fa
 PASS circle1.transform.baseVal.appendItem(null) threw exception TypeError: Failed to execute 'appendItem' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
 
 Testing animVal clear throws
-PASS circle1.transform.animVal.clear() threw exception NoModificationAllowedError: Failed to execute 'clear' on 'SVGTransformList': This object is read-only, because the property is an animation value..
+PASS circle1.transform.animVal.clear() threw exception NoModificationAllowedError: Failed to execute 'clear' on 'SVGTransformList': The object is read-only..
 PASS circle1.transform.baseVal.clear() is undefined.
 
 Creating new SVGTransform, with 45 deg rotation about x=50, y=100 and append it to the transform list

@@ -62,7 +62,7 @@ PASS currentView.viewTargetString = '#test' is "#test"
 PASS currentView.viewTargetString is ""
 
 Try changing transform
-PASS currentView.transform.clear() threw exception NoModificationAllowedError: Failed to execute 'clear' on 'SVGTransformList': This object is read-only, because the property is an animation value..
+PASS currentView.transform.clear() threw exception NoModificationAllowedError: Failed to execute 'clear' on 'SVGTransformList': The object is read-only..
 PASS currentView.transform.numberOfItems is 0
 PASS successfullyParsed is true
 

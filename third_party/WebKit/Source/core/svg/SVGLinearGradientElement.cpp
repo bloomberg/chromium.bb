@@ -123,9 +123,9 @@ static void setGradientAttributes(SVGGradientElement* element, LinearGradientAtt
     if (!attributes.hasGradientUnits() && element->gradientUnits()->isSpecified())
         attributes.setGradientUnits(element->gradientUnits()->currentValue()->enumValue());
 
-    if (!attributes.hasGradientTransform() && element->gradientTransformSpecified()) {
+    if (!attributes.hasGradientTransform() && element->gradientTransform()->isSpecified()) {
         AffineTransform transform;
-        element->gradientTransformCurrentValue().concatenate(transform);
+        element->gradientTransform()->currentValue()->concatenate(transform);
         attributes.setGradientTransform(transform);
     }
 

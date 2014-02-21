@@ -33,10 +33,7 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_TRANSFORM_LIST(SVGPatternElement, SVGNames::patternTransformAttr, PatternTransform, patternTransform)
-
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGPatternElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(patternTransform)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
@@ -49,6 +46,7 @@ inline SVGPatternElement::SVGPatternElement(Document& document)
     , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight)))
     , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(LengthModeWidth)))
     , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight)))
+    , m_patternTransform(SVGAnimatedTransformList::create(this, SVGNames::patternTransformAttr, SVGTransformList::create()))
     , m_patternUnits(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::create(this, SVGNames::patternUnitsAttr, SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX))
     , m_patternContentUnits(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::create(this, SVGNames::patternContentUnitsAttr, SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE))
 {
@@ -58,6 +56,7 @@ inline SVGPatternElement::SVGPatternElement(Document& document)
     addToPropertyMap(m_y);
     addToPropertyMap(m_width);
     addToPropertyMap(m_height);
+    addToPropertyMap(m_patternTransform);
     addToPropertyMap(m_patternUnits);
     addToPropertyMap(m_patternContentUnits);
     registerAnimatedPropertiesForSVGPatternElement();
@@ -97,11 +96,7 @@ void SVGPatternElement::parseAttribute(const QualifiedName& name, const AtomicSt
     } else if (name == SVGNames::patternContentUnitsAttr) {
         m_patternContentUnits->setBaseValueAsString(value, parseError);
     } else if (name == SVGNames::patternTransformAttr) {
-        SVGTransformList newList;
-        newList.parse(value);
-        detachAnimatedPatternTransformListWrappers(newList.size());
-        setPatternTransformBaseValue(newList);
-        return;
+        m_patternTransform->setBaseValueAsString(value, parseError);
     } else if (name == SVGNames::xAttr) {
         m_x->setBaseValueAsString(value, AllowNegativeLengths, parseError);
     } else if (name == SVGNames::yAttr) {
@@ -182,9 +177,9 @@ static void setPatternAttributes(const SVGPatternElement* element, PatternAttrib
     if (!attributes.hasPatternContentUnits() && element->patternContentUnits()->isSpecified())
         attributes.setPatternContentUnits(element->patternContentUnits()->currentValue()->enumValue());
 
-    if (!attributes.hasPatternTransform() && element->patternTransformSpecified()) {
+    if (!attributes.hasPatternTransform() && element->patternTransform()->isSpecified()) {
         AffineTransform transform;
-        element->patternTransformCurrentValue().concatenate(transform);
+        element->patternTransform()->currentValue()->concatenate(transform);
         attributes.setPatternTransform(transform);
     }
 
@@ -220,7 +215,7 @@ void SVGPatternElement::collectPatternAttributes(PatternAttributes& attributes) 
 AffineTransform SVGPatternElement::localCoordinateSpaceTransform(SVGElement::CTMScope) const
 {
     AffineTransform matrix;
-    patternTransformCurrentValue().concatenate(matrix);
+    m_patternTransform->currentValue()->concatenate(matrix);
     return matrix;
 }
 

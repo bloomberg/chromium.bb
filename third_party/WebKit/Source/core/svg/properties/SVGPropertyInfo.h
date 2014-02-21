@@ -52,6 +52,7 @@ enum AnimatedPropertyType {
     AnimatedRect,
     AnimatedString,
     AnimatedStringList,
+    AnimatedTransform,
     AnimatedTransformList,
     AnimatedUnknown
 };

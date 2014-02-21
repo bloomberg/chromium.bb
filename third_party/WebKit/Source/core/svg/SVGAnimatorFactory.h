@@ -44,8 +44,6 @@ public:
         switch (attributeType) {
         case AnimatedPath:
             return adoptPtr(new SVGAnimatedPathAnimator(animationElement, contextElement));
-        case AnimatedTransformList:
-            return adoptPtr(new SVGAnimatedTransformListAnimator(animationElement, contextElement));
         // Below properties have migrated to new property implementation.
         case AnimatedAngle:
         case AnimatedEnumeration:
@@ -62,11 +60,13 @@ public:
         case AnimatedPreserveAspectRatio:
         case AnimatedRect:
         case AnimatedString:
+        case AnimatedTransformList:
             return adoptPtr(new SVGAnimatedNewPropertyAnimator(attributeType, animationElement, contextElement));
 
-        // SVGAnimatedPoint/SVGAnimatedStringList does not exist.
+        // SVGAnimated{Point,StringList,Transform} does not exist.
         case AnimatedPoint:
         case AnimatedStringList:
+        case AnimatedTransform:
             ASSERT_NOT_REACHED();
 
         case AnimatedUnknown:

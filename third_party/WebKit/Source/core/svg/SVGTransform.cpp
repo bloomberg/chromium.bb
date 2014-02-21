@@ -29,13 +29,15 @@
 namespace WebCore {
 
 SVGTransform::SVGTransform()
-    : m_type(SVG_TRANSFORM_UNKNOWN)
+    : NewSVGPropertyBase(classType())
+    , m_transformType(SVG_TRANSFORM_UNKNOWN)
     , m_angle(0)
 {
 }
 
-SVGTransform::SVGTransform(SVGTransformType type, ConstructionMode mode)
-    : m_type(type)
+SVGTransform::SVGTransform(SVGTransformType transformType, ConstructionMode mode)
+    : NewSVGPropertyBase(classType())
+    , m_transformType(transformType)
     , m_angle(0)
 {
     if (mode == ConstructZeroTransform)
@@ -43,31 +45,53 @@ SVGTransform::SVGTransform(SVGTransformType type, ConstructionMode mode)
 }
 
 SVGTransform::SVGTransform(const AffineTransform& matrix)
-    : m_type(SVG_TRANSFORM_MATRIX)
+    : NewSVGPropertyBase(classType())
+    , m_transformType(SVG_TRANSFORM_MATRIX)
     , m_angle(0)
     , m_matrix(matrix)
 {
 }
 
+SVGTransform::SVGTransform(SVGTransformType transformType, float angle, const FloatPoint& center, const AffineTransform& matrix)
+    : NewSVGPropertyBase(classType())
+    , m_transformType(transformType)
+    , m_angle(angle)
+    , m_center(center)
+    , m_matrix(matrix)
+{
+}
+
+SVGTransform::~SVGTransform()
+{
+}
+
+PassRefPtr<SVGTransform> SVGTransform::clone() const
+{
+    return adoptRef(new SVGTransform(m_transformType, m_angle, m_center, m_matrix));
+}
+
+PassRefPtr<NewSVGPropertyBase> SVGTransform::cloneForAnimation(const String&) const
+{
+    // SVGTransform is never animated.
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
 void SVGTransform::setMatrix(const AffineTransform& matrix)
 {
-    m_type = SVG_TRANSFORM_MATRIX;
-    m_angle = 0;
+    onMatrixChange();
     m_matrix = matrix;
 }
 
-void SVGTransform::updateSVGMatrix()
+void SVGTransform::onMatrixChange()
 {
-    // The underlying matrix has been changed, alter the transformation type.
-    // Spec: In case the matrix object is changed directly (i.e., without using the methods on the SVGTransform interface itself)
-    // then the type of the SVGTransform changes to SVG_TRANSFORM_MATRIX.
-    m_type = SVG_TRANSFORM_MATRIX;
+    m_transformType = SVG_TRANSFORM_MATRIX;
     m_angle = 0;
 }
 
 void SVGTransform::setTranslate(float tx, float ty)
 {
-    m_type = SVG_TRANSFORM_TRANSLATE;
+    m_transformType = SVG_TRANSFORM_TRANSLATE;
     m_angle = 0;
 
     m_matrix.makeIdentity();
@@ -81,7 +105,7 @@ FloatPoint SVGTransform::translate() const
 
 void SVGTransform::setScale(float sx, float sy)
 {
-    m_type = SVG_TRANSFORM_SCALE;
+    m_transformType = SVG_TRANSFORM_SCALE;
     m_angle = 0;
     m_center = FloatPoint();
 
@@ -96,7 +120,7 @@ FloatSize SVGTransform::scale() const
 
 void SVGTransform::setRotate(float angle, float cx, float cy)
 {
-    m_type = SVG_TRANSFORM_ROTATE;
+    m_transformType = SVG_TRANSFORM_ROTATE;
     m_angle = angle;
     m_center = FloatPoint(cx, cy);
 
@@ -109,7 +133,7 @@ void SVGTransform::setRotate(float angle, float cx, float cy)
 
 void SVGTransform::setSkewX(float angle)
 {
-    m_type = SVG_TRANSFORM_SKEWX;
+    m_transformType = SVG_TRANSFORM_SKEWX;
     m_angle = angle;
 
     m_matrix.makeIdentity();
@@ -118,14 +142,16 @@ void SVGTransform::setSkewX(float angle)
 
 void SVGTransform::setSkewY(float angle)
 {
-    m_type = SVG_TRANSFORM_SKEWY;
+    m_transformType = SVG_TRANSFORM_SKEWY;
     m_angle = angle;
 
     m_matrix.makeIdentity();
     m_matrix.skewY(angle);
 }
 
-const String& SVGTransform::transformTypePrefixForParsing(SVGTransformType type)
+namespace {
+
+const String& transformTypePrefixForParsing(SVGTransformType type)
 {
     switch (type) {
     case SVG_TRANSFORM_UNKNOWN:
@@ -160,10 +186,12 @@ const String& SVGTransform::transformTypePrefixForParsing(SVGTransformType type)
     return emptyString();
 }
 
+}
+
 String SVGTransform::valueAsString() const
 {
-    const String& prefix = transformTypePrefixForParsing(m_type);
-    switch (m_type) {
+    const String& prefix = transformTypePrefixForParsing(m_transformType);
+    switch (m_transformType) {
     case SVG_TRANSFORM_UNKNOWN:
         return prefix;
     case SVG_TRANSFORM_MATRIX: {
@@ -194,6 +222,26 @@ String SVGTransform::valueAsString() const
 
     ASSERT_NOT_REACHED();
     return emptyString();
+}
+
+void SVGTransform::add(PassRefPtr<NewSVGPropertyBase>, SVGElement*)
+{
+    // SVGTransform is not animated by itself.
+    ASSERT_NOT_REACHED();
+}
+
+void SVGTransform::calculateAnimatedValue(SVGAnimationElement*, float, unsigned, PassRefPtr<NewSVGPropertyBase>, PassRefPtr<NewSVGPropertyBase>, PassRefPtr<NewSVGPropertyBase>, SVGElement*)
+{
+    // SVGTransform is not animated by itself.
+    ASSERT_NOT_REACHED();
+}
+
+float SVGTransform::calculateDistance(PassRefPtr<NewSVGPropertyBase>, SVGElement*)
+{
+    // SVGTransform is not animated by itself.
+    ASSERT_NOT_REACHED();
+
+    return -1;
 }
 
 } // namespace WebCore

@@ -28,35 +28,38 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGPointTearOff_h
-#define SVGPointTearOff_h
+#include "config.h"
+#include "core/svg/SVGTransformListTearOff.h"
 
-#include "bindings/v8/ScriptWrappable.h"
-#include "core/svg/SVGPoint.h"
-#include "core/svg/properties/NewSVGPropertyTearOff.h"
+#include "bindings/v8/ExceptionState.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/svg/SVGSVGElement.h"
 
 namespace WebCore {
 
-class SVGMatrixTearOff;
+SVGTransformListTearOff::SVGTransformListTearOff(PassRefPtr<SVGTransformList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
+    : NewSVGListPropertyTearOffHelper<SVGTransformListTearOff, SVGTransformList>(target, contextElement, propertyIsAnimVal, attributeName)
+{
+    ScriptWrappable::init(this);
+}
 
-class SVGPointTearOff : public NewSVGPropertyTearOff<SVGPoint>, public ScriptWrappable {
-public:
-    static PassRefPtr<SVGPointTearOff> create(PassRefPtr<SVGPoint> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
-    {
-        return adoptRef(new SVGPointTearOff(target, contextElement, propertyIsAnimVal, attributeName));
+SVGTransformListTearOff::~SVGTransformListTearOff()
+{
+}
+
+PassRefPtr<SVGTransformTearOff> SVGTransformListTearOff::createSVGTransformFromMatrix(PassRefPtr<SVGMatrixTearOff> matrix) const
+{
+    return SVGSVGElement::createSVGTransformFromMatrix(matrix);
+}
+
+PassRefPtr<SVGTransformTearOff> SVGTransformListTearOff::consolidate(ExceptionState& exceptionState)
+{
+    if (isImmutable()) {
+        exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");
+        return 0;
     }
 
-    void setX(float, ExceptionState&);
-    void setY(float, ExceptionState&);
-    float x() { return target()->x(); }
-    float y() { return target()->y(); }
+    return createItemTearOff(target()->consolidate());
+}
 
-    PassRefPtr<SVGPointTearOff> matrixTransform(PassRefPtr<SVGMatrixTearOff>);
-
-protected:
-    SVGPointTearOff(PassRefPtr<SVGPoint>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = nullQName());
-};
-
-} // namespace WebCore
-
-#endif // SVGPointTearOff_h_
+}

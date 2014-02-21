@@ -34,7 +34,7 @@
     ConstructorCallWith=ExecutionContext,
     Constructor(DOMString str1, [Default=Undefined] optional DOMString str2),
     RaisesException=Constructor,
-    SetWrapperReferenceTo(ReferencedType referencedName),
+    SetWrapperReferenceTo(TestObject referencedName),
 ] interface TestInterface {
     [ImplementedAs=getItem] getter (Node or NodeList) namedItem(DOMString name);
     [Custom] setter Node (DOMString name, Node value);

@@ -28,35 +28,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGPointTearOff_h
-#define SVGPointTearOff_h
+#ifndef SVGTransformListTearOff_h
+#define SVGTransformListTearOff_h
 
-#include "bindings/v8/ScriptWrappable.h"
-#include "core/svg/SVGPoint.h"
-#include "core/svg/properties/NewSVGPropertyTearOff.h"
+#include "core/svg/SVGTransformList.h"
+#include "core/svg/SVGTransformTearOff.h"
+#include "core/svg/properties/NewSVGListPropertyTearOffHelper.h"
 
 namespace WebCore {
 
-class SVGMatrixTearOff;
-
-class SVGPointTearOff : public NewSVGPropertyTearOff<SVGPoint>, public ScriptWrappable {
+class SVGTransformListTearOff FINAL :
+    public NewSVGListPropertyTearOffHelper<SVGTransformListTearOff, SVGTransformList>,
+    public ScriptWrappable {
 public:
-    static PassRefPtr<SVGPointTearOff> create(PassRefPtr<SVGPoint> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
+    static PassRefPtr<SVGTransformListTearOff> create(PassRefPtr<SVGTransformList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = nullQName())
     {
-        return adoptRef(new SVGPointTearOff(target, contextElement, propertyIsAnimVal, attributeName));
+        return adoptRef(new SVGTransformListTearOff(target, contextElement, propertyIsAnimVal, attributeName));
     }
 
-    void setX(float, ExceptionState&);
-    void setY(float, ExceptionState&);
-    float x() { return target()->x(); }
-    float y() { return target()->y(); }
+    virtual ~SVGTransformListTearOff();
 
-    PassRefPtr<SVGPointTearOff> matrixTransform(PassRefPtr<SVGMatrixTearOff>);
+    PassRefPtr<SVGTransformTearOff> createSVGTransformFromMatrix(PassRefPtr<SVGMatrixTearOff>) const;
+    PassRefPtr<SVGTransformTearOff> consolidate(ExceptionState&);
 
-protected:
-    SVGPointTearOff(PassRefPtr<SVGPoint>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = nullQName());
+private:
+    SVGTransformListTearOff(PassRefPtr<SVGTransformList>, SVGElement*, PropertyIsAnimValType, const QualifiedName&);
 };
 
 } // namespace WebCore
 
-#endif // SVGPointTearOff_h_
+#endif // SVGTransformListTearOff_h_

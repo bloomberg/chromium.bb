@@ -52,6 +52,7 @@ public:
 
     Vector<Gradient::ColorStop> buildStops();
 
+    SVGAnimatedTransformList* gradientTransform() { return m_gradientTransform.get(); }
     SVGAnimatedEnumeration<SVGSpreadMethodType>* spreadMethod() { return m_spreadMethod.get(); }
     SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>* gradientUnits() { return m_gradientUnits.get(); }
 
@@ -67,10 +68,10 @@ private:
 
     virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0) OVERRIDE FINAL;
 
+    RefPtr<SVGAnimatedTransformList> m_gradientTransform;
     RefPtr<SVGAnimatedEnumeration<SVGSpreadMethodType> > m_spreadMethod;
     RefPtr<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_gradientUnits;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGGradientElement)
-        DECLARE_ANIMATED_TRANSFORM_LIST(GradientTransform, gradientTransform)
     END_DECLARE_ANIMATED_PROPERTIES
 };
 

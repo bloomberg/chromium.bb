@@ -21,40 +21,62 @@
 #ifndef SVGTransform_h
 #define SVGTransform_h
 
-#include "core/svg/SVGMatrix.h"
+#include "core/svg/properties/NewSVGProperty.h"
 #include "platform/geometry/FloatPoint.h"
+#include "platform/transforms/AffineTransform.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 class FloatSize;
+class SVGTransformTearOff;
 
-class SVGTransform {
+enum SVGTransformType {
+    SVG_TRANSFORM_UNKNOWN = 0,
+    SVG_TRANSFORM_MATRIX = 1,
+    SVG_TRANSFORM_TRANSLATE = 2,
+    SVG_TRANSFORM_SCALE = 3,
+    SVG_TRANSFORM_ROTATE = 4,
+    SVG_TRANSFORM_SKEWX = 5,
+    SVG_TRANSFORM_SKEWY = 6
+};
+
+class SVGTransform : public NewSVGPropertyBase {
 public:
-    enum SVGTransformType {
-        SVG_TRANSFORM_UNKNOWN = 0,
-        SVG_TRANSFORM_MATRIX = 1,
-        SVG_TRANSFORM_TRANSLATE = 2,
-        SVG_TRANSFORM_SCALE = 3,
-        SVG_TRANSFORM_ROTATE = 4,
-        SVG_TRANSFORM_SKEWX = 5,
-        SVG_TRANSFORM_SKEWY = 6
-    };
+    typedef SVGTransformTearOff TearOffType;
 
     enum ConstructionMode {
         ConstructIdentityTransform,
         ConstructZeroTransform
     };
 
-    SVGTransform();
-    SVGTransform(SVGTransformType, ConstructionMode = ConstructIdentityTransform);
-    explicit SVGTransform(const AffineTransform&);
+    static PassRefPtr<SVGTransform> create()
+    {
+        return adoptRef(new SVGTransform());
+    }
 
-    SVGTransformType type() const { return m_type; }
+    static PassRefPtr<SVGTransform> create(SVGTransformType type, ConstructionMode mode = ConstructIdentityTransform)
+    {
+        return adoptRef(new SVGTransform(type, mode));
+    }
 
-    SVGMatrix& svgMatrix() { return static_cast<SVGMatrix&>(m_matrix); }
-    AffineTransform matrix() const { return m_matrix; }
-    void updateSVGMatrix();
+    static PassRefPtr<SVGTransform> create(const AffineTransform& affineTransform)
+    {
+        return adoptRef(new SVGTransform(affineTransform));
+    }
+
+    virtual ~SVGTransform();
+
+    PassRefPtr<SVGTransform> clone() const;
+    virtual PassRefPtr<NewSVGPropertyBase> cloneForAnimation(const String&) const OVERRIDE;
+
+    SVGTransformType transformType() const { return m_transformType; }
+
+    const AffineTransform& matrix() const { return m_matrix; }
+
+    // |onMatrixChange| must be called after modifications via |mutableMatrix|.
+    AffineTransform* mutableMatrix() { return &m_matrix; }
+    void onMatrixChange();
 
     float angle() const { return m_angle; }
     FloatPoint rotationCenter() const { return m_center; }
@@ -70,15 +92,25 @@ public:
     FloatPoint translate() const;
     FloatSize scale() const;
 
-    bool isValid() const { return m_type != SVG_TRANSFORM_UNKNOWN; }
-    String valueAsString() const;
+    bool isValid() const { return m_transformType != SVG_TRANSFORM_UNKNOWN; }
 
-    static const String& transformTypePrefixForParsing(SVGTransformType);
+    virtual String valueAsString() const OVERRIDE;
+
+    virtual void add(PassRefPtr<NewSVGPropertyBase>, SVGElement*) OVERRIDE;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> from, PassRefPtr<NewSVGPropertyBase> to, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) OVERRIDE;
+    virtual float calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement* contextElement) OVERRIDE;
+
+    static AnimatedPropertyType classType() { return AnimatedTransform; }
 
 private:
+    SVGTransform();
+    SVGTransform(SVGTransformType, ConstructionMode);
+    explicit SVGTransform(const AffineTransform&);
+    SVGTransform(SVGTransformType, float, const FloatPoint&, const AffineTransform&);
+
     friend bool operator==(const SVGTransform& a, const SVGTransform& b);
 
-    SVGTransformType m_type;
+    SVGTransformType m_transformType;
     float m_angle;
     FloatPoint m_center;
     AffineTransform m_matrix;
@@ -86,12 +118,19 @@ private:
 
 inline bool operator==(const SVGTransform& a, const SVGTransform& b)
 {
-    return a.m_type == b.m_type && a.m_angle == b.m_angle && a.m_matrix == b.m_matrix;
+    return a.m_transformType == b.m_transformType && a.m_angle == b.m_angle && a.m_matrix == b.m_matrix;
 }
 
 inline bool operator!=(const SVGTransform& a, const SVGTransform& b)
 {
     return !(a == b);
+}
+
+inline PassRefPtr<SVGTransform> toSVGTransform(PassRefPtr<NewSVGPropertyBase> passBase)
+{
+    RefPtr<NewSVGPropertyBase> base = passBase;
+    ASSERT(base->type() == SVGTransform::classType());
+    return static_pointer_cast<SVGTransform>(base.release());
 }
 
 } // namespace WebCore

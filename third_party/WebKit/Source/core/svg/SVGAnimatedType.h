@@ -20,10 +20,7 @@
 #ifndef SVGAnimatedType_h
 #define SVGAnimatedType_h
 
-#include "core/css/StyleColor.h"
 #include "core/svg/SVGAngle.h"
-#include "core/svg/SVGColor.h"
-#include "core/svg/SVGTransformList.h"
 #include "core/svg/properties/NewSVGAnimatedProperty.h"
 #include "core/svg/properties/SVGPropertyInfo.h"
 
@@ -36,31 +33,17 @@ class SVGAnimatedType FINAL {
 public:
     ~SVGAnimatedType();
 
-    static PassOwnPtr<SVGAnimatedType> createColor(StyleColor*);
     static PassOwnPtr<SVGAnimatedType> createPath(PassOwnPtr<SVGPathByteStream>);
-    static PassOwnPtr<SVGAnimatedType> createTransformList(SVGTransformList*);
     // Temporary compatibility layer. This shouldn't be needed after all properties are switched to NewSVGAnimatedProperty impl.
     static PassOwnPtr<SVGAnimatedType> createNewProperty(PassRefPtr<NewSVGPropertyBase>);
     static bool supportsAnimVal(AnimatedPropertyType);
 
     AnimatedPropertyType type() const { return m_type; }
 
-    StyleColor& color()
-    {
-        ASSERT(m_type == AnimatedColor);
-        return *m_data.color;
-    }
-
     SVGPathByteStream* path()
     {
         ASSERT(m_type == AnimatedPath);
         return m_data.path;
-    }
-
-    SVGTransformList& transformList()
-    {
-        ASSERT(m_type == AnimatedTransformList);
-        return *m_data.transformList;
     }
 
     RefPtr<NewSVGPropertyBase>& newProperty()
@@ -82,9 +65,7 @@ private:
         {
         }
 
-        StyleColor* color;
         SVGPathByteStream* path;
-        SVGTransformList* transformList;
     } m_data;
     RefPtr<NewSVGPropertyBase> m_newProperty;
 };

@@ -31,14 +31,17 @@
 #include "config.h"
 #include "core/svg/SVGAnimatedNewPropertyAnimator.h"
 
+#include "core/svg/SVGAnimateTransformElement.h"
 #include "core/svg/SVGAnimatedColor.h"
 #include "core/svg/SVGAnimationElement.h"
+#include "core/svg/SVGColor.h"
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGLength.h"
 #include "core/svg/SVGLengthList.h"
 #include "core/svg/SVGNumber.h"
 #include "core/svg/SVGPointList.h"
 #include "core/svg/SVGString.h"
+#include "core/svg/SVGTransformList.h"
 
 namespace WebCore {
 
@@ -61,9 +64,18 @@ SVGAnimatedNewPropertyAnimator::~SVGAnimatedNewPropertyAnimator()
 PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::createPropertyForAnimation(const String& value)
 {
     if (isAnimatingSVGDom()) {
-        ASSERT(m_animatedProperty);
-
         // SVG DOM animVal animation code-path.
+
+        if (m_type == AnimatedTransformList) {
+            // TransformList must be animated via <animateTransform>,
+            // and its {from,by,to} attribute values needs to be parsed w.r.t. its "type" attribute.
+            // Spec: http://www.w3.org/TR/SVG/single-page.html#animate-AnimateTransformElement
+            ASSERT(m_animationElement);
+            SVGTransformType transformType = toSVGAnimateTransformElement(m_animationElement)->transformType();
+            return SVGTransformList::create(transformType, value);
+        }
+
+        ASSERT(m_animatedProperty);
         return m_animatedProperty->currentValueBase()->cloneForAnimation(value);
     }
 
@@ -104,6 +116,8 @@ PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::createPropertyFor
     case AnimatedPoint:
     case AnimatedPoints:
     case AnimatedRect:
+    case AnimatedTransform:
+    case AnimatedTransformList:
         ASSERT_NOT_REACHED();
 
     // These properties are not yet migrated to NewProperty implementation. see http://crbug.com/308818
@@ -114,7 +128,6 @@ PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::createPropertyFor
     case AnimatedPath:
     case AnimatedPreserveAspectRatio:
     case AnimatedStringList:
-    case AnimatedTransformList:
         ASSERT_NOT_REACHED();
 
     case AnimatedUnknown:

@@ -30,7 +30,7 @@
 #include "core/html/canvas/Canvas2DContextAttributes.h"
 #include "core/html/canvas/CanvasPathMethods.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
-#include "core/svg/SVGMatrix.h"
+#include "core/svg/SVGMatrixTearOff.h"
 #include "platform/fonts/Font.h"
 #include "platform/graphics/Color.h"
 #include "platform/geometry/FloatSize.h"
@@ -116,11 +116,11 @@ public:
     void save() { ++m_stateStack.last().m_unrealizedSaveCount; }
     void restore();
 
-    SVGMatrix currentTransform() const
+    PassRefPtr<SVGMatrixTearOff> currentTransform() const
     {
-        return SVGMatrix(state().m_transform);
+        return SVGMatrixTearOff::create(state().m_transform);
     }
-    void setCurrentTransform(const SVGMatrix&);
+    void setCurrentTransform(PassRefPtr<SVGMatrixTearOff>);
 
     void scale(float sx, float sy);
     void rotate(float angleInRadians);

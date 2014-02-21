@@ -30,7 +30,7 @@ interface CanvasRenderingContext2D : CanvasRenderingContext {
     void save();
     void restore();
 
-    [RuntimeEnabled=ExperimentalCanvasFeatures, Immutable] attribute SVGMatrix currentTransform;
+    [StrictTypeChecking, RuntimeEnabled=ExperimentalCanvasFeatures] attribute SVGMatrix currentTransform;
     void scale(float sx, float sy);
     void rotate(float angle);
     void translate(float tx, float ty);

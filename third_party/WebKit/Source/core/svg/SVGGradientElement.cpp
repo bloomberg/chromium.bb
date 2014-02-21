@@ -48,20 +48,19 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGSpreadMe
 }
 
 // Animated property definitions
-DEFINE_ANIMATED_TRANSFORM_LIST(SVGGradientElement, SVGNames::gradientTransformAttr, GradientTransform, gradientTransform)
-
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGGradientElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(gradientTransform)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
 SVGGradientElement::SVGGradientElement(const QualifiedName& tagName, Document& document)
     : SVGElement(tagName, document)
     , SVGURIReference(this)
+    , m_gradientTransform(SVGAnimatedTransformList::create(this, SVGNames::gradientTransformAttr, SVGTransformList::create()))
     , m_spreadMethod(SVGAnimatedEnumeration<SVGSpreadMethodType>::create(this, SVGNames::spreadMethodAttr, SVGSpreadMethodPad))
     , m_gradientUnits(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::create(this, SVGNames::gradientUnitsAttr, SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX))
 {
     ScriptWrappable::init(this);
+    addToPropertyMap(m_gradientTransform);
     addToPropertyMap(m_spreadMethod);
     addToPropertyMap(m_gradientUnits);
     registerAnimatedPropertiesForSVGGradientElement();
@@ -86,17 +85,11 @@ void SVGGradientElement::parseAttribute(const QualifiedName& name, const AtomicS
         return;
     }
 
-    if (name == SVGNames::gradientTransformAttr) {
-        SVGTransformList newList;
-        newList.parse(value);
-        detachAnimatedGradientTransformListWrappers(newList.size());
-        setGradientTransformBaseValue(newList);
-        return;
-    }
-
     SVGParsingError parseError = NoError;
 
-    if (name == SVGNames::gradientUnitsAttr)
+    if (name == SVGNames::gradientTransformAttr)
+        m_gradientTransform->setBaseValueAsString(value, parseError);
+    else if (name == SVGNames::gradientUnitsAttr)
         m_gradientUnits->setBaseValueAsString(value, parseError);
     else if (name == SVGNames::spreadMethodAttr)
         m_spreadMethod->setBaseValueAsString(value, parseError);

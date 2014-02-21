@@ -246,17 +246,12 @@ my %svgTypeNewPropertyImplementation = (
     "SVGRect" => 1,
     "SVGString" => 1,
     "SVGStringList" => 1,
+    "SVGTransform" => 1,
+    "SVGTransformList" => 1,
 );
 
 my %svgTypeNeedingTearOff = (
-    "SVGMatrix" => "SVGMatrixTearOff",
     "SVGPathSegList" => "SVGPathSegListPropertyTearOff",
-    "SVGTransform" => "SVGPropertyTearOff<SVGTransform>",
-    "SVGTransformList" => "SVGTransformListPropertyTearOff"
-);
-
-my %svgTypeWithWritablePropertiesNeedingTearOff = (
-    "SVGMatrix" => 1
 );
 
 # Default license header
@@ -559,12 +554,13 @@ END
         if ($svgPropertyType) {
             $setReferenceType = $svgNativeType;
         }
+        my $setReferenceImplType = GetImplNameFromImplementedBy($setReferenceType);
 
         my $setReferenceName = $setReference->name;
 
         AddIncludesForType($setReferenceType);
         $code .= <<END;
-    ${setReferenceType}* ${setReferenceName} = impl->${setReferenceName}();
+    ${setReferenceImplType}* ${setReferenceName} = impl->${setReferenceName}();
     if (${setReferenceName}) {
         if (!DOMDataStore::containsWrapper<${setReferenceV8Type}>(${setReferenceName}, isolate))
             wrap(${setReferenceName}, creationContext, isolate);
@@ -613,10 +609,6 @@ sub GetSVGPropertyTypes
     my $svgWrappedNativeType = GetSVGWrappedTypeNeedingTearOff($implType);
     if ($svgNativeType =~ /SVGPropertyTearOff/) {
         $svgPropertyType = $svgWrappedNativeType;
-        AddToHeaderIncludes("core/svg/properties/SVGAnimatedPropertyTearOff.h");
-    } elsif ($svgNativeType =~ /SVGMatrixTearOff/) {
-        $svgPropertyType = $svgWrappedNativeType;
-        AddToHeaderIncludes("core/svg/properties/SVGMatrixTearOff.h");
         AddToHeaderIncludes("core/svg/properties/SVGAnimatedPropertyTearOff.h");
     } elsif ($svgNativeType =~ /SVGListPropertyTearOff/ or $svgNativeType =~ /SVGStaticListPropertyTearOff/ or $svgNativeType =~ /SVGTransformListPropertyTearOff/) {
         $svgListPropertyType = $svgWrappedNativeType;
@@ -1713,25 +1705,7 @@ END
         AddToImplIncludes("core/svg/properties/SVGPropertyTearOff.h");
         my $tearOffType = GetSVGTypeNeedingTearOff($attrType);
         my $wrappedValue;
-        if (IsSVGTypeWithWritablePropertiesNeedingTearOff($attrType) and not defined $attribute->extendedAttributes->{"Immutable"}) {
-            my $getter = $expression;
-            $getter =~ s/imp->//;
-            $getter =~ s/\(\)//;
-
-            my $updateMethod = "&${implClassName}::update" . FirstLetterToUpperCase($getter);
-
-            my $selfIsTearOffType = IsSVGTypeNeedingTearOff($interfaceName);
-            if ($selfIsTearOffType) {
-                AddToImplIncludes("core/svg/properties/SVGMatrixTearOff.h");
-                # FIXME: Don't create a new one everytime we access the matrix property. This means, e.g, === won't work.
-                $wrappedValue = "WTF::getPtr(SVGMatrixTearOff::create(wrapper, $expression))";
-            } else {
-                AddToImplIncludes("core/svg/properties/SVGStaticPropertyTearOff.h");
-                $tearOffType =~ s/SVGPropertyTearOff</SVGStaticPropertyTearOff<$implClassName, /;
-
-                $wrappedValue = "WTF::getPtr(${tearOffType}::create(imp, $expression, $updateMethod))";
-            }
-        } elsif ($tearOffType =~ /SVGStaticListPropertyTearOff/) {
+        if ($tearOffType =~ /SVGStaticListPropertyTearOff/) {
                 $wrappedValue = "WTF::getPtr(${tearOffType}::create(imp, $expression))";
         } elsif ($tearOffType =~ /SVG(Point|PathSeg)List/) {
                 $wrappedValue = "WTF::getPtr($expression)";
@@ -5347,8 +5321,6 @@ END
     }
 END
            }
-        } elsif ($parameter->type eq "SVGMatrix" and $interfaceName eq "SVGTransformList") {
-            push @arguments, "$paramName.get()";
         } elsif (IsNullableParameter($parameter)) {
             push @arguments, "${paramName}IsNull ? 0 : &$paramName";
         } elsif (IsCallbackInterface($paramType) or $paramType eq "NodeFilter" or $paramType eq "XPathNSResolver") {
@@ -6047,14 +6019,6 @@ sub IsSVGTypeNeedingTearOff
     return 0;
 }
 
-sub IsSVGTypeWithWritablePropertiesNeedingTearOff
-{
-    my $type = shift;
-
-    return 1 if $svgTypeWithWritablePropertiesNeedingTearOff{$type};
-    return 0;
-}
-
 sub IsTypedArrayType
 {
     my $type = shift;
@@ -6117,8 +6081,6 @@ sub GetSVGWrappedTypeNeedingTearOff
         $svgTypeNeedingTearOff =~ s/SVGStaticListPropertyTearOff<//;
     }  elsif ($svgTypeNeedingTearOff =~ /SVGTransformListPropertyTearOff/) {
         $svgTypeNeedingTearOff =~ s/SVGTransformListPropertyTearOff<//;
-    } elsif ($svgTypeNeedingTearOff =~ /SVGMatrixTearOff/) {
-        $svgTypeNeedingTearOff = 'SVGMatrix';
     }
 
     $svgTypeNeedingTearOff =~ s/>//;

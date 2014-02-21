@@ -31,10 +31,10 @@
 
 namespace WebCore {
 
+class SVGMatrixTearOff;
 class SVGAngleTearOff;
-class SVGMatrix;
 class SVGNumberTearOff;
-class SVGTransform;
+class SVGTransformTearOff;
 class SVGViewSpec;
 class SVGViewElement;
 class SMILTimeContainer;
@@ -110,10 +110,10 @@ public:
     static PassRefPtr<SVGLengthTearOff> createSVGLength();
     static PassRefPtr<SVGAngleTearOff> createSVGAngle();
     static PassRefPtr<SVGPointTearOff> createSVGPoint();
-    static SVGMatrix createSVGMatrix();
+    static PassRefPtr<SVGMatrixTearOff> createSVGMatrix();
     static PassRefPtr<SVGRectTearOff> createSVGRect();
-    static SVGTransform createSVGTransform();
-    static SVGTransform createSVGTransformFromMatrix(const SVGMatrix&);
+    static PassRefPtr<SVGTransformTearOff> createSVGTransform();
+    static PassRefPtr<SVGTransformTearOff> createSVGTransformFromMatrix(PassRefPtr<SVGMatrixTearOff>);
 
     AffineTransform viewBoxToViewTransform(float viewWidth, float viewHeight) const;
 

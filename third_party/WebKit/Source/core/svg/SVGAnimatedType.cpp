@@ -37,9 +37,6 @@ SVGAnimatedType::~SVGAnimatedType()
     case AnimatedPath:
         delete m_data.path;
         break;
-    case AnimatedTransformList:
-        delete m_data.transformList;
-        break;
     // Below properties are migrated to new property implementation.
     case AnimatedAngle:
     case AnimatedBoolean:
@@ -57,11 +54,13 @@ SVGAnimatedType::~SVGAnimatedType()
     case AnimatedRect:
     case AnimatedString:
     case AnimatedStringList:
+    case AnimatedTransformList:
         // handled by RefPtr
         break;
 
-    // There is no SVGAnimatedPoint
+    // There is no SVGAnimated{Point,Transform}
     case AnimatedPoint:
+    case AnimatedTransform:
         ASSERT_NOT_REACHED();
         break;
 
@@ -76,14 +75,6 @@ PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createPath(PassOwnPtr<SVGPathByteSt
     ASSERT(path);
     OwnPtr<SVGAnimatedType> animatedType = adoptPtr(new SVGAnimatedType(AnimatedPath));
     animatedType->m_data.path = path.leakPtr();
-    return animatedType.release();
-}
-
-PassOwnPtr<SVGAnimatedType> SVGAnimatedType::createTransformList(SVGTransformList* transformList)
-{
-    ASSERT(transformList);
-    OwnPtr<SVGAnimatedType> animatedType = adoptPtr(new SVGAnimatedType(AnimatedTransformList));
-    animatedType->m_data.transformList = transformList;
     return animatedType.release();
 }
 
@@ -120,6 +111,7 @@ String SVGAnimatedType::valueAsString()
     case AnimatedIntegerOptionalInteger:
     case AnimatedPath:
     case AnimatedPoint:
+    case AnimatedTransform:
     case AnimatedTransformList:
     case AnimatedUnknown:
         // Only SVG DOM animations use these property types - that means valueAsString() is never used for those.
@@ -156,6 +148,7 @@ bool SVGAnimatedType::setValueAsString(const QualifiedName& attrName, const Stri
     case AnimatedIntegerOptionalInteger:
     case AnimatedPath:
     case AnimatedPoint:
+    case AnimatedTransform:
     case AnimatedTransformList:
     case AnimatedUnknown:
         // Only SVG DOM animations use these property types - that means setValueAsString() is never used for those.

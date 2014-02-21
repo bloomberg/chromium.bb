@@ -34,6 +34,7 @@
 #include "core/events/EventListener.h"
 #include "core/events/EventSender.h"
 #include "core/svg/SVGDocumentExtensions.h"
+#include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGURIReference.h"
 #include "core/svg/animation/SMILTimeContainer.h"

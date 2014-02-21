@@ -30,6 +30,7 @@ namespace WebCore {
 
 class AffineTransform;
 class Path;
+class SVGMatrixTearOff;
 
 class SVGGraphicsElement : public SVGElement, public SVGTests {
 public:
@@ -39,7 +40,11 @@ public:
 
     AffineTransform getCTM(StyleUpdateStrategy = AllowStyleUpdate);
     AffineTransform getScreenCTM(StyleUpdateStrategy = AllowStyleUpdate);
-    AffineTransform getTransformToElement(SVGElement*, ExceptionState&);
+    PassRefPtr<SVGMatrixTearOff> getCTMFromJavascript();
+    PassRefPtr<SVGMatrixTearOff> getScreenCTMFromJavascript();
+
+    PassRefPtr<SVGMatrixTearOff> getTransformToElement(SVGElement*, ExceptionState&);
+
     SVGElement* nearestViewportElement() const;
     SVGElement* farthestViewportElement() const;
 
@@ -56,6 +61,9 @@ public:
 
     virtual bool isValid() const OVERRIDE FINAL { return SVGTests::isValid(); }
 
+    SVGAnimatedTransformList* transform() { return m_transform.get(); }
+    const SVGAnimatedTransformList* transform() const { return m_transform.get(); }
+
 protected:
     SVGGraphicsElement(const QualifiedName&, Document&, ConstructionType = CreateSVGElement);
 
@@ -63,8 +71,8 @@ protected:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual void svgAttributeChanged(const QualifiedName&) OVERRIDE;
 
+    RefPtr<SVGAnimatedTransformList> m_transform;
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGGraphicsElement)
-        DECLARE_ANIMATED_TRANSFORM_LIST(Transform, transform)
     END_DECLARE_ANIMATED_PROPERTIES
 
 private:

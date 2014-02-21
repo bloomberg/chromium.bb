@@ -32,17 +32,17 @@
 namespace WebCore {
 
 // Animated property definitions
-DEFINE_ANIMATED_TRANSFORM_LIST(SVGGraphicsElement, SVGNames::transformAttr, Transform, transform)
 
 BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGGraphicsElement)
-    REGISTER_LOCAL_ANIMATED_PROPERTY(transform)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
 SVGGraphicsElement::SVGGraphicsElement(const QualifiedName& tagName, Document& document, ConstructionType constructionType)
     : SVGElement(tagName, document, constructionType)
     , SVGTests(this)
+    , m_transform(SVGAnimatedTransformList::create(this, SVGNames::transformAttr, SVGTransformList::create()))
 {
+    addToPropertyMap(m_transform);
     registerAnimatedPropertiesForSVGGraphicsElement();
 }
 
@@ -50,7 +50,7 @@ SVGGraphicsElement::~SVGGraphicsElement()
 {
 }
 
-AffineTransform SVGGraphicsElement::getTransformToElement(SVGElement* target, ExceptionState& exceptionState)
+PassRefPtr<SVGMatrixTearOff> SVGGraphicsElement::getTransformToElement(SVGElement* target, ExceptionState& exceptionState)
 {
     AffineTransform ctm = getCTM(AllowStyleUpdate);
 
@@ -58,12 +58,12 @@ AffineTransform SVGGraphicsElement::getTransformToElement(SVGElement* target, Ex
         AffineTransform targetCTM = toSVGGraphicsElement(target)->getCTM(AllowStyleUpdate);
         if (!targetCTM.isInvertible()) {
             exceptionState.throwDOMException(InvalidStateError, "The target transformation is not invertable.");
-            return ctm;
+            return 0;
         }
         ctm = targetCTM.inverse() * ctm;
     }
 
-    return ctm;
+    return SVGMatrixTearOff::create(ctm);
 }
 
 static AffineTransform computeCTM(SVGGraphicsElement* element, SVGElement::CTMScope mode, SVGGraphicsElement::StyleUpdateStrategy styleUpdateStrategy)
@@ -99,6 +99,16 @@ AffineTransform SVGGraphicsElement::getScreenCTM(StyleUpdateStrategy styleUpdate
     return computeCTM(this, ScreenScope, styleUpdateStrategy);
 }
 
+PassRefPtr<SVGMatrixTearOff> SVGGraphicsElement::getCTMFromJavascript()
+{
+    return SVGMatrixTearOff::create(getCTM());
+}
+
+PassRefPtr<SVGMatrixTearOff> SVGGraphicsElement::getScreenCTMFromJavascript()
+{
+    return SVGMatrixTearOff::create(getScreenCTM());
+}
+
 AffineTransform SVGGraphicsElement::animatedLocalTransform() const
 {
     AffineTransform matrix;
@@ -122,7 +132,7 @@ AffineTransform SVGGraphicsElement::animatedLocalTransform() const
             matrix.setF(matrix.f() / zoom);
         }
     } else {
-        transformCurrentValue().concatenate(matrix);
+        m_transform->currentValue()->concatenate(matrix);
     }
 
     if (m_supplementalTransform)
@@ -154,17 +164,16 @@ void SVGGraphicsElement::parseAttribute(const QualifiedName& name, const AtomicS
         return;
     }
 
-    if (name == SVGNames::transformAttr) {
-        SVGTransformList newList;
-        newList.parse(value);
-        detachAnimatedTransformListWrappers(newList.size());
-        setTransformBaseValue(newList);
-        return;
-    } else if (SVGTests::parseAttribute(name, value)) {
-        return;
-    }
+    SVGParsingError parseError = NoError;
 
-    ASSERT_NOT_REACHED();
+    if (name == SVGNames::transformAttr)
+        m_transform->setBaseValueAsString(value, parseError);
+    else if (SVGTests::parseAttribute(name, value))
+        return;
+    else
+        ASSERT_NOT_REACHED();
+
+    reportAttributeParsingError(parseError, name, value);
 }
 
 void SVGGraphicsElement::svgAttributeChanged(const QualifiedName& attrName)

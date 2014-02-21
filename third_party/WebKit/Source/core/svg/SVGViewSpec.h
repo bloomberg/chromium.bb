@@ -23,13 +23,10 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/svg/SVGFitToViewBox.h"
 #include "core/svg/SVGSVGElement.h"
-#include "core/svg/SVGTransformList.h"
 #include "core/svg/SVGZoomAndPan.h"
 #include "wtf/WeakPtr.h"
 
 namespace WebCore {
-
-class SVGTransformListPropertyTearOff;
 
 class SVGViewSpec FINAL : public RefCounted<SVGViewSpec>, public ScriptWrappable, public SVGZoomAndPan, public SVGFitToViewBox {
 public:
@@ -49,34 +46,24 @@ public:
 
     String preserveAspectRatioString() const;
 
-    void setTransformString(const String&);
     String transformString() const;
-
-    void setViewTargetString(const String& string) { m_viewTargetString = string; }
     String viewTargetString() const { return m_viewTargetString; }
 
     SVGElement* contextElement() const { return m_contextElement; }
     void detachContextElement();
 
-    // Custom non-animated 'transform' property.
-    SVGTransformListPropertyTearOff* transform();
-    SVGTransformList transformBaseValue() const { return m_transform; }
+    SVGTransformList* transform() { return m_transform ? m_transform->baseValue() : 0; }
+    PassRefPtr<SVGTransformListTearOff> transformFromJavascript() { return m_transform ? m_transform->baseVal() : 0; }
 
 private:
     explicit SVGViewSpec(SVGSVGElement*);
-
-    static const SVGPropertyInfo* transformPropertyInfo();
-
-    static const AtomicString& transformIdentifier();
-
-    static PassRefPtr<SVGAnimatedProperty> lookupOrCreateTransformWrapper(SVGViewSpec* contextElement);
 
     template<typename CharType>
     bool parseViewSpecInternal(const CharType* ptr, const CharType* end);
 
     // FIXME(oilpan): This is back-ptr to be cleared from contextElement.
     SVGSVGElement* m_contextElement;
-    SVGTransformList m_transform;
+    RefPtr<SVGAnimatedTransformList> m_transform;
     String m_viewTargetString;
 };
 

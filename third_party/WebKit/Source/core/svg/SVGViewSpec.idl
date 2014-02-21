@@ -24,7 +24,7 @@
  */
 
 interface SVGViewSpec {
-      readonly attribute SVGTransformList transform;
+      [ImplementedAs=transformFromJavascript] readonly attribute SVGTransformList transform;
       readonly attribute SVGElement viewTarget;
       readonly attribute DOMString viewBoxString;
       readonly attribute DOMString preserveAspectRatioString;

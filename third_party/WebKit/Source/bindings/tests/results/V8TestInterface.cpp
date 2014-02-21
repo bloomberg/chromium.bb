@@ -37,7 +37,6 @@
 #include "RuntimeEnabledFeatures.h"
 #include "V8Node.h"
 #include "V8NodeList.h"
-#include "V8ReferencedType.h"
 #include "V8TestInterfaceEmpty.h"
 #include "V8TestObject.h"
 #include "bindings/tests/idls/TestImplements.h"
@@ -730,11 +729,11 @@ void V8TestInterface::visitDOMWrapper(void* object, const v8::Persistent<v8::Obj
     TestInterface* impl = fromInternalPointer(object);
     v8::Local<v8::Object> creationContext = v8::Local<v8::Object>::New(isolate, wrapper);
     V8WrapperInstantiationScope scope(creationContext, isolate);
-    ReferencedType* referencedName = impl->referencedName();
+    TestObj* referencedName = impl->referencedName();
     if (referencedName) {
-        if (!DOMDataStore::containsWrapper<V8ReferencedType>(referencedName, isolate))
+        if (!DOMDataStore::containsWrapper<V8TestObject>(referencedName, isolate))
             wrap(referencedName, creationContext, isolate);
-        DOMDataStore::setWrapperReference<V8ReferencedType>(wrapper, referencedName, isolate);
+        DOMDataStore::setWrapperReference<V8TestObject>(wrapper, referencedName, isolate);
     }
     setObjectGroup(object, wrapper, isolate);
 }
