@@ -346,6 +346,12 @@ const char kDomAutomationController[]       = "dom-automation";
 // Enable gpu-accelerated SVG/W3C filters.
 const char kEnableAcceleratedFilters[]      = "enable-accelerated-filters";
 
+// Enable bleeding-edge code to make Chrome draw content faster. The changes
+// behind this path are very likely to break lots of content.
+// ** DO NOT use this flag unless you know what you are doing. **
+const char kEnableBleedingEdgeRenderingFastPaths[] =
+    "enable-bleeding-edge-rendering-fast-paths";
+
 // Disable gpu-accelerated 2d canvas.
 const char kEnableDeferredFilters[]         = "enable-deferred-filters";
 

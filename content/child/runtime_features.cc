@@ -176,6 +176,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   if (command_line.HasSwitch(switches::kEnableTargetedStyleRecalc))
     WebRuntimeFeatures::enableTargetedStyleRecalc(true);
+
+  if (command_line.HasSwitch(switches::kEnableBleedingEdgeRenderingFastPaths))
+    WebRuntimeFeatures::enableBleedingEdgeFastPaths(true);
 }
 
 }  // namespace content
