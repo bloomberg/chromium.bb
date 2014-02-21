@@ -302,6 +302,15 @@ void HTMLSelectElement::parseAttribute(const QualifiedName& name, const AtomicSt
     else if (name == accesskeyAttr) {
         // FIXME: ignore for the moment.
         //
+    } else if (name == disabledAttr) {
+        HTMLFormControlElementWithState::parseAttribute(name, value);
+        if (renderer() && renderer()->isMenuList()) {
+            if (RenderMenuList* menuList = toRenderMenuList(renderer())) {
+                if (menuList->popupIsVisible())
+                    menuList->hidePopup();
+            }
+        }
+
     } else
         HTMLFormControlElementWithState::parseAttribute(name, value);
 }
@@ -1053,7 +1062,7 @@ bool HTMLSelectElement::platformHandleKeydownEvent(KeyboardEvent* event)
             // Calling focus() may cause us to lose our renderer. Return true so
             // that our caller doesn't process the event further, but don't set
             // the event as handled.
-            if (!renderer())
+            if (!renderer() || isDisabledFormControl())
                 return true;
 
             // Save the selection so it can be compared to the new selection
@@ -1140,7 +1149,7 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
 
                 // Calling focus() may remove the renderer or change the
                 // renderer type.
-                if (!renderer() || !renderer()->isMenuList())
+                if (!renderer() || !renderer()->isMenuList() || isDisabledFormControl())
                     return;
 
                 // Save the selection so it can be compared to the new selection
@@ -1158,7 +1167,7 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
 
                 // Calling focus() may remove the renderer or change the
                 // renderer type.
-                if (!renderer() || !renderer()->isMenuList())
+                if (!renderer() || !renderer()->isMenuList() || isDisabledFormControl())
                     return;
 
                 // Save the selection so it can be compared to the new selection
@@ -1183,7 +1192,7 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
 
     if (event->type() == EventTypeNames::mousedown && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
         focus();
-        if (renderer() && renderer()->isMenuList()) {
+        if (renderer() && renderer()->isMenuList() && !isDisabledFormControl()) {
             if (RenderMenuList* menuList = toRenderMenuList(renderer())) {
                 if (menuList->popupIsVisible())
                     menuList->hidePopup();
