@@ -707,16 +707,6 @@ crbug.com/320334 media/media-can-play-ogg.html [ Failure ]
 crbug.com/326139 media/video-frame-accurate-seek.html [ Pass ImageOnlyFailure ]
 crbug.com/326139 [ SnowLeopard ] media/video-frame-size-change.html [ Pass ImageOnlyFailure ]
 
-crbug.com/344105 fast/repaint/float-overflow-right.html [ Failure NeedsRebaseline ]
-crbug.com/344105 fast/repaint/float-overflow.html [ Failure NeedsRebaseline ]
-crbug.com/344105 fast/repaint/inline-horizontal-bt-overflow.html [ Failure NeedsRebaseline ]
-crbug.com/344105 fast/repaint/inline-overflow.html [ Failure NeedsRebaseline ]
-crbug.com/344105 fast/repaint/inline-relative-positioned.html [ Failure NeedsRebaseline ]
-crbug.com/344105 fast/repaint/inline-vertical-lr-overflow.html [ Failure NeedsRebaseline ]
-crbug.com/344105 fast/repaint/inline-vertical-rl-overflow.html [ Failure NeedsRebaseline ]
-crbug.com/344105 fast/repaint/multicol-repaint.html [ Failure NeedsRebaseline ]
-crbug.com/344105 fast/repaint/text-in-relative-positioned-inline.html [ Failure NeedsRebaseline ]
-
 crbug.com/245556 compositing/transitions/transform-on-large-layer.html [ ImageOnlyFailure ]
 crbug.com/245556 virtual/softwarecompositing/transitions/transform-on-large-layer.html [ ImageOnlyFailure ]
 
