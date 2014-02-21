@@ -14,12 +14,12 @@
     ['disable_nacl==0 and disable_nacl_untrusted==0', {
       'targets': [
         {
-          'target_name': 'gles2_utils_untrusted',
+          'target_name': 'gles2_utils_nacl',
           'type': 'none',
           'variables': {
             'gles2_utils_target': 1,
             'nacl_untrusted_build': 1,
-            'nlib_target': 'libgles2_utils_untrusted.a',
+            'nlib_target': 'libgles2_utils_nacl.a',
             'build_glibc': 0,
             'build_newlib': 0,
             'build_irt': 1,

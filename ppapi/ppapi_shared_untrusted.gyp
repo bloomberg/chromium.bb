@@ -31,9 +31,9 @@
           'dependencies': [
             '../native_client/tools.gyp:prep_toolchain',
             '../base/base_untrusted.gyp:base_untrusted',
-            '../gpu/command_buffer/command_buffer_untrusted.gyp:gles2_utils_untrusted',
-            '../gpu/gpu_untrusted.gyp:command_buffer_client_untrusted',
-            '../gpu/gpu_untrusted.gyp:gles2_implementation_untrusted',
+            '../gpu/command_buffer/command_buffer_nacl.gyp:gles2_utils_nacl',
+            '../gpu/gpu_nacl.gyp:command_buffer_client_nacl',
+            '../gpu/gpu_nacl.gyp:gles2_implementation_nacl',
             '../media/media_untrusted.gyp:shared_memory_support_untrusted',
             '../third_party/khronos/khronos.gyp:khronos_headers',
           ],

@@ -31,7 +31,7 @@
           'dependencies': [
             '../native_client/tools.gyp:prep_toolchain',
             '../base/base_untrusted.gyp:base_untrusted',
-            '../gpu/gpu_untrusted.gyp:gpu_ipc_untrusted',
+            '../gpu/gpu_nacl.gyp:gpu_ipc_nacl',
             '../ipc/ipc_untrusted.gyp:ipc_untrusted',
             '../ppapi/ppapi_shared_untrusted.gyp:ppapi_shared_untrusted',
             '../components/tracing_untrusted.gyp:tracing_untrusted',

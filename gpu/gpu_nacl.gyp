@@ -16,11 +16,11 @@
     ['disable_nacl==0 and disable_nacl_untrusted==0', {
       'targets': [
         {
-          'target_name': 'gles2_implementation_untrusted',
+          'target_name': 'gles2_implementation_nacl',
           'type': 'none',
           'variables': {
             'nacl_untrusted_build': 1,
-            'nlib_target': 'libgles2_implementation_untrusted.a',
+            'nlib_target': 'libgles2_implementation_nacl.a',
             'build_glibc': 0,
             'build_newlib': 0,
             'build_irt': 1,
@@ -35,16 +35,16 @@
             '../native_client/tools.gyp:prep_toolchain',
             '../base/base_untrusted.gyp:base_untrusted',
             '../third_party/khronos/khronos.gyp:khronos_headers',
-            'command_buffer/command_buffer_untrusted.gyp:gles2_utils_untrusted',
-            'gles2_cmd_helper_untrusted',
+            'command_buffer/command_buffer_nacl.gyp:gles2_utils_nacl',
+            'gles2_cmd_helper_nacl',
           ],
         },
         {
-          'target_name': 'command_buffer_common_untrusted',
+          'target_name': 'command_buffer_common_nacl',
           'type': 'none',
           'variables': {
             'nacl_untrusted_build': 1,
-            'nlib_target': 'libcommand_buffer_common_untrusted.a',
+            'nlib_target': 'libcommand_buffer_common_nacl.a',
             'build_glibc': 0,
             'build_newlib': 0,
             'build_irt': 1,
@@ -55,15 +55,15 @@
           'dependencies': [
             '../native_client/tools.gyp:prep_toolchain',
             '../base/base_untrusted.gyp:base_untrusted',
-            'command_buffer/command_buffer_untrusted.gyp:gles2_utils_untrusted',
+            'command_buffer/command_buffer_nacl.gyp:gles2_utils_nacl',
           ],
         },
         {
-          'target_name': 'gles2_cmd_helper_untrusted',
+          'target_name': 'gles2_cmd_helper_nacl',
           'type': 'none',
           'variables': {
             'nacl_untrusted_build': 1,
-            'nlib_target': 'libgles2_cmd_helper_untrusted.a',
+            'nlib_target': 'libgles2_cmd_helper_nacl.a',
             'build_glibc': 0,
             'build_newlib': 0,
             'build_irt': 1,
@@ -74,15 +74,15 @@
           'dependencies': [
             '../native_client/tools.gyp:prep_toolchain',
             '../base/base_untrusted.gyp:base_untrusted',
-            'command_buffer_client_untrusted',
+            'command_buffer_client_nacl',
           ],
         },
         {
-          'target_name': 'command_buffer_client_untrusted',
+          'target_name': 'command_buffer_client_nacl',
           'type': 'none',
           'variables': {
             'nacl_untrusted_build': 1,
-            'nlib_target': 'libcommand_buffer_client_untrusted.a',
+            'nlib_target': 'libcommand_buffer_client_nacl.a',
             'build_glibc': 0,
             'build_newlib': 0,
             'build_irt': 1,
@@ -93,15 +93,15 @@
           'dependencies': [
             '../native_client/tools.gyp:prep_toolchain',
             '../base/base_untrusted.gyp:base_untrusted',
-            'command_buffer_common_untrusted',
+            'command_buffer_common_nacl',
           ],
         },
         {
-          'target_name': 'gpu_ipc_untrusted',
+          'target_name': 'gpu_ipc_nacl',
           'type': 'none',
           'variables': {
             'nacl_untrusted_build': 1,
-            'nlib_target': 'libgpu_ipc_untrusted.a',
+            'nlib_target': 'libgpu_ipc_nacl.a',
             'build_glibc': 0,
             'build_newlib': 0,
             'build_irt': 1,
@@ -112,7 +112,7 @@
           'dependencies': [
             '../native_client/tools.gyp:prep_toolchain',
             '../base/base_untrusted.gyp:base_untrusted',
-            'command_buffer_common_untrusted',
+            'command_buffer_common_nacl',
           ],
         },
       ],
