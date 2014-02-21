@@ -9,8 +9,7 @@
 namespace base {
 
 // Do not put everything inside an anonymous namespace.  If you do, many of the
-// helper function declarations will generate unused definition warnings unless
-// unused definition warnings.
+// helper function declarations will generate unused definition warnings.
 
 static const int kParentValue = 1;
 static const int kChildValue = 2;
