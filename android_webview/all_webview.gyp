@@ -15,7 +15,7 @@
         'android_webview.gyp:libwebviewchromium',
 
         # Needed by android_webview_java
-        '../base/base.gyp:base_java_activity_state',
+        '../base/base.gyp:base_java_application_state',
         '../base/base.gyp:base_java_memory_pressure_level_list',
         '../content/content.gyp:gesture_event_type_java',
         '../content/content.gyp:page_transition_types_java',

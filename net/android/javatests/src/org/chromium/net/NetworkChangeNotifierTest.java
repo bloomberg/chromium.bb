@@ -12,7 +12,7 @@ import android.test.InstrumentationTestCase;
 import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.MediumTest;
 
-import org.chromium.base.ActivityStatus;
+import org.chromium.base.ApplicationState;
 import org.chromium.base.test.util.Feature;
 
 /**
@@ -163,14 +163,14 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
 
         observer.resetHasReceivedNotification();
         // Pretend we got moved to the background.
-        receiver.onActivityStateChange(ActivityStatus.PAUSED);
+        receiver.onApplicationStateChange(ApplicationState.HAS_PAUSED_ACTIVITIES);
         // Change the state.
         connectivityDelegate.setActiveNetworkExists(true);
         connectivityDelegate.setNetworkType(NetworkChangeNotifier.CONNECTION_WIFI);
         // The NetworkChangeNotifierAutoDetect doesn't receive any notification while we are in the
         // background, but when we get back to the foreground the state changed should be detected
         // and a notification sent.
-        receiver.onActivityStateChange(ActivityStatus.RESUMED);
+        receiver.onApplicationStateChange(ApplicationState.HAS_RUNNING_ACTIVITIES);
         assertTrue(observer.hasReceivedNotification());
     }
 }

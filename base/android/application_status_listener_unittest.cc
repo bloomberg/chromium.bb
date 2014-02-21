@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/android/activity_status.h"
+#include "base/android/application_status_listener.h"
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/logging.h"
@@ -20,11 +20,12 @@ namespace {
 
 using base::android::ScopedJavaLocalRef;
 
-// An invalid ActivityState value.
-const ActivityState kInvalidActivityState = static_cast<ActivityState>(100);
+// An invalid ApplicationState value.
+const ApplicationState kInvalidApplicationState =
+    static_cast<ApplicationState>(100);
 
 // Used to generate a callback that stores the new state at a given location.
-void StoreStateTo(ActivityState* target, ActivityState state) {
+void StoreStateTo(ApplicationState* target, ApplicationState state) {
   *target = state;
 }
 
@@ -39,10 +40,9 @@ void RunTasksUntilIdle() {
 class MultiThreadedTest {
  public:
   MultiThreadedTest()
-      : activity_status_(ActivityStatus::GetInstance()),
-        state_(kInvalidActivityState),
+      : state_(kInvalidApplicationState),
         event_(false, false),
-        thread_("ActivityStatusTest thread"),
+        thread_("ApplicationStatusTest thread"),
         main_() {
   }
 
@@ -58,14 +58,16 @@ class MultiThreadedTest {
     event_.Wait();
 
     // Change state, then wait for the thread to modify state.
-    activity_status_->OnActivityStateChange(ACTIVITY_STATE_CREATED);
+    ApplicationStatusListener::NotifyApplicationStateChange(
+        APPLICATION_STATE_HAS_RUNNING_ACTIVITIES);
     event_.Wait();
-    EXPECT_EQ(ACTIVITY_STATE_CREATED, state_);
+    EXPECT_EQ(APPLICATION_STATE_HAS_RUNNING_ACTIVITIES, state_);
 
     // Again
-    activity_status_->OnActivityStateChange(ACTIVITY_STATE_DESTROYED);
+    ApplicationStatusListener::NotifyApplicationStateChange(
+        APPLICATION_STATE_HAS_DESTROYED_ACTIVITIES);
     event_.Wait();
-    EXPECT_EQ(ACTIVITY_STATE_DESTROYED, state_);
+    EXPECT_EQ(APPLICATION_STATE_HAS_DESTROYED_ACTIVITIES, state_);
   }
 
  private:
@@ -75,51 +77,51 @@ class MultiThreadedTest {
 
   void RegisterThreadForEvents() {
     ExpectOnThread();
-    listener_.reset(new ActivityStatus::Listener(base::Bind(
+    listener_.reset(new ApplicationStatusListener(base::Bind(
         &MultiThreadedTest::StoreStateAndSignal, base::Unretained(this))));
     EXPECT_TRUE(listener_.get());
     event_.Signal();
   }
 
-  void StoreStateAndSignal(ActivityState state) {
+  void StoreStateAndSignal(ApplicationState state) {
     ExpectOnThread();
     state_ = state;
     event_.Signal();
   }
 
-  ActivityStatus* const activity_status_;
-  ActivityState state_;
+  ApplicationState state_;
   base::WaitableEvent event_;
   base::Thread thread_;
   base::MessageLoop main_;
-  scoped_ptr<ActivityStatus::Listener> listener_;
+  scoped_ptr<ApplicationStatusListener> listener_;
 };
 
 }  // namespace
 
-TEST(ActivityStatusTest, SingleThread) {
+TEST(ApplicationStatusListenerTest, SingleThread) {
   MessageLoop message_loop;
 
-  ActivityState result = kInvalidActivityState;
+  ApplicationState result = kInvalidApplicationState;
 
   // Create a new listener that stores the new state into |result| on every
   // state change.
-  ActivityStatus::Listener listener(
+  ApplicationStatusListener listener(
       base::Bind(&StoreStateTo, base::Unretained(&result)));
 
-  EXPECT_EQ(kInvalidActivityState, result);
+  EXPECT_EQ(kInvalidApplicationState, result);
 
-  ActivityStatus* const activity_status = ActivityStatus::GetInstance();
-  activity_status->OnActivityStateChange(ACTIVITY_STATE_CREATED);
+  ApplicationStatusListener::NotifyApplicationStateChange(
+      APPLICATION_STATE_HAS_RUNNING_ACTIVITIES);
   RunTasksUntilIdle();
-  EXPECT_EQ(ACTIVITY_STATE_CREATED, result);
+  EXPECT_EQ(APPLICATION_STATE_HAS_RUNNING_ACTIVITIES, result);
 
-  activity_status->OnActivityStateChange(ACTIVITY_STATE_DESTROYED);
+  ApplicationStatusListener::NotifyApplicationStateChange(
+      APPLICATION_STATE_HAS_DESTROYED_ACTIVITIES);
   RunTasksUntilIdle();
-  EXPECT_EQ(ACTIVITY_STATE_DESTROYED, result);
+  EXPECT_EQ(APPLICATION_STATE_HAS_DESTROYED_ACTIVITIES, result);
 }
 
-TEST(ActivityStatusTest, TwoThreads) {
+TEST(ApplicationStatusListenerTest, TwoThreads) {
   MultiThreadedTest test;
   test.Run();
 }

@@ -16,7 +16,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
-import org.chromium.base.ActivityStatus;
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
 import org.chromium.content.browser.test.util.Criteria;
@@ -114,6 +114,6 @@ public class DelayedSyncControllerTest extends ChromiumTestShellTestBase {
     }
 
     private static boolean isActivityResumed() {
-        return ActivityStatus.isApplicationVisible();
+        return ApplicationStatus.hasVisibleActivities();
     }
 }

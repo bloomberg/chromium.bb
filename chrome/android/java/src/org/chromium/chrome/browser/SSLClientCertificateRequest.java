@@ -12,12 +12,12 @@ import android.security.KeyChainAliasCallback;
 import android.security.KeyChainException;
 import android.util.Log;
 
-import org.chromium.base.ActivityStatus;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
 import org.chromium.net.AndroidPrivateKey;
 import org.chromium.net.DefaultAndroidKeyStore;
+import org.chromium.ui.base.WindowAndroid;
 
 import java.security.Principal;
 import java.security.cert.CertificateEncodingException;
@@ -214,23 +214,27 @@ public class SSLClientCertificateRequest {
     /**
      * Create a new asynchronous request to select a client certificate.
      *
-     * @param nativePtr The native object responsible for this request.
-     * @param keyTypes The list of supported key exchange types.
+     * @param nativePtr         The native object responsible for this request.
+     * @param window            A WindowAndroid instance.
+     * @param keyTypes          The list of supported key exchange types.
      * @param encodedPrincipals The list of CA DistinguishedNames.
-     * @param hostName The server host name is available (empty otherwise).
-     * @param port The server port if available (0 otherwise).
-     * @return true on success.
+     * @param hostName          The server host name is available (empty otherwise).
+     * @param port              The server port if available (0 otherwise).
+     * @return                  true on success.
      * Note that nativeOnSystemRequestComplete will be called iff this method returns true.
      */
     @CalledByNative
-    private static boolean selectClientCertificate(final int nativePtr, final String[] keyTypes,
-            byte[][] encodedPrincipals, final String hostName, final int port) {
+    private static boolean selectClientCertificate(final int nativePtr, final WindowAndroid window,
+            final String[] keyTypes, byte[][] encodedPrincipals, final String hostName,
+            final int port) {
         ThreadUtils.assertOnUiThread();
-        final Activity activity = ActivityStatus.getActivity();
-        if (activity == null) {
-            Log.w(TAG, "No active Chromium main activity!?");
+
+        final Context context = window.getContext();
+        if (context == null || !(context instanceof Activity)) {
+            Log.w(TAG, "Context not activity.");
             return false;
         }
+        final Activity activity = (Activity) context;
 
         // Build the list of principals from encoded versions.
         Principal[] principals = null;

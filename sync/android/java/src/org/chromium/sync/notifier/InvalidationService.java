@@ -19,7 +19,7 @@ import com.google.ipc.invalidation.external.client.types.Invalidation;
 import com.google.ipc.invalidation.external.client.types.ObjectId;
 import com.google.protos.ipc.invalidation.Types.ClientType;
 
-import org.chromium.base.ActivityStatus;
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CollectionUtil;
 import org.chromium.sync.internal_api.pub.base.ModelType;
 import org.chromium.sync.notifier.InvalidationPreferences.EditContext;
@@ -478,7 +478,7 @@ public class InvalidationService extends AndroidListener {
      */
     @VisibleForTesting
     boolean isChromeInForeground() {
-        return ActivityStatus.isApplicationVisible();
+        return ApplicationStatus.hasVisibleActivities();
     }
 
     /** Returns whether the notification client has been started, for tests. */

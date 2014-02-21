@@ -187,8 +187,8 @@ void SimpleIndex::Initialize(base::Time cache_mtime) {
 
 #if defined(OS_ANDROID)
   if (base::android::IsVMInitialized()) {
-    activity_status_listener_.reset(new base::android::ActivityStatus::Listener(
-        base::Bind(&SimpleIndex::OnActivityStateChange, AsWeakPtr())));
+    app_status_listener_.reset(new base::android::ApplicationStatusListener(
+        base::Bind(&SimpleIndex::OnApplicationStateChange, AsWeakPtr())));
   }
 #endif
 
@@ -455,15 +455,15 @@ void SimpleIndex::MergeInitializingSet(
 }
 
 #if defined(OS_ANDROID)
-void SimpleIndex::OnActivityStateChange(
-    base::android::ActivityState state) {
+void SimpleIndex::OnApplicationStateChange(
+    base::android::ApplicationState state) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   // For more info about android activities, see:
   // developer.android.com/training/basics/activity-lifecycle/pausing.html
-  // These values are defined in the file ActivityStatus.java
-  if (state == base::android::ACTIVITY_STATE_RESUMED) {
+  if (state == base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES) {
     app_on_background_ = false;
-  } else if (state == base::android::ACTIVITY_STATE_STOPPED) {
+  } else if (state ==
+      base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES) {
     app_on_background_ = true;
     WriteToDisk();
   }

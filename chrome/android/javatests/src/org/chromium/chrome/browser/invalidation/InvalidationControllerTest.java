@@ -15,7 +15,9 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import com.google.ipc.invalidation.external.client.types.ObjectId;
 
-import org.chromium.base.ActivityStatus;
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationState;
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
@@ -79,7 +81,7 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
     public void testResumingMainActivity() throws Exception {
         // Resuming main activity should trigger a start if sync is enabled.
         setupSync(true);
-        mController.onActivityStateChange(ActivityStatus.RESUMED);
+        mController.onApplicationStateChange(ApplicationState.HAS_RUNNING_ACTIVITIES);
         assertEquals(1, mContext.getNumStartedIntents());
         Intent intent = mContext.getStartedIntent(0);
         validateIntentComponent(intent);
@@ -90,7 +92,7 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
     public void testResumingMainActivityWithSyncDisabled() throws Exception {
         // Resuming main activity should NOT trigger a start if sync is disabled.
         setupSync(false);
-        mController.onActivityStateChange(ActivityStatus.RESUMED);
+        mController.onApplicationStateChange(ApplicationState.HAS_RUNNING_ACTIVITIES);
         assertEquals(0, mContext.getNumStartedIntents());
     }
 
@@ -99,7 +101,7 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
     public void testPausingMainActivity() throws Exception {
         // Resuming main activity should trigger a stop if sync is enabled.
         setupSync(true);
-        mController.onActivityStateChange(ActivityStatus.PAUSED);
+        mController.onApplicationStateChange(ApplicationState.HAS_PAUSED_ACTIVITIES);
         assertEquals(1, mContext.getNumStartedIntents());
         Intent intent = mContext.getStartedIntent(0);
         validateIntentComponent(intent);
@@ -113,7 +115,7 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
     public void testPausingMainActivityWithSyncDisabled() throws Exception {
         // Resuming main activity should NOT trigger a stop if sync is disabled.
         setupSync(false);
-        mController.onActivityStateChange(ActivityStatus.PAUSED);
+        mController.onApplicationStateChange(ApplicationState.HAS_PAUSED_ACTIVITIES);
         assertEquals(0, mContext.getNumStartedIntents());
     }
 
@@ -137,7 +139,7 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         // Create instance.
         new InvalidationController(mContext) {
             @Override
-            public void onActivityStateChange(int newState) {
+            public void onApplicationStateChange(int newState) {
                 listenerCallbackCalled.set(true);
             }
         };
@@ -146,7 +148,7 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         assertFalse(listenerCallbackCalled.get());
 
         // Ensure we get a callback, which means we have registered for them.
-        ActivityStatus.onStateChangeForTesting(new Activity(), ActivityStatus.RESUMED);
+        ApplicationStatus.onStateChangeForTesting(new Activity(), ActivityState.CREATED);
         assertTrue(listenerCallbackCalled.get());
     }
 

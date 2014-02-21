@@ -439,7 +439,7 @@
       'type': '<(gtest_target_type)',
       'sources': [
         # Tests.
-        'android/activity_status_unittest.cc',
+        'android/application_status_listener_unittest.cc',
         'android/jni_android_unittest.cc',
         'android/jni_array_unittest.cc',
         'android/jni_string_unittest.cc',
@@ -1237,7 +1237,7 @@
           'target_name': 'base_jni_headers',
           'type': 'none',
           'sources': [
-            'android/java/src/org/chromium/base/ActivityStatus.java',
+            'android/java/src/org/chromium/base/ApplicationStatus.java',
             'android/java/src/org/chromium/base/BuildInfo.java',
             'android/java/src/org/chromium/base/CommandLine.java',
             'android/java/src/org/chromium/base/ContentUriUtils.java',
@@ -1295,7 +1295,7 @@
             'jar_excluded_classes': [ '*/NativeLibraries.class' ],
           },
           'dependencies': [
-            'base_java_activity_state',
+            'base_java_application_state',
             'base_java_memory_pressure_level_list',
             'base_native_libraries_gen',
           ],
@@ -1320,18 +1320,18 @@
           'includes': [ '../build/java.gypi' ],
         },
         {
-          'target_name': 'base_java_activity_state',
+          'target_name': 'base_java_application_state',
           'type': 'none',
-          # This target is used to auto-generate ActivityState.java
+          # This target is used to auto-generate ApplicationState.java
           # from a template file. The source file contains a list of
           # Java constant declarations matching the ones in
-          # android/activity_state_list.h.
+          # android/application_state_list.h.
           'sources': [
-            'android/java/src/org/chromium/base/ActivityState.template',
+            'android/java/src/org/chromium/base/ApplicationState.template',
           ],
           'variables': {
             'package_name': 'org/chromium/base',
-            'template_deps': ['android/activity_state_list.h'],
+            'template_deps': ['android/application_state_list.h'],
           },
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },

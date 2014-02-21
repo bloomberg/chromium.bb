@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
+#include "chrome/browser/ui/android/window_android_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/SSLClientCertificateRequest_jni.h"
 #include "net/android/keystore_openssl.h"
@@ -22,6 +23,7 @@
 #include "net/ssl/openssl_client_key_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_client_cert_type.h"
+#include "ui/base/android/window_android.h"
 
 
 namespace chrome {
@@ -42,6 +44,7 @@ void RecordClientCertificateKey(
 
 void StartClientCertificateRequest(
     const net::SSLCertRequestInfo* cert_request_info,
+    ui::WindowAndroid* window,
     const chrome::SelectCertificateCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
@@ -106,8 +109,13 @@ void StartClientCertificateRequest(
 
   if (!chrome::android::
       Java_SSLClientCertificateRequest_selectClientCertificate(
-          env, request_id, key_types_ref.obj(), principals_ref.obj(),
-          host_name_ref.obj(), cert_request_info->host_and_port.port())) {
+          env,
+          request_id,
+          window->GetJavaObject().obj(),
+          key_types_ref.obj(),
+          principals_ref.obj(),
+          host_name_ref.obj(),
+          cert_request_info->host_and_port.port())) {
     return;
   }
 
@@ -223,8 +231,11 @@ void ShowSSLClientCertificateSelector(
     const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
     const chrome::SelectCertificateCallback& callback) {
+  ui::WindowAndroid* window =
+      WindowAndroidHelper::FromWebContents(contents)->GetWindowAndroid();
+  DCHECK(window);
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  StartClientCertificateRequest(cert_request_info, callback);
+  StartClientCertificateRequest(cert_request_info, window, callback);
 }
 
 }  // namespace chrome

@@ -15,7 +15,7 @@ import android.util.Log;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import org.chromium.base.ActivityStatus;
+import org.chromium.base.ApplicationStatus;
 import org.chromium.sync.notifier.SyncStatusHelper;
 import org.chromium.sync.signin.AccountManagerHelper;
 
@@ -93,7 +93,7 @@ public class DelayedSyncController {
     boolean shouldPerformSync(Context ctx, Bundle extras, Account account) {
         boolean manualSync = isManualSync(extras);
 
-        if (manualSync || ActivityStatus.isApplicationVisible()) {
+        if (manualSync || ApplicationStatus.hasVisibleActivities()) {
             clearDelayedSyncs(ctx);
             return true;
         } else {

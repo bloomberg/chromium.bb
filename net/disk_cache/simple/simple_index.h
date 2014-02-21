@@ -25,7 +25,7 @@
 #include "net/base/net_export.h"
 
 #if defined(OS_ANDROID)
-#include "base/android/activity_status.h"
+#include "base/android/application_status_listener.h"
 #endif
 
 class Pickle;
@@ -149,9 +149,9 @@ class NET_EXPORT_PRIVATE SimpleIndex
   void MergeInitializingSet(scoped_ptr<SimpleIndexLoadResult> load_result);
 
 #if defined(OS_ANDROID)
-  void OnActivityStateChange(base::android::ActivityState state);
+  void OnApplicationStateChange(base::android::ApplicationState state);
 
-  scoped_ptr<base::android::ActivityStatus::Listener> activity_status_listener_;
+  scoped_ptr<base::android::ApplicationStatusListener> app_status_listener_;
 #endif
 
   // The owner of |this| must ensure the |delegate_| outlives |this|.

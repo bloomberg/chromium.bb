@@ -30,7 +30,7 @@ def print_landmines(target):
       builder() == 'ninja'):
     print 'Need to clobber winja goma due to backend cwd cache fix.'
   if platform() == 'android':
-    print 'Clobber: Resources removed in r195014 require clobber.'
+    print 'Clobber: Autogen java file needs to be removed (issue 159173002)'
   if platform() == 'win' and builder() == 'ninja':
     print 'Compile on cc_unittests fails due to symbols removed in r185063.'
   if platform() == 'linux' and builder() == 'ninja':
