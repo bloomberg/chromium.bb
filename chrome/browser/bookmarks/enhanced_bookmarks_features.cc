@@ -50,6 +50,10 @@ bool OptInIntoBookmarksExperiment() {
 }
 
 bool IsEnhancedBookmarksExperimentEnabled() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kManualEnhancedBookmarks))
+    return true;
+
   std::string ext_id = GetEnhancedBookmarksExtensionIdFromFinch();
   extensions::FeatureProvider* feature_provider =
       extensions::FeatureProvider::GetPermissionFeatures();
