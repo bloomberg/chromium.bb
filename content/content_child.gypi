@@ -175,6 +175,8 @@
     'child/webthemeengine_impl_default.h',
     'child/webthemeengine_impl_mac.cc',
     'child/webthemeengine_impl_mac.h',
+    'child/webthread_impl.cc',
+    'child/webthread_impl.h',
     'child/worker_task_runner.cc',
     'child/worker_task_runner.h',
     'child/worker_thread_task_runner.cc',

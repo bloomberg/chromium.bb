@@ -1,11 +1,11 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // An implementation of WebThread in terms of base::MessageLoop and
 // base::Thread
 
-#include "webkit/child/webthread_impl.h"
+#include "content/child/webthread_impl.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -13,16 +13,16 @@
 #include "base/pending_task.h"
 #include "base/threading/platform_thread.h"
 
-namespace webkit_glue {
+namespace content {
 
-WebThreadBase::WebThreadBase() { }
-WebThreadBase::~WebThreadBase() { }
+WebThreadBase::WebThreadBase() {}
+WebThreadBase::~WebThreadBase() {}
 
-class WebThreadBase::TaskObserverAdapter :
-    public base::MessageLoop::TaskObserver {
+class WebThreadBase::TaskObserverAdapter
+    : public base::MessageLoop::TaskObserver {
  public:
   TaskObserverAdapter(WebThread::TaskObserver* observer)
-      : observer_(observer) { }
+      : observer_(observer) {}
 
   virtual void WillProcessTask(const base::PendingTask& pending_task) OVERRIDE {
     observer_->willProcessTask();
@@ -65,8 +65,7 @@ void WebThreadImpl::postTask(Task* task) {
       FROM_HERE, base::Bind(&blink::WebThread::Task::run, base::Owned(task)));
 }
 
-void WebThreadImpl::postDelayedTask(
-    Task* task, long long delay_ms) {
+void WebThreadImpl::postDelayedTask(Task* task, long long delay_ms) {
   thread_->message_loop()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&blink::WebThread::Task::run, base::Owned(task)),
@@ -75,7 +74,7 @@ void WebThreadImpl::postDelayedTask(
 
 void WebThreadImpl::enterRunLoop() {
   CHECK(isCurrentThread());
-  CHECK(!thread_->message_loop()->is_running()); // We don't support nesting.
+  CHECK(!thread_->message_loop()->is_running());  // We don't support nesting.
   thread_->message_loop()->Run();
 }
 
@@ -95,16 +94,15 @@ WebThreadImpl::~WebThreadImpl() {
 
 WebThreadImplForMessageLoop::WebThreadImplForMessageLoop(
     base::MessageLoopProxy* message_loop)
-    : message_loop_(message_loop) {
-}
+    : message_loop_(message_loop) {}
 
 void WebThreadImplForMessageLoop::postTask(Task* task) {
   message_loop_->PostTask(
       FROM_HERE, base::Bind(&blink::WebThread::Task::run, base::Owned(task)));
 }
 
-void WebThreadImplForMessageLoop::postDelayedTask(
-    Task* task, long long delay_ms) {
+void WebThreadImplForMessageLoop::postDelayedTask(Task* task,
+                                                  long long delay_ms) {
   message_loop_->PostDelayedTask(
       FROM_HERE,
       base::Bind(&blink::WebThread::Task::run, base::Owned(task)),
@@ -113,8 +111,8 @@ void WebThreadImplForMessageLoop::postDelayedTask(
 
 void WebThreadImplForMessageLoop::enterRunLoop() {
   CHECK(isCurrentThread());
-  CHECK(!base::MessageLoop::current()
-            ->is_running());  // We don't support nesting.
+  // We don't support nesting.
+  CHECK(!base::MessageLoop::current()->is_running());
   base::MessageLoop::current()->Run();
 }
 
@@ -128,7 +126,6 @@ bool WebThreadImplForMessageLoop::isCurrentThread() const {
   return message_loop_->BelongsToCurrentThread();
 }
 
-WebThreadImplForMessageLoop::~WebThreadImplForMessageLoop() {
-}
+WebThreadImplForMessageLoop::~WebThreadImplForMessageLoop() {}
 
-}
+}  // namespace content

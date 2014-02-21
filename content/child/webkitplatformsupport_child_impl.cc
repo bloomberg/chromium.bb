@@ -8,11 +8,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/child/web_discardable_memory_impl.h"
+#include "content/child/webthread_impl.h"
 #include "content/child/worker_task_runner.h"
 #include "third_party/WebKit/public/platform/WebWaitableEvent.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "webkit/child/fling_curve_configuration.h"
-#include "webkit/child/webthread_impl.h"
 
 #if defined(OS_ANDROID)
 #include "webkit/child/fling_animator_impl_android.h"
@@ -84,13 +84,12 @@ WebKitPlatformSupportChildImpl::createFlingAnimationCurve(
 
 blink::WebThread* WebKitPlatformSupportChildImpl::createThread(
     const char* name) {
-  return new webkit_glue::WebThreadImpl(name);
+  return new WebThreadImpl(name);
 }
 
 blink::WebThread* WebKitPlatformSupportChildImpl::currentThread() {
-  webkit_glue::WebThreadImplForMessageLoop* thread =
-      static_cast<webkit_glue::WebThreadImplForMessageLoop*>(
-          current_thread_slot_.Get());
+  WebThreadImplForMessageLoop* thread =
+      static_cast<WebThreadImplForMessageLoop*>(current_thread_slot_.Get());
   if (thread)
     return (thread);
 
@@ -99,7 +98,7 @@ blink::WebThread* WebKitPlatformSupportChildImpl::currentThread() {
   if (!message_loop.get())
     return NULL;
 
-  thread = new webkit_glue::WebThreadImplForMessageLoop(message_loop.get());
+  thread = new WebThreadImplForMessageLoop(message_loop.get());
   current_thread_slot_.Set(thread);
   return thread;
 }
@@ -141,8 +140,8 @@ WebKitPlatformSupportChildImpl::allocateAndLockDiscardableMemory(size_t bytes) {
 
 // static
 void WebKitPlatformSupportChildImpl::DestroyCurrentThread(void* thread) {
-  webkit_glue::WebThreadImplForMessageLoop* impl =
-      static_cast<webkit_glue::WebThreadImplForMessageLoop*>(thread);
+  WebThreadImplForMessageLoop* impl =
+      static_cast<WebThreadImplForMessageLoop*>(thread);
   delete impl;
 }
 

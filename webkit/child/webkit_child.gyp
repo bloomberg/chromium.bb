@@ -77,8 +77,6 @@
         'websocketstreamhandle_delegate.h',
         'websocketstreamhandle_impl.cc',
         'websocketstreamhandle_impl.h',
-        'webthread_impl.cc',
-        'webthread_impl.h',
         'weburlloader_impl.cc',
         'weburlloader_impl.h',
         'weburlrequest_extradata_impl.cc',
