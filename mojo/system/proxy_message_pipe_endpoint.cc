@@ -129,7 +129,8 @@ void ProxyMessagePipeEndpoint::EnqueueMessageInternal(
     // If it fails at this point, the message gets dropped. (This is no
     // different from any other in-transit errors.)
     // Note: |WriteMessage()| will destroy the message even on failure.
-    if (!channel_->WriteMessage(message))
+    // TODO(vtl): Convert |message| (and so on "upstream") to a |scoped_ptr|.
+    if (!channel_->WriteMessage(make_scoped_ptr(message)))
       LOG(WARNING) << "Failed to write message to channel";
   } else {
     paused_message_queue_.push_back(message);

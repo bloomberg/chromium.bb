@@ -107,7 +107,7 @@ void Channel::RunMessagePipeEndpoint(MessageInTransit::EndpointId local_id,
   endpoint_info.message_pipe->Run(endpoint_info.port, remote_id);
 }
 
-bool Channel::WriteMessage(MessageInTransit* message) {
+bool Channel::WriteMessage(scoped_ptr<MessageInTransit> message) {
   base::AutoLock locker(lock_);
   if (!raw_channel_.get()) {
     // TODO(vtl): I think this is probably not an error condition, but I should
@@ -116,7 +116,7 @@ bool Channel::WriteMessage(MessageInTransit* message) {
     return false;
   }
 
-  return raw_channel_->WriteMessage(message);
+  return raw_channel_->WriteMessage(message.Pass());
 }
 
 void Channel::DetachMessagePipeEndpoint(MessageInTransit::EndpointId local_id) {

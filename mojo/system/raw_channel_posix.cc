@@ -21,6 +21,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "mojo/system/embedder/platform_handle.h"
 #include "mojo/system/message_in_transit.h"
@@ -43,7 +44,7 @@ class RawChannelPosix : public RawChannel,
   // |RawChannel| implementation:
   virtual bool Init() OVERRIDE;
   virtual void Shutdown() OVERRIDE;
-  virtual bool WriteMessage(MessageInTransit* message) OVERRIDE;
+  virtual bool WriteMessage(scoped_ptr<MessageInTransit> message) OVERRIDE;
 
  private:
   // |base::MessageLoopForIO::Watcher| implementation:
@@ -83,6 +84,8 @@ class RawChannelPosix : public RawChannel,
 
   base::Lock write_lock_;  // Protects the following members.
   bool write_stopped_;
+  // TODO(vtl): When C++11 is available, switch this to a deque of
+  // |scoped_ptr|/|unique_ptr|s.
   std::deque<MessageInTransit*> write_message_queue_;
   size_t write_message_offset_;
   // This is used for posting tasks from write threads to the I/O thread. It
@@ -162,19 +165,17 @@ void RawChannelPosix::Shutdown() {
 }
 
 // Reminder: This must be thread-safe, and takes ownership of |message|.
-bool RawChannelPosix::WriteMessage(MessageInTransit* message) {
+bool RawChannelPosix::WriteMessage(scoped_ptr<MessageInTransit> message) {
   base::AutoLock locker(write_lock_);
-  if (write_stopped_) {
-    delete message;
+  if (write_stopped_)
     return false;
-  }
 
   if (!write_message_queue_.empty()) {
-    write_message_queue_.push_back(message);
+    write_message_queue_.push_back(message.release());
     return true;
   }
 
-  write_message_queue_.push_front(message);
+  write_message_queue_.push_front(message.release());
   DCHECK_EQ(write_message_offset_, 0u);
   bool result = WriteFrontMessageNoLock();
   DCHECK(result || write_message_queue_.empty());
@@ -384,8 +385,8 @@ bool RawChannelPosix::WriteFrontMessageNoLock() {
     // Complete write.
     DCHECK_EQ(static_cast<size_t>(bytes_written), bytes_to_write);
     write_message_queue_.pop_front();
-    write_message_offset_ = 0;
     delete message;
+    write_message_offset_ = 0;
   }
 
   return true;
@@ -396,12 +397,7 @@ void RawChannelPosix::CancelPendingWritesNoLock() {
   DCHECK(!write_stopped_);
 
   write_stopped_ = true;
-  for (std::deque<MessageInTransit*>::iterator it =
-           write_message_queue_.begin(); it != write_message_queue_.end();
-       ++it) {
-    delete *it;
-  }
-  write_message_queue_.clear();
+  STLDeleteElements(&write_message_queue_);
 }
 
 }  // namespace

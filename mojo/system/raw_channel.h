@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "mojo/system/constants.h"
 #include "mojo/system/embedder/scoped_platform_handle.h"
 #include "mojo/system/system_impl_export.h"
@@ -84,7 +85,7 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
 
   // This is thread-safe. It takes ownership of |message| (always, even on
   // failure). Returns true on success.
-  virtual bool WriteMessage(MessageInTransit* message) = 0;
+  virtual bool WriteMessage(scoped_ptr<MessageInTransit> message) = 0;
 
  protected:
   RawChannel(Delegate* delegate, base::MessageLoopForIO* message_loop_for_io)

@@ -81,7 +81,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
                               MessageInTransit::EndpointId remote_id);
 
   // This forwards |message| verbatim to |raw_channel_|.
-  bool WriteMessage(MessageInTransit* message);
+  bool WriteMessage(scoped_ptr<MessageInTransit> message);
 
   // This removes the message pipe/port's endpoint (with the given local ID,
   // returned by |AttachMessagePipeEndpoint()| from this channel. After this is

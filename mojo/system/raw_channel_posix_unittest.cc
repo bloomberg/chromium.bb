@@ -39,14 +39,15 @@ namespace mojo {
 namespace system {
 namespace {
 
-MessageInTransit* MakeTestMessage(uint32_t num_bytes) {
+scoped_ptr<MessageInTransit> MakeTestMessage(uint32_t num_bytes) {
   std::vector<unsigned char> bytes(num_bytes, 0);
   for (size_t i = 0; i < num_bytes; i++)
     bytes[i] = static_cast<unsigned char>(i + num_bytes);
-  return new MessageInTransit(MessageInTransit::OWNED_BUFFER,
-                              MessageInTransit::kTypeMessagePipeEndpoint,
-                              MessageInTransit::kSubtypeMessagePipeEndpointData,
-                              num_bytes, 0, bytes.data());
+  return make_scoped_ptr(
+      new MessageInTransit(MessageInTransit::OWNED_BUFFER,
+                           MessageInTransit::kTypeMessagePipeEndpoint,
+                           MessageInTransit::kSubtypeMessagePipeEndpointData,
+                           num_bytes, 0, bytes.data()));
 }
 
 bool CheckMessageData(const void* bytes, uint32_t num_bytes) {
@@ -64,12 +65,11 @@ void InitOnIOThread(RawChannel* raw_channel) {
 
 bool WriteTestMessageToHandle(const embedder::PlatformHandle& handle,
                               uint32_t num_bytes) {
-  MessageInTransit* message = MakeTestMessage(num_bytes);
+  scoped_ptr<MessageInTransit> message(MakeTestMessage(num_bytes));
 
   ssize_t write_size = HANDLE_EINTR(
      write(handle.fd, message->main_buffer(), message->main_buffer_size()));
   bool result = write_size == static_cast<ssize_t>(message->main_buffer_size());
-  delete message;
   return result;
 }
 
