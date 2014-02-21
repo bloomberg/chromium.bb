@@ -15,4 +15,12 @@
     <dimen name="autofill_text_height">44dp</dimen>
     <dimen name="autofill_text_divider_height">1px</dimen>
 
+    <!--
+         Fallback values if the corresponding com.android.internal.R dimensions
+         cannot be retrieved by name.
+         Note: Constants taken directly from Android's core/res/values/config.xml.
+    -->
+    <dimen name="config_minScalingSpan">27.0mm</dimen>
+    <dimen name="config_minScalingTouchMajor">48.0dp</dimen>
+
 </resources>
