@@ -145,7 +145,7 @@ bool StyleSheetContents::isCacheable() const
     return maybeCacheable();
 }
 
-void StyleSheetContents::parserAppendRule(PassRefPtr<StyleRuleBase> rule)
+void StyleSheetContents::parserAppendRule(PassRefPtrWillBeRawPtr<StyleRuleBase> rule)
 {
     ASSERT(!rule->isCharsetRule());
     if (rule->isImportRule()) {
@@ -225,7 +225,7 @@ void StyleSheetContents::parserSetEncodingFromCharsetRule(const String& encoding
     m_encodingFromCharsetRule = encoding;
 }
 
-bool StyleSheetContents::wrapperInsertRule(PassRefPtr<StyleRuleBase> rule, unsigned index)
+bool StyleSheetContents::wrapperInsertRule(PassRefPtrWillBeRawPtr<StyleRuleBase> rule, unsigned index)
 {
     ASSERT(m_isMutable);
     ASSERT_WITH_SECURITY_IMPLICATION(index <= ruleCount());
@@ -472,7 +472,7 @@ KURL StyleSheetContents::completeURL(const String& url) const
     return m_parserContext.completeURL(url);
 }
 
-static bool childRulesHaveFailedOrCanceledSubresources(const Vector<RefPtr<StyleRuleBase> >& rules)
+static bool childRulesHaveFailedOrCanceledSubresources(const WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> >& rules)
 {
     for (unsigned i = 0; i < rules.size(); ++i) {
         const StyleRuleBase* rule = rules[i].get();
@@ -588,7 +588,7 @@ void StyleSheetContents::notifyRemoveFontFaceRule(const StyleRuleFontFace* fontF
     }
 }
 
-static void findFontFaceRulesFromRules(const Vector<RefPtr<StyleRuleBase> >& rules, Vector<const StyleRuleFontFace*>& fontFaceRules)
+static void findFontFaceRulesFromRules(const WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> >& rules, Vector<const StyleRuleFontFace*>& fontFaceRules)
 {
     for (unsigned i = 0; i < rules.size(); ++i) {
         StyleRuleBase* rule = rules[i].get();
@@ -615,8 +615,10 @@ void StyleSheetContents::findFontFaceRules(Vector<const StyleRuleFontFace*>& fon
     findFontFaceRulesFromRules(childRules(), fontFaceRules);
 }
 
-void StyleSheetContents::trace(Visitor*)
+void StyleSheetContents::trace(Visitor* visitor)
 {
+    visitor->trace(m_importRules);
+    visitor->trace(m_childRules);
 }
 
 }

@@ -31,6 +31,7 @@
 #define CSSFilterRule_h
 
 #include "core/css/CSSRule.h"
+#include "heap/Handle.h"
 
 namespace WebCore {
 
@@ -53,7 +54,7 @@ public:
 private:
     CSSFilterRule(StyleRuleFilter*, CSSStyleSheet* parent);
 
-    RefPtr<StyleRuleFilter> m_filterRule;
+    RefPtrWillBePersistent<StyleRuleFilter> m_filterRule;
     mutable RefPtr<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
 };
 

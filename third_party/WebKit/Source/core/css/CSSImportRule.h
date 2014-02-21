@@ -23,6 +23,7 @@
 #define CSSImportRule_h
 
 #include "core/css/CSSRule.h"
+#include "heap/Handle.h"
 
 namespace WebCore {
 
@@ -48,7 +49,7 @@ public:
 private:
     CSSImportRule(StyleRuleImport*, CSSStyleSheet*);
 
-    RefPtr<StyleRuleImport> m_importRule;
+    RefPtrWillBePersistent<StyleRuleImport> m_importRule;
     mutable RefPtr<MediaList> m_mediaCSSOMWrapper;
     mutable RefPtr<CSSStyleSheet> m_styleSheetCSSOMWrapper;
 };

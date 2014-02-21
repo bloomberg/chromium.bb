@@ -23,6 +23,7 @@
 #define CSSStyleRule_h
 
 #include "core/css/CSSRule.h"
+#include "heap/Handle.h"
 
 namespace WebCore {
 
@@ -53,7 +54,7 @@ private:
 
     String generateSelectorText() const;
 
-    RefPtr<StyleRule> m_styleRule;
+    RefPtrWillBePersistent<StyleRule> m_styleRule;
     mutable RefPtr<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
 };
 

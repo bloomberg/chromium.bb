@@ -227,7 +227,7 @@ private:
     virtual void fontsNeedUpdate(CSSFontSelector*) OVERRIDE;
 
 private:
-    void initWatchedSelectorRules(const Vector<RefPtr<StyleRule> >& watchedSelectors);
+    void initWatchedSelectorRules(const WillBeHeapVector<RefPtrWillBeMember<StyleRule> >& watchedSelectors);
 
     void addTreeBoundaryCrossingRules(const Vector<MinimalRuleData>&, ContainerNode* scope);
 
@@ -279,7 +279,7 @@ private:
     bool pseudoStyleForElementInternal(Element&, const PseudoStyleRequest&, RenderStyle* parentStyle, StyleResolverState&);
 
     // FIXME: This likely belongs on RuleSet.
-    typedef HashMap<StringImpl*, RefPtr<StyleRuleKeyframes> > KeyframesRuleMap;
+    typedef WillBePersistentHeapHashMap<StringImpl*, RefPtrWillBeMember<StyleRuleKeyframes> > KeyframesRuleMap;
     KeyframesRuleMap m_keyframesRuleMap;
 
     static RenderStyle* s_styleNotYetAvailable;

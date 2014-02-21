@@ -248,7 +248,7 @@ void BisonCSSParser::parseSheet(StyleSheetContents* sheet, const String& string,
     m_tokenizer.m_internal = true;
 }
 
-PassRefPtr<StyleRuleBase> BisonCSSParser::parseRule(StyleSheetContents* sheet, const String& string)
+PassRefPtrWillBeRawPtr<StyleRuleBase> BisonCSSParser::parseRule(StyleSheetContents* sheet, const String& string)
 {
     setStyleSheet(sheet);
     m_allowNamespaceDeclarations = false;
@@ -9454,7 +9454,7 @@ StyleRuleBase* BisonCSSParser::createImportRule(const CSSParserString& url, Medi
 {
     if (!media || !m_allowImportRules)
         return 0;
-    RefPtr<StyleRuleImport> rule = StyleRuleImport::create(url, media);
+    RefPtrWillBeRawPtr<StyleRuleImport> rule = StyleRuleImport::create(url, media);
     StyleRuleImport* result = rule.get();
     m_parsedRules.append(rule.release());
     return result;
@@ -9463,7 +9463,7 @@ StyleRuleBase* BisonCSSParser::createImportRule(const CSSParserString& url, Medi
 StyleRuleBase* BisonCSSParser::createMediaRule(MediaQuerySet* media, RuleList* rules)
 {
     m_allowImportRules = m_allowNamespaceDeclarations = false;
-    RefPtr<StyleRuleMedia> rule;
+    RefPtrWillBeRawPtr<StyleRuleMedia> rule;
     if (rules) {
         rule = StyleRuleMedia::create(media ? media : MediaQuerySet::create(), *rules);
     } else {
@@ -9480,7 +9480,7 @@ StyleRuleBase* BisonCSSParser::createSupportsRule(bool conditionIsSupported, Rul
     m_allowImportRules = m_allowNamespaceDeclarations = false;
 
     RefPtr<CSSRuleSourceData> data = popSupportsRuleData();
-    RefPtr<StyleRuleSupports> rule;
+    RefPtrWillBeRawPtr<StyleRuleSupports> rule;
     String conditionText;
     unsigned conditionOffset = data->ruleHeaderRange.start + 9;
     unsigned conditionLength = data->ruleHeaderRange.length() - 9;
@@ -9533,7 +9533,7 @@ PassRefPtr<CSSRuleSourceData> BisonCSSParser::popSupportsRuleData()
 
 BisonCSSParser::RuleList* BisonCSSParser::createRuleList()
 {
-    OwnPtr<RuleList> list = adoptPtr(new RuleList);
+    OwnPtrWillBeRawPtr<RuleList> list = adoptPtrWillBeNoop(new RuleList);
     RuleList* listPtr = list.get();
 
     m_parsedRuleLists.append(list.release());
@@ -9628,7 +9628,7 @@ StyleRuleKeyframes* BisonCSSParser::createKeyframesRule(const String& name, Pass
 {
     OwnPtr<Vector<RefPtr<StyleKeyframe> > > keyframes = popKeyframes;
     m_allowImportRules = m_allowNamespaceDeclarations = false;
-    RefPtr<StyleRuleKeyframes> rule = StyleRuleKeyframes::create();
+    RefPtrWillBeRawPtr<StyleRuleKeyframes> rule = StyleRuleKeyframes::create();
     for (size_t i = 0; i < keyframes->size(); ++i)
         rule->parserAppendKeyframe(keyframes->at(i));
     rule->setName(name);
@@ -9643,7 +9643,7 @@ StyleRuleBase* BisonCSSParser::createStyleRule(Vector<OwnPtr<CSSParserSelector> 
     StyleRule* result = 0;
     if (selectors) {
         m_allowImportRules = m_allowNamespaceDeclarations = false;
-        RefPtr<StyleRule> rule = StyleRule::create();
+        RefPtrWillBeRawPtr<StyleRule> rule = StyleRule::create();
         rule->parserAdoptSelectorVector(*selectors);
         if (m_hasFontFaceOnlyValues)
             deleteFontFaceOnlyValues();
@@ -9671,7 +9671,7 @@ StyleRuleBase* BisonCSSParser::createFontFaceRule()
             return 0;
         }
     }
-    RefPtr<StyleRuleFontFace> rule = StyleRuleFontFace::create();
+    RefPtrWillBeRawPtr<StyleRuleFontFace> rule = StyleRuleFontFace::create();
     rule->setProperties(createStylePropertySet());
     clearProperties();
     StyleRuleFontFace* result = rule.get();
@@ -9841,7 +9841,7 @@ StyleRuleBase* BisonCSSParser::createPageRule(PassOwnPtr<CSSParserSelector> page
     m_allowImportRules = m_allowNamespaceDeclarations = false;
     StyleRulePage* pageRule = 0;
     if (pageSelector) {
-        RefPtr<StyleRulePage> rule = StyleRulePage::create();
+        RefPtrWillBeRawPtr<StyleRulePage> rule = StyleRulePage::create();
         Vector<OwnPtr<CSSParserSelector> > selectorVector;
         selectorVector.append(pageSelector);
         rule->parserAdoptSelectorVector(selectorVector);
@@ -9999,7 +9999,7 @@ StyleRuleBase* BisonCSSParser::createViewportRule()
 
     m_allowImportRules = m_allowNamespaceDeclarations = false;
 
-    RefPtr<StyleRuleViewport> rule = StyleRuleViewport::create();
+    RefPtrWillBeRawPtr<StyleRuleViewport> rule = StyleRuleViewport::create();
 
     rule->setProperties(createStylePropertySet());
     clearProperties();

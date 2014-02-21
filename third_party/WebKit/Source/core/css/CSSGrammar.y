@@ -73,7 +73,8 @@ using namespace HTMLNames;
     CSSParserString string;
 
     StyleRuleBase* rule;
-    Vector<RefPtr<StyleRuleBase> >* ruleList;
+    // Vector pointed to by raw ruleList pointer is guaranteed to be kept alive by the BisonCSSParser::m_parsedRules vector.
+    WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> >* ruleList;
     CSSParserSelector* selector;
     Vector<OwnPtr<CSSParserSelector> >* selectorList;
     CSSSelector::MarginBoxType marginBox;

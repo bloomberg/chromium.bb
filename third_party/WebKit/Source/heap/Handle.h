@@ -550,6 +550,7 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 #define RawPtrWillBeWeakMember WebCore::WeakMember
 #define OwnPtrWillBeMember WebCore::Member
 #define OwnPtrWillBePersistent WebCore::Persistent
+#define OwnPtrWillBeRawPtr WTF::RawPtr
 #define PassOwnPtrWillBeRawPtr WTF::RawPtr
 #define NoBaseWillBeGarbageCollected WebCore::GarbageCollected
 #define NoBaseWillBeGarbageCollectedFinalized WebCore::GarbageCollectedFinalized
@@ -607,6 +608,7 @@ public:
 #define RawPtrWillBeWeakMember WTF::RawPtr
 #define OwnPtrWillBeMember WTF::OwnPtr
 #define OwnPtrWillBePersistent WTF::OwnPtr
+#define OwnPtrWillBeRawPtr WTF::OwnPtr
 #define PassOwnPtrWillBeRawPtr WTF::PassOwnPtr
 #define NoBaseWillBeGarbageCollected WebCore::DummyBase
 #define NoBaseWillBeGarbageCollectedFinalized WebCore::DummyBase

@@ -88,7 +88,7 @@ public:
     void setCurrentProperty(CSSPropertyID);
 
     void parseSheet(StyleSheetContents*, const String&, const TextPosition& startPosition = TextPosition::minimumPosition(), CSSParserObserver* = 0, bool = false);
-    PassRefPtr<StyleRuleBase> parseRule(StyleSheetContents*, const String&);
+    PassRefPtrWillBeRawPtr<StyleRuleBase> parseRule(StyleSheetContents*, const String&);
     PassRefPtr<StyleKeyframe> parseKeyframeRule(StyleSheetContents*, const String&);
     bool parseSupportsCondition(const String&);
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, CSSParserMode, StyleSheetContents*);
@@ -127,7 +127,7 @@ public:
     StyleKeyframe* createKeyframe(CSSParserValueList*);
     StyleRuleKeyframes* createKeyframesRule(const String&, PassOwnPtr<Vector<RefPtr<StyleKeyframe> > >, bool isPrefixed);
 
-    typedef Vector<RefPtr<StyleRuleBase> > RuleList;
+    typedef WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> > RuleList;
     StyleRuleBase* createMediaRule(MediaQuerySet*, RuleList*);
     RuleList* createRuleList();
     RuleList* appendRule(RuleList*, StyleRuleBase*);
@@ -179,7 +179,7 @@ public:
     bool m_important;
     CSSPropertyID m_id;
     StyleSheetContents* m_styleSheet;
-    RefPtr<StyleRuleBase> m_rule;
+    RefPtrWillBePersistent<StyleRuleBase> m_rule;
     RefPtr<StyleKeyframe> m_keyframe;
     RefPtr<MediaQuerySet> m_mediaList;
     OwnPtr<CSSParserValueList> m_valueList;
@@ -289,10 +289,10 @@ private:
 
     CSSParserLocation m_locationLabel;
 
-    Vector<RefPtr<StyleRuleBase> > m_parsedRules;
+    WillBePersistentHeapVector<RefPtrWillBeMember<StyleRuleBase> > m_parsedRules;
     Vector<RefPtr<StyleKeyframe> > m_parsedKeyframes;
     Vector<RefPtr<MediaQuerySet> > m_parsedMediaQuerySets;
-    Vector<OwnPtr<RuleList> > m_parsedRuleLists;
+    WillBePersistentHeapVector<OwnPtrWillBeMember<RuleList> > m_parsedRuleLists;
     Vector<CSSParserSelector*> m_floatingSelectors;
     Vector<Vector<OwnPtr<CSSParserSelector> >*> m_floatingSelectorVectors;
     Vector<CSSParserValueList*> m_floatingValueLists;

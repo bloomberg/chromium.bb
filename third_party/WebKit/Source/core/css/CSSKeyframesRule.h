@@ -39,7 +39,7 @@ class CSSKeyframeRule;
 
 class StyleRuleKeyframes FINAL : public StyleRuleBase {
 public:
-    static PassRefPtrWillBeRawPtr<StyleRuleKeyframes> create() { return adoptRefCountedWillBeRefCountedGarbageCollected(new StyleRuleKeyframes()); }
+    static PassRefPtrWillBeRawPtr<StyleRuleKeyframes> create() { return adoptRefWillBeNoop(new StyleRuleKeyframes()); }
 
     ~StyleRuleKeyframes();
 
@@ -57,7 +57,7 @@ public:
 
     int findKeyframeIndex(const String& key) const;
 
-    PassRefPtr<StyleRuleKeyframes> copy() const { return adoptRef(new StyleRuleKeyframes(*this)); }
+    PassRefPtrWillBeRawPtr<StyleRuleKeyframes> copy() const { return adoptRefWillBeNoop(new StyleRuleKeyframes(*this)); }
 
     void traceAfterDispatch(Visitor* visitor) { StyleRuleBase::traceAfterDispatch(visitor); }
 
@@ -101,7 +101,7 @@ public:
 private:
     CSSKeyframesRule(StyleRuleKeyframes*, CSSStyleSheet* parent);
 
-    RefPtr<StyleRuleKeyframes> m_keyframesRule;
+    RefPtrWillBePersistent<StyleRuleKeyframes> m_keyframesRule;
     mutable Vector<RefPtr<CSSKeyframeRule> > m_childRuleCSSOMWrappers;
     mutable OwnPtr<CSSRuleList> m_ruleListCSSOMWrapper;
     bool m_isPrefixed;

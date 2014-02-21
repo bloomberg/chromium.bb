@@ -23,6 +23,7 @@
 #define CSSFontFaceRule_h
 
 #include "core/css/CSSRule.h"
+#include "heap/Handle.h"
 
 namespace WebCore {
 
@@ -47,7 +48,7 @@ public:
 private:
     CSSFontFaceRule(StyleRuleFontFace*, CSSStyleSheet* parent);
 
-    RefPtr<StyleRuleFontFace> m_fontFaceRule;
+    RefPtrWillBePersistent<StyleRuleFontFace> m_fontFaceRule;
     mutable RefPtr<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
 };
 

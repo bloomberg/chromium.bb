@@ -168,7 +168,7 @@ StyleResolver::StyleResolver(Document& document)
 #endif
 }
 
-void StyleResolver::initWatchedSelectorRules(const Vector<RefPtr<StyleRule> >& watchedSelectors)
+void StyleResolver::initWatchedSelectorRules(const WillBeHeapVector<RefPtrWillBeMember<StyleRule> >& watchedSelectors)
 {
     if (!watchedSelectors.size())
         return;

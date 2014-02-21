@@ -63,7 +63,7 @@ private:
 
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 
-    RefPtr<StyleRuleFontFace> m_fontFaceRule;
+    RefPtrWillBePersistent<StyleRuleFontFace> m_fontFaceRule;
     SVGFontElement* m_fontElement;
 };
 

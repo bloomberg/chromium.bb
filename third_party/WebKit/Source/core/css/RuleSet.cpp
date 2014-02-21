@@ -333,7 +333,7 @@ void RuleSet::addKeyframesRule(StyleRuleKeyframes* rule)
     m_keyframesRules.append(rule);
 }
 
-void RuleSet::addChildRules(const Vector<RefPtr<StyleRuleBase> >& rules, const MediaQueryEvaluator& medium, AddRuleFlags addRuleFlags)
+void RuleSet::addChildRules(const WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> >& rules, const MediaQueryEvaluator& medium, AddRuleFlags addRuleFlags)
 {
     for (unsigned i = 0; i < rules.size(); ++i) {
         StyleRuleBase* rule = rules[i].get();
@@ -376,7 +376,7 @@ void RuleSet::addRulesFromSheet(StyleSheetContents* sheet, const MediaQueryEvalu
     ASSERT(sheet);
 
     addRuleFlags = static_cast<AddRuleFlags>(addRuleFlags | RuleCanUseFastCheckSelector);
-    const Vector<RefPtr<StyleRuleImport> >& importRules = sheet->importRules();
+    const WillBeHeapVector<RefPtrWillBeMember<StyleRuleImport> >& importRules = sheet->importRules();
     for (unsigned i = 0; i < importRules.size(); ++i) {
         StyleRuleImport* importRule = importRules[i].get();
         if (importRule->styleSheet() && (!importRule->mediaQueries() || medium.eval(importRule->mediaQueries(), &m_viewportDependentMediaQueryResults)))

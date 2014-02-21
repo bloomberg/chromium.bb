@@ -56,7 +56,7 @@ public:
 
 public:
     const StyleRuleKeyframes* keyframeStylesForAnimation(const StringImpl* animationName);
-    void addKeyframeStyle(PassRefPtr<StyleRuleKeyframes>);
+    void addKeyframeStyle(PassRefPtrWillBeRawPtr<StyleRuleKeyframes>);
 
     void collectMatchingAuthorRules(ElementRuleCollector&, bool includeEmptyRules, bool applyAuthorStyles, CascadeScope, CascadeOrder = ignoreCascadeOrder);
     void matchPageRules(PageRuleCollector&);
@@ -73,7 +73,7 @@ private:
 
     Vector<CSSStyleSheet*> m_authorStyleSheets;
 
-    typedef HashMap<const StringImpl*, RefPtr<StyleRuleKeyframes> > KeyframesRuleMap;
+    typedef WillBePersistentHeapHashMap<const StringImpl*, RefPtrWillBeMember<StyleRuleKeyframes> > KeyframesRuleMap;
     KeyframesRuleMap m_keyframesRuleMap;
 };
 

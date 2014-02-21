@@ -23,6 +23,7 @@
 #define CSSPageRule_h
 
 #include "core/css/CSSRule.h"
+#include "heap/Handle.h"
 
 namespace WebCore {
 
@@ -49,7 +50,7 @@ public:
 private:
     CSSPageRule(StyleRulePage*, CSSStyleSheet*);
 
-    RefPtr<StyleRulePage> m_pageRule;
+    RefPtrWillBePersistent<StyleRulePage> m_pageRule;
     mutable RefPtr<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
 };
 

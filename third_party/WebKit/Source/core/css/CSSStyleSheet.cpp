@@ -276,7 +276,7 @@ unsigned CSSStyleSheet::insertRule(const String& ruleString, unsigned index, Exc
     }
     CSSParserContext context(m_contents->parserContext(), UseCounter::getFrom(this));
     BisonCSSParser p(context);
-    RefPtr<StyleRuleBase> rule = p.parseRule(m_contents.get(), ruleString);
+    RefPtrWillBeRawPtr<StyleRuleBase> rule = p.parseRule(m_contents.get(), ruleString);
 
     if (!rule) {
         exceptionState.throwDOMException(SyntaxError, "Failed to parse the rule '" + ruleString + "'.");

@@ -69,7 +69,7 @@ unsigned CSSGroupingRule::insertRule(const String& ruleString, unsigned index, E
     CSSStyleSheet* styleSheet = parentStyleSheet();
     CSSParserContext context(parserContext(), UseCounter::getFrom(styleSheet));
     BisonCSSParser parser(context);
-    RefPtr<StyleRuleBase> newRule = parser.parseRule(styleSheet ? styleSheet->contents() : 0, ruleString);
+    RefPtrWillBeRawPtr<StyleRuleBase> newRule = parser.parseRule(styleSheet ? styleSheet->contents() : 0, ruleString);
     if (!newRule) {
         exceptionState.throwDOMException(SyntaxError, "the rule '" + ruleString + "' is invalid and cannot be parsed.");
         return 0;

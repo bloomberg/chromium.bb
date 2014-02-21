@@ -32,6 +32,7 @@
 #define CSSViewportRule_h
 
 #include "core/css/CSSRule.h"
+#include "heap/Handle.h"
 
 namespace WebCore {
 
@@ -56,7 +57,7 @@ public:
 private:
     CSSViewportRule(StyleRuleViewport*, CSSStyleSheet*);
 
-    RefPtr<StyleRuleViewport> m_viewportRule;
+    RefPtrWillBePersistent<StyleRuleViewport> m_viewportRule;
     mutable RefPtr<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
 };
 

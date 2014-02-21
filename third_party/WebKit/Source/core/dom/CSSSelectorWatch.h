@@ -50,7 +50,7 @@ public:
     static CSSSelectorWatch& from(Document&);
 
     void watchCSSSelectors(const Vector<String>& selectors);
-    const Vector<RefPtr<StyleRule> >& watchedCallbackSelectors() const { return m_watchedCallbackSelectors; }
+    const WillBeHeapVector<RefPtrWillBeMember<StyleRule> >& watchedCallbackSelectors() const { return m_watchedCallbackSelectors; }
 
     void updateSelectorMatches(const Vector<String>& removedSelectors, const Vector<String>& addedSelectors);
 
@@ -60,7 +60,7 @@ private:
 
     Document& m_document;
 
-    Vector<RefPtr<StyleRule> > m_watchedCallbackSelectors;
+    WillBePersistentHeapVector<RefPtrWillBeMember<StyleRule> > m_watchedCallbackSelectors;
 
     // Maps a CSS selector string with a -webkit-callback property to the number
     // of matching RenderStyle objects in this document.

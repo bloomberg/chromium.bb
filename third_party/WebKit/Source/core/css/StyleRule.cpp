@@ -171,7 +171,7 @@ void StyleRuleBase::destroy()
     ASSERT_NOT_REACHED();
 }
 
-PassRefPtr<StyleRuleBase> StyleRuleBase::copy() const
+PassRefPtrWillBeRawPtr<StyleRuleBase> StyleRuleBase::copy() const
 {
     switch (type()) {
     case Style:
@@ -335,7 +335,7 @@ void StyleRuleFontFace::setProperties(PassRefPtr<StylePropertySet> properties)
     m_properties = properties;
 }
 
-StyleRuleGroup::StyleRuleGroup(Type type, Vector<RefPtr<StyleRuleBase> >& adoptRule)
+StyleRuleGroup::StyleRuleGroup(Type type, WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> >& adoptRule)
     : StyleRuleBase(type)
 {
     m_childRules.swap(adoptRule);
@@ -349,7 +349,7 @@ StyleRuleGroup::StyleRuleGroup(const StyleRuleGroup& o)
         m_childRules[i] = o.m_childRules[i]->copy();
 }
 
-void StyleRuleGroup::wrapperInsertRule(unsigned index, PassRefPtr<StyleRuleBase> rule)
+void StyleRuleGroup::wrapperInsertRule(unsigned index, PassRefPtrWillBeRawPtr<StyleRuleBase> rule)
 {
     m_childRules.insert(index, rule);
 }
@@ -359,7 +359,13 @@ void StyleRuleGroup::wrapperRemoveRule(unsigned index)
     m_childRules.remove(index);
 }
 
-StyleRuleMedia::StyleRuleMedia(PassRefPtr<MediaQuerySet> media, Vector<RefPtr<StyleRuleBase> >& adoptRules)
+void StyleRuleGroup::traceAfterDispatch(Visitor* visitor)
+{
+    visitor->trace(m_childRules);
+    StyleRuleBase::traceAfterDispatch(visitor);
+}
+
+StyleRuleMedia::StyleRuleMedia(PassRefPtr<MediaQuerySet> media, WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> >& adoptRules)
     : StyleRuleGroup(Media, adoptRules)
     , m_mediaQueries(media)
 {
@@ -372,7 +378,7 @@ StyleRuleMedia::StyleRuleMedia(const StyleRuleMedia& o)
         m_mediaQueries = o.m_mediaQueries->copy();
 }
 
-StyleRuleSupports::StyleRuleSupports(const String& conditionText, bool conditionIsSupported, Vector<RefPtr<StyleRuleBase> >& adoptRules)
+StyleRuleSupports::StyleRuleSupports(const String& conditionText, bool conditionIsSupported, WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> >& adoptRules)
     : StyleRuleGroup(Supports, adoptRules)
     , m_conditionText(conditionText)
     , m_conditionIsSupported(conditionIsSupported)

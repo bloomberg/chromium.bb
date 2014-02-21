@@ -177,7 +177,7 @@ private:
     void addFontFaceRule(StyleRuleFontFace*);
     void addKeyframesRule(StyleRuleKeyframes*);
 
-    void addChildRules(const Vector<RefPtr<StyleRuleBase> >&, const MediaQueryEvaluator& medium, AddRuleFlags);
+    void addChildRules(const WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> >&, const MediaQueryEvaluator& medium, AddRuleFlags);
     bool findBestRuleSetAndAdd(const CSSSelector&, RuleData&);
 
     void compactRules();

@@ -33,7 +33,7 @@ namespace WebCore {
 
 PassRefPtrWillBeRawPtr<StyleRuleImport> StyleRuleImport::create(const String& href, PassRefPtr<MediaQuerySet> media)
 {
-    return adoptRefCountedWillBeRefCountedGarbageCollected(new StyleRuleImport(href, media));
+    return adoptRefWillBeNoop(new StyleRuleImport(href, media));
 }
 
 StyleRuleImport::StyleRuleImport(const String& href, PassRefPtr<MediaQuerySet> media)
