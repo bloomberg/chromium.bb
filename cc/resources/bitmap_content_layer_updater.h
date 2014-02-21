@@ -70,7 +70,6 @@ class CC_EXPORT BitmapContentLayerUpdater : public ContentLayerUpdater {
   SkBitmap bitmap_backing_;
   skia::RefPtr<SkCanvas> canvas_;
   gfx::Size canvas_size_;
-  bool opaque_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BitmapContentLayerUpdater);
