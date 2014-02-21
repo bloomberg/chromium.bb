@@ -21,6 +21,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.os.UserHandle;
 import android.preference.PreferenceManager;
 import android.provider.BaseColumns;
 import android.provider.Browser;
@@ -395,7 +396,7 @@ public class ChromeBrowserProvider extends ContentProvider {
         }
 
         res = ContentUris.withAppendedId(uri, id);
-        getContext().getContentResolver().notifyChange(res, null);
+        notifyChange(res);
         return res;
     }
 
@@ -450,9 +451,7 @@ public class ChromeBrowserProvider extends ContentProvider {
             default:
                 throw new IllegalArgumentException(TAG + ": delete - unknown URL " + uri);
         }
-        if (result != 0) {
-            getContext().getContentResolver().notifyChange(uri, null);
-        }
+        if (result != 0) notifyChange(uri);
         return result;
     }
 
@@ -520,9 +519,7 @@ public class ChromeBrowserProvider extends ContentProvider {
             default:
                 throw new IllegalArgumentException(TAG + ": update - unknown URL " + uri);
         }
-        if (result != 0) {
-            getContext().getContentResolver().notifyChange(uri, null);
-        }
+        if (result != 0) notifyChange(uri);
         return result;
     }
 
@@ -1046,14 +1043,12 @@ public class ChromeBrowserProvider extends ContentProvider {
 
     @CalledByNative
     private void onBookmarkChanged() {
-        getContext().getContentResolver().notifyChange(
-                buildAPIContentUri(getContext(), BOOKMARKS_PATH), null);
+        notifyChange(buildAPIContentUri(getContext(), BOOKMARKS_PATH));
     }
 
     @CalledByNative
     private void onSearchTermChanged() {
-        getContext().getContentResolver().notifyChange(
-                buildAPIContentUri(getContext(), SEARCHES_PATH), null);
+        notifyChange(buildAPIContentUri(getContext(), SEARCHES_PATH));
     }
 
     private long addSearchTermFromAPI(ContentValues values) {
@@ -1283,6 +1278,24 @@ public class ChromeBrowserProvider extends ContentProvider {
             int gValue, int bValue, Context context) {
         return BookmarkUtils.createAddToHomeIntent(
                 context, url, title, favicon, rValue, gValue, bValue);
+    }
+
+    private void notifyChange(final Uri uri) {
+        UserHandle callingUserHandle = Binder.getCallingUserHandle();
+        // If the calling user is different than current one, we need to post a
+        // task to notify change, otherwise, a system level hidden permission
+        // INTERACT_ACROSS_USERS_FULL is needed.
+        if (callingUserHandle != null &&
+                !callingUserHandle.equals(android.os.Process.myUserHandle())) {
+            ThreadUtils.postOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    getContext().getContentResolver().notifyChange(uri, null);
+                }
+            });
+        } else {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
     }
 
     private native long nativeInit();
