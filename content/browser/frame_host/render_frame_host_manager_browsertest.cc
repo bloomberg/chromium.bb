@@ -4,6 +4,7 @@
 
 #include <set>
 
+#include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
@@ -20,6 +21,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -1348,6 +1350,38 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ClearPendingWebUIOnCommit) {
   NavigateToURL(shell(), webui_url2);
   EXPECT_EQ(webui, web_contents->GetRenderManagerForTesting()->web_ui());
   EXPECT_FALSE(web_contents->GetRenderManagerForTesting()->pending_web_ui());
+}
+
+class RFHMProcessPerTabTest : public RenderFrameHostManagerTest {
+ public:
+  RFHMProcessPerTabTest() {}
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitch(switches::kProcessPerTab);
+  }
+};
+
+// Test that we still swap processes for BrowsingInstance changes even in
+// --process-per-tab mode.  See http://crbug.com/343017.
+IN_PROC_BROWSER_TEST_F(RFHMProcessPerTabTest, BackFromWebUI) {
+  ASSERT_TRUE(test_server()->Start());
+  GURL original_url(test_server()->GetURL("files/title2.html"));
+  NavigateToURL(shell(), original_url);
+
+  // Visit a WebUI page with bindings.
+  GURL webui_url(GURL(std::string(kChromeUIScheme) + "://" +
+                      std::string(kChromeUIGpuHost)));
+  NavigateToURL(shell(), webui_url);
+  EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
+                  shell()->web_contents()->GetRenderProcessHost()->GetID()));
+
+  // Go back and ensure we have no WebUI bindings.
+  TestNavigationObserver back_nav_load_observer(shell()->web_contents());
+  shell()->web_contents()->GetController().GoBack();
+  back_nav_load_observer.Wait();
+  EXPECT_EQ(original_url, shell()->web_contents()->GetLastCommittedURL());
+  EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
+                  shell()->web_contents()->GetRenderProcessHost()->GetID()));
 }
 
 }  // namespace content

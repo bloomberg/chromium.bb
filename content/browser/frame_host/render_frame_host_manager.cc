@@ -638,9 +638,12 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
     const NavigationEntryImpl* new_entry) const {
   DCHECK(new_entry);
 
-  // If new_entry already has a SiteInstance, assume it is correct and use it.
-  if (new_entry->site_instance())
-    return false;
+  // If new_entry already has a SiteInstance, assume it is correct.  We only
+  // need to force a swap if it is in a different BrowsingInstance.
+  if (new_entry->site_instance()) {
+    return !new_entry->site_instance()->IsRelatedSiteInstance(
+        render_frame_host_->GetSiteInstance());
+  }
 
   // Check for reasons to swap processes even if we are in a process model that
   // doesn't usually swap (e.g., process-per-tab).  Any time we return true,
@@ -723,17 +726,20 @@ SiteInstance* RenderFrameHostManager::GetSiteInstanceForEntry(
       delegate_->GetControllerForRenderManager();
   BrowserContext* browser_context = controller.GetBrowserContext();
 
-  // If a swap is required, we need to force the SiteInstance AND
-  // BrowsingInstance to be different ones, using CreateForURL.
-  if (force_browsing_instance_swap) {
-    // We shouldn't be forcing a swap if an entry already has a SiteInstance.
-    CHECK(!entry.site_instance());
-    return SiteInstance::CreateForURL(browser_context, dest_url);
+  // If the entry has an instance already we should use it.
+  if (entry.site_instance()) {
+    // If we are forcing a swap, this should be in a different BrowsingInstance.
+    if (force_browsing_instance_swap) {
+      CHECK(!entry.site_instance()->IsRelatedSiteInstance(
+                render_frame_host_->GetSiteInstance()));
+    }
+    return entry.site_instance();
   }
 
-  // If the entry has an instance already we should use it.
-  if (entry.site_instance())
-    return entry.site_instance();
+  // If a swap is required, we need to force the SiteInstance AND
+  // BrowsingInstance to be different ones, using CreateForURL.
+  if (force_browsing_instance_swap)
+    return SiteInstance::CreateForURL(browser_context, dest_url);
 
   // (UGLY) HEURISTIC, process-per-site only:
   //
