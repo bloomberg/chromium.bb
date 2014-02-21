@@ -975,10 +975,7 @@ enum {
     return;
 
   // Disable screen updates to prevent flickering.
-  if (view == [bookmarkBarController_ view] ||
-      view == [downloadShelfController_ view]) {
-    [[self window] disableScreenUpdatesUntilFlush];
-  }
+  gfx::ScopedNSDisableScreenUpdates disabler;
 
   // Grow or shrink the window by the amount of the height change.  We adjust
   // the window height only in two cases:

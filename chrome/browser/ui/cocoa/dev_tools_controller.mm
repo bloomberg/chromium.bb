@@ -9,6 +9,7 @@
 
 #include <Cocoa/Cocoa.h>
 
+#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -16,9 +17,21 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/public/common/content_switches.h"
 #include "ui/base/cocoa/base_view.h"
 #include "ui/base/cocoa/focus_tracker.h"
+#include "ui/gfx/mac/scoped_ns_disable_screen_updates.h"
 #include "ui/gfx/size_conversions.h"
+
+namespace {
+
+bool CoreAnimationIsEnabled() {
+  static bool is_enabled = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseCoreAnimation);
+  return is_enabled;
+}
+
+}
 
 using content::WebContents;
 
@@ -55,13 +68,27 @@ using content::WebContents;
   DCHECK_EQ(1u, [subviews count]);
   contentsView_ = [subviews objectAtIndex:0];
   devToolsView_ = devToolsView;
-  // Place DevTools under contents.
-  [self addSubview:devToolsView positioned:NSWindowBelow relativeTo:nil];
+  if (CoreAnimationIsEnabled()) {
+    // Make sure we do not draw any transient arrangements of views.
+    gfx::ScopedNSDisableScreenUpdates disabler;
+    [self replaceSubview:contentsView_ with:devToolsView_];
+    [devToolsView_ addSubview:contentsView_];
+  } else {
+    // Place DevTools under contents.
+    [self addSubview:devToolsView positioned:NSWindowBelow relativeTo:nil];
+  }
 }
 
 - (void)hideDevTools {
   DCHECK_EQ(2u, [[self subviews] count]);
-  [devToolsView_ removeFromSuperview];
+  if (CoreAnimationIsEnabled()) {
+    // Make sure we do not draw any transient arrangements of views.
+    gfx::ScopedNSDisableScreenUpdates disabler;
+    [contentsView_ removeFromSuperview];
+    [self replaceSubview:devToolsView_ with:contentsView_];
+  } else {
+    [devToolsView_ removeFromSuperview];
+  }
   contentsView_ = nil;
   devToolsView_ = nil;
 }
@@ -118,6 +145,8 @@ using content::WebContents;
   DevToolsWindow* newDevToolsWindow = contents ?
       DevToolsWindow::GetDockedInstanceForInspectedTab(contents) : NULL;
 
+  // Make sure we do not draw any transient arrangements of views.
+  gfx::ScopedNSDisableScreenUpdates disabler;
   bool shouldHide = devToolsWindow_ && devToolsWindow_ != newDevToolsWindow;
   bool shouldShow = newDevToolsWindow && devToolsWindow_ != newDevToolsWindow;
 
@@ -141,8 +170,6 @@ using content::WebContents;
     [self showDevToolsView];
 
   [devToolsContainerView_ adjustSubviews];
-  if (shouldHide || shouldShow)
-    [[devToolsContainerView_ window] disableScreenUpdatesUntilFlush];
 }
 
 - (void)showDevToolsView {

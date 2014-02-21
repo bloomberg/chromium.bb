@@ -72,6 +72,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/mac/scoped_ns_disable_screen_updates.h"
 
 using base::UserMetricsAction;
 using content::OpenURLParams;
@@ -614,9 +615,11 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   NSInteger index = [self indexFromModelIndex:modelIndex];
   TabContentsController* controller = [tabContentsArray_ objectAtIndex:index];
 
+  // Make sure we do not draw any transient arrangements of views.
+  gfx::ScopedNSDisableScreenUpdates ns_disabler;
   // Make sure that any layers that move are not animated to their new
   // positions.
-  ScopedCAActionDisabler disabler;
+  ScopedCAActionDisabler ca_disabler;
 
   // Resize the new view to fit the window. Calling |view| may lazily
   // instantiate the TabContentsController from the nib. Until we call
