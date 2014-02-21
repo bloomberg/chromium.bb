@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_registry_interface.h"
 #include "content/renderer/render_thread_impl.h"
@@ -106,17 +107,7 @@ scoped_refptr<VideoSourceInterface> VideoSourceHandler::GetFirstVideoSource(
   }
 
   // Get the first video track from the stream.
-  MediaStreamExtraData* extra_data =
-      static_cast<MediaStreamExtraData*>(stream.extraData());
-  if (!extra_data) {
-    LOG(ERROR) << "GetFirstVideoSource - MediaStreamExtraData is NULL.";
-    return source;
-  }
-  webrtc::MediaStreamInterface* native_stream = extra_data->stream().get();
-  if (!native_stream) {
-    LOG(ERROR) << "GetFirstVideoSource - native stream is NULL.";
-    return source;
-  }
+  webrtc::MediaStreamInterface* native_stream = MediaStream::GetAdapter(stream);
   webrtc::VideoTrackVector native_video_tracks =
       native_stream->GetVideoTracks();
   if (native_video_tracks.empty()) {

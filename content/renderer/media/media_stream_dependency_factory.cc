@@ -11,9 +11,9 @@
 #include "base/synchronization/waitable_event.h"
 #include "content/common/media/media_stream_messages.h"
 #include "content/public/common/content_switches.h"
+#include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_audio_processor_options.h"
 #include "content/renderer/media/media_stream_audio_source.h"
-#include "content/renderer/media/media_stream_track_extra_data.h"
 #include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/peer_connection_identity_service.h"
@@ -240,156 +240,74 @@ cricket::VideoCapturer* MediaStreamDependencyFactory::CreateVideoCapturer(
   return new RtcVideoCapturer(info.session_id, is_screeencast);
 }
 
-void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
-    blink::WebMediaStream* web_stream) {
+scoped_refptr<webrtc::MediaStreamInterface>
+MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
+    const blink::WebMediaStream& web_stream) {
+  DCHECK(web_stream.extraData());
   DVLOG(1) << "MediaStreamDependencyFactory::CreateNativeLocalMediaStream()";
 
-  std::string label = base::UTF16ToUTF8(web_stream->id());
+  std::string label = web_stream.id().utf8();
   scoped_refptr<webrtc::MediaStreamInterface> native_stream =
       CreateLocalMediaStream(label);
-  MediaStreamExtraData* extra_data =
-      new MediaStreamExtraData(native_stream.get(), true);
-  web_stream->setExtraData(extra_data);
 
   // Add audio tracks.
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
-  web_stream->audioTracks(audio_tracks);
+  web_stream.audioTracks(audio_tracks);
   for (size_t i = 0; i < audio_tracks.size(); ++i) {
-    AddNativeMediaStreamTrack(*web_stream, audio_tracks[i]);
+    MediaStreamTrack* native_track =
+        MediaStreamTrack::GetTrack(audio_tracks[i]);
+    if (!native_track) {
+      // TODO(perkj): Implement.
+      // This can happen if the blink track uses a source from a remote track.
+      NOTIMPLEMENTED();
+      continue;
+    }
+    native_stream->AddTrack(native_track->GetAudioAdapter());
   }
 
   // Add video tracks.
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-  web_stream->videoTracks(video_tracks);
+  web_stream.videoTracks(video_tracks);
   for (size_t i = 0; i < video_tracks.size(); ++i) {
-    AddNativeMediaStreamTrack(*web_stream, video_tracks[i]);
-  }
-}
-
-void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
-    blink::WebMediaStream* web_stream,
-    const MediaStreamExtraData::StreamStopCallback& stream_stop) {
-  CreateNativeLocalMediaStream(web_stream);
-
-  MediaStreamExtraData* extra_data =
-     static_cast<MediaStreamExtraData*>(web_stream->extraData());
-  extra_data->SetLocalStreamStopCallback(stream_stop);
-}
-
-scoped_refptr<webrtc::AudioTrackInterface>
-MediaStreamDependencyFactory::CreateNativeAudioMediaStreamTrack(
-    const blink::WebMediaStreamTrack& track) {
-  blink::WebMediaStreamSource source = track.source();
-  DCHECK_EQ(source.type(), blink::WebMediaStreamSource::TypeAudio);
-  MediaStreamAudioSource* source_data =
-      static_cast<MediaStreamAudioSource*>(source.extraData());
-
-  scoped_refptr<WebAudioCapturerSource> webaudio_source;
-  scoped_refptr<WebRtcAudioCapturer> capturer;
-  if (source_data) {
-    capturer = source_data->GetAudioCapturer();
-  } else {
-    if (source.requiresAudioConsumer()) {
-      // We're adding a WebAudio MediaStream.
-      // Create a specific capturer for each WebAudio consumer.
-      webaudio_source = CreateWebAudioSource(&source);
-      source_data =
-          static_cast<MediaStreamAudioSource*>(source.extraData());
-
-      // Use the current default capturer for the WebAudio track so that the
-      // WebAudio track can pass a valid delay value and |need_audio_processing|
-      // flag to PeerConnection.
-      // TODO(xians): Remove this after moving APM to Chrome.
-      if (GetWebRtcAudioDevice())
-        capturer = GetWebRtcAudioDevice()->GetDefaultCapturer();
-    } else {
-      // TODO(perkj): Implement support for sources from
-      // remote MediaStreams.
+    MediaStreamTrack* native_track =
+        MediaStreamTrack::GetTrack(video_tracks[i]);
+    if (!native_track) {
+      // TODO(perkj): Implement.
+      // This can happen if the blink track uses a source from a remote track.
       NOTIMPLEMENTED();
-      return NULL;
+      continue;
     }
+    native_stream->AddTrack(native_track->GetVideoAdapter());
   }
-
-  return CreateLocalAudioTrack(track,
-                               capturer,
-                               webaudio_source.get(),
-                               source_data->local_audio_source());
-}
-
-scoped_refptr<webrtc::VideoTrackInterface>
-MediaStreamDependencyFactory::CreateNativeVideoMediaStreamTrack(
-    const blink::WebMediaStreamTrack& track) {
-  DCHECK(track.extraData() == NULL);
-  blink::WebMediaStreamSource source = track.source();
-  DCHECK_EQ(source.type(), blink::WebMediaStreamSource::TypeVideo);
-
-  MediaStreamVideoSource* source_data =
-      static_cast<MediaStreamVideoSource*>(source.extraData());
-
-  if (!source_data) {
-    // TODO(perkj): Implement support for sources from
-    // remote MediaStreams.
-    NOTIMPLEMENTED();
-    return NULL;
-  }
-
-  // Create native track from the source.
-  scoped_refptr<webrtc::VideoTrackInterface> webrtc_track =
-      CreateLocalVideoTrack(track.id().utf8(), source_data->GetAdapter());
-
-  bool local_track = true;
-  AddNativeTrackToBlinkTrack(webrtc_track, track, local_track);
-
-  webrtc_track->set_enabled(track.isEnabled());
-
-  return webrtc_track;
-}
-
-void MediaStreamDependencyFactory::CreateNativeMediaStreamTrack(
-    const blink::WebMediaStreamTrack& track) {
-  DCHECK(!track.isNull() && !track.extraData());
-  DCHECK(!track.source().isNull());
-
-  switch (track.source().type()) {
-    case blink::WebMediaStreamSource::TypeAudio:
-      CreateNativeAudioMediaStreamTrack(track);
-      break;
-    case blink::WebMediaStreamSource::TypeVideo:
-      CreateNativeVideoMediaStreamTrack(track);
-      break;
-  }
+  return native_stream;
 }
 
 bool MediaStreamDependencyFactory::AddNativeMediaStreamTrack(
     const blink::WebMediaStream& stream,
     const blink::WebMediaStreamTrack& track) {
-  webrtc::MediaStreamInterface* native_stream = GetNativeMediaStream(stream);
-  DCHECK(native_stream);
+  DVLOG(1) << "AddNativeMediaStreamTrack";
+  webrtc::MediaStreamInterface* webrtc_stream =
+      MediaStream::GetAdapter(stream);
+
+  MediaStreamTrack* native_track =
+      MediaStreamTrack::GetTrack(track);
+  if (!native_track) {
+    // TODO(perkj): Implement.
+    // This can happen if the blink track uses a source from a remote track.
+    NOTIMPLEMENTED();
+    return false;
+  }
 
   switch (track.source().type()) {
     case blink::WebMediaStreamSource::TypeAudio: {
-      scoped_refptr<webrtc::AudioTrackInterface> native_audio_track;
-      if (!track.extraData()) {
-        native_audio_track = CreateNativeAudioMediaStreamTrack(track);
-      } else {
-        native_audio_track = static_cast<webrtc::AudioTrackInterface*>(
-            GetNativeMediaStreamTrack(track));
-      }
-
-      return native_audio_track.get() &&
-          native_stream->AddTrack(native_audio_track);
+      webrtc::AudioTrackInterface* webrtc_audio_track =
+          native_track->GetAudioAdapter();
+      return webrtc_audio_track && webrtc_stream->AddTrack(webrtc_audio_track);
     }
     case blink::WebMediaStreamSource::TypeVideo: {
-      scoped_refptr<webrtc::VideoTrackInterface> native_video_track;
-      if (!track.extraData()) {
-        native_video_track = CreateNativeVideoMediaStreamTrack(track);
-      } else {
-        native_video_track = static_cast<webrtc::VideoTrackInterface*>(
-            GetNativeMediaStreamTrack(track));
-      }
-
-      return native_video_track.get() &&
-          native_stream->AddTrack(native_video_track);
+      webrtc::VideoTrackInterface* webrtc_video_track =
+          native_track->GetVideoAdapter();
+      return webrtc_video_track && webrtc_stream->AddTrack(webrtc_video_track);
     }
   }
   return false;
@@ -408,9 +326,9 @@ bool MediaStreamDependencyFactory::AddNativeVideoMediaTrack(
   scoped_refptr<webrtc::VideoTrackInterface> native_track =
       CreateLocalVideoTrack(track_id, capturer);
 
-  // Add the native track to native stream
+  // Add the webrtc track to the webrtc stream
   webrtc::MediaStreamInterface* native_stream =
-      GetNativeMediaStream(*stream);
+      MediaStream::GetAdapter(*stream);
   DCHECK(native_stream);
   native_stream->AddTrack(native_track.get());
 
@@ -433,11 +351,10 @@ bool MediaStreamDependencyFactory::AddNativeVideoMediaTrack(
 bool MediaStreamDependencyFactory::RemoveNativeMediaStreamTrack(
     const blink::WebMediaStream& stream,
     const blink::WebMediaStreamTrack& track) {
-  MediaStreamExtraData* extra_data =
-      static_cast<MediaStreamExtraData*>(stream.extraData());
-  webrtc::MediaStreamInterface* native_stream = extra_data->stream().get();
+  webrtc::MediaStreamInterface* native_stream =
+      MediaStream::GetAdapter(stream);
   DCHECK(native_stream);
-  std::string track_id = base::UTF16ToUTF8(track.id());
+  std::string track_id = track.id().utf8();
   switch (track.source().type()) {
     case blink::WebMediaStreamSource::TypeAudio:
       return native_stream->RemoveTrack(
@@ -609,15 +526,83 @@ MediaStreamDependencyFactory::CreateLocalAudioSource(
   return source;
 }
 
+void MediaStreamDependencyFactory::CreateLocalAudioTrack(
+    const blink::WebMediaStreamTrack& track) {
+  blink::WebMediaStreamSource source = track.source();
+  DCHECK_EQ(source.type(), blink::WebMediaStreamSource::TypeAudio);
+  MediaStreamAudioSource* source_data =
+      static_cast<MediaStreamAudioSource*>(source.extraData());
+
+  scoped_refptr<WebAudioCapturerSource> webaudio_source;
+  if (!source_data) {
+    if (source.requiresAudioConsumer()) {
+      // We're adding a WebAudio MediaStream.
+      // Create a specific capturer for each WebAudio consumer.
+      webaudio_source = CreateWebAudioSource(&source);
+      source_data =
+          static_cast<MediaStreamAudioSource*>(source.extraData());
+    } else {
+      // TODO(perkj): Implement support for sources from
+      // remote MediaStreams.
+      NOTIMPLEMENTED();
+      return;
+    }
+  }
+
+  // Creates an adapter to hold all the libjingle objects.
+  scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
+      WebRtcLocalAudioTrackAdapter::Create(track.id().utf8(),
+                                           source_data->local_audio_source()));
+  static_cast<webrtc::AudioTrackInterface*>(adapter.get())->set_enabled(
+      track.isEnabled());
+
+  // TODO(xians): Merge |source| to the capturer(). We can't do this today
+  // because only one capturer() is supported while one |source| is created
+  // for each audio track.
+  scoped_ptr<WebRtcLocalAudioTrack> audio_track(
+      new WebRtcLocalAudioTrack(adapter,
+                                source_data->GetAudioCapturer(),
+                                webaudio_source));
+
+  StartLocalAudioTrack(audio_track.get());
+
+  // Pass the pointer of the source provider to the blink audio track.
+  blink::WebMediaStreamTrack writable_track = track;
+  writable_track.setSourceProvider(audio_track->audio_source_provider());
+
+  // Pass the ownership of the native local audio track to the blink track.
+  writable_track.setExtraData(audio_track.release());
+}
+
+void MediaStreamDependencyFactory::StartLocalAudioTrack(
+    WebRtcLocalAudioTrack* audio_track) {
+  // Add the WebRtcAudioDevice as the sink to the local audio track.
+  // TODO(xians): Implement a PeerConnection sink adapter and remove this
+  // AddSink() call.
+  audio_track->AddSink(GetWebRtcAudioDevice());
+  // Start the audio track. This will hook the |audio_track| to the capturer
+  // as the sink of the audio, and only start the source of the capturer if
+  // it is the first audio track connecting to the capturer.
+  audio_track->Start();
+}
+
 scoped_refptr<WebAudioCapturerSource>
 MediaStreamDependencyFactory::CreateWebAudioSource(
     blink::WebMediaStreamSource* source) {
   DVLOG(1) << "MediaStreamDependencyFactory::CreateWebAudioSource()";
-  DCHECK(GetWebRtcAudioDevice());
 
   scoped_refptr<WebAudioCapturerSource>
       webaudio_capturer_source(new WebAudioCapturerSource());
   MediaStreamAudioSource* source_data = new MediaStreamAudioSource();
+
+  // Use the current default capturer for the WebAudio track so that the
+  // WebAudio track can pass a valid delay value and |need_audio_processing|
+  // flag to PeerConnection.
+  // TODO(xians): Remove this after moving APM to Chrome.
+  if (GetWebRtcAudioDevice()) {
+    source_data->SetAudioCapturer(
+        GetWebRtcAudioDevice()->GetDefaultCapturer());
+  }
 
   // Create a LocalAudioSource object which holds audio options.
   // SetLocalAudioSource() affects core audio parts in third_party/Libjingle.
@@ -651,45 +636,6 @@ MediaStreamDependencyFactory::CreateLocalVideoTrack(
 
   // Create native track from the source.
   return GetPcFactory()->CreateVideoTrack(id, source.get()).get();
-}
-
-scoped_refptr<webrtc::AudioTrackInterface>
-MediaStreamDependencyFactory::CreateLocalAudioTrack(
-    const blink::WebMediaStreamTrack& blink_track,
-    const scoped_refptr<WebRtcAudioCapturer>& capturer,
-    WebAudioCapturerSource* webaudio_source,
-    webrtc::AudioSourceInterface* source) {
-  DCHECK(GetWebRtcAudioDevice());
-
-  // Creates an adapter to hold all the libjingle objects.
-  scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
-      WebRtcLocalAudioTrackAdapter::Create(blink_track.id().utf8(), source));
-  static_cast<webrtc::AudioTrackInterface*>(adapter.get())->set_enabled(
-      blink_track.isEnabled());
-
-  // TODO(xians): Merge |source| to the capturer(). We can't do this today
-  // because only one capturer() is supported while one |source| is created
-  // for each audio track.
-  scoped_ptr<WebRtcLocalAudioTrack> audio_track(
-      new WebRtcLocalAudioTrack(adapter, capturer, webaudio_source));
-
-  // Add the WebRtcAudioDevice as the sink to the local audio track.
-  // TODO(xians): Implement a PeerConnection sink adapter and remove this
-  // AddSink() call.
-  audio_track->AddSink(GetWebRtcAudioDevice());
-  // Start the audio track. This will hook the |audio_track| to the capturer
-  // as the sink of the audio, and only start the source of the capturer if
-  // it is the first audio track connecting to the capturer.
-  audio_track->Start();
-
-  // Pass the pointer of the source provider to the blink audio track.
-  blink::WebMediaStreamTrack writable_track = blink_track;
-  writable_track.setSourceProvider(audio_track->audio_source_provider());
-
-  // Pass the ownership of the native local audio track to the blink track.
-  writable_track.setExtraData(audio_track.release());
-
-  return adapter;
 }
 
 webrtc::SessionDescriptionInterface*
@@ -777,33 +723,16 @@ void MediaStreamDependencyFactory::AddNativeTrackToBlinkTrack(
   blink::WebMediaStreamTrack track = webkit_track;
 
   if (track.source().type() == blink::WebMediaStreamSource::TypeVideo) {
+    DVLOG(1) << "AddNativeTrackToBlinkTrack() video";
     track.setExtraData(new MediaStreamVideoTrack(
-        static_cast<webrtc::VideoTrackInterface*>(native_track),
-        is_local_track));
+        static_cast<webrtc::VideoTrackInterface*>(native_track)));
   } else {
-    track.setExtraData(new MediaStreamTrackExtraData(native_track,
-                                                     is_local_track));
+    DVLOG(1) << "AddNativeTrackToBlinkTrack() audio";
+    track.setExtraData(
+        new MediaStreamTrack(
+            static_cast<webrtc::AudioTrackInterface*>(native_track),
+            is_local_track));
   }
-}
-
-webrtc::MediaStreamInterface*
-MediaStreamDependencyFactory::GetNativeMediaStream(
-    const blink::WebMediaStream& stream) {
-  if (stream.isNull())
-    return NULL;
-  MediaStreamExtraData* extra_data =
-      static_cast<MediaStreamExtraData*>(stream.extraData());
-  return extra_data ? extra_data->stream().get() : NULL;
-}
-
-webrtc::MediaStreamTrackInterface*
-MediaStreamDependencyFactory::GetNativeMediaStreamTrack(
-      const blink::WebMediaStreamTrack& track) {
-  if (track.isNull())
-    return NULL;
-  MediaStreamTrackExtraData* extra_data =
-      static_cast<MediaStreamTrackExtraData*>(track.extraData());
-  return extra_data ? extra_data->track().get() : NULL;
 }
 
 bool MediaStreamDependencyFactory::OnControlMessageReceived(

@@ -191,11 +191,6 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
   virtual scoped_refptr<webrtc::VideoTrackInterface>
       CreateLocalVideoTrack(const std::string& id,
                             cricket::VideoCapturer* capturer) OVERRIDE;
-  virtual scoped_refptr<webrtc::AudioTrackInterface> CreateLocalAudioTrack(
-      const blink::WebMediaStreamTrack& blink_track,
-      const scoped_refptr<WebRtcAudioCapturer>& capturer,
-      WebAudioCapturerSource* webaudio_source,
-      webrtc::AudioSourceInterface* source) OVERRIDE;
   virtual webrtc::SessionDescriptionInterface* CreateSessionDescription(
       const std::string& type,
       const std::string& sdp,
@@ -208,6 +203,9 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
   virtual scoped_refptr<WebRtcAudioCapturer> CreateAudioCapturer(
       int render_view_id, const StreamDeviceInfo& device_info,
       const blink::WebMediaConstraints& constraints) OVERRIDE;
+
+  virtual void StartLocalAudioTrack(
+      WebRtcLocalAudioTrack* audio_track) OVERRIDE;
 
   MockAudioSource* last_audio_source() { return last_audio_source_.get(); }
   MockVideoSource* last_video_source() { return last_video_source_.get(); }

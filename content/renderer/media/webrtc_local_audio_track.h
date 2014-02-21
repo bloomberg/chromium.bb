@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "content/renderer/media/media_stream_track_extra_data.h"
+#include "content/renderer/media/media_stream_track.h"
 #include "content/renderer/media/tagged_list.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_local_audio_source_provider.h"
@@ -32,7 +32,7 @@ class WebRtcLocalAudioTrackAdapter;
 // WebRtcAudioCapturer to get the captured data, and forward the data to
 // its |sinks_|. The data flow can be stopped by disabling the audio track.
 class CONTENT_EXPORT WebRtcLocalAudioTrack
-    : NON_EXPORTED_BASE(public MediaStreamTrackExtraData) {
+    : NON_EXPORTED_BASE(public MediaStreamTrack) {
  public:
   WebRtcLocalAudioTrack(WebRtcLocalAudioTrackAdapter* adapter,
                         const scoped_refptr<WebRtcAudioCapturer>& capturer,

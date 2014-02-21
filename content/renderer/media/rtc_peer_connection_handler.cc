@@ -16,7 +16,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
-#include "content/renderer/media/media_stream_track_extra_data.h"
+#include "content/renderer/media/media_stream_track.h"
 #include "content/renderer/media/peer_connection_tracker.h"
 #include "content/renderer/media/remote_media_stream_impl.h"
 #include "content/renderer/media/rtc_data_channel_handler.h"
@@ -555,15 +555,16 @@ bool RTCPeerConnectionHandler::addStream(
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
   stream.audioTracks(audio_tracks);
   for (size_t i = 0; i < audio_tracks.size(); ++i) {
-    MediaStreamTrackExtraData* extra_data =
-        static_cast<MediaStreamTrackExtraData*>(audio_tracks[i].extraData());
-    if (!extra_data->is_local_track()) {
+    MediaStreamTrack* native_track =
+        MediaStreamTrack::GetTrack(audio_tracks[i]);
+    if (!native_track || !native_track->is_local_track()) {
       // We don't support connecting remote audio tracks to PeerConnection yet.
       // See issue http://crbug/344303.
       // TODO(xians): Remove this after we support connecting remote audio track
       // to PeerConnection.
       DLOG(ERROR) << "addStream() failed because we don't support connecting"
                   << " remote audio track to PeerConnection";
+      NOTIMPLEMENTED();
       return false;
     }
 
@@ -598,8 +599,18 @@ void RTCPeerConnectionHandler::getStats(LocalRTCStatsRequest* request) {
       new talk_base::RefCountedObject<StatsResponse>(request));
   webrtc::MediaStreamTrackInterface* track = NULL;
   if (request->hasSelector()) {
-      track = MediaStreamDependencyFactory::GetNativeMediaStreamTrack(
-          request->component());
+    MediaStreamTrack* native_track =
+        MediaStreamTrack::GetTrack(request->component());
+    if (native_track) {
+      blink::WebMediaStreamSource::Type type =
+          request->component().source().type();
+      if (type == blink::WebMediaStreamSource::TypeAudio)
+        track = native_track->GetAudioAdapter();
+      else {
+        DCHECK_EQ(blink::WebMediaStreamSource::TypeVideo, type);
+        track = native_track->GetVideoAdapter();
+      }
+    }
     if (!track) {
       DVLOG(1) << "GetStats: Track not found.";
       // TODO(hta): Consider how to get an error back.
@@ -659,15 +670,14 @@ blink::WebRTCDTMFSenderHandler* RTCPeerConnectionHandler::createDTMFSender(
     const blink::WebMediaStreamTrack& track) {
   DVLOG(1) << "createDTMFSender.";
 
-  if (track.source().type() != blink::WebMediaStreamSource::TypeAudio) {
+  MediaStreamTrack* native_track = MediaStreamTrack::GetTrack(track);
+  if (!native_track ||
+      track.source().type() != blink::WebMediaStreamSource::TypeAudio) {
     DLOG(ERROR) << "Could not create DTMF sender from a non-audio track.";
     return NULL;
   }
 
-  webrtc::AudioTrackInterface* audio_track =
-      static_cast<webrtc::AudioTrackInterface*>(
-          MediaStreamDependencyFactory::GetNativeMediaStreamTrack(track));
-
+  webrtc::AudioTrackInterface* audio_track = native_track->GetAudioAdapter();
   talk_base::scoped_refptr<webrtc::DtmfSenderInterface> sender(
       native_peer_connection_->CreateDtmfSender(audio_track));
   if (!sender) {

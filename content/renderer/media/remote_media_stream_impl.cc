@@ -8,8 +8,8 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
-#include "content/renderer/media/media_stream_extra_data.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
 namespace content {
@@ -152,7 +152,7 @@ RemoteMediaStreamImpl::RemoteMediaStreamImpl(
 
   webkit_stream_.initialize(base::UTF8ToUTF16(webrtc_stream->label()),
                             webkit_audio_tracks, webkit_video_tracks);
-  webkit_stream_.setExtraData(new MediaStreamExtraData(webrtc_stream, false));
+  webkit_stream_.setExtraData(new MediaStream(webrtc_stream));
 }
 
 RemoteMediaStreamImpl::~RemoteMediaStreamImpl() {

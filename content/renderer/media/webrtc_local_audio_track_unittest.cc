@@ -191,7 +191,7 @@ TEST_F(WebRtcLocalAudioTrackTest, ConnectAndDisconnectOneSink) {
   static_cast<WebRtcLocalAudioSourceProvider*>(
       track->audio_source_provider())->SetSinkParamsForTesting(params_);
   track->Start();
-  EXPECT_TRUE(track->track()->enabled());
+  EXPECT_TRUE(track->GetAudioAdapter()->enabled());
 
   // Connect a number of network channels to the audio track.
   static const int kNumberOfNetworkChannels = 4;
@@ -240,8 +240,8 @@ TEST_F(WebRtcLocalAudioTrackTest,  DISABLED_DisableEnableAudioTrack) {
   track->Start();
   static_cast<webrtc::AudioTrackInterface*>(
       adapter.get())->GetRenderer()->AddChannel(0);
-  EXPECT_TRUE(track->track()->enabled());
-  EXPECT_TRUE(track->track()->set_enabled(false));
+  EXPECT_TRUE(track->GetAudioAdapter()->enabled());
+  EXPECT_TRUE(track->GetAudioAdapter()->set_enabled(false));
   scoped_ptr<MockMediaStreamAudioSink> sink(new MockMediaStreamAudioSink());
   const media::AudioParameters params = capturer_->source_audio_parameters();
   base::WaitableEvent event(false, false);
@@ -269,7 +269,7 @@ TEST_F(WebRtcLocalAudioTrackTest,  DISABLED_DisableEnableAudioTrack) {
                           true,
                           false)).Times(AtLeast(1))
       .WillRepeatedly(SignalEvent(&event));
-  EXPECT_TRUE(track->track()->set_enabled(true));
+  EXPECT_TRUE(track->GetAudioAdapter()->set_enabled(true));
   EXPECT_TRUE(event.TimedWait(TestTimeouts::tiny_timeout()));
   track->RemoveSink(sink.get());
 
@@ -293,7 +293,7 @@ TEST_F(WebRtcLocalAudioTrackTest, DISABLED_MultipleAudioTracks) {
   track_1->Start();
   static_cast<webrtc::AudioTrackInterface*>(
       adapter_1.get())->GetRenderer()->AddChannel(0);
-  EXPECT_TRUE(track_1->track()->enabled());
+  EXPECT_TRUE(track_1->GetAudioAdapter()->enabled());
   scoped_ptr<MockMediaStreamAudioSink> sink_1(new MockMediaStreamAudioSink());
   const media::AudioParameters params = capturer_->source_audio_parameters();
   base::WaitableEvent event_1(false, false);
@@ -320,7 +320,7 @@ TEST_F(WebRtcLocalAudioTrackTest, DISABLED_MultipleAudioTracks) {
   track_2->Start();
   static_cast<webrtc::AudioTrackInterface*>(
       adapter_2.get())->GetRenderer()->AddChannel(1);
-  EXPECT_TRUE(track_2->track()->enabled());
+  EXPECT_TRUE(track_2->GetAudioAdapter()->enabled());
 
   // Verify both |sink_1| and |sink_2| get data.
   event_1.Reset();

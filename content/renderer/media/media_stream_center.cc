@@ -8,17 +8,13 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/utf_string_conversions.h"
 #include "content/common/media/media_stream_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_thread.h"
+#include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
-#include "content/renderer/media/media_stream_extra_data.h"
 #include "content/renderer/media/media_stream_source.h"
-#include "content/renderer/media/media_stream_track_extra_data.h"
-#include "content/renderer/render_view_impl.h"
+#include "content/renderer/media/media_stream_video_track.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenterClient.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
@@ -27,12 +23,58 @@
 #include "third_party/WebKit/public/platform/WebSourceInfo.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
-#include "third_party/libjingle/source/talk/app/webrtc/jsep.h"
 
 using blink::WebFrame;
 using blink::WebView;
 
 namespace content {
+
+namespace {
+
+void CreateNativeAudioMediaStreamTrack(
+    const blink::WebMediaStreamTrack& track,
+    MediaStreamDependencyFactory* factory) {
+  DCHECK(!track.extraData());
+  blink::WebMediaStreamSource source = track.source();
+  DCHECK_EQ(source.type(), blink::WebMediaStreamSource::TypeAudio);
+  factory->CreateLocalAudioTrack(track);
+}
+
+void CreateNativeVideoMediaStreamTrack(
+    const blink::WebMediaStreamTrack& track,
+    MediaStreamDependencyFactory* factory) {
+  DCHECK(track.extraData() == NULL);
+  blink::WebMediaStreamSource source = track.source();
+  DCHECK_EQ(source.type(), blink::WebMediaStreamSource::TypeVideo);
+
+  if (!source.extraData()) {
+    // TODO(perkj): Implement support for sources from
+    // remote MediaStreams.
+    NOTIMPLEMENTED();
+    return;
+  }
+  MediaStreamTrack* native_track = new MediaStreamVideoTrack(factory);
+  native_track->SetEnabled(track.isEnabled());
+  blink::WebMediaStreamTrack writable_track(track);
+  writable_track.setExtraData(native_track);
+}
+
+void CreateNativeMediaStreamTrack(const blink::WebMediaStreamTrack& track,
+                                  MediaStreamDependencyFactory* factory) {
+  DCHECK(!track.isNull() && !track.extraData());
+  DCHECK(!track.source().isNull());
+
+  switch (track.source().type()) {
+    case blink::WebMediaStreamSource::TypeAudio:
+      CreateNativeAudioMediaStreamTrack(track, factory);
+      break;
+    case blink::WebMediaStreamSource::TypeVideo:
+      CreateNativeVideoMediaStreamTrack(track, factory);
+      break;
+  }
+}
+
+}  // namespace
 
 MediaStreamCenter::MediaStreamCenter(blink::WebMediaStreamCenterClient* client,
                                      MediaStreamDependencyFactory* factory)
@@ -55,25 +97,24 @@ bool MediaStreamCenter::getMediaStreamTrackSources(
 
 void MediaStreamCenter::didCreateMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
-  if (!rtc_factory_)
-    return;
-  rtc_factory_->CreateNativeMediaStreamTrack(track);
+  DVLOG(1) << "MediaStreamCenter::didCreateMediaStreamTrack";
+  CreateNativeMediaStreamTrack(track, rtc_factory_);
 }
 
 void MediaStreamCenter::didEnableMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
-  webrtc::MediaStreamTrackInterface* native_track =
-      MediaStreamDependencyFactory::GetNativeMediaStreamTrack(track);
+  MediaStreamTrack* native_track =
+      MediaStreamTrack::GetTrack(track);
   if (native_track)
-    native_track->set_enabled(true);
+    native_track->SetEnabled(true);
 }
 
 void MediaStreamCenter::didDisableMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
-  webrtc::MediaStreamTrackInterface* native_track =
-      MediaStreamDependencyFactory::GetNativeMediaStreamTrack(track);
+  MediaStreamTrack* native_track =
+      MediaStreamTrack::GetTrack(track);
   if (native_track)
-    native_track->set_enabled(false);
+    native_track->SetEnabled(false);
 }
 
 bool MediaStreamCenter::didStopMediaStreamTrack(
@@ -94,9 +135,8 @@ bool MediaStreamCenter::didStopMediaStreamTrack(
 void MediaStreamCenter::didStopLocalMediaStream(
     const blink::WebMediaStream& stream) {
   DVLOG(1) << "MediaStreamCenter::didStopLocalMediaStream";
-  MediaStreamExtraData* extra_data =
-      static_cast<MediaStreamExtraData*>(stream.extraData());
-  if (!extra_data) {
+  MediaStream* native_stream = MediaStream::GetMediaStream(stream);
+  if (!native_stream) {
     NOTREACHED();
     return;
   }
@@ -117,32 +157,54 @@ void MediaStreamCenter::didStopLocalMediaStream(
   for (size_t i = 0; i < video_tracks.size(); ++i)
     didDisableMediaStreamTrack(video_tracks[i]);
 
-  extra_data->OnLocalStreamStop();
+  native_stream->OnStreamStopped();
 }
 
-void MediaStreamCenter::didCreateMediaStream(
-    blink::WebMediaStream& stream) {
-  if (!rtc_factory_)
-    return;
-  rtc_factory_->CreateNativeLocalMediaStream(&stream);
+void MediaStreamCenter::didCreateMediaStream(blink::WebMediaStream& stream) {
+  DVLOG(1) << "MediaStreamCenter::didCreateMediaStream";
+  blink::WebMediaStream writable_stream(stream);
+  MediaStream* native_stream(
+      new MediaStream(rtc_factory_,
+                      MediaStream::StreamStopCallback(),
+                      stream));
+  writable_stream.setExtraData(native_stream);
+
+  // TODO(perkj): Remove track creation once crbug/294145 is fixed. A track
+  // should already have been created before reaching here.
+  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
+  stream.audioTracks(audio_tracks);
+  for (size_t i = 0; i < audio_tracks.size(); ++i) {
+    if (!MediaStreamTrack::GetTrack(audio_tracks[i]))
+      CreateNativeMediaStreamTrack(audio_tracks[i], rtc_factory_);
+  }
+
+  blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
+  stream.videoTracks(video_tracks);
+  for (size_t i = 0; i < video_tracks.size(); ++i) {
+    if (!MediaStreamTrack::GetTrack(video_tracks[i]))
+      CreateNativeMediaStreamTrack(video_tracks[i], rtc_factory_);
+  }
+
 }
 
 bool MediaStreamCenter::didAddMediaStreamTrack(
     const blink::WebMediaStream& stream,
     const blink::WebMediaStreamTrack& track) {
-  if (!rtc_factory_)
-    return false;
-
-  return rtc_factory_->AddNativeMediaStreamTrack(stream, track);
+  DVLOG(1) << "MediaStreamCenter::didAddMediaStreamTrack";
+  // TODO(perkj): Remove track creation once crbug/294145 is fixed. A track
+  // should already have been created before reaching here.
+  if (!MediaStreamTrack::GetTrack(track))
+    CreateNativeMediaStreamTrack(track, rtc_factory_);
+  MediaStream* native_stream = MediaStream::GetMediaStream(stream);
+  return native_stream->AddTrack(stream, track);
 }
 
 bool MediaStreamCenter::didRemoveMediaStreamTrack(
     const blink::WebMediaStream& stream,
     const blink::WebMediaStreamTrack& track) {
-  if (!rtc_factory_)
-    return false;
-
-  return rtc_factory_->RemoveNativeMediaStreamTrack(stream, track);
+  DVLOG(1) << "MediaStreamCenter::didRemoveMediaStreamTrack";
+  MediaStream* native_stream = MediaStream::GetMediaStream(stream);
+  return native_stream->RemoveTrack(stream, track);
 }
 
 bool MediaStreamCenter::OnControlMessageReceived(const IPC::Message& message) {

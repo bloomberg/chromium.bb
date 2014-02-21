@@ -442,15 +442,6 @@ MockMediaStreamDependencyFactory::CreateLocalVideoTrack(
   return new talk_base::RefCountedObject<MockLocalVideoTrack>(id, source.get());
 }
 
-scoped_refptr<webrtc::AudioTrackInterface>
-MockMediaStreamDependencyFactory::CreateLocalAudioTrack(
-    const blink::WebMediaStreamTrack& blink_track,
-    const scoped_refptr<WebRtcAudioCapturer>& capturer,
-    WebAudioCapturerSource* webaudio_source,
-    webrtc::AudioSourceInterface* source) {
-  return WebRtcLocalAudioTrackAdapter::Create(blink_track.id().utf8(), source);
-}
-
 SessionDescriptionInterface*
 MockMediaStreamDependencyFactory::CreateSessionDescription(
     const std::string& type,
@@ -473,6 +464,11 @@ MockMediaStreamDependencyFactory::CreateAudioCapturer(
     const blink::WebMediaConstraints& constraints) {
   return WebRtcAudioCapturer::CreateCapturer(-1, device_info,
                                              constraints, NULL);
+}
+
+void MockMediaStreamDependencyFactory::StartLocalAudioTrack(
+      WebRtcLocalAudioTrack* audio_track) {
+  return;
 }
 
 }  // namespace content

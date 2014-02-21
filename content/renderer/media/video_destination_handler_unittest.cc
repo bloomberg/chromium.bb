@@ -5,7 +5,7 @@
 #include <string>
 
 #include "base/strings/utf_string_conversions.h"
-#include "content/renderer/media/media_stream_extra_data.h"
+#include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/mock_media_stream_dependency_factory.h"
 #include "content/renderer/media/mock_media_stream_registry.h"
 #include "content/renderer/media/video_destination_handler.h"
@@ -111,14 +111,14 @@ TEST_F(VideoDestinationHandlerTest, Open) {
   EXPECT_EQ(1u, video_tracks.size());
 
   // Verify the native video track has been added.
-  MediaStreamExtraData* extra_data =
-      static_cast<MediaStreamExtraData*>(test_stream.extraData());
-  DCHECK(extra_data);
-  webrtc::MediaStreamInterface* native_stream = extra_data->stream().get();
+  MediaStream* native_stream = MediaStream::GetMediaStream(test_stream);
   DCHECK(native_stream);
-  webrtc::VideoTrackVector native_video_tracks =
-      native_stream->GetVideoTracks();
-  EXPECT_EQ(1u, native_video_tracks.size());
+  webrtc::MediaStreamInterface* webrtc_stream =
+      MediaStream::GetAdapter(test_stream);
+  DCHECK(webrtc_stream);
+  webrtc::VideoTrackVector webrtc_video_tracks =
+      webrtc_stream->GetVideoTracks();
+  EXPECT_EQ(1u, webrtc_video_tracks.size());
 
   delete frame_writer;
 }

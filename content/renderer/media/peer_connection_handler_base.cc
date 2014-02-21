@@ -6,8 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/renderer/media/media_stream_dependency_factory.h"
-#include "content/renderer/media/media_stream_extra_data.h"
+#include "content/renderer/media/media_stream.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
@@ -28,19 +27,15 @@ bool PeerConnectionHandlerBase::AddStream(
     const blink::WebMediaStream& stream,
     const webrtc::MediaConstraintsInterface* constraints) {
   webrtc::MediaStreamInterface* native_stream =
-      MediaStreamDependencyFactory::GetNativeMediaStream(stream);
-  if (!native_stream)
-    return false;
+      MediaStream::GetMediaStream(stream)->GetAdapter(stream);
   return native_peer_connection_->AddStream(native_stream, constraints);
 }
 
 void PeerConnectionHandlerBase::RemoveStream(
     const blink::WebMediaStream& stream) {
   webrtc::MediaStreamInterface* native_stream =
-      MediaStreamDependencyFactory::GetNativeMediaStream(stream);
-  if (native_stream)
-    native_peer_connection_->RemoveStream(native_stream);
-  DCHECK(native_stream);
+      MediaStream::GetMediaStream(stream)->GetAdapter(stream);
+  native_peer_connection_->RemoveStream(native_stream);
 }
 
 }  // namespace content

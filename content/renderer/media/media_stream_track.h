@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,28 +12,40 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 
 namespace webrtc {
+class AudioTrackInterface;
+class VideoTrackInterface;
 class MediaStreamTrackInterface;
 }  // namespace webrtc
 
 namespace content {
 
-class CONTENT_EXPORT MediaStreamTrackExtraData
+// MediaStreamTrack is a Chrome representation of blink::WebMediaStreamTrack.
+// It is owned by blink::WebMediaStreamTrack as
+// blink::WebMediaStreamTrack::ExtraData.
+class CONTENT_EXPORT MediaStreamTrack
     : NON_EXPORTED_BASE(public blink::WebMediaStreamTrack::ExtraData) {
  public:
-  MediaStreamTrackExtraData(webrtc::MediaStreamTrackInterface* track,
-                            bool is_local_track);
-  virtual ~MediaStreamTrackExtraData();
+  MediaStreamTrack(webrtc::MediaStreamTrackInterface* track,
+                   bool is_local_track);
+  virtual ~MediaStreamTrack();
 
-  const scoped_refptr<webrtc::MediaStreamTrackInterface>& track() const {
-    return track_;
-  }
+  static MediaStreamTrack* GetTrack(
+      const blink::WebMediaStreamTrack& track);
+
+  virtual void SetEnabled(bool enabled);
+
+  virtual webrtc::AudioTrackInterface* GetAudioAdapter();
+  virtual webrtc::VideoTrackInterface* GetVideoAdapter();
+
   bool is_local_track () const { return is_local_track_; }
 
- private:
+ protected:
   scoped_refptr<webrtc::MediaStreamTrackInterface> track_;
+
+ private:
   const bool is_local_track_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaStreamTrackExtraData);
+  DISALLOW_COPY_AND_ASSIGN(MediaStreamTrack);
 };
 
 }  // namespace content

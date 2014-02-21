@@ -13,7 +13,6 @@
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/render_process_observer.h"
-#include "content/renderer/media/media_stream_extra_data.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
@@ -29,14 +28,12 @@ class PacketSocketFactory;
 class Thread;
 }
 
-namespace webrtc {
-class PeerConnection;
-}
-
 namespace blink {
 class WebFrame;
 class WebMediaConstraints;
 class WebMediaStream;
+class WebMediaStreamSource;
+class WebMediaStreamTrack;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
 }
@@ -50,6 +47,7 @@ class RTCMediaConstraints;
 class WebAudioCapturerSource;
 class WebRtcAudioCapturer;
 class WebRtcAudioDeviceImpl;
+class WebRtcLocalAudioTrack;
 class WebRtcLoggingHandlerImpl;
 class WebRtcLoggingMessageFilter;
 struct StreamDeviceInfo;
@@ -83,25 +81,21 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   virtual cricket::VideoCapturer* CreateVideoCapturer(
       const StreamDeviceInfo& info);
 
-  // Creates a libjingle representation of a MediaStream and stores
-  // it in the extra data field of |web_stream|.
-  void CreateNativeLocalMediaStream(
-      blink::WebMediaStream* web_stream);
+  // Creates a libjingle representation of a MediaStream.
+  scoped_refptr<webrtc::MediaStreamInterface> CreateNativeLocalMediaStream(
+      const blink::WebMediaStream& web_stream);
 
-  // Creates a libjingle representation of a MediaStream and stores
-  // it in the extra data field of |web_stream|.
-  // |stream_stopped| is a callback that is run when a MediaStream have been
-  // stopped.
-  void CreateNativeLocalMediaStream(
-      blink::WebMediaStream* web_stream,
-      const MediaStreamExtraData::StreamStopCallback& stream_stop);
+  // Create an instance of WebRtcLocalAudioTrack and store it
+  // in the extraData field of |track|.
+  void CreateLocalAudioTrack(const blink::WebMediaStreamTrack& track);
 
-  // Creates a libjingle representation of a MediaStreamTrack and stores
-  // it in the extra data field of |track|.
-  void CreateNativeMediaStreamTrack(const blink::WebMediaStreamTrack& track);
+  // Asks the PeerConnection factory to create a Local VideoTrack object.
+  virtual scoped_refptr<webrtc::VideoTrackInterface>
+      CreateLocalVideoTrack(const std::string& id,
+                            webrtc::VideoSourceInterface* source);
 
-  // Adds a libjingle representation of a MediaStreamTrack to |stream| based
-  // on the source of |track|.
+  // Adds a libjingle representation of a MediaStreamTrack to the libjingle
+  // Representation of |stream|.
   bool AddNativeMediaStreamTrack(const blink::WebMediaStream& stream,
                                  const blink::WebMediaStreamTrack& track);
 
@@ -111,6 +105,8 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
                                 blink::WebMediaStream* stream,
                                 cricket::VideoCapturer* capturer);
 
+  // Removes a libjingle MediaStreamTrack from the libjingle representation of
+  // |stream|.
   bool RemoveNativeMediaStreamTrack(const blink::WebMediaStream& stream,
                                     const blink::WebMediaStreamTrack& track);
 
@@ -151,12 +147,6 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
       const blink::WebMediaStreamTrack& webkit_track,
       bool is_local_track);
 
-  static webrtc::MediaStreamInterface* GetNativeMediaStream(
-      const blink::WebMediaStream& stream);
-
-  static webrtc::MediaStreamTrackInterface* GetNativeMediaStreamTrack(
-      const blink::WebMediaStreamTrack& track);
-
  protected:
   // Asks the PeerConnection factory to create a Local MediaStream object.
   virtual scoped_refptr<webrtc::MediaStreamInterface>
@@ -173,19 +163,6 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   // WebRtcAudioCapturer.
   virtual scoped_refptr<WebAudioCapturerSource> CreateWebAudioSource(
       blink::WebMediaStreamSource* source);
-
-  // Asks the PeerConnection factory to create a Local AudioTrack object.
-  virtual scoped_refptr<webrtc::AudioTrackInterface>
-      CreateLocalAudioTrack(
-          const blink::WebMediaStreamTrack& blink_track,
-          const scoped_refptr<WebRtcAudioCapturer>& capturer,
-          WebAudioCapturerSource* webaudio_source,
-          webrtc::AudioSourceInterface* source);
-
-  // Asks the PeerConnection factory to create a Local VideoTrack object.
-  virtual scoped_refptr<webrtc::VideoTrackInterface>
-      CreateLocalVideoTrack(const std::string& id,
-                            webrtc::VideoSourceInterface* source);
 
   // Asks the PeerConnection factory to create a Local VideoTrack object with
   // the video source using |capturer|.
@@ -204,6 +181,11 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
       int render_view_id, const StreamDeviceInfo& device_info,
       const blink::WebMediaConstraints& constraints);
 
+  // Adds the audio device as a sink to the audio track and starts the local
+  // audio track. This is virtual for test purposes since no real audio device
+  // exist in unit tests.
+  virtual void StartLocalAudioTrack(WebRtcLocalAudioTrack* audio_track);
+
  private:
   // Creates |pc_factory_|, which in turn is used for
   // creating PeerConnection objects.
@@ -215,12 +197,6 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   void CreateIpcNetworkManagerOnWorkerThread(base::WaitableEvent* event);
   void DeleteIpcNetworkManager();
   void CleanupPeerConnectionFactory();
-
-  scoped_refptr<webrtc::AudioTrackInterface>
-  CreateNativeAudioMediaStreamTrack(const blink::WebMediaStreamTrack& track);
-
-  scoped_refptr<webrtc::VideoTrackInterface>
-  CreateNativeVideoMediaStreamTrack(const blink::WebMediaStreamTrack& track);
 
   // RenderProcessObserver implementation.
   virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;

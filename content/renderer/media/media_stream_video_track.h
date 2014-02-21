@@ -10,7 +10,7 @@
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/media_stream_video_sink.h"
-#include "content/renderer/media/media_stream_track_extra_data.h"
+#include "content/renderer/media/media_stream_track.h"
 
 namespace webrtc {
 class VideoTrackInterface;
@@ -18,28 +18,33 @@ class VideoTrackInterface;
 
 namespace content {
 
+class MediaStreamDependencyFactory;
 class WebRtcVideoSinkAdapter;
 
 // MediaStreamVideoTrack is a video specific representation of a
 // blink::WebMediaStreamTrack in content. It is owned by the blink object
 // and can be retrieved from a blink object using
 // WebMediaStreamTrack::extraData()
-class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrackExtraData {
+class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
  public:
-  MediaStreamVideoTrack(webrtc::VideoTrackInterface* track,
-                        bool is_local_track);
+  // Constructor for local video tracks.
+  explicit MediaStreamVideoTrack(MediaStreamDependencyFactory* factory);
+  // Constructor for remote video tracks.
+  explicit MediaStreamVideoTrack(webrtc::VideoTrackInterface* track);
   virtual ~MediaStreamVideoTrack();
   void AddSink(MediaStreamVideoSink* sink);
   void RemoveSink(MediaStreamVideoSink* sink);
 
+  virtual webrtc::VideoTrackInterface* GetVideoAdapter() OVERRIDE;
+
  private:
   // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;
-  // The webrtc video track.
-  // TODO(perkj): Make this class independent of webrtc as part of project
-  // Piranha Plant.
-  webrtc::VideoTrackInterface* video_track_;
   ScopedVector<WebRtcVideoSinkAdapter> sinks_;
+
+  // Weak ref to a MediaStreamDependencyFactory, owned by the RenderThread.
+  // It's valid for the lifetime of RenderThread.
+  MediaStreamDependencyFactory* factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoTrack);
 };

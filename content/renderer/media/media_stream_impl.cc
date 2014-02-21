@@ -10,12 +10,13 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_audio_renderer.h"
 #include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
-#include "content/renderer/media/media_stream_extra_data.h"
 #include "content/renderer/media/media_stream_video_capturer_source.h"
+#include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/peer_connection_tracker.h"
 #include "content/renderer/media/rtc_video_renderer.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
@@ -55,15 +56,6 @@ void CopyStreamConstraints(const blink::WebMediaConstraints& constraints,
 }
 
 static int g_next_request_id  = 0;
-
-webrtc::MediaStreamInterface* GetNativeMediaStream(
-    const blink::WebMediaStream& web_stream) {
-  content::MediaStreamExtraData* extra_data =
-      static_cast<content::MediaStreamExtraData*>(web_stream.extraData());
-  if (!extra_data)
-    return NULL;
-  return extra_data->stream().get();
-}
 
 void GetDefaultOutputDeviceParams(
     int* output_sample_rate, int* output_buffer_size) {
@@ -202,12 +194,8 @@ bool MediaStreamImpl::IsMediaStream(const GURL& url) {
   blink::WebMediaStream web_stream(
       blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(url));
 
-  if (web_stream.isNull() || !web_stream.extraData())
-    return false;  // This is not a valid stream.
-
-  webrtc::MediaStreamInterface* stream = GetNativeMediaStream(web_stream);
-  return (stream &&
-      (!stream->GetVideoTracks().empty() || !stream->GetAudioTracks().empty()));
+  return (!web_stream.isNull() &&
+      (MediaStream::GetMediaStream(web_stream) != NULL));
 }
 
 scoped_refptr<VideoFrameProvider>
@@ -243,8 +231,7 @@ MediaStreamImpl::GetAudioRenderer(const GURL& url, int render_frame_id) {
   DVLOG(1) << "MediaStreamImpl::GetAudioRenderer stream:"
            << base::UTF16ToUTF8(web_stream.id());
 
-  MediaStreamExtraData* extra_data =
-      static_cast<MediaStreamExtraData*>(web_stream.extraData());
+  MediaStream* native_stream = MediaStream::GetMediaStream(web_stream);
 
   // TODO(tommi): MediaStreams do not have a 'local or not' concept.
   // Tracks _might_, but even so, we need to fix the data flow so that
@@ -255,7 +242,7 @@ MediaStreamImpl::GetAudioRenderer(const GURL& url, int render_frame_id) {
   // We need to remove the |is_local| property from MediaStreamExtraData since
   // this concept is peerconnection specific (is a previously recorded stream
   // local or remote?).
-  if (extra_data->is_local()) {
+  if (native_stream->is_local()) {
     // Create the local audio renderer if the stream contains audio tracks.
     blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
     web_stream.audioTracks(audio_tracks);
@@ -267,8 +254,9 @@ MediaStreamImpl::GetAudioRenderer(const GURL& url, int render_frame_id) {
     return CreateLocalAudioRenderer(audio_tracks[0], render_frame_id);
   }
 
-  webrtc::MediaStreamInterface* stream = extra_data->stream().get();
-  if (!stream || stream->GetAudioTracks().empty())
+  webrtc::MediaStreamInterface* stream =
+      MediaStream::GetAdapter(web_stream);
+  if (stream->GetAudioTracks().empty())
     return NULL;
 
   // This is a remote WebRTC media stream.
@@ -343,6 +331,11 @@ void MediaStreamImpl::OnStreamGenerated(
 
   web_stream->initialize(webkit_id, audio_track_vector,
                          video_track_vector);
+  web_stream->setExtraData(
+      new MediaStream(
+          dependency_factory_,
+          base::Bind(&MediaStreamImpl::OnLocalMediaStreamStop, AsWeakPtr()),
+          *web_stream));
 
   // Wait for the tracks to be started successfully or to fail.
   request_info->CallbackOnTracksStarted(
@@ -470,6 +463,8 @@ void MediaStreamImpl::CreateVideoTracks(
                            request->frame,
                            &webkit_source);
     (*webkit_tracks)[i].initialize(webkit_source);
+    (*webkit_tracks)[i].setExtraData(new MediaStreamVideoTrack(
+        dependency_factory_));
     request->StartTrack((*webkit_tracks)[i], constraints);
   }
 }
@@ -518,12 +513,6 @@ void MediaStreamImpl::CreateAudioTracks(
 void MediaStreamImpl::OnCreateNativeTracksCompleted(
     UserMediaRequestInfo* request,
     bool request_succeeded) {
-  // Create a native representation of the stream.
-  if (request_succeeded) {
-    dependency_factory_->CreateNativeLocalMediaStream(
-        &request->web_stream,
-        base::Bind(&MediaStreamImpl::OnLocalMediaStreamStop, AsWeakPtr()));
-  }
   DVLOG(1) << "MediaStreamImpl::OnCreateNativeTracksComplete("
            << "{request_id = " << request->request_id << "} "
            << "{request_succeeded = " << request_succeeded << "})";
@@ -809,25 +798,6 @@ bool MediaStreamImpl::GetAuthorizedDeviceInfoForAudioRenderer(
 
   return audio_device->GetAuthorizedDeviceInfoForAudioRenderer(
       session_id, output_sample_rate, output_frames_per_buffer);
-}
-
-MediaStreamExtraData::MediaStreamExtraData(
-    webrtc::MediaStreamInterface* stream, bool is_local)
-    : stream_(stream),
-      is_local_(is_local) {
-}
-
-MediaStreamExtraData::~MediaStreamExtraData() {
-}
-
-void MediaStreamExtraData::SetLocalStreamStopCallback(
-    const StreamStopCallback& stop_callback) {
-  stream_stop_callback_ = stop_callback;
-}
-
-void MediaStreamExtraData::OnLocalStreamStop() {
-  if (!stream_stop_callback_.is_null())
-    stream_stop_callback_.Run(stream_->label());
 }
 
 MediaStreamImpl::UserMediaRequestInfo::UserMediaRequestInfo(

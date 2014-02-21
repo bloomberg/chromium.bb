@@ -83,7 +83,6 @@ class WebRtcAudioCapturerTest : public testing::Test {
     static_cast<WebRtcLocalAudioSourceProvider*>(
         track_->audio_source_provider())->SetSinkParamsForTesting(params_);
     track_->Start();
-    EXPECT_TRUE(track_->track()->enabled());
   }
 
   media::AudioParameters params_;
@@ -92,7 +91,7 @@ class WebRtcAudioCapturerTest : public testing::Test {
   scoped_ptr<WebRtcLocalAudioTrack> track_;
 };
 
-// Pass the delay value, vollume and key_pressed info via capture callback, and
+// Pass the delay value, volume and key_pressed info via capture callback, and
 // those values should be correctly stored and passed to the track.
 TEST_F(WebRtcAudioCapturerTest, VerifyAudioParams) {
   // Connect a mock sink to the track.

@@ -5,7 +5,7 @@
 #include "content/public/renderer/media_stream_audio_sink.h"
 
 #include "base/logging.h"
-#include "content/renderer/media/media_stream_track_extra_data.h"
+#include "content/renderer/media/media_stream_track.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
@@ -16,24 +16,22 @@ void MediaStreamAudioSink::AddToAudioTrack(
     MediaStreamAudioSink* sink,
     const blink::WebMediaStreamTrack& track) {
   DCHECK(track.source().type() == blink::WebMediaStreamSource::TypeAudio);
-  MediaStreamTrackExtraData* extra_data =
-      static_cast<MediaStreamTrackExtraData*>(track.extraData());
+  MediaStreamTrack* native_track = MediaStreamTrack::GetTrack(track);
   // TODO(xians): Support remote audio track.
-  DCHECK(extra_data->is_local_track());
+  DCHECK(native_track->is_local_track());
   WebRtcLocalAudioTrack* audio_track =
-      static_cast<WebRtcLocalAudioTrack*>(extra_data);
+      static_cast<WebRtcLocalAudioTrack*>(native_track);
   audio_track->AddSink(sink);
 }
 
 void MediaStreamAudioSink::RemoveFromAudioTrack(
     MediaStreamAudioSink* sink,
     const blink::WebMediaStreamTrack& track) {
-  MediaStreamTrackExtraData* extra_data =
-      static_cast<MediaStreamTrackExtraData*>(track.extraData());
+  MediaStreamTrack* native_track = MediaStreamTrack::GetTrack(track);
   // TODO(xians): Support remote audio track.
-  DCHECK(extra_data->is_local_track());
+  DCHECK(native_track->is_local_track());
   WebRtcLocalAudioTrack* audio_track =
-      static_cast<WebRtcLocalAudioTrack*>(extra_data);
+      static_cast<WebRtcLocalAudioTrack*>(native_track);
   audio_track->RemoveSink(sink);
 }
 

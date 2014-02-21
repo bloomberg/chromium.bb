@@ -34,12 +34,17 @@ void MediaStreamAudioSource::AddTrack(
     const blink::WebMediaConstraints& constraints,
     const ConstraintsCallback& callback) {
   // TODO(xians): Properly implement for audio sources.
+  if (!factory_)
+    callback.Run(this, false);
+
   bool result = true;
-  if (factory_ && !local_audio_source_) {
+  if (!local_audio_source_) {
     result = factory_->InitializeMediaStreamAudioSource(render_view_id_,
                                                         constraints,
                                                         this);
   }
+  if (result)
+    factory_->CreateLocalAudioTrack(track);
   callback.Run(this, result);
 }
 

@@ -53,13 +53,6 @@ void MediaStreamVideoSource::AddTrack(
   // configured.
   constraints_callbacks_.push_back(callback);
   TriggerConstraintsCallbackOnStateChange();
-
-  // TODO(perkj): Use the MediaStreamDependencyFactory for now to create the
-  // MediaStreamVideoTrack since creation is currently still depending on
-  // libjingle. The webrtc video track implementation will attach to the
-  // webrtc::VideoSourceInterface returned by GetAdapter() to receive video
-  // frames.
-  factory_->CreateNativeMediaStreamTrack(track);
 }
 
 void MediaStreamVideoSource::RemoveTrack(

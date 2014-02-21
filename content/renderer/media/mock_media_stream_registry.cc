@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/strings/utf_string_conversions.h"
+#include "content/renderer/media/media_stream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -31,7 +32,7 @@ void MockMediaStreamRegistry::Init(const std::string& stream_url) {
   blink::WebString webkit_stream_label(base::UTF8ToUTF16(stream->label()));
   test_stream_.initialize(webkit_stream_label,
                           webkit_audio_tracks, webkit_video_tracks);
-  test_stream_.setExtraData(new MediaStreamExtraData(stream.get(), false));
+  test_stream_.setExtraData(new MediaStream(stream.get()));
 }
 
 bool MockMediaStreamRegistry::AddVideoTrack(const std::string& track_id) {

@@ -5,7 +5,7 @@
 #include <string>
 
 #include "base/strings/utf_string_conversions.h"
-#include "content/renderer/media/media_stream_extra_data.h"
+#include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_registry_interface.h"
 #include "content/renderer/media/mock_media_stream_dependency_factory.h"
 #include "content/renderer/media/mock_media_stream_registry.h"

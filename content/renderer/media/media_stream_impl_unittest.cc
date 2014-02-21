@@ -4,7 +4,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/renderer/media/media_stream_extra_data.h"
+#include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_impl.h"
 #include "content/renderer/media/mock_media_stream_dependency_factory.h"
 #include "content/renderer/media/mock_media_stream_dispatcher.h"
@@ -85,17 +85,21 @@ class MediaStreamImplTest : public ::testing::Test {
               ms_impl_->request_state());
 
     blink::WebMediaStream desc = ms_impl_->last_generated_stream();
-    content::MediaStreamExtraData* extra_data =
-        static_cast<content::MediaStreamExtraData*>(desc.extraData());
-    if (!extra_data || !extra_data->stream().get()) {
+    content::MediaStream* native_stream =
+        content::MediaStream::GetMediaStream(desc);
+    if (!native_stream) {
       ADD_FAILURE();
       return desc;
     }
 
-    EXPECT_EQ(1u, extra_data->stream()->GetAudioTracks().size());
-    EXPECT_EQ(1u, extra_data->stream()->GetVideoTracks().size());
-    EXPECT_NE(extra_data->stream()->GetAudioTracks()[0]->id(),
-              extra_data->stream()->GetVideoTracks()[0]->id());
+    blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
+    desc.audioTracks(audio_tracks);
+    blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
+    desc.videoTracks(video_tracks);
+
+    EXPECT_EQ(1u, audio_tracks.size());
+    EXPECT_EQ(1u, video_tracks.size());
+    EXPECT_NE(audio_tracks[0].id(), video_tracks[0].id());
     return desc;
   }
 

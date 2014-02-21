@@ -4,11 +4,13 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/common/media/media_stream_options.h"
+#include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_audio_source.h"
-#include "content/renderer/media/media_stream_extra_data.h"
 #include "content/renderer/media/media_stream_video_source.h"
+#include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/mock_media_stream_dependency_factory.h"
 #include "content/renderer/media/mock_web_rtc_peer_connection_handler_client.h"
+#include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
@@ -66,6 +68,7 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
                                   "audio");
       audio_sources[0].setExtraData(
           new MediaStreamAudioSource());
+
       audio_sources_.assign(audio_sources);
     }
     if (video) {
@@ -86,6 +89,13 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
     for (size_t i = 0; i < audio_track_vector.size(); ++i) {
       audio_track_vector[i].initialize(audio_sources[i].id(),
                                        audio_sources[i]);
+      MediaStreamTrack* native_track =
+          new MediaStreamTrack(
+              WebRtcLocalAudioTrackAdapter::Create(
+                  audio_track_vector[i].id().utf8(), NULL),
+                  true);
+
+      audio_track_vector[i].setExtraData(native_track);
     }
 
     blink::WebVector<blink::WebMediaStreamTrack> video_track_vector(
@@ -93,22 +103,32 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
     for (size_t i = 0; i < video_track_vector.size(); ++i) {
       video_track_vector[i].initialize(video_sources[i].id(),
                                        video_sources[i]);
+      video_track_vector[i].setExtraData(
+          new MediaStreamVideoTrack(dependency_factory_.get()));
     }
 
     stream_desc.initialize("media stream", audio_track_vector,
                            video_track_vector);
+    stream_desc.setExtraData(
+        new content::MediaStream(dependency_factory_.get(),
+                                 content::MediaStream::StreamStopCallback(),
+                                 stream_desc));
     return stream_desc;
   }
 
   void VerifyMediaStream(const blink::WebMediaStream& stream_desc,
                          size_t num_audio_tracks,
                          size_t num_video_tracks) {
-    content::MediaStreamExtraData* extra_data =
-        static_cast<content::MediaStreamExtraData*>(stream_desc.extraData());
-    ASSERT_TRUE(extra_data && extra_data->stream().get());
-    EXPECT_TRUE(extra_data->is_local());
-    EXPECT_EQ(num_audio_tracks, extra_data->stream()->GetAudioTracks().size());
-    EXPECT_EQ(num_video_tracks, extra_data->stream()->GetVideoTracks().size());
+    content::MediaStream* native_stream =
+            content::MediaStream::GetMediaStream(stream_desc);
+    ASSERT_TRUE(native_stream);
+    EXPECT_TRUE(native_stream->is_local());
+
+    webrtc::MediaStreamInterface* webrtc_stream =
+        MediaStream::GetAdapter(stream_desc);
+    ASSERT_TRUE(webrtc_stream);
+    EXPECT_EQ(num_audio_tracks, webrtc_stream->GetAudioTracks().size());
+    EXPECT_EQ(num_video_tracks, webrtc_stream->GetVideoTracks().size());
   }
 
  protected:
@@ -127,7 +147,6 @@ TEST_F(MediaStreamDependencyFactoryTest, CreateRTCPeerConnectionHandler) {
 TEST_F(MediaStreamDependencyFactoryTest, CreateNativeMediaStream) {
   blink::WebMediaStream stream_desc = CreateWebKitMediaStream(true, true);
 
-  dependency_factory_->CreateNativeLocalMediaStream(&stream_desc);
   VerifyMediaStream(stream_desc, 1, 1);
 }
 
@@ -154,15 +173,17 @@ TEST_F(MediaStreamDependencyFactoryTest, CreateNativeMediaStreamWithoutSource) {
 
   blink::WebMediaStream stream_desc;
   stream_desc.initialize("new stream", audio_tracks, video_tracks);
+  stream_desc.setExtraData(
+      new content::MediaStream(dependency_factory_.get(),
+                               content::MediaStream::StreamStopCallback(),
+                               stream_desc));
 
-  dependency_factory_->CreateNativeLocalMediaStream(&stream_desc);
   VerifyMediaStream(stream_desc, 0, 0);
 }
 
 TEST_F(MediaStreamDependencyFactoryTest, AddAndRemoveNativeTrack) {
   blink::WebMediaStream stream_desc = CreateWebKitMediaStream(true, true);
 
-  dependency_factory_->CreateNativeLocalMediaStream(&stream_desc);
   VerifyMediaStream(stream_desc, 1, 1);
 
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
