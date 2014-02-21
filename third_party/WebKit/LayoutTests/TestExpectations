@@ -613,8 +613,6 @@ crbug.com/306595 svg/W3C-SVG-1.1-SE/struct-dom-11-f.svg [ Pass Timeout ]
 crbug.com/306595 svg/W3C-SVG-1.1-SE/types-dom-03-b.svg [ Pass Timeout ]
 crbug.com/306595 svg/W3C-SVG-1.1-SE/svgdom-over-01-f.svg [ Pass Timeout ]
 
-Bug(Savago) svg/filters/big-sized-filter.svg [ NeedsRebaseline ]
-
 crbug.com/308952 [ XP ] inspector/editor/text-editor-reveal-line.html [ Failure ]
 crbug.com/310992 virtual/threaded/animations/play-state.html [ Pass Failure ]
 crbug.com/310992 animations/play-state.html [ Pass Failure ]
