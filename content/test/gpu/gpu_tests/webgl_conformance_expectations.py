@@ -89,19 +89,19 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['lion', 'intel'], bug=323736)
 
     # Mac/ATI failures
-    self.Skip('conformance/extensions/oes-texture-float-with-image-data.html',
+    self.Fail('conformance/extensions/oes-texture-float-with-image-data.html',
         ['mac', 'amd'], bug=308328)
-    self.Skip('conformance/rendering/gl-clear.html',
+    self.Fail('conformance/rendering/gl-clear.html',
         ['mac', 'amd'], bug=308328)
-    self.Skip('conformance/textures/tex-image-and-sub-image-2d-with-array-buffer-view.html',
+    self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-array-buffer-view.html',
         ['mac', 'amd'], bug=308328)
-    self.Skip('conformance/textures/tex-image-and-sub-image-2d-with-image-data.html',
+    self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-image-data.html',
         ['mac', 'amd'], bug=308328)
-    self.Skip('conformance/textures/tex-image-and-sub-image-2d-with-image-data-rgb565.html',
+    self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-image-data-rgb565.html',
         ['mac', 'amd'], bug=308328)
-    self.Skip('conformance/textures/tex-image-and-sub-image-2d-with-image-data-rgba4444.html',
+    self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-image-data-rgba4444.html',
         ['mac', 'amd'], bug=308328)
-    self.Skip('conformance/textures/tex-image-and-sub-image-2d-with-image-data-rgba5551.html',
+    self.Fail('conformance/textures/tex-image-and-sub-image-2d-with-image-data-rgba5551.html',
         ['mac', 'amd'], bug=308328)
 
     # Android failures
