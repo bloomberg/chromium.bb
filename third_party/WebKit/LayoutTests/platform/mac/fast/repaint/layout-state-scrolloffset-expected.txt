@@ -1,0 +1,6 @@
+You should see the text 'after' in the inner box with no mangled pixels.
+after
+ (repaint rects
+  (rect 100 118 50 18)
+)
+

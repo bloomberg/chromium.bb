@@ -1,0 +1,19 @@
+Repaint test for http://bugs.webkit.org/show_bug.cgi?id=15838 Incomplete repaint toggling "How you know this person" on Facebook.
+
+Word,
+words,
+more words.
+I could
+write a book
+about all the stuff
+that comes
+after
+the break.
+(repaint rects
+  (rect 8 60 784 162)
+  (rect 8 60 784 90)
+  (rect 8 150 10 100)
+  (rect 8 250 784 72)
+  (rect 8 222 784 100)
+)
+

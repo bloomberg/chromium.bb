@@ -1,7 +1,9 @@
-layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
-layer at (0,0) size 800x316
-  RenderBlock {HTML} at (0,0) size 800x316
-    RenderBody {BODY} at (8,8) size 784x300
-      RenderBlock {DIV} at (0,0) size 100x300
-        RenderBlock {DIV} at (0,100) size 100x200
+(repaint rects
+  (rect 8 108 100 100)
+  (rect 8 108 100 200)
+  (rect 8 8 100 200)
+  (rect 8 8 100 300)
+  (rect 8 208 784 100)
+  (rect 0 216 800 100)
+)
+

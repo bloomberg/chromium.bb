@@ -1,0 +1,23 @@
+This tests for a repaint bug. The old caret position should be invalidated when a paragraph separator is inserted.
+
+
+
+
+(repaint rects
+  (rect 3 73 794 10)
+  (rect -5 -5 5 610)
+  (rect 800 -5 5 610)
+  (rect -5 -5 810 5)
+  (rect -5 600 810 5)
+  (rect -5 -5 5 610)
+  (rect 800 -5 5 610)
+  (rect -5 -5 810 5)
+  (rect -5 600 810 5)
+  (rect 3 73 794 10)
+  (rect 3 73 794 28)
+  (rect 3 83 794 18)
+  (rect 3 78 794 5)
+  (rect 7 59 3 20)
+  (rect 7 77 3 20)
+)
+

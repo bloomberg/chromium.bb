@@ -1,0 +1,9 @@
+If you see any red or orange below then the test has failed.
+
+ 
+ (repaint rects
+  (rect 8 92 100 50)
+  (rect 8 92 100 50)
+  (rect 8 92 100 50)
+)
+

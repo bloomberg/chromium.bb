@@ -1,0 +1,9 @@
+Test for http://bugs.webkit.org/show_bug.cgi?id=12590 REGRESSION: Text selection is weird in textareas in Trac wiki editing pages.
+
+Lorem
+ipsum
+(repaint rects
+  (rect 26 137 42 18)
+  (rect 26 155 38 18)
+)
+

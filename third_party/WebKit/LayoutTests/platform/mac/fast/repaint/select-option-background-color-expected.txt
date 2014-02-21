@@ -1,0 +1,7 @@
+This is a test for regression against https://bugs.webkit.org/show_bug.cgi?id=49790
+
+
+(repaint rects
+  (rect 2 36 25 57)
+)
+

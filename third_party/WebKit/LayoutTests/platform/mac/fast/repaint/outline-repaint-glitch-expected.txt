@@ -1,0 +1,20 @@
+BUG ID: Bugzilla bug 8032 REGRESSION: Focus ring not completely redrawn after a Delete changes its size
+
+Note that this bug (and the test) are just outline versions of Bugzilla bug 6301 and test border-repaint-glitch.html
+
+TEST PASS: The boxes will resize, maintaining their solid red rectangular outlines.
+
+TEST FAIL: The boxes will resize, but the outlines will break. The first box will be missing small segments from either side of its bottom outline. The second box will have small red horizontal segments protruding inwards from both sides of the outline, where the bottom outline was before.
+
+
+(repaint rects
+  (rect 25 217 188 68)
+  (rect 25 217 188 48)
+  (rect 15 265 208 20)
+  (rect 15 261 208 4)
+  (rect 25 377 188 48)
+  (rect 25 377 188 68)
+  (rect 15 425 208 20)
+  (rect 15 421 208 4)
+)
+

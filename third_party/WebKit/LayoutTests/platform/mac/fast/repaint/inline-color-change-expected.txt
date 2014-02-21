@@ -1,0 +1,10 @@
+Repaint test for rdar://problem/6518850 Make sure that an inline repaints using its line boxes and not using RenderBox width()/height().
+
+PASS
+
+(repaint rects
+  (rect 8 68 39 18)
+  (rect 8 68 39 18)
+  (rect 8 68 39 18)
+)
+

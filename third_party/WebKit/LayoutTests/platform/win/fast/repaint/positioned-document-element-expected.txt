@@ -1,8 +1,13 @@
-layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
-layer at (100,100) size 419x52
-  RenderBlock (positioned) {HTML} at (100,100) size 419x52 [bgcolor=#008000]
-    RenderBody {BODY} at (8,16) size 403x20
-      RenderBlock {P} at (0,0) size 403x20
-        RenderText {#text} at (0,0) size 403x19
-          text run at (0,0) width 403: "Tests that the entire viewport is painted with a floated html element."
+Tests that the entire viewport is painted with a floated html element.
+
+(repaint rects
+  (rect 0 0 800 600)
+  (rect 0 0 800 52)
+  (rect 0 0 800 52)
+  (rect 108 16 784 20)
+  (rect 108 16 403 20)
+  (rect 511 16 381 20)
+  (rect 0 0 800 52)
+  (rect 100 100 419 52)
+)
+

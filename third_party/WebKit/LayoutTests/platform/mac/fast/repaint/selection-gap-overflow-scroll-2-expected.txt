@@ -1,0 +1,9 @@
+Test for https://bugs.webkit.org/show_bug.cgi?id=34946 REGRESSION: Selection painting issue in bug review textbox.
+
+Lorem
+ipsum
+(repaint rects
+  (rect 26 119 42 18)
+  (rect 26 137 38 18)
+)
+

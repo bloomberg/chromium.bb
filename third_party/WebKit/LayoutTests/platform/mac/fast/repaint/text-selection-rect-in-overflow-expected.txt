@@ -1,0 +1,13 @@
+
+
+
+
+Should have green background
+
+
+
+
+(repaint rects
+  (rect 8 18 197 18)
+)
+

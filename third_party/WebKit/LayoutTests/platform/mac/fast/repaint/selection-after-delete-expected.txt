@@ -1,0 +1,11 @@
+This tests to see if selection gaps are removed when the selection is deleted. Nothing should be selected below. A caret should be inside the red div.
+
+
+(repaint rects
+  (rect 38 74 152 92)
+  (rect 38 94 152 72)
+  (rect 38 93 152 1)
+  (rect 38 75 152 90)
+  (rect 38 74 3 20)
+)
+

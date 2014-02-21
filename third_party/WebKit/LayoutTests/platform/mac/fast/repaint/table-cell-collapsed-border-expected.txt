@@ -1,0 +1,14 @@
+Repaint test for http://bugs.webkit.org/show_bug.cgi?id=11359 Incomplete repaint of table cell's collapsed border when changing only the cell.
+
+(repaint rects
+  (rect 220 260 122 110)
+  (rect 220 260 122 110)
+  (rect 220 260 122 110)
+  (rect 3 260 118 110)
+  (rect 3 260 118 110)
+  (rect 3 260 118 110)
+  (rect 220 60 122 108)
+  (rect 220 60 122 108)
+  (rect 220 60 122 108)
+)
+

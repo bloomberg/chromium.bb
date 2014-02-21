@@ -1,0 +1,9 @@
+Repaint test for http://bugs.webkit.org/show_bug.cgi?id=15157 Image defined in background-position: top center gets unexpectedly truncated.
+
+(repaint rects
+  (rect 0 0 800 600)
+  (rect 8 240 784 288)
+  (rect 8 240 784 288)
+  (rect 8 240 784 288)
+)
+

@@ -1,0 +1,9 @@
+Test for https://bugs.webkit.org/show_bug.cgi?id=22472 Selection is not completely erased when a replaced element moves
+
+
+(repaint rects
+  (rect 8 50 784 236)
+  (rect 8 130 214 236)
+  (rect 8 50 214 236)
+)
+

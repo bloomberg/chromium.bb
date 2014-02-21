@@ -1,0 +1,20 @@
+CONSOLE MESSAGE: line 37: here
+The color of this text in the reflection should be green
+
+The color of this text in the reflection should be green
+
+The color of this text in the reflection should be green
+
+The color of this text in the reflection should be green
+
+(repaint rects
+  (rect 304 377 128 156)
+  (rect 304 377 128 156)
+  (rect 379 267 288 54)
+  (rect 379 267 288 54)
+  (rect 69 267 288 54)
+  (rect 69 267 288 54)
+  (rect 304 39 128 172)
+  (rect 304 39 128 172)
+)
+

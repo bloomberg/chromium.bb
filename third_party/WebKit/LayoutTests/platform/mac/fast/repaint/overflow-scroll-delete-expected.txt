@@ -1,0 +1,16 @@
+This is a repaint test for http://bugs.webkit.org/show_bug.cgi?id=11277 REGRESSION: Incomplete repaint of overflow areas when deleting. This shows that the repaint rect doesn't account for scrolling. You can use Quartz Debug to see that changing the text repaints a rect where the text would have been if it hadn't been scrolled.
+
+
+
+
+
+
+
+
+
+
+Passed Test
+(repaint rects
+  (rect 8 112 80 35)
+)
+

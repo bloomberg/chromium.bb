@@ -1,0 +1,7 @@
+Tests repaint after layout of a subtree, inside a transformed element. You should see a large green square below.
+
+(repaint rects
+  (rect 28 46 100 200)
+  (rect 28 46 200 200)
+)
+

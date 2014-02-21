@@ -1,1 +1,5 @@
+(repaint rects
+  (rect 93 54 142 143)
+  (rect 93 54 142 143)
+)
 

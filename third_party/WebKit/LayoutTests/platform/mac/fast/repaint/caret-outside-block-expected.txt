@@ -1,0 +1,6 @@
+The caret should be at the end of this line
+(repaint rects
+  (rect 790 7 3 20)
+  (rect 790 7 3 20)
+)
+

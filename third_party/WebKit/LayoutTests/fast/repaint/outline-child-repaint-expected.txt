@@ -1,0 +1,9 @@
+This is a repaint test for https://bugs.webkit.org/show_bug.cgi?id=22159 Repaint issue with outlines in child objects.
+
+If the test passes, you should not see any red below
+
+(repaint rects
+  (rect 0 140 220 70)
+  (rect 0 240 220 70)
+)
+

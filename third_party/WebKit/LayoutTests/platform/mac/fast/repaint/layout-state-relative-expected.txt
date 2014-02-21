@@ -1,0 +1,7 @@
+Repaint test for rdar://problem/6048566 Repaint original element's position, not its offset position.
+
+PASS
+(repaint rects
+  (rect 8 150 784 18)
+)
+

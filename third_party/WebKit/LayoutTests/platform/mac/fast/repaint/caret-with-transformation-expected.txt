@@ -1,0 +1,6 @@
+This test verifies caret repaint is correctly transformed.
+(repaint rects
+  (rect 41 35 13 19)
+  (rect 335 205 14 19)
+)
+

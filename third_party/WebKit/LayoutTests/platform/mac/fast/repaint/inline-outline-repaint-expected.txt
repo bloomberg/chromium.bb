@@ -1,39 +1,49 @@
-layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
-layer at (0,0) size 800x210
-  RenderBlock {HTML} at (0,0) size 800x210
-    RenderBody {BODY} at (8,16) size 784x186
-      RenderBlock {P} at (0,0) size 784x18
-        RenderInline {B} at (0,0) size 62x18
-          RenderText {#text} at (0,0) size 62x18
-            text run at (0,0) width 62: "BUG ID:"
-        RenderText {#text} at (62,0) size 4x18
-          text run at (62,0) width 4: " "
-        RenderInline {A} at (0,0) size 117x18 [color=#0000EE]
-          RenderText {#text} at (66,0) size 117x18
-            text run at (66,0) width 117: "Bugzilla bug 8337"
-        RenderText {#text} at (183,0) size 327x18
-          text run at (183,0) width 327: " Incomplete repaint of inlines\x{2019} outline during editing"
-      RenderBlock {P} at (0,34) size 784x42 [bgcolor=#98FB98]
-        RenderInline {B} at (0,0) size 91x18
-          RenderText {#text} at (3,3) size 91x18
-            text run at (3,3) width 91: "TEST PASS:"
-        RenderText {#text} at (94,3) size 757x36
-          text run at (94,3) width 4: " "
-          text run at (98,3) width 662: "The words \x{201C}sit amet\x{201D} will be deleted, and the blue outline will shrink to surround only the remaining text,"
-          text run at (3,21) width 316: "without leaving behind any trails or other artifacts."
-      RenderBlock {P} at (0,92) size 784x42 [bgcolor=#FF3300]
-        RenderInline {B} at (0,0) size 90x18
-          RenderText {#text} at (3,3) size 90x18
-            text run at (3,3) width 90: "TEST FAIL:"
-        RenderText {#text} at (93,3) size 725x36
-          text run at (93,3) width 4: " "
-          text run at (97,3) width 631: "As the words \x{201C}sit amet\x{201D} will be deleted, the blue outline will leave trails behind as it shrinks to fit the"
-          text run at (3,21) width 94: "remaining text."
-      RenderBlock {DIV} at (0,150) size 100x36
-        RenderInline {SPAN} at (0,0) size 88x36
-          RenderText {#text} at (0,0) size 88x36
-            text run at (0,0) width 84: "Lorem ipsum"
-            text run at (84,0) width 4: " "
-            text run at (0,18) width 37: "dolor "
-caret: position 18 of child 0 {#text} of child 1 {SPAN} of child 7 {DIV} of body
+BUG ID: Bugzilla bug 8337 Incomplete repaint of inlines’ outline during editing
+
+TEST PASS: The words “sit amet” will be deleted, and the blue outline will shrink to surround only the remaining text, without leaving behind any trails or other artifacts.
+
+TEST FAIL: As the words “sit amet” will be deleted, the blue outline will leave trails behind as it shrinks to fit the remaining text.
+
+Lorem ipsum dolor 
+(repaint rects
+  (rect 96 183 3 20)
+  (rect 96 183 3 20)
+  (rect 5 163 106 42)
+  (rect 96 183 3 20)
+  (rect 92 183 3 20)
+  (rect 5 163 106 42)
+  (rect 5 163 106 42)
+  (rect 5 163 106 42)
+  (rect 92 183 3 20)
+  (rect 88 183 3 20)
+  (rect 5 163 106 42)
+  (rect 88 183 3 20)
+  (rect 81 183 3 20)
+  (rect 5 163 106 42)
+  (rect 81 183 3 20)
+  (rect 69 183 3 20)
+  (rect 5 163 106 42)
+  (rect 69 183 3 20)
+  (rect 58 183 3 20)
+  (rect 5 163 106 42)
+  (rect 5 163 106 42)
+  (rect 58 183 3 20)
+  (rect 62 183 3 20)
+  (rect 5 163 106 42)
+  (rect 62 183 3 20)
+  (rect 58 183 3 20)
+  (rect 5 163 106 42)
+  (rect 58 183 3 20)
+  (rect 54 183 3 20)
+  (rect 5 163 106 42)
+  (rect 54 183 3 20)
+  (rect 50 183 3 20)
+  (rect 5 163 106 42)
+  (rect 50 183 3 20)
+  (rect 40 183 3 20)
+  (rect 5 163 106 42)
+  (rect 5 163 106 42)
+  (rect 40 183 3 20)
+  (rect 44 183 3 20)
+)
+

@@ -1,19 +1,59 @@
-layer at (0,0) size 800x600
-  RenderView at (0,0) size 800x600
-layer at (0,0) size 800x600
-  RenderBlock {HTML} at (0,0) size 800x600
-    RenderBody {BODY} at (8,8) size 784x584
-      RenderBlock {H4} at (0,0) size 784x18
-        RenderText {#text} at (0,0) size 334x18
-          text run at (0,0) width 334: "Deleting into a nested block (was Radar 4056100)"
-      RenderBlock {DIV} at (0,39.27) size 400x54
-        RenderText {#text} at (0,0) size 369x54
-          text run at (0,0) width 345: "The bug's symptom was that the visual result were two"
-          text run at (0,18) width 369: "instances of the word \"three\", because the original was not"
-          text run at (0,36) width 175: "erased. Resize cleared it up."
-      RenderBlock {HR} at (0,101.27) size 784x2 [border: (1px inset #EEEEEE)]
-      RenderBlock {DIV} at (0,111.27) size 784x100
-        RenderBlock {DIV} at (0,0) size 784x18
-          RenderText {#text} at (0,0) size 31x18
-            text run at (0,0) width 31: "three"
-caret: position 0 of child 0 {#text} of child 1 {DIV} of child 7 {DIV} of body
+Deleting into a nested block (was Radar 4056100)
+
+The bug's symptom was that the visual result were two instances of the word "three", because the original was not erased. Resize cleared it up.
+three
+(repaint rects
+  (rect 8 137 24 19)
+  (rect 8 119 23 19)
+  (rect 3 114 794 28)
+  (rect 3 132 794 28)
+  (rect 3 132 794 28)
+  (rect 3 124 794 18)
+  (rect 8 120 784 4)
+  (rect 3 150 794 28)
+  (rect 3 132 794 28)
+  (rect 3 160 794 18)
+  (rect 8 156 784 4)
+  (rect 3 132 794 46)
+  (rect 3 114 794 28)
+  (rect -5 -5 5 610)
+  (rect 800 -5 5 610)
+  (rect -5 -5 810 5)
+  (rect -5 600 810 5)
+  (rect -5 -5 5 610)
+  (rect 800 -5 5 610)
+  (rect -5 -5 810 5)
+  (rect -5 600 810 5)
+  (rect 3 114 794 10)
+  (rect 3 114 794 28)
+  (rect 3 114 794 28)
+  (rect 3 132 794 28)
+  (rect 8 119 784 19)
+  (rect 3 132 794 28)
+  (rect 3 142 794 18)
+  (rect 8 138 784 4)
+  (rect 3 142 794 18)
+  (rect 8 138 784 4)
+  (rect 3 132 794 10)
+  (rect 3 132 794 28)
+  (rect 3 142 794 18)
+  (rect 8 138 784 4)
+  (rect 8 119 784 19)
+  (rect 3 132 794 28)
+  (rect 3 132 794 28)
+  (rect 3 132 794 28)
+  (rect 3 114 794 28)
+  (rect 8 119 31 19)
+  (rect 8 119 31 19)
+  (rect 3 114 794 28)
+  (rect 3 114 794 28)
+  (rect 8 119 31 19)
+  (rect 8 119 31 19)
+  (rect 3 114 794 28)
+  (rect 3 114 794 28)
+  (rect 8 119 31 19)
+  (rect 7 118 3 20)
+  (rect 7 118 3 20)
+  (rect 8 119 31 19)
+)
+

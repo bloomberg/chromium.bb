@@ -1,0 +1,11 @@
+BUG ID: Bugzilla bug 6388 REGRESSION: Incomplete repaint when dragging the map on Google maps
+
+TEST PASS: The blue square will change to green.
+
+TEST FAIL: The blue square will NOT change to green.
+
+
+(repaint rects
+  (rect 8 130 100 100)
+)
+

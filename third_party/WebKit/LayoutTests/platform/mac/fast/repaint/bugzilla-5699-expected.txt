@@ -1,0 +1,15 @@
+BUG ID: Bugzilla bug 5699 REGRESSION: incomplete repaint
+
+TEST PASS: The word “Hello” will move down.
+
+TEST FAIL: Another copy of the word “Hello” will appear.
+
+ 
+Hello
+(repaint rects
+  (rect 8 166 784 30)
+  (rect 8 130 784 66)
+  (rect 8 166 784 30)
+  (rect 0 182 800 30)
+)
+

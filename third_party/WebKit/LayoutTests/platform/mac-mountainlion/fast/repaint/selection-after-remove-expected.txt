@@ -1,0 +1,15 @@
+This tests to see if selection gaps are invalidated properly when content inside the selection is removed. Only 'hello world' should have a selecton tint behind it.
+
+hello world
+(repaint rects
+  (rect 70 147 41 18)
+  (rect 39 75 150 90)
+  (rect 39 75 35 18)
+  (rect 38 74 152 92)
+  (rect 38 94 152 72)
+  (rect 38 93 152 1)
+  (rect 38 75 152 90)
+  (rect 74 75 37 18)
+  (rect 39 75 35 18)
+)
+

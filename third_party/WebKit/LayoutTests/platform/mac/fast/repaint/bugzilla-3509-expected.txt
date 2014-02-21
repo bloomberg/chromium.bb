@@ -1,0 +1,12 @@
+BUG ID: Bugzilla bug 3509 REGRESSION(125-412) Portion of nested table is not painted correctly on cafepress site
+
+TEST PASS: The blue rectangle will change into a square.
+
+TEST FAIL: The blue rectangle will change into a shape that is not square.
+
+ 
+(repaint rects
+  (rect 11 125 50 100)
+  (rect 11 125 100 100)
+)
+

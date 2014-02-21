@@ -1,0 +1,5 @@
+PASS
+(repaint rects
+  (rect 51 50 197 87)
+)
+

@@ -1,1 +1,5 @@
+(repaint rects
+  (rect 79 129 142 142)
+  (rect 79 129 142 142)
+)
 
