@@ -7,7 +7,9 @@
 #   make
 
 CLANG_LEVEL := ../..
-LIBRARYNAME = BlinkGCPlugin
+
+# This line is read by update.sh and other scripts in tools/clang/scripts
+LIBRARYNAME = BlinkGCPlugin_1
 
 LINK_LIBS_IN_SHARED = 0
 SHARED_LIBRARY = 1

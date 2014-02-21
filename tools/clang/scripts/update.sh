@@ -20,6 +20,12 @@ COMPILER_RT_DIR="${LLVM_DIR}/projects/compiler-rt"
 ANDROID_NDK_DIR="${LLVM_DIR}/../android_tools/ndk"
 STAMP_FILE="${LLVM_BUILD_DIR}/cr_build_revision"
 
+# Use both the clang revision and the plugin revisions to test for updates.
+BLINKGCPLUGIN_REVISION=\
+$(grep LIBRARYNAME "$THIS_DIR"/../blink_gc_plugin/Makefile \
+    | cut -d '_' -f 2)
+CLANG_AND_PLUGINS_REVISION="${CLANG_REVISION}-${BLINKGCPLUGIN_REVISION}"
+
 # ${A:-a} returns $A if it's set, a else.
 LLVM_REPO_URL=${LLVM_URL:-https://llvm.org/svn/llvm-project}
 
@@ -159,8 +165,9 @@ fi
 if [[ -f "${STAMP_FILE}" ]]; then
   PREVIOUSLY_BUILT_REVISON=$(cat "${STAMP_FILE}")
   if [[ -z "$force_local_build" ]] && \
-       [[ "${PREVIOUSLY_BUILT_REVISON}" = "${CLANG_REVISION}" ]]; then
-    echo "Clang already at ${CLANG_REVISION}"
+       [[ "${PREVIOUSLY_BUILT_REVISON}" = \
+          "${CLANG_AND_PLUGINS_REVISION}" ]]; then
+    echo "Clang already at ${CLANG_AND_PLUGINS_REVISION}"
     exit 0
   fi
 fi
@@ -220,7 +227,7 @@ if [[ -z "$force_local_build" ]]; then
     mkdir -p "${LLVM_BUILD_DIR}/Release+Asserts"
     tar -xzf "${CDS_OUTPUT}" -C "${LLVM_BUILD_DIR}/Release+Asserts"
     echo clang "${CLANG_REVISION}" unpacked
-    echo "${CLANG_REVISION}" > "${STAMP_FILE}"
+    echo "${CLANG_AND_PLUGINS_REVISION}" > "${STAMP_FILE}"
     rm -rf "${CDS_OUT_DIR}"
     exit 0
   else
@@ -393,4 +400,4 @@ if [[ -n "$run_tests" ]]; then
 fi
 
 # After everything is done, log success for this revision.
-echo "${CLANG_REVISION}" > "${STAMP_FILE}"
+echo "${CLANG_AND_PLUGINS_REVISION}" > "${STAMP_FILE}"

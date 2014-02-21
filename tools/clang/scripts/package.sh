@@ -100,7 +100,11 @@ cp "${LLVM_BIN_DIR}/llvm-symbolizer" $PDIR/bin/
 # Copy plugins. Some of the dylibs are pretty big, so copy only the ones we
 # care about.
 cp "${LLVM_LIB_DIR}/libFindBadConstructs.${SO_EXT}" $PDIR/lib
-cp "${LLVM_LIB_DIR}/libBlinkGCPlugin.${SO_EXT}" $PDIR/lib
+
+BLINKGCPLUGIN_LIBNAME=\
+$(grep LIBRARYNAME "$THIS_DIR"/../blink_gc_plugin/Makefile \
+    | cut -d ' ' -f 3)
+cp "${LLVM_LIB_DIR}/lib${BLINKGCPLUGIN_LIBNAME}.${SO_EXT}" $PDIR/lib
 
 if [[ -n "${gcc_toolchain}" ]]; then
   # Copy the stdlibc++.so.6 we linked Clang against so it can run.
