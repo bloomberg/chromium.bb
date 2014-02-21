@@ -1,9 +1,13 @@
 {
     "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
     "archives": {
-        "mobile_memory_006.wpr": [
+        "mobile_memory_016.wpr": [
             "https://mail.google.com/mail/mu", 
-            "https://www.google.com/search?site=&tbm=isch&q=google"
+            "https://www.google.com/search?site=&tbm=isch&q=google", 
+            "http://techcrunch.com", 
+            "http://techcrunch.com/2014/02/17/pixel-brings-brings-old-school-video-game-art-to-life-in-your-home/", 
+            "http://techcrunch.com/2014/02/15/kickstarter-coins-2/", 
+            "http://techcrunch.com/2014/02/15/was-y-combinator-worth-it/"
         ]
     }
 }

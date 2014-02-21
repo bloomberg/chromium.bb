@@ -27,6 +27,31 @@
         { "action": "scroll" },
         { "action": "wait", "javascript": "document.getElementById('rg_s').childElementCount > 300" }
       ]
+    },
+    {
+      "url": "http://techcrunch.com",
+      "why": "Renderer process memory bloat",
+      "stress_memory": [
+        { "action": "scroll" }
+      ]
+    },
+    {
+      "url": "http://techcrunch.com/2014/02/17/pixel-brings-brings-old-school-video-game-art-to-life-in-your-home/",
+      "stress_memory": [
+        { "action": "scroll" }
+      ]
+    },
+    {
+      "url": "http://techcrunch.com/2014/02/15/kickstarter-coins-2/",
+      "stress_memory": [
+        { "action": "scroll" }
+      ]
+    },
+    {
+      "url": "http://techcrunch.com/2014/02/15/was-y-combinator-worth-it/",
+      "stress_memory": [
+        { "action": "scroll" }
+      ]
     }
   ]
 }
