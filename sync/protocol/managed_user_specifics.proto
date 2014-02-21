@@ -33,4 +33,8 @@ message ManagedUserSpecifics {
   // It has the following format:
   // "chromeos-avatar-index:INDEX" where INDEX is an integer.
   optional string chromeos_avatar = 6;
+  // Key for signing supervised user's password.
+  optional string password_signature_key = 7;
+  // Key for encrypting supervised user's password.
+  optional string password_encryption_key = 8;
 }

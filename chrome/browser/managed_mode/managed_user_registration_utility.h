@@ -33,9 +33,12 @@ class DeviceInfo;
 // Structure to store registration information.
 struct ManagedUserRegistrationInfo {
   ManagedUserRegistrationInfo(const base::string16& name, int avatar_index);
+  ~ManagedUserRegistrationInfo();
   int avatar_index;
   base::string16 name;
   std::string master_key;
+  std::string password_signature_key;
+  std::string password_encryption_key;
 };
 
 // Holds the state necessary for registering a new managed user with the

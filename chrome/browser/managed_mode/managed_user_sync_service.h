@@ -38,6 +38,8 @@ class ManagedUserSyncService : public BrowserContextKeyedService,
   static const char kChromeAvatar[];
   static const char kChromeOsAvatar[];
   static const char kMasterKey[];
+  static const char kPasswordSignatureKey[];
+  static const char kPasswordEncryptionKey[];
   static const char kName[];
 
   // Represents a non-existing avatar on Chrome and Chrome OS.
@@ -68,6 +70,8 @@ class ManagedUserSyncService : public BrowserContextKeyedService,
   void AddManagedUser(const std::string& id,
                       const std::string& name,
                       const std::string& master_key,
+                      const std::string& password_signature_key,
+                      const std::string& password_encryption_key,
                       int avatar_index);
   void DeleteManagedUser(const std::string& id);
 
