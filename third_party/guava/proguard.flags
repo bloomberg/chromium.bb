@@ -27,3 +27,11 @@
     public static **[] values();
     public static ** valueOf(java.lang.String);
 }
+
+# Keep finalizer stuff from google-common used via reflection
+-keepclassmembers class com.google.common.** {
+  *** finalizeReferent();
+}
+-keepclassmembers class com.google.common.** {
+  *** startFinalizer(java.lang.Class,java.lang.Object);
+}

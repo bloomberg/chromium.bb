@@ -41,16 +41,21 @@ def DoJavac(options):
     else:
       jar_inputs.append(path)
 
-  javac_cmd = [
-      'javac',
+  javac_args = [
       '-g',
       '-source', '1.5',
       '-target', '1.5',
       '-classpath', ':'.join(classpath),
-      '-d', output_dir,
-      '-Xlint:unchecked',
-      '-Xlint:deprecation',
-      ] + java_files
+      '-d', output_dir]
+  if options.chromium_code:
+    javac_args.extend(['-Xlint:unchecked', '-Xlint:deprecation'])
+  else:
+    # XDignore.symbol.file makes javac compile against rt.jar instead of
+    # ct.sym. This means that using a java internal package/class will not
+    # trigger a compile warning or error.
+    javac_args.extend(['-XDignore.symbol.file'])
+
+  javac_cmd = ['javac'] + javac_args + java_files
 
   def Compile():
     # Delete the classes directory. This ensures that all .class files in the
