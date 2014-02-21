@@ -296,9 +296,15 @@ void BluetoothDeviceChromeOS::RejectPairing() {
 }
 
 void BluetoothDeviceChromeOS::CancelPairing() {
-  // If there wasn't a callback in progress that we can reply to then we
-  // have to send a CancelPairing() to the device instead.
-  if (!pairing_context_.get() || !pairing_context_->CancelPairing()) {
+  bool canceled = false;
+
+  // If there is a callback in progress that we can reply to then use that
+  // to cancel the current pairing request.
+  if (pairing_context_.get() && pairing_context_->CancelPairing())
+    canceled = true;
+
+  // If not we have to send an explicit CancelPairing() to the device instead.
+  if (!canceled) {
     VLOG(1) << object_path_.value() << ": No pairing context or callback. "
             << "Sending explicit cancel";
     DBusThreadManager::Get()->GetBluetoothDeviceClient()->
@@ -307,12 +313,14 @@ void BluetoothDeviceChromeOS::CancelPairing() {
             base::Bind(&base::DoNothing),
             base::Bind(&BluetoothDeviceChromeOS::OnCancelPairingError,
                        weak_ptr_factory_.GetWeakPtr()));
-
-    // Since there's no calback to this method, it's possible that the pairing
-    // delegate is going to be freed before things complete, so clear out the
-    // context holding it.
-    pairing_context_.reset();
+    canceled = true;
   }
+
+  // Since there is no callback to this method it's possible that the pairing
+  // delegate is going to be freed before things complete (indeed it's
+  // documented that this is the method you should call while freeing the
+  // pairing delegate), so clear our the context holding on to it.
+  pairing_context_.reset();
 }
 
 void BluetoothDeviceChromeOS::Disconnect(const base::Closure& callback,
