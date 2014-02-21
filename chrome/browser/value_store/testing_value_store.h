@@ -43,6 +43,10 @@ class TestingValueStore : public ValueStore {
   virtual WriteResult Remove(const std::string& key) OVERRIDE;
   virtual WriteResult Remove(const std::vector<std::string>& keys) OVERRIDE;
   virtual WriteResult Clear() OVERRIDE;
+  // TestingValueStores can't get corrupted (they're all in-memory), so these
+  // just return true.
+  virtual bool Restore() OVERRIDE;
+  virtual bool RestoreKey(const std::string& key) OVERRIDE;
 
  private:
   scoped_ptr<ValueStore::Error> TestingError();

@@ -69,6 +69,7 @@ class TestExtensionSystem : public ExtensionSystem {
   TestingValueStore* value_store() { return value_store_; }
   virtual InfoMap* info_map() OVERRIDE;
   virtual LazyBackgroundTaskQueue* lazy_background_task_queue() OVERRIDE;
+  void SetEventRouter(scoped_ptr<EventRouter> event_router);
   virtual EventRouter* event_router() OVERRIDE;
   virtual ExtensionWarningService* warning_service() OVERRIDE;
   virtual Blacklist* blacklist() OVERRIDE;
@@ -100,6 +101,7 @@ class TestExtensionSystem : public ExtensionSystem {
   scoped_ptr<ExtensionService> extension_service_;
   scoped_ptr<ProcessManager> process_manager_;
   scoped_refptr<InfoMap> info_map_;
+  scoped_ptr<EventRouter> event_router_;
   scoped_ptr<ErrorConsole> error_console_;
   scoped_ptr<InstallVerifier> install_verifier_;
   scoped_ptr<QuotaService> quota_service_;

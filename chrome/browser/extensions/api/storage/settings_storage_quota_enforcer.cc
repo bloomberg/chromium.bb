@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/value_store/value_store_util.h"
 #include "extensions/common/extension_api.h"
@@ -87,17 +88,7 @@ scoped_ptr<ValueStore::Error> QuotaExceededError(Resource resource,
 SettingsStorageQuotaEnforcer::SettingsStorageQuotaEnforcer(
     const Limits& limits, ValueStore* delegate)
     : limits_(limits), delegate_(delegate), used_total_(0) {
-  ReadResult maybe_settings = delegate_->Get();
-  if (maybe_settings->HasError()) {
-    LOG(WARNING) << "Failed to get initial settings for quota: " <<
-        maybe_settings->error().message;
-    return;
-  }
-
-  for (base::DictionaryValue::Iterator it(maybe_settings->settings());
-       !it.IsAtEnd(); it.Advance()) {
-    Allocate(it.key(), it.value(), &used_total_, &used_per_setting_);
-  }
+  CalculateUsage();
 }
 
 SettingsStorageQuotaEnforcer::~SettingsStorageQuotaEnforcer() {}
@@ -229,10 +220,54 @@ ValueStore::WriteResult SettingsStorageQuotaEnforcer::Clear() {
     return result.Pass();
   }
 
-  while (!used_per_setting_.empty()) {
-    Free(&used_total_, &used_per_setting_, used_per_setting_.begin()->first);
-  }
+  used_per_setting_.clear();
+  used_total_ = 0;
   return result.Pass();
+}
+
+bool SettingsStorageQuotaEnforcer::Restore() {
+  if (!delegate_->Restore()) {
+    // If we failed, we can't calculate the usage - that's okay, though, because
+    // next time we Restore() (if it succeeds) we will recalculate usage anyway.
+    // So reset storage counters now to free up resources.
+    used_per_setting_.clear();
+    used_total_ = 0u;
+    return false;
+  }
+  CalculateUsage();
+  return true;
+}
+
+bool SettingsStorageQuotaEnforcer::RestoreKey(const std::string& key) {
+  if (!delegate_->RestoreKey(key))
+    return false;
+
+  ReadResult result = Get(key);
+  // If the key was deleted as a result of the Restore() call, free it.
+  if (!result->settings().HasKey(key) && ContainsKey(used_per_setting_, key))
+    Free(&used_total_, &used_per_setting_, key);
+  return true;
+}
+
+void SettingsStorageQuotaEnforcer::CalculateUsage() {
+  ReadResult maybe_settings = delegate_->Get();
+  if (maybe_settings->HasError()) {
+    // Try to restore the database if it's corrupt.
+    if (maybe_settings->error().code == ValueStore::CORRUPTION &&
+        delegate_->Restore()) {
+      maybe_settings = delegate_->Get();
+    } else {
+      LOG(WARNING) << "Failed to get settings for quota:"
+                   << maybe_settings->error().message;
+      return;
+    }
+  }
+
+  for (base::DictionaryValue::Iterator it(maybe_settings->settings());
+       !it.IsAtEnd();
+       it.Advance()) {
+    Allocate(it.key(), it.value(), &used_total_, &used_per_setting_);
+  }
 }
 
 }  // namespace extensions

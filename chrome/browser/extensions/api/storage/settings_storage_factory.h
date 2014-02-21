@@ -26,6 +26,12 @@ class SettingsStorageFactory
   virtual ValueStore* Create(const base::FilePath& base_path,
                              const std::string& extension_id) = 0;
 
+  // Deletes the database for the extension, if one exists.
+  // Note: it is important to delete references to the database if any are
+  // held, because ValueStores will create themselves if there is no file.
+  virtual void DeleteDatabaseIfExists(const base::FilePath& base_path,
+                                      const std::string& extension_id) = 0;
+
  protected:
   friend class base::RefCountedThreadSafe<SettingsStorageFactory>;
   virtual ~SettingsStorageFactory() {}

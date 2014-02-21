@@ -124,6 +124,14 @@ ValueStore::WriteResult TestingValueStore::Clear() {
   return Remove(keys);
 }
 
+bool TestingValueStore::Restore() {
+  return true;
+}
+
+bool TestingValueStore::RestoreKey(const std::string& key) {
+  return true;
+}
+
 scoped_ptr<ValueStore::Error> TestingValueStore::TestingError() {
   return make_scoped_ptr(new ValueStore::Error(
       error_code_, kGenericErrorMessage, scoped_ptr<std::string>()));
