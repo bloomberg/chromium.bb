@@ -94,19 +94,17 @@ class LayerWithRealCompositorTest : public testing::Test {
     Compositor::Initialize();
 
     const gfx::Rect host_bounds(10, 10, 500, 500);
-    window_.reset(TestCompositorHost::Create(host_bounds));
-    window_->Show();
+    compositor_host_.reset(TestCompositorHost::Create(host_bounds));
+    compositor_host_->Show();
   }
 
   virtual void TearDown() OVERRIDE {
-    window_.reset();
+    compositor_host_.reset();
     TerminateContextFactoryForTests();
     Compositor::Terminate();
   }
 
-  Compositor* GetCompositor() {
-    return window_->GetCompositor();
-  }
+  Compositor* GetCompositor() { return compositor_host_->GetCompositor(); }
 
   Layer* CreateLayer(LayerType type) {
     return new Layer(type);
@@ -203,7 +201,7 @@ class LayerWithRealCompositorTest : public testing::Test {
     bool completed_;
   };
 
-  scoped_ptr<TestCompositorHost> window_;
+  scoped_ptr<TestCompositorHost> compositor_host_;
 
   // The root directory for test files.
   base::FilePath test_data_directory_;
