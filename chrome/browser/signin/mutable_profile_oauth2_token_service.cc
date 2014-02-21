@@ -39,40 +39,50 @@ std::string RemoveAccountIdPrefix(const std::string& prefixed_account_id) {
   return prefixed_account_id.substr(kAccountIdPrefixLength);
 }
 
+}  // namespace
+
 // This class sends a request to GAIA to revoke the given refresh token from
 // the server.  This is a best effort attempt only.  This class deletes itself
 // when done sucessfully or otherwise.
-class RevokeServerRefreshToken : public GaiaAuthConsumer {
+class MutableProfileOAuth2TokenService::RevokeServerRefreshToken
+    : public GaiaAuthConsumer {
  public:
-  RevokeServerRefreshToken(const std::string& account_id,
-                           net::URLRequestContextGetter* request_context);
+  RevokeServerRefreshToken(MutableProfileOAuth2TokenService* token_service,
+                           const std::string& account_id);
   virtual ~RevokeServerRefreshToken();
 
  private:
   // GaiaAuthConsumer overrides:
   virtual void OnOAuth2RevokeTokenCompleted() OVERRIDE;
 
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
+  MutableProfileOAuth2TokenService* token_service_;
   GaiaAuthFetcher fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(RevokeServerRefreshToken);
 };
 
-RevokeServerRefreshToken::RevokeServerRefreshToken(
-    const std::string& refresh_token,
-    net::URLRequestContextGetter* request_context)
-    : request_context_(request_context),
-      fetcher_(this, GaiaConstants::kChromeSource, request_context) {
+MutableProfileOAuth2TokenService::
+    RevokeServerRefreshToken::RevokeServerRefreshToken(
+    MutableProfileOAuth2TokenService* token_service,
+    const std::string& refresh_token)
+    : token_service_(token_service),
+      fetcher_(this, GaiaConstants::kChromeSource,
+               token_service_->GetRequestContext()) {
   fetcher_.StartRevokeOAuth2Token(refresh_token);
 }
 
-RevokeServerRefreshToken::~RevokeServerRefreshToken() {}
+MutableProfileOAuth2TokenService::
+    RevokeServerRefreshToken::~RevokeServerRefreshToken() {}
 
-void RevokeServerRefreshToken::OnOAuth2RevokeTokenCompleted() {
-  delete this;
+void MutableProfileOAuth2TokenService::
+    RevokeServerRefreshToken::OnOAuth2RevokeTokenCompleted() {
+  // |this| pointer will be deleted when removed from the vector, so don't
+  // access any members after call to erase().
+  token_service_->server_revokes_.erase(
+      std::find(token_service_->server_revokes_.begin(),
+                token_service_->server_revokes_.end(),
+                this));
 }
-
-}  // namespace
 
 MutableProfileOAuth2TokenService::AccountInfo::AccountInfo(
     ProfileOAuth2TokenService* token_service,
@@ -114,9 +124,11 @@ MutableProfileOAuth2TokenService::MutableProfileOAuth2TokenService()
 }
 
 MutableProfileOAuth2TokenService::~MutableProfileOAuth2TokenService() {
+  DCHECK(server_revokes_.empty());
 }
 
 void MutableProfileOAuth2TokenService::Shutdown() {
+  server_revokes_.clear();
   CancelWebTokenFetch();
   CancelAllRequests();
   refresh_tokens_.clear();
@@ -348,8 +360,10 @@ void MutableProfileOAuth2TokenService::RevokeAllCredentials() {
 
 void MutableProfileOAuth2TokenService::RevokeCredentialsOnServer(
     const std::string& refresh_token) {
-  // RevokeServerRefreshToken deletes itself when done.
-  new RevokeServerRefreshToken(refresh_token, GetRequestContext());
+  // Keep track or all server revoke requests.  This way they can be deleted
+  // before the token service is shutdown and won't outlive the profile.
+  server_revokes_.push_back(
+      new RevokeServerRefreshToken(this, refresh_token));
 }
 
 void MutableProfileOAuth2TokenService::CancelWebTokenFetch() {

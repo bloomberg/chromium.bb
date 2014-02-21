@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SIGNIN_MUTABLE_PROFILE_OAUTH2_TOKEN_SERVICE_H_
 #define CHROME_BROWSER_SIGNIN_MUTABLE_PROFILE_OAUTH2_TOKEN_SERVICE_H_
 
+#include "base/memory/scoped_vector.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_data_service_consumer.h"
@@ -72,6 +73,8 @@ class MutableProfileOAuth2TokenService : public ProfileOAuth2TokenService,
   AccountInfoMap& refresh_tokens() { return refresh_tokens_; }
 
  private:
+  class RevokeServerRefreshToken;
+
   FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceTest,
                            TokenServiceUpdateClearsCache);
   FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceTest,
@@ -118,6 +121,8 @@ class MutableProfileOAuth2TokenService : public ProfileOAuth2TokenService,
   // The primary account id of this service's profile during the loading of
   // credentials.  This member is empty otherwise.
   std::string loading_primary_account_id_;
+
+  ScopedVector<RevokeServerRefreshToken> server_revokes_;
 
   DISALLOW_COPY_AND_ASSIGN(MutableProfileOAuth2TokenService);
 };
