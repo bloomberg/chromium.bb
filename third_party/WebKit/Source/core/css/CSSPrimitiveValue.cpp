@@ -563,7 +563,7 @@ double CSSPrimitiveValue::computeLengthDouble(const CSSToLengthConversionData& c
         return m_value.calc->computeLengthPx(conversionData);
 
     const RenderStyle& style = conversionData.style();
-    const RenderStyle& rootStyle = conversionData.rootStyle();
+    const RenderStyle* rootStyle = conversionData.rootStyle();
     bool computingFontSize = conversionData.computingFontSize();
 
     double factor;
@@ -582,7 +582,10 @@ double CSSPrimitiveValue::computeLengthDouble(const CSSToLengthConversionData& c
                 factor = (computingFontSize ? style.fontDescription().specifiedSize() : style.fontDescription().computedSize()) / 2.0;
             break;
         case CSS_REMS:
-            factor = computingFontSize ? rootStyle.fontDescription().specifiedSize() : rootStyle.fontDescription().computedSize();
+            if (rootStyle)
+                factor = computingFontSize ? rootStyle->fontDescription().specifiedSize() : rootStyle->fontDescription().computedSize();
+            else
+                factor = 1.0;
             break;
         case CSS_CHS:
             factor = style.fontMetrics().zeroWidth();

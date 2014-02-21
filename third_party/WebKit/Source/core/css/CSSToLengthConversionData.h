@@ -46,7 +46,7 @@ public:
     CSSToLengthConversionData(const RenderStyle* currStyle, const RenderStyle* rootStyle, float viewportWidth, float viewportHeight, float zoom, bool computingFontSize = false);
 
     const RenderStyle& style() const { return *m_style; }
-    const RenderStyle& rootStyle() const { return *m_rootStyle; }
+    const RenderStyle* rootStyle() const { return m_rootStyle; }
     float zoom() const;
     bool computingFontSize() const { return m_computingFontSize; }
 
