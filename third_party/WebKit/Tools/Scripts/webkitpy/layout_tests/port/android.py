@@ -601,9 +601,7 @@ class AndroidPort(base.Port):
         serve the actual layout tests to the test driver."""
         return True
 
-    def start_http_server(self, additional_dirs=None, number_of_drivers=0):
-        if not additional_dirs:
-            additional_dirs = {}
+    def start_http_server(self, additional_dirs, number_of_drivers):
         additional_dirs[PERF_TEST_PATH_PREFIX] = self.perf_tests_dir()
         additional_dirs[LAYOUT_TEST_PATH_PREFIX] = self.layout_tests_dir()
         super(AndroidPort, self).start_http_server(additional_dirs, number_of_drivers)

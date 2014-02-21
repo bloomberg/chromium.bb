@@ -39,7 +39,7 @@ _log = logging.getLogger(__name__)
 
 
 class ApacheHTTP(server_base.ServerBase):
-    def __init__(self, port_obj, output_dir, additional_dirs=None, number_of_servers=None):
+    def __init__(self, port_obj, output_dir, additional_dirs, number_of_servers):
         super(ApacheHTTP, self).__init__(port_obj, output_dir)
         # We use the name "httpd" instead of "apache" to make our paths (e.g. the pid file: /tmp/WebKit/httpd.pid)
         # match old-run-webkit-tests: https://bugs.webkit.org/show_bug.cgi?id=63956

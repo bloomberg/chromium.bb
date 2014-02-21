@@ -46,7 +46,7 @@ _DEFAULT_WS_PORT = 8880
 
 class PyWebSocket(server_base.ServerBase):
 
-    def __init__(self, port_obj, output_dir, additional_dirs=None):
+    def __init__(self, port_obj, output_dir):
         super(PyWebSocket, self).__init__(port_obj, output_dir)
         self._name = 'pywebsocket'
         self._log_prefixes = (_WS_LOG_PREFIX,)

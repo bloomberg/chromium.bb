@@ -1091,7 +1091,7 @@ class Port(object):
         be the case when the tests aren't run on the host platform."""
         return False
 
-    def start_http_server(self, additional_dirs=None, number_of_drivers=None):
+    def start_http_server(self, additional_dirs, number_of_drivers):
         """Start a web server. Raise an error if it can't start or is already running.
 
         Ports can stub this out if they don't need a web server to be running."""
@@ -1100,7 +1100,7 @@ class Port(object):
         if self.uses_apache():
             server = apache_http.ApacheHTTP(self, self.results_directory(), additional_dirs=additional_dirs, number_of_servers=(number_of_drivers * 4))
         else:
-            server = lighttpd.Lighttpd(self, self.results_directory(), additional_dirs=additional_dirs)
+            server = lighttpd.Lighttpd(self, self.results_directory())
 
         server.start()
         self._http_server = server

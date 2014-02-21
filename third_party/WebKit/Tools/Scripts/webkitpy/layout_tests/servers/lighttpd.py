@@ -39,7 +39,7 @@ _log = logging.getLogger(__name__)
 
 class Lighttpd(server_base.ServerBase):
 
-    def __init__(self, port_obj, output_dir, additional_dirs=None):
+    def __init__(self, port_obj, output_dir):
         super(Lighttpd, self).__init__(port_obj, output_dir)
         self._name = 'lighttpd'
         self._log_prefixes = ('access.log-', 'error.log-')

@@ -490,7 +490,7 @@ class TestPort(Port):
     def _driver_class(self):
         return TestDriver
 
-    def start_http_server(self, additional_dirs=None, number_of_drivers=None):
+    def start_http_server(self, additional_dirs, number_of_drivers):
         pass
 
     def start_websocket_server(self):

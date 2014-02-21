@@ -104,7 +104,7 @@ class MockDRTPort(object):
     def start_helper(self):
         pass
 
-    def start_http_server(self, number_of_servers):
+    def start_http_server(self, additional_dirs, number_of_servers):
         pass
 
     def start_websocket_server(self):

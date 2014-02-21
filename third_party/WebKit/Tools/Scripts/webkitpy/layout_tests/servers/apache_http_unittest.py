@@ -53,7 +53,7 @@ class TestApacheHTTP(unittest.TestCase):
         test_port = test.TestPort(host)
         host.filesystem.write_text_file(test_port.path_to_apache_config_file(), '')
 
-        server = ApacheHTTP(test_port, "/mock/output_dir", number_of_servers=4)
+        server = ApacheHTTP(test_port, "/mock/output_dir", additional_dirs=[], number_of_servers=4)
         server._check_that_all_ports_are_available = lambda: True
         server._is_server_running_on_all_ports = lambda: True
         server._wait_for_action = fake_pid

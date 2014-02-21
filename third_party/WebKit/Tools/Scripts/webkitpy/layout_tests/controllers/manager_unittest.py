@@ -60,7 +60,7 @@ class ManagerTest(unittest.TestCase):
             manager = Manager(port, options=MockOptions(http=True, max_locked_shards=1), printer=Mock())
             return manager
 
-        def start_http_server(number_of_drivers):
+        def start_http_server(additional_dirs, number_of_drivers):
             self.http_started = True
 
         def start_websocket_server():
