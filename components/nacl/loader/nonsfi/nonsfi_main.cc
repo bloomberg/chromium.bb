@@ -4,8 +4,10 @@
 
 #include "components/nacl/loader/nonsfi/nonsfi_main.h"
 
+#include "base/debug/leak_annotations.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/platform_thread.h"
 #include "components/nacl/loader/nonsfi/elf_loader.h"
 #include "components/nacl/loader/nonsfi/irt_interfaces.h"
 #include "native_client/src/include/elf_auxv.h"
@@ -21,6 +23,41 @@
 namespace nacl {
 namespace nonsfi {
 namespace {
+
+typedef void (*EntryPointType)(uintptr_t*);
+
+class PluginMainDelegate : public base::PlatformThread::Delegate {
+ public:
+  explicit PluginMainDelegate(EntryPointType entry_point)
+      : entry_point_(entry_point) {
+  }
+
+  virtual ~PluginMainDelegate() {
+  }
+
+  virtual void ThreadMain() OVERRIDE {
+    base::PlatformThread::SetName("NaClMainThread");
+
+    uintptr_t info[] = {
+      0,  // Do not use fini.
+      0,  // envc.
+      0,  // argc.
+      0,  // Null terminate for argv.
+      0,  // Null terminate for envv.
+      AT_SYSINFO,
+      reinterpret_cast<uintptr_t>(&NaClIrtInterface),
+      AT_NULL,
+      0,  // Null terminate for auxv.
+    };
+    entry_point_(info);
+  }
+
+ private:
+  EntryPointType entry_point_;
+};
+
+// Default stack size of the plugin main thread. We heuristically chose 16M.
+const size_t kStackSize = (16 << 20);
 
 struct NaClDescUnrefer {
   void operator()(struct NaClDesc* desc) const {
@@ -46,22 +83,16 @@ void LoadModuleRpc(struct NaClSrpcRpc* rpc,
     return;
   }
 
-  uintptr_t entry_point = image.entry_point();
-  rpc->result = NACL_SRPC_RESULT_OK;
+  EntryPointType entry_point =
+      reinterpret_cast<EntryPointType>(image.entry_point());
+  if (!base::PlatformThread::CreateNonJoinable(
+          kStackSize, new PluginMainDelegate(entry_point))) {
+    LOG(ERROR) << "LoadModuleRpc: Failed to create plugin main thread.";
+    return;
+  }
 
-  // Run for testing. TODO(hidehiko): Remove this.
-  uintptr_t info[] = {
-    0,  // Do not use fini.
-    0,  // envc.
-    0,  // argc.
-    0,  // Null terminate for argv.
-    0,  // Null terminate for envv.
-    AT_SYSINFO,
-    reinterpret_cast<uintptr_t>(&NaClIrtInterface),
-    AT_NULL,
-    0,  // Null terminate for auxv.
-  };
-  reinterpret_cast<void (*)(uintptr_t*)>(entry_point)(info);
+  rpc->result = NACL_SRPC_RESULT_OK;
+  (*done_cls->Run)(done_cls);
 }
 
 const static struct NaClSrpcHandlerDesc kNonSfiServiceHandlers[] = {

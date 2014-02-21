@@ -181,9 +181,11 @@
               'dependencies': [
                 'nacl',
                 'nacl_common',
+                '../components/tracing.gyp:tracing',
                 '../crypto/crypto.gyp:crypto',
                 '../sandbox/sandbox.gyp:libc_urandom_override',
                 '../sandbox/sandbox.gyp:sandbox',
+                '../ppapi/ppapi_internal.gyp:ppapi_proxy',
               ],
               'defines': [
                 '<@(nacl_defines)',
@@ -206,6 +208,7 @@
                 'nacl/loader/nonsfi/irt_interfaces.cc',
                 'nacl/loader/nonsfi/irt_interfaces.h',
                 'nacl/loader/nonsfi/irt_memory.cc',
+                'nacl/loader/nonsfi/irt_ppapi.cc',
                 'nacl/loader/nonsfi/irt_thread.cc',
                 'nacl/loader/nonsfi/irt_util.h',
                 'nacl/loader/nonsfi/nonsfi_main.cc',
@@ -216,6 +219,8 @@
                 '../content/common/sandbox_linux/sandbox_init_linux.cc',
                 '../content/common/sandbox_linux/sandbox_seccomp_bpf_linux.cc',
                 '../content/public/common/content_switches.cc',
+                '../ppapi/proxy/plugin_main_irt.cc',
+                '../ppapi/proxy/plugin_main_irt.h',
               ],
               'conditions': [
                 ['toolkit_uses_gtk == 1', {
