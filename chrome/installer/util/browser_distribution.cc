@@ -16,6 +16,7 @@
 #include "base/path_service.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
+#include "chrome/common/chrome_icon_resources_win.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/installer/util/chrome_app_host_distribution.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"
@@ -38,9 +39,6 @@ const wchar_t kChromiumActiveSetupGuid[] =
 
 const wchar_t kCommandExecuteImplUuid[] =
     L"{A2DF06F9-A21A-44A8-8A99-8B9C84F29160}";
-
-// The Chromium App Launcher icon is index 1; see chrome_exe.rc.
-const int kAppLauncherIconIndex = 1;
 
 // The BrowserDistribution objects are never freed.
 BrowserDistribution* g_browser_distribution = NULL;
@@ -167,10 +165,10 @@ base::string16 BrowserDistribution::GetShortcutName(
 
 int BrowserDistribution::GetIconIndex(ShortcutType shortcut_type) {
   if (shortcut_type == SHORTCUT_APP_LAUNCHER)
-    return kAppLauncherIconIndex;
+    return icon_resources::kAppLauncherIndex;
   DCHECK(shortcut_type == SHORTCUT_CHROME ||
          shortcut_type == SHORTCUT_CHROME_ALTERNATE) << shortcut_type;
-  return 0;
+  return icon_resources::kApplicationIndex;
 }
 
 base::string16 BrowserDistribution::GetIconFilename() {

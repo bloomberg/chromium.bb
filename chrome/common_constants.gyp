@@ -18,6 +18,8 @@
       '../extensions/common/constants.h',
       'common/chrome_constants.cc',
       'common/chrome_constants.h',
+      'common/chrome_icon_resources_win.cc',
+      'common/chrome_icon_resources_win.h',
       'common/chrome_paths.cc',
       'common/chrome_paths.h',
       'common/chrome_paths_android.cc',

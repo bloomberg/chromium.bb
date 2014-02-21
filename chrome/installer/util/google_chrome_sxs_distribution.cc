@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "chrome/common/chrome_icon_resources_win.h"
 
 #include "installer_util_strings.h"  // NOLINT
 
@@ -18,12 +19,8 @@ const wchar_t kChannelName[] = L"canary";
 const wchar_t kBrowserAppId[] = L"ChromeCanary";
 const wchar_t kBrowserProgIdPrefix[] = L"ChromeSSHTM";
 const wchar_t kBrowserProgIdDesc[] = L"Chrome Canary HTML Document";
-const int kSxSIconIndex = 4;
 const wchar_t kCommandExecuteImplUuid[] =
     L"{1BEAC3E3-B852-44F4-B468-8906C062422E}";
-
-// The Chrome App Launcher Canary icon is index 6; see chrome_exe.rc.
-const int kSxSAppLauncherIconIndex = 6;
 
 }  // namespace
 
@@ -94,10 +91,10 @@ BrowserDistribution::DefaultBrowserControlPolicy
 
 int GoogleChromeSxSDistribution::GetIconIndex(ShortcutType shortcut_type) {
   if (shortcut_type == SHORTCUT_APP_LAUNCHER)
-    return kSxSAppLauncherIconIndex;
+    return icon_resources::kSxSAppLauncherIndex;
   DCHECK(shortcut_type == SHORTCUT_CHROME ||
          shortcut_type == SHORTCUT_CHROME_ALTERNATE) << shortcut_type;
-  return kSxSIconIndex;
+  return icon_resources::kSxSApplicationIndex;
 }
 
 bool GoogleChromeSxSDistribution::GetChromeChannel(base::string16* channel) {

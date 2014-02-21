@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
+#include "chrome/common/chrome_icon_resources_win.h"
 #include "chrome/common/net/test_server_locations.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/google_update_constants.h"
@@ -39,9 +40,6 @@ const wchar_t kBrowserProgIdPrefix[] = L"ChromeHTML";
 const wchar_t kBrowserProgIdDesc[] = L"Chrome HTML Document";
 const wchar_t kCommandExecuteImplUuid[] =
     L"{5C65F4B0-3651-4514-B207-D10CB699B14B}";
-
-// The Google Chrome App Launcher icon is index 5; see chrome_exe.rc.
-const int kAppLauncherIconIndex = 5;
 
 // Substitute the locale parameter in uninstall URL with whatever
 // Google Update tells us is the locale. In case we fail to find
@@ -149,10 +147,10 @@ base::string16 GoogleChromeDistribution::GetShortcutName(
 
 int GoogleChromeDistribution::GetIconIndex(ShortcutType shortcut_type) {
   if (shortcut_type == SHORTCUT_APP_LAUNCHER)
-    return kAppLauncherIconIndex;
+    return icon_resources::kAppLauncherIndex;
   DCHECK(shortcut_type == SHORTCUT_CHROME ||
          shortcut_type == SHORTCUT_CHROME_ALTERNATE) << shortcut_type;
-  return 0;
+  return icon_resources::kApplicationIndex;
 }
 
 base::string16 GoogleChromeDistribution::GetBaseAppId() {

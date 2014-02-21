@@ -47,15 +47,16 @@ IDR_SXS                 ICON                    "theme\google_chrome\win\chrome_
 IDR_MAINFRAME           ICON                    "theme\chromium\win\chromium.ico"
 #endif
 
-// Icon for the App Lancher. Named with a leading X to keep the name
-// alphabetically after IDR_SXS.
+// Start a naming scheme to keep icons in order. A leading X is used to keep
+// the name alphabetically after IDR_SXS. The maximum of the number that follows
+// should be incremented when a new icon is added. The icon indices in
+// chrome_icon_resources_win.cc should also be updated.
+
 #if defined(GOOGLE_CHROME_BUILD)
-// The App Launcher icon must have an index of 5 in Chrome, and 6 for SXS.
-IDR_X_APP_LIST          ICON                    "theme\\google_chrome\\win\\app_list.ico"
-IDR_X_APP_LIST_SXS      ICON                    "theme\\google_chrome\\win\\app_list_sxs.ico"
+IDR_X001_APP_LIST       ICON                    "theme\\google_chrome\\win\\app_list.ico"
+IDR_X002_APP_LIST_SXS   ICON                    "theme\\google_chrome\\win\\app_list_sxs.ico"
 #else
-// The App Launcher icon must have an index of 1 for Chromium.
-IDR_X_APP_LIST          ICON                    "theme\\chromium\\win\\app_list.ico"
+IDR_X001_APP_LIST       ICON                    "theme\\chromium\\win\\app_list.ico"
 #endif
 
 
