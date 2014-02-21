@@ -65,14 +65,18 @@ public:
 private:
     DescendantInvalidationSet();
 
+    HashSet<AtomicString>& ensureClassSet();
+    HashSet<AtomicString>& ensureIdSet();
+    HashSet<AtomicString>& ensureTagNameSet();
+
     bool invalidateElementSubtreeInternal(Element*);
     // If true, all descendants might be invalidated, so a full subtree recalc is required.
     bool m_allDescendantsMightBeInvalid;
 
     // FIXME: optimize this if it becomes a memory issue.
-    HashSet<AtomicString> m_classes;
-    HashSet<AtomicString> m_ids;
-    HashSet<AtomicString> m_tagNames;
+    OwnPtr<HashSet<AtomicString> > m_classes;
+    OwnPtr<HashSet<AtomicString> > m_ids;
+    OwnPtr<HashSet<AtomicString> > m_tagNames;
 };
 
 } // namespace WebCore
