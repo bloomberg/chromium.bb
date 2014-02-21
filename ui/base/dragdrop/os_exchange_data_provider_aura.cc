@@ -122,7 +122,9 @@ bool OSExchangeDataProviderAura::HasString() const {
   return (formats_ & OSExchangeData::STRING) != 0;
 }
 
-bool OSExchangeDataProviderAura::HasURL() const {
+bool OSExchangeDataProviderAura::HasURL(
+    OSExchangeData::FilenameToURLPolicy policy) const {
+  // TODO(dcheng): implement filename conversion.
   if ((formats_ & OSExchangeData::URL) != 0) {
     return true;
   }

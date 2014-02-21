@@ -154,7 +154,7 @@ bool HomeButton::GetDropFormats(
 }
 
 bool HomeButton::CanDrop(const OSExchangeData& data) {
-  return data.HasURL();
+  return data.HasURL(ui::OSExchangeData::CONVERT_FILENAMES);
 }
 
 int HomeButton::OnDragUpdated(const ui::DropTargetEvent& event) {

@@ -134,13 +134,14 @@ bool GetFileUrl(IDataObject* data_object, base::string16* url,
 
 }  // namespace
 
-bool ClipboardUtil::HasUrl(IDataObject* data_object) {
+bool ClipboardUtil::HasUrl(IDataObject* data_object, bool convert_filenames) {
   DCHECK(data_object);
   return HasData(data_object, Clipboard::GetMozUrlFormatType()) ||
          HasData(data_object, Clipboard::GetUrlWFormatType()) ||
          HasData(data_object, Clipboard::GetUrlFormatType()) ||
-         HasData(data_object, Clipboard::GetFilenameWFormatType()) ||
-         HasData(data_object, Clipboard::GetFilenameFormatType());
+         (convert_filenames && (
+             HasData(data_object, Clipboard::GetFilenameWFormatType()) ||
+             HasData(data_object, Clipboard::GetFilenameFormatType())));
 }
 
 bool ClipboardUtil::HasFilenames(IDataObject* data_object) {
@@ -168,7 +169,7 @@ bool ClipboardUtil::HasPlainText(IDataObject* data_object) {
 bool ClipboardUtil::GetUrl(IDataObject* data_object,
     base::string16* url, base::string16* title, bool convert_filenames) {
   DCHECK(data_object && url && title);
-  if (!HasUrl(data_object))
+  if (!HasUrl(data_object, convert_filenames))
     return false;
 
   // Try to extract a URL from |data_object| in a variety of formats.

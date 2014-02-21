@@ -304,7 +304,8 @@ bool OSExchangeDataProviderAuraX11::HasString() const {
   return !requested_types.empty() && !HasFile();
 }
 
-bool OSExchangeDataProviderAuraX11::HasURL() const {
+bool OSExchangeDataProviderAuraX11::HasURL(
+    OSExchangeData::FilenameToURLPolicy policy) const {
   std::vector< ::Atom> url_atoms = ui::GetURLAtomsFrom(&atom_cache_);
   std::vector< ::Atom> requested_types;
   ui::GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
@@ -324,7 +325,8 @@ bool OSExchangeDataProviderAuraX11::HasURL() const {
       std::vector<std::string> tokens = ui::ParseURIList(data);
       for (std::vector<std::string>::const_iterator it = tokens.begin();
            it != tokens.end(); ++it) {
-        if (!GURL(*it).SchemeIsFile())
+        if (!GURL(*it).SchemeIsFile() ||
+            policy == OSExchangeData::CONVERT_FILENAMES)
           return true;
       }
 

@@ -68,21 +68,24 @@ TEST_F(OSExchangeDataProviderAuraX11Test, FilesArentURLs) {
   AddURLList(kFileURL);
 
   EXPECT_TRUE(provider.HasFile());
-  EXPECT_FALSE(provider.HasURL());
+  EXPECT_TRUE(provider.HasURL(ui::OSExchangeData::CONVERT_FILENAMES));
+  EXPECT_FALSE(provider.HasURL(ui::OSExchangeData::DO_NOT_CONVERT_FILENAMES));
 }
 
 TEST_F(OSExchangeDataProviderAuraX11Test, HTTPURLsArentFiles) {
   AddURLList(kGoogleURL);
 
   EXPECT_FALSE(provider.HasFile());
-  EXPECT_TRUE(provider.HasURL());
+  EXPECT_TRUE(provider.HasURL(ui::OSExchangeData::CONVERT_FILENAMES));
+  EXPECT_TRUE(provider.HasURL(ui::OSExchangeData::DO_NOT_CONVERT_FILENAMES));
 }
 
 TEST_F(OSExchangeDataProviderAuraX11Test, URIListWithBoth) {
   AddURLList("file:///home/user/file.txt\nhttp://www.google.com");
 
   EXPECT_TRUE(provider.HasFile());
-  EXPECT_TRUE(provider.HasURL());
+  EXPECT_TRUE(provider.HasURL(ui::OSExchangeData::CONVERT_FILENAMES));
+  EXPECT_TRUE(provider.HasURL(ui::OSExchangeData::DO_NOT_CONVERT_FILENAMES));
 
   // We should only receive the file from GetFilenames().
   std::vector<OSExchangeData::FileInfo> filenames;
@@ -104,7 +107,7 @@ TEST_F(OSExchangeDataProviderAuraX11Test, OnlyStringURLIsUnfiltered) {
   provider.SetString(file_url);
 
   EXPECT_TRUE(provider.HasString());
-  EXPECT_FALSE(provider.HasURL());
+  EXPECT_FALSE(provider.HasURL(ui::OSExchangeData::DO_NOT_CONVERT_FILENAMES));
 }
 
 TEST_F(OSExchangeDataProviderAuraX11Test, StringAndURIListFilterString) {

@@ -121,7 +121,7 @@ class UI_BASE_EXPORT OSExchangeData {
                                 Pickle* data) const = 0;
 
     virtual bool HasString() const = 0;
-    virtual bool HasURL() const = 0;
+    virtual bool HasURL(FilenameToURLPolicy policy) const = 0;
     virtual bool HasFile() const = 0;
     virtual bool HasCustomFormat(const CustomFormat& format) const = 0;
 
@@ -201,14 +201,9 @@ class UI_BASE_EXPORT OSExchangeData {
   // Test whether or not data of certain types is present, without actually
   // returning anything.
   bool HasString() const;
-  bool HasURL() const;
+  bool HasURL(FilenameToURLPolicy policy) const;
   bool HasFile() const;
   bool HasCustomFormat(const CustomFormat& format) const;
-
-  // Returns true if this OSExchangeData has data for ALL the formats in
-  // |formats| and ALL the custom formats in |custom_formats|.
-  bool HasAllFormats(int formats,
-                     const std::set<CustomFormat>& custom_formats) const;
 
   // Returns true if this OSExchangeData has data in any of the formats in
   // |formats| or any custom format in |custom_formats|.

@@ -173,7 +173,7 @@ class UI_BASE_EXPORT OSExchangeDataProviderWin
                                std::string* file_contents) const;
   virtual bool GetHtml(base::string16* html, GURL* base_url) const;
   virtual bool HasString() const;
-  virtual bool HasURL() const;
+  virtual bool HasURL(OSExchangeData::FilenameToURLPolicy policy) const;
   virtual bool HasFile() const;
   virtual bool HasFileContents() const;
   virtual bool HasHtml() const;

@@ -477,8 +477,11 @@ bool OSExchangeDataProviderWin::HasString() const {
   return ClipboardUtil::HasPlainText(source_object_);
 }
 
-bool OSExchangeDataProviderWin::HasURL() const {
-  return (ClipboardUtil::HasUrl(source_object_) ||
+bool OSExchangeDataProviderWin::HasURL(
+    OSExchangeData::FilenameToURLPolicy policy) const {
+  return (ClipboardUtil::HasUrl(
+              source_object_,
+              policy == OSExchangeData::CONVERT_FILENAMES ? true : false) ||
           HasPlainTextURL(source_object_));
 }
 

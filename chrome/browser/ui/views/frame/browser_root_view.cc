@@ -48,7 +48,7 @@ bool BrowserRootView::CanDrop(const ui::OSExchangeData& data) {
     return false;
 
   // If there is a URL, we'll allow the drop.
-  if (data.HasURL())
+  if (data.HasURL(ui::OSExchangeData::CONVERT_FILENAMES))
     return true;
 
   // If there isn't a URL, see if we can 'paste and go'.

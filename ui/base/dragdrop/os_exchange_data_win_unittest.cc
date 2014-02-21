@@ -62,7 +62,7 @@ TEST(OSExchangeDataWinTest, StringDataWritingViaCOM) {
   // Construct a new object with the old object so that we can use our access
   // APIs.
   OSExchangeData data2(data.provider().Clone());
-  EXPECT_TRUE(data2.HasURL());
+  EXPECT_TRUE(data2.HasURL(OSExchangeData::CONVERT_FILENAMES));
   GURL url_from_data;
   std::wstring title;
   EXPECT_TRUE(data2.GetURLAndTitle(
@@ -114,7 +114,7 @@ TEST(OSExchangeDataWinTest, RemoveData) {
   // Construct a new object with the old object so that we can use our access
   // APIs.
   OSExchangeData data2(data.provider().Clone());
-  EXPECT_TRUE(data2.HasURL());
+  EXPECT_TRUE(data2.HasURL(OSExchangeData::CONVERT_FILENAMES));
   GURL url_from_data;
   std::wstring title;
   EXPECT_TRUE(data2.GetURLAndTitle(
@@ -347,7 +347,7 @@ TEST(OSExchangeDataWinTest, ProvideURLForPlainTextURL) {
   data.SetString(L"http://google.com");
 
   OSExchangeData data2(data.provider().Clone());
-  ASSERT_TRUE(data2.HasURL());
+  ASSERT_TRUE(data2.HasURL(OSExchangeData::CONVERT_FILENAMES));
   GURL read_url;
   std::wstring title;
   EXPECT_TRUE(data2.GetURLAndTitle(

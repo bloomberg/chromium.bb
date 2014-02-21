@@ -75,7 +75,8 @@ class UI_BASE_EXPORT OSExchangeDataProviderAuraX11
   virtual bool GetPickledData(const OSExchangeData::CustomFormat& format,
                               Pickle* pickle) const OVERRIDE;
   virtual bool HasString() const OVERRIDE;
-  virtual bool HasURL() const OVERRIDE;
+  virtual bool HasURL(OSExchangeData::FilenameToURLPolicy policy) const
+      OVERRIDE;
   virtual bool HasFile() const OVERRIDE;
   virtual bool HasCustomFormat(const OSExchangeData::CustomFormat& format) const
       OVERRIDE;

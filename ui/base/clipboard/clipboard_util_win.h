@@ -22,7 +22,7 @@ class UI_BASE_EXPORT ClipboardUtil {
   /////////////////////////////////////////////////////////////////////////////
   // These methods check to see if |data_object| has the requested type.
   // Returns true if it does.
-  static bool HasUrl(IDataObject* data_object);
+  static bool HasUrl(IDataObject* data_object, bool convert_filenames);
   static bool HasFilenames(IDataObject* data_object);
   static bool HasPlainText(IDataObject* data_object);
   static bool HasFileContents(IDataObject* data_object);
