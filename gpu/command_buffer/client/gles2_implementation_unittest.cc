@@ -297,8 +297,65 @@ void MockTransferBuffer::FreePendingToken(void* p, unsigned int /* token */) {
   last_alloc_ = NULL;
 }
 
+// API wrapper for Buffers.
+class GenBuffersAPI {
+ public:
+  static void Gen(GLES2Implementation* gl_impl, GLsizei n, GLuint* ids) {
+    gl_impl->GenBuffers(n, ids);
+  }
+
+  static void Delete(GLES2Implementation* gl_impl,
+                     GLsizei n,
+                     const GLuint* ids) {
+    gl_impl->DeleteBuffers(n, ids);
+  }
+};
+
+// API wrapper for Framebuffers.
+class GenFramebuffersAPI {
+ public:
+  static void Gen(GLES2Implementation* gl_impl, GLsizei n, GLuint* ids) {
+    gl_impl->GenFramebuffers(n, ids);
+  }
+
+  static void Delete(GLES2Implementation* gl_impl,
+                     GLsizei n,
+                     const GLuint* ids) {
+    gl_impl->DeleteFramebuffers(n, ids);
+  }
+};
+
+// API wrapper for Renderbuffers.
+class GenRenderbuffersAPI {
+ public:
+  static void Gen(GLES2Implementation* gl_impl, GLsizei n, GLuint* ids) {
+    gl_impl->GenRenderbuffers(n, ids);
+  }
+
+  static void Delete(GLES2Implementation* gl_impl,
+                     GLsizei n,
+                     const GLuint* ids) {
+    gl_impl->DeleteRenderbuffers(n, ids);
+  }
+};
+
+// API wrapper for Textures.
+class GenTexturesAPI {
+ public:
+  static void Gen(GLES2Implementation* gl_impl, GLsizei n, GLuint* ids) {
+    gl_impl->GenTextures(n, ids);
+  }
+
+  static void Delete(GLES2Implementation* gl_impl,
+                     GLsizei n,
+                     const GLuint* ids) {
+    gl_impl->DeleteTextures(n, ids);
+  }
+};
+
 class GLES2ImplementationTest : public testing::Test {
  protected:
+  static const int kNumTestContexts = 2;
   static const uint8 kInitialValue = 0xBD;
   static const int32 kNumCommandEntries = 500;
   static const int32 kCommandBufferSizeBytes =
@@ -319,7 +376,7 @@ class GLES2ImplementationTest : public testing::Test {
   static const GLint kNumShaderBinaryFormats = 0;
   static const GLuint kStartId = 1024;
   static const GLuint kBuffersStartId =
-      GLES2Implementation::kClientSideArrayId + 2;
+      GLES2Implementation::kClientSideArrayId + 2 * kNumTestContexts;
   static const GLuint kFramebuffersStartId = 1;
   static const GLuint kProgramsAndShadersStartId = 1;
   static const GLuint kRenderbuffersStartId = 1;
@@ -329,10 +386,115 @@ class GLES2ImplementationTest : public testing::Test {
 
   typedef MockTransferBuffer::ExpectedMemoryInfo ExpectedMemoryInfo;
 
-  GLES2ImplementationTest()
-      : commands_(NULL),
-        token_(0) {
-  }
+  class TestContext {
+   public:
+    TestContext() : commands_(NULL), token_(0) {}
+
+    void Initialize(ShareGroup* share_group, bool bind_generates_resource) {
+      command_buffer_.reset(new StrictMock<MockClientCommandBuffer>());
+      ASSERT_TRUE(command_buffer_->Initialize());
+
+      transfer_buffer_.reset(
+          new MockTransferBuffer(command_buffer_.get(),
+                                 kTransferBufferSize,
+                                 GLES2Implementation::kStartingOffset,
+                                 GLES2Implementation::kAlignment));
+
+      helper_.reset(new GLES2CmdHelper(command_buffer()));
+      helper_->Initialize(kCommandBufferSizeBytes);
+
+      gpu_control_.reset(new StrictMock<MockClientGpuControl>());
+      EXPECT_CALL(*gpu_control_, GetCapabilities())
+          .WillOnce(testing::Return(Capabilities()));
+
+      GLES2Implementation::GLStaticState state;
+      GLES2Implementation::GLStaticState::IntState& int_state = state.int_state;
+      int_state.max_combined_texture_image_units =
+          kMaxCombinedTextureImageUnits;
+      int_state.max_cube_map_texture_size = kMaxCubeMapTextureSize;
+      int_state.max_fragment_uniform_vectors = kMaxFragmentUniformVectors;
+      int_state.max_renderbuffer_size = kMaxRenderbufferSize;
+      int_state.max_texture_image_units = kMaxTextureImageUnits;
+      int_state.max_texture_size = kMaxTextureSize;
+      int_state.max_varying_vectors = kMaxVaryingVectors;
+      int_state.max_vertex_attribs = kMaxVertexAttribs;
+      int_state.max_vertex_texture_image_units = kMaxVertexTextureImageUnits;
+      int_state.max_vertex_uniform_vectors = kMaxVertexUniformVectors;
+      int_state.num_compressed_texture_formats = kNumCompressedTextureFormats;
+      int_state.num_shader_binary_formats = kNumShaderBinaryFormats;
+
+      // This just happens to work for now because IntState has 1 GLint per
+      // state.
+      // If IntState gets more complicated this code will need to get more
+      // complicated.
+      ExpectedMemoryInfo mem1 = transfer_buffer_->GetExpectedMemory(
+          sizeof(GLES2Implementation::GLStaticState::IntState) * 2 +
+          sizeof(cmds::GetShaderPrecisionFormat::Result) * 12);
+
+      {
+        InSequence sequence;
+
+        EXPECT_CALL(*command_buffer_, OnFlush())
+            .WillOnce(SetMemory(mem1.ptr + sizeof(int_state), int_state))
+            .RetiresOnSaturation();
+        GetNextToken();  // eat the token that starting up will use.
+
+        gl_.reset(
+            new GLES2Implementation(helper_.get(),
+                                    share_group,
+                                    transfer_buffer_.get(),
+                                    bind_generates_resource,
+                                    false /* free_everything_when_invisible */,
+                                    gpu_control_.get()));
+        ASSERT_TRUE(gl_->Initialize(kTransferBufferSize,
+                                    kTransferBufferSize,
+                                    kTransferBufferSize,
+                                    GLES2Implementation::kNoLimit));
+      }
+
+      EXPECT_CALL(*command_buffer_, OnFlush()).Times(1).RetiresOnSaturation();
+      helper_->CommandBufferHelper::Finish();
+      ::testing::Mock::VerifyAndClearExpectations(gl_.get());
+
+      Buffer ring_buffer = helper_->get_ring_buffer();
+      commands_ = static_cast<CommandBufferEntry*>(ring_buffer.ptr) +
+                  command_buffer()->GetState().put_offset;
+      ClearCommands();
+      EXPECT_TRUE(transfer_buffer_->InSync());
+
+      ::testing::Mock::VerifyAndClearExpectations(command_buffer());
+    }
+
+    void TearDown() {
+      Mock::VerifyAndClear(gl_.get());
+      EXPECT_CALL(*command_buffer(), OnFlush()).Times(AnyNumber());
+      // For command buffer.
+      EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
+          .Times(AtLeast(1));
+      gl_.reset();
+    }
+
+    MockClientCommandBuffer* command_buffer() const {
+      return command_buffer_.get();
+    }
+
+    int GetNextToken() { return ++token_; }
+
+    void ClearCommands() {
+      Buffer ring_buffer = helper_->get_ring_buffer();
+      memset(ring_buffer.ptr, kInitialValue, ring_buffer.size);
+    }
+
+    scoped_ptr<MockClientCommandBuffer> command_buffer_;
+    scoped_ptr<MockClientGpuControl> gpu_control_;
+    scoped_ptr<GLES2CmdHelper> helper_;
+    scoped_ptr<MockTransferBuffer> transfer_buffer_;
+    scoped_ptr<GLES2Implementation> gl_;
+    CommandBufferEntry* commands_;
+    int token_;
+  };
+
+  GLES2ImplementationTest() : commands_(NULL) {}
 
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
@@ -354,88 +516,24 @@ class GLES2ImplementationTest : public testing::Test {
   }
 
   void Initialize(bool bind_generates_resource) {
-    command_buffer_.reset(new StrictMock<MockClientCommandBuffer>());
-    ASSERT_TRUE(command_buffer_->Initialize());
+    share_group_ = new ShareGroup(bind_generates_resource);
 
-    transfer_buffer_.reset(new MockTransferBuffer(
-        command_buffer(),
-        kTransferBufferSize,
-        GLES2Implementation::kStartingOffset,
-        GLES2Implementation::kAlignment));
+    for (int i = 0; i < kNumTestContexts; i++)
+      test_contexts_[i].Initialize(share_group_.get(), bind_generates_resource);
 
-    helper_.reset(new GLES2CmdHelper(command_buffer()));
-    helper_->Initialize(kCommandBufferSizeBytes);
-
-    gpu_control_.reset(new StrictMock<MockClientGpuControl>());
-    EXPECT_CALL(*gpu_control_, GetCapabilities())
-        .WillOnce(testing::Return(Capabilities()));
-
-    GLES2Implementation::GLStaticState state;
-    GLES2Implementation::GLStaticState::IntState& int_state = state.int_state;
-    int_state.max_combined_texture_image_units = kMaxCombinedTextureImageUnits;
-    int_state.max_cube_map_texture_size = kMaxCubeMapTextureSize;
-    int_state.max_fragment_uniform_vectors = kMaxFragmentUniformVectors;
-    int_state.max_renderbuffer_size = kMaxRenderbufferSize;
-    int_state.max_texture_image_units = kMaxTextureImageUnits;
-    int_state.max_texture_size = kMaxTextureSize;
-    int_state.max_varying_vectors = kMaxVaryingVectors;
-    int_state.max_vertex_attribs = kMaxVertexAttribs;
-    int_state.max_vertex_texture_image_units = kMaxVertexTextureImageUnits;
-    int_state.max_vertex_uniform_vectors = kMaxVertexUniformVectors;
-    int_state.num_compressed_texture_formats = kNumCompressedTextureFormats;
-    int_state.num_shader_binary_formats = kNumShaderBinaryFormats;
-
-    // This just happens to work for now because IntState has 1 GLint per state.
-    // If IntState gets more complicated this code will need to get more
-    // complicated.
-    ExpectedMemoryInfo mem1 = GetExpectedMemory(
-        sizeof(GLES2Implementation::GLStaticState::IntState) * 2 +
-        sizeof(cmds::GetShaderPrecisionFormat::Result) * 12);
-
-    {
-      InSequence sequence;
-
-      EXPECT_CALL(*command_buffer(), OnFlush())
-          .WillOnce(SetMemory(mem1.ptr + sizeof(int_state), int_state))
-          .RetiresOnSaturation();
-      GetNextToken();  // eat the token that starting up will use.
-
-      gl_.reset(new GLES2Implementation(
-          helper_.get(),
-          NULL,
-          transfer_buffer_.get(),
-          bind_generates_resource,
-          false /* free_everything_when_invisible */,
-          gpu_control_.get()));
-      ASSERT_TRUE(gl_->Initialize(
-          kTransferBufferSize,
-          kTransferBufferSize,
-          kTransferBufferSize,
-          GLES2Implementation::kNoLimit));
-    }
-
-    EXPECT_CALL(*command_buffer(), OnFlush())
-        .Times(1)
-        .RetiresOnSaturation();
-    helper_->CommandBufferHelper::Finish();
-    ::testing::Mock::VerifyAndClearExpectations(gl_.get());
-
-    Buffer ring_buffer = helper_->get_ring_buffer();
-    commands_ = static_cast<CommandBufferEntry*>(ring_buffer.ptr) +
-                command_buffer()->GetState().put_offset;
-    ClearCommands();
-    EXPECT_TRUE(transfer_buffer_->InSync());
-
-    ::testing::Mock::VerifyAndClearExpectations(command_buffer());
+    // Default to test context 0.
+    gpu_control_ = test_contexts_[0].gpu_control_.get();
+    helper_ = test_contexts_[0].helper_.get();
+    transfer_buffer_ = test_contexts_[0].transfer_buffer_.get();
+    gl_ = test_contexts_[0].gl_.get();
+    commands_ = test_contexts_[0].commands_;
   }
 
   MockClientCommandBuffer* command_buffer() const {
-    return command_buffer_.get();
+    return test_contexts_[0].command_buffer_.get();
   }
 
-  int GetNextToken() {
-    return ++token_;
-  }
+  int GetNextToken() { return test_contexts_[0].GetNextToken(); }
 
   const void* GetPut() {
     return helper_->GetSpace(0);
@@ -477,14 +575,14 @@ class GLES2ImplementationTest : public testing::Test {
     return gl_->GetBucketContents(bucket_id, data);
   }
 
-  Sequence sequence_;
-  scoped_ptr<MockClientCommandBuffer> command_buffer_;
-  scoped_ptr<MockClientGpuControl> gpu_control_;
-  scoped_ptr<GLES2CmdHelper> helper_;
-  scoped_ptr<MockTransferBuffer> transfer_buffer_;
-  scoped_ptr<GLES2Implementation> gl_;
+  TestContext test_contexts_[kNumTestContexts];
+
+  scoped_refptr<ShareGroup> share_group_;
+  MockClientGpuControl* gpu_control_;
+  GLES2CmdHelper* helper_;
+  MockTransferBuffer* transfer_buffer_;
+  GLES2Implementation* gl_;
   CommandBufferEntry* commands_;
-  int token_;
 };
 
 void GLES2ImplementationTest::SetUp() {
@@ -492,17 +590,97 @@ void GLES2ImplementationTest::SetUp() {
 }
 
 void GLES2ImplementationTest::TearDown() {
-  Mock::VerifyAndClear(gl_.get());
-  EXPECT_CALL(*command_buffer(), OnFlush()).Times(AnyNumber());
-  // For command buffer.
-  EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
-      .Times(AtLeast(1));
-  gl_.reset();
+  for (int i = 0; i < kNumTestContexts; i++)
+    test_contexts_[i].TearDown();
 }
 
 class GLES2ImplementationStrictSharedTest : public GLES2ImplementationTest {
  protected:
   virtual void SetUp() OVERRIDE;
+
+  template <class ResApi>
+  void FlushGenerationTest() {
+    GLuint id1, id2, id3;
+
+    // Generate valid id.
+    ResApi::Gen(gl_, 1, &id1);
+    EXPECT_NE(id1, 0u);
+
+    // Delete id1 and generate id2.  id1 should not be reused.
+    ResApi::Delete(gl_, 1, &id1);
+    ResApi::Gen(gl_, 1, &id2);
+    EXPECT_NE(id2, 0u);
+    EXPECT_NE(id2, id1);
+
+    // Expect id1 reuse after Flush.
+    gl_->Flush();
+    ResApi::Gen(gl_, 1, &id3);
+    EXPECT_EQ(id3, id1);
+  }
+
+  // Ids should not be reused unless the |Deleting| context does a Flush()
+  // AND triggers a lazy release after that.
+  template <class ResApi>
+  void CrossContextGenerationTest() {
+    GLES2Implementation* gl1 = test_contexts_[0].gl_.get();
+    GLES2Implementation* gl2 = test_contexts_[1].gl_.get();
+    GLuint id1, id2, id3;
+
+    // Delete, no flush on context 1.  No reuse.
+    ResApi::Gen(gl1, 1, &id1);
+    ResApi::Delete(gl1, 1, &id1);
+    ResApi::Gen(gl1, 1, &id2);
+    EXPECT_NE(id1, id2);
+
+    // Flush context 2.  Still no reuse.
+    gl2->Flush();
+    ResApi::Gen(gl2, 1, &id3);
+    EXPECT_NE(id1, id3);
+    EXPECT_NE(id2, id3);
+
+    // Flush on context 1, but no lazy release.  Still no reuse.
+    gl1->Flush();
+    ResApi::Gen(gl2, 1, &id3);
+    EXPECT_NE(id1, id3);
+
+    // Lazy release triggered by another Delete.  Should reuse id1.
+    ResApi::Delete(gl1, 1, &id2);
+    ResApi::Gen(gl2, 1, &id3);
+    EXPECT_EQ(id1, id3);
+  }
+
+  // Same as CrossContextGenerationTest(), but triggers an Auto Flush on
+  // the Delete().  Tests an edge case regression.
+  template <class ResApi>
+  void CrossContextGenerationAutoFlushTest() {
+    GLES2Implementation* gl1 = test_contexts_[0].gl_.get();
+    GLES2Implementation* gl2 = test_contexts_[1].gl_.get();
+    GLuint id1, id2, id3;
+
+    // Delete, no flush on context 1.  No reuse.
+    // By half filling the buffer, an internal flush is forced on the Delete().
+    ResApi::Gen(gl1, 1, &id1);
+    gl1->helper()->Noop(kNumCommandEntries / 2);
+    ResApi::Delete(gl1, 1, &id1);
+    ResApi::Gen(gl1, 1, &id2);
+    EXPECT_NE(id1, id2);
+
+    // Flush context 2.  Still no reuse.
+    gl2->Flush();
+    ResApi::Gen(gl2, 1, &id3);
+    EXPECT_NE(id1, id3);
+    EXPECT_NE(id2, id3);
+
+    // Flush on context 1, but no lazy release.  Still no reuse.
+    gl1->Flush();
+    ResApi::Gen(gl2, 1, &id3);
+    EXPECT_NE(id1, id3);
+
+    // Lazy release triggered by another Delete.  Should reuse id1.
+    ResApi::Delete(gl1, 1, &id2);
+    ResApi::Gen(gl2, 1, &id3);
+    EXPECT_EQ(id1, id3);
+  }
 };
 
 void GLES2ImplementationStrictSharedTest::SetUp() {
@@ -2442,6 +2620,58 @@ TEST_F(GLES2ImplementationStrictSharedTest, BindsNotCached) {
     gl_->GetIntegerv(pv.pname, &v);
     EXPECT_EQ(pv.expected, v);
   }
+}
+
+// glGen* Ids must not be reused until glDelete* commands have been
+// flushed by glFlush.
+TEST_F(GLES2ImplementationStrictSharedTest, FlushGenerationTestBuffers) {
+  FlushGenerationTest<GenBuffersAPI>();
+}
+TEST_F(GLES2ImplementationStrictSharedTest, FlushGenerationTestFramebuffers) {
+  FlushGenerationTest<GenFramebuffersAPI>();
+}
+TEST_F(GLES2ImplementationStrictSharedTest, FlushGenerationTestRenderbuffers) {
+  FlushGenerationTest<GenRenderbuffersAPI>();
+}
+TEST_F(GLES2ImplementationStrictSharedTest, FlushGenerationTestTextures) {
+  FlushGenerationTest<GenTexturesAPI>();
+}
+
+// glGen* Ids must not be reused cross-context until glDelete* commands are
+// flushed by glFlush, and the Ids are lazily freed after.
+TEST_F(GLES2ImplementationStrictSharedTest, CrossContextGenerationTestBuffers) {
+  CrossContextGenerationTest<GenBuffersAPI>();
+}
+TEST_F(GLES2ImplementationStrictSharedTest,
+       CrossContextGenerationTestFramebuffers) {
+  CrossContextGenerationTest<GenFramebuffersAPI>();
+}
+TEST_F(GLES2ImplementationStrictSharedTest,
+       CrossContextGenerationTestRenderbuffers) {
+  CrossContextGenerationTest<GenRenderbuffersAPI>();
+}
+TEST_F(GLES2ImplementationStrictSharedTest,
+       CrossContextGenerationTestTextures) {
+  CrossContextGenerationTest<GenTexturesAPI>();
+}
+
+// Test Delete which causes auto flush.  Tests a regression case that occurred
+// in testing.
+TEST_F(GLES2ImplementationStrictSharedTest,
+       CrossContextGenerationAutoFlushTestBuffers) {
+  CrossContextGenerationAutoFlushTest<GenBuffersAPI>();
+}
+TEST_F(GLES2ImplementationStrictSharedTest,
+       CrossContextGenerationAutoFlushTestFramebuffers) {
+  CrossContextGenerationAutoFlushTest<GenFramebuffersAPI>();
+}
+TEST_F(GLES2ImplementationStrictSharedTest,
+       CrossContextGenerationAutoFlushTestRenderbuffers) {
+  CrossContextGenerationAutoFlushTest<GenRenderbuffersAPI>();
+}
+TEST_F(GLES2ImplementationStrictSharedTest,
+       CrossContextGenerationAutoFlushTestTextures) {
+  CrossContextGenerationAutoFlushTest<GenTexturesAPI>();
 }
 
 TEST_F(GLES2ImplementationTest, GetString) {

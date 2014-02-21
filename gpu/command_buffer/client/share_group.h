@@ -20,6 +20,24 @@ class ProgramInfoManager;
 
 typedef void (GLES2Implementation::*DeleteFn)(GLsizei n, const GLuint* ids);
 
+class ShareGroupContextData {
+ public:
+  struct IdHandlerData {
+    IdHandlerData();
+    ~IdHandlerData();
+
+    std::vector<GLuint> freed_ids_;
+    uint32 flush_generation_;
+  };
+
+  IdHandlerData* id_handler_data(int namespace_id) {
+    return &id_handler_data_[namespace_id];
+  }
+
+ private:
+  IdHandlerData id_handler_data_[id_namespaces::kNumIdNamespaces];
+};
+
 // Base class for IdHandlers
 class IdHandlerInterface {
  public:
@@ -38,6 +56,9 @@ class IdHandlerInterface {
 
   // Marks an id as used for glBind functions. id = 0 does nothing.
   virtual bool MarkAsUsedForBind(GLuint id) = 0;
+
+  // Called when a context in the share group is destructed.
+  virtual void FreeContext(GLES2Implementation* gl_impl) = 0;
 };
 
 // ShareGroup manages shared resources for contexts that are sharing resources.
@@ -58,6 +79,12 @@ class GLES2_IMPL_EXPORT ShareGroup
 
   ProgramInfoManager* program_info_manager() {
     return program_info_manager_.get();
+  }
+
+  void FreeContext(GLES2Implementation* gl_impl) {
+    for (int i = 0; i < id_namespaces::kNumIdNamespaces; ++i) {
+      id_handlers_[i]->FreeContext(gl_impl);
+    }
   }
 
  private:

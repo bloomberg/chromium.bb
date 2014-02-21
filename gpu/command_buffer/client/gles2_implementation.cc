@@ -275,6 +275,10 @@ GLES2Implementation::~GLES2Implementation() {
 #if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
   DeleteBuffers(arraysize(reserved_ids_), &reserved_ids_[0]);
 #endif
+
+  // Release any per-context data in share group.
+  share_group_->FreeContext(this);
+
   buffer_tracker_.reset();
 
   // Make sure the commands make it the service.

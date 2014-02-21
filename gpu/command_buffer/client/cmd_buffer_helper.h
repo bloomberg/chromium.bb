@@ -256,6 +256,8 @@ class GPU_EXPORT CommandBufferHelper {
     return ring_buffer_;
   }
 
+  uint32 flush_generation() const { return flush_generation_; }
+
   void FreeRingBuffer();
 
   bool HaveRingBuffer() const {
@@ -310,6 +312,10 @@ class GPU_EXPORT CommandBufferHelper {
 
   // Using C runtime instead of base because this file cannot depend on base.
   clock_t last_flush_time_;
+
+  // Incremented every time the helper flushes the command buffer.
+  // Can be used to track when prior commands have been flushed.
+  uint32 flush_generation_;
 
   friend class CommandBufferHelperTest;
   DISALLOW_COPY_AND_ASSIGN(CommandBufferHelper);

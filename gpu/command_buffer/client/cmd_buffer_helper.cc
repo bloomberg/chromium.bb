@@ -156,6 +156,7 @@ bool CommandBufferHelper::FlushSync() {
   last_flush_time_ = clock();
   last_put_sent_ = put_;
   CommandBuffer::State state = command_buffer_->FlushSync(put_, get_offset());
+  ++flush_generation_;
   CalcImmediateEntries(0);
   return state.error == error::kNoError;
 }
@@ -169,6 +170,7 @@ void CommandBufferHelper::Flush() {
     last_flush_time_ = clock();
     last_put_sent_ = put_;
     command_buffer_->Flush(put_);
+    ++flush_generation_;
     CalcImmediateEntries(0);
   }
 }

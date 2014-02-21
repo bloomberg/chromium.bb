@@ -3955,7 +3955,8 @@ class GENnHandler(TypeHandler):
       MakeIds(this, 0, %(args)s);
   %(name)sHelper(%(args)s);
   helper_->%(name)sImmediate(%(args)s);
-  helper_->CommandBufferHelper::Flush();
+  if (share_group_->bind_generates_resource())
+    helper_->CommandBufferHelper::Flush();
 %(log_code)s
   CheckGLError();
 }

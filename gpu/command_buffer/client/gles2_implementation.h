@@ -260,6 +260,10 @@ class GLES2_IMPL_EXPORT GLES2Implementation
     return gpu_control_;
   }
 
+  ShareGroupContextData* share_group_context_data() {
+    return &share_group_context_data_;
+  }
+
  private:
   friend class GLES2ImplementationTest;
   friend class VertexArrayObjectManager;
@@ -696,6 +700,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   scoped_ptr<MappedMemoryManager> mapped_memory_;
 
   scoped_refptr<ShareGroup> share_group_;
+  ShareGroupContextData share_group_context_data_;
 
   scoped_ptr<QueryTracker> query_tracker_;
   typedef std::map<GLuint, QueryTracker::Query*> QueryMap;

@@ -408,7 +408,8 @@ void GLES2Implementation::GenBuffers(GLsizei n, GLuint* buffers) {
       MakeIds(this, 0, n, buffers);
   GenBuffersHelper(n, buffers);
   helper_->GenBuffersImmediate(n, buffers);
-  helper_->CommandBufferHelper::Flush();
+  if (share_group_->bind_generates_resource())
+    helper_->CommandBufferHelper::Flush();
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
       GPU_CLIENT_LOG("  " << i << ": " << buffers[i]);
@@ -435,7 +436,8 @@ void GLES2Implementation::GenFramebuffers(GLsizei n, GLuint* framebuffers) {
       MakeIds(this, 0, n, framebuffers);
   GenFramebuffersHelper(n, framebuffers);
   helper_->GenFramebuffersImmediate(n, framebuffers);
-  helper_->CommandBufferHelper::Flush();
+  if (share_group_->bind_generates_resource())
+    helper_->CommandBufferHelper::Flush();
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
       GPU_CLIENT_LOG("  " << i << ": " << framebuffers[i]);
@@ -455,7 +457,8 @@ void GLES2Implementation::GenRenderbuffers(GLsizei n, GLuint* renderbuffers) {
       MakeIds(this, 0, n, renderbuffers);
   GenRenderbuffersHelper(n, renderbuffers);
   helper_->GenRenderbuffersImmediate(n, renderbuffers);
-  helper_->CommandBufferHelper::Flush();
+  if (share_group_->bind_generates_resource())
+    helper_->CommandBufferHelper::Flush();
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
       GPU_CLIENT_LOG("  " << i << ": " << renderbuffers[i]);
@@ -475,7 +478,8 @@ void GLES2Implementation::GenTextures(GLsizei n, GLuint* textures) {
       MakeIds(this, 0, n, textures);
   GenTexturesHelper(n, textures);
   helper_->GenTexturesImmediate(n, textures);
-  helper_->CommandBufferHelper::Flush();
+  if (share_group_->bind_generates_resource())
+    helper_->CommandBufferHelper::Flush();
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
       GPU_CLIENT_LOG("  " << i << ": " << textures[i]);
@@ -1517,7 +1521,8 @@ void GLES2Implementation::GenQueriesEXT(GLsizei n, GLuint* queries) {
       MakeIds(this, 0, n, queries);
   GenQueriesEXTHelper(n, queries);
   helper_->GenQueriesEXTImmediate(n, queries);
-  helper_->CommandBufferHelper::Flush();
+  if (share_group_->bind_generates_resource())
+    helper_->CommandBufferHelper::Flush();
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
       GPU_CLIENT_LOG("  " << i << ": " << queries[i]);
@@ -1558,7 +1563,8 @@ void GLES2Implementation::GenVertexArraysOES(GLsizei n, GLuint* arrays) {
       MakeIds(this, 0, n, arrays);
   GenVertexArraysOESHelper(n, arrays);
   helper_->GenVertexArraysOESImmediate(n, arrays);
-  helper_->CommandBufferHelper::Flush();
+  if (share_group_->bind_generates_resource())
+    helper_->CommandBufferHelper::Flush();
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < n; ++i) {
       GPU_CLIENT_LOG("  " << i << ": " << arrays[i]);

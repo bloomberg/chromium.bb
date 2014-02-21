@@ -227,6 +227,8 @@ class CommandBufferHelperTest : public testing::Test {
 
   int32 GetHelperPutOffset() { return helper_->put_; }
 
+  uint32 GetHelperFlushGeneration() { return helper_->flush_generation(); }
+
   error::Error GetError() {
     return command_buffer_->GetState().error;
   }
@@ -610,6 +612,49 @@ TEST_F(CommandBufferHelperTest, IsContextLost) {
   EXPECT_FALSE(helper_->IsContextLost());
   command_buffer_->SetParseError(error::kGenericError);
   EXPECT_TRUE(helper_->IsContextLost());
+}
+
+// Checks helper's 'flush generation' updates.
+TEST_F(CommandBufferHelperTest, TestFlushGeneration) {
+  // Explicit flushing only.
+  helper_->SetAutomaticFlushes(false);
+
+  // Generation should change after Flush() but not before.
+  uint32 gen1, gen2, gen3;
+
+  gen1 = GetHelperFlushGeneration();
+  AddUniqueCommandWithExpect(error::kNoError, 2);
+  gen2 = GetHelperFlushGeneration();
+  helper_->Flush();
+  gen3 = GetHelperFlushGeneration();
+  EXPECT_EQ(gen2, gen1);
+  EXPECT_NE(gen3, gen2);
+
+  // Generation should change after FlushSync() but not before.
+  gen1 = GetHelperFlushGeneration();
+  AddUniqueCommandWithExpect(error::kNoError, 2);
+  gen2 = GetHelperFlushGeneration();
+  helper_->FlushSync();
+  gen3 = GetHelperFlushGeneration();
+  EXPECT_EQ(gen2, gen1);
+  EXPECT_NE(gen3, gen2);
+
+  // Generation should change after Finish() but not before.
+  gen1 = GetHelperFlushGeneration();
+  AddUniqueCommandWithExpect(error::kNoError, 2);
+  gen2 = GetHelperFlushGeneration();
+  helper_->Finish();
+  gen3 = GetHelperFlushGeneration();
+  EXPECT_EQ(gen2, gen1);
+  EXPECT_NE(gen3, gen2);
+
+  helper_->Finish();
+
+  // Check that the commands did happen.
+  Mock::VerifyAndClearExpectations(api_mock_.get());
+
+  // Check the error status.
+  EXPECT_EQ(error::kNoError, GetError());
 }
 
 }  // namespace gpu
