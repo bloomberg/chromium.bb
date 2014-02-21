@@ -48,12 +48,58 @@ namespace WebCore {
 
 static bool isSkippableComponentForInvalidation(const CSSSelector& selector)
 {
-    if (selector.matchesPseudoElement() || selector.pseudoType() == CSSSelector::PseudoHost)
+    if (selector.m_match == CSSSelector::Tag
+        || selector.m_match == CSSSelector::Id
+        || selector.isAttributeSelector())
+        return true;
+    if (selector.m_match != CSSSelector::PseudoClass)
         return false;
-    return true;
+    switch (selector.pseudoType()) {
+    case CSSSelector::PseudoEmpty:
+    case CSSSelector::PseudoFirstChild:
+    case CSSSelector::PseudoFirstOfType:
+    case CSSSelector::PseudoLastChild:
+    case CSSSelector::PseudoLastOfType:
+    case CSSSelector::PseudoOnlyChild:
+    case CSSSelector::PseudoOnlyOfType:
+    case CSSSelector::PseudoNthChild:
+    case CSSSelector::PseudoNthOfType:
+    case CSSSelector::PseudoNthLastChild:
+    case CSSSelector::PseudoNthLastOfType:
+    case CSSSelector::PseudoLink:
+    case CSSSelector::PseudoVisited:
+    case CSSSelector::PseudoAnyLink:
+    case CSSSelector::PseudoHover:
+    case CSSSelector::PseudoDrag:
+    case CSSSelector::PseudoFocus:
+    case CSSSelector::PseudoActive:
+    case CSSSelector::PseudoChecked:
+    case CSSSelector::PseudoEnabled:
+    case CSSSelector::PseudoDefault:
+    case CSSSelector::PseudoDisabled:
+    case CSSSelector::PseudoOptional:
+    case CSSSelector::PseudoRequired:
+    case CSSSelector::PseudoReadOnly:
+    case CSSSelector::PseudoReadWrite:
+    case CSSSelector::PseudoValid:
+    case CSSSelector::PseudoInvalid:
+    case CSSSelector::PseudoIndeterminate:
+    case CSSSelector::PseudoTarget:
+    case CSSSelector::PseudoLang:
+    case CSSSelector::PseudoRoot:
+    case CSSSelector::PseudoScope:
+    case CSSSelector::PseudoInRange:
+    case CSSSelector::PseudoOutOfRange:
+    case CSSSelector::PseudoUnresolved:
+        return true;
+    default:
+        return false;
+    }
+    ASSERT_NOT_REACHED();
+    return false;
 }
 
-// This method is somewhat conservative in what it acceptss.
+// This method is somewhat conservative in what it accepts.
 static bool supportsClassDescendantInvalidation(const CSSSelector& selector)
 {
     bool foundDescendantRelation = false;
