@@ -27,7 +27,7 @@ namespace drive_backend {
 
 class MetadataDatabase;
 class SyncEngineContext;
-class TrackerSet;
+class TrackerIDSet;
 
 // Resolves server side file confliction.
 // If a remote file has an active tracker and multiple managed parents,
@@ -50,7 +50,7 @@ class ConflictResolver : public SyncTask {
   void DidDetachFromParent(const SyncStatusCallback& callback,
                            google_apis::GDataErrorCode error);
 
-  std::string PickPrimaryFile(const TrackerSet& trackers);
+  std::string PickPrimaryFile(const TrackerIDSet& trackers);
   void RemoveNonPrimaryFiles(const SyncStatusCallback& callback);
   void DidRemoveFile(const SyncStatusCallback& callback,
                      const std::string& file_id,

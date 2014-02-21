@@ -217,7 +217,7 @@ class RegisterAppTaskTest : public testing::Test,
   }
 
   bool IsAppRegistered(const std::string& app_id) {
-    TrackerSet trackers;
+    TrackerIDSet trackers;
     if (!metadata_database_->FindTrackersByParentAndTitle(
             kSyncRootTrackerID, app_id, &trackers))
       return false;
@@ -233,13 +233,16 @@ class RegisterAppTaskTest : public testing::Test,
   }
 
   bool HasRemoteAppRoot(const std::string& app_id) {
-    TrackerSet files;
+    TrackerIDSet files;
     if (!metadata_database_->FindTrackersByParentAndTitle(
             kSyncRootTrackerID, app_id, &files) ||
         !files.has_active())
       return false;
 
-    std::string app_root_folder_id = files.active_tracker()->file_id();
+    FileTracker app_root_tracker;
+    EXPECT_TRUE(metadata_database_->FindTrackerByTrackerID(
+        files.active_tracker(), &app_root_tracker));
+    std::string app_root_folder_id = app_root_tracker.file_id();
     scoped_ptr<google_apis::ResourceEntry> entry;
     if (google_apis::HTTP_SUCCESS !=
         fake_drive_service_helper_->GetResourceEntry(

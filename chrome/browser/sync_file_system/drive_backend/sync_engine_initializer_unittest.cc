@@ -154,13 +154,13 @@ class SyncEngineInitializerTest : public testing::Test {
   }
 
   size_t CountTrackersForFile(const std::string& file_id) {
-    TrackerSet trackers;
+    TrackerIDSet trackers;
     metadata_database_->FindTrackersByFileID(file_id, &trackers);
-    return trackers.tracker_set().size();
+    return trackers.size();
   }
 
   bool HasActiveTracker(const std::string& file_id) {
-    TrackerSet trackers;
+    TrackerIDSet trackers;
     return metadata_database_->FindTrackersByFileID(file_id, &trackers) &&
         trackers.has_active();
   }

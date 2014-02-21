@@ -27,7 +27,7 @@ class FileTracker;
 class FolderCreator;
 class MetadataDatabase;
 class SyncEngineContext;
-class TrackerSet;
+class TrackerIDSet;
 
 class RegisterAppTask : public SyncTask {
  public:
@@ -42,7 +42,7 @@ class RegisterAppTask : public SyncTask {
   void DidCreateAppRootFolder(const SyncStatusCallback& callback,
                               const std::string& file_id,
                               SyncStatusCode status);
-  bool FilterCandidates(const TrackerSet& trackers,
+  bool FilterCandidates(const TrackerIDSet& trackers,
                         FileTracker* candidate);
   void RegisterAppIntoDatabase(const FileTracker& tracker,
                                const SyncStatusCallback& callback);

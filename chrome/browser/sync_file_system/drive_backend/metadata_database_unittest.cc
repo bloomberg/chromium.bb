@@ -75,6 +75,10 @@ void ExpectEquivalent(const FileTracker* left, const FileTracker* right) {
   test_util::ExpectEquivalentTrackers(*left, *right);
 }
 
+void ExpectEquivalent(int64 left, int64 right) {
+  EXPECT_EQ(left, right);
+}
+
 template <typename Container>
 void ExpectEquivalentMaps(const Container& left, const Container& right);
 template <typename Key, typename Value, typename Compare>
@@ -91,11 +95,11 @@ void ExpectEquivalent(const std::set<Value, Compare>& left,
   return ExpectEquivalentSets(left, right);
 }
 
-void ExpectEquivalent(const TrackerSet& left,
-                      const TrackerSet& right) {
+void ExpectEquivalent(const TrackerIDSet& left,
+                      const TrackerIDSet& right) {
   {
     SCOPED_TRACE("Expect equivalent active_tracker");
-    ExpectEquivalent(left.active_tracker(), right.active_tracker());
+    EXPECT_EQ(left.active_tracker(), right.active_tracker());
   }
   ExpectEquivalent(left.tracker_set(), right.tracker_set());
 }
@@ -158,10 +162,10 @@ class MetadataDatabaseTest : public testing::Test {
   }
 
   int64 GetTrackerIDByFileID(const std::string& file_id) {
-    TrackerSet trackers;
+    TrackerIDSet trackers;
     if (metadata_database_->FindTrackersByFileID(file_id, &trackers)) {
       EXPECT_FALSE(trackers.empty());
-      return (*trackers.begin())->tracker_id();
+      return *trackers.begin();
     }
     return 0;
   }

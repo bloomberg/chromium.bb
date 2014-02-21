@@ -492,7 +492,7 @@ TEST_F(LocalToRemoteSyncerTest, Conflict_CreateFolderOnFolder) {
   EXPECT_TRUE(folder_id == entries[0]->resource_id() ||
               folder_id == entries[1]->resource_id());
 
-  TrackerSet trackers;
+  TrackerIDSet trackers;
   EXPECT_TRUE(GetMetadataDatabase()->FindTrackersByFileID(
       folder_id, &trackers));
   EXPECT_EQ(1u, trackers.size());

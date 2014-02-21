@@ -15,7 +15,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/sync_file_system/drive_backend/tracker_set.h"
+#include "chrome/browser/sync_file_system/drive_backend/tracker_id_set.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
 
@@ -112,8 +112,8 @@ class MetadataDatabase {
  public:
   typedef std::map<std::string, FileMetadata*> FileByID;
   typedef std::map<int64, FileTracker*> TrackerByID;
-  typedef std::map<std::string, TrackerSet> TrackersByFileID;
-  typedef std::map<std::string, TrackerSet> TrackersByTitle;
+  typedef std::map<std::string, TrackerIDSet> TrackersByFileID;
+  typedef std::map<std::string, TrackerIDSet> TrackersByTitle;
   typedef std::map<int64, TrackersByTitle> TrackersByParentAndTitle;
   typedef std::map<std::string, FileTracker*> TrackerByAppID;
   typedef std::vector<std::string> FileIDList;
@@ -230,7 +230,7 @@ class MetadataDatabase {
   // Finds the trackers tracking |file_id|.  Returns true if the trackers are
   // found.
   bool FindTrackersByFileID(const std::string& file_id,
-                            TrackerSet* trackers) const;
+                            TrackerIDSet* trackers) const;
 
   // Finds the set of trackers whose parent's tracker ID is |parent_tracker_id|,
   // and who has |title| as its title in the synced_details.
@@ -239,7 +239,7 @@ class MetadataDatabase {
   bool FindTrackersByParentAndTitle(
       int64 parent_tracker_id,
       const std::string& title,
-      TrackerSet* trackers) const;
+      TrackerIDSet* trackers) const;
 
   // Builds the file path for the given tracker.  Returns true on success.
   // |path| can be NULL.
@@ -341,8 +341,8 @@ class MetadataDatabase {
   }
 
   bool GetMultiParentFileTrackers(std::string* file_id,
-                                  TrackerSet* trackers);
-  bool GetConflictingTrackers(TrackerSet* trackers);
+                                  TrackerIDSet* trackers);
+  bool GetConflictingTrackers(TrackerIDSet* trackers);
 
   // Sets |app_ids| to a list of all registered app ids.
   void GetRegisteredAppIDs(std::vector<std::string>* app_ids);
@@ -415,7 +415,7 @@ class MetadataDatabase {
   void MarkSingleTrackerAsDirty(FileTracker* tracker,
                                 leveldb::WriteBatch* batch);
   void ClearDirty(FileTracker* tracker, leveldb::WriteBatch* batch);
-  void MarkTrackerSetDirty(TrackerSet* trackers,
+  void MarkTrackerSetDirty(TrackerIDSet* trackers,
                            leveldb::WriteBatch* batch);
   void MarkTrackersDirtyByFileID(const std::string& file_id,
                                  leveldb::WriteBatch* batch);
