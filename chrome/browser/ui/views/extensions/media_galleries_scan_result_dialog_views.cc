@@ -325,6 +325,17 @@ void MediaGalleriesScanResultDialogViews::ShowContextMenu(
   }
 }
 
+void MediaGalleriesScanResultDialogViews::AcceptDialogForTesting() {
+  accepted_ = true;
+
+  web_modal::WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      web_modal::WebContentsModalDialogManager::FromWebContents(
+          controller_->web_contents());
+  DCHECK(web_contents_modal_dialog_manager);
+  web_modal::WebContentsModalDialogManager::TestApi(
+      web_contents_modal_dialog_manager).CloseAllDialogs();
+}
+
 // MediaGalleriesScanResultDialogViewsController -------------------------------
 
 // static

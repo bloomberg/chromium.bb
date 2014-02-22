@@ -4,34 +4,38 @@
 
 var mediaGalleries = chrome.mediaGalleries;
 
-function StartAndCancelMediaScanTest() {
-  function StartMediaScanTest() {
-    var startEventListener = function(details) {
-      chrome.test.assertEq('start', details.type);
-      mediaGalleries.onScanProgress.removeListener(startEventListener);
-      CancelMediaScanTest();
-    }
-    mediaGalleries.onScanProgress.addListener(startEventListener);
+function MediaScanTest() {
+  var scanProgress = 'start';
+  var initialGalleryCount = 0;
 
+  function OnScanResultsAdded(galleries) {
+    chrome.test.assertEq(initialGalleryCount + 1, galleries.length);
+    chrome.test.succeed();
+  }
+
+  function OnScanProgress(details) {
+    chrome.test.assertEq(scanProgress, details.type);
+    if (scanProgress == 'start') {
+      scanProgress = 'finish';
+    } else {
+      scanProgress = 'done';
+      chrome.test.runWithUserGesture(function() {
+          mediaGalleries.addScanResults(OnScanResultsAdded);
+      });
+    }
+  }
+
+  function OnInitialMediaGalleries(galleries) {
+    initialGalleryCount = galleries.length;
+    mediaGalleries.onScanProgress.addListener(OnScanProgress);
     mediaGalleries.startMediaScan();
   }
 
-  function CancelMediaScanTest() {
-    var cancelEventListener = function(details) {
-      chrome.test.assertEq('cancel', details.type);
-      mediaGalleries.onScanProgress.removeListener(cancelEventListener);
-      chrome.test.succeed();
-    };
-    mediaGalleries.onScanProgress.addListener(cancelEventListener);
-
-    mediaGalleries.cancelMediaScan();
-  }
-
-  StartMediaScanTest();
+  mediaGalleries.getMediaFileSystems(OnInitialMediaGalleries);
 }
 
 CreateDummyWindowToPreventSleep();
 
 chrome.test.runTests([
-  StartAndCancelMediaScanTest,
+  MediaScanTest,
 ]);

@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
@@ -22,7 +23,15 @@
 
 namespace MediaGalleries = extensions::api::media_galleries;
 
+class MediaGalleriesScanResultDialogController;
+
+namespace content {
+class WebContents;
+}
+
 namespace extensions {
+
+class Extension;
 
 // The profile-keyed service that manages the media galleries extension API.
 // Created at the same time as the Profile. This is also the event router.
@@ -204,6 +213,12 @@ class MediaGalleriesAddScanResultsFunction
  protected:
   virtual ~MediaGalleriesAddScanResultsFunction();
   virtual bool RunImpl() OVERRIDE;
+
+  // Pulled out for testing.
+  virtual MediaGalleriesScanResultDialogController* MakeDialog(
+      content::WebContents* web_contents,
+      const extensions::Extension& extension,
+      const base::Closure& on_finish);
 
  private:
   // Bottom half for RunImpl, invoked after the preferences is initialized.

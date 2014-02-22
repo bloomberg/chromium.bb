@@ -12,6 +12,7 @@
 
 #include "apps/app_window.h"
 #include "apps/app_window_registry.h"
+#include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/platform_file.h"
 #include "base/stl_util.h"
@@ -698,6 +699,16 @@ bool MediaGalleriesAddScanResultsFunction::RunImpl() {
       &MediaGalleriesAddScanResultsFunction::OnPreferencesInit, this));
 }
 
+MediaGalleriesScanResultDialogController*
+MediaGalleriesAddScanResultsFunction::MakeDialog(
+    content::WebContents* web_contents,
+    const extensions::Extension& extension,
+    const base::Closure& on_finish) {
+  // Controller will delete itself.
+  return new MediaGalleriesScanResultDialogController(web_contents, extension,
+                                                      on_finish);
+}
+
 void MediaGalleriesAddScanResultsFunction::OnPreferencesInit() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   const Extension* extension = GetExtension();
@@ -716,10 +727,9 @@ void MediaGalleriesAddScanResultsFunction::OnPreferencesInit() {
     return;
   }
 
-  // Controller will delete itself.
   base::Closure cb = base::Bind(
       &MediaGalleriesAddScanResultsFunction::GetAndReturnGalleries, this);
-  new MediaGalleriesScanResultDialogController(contents, *extension, cb);
+  MakeDialog(contents, *extension, cb);
 }
 
 void MediaGalleriesAddScanResultsFunction::GetAndReturnGalleries() {

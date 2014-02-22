@@ -46,7 +46,7 @@ class MockMediaGalleriesScanResultDialog
     dialog_destroyed_callback_.Run(update_count_);
   }
 
-  // MockMediaGalleriesScanResultDialog implementation.
+  // MediaGalleriesScanResultDialog implementation.
   virtual void UpdateResults() OVERRIDE {
     update_count_++;
   }
@@ -57,6 +57,10 @@ class MockMediaGalleriesScanResultDialog
   }
 
  private:
+  // MediaGalleriesScanResultDialog implementation.
+  virtual void AcceptDialogForTesting() OVERRIDE {
+  }
+
   int update_count_;
 
   DialogDestroyedCallback dialog_destroyed_callback_;

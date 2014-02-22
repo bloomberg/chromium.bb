@@ -191,6 +191,10 @@ void MediaGalleriesScanResultDialogCocoa::InitDialogControls() {
   [alert_ layout];
 }
 
+void MediaGalleriesScanResultDialogCocoa::AcceptDialogForTesting() {
+  OnAcceptClicked();
+}
+
 CGFloat MediaGalleriesScanResultDialogCocoa::CreateCheckboxes(
     CGFloat y_pos,
     const MediaGalleriesScanResultDialogController::OrderedScanResults&

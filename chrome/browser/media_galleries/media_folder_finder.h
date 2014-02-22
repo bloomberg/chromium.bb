@@ -38,6 +38,7 @@ class MediaFolderFinder {
 
  private:
   friend class MediaFolderFinderTest;
+  friend class MediaGalleriesPlatformAppBrowserTest;
 
   class Worker;
   struct WorkerReply {

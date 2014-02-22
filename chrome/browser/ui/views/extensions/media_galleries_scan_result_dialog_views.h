@@ -78,6 +78,9 @@ class MediaGalleriesScanResultDialogViews
                        ui::MenuSourceType source_type,
                        MediaGalleryPrefId id);
 
+  // MediaGalleriesScanResultDialog implementation:
+  virtual void AcceptDialogForTesting() OVERRIDE;
+
   MediaGalleriesScanResultDialogController* controller_;
 
   // The containing window (a weak pointer).

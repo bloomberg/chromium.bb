@@ -60,6 +60,9 @@ class MediaGalleriesScanResultDialogCocoa
       const MediaGalleriesScanResultDialogController::OrderedScanResults&
           scan_results);
 
+  // MediaGalleriesScanResultDialog implementation:
+  virtual void AcceptDialogForTesting() OVERRIDE;
+
   MediaGalleriesScanResultDialogController* controller_;  // weak
   scoped_ptr<ConstrainedWindowMac> window_;
 

@@ -42,6 +42,11 @@ class MediaGalleriesScanResultDialog {
   // Constructs a platform-specific dialog owned and controlled by |controller|.
   static MediaGalleriesScanResultDialog* Create(
       MediaGalleriesScanResultDialogController* controller);
+
+ private:
+  friend class TestMediaGalleriesAddScanResultsFunction;
+
+  virtual void AcceptDialogForTesting() = 0;
 };
 
 // The controller is responsible for handling the logic of the dialog and
@@ -124,6 +129,7 @@ class MediaGalleriesScanResultDialogController
  private:
   friend class MediaGalleriesScanResultDialogControllerTest;
   friend class MediaGalleriesScanResultDialogCocoaTest;
+  friend class TestMediaGalleriesAddScanResultsFunction;
 
   // Bottom half of constructor -- called when |preferences_| is initialized.
   void OnPreferencesInitialized();
