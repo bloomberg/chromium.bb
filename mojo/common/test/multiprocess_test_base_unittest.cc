@@ -6,19 +6,22 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "mojo/common/test/test_utils.h"
 #include "mojo/system/embedder/scoped_platform_handle.h"
 
 #if defined(OS_POSIX)
 #include <fcntl.h>
+#include <unistd.h>
+
+#include "base/posix/eintr_wrapper.h"
 #endif
 
 #if defined(OS_WIN)
+#include <windows.h>
+
 #include "base/win/windows_version.h"
 #endif
 
 namespace mojo {
-namespace test {
 namespace {
 
 // Returns true and logs a warning on Windows prior to Vista.
@@ -43,19 +46,57 @@ bool IsNonBlocking(const embedder::PlatformHandle& handle) {
 #endif
 }
 
+// Note: On POSIX, this method sets the handle to block.
 bool WriteByte(const embedder::PlatformHandle& handle, char c) {
-  size_t bytes_written = 0;
-  BlockingWrite(handle, &c, 1, &bytes_written);
-  return bytes_written == 1;
+#if defined(OS_WIN)
+  DWORD num_bytes_written = 0;
+  OVERLAPPED overlapped = { 0 };
+
+  if (!WriteFile(handle.handle, &c, 1, &num_bytes_written, &overlapped)) {
+    if (GetLastError() != ERROR_IO_PENDING)
+      return false;
+
+    if (GetOverlappedResult(handle.handle, &overlapped, &num_bytes_written,
+                            TRUE)) {
+      return num_bytes_written == 1;
+    }
+
+    return false;
+  }
+  return num_bytes_written == 1;
+#else
+  // We're lazy. Set it to block.
+  PCHECK(fcntl(handle.fd, F_SETFL, 0) == 0);
+
+  return HANDLE_EINTR(write(handle.fd, &c, 1)) == 1;
+#endif
 }
 
+// Note: On POSIX, this method sets the handle to block.
 bool ReadByte(const embedder::PlatformHandle& handle, char* c) {
-  size_t bytes_read = 0;
-  BlockingRead(handle, c, 1, &bytes_read);
-  return bytes_read == 1;
+#if defined(OS_WIN)
+  DWORD num_bytes_read = 0;
+  OVERLAPPED overlapped = { 0 };
+
+  if (!ReadFile(handle.handle, c, 1, &num_bytes_read, &overlapped)) {
+    if (GetLastError() != ERROR_IO_PENDING)
+      return false;
+
+    if (GetOverlappedResult(handle.handle, &overlapped, &num_bytes_read, TRUE))
+      return num_bytes_read == 1;
+
+    return false;
+  }
+  return num_bytes_read == 1;
+#else
+  // We're lazy. Set it to block.
+  PCHECK(fcntl(handle.fd, F_SETFL, 0) == 0);
+
+  return HANDLE_EINTR(read(handle.fd, c, 1)) == 1;
+#endif
 }
 
-typedef MultiprocessTestBase MultiprocessTestBaseTest;
+typedef test::MultiprocessTestBase MultiprocessTestBaseTest;
 
 TEST_F(MultiprocessTestBaseTest, RunChild) {
   if (SkipTest())
@@ -131,5 +172,4 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(PassedChannel) {
 }
 
 }  // namespace
-}  // namespace test
 }  // namespace mojo

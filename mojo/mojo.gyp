@@ -259,9 +259,6 @@
       'sources': [
         'common/test/multiprocess_test_base.cc',
         'common/test/multiprocess_test_base.h',
-        'common/test/test_utils.h',
-        'common/test/test_utils_posix.cc',
-        'common/test/test_utils_win.cc',
       ],
     },
     {
