@@ -53,11 +53,11 @@ BitmapPlatformDevice::BitmapPlatformDevice(const SkBitmap& bitmap)
 BitmapPlatformDevice::~BitmapPlatformDevice() {
 }
 
-SkBaseDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
-    SkBitmap::Config config, int width, int height, bool isOpaque,
-    Usage /*usage*/) {
-  SkASSERT(config == SkBitmap::kARGB_8888_Config);
-  return BitmapPlatformDevice::Create(width, height, isOpaque);
+SkBaseDevice* BitmapPlatformDevice::onCreateDevice(const SkImageInfo& info,
+                                                   Usage /*usage*/) {
+  SkASSERT(info.colorType() == kPMColor_SkColorType);
+  return BitmapPlatformDevice::Create(info.width(), info.height(),
+                                      info.isOpaque());
 }
 
 PlatformSurface BitmapPlatformDevice::BeginPlatformPaint() {

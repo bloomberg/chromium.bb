@@ -238,14 +238,11 @@ void BitmapPlatformDevice::DrawToNativeContext(CGContextRef context, int x,
     ReleaseBitmapContext();
 }
 
-SkBaseDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
-    SkBitmap::Config config, int width, int height, bool isOpaque,
-    Usage /*usage*/) {
-  SkASSERT(config == SkBitmap::kARGB_8888_Config);
-  SkBaseDevice* bitmap_device = BitmapPlatformDevice::CreateAndClear(width, 
-                                                                     height,
-                                                                     isOpaque);
-  return bitmap_device;
+SkBaseDevice* BitmapPlatformDevice::onCreateDevice(const SkImageInfo& info,
+                                                   Usage /*usage*/) {
+  SkASSERT(info.colorType() == kPMColor_SkColorType);
+  return BitmapPlatformDevice::CreateAndClear(info.width(), info.height(),
+                                                info.isOpaque());
 }
 
 // PlatformCanvas impl

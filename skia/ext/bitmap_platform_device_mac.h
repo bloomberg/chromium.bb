@@ -63,9 +63,8 @@ class SK_API BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice
   BitmapPlatformDevice(CGContextRef context,
                        const SkBitmap& bitmap);
 
-  virtual SkBaseDevice* onCreateCompatibleDevice(SkBitmap::Config, int width,
-                                                 int height, bool isOpaque,
-                                                 Usage usage) OVERRIDE;
+  virtual SkBaseDevice* onCreateDevice(const SkImageInfo& info,
+                                       Usage usage) OVERRIDE;
 
  private:
   void ReleaseBitmapContext();
