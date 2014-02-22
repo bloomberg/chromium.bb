@@ -277,9 +277,7 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
   match.contents_class =
       SpansFromTermMatch(new_matches, match.contents.length(), true);
 
-  match.allowed_to_be_default_match = history_match.can_inline() &&
-      !PreventInlineAutocomplete(autocomplete_input_);
-  if (match.allowed_to_be_default_match) {
+  if (history_match.can_inline()) {
     DCHECK(!new_matches.empty());
     size_t inline_autocomplete_offset = new_matches[0].offset +
         new_matches[0].length;
@@ -291,6 +289,8 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
       match.inline_autocompletion =
           match.fill_into_edit.substr(inline_autocomplete_offset);
     }
+    match.allowed_to_be_default_match = match.inline_autocompletion.empty() ||
+        !PreventInlineAutocomplete(autocomplete_input_);
   }
 
   // Format the description autocomplete presentation.
