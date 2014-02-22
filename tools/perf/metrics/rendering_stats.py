@@ -169,8 +169,8 @@ class RenderingStats(object):
         self.frame_timestamps[-1].append(
             event.start)
         if not first_frame:
-          self.frame_times[-1].append(round(self.frame_timestamps[-1] -
-                                            self.frame_timestamps[-2], 2))
+          self.frame_times[-1].append(round(self.frame_timestamps[-1][-1] -
+                                            self.frame_timestamps[-1][-2], 2))
         first_frame = False
       self.paint_times[-1].append(1000.0 *
           event.args['data']['paint_time'])
