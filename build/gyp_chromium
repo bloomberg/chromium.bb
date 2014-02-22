@@ -350,8 +350,6 @@ def CopyVsRuntimeDlls(output_dir, runtime_dirs):
   """
   assert sys.platform.startswith(('win32', 'cygwin'))
 
-  print 'Copying runtime DLLs:'
-
   def copy_runtime(target_dir, source_dir, dll_pattern):
     """Copy both the msvcr and msvcp runtime DLLs, only if the target doesn't
     exist, but the target directory does exist."""
@@ -361,10 +359,13 @@ def CopyVsRuntimeDlls(output_dir, runtime_dirs):
       source = os.path.join(source_dir, dll)
       # If gyp generated to that output dir, and the runtime isn't already
       # there, then copy it over.
-      print source, target, target_dir
-      if os.path.isdir(target_dir) and not os.path.isfile(target):
-        print '  copying', source, target
-        shutil.copyfile(source, target)
+      if (os.path.isdir(target_dir) and
+          (not os.path.isfile(target) or
+            os.stat(target).st_mtime != os.stat(source).st_mtime)):
+        print 'Copying %s to %s...' % (source, target)
+        if os.path.exists(target):
+          os.unlink(target)
+        shutil.copy2(source, target)
 
   x86, x64 = runtime_dirs
   out_debug = os.path.join(output_dir, 'Debug')
@@ -480,6 +481,9 @@ if __name__ == '__main__':
     version_is_pro = version[-1] != 'e'
     win8sdk = toolchain_data['win8sdk']
     wdk = toolchain_data['wdk']
+    # TODO(scottmg): The order unfortunately matters in these. They should be
+    # split into separate keys for x86 and x64. (See CopyVsRuntimeDlls call
+    # below). http://crbug.com/345992
     vs2013_runtime_dll_dirs = toolchain_data['runtime_dirs']
 
     os.environ['GYP_MSVS_OVERRIDE_PATH'] = toolchain
@@ -538,7 +542,8 @@ if __name__ == '__main__':
       [sys.executable, os.path.join(script_dir, 'landmines.py')])
 
   if vs2013_runtime_dll_dirs:
+    x64_runtime, x86_runtime = vs2013_runtime_dll_dirs
     CopyVsRuntimeDlls(os.path.join(chrome_src, GetOutputDirectory()),
-                      vs2013_runtime_dll_dirs)
+                      (x86_runtime, x64_runtime))
 
   sys.exit(gyp_rc)
