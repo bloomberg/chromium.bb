@@ -19,7 +19,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/point.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -49,7 +48,6 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
     views::Widget* frame,
     MinimizeAllowed minimize_allowed)
     : frame_(frame),
-      header_style_(HEADER_STYLE_SHORT),
       minimize_button_(NULL),
       size_button_(NULL),
       close_button_(NULL) {
@@ -93,6 +91,27 @@ FrameCaptionButtonContainerView::GetOldStyleSizeButton() {
       NULL : static_cast<FrameMaximizeButton*>(size_button_);
 }
 
+void FrameCaptionButtonContainerView::SetButtonImages(CaptionButtonIcon icon,
+                                                      int normal_image_id,
+                                                      int hovered_image_id,
+                                                      int pressed_image_id) {
+  button_icon_id_map_[icon] = ButtonIconIds(normal_image_id,
+                                            hovered_image_id,
+                                            pressed_image_id);
+  FrameCaptionButton* buttons[] = {
+    minimize_button_, size_button_, close_button_
+  };
+  for (size_t i = 0; i < arraysize(buttons); ++i) {
+    if (buttons[i]->icon() == icon) {
+      buttons[i]->SetImages(icon,
+                            FrameCaptionButton::ANIMATE_NO,
+                            normal_image_id,
+                            hovered_image_id,
+                            pressed_image_id);
+    }
+  }
+}
+
 void FrameCaptionButtonContainerView::ResetWindowControls() {
   SetButtonsToNormal(ANIMATE_NO);
 }
@@ -129,19 +148,6 @@ gfx::Size FrameCaptionButtonContainerView::GetPreferredSize() {
 }
 
 void FrameCaptionButtonContainerView::Layout() {
-  FrameCaptionButton::Style style = FrameCaptionButton::STYLE_SHORT_RESTORED;
-  if (header_style_ == HEADER_STYLE_SHORT) {
-    if (frame_->IsMaximized() || frame_->IsFullscreen())
-      style = FrameCaptionButton::STYLE_SHORT_MAXIMIZED_OR_FULLSCREEN;
-    // Else: FrameCaptionButton::STYLE_SHORT_RESTORED;
-  } else {
-    style = FrameCaptionButton::STYLE_TALL_RESTORED;
-  }
-
-  minimize_button_->SetStyle(style);
-  size_button_->SetStyle(style);
-  close_button_->SetStyle(style);
-
   int x = 0;
   for (int i = 0; i < child_count(); ++i) {
     views::View* child = child_at(i);
@@ -171,6 +177,30 @@ void FrameCaptionButtonContainerView::OnPaint(gfx::Canvas* canvas) {
     canvas->DrawImageInt(button_separator_,
                          GetMirroredXForRect(divider),
                          divider.y());
+  }
+}
+
+void FrameCaptionButtonContainerView::SetButtonIcon(FrameCaptionButton* button,
+                                                    CaptionButtonIcon icon,
+                                                    Animate animate) {
+  // The early return is dependant on |animate| because callers use
+  // SetButtonIcon() with ANIMATE_NO to progress |button|'s crossfade animation
+  // to the end.
+  if (button->icon() == icon &&
+      (animate == ANIMATE_YES || !button->IsAnimatingImageSwap())) {
+    return;
+  }
+
+  FrameCaptionButton::Animate fcb_animate = (animate == ANIMATE_YES) ?
+      FrameCaptionButton::ANIMATE_YES : FrameCaptionButton::ANIMATE_NO;
+  std::map<CaptionButtonIcon, ButtonIconIds>::const_iterator it =
+      button_icon_id_map_.find(icon);
+  if (it != button_icon_id_map_.end()) {
+    button->SetImages(icon,
+                      fcb_animate,
+                      it->second.normal_image_id,
+                      it->second.hovered_image_id,
+                      it->second.pressed_image_id);
   }
 }
 
@@ -228,10 +258,8 @@ void FrameCaptionButtonContainerView::SetButtonIcons(
     CaptionButtonIcon minimize_button_icon,
     CaptionButtonIcon close_button_icon,
     Animate animate) {
-  FrameCaptionButton::Animate fcb_animate = (animate == ANIMATE_YES) ?
-      FrameCaptionButton::ANIMATE_YES : FrameCaptionButton::ANIMATE_NO;
-  minimize_button_->SetIcon(minimize_button_icon, fcb_animate);
-  close_button_->SetIcon(close_button_icon, fcb_animate);
+  SetButtonIcon(minimize_button_, minimize_button_icon, animate);
+  SetButtonIcon(close_button_, close_button_icon, animate);
 }
 
 const FrameCaptionButton*
@@ -271,6 +299,23 @@ FrameCaptionButtonContainerView::PressButtonAt(
         views::Button::STATE_PRESSED : views::Button::STATE_NORMAL);
   }
   return pressed_button;
+}
+
+FrameCaptionButtonContainerView::ButtonIconIds::ButtonIconIds()
+    : normal_image_id(-1),
+      hovered_image_id(-1),
+      pressed_image_id(-1) {
+}
+
+FrameCaptionButtonContainerView::ButtonIconIds::ButtonIconIds(int normal_id,
+                                                              int hovered_id,
+                                                              int pressed_id)
+    : normal_image_id(normal_id),
+      hovered_image_id(hovered_id),
+      pressed_image_id(pressed_id) {
+}
+
+FrameCaptionButtonContainerView::ButtonIconIds::~ButtonIconIds() {
 }
 
 }  // namespace ash

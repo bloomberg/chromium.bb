@@ -13,6 +13,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/snap_sizer.h"
 #include "base/command_line.h"
+#include "grit/ash_resources.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
@@ -93,6 +94,17 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
     if (details.is_add && details.child == this) {
       caption_button_container_ = new FrameCaptionButtonContainerView(
           GetWidget(), FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
+
+      // Set arbitrary images for the container's buttons so that the buttons
+      // have non-empty sizes.
+      for (int icon = 0; icon < CAPTION_BUTTON_ICON_COUNT; ++icon) {
+        caption_button_container_->SetButtonImages(
+            static_cast<CaptionButtonIcon>(icon),
+            IDR_AURA_WINDOW_CLOSE,
+            IDR_AURA_WINDOW_CLOSE_H,
+            IDR_AURA_WINDOW_CLOSE_P);
+      }
+
       AddChildView(caption_button_container_);
     }
   }

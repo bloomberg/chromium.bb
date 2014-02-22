@@ -32,11 +32,21 @@ class FrameCaptionButtonContainerView;
 // Helper class for painting the window header.
 class ASH_EXPORT HeaderPainter : public gfx::AnimationDelegate {
  public:
+  // TODO(pkotwicz): Move code related to "browser" windows out of ash.
+  enum Style {
+    // Header style used for browser windows.
+    STYLE_BROWSER,
+
+    // Header style used for apps and miscellaneous windows (e.g. task manager).
+    STYLE_OTHER
+  };
+
   HeaderPainter();
   virtual ~HeaderPainter();
 
   // None of the parameters are owned.
-  void Init(views::Widget* frame,
+  void Init(Style style,
+            views::Widget* frame,
             views::View* header_view,
             views::View* window_icon,
             FrameCaptionButtonContainerView* caption_button_container);
@@ -87,10 +97,8 @@ class ASH_EXPORT HeaderPainter : public gfx::AnimationDelegate {
   // Paint the title bar, primarily the title string.
   void PaintTitleBar(gfx::Canvas* canvas, const gfx::FontList& title_font_list);
 
-  // Performs layout for the header based on whether we want the shorter
-  // appearance. |shorter_layout| is typically used for maximized windows, but
-  // not always.
-  void LayoutHeader(bool shorter_layout);
+  // Performs layout for the header based on |frame_|'s show state.
+  void LayoutHeader();
 
   // Sets the height of the header. The height of the header affects painting,
   // and non client hit tests. It does not affect layout.
@@ -115,6 +123,9 @@ class ASH_EXPORT HeaderPainter : public gfx::AnimationDelegate {
  private:
   FRIEND_TEST_ALL_PREFIXES(HeaderPainterTest, TitleIconAlignment);
 
+  // Updates the images used for the minimize, restore and close buttons.
+  void UpdateCaptionButtonImages();
+
   // Returns the header bounds in the coordinates of |header_view_|. The header
   // is assumed to be positioned at the top left corner of |header_view_| and to
   // have the same width as |header_view_|.
@@ -133,6 +144,8 @@ class ASH_EXPORT HeaderPainter : public gfx::AnimationDelegate {
   // Get the bounds for the title. The provided |title_font_list| is used to
   // determine the correct dimensions.
   gfx::Rect GetTitleBounds(const gfx::FontList& title_font_list);
+
+  Style style_;
 
   // Not owned
   views::Widget* frame_;

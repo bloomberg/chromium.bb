@@ -34,13 +34,6 @@ class ASH_EXPORT FrameCaptionButtonContainerView
     MINIMIZE_ALLOWED,
     MINIMIZE_DISALLOWED
   };
-  enum HeaderStyle {
-    // Default.
-    HEADER_STYLE_SHORT,
-
-    // Restored tabbed browser windows.
-    HEADER_STYLE_TALL
-  };
 
   // |frame| is the views::Widget that the caption buttons act on.
   // |minimize_allowed| indicates whether the frame can be minimized (either via
@@ -78,6 +71,14 @@ class ASH_EXPORT FrameCaptionButtonContainerView
   // otherwise.
   FrameMaximizeButton* GetOldStyleSizeButton();
 
+  // Sets the resource ids of the images to paint the button for |icon|. The
+  // FrameCaptionButtonContainerView will keep track of the images to use for
+  // |icon| even if none of the buttons currently use |icon|.
+  void SetButtonImages(CaptionButtonIcon icon,
+                       int normal_image_id,
+                       int hovered_image_id,
+                       int pressed_image_id);
+
   // Tell the window controls to reset themselves to the normal state.
   void ResetWindowControls();
 
@@ -85,11 +86,6 @@ class ASH_EXPORT FrameCaptionButtonContainerView
   // HTNOWHERE if |point| is not over any of the caption buttons. |point| must
   // be in the coordinates of the FrameCaptionButtonContainerView.
   int NonClientHitTest(const gfx::Point& point) const;
-
-  // Sets the header style.
-  void set_header_style(HeaderStyle header_style) {
-    header_style_ = header_style;
-  }
 
   // views::View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -99,6 +95,24 @@ class ASH_EXPORT FrameCaptionButtonContainerView
 
  private:
   friend class FrameCaptionButtonContainerViewTest;
+
+  struct ButtonIconIds {
+    ButtonIconIds();
+    ButtonIconIds(int normal_id, int hovered_id, int pressed_id);
+    ~ButtonIconIds();
+
+    int normal_image_id;
+    int hovered_image_id;
+    int pressed_image_id;
+  };
+
+  // Sets |button|'s icon to |icon|. If |animate| is ANIMATE_YES, the button
+  // will crossfade to the new icon. If |animate| is ANIMATE_NO and
+  // |icon| == |button|->icon(), the crossfade animation is progressed to the
+  // end.
+  void SetButtonIcon(FrameCaptionButton* button,
+                     CaptionButtonIcon icon,
+                     Animate animate);
 
   // views::ButtonListener override:
   virtual void ButtonPressed(views::Button* sender,
@@ -120,13 +134,15 @@ class ASH_EXPORT FrameCaptionButtonContainerView
   // The close button separator.
   gfx::ImageSkia button_separator_;
 
-  HeaderStyle header_style_;
-
   // The buttons. In the normal button style, at most one of |minimize_button_|
   // and |size_button_| is visible.
   FrameCaptionButton* minimize_button_;
   FrameCaptionButton* size_button_;
   FrameCaptionButton* close_button_;
+
+  // Mapping of the images needed to paint a button for each of the values of
+  // CaptionButtonIcon.
+  std::map<CaptionButtonIcon, ButtonIconIds> button_icon_id_map_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameCaptionButtonContainerView);
 };

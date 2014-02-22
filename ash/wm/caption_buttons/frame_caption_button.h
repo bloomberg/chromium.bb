@@ -9,7 +9,7 @@
 #include "ash/wm/caption_buttons/caption_button_types.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/custom_button.h"
 
 namespace gfx {
 class SlideAnimation;
@@ -19,22 +19,11 @@ namespace ash {
 
 // Base class for the window caption buttons (minimize, maximize, restore,
 // close).
-class ASH_EXPORT FrameCaptionButton : public views::ImageButton {
+class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
  public:
   enum Animate {
     ANIMATE_YES,
     ANIMATE_NO
-  };
-
-  enum Style {
-    // Restored browser windows.
-    STYLE_TALL_RESTORED,
-
-    // All other restored windows.
-    STYLE_SHORT_RESTORED,
-
-    // Maximized or fullscreen windows.
-    STYLE_SHORT_MAXIMIZED_OR_FULLSCREEN
   };
 
   static const char kViewClassName[];
@@ -42,14 +31,22 @@ class ASH_EXPORT FrameCaptionButton : public views::ImageButton {
   FrameCaptionButton(views::ButtonListener* listener, CaptionButtonIcon icon);
   virtual ~FrameCaptionButton();
 
-  // Sets the button's icon. If |animate| is ANIMATE_YES, the button crossfades
-  // to the new icon.
-  void SetIcon(CaptionButtonIcon icon, Animate animate);
+  // Sets the images to use to paint the button. If |animate| is ANIMATE_YES,
+  // the button crossfades to the new visuals. If the image ids match those
+  // currently used by the button and |animate| is ANIMATE_NO the crossfade
+  // animation is progressed to the end.
+  void SetImages(CaptionButtonIcon icon,
+                 Animate animate,
+                 int normal_image_id,
+                 int hovered_image_id,
+                 int pressed_image_id);
 
-  // Sets the button's style. The transition to the new style is not animated.
-  void SetStyle(Style style);
+  // Returns true if the button is crossfading to new visuals set in
+  // SetImages().
+  bool IsAnimatingImageSwap() const;
 
   // views::View overrides:
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
@@ -63,32 +60,30 @@ class ASH_EXPORT FrameCaptionButton : public views::ImageButton {
   virtual void StateChanged() OVERRIDE;
 
  private:
-  // Paints the button as it will look at the end of the animation but with
-  // |opacity|.
+  // Paints the button as it will look at the end of |swap_images_animation_|
+  // but with |opacity|.
   void PaintWithAnimationEndState(gfx::Canvas* canvas, int opacity);
-
-  // Updates the button's images based on the current icon and style.
-  void UpdateImages();
-
-  // Sets the button's images based on the given ids.
-  void SetImages(int normal_image_id, int hot_image_id, int pushed_image_id);
-
-  // gfx::AnimationDelegate override:
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
   // The button's current icon.
   CaptionButtonIcon icon_;
 
-  // The button's current style.
-  Style style_;
-
   // The scale at which the button was previously painted.
   float last_paint_scale_;
+
+  // The images and image ids used to paint the button.
+  int normal_image_id_;
+  int hovered_image_id_;
+  int pressed_image_id_;
+  gfx::ImageSkia normal_image_;
+  gfx::ImageSkia hovered_image_;
+  gfx::ImageSkia pressed_image_;
 
   // The image to crossfade from.
   gfx::ImageSkia crossfade_image_;
 
-  scoped_ptr<gfx::SlideAnimation> animation_;
+  // Crossfade animation started when the button's images are changed by
+  // SetImages().
+  scoped_ptr<gfx::SlideAnimation> swap_images_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameCaptionButton);
 };

@@ -4,7 +4,6 @@
 
 #include "ash/wm/caption_buttons/frame_caption_button.h"
 
-#include "grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
@@ -13,11 +12,11 @@ namespace ash {
 
 namespace {
 
-// The duration of the crossfade animation when swapping the button's icon.
-const int kCrossfadeDurationMs = 200;
+// The duration of the crossfade animation when swapping the button's images.
+const int kSwapImagesAnimationDurationMs = 200;
 
 // The duration of the fade out animation of the old icon during a crossfade
-// animation as a ratio of |kCrossfadeDurationMs|.
+// animation as a ratio of |kSwapImagesAnimationDurationMs|.
 const float kFadeOutRatio = 0.5f;
 
 }  // namespace
@@ -27,46 +26,68 @@ const char FrameCaptionButton::kViewClassName[] = "FrameCaptionButton";
 
 FrameCaptionButton::FrameCaptionButton(views::ButtonListener* listener,
                                        CaptionButtonIcon icon)
-    : ImageButton(listener),
+    : CustomButton(listener),
       icon_(icon),
-      style_(STYLE_SHORT_RESTORED),
       last_paint_scale_(1.0f),
-      animation_(new gfx::SlideAnimation(this)) {
-  animation_->Reset(1);
-  UpdateImages();
+      normal_image_id_(-1),
+      hovered_image_id_(-1),
+      pressed_image_id_(-1),
+      swap_images_animation_(new gfx::SlideAnimation(this)) {
+  swap_images_animation_->Reset(1);
+  EnableCanvasFlippingForRTLUI(true);
 }
 
 FrameCaptionButton::~FrameCaptionButton() {
 }
 
-void FrameCaptionButton::SetIcon(CaptionButtonIcon icon, Animate animate) {
-  if (icon_ == icon)
+void FrameCaptionButton::SetImages(CaptionButtonIcon icon,
+                                   Animate animate,
+                                   int normal_image_id,
+                                   int hovered_image_id,
+                                   int pressed_image_id) {
+  // The early return is dependant on |animate| because callers use SetImages()
+  // with ANIMATE_NO to progress the crossfade animation to the end.
+  if (icon == icon_ &&
+      (animate == ANIMATE_YES || !swap_images_animation_->is_animating()) &&
+      normal_image_id == normal_image_id_ &&
+      hovered_image_id == hovered_image_id_ &&
+      pressed_image_id == pressed_image_id_) {
     return;
+  }
 
   if (animate == ANIMATE_YES) {
     gfx::Canvas canvas(size(), last_paint_scale_, false);
     OnPaint(&canvas);
     crossfade_image_ = gfx::ImageSkia(canvas.ExtractImageRep());
-
-    icon_ = icon;
-    UpdateImages();
-
-    animation_->Reset(0);
-    animation_->SetSlideDuration(kCrossfadeDurationMs);
-    animation_->Show();
-  } else {
-    animation_->Reset(1);
-    icon_ = icon;
-    UpdateImages();
   }
+
+  icon_ = icon;
+  normal_image_id_ = normal_image_id;
+  hovered_image_id_ = hovered_image_id;
+  pressed_image_id_ = pressed_image_id;
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  normal_image_ = *rb.GetImageSkiaNamed(normal_image_id);
+  hovered_image_ = *rb.GetImageSkiaNamed(hovered_image_id);
+  pressed_image_ = *rb.GetImageSkiaNamed(pressed_image_id);
+
+  if (animate == ANIMATE_YES) {
+    swap_images_animation_->Reset(0);
+    swap_images_animation_->SetSlideDuration(kSwapImagesAnimationDurationMs);
+    swap_images_animation_->Show();
+  } else {
+    swap_images_animation_->Reset(1);
+  }
+  PreferredSizeChanged();
+  SchedulePaint();
 }
 
-void FrameCaptionButton::SetStyle(Style style) {
-  if (style_ == style)
-    return;
-  animation_->Reset(1);
-  style_ = style;
-  UpdateImages();
+bool FrameCaptionButton::IsAnimatingImageSwap() const {
+  return swap_images_animation_->is_animating();
+}
+
+gfx::Size FrameCaptionButton::GetPreferredSize() {
+  return normal_image_.isNull() ? gfx::Size() : normal_image_.size();
 }
 
 const char* FrameCaptionButton::GetClassName() const {
@@ -74,8 +95,11 @@ const char* FrameCaptionButton::GetClassName() const {
 }
 
 void FrameCaptionButton::OnPaint(gfx::Canvas* canvas) {
+  // TODO(pkotwicz): Take |CustomButton::hover_animation_| into account once
+  // the button has separate images for the icon and background.
+
   last_paint_scale_ = canvas->image_scale();
-  double animation_value = animation_->GetCurrentValue();
+  double animation_value = swap_images_animation_->GetCurrentValue();
   int alpha = static_cast<int>(animation_value * 255);
   int crossfade_alpha = 0;
   if (animation_value < kFadeOutRatio) {
@@ -99,7 +123,7 @@ void FrameCaptionButton::OnPaint(gfx::Canvas* canvas) {
 }
 
 void FrameCaptionButton::OnGestureEvent(ui::GestureEvent* event) {
-  // ImageButton does not become pressed when the user drags off and then back
+  // CustomButton does not become pressed when the user drags off and then back
   // onto the button. Make FrameCaptionButton pressed in this case because this
   // behavior is more consistent with AlternateFrameSizeButton.
   if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN ||
@@ -118,80 +142,31 @@ void FrameCaptionButton::OnGestureEvent(ui::GestureEvent* event) {
       event->StopPropagation();
     }
   }
-  ImageButton::OnGestureEvent(event);
+  CustomButton::OnGestureEvent(event);
 }
 
 void FrameCaptionButton::StateChanged() {
   if (state_ == STATE_HOVERED || state_ == STATE_PRESSED)
-    animation_->Reset(1);
+    swap_images_animation_->Reset(1);
 }
 
-void FrameCaptionButton::PaintWithAnimationEndState(gfx::Canvas* canvas,
-                                                    int opacity) {
-  gfx::ImageSkia img = GetImageToPaint();
-  if (img.isNull())
-    return;
-
-  SkPaint paint;
-  paint.setAlpha(opacity);
-  canvas->DrawImageInt(img, 0, 0, paint);
-}
-
-void FrameCaptionButton::UpdateImages() {
-  switch (icon_) {
-    case CAPTION_BUTTON_ICON_MINIMIZE:
-      SetImages(IDR_AURA_WINDOW_MINIMIZE_SHORT,
-                IDR_AURA_WINDOW_MINIMIZE_SHORT_H,
-                IDR_AURA_WINDOW_MINIMIZE_SHORT_P);
-      break;
-   case CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE:
-   case CAPTION_BUTTON_ICON_LEFT_SNAPPED:
-   case CAPTION_BUTTON_ICON_RIGHT_SNAPPED:
-     if (style_ == STYLE_SHORT_MAXIMIZED_OR_FULLSCREEN) {
-       SetImages(IDR_AURA_WINDOW_MAXIMIZED_RESTORE2,
-                 IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_H,
-                 IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_P);
-     } else if (style_ == STYLE_SHORT_RESTORED) {
-       SetImages(IDR_AURA_WINDOW_MAXIMIZED_RESTORE,
-                 IDR_AURA_WINDOW_MAXIMIZED_RESTORE_H,
-                 IDR_AURA_WINDOW_MAXIMIZED_RESTORE_P);
-     } else {
-       SetImages(IDR_AURA_WINDOW_MAXIMIZE,
-                 IDR_AURA_WINDOW_MAXIMIZE_H,
-                 IDR_AURA_WINDOW_MAXIMIZE_P);
-     }
-     break;
-   case CAPTION_BUTTON_ICON_CLOSE:
-     if (style_ == STYLE_SHORT_MAXIMIZED_OR_FULLSCREEN) {
-       SetImages(IDR_AURA_WINDOW_MAXIMIZED_CLOSE2,
-                 IDR_AURA_WINDOW_MAXIMIZED_CLOSE2_H,
-                 IDR_AURA_WINDOW_MAXIMIZED_CLOSE2_P);
-     } else if (style_ == STYLE_SHORT_RESTORED) {
-       SetImages(IDR_AURA_WINDOW_MAXIMIZED_CLOSE,
-                 IDR_AURA_WINDOW_MAXIMIZED_CLOSE_H,
-                 IDR_AURA_WINDOW_MAXIMIZED_CLOSE_P);
-     } else {
-       SetImages(IDR_AURA_WINDOW_CLOSE,
-                 IDR_AURA_WINDOW_CLOSE_H,
-                 IDR_AURA_WINDOW_CLOSE_P);
-     }
-     break;
+void FrameCaptionButton::PaintWithAnimationEndState(
+    gfx::Canvas* canvas,
+    int opacity) {
+  gfx::ImageSkia img;
+  if (state() == STATE_HOVERED) {
+    img = hovered_image_;
+  } else if (state() == STATE_PRESSED) {
+    img = pressed_image_;
+  } else {
+    img = normal_image_;
   }
 
-  SchedulePaint();
-}
-
-void FrameCaptionButton::SetImages(int normal_image_id,
-                                   int hot_image_id,
-                                   int pushed_image_id) {
-  ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
-  SetImage(STATE_NORMAL, resource_bundle.GetImageSkiaNamed(normal_image_id));
-  SetImage(STATE_HOVERED, resource_bundle.GetImageSkiaNamed(hot_image_id));
-  SetImage(STATE_PRESSED, resource_bundle.GetImageSkiaNamed(pushed_image_id));
-}
-
-void FrameCaptionButton::AnimationProgressed(const gfx::Animation* animation) {
-  SchedulePaint();
+  if (!img.isNull()) {
+    SkPaint paint;
+    paint.setAlpha(opacity);
+    canvas->DrawImageInt(img, 0, 0, paint);
+  }
 }
 
 }  // namespace ash

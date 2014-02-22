@@ -104,7 +104,10 @@ void BrowserNonClientFrameViewAsh::Init() {
   UpdateAvatarInfo();
 
   // HeaderPainter handles layout.
-  header_painter_->Init(frame(), this, window_icon_, caption_button_container_);
+  ash::HeaderPainter::Style header_style = UsePackagedAppHeaderStyle() ?
+      ash::HeaderPainter::STYLE_OTHER : ash::HeaderPainter::STYLE_BROWSER;
+  header_painter_->Init(header_style, frame(), this, window_icon_,
+      caption_button_container_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -268,9 +271,7 @@ void BrowserNonClientFrameViewAsh::Layout() {
   // The header must be laid out before computing |header_height| because the
   // computation of |header_height| for app and popup windows depends on the
   // position of the window controls.
-  header_painter_->LayoutHeader(UsePackagedAppHeaderStyle() ||
-                                frame()->IsMaximized() ||
-                                frame()->IsFullscreen());
+  header_painter_->LayoutHeader();
 
   int header_height = 0;
   if (browser_view()->IsTabStripVisible()) {

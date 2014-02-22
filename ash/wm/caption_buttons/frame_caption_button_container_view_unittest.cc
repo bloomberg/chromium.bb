@@ -10,8 +10,6 @@
 #include "base/command_line.h"
 #include "grit/ash_resources.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/views/border.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -65,6 +63,18 @@ class FrameCaptionButtonContainerViewTest : public ash::test::AshTestBase {
     return widget;
   }
 
+  // Sets |container| to use arbitrary images for the buttons. Setting the
+  // images causes the buttons to have non-empty sizes.
+  void SetMockImages(FrameCaptionButtonContainerView* container) {
+    for (int icon = 0; icon < CAPTION_BUTTON_ICON_COUNT; ++icon) {
+      container->SetButtonImages(
+          static_cast<CaptionButtonIcon>(icon),
+          IDR_AURA_WINDOW_CLOSE,
+          IDR_AURA_WINDOW_CLOSE_H,
+          IDR_AURA_WINDOW_CLOSE_P);
+    }
+  }
+
   // Tests that |leftmost| and |rightmost| are at |container|'s edges.
   bool CheckButtonsAtEdges(FrameCaptionButtonContainerView* container,
                            const ash::FrameCaptionButton& leftmost,
@@ -85,24 +95,6 @@ class FrameCaptionButtonContainerViewTest : public ash::test::AshTestBase {
                << rightmost.bounds().ToString() << " not at edges of "
                << expected.ToString();
     return false;
-  }
-
-  // Returns true if the images for |button|'s states match the passed in ids.
-  bool ImagesMatch(ash::FrameCaptionButton* button,
-                   int normal_image_id,
-                   int hovered_image_id,
-                   int pressed_image_id) {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    gfx::ImageSkia* normal = rb.GetImageSkiaNamed(normal_image_id);
-    gfx::ImageSkia* hovered = rb.GetImageSkiaNamed(hovered_image_id);
-    gfx::ImageSkia* pressed = rb.GetImageSkiaNamed(pressed_image_id);
-    using views::Button;
-    gfx::ImageSkia actual_normal = button->GetImage(Button::STATE_NORMAL);
-    gfx::ImageSkia actual_hovered = button->GetImage(Button::STATE_HOVERED);
-    gfx::ImageSkia actual_pressed = button->GetImage(Button::STATE_PRESSED);
-    return actual_normal.BackedBySameObjectAs(*normal) &&
-        actual_hovered.BackedBySameObjectAs(*hovered) &&
-        actual_pressed.BackedBySameObjectAs(*pressed);
   }
 
  private:
@@ -136,6 +128,7 @@ TEST_F(FrameCaptionButtonContainerViewTestOldStyle, ButtonVisibility) {
       CreateTestWidget(MAXIMIZE_ALLOWED));
   FrameCaptionButtonContainerView container1(widget_can_maximize.get(),
       FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
+  SetMockImages(&container1);
   container1.Layout();
   FrameCaptionButtonContainerView::TestApi t1(&container1);
   EXPECT_FALSE(t1.minimize_button()->visible());
@@ -150,6 +143,7 @@ TEST_F(FrameCaptionButtonContainerViewTestOldStyle, ButtonVisibility) {
       CreateTestWidget(MAXIMIZE_DISALLOWED));
   FrameCaptionButtonContainerView container2(widget_cannot_maximize.get(),
       FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
+  SetMockImages(&container2);
   container2.Layout();
   FrameCaptionButtonContainerView::TestApi t2(&container2);
   EXPECT_TRUE(t2.minimize_button()->visible());
@@ -162,6 +156,7 @@ TEST_F(FrameCaptionButtonContainerViewTestOldStyle, ButtonVisibility) {
   // neither minimizing nor maximizing are allowed.
   FrameCaptionButtonContainerView container3(widget_cannot_maximize.get(),
       FrameCaptionButtonContainerView::MINIMIZE_DISALLOWED);
+  SetMockImages(&container3);
   container3.Layout();
   FrameCaptionButtonContainerView::TestApi t3(&container3);
   EXPECT_FALSE(t3.minimize_button()->visible());
@@ -169,65 +164,6 @@ TEST_F(FrameCaptionButtonContainerViewTestOldStyle, ButtonVisibility) {
   EXPECT_TRUE(t3.close_button()->visible());
   EXPECT_TRUE(CheckButtonsAtEdges(
       &container3, *t3.close_button(), *t3.close_button()));
-}
-
-// Test how the header style affects which images are used for the buttons.
-TEST_F(FrameCaptionButtonContainerViewTestOldStyle, HeaderStyle) {
-  scoped_ptr<views::Widget> widget(CreateTestWidget(MAXIMIZE_ALLOWED));
-  FrameCaptionButtonContainerView container(widget.get(),
-      FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
-  FrameCaptionButtonContainerView::TestApi t(&container);
-
-  // Tall header style.
-  container.set_header_style(
-      FrameCaptionButtonContainerView::HEADER_STYLE_TALL);
-  container.Layout();
-  EXPECT_TRUE(ImagesMatch(t.size_button(),
-                          IDR_AURA_WINDOW_MAXIMIZE,
-                          IDR_AURA_WINDOW_MAXIMIZE_H,
-                          IDR_AURA_WINDOW_MAXIMIZE_P));
-  EXPECT_TRUE(ImagesMatch(t.close_button(),
-                          IDR_AURA_WINDOW_CLOSE,
-                          IDR_AURA_WINDOW_CLOSE_H,
-                          IDR_AURA_WINDOW_CLOSE_P));
-
-  // Short header style.
-  container.set_header_style(
-      FrameCaptionButtonContainerView::HEADER_STYLE_SHORT);
-  container.Layout();
-  EXPECT_TRUE(ImagesMatch(t.size_button(),
-                          IDR_AURA_WINDOW_MAXIMIZED_RESTORE,
-                          IDR_AURA_WINDOW_MAXIMIZED_RESTORE_H,
-                          IDR_AURA_WINDOW_MAXIMIZED_RESTORE_P));
-  EXPECT_TRUE(ImagesMatch(t.close_button(),
-                          IDR_AURA_WINDOW_MAXIMIZED_CLOSE,
-                          IDR_AURA_WINDOW_MAXIMIZED_CLOSE_H,
-                          IDR_AURA_WINDOW_MAXIMIZED_CLOSE_P));
-
-  // Maximized short header style.
-  widget->Maximize();
-  container.Layout();
-  EXPECT_TRUE(ImagesMatch(t.size_button(),
-                          IDR_AURA_WINDOW_MAXIMIZED_RESTORE2,
-                          IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_H,
-                          IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_P));
-  EXPECT_TRUE(ImagesMatch(t.close_button(),
-                          IDR_AURA_WINDOW_MAXIMIZED_CLOSE2,
-                          IDR_AURA_WINDOW_MAXIMIZED_CLOSE2_H,
-                          IDR_AURA_WINDOW_MAXIMIZED_CLOSE2_P));
-
-  // The buttons are visible during a reveal of the top-of-window views in
-  // immersive fullscreen. They should use the same images as maximized.
-  widget->SetFullscreen(true);
-  container.Layout();
-  EXPECT_TRUE(ImagesMatch(t.size_button(),
-                          IDR_AURA_WINDOW_MAXIMIZED_RESTORE2,
-                          IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_H,
-                          IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_P));
-  EXPECT_TRUE(ImagesMatch(t.close_button(),
-                          IDR_AURA_WINDOW_MAXIMIZED_CLOSE2,
-                          IDR_AURA_WINDOW_MAXIMIZED_CLOSE2_H,
-                          IDR_AURA_WINDOW_MAXIMIZED_CLOSE2_P));
 }
 
 class FrameCaptionButtonContainerViewTestAlternateStyle
@@ -264,6 +200,7 @@ TEST_F(FrameCaptionButtonContainerViewTestAlternateStyle, ButtonVisibility) {
       CreateTestWidget(MAXIMIZE_ALLOWED));
   FrameCaptionButtonContainerView container(widget_can_maximize.get(),
       FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
+  SetMockImages(&container);
   container.Layout();
   FrameCaptionButtonContainerView::TestApi t(&container);
   EXPECT_TRUE(t.minimize_button()->visible());

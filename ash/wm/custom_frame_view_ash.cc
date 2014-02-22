@@ -220,7 +220,8 @@ CustomFrameViewAsh::HeaderView::HeaderView(views::Widget* frame)
   if (frame_maximize_button)
     frame_maximize_button->AddObserver(this);
 
-  header_painter_->Init(frame_, this, NULL, caption_button_container_);
+  header_painter_->Init(HeaderPainter::STYLE_OTHER, frame_, this, NULL,
+      caption_button_container_);
 }
 
 CustomFrameViewAsh::HeaderView::~HeaderView() {
@@ -257,7 +258,7 @@ int CustomFrameViewAsh::HeaderView::GetMinimumWidth() const {
 }
 
 void CustomFrameViewAsh::HeaderView::Layout() {
-  header_painter_->LayoutHeader(true);
+  header_painter_->LayoutHeader();
   header_painter_->set_header_height(GetPreferredHeight());
 }
 

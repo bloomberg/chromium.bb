@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "ash/root_window_controller.h"
 #include "ash/wm/caption_buttons/frame_caption_button_container_view.h"
 #include "base/logging.h"  // DCHECK
 #include "grit/ash_resources.h"
@@ -22,7 +21,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -155,6 +153,7 @@ HeaderPainter::~HeaderPainter() {
 }
 
 void HeaderPainter::Init(
+    Style style,
     views::Widget* frame,
     views::View* header_view,
     views::View* window_icon,
@@ -163,6 +162,7 @@ void HeaderPainter::Init(
   DCHECK(header_view);
   // window_icon may be NULL.
   DCHECK(caption_button_container);
+  style_ = style;
   frame_ = frame;
   header_view_ = header_view;
   window_icon_ = window_icon;
@@ -393,15 +393,13 @@ void HeaderPainter::PaintTitleBar(gfx::Canvas* canvas,
   }
 }
 
-void HeaderPainter::LayoutHeader(bool shorter_layout) {
+void HeaderPainter::LayoutHeader() {
   // Purposefully set |header_height_| to an invalid value. We cannot use
   // |header_height_| because the computation of |header_height_| may depend
   // on having laid out the window controls.
   header_height_ = -1;
 
-  caption_button_container_->set_header_style(shorter_layout ?
-      FrameCaptionButtonContainerView::HEADER_STYLE_SHORT :
-      FrameCaptionButtonContainerView::HEADER_STYLE_TALL);
+  UpdateCaptionButtonImages();
   caption_button_container_->Layout();
 
   gfx::Size caption_button_container_size =
@@ -450,6 +448,79 @@ void HeaderPainter::AnimationProgressed(const gfx::Animation* animation) {
 
 ///////////////////////////////////////////////////////////////////////////////
 // HeaderPainter, private:
+
+void HeaderPainter::UpdateCaptionButtonImages() {
+  if (frame_->IsMaximized() || frame_->IsFullscreen()) {
+    caption_button_container_->SetButtonImages(
+        CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
+        IDR_AURA_WINDOW_MAXIMIZED_RESTORE2,
+        IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_H,
+        IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_P);
+    caption_button_container_->SetButtonImages(
+        CAPTION_BUTTON_ICON_CLOSE,
+        IDR_AURA_WINDOW_MAXIMIZED_CLOSE2,
+        IDR_AURA_WINDOW_MAXIMIZED_CLOSE2_H,
+        IDR_AURA_WINDOW_MAXIMIZED_CLOSE2_P);
+    caption_button_container_->SetButtonImages(
+        CAPTION_BUTTON_ICON_LEFT_SNAPPED,
+        IDR_AURA_WINDOW_MAXIMIZED_RESTORE2,
+        IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_H,
+        IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_P);
+    caption_button_container_->SetButtonImages(
+        CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
+        IDR_AURA_WINDOW_MAXIMIZED_RESTORE2,
+        IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_H,
+        IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_P);
+  } else if (style_ == STYLE_BROWSER) {
+    caption_button_container_->SetButtonImages(
+        CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
+        IDR_AURA_WINDOW_MAXIMIZE,
+        IDR_AURA_WINDOW_MAXIMIZE_H,
+        IDR_AURA_WINDOW_MAXIMIZE_P);
+    caption_button_container_->SetButtonImages(
+        CAPTION_BUTTON_ICON_CLOSE,
+        IDR_AURA_WINDOW_CLOSE,
+        IDR_AURA_WINDOW_CLOSE_H,
+        IDR_AURA_WINDOW_CLOSE_P);
+    caption_button_container_->SetButtonImages(
+        CAPTION_BUTTON_ICON_LEFT_SNAPPED,
+        IDR_AURA_WINDOW_MAXIMIZE,
+        IDR_AURA_WINDOW_MAXIMIZE_H,
+        IDR_AURA_WINDOW_MAXIMIZE_P);
+    caption_button_container_->SetButtonImages(
+        CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
+        IDR_AURA_WINDOW_MAXIMIZE,
+        IDR_AURA_WINDOW_MAXIMIZE_H,
+        IDR_AURA_WINDOW_MAXIMIZE_P);
+  } else {
+    caption_button_container_->SetButtonImages(
+        CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
+        IDR_AURA_WINDOW_MAXIMIZED_RESTORE,
+        IDR_AURA_WINDOW_MAXIMIZED_RESTORE_H,
+        IDR_AURA_WINDOW_MAXIMIZED_RESTORE_P);
+    caption_button_container_->SetButtonImages(
+        CAPTION_BUTTON_ICON_CLOSE,
+        IDR_AURA_WINDOW_MAXIMIZED_CLOSE,
+        IDR_AURA_WINDOW_MAXIMIZED_CLOSE_H,
+        IDR_AURA_WINDOW_MAXIMIZED_CLOSE_P);
+    caption_button_container_->SetButtonImages(
+        CAPTION_BUTTON_ICON_LEFT_SNAPPED,
+        IDR_AURA_WINDOW_MAXIMIZED_RESTORE,
+        IDR_AURA_WINDOW_MAXIMIZED_RESTORE_H,
+        IDR_AURA_WINDOW_MAXIMIZED_RESTORE_P);
+    caption_button_container_->SetButtonImages(
+        CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
+        IDR_AURA_WINDOW_MAXIMIZED_RESTORE,
+        IDR_AURA_WINDOW_MAXIMIZED_RESTORE_H,
+        IDR_AURA_WINDOW_MAXIMIZED_RESTORE_P);
+  }
+
+  caption_button_container_->SetButtonImages(
+      CAPTION_BUTTON_ICON_MINIMIZE,
+      IDR_AURA_WINDOW_MINIMIZE_SHORT,
+      IDR_AURA_WINDOW_MINIMIZE_SHORT_H,
+      IDR_AURA_WINDOW_MINIMIZE_SHORT_P);
+}
 
 gfx::Rect HeaderPainter::GetHeaderLocalBounds() const {
   return gfx::Rect(header_view_->width(), header_height_);

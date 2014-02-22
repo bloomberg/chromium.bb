@@ -36,30 +36,48 @@ class HeaderPainterTest : public ash::test::AshTestBase {
 // Ensure the title text is vertically aligned with the window icon.
 TEST_F(HeaderPainterTest, TitleIconAlignment) {
   scoped_ptr<Widget> w(CreateTestWidget());
-  HeaderPainter p;
   ash::FrameCaptionButtonContainerView container(w.get(),
       ash::FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
   views::View window_icon;
   window_icon.SetBounds(0, 0, 16, 16);
-  p.Init(w.get(),
-         w->non_client_view()->frame_view(),
-         &window_icon,
-         &container);
   w->SetBounds(gfx::Rect(0, 0, 500, 500));
   w->Show();
 
-  // Title and icon are aligned when shorter_header is false.
-  p.LayoutHeader(false);
   gfx::FontList default_font_list;
-  gfx::Rect large_header_title_bounds = p.GetTitleBounds(default_font_list);
-  EXPECT_EQ(window_icon.bounds().CenterPoint().y(),
-            large_header_title_bounds.CenterPoint().y());
 
-  // Title and icon are aligned when shorter_header is true.
-  p.LayoutHeader(true);
-  gfx::Rect short_header_title_bounds = p.GetTitleBounds(default_font_list);
+  // 1) Non-browser windows.
+  HeaderPainter non_browser_painter;
+  non_browser_painter.Init(HeaderPainter::STYLE_OTHER,
+      w.get(),
+      w->non_client_view()->frame_view(),
+      &window_icon,
+      &container);
+  non_browser_painter.LayoutHeader();
+  gfx::Rect non_browser_header_title_bounds =
+      non_browser_painter.GetTitleBounds(default_font_list);
   EXPECT_EQ(window_icon.bounds().CenterPoint().y(),
-            short_header_title_bounds.CenterPoint().y());
+            non_browser_header_title_bounds.CenterPoint().y());
+
+  // 2) Non-maximized browser windows.
+  HeaderPainter browser_painter;
+  browser_painter.Init(HeaderPainter::STYLE_BROWSER,
+      w.get(),
+      w->non_client_view()->frame_view(),
+      &window_icon,
+      &container);
+  browser_painter.LayoutHeader();
+  gfx::Rect browser_header_title_bounds =
+      browser_painter.GetTitleBounds(default_font_list);
+  EXPECT_EQ(window_icon.bounds().CenterPoint().y(),
+            browser_header_title_bounds.CenterPoint().y());
+
+  // 3) Maximized browser windows.
+  w->Maximize();
+  browser_painter.LayoutHeader();
+  gfx::Rect maximized_browser_header_title_bounds =
+      browser_painter.GetTitleBounds(default_font_list);
+  EXPECT_EQ(window_icon.bounds().CenterPoint().y(),
+            maximized_browser_header_title_bounds.CenterPoint().y());
 }
 
 }  // namespace ash

@@ -52,7 +52,8 @@ void PanelFrameView::InitHeaderPainter() {
     AddChildView(window_icon_);
   }
 
-  header_painter_->Init(frame_, this, window_icon_, caption_button_container_);
+  header_painter_->Init(HeaderPainter::STYLE_OTHER, frame_, this, window_icon_,
+      caption_button_container_);
 }
 
 int PanelFrameView::NonClientTopBorderHeight() const {
@@ -76,7 +77,7 @@ gfx::Size PanelFrameView::GetMinimumSize() {
 void PanelFrameView::Layout() {
   if (!header_painter_)
     return;
-  header_painter_->LayoutHeader(true);
+  header_painter_->LayoutHeader();
   header_painter_->set_header_height(NonClientTopBorderHeight());
 }
 

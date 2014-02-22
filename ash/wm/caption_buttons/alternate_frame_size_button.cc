@@ -174,6 +174,7 @@ void AlternateFrameSizeButton::UpdatePressedButton(
         break;
       case CAPTION_BUTTON_ICON_MINIMIZE:
       case CAPTION_BUTTON_ICON_CLOSE:
+      case CAPTION_BUTTON_ICON_COUNT:
         NOTREACHED();
         break;
     }
