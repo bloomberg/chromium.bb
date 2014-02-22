@@ -6,11 +6,11 @@
 
 #include "printing/backend/print_backend_consts.h"
 
-const char kLocationTagName[] = "location";
-const char kDriverNameTagName[] = "drivername";
-const char kDriverInfoTagName[] = "system_driverinfo";
-const char kCUPSPrintServerURL[] = "print_server_url";
 const char kCUPSBlocking[] = "cups_blocking";
 const char kCUPSEncryption[] = "cups_encryption";
-const char kValueTrue[] = "true";
+const char kCUPSPrintServerURL[] = "print_server_url";
+const char kDriverInfoTagName[] = "system_driverinfo";
+const char kDriverNameTagName[] = "printer-make-and-model";  // Match CUPS.
+const char kLocationTagName[] = "printer-location";  // Match CUPS.
 const char kValueFalse[] = "false";
+const char kValueTrue[] = "true";
