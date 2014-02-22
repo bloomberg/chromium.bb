@@ -21,6 +21,16 @@
                 log("PASS: a doctype in an XML document is correctly set to the first child of the Document.");
             else
                 log("FAIL: a doctype in an XML document is not correctly set to the first child of the Document.");
+
+            if (document.doctype.publicId == '')
+                log("PASS: doctype.publicId correctly defaults to empty string when not set.");
+            else
+                log("FAIL: doctype.publicId does not default to empty string when not set, instead is : " + document.doctype.publicId);
+
+            if (document.doctype.systemId == '')
+                log("PASS: doctype.systemId correctly defaults to empty string when not set.");
+            else
+                log("FAIL: doctype.systemId does not default to empty string when not set, instead is : " + document.doctype.systemId);
         }
     </script>
 </head>
