@@ -12,6 +12,11 @@
 #include "sandbox/win/src/crosscall_params.h"
 #include "sandbox/win/src/crosscall_server.h"
 
+namespace {
+// This handle must not be closed.
+volatile HANDLE g_alive_mutex = NULL;
+}
+
 namespace sandbox {
 
 SharedMemIPCServer::SharedMemIPCServer(HANDLE target_process,
@@ -25,6 +30,19 @@ SharedMemIPCServer::SharedMemIPCServer(HANDLE target_process,
       target_process_id_(target_process_id),
       target_job_object_(target_job),
       call_dispatcher_(dispatcher) {
+  // We create a initially owned mutex. If the server dies unexpectedly,
+  // the thread that owns it will fail to release the lock and windows will
+  // report to the target (when it tries to acquire it) that the wait was
+  // abandoned. Note: We purposely leak the local handle because we want it to
+  // be closed by Windows itself so it is properly marked as abandoned if the
+  // server dies.
+  if (!g_alive_mutex) {
+    HANDLE mutex = ::CreateMutexW(NULL, TRUE, NULL);
+    if (::InterlockedCompareExchangePointer(&g_alive_mutex, mutex, NULL)) {
+      // We lost the race to create the mutex.
+      ::CloseHandle(mutex);
+    }
+  }
 }
 
 SharedMemIPCServer::~SharedMemIPCServer() {
@@ -108,15 +126,7 @@ bool SharedMemIPCServer::Init(void* shared_mem, uint32 shared_size,
     thread_provider_->RegisterWait(this, service_context->ping_event,
                                    ThreadPingEventReady, service_context);
   }
-
-  // We create a mutex that the server locks. If the server dies unexpectedly,
-  // the thread that owns it will fail to release the lock and windows will
-  // report to the target (when it tries to acquire it) that the wait was
-  // abandoned. Note: We purposely leak the local handle because we want it to
-  // be closed by Windows itself so it is properly marked as abandoned if the
-  // server dies.
-  if (!::DuplicateHandle(::GetCurrentProcess(),
-                         ::CreateMutexW(NULL, TRUE, NULL),
+  if (!::DuplicateHandle(::GetCurrentProcess(), g_alive_mutex,
                          target_process_, &client_control_->server_alive,
                          SYNCHRONIZE | EVENT_MODIFY_STATE, FALSE, 0)) {
     return false;
