@@ -8,6 +8,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -304,6 +305,7 @@ WebHistoryService::WebHistoryService(Profile* profile)
 }
 
 WebHistoryService::~WebHistoryService() {
+  STLDeleteElements(&pending_expire_requests_);
 }
 
 scoped_ptr<WebHistoryService::Request> WebHistoryService::QueryHistory(
@@ -321,7 +323,7 @@ scoped_ptr<WebHistoryService::Request> WebHistoryService::QueryHistory(
   return request.PassAs<Request>();
 }
 
-scoped_ptr<WebHistoryService::Request> WebHistoryService::ExpireHistory(
+void WebHistoryService::ExpireHistory(
     const std::vector<ExpireHistoryArgs>& expire_list,
     const ExpireWebHistoryCallback& callback) {
   base::DictionaryValue delete_request;
@@ -368,10 +370,10 @@ scoped_ptr<WebHistoryService::Request> WebHistoryService::ExpireHistory(
       new RequestImpl(profile_, url, completion_callback));
   request->set_post_data(post_data);
   request->Start();
-  return request.PassAs<Request>();
+  pending_expire_requests_.insert(request.release());
 }
 
-scoped_ptr<WebHistoryService::Request> WebHistoryService::ExpireHistoryBetween(
+void WebHistoryService::ExpireHistoryBetween(
     const std::set<GURL>& restrict_urls,
     base::Time begin_time,
     base::Time end_time,
@@ -380,7 +382,7 @@ scoped_ptr<WebHistoryService::Request> WebHistoryService::ExpireHistoryBetween(
   expire_list.back().urls = restrict_urls;
   expire_list.back().begin_time = begin_time;
   expire_list.back().end_time = end_time;
-  return ExpireHistory(expire_list, callback);
+  ExpireHistory(expire_list, callback);
 }
 
 // static
@@ -404,7 +406,10 @@ void WebHistoryService::ExpireHistoryCompletionCallback(
     if (response_value)
       response_value->GetString("version_info", &server_version_info_);
   }
-  callback.Run(request, response_value.get() && success);
+  callback.Run(response_value.get() && success);
+  // Clean up from pending requests.
+  pending_expire_requests_.erase(request);
+  delete request;
 }
 
 }  // namespace history

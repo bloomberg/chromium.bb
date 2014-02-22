@@ -386,7 +386,10 @@ bool BrowsingHistoryHandler::HistoryEntry::SortByTimeDescending(
   return entry1.time > entry2.time;
 }
 
-BrowsingHistoryHandler::BrowsingHistoryHandler() {}
+BrowsingHistoryHandler::BrowsingHistoryHandler()
+    : has_pending_delete_request_(false),
+      weak_factory_(this) {
+}
 
 BrowsingHistoryHandler::~BrowsingHistoryHandler() {
   history_request_consumer_.CancelAllRequests();
@@ -529,7 +532,10 @@ void BrowsingHistoryHandler::HandleQueryHistory(const base::ListValue* args) {
 
 void BrowsingHistoryHandler::HandleRemoveVisits(const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
+  // TODO(davidben): history.js is not aware of this failure and will still
+  // override |deleteCompleteCallback_|.
   if (delete_task_tracker_.HasTrackedTasks() ||
+      has_pending_delete_request_ ||
       !profile->GetPrefs()->GetBoolean(prefs::kAllowDeletingBrowserHistory)) {
     web_ui()->CallJavascriptFunction("deleteFailed");
     return;
@@ -612,10 +618,11 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const base::ListValue* args) {
       &delete_task_tracker_);
 
   if (web_history) {
-    web_history_delete_request_ = web_history->ExpireHistory(
+    has_pending_delete_request_ = true;
+    web_history->ExpireHistory(
         expire_list,
         base::Bind(&BrowsingHistoryHandler::RemoveWebHistoryComplete,
-                   base::Unretained(this)));
+                   weak_factory_.GetWeakPtr()));
   }
 
 #if defined(ENABLE_EXTENSIONS)
@@ -886,14 +893,12 @@ void BrowsingHistoryHandler::RemoveComplete() {
 
   // Notify the page that the deletion request is complete, but only if a web
   // history delete request is not still pending.
-  if (!(web_history_delete_request_.get() &&
-        web_history_delete_request_->is_pending())) {
+  if (!has_pending_delete_request_)
     web_ui()->CallJavascriptFunction("deleteComplete");
-  }
 }
 
-void BrowsingHistoryHandler::RemoveWebHistoryComplete(
-    history::WebHistoryService::Request* request, bool success) {
+void BrowsingHistoryHandler::RemoveWebHistoryComplete(bool success) {
+  has_pending_delete_request_ = false;
   // TODO(dubroy): Should we handle failure somehow? Delete directives will
   // ensure that the visits are eventually deleted, so maybe it's not necessary.
   if (!delete_task_tracker_.HasTrackedTasks())

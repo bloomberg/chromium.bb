@@ -115,11 +115,11 @@ class URLIteratorFromURLRows
 };
 
 // Callback from WebHistoryService::ExpireWebHistory().
-void ExpireWebHistoryComplete(
-    history::WebHistoryService::Request* request,
-    bool success) {
-  // Ignore the result and delete the request.
-  delete request;
+void ExpireWebHistoryComplete(bool success) {
+  // Ignore the result.
+  //
+  // TODO(davidben): ExpireLocalAndRemoteHistoryBetween callback should not fire
+  // until this completes.
 }
 
 }  // namespace
@@ -1163,14 +1163,12 @@ void HistoryService::ExpireLocalAndRemoteHistoryBetween(
 
     // Attempt online deletion from the history server, but ignore the result.
     // Deletion directives ensure that the results will eventually be deleted.
-    // Pass ownership of the request to the callback.
-    scoped_ptr<history::WebHistoryService::Request> request =
-        web_history->ExpireHistoryBetween(
-            restrict_urls, begin_time, end_time,
-            base::Bind(&ExpireWebHistoryComplete));
-
-    // The request will be freed when the callback is called.
-    CHECK(request.release());
+    //
+    // TODO(davidben): |callback| should not run until this operation completes
+    // too.
+    web_history->ExpireHistoryBetween(
+        restrict_urls, begin_time, end_time,
+        base::Bind(&ExpireWebHistoryComplete));
   }
   ExpireHistoryBetween(restrict_urls, begin_time, end_time, callback, tracker);
 }

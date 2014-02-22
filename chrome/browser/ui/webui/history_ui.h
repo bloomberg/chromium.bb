@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/timer/timer.h"
@@ -157,8 +158,7 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   void RemoveComplete();
 
   // Callback from history server when visits were deleted.
-  void RemoveWebHistoryComplete(history::WebHistoryService::Request* request,
-                                bool success);
+  void RemoveWebHistoryComplete(bool success);
 
   bool ExtractIntegerValueAtIndex(
       const base::ListValue* value, int index, int* out_int);
@@ -181,9 +181,8 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   // Deleting the request will cancel it.
   scoped_ptr<history::WebHistoryService::Request> web_history_request_;
 
-  // The currently-executing delete request for synced history.
-  // Deleting the request will cancel it.
-  scoped_ptr<history::WebHistoryService::Request> web_history_delete_request_;
+  // True if there is a pending delete requests to the history service.
+  bool has_pending_delete_request_;
 
   // Tracker for delete requests to the history service.
   base::CancelableTaskTracker delete_task_tracker_;
@@ -202,6 +201,8 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
 
   // Timer used to implement a timeout on a Web History response.
   base::OneShotTimer<BrowsingHistoryHandler> web_history_timer_;
+
+  base::WeakPtrFactory<BrowsingHistoryHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingHistoryHandler);
 };

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_HISTORY_WEB_HISTORY_SERVICE_H_
 #define CHROME_BROWSER_HISTORY_WEB_HISTORY_SERVICE_H_
 
+#include <set>
+
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -46,8 +48,7 @@ class WebHistoryService : public BrowserContextKeyedService {
   typedef base::Callback<void(Request*, const base::DictionaryValue*)>
       QueryWebHistoryCallback;
 
-  typedef base::Callback<void(Request*, bool success)>
-      ExpireWebHistoryCallback;
+  typedef base::Callback<void(bool success)> ExpireWebHistoryCallback;
 
   explicit WebHistoryService(Profile* profile);
   virtual ~WebHistoryService();
@@ -65,19 +66,15 @@ class WebHistoryService : public BrowserContextKeyedService {
 
   // Removes all visits to specified URLs in specific time ranges.
   // This is the of equivalent HistoryService::ExpireHistory().
-  // The caller takes ownership of the returned Request. If it is destroyed, the
-  // request is cancelled.
-  scoped_ptr<Request> ExpireHistory(
-      const std::vector<ExpireHistoryArgs>& expire_list,
-      const ExpireWebHistoryCallback& callback);
+  void ExpireHistory(const std::vector<ExpireHistoryArgs>& expire_list,
+                     const ExpireWebHistoryCallback& callback);
 
   // Removes all visits to specified URLs in the given time range.
   // This is the of equivalent HistoryService::ExpireHistoryBetween().
-  scoped_ptr<Request> ExpireHistoryBetween(
-      const std::set<GURL>& restrict_urls,
-      base::Time begin_time,
-      base::Time end_time,
-      const ExpireWebHistoryCallback& callback);
+  void ExpireHistoryBetween(const std::set<GURL>& restrict_urls,
+                            base::Time begin_time,
+                            base::Time end_time,
+                            const ExpireWebHistoryCallback& callback);
 
  private:
   // Called by |request| when a web history query has completed. Unpacks the
@@ -102,6 +99,10 @@ class WebHistoryService : public BrowserContextKeyedService {
   // a mutation operation (e.g., deleting history). This is used to ensure that
   // subsequent reads see a version of the data that includes the mutation.
   std::string server_version_info_;
+
+  // Pending expiration requests to be canceled if not complete by profile
+  // shutdown.
+  std::set<Request*> pending_expire_requests_;
 
   base::WeakPtrFactory<WebHistoryService> weak_ptr_factory_;
 
