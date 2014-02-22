@@ -1331,6 +1331,12 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
     const gfx::Size& size,
     float surface_scale_factor,
     const std::vector<ui::LatencyInfo>& latency_info) {
+  // Ensure that the frame be acked unless it is explicitly passed to a
+  // display function.
+  base::ScopedClosureRunner scoped_ack(
+      base::Bind(&RenderWidgetHostViewMac::SendPendingSwapAck,
+                 weak_factory_.GetWeakPtr()));
+
   if (render_widget_host_->is_hidden())
     return;
 
@@ -1354,7 +1360,6 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
         compositing_iosurface_->CopyToVideoFrame(
             gfx::Rect(size), frame,
             base::Bind(callback, present_time));
-        SendPendingSwapAck();
         return;
       }
     }
@@ -1440,6 +1445,7 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
   // No need to draw the surface if we are inside a drawRect. It will be done
   // later.
   if (!about_to_validate_and_paint_) {
+    scoped_ack.Reset();
     if (use_core_animation_) {
       DCHECK(compositing_iosurface_layer_);
       compositing_iosurface_layer_async_timer_.Reset();
@@ -1696,9 +1702,6 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
                         params.size,
                         params.scale_factor,
                         params.latency_info);
-  // TODO(ccameron): This ack should not be needed, and will inappropriately
-  // remove GPU back-pressure. Remove this.
-  SendPendingSwapAck();
 }
 
 void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
@@ -1716,9 +1719,6 @@ void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
                         params.surface_size,
                         params.surface_scale_factor,
                         params.latency_info);
-  // TODO(ccameron): This ack should not be needed, and will inappropriately
-  // remove GPU back-pressure. Remove this.
-  SendPendingSwapAck();
 }
 
 void RenderWidgetHostViewMac::AcceleratedSurfaceSuspend() {
@@ -1891,6 +1891,7 @@ void RenderWidgetHostViewMac::GotAcceleratedFrame() {
   base::TimeTicks timebase;
   base::TimeDelta interval;
   if (compositing_iosurface_context_ &&
+      compositing_iosurface_context_->display_link() &&
       compositing_iosurface_context_->display_link()->GetVSyncParameters(
           &timebase, &interval)) {
     render_widget_host_->UpdateVSyncParameters(timebase, interval);
@@ -2094,10 +2095,6 @@ void RenderWidgetHostViewMac::AddPendingSwapAck(
   // loss. Drop the old acks.
   pending_swap_ack_.reset(new PendingSwapAck(
       route_id, gpu_host_id, renderer_id));
-  // Ack this immediately if we're already inside a paint call, or if we're
-  // hidden and this may not paint for a long time.
-  if (about_to_validate_and_paint_ || render_widget_host_->is_hidden())
-    SendPendingSwapAck();
 }
 
 void RenderWidgetHostViewMac::SendPendingSwapAck() {

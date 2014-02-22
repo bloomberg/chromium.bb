@@ -57,11 +57,22 @@
 }
 
 - (void)gotNewFrame {
-  if (![self isAsynchronous]) {
+  if (context_ && context_->is_vsync_disabled()) {
+    // If vsync is disabled, draw immediately and don't bother trying to use
+    // the isAsynchronous property to ensure smooth animation.
     [self setNeedsDisplay];
-    [self setAsynchronous:YES];
+    [self displayIfNeeded];
+
+    // Calls to setNeedsDisplay can sometimes be ignored, especially if issued
+    // rapidly (e.g, with vsync off). This is unacceptable because the failure
+    // to ack a single frame will hang the renderer. Ensure that the renderer
+    // not be blocked.
+    if (needsDisplay_)
+      renderWidgetHostView_->SendPendingSwapAck();
   } else {
     needsDisplay_ = YES;
+    if (![self isAsynchronous])
+      [self setAsynchronous:YES];
   }
 }
 
@@ -70,8 +81,15 @@
     return;
 
   [self setAsynchronous:NO];
-  if (needsDisplay_)
+
+  // If there was a pending frame, ensure that it goes through.
+  if (needsDisplay_) {
     [self setNeedsDisplay];
+    [self displayIfNeeded];
+  }
+  // If that fails then ensure that, at a minimum, the renderer is not blocked.
+  if (needsDisplay_)
+    renderWidgetHostView_->SendPendingSwapAck();
 }
 
 - (void)waitForResizedFrameInContext:(CGLContextObj)glContext {
@@ -178,6 +196,11 @@
 
   needsDisplay_ = NO;
   renderWidgetHostView_->SendPendingLatencyInfoToHost();
+
+  [super drawInCGLContext:glContext
+              pixelFormat:pixelFormat
+             forLayerTime:timeInterval
+              displayTime:timeStamp];
 }
 
 @end
