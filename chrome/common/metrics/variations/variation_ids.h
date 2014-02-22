@@ -304,10 +304,16 @@ enum ReservedVariationID {
   EXTENSION_INSTALL_PROMPT_EXPERIMENT_ID_MIN = 3312051,
   EXTENSION_INSTALL_PROMPT_EXPERIMENT_ID_MAX = 3312099,
 
+  // <link rel=prefetch> field trial.
+  LINK_REL_PREFETCH_ENABLED_1 = 3312118,
+  LINK_REL_PREFETCH_ENABLED_2 = 3312119,
+  LINK_REL_PREFETCH_DISABLED_1 = 3312120,
+  LINK_REL_PREFETCH_DISABLED_2 = 3312121,
+
   // NEXT ID: When adding new IDs, please add them above this section, starting
   // with the value of NEXT_ID, and updating NEXT_ID to (end of your reserved
   // range) + 1.
-  NEXT_ID = 3312118,
+  NEXT_ID = 3312122,
 
   // USABLE IDs END HERE.
   //
