@@ -64,6 +64,7 @@ class SpeechRecognitionBubbleView : public views::BubbleDelegateView,
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   // views::View overrides.
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
 
@@ -107,10 +108,12 @@ SpeechRecognitionBubbleView::SpeechRecognitionBubbleView(
       display_mode_(SpeechRecognitionBubbleBase::DISPLAY_MODE_WARM_UP),
       kIconLayoutMinWidth(ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
                           IDR_SPEECH_INPUT_MIC_EMPTY)->width()) {
-  // The bubble lifetime is managed by its controller; closing on escape or
-  // explicitly closing on deactivation will cause unexpected behavior.
-  set_close_on_esc(false);
+  // The bubble lifetime is managed by its controller; explicitly closing
+  // on deactivation will cause unexpected behavior.
   set_close_on_deactivate(false);
+  // Prevent default behavior of bubble closure on escape key and handle
+  // it in the AcceleratorPressed() to avoid an unexpected behavior.
+  set_close_on_esc(false);
 }
 
 void SpeechRecognitionBubbleView::OnWidgetActivationChanged(
@@ -223,6 +226,17 @@ void SpeechRecognitionBubbleView::LinkClicked(views::Link* source,
                                               int event_flags) {
   DCHECK_EQ(mic_settings_, source);
   content::SpeechRecognitionManager::GetInstance()->ShowAudioInputSettings();
+}
+
+bool SpeechRecognitionBubbleView::AcceleratorPressed(
+    const ui::Accelerator& accelerator) {
+  // The accelerator is added by BubbleDelegateView.
+  if (accelerator.key_code() == ui::VKEY_ESCAPE) {
+    delegate_->InfoBubbleButtonClicked(SpeechRecognitionBubble::BUTTON_CANCEL);
+    return true;
+  }
+
+  return BubbleDelegateView::AcceleratorPressed(accelerator);
 }
 
 gfx::Size SpeechRecognitionBubbleView::GetPreferredSize() {
