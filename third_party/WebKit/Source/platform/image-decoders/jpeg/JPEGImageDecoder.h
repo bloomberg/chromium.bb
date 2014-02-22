@@ -55,9 +55,11 @@ public:
     virtual bool setFailed() OVERRIDE;
 
     bool outputScanlines();
+    unsigned desiredScaleNumerator() const;
     void jpegComplete();
 
     void setOrientation(ImageOrientation orientation) { m_orientation = orientation; }
+    void setDecodedSize(unsigned width, unsigned height);
 
 private:
     // Decodes the image.  If |onlySize| is true, stops decoding after
