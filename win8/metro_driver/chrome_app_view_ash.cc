@@ -1178,6 +1178,13 @@ HRESULT ChromeAppViewAsh::OnAcceleratorKeyDown(
       break;
 
     case winui::Core::CoreAcceleratorKeyEventType_SystemKeyDown:
+      // Don't send the Alt + F4 combination to Chrome as this is intended to
+      // shut the metro environment down. Reason we check for Control here is
+      // Windows does not shutdown metro if Ctrl is pressed along with Alt F4.
+      // Other key combinations with Alt F4 shutdown metro.
+      if ((virtual_key == VK_F4) && ((keyboard_flags & ui::EF_ALT_DOWN) &&
+          !(keyboard_flags & ui::EF_CONTROL_DOWN)))
+        return S_OK;
       ui_channel_->Send(new MetroViewerHostMsg_KeyDown(virtual_key,
                                                        status.RepeatCount,
                                                        status.ScanCode,
