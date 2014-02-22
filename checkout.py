@@ -713,8 +713,7 @@ class GitCheckout(CheckoutBase):
     # index.
     cmd = ['commit', '-m', 'Committed patch']
     if name and email:
-      author = '%s <%s>' % (name, email)
-      cmd.extend(['--author', author])
+      cmd = ['-c', 'user.email=%s' % email, '-c', 'user.name=%s' % name] + cmd
     if verbose:
       cmd.append('--verbose')
     self._check_call_git(cmd)
