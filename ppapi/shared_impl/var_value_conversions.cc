@@ -30,10 +30,7 @@ namespace {
 // of array and dictionary vars. VarNode represents elements of that stack.
 struct VarNode {
   VarNode(const PP_Var& in_var, base::Value* in_value)
-      : var(in_var),
-        value(in_value),
-        sentinel(false) {
-  }
+      : var(in_var), value(in_value), sentinel(false) {}
 
   // This object doesn't hold a reference to it.
   PP_Var var;
@@ -50,9 +47,7 @@ struct VarNode {
 // of list and dictionary values. ValueNode represents elements of that stack.
 struct ValueNode {
   ValueNode(const PP_Var& in_var, const base::Value* in_value)
-      : var(in_var),
-        value(in_value) {
-  }
+      : var(in_var), value(in_value) {}
 
   // This object doesn't hold a reference to it.
   PP_Var var;
@@ -95,9 +90,7 @@ bool CreateValueFromVarHelper(const std::set<int64_t>& parent_ids,
       value->reset(new base::StringValue(string_var->value()));
       return true;
     }
-    case PP_VARTYPE_OBJECT: {
-      return false;
-    }
+    case PP_VARTYPE_OBJECT: { return false; }
     case PP_VARTYPE_ARRAY: {
       if (ContainsKey(parent_ids, var.value.as_id)) {
         // A circular reference is found.
@@ -131,9 +124,7 @@ bool CreateValueFromVarHelper(const std::set<int64_t>& parent_ids,
       value->reset(binary_value);
       return true;
     }
-    case PP_VARTYPE_RESOURCE: {
-      return false;
-    }
+    case PP_VARTYPE_RESOURCE: { return false; }
   }
   NOTREACHED();
   return false;
@@ -259,8 +250,8 @@ base::Value* CreateValueFromVar(const PP_Var& var) {
         }
 
         scoped_ptr<base::Value> child_value;
-        if (!CreateValueFromVarHelper(parent_ids, iter->second.get(),
-                                      &child_value, &state)) {
+        if (!CreateValueFromVarHelper(
+                 parent_ids, iter->second.get(), &child_value, &state)) {
           return NULL;
         }
 
@@ -282,8 +273,8 @@ base::Value* CreateValueFromVar(const PP_Var& var) {
            iter != array_var->elements().end();
            ++iter) {
         scoped_ptr<base::Value> child_value;
-        if (!CreateValueFromVarHelper(parent_ids, iter->get(), &child_value,
-                                      &state)) {
+        if (!CreateValueFromVarHelper(
+                 parent_ids, iter->get(), &child_value, &state)) {
           return NULL;
         }
 
@@ -314,8 +305,7 @@ PP_Var CreateVarFromValue(const base::Value& value) {
           static_cast<const base::DictionaryValue*>(top.value);
       DictionaryVar* dict_var = DictionaryVar::FromPPVar(top.var);
       DCHECK(dict_var);
-      for (base::DictionaryValue::Iterator iter(*dict_value);
-           !iter.IsAtEnd();
+      for (base::DictionaryValue::Iterator iter(*dict_value); !iter.IsAtEnd();
            iter.Advance()) {
         ScopedPPVar child_var;
         if (!CreateVarFromValueHelper(iter.value(), &child_var, &state) ||
@@ -346,8 +336,7 @@ PP_Var CreateVarFromValue(const base::Value& value) {
   return root_var.Release();
 }
 
-base::ListValue* CreateListValueFromVarVector(
-    const std::vector<PP_Var>& vars) {
+base::ListValue* CreateListValueFromVarVector(const std::vector<PP_Var>& vars) {
   scoped_ptr<base::ListValue> list_value(new base::ListValue());
 
   for (std::vector<PP_Var>::const_iterator iter = vars.begin();
@@ -371,8 +360,7 @@ bool CreateVarVectorFromListValue(const base::ListValue& list_value,
   for (base::ListValue::const_iterator iter = list_value.begin();
        iter != list_value.end();
        ++iter) {
-    ScopedPPVar child_var(ScopedPPVar::PassRef(),
-                          CreateVarFromValue(**iter));
+    ScopedPPVar child_var(ScopedPPVar::PassRef(), CreateVarFromValue(**iter));
     if (child_var.get().type == PP_VARTYPE_UNDEFINED)
       return false;
 
@@ -391,4 +379,3 @@ bool CreateVarVectorFromListValue(const base::ListValue& list_value,
 }
 
 }  // namespace ppapi
-

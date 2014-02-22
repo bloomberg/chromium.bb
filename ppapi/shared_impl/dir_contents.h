@@ -5,7 +5,6 @@
 #ifndef PPAPI_SHARED_IMPL_DIR_CONTENTS_H_
 #define PPAPI_SHARED_IMPL_DIR_CONTENTS_H_
 
-
 #include <vector>
 
 #include "base/files/file_path.h"

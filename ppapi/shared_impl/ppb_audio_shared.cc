@@ -18,23 +18,17 @@ PP_ThreadFunctions thread_functions;
 }
 #endif  // defined(OS_NACL)
 
-AudioCallbackCombined::AudioCallbackCombined() : callback_1_0_(NULL),
-                                                 callback_(NULL) {
-}
+AudioCallbackCombined::AudioCallbackCombined()
+    : callback_1_0_(NULL), callback_(NULL) {}
 
 AudioCallbackCombined::AudioCallbackCombined(
     PPB_Audio_Callback_1_0 callback_1_0)
-    : callback_1_0_(callback_1_0),
-      callback_(NULL) {
-}
+    : callback_1_0_(callback_1_0), callback_(NULL) {}
 
 AudioCallbackCombined::AudioCallbackCombined(PPB_Audio_Callback callback)
-    : callback_1_0_(NULL),
-      callback_(callback) {
-}
+    : callback_1_0_(NULL), callback_(callback) {}
 
-AudioCallbackCombined::~AudioCallbackCombined() {
-}
+AudioCallbackCombined::~AudioCallbackCombined() {}
 
 bool AudioCallbackCombined::IsValid() const {
   return callback_1_0_ || callback_;
@@ -111,8 +105,8 @@ void PPB_Audio_Shared::SetStreamInfo(
   socket_.reset(new base::CancelableSyncSocket(socket_handle));
   shared_memory_.reset(new base::SharedMemory(shared_memory_handle, false));
   shared_memory_size_ = shared_memory_size;
-  bytes_per_second_ = kAudioOutputChannels * (kBitsPerAudioOutputSample / 8) *
-                      sample_rate;
+  bytes_per_second_ =
+      kAudioOutputChannels * (kBitsPerAudioOutputSample / 8) * sample_rate;
   buffer_index_ = 0;
 
   if (!shared_memory_->Map(shared_memory_size_)) {
@@ -125,9 +119,8 @@ void PPB_Audio_Shared::SetStreamInfo(
     audio_bus_ = media::AudioBus::WrapMemory(
         kAudioOutputChannels, sample_frame_count, shared_memory_->memory());
     // Setup integer audio buffer for user audio data.
-    client_buffer_size_bytes_ =
-        audio_bus_->frames() * audio_bus_->channels() *
-        kBitsPerAudioOutputSample / 8;
+    client_buffer_size_bytes_ = audio_bus_->frames() * audio_bus_->channels() *
+                                kBitsPerAudioOutputSample / 8;
     client_buffer_.reset(new uint8_t[client_buffer_size_bytes_]);
   }
 
@@ -147,8 +140,8 @@ void PPB_Audio_Shared::StartThread() {
   memset(client_buffer_.get(), 0, client_buffer_size_bytes_);
 #if !defined(OS_NACL)
   DCHECK(!audio_thread_.get());
-  audio_thread_.reset(new base::DelegateSimpleThread(
-      this, "plugin_audio_thread"));
+  audio_thread_.reset(
+      new base::DelegateSimpleThread(this, "plugin_audio_thread"));
   audio_thread_->Start();
 #else
   // Use NaCl's special API for IRT code that creates threads that call back
@@ -214,13 +207,13 @@ void PPB_Audio_Shared::Run() {
 
     PP_TimeDelta latency =
         static_cast<double>(pending_data) / bytes_per_second_;
-    callback_.Run(client_buffer_.get(), client_buffer_size_bytes_, latency,
-                  user_data_);
+    callback_.Run(
+        client_buffer_.get(), client_buffer_size_bytes_, latency, user_data_);
 
     // Deinterleave the audio data into the shared memory as floats.
-    audio_bus_->FromInterleaved(
-        client_buffer_.get(), audio_bus_->frames(),
-        kBitsPerAudioOutputSample / 8);
+    audio_bus_->FromInterleaved(client_buffer_.get(),
+                                audio_bus_->frames(),
+                                kBitsPerAudioOutputSample / 8);
 
     // Let the other end know which buffer we just filled.  The buffer index is
     // used to ensure the other end is getting the buffer it expects.  For more

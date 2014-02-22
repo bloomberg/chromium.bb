@@ -16,18 +16,11 @@ namespace ppapi {
 
 namespace {
 
-void* MemAlloc(uint32_t num_bytes) {
-  return malloc(num_bytes);
-}
+void* MemAlloc(uint32_t num_bytes) { return malloc(num_bytes); }
 
-void MemFree(void* ptr) {
-  free(ptr);
-}
+void MemFree(void* ptr) { free(ptr); }
 
-const PPB_Memory_Dev ppb_memory = {
-  &MemAlloc,
-  &MemFree
-};
+const PPB_Memory_Dev ppb_memory = {&MemAlloc, &MemFree};
 
 }  // namespace
 

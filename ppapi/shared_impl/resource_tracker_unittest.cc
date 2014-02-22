@@ -23,16 +23,12 @@ class MyMockResource : public Resource {
   MyMockResource(PP_Instance instance) : Resource(OBJECT_IS_IMPL, instance) {
     mock_resource_alive_count++;
   }
-  virtual ~MyMockResource() {
-    mock_resource_alive_count--;
-  }
+  virtual ~MyMockResource() { mock_resource_alive_count--; }
 
   virtual void LastPluginRefWasDeleted() OVERRIDE {
     last_plugin_ref_was_deleted_count++;
   }
-  virtual void InstanceWasDeleted() OVERRIDE {
-    instance_was_deleted_count++;
-  }
+  virtual void InstanceWasDeleted() OVERRIDE { instance_was_deleted_count++; }
 };
 
 }  // namespace
@@ -47,8 +43,7 @@ class ResourceTrackerTest : public testing::Test {
     last_plugin_ref_was_deleted_count = 0;
     instance_was_deleted_count = 0;
   }
-  virtual void TearDown() OVERRIDE {
-  }
+  virtual void TearDown() OVERRIDE {}
 
   ResourceTracker& resource_tracker() { return *globals_.GetResourceTracker(); }
 

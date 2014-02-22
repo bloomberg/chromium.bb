@@ -62,4 +62,3 @@ class PPAPI_SHARED_EXPORT FlashClipboardFormatRegistry {
 }  // ppapi
 
 #endif  // PPAPI_SHARED_IMPL_FLASH_CLIPBOARD_FORMAT_REGISTRY_H_
-

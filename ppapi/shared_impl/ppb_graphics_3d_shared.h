@@ -51,9 +51,7 @@ class PPAPI_SHARED_EXPORT PPB_Graphics3D_Shared
                                          GLenum access) OVERRIDE;
   virtual void UnmapTexSubImage2DCHROMIUM(const void* mem) OVERRIDE;
 
-  gpu::gles2::GLES2Implementation* gles2_impl() {
-    return gles2_impl_.get();
-  }
+  gpu::gles2::GLES2Implementation* gles2_impl() { return gles2_impl_.get(); }
 
   // Sends swap-buffers notification to the plugin.
   void SwapBuffersACK(int32_t pp_error);
@@ -87,4 +85,3 @@ class PPAPI_SHARED_EXPORT PPB_Graphics3D_Shared
 }  // namespace ppapi
 
 #endif  // PPAPI_SHARED_IMPL_GRAPHICS_3D_IMPL_H_
-

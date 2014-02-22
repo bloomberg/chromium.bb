@@ -16,14 +16,12 @@
 namespace ppapi {
 
 ResourceTracker::ResourceTracker(ThreadMode thread_mode)
-    : last_resource_value_(0),
-      weak_ptr_factory_(this) {
+    : last_resource_value_(0), weak_ptr_factory_(this) {
   if (thread_mode == SINGLE_THREADED)
     thread_checker_.reset(new base::ThreadChecker);
 }
 
-ResourceTracker::~ResourceTracker() {
-}
+ResourceTracker::~ResourceTracker() {}
 
 void ResourceTracker::CheckThreadingPreconditions() const {
   DCHECK(!thread_checker_ || thread_checker_->CalledOnValidThread());
@@ -202,7 +200,7 @@ PP_Resource ResourceTracker::AddResource(Resource* object) {
       // could happen for OOP plugins where due to reentrancies in context of
       // outgoing sync calls the renderer can send events after a plugin has
       // exited.
-      DLOG(INFO) << "Failed to find plugin instance in instance map";
+      VLOG(1) << "Failed to find plugin instance in instance map";
       return 0;
     }
     found->second->resources.insert(new_id);
@@ -267,7 +265,6 @@ bool ResourceTracker::CanOperateOnResource(PP_Resource res) {
   // same as that of |last_resource_value_|.
   return ((res >> kPPIdTypeBits) & 1) == (last_resource_value_ & 1);
 #endif
-
 }
 
 }  // namespace ppapi

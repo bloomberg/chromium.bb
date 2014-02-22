@@ -6,10 +6,8 @@
 
 namespace ppapi {
 
-URLResponseInfoData::URLResponseInfoData() : status_code(-1) {
-}
+URLResponseInfoData::URLResponseInfoData() : status_code(-1) {}
 
-URLResponseInfoData::~URLResponseInfoData() {
-}
+URLResponseInfoData::~URLResponseInfoData() {}
 
 }  // namespace ppapi

@@ -14,16 +14,12 @@
 
 namespace ppapi {
 
-ArrayWriter::ArrayWriter() {
-  Reset();
-}
+ArrayWriter::ArrayWriter() { Reset(); }
 
 ArrayWriter::ArrayWriter(const PP_ArrayOutput& output)
-    : pp_array_output_(output) {
-}
+    : pp_array_output_(output) {}
 
-ArrayWriter::~ArrayWriter() {
-}
+ArrayWriter::~ArrayWriter() {}
 
 void ArrayWriter::Reset() {
   pp_array_output_.GetDataBuffer = NULL;
@@ -31,12 +27,12 @@ void ArrayWriter::Reset() {
 }
 
 bool ArrayWriter::StoreResourceVector(
-    const std::vector< scoped_refptr<Resource> >& input) {
+    const std::vector<scoped_refptr<Resource> >& input) {
   // Always call the alloc function, even on 0 array size.
-  void* dest = pp_array_output_.GetDataBuffer(
-      pp_array_output_.user_data,
-      static_cast<uint32_t>(input.size()),
-      sizeof(PP_Resource));
+  void* dest =
+      pp_array_output_.GetDataBuffer(pp_array_output_.user_data,
+                                     static_cast<uint32_t>(input.size()),
+                                     sizeof(PP_Resource));
 
   // Regardless of success, we clear the output to prevent future calls on
   // this same output object.
@@ -56,10 +52,10 @@ bool ArrayWriter::StoreResourceVector(
 
 bool ArrayWriter::StoreResourceVector(const std::vector<PP_Resource>& input) {
   // Always call the alloc function, even on 0 array size.
-  void* dest = pp_array_output_.GetDataBuffer(
-      pp_array_output_.user_data,
-      static_cast<uint32_t>(input.size()),
-      sizeof(PP_Resource));
+  void* dest =
+      pp_array_output_.GetDataBuffer(pp_array_output_.user_data,
+                                     static_cast<uint32_t>(input.size()),
+                                     sizeof(PP_Resource));
 
   // Regardless of success, we clear the output to prevent future calls on
   // this same output object.
@@ -79,12 +75,12 @@ bool ArrayWriter::StoreResourceVector(const std::vector<PP_Resource>& input) {
 }
 
 bool ArrayWriter::StoreVarVector(
-    const std::vector< scoped_refptr<Var> >& input) {
+    const std::vector<scoped_refptr<Var> >& input) {
   // Always call the alloc function, even on 0 array size.
-  void* dest = pp_array_output_.GetDataBuffer(
-      pp_array_output_.user_data,
-      static_cast<uint32_t>(input.size()),
-      sizeof(PP_Var));
+  void* dest =
+      pp_array_output_.GetDataBuffer(pp_array_output_.user_data,
+                                     static_cast<uint32_t>(input.size()),
+                                     sizeof(PP_Var));
 
   // Regardless of success, we clear the output to prevent future calls on
   // this same output object.
@@ -104,10 +100,10 @@ bool ArrayWriter::StoreVarVector(
 
 bool ArrayWriter::StoreVarVector(const std::vector<PP_Var>& input) {
   // Always call the alloc function, even on 0 array size.
-  void* dest = pp_array_output_.GetDataBuffer(
-      pp_array_output_.user_data,
-      static_cast<uint32_t>(input.size()),
-      sizeof(PP_Var));
+  void* dest =
+      pp_array_output_.GetDataBuffer(pp_array_output_.user_data,
+                                     static_cast<uint32_t>(input.size()),
+                                     sizeof(PP_Var));
 
   // Regardless of success, we clear the output to prevent future calls on
   // this same output object.

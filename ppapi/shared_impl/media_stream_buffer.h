@@ -11,11 +11,7 @@
 namespace ppapi {
 
 union MediaStreamBuffer {
-  enum Type {
-    TYPE_UNKNOWN = 0,
-    TYPE_AUDIO = 1,
-    TYPE_VIDEO = 2,
-  };
+  enum Type { TYPE_UNKNOWN = 0, TYPE_AUDIO = 1, TYPE_VIDEO = 2, };
 
   struct Header {
     Type type;

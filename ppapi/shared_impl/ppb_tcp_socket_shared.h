@@ -29,14 +29,7 @@ class PPAPI_SHARED_EXPORT TCPSocketState {
   // Transitions that will change the socket state. Please note that
   // read/write/accept are not included because they don't change the socket
   // state.
-  enum TransitionType {
-    NONE,
-    BIND,
-    CONNECT,
-    SSL_CONNECT,
-    LISTEN,
-    CLOSE
-  };
+  enum TransitionType { NONE, BIND, CONNECT, SSL_CONNECT, LISTEN, CLOSE };
 
   explicit TCPSocketState(StateType state);
   ~TCPSocketState();

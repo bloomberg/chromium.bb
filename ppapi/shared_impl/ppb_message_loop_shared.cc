@@ -7,14 +7,11 @@
 namespace ppapi {
 
 MessageLoopShared::MessageLoopShared(PP_Instance instance)
-    : Resource(OBJECT_IS_PROXY, instance) {
-}
+    : Resource(OBJECT_IS_PROXY, instance) {}
 
 MessageLoopShared::MessageLoopShared(ForMainThread)
-    : Resource(Resource::Untracked()) {
-}
+    : Resource(Resource::Untracked()) {}
 
-MessageLoopShared::~MessageLoopShared() {
-}
+MessageLoopShared::~MessageLoopShared() {}
 
 }  // namespace ppapi

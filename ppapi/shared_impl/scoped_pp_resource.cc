@@ -10,16 +10,14 @@
 
 namespace ppapi {
 
-ScopedPPResource::ScopedPPResource() : id_(0) {
-}
+ScopedPPResource::ScopedPPResource() : id_(0) {}
 
 ScopedPPResource::ScopedPPResource(PP_Resource resource) : id_(resource) {
   CallAddRef();
 }
 
 ScopedPPResource::ScopedPPResource(const PassRef&, PP_Resource resource)
-    : id_(resource) {
-}
+    : id_(resource) {}
 
 ScopedPPResource::ScopedPPResource(Resource* resource)
     : id_(resource ? resource->GetReference() : 0) {
@@ -31,9 +29,7 @@ ScopedPPResource::ScopedPPResource(const ScopedPPResource& other)
   CallAddRef();
 }
 
-ScopedPPResource::~ScopedPPResource() {
-  CallRelease();
-}
+ScopedPPResource::~ScopedPPResource() { CallRelease(); }
 
 ScopedPPResource& ScopedPPResource::operator=(PP_Resource resource) {
   if (id_ == resource)

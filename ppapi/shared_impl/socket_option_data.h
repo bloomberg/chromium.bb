@@ -12,11 +12,7 @@ namespace ppapi {
 
 class PPAPI_SHARED_EXPORT SocketOptionData {
  public:
-  enum Type {
-    TYPE_INVALID = 0,
-    TYPE_BOOL = 1,
-    TYPE_INT32 = 2
-  };
+  enum Type { TYPE_INVALID = 0, TYPE_BOOL = 1, TYPE_INT32 = 2 };
 
   SocketOptionData();
   ~SocketOptionData();

@@ -20,8 +20,7 @@ URLRequestInfoData::BodyItem::BodyItem()
       file_ref_pp_resource(0),
       start_offset(0),
       number_of_bytes(-1),
-      expected_last_modified_time(0.0) {
-}
+      expected_last_modified_time(0.0) {}
 
 URLRequestInfoData::BodyItem::BodyItem(const std::string& data)
     : is_file(false),
@@ -29,21 +28,18 @@ URLRequestInfoData::BodyItem::BodyItem(const std::string& data)
       file_ref_pp_resource(0),
       start_offset(0),
       number_of_bytes(-1),
-      expected_last_modified_time(0.0) {
-}
+      expected_last_modified_time(0.0) {}
 
-URLRequestInfoData::BodyItem::BodyItem(
-    Resource* file_ref,
-    int64_t start_offset,
-    int64_t number_of_bytes,
-    PP_Time expected_last_modified_time)
+URLRequestInfoData::BodyItem::BodyItem(Resource* file_ref,
+                                       int64_t start_offset,
+                                       int64_t number_of_bytes,
+                                       PP_Time expected_last_modified_time)
     : is_file(true),
       file_ref_resource(file_ref),
       file_ref_pp_resource(file_ref->pp_resource()),
       start_offset(start_offset),
       number_of_bytes(number_of_bytes),
-      expected_last_modified_time(expected_last_modified_time) {
-}
+      expected_last_modified_time(expected_last_modified_time) {}
 
 URLRequestInfoData::URLRequestInfoData()
     : url(),
@@ -63,10 +59,8 @@ URLRequestInfoData::URLRequestInfoData()
       custom_user_agent(),
       prefetch_buffer_upper_threshold(kDefaultPrefetchBufferUpperThreshold),
       prefetch_buffer_lower_threshold(kDefaultPrefetchBufferLowerThreshold),
-      body() {
-}
+      body() {}
 
-URLRequestInfoData::~URLRequestInfoData() {
-}
+URLRequestInfoData::~URLRequestInfoData() {}
 
 }  // namespace ppapi

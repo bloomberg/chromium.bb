@@ -27,4 +27,3 @@ class PPAPI_SHARED_EXPORT PPB_OpenGLES2_Shared {
 }  // namespace ppapi
 
 #endif  // PPAPI_SHARED_IMPL_PPB_OPENGLES2_SHARED_H_
-

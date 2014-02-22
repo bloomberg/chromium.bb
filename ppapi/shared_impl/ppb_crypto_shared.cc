@@ -19,9 +19,7 @@ void GetRandomBytes(char* buffer, uint32_t num_bytes) {
   base::RandBytes(buffer, num_bytes);
 }
 
-const PPB_Crypto_Dev crypto_interface = {
-  &GetRandomBytes
-};
+const PPB_Crypto_Dev crypto_interface = {&GetRandomBytes};
 
 }  // namespace
 

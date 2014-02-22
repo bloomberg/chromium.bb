@@ -27,11 +27,13 @@ PPAPI_SHARED_EXPORT extern const unsigned int kPPIdTypeBits;
 extern const int32 kMaxPPId;
 
 // The least significant bits are the type, the rest are the value.
-template <typename T> inline T MakeTypedId(T value, PPIdType type) {
+template <typename T>
+inline T MakeTypedId(T value, PPIdType type) {
   return (value << kPPIdTypeBits) | static_cast<T>(type);
 }
 
-template <typename T> inline bool CheckIdType(T id, PPIdType type) {
+template <typename T>
+inline bool CheckIdType(T id, PPIdType type) {
   // Say a resource of 0 is always valid, since that means "no resource."
   // You shouldn't be passing 0 var, instance, or module IDs around so those
   // are still invalid.

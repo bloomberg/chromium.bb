@@ -55,9 +55,9 @@ class PPAPI_SHARED_EXPORT MediaStreamBufferManager {
 
   // Initializes shared memory for buffers transmission.
   bool SetBuffers(int32_t number_of_buffers,
-                 int32_t buffer_size,
-                 scoped_ptr<base::SharedMemory> shm,
-                 bool enqueue_all_buffers);
+                  int32_t buffer_size,
+                  scoped_ptr<base::SharedMemory> shm,
+                  bool enqueue_all_buffers);
 
   // Dequeues a buffer from |buffer_queue_|.
   int32_t DequeueBuffer();

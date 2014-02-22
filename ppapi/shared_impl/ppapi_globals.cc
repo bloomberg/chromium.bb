@@ -36,7 +36,7 @@ PpapiGlobals::~PpapiGlobals() {
   ppapi_globals = NULL;
 }
 
-//Static Getter for the global singleton.
+// Static Getter for the global singleton.
 PpapiGlobals* PpapiGlobals::Get() {
   if (ppapi_globals)
     return ppapi_globals;
@@ -61,16 +61,11 @@ void PpapiGlobals::ResetMainThreadMessageLoopForTesting() {
   main_loop_proxy_ = base::MessageLoopProxy::current();
 }
 
-bool PpapiGlobals::IsHostGlobals() const {
-  return false;
-}
+bool PpapiGlobals::IsHostGlobals() const { return false; }
 
-bool PpapiGlobals::IsPluginGlobals() const {
-  return false;
-}
+bool PpapiGlobals::IsPluginGlobals() const { return false; }
 
-void PpapiGlobals::MarkPluginIsActive() {
-}
+void PpapiGlobals::MarkPluginIsActive() {}
 
 // static
 PpapiGlobals* PpapiGlobals::GetThreadLocalPointer() {

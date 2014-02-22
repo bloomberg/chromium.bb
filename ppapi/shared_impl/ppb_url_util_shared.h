@@ -22,8 +22,7 @@ namespace ppapi {
 class PPAPI_SHARED_EXPORT PPB_URLUtil_Shared {
  public:
   // PPB_URLUtil shared functions.
-  static PP_Var Canonicalize(PP_Var url,
-                             PP_URLComponents_Dev* components);
+  static PP_Var Canonicalize(PP_Var url, PP_URLComponents_Dev* components);
   static PP_Var ResolveRelativeToURL(PP_Var base_url,
                                      PP_Var relative,
                                      PP_URLComponents_Dev* components);

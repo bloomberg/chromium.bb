@@ -23,8 +23,9 @@ namespace ppapi {
 namespace {
 
 bool IsMainThread() {
-  return
-      PpapiGlobals::Get()->GetMainThreadMessageLoop()->BelongsToCurrentThread();
+  return PpapiGlobals::Get()
+      ->GetMainThreadMessageLoop()
+      ->BelongsToCurrentThread();
 }
 
 int32_t RunCompletionTask(TrackedCallback::CompletionTask completion_task,
@@ -40,9 +41,8 @@ int32_t RunCompletionTask(TrackedCallback::CompletionTask completion_task,
 // TrackedCallback -------------------------------------------------------------
 
 // Note: don't keep a Resource* since it may go out of scope before us.
-TrackedCallback::TrackedCallback(
-    Resource* resource,
-    const PP_CompletionCallback& callback)
+TrackedCallback::TrackedCallback(Resource* resource,
+                                 const PP_CompletionCallback& callback)
     : is_scheduled_(false),
       resource_id_(resource ? resource->pp_resource() : 0),
       completed_(false),
@@ -80,16 +80,11 @@ TrackedCallback::TrackedCallback(
   }
 }
 
-TrackedCallback::~TrackedCallback() {
-}
+TrackedCallback::~TrackedCallback() {}
 
-void TrackedCallback::Abort() {
-  Run(PP_ERROR_ABORTED);
-}
+void TrackedCallback::Abort() { Run(PP_ERROR_ABORTED); }
 
-void TrackedCallback::PostAbort() {
-  PostRun(PP_ERROR_ABORTED);
-}
+void TrackedCallback::PostAbort() { PostRun(PP_ERROR_ABORTED); }
 
 void TrackedCallback::Run(int32_t result) {
   // Only allow the callback to be run once. Note that this also covers the case

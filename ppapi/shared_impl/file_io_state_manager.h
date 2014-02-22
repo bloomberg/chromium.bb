@@ -66,4 +66,3 @@ class PPAPI_SHARED_EXPORT FileIOStateManager {
 }  // namespace ppapi
 
 #endif  // PPAPI_SHARED_IMPL_FILE_IO_STATE_MANAGER_H_
-

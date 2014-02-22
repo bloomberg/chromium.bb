@@ -44,9 +44,7 @@ Resource::Resource(Untracked) {
   pp_resource_ = PpapiGlobals::Get()->GetResourceTracker()->AddResource(this);
 }
 
-Resource::~Resource() {
-  RemoveFromResourceTracker();
-}
+Resource::~Resource() { RemoveFromResourceTracker(); }
 
 PP_Resource Resource::GetReference() {
   PpapiGlobals::Get()->GetResourceTracker()->AddRefResource(pp_resource());
@@ -75,8 +73,8 @@ void Resource::OnReplyReceived(const proxy::ResourceMessageReplyParams& params,
 }
 
 void Resource::Log(PP_LogLevel level, const std::string& message) {
-  PpapiGlobals::Get()->LogWithSource(pp_instance(), level, std::string(),
-                                     message);
+  PpapiGlobals::Get()->LogWithSource(
+      pp_instance(), level, std::string(), message);
 }
 
 void Resource::RemoveFromResourceTracker() {
@@ -89,4 +87,3 @@ FOR_ALL_PPAPI_RESOURCE_APIS(DEFINE_TYPE_GETTER)
 #undef DEFINE_TYPE_GETTER
 
 }  // namespace ppapi
-

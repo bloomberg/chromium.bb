@@ -172,10 +172,9 @@ class PPAPI_SHARED_EXPORT ArrayBufferVar : public Var {
   //
   // Returns true if creating the shared memory (and copying) is successful,
   // false otherwise.
-  virtual bool CopyToNewShmem(
-      PP_Instance instance,
-      int *host_shm_handle_id,
-      base::SharedMemoryHandle *plugin_shm_handle) = 0;
+  virtual bool CopyToNewShmem(PP_Instance instance,
+                              int* host_shm_handle_id,
+                              base::SharedMemoryHandle* plugin_shm_handle) = 0;
 
   // Var override.
   virtual ArrayBufferVar* AsArrayBufferVar() OVERRIDE;

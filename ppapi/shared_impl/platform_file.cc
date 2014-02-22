@@ -14,7 +14,7 @@ base::PlatformFile IntToPlatformFile(int32_t handle) {
 #elif defined(OS_POSIX)
   return handle;
 #else
-  #error Not implemented.
+#error Not implemented.
 #endif
 }
 
@@ -24,7 +24,7 @@ int32_t PlatformFileToInt(base::PlatformFile handle) {
 #elif defined(OS_POSIX)
   return handle;
 #else
-  #error Not implemented.
+#error Not implemented.
 #endif
 }
 

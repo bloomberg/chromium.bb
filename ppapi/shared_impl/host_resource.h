@@ -39,9 +39,7 @@ class PPAPI_SHARED_EXPORT HostResource {
  public:
   HostResource();
 
-  bool is_null() const {
-    return !host_resource_;
-  }
+  bool is_null() const { return !host_resource_; }
 
   // Some resources are plugin-side only and don't have a corresponding
   // resource in the host. Yet these resources still need an instance to be
@@ -55,9 +53,7 @@ class PPAPI_SHARED_EXPORT HostResource {
   // DO NOT CALL THESE FUNCTIONS IN THE PLUGIN SIDE OF THE PROXY. The values
   // will be invalid. See the class comment above.
   void SetHostResource(PP_Instance instance, PP_Resource resource);
-  PP_Resource host_resource() const {
-    return host_resource_;
-  }
+  PP_Resource host_resource() const { return host_resource_; }
 
   PP_Instance instance() const { return instance_; }
 

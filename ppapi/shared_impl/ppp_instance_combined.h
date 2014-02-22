@@ -60,4 +60,3 @@ struct PPAPI_SHARED_EXPORT PPP_Instance_Combined {
 }  // namespace ppapi
 
 #endif  // PPAPI_SHARED_IMPL_PPP_INSTANCE_COMBINED_H_
-

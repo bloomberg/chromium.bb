@@ -9,25 +9,15 @@
 
 namespace ppapi {
 
-int ResourceVar::GetPendingRendererHostId() const {
-  return 0;
-}
+int ResourceVar::GetPendingRendererHostId() const { return 0; }
 
-int ResourceVar::GetPendingBrowserHostId() const {
-  return 0;
-}
+int ResourceVar::GetPendingBrowserHostId() const { return 0; }
 
-const IPC::Message* ResourceVar::GetCreationMessage() const {
-  return NULL;
-}
+const IPC::Message* ResourceVar::GetCreationMessage() const { return NULL; }
 
-ResourceVar* ResourceVar::AsResourceVar() {
-  return this;
-}
+ResourceVar* ResourceVar::AsResourceVar() { return this; }
 
-PP_VarType ResourceVar::GetType() const {
-  return PP_VARTYPE_RESOURCE;
-}
+PP_VarType ResourceVar::GetType() const { return PP_VARTYPE_RESOURCE; }
 
 // static
 ResourceVar* ResourceVar::FromPPVar(PP_Var var) {

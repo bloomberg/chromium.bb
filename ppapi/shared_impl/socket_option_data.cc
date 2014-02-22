@@ -6,15 +6,11 @@
 
 namespace ppapi {
 
-SocketOptionData::SocketOptionData() : type_(TYPE_INVALID), value_(0) {
-}
+SocketOptionData::SocketOptionData() : type_(TYPE_INVALID), value_(0) {}
 
-SocketOptionData::~SocketOptionData() {
-}
+SocketOptionData::~SocketOptionData() {}
 
-SocketOptionData::Type SocketOptionData::GetType() const {
-  return type_;
-}
+SocketOptionData::Type SocketOptionData::GetType() const { return type_; }
 
 bool SocketOptionData::GetBool(bool* out_value) const {
   if (!out_value || type_ != TYPE_BOOL)

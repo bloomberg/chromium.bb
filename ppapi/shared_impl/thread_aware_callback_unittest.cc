@@ -18,29 +18,20 @@ namespace {
 
 class TestParameter {
  public:
-  TestParameter() : value_(0) {
-  }
+  TestParameter() : value_(0) {}
 
   int value_;
 };
 
 int called_num = 0;
 
-void TestCallback_0() {
-  ++called_num;
-}
+void TestCallback_0() { ++called_num; }
 
-void TestCallback_1(int p1) {
-  ++called_num;
-}
+void TestCallback_1(int p1) { ++called_num; }
 
-void TestCallback_2(int p1, const double* p2) {
-  ++called_num;
-}
+void TestCallback_2(int p1, const double* p2) { ++called_num; }
 
-void TestCallback_3(int p1, const double* p2, bool* p3) {
-  ++called_num;
-}
+void TestCallback_3(int p1, const double* p2, bool* p3) { ++called_num; }
 
 void TestCallback_4(int p1, const double* p2, bool* p3, TestParameter p4) {
   ++called_num;
@@ -61,8 +52,7 @@ typedef proxy::PluginProxyTest ThreadAwareCallbackTest;
 class ThreadAwareCallbackMultiThreadTest
     : public proxy::PluginProxyMultiThreadTest {
  public:
-  ThreadAwareCallbackMultiThreadTest() : main_thread_callback_called_(false) {
-  }
+  ThreadAwareCallbackMultiThreadTest() : main_thread_callback_called_(false) {}
   virtual ~ThreadAwareCallbackMultiThreadTest() {
     CHECK(main_thread_callback_called_);
   }
@@ -109,10 +99,8 @@ class ThreadAwareCallbackMultiThreadTest
 // run the callback will be ignored.
 class ThreadAwareCallbackAbortTest : public proxy::PluginProxyMultiThreadTest {
  public:
-  ThreadAwareCallbackAbortTest() {
-  }
-  virtual ~ThreadAwareCallbackAbortTest() {
-  }
+  ThreadAwareCallbackAbortTest() {}
+  virtual ~ThreadAwareCallbackAbortTest() {}
 
   // proxy::PluginProxyMultiThreadTest implementation.
   virtual void SetUpTestOnMainThread() OVERRIDE {
@@ -194,25 +182,18 @@ TEST_F(ThreadAwareCallbackTest, Basics) {
       ThreadAwareCallback<FuncType_4>::Create(TestCallback_4));
   callback_4->RunOnTargetThread(1, &double_arg, &bool_arg, object_arg);
 
-  typedef void (*FuncType_5)(int,
-                             const double*,
-                             bool*,
-                             TestParameter,
-                             const TestParameter&);
+  typedef void (*FuncType_5)(
+      int, const double*, bool*, TestParameter, const TestParameter&);
   scoped_ptr<ThreadAwareCallback<FuncType_5> > callback_5(
       ThreadAwareCallback<FuncType_5>::Create(TestCallback_5));
-  callback_5->RunOnTargetThread(1, &double_arg, &bool_arg, object_arg,
-                               object_arg);
+  callback_5->RunOnTargetThread(
+      1, &double_arg, &bool_arg, object_arg, object_arg);
 
   EXPECT_EQ(6, called_num);
 }
 
-TEST_F(ThreadAwareCallbackMultiThreadTest, RunOnTargetThread) {
-  RunTest();
-}
+TEST_F(ThreadAwareCallbackMultiThreadTest, RunOnTargetThread) { RunTest(); }
 
-TEST_F(ThreadAwareCallbackAbortTest, NotRunIfAborted) {
-  RunTest();
-}
+TEST_F(ThreadAwareCallbackAbortTest, NotRunIfAborted) { RunTest(); }
 
 }  // namespace ppapi

@@ -21,8 +21,7 @@ namespace ppapi {
 // static
 const int PPB_Instance_Shared::kExtraCharsForTextInput = 100;
 
-PPB_Instance_Shared::~PPB_Instance_Shared() {
-}
+PPB_Instance_Shared::~PPB_Instance_Shared() {}
 
 void PPB_Instance_Shared::Log(PP_Instance instance,
                               PP_LogLevel level,
@@ -48,12 +47,11 @@ int32_t PPB_Instance_Shared::ValidateRequestInputEvents(
     bool is_filtering,
     uint32_t event_classes) {
   // See if any bits are set we don't know about.
-  if (event_classes &
-      ~static_cast<uint32_t>(PP_INPUTEVENT_CLASS_MOUSE |
-                             PP_INPUTEVENT_CLASS_KEYBOARD |
-                             PP_INPUTEVENT_CLASS_WHEEL |
-                             PP_INPUTEVENT_CLASS_TOUCH |
-                             PP_INPUTEVENT_CLASS_IME))
+  if (event_classes & ~static_cast<uint32_t>(PP_INPUTEVENT_CLASS_MOUSE |
+                                             PP_INPUTEVENT_CLASS_KEYBOARD |
+                                             PP_INPUTEVENT_CLASS_WHEEL |
+                                             PP_INPUTEVENT_CLASS_TOUCH |
+                                             PP_INPUTEVENT_CLASS_IME))
     return PP_ERROR_NOTSUPPORTED;
 
   // Everything else is valid.
@@ -94,8 +92,8 @@ bool PPB_Instance_Shared::ValidateSetCursorParams(PP_MouseCursor_Type type,
     return false;
 
   // Validate the hot spot location.
-  if (hot_spot->x < 0 || hot_spot->x >= desc.size.width ||
-      hot_spot->y < 0 || hot_spot->y >= desc.size.height)
+  if (hot_spot->x < 0 || hot_spot->x >= desc.size.width || hot_spot->y < 0 ||
+      hot_spot->y >= desc.size.height)
     return false;
   return true;
 }

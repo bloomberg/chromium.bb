@@ -21,28 +21,16 @@ class MockStringVar : public StringVar {
   MockStringVar(const std::string& str) : StringVar(str) {
     mock_var_alive_count++;
   }
-  virtual ~MockStringVar() {
-    mock_var_alive_count--;
-  }
-  bool HasValidVarID() {
-    return GetExistingVarID() != 0;
-  }
+  virtual ~MockStringVar() { mock_var_alive_count--; }
+  bool HasValidVarID() { return GetExistingVarID() != 0; }
 };
 
 class MockObjectVar : public Var {
  public:
-  MockObjectVar() : Var() {
-    mock_var_alive_count++;
-  }
-  virtual ~MockObjectVar() {
-    mock_var_alive_count--;
-  }
-  virtual PP_VarType GetType() const OVERRIDE {
-    return PP_VARTYPE_OBJECT;
-  }
-  bool HasValidVarID() {
-    return GetExistingVarID() != 0;
-  }
+  MockObjectVar() : Var() { mock_var_alive_count++; }
+  virtual ~MockObjectVar() { mock_var_alive_count--; }
+  virtual PP_VarType GetType() const OVERRIDE { return PP_VARTYPE_OBJECT; }
+  bool HasValidVarID() { return GetExistingVarID() != 0; }
 };
 
 }  // namespace
@@ -56,8 +44,7 @@ class VarTrackerTest : public testing::Test {
     ASSERT_EQ(0, mock_var_alive_count);
     ProxyLock::EnableLockingOnThreadForTest();
   }
-  virtual void TearDown() OVERRIDE {
-  }
+  virtual void TearDown() OVERRIDE {}
 
   VarTracker& var_tracker() { return *globals_.GetVarTracker(); }
 

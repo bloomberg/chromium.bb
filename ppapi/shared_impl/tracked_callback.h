@@ -109,13 +109,9 @@ class PPAPI_SHARED_EXPORT TrackedCallback
   bool aborted() const { return aborted_; }
 
   // Returns true if this is a blocking callback.
-  bool is_blocking() {
-    return !callback_.func;
-  }
+  bool is_blocking() { return !callback_.func; }
 
-  MessageLoopShared* target_loop() const {
-    return target_loop_.get();
-  }
+  MessageLoopShared* target_loop() const { return target_loop_.get(); }
 
   // Determines if the given callback is pending. A callback is pending if it
   // has not completed and has not been aborted. When receiving a plugin call,

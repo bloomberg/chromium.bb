@@ -10,17 +10,11 @@
 namespace ppapi {
 
 FileIOStateManager::FileIOStateManager()
-    : num_pending_ops_(0),
-      pending_op_(OPERATION_NONE),
-      file_open_(false) {
-}
+    : num_pending_ops_(0), pending_op_(OPERATION_NONE), file_open_(false) {}
 
-FileIOStateManager::~FileIOStateManager() {
-}
+FileIOStateManager::~FileIOStateManager() {}
 
-void FileIOStateManager::SetOpenSucceed() {
-  file_open_ = true;
-}
+void FileIOStateManager::SetOpenSucceed() { file_open_ = true; }
 
 int32_t FileIOStateManager::CheckOperationState(OperationType new_op,
                                                 bool should_be_open) {
@@ -53,4 +47,3 @@ void FileIOStateManager::SetOperationFinished() {
 }
 
 }  // namespace ppapi
-

@@ -14,13 +14,10 @@ namespace ppapi {
 
 struct FlashSiteSetting {
   FlashSiteSetting()
-      : permission(PP_FLASH_BROWSEROPERATIONS_PERMISSION_DEFAULT) {
-  }
+      : permission(PP_FLASH_BROWSEROPERATIONS_PERMISSION_DEFAULT) {}
   FlashSiteSetting(const std::string& in_site,
                    PP_Flash_BrowserOperations_Permission in_permission)
-      : site(in_site),
-        permission(in_permission) {
-  }
+      : site(in_site), permission(in_permission) {}
 
   std::string site;
   PP_Flash_BrowserOperations_Permission permission;

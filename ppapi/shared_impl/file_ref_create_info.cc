@@ -31,11 +31,11 @@ bool FileRefCreateInfo::IsValid() const {
   return file_system_type != PP_FILESYSTEMTYPE_INVALID;
 }
 
-FileRefCreateInfo
-MakeExternalFileRefCreateInfo(const base::FilePath& external_path,
-                              const std::string& display_name,
-                              int browser_pending_host_resource_id,
-                              int renderer_pending_host_resource_id) {
+FileRefCreateInfo MakeExternalFileRefCreateInfo(
+    const base::FilePath& external_path,
+    const std::string& display_name,
+    int browser_pending_host_resource_id,
+    int renderer_pending_host_resource_id) {
   FileRefCreateInfo info;
   info.file_system_type = PP_FILESYSTEMTYPE_EXTERNAL;
   if (!display_name.empty())

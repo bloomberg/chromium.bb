@@ -19,24 +19,17 @@
 namespace ppapi {
 
 VarTracker::VarInfo::VarInfo()
-    : var(),
-      ref_count(0),
-      track_with_no_reference_count(0) {
-}
+    : var(), ref_count(0), track_with_no_reference_count(0) {}
 
 VarTracker::VarInfo::VarInfo(Var* v, int input_ref_count)
-    : var(v),
-      ref_count(input_ref_count),
-      track_with_no_reference_count(0) {
-}
+    : var(v), ref_count(input_ref_count), track_with_no_reference_count(0) {}
 
 VarTracker::VarTracker(ThreadMode thread_mode) : last_var_id_(0) {
   if (thread_mode == SINGLE_THREADED)
     thread_checker_.reset(new base::ThreadChecker);
 }
 
-VarTracker::~VarTracker() {
-}
+VarTracker::~VarTracker() {}
 
 void VarTracker::CheckThreadingPreconditions() const {
   DCHECK(!thread_checker_ || thread_checker_->CalledOnValidThread());
@@ -151,8 +144,8 @@ int32 VarTracker::AddVarInternal(Var* var, AddVarRefMode mode) {
 
   int32 new_id = MakeTypedId(++last_var_id_, PP_ID_TYPE_VAR);
   std::pair<VarMap::iterator, bool> was_inserted =
-      live_vars_.insert(std::make_pair(new_id,
-          VarInfo(var, mode == ADD_VAR_TAKE_ONE_REFERENCE ? 1 : 0)));
+      live_vars_.insert(std::make_pair(
+          new_id, VarInfo(var, mode == ADD_VAR_TAKE_ONE_REFERENCE ? 1 : 0)));
   // We should never insert an ID that already exists.
   DCHECK(was_inserted.second);
 
@@ -191,8 +184,8 @@ VarTracker::VarMap::iterator VarTracker::GetLiveVar(const PP_Var& var) {
   return live_vars_.find(static_cast<int32>(var.value.as_id));
 }
 
-VarTracker::VarMap::const_iterator VarTracker::GetLiveVar(
-    const PP_Var& var) const {
+VarTracker::VarMap::const_iterator VarTracker::GetLiveVar(const PP_Var& var)
+    const {
   return live_vars_.find(static_cast<int32>(var.value.as_id));
 }
 

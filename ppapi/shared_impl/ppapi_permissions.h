@@ -40,8 +40,7 @@ enum Permission {
 
   // Meta permission for initializing plugins registered on the command line
   // that get all permissions.
-  PERMISSION_ALL_BITS = PERMISSION_DEV |
-                        PERMISSION_PRIVATE |
+  PERMISSION_ALL_BITS = PERMISSION_DEV | PERMISSION_PRIVATE |
                         PERMISSION_BYPASS_USER_GESTURE |
                         PERMISSION_TESTING |
                         PERMISSION_FLASH |

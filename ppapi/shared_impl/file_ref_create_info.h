@@ -17,10 +17,11 @@ namespace ppapi {
 // FileRefs are created in a number of places and they include a number of
 // return values. This struct encapsulates everything in one place.
 struct FileRefCreateInfo {
-  FileRefCreateInfo() : file_system_type(PP_FILESYSTEMTYPE_INVALID),
-                        browser_pending_host_resource_id(0),
-                        renderer_pending_host_resource_id(0),
-                        file_system_plugin_resource(0) { }
+  FileRefCreateInfo()
+      : file_system_type(PP_FILESYSTEMTYPE_INVALID),
+        browser_pending_host_resource_id(0),
+        renderer_pending_host_resource_id(0),
+        file_system_plugin_resource(0) {}
 
   PPAPI_SHARED_EXPORT bool IsValid() const;
 
@@ -41,10 +42,10 @@ struct FileRefCreateInfo {
 // Used in the renderer when sending a FileRefCreateInfo to a plugin for a
 // FileRef on an external filesystem.
 PPAPI_SHARED_EXPORT FileRefCreateInfo
-MakeExternalFileRefCreateInfo(const base::FilePath& external_path,
-                              const std::string& display_name,
-                              int browser_pending_host_resource_id,
-                              int renderer_pending_host_resource_id);
+    MakeExternalFileRefCreateInfo(const base::FilePath& external_path,
+                                  const std::string& display_name,
+                                  int browser_pending_host_resource_id,
+                                  int renderer_pending_host_resource_id);
 
 }  // namespace ppapi
 

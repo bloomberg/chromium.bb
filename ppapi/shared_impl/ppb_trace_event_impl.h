@@ -18,16 +18,15 @@ namespace ppapi {
 class PPAPI_SHARED_EXPORT TraceEventImpl {
  public:
   static void* GetCategoryEnabled(const char* category_name);
-  static void AddTraceEvent(
-      int8_t phase,
-      const void* category_enabled,
-      const char* name,
-      uint64_t id,
-      uint32_t num_args,
-      const char* arg_names[],
-      const uint8_t arg_types[],
-      const uint64_t arg_values[],
-      uint8_t flags);
+  static void AddTraceEvent(int8_t phase,
+                            const void* category_enabled,
+                            const char* name,
+                            uint64_t id,
+                            uint32_t num_args,
+                            const char* arg_names[],
+                            const uint8_t arg_types[],
+                            const uint64_t arg_values[],
+                            uint8_t flags);
   static void AddTraceEventWithThreadIdAndTimestamp(
       int8_t phase,
       const void* category_enabled,

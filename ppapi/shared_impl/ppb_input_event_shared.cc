@@ -30,18 +30,14 @@ InputEventData::InputEventData()
       composition_selection_end(0),
       touches(),
       changed_touches(),
-      target_touches() {
-}
+      target_touches() {}
 
-InputEventData::~InputEventData() {
-}
+InputEventData::~InputEventData() {}
 
 PPB_InputEvent_Shared::PPB_InputEvent_Shared(ResourceObjectType type,
                                              PP_Instance instance,
                                              const InputEventData& data)
-    : Resource(type, instance),
-      data_(data) {
-}
+    : Resource(type, instance), data_(data) {}
 
 PPB_InputEvent_API* PPB_InputEvent_Shared::AsPPB_InputEvent_API() {
   return this;
@@ -51,17 +47,13 @@ const InputEventData& PPB_InputEvent_Shared::GetInputEventData() const {
   return data_;
 }
 
-PP_InputEvent_Type PPB_InputEvent_Shared::GetType() {
-  return data_.event_type;
-}
+PP_InputEvent_Type PPB_InputEvent_Shared::GetType() { return data_.event_type; }
 
 PP_TimeTicks PPB_InputEvent_Shared::GetTimeStamp() {
   return data_.event_time_stamp;
 }
 
-uint32_t PPB_InputEvent_Shared::GetModifiers() {
-  return data_.event_modifiers;
-}
+uint32_t PPB_InputEvent_Shared::GetModifiers() { return data_.event_modifiers; }
 
 PP_InputEvent_MouseButton PPB_InputEvent_Shared::GetMouseButton() {
   return data_.mouse_button;
@@ -91,9 +83,7 @@ PP_Bool PPB_InputEvent_Shared::GetWheelScrollByPage() {
   return PP_FromBool(data_.wheel_scroll_by_page);
 }
 
-uint32_t PPB_InputEvent_Shared::GetKeyCode() {
-  return data_.key_code;
-}
+uint32_t PPB_InputEvent_Shared::GetKeyCode() { return data_.key_code; }
 
 PP_Var PPB_InputEvent_Shared::GetCharacterText() {
   return StringVar::StringToPPVar(data_.character_text);
@@ -201,7 +191,7 @@ PP_TouchPoint PPB_InputEvent_Shared::GetTouchById(PP_TouchListType list,
   return PP_MakeTouchPoint();
 }
 
-//static
+// static
 PP_Resource PPB_InputEvent_Shared::CreateIMEInputEvent(
     ResourceObjectType type,
     PP_Instance instance,
@@ -239,7 +229,7 @@ PP_Resource PPB_InputEvent_Shared::CreateIMEInputEvent(
   return (new PPB_InputEvent_Shared(type, instance, data))->GetReference();
 }
 
-//static
+// static
 PP_Resource PPB_InputEvent_Shared::CreateKeyboardInputEvent(
     ResourceObjectType type,
     PP_Instance instance,
@@ -276,7 +266,7 @@ PP_Resource PPB_InputEvent_Shared::CreateKeyboardInputEvent(
   return (new PPB_InputEvent_Shared(type, instance, data))->GetReference();
 }
 
-//static
+// static
 PP_Resource PPB_InputEvent_Shared::CreateMouseInputEvent(
     ResourceObjectType type,
     PP_Instance instance,
@@ -306,7 +296,7 @@ PP_Resource PPB_InputEvent_Shared::CreateMouseInputEvent(
   return (new PPB_InputEvent_Shared(type, instance, data))->GetReference();
 }
 
-//static
+// static
 PP_Resource PPB_InputEvent_Shared::CreateWheelInputEvent(
     ResourceObjectType type,
     PP_Instance instance,

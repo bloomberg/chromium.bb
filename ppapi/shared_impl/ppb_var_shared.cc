@@ -22,7 +22,6 @@ using ppapi::StringVar;
 namespace ppapi {
 namespace {
 
-
 // PPB_Var methods -------------------------------------------------------------
 
 void AddRefVar(PP_Var var) {
@@ -70,29 +69,14 @@ PP_Var VarFromResource(PP_Resource resource) {
   return PpapiGlobals::Get()->GetVarTracker()->MakeResourcePPVar(resource);
 }
 
-const PPB_Var var_interface = {
-  &AddRefVar,
-  &ReleaseVar,
-  &VarFromUtf8,
-  &VarToUtf8,
-  &VarToResource,
-  &VarFromResource
-};
+const PPB_Var var_interface = {&AddRefVar, &ReleaseVar,    &VarFromUtf8,
+                               &VarToUtf8, &VarToResource, &VarFromResource};
 
-const PPB_Var_1_1 var_interface1_1 = {
-  &AddRefVar,
-  &ReleaseVar,
-  &VarFromUtf8,
-  &VarToUtf8
-};
+const PPB_Var_1_1 var_interface1_1 = {&AddRefVar,   &ReleaseVar,
+                                      &VarFromUtf8, &VarToUtf8};
 
-const PPB_Var_1_0 var_interface1_0 = {
-  &AddRefVar,
-  &ReleaseVar,
-  &VarFromUtf8_1_0,
-  &VarToUtf8
-};
-
+const PPB_Var_1_0 var_interface1_0 = {&AddRefVar,       &ReleaseVar,
+                                      &VarFromUtf8_1_0, &VarToUtf8};
 
 // PPB_VarArrayBuffer methods --------------------------------------------------
 
@@ -127,11 +111,7 @@ void Unmap(PP_Var array) {
 }
 
 const PPB_VarArrayBuffer_1_0 var_arraybuffer_interface = {
-  &CreateArrayBufferVar,
-  &ByteLength,
-  &Map,
-  &Unmap
-};
+    &CreateArrayBufferVar, &ByteLength, &Map, &Unmap};
 
 }  // namespace
 

@@ -21,9 +21,7 @@ struct PPAPI_SHARED_EXPORT DeviceRefData {
   DeviceRefData();
 
   bool operator==(const DeviceRefData& other) const {
-    return type == other.type &&
-           name == other.name &&
-           id == other.id;
+    return type == other.type && name == other.name && id == other.id;
   }
 
   PP_DeviceType_Dev type;

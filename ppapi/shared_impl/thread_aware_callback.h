@@ -64,12 +64,9 @@ class ThreadAwareCallback : public internal::ThreadAwareCallbackBase {
     return new ThreadAwareCallback(func);
   }
 
-  ~ThreadAwareCallback() {
-  }
+  ~ThreadAwareCallback() {}
 
-  void RunOnTargetThread() {
-    InternalRunOnTargetThread(base::Bind(func_));
-  }
+  void RunOnTargetThread() { InternalRunOnTargetThread(base::Bind(func_)); }
 
   template <class P1>
   void RunOnTargetThread(const P1& p1) {
@@ -104,8 +101,7 @@ class ThreadAwareCallback : public internal::ThreadAwareCallbackBase {
   }
 
  private:
-  explicit ThreadAwareCallback(FuncType func) : func_(func) {
-  }
+  explicit ThreadAwareCallback(FuncType func) : func_(func) {}
 
   FuncType func_;
 };

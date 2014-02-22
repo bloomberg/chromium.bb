@@ -22,10 +22,9 @@ PPAPI_SHARED_EXPORT bool PepperFileOpenFlagsToPlatformFileFlags(
     int32_t pp_open_flags,
     int* flags_out);
 
-PPAPI_SHARED_EXPORT void FileInfoToPepperFileInfo(
-    const base::File::Info& info,
-    PP_FileSystemType fs_type,
-    PP_FileInfo* info_out);
+PPAPI_SHARED_EXPORT void FileInfoToPepperFileInfo(const base::File::Info& info,
+                                                  PP_FileSystemType fs_type,
+                                                  PP_FileInfo* info_out);
 
 }  // namespace ppapi
 

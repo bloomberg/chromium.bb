@@ -31,13 +31,12 @@ class TestVarTracker : public VarTracker {
   virtual ArrayBufferVar* CreateArrayBuffer(uint32 size_in_bytes) OVERRIDE {
     return NULL;
   }
-  virtual ArrayBufferVar* CreateShmArrayBuffer(
-      uint32 size_in_bytes,
-      base::SharedMemoryHandle handle) OVERRIDE {
+  virtual ArrayBufferVar* CreateShmArrayBuffer(uint32 size_in_bytes,
+                                               base::SharedMemoryHandle handle)
+      OVERRIDE {
     return NULL;
   }
-  virtual void DidDeleteInstance(PP_Instance instance) OVERRIDE {
-  }
+  virtual void DidDeleteInstance(PP_Instance instance) OVERRIDE {}
   virtual int TrackSharedMemoryHandle(PP_Instance instance,
                                       base::SharedMemoryHandle handle,
                                       uint32 size_in_bytes) OVERRIDE {
@@ -62,10 +61,10 @@ class TestGlobals : public PpapiGlobals {
   // PpapiGlobals implementation.
   virtual ResourceTracker* GetResourceTracker() OVERRIDE;
   virtual VarTracker* GetVarTracker() OVERRIDE;
-  virtual CallbackTracker* GetCallbackTrackerForInstance(
-      PP_Instance instance) OVERRIDE;
-  virtual thunk::PPB_Instance_API* GetInstanceAPI(
-      PP_Instance instance) OVERRIDE;
+  virtual CallbackTracker* GetCallbackTrackerForInstance(PP_Instance instance)
+      OVERRIDE;
+  virtual thunk::PPB_Instance_API* GetInstanceAPI(PP_Instance instance)
+      OVERRIDE;
   virtual thunk::ResourceCreationAPI* GetResourceCreationAPI(
       PP_Instance instance) OVERRIDE;
   virtual PP_Module GetModuleForInstance(PP_Instance instance) OVERRIDE;
@@ -95,4 +94,4 @@ class TestGlobals : public PpapiGlobals {
 
 }  // namespace ppapi
 
-#endif   // PPAPI_SHARED_IMPL_TEST_GLOBALS_H_
+#endif  // PPAPI_SHARED_IMPL_TEST_GLOBALS_H_

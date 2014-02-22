@@ -81,12 +81,9 @@ class PPAPI_SHARED_EXPORT ProxyLock {
 // such as PPB_Var and PPB_Core.
 class ProxyAutoLock {
  public:
-  ProxyAutoLock() {
-    ProxyLock::Acquire();
-  }
-  ~ProxyAutoLock() {
-    ProxyLock::Release();
-  }
+  ProxyAutoLock() { ProxyLock::Acquire(); }
+  ~ProxyAutoLock() { ProxyLock::Release(); }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ProxyAutoLock);
 };
@@ -97,12 +94,9 @@ class ProxyAutoLock {
 // exception.
 class ProxyAutoUnlock {
  public:
-  ProxyAutoUnlock() {
-    ProxyLock::Release();
-  }
-  ~ProxyAutoUnlock() {
-    ProxyLock::Acquire();
-  }
+  ProxyAutoUnlock() { ProxyLock::Release(); }
+  ~ProxyAutoUnlock() { ProxyLock::Acquire(); }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ProxyAutoUnlock);
 };
@@ -170,9 +164,9 @@ template <typename RunType>
 class RunWhileLockedHelper;
 
 template <>
-class RunWhileLockedHelper<void ()> {
+class RunWhileLockedHelper<void()> {
  public:
-  typedef base::Callback<void ()> CallbackType;
+  typedef base::Callback<void()> CallbackType;
   explicit RunWhileLockedHelper(const CallbackType& callback)
       : callback_(new CallbackType(callback)) {
     // Copying |callback| may adjust reference counts for bound Vars or
@@ -224,6 +218,7 @@ class RunWhileLockedHelper<void ()> {
       callback_.reset();
     }
   }
+
  private:
   scoped_ptr<CallbackType> callback_;
 
@@ -232,9 +227,9 @@ class RunWhileLockedHelper<void ()> {
 };
 
 template <typename P1>
-class RunWhileLockedHelper<void (P1)> {
+class RunWhileLockedHelper<void(P1)> {
  public:
-  typedef base::Callback<void (P1)> CallbackType;
+  typedef base::Callback<void(P1)> CallbackType;
   explicit RunWhileLockedHelper(const CallbackType& callback)
       : callback_(new CallbackType(callback)) {
     ProxyLock::AssertAcquired();
@@ -255,15 +250,16 @@ class RunWhileLockedHelper<void (P1)> {
       callback_.reset();
     }
   }
+
  private:
   scoped_ptr<CallbackType> callback_;
   base::ThreadChecker thread_checker_;
 };
 
 template <typename P1, typename P2>
-class RunWhileLockedHelper<void (P1, P2)> {
+class RunWhileLockedHelper<void(P1, P2)> {
  public:
-  typedef base::Callback<void (P1, P2)> CallbackType;
+  typedef base::Callback<void(P1, P2)> CallbackType;
   explicit RunWhileLockedHelper(const CallbackType& callback)
       : callback_(new CallbackType(callback)) {
     ProxyLock::AssertAcquired();
@@ -284,15 +280,16 @@ class RunWhileLockedHelper<void (P1, P2)> {
       callback_.reset();
     }
   }
+
  private:
   scoped_ptr<CallbackType> callback_;
   base::ThreadChecker thread_checker_;
 };
 
 template <typename P1, typename P2, typename P3>
-class RunWhileLockedHelper<void (P1, P2, P3)> {
+class RunWhileLockedHelper<void(P1, P2, P3)> {
  public:
-  typedef base::Callback<void (P1, P2, P3)> CallbackType;
+  typedef base::Callback<void(P1, P2, P3)> CallbackType;
   explicit RunWhileLockedHelper(const CallbackType& callback)
       : callback_(new CallbackType(callback)) {
     ProxyLock::AssertAcquired();
@@ -313,6 +310,7 @@ class RunWhileLockedHelper<void (P1, P2, P3)> {
       callback_.reset();
     }
   }
+
  private:
   scoped_ptr<CallbackType> callback_;
   base::ThreadChecker thread_checker_;
@@ -349,8 +347,8 @@ class RunWhileLockedHelper<void (P1, P2, P3)> {
 // was run (but can be destroyed with or without the proxy lock acquired). Or
 // (3) destroyed without the proxy lock acquired.
 template <class FunctionType>
-inline base::Callback<FunctionType>
-RunWhileLocked(const base::Callback<FunctionType>& callback) {
+inline base::Callback<FunctionType> RunWhileLocked(
+    const base::Callback<FunctionType>& callback) {
   internal::RunWhileLockedHelper<FunctionType>* helper =
       new internal::RunWhileLockedHelper<FunctionType>(callback);
   return base::Bind(

@@ -34,14 +34,11 @@ class CheckLockStateInDestructor
     : public base::RefCounted<CheckLockStateInDestructor> {
  public:
   CheckLockStateInDestructor() {}
-  void Method() {
-    ++called_num;
-  }
+  void Method() { ++called_num; }
+
  private:
   friend class base::RefCounted<CheckLockStateInDestructor>;
-  ~CheckLockStateInDestructor() {
-    CheckLockState();
-  }
+  ~CheckLockStateInDestructor() { CheckLockState(); }
   DISALLOW_COPY_AND_ASSIGN(CheckLockStateInDestructor);
 };
 
@@ -93,9 +90,8 @@ TEST(PpapiProxyLockTest, Locking) {
     ProxyAutoLock lock;
     scoped_refptr<CheckLockStateInDestructor> object =
         new CheckLockStateInDestructor();
-    cb0 = RunWhileLocked(
-              base::Bind(&CheckLockStateInDestructor::Method,
-                         object));
+    cb0 =
+        RunWhileLocked(base::Bind(&CheckLockStateInDestructor::Method, object));
     // Note after this scope, the Callback owns the only reference.
   }
   cb0.Run();
@@ -158,18 +154,21 @@ TEST(PpapiProxyLockTest, Unlocking) {
     CallWhileUnlocked(TestCallback_0);
     ASSERT_EQ(1, called_num);
     called_num = 0;
-  } {
+  }
+  {
     CallWhileUnlocked(TestCallback_1, 123);
     ASSERT_EQ(1, called_num);
     called_num = 0;
-  } {
+  }
+  {
     // TODO(dmichael): Make const-ref arguments work properly with type
     // deduction.
     CallWhileUnlocked<void, int, const std::string&>(
         TestCallback_2, 123, std::string("yo"));
     ASSERT_EQ(1, called_num);
     called_num = 0;
-  } {
+  }
+  {
     base::Callback<void()> callback(base::Bind(TestCallback_0));
     CallWhileUnlocked(callback);
     ASSERT_EQ(1, called_num);

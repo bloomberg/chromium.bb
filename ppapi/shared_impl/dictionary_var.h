@@ -45,9 +45,7 @@ class PPAPI_SHARED_EXPORT DictionaryVar : public Var {
   bool SetWithStringKey(const std::string& utf8_key, const PP_Var& value);
   void DeleteWithStringKey(const std::string& utf8_key);
 
-  const KeyValueMap& key_value_map() const {
-    return key_value_map_;
-  }
+  const KeyValueMap& key_value_map() const { return key_value_map_; }
 
  protected:
   virtual ~DictionaryVar();

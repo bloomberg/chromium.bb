@@ -20,43 +20,43 @@ namespace ppapi {
 // This must match the definition of blink::Gamepad. The GamepadHost unit test
 // has some compile asserts to validate this.
 struct WebKitGamepad {
-    static const size_t kIdLengthCap = 128;
-    static const size_t kAxesLengthCap = 16;
-    static const size_t kButtonsLengthCap = 32;
+  static const size_t kIdLengthCap = 128;
+  static const size_t kAxesLengthCap = 16;
+  static const size_t kButtonsLengthCap = 32;
 
-    // Is there a gamepad connected at this index?
-    bool connected;
+  // Is there a gamepad connected at this index?
+  bool connected;
 
-    // Device identifier (based on manufacturer, model, etc.).
-    base::char16 id[kIdLengthCap];
+  // Device identifier (based on manufacturer, model, etc.).
+  base::char16 id[kIdLengthCap];
 
-    // Monotonically increasing value referring to when the data were last
-    // updated.
-    unsigned long long timestamp;
+  // Monotonically increasing value referring to when the data were last
+  // updated.
+  unsigned long long timestamp;
 
-    // Number of valid entries in the axes array.
-    unsigned axes_length;
+  // Number of valid entries in the axes array.
+  unsigned axes_length;
 
-    // Normalized values representing axes, in the range [-1..1].
-    float axes[kAxesLengthCap];
+  // Normalized values representing axes, in the range [-1..1].
+  float axes[kAxesLengthCap];
 
-    // Number of valid entries in the buttons array.
-    unsigned buttons_length;
+  // Number of valid entries in the buttons array.
+  unsigned buttons_length;
 
-    // Normalized values representing buttons, in the range [0..1].
-    float buttons[kButtonsLengthCap];
+  // Normalized values representing buttons, in the range [0..1].
+  float buttons[kButtonsLengthCap];
 };
 
 // This must match the definition of blink::Gamepads. The GamepadHost unit
 // test has some compile asserts to validate this.
 struct WebKitGamepads {
-    static const size_t kItemsLengthCap = 4;
+  static const size_t kItemsLengthCap = 4;
 
-    // Number of valid entries in the items array.
-    unsigned length;
+  // Number of valid entries in the items array.
+  unsigned length;
 
-    // Gamepad data for N separate gamepad devices.
-    WebKitGamepad items[kItemsLengthCap];
+  // Gamepad data for N separate gamepad devices.
+  WebKitGamepad items[kItemsLengthCap];
 };
 
 // This is the structure store in shared memory. It must match

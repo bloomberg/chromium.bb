@@ -13,11 +13,9 @@
 
 namespace ppapi {
 
-ArrayVar::ArrayVar() {
-}
+ArrayVar::ArrayVar() {}
 
-ArrayVar::~ArrayVar() {
-}
+ArrayVar::~ArrayVar() {}
 
 // static
 ArrayVar* ArrayVar::FromPPVar(const PP_Var& var) {
@@ -31,13 +29,9 @@ ArrayVar* ArrayVar::FromPPVar(const PP_Var& var) {
   return var_object->AsArrayVar();
 }
 
-ArrayVar* ArrayVar::AsArrayVar() {
-  return this;
-}
+ArrayVar* ArrayVar::AsArrayVar() { return this; }
 
-PP_VarType ArrayVar::GetType() const {
-  return PP_VARTYPE_ARRAY;
-}
+PP_VarType ArrayVar::GetType() const { return PP_VARTYPE_ARRAY; }
 
 PP_Var ArrayVar::Get(uint32_t index) const {
   if (index >= elements_.size())

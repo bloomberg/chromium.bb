@@ -13,28 +13,20 @@ using ppapi::thunk::PPB_DeviceRef_API;
 
 namespace ppapi {
 
-DeviceRefData::DeviceRefData()
-    : type(PP_DEVICETYPE_DEV_INVALID) {
-}
+DeviceRefData::DeviceRefData() : type(PP_DEVICETYPE_DEV_INVALID) {}
 
 PPB_DeviceRef_Shared::PPB_DeviceRef_Shared(ResourceObjectType type,
                                            PP_Instance instance,
                                            const DeviceRefData& data)
-    : Resource(type, instance),
-      data_(data) {
-}
+    : Resource(type, instance), data_(data) {}
 
-PPB_DeviceRef_API* PPB_DeviceRef_Shared::AsPPB_DeviceRef_API() {
-  return this;
-}
+PPB_DeviceRef_API* PPB_DeviceRef_Shared::AsPPB_DeviceRef_API() { return this; }
 
 const DeviceRefData& PPB_DeviceRef_Shared::GetDeviceRefData() const {
   return data_;
 }
 
-PP_DeviceType_Dev PPB_DeviceRef_Shared::GetType() {
-  return data_.type;
-}
+PP_DeviceType_Dev PPB_DeviceRef_Shared::GetType() { return data_.type; }
 
 PP_Var PPB_DeviceRef_Shared::GetName() {
   return StringVar::StringToPPVar(data_.name);

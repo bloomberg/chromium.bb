@@ -17,11 +17,8 @@ const size_t kMaxFormatNameLength = 50;
 
 // All formats in PP_Flash_Clipboard_Format should be added here.
 const PP_Flash_Clipboard_Format kPredefinedFormats[] = {
-  PP_FLASH_CLIPBOARD_FORMAT_INVALID,
-  PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT,
-  PP_FLASH_CLIPBOARD_FORMAT_HTML,
-  PP_FLASH_CLIPBOARD_FORMAT_RTF
-};
+    PP_FLASH_CLIPBOARD_FORMAT_INVALID, PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT,
+    PP_FLASH_CLIPBOARD_FORMAT_HTML,    PP_FLASH_CLIPBOARD_FORMAT_RTF};
 
 // The first custom format ID will be the ID after that max value in
 // PP_Flash_Clipboard_Format.
@@ -36,11 +33,9 @@ bool IsValidFormatName(const std::string& format_name) {
 
 }  // namespace
 
-FlashClipboardFormatRegistry::FlashClipboardFormatRegistry() {
-}
+FlashClipboardFormatRegistry::FlashClipboardFormatRegistry() {}
 
-FlashClipboardFormatRegistry::~FlashClipboardFormatRegistry() {
-}
+FlashClipboardFormatRegistry::~FlashClipboardFormatRegistry() {}
 
 uint32_t FlashClipboardFormatRegistry::RegisterFormat(
     const std::string& format_name) {
@@ -63,8 +58,7 @@ bool FlashClipboardFormatRegistry::IsFormatRegistered(uint32_t format) const {
   return custom_formats_.find(format) != custom_formats_.end();
 }
 
-std::string FlashClipboardFormatRegistry::GetFormatName(
-    uint32_t format) const {
+std::string FlashClipboardFormatRegistry::GetFormatName(uint32_t format) const {
   FormatMap::const_iterator it = custom_formats_.find(format);
   if (it == custom_formats_.end())
     return std::string();
@@ -74,7 +68,8 @@ std::string FlashClipboardFormatRegistry::GetFormatName(
 uint32_t FlashClipboardFormatRegistry::GetFormatID(
     const std::string& format_name) const {
   for (FormatMap::const_iterator it = custom_formats_.begin();
-       it != custom_formats_.end(); ++it) {
+       it != custom_formats_.end();
+       ++it) {
     if (it->second == format_name)
       return it->first;
   }

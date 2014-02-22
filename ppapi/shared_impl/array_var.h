@@ -37,13 +37,9 @@ class PPAPI_SHARED_EXPORT ArrayVar : public Var {
   uint32_t GetLength() const;
   PP_Bool SetLength(uint32_t length);
 
-  const ElementVector& elements() const {
-    return elements_;
-  }
+  const ElementVector& elements() const { return elements_; }
 
-  ElementVector& elements() {
-    return elements_;
-  }
+  ElementVector& elements() { return elements_; }
 
  protected:
   virtual ~ArrayVar();

@@ -40,9 +40,7 @@ PPP_Instance_Combined::PPP_Instance_Combined(
 
 PPP_Instance_Combined::PPP_Instance_Combined(
     const PPP_Instance_1_1& instance_if)
-    : instance_1_1_(instance_if),
-      did_change_view_1_0_(NULL) {
-}
+    : instance_1_1_(instance_if), did_change_view_1_0_(NULL) {}
 
 PP_Bool PPP_Instance_Combined::DidCreate(PP_Instance instance,
                                          uint32_t argc,
@@ -60,9 +58,8 @@ void PPP_Instance_Combined::DidChangeView(PP_Instance instance,
                                           const struct PP_Rect* position,
                                           const struct PP_Rect* clip) {
   if (instance_1_1_.DidChangeView) {
-    CallWhileUnlocked(instance_1_1_.DidChangeView,
-                      instance,
-                      view_changed_resource);
+    CallWhileUnlocked(
+        instance_1_1_.DidChangeView, instance, view_changed_resource);
   } else {
     CallWhileUnlocked(did_change_view_1_0_, instance, position, clip);
   }
@@ -75,10 +72,8 @@ void PPP_Instance_Combined::DidChangeFocus(PP_Instance instance,
 
 PP_Bool PPP_Instance_Combined::HandleDocumentLoad(PP_Instance instance,
                                                   PP_Resource url_loader) {
-  return CallWhileUnlocked(instance_1_1_.HandleDocumentLoad,
-                           instance,
-                           url_loader);
+  return CallWhileUnlocked(
+      instance_1_1_.HandleDocumentLoad, instance, url_loader);
 }
 
 }  // namespace ppapi
-

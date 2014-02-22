@@ -14,8 +14,7 @@ namespace internal {
 
 class ThreadAwareCallbackBase::Core : public base::RefCountedThreadSafe<Core> {
  public:
-  Core() : aborted_(false) {
-  }
+  Core() : aborted_(false) {}
 
   void MarkAsAborted() { aborted_ = true; }
 
@@ -26,8 +25,7 @@ class ThreadAwareCallbackBase::Core : public base::RefCountedThreadSafe<Core> {
 
  private:
   friend class base::RefCountedThreadSafe<Core>;
-  ~Core() {
-  }
+  ~Core() {}
 
   bool aborted_;
 };
@@ -38,9 +36,7 @@ ThreadAwareCallbackBase::ThreadAwareCallbackBase()
   DCHECK(target_loop_.get());
 }
 
-ThreadAwareCallbackBase::~ThreadAwareCallbackBase() {
-  core_->MarkAsAborted();
-}
+ThreadAwareCallbackBase::~ThreadAwareCallbackBase() { core_->MarkAsAborted(); }
 
 // static
 bool ThreadAwareCallbackBase::HasTargetLoop() {

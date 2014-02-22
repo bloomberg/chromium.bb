@@ -12,8 +12,7 @@ Preferences::Preferences()
       number_of_cpu_cores(0),
       is_3d_supported(true),
       is_stage3d_supported(false),
-      is_stage3d_baseline_supported(false) {
-}
+      is_stage3d_baseline_supported(false) {}
 
 Preferences::Preferences(const WebPreferences& prefs)
     : standard_font_family_map(prefs.standard_font_family_map),
@@ -30,10 +29,8 @@ Preferences::Preferences(const WebPreferences& prefs)
       // and if it runs in hardware
       // (accelerated_compositing_for_plugins_enabled)
       is_webgl_supported(prefs.experimental_webgl_enabled &&
-                         prefs.accelerated_compositing_for_plugins_enabled) {
-}
+                         prefs.accelerated_compositing_for_plugins_enabled) {}
 
-Preferences::~Preferences() {
-}
+Preferences::~Preferences() {}
 
 }  // namespace ppapi

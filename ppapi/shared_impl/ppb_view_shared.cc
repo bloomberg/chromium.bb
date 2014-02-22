@@ -22,8 +22,7 @@ ViewData::ViewData() {
   css_scale = 1.0f;
 }
 
-ViewData::~ViewData() {
-}
+ViewData::~ViewData() {}
 
 bool ViewData::Equals(const ViewData& other) const {
   return rect.point.x == other.rect.point.x &&
@@ -36,27 +35,19 @@ bool ViewData::Equals(const ViewData& other) const {
          clip_rect.point.y == other.clip_rect.point.y &&
          clip_rect.size.width == other.clip_rect.size.width &&
          clip_rect.size.height == other.clip_rect.size.height &&
-         device_scale == other.device_scale &&
-         css_scale == other.css_scale;
+         device_scale == other.device_scale && css_scale == other.css_scale;
 }
 
 PPB_View_Shared::PPB_View_Shared(ResourceObjectType type,
                                  PP_Instance instance,
                                  const ViewData& data)
-    : Resource(type, instance),
-      data_(data) {
-}
+    : Resource(type, instance), data_(data) {}
 
-PPB_View_Shared::~PPB_View_Shared() {
-}
+PPB_View_Shared::~PPB_View_Shared() {}
 
-thunk::PPB_View_API* PPB_View_Shared::AsPPB_View_API() {
-  return this;
-}
+thunk::PPB_View_API* PPB_View_Shared::AsPPB_View_API() { return this; }
 
-const ViewData& PPB_View_Shared::GetData() const {
-  return data_;
-}
+const ViewData& PPB_View_Shared::GetData() const { return data_; }
 
 PP_Bool PPB_View_Shared::GetRect(PP_Rect* viewport) const {
   if (!viewport)
@@ -84,12 +75,8 @@ PP_Bool PPB_View_Shared::GetClipRect(PP_Rect* clip) const {
   return PP_TRUE;
 }
 
-float PPB_View_Shared::GetDeviceScale() const {
-  return data_.device_scale;
-}
+float PPB_View_Shared::GetDeviceScale() const { return data_.device_scale; }
 
-float PPB_View_Shared::GetCSSScale() const {
-  return data_.css_scale;
-}
+float PPB_View_Shared::GetCSSScale() const { return data_.css_scale; }
 
 }  // namespace ppapi

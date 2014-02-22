@@ -53,7 +53,8 @@ PPAPI_SHARED_EXPORT base::ListValue* CreateListValueFromVarVector(
 // The conversion fails and returns false if any of the calls to
 // CreateVarFromValue() fails. In that case, |vars| is untouched.
 PPAPI_SHARED_EXPORT bool CreateVarVectorFromListValue(
-    const base::ListValue& list_value, std::vector<PP_Var>* vars);
+    const base::ListValue& list_value,
+    std::vector<PP_Var>* vars);
 
 }  // namespace ppapi
 

@@ -33,27 +33,23 @@ bool Equals(const base::Value& value, const PP_Var& var) {
     }
     case base::Value::TYPE_BOOLEAN: {
       bool result = false;
-      return var.type == PP_VARTYPE_BOOL &&
-             value.GetAsBoolean(&result) &&
+      return var.type == PP_VARTYPE_BOOL && value.GetAsBoolean(&result) &&
              result == PP_ToBool(var.value.as_bool);
     }
     case base::Value::TYPE_INTEGER: {
       int result = 0;
-      return var.type == PP_VARTYPE_INT32 &&
-             value.GetAsInteger(&result) &&
+      return var.type == PP_VARTYPE_INT32 && value.GetAsInteger(&result) &&
              result == var.value.as_int;
     }
     case base::Value::TYPE_DOUBLE: {
       double result = 0;
-      return var.type == PP_VARTYPE_DOUBLE &&
-             value.GetAsDouble(&result) &&
+      return var.type == PP_VARTYPE_DOUBLE && value.GetAsDouble(&result) &&
              fabs(result - var.value.as_double) < 1.0e-4;
     }
     case base::Value::TYPE_STRING: {
       std::string result;
       StringVar* string_var = StringVar::FromPPVar(var);
-      return string_var &&
-             value.GetAsString(&result) &&
+      return string_var && value.GetAsString(&result) &&
              result == string_var->value();
     }
     case base::Value::TYPE_BINARY: {
@@ -65,7 +61,8 @@ bool Equals(const base::Value& value, const PP_Var& var) {
         return false;
       }
 
-      bool result = !memcmp(binary_value.GetBuffer(), array_buffer_var->Map(),
+      bool result = !memcmp(binary_value.GetBuffer(),
+                            array_buffer_var->Map(),
                             binary_value.GetSize());
       array_buffer_var->Unmap();
       return result;
@@ -135,10 +132,8 @@ bool ConvertValueAndVerify(const base::Value& value) {
 
 class VarValueConversionsTest : public testing::Test {
  public:
-  VarValueConversionsTest() {
-  }
-  virtual ~VarValueConversionsTest() {
-  }
+  VarValueConversionsTest() {}
+  virtual ~VarValueConversionsTest() {}
 
   // testing::Test implementation.
   virtual void SetUp() {
@@ -242,12 +237,12 @@ TEST_F(VarValueConversionsTest, CreateValueFromVar) {
     ScopedPPVar string_pp_var(ScopedPPVar::PassRef(), string_var->GetPPVar());
 
     ASSERT_TRUE(dict_var_1->SetWithStringKey("null_key", PP_MakeNull()));
-    ASSERT_TRUE(dict_var_1->SetWithStringKey("string_key",
-                                             string_pp_var.get()));
+    ASSERT_TRUE(
+        dict_var_1->SetWithStringKey("string_key", string_pp_var.get()));
     ASSERT_TRUE(dict_var_1->SetWithStringKey("dict_key", dict_pp_var_2.get()));
 
-    ASSERT_TRUE(dict_var_2->SetWithStringKey("undefined_key",
-                                             PP_MakeUndefined()));
+    ASSERT_TRUE(
+        dict_var_2->SetWithStringKey("undefined_key", PP_MakeUndefined()));
     ASSERT_TRUE(dict_var_2->SetWithStringKey("double_key", PP_MakeDouble(1)));
     ASSERT_TRUE(dict_var_2->SetWithStringKey("array_key", array_pp_var.get()));
 

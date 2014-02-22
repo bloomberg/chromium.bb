@@ -10,14 +10,11 @@
 
 namespace ppapi {
 
-PpapiPermissions::PpapiPermissions() : permissions_(0) {
-}
+PpapiPermissions::PpapiPermissions() : permissions_(0) {}
 
-PpapiPermissions::PpapiPermissions(uint32 perms) : permissions_(perms) {
-}
+PpapiPermissions::PpapiPermissions(uint32 perms) : permissions_(perms) {}
 
-PpapiPermissions::~PpapiPermissions() {
-}
+PpapiPermissions::~PpapiPermissions() {}
 
 // static
 PpapiPermissions PpapiPermissions::AllPermissions() {

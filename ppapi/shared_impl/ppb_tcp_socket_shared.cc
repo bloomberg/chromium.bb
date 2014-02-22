@@ -9,13 +9,11 @@
 namespace ppapi {
 
 TCPSocketState::TCPSocketState(StateType state)
-    : state_(state),
-      pending_transition_(NONE) {
+    : state_(state), pending_transition_(NONE) {
   DCHECK(state_ == INITIAL || state_ == CONNECTED);
 }
 
-TCPSocketState::~TCPSocketState() {
-}
+TCPSocketState::~TCPSocketState() {}
 
 void TCPSocketState::SetPendingTransition(TransitionType pending_transition) {
   DCHECK(IsValidTransition(pending_transition));

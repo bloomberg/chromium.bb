@@ -12,11 +12,9 @@
 
 namespace ppapi {
 
-DictionaryVar::DictionaryVar() {
-}
+DictionaryVar::DictionaryVar() {}
 
-DictionaryVar::~DictionaryVar() {
-}
+DictionaryVar::~DictionaryVar() {}
 
 // static
 DictionaryVar* DictionaryVar::FromPPVar(const PP_Var& var) {
@@ -30,13 +28,9 @@ DictionaryVar* DictionaryVar::FromPPVar(const PP_Var& var) {
   return var_object->AsDictionaryVar();
 }
 
-DictionaryVar* DictionaryVar::AsDictionaryVar() {
-  return this;
-}
+DictionaryVar* DictionaryVar::AsDictionaryVar() { return this; }
 
-PP_VarType DictionaryVar::GetType() const {
-  return PP_VARTYPE_DICTIONARY;
-}
+PP_VarType DictionaryVar::GetType() const { return PP_VARTYPE_DICTIONARY; }
 
 PP_Var DictionaryVar::Get(const PP_Var& key) const {
   StringVar* string_var = StringVar::FromPPVar(key);
@@ -86,10 +80,10 @@ PP_Var DictionaryVar::GetKeys() const {
   array_var->elements().reserve(key_value_map_.size());
 
   for (KeyValueMap::const_iterator iter = key_value_map_.begin();
-       iter != key_value_map_.end(); ++iter) {
-    array_var->elements().push_back(
-        ScopedPPVar(ScopedPPVar::PassRef(),
-                    StringVar::StringToPPVar(iter->first)));
+       iter != key_value_map_.end();
+       ++iter) {
+    array_var->elements().push_back(ScopedPPVar(
+        ScopedPPVar::PassRef(), StringVar::StringToPPVar(iter->first)));
   }
   return array_var->GetPPVar();
 }

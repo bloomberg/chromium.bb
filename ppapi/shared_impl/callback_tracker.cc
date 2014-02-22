@@ -17,17 +17,18 @@ namespace ppapi {
 
 // CallbackTracker -------------------------------------------------------------
 
-CallbackTracker::CallbackTracker() {
-}
+CallbackTracker::CallbackTracker() {}
 
 void CallbackTracker::AbortAll() {
   // Iterate over a copy since |Abort()| calls |Remove()| (indirectly).
   // TODO(viettrungluu): This obviously isn't so efficient.
   CallbackSetMap pending_callbacks_copy = pending_callbacks_;
   for (CallbackSetMap::iterator it1 = pending_callbacks_copy.begin();
-       it1 != pending_callbacks_copy.end(); ++it1) {
+       it1 != pending_callbacks_copy.end();
+       ++it1) {
     for (CallbackSet::iterator it2 = it1->second.begin();
-         it2 != it1->second.end(); ++it2) {
+         it2 != it1->second.end();
+         ++it2) {
       (*it2)->Abort();
     }
   }
@@ -39,7 +40,8 @@ void CallbackTracker::PostAbortForResource(PP_Resource resource_id) {
   if (it1 == pending_callbacks_.end())
     return;
   for (CallbackSet::iterator it2 = it1->second.begin();
-       it2 != it1->second.end(); ++it2) {
+       it2 != it1->second.end();
+       ++it2) {
     // Post the abort.
     (*it2)->PostAbort();
   }

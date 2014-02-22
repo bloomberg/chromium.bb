@@ -21,17 +21,14 @@ PPB_AudioConfig_Shared::PPB_AudioConfig_Shared(ResourceObjectType type,
                                                PP_Instance instance)
     : Resource(type, instance),
       sample_rate_(PP_AUDIOSAMPLERATE_NONE),
-      sample_frame_count_(0) {
-}
+      sample_frame_count_(0) {}
 
-PPB_AudioConfig_Shared::~PPB_AudioConfig_Shared() {
-}
+PPB_AudioConfig_Shared::~PPB_AudioConfig_Shared() {}
 
-PP_Resource PPB_AudioConfig_Shared::Create(
-    ResourceObjectType type,
-    PP_Instance instance,
-    PP_AudioSampleRate sample_rate,
-    uint32_t sample_frame_count) {
+PP_Resource PPB_AudioConfig_Shared::Create(ResourceObjectType type,
+                                           PP_Instance instance,
+                                           PP_AudioSampleRate sample_rate,
+                                           uint32_t sample_frame_count) {
   scoped_refptr<PPB_AudioConfig_Shared> object(
       new PPB_AudioConfig_Shared(type, instance));
   if (!object->Init(sample_rate, sample_frame_count))
@@ -97,8 +94,8 @@ uint32_t PPB_AudioConfig_Shared::RecommendSampleFrameCount_1_1(
   // If client is using same sample rate as audio hardware, then recommend a
   // multiple of the audio hardware's sample frame count.
   if (!kHighLatencyDevice && hardware_sample_rate == sample_rate) {
-    return CalculateMultipleOfSampleFrameCount(
-        hardware_sample_frame_count, sample_frame_count);
+    return CalculateMultipleOfSampleFrameCount(hardware_sample_frame_count,
+                                               sample_frame_count);
   }
 
   // If the hardware requires a high latency buffer or we're at a low sample
@@ -126,12 +123,12 @@ uint32_t PPB_AudioConfig_Shared::RecommendSampleFrameCount_1_1(
   int min_sample_frame_count = kLowLatencySampleFrameCount;
   if (hardware_sample_rate == 44100 && sample_rate == 48000 &&
       hardware_sample_frame_count > hardware_sample_rate / 100u) {
-    min_sample_frame_count = std::max(
-        2 * kLowLatencySampleFrameCount, hardware_sample_frame_count);
+    min_sample_frame_count =
+        std::max(2 * kLowLatencySampleFrameCount, hardware_sample_frame_count);
   }
 
-  return CalculateMultipleOfSampleFrameCount(
-      min_sample_frame_count, sample_frame_count);
+  return CalculateMultipleOfSampleFrameCount(min_sample_frame_count,
+                                             sample_frame_count);
 }
 
 // static
@@ -141,7 +138,7 @@ PP_AudioSampleRate PPB_AudioConfig_Shared::RecommendSampleRate(
   if (enter.failed())
     return PP_AUDIOSAMPLERATE_NONE;
   PP_AudioSampleRate hardware_sample_rate = static_cast<PP_AudioSampleRate>(
-    enter.functions()->GetAudioHardwareOutputSampleRate(instance));
+      enter.functions()->GetAudioHardwareOutputSampleRate(instance));
   return hardware_sample_rate;
 }
 

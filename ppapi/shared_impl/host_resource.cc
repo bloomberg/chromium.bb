@@ -6,8 +6,7 @@
 
 namespace ppapi {
 
-HostResource::HostResource() : instance_(0), host_resource_(0) {
-}
+HostResource::HostResource() : instance_(0), host_resource_(0) {}
 
 // static
 HostResource HostResource::MakeInstanceOnly(PP_Instance instance) {
@@ -22,4 +21,3 @@ void HostResource::SetHostResource(PP_Instance instance, PP_Resource resource) {
 }
 
 }  // namespace ppapi
-

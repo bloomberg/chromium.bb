@@ -78,7 +78,7 @@ class CallbackShutdownTest : public TrackedCallbackTest {
   // (1) A callback which is run (so shouldn't be aborted on shutdown).
   // (2) A callback which is aborted (so shouldn't be aborted on shutdown).
   // (3) A callback which isn't run (so should be aborted on shutdown).
-  CallbackRunInfo& info_did_run() { return info_did_run_; }  // (1)
+  CallbackRunInfo& info_did_run() { return info_did_run_; }      // (1)
   CallbackRunInfo& info_did_abort() { return info_did_abort_; }  // (2)
   CallbackRunInfo& info_didnt_run() { return info_didnt_run_; }  // (3)
 
@@ -155,8 +155,7 @@ class CallbackMockResource : public Resource {
     EXPECT_NE(0, resource_id);
 
     callback_did_run_ = new TrackedCallback(
-        this,
-        PP_MakeCompletionCallback(&TestCallback, &info_did_run_));
+        this, PP_MakeCompletionCallback(&TestCallback, &info_did_run_));
     EXPECT_EQ(0U, info_did_run_.run_count);
     EXPECT_EQ(0U, info_did_run_.completion_task_run_count);
 
@@ -167,22 +166,21 @@ class CallbackMockResource : public Resource {
         PP_MakeCompletionCallback(&TestCallback,
                                   &info_did_run_with_completion_task_));
     callback_did_run_with_completion_task_->set_completion_task(
-        Bind(&CallbackMockResource::CompletionTask, this,
+        Bind(&CallbackMockResource::CompletionTask,
+             this,
              &info_did_run_with_completion_task_));
     EXPECT_EQ(0U, info_did_run_with_completion_task_.run_count);
     EXPECT_EQ(0U, info_did_run_with_completion_task_.completion_task_run_count);
 
     callback_did_abort_ = new TrackedCallback(
-        this,
-        PP_MakeCompletionCallback(&TestCallback, &info_did_abort_));
+        this, PP_MakeCompletionCallback(&TestCallback, &info_did_abort_));
     callback_did_abort_->set_completion_task(
         Bind(&CallbackMockResource::CompletionTask, this, &info_did_abort_));
     EXPECT_EQ(0U, info_did_abort_.run_count);
     EXPECT_EQ(0U, info_did_abort_.completion_task_run_count);
 
     callback_didnt_run_ = new TrackedCallback(
-        this,
-        PP_MakeCompletionCallback(&TestCallback, &info_didnt_run_));
+        this, PP_MakeCompletionCallback(&TestCallback, &info_didnt_run_));
     callback_didnt_run_->set_completion_task(
         Bind(&CallbackMockResource::CompletionTask, this, &info_didnt_run_));
     EXPECT_EQ(0U, info_didnt_run_.run_count);
@@ -215,8 +213,7 @@ class CallbackMockResource : public Resource {
     // completion task should override the result.
     EXPECT_EQ(kOverrideResultValue, info_did_run_with_completion_task_.result);
     EXPECT_EQ(1U, info_did_run_with_completion_task_.completion_task_run_count);
-    EXPECT_EQ(PP_OK,
-              info_did_run_with_completion_task_.completion_task_result);
+    EXPECT_EQ(PP_OK, info_did_run_with_completion_task_.completion_task_result);
 
     EXPECT_EQ(1U, info_did_abort_.run_count);
     // completion task shouldn't override an abort.
@@ -255,8 +252,7 @@ class CallbackMockResource : public Resource {
 // Test that callbacks get aborted on the last resource unref.
 TEST_F(CallbackResourceTest, AbortOnNoRef) {
   ProxyAutoLock lock;
-  ResourceTracker* resource_tracker =
-      PpapiGlobals::Get()->GetResourceTracker();
+  ResourceTracker* resource_tracker = PpapiGlobals::Get()->GetResourceTracker();
 
   // Test several things: Unref-ing a resource (to zero refs) with callbacks
   // which (1) have been run, (2) have been aborted, (3) haven't been completed.
@@ -305,8 +301,7 @@ TEST_F(CallbackResourceTest, AbortOnNoRef) {
 // doesn't resurrect callbacks.
 TEST_F(CallbackResourceTest, Resurrection) {
   ProxyAutoLock lock;
-  ResourceTracker* resource_tracker =
-      PpapiGlobals::Get()->GetResourceTracker();
+  ResourceTracker* resource_tracker = PpapiGlobals::Get()->GetResourceTracker();
 
   scoped_refptr<CallbackMockResource> resource(
       new CallbackMockResource(pp_instance()));

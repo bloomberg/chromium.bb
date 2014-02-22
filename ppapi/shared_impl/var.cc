@@ -76,33 +76,19 @@ std::string Var::PPVarToLogString(PP_Var var) {
   }
 }
 
-StringVar* Var::AsStringVar() {
-  return NULL;
-}
+StringVar* Var::AsStringVar() { return NULL; }
 
-ArrayBufferVar* Var::AsArrayBufferVar() {
-  return NULL;
-}
+ArrayBufferVar* Var::AsArrayBufferVar() { return NULL; }
 
-NPObjectVar* Var::AsNPObjectVar() {
-  return NULL;
-}
+NPObjectVar* Var::AsNPObjectVar() { return NULL; }
 
-ProxyObjectVar* Var::AsProxyObjectVar() {
-  return NULL;
-}
+ProxyObjectVar* Var::AsProxyObjectVar() { return NULL; }
 
-ArrayVar* Var::AsArrayVar() {
-  return NULL;
-}
+ArrayVar* Var::AsArrayVar() { return NULL; }
 
-DictionaryVar* Var::AsDictionaryVar() {
-  return NULL;
-}
+DictionaryVar* Var::AsDictionaryVar() { return NULL; }
 
-ResourceVar* Var::AsResourceVar() {
-  return NULL;
-}
+ResourceVar* Var::AsResourceVar() { return NULL; }
 
 PP_Var Var::GetPPVar() {
   int32 id = GetOrCreateVarID();
@@ -116,15 +102,11 @@ PP_Var Var::GetPPVar() {
   return result;
 }
 
-int32 Var::GetExistingVarID() const {
-  return var_id_;
-}
+int32 Var::GetExistingVarID() const { return var_id_; }
 
-Var::Var() : var_id_(0) {
-}
+Var::Var() : var_id_(0) {}
 
-Var::~Var() {
-}
+Var::~Var() {}
 
 int32 Var::GetOrCreateVarID() {
   VarTracker* tracker = PpapiGlobals::Get()->GetVarTracker();
@@ -146,27 +128,17 @@ void Var::AssignVarID(int32 id) {
 
 // StringVar -------------------------------------------------------------------
 
-StringVar::StringVar() {
-}
+StringVar::StringVar() {}
 
-StringVar::StringVar(const std::string& str)
-    : value_(str) {
-}
+StringVar::StringVar(const std::string& str) : value_(str) {}
 
-StringVar::StringVar(const char* str, uint32 len)
-    : value_(str, len) {
-}
+StringVar::StringVar(const char* str, uint32 len) : value_(str, len) {}
 
-StringVar::~StringVar() {
-}
+StringVar::~StringVar() {}
 
-StringVar* StringVar::AsStringVar() {
-  return this;
-}
+StringVar* StringVar::AsStringVar() { return this; }
 
-PP_VarType StringVar::GetType() const {
-  return PP_VARTYPE_STRING;
-}
+PP_VarType StringVar::GetType() const { return PP_VARTYPE_STRING; }
 
 // static
 PP_Var StringVar::StringToPPVar(const std::string& var) {
@@ -201,19 +173,13 @@ PP_Var StringVar::SwapValidatedUTF8StringIntoPPVar(std::string* src) {
 
 // ArrayBufferVar --------------------------------------------------------------
 
-ArrayBufferVar::ArrayBufferVar() {
-}
+ArrayBufferVar::ArrayBufferVar() {}
 
-ArrayBufferVar::~ArrayBufferVar() {
-}
+ArrayBufferVar::~ArrayBufferVar() {}
 
-ArrayBufferVar* ArrayBufferVar::AsArrayBufferVar() {
-  return this;
-}
+ArrayBufferVar* ArrayBufferVar::AsArrayBufferVar() { return this; }
 
-PP_VarType ArrayBufferVar::GetType() const {
-  return PP_VARTYPE_ARRAY_BUFFER;
-}
+PP_VarType ArrayBufferVar::GetType() const { return PP_VARTYPE_ARRAY_BUFFER; }
 
 // static
 ArrayBufferVar* ArrayBufferVar::FromPPVar(PP_Var var) {
@@ -227,4 +193,3 @@ ArrayBufferVar* ArrayBufferVar::FromPPVar(PP_Var var) {
 }
 
 }  // namespace ppapi
-

@@ -11,8 +11,7 @@
 
 namespace ppapi {
 
-base::LazyInstance<base::Lock>::Leaky
-    g_proxy_lock = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::Lock>::Leaky g_proxy_lock = LAZY_INSTANCE_INITIALIZER;
 
 bool g_disable_locking = false;
 base::LazyInstance<base::ThreadLocalBoolean>::Leaky
@@ -20,8 +19,8 @@ base::LazyInstance<base::ThreadLocalBoolean>::Leaky
 
 // Simple single-thread deadlock detector for the proxy lock.
 // |true| when the current thread has the lock.
-base::LazyInstance<base::ThreadLocalBoolean>::Leaky
-    g_proxy_locked_on_thread = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::ThreadLocalBoolean>::Leaky g_proxy_locked_on_thread =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
 base::Lock* ProxyLock::Get() {

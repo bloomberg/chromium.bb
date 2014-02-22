@@ -12,24 +12,19 @@ namespace ppapi {
 
 MediaStreamBufferManager::Delegate::~Delegate() {}
 
-void MediaStreamBufferManager::Delegate::OnNewBufferEnqueued() {
-}
+void MediaStreamBufferManager::Delegate::OnNewBufferEnqueued() {}
 
 MediaStreamBufferManager::MediaStreamBufferManager(Delegate* delegate)
-   : delegate_(delegate),
-     buffer_size_(0),
-     number_of_buffers_(0) {
+    : delegate_(delegate), buffer_size_(0), number_of_buffers_(0) {
   DCHECK(delegate_);
 }
 
-MediaStreamBufferManager::~MediaStreamBufferManager() {
-}
+MediaStreamBufferManager::~MediaStreamBufferManager() {}
 
-bool MediaStreamBufferManager::SetBuffers(
-    int32_t number_of_buffers,
-    int32_t buffer_size,
-    scoped_ptr<base::SharedMemory> shm,
-    bool enqueue_all_buffers) {
+bool MediaStreamBufferManager::SetBuffers(int32_t number_of_buffers,
+                                          int32_t buffer_size,
+                                          scoped_ptr<base::SharedMemory> shm,
+                                          bool enqueue_all_buffers) {
   DCHECK(shm);
   DCHECK(!shm_);
   DCHECK_GT(number_of_buffers, 0);
@@ -70,8 +65,7 @@ void MediaStreamBufferManager::EnqueueBuffer(int32_t index) {
   delegate_->OnNewBufferEnqueued();
 }
 
-MediaStreamBuffer* MediaStreamBufferManager::GetBufferPointer(
-    int32_t index) {
+MediaStreamBuffer* MediaStreamBufferManager::GetBufferPointer(int32_t index) {
   DCHECK_GE(index, 0);
   DCHECK_LT(index, number_of_buffers_);
   return buffers_[index];

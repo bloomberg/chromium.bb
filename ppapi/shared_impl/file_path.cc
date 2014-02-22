@@ -6,14 +6,10 @@
 
 namespace ppapi {
 
-PepperFilePath::PepperFilePath()
-    : domain_(DOMAIN_INVALID),
-      path_() {
-}
+PepperFilePath::PepperFilePath() : domain_(DOMAIN_INVALID), path_() {}
 
 PepperFilePath::PepperFilePath(Domain domain, const base::FilePath& path)
-    : domain_(domain),
-      path_(path) {
+    : domain_(domain), path_(path) {
   // TODO(viettrungluu): Should we DCHECK() some things here?
 }
 

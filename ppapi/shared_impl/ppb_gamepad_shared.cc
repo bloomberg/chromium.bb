@@ -27,9 +27,8 @@ void ConvertWebKitGamepadData(const WebKitGamepads& webkit_data,
       output_pad.axes_length = webkit_pad.axes_length;
       memcpy(output_pad.axes, webkit_pad.axes, sizeof(output_pad.axes));
       output_pad.buttons_length = webkit_pad.buttons_length;
-      memcpy(output_pad.buttons,
-             webkit_pad.buttons,
-             sizeof(output_pad.buttons));
+      memcpy(
+          output_pad.buttons, webkit_pad.buttons, sizeof(output_pad.buttons));
     }
   }
 }
