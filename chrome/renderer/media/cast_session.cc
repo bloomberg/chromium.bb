@@ -62,3 +62,11 @@ void CastSession::StartUDP(const net::IPEndPoint& local_endpoint,
           local_endpoint,
           remote_endpoint));
 }
+
+void CastSession::GetEventLogsAndReset(const EventLogsCallback& callback) {
+  io_message_loop_proxy_->PostTask(
+      FROM_HERE,
+      base::Bind(&CastSessionDelegate::GetEventLogsAndReset,
+                 base::Unretained(delegate_.get()),
+                 callback));
+}

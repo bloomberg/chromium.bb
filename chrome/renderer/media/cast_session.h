@@ -41,6 +41,7 @@ class CastSession : public base::RefCounted<CastSession> {
   base::Callback<void(const scoped_refptr<media::cast::FrameInput>&)>
   FrameInputAvailableCallback;
   typedef base::Callback<void(const std::vector<char>&)> SendPacketCallback;
+  typedef base::Callback<void(scoped_ptr<std::string>)> EventLogsCallback;
 
   CastSession();
 
@@ -55,6 +56,9 @@ class CastSession : public base::RefCounted<CastSession> {
                   const FrameInputAvailableCallback& callback);
   void StartUDP(const net::IPEndPoint& local_endpoint,
                 const net::IPEndPoint& remote_endpoint);
+
+  // Get raw event logs and provide the results in |callback| on main thread.
+  void GetEventLogsAndReset(const EventLogsCallback& callback);
 
  private:
   friend class base::RefCounted<CastSession>;

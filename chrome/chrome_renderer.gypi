@@ -22,6 +22,7 @@
         '../components/components.gyp:visitedlink_renderer',
         '../content/content.gyp:content_renderer',
         '../media/cast/cast.gyp:cast_config',
+        '../media/cast/cast.gyp:sender_logging',
         '../media/cast/cast_sender.gyp:cast_sender',
         '../media/cast/transport/cast_transport.gyp:cast_transport',
         '../net/net.gyp:net',

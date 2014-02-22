@@ -24,6 +24,7 @@ class VideoFrame;
 
 namespace cast {
 class CastEnvironment;
+class EncodingEventSubscriber;
 class FrameInput;
 
 namespace transport {
@@ -40,6 +41,7 @@ class CastSessionDelegate {
  public:
   typedef base::Callback<void(const scoped_refptr<media::cast::FrameInput>&)>
       FrameInputAvailableCallback;
+  typedef base::Callback<void(scoped_ptr<std::string>)> EventLogsCallback;
 
   CastSessionDelegate();
   virtual ~CastSessionDelegate();
@@ -55,6 +57,9 @@ class CastSessionDelegate {
                   const FrameInputAvailableCallback& callback);
   void StartUDP(const net::IPEndPoint& local_endpoint,
                 const net::IPEndPoint& remote_endpoint);
+
+  // Returns raw event logs in serialized format since last call.
+  void GetEventLogsAndReset(const EventLogsCallback& callback);
 
  protected:
   // Callback with the result of the initialization.
@@ -84,6 +89,9 @@ class CastSessionDelegate {
 
   FrameInputAvailableCallback audio_frame_input_available_callback_;
   FrameInputAvailableCallback video_frame_input_available_callback_;
+
+  scoped_ptr<media::cast::EncodingEventSubscriber> audio_event_subscriber_;
+  scoped_ptr<media::cast::EncodingEventSubscriber> video_event_subscriber_;
 
   net::IPEndPoint local_endpoint_;
   net::IPEndPoint remote_endpoint_;

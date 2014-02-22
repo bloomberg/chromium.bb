@@ -14,6 +14,7 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_sender.h"
+#include "media/cast/logging/encoding_event_subscriber.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/transport/cast_transport_config.h"
 #include "media/cast/transport/cast_transport_sender.h"
@@ -26,6 +27,18 @@ using media::cast::VideoSenderConfig;
 static base::LazyInstance<CastThreads> g_cast_threads =
     LAZY_INSTANCE_INITIALIZER;
 
+namespace {
+
+// Allow about 9MB for video event logs. Assume serialized log data for
+// each frame will take up to 150 bytes.
+const int kMaxVideoEventEntries = 9000000 / 150;
+
+// Allow about 9MB for audio event logs. Assume serialized log data for
+// each frame will take up to 75 bytes.
+const int kMaxAudioEventEntries = 9000000 / 75;
+
+}  // namespace
+
 CastSessionDelegate::CastSessionDelegate()
     : transport_configured_(false),
       io_message_loop_proxy_(
@@ -35,6 +48,15 @@ CastSessionDelegate::CastSessionDelegate()
 
 CastSessionDelegate::~CastSessionDelegate() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+
+  if (audio_event_subscriber_.get()) {
+    cast_environment_->Logging()->RemoveRawEventSubscriber(
+        audio_event_subscriber_.get());
+  }
+  if (video_event_subscriber_.get()) {
+    cast_environment_->Logging()->RemoveRawEventSubscriber(
+        video_event_subscriber_.get());
+  }
 }
 
 void CastSessionDelegate::Initialize() {
@@ -86,6 +108,16 @@ void CastSessionDelegate::StartUDP(
   StartSendingInternal();
 }
 
+void CastSessionDelegate::GetEventLogsAndReset(
+    const EventLogsCallback& callback) {
+  if (!cast_sender_.get())
+    return;
+
+  // TODO(imcheng): Get data from event subscribers.
+  scoped_ptr<std::string> result(new std::string);
+  callback.Run(result.Pass());
+}
+
 void CastSessionDelegate::StatusNotificationCB(
     media::cast::transport::CastTransportStatus unused_status) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
@@ -116,11 +148,25 @@ void CastSessionDelegate::StartSendingInternal() {
     config.audio_rtp_config = audio_config_->rtp_config;
     config.audio_frequency = audio_config_->frequency;
     config.audio_channels = audio_config_->channels;
+
+    if (!audio_event_subscriber_.get()) {
+      audio_event_subscriber_.reset(new media::cast::EncodingEventSubscriber(
+          media::cast::AUDIO_EVENT, kMaxAudioEventEntries));
+      cast_environment_->Logging()->AddRawEventSubscriber(
+          audio_event_subscriber_.get());
+    }
   }
   if (video_config_) {
     config.video_ssrc = video_config_->sender_ssrc;
     config.video_codec = video_config_->codec;
     config.video_rtp_config = video_config_->rtp_config;
+
+    if (!video_event_subscriber_.get()) {
+      video_event_subscriber_.reset(new media::cast::EncodingEventSubscriber(
+          media::cast::VIDEO_EVENT, kMaxVideoEventEntries));
+      cast_environment_->Logging()->AddRawEventSubscriber(
+          video_event_subscriber_.get());
+    }
   }
 
   cast_transport_.reset(new CastTransportSenderIPC(
