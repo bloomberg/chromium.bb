@@ -145,8 +145,7 @@ class CONTENT_EXPORT Status {
   static Status ErrorUnexpected();
 
   // The authentication tag length specified for AES-GCM encrypt/decrypt was
-  // either greater than 128 bits, or it was not a multiple of 8 bits.
-  // (zero length is allowed).
+  // not 32, 64, 96, 104, 112, 120, or 128.
   static Status ErrorInvalidAesGcmTagLength();
 
   // The "publicExponent" used to generate a key was invalid: either no bytes

@@ -293,9 +293,6 @@ Status AesGcmEncryptDecrypt(EncryptOrDecrypt mode,
   if (!g_aes_gcm_support.Get().IsSupported())
     return Status::ErrorUnsupported();
 
-  // TODO(eroman): Is this necessary?
-  if ((tag_length_bits % 8) != 0)
-    return Status::ErrorInvalidAesGcmTagLength();
   unsigned int tag_length_bytes = tag_length_bits / 8;
 
   CK_GCM_PARAMS gcm_params = {0};

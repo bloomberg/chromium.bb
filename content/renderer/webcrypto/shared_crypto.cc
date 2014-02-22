@@ -94,13 +94,13 @@ Status EncryptDecryptAesGcm(EncryptOrDecrypt mode,
   if (!params)
     return Status::ErrorUnexpected();
 
-  // TODO(eroman): The spec doesn't define the default value. Assume 128 for now
-  // since that is the maximum tag length:
-  // http://www.w3.org/2012/webcrypto/track/issues/46
   unsigned int tag_length_bits = 128;
   if (params->hasTagLengthBits())
     tag_length_bits = params->optionalTagLengthBits();
-  if (tag_length_bits > 128)
+
+  if (tag_length_bits != 32 && tag_length_bits != 64 && tag_length_bits != 96 &&
+      tag_length_bits != 104 && tag_length_bits != 112 &&
+      tag_length_bits != 120 && tag_length_bits != 128)
     return Status::ErrorInvalidAesGcmTagLength();
 
   return platform::EncryptDecryptAesGcm(

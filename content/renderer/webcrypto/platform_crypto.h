@@ -55,7 +55,7 @@ Status EncryptDecryptAesCbc(EncryptOrDecrypt mode,
 
 // Preconditions:
 //  * |key| is a non-null AES-GCM key.
-//  * |tag_length_bits| is in the range [0, 128].
+//  * |tag_length_bits| is one of {32, 64, 96, 104, 112, 120, 128}
 Status EncryptDecryptAesGcm(EncryptOrDecrypt mode,
                             SymKey* key,
                             const CryptoData& data,

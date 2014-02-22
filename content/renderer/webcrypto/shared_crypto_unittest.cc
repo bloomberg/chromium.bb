@@ -1996,7 +1996,7 @@ TEST_F(SharedCryptoTest, MAYBE(AesGcmSampleSets)) {
                                 &plain_text));
 
     // Try different incorrect tag lengths
-    uint8 kAlternateTagLengths[] = {8, 96, 120, 128, 160, 255};
+    uint8 kAlternateTagLengths[] = {0, 8, 96, 120, 128, 160, 255};
     for (size_t tag_i = 0; tag_i < arraysize(kAlternateTagLengths); ++tag_i) {
       unsigned int wrong_tag_size_bits = kAlternateTagLengths[tag_i];
       if (test_tag_size_bits == wrong_tag_size_bits)

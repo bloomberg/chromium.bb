@@ -121,8 +121,8 @@ Status Status::ErrorUnexpected() {
 
 Status Status::ErrorInvalidAesGcmTagLength() {
   return Status(
-      "The tag length is invalid: either too large or not a multiple "
-      "of 8 bits");
+      "The tag length is invalid: Must be 32, 64, 96, 104, 112, 120, or 128 "
+      "bits");
 }
 
 Status Status::ErrorGenerateKeyPublicExponent() {
