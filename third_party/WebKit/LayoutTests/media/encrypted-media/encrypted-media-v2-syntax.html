@@ -58,7 +58,7 @@
                 testDOMException('mediaKeySession.update(null)', "DOMException.INVALID_ACCESS_ERR");
                 run('mediaKeySession.update(new Uint8Array(1))');
 
-                // FIXME: Test MediaKeySession.release().
+                run('mediaKeySession.release()');
 
                 endTest();
             }

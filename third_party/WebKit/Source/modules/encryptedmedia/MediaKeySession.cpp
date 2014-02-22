@@ -40,6 +40,26 @@ namespace WebCore {
 
 DEFINE_GC_INFO(MediaKeySession);
 
+PassOwnPtr<MediaKeySession::PendingAction> MediaKeySession::PendingAction::CreatePendingUpdate(PassRefPtr<Uint8Array> data)
+{
+    return adoptPtr(new PendingAction(Update, data));
+}
+
+PassOwnPtr<MediaKeySession::PendingAction> MediaKeySession::PendingAction::CreatePendingRelease()
+{
+    return adoptPtr(new PendingAction(Release, PassRefPtr<Uint8Array>()));
+}
+
+MediaKeySession::PendingAction::PendingAction(Type type, PassRefPtr<Uint8Array> data)
+    : type(type)
+    , data(data)
+{
+}
+
+MediaKeySession::PendingAction::~PendingAction()
+{
+}
+
 PassRefPtrWillBeRawPtr<MediaKeySession> MediaKeySession::create(ExecutionContext* context, ContentDecryptionModule* cdm, WeakPtr<MediaKeys> keys)
 {
     RefPtrWillBeRawPtr<MediaKeySession> session(adoptRefCountedWillBeRefCountedGarbageCollected(new MediaKeySession(context, cdm, keys)));
@@ -54,7 +74,7 @@ MediaKeySession::MediaKeySession(ExecutionContext* context, ContentDecryptionMod
     , m_session(cdm->createSession(this))
     , m_keys(keys)
     , m_isClosed(false)
-    , m_updateTimer(this, &MediaKeySession::updateTimerFired)
+    , m_actionTimer(this, &MediaKeySession::actionTimerFired)
 {
     WTF_LOG(Media, "MediaKeySession::MediaKeySession");
     ScriptWrappable::init(this);
@@ -70,12 +90,6 @@ MediaKeySession::~MediaKeySession()
 void MediaKeySession::setError(MediaKeyError* error)
 {
     m_error = error;
-}
-
-void MediaKeySession::release(ExceptionState& exceptionState)
-{
-    ASSERT(!m_isClosed);
-    m_session->release();
 }
 
 String MediaKeySession::sessionId() const
@@ -96,7 +110,8 @@ void MediaKeySession::update(Uint8Array* response, ExceptionState& exceptionStat
 
     // From <https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-update>:
     // The update(response) method must run the following steps:
-    // 1. If the argument is null or an empty array, throw an INVALID_ACCESS_ERR.
+    // 1. If response is null or an empty array, throw an INVALID_ACCESS_ERR
+    //    exception and abort these steps.
     if (!response || !response->length()) {
         exceptionState.throwDOMException(InvalidAccessError, String::format("The response argument provided is %s.", response ? "an empty array" : "invalid"));
         return;
@@ -106,26 +121,55 @@ void MediaKeySession::update(Uint8Array* response, ExceptionState& exceptionStat
     // FIXME: Implement states in MediaKeySession.
 
     // 3. Schedule a task to handle the call, providing response.
-    m_pendingUpdates.append(response);
+    m_pendingActions.append(PendingAction::CreatePendingUpdate(response));
 
-    if (!m_updateTimer.isActive())
-        m_updateTimer.startOneShot(0);
+    if (!m_actionTimer.isActive())
+        m_actionTimer.startOneShot(0);
 }
 
-void MediaKeySession::updateTimerFired(Timer<MediaKeySession>*)
+void MediaKeySession::release(ExceptionState& exceptionState)
 {
-    ASSERT(m_pendingUpdates.size());
+    WTF_LOG(Media, "MediaKeySession::release");
+    ASSERT(!m_isClosed);
 
-    while (!m_pendingUpdates.isEmpty()) {
-        RefPtr<Uint8Array> pendingUpdate = m_pendingUpdates.takeFirst();
+    // From <https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-release>:
+    // The release() method must run the following steps:
+    // 1. If the state of the MediaKeySession is CLOSED then abort these steps.
+    // 2. If the state of the MediaKeySession is ERROR, throw an INVALID_STATE_ERR
+    //    exception and abort these steps.
+    // FIXME: Implement states in MediaKeySession.
 
-        // NOTE: Continued from step 3. of MediaKeySession::update()
-        // 3.1. Let cdm be the cdm loaded in the MediaKeys constructor.
-        // NOTE: This is m_session.
-        // 3.2. Let request be null.
-        // 3.3. Use cdm to execute the following steps:
-        // 3.3.1 Process response.
-        m_session->update(*pendingUpdate);
+    // 3. Schedule a task to handle the call.
+    m_pendingActions.append(PendingAction::CreatePendingRelease());
+
+    if (!m_actionTimer.isActive())
+        m_actionTimer.startOneShot(0);
+}
+
+void MediaKeySession::actionTimerFired(Timer<MediaKeySession>*)
+{
+    ASSERT(m_pendingActions.size());
+
+    while (!m_pendingActions.isEmpty()) {
+        OwnPtr<PendingAction> pendingAction(m_pendingActions.takeFirst());
+
+        switch (pendingAction->type) {
+        case PendingAction::Update:
+            // NOTE: Continued from step 3. of MediaKeySession::update()
+            // 3.1. Let cdm be the cdm loaded in the MediaKeys constructor.
+            // 3.2. Let request be null.
+            // 3.3. Use cdm to execute the following steps:
+            // 3.3.1 Process response.
+            m_session->update(*(pendingAction->data));
+            break;
+        case PendingAction::Release:
+            // NOTE: Continued from step 3. of MediaKeySession::release().
+            // 3.1 Let cdm be the cdm loaded in the MediaKeys constructor.
+            // 3.2 Use cdm to execute the following steps:
+            // 3.2.1 Process the release request.
+            m_session->release();
+            break;
+        }
     }
 }
 
@@ -209,7 +253,7 @@ bool MediaKeySession::hasPendingActivity() const
     // Remain around if there are pending events or MediaKeys is still around
     // and we're not closed.
     return ActiveDOMObject::hasPendingActivity()
-        || !m_pendingUpdates.isEmpty()
+        || !m_pendingActions.isEmpty()
         || m_asyncEventQueue->hasPendingEvents()
         || (m_keys && !m_isClosed);
 }
@@ -220,9 +264,9 @@ void MediaKeySession::stop()
     m_session.clear();
     m_isClosed = true;
 
-    if (m_updateTimer.isActive())
-        m_updateTimer.stop();
-    m_pendingUpdates.clear();
+    if (m_actionTimer.isActive())
+        m_actionTimer.stop();
+    m_pendingActions.clear();
     m_asyncEventQueue->close();
 }
 

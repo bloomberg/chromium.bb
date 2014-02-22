@@ -93,8 +93,25 @@ public:
     void trace(Visitor*) { }
 
 private:
+    // A struct holding the pending action.
+    struct PendingAction {
+        enum Type {
+            Update,
+            Release
+        };
+        const Type type;
+        const RefPtr<Uint8Array> data;
+
+        static PassOwnPtr<PendingAction> CreatePendingUpdate(PassRefPtr<Uint8Array> data);
+        static PassOwnPtr<PendingAction> CreatePendingRelease();
+        ~PendingAction();
+
+    private:
+        PendingAction(Type, PassRefPtr<Uint8Array> data);
+    };
+
     MediaKeySession(ExecutionContext*, ContentDecryptionModule*, WeakPtr<MediaKeys>);
-    void updateTimerFired(Timer<MediaKeySession>*);
+    void actionTimerFired(Timer<MediaKeySession>*);
 
     // ContentDecryptionModuleSessionClient
     virtual void message(const unsigned char* message, size_t messageLength, const KURL& destinationURL) OVERRIDE;
@@ -113,8 +130,8 @@ private:
     // Is the CDM finished with this session?
     bool m_isClosed;
 
-    Deque<RefPtr<Uint8Array> > m_pendingUpdates;
-    Timer<MediaKeySession> m_updateTimer;
+    Deque<OwnPtr<PendingAction> > m_pendingActions;
+    Timer<MediaKeySession> m_actionTimer;
 };
 
 }

@@ -30,5 +30,6 @@ EXPECTED (mediaKeySession.onwebkitkeymessage == 'null') OK
 TEST(mediaKeySession.update()) THROWS("TypeError: Failed to execute 'update' on 'MediaKeySession': 1 argument required, but only 0 present.") OK
 TEST(mediaKeySession.update(null)) THROWS(DOMException.INVALID_ACCESS_ERR: Failed to execute 'update' on 'MediaKeySession': The response argument provided is invalid.) OK
 RUN(mediaKeySession.update(new Uint8Array(1)))
+RUN(mediaKeySession.release())
 END OF TEST
 
