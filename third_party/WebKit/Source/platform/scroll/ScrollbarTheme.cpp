@@ -34,7 +34,7 @@
 #if !OS(MACOSX)
 #include "public/platform/Platform.h"
 #include "public/platform/WebRect.h"
-#include "public/platform/default/WebThemeEngine.h"
+#include "public/platform/WebThemeEngine.h"
 #endif
 
 namespace WebCore {

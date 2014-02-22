@@ -1,4 +1,0 @@
-# FIXME: crbug.com/327471. Remove this file when default/WebThemeEngine.h is removed.
-include_rules = [
-    "+..",
-]
