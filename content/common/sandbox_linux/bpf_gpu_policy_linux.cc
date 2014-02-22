@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -22,6 +23,7 @@
 #include "build/build_config.h"
 #include "content/common/sandbox_linux/sandbox_bpf_base_policy_linux.h"
 #include "content/common/sandbox_linux/sandbox_seccomp_bpf_linux.h"
+#include "content/common/set_process_title.h"
 #include "content/public/common/content_switches.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_sets.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
@@ -136,9 +138,24 @@ ErrorCode GpuBrokerProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
   }
 }
 
-bool EnableGpuBrokerPolicyCallback() {
-  return SandboxSeccompBPF::StartSandboxWithExternalPolicy(
-      scoped_ptr<sandbox::SandboxBPFPolicy>(new GpuBrokerProcessPolicy));
+void UpdateProcessTypeToGpuBroker() {
+  CommandLine::StringVector exec = CommandLine::ForCurrentProcess()->GetArgs();
+  CommandLine::Reset();
+  CommandLine::Init(0, NULL);
+  CommandLine::ForCurrentProcess()->InitFromArgv(exec);
+  CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kProcessType,
+                                                      "gpu-broker");
+
+  // Update the process title. The argv was already cached by the call to
+  // SetProcessTitleFromCommandLine in content_main_runner.cc, so we can pass
+  // NULL here (we don't have the original argv at this point).
+  SetProcessTitleFromCommandLine(NULL);
+}
+
+bool UpdateProcessTypeAndEnableSandbox(
+    const base::Callback<bool(void)>& broker_sandboxer_callback) {
+  UpdateProcessTypeToGpuBroker();
+  return broker_sandboxer_callback.Run();
 }
 
 }  // namespace
@@ -188,7 +205,9 @@ bool GpuProcessPolicy::PreSandboxHook() {
   DCHECK(!broker_process());
   // Create a new broker process.
   InitGpuBrokerProcess(
-      EnableGpuBrokerPolicyCallback,
+      base::Bind(&SandboxSeccompBPF::StartSandboxWithExternalPolicy,
+                 base::Passed(scoped_ptr<sandbox::SandboxBPFPolicy>(
+                     new GpuBrokerProcessPolicy))),
       std::vector<std::string>(),  // No extra files in whitelist.
       std::vector<std::string>());
 
@@ -214,7 +233,7 @@ bool GpuProcessPolicy::PreSandboxHook() {
 }
 
 void GpuProcessPolicy::InitGpuBrokerProcess(
-    bool (*broker_sandboxer_callback)(void),
+    const base::Callback<bool(void)>& broker_sandboxer_callback,
     const std::vector<std::string>& read_whitelist_extra,
     const std::vector<std::string>& write_whitelist_extra) {
   static const char kDriRcPath[] = "/etc/drirc";
@@ -241,8 +260,10 @@ void GpuProcessPolicy::InitGpuBrokerProcess(
   broker_process_ = new BrokerProcess(GetFSDeniedErrno(),
                                       read_whitelist,
                                       write_whitelist);
-  // Initialize the broker process and give it a sandbox callback.
-  CHECK(broker_process_->Init(broker_sandboxer_callback));
+  // The initialization callback will perform generic initialization and then
+  // call broker_sandboxer_callback.
+  CHECK(broker_process_->Init(base::Bind(&UpdateProcessTypeAndEnableSandbox,
+                                         broker_sandboxer_callback)));
 }
 
 }  // namespace content

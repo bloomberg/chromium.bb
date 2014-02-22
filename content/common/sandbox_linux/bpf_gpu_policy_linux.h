@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "content/common/sandbox_linux/sandbox_bpf_base_policy_linux.h"
 
 namespace sandbox {
@@ -34,7 +35,7 @@ class GpuProcessPolicy : public SandboxBPFBasePolicy {
   // names that should be whitelisted by the broker process, in addition to
   // the basic ones.
   void InitGpuBrokerProcess(
-      bool (*broker_sandboxer_callback)(void),
+      const base::Callback<bool(void)>& broker_sandboxer_callback,
       const std::vector<std::string>& read_whitelist_extra,
       const std::vector<std::string>& write_whitelist_extra);
 

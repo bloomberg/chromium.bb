@@ -20,6 +20,7 @@
 
 #include <ostream>
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "sandbox/linux/seccomp-bpf/bpf_tests.h"
@@ -670,6 +671,8 @@ BPF_TEST(SandboxBPF, UnsafeTrapWithErrno, RedirectAllSyscallsPolicy) {
   BPF_ASSERT(errno == 0);
 }
 
+bool NoOpCallback() { return true; }
+
 // Test a trap handler that makes use of a broker process to open().
 
 class InitializedOpenBroker {
@@ -682,7 +685,7 @@ class InitializedOpenBroker {
     broker_process_.reset(
         new BrokerProcess(EPERM, allowed_files, std::vector<std::string>()));
     BPF_ASSERT(broker_process() != NULL);
-    BPF_ASSERT(broker_process_->Init(NULL));
+    BPF_ASSERT(broker_process_->Init(base::Bind(&NoOpCallback)));
 
     initialized_ = true;
   }

@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -60,6 +61,8 @@ class ScopedTemporaryFile {
   DISALLOW_COPY_AND_ASSIGN(ScopedTemporaryFile);
 };
 
+bool NoOpCallback() { return true; }
+
 }  // namespace
 
 #if defined(OS_ANDROID)
@@ -74,7 +77,7 @@ TEST(BrokerProcess, CreateAndDestroy) {
 
   scoped_ptr<BrokerProcess> open_broker(
       new BrokerProcess(EPERM, read_whitelist, std::vector<std::string>()));
-  ASSERT_TRUE(open_broker->Init(NULL));
+  ASSERT_TRUE(open_broker->Init(base::Bind(&NoOpCallback)));
   pid_t broker_pid = open_broker->broker_pid();
 
   // Destroy the broker and check it has exited properly.
@@ -88,7 +91,7 @@ TEST(BrokerProcess, CreateAndDestroy) {
 TEST(BrokerProcess, TestOpenAccessNull) {
   const std::vector<std::string> empty;
   BrokerProcess open_broker(EPERM, empty, empty);
-  ASSERT_TRUE(open_broker.Init(NULL));
+  ASSERT_TRUE(open_broker.Init(base::Bind(&NoOpCallback)));
 
   int fd = open_broker.Open(NULL, O_RDONLY);
   ASSERT_EQ(fd, -EFAULT);
@@ -119,7 +122,7 @@ void TestOpenFilePerms(bool fast_check_in_client, int denied_errno) {
                             read_whitelist,
                             write_whitelist,
                             fast_check_in_client);
-  ASSERT_TRUE(open_broker.Init(NULL));
+  ASSERT_TRUE(open_broker.Init(base::Bind(&NoOpCallback)));
 
   int fd = -1;
   fd = open_broker.Open(kR_WhiteListed, O_RDONLY);
@@ -270,7 +273,7 @@ void TestOpenCpuinfo(bool fast_check_in_client) {
 
   scoped_ptr<BrokerProcess> open_broker(new BrokerProcess(
       EPERM, read_whitelist, std::vector<std::string>(), fast_check_in_client));
-  ASSERT_TRUE(open_broker->Init(NULL));
+  ASSERT_TRUE(open_broker->Init(base::Bind(&NoOpCallback)));
   pid_t broker_pid = open_broker->broker_pid();
 
   int fd = -1;
@@ -340,7 +343,7 @@ TEST(BrokerProcess, OpenFileRW) {
   whitelist.push_back(tempfile_name);
 
   BrokerProcess open_broker(EPERM, whitelist, whitelist);
-  ASSERT_TRUE(open_broker.Init(NULL));
+  ASSERT_TRUE(open_broker.Init(base::Bind(&NoOpCallback)));
 
   // Check we can access that file with read or write.
   int can_access = open_broker.Access(tempfile_name, R_OK | W_OK);
@@ -377,7 +380,7 @@ SANDBOX_TEST(BrokerProcess, BrokerDied) {
                             std::vector<std::string>(),
                             true /* fast_check_in_client */,
                             true /* quiet_failures_for_tests */);
-  SANDBOX_ASSERT(open_broker.Init(NULL));
+  SANDBOX_ASSERT(open_broker.Init(base::Bind(&NoOpCallback)));
   pid_t broker_pid = open_broker.broker_pid();
   SANDBOX_ASSERT(kill(broker_pid, SIGKILL) == 0);
 
@@ -400,7 +403,7 @@ void TestOpenComplexFlags(bool fast_check_in_client) {
                             whitelist,
                             whitelist,
                             fast_check_in_client);
-  ASSERT_TRUE(open_broker.Init(NULL));
+  ASSERT_TRUE(open_broker.Init(base::Bind(&NoOpCallback)));
   // Test that we do the right thing for O_CLOEXEC and O_NONBLOCK.
   int fd = -1;
   int ret = 0;

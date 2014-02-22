@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/pickle.h"
 #include "base/process/process.h"
 
@@ -42,9 +43,9 @@ class BrokerProcess {
   ~BrokerProcess();
   // Will initialize the broker process. There should be no threads at this
   // point, since we need to fork().
-  // sandbox_callback is a function that should be called to enable the
-  // sandbox in the broker.
-  bool Init(bool (*sandbox_callback)(void));
+  // broker_process_init_callback will be called in the new broker process,
+  // after fork() returns.
+  bool Init(const base::Callback<bool(void)>& broker_process_init_callback);
 
   // Can be used in place of access(). Will be async signal safe.
   // X_OK will always return an error in practice since the broker process

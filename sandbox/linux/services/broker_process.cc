@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/pickle.h"
@@ -136,7 +137,8 @@ BrokerProcess::~BrokerProcess() {
   }
 }
 
-bool BrokerProcess::Init(bool (*sandbox_callback)(void)) {
+bool BrokerProcess::Init(
+    const base::Callback<bool(void)>& broker_process_init_callback) {
   CHECK(!initialized_);
   int socket_pair[2];
   // Use SOCK_SEQPACKET, because we need to preserve message boundaries
@@ -173,10 +175,7 @@ bool BrokerProcess::Init(bool (*sandbox_callback)(void)) {
     shutdown(socket_pair[0], SHUT_WR);
     ipc_socketpair_ = socket_pair[0];
     is_child_ = true;
-    // Enable the sandbox if provided.
-    if (sandbox_callback) {
-      CHECK(sandbox_callback());
-    }
+    CHECK(broker_process_init_callback.Run());
     initialized_ = true;
     for (;;) {
       HandleRequest();

@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -151,11 +152,6 @@ ErrorCode CrosArmGpuBrokerProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
   }
 }
 
-bool EnableArmGpuBrokerPolicyCallback() {
-  return SandboxSeccompBPF::StartSandboxWithExternalPolicy(
-      scoped_ptr<sandbox::SandboxBPFPolicy>(new CrosArmGpuBrokerProcessPolicy));
-}
-
 }  // namespace
 
 CrosArmGpuProcessPolicy::CrosArmGpuProcessPolicy(bool allow_shmat)
@@ -207,9 +203,12 @@ bool CrosArmGpuProcessPolicy::PreSandboxHook() {
   // Add ARM-specific files to whitelist in the broker.
 
   AddArmGpuWhitelist(&read_whitelist_extra, &write_whitelist_extra);
-  InitGpuBrokerProcess(EnableArmGpuBrokerPolicyCallback,
-                       read_whitelist_extra,
-                       write_whitelist_extra);
+  InitGpuBrokerProcess(
+      base::Bind(&SandboxSeccompBPF::StartSandboxWithExternalPolicy,
+                 base::Passed(scoped_ptr<sandbox::SandboxBPFPolicy>(
+                     new CrosArmGpuBrokerProcessPolicy))),
+      read_whitelist_extra,
+      write_whitelist_extra);
 
   const int dlopen_flag = RTLD_NOW | RTLD_GLOBAL | RTLD_NODELETE;
 
