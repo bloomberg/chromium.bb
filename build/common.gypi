@@ -1607,6 +1607,9 @@
             # Turn on multiple dll by default on Windows when in static_library.
             'chrome_multiple_dll%': 1,
           }],
+          ['asan==1', {
+            'win_use_allocator_shim%': 0,
+          }],
           ['component=="shared_library" and "<(GENERATOR)"=="ninja"', {
             # Only enabled by default for ninja because it's buggy in VS.
             # Not enabled for component=static_library because some targets
@@ -1817,12 +1820,7 @@
         ],
       }],
 
-      ['asan==1 and OS=="win"', {
-        # TODO(hans): Remove once users set syzyasan (crbug.com/343960).
-        'syzyasan%': 1,
-      }],
-      ['asan==1 and OS!="win"', {
-        # TODO(hans): Windows should use Clang-based ASan (crbug.com/343960).
+      ['asan==1', {
         'clang%': 1,
       }],
       ['asan==1 and OS=="mac"', {
@@ -1979,7 +1977,7 @@
         ],
       }],
 
-      ['OS=="win" and clang==1', {
+      ['OS=="win" and (clang==1 or asan==1)', {
         'chromium_win_pch': 0,
       }],
 
@@ -4816,6 +4814,37 @@
                   'VCCLCompilerTool': {
                     'AdditionalOptions': [
                       '-fmsc-version=1600',
+                    ],
+                  },
+                }],
+              ],
+            }],
+            ['asan==1', {
+              # ASan on Windows is a work in progress and very experimental.
+              # See crbug.com/345874.
+              'VCCLCompilerTool': {
+                'AdditionalOptions': [
+                  '-fsanitize=address',
+                ],
+              },
+              'VCLinkerTool': {
+                'AdditionalLibraryDirectories': [
+                  # TODO(hans): If make_clang_dir is absolute, this breaks.
+                  '<(DEPTH)/<(make_clang_dir)/lib/clang/3.5/lib/windows',
+                ],
+              },
+              'target_conditions': [
+                ['_type=="executable"', {
+                  'VCLinkerTool': {
+                    'AdditionalDependencies': [
+                       'clang_rt.asan-i386.lib',
+                    ],
+                  },
+                }],
+                ['_type=="shared_library" or _type=="loadable_module"', {
+                  'VCLinkerTool': {
+                    'AdditionalDependencies': [
+                       'clang_rt.asan_dll_thunk-i386.lib',
                     ],
                   },
                 }],

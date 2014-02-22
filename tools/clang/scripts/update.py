@@ -8,6 +8,7 @@ update.sh. This script should replace update.sh on all platforms eventually."""
 
 import os
 import re
+import shutil
 import subprocess
 import sys
 
@@ -15,7 +16,7 @@ import sys
 # https://code.google.com/p/chromium/wiki/UpdatingClang
 # Reverting problematic clang rolls is safe, though.
 # Note: this revision is only used for Windows. Other platforms use update.sh.
-LLVM_WINDOWS_REVISION = '201859'
+LLVM_WINDOWS_REVISION = '201860'
 
 # Path constants. (All of these should be absolute paths.)
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -23,6 +24,7 @@ CHROMIUM_DIR = os.path.abspath(os.path.join(THIS_DIR, '..', '..', '..'))
 LLVM_DIR = os.path.join(CHROMIUM_DIR, 'third_party', 'llvm')
 LLVM_BUILD_DIR = os.path.join(CHROMIUM_DIR, 'third_party', 'llvm-build',
                               'Release+Asserts')
+COMPILER_RT_BUILD_DIR = os.path.join(LLVM_BUILD_DIR, '32bit-compiler-rt')
 CLANG_DIR = os.path.join(LLVM_DIR, 'tools', 'clang')
 COMPILER_RT_DIR = os.path.join(LLVM_DIR, 'projects', 'compiler-rt')
 STAMP_FILE = os.path.join(LLVM_BUILD_DIR, 'cr_build_revision')
@@ -134,8 +136,28 @@ def UpdateClang():
   RunCommand(GetVSVersion().SetupScript('x64') +
              ['&&', 'cmake', '-GNinja', '-DCMAKE_BUILD_TYPE=Release',
               '-DLLVM_ENABLE_ASSERTIONS=ON', LLVM_DIR])
-
   RunCommand(GetVSVersion().SetupScript('x64') + ['&&', 'ninja', 'all'])
+
+  # Do an x86 build of compiler-rt to get the 32-bit ASan run-time.
+  # TODO(hans): Remove once the regular build above produces this.
+  if not os.path.exists(COMPILER_RT_BUILD_DIR):
+    os.makedirs(COMPILER_RT_BUILD_DIR)
+  os.chdir(COMPILER_RT_BUILD_DIR)
+  RunCommand(GetVSVersion().SetupScript('x86') +
+             ['&&', 'cmake', '-GNinja', '-DCMAKE_BUILD_TYPE=Release',
+              '-DLLVM_ENABLE_ASSERTIONS=ON', LLVM_DIR])
+  RunCommand(GetVSVersion().SetupScript('x86') + ['&&', 'ninja', 'compiler-rt'])
+  asan_rt_lib_src_dir = os.path.join(COMPILER_RT_BUILD_DIR, 'lib', 'clang',
+                                     '3.5', 'lib', 'windows')
+  asan_rt_lib_dst_dir = os.path.join(LLVM_BUILD_DIR, 'lib', 'clang',
+                                     '3.5', 'lib', 'windows')
+  if not os.path.exists(asan_rt_lib_dst_dir):
+    os.makedirs(asan_rt_lib_dst_dir)
+  for root, _, files in os.walk(asan_rt_lib_src_dir):
+    for f in files:
+      if re.match(r'^.*-i386\.lib$', f):
+        shutil.copy(os.path.join(root, f), asan_rt_lib_dst_dir)
+        print "Copying %s to %s" % (f, asan_rt_lib_dst_dir)
 
   WriteStampFile(LLVM_WINDOWS_REVISION)
   print 'Clang update was successful.'
@@ -160,7 +182,7 @@ def main():
         [os.path.join(os.path.dirname(__file__), 'update.sh')] +  sys.argv[1:],
         stderr=os.fdopen(os.dup(sys.stdin.fileno())))
 
-  if not re.search('clang=1', os.environ.get('GYP_DEFINES', '')):
+  if not re.search('(clang|asan)=1', os.environ.get('GYP_DEFINES', '')):
     print 'Skipping Clang update (clang=1 was not set in GYP_DEFINES).'
     return 0
 
