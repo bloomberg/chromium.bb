@@ -4,6 +4,7 @@
 
 #include "apps/shell/browser/shell_browser_main_parts.h"
 
+#include "apps/shell/browser/shell_apps_client.h"
 #include "apps/shell/browser/shell_browser_context.h"
 #include "apps/shell/browser/shell_extension_system.h"
 #include "apps/shell/browser/shell_extension_system_factory.h"
@@ -111,6 +112,9 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
       new extensions::ShellExtensionsBrowserClient(browser_context_.get()));
   extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
 
+  apps_client_.reset(new ShellAppsClient(browser_context_.get()));
+  AppsClient::Set(apps_client_.get());
+
   // Create our custom ExtensionSystem first because other
   // BrowserContextKeyedServices depend on it.
   // TODO(yoz): Move this after EnsureBrowserContextKeyedServiceFactoriesBuilt.
@@ -163,6 +167,7 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
 
 void ShellBrowserMainParts::OnWindowTreeHostCloseRequested(
     const aura::WindowEventDispatcher* dispatcher) {
+  extension_system_->CloseApp();
   base::MessageLoop::current()->PostTask(FROM_HERE,
                                          base::MessageLoop::QuitClosure());
 }

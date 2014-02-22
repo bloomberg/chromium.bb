@@ -7,6 +7,7 @@
 #include "apps/app_window.h"
 #include "apps/app_window_contents.h"
 #include "apps/app_window_registry.h"
+#include "apps/apps_client.h"
 #include "apps/ui/native_app_window.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
@@ -17,7 +18,6 @@
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/apps/chrome_app_window_delegate.h"
 #include "chrome/common/extensions/api/app_window.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "content/public/browser/notification_registrar.h"
@@ -269,8 +269,8 @@ bool AppWindowCreateFunction::RunImpl() {
   create_params.creator_process_id =
       render_view_host_->GetProcess()->GetID();
 
-  AppWindow* app_window = new AppWindow(
-      GetProfile(), new ChromeAppWindowDelegate(), GetExtension());
+  AppWindow* app_window =
+      apps::AppsClient::Get()->CreateAppWindow(GetProfile(), GetExtension());
   app_window->Init(
       url, new apps::AppWindowContentsImpl(app_window), create_params);
 

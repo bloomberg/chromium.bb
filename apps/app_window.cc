@@ -6,6 +6,7 @@
 
 #include "apps/app_window_geometry_cache.h"
 #include "apps/app_window_registry.h"
+#include "apps/apps_client.h"
 #include "apps/ui/native_app_window.h"
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
@@ -14,7 +15,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_web_contents_observer.h"
 #include "chrome/browser/extensions/suggest_permission_util.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
@@ -232,7 +232,7 @@ void AppWindow::Init(const GURL& url,
   }
 
   // Prevent the browser process from shutting down while this window is open.
-  chrome::StartKeepAlive();
+  AppsClient::Get()->StartKeepAlive();
 
   UpdateExtensionAppIcon();
 
@@ -245,7 +245,7 @@ AppWindow::~AppWindow() {
   registrar_.RemoveAll();
 
   // Remove shutdown prevention.
-  chrome::EndKeepAlive();
+  AppsClient::Get()->EndKeepAlive();
 }
 
 void AppWindow::RequestMediaAccessPermission(

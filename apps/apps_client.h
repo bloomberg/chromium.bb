@@ -17,6 +17,8 @@ class Extension;
 
 namespace apps {
 
+class AppWindow;
+
 // Sets up global state for the apps system. Should be Set() once in each
 // process. This should be implemented by the client of the apps system.
 class AppsClient {
@@ -28,6 +30,17 @@ class AppsClient {
   // or false if the launch should be prevented.
   virtual bool CheckAppLaunch(content::BrowserContext* context,
                               const extensions::Extension* extension) = 0;
+
+  // Creates a new apps::AppWindow for the app in |extension| for |context|.
+  // Caller takes ownership.
+  virtual AppWindow* CreateAppWindow(
+      content::BrowserContext* context,
+      const extensions::Extension* extension) = 0;
+
+  // Tells the embedding application to stay running. The application may close
+  // after a matching number of calls to EndKeepAlive() are made.
+  virtual void StartKeepAlive() = 0;
+  virtual void EndKeepAlive() = 0;
 
   // Return the apps client.
   static AppsClient* Get();

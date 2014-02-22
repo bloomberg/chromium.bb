@@ -40,6 +40,7 @@ class WMTestHelper;
 
 namespace apps {
 
+class ShellAppsClient;
 class ShellBrowserContext;
 class ShellExtensionsClient;
 
@@ -90,6 +91,7 @@ class ShellBrowserMainParts : public content::BrowserMainParts,
   scoped_ptr<ShellExtensionsClient> extensions_client_;
   scoped_ptr<extensions::ShellExtensionsBrowserClient>
       extensions_browser_client_;
+  scoped_ptr<ShellAppsClient> apps_client_;
   scoped_ptr<net::NetLog> net_log_;
 
   // Enable a minimal set of views::corewm to be initialized.

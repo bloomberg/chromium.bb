@@ -40,6 +40,9 @@ class ShellExtensionSystem : public ExtensionSystem {
   // Returns true on success.
   bool LoadAndLaunchApp(const base::FilePath& app_dir);
 
+  // Closes the running app.
+  void CloseApp();
+
   // BrowserContextKeyedService implementation:
   virtual void Shutdown() OVERRIDE;
 
@@ -70,6 +73,9 @@ class ShellExtensionSystem : public ExtensionSystem {
 
  private:
   content::BrowserContext* browser_context_;  // Not owned.
+
+  // Extension ID for the app.
+  std::string app_id_;
 
   // Data to be accessed on the IO thread. Must outlive process_manager_.
   scoped_refptr<InfoMap> info_map_;

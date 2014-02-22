@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "apps/app_window_registry.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -48,6 +49,7 @@ bool ShellExtensionSystem::LoadAndLaunchApp(const base::FilePath& app_dir) {
         << " failed with: " << load_error;
     return false;
   }
+  app_id_ = extension->id();
 
   // TODO(jamescook): We may want to do some of these things here:
   // * Create a PermissionsUpdater.
@@ -84,6 +86,11 @@ bool ShellExtensionSystem::LoadAndLaunchApp(const base::FilePath& app_dir) {
   event_router_->DispatchEventWithLazyListener(extension->id(), event.Pass());
 
   return true;
+}
+
+void ShellExtensionSystem::CloseApp() {
+  apps::AppWindowRegistry::Get(browser_context_)
+      ->CloseAllAppWindowsForApp(app_id_);
 }
 
 void ShellExtensionSystem::Shutdown() {

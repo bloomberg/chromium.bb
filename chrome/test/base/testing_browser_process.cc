@@ -7,6 +7,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "chrome/browser/apps/chrome_apps_client.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_impl.h"
@@ -73,6 +74,7 @@ TestingBrowserProcess::TestingBrowserProcess()
       extensions_browser_client_(
           new extensions::ChromeExtensionsBrowserClient) {
   extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
+  apps::AppsClient::Set(ChromeAppsClient::GetInstance());
 }
 
 TestingBrowserProcess::~TestingBrowserProcess() {
