@@ -467,7 +467,7 @@ def main():
           os.path.join(target_dir, 'sys32'),
         ],
     }
-    with open(os.path.join(target_dir, 'data.json'), 'w') as f:
+    with open(os.path.join(target_dir, '..', 'data.json'), 'w') as f:
       json.dump(data, f)
   finally:
     if options.clean:

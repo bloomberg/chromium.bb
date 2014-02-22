@@ -195,7 +195,8 @@ def main():
     SaveTimestampsAndHash(target_dir, current_hash)
 
   if options.output_json:
-    shutil.copyfile(os.path.join(target_dir, 'data.json'), options.output_json)
+    shutil.copyfile(os.path.join(target_dir, '..', 'data.json'),
+                    options.output_json)
 
   return 0
 

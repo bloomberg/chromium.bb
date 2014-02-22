@@ -27,6 +27,7 @@
 /win_toolchain/vs2013_files
 /win_toolchain/.timestamps
 /win_toolchain/.vspro
+/win_toolchain/data.json
 
 # Ignore ctags/cscope index files
 /TAGS
