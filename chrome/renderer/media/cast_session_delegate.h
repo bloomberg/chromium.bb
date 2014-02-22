@@ -78,13 +78,6 @@ class CastSessionDelegate {
   scoped_ptr<media::cast::CastSender> cast_sender_;
   scoped_ptr<media::cast::transport::CastTransportSender> cast_transport_;
 
-  // Utilities threads owned by this class. They are used by CastSender for
-  // encoding.
-  // TODO(hclam): See crbug.com/317006 for more details.
-  // This class shouldn't create and own threads.
-  base::Thread audio_encode_thread_;
-  base::Thread video_encode_thread_;
-
   // Configuration for audio and video.
   scoped_ptr<media::cast::AudioSenderConfig> audio_config_;
   scoped_ptr<media::cast::VideoSenderConfig> video_config_;

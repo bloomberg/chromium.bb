@@ -4,8 +4,10 @@
 
 #include "chrome/renderer/media/cast_session_delegate.h"
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "chrome/renderer/media/cast_threads.h"
 #include "chrome/renderer/media/cast_transport_sender_ipc.h"
 #include "content/public/renderer/p2p_socket_client.h"
 #include "content/public/renderer/render_thread.h"
@@ -21,10 +23,11 @@ using media::cast::CastEnvironment;
 using media::cast::CastSender;
 using media::cast::VideoSenderConfig;
 
+static base::LazyInstance<CastThreads> g_cast_threads =
+    LAZY_INSTANCE_INITIALIZER;
+
 CastSessionDelegate::CastSessionDelegate()
-    : audio_encode_thread_("CastAudioEncodeThread"),
-      video_encode_thread_("CastVideoEncodeThread"),
-      transport_configured_(false),
+    : transport_configured_(false),
       io_message_loop_proxy_(
           content::RenderThread::Get()->GetIOMessageLoopProxy()) {
   DCHECK(io_message_loop_proxy_);
@@ -38,9 +41,6 @@ void CastSessionDelegate::Initialize() {
   if (cast_environment_)
     return;  // Already initialized.
 
-  audio_encode_thread_.Start();
-  video_encode_thread_.Start();
-
   // CastSender uses the renderer's IO thread as the main thread. This reduces
   // thread hopping for incoming video frames and outgoing network packets.
   // There's no need to decode so no thread assigned for decoding.
@@ -48,9 +48,9 @@ void CastSessionDelegate::Initialize() {
   cast_environment_ = new CastEnvironment(
       scoped_ptr<base::TickClock>(new base::DefaultTickClock()).Pass(),
       base::MessageLoopProxy::current(),
-      audio_encode_thread_.message_loop_proxy(),
+      g_cast_threads.Get().GetAudioEncodeMessageLoopProxy(),
       NULL,
-      video_encode_thread_.message_loop_proxy(),
+      g_cast_threads.Get().GetVideoEncodeMessageLoopProxy(),
       NULL,
       base::MessageLoopProxy::current(),
       media::cast::GetDefaultCastSenderLoggingConfig());

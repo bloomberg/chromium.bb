@@ -169,6 +169,8 @@
         'renderer/media/cast_session.h',
         'renderer/media/cast_session_delegate.cc',
         'renderer/media/cast_session_delegate.h',
+        'renderer/media/cast_threads.cc',
+        'renderer/media/cast_threads.h',
         'renderer/media/cast_transport_sender_ipc.cc',
         'renderer/media/cast_transport_sender_ipc.h',
         'renderer/media/cast_udp_transport.cc',
