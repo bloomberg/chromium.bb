@@ -67,6 +67,7 @@ public:
     class LayoutScope {
     public:
         explicit LayoutScope(Document& document, RenderBlock* block)
+            : m_block(0)
         {
             m_textAutosizer = document.fastTextAutosizer();
             if (m_textAutosizer) {
@@ -76,8 +77,6 @@ public:
                 }
                 m_block = block;
                 m_textAutosizer->beginLayout(m_block);
-            } else {
-                m_block = 0;
             }
         }
 
