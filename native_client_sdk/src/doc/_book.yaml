@@ -75,6 +75,8 @@ toc:
     path: /native-client/dev/reference/pnacl-bitcode-abi
   - title: "PNaCl C/C++ Language Support"
     path: /native-client/dev/reference/pnacl-c-cpp-language-support
+  - title: "PNaCl Undefined Behavior"
+    path: /native-client/dev/reference/pnacl-undefined-behavior
   - title: "Sandbox Internals"
     section:
     - title "ARM 32-bit Sandbox"

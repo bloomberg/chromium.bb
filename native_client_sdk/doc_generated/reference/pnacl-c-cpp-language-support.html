@@ -20,12 +20,14 @@
 <li><a class="reference internal" href="#setjmp-and-longjmp" id="id9"><code>setjmp</code> and <code>longjmp</code></a></li>
 <li><a class="reference internal" href="#c-exception-handling" id="id10">C++ Exception Handling</a></li>
 <li><a class="reference internal" href="#inline-assembly" id="id11">Inline Assembly</a></li>
-<li><p class="first"><a class="reference internal" href="#future-directions" id="id12">Future Directions</a></p>
+<li><a class="reference internal" href="#undefined-behavior" id="id12">Undefined Behavior</a></li>
+<li><a class="reference internal" href="#floating-point" id="id13">Floating-Point</a></li>
+<li><p class="first"><a class="reference internal" href="#future-directions" id="id14">Future Directions</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#simd" id="id13">SIMD</a></li>
-<li><a class="reference internal" href="#inter-process-communication" id="id14">Inter-Process Communication</a></li>
-<li><a class="reference internal" href="#posix-style-signal-handling" id="id15">POSIX-style Signal Handling</a></li>
-<li><a class="reference internal" href="#computed-goto" id="id16">Computed <code>goto</code></a></li>
+<li><a class="reference internal" href="#simd" id="id15">SIMD</a></li>
+<li><a class="reference internal" href="#inter-process-communication" id="id16">Inter-Process Communication</a></li>
+<li><a class="reference internal" href="#posix-style-signal-handling" id="id17">POSIX-style Signal Handling</a></li>
+<li><a class="reference internal" href="#computed-goto" id="id18">Computed <code>goto</code></a></li>
 </ul>
 </li>
 </ul>
@@ -59,7 +61,8 @@ stores is provided on a happens-before basis that relates memory
 locations to each other as the C11/C++11 standards do.</p>
 <p>Non-atomic memory accesses may be reordered, separated, elided or fused
 according to C and C++&#8217;s memory model before the pexe is created as well
-as after its creation.</p>
+as after its creation. Accessing atomic memory location through
+non-atomic primitives is <cite>Undefined Behavior &lt;undefined_behavior&gt;</cite>.</p>
 <p>As in C11/C++11 some atomic accesses may be implemented with locks on
 certain platforms. The <code>ATOMIC_*_LOCK_FREE</code> macros will always be
 <code>1</code>, signifying that all types are sometimes lock-free. The
@@ -168,6 +171,40 @@ prevent reordering of memory accesses to objects which may escape.</p>
 <p>NaCl supports a fairly wide subset of inline assembly through GCC&#8217;s
 inline assembly syntax, with the restriction that the sandboxing model
 for the target architecture has to be respected.</p>
+</section><section id="undefined-behavior">
+<h2 id="undefined-behavior">Undefined Behavior</h2>
+<p>The C and C++ languages expose some undefined behavior which is
+discussed in <cite>PNaCl Undefined Behavior &lt;undefined_behavior&gt;</cite>.</p>
+</section><section id="floating-point">
+<h2 id="floating-point">Floating-Point</h2>
+<p>PNaCl exposes 32-bit and 64-bit floating point operations which are
+mostly IEEE-754 compliant. There are a few caveats:</p>
+<ul class="small-gap">
+<li>Some <a class="reference internal" href="/native-client/reference/pnacl-undefined-behavior.html#undefined-behavior-fp"><em>floating-point behavior is currently left as undefined</em></a>.</li>
+<li>The default rounding mode is round-to-nearest and other rounding modes
+are currently not usable, which isn&#8217;t IEEE-754 compliant. PNaCl could
+support switching modes (the 4 modes exposed by C99 <code>FLT_ROUNDS</code>
+macros).</li>
+<li>Signaling <code>NaN</code> never fault.</li>
+<li><p class="first">Fast-math optimizations are currently supported before <em>pexe</em> creation
+time. A <em>pexe</em> loses all fast-math information when it is
+created. Fast-math translation could be enabled at a later date,
+potentially at a perf-function granularity. This wouldn&#8217;t affect
+already-existing <em>pexe</em>; it would be an opt-in feature.</p>
+<ul class="small-gap">
+<li>Fused-multiply-add have higher precision and often execute faster;
+PNaCl currently disallows them in the <em>pexe</em> because they aren&#8217;t
+supported on all platforms and can&#8217;t realistically be
+emulated. PNaCl could (but currently doesn&#8217;t) only generate them in
+the backend if fast-math were specified and the hardware supports
+the operation.</li>
+<li>Transcendentals aren&#8217;t exposed by PNaCl&#8217;s ABI; they are part of the
+math library that is included in the <em>pexe</em>. PNaCl could, but
+currently doesn&#8217;t, use hardware support if fast-math were provided
+in the <em>pexe</em>.</li>
+</ul>
+</li>
+</ul>
 </section><section id="future-directions">
 <h2 id="future-directions">Future Directions</h2>
 <section id="simd">
