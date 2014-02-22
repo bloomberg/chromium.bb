@@ -162,7 +162,7 @@ def main():
     scm_obj = checkout.SvnCheckout(full_dir, None, None, None, None)
   elif scm_type == 'git':
     scm_obj = checkout.GitCheckout(full_dir, None, None, None, None,
-                                   base_ref=options.base_ref)
+                                   base_ref=options.base_ref,)
   elif scm_type == None:
     scm_obj = checkout.RawCheckout(full_dir, None, None)
   else:
@@ -179,7 +179,10 @@ def main():
 
   print('\nApplying the patch.')
   try:
-    scm_obj.apply_patch(patchset, verbose=True)
+    scm_obj.apply_patch(
+        patchset, verbose=True,
+        email=properties.get('owner_email', 'chrome-bot@chromium.org'),
+        name=properties.get('owner', 'chrome-bot'))
   except checkout.PatchApplicationFailed, e:
     print(str(e))
     print('CWD=%s' % os.getcwd())

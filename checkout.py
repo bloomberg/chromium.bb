@@ -131,7 +131,8 @@ class CheckoutBase(object):
     """
     raise NotImplementedError()
 
-  def apply_patch(self, patches, post_processors=None, verbose=False):
+  def apply_patch(self, patches, post_processors=None, verbose=False,
+                  name=None, email=None):
     """Applies a patch and returns the list of modified files.
 
     This function should throw patch.UnsupportedPatchFormat or
@@ -165,7 +166,8 @@ class RawCheckout(CheckoutBase):
     """Stubbed out."""
     pass
 
-  def apply_patch(self, patches, post_processors=None, verbose=False):
+  def apply_patch(self, patches, post_processors=None, verbose=False,
+                  name=None, email=None):
     """Ignores svn properties."""
     post_processors = post_processors or self.post_processors or []
     for p in patches:
@@ -349,7 +351,8 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
           (self.project_name, self.project_path))
     return self._revert(revision)
 
-  def apply_patch(self, patches, post_processors=None, verbose=False):
+  def apply_patch(self, patches, post_processors=None, verbose=False,
+                  name=None, email=None):
     post_processors = post_processors or self.post_processors or []
     for p in patches:
       stdout = []
@@ -628,7 +631,8 @@ class GitCheckout(CheckoutBase):
     """Gets the current revision (in unicode) from the local branch."""
     return unicode(self._check_output_git(['rev-parse', 'HEAD']).strip())
 
-  def apply_patch(self, patches, post_processors=None, verbose=False):
+  def apply_patch(self, patches, post_processors=None, verbose=False, 
+                  name=None, email=None):
     """Applies a patch on 'working_branch' and switches to it.
 
     Also commits the changes on the local branch.
@@ -708,6 +712,9 @@ class GitCheckout(CheckoutBase):
     # Once all the patches are processed and added to the index, commit the
     # index.
     cmd = ['commit', '-m', 'Committed patch']
+    if name and email:
+      author = '%s <%s>' % (name, email)
+      cmd.extend(['--author', author])
     if verbose:
       cmd.append('--verbose')
     self._check_call_git(cmd)
@@ -818,7 +825,8 @@ class ReadOnlyCheckout(object):
   def get_settings(self, key):
     return self.checkout.get_settings(key)
 
-  def apply_patch(self, patches, post_processors=None, verbose=False):
+  def apply_patch(self, patches, post_processors=None, verbose=False,
+                  name=None, email=None):
     return self.checkout.apply_patch(
         patches, post_processors or self.post_processors, verbose)
 
