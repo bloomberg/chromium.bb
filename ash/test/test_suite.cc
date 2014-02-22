@@ -13,6 +13,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/gfx_paths.h"
+#include "ui/gl/gl_surface.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -29,6 +30,7 @@ AuraShellTestSuite::AuraShellTestSuite(int argc, char** argv)
 
 void AuraShellTestSuite::Initialize() {
   base::TestSuite::Initialize();
+  gfx::GLSurface::InitializeOneOffForTests(true);
 
 #if defined(OS_WIN)
   if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
