@@ -162,10 +162,14 @@ MojoResult CoreImpl::CreateMessagePipe(MojoHandle* message_pipe_handle0,
   {
     base::AutoLock locker(handle_table_lock_);
 
+    // TODO(vtl): crbug.com/345911: On failure, we should close the dispatcher
+    // (outside the table lock).
     h0 = AddDispatcherNoLock(dispatcher0);
     if (h0 == MOJO_HANDLE_INVALID)
       return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
+    // TODO(vtl): crbug.com/345911: On failure, we should close both dispatchers
+    // (outside the table lock).
     h1 = AddDispatcherNoLock(dispatcher1);
     if (h1 == MOJO_HANDLE_INVALID) {
       handle_table_.erase(h0);
@@ -359,6 +363,8 @@ MojoResult CoreImpl::ReadMessage(MojoHandle message_pipe_handle,
       // TODO(vtl): What should we do if we hit the maximum handle table size
       // here? Currently, we'll just fill in those handles with
       // |MOJO_HANDLE_INVALID| (and return success anyway).
+      // TODO(vtl): crbug.com/345911: On failure, we should close the dispatcher
+      // (outside the table lock).
       handles[i] = AddDispatcherNoLock(dispatchers[i]);
       LOG_IF(ERROR, handles[i] == MOJO_HANDLE_INVALID)
           << "Failed to add dispatcher (" << dispatchers[i].get() << ")";
@@ -398,10 +404,14 @@ MojoResult CoreImpl::CreateDataPipe(const MojoCreateDataPipeOptions* options,
   {
     base::AutoLock locker(handle_table_lock_);
 
+    // TODO(vtl): crbug.com/345911: On failure, we should close the dispatcher
+    // (outside the table lock).
     producer_handle = AddDispatcherNoLock(producer_dispatcher);
     if (producer_handle == MOJO_HANDLE_INVALID)
       return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
+    // TODO(vtl): crbug.com/345911: On failure, we should close both dispatchers
+    // (outside the table lock).
     consumer_handle = AddDispatcherNoLock(consumer_dispatcher);
     if (consumer_handle == MOJO_HANDLE_INVALID) {
       handle_table_.erase(producer_handle);
@@ -499,9 +509,32 @@ MojoResult CoreImpl::DuplicateBufferHandle(
     MojoHandle buffer_handle,
     const MojoDuplicateBufferHandleOptions* options,
     MojoHandle* new_buffer_handle) {
-  // TODO(vtl)
-  NOTIMPLEMENTED();
-  return MOJO_RESULT_UNIMPLEMENTED;
+  scoped_refptr<Dispatcher> dispatcher(GetDispatcher(buffer_handle));
+  if (!dispatcher.get())
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  if (!VerifyUserPointer<MojoHandle>(new_buffer_handle, 1))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  scoped_refptr<Dispatcher> new_dispatcher;
+  MojoResult result = dispatcher->DuplicateBufferHandle(options,
+                                                        &new_dispatcher);
+  if (result != MOJO_RESULT_OK)
+    return result;
+
+  MojoHandle new_handle;
+  {
+    base::AutoLock locker(handle_table_lock_);
+
+    // TODO(vtl): crbug.com/345911: On failure, we should close the dispatcher
+    // (outside the table lock).
+    new_handle = AddDispatcherNoLock(new_dispatcher);
+    if (new_handle == MOJO_HANDLE_INVALID)
+      return MOJO_RESULT_RESOURCE_EXHAUSTED;
+  }
+
+  *new_buffer_handle = new_handle;
+  return MOJO_RESULT_OK;
 }
 
 MojoResult CoreImpl::MapBuffer(MojoHandle buffer_handle,
@@ -509,9 +542,17 @@ MojoResult CoreImpl::MapBuffer(MojoHandle buffer_handle,
                                uint64_t num_bytes,
                                void** buffer,
                                MojoMapBufferFlags flags) {
-  // TODO(vtl)
-  NOTIMPLEMENTED();
-  return MOJO_RESULT_UNIMPLEMENTED;
+  scoped_refptr<Dispatcher> dispatcher(GetDispatcher(buffer_handle));
+  if (!dispatcher.get())
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  MojoResult result = dispatcher->MapBuffer(offset, num_bytes, buffer, flags);
+  if (result != MOJO_RESULT_OK)
+    return result;
+
+  // TODO(vtl): Record the mapping.
+
+  return MOJO_RESULT_OK;
 }
 
 MojoResult CoreImpl::UnmapBuffer(void* buffer) {

@@ -91,6 +91,16 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
                            uint32_t* buffer_num_bytes,
                            MojoReadDataFlags flags);
   MojoResult EndReadData(uint32_t num_bytes_read);
+  // |options| may be null. |new_dispatcher| must not be null, but
+  // |*new_dispatcher| should be null (and will contain the dispatcher for the
+  // new handle on success).
+  MojoResult DuplicateBufferHandle(
+      const MojoDuplicateBufferHandleOptions* options,
+      scoped_refptr<Dispatcher>* new_dispatcher);
+  MojoResult MapBuffer(uint64_t offset,
+                       uint64_t num_bytes,
+                       void** buffer,
+                       MojoMapBufferFlags flags);
 
   // Adds a waiter to this dispatcher. The waiter will be woken up when this
   // object changes state to satisfy |flags| with result |wake_result| (which
@@ -172,6 +182,13 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
                                              uint32_t* buffer_num_bytes,
                                              MojoReadDataFlags flags);
   virtual MojoResult EndReadDataImplNoLock(uint32_t num_bytes_read);
+  virtual MojoResult DuplicateBufferHandleImplNoLock(
+      const MojoDuplicateBufferHandleOptions* options,
+      scoped_refptr<Dispatcher>* new_dispatcher);
+  virtual MojoResult MapBufferImplNoLock(uint64_t offset,
+                                         uint64_t num_bytes,
+                                         void** buffer,
+                                         MojoMapBufferFlags flags);
   virtual MojoResult AddWaiterImplNoLock(Waiter* waiter,
                                          MojoWaitFlags flags,
                                          MojoResult wake_result);

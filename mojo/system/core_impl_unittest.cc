@@ -874,6 +874,8 @@ TEST_F(CoreImplTest, MessagePipeBasicLocalHandlePassing2) {
   EXPECT_EQ(MOJO_RESULT_OK, core()->Close(ch));
 }
 
+// TODO(vtl): Test |DuplicateBufferHandle()| and |MapBuffer()|.
+
 }  // namespace
 }  // namespace system
 }  // namespace mojo
