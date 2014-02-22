@@ -125,16 +125,13 @@ class PerfDirectRasterWorkerPoolImpl : public DirectRasterWorkerPool {
       : DirectRasterWorkerPool(resource_provider, context_provider) {}
 };
 
-class RasterWorkerPoolPerfTest
-    : public testing::TestWithParam<RasterWorkerPoolType>,
-      public RasterWorkerPoolClient {
+class RasterWorkerPoolPerfTestBase {
  public:
   typedef std::vector<scoped_refptr<internal::RasterWorkerPoolTask> >
       RasterTaskVector;
 
-  RasterWorkerPoolPerfTest()
+  RasterWorkerPoolPerfTestBase()
       : context_provider_(TestContextProvider::Create()),
-        task_graph_runner_(new PerfTaskGraphRunnerImpl),
         timer_(kWarmupRuns,
                base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
                kTimeCheckInterval) {
@@ -143,49 +140,8 @@ class RasterWorkerPoolPerfTest
 
     resource_provider_ = ResourceProvider::Create(
                              output_surface_.get(), NULL, 0, false, 1).Pass();
-
-    switch (GetParam()) {
-      case RASTER_WORKER_POOL_TYPE_PIXEL_BUFFER:
-        raster_worker_pool_.reset(new PerfPixelBufferRasterWorkerPoolImpl(
-            task_graph_runner_.get(), resource_provider_.get()));
-        break;
-      case RASTER_WORKER_POOL_TYPE_IMAGE:
-        raster_worker_pool_.reset(new PerfImageRasterWorkerPoolImpl(
-            task_graph_runner_.get(), resource_provider_.get()));
-        break;
-      case RASTER_WORKER_POOL_TYPE_DIRECT:
-        raster_worker_pool_.reset(new PerfDirectRasterWorkerPoolImpl(
-            resource_provider_.get(), context_provider_));
-        break;
-    }
-
-    DCHECK(raster_worker_pool_);
-    raster_worker_pool_->SetClient(this);
   }
-  virtual ~RasterWorkerPoolPerfTest() { resource_provider_.reset(); }
-
-  // Overridden from testing::Test:
-  virtual void TearDown() OVERRIDE {
-    raster_worker_pool_->Shutdown();
-    raster_worker_pool_->CheckForCompletedTasks();
-  }
-
-  // Overriden from RasterWorkerPoolClient:
-  virtual bool ShouldForceTasksRequiredForActivationToComplete()
-      const OVERRIDE {
-    return false;
-  }
-  virtual void DidFinishRunningTasks() OVERRIDE {
-    raster_worker_pool_->CheckForCompletedTasks();
-    base::MessageLoop::current()->Quit();
-  }
-  virtual void DidFinishRunningTasksRequiredForActivation() OVERRIDE {}
-
-  void RunMessageLoopUntilAllTasksHaveCompleted() {
-    while (task_graph_runner_->RunTaskForTesting())
-      continue;
-    base::MessageLoop::current()->Run();
-  }
+  virtual ~RasterWorkerPoolPerfTestBase() { resource_provider_.reset(); }
 
   void CreateImageDecodeTasks(
       unsigned num_image_decode_tasks,
@@ -211,12 +167,70 @@ class RasterWorkerPoolPerfTest
     }
   }
 
-  void BuildTaskQueue(RasterTaskQueue* queue,
-                      const RasterTaskVector& raster_tasks) {
-    for (RasterTaskVector::const_iterator it = raster_tasks.begin();
-         it != raster_tasks.end();
-         ++it)
-      queue->items.push_back(RasterTaskQueue::Item(it->get(), false));
+  void BuildRasterTaskQueue(RasterTaskQueue* queue,
+                            const RasterTaskVector& raster_tasks) {
+    for (size_t i = 0u; i < raster_tasks.size(); ++i) {
+      bool required_for_activation = (i % 2) == 0;
+      queue->items.push_back(RasterTaskQueue::Item(raster_tasks[i].get(),
+                                                   required_for_activation));
+      queue->required_for_activation_count += required_for_activation;
+    }
+  }
+
+ protected:
+  scoped_refptr<TestContextProvider> context_provider_;
+  FakeOutputSurfaceClient output_surface_client_;
+  scoped_ptr<FakeOutputSurface> output_surface_;
+  scoped_ptr<ResourceProvider> resource_provider_;
+  LapTimer timer_;
+};
+
+class RasterWorkerPoolPerfTest
+    : public RasterWorkerPoolPerfTestBase,
+      public testing::TestWithParam<RasterWorkerPoolType>,
+      public RasterWorkerPoolClient {
+ public:
+  RasterWorkerPoolPerfTest() : task_graph_runner_(new PerfTaskGraphRunnerImpl) {
+    switch (GetParam()) {
+      case RASTER_WORKER_POOL_TYPE_PIXEL_BUFFER:
+        raster_worker_pool_.reset(new PerfPixelBufferRasterWorkerPoolImpl(
+            task_graph_runner_.get(), resource_provider_.get()));
+        break;
+      case RASTER_WORKER_POOL_TYPE_IMAGE:
+        raster_worker_pool_.reset(new PerfImageRasterWorkerPoolImpl(
+            task_graph_runner_.get(), resource_provider_.get()));
+        break;
+      case RASTER_WORKER_POOL_TYPE_DIRECT:
+        raster_worker_pool_.reset(new PerfDirectRasterWorkerPoolImpl(
+            resource_provider_.get(), context_provider_));
+        break;
+    }
+
+    DCHECK(raster_worker_pool_);
+    raster_worker_pool_->SetClient(this);
+  }
+
+  // Overridden from testing::Test:
+  virtual void TearDown() OVERRIDE {
+    raster_worker_pool_->Shutdown();
+    raster_worker_pool_->CheckForCompletedTasks();
+  }
+
+  // Overriden from RasterWorkerPoolClient:
+  virtual bool ShouldForceTasksRequiredForActivationToComplete()
+      const OVERRIDE {
+    return false;
+  }
+  virtual void DidFinishRunningTasks() OVERRIDE {
+    raster_worker_pool_->CheckForCompletedTasks();
+    base::MessageLoop::current()->Quit();
+  }
+  virtual void DidFinishRunningTasksRequiredForActivation() OVERRIDE {}
+
+  void RunMessageLoopUntilAllTasksHaveCompleted() {
+    while (task_graph_runner_->RunTaskForTesting())
+      continue;
+    base::MessageLoop::current()->Run();
   }
 
   void RunScheduleTasksTest(const std::string& test_name,
@@ -233,7 +247,7 @@ class RasterWorkerPoolPerfTest
     timer_.Reset();
     do {
       queue.Reset();
-      BuildTaskQueue(&queue, raster_tasks);
+      BuildRasterTaskQueue(&queue, raster_tasks);
       raster_worker_pool_->ScheduleTasks(&queue);
       raster_worker_pool_->CheckForCompletedTasks();
       timer_.NextLap();
@@ -270,7 +284,7 @@ class RasterWorkerPoolPerfTest
     timer_.Reset();
     do {
       queue.Reset();
-      BuildTaskQueue(&queue, raster_tasks[count % kNumVersions]);
+      BuildRasterTaskQueue(&queue, raster_tasks[count % kNumVersions]);
       raster_worker_pool_->ScheduleTasks(&queue);
       raster_worker_pool_->CheckForCompletedTasks();
       ++count;
@@ -303,7 +317,7 @@ class RasterWorkerPoolPerfTest
     timer_.Reset();
     do {
       queue.Reset();
-      BuildTaskQueue(&queue, raster_tasks);
+      BuildRasterTaskQueue(&queue, raster_tasks);
       raster_worker_pool_->ScheduleTasks(&queue);
       RunMessageLoopUntilAllTasksHaveCompleted();
       timer_.NextLap();
@@ -335,13 +349,8 @@ class RasterWorkerPoolPerfTest
     return std::string();
   }
 
-  scoped_refptr<TestContextProvider> context_provider_;
-  FakeOutputSurfaceClient output_surface_client_;
-  scoped_ptr<FakeOutputSurface> output_surface_;
-  scoped_ptr<ResourceProvider> resource_provider_;
   scoped_ptr<internal::TaskGraphRunner> task_graph_runner_;
   scoped_ptr<RasterWorkerPool> raster_worker_pool_;
-  LapTimer timer_;
 };
 
 TEST_P(RasterWorkerPoolPerfTest, ScheduleTasks) {
@@ -376,6 +385,45 @@ INSTANTIATE_TEST_CASE_P(RasterWorkerPoolPerfTests,
                         ::testing::Values(RASTER_WORKER_POOL_TYPE_PIXEL_BUFFER,
                                           RASTER_WORKER_POOL_TYPE_IMAGE,
                                           RASTER_WORKER_POOL_TYPE_DIRECT));
+
+class RasterWorkerPoolCommonPerfTest : public RasterWorkerPoolPerfTestBase,
+                                       public testing::Test {
+ public:
+  void RunBuildRasterTaskQueueTest(const std::string& test_name,
+                                   unsigned num_raster_tasks,
+                                   unsigned num_image_decode_tasks) {
+    internal::WorkerPoolTask::Vector image_decode_tasks;
+    RasterTaskVector raster_tasks;
+    CreateImageDecodeTasks(num_image_decode_tasks, &image_decode_tasks);
+    CreateRasterTasks(num_raster_tasks, image_decode_tasks, &raster_tasks);
+
+    // Avoid unnecessary heap allocations by reusing the same queue.
+    RasterTaskQueue queue;
+
+    timer_.Reset();
+    do {
+      queue.Reset();
+      BuildRasterTaskQueue(&queue, raster_tasks);
+      timer_.NextLap();
+    } while (!timer_.HasTimeLimitExpired());
+
+    perf_test::PrintResult("build_raster_task_queue",
+                           "",
+                           test_name,
+                           timer_.LapsPerSecond(),
+                           "runs/s",
+                           true);
+  }
+};
+
+TEST_F(RasterWorkerPoolCommonPerfTest, BuildRasterTaskQueue) {
+  RunBuildRasterTaskQueueTest("1_0", 1, 0);
+  RunBuildRasterTaskQueueTest("32_0", 32, 0);
+  RunBuildRasterTaskQueueTest("1_1", 1, 1);
+  RunBuildRasterTaskQueueTest("32_1", 32, 1);
+  RunBuildRasterTaskQueueTest("1_4", 1, 4);
+  RunBuildRasterTaskQueueTest("32_4", 32, 4);
+}
 
 }  // namespace
 }  // namespace cc
