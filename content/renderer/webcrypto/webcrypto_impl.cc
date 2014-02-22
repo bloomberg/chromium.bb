@@ -194,4 +194,16 @@ void WebCryptoImpl::verifySignature(const blink::WebCryptoAlgorithm& algorithm,
     result.completeWithBoolean(signature_match);
 }
 
+bool WebCryptoImpl::digestSynchronous(
+    const blink::WebCryptoAlgorithmId algorithm_id,
+    const unsigned char* data,
+    unsigned int data_size,
+    blink::WebArrayBuffer& result) {
+  blink::WebCryptoAlgorithm algorithm =
+      blink::WebCryptoAlgorithm::adoptParamsAndCreate(algorithm_id, NULL);
+  return (webcrypto::Digest(
+              algorithm, webcrypto::CryptoData(data, data_size), &result))
+      .IsSuccess();
+}
+
 }  // namespace content

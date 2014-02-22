@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "third_party/WebKit/public/platform/WebCrypto.h"
+#include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
 
 namespace content {
 
@@ -60,6 +61,12 @@ class WebCryptoImpl : public blink::WebCrypto {
                                const unsigned char* data,
                                unsigned int data_size,
                                blink::WebCryptoResult result);
+  // This method synchronously computes a digest for the given data, returning
+  // |true| if successful and |false| otherwise.
+  virtual bool digestSynchronous(const blink::WebCryptoAlgorithmId algorithm_id,
+                                 const unsigned char* data,
+                                 unsigned int data_size,
+                                 blink::WebArrayBuffer& result);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebCryptoImpl);
