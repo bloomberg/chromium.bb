@@ -253,6 +253,10 @@ def parse_args(args):
             help="Print detailed logging of the driver/content_shell"),
         optparse.make_option("--disable-breakpad", action="store_true",
             help="Don't use breakpad to symbolize unexpected crashes."),
+        optparse.make_option("--use-apache", action="store_true",
+            help="Use Apache instead of LigHTTPd (default is port-specific)."),
+        optparse.make_option("--no-use-apache", action="store_false", dest="use_apache",
+            help="Use LigHTTPd instead of Apache (default is port-specific)."),
     ]))
 
     option_group_definitions.append(("Miscellaneous Options", [

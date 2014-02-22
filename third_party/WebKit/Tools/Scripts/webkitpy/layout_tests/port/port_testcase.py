@@ -107,6 +107,7 @@ class PortTestCase(unittest.TestCase):
             port._dump_reader.check_is_functional = lambda: True
         port._options.build = True
         port._check_driver_build_up_to_date = lambda config: True
+        port.check_httpd = lambda: True
         oc = OutputCapture()
         try:
             oc.capture_output()

@@ -348,6 +348,9 @@ class Port(object):
         if self._dump_reader:
             result = self._dump_reader.check_is_functional() and result
 
+        if needs_http:
+            result = self.check_httpd() and result
+
         return test_run_results.OK_EXIT_STATUS if result else test_run_results.UNEXPECTED_ERROR_EXIT_STATUS
 
     def _check_driver(self):
@@ -1116,9 +1119,8 @@ class Port(object):
         self._websocket_server = server
 
     def http_server_supports_ipv6(self):
-        # Cygwin is the only platform to still use Apache 1.3, which only supports IPV4.
-        # Once it moves to Apache 2, we can drop this method altogether.
-        if self.host.platform.is_cygwin():
+        # Apache < 2.4 on win32 does not support IPv6, nor does cygwin apache.
+        if self.host.platform.is_cygwin() or self.get_option('use_apache') and self.host.platform.is_win():
             return False
         return True
 

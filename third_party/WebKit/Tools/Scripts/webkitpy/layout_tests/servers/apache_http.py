@@ -64,6 +64,8 @@ class ApacheHTTP(server_base.ServerBase):
         access_log = self._filesystem.join(output_dir, "access_log.txt")
         error_log = self._filesystem.join(output_dir, "error_log.txt")
 
+        self._is_win = self._port_obj.host.platform.is_win()
+
         start_cmd = [executable,
             '-f', '%s' % self._port_obj.path_to_apache_config_file(),
             '-C', 'ServerRoot "%s"' % server_root,
@@ -73,13 +75,18 @@ class ApacheHTTP(server_base.ServerBase):
             '-c', 'TypesConfig "%s"' % mime_types_path,
             '-c', 'CustomLog "%s" common' % access_log,
             '-c', 'ErrorLog "%s"' % error_log,
-            '-C', 'User "%s"' % os.environ.get("USERNAME", os.environ.get("USER", "")),
             '-c', 'PidFile %s' % self._pid_file,
             '-c', 'SSLCertificateFile "%s"' % cert_file,
-            '-c', 'StartServers %d' % number_of_servers,
-            '-c', 'MinSpareServers %d' % number_of_servers,
-            '-c', 'MaxSpareServers %d' % number_of_servers,
-            '-k', 'start']
+            ]
+
+        if self._is_win:
+            start_cmd += ['-c', "ThreadsPerChild %d" % (self._number_of_servers * 2)]
+        else:
+            start_cmd += ['-c', "StartServers %d" % self._number_of_servers,
+                          '-c', "MinSpareServers %d" % self._number_of_servers,
+                          '-c', "MaxSpareServers %d" % self._number_of_servers,
+                          '-C', 'User "%s"' % os.environ.get('USERNAME', os.environ.get('USER', '')),
+                          '-k', 'start']
 
         enable_ipv6 = self._port_obj.http_server_supports_ipv6()
         # Perform part of the checks Apache's APR does when trying to listen to
@@ -140,6 +147,10 @@ class ApacheHTTP(server_base.ServerBase):
         # that the process specified by the pid_file no longer exists before deleting the file.
         if self._pid and not self._executive.check_running_pid(self._pid):
             self._filesystem.remove(self._pid_file)
+            return
+
+        if self._is_win:
+            self._executive.kill_process(self._pid)
             return
 
         proc = self._executive.popen([self._port_obj.path_to_apache(),
