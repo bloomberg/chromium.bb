@@ -18,7 +18,7 @@ CCTestSuite::~CCTestSuite() {}
 
 void CCTestSuite::Initialize() {
   base::TestSuite::Initialize();
-  gfx::GLSurface::InitializeOneOffForTests();
+  gfx::GLSurface::InitializeOneOffForTests(true);
   CCPaths::RegisterPathProvider();
 
   message_loop_.reset(new base::MessageLoop);

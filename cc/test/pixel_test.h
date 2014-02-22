@@ -9,6 +9,7 @@
 #include "cc/test/pixel_comparator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/size.h"
+#include "ui/gl/gl_implementation.h"
 
 #ifndef CC_TEST_PIXEL_TEST_H_
 #define CC_TEST_PIXEL_TEST_H_
@@ -73,6 +74,8 @@ class PixelTest : public testing::Test, RendererClient {
 
   bool PixelsMatchReference(const base::FilePath& ref_file,
                             const PixelComparator& comparator);
+
+  scoped_ptr<gfx::DisableNullDrawGLBindings> enable_pixel_output_;
 };
 
 template<typename RendererType>
