@@ -111,20 +111,22 @@ HWND NativeAppWindowViewsWin::GetNativeAppWindowHWND() const {
 
 void NativeAppWindowViewsWin::OnBeforeWidgetInit(
     views::Widget::InitParams* init_params, views::Widget* widget) {
+  content::BrowserContext* browser_context = app_window()->browser_context();
+  const extensions::Extension* extension = app_window()->extension();
   // If an app has any existing windows, ensure new ones are created on the
   // same desktop.
   apps::AppWindow* any_existing_window =
-      apps::AppWindowRegistry::Get(browser_context())
-          ->GetCurrentAppWindowForApp(extension()->id());
+      apps::AppWindowRegistry::Get(browser_context)
+          ->GetCurrentAppWindowForApp(extension->id());
   chrome::HostDesktopType desktop_type;
   if (any_existing_window) {
     desktop_type = chrome::GetHostDesktopTypeForNativeWindow(
         any_existing_window->GetNativeWindow());
   } else {
     PerAppSettingsService* settings =
-        PerAppSettingsServiceFactory::GetForBrowserContext(browser_context());
-    if (settings->HasDesktopLastLaunchedFrom(extension()->id())) {
-      desktop_type = settings->GetDesktopLastLaunchedFrom(extension()->id());
+        PerAppSettingsServiceFactory::GetForBrowserContext(browser_context);
+    if (settings->HasDesktopLastLaunchedFrom(extension->id())) {
+      desktop_type = settings->GetDesktopLastLaunchedFrom(extension->id());
     } else {
       // We don't know what desktop this app was last launched from, so take our
       // best guess as to what desktop the user is on.
@@ -141,19 +143,22 @@ void NativeAppWindowViewsWin::InitializeDefaultWindow(
     const apps::AppWindow::CreateParams& create_params) {
   NativeAppWindowViews::InitializeDefaultWindow(create_params);
 
+  const extensions::Extension* extension = app_window()->extension();
   std::string app_name =
-      web_app::GenerateApplicationNameFromExtensionId(extension()->id());
+      web_app::GenerateApplicationNameFromExtensionId(extension->id());
   base::string16 app_name_wide = base::UTF8ToWide(app_name);
   HWND hwnd = GetNativeAppWindowHWND();
+  Profile* profile =
+      Profile::FromBrowserContext(app_window()->browser_context());
   ui::win::SetAppIdForWindow(
       ShellIntegration::GetAppModelIdForProfile(
           app_name_wide,
-          Profile::FromBrowserContext(browser_context())->GetPath()),
+          profile->GetPath()),
       hwnd);
 
   web_app::UpdateShortcutInfoAndIconForApp(
-      *extension(),
-      Profile::FromBrowserContext(browser_context()),
+      *extension,
+      profile,
       base::Bind(&NativeAppWindowViewsWin::OnShortcutInfoLoaded,
                  weak_ptr_factory_.GetWeakPtr()));
 }

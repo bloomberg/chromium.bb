@@ -4,36 +4,26 @@
 
 #include "chrome/browser/ui/views/apps/native_app_window_views.h"
 
-#include "apps/app_window.h"
 #include "apps/ui/views/app_window_frame_view.h"
 #include "base/command_line.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chrome_page_zoom.h"
-#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/views/apps/shaped_app_window_targeter.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/browser/ui/views/frame/taskbar_decorator.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_widget_host_view.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
-#include "extensions/common/draggable_region.h"
 #include "extensions/common/extension.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/non_client_view.h"
 #include "ui/wm/public/easy_resize_window_targeter.h"
 
 #if defined(OS_LINUX)
@@ -52,6 +42,7 @@
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_observer.h"
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/window.h"
@@ -201,50 +192,11 @@ class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate,
 }  // namespace
 
 NativeAppWindowViews::NativeAppWindowViews()
-    : web_view_(NULL),
-      window_(NULL),
-      is_fullscreen_(false),
-      weak_ptr_factory_(this) {
-}
+    : is_fullscreen_(false),
+      has_frame_color_(false),
+      frame_color_(SK_ColorBLACK) {}
 
-void NativeAppWindowViews::Init(apps::AppWindow* app_window,
-                                const AppWindow::CreateParams& create_params) {
-  app_window_ = app_window;
-  frameless_ = create_params.frame == AppWindow::FRAME_NONE;
-  has_frame_color_ = create_params.has_frame_color;
-  frame_color_ = create_params.frame_color;
-  transparent_background_ = create_params.transparent_background;
-  resizable_ = create_params.resizable;
-  Observe(web_contents());
-
-  window_ = new views::Widget;
-  if (create_params.window_type == AppWindow::WINDOW_TYPE_PANEL ||
-      create_params.window_type == AppWindow::WINDOW_TYPE_V1_PANEL) {
-    InitializePanelWindow(create_params);
-  } else {
-    InitializeDefaultWindow(create_params);
-  }
-  extension_keybinding_registry_.reset(new ExtensionKeybindingRegistryViews(
-      Profile::FromBrowserContext(browser_context()),
-      window_->GetFocusManager(),
-      extensions::ExtensionKeybindingRegistry::PLATFORM_APPS_ONLY,
-      app_window_));
-
-  OnViewWasResized();
-  window_->AddObserver(this);
-
-#if defined(OS_WIN)
-  if (ShouldUseNativeFrame() &&
-      chrome::GetHostDesktopTypeForNativeWindow(window_->GetNativeWindow()) !=
-      chrome::HOST_DESKTOP_TYPE_ASH) {
-    InstallEasyResizeTargeterOnContainer();
-  }
-#endif
-}
-
-NativeAppWindowViews::~NativeAppWindowViews() {
-  web_view_->SetWebContents(NULL);
-}
+NativeAppWindowViews::~NativeAppWindowViews() {}
 
 void NativeAppWindowViews::OnBeforeWidgetInit(
     views::Widget::InitParams* init_params,
@@ -253,7 +205,8 @@ void NativeAppWindowViews::OnBeforeWidgetInit(
 void NativeAppWindowViews::InitializeDefaultWindow(
     const AppWindow::CreateParams& create_params) {
   std::string app_name =
-      web_app::GenerateApplicationNameFromExtensionId(extension()->id());
+      web_app::GenerateApplicationNameFromExtensionId(
+          app_window()->extension()->id());
 
   views::Widget::InitParams init_params(views::Widget::InitParams::TYPE_WINDOW);
   init_params.delegate = this;
@@ -286,16 +239,16 @@ void NativeAppWindowViews::InitializeDefaultWindow(
   init_params.wm_role_name = std::string(kX11WindowRoleApp);
 #endif
 
-  OnBeforeWidgetInit(&init_params, window_);
-  window_->Init(init_params);
+  OnBeforeWidgetInit(&init_params, window());
+  window()->Init(init_params);
 
   gfx::Rect adjusted_bounds = window_bounds;
   adjusted_bounds.Inset(-GetFrameInsets());
   // Center window if no position was specified.
   if (!position_specified)
-    window_->CenterWindow(adjusted_bounds.size());
+    window()->CenterWindow(adjusted_bounds.size());
   else if (!adjusted_bounds.IsEmpty() && adjusted_bounds != window_bounds)
-    window_->SetBounds(adjusted_bounds);
+    window()->SetBounds(adjusted_bounds);
 
   // Register accelarators supported by app windows.
   // TODO(jeremya/stevenjb): should these be registered for panels too?
@@ -356,8 +309,8 @@ void NativeAppWindowViews::InitializePanelWindow(
   // TODO(erg): Conceptually, these are toplevel windows, but we theoretically
   // could plumb context through to here in some cases.
   params.top_level = true;
-  window_->Init(params);
-  window_->set_focus_on_creation(create_params.focused);
+  window()->Init(params);
+  window()->set_focus_on_creation(create_params.focused);
 
 #if defined(USE_ASH)
   if (create_params.state == ui::SHOW_STATE_DETACHED) {
@@ -370,7 +323,7 @@ void NativeAppWindowViews::InitializePanelWindow(
     aura::client::ParentWindowWithContext(native_window,
                                           native_window->GetRootWindow(),
                                           native_window->GetBoundsInScreen());
-    window_->SetBounds(window_bounds);
+    window()->SetBounds(window_bounds);
   }
 #else
   // TODO(stevenjb): NativeAppWindow panels need to be implemented for other
@@ -379,18 +332,19 @@ void NativeAppWindowViews::InitializePanelWindow(
 }
 
 bool NativeAppWindowViews::ShouldUseNativeFrame() const {
-  return !frameless_ & !has_frame_color_;
+  return !IsFrameless() & !has_frame_color_;
 }
 
 void NativeAppWindowViews::InstallEasyResizeTargeterOnContainer() const {
-  aura::Window* root_window = window_->GetNativeWindow()->GetRootWindow();
+  aura::Window* root_window = window()->GetNativeWindow()->GetRootWindow();
   gfx::Insets inset(kResizeInsideBoundsSize, kResizeInsideBoundsSize,
                     kResizeInsideBoundsSize, kResizeInsideBoundsSize);
   root_window->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
       new wm::EasyResizeWindowTargeter(root_window, inset, inset)));
 }
 
-apps::AppWindowFrameView* NativeAppWindowViews::CreateAppWindowFrameView() {
+apps::AppWindowFrameView*
+NativeAppWindowViews::CreateAppWindowFrameView() {
   // By default the user can resize the window from slightly inside the bounds.
   int resize_inside_bounds_size = kResizeInsideBoundsSize;
   int resize_outside_bounds_size = 0;
@@ -399,7 +353,7 @@ apps::AppWindowFrameView* NativeAppWindowViews::CreateAppWindowFrameView() {
 #if defined(USE_ASH)
   // For Aura windows on the Ash desktop the sizes are different and the user
   // can resize the window from slightly outside the bounds as well.
-  if (chrome::IsNativeWindowInAsh(window_->GetNativeWindow())) {
+  if (chrome::IsNativeWindowInAsh(window()->GetNativeWindow())) {
     resize_inside_bounds_size = ash::kResizeInsideBoundsSize;
     resize_outside_bounds_size = ash::kResizeOutsideBoundsSize;
     resize_outside_scale_for_touch = ash::kResizeOutsideBoundsScaleForTouch;
@@ -407,7 +361,7 @@ apps::AppWindowFrameView* NativeAppWindowViews::CreateAppWindowFrameView() {
   }
 #endif
   apps::AppWindowFrameView* frame_view = new apps::AppWindowFrameView(this);
-  frame_view->Init(window_,
+  frame_view->Init(window(),
                    frame_color_,
                    resize_inside_bounds_size,
                    resize_outside_bounds_size,
@@ -417,30 +371,6 @@ apps::AppWindowFrameView* NativeAppWindowViews::CreateAppWindowFrameView() {
 }
 
 // ui::BaseWindow implementation.
-
-bool NativeAppWindowViews::IsActive() const {
-  return window_->IsActive();
-}
-
-bool NativeAppWindowViews::IsMaximized() const {
-  return window_->IsMaximized();
-}
-
-bool NativeAppWindowViews::IsMinimized() const {
-  return window_->IsMinimized();
-}
-
-bool NativeAppWindowViews::IsFullscreen() const {
-  return window_->IsFullscreen();
-}
-
-gfx::NativeWindow NativeAppWindowViews::GetNativeWindow() {
-  return window_->GetNativeWindow();
-}
-
-gfx::Rect NativeAppWindowViews::GetRestoredBounds() const {
-  return window_->GetRestoredBounds();
-}
 
 ui::WindowShowState NativeAppWindowViews::GetRestoredState() const {
   if (IsMaximized())
@@ -460,7 +390,7 @@ ui::WindowShowState NativeAppWindowViews::GetRestoredState() const {
 #if defined(USE_ASH)
   // Use kRestoreShowStateKey in case a window is minimized/hidden.
   ui::WindowShowState restore_state =
-      window_->GetNativeWindow()->GetProperty(
+      window()->GetNativeWindow()->GetProperty(
           aura::client::kRestoreShowStateKey);
   // Whitelist states to return so that invalid and transient states
   // are not saved and used to restore windows when they are recreated.
@@ -481,93 +411,36 @@ ui::WindowShowState NativeAppWindowViews::GetRestoredState() const {
   return ui::SHOW_STATE_NORMAL;
 }
 
-gfx::Rect NativeAppWindowViews::GetBounds() const {
-  return window_->GetWindowBoundsInScreen();
-}
-
-void NativeAppWindowViews::Show() {
-  if (window_->IsVisible()) {
-    window_->Activate();
-    return;
-  }
-
-  window_->Show();
-}
-
-void NativeAppWindowViews::ShowInactive() {
-  if (window_->IsVisible())
-    return;
-  window_->ShowInactive();
-}
-
-void NativeAppWindowViews::Hide() {
-  window_->Hide();
-}
-
-void NativeAppWindowViews::Close() {
-  window_->Close();
-}
-
-void NativeAppWindowViews::Activate() {
-  window_->Activate();
-}
-
-void NativeAppWindowViews::Deactivate() {
-  window_->Deactivate();
-}
-
-void NativeAppWindowViews::Maximize() {
-  window_->Maximize();
-}
-
-void NativeAppWindowViews::Minimize() {
-  window_->Minimize();
-}
-
-void NativeAppWindowViews::Restore() {
-  window_->Restore();
-}
-
-void NativeAppWindowViews::SetBounds(const gfx::Rect& bounds) {
-  window_->SetBounds(bounds);
-}
-
-void NativeAppWindowViews::FlashFrame(bool flash) {
-  window_->FlashFrame(flash);
-}
-
 bool NativeAppWindowViews::IsAlwaysOnTop() const {
-  if (app_window_->window_type_is_panel()) {
+  if (app_window()->window_type_is_panel()) {
 #if defined(USE_ASH)
-    return ash::wm::GetWindowState(window_->GetNativeWindow())->
+    return ash::wm::GetWindowState(window()->GetNativeWindow())->
         panel_attached();
 #else
     return true;
 #endif
   } else {
-    return window_->IsAlwaysOnTop();
+    return window()->IsAlwaysOnTop();
   }
 }
 
-void NativeAppWindowViews::SetAlwaysOnTop(bool always_on_top) {
-  window_->SetAlwaysOnTop(always_on_top);
-}
+// views::ContextMenuController implementation.
 
 void NativeAppWindowViews::ShowContextMenuForView(
     views::View* source,
     const gfx::Point& p,
     ui::MenuSourceType source_type) {
-#if defined(USE_ASH) & defined(OS_CHROMEOS)
+#if defined(USE_ASH) && defined(OS_CHROMEOS)
   scoped_ptr<ui::MenuModel> model =
-      CreateMultiUserContextMenu(app_window_->GetNativeWindow());
+      CreateMultiUserContextMenu(app_window()->GetNativeWindow());
   if (!model.get())
     return;
 
   // Only show context menu if point is in caption.
   gfx::Point point_in_view_coords(p);
-  views::View::ConvertPointFromScreen(window_->non_client_view(),
+  views::View::ConvertPointFromScreen(window()->non_client_view(),
                                       &point_in_view_coords);
-  int hit_test = window_->non_client_view()->NonClientHitTest(
+  int hit_test = window()->non_client_view()->NonClientHitTest(
       point_in_view_coords);
   if (hit_test == HTCAPTION) {
     menu_runner_.reset(new views::MenuRunner(model.get()));
@@ -581,66 +454,10 @@ void NativeAppWindowViews::ShowContextMenuForView(
 #endif
 }
 
-gfx::NativeView NativeAppWindowViews::GetHostView() const {
-  return window_->GetNativeView();
-}
-
-gfx::Point NativeAppWindowViews::GetDialogPosition(const gfx::Size& size) {
-  gfx::Size app_window_size = window_->GetWindowBoundsInScreen().size();
-  return gfx::Point(app_window_size.width() / 2 - size.width() / 2,
-                    app_window_size.height() / 2 - size.height() / 2);
-}
-
-gfx::Size NativeAppWindowViews::GetMaximumDialogSize() {
-  return window_->GetWindowBoundsInScreen().size();
-}
-
-void NativeAppWindowViews::AddObserver(
-    web_modal::ModalDialogHostObserver* observer) {
-  observer_list_.AddObserver(observer);
-}
-void NativeAppWindowViews::RemoveObserver(
-    web_modal::ModalDialogHostObserver* observer) {
-  observer_list_.RemoveObserver(observer);
-}
-
-// Private method. TODO(stevenjb): Move this below InitializePanelWindow()
-// to match declaration order.
-void NativeAppWindowViews::OnViewWasResized() {
-  FOR_EACH_OBSERVER(web_modal::ModalDialogHostObserver,
-                    observer_list_,
-                    OnPositionRequiresUpdate());
-}
-
-// WidgetDelegate implementation.
-
-void NativeAppWindowViews::OnWidgetMove() {
-  app_window_->OnNativeWindowChanged();
-}
-
-views::View* NativeAppWindowViews::GetInitiallyFocusedView() {
-  return web_view_;
-}
-
-bool NativeAppWindowViews::CanResize() const {
-  return resizable_ && !app_window_->size_constraints().HasFixedSize();
-}
-
-bool NativeAppWindowViews::CanMaximize() const {
-  return resizable_ && !app_window_->size_constraints().HasMaximumSize() &&
-         !app_window_->window_type_is_panel();
-}
-
-base::string16 NativeAppWindowViews::GetWindowTitle() const {
-  return base::string16();
-}
-
-bool NativeAppWindowViews::ShouldShowWindowTitle() const {
-  return app_window_->window_type() == AppWindow::WINDOW_TYPE_V1_PANEL;
-}
+// views::WidgetDelegate implementation.
 
 gfx::ImageSkia NativeAppWindowViews::GetWindowAppIcon() {
-  gfx::Image app_icon = app_window_->app_icon();
+  gfx::Image app_icon = app_window()->app_icon();
   if (app_icon.IsEmpty())
     return GetWindowIcon();
   else
@@ -648,7 +465,7 @@ gfx::ImageSkia NativeAppWindowViews::GetWindowAppIcon() {
 }
 
 gfx::ImageSkia NativeAppWindowViews::GetWindowIcon() {
-  content::WebContents* web_contents = app_window_->web_contents();
+  content::WebContents* web_contents = app_window()->web_contents();
   if (web_contents) {
     FaviconTabHelper* favicon_tab_helper =
         FaviconTabHelper::FromWebContents(web_contents);
@@ -659,33 +476,6 @@ gfx::ImageSkia NativeAppWindowViews::GetWindowIcon() {
   return gfx::ImageSkia();
 }
 
-bool NativeAppWindowViews::ShouldShowWindowIcon() const {
-  return app_window_->window_type() == AppWindow::WINDOW_TYPE_V1_PANEL;
-}
-
-void NativeAppWindowViews::SaveWindowPlacement(const gfx::Rect& bounds,
-                                               ui::WindowShowState show_state) {
-  views::WidgetDelegate::SaveWindowPlacement(bounds, show_state);
-  app_window_->OnNativeWindowChanged();
-}
-
-void NativeAppWindowViews::DeleteDelegate() {
-  window_->RemoveObserver(this);
-  app_window_->OnNativeClose();
-}
-
-views::Widget* NativeAppWindowViews::GetWidget() {
-  return window_;
-}
-
-const views::Widget* NativeAppWindowViews::GetWidget() const {
-  return window_;
-}
-
-views::View* NativeAppWindowViews::GetContentsView() {
-  return this;
-}
-
 views::NonClientFrameView* NativeAppWindowViews::CreateNonClientFrameView(
     views::Widget* widget) {
 #if defined(USE_ASH)
@@ -694,10 +484,10 @@ views::NonClientFrameView* NativeAppWindowViews::CreateNonClientFrameView(
     // WindowStateDelegate if one is not already set.
     ash::wm::GetWindowState(GetNativeWindow())->SetDelegate(
         scoped_ptr<ash::wm::WindowStateDelegate>(
-            new NativeAppWindowStateDelegate(app_window_, this)).Pass());
+            new NativeAppWindowStateDelegate(app_window(), this)).Pass());
 
-    if (app_window_->window_type_is_panel()) {
-      ash::PanelFrameView::FrameType frame_type = frameless_ ?
+    if (app_window()->window_type_is_panel()) {
+      ash::PanelFrameView::FrameType frame_type = IsFrameless() ?
           ash::PanelFrameView::FRAME_NONE : ash::PanelFrameView::FRAME_ASH;
       views::NonClientFrameView* frame_view =
           new ash::PanelFrameView(widget, frame_type);
@@ -705,7 +495,7 @@ views::NonClientFrameView* NativeAppWindowViews::CreateNonClientFrameView(
       return frame_view;
     }
 
-    if (!frameless_) {
+    if (!IsFrameless()) {
       ash::CustomFrameViewAsh* custom_frame_view =
           new ash::CustomFrameViewAsh(widget);
 #if defined(OS_CHROMEOS)
@@ -737,91 +527,12 @@ void NativeAppWindowViews::GetWidgetHitTestMask(gfx::Path* mask) const {
   shape_->getBoundaryPath(mask);
 }
 
-bool NativeAppWindowViews::ShouldDescendIntoChildForEventHandling(
-    gfx::NativeView child,
-    const gfx::Point& location) {
-#if defined(USE_AURA)
-  if (child->Contains(web_view_->web_contents()->GetView()->GetNativeView())) {
-    // App window should claim mouse events that fall within the draggable
-    // region.
-    return !draggable_region_.get() ||
-           !draggable_region_->contains(location.x(), location.y());
-  }
-#endif
-
-  return true;
-}
-
-// WidgetObserver implementation.
-
-void NativeAppWindowViews::OnWidgetVisibilityChanged(views::Widget* widget,
-                                                     bool visible) {
-  app_window_->OnNativeWindowChanged();
-}
-
-void NativeAppWindowViews::OnWidgetActivationChanged(views::Widget* widget,
-                                                     bool active) {
-  app_window_->OnNativeWindowChanged();
-  if (active)
-    app_window_->OnNativeWindowActivated();
-}
-
-// WebContentsObserver implementation.
-
-void NativeAppWindowViews::RenderViewCreated(
-    content::RenderViewHost* render_view_host) {
-  if (transparent_background_) {
-    // Use a background with transparency to trigger transparency in Webkit.
-    SkBitmap background;
-    background.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
-    background.allocPixels();
-    background.eraseARGB(0x00, 0x00, 0x00, 0x00);
-
-    content::RenderWidgetHostView* view = render_view_host->GetView();
-    DCHECK(view);
-    view->SetBackground(background);
-  }
-}
-
-void NativeAppWindowViews::RenderViewHostChanged(
-    content::RenderViewHost* old_host,
-    content::RenderViewHost* new_host) {
-  OnViewWasResized();
-}
-
 // views::View implementation.
-
-void NativeAppWindowViews::Layout() {
-  DCHECK(web_view_);
-  web_view_->SetBounds(0, 0, width(), height());
-  OnViewWasResized();
-}
-
-void NativeAppWindowViews::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
-  if (details.is_add && details.child == this) {
-    web_view_ = new views::WebView(NULL);
-    AddChildView(web_view_);
-    web_view_->SetWebContents(web_contents());
-  }
-}
 
 gfx::Size NativeAppWindowViews::GetPreferredSize() {
   if (!preferred_size_.IsEmpty())
     return preferred_size_;
-  return views::View::GetPreferredSize();
-}
-
-gfx::Size NativeAppWindowViews::GetMinimumSize() {
-  return app_window_->size_constraints().GetMinimumSize();
-}
-
-gfx::Size NativeAppWindowViews::GetMaximumSize() {
-  return app_window_->size_constraints().GetMaximumSize();
-}
-
-void NativeAppWindowViews::OnFocus() {
-  web_view_->RequestFocus();
+  return BaseNativeAppWindowViews::GetPreferredSize();
 }
 
 bool NativeAppWindowViews::AcceleratorPressed(
@@ -837,31 +548,31 @@ bool NativeAppWindowViews::AcceleratorPressed(
       Close();
       return true;
     case IDC_ZOOM_MINUS:
-      chrome_page_zoom::Zoom(web_view_->GetWebContents(),
+      chrome_page_zoom::Zoom(web_view()->GetWebContents(),
                              content::PAGE_ZOOM_OUT);
       return true;
     case IDC_ZOOM_NORMAL:
-      chrome_page_zoom::Zoom(web_view_->GetWebContents(),
+      chrome_page_zoom::Zoom(web_view()->GetWebContents(),
                              content::PAGE_ZOOM_RESET);
       return true;
     case IDC_ZOOM_PLUS:
-      chrome_page_zoom::Zoom(web_view_->GetWebContents(),
+      chrome_page_zoom::Zoom(web_view()->GetWebContents(),
                              content::PAGE_ZOOM_IN);
       return true;
     default:
       NOTREACHED() << "Unknown accelerator sent to app window.";
   }
-  return false;
+  return BaseNativeAppWindowViews::AcceleratorPressed(accelerator);
 }
 
 // NativeAppWindow implementation.
 
 void NativeAppWindowViews::SetFullscreen(int fullscreen_types) {
   // Fullscreen not supported by panels.
-  if (app_window_->window_type_is_panel())
+  if (app_window()->window_type_is_panel())
     return;
   is_fullscreen_ = (fullscreen_types != AppWindow::FULLSCREEN_TYPE_NONE);
-  window_->SetFullscreen(is_fullscreen_);
+  window()->SetFullscreen(is_fullscreen_);
 
 #if defined(USE_ASH)
   if (immersive_fullscreen_controller_.get()) {
@@ -873,7 +584,7 @@ void NativeAppWindowViews::SetFullscreen(int fullscreen_types) {
     // Autohide the shelf instead of hiding the shelf completely when only in
     // OS fullscreen.
     ash::wm::WindowState* window_state =
-        ash::wm::GetWindowState(window_->GetNativeWindow());
+        ash::wm::GetWindowState(window()->GetNativeWindow());
     window_state->set_hide_shelf_when_fullscreen(fullscreen_types !=
                                                  AppWindow::FULLSCREEN_TYPE_OS);
     DCHECK(ash::Shell::HasInstance());
@@ -891,27 +602,20 @@ bool NativeAppWindowViews::IsFullscreenOrPending() const {
 }
 
 bool NativeAppWindowViews::IsDetached() const {
-  if (!app_window_->window_type_is_panel())
+  if (!app_window()->window_type_is_panel())
     return false;
 #if defined(USE_ASH)
-  return !ash::wm::GetWindowState(window_->GetNativeWindow())->panel_attached();
+  return !ash::wm::GetWindowState(window()->GetNativeWindow())
+              ->panel_attached();
 #else
   return false;
 #endif
 }
 
-void NativeAppWindowViews::UpdateWindowIcon() {
-  window_->UpdateWindowIcon();
-}
-
-void NativeAppWindowViews::UpdateWindowTitle() {
-  window_->UpdateWindowTitle();
-}
-
 void NativeAppWindowViews::UpdateBadgeIcon() {
   const gfx::Image* icon = NULL;
-  if (!app_window_->badge_icon().IsEmpty()) {
-    icon = &app_window_->badge_icon();
+  if (!app_window()->badge_icon().IsEmpty()) {
+    icon = &app_window()->badge_icon();
     // chrome::DrawTaskbarDecoration can do interesting things with non-square
     // bitmaps.
     // TODO(benwells): Refactor chrome::DrawTaskbarDecoration to not be avatar
@@ -924,68 +628,55 @@ void NativeAppWindowViews::UpdateBadgeIcon() {
   chrome::DrawTaskbarDecoration(GetNativeWindow(), icon);
 }
 
-void NativeAppWindowViews::UpdateDraggableRegions(
-    const std::vector<extensions::DraggableRegion>& regions) {
-  // Draggable region is not supported for non-frameless window.
-  if (!frameless_)
-    return;
-
-  draggable_region_.reset(AppWindow::RawDraggableRegionsToSkRegion(regions));
-  OnViewWasResized();
-}
-
-SkRegion* NativeAppWindowViews::GetDraggableRegion() {
-  return draggable_region_.get();
-}
-
 void NativeAppWindowViews::UpdateShape(scoped_ptr<SkRegion> region) {
   bool had_shape = shape_;
   shape_ = region.Pass();
 
-  aura::Window* native_window = window_->GetNativeWindow();
+  aura::Window* native_window = window()->GetNativeWindow();
   if (shape_) {
-    window_->SetShape(new SkRegion(*shape_));
+    window()->SetShape(new SkRegion(*shape_));
     if (!had_shape) {
       native_window->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
           new ShapedAppWindowTargeter(native_window, this)));
     }
   } else {
-    window_->SetShape(NULL);
+    window()->SetShape(NULL);
     if (had_shape)
       native_window->SetEventTargeter(scoped_ptr<ui::EventTargeter>());
   }
 }
 
-void NativeAppWindowViews::HandleKeyboardEvent(
-    const content::NativeWebKeyboardEvent& event) {
-  unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,
-                                                        GetFocusManager());
+bool NativeAppWindowViews::HasFrameColor() const {
+  return has_frame_color_;
 }
-
-bool NativeAppWindowViews::IsFrameless() const {
-  return frameless_;
-}
-
-bool NativeAppWindowViews::HasFrameColor() const { return has_frame_color_; }
 
 SkColor NativeAppWindowViews::FrameColor() const { return frame_color_; }
 
-gfx::Insets NativeAppWindowViews::GetFrameInsets() const {
-  if (frameless_)
-    return gfx::Insets();
+// BaseNativeAppWindowViews implementation.
 
-  // The pretend client_bounds passed in need to be large enough to ensure that
-  // GetWindowBoundsForClientBounds() doesn't decide that it needs more than
-  // the specified amount of space to fit the window controls in, and return a
-  // number larger than the real frame insets. Most window controls are smaller
-  // than 1000x1000px, so this should be big enough.
-  gfx::Rect client_bounds = gfx::Rect(1000, 1000);
-  gfx::Rect window_bounds =
-      window_->non_client_view()->GetWindowBoundsForClientBounds(
-          client_bounds);
-  return window_bounds.InsetsFrom(client_bounds);
+void NativeAppWindowViews::InitializeWindow(
+    AppWindow* app_window,
+    const AppWindow::CreateParams& create_params) {
+  DCHECK(window());
+  has_frame_color_ = create_params.has_frame_color;
+  frame_color_ = create_params.frame_color;
+  if (create_params.window_type == AppWindow::WINDOW_TYPE_PANEL ||
+      create_params.window_type == AppWindow::WINDOW_TYPE_V1_PANEL) {
+    InitializePanelWindow(create_params);
+  } else {
+    InitializeDefaultWindow(create_params);
+  }
+  extension_keybinding_registry_.reset(new ExtensionKeybindingRegistryViews(
+      Profile::FromBrowserContext(app_window->browser_context()),
+      window()->GetFocusManager(),
+      extensions::ExtensionKeybindingRegistry::PLATFORM_APPS_ONLY,
+      app_window));
+
+#if defined(OS_WIN)
+  if (ShouldUseNativeFrame() &&
+      chrome::GetHostDesktopTypeForNativeWindow(window()->GetNativeWindow()) !=
+      chrome::HOST_DESKTOP_TYPE_ASH) {
+    InstallEasyResizeTargeterOnContainer();
+  }
+#endif
 }
-
-void NativeAppWindowViews::HideWithApp() {}
-void NativeAppWindowViews::ShowWithApp() {}
-void NativeAppWindowViews::UpdateWindowMinMaxSize() {}

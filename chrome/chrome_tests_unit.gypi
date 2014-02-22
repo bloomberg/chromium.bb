@@ -2685,6 +2685,7 @@
           'sources/': [
             ['exclude', '^browser/bookmarks/bookmark_node_data_unittest.cc'],
             ['exclude', '^browser/ui/views/'],
+            ['exclude', '^../apps/ui/views/'],
             ['exclude', '^../ui/views/'],
           ],
         }],

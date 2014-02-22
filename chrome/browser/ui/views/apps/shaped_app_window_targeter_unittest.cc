@@ -35,8 +35,8 @@ class ShapedAppWindowTargeterTest : public aura::test::AuraTestBase {
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     widget_->Init(params);
 
-    app_window_.web_view_ = &web_view_;
-    app_window_.window_ = widget_.get();
+    app_window_.set_web_view_for_testing(&web_view_);
+    app_window_.set_window_for_testing(widget_.get());
 
     widget_->Show();
   }
