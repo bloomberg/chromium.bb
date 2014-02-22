@@ -2,23 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
-
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/child/webkitplatformsupport_impl.h"
 
-namespace {
+namespace content {
 
 // Derives WebKitPlatformSupportImpl for testing shared timers.
-class TestWebKitPlatformSupport
-    : public webkit_glue::WebKitPlatformSupportImpl {
+class TestBlinkPlatformImpl : public webkit_glue::WebKitPlatformSupportImpl {
  public:
-  TestWebKitPlatformSupport() : mock_monotonically_increasing_time_(0) {
-  }
+  TestBlinkPlatformImpl() : mock_monotonically_increasing_time_(0) {}
 
-  // WebKitPlatformSupportImpl implementation
+  // webkit_glue::WebKitPlatformSupportImpl:
   virtual base::string16 GetLocalizedString(int) OVERRIDE {
     return base::string16();
   }
@@ -50,9 +46,7 @@ class TestWebKitPlatformSupport
     shared_timer_delay_ = delay;
   }
 
-  base::TimeDelta shared_timer_delay() {
-    return shared_timer_delay_;
-  }
+  base::TimeDelta shared_timer_delay() { return shared_timer_delay_; }
 
   void set_mock_monotonically_increasing_time(double mock_time) {
     mock_monotonically_increasing_time_ = mock_time;
@@ -61,27 +55,34 @@ class TestWebKitPlatformSupport
  private:
   base::TimeDelta shared_timer_delay_;
   double mock_monotonically_increasing_time_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestBlinkPlatformImpl);
 };
 
-TEST(WebkitGlueTest, SuspendResumeSharedTimer) {
+TEST(BlinkPlatformTest, SuspendResumeSharedTimer) {
   base::MessageLoop message_loop;
 
-  TestWebKitPlatformSupport platform_support;
+  TestBlinkPlatformImpl platform_impl;
 
   // Set a timer to fire as soon as possible.
-  platform_support.setSharedTimerFireInterval(0);
+  platform_impl.setSharedTimerFireInterval(0);
+
   // Suspend timers immediately so the above timer wouldn't be fired.
-  platform_support.SuspendSharedTimer();
+  platform_impl.SuspendSharedTimer();
+
   // The above timer would have posted a task which can be processed out of the
   // message loop.
   base::RunLoop().RunUntilIdle();
+
   // Set a mock time after 1 second to simulate timers suspended for 1 second.
   double new_time = base::Time::Now().ToDoubleT() + 1;
-  platform_support.set_mock_monotonically_increasing_time(new_time);
+  platform_impl.set_mock_monotonically_increasing_time(new_time);
+
   // Resume timers so that the timer set above will be set again to fire
   // immediately.
-  platform_support.ResumeSharedTimer();
-  EXPECT_TRUE(base::TimeDelta() == platform_support.shared_timer_delay());
+  platform_impl.ResumeSharedTimer();
+
+  EXPECT_TRUE(base::TimeDelta() == platform_impl.shared_timer_delay());
 }
 
-}  // namespace
+}  // namespace content
