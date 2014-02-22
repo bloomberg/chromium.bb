@@ -350,6 +350,8 @@ def CopyVsRuntimeDlls(output_dir, runtime_dirs):
   """
   assert sys.platform.startswith(('win32', 'cygwin'))
 
+  print 'Copying runtime DLLs:'
+
   def copy_runtime(target_dir, source_dir, dll_pattern):
     """Copy both the msvcr and msvcp runtime DLLs, only if the target doesn't
     exist, but the target directory does exist."""
@@ -359,7 +361,9 @@ def CopyVsRuntimeDlls(output_dir, runtime_dirs):
       source = os.path.join(source_dir, dll)
       # If gyp generated to that output dir, and the runtime isn't already
       # there, then copy it over.
+      print source, target, target_dir
       if os.path.isdir(target_dir) and not os.path.isfile(target):
+        print '  copying', source, target
         shutil.copyfile(source, target)
 
   x86, x64 = runtime_dirs
@@ -453,7 +457,6 @@ if __name__ == '__main__':
   vs2013_runtime_dll_dirs = None
   depot_tools_win_toolchain = \
       bool(int(os.environ.get('DEPOT_TOOLS_WIN_TOOLCHAIN', '1')))
-  # TODO(scottmg): temp build fix while switching to 2013.
   if sys.platform in ('win32', 'cygwin') and depot_tools_win_toolchain:
     import find_depot_tools
     depot_tools_path = find_depot_tools.add_depot_tools_to_path()
