@@ -6,11 +6,11 @@
 
 import logging
 import os
+import shutil
 import time
 
 from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
-from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import remote_access
 
@@ -23,62 +23,108 @@ class VMCreationError(VMError):
   """Raised when failed to create a VM image."""
 
 
-def CreateVMImage(image=None, board=None, updatable=True):
+def VMIsUpdatable(path):
+  """Check if the existing VM image is updatable.
+
+  Args:
+    path: Path to the VM image.
+
+  Returns:
+    True if VM is updatable; False otherwise.
+  """
+  table = cros_build_lib.GetImageDiskPartitionInfo(path, unit='MB')
+  # Assume if size of the two root partitions match, the image
+  # is updatable.
+  return table['ROOT-B'].size == table['ROOT-A'].size
+
+
+def CreateVMImage(image=None, board=None, updatable=True, dest_dir=None):
   """Returns the path of the image built to run in a VM.
 
   By default, the returned VM is a test image that can run full update
   testing on it. If there exists a VM image with the matching
-  |updatable| setting, this method does not return a new image.
+  |updatable| setting, this method returns the path to the existing
+  image. If |dest_dir| is set, it will copy/create the VM image to the
+  |dest_dir|.
 
   Args:
-    image: Path to the image. Defaults to None to use the latest image
-      for the board.
+    image: Path to the (non-VM) image. Defaults to None to use the latest
+      image for the board.
     board: Board that the image was built with. If None, attempts to use the
-           configured default board.
+      configured default board.
     updatable: Create a VM image that supports AU.
+    dest_dir: If set, create/copy the VM image to |dest|; otherwise,
+      use the folder where |image| resides.
   """
   if not image and not board:
     raise VMCreationError(
         'Cannot create VM when both image and board are None.')
 
   image_dir = os.path.dirname(image)
-  vm_image_path = os.path.join(image_dir, constants.VM_IMAGE_BIN)
-  # Do not create a new VM image if it already exists.
-  if os.path.exists(vm_image_path):
+  src_path = dest_path = os.path.join(image_dir, constants.VM_IMAGE_BIN)
+
+  if dest_dir:
+    dest_path = os.path.join(dest_dir, constants.VM_IMAGE_BIN)
+
+  exists = False
+  # Do not create a new VM image if a matching image already exists.
+  exists = os.path.exists(src_path) and (
+      not updatable or VMIsUpdatable(src_path))
+
+  if exists and dest_dir:
+    # Copy the existing VM image to dest_dir.
+    shutil.copyfile(src_path, dest_path)
+
+  if not exists:
+    # No existing VM image that we can reuse. Create a new VM image.
+    logging.info('Creating %s', dest_path)
+    cmd = ['./image_to_vm.sh', '--test_image']
+
+    if image:
+      cmd.append('--from=%s' % cros_build_lib.ToChrootPath(image_dir))
+
     if updatable:
-      # Check if the existing VM image is updatable.
-      table = cros_build_lib.GetImageDiskPartitionInfo(vm_image_path, unit='MB')
-      if table['ROOT-B'].size == table['ROOT-A'].size:
-        # Assume if size of the two root partitions match, the image
-        # is updatable.
-        return vm_image_path
-    else:
-      return vm_image_path
+      cmd.extend(['--disk_layout', '2gb-rootfs-updatable'])
 
-  logging.info('Creating %s', vm_image_path)
-  cmd = ['./image_to_vm.sh', '--test_image']
+    if board:
+      cmd.extend(['--board', board])
 
-  if image:
-    cmd.append(
-        '--from=%s' % git.ReinterpretPathForChroot(image_dir))
+    # image_to_vm.sh only runs in chroot, but dest_dir may not be
+    # reachable from chroot. In that case, we copy it to a temporary
+    # directory in chroot, and then move it to dest_dir .
+    tempdir = None
+    if dest_dir:
+      # Create a temporary directory in chroot to store the VM
+      # image. This is to avoid the case where dest_dir is not
+      # reachable within chroot.
+      tempdir = cros_build_lib.RunCommand(
+          ['mktemp', '-d'],
+          capture_output=True,
+          enter_chroot=True).output.strip()
+      cmd.append('--to=%s' % tempdir)
 
-  if updatable:
-    cmd.extend(['--disk_layout', '2gb-rootfs-updatable'])
+    msg = 'Failed to create the VM image'
+    try:
+      cros_build_lib.RunCommand(cmd, enter_chroot=True,
+                                cwd=constants.SOURCE_ROOT)
+    except cros_build_lib.RunCommandError as e:
+      logging.error('%s: %s', msg, e)
+      if tempdir:
+        osutils.RmDir(
+            cros_build_lib.FromChrootPath(tempdir), ignore_missing=True)
+      raise VMCreationError(msg)
 
-  if board:
-    cmd.extend(['--board', board])
+    if dest_dir:
+      # Move VM from tempdir to dest_dir.
+      shutil.move(
+          cros_build_lib.FromChrootPath(
+            os.path.join(tempdir, constants.VM_IMAGE_BIN)), dest_path)
+      osutils.RmDir(cros_build_lib.FromChrootPath(tempdir), ignore_missing=True)
 
-  msg = 'Failed to create the VM image'
-  try:
-    cros_build_lib.RunCommand(cmd, enter_chroot=True, cwd=constants.SOURCE_ROOT)
-  except cros_build_lib.RunCommandError as e:
-    logging.error('%s: %s', msg, e)
+  if not os.path.exists(dest_path):
     raise VMCreationError(msg)
 
-  if not os.path.exists(vm_image_path):
-    raise VMCreationError(msg)
-
-  return vm_image_path
+  return dest_path
 
 
 class VMStartupError(VMError):

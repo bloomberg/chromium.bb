@@ -11,8 +11,6 @@ a VM. It starts a VM and runs `cros flash` to update the VM, and then
 """
 
 import logging
-import os
-import shutil
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -62,14 +60,10 @@ class CrosCommandTest(object):
   def Setup(self):
     """Creates and/or starts the VM instance."""
     logging.info('Setting up image %s for vm testing.', self.image_path)
-    vm_path = vm.CreateVMImage(image=self.image_path, board=self.board,
-                               updatable=True)
-
-    logging.info('Making a copy of the vm image %s to manipulate.', vm_path)
-    self.working_image_path = os.path.join(self.tempdir,
-                                           os.path.basename(vm_path))
-    shutil.copyfile(vm_path, self.working_image_path)
-    logging.debug('Copy of vm image stored at %s.', self.working_image_path)
+    self.working_image_path = vm.CreateVMImage(
+        image=self.image_path, board=self.board, updatable=True,
+        dest_dir=self.tempdir)
+    logging.info('Using VM image at %s.', self.working_image_path)
 
     self.vm = vm.VMInstance(self.working_image_path, tempdir=self.tempdir)
     logging.info('Starting the vm on port %d.', self.vm.port)
