@@ -454,8 +454,7 @@ if __name__ == '__main__':
   depot_tools_win_toolchain = \
       bool(int(os.environ.get('DEPOT_TOOLS_WIN_TOOLCHAIN', '1')))
   # TODO(scottmg): temp build fix while switching to 2013.
-  if False and \
-          sys.platform in ('win32', 'cygwin') and depot_tools_win_toolchain:
+  if sys.platform in ('win32', 'cygwin') and depot_tools_win_toolchain:
     import find_depot_tools
     depot_tools_path = find_depot_tools.add_depot_tools_to_path()
     temp_handle, data_file = tempfile.mkstemp(suffix='.json')
