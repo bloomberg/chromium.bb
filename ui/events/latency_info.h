@@ -65,6 +65,7 @@ enum LatencyComponentType {
   // This component indicates that the cached LatencyInfo number exceeds the
   // maximal allowed size.
   LATENCY_INFO_LIST_TERMINATED_OVERFLOW_COMPONENT,
+  LATENCY_COMPONENT_TYPE_LAST = LATENCY_INFO_LIST_TERMINATED_OVERFLOW_COMPONENT
 };
 
 struct EVENTS_BASE_EXPORT LatencyInfo {
