@@ -7,12 +7,10 @@ package org.chromium.ui.gfx;
 import android.content.ComponentCallbacks;
 import android.content.Context;
 import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.view.ViewConfiguration;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-import org.chromium.ui.R;
 
 /**
  * This class facilitates access to ViewConfiguration-related properties, also
@@ -53,9 +51,7 @@ public class ViewConfigurationHelper {
                 getScaledMaximumFlingVelocity(),
                 getScaledMinimumFlingVelocity(),
                 getScaledTouchSlop(),
-                getScaledDoubleTapSlop(),
-                getScaledMinScalingSpan(),
-                getScaledMinScalingTouchMajor());
+                getScaledDoubleTapSlop());
     }
 
     @CalledByNative
@@ -99,25 +95,6 @@ public class ViewConfigurationHelper {
     }
 
     @CalledByNative
-    private int getScaledMinScalingSpan() {
-        final Resources res = mAppContext.getResources();
-        int id = res.getIdentifier("config_minScalingSpan", "dimen", "android");
-        // Fall back to a sensible default if the internal identifier does not exist.
-        if (id == 0) id = res.getDimensionPixelSize(R.dimen.config_minScalingSpan);
-        return res.getDimensionPixelSize(id);
-
-    }
-
-    @CalledByNative
-    private int getScaledMinScalingTouchMajor() {
-        final Resources res = mAppContext.getResources();
-        int id = res.getIdentifier("config_minScalingTouchMajor", "dimen", "android");
-        // Fall back to a sensible default if the internal identifier does not exist.
-        if (id == 0) id = res.getDimensionPixelSize(R.dimen.config_minScalingTouchMajor);
-        return res.getDimensionPixelSize(id);
-    }
-
-    @CalledByNative
     private static ViewConfigurationHelper createWithListener(Context context) {
         ViewConfigurationHelper viewConfigurationHelper = new ViewConfigurationHelper(context);
         viewConfigurationHelper.registerListener();
@@ -126,6 +103,5 @@ public class ViewConfigurationHelper {
 
     private native void nativeUpdateSharedViewConfiguration(
             int scaledMaximumFlingVelocity, int scaledMinimumFlingVelocity,
-            int scaledTouchSlop, int scaledDoubleTapSlop,
-            int scaledMinScalingSpan, int scaledMinScalingTouchMajor);
+            int scaledTouchSlop, int scaledDoubleTapSlop);
 }
