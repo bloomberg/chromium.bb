@@ -24,13 +24,10 @@ class CC_EXPORT DirectRasterWorkerPool : public RasterWorkerPool {
   virtual void CheckForCompletedTasks() OVERRIDE;
 
   // Overridden from internal::WorkerPoolTaskClient:
-  virtual SkCanvas* AcquireCanvasForRaster(internal::RasterWorkerPoolTask* task)
-      OVERRIDE;
-  virtual void OnRasterCompleted(internal::RasterWorkerPoolTask* task,
-                                 const PicturePileImpl::Analysis& analysis)
-      OVERRIDE;
-  virtual void OnImageDecodeCompleted(internal::WorkerPoolTask* task) OVERRIDE {
-  }
+  virtual SkCanvas* AcquireCanvasForRaster(internal::WorkerPoolTask* task,
+                                           const Resource* resource) OVERRIDE;
+  virtual void ReleaseCanvasForRaster(internal::WorkerPoolTask* task,
+                                      const Resource* resource) OVERRIDE;
 
  protected:
   DirectRasterWorkerPool(ResourceProvider* resource_provider,

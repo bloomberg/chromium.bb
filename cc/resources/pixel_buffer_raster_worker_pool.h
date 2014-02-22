@@ -13,8 +13,8 @@
 #if defined(COMPILER_GCC)
 namespace BASE_HASH_NAMESPACE {
 template <>
-struct hash<cc::internal::RasterWorkerPoolTask*> {
-  size_t operator()(cc::internal::RasterWorkerPoolTask* ptr) const {
+struct hash<cc::internal::WorkerPoolTask*> {
+  size_t operator()(cc::internal::WorkerPoolTask* ptr) const {
     return hash<size_t>()(reinterpret_cast<size_t>(ptr));
   }
 };
@@ -39,12 +39,10 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
   virtual void CheckForCompletedTasks() OVERRIDE;
 
   // Overridden from internal::WorkerPoolTaskClient:
-  virtual SkCanvas* AcquireCanvasForRaster(internal::RasterWorkerPoolTask* task)
-      OVERRIDE;
-  virtual void OnRasterCompleted(internal::RasterWorkerPoolTask* task,
-                                 const PicturePileImpl::Analysis& analysis)
-      OVERRIDE;
-  virtual void OnImageDecodeCompleted(internal::WorkerPoolTask* task) OVERRIDE;
+  virtual SkCanvas* AcquireCanvasForRaster(internal::WorkerPoolTask* task,
+                                           const Resource* resource) OVERRIDE;
+  virtual void ReleaseCanvasForRaster(internal::WorkerPoolTask* task,
+                                      const Resource* resource) OVERRIDE;
 
  protected:
   PixelBufferRasterWorkerPool(internal::TaskGraphRunner* task_graph_runner,
@@ -52,10 +50,12 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
                               size_t max_transfer_buffer_usage_bytes);
 
  private:
-  enum RasterTaskState { UNSCHEDULED, SCHEDULED, UPLOADING, COMPLETED };
-  typedef std::deque<scoped_refptr<internal::RasterWorkerPoolTask> >
-      RasterTaskDeque;
-  typedef internal::RasterWorkerPoolTask* RasterTaskMapKey;
+  struct RasterTaskState {
+    RasterTaskState() : type(UNSCHEDULED), resource(NULL) {}
+    enum { UNSCHEDULED, SCHEDULED, UPLOADING, COMPLETED } type;
+    const Resource* resource;
+  };
+  typedef internal::WorkerPoolTask* RasterTaskMapKey;
   typedef base::hash_set<RasterTaskMapKey> RasterTaskSet;
   typedef base::hash_map<RasterTaskMapKey, RasterTaskState> RasterTaskStateMap;
 
@@ -73,8 +73,7 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
   bool HasPendingTasks() const;
   bool HasPendingTasksRequiredForActivation() const;
   void CheckForCompletedWorkerPoolTasks();
-  bool IsRasterTaskRequiredForActivation(internal::RasterWorkerPoolTask* task)
-      const;
+  bool IsRasterTaskRequiredForActivation(internal::WorkerPoolTask* task) const;
 
   const char* StateName() const;
   scoped_ptr<base::Value> StateAsValue() const;
@@ -85,8 +84,8 @@ class CC_EXPORT PixelBufferRasterWorkerPool : public RasterWorkerPool {
   RasterTaskQueue raster_tasks_;
   RasterTaskSet raster_tasks_required_for_activation_;
   RasterTaskStateMap raster_task_states_;
-  RasterTaskDeque raster_tasks_with_pending_upload_;
-  RasterTaskDeque completed_raster_tasks_;
+  TaskDeque raster_tasks_with_pending_upload_;
+  TaskDeque completed_raster_tasks_;
   TaskDeque completed_image_decode_tasks_;
 
   size_t scheduled_raster_task_count_;

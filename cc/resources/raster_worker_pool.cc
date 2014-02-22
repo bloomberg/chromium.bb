@@ -112,7 +112,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   virtual void ScheduleOnOriginThread(internal::WorkerPoolTaskClient* client)
       OVERRIDE {
     DCHECK(!canvas_);
-    canvas_ = client->AcquireCanvasForRaster(this);
+    canvas_ = client->AcquireCanvasForRaster(this, resource());
   }
   virtual void RunOnOriginThread() OVERRIDE {
     TRACE_EVENT0("cc", "RasterWorkerPoolTaskImpl::RunOnOriginThread");
@@ -135,7 +135,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   virtual void CompleteOnOriginThread(internal::WorkerPoolTaskClient* client)
       OVERRIDE {
     canvas_ = NULL;
-    client->OnRasterCompleted(this, analysis_);
+    client->ReleaseCanvasForRaster(this, resource());
   }
   virtual void RunReplyOnOriginThread() OVERRIDE {
     DCHECK(!canvas_);
@@ -270,9 +270,7 @@ class ImageDecodeWorkerPoolTaskImpl : public internal::WorkerPoolTask {
     Decode();
   }
   virtual void CompleteOnOriginThread(internal::WorkerPoolTaskClient* client)
-      OVERRIDE {
-    client->OnImageDecodeCompleted(this);
-  }
+      OVERRIDE {}
   virtual void RunReplyOnOriginThread() OVERRIDE {
     reply_.Run(!HasFinishedRunning());
   }

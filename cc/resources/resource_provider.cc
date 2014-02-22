@@ -389,28 +389,34 @@ SkCanvas* ResourceProvider::RasterBuffer::LockForWrite() {
   return locked_canvas_;
 }
 
-void ResourceProvider::RasterBuffer::UnlockForWrite() {
+bool ResourceProvider::RasterBuffer::UnlockForWrite() {
   if (locked_canvas_) {
     locked_canvas_->restoreToCount(canvas_save_count_);
     locked_canvas_ = NULL;
   }
-  DoUnlockForWrite();
+  return DoUnlockForWrite();
 }
 
 ResourceProvider::DirectRasterBuffer::DirectRasterBuffer(
     const Resource* resource,
     ResourceProvider* resource_provider)
-    : RasterBuffer(resource, resource_provider) {}
+    : RasterBuffer(resource, resource_provider), surface_generation_id_(0u) {}
 
 ResourceProvider::DirectRasterBuffer::~DirectRasterBuffer() {}
 
 SkCanvas* ResourceProvider::DirectRasterBuffer::DoLockForWrite() {
   if (!surface_)
     surface_ = CreateSurface();
+  surface_generation_id_ = surface_ ? surface_->generationID() : 0u;
   return surface_ ? surface_->getCanvas() : NULL;
 }
 
-void ResourceProvider::DirectRasterBuffer::DoUnlockForWrite() {}
+bool ResourceProvider::DirectRasterBuffer::DoUnlockForWrite() {
+  // generationID returns a non-zero, unique value corresponding to the content
+  // of surface. Hence, a change since DoLockForWrite was called means the
+  // surface has changed.
+  return surface_ ? surface_generation_id_ != surface_->generationID() : false;
+}
 
 skia::RefPtr<SkSurface> ResourceProvider::DirectRasterBuffer::CreateSurface() {
   skia::RefPtr<SkSurface> surface;
@@ -453,7 +459,9 @@ skia::RefPtr<SkSurface> ResourceProvider::DirectRasterBuffer::CreateSurface() {
 ResourceProvider::BitmapRasterBuffer::BitmapRasterBuffer(
     const Resource* resource,
     ResourceProvider* resource_provider)
-    : RasterBuffer(resource, resource_provider), mapped_buffer_(NULL) {}
+    : RasterBuffer(resource, resource_provider),
+      mapped_buffer_(NULL),
+      raster_bitmap_generation_id_(0u) {}
 
 ResourceProvider::BitmapRasterBuffer::~BitmapRasterBuffer() {}
 
@@ -492,19 +500,29 @@ SkCanvas* ResourceProvider::BitmapRasterBuffer::DoLockForWrite() {
   skia::RefPtr<SkBitmapDevice> device =
       skia::AdoptRef(new SkBitmapDevice(raster_bitmap_));
   raster_canvas_ = skia::AdoptRef(new SkCanvas(device.get()));
+  raster_bitmap_generation_id_ = raster_bitmap_.getGenerationID();
   return raster_canvas_.get();
 }
 
-void ResourceProvider::BitmapRasterBuffer::DoUnlockForWrite() {
+bool ResourceProvider::BitmapRasterBuffer::DoUnlockForWrite() {
   raster_canvas_.clear();
 
-  SkBitmap::Config buffer_config = SkBitmapConfig(resource()->format);
-  if (mapped_buffer_ && (buffer_config != raster_bitmap_.config()))
-    CopyBitmap(raster_bitmap_, mapped_buffer_, buffer_config);
+  // getGenerationID returns a non-zero, unique value corresponding to the
+  // pixels in bitmap. Hence, a change since DoLockForWrite was called means the
+  // bitmap has changed.
+  bool raster_bitmap_changed =
+      raster_bitmap_generation_id_ != raster_bitmap_.getGenerationID();
+
+  if (raster_bitmap_changed) {
+    SkBitmap::Config buffer_config = SkBitmapConfig(resource()->format);
+    if (mapped_buffer_ && (buffer_config != raster_bitmap_.config()))
+      CopyBitmap(raster_bitmap_, mapped_buffer_, buffer_config);
+  }
   raster_bitmap_.reset();
 
   UnmapBuffer();
   mapped_buffer_ = NULL;
+  return raster_bitmap_changed;
 }
 
 ResourceProvider::ImageRasterBuffer::ImageRasterBuffer(
@@ -1740,10 +1758,10 @@ SkCanvas* ResourceProvider::MapPixelRasterBuffer(ResourceId id) {
   return resource->pixel_raster_buffer->LockForWrite();
 }
 
-void ResourceProvider::UnmapPixelRasterBuffer(ResourceId id) {
+bool ResourceProvider::UnmapPixelRasterBuffer(ResourceId id) {
   Resource* resource = GetResource(id);
   DCHECK(resource->pixel_raster_buffer.get());
-  resource->pixel_raster_buffer->UnlockForWrite();
+  return resource->pixel_raster_buffer->UnlockForWrite();
 }
 
 void ResourceProvider::AcquirePixelBuffer(Resource* resource) {
