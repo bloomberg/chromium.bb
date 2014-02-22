@@ -2,9 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""
-Basic locking functionality.
-"""
+"""Basic locking functionality."""
 
 import os
 import errno
@@ -23,6 +21,7 @@ class _Lock(cros_build_lib.MasterPidContextManager):
     Args:
       path: On disk pathway to lock.  Can be a directory or a file.
       description: A description for this lock- what is it protecting?
+      verbose: Verbose logging?
     """
     cros_build_lib.MasterPidContextManager.__init__(self)
     self._verbose = verbose
@@ -138,12 +137,15 @@ class _Lock(cros_build_lib.MasterPidContextManager):
 
 
 class FileLock(_Lock):
+  """Use a specified file as a locking mechanism."""
 
   def __init__(self, path, description=None, verbose=True):
-    """
+    """Initializer for FileLock.
+
     Args:
       path: On disk pathway to lock.  Can be a directory or a file.
       description: A description for this lock- what is it protecting?
+      verbose: Verbose logging?
     """
     if description is None:
       description = "lock %s" % (path,)

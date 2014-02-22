@@ -16,6 +16,7 @@ from chromite.lib import upgrade_table as utable
 
 # pylint: disable=W0212,R0904
 class UpgradeTableTest(cros_test_lib.TestCase):
+  """Unittests for UpgradeTable."""
   ARCH = 'some-arch'
   NAME = 'some-name'
 

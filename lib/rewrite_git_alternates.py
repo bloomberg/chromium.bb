@@ -1,12 +1,10 @@
 #!/usr/bin/python
-
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 
-"""
-Functionality for mangling repository checkouts that are shared
+"""Functionality for mangling repository checkouts that are shared
 
 In particular, this in combination w/ enter_chroot's mount binding, allows
 us to access the same repo from inside and outside a chroot at the same time
@@ -148,7 +146,7 @@ def _GetProjects(repo_root):
 
 
 class Failed(Exception):
-  pass
+  """Exception used to fail out for a bad environment."""
 
 
 def _RebuildRepoCheckout(target_root, reference_map,
@@ -181,6 +179,7 @@ def WalkReferences(repo_root, max_depth=5, suppress=()):
     repo_root: The root of a repo checkout to start from
     max_depth: Git internally limits the max alternates depth to 5;
       this option exists to adjust how deep we're willing to look.
+    suppress: List of repos already seen (and so to ignore).
 
   Returns:
     List of repository roots required for this repo_root.
@@ -225,7 +224,7 @@ def RebuildRepoCheckout(repo_root, initial_reference,
 
   Args:
     repo_root: absolute path to the root of a repository checkout
-    reference_root: absolute path to the root of the repository that is
+    initial_reference: absolute path to the root of the repository that is
       shared
     chroot_reference_root: if given, repo_root will have it's chroot
       alternates tree configured with this pathway, enabling repo access to

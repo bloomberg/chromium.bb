@@ -332,6 +332,7 @@ class Cgroup(object):
     via the logic described for autoclean_parents below.
 
     Args:
+      name: Name of group to add.
       autoclean_parents: Optional keyword argument; if unspecified, it takes
         the value of autoclean (or True if autoclean isn't specified).  This
         controls whether any intermediate nodes that must be created for
@@ -441,10 +442,11 @@ class Cgroup(object):
     """Perform the actual group removal.
 
     Args:
-      namespace: The cgroup namespace to remove
+      path: The cgroup's location on disk.
       strict: Boolean; if true, then it's an error if the group can't be
         removed.  This can occur if there are still processes in it, or in
         a nested group.
+      sudo_strict: See SudoRunCommand's strict option.
     """
     # Depth first recursively remove our children cgroups, then ourselves.
     # Allow this to fail since currently it's possible for the cleanup code

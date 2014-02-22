@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -21,6 +20,7 @@ from chromite.lib import gob_util
 
 # pylint: disable=W0212,R0904
 class GerritHelperTest(cros_test_lib.GerritTestCase):
+  """Unittests for GerritHelper."""
 
   def _GetHelper(self, remote=constants.EXTERNAL_REMOTE):
     return gerrit.GetGerritHelper(remote)

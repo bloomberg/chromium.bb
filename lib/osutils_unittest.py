@@ -1,5 +1,4 @@
 #!/usr/bin/python
-#
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -17,6 +16,7 @@ from chromite.lib import osutils
 
 
 class TestOsutils(cros_test_lib.TempDirTestCase):
+  """General unittests for the osutils module."""
 
   def testReadWriteFile(self):
     """Verify we can write data to a file, and then read it back."""
@@ -135,6 +135,7 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
 
 
 class MountTests(cros_test_lib.TestCase):
+  """Unittests for osutils mounting and umounting helpers."""
 
   def testMountTmpfsDir(self):
     """Verify mounting a tmpfs works"""
@@ -218,6 +219,7 @@ class FindInPathParentsTest(cros_test_lib.TempDirTestCase):
 
 
 class SourceEnvironmentTest(cros_test_lib.TempDirTestCase):
+  """Test ostuil's environmental variable related methods."""
 
   ENV_WHITELIST = {
       'ENV1': 'monkeys like bananas',

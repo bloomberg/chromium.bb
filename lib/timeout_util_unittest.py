@@ -23,6 +23,7 @@ from chromite.lib import timeout_util
 
 
 class TestTimeouts(cros_test_lib.TestCase):
+  """Tests for timeout_util.Timeout."""
 
   def testTimeout(self):
     """Tests that we can nest Timeout correctly."""
@@ -50,6 +51,7 @@ class TestTimeouts(cros_test_lib.TestCase):
 
 
 class TestWaitFors(cros_test_lib.TestCase):
+  """Tests for assorted timeout_utils WaitForX methods."""
 
   def setUp(self):
     self.values_ix = 0

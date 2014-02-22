@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Helper methods and classes related to managing sudo."""
+
 import os
 import sys
 import errno
@@ -11,8 +13,8 @@ import cros_build_lib
 
 
 class SudoKeepAlive(cros_build_lib.MasterPidContextManager):
+  """Keep sudo auth cookie fresh.
 
-  """
   This refreshes the sudo auth cookie; this is implemented this
   way to ensure that sudo has access to both invoking tty, and
   will update the user's tty-less cookie.

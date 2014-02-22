@@ -6,14 +6,16 @@
 """Unit tests for the gdata_lib module."""
 
 import getpass
+import mox
+import os
 import re
+import sys
 
+# pylint: disable=F0401
 import atom.service
 import gdata.projecthosting.client as gd_ph_client
 import gdata.spreadsheet.service
-import mox
-import os
-import sys
+# pylint: enable=F0401
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))))
@@ -26,6 +28,7 @@ from chromite.lib import osutils
 
 
 class GdataLibTest(cros_test_lib.OutputTestCase):
+  """Tests for methods that escape/unescape strings for speadsheets."""
 
   def testPrepColNameForSS(self):
     tests = {
@@ -96,6 +99,7 @@ class GdataLibTest(cros_test_lib.OutputTestCase):
 
 
 class CredsTest(cros_test_lib.MoxOutputTestCase):
+  """Tests related to user credentials."""
 
   USER = 'somedude@chromium.org'
   PASSWORD = 'worldsbestpassword'
@@ -220,6 +224,7 @@ class CredsTest(cros_test_lib.MoxOutputTestCase):
 
 
 class SpreadsheetRowTest(cros_test_lib.OutputTestCase):
+  """Tests related to spreadsheet row interaction."""
 
   SS_ROW_OBJ = 'SSRowObj'
   SS_ROW_NUM = 5
@@ -256,6 +261,7 @@ class SpreadsheetRowTest(cros_test_lib.OutputTestCase):
 
 
 class SpreadsheetCommTest(cros_test_lib.MoxOutputTestCase):
+  """Test Speadsheet communication."""
 
   SS_KEY = 'TheSSKey'
   WS_NAME = 'TheWSName'
@@ -711,6 +717,7 @@ class SpreadsheetCommTest(cros_test_lib.MoxOutputTestCase):
 
 
 class IssueCommentTest(cros_test_lib.TestCase):
+  """Test creating comments."""
 
   def testInit(self):
     title = 'Greetings, Earthlings'
@@ -733,6 +740,7 @@ def createTrackerIssue(tid, labels, owner, status, content, title):
   return tissue
 
 class IssueTest(cros_test_lib.MoxTestCase):
+  """Test creating a bug."""
 
   def testInitOverride(self):
     owner = 'somedude@chromium.org'
@@ -778,6 +786,7 @@ class IssueTest(cros_test_lib.MoxTestCase):
 
 
 class TrackerCommTest(cros_test_lib.MoxOutputTestCase):
+  """Test bug tracker communication."""
 
   def testConnectEmail(self):
     source = 'TheSource'
@@ -966,6 +975,7 @@ class TrackerCommTest(cros_test_lib.MoxOutputTestCase):
 
 
 class RetrySpreadsheetsServiceTest(cros_test_lib.MoxOutputTestCase):
+  """Test Spreadsheet server retry helper."""
 
   def testRequest(self):
     """Test that calling request method invokes _RetryRequest wrapper."""

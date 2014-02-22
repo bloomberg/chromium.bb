@@ -1,8 +1,9 @@
 #!/usr/bin/python
-#
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
+"""Unittests for cgroups.py."""
 
 import os
 import sys
@@ -17,6 +18,7 @@ from chromite.lib import sudo
 
 
 class TestCreateGroups(cros_test_lib.TestCase):
+  """Unittests for creating groups."""
 
   def _CrosSdk(self):
     cmd = ['cros_sdk', '--', 'sleep', '0.001']

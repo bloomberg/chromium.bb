@@ -196,6 +196,7 @@ def RmDir(path, ignore_missing=False, sudo=False):
   """Recursively remove a directory.
 
   Args:
+    path: Path of directory to remove.
     ignore_missing: Do not error when path does not exist.
     sudo: Remove directories as root.
   """
@@ -272,12 +273,12 @@ def DirectoryIterator(base_path):
 def IteratePathParents(start_path):
   """Generator that iterates through a directory's parents.
 
+  Args:
+    start_path: The path to start from.
+
   Yields:
     The passed-in path, along with its parents.  i.e.,
     IteratePathParents('/usr/local') would yield '/usr/local', '/usr/', and '/'.
-
-  Args:
-    start_path: The path to start from.
   """
   path = os.path.abspath(start_path)
   yield path
@@ -306,7 +307,7 @@ def FindInPathParents(path_to_find, start_path, test_func=None):
   '/usr/local/google'.
 
   Args:
-    rel_path: The relative path to look for.
+    path_to_find: The relative path to look for.
     start_path: The path to start the search from.  If |start_path| is a
       directory, it will be included in the directories that are searched.
     test_func: The function to use to verify the relative path.  Defaults to

@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 # Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -14,14 +13,15 @@ import re
 import urllib
 import xml.dom.minidom
 
-# pylint: disable=W0404
+# pylint: disable=F0401
 import gdata.projecthosting.client
 import gdata.service
 import gdata.spreadsheet.service
+# pylint: enable=F0401
 
 from chromite.lib import operation
 
-# pylint: disable=W0201,E0203
+# pylint: disable=W0201,E0203,E1101
 
 TOKEN_FILE = os.path.join(os.environ['HOME'], '.gdata_token')
 CRED_FILE = os.path.join(os.environ['HOME'], '.gdata_cred.txt')

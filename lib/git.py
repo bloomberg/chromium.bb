@@ -448,13 +448,11 @@ class Manifest(object):
         # classes are moved out into their own module (if possible;
         # may still be cyclic).
         with open(source, 'rb') as f:
-          # pylint: disable=E1101
           return hashlib.md5(f.read()).hexdigest()
       except EnvironmentError as e:
         if e.errno != errno.ENOENT or not ignore_missing:
           raise
     source.seek(0)
-    # pylint: disable=E1101
     md5 = hashlib.md5(source.read()).hexdigest()
     source.seek(0)
     return md5

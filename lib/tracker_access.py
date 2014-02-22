@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 # Copyright (c) 2010 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -9,12 +8,15 @@
 import pprint
 import sys
 
-# import the GData libraries
+# pylint: disable=F0401
 import gdata.client
 import gdata.projecthosting.client
+# pylint: enable=F0401
+
 
 DEFAULT_TRACKER_SOURCE = "chromite-tracker-access-1.0"
 VERBOSE = True  # Set to True to get extra debug info...
+
 
 class TrackerAccess(object):
   """Class for accessing the tracker on code.google.com."""

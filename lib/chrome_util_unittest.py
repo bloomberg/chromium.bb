@@ -1,8 +1,9 @@
 #!/usr/bin/python
-
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
+"""Unittests for chrome_util."""
 
 import os
 import sys
@@ -18,6 +19,7 @@ from chromite.lib import chrome_util
 Dir = cros_test_lib.Directory
 
 class CopyTest(cros_test_lib.TempDirTestCase):
+  """Unittests for chrome_util Copy."""
   def setUp(self):
     self.src_base = os.path.join(self.tempdir, 'src_base')
     self.dest_base = os.path.join(self.tempdir, 'dest_base')

@@ -1,8 +1,9 @@
 #!/usr/bin/python
-
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
+"""Unittests for the partial_mock test helper code."""
 
 import os
 import sys
@@ -75,6 +76,7 @@ class RecursiveCompareTest(cros_test_lib.MoxTestCase):
 
 
 class ListContainsTest(cros_test_lib.MoxTestCase):
+  """Unittests for ListContains method."""
 
   L = range(10) + range(10) + [9]
   STRICTLY_TRUE_LISTS = [range(10), range(9, 10), range(3, 6), range(1), [],

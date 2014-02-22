@@ -2,12 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Library to make common google storage operations more reliable.
-"""
+"""Library to make common google storage operations more reliable."""
 
 import contextlib
 import getpass
-# pylint: disable=E1101
 import hashlib
 import logging
 import os

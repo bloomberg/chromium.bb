@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -53,6 +52,7 @@ GERRIT_ABANDONED_CHANGEID = '2'
 
 
 class TestGitRepoPatch(cros_test_lib.TempDirTestCase):
+  """Unittests for git patch related methods."""
 
   # No mock bits are to be used in this class's tests.
   # This needs to actually validate git output, and git behaviour, rather
@@ -413,6 +413,7 @@ I am the first commit.
                       git1, cid1, [], 'CQ_DEPEND=1')
 
 class TestLocalPatchGit(TestGitRepoPatch):
+  """Test Local patch handling."""
 
   patch_kls = cros_patch.LocalPatch
 
@@ -467,6 +468,7 @@ class TestLocalPatchGit(TestGitRepoPatch):
 
 
 class TestUploadedLocalPatch(TestGitRepoPatch):
+  """Test uploading of local git patches."""
 
   PROJECT = 'chromiumos/chromite'
   ORIGINAL_BRANCH = 'original_branch'
@@ -491,10 +493,12 @@ class TestUploadedLocalPatch(TestGitRepoPatch):
 
 
 class TestGerritPatch(TestGitRepoPatch):
+  """Test Gerrit patch handling."""
 
   has_native_change_id = True
 
   class patch_kls(cros_patch.GerritPatch):
+    """Test helper class to suppress pointing to actual gerrit."""
     # Suppress the behaviour pointing the project url at actual gerrit,
     # instead slaving it back to a local repo for tests.
     def __init__(self, *args, **kwargs):
@@ -579,6 +583,7 @@ class TestGerritPatch(TestGitRepoPatch):
 
 
 class PrepareRemotePatchesTest(cros_test_lib.TestCase):
+  """Test preparing remote patches."""
 
   def MkRemote(self,
                project='my/project', original_branch='my-local',
@@ -624,6 +629,7 @@ class PrepareRemotePatchesTest(cros_test_lib.TestCase):
 
 
 class PrepareLocalPatchesTests(cros_build_lib_unittest.RunCommandTestCase):
+  """Test preparing local patches."""
 
   def setUp(self):
     self.path, self.project, self.branch = 'mydir', 'my/project', 'mybranch'
@@ -659,6 +665,7 @@ class PrepareLocalPatchesTests(cros_build_lib_unittest.RunCommandTestCase):
 
 
 class TestFormatting(cros_test_lib.TestCase):
+  """Test formatting of output."""
 
   def _assertResult(self, functor, value, expected=None, raises=False,
                     fixup=str, **kwargs):

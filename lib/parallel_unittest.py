@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Unittests for parallel library."""
+
 import contextlib
 import cPickle
 import logging
@@ -118,6 +120,7 @@ class BackgroundTaskVerifier(partial_mock.PartialMock):
 
 
 class TestBackgroundWrapper(cros_test_lib.TestCase):
+  """Unittests for background wrapper."""
 
   def setUp(self):
     self.tempfile = None
@@ -152,6 +155,7 @@ class TestBackgroundWrapper(cros_test_lib.TestCase):
 
 
 class TestHelloWorld(TestBackgroundWrapper):
+  """Test HelloWorld output in various background environments."""
 
   def setUp(self):
     self.printed_hello = multiprocessing.Event()
@@ -214,6 +218,7 @@ def _BackgroundTaskRunnerArgs(results, arg1, arg2, kwarg1=None, kwarg2=None):
 
 
 class TestBackgroundTaskRunnerArgs(TestBackgroundWrapper):
+  """Unittests for BackgroundTaskRunner argument handling."""
 
   def testArgs(self):
     """Test that we can pass args down to the task."""
@@ -238,6 +243,7 @@ class TestBackgroundTaskRunnerArgs(TestBackgroundWrapper):
 
 
 class TestFastPrinting(TestBackgroundWrapper):
+  """Stress tests for background sys.stdout handling."""
 
   def _FastPrinter(self):
     # Writing lots of output quickly often reproduces bugs in this module

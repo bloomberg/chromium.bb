@@ -58,7 +58,7 @@ def Manager():
 
 
 class BackgroundFailure(results_lib.StepFailure):
-  pass
+  """Exception to show a step failed while running in a background process."""
 
 
 class _BackgroundTask(multiprocessing.Process):

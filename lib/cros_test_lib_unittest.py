@@ -1,8 +1,9 @@
 #!/usr/bin/python
-
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
+"""Unittest for cros_test_lib (tests for tests? Who'd a thunk it)."""
 
 import os
 import sys
@@ -146,10 +147,12 @@ class MockTestCaseTest(cros_test_lib.TestCase):
   """Tests MockTestCase functionality."""
 
   class MyMockTestCase(cros_test_lib.MockTestCase):
+    """Helper class for testing MockTestCase."""
     def testIt(self):
       pass
 
   class Mockable(object):
+    """Helper test class intended for having values mocked out."""
     TO_BE_MOCKED = 0
     TO_BE_MOCKED2 = 10
     TO_BE_MOCKED3 = 20

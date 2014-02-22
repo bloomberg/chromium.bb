@@ -1,8 +1,9 @@
 #!/usr/bin/python
-
 # Copyright (c) 2013 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
+"""Unittests for stats."""
 
 import logging
 import os
@@ -98,6 +99,7 @@ class StatsCreationTest(cros_test_lib.MockLoggingTestCase):
 
 
 class ConditionsTest(cros_test_lib.MockTestCase):
+  """Test UploadConditionsMet."""
 
   def testConditionsMet(self):
     stat = stats.Stats(

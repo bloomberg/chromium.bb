@@ -18,6 +18,8 @@ if cros_build_lib.IsInsideChroot():
   # Only import portage after we've checked that we're inside the chroot.
   # Outside may not have portage, in which case the above may not happen.
   # We'll check in main() if the operation needs portage.
+
+  # pylint: disable=F0401
   import portage
 
 
