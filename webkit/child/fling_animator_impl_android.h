@@ -5,11 +5,11 @@
 #ifndef WEBKIT_CHILD_FLING_ANIMATOR_IMPL_ANDROID_H_
 #define WEBKIT_CHILD_FLING_ANIMATOR_IMPL_ANDROID_H_
 
-#include "base/android/scoped_java_ref.h"
+
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebGestureCurve.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
-#include "ui/gfx/point.h"
+#include "ui/gfx/android/scroller.h"
 #include "ui/gfx/point_f.h"
 #include "webkit/child/webkit_child_export.h"
 
@@ -28,31 +28,21 @@ class WEBKIT_CHILD_EXPORT FlingAnimatorImpl : public blink::WebGestureCurve {
       const blink::WebFloatPoint& velocity,
       const blink::WebSize&);
 
-  virtual bool apply(double time,
-                     blink::WebGestureCurveTarget* target);
-
-  static bool RegisterJni(JNIEnv*);
+  virtual bool apply(double time, blink::WebGestureCurveTarget* target);
 
  private:
   void StartFling(const gfx::PointF& velocity);
-  // Returns true if the animation is not yet finished.
-  bool UpdatePosition();
-  gfx::Point GetCurrentPosition();
-  float GetCurrentVelocity();
-  virtual void CancelFling();
+  void CancelFling();
 
   bool is_active_;
 
-  // Java OverScroller instance and methods.
-  base::android::ScopedJavaGlobalRef<jobject> java_scroller_;
+  gfx::Scroller scroller_;
 
-  gfx::Point last_position_;
-  gfx::PointF last_velocity_;
-  double last_time_;
+  gfx::PointF last_position_;
 
   DISALLOW_COPY_AND_ASSIGN(FlingAnimatorImpl);
 };
 
-} // namespace webkit_glue
+}  // namespace webkit_glue
 
-#endif // WEBKIT_CHILD_FLING_ANIMATOR_IMPL_ANDROID_H_
+#endif  // WEBKIT_CHILD_FLING_ANIMATOR_IMPL_ANDROID_H_

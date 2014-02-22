@@ -222,6 +222,11 @@
             'gfx/interpolated_transform_unittest.cc',
           ],
         }],
+        ['OS == "android"', {
+          'sources': [
+            'gfx/android/scroller_unittest.cc',
+          ],
+        }],
         ['OS == "android" and gtest_target_type == "shared_library"', {
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',

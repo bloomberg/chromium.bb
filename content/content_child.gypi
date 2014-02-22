@@ -19,8 +19,6 @@
     '../base/base.gyp:base',
   ],
   'sources': [
-    'child/android/child_jni_registrar.cc',
-    'child/android/child_jni_registrar.h',
     'child/appcache/appcache_backend_proxy.cc',
     'child/appcache/appcache_backend_proxy.h',
     'child/appcache/appcache_dispatcher.cc',

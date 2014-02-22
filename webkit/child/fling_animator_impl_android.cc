@@ -4,41 +4,33 @@
 
 #include "webkit/child/fling_animator_impl_android.h"
 
-#include "base/android/jni_android.h"
-#include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
-#include "jni/OverScroller_jni.h"
 #include "third_party/WebKit/public/platform/WebFloatSize.h"
 #include "third_party/WebKit/public/platform/WebGestureCurveTarget.h"
-#include "ui/gfx/screen.h"
+#include "ui/gfx/android/view_configuration.h"
+#include "ui/gfx/frame_time.h"
 #include "ui/gfx/vector2d.h"
 
 namespace webkit_glue {
 
 namespace {
-static const float kEpsilon = 1e-4;
+
+gfx::Scroller::Config GetScrollerConfig() {
+  gfx::Scroller::Config config;
+  config.flywheel_enabled = false;
+  config.fling_friction = gfx::ViewConfiguration::GetScrollFriction();
+  return config;
 }
+
+}  // namespace
 
 FlingAnimatorImpl::FlingAnimatorImpl()
-    : is_active_(false) {
-  // hold the global reference of the Java objects.
-  JNIEnv* env = base::android::AttachCurrentThread();
-  java_scroller_.Reset(JNI_OverScroller::Java_OverScroller_ConstructorAWOS_ACC(
-      env,
-      base::android::GetApplicationContext()));
-}
+    : is_active_(false),
+      scroller_(GetScrollerConfig()) {}
 
-FlingAnimatorImpl::~FlingAnimatorImpl()
-{
-}
+FlingAnimatorImpl::~FlingAnimatorImpl() {}
 
-//static
-bool FlingAnimatorImpl::RegisterJni(JNIEnv* env) {
-  return JNI_OverScroller::RegisterNativesImpl(env);
-}
-
-void FlingAnimatorImpl::StartFling(const gfx::PointF& velocity)
-{
+void FlingAnimatorImpl::StartFling(const gfx::PointF& velocity) {
   // No bounds on the fling. See http://webkit.org/b/96403
   // Instead, use the largest possible bounds for minX/maxX/minY/maxY. The
   // compositor will ignore any attempt to scroll beyond the end of the page.
@@ -48,96 +40,48 @@ void FlingAnimatorImpl::StartFling(const gfx::PointF& velocity)
     CancelFling();
 
   is_active_ = true;
-  last_time_ = 0;
-  last_velocity_ = velocity;
-
-  JNIEnv* env = base::android::AttachCurrentThread();
-
-  // The OverScroller deceleration constants work in pixel space.  DIP scaling
-  // will be performed in |apply()| on the generated fling updates.
-  float dpi_scale = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay()
-      .device_scale_factor();
-  JNI_OverScroller::Java_OverScroller_flingV_I_I_I_I_I_I_I_I(
-      env, java_scroller_.obj(), 0, 0,
-      static_cast<int>(velocity.x() * dpi_scale),
-      static_cast<int>(velocity.y() * dpi_scale),
-      INT_MIN, INT_MAX, INT_MIN, INT_MAX);
+  scroller_.Fling(0,
+                  0,
+                  velocity.x(),
+                  velocity.y(),
+                  INT_MIN,
+                  INT_MAX,
+                  INT_MIN,
+                  INT_MAX,
+                  gfx::FrameTime::Now());
+  // TODO(jdduke): Initialize the fling at time 0 and use the monotonic
+  // time in |apply()| for updates, crbug.com/345459.
 }
 
-void FlingAnimatorImpl::CancelFling()
-{
+void FlingAnimatorImpl::CancelFling() {
   if (!is_active_)
     return;
 
   is_active_ = false;
-  JNIEnv* env = base::android::AttachCurrentThread();
-  JNI_OverScroller::Java_OverScroller_abortAnimation(env, java_scroller_.obj());
+  scroller_.AbortAnimation();
 }
 
-bool FlingAnimatorImpl::UpdatePosition()
-{
-  JNIEnv* env = base::android::AttachCurrentThread();
-  bool result = JNI_OverScroller::Java_OverScroller_computeScrollOffset(
-      env,
-      java_scroller_.obj());
-  return is_active_ = result;
-}
-
-gfx::Point FlingAnimatorImpl::GetCurrentPosition()
-{
-  JNIEnv* env = base::android::AttachCurrentThread();
-  gfx::Point position(
-      JNI_OverScroller::Java_OverScroller_getCurrX(env, java_scroller_.obj()),
-      JNI_OverScroller::Java_OverScroller_getCurrY(env, java_scroller_.obj()));
-  return position;
-}
-
-float FlingAnimatorImpl::GetCurrentVelocity()
-{
-  JNIEnv* env = base::android::AttachCurrentThread();
-  // TODO(jdduke): Add Java-side hooks for getCurrVelocityX/Y, and return
-  //               vector velocity.
-  return JNI_OverScroller::Java_OverScroller_getCurrVelocity(
-      env, java_scroller_.obj());
-}
-
-bool FlingAnimatorImpl::apply(double time,
+bool FlingAnimatorImpl::apply(double /* time */,
                               blink::WebGestureCurveTarget* target) {
-  if (!UpdatePosition())
+  // Historically, Android's Scroller used |currentAnimationTimeMillis()|,
+  // which is equivalent to gfx::FrameTime::Now().  In practice, this produces
+  // smoother results than using |time|, so continue using FrameTime::Now().
+  // TODO(jdduke): Use |time| upon resolution of crbug.com/345459.
+  if (!scroller_.ComputeScrollOffset(gfx::FrameTime::Now())) {
+    is_active_ = false;
     return false;
-
-  gfx::Point current_position = GetCurrentPosition();
-  gfx::Vector2d diff(current_position - last_position_);
-  last_position_ = current_position;
-  float dpi_scale = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay()
-      .device_scale_factor();
-  blink::WebFloatSize scroll_amount(diff.x() / dpi_scale,
-                                    diff.y() / dpi_scale);
-
-  float delta_time = time - last_time_;
-  last_time_ = time;
-
-  // Currently, the OverScroller only provides the velocity magnitude; use the
-  // angle of the scroll delta to yield approximate x and y velocity components.
-  // TODO(jdduke): Remove this when we can properly poll OverScroller velocity.
-  gfx::PointF current_velocity = last_velocity_;
-  if (delta_time > kEpsilon) {
-    float diff_length = diff.Length();
-    if (diff_length > kEpsilon) {
-      float velocity = GetCurrentVelocity();
-      float scroll_to_velocity = velocity / diff_length;
-      current_velocity = gfx::PointF(diff.x() * scroll_to_velocity,
-                                     diff.y() * scroll_to_velocity);
-    }
   }
-  last_velocity_ = current_velocity;
-  blink::WebFloatSize fling_velocity(current_velocity.x() / dpi_scale,
-                                     current_velocity.y() / dpi_scale);
-  target->notifyCurrentFlingVelocity(fling_velocity);
+
+  target->notifyCurrentFlingVelocity(blink::WebFloatSize(
+      scroller_.GetCurrVelocityX(), scroller_.GetCurrVelocityY()));
+
+  gfx::PointF current_position(scroller_.GetCurrX(), scroller_.GetCurrY());
+  gfx::Vector2dF scroll_amount(current_position - last_position_);
+  last_position_ = current_position;
 
   // scrollBy() could delete this curve if the animation is over, so don't touch
   // any member variables after making that call.
-  target->scrollBy(scroll_amount);
+  target->scrollBy(blink::WebFloatSize(scroll_amount));
   return true;
 }
 
@@ -149,4 +93,4 @@ FlingAnimatorImpl* FlingAnimatorImpl::CreateAndroidGestureCurve(
   return gesture_curve;
 }
 
-} // namespace webkit_glue
+}  // namespace webkit_glue

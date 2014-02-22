@@ -18,7 +18,6 @@
 #include "base/tracked_objects.h"
 #include "content/app/android/app_jni_registrar.h"
 #include "content/browser/android/browser_jni_registrar.h"
-#include "content/child/android/child_jni_registrar.h"
 #include "content/common/android/common_jni_registrar.h"
 #include "content/common/content_constants_internal.h"
 #include "content/public/common/content_switches.h"
@@ -52,9 +51,6 @@ bool EnsureJniRegistered(JNIEnv* env) {
       return false;
 
     if (!ui::shell_dialogs::RegisterJni(env))
-      return false;
-
-    if (!content::android::RegisterChildJni(env))
       return false;
 
     if (!content::android::RegisterCommonJni(env))
