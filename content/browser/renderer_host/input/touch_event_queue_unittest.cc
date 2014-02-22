@@ -1336,13 +1336,14 @@ TEST_F(TouchEventQueueTest, TouchMoveSuppressionWithinSlopRegion) {
   ASSERT_EQ(2U, GetAndResetAckedEventCount());
   ASSERT_EQ(0U, queued_event_count());
 
-  // The slop region is boundary-inclusive.
-  MoveTouchPoint(0, kSlopLengthDips, 0);
+  // The slop region is boundary-exclusive.
+  // TODO(jdduke): Change to inclusive upon resolving crbug.com/336807.
+  MoveTouchPoint(0, kSlopLengthDips - 1., 0);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
-  MoveTouchPoint(0, kSlopLengthDips + 1., 0);
+  MoveTouchPoint(0, kSlopLengthDips, 0);
   EXPECT_EQ(1U, queued_event_count());
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
@@ -1356,7 +1357,7 @@ TEST_F(TouchEventQueueTest, NoTouchMoveSuppressionAfterTouchConsumed) {
   SetUpForTouchMoveSlopTesting(kSlopLengthDips);
 
   // Queue a TouchStart.
-  PressTouchPoint(0, 1);
+  PressTouchPoint(0, 0);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_CONSUMED);
   ASSERT_EQ(1U, GetAndResetSentEventCount());
   ASSERT_EQ(1U, GetAndResetAckedEventCount());
@@ -1369,6 +1370,48 @@ TEST_F(TouchEventQueueTest, NoTouchMoveSuppressionAfterTouchConsumed) {
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 }
 
+// Tests that TouchMove's are not dropped due to integral truncation of
+// WebTouchPoint coordinates after DPI scaling.
+TEST_F(TouchEventQueueTest, TouchMoveSuppressionWithDIPScaling) {
+  const float kSlopLengthPixels = 7.f;
+  const float kDPIScale = 3.f;
+  SetUpForTouchMoveSlopTesting(kSlopLengthPixels / kDPIScale);
+
+  // Queue a TouchStart.
+  PressTouchPoint(0, 0);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  ASSERT_EQ(1U, GetAndResetSentEventCount());
+  ASSERT_EQ(1U, GetAndResetAckedEventCount());
+
+  // TouchMove's along the slop boundary should not be suppresed.
+  // TODO(jdduke): These should be suppressed, crbug.com/336807.
+  MoveTouchPoint(0, 0, kSlopLengthPixels / kDPIScale);
+  EXPECT_EQ(1U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+
+  // Reset the touch sequence.
+  ReleaseTouchPoint(0);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  GetAndResetSentEventCount();
+  GetAndResetAckedEventCount();
+
+  // Queue a TouchStart.
+  PressTouchPoint(0, 0);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  ASSERT_EQ(1U, GetAndResetSentEventCount());
+  ASSERT_EQ(1U, GetAndResetAckedEventCount());
+
+  // TouchMove's outside the region should not be suppressed.
+  const float kPixelCoordOutsideSlopRegion = kSlopLengthPixels + 1.f;
+  MoveTouchPoint(0, 0, kPixelCoordOutsideSlopRegion / kDPIScale);
+  EXPECT_EQ(1U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+}
+
+
 // Tests that TouchMove's are not dropped if a secondary pointer is present
 // during any movement.
 TEST_F(TouchEventQueueTest, NoTouchMoveSuppressionAfterMultiTouch) {
@@ -1378,7 +1421,7 @@ TEST_F(TouchEventQueueTest, NoTouchMoveSuppressionAfterMultiTouch) {
   SetUpForTouchMoveSlopTesting(kSlopLengthDips);
 
   // Queue a TouchStart.
-  PressTouchPoint(0, 1);
+  PressTouchPoint(0, 0);
   SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   ASSERT_EQ(1U, GetAndResetSentEventCount());
   ASSERT_EQ(1U, GetAndResetAckedEventCount());
