@@ -1473,7 +1473,7 @@ bool RenderWidgetHostViewMac::DrawIOSurfaceWithoutCoreAnimation() {
   if (underlay_view_ &&
       underlay_view_->compositing_iosurface_ &&
       underlay_view_has_drawn_) {
-    [underlay_view_->cocoa_view() setNeedsDisplayInRect:NSMakeRect(0, 0, 1, 1)];
+    [underlay_view_->cocoa_view() setNeedsDisplay:YES];
     SendPendingSwapAck();
     return true;
   }
