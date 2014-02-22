@@ -15,7 +15,7 @@
           'type': 'none',
           'defines!': ['CONTENT_IMPLEMENTATION'],
           'dependencies': [
-            '../base/base_untrusted.gyp:base_untrusted',
+            '../base/base_nacl.gyp:base_nacl',
             '../native_client/tools.gyp:prep_toolchain',
             '../ipc/ipc.gyp:ipc',
           ],

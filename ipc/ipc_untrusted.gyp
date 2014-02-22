@@ -26,7 +26,7 @@
           },
           'dependencies': [
             '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-            '../base/base_untrusted.gyp:base_untrusted',
+            '../base/base_nacl.gyp:base_nacl',
           ],
         },
       ],

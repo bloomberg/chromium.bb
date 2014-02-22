@@ -33,7 +33,7 @@
           ],
           'dependencies': [
             '../native_client/tools.gyp:prep_toolchain',
-            '../base/base_untrusted.gyp:base_untrusted',
+            '../base/base_nacl.gyp:base_nacl',
             '../third_party/khronos/khronos.gyp:khronos_headers',
             'command_buffer/command_buffer_nacl.gyp:gles2_utils_nacl',
             'gles2_cmd_helper_nacl',
@@ -54,7 +54,7 @@
           ],
           'dependencies': [
             '../native_client/tools.gyp:prep_toolchain',
-            '../base/base_untrusted.gyp:base_untrusted',
+            '../base/base_nacl.gyp:base_nacl',
             'command_buffer/command_buffer_nacl.gyp:gles2_utils_nacl',
           ],
         },
@@ -73,7 +73,7 @@
           ],
           'dependencies': [
             '../native_client/tools.gyp:prep_toolchain',
-            '../base/base_untrusted.gyp:base_untrusted',
+            '../base/base_nacl.gyp:base_nacl',
             'command_buffer_client_nacl',
           ],
         },
@@ -92,7 +92,7 @@
           ],
           'dependencies': [
             '../native_client/tools.gyp:prep_toolchain',
-            '../base/base_untrusted.gyp:base_untrusted',
+            '../base/base_nacl.gyp:base_nacl',
             'command_buffer_common_nacl',
           ],
         },
@@ -111,7 +111,7 @@
           ],
           'dependencies': [
             '../native_client/tools.gyp:prep_toolchain',
-            '../base/base_untrusted.gyp:base_untrusted',
+            '../base/base_nacl.gyp:base_nacl',
             'command_buffer_common_nacl',
           ],
         },

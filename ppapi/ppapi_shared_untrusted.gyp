@@ -30,7 +30,7 @@
           ],
           'dependencies': [
             '../native_client/tools.gyp:prep_toolchain',
-            '../base/base_untrusted.gyp:base_untrusted',
+            '../base/base_nacl.gyp:base_nacl',
             '../gpu/command_buffer/command_buffer_nacl.gyp:gles2_utils_nacl',
             '../gpu/gpu_nacl.gyp:command_buffer_client_nacl',
             '../gpu/gpu_nacl.gyp:gles2_implementation_nacl',

@@ -14,12 +14,12 @@
     ['disable_nacl==0 and disable_nacl_untrusted==0', {
       'targets': [
         {
-          'target_name': 'base_untrusted',
+          'target_name': 'base_nacl',
           'type': 'none',
           'variables': {
             'base_target': 1,
             'nacl_untrusted_build': 1,
-            'nlib_target': 'libbase_untrusted.a',
+            'nlib_target': 'libbase_nacl.a',
             'build_glibc': 1,
             'build_newlib': 1,
             'build_irt': 1,
@@ -40,12 +40,12 @@
           ],
         },
         {
-          'target_name': 'base_i18n_untrusted',
+          'target_name': 'base_i18n_nacl',
           'type': 'none',
           'variables': {
             'base_i18n_target': 1,
             'nacl_untrusted_build': 1,
-            'nlib_target': 'libbase_i18n_untrusted.a',
+            'nlib_target': 'libbase_i18n_nacl.a',
             'build_glibc': 0,
             'build_newlib': 1,
             'build_irt': 0,
