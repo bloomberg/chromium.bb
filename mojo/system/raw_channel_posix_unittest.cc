@@ -7,10 +7,7 @@
 
 #include "mojo/system/raw_channel.h"
 
-#include <fcntl.h>
-#include <stdint.h>
 #include <sys/socket.h>
-#include <unistd.h>
 
 #include <vector>
 
@@ -22,13 +19,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
-#include "base/posix/eintr_wrapper.h"
 #include "base/rand_util.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"  // For |Sleep()|.
 #include "base/threading/simple_thread.h"
 #include "base/time/time.h"
+#include "mojo/common/test/test_utils.h"
 #include "mojo/system/embedder/platform_channel_pair.h"
 #include "mojo/system/embedder/platform_handle.h"
 #include "mojo/system/embedder/scoped_platform_handle.h"
@@ -67,10 +64,10 @@ bool WriteTestMessageToHandle(const embedder::PlatformHandle& handle,
                               uint32_t num_bytes) {
   scoped_ptr<MessageInTransit> message(MakeTestMessage(num_bytes));
 
-  ssize_t write_size = HANDLE_EINTR(
-     write(handle.fd, message->main_buffer(), message->main_buffer_size()));
-  bool result = write_size == static_cast<ssize_t>(message->main_buffer_size());
-  return result;
+  size_t write_size = 0;
+  mojo::test::BlockingWrite(
+      handle, message->main_buffer(), message->main_buffer_size(), &write_size);
+  return write_size == message->main_buffer_size();
 }
 
 // -----------------------------------------------------------------------------
@@ -134,12 +131,9 @@ class TestMessageReaderAndChecker {
     unsigned char buffer[4096];
 
     for (size_t i = 0; i < kMessageReaderMaxPollIterations;) {
-      ssize_t read_size = HANDLE_EINTR(
-          read(handle_.fd, buffer, sizeof(buffer)));
-      if (read_size < 0) {
-        PCHECK(errno == EAGAIN || errno == EWOULDBLOCK);
-        read_size = 0;
-      }
+      size_t read_size = 0;
+      CHECK(mojo::test::NonBlockingRead(handle_, buffer, sizeof(buffer),
+                                        &read_size));
 
       // Append newly-read data to |bytes_|.
       bytes_.insert(bytes_.end(), buffer, buffer + read_size);
@@ -285,9 +279,6 @@ class ReadCheckerRawChannelDelegate : public RawChannel::Delegate {
 
 // Tests reading (writing using our own custom writer).
 TEST_F(RawChannelPosixTest, OnReadMessage) {
-  // We're going to write to |fd(1)|. We'll do so in a blocking manner.
-  PCHECK(fcntl(handles[1].get().fd, F_SETFL, 0) == 0);
-
   ReadCheckerRawChannelDelegate delegate;
   scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass(),
                                                &delegate,
@@ -480,9 +471,6 @@ class FatalErrorRecordingRawChannelDelegate
 // that it does.)
 TEST_F(RawChannelPosixTest, OnFatalError) {
   const size_t kMessageCount = 5;
-
-  // We're going to write to |fd(1)|. We'll do so in a blocking manner.
-  PCHECK(fcntl(handles[1].get().fd, F_SETFL, 0) == 0);
 
   FatalErrorRecordingRawChannelDelegate delegate(2 * kMessageCount);
   scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass(),
