@@ -107,19 +107,18 @@ PassRefPtr<SVGFilterBuilder> RenderSVGResourceFilter::buildPrimitives(SVGFilter*
     return builder.release();
 }
 
-bool RenderSVGResourceFilter::fitsInMaximumImageSize(const FloatSize& size, FloatSize& scale)
+void RenderSVGResourceFilter::adjustScaleForMaximumImageSize(const FloatSize& size, FloatSize& filterScale)
 {
     FloatSize scaledSize(size);
-    scaledSize.scale(scale.width(), scale.height());
+    scaledSize.scale(filterScale.width(), filterScale.height());
     float scaledArea = scaledSize.width() * scaledSize.height();
 
     if (scaledArea <= FilterEffect::maxFilterArea())
-        return true;
+        return;
 
     // If area of scaled size is bigger than the upper limit, adjust the scale
     // to fit.
-    scale.scale(sqrt(FilterEffect::maxFilterArea() / scaledArea));
-    return false;
+    filterScale.scale(sqrt(FilterEffect::maxFilterArea() / scaledArea));
 }
 
 static bool createImageBuffer(const Filter* filter, OwnPtr<ImageBuffer>& imageBuffer, bool accelerated)
@@ -196,7 +195,7 @@ bool RenderSVGResourceFilter::applyResource(RenderObject* object, RenderStyle*, 
     }
     // The size of the scaled filter boundaries shouldn't be bigger than kMaxFilterSize.
     // Intermediate filters are limited by the filter boundaries so they can't be bigger than this.
-    fitsInMaximumImageSize(filterData->boundaries.size(), filterScale);
+    adjustScaleForMaximumImageSize(filterData->boundaries.size(), filterScale);
 
     filterData->drawingRegion = object->strokeBoundingBox();
     filterData->drawingRegion.intersect(filterData->boundaries);

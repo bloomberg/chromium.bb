@@ -85,7 +85,7 @@ public:
 
     FloatRect drawingRegion(RenderObject*) const;
 private:
-    bool fitsInMaximumImageSize(const FloatSize&, FloatSize&);
+    void adjustScaleForMaximumImageSize(const FloatSize&, FloatSize&);
 
     typedef HashMap<RenderObject*, OwnPtr<FilterData> > FilterMap;
     FilterMap m_filter;
