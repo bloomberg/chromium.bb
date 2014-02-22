@@ -1,3 +1,5 @@
+target triple = "le32-unknown-nacl"
+
 define double @frem(double %numerator, double %denom) {
   %r = frem double %numerator, %denom
   ret double %r
