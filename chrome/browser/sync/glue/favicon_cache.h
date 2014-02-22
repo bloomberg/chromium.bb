@@ -189,6 +189,10 @@ class FaviconCache : public syncer::SyncableService,
   // Locally drops the favicon pointed to by |favicon_iter|.
   void DropSyncedFavicon(FaviconMap::iterator favicon_iter);
 
+  // Only drops the data associated with |type| of |favicon_iter|.
+  void DropPartialFavicon(FaviconMap::iterator favicon_iter,
+                          syncer::ModelType type);
+
   // For testing only.
   size_t NumFaviconsForTest() const;
   size_t NumTasksForTest() const;
