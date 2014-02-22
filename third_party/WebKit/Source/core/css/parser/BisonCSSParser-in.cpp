@@ -4102,12 +4102,12 @@ bool CSSPropertyParser::parseFillProperty(CSSPropertyID propId, CSSPropertyID& p
                     }
                     break;
                 case CSSPropertyBackgroundBlendMode:
-                    if (RuntimeEnabledFeatures::cssCompositingEnabled() && (val->id == CSSValueNormal || val->id == CSSValueMultiply
+                    if (val->id == CSSValueNormal || val->id == CSSValueMultiply
                         || val->id == CSSValueScreen || val->id == CSSValueOverlay || val->id == CSSValueDarken
                         || val->id == CSSValueLighten ||  val->id == CSSValueColorDodge || val->id == CSSValueColorBurn
                         || val->id == CSSValueHardLight || val->id == CSSValueSoftLight || val->id == CSSValueDifference
                         || val->id == CSSValueExclusion || val->id == CSSValueHue || val->id == CSSValueSaturation
-                        || val->id == CSSValueColor || val->id == CSSValueLuminosity)) {
+                        || val->id == CSSValueColor || val->id == CSSValueLuminosity) {
                         currValue = cssValuePool().createIdentifierValue(val->id);
                         m_valueList->next();
                     }

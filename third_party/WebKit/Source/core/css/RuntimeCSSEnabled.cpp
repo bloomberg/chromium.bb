@@ -106,7 +106,6 @@ static void setPropertySwitchesFromRuntimeFeatures()
     };
     setCSSPropertiesEnabled(animationProperties, WTF_ARRAY_LENGTH(animationProperties), RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled());
 
-    RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyBackgroundBlendMode, RuntimeEnabledFeatures::cssCompositingEnabled());
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyMixBlendMode, RuntimeEnabledFeatures::cssCompositingEnabled());
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyIsolation, RuntimeEnabledFeatures::cssCompositingEnabled());
     RuntimeCSSEnabled::setCSSPropertyEnabled(CSSPropertyTouchAction, RuntimeEnabledFeatures::cssTouchActionEnabled());
