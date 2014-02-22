@@ -79,6 +79,29 @@ cr.define('login', function() {
     PAD_MENU_ITEM: 4  // User pad menu items (Remove this user).
   };
 
+  /**
+   * Supported authentication types. Keep in sync with the enum in
+   * chrome/browser/chromeos/login/login_display.h
+   * @enum {number}
+   * @const
+   */
+  var AUTH_TYPE = {
+    OFFLINE_PASSWORD: 0,
+    ONLINE_SIGN_IN: 1,
+    NUMERIC_PIN: 2,
+    USER_CLICK: 3,
+  };
+
+  /**
+   * Names of authentication types.
+   */
+  var AUTH_TYPE_NAMES = {
+    0: 'offlinePassword',
+    1: 'onlineSignIn',
+    2: 'numericPin',
+    3: 'userClick',
+  };
+
   // Focus and tab order are organized as follows:
   //
   // (1) all user pods have tab index 1 so they are traversed first;
@@ -135,11 +158,11 @@ cr.define('login', function() {
     /** @override */
     decorate: function() {
       this.tabIndex = UserPodTabOrder.POD_INPUT;
-      this.customButton.tabIndex = UserPodTabOrder.POD_INPUT;
+      this.customButtonElement.tabIndex = UserPodTabOrder.POD_INPUT;
       this.actionBoxAreaElement.tabIndex = UserPodTabOrder.ACTION_BOX;
 
-      this.addEventListener('click',
-          this.handleClickOnPod_.bind(this));
+      this.addEventListener('keydown', this.handlePodKeyDown_.bind(this));
+      this.addEventListener('click', this.handleClickOnPod_.bind(this));
 
       this.signinButtonElement.addEventListener('click',
           this.activate.bind(this));
@@ -164,7 +187,7 @@ cr.define('login', function() {
             this.handleRemoveUserConfirmationClick_.bind(this));
       }
 
-      this.customButton.addEventListener('click',
+      this.customButtonElement.addEventListener('click',
           this.handleCustomButtonClick_.bind(this));
     },
 
@@ -179,14 +202,19 @@ cr.define('login', function() {
 
       this.imageElement.addEventListener('load',
           this.parentNode.handlePodImageLoad.bind(this.parentNode, this));
+
+      var initialAuthType = this.user.initialAuthType ||
+          AUTH_TYPE.OFFLINE_PASSWORD;
+      this.setAuthType(initialAuthType, null);
     },
 
     /**
      * Resets tab order for pod elements to its initial state.
      */
     resetTabOrder: function() {
-      this.tabIndex = UserPodTabOrder.POD_INPUT;
+      // Note: the |mainInput| can be the pod itself.
       this.mainInput.tabIndex = -1;
+      this.tabIndex = UserPodTabOrder.POD_INPUT;
     },
 
     /**
@@ -248,6 +276,15 @@ cr.define('login', function() {
      */
     get passwordElement() {
       return this.querySelector('.password');
+    },
+
+    /**
+     * Gets the password label, which is used to show a message where the
+     * password field is normally.
+     * @type {!HTMLInputElement}
+     */
+    get passwordLabelElement() {
+      return this.querySelector('.password-label');
     },
 
     /**
@@ -376,7 +413,7 @@ cr.define('login', function() {
      * using the chrome.screenlockPrivate API.
      * @type {!HTMLInputElement}
      */
-    get customButton() {
+    get customButtonElement() {
       return this.querySelector('.custom-button');
     },
 
@@ -390,9 +427,12 @@ cr.define('login', function() {
       this.nameElement.textContent = this.user_.displayName;
       this.signedInIndicatorElement.hidden = !this.user_.signedIn;
 
-      var forceOnlineSignin = this.forceOnlineSignin;
-      this.passwordElement.hidden = forceOnlineSignin;
-      this.signinButtonElement.hidden = !forceOnlineSignin;
+      this.signinButtonElement.hidden = !this.isAuthTypeOnlineSignIn;
+      this.customButtonElement.tabIndex = UserPodTabOrder.POD_INPUT;
+      if (this.isAuthTypeUserClick) {
+        this.passwordLabelElement.textContent = this.authValue;
+        this.customButtonElement.tabIndex = -1;
+      }
 
       this.updateActionBoxArea();
 
@@ -469,21 +509,17 @@ cr.define('login', function() {
     },
 
     /**
-     * Whether this user must authenticate against GAIA.
-     */
-    get forceOnlineSignin() {
-      return this.user.forceOnlineSignin && !this.user.signedIn;
-    },
-
-    /**
      * Gets main input element.
      * @type {(HTMLButtonElement|HTMLInputElement)}
      */
     get mainInput() {
-      if (!this.signinButtonElement.hidden)
-        return this.signinButtonElement;
-      else
+      if (this.isAuthTypePassword) {
         return this.passwordElement;
+      } else if (this.isAuthTypeOnlineSignIn) {
+        return this.signinButtonElement;
+      } else if (this.isAuthTypeUserClick) {
+        return this;
+      }
     },
 
     /**
@@ -534,6 +570,60 @@ cr.define('login', function() {
     },
 
     /**
+     * Set the authentication type for the pod.
+     * @param {number} An auth type value defined in the AUTH_TYPE enum.
+     * @param {string} authValue The initial value used for the auth type.
+     */
+    setAuthType: function(authType, authValue) {
+      this.authType_ = authType;
+      this.authValue_ = authValue;
+      this.setAttribute('auth-type', AUTH_TYPE_NAMES[this.authType_]);
+      this.update();
+      this.reset(this.parentNode.isFocused(this));
+    },
+
+    /**
+     * The auth type of the user pod. This value is one of the enum
+     * values in AUTH_TYPE.
+     * @type {number}
+     */
+    get authType() {
+      return this.authType_;
+    },
+
+    /**
+     * The initial value used for the pod's authentication type.
+     * eg. a prepopulated password input when using password authentication.
+     */
+    get authValue() {
+      return this.authValue_;
+    },
+
+    /**
+     * True if the the user pod uses a password to authenticate.
+     * @type {bool}
+     */
+    get isAuthTypePassword() {
+      return this.authType_ == AUTH_TYPE.OFFLINE_PASSWORD;
+    },
+
+    /**
+     * True if the the user pod uses a user click to authenticate.
+     * @type {bool}
+     */
+    get isAuthTypeUserClick() {
+      return this.authType_ == AUTH_TYPE.USER_CLICK;
+    },
+
+    /**
+     * True if the the user pod uses a online sign in to authenticate.
+     * @type {bool}
+     */
+    get isAuthTypeOnlineSignIn() {
+      return this.authType_ == AUTH_TYPE.ONLINE_SIGN_IN;
+    },
+
+    /**
      * Updates the image element of the user.
      */
     updateUserImage: function() {
@@ -545,11 +635,8 @@ cr.define('login', function() {
      * Focuses on input element.
      */
     focusInput: function() {
-      var forceOnlineSignin = this.forceOnlineSignin;
-      this.signinButtonElement.hidden = !forceOnlineSignin;
-      this.passwordElement.hidden = forceOnlineSignin;
-
       // Move tabIndex from the whole pod to the main input.
+      // Note: the |mainInput| can be the pod itself.
       this.tabIndex = -1;
       this.mainInput.tabIndex = UserPodTabOrder.POD_INPUT;
       this.mainInput.focus();
@@ -561,14 +648,20 @@ cr.define('login', function() {
      * @return {boolean} True if activated successfully.
      */
     activate: function(e) {
-      if (this.forceOnlineSignin) {
+      if (this.isAuthTypeOnlineSignIn) {
         this.showSigninUI();
-      } else if (!this.passwordElement.value) {
-        return false;
-      } else {
+      } else if (this.isAuthTypeUserClick) {
+        Oobe.disableSigninUI();
+        chrome.send('authenticateUser', [this.user.username, '']);
+      } else if (this.isAuthTypePassword) {
+        if (!this.passwordElement.value)
+          return false;
         Oobe.disableSigninUI();
         chrome.send('authenticateUser',
                     [this.user.username, this.passwordElement.value]);
+      } else {
+        console.error('Activating user pod with invalid authentication type: ' +
+            this.authType);
       }
 
       return true;
@@ -738,10 +831,31 @@ cr.define('login', function() {
       if (this.parentNode.disabled)
         return;
 
-      if (this.forceOnlineSignin && !this.isActionBoxMenuActive) {
-        this.showSigninUI();
+      if (!this.isActionBoxMenuActive) {
+        if (this.isAuthTypeOnlineSignIn) {
+          this.showSigninUI();
+        } else if (this.isAuthTypeUserClick) {
+          this.parentNode.setActivatedPod(this);
+        }
+
         // Prevent default so that we don't trigger 'focus' event.
         e.preventDefault();
+      }
+    },
+
+    /**
+     * Handles keydown event for a user pod.
+     * @param {Event} e Key event.
+     */
+    handlePodKeyDown_: function(e) {
+      if (!this.isAuthTypeUserClick || this.disabled)
+        return;
+      switch (e.keyIdentifier) {
+        case 'Enter':
+        case 'U+0020':  // Space
+          if (this.parentNode.isFocused(this))
+            this.parentNode.setActivatedPod(this);
+          break;
       }
     },
 
@@ -813,11 +927,6 @@ cr.define('login', function() {
     },
 
     /** @override */
-    get forceOnlineSignin() {
-      return false;
-    },
-
-    /** @override */
     get mainInput() {
       if (this.expanded)
         return this.enterButtonElement;
@@ -858,9 +967,7 @@ cr.define('login', function() {
       }).bind(this));
     },
 
-    /**
-     * Updates the user pod element.
-     */
+    /** @override **/
     update: function() {
       UserPod.prototype.update.call(this);
       this.querySelector('.side-pane-name').textContent =
@@ -1484,10 +1591,42 @@ cr.define('login', function() {
         return;
       }
 
-      pod.customButton.hidden = false;
+      pod.customButtonElement.hidden = false;
       var icon =
-          pod.customButton.querySelector('.custom-button-icon');
+          pod.customButtonElement.querySelector('.custom-button-icon');
       icon.src = iconURL;
+    },
+
+    /**
+     * Hides button from user pod added by showUserPodButton().
+     * @param {string} username Username of pod to remove button
+     */
+    hideUserPodButton: function(username) {
+      var pod = this.getPodWithUsername_(username);
+      if (pod == null) {
+        console.error('Unable to hide user pod button for ' + username +
+                      ': user pod not found.');
+        return;
+      }
+
+      pod.customButtonElement.hidden = true;
+    },
+
+    /**
+     * Sets the authentication type used to authenticate the user.
+     * @param {string} username Username of selected user
+     * @param {number} authType Authentication type, must be one of the
+     *                          values listed in AUTH_TYPE enum.
+     * @param {string} value The initial value to use for authentication.
+     */
+    setAuthType: function(username, authType, value) {
+      var pod = this.getPodWithUsername_(username);
+      if (pod == null) {
+        console.error('Unable to set auth type for ' + username +
+                      ': user pod not found.');
+        return;
+      }
+      pod.setAuthType(authType, value);
     },
 
     /**
@@ -1782,21 +1921,6 @@ cr.define('login', function() {
       var pod = this.getPodWithUsername_(username);
       if (pod)
         pod.updateUserImage();
-    },
-
-    /**
-     * Indicates that the given user must authenticate against GAIA during the
-     * next sign-in.
-     * @param {string} username User for whom to enforce GAIA sign-in.
-     */
-    forceOnlineSigninForUser: function(username) {
-      var pod = this.getPodWithUsername_(username);
-      if (pod) {
-        pod.user.forceOnlineSignin = true;
-        pod.update();
-      } else {
-        console.log('Failed to update GAIA state for: ' + username);
-      }
     },
 
     /**

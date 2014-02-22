@@ -24,6 +24,7 @@
 #include "base/strings/string_util.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/extensions/screenlock_private_api.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_performer.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
@@ -256,9 +257,31 @@ void ScreenLocker::UnlockOnLoginSuccess() {
 void ScreenLocker::Authenticate(const UserContext& user_context) {
   LOG_ASSERT(IsUserLoggedIn(user_context.username))
       << "Invalid user trying to unlock.";
+
   authentication_start_time_ = base::Time::Now();
   delegate_->SetInputEnabled(false);
   delegate_->OnAuthenticate();
+
+  // Send authentication request to app using chrome.screenlockPrivate API
+  // if the authentication type is not the system password.
+  LoginDisplay::AuthType auth_type = GetAuthType(user_context.username);
+  if (auth_type != LoginDisplay::OFFLINE_PASSWORD) {
+    // Find the user that is authenticating.
+    const User* unlock_user = NULL;
+    for (UserList::const_iterator it = users_.begin();
+         it != users_.end();
+         ++it) {
+      if ((*it)->email() == user_context.username) {
+        unlock_user = *it;
+        break;
+      }
+    }
+    LOG_ASSERT(unlock_user);
+
+    // TODO(tengs): dispatch auth attempted event to the screenlockPrivate
+    // API's event router.
+    return;
+  }
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -303,10 +326,36 @@ void ScreenLocker::ShowUserPodButton(const std::string& username,
 
   screenlock_icon_provider_->AddIcon(username, icon);
 
-  // Append the current time to the URL so the image will not be cached.
-  std::string icon_url = ScreenlockIconSource::GetIconURLForUser(username)
-       + "?" + base::Int64ToString(base::Time::Now().ToInternalValue());
-  delegate_->ShowUserPodButton(username, icon_url, click_callback);
+  if (!username.empty()) {
+    // Append the current time to the URL so the image will not be cached.
+    std::string icon_url =
+        ScreenlockIconSource::GetIconURLForUser(username) + "?uniq=" +
+        base::Int64ToString(base::Time::Now().ToInternalValue());
+    delegate_->ShowUserPodButton(username, icon_url, click_callback);
+  }
+}
+
+void ScreenLocker::HideUserPodButton(const std::string& username) {
+  if (!locked_)
+    return;
+  screenlock_icon_provider_->RemoveIcon(username);
+  delegate_->HideUserPodButton(username);
+}
+
+void ScreenLocker::SetAuthType(const std::string& username,
+                               LoginDisplay::AuthType auth_type,
+                               const std::string& initial_value) {
+  if (!locked_)
+    return;
+  delegate_->SetAuthType(username, auth_type, initial_value);
+}
+
+LoginDisplay::AuthType ScreenLocker::GetAuthType(const std::string& username)
+    const {
+  // Return default authentication type when not locked.
+  if (!locked_)
+    return LoginDisplay::OFFLINE_PASSWORD;
+  return delegate_->GetAuthType(username);
 }
 
 void ScreenLocker::ShowErrorMessage(int error_msg_id,

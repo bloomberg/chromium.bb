@@ -27,12 +27,13 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       'setApps',
       'showAppError',
       'updateUserImage',
-      'forceOnlineSignin',
       'setCapsLockState',
       'forceLockedUserPodFocus',
       'removeUser',
       'showBannerMessage',
       'showUserPodButton',
+      'hideUserPodButton',
+      'setAuthType',
     ],
 
     preferredWidth_: 0,
@@ -226,15 +227,6 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
     },
 
     /**
-     * Indicates that the given user must authenticate against GAIA during the
-     * next sign-in.
-     * @param {string} username User for whom to enforce GAIA sign-in.
-     */
-    forceOnlineSignin: function(username) {
-      $('pod-row').forceOnlineSigninForUser(username);
-    },
-
-    /**
      * Updates Caps Lock state (for Caps Lock hint in password input field).
      * @param {boolean} enabled Whether Caps Lock is on.
      */
@@ -279,6 +271,26 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
      */
     showUserPodButton: function(username, iconURL) {
       $('pod-row').showUserPodButton(username, iconURL);
+    },
+
+    /**
+     * Hides button on the user pod of |username| added by showUserPodButton().
+     * This function is used by the chrome.screenlockPrivate API.
+     * @param {string} username Username of pod to remove button
+     */
+    hideUserPodButton: function(username) {
+      $('pod-row').hideUserPodButton(username);
+    },
+
+    /**
+     * Sets the authentication type used to authenticate the user.
+     * @param {string} username Username of selected user
+     * @param {number} authType Authentication type, must be a valid value in
+     *                          the AUTH_TYPE enum in user_pod_row.js.
+     * @param {string} value The initial value to use for authentication.
+     */
+    setAuthType: function(username, authType, value) {
+      $('pod-row').setAuthType(username, authType, value);
     }
   };
 });

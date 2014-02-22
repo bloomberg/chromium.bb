@@ -64,6 +64,10 @@ podrow[ncolumns='6'] .pod {
   z-index: 1;
 }
 
+.pod.focused[auth-type='userClick'] {
+  cursor: pointer;
+}
+
 .pod .user-image-container {
   height: 160px;
   line-height: 160px;
@@ -142,6 +146,19 @@ podrow[ncolumns='6'] .pod {
   position: relative;
 }
 
+.password-label {
+  -webkit-box-align: center;
+  border: none;
+  display: none;
+  font-size: 14px;
+  height: 40px;
+  text-overflow: ellipsis;
+}
+
+.pod[auth-type='userClick'] .password-label {
+  display: -webkit-box;
+}
+
 .custom-button {
   -webkit-box-align: center;
   background-color: rgba(0, 0, 0, 0);
@@ -171,11 +188,15 @@ button.custom-button:focus:hover {
   background: white;
   border: none;
   box-sizing: border-box;
-  display: inline-block;
+  display: none;
   height: 40px;
   outline: none;
   padding: 4px 6px;
   width: 100%;
+}
+
+.pod[auth-type='offlinePassword'] input[type='password'] {
+  display: inline-block;
 }
 
 .pod.need-password.focused .password-area {
@@ -185,7 +206,7 @@ button.custom-button:focus:hover {
 .pod .signin-button,
 .pod .launch-app-button {
   box-sizing: border-box;
-  display: inline-block;
+  display: none;
   height: 26px;
   margin: 6px 0 !important;
   max-width: 100%;
@@ -193,9 +214,9 @@ button.custom-button:focus:hover {
   padding: 4px 8px;
 }
 
-.pod:not(.focused) .signin-button,
-.pod:not(.focused) .launch-app-button  {
-  display: none;
+.pod.focused .launch-app-button,
+.pod.focused[auth-type='onlineSignIn'] .signin-button {
+  display: inline-block;
 }
 
 .pod .capslock-hint {
@@ -346,6 +367,7 @@ html[dir=rtl] .action-box-area {
   border: 1px solid lightgray;
   border-radius: 2px;
   box-shadow: none;
+  display: none;
   font-size: 13px;
   line-height: 19px;
   margin: 0;
@@ -366,6 +388,8 @@ html[dir=rtl] .action-box-menu {
 }
 
 .action-box-area.active ~ .action-box-menu {
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
   opacity: 1;
   visibility: visible;
 }

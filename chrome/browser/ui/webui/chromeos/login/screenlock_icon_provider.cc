@@ -15,6 +15,11 @@ void ScreenlockIconProvider::AddIcon(const std::string& username,
   user_icon_map_[username] = icon;
 }
 
+void ScreenlockIconProvider::RemoveIcon(const std::string& username) {
+  if (user_icon_map_.find(username) != user_icon_map_.end())
+    user_icon_map_.erase(username);
+}
+
 gfx::Image ScreenlockIconProvider::GetIcon(const std::string& username) {
   if (user_icon_map_.find(username) == user_icon_map_.end())
     return gfx::Image();

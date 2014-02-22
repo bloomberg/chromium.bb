@@ -199,6 +199,7 @@ void LocallyManagedUserCreationScreenHandler::Show() {
     SigninScreenHandler::FillUserDictionary(*it,
                                             is_owner,
                                             false /* is_signin_to_add */,
+                                            LoginDisplay::OFFLINE_PASSWORD,
                                             user_dict);
     users_list->Append(user_dict);
   }

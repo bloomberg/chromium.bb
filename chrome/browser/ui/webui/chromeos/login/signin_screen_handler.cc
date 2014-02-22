@@ -87,7 +87,7 @@ const char kKeyLocallyManagedUser[] = "locallyManagedUser";
 const char kKeySignedIn[] = "signedIn";
 const char kKeyCanRemove[] = "canRemove";
 const char kKeyIsOwner[] = "isOwner";
-const char kKeyForceOnlineSignin[] = "forceOnlineSignin";
+const char kKeyInitialAuthType[] = "initialAuthType";
 const char kKeyMultiProfilesAllowed[] = "isMultiProfilesAllowed";
 const char kKeyMultiProfilesPolicy[] = "multiProfilesPolicy";
 
@@ -227,6 +227,26 @@ static bool SetUserInputMethodImpl(
 
 void RecordSAMLScrapingVerificationResultInHistogram(bool success) {
   UMA_HISTOGRAM_BOOLEAN("ChromeOS.SAML.Scraping.VerificationResult", success);
+}
+
+bool ShouldForceOnlineSignIn(const User* user) {
+  // Force online sign-in if the user is not logged in and at least one of the
+  // following is true:
+  // * The flag to force online sign-in is set for the user.
+  // * The user's oauth token is invalid.
+  // * The user's oauth token status is unknown. This condition does not apply
+  //   to supervised users: A supervised user whose oauth token status is
+  //   unknown may still log in offline. The token will be invalidated inside
+  //   the session in case it has been revoked.
+  if (user->is_logged_in())
+    return false;
+  const bool is_locally_managed_user =
+      user->GetType() == User::USER_TYPE_LOCALLY_MANAGED;
+  const User::OAuthTokenStatus token_status = user->oauth_token_status();
+  return user->force_online_signin() ||
+         (token_status == User::OAUTH2_TOKEN_STATUS_INVALID) ||
+         (!is_locally_managed_user &&
+          token_status == User::OAUTH_TOKEN_STATUS_UNKNOWN);
 }
 
 }  // namespace
@@ -839,6 +859,27 @@ void SigninScreenHandler::ShowUserPodButton(
   CallJS("login.AccountPickerScreen.showUserPodButton", username, iconURL);
 }
 
+void SigninScreenHandler::HideUserPodButton(const std::string& username) {
+  CallJS("login.AccountPickerScreen.hideUserPodButton", username);
+}
+
+void SigninScreenHandler::SetAuthType(const std::string& username,
+                                      LoginDisplay::AuthType auth_type,
+                                      const std::string& initial_value) {
+  user_auth_type_map_[username] = auth_type;
+  CallJS("login.AccountPickerScreen.setAuthType",
+         username,
+         static_cast<int>(auth_type),
+         base::StringValue(initial_value));
+}
+
+LoginDisplay::AuthType SigninScreenHandler::GetAuthType(
+    const std::string& username) const {
+  if (user_auth_type_map_.find(username) == user_auth_type_map_.end())
+    return LoginDisplay::OFFLINE_PASSWORD;
+  return user_auth_type_map_.find(username)->second;
+}
+
 void SigninScreenHandler::ShowError(int login_attempts,
                                     const std::string& error_text,
                                     const std::string& help_link_text,
@@ -866,7 +907,10 @@ void SigninScreenHandler::ShowGaiaPasswordChanged(const std::string& username) {
   email_ = username;
   password_changed_for_.insert(email_);
   core_oobe_actor_->ShowSignInUI(email_);
-  CallJS("login.AccountPickerScreen.forceOnlineSignin", email_);
+  CallJS("login.setAuthType",
+         username,
+         static_cast<int>(LoginDisplay::ONLINE_SIGN_IN),
+         base::StringValue(""));
 }
 
 void SigninScreenHandler::ShowPasswordChangedDialog(bool show_password_error) {
@@ -1225,33 +1269,20 @@ void SigninScreenHandler::HandleLaunchHelpApp(double help_topic_id) {
 void SigninScreenHandler::FillUserDictionary(User* user,
                                              bool is_owner,
                                              bool is_signin_to_add,
+                                             LoginDisplay::AuthType auth_type,
                                              base::DictionaryValue* user_dict) {
   const std::string& email = user->email();
   const bool is_public_account =
       user->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT;
   const bool is_locally_managed_user =
       user->GetType() == User::USER_TYPE_LOCALLY_MANAGED;
-  const User::OAuthTokenStatus token_status = user->oauth_token_status();
-
-  // Force online sign-in if at least one of the following is true:
-  // * The flag to force online sign-in is set for the user.
-  // * The user's oauth token is invalid.
-  // * The user's oauth token status is unknown. This condition does not apply
-  //   to supervised users: A supervised user whose oauth token status is
-  //   unknown may still log in offline. The token will be invalidated inside
-  //   the session in case it has been revoked.
-  const bool force_online_signin =
-      user->force_online_signin() ||
-      (token_status == User::OAUTH2_TOKEN_STATUS_INVALID) ||
-      (!is_locally_managed_user &&
-           token_status == User::OAUTH_TOKEN_STATUS_UNKNOWN);
 
   user_dict->SetString(kKeyUsername, email);
   user_dict->SetString(kKeyEmailAddress, user->display_email());
   user_dict->SetString(kKeyDisplayName, user->GetDisplayName());
   user_dict->SetBoolean(kKeyPublicAccount, is_public_account);
   user_dict->SetBoolean(kKeyLocallyManagedUser, is_locally_managed_user);
-  user_dict->SetInteger(kKeyForceOnlineSignin, force_online_signin);
+  user_dict->SetInteger(kKeyInitialAuthType, auth_type);
   user_dict->SetBoolean(kKeySignedIn, user->is_logged_in());
   user_dict->SetBoolean(kKeyIsOwner, is_owner);
 
@@ -1297,6 +1328,9 @@ void SigninScreenHandler::SendUserList(bool animated) {
   bool is_signin_to_add = LoginDisplayHostImpl::default_host() &&
       UserManager::Get()->IsUserLoggedIn();
 
+  user_pod_button_callback_map_.clear();
+  user_auth_type_map_.clear();
+
   bool single_user = users.size() == 1;
   std::string owner;
   chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
@@ -1312,8 +1346,14 @@ void SigninScreenHandler::SendUserList(bool animated) {
 
     if (is_public_account || non_owner_count < max_non_owner_users ||
         is_owner) {
+      LoginDisplay::AuthType initial_auth_type =
+          ShouldForceOnlineSignIn(*it) ? LoginDisplay::ONLINE_SIGN_IN
+                                       : LoginDisplay::OFFLINE_PASSWORD;
+      user_auth_type_map_[email] = initial_auth_type;
+
       base::DictionaryValue* user_dict = new base::DictionaryValue();
-      FillUserDictionary(*it, is_owner, is_signin_to_add, user_dict);
+      FillUserDictionary(
+          *it, is_owner, is_signin_to_add, initial_auth_type, user_dict);
       bool signed_in = (*it)->is_logged_in();
       // Single user check here is necessary because owner info might not be
       // available when running into login screen on first boot.

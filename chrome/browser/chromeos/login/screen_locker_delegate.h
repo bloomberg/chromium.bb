@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
+#include "chrome/browser/chromeos/login/login_display.h"
 #include "ui/gfx/native_widget_types.h"
 
 class GURL;
@@ -51,6 +52,18 @@ class ScreenLockerDelegate {
   virtual void ShowUserPodButton(const std::string& username,
                                  const std::string& iconURL,
                                  const base::Closure& click_callback) = 0;
+
+  // Hides the user pod button for a user.
+  virtual void HideUserPodButton(const std::string& username) = 0;
+
+  // Set the authentication type to be used on the lock screen.
+  virtual void SetAuthType(const std::string& username,
+                           LoginDisplay::AuthType auth_type,
+                           const std::string& initial_value) = 0;
+
+  // Returns the authentication type used for |username|.
+  virtual LoginDisplay::AuthType GetAuthType(const std::string& username)
+      const = 0;
 
   // Disables all UI needed and shows error bubble with |message|.
   // If |sign_out_only| is true then all other input except "Sign Out"

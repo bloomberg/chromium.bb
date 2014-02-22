@@ -113,6 +113,28 @@ void WebUIScreenLocker::ShowUserPodButton(
   login_display_->ShowUserPodButton(username, iconURL, click_callback);
 }
 
+void WebUIScreenLocker::HideUserPodButton(const std::string& username) {
+  if (!webui_ready_)
+    return;
+  login_display_->HideUserPodButton(username);
+}
+
+void WebUIScreenLocker::SetAuthType(const std::string& username,
+                                    LoginDisplay::AuthType auth_type,
+                                    const std::string& initial_value) {
+  if (!webui_ready_)
+    return;
+  login_display_->SetAuthType(username, auth_type, initial_value);
+}
+
+LoginDisplay::AuthType WebUIScreenLocker::GetAuthType(
+    const std::string& username) const {
+  // Return default auth type if login display is not ready.
+  if (!webui_ready_)
+    return LoginDisplay::OFFLINE_PASSWORD;
+  return login_display_->GetAuthType(username);
+}
+
 void WebUIScreenLocker::ShowErrorMessage(
     int error_msg_id,
     HelpAppLauncher::HelpTopic help_topic_id) {

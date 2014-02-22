@@ -14,6 +14,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
+#include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/screen_locker_delegate.h"
 #include "chrome/browser/chromeos/login/user.h"
@@ -88,6 +89,17 @@ class ScreenLocker : public LoginStatusConsumer {
   void ShowUserPodButton(const std::string& username,
                          const gfx::Image& icon,
                          const base::Closure& click_callback);
+
+  // Hides the user pod button for a user.
+  void HideUserPodButton(const std::string& username);
+
+  // Set the authentication type to be used on the lock screen.
+  void SetAuthType(const std::string& username,
+                   LoginDisplay::AuthType auth_type,
+                   const std::string& initial_value);
+
+  // Returns the authentication type used for |username|.
+  LoginDisplay::AuthType GetAuthType(const std::string& username) const;
 
   // Disables all UI needed and shows error bubble with |message|.
   // If |sign_out_only| is true then all other input except "Sign Out"

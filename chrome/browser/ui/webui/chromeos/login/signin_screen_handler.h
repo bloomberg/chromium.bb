@@ -79,6 +79,12 @@ class LoginDisplayWebUIHandler {
   virtual void ShowUserPodButton(const std::string& username,
                                  const std::string& iconURL,
                                  const base::Closure& click_callback) = 0;
+  virtual void HideUserPodButton(const std::string& username) = 0;
+  virtual void SetAuthType(const std::string& username,
+                           LoginDisplay::AuthType auth_type,
+                           const std::string& initial_value) = 0;
+  virtual LoginDisplay::AuthType GetAuthType(const std::string& username)
+      const = 0;
   virtual void ShowError(int login_attempts,
                          const std::string& error_text,
                          const std::string& help_link_text,
@@ -279,6 +285,12 @@ class SigninScreenHandler
   virtual void ShowUserPodButton(const std::string& username,
                                  const std::string& iconURL,
                                  const base::Closure& click_callback) OVERRIDE;
+  virtual void HideUserPodButton(const std::string& username) OVERRIDE;
+  virtual void SetAuthType(const std::string& username,
+                           LoginDisplay::AuthType auth_type,
+                           const std::string& initial_value) OVERRIDE;
+  virtual LoginDisplay::AuthType GetAuthType(const std::string& username)
+      const OVERRIDE;
   virtual void ShowError(int login_attempts,
                          const std::string& error_text,
                          const std::string& help_link_text,
@@ -370,6 +382,7 @@ class SigninScreenHandler
   static void FillUserDictionary(User* user,
                                  bool is_owner,
                                  bool is_signin_to_add,
+                                 LoginDisplay::AuthType auth_type,
                                  base::DictionaryValue* user_dict);
 
   // Sends user list to account picker.
@@ -525,6 +538,10 @@ class SigninScreenHandler
 
   // Map of callbacks run when the custom button on a user pod is clicked.
   std::map<std::string, base::Closure> user_pod_button_callback_map_;
+
+  // Map of usernames to their current authentication type. If a user is not
+  // contained in the map, it is using the default authentication type.
+  std::map<std::string, LoginDisplay::AuthType> user_auth_type_map_;
 
   // Non-owning ptr.
   // TODO (ygorshenin@): remove this dependency.
