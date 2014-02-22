@@ -87,6 +87,8 @@ int NaClSecureRngTestingCtor(struct NaClSecureRng *self,
 }
 
 static void NaClSecureRngDtor(struct NaClSecureRngIf *vself) {
+  struct NaClSecureRng *self = (struct NaClSecureRng *) vself;
+  memset(self->buf, 0, sizeof self->buf);
   vself->vtbl = NULL;
   return;
 }

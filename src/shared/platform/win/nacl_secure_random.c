@@ -1,13 +1,22 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2008 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
  * NaCl Service Runtime.  Secure RNG implementation.
  */
-#include <stdlib.h>
+#include <windows.h>
+
+/*
+ * #define needed to link in RtlGenRandom(), a.k.a. SystemFunction036. See
+ * the "Community Additions" comment on MSDN here:
+ *   http://msdn.microsoft.com/en-us/library/windows/desktop/aa387694.aspx
+ */
+#define SystemFunction036 NTAPI SystemFunction036
+#include <NTSecAPI.h>
+#undef SystemFunction036
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_secure_random.h"
@@ -49,22 +58,15 @@ int NaClSecureRngTestingCtor(struct NaClSecureRng *self,
 }
 
 static void NaClSecureRngDtor(struct NaClSecureRngIf *vself) {
+  struct NaClSecureRng *self = (struct NaClSecureRng *) vself;
+  SecureZeroMemory(self->buf, sizeof self->buf);
   vself->vtbl = NULL;
   return;
 }
 
 static void NaClSecureRngFilbuf(struct NaClSecureRng *self) {
-  int bytes_filled = 0;
-  int bytes_to_copy = 0;
-  unsigned int random_int;
-  for (bytes_filled = 0;
-       bytes_filled < sizeof self->buf;
-       bytes_filled += bytes_to_copy) {
-    if (rand_s(&random_int)) {
-      NaClLog(LOG_FATAL, "rand_s failed: error %d\n", GetLastError());
-    }
-    bytes_to_copy = min(sizeof(self->buf) - bytes_filled, sizeof(random_int));
-    memcpy(self->buf + bytes_filled, &random_int, bytes_to_copy);
+  if (!RtlGenRandom(self->buf, sizeof self->buf)) {
+    NaClLog(LOG_FATAL, "RtlGenRandom failed: error 0x%x\n", GetLastError());
   }
   self->nvalid = sizeof self->buf;
 }

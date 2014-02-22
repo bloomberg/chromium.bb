@@ -698,6 +698,7 @@
               '/nxcompat',
             ],
             'AdditionalDependencies': [
+              'advapi32.lib',
               'wininet.lib',
               'version.lib',
               'msimg32.lib',
