@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/logging.h"
-
+#include "base/numerics/safe_conversions.h"
 #include "components/cloud_devices/cloud_device_description.h"
 
 namespace base {
@@ -133,7 +133,7 @@ class SelectionCapability {
     if (is_default) {
       DCHECK_EQ(default_idx_, -1);
       // Point to the last element.
-      default_idx_ = static_cast<int>(size());
+      default_idx_ = base::checked_cast<int>(size());
     }
     options_.push_back(option);
   }
