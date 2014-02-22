@@ -17,6 +17,10 @@
   id<ThrobberDataDelegate> dataDelegate_;
 }
 
+// Creates a filmstrip view with |frame| and image |image|.
++ (id)filmstripThrobberViewWithFrame:(NSRect)frame
+                               image:(NSImage*)image;
+
 // Creates a toast view with |frame| and specified images.
 + (id)toastThrobberViewWithFrame:(NSRect)frame
                      beforeImage:(NSImage*)beforeImage

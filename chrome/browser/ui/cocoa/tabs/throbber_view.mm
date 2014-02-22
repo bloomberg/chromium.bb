@@ -28,6 +28,60 @@ static const float kAnimationIntervalSeconds = 0.03;  // 30ms, same as windows
 - (void)advanceFrame;
 @end
 
+@interface ThrobberFilmstripDelegate : NSObject
+                                       <ThrobberDataDelegate> {
+  base::scoped_nsobject<NSImage> image_;
+  unsigned int numFrames_;  // Number of frames in this animation.
+  unsigned int animationFrame_;  // Current frame of the animation,
+                                 // [0..numFrames_)
+}
+
+- (id)initWithImage:(NSImage*)image;
+
+@end
+
+@implementation ThrobberFilmstripDelegate
+
+- (id)initWithImage:(NSImage*)image {
+  if ((self = [super init])) {
+    // Reset the animation counter so there's no chance we are off the end.
+    animationFrame_ = 0;
+
+    // Ensure that the height divides evenly into the width. Cache the
+    // number of frames in the animation for later.
+    NSSize imageSize = [image size];
+    DCHECK(imageSize.height && imageSize.width);
+    if (!imageSize.height)
+      return nil;
+    DCHECK((int)imageSize.width % (int)imageSize.height == 0);
+    numFrames_ = (int)imageSize.width / (int)imageSize.height;
+    DCHECK(numFrames_);
+    image_.reset([image retain]);
+  }
+  return self;
+}
+
+- (BOOL)animationIsComplete {
+  return NO;
+}
+
+- (void)drawFrameInRect:(NSRect)rect {
+  float imageDimension = [image_ size].height;
+  float xOffset = animationFrame_ * imageDimension;
+  NSRect sourceImageRect =
+      NSMakeRect(xOffset, 0, imageDimension, imageDimension);
+  [image_ drawInRect:rect
+            fromRect:sourceImageRect
+           operation:NSCompositeSourceOver
+            fraction:1.0];
+}
+
+- (void)advanceFrame {
+  animationFrame_ = ++animationFrame_ % numFrames_;
+}
+
+@end
+
 @interface ThrobberToastDelegate : NSObject
                                    <ThrobberDataDelegate> {
   base::scoped_nsobject<NSImage> image1_;
@@ -230,6 +284,17 @@ typedef std::set<ThrobberView*> ThrobberSet;
 @end
 
 @implementation ThrobberView
+
++ (id)filmstripThrobberViewWithFrame:(NSRect)frame
+                               image:(NSImage*)image {
+  ThrobberFilmstripDelegate* delegate =
+      [[[ThrobberFilmstripDelegate alloc] initWithImage:image] autorelease];
+  if (!delegate)
+    return nil;
+
+  return [[[ThrobberView alloc] initWithFrame:frame
+                                     delegate:delegate] autorelease];
+}
 
 + (id)toastThrobberViewWithFrame:(NSRect)frame
                      beforeImage:(NSImage*)beforeImage

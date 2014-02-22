@@ -1611,8 +1611,10 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
         [[tabController mediaIndicatorView]
           updateIndicator:TAB_MEDIA_STATE_NONE];
       } else {
-        iconView =
-            [[[SpriteView alloc] initWithImage:throbberImage] autorelease];
+        NSRect frame =
+            NSMakeRect(0, 0, kIconWidthAndHeight, kIconWidthAndHeight);
+        iconView = [ThrobberView filmstripThrobberViewWithFrame:frame
+                                                          image:throbberImage];
       }
     }
 
