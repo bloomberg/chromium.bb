@@ -1851,15 +1851,6 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_UnlockMouse)
 // making a URL spoof possible.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_DidAccessInitialDocument)
 
-// Following message is used to communicate the values received by the
-// callback binding the JS to Cpp.
-// An instance of browser that has an automation host listening to it can
-// have a javascript send a native value (string, number, boolean) to the
-// listener in Cpp. (DomAutomationController)
-IPC_MESSAGE_ROUTED2(ViewHostMsg_DomOperationResponse,
-                    std::string  /* json_string */,
-                    int  /* automation_id */)
-
 // Notifies that multiple touch targets may have been pressed, and to show
 // the disambiguation popup.
 IPC_MESSAGE_ROUTED3(ViewHostMsg_ShowDisambiguationPopup,

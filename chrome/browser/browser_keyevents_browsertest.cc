@@ -20,7 +20,6 @@
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -35,7 +34,6 @@
 
 using content::DomOperationNotificationDetails;
 using content::NavigationController;
-using content::RenderViewHost;
 
 namespace {
 
@@ -96,10 +94,11 @@ const wchar_t* GetBoolString(bool value) {
 // A class to help wait for the finish of a key event test.
 class TestFinishObserver : public content::NotificationObserver {
  public:
-  explicit TestFinishObserver(RenderViewHost* render_view_host)
+  explicit TestFinishObserver(content::WebContents* web_contents)
       : finished_(false), waiting_(false) {
-    registrar_.Add(this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
-                   content::Source<RenderViewHost>(render_view_host));
+    registrar_.Add(this,
+                   content::NOTIFICATION_DOM_OPERATION_RESPONSE,
+                   content::Source<content::WebContents>(web_contents));
   }
 
   bool WaitForFinish() {
@@ -270,8 +269,7 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
     // because the test finished message might be arrived before returning
     // from the SendKeyPressSync() method.
     TestFinishObserver finish_observer(
-        browser()->tab_strip_model()->GetWebContentsAt(tab_index)->
-            GetRenderViewHost());
+        browser()->tab_strip_model()->GetWebContentsAt(tab_index));
 
     ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
         browser(), test.key, test.ctrl, test.shift, test.alt, test.command));

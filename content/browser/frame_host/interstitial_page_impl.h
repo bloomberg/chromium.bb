@@ -13,6 +13,7 @@
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
+#include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -104,15 +105,20 @@ class CONTENT_EXPORT InterstitialPageImpl
                        const NotificationDetails& details) OVERRIDE;
 
   // WebContentsObserver implementation:
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
   virtual void NavigationEntryCommitted(
       const LoadCommittedDetails& load_details) OVERRIDE;
 
   // RenderFrameHostDelegate implementation:
+  virtual bool OnMessageReceived(RenderFrameHost* render_frame_host,
+                                 const IPC::Message& message) OVERRIDE;
   virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) OVERRIDE;
 
   // RenderViewHostDelegate implementation:
   virtual RenderViewHostDelegateView* GetDelegateView() OVERRIDE;
+  virtual bool OnMessageReceived(RenderViewHost* render_view_host,
+                                 const IPC::Message& message) OVERRIDE;
   virtual const GURL& GetURL() const OVERRIDE;
   virtual void RenderViewTerminated(RenderViewHost* render_view_host,
                                     base::TerminationStatus status,
@@ -193,6 +199,10 @@ class CONTENT_EXPORT InterstitialPageImpl
   // Used to block/resume/cancel requests for the RenderViewHost hidden by this
   // interstitial.
   void TakeActionOnResourceDispatcher(ResourceRequestAction action);
+
+  // IPC message handlers.
+  void OnDomOperationResponse(const std::string& json_string,
+                              int automation_id);
 
   // The contents in which we are displayed.  This is valid until Hide is
   // called, at which point it will be set to NULL because the WebContents

@@ -626,8 +626,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnCancelDesktopNotification(int notification_id);
   void OnRunFileChooser(const FileChooserParams& params);
   void OnDidAccessInitialDocument();
-  void OnDomOperationResponse(const std::string& json_string,
-                              int automation_id);
   void OnFocusedNodeTouched(bool editable);
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)

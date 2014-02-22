@@ -285,7 +285,7 @@ void PPAPITestBase::RunTestURL(const GURL& test_url) {
   // "PASS" or "FAIL"). This keeps us from timing out on waits for long tests.
   PPAPITestMessageHandler handler;
   JavascriptTestObserver observer(
-      browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
+      browser()->tab_strip_model()->GetActiveWebContents(),
       &handler);
 
   ui_test_utils::NavigateToURL(browser(), test_url);

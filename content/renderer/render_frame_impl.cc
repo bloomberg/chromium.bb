@@ -25,6 +25,7 @@
 #include "content/common/socket_stream_handle_data.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
@@ -41,6 +42,7 @@
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/child_frame_compositing_helper.h"
 #include "content/renderer/context_menu_params_builder.h"
+#include "content/renderer/dom_automation_controller.h"
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/npapi/plugin_channel_host.h"
 #include "content/renderer/render_thread_impl.h"
@@ -1458,7 +1460,15 @@ void RenderFrameImpl::didClearWindowObject(blink::WebFrame* frame,
   // * enabled_bindings_
   // * dom_automation_controller_
   // * stats_collection_controller_
+
   render_view_->didClearWindowObject(frame, world_id);
+
+  // Only install controllers into the main world.
+  if (world_id)
+    return;
+
+  if (render_view_->GetEnabledBindings() & BINDINGS_POLICY_DOM_AUTOMATION)
+    DomAutomationController::Install(this, frame);
 }
 
 void RenderFrameImpl::didCreateDocumentElement(blink::WebFrame* frame) {

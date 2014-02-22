@@ -37,6 +37,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/page_transition_types.h"
@@ -249,9 +250,6 @@ void InterstitialPageImpl::Show() {
 
   notification_registrar_.Add(this, NOTIFICATION_NAV_ENTRY_PENDING,
       Source<NavigationController>(controller_));
-  notification_registrar_.Add(
-      this, NOTIFICATION_DOM_OPERATION_RESPONSE,
-      Source<RenderViewHost>(render_view_host_));
 }
 
 void InterstitialPageImpl::Hide() {
@@ -346,13 +344,6 @@ void InterstitialPageImpl::Observe(
         TakeActionOnResourceDispatcher(CANCEL);
       }
       break;
-    case NOTIFICATION_DOM_OPERATION_RESPONSE:
-      if (enabled()) {
-        Details<DomOperationNotificationDetails> dom_op_details(
-            details);
-        delegate_->CommandReceived(dom_op_details->json);
-      }
-      break;
     default:
       NOTREACHED();
   }
@@ -365,6 +356,34 @@ void InterstitialPageImpl::NavigationEntryCommitted(
 
 void InterstitialPageImpl::WebContentsDestroyed(WebContents* web_contents) {
   OnNavigatingAwayOrTabClosing();
+}
+
+bool InterstitialPageImpl::OnMessageReceived(RenderFrameHost* render_frame_host,
+                                             const IPC::Message& message) {
+  return OnMessageReceived(message);
+}
+
+bool InterstitialPageImpl::OnMessageReceived(RenderViewHost* render_view_host,
+                                             const IPC::Message& message) {
+  return OnMessageReceived(message);
+}
+
+bool InterstitialPageImpl::OnMessageReceived(const IPC::Message& message) {
+
+  bool handled = true;
+  bool message_is_ok = true;
+  IPC_BEGIN_MESSAGE_MAP_EX(InterstitialPageImpl, message, message_is_ok)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DomOperationResponse,
+                        OnDomOperationResponse)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP_EX()
+
+  if (!message_is_ok) {
+    RecordAction(base::UserMetricsAction("BadMessageTerminate_RVD"));
+    web_contents()->GetRenderProcessHost()->ReceivedBadMessage();
+  }
+
+  return handled;
 }
 
 void InterstitialPageImpl::RenderFrameCreated(
@@ -805,6 +824,22 @@ void InterstitialPageImpl::TakeActionOnResourceDispatcher(
           original_rvh_id_,
           action));
 }
+
+void InterstitialPageImpl::OnDomOperationResponse(
+    const std::string& json_string,
+    int automation_id) {
+  // Needed by test code.
+  DomOperationNotificationDetails details(json_string, automation_id);
+  NotificationService::current()->Notify(
+      NOTIFICATION_DOM_OPERATION_RESPONSE,
+      Source<WebContents>(web_contents()),
+      Details<DomOperationNotificationDetails>(&details));
+
+  if (!enabled())
+    return;
+  delegate_->CommandReceived(details.json);
+}
+
 
 InterstitialPageImpl::InterstitialPageRVHDelegateView::
     InterstitialPageRVHDelegateView(InterstitialPageImpl* page)

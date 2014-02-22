@@ -348,6 +348,15 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_DidStartLoading)
 // notion of the throbber stopping.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_DidStopLoading)
 
+// Following message is used to communicate the values received by the
+// callback binding the JS to Cpp.
+// An instance of browser that has an automation host listening to it can
+// have a javascript send a native value (string, number, boolean) to the
+// listener in Cpp. (DomAutomationController)
+IPC_MESSAGE_ROUTED2(FrameHostMsg_DomOperationResponse,
+                    std::string  /* json_string */,
+                    int  /* automation_id */)
+
 // Sent to the browser when the renderer detects it is blocked on a pepper
 // plugin message for too long. This is also sent when it becomes unhung
 // (according to the value of is_hung). The browser can give the user the

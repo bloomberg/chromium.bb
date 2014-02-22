@@ -57,7 +57,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -1237,8 +1236,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_RunFileChooser, OnRunFileChooser)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidAccessInitialDocument,
                         OnDidAccessInitialDocument)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DomOperationResponse,
-                        OnDomOperationResponse)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_Events, OnAccessibilityEvents)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_LocationChanges,
                         OnAccessibilityLocationChanges)
@@ -2018,15 +2015,6 @@ void RenderViewHostImpl::OnRunFileChooser(const FileChooserParams& params) {
 void RenderViewHostImpl::OnDidAccessInitialDocument() {
   has_accessed_initial_document_ = true;
   delegate_->DidAccessInitialDocument();
-}
-
-void RenderViewHostImpl::OnDomOperationResponse(
-    const std::string& json_string, int automation_id) {
-  DomOperationNotificationDetails details(json_string, automation_id);
-  NotificationService::current()->Notify(
-      NOTIFICATION_DOM_OPERATION_RESPONSE,
-      Source<RenderViewHost>(this),
-      Details<DomOperationNotificationDetails>(&details));
 }
 
 void RenderViewHostImpl::OnFocusedNodeTouched(bool editable) {

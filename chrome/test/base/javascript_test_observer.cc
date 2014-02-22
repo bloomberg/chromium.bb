@@ -7,6 +7,7 @@
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
 
 TestMessageHandler::TestMessageHandler() : ok_(true) {
@@ -26,14 +27,15 @@ void TestMessageHandler::Reset() {
 }
 
 JavascriptTestObserver::JavascriptTestObserver(
-    content::RenderViewHost* render_view_host,
+    content::WebContents* web_contents,
     TestMessageHandler* handler)
     : handler_(handler),
       running_(false),
       finished_(false) {
   Reset();
-  registrar_.Add(this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
-                 content::Source<content::RenderViewHost>(render_view_host));
+  registrar_.Add(this,
+                 content::NOTIFICATION_DOM_OPERATION_RESPONSE,
+                 content::Source<content::WebContents>(web_contents));
 }
 
 JavascriptTestObserver::~JavascriptTestObserver() {

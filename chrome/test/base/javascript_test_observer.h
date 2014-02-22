@@ -16,7 +16,7 @@ class DictionaryValue;
 }
 
 namespace content {
-class RenderViewHost;
+class WebContents;
 }
 
 // Base class for handling a stream of automation messages produced by a
@@ -61,7 +61,7 @@ class JavascriptTestObserver : public content::NotificationObserver {
   // The observer does not own any arguments passed to it.  It is assumed that
   // the arguments will outlive all uses of the observer.
   JavascriptTestObserver(
-      content::RenderViewHost* render_view_host,
+      content::WebContents* web_contents,
       TestMessageHandler* handler);
 
   virtual ~JavascriptTestObserver();

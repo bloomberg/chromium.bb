@@ -44,7 +44,7 @@ class DOMOperationObserver : public NotificationObserver,
       : WebContentsObserver(WebContents::FromRenderViewHost(rvh)),
         did_respond_(false) {
     registrar_.Add(this, NOTIFICATION_DOM_OPERATION_RESPONSE,
-                   Source<RenderViewHost>(rvh));
+                   Source<WebContents>(web_contents()));
     message_loop_runner_ = new MessageLoopRunner;
   }
 

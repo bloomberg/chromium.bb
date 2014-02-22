@@ -715,6 +715,8 @@ class CONTENT_EXPORT WebContentsImpl
                           bool is_hung);
   void OnPluginCrashed(const base::FilePath& plugin_path,
                        base::ProcessId plugin_pid);
+  void OnDomOperationResponse(const std::string& json_string,
+                              int automation_id);
   void OnAppCacheAccessed(const GURL& manifest_url, bool blocked_by_policy);
   void OnOpenColorChooser(int color_chooser_id,
                           SkColor color,

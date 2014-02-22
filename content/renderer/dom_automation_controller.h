@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_DOM_AUTOMATION_CONTROLLER_H_
 
 #include "base/basictypes.h"
-#include "content/public/renderer/render_view_observer.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "gin/wrappable.h"
 
 /* DomAutomationController class:
@@ -81,14 +81,14 @@ class Arguments;
 
 namespace content {
 
-class RenderViewImpl;
+class RenderFrame;
 
 class DomAutomationController : public gin::Wrappable<DomAutomationController>,
-                                public RenderViewObserver {
+                                public RenderFrameObserver {
  public:
   static gin::WrapperInfo kWrapperInfo;
 
-  static void Install(RenderViewImpl* render_view, blink::WebFrame* frame);
+  static void Install(RenderFrame* render_frame, blink::WebFrame* frame);
 
   // Makes the renderer send a javascript value to the app.
   // The value to be sent can be either of type String,
@@ -106,7 +106,7 @@ class DomAutomationController : public gin::Wrappable<DomAutomationController>,
   bool SetAutomationId(int automation_id);
 
  private:
-  explicit DomAutomationController(RenderViewImpl* render_view);
+  explicit DomAutomationController(RenderFrame* render_view);
   virtual ~DomAutomationController();
 
   // gin::WrappableBase

@@ -7,7 +7,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/strings/string_util.h"
 #include "content/common/child_process_messages.h"
-#include "content/common/view_messages.h"
+#include "content/common/frame_messages.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/v8_value_converter_impl.h"
 #include "gin/handle.h"
@@ -21,7 +21,7 @@ gin::WrapperInfo DomAutomationController::kWrapperInfo = {
     gin::kEmbedderNativeGin};
 
 // static
-void DomAutomationController::Install(RenderViewImpl* render_view,
+void DomAutomationController::Install(RenderFrame* render_frame,
                                       blink::WebFrame* frame) {
   v8::Isolate* isolate = blink::mainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
@@ -32,14 +32,14 @@ void DomAutomationController::Install(RenderViewImpl* render_view,
   v8::Context::Scope context_scope(context);
 
   gin::Handle<DomAutomationController> controller =
-      gin::CreateHandle(isolate, new DomAutomationController(render_view));
+      gin::CreateHandle(isolate, new DomAutomationController(render_frame));
   v8::Handle<v8::Object> global = context->Global();
   global->Set(gin::StringToV8(isolate, "domAutomationController"),
               controller.ToV8());
 }
 
-DomAutomationController::DomAutomationController(RenderViewImpl* render_view)
-    : RenderViewObserver(render_view), automation_id_(MSG_ROUTING_NONE) {}
+DomAutomationController::DomAutomationController(RenderFrame* render_frame)
+    : RenderFrameObserver(render_frame), automation_id_(MSG_ROUTING_NONE) {}
 
 DomAutomationController::~DomAutomationController() {}
 
@@ -56,7 +56,7 @@ gin::ObjectTemplateBuilder DomAutomationController::GetObjectTemplateBuilder(
 void DomAutomationController::OnDestruct() {}
 
 bool DomAutomationController::SendMsg(const gin::Arguments& args) {
-  if (!render_view())
+  if (!render_frame())
     return false;
 
   if (automation_id_ == MSG_ROUTING_NONE)
@@ -84,21 +84,21 @@ bool DomAutomationController::SendMsg(const gin::Arguments& args) {
   if (!serializer.Serialize(*value))
     return false;
 
-  bool succeeded = Send(
-      new ViewHostMsg_DomOperationResponse(routing_id(), json, automation_id_));
+  bool succeeded = Send(new FrameHostMsg_DomOperationResponse(
+      routing_id(), json, automation_id_));
 
   automation_id_ = MSG_ROUTING_NONE;
   return succeeded;
 }
 
 bool DomAutomationController::SendJSON(const std::string& json) {
-  if (!render_view())
+  if (!render_frame())
     return false;
 
   if (automation_id_ == MSG_ROUTING_NONE)
     return false;
-  bool result = Send(
-      new ViewHostMsg_DomOperationResponse(routing_id(), json, automation_id_));
+  bool result = Send(new FrameHostMsg_DomOperationResponse(
+      routing_id(), json, automation_id_));
 
   automation_id_ = MSG_ROUTING_NONE;
   return result;
@@ -106,10 +106,10 @@ bool DomAutomationController::SendJSON(const std::string& json) {
 
 bool DomAutomationController::SendWithId(int automation_id,
                                          const std::string& str) {
-  if (!render_view())
+  if (!render_frame())
     return false;
   return Send(
-      new ViewHostMsg_DomOperationResponse(routing_id(), str, automation_id));
+      new FrameHostMsg_DomOperationResponse(routing_id(), str, automation_id));
 }
 
 bool DomAutomationController::SetAutomationId(int automation_id) {

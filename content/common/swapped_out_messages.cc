@@ -28,7 +28,6 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     case ViewHostMsg_ShouldClose_ACK::ID:
     case ViewHostMsg_SwapOut_ACK::ID:
     case ViewHostMsg_ClosePage_ACK::ID:
-    case ViewHostMsg_DomOperationResponse::ID:
     case ViewHostMsg_SwapCompositorFrame::ID:
     case ViewHostMsg_UpdateIsDelayed::ID:
     case ViewHostMsg_DidActivateAcceleratedCompositing::ID:
@@ -39,6 +38,7 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     case FrameHostMsg_SwapOut_ACK::ID:
     // Frame detach must occur after the RenderView has swapped out.
     case FrameHostMsg_Detach::ID:
+    case FrameHostMsg_DomOperationResponse::ID:
     case FrameHostMsg_CompositorFrameSwappedACK::ID:
     case FrameHostMsg_BuffersSwappedACK::ID:
     case FrameHostMsg_ReclaimCompositorResources::ID:

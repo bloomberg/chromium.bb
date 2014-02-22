@@ -43,7 +43,7 @@ void PnaclHeaderTest::RunLoadTest(const std::string& url,
   StartServer();
   LoadTestMessageHandler handler;
   JavascriptTestObserver observer(
-      browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
+      browser()->tab_strip_model()->GetActiveWebContents(),
       &handler);
   ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL(url));
   // Wait until the NMF and pexe are also loaded, not just the HTML.
