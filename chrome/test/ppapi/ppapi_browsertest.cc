@@ -1648,6 +1648,9 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_FlashMessageLoop) {
           LIST_TEST(FlashMessageLoop_RunWithoutQuit));
 }
 
+TEST_PPAPI_OUT_OF_PROCESS(MediaStreamAudioTrack)
+TEST_PPAPI_NACL(MediaStreamAudioTrack)
+
 TEST_PPAPI_IN_PROCESS(MouseCursor)
 TEST_PPAPI_OUT_OF_PROCESS(MouseCursor)
 TEST_PPAPI_NACL(MouseCursor)

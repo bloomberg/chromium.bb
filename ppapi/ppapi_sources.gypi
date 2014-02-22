@@ -455,6 +455,8 @@
       'tests/test_ime_input_event.h',
       'tests/test_input_event.cc',
       'tests/test_input_event.h',
+      'tests/test_media_stream_audio_track.cc',
+      'tests/test_media_stream_audio_track.h',
       'tests/test_memory.cc',
       'tests/test_memory.h',
       'tests/test_message_loop.cc',
