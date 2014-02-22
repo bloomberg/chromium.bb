@@ -87,14 +87,14 @@ union CommandBufferEntry {
   float value_float;
 };
 
-const size_t kCommandBufferEntrySize = 4;
+#define GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT 4
+const size_t kCommandBufferEntrySize = GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT;
 
 COMPILE_ASSERT(sizeof(CommandBufferEntry) == kCommandBufferEntrySize,
                Sizeof_CommandBufferEntry_is_not_4);
 
-// Make sure the compiler does not add extra padding to any of the command
-// structures.
-#pragma pack(push, 1)
+// Command buffer is GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT byte aligned.
+#pragma pack(push, GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT)
 
 // Gets the address of memory just after a structure in a typesafe way. This is
 // used for IMMEDIATE commands to get the address of the place to put the data.

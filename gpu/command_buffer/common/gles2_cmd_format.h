@@ -42,7 +42,8 @@ typedef khronos_ssize_t  GLsizeiptr;
 namespace gpu {
 namespace gles2 {
 
-#pragma pack(push, 1)
+// Command buffer is GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT byte aligned.
+#pragma pack(push, GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT)
 
 namespace id_namespaces {
 
