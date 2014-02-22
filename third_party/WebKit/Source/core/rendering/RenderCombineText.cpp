@@ -76,7 +76,7 @@ void RenderCombineText::getStringToRender(int start, StringView& string, int& le
 {
     ASSERT(start >= 0);
     if (m_isCombined) {
-        string = StringView(originalText());
+        string = StringView(m_renderingText.impl());
         length = string.length();
         return;
     }
@@ -136,6 +136,7 @@ void RenderCombineText::combineText()
 
     if (m_isCombined) {
         DEFINE_STATIC_LOCAL(String, objectReplacementCharacterString, (&objectReplacementCharacter, 1));
+        m_renderingText = text();
         RenderText::setTextInternal(objectReplacementCharacterString.impl());
     }
 }

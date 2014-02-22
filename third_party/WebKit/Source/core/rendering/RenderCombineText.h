@@ -45,6 +45,7 @@ private:
     virtual void setTextInternal(PassRefPtr<StringImpl>) OVERRIDE;
 
     float m_combinedTextWidth;
+    String m_renderingText;
     bool m_isCombined : 1;
     bool m_needsFontUpdate : 1;
 };
