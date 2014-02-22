@@ -588,6 +588,20 @@ public abstract class TabBase implements NavigationClient {
     }
 
     /**
+     * Triggers the showing logic for the view backing this tab.
+     */
+    protected void show() {
+        if (mContentViewCore != null) mContentViewCore.onShow();
+    }
+
+    /**
+     * Triggers the hiding logic for the view backing the tab.
+     */
+    protected void hide() {
+        if (mContentViewCore != null) mContentViewCore.onHide();
+    }
+
+    /**
      * Shows the given {@code nativePage} if it's not already showing.
      * @param nativePage The {@link NativePage} to show.
      */
