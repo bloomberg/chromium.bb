@@ -9640,6 +9640,15 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.OCSPResponseStapled" enum="BooleanSuccess">
+  <summary>
+    When connecting over HTTPS, a server may include an OCSP response as part of
+    the TLS handshake so that clients do not have to fetch it, provided the
+    client requested the server do so. This measures whether or not a server
+    included an OCSP response when it was requested.
+  </summary>
+</histogram>
+
 <histogram name="Net.OSErrorsForGetAddrinfo" enum="ErrorCodesGetaddrinfo_All">
   <summary>
     Positive error code that was returned by the system library

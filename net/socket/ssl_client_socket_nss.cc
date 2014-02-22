@@ -2393,9 +2393,14 @@ void SSLClientSocketNSS::Core::UpdateSignedCertTimestamps() {
 }
 
 void SSLClientSocketNSS::Core::UpdateStapledOCSPResponse() {
+  PRBool ocsp_requested = PR_FALSE;
+  SSL_OptionGet(nss_fd_, SSL_ENABLE_OCSP_STAPLING, &ocsp_requested);
   const SECItemArray* ocsp_responses =
       SSL_PeerStapledOCSPResponses(nss_fd_);
-  if (!ocsp_responses || !ocsp_responses->len)
+  bool ocsp_responses_present = ocsp_responses && ocsp_responses->len;
+  if (ocsp_requested)
+    UMA_HISTOGRAM_BOOLEAN("Net.OCSPResponseStapled", ocsp_responses_present);
+  if (!ocsp_responses_present)
     return;
 
   nss_handshake_state_.stapled_ocsp_response = std::string(
