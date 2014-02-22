@@ -63,7 +63,6 @@ public:
         // to the end of the list.
         PageDestruction = 0,
         LegacyNotifications = 1,
-        MultipartMainResource = 2,
         PrefixedIndexedDB = 3,
         WorkerStart = 4,
         SharedWorkerStart = 5,
@@ -85,7 +84,6 @@ public:
         IncrementalAttribute = 25,
         InputTypeColor = 26,
         InputTypeDate = 27,
-        InputTypeDateTime = 28,
         InputTypeDateTimeFallback = 29,
         InputTypeDateTimeLocal = 30,
         InputTypeEmail = 31,
@@ -132,20 +130,16 @@ public:
         XSLProcessingInstruction = 78,
         XSLTProcessor = 79,
         SVGSwitchElement = 80,
-        HTMLShadowElementOlderShadowRoot = 82,
         DocumentAll = 83,
         FormElement = 84,
         DemotedFormElement = 85,
         CaptureAttributeAsEnum = 86,
-        ShadowDOMPrefixedPseudo = 87,
         ShadowDOMPrefixedCreateShadowRoot = 88,
         ShadowDOMPrefixedShadowRoot = 89,
         SVGAnimationElement = 90,
         KeyboardEventKeyLocation = 91,
         CaptureEvents = 92,
         ReleaseEvents = 93,
-        CSSDisplayRunIn = 94,
-        CSSDisplayCompact = 95,
         LineClamp = 96,
         SubFrameBeforeUnloadRegistered = 97,
         SubFrameBeforeUnloadFired = 98,
@@ -154,9 +148,7 @@ public:
         PrefixedShadowRootConstructor = 101,
         ConsoleMarkTimeline = 102,
         CSSPseudoElementUserAgentCustomPseudo = 103,
-        DocumentTypeEntities = 104, // Removed from DOM4.
         DocumentTypeInternalSubset = 105, // Removed from DOM4.
-        DocumentTypeNotations = 106, // Removed from DOM4.
         ElementGetAttributeNode = 107, // Removed from DOM4.
         ElementSetAttributeNode = 108, // Removed from DOM4.
         ElementRemoveAttributeNode = 109, // Removed from DOM4.
@@ -203,8 +195,6 @@ public:
         BeforeLoadEvent = 154,
         GetMatchedCSSRules = 155,
         SVGFontInCSS = 156,
-        ScrollTopBodyNotQuirksMode = 157,
-        ScrollLeftBodyNotQuirksMode = 158,
         AttributeSpecified = 162, // Removed in DOM4.
         BeforeLoadEventInIsolatedWorld = 163,
         PrefixedAudioDecodedByteCount = 164,

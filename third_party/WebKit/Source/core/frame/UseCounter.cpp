@@ -626,10 +626,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case DocumentClear:
         return "document.clear() is deprecated. This method doesn't do anything.";
 
-    // Web Components
-    case HTMLShadowElementOlderShadowRoot:
-        return "HTMLShadowElement.olderShadowRoot is deprecated.";
-
     // HTML Media Capture
     case CaptureAttributeAsEnum:
         return "Using the 'capture' attribute as an enum is deprecated. Please use it as a boolean and specify the media types that should be accepted in the 'accept' attribute.";
@@ -652,12 +648,6 @@ String UseCounter::deprecationMessage(Feature feature)
 
     case EventReturnValue:
         return "event.returnValue is deprecated. Please use the standard event.preventDefault() instead.";
-
-    case ScrollTopBodyNotQuirksMode:
-        return "body.scrollTop is deprecated in strict mode. Please use 'documentElement.scrollTop' if in strict mode and 'body.scrollTop' only if in quirks mode.";
-
-    case ScrollLeftBodyNotQuirksMode:
-        return "body.scrollLeft is deprecated in strict mode. Please use 'documentElement.scrollLeft' if in strict mode and 'body.scrollLeft' only if in quirks mode.";
 
     case ShowModalDialog:
         return "Chromium is considering deprecating showModalDialog. Please use window.open and postMessage instead.";
