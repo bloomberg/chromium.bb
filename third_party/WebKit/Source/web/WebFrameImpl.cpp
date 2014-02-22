@@ -537,11 +537,6 @@ void WebFrameImpl::setName(const WebString& name)
     frame()->tree().setName(name);
 }
 
-long long WebFrameImpl::embedderIdentifier() const
-{
-    return m_frameInit->frameID();
-}
-
 WebVector<WebIconURL> WebFrameImpl::iconURLs(int iconTypesMask) const
 {
     // The URL to the icon may be in the header. As such, only
@@ -2098,30 +2093,13 @@ WebFrame* WebFrame::create(WebFrameClient* client)
     return WebFrameImpl::create(client);
 }
 
-WebFrame* WebFrame::create(WebFrameClient* client, long long embedderIdentifier)
-{
-    return WebFrameImpl::create(client, embedderIdentifier);
-}
-
-long long WebFrame::generateEmbedderIdentifier()
-{
-    static long long next = 0;
-    // Assume that 64-bit will not wrap to -1.
-    return ++next;
-}
-
 WebFrameImpl* WebFrameImpl::create(WebFrameClient* client)
 {
-    return WebFrameImpl::create(client, generateEmbedderIdentifier());
+    return adoptRef(new WebFrameImpl(client)).leakRef();
 }
 
-WebFrameImpl* WebFrameImpl::create(WebFrameClient* client, long long embedderIdentifier)
-{
-    return adoptRef(new WebFrameImpl(client, embedderIdentifier)).leakRef();
-}
-
-WebFrameImpl::WebFrameImpl(WebFrameClient* client, long long embedderIdentifier)
-    : m_frameInit(WebFrameInit::create(this, embedderIdentifier))
+WebFrameImpl::WebFrameImpl(WebFrameClient* client)
+    : m_frameInit(WebFrameInit::create(this))
     , m_parent(0)
     , m_previousSibling(0)
     , m_nextSibling(0)

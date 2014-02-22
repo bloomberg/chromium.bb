@@ -76,12 +76,10 @@ namespace WebCore {
     class FrameInit : public RefCounted<FrameInit> {
     public:
         // For creating a dummy Frame
-        static PassRefPtr<FrameInit> create(int64_t frameID, FrameHost* host, FrameLoaderClient* client)
+        static PassRefPtr<FrameInit> create(FrameHost* host, FrameLoaderClient* client)
         {
-            return adoptRef(new FrameInit(frameID, host, client));
+            return adoptRef(new FrameInit(host, client));
         }
-
-        int64_t frameID() const { return m_frameID; }
 
         void setFrameHost(FrameHost* host) { m_frameHost = host; }
         FrameHost* frameHost() const { return m_frameHost; }
@@ -93,16 +91,14 @@ namespace WebCore {
         HTMLFrameOwnerElement* ownerElement() const { return m_ownerElement; }
 
     protected:
-        FrameInit(int64_t frameID, FrameHost* host = 0, FrameLoaderClient* client = 0)
-            : m_frameID(frameID)
-            , m_client(client)
+        FrameInit(FrameHost* host = 0, FrameLoaderClient* client = 0)
+            : m_client(client)
             , m_frameHost(host)
             , m_ownerElement(0)
         {
         }
 
     private:
-        int64_t m_frameID;
         FrameLoaderClient* m_client;
         FrameHost* m_frameHost;
         HTMLFrameOwnerElement* m_ownerElement;
@@ -158,7 +154,7 @@ namespace WebCore {
 
         void didChangeVisibilityState();
 
-        int64_t frameID() const { return m_frameInit->frameID(); }
+        int64_t frameID() const { return m_frameID; }
 
         // FIXME: These should move to RemoteFrame once that exists.
         // RemotePlatformLayer is only ever set for Frames which exist in another process.
@@ -223,6 +219,8 @@ namespace WebCore {
 
         HashSet<FrameDestructionObserver*> m_destructionObservers;
 
+        // Temporary hack for history.
+        int64_t m_frameID;
         FrameHost* m_host;
         mutable FrameTree m_treeNode;
         mutable FrameLoader m_loader;

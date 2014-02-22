@@ -77,6 +77,18 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
+namespace {
+
+int64_t generateFrameID()
+{
+    // Initialize to the current time to reduce the likelihood of generating
+    // identifiers that overlap with those from past/future browser sessions.
+    static int64_t next = static_cast<int64_t>(currentTime() * 1000000.0);
+    return ++next;
+}
+
+} // namespace
+
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, frameCounter, ("Frame"));
 
 static inline float parentPageZoomFactor(Frame* frame)
@@ -96,7 +108,8 @@ static inline float parentTextZoomFactor(Frame* frame)
 }
 
 inline Frame::Frame(PassRefPtr<FrameInit> frameInit)
-    : m_host(frameInit->frameHost())
+    : m_frameID(generateFrameID())
+    , m_host(frameInit->frameHost())
     , m_treeNode(this)
     , m_loader(this, frameInit->frameLoaderClient())
     , m_navigationScheduler(this)

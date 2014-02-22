@@ -79,7 +79,6 @@ public:
     virtual WebString uniqueName() const OVERRIDE;
     virtual WebString assignedName() const OVERRIDE;
     virtual void setName(const WebString&) OVERRIDE;
-    virtual long long embedderIdentifier() const OVERRIDE;
     virtual WebVector<WebIconURL> iconURLs(int iconTypesMask) const OVERRIDE;
     virtual void setIsRemote(bool) OVERRIDE;
     virtual void setRemoteWebLayer(WebLayer*) OVERRIDE;
@@ -241,9 +240,6 @@ public:
     void willDetachParent();
 
     static WebFrameImpl* create(WebFrameClient*);
-    // FIXME: Move the embedderIdentifier concept fully to the embedder and
-    // remove this factory method.
-    static WebFrameImpl* create(WebFrameClient*, long long embedderIdentifier);
     virtual ~WebFrameImpl();
 
     // Called by the WebViewImpl to initialize the main frame for the page.
@@ -338,7 +334,7 @@ private:
       InvalidateAll          // Both content area and the scrollbar.
     };
 
-    WebFrameImpl(WebFrameClient*, long long frame_identifier);
+    explicit WebFrameImpl(WebFrameClient*);
 
     // Sets the local WebCore frame and registers destruction observers.
     void setWebCoreFrame(PassRefPtr<WebCore::Frame>);
@@ -422,15 +418,14 @@ private:
 
     class WebFrameInit : public WebCore::FrameInit {
     public:
-        static PassRefPtr<WebFrameInit> create(WebFrameImpl* webFrameImpl, int64_t frameID)
+        static PassRefPtr<WebFrameInit> create(WebFrameImpl* webFrameImpl)
         {
-            return adoptRef(new WebFrameInit(webFrameImpl, frameID));
+            return adoptRef(new WebFrameInit(webFrameImpl));
         }
 
     private:
-        WebFrameInit(WebFrameImpl* webFrameImpl, int64_t frameID)
-            : WebCore::FrameInit(frameID)
-            , m_frameLoaderClientImpl(webFrameImpl)
+        explicit WebFrameInit(WebFrameImpl* webFrameImpl)
+            : m_frameLoaderClientImpl(webFrameImpl)
         {
             setFrameLoaderClient(&m_frameLoaderClientImpl);
         }
