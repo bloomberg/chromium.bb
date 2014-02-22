@@ -1639,6 +1639,7 @@ String Internals::layerTreeAsText(Document* document, ExceptionState& exceptionS
 
 String Internals::elementLayerTreeAsText(Element* element, ExceptionState& exceptionState) const
 {
+    DisableCompositingQueryAsserts disabler;
     return elementLayerTreeAsText(element, 0, exceptionState);
 }
 

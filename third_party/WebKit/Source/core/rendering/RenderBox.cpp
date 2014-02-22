@@ -427,12 +427,19 @@ int RenderBox::scrollTop() const
 
 void RenderBox::setScrollLeft(int newLeft)
 {
+    // This doesn't hit in any tests, but since the equivalent code in setScrollTop
+    // does, presumably this code does as well.
+    DisableCompositingQueryAsserts disabler;
+
     if (hasOverflowClip())
         layer()->scrollableArea()->scrollToXOffset(newLeft, ScrollOffsetClamped);
 }
 
 void RenderBox::setScrollTop(int newTop)
 {
+    // Hits in compositing/overflow/do-not-assert-on-invisible-composited-layers.html
+    DisableCompositingQueryAsserts disabler;
+
     if (hasOverflowClip())
         layer()->scrollableArea()->scrollToYOffset(newTop, ScrollOffsetClamped);
 }
@@ -440,6 +447,10 @@ void RenderBox::setScrollTop(int newTop)
 void RenderBox::scrollToOffset(const IntSize& offset)
 {
     ASSERT(hasOverflowClip());
+
+    // This doesn't hit in any tests, but since the equivalent code in setScrollTop
+    // does, presumably this code does as well.
+    DisableCompositingQueryAsserts disabler;
     layer()->scrollableArea()->scrollToOffset(offset, ScrollOffsetClamped);
 }
 

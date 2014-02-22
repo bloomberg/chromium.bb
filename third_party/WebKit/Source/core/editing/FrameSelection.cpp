@@ -62,6 +62,7 @@
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineTextBox.h"
+#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
@@ -260,6 +261,9 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
 
     if (!(options & DoNotUpdateAppearance)) {
         m_frame->document()->updateLayoutIgnorePendingStylesheets();
+
+        // Hits in compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html
+        DisableCompositingQueryAsserts disabler;
         updateAppearance();
     }
 
@@ -486,6 +490,8 @@ TextDirection FrameSelection::directionOfSelection()
 
 void FrameSelection::didChangeFocus()
 {
+    // Hits in virtual/gpu/compositedscrolling/scrollbars/scrollbar-miss-mousemove-disabled.html
+    DisableCompositingQueryAsserts disabler;
     updateAppearance();
 }
 

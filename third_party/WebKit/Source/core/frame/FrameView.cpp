@@ -2013,7 +2013,12 @@ void FrameView::performPostLayoutTasks()
     m_postLayoutTasksTimer.stop();
 
     m_frame->selection().setCaretRectNeedsUpdate();
-    m_frame->selection().updateAppearance();
+
+    {
+        // Hits in compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html
+        DisableCompositingQueryAsserts disabler;
+        m_frame->selection().updateAppearance();
+    }
 
     ASSERT(m_frame->document());
     if (m_nestedLayoutCount <= 1) {

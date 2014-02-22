@@ -195,8 +195,11 @@ void RenderMarquee::updateMarqueePosition()
         EMarqueeBehavior behavior = style()->marqueeBehavior();
         m_start = computePosition(direction(), behavior == MALTERNATE);
         m_end = computePosition(reverseDirection(), behavior == MALTERNATE || behavior == MSLIDE);
-        if (!m_stopped)
+        if (!m_stopped) {
+            // Hits in compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html during layout.
+            DisableCompositingQueryAsserts disabler;
             start();
+        }
     }
 }
 

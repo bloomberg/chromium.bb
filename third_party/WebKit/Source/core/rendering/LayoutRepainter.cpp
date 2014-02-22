@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/rendering/LayoutRepainter.h"
 
+#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderObject.h"
 
 namespace WebCore {
@@ -40,7 +41,11 @@ LayoutRepainter::LayoutRepainter(RenderObject& object, bool checkForRepaint)
 
     if (m_checkForRepaint) {
         m_repaintContainer = m_object.containerForRepaint();
-        m_oldBounds = m_object.clippedOverflowRectForRepaint(m_repaintContainer);
+        {
+            // Hits in compositing/video/video-controls-layer-creation.html
+            DisableCompositingQueryAsserts disabler;
+            m_oldBounds = m_object.clippedOverflowRectForRepaint(m_repaintContainer);
+        }
         m_oldOutlineBox = m_object.outlineBoundsForRepaint(m_repaintContainer);
     }
 }
@@ -49,6 +54,9 @@ bool LayoutRepainter::repaintAfterLayout()
 {
     if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
         return false;
+
+    // Hits in compositing/video/video-controls-layer-creation.html
+    DisableCompositingQueryAsserts disabler;
 
     return m_checkForRepaint ? m_object.repaintAfterLayoutIfNeeded(m_repaintContainer, m_object.selfNeedsLayout(), m_oldBounds, m_oldOutlineBox) : false;
 }

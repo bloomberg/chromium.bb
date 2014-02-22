@@ -575,11 +575,16 @@ void RenderLayerScrollableArea::updateAfterLayout()
     bool hasHorizontalOverflow = this->hasHorizontalOverflow();
     bool hasVerticalOverflow = this->hasVerticalOverflow();
 
-    // overflow:scroll should just enable/disable.
-    if (m_box->style()->overflowX() == OSCROLL)
-        horizontalScrollbar()->setEnabled(hasHorizontalOverflow);
-    if (m_box->style()->overflowY() == OSCROLL)
-        verticalScrollbar()->setEnabled(hasVerticalOverflow);
+    {
+        // Hits in compositing/overflow/automatically-opt-into-composited-scrolling-after-style-change.html.
+        DisableCompositingQueryAsserts disabler;
+
+        // overflow:scroll should just enable/disable.
+        if (m_box->style()->overflowX() == OSCROLL)
+            horizontalScrollbar()->setEnabled(hasHorizontalOverflow);
+        if (m_box->style()->overflowY() == OSCROLL)
+            verticalScrollbar()->setEnabled(hasVerticalOverflow);
+    }
 
     // overflow:auto may need to lay out again if scrollbars got added/removed.
     bool autoHorizontalScrollBarChanged = m_box->hasAutoHorizontalScrollbar() && (hasHorizontalScrollbar() != hasHorizontalOverflow);
@@ -618,14 +623,19 @@ void RenderLayerScrollableArea::updateAfterLayout()
         }
     }
 
-    // Set up the range (and page step/line step).
-    if (Scrollbar* horizontalScrollbar = this->horizontalScrollbar()) {
-        int clientWidth = m_box->pixelSnappedClientWidth();
-        horizontalScrollbar->setProportion(clientWidth, overflowRect().width());
-    }
-    if (Scrollbar* verticalScrollbar = this->verticalScrollbar()) {
-        int clientHeight = m_box->pixelSnappedClientHeight();
-        verticalScrollbar->setProportion(clientHeight, overflowRect().height());
+    {
+        // Hits in compositing/overflow/automatically-opt-into-composited-scrolling-after-style-change.html.
+        DisableCompositingQueryAsserts disabler;
+
+        // Set up the range (and page step/line step).
+        if (Scrollbar* horizontalScrollbar = this->horizontalScrollbar()) {
+            int clientWidth = m_box->pixelSnappedClientWidth();
+            horizontalScrollbar->setProportion(clientWidth, overflowRect().width());
+        }
+        if (Scrollbar* verticalScrollbar = this->verticalScrollbar()) {
+            int clientHeight = m_box->pixelSnappedClientHeight();
+            verticalScrollbar->setProportion(clientHeight, overflowRect().height());
+        }
     }
 
     updateScrollableAreaSet(hasScrollableHorizontalOverflow() || hasScrollableVerticalOverflow());
@@ -832,10 +842,14 @@ void RenderLayerScrollableArea::setHasHorizontalScrollbar(bool hasScrollbar)
     if (hasScrollbar == hasHorizontalScrollbar())
         return;
 
-    if (hasScrollbar)
+    if (hasScrollbar) {
+        // This doesn't hit in any tests, but since the equivalent code in setHasVerticalScrollbar
+        // does, presumably this code does as well.
+        DisableCompositingQueryAsserts disabler;
         m_hBar = createScrollbar(HorizontalScrollbar);
-    else
+    } else {
         destroyScrollbar(HorizontalScrollbar);
+    }
 
     // Destroying or creating one bar can cause our scrollbar corner to come and go. We need to update the opposite scrollbar's style.
     if (m_hBar)
@@ -853,10 +867,13 @@ void RenderLayerScrollableArea::setHasVerticalScrollbar(bool hasScrollbar)
     if (hasScrollbar == hasVerticalScrollbar())
         return;
 
-    if (hasScrollbar)
+    if (hasScrollbar) {
+        // Hits in compositing/overflow/automatically-opt-into-composited-scrolling-after-style-change.html
+        DisableCompositingQueryAsserts disabler;
         m_vBar = createScrollbar(VerticalScrollbar);
-    else
+    } else {
         destroyScrollbar(VerticalScrollbar);
+    }
 
     // Destroying or creating one bar can cause our scrollbar corner to come and go. We need to update the opposite scrollbar's style.
     if (m_hBar)

@@ -1934,6 +1934,9 @@ void RenderBlockFlow::repaintOverflow()
 
     // Make sure the rect is still non-empty after intersecting for overflow above
     if (!repaintRect.isEmpty()) {
+        // Hits in media/event-attributes.html
+        DisableCompositingQueryAsserts disabler;
+
         repaintRectangle(repaintRect); // We need to do a partial repaint of our content.
         if (hasReflection())
             repaintRectangle(reflectedRect(repaintRect));

@@ -356,7 +356,7 @@ public:
     // compositing state may legally be read.
     bool isAllowedToQueryCompositingState() const;
 
-    CompositedLayerMappingPtr compositedLayerMapping() const { return m_compositedLayerMapping.get(); }
+    CompositedLayerMappingPtr compositedLayerMapping() const;
     CompositedLayerMappingPtr ensureCompositedLayerMapping();
 
     // NOTE: If you are using hasCompositedLayerMapping to determine the state of compositing for this layer,

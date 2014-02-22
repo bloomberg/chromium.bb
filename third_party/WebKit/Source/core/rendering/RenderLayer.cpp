@@ -1457,6 +1457,10 @@ void RenderLayer::removeOnlyThisLayer()
         removeChild(current);
         m_parent->addChild(current, nextSib);
         current->repainter().setRepaintStatus(NeedsFullRepaint);
+
+        // Hits in compositing/overflow/automatically-opt-into-composited-scrolling-part-1.html
+        DisableCompositingQueryAsserts disabler;
+
         current->updateLayerPositions(0); // FIXME: use geometry map.
         current = next;
     }
@@ -3482,6 +3486,12 @@ bool RenderLayer::isAllowedToQueryCompositingState() const
     if (gCompositingQueryMode == CompositingQueriesAreAllowed)
         return true;
     return renderer()->document().lifecycle().state() >= DocumentLifecycle::InCompositingUpdate;
+}
+
+CompositedLayerMappingPtr RenderLayer::compositedLayerMapping() const
+{
+    ASSERT(isAllowedToQueryCompositingState());
+    return m_compositedLayerMapping.get();
 }
 
 CompositedLayerMappingPtr RenderLayer::ensureCompositedLayerMapping()
