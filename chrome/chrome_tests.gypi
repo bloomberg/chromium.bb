@@ -2289,7 +2289,6 @@
         'test/perf/frame_rate/frame_rate_tests.cc',
         'test/perf/generate_profile.cc',
         'test/perf/generate_profile.h',
-        'test/perf/indexeddb_uitest.cc',
         'test/perf/memory_test.cc',
         'test/perf/perf_ui_test_suite.cc',
         'test/perf/run_all_perfuitests.cc',

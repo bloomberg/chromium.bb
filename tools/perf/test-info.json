@@ -74,13 +74,6 @@
     "description": "Impact HTML5 Gaming benchmark.\n\nTests one very specific use case: smooth running games rendered with the <canvas> element. The score for the HTML5-Benchmark takes the total time the browser spent rendering frames (formula is 1000000/(sqrt(totalTime) + lagTime * 0.1)). The benchmark automatically runs at a reasonable screen size. Final score is a indicator for the browser's ability to smoothly run HTML5 games.",
     "code": ["chrome/src/tools/perf/benchmark/html5gaming.py"]
   },
-  "idb_perf":{
-    "description":"Benchmarks for a variety of IndexedDB operations.",
-    "code":[
-      "chrome/src/chrome/test/perf/indexeddb_uitest.cc",
-      "chrome/src/chrome/test/data/indexeddb/perf_test.html"
-    ]
-  },
   "image_decoding.image_decoding_measurement ":{
     "description":"Milliseconds to decode a large image of various formats (gif, jpg, png, webp)."
   },
