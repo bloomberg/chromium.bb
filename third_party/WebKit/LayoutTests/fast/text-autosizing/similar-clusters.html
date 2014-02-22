@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta name="viewport" content="width=800">
+<style>
+html { font-size: 16px; }
+body { width: 800px; margin: 0; overflow-y: hidden; }
+</style>
+
+<script>
+if (window.internals) {
+    window.internals.settings.setTextAutosizingEnabled(true);
+    window.internals.settings.setTextAutosizingWindowSizeOverride(320, 480);
+} else if (window.console && console.warn) {
+    console.warn("This test depends on the Text Autosizing setting being true, so run it in DumpRenderTree, or manually enable Text Autosizing, and either use a mobile device with 320px device-width (like Nexus S or iPhone), or define HACK_FORCE_TEXT_AUTOSIZING_ON_DESKTOP.");
+}
+</script>
+
+</head>
+<body>
+
+  <div style="width: 500px">
+    Short cluster #1.
+  </div>
+  <div style="width: 500px">
+    Short and similar.
+  </div>
+  <div style="width: 550px">
+    Short cluster #2.
+  </div>
+  <div style="width: 550px">
+    Similar to #2 but long.
+    Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut
+    labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
+    laboris ni si ut aliquip ex ea commodo consequat.
+  </div>
+
+</body>
+</html>

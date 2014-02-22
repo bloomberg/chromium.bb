@@ -30,6 +30,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
 #include "core/rendering/AutoTableLayout.h"
+#include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/FixedTableLayout.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestResult.h"
@@ -413,6 +414,7 @@ void RenderTable::simplifiedNormalFlowLayout()
 
 void RenderTable::layout()
 {
+    FastTextAutosizer::LayoutScope fastTextAutosizerLayoutScope(document(), this);
     ASSERT(needsLayout());
 
     LayoutRectRecorder recorder(*this);

@@ -47,6 +47,16 @@ using namespace std;
 
 namespace WebCore {
 
+static const RenderObject* parentElementRenderer(const RenderObject* renderer)
+{
+    for (RenderObject* parent = renderer->parent(); parent; parent = parent->parent()) {
+        Node* node = parent->generatingNode();
+        if (node && node->isElementNode())
+            return parent;
+    }
+    return 0;
+}
+
 FastTextAutosizer::FastTextAutosizer(const Document* document)
     : m_document(document)
 #ifndef NDEBUG
@@ -65,11 +75,8 @@ void FastTextAutosizer::record(const RenderBlock* block)
     if (!isFingerprintingCandidate(block))
         return;
 
-    AtomicString fingerprint = computeFingerprint(block);
-    if (fingerprint.isNull())
-        return;
-
-    m_fingerprintMapper.add(block, fingerprint);
+    if (Fingerprint fingerprint = computeFingerprint(block))
+        m_fingerprintMapper.addTentativeClusterRoot(block, fingerprint);
 }
 
 void FastTextAutosizer::destroy(const RenderBlock* block)
@@ -201,25 +208,28 @@ bool FastTextAutosizer::isFingerprintingCandidate(const RenderBlock* block)
     // FIXME: move the logic out of TextAutosizer.cpp into this class.
     return block->isRenderView()
         || (TextAutosizer::isAutosizingContainer(block)
-            && TextAutosizer::isIndependentDescendant(block));
+            && (TextAutosizer::isIndependentDescendant(block)
+                || mightBeWiderOrNarrowerDescendant(block)));
 }
 
-bool FastTextAutosizer::clusterWouldHaveEnoughTextToAutosize(const RenderBlock* root)
+bool FastTextAutosizer::clusterWouldHaveEnoughTextToAutosize(const RenderBlock* root, const RenderBlock* widthProvider)
 {
     Cluster hypotheticalCluster(root, true, 0);
-    return clusterHasEnoughTextToAutosize(&hypotheticalCluster);
+    return clusterHasEnoughTextToAutosize(&hypotheticalCluster, widthProvider);
 }
 
-bool FastTextAutosizer::clusterHasEnoughTextToAutosize(Cluster* cluster)
+bool FastTextAutosizer::clusterHasEnoughTextToAutosize(Cluster* cluster, const RenderBlock* widthProvider)
 {
     const RenderBlock* root = cluster->m_root;
+    if (!widthProvider)
+        widthProvider = root;
 
     // TextAreas and user-modifiable areas get a free pass to autosize regardless of text content.
     if (root->isTextArea() || (root->style() && root->style()->userModify() != READ_ONLY))
         return true;
 
     static const float minLinesOfText = 4;
-    if (textLength(cluster) >= root->contentLogicalWidth() * minLinesOfText)
+    if (textLength(cluster) >= widthProvider->contentLogicalWidth() * minLinesOfText)
         return true;
 
     return false;
@@ -250,10 +260,49 @@ float FastTextAutosizer::textLength(Cluster* cluster)
     return cluster->m_textLength = length;
 }
 
-AtomicString FastTextAutosizer::computeFingerprint(const RenderBlock* block)
+FastTextAutosizer::Fingerprint FastTextAutosizer::getFingerprint(const RenderObject* renderer)
 {
-    // FIXME(crbug.com/322340): Implement a fingerprinting algorithm.
-    return nullAtom;
+    Fingerprint result = m_fingerprintMapper.get(renderer);
+    if (!result) {
+        result = computeFingerprint(renderer);
+        m_fingerprintMapper.add(renderer, result);
+    }
+    return result;
+}
+
+FastTextAutosizer::Fingerprint FastTextAutosizer::computeFingerprint(const RenderObject* renderer)
+{
+    Node* node = renderer->generatingNode();
+    if (!node || !node->isElementNode())
+        return 0;
+
+    FingerprintSourceData data;
+
+    // FIXME: Instead of computing and caching parent fingerprints on demand,
+    // consider maintaining a fingerprint stack during the style recalc
+    // tree walk (similar to the cluster stack used during layout).
+
+    if (const RenderObject* parent = parentElementRenderer(renderer))
+        data.m_parentHash = getFingerprint(parent);
+
+    data.m_qualifiedNameHash = QualifiedNameHash::hash(toElement(node)->tagQName());
+
+    if (RenderStyle* style = renderer->style()) {
+        data.m_packedStyleProperties = style->direction();
+        data.m_packedStyleProperties |= (style->position() << 1);
+        data.m_packedStyleProperties |= (style->floating() << 4);
+        data.m_packedStyleProperties |= (style->display() << 6);
+        data.m_packedStyleProperties |= (style->width().type() << 11);
+        // packedStyleProperties effectively using 15 bits now.
+
+        // consider for adding: writing mode, padding.
+
+        data.m_width = style->width().getFloatValue();
+    }
+
+    return StringHasher::computeHash<UChar>(
+        static_cast<const UChar*>(static_cast<const void*>(&data)),
+        sizeof data / sizeof(UChar));
 }
 
 FastTextAutosizer::Cluster* FastTextAutosizer::maybeCreateCluster(const RenderBlock* block)
@@ -280,11 +329,11 @@ FastTextAutosizer::Cluster* FastTextAutosizer::maybeCreateCluster(const RenderBl
 
 FastTextAutosizer::Supercluster* FastTextAutosizer::getSupercluster(const RenderBlock* block)
 {
-    AtomicString fingerprint = m_fingerprintMapper.get(block);
-    if (fingerprint.isNull())
+    Fingerprint fingerprint = m_fingerprintMapper.get(block);
+    if (!fingerprint)
         return 0;
 
-    BlockSet* roots = &m_fingerprintMapper.getBlocks(fingerprint);
+    BlockSet* roots = &m_fingerprintMapper.getTentativeClusterRoots(fingerprint);
     if (roots->size() < 2)
         return 0;
 
@@ -345,12 +394,15 @@ float FastTextAutosizer::superclusterMultiplier(Supercluster* supercluster)
         const BlockSet* roots = supercluster->m_roots;
         // Set of the deepest block containing all text (DBCAT) of every cluster.
         BlockSet dbcats;
-        for (BlockSet::iterator it = roots->begin(); it != roots->end(); ++it) {
+        for (BlockSet::iterator it = roots->begin(); it != roots->end(); ++it)
             dbcats.add(deepestBlockContainingAllText(*it));
-            supercluster->m_anyClusterHasEnoughText |= clusterWouldHaveEnoughTextToAutosize(*it);
-        }
+        const RenderBlock* widthProvider = deepestCommonAncestor(dbcats);
+
+        for (BlockSet::iterator it = roots->begin(); it != roots->end(); ++it)
+            supercluster->m_anyClusterHasEnoughText |= clusterWouldHaveEnoughTextToAutosize(*it, widthProvider);
+
         supercluster->m_multiplier = supercluster->m_anyClusterHasEnoughText
-            ? multiplierFromBlock(deepestCommonAncestor(dbcats)) : 1.0f;
+            ? multiplierFromBlock(widthProvider) : 1.0f;
     }
     ASSERT(supercluster->m_multiplier);
     return supercluster->m_multiplier;
@@ -512,9 +564,14 @@ FastTextAutosizer::Cluster* FastTextAutosizer::currentCluster() const
     return m_clusterStack.last().get();
 }
 
-void FastTextAutosizer::FingerprintMapper::add(const RenderBlock* block, AtomicString fingerprint)
+void FastTextAutosizer::FingerprintMapper::add(const RenderObject* renderer, Fingerprint fingerprint)
 {
-    m_fingerprints.set(block, fingerprint);
+    m_fingerprints.set(renderer, fingerprint);
+}
+
+void FastTextAutosizer::FingerprintMapper::addTentativeClusterRoot(const RenderBlock* block, Fingerprint fingerprint)
+{
+    add(block, fingerprint);
 
     ReverseFingerprintMap::AddResult addResult = m_blocksForFingerprint.add(fingerprint, PassOwnPtr<BlockSet>());
     if (addResult.isNewEntry)
@@ -522,25 +579,28 @@ void FastTextAutosizer::FingerprintMapper::add(const RenderBlock* block, AtomicS
     addResult.storedValue->value->add(block);
 }
 
-void FastTextAutosizer::FingerprintMapper::remove(const RenderBlock* block)
+void FastTextAutosizer::FingerprintMapper::remove(const RenderObject* renderer)
 {
-    AtomicString fingerprint = m_fingerprints.take(block);
-    if (fingerprint.isNull())
+    Fingerprint fingerprint = m_fingerprints.take(renderer);
+    if (!fingerprint || !renderer->isRenderBlock())
         return;
 
     ReverseFingerprintMap::iterator blocksIter = m_blocksForFingerprint.find(fingerprint);
+    if (blocksIter == m_blocksForFingerprint.end())
+        return;
+
     BlockSet& blocks = *blocksIter->value;
-    blocks.remove(block);
+    blocks.remove(toRenderBlock(renderer));
     if (blocks.isEmpty())
         m_blocksForFingerprint.remove(blocksIter);
 }
 
-AtomicString FastTextAutosizer::FingerprintMapper::get(const RenderBlock* block)
+FastTextAutosizer::Fingerprint FastTextAutosizer::FingerprintMapper::get(const RenderObject* renderer)
 {
-    return m_fingerprints.get(block);
+    return m_fingerprints.get(renderer);
 }
 
-FastTextAutosizer::BlockSet& FastTextAutosizer::FingerprintMapper::getBlocks(AtomicString fingerprint)
+FastTextAutosizer::BlockSet& FastTextAutosizer::FingerprintMapper::getTentativeClusterRoots(Fingerprint fingerprint)
 {
     return *m_blocksForFingerprint.get(fingerprint);
 }

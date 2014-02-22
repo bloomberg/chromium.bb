@@ -38,7 +38,6 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/text/AtomicStringHash.h"
 
 namespace WebCore {
 
@@ -147,20 +146,41 @@ private:
         Last
     };
 
-    typedef HashMap<AtomicString, OwnPtr<Supercluster> > SuperclusterMap;
+    struct FingerprintSourceData {
+        FingerprintSourceData()
+            : m_parentHash(0)
+            , m_qualifiedNameHash(0)
+            , m_packedStyleProperties(0)
+            , m_width(0)
+        {
+        }
+
+        unsigned m_parentHash;
+        unsigned m_qualifiedNameHash;
+        // Style specific selection of signals
+        unsigned m_packedStyleProperties;
+        float m_width;
+    };
+    // Ensures efficient hashing using StringHasher.
+    COMPILE_ASSERT(!(sizeof(FingerprintSourceData) % sizeof(UChar)),
+        Sizeof_FingerprintSourceData_must_be_multiple_of_UChar);
+
+    typedef unsigned Fingerprint;
+    typedef HashMap<Fingerprint, OwnPtr<Supercluster> > SuperclusterMap;
     typedef Vector<OwnPtr<Cluster> > ClusterStack;
 
     // Fingerprints are computed during style recalc, for (some subset of)
     // blocks that will become cluster roots.
     class FingerprintMapper {
     public:
-        void add(const RenderBlock*, AtomicString);
-        void remove(const RenderBlock*);
-        AtomicString get(const RenderBlock*);
-        BlockSet& getBlocks(AtomicString);
+        void add(const RenderObject*, Fingerprint);
+        void addTentativeClusterRoot(const RenderBlock*, Fingerprint);
+        void remove(const RenderObject*);
+        Fingerprint get(const RenderObject*);
+        BlockSet& getTentativeClusterRoots(Fingerprint);
     private:
-        typedef HashMap<const RenderBlock*, AtomicString> FingerprintMap;
-        typedef HashMap<AtomicString, OwnPtr<BlockSet> > ReverseFingerprintMap;
+        typedef HashMap<const RenderObject*, Fingerprint> FingerprintMap;
+        typedef HashMap<Fingerprint, OwnPtr<BlockSet> > ReverseFingerprintMap;
 
         FingerprintMap m_fingerprints;
         ReverseFingerprintMap m_blocksForFingerprint;
@@ -174,10 +194,11 @@ private:
     bool enabled();
     void prepareRenderViewInfo();
     bool isFingerprintingCandidate(const RenderBlock*);
-    bool clusterHasEnoughTextToAutosize(Cluster*);
-    bool clusterWouldHaveEnoughTextToAutosize(const RenderBlock*);
+    bool clusterHasEnoughTextToAutosize(Cluster*, const RenderBlock* widthProvider = 0);
+    bool clusterWouldHaveEnoughTextToAutosize(const RenderBlock* root, const RenderBlock* widthProvider = 0);
     float textLength(Cluster*);
-    AtomicString computeFingerprint(const RenderBlock*);
+    Fingerprint getFingerprint(const RenderObject*);
+    Fingerprint computeFingerprint(const RenderObject*);
     Cluster* maybeCreateCluster(const RenderBlock*);
     Supercluster* getSupercluster(const RenderBlock*);
     const RenderBlock* deepestCommonAncestor(BlockSet&);
