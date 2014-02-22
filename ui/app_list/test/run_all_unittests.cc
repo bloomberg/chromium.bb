@@ -11,6 +11,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 
+#if !defined(OS_MACOSX)
+#include "ui/gl/gl_surface.h"
+#endif
+
 namespace {
 
 class AppListTestSuite : public base::TestSuite {
@@ -19,6 +23,9 @@ class AppListTestSuite : public base::TestSuite {
 
  protected:
   virtual void Initialize() OVERRIDE {
+#if !defined(OS_MACOSX)
+    gfx::GLSurface::InitializeOneOffForTests(true);
+#endif
     base::TestSuite::Initialize();
     ui::RegisterPathProvider();
 
