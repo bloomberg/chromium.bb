@@ -26,13 +26,14 @@ class ResourceProvider;
 namespace internal {
 
 class WorkerPoolTask;
+class RasterWorkerPoolTask;
 
 class CC_EXPORT WorkerPoolTaskClient {
  public:
-  virtual SkCanvas* AcquireCanvasForRaster(WorkerPoolTask* task,
-                                           const Resource* resource) = 0;
-  virtual void ReleaseCanvasForRaster(WorkerPoolTask* task,
-                                      const Resource* resource) = 0;
+  virtual SkCanvas* AcquireCanvasForRaster(RasterWorkerPoolTask* task) = 0;
+  virtual void OnRasterCompleted(RasterWorkerPoolTask* task,
+                                 const PicturePileImpl::Analysis& analysis) = 0;
+  virtual void OnImageDecodeCompleted(WorkerPoolTask* task) = 0;
 
  protected:
   virtual ~WorkerPoolTaskClient() {}
@@ -96,13 +97,13 @@ struct CC_EXPORT RasterTaskQueue {
   struct CC_EXPORT Item {
     class TaskComparator {
      public:
-      explicit TaskComparator(const internal::WorkerPoolTask* task)
+      explicit TaskComparator(const internal::RasterWorkerPoolTask* task)
           : task_(task) {}
 
       bool operator()(const Item& item) const { return item.task == task_; }
 
      private:
-      const internal::WorkerPoolTask* task_;
+      const internal::RasterWorkerPoolTask* task_;
     };
 
     typedef std::vector<Item> Vector;

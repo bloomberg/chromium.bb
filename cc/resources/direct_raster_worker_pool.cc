@@ -104,15 +104,14 @@ void DirectRasterWorkerPool::CheckForCompletedTasks() {
 }
 
 SkCanvas* DirectRasterWorkerPool::AcquireCanvasForRaster(
-    internal::WorkerPoolTask* task,
-    const Resource* resource) {
-  return resource_provider()->MapDirectRasterBuffer(resource->id());
+    internal::RasterWorkerPoolTask* task) {
+  return resource_provider()->MapDirectRasterBuffer(task->resource()->id());
 }
 
-void DirectRasterWorkerPool::ReleaseCanvasForRaster(
-    internal::WorkerPoolTask* task,
-    const Resource* resource) {
-  resource_provider()->UnmapDirectRasterBuffer(resource->id());
+void DirectRasterWorkerPool::OnRasterCompleted(
+    internal::RasterWorkerPoolTask* task,
+    const PicturePileImpl::Analysis& analysis) {
+  resource_provider()->UnmapDirectRasterBuffer(task->resource()->id());
 }
 
 void DirectRasterWorkerPool::OnRasterTasksFinished() {

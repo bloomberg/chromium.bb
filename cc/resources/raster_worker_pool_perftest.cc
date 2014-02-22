@@ -71,12 +71,12 @@ class PerfRasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   // Overridden from internal::WorkerPoolTask:
   virtual void ScheduleOnOriginThread(internal::WorkerPoolTaskClient* client)
       OVERRIDE {
-    client->AcquireCanvasForRaster(this, resource());
+    client->AcquireCanvasForRaster(this);
   }
   virtual void RunOnOriginThread() OVERRIDE {}
   virtual void CompleteOnOriginThread(internal::WorkerPoolTaskClient* client)
       OVERRIDE {
-    client->ReleaseCanvasForRaster(this, resource());
+    client->OnRasterCompleted(this, PicturePileImpl::Analysis());
   }
   virtual void RunReplyOnOriginThread() OVERRIDE { Reset(); }
 

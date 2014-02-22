@@ -56,14 +56,14 @@ class TestRasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   // Overridden from internal::WorkerPoolTask:
   virtual void ScheduleOnOriginThread(internal::WorkerPoolTaskClient* client)
       OVERRIDE {
-    client->AcquireCanvasForRaster(this, resource());
+    client->AcquireCanvasForRaster(this);
   }
   virtual void RunOnOriginThread() OVERRIDE {
     raster_thread_ = RASTER_THREAD_ORIGIN;
   }
   virtual void CompleteOnOriginThread(internal::WorkerPoolTaskClient* client)
       OVERRIDE {
-    client->ReleaseCanvasForRaster(this, resource());
+    client->OnRasterCompleted(this, PicturePileImpl::Analysis());
   }
   virtual void RunReplyOnOriginThread() OVERRIDE {
     reply_.Run(
