@@ -87,6 +87,9 @@ public:
 
     static const AtomicString& eventNameForAttributeName(const QualifiedName& attrName);
 
+    virtual bool matchesReadOnlyPseudoClass() const OVERRIDE;
+    virtual bool matchesReadWritePseudoClass() const OVERRIDE;
+
 protected:
     HTMLElement(const QualifiedName& tagName, Document&, ConstructionType);
 
