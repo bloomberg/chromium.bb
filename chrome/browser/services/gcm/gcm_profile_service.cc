@@ -4,6 +4,9 @@
 
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 
+#include <string>
+#include <vector>
+
 #include "base/base64.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -19,6 +22,8 @@
 #include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/services/gcm/gcm_client_factory.h"
 #include "chrome/browser/services/gcm/gcm_event_router.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_constants.h"
@@ -253,11 +258,11 @@ class GCMProfileService::IOWorker
   virtual void OnGCMReady() OVERRIDE;
 
   // Called on IO thread.
-  void Initialize(
-      GCMClientFactory* gcm_client_factory,
-      const base::FilePath& store_path,
-      const scoped_refptr<net::URLRequestContextGetter>&
-          url_request_context_getter);
+  void Initialize(GCMClientFactory* gcm_client_factory,
+                  const base::FilePath& store_path,
+                  const std::vector<std::string>& account_ids,
+                  const scoped_refptr<net::URLRequestContextGetter>&
+                      url_request_context_getter);
   void Reset();
   void CheckOut();
   void Register(const std::string& app_id,
@@ -289,6 +294,7 @@ GCMProfileService::IOWorker::~IOWorker() {
 void GCMProfileService::IOWorker::Initialize(
     GCMClientFactory* gcm_client_factory,
     const base::FilePath& store_path,
+    const std::vector<std::string>& account_ids,
     const scoped_refptr<net::URLRequestContextGetter>&
         url_request_context_getter) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
@@ -309,6 +315,7 @@ void GCMProfileService::IOWorker::Initialize(
 
   gcm_client_->Initialize(chrome_build_proto,
                           store_path,
+                          account_ids,
                           blocking_task_runner,
                           url_request_context_getter,
                           this);
@@ -714,6 +721,13 @@ void GCMProfileService::CheckIn(const std::string& username) {
   // Load all register apps.
   ReadRegisteredAppIDs();
 
+  // Get the list of available accounts.
+  std::vector<std::string> account_ids;
+#if !defined(OS_ANDROID)
+  account_ids =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->GetAccounts();
+#endif
+
   // Let the IO thread create and initialize GCMClient.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter =
       profile_->GetRequestContext();
@@ -724,6 +738,7 @@ void GCMProfileService::CheckIn(const std::string& username) {
                  io_worker_,
                  gcm_client_factory_.get(),
                  profile_->GetPath().Append(chrome::kGCMStoreDirname),
+                 account_ids,
                  url_request_context_getter));
 }
 

@@ -135,6 +135,7 @@ class GCM_EXPORT GCMClient {
   // Begins initialization of the GCM Client.
   // |chrome_build_proto|: chrome info, i.e., version, channel and etc.
   // |store_path|: path to the GCM store.
+  // |account_ids|: account IDs to be related to the device when checking in.
   // |blocking_task_runner|: for running blocking file tasks.
   // |url_request_context_getter|: for url requests.
   // |delegate|: the delegate whose methods will be called asynchronously in
@@ -142,6 +143,7 @@ class GCM_EXPORT GCMClient {
   virtual void Initialize(
       const checkin_proto::ChromeBuildProto& chrome_build_proto,
       const base::FilePath& store_path,
+      const std::vector<std::string>& account_ids,
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
       const scoped_refptr<net::URLRequestContextGetter>&
           url_request_context_getter,

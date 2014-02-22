@@ -280,6 +280,7 @@ void GCMClientImplTest::InitializeGCMClient() {
   checkin_proto::ChromeBuildProto chrome_build_proto;
   gcm_client_->Initialize(chrome_build_proto,
                           temp_directory_.path(),
+                          std::vector<std::string>(),
                           message_loop_.message_loop_proxy(),
                           url_request_context_getter_,
                           this);

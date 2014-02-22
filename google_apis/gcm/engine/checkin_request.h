@@ -5,6 +5,9 @@
 #ifndef GOOGLE_APIS_GCM_ENGINE_CHECKIN_REQUEST_H_
 #define GOOGLE_APIS_GCM_ENGINE_CHECKIN_REQUEST_H_
 
+#include <string>
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
@@ -35,6 +38,7 @@ class GCM_EXPORT CheckinRequest : public net::URLFetcherDelegate {
                  const checkin_proto::ChromeBuildProto& chrome_build_proto,
                  uint64 android_id,
                  uint64 security_token,
+                 const std::vector<std::string>& account_ids,
                  net::URLRequestContextGetter* request_context_getter);
   virtual ~CheckinRequest();
 
@@ -53,9 +57,10 @@ class GCM_EXPORT CheckinRequest : public net::URLFetcherDelegate {
 
   net::BackoffEntry backoff_entry_;
   scoped_ptr<net::URLFetcher> url_fetcher_;
-  checkin_proto::ChromeBuildProto chrome_build_proto_;
-  uint64 android_id_;
-  uint64 security_token_;
+  const checkin_proto::ChromeBuildProto chrome_build_proto_;
+  const uint64 android_id_;
+  const uint64 security_token_;
+  const std::vector<std::string> account_ids_;
 
   base::WeakPtrFactory<CheckinRequest> weak_ptr_factory_;
 

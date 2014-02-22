@@ -52,6 +52,7 @@ CheckinRequest::CheckinRequest(
     const checkin_proto::ChromeBuildProto& chrome_build_proto,
     uint64 android_id,
     uint64 security_token,
+    const std::vector<std::string>& account_ids,
     net::URLRequestContextGetter* request_context_getter)
     : request_context_getter_(request_context_getter),
       callback_(callback),
@@ -59,6 +60,7 @@ CheckinRequest::CheckinRequest(
       chrome_build_proto_(chrome_build_proto),
       android_id_(android_id),
       security_token_(security_token),
+      account_ids_(account_ids),
       weak_ptr_factory_(this) {
 }
 
@@ -80,6 +82,12 @@ void CheckinRequest::Start() {
 #else
   checkin->set_type(checkin_proto::DEVICE_CHROME_BROWSER);
 #endif
+
+  for (std::vector<std::string>::const_iterator iter = account_ids_.begin();
+       iter != account_ids_.end();
+       ++iter) {
+    request.add_account_cookie("[" + *iter + "]");
+  }
 
   std::string upload_data;
   CHECK(request.SerializeToString(&upload_data));

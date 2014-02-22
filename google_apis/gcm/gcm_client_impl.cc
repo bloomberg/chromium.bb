@@ -126,6 +126,7 @@ GCMClientImpl::~GCMClientImpl() {
 void GCMClientImpl::Initialize(
     const checkin_proto::ChromeBuildProto& chrome_build_proto,
     const base::FilePath& path,
+    const std::vector<std::string>& account_ids,
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
     const scoped_refptr<net::URLRequestContextGetter>&
         url_request_context_getter,
@@ -136,6 +137,7 @@ void GCMClientImpl::Initialize(
 
   chrome_build_proto_.CopyFrom(chrome_build_proto);
   url_request_context_getter_ = url_request_context_getter;
+  account_ids_ = account_ids;
 
   gcm_store_.reset(new GCMStoreImpl(false, path, blocking_task_runner));
   gcm_store_->Load(base::Bind(&GCMClientImpl::OnLoadCompleted,
@@ -232,14 +234,14 @@ void GCMClientImpl::ResetState() {
 
 void GCMClientImpl::StartCheckin(const CheckinInfo& checkin_info) {
   checkin_request_.reset(
-      new CheckinRequest(
-          base::Bind(&GCMClientImpl::OnCheckinCompleted,
-                     weak_ptr_factory_.GetWeakPtr()),
-          kDefaultBackoffPolicy,
-          chrome_build_proto_,
-          checkin_info.android_id,
-          checkin_info.secret,
-          url_request_context_getter_));
+      new CheckinRequest(base::Bind(&GCMClientImpl::OnCheckinCompleted,
+                                    weak_ptr_factory_.GetWeakPtr()),
+                         kDefaultBackoffPolicy,
+                         chrome_build_proto_,
+                         checkin_info.android_id,
+                         checkin_info.secret,
+                         account_ids_,
+                         url_request_context_getter_));
   checkin_request_->Start();
 }
 
