@@ -9,6 +9,7 @@
 
 import glob
 import gyp_helper
+import json
 import os
 import pipes
 import shlex
@@ -16,6 +17,7 @@ import shutil
 import subprocess
 import string
 import sys
+import tempfile
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 chrome_src = os.path.abspath(os.path.join(script_dir, os.pardir))
@@ -330,6 +332,14 @@ def RunGN(vars_dict):
   return subprocess.call(args) == 0
 
 
+def GetDesiredVsToolchainHashes():
+  """Load a list of SHA1s corresponding to the toolchains that we want installed
+  to build with."""
+  sha1path = os.path.join(script_dir, 'toolchain_vs2013.hash')
+  with open(sha1path, 'rb') as f:
+    return f.read().strip().splitlines()
+
+
 def CopyVsRuntimeDlls(output_dir, runtime_dirs):
   """Copies the VS runtime DLLs from the given |runtime_dirs| to the output
   directory so that even if not system-installed, built binaries are likely to
@@ -438,42 +448,53 @@ if __name__ == '__main__':
       not 'OS=ios' in os.environ.get('GYP_DEFINES', []):
     os.environ['GYP_GENERATORS'] = 'ninja'
 
-  # If on windows, and the automatic toolchain has been installed by
-  # depot_tools, then use it.
+  # If on Windows, request that depot_tools install/update the automatic
+  # toolchain, and then use it (unless opted-out).
   vs2013_runtime_dll_dirs = None
-  # If MSVS_VERSION is explicitly specified to be something other than 2013,
-  # don't use the automatic toolchain, as it currently only supports VS2013.
-  msvs_version = os.environ.get('GYP_MSVS_VERSION', '2013')
-  if sys.platform in ('win32', 'cygwin') and msvs_version.startswith('2013'):
+  depot_tools_win_toolchain = \
+      bool(int(os.environ.get('DEPOT_TOOLS_WIN_TOOLCHAIN', '1')))
+  if sys.platform in ('win32', 'cygwin') and depot_tools_win_toolchain:
     import find_depot_tools
     depot_tools_path = find_depot_tools.add_depot_tools_to_path()
-    toolchain = os.path.normpath(os.path.join(
-        depot_tools_path, 'win_toolchain', 'vs2013_files'))
-    version_file = os.path.join(toolchain, '.version')
-    if os.path.isdir(toolchain) and os.path.isfile(version_file):
-      os.environ['GYP_MSVS_OVERRIDE_PATH'] = toolchain
-      with open(version_file, 'r') as f:
-        version_is_pro = f.read().strip() == 'pro'
-      vs2013_runtime_dll_dirs = (os.path.join(toolchain, 'sys32'),
-                                 os.path.join(toolchain, 'sys64'))
-      os.environ['GYP_MSVS_VERSION'] = '2013' if version_is_pro else '2013e'
-      # We need to make sure windows_sdk_path is set to the automated
-      # toolchain values in GYP_DEFINES, but don't want to override any other
-      # values there.
-      gyp_defines_dict = gyp.NameValueListToDict(gyp.ShlexEnv('GYP_DEFINES'))
-      win8sdk = os.path.join(toolchain, 'win8sdk')
-      wdk = os.path.join(toolchain, 'wdk')
-      gyp_defines_dict['windows_sdk_path'] = win8sdk
-      os.environ['WINDOWSSDKDIR'] = win8sdk
-      os.environ['WDK_DIR'] = wdk
-      os.environ['GYP_DEFINES'] = ' '.join('%s=%s' % (k, pipes.quote(str(v)))
-          for k, v in gyp_defines_dict.iteritems())
-      # Include the VS runtime in the PATH in case it's not machine-installed.
-      runtime_path = ';'.join(os.path.normpath(os.path.join(toolchain, s))
-                              for s in ('sys64', 'sys32'))
-      os.environ['PATH'] = runtime_path + ';' + os.environ['PATH']
-      print('Using automatic toolchain in %s (%s edition).' % (
-                toolchain, 'Pro' if version_is_pro else 'Express'))
+    temp_handle, data_file = tempfile.mkstemp(suffix='.json')
+    os.close(temp_handle)
+    get_toolchain_args = [
+        sys.executable,
+        os.path.join(depot_tools_path,
+                    'win_toolchain',
+                    'get_toolchain_if_necessary.py'),
+        '--output-json', data_file,
+      ] + GetDesiredVsToolchainHashes()
+    subprocess.check_call(get_toolchain_args)
+
+    with open(data_file, 'r') as tempf:
+      toolchain_data = json.load(tempf)
+    os.unlink(data_file)
+
+    toolchain = toolchain_data['path']
+    version = toolchain_data['version']
+    version_is_pro = version[-1] != 'e'
+    win8sdk = toolchain_data['win8sdk']
+    wdk = toolchain_data['wdk']
+    vs2013_runtime_dll_dirs = toolchain_data['runtime_dirs']
+
+    os.environ['GYP_MSVS_OVERRIDE_PATH'] = toolchain
+    os.environ['GYP_MSVS_VERSION'] = version
+    # We need to make sure windows_sdk_path is set to the automated
+    # toolchain values in GYP_DEFINES, but don't want to override any
+    # otheroptions.express
+    # values there.
+    gyp_defines_dict = gyp.NameValueListToDict(gyp.ShlexEnv('GYP_DEFINES'))
+    gyp_defines_dict['windows_sdk_path'] = win8sdk
+    os.environ['GYP_DEFINES'] = ' '.join('%s=%s' % (k, pipes.quote(str(v)))
+        for k, v in gyp_defines_dict.iteritems())
+    os.environ['WINDOWSSDKDIR'] = win8sdk
+    os.environ['WDK_DIR'] = wdk
+    # Include the VS runtime in the PATH in case it's not machine-installed.
+    runtime_path = ';'.join(vs2013_runtime_dll_dirs)
+    os.environ['PATH'] = runtime_path + ';' + os.environ['PATH']
+    print('Using automatic toolchain in %s (%s edition).' % (
+              toolchain, 'Pro' if version_is_pro else 'Express'))
 
   # If CHROMIUM_GYP_SYNTAX_CHECK is set to 1, it will invoke gyp with --check
   # to enfore syntax checking.
