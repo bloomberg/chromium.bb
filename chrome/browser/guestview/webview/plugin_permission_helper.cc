@@ -92,6 +92,7 @@ void PluginPermissionHelper::OnOpenAboutPlugins() {
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 void PluginPermissionHelper::OnFindMissingPlugin(int placeholder_id,
                                                  const std::string& mime_type) {
+  Send(new ChromeViewMsg_DidNotFindMissingPlugin(placeholder_id));
 }
 
 void PluginPermissionHelper::OnRemovePluginPlaceholderHost(int placeholder_id) {
