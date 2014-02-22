@@ -29,7 +29,9 @@ maintained, and a new 2015 script would be added.
 import ctypes.wintypes
 import hashlib
 import json
+import optparse
 import os
+import shutil
 import subprocess
 import sys
 import time
@@ -145,21 +147,18 @@ def main():
   if not sys.platform.startswith(('cygwin', 'win32')):
     return 0
 
-  if len(sys.argv) != 1:
-    print >> sys.stderr, 'Unexpected arguments.'
-    return 1
+  parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
+  parser.add_option('--output-json', metavar='FILE',
+                    help='write information about toolchain to FILE')
+  options, args = parser.parse_args()
+
+  desired_hashes = set(args)
 
   # Move to depot_tools\win_toolchain where we'll store our files, and where
   # the downloader script is.
   os.chdir(os.path.normpath(os.path.join(BASEDIR)))
   toolchain_dir = '.'
   target_dir = os.path.normpath(os.path.join(toolchain_dir, 'vs2013_files'))
-
-  sha1path = os.path.join(toolchain_dir, 'toolchain_vs2013.hash')
-  desired_hashes = set()
-  if os.path.isfile(sha1path):
-    with open(sha1path, 'rb') as f:
-      desired_hashes = set(f.read().strip().splitlines())
 
   # If the current hash doesn't match what we want in the file, nuke and pave.
   # Typically this script is only run when the .sha1 one file is updated, but
@@ -194,6 +193,9 @@ def main():
               desired_hashes, current_hash))
       return 1
     SaveTimestampsAndHash(target_dir, current_hash)
+
+  if options.output_json:
+    shutil.copyfile(os.path.join(target_dir, 'data.json'), options.output_json)
 
   return 0
 

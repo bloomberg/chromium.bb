@@ -7,6 +7,7 @@
 
 
 import ctypes
+import json
 import optparse
 import os
 import shutil
@@ -456,8 +457,18 @@ def main():
     CopyToFinalLocation(extracted, target_dir)
 
     GenerateSetEnvCmd(target_dir, not options.express)
-    with open(os.path.join(target_dir, '.version'), 'w') as f:
-      f.write('express' if options.express else 'pro')
+    data = {
+        'path': target_dir,
+        'version': '2013e' if options.express else '2013',
+        'win8sdk': os.path.join(target_dir, 'win8sdk'),
+        'wdk': os.path.join(target_dir, 'wdk'),
+        'runtime_dirs': [
+          os.path.join(target_dir, 'sys64'),
+          os.path.join(target_dir, 'sys32'),
+        ],
+    }
+    with open(os.path.join(target_dir, 'data.json'), 'w') as f:
+      json.dump(data, f)
   finally:
     if options.clean:
       DeleteAllTempDirs()
