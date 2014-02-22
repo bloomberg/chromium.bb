@@ -307,6 +307,7 @@ def ExtractComponents(image):
       (r'vc_libraryDesktop\x86\vc_LibraryDesktopX86.msi', True),
       (r'vc_libraryextended\vc_libraryextended.msi', False),
       (r'professionalcore\Setup\vs_professionalcore.msi', False),
+      (r'vc_libraryselectablemfc\vc_libraryselectablemfc.msi', False),
     ]
   extracted_iso = ExtractIso(image.vs_path)
   result = ExtractMsiList(os.path.join(extracted_iso, 'packages'), vs_packages)
