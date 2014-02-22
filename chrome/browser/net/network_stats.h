@@ -181,8 +181,9 @@ class NetworkStats {
   // Collect network connectivity stats. This is called when all the data from
   // server is read or when there is a failure during connect/read/write. It
   // will either start the next phase of the test, or it will self destruct
-  // at the end of this method.
-  void TestPhaseComplete(Status status, int result);
+  // at the end of this method. Returns true if a new test wasn't started and it
+  // was self destructed.
+  bool TestPhaseComplete(Status status, int result);
 
   // This method is called from TestPhaseComplete() and calls
   // |finished_callback_| callback to indicate that the test has finished.

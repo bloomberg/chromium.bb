@@ -320,7 +320,7 @@ int NetworkStats::ReadData() {
     return net::ERR_IO_PENDING;
 
   int rv = 0;
-  do {
+  while (true) {
     DCHECK(!read_buffer_.get());
     read_buffer_ = new net::IOBuffer(kMaxMessageSize);
 
@@ -328,7 +328,11 @@ int NetworkStats::ReadData() {
         read_buffer_.get(),
         kMaxMessageSize,
         base::Bind(&NetworkStats::OnReadComplete, weak_factory_.GetWeakPtr()));
-  } while (rv > 0 && !ReadComplete(rv));
+    if (rv <= 0)
+      break;
+    if (ReadComplete(rv))
+      return rv;
+  };
   if (rv == net::ERR_IO_PENDING)
     read_state_ = READ_STATE_READ_PENDING;
   return rv;
@@ -394,11 +398,9 @@ bool NetworkStats::ReadComplete(int result) {
     return false;
   }
   // All packets are received for the current test.
-  // Read completes if all tests are done.
-  bool all_tests_done = current_test_index_ >= maximum_tests_ ||
-      current_test_index_ + 1 >= test_sequence_.size();
-  TestPhaseComplete(SUCCESS, net::OK);
-  return all_tests_done;
+  // Read completes if all tests are done (if TestPhaseComplete didn't start
+  // another test).
+  return TestPhaseComplete(SUCCESS, net::OK);
 }
 
 bool NetworkStats::UpdateReception(const ProbePacket& probe_packet) {
@@ -530,13 +532,12 @@ void NetworkStats::OnReadDataTimeout(uint32 test_index) {
   TestPhaseComplete(READ_TIMED_OUT, net::ERR_FAILED);
 }
 
-void NetworkStats::TestPhaseComplete(Status status, int result) {
+bool NetworkStats::TestPhaseComplete(Status status, int result) {
   // If there is no valid token, do nothing and delete self.
   // This includes all connection error, name resolve error, etc.
   if (write_state_ == WRITE_STATE_WRITE_PENDING) {
     UMA_HISTOGRAM_BOOLEAN("NetConnectivity5.TestFailed.WritePending", true);
-  } else if (token_.timestamp_micros() != 0 &&
-             (status == SUCCESS || status == READ_TIMED_OUT)) {
+  } else if (status == SUCCESS || status == READ_TIMED_OUT) {
     TestType current_test = test_sequence_[current_test_index_];
     DCHECK_LT(current_test, TEST_TYPE_MAX);
     if (current_test != TOKEN_REQUEST) {
@@ -560,7 +561,7 @@ void NetworkStats::TestPhaseComplete(Status status, int result) {
       base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&NetworkStats::StartOneTest, weak_factory_.GetWeakPtr()));
-      return;
+      return false;
     }
   }
 
@@ -574,6 +575,7 @@ void NetworkStats::TestPhaseComplete(Status status, int result) {
   DVLOG(1) << "NetworkStat: schedule delete self at test index "
            << current_test_index_;
   delete this;
+  return true;
 }
 
 NetworkStats::TestType NetworkStats::GetNextTest() {
