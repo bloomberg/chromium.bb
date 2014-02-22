@@ -20,6 +20,10 @@
             "type": "integer",
             "description": "The ID of the process, as provided by the OS."
           },
+          "title": {
+            "type": "string",
+            "description": "The title of the process as seen in the task manager."
+          },
           "type": {
             "type": "string",
             "enum": ["browser", "renderer", "extension", "notification", "plugin", "worker", "nacl", "utility", "gpu", "other"],
@@ -28,6 +32,10 @@
           "profile": {
             "type": "string",
             "description": "The profile which the process is associated with."
+          },
+          "naclDebugPort": {
+            "type": "integer",
+            "description": "The debugging port for Native Client processes. Zero for other process types and for NaCl processes that do not have debugging enabled."
           },
           "tabs": {
             "type": "array",  "items": {"type": "integer", "minimum": 0},

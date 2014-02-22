@@ -146,8 +146,11 @@ base::DictionaryValue* CreateProcessFromModel(int process_id,
   result->SetInteger(keys::kIdKey, process_id);
   result->SetInteger(keys::kOsProcessIdKey, model->GetProcessId(index));
   SetProcessType(result, model, index);
+  result->SetString(keys::kTitleKey, model->GetResourceTitle(index));
   result->SetString(keys::kProfileKey,
       model->GetResourceProfileName(index));
+  result->SetInteger(keys::kNaClDebugPortKey,
+                     model->GetNaClDebugStubPort(index));
 
   result->Set(keys::kTabsListKey, GetTabsForProcess(process_id));
 

@@ -12,20 +12,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "extensions/common/switches.h"
 
-// Sometimes times out on Mac OS and Windows
-// crbug.com/97499
-// Also on Linux: crbug.com/130138
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Processes) {
-#else
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Processes) {
-#endif
   ASSERT_TRUE(RunExtensionTest("processes/api")) << message_;
 }
-
-// http://crbug.com/31663
-// TODO(linux_aura) http://crbug.com/163931
-#if !defined(OS_WIN) && !(defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA))
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ProcessesVsTaskManager) {
   // Ensure task manager is not yet updating
@@ -53,5 +42,3 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ProcessesVsTaskManager) {
   UnloadExtension(last_loaded_extension_id());
   EXPECT_EQ(1, model->update_requests_);
 }
-
-#endif

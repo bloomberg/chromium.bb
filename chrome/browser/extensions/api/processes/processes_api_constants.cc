@@ -16,6 +16,7 @@ const char kIdKey[] = "id";
 const char kImageCacheKey[] = "imageCache";
 const char kJsMemoryAllocatedKey[] = "jsMemoryAllocated";
 const char kJsMemoryUsedKey[] = "jsMemoryUsed";
+const char kNaClDebugPortKey[] = "naclDebugPort";
 const char kNetworkKey[] = "network";
 const char kOsProcessIdKey[] = "osProcessId";
 const char kPrivateMemoryKey[] = "privateMemory";
@@ -23,6 +24,7 @@ const char kProfileKey[] = "profile";
 const char kScriptCacheKey[] = "scriptCache";
 const char kSqliteMemoryKey[] = "sqliteMemory";
 const char kTabsListKey[] = "tabs";
+const char kTitleKey[] = "title";
 const char kTypeKey[] = "type";
 
 // Process types.

@@ -29,6 +29,7 @@ function pageUrl(letter) {
 
 function dumpProcess(process) {
   console.log("id          " + process.id);
+  console.log("title       " + process.title);
   console.log("osProcId    " + process.osProcessId);
   console.log("type        " + process.type);
   console.log("profile     " + process.profile);
@@ -40,6 +41,7 @@ function dumpProcess(process) {
   console.log("jsMemUsed   " + process.jsMemoryUsed);
   console.log("sqliteMem   " + process.sqliteMemory);
   console.log("fps         " + process.fps);
+  console.log("naclDebugPort " + process.naclDebugPort);
   if ("imageCache" in process) {
     console.log("imageCache.size      " + process.imageCache.size);
     console.log("imageCache.liveSize  " + process.imageCache.liveSize);
@@ -57,6 +59,8 @@ function dumpProcess(process) {
 function validateProcessProperties(process, updating, memory_included) {
   // Always present.
   assertTrue("id" in process);
+  assertTrue("title" in process);
+  assertTrue("naclDebugPort" in process);
   assertTrue("osProcessId" in process);
   assertTrue("type" in process);
   assertTrue("profile" in process);
@@ -73,7 +77,7 @@ function validateProcessProperties(process, updating, memory_included) {
   // sqliteMemory is only reported for the browser process
   if (process.type == "browser") {
     assertEq(("sqliteMemory" in process), updating);
-  } else {
+  } else if (process.type == "renderer") {
     // The rest are not present in the browser process
     assertEq(("jsMemoryAllocated" in process), updating);
     assertEq(("jsMemoryUsed" in process), updating);
@@ -264,6 +268,9 @@ chrome.test.runTests([
     createTab(5, "chrome://newtab/");
   },
 
+  // DISABLED: crbug.com/345411
+  // Hangs consistently.
+  /*
   function testOnExited() {
     listenOnce(chrome.processes.onExited,
         function(processId, type, code) {
@@ -273,6 +280,7 @@ chrome.test.runTests([
       chrome.tabs.remove(tab.id);
     }));
   },
+  */
 
   function testGetProcessInfoList() {
      getProcessId(tabs[0].id, pass(function(pidTab0) {
