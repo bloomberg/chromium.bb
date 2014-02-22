@@ -5,21 +5,20 @@
 # This Makefile is used by debhelper, which supplies the appropriate value of
 # variables not defined here, such as DESTDIR.
 
-SRC = ../../../..
-TOOLS = $(SRC)/remoting/tools
-RELEASE = $(SRC)/out/Release
+SRC_DIR = ../../../..
+BUILD_DIR = $(SRC_DIR)/out/Release
 
 INSTALL_DIR = $(DESTDIR)/opt/google/chrome-remote-desktop
 CRON_DIR = $(DESTDIR)/etc/cron.daily
 NATIVE_MESSAGING_DIR = $(DESTDIR)/etc/opt/chrome/native-messaging-hosts
 
-ME2ME_PROGNAME = $(RELEASE)/remoting_me2me_host
+ME2ME_PROGNAME = $(BUILD_DIR)/remoting_me2me_host
 ME2ME_DEBUGFILE = $(ME2ME_PROGNAME).debug
-START_PROGNAME = $(RELEASE)/remoting_start_host
+START_PROGNAME = $(BUILD_DIR)/remoting_start_host
 START_DEBUGFILE = $(START_PROGNAME).debug
-ME2ME_NM_PROGNAME = $(RELEASE)/remoting_native_messaging_host
+ME2ME_NM_PROGNAME = $(BUILD_DIR)/remoting_native_messaging_host
 ME2ME_NM_DEBUGFILE = $(ME2ME_NM_PROGNAME).debug
-REMOTE_ASSISTANCE_PROGNAME = $(RELEASE)/remoting_it2me_native_messaging_host
+REMOTE_ASSISTANCE_PROGNAME = $(BUILD_DIR)/remoting_it2me_native_messaging_host
 REMOTE_ASSISTANCE_DEBUGFILE = $(REMOTE_ASSISTANCE_PROGNAME).debug
 
 all:
@@ -30,16 +29,17 @@ install:
 	install -d "$(NATIVE_MESSAGING_DIR)"
 	install -d "$(CRON_DIR)"
 
-	install "$(TOOLS)/me2me_virtual_host.py" \
+	install "$(SRC_DIR)/remoting/host/linux/linux_me2me_host.py" \
 	  "$(INSTALL_DIR)/chrome-remote-desktop"
-	install "$(TOOLS)/is-remoting-session" "$(INSTALL_DIR)"
+	install "$(SRC_DIR)/remoting/host/installer/linux/is-remoting-session" \
+	  "$(INSTALL_DIR)"
 
 	install -m 0644 \
-	    "$(RELEASE)/remoting/com.google.chrome.remote_desktop.json" \
+	    "$(BUILD_DIR)/remoting/com.google.chrome.remote_desktop.json" \
 	   "$(NATIVE_MESSAGING_DIR)/com.google.chrome.remote_desktop.json"
 
 	install -m 0644 \
-	  "$(RELEASE)/remoting/com.google.chrome.remote_assistance.json" \
+	  "$(BUILD_DIR)/remoting/com.google.chrome.remote_assistance.json" \
 	  "$(NATIVE_MESSAGING_DIR)/com.google.chrome.remote_assistance.json"
 
 	eu-strip -f "$(ME2ME_DEBUGFILE)" "$(ME2ME_PROGNAME)"
@@ -58,12 +58,12 @@ install:
 	  "$(INSTALL_DIR)/remote-assistance-host"
 
 	install -m 0644 \
-          "$(RELEASE)/icudtl.dat" "$(INSTALL_DIR)/icudtl.dat"
+          "$(BUILD_DIR)/icudtl.dat" "$(INSTALL_DIR)/icudtl.dat"
 
-	for locale in $$(ls $(RELEASE)/remoting_locales); do \
-	  install "$(RELEASE)/remoting_locales/$$locale" \
+	for locale in $$(ls $(BUILD_DIR)/remoting_locales); do \
+	  install "$(BUILD_DIR)/remoting_locales/$$locale" \
 	    "$(INSTALL_DIR)/remoting_locales/$$locale"; \
 	done
 
-	install $(RELEASE)/remoting/installer/cron/chrome-remote-desktop \
+	install $(BUILD_DIR)/remoting/installer/cron/chrome-remote-desktop \
 	  "$(CRON_DIR)/chrome-remote-desktop"

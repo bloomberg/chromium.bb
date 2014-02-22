@@ -44,7 +44,7 @@ DEFAULT_SIZES = "1600x1200,3840x1600"
 
 SCRIPT_PATH = sys.path[0]
 
-IS_INSTALLED = (os.path.basename(sys.argv[0]) != 'me2me_virtual_host.py')
+IS_INSTALLED = (os.path.basename(sys.argv[0]) != 'linux_me2me_host.py')
 
 if IS_INSTALLED:
   HOST_BINARY_NAME = "chrome-remote-desktop-host"
