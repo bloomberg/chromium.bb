@@ -68,6 +68,19 @@ private:
 
     virtual bool supportsPartialLayout() const OVERRIDE { return false; }
 
+    // Have all padding getters return 0. The important point here is to avoid resolving percents
+    // against the containing block, since scroll bar corners don't always have one (so it would
+    // crash). Scroll bar corners are not actually laid out, and they don't have child content, so
+    // what we return here doesn't really matter.
+    virtual LayoutUnit paddingTop() const OVERRIDE { return LayoutUnit(); }
+    virtual LayoutUnit paddingBottom() const OVERRIDE { return LayoutUnit(); }
+    virtual LayoutUnit paddingLeft() const OVERRIDE { return LayoutUnit(); }
+    virtual LayoutUnit paddingRight() const OVERRIDE { return LayoutUnit(); }
+    virtual LayoutUnit paddingBefore() const OVERRIDE { return LayoutUnit(); }
+    virtual LayoutUnit paddingAfter() const OVERRIDE { return LayoutUnit(); }
+    virtual LayoutUnit paddingStart() const OVERRIDE { return LayoutUnit(); }
+    virtual LayoutUnit paddingEnd() const OVERRIDE { return LayoutUnit(); }
+
     void layoutHorizontalPart();
     void layoutVerticalPart();
 
