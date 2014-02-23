@@ -100,8 +100,6 @@ public:
     // Creates a WebFrame. Delete this WebFrame by calling WebFrame::close().
     // It is valid to pass a null client pointer.
     BLINK_EXPORT static WebFrame* create(WebFrameClient*);
-    // FIXME: This version is deprecated and will be removed.
-    BLINK_EXPORT static WebFrame* create(WebFrameClient* client, long long) { return create(client); }
 
     // Returns the number of live WebFrame objects, used for leak checking.
     BLINK_EXPORT static int instanceCount();
