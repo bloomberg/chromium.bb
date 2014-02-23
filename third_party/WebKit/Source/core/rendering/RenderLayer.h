@@ -482,8 +482,7 @@ private:
     void setAncestorChainHasOutOfFlowPositionedDescendant();
     void dirtyAncestorChainHasOutOfFlowPositionedDescendantStatus();
 
-    void clipToRect(RenderLayer* rootLayer, GraphicsContext*, const LayoutRect& paintDirtyRect, const ClipRect&,
-                    BorderRadiusClippingRule = IncludeSelfForBorderRadius);
+    void clipToRect(const LayerPaintingInfo&, GraphicsContext*, const ClipRect&, BorderRadiusClippingRule = IncludeSelfForBorderRadius);
     void restoreClip(GraphicsContext*, const LayoutRect& paintDirtyRect, const ClipRect&);
 
     void updateSelfPaintingLayer();
