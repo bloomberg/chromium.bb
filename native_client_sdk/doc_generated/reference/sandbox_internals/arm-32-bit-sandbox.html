@@ -1,7 +1,7 @@
 {{+bindTo:partials.standard_nacl_article}}
 
 <section id="arm-32-bit-sandbox">
-<h1 id="arm-32-bit-sandbox">ARM 32-bit Sandbox</h1>
+<span id="id1"></span><h1 id="arm-32-bit-sandbox"><span id="id1"></span>ARM 32-bit Sandbox</h1>
 <p>Native Client for ARM is a sandboxing technology for running
 programs&#8212;even malicious ones&#8212;safely, on computers that use 32-bit
 ARM processors. The ARM sandbox is an extension of earlier work on
@@ -23,33 +23,33 @@ or any other architecture, but we do assume some familiarity with
 assembly languages in general.</p>
 <div class="contents local" id="contents" style="display: none">
 <ul class="small-gap">
-<li><p class="first"><a class="reference internal" href="#an-introduction-to-the-arm-architecture" id="id2">An Introduction to the ARM Architecture</a></p>
+<li><p class="first"><a class="reference internal" href="#an-introduction-to-the-arm-architecture" id="id3">An Introduction to the ARM Architecture</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#about-arm-and-armv7-a" id="id3">About ARM and ARMv7-A</a></li>
-<li><a class="reference internal" href="#arm-programmer-s-model" id="id4">ARM Programmer&#8217;s Model</a></li>
+<li><a class="reference internal" href="#about-arm-and-armv7-a" id="id4">About ARM and ARMv7-A</a></li>
+<li><a class="reference internal" href="#arm-programmer-s-model" id="id5">ARM Programmer&#8217;s Model</a></li>
 </ul>
 </li>
-<li><p class="first"><a class="reference internal" href="#the-native-client-approach" id="id5">The Native Client Approach</a></p>
+<li><p class="first"><a class="reference internal" href="#the-native-client-approach" id="id6">The Native Client Approach</a></p>
 <ul class="small-gap">
-<li><p class="first"><a class="reference internal" href="#nacl-arm-pure-software-fault-isolation" id="id6">NaCl/ARM: Pure Software Fault Isolation</a></p>
+<li><p class="first"><a class="reference internal" href="#nacl-arm-pure-software-fault-isolation" id="id7">NaCl/ARM: Pure Software Fault Isolation</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#load-and-store" id="id7"><em>Load</em> and <em>Store</em></a></li>
-<li><a class="reference internal" href="#the-stack-pointer-thread-pointer-and-program-counter" id="id8">The Stack Pointer, Thread Pointer, and Program Counter</a></li>
-<li><a class="reference internal" href="#indirect-branch" id="id9"><em>Indirect Branch</em></a></li>
-<li><a class="reference internal" href="#literal-pools-and-data-bundles" id="id10">Literal Pools and Data Bundles</a></li>
+<li><a class="reference internal" href="#load-and-store" id="id8"><em>Load</em> and <em>Store</em></a></li>
+<li><a class="reference internal" href="#the-stack-pointer-thread-pointer-and-program-counter" id="id9">The Stack Pointer, Thread Pointer, and Program Counter</a></li>
+<li><a class="reference internal" href="#indirect-branch" id="id10"><em>Indirect Branch</em></a></li>
+<li><a class="reference internal" href="#literal-pools-and-data-bundles" id="id11">Literal Pools and Data Bundles</a></li>
 </ul>
 </li>
-<li><p class="first"><a class="reference internal" href="#trampolines-and-memory-layout" id="id11">Trampolines and Memory Layout</a></p>
+<li><p class="first"><a class="reference internal" href="#trampolines-and-memory-layout" id="id12">Trampolines and Memory Layout</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#memory-map" id="id12">Memory Map</a></li>
-<li><a class="reference internal" href="#inside-a-trampoline" id="id13">Inside a Trampoline</a></li>
+<li><a class="reference internal" href="#memory-map" id="id13">Memory Map</a></li>
+<li><a class="reference internal" href="#inside-a-trampoline" id="id14">Inside a Trampoline</a></li>
 </ul>
 </li>
-<li><p class="first"><a class="reference internal" href="#loose-ends" id="id14">Loose Ends</a></p>
+<li><p class="first"><a class="reference internal" href="#loose-ends" id="id15">Loose Ends</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#forbidden-instructions" id="id15">Forbidden Instructions</a></li>
-<li><a class="reference internal" href="#coprocessors" id="id16">Coprocessors</a></li>
-<li><a class="reference internal" href="#validator-code" id="id17">Validator Code</a></li>
+<li><a class="reference internal" href="#forbidden-instructions" id="id16">Forbidden Instructions</a></li>
+<li><a class="reference internal" href="#coprocessors" id="id17">Coprocessors</a></li>
+<li><a class="reference internal" href="#validator-code" id="id18">Validator Code</a></li>
 </ul>
 </li>
 </ul>
