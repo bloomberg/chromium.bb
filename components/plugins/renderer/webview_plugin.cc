@@ -45,7 +45,7 @@ WebViewPlugin::WebViewPlugin(WebViewPlugin::Delegate* delegate)
     : delegate_(delegate),
       container_(NULL),
       web_view_(WebView::create(this)),
-      web_frame_(WebFrame::create(this, 0)),
+      web_frame_(WebFrame::create(this)),
       finished_loading_(false),
       focused_(false) {
   web_view_->setMainFrame(web_frame_);

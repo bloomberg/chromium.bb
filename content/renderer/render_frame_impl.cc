@@ -1001,8 +1001,7 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
 
   RenderFrameImpl* child_render_frame = RenderFrameImpl::Create(
       render_view_.get(), child_routing_id);
-  blink::WebFrame* web_frame = WebFrame::create(child_render_frame,
-                                                child_routing_id);
+  blink::WebFrame* web_frame = WebFrame::create(child_render_frame);
   parent->appendChild(web_frame);
   child_render_frame->SetWebFrame(web_frame);
 
