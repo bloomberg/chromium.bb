@@ -118,57 +118,6 @@ def IsEnvFlagTrue(flag_name, default=False):
   return bool(re.search(flag_value, r'^([tTyY]|1:?)'))
 
 
-def GetGomaConfig(gomadir, osname, arch, toolname, is_pnacl_toolchain):
-  """Returns full-path of gomacc if goma is available or None."""
-  # Start goma support from os/arch/toolname that have been tested.
-  # Set NO_NACL_GOMA=true to force to avoid using goma.
-  if (osname not in ['linux', 'mac']
-      or arch not in ['x86-32', 'x86-64', 'pnacl']
-      or toolname not in ['newlib', 'glibc']
-      or IsEnvFlagTrue('NO_NACL_GOMA', default=False)):
-    return {}
-
-  goma_config = {}
-  gomacc_base = 'gomacc.exe' if osname == 'win' else 'gomacc'
-  # Search order of gomacc:
-  # --gomadir command argument -> GOMA_DIR env. -> PATH env.
-  search_path = []
-  # 1. --gomadir in the command argument.
-  if gomadir:
-    search_path.append(gomadir)
-  # 2. Use GOMA_DIR environment variable if exist.
-  goma_dir_env = os.environ.get('GOMA_DIR')
-  if goma_dir_env:
-    search_path.append(goma_dir_env)
-  # 3. Append PATH env.
-  path_env = os.environ.get('PATH')
-  if path_env:
-    search_path.extend(path_env.split(os.path.pathsep))
-
-  for directory in search_path:
-    gomacc = os.path.join(directory, gomacc_base)
-    if os.path.isfile(gomacc):
-      try:
-        port = int(subprocess.Popen(
-            [gomacc, 'port'], stdout=subprocess.PIPE).communicate()[0].strip())
-        status = urllib2.urlopen(
-            'http://127.0.0.1:%d/healthz' % port).read().strip()
-        if status == 'ok':
-          goma_config['gomacc'] = gomacc
-          break
-      except (OSError, ValueError, urllib2.URLError) as e:
-        # Try another gomacc in the search path.
-        self.Log('Strange gomacc %s found, try another one: %s' % (gomacc, e))
-
-  if goma_config:
-    default_value = False
-    if osname == 'linux':
-      default_value = True
-    goma_config['burst'] = IsEnvFlagTrue('NACL_GOMA_BURST',
-                                         default=default_value)
-  return goma_config
-
-
 class Builder(object):
   """Builder object maintains options and generates build command-lines.
 
@@ -268,8 +217,7 @@ class Builder(object):
     self.strip_debug = options.strip_debug
     self.tls_edit = options.tls_edit
     self.finalize_pexe = options.finalize_pexe and arch == 'pnacl'
-    goma_config = GetGomaConfig(options.gomadir, self.osname, arch, toolname,
-                                self.is_pnacl_toolchain)
+    goma_config = self.GetGomaConfig(options.gomadir, arch, toolname)
     self.gomacc = goma_config.get('gomacc', '')
     self.goma_burst = goma_config.get('burst', False)
 
@@ -461,6 +409,58 @@ class Builder(object):
     elif path.startswith('/libexec/'):
       path = os.path.normpath(os.path.join(self.toolchain, path[1:]))
     return path
+
+  def GetGomaConfig(self, gomadir, arch, toolname):
+    """Returns a goma config dictionary if goma is available or {}."""
+
+    # Start goma support from os/arch/toolname that have been tested.
+    # Set NO_NACL_GOMA=true to force to avoid using goma.
+    if (self.osname not in ['linux', 'mac']
+        or arch not in ['x86-32', 'x86-64', 'pnacl']
+        or toolname not in ['newlib', 'glibc']
+        or IsEnvFlagTrue('NO_NACL_GOMA', default=False)):
+      return {}
+
+    goma_config = {}
+    gomacc_base = 'gomacc.exe' if self.osname == 'win' else 'gomacc'
+    # Search order of gomacc:
+    # --gomadir command argument -> GOMA_DIR env. -> PATH env.
+    search_path = []
+    # 1. --gomadir in the command argument.
+    if gomadir:
+      search_path.append(gomadir)
+    # 2. Use GOMA_DIR environment variable if exist.
+    goma_dir_env = os.environ.get('GOMA_DIR')
+    if goma_dir_env:
+      search_path.append(goma_dir_env)
+    # 3. Append PATH env.
+    path_env = os.environ.get('PATH')
+    if path_env:
+      search_path.extend(path_env.split(os.path.pathsep))
+
+    for directory in search_path:
+      gomacc = os.path.join(directory, gomacc_base)
+      if os.path.isfile(gomacc):
+        try:
+          port = int(subprocess.Popen(
+              [gomacc, 'port'],
+              stdout=subprocess.PIPE).communicate()[0].strip())
+          status = urllib2.urlopen(
+              'http://127.0.0.1:%d/healthz' % port).read().strip()
+          if status == 'ok':
+            goma_config['gomacc'] = gomacc
+            break
+        except (OSError, ValueError, urllib2.URLError) as e:
+          # Try another gomacc in the search path.
+          self.Log('Strange gomacc %s found, try another one: %s' % (gomacc, e))
+
+    if goma_config:
+      default_value = False
+      if self.osname == 'linux':
+        default_value = True
+      goma_config['burst'] = IsEnvFlagTrue('NACL_GOMA_BURST',
+                                           default=default_value)
+    return goma_config
 
   def NeedsRebuild(self, outd, out, src, rebuilt=False):
     if not IsFile(self.toolstamp):
