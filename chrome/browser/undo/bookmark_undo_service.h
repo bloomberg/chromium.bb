@@ -54,8 +54,6 @@ class BookmarkUndoService : public BaseBookmarkModelObserver,
                                         const BookmarkNode* node) OVERRIDE;
   virtual void OnWillReorderBookmarkNode(BookmarkModel* model,
                                          const BookmarkNode* node) OVERRIDE;
-  virtual void GroupedBookmarkChangesBeginning(BookmarkModel* model) OVERRIDE;
-  virtual void GroupedBookmarkChangesEnded(BookmarkModel* model) OVERRIDE;
 
   // BookmarkRenumberObserver:
   virtual void OnBookmarkRenumbered(int64 old_id, int64 new_id) OVERRIDE;

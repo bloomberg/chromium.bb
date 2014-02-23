@@ -33,3 +33,18 @@ ScopedSuspendBookmarkUndo::~ScopedSuspendBookmarkUndo() {
   if (undo_manager)
     undo_manager->ResumeUndoTracking();
 }
+
+// ScopedGroupBookmarkActions -------------------------------------------------
+
+ScopedGroupBookmarkActions::ScopedGroupBookmarkActions(Profile* profile)
+    : profile_(profile) {
+  UndoManager *undo_manager = GetUndoManager(profile_);
+  if (undo_manager)
+    undo_manager->StartGroupingActions();
+}
+
+ScopedGroupBookmarkActions::~ScopedGroupBookmarkActions() {
+  UndoManager *undo_manager = GetUndoManager(profile_);
+  if (undo_manager)
+    undo_manager->EndGroupingActions();
+}

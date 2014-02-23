@@ -99,15 +99,6 @@ class BookmarkModelObserver {
   // Invoked when all non-permanent bookmark nodes have been removed.
   virtual void BookmarkAllNodesRemoved(BookmarkModel* model) = 0;
 
-  // Invoked before a set of model changes that is initiated by a single user
-  // action. For example, this is called a single time when pasting from the
-  // clipboard before each pasted bookmark is added to the bookmark model.
-  virtual void GroupedBookmarkChangesBeginning(BookmarkModel* model) {}
-
-  // Invoked after a set of model changes triggered by a single user action has
-  // ended.
-  virtual void GroupedBookmarkChangesEnded(BookmarkModel* model) {}
-
  protected:
   virtual ~BookmarkModelObserver() {}
 };
