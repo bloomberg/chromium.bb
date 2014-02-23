@@ -90,7 +90,9 @@ bool PairingRegistry::Pairing::operator==(const Pairing& other) const {
 }
 
 bool PairingRegistry::Pairing::is_valid() const {
-  return !client_id_.empty() && !shared_secret_.empty();
+  // |shared_secret_| is optional. It will be empty on Windows because the
+  // privileged registry key can only be read in the elevated host process.
+  return !client_id_.empty();
 }
 
 PairingRegistry::PairingRegistry(
