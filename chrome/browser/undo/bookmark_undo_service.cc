@@ -8,10 +8,10 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/bookmarks/scoped_group_bookmark_actions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/undo/bookmark_renumber_observer.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
-#include "chrome/browser/undo/bookmark_undo_utils.h"
 #include "chrome/browser/undo/undo_operation.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -391,16 +391,6 @@ BookmarkUndoService::~BookmarkUndoService() {
   BookmarkModelFactory::GetForProfile(profile_)->RemoveObserver(this);
 }
 
-void BookmarkUndoService::OnBookmarkRenumbered(int64 old_id, int64 new_id) {
-  std::vector<UndoOperation*> all_operations =
-      undo_manager()->GetAllUndoOperations();
-  for (std::vector<UndoOperation*>::iterator it = all_operations.begin();
-       it != all_operations.end(); ++it) {
-    static_cast<BookmarkUndoOperation*>(*it)->OnBookmarkRenumbered(old_id,
-                                                                   new_id);
-  }
-}
-
 void BookmarkUndoService::BookmarkModelLoaded(BookmarkModel* model,
                                               bool ids_reassigned) {
   undo_manager_.RemoveAllOperations();
@@ -466,3 +456,23 @@ void BookmarkUndoService::OnWillReorderBookmarkNode(BookmarkModel* model,
   scoped_ptr<UndoOperation> op(new BookmarkReorderOperation(profile_, node));
   undo_manager()->AddUndoOperation(op.Pass());
 }
+
+void BookmarkUndoService::GroupedBookmarkChangesBeginning(
+    BookmarkModel* model) {
+  undo_manager()->StartGroupingActions();
+}
+
+void BookmarkUndoService::GroupedBookmarkChangesEnded(BookmarkModel* model) {
+  undo_manager()->EndGroupingActions();
+}
+
+void BookmarkUndoService::OnBookmarkRenumbered(int64 old_id, int64 new_id) {
+  std::vector<UndoOperation*> all_operations =
+      undo_manager()->GetAllUndoOperations();
+  for (std::vector<UndoOperation*>::iterator it = all_operations.begin();
+       it != all_operations.end(); ++it) {
+    static_cast<BookmarkUndoOperation*>(*it)->OnBookmarkRenumbered(old_id,
+                                                                   new_id);
+  }
+}
+

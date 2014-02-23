@@ -24,18 +24,4 @@ class ScopedSuspendBookmarkUndo {
   DISALLOW_COPY_AND_ASSIGN(ScopedSuspendBookmarkUndo);
 };
 
-// ScopedGroupBookmarkActions -------------------------------------------------
-
-// Scopes the grouping of a set of changes into one undoable action.
-class ScopedGroupBookmarkActions {
- public:
-  explicit ScopedGroupBookmarkActions(Profile* profile);
-  ~ScopedGroupBookmarkActions();
-
- private:
-  Profile* profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedGroupBookmarkActions);
-};
-
 #endif  // CHROME_BROWSER_UNDO_BOOKMARK_UNDO_UTILS_H_

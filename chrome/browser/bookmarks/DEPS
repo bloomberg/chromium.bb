@@ -9,7 +9,6 @@ include_rules = [
   "+chrome/browser/chrome_notification_types.h",
   "+chrome/browser/undo/bookmark_undo_service.h",
   "+chrome/browser/undo/bookmark_undo_service_factory.h",
-  "+chrome/browser/undo/bookmark_undo_utils.h",
 
   # TODO(tfarina): Bring this list to zero. crbug.com/144783
   # Do not add to the list of temporarily-allowed dependencies below,
