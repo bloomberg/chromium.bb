@@ -664,8 +664,6 @@ WL_EXPORT void
 wl_client_destroy(struct wl_client *client)
 {
 	uint32_t serial = 0;
-	
-	wl_log("disconnect from client %p\n", client);
 
 	wl_signal_emit(&client->destroy_signal, client);
 
@@ -1089,8 +1087,6 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 		errno = ENAMETOOLONG;
 		return -1;
 	};
-
-	wl_log("using socket %s\n", s->addr.sun_path);
 
 	s->fd_lock = get_socket_lock(s);
 	if (s->fd_lock < 0) {
