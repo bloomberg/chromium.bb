@@ -2054,7 +2054,7 @@
       # instead of O(N*logN). This is particularly slow under memory
       # tools like ThreadSanitizer so we want it to be disablable.
       # See http://msdn.microsoft.com/en-us/library/aa985982(v=VS.80).aspx
-      'win_debug_disable_iterator_debugging%': '1',
+      'win_debug_disable_iterator_debugging%': '0',
 
       # An application manifest fragment to declare compatibility settings for
       # 'executable' targets. Ignored in other target type.
