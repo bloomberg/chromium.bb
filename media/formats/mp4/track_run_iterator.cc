@@ -57,10 +57,22 @@ TrackRunInfo::TrackRunInfo()
 TrackRunInfo::~TrackRunInfo() {}
 
 TimeDelta TimeDeltaFromRational(int64 numer, int64 denom) {
-  DCHECK_LT((numer > 0 ? numer : -numer),
-            kint64max / base::Time::kMicrosecondsPerSecond);
-  return TimeDelta::FromMicroseconds(
-        base::Time::kMicrosecondsPerSecond * numer / denom);
+  // To avoid overflow, split the following calculation:
+  // (numer * base::Time::kMicrosecondsPerSecond) / denom
+  // into:
+  //  (numer / denom) * base::Time::kMicrosecondsPerSecond +
+  // ((numer % denom) * base::Time::kMicrosecondsPerSecond) / denom
+  int64 a = numer / denom;
+  DCHECK_LE((a > 0 ? a : -a), kint64max / base::Time::kMicrosecondsPerSecond);
+  int64 timea_in_us = a * base::Time::kMicrosecondsPerSecond;
+
+  int64 b = numer % denom;
+  DCHECK_LE((b > 0 ? b : -b), kint64max / base::Time::kMicrosecondsPerSecond);
+  int64 timeb_in_us = (b * base::Time::kMicrosecondsPerSecond) / denom;
+
+  DCHECK((timeb_in_us < 0) || (timea_in_us <= kint64max - timeb_in_us));
+  DCHECK((timeb_in_us > 0) || (timea_in_us >= kint64min - timeb_in_us));
+  return TimeDelta::FromMicroseconds(timea_in_us + timeb_in_us);
 }
 
 TrackRunIterator::TrackRunIterator(const Movie* moov,
