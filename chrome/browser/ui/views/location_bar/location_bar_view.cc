@@ -48,6 +48,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_layout.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/open_pdf_in_reader_view.h"
+#include "chrome/browser/ui/views/location_bar/origin_chip_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_with_badge_view.h"
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
@@ -57,7 +58,7 @@
 #include "chrome/browser/ui/views/location_bar/zoom_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_view.h"
-#include "chrome/browser/ui/views/toolbar/origin_chip_view.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_origin_chip_view.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -198,6 +199,8 @@ LocationBarView::LocationBarView(Browser* browser,
       browser_(browser),
       omnibox_view_(NULL),
       delegate_(delegate),
+      origin_chip_view_(NULL),
+      toolbar_origin_chip_view_(NULL),
       location_icon_view_(NULL),
       ev_bubble_view_(NULL),
       ime_inline_autocomplete_view_(NULL),
@@ -209,7 +212,6 @@ LocationBarView::LocationBarView(Browser* browser,
       generated_credit_card_view_(NULL),
       open_pdf_in_reader_view_(NULL),
       manage_passwords_icon_view_(NULL),
-      origin_chip_view_(NULL),
       translate_icon_view_(NULL),
       star_view_(NULL),
       search_button_(NULL),
@@ -314,6 +316,12 @@ void LocationBarView::Init() {
           ui::NativeTheme::kColorId_TextfieldSelectionColor));
   ime_inline_autocomplete_view_->SetVisible(false);
   AddChildView(ime_inline_autocomplete_view_);
+
+  origin_chip_view_ = new OriginChipView(this, profile(), font_list);
+  origin_chip_view_->Init();
+  origin_chip_view_->SetFocusable(false);
+  origin_chip_view_->set_drag_controller(this);
+  AddChildView(origin_chip_view_);
 
   const SkColor text_color = GetColor(ToolbarModel::NONE, TEXT);
   selected_keyword_view_ = new SelectedKeywordView(
@@ -682,11 +690,14 @@ gfx::Size LocationBarView::GetPreferredSize() {
   gfx::Size background_min_size(border_painter_->GetMinimumSize());
   if (!IsInitialized())
     return background_min_size;
+
+  gfx::Size origin_chip_view_min_size(origin_chip_view_->GetMinimumSize());
   gfx::Size search_button_min_size(search_button_->GetMinimumSize());
   gfx::Size min_size(background_min_size);
   min_size.SetToMax(search_button_min_size);
-  min_size.set_width(
-      background_min_size.width() + search_button_min_size.width());
+  min_size.set_width(origin_chip_view_min_size.width() +
+                     background_min_size.width() +
+                     search_button_min_size.width());
   return min_size;
 }
 
@@ -694,18 +705,24 @@ void LocationBarView::Layout() {
   if (!IsInitialized())
     return;
 
+  origin_chip_view_->SetVisible(origin_chip_view_->ShouldShow());
   selected_keyword_view_->SetVisible(false);
   location_icon_view_->SetVisible(false);
   ev_bubble_view_->SetVisible(false);
   keyword_hint_view_->SetVisible(false);
 
   const int item_padding = GetItemPadding();
+
   // The textfield has 1 px of whitespace before the text in the RTL case only.
   const int kEditLeadingInternalSpace = base::i18n::IsRTL() ? 1 : 0;
   LocationBarLayout leading_decorations(
       LocationBarLayout::LEFT_EDGE, item_padding - kEditLeadingInternalSpace);
   LocationBarLayout trailing_decorations(LocationBarLayout::RIGHT_EDGE,
                                          item_padding);
+
+  const int origin_chip_width = origin_chip_view_->visible() ?
+      origin_chip_view_->GetPreferredSize().width() : 0;
+  origin_chip_view_->SetBounds(0, 0, origin_chip_width, height());
 
   const base::string16 keyword(omnibox_view_->model()->keyword());
   const bool is_keyword_hint(omnibox_view_->model()->is_keyword_hint());
@@ -737,7 +754,8 @@ void LocationBarView::Layout() {
         selected_keyword_view_->set_is_extension_icon(false);
       }
     }
-  } else if (!origin_chip_view_ &&
+  } else if (!toolbar_origin_chip_view_ &&
+      !chrome::ShouldDisplayOriginChipV2() &&
       (GetToolbarModel()->GetSecurityLevel(false) == ToolbarModel::EV_SECURE)) {
     ev_bubble_view_->SetLabel(GetToolbarModel()->GetEVCertName());
     // The largest fraction of the omnibox that can be taken by the EV bubble.
@@ -745,7 +763,7 @@ void LocationBarView::Layout() {
     leading_decorations.AddDecoration(bubble_location_y, bubble_height, false,
                                       kMaxBubbleFraction, kBubblePadding,
                                       item_padding, 0, ev_bubble_view_);
-  } else {
+  } else if (!origin_chip_view_->visible()) {
     leading_decorations.AddDecoration(
         vertical_edge_thickness(), location_height,
         GetBuiltInHorizontalPaddingForChildViews(),
@@ -816,7 +834,8 @@ void LocationBarView::Layout() {
 
   // Perform layout.
   const int horizontal_edge_thickness = GetHorizontalEdgeThickness();
-  int full_width = width() - horizontal_edge_thickness;
+  int full_width = width() - horizontal_edge_thickness - origin_chip_width;
+
   // The search button images are made to look as if they overlay the normal
   // edge images, but to align things, the search button needs to be inset
   // horizontally by 1 px.
@@ -836,7 +855,7 @@ void LocationBarView::Layout() {
   int available_width = entry_width - location_needed_width;
   // The bounds must be wide enough for all the decorations to fit.
   gfx::Rect location_bounds(
-      horizontal_edge_thickness, vertical_edge_thickness(),
+      origin_chip_width + horizontal_edge_thickness, vertical_edge_thickness(),
       std::max(full_width, full_width - entry_width), location_height);
   leading_decorations.LayoutPass3(&location_bounds, &available_width);
   trailing_decorations.LayoutPass3(&location_bounds, &available_width);
@@ -927,7 +946,11 @@ void LocationBarView::Layout() {
 }
 
 void LocationBarView::PaintChildren(gfx::Canvas* canvas) {
-  View::PaintChildren(canvas);
+  // Paint all the children except for the origin chip which will be painted
+  // after the border.
+  for (int i = 0, count = child_count(); i < count; ++i)
+    if (!child_at(i)->layer() && (child_at(i) != origin_chip_view_))
+      child_at(i)->Paint(canvas);
 
   // For non-InstantExtendedAPI cases, if necessary, show focus rect. As we need
   // the focus rect to appear on top of children we paint here rather than
@@ -942,6 +965,10 @@ void LocationBarView::PaintChildren(gfx::Canvas* canvas) {
   if (is_popup_mode_ && (GetHorizontalEdgeThickness() == 0))
     border_rect.Inset(-kPopupEdgeThickness, 0);
   views::Painter::PaintPainterAt(canvas, border_painter_.get(), border_rect);
+
+  // The origin chip must be painted after the border so that the border shadow
+  // is not drawn over it.
+  origin_chip_view_->Paint(canvas);
 }
 
 void LocationBarView::OnPaint(gfx::Canvas* canvas) {
@@ -977,13 +1004,13 @@ void LocationBarView::SelectAll() {
 }
 
 views::ImageView* LocationBarView::GetLocationIconView() {
-  return origin_chip_view_ ?
-      origin_chip_view_->location_icon_view() : location_icon_view_;
+  return toolbar_origin_chip_view_ ?
+      toolbar_origin_chip_view_->location_icon_view() : location_icon_view_;
 }
 
 const views::ImageView* LocationBarView::GetLocationIconView() const {
-  return origin_chip_view_ ?
-      origin_chip_view_->location_icon_view() : location_icon_view_;
+  return toolbar_origin_chip_view_ ?
+      toolbar_origin_chip_view_->location_icon_view() : location_icon_view_;
 }
 
 views::View* LocationBarView::GetLocationBarAnchor() {
@@ -1054,7 +1081,10 @@ void LocationBarView::OnChanged() {
       *GetThemeProvider()->GetImageSkiaNamed((icon_id == IDR_OMNIBOX_SEARCH) ?
           IDR_OMNIBOX_SEARCH_BUTTON_LOUPE : IDR_OMNIBOX_SEARCH_BUTTON_ARROW));
 
-  if (origin_chip_view_)
+  if (toolbar_origin_chip_view_)
+    toolbar_origin_chip_view_->OnChanged();
+
+  if (origin_chip_view_->visible())
     origin_chip_view_->OnChanged();
 
   Layout();
@@ -1153,10 +1183,12 @@ void LocationBarView::WriteDragDataForView(views::View* sender,
 
 int LocationBarView::GetDragOperationsForView(views::View* sender,
                                               const gfx::Point& p) {
-  DCHECK((sender == location_icon_view_) || (sender == ev_bubble_view_));
+  DCHECK((sender == location_icon_view_) || (sender == ev_bubble_view_) ||
+         (sender == origin_chip_view_));
   WebContents* web_contents = delegate_->GetWebContents();
   return (web_contents && web_contents->GetURL().is_valid() &&
-          !GetOmniboxView()->IsEditingOrEmpty()) ?
+          (!GetOmniboxView()->IsEditingOrEmpty() ||
+           sender == origin_chip_view_)) ?
       (ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK) :
       ui::DragDropTypes::DRAG_NONE;
 }

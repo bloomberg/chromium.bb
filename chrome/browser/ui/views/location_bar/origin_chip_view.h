@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_ORIGIN_CHIP_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_TOOLBAR_ORIGIN_CHIP_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_ORIGIN_CHIP_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_ORIGIN_CHIP_VIEW_H_
 
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/drag_controller.h"
+#include "ui/views/controls/button/label_button.h"
 
+class LocationBarView;
 class OriginChipExtensionIcon;
-class ToolbarView;
+class Profile;
 
 namespace content {
 class WebContents;
@@ -21,6 +21,7 @@ class WebContents;
 
 namespace gfx {
 class Canvas;
+class FontList;
 }
 
 namespace views {
@@ -28,12 +29,13 @@ class Button;
 class Label;
 }
 
-class OriginChipView : public ToolbarButton,
+class OriginChipView : public views::LabelButton,
                        public views::ButtonListener,
-                       public views::DragController,
                        public SafeBrowsingUIManager::Observer {
  public:
-  explicit OriginChipView(ToolbarView* toolbar_view);
+  OriginChipView(LocationBarView* location_bar_view,
+                 Profile* profile,
+                 const gfx::FontList& font_list);
   virtual ~OriginChipView();
 
   void Init();
@@ -63,24 +65,13 @@ class OriginChipView : public ToolbarButton,
   // width, since the hostname will not be elided past the TLD+1.
   int ElideDomainTarget(int target_max_width);
 
-  // ToolbarButton:
+  // views::LabelButton:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
-
-  // views::DragController:
-  virtual void WriteDragDataForView(View* sender,
-                                    const gfx::Point& press_pt,
-                                    OSExchangeData* data) OVERRIDE;
-  virtual int GetDragOperationsForView(View* sender,
-                                       const gfx::Point& p) OVERRIDE;
-  virtual bool CanStartDragForView(View* sender,
-                                   const gfx::Point& press_pt,
-                                   const gfx::Point& p) OVERRIDE;
 
   // SafeBrowsingUIManager::Observer:
   virtual void OnSafeBrowsingHit(
@@ -89,15 +80,13 @@ class OriginChipView : public ToolbarButton,
       const SafeBrowsingUIManager::UnsafeResource& resource) OVERRIDE;
 
  private:
-  ToolbarView* toolbar_view_;
+  // Sets an image grid to represent the current security state.
+  void SetBorderImages(const int images[3][9]);
+
+  LocationBarView* location_bar_view_;
+  Profile* profile_;
   views::Label* host_label_;
   LocationIconView* location_icon_view_;
-  scoped_ptr<views::Painter> ev_background_painter_;
-  scoped_ptr<views::Painter> broken_ssl_background_painter_;
-  scoped_ptr<views::Painter> malware_background_painter_;
-  // Will point to one of the background painters, or NULL if the state of the
-  // chip has no background.
-  views::Painter* painter_;
   bool showing_16x16_icon_;
   scoped_ptr<OriginChipExtensionIcon> extension_icon_;
   GURL url_displayed_;
@@ -107,4 +96,4 @@ class OriginChipView : public ToolbarButton,
   DISALLOW_COPY_AND_ASSIGN(OriginChipView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_ORIGIN_CHIP_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_ORIGIN_CHIP_VIEW_H_

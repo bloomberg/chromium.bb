@@ -48,6 +48,7 @@ class Profile;
 class SelectedKeywordView;
 class StarView;
 class TemplateURLService;
+class ToolbarOriginChipView;
 class TranslateIconView;
 class ZoomView;
 
@@ -197,8 +198,9 @@ class LocationBarView : public LocationBar,
   // The translate icon. It may not be visible.
   TranslateIconView* translate_icon_view() { return translate_icon_view_; }
 
-  void set_origin_chip_view(OriginChipView* origin_chip_view) {
-    origin_chip_view_ = origin_chip_view;
+  void set_toolbar_origin_chip_view(
+      ToolbarOriginChipView* toolbar_origin_chip_view) {
+    toolbar_origin_chip_view_ = toolbar_origin_chip_view;
   }
 
   // Shows the bookmark prompt.
@@ -342,6 +344,11 @@ class LocationBarView : public LocationBar,
   static const int kPopupEdgeThickness;
   // Amount of padding built into the standard omnibox icons.
   static const int kIconInternalPadding;
+  // Amount of padding to place between the origin chip and the leading edge of
+  // the location bar.
+  static const int kOriginChipEdgeItemPadding;
+  // Amount of padding built into the origin chip.
+  static const int kOriginChipBuiltinPadding;
   // Space between the edge and a bubble.
   static const int kBubblePadding;
 
@@ -422,6 +429,12 @@ class LocationBarView : public LocationBar,
   // Object used to paint the border.
   scoped_ptr<views::Painter> border_painter_;
 
+  // The version of the origin chip that appears in the location bar.
+  OriginChipView* origin_chip_view_;
+
+  // The version of the origin chip that appears in the toolbar.
+  ToolbarOriginChipView* toolbar_origin_chip_view_;
+
   // An icon to the left of the edit field.
   LocationIconView* location_icon_view_;
 
@@ -473,9 +486,6 @@ class LocationBarView : public LocationBar,
 
   // The page action icon views.
   PageActionViews page_action_views_;
-
-  // The Origin Chip.
-  OriginChipView* origin_chip_view_;
 
   // The icon for Translate.
   TranslateIconView* translate_icon_view_;

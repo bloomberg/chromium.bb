@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/toolbar/origin_chip_view.h"
+#include "chrome/browser/ui/views/location_bar/origin_chip_view.h"
 
 #include "base/files/file_path.h"
 #include "base/metrics/histogram.h"
@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/toolbar/origin_chip.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "content/public/browser/navigation_controller.h"
@@ -38,11 +37,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
+#include "ui/gfx/font_list.h"
 #include "ui/views/background.h"
-#include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
-#include "ui/views/controls/label.h"
 #include "ui/views/painter.h"
 
 
@@ -105,24 +103,46 @@ const int k16x16IconTrailingSpacing = 2;
 const int kIconTextSpacing = 3;
 const int kTrailingLabelMargin = 0;
 
-const SkColor kEVBackgroundColor = SkColorSetRGB(163, 226, 120);
-const SkColor kMalwareBackgroundColor = SkColorSetRGB(145, 0, 0);
-const SkColor kBrokenSSLBackgroundColor = SkColorSetRGB(253, 196, 36);
+const int kNormalImages[3][9] = {
+  IMAGE_GRID(IDR_ORIGIN_CHIP_NORMAL),
+  IMAGE_GRID(IDR_ORIGIN_CHIP_HOVER),
+  IMAGE_GRID(IDR_ORIGIN_CHIP_PRESSED)
+};
+
+const int kMalwareImages[3][9] = {
+  IMAGE_GRID(IDR_ORIGIN_CHIP_MALWARE_NORMAL),
+  IMAGE_GRID(IDR_ORIGIN_CHIP_MALWARE_HOVER),
+  IMAGE_GRID(IDR_ORIGIN_CHIP_MALWARE_PRESSED)
+};
+
+const int kBrokenSSLImages[3][9] = {
+  IMAGE_GRID(IDR_ORIGIN_CHIP_BROKENSSL_NORMAL),
+  IMAGE_GRID(IDR_ORIGIN_CHIP_BROKENSSL_HOVER),
+  IMAGE_GRID(IDR_ORIGIN_CHIP_BROKENSSL_PRESSED)
+};
+
+const int kEVImages[3][9] = {
+  IMAGE_GRID(IDR_ORIGIN_CHIP_EV_NORMAL),
+  IMAGE_GRID(IDR_ORIGIN_CHIP_EV_HOVER),
+  IMAGE_GRID(IDR_ORIGIN_CHIP_EV_PRESSED)
+};
 
 }  // namespace
 
-OriginChipView::OriginChipView(ToolbarView* toolbar_view)
-    : ToolbarButton(this, NULL),
-      toolbar_view_(toolbar_view),
-      painter_(NULL),
+OriginChipView::OriginChipView(LocationBarView* location_bar_view,
+                               Profile* profile,
+                               const gfx::FontList& font_list)
+    : LabelButton(this, base::string16()),
+      location_bar_view_(location_bar_view),
+      profile_(profile),
       showing_16x16_icon_(false) {
   scoped_refptr<SafeBrowsingService> sb_service =
       g_browser_process->safe_browsing_service();
   // May not be set for unit tests.
-  if (sb_service.get() && sb_service->ui_manager())
+  if (sb_service && sb_service->ui_manager())
     sb_service->ui_manager()->AddObserver(this);
 
-  set_drag_controller(this);
+  SetFontList(font_list);
 }
 
 OriginChipView::~OriginChipView() {
@@ -133,40 +153,23 @@ OriginChipView::~OriginChipView() {
 }
 
 void OriginChipView::Init() {
-  ToolbarButton::Init();
   image()->EnableCanvasFlippingForRTLUI(false);
 
   // TODO(gbillock): Would be nice to just use stock LabelButton stuff here.
-  location_icon_view_ = new LocationIconView(toolbar_view_->location_bar());
+  location_icon_view_ = new LocationIconView(location_bar_view_);
   // Make location icon hover events count as hovering the origin chip.
   location_icon_view_->set_interactive(false);
-
-  host_label_ = new views::Label();
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  host_label_->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
-
-  AddChildView(location_icon_view_);
-  AddChildView(host_label_);
-
-  location_icon_view_->SetImage(GetThemeProvider()->GetImageSkiaNamed(
-      IDR_LOCATION_BAR_HTTP));
   location_icon_view_->ShowTooltip(true);
+  AddChildView(location_icon_view_);
 
-  const int kEVBackgroundImages[] = IMAGE_GRID(IDR_SITE_CHIP_EV);
-  ev_background_painter_.reset(
-      views::Painter::CreateImageGridPainter(kEVBackgroundImages));
-  const int kBrokenSSLBackgroundImages[] = IMAGE_GRID(IDR_SITE_CHIP_BROKENSSL);
-  broken_ssl_background_painter_.reset(
-      views::Painter::CreateImageGridPainter(kBrokenSSLBackgroundImages));
-  const int kMalwareBackgroundImages[] = IMAGE_GRID(IDR_SITE_CHIP_MALWARE);
-  malware_background_painter_.reset(
-      views::Painter::CreateImageGridPainter(kMalwareBackgroundImages));
+  host_label_ = new views::Label(base::string16(), GetFontList());
+  AddChildView(host_label_);
 }
 
 bool OriginChipView::ShouldShow() {
-  return chrome::ShouldDisplayOriginChip() ||
-      (toolbar_view_->GetToolbarModel()->WouldOmitURLDueToOriginChip() &&
-       toolbar_view_->GetToolbarModel()->origin_chip_enabled());
+  return chrome::ShouldDisplayOriginChipV2() &&
+      location_bar_view_->GetToolbarModel()->WouldOmitURLDueToOriginChip() &&
+      location_bar_view_->GetToolbarModel()->origin_chip_enabled();
 }
 
 void OriginChipView::Update(content::WebContents* web_contents) {
@@ -174,9 +177,9 @@ void OriginChipView::Update(content::WebContents* web_contents) {
     return;
 
   // Note: security level can change async as the connection is made.
-  GURL url = toolbar_view_->GetToolbarModel()->GetURL();
+  GURL url = location_bar_view_->GetToolbarModel()->GetURL();
   const ToolbarModel::SecurityLevel security_level =
-      toolbar_view_->GetToolbarModel()->GetSecurityLevel(true);
+      location_bar_view_->GetToolbarModel()->GetSecurityLevel(true);
 
   bool url_malware = OriginChip::IsMalware(url, web_contents);
 
@@ -193,36 +196,28 @@ void OriginChipView::Update(content::WebContents* web_contents) {
   url_malware_ = url_malware;
   security_level_ = security_level;
 
-  SkColor label_background =
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR);
   if (url_malware_) {
-    painter_ = malware_background_painter_.get();
-    label_background = kMalwareBackgroundColor;
+    SetBorderImages(kMalwareImages);
   } else if (security_level_ == ToolbarModel::SECURITY_ERROR) {
-    painter_ = broken_ssl_background_painter_.get();
-    label_background = kBrokenSSLBackgroundColor;
+    SetBorderImages(kBrokenSSLImages);
   } else if (security_level_ == ToolbarModel::EV_SECURE) {
-    painter_ = ev_background_painter_.get();
-    label_background = kEVBackgroundColor;
+    SetBorderImages(kEVImages);
   } else {
-    painter_ = NULL;
+    SetBorderImages(kNormalImages);
   }
 
   base::string16 host =
-      OriginChip::LabelFromURLForProfile(url_displayed_,
-                                         toolbar_view_->browser()->profile());
+      OriginChip::LabelFromURLForProfile(url_displayed_, profile_);
   if (security_level_ == ToolbarModel::EV_SECURE) {
     host = l10n_util::GetStringFUTF16(IDS_SITE_CHIP_EV_SSL_LABEL,
-        toolbar_view_->GetToolbarModel()->GetEVCertName(),
+        location_bar_view_->GetToolbarModel()->GetEVCertName(),
         host);
   }
-
   host_label_->SetText(host);
   host_label_->SetTooltipText(host);
-  host_label_->SetBackgroundColor(label_background);
   host_label_->SetElideBehavior(views::Label::NO_ELIDE);
 
-  int icon = toolbar_view_->GetToolbarModel()->GetIconForSecurityLevel(
+  int icon = location_bar_view_->GetToolbarModel()->GetIconForSecurityLevel(
       security_level_);
   showing_16x16_icon_ = false;
 
@@ -240,14 +235,11 @@ void OriginChipView::Update(content::WebContents* web_contents) {
     location_icon_view_->SetImage(GetThemeProvider()->GetImageSkiaNamed(icon));
 
     ExtensionService* service =
-        extensions::ExtensionSystem::Get(
-            toolbar_view_->browser()->profile())->extension_service();
+        extensions::ExtensionSystem::Get(profile_)->extension_service();
     const extensions::Extension* extension =
         service->extensions()->GetExtensionOrAppByURL(url_displayed_);
     extension_icon_.reset(
-        new OriginChipExtensionIcon(location_icon_view_,
-                                    toolbar_view_->browser()->profile(),
-                                    extension));
+        new OriginChipExtensionIcon(location_icon_view_, profile_, extension));
   } else {
     extension_icon_.reset();
   }
@@ -256,10 +248,34 @@ void OriginChipView::Update(content::WebContents* web_contents) {
   SchedulePaint();
 }
 
+void OriginChipView::SetBorderImages(const int images[3][9]) {
+  scoped_ptr<views::LabelButtonBorder> border(
+      new views::LabelButtonBorder(views::Button::STYLE_BUTTON));
+
+  views::Painter* painter = views::Painter::CreateImageGridPainter(images[0]);
+  border->SetPainter(false, Button::STATE_NORMAL, painter);
+  painter = views::Painter::CreateImageGridPainter(images[1]);
+  border->SetPainter(false, Button::STATE_HOVERED, painter);
+  painter = views::Painter::CreateImageGridPainter(images[2]);
+  border->SetPainter(false, Button::STATE_PRESSED, painter);
+
+  SetBorder(border.PassAs<views::Border>());
+
+  // Calculate a representative background color of the provided image grid and
+  // set it as the background color of the host label in order to color the text
+  // appropriately. We grab the color of the middle pixel of the middle image
+  // of the background, which we treat as the representative color of the entire
+  // background (reasonable, given the current appearance of these images).
+  const SkBitmap& bitmap(
+      GetThemeProvider()->GetImageSkiaNamed(
+          images[0][4])->GetRepresentation(1.0f).sk_bitmap());
+  SkAutoLockPixels pixel_lock(bitmap);
+  host_label_->SetBackgroundColor(
+      bitmap.getColor(bitmap.width() / 2, bitmap.height() / 2));
+}
+
 void OriginChipView::OnChanged() {
-  Update(toolbar_view_->GetWebContents());
-  toolbar_view_->Layout();
-  toolbar_view_->SchedulePaint();
+  Update(location_bar_view_->GetWebContents());
   // TODO(gbillock): Also need to potentially repaint infobars to make sure the
   // arrows are pointing to the right spot. Only needed for some edge cases.
 }
@@ -296,18 +312,9 @@ void OriginChipView::Layout() {
                          height() - 2 * LocationBarView::kNormalEdgeThickness);
 }
 
-void OriginChipView::OnPaint(gfx::Canvas* canvas) {
-  gfx::Rect rect(GetLocalBounds());
-  if (painter_)
-    views::Painter::PaintPainterAt(canvas, painter_, rect);
-
-  ToolbarButton::OnPaint(canvas);
-}
-
 int OriginChipView::ElideDomainTarget(int target_max_width) {
   base::string16 host =
-      OriginChip::LabelFromURLForProfile(url_displayed_,
-                                         toolbar_view_->browser()->profile());
+      OriginChip::LabelFromURLForProfile(url_displayed_, profile_);
   host_label_->SetText(host);
   int width = GetPreferredSize().width();
   if (width <= target_max_width)
@@ -317,7 +324,7 @@ int OriginChipView::ElideDomainTarget(int target_max_width) {
   int padding_width = width - label_size.width();
 
   host_label_->SetText(ElideHost(
-      toolbar_view_->GetToolbarModel()->GetURL(),
+      location_bar_view_->GetToolbarModel()->GetURL(),
       host_label_->font_list(), target_max_width - padding_width));
   return GetPreferredSize().width();
 }
@@ -343,37 +350,7 @@ void OriginChipView::ButtonPressed(views::Button* sender,
   UMA_HISTOGRAM_COUNTS("OriginChip.Pressed", 1);
   content::RecordAction(base::UserMetricsAction("OriginChipPress"));
 
-  toolbar_view_->location_bar()->GetOmniboxView()->SetFocus();
-  toolbar_view_->location_bar()->GetOmniboxView()->model()->
-      SetCaretVisibility(true);
-  toolbar_view_->location_bar()->GetOmniboxView()->ShowURL();
-}
-
-void OriginChipView::WriteDragDataForView(View* sender,
-                                        const gfx::Point& press_pt,
-                                        OSExchangeData* data) {
-  // TODO(gbillock): Consolidate this with the identical logic in
-  // LocationBarView.
-  content::WebContents* web_contents = toolbar_view_->GetWebContents();
-  FaviconTabHelper* favicon_tab_helper =
-      FaviconTabHelper::FromWebContents(web_contents);
-  gfx::ImageSkia favicon = favicon_tab_helper->GetFavicon().AsImageSkia();
-  button_drag_utils::SetURLAndDragImage(web_contents->GetURL(),
-                                        web_contents->GetTitle(),
-                                        favicon,
-                                        data,
-                                        sender->GetWidget());
-}
-
-int OriginChipView::GetDragOperationsForView(View* sender,
-                                           const gfx::Point& p) {
-  return ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK;
-}
-
-bool OriginChipView::CanStartDragForView(View* sender,
-                                       const gfx::Point& press_pt,
-                                       const gfx::Point& p) {
-  return true;
+  location_bar_view_->GetOmniboxView()->ShowURL();
 }
 
 // Note: When OnSafeBrowsingHit would be called, OnSafeBrowsingMatch will

@@ -37,9 +37,9 @@
 #include "chrome/browser/ui/views/toolbar/back_button.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/home_button.h"
-#include "chrome/browser/ui/views/toolbar/origin_chip_view.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_origin_chip_view.h"
 #include "chrome/browser/ui/views/toolbar/wrench_menu.h"
 #include "chrome/browser/ui/views/toolbar/wrench_toolbar_button.h"
 #include "chrome/browser/upgrade_detector.h"
@@ -221,7 +221,7 @@ void ToolbarView::Init() {
   app_menu_->set_id(VIEW_ID_APP_MENU);
 
   // Always add children in order from left to right, for accessibility.
-  origin_chip_view_ = new OriginChipView(this);
+  origin_chip_view_ = new ToolbarOriginChipView(this);
   chrome::OriginChipPosition origin_chip_position =
       chrome::GetOriginChipPosition();
   AddChildView(back_);
@@ -249,8 +249,8 @@ void ToolbarView::Init() {
   location_bar_->Init();
 
   origin_chip_view_->Init();
-  if (chrome::ShouldDisplayOriginChip() || chrome::ShouldDisplayOriginChipV2())
-    location_bar_->set_origin_chip_view(origin_chip_view_);
+  if (origin_chip_view_->ShouldShow())
+    location_bar_->set_toolbar_origin_chip_view(origin_chip_view_);
 
   show_home_button_.Init(prefs::kShowHomeButton,
                          browser_->profile()->GetPrefs(),
@@ -596,8 +596,7 @@ void ToolbarView::Layout() {
   chrome::OriginChipPosition origin_chip_position =
       chrome::GetOriginChipPosition();
   if (origin_chip_view_->visible() &&
-      (chrome::ShouldDisplayOriginChipV2() ||
-       origin_chip_position == chrome::ORIGIN_CHIP_LEADING_LOCATION_BAR)) {
+      origin_chip_position == chrome::ORIGIN_CHIP_LEADING_LOCATION_BAR) {
     origin_chip_view_->SetBounds(next_element_x, child_y,
                                  origin_chip_width, child_height);
     next_element_x = origin_chip_view_->bounds().right() + kStandardSpacing;
