@@ -265,11 +265,11 @@ void CustomFrameViewAsh::HeaderView::Layout() {
 void CustomFrameViewAsh::HeaderView::OnPaint(gfx::Canvas* canvas) {
   int theme_image_id = 0;
   if (frame_->IsMaximized() || frame_->IsFullscreen())
-    theme_image_id = IDR_AURA_WINDOW_HEADER_BASE_MINIMAL;
+    theme_image_id = IDR_AURA_BROWSER_WINDOW_HEADER_BASE_MAXIMIZED;
   else if (frame_->non_client_view()->frame_view()->ShouldPaintAsActive())
-    theme_image_id = IDR_AURA_WINDOW_HEADER_BASE_ACTIVE;
+    theme_image_id = IDR_AURA_BROWSER_WINDOW_HEADER_BASE_RESTORED_ACTIVE;
   else
-    theme_image_id = IDR_AURA_WINDOW_HEADER_BASE_INACTIVE;
+    theme_image_id = IDR_AURA_BROWSER_WINDOW_HEADER_BASE_RESTORED_INACTIVE;
 
   header_painter_->PaintHeader(
       canvas,

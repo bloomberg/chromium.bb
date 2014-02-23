@@ -127,7 +127,7 @@ class TraySms::SmsMessageView : public views::View,
     close_button->SetImage(
         views::CustomButton::STATE_NORMAL,
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            IDR_AURA_WINDOW_CLOSE));
+            IDR_AURA_UBER_TRAY_SMS_DISMISS));
     const int msg_width = owner_->system_tray()->GetSystemBubble()->
         bubble_view()->GetPreferredSize().width() -
             (kNotificationIconWidth + kTrayPopupPaddingHorizontal * 2);

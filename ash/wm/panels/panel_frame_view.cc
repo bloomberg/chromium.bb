@@ -117,9 +117,9 @@ void PanelFrameView::OnPaint(gfx::Canvas* canvas) {
   bool paint_as_active = ShouldPaintAsActive();
   int theme_frame_id = 0;
   if (paint_as_active)
-    theme_frame_id = IDR_AURA_WINDOW_HEADER_BASE_ACTIVE;
+    theme_frame_id = IDR_AURA_BROWSER_WINDOW_HEADER_BASE_RESTORED_ACTIVE;
   else
-    theme_frame_id = IDR_AURA_WINDOW_HEADER_BASE_INACTIVE;
+    theme_frame_id = IDR_AURA_BROWSER_WINDOW_HEADER_BASE_RESTORED_INACTIVE;
 
   header_painter_->PaintHeader(
       canvas,

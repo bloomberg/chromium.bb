@@ -170,16 +170,16 @@ void HeaderPainter::Init(
 
   // Window frame image parts.
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  top_left_corner_ =
-      rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_SHADE_TOP_LEFT).ToImageSkia();
-  top_edge_ =
-      rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_SHADE_TOP).ToImageSkia();
-  top_right_corner_ =
-      rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_SHADE_TOP_RIGHT).ToImageSkia();
-  header_left_edge_ =
-      rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_SHADE_LEFT).ToImageSkia();
-  header_right_edge_ =
-      rb.GetImageNamed(IDR_AURA_WINDOW_HEADER_SHADE_RIGHT).ToImageSkia();
+  top_left_corner_ = rb.GetImageNamed(
+      IDR_AURA_BROWSER_WINDOW_HEADER_SHADE_TOP_LEFT).ToImageSkia();
+  top_edge_ = rb.GetImageNamed(
+      IDR_AURA_BROWSER_WINDOW_HEADER_SHADE_TOP).ToImageSkia();
+  top_right_corner_ = rb.GetImageNamed(
+      IDR_AURA_BROWSER_WINDOW_HEADER_SHADE_TOP_RIGHT).ToImageSkia();
+  header_left_edge_ = rb.GetImageNamed(
+      IDR_AURA_BROWSER_WINDOW_HEADER_SHADE_LEFT).ToImageSkia();
+  header_right_edge_ = rb.GetImageNamed(
+      IDR_AURA_BROWSER_WINDOW_HEADER_SHADE_RIGHT).ToImageSkia();
 }
 
 // static

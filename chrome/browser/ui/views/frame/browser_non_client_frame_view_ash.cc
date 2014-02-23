@@ -253,7 +253,7 @@ void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
       (theme_frame_overlay_image_id == 0 ||
        !theme_provider->HasCustomImage(theme_frame_overlay_image_id))) {
     if (frame()->IsMaximized() || frame()->IsFullscreen())
-      theme_frame_image_id = IDR_AURA_WINDOW_HEADER_BASE_MINIMAL;
+      theme_frame_image_id = IDR_AURA_BROWSER_WINDOW_HEADER_BASE_MAXIMIZED;
   }
   header_painter_->PaintHeader(
       canvas,
@@ -436,7 +436,7 @@ void BrowserNonClientFrameViewAsh::PaintImmersiveLightbarStyleHeader(
     gfx::Canvas* canvas) {
   // The light bar header is not themed because theming it does not look good.
   gfx::ImageSkia* frame_image = GetThemeProvider()->GetImageSkiaNamed(
-      IDR_AURA_WINDOW_HEADER_BASE_MINIMAL);
+      IDR_AURA_BROWSER_WINDOW_HEADER_BASE_MAXIMIZED);
   canvas->TileImageInt(*frame_image, 0, 0, width(), frame_image->height());
 }
 
@@ -539,12 +539,12 @@ int BrowserNonClientFrameViewAsh::GetThemeFrameImageId() const {
   // Never theme app and popup windows.
   if (ShouldPaintAsActive()) {
     return is_incognito ?
-        IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_ACTIVE :
-        IDR_AURA_WINDOW_HEADER_BASE_ACTIVE;
+        IDR_AURA_BROWSER_WINDOW_HEADER_BASE_RESTORED_INCOGNITO_ACTIVE :
+        IDR_AURA_BROWSER_WINDOW_HEADER_BASE_RESTORED_ACTIVE;
   }
   return is_incognito ?
-      IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_INACTIVE :
-      IDR_AURA_WINDOW_HEADER_BASE_INACTIVE;
+      IDR_AURA_BROWSER_WINDOW_HEADER_BASE_RESTORED_INCOGNITO_INACTIVE :
+      IDR_AURA_BROWSER_WINDOW_HEADER_BASE_RESTORED_INACTIVE;
 }
 
 int BrowserNonClientFrameViewAsh::GetThemeFrameOverlayImageId() const {

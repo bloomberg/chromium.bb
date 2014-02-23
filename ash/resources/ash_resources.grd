@@ -17,6 +17,32 @@
       <!-- KEEP THESE IN ALPHABETICAL ORDER!  DO NOT ADD TO RANDOM PLACES JUST
            BECAUSE YOUR RESOURCES ARE FUNCTIONALLY RELATED OR FALL UNDER THE
            SAME CONDITIONALS. -->
+      <structure type="chrome_scaled_image" name="IDR_AURA_BROWSER_WINDOW_CONTROL_BACKGROUND_MAXIMIZED_H" file="common/browser_window_control_background_maximized_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_BROWSER_WINDOW_CONTROL_BACKGROUND_MAXIMIZED_P" file="common/browser_window_control_background_maximized_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_BROWSER_WINDOW_CONTROL_BACKGROUND_RESTORED_H" file="common/browser_window_control_background_restored_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_BROWSER_WINDOW_CONTROL_BACKGROUND_RESTORED_P" file="common/browser_window_control_background_restored_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_BROWSER_WINDOW_CONTROL_ICON_MAXIMIZED_CLOSE" file="common/browser_window_control_icon_maximized_close.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_BROWSER_WINDOW_CONTROL_ICON_MAXIMIZED_LEFT_SNAPPED" file="common/browser_window_control_icon_maximized_left_snapped.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_BROWSER_WINDOW_CONTROL_ICON_MAXIMIZED_MINIMIZE" file="common/browser_window_control_icon_maximized_minimize.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_BROWSER_WINDOW_CONTROL_ICON_MAXIMIZED_RIGHT_SNAPPED" file="common/browser_window_control_icon_maximized_right_snapped.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_BROWSER_WINDOW_CONTROL_ICON_MAXIMIZED_SIZE" file="common/browser_window_control_icon_maximized_size.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_BROWSER_WINDOW_CONTROL_ICON_RESTORED_CLOSE" file="common/browser_window_control_icon_restored_close.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_BROWSER_WINDOW_CONTROL_ICON_RESTORED_LEFT_SNAPPED" file="common/browser_window_control_icon_restored_left_snapped.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_BROWSER_WINDOW_CONTROL_ICON_RESTORED_MINIMIZE" file="common/browser_window_control_icon_restored_minimize.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_BROWSER_WINDOW_CONTROL_ICON_RESTORED_RIGHT_SNAPPED" file="common/browser_window_control_icon_restored_right_snapped.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_BROWSER_WINDOW_CONTROL_ICON_RESTORED_SIZE" file="common/browser_window_control_icon_restored_size.png" />
+
+      <structure type="chrome_scaled_image" name="IDR_AURA_BROWSER_WINDOW_HEADER_BASE_MAXIMIZED" file="common/browser_window_header_base_maximized.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_BROWSER_WINDOW_HEADER_BASE_RESTORED_ACTIVE" file="common/browser_window_header_base_active.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_BROWSER_WINDOW_HEADER_BASE_RESTORED_INACTIVE" file="common/browser_window_header_base_inactive.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_BROWSER_WINDOW_HEADER_BASE_RESTORED_INCOGNITO_ACTIVE" file="common/browser_window_header_base_incognito_active.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_BROWSER_WINDOW_HEADER_BASE_RESTORED_INCOGNITO_INACTIVE" file="common/browser_window_header_base_incognito_inactive.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_BROWSER_WINDOW_HEADER_SHADE_LEFT" file="common/browser_window_header_shade_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_BROWSER_WINDOW_HEADER_SHADE_RIGHT" file="common/browser_window_header_shade_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_BROWSER_WINDOW_HEADER_SHADE_TOP" file="common/browser_window_header_shade_top.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_BROWSER_WINDOW_HEADER_SHADE_TOP_LEFT" file="common/browser_window_header_shade_top_left.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_BROWSER_WINDOW_HEADER_SHADE_TOP_RIGHT" file="common/browser_window_header_shade_top_right.png" />
+
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_BACKGROUND" file="common/launcher/launcher_background.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_CORNER" file="common/launcher/launcher_corner.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_DIMMING" file="common/launcher/launcher_dimming.png" />
@@ -151,6 +177,7 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SHUTDOWN" file="cros/status/status_shutdown.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER" file="cros/status/status_shutdown_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SMS" file="cros/status/status_sms.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SMS_DISMISS" file="cros/status/status_sms_dismiss.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_TRACING" file="cros/status/status_tracing.png" />
 
       <!-- ChromeOS specific icons -->
@@ -213,16 +240,23 @@
 
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_BUTTON_SEPARATOR" file="common/window_button_separator.png" />
 
+      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_BACKGROUND_H" file="common/window_control_background_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_BACKGROUND_P" file="common/window_control_background_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_CLOSE" file="common/window_control_icon_close.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_CLOSE_I" file="common/window_control_icon_close_inactive.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_LEFT_SNAPPED" file="common/window_control_icon_left_snapped.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_MINIMIZE" file="common/window_control_icon_minimize.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_MINIMIZE_I" file="common/window_control_icon_minimize_inactive.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_RIGHT_SNAPPED" file="common/window_control_icon_right_snapped.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_SIZE" file="common/window_control_icon_size.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_SIZE_I" file="common/window_control_icon_size_inactive.png" />
+
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_BASE_ACTIVE" file="common/window_header_base_active.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_BASE_INACTIVE" file="common/window_header_base_inactive.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_ACTIVE" file="common/window_header_base_incognito_active.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_BASE_INCOGNITO_INACTIVE" file="common/window_header_base_incognito_inactive.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_BASE_MINIMAL" file="common/window_header_base_minimal.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_LEFT" file="common/window_header_shade_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_RIGHT" file="common/window_header_shade_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_TOP" file="common/window_header_shade_top.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_TOP_LEFT" file="common/window_header_shade_top_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_TOP_RIGHT" file="common/window_header_shade_top_right.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_BOTTOM" file="common/window_header_shade_bottom_inactive.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_LEFT" file="common/window_header_shade_left_inactive.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_RIGHT" file="common/window_header_shade_right_inactive.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_TOP" file="common/window_header_shade_top_inactive.png" />
 
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CLOSE" file="common/window_close_tall_normal.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CLOSE_H" file="common/window_close_tall_hover.png" />
