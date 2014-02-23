@@ -26,12 +26,11 @@ class PhantomWindowController;
 // When the mouse is pressed over the size button or the size button is touched:
 // - The minimize and close buttons are set to snap left and snap right
 //   respectively.
-// - The pressed button is updated during the drag to reflect the button
-//   underneath the mouse cursor. (The size button is potentially unpressed).
-// When the drag terminates, the action for the pressed button is executed.
-// For the sake of simplicity, the size button is the event handler for a click
-// starting on the size button and the entire drag (including when the size
-// button is unpressed).
+// - The size button stays pressed while the mouse is over the buttons to snap
+//   left and to snap right. The button underneath the mouse is hovered.
+// When the drag terminates, the action for the button underneath the mouse
+// is executed. For the sake of simplicity, the size button is the event
+// handler for a click starting on the size button and the entire drag.
 class ASH_EXPORT AlternateFrameSizeButton : public FrameCaptionButton {
  public:
   AlternateFrameSizeButton(views::ButtonListener* listener,
@@ -45,6 +44,7 @@ class ASH_EXPORT AlternateFrameSizeButton : public FrameCaptionButton {
   virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
+  virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   void set_delay_to_set_buttons_to_snap_mode(int delay_ms) {
@@ -58,8 +58,14 @@ class ASH_EXPORT AlternateFrameSizeButton : public FrameCaptionButton {
   // Sets the buttons adjacent to the size button to snap left and right.
   void SetButtonsToSnapMode();
 
-  // Updates the pressed button based on |event_location|.
-  void UpdatePressedButton(const ui::LocatedEvent& event);
+  // Updates |snap_type_|, whether the size button is pressed and whether any
+  // other buttons are hovered.
+  void UpdateSnapType(const ui::LocatedEvent& event);
+
+  // Returns the button which should be hovered (if any) while in "snap mode"
+  // for |event_location_in_screen|.
+  const FrameCaptionButton* GetButtonToHover(
+      const gfx::Point& event_location_in_screen) const;
 
   // Snaps |frame_| according to |snap_type_|. Returns true if |frame_| was
   // snapped.
@@ -92,8 +98,9 @@ class ASH_EXPORT AlternateFrameSizeButton : public FrameCaptionButton {
   // right.
   bool in_snap_mode_;
 
-  // The action of the currently pressed button. If |snap_type_| == SNAP_NONE,
-  // the size button's default action is run when clicked.
+  // The action to execute when the drag/click is ended. If
+  // |snap_type_| == SNAP_NONE, the size button's default action is run when the
+  // drag/click is ended.
   SnapType snap_type_;
 
   // Displays a preview of how the window's bounds will change as a result of

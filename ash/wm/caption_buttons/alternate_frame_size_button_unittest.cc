@@ -322,11 +322,11 @@ TEST_F(AlternateFrameSizeButtonTest, ResetButtonsAfterClick) {
   EXPECT_EQ(CAPTION_BUTTON_ICON_LEFT_SNAPPED, minimize_button()->icon());
   EXPECT_EQ(CAPTION_BUTTON_ICON_RIGHT_SNAPPED, close_button()->icon());
 
-  // Dragging the mouse over the minimize button should press the minimize
+  // Dragging the mouse over the minimize button should hover the minimize
   // button and the minimize and close button icons should stay changed.
   generator.MoveMouseTo(CenterPointInScreen(minimize_button()));
-  EXPECT_EQ(views::Button::STATE_PRESSED, minimize_button()->state());
-  EXPECT_EQ(views::Button::STATE_NORMAL, size_button()->state());
+  EXPECT_EQ(views::Button::STATE_HOVERED, minimize_button()->state());
+  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
   EXPECT_EQ(views::Button::STATE_NORMAL, close_button()->state());
   EXPECT_EQ(CAPTION_BUTTON_ICON_LEFT_SNAPPED, minimize_button()->icon());
   EXPECT_EQ(CAPTION_BUTTON_ICON_RIGHT_SNAPPED, close_button()->icon());
@@ -373,6 +373,44 @@ TEST_F(AlternateFrameSizeButtonTest, ResetButtonsAfterClick) {
   EXPECT_TRUE(AllButtonsInNormalState());
   EXPECT_EQ(CAPTION_BUTTON_ICON_MINIMIZE, minimize_button()->icon());
   EXPECT_EQ(CAPTION_BUTTON_ICON_CLOSE, close_button()->icon());
+}
+
+// Test that the size button is pressed whenever the snap left/right buttons
+// are hovered.
+TEST_F(AlternateFrameSizeButtonTest, SizeButtonPressedWhenSnapButtonHovered) {
+  EXPECT_EQ(CAPTION_BUTTON_ICON_MINIMIZE, minimize_button()->icon());
+  EXPECT_EQ(CAPTION_BUTTON_ICON_CLOSE, close_button()->icon());
+  EXPECT_TRUE(AllButtonsInNormalState());
+
+  // Pressing the size button should result in the size button being pressed and
+  // the minimize and close button icons changing.
+  aura::test::EventGenerator& generator = GetEventGenerator();
+  generator.MoveMouseTo(CenterPointInScreen(size_button()));
+  generator.PressLeftButton();
+  EXPECT_EQ(views::Button::STATE_NORMAL, minimize_button()->state());
+  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
+  EXPECT_EQ(views::Button::STATE_NORMAL, close_button()->state());
+  EXPECT_EQ(CAPTION_BUTTON_ICON_LEFT_SNAPPED, minimize_button()->icon());
+  EXPECT_EQ(CAPTION_BUTTON_ICON_RIGHT_SNAPPED, close_button()->icon());
+
+  // Dragging the mouse over the minimize button (snap left button) should hover
+  // the minimize button and keep the size button pressed.
+  generator.MoveMouseTo(CenterPointInScreen(minimize_button()));
+  EXPECT_EQ(views::Button::STATE_HOVERED, minimize_button()->state());
+  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
+  EXPECT_EQ(views::Button::STATE_NORMAL, close_button()->state());
+
+  // Moving the mouse far away from the caption buttons and then moving it over
+  // the close button (snap right button) should hover the close button and
+  // keep the size button pressed.
+  const gfx::Rect& kWorkAreaBoundsInScreen =
+      ash::Shell::GetScreen()->GetPrimaryDisplay().work_area();
+  generator.MoveMouseTo(kWorkAreaBoundsInScreen.bottom_left());
+  EXPECT_TRUE(AllButtonsInNormalState());
+  generator.MoveMouseTo(CenterPointInScreen(close_button()));
+  EXPECT_EQ(views::Button::STATE_NORMAL, minimize_button()->state());
+  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
+  EXPECT_EQ(views::Button::STATE_HOVERED, close_button()->state());
 }
 
 }  // namespace test

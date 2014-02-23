@@ -21,10 +21,22 @@ namespace {
 // right.
 const int kSetButtonsToSnapModeDelayMs = 150;
 
-// The amount that a user can overshoot the snap left / snap right button and
-// keep the snap left / snap right button pressed.
-const int kPressedHitBoundsExpandX = 200;
-const int kPressedHitBoundsExpandY = 50;
+// The amount that a user can overshoot one of the caption buttons while in
+// "snap mode" and keep the button hovered/pressed.
+const int kMaxOvershootX = 200;
+const int kMaxOvershootY = 50;
+
+// Returns true if a mouse drag while in "snap mode" at |location_in_screen|
+// would hover/press |button| or keep it hovered/pressed.
+bool HitTestButton(const ash::FrameCaptionButton* button,
+                   const gfx::Point& location_in_screen) {
+  gfx::Rect expanded_bounds_in_screen = button->GetBoundsInScreen();
+  if (button->state() == views::Button::STATE_HOVERED ||
+      button->state() == views::Button::STATE_PRESSED) {
+    expanded_bounds_in_screen.Inset(-kMaxOvershootX, -kMaxOvershootY);
+  }
+  return expanded_bounds_in_screen.Contains(location_in_screen);
+}
 
 }  // namespace
 
@@ -59,8 +71,12 @@ bool AlternateFrameSizeButton::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 bool AlternateFrameSizeButton::OnMouseDragged(const ui::MouseEvent& event) {
-  UpdatePressedButton(event);
-  FrameCaptionButton::OnMouseDragged(event);
+  UpdateSnapType(event);
+  // By default a FrameCaptionButton reverts to STATE_NORMAL once the mouse
+  // leaves its bounds. Skip FrameCaptionButton's handling when
+  // |in_snap_mode_| == true because we want different behavior.
+  if (!in_snap_mode_)
+    FrameCaptionButton::OnMouseDragged(event);
   return true;
 }
 
@@ -72,6 +88,12 @@ void AlternateFrameSizeButton::OnMouseReleased(const ui::MouseEvent& event) {
 void AlternateFrameSizeButton::OnMouseCaptureLost() {
   SetButtonsToNormalMode(AlternateFrameSizeButtonDelegate::ANIMATE_YES);
   FrameCaptionButton::OnMouseCaptureLost();
+}
+
+void AlternateFrameSizeButton::OnMouseMoved(const ui::MouseEvent& event) {
+  // Ignore any synthetic mouse moves during a drag.
+  if (!in_snap_mode_)
+    FrameCaptionButton::OnMouseMoved(event);
 }
 
 void AlternateFrameSizeButton::OnGestureEvent(ui::GestureEvent* event) {
@@ -89,7 +111,7 @@ void AlternateFrameSizeButton::OnGestureEvent(ui::GestureEvent* event) {
 
   if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN ||
       event->type() == ui::ET_GESTURE_SCROLL_UPDATE) {
-    UpdatePressedButton(*event);
+    UpdateSnapType(*event);
     event->SetHandled();
     return;
   }
@@ -134,8 +156,7 @@ void AlternateFrameSizeButton::SetButtonsToSnapMode() {
                             AlternateFrameSizeButtonDelegate::ANIMATE_YES);
 }
 
-void AlternateFrameSizeButton::UpdatePressedButton(
-    const ui::LocatedEvent& event) {
+void AlternateFrameSizeButton::UpdateSnapType(const ui::LocatedEvent& event) {
   if (!in_snap_mode_) {
     // Set the buttons adjacent to the size button to snap left and right early
     // if the user drags past the drag threshold.
@@ -153,16 +174,16 @@ void AlternateFrameSizeButton::UpdatePressedButton(
 
   gfx::Point event_location_in_screen(event.location());
   views::View::ConvertPointToScreen(this, &event_location_in_screen);
+  const FrameCaptionButton* to_hover =
+      GetButtonToHover(event_location_in_screen);
+  bool press_size_button =
+      to_hover || HitTestButton(this, event_location_in_screen);
+  delegate_->SetHoveredAndPressedButtons(
+      to_hover, press_size_button ? this : NULL);
 
-  gfx::Insets pressed_button_hittest_insets(-kPressedHitBoundsExpandY,
-                                            -kPressedHitBoundsExpandX,
-                                            -kPressedHitBoundsExpandY,
-                                            -kPressedHitBoundsExpandX);
-  const FrameCaptionButton* pressed_button = delegate_->PressButtonAt(
-      event_location_in_screen, pressed_button_hittest_insets);
   snap_type_ = SNAP_NONE;
-  if (pressed_button) {
-    switch (pressed_button->icon()) {
+  if (to_hover) {
+    switch (to_hover->icon()) {
       case CAPTION_BUTTON_ICON_LEFT_SNAPPED:
         snap_type_ = SNAP_LEFT;
         break;
@@ -170,8 +191,6 @@ void AlternateFrameSizeButton::UpdatePressedButton(
         snap_type_ = SNAP_RIGHT;
         break;
       case CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE:
-        // snap_type_ = SNAP_NONE
-        break;
       case CAPTION_BUTTON_ICON_MINIMIZE:
       case CAPTION_BUTTON_ICON_CLOSE:
       case CAPTION_BUTTON_ICON_COUNT:
@@ -200,10 +219,22 @@ void AlternateFrameSizeButton::UpdatePressedButton(
   }
 }
 
+const FrameCaptionButton* AlternateFrameSizeButton::GetButtonToHover(
+    const gfx::Point& event_location_in_screen) const {
+  const FrameCaptionButton* closest_button = delegate_->GetButtonClosestTo(
+      event_location_in_screen);
+  if ((closest_button->icon() == CAPTION_BUTTON_ICON_LEFT_SNAPPED ||
+       closest_button->icon() == CAPTION_BUTTON_ICON_RIGHT_SNAPPED) &&
+      HitTestButton(closest_button, event_location_in_screen)) {
+    return closest_button;
+  }
+  return NULL;
+}
+
 bool AlternateFrameSizeButton::CommitSnap(const ui::LocatedEvent& event) {
   // The position of |event| may be different than the position of the previous
   // event.
-  UpdatePressedButton(event);
+  UpdateSnapType(event);
 
   if (in_snap_mode_ &&
       (snap_type_ == SNAP_LEFT || snap_type_ == SNAP_RIGHT)) {

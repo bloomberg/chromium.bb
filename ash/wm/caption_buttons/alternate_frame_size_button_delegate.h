@@ -11,6 +11,7 @@
 namespace gfx {
 class Insets;
 class Point;
+class Vector2d;
 }
 
 namespace ash {
@@ -38,15 +39,15 @@ class ASH_EXPORT AlternateFrameSizeButtonDelegate {
                               CaptionButtonIcon right_button_action,
                               Animate animate) = 0;
 
-  // Presses the button at |position_in_screen| and unpresses any other pressed
-  // caption buttons.
-  // |pressed_button_hittest_insets| indicates how much the hittest insets for
-  // the currently pressed button should be expanded if no button was found at
-  // |position_in_screen| using the normal button hittest insets.
-  // Returns the button which was pressed.
-  virtual const FrameCaptionButton* PressButtonAt(
-      const gfx::Point& position_in_screen,
-      const gfx::Insets& pressed_button_hittest_insets) const = 0;
+  // Returns the button closest to |position_in_screen|.
+  virtual const FrameCaptionButton* GetButtonClosestTo(
+      const gfx::Point& position_in_screen) const = 0;
+
+  // Sets |to_hover| and |to_pressed| to STATE_HOVERED and STATE_PRESSED
+  // respectively. All other buttons are to set to STATE_NORMAL.
+  virtual void SetHoveredAndPressedButtons(
+      const FrameCaptionButton* to_hover,
+      const FrameCaptionButton* to_press) = 0;
 
  protected:
   virtual ~AlternateFrameSizeButtonDelegate() {}

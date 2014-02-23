@@ -4,6 +4,8 @@
 
 #include "ash/wm/caption_buttons/frame_caption_button_container_view.h"
 
+#include <cmath>
+
 #include "ash/ash_switches.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
@@ -262,43 +264,51 @@ void FrameCaptionButtonContainerView::SetButtonIcons(
   SetButtonIcon(close_button_, close_button_icon, animate);
 }
 
-const FrameCaptionButton*
-FrameCaptionButtonContainerView::PressButtonAt(
-    const gfx::Point& position_in_screen,
-    const gfx::Insets& pressed_hittest_outer_insets) const {
-  DCHECK(switches::UseAlternateFrameCaptionButtonStyle());
+const FrameCaptionButton* FrameCaptionButtonContainerView::GetButtonClosestTo(
+    const gfx::Point& position_in_screen) const {
+  // Since the buttons all have the same size, the closest button is the button
+  // with the center point closest to |position_in_screen|.
+  // TODO(pkotwicz): Make the caption buttons not overlap.
   gfx::Point position(position_in_screen);
   views::View::ConvertPointFromScreen(this, &position);
 
   FrameCaptionButton* buttons[] = {
-    close_button_, size_button_, minimize_button_
+    minimize_button_, size_button_, close_button_
   };
-  FrameCaptionButton* pressed_button = NULL;
+  int min_squared_distance = INT_MAX;
+  FrameCaptionButton* closest_button = NULL;
   for (size_t i = 0; i < arraysize(buttons); ++i) {
     FrameCaptionButton* button = buttons[i];
     if (!button->visible())
       continue;
 
-    if (button->state() == views::Button::STATE_PRESSED) {
-      gfx::Rect expanded_bounds = button->bounds();
-      expanded_bounds.Inset(pressed_hittest_outer_insets);
-      if (expanded_bounds.Contains(position)) {
-        pressed_button = button;
-        // Do not break in order to give preference to buttons which are
-        // closer to |position_in_screen| than the currently pressed button.
-        // TODO(pkotwicz): Make the caption buttons not overlap.
-      }
-    } else if (ConvertPointToViewAndHitTest(this, button, position)) {
-      pressed_button = button;
-      break;
+    gfx::Point center_point = button->bounds().CenterPoint();
+    int squared_distance = static_cast<int>(
+        pow(static_cast<double>(position.x() - center_point.x()), 2) +
+        pow(static_cast<double>(position.y() - center_point.y()), 2));
+    if (squared_distance < min_squared_distance) {
+      min_squared_distance = squared_distance;
+      closest_button = button;
     }
   }
+  return closest_button;
+}
 
+void FrameCaptionButtonContainerView::SetHoveredAndPressedButtons(
+    const FrameCaptionButton* to_hover,
+    const FrameCaptionButton* to_press) {
+  FrameCaptionButton* buttons[] = {
+    minimize_button_, size_button_, close_button_
+  };
   for (size_t i = 0; i < arraysize(buttons); ++i) {
-    buttons[i]->SetState(buttons[i] == pressed_button ?
-        views::Button::STATE_PRESSED : views::Button::STATE_NORMAL);
+    FrameCaptionButton* button = buttons[i];
+    views::Button::ButtonState new_state = views::Button::STATE_NORMAL;
+    if (button == to_hover)
+      new_state = views::Button::STATE_HOVERED;
+    else if (button == to_press)
+      new_state = views::Button::STATE_PRESSED;
+    button->SetState(new_state);
   }
-  return pressed_button;
 }
 
 FrameCaptionButtonContainerView::ButtonIconIds::ButtonIconIds()

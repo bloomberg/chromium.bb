@@ -124,9 +124,11 @@ class ASH_EXPORT FrameCaptionButtonContainerView
   virtual void SetButtonIcons(CaptionButtonIcon minimize_button_icon,
                               CaptionButtonIcon close_button_icon,
                               Animate animate) OVERRIDE;
-  virtual const FrameCaptionButton* PressButtonAt(
-      const gfx::Point& position_in_screen,
-      const gfx::Insets& pressed_hittest_outer_insets) const OVERRIDE;
+  virtual const FrameCaptionButton* GetButtonClosestTo(
+      const gfx::Point& position_in_screen) const OVERRIDE;
+  virtual void SetHoveredAndPressedButtons(
+      const FrameCaptionButton* to_hover,
+      const FrameCaptionButton* to_press) OVERRIDE;
 
   // The widget that the buttons act on.
   views::Widget* frame_;
