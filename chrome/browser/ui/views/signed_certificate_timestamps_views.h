@@ -41,7 +41,6 @@ class SignedCertificateTimestampsViews : public views::DialogDelegateView,
   virtual ui::ModalType GetModalType() const OVERRIDE;
 
   // views::View:
-  virtual gfx::Size GetMinimumSize() OVERRIDE;
   virtual void ViewHierarchyChanged(const ViewHierarchyChangedDetails& details)
       OVERRIDE;
 

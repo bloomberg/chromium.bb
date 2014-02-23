@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/signed_certificate_timestamps_views.h"
 
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -92,14 +93,11 @@ base::string16 SCTListModel::GetItemAt(int index) {
   std::string status = l10n_util::GetStringUTF8(
       chrome::ct::StatusToResourceID(sct_list_[index].status));
 
-  // TODO(eranm): Internationalization: If the locale is a RTL one,
-  // format the string so that the index is on the right, status
-  // and origin on the left. Specifically: the format part should be a
-  // localized IDS string where the placeholders get rearranged for RTL locales,
-  // GetStringFUTF16 is used to replace the placeholders with these
-  // origin/status strings and the numbered index.
-  return base::UTF8ToUTF16(base::StringPrintf(
-      "%d: %s, %s", index + 1, origin.c_str(), status.c_str()));
+  // This formatting string may be internationalized for RTL, etc.
+  return l10n_util::GetStringFUTF16(IDS_SCT_CHOOSER_FORMAT,
+                                    base::IntToString16(index + 1),
+                                    base::UTF8ToUTF16(origin),
+                                    base::UTF8ToUTF16(status));
 }
 
 SignedCertificateTimestampsViews::SignedCertificateTimestampsViews(
@@ -139,12 +137,6 @@ void SignedCertificateTimestampsViews::OnPerformAction(
   DCHECK_EQ(combobox, sct_selector_box_.get());
   DCHECK_LT(combobox->selected_index(), sct_list_model_->GetItemCount());
   ShowSCTInfo(combobox->selected_index());
-}
-
-gfx::Size SignedCertificateTimestampsViews::GetMinimumSize() {
-  // Allow UpdateWebContentsModalDialogPosition to clamp the dialog width.
-  return gfx::Size(View::GetMinimumSize().width() + 300,
-                   View::GetMinimumSize().height());
 }
 
 void SignedCertificateTimestampsViews::ViewHierarchyChanged(

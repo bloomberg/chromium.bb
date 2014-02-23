@@ -3373,7 +3373,13 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_SCT_ORIGIN_UNKNOWN" desc="SCT came from an unknown origin">
           Unknown
         </message>
-        <message name="IDS_SCT_VERSION" desc="Version of SCT (numeric)">
+        <message name="IDS_SCT_VERSION_V1" desc="SCT Version 1">
+          V1
+        </message>
+        <message name="IDS_SCT_VERSION_UNKNOWN" desc="SCT with unknown version">
+          Unknown
+        </message>
+        <message name="IDS_SCT_VERSION" desc="Version of SCT">
           Version
         </message>
         <message name="IDS_SCT_TIMESTAMP" desc="Time when the SCT was issued by the log">
@@ -3392,19 +3398,19 @@ Even if you have downloaded files from this website before, the website might ha
           MD5
         </message>
         <message name="IDS_SCT_HASH_ALGORITHM_SHA1" desc="SHA1 hash algorithm">
-          SHA1
+          SHA-1
         </message>
         <message name="IDS_SCT_HASH_ALGORITHM_SHA224" desc="SHA224 hash algorithm">
-          SHA224
+          SHA-224
         </message>
         <message name="IDS_SCT_HASH_ALGORITHM_SHA256" desc="SHA256 hash algorithm">
-          SHA256
+          SHA-256
         </message>
         <message name="IDS_SCT_HASH_ALGORITHM_SHA384" desc="SHA384 hash algorithm">
-          SHA384
+          SHA-384
         </message>
         <message name="IDS_SCT_HASH_ALGORITHM_SHA512" desc="SHA512 hash algorithm">
-          SHA512
+          SHA-512
         </message>
         <message name="IDS_SCT_SIGNATURE_ALGORITHM" desc="Signature algorithm used to sign over the Precertificate's hash">
           Signature algorithm
@@ -3423,6 +3429,12 @@ Even if you have downloaded files from this website before, the website might ha
         </message>
         <message name="IDS_SCT_SIGNATURE_DATA" desc="The signature bytes (hex)">
           Signature data
+        </message>
+        <message name="IDS_SCT_RAW_DATA_HELP" desc="Instructions on how to get the raw data.">
+          The raw data is available through NetLog. See help for more details.
+        </message>
+        <message name="IDS_SCT_CHOOSER_FORMAT" desc="Format of combobox information layout.">
+          <ph name="SCT_INDEX">$1<ex>1</ex></ph>: <ph name="SCT_ORIGIN">$2<ex>Embedded</ex></ph>, <ph name="SCT_STATUS">$3<ex>Verified</ex></ph>
         </message>
       </if>
 
@@ -9500,7 +9512,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
           Certificate information
         </message>
         <message name="IDS_PAGEINFO_CERT_TRANSPARENCY_INFO_BUTTON" desc="Text of button in the page info that shows Signed Certificate Timestamps.">
-          Certificate transparency
+          Transparency information
         </message>
       </if>
       <if expr="use_titlecase">
@@ -9508,7 +9520,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
           Certificate Information
         </message>
         <message name="IDS_PAGEINFO_CERT_TRANSPARENCY_INFO_BUTTON" desc="Text of button in the page info that shows Signed Certificate Timestamps.">
-          Certificate Transparency
+          Transparency Information
         </message>
       </if>
       <message name="IDS_PAGE_INFO_HELP_CENTER_LINK" desc="This is the text of the link pointing to the Help Center. This appears at the bottom of the SSL dialog and 'this' refers to the sections within the bubble.">

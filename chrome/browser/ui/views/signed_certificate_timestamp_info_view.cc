@@ -15,9 +15,7 @@
 #include "net/cert/signed_certificate_timestamp.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/views/border.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 
@@ -60,6 +58,10 @@ int SignatureAlgorithmToResourceID(
       return IDS_SCT_SIGNATURE_ALGORITHM_ECDSA;
   }
   return IDS_SCT_SIGNATURE_ALGORITHM_ANONYMOUS;
+}
+
+int VersionToResourceID(int version) {
+  return version == 0 ? IDS_SCT_VERSION_V1 : IDS_SCT_VERSION_UNKNOWN;
 }
 
 }  // namespace
@@ -122,7 +124,8 @@ void SignedCertificateTimestampInfoView::SetSignedCertificateTimestamp(
       l10n_util::GetStringUTF16(chrome::ct::StatusToResourceID(status)));
   origin_value_field_->SetText(
       l10n_util::GetStringUTF16(chrome::ct::SCTOriginToResourceID(sct)));
-  version_value_field_->SetText(base::IntToString16(sct.version));
+  version_value_field_->SetText(
+      l10n_util::GetStringUTF16(VersionToResourceID(sct.version)));
   log_description_value_field_->SetText(base::UTF8ToUTF16(sct.log_description));
   timestamp_value_field_->SetText(
       base::TimeFormatFriendlyDateAndTime(sct.timestamp));
@@ -135,18 +138,14 @@ void SignedCertificateTimestampInfoView::SetSignedCertificateTimestamp(
   // The log_id and signature_data fields contain binary data, format it
   // accordingly before displaying.
   log_id_value_field_->SetText(
-      base::UTF8ToUTF16(x509_certificate_model::ProcessRawBytesWithSeparators(
+      base::UTF8ToUTF16(x509_certificate_model::ProcessRawBytes(
           reinterpret_cast<const unsigned char*>(sct.log_id.c_str()),
-          sct.log_id.length(),
-          ' ',
-          ' ')));
+          sct.log_id.length())));
   signature_data_value_field_->SetText(
-      base::UTF8ToUTF16(x509_certificate_model::ProcessRawBytesWithSeparators(
+      base::UTF8ToUTF16(x509_certificate_model::ProcessRawBytes(
           reinterpret_cast<const unsigned char*>(
               sct.signature.signature_data.c_str()),
-          sct.signature.signature_data.length(),
-          ' ',
-          ' ')));
+          sct.signature.signature_data.length())));
 
   Layout();
 }
@@ -157,34 +156,37 @@ void SignedCertificateTimestampInfoView::ViewHierarchyChanged(
     Init();
 }
 
-void SignedCertificateTimestampInfoView::AddLabelRow(
-    int layout_id,
-    views::GridLayout* layout,
-    int label_message_id,
-    views::Textfield* textfield) {
+void SignedCertificateTimestampInfoView::AddLabelRow(int layout_id,
+                                                     views::GridLayout* layout,
+                                                     int label_message_id,
+                                                     views::Label* data_label) {
   layout->StartRow(0, layout_id);
   layout->AddView(
       new views::Label(l10n_util::GetStringUTF16(label_message_id)));
   layout->AddView(
-      textfield, 2, 1, views::GridLayout::FILL, views::GridLayout::CENTER);
+      data_label, 2, 1, views::GridLayout::LEADING, views::GridLayout::CENTER);
   layout->AddPaddingRow(0, kExtraLineHeightPadding);
-
-  textfield->SetReadOnly(true);
-  // Color these borderless text areas the same as the containing dialog.
-  textfield->SetBackgroundColor(SK_ColorTRANSPARENT);
-  textfield->SetBorder(views::Border::NullBorder());
 }
 
 void SignedCertificateTimestampInfoView::Init() {
-  status_value_field_ = new views::Textfield;
-  origin_value_field_ = new views::Textfield;
-  version_value_field_ = new views::Textfield;
-  log_description_value_field_ = new views::Textfield;
-  log_id_value_field_ = new views::Textfield;
-  timestamp_value_field_ = new views::Textfield;
-  hash_algorithm_value_field_ = new views::Textfield;
-  signature_algorithm_value_field_ = new views::Textfield;
-  signature_data_value_field_ = new views::Textfield;
+  status_value_field_ = new views::Label;
+  origin_value_field_ = new views::Label;
+  version_value_field_ = new views::Label;
+  log_description_value_field_ = new views::Label;
+  log_id_value_field_ = new views::Label;
+  log_id_value_field_->SetMultiLine(true);
+  log_id_value_field_->SetAllowCharacterBreak(true);
+  log_id_value_field_->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_SCT_RAW_DATA_HELP));
+
+  timestamp_value_field_ = new views::Label;
+  hash_algorithm_value_field_ = new views::Label;
+  signature_algorithm_value_field_ = new views::Label;
+  signature_data_value_field_ = new views::Label;
+  signature_data_value_field_->SetMultiLine(true);
+  signature_data_value_field_->SetAllowCharacterBreak(true);
+  signature_data_value_field_->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_SCT_RAW_DATA_HELP));
 
   views::GridLayout* layout = new views::GridLayout(this);
   layout->SetInsets(

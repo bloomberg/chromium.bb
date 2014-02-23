@@ -13,7 +13,6 @@
 namespace views {
 class GridLayout;
 class Label;
-class Textfield;
 }
 
 namespace net {
@@ -56,21 +55,21 @@ class SignedCertificateTimestampInfoView : public views::View {
   void AddLabelRow(int layout_id,
                    views::GridLayout* layout,
                    int label_message_id,
-                   views::Textfield* text_field);
+                   views::Label* data_label);
 
   // Sets up the view layout.
   void Init();
 
   // Individual property labels
-  views::Textfield* status_value_field_;
-  views::Textfield* origin_value_field_;
-  views::Textfield* version_value_field_;
-  views::Textfield* log_description_value_field_;
-  views::Textfield* log_id_value_field_;
-  views::Textfield* timestamp_value_field_;
-  views::Textfield* hash_algorithm_value_field_;
-  views::Textfield* signature_algorithm_value_field_;
-  views::Textfield* signature_data_value_field_;
+  views::Label* status_value_field_;
+  views::Label* origin_value_field_;
+  views::Label* version_value_field_;
+  views::Label* log_description_value_field_;
+  views::Label* log_id_value_field_;
+  views::Label* timestamp_value_field_;
+  views::Label* hash_algorithm_value_field_;
+  views::Label* signature_algorithm_value_field_;
+  views::Label* signature_data_value_field_;
 
   DISALLOW_COPY_AND_ASSIGN(SignedCertificateTimestampInfoView);
 };

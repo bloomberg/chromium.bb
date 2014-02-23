@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
@@ -18,7 +17,6 @@
 #include "chrome/browser/ui/views/website_settings/permission_selector_view.h"
 #include "chrome/browser/ui/website_settings/website_settings.h"
 #include "chrome/browser/ui/website_settings/website_settings_utils.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -532,9 +530,7 @@ void WebsiteSettingsPopupView::SetIdentityInfo(
         l10n_util::GetStringUTF16(IDS_PAGEINFO_CERT_INFO_BUTTON));
     certificate_dialog_link_->set_listener(this);
 
-    if (!signed_certificate_timestamp_ids_.empty() &&
-        CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableSignedCertificateTimestampsViewer)) {
+    if (!signed_certificate_timestamp_ids_.empty()) {
       signed_certificate_timestamps_link_ =
           new views::Link(l10n_util::GetStringUTF16(
               IDS_PAGEINFO_CERT_TRANSPARENCY_INFO_BUTTON));
