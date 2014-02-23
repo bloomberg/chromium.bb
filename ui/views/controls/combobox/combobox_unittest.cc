@@ -612,40 +612,38 @@ TEST_F(ComboboxTest, ConsumingPressKeyEvents) {
       ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_SPACE, 0, false)));
 }
 
-// Disabled because of memory leaks, see http://crbug.com/341042.
-TEST_F(ComboboxTest, DISABLED_ContentWidth) {
+TEST_F(ComboboxTest, ContentWidth) {
   std::vector<std::string> values;
-
-  scoped_ptr<VectorComboboxModel> model(new VectorComboboxModel(&values));
-  combobox_ = new TestCombobox(model.get());
+  VectorComboboxModel model(&values);
+  TestCombobox combobox(&model);
 
   std::string long_item = "this is the long item";
   std::string short_item = "s";
 
   values.resize(1);
   values[0] = long_item;
-  combobox_->ModelChanged();
+  combobox.ModelChanged();
 
-  const int long_item_width = combobox_->content_size_.width();
+  const int long_item_width = combobox.content_size_.width();
 
   values[0] = short_item;
-  combobox_->ModelChanged();
+  combobox.ModelChanged();
 
-  const int short_item_width = combobox_->content_size_.width();
+  const int short_item_width = combobox.content_size_.width();
 
   values.resize(2);
   values[0] = short_item;
   values[1] = long_item;
-  combobox_->ModelChanged();
+  combobox.ModelChanged();
 
   // When the style is STYLE_NORMAL, the width will fit with the longest item.
-  combobox_->SetStyle(Combobox::STYLE_NORMAL);
-  EXPECT_EQ(long_item_width, combobox_->content_size_.width());
+  combobox.SetStyle(Combobox::STYLE_NORMAL);
+  EXPECT_EQ(long_item_width, combobox.content_size_.width());
 
   // When the style is STYLE_ACTION, the width will fit with the first items'
   // width.
-  combobox_->SetStyle(Combobox::STYLE_ACTION);
-  EXPECT_EQ(short_item_width, combobox_->content_size_.width());
+  combobox.SetStyle(Combobox::STYLE_ACTION);
+  EXPECT_EQ(short_item_width, combobox.content_size_.width());
 }
 
 }  // namespace views
