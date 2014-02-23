@@ -1491,6 +1491,7 @@ bool RenderLayerScrollableArea::usesCompositedScrolling() const
     if (m_box && (m_box->isIntristicallyScrollable(VerticalScrollbar) || m_box->isIntristicallyScrollable(HorizontalScrollbar)))
         return false;
 
+    DisableCompositingQueryAsserts disabler;
     return m_box->hasCompositedLayerMapping() && m_box->compositedLayerMapping()->scrollingLayer();
 }
 
