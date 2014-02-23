@@ -464,9 +464,9 @@ the possible places that any *indirect branch* can land. On Native
 Client for ARM, *indirect branch* can target any address that has its
 bottom four bits clear---any address that's ``0 mod 16``. We call these
 16-byte chunks of code "bundles". The validator makes sure that no
-pseudo-instruction straddles a bundle boundary. Compilers must pad with`
-`nop``\ s to ensure that every pseudo-instruction fits entirely inside
-one bundle.
+pseudo-instruction straddles a bundle boundary. Compilers must pad with
+``nop`` to ensure that every pseudo-instruction fits entirely inside one
+bundle.
 
 Here is the *indirect branch* pseudo-instruction. As you can see, it
 clears the top two and bottom four bits of the address:
@@ -669,6 +669,7 @@ the program). For example:
 .. naclcode::
   :prettyprint: 0
 
+  .p2align 4
   bkpt #0x5BE0          ; Must be aligned 0 mod 16!
   .word 0xDEADBEEF      ; Arbitrary constants are A-OK.
   svc #30               ; Trying to make a syscall? OK!

@@ -411,9 +411,9 @@ the possible places that any <em>indirect branch</em> can land. On Native
 Client for ARM, <em>indirect branch</em> can target any address that has its
 bottom four bits clear&#8212;any address that&#8217;s <code>0 mod 16</code>. We call these
 16-byte chunks of code &#8220;bundles&#8221;. The validator makes sure that no
-pseudo-instruction straddles a bundle boundary. Compilers must pad with`
-<cite>nop`</cite>s to ensure that every pseudo-instruction fits entirely inside
-one bundle.</p>
+pseudo-instruction straddles a bundle boundary. Compilers must pad with
+<code>nop</code> to ensure that every pseudo-instruction fits entirely inside one
+bundle.</p>
 <p>Here is the <em>indirect branch</em> pseudo-instruction. As you can see, it
 clears the top two and bottom four bits of the address:</p>
 <pre>
@@ -580,6 +580,7 @@ way, if an <em>indirect branch</em> tries to enter the data bundle, the process
 will take a fault and the trusted runtime will intervene (by terminating
 the program). For example:</p>
 <pre>
+.p2align 4
 bkpt #0x5BE0          ; Must be aligned 0 mod 16!
 .word 0xDEADBEEF      ; Arbitrary constants are A-OK.
 svc #30               ; Trying to make a syscall? OK!
