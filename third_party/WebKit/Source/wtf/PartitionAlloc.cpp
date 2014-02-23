@@ -526,8 +526,8 @@ static ALWAYS_INLINE bool partitionSetNewActivePage(PartitionPage* page)
 
 static ALWAYS_INLINE void* partitionDirectMap(PartitionRootBase* root, int flags, size_t size)
 {
-    size += kSystemPageOffsetMask;
-    size &= kSystemPageBaseMask;
+    size = partitionDirectMapSize(size);
+
     // Because we need to fake looking like a super page, We need to allocate
     // a bunch of system pages more than "size":
     // - The first few system pages are the partition page in which the super
@@ -611,10 +611,10 @@ void* partitionAllocSlowPath(PartitionRootBase* root, int flags, size_t size, Pa
     // can still have a blazing fast hot path due to lack of corner-case
     // branches.
     bool returnNull = flags & PartitionAllocReturnNull;
-    if (UNLIKELY(!bucket->numSystemPagesPerSlotSpan)) {
+    if (UNLIKELY(partitionBucketIsDirectMapped(bucket))) {
         ASSERT(size > kGenericMaxBucketed);
         ASSERT(bucket == &PartitionRootBase::gPagedBucket);
-        if (size > INT_MAX - kSystemPageSize) {
+        if (size > kGenericMaxDirectMapped) {
             if (returnNull)
                 return 0;
             RELEASE_ASSERT(false);
@@ -718,7 +718,7 @@ void partitionFreeSlowPath(PartitionPage* page)
     ASSERT(bucket->activePagesHead != &PartitionRootGeneric::gSeedPage);
     if (LIKELY(page->numAllocatedSlots == 0)) {
         // Page became fully unused.
-        if (UNLIKELY(!bucket->numSystemPagesPerSlotSpan)) {
+        if (UNLIKELY(partitionBucketIsDirectMapped(bucket))) {
             partitionDirectUnmap(page);
             return;
         }

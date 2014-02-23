@@ -182,6 +182,7 @@ static const size_t kGenericNumBucketsPerOrder = 1 << kGenericNumBucketsPerOrder
 static const size_t kGenericSmallestBucket = 1 << (kGenericMinBucketedOrder - 1);
 static const size_t kGenericMaxBucketSpacing = 1 << ((kGenericMaxBucketedOrder - 1) - kGenericNumBucketsPerOrderBits);
 static const size_t kGenericMaxBucketed = (1 << (kGenericMaxBucketedOrder - 1)) + ((kGenericNumBucketsPerOrder - 1) * kGenericMaxBucketSpacing);
+static const size_t kGenericMaxDirectMapped = INT_MAX - kSystemPageSize;
 static const size_t kBitsPerSizet = sizeof(void*) * CHAR_BIT;
 
 // Constants for the memory reclaim logic.
@@ -565,6 +566,40 @@ ALWAYS_INLINE void partitionFreeGeneric(PartitionRootGeneric* root, void* ptr)
 #endif
 }
 
+ALWAYS_INLINE bool partitionBucketIsDirectMapped(PartitionBucket* bucket)
+{
+    return !bucket->numSystemPagesPerSlotSpan;
+}
+
+ALWAYS_INLINE size_t partitionDirectMapSize(size_t size)
+{
+    // Caller must check that the size is not above the kGenericMaxDirectMapped
+    // limit before calling. This also guards against integer overflow in the
+    // calculation here.
+    ASSERT(size <= kGenericMaxDirectMapped);
+    return (size + kSystemPageOffsetMask) & kSystemPageBaseMask;
+}
+
+ALWAYS_INLINE size_t partitionAllocActualSize(PartitionRootGeneric* root, size_t size)
+{
+#if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
+    return size;
+#else
+    ASSERT(root->initialized);
+    size = partitionCookieSizeAdjustAdd(size);
+    PartitionBucket* bucket = partitionGenericSizeToBucket(root, size);
+    if (LIKELY(!partitionBucketIsDirectMapped(bucket))) {
+        size = bucket->slotSize;
+    } else if (size > kGenericMaxDirectMapped) {
+        // Too large to allocate => return the size unchanged.
+    } else {
+        ASSERT(bucket == &PartitionRootBase::gPagedBucket);
+        size = partitionDirectMapSize(size);
+    }
+    return partitionCookieSizeAdjustSubtract(size);
+#endif
+}
+
 ALWAYS_INLINE bool partitionAllocSupportsGetSize()
 {
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
@@ -623,6 +658,7 @@ using WTF::partitionFree;
 using WTF::partitionAllocGeneric;
 using WTF::partitionFreeGeneric;
 using WTF::partitionReallocGeneric;
+using WTF::partitionAllocActualSize;
 using WTF::partitionAllocSupportsGetSize;
 using WTF::partitionAllocGetSize;
 

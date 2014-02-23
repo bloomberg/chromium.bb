@@ -593,33 +593,39 @@ TEST(WTF_PartitionAlloc, GenericAllocGetSize)
     TestSetup();
 
     void* ptr;
-    size_t requestedSize, actualSize;
+    size_t requestedSize, actualSize, predictedSize;
 
     EXPECT_TRUE(partitionAllocSupportsGetSize());
 
     // Allocate something small.
     requestedSize = 511 - kExtraAllocSize;
+    predictedSize = partitionAllocActualSize(genericAllocator.root(), requestedSize);
     ptr = partitionAllocGeneric(genericAllocator.root(), requestedSize);
     EXPECT_TRUE(ptr);
     actualSize = partitionAllocGetSize(ptr);
+    EXPECT_EQ(predictedSize, actualSize);
     EXPECT_LT(requestedSize, actualSize);
     partitionFreeGeneric(genericAllocator.root(), ptr);
 
     // Allocate a size that should be a perfect match for a bucket, because it
     // is an exact power of 2.
     requestedSize = (256 * 1024) - kExtraAllocSize;
+    predictedSize = partitionAllocActualSize(genericAllocator.root(), requestedSize);
     ptr = partitionAllocGeneric(genericAllocator.root(), requestedSize);
     EXPECT_TRUE(ptr);
     actualSize = partitionAllocGetSize(ptr);
+    EXPECT_EQ(predictedSize, actualSize);
     EXPECT_EQ(requestedSize, actualSize);
     partitionFreeGeneric(genericAllocator.root(), ptr);
 
     // Allocate a size that is a system page smaller than a bucket. GetSize()
     // should return a larger size than we asked for now.
     requestedSize = (256 * 1024) - WTF::kSystemPageSize - kExtraAllocSize;
+    predictedSize = partitionAllocActualSize(genericAllocator.root(), requestedSize);
     ptr = partitionAllocGeneric(genericAllocator.root(), requestedSize);
     EXPECT_TRUE(ptr);
     actualSize = partitionAllocGetSize(ptr);
+    EXPECT_EQ(predictedSize, actualSize);
     EXPECT_EQ(requestedSize + WTF::kSystemPageSize, actualSize);
     // Check that we can write at the end of the reported size too.
     char* charPtr = reinterpret_cast<char*>(ptr);
@@ -628,11 +634,18 @@ TEST(WTF_PartitionAlloc, GenericAllocGetSize)
 
     // Allocate something very large, and uneven.
     requestedSize = 512 * 1024 * 1024 - 1;
+    predictedSize = partitionAllocActualSize(genericAllocator.root(), requestedSize);
     ptr = partitionAllocGeneric(genericAllocator.root(), requestedSize);
     EXPECT_TRUE(ptr);
     actualSize = partitionAllocGetSize(ptr);
+    EXPECT_EQ(predictedSize, actualSize);
     EXPECT_LT(requestedSize, actualSize);
     partitionFreeGeneric(genericAllocator.root(), ptr);
+
+    // Too large allocation.
+    requestedSize = INT_MAX;
+    predictedSize = partitionAllocActualSize(genericAllocator.root(), requestedSize);
+    EXPECT_EQ(requestedSize, predictedSize);
 
     TestShutdown();
 }
