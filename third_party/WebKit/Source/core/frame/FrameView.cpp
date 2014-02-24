@@ -312,8 +312,6 @@ void FrameView::recalculateScrollbarOverlayStyle()
 void FrameView::clear()
 {
     reset();
-    // FIXME: Why don't we set m_cannotBlitToWindow to false here?
-
     setScrollbarsSuppressed(true);
 }
 
@@ -1494,17 +1492,11 @@ void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
 // Note that this gets called at painting time.
 void FrameView::setIsOverlapped(bool isOverlapped)
 {
-    if (isOverlapped == m_isOverlapped)
-        return;
-
     m_isOverlapped = isOverlapped;
 }
 
 void FrameView::setContentIsOpaque(bool contentIsOpaque)
 {
-    if (contentIsOpaque == m_contentIsOpaque)
-        return;
-
     m_contentIsOpaque = contentIsOpaque;
 }
 
@@ -2433,9 +2425,7 @@ void FrameView::notifyPageThatContentAreaWillPaint() const
 
 bool FrameView::scrollAnimatorEnabled() const
 {
-    if (m_frame->settings())
-        return m_frame->settings()->scrollAnimatorEnabled();
-    return false;
+    return m_frame->settings() && m_frame->settings()->scrollAnimatorEnabled();
 }
 
 void FrameView::updateAnnotatedRegions()
