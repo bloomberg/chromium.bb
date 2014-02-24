@@ -173,6 +173,8 @@ void MouseInterpreter::InterpretMouseButtonEvent(
     GESTURES_BUTTON_LEFT,
     GESTURES_BUTTON_MIDDLE,
     GESTURES_BUTTON_RIGHT,
+    GESTURES_BUTTON_BACK,
+    GESTURES_BUTTON_FORWARD
   };
   unsigned down = 0, up = 0;
 

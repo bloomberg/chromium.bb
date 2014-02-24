@@ -155,6 +155,8 @@ struct FingerState {
 #define GESTURES_BUTTON_LEFT 1
 #define GESTURES_BUTTON_MIDDLE 2
 #define GESTURES_BUTTON_RIGHT 4
+#define GESTURES_BUTTON_BACK 8
+#define GESTURES_BUTTON_FORWARD 16
 
 // One frame of trackpad data
 struct HardwareState {
