@@ -576,10 +576,10 @@ static void supplementalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>&
     }
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
-    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::toNativeWithTypeCheck(info.GetIsolate(), info[1]));
+    V8TRYCATCH_VOID(TestObject*, objArg, V8TestObject::toNativeWithTypeCheck(info.GetIsolate(), info[1]));
     ASSERT(imp);
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    RefPtr<TestObj> result = TestPartialInterface::supplementalMethod2(scriptContext, *imp, strArg, objArg, exceptionState);
+    RefPtr<TestObject> result = TestPartialInterface::supplementalMethod2(scriptContext, *imp, strArg, objArg, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     v8SetReturnValue(info, result.release());
@@ -729,7 +729,7 @@ void V8TestInterface::visitDOMWrapper(void* object, const v8::Persistent<v8::Obj
     TestInterface* impl = fromInternalPointer(object);
     v8::Local<v8::Object> creationContext = v8::Local<v8::Object>::New(isolate, wrapper);
     V8WrapperInstantiationScope scope(creationContext, isolate);
-    TestObj* referencedName = impl->referencedName();
+    TestObject* referencedName = impl->referencedName();
     if (referencedName) {
         if (!DOMDataStore::containsWrapper<V8TestObject>(referencedName, isolate))
             wrap(referencedName, creationContext, isolate);

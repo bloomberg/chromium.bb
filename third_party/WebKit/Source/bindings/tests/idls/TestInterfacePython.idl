@@ -34,7 +34,7 @@
     Custom=LegacyCallAsFunction|ToV8,
     ImplementedAs=TestInterfacePythonImplementation,
     RuntimeEnabled=FeatureName,
-    SetWrapperReferenceTo(TestObjectPython referencedName),
+    SetWrapperReferenceTo(TestInterfacePython referencedName),
     StrictTypeChecking,
 ] interface TestInterfacePython : TestInterfaceEmpty {
     // members needed to test [ImplementedAs], as this affect attribute

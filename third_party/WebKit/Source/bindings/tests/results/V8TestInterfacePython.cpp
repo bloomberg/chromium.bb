@@ -38,7 +38,6 @@
 #include "V8Node.h"
 #include "V8TestImplementedAs.h"
 #include "V8TestInterfaceEmpty.h"
-#include "V8TestObjectPython.h"
 #include "bindings/tests/idls/TestImplements.h"
 #include "bindings/tests/idls/TestImplements2Implementation.h"
 #include "bindings/tests/idls/TestPartialInterfacePython.h"
@@ -893,11 +892,11 @@ void V8TestInterfacePython::visitDOMWrapper(void* object, const v8::Persistent<v
     TestInterfacePythonImplementation* impl = fromInternalPointer(object);
     v8::Local<v8::Object> creationContext = v8::Local<v8::Object>::New(isolate, wrapper);
     V8WrapperInstantiationScope scope(creationContext, isolate);
-    TestObjectPython* referencedName = impl->referencedName();
+    TestInterfacePythonImplementation* referencedName = impl->referencedName();
     if (referencedName) {
-        if (!DOMDataStore::containsWrapper<V8TestObjectPython>(referencedName, isolate))
+        if (!DOMDataStore::containsWrapper<V8TestInterfacePython>(referencedName, isolate))
             wrap(referencedName, creationContext, isolate);
-        DOMDataStore::setWrapperReference<V8TestObjectPython>(wrapper, referencedName, isolate);
+        DOMDataStore::setWrapperReference<V8TestInterfacePython>(wrapper, referencedName, isolate);
     }
     setObjectGroup(object, wrapper, isolate);
 }

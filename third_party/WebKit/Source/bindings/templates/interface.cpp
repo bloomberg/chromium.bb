@@ -682,7 +682,7 @@ void {{v8_class}}::visitDOMWrapper(void* object, const v8::Persistent<v8::Object
     v8::Local<v8::Object> creationContext = v8::Local<v8::Object>::New(isolate, wrapper);
     V8WrapperInstantiationScope scope(creationContext, isolate);
     {% for set_wrapper_reference_to in set_wrapper_reference_to_list %}
-    {{set_wrapper_reference_to.idl_type}}* {{set_wrapper_reference_to.name}} = impl->{{set_wrapper_reference_to.name}}();
+    {{set_wrapper_reference_to.cpp_type}} {{set_wrapper_reference_to.name}} = impl->{{set_wrapper_reference_to.name}}();
     if ({{set_wrapper_reference_to.name}}) {
         if (!DOMDataStore::containsWrapper<{{set_wrapper_reference_to.v8_type}}>({{set_wrapper_reference_to.name}}, isolate))
             wrap({{set_wrapper_reference_to.name}}, creationContext, isolate);

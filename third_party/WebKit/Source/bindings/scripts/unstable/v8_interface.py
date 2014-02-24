@@ -102,6 +102,7 @@ def generate_interface(interface):
     # [SetWrapperReferenceTo]
     set_wrapper_reference_to_list = [{
         'name': argument.name,
+        'cpp_type': v8_types.cpp_type(argument.idl_type, used_as_argument=True),
         'idl_type': argument.idl_type,
         'v8_type': v8_types.v8_type(argument.idl_type),
     } for argument in extended_attributes.get('SetWrapperReferenceTo', [])]

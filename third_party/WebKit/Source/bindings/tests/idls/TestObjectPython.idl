@@ -33,6 +33,7 @@ enum TestEnum {"", "EnumValue1", "EnumValue2", "EnumValue3"};
 callback VoidCallbackFunction = void ();
 callback AnyCallbackFunctionOptionalAnyArg = any (optional any optionalAnyArg);
 
+// No extended attributes on the interface; those go in TestInterface.idl
 interface TestObjectPython {
     // Constants
     const unsigned short CONST_VALUE_0 = 0;

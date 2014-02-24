@@ -34,7 +34,7 @@
 #define V8TestObject_h
 
 #include "V8EventTarget.h"
-#include "bindings/tests/idls/TestObj.h"
+#include "bindings/tests/idls/TestObject.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/WrapperTypeInfo.h"
@@ -46,11 +46,11 @@ class V8TestObject {
 public:
     static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*, WrapperWorldType);
-    static TestObj* toNative(v8::Handle<v8::Object> object)
+    static TestObject* toNative(v8::Handle<v8::Object> object)
     {
         return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
     }
-    static TestObj* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
+    static TestObject* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
     static void derefObject(void*);
     static EventTarget* toEventTarget(v8::Handle<v8::Object>);
@@ -61,31 +61,31 @@ public:
     static void customAttrAttributeSetterCustom(v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
     static const int eventListenerCacheIndex = v8DefaultWrapperInternalFieldCount + 0;
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 1;
-    static inline void* toInternalPointer(TestObj* impl)
+    static inline void* toInternalPointer(TestObject* impl)
     {
         return V8EventTarget::toInternalPointer(impl);
     }
 
-    static inline TestObj* fromInternalPointer(void* object)
+    static inline TestObject* fromInternalPointer(void* object)
     {
-        return static_cast<TestObj*>(V8EventTarget::fromInternalPointer(object));
+        return static_cast<TestObject*>(V8EventTarget::fromInternalPointer(object));
     }
-    static void installPerContextEnabledProperties(v8::Handle<v8::Object>, TestObj*, v8::Isolate*);
+    static void installPerContextEnabledProperties(v8::Handle<v8::Object>, TestObject*, v8::Isolate*);
     static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*);
 
 private:
-    friend v8::Handle<v8::Object> wrap(TestObj*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
-    static v8::Handle<v8::Object> createWrapper(PassRefPtr<TestObj>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+    friend v8::Handle<v8::Object> wrap(TestObject*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+    static v8::Handle<v8::Object> createWrapper(PassRefPtr<TestObject>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 };
 
-inline v8::Handle<v8::Object> wrap(TestObj* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+inline v8::Handle<v8::Object> wrap(TestObject* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
     ASSERT(!DOMDataStore::containsWrapper<V8TestObject>(impl, isolate));
     return V8TestObject::createWrapper(impl, creationContext, isolate);
 }
 
-inline v8::Handle<v8::Value> toV8(TestObj* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+inline v8::Handle<v8::Value> toV8(TestObject* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (UNLIKELY(!impl))
         return v8::Null(isolate);
@@ -96,7 +96,7 @@ inline v8::Handle<v8::Value> toV8(TestObj* impl, v8::Handle<v8::Object> creation
 }
 
 template<typename CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestObj* impl)
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestObject* impl)
 {
     if (UNLIKELY(!impl)) {
         v8SetReturnValueNull(callbackInfo);
@@ -109,7 +109,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestObj* impl)
 }
 
 template<typename CallbackInfo>
-inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, TestObj* impl)
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, TestObject* impl)
 {
     ASSERT(worldType(callbackInfo.GetIsolate()) == MainWorld);
     if (UNLIKELY(!impl)) {
@@ -123,7 +123,7 @@ inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, TestO
 }
 
 template<class CallbackInfo, class Wrappable>
-inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, TestObj* impl, Wrappable* wrappable)
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, TestObject* impl, Wrappable* wrappable)
 {
     if (UNLIKELY(!impl)) {
         v8SetReturnValueNull(callbackInfo);
@@ -135,25 +135,25 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, TestObj* impl
     v8SetReturnValue(callbackInfo, wrapper);
 }
 
-inline v8::Handle<v8::Value> toV8(PassRefPtr<TestObj> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+inline v8::Handle<v8::Value> toV8(PassRefPtr<TestObject> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     return toV8(impl.get(), creationContext, isolate);
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, PassRefPtr<TestObj> impl)
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, PassRefPtr<TestObject> impl)
 {
     v8SetReturnValue(callbackInfo, impl.get());
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, PassRefPtr<TestObj> impl)
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, PassRefPtr<TestObject> impl)
 {
     v8SetReturnValueForMainWorld(callbackInfo, impl.get());
 }
 
 template<class CallbackInfo, class Wrappable>
-inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<TestObj> impl, Wrappable* wrappable)
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<TestObject> impl, Wrappable* wrappable)
 {
     v8SetReturnValueFast(callbackInfo, impl.get(), wrappable);
 }
