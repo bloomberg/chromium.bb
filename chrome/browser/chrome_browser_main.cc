@@ -1102,9 +1102,11 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   StartMetricsRecording();
 #endif
 
-  browser_process_->rappor_service()->Start(
-      browser_process_->local_state(),
-      browser_process_->system_request_context());
+  if (IsMetricsReportingEnabled()) {
+    browser_process_->rappor_service()->Start(
+        browser_process_->local_state(),
+        browser_process_->system_request_context());
+  }
 
   // Create watchdog thread after creating all other threads because it will
   // watch the other threads and they must be running.

@@ -218,13 +218,14 @@ void BrowserProcessImpl::StartTearDown() {
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&SdchDictionaryFetcher::Shutdown));
 
-  // We need to destroy the MetricsService, VariationsService,
+  // We need to destroy the MetricsService, RapporService, VariationsService,
   // IntranetRedirectDetector, PromoResourceService, and SafeBrowsing
   // ClientSideDetectionService (owned by the SafeBrowsingService) before the
   // io_thread_ gets destroyed, since their destructors can call the URLFetcher
   // destructor, which does a PostDelayedTask operation on the IO thread. (The
   // IO thread will handle that URLFetcher operation before going away.)
   metrics_service_.reset();
+  rappor_service_.reset();
   variations_service_.reset();
   intranet_redirect_detector_.reset();
 #if defined(FULL_SAFE_BROWSING) || defined(MOBILE_SAFE_BROWSING)
