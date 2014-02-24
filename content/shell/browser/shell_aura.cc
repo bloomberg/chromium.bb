@@ -51,7 +51,7 @@ void Shell::PlatformCreateWindow(int width, int height) {
 void Shell::PlatformSetContents() {
   CHECK(platform_);
   aura::Window* content = web_contents_->GetView()->GetNativeView();
-  aura::Window* parent = platform_->window()->window();
+  aura::Window* parent = platform_->dispatcher()->window();
   if (parent->Contains(content))
     return;
   parent->AddChild(content);
