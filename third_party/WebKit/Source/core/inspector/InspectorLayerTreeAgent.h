@@ -63,6 +63,10 @@ public:
     virtual void clearFrontend() OVERRIDE;
     virtual void restore() OVERRIDE;
 
+    // Called from InspectorController
+    void willAddPageOverlay(const GraphicsLayer*);
+    void didRemovePageOverlay(const GraphicsLayer*);
+
     // Called from InspectorInstrumentation
     void layerTreeDidChange();
     void didPaint(RenderObject*, const GraphicsLayer*, GraphicsContext*, const LayoutRect&);
@@ -88,11 +92,13 @@ private:
 
     typedef HashMap<int, int> LayerIdToNodeIdMap;
     void buildLayerIdToNodeIdMap(RenderLayer*, LayerIdToNodeIdMap&);
+    void gatherGraphicsLayers(GraphicsLayer*, HashMap<int, int>& layerIdToNodeIdMap, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >&);
     int idForNode(Node*);
 
     InspectorFrontend::LayerTree* m_frontend;
     Page* m_page;
     InspectorDOMAgent* m_domAgent;
+    Vector<int, 2> m_pageOverlayLayerIds;
 
     typedef HashMap<String, LayerSnapshot> SnapshotById;
     SnapshotById m_snapshotById;

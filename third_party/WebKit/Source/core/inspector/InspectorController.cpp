@@ -74,6 +74,7 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
     , m_injectedScriptManager(InjectedScriptManager::createForPage())
     , m_state(adoptPtr(new InspectorCompositeState(inspectorClient)))
     , m_overlay(InspectorOverlay::create(page, inspectorClient))
+    , m_layerTreeAgent(0)
     , m_page(page)
     , m_inspectorClient(inspectorClient)
     , m_agents(m_instrumentingAgents.get(), m_state.get())
@@ -169,7 +170,9 @@ void InspectorController::initializeDeferredAgents()
 
     m_agents.append(InspectorInputAgent::create(m_page, m_inspectorClient));
 
-    m_agents.append(InspectorLayerTreeAgent::create(m_domAgent, m_page));
+    OwnPtr<InspectorLayerTreeAgent> layerTreeAgentPtr(InspectorLayerTreeAgent::create(m_domAgent, m_page));
+    m_layerTreeAgent = layerTreeAgentPtr.get();
+    m_agents.append(layerTreeAgentPtr.release());
 }
 
 void InspectorController::inspectedPageDestroyed()
@@ -467,6 +470,18 @@ void InspectorController::scriptsEnabled(bool  enabled)
 {
     if (InspectorPageAgent* pageAgent = m_instrumentingAgents->inspectorPageAgent())
         pageAgent->scriptsEnabled(enabled);
+}
+
+void InspectorController::willAddPageOverlay(const GraphicsLayer* layer)
+{
+    if (m_layerTreeAgent)
+        m_layerTreeAgent->willAddPageOverlay(layer);
+}
+
+void InspectorController::didRemovePageOverlay(const GraphicsLayer* layer)
+{
+    if (m_layerTreeAgent)
+        m_layerTreeAgent->didRemovePageOverlay(layer);
 }
 
 } // namespace WebCore

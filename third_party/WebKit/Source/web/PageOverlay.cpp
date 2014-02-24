@@ -101,6 +101,8 @@ void PageOverlay::clear()
 
     if (m_layer) {
         m_layer->removeFromParent();
+        if (WebCore::Page* page = m_viewImpl->page())
+            page->inspectorController().didRemovePageOverlay(m_layer.get());
         m_layer = nullptr;
         m_layerClient = nullptr;
     }
@@ -114,6 +116,9 @@ void PageOverlay::update()
         m_layerClient = OverlayGraphicsLayerClientImpl::create(m_overlay);
         m_layer = GraphicsLayer::create(m_viewImpl->graphicsLayerFactory(), m_layerClient.get());
         m_layer->setDrawsContent(true);
+
+        if (WebCore::Page* page = m_viewImpl->page())
+            page->inspectorController().willAddPageOverlay(m_layer.get());
 
         // Compositor hit-testing does not know how to deal with layers that may be
         // transparent to events (see http://crbug.com/269598). So require

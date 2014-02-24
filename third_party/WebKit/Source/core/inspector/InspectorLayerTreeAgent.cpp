@@ -110,16 +110,6 @@ static PassRefPtr<TypeBuilder::LayerTree::Layer> buildObjectForLayer(GraphicsLay
     return layerObject;
 }
 
-void gatherGraphicsLayers(GraphicsLayer* root, HashMap<int, int>& layerIdToNodeIdMap, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >& layers)
-{
-    int layerId = root->platformLayer()->id();
-    layers->addItem(buildObjectForLayer(root, layerIdToNodeIdMap.get(layerId)));
-    if (GraphicsLayer* replica = root->replicaLayer())
-        gatherGraphicsLayers(replica, layerIdToNodeIdMap, layers);
-    for (size_t i = 0, size = root->children().size(); i < size; ++i)
-        gatherGraphicsLayers(root->children()[i], layerIdToNodeIdMap, layers);
-}
-
 InspectorLayerTreeAgent::InspectorLayerTreeAgent(InspectorDOMAgent* domAgent, Page* page)
     : InspectorBaseAgent<InspectorLayerTreeAgent>("LayerTree")
     , m_frontend(0)
@@ -210,6 +200,18 @@ void InspectorLayerTreeAgent::buildLayerIdToNodeIdMap(RenderLayer* root, LayerId
         if (RenderLayerCompositor* childCompositor = childRenderView->compositor())
             buildLayerIdToNodeIdMap(childCompositor->rootRenderLayer(), layerIdToNodeIdMap);
     }
+}
+
+void InspectorLayerTreeAgent::gatherGraphicsLayers(GraphicsLayer* root, HashMap<int, int>& layerIdToNodeIdMap, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >& layers)
+{
+    int layerId = root->platformLayer()->id();
+    if (m_pageOverlayLayerIds.find(layerId) != WTF::kNotFound)
+        return;
+    layers->addItem(buildObjectForLayer(root, layerIdToNodeIdMap.get(layerId)));
+    if (GraphicsLayer* replica = root->replicaLayer())
+        gatherGraphicsLayers(replica, layerIdToNodeIdMap, layers);
+    for (size_t i = 0, size = root->children().size(); i < size; ++i)
+        gatherGraphicsLayers(root->children()[i], layerIdToNodeIdMap, layers);
 }
 
 int InspectorLayerTreeAgent::idForNode(Node* node)
@@ -383,5 +385,19 @@ void InspectorLayerTreeAgent::profileSnapshot(ErrorString* errorString, const St
         outTimings->addItem(outRow.release());
     }
 }
+
+void InspectorLayerTreeAgent::willAddPageOverlay(const GraphicsLayer* layer)
+{
+    m_pageOverlayLayerIds.append(layer->platformLayer()->id());
+}
+
+void InspectorLayerTreeAgent::didRemovePageOverlay(const GraphicsLayer* layer)
+{
+    size_t index = m_pageOverlayLayerIds.find(layer->platformLayer()->id());
+    if (index == WTF::kNotFound)
+        return;
+    m_pageOverlayLayerIds.remove(index);
+}
+
 
 } // namespace WebCore

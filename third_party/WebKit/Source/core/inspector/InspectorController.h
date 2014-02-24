@@ -43,6 +43,7 @@ namespace WebCore {
 class DOMWrapperWorld;
 class Frame;
 class GraphicsContext;
+class GraphicsLayer;
 class InjectedScriptManager;
 class InspectorBackendDispatcher;
 class InspectorAgent;
@@ -51,6 +52,7 @@ class InspectorDOMAgent;
 class InspectorFrontend;
 class InspectorFrontendChannel;
 class InspectorFrontendClient;
+class InspectorLayerTreeAgent;
 class InspectorPageAgent;
 class InspectorTimelineAgent;
 class InspectorOverlay;
@@ -130,6 +132,8 @@ public:
 
     void scriptsEnabled(bool);
 
+    void willAddPageOverlay(const GraphicsLayer*);
+    void didRemovePageOverlay(const GraphicsLayer*);
 private:
     InspectorController(Page*, InspectorClient*);
 
@@ -145,6 +149,7 @@ private:
     InspectorDOMAgent* m_domAgent;
     InspectorPageAgent* m_pageAgent;
     InspectorTimelineAgent* m_timelineAgent;
+    InspectorLayerTreeAgent* m_layerTreeAgent;
 
     RefPtr<InspectorBackendDispatcher> m_inspectorBackendDispatcher;
     OwnPtr<InspectorFrontendClient> m_inspectorFrontendClient;

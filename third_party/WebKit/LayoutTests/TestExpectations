@@ -1191,7 +1191,7 @@ crbug.com/340150 [ Mac Debug ] plugins/plugin-document-back-forward.html [ Pass 
 crbug.com/339174 fast/writing-mode/Kusa-Makura-background-canvas.html [ Pass Failure ]
 crbug.com/339252 inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
 crbug.com/339259 fast/flexbox/box-orient-button.html [ Pass Failure ]
-crbug.com/339238 inspector/layer-tree-model.html [ Pass Failure ]
+crbug.com/339238 inspector/layers/layer-tree-model.html [ Pass Failure ]
 crbug.com/339394 [ Win Debug ] virtual/threaded/animations/animation-matrix-negative-scale-unmatrix.html [ Pass Failure ]
 crbug.com/339592 media/track/opera/interfaces/TextTrackList/onaddtrack.html [ Pass Crash ]
 crbug.com/339597 http/tests/navigation/back-to-redirect-with-frame.php [ Pass Timeout ]
