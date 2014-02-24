@@ -4129,10 +4129,8 @@ class ReportStage(bs.BuilderStage, ArchivingStageMixin):
         the boards it applies to, including None if applicable.  If no index
         file is uploaded then this returns None.
     """
-    # Generate the index page needed for public reading.
-    archive_path = self.archive.archive_path
-    download_url = self.archive.download_url
-    upload_url = self.archive.upload_url
+    archive = builder_run.GetArchive()
+    archive_path = archive.archive_path
 
     config = builder_run.config
     boards = config.boards
@@ -4164,13 +4162,13 @@ class ReportStage(bs.BuilderStage, ArchivingStageMixin):
           '..|',
       ]
       index = os.path.join(archive_path, 'index.html')
-      commands.GenerateHtmlIndex(index, files, url_base=download_url,
+      commands.GenerateHtmlIndex(index, files, url_base=archive.download_url,
                                  head=head)
       commands.UploadArchivedFile(
-          archive_path, upload_url, os.path.basename(index),
+          archive_path, archive.upload_url, os.path.basename(index),
           debug=self._run.debug, acl=self.acl)
 
-      return dict((b, download_url + '/index.html') for b in boards)
+      return dict((b, archive.download_url + '/index.html') for b in boards)
 
   def PerformStage(self):
     # Make sure local archive directory is prepared, if it was not already.
@@ -4180,22 +4178,20 @@ class ReportStage(bs.BuilderStage, ArchivingStageMixin):
     if not os.path.exists(self.archive_path):
       self.archive.SetupArchivePath()
 
-    archive_urls = {}
-
     if results_lib.Results.BuildSucceededSoFar():
       final_status = constants.FINAL_STATUS_PASSED
     else:
       final_status = constants.FINAL_STATUS_FAILED
 
+    # Upload metadata, and update the pass/fail streak counter for the main
+    # run only. These aren't needed for the child builder runs.
+    self._UploadMetadataForRun(self._run, final_status)
+    self._UpdateRunStreak(self._run, final_status)
+
     # Iterate through each builder run, whether there is just the main one
     # or multiple child builder runs.
+    archive_urls = {}
     for builder_run in self._run.GetUngroupedBuilderRuns():
-      # Generate the final metadata for this run.
-      self._UploadMetadataForRun(builder_run, final_status)
-
-      # Handle pass/fail streak counter for this run.
-      self._UpdateRunStreak(builder_run, final_status)
-
       # Generate an index for archived artifacts if there are any.  All the
       # archived artifacts for one run/config are in one location, so the index
       # is only specific to each run/config.  In theory multiple boards could
