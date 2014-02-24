@@ -47,6 +47,7 @@ class RenderWidgetHelper;
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
 class RenderWidgetHostViewFrameSubscriber;
+class ScreenOrientationDispatcherHost;
 class StoragePartition;
 class StoragePartitionImpl;
 
@@ -171,6 +172,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Fires the webrtc log message callback with |message|, if callback is set.
   void WebRtcLogMessage(const std::string& message);
 #endif
+
+  scoped_refptr<ScreenOrientationDispatcherHost>
+      screen_orientation_dispatcher_host() const;
 
   // Register/unregister the host identified by the host id in the global host
   // list.
@@ -410,6 +414,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Lives on the browser's ChildThread.
   base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_;
+
+  // Message filter and dispatcher for screen orientation.
+  ScreenOrientationDispatcherHost* screen_orientation_dispatcher_host_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderProcessHostImpl);
 };

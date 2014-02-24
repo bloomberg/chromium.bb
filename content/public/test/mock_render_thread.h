@@ -102,13 +102,17 @@ class MockRenderThread : public RenderThread {
   // state.
   void SendCloseMessage();
 
+  // Dispatches control messages to observers.
+  bool OnControlMessageReceived(const IPC::Message& msg);
+
+  ObserverList<RenderProcessObserver>& observers() {
+    return observers_;
+  }
+
  protected:
   // This function operates as a regular IPC listener. Subclasses
   // overriding this should first delegate to this implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg);
-
-  // Dispatches control messages to observers.
-  bool OnControlMessageReceived(const IPC::Message& msg);
 
   // The Widget expects to be returned valid route_id.
   void OnCreateWidget(int opener_id,
