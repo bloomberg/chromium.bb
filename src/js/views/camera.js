@@ -383,6 +383,28 @@ camera.views.Camera = function(context, router) {
    */
   this.takePictureTimer_ = null;
 
+  /**
+   * Used by the performance test to progress to a next step. If not null, then
+   * the performance test is in progress.
+   * @type {number?}
+   * @private
+   */
+  this.performanceTestTimer_ = null;
+
+  /**
+   * Stores results of the performance test.
+   * @type {Array.<Object>}
+   * @private
+   */
+  this.performanceTestResults_ = [];
+
+  /**
+   * Used by the performance test to periodically update the UI.
+   * @type {number?}
+   * @private
+   */
+  this.performanceTestUIInterval_ = null;
+
   // End of properties, seal the object.
   Object.seal(this);
 
@@ -399,7 +421,7 @@ camera.views.Camera = function(context, router) {
 
   // Handle the 'Take' button.
   document.querySelector('#take-picture').addEventListener(
-      'click', this.takePicture_.bind(this));
+      'click', this.onTakePictureClicked_.bind(this));
 
   document.querySelector('#toolbar #album-enter').addEventListener('click',
       this.onAlbumEnterClicked_.bind(this));
@@ -620,11 +642,24 @@ camera.views.Camera.prototype.onInactivate = function() {
 };
 
 /**
+ * Handles clicking on the take-picture button.
+ * @param {Event} event Mouse event
+ * @private
+ */
+camera.views.Camera.prototype.onTakePictureClicked_ = function(event) {
+  if (this.performanceTestTimer_)
+    return;
+  this.takePicture_();
+};
+
+/**
  * Handles clicking on the album button.
  * @param {Event} event Mouse event
  * @private
  */
 camera.views.Camera.prototype.onAlbumEnterClicked_ = function(event) {
+  if (this.performanceTestTimer_)
+    return;
   this.router.navigate(camera.Router.ViewIdentifier.ALBUM);
 };
 
@@ -634,6 +669,8 @@ camera.views.Camera.prototype.onAlbumEnterClicked_ = function(event) {
  * @private
  */
 camera.views.Camera.prototype.onFiltersToggleClicked_ = function(event) {
+  if (this.performanceTestTimer_)
+    return;
   this.setExpanded_(!this.expanded_);
 };
 
@@ -643,6 +680,8 @@ camera.views.Camera.prototype.onFiltersToggleClicked_ = function(event) {
  * @private
  */
 camera.views.Camera.prototype.onRibbonPullReleased_ = function(distance) {
+  if (this.performanceTestTimer_)
+    return;
   if (distance < -50)
     this.setExpanded_(!this.expanded_);
   else if (distance > 25)
@@ -655,6 +694,8 @@ camera.views.Camera.prototype.onRibbonPullReleased_ = function(distance) {
  * @private
  */
 camera.views.Camera.prototype.onWindowMouseOut_ = function(event) {
+  if (this.performanceTestTimer_)
+    return;
   if (event.toElement !== null)
     return;
 
@@ -669,6 +710,8 @@ camera.views.Camera.prototype.onWindowMouseOut_ = function(event) {
  * @private
  */
 camera.views.Camera.prototype.onWindowKeyDown_ = function(event) {
+  if (this.performanceTestTimer_)
+    return;
   // When the ribbon is focused, then do not collapse it when pressing keys.
   if (document.activeElement == document.querySelector('#effects-wrapper')) {
     this.setExpanded_(true);
@@ -698,6 +741,8 @@ camera.views.Camera.prototype.onWindowKeyDown_ = function(event) {
  * @private
  */
 camera.views.Camera.prototype.onToggleTimerKeyPress_ = function(event) {
+  if (this.performanceTestTimer_)
+    return;
   if (camera.util.getShortcutIdentifier(event) == 'Enter')
     document.querySelector('#toggle-timer').click();
 };
@@ -708,6 +753,8 @@ camera.views.Camera.prototype.onToggleTimerKeyPress_ = function(event) {
  * @private
  */
 camera.views.Camera.prototype.onToggleMultiKeyPress_ = function(event) {
+  if (this.performanceTestTimer_)
+    return;
   if (camera.util.getShortcutIdentifier(event) == 'Enter')
     document.querySelector('#toggle-multi').click();
 };
@@ -718,6 +765,8 @@ camera.views.Camera.prototype.onToggleMultiKeyPress_ = function(event) {
  * @private
  */
 camera.views.Camera.prototype.onToggleTimerClicked_ = function(event) {
+  if (this.performanceTestTimer_)
+    return;
   var enabled = document.querySelector('#toggle-timer').checked;
   this.showToastMessage_(
       chrome.i18n.getMessage(enabled ? 'toggleTimerActiveMessage' :
@@ -731,6 +780,8 @@ camera.views.Camera.prototype.onToggleTimerClicked_ = function(event) {
  * @private
  */
 camera.views.Camera.prototype.onToggleMultiClicked_ = function(event) {
+  if (this.performanceTestTimer_)
+    return;
   var enabled = document.querySelector('#toggle-multi').checked;
   this.showToastMessage_(
       chrome.i18n.getMessage(enabled ? 'toggleMultiActiveMessage' :
@@ -744,6 +795,8 @@ camera.views.Camera.prototype.onToggleMultiClicked_ = function(event) {
  * @private
  */
 camera.views.Camera.prototype.onPointerActivity_ = function(event) {
+  if (this.performanceTestTimer_)
+    return;
   // Show the window controls.
   this.setControlsVisible_(true);
 
@@ -870,7 +923,8 @@ camera.views.Camera.prototype.setCurrentEffect_ = function(effectIndex) {
   this.currentEffectIndex_ = effectIndex;
 
   // Show the ribbon when switching effects.
-  this.setExpanded_(true);
+  if (!this.performanceTestTimer_)
+    this.setExpanded_(true);
 
   // TODO(mtomasz): This is a little racy, since setting may be run in parallel,
   // without guarantee which one will be written as the last one.
@@ -891,6 +945,8 @@ camera.views.Camera.prototype.onResize = function() {
  * @override
  */
 camera.views.Camera.prototype.onKeyPressed = function(event) {
+  if (this.performanceTestTimer_)
+    return;
   this.keyBuffer_ += String.fromCharCode(event.which);
   this.keyBuffer_ = this.keyBuffer_.substr(-10);
 
@@ -902,6 +958,11 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
 
   if (this.keyBuffer_.indexOf('VER') !== -1) {
     this.showVersion_();
+    this.keyBuffer_ = '';
+  }
+
+  if (this.keyBuffer_.indexOf('CHOCOBUNNY') !== -1) {
+    this.startPerformanceTest_();
     this.keyBuffer_ = '';
   }
 
@@ -978,7 +1039,9 @@ camera.views.Camera.prototype.showToastMessage_ = function(message) {
 };
 
 /**
- * Toggles the toolbar visibility.
+ * Toggles the toolbar visibility. However, it may delay the operation, if
+ * eg. some UI element is hovered.
+ *
  * @param {boolean} expanded True to show the toolbar, false to hide.
  * @private
  */
@@ -990,7 +1053,7 @@ camera.views.Camera.prototype.setExpanded_ = function(expanded) {
   if (expanded) {
     var isRibbonHovered =
         document.querySelector('#toolbar').webkitMatchesSelector(':hover');
-    if (!isRibbonHovered) {
+    if (!isRibbonHovered && !this.performanceTestTimer_) {
       this.collapseTimer_ = setTimeout(
           this.setExpanded_.bind(this, false), 3000);
     }
@@ -1006,7 +1069,6 @@ camera.views.Camera.prototype.setExpanded_ = function(expanded) {
     }
   }
 };
-
 /**
  * Toggles the window controls visibility.
  *
@@ -1058,6 +1120,130 @@ camera.views.Camera.prototype.showVersion_ = function() {
     type: camera.views.Dialog.Type.ALERT,
     message: message
   });
+};
+
+/**
+ * Starts a performance test.
+ * @private
+ */
+camera.views.Camera.prototype.startPerformanceTest_ = function() {
+  if (this.performanceTestTimer_)
+    return;
+
+  this.performanceTestResults_ = [];
+
+  // Start the test after resizing to desired dimensions.
+  var onBoundsChanged = function() {
+    document.body.classList.add('performance-test');
+    this.progressPerformanceTest_(0);
+    var perfTestBubble = document.querySelector('#perf-test-bubble');
+    this.performanceTestUIInterval_ = setInterval(function() {
+      var fps = this.performanceMonitor_.fps;
+      var scale = 1 + Math.min(fps / 60, 1);
+      // (10..30) -> (0..30)
+      var hue = 120 * Math.max(0, Math.min(fps, 30) * 40 / 30 - 10) / 30;
+      perfTestBubble.textContent = Math.round(fps);
+      perfTestBubble.style.backgroundColor =
+          'hsla(' + hue + ', 100%, 75%, 0.75)';
+      perfTestBubble.style.webkitTransform = 'scale(' + scale + ')';
+    }.bind(this), 100);
+    // Removing listener will be ignored if not registered earlier.
+    chrome.app.window.current().onBoundsChanged.removeListener(onBoundsChanged);
+  }.bind(this);
+
+   // Set the default window size and wait until it is applied.
+  var onRestored = function() {
+    if (this.setDefaultGeometry_())
+      chrome.app.window.current().onBoundsChanged.addListener(onBoundsChanged);
+    else
+      onBoundsChanged();
+    chrome.app.window.current().onRestored.removeListener(onRestored);
+  }.bind(this);
+
+  // If maximized, then restore before proceeding. The timer has to be used, to
+  // know that the performance test has started.
+  // TODO(mtomasz): Consider using a bool member instead of reusing timer.
+  this.performanceTestTimer_ = setTimeout(function() {
+    if (chrome.app.window.current().isMaximized()) {
+      chrome.app.window.current().restore();
+      chrome.app.window.current().onRestored.addListener(onRestored);
+    } else {
+      onRestored();
+    }
+  }, 0);
+};
+
+/**
+ * Progresses to the next step of the performance test.
+ * @param {number} index Step index to progress to.
+ * @private
+ */
+camera.views.Camera.prototype.progressPerformanceTest_ = function(index) {
+  // Finalize the previous test.
+  if (index) {
+    var result = {
+      effect: Math.floor(index - 1 / 2),
+      ribbon: (index - 1) % 2,
+      // TODO(mtomasz): Avoid localization. Use English instead.
+      name: this.mainProcessor_.effect.getTitle(),
+      fps: this.performanceMonitor_.fps
+    };
+    this.performanceTestResults_.push(result);
+  }
+
+  // Check if the end.
+  if (index == this.previewProcessors_.length * 2) {
+    this.stopPerformanceTest_();
+    var message = '';
+    var score = 0;
+    this.performanceTestResults_.forEach(function(result) {
+      message += [
+        result.effect,
+        result.ribbon,
+        result.name,
+        Math.round(result.fps)
+      ].join(', ') + '\n';
+      score += result.fps / this.performanceTestResults_.length;
+    }.bind(this));
+    var header = 'Score: ' + Math.round(score * 100) + '\n';
+    this.router.navigate(camera.Router.ViewIdentifier.DIALOG, {
+      type: camera.views.Dialog.Type.ALERT,
+      message: header + message
+    });
+    return;
+  }
+
+  // Run new test.
+  this.performanceMonitor_.stop();
+  this.performanceMonitor_.start();
+  this.setCurrentEffect_(Math.floor(index / 2));
+  this.setExpanded_(index % 2 == 1);
+
+  // Update the progress bar.
+  var progress = (index / (this.previewProcessors_.length * 2)) * 100;
+  var perfTestBar = document.querySelector('#perf-test-bar');
+  perfTestBar.textContent = Math.round(progress) + '%';
+  perfTestBar.style.width = progress + '%';
+
+  // Schedule the next test.
+  this.performanceTestTimer_ = setTimeout(function() {
+    this.progressPerformanceTest_(index + 1);
+  }.bind(this), 5000);
+};
+
+/**
+ * Stops the performance test.
+ * @private
+ */
+camera.views.Camera.prototype.stopPerformanceTest_ = function() {
+  if (!this.performanceTestTimer_)
+    return;
+  clearTimeout(this.performanceTestTimer_);
+  this.performanceTestTimer_ = null;
+  clearInterval(this.performanceTestUIInterval_);
+  this.performanceTestUIInterval_ = null;
+  this.showToastMessage_('Performance test terminated');
+  document.body.classList.remove('performance-test');
 };
 
 /**
@@ -1316,7 +1502,7 @@ camera.views.Camera.prototype.setHeadTrackerQuality_ = function(quality) {
         if (stream.ended) {
           this.capturing_ = false;
           onDisconnected();
-          clearTimeout(this.watchdog_);
+          clearInterval(this.watchdog_);
           this.watchdog_ = null;
         }
       }.bind(this), 1000);
@@ -1328,7 +1514,7 @@ camera.views.Camera.prototype.setHeadTrackerQuality_ = function(quality) {
         requestAnimationFrame(onAnimationFrame);
       }.bind(this);
       onAnimationFrame();
-      onSuccess(resolution[0], resolution[1]);
+      onSuccess();
     }.bind(this);
     // Load the stream and wait for the metadata.
     this.video_.addEventListener('loadedmetadata', onLoadedMetadata);
@@ -1353,26 +1539,36 @@ camera.views.Camera.prototype.stop = function() {
 };
 
 /**
+ * Sets the window size to the default dimensions.
+ * @return {boolean} Whether the window has been resized.
+ * @private
+ */
+camera.views.Camera.prototype.setDefaultGeometry_ = function() {
+  var bounds = chrome.app.window.current().getBounds();
+  var targetAspectRatio = this.video_.videoWidth / this.video_.videoHeight;
+  var targetWidth = Math.round(screen.width * 0.8);
+  var targetHeight = Math.round(targetWidth / targetAspectRatio);
+  chrome.app.window.current().resizeTo(targetWidth, targetHeight);
+  chrome.app.window.current().moveTo(
+      bounds.left - (targetWidth - bounds.width) / 2,
+      bounds.top - (targetHeight - bounds.height) / 2);
+ return bounds.width != targetWidth || bounds.height != targetHeight;
+};
+
+/**
  * Starts capturing the camera with the highest possible resolution.
  * @private
  */
 camera.views.Camera.prototype.start_ = function() {
   var index = 0;
 
-  var onSuccess = function(width, height) {
+  var onSuccess = function() {
     // Set the default dimensions to at most half of the available width
     // and to the compatible aspect ratio. 640/360 dimensions are used to
     // detect that the window has never been opened.
     var bounds = chrome.app.window.current().getBounds();
-    var targetAspectRatio = width / height;
-    var targetWidth = Math.round(Math.min(width, screen.width * 0.8));
-    var targetHeight = Math.round(targetWidth / targetAspectRatio);
-    if (bounds.width == 640 && bounds.height == 360) {
-      chrome.app.window.current().resizeTo(targetWidth, targetHeight);
-      chrome.app.window.current().moveTo(
-          bounds.left - (targetWidth - bounds.width) / 2,
-          bounds.top - (targetHeight - bounds.height) / 2);
-    }
+    if (bounds.width == 640 && bounds.height == 360)
+      this.setDefaultGeometry_();
 
     setTimeout(function() {
       // Remove the initialization layer, but with some small delay to give

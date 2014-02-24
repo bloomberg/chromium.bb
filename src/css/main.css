@@ -613,6 +613,76 @@ body.show-shutter #shutter {
   opacity: 1;
 }
 
+#performance-test {
+  -webkit-box-align: center;
+  -webkit-box-orient: vertical;
+  -webkit-box-pack: center;
+  bottom: 0;
+  display: -webkit-box;
+  left: 0;
+  pointer-events: none;
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transition: opacity 250ms;
+  z-index: 1;
+}
+
+#performance-test .perf-test-msg {
+  background: rgba(30, 30, 35, 0.75);
+  border-radius: 32px;
+  color: white;
+  font-size: 24px;
+  padding: 16px 32px;
+}
+
+#performance-test #perf-test-bar-wrapper {
+  background: rgba(30, 30, 35, 0.5);
+  border-radius: 32px;
+  margin: 8px;
+  width: 50%;
+}
+
+#performance-test #perf-test-bar {
+  background: rgba(96, 255, 96, 0.8);
+  border-radius: 32px;
+  color: white;
+  font-size: 16px;
+  min-width: 32px;
+  padding: 8px 0;
+  text-align: center;
+  width: 0;
+}
+
+#performance-test #perf-test-bubble-wrapper {
+  -webkit-box-align: center;
+  -webkit-box-orient: vertical;
+  -webkit-box-pack: center;
+  display: -webkit-box;
+  width: 96px;
+  height: 96px;
+  margin-top: 60px;
+}
+
+#performance-test #perf-test-bubble {
+  border-radius: 100px;
+  color: white;
+  font-size: 16px;
+  line-height: 24px;
+  padding: 32px;
+  text-align: center;
+  width: 24px;
+}
+
+body.performance-test #performance-test {
+  opacity: 1;
+}
+
+body.performance-test * {
+  pointer-events: none !important;
+}
+
 #album .buttons,
 #browser .buttons {
   position: fixed;
@@ -824,9 +894,26 @@ body.dialog #dialog #dialog-popup {
   -webkit-user-select: initial;  /* Allow copying the message. */
   cursor: text;
   font-size: 120%;
+  max-height: 320px;
   max-width: 640px;
+  overflow: auto;
   padding: 20px 0;
   white-space: pre-wrap;
+}
+
+#dialog #dialog-msg::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+#dialog #dialog-msg::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#dialog #dialog-msg::-webkit-scrollbar-thumb {
+  background: gray;
+  width: 6px;
+  height: 6px;
 }
 
 #dialog #dialog-buttons {
