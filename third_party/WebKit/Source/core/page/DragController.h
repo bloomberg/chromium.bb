@@ -39,7 +39,7 @@ namespace WebCore {
     class DragData;
     class DragImage;
     struct DragSession;
-    struct DragState;
+    class DragState;
     class Element;
     class Frame;
     class FrameSelection;

@@ -306,10 +306,17 @@ EventHandler::~EventHandler()
     ASSERT(!m_fakeMouseMoveEventTimer.isActive());
 }
 
+DEFINE_GC_INFO(DragState);
+
 DragState& EventHandler::dragState()
 {
+#if ENABLE(OILPAN)
+    DEFINE_STATIC_LOCAL(Persistent<DragState>, state, (new DragState()));
+    return *state;
+#else
     DEFINE_STATIC_LOCAL(DragState, state, ());
     return state;
+#endif
 }
 
 void EventHandler::clear()
@@ -3993,7 +4000,7 @@ bool EventHandler::passWidgetMouseDownEventToWidget(const MouseEventWithHitTestR
     return false;
 }
 
-PassRefPtr<Clipboard> EventHandler::createDraggingClipboard() const
+PassRefPtrWillBeRawPtr<Clipboard> EventHandler::createDraggingClipboard() const
 {
     return Clipboard::create(Clipboard::DragAndDrop, ClipboardWritable, DataObject::create());
 }

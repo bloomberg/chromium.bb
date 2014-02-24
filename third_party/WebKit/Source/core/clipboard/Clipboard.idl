@@ -27,6 +27,7 @@
  */
 
 [
+    WillBeGarbageCollected
 ] interface Clipboard {
              [TreatReturnedNullStringAs=Undefined] attribute DOMString dropEffect;
              [TreatReturnedNullStringAs=Undefined] attribute DOMString effectAllowed;

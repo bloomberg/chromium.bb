@@ -39,9 +39,11 @@
 
 namespace WebCore {
 
-PassRefPtr<DataTransferItem> DataTransferItem::create(PassRefPtr<Clipboard> clipboard, PassRefPtr<DataObjectItem> item)
+DEFINE_GC_INFO(DataTransferItem);
+
+PassRefPtrWillBeRawPtr<DataTransferItem> DataTransferItem::create(PassRefPtrWillBeRawPtr<Clipboard> clipboard, PassRefPtrWillBeRawPtr<DataObjectItem> item)
 {
-    return adoptRef(new DataTransferItem(clipboard, item));
+    return adoptRefWillBeNoop(new DataTransferItem(clipboard, item));
 }
 
 DataTransferItem::~DataTransferItem()
@@ -89,13 +91,18 @@ PassRefPtr<Blob> DataTransferItem::getAsFile() const
     return m_item->getAsFile();
 }
 
-DataTransferItem::DataTransferItem(PassRefPtr<Clipboard> clipboard, PassRefPtr<DataObjectItem> item)
+DataTransferItem::DataTransferItem(PassRefPtrWillBeRawPtr<Clipboard> clipboard, PassRefPtrWillBeRawPtr<DataObjectItem> item)
     : m_clipboard(clipboard)
     , m_item(item)
 {
     ScriptWrappable::init(this);
 }
 
+void DataTransferItem::trace(Visitor* visitor)
+{
+    visitor->trace(m_clipboard);
+    visitor->trace(m_item);
+}
 
 } // namespace WebCore
 

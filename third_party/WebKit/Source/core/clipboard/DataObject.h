@@ -32,6 +32,7 @@
 #define DataObject_h
 
 #include "core/clipboard/DataObjectItem.h"
+#include "heap/Handle.h"
 #include "platform/PasteMode.h"
 #include "platform/Supplementable.h"
 #include "wtf/ListHashSet.h"
@@ -49,22 +50,23 @@ class SharedBuffer;
 // A data object for holding data that would be in a clipboard or moved
 // during a drag-n-drop operation. This is the data that WebCore is aware
 // of and is not specific to a platform.
-class DataObject : public RefCounted<DataObject>, public Supplementable<DataObject> {
+class DataObject : public RefCountedWillBeGarbageCollectedFinalized<DataObject>, public Supplementable<DataObject> {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<DataObject> createFromPasteboard(PasteMode);
-    static PassRefPtr<DataObject> create();
+    static PassRefPtrWillBeRawPtr<DataObject> createFromPasteboard(PasteMode);
+    static PassRefPtrWillBeRawPtr<DataObject> create();
 
-    PassRefPtr<DataObject> copy() const;
+    PassRefPtrWillBeRawPtr<DataObject> copy() const;
 
     // DataTransferItemList support.
     size_t length() const;
-    PassRefPtr<DataObjectItem> item(unsigned long index);
+    PassRefPtrWillBeRawPtr<DataObjectItem> item(unsigned long index);
     // FIXME: Implement V8DataTransferItemList::indexedPropertyDeleter to get this called.
     void deleteItem(unsigned long index);
     void clearAll();
     // Returns null if an item already exists with the provided type.
-    PassRefPtr<DataObjectItem> add(const String& data, const String& type);
-    PassRefPtr<DataObjectItem> add(PassRefPtr<File>);
+    PassRefPtrWillBeRawPtr<DataObjectItem> add(const String& data, const String& type);
+    PassRefPtrWillBeRawPtr<DataObjectItem> add(PassRefPtr<File>);
 
     // WebCore helpers.
     void clearData(const String& type);
@@ -90,15 +92,18 @@ public:
     int modifierKeyState() const { return m_modifierKeyState; }
     void setModifierKeyState(int modifierKeyState) { m_modifierKeyState = modifierKeyState; }
 
+    // FIXME: oilpan: This trace() has to trace Supplementable.
+    void trace(Visitor*);
+
 private:
     DataObject();
     explicit DataObject(const DataObject&);
 
-    PassRefPtr<DataObjectItem> findStringItem(const String& type) const;
-    bool internalAddStringItem(PassRefPtr<DataObjectItem>);
-    void internalAddFileItem(PassRefPtr<DataObjectItem>);
+    PassRefPtrWillBeRawPtr<DataObjectItem> findStringItem(const String& type) const;
+    bool internalAddStringItem(PassRefPtrWillBeRawPtr<DataObjectItem>);
+    void internalAddFileItem(PassRefPtrWillBeRawPtr<DataObjectItem>);
 
-    Vector<RefPtr<DataObjectItem> > m_itemList;
+    WillBeHeapVector<RefPtrWillBeMember<DataObjectItem> > m_itemList;
 
     // State of Shift/Ctrl/Alt/Meta keys.
     int m_modifierKeyState;

@@ -459,7 +459,7 @@ bool Editor::dispatchCPPEvent(const AtomicString &eventType, ClipboardAccessPoli
     if (!target)
         return true;
 
-    RefPtr<Clipboard> clipboard = Clipboard::create(
+    RefPtrWillBeRawPtr<Clipboard> clipboard = Clipboard::create(
         Clipboard::CopyAndPaste,
         policy,
         policy == ClipboardWritable
@@ -470,7 +470,7 @@ bool Editor::dispatchCPPEvent(const AtomicString &eventType, ClipboardAccessPoli
     target->dispatchEvent(evt, IGNORE_EXCEPTION);
     bool noDefaultProcessing = evt->defaultPrevented();
     if (noDefaultProcessing && policy == ClipboardWritable) {
-        RefPtr<DataObject> dataObject = clipboard->dataObject();
+        RefPtrWillBeRawPtr<DataObject> dataObject = clipboard->dataObject();
         Pasteboard::generalPasteboard()->writeDataObject(dataObject.release());
     }
 

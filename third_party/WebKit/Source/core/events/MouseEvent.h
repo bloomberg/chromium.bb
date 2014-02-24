@@ -59,7 +59,7 @@ public:
         int detail, int screenX, int screenY, int pageX, int pageY,
         int movementX, int movementY,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short button,
-        PassRefPtr<EventTarget> relatedTarget, PassRefPtr<Clipboard>, bool isSimulated = false);
+        PassRefPtr<EventTarget> relatedTarget, PassRefPtrWillBeRawPtr<Clipboard>, bool isSimulated = false);
 
     static PassRefPtr<MouseEvent> create(const AtomicString& eventType, PassRefPtr<AbstractView>, const PlatformMouseEvent&, int detail, PassRefPtr<Node> relatedTarget);
 
@@ -96,7 +96,7 @@ protected:
         int detail, int screenX, int screenY, int pageX, int pageY,
         int movementX, int movementY,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short button,
-        PassRefPtr<EventTarget> relatedTarget, PassRefPtr<Clipboard>, bool isSimulated);
+        PassRefPtr<EventTarget> relatedTarget, PassRefPtrWillBeRawPtr<Clipboard>, bool isSimulated);
 
     MouseEvent(const AtomicString& type, const MouseEventInit&);
 
@@ -106,7 +106,7 @@ private:
     unsigned short m_button;
     bool m_buttonDown;
     RefPtr<EventTarget> m_relatedTarget;
-    RefPtr<Clipboard> m_clipboard;
+    RefPtrWillBePersistent<Clipboard> m_clipboard;
 };
 
 class SimulatedMouseEvent FINAL : public MouseEvent {

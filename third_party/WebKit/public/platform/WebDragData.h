@@ -36,10 +36,7 @@
 #include "WebString.h"
 #include "WebURL.h"
 
-#if BLINK_IMPLEMENTATION
 namespace WebCore { class DataObject; }
-namespace WTF { template <typename T> class PassRefPtr; }
-#endif
 
 namespace blink {
 
@@ -83,21 +80,20 @@ public:
         WebURL baseURL;
     };
 
-    ~WebDragData() { reset(); }
-
-    WebDragData() : m_private(0) { }
-    WebDragData(const WebDragData& d) : m_private(0) { assign(d); }
-    WebDragData& operator=(const WebDragData& d)
+    WebDragData() { }
+    WebDragData(const WebDragData& object) { assign(object); }
+    WebDragData& operator=(const WebDragData& object)
     {
-        assign(d);
+        assign(object);
         return *this;
     }
+    ~WebDragData() { reset(); }
+
+    bool isNull() const { return m_private.isNull(); }
 
     BLINK_EXPORT void initialize();
     BLINK_EXPORT void reset();
     BLINK_EXPORT void assign(const WebDragData&);
-
-    bool isNull() const { return !m_private; }
 
     BLINK_EXPORT WebVector<Item> items() const;
     BLINK_EXPORT void setItems(const WebVector<Item>&);
@@ -107,15 +103,14 @@ public:
     BLINK_EXPORT void setFilesystemId(const WebString&);
 
 #if BLINK_IMPLEMENTATION
-    WebDragData(const WTF::PassRefPtr<WebCore::DataObject>&);
-    WebDragData& operator=(const WTF::PassRefPtr<WebCore::DataObject>&);
-    operator WTF::PassRefPtr<WebCore::DataObject>() const;
+    explicit WebDragData(const PassRefPtrWillBeRawPtr<WebCore::DataObject>&);
+    WebDragData& operator=(const PassRefPtrWillBeRawPtr<WebCore::DataObject>&);
+    WebCore::DataObject* getValue() const;
 #endif
 
 private:
-    void assign(WebDragDataPrivate*);
     void ensureMutable();
-    WebDragDataPrivate* m_private;
+    WebPrivatePtr<WebCore::DataObject> m_private;
 };
 
 } // namespace blink

@@ -39,49 +39,51 @@
 
 namespace WebCore {
 
-PassRefPtr<DataObjectItem> DataObjectItem::createFromString(const String& type, const String& data)
+DEFINE_GC_INFO(DataObjectItem);
+
+PassRefPtrWillBeRawPtr<DataObjectItem> DataObjectItem::createFromString(const String& type, const String& data)
 {
-    RefPtr<DataObjectItem> item = adoptRef(new DataObjectItem(StringKind, type));
+    RefPtrWillBeRawPtr<DataObjectItem> item = adoptRefWillBeNoop(new DataObjectItem(StringKind, type));
     item->m_data = data;
     return item.release();
 }
 
-PassRefPtr<DataObjectItem> DataObjectItem::createFromFile(PassRefPtr<File> file)
+PassRefPtrWillBeRawPtr<DataObjectItem> DataObjectItem::createFromFile(PassRefPtr<File> file)
 {
-    RefPtr<DataObjectItem> item = adoptRef(new DataObjectItem(FileKind, file->type()));
+    RefPtrWillBeRawPtr<DataObjectItem> item = adoptRefWillBeNoop(new DataObjectItem(FileKind, file->type()));
     item->m_file = file;
     return item.release();
 }
 
-PassRefPtr<DataObjectItem> DataObjectItem::createFromURL(const String& url, const String& title)
+PassRefPtrWillBeRawPtr<DataObjectItem> DataObjectItem::createFromURL(const String& url, const String& title)
 {
-    RefPtr<DataObjectItem> item = adoptRef(new DataObjectItem(StringKind, mimeTypeTextURIList));
+    RefPtrWillBeRawPtr<DataObjectItem> item = adoptRefWillBeNoop(new DataObjectItem(StringKind, mimeTypeTextURIList));
     item->m_data = url;
     item->m_title = title;
     return item.release();
 }
 
-PassRefPtr<DataObjectItem> DataObjectItem::createFromHTML(const String& html, const KURL& baseURL)
+PassRefPtrWillBeRawPtr<DataObjectItem> DataObjectItem::createFromHTML(const String& html, const KURL& baseURL)
 {
-    RefPtr<DataObjectItem> item = adoptRef(new DataObjectItem(StringKind, mimeTypeTextHTML));
+    RefPtrWillBeRawPtr<DataObjectItem> item = adoptRefWillBeNoop(new DataObjectItem(StringKind, mimeTypeTextHTML));
     item->m_data = html;
     item->m_baseURL = baseURL;
     return item.release();
 }
 
-PassRefPtr<DataObjectItem> DataObjectItem::createFromSharedBuffer(const String& name, PassRefPtr<SharedBuffer> buffer)
+PassRefPtrWillBeRawPtr<DataObjectItem> DataObjectItem::createFromSharedBuffer(const String& name, PassRefPtr<SharedBuffer> buffer)
 {
-    RefPtr<DataObjectItem> item = adoptRef(new DataObjectItem(FileKind, String()));
+    RefPtrWillBeRawPtr<DataObjectItem> item = adoptRefWillBeNoop(new DataObjectItem(FileKind, String()));
     item->m_sharedBuffer = buffer;
     item->m_title = name;
     return item.release();
 }
 
-PassRefPtr<DataObjectItem> DataObjectItem::createFromPasteboard(const String& type, uint64_t sequenceNumber)
+PassRefPtrWillBeRawPtr<DataObjectItem> DataObjectItem::createFromPasteboard(const String& type, uint64_t sequenceNumber)
 {
     if (type == mimeTypeImagePng)
-        return adoptRef(new DataObjectItem(FileKind, type, sequenceNumber));
-    return adoptRef(new DataObjectItem(StringKind, type, sequenceNumber));
+        return adoptRefWillBeNoop(new DataObjectItem(FileKind, type, sequenceNumber));
+    return adoptRefWillBeNoop(new DataObjectItem(StringKind, type, sequenceNumber));
 }
 
 DataObjectItem::DataObjectItem(Kind kind, const String& type)

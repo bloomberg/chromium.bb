@@ -28,7 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface DataTransferItemList {
+[
+    WillBeGarbageCollected
+] interface DataTransferItemList {
     readonly attribute long length;
     [ImplementedAs=item] getter DataTransferItem (unsigned long index);
 

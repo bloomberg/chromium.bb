@@ -29,6 +29,7 @@
  */
 
 [
+    WillBeGarbageCollected,
     NoInterfaceObject
 ] interface DataTransferItem {
     readonly attribute DOMString kind;

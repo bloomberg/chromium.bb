@@ -32,6 +32,7 @@
 
 #include "core/clipboard/DataObject.h"
 #include "core/clipboard/DataTransferItem.h"
+#include "heap/Handle.h"
 #include "modules/filesystem/DraggedIsolatedFileSystem.h"
 #include "platform/clipboard/ClipboardMimeTypes.h"
 #include "public/platform/WebData.h"
@@ -46,25 +47,40 @@ using namespace WebCore;
 
 namespace blink {
 
-class WebDragDataPrivate : public DataObject {
-};
-
 void WebDragData::initialize()
 {
-    assign(static_cast<WebDragDataPrivate*>(DataObject::create().leakRef()));
+    m_private = DataObject::create();
 }
 
 void WebDragData::reset()
 {
-    assign(0);
+    m_private.reset();
 }
 
 void WebDragData::assign(const WebDragData& other)
 {
-    WebDragDataPrivate* p = const_cast<WebDragDataPrivate*>(other.m_private);
-    if (p)
-        p->ref();
-    assign(p);
+    m_private = other.m_private;
+}
+
+WebDragData::WebDragData(const PassRefPtrWillBeRawPtr<WebCore::DataObject>& object)
+{
+    m_private = object;
+}
+
+WebDragData& WebDragData::operator=(const PassRefPtrWillBeRawPtr<WebCore::DataObject>& object)
+{
+    m_private = object;
+    return *this;
+}
+
+DataObject* WebDragData::getValue() const
+{
+    return m_private.get();
+}
+
+void WebDragData::ensureMutable()
+{
+    ASSERT(!isNull());
 }
 
 WebVector<WebDragData::Item> WebDragData::items() const
@@ -132,7 +148,7 @@ void WebDragData::addItem(const Item& item)
 WebString WebDragData::filesystemId() const
 {
     ASSERT(!isNull());
-    DraggedIsolatedFileSystem* filesystem = DraggedIsolatedFileSystem::from(m_private);
+    DraggedIsolatedFileSystem* filesystem = DraggedIsolatedFileSystem::from(m_private.get());
     if (filesystem)
         return filesystem->filesystemId();
     return WebString();
@@ -142,38 +158,7 @@ void WebDragData::setFilesystemId(const WebString& filesystemId)
 {
     // The ID is an opaque string, given by and validated by chromium port.
     ensureMutable();
-    ASSERT(m_private);
-    DraggedIsolatedFileSystem::provideTo(*m_private, DraggedIsolatedFileSystem::supplementName(), DraggedIsolatedFileSystem::create(filesystemId));
-}
-
-WebDragData::WebDragData(const WTF::PassRefPtr<WebCore::DataObject>& data)
-    : m_private(static_cast<WebDragDataPrivate*>(data.leakRef()))
-{
-}
-
-WebDragData& WebDragData::operator=(const WTF::PassRefPtr<WebCore::DataObject>& data)
-{
-    assign(static_cast<WebDragDataPrivate*>(data.leakRef()));
-    return *this;
-}
-
-WebDragData::operator WTF::PassRefPtr<WebCore::DataObject>() const
-{
-    return PassRefPtr<DataObject>(const_cast<WebDragDataPrivate*>(m_private));
-}
-
-void WebDragData::assign(WebDragDataPrivate* p)
-{
-    // p is already ref'd for us by the caller
-    if (m_private)
-        m_private->deref();
-    m_private = p;
-}
-
-void WebDragData::ensureMutable()
-{
-    ASSERT(!isNull());
-    ASSERT(m_private->hasOneRef());
+    DraggedIsolatedFileSystem::provideTo(*m_private.get(), DraggedIsolatedFileSystem::supplementName(), DraggedIsolatedFileSystem::create(filesystemId));
 }
 
 } // namespace blink

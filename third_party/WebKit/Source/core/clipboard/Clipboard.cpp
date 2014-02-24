@@ -44,6 +44,8 @@
 
 namespace WebCore {
 
+DEFINE_GC_INFO(Clipboard);
+
 // These "conversion" methods are called by both WebCore and WebKit, and never make sense to JS, so we don't
 // worry about security for these. They don't allow access to the pasteboard anyway.
 static DragOperation dragOpFromIEOp(const String& op)
@@ -107,9 +109,9 @@ static String normalizeType(const String& type, bool* convertToURL = 0)
     return cleanType;
 }
 
-PassRefPtr<Clipboard> Clipboard::create(ClipboardType type, ClipboardAccessPolicy policy, PassRefPtr<DataObject> dataObject)
+PassRefPtrWillBeRawPtr<Clipboard> Clipboard::create(ClipboardType type, ClipboardAccessPolicy policy, PassRefPtrWillBeRawPtr<DataObject> dataObject)
 {
-    return adoptRef(new Clipboard(type, policy , dataObject));
+    return adoptRefWillBeNoop(new Clipboard(type, policy , dataObject));
 }
 
 Clipboard::~Clipboard()
@@ -440,7 +442,7 @@ bool Clipboard::hasDropZoneType(const String& keyword)
     return false;
 }
 
-PassRefPtr<DataTransferItemList> Clipboard::items()
+PassRefPtrWillBeRawPtr<DataTransferItemList> Clipboard::items()
 {
     // FIXME: According to the spec, we are supposed to return the same collection of items each
     // time. We now return a wrapper that always wraps the *same* set of items, so JS shouldn't be
@@ -448,12 +450,12 @@ PassRefPtr<DataTransferItemList> Clipboard::items()
     return DataTransferItemList::create(this, m_dataObject);
 }
 
-PassRefPtr<DataObject> Clipboard::dataObject() const
+PassRefPtrWillBeRawPtr<DataObject> Clipboard::dataObject() const
 {
     return m_dataObject;
 }
 
-Clipboard::Clipboard(ClipboardType type, ClipboardAccessPolicy policy, PassRefPtr<DataObject> dataObject)
+Clipboard::Clipboard(ClipboardType type, ClipboardAccessPolicy policy, PassRefPtrWillBeRawPtr<DataObject> dataObject)
     : m_policy(policy)
     , m_dropEffect("uninitialized")
     , m_effectAllowed("uninitialized")
@@ -520,6 +522,11 @@ String convertDragOperationToDropZoneOperation(DragOperation operation)
     default:
         return String("copy");
     }
+}
+
+void Clipboard::trace(Visitor* visitor)
+{
+    visitor->trace(m_dataObject);
 }
 
 } // namespace WebCore

@@ -27,6 +27,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/DOMTimeStamp.h"
 #include "core/events/EventPath.h"
+#include "heap/Handle.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/AtomicString.h"
 

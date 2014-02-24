@@ -26,6 +26,7 @@
 #ifndef Pasteboard_h
 #define Pasteboard_h
 
+#include "heap/Handle.h"
 #include "public/platform/WebClipboard.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
@@ -49,7 +50,7 @@ public:
     static Pasteboard* generalPasteboard();
     void writePlainText(const String&, SmartReplaceOption);
     void writeImage(Image*, const KURL&, const String& title);
-    void writeDataObject(PassRefPtr<DataObject>);
+    void writeDataObject(PassRefPtrWillBeRawPtr<DataObject>);
     bool canSmartReplace();
     bool isHTMLAvailable();
     String plainText();

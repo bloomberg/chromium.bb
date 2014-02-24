@@ -3137,7 +3137,7 @@ WebDragOperation WebViewImpl::dragTargetDragEnter(
 {
     ASSERT(!m_currentDragData);
 
-    m_currentDragData = webDragData;
+    m_currentDragData = webDragData.getValue();
     m_operationsAllowed = operationsAllowed;
 
     return dragTargetDragEnterOrOver(clientPoint, screenPoint, DragEnter, keyModifiers);

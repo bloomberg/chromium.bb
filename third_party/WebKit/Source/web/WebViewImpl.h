@@ -649,7 +649,7 @@ private:
     OwnPtr<WebSettingsImpl> m_webSettings;
 
     // A copy of the web drop data object we received from the browser.
-    RefPtr<WebCore::DataObject> m_currentDragData;
+    RefPtrWillBePersistent<WebCore::DataObject> m_currentDragData;
 
     // The point relative to the client area where the mouse was last pressed
     // down. This is used by the drag client to determine what was under the

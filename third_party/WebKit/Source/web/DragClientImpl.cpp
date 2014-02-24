@@ -69,7 +69,7 @@ void DragClientImpl::startDrag(DragImage* dragImage,
     // Add a ref to the frame just in case a load occurs mid-drag.
     RefPtr<Frame> frameProtector = frame;
 
-    WebDragData dragData = clipboard->dataObject();
+    WebDragData dragData(clipboard->dataObject());
     WebDragOperationsMask dragOperationMask = static_cast<WebDragOperationsMask>(clipboard->sourceOperation());
     WebImage image;
     IntSize offsetSize(eventPos - dragImageOrigin);

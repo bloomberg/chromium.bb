@@ -723,7 +723,7 @@ void WebPluginContainerImpl::handleDragEvent(MouseEvent* event)
         return;
 
     Clipboard* clipboard = event->dataTransfer();
-    WebDragData dragData = clipboard->dataObject();
+    WebDragData dragData(clipboard->dataObject());
     WebDragOperationsMask dragOperationMask = static_cast<WebDragOperationsMask>(clipboard->sourceOperation());
     WebPoint dragScreenLocation(event->screenX(), event->screenY());
     WebPoint dragLocation(event->absoluteLocation().x() - location().x(), event->absoluteLocation().y() - location().y());

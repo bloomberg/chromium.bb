@@ -34,7 +34,7 @@ namespace WebCore {
     public:
         virtual ~ClipboardEvent();
 
-        static PassRefPtr<ClipboardEvent> create(const AtomicString& type, bool canBubbleArg, bool cancelableArg, PassRefPtr<Clipboard> clipboardArg)
+        static PassRefPtr<ClipboardEvent> create(const AtomicString& type, bool canBubbleArg, bool cancelableArg, PassRefPtrWillBeRawPtr<Clipboard> clipboardArg)
         {
             return adoptRef(new ClipboardEvent(type, canBubbleArg, cancelableArg, clipboardArg));
         }
@@ -43,12 +43,12 @@ namespace WebCore {
 
     private:
         ClipboardEvent();
-        ClipboardEvent(const AtomicString& type, bool canBubbleArg, bool cancelableArg, PassRefPtr<Clipboard>);
+        ClipboardEvent(const AtomicString& type, bool canBubbleArg, bool cancelableArg, PassRefPtrWillBeRawPtr<Clipboard>);
 
         virtual const AtomicString& interfaceName() const OVERRIDE;
         virtual bool isClipboardEvent() const OVERRIDE;
 
-        RefPtr<Clipboard> m_clipboard;
+        RefPtrWillBePersistent<Clipboard> m_clipboard;
     };
 
 } // namespace WebCore

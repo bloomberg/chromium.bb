@@ -39,9 +39,11 @@
 
 namespace WebCore {
 
-PassRefPtr<DataObject> DataObject::createFromPasteboard(PasteMode pasteMode)
+DEFINE_GC_INFO(DataObject);
+
+PassRefPtrWillBeRawPtr<DataObject> DataObject::createFromPasteboard(PasteMode pasteMode)
 {
-    RefPtr<DataObject> dataObject = create();
+    RefPtrWillBeRawPtr<DataObject> dataObject = create();
     blink::WebClipboard::Buffer buffer = Pasteboard::generalPasteboard()->buffer();
     uint64_t sequenceNumber = blink::Platform::current()->clipboard()->sequenceNumber(buffer);
     bool ignored;
@@ -57,14 +59,14 @@ PassRefPtr<DataObject> DataObject::createFromPasteboard(PasteMode pasteMode)
     return dataObject.release();
 }
 
-PassRefPtr<DataObject> DataObject::create()
+PassRefPtrWillBeRawPtr<DataObject> DataObject::create()
 {
-    return adoptRef(new DataObject());
+    return adoptRefWillBeNoop(new DataObject());
 }
 
-PassRefPtr<DataObject> DataObject::copy() const
+PassRefPtrWillBeRawPtr<DataObject> DataObject::copy() const
 {
-    return adoptRef(new DataObject(*this));
+    return adoptRefWillBeNoop(new DataObject(*this));
 }
 
 size_t DataObject::length() const
@@ -72,7 +74,7 @@ size_t DataObject::length() const
     return m_itemList.size();
 }
 
-PassRefPtr<DataObjectItem> DataObject::item(unsigned long index)
+PassRefPtrWillBeRawPtr<DataObjectItem> DataObject::item(unsigned long index)
 {
     if (index >= length())
         return nullptr;
@@ -91,20 +93,20 @@ void DataObject::clearAll()
     m_itemList.clear();
 }
 
-PassRefPtr<DataObjectItem> DataObject::add(const String& data, const String& type)
+PassRefPtrWillBeRawPtr<DataObjectItem> DataObject::add(const String& data, const String& type)
 {
-    RefPtr<DataObjectItem> item = DataObjectItem::createFromString(type, data);
+    RefPtrWillBeRawPtr<DataObjectItem> item = DataObjectItem::createFromString(type, data);
     if (!internalAddStringItem(item))
         return nullptr;
     return item;
 }
 
-PassRefPtr<DataObjectItem> DataObject::add(PassRefPtr<File> file)
+PassRefPtrWillBeRawPtr<DataObjectItem> DataObject::add(PassRefPtr<File> file)
 {
     if (!file)
         return nullptr;
 
-    RefPtr<DataObjectItem> item = DataObjectItem::createFromFile(file);
+    RefPtrWillBeRawPtr<DataObjectItem> item = DataObjectItem::createFromFile(file);
     m_itemList.append(item);
     return item;
 }
@@ -169,7 +171,7 @@ bool DataObject::setData(const String& type, const String& data)
 
 void DataObject::urlAndTitle(String& url, String* title) const
 {
-    RefPtr<DataObjectItem> item = findStringItem(mimeTypeTextURIList);
+    RefPtrWillBeRawPtr<DataObjectItem> item = findStringItem(mimeTypeTextURIList);
     if (!item)
         return;
     url = convertURIListToURL(item->getAsString());
@@ -185,7 +187,7 @@ void DataObject::setURLAndTitle(const String& url, const String& title)
 
 void DataObject::htmlAndBaseURL(String& html, KURL& baseURL) const
 {
-    RefPtr<DataObjectItem> item = findStringItem(mimeTypeTextHTML);
+    RefPtrWillBeRawPtr<DataObjectItem> item = findStringItem(mimeTypeTextHTML);
     if (!item)
         return;
     html = item->getAsString();
@@ -233,13 +235,12 @@ DataObject::DataObject()
 }
 
 DataObject::DataObject(const DataObject& other)
-    : RefCounted<DataObject>()
-    , m_itemList(other.m_itemList)
+    : m_itemList(other.m_itemList)
     , m_modifierKeyState(0)
 {
 }
 
-PassRefPtr<DataObjectItem> DataObject::findStringItem(const String& type) const
+PassRefPtrWillBeRawPtr<DataObjectItem> DataObject::findStringItem(const String& type) const
 {
     for (size_t i = 0; i < m_itemList.size(); ++i) {
         if (m_itemList[i]->kind() == DataObjectItem::StringKind && m_itemList[i]->type() == type)
@@ -248,7 +249,7 @@ PassRefPtr<DataObjectItem> DataObject::findStringItem(const String& type) const
     return nullptr;
 }
 
-bool DataObject::internalAddStringItem(PassRefPtr<DataObjectItem> item)
+bool DataObject::internalAddStringItem(PassRefPtrWillBeRawPtr<DataObjectItem> item)
 {
     ASSERT(item->kind() == DataObjectItem::StringKind);
     for (size_t i = 0; i < m_itemList.size(); ++i) {
@@ -260,10 +261,15 @@ bool DataObject::internalAddStringItem(PassRefPtr<DataObjectItem> item)
     return true;
 }
 
-void DataObject::internalAddFileItem(PassRefPtr<DataObjectItem> item)
+void DataObject::internalAddFileItem(PassRefPtrWillBeRawPtr<DataObjectItem> item)
 {
     ASSERT(item->kind() == DataObjectItem::FileKind);
     m_itemList.append(item);
+}
+
+void DataObject::trace(Visitor* visitor)
+{
+    visitor->trace(m_itemList);
 }
 
 } // namespace WebCore

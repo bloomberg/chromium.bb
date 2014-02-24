@@ -32,6 +32,7 @@
 #include "core/page/FocusType.h"
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/style/RenderStyleConstants.h"
+#include "heap/Handle.h"
 #include "platform/Cursor.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/Timer.h"
@@ -78,7 +79,7 @@ class VisibleSelection;
 class WheelEvent;
 class Widget;
 
-struct DragState;
+class DragState;
 
 enum AppendTrailingWhitespace { ShouldAppendTrailingWhitespace, DontAppendTrailingWhitespace };
 enum CheckDragHysteresis { ShouldCheckDragHysteresis, DontCheckDragHysteresis };
@@ -180,7 +181,7 @@ public:
 private:
     static DragState& dragState();
 
-    PassRefPtr<Clipboard> createDraggingClipboard() const;
+    PassRefPtrWillBeRawPtr<Clipboard> createDraggingClipboard() const;
 
     bool updateSelectionForMouseDownDispatchingSelectStart(Node*, const VisibleSelection&, TextGranularity);
     void selectClosestWordFromHitTestResult(const HitTestResult&, AppendTrailingWhitespace);

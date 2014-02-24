@@ -35,14 +35,19 @@ namespace WebCore {
 class Clipboard;
 class Node;
 
-struct DragState {
+class DragState : public NoBaseWillBeGarbageCollectedFinalized<DragState> {
     WTF_MAKE_NONCOPYABLE(DragState);
-    WTF_MAKE_FAST_ALLOCATED;
+    DECLARE_GC_INFO;
 public:
     DragState() { }
     RefPtr<Node> m_dragSrc; // element that may be a drag source, for the current mouse gesture
     DragSourceAction m_dragType;
-    RefPtr<Clipboard> m_dragClipboard; // used on only the source side of dragging
+    RefPtrWillBeMember<Clipboard> m_dragClipboard; // used on only the source side of dragging
+
+    void trace(Visitor* visitor)
+    {
+        visitor->trace(m_dragClipboard);
+    }
 };
 
 } // namespace WebCore
