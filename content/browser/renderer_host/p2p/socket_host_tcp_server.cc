@@ -116,7 +116,7 @@ void P2PSocketHostTcpServer::OnAccepted(int result) {
 
 void P2PSocketHostTcpServer::Send(const net::IPEndPoint& to,
                                   const std::vector<char>& data,
-                                  const talk_base::PacketOptions& options,
+                                  net::DiffServCodePoint dscp,
                                   uint64 packet_id) {
   NOTREACHED();
   OnError();

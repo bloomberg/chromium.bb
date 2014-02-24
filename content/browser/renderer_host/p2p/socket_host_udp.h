@@ -18,7 +18,6 @@
 #include "content/public/common/p2p_socket_type.h"
 #include "net/base/ip_endpoint.h"
 #include "net/udp/udp_server_socket.h"
-#include "third_party/libjingle/source/talk/base/asyncpacketsocket.h"
 
 namespace content {
 
@@ -35,7 +34,7 @@ class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
                     const net::IPEndPoint& remote_address) OVERRIDE;
   virtual void Send(const net::IPEndPoint& to,
                     const std::vector<char>& data,
-                    const talk_base::PacketOptions& options,
+                    net::DiffServCodePoint dscp,
                     uint64 packet_id) OVERRIDE;
   virtual P2PSocketHost* AcceptIncomingTcpConnection(
       const net::IPEndPoint& remote_address, int id) OVERRIDE;
@@ -49,13 +48,13 @@ class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
   struct PendingPacket {
     PendingPacket(const net::IPEndPoint& to,
                   const std::vector<char>& content,
-                  const talk_base::PacketOptions& dscp,
+                  net::DiffServCodePoint dscp,
                   uint64 id);
     ~PendingPacket();
     net::IPEndPoint to;
     scoped_refptr<net::IOBuffer> data;
     int size;
-    talk_base::PacketOptions packet_options;
+    net::DiffServCodePoint dscp;
     uint64 id;
   };
 

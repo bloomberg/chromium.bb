@@ -44,10 +44,9 @@ class P2PSocketClientImpl : public P2PSocketClient {
 
   // Send the |data| to the |address| using Differentiated Services Code Point
   // |dscp|.
-  virtual void SendWithOptions(
-      const net::IPEndPoint& address,
-      const std::vector<char>& data,
-      const talk_base::PacketOptions& options) OVERRIDE;
+  virtual void SendWithDscp(const net::IPEndPoint& address,
+                            const std::vector<char>& data,
+                            net::DiffServCodePoint dscp) OVERRIDE;
 
   // Setting socket options.
   virtual void SetOption(P2PSocketOption option, int value) OVERRIDE;

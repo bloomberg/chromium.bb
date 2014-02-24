@@ -55,19 +55,14 @@ namespace content {
 P2PSocketHostUdp::PendingPacket::PendingPacket(
     const net::IPEndPoint& to,
     const std::vector<char>& content,
-    const talk_base::PacketOptions& options,
+    net::DiffServCodePoint dscp_,
     uint64 id)
     : to(to),
       data(new net::IOBuffer(content.size())),
       size(content.size()),
-      packet_options(options),
+      dscp(dscp_),
       id(id) {
   memcpy(data->data(), &content[0], size);
-  if (!options.packet_time_params.srtp_auth_key.empty()) {
-    memcpy(&packet_options.packet_time_params.srtp_auth_key[0],
-           &options.packet_time_params.srtp_auth_key[0],
-           options.packet_time_params.srtp_auth_key.size());
-  }
 }
 
 P2PSocketHostUdp::PendingPacket::~PendingPacket() {
@@ -187,7 +182,7 @@ void P2PSocketHostUdp::HandleReadResult(int result) {
 
 void P2PSocketHostUdp::Send(const net::IPEndPoint& to,
                             const std::vector<char>& data,
-                            const talk_base::PacketOptions& options,
+                            net::DiffServCodePoint dscp,
                             uint64 packet_id) {
   if (!socket_) {
     // The Send message may be sent after the an OnError message was
@@ -213,10 +208,9 @@ void P2PSocketHostUdp::Send(const net::IPEndPoint& to,
   }
 
   if (send_pending_) {
-    send_queue_.push_back(PendingPacket(to, data, options, packet_id));
+    send_queue_.push_back(PendingPacket(to, data, dscp, packet_id));
   } else {
-    // TODO(mallinath: Remove unnecessary memcpy in this case.
-    PendingPacket packet(to, data, options, packet_id);
+    PendingPacket packet(to, data, dscp, packet_id);
     DoSend(packet);
   }
 }
@@ -228,13 +222,11 @@ void P2PSocketHostUdp::DoSend(const PendingPacket& packet) {
   // 1. If the outgoing packet is set to DSCP_NO_CHANGE
   // 2. If no change in DSCP value from last packet
   // 3. If there is any error in setting DSCP on socket.
-  net::DiffServCodePoint dscp =
-      static_cast<net::DiffServCodePoint>(packet.packet_options.dscp);
-  if (dscp != net::DSCP_NO_CHANGE &&
-      last_dscp_ != dscp && last_dscp_ != net::DSCP_NO_CHANGE) {
-    int result = socket_->SetDiffServCodePoint(dscp);
+  if (packet.dscp != net::DSCP_NO_CHANGE &&
+      last_dscp_ != packet.dscp && last_dscp_ != net::DSCP_NO_CHANGE) {
+    int result = socket_->SetDiffServCodePoint(packet.dscp);
     if (result == net::OK) {
-      last_dscp_ = dscp;
+      last_dscp_ = packet.dscp;
     } else if (!IsTransientError(result) && last_dscp_ != net::DSCP_CS0) {
       // We receieved a non-transient error, and it seems we have
       // not changed the DSCP in the past, disable DSCP as it unlikely

@@ -11,7 +11,6 @@
 #include "ipc/ipc_message_macros.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_util.h"
-#include "third_party/libjingle/source/talk/base/asyncpacketsocket.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -21,26 +20,13 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::P2PSocketType,
                           content::P2P_SOCKET_TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(content::P2PSocketOption,
                           content::P2P_SOCKET_OPT_MAX - 1)
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(talk_base::DiffServCodePoint,
-                              talk_base::DSCP_NO_CHANGE,
-                              talk_base::DSCP_CS7)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(net::DiffServCodePoint,
+                              net::DSCP_FIRST,
+                              net::DSCP_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(net::NetworkInterface)
   IPC_STRUCT_TRAITS_MEMBER(name)
   IPC_STRUCT_TRAITS_MEMBER(address)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(talk_base::PacketTimeUpdateParams)
-  IPC_STRUCT_TRAITS_MEMBER(rtp_sendtime_extension_id)
-  IPC_STRUCT_TRAITS_MEMBER(srtp_auth_key)
-  IPC_STRUCT_TRAITS_MEMBER(srtp_auth_tag_len)
-  IPC_STRUCT_TRAITS_MEMBER(srtp_packet_index)
-  IPC_STRUCT_TRAITS_MEMBER(payload_len)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(talk_base::PacketOptions)
-  IPC_STRUCT_TRAITS_MEMBER(dscp)
-  IPC_STRUCT_TRAITS_MEMBER(packet_time_params)
 IPC_STRUCT_TRAITS_END()
 
 // P2P Socket messages sent from the browser to the renderer.
@@ -99,7 +85,7 @@ IPC_MESSAGE_CONTROL5(P2PHostMsg_Send,
                      int /* socket_id */,
                      net::IPEndPoint /* socket_address */,
                      std::vector<char> /* data */,
-                     talk_base::PacketOptions /* dscp */,
+                     net::DiffServCodePoint /* dscp */,
                      uint64 /* packet_id */)
 
 IPC_MESSAGE_CONTROL1(P2PHostMsg_DestroySocket,

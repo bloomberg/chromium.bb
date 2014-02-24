@@ -231,7 +231,7 @@ void P2PSocketDispatcherHost::OnAcceptIncomingTcpConnection(
 void P2PSocketDispatcherHost::OnSend(int socket_id,
                                      const net::IPEndPoint& socket_address,
                                      const std::vector<char>& data,
-                                     const talk_base::PacketOptions& options,
+                                     net::DiffServCodePoint dscp,
                                      uint64 packet_id) {
   P2PSocketHost* socket = LookupSocket(socket_id);
   if (!socket) {
@@ -248,7 +248,7 @@ void P2PSocketDispatcherHost::OnSend(int socket_id,
     return;
   }
 
-  socket->Send(socket_address, data, options, packet_id);
+  socket->Send(socket_address, data, dscp, packet_id);
 }
 
 void P2PSocketDispatcherHost::OnSetOption(int socket_id,

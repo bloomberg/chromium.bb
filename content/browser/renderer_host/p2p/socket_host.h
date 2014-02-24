@@ -18,10 +18,6 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-namespace talk_base {
-struct PacketOptions;
-}
-
 namespace content {
 class P2PMessageThrottler;
 
@@ -44,7 +40,7 @@ class CONTENT_EXPORT P2PSocketHost {
   // Sends |data| on the socket to |to|.
   virtual void Send(const net::IPEndPoint& to,
                     const std::vector<char>& data,
-                    const talk_base::PacketOptions& options,
+                    net::DiffServCodePoint dscp,
                     uint64 packet_id) = 0;
 
   virtual P2PSocketHost* AcceptIncomingTcpConnection(
