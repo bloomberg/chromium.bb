@@ -14,6 +14,7 @@
 #include "android_webview/browser/net_disk_cache_remover.h"
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
 #include "android_webview/common/aw_hit_test_data.h"
+#include "android_webview/common/devtools_instrumentation.h"
 #include "android_webview/native/aw_autofill_manager_delegate.h"
 #include "android_webview/native/aw_browser_dependency_factory.h"
 #include "android_webview/native/aw_contents_client_bridge.h"
@@ -422,6 +423,8 @@ bool AwContents::OnReceivedHttpAuthRequest(const JavaRef<jobject>& handler,
 
   ScopedJavaLocalRef<jstring> jhost = ConvertUTF8ToJavaString(env, host);
   ScopedJavaLocalRef<jstring> jrealm = ConvertUTF8ToJavaString(env, realm);
+  devtools_instrumentation::ScopedEmbedderCallbackTask embedder_callback(
+      "onReceivedHttpAuthRequest");
   Java_AwContents_onReceivedHttpAuthRequest(env, obj.obj(), handler.obj(),
       jhost.obj(), jrealm.obj());
   return true;
@@ -459,6 +462,8 @@ void ShowGeolocationPromptHelperTask(const JavaObjectWeakGlobalRef& java_ref,
   if (j_ref.obj()) {
     ScopedJavaLocalRef<jstring> j_origin(
         ConvertUTF8ToJavaString(env, origin.spec()));
+    devtools_instrumentation::ScopedEmbedderCallbackTask embedder_callback(
+        "onGeolocationPermissionsShowPrompt");
     Java_AwContents_onGeolocationPermissionsShowPrompt(env,
                                                        j_ref.obj(),
                                                        j_origin.obj());
@@ -530,6 +535,8 @@ void AwContents::HideGeolocationPrompt(const GURL& origin) {
     JNIEnv* env = AttachCurrentThread();
     ScopedJavaLocalRef<jobject> j_ref = java_ref_.get(env);
     if (j_ref.obj()) {
+      devtools_instrumentation::ScopedEmbedderCallbackTask embedder_callback(
+          "onGeolocationPermissionsHidePrompt");
       Java_AwContents_onGeolocationPermissionsHidePrompt(env, j_ref.obj());
     }
     if (!pending_geolocation_prompts_.empty()) {
@@ -654,8 +661,11 @@ void AwContents::OnNewPicture() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (!obj.is_null())
+  if (!obj.is_null()) {
+    devtools_instrumentation::ScopedEmbedderCallbackTask embedder_callback(
+        "onNewPicture");
     Java_AwContents_onNewPicture(env, obj.obj());
+  }
 }
 
 base::android::ScopedJavaLocalRef<jbyteArray>

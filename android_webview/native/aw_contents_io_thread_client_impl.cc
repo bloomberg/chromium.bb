@@ -7,6 +7,7 @@
 #include <map>
 #include <utility>
 
+#include "android_webview/common/devtools_instrumentation.h"
 #include "android_webview/native/intercepted_request_data_impl.h"
 #include "base/android/jni_helper.h"
 #include "base/android/jni_string.h"
@@ -241,6 +242,8 @@ AwContentsIoThreadClientImpl::ShouldInterceptRequest(
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jstring_url =
       ConvertUTF8ToJavaString(env, location.spec());
+  devtools_instrumentation::ScopedEmbedderCallbackTask embedder_callback(
+      "shouldInterceptRequest");
   ScopedJavaLocalRef<jobject> ret =
       Java_AwContentsIoThreadClient_shouldInterceptRequest(
           env, java_object_.obj(), jstring_url.obj(), is_main_frame);

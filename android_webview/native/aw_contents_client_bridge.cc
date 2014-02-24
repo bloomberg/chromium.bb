@@ -4,6 +4,7 @@
 
 #include "android_webview/native/aw_contents_client_bridge.h"
 
+#include "android_webview/common/devtools_instrumentation.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -108,17 +109,22 @@ void AwContentsClientBridge::RunJavaScriptDialog(
       ConvertUTF16ToJavaString(env, message_text));
 
   switch (message_type) {
-    case content::JAVASCRIPT_MESSAGE_TYPE_ALERT:
+    case content::JAVASCRIPT_MESSAGE_TYPE_ALERT: {
+      devtools_instrumentation::ScopedEmbedderCallbackTask("onJsAlert");
       Java_AwContentsClientBridge_handleJsAlert(
           env, obj.obj(), jurl.obj(), jmessage.obj(), callback_id);
       break;
-    case content::JAVASCRIPT_MESSAGE_TYPE_CONFIRM:
+    }
+    case content::JAVASCRIPT_MESSAGE_TYPE_CONFIRM: {
+      devtools_instrumentation::ScopedEmbedderCallbackTask("onJsConfirm");
       Java_AwContentsClientBridge_handleJsConfirm(
           env, obj.obj(), jurl.obj(), jmessage.obj(), callback_id);
       break;
+    }
     case content::JAVASCRIPT_MESSAGE_TYPE_PROMPT: {
       ScopedJavaLocalRef<jstring> jdefault_value(
           ConvertUTF16ToJavaString(env, default_prompt_text));
+      devtools_instrumentation::ScopedEmbedderCallbackTask("onJsPrompt");
       Java_AwContentsClientBridge_handleJsPrompt(env,
                                                  obj.obj(),
                                                  jurl.obj(),
@@ -150,6 +156,7 @@ void AwContentsClientBridge::RunBeforeUnloadDialog(
   ScopedJavaLocalRef<jstring> jmessage(
       ConvertUTF16ToJavaString(env, message_text));
 
+  devtools_instrumentation::ScopedEmbedderCallbackTask("onJsBeforeUnload");
   Java_AwContentsClientBridge_handleJsBeforeUnload(
       env, obj.obj(), jurl.obj(), jmessage.obj(), callback_id);
 }
@@ -161,6 +168,8 @@ bool AwContentsClientBridge::ShouldOverrideUrlLoading(
   if (obj.is_null())
     return false;
   ScopedJavaLocalRef<jstring> jurl = ConvertUTF16ToJavaString(env, url);
+  devtools_instrumentation::ScopedEmbedderCallbackTask(
+      "shouldOverrideUrlLoading");
   return Java_AwContentsClientBridge_shouldOverrideUrlLoading(
       env, obj.obj(),
       jurl.obj());

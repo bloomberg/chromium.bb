@@ -195,6 +195,7 @@
         'common/aw_resource.h',
         'common/aw_switches.cc',
         'common/aw_switches.h',
+        'common/devtools_instrumentation.h',
         'common/print_messages.cc',
         'common/print_messages.h',
         'common/render_view_messages.cc',
