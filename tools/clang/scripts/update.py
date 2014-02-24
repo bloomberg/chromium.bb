@@ -16,7 +16,7 @@ import sys
 # https://code.google.com/p/chromium/wiki/UpdatingClang
 # Reverting problematic clang rolls is safe, though.
 # Note: this revision is only used for Windows. Other platforms use update.sh.
-LLVM_WINDOWS_REVISION = '201860'
+LLVM_WINDOWS_REVISION = '202050'
 
 # Path constants. (All of these should be absolute paths.)
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
