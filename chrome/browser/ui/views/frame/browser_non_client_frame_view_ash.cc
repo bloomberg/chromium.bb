@@ -243,20 +243,26 @@ void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
     return;
   }
 
+  caption_button_container_->SetPaintAsActive(ShouldPaintAsActive());
+
   // The primary header image changes based on window activation state and
   // theme, so we look it up for each paint.
-  int theme_frame_image_id = GetThemeFrameImageId();
-  int theme_frame_overlay_image_id = GetThemeFrameOverlayImageId();
-
-  ui::ThemeProvider* theme_provider = GetThemeProvider();
-  if (!theme_provider->HasCustomImage(theme_frame_image_id) &&
-      (theme_frame_overlay_image_id == 0 ||
-       !theme_provider->HasCustomImage(theme_frame_overlay_image_id))) {
-    if (frame()->IsMaximized() || frame()->IsFullscreen())
-      theme_frame_image_id = IDR_AURA_BROWSER_WINDOW_HEADER_BASE_MAXIMIZED;
+  int theme_frame_image_id = 0;
+  int theme_frame_overlay_image_id = 0;
+  if (browser_view()->IsTabStripVisible()) {
+    GetFrameImageIdsForTabbedBrowser(&theme_frame_image_id,
+                                     &theme_frame_overlay_image_id);
+  } else if (browser_view()->browser()->is_app()) {
+    theme_frame_image_id = GetFrameImageIdForHostedApp();
+  } else {
+    theme_frame_image_id = GetFrameImageIdForBrowserPopup();
   }
+
+  ash::HeaderPainter::Mode header_mode = ShouldPaintAsActive() ?
+      ash::HeaderPainter::MODE_ACTIVE : ash::HeaderPainter::MODE_INACTIVE;
   header_painter_->PaintHeader(
       canvas,
+      header_mode,
       theme_frame_image_id,
       theme_frame_overlay_image_id);
   if (browser_view()->ShouldShowWindowTitle())
@@ -516,7 +522,9 @@ void BrowserNonClientFrameViewAsh::PaintToolbarBackground(gfx::Canvas* canvas) {
 
 void BrowserNonClientFrameViewAsh::PaintContentEdge(gfx::Canvas* canvas) {
   if (UsePackagedAppHeaderStyle()) {
-    header_painter_->PaintHeaderContentSeparator(canvas);
+    ash::HeaderPainter::Mode header_mode = ShouldPaintAsActive() ?
+        ash::HeaderPainter::MODE_ACTIVE : ash::HeaderPainter::MODE_INACTIVE;
+    header_painter_->PaintHeaderContentSeparator(canvas, header_mode);
   } else {
     canvas->FillRect(gfx::Rect(0, caption_button_container_->bounds().bottom(),
                                width(), kClientEdgeThickness),
@@ -525,18 +533,41 @@ void BrowserNonClientFrameViewAsh::PaintContentEdge(gfx::Canvas* canvas) {
   }
 }
 
-int BrowserNonClientFrameViewAsh::GetThemeFrameImageId() const {
+void BrowserNonClientFrameViewAsh::GetFrameImageIdsForTabbedBrowser(
+    int* frame_image_id,
+    int* frame_overlay_image_id) const {
+  *frame_overlay_image_id = 0;
+
   bool is_incognito = !browser_view()->IsRegularOrGuestSession();
-  if (browser_view()->IsBrowserTypeNormal()) {
-    // Use the standard resource ids to allow users to theme the frames.
-    if (ShouldPaintAsActive()) {
-      return is_incognito ?
-          IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME;
-    }
-    return is_incognito ?
+  ui::ThemeProvider* tp = GetThemeProvider();
+  if (tp->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
+      !is_incognito) {
+    *frame_overlay_image_id = ShouldPaintAsActive() ?
+        IDR_THEME_FRAME_OVERLAY : IDR_THEME_FRAME_OVERLAY_INACTIVE;
+  }
+
+  if (ShouldPaintAsActive()) {
+    *frame_image_id = is_incognito ?
+        IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME;
+  } else {
+    *frame_image_id = is_incognito ?
         IDR_THEME_FRAME_INCOGNITO_INACTIVE : IDR_THEME_FRAME_INACTIVE;
   }
-  // Never theme app and popup windows.
+
+  if ((frame()->IsMaximized() || frame()->IsFullscreen()) &&
+      !tp->HasCustomImage(IDR_THEME_FRAME) &&
+      !tp->HasCustomImage(*frame_image_id) &&
+      *frame_overlay_image_id == 0) {
+    *frame_image_id = IDR_AURA_BROWSER_WINDOW_HEADER_BASE_MAXIMIZED;
+  }
+}
+
+int BrowserNonClientFrameViewAsh::GetFrameImageIdForBrowserPopup() const {
+  // Browser popups are not themeable.
+  if (frame()->IsMaximized() || frame()->IsFullscreen())
+    return IDR_AURA_BROWSER_WINDOW_HEADER_BASE_MAXIMIZED;
+
+  bool is_incognito = !browser_view()->IsRegularOrGuestSession();
   if (ShouldPaintAsActive()) {
     return is_incognito ?
         IDR_AURA_BROWSER_WINDOW_HEADER_BASE_RESTORED_INCOGNITO_ACTIVE :
@@ -547,13 +578,11 @@ int BrowserNonClientFrameViewAsh::GetThemeFrameImageId() const {
       IDR_AURA_BROWSER_WINDOW_HEADER_BASE_RESTORED_INACTIVE;
 }
 
-int BrowserNonClientFrameViewAsh::GetThemeFrameOverlayImageId() const {
-  ui::ThemeProvider* tp = GetThemeProvider();
-  if (tp->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
-      browser_view()->IsBrowserTypeNormal() &&
-      !browser_view()->IsOffTheRecord()) {
+int BrowserNonClientFrameViewAsh::GetFrameImageIdForHostedApp() const {
+  if (UsePackagedAppHeaderStyle()) {
     return ShouldPaintAsActive() ?
-        IDR_THEME_FRAME_OVERLAY : IDR_THEME_FRAME_OVERLAY_INACTIVE;
+        IDR_AURA_WINDOW_HEADER_BASE_ACTIVE :
+        IDR_AURA_WINDOW_HEADER_BASE_INACTIVE;
   }
-  return 0;
+  return GetFrameImageIdForBrowserPopup();
 }

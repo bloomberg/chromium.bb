@@ -263,20 +263,25 @@ void CustomFrameViewAsh::HeaderView::Layout() {
 }
 
 void CustomFrameViewAsh::HeaderView::OnPaint(gfx::Canvas* canvas) {
-  int theme_image_id = 0;
-  if (frame_->IsMaximized() || frame_->IsFullscreen())
-    theme_image_id = IDR_AURA_BROWSER_WINDOW_HEADER_BASE_MAXIMIZED;
-  else if (frame_->non_client_view()->frame_view()->ShouldPaintAsActive())
-    theme_image_id = IDR_AURA_BROWSER_WINDOW_HEADER_BASE_RESTORED_ACTIVE;
-  else
-    theme_image_id = IDR_AURA_BROWSER_WINDOW_HEADER_BASE_RESTORED_INACTIVE;
+  bool paint_as_active =
+      frame_->non_client_view()->frame_view()->ShouldPaintAsActive();
+  caption_button_container_->SetPaintAsActive(paint_as_active);
 
+  int theme_image_id = 0;
+  if (paint_as_active)
+    theme_image_id = IDR_AURA_WINDOW_HEADER_BASE_ACTIVE;
+  else
+    theme_image_id = IDR_AURA_WINDOW_HEADER_BASE_INACTIVE;
+
+  HeaderPainter::Mode header_mode = paint_as_active ?
+      HeaderPainter::MODE_ACTIVE : HeaderPainter::MODE_INACTIVE;
   header_painter_->PaintHeader(
       canvas,
+      header_mode,
       theme_image_id,
       0);
   header_painter_->PaintTitleBar(canvas, GetTitleFontList());
-  header_painter_->PaintHeaderContentSeparator(canvas);
+  header_painter_->PaintHeaderContentSeparator(canvas, header_mode);
 }
 
 void CustomFrameViewAsh::HeaderView::OnImmersiveRevealStarted() {

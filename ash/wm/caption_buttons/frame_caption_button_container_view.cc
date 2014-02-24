@@ -12,11 +12,9 @@
 #include "ash/wm/caption_buttons/alternate_frame_size_button.h"
 #include "ash/wm/caption_buttons/frame_caption_button.h"
 #include "ash/wm/caption_buttons/frame_maximize_button.h"
-#include "grit/ash_resources.h"
 #include "grit/ui_strings.h"  // Accessibility names
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/insets.h"
@@ -27,9 +25,6 @@
 namespace ash {
 
 namespace {
-
-// The distance between buttons.
-const int kDistanceBetweenButtons = -1;
 
 // Converts |point| from |src| to |dst| and hittests against |dst|.
 bool ConvertPointToViewAndHitTest(const views::View* src,
@@ -79,9 +74,6 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
   close_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
   AddChildView(close_button_);
-
-  button_separator_ = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-      IDR_AURA_WINDOW_BUTTON_SEPARATOR).AsImageSkia();
 }
 
 FrameCaptionButtonContainerView::~FrameCaptionButtonContainerView() {
@@ -93,13 +85,16 @@ FrameCaptionButtonContainerView::GetOldStyleSizeButton() {
       NULL : static_cast<FrameMaximizeButton*>(size_button_);
 }
 
-void FrameCaptionButtonContainerView::SetButtonImages(CaptionButtonIcon icon,
-                                                      int normal_image_id,
-                                                      int hovered_image_id,
-                                                      int pressed_image_id) {
-  button_icon_id_map_[icon] = ButtonIconIds(normal_image_id,
-                                            hovered_image_id,
-                                            pressed_image_id);
+void FrameCaptionButtonContainerView::SetButtonImages(
+    CaptionButtonIcon icon,
+    int icon_image_id,
+    int inactive_icon_image_id,
+    int hovered_background_image_id,
+    int pressed_background_image_id) {
+  button_icon_id_map_[icon] = ButtonIconIds(icon_image_id,
+                                            inactive_icon_image_id,
+                                            hovered_background_image_id,
+                                            pressed_background_image_id);
   FrameCaptionButton* buttons[] = {
     minimize_button_, size_button_, close_button_
   };
@@ -107,11 +102,18 @@ void FrameCaptionButtonContainerView::SetButtonImages(CaptionButtonIcon icon,
     if (buttons[i]->icon() == icon) {
       buttons[i]->SetImages(icon,
                             FrameCaptionButton::ANIMATE_NO,
-                            normal_image_id,
-                            hovered_image_id,
-                            pressed_image_id);
+                            icon_image_id,
+                            inactive_icon_image_id,
+                            hovered_background_image_id,
+                            pressed_background_image_id);
     }
   }
+}
+
+void FrameCaptionButtonContainerView::SetPaintAsActive(bool paint_as_active) {
+  minimize_button_->set_paint_as_active(paint_as_active);
+  size_button_->set_paint_as_active(paint_as_active);
+  close_button_->set_paint_as_active(paint_as_active);
 }
 
 void FrameCaptionButtonContainerView::ResetWindowControls() {
@@ -135,16 +137,10 @@ int FrameCaptionButtonContainerView::NonClientHitTest(
 
 gfx::Size FrameCaptionButtonContainerView::GetPreferredSize() {
   int width = 0;
-  bool first_visible = true;
   for (int i = 0; i < child_count(); ++i) {
     views::View* child = child_at(i);
-    if (!child->visible())
-      continue;
-
-    width += child_at(i)->GetPreferredSize().width();
-    if (!first_visible)
-      width += kDistanceBetweenButtons;
-    first_visible = false;
+    if (child->visible())
+      width += child_at(i)->GetPreferredSize().width();
   }
   return gfx::Size(width, close_button_->GetPreferredSize().height());
 }
@@ -158,28 +154,12 @@ void FrameCaptionButtonContainerView::Layout() {
 
     gfx::Size size = child->GetPreferredSize();
     child->SetBounds(x, 0, size.width(), size.height());
-    x += size.width() + kDistanceBetweenButtons;
+    x += size.width();
   }
 }
 
 const char* FrameCaptionButtonContainerView::GetClassName() const {
   return kViewClassName;
-}
-
-void FrameCaptionButtonContainerView::OnPaint(gfx::Canvas* canvas) {
-  views::View::OnPaint(canvas);
-
-  // The alternate button style does not paint the button separator.
-  if (!switches::UseAlternateFrameCaptionButtonStyle()) {
-    // We should have at most two visible buttons. The button separator is
-    // always painted underneath the close button regardless of whether a
-    // button other than the close button is visible.
-    gfx::Rect divider(close_button_->bounds().origin(),
-                      button_separator_.size());
-    canvas->DrawImageInt(button_separator_,
-                         GetMirroredXForRect(divider),
-                         divider.y());
-  }
 }
 
 void FrameCaptionButtonContainerView::SetButtonIcon(FrameCaptionButton* button,
@@ -200,9 +180,10 @@ void FrameCaptionButtonContainerView::SetButtonIcon(FrameCaptionButton* button,
   if (it != button_icon_id_map_.end()) {
     button->SetImages(icon,
                       fcb_animate,
-                      it->second.normal_image_id,
-                      it->second.hovered_image_id,
-                      it->second.pressed_image_id);
+                      it->second.icon_image_id,
+                      it->second.inactive_icon_image_id,
+                      it->second.hovered_background_image_id,
+                      it->second.pressed_background_image_id);
   }
 }
 
@@ -312,17 +293,21 @@ void FrameCaptionButtonContainerView::SetHoveredAndPressedButtons(
 }
 
 FrameCaptionButtonContainerView::ButtonIconIds::ButtonIconIds()
-    : normal_image_id(-1),
-      hovered_image_id(-1),
-      pressed_image_id(-1) {
+    : icon_image_id(-1),
+      inactive_icon_image_id(-1),
+      hovered_background_image_id(-1),
+      pressed_background_image_id(-1) {
 }
 
-FrameCaptionButtonContainerView::ButtonIconIds::ButtonIconIds(int normal_id,
-                                                              int hovered_id,
-                                                              int pressed_id)
-    : normal_image_id(normal_id),
-      hovered_image_id(hovered_id),
-      pressed_image_id(pressed_id) {
+FrameCaptionButtonContainerView::ButtonIconIds::ButtonIconIds(
+    int icon_id,
+    int inactive_icon_id,
+    int hovered_background_id,
+    int pressed_background_id)
+    : icon_image_id(icon_id),
+      inactive_icon_image_id(inactive_icon_id),
+      hovered_background_image_id(hovered_background_id),
+      pressed_background_image_id(pressed_background_id) {
 }
 
 FrameCaptionButtonContainerView::ButtonIconIds::~ButtonIconIds() {

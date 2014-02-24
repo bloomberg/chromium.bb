@@ -43,10 +43,16 @@ const int kTitleNoIconOffsetX = 8;
 const SkColor kNonMaximizedWindowTitleTextColor = SkColorSetRGB(40, 40, 40);
 // Color for the maximized window title text.
 const SkColor kMaximizedWindowTitleTextColor = SK_ColorWHITE;
-// Size of header/content separator line below the header image.
+// Size of header/content separator line below the header image for non-browser
+// windows.
 const int kHeaderContentSeparatorSize = 1;
-// Color of header bottom edge line.
-const SkColor kHeaderContentSeparatorColor = SkColorSetRGB(128, 128, 128);
+// Color of the active window header/content separator line for non-browser
+// windows.
+const SkColor kHeaderContentSeparatorColor = SkColorSetRGB(180, 180, 182);
+// Color of the inactive window header/content separator line for non-browser
+// windows.
+const SkColor kHeaderContentSeparatorInactiveColor =
+    SkColorSetRGB(150, 150, 152);
 // In the pre-Ash era the web content area had a frame along the left edge, so
 // user-generated theme images for the new tab page assume they are shifted
 // right relative to the header.  Now that we have removed the left edge frame
@@ -139,11 +145,6 @@ HeaderPainter::HeaderPainter()
       window_icon_(NULL),
       caption_button_container_(NULL),
       header_height_(0),
-      top_left_corner_(NULL),
-      top_edge_(NULL),
-      top_right_corner_(NULL),
-      header_left_edge_(NULL),
-      header_right_edge_(NULL),
       previous_theme_frame_id_(0),
       previous_theme_frame_overlay_id_(0),
       crossfade_theme_frame_id_(0),
@@ -167,19 +168,6 @@ void HeaderPainter::Init(
   header_view_ = header_view;
   window_icon_ = window_icon;
   caption_button_container_ = caption_button_container;
-
-  // Window frame image parts.
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  top_left_corner_ = rb.GetImageNamed(
-      IDR_AURA_BROWSER_WINDOW_HEADER_SHADE_TOP_LEFT).ToImageSkia();
-  top_edge_ = rb.GetImageNamed(
-      IDR_AURA_BROWSER_WINDOW_HEADER_SHADE_TOP).ToImageSkia();
-  top_right_corner_ = rb.GetImageNamed(
-      IDR_AURA_BROWSER_WINDOW_HEADER_SHADE_TOP_RIGHT).ToImageSkia();
-  header_left_edge_ = rb.GetImageNamed(
-      IDR_AURA_BROWSER_WINDOW_HEADER_SHADE_LEFT).ToImageSkia();
-  header_right_edge_ = rb.GetImageNamed(
-      IDR_AURA_BROWSER_WINDOW_HEADER_SHADE_RIGHT).ToImageSkia();
 }
 
 // static
@@ -236,6 +224,7 @@ int HeaderPainter::GetThemeBackgroundXInset() const {
 }
 
 void HeaderPainter::PaintHeader(gfx::Canvas* canvas,
+                                Mode mode,
                                 int theme_frame_id,
                                 int theme_frame_overlay_id) {
   bool initial_paint = (previous_theme_frame_id_ == 0);
@@ -321,55 +310,21 @@ void HeaderPainter::PaintHeader(gfx::Canvas* canvas,
   previous_theme_frame_id_ = theme_frame_id;
   previous_theme_frame_overlay_id_ = theme_frame_overlay_id;
 
-  // We don't need the extra lightness in the edges when the window is maximized
-  // or fullscreen.
-  if (frame_->IsMaximized() || frame_->IsFullscreen())
-    return;
-
-  // Draw the top corners and edge.
-  int top_left_width = top_left_corner_->width();
-  int top_left_height = top_left_corner_->height();
-  canvas->DrawImageInt(*top_left_corner_,
-                       0, 0, top_left_width, top_left_height,
-                       0, 0, top_left_width, top_left_height,
-                       false);
-  canvas->TileImageInt(*top_edge_,
-      top_left_width,
-      0,
-      header_view_->width() - top_left_width - top_right_corner_->width(),
-      top_edge_->height());
-  int top_right_height = top_right_corner_->height();
-  canvas->DrawImageInt(*top_right_corner_,
-                       0, 0,
-                       top_right_corner_->width(), top_right_height,
-                       header_view_->width() - top_right_corner_->width(), 0,
-                       top_right_corner_->width(), top_right_height,
-                       false);
-
-  // Header left edge.
-  int header_left_height = theme_frame->height() - top_left_height;
-  canvas->TileImageInt(*header_left_edge_,
-                       0, top_left_height,
-                       header_left_edge_->width(), header_left_height);
-
-  // Header right edge.
-  int header_right_height = theme_frame->height() - top_right_height;
-  canvas->TileImageInt(*header_right_edge_,
-                       header_view_->width() - header_right_edge_->width(),
-                       top_right_height,
-                       header_right_edge_->width(),
-                       header_right_height);
-
-  // We don't draw edges around the content area.  Web content goes flush
-  // to the edge of the window.
+  PaintBorder(canvas, mode);
 }
 
-void HeaderPainter::PaintHeaderContentSeparator(gfx::Canvas* canvas) {
+void HeaderPainter::PaintHeaderContentSeparator(gfx::Canvas* canvas,
+                                                Mode mode) {
+  DCHECK_EQ(style_, STYLE_OTHER);
+  SkColor color = (mode == MODE_ACTIVE) ?
+      kHeaderContentSeparatorColor :
+      kHeaderContentSeparatorInactiveColor;
+
   canvas->FillRect(gfx::Rect(0,
                              header_height_ - kHeaderContentSeparatorSize,
                              header_view_->width(),
                              kHeaderContentSeparatorSize),
-                   kHeaderContentSeparatorColor);
+                   color);
 }
 
 int HeaderPainter::HeaderContentSeparatorSize() const {
@@ -449,77 +404,189 @@ void HeaderPainter::AnimationProgressed(const gfx::Animation* animation) {
 ///////////////////////////////////////////////////////////////////////////////
 // HeaderPainter, private:
 
-void HeaderPainter::UpdateCaptionButtonImages() {
-  if (frame_->IsMaximized() || frame_->IsFullscreen()) {
-    caption_button_container_->SetButtonImages(
-        CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
-        IDR_AURA_WINDOW_MAXIMIZED_RESTORE2,
-        IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_H,
-        IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_P);
-    caption_button_container_->SetButtonImages(
-        CAPTION_BUTTON_ICON_CLOSE,
-        IDR_AURA_WINDOW_MAXIMIZED_CLOSE2,
-        IDR_AURA_WINDOW_MAXIMIZED_CLOSE2_H,
-        IDR_AURA_WINDOW_MAXIMIZED_CLOSE2_P);
-    caption_button_container_->SetButtonImages(
-        CAPTION_BUTTON_ICON_LEFT_SNAPPED,
-        IDR_AURA_WINDOW_MAXIMIZED_RESTORE2,
-        IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_H,
-        IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_P);
-    caption_button_container_->SetButtonImages(
-        CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
-        IDR_AURA_WINDOW_MAXIMIZED_RESTORE2,
-        IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_H,
-        IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_P);
-  } else if (style_ == STYLE_BROWSER) {
-    caption_button_container_->SetButtonImages(
-        CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
-        IDR_AURA_WINDOW_MAXIMIZE,
-        IDR_AURA_WINDOW_MAXIMIZE_H,
-        IDR_AURA_WINDOW_MAXIMIZE_P);
-    caption_button_container_->SetButtonImages(
-        CAPTION_BUTTON_ICON_CLOSE,
-        IDR_AURA_WINDOW_CLOSE,
-        IDR_AURA_WINDOW_CLOSE_H,
-        IDR_AURA_WINDOW_CLOSE_P);
-    caption_button_container_->SetButtonImages(
-        CAPTION_BUTTON_ICON_LEFT_SNAPPED,
-        IDR_AURA_WINDOW_MAXIMIZE,
-        IDR_AURA_WINDOW_MAXIMIZE_H,
-        IDR_AURA_WINDOW_MAXIMIZE_P);
-    caption_button_container_->SetButtonImages(
-        CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
-        IDR_AURA_WINDOW_MAXIMIZE,
-        IDR_AURA_WINDOW_MAXIMIZE_H,
-        IDR_AURA_WINDOW_MAXIMIZE_P);
-  } else {
-    caption_button_container_->SetButtonImages(
-        CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
-        IDR_AURA_WINDOW_MAXIMIZED_RESTORE,
-        IDR_AURA_WINDOW_MAXIMIZED_RESTORE_H,
-        IDR_AURA_WINDOW_MAXIMIZED_RESTORE_P);
-    caption_button_container_->SetButtonImages(
-        CAPTION_BUTTON_ICON_CLOSE,
-        IDR_AURA_WINDOW_MAXIMIZED_CLOSE,
-        IDR_AURA_WINDOW_MAXIMIZED_CLOSE_H,
-        IDR_AURA_WINDOW_MAXIMIZED_CLOSE_P);
-    caption_button_container_->SetButtonImages(
-        CAPTION_BUTTON_ICON_LEFT_SNAPPED,
-        IDR_AURA_WINDOW_MAXIMIZED_RESTORE,
-        IDR_AURA_WINDOW_MAXIMIZED_RESTORE_H,
-        IDR_AURA_WINDOW_MAXIMIZED_RESTORE_P);
-    caption_button_container_->SetButtonImages(
-        CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
-        IDR_AURA_WINDOW_MAXIMIZED_RESTORE,
-        IDR_AURA_WINDOW_MAXIMIZED_RESTORE_H,
-        IDR_AURA_WINDOW_MAXIMIZED_RESTORE_P);
+void HeaderPainter::PaintBorder(gfx::Canvas* canvas, Mode mode) {
+  if (frame_->IsMaximized() ||
+      frame_->IsFullscreen() ||
+      (style_ == STYLE_OTHER && mode == MODE_ACTIVE)) {
+    return;
   }
 
-  caption_button_container_->SetButtonImages(
-      CAPTION_BUTTON_ICON_MINIMIZE,
-      IDR_AURA_WINDOW_MINIMIZE_SHORT,
-      IDR_AURA_WINDOW_MINIMIZE_SHORT_H,
-      IDR_AURA_WINDOW_MINIMIZE_SHORT_P);
+  gfx::ImageSkia top_left_corner;
+  gfx::ImageSkia top_right_corner;
+  gfx::ImageSkia top_edge;
+  gfx::ImageSkia left_edge;
+  gfx::ImageSkia right_edge;
+  gfx::ImageSkia bottom_edge;
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  if (style_ == STYLE_BROWSER) {
+    top_left_corner = *rb.GetImageSkiaNamed(
+        IDR_AURA_BROWSER_WINDOW_HEADER_SHADE_TOP_LEFT);
+    top_right_corner = *rb.GetImageSkiaNamed(
+        IDR_AURA_BROWSER_WINDOW_HEADER_SHADE_TOP_RIGHT);
+    top_edge = *rb.GetImageSkiaNamed(IDR_AURA_BROWSER_WINDOW_HEADER_SHADE_TOP);
+    left_edge = *rb.GetImageSkiaNamed(
+        IDR_AURA_BROWSER_WINDOW_HEADER_SHADE_LEFT);
+    right_edge = *rb.GetImageSkiaNamed(
+        IDR_AURA_BROWSER_WINDOW_HEADER_SHADE_RIGHT);
+  } else {
+    top_edge = *rb.GetImageSkiaNamed(
+        IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_TOP);
+    left_edge = *rb.GetImageSkiaNamed(
+        IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_LEFT);
+    right_edge = *rb.GetImageSkiaNamed(
+        IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_RIGHT);
+    bottom_edge = *rb.GetImageSkiaNamed(
+        IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_BOTTOM);
+  }
+
+  DCHECK(!top_edge.isNull());
+  DCHECK(!left_edge.isNull());
+  DCHECK(!right_edge.isNull());
+
+  int top_left_width = top_left_corner.width();
+  int top_left_height = top_left_corner.height();
+  if (!top_left_corner.isNull()) {
+    canvas->DrawImageInt(top_left_corner, 0, 0);
+  }
+
+  int top_right_height = top_right_corner.height();
+  if (!top_right_corner.isNull()) {
+    canvas->DrawImageInt(top_right_corner,
+                         header_view_->width() - top_right_corner.width(),
+                         top_right_height);
+  }
+
+  canvas->TileImageInt(top_edge,
+      top_left_width,
+      0,
+      header_view_->width() - top_left_width - top_right_corner.width(),
+      top_edge.height());
+
+  // TODO(pkotwicz): Compute |bottom| more accurately. The computation is
+  // inaccurate for browser windows.
+  int bottom = header_height_ - kHeaderContentSeparatorSize;
+  int bottom_height = bottom_edge.height();
+  if (!bottom_edge.isNull()) {
+    canvas->TileImageInt(bottom_edge,
+                         0, bottom - bottom_height,
+                         header_view_->width(), bottom_height);
+  }
+
+  int left_edge_height = bottom - bottom_height - top_left_height;
+  canvas->TileImageInt(left_edge,
+                       0, top_left_height,
+                       left_edge.width(), left_edge_height);
+
+  int right_edge_height = bottom - bottom_height - top_right_height;
+  canvas->TileImageInt(right_edge,
+                       header_view_->width() - right_edge.width(),
+                       top_right_height,
+                       right_edge.width(),
+                       right_edge_height);
+}
+
+void HeaderPainter::UpdateCaptionButtonImages() {
+  if (style_ == STYLE_BROWSER) {
+    if (frame_->IsMaximized() || frame_->IsFullscreen()) {
+      caption_button_container_->SetButtonImages(
+          CAPTION_BUTTON_ICON_MINIMIZE,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_ICON_MAXIMIZED_MINIMIZE,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_ICON_MAXIMIZED_MINIMIZE,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_BACKGROUND_MAXIMIZED_H,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_BACKGROUND_MAXIMIZED_P);
+      caption_button_container_->SetButtonImages(
+          CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_ICON_MAXIMIZED_SIZE,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_ICON_MAXIMIZED_SIZE,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_BACKGROUND_MAXIMIZED_H,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_BACKGROUND_MAXIMIZED_P);
+      caption_button_container_->SetButtonImages(
+          CAPTION_BUTTON_ICON_CLOSE,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_ICON_MAXIMIZED_CLOSE,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_ICON_MAXIMIZED_CLOSE,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_BACKGROUND_MAXIMIZED_H,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_BACKGROUND_MAXIMIZED_P);
+      caption_button_container_->SetButtonImages(
+          CAPTION_BUTTON_ICON_LEFT_SNAPPED,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_ICON_MAXIMIZED_LEFT_SNAPPED,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_ICON_MAXIMIZED_LEFT_SNAPPED,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_BACKGROUND_MAXIMIZED_H,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_BACKGROUND_MAXIMIZED_P);
+      caption_button_container_->SetButtonImages(
+          CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_ICON_MAXIMIZED_RIGHT_SNAPPED,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_ICON_MAXIMIZED_RIGHT_SNAPPED,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_BACKGROUND_MAXIMIZED_H,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_BACKGROUND_MAXIMIZED_P);
+    } else {
+      caption_button_container_->SetButtonImages(
+          CAPTION_BUTTON_ICON_MINIMIZE,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_ICON_RESTORED_MINIMIZE,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_ICON_RESTORED_MINIMIZE,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_BACKGROUND_RESTORED_H,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_BACKGROUND_RESTORED_P);
+      caption_button_container_->SetButtonImages(
+          CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_ICON_RESTORED_SIZE,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_ICON_RESTORED_SIZE,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_BACKGROUND_RESTORED_H,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_BACKGROUND_RESTORED_P);
+      caption_button_container_->SetButtonImages(
+          CAPTION_BUTTON_ICON_CLOSE,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_ICON_RESTORED_CLOSE,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_ICON_RESTORED_CLOSE,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_BACKGROUND_RESTORED_H,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_BACKGROUND_RESTORED_P);
+      caption_button_container_->SetButtonImages(
+          CAPTION_BUTTON_ICON_LEFT_SNAPPED,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_ICON_RESTORED_LEFT_SNAPPED,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_ICON_RESTORED_LEFT_SNAPPED,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_BACKGROUND_RESTORED_H,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_BACKGROUND_RESTORED_P);
+      caption_button_container_->SetButtonImages(
+          CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_ICON_RESTORED_RIGHT_SNAPPED,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_ICON_RESTORED_RIGHT_SNAPPED,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_BACKGROUND_RESTORED_H,
+          IDR_AURA_BROWSER_WINDOW_CONTROL_BACKGROUND_RESTORED_P);
+    }
+  } else {
+    caption_button_container_->SetButtonImages(
+        CAPTION_BUTTON_ICON_MINIMIZE,
+        IDR_AURA_WINDOW_CONTROL_ICON_MINIMIZE,
+        IDR_AURA_WINDOW_CONTROL_ICON_MINIMIZE_I,
+        IDR_AURA_WINDOW_CONTROL_BACKGROUND_H,
+        IDR_AURA_WINDOW_CONTROL_BACKGROUND_P);
+    caption_button_container_->SetButtonImages(
+        CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
+        IDR_AURA_WINDOW_CONTROL_ICON_SIZE,
+        IDR_AURA_WINDOW_CONTROL_ICON_SIZE_I,
+        IDR_AURA_WINDOW_CONTROL_BACKGROUND_H,
+        IDR_AURA_WINDOW_CONTROL_BACKGROUND_P);
+    caption_button_container_->SetButtonImages(
+        CAPTION_BUTTON_ICON_CLOSE,
+        IDR_AURA_WINDOW_CONTROL_ICON_CLOSE,
+        IDR_AURA_WINDOW_CONTROL_ICON_CLOSE_I,
+        IDR_AURA_WINDOW_CONTROL_BACKGROUND_H,
+        IDR_AURA_WINDOW_CONTROL_BACKGROUND_P);
+
+    // There is no dedicated icon for the snap-left and snap-right buttons
+    // when |frame_| is inactive because they should never be visible while
+    // |frame_| is inactive.
+    caption_button_container_->SetButtonImages(
+        CAPTION_BUTTON_ICON_LEFT_SNAPPED,
+        IDR_AURA_WINDOW_CONTROL_ICON_LEFT_SNAPPED,
+        IDR_AURA_WINDOW_CONTROL_ICON_LEFT_SNAPPED,
+        IDR_AURA_WINDOW_CONTROL_BACKGROUND_H,
+        IDR_AURA_WINDOW_CONTROL_BACKGROUND_P);
+    caption_button_container_->SetButtonImages(
+        CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
+        IDR_AURA_WINDOW_CONTROL_ICON_RIGHT_SNAPPED,
+        IDR_AURA_WINDOW_CONTROL_ICON_RIGHT_SNAPPED,
+        IDR_AURA_WINDOW_CONTROL_BACKGROUND_H,
+        IDR_AURA_WINDOW_CONTROL_BACKGROUND_P);
+  }
 }
 
 gfx::Rect HeaderPainter::GetHeaderLocalBounds() const {
