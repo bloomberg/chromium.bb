@@ -687,11 +687,9 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestParameter(IN_GUEST_MODE, "videoOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "videoOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "videoOpenDrive"),
-// Audio player tests are temporary disabled.
-// TODO(yoshiki): Re-enable them: crbug.com/340955.
-//                      TestParameter(IN_GUEST_MODE, "audioOpenDownloads"),
-//                      TestParameter(NOT_IN_GUEST_MODE, "audioOpenDownloads"),
-//                      TestParameter(NOT_IN_GUEST_MODE, "audioOpenDrive"),
+                      TestParameter(IN_GUEST_MODE, "audioOpenDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE, "audioOpenDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE, "audioOpenDrive"),
                       TestParameter(IN_GUEST_MODE, "galleryOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE,
                                     "galleryOpenDownloads"),
