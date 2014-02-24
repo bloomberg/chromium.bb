@@ -76,9 +76,18 @@ interface CanvasRenderingContext2D : CanvasRenderingContext {
     [RaisesException] void arc(float x, float y, float radius, float startAngle, float endAngle, [Default=Undefined] optional boolean anticlockwise);
     [RaisesException] void ellipse(float x, float y, float radiusX, float radiusY, float rotation, float startAngle, float endAngle, [Default=Undefined] optional boolean anticlockwise);
 
-    void fill(optional CanvasWindingRule winding);
+    // FIXME: Simplify these using optional CanvasWindingRule once crbug.com/339000 gets fixed.
+    void fill();
+    [RuntimeEnabled=ExperimentalCanvasFeatures] void fill(Path path);
+    void fill(CanvasWindingRule winding);
+    [RuntimeEnabled=ExperimentalCanvasFeatures] void fill(Path path, CanvasWindingRule winding);
     void stroke();
-    void clip(optional CanvasWindingRule winding);
+    [RuntimeEnabled=ExperimentalCanvasFeatures] void stroke(Path path);
+    // FIXME: Simplify these using optional CanvasWindingRule once crbug.com/339000 gets fixed.
+    void clip();
+    [RuntimeEnabled=ExperimentalCanvasFeatures] void clip(Path path);
+    void clip(CanvasWindingRule winding);
+    [RuntimeEnabled=ExperimentalCanvasFeatures] void clip(Path path, CanvasWindingRule winding);
     boolean isPointInPath(float x, float y, optional CanvasWindingRule winding);
     boolean isPointInStroke(float x, float y);
 

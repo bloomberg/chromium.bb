@@ -872,86 +872,129 @@ static bool parseWinding(const String& windingRuleString, WindRule& windRule)
     return true;
 }
 
-void CanvasRenderingContext2D::fill(const String& windingRuleString)
+void CanvasRenderingContext2D::fillInternal(const Path& path, const String& windingRuleString)
 {
+    if (path.isEmpty()) {
+        return;
+    }
     GraphicsContext* c = drawingContext();
-    if (!c)
+    if (!c) {
         return;
-    if (!state().m_invertibleCTM)
+    }
+    if (!state().m_invertibleCTM) {
         return;
+    }
     FloatRect clipBounds;
-    if (!drawingContext()->getTransformedClipBounds(&clipBounds))
+    if (!drawingContext()->getTransformedClipBounds(&clipBounds)) {
         return;
+    }
 
     // If gradient size is zero, then paint nothing.
     Gradient* gradient = c->fillGradient();
-    if (gradient && gradient->isZeroSize())
+    if (gradient && gradient->isZeroSize()) {
         return;
+    }
 
-    if (!m_path.isEmpty()) {
-        WindRule windRule = c->fillRule();
-        WindRule newWindRule = RULE_NONZERO;
-        if (!parseWinding(windingRuleString, newWindRule))
-            return;
-        c->setFillRule(newWindRule);
+    WindRule windRule = c->fillRule();
+    WindRule newWindRule = RULE_NONZERO;
+    if (!parseWinding(windingRuleString, newWindRule)) {
+        return;
+    }
+    c->setFillRule(newWindRule);
 
-        if (isFullCanvasCompositeMode(state().m_globalComposite)) {
-            fullCanvasCompositedFill(m_path);
-            didDraw(clipBounds);
-        } else if (state().m_globalComposite == CompositeCopy) {
-            clearCanvas();
-            c->fillPath(m_path);
-            didDraw(clipBounds);
-        } else {
-            FloatRect dirtyRect;
-            if (computeDirtyRect(m_path.boundingRect(), clipBounds, &dirtyRect)) {
-                c->fillPath(m_path);
-                didDraw(dirtyRect);
-            }
+    if (isFullCanvasCompositeMode(state().m_globalComposite)) {
+        fullCanvasCompositedFill(path);
+        didDraw(clipBounds);
+    } else if (state().m_globalComposite == CompositeCopy) {
+        clearCanvas();
+        c->fillPath(path);
+        didDraw(clipBounds);
+    } else {
+        FloatRect dirtyRect;
+        if (computeDirtyRect(path.boundingRect(), clipBounds, &dirtyRect)) {
+            c->fillPath(path);
+            didDraw(dirtyRect);
         }
+    }
 
-        c->setFillRule(windRule);
+    c->setFillRule(windRule);
+}
+
+void CanvasRenderingContext2D::fill(const String& windingRuleString)
+{
+    fillInternal(m_path, windingRuleString);
+}
+
+void CanvasRenderingContext2D::fill(DOMPath* domPath, const String& windingRuleString)
+{
+    fillInternal(domPath->path(), windingRuleString);
+}
+
+void CanvasRenderingContext2D::strokeInternal(const Path& path)
+{
+    if (path.isEmpty()) {
+        return;
+    }
+    GraphicsContext* c = drawingContext();
+    if (!c) {
+        return;
+    }
+    if (!state().m_invertibleCTM) {
+        return;
+    }
+
+    // If gradient size is zero, then paint nothing.
+    Gradient* gradient = c->strokeGradient();
+    if (gradient && gradient->isZeroSize()) {
+        return;
+    }
+
+    FloatRect bounds = path.boundingRect();
+    inflateStrokeRect(bounds);
+    FloatRect dirtyRect;
+    if (computeDirtyRect(bounds, &dirtyRect)) {
+        c->strokePath(path);
+        didDraw(dirtyRect);
     }
 }
 
 void CanvasRenderingContext2D::stroke()
 {
+    strokeInternal(m_path);
+}
+
+void CanvasRenderingContext2D::stroke(DOMPath* domPath)
+{
+    strokeInternal(domPath->path());
+}
+
+void CanvasRenderingContext2D::clipInternal(const Path& path, const String& windingRuleString)
+{
     GraphicsContext* c = drawingContext();
-    if (!c)
+    if (!c) {
         return;
-    if (!state().m_invertibleCTM)
-        return;
-
-    // If gradient size is zero, then paint nothing.
-    Gradient* gradient = c->strokeGradient();
-    if (gradient && gradient->isZeroSize())
-        return;
-
-    if (!m_path.isEmpty()) {
-        FloatRect bounds = m_path.boundingRect();
-        inflateStrokeRect(bounds);
-        FloatRect dirtyRect;
-        if (computeDirtyRect(bounds, &dirtyRect)) {
-            c->strokePath(m_path);
-            didDraw(dirtyRect);
-        }
     }
+    if (!state().m_invertibleCTM) {
+        return;
+    }
+
+    WindRule newWindRule = RULE_NONZERO;
+    if (!parseWinding(windingRuleString, newWindRule)) {
+        return;
+    }
+
+    realizeSaves();
+    c->canvasClip(path, newWindRule);
 }
 
 void CanvasRenderingContext2D::clip(const String& windingRuleString)
 {
-    GraphicsContext* c = drawingContext();
-    if (!c)
-        return;
-    if (!state().m_invertibleCTM)
-        return;
+    clipInternal(m_path, windingRuleString);
+}
 
-    WindRule newWindRule = RULE_NONZERO;
-    if (!parseWinding(windingRuleString, newWindRule))
-        return;
-
-    realizeSaves();
-    c->canvasClip(m_path, newWindRule);
+void CanvasRenderingContext2D::clip(DOMPath* domPath, const String& windingRuleString)
+{
+    clipInternal(domPath->path(), windingRuleString);
 }
 
 bool CanvasRenderingContext2D::isPointInPath(const float x, const float y, const String& windingRuleString)

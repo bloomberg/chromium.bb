@@ -1,0 +1,47 @@
+Series of tests to ensure fill() works with path and winding rule parameters.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Testing fill()
+PASS pixelDataAtPoint()[0] is within 5 of 0
+PASS pixelDataAtPoint()[1] is within 5 of 255
+PASS pixelDataAtPoint()[2] is within 5 of 0
+PASS pixelDataAtPoint()[3] is within 5 of 255
+
+Testing fill(path)
+PASS pixelDataAtPoint()[0] is within 5 of 0
+PASS pixelDataAtPoint()[1] is within 5 of 255
+PASS pixelDataAtPoint()[2] is within 5 of 0
+PASS pixelDataAtPoint()[3] is within 5 of 255
+
+Testing fill("nonzero")
+PASS pixelDataAtPoint()[0] is within 5 of 0
+PASS pixelDataAtPoint()[1] is within 5 of 255
+PASS pixelDataAtPoint()[2] is within 5 of 0
+PASS pixelDataAtPoint()[3] is within 5 of 255
+
+Testing fill(path, "nonzero")
+PASS pixelDataAtPoint()[0] is within 5 of 0
+PASS pixelDataAtPoint()[1] is within 5 of 255
+PASS pixelDataAtPoint()[2] is within 5 of 0
+PASS pixelDataAtPoint()[3] is within 5 of 255
+
+Testing fill("evenodd")
+PASS pixelDataAtPoint()[0] is within 5 of 255
+PASS pixelDataAtPoint()[1] is within 5 of 0
+PASS pixelDataAtPoint()[2] is within 5 of 0
+PASS pixelDataAtPoint()[3] is within 5 of 255
+
+Testing fill(path, "evenodd")
+PASS pixelDataAtPoint()[0] is within 5 of 255
+PASS pixelDataAtPoint()[1] is within 5 of 0
+PASS pixelDataAtPoint()[2] is within 5 of 0
+PASS pixelDataAtPoint()[3] is within 5 of 255
+
+PASS ctx.fill(null) threw exception TypeError: Failed to execute 'fill' on 'CanvasRenderingContext2D': parameter 1 ('null') is not a valid enum value..
+PASS ctx.fill(null, null) threw exception TypeError: Failed to execute 'fill' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

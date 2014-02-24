@@ -148,8 +148,11 @@ public:
     PassRefPtr<DOMPath> currentPath();
     void setCurrentPath(DOMPath*);
     void fill(const String& winding = "nonzero");
+    void fill(DOMPath*, const String& winding = "nonzero");
     void stroke();
+    void stroke(DOMPath*);
     void clip(const String& winding = "nonzero");
+    void clip(DOMPath*, const String& winding = "nonzero");
 
     bool isPointInPath(const float x, const float y, const String& winding = "nonzero");
     bool isPointInStroke(const float x, const float y);
@@ -301,6 +304,10 @@ private:
 
     void applyStrokePattern();
     void applyFillPattern();
+
+    void fillInternal(const Path&, const String& windingRuleString);
+    void strokeInternal(const Path&);
+    void clipInternal(const Path&, const String& windingRuleString);
 
     void drawTextInternal(const String& text, float x, float y, bool fill, float maxWidth = 0, bool useMaxWidth = false);
 
