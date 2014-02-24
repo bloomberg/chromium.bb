@@ -58,6 +58,7 @@ int Event_Get_Slot_Count(EvdevPtr);
 int Event_Get_Button_Left(EvdevPtr);
 int Event_Get_Button_Middle(EvdevPtr);
 int Event_Get_Button_Right(EvdevPtr);
+int Event_Get_Button(EvdevPtr, int button);
 void Event_Sync_State(EvdevPtr);
 const char* Event_To_String(int type, int code);
 const char* Event_Type_To_String(int type);

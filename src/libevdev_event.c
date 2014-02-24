@@ -180,19 +180,25 @@ Event_Get_Slot_Count(EvdevPtr device)
 int
 Event_Get_Button_Left(EvdevPtr device)
 {
-    return TestBit(BTN_LEFT, device->key_state_bitmask);
+    return Event_Get_Button(device, BTN_LEFT);
 }
 
 int
 Event_Get_Button_Middle(EvdevPtr device)
 {
-    return TestBit(BTN_MIDDLE, device->key_state_bitmask);
+    return Event_Get_Button(device, BTN_MIDDLE);
 }
 
 int
 Event_Get_Button_Right(EvdevPtr device)
 {
-    return TestBit(BTN_RIGHT, device->key_state_bitmask);
+    return Event_Get_Button(device, BTN_RIGHT);
+}
+
+int
+Event_Get_Button(EvdevPtr device, int button)
+{
+    return TestBit(button, device->key_state_bitmask);
 }
 
 #define CASE_RETURN(s) \
@@ -249,6 +255,10 @@ Event_To_String(int type, int code) {
         CASE_RETURN(BTN_LEFT);
         CASE_RETURN(BTN_RIGHT);
         CASE_RETURN(BTN_MIDDLE);
+        CASE_RETURN(BTN_BACK);
+        CASE_RETURN(BTN_FORWARD);
+        CASE_RETURN(BTN_EXTRA);
+        CASE_RETURN(BTN_SIDE);
         CASE_RETURN(BTN_TOUCH);
         CASE_RETURN(BTN_TOOL_FINGER);
         CASE_RETURN(BTN_TOOL_DOUBLETAP);
