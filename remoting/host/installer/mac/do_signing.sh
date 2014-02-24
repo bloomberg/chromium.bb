@@ -116,7 +116,7 @@ sign() {
   fi
 
   echo Signing "${name}"
-  codesign -vv -s "${id}" --keychain "${keychain}" "${name}"
+  codesign -vv -s "${id}" --deep --keychain "${keychain}" "${name}"
   codesign -v "${name}"
 }
 
