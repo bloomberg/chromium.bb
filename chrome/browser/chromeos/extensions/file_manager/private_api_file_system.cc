@@ -513,7 +513,7 @@ bool FileBrowserPrivateStartCopyFunction::RunImpl() {
   fileapi::FileSystemURL source_url(
       file_system_context->CrackURL(GURL(params->source_url)));
   fileapi::FileSystemURL destination_url(file_system_context->CrackURL(
-      GURL(params->parent + "/" + params->new_name)));
+      GURL(params->parent + "/" + net::EscapePath(params->new_name))));
 
   if (!source_url.is_valid() || !destination_url.is_valid()) {
     // Error code in format of DOMError.name.
