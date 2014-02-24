@@ -48,6 +48,9 @@ SVGViewSpec::SVGViewSpec(SVGSVGElement* contextElement)
 
 String SVGViewSpec::preserveAspectRatioString() const
 {
+    if (!preserveAspectRatio())
+        return String();
+
     return preserveAspectRatio()->baseValue()->valueAsString();
 }
 
@@ -61,6 +64,9 @@ String SVGViewSpec::transformString() const
 
 String SVGViewSpec::viewBoxString() const
 {
+    if (!viewBox())
+        return String();
+
     return viewBox()->currentValue()->valueAsString();
 }
 

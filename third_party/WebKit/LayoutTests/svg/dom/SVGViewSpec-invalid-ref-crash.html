@@ -21,6 +21,9 @@
     shouldBeNull("viewTransform = svgView.transform;");
     shouldBeNull("viewViewTarget = svgView.viewTarget;");
     shouldNotThrow("viewViewBox = svgView.viewBox;");
+    shouldBeEqualToString("svgView.preserveAspectRatioString", "");
+    shouldBeEqualToString("svgView.transformString", "");
+    shouldBeEqualToString("svgView.viewBoxString", "");
 
     gc();
 

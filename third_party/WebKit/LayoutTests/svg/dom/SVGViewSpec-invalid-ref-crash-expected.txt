@@ -7,6 +7,9 @@ PASS viewPreserveAspectRatio = svgView.preserveAspectRatio; is null
 PASS viewTransform = svgView.transform; is null
 PASS viewViewTarget = svgView.viewTarget; is null
 PASS viewViewBox = svgView.viewBox; did not throw exception.
+PASS svgView.preserveAspectRatioString is ""
+PASS svgView.transformString is ""
+PASS svgView.viewBoxString is ""
 PASS successfullyParsed is true
 
 TEST COMPLETE
