@@ -79,7 +79,7 @@ import v8_types
 from v8_utilities import capitalize, cpp_name, conditional_string, v8_class_name
 
 
-def write_header_and_cpp(definitions, interface_name, interfaces_info, output_dir):
+def generate_header_and_cpp(definitions, interface_name, interfaces_info, cache_dir):
     try:
         interface = definitions.interfaces[interface_name]
     except KeyError:
@@ -89,7 +89,7 @@ def write_header_and_cpp(definitions, interface_name, interfaces_info, output_di
     interfaces.update(definitions.interfaces)
 
     # Set up Jinja
-    jinja_env = initialize_jinja_env(output_dir)
+    jinja_env = initialize_jinja_env(cache_dir)
     if interface.is_callback:
         header_template_filename = 'callback_interface.h'
         cpp_template_filename = 'callback_interface.cpp'
@@ -132,27 +132,18 @@ def write_header_and_cpp(definitions, interface_name, interfaces_info, output_di
     includes.update(interface_info.get('dependencies_include_paths', []))
     template_contents['cpp_includes'] = sorted(includes)
 
-    # Render Jinja templates and write files
-    def write_file(basename, file_text):
-        filename = os.path.join(output_dir, basename)
-        with open(filename, 'w') as output_file:
-            output_file.write(file_text)
-
-    header_basename = v8_class_name(interface) + '.h'
-    header_file_text = header_template.render(template_contents)
-    write_file(header_basename, header_file_text)
-
-    cpp_basename = v8_class_name(interface) + '.cpp'
-    cpp_file_text = cpp_template.render(template_contents)
-    write_file(cpp_basename, cpp_file_text)
+    # Render Jinja templates
+    header_text = header_template.render(template_contents)
+    cpp_text = cpp_template.render(template_contents)
+    return header_text, cpp_text
 
 
-def initialize_jinja_env(output_dir):
+def initialize_jinja_env(cache_dir):
     jinja_env = jinja2.Environment(
         loader=jinja2.FileSystemLoader(templates_dir),
         # Bytecode cache is not concurrency-safe unless pre-cached:
         # if pre-cached this is read-only, but writing creates a race condition.
-        bytecode_cache=jinja2.FileSystemBytecodeCache(output_dir),
+        bytecode_cache=jinja2.FileSystemBytecodeCache(cache_dir),
         keep_trailing_newline=True,  # newline-terminate generated files
         lstrip_blocks=True,  # so can indent control flow tags
         trim_blocks=True)
@@ -189,14 +180,14 @@ def runtime_enabled_if(code, runtime_enabled_function_name):
 def main(argv):
     # If file itself executed, cache templates
     try:
-        output_dir = argv[1]
+        cache_dir = argv[1]
         dummy_filename = argv[2]
     except IndexError as err:
         print 'Usage: %s OUTPUT_DIR DUMMY_FILENAME' % argv[0]
         return 1
 
     # Cache templates
-    jinja_env = initialize_jinja_env(output_dir)
+    jinja_env = initialize_jinja_env(cache_dir)
     for template_filename in os.listdir(templates_dir):
         jinja_env.get_template(template_filename)
 

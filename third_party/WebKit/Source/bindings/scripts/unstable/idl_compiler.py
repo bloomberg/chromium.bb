@@ -43,6 +43,7 @@ import sys
 
 import code_generator_v8
 import idl_reader
+# from utilities import write_file  # FIXME: import once in same directory
 
 def parse_options():
     parser = optparse.OptionParser()
@@ -56,10 +57,21 @@ def parse_options():
     options, args = parser.parse_args()
     if options.output_directory is None:
         parser.error('Must specify output directory using --output-directory.')
+    options.write_file_only_if_changed = bool(options.write_file_only_if_changed)
     if len(args) != 1:
         parser.error('Must specify exactly 1 input file as argument, but %d given.' % len(args))
     idl_filename = os.path.realpath(args[0])
     return options, idl_filename
+
+
+# FIXME: import from utilities once moved into same directory
+def write_file(new_lines, destination_filename, only_if_changed):
+    if only_if_changed and os.path.isfile(destination_filename):
+        with open(destination_filename) as destination_file:
+            if destination_file.readlines() == new_lines:
+                return
+    with open(destination_filename, 'w') as destination_file:
+        destination_file.write(''.join(new_lines))
 
 
 def main():
@@ -67,6 +79,7 @@ def main():
     basename = os.path.basename(idl_filename)
     interface_name, _ = os.path.splitext(basename)
     output_directory = options.output_directory
+    only_if_changed = options.write_file_only_if_changed
 
     interfaces_info_filename = options.interfaces_info_file
     if interfaces_info_filename:
@@ -77,7 +90,12 @@ def main():
 
     reader = idl_reader.IdlReader(interfaces_info, options.idl_attributes_file, output_directory)
     definitions = reader.read_idl_definitions(idl_filename)
-    code_generator_v8.write_header_and_cpp(definitions, interface_name, interfaces_info, output_directory)
+    header_text, cpp_text = code_generator_v8.generate_header_and_cpp(definitions, interface_name, interfaces_info, output_directory)
+
+    header_filename = output_directory + 'V8%s.h' % interface_name
+    cpp_filename = output_directory + 'V8%s.cpp' % interface_name
+    write_file(header_text, header_filename, only_if_changed)
+    write_file(cpp_text, cpp_filename, only_if_changed)
 
 
 if __name__ == '__main__':
