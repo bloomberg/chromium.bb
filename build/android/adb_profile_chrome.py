@@ -24,75 +24,16 @@ from pylib import cmd_helper
 from pylib import constants
 from pylib import pexpect
 
-
-_TRACE_VIEWER_TEMPLATE = """<!DOCTYPE html>
-<html>
-  <head>
-    <title>%(title)s</title>
-    <style>
-      %(timeline_css)s
-    </style>
-    <style>
-      .view {
-        overflow: hidden;
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-      }
-    </style>
-    <script>
-      %(timeline_js)s
-    </script>
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        var trace_data = window.atob('%(trace_data_base64)s');
-        var m = new tracing.TraceModel(trace_data);
-        var timelineViewEl = document.querySelector('.view');
-        ui.decorate(timelineViewEl, tracing.TimelineView);
-        timelineViewEl.model = m;
-        timelineViewEl.tabIndex = 1;
-        timelineViewEl.timeline.focusElement = timelineViewEl;
-      });
-    </script>
-  </head>
-  <body>
-    <div class="view"></view>
-  </body>
-</html>"""
+_TRACE_VIEWER_ROOT = os.path.join(constants.DIR_SOURCE_ROOT,
+                                  'third_party', 'trace-viewer')
+sys.path.append(_TRACE_VIEWER_ROOT)
+from build import trace2html
 
 _DEFAULT_CHROME_CATEGORIES = '_DEFAULT_CHROME_CATEGORIES'
 
 
 def _GetTraceTimestamp():
  return time.strftime('%Y-%m-%d-%H%M%S', time.localtime())
-
-
-def _PackageTraceAsHtml(trace_file_name, html_file_name):
-  trace_viewer_root = os.path.join(constants.DIR_SOURCE_ROOT,
-                                   'third_party', 'trace-viewer')
-  build_dir = os.path.join(trace_viewer_root, 'build')
-  src_dir = os.path.join(trace_viewer_root, 'src')
-  if not build_dir in sys.path:
-    sys.path.append(build_dir)
-  generate = __import__('generate', {}, {})
-  parse_deps = __import__('parse_deps', {}, {})
-
-  basename = os.path.splitext(trace_file_name)[0]
-  load_sequence = parse_deps.calc_load_sequence(
-      ['tracing/standalone_timeline_view.js'], [src_dir])
-
-  with open(trace_file_name) as trace_file:
-    trace_data = base64.b64encode(trace_file.read())
-    with open(html_file_name, 'w') as html_file:
-      html = _TRACE_VIEWER_TEMPLATE % {
-        'title': os.path.basename(os.path.splitext(trace_file_name)[0]),
-        'timeline_js': generate.generate_js(load_sequence),
-        'timeline_css': generate.generate_css(load_sequence),
-        'trace_data_base64': trace_data
-      }
-      html_file.write(html)
 
 
 class ChromeTracingController(object):
@@ -259,6 +200,13 @@ def _ArchiveFiles(host_files, output):
       os.unlink(host_file)
 
 
+def _PackageTracesAsHtml(trace_files, html_file):
+  with open(html_file, 'w') as f:
+    trace2html.WriteHTMLForTracesToFile(trace_files, f)
+  for trace_file in trace_files:
+    os.unlink(trace_file)
+
+
 def _PrintMessage(heading, eol='\n'):
   sys.stdout.write('%s%s' % (heading, eol))
   sys.stdout.flush()
@@ -284,6 +232,11 @@ def _PullTraces(controllers, output, compress, write_html):
   for controller in controllers:
     trace_files.append(controller.PullTrace())
 
+  if write_html:
+    html_file = os.path.splitext(trace_files[0])[0] + '.html'
+    _PackageTracesAsHtml(trace_files, html_file)
+    trace_files = [html_file]
+
   if compress and len(trace_files) == 1:
     result = output or trace_files[0] + '.gz'
     _CompressFile(trace_files[0], result)
@@ -295,12 +248,6 @@ def _PullTraces(controllers, output, compress, write_html):
     shutil.move(trace_files[0], result)
   else:
     result = trace_files[0]
-
-  if write_html:
-    result, trace_file = os.path.splitext(result)[0] + '.html', result
-    _PackageTraceAsHtml(trace_file, result)
-    if trace_file != result:
-      os.unlink(trace_file)
 
   _PrintMessage('done')
   _PrintMessage('Trace written to %s' % os.path.abspath(result))
