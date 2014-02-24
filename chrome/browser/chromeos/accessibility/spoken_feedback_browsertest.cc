@@ -4,6 +4,7 @@
 
 #include <queue>
 
+#include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -78,6 +79,35 @@ IN_PROC_BROWSER_TEST_F(SpokenFeedbackTest, FocusToolbar) {
   EXPECT_TRUE(MatchPattern(monitor.GetNextUtterance(), "*oolbar*"));
   EXPECT_EQ("Reload,", monitor.GetNextUtterance());
   EXPECT_EQ("button", monitor.GetNextUtterance());
+}
+
+IN_PROC_BROWSER_TEST_F(SpokenFeedbackTest, TypeInOmnibox) {
+  EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
+
+  SpeechMonitor monitor;
+  AccessibilityManager::Get()->EnableSpokenFeedback(
+      true, ash::A11Y_NOTIFICATION_NONE);
+  EXPECT_TRUE(monitor.SkipChromeVoxEnabledMessage());
+
+  chrome::ExecuteCommand(browser(), IDC_FOCUS_LOCATION);
+
+  gfx::NativeWindow window = ash::Shell::GetInstance()->GetPrimaryRootWindow();
+  ui_controls::SendKeyPress(window, ui::VKEY_X, false, false, false, false);
+  while (true) {
+    std::string utterance = monitor.GetNextUtterance();
+    VLOG(0) << "Got utterance: " << utterance;
+    if (utterance == "x")
+      break;
+  }
+
+  ui_controls::SendKeyPress(window, ui::VKEY_Y, false, false, false, false);
+  EXPECT_EQ("y", monitor.GetNextUtterance());
+
+  ui_controls::SendKeyPress(window, ui::VKEY_Z, false, false, false, false);
+  EXPECT_EQ("z", monitor.GetNextUtterance());
+
+  ui_controls::SendKeyPress(window, ui::VKEY_BACK, false, false, false, false);
+  EXPECT_EQ("z", monitor.GetNextUtterance());
 }
 
 //
