@@ -366,10 +366,9 @@ ui::AXEvent AXEventFromBlink(blink::WebAXEvent event) {
       return ui::AX_EVENT_TEXT_REMOVED;
     case blink::WebAXEventValueChanged:
       return ui::AX_EVENT_VALUE_CHANGED;
+    default:
+      return static_cast<ui::AXEvent>(-1);
   }
-
-  NOTREACHED();
-  return static_cast<ui::AXEvent>(-1);
 }
 
 ui::AXTextDirection AXTextDirectionFromBlink(

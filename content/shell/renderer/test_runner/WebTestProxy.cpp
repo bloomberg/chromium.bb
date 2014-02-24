@@ -844,6 +844,9 @@ void WebTestProxyBase::postAccessibilityEvent(const blink::WebAXObject& obj, bli
     case blink::WebAXEventValueChanged:
         eventName = "ValueChanged";
         break;
+    default:
+        eventName = "Unknown";
+        break;
     }
 
     m_testInterfaces->accessibilityController()->notificationReceived(obj, eventName);
