@@ -29,6 +29,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/DOMURLUtils.h"
+#include "heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
@@ -42,21 +43,21 @@ class ExceptionState;
 class ExecutionContext;
 class URLRegistrable;
 
-class DOMURL FINAL : public ScriptWrappable, public DOMURLUtils, public RefCounted<DOMURL> {
-
+class DOMURL FINAL : public RefCountedWillBeGarbageCollectedFinalized<DOMURL>, public ScriptWrappable, public DOMURLUtils {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<DOMURL> create(const String& url, ExceptionState& exceptionState)
+    static PassRefPtrWillBeRawPtr<DOMURL> create(const String& url, ExceptionState& exceptionState)
     {
-        return adoptRef(new DOMURL(url, blankURL(), exceptionState));
+        return adoptRefWillBeNoop(new DOMURL(url, blankURL(), exceptionState));
     }
-    static PassRefPtr<DOMURL> create(const String& url, const String& base, ExceptionState& exceptionState)
+    static PassRefPtrWillBeRawPtr<DOMURL> create(const String& url, const String& base, ExceptionState& exceptionState)
     {
-        return adoptRef(new DOMURL(url, KURL(KURL(), base), exceptionState));
+        return adoptRefWillBeNoop(new DOMURL(url, KURL(KURL(), base), exceptionState));
     }
-    static PassRefPtr<DOMURL> create(const String& url, PassRefPtr<DOMURL> base, ExceptionState& exceptionState)
+    static PassRefPtrWillBeRawPtr<DOMURL> create(const String& url, PassRefPtrWillBeRawPtr<DOMURL> base, ExceptionState& exceptionState)
     {
         ASSERT(base);
-        return adoptRef(new DOMURL(url, base->m_url, exceptionState));
+        return adoptRefWillBeNoop(new DOMURL(url, base->m_url, exceptionState));
     }
 
     static String createObjectURL(ExecutionContext*, Blob*);
@@ -69,6 +70,8 @@ public:
 
     virtual String input() const OVERRIDE { return m_input; }
     virtual void setInput(const String&) OVERRIDE;
+
+    void trace(Visitor*) { }
 
 private:
     DOMURL(const String& url, const KURL& base, ExceptionState&);

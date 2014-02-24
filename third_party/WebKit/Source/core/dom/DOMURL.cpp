@@ -40,6 +40,8 @@
 
 namespace WebCore {
 
+DEFINE_GC_INFO(DOMURL);
+
 DOMURL::DOMURL(const String& url, const KURL& base, ExceptionState& exceptionState)
 {
     ScriptWrappable::init(this);
