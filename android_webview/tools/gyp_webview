@@ -34,16 +34,10 @@ DEFINES+=" android_webview_build=1"
 android_sdk=$(python -c \
     "import os.path; print os.path.relpath('${ANDROID_SDK_ROOT}', \
     '${ANDROID_BUILD_TOP}')")
-android_sdk_tools=$(python -c \
-    "import os.path, sys; \
-    print os.path.relpath( \
-    '${ANDROID_SDK_ROOT}/../tools/' + sys.platform.rstrip('23'), \
-    '${ANDROID_BUILD_TOP}')")
 DEFINES+=" android_src=\$(PWD)"
 DEFINES+=" android_ndk_root=ndk_root_unused_in_webview_build"
 DEFINES+=" android_sdk=\$(PWD)/${android_sdk}"
 DEFINES+=" android_sdk_root=\$(PWD)/${android_sdk}"
-DEFINES+=" android_sdk_tools=\$(PWD)/${android_sdk_tools}"
 DEFINES+=" android_sdk_version=sdk_version_unused_in_webview_build"
 DEFINES+=" android_toolchain=${ANDROID_TOOLCHAIN}"
 
@@ -58,21 +52,23 @@ export GYP_DEFINES="${GYP_DEFINES} ${DEFINES}"
 FLAGS="-f android -Gdefault_target=All -Glimit_to_target_all=1 "\
 "--depth=${CHROME_SRC} ${CHROME_SRC}/android_webview/all_webview.gyp"
 
-if [ "$PLATFORM" == "linux-arm" -o "$PLATFORM" == "all" ]; then
-  ${GYP} --suffix .linux-arm ${FLAGS} -Dtarget_arch=arm -Dhost_os=linux
-fi
-if [ "$PLATFORM" == "linux-x86" -o "$PLATFORM" == "all" ]; then
-  ${GYP} --suffix .linux-x86 ${FLAGS} -Dtarget_arch=ia32 -Dhost_os=linux
-fi
-if [ "$PLATFORM" == "linux-mips" -o "$PLATFORM" == "all" ]; then
-  ${GYP} --suffix .linux-mips ${FLAGS} -Dtarget_arch=mipsel -Dhost_os=linux
-fi
-if [ "$PLATFORM" == "darwin-arm" -o "$PLATFORM" == "all" ]; then
-  ${GYP} --suffix .darwin-arm ${FLAGS} -Dtarget_arch=arm -Dhost_os=mac
-fi
-if [ "$PLATFORM" == "darwin-x86" -o "$PLATFORM" == "all" ]; then
-  ${GYP} --suffix .darwin-x86 ${FLAGS} -Dtarget_arch=ia32 -Dhost_os=mac
-fi
-if [ "$PLATFORM" == "darwin-mips" -o "$PLATFORM" == "all" ]; then
-  ${GYP} --suffix .darwin-mips ${FLAGS} -Dtarget_arch=mipsel -Dhost_os=mac
-fi
+for host_os in linux mac; do
+  host_platform=$(echo $host_os | sed -e 's/mac/darwin/')
+  android_sdk_tools=$(python -c \
+      "import os.path, sys; \
+      print os.path.relpath( \
+      '${ANDROID_SDK_ROOT}/../tools/${host_platform}', \
+      '${ANDROID_BUILD_TOP}')")
+  EFLAGS=\
+"${FLAGS} -Dhost_os=${host_os} -Dandroid_sdk_tools=\$(PWD)/${android_sdk_tools}"
+
+  if [ "$PLATFORM" == "${host_platform}-arm" -o "$PLATFORM" == "all" ]; then
+    ${GYP} --suffix .${host_platform}-arm ${EFLAGS} -Dtarget_arch=arm
+  fi
+  if [ "$PLATFORM" == "${host_platform}-x86" -o "$PLATFORM" == "all" ]; then
+    ${GYP} --suffix .${host_platform}-x86 ${EFLAGS} -Dtarget_arch=ia32
+  fi
+  if [ "$PLATFORM" == "${host_platform}-mips" -o "$PLATFORM" == "all" ]; then
+    ${GYP} --suffix .${host_platform}-mips ${EFLAGS} -Dtarget_arch=mipsel
+  fi
+done
