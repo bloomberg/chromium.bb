@@ -56,6 +56,11 @@ class JavaBridgeDispatcherHostManager
   void JavaBoundObjectCreated(const base::android::JavaRef<jobject>& object);
   void JavaBoundObjectDestroyed(const base::android::JavaRef<jobject>& object);
 
+  bool GetAllowObjectContentsInspection() const {
+    return allow_object_contents_inspection_;
+  }
+  void SetAllowObjectContentsInspection(bool allow);
+
  private:
   typedef std::map<RenderViewHost*, scoped_refptr<JavaBridgeDispatcherHost> >
       InstanceMap;
@@ -63,6 +68,7 @@ class JavaBridgeDispatcherHostManager
   typedef std::map<base::string16, NPObject*> ObjectMap;
   ObjectMap objects_;
   JavaObjectWeakGlobalRef retained_object_set_;
+  bool allow_object_contents_inspection_;
 
   DISALLOW_COPY_AND_ASSIGN(JavaBridgeDispatcherHostManager);
 };

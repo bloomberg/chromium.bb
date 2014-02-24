@@ -477,8 +477,8 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
                 "var result = \"\"; " +
                 "for (x in testObject) { result += \" \" + x } " +
                 "testController.setStringValue(result);");
-        // LIVECONNECT_COMPLIANCE: Should be able to enumerate members.
-        assertEquals("", mTestController.waitForStringValue());
+        assertEquals(" equals getClass hashCode method notify notifyAll toString wait",
+                mTestController.waitForStringValue());
     }
 
     @SmallTest
@@ -708,5 +708,50 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         assertRaisesException("testObject.blocked()");
         assertEquals("undefined", executeJavaScriptAndGetStringResult(
                 "typeof testObject.blocked"));
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
+    public void testObjectsInspection() throws Throwable {
+        class Test {
+            @JavascriptInterface
+            public String m1() { return "foo"; }
+
+            @JavascriptInterface
+            public String m2() { return "bar"; }
+
+            @JavascriptInterface
+            public String m2(int x) { return "bar " + x; }
+        }
+
+        final String jsObjectKeysTestTemplate = "Object.keys(%s).toString()";
+        final String jsForInTestTemplate =
+                "(function(){" +
+                "  var s=[]; for(var m in %s) s.push(m); return s.join(\",\")" +
+                "})()";
+        final String inspectableObjectName = "testObj1";
+        final String nonInspectableObjectName = "testObj2";
+
+        // Inspection is enabled by default.
+        injectObjectAndReload(new Test(), inspectableObjectName, JavascriptInterface.class);
+
+        assertEquals("m1,m2", executeJavaScriptAndGetStringResult(
+                        String.format(jsObjectKeysTestTemplate, inspectableObjectName)));
+        assertEquals("m1,m2", executeJavaScriptAndGetStringResult(
+                        String.format(jsForInTestTemplate, inspectableObjectName)));
+
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                getContentView().getContentViewCore().setAllowJavascriptInterfacesInspection(false);
+            }
+        });
+
+        injectObjectAndReload(new Test(), nonInspectableObjectName, JavascriptInterface.class);
+
+        assertEquals("", executeJavaScriptAndGetStringResult(
+                        String.format(jsObjectKeysTestTemplate, nonInspectableObjectName)));
+        assertEquals("", executeJavaScriptAndGetStringResult(
+                        String.format(jsForInTestTemplate, nonInspectableObjectName)));
     }
 }

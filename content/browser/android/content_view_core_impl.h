@@ -178,6 +178,9 @@ class ContentViewCoreImpl : public ContentViewCore,
   bool GetUseDesktopUserAgent(JNIEnv* env, jobject /* obj */);
   void Show();
   void Hide();
+  void SetAllowJavascriptInterfacesInspection(JNIEnv* env,
+                                              jobject obj,
+                                              jboolean allow);
   void AddJavascriptInterface(JNIEnv* env,
                               jobject obj,
                               jobject object,

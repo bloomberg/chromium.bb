@@ -20,7 +20,8 @@ namespace content {
 
 JavaBridgeDispatcherHostManager::JavaBridgeDispatcherHostManager(
     WebContents* web_contents)
-    : WebContentsObserver(web_contents) {
+    : WebContentsObserver(web_contents),
+      allow_object_contents_inspection_(true) {
 }
 
 JavaBridgeDispatcherHostManager::~JavaBridgeDispatcherHostManager() {
@@ -152,6 +153,11 @@ void JavaBridgeDispatcherHostManager::JavaBoundObjectDestroyed(
   if (!retained_object_set.is_null()) {
     JNI_Java_HashSet_remove(env, retained_object_set, object);
   }
+}
+
+void JavaBridgeDispatcherHostManager::SetAllowObjectContentsInspection(
+    bool allow) {
+  allow_object_contents_inspection_ = allow;
 }
 
 }  // namespace content

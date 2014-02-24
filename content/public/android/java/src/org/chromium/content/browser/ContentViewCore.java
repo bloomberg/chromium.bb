@@ -2838,6 +2838,19 @@ public class ContentViewCore
     }
 
     /**
+     * Enables or disables inspection of JavaScript objects added via
+     * {@link #addJavascriptInterface(Object, String)} by means of Object.keys() method and
+     * &quot;for .. in&quot; loop. Being able to inspect JavaScript objects is useful
+     * when debugging hybrid Android apps, but can't be enabled for legacy applications due
+     * to compatibility risks.
+     *
+     * @param allow Whether to allow JavaScript objects inspection.
+     */
+    public void setAllowJavascriptInterfacesInspection(boolean allow) {
+        nativeSetAllowJavascriptInterfacesInspection(mNativeContentViewCore, allow);
+    }
+
+    /**
      * This will mimic {@link #addPossiblyUnsafeJavascriptInterface(Object, String, Class)}
      * and automatically pass in {@link JavascriptInterface} as the required annotation.
      *
@@ -3407,6 +3420,9 @@ public class ContentViewCore
     private native boolean nativeGetUseDesktopUserAgent(long nativeContentViewCoreImpl);
 
     private native void nativeClearSslPreferences(long nativeContentViewCoreImpl);
+
+    private native void nativeSetAllowJavascriptInterfacesInspection(
+            long nativeContentViewCoreImpl, boolean allow);
 
     private native void nativeAddJavascriptInterface(long nativeContentViewCoreImpl, Object object,
             String name, Class requiredAnnotation, HashSet<Object> retainedObjectSet);

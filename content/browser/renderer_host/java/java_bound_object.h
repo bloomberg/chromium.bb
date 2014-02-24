@@ -37,7 +37,8 @@ class JavaBoundObject {
   static NPObject* Create(
       const base::android::JavaRef<jobject>& object,
       const base::android::JavaRef<jclass>& safe_annotation_clazz,
-      const base::WeakPtr<JavaBridgeDispatcherHostManager>& manager);
+      const base::WeakPtr<JavaBridgeDispatcherHostManager>& manager,
+      bool can_enumerate_methods);
 
   virtual ~JavaBoundObject();
 
@@ -48,15 +49,18 @@ class JavaBoundObject {
       NPObject* object);
 
   // Methods to implement the NPObject callbacks.
+  bool CanEnumerateMethods() const { return can_enumerate_methods_; }
+  std::vector<std::string> GetMethodNames() const;
   bool HasMethod(const std::string& name) const;
   bool Invoke(const std::string& name, const NPVariant* args, size_t arg_count,
               NPVariant* result);
 
  private:
-  explicit JavaBoundObject(
+  JavaBoundObject(
       const base::android::JavaRef<jobject>& object,
       const base::android::JavaRef<jclass>& safe_annotation_clazz,
-      const base::WeakPtr<JavaBridgeDispatcherHostManager>& manager_);
+      const base::WeakPtr<JavaBridgeDispatcherHostManager>& manager,
+      bool can_enumerate_methods);
 
   void EnsureMethodsAreSetUp() const;
 
@@ -76,6 +80,7 @@ class JavaBoundObject {
   typedef std::multimap<std::string, linked_ptr<JavaMethod> > JavaMethodMap;
   mutable JavaMethodMap methods_;
   mutable bool are_methods_set_up_;
+  const bool can_enumerate_methods_;
 
   base::android::ScopedJavaGlobalRef<jclass> safe_annotation_clazz_;
 

@@ -1379,6 +1379,14 @@ void ContentViewCoreImpl::ClearHistory(JNIEnv* env, jobject obj) {
     web_contents_->GetController().PruneAllButLastCommitted();
 }
 
+void ContentViewCoreImpl::SetAllowJavascriptInterfacesInspection(
+    JNIEnv* env,
+    jobject obj,
+    jboolean allow) {
+  web_contents_->java_bridge_dispatcher_host_manager()
+      ->SetAllowObjectContentsInspection(allow);
+}
+
 void ContentViewCoreImpl::AddJavascriptInterface(
     JNIEnv* env,
     jobject /* obj */,
@@ -1395,8 +1403,11 @@ void ContentViewCoreImpl::AddJavascriptInterface(
   JavaBridgeDispatcherHostManager* java_bridge =
       web_contents_->java_bridge_dispatcher_host_manager();
   java_bridge->SetRetainedObjectSet(weak_retained_object_set);
-  NPObject* bound_object = JavaBoundObject::Create(scoped_object, scoped_clazz,
-                                                   java_bridge->AsWeakPtr());
+  NPObject* bound_object =
+      JavaBoundObject::Create(scoped_object,
+                              scoped_clazz,
+                              java_bridge->AsWeakPtr(),
+                              java_bridge->GetAllowObjectContentsInspection());
   java_bridge->AddNamedObject(ConvertJavaStringToUTF16(env, name),
                               bound_object);
   blink::WebBindings::releaseObject(bound_object);

@@ -691,6 +691,16 @@ public class AwContents {
     }
 
     /**
+     * Disables contents of JS-to-Java bridge objects to be inspectable using
+     * Object.keys() method and "for .. in" loops. This is intended for applications
+     * targeting earlier Android releases where this was not possible, and we want
+     * to ensure backwards compatible behavior.
+     */
+    public void disableJavascriptInterfacesInspection() {
+        mContentViewCore.setAllowJavascriptInterfacesInspection(false);
+    }
+
+    /**
      * Intended for test code.
      * @return the number of native instances of this class.
      */

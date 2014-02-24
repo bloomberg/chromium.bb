@@ -64,6 +64,8 @@ struct JavaNPObject : public NPObject {
   static bool HasProperty(NPObject* np_object, NPIdentifier np_identifier);
   static bool GetProperty(NPObject* np_object, NPIdentifier np_identifier,
                           NPVariant *result);
+  static bool Enumerate(NPObject* object, NPIdentifier** values,
+                        uint32_t* count);
 };
 
 const NPClass JavaNPObject::kNPClass = {
@@ -78,6 +80,8 @@ const NPClass JavaNPObject::kNPClass = {
   JavaNPObject::GetProperty,
   NULL,  // NPSetProperty,
   NULL,  // NPRemoveProperty
+  JavaNPObject::Enumerate,
+  NULL,
 };
 
 NPObject* JavaNPObject::Allocate(NPP npp, NPClass* np_class) {
@@ -120,6 +124,20 @@ bool JavaNPObject::GetProperty(NPObject* np_object,
   return false;
 }
 
+bool JavaNPObject::Enumerate(NPObject* np_object, NPIdentifier** values,
+                             uint32_t* count) {
+  JavaNPObject* obj = reinterpret_cast<JavaNPObject*>(np_object);
+  if (!obj->bound_object->CanEnumerateMethods()) return false;
+  std::vector<std::string> method_names = obj->bound_object->GetMethodNames();
+  *count = method_names.size();
+  *values = static_cast<NPIdentifier*>(
+      malloc(sizeof(NPIdentifier) * method_names.size()));
+  for (uint32_t i = 0; i < method_names.size(); ++i) {
+    (*values)[i] = WebBindings::getStringIdentifier(method_names[i].c_str());
+  }
+  return true;
+}
+
 // Calls a Java method through JNI. If the Java method raises an uncaught
 // exception, it is cleared and this method returns false. Otherwise, this
 // method returns true and the Java method's return value is provided as an
@@ -132,7 +150,8 @@ bool CallJNIMethod(
     jvalue* parameters,
     NPVariant* result,
     const JavaRef<jclass>& safe_annotation_clazz,
-    const base::WeakPtr<JavaBridgeDispatcherHostManager>& manager) {
+    const base::WeakPtr<JavaBridgeDispatcherHostManager>& manager,
+    bool can_enumerate_methods) {
   JNIEnv* env = AttachCurrentThread();
   switch (return_type.type) {
     case JavaType::TypeBoolean:
@@ -215,7 +234,8 @@ bool CallJNIMethod(
       }
       OBJECT_TO_NPVARIANT(JavaBoundObject::Create(scoped_java_object,
                                                   safe_annotation_clazz,
-                                                  manager),
+                                                  manager,
+                                                  can_enumerate_methods),
                           *result);
       break;
     }
@@ -778,7 +798,8 @@ jvalue CoerceJavaScriptValueToJavaValue(const NPVariant& variant,
 NPObject* JavaBoundObject::Create(
     const JavaRef<jobject>& object,
     const JavaRef<jclass>& safe_annotation_clazz,
-    const base::WeakPtr<JavaBridgeDispatcherHostManager>& manager) {
+    const base::WeakPtr<JavaBridgeDispatcherHostManager>& manager,
+    bool can_enumerate_methods) {
   // The first argument (a plugin's instance handle) is passed through to the
   // allocate function directly, and we don't use it, so it's ok to be 0.
   // The object is created with a ref count of one.
@@ -786,17 +807,20 @@ NPObject* JavaBoundObject::Create(
       &JavaNPObject::kNPClass));
   // The NPObject takes ownership of the JavaBoundObject.
   reinterpret_cast<JavaNPObject*>(np_object)->bound_object =
-      new JavaBoundObject(object, safe_annotation_clazz, manager);
+      new JavaBoundObject(
+          object, safe_annotation_clazz, manager, can_enumerate_methods);
   return np_object;
 }
 
 JavaBoundObject::JavaBoundObject(
     const JavaRef<jobject>& object,
     const JavaRef<jclass>& safe_annotation_clazz,
-    const base::WeakPtr<JavaBridgeDispatcherHostManager>& manager)
+    const base::WeakPtr<JavaBridgeDispatcherHostManager>& manager,
+    bool can_enumerate_methods)
     : java_object_(AttachCurrentThread(), object.obj()),
       manager_(manager),
       are_methods_set_up_(false),
+      can_enumerate_methods_(can_enumerate_methods),
       safe_annotation_clazz_(safe_annotation_clazz) {
   BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -822,6 +846,17 @@ ScopedJavaLocalRef<jobject> JavaBoundObject::GetJavaObject(NPObject* object) {
   DCHECK_EQ(&JavaNPObject::kNPClass, object->_class);
   JavaBoundObject* jbo = reinterpret_cast<JavaNPObject*>(object)->bound_object;
   return jbo->java_object_.get(AttachCurrentThread());
+}
+
+std::vector<std::string> JavaBoundObject::GetMethodNames() const {
+  EnsureMethodsAreSetUp();
+  std::vector<std::string> result;
+  for (JavaMethodMap::const_iterator it = methods_.begin();
+       it != methods_.end();
+       it = methods_.upper_bound(it->first)) {
+    result.push_back(it->first);
+  }
+  return result;
 }
 
 bool JavaBoundObject::HasMethod(const std::string& name) const {
@@ -869,7 +904,8 @@ bool JavaBoundObject::Invoke(const std::string& name, const NPVariant* args,
     ok = CallJNIMethod(obj.obj(), method->return_type(),
                        method->id(), &parameters[0], result,
                        safe_annotation_clazz_,
-                       manager_);
+                       manager_,
+                       can_enumerate_methods_);
   }
 
   // Now that we're done with the jvalue, release any local references created
