@@ -192,7 +192,7 @@ def generate_getter(interface, attribute, contents):
 
 def getter_expression(interface, attribute, contents):
     arguments = []
-    this_getter_base_name = getter_base_name(attribute, arguments)
+    this_getter_base_name = getter_base_name(interface, attribute, arguments)
     getter_name = v8_utilities.scoped_name(interface, attribute, this_getter_base_name)
 
     arguments.extend(v8_utilities.call_with_arguments(attribute))
@@ -213,7 +213,7 @@ CONTENT_ATTRIBUTE_GETTER_NAMES = {
 }
 
 
-def getter_base_name(attribute, arguments):
+def getter_base_name(interface, attribute, arguments):
     extended_attributes = attribute.extended_attributes
     if 'Reflect' not in extended_attributes:
         return uncapitalize(cpp_name(attribute))
@@ -223,7 +223,7 @@ def getter_base_name(attribute, arguments):
         # Special-case for performance optimization.
         return 'get%sAttribute' % content_attribute_name.capitalize()
 
-    arguments.append(scoped_content_attribute_name(attribute))
+    arguments.append(scoped_content_attribute_name(interface, attribute))
 
     idl_type = attribute.idl_type
     if idl_type in CONTENT_ATTRIBUTE_GETTER_NAMES:
@@ -289,7 +289,7 @@ def setter_expression(interface, attribute, contents):
     extended_attributes = attribute.extended_attributes
     arguments = v8_utilities.call_with_arguments(attribute, extended_attributes.get('SetterCallWith'))
 
-    this_setter_base_name = setter_base_name(attribute, arguments)
+    this_setter_base_name = setter_base_name(interface, attribute, arguments)
     setter_name = v8_utilities.scoped_name(interface, attribute, this_setter_base_name)
 
     if ('ImplementedBy' in extended_attributes and
@@ -324,10 +324,10 @@ CONTENT_ATTRIBUTE_SETTER_NAMES = {
 }
 
 
-def setter_base_name(attribute, arguments):
+def setter_base_name(interface, attribute, arguments):
     if 'Reflect' not in attribute.extended_attributes:
         return 'set%s' % capitalize(cpp_name(attribute))
-    arguments.append(scoped_content_attribute_name(attribute))
+    arguments.append(scoped_content_attribute_name(interface, attribute))
 
     idl_type = attribute.idl_type
     if idl_type in CONTENT_ATTRIBUTE_SETTER_NAMES:
@@ -335,9 +335,9 @@ def setter_base_name(attribute, arguments):
     return 'setAttribute'
 
 
-def scoped_content_attribute_name(attribute):
+def scoped_content_attribute_name(interface, attribute):
     content_attribute_name = attribute.extended_attributes['Reflect'] or attribute.name.lower()
-    namespace = 'HTMLNames'  # FIXME: can be SVG too
+    namespace = 'SVGNames' if interface.name.startswith('SVG') else 'HTMLNames'
     includes.add('%s.h' % namespace)
     return '%s::%sAttr' % (namespace, content_attribute_name)
 
