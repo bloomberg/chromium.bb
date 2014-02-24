@@ -193,6 +193,7 @@
                   'SubSystem': '2',  # Set /SUBSYSTEM:WINDOWS
                 },
               },
+              'msvs_large_pdb': 1,
               'dependencies': [
                 '../sandbox/sandbox.gyp:sandbox',
               ],

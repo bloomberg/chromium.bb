@@ -2199,6 +2199,7 @@
           'dependencies': [
             'chrome_version_resources',
           ],
+          'msvs_large_pdb': 1,
           'conditions': [
             ['win_use_allocator_shim==1', {
               'dependencies': [
@@ -2316,6 +2317,7 @@
               ],
             }],
           ],
+          'msvs_large_pdb': 1,
           'configurations': {
             'Debug_Base': {
               'msvs_settings': {
@@ -2669,6 +2671,7 @@
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
           ],
+          'msvs_large_pdb': 1,
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
           ],
