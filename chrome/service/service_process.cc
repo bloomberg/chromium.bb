@@ -35,7 +35,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 
-#if defined(OS_LINUX) || defined(OS_OPENBSD)
+#if defined(USE_GLIB)
 #include <glib-object.h>
 #endif
 
@@ -144,7 +144,7 @@ bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
   char **argv_pointer = argv.get();
   gtk_init_check(&argc, &argv_pointer);
   free(argv[0]);
-#elif defined(OS_LINUX) || defined(OS_OPENBSD)
+#elif defined(USE_GLIB)
   // g_type_init has been deprecated since version 2.35.
 #if !GLIB_CHECK_VERSION(2, 35, 0)
   // GLib type system initialization is needed for gconf.
