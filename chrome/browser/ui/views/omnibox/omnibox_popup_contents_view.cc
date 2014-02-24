@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 
+#include <algorithm>
+
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
@@ -85,7 +87,7 @@ void OmniboxPopupContentsView::Init() {
   // necessarily our final class yet, and we may have subclasses
   // overriding CreateResultView.
   for (size_t i = 0; i < AutocompleteResult::kMaxMatches; ++i) {
-    OmniboxResultView* result_view = CreateResultView(this, i, font_list_);
+    OmniboxResultView* result_view = CreateResultView(i, font_list_);
     result_view->SetVisible(false);
     AddChildViewAt(result_view, static_cast<int>(i));
   }
@@ -170,11 +172,18 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
   // Update the match cached by each row, in the process of doing so make sure
   // we have enough row views.
   const size_t result_size = model_->result().size();
+  max_match_contents_width_ = 0;
   for (size_t i = 0; i < result_size; ++i) {
     OmniboxResultView* view = result_view_at(i);
-    view->SetMatch(GetMatchAtIndex(i));
+    const AutocompleteMatch& match = GetMatchAtIndex(i);
+    view->SetMatch(match);
     view->SetVisible(i >= hidden_matches);
+    if (match.type == AutocompleteMatchType::SEARCH_SUGGEST_INFINITE) {
+      max_match_contents_width_ = std::max(
+          max_match_contents_width_, view->GetMatchContentsWidth());
+    }
   }
+
   for (size_t i = result_size; i < AutocompleteResult::kMaxMatches; ++i)
     child_at(i)->SetVisible(false);
 
@@ -402,10 +411,9 @@ int OmniboxPopupContentsView::CalculatePopupHeight() {
 }
 
 OmniboxResultView* OmniboxPopupContentsView::CreateResultView(
-    OmniboxResultViewModel* model,
     int model_index,
     const gfx::FontList& font_list) {
-  return new OmniboxResultView(model, model_index, location_bar_view_,
+  return new OmniboxResultView(this, model_index, location_bar_view_,
                                font_list);
 }
 

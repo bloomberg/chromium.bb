@@ -419,6 +419,8 @@ TEST_F(RenderTextTest, ElidedText) {
   } cases[] = {
     // Strings shorter than the elision width should be laid out in full.
     { L"",        L""       , false },
+    { L"M",       L""       , false },
+    { L" . ",     L" . "    , false },
     { kWeak,      kWeak     , false },
     { kLtr,       kLtr      , false },
     { kLtrRtl,    kLtrRtl   , false },
@@ -443,7 +445,7 @@ TEST_F(RenderTextTest, ElidedText) {
     { L"0\x05e9\x05bc\x05c1\x05b8",   L"0\x05e9\x05bc\x05c1\x05b8", false },
     { L"0\x05e9\x05bc\x05c1\x05b8",   L"0\x05e9\x05bc\x2026"      , true  },
     { L"01\x05e9\x05bc\x05c1\x05b8",  L"01\x05e9\x2026"           , true  },
-    { L"012\x05e9\x05bc\x05c1\x05b8", L"012\x2026"                , true  },
+    { L"012\x05e9\x05bc\x05c1\x05b8", L"012\x2026\x200E"          , true  },
     { L"012\xF0\x9D\x84\x9E",         L"012\xF0\x2026"            , true  },
   };
 
@@ -468,7 +470,8 @@ TEST_F(RenderTextTest, ElidedText) {
 
     render_text->SetText(input);
     render_text->SetDisplayRect(gfx::Rect(0, 0, expected_width, 100));
-    EXPECT_EQ(input, render_text->text());
+    EXPECT_EQ(input, render_text->text())
+        << "->For case " << i << ": " << cases[i].text << "\n";
     EXPECT_EQ(WideToUTF16(cases[i].layout_text), render_text->GetLayoutText())
         << "->For case " << i << ": " << cases[i].text << "\n";
     expected_render_text->SetText(base::string16());

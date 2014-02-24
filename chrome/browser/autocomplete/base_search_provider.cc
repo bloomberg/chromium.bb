@@ -95,6 +95,7 @@ BaseSearchProvider::SuggestResult::SuggestResult(
     const base::string16& suggestion,
     AutocompleteMatchType::Type type,
     const base::string16& match_contents,
+    const base::string16& match_contents_prefix,
     const base::string16& annotation,
     const std::string& suggest_query_params,
     const std::string& deletion_url,
@@ -106,6 +107,7 @@ BaseSearchProvider::SuggestResult::SuggestResult(
     : Result(from_keyword_provider, relevance, relevance_from_server),
       suggestion_(suggestion),
       type_(type),
+      match_contents_prefix_(match_contents_prefix),
       annotation_(annotation),
       suggest_query_params_(suggest_query_params),
       deletion_url_(deletion_url),
@@ -120,8 +122,20 @@ BaseSearchProvider::SuggestResult::~SuggestResult() {}
 void BaseSearchProvider::SuggestResult::ClassifyMatchContents(
     const bool allow_bolding_all,
     const base::string16& input_text) {
-  size_t input_position = match_contents_.find(input_text);
-  if (!allow_bolding_all && (input_position == base::string16::npos)) {
+  base::string16 lookup_text = input_text;
+  if (type_ == AutocompleteMatchType::SEARCH_SUGGEST_INFINITE) {
+    const size_t contents_index =
+        suggestion_.length() - match_contents_.length();
+    // Ensure the query starts with the input text, and ends with the match
+    // contents, and the input text has an overlap with contents.
+    if (StartsWith(suggestion_, input_text, true) &&
+        EndsWith(suggestion_, match_contents_, true) &&
+        (input_text.length() > contents_index)) {
+      lookup_text = input_text.substr(contents_index);
+    }
+  }
+  size_t lookup_position = match_contents_.find(lookup_text);
+  if (!allow_bolding_all && (lookup_position == base::string16::npos)) {
     // Bail if the code below to update the bolding would bold the whole
     // string.  Note that the string may already be entirely bolded; if
     // so, leave it as is.
@@ -132,7 +146,7 @@ void BaseSearchProvider::SuggestResult::ClassifyMatchContents(
   // will be highlighted, e.g. for input_text = "you" the suggestion may be
   // "youtube", so we'll bold the "tube" section: you*tube*.
   if (input_text != match_contents_) {
-    if (input_position == base::string16::npos) {
+    if (lookup_position == base::string16::npos) {
       // The input text is not a substring of the query string, e.g. input
       // text is "slasdot" and the query string is "slashdot", so we bold the
       // whole thing.
@@ -144,13 +158,13 @@ void BaseSearchProvider::SuggestResult::ClassifyMatchContents(
       // short as a single character highlighted in a query suggestion result,
       // e.g. for input text "s" and query string "southwest airlines", it
       // looks odd if both the first and last s are highlighted.
-      if (input_position != 0) {
+      if (lookup_position != 0) {
         match_contents_class_.push_back(
             ACMatchClassification(0, ACMatchClassification::MATCH));
       }
       match_contents_class_.push_back(
-          ACMatchClassification(input_position, ACMatchClassification::NONE));
-      size_t next_fragment_position = input_position + input_text.length();
+          ACMatchClassification(lookup_position, ACMatchClassification::NONE));
+      size_t next_fragment_position = lookup_position + lookup_text.length();
       if (next_fragment_position < match_contents_.length()) {
         match_contents_class_.push_back(ACMatchClassification(
             next_fragment_position, ACMatchClassification::MATCH));
@@ -298,6 +312,16 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   match.keyword = template_url->keyword();
   match.contents = suggestion.match_contents();
   match.contents_class = suggestion.match_contents_class();
+  if (suggestion.type() == AutocompleteMatchType::SEARCH_SUGGEST_INFINITE) {
+    match.RecordAdditionalInfo("input text", base::UTF16ToUTF8(input.text()));
+    match.RecordAdditionalInfo(
+        "match contents prefix",
+        base::UTF16ToUTF8(suggestion.match_contents_prefix()));
+    match.RecordAdditionalInfo(
+        "match contents start index",
+        static_cast<int>(
+            suggestion.suggestion().length() - match.contents.length()));
+  }
 
   if (!suggestion.annotation().empty())
     match.description = suggestion.annotation();

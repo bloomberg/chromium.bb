@@ -922,6 +922,7 @@ bool SearchProvider::ParseSuggestResults(base::Value* root_val,
       bool should_prefetch = static_cast<int>(index) == prefetch_index;
       base::DictionaryValue* suggestion_detail = NULL;
       base::string16 match_contents = suggestion;
+      base::string16 match_contents_prefix;
       base::string16 annotation;
       std::string suggest_query_params;
       std::string deletion_url;
@@ -930,23 +931,21 @@ bool SearchProvider::ParseSuggestResults(base::Value* root_val,
         suggestion_details->GetDictionary(index, &suggestion_detail);
         if (suggestion_detail) {
           suggestion_detail->GetString("du", &deletion_url);
-          suggestion_detail->GetString("title", &match_contents) ||
-              suggestion_detail->GetString("t", &match_contents);
+          suggestion_detail->GetString("t", &match_contents);
+          suggestion_detail->GetString("mp", &match_contents_prefix);
           // Error correction for bad data from server.
           if (match_contents.empty())
             match_contents = suggestion;
-          suggestion_detail->GetString("annotation", &annotation) ||
-              suggestion_detail->GetString("a", &annotation);
-          suggestion_detail->GetString("query_params", &suggest_query_params) ||
-              suggestion_detail->GetString("q", &suggest_query_params);
+          suggestion_detail->GetString("a", &annotation);
+          suggestion_detail->GetString("q", &suggest_query_params);
         }
       }
 
       // TODO(kochi): Improve calculator suggestion presentation.
       results->suggest_results.push_back(SuggestResult(
-          suggestion, match_type, match_contents, annotation,
-          suggest_query_params, deletion_url, is_keyword, relevance, true,
-          should_prefetch, input_text));
+          suggestion, match_type, match_contents, match_contents_prefix,
+          annotation, suggest_query_params, deletion_url, is_keyword, relevance,
+          true, should_prefetch, input_text));
     }
   }
 
@@ -996,8 +995,9 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   if (verbatim_relevance > 0) {
     SuggestResult verbatim(
         input_.text(), AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
-        input_.text(), base::string16(), std::string(), std::string(), false,
-        verbatim_relevance, relevance_from_server, false, input_.text());
+        input_.text(), base::string16(), base::string16(), std::string(),
+        std::string(), false, verbatim_relevance, relevance_from_server, false,
+        input_.text());
     AddMatchToMap(
         verbatim, std::string(), did_not_accept_default_suggestion, &map);
   }
@@ -1017,8 +1017,8 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
       if (keyword_verbatim_relevance > 0) {
         SuggestResult verbatim(
             keyword_input_.text(), AutocompleteMatchType::SEARCH_OTHER_ENGINE,
-            keyword_input_.text(), base::string16(), std::string(),
-            std::string(), true, keyword_verbatim_relevance,
+            keyword_input_.text(), base::string16(), base::string16(),
+            std::string(), std::string(), true, keyword_verbatim_relevance,
             keyword_relevance_from_server, false, keyword_input_.text());
         AddMatchToMap(
             verbatim, std::string(), did_not_accept_keyword_suggestion, &map);
@@ -1370,8 +1370,8 @@ SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
         prevent_search_history_inlining);
     scored_results.push_back(SuggestResult(
         i->term, AutocompleteMatchType::SEARCH_HISTORY, i->term,
-        base::string16(), std::string(), std::string(), is_keyword, relevance,
-        false, false, input_text));
+        base::string16(), base::string16(), std::string(), std::string(),
+        is_keyword, relevance, false, false, input_text));
   }
 
   // History returns results sorted for us.  However, we may have docked some

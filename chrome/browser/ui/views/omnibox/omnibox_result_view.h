@@ -17,7 +17,7 @@
 #include "ui/views/view.h"
 
 class LocationBarView;
-class OmniboxResultViewModel;
+class OmniboxPopupContentsView;
 
 namespace gfx {
 class Canvas;
@@ -45,7 +45,7 @@ class OmniboxResultView : public views::View,
     NUM_KINDS
   };
 
-  OmniboxResultView(OmniboxResultViewModel* model,
+  OmniboxResultView(OmniboxPopupContentsView* model,
                     int model_index,
                     LocationBarView* location_bar_view,
                     const gfx::FontList& font_list);
@@ -71,21 +71,34 @@ class OmniboxResultView : public views::View,
   // class, this is the height of one line of text.
   virtual int GetTextHeight() const;
 
- protected:
-  virtual void PaintMatch(gfx::Canvas* canvas,
-                          const AutocompleteMatch& match,
-                          int x);
+  // Returns the display width required for the match contents.
+  int GetMatchContentsWidth() const;
 
-  // Draws the specified |text| into the canvas, using highlighting provided by
-  // |classifications|. If |force_dim| is true, ACMatchClassification::DIM is
-  // added to all of the classifications. Returns the x position to the right
-  // of the string.
-  int DrawString(gfx::Canvas* canvas,
-                 const base::string16& text,
-                 const ACMatchClassifications& classifications,
-                 bool force_dim,
-                 int x,
-                 int y);
+ protected:
+  virtual void PaintMatch(gfx::Canvas* canvas, int x);
+
+  // Draws given |render_text| on |canvas| at given location (|x|, |y|).
+  // |contents| determines any formatting difference between contents and
+  // description parts of the omnibox result (see AutocompleteMatch).
+  int DrawRenderText(gfx::Canvas* canvas,
+                     gfx::RenderText* render_text,
+                     bool contents,
+                     int x,
+                     int y) const;
+
+  // Creates a RenderText with given |text| and rendering defaults.
+  scoped_ptr<gfx::RenderText> CreateRenderText(
+      const base::string16& text) const;
+
+  // Applies styles specified by |classifications| and |force_dim| in the range
+  // from |range_start| to |range_end| in the |render_text|.
+  void ApplyClassifications(
+      gfx::RenderText* render_text,
+      const ACMatchClassifications& classifications,
+      bool force_dim) const;
+
+  // Renders match contents at a suitable location in the bounds of this view.
+  gfx::RenderText* RenderMatchContents();
 
   const gfx::Rect& text_bounds() const { return text_bounds_; }
 
@@ -95,18 +108,16 @@ class OmniboxResultView : public views::View,
     minimum_text_vertical_padding_ = value;
   }
 
- private:
-  struct RunData;
-  typedef std::vector<RunData> Runs;
-  typedef std::vector<gfx::RenderText*> Classifications;
+  // Returns the match to be rendered for this row.
+  const AutocompleteMatch& display_match() const {
+    return render_associated_keyword_match_ ?
+        *match_.associated_keyword.get() : match_;
+  }
 
+ private:
   // Common initialization code of the colors returned by GetColors().
   static void CommonInitColors(const ui::NativeTheme* theme,
                                SkColor colors[][NUM_KINDS]);
-
-  // Predicate functions for use when sorting the runs.
-  static bool SortRunsLogically(const RunData& lhs, const RunData& rhs);
-  static bool SortRunsVisually(const RunData& lhs, const RunData& rhs);
 
   gfx::ImageSkia GetIcon() const;
   const gfx::ImageSkia* GetKeywordIcon() const;
@@ -119,7 +130,14 @@ class OmniboxResultView : public views::View,
   // gfx::AnimationDelegate:
   virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
+  // Returns the offset at which the suggestion should be displayed within the
+  // text bounds. The directionality of UI and match contents is used to
+  // determine the offset relative to the correct edge.
+  int GetDisplayOffset(bool is_ui_rtl, bool is_match_contents_rtl) const;
+
   static int default_icon_size_;
+
+  static int ellipsis_width_;
 
   // Default values cached here, may be overridden using the setters above.
   int edge_item_padding_;
@@ -127,7 +145,7 @@ class OmniboxResultView : public views::View,
   int minimum_text_vertical_padding_;
 
   // This row's model and model index.
-  OmniboxResultViewModel* model_;
+  OmniboxPopupContentsView* model_;
   size_t model_index_;
 
   LocationBarView* location_bar_view_;
@@ -135,14 +153,15 @@ class OmniboxResultView : public views::View,
   const gfx::FontList font_list_;
   int font_height_;
 
-  // Width of the ellipsis in the normal font.
-  int ellipsis_width_;
-
   // A context used for mirroring regions.
   class MirroringContext;
   scoped_ptr<MirroringContext> mirroring_context_;
 
   AutocompleteMatch match_;
+
+  // Whether the associated keyword match should be rendered instead of the
+  // original match.
+  bool render_associated_keyword_match_;
 
   gfx::Rect text_bounds_;
   gfx::Rect icon_bounds_;
@@ -151,6 +170,8 @@ class OmniboxResultView : public views::View,
   scoped_ptr<views::ImageView> keyword_icon_;
 
   scoped_ptr<gfx::SlideAnimation> animation_;
+
+  scoped_ptr<gfx::RenderText> match_contents_render_text_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxResultView);
 };

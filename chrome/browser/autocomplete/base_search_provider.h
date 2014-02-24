@@ -138,6 +138,7 @@ class BaseSearchProvider : public AutocompleteProvider,
     SuggestResult(const base::string16& suggestion,
                   AutocompleteMatchType::Type type,
                   const base::string16& match_contents,
+                  const base::string16& match_contents_prefix,
                   const base::string16& annotation,
                   const std::string& suggest_query_params,
                   const std::string& deletion_url,
@@ -150,6 +151,9 @@ class BaseSearchProvider : public AutocompleteProvider,
 
     const base::string16& suggestion() const { return suggestion_; }
     AutocompleteMatchType::Type type() const { return type_; }
+    const base::string16& match_contents_prefix() const {
+      return match_contents_prefix_;
+    }
     const base::string16& annotation() const { return annotation_; }
     const std::string& suggest_query_params() const {
       return suggest_query_params_;
@@ -175,6 +179,11 @@ class BaseSearchProvider : public AutocompleteProvider,
     base::string16 suggestion_;
 
     AutocompleteMatchType::Type type_;
+
+    // The contents to be displayed as prefix of match contents.
+    // Used for postfix suggestions to display a leading ellipsis (or some
+    // equivalent character) to indicate omitted text.
+    base::string16 match_contents_prefix_;
 
     // Optional annotation for the |match_contents_| for disambiguation.
     // This may be displayed in the autocomplete match contents, but is defined

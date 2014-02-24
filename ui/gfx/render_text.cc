@@ -878,7 +878,7 @@ void RenderText::SetSelectionModel(const SelectionModel& model) {
 }
 
 const base::string16& RenderText::GetLayoutText() const {
-  return layout_text_.empty() ? text_ : layout_text_;
+  return layout_text_;
 }
 
 const BreakList<size_t>& RenderText::GetLineBreaks() {
@@ -1112,9 +1112,11 @@ void RenderText::UpdateLayoutText() {
       if (layout_text_.length() > cp_start)
         layout_text_.replace(cp_start, 1, text_.substr(start, end - start));
     }
+  } else {
+    layout_text_ = text_;
   }
 
-  const base::string16& text = GetLayoutText();
+  const base::string16& text = layout_text_;
   if (truncate_length_ > 0 && truncate_length_ < text.length()) {
     // Truncate the text at a valid character break and append an ellipsis.
     icu::StringCharacterIterator iter(text.c_str());
@@ -1123,13 +1125,12 @@ void RenderText::UpdateLayoutText() {
   }
 
   if (elide_behavior_ != NO_ELIDE && display_rect_.width() > 0 &&
-      !GetLayoutText().empty() && GetContentWidth() > display_rect_.width()) {
-    base::string16 elided_text = ElideText(GetLayoutText());
-
+      !layout_text_.empty() && GetContentWidth() > display_rect_.width()) {
     // This doesn't trim styles so ellipsis may get rendered as a different
     // style than the preceding text. See crbug.com/327850.
-    layout_text_.assign(elided_text);
+    layout_text_.assign(ElideText(layout_text_));
   }
+
   ResetLayout();
 }
 
@@ -1177,6 +1178,7 @@ base::string16 RenderText::ElideText(const base::string16& text) {
   // Use binary search to compute the elided text.
   size_t lo = 0;
   size_t hi = text.length() - 1;
+  const base::i18n::TextDirection text_direction = GetTextDirection();
   for (size_t guess = (lo + hi) / 2; lo <= hi; guess = (lo + hi) / 2) {
     // Restore styles and colors. They will be truncated to size by SetText.
     render_text->styles_ = styles_;
@@ -1192,12 +1194,10 @@ base::string16 RenderText::ElideText(const base::string16& text) {
       // whole text. Since we want ellipsis to indicate continuation of the
       // preceding text, we force the directionality of ellipsis to be same as
       // the preceding text using LTR or RTL markers.
-      base::i18n::TextDirection leading_text_direction =
-          base::i18n::GetFirstStrongCharacterDirection(new_text);
       base::i18n::TextDirection trailing_text_direction =
           base::i18n::GetLastStrongCharacterDirection(new_text);
       new_text.append(ellipsis);
-      if (trailing_text_direction != leading_text_direction) {
+      if (trailing_text_direction != text_direction) {
         if (trailing_text_direction == base::i18n::LEFT_TO_RIGHT)
           new_text += base::i18n::kLeftToRightMark;
         else

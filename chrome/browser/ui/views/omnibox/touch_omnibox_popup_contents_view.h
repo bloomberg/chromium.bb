@@ -22,7 +22,7 @@ class View;
 
 class TouchOmniboxResultView : public OmniboxResultView {
  public:
-  TouchOmniboxResultView(OmniboxResultViewModel* model,
+  TouchOmniboxResultView(OmniboxPopupContentsView* model,
                          int model_index,
                          LocationBarView* location_bar_view,
                          const gfx::FontList& font_list);
@@ -31,9 +31,7 @@ class TouchOmniboxResultView : public OmniboxResultView {
   virtual ~TouchOmniboxResultView();
 
   // OmniboxResultView:
-  virtual void PaintMatch(gfx::Canvas* canvas,
-                          const AutocompleteMatch& match,
-                          int x) OVERRIDE;
+  virtual void PaintMatch(gfx::Canvas* canvas, int x) OVERRIDE;
   virtual int GetTextHeight() const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(TouchOmniboxResultView);
@@ -55,7 +53,6 @@ class TouchOmniboxPopupContentsView
   // OmniboxPopupContentsView:
   virtual void PaintResultViews(gfx::Canvas* canvas) OVERRIDE;
   virtual OmniboxResultView* CreateResultView(
-      OmniboxResultViewModel* model,
       int model_index,
       const gfx::FontList& font_list) OVERRIDE;
 

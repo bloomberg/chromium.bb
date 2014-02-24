@@ -55,6 +55,10 @@ AutocompleteMatch::Type GetTypeForShortcut(AutocompleteMatch::Type type) {
 
     case AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED:
     case AutocompleteMatchType::SEARCH_SUGGEST:
+    case AutocompleteMatchType::SEARCH_SUGGEST_ENTITY:
+    case AutocompleteMatchType::SEARCH_SUGGEST_INFINITE:
+    case AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED:
+    case AutocompleteMatchType::SEARCH_SUGGEST_PROFILE:
       return AutocompleteMatchType::SEARCH_HISTORY;
 
     default:

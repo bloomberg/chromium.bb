@@ -207,7 +207,7 @@ void ZeroSuggestProvider::AddSuggestResultsToMap(
     // a different query -- create correct objects to begin with.
     const SuggestResult suggestion(
         query_string, AutocompleteMatchType::SEARCH_SUGGEST, query_string,
-        base::string16(), std::string(), std::string(), false,
+        base::string16(), base::string16(), std::string(), std::string(), false,
         results[i].relevance(), true, false, query_string);
     AddMatchToMap(suggestion, std::string(), i, map);
   }
@@ -345,8 +345,8 @@ void ZeroSuggestProvider::ParseSuggestResults(const base::Value& root_val) {
     } else {
       results_.suggest_results.push_back(SuggestResult(
           result, AutocompleteMatchType::SEARCH_SUGGEST, result,
-          base::string16(), std::string(), std::string(), false, relevance,
-          relevances != NULL, false, current_query_string16));
+          base::string16(), base::string16(), std::string(), std::string(),
+          false, relevance, relevances != NULL, false, current_query_string16));
     }
   }
 }
