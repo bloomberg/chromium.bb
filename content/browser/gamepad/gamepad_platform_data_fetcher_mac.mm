@@ -353,7 +353,10 @@ void GamepadPlatformDataFetcherMac::XboxDeviceAdd(XboxController* device) {
 
   NSString* ident =
       [NSString stringWithFormat:
-          @"Xbox 360 Controller (STANDARD GAMEPAD Vendor: %04x Product: %04x)",
+          @"%@ (STANDARD GAMEPAD Vendor: %04x Product: %04x)",
+              device->GetControllerType() == XboxController::XBOX_360_CONTROLLER
+                  ? @"Xbox 360 Controller"
+                  : @"Xbox One Controller",
               device->GetProductId(), device->GetVendorId()];
   NSData* as16 = [ident dataUsingEncoding:NSUTF16StringEncoding];
   const size_t kOutputLengthBytes = sizeof(data_.items[slot].id);

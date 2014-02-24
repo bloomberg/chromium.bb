@@ -18,6 +18,12 @@
 
 class XboxController {
  public:
+  enum ControllerType {
+    UNKNOWN_CONTROLLER,
+    XBOX_360_CONTROLLER,
+    XBOX_ONE_CONTROLLER
+  };
+
   enum LEDPattern {
     LED_OFF = 0,
 
@@ -77,15 +83,19 @@ class XboxController {
   UInt32 location_id() { return location_id_; }
   int GetVendorId() const;
   int GetProductId() const;
+  ControllerType GetControllerType() const;
 
  private:
   static void WriteComplete(void* context, IOReturn result, void* arg0);
   static void GotData(void* context, IOReturn result, void* arg0);
 
-  void ProcessPacket(size_t length);
+  void ProcessXbox360Packet(size_t length);
+  void ProcessXboxOnePacket(size_t length);
   void QueueRead();
 
   void IOError();
+
+  void WriteXboxOneInit();
 
   // Handle for the USB device. IOUSBDeviceStruct320 is the latest version of
   // the device API that is supported on Mac OS 10.6.
@@ -117,6 +127,10 @@ class XboxController {
 
   Delegate* delegate_;
 
+  ControllerType controller_type_;
+  int read_endpoint_;
+  int control_endpoint_;
+
   DISALLOW_COPY_AND_ASSIGN(XboxController);
 };
 
@@ -134,6 +148,11 @@ class XboxDataFetcher : public XboxController::Delegate {
   virtual ~XboxDataFetcher();
 
   bool RegisterForNotifications();
+  bool RegisterForDeviceNotifications(
+    int vendor_id,
+    int product_id,
+    base::mac::ScopedIOObject<io_iterator_t>* added_iter,
+    base::mac::ScopedIOObject<io_iterator_t>* removed_iter);
   void UnregisterFromNotifications();
 
   XboxController* ControllerForLocation(UInt32 location_id);
@@ -158,8 +177,10 @@ class XboxDataFetcher : public XboxController::Delegate {
   // do need to maintain a reference to it so we can invalidate it.
   CFRunLoopSourceRef source_;
   IONotificationPortRef port_;
-  base::mac::ScopedIOObject<io_iterator_t> device_added_iter_;
-  base::mac::ScopedIOObject<io_iterator_t> device_removed_iter_;
+  base::mac::ScopedIOObject<io_iterator_t> xbox_360_device_added_iter_;
+  base::mac::ScopedIOObject<io_iterator_t> xbox_360_device_removed_iter_;
+  base::mac::ScopedIOObject<io_iterator_t> xbox_one_device_added_iter_;
+  base::mac::ScopedIOObject<io_iterator_t> xbox_one_device_removed_iter_;
 
   DISALLOW_COPY_AND_ASSIGN(XboxDataFetcher);
 };
