@@ -8,6 +8,7 @@
 
 #include "base/strings/string16.h"
 #include "chrome_elf/chrome_elf_constants.h"
+#include "chrome_elf/chrome_elf_util.h"
 #include "chrome_elf/ntdll_cache.h"
 #include "sandbox/win/src/nt_internals.h"
 
@@ -241,11 +242,6 @@ HANDLE CreateFileNTDLL(
   }
 
   return file_handle;
-}
-
-bool IsCanary(LPWSTR exe_path) {
-  wchar_t* found = wcsstr(exe_path, L"Google\\Chrome SxS");
-  return !!found;
 }
 
 bool ShouldBypass(LPCWSTR file_path) {

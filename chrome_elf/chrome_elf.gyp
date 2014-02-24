@@ -24,6 +24,7 @@
       ],
       'dependencies': [
         'blacklist',
+        'chrome_elf_breakpad',
         'chrome_elf_lib',
       ],
       'msvs_settings': {
@@ -46,6 +47,7 @@
       'type': 'executable',
       'sources': [
         'blacklist/test/blacklist_test.cc',
+        'chrome_elf_util_unittest.cc',
         'create_file/chrome_create_file_unittest.cc',
         'elf_imports_unittest.cc',
         'ntdll_cache_unittest.cc',
@@ -96,13 +98,13 @@
         '..',
       ],
       'sources': [
-        'chrome_elf_constants.cc',
-        'chrome_elf_constants.h',
-        'chrome_elf_types.h',
         'create_file/chrome_create_file.cc',
         'create_file/chrome_create_file.h',
         'ntdll_cache.cc',
         'ntdll_cache.h',
+      ],
+      'dependencies': [
+        'chrome_elf_common',
       ],
       'conditions': [
         ['component=="shared_library"', {
@@ -112,6 +114,46 @@
             '../chrome_elf/chrome_elf.gyp:chrome_redirects',
           ],
         }],
+      ],
+    },
+    {
+      'target_name': 'chrome_elf_common',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'chrome_elf_constants.cc',
+        'chrome_elf_constants.h',
+        'chrome_elf_types.h',
+        'chrome_elf_util.cc',
+        'chrome_elf_util.h',
+      ],
+      'conditions': [
+        ['component=="shared_library"', {
+          # In component builds, all targets depend on chrome_redirects by
+          # default. Remove it here so we are able to test it.
+          'dependencies!': [
+            '../chrome_elf/chrome_elf.gyp:chrome_redirects',
+          ],
+        }],
+      ],
+    },
+    {
+      'target_name': 'chrome_elf_breakpad',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+        '<(SHARED_INTERMEDIATE_DIR)',
+      ],
+      'sources': [
+        'breakpad.cc',
+        'breakpad.h',
+      ],
+      'dependencies': [
+        'chrome_elf_common',
+        '../breakpad/breakpad.gyp:breakpad_handler',
+        '../chrome/chrome.gyp:chrome_version_header',
       ],
     },
   ], # targets

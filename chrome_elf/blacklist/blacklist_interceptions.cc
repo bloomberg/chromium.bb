@@ -17,6 +17,7 @@
 #include "base/strings/string16.h"
 #include "base/win/pe_image.h"
 #include "chrome_elf/blacklist/blacklist.h"
+#include "chrome_elf/breakpad.h"
 #include "sandbox/win/src/internal_types.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/sandbox_nt_util.h"
@@ -167,25 +168,7 @@ bool IsSameAsCurrentProcess(HANDLE process) {
           (::GetProcessId(process) == ::GetCurrentProcessId());
 }
 
-}  // namespace
-
-namespace blacklist {
-
-bool InitializeInterceptImports() {
-  g_nt_query_section_func = reinterpret_cast<NtQuerySectionFunction>(
-          GetNtDllExportByName("NtQuerySection"));
-  g_nt_query_virtual_memory_func =
-      reinterpret_cast<NtQueryVirtualMemoryFunction>(
-          GetNtDllExportByName("NtQueryVirtualMemory"));
-  g_nt_unmap_view_of_section_func =
-      reinterpret_cast<NtUnmapViewOfSectionFunction>(
-          GetNtDllExportByName("NtUnmapViewOfSection"));
-
-  return g_nt_query_section_func && g_nt_query_virtual_memory_func &&
-         g_nt_unmap_view_of_section_func;
-}
-
-SANDBOX_INTERCEPT NTSTATUS WINAPI BlNtMapViewOfSection(
+NTSTATUS BlNtMapViewOfSectionImpl(
     NtMapViewOfSectionFunction orig_MapViewOfSection,
     HANDLE section,
     HANDLE process,
@@ -225,6 +208,50 @@ SANDBOX_INTERCEPT NTSTATUS WINAPI BlNtMapViewOfSection(
       g_nt_unmap_view_of_section_func(process, *base);
       ret = STATUS_UNSUCCESSFUL;
     }
+  }
+
+  return ret;
+}
+
+}  // namespace
+
+namespace blacklist {
+
+bool InitializeInterceptImports() {
+  g_nt_query_section_func =
+      reinterpret_cast<NtQuerySectionFunction>(
+          GetNtDllExportByName("NtQuerySection"));
+  g_nt_query_virtual_memory_func =
+      reinterpret_cast<NtQueryVirtualMemoryFunction>(
+          GetNtDllExportByName("NtQueryVirtualMemory"));
+  g_nt_unmap_view_of_section_func =
+      reinterpret_cast<NtUnmapViewOfSectionFunction>(
+          GetNtDllExportByName("NtUnmapViewOfSection"));
+
+  return (g_nt_query_section_func && g_nt_query_virtual_memory_func &&
+          g_nt_unmap_view_of_section_func);
+}
+
+SANDBOX_INTERCEPT NTSTATUS WINAPI BlNtMapViewOfSection(
+    NtMapViewOfSectionFunction orig_MapViewOfSection,
+    HANDLE section,
+    HANDLE process,
+    PVOID *base,
+    ULONG_PTR zero_bits,
+    SIZE_T commit_size,
+    PLARGE_INTEGER offset,
+    PSIZE_T view_size,
+    SECTION_INHERIT inherit,
+    ULONG allocation_type,
+    ULONG protect) {
+  NTSTATUS ret = STATUS_UNSUCCESSFUL;
+
+  __try {
+    ret = BlNtMapViewOfSectionImpl(orig_MapViewOfSection, section, process,
+                                   base, zero_bits, commit_size, offset,
+                                   view_size, inherit, allocation_type,
+                                   protect);
+  } __except(GenerateCrashDump(GetExceptionInformation())) {
   }
 
   return ret;

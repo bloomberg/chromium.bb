@@ -343,12 +343,6 @@ TEST_F(ChromeCreateFileTest, CheckParams_FILE_FLAG_OPEN_NO_RECALL) {
   ResetNtCreateFileCalls();
 }
 
-TEST_F(ChromeCreateFileTest, CanaryTest) {
-  EXPECT_TRUE(IsCanary(L"C:\\Users\\user\\AppData\\Local\\Google\\Chrome SxS"));
-  EXPECT_FALSE(IsCanary(L"C:\\Users\\user\\AppData\\Local\\Google\\Chrome"));
-  EXPECT_FALSE(IsCanary(L"C:\\Users\\user\\AppData\\Local\\Chromium"));
-}
-
 TEST_F(ChromeCreateFileTest, BypassTest) {
   std::wstring UNC_filepath_file(L"\\\\.\\some_file.txt");
 
