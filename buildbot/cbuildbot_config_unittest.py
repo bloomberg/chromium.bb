@@ -546,6 +546,17 @@ class OverrideForTrybotTest(cros_test_lib.TestCase):
     self.assertFalse(constants.USE_CHROME_INTERNAL in new['useflags'])
     self.assertFalse(constants.USE_CHROME_PDF in new['useflags'])
 
+  def testVmTestOverride(self):
+    """Verify that vm_tests override for trybots pay heed to original config."""
+    mock_options = mock.Mock()
+    old = cbuildbot_config.config['x86-mario-paladin']
+    new = cbuildbot_config.OverrideConfigForTrybot(old, mock_options)
+    self.assertEquals(new['vm_tests'], [constants.SIMPLE_AU_TEST_TYPE,
+                                        constants.CROS_VM_TEST_TYPE])
+    old['vm_tests'] = None
+    new = cbuildbot_config.OverrideConfigForTrybot(old, mock_options)
+    self.assertIsNone(new['vm_tests'])
+
 
 if __name__ == '__main__':
   cros_test_lib.main()
