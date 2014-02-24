@@ -15,12 +15,11 @@ var camera = camera || {};
 camera.effects = camera.effects || {};
 
 /**
- * @param {camera.Tracker} tracker Head tracker object.
  * @constructor
  * @extends {camera.Effect}
  */
-camera.effects.Sepia = function(tracker) {
-  camera.Effect.call(this, tracker);
+camera.effects.Sepia = function() {
+  camera.Effect.call(this);
   Object.freeze(this);
 };
 
@@ -31,7 +30,7 @@ camera.effects.Sepia.prototype = {
 /**
  * @override
  */
-camera.effects.Sepia.prototype.filterFrame = function(canvas) {
+camera.effects.Sepia.prototype.filterFrame = function(canvas, faces) {
   canvas.sepia(0.5);
 };
 

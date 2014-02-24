@@ -15,12 +15,11 @@ var camera = camera || {};
 camera.effects = camera.effects || {};
 
 /**
- * @param {camera.Tracker} tracker Head tracker object.
  * @constructor
  * @extends {camera.Effect}
  */
-camera.effects.Modern = function(tracker) {
-  camera.Effect.call(this, tracker);
+camera.effects.Modern = function() {
+  camera.Effect.call(this);
 
   /**
    * @type {Array.<number>}
@@ -61,7 +60,7 @@ camera.effects.Modern.prototype.randomize = function() {
 /**
  * @override
  */
-camera.effects.Modern.prototype.filterFrame = function(canvas) {
+camera.effects.Modern.prototype.filterFrame = function(canvas, faces) {
   canvas.modern(camera.effects.COLORS[this.colorIndexes_[0]],
                 camera.effects.COLORS[this.colorIndexes_[1]],
                 camera.effects.COLORS[this.colorIndexes_[2]],

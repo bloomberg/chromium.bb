@@ -10,15 +10,9 @@
 var camera = camera || {};
 
 /**
- * @param {camera.Tracker} tracker Head tracker object.
  * @constructor
  */
-camera.Effect = function(tracker) {
-  /**
-   * @type {camera.Tracker}
-   * @private
-   */
-  this.tracker_ = tracker;
+camera.Effect = function() {
 };
 
 /**
@@ -29,9 +23,13 @@ camera.Effect.prototype.randomize = function() {
 
 /**
  * Filters the passed frame with the effect.
+ *
  * @param {HTMLCanvasElement} canvas Canvas element to be filtered.
+ * @param {Array.<camera.Tracker.Face>} faces Array of detected faces for this
+ *     frame. Requires usesHeadTracker() to return true, otherwise the array is
+ *     null.
  */
-camera.Effect.prototype.filterFrame = function(canvas) {
+camera.Effect.prototype.filterFrame = function(canvas, faces) {
 };
 
 /**
@@ -45,10 +43,18 @@ camera.Effect.prototype.getTitle = function() {
 /**
  * Returns true if the effect is slow and preview should be done in lower
  * resolution to keep acceptable FPS.
- *
  * @return {boolean} True if slow, false otherwise.
  */
 camera.Effect.prototype.isSlow = function() {
+  return false;
+};
+
+/**
+ * Returns true if the effect uses head tracker, and false otherwise. By default
+ * false.
+ * @return {boolean} True if uses, false otherwise.
+ */
+camera.Effect.prototype.usesHeadTracker = function() {
   return false;
 };
 

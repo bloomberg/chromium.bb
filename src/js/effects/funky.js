@@ -15,12 +15,11 @@ var camera = camera || {};
 camera.effects = camera.effects || {};
 
 /**
- * @param {camera.Tracker} tracker Head tracker object.
  * @constructor
  * @extends {camera.Effect}
  */
-camera.effects.Funky = function(tracker) {
-  camera.Effect.call(this, tracker);
+camera.effects.Funky = function() {
+  camera.Effect.call(this);
 
   /**
    * @type {number}
@@ -46,7 +45,7 @@ camera.effects.Funky.prototype.randomize = function() {
 /**
  * @override
  */
-camera.effects.Funky.prototype.filterFrame = function(canvas) {
+camera.effects.Funky.prototype.filterFrame = function(canvas, faces) {
   canvas.colorHalftone(320, 240, 0.25, this.amount_ / 720 * canvas.height);
 };
 

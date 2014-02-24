@@ -15,12 +15,11 @@ var camera = camera || {};
 camera.effects = camera.effects || {};
 
 /**
- * @param {camera.Tracker} tracker Head tracker object.
  * @constructor
  * @extends {camera.Effect}
  */
-camera.effects.Beauty = function(tracker) {
-  camera.Effect.call(this, tracker);
+camera.effects.Beauty = function() {
+  camera.Effect.call(this);
 
   /**
    * @type {number}
@@ -53,8 +52,8 @@ camera.effects.Beauty.prototype.randomize = function() {
 /**
  * @override
  */
-camera.effects.Beauty.prototype.filterFrame = function(canvas) {
-  var face = this.tracker_.getFacesForCanvas(canvas)[0];
+camera.effects.Beauty.prototype.filterFrame = function(canvas, faces) {
+  var face = faces[0];
   var factor = 720 / canvas.width * 2;
   var exponent = 50 * (1 - face.width) * factor;
   canvas.denoise(exponent);
@@ -72,6 +71,13 @@ camera.effects.Beauty.prototype.getTitle = function() {
  * @override
  */
 camera.effects.Beauty.prototype.isSlow = function() {
+  return true;
+};
+
+/**
+ * @override
+ */
+camera.effects.Beauty.prototype.usesHeadTracker = function() {
   return true;
 };
 

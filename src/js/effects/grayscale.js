@@ -15,12 +15,11 @@ var camera = camera || {};
 camera.effects = camera.effects || {};
 
 /**
- * @param {camera.Tracker} tracker Head tracker object.
  * @constructor
  * @extends {camera.Effect}
  */
-camera.effects.Grayscale = function(tracker) {
-  camera.Effect.call(this, tracker);
+camera.effects.Grayscale = function() {
+  camera.Effect.call(this);
   Object.freeze(this);
 };
 
@@ -31,7 +30,7 @@ camera.effects.Grayscale.prototype = {
 /**
  * @override
  */
-camera.effects.Grayscale.prototype.filterFrame = function(canvas) {
+camera.effects.Grayscale.prototype.filterFrame = function(canvas, faces) {
   canvas.hueSaturation(0, -1);
 };
 

@@ -438,6 +438,15 @@ camera.views.Camera.DrawMode = Object.freeze({
 });
 
 /**
+ * Head tracker quality.
+ * @enum {number}
+ */
+camera.views.Camera.HeadTrackerQuality = Object.freeze({
+  LOW: 0,    // Very low resolution, used for the effects' previews.
+  NORMAL: 1  // Default resolution, still low though.
+});
+
+/**
  * Number of frames to be skipped between optimized effects' ribbon refreshes
  * and the head detection invocations (which both use the preview back buffer).
  *
@@ -445,6 +454,15 @@ camera.views.Camera.DrawMode = Object.freeze({
  * @const
  */
 camera.views.Camera.PREVIEW_BUFFER_SKIP_FRAMES = 3;
+
+/**
+ * Number of frames to be skipped between the head tracker invocations when
+ * the head tracker is used for the ribbon only.
+ *
+ * @type {number}
+ * @const
+ */
+camera.views.Camera.RIBBON_HEAD_TRACKER_SKIP_FRAMES = 30;
 
 camera.views.Camera.prototype = {
   __proto__: camera.View.prototype,
@@ -482,10 +500,12 @@ camera.views.Camera.prototype.initialize = function(callback) {
     this.mainCanvasTexture_ = this.mainCanvas_.texture(this.video_);
     this.mainFastCanvasTexture_ = this.mainFastCanvas_.texture(this.video_);
     this.mainProcessor_ = new camera.Processor(
+        this.tracker_,
         this.mainCanvasTexture_,
         this.mainCanvas_,
         this.mainCanvas_);
     this.mainFastProcessor_ = new camera.Processor(
+        this.tracker_,
         this.mainFastCanvasTexture_,
         this.mainFastCanvas_,
         this.mainFastCanvas_,
@@ -503,27 +523,27 @@ camera.views.Camera.prototype.initialize = function(callback) {
     // Prepare effect previews.
     this.previewCanvasTexture_ = this.previewCanvas_.texture(
         this.previewInputCanvas_);
-    this.addEffect_(new camera.effects.Normal(this.tracker_));
-    this.addEffect_(new camera.effects.Vintage(this.tracker_));
-    this.addEffect_(new camera.effects.Cinema(this.tracker_));
-    this.addEffect_(new camera.effects.TiltShift(this.tracker_));
-    this.addEffect_(new camera.effects.Retro30(this.tracker_));
-    this.addEffect_(new camera.effects.Retro50(this.tracker_));
-    this.addEffect_(new camera.effects.Retro60(this.tracker_));
-    this.addEffect_(new camera.effects.PhotoLab(this.tracker_));
-    this.addEffect_(new camera.effects.BigHead(this.tracker_));
-    this.addEffect_(new camera.effects.BigJaw(this.tracker_));
-    this.addEffect_(new camera.effects.BigEyes(this.tracker_));
-    this.addEffect_(new camera.effects.BunnyHead(this.tracker_));
-    this.addEffect_(new camera.effects.Grayscale(this.tracker_));
-    this.addEffect_(new camera.effects.Sepia(this.tracker_));
-    this.addEffect_(new camera.effects.Colorize(this.tracker_));
-    this.addEffect_(new camera.effects.Modern(this.tracker_));
-    this.addEffect_(new camera.effects.Beauty(this.tracker_));
-    this.addEffect_(new camera.effects.Newspaper(this.tracker_));
-    this.addEffect_(new camera.effects.Funky(this.tracker_));
-    this.addEffect_(new camera.effects.Ghost(this.tracker_));
-    this.addEffect_(new camera.effects.Swirl(this.tracker_));
+    this.addEffect_(new camera.effects.Normal());
+    this.addEffect_(new camera.effects.Vintage());
+    this.addEffect_(new camera.effects.Cinema());
+    this.addEffect_(new camera.effects.TiltShift());
+    this.addEffect_(new camera.effects.Retro30());
+    this.addEffect_(new camera.effects.Retro50());
+    this.addEffect_(new camera.effects.Retro60());
+    this.addEffect_(new camera.effects.PhotoLab());
+    this.addEffect_(new camera.effects.BigHead());
+    this.addEffect_(new camera.effects.BigJaw());
+    this.addEffect_(new camera.effects.BigEyes());
+    this.addEffect_(new camera.effects.BunnyHead());
+    this.addEffect_(new camera.effects.Grayscale());
+    this.addEffect_(new camera.effects.Sepia());
+    this.addEffect_(new camera.effects.Colorize());
+    this.addEffect_(new camera.effects.Modern());
+    this.addEffect_(new camera.effects.Beauty());
+    this.addEffect_(new camera.effects.Newspaper());
+    this.addEffect_(new camera.effects.Funky());
+    this.addEffect_(new camera.effects.Ghost());
+    this.addEffect_(new camera.effects.Swirl());
 
     // Select the default effect and state of the timer toggle button.
     // TODO(mtomasz): Move to chrome.storage.local.sync, after implementing
@@ -804,6 +824,7 @@ camera.views.Camera.prototype.addEffect_ = function(effect) {
 
   // Create the preview processor.
   var processor = new camera.Processor(
+      this.tracker_,
       this.previewCanvasTexture_,
       canvas,
       this.previewCanvas_);
@@ -1222,24 +1243,41 @@ camera.views.Camera.prototype.synchronizeBounds_ = function() {
 
   var width = document.body.offsetWidth;
   var height = document.body.offsetHeight;
-  var windowRatio = width / height;
-  var videoRatio = this.video_.videoWidth / this.video_.videoHeight;
 
   this.video_.width = this.video_.videoWidth;
   this.video_.height = this.video_.videoHeight;
 
   // Add 1 pixel to avoid artifacts.
   var zoom = (width + 1) / this.video_.videoWidth;
+}
 
-  // Set resolution of the low-resolution tracker input canvas.
+/**
+ * Sets resolution of the low-resolution tracker input canvas. Depending on the
+ * argument, the resolution is low, or very low.
+ *
+ * @param {camera.views.Camera.HeadTrackerQuality} quality Quality of the head
+ *     tracker.
+ * @private
+ */
+camera.views.Camera.prototype.setHeadTrackerQuality_ = function(quality) {
+  var videoRatio = this.video_.videoWidth / this.video_.videoHeight;
+  var scale;
+  switch (quality) {
+    case camera.views.Camera.HeadTrackerQuality.NORMAL:
+      scale = 1;
+      break;
+    case camera.views.Camera.HeadTrackerQuality.LOW:
+      scale = 0.75;
+      break;
+  }
   if (videoRatio < 1.5) {
     // For resolutions: 800x600.
-    this.trackerInputCanvas_.width = 120;
-    this.trackerInputCanvas_.height = 90;
+    this.trackerInputCanvas_.width = Math.round(120 * scale);
+    this.trackerInputCanvas_.height = Math.round(90 * scale);
   } else {
     // For wide resolutions (any other).
-    this.trackerInputCanvas_.width = 192;
-    this.trackerInputCanvas_.height = 108;
+    this.trackerInputCanvas_.width = Math.round(160 * scale);
+    this.trackerInputCanvas_.height = Math.round(90 * scale);
   }
 };
 
@@ -1478,16 +1516,33 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
     this.previewCanvasTexture_.loadContentsOf(this.previewInputCanvas_);
   }
 
-  // Copy the video frame to the back buffer. The back buffer is low
-  // resolution, since it is only used by the head tracker.
-  if (!this.tracker_.busy) {
-    var context = this.trackerInputCanvas_.getContext('2d');
+  // Request update of the head tracker always if it is used by the active
+  // effect, or periodically if used on the visible ribbon only.
+  // TODO(mtomasz): Do not call the head tracker when performing any CSS
+  // transitions or animations.
+  var requestHeadTrackerUpdate = this.mainProcessor_.effect.usesHeadTracker() ||
+      (this.expanded_ && this.frame_ %
+       camera.views.Camera.RIBBON_HEAD_TRACKER_SKIP_FRAMES == 0);
+
+  // Copy the video frame to the back buffer. The back buffer is low resolution
+  // since it is only used by the head tracker. Also, if the currently selected
+  // effect does not use head tracking, then use even lower resolution, so we
+  // can get higher FPS, when the head tracker is used for tiny effect previews
+  // only.
+  if (!this.tracker_.busy && requestHeadTrackerUpdate) {
+    this.setHeadTrackerQuality_(
+        this.mainProcessor_.effect.usesHeadTracker() ?
+            camera.views.Camera.HeadTrackerQuality.NORMAL :
+            camera.views.Camera.HeadTrackerQuality.LOW);
+
     // Aspect ratios are required to be same.
+    var context = this.trackerInputCanvas_.getContext('2d');
     context.drawImage(this.video_,
                       0,
                       0,
                       this.trackerInputCanvas_.width,
                       this.trackerInputCanvas_.height);
+
     this.tracker_.detect();
   }
 

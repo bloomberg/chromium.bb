@@ -13,6 +13,7 @@ var camera = camera || {};
  * Creates a processor object, which takes the camera stream and processes it.
  * Flushes the result to a canvas.
  *
+ * @param {camera.Tracker} tracker Head tracker object.
  * @param {fx.Texture} input Texture with the input frame.
  * @param {Canvas} output Canvas with the output frame.
  * @param {fx.Canvas} fxCanvas Fx canvas to be used for processing.
@@ -20,7 +21,13 @@ var camera = camera || {};
  *     Default is the high quality mode.
  * @constructor
  */
-camera.Processor = function(input, output, fxCanvas, opt_mode) {
+camera.Processor = function(tracker, input, output, fxCanvas, opt_mode) {
+  /**
+   * @type {camera.Tracker}
+   * @private
+   */
+  this.tracker_ = tracker;
+
   /**
    * @type {fx.Texture}
    * @private
@@ -102,8 +109,12 @@ camera.Processor.prototype.processFrame = function() {
   }
 
   this.fxCanvas_.draw(this.input_, textureWidth, textureHeight);
-  if (this.effect_)
-    this.effect_.filterFrame(this.fxCanvas_);
+  if (this.effect_) {
+    this.effect_.filterFrame(
+        this.fxCanvas_,
+        this.effect_.usesHeadTracker() ?
+            this.tracker_.getFacesForCanvas(this.fxCanvas_) : null);
+  }
   this.fxCanvas_.update();
 
   // If the fx canvas does not act as an output, then copy the result from it

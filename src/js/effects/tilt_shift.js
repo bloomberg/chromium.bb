@@ -15,12 +15,11 @@ var camera = camera || {};
 camera.effects = camera.effects || {};
 
 /**
- * @param {camera.Tracker} tracker Head tracker object.
  * @constructor
  * @extends {camera.Effect}
  */
-camera.effects.TiltShift = function(tracker) {
-  camera.Effect.call(this, tracker);
+camera.effects.TiltShift = function() {
+  camera.Effect.call(this);
 
   /**
    * @type {number}
@@ -53,7 +52,7 @@ camera.effects.TiltShift.prototype.randomize = function() {
 /**
  * @override
  */
-camera.effects.TiltShift.prototype.filterFrame = function(canvas) {
+camera.effects.TiltShift.prototype.filterFrame = function(canvas, faces) {
   canvas.tiltShift(0,
                    canvas.height * 0.4,
                    canvas.width - 1,

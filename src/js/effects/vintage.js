@@ -15,12 +15,11 @@ var camera = camera || {};
 camera.effects = camera.effects || {};
 
 /**
- * @param {camera.Tracker} tracker Head tracker object.
  * @constructor
  * @extends {camera.Effect}
  */
-camera.effects.Vintage = function(tracker) {
-  camera.Effect.call(this, tracker);
+camera.effects.Vintage = function() {
+  camera.Effect.call(this);
 
   /**
    * @type {number}
@@ -60,7 +59,7 @@ camera.effects.Vintage.prototype.randomize = function() {
 /**
  * @override
  */
-camera.effects.Vintage.prototype.filterFrame = function(canvas) {
+camera.effects.Vintage.prototype.filterFrame = function(canvas, faces) {
  canvas.brightnessContrast(this.brightness_, this.contrast_).
      vibrance(this.vibrance_).
      vignette(0.5, 0.4);
