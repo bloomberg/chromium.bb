@@ -25,6 +25,7 @@ class PasswordGenerationManager;
 using autofill::PasswordForm;
 using base::ASCIIToUTF16;
 using testing::_;
+using testing::AnyNumber;
 using testing::DoAll;
 using testing::Exactly;
 using testing::Return;
@@ -64,8 +65,7 @@ class MockPasswordManagerDriver : public PasswordManagerDriver {
   MOCK_METHOD0(GetPasswordGenerationManager, PasswordGenerationManager*());
   MOCK_METHOD0(GetPasswordManager, PasswordManager*());
   MOCK_METHOD0(GetAutofillManager, autofill::AutofillManager*());
-  MOCK_METHOD1(AllowPasswordGenerationForForm,
-               void(autofill::PasswordForm* form));
+  MOCK_METHOD1(AllowPasswordGenerationForForm, void(autofill::PasswordForm*));
   MOCK_METHOD1(AccountCreationFormsFound,
                void(const std::vector<autofill::FormData>&));
 };
@@ -110,10 +110,14 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
 
     EXPECT_CALL(driver_, DidLastPageLoadEncounterSSLErrors())
         .WillRepeatedly(Return(false));
+    EXPECT_CALL(driver_, IsOffTheRecord()).WillRepeatedly(Return(false));
     EXPECT_CALL(driver_, GetPasswordGenerationManager())
         .WillRepeatedly(Return(static_cast<PasswordGenerationManager*>(NULL)));
     EXPECT_CALL(driver_, GetPasswordManager())
         .WillRepeatedly(Return(manager_.get()));
+    EXPECT_CALL(driver_, AllowPasswordGenerationForForm(_)).Times(AnyNumber());
+
+    EXPECT_CALL(*store_, ReportMetricsImpl()).Times(AnyNumber());
   }
 
   virtual void TearDown() {
