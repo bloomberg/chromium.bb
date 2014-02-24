@@ -36,6 +36,13 @@ var viewport;
 // The document dimensions.
 var documentDimensions;
 
+// Notify the plugin to print.
+function print() {
+  plugin.postMessage({
+    type: 'print',
+  });
+}
+
 // Returns true if the fit-to-page button is enabled.
 function isFitToPageEnabled() {
   return $('fit-to-page-button').classList.contains('polymer-selected');
@@ -120,10 +127,9 @@ function load() {
   plugin.id = 'plugin';
   plugin.type = 'application/x-google-chrome-pdf';
   plugin.addEventListener('message', handleMessage, false);
-  // The pdf location is passed in the document url in the format:
-  // http://<.../pdf.html>?<pdf location>.
-  var url = window.location.search.substring(1);
-  plugin.setAttribute('src', url);
+  // The pdf location is passed in stream details in the background page.
+  var streamDetails = chrome.extension.getBackgroundPage().popStreamDetails();
+  plugin.setAttribute('src', streamDetails.streamURL);
   document.body.appendChild(plugin);
 
   // Setup the button event listeners.
@@ -135,6 +141,9 @@ function load() {
       viewport.zoomIn.bind(viewport));
   $('zoom-out-button').addEventListener('click',
       viewport.zoomOut.bind(viewport));
+  $('save-button-link').href = streamDetails.originalURL;
+  $('print-button').addEventListener('click', print);
+
 
   // Setup keyboard event listeners.
   document.onkeydown = function(e) {

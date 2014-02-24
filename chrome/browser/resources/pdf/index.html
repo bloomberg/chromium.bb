@@ -174,7 +174,7 @@ license that can be found in the LICENSE file.
   
 </polymer-element>
 
-<polymer-element name="viewer-toolbar" attributes="fadingIn" on-mouseover="{{fadeIn}}" on-mousemove="{{fadeIn}}" on-mouseout="{{fadeOut}}" assetpath="html_office/elements/viewer-toolbar/">
+<polymer-element name="viewer-toolbar" attributes="fadingIn" assetpath="html_office/elements/viewer-toolbar/">
 <template>
   <style>/* Copyright 2013 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
@@ -187,6 +187,7 @@ license that can be found in the LICENSE file.
   font-size: 0;
   opacity: 1;
   padding: 30px 30px 15px 30vw;
+  pointer-events: none;
   position: fixed;
   right: 0;
 }
@@ -226,6 +227,7 @@ license that can be found in the LICENSE file.
   display: inline-block;
   height: 36px;
   margin: 0;
+  pointer-events: all;
   width: 43px;
 }
 
@@ -447,7 +449,9 @@ license that can be found in the LICENSE file.
     <viewer-button id="zoom-out-button" src="button_zoom_out.png">
     </viewer-button>
   </polymer-selector>
-  <viewer-button id="save-button" src="button_save.png"></viewer-button>
+  <a id="save-button-link" download="">
+    <viewer-button id="save-button" src="button_save.png"></viewer-button>
+  </a>
   <viewer-button id="print-button" src="button_print.png"></viewer-button>
 </viewer-toolbar>
 

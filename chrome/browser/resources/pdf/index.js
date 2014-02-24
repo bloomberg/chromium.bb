@@ -389,32 +389,49 @@ Polymer={},"function"==typeof window.Polymer&&(Polymer={}),function(a){function 
 
   Polymer('viewer-toolbar', {
     fadingIn: false,
-    timerId: undefined,
+    timerId_: undefined,
+    inInitialFadeIn_: false,
     ready: function() {
-      this.fadingInChanged();
+      this.parentNode.addEventListener('mousemove', function(e) {
+        var rect = this.getBoundingClientRect();
+        if (e.clientX >= rect.left && e.clientX <= rect.right &&
+            e.clientY >= rect.top && e.clientY <= rect.bottom) {
+          this.fadingIn = true;
+          // If we hover over the toolbar, cancel the initial fade in.
+          if (this.inInitialFadeIn_)
+            this.inInitialFadeIn_ = false;
+        } else {
+          // Initially we want to keep the toolbar up for a longer period.
+          if (!this.inInitialFadeIn_)
+            this.fadingIn = false;
+        }
+      }.bind(this));
     },
-    fadeIn: function() {
-      this.fadingIn = true;
-    },
-    fadeOut: function() {
-      this.fadingIn = false;
+    initialFadeIn: function() {
+      this.inInitialFadeIn_ = true;
+      this.fadeIn();
+      this.fadeOutAfterDelay(6000);
     },
     fadingInChanged: function() {
       if (this.fadingIn) {
-        this.style.opacity = 1;
-        if (this.timerId !== undefined) {
-          clearTimeout(this.timerId);
-          this.timerId = undefined;
-        }
+        this.fadeIn();
       } else {
-        if (this.timerId === undefined) {
-          this.timerId = setTimeout(
-            function() {
-              this.style.opacity = 0;
-              this.timerId = undefined;
-            }.bind(this), 3000);
-        }
+        if (this.timerId_ === undefined)
+          this.fadeOutAfterDelay(3000);
       }
+    },
+    fadeIn: function() {
+      this.style.opacity = 1;
+      clearTimeout(this.timerId_);
+      this.timerId_ = undefined;
+    },
+    fadeOutAfterDelay: function(delay) {
+      this.timerId_ = setTimeout(
+        function() {
+          this.style.opacity = 0;
+          this.timerId_ = undefined;
+          this.inInitialFadeIn_ = false;
+        }.bind(this), delay);
     }
   });
 ;
@@ -454,26 +471,28 @@ Polymer={},"function"==typeof window.Polymer&&(Polymer={}),function(a){function 
     text: '1',
     timerId: undefined,
     ready: function() {
-      var scrollCallback = function() {
-        var percent = window.scrollY /
-            (document.body.scrollHeight -
-             document.documentElement.clientHeight);
-        this.style.top = percent *
-            (document.documentElement.clientHeight - this.offsetHeight) + 'px';
-        this.style.opacity = 1;
-        clearTimeout(this.timerId);
-
-        this.timerId = setTimeout(function() {
-          this.style.opacity = 0;
-          this.timerId = undefined;
-        }.bind(this), 2000);
-      }.bind(this);
+      var callback = this.fadeIn.bind(this, 2000);
       window.addEventListener('scroll', function() {
-        requestAnimationFrame(scrollCallback);
+        requestAnimationFrame(callback);
       });
-
-      scrollCallback();
     },
+    initialFadeIn: function() {
+      this.fadeIn(6000);
+    },
+    fadeIn: function(displayTime) {
+      var percent = window.scrollY /
+          (document.body.scrollHeight -
+           document.documentElement.clientHeight);
+      this.style.top = percent *
+          (document.documentElement.clientHeight - this.offsetHeight) + 'px';
+      this.style.opacity = 1;
+      clearTimeout(this.timerId);
+
+      this.timerId = setTimeout(function() {
+        this.style.opacity = 0;
+        this.timerId = undefined;
+      }.bind(this), displayTime);
+    }
   });
 ;
 
