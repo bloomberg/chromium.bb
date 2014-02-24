@@ -491,6 +491,43 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
       rv, args, kwargs.get('cwd', None), None, None)
 
 
+class GitFilter(object):
+  """A filter_fn implementation for quieting down git output messages.
+
+  Allows a custom function to skip certain lines (predicate), and will throttle
+  the output of percentage completed lines to only output every X seconds.
+  """
+  PERCENT_RE = re.compile('.* ([0-9]{1,2})% .*')
+
+  def __init__(self, time_throttle=0, predicate=None):
+    """
+    Args:
+      time_throttle (int): GitFilter will throttle 'noisy' output (such as the
+        XX% complete messages) to only be printed at least |time_throttle|
+        seconds apart.
+      predicate (f(line)): An optional function which is invoked for every line.
+        The line will be skipped if predicate(line) returns False.
+    """
+    self.last_time = 0
+    self.time_throttle = time_throttle
+    self.predicate = predicate
+
+  def __call__(self, line):
+    # git uses an escape sequence to clear the line; elide it.
+    esc = line.find(unichr(033))
+    if esc > -1:
+      line = line[:esc]
+    if self.predicate and not self.predicate(line):
+      return
+    now = time.time()
+    match = self.PERCENT_RE.match(line)
+    if not match:
+      self.last_time = 0
+    if (now - self.last_time) >= self.time_throttle:
+      self.last_time = now
+      print line
+
+
 def FindGclientRoot(from_dir, filename='.gclient'):
   """Tries to find the gclient root."""
   real_from_dir = os.path.realpath(from_dir)

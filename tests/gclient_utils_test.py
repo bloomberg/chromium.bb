@@ -32,7 +32,7 @@ class GclientUtilsUnittest(GclientUtilBase):
         'CheckCallAndFilterAndHeader', 'Error', 'ExecutionQueue', 'FileRead',
         'FileWrite', 'FindFileUpwards', 'FindGclientRoot',
         'GetGClientRootAndEntries', 'GetEditor', 'GetExeSuffix',
-        'GetMacWinOrLinux', 'IsDateRevision', 'MakeDateRevision',
+        'GetMacWinOrLinux', 'GitFilter', 'IsDateRevision', 'MakeDateRevision',
         'MakeFileAutoFlush', 'MakeFileAnnotated', 'PathDifference',
         'ParseCodereviewSettingsContent', 'NumLocalCpus', 'PrintableObject',
         'RETRY_INITIAL_SLEEP', 'RETRY_MAX', 'RunEditor', 'GCLIENT_CHILDREN',
