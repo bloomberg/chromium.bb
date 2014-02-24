@@ -242,6 +242,8 @@ CPP_SPECIAL_CONVERSION_RULES = {
     'EventHandler': 'EventListener*',
     'Promise': 'ScriptPromise',
     'ScriptValue': 'ScriptValue',
+    # FIXME: Eliminate custom bindings for XPathNSResolver  http://crbug.com/345529
+    'XPathNSResolver': 'RefPtrWillBeRawPtr<XPathNSResolver>',
     'boolean': 'bool',
 }
 
@@ -267,8 +269,7 @@ def cpp_type(idl_type, extended_attributes=None, used_as_argument=False):
         return 'unsigned'
     if idl_type in CPP_SPECIAL_CONVERSION_RULES:
         return CPP_SPECIAL_CONVERSION_RULES[idl_type]
-    if (idl_type in NON_WRAPPER_TYPES or
-        idl_type == 'XPathNSResolver'):  # FIXME: eliminate this special case
+    if idl_type in NON_WRAPPER_TYPES:
         return 'RefPtr<%s>' % idl_type
     if idl_type == 'DOMString':
         if not used_as_argument:
