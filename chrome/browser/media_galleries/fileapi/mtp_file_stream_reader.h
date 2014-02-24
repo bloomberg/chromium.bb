@@ -42,6 +42,13 @@ class MTPFileStreamReader
                          const net::CompletionCallback& callback,
                          const base::File::Info& file_info);
 
+  void FinishValidateMediaHeader(
+      net::IOBuffer* header_buf,
+      const base::File::Info& file_info,
+      net::IOBuffer* buf, int buf_len,
+      const net::CompletionCallback& callback,
+      int header_bytes_read);
+
   void FinishRead(const net::CompletionCallback& callback,
                   int bytes_read);
 
@@ -52,6 +59,9 @@ class MTPFileStreamReader
   fileapi::FileSystemURL url_;
   int64 current_offset_;
   const base::Time expected_modification_time_;
+
+  bool media_header_validated_;
+
   base::WeakPtrFactory<MTPFileStreamReader> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MTPFileStreamReader);

@@ -166,6 +166,11 @@ SyncFileSystemBackend::CreateFileSystemOperation(
       url, context, operation_context.Pass());
 }
 
+bool SyncFileSystemBackend::SupportsStreaming(
+    const fileapi::FileSystemURL& url) const {
+  return false;
+}
+
 scoped_ptr<webkit_blob::FileStreamReader>
 SyncFileSystemBackend::CreateFileStreamReader(
     const fileapi::FileSystemURL& url,

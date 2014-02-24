@@ -487,10 +487,18 @@ void FileAPIMessageFilter::OnCreateSnapshotFile(
     return;
   }
 
-  operations_[request_id] = operation_runner()->CreateSnapshotFile(
-      url,
-      base::Bind(&FileAPIMessageFilter::DidCreateSnapshot,
-                 this, request_id, url));
+  FileSystemBackend* backend = context_->GetFileSystemBackend(url.type());
+  if (backend->SupportsStreaming(url)) {
+    operations_[request_id] = operation_runner()->GetMetadata(
+        url,
+        base::Bind(&FileAPIMessageFilter::DidGetMetadataForStreaming,
+                   this, request_id));
+  } else {
+    operations_[request_id] = operation_runner()->CreateSnapshotFile(
+        url,
+        base::Bind(&FileAPIMessageFilter::DidCreateSnapshot,
+                   this, request_id, url));
+  }
 }
 
 void FileAPIMessageFilter::OnDidReceiveSnapshotFile(int request_id) {
@@ -695,6 +703,21 @@ void FileAPIMessageFilter::DidGetMetadata(
   operations_.erase(request_id);
 }
 
+void FileAPIMessageFilter::DidGetMetadataForStreaming(
+    int request_id,
+    base::File::Error result,
+    const base::File::Info& info) {
+  if (result == base::File::FILE_OK) {
+    // For now, streaming Blobs are implemented as a successful snapshot file
+    // creation with an empty path.
+    Send(new FileSystemMsg_DidCreateSnapshotFile(request_id, info,
+                                                 base::FilePath()));
+  } else {
+    Send(new FileSystemMsg_DidFail(request_id, result));
+  }
+  operations_.erase(request_id);
+}
+
 void FileAPIMessageFilter::DidReadDirectory(
     int request_id,
     base::File::Error result,
@@ -775,16 +798,6 @@ void FileAPIMessageFilter::DidCreateSnapshot(
 
   if (result != base::File::FILE_OK) {
     Send(new FileSystemMsg_DidFail(request_id, result));
-    return;
-  }
-
-  // TODO(tommycli): This allows streaming blobs to use a 'fake' snapshot file
-  // with an empty path. We want to eventually have explicit plumbing for
-  // the creation of Blobs without snapshot files, probably called something
-  // like GetMetadataForStreaming.
-  if (platform_path.empty()) {
-    Send(new FileSystemMsg_DidCreateSnapshotFile(request_id, info,
-                                                 base::FilePath()));
     return;
   }
 

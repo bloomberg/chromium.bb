@@ -4,12 +4,16 @@
 
 #include "chrome/browser/media_galleries/fileapi/mtp_file_stream_reader.h"
 
+#include <algorithm>
+
 #include "base/numerics/safe_conversions.h"
 #include "base/platform_file.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_map_service.h"
+#include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
+#include "net/base/mime_sniffer.h"
 #include "net/base/net_errors.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 
@@ -37,6 +41,29 @@ void CallInt64CompletionCallbackWithPlatformFileError(
   callback.Run(net::FileErrorToNetError(file_error));
 }
 
+void ReadBytes(const fileapi::FileSystemURL& url, net::IOBuffer* buf,
+               int64 offset, int buf_len, const base::File::Info& file_info,
+               const net::CompletionCallback& callback) {
+  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(url);
+  if (!delegate) {
+    callback.Run(net::ERR_FAILED);
+    return;
+  }
+
+  DCHECK_GE(file_info.size, offset);
+  int bytes_to_read = std::min(
+      buf_len,
+      base::saturated_cast<int>(file_info.size - offset));
+
+  delegate->ReadBytes(
+      url.path(),
+      make_scoped_refptr(buf),
+      offset,
+      bytes_to_read,
+      callback,
+      base::Bind(&CallCompletionCallbackWithPlatformFileError, callback));
+}
+
 }  // namespace
 
 MTPFileStreamReader::MTPFileStreamReader(
@@ -48,6 +75,7 @@ MTPFileStreamReader::MTPFileStreamReader(
       url_(url),
       current_offset_(initial_offset),
       expected_modification_time_(expected_modification_time),
+      media_header_validated_(false),
       weak_factory_(this) {
 }
 
@@ -91,9 +119,7 @@ int64 MTPFileStreamReader::GetLength(
 }
 
 void MTPFileStreamReader::OnFileInfoForRead(
-    net::IOBuffer* buf,
-    int buf_len,
-    const net::CompletionCallback& callback,
+    net::IOBuffer* buf, int buf_len, const net::CompletionCallback& callback,
     const base::File::Info& file_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
@@ -102,26 +128,43 @@ void MTPFileStreamReader::OnFileInfoForRead(
     return;
   }
 
-  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(url_);
-  if (!delegate) {
-    callback.Run(net::ERR_FAILED);
+  if (!media_header_validated_) {
+    int header_bytes = std::min(net::kMaxBytesToSniff,
+                                base::saturated_cast<int>(file_info.size));
+    scoped_refptr<net::IOBuffer> header_buf(new net::IOBuffer(header_bytes));
+    ReadBytes(url_, header_buf, 0, header_bytes, file_info,
+              base::Bind(&MTPFileStreamReader::FinishValidateMediaHeader,
+                         weak_factory_.GetWeakPtr(), header_buf, file_info,
+                         make_scoped_refptr(buf), buf_len, callback));
     return;
   }
 
-  DCHECK_GE(file_info.size, current_offset_);
-  int bytes_to_read = std::min(
-      buf_len,
-      base::checked_cast<int>(file_info.size - current_offset_));
+  ReadBytes(url_, buf, current_offset_, buf_len, file_info,
+            base::Bind(&MTPFileStreamReader::FinishRead,
+                       weak_factory_.GetWeakPtr(), callback));
+}
 
-  delegate->ReadBytes(
-      url_.path(),
-      make_scoped_refptr(buf),
-      current_offset_,
-      bytes_to_read,
-      base::Bind(&MTPFileStreamReader::FinishRead, weak_factory_.GetWeakPtr(),
-                 callback),
-      base::Bind(&CallCompletionCallbackWithPlatformFileError,
-                 callback));
+void MTPFileStreamReader::FinishValidateMediaHeader(
+    net::IOBuffer* header_buf,
+    const base::File::Info& file_info,
+    net::IOBuffer* buf, int buf_len,
+    const net::CompletionCallback& callback,
+    int header_bytes_read) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_GE(header_bytes_read, 0);
+  base::File::Error error = NativeMediaFileUtil::BufferIsMediaHeader(
+      header_buf, header_bytes_read);
+  if (error != base::File::FILE_OK) {
+    CallCompletionCallbackWithPlatformFileError(callback, error);
+    return;
+  }
+
+  media_header_validated_ = true;
+
+  // Complete originally requested read.
+  ReadBytes(url_, buf, current_offset_, buf_len, file_info,
+            base::Bind(&MTPFileStreamReader::FinishRead,
+                       weak_factory_.GetWeakPtr(), callback));
 }
 
 void MTPFileStreamReader::FinishRead(const net::CompletionCallback& callback,

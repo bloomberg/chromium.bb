@@ -165,6 +165,9 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
   void DidGetMetadata(int request_id,
                       base::File::Error result,
                       const base::File::Info& info);
+  void DidGetMetadataForStreaming(int request_id,
+                                  base::File::Error result,
+                                  const base::File::Info& info);
   void DidReadDirectory(int request_id,
                         base::File::Error result,
                         const std::vector<fileapi::DirectoryEntry>& entries,

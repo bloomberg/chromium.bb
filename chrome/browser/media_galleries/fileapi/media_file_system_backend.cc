@@ -178,6 +178,16 @@ MediaFileSystemBackend::CreateFileSystemOperation(
       url, context, operation_context.Pass());
 }
 
+bool MediaFileSystemBackend::SupportsStreaming(
+    const fileapi::FileSystemURL& url) const {
+  if (url.type() == fileapi::kFileSystemTypeDeviceMedia) {
+    DCHECK(device_media_async_file_util_);
+    return device_media_async_file_util_->SupportsStreaming(url);
+  }
+
+  return false;
+}
+
 scoped_ptr<webkit_blob::FileStreamReader>
 MediaFileSystemBackend::CreateFileStreamReader(
     const FileSystemURL& url,

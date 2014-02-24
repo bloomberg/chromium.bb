@@ -117,6 +117,11 @@ FileSystemOperation* SandboxFileSystemBackend::CreateFileSystemOperation(
   return FileSystemOperation::Create(url, context, operation_context.Pass());
 }
 
+bool SandboxFileSystemBackend::SupportsStreaming(
+    const fileapi::FileSystemURL& url) const {
+  return false;
+}
+
 scoped_ptr<webkit_blob::FileStreamReader>
 SandboxFileSystemBackend::CreateFileStreamReader(
     const FileSystemURL& url,

@@ -33,6 +33,7 @@ class IsolatedFileSystemBackend : public FileSystemBackend {
       const FileSystemURL& url,
       FileSystemContext* context,
       base::File::Error* error_code) const OVERRIDE;
+  virtual bool SupportsStreaming(const FileSystemURL& url) const OVERRIDE;
   virtual scoped_ptr<webkit_blob::FileStreamReader> CreateFileStreamReader(
       const FileSystemURL& url,
       int64 offset,

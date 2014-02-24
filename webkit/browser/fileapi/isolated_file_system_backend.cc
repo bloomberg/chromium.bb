@@ -102,6 +102,11 @@ FileSystemOperation* IsolatedFileSystemBackend::CreateFileSystemOperation(
       url, context, make_scoped_ptr(new FileSystemOperationContext(context)));
 }
 
+bool IsolatedFileSystemBackend::SupportsStreaming(
+    const fileapi::FileSystemURL& url) const {
+  return false;
+}
+
 scoped_ptr<webkit_blob::FileStreamReader>
 IsolatedFileSystemBackend::CreateFileStreamReader(
     const FileSystemURL& url,

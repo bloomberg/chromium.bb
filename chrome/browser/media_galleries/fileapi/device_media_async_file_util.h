@@ -39,6 +39,8 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
   // object.
   static DeviceMediaAsyncFileUtil* Create(const base::FilePath& profile_path);
 
+  bool SupportsStreaming(const fileapi::FileSystemURL& url);
+
   // AsyncFileUtil overrides.
   virtual void CreateOrOpen(
       scoped_ptr<fileapi::FileSystemOperationContext> context,
@@ -177,23 +179,6 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
       const base::File::Info& file_info,
       scoped_refptr<webkit_blob::ShareableFileReference> platform_file,
       base::File::Error error);
-
-  // The following three functions are called in sequence when we have a
-  // streaming MTP implementation and don't need a local snapshot file to be
-  // created.
-  void GetHeaderBytesForMIMESniffing(
-      const fileapi::FileSystemURL& url,
-      base::SequencedTaskRunner* media_task_runner,
-      const AsyncFileUtil::CreateSnapshotFileCallback& callback,
-      base::File::Error error,
-      const base::File::Info& file_info);
-  void FinishStreamingSnapshotFile(
-      const fileapi::FileSystemURL& url,
-      base::SequencedTaskRunner* media_task_runner,
-      const AsyncFileUtil::CreateSnapshotFileCallback& callback,
-      const base::File::Info& file_info,
-      net::IOBuffer* buffer,
-      int buffer_size);
 
   // Called when CreateSnapshotFile method call fails. |callback| is invoked to
   // notify the caller about the |error|.

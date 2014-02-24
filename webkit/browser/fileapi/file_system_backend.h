@@ -89,6 +89,11 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemBackend {
       FileSystemContext* context,
       base::File::Error* error_code) const = 0;
 
+  // Returns true if Blobs accessing |url| should use FileStreamReader.
+  // If false, Blobs are accessed using a snapshot file by calling
+  // AsyncFileUtil::CreateSnapshotFile.
+  virtual bool SupportsStreaming(const FileSystemURL& url) const = 0;
+
   // Creates a new file stream reader for a given filesystem URL |url| with an
   // offset |offset|. |expected_modification_time| specifies the expected last
   // modification if the value is non-null, the reader will check the underlying

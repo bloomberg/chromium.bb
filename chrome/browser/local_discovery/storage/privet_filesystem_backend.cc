@@ -74,6 +74,11 @@ PrivetFileSystemBackend::CreateFileSystemOperation(
       make_scoped_ptr(new fileapi::FileSystemOperationContext(context)));
 }
 
+bool PrivetFileSystemBackend::SupportsStreaming(
+    const fileapi::FileSystemURL& url) const {
+  return false;
+}
+
 scoped_ptr<webkit_blob::FileStreamReader>
 PrivetFileSystemBackend::CreateFileStreamReader(
     const fileapi::FileSystemURL& url,

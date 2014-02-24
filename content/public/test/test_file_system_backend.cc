@@ -225,6 +225,11 @@ FileSystemOperation* TestFileSystemBackend::CreateFileSystemOperation(
   return FileSystemOperation::Create(url, context, operation_context.Pass());
 }
 
+bool TestFileSystemBackend::SupportsStreaming(
+    const fileapi::FileSystemURL& url) const {
+  return false;
+}
+
 scoped_ptr<webkit_blob::FileStreamReader>
 TestFileSystemBackend::CreateFileStreamReader(
     const FileSystemURL& url,

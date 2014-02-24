@@ -45,6 +45,8 @@ class SyncFileSystemBackend
       const fileapi::FileSystemURL& url,
       fileapi::FileSystemContext* context,
       base::File::Error* error_code) const OVERRIDE;
+  virtual bool SupportsStreaming(
+      const fileapi::FileSystemURL& url) const OVERRIDE;
   virtual scoped_ptr<webkit_blob::FileStreamReader> CreateFileStreamReader(
       const fileapi::FileSystemURL& url,
       int64 offset,

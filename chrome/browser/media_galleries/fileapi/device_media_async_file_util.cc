@@ -71,6 +71,15 @@ DeviceMediaAsyncFileUtil* DeviceMediaAsyncFileUtil::Create(
   return new DeviceMediaAsyncFileUtil(profile_path);
 }
 
+bool DeviceMediaAsyncFileUtil::SupportsStreaming(
+    const fileapi::FileSystemURL& url) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(url);
+  if (!delegate)
+    return false;
+  return delegate->IsStreaming();
+}
+
 void DeviceMediaAsyncFileUtil::CreateOrOpen(
     scoped_ptr<FileSystemOperationContext> context,
     const FileSystemURL& url,
@@ -236,16 +245,6 @@ void DeviceMediaAsyncFileUtil::CreateSnapshotFile(
   }
 
   scoped_refptr<base::SequencedTaskRunner> task_runner = context->task_runner();
-
-  if (delegate->IsStreaming()) {
-    GetFileInfo(
-        context.Pass(),
-        url,
-        base::Bind(&DeviceMediaAsyncFileUtil::GetHeaderBytesForMIMESniffing,
-                   weak_ptr_factory_.GetWeakPtr(), url, task_runner, callback));
-    return;
-  }
-
   base::FilePath* snapshot_file_path = new base::FilePath;
   const bool success = task_runner->PostTaskAndReply(
           FROM_HERE,
@@ -336,49 +335,6 @@ void DeviceMediaAsyncFileUtil::OnDidCheckMedia(
   if (error != base::File::FILE_OK)
     platform_file = NULL;
   callback.Run(error, file_info, platform_path, platform_file);
-}
-
-void DeviceMediaAsyncFileUtil::GetHeaderBytesForMIMESniffing(
-    const fileapi::FileSystemURL& url,
-    base::SequencedTaskRunner* media_task_runner,
-    const AsyncFileUtil::CreateSnapshotFileCallback& callback,
-    base::File::Error error,
-    const base::File::Info& file_info) {
-  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(url);
-  if (!delegate) {
-    OnCreateSnapshotFileError(callback, base::File::FILE_ERROR_NOT_FOUND);
-    return;
-  }
-
-  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(net::kMaxBytesToSniff));
-  delegate->ReadBytes(
-      url.path(),
-      buffer,
-      0,
-      net::kMaxBytesToSniff,
-      base::Bind(&DeviceMediaAsyncFileUtil::FinishStreamingSnapshotFile,
-                 weak_ptr_factory_.GetWeakPtr(), url,
-                 make_scoped_refptr(media_task_runner), callback, file_info,
-                 buffer),
-      base::Bind(&DeviceMediaAsyncFileUtil::OnCreateSnapshotFileError,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
-}
-
-void DeviceMediaAsyncFileUtil::FinishStreamingSnapshotFile(
-    const fileapi::FileSystemURL& url,
-    base::SequencedTaskRunner* media_task_runner,
-    const AsyncFileUtil::CreateSnapshotFileCallback& callback,
-    const base::File::Info& file_info,
-    net::IOBuffer* buffer,
-    int buffer_size) {
-  base::File::Error error =
-      NativeMediaFileUtil::BufferIsMediaHeader(buffer, buffer_size);
-  if (error != base::File::FILE_OK) {
-    OnCreateSnapshotFileError(callback, error);
-    return;
-  }
-  callback.Run(base::File::FILE_OK, file_info, base::FilePath(),
-               scoped_refptr<ShareableFileReference>());
 }
 
 void DeviceMediaAsyncFileUtil::OnCreateSnapshotFileError(
