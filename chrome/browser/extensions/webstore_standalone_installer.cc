@@ -244,9 +244,14 @@ void WebstoreStandaloneInstaller::InstallUIProceed() {
       } else {  // Don't install a blacklisted extension.
         install_result = kExtensionIsBlacklisted;
       }
-    }  // else extension is installed and enabled; no work to be done.
-    CompleteInstall(install_result);
-    return;
+    } else if (!extension->is_ephemeral()) {
+      // else extension is installed and enabled; no work to be done.
+      CompleteInstall(install_result);
+      return;
+    }
+
+    // TODO(tmdiep): Optimize installation of ephemeral apps. For now we just
+    // reinstall the app.
   }
 
   scoped_ptr<WebstoreInstaller::Approval> approval = CreateApproval();
