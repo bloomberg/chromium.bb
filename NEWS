@@ -1,6 +1,10 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
-* Noteworthy changes in release 2.5.4 (2014-1-17)
+* Noteworthy changes in release 2.5.4 (2014-3-1)
+** New features
+   - Added function lou_registerTableResolver for plugging in a table
+     resolver callback from your host language.
+
 ** Bug Fixes
    - Fixed ENDSEGMENT indicator in computer Braille thanks to John
      Boyer.
@@ -11,6 +15,9 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
      should now back-translate correctly. Thanks to John Boyer.
    - Fixed a problem with syllable opcode. Thanks to John Boyer.
    - Fix warnings with gcc 4.8.2. Thanks to Peter Lundblad.
+   - When a table is specified with an absolute or relative path, the
+     "includes" in that table will now work as expected, meaning files
+     in the same directory will be found.
 
 ** Braille Table Improvements
    - fr-bfu-comp8.utb: corrections, zero was wrongly displayed in some
@@ -66,6 +73,11 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 ** Backwards incompatible changes
    - Delete the table chardefs-ueb.cti as these rules are now
      provided by en-ueb-chardefs.uti
+
+** Invisible changes
+   - Refactoring in compileTranslationTable.c: separated more clearly
+     the compilation from the table resolving, removed duplicate code,
+     etc.
 
 * Noteworthy changes in release 2.5.3 (2013-6-21)
 ** New features
