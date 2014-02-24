@@ -14,7 +14,7 @@ namespace ui {
 // AXTreeSource abstraction and doesn't need to actually know about
 // AXTree directly. Another AXTreeSource is used to abstract the Blink
 // accessibility tree.
-class AX_EXPORT AXTreeSourceAdapter : public AXTreeSource<AXNode> {
+class AX_EXPORT AXTreeSourceAdapter : public AXTreeSource<const AXNode*> {
  public:
   AXTreeSourceAdapter(AXTree* tree) : tree_(tree) {}
   virtual ~AXTreeSourceAdapter() {}
@@ -32,17 +32,28 @@ class AX_EXPORT AXTreeSourceAdapter : public AXTreeSource<AXNode> {
     return node->id();
   }
 
-  virtual int GetChildCount(const AXNode* node) const OVERRIDE {
-    return node->child_count();
-  }
-
-  virtual AXNode* GetChildAtIndex(const AXNode* node, int index)
-      const OVERRIDE {
-    return node->ChildAtIndex(index);
+  virtual void GetChildren(
+      const AXNode* node,
+      std::vector<const AXNode*>* out_children) const OVERRIDE {
+    for (int i = 0; i < node->child_count(); ++i)
+      out_children->push_back(node->ChildAtIndex(i));
   }
 
   virtual AXNode* GetParent(const AXNode* node) const OVERRIDE {
     return node->parent();
+  }
+
+  virtual bool IsValid(const AXNode* node) const OVERRIDE {
+    return node != NULL;
+  }
+
+  virtual bool IsEqual(const AXNode* node1,
+                       const AXNode* node2) const OVERRIDE {
+    return node1 == node2;
+  }
+
+  virtual const AXNode* GetNull() const OVERRIDE {
+    return NULL;
   }
 
   virtual void SerializeNode(
@@ -64,7 +75,7 @@ AXSerializableTree::AXSerializableTree(const AXTreeUpdate& initial_state)
 AXSerializableTree::~AXSerializableTree() {
 }
 
-AXTreeSource<AXNode>* AXSerializableTree::CreateTreeSource() {
+AXTreeSource<const AXNode*>* AXSerializableTree::CreateTreeSource() {
   return new AXTreeSourceAdapter(this);
 }
 

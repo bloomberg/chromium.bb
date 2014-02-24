@@ -26,8 +26,26 @@ std::string TreeToStringHelper(AXNode* node, int indent) {
 
 }  // anonymous namespace
 
+// Intermediate state to keep track of during a tree update.
+struct AXTreeUpdateState {
+  // During an update, this keeps track of all nodes that have been
+  // implicitly referenced as part of this update, but haven't been
+  // updated yet. It's an error if there are any pending nodes at the
+  // end of Unserialize.
+  std::set<AXNode*> pending_nodes;
+
+  // Keeps track of new nodes created during this update.
+  std::set<AXNode*> new_nodes;
+};
+
+AXTreeDelegate::AXTreeDelegate() {
+}
+
+AXTreeDelegate::~AXTreeDelegate() {
+}
+
 AXTree::AXTree()
-    : root_(NULL) {
+    : delegate_(NULL), root_(NULL) {
   AXNodeData root;
   root.id = 0;
   root.role = AX_ROLE_ROOT_WEB_AREA;
@@ -38,13 +56,17 @@ AXTree::AXTree()
 }
 
 AXTree::AXTree(const AXTreeUpdate& initial_state)
-    : root_(NULL) {
+    : delegate_(NULL), root_(NULL) {
   CHECK(Unserialize(initial_state)) << error();
 }
 
 AXTree::~AXTree() {
   if (root_)
     DestroyNodeAndSubtree(root_);
+}
+
+void AXTree::SetDelegate(AXTreeDelegate* delegate) {
+  delegate_ = delegate;
 }
 
 AXNode* AXTree::GetRoot() const {
@@ -57,7 +79,8 @@ AXNode* AXTree::GetFromId(int32 id) const {
 }
 
 bool AXTree::Unserialize(const AXTreeUpdate& update) {
-  std::set<AXNode*> pending_nodes;
+  AXTreeUpdateState update_state;
+  int32 old_root_id = root_ ? root_->id() : 0;
 
   if (update.node_id_to_clear != 0) {
     AXNode* node = GetFromId(update.node_id_to_clear);
@@ -74,22 +97,36 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
         DestroyNodeAndSubtree(node->ChildAtIndex(i));
       std::vector<AXNode*> children;
       node->SwapChildren(children);
-      pending_nodes.insert(node);
+      update_state.pending_nodes.insert(node);
     }
   }
 
   for (size_t i = 0; i < update.nodes.size(); ++i) {
-    if (!UpdateNode(update.nodes[i], &pending_nodes))
+    if (!UpdateNode(update.nodes[i], &update_state))
       return false;
   }
 
-  if (!pending_nodes.empty()) {
+  if (!update_state.pending_nodes.empty()) {
     error_ = "Nodes left pending by the update:";
-    for (std::set<AXNode*>::iterator iter = pending_nodes.begin();
-         iter != pending_nodes.end(); ++iter) {
+    for (std::set<AXNode*>::iterator iter = update_state.pending_nodes.begin();
+         iter != update_state.pending_nodes.end(); ++iter) {
       error_ += base::StringPrintf(" %d", (*iter)->id());
     }
     return false;
+  }
+
+  if (delegate_) {
+    for (size_t i = 0; i < update.nodes.size(); ++i) {
+      AXNode* node = GetFromId(update.nodes[i].id);
+      if (update_state.new_nodes.find(node) != update_state.new_nodes.end()) {
+        delegate_->OnNodeCreated(node);
+        update_state.new_nodes.erase(node);
+      } else {
+        delegate_->OnNodeChanged(node);
+      }
+    }
+    if (root_->id() != old_root_id)
+      delegate_->OnRootChanged(root_);
   }
 
   return true;
@@ -104,7 +141,7 @@ AXNode* AXTree::CreateNode(AXNode* parent, int32 id, int32 index_in_parent) {
 }
 
 bool AXTree::UpdateNode(
-    const AXNodeData& src, std::set<AXNode*>* pending_nodes) {
+    const AXNodeData& src, AXTreeUpdateState* update_state) {
   // This method updates one node in the tree based on serialized data
   // received in an AXTreeUpdate. See AXTreeUpdate for pre and post
   // conditions.
@@ -114,7 +151,7 @@ bool AXTree::UpdateNode(
   // and this is a serious error.
   AXNode* node = GetFromId(src.id);
   if (node) {
-    pending_nodes->erase(node);
+    update_state->pending_nodes.erase(node);
   } else {
     if (src.role != AX_ROLE_ROOT_WEB_AREA) {
       error_ = base::StringPrintf(
@@ -122,6 +159,7 @@ bool AXTree::UpdateNode(
       return false;
     }
     node = CreateAndInitializeNode(NULL, src.id, 0);
+    update_state->new_nodes.insert(node);
   }
 
   // Set the node's data.
@@ -136,7 +174,7 @@ bool AXTree::UpdateNode(
   // and swap it in.
   std::vector<AXNode*> new_children;
   bool success = CreateNewChildVector(
-      node, src.child_ids, &new_children, pending_nodes);
+      node, src.child_ids, &new_children, update_state);
   node->SwapChildren(new_children);
 
   // Update the root of the tree if needed.
@@ -145,13 +183,9 @@ bool AXTree::UpdateNode(
     if (root_)
       DestroyNodeAndSubtree(root_);
     root_ = node;
-    OnRootChanged();
   }
 
   return success;
-}
-
-void AXTree::OnRootChanged() {
 }
 
 AXNode* AXTree::CreateAndInitializeNode(
@@ -165,6 +199,8 @@ void AXTree::DestroyNodeAndSubtree(AXNode* node) {
   id_map_.erase(node->id());
   for (int i = 0; i < node->child_count(); ++i)
     DestroyNodeAndSubtree(node->ChildAtIndex(i));
+  if (delegate_)
+    delegate_->OnNodeWillBeDeleted(node);
   node->Destroy();
 }
 
@@ -196,7 +232,7 @@ bool AXTree::DeleteOldChildren(AXNode* node,
 bool AXTree::CreateNewChildVector(AXNode* node,
                                   const std::vector<int32> new_child_ids,
                                   std::vector<AXNode*>* new_children,
-                                  std::set<AXNode*>* pending_nodes) {
+                                  AXTreeUpdateState* update_state) {
   bool success = true;
   for (size_t i = 0; i < new_child_ids.size(); ++i) {
     int32 child_id = new_child_ids[i];
@@ -218,7 +254,8 @@ bool AXTree::CreateNewChildVector(AXNode* node,
       child->SetIndexInParent(index_in_parent);
     } else {
       child = CreateAndInitializeNode(node, child_id, index_in_parent);
-      pending_nodes->insert(child);
+      update_state->pending_nodes.insert(child);
+      update_state->new_nodes.insert(child);
     }
     new_children->push_back(child);
   }

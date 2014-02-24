@@ -12,6 +12,47 @@
 
 namespace ui {
 
+namespace {
+
+class FakeAXTreeDelegate : public AXTreeDelegate {
+ public:
+  virtual void OnNodeWillBeDeleted(AXNode* node) OVERRIDE {
+    deleted_ids_.push_back(node->id());
+  }
+
+  virtual void OnNodeCreated(AXNode* node) OVERRIDE {
+    created_ids_.push_back(node->id());
+  }
+
+  virtual void OnNodeChanged(AXNode* node) OVERRIDE {
+    changed_ids_.push_back(node->id());
+  }
+
+  virtual void OnRootChanged(AXNode* new_root) OVERRIDE {
+    new_root_ids_.push_back(new_root->id());
+  }
+
+  void Reset() {
+    deleted_ids_.clear();
+    created_ids_.clear();
+    changed_ids_.clear();
+    new_root_ids_.clear();
+  }
+
+  const std::vector<int32>& deleted_ids() { return deleted_ids_; }
+  const std::vector<int32>& created_ids() { return created_ids_; }
+  const std::vector<int32>& changed_ids() { return changed_ids_; }
+  const std::vector<int32>& new_root_ids() { return new_root_ids_; }
+
+ private:
+  std::vector<int32> deleted_ids_;
+  std::vector<int32> created_ids_;
+  std::vector<int32> changed_ids_;
+  std::vector<int32> new_root_ids_;
+};
+
+}  // namespace
+
 TEST(AXTreeTest, SerializeSimpleAXTree) {
   AXNodeData root;
   root.id = 1;
@@ -39,27 +80,27 @@ TEST(AXTreeTest, SerializeSimpleAXTree) {
   initial_state.nodes.push_back(checkbox);
   AXSerializableTree src_tree(initial_state);
 
-  scoped_ptr<AXTreeSource<AXNode> > tree_source(
+  scoped_ptr<AXTreeSource<const AXNode*> > tree_source(
       src_tree.CreateTreeSource());
-  AXTreeSerializer<AXNode> serializer(tree_source.get());
+  AXTreeSerializer<const AXNode*> serializer(tree_source.get());
   AXTreeUpdate update;
   serializer.SerializeChanges(src_tree.GetRoot(), &update);
 
   AXTree dst_tree;
   ASSERT_TRUE(dst_tree.Unserialize(update));
 
-  AXNode* root_node = dst_tree.GetRoot();
+  const AXNode* root_node = dst_tree.GetRoot();
   ASSERT_TRUE(root_node != NULL);
   EXPECT_EQ(root.id, root_node->id());
   EXPECT_EQ(root.role, root_node->data().role);
 
   ASSERT_EQ(2, root_node->child_count());
 
-  AXNode* button_node = root_node->ChildAtIndex(0);
+  const AXNode* button_node = root_node->ChildAtIndex(0);
   EXPECT_EQ(button.id, button_node->id());
   EXPECT_EQ(button.role, button_node->data().role);
 
-  AXNode* checkbox_node = root_node->ChildAtIndex(1);
+  const AXNode* checkbox_node = root_node->ChildAtIndex(1);
   EXPECT_EQ(checkbox.id, checkbox_node->id());
   EXPECT_EQ(checkbox.role, checkbox_node->data().role);
 
@@ -172,6 +213,39 @@ TEST(AXTreeTest, InvalidReparentingFails) {
   update.nodes[2].id = 3;
   EXPECT_FALSE(tree.Unserialize(update));
   ASSERT_EQ("Node 3 reparented from 2 to 1", tree.error());
+}
+
+TEST(AXTreeTest, TreeDelegateIsCalled) {
+  AXTreeUpdate initial_state;
+  initial_state.nodes.resize(1);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
+
+  AXTree tree(initial_state);
+  AXTreeUpdate update;
+  update.node_id_to_clear = 1;
+  update.nodes.resize(2);
+  update.nodes[0].id = 2;
+  update.nodes[0].role = AX_ROLE_ROOT_WEB_AREA;
+  update.nodes[0].child_ids.push_back(3);
+  update.nodes[1].id = 3;
+
+  FakeAXTreeDelegate fake_delegate;
+  tree.SetDelegate(&fake_delegate);
+
+  EXPECT_TRUE(tree.Unserialize(update));
+
+  ASSERT_EQ(1U, fake_delegate.deleted_ids().size());
+  EXPECT_EQ(1, fake_delegate.deleted_ids()[0]);
+
+  ASSERT_EQ(2U, fake_delegate.created_ids().size());
+  EXPECT_EQ(2, fake_delegate.created_ids()[0]);
+  EXPECT_EQ(3, fake_delegate.created_ids()[1]);
+
+  ASSERT_EQ(1U, fake_delegate.new_root_ids().size());
+  EXPECT_EQ(2, fake_delegate.new_root_ids()[0]);
+
+  tree.SetDelegate(NULL);
 }
 
 }  // namespace ui

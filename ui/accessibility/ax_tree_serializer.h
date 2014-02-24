@@ -51,7 +51,7 @@ struct ClientTreeNode;
 // because AXTreeSerializer always keeps track of what updates it's sent,
 // it will never send an invalid update and the client tree will not break,
 // it just may not contain all of the changes.
-template<class AXSourceNode>
+template<typename AXSourceNode>
 class AXTreeSerializer {
  public:
   explicit AXTreeSerializer(AXTreeSource<AXSourceNode>* tree);
@@ -63,8 +63,12 @@ class AXTreeSerializer {
   void Reset();
 
   // Serialize all changes to |node| and append them to |out_update|.
-  void SerializeChanges(const AXSourceNode* node,
+  void SerializeChanges(AXSourceNode node,
                         AXTreeUpdate* out_update);
+
+  // Delete the client subtree for this node, ensuring that the subtree
+  // is re-serialized.
+  void DeleteClientSubtree(AXSourceNode node);
 
   // Only for unit testing. Normally this class relies on getting a call
   // to SerializeChanges() every time the source tree changes. For unit
@@ -107,21 +111,21 @@ class AXTreeSerializer {
   // LCA(source node 5, client node 5) is node 1.
   // It's not node 5, because the two trees disagree on the parent of
   // node 4, so the LCA is the first ancestor both trees agree on.
-  const AXSourceNode* LeastCommonAncestor(const AXSourceNode* node,
-                                          ClientTreeNode* client_node);
+  AXSourceNode LeastCommonAncestor(AXSourceNode node,
+                                   ClientTreeNode* client_node);
 
   // Return the least common ancestor of |node| that's in the client tree.
   // This just walks up the ancestors of |node| until it finds a node that's
   // also in the client tree, and then calls LeastCommonAncestor on the
   // source node and client node.
-  const AXSourceNode* LeastCommonAncestor(const AXSourceNode* node);
+  AXSourceNode LeastCommonAncestor(AXSourceNode node);
 
   // Walk the subtree rooted at |node| and return true if any nodes that
-  // would be updated are being reparented. If so, update |lca| to point
+  // would be updated are being reparented. If so, update |out_lca| to point
   // to the least common ancestor of the previous LCA and the previous
   // parent of the node being reparented.
-  bool AnyDescendantWasReparented(const AXSourceNode* node,
-                                  const AXSourceNode** lca);
+  bool AnyDescendantWasReparented(AXSourceNode node,
+                                  AXSourceNode* out_lca);
 
   ClientTreeNode* ClientTreeNodeById(int32 id);
 
@@ -130,7 +134,7 @@ class AXTreeSerializer {
   void DeleteClientSubtree(ClientTreeNode* client_node);
 
   // Helper function, called recursively with each new node to serialize.
-  void SerializeChangedNodes(const AXSourceNode* node,
+  void SerializeChangedNodes(AXSourceNode node,
                              AXTreeUpdate* out_update);
 
   // The tree source.
@@ -154,19 +158,19 @@ struct AX_EXPORT ClientTreeNode {
   std::vector<ClientTreeNode*> children;
 };
 
-template<class AXSourceNode>
+template<typename AXSourceNode>
 AXTreeSerializer<AXSourceNode>::AXTreeSerializer(
     AXTreeSource<AXSourceNode>* tree)
     : tree_(tree),
       client_root_(NULL) {
 }
 
-template<class AXSourceNode>
+template<typename AXSourceNode>
 AXTreeSerializer<AXSourceNode>::~AXTreeSerializer() {
   Reset();
 }
 
-template<class AXSourceNode>
+template<typename AXSourceNode>
 void AXTreeSerializer<AXSourceNode>::Reset() {
   if (client_root_) {
     DeleteClientSubtree(client_root_);
@@ -174,20 +178,20 @@ void AXTreeSerializer<AXSourceNode>::Reset() {
   }
 }
 
-template<class AXSourceNode>
+template<typename AXSourceNode>
 void AXTreeSerializer<AXSourceNode>::ChangeTreeSourceForTesting(
     AXTreeSource<AXSourceNode>* new_tree) {
   tree_ = new_tree;
 }
 
-template<class AXSourceNode>
-const AXSourceNode* AXTreeSerializer<AXSourceNode>::LeastCommonAncestor(
-    const AXSourceNode* node, ClientTreeNode* client_node) {
-  if (node == NULL || client_node == NULL)
-    return NULL;
+template<typename AXSourceNode>
+AXSourceNode AXTreeSerializer<AXSourceNode>::LeastCommonAncestor(
+    AXSourceNode node, ClientTreeNode* client_node) {
+  if (!tree_->IsValid(node) || client_node == NULL)
+    return tree_->GetNull();
 
-  std::vector<const AXSourceNode*> ancestors;
-  while (node) {
+  std::vector<AXSourceNode> ancestors;
+  while (tree_->IsValid(node)) {
     ancestors.push_back(node);
     node = tree_->GetParent(node);
   }
@@ -201,7 +205,7 @@ const AXSourceNode* AXTreeSerializer<AXSourceNode>::LeastCommonAncestor(
   // Start at the root. Keep going until the source ancestor chain and
   // client ancestor chain disagree. The last node before they disagree
   // is the LCA.
-  const AXSourceNode* lca = NULL;
+  AXSourceNode lca = tree_->GetNull();
   int source_index = static_cast<int>(ancestors.size() - 1);
   int client_index = static_cast<int>(client_ancestors.size() - 1);
   while (source_index >= 0 && client_index >= 0) {
@@ -216,40 +220,41 @@ const AXSourceNode* AXTreeSerializer<AXSourceNode>::LeastCommonAncestor(
   return lca;
 }
 
-template<class AXSourceNode>
-const AXSourceNode* AXTreeSerializer<AXSourceNode>::LeastCommonAncestor(
-    const AXSourceNode* node) {
+template<typename AXSourceNode>
+AXSourceNode AXTreeSerializer<AXSourceNode>::LeastCommonAncestor(
+    AXSourceNode node) {
   // Walk up the tree until the source node's id also exists in the
   // client tree, then call LeastCommonAncestor on those two nodes.
   ClientTreeNode* client_node = ClientTreeNodeById(tree_->GetId(node));
-  while (node && !client_node) {
+  while (tree_->IsValid(node) && !client_node) {
     node = tree_->GetParent(node);
-    if (node)
+    if (tree_->IsValid(node))
       client_node = ClientTreeNodeById(tree_->GetId(node));
   }
   return LeastCommonAncestor(node, client_node);
 }
 
-template<class AXSourceNode>
+template<typename AXSourceNode>
 bool AXTreeSerializer<AXSourceNode>::AnyDescendantWasReparented(
-    const AXSourceNode* node, const AXSourceNode** lca) {
+    AXSourceNode node, AXSourceNode* out_lca) {
   bool result = false;
   int id = tree_->GetId(node);
-  int child_count = tree_->GetChildCount(node);
-  for (int i = 0; i < child_count; ++i) {
-    const AXSourceNode* child = tree_->GetChildAtIndex(node, i);
+  std::vector<AXSourceNode> children;
+  tree_->GetChildren(node, &children);
+  for (size_t i = 0; i < children.size(); ++i) {
+    AXSourceNode& child = children[i];
     int child_id = tree_->GetId(child);
     ClientTreeNode* client_child = ClientTreeNodeById(child_id);
     if (client_child) {
       if (!client_child->parent) {
         // If the client child has no parent, it must have been the
         // previous root node, so there is no LCA and we can exit early.
-        *lca = NULL;
+        *out_lca = tree_->GetNull();
         return true;
       } else if (client_child->parent->id != id) {
         // If the client child's parent is not this node, update the LCA
         // and return true (reparenting was found).
-        *lca = LeastCommonAncestor(*lca, client_child);
+        *out_lca = LeastCommonAncestor(*out_lca, client_child);
         result = true;
       } else {
         // This child is already in the client tree, we won't
@@ -260,13 +265,13 @@ bool AXTreeSerializer<AXSourceNode>::AnyDescendantWasReparented(
     }
 
     // This is a new child or reparented child, check it recursively.
-    if (AnyDescendantWasReparented(child, lca))
+    if (AnyDescendantWasReparented(child, out_lca))
       result = true;
   }
   return result;
 }
 
-template<class AXSourceNode>
+template<typename AXSourceNode>
 ClientTreeNode* AXTreeSerializer<AXSourceNode>::ClientTreeNodeById(int32 id) {
   base::hash_map<int32, ClientTreeNode*>::iterator iter =
       client_id_map_.find(id);
@@ -276,19 +281,19 @@ ClientTreeNode* AXTreeSerializer<AXSourceNode>::ClientTreeNodeById(int32 id) {
     return NULL;
 }
 
-template<class AXSourceNode>
+template<typename AXSourceNode>
 void AXTreeSerializer<AXSourceNode>::SerializeChanges(
-    const AXSourceNode* node,
+    AXSourceNode node,
     AXTreeUpdate* out_update) {
   // If the node isn't in the client tree, we need to serialize starting
   // with the LCA.
-  const AXSourceNode* lca = LeastCommonAncestor(node);
+  AXSourceNode lca = LeastCommonAncestor(node);
 
   if (client_root_) {
     // If the LCA is anything other than the node itself, tell the
     // client to first delete the subtree rooted at the LCA.
-    bool need_delete = (lca != node);
-    if (lca) {
+    bool need_delete = !tree_->IsEqual(lca, node);
+    if (tree_->IsValid(lca)) {
       // Check for any reparenting within this subtree - if there is
       // any, we need to delete and reserialize the whole subtree
       // that contains the old and new parents of the reparented node.
@@ -296,7 +301,7 @@ void AXTreeSerializer<AXSourceNode>::SerializeChanges(
         need_delete = true;
     }
 
-    if (lca == NULL) {
+    if (!tree_->IsValid(lca)) {
       // If there's no LCA, just tell the client to destroy the whole
       // tree and then we'll serialize everything from the new root.
       out_update->node_id_to_clear = client_root_->id;
@@ -319,12 +324,19 @@ void AXTreeSerializer<AXSourceNode>::SerializeChanges(
   }
 
   // Serialize from the LCA, or from the root if there isn't one.
-  if (!lca)
+  if (!tree_->IsValid(lca))
     lca = tree_->GetRoot();
   SerializeChangedNodes(lca, out_update);
 }
 
-template<class AXSourceNode>
+template<typename AXSourceNode>
+void AXTreeSerializer<AXSourceNode>::DeleteClientSubtree(AXSourceNode node) {
+  ClientTreeNode* client_node = ClientTreeNodeById(tree_->GetId(node));
+  if (client_node)
+    DeleteClientSubtree(client_node);
+}
+
+template<typename AXSourceNode>
 void AXTreeSerializer<AXSourceNode>::DeleteClientSubtree(
     ClientTreeNode* client_node) {
   for (size_t i = 0; i < client_node->children.size(); ++i) {
@@ -334,9 +346,9 @@ void AXTreeSerializer<AXSourceNode>::DeleteClientSubtree(
   client_node->children.clear();
 }
 
-template<class AXSourceNode>
+template<typename AXSourceNode>
 void AXTreeSerializer<AXSourceNode>::SerializeChangedNodes(
-    const AXSourceNode* node,
+    AXSourceNode node,
     AXTreeUpdate* out_update) {
   // This method has three responsibilities:
   // 1. Serialize |node| into an AXNodeData, and append it to
@@ -368,9 +380,10 @@ void AXTreeSerializer<AXSourceNode>::SerializeChangedNodes(
   // Create a set of the child ids so we can quickly look
   // up which children are new and which ones were there before.
   base::hash_set<int32> new_child_ids;
-  int child_count = tree_->GetChildCount(node);
-  for (int i = 0; i < child_count; ++i) {
-    AXSourceNode* child = tree_->GetChildAtIndex(node, i);
+  std::vector<AXSourceNode> children;
+  tree_->GetChildren(node, &children);
+  for (size_t i = 0; i < children.size(); ++i) {
+    AXSourceNode& child = children[i];
     int new_child_id = tree_->GetId(child);
     new_child_ids.insert(new_child_id);
 
@@ -412,10 +425,10 @@ void AXTreeSerializer<AXSourceNode>::SerializeChangedNodes(
   // Iterate over the children, make note of the ones that are new
   // and need to be serialized, and update the ClientTreeNode
   // data structure to reflect the new tree.
-  std::vector<AXSourceNode*> children_to_serialize;
-  client_node->children.reserve(child_count);
-  for (int i = 0; i < child_count; ++i) {
-    AXSourceNode* child = tree_->GetChildAtIndex(node, i);
+  std::vector<AXSourceNode> children_to_serialize;
+  client_node->children.reserve(children.size());
+  for (size_t i = 0; i < children.size(); ++i) {
+    AXSourceNode& child = children[i];
     int child_id = tree_->GetId(child);
 
     // No need to do anything more with children that aren't new;

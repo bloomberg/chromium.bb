@@ -15,6 +15,31 @@
 namespace ui {
 
 class AXNode;
+struct AXTreeUpdateState;
+
+// Used when you want to be notified when changes happen to the tree.
+class AX_EXPORT AXTreeDelegate {
+ public:
+  AXTreeDelegate();
+  virtual ~AXTreeDelegate();
+
+  // Called just before a node is deleted. Its id and data will be valid,
+  // but its links to parents and children are invalid. This is called
+  // in the middle of an update, the tree may be in an invalid state!
+  virtual void OnNodeWillBeDeleted(AXNode* node) = 0;
+
+  // Called after a new node is created. It's guaranteed to be called
+  // after it's been fully initialized, so you can rely on its data and
+  // links to parents and children being valid. This will be called on
+  // parents before it's called on their children.
+  virtual void OnNodeCreated(AXNode* node) = 0;
+
+  // Called when a node changes its data or children.
+  virtual void OnNodeChanged(AXNode* node) = 0;
+
+  // Called when the root node changes.
+  virtual void OnRootChanged(AXNode* new_root) = 0;
+};
 
 // AXTree is a live, managed tree of AXNode objects that can receive
 // updates from another AXTreeSource via AXTreeUpdates, and it can be
@@ -26,6 +51,8 @@ class AX_EXPORT AXTree {
   AXTree();
   explicit AXTree(const AXTreeUpdate& initial_state);
   virtual ~AXTree();
+
+  virtual void SetDelegate(AXTreeDelegate* delegate);
 
   virtual AXNode* GetRoot() const;
   virtual AXNode* GetFromId(int32 id) const;
@@ -42,22 +69,14 @@ class AX_EXPORT AXTree {
   // for testing and debugging.
   const std::string& error() { return error_; }
 
- protected:
-  // Subclasses can override this to use a subclass of AXNode.
-  virtual AXNode* CreateNode(AXNode* parent, int32 id, int32 index_in_parent);
+ private:
+  AXNode* CreateNode(AXNode* parent, int32 id, int32 index_in_parent);
 
   // This is called from within Unserialize(), it returns true on success.
-  // Subclasses can override this to do additional processing. |pending_nodes|
-  // is updated to contain all nodes that have been implicitly referenced
-  // as part of this update, but haven't been updated yet. It's an error if
-  // there are any pending nodes at the end of Unserialize.
-  virtual bool UpdateNode(const AXNodeData& src,
-                          std::set<AXNode*>* pending_nodes);
+  bool UpdateNode(const AXNodeData& src, AXTreeUpdateState* update_state);
 
-  // Subclasses can override this to do special behavior when the root changes.
-  virtual void OnRootChanged();
+  void OnRootChanged();
 
- private:
   // Convenience function to create a node and call Initialize on it.
   AXNode* CreateAndInitializeNode(
       AXNode* parent, int32 id, int32 index_in_parent);
@@ -76,13 +95,13 @@ class AX_EXPORT AXTree {
   // pointers to child nodes, reusing existing nodes already in the tree
   // if they exist, and creating otherwise. Reparenting is disallowed, so
   // if the id already exists as the child of another node, that's an
-  // error. Returns true on success, false on fatal error. See
-  // UpdateNode, above, for an explanation of |pending_nodes|.
+  // error. Returns true on success, false on fatal error.
   bool CreateNewChildVector(AXNode* node,
                             const std::vector<int32> new_child_ids,
                             std::vector<AXNode*>* new_children,
-                            std::set<AXNode*>* pending_nodes);
+                            AXTreeUpdateState* update_state);
 
+  AXTreeDelegate* delegate_;
   AXNode* root_;
   base::hash_map<int32, AXNode*> id_map_;
   std::string error_;

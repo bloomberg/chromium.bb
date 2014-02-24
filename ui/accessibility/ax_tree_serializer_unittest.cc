@@ -30,9 +30,9 @@ class AXTreeSerializerTest : public testing::Test {
   AXTreeUpdate treedata1_;
   scoped_ptr<AXSerializableTree> tree0_;
   scoped_ptr<AXSerializableTree> tree1_;
-  scoped_ptr<AXTreeSource<AXNode> > tree0_source_;
-  scoped_ptr<AXTreeSource<AXNode> > tree1_source_;
-  scoped_ptr<AXTreeSerializer<AXNode> > serializer_;
+  scoped_ptr<AXTreeSource<const AXNode*> > tree0_source_;
+  scoped_ptr<AXTreeSource<const AXNode*> > tree1_source_;
+  scoped_ptr<AXTreeSerializer<const AXNode*> > serializer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AXTreeSerializerTest);
@@ -48,7 +48,7 @@ void AXTreeSerializerTest::CreateTreeSerializer() {
   // Serialize tree0 so that AXTreeSerializer thinks that its client
   // is totally in sync.
   tree0_source_.reset(tree0_->CreateTreeSource());
-  serializer_.reset(new AXTreeSerializer<AXNode>(tree0_source_.get()));
+  serializer_.reset(new AXTreeSerializer<const AXNode*>(tree0_source_.get()));
   AXTreeUpdate unused_update;
   serializer_->SerializeChanges(tree0_->GetRoot(), &unused_update);
 

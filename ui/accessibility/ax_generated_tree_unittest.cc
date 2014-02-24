@@ -207,9 +207,9 @@ TEST(AXGeneratedTreeTest, SerializeGeneratedTrees) {
 
         // Start by serializing tree0 and unserializing it into a new
         // empty tree |dst_tree|.
-        scoped_ptr<AXTreeSource<AXNode> > tree0_source(
+        scoped_ptr<AXTreeSource<const AXNode*> > tree0_source(
             tree0.CreateTreeSource());
-        AXTreeSerializer<AXNode> serializer(tree0_source.get());
+        AXTreeSerializer<const AXNode*> serializer(tree0_source.get());
         AXTreeUpdate update0;
         serializer.SerializeChanges(tree0.GetRoot(), &update0);
 
@@ -221,7 +221,7 @@ TEST(AXGeneratedTreeTest, SerializeGeneratedTrees) {
 
         // Next, pretend that tree0 turned into tree1, and serialize
         // a sequence of updates to |dst_tree| to match.
-        scoped_ptr<AXTreeSource<AXNode> > tree1_source(
+        scoped_ptr<AXTreeSource<const AXNode*> > tree1_source(
             tree1.CreateTreeSource());
         serializer.ChangeTreeSourceForTesting(tree1_source.get());
 
