@@ -908,12 +908,6 @@ float RenderListBox::pixelStep(ScrollbarOrientation) const
     return 1.0f / itemHeight();
 }
 
-ScrollableArea* RenderListBox::enclosingScrollableArea() const
-{
-    // FIXME: Return a RenderLayer that's scrollable.
-    return 0;
-}
-
 IntRect RenderListBox::scrollableAreaBoundingBox() const
 {
     return absoluteBoundingBoxRect();

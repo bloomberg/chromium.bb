@@ -2343,12 +2343,6 @@ bool FrameView::scrollbarsCanBeActive() const
     return !!m_frame->document();
 }
 
-ScrollableArea* FrameView::enclosingScrollableArea() const
-{
-    // FIXME: Walk up the frame tree and look for a scrollable parent frame or RenderLayer.
-    return 0;
-}
-
 IntRect FrameView::scrollableAreaBoundingBox() const
 {
     RenderPart* ownerRenderer = frame().ownerRenderer();

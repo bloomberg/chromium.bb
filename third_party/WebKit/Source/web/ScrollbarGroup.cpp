@@ -125,12 +125,6 @@ bool ScrollbarGroup::isActive() const
     return true;
 }
 
-ScrollableArea* ScrollbarGroup::enclosingScrollableArea() const
-{
-    // FIXME: Return a parent scrollable area that can be scrolled.
-    return 0;
-}
-
 void ScrollbarGroup::setFrameRect(const IntRect& frameRect)
 {
     m_frameRect = frameRect;

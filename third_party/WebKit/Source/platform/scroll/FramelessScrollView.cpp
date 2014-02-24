@@ -56,12 +56,6 @@ bool FramelessScrollView::isActive() const
     return true;
 }
 
-ScrollableArea* FramelessScrollView::enclosingScrollableArea() const
-{
-    // FIXME: Look for an ancestor scrollable area that can be scrolled.
-    return 0;
-}
-
 bool FramelessScrollView::scrollbarsCanBeActive() const
 {
     return isActive();

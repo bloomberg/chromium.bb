@@ -54,7 +54,6 @@ public:
     virtual void invalidateScrollbarRect(WebCore::Scrollbar*, const WebCore::IntRect&) OVERRIDE;
     virtual void invalidateScrollCornerRect(const WebCore::IntRect&) OVERRIDE;
     virtual bool isActive() const OVERRIDE;
-    virtual ScrollableArea* enclosingScrollableArea() const OVERRIDE;
     virtual WebCore::IntRect scrollCornerRect() const OVERRIDE { return WebCore::IntRect(); }
     virtual bool isScrollCornerVisible() const OVERRIDE;
     virtual void getTickmarks(Vector<WebCore::IntRect>&) const OVERRIDE;

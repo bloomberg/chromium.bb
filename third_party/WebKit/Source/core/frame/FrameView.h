@@ -362,7 +362,6 @@ private:
     virtual void invalidateScrollbarRect(Scrollbar*, const IntRect&) OVERRIDE;
     virtual void getTickmarks(Vector<IntRect>&) const OVERRIDE;
     virtual void scrollTo(const IntSize&) OVERRIDE;
-    virtual ScrollableArea* enclosingScrollableArea() const OVERRIDE;
     virtual IntRect scrollableAreaBoundingBox() const OVERRIDE;
     virtual bool scrollAnimatorEnabled() const OVERRIDE;
     virtual bool usesCompositedScrolling() const OVERRIDE;
