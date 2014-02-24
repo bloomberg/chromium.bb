@@ -251,7 +251,7 @@ def is_keep_alive_for_gc(interface, attribute):
              attribute.name == 'self' or
              # FIXME: Remove these hard-coded hacks.
              idl_type in ['EventTarget', 'Window'] or
-             idl_type.startswith('HTML'))))
+             idl_type.startswith(('HTML', 'SVG')))))
 
 
 ################################################################################
