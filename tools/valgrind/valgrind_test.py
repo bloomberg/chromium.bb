@@ -955,9 +955,6 @@ class DrMemory(BaseTool):
 
     proc += self._tool_flags
 
-    # DrM i#850/851: The new -callstack_use_top_fp_selectively has bugs.
-    proc += ["-no_callstack_use_top_fp_selectively"]
-
     # Dr.Memory requires -- to separate tool flags from the executable name.
     proc += ["--"]
 
