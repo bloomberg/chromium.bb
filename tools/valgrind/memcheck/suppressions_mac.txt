@@ -2387,3 +2387,15 @@
    ...
    fun:_ZN7WebCore13StyleResolver*
 }
+{
+   bug_346072
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base17LoadNativeLibraryERKNS_8FilePathEPSs
+   fun:_ZN3gfx26InitializeStaticGLBindingsENS_16GLImplementationE
+   fun:_ZN3gfx9GLSurface30InitializeOneOffImplementationENS_16GLImplementationEbbb
+   fun:_ZN3gfx9GLSurface24InitializeOneOffForTestsEb
+   fun:_ZN7content16ContentTestSuite10InitializeEv
+   fun:_ZN4base9TestSuite3RunEv
+   fun:_ZN7content17UnitTestTestSuite3RunEv
+}
