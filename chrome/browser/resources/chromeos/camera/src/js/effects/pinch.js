@@ -15,15 +15,14 @@ var camera = camera || {};
 camera.effects = camera.effects || {};
 
 /**
- * @param {camera.Tracker} tracker Head tracker object.
  * @param {number} offset Vertical offset in percents.
  * @param {number} size Size of the pinch.
  * @param {number} strength Strength of the pinch.
  * @constructor
  * @extends {camera.Effect}
  */
-camera.effects.Pinch = function(tracker, offset, size, strength) {
-  camera.Effect.call(this, tracker);
+camera.effects.Pinch = function(offset, size, strength) {
+  camera.Effect.call(this);
 
   /**
    * @type {number}
@@ -67,8 +66,7 @@ camera.effects.Pinch.prototype.randomize = function() {
 /**
  * @override
  */
-camera.effects.Pinch.prototype.filterFrame = function(canvas) {
-  var faces = this.tracker_.getFacesForCanvas(canvas);
+camera.effects.Pinch.prototype.filterFrame = function(canvas, faces) {
   for (var index = 0; index < faces.length; index++) {
     var x = canvas.width * (faces[index].x + (faces[index].width / 2));
     var y = canvas.height * faces[index].y;
@@ -84,17 +82,16 @@ camera.effects.Pinch.prototype.filterFrame = function(canvas) {
 /**
  * @override
  */
-camera.effects.Pinch.prototype.getTitle = function() {
-  return chrome.i18n.getMessage('pinchEffect');
+camera.effects.Pinch.prototype.usesHeadTracker = function() {
+  return true;
 };
 
 /**
- * @param {camera.Tracker} tracker Head tracker object.
  * @constructor
  * @extends {camera.effects.Pinch}
  */
-camera.effects.BigHead = function(tracker) {
-  camera.effects.Pinch.call(this, tracker, 0, 1.0, 1.0);
+camera.effects.BigHead = function() {
+  camera.effects.Pinch.call(this, 0, 1.0, 1.0);
 };
 
 camera.effects.BigHead.prototype = {
@@ -109,12 +106,11 @@ camera.effects.BigHead.prototype.getTitle = function() {
 };
 
 /**
- * @param {camera.Tracker} tracker Head tracker object.
  * @constructor
  * @extends {camera.effects.Pinch}
  */
-camera.effects.BigJaw = function(tracker) {
-  camera.effects.Pinch.call(this, tracker, 0.9, 0.6, 1.0);
+camera.effects.BigJaw = function() {
+  camera.effects.Pinch.call(this, 0.9, 0.6, 1.0);
 };
 
 camera.effects.BigJaw.prototype = {
@@ -129,12 +125,11 @@ camera.effects.BigJaw.prototype.getTitle = function() {
 };
 
 /**
- * @param {camera.Tracker} tracker Head tracker object.
  * @constructor
  * @extends {camera.effects.Pinch}
  */
-camera.effects.BunnyHead = function(tracker) {
-  camera.effects.Pinch.call(this, tracker, 0.8, 0.8, -0.7);
+camera.effects.BunnyHead = function() {
+  camera.effects.Pinch.call(this, 0.8, 0.8, -0.7);
 };
 
 camera.effects.BunnyHead.prototype = {

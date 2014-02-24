@@ -15,12 +15,11 @@ var camera = camera || {};
 camera.effects = camera.effects || {};
 
 /**
- * @param {camera.Tracker} tracker Head tracker object.
  * @constructor
  * @extends {camera.Effect}
  */
-camera.effects.BigEyes = function(tracker) {
-  camera.Effect.call(this, tracker);
+camera.effects.BigEyes = function() {
+  camera.Effect.call(this);
 
   /**
    * @type {number}
@@ -46,8 +45,7 @@ camera.effects.BigEyes.prototype.randomize = function() {
 /**
  * @override
  */
-camera.effects.BigEyes.prototype.filterFrame = function(canvas) {
-  var faces = this.tracker_.getFacesForCanvas(canvas);
+camera.effects.BigEyes.prototype.filterFrame = function(canvas, faces) {
   for (var index = 0; index < faces.length; index++) {
     var x = canvas.width * (faces[index].x + (faces[index].width / 2));
     var y = canvas.height * faces[index].y;
@@ -71,5 +69,12 @@ camera.effects.BigEyes.prototype.filterFrame = function(canvas) {
  */
 camera.effects.BigEyes.prototype.getTitle = function() {
   return chrome.i18n.getMessage('bigEyesEffect');
+};
+
+/**
+ * @override
+ */
+camera.effects.BigEyes.prototype.usesHeadTracker = function() {
+  return true;
 };
 

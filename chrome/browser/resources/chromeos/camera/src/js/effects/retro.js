@@ -15,7 +15,6 @@ var camera = camera || {};
 camera.effects = camera.effects || {};
 
 /**
- * @param {camera.Tracker} tracker Head tracker object.
  * @param {number} rs Red channel shifting value. 0 for none, 1 for max.
  * @param {number} gs Green channel shifting value. 0 for none, 1 for max.
  * @param {number} bs Blue channel shifting value. 0 for none, 1 for max.
@@ -25,8 +24,8 @@ camera.effects = camera.effects || {};
  * @constructor
  * @extends {camera.Effect}
  */
-camera.effects.Retro = function(tracker, rs, gs, bs, rd, gd, bd) {
-  camera.Effect.call(this, tracker);
+camera.effects.Retro = function(rs, gs, bs, rd, gd, bd) {
+  camera.Effect.call(this);
 
   /**
    * @type {number}
@@ -95,7 +94,7 @@ camera.effects.Retro.prototype.randomize = function() {
 /**
  * @override
  */
-camera.effects.Retro.prototype.filterFrame = function(canvas) {
+camera.effects.Retro.prototype.filterFrame = function(canvas, faces) {
   canvas.brightnessContrast(this.brightness_ / 2, this.contrast_ / 2);
   canvas.curves([[0, this.rs_], [1, 1 - this.rd_]],
                 [[0, this.gs_], [1, 1 - this.gd_]],
@@ -105,12 +104,11 @@ camera.effects.Retro.prototype.filterFrame = function(canvas) {
 };
 
 /**
- * @param {camera.Tracker} tracker Head tracker object.
  * @constructor
  * @extends {camera.effects.Retro}
  */
-camera.effects.Retro30 = function(tracker) {
-  camera.effects.Retro.call(this, tracker, 0.1, 0, 0, 0, 0.1, 0.4);
+camera.effects.Retro30 = function() {
+  camera.effects.Retro.call(this, 0.1, 0, 0, 0, 0.1, 0.4);
 };
 
 camera.effects.Retro30.prototype = {
@@ -125,12 +123,11 @@ camera.effects.Retro30.prototype.getTitle = function() {
 };
 
 /**
- * @param {camera.Tracker} tracker Head tracker object.
  * @constructor
  * @extends {camera.effects.Retro}
  */
-camera.effects.Retro50 = function(tracker) {
-  camera.effects.Retro.call(this, tracker, 0.2, 0, 0, 0.2, 0.2, 0);
+camera.effects.Retro50 = function() {
+  camera.effects.Retro.call(this, 0.2, 0, 0, 0.2, 0.2, 0);
 };
 
 camera.effects.Retro50.prototype = {
@@ -145,12 +142,11 @@ camera.effects.Retro50.prototype.getTitle = function() {
 };
 
 /**
- * @param {camera.Tracker} tracker Head tracker object.
  * @constructor
  * @extends {camera.effects.Retro}
  */
-camera.effects.Retro60 = function(tracker) {
-  camera.effects.Retro.call(this, tracker, 0, 0, 0.2, 0.2, 0, 0);
+camera.effects.Retro60 = function() {
+  camera.effects.Retro.call(this, 0, 0, 0.2, 0.2, 0, 0);
 };
 
 camera.effects.Retro60.prototype = {

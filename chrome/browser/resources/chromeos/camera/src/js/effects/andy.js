@@ -15,12 +15,11 @@ var camera = camera || {};
 camera.effects = camera.effects || {};
 
 /**
- * @param {camera.Tracker} tracker Head tracker object.
  * @constructor
  * @extends {camera.Effect}
  */
-camera.effects.Andy = function(tracker) {
-  camera.Effect.call(this, tracker);
+camera.effects.Andy = function() {
+  camera.Effect.call(this);
   Object.freeze(this);
 };
 
@@ -31,8 +30,7 @@ camera.effects.Andy.prototype = {
 /**
  * @override
  */
-camera.effects.Andy.prototype.filterFrame = function(canvas) {
-  var faces = this.tracker_.getFacesForCanvas(canvas);
+camera.effects.Andy.prototype.filterFrame = function(canvas, faces) {
   for (var index = 0; index < faces.length; index++) {
     x = canvas.width * (faces[index].x + (faces[index].width / 2));
     y = canvas.height * faces[index].y;
@@ -47,5 +45,12 @@ camera.effects.Andy.prototype.filterFrame = function(canvas) {
  */
 camera.effects.Andy.prototype.getTitle = function() {
   return chrome.i18n.getMessage('andyEffect');
+};
+
+/**
+ * @override
+ */
+camera.effects.Andy.prototype.usesHeadTracker = function() {
+  return true;
 };
 

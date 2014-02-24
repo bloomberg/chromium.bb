@@ -15,12 +15,11 @@ var camera = camera || {};
 camera.effects = camera.effects || {};
 
 /**
- * @param {camera.Tracker} tracker Head tracker object.
  * @constructor
  * @extends {camera.Effect}
  */
-camera.effects.Swirl = function(tracker) {
-  camera.Effect.call(this, tracker);
+camera.effects.Swirl = function() {
+  camera.Effect.call(this);
   Object.freeze(this);
 };
 
@@ -31,8 +30,8 @@ camera.effects.Swirl.prototype = {
 /**
  * @override
  */
-camera.effects.Swirl.prototype.filterFrame = function(canvas) {
-  var face = this.tracker_.getFacesForCanvas(canvas)[0];
+camera.effects.Swirl.prototype.filterFrame = function(canvas, faces) {
+  var face = faces[0];
   var x = canvas.width * (face.x + (face.width / 2));
   var y = canvas.height * face.y;
   var radius = Math.sqrt(Math.pow(face.width * canvas.width, 2) +
@@ -45,5 +44,12 @@ camera.effects.Swirl.prototype.filterFrame = function(canvas) {
  */
 camera.effects.Swirl.prototype.getTitle = function() {
   return chrome.i18n.getMessage('swirlEffect');
+};
+
+/**
+ * @override
+ */
+camera.effects.Swirl.prototype.usesHeadTracker = function() {
+  return true;
 };
 

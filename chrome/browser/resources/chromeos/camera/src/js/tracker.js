@@ -254,6 +254,11 @@ camera.Tracker.prototype.detect = function() {
   this.busy_ = true;
   var finishMeasuring = this.performanceMonitor_.startMeasuring();
 
+  // Remember the dimensions, since the input canvas may change, before the
+  // returned callback is called.
+  var width = this.input_.width;
+  var height = this.input_.height;
+
   var result = ccv.detect_objects({
     canvas: this.input_,
     interval: 5,
@@ -269,10 +274,10 @@ camera.Tracker.prototype.detect = function() {
       var newFaces = [];
       for (var index = 0; index < result.length; index++) {
         var face = new camera.Tracker.Face(
-            result[index].x / this.input_.width,
-            result[index].y / this.input_.height,
-            result[index].width / this.input_.width,
-            result[index].height / this.input_.height,
+            result[index].x / width,
+            result[index].y / height,
+            result[index].width / width,
+            result[index].height / height,
             result[index].confidence);
         newFaces.push(face);
       }

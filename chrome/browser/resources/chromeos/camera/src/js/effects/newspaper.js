@@ -15,12 +15,11 @@ var camera = camera || {};
 camera.effects = camera.effects || {};
 
 /**
- * @param {camera.Tracker} tracker Head tracker object.
  * @constructor
  * @extends {camera.Effect}
  */
-camera.effects.Newspaper = function(tracker) {
-  camera.Effect.call(this, tracker);
+camera.effects.Newspaper = function() {
+  camera.Effect.call(this);
 
   /**
    * @type {number}
@@ -46,7 +45,7 @@ camera.effects.Newspaper.prototype.randomize = function() {
 /**
  * @override
  */
-camera.effects.Newspaper.prototype.filterFrame = function(canvas) {
+camera.effects.Newspaper.prototype.filterFrame = function(canvas, faces) {
   canvas.dotScreen(320, 239.5, 1.1, this.amount_ / 720 * canvas.height);
 };
 
