@@ -672,12 +672,6 @@ bool FrameView::isEnclosedInCompositingLayer() const
     return false;
 }
 
-bool FrameView::isSoftwareRenderable() const
-{
-    RenderView* renderView = this->renderView();
-    return !renderView || !renderView->compositor()->has3DContent();
-}
-
 RenderObject* FrameView::layoutRoot(bool onlyDuringLayout) const
 {
     return onlyDuringLayout && layoutPending() ? 0 : m_layoutSubtreeRoot;

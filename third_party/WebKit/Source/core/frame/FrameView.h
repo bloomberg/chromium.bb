@@ -114,10 +114,6 @@ public:
     bool hasCompositedContent() const;
     bool isEnclosedInCompositingLayer() const;
 
-    // Returns true when a paint with the PaintBehaviorFlattenCompositingLayers flag set gives
-    // a faithful representation of the content.
-    bool isSoftwareRenderable() const;
-
     void resetScrollbars();
     void prepareForDetach();
     void detachCustomScrollbars();
