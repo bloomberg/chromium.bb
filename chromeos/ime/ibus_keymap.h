@@ -15,9 +15,6 @@ namespace input_method {
 // Translates the key value from an IBus constant to a string.
 CHROMEOS_EXPORT std::string GetIBusKey(int keyval);
 
-// Translates the unmodified keycode from an IBus constant to a string.
-CHROMEOS_EXPORT std::string GetIBusKeyCode(uint16 keycode);
-
 }  // namespace input_method
 }  // namespace chromeos
 
