@@ -156,12 +156,18 @@ bool RuleFeatureSet::updateClassInvalidationSets(const CSSSelector& selector)
     AtomicString tagName;
 
     const CSSSelector* lastSelector = &selector;
-    for (; lastSelector->relation() == CSSSelector::SubSelector; lastSelector = lastSelector->tagHistory()) {
+    for (; lastSelector; lastSelector = lastSelector->tagHistory()) {
         extractClassIdOrTag(*lastSelector, classes, id, tagName);
+        if (lastSelector->m_match == CSSSelector::Class)
+            ensureClassInvalidationSet(lastSelector->value());
+        if (lastSelector->relation() != CSSSelector::SubSelector)
+            break;
     }
-    extractClassIdOrTag(*lastSelector, classes, id, tagName);
 
-    for (const CSSSelector* current = &selector ; current; current = current->tagHistory()) {
+    if (!lastSelector)
+        return true;
+
+    for (const CSSSelector* current = lastSelector->tagHistory(); current; current = current->tagHistory()) {
         if (current->m_match == CSSSelector::Class) {
             DescendantInvalidationSet& invalidationSet = ensureClassInvalidationSet(current->value());
             if (!id.isEmpty())

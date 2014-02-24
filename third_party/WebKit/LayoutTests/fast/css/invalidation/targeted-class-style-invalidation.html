@@ -5,6 +5,7 @@
   div { width: 100px }
   .outer .inner { width: 200px }
   .outer2 { width: 150px }
+  .outer3.nomatch {}
 </style>
 
 <div id="outer">
@@ -20,6 +21,10 @@
 <div id="outer2">
     <div id="inner3"></div>
 </div>
+<div id="outer3">
+    <div class="nomatch"></div>
+    <div class="outer3"></div>
+</div>
 
 <script>
 description("Test that adding and removing class names only updates the elements that are affected.");
@@ -34,6 +39,7 @@ function insertStyleSheet(css)
 var outer = document.getElementById('outer');
 var inner = document.getElementById('inner');
 var outer2 = document.getElementById('outer2');
+var outer3 = document.getElementById('outer3');
 
 var count;
 if (internals.runtimeFlags.targetedStyleRecalcEnabled)
@@ -68,4 +74,14 @@ outer2.offsetTop;
 outer2.className = 'outer2';
 shouldBe("internals.updateStyleAndReturnAffectedElementCount()", '' + count);
 shouldBe("getComputedStyle(outer2).width", '"150px"');
+
+if (internals.runtimeFlags.targetedStyleRecalcEnabled)
+    count = 1;
+else
+    count = 3;
+
+// Style recalc should happen on "outer3", but none of its children.
+outer3.offsetTop;
+outer3.className = 'outer3';
+shouldBe("internals.updateStyleAndReturnAffectedElementCount()", '' + count);
 </script>

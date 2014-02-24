@@ -9,6 +9,7 @@ PASS internals.updateStyleAndReturnAffectedElementCount() is 2
 PASS getComputedStyle(inner).width is "100px"
 PASS internals.updateStyleAndReturnAffectedElementCount() is 2
 PASS getComputedStyle(outer2).width is "150px"
+PASS internals.updateStyleAndReturnAffectedElementCount() is 3
 PASS successfullyParsed is true
 
 TEST COMPLETE
