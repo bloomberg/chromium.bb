@@ -514,12 +514,10 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     }
 
     dbus::MessageReader reader(response);
-    uint8* buffer = NULL;
+    const uint8* buffer = NULL;
     size_t buf_size = 0;
-    if (!reader.PopArrayOfBytes(reinterpret_cast<uint8**>(
-        &buffer), &buf_size)) {
+    if (!reader.PopArrayOfBytes(&buffer, &buf_size))
       return;
-    }
 
     // TODO(asharif): Figure out a way to avoid this copy.
     data.insert(data.end(), buffer, buffer + buf_size);

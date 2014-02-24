@@ -420,7 +420,7 @@ dbus::Response* NativeBackendKWalletTest::KWalletMethodCall(
     int handle = NativeBackendKWalletStub::kInvalidKWalletHandle;
     std::string folder_name;
     std::string key;
-    uint8_t* bytes = NULL;
+    const uint8_t* bytes = NULL;
     size_t length = 0;
     std::string app_name;
     EXPECT_TRUE(reader.PopInt32(&handle));

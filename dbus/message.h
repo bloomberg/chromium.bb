@@ -408,12 +408,14 @@ class CHROME_DBUS_EXPORT MessageReader {
   // Arrays of bytes are often used for exchanging binary blobs hence it's
   // worth having a specialized function.
   //
-  // |bytes| must be copied if the contents will be referenced after the
-  // MessageReader is destroyed.
-  bool PopArrayOfBytes(uint8** bytes, size_t* length);
+  // Ownership of the memory pointed to by |bytes| remains with the
+  // MessageReader; |bytes| must be copied if the contents will be referenced
+  // after the MessageReader is destroyed.
+  bool PopArrayOfBytes(const uint8** bytes, size_t* length);
 
-  // Gets the array of strings at the current iterator position.
-  // Returns true and advances the iterator on success.
+  // Gets the array of strings at the current iterator position. |strings| is
+  // cleared before being modified. Returns true and advances the iterator on
+  // success.
   //
   // Arrays of strings are often used to communicate with D-Bus
   // services like KWallet, hence it's worth having a specialized
@@ -421,7 +423,8 @@ class CHROME_DBUS_EXPORT MessageReader {
   bool PopArrayOfStrings(std::vector<std::string>* strings);
 
   // Gets the array of object paths at the current iterator position.
-  // Returns true and advances the iterator on success.
+  // |object_paths| is cleared before being modified. Returns true and advances
+  // the iterator on success.
   //
   // Arrays of object paths are often used to communicate with D-Bus
   // services like NetworkManager, hence it's worth having a specialized

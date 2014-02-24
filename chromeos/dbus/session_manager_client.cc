@@ -403,14 +403,14 @@ class SessionManagerClientImpl : public SessionManagerClient {
       return;
     }
     dbus::MessageReader reader(response);
-    uint8* values = NULL;
+    const uint8* values = NULL;
     size_t length = 0;
     if (!reader.PopArrayOfBytes(&values, &length)) {
       LOG(ERROR) << "Invalid response: " << response->ToString();
       return;
     }
     // static_cast does not work due to signedness.
-    extracted->assign(reinterpret_cast<char*>(values), length);
+    extracted->assign(reinterpret_cast<const char*>(values), length);
   }
 
   // Called when kSessionManagerRetrievePolicy or

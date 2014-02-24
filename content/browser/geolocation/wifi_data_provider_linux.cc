@@ -246,7 +246,7 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
                      << ": " << response->ToString();
         continue;
       }
-      uint8* ssid_bytes = NULL;
+      const uint8* ssid_bytes = NULL;
       size_t ssid_length = 0;
       if (!variant_reader.PopArrayOfBytes(&ssid_bytes, &ssid_length)) {
         LOG(WARNING) << "Unexpected response for " << access_point_path.value()

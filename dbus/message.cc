@@ -807,7 +807,7 @@ bool MessageReader::PopVariant(MessageReader* sub_reader) {
   return PopContainer(DBUS_TYPE_VARIANT, sub_reader);
 }
 
-bool MessageReader::PopArrayOfBytes(uint8** bytes, size_t* length) {
+bool MessageReader::PopArrayOfBytes(const uint8** bytes, size_t* length) {
   MessageReader array_reader(message_);
   if (!PopArray(&array_reader))
       return false;
@@ -829,9 +829,10 @@ bool MessageReader::PopArrayOfBytes(uint8** bytes, size_t* length) {
 
 bool MessageReader::PopArrayOfStrings(
     std::vector<std::string> *strings) {
+  strings->clear();
   MessageReader array_reader(message_);
   if (!PopArray(&array_reader))
-      return false;
+    return false;
   while (array_reader.HasMoreData()) {
     std::string string;
     if (!array_reader.PopString(&string))
@@ -843,9 +844,10 @@ bool MessageReader::PopArrayOfStrings(
 
 bool MessageReader::PopArrayOfObjectPaths(
     std::vector<ObjectPath> *object_paths) {
+  object_paths->clear();
   MessageReader array_reader(message_);
   if (!PopArray(&array_reader))
-      return false;
+    return false;
   while (array_reader.HasMoreData()) {
     ObjectPath object_path;
     if (!array_reader.PopObjectPath(&object_path))
@@ -858,9 +860,10 @@ bool MessageReader::PopArrayOfObjectPaths(
 bool MessageReader::PopArrayOfBytesAsProto(
     google::protobuf::MessageLite* protobuf) {
   DCHECK(protobuf != NULL);
-  char* serialized_buf = NULL;
+  const char* serialized_buf = NULL;
   size_t buf_size = 0;
-  if (!PopArrayOfBytes(reinterpret_cast<uint8**>(&serialized_buf), &buf_size)) {
+  if (!PopArrayOfBytes(
+          reinterpret_cast<const uint8**>(&serialized_buf), &buf_size)) {
     LOG(ERROR) << "Error reading array of bytes";
     return false;
   }

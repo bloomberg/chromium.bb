@@ -208,7 +208,7 @@ TEST(MessageTest, ArrayOfBytes) {
   writer.AppendArrayOfBytes(bytes.data(), bytes.size());
 
   MessageReader reader(message.get());
-  uint8* output_bytes = NULL;
+  const uint8* output_bytes = NULL;
   size_t length = 0;
   ASSERT_TRUE(reader.PopArrayOfBytes(&output_bytes, &length));
   ASSERT_FALSE(reader.HasMoreData());
@@ -225,7 +225,7 @@ TEST(MessageTest, ArrayOfBytes_Empty) {
   writer.AppendArrayOfBytes(bytes.data(), bytes.size());
 
   MessageReader reader(message.get());
-  uint8* output_bytes = NULL;
+  const uint8* output_bytes = NULL;
   size_t length = 0;
   ASSERT_TRUE(reader.PopArrayOfBytes(&output_bytes, &length));
   ASSERT_FALSE(reader.HasMoreData());

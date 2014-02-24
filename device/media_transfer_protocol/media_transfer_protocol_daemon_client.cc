@@ -349,7 +349,7 @@ class MediaTransferProtocolDaemonClientImpl
       return;
     }
 
-    uint8* data_bytes = NULL;
+    const uint8* data_bytes = NULL;
     size_t data_length = 0;
     dbus::MessageReader reader(response);
     if (!reader.PopArrayOfBytes(&data_bytes, &data_length)) {

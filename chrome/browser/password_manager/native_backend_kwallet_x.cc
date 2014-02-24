@@ -392,7 +392,7 @@ bool NativeBackendKWallet::RemoveLoginsCreatedBetween(
       continue;
     }
     dbus::MessageReader reader(response.get());
-    uint8_t* bytes = NULL;
+    const uint8_t* bytes = NULL;
     size_t length = 0;
     if (!reader.PopArrayOfBytes(&bytes, &length)) {
       LOG(ERROR) << "Error reading response from kwalletd (readEntry): "
@@ -502,7 +502,7 @@ bool NativeBackendKWallet::GetLoginsList(PasswordFormList* forms,
       return false;
     }
     dbus::MessageReader reader(response.get());
-    uint8_t* bytes = NULL;
+    const uint8_t* bytes = NULL;
     size_t length = 0;
     if (!reader.PopArrayOfBytes(&bytes, &length)) {
       LOG(ERROR) << "Error reading response from kwalletd (readEntry): "
@@ -610,7 +610,7 @@ bool NativeBackendKWallet::GetAllLogins(PasswordFormList* forms,
       continue;
     }
     dbus::MessageReader reader(response.get());
-    uint8_t* bytes = NULL;
+    const uint8_t* bytes = NULL;
     size_t length = 0;
     if (!reader.PopArrayOfBytes(&bytes, &length)) {
       LOG(ERROR) << "Error reading response from kwalletd (readEntry): "

@@ -357,7 +357,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     if (!response.get())
       return false;
     dbus::MessageReader reader(response.get());
-    uint8* bytes = NULL;
+    const uint8* bytes = NULL;
     size_t length = 0;
     if (!reader.PopArrayOfBytes(&bytes, &length) ||
         !reader.PopBool(successful))
@@ -737,7 +737,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
       return;
     }
     dbus::MessageReader reader(response);
-    uint8* bytes = NULL;
+    const uint8* bytes = NULL;
     size_t length = 0;
     if (!reader.PopArrayOfBytes(&bytes, &length)) {
       callback.Run(DBUS_METHOD_CALL_FAILURE, std::vector<uint8>());
@@ -827,7 +827,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
       return;
     }
     dbus::MessageReader reader(response);
-    uint8* data_buffer = NULL;
+    const uint8* data_buffer = NULL;
     size_t data_length = 0;
     bool result = false;
     if (!reader.PopArrayOfBytes(&data_buffer, &data_length) ||
@@ -835,7 +835,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
       callback.Run(DBUS_METHOD_CALL_FAILURE, false, std::string());
       return;
     }
-    std::string data(reinterpret_cast<char*>(data_buffer), data_length);
+    std::string data(reinterpret_cast<const char*>(data_buffer), data_length);
     callback.Run(DBUS_METHOD_CALL_SUCCESS, result, data);
   }
 
@@ -900,7 +900,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
     dbus::MessageReader reader(signal);
     int async_id = 0;
     bool return_status = false;
-    uint8* return_data_buffer = NULL;
+    const uint8* return_data_buffer = NULL;
     size_t return_data_length = 0;
     if (!reader.PopInt32(&async_id) ||
         !reader.PopBool(&return_status) ||
@@ -909,7 +909,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
       return;
     }
     if (!async_call_status_data_handler_.is_null()) {
-      std::string return_data(reinterpret_cast<char*>(return_data_buffer),
+      std::string return_data(reinterpret_cast<const char*>(return_data_buffer),
                               return_data_length);
       async_call_status_data_handler_.Run(async_id, return_status, return_data);
     }
