@@ -16,29 +16,47 @@ namespace base {
 // AssertAcquired() method.
 class BASE_EXPORT Lock {
  public:
+#if defined(NDEBUG)             // Optimized wrapper implementation
+  Lock() : lock_() {}
+  ~Lock() {}
+  void Acquire() { lock_.Lock(); }
+  void Release() { lock_.Unlock(); }
+
+  // If the lock is not held, take it and return true. If the lock is already
+  // held by another thread, immediately return false. This must not be called
+  // by a thread already holding the lock (what happens is undefined and an
+  // assertion may fail).
+  bool Try() { return lock_.Try(); }
+
+  // Null implementation if not debug.
+  void AssertAcquired() const {}
+#else
   Lock();
   ~Lock();
 
   // NOTE: Although windows critical sections support recursive locks, we do not
   // allow this, and we will commonly fire a DCHECK() if a thread attempts to
   // acquire the lock a second time (while already holding it).
-  void Acquire();
+  void Acquire() {
+    lock_.Lock();
+    CheckUnheldAndMark();
+  }
+  void Release() {
+    CheckHeldAndUnmark();
+    lock_.Unlock();
+  }
 
-  void Release();
+  bool Try() {
+    bool rv = lock_.Try();
+    if (rv) {
+      CheckUnheldAndMark();
+    }
+    return rv;
+  }
 
-  // If the lock is not held, take it and return true. If the lock is already
-  // held by another thread, immediately return false. This must not be called
-  // by a thread already holding the lock (what happens is undefined and an
-  // assertion may fail).
-  bool Try();
-
-#if !defined(NDEBUG)
   void AssertAcquired() const;
-#else
-  void AssertAcquired() const {}
-#endif
+#endif                          // NDEBUG
 
- private:
 #if defined(OS_POSIX)
   // The posix implementation of ConditionVariable needs to be able
   // to see our lock and tweak our debugging counters, as it releases
@@ -50,6 +68,7 @@ class BASE_EXPORT Lock {
   friend class WinVistaCondVar;
 #endif
 
+ private:
 #if !defined(NDEBUG)
   // Members and routines taking care of locks assertions.
   // Note that this checks for recursive locks and allows them
