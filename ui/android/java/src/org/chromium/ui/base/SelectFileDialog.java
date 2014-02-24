@@ -134,6 +134,7 @@ class SelectFileDialog implements WindowAndroid.IntentCallback{
      *  or an empty string otherwise.
      */
     private String resolveFileName(Uri uri, ContentResolver contentResolver) {
+        if (contentResolver == null || uri == null) return "";
         Cursor cursor = null;
         try {
             cursor = contentResolver.query(uri, null, null, null, null);
@@ -143,6 +144,10 @@ class SelectFileDialog implements WindowAndroid.IntentCallback{
                 int index = cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME);
                 if (index > -1) return cursor.getString(index);
             }
+        } catch (NullPointerException e) {
+            // Some android models don't handle the provider call correctly.
+            // see crbug.com/345393
+            return "";
         } finally {
             if (cursor != null ) {
                 cursor.close();
