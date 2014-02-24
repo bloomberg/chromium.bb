@@ -2922,7 +2922,7 @@ TEST_F(WebFrameTest, FindInPage)
     WebRange range = frame->selectionRange();
     EXPECT_EQ(5, range.startOffset());
     EXPECT_EQ(9, range.endOffset());
-    EXPECT_TRUE(frame->document().focusedNode().isNull());
+    EXPECT_TRUE(frame->document().focusedElement().isNull());
 
     // Find in an <input> value.
     EXPECT_TRUE(frame->find(findIdentifier, WebString::fromUTF8("bar2"), options, false, 0));
@@ -2932,7 +2932,7 @@ TEST_F(WebFrameTest, FindInPage)
     ASSERT_FALSE(range.isNull());
     EXPECT_EQ(5, range.startOffset());
     EXPECT_EQ(9, range.endOffset());
-    EXPECT_EQ(WebString::fromUTF8("INPUT"), frame->document().focusedNode().nodeName());
+    EXPECT_EQ(WebString::fromUTF8("INPUT"), frame->document().focusedElement().tagName());
 
     // Find in a <textarea> content.
     EXPECT_TRUE(frame->find(findIdentifier, WebString::fromUTF8("bar3"), options, false, 0));
@@ -2942,7 +2942,7 @@ TEST_F(WebFrameTest, FindInPage)
     ASSERT_FALSE(range.isNull());
     EXPECT_EQ(5, range.startOffset());
     EXPECT_EQ(9, range.endOffset());
-    EXPECT_EQ(WebString::fromUTF8("TEXTAREA"), frame->document().focusedNode().nodeName());
+    EXPECT_EQ(WebString::fromUTF8("TEXTAREA"), frame->document().focusedElement().tagName());
 
     // Find in a contentEditable element.
     EXPECT_TRUE(frame->find(findIdentifier, WebString::fromUTF8("bar4"), options, false, 0));
@@ -2953,7 +2953,7 @@ TEST_F(WebFrameTest, FindInPage)
     EXPECT_EQ(0, range.startOffset());
     EXPECT_EQ(4, range.endOffset());
     // "bar4" is surrounded by <span>, but the focusable node should be the parent <div>.
-    EXPECT_EQ(WebString::fromUTF8("DIV"), frame->document().focusedNode().nodeName());
+    EXPECT_EQ(WebString::fromUTF8("DIV"), frame->document().focusedElement().tagName());
 
     // Find in <select> content.
     EXPECT_FALSE(frame->find(findIdentifier, WebString::fromUTF8("bar5"), options, false, 0));

@@ -201,6 +201,11 @@ WebNode WebDocument::focusedNode() const
     return WebNode(constUnwrap<Document>()->focusedElement());
 }
 
+WebElement WebDocument::focusedElement() const
+{
+    return WebElement(constUnwrap<Document>()->focusedElement());
+}
+
 WebDocumentType WebDocument::doctype() const
 {
     return WebDocumentType(constUnwrap<Document>()->doctype());

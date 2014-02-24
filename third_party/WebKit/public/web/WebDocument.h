@@ -107,7 +107,9 @@ public:
     BLINK_EXPORT void images(WebVector<WebElement>&);
     BLINK_EXPORT WebURL completeURL(const WebString&) const;
     BLINK_EXPORT WebElement getElementById(const WebString&) const;
+    // Deprecated API. Use focusedElement() instead.
     BLINK_EXPORT WebNode focusedNode() const;
+    BLINK_EXPORT WebElement focusedElement() const;
     BLINK_EXPORT WebDocumentType doctype() const;
     BLINK_EXPORT void cancelFullScreen();
     BLINK_EXPORT WebElement fullScreenElement() const;
