@@ -1447,10 +1447,6 @@ void RenderLayerCompositor::frameViewDidScroll()
         AcceleratedFixedRootBackgroundHistogramMax);
 }
 
-void RenderLayerCompositor::frameViewDidLayout()
-{
-}
-
 void RenderLayerCompositor::frameViewScrollbarsExistenceDidChange()
 {
     if (m_containerLayer)
@@ -1899,8 +1895,7 @@ bool RenderLayerCompositor::requiresCompositingForPlugin(RenderObject* renderer)
     if (!(m_compositingTriggers & ChromeClient::PluginTrigger))
         return false;
 
-    bool composite = renderer->isEmbeddedObject() && toRenderEmbeddedObject(renderer)->allowsAcceleratedCompositing();
-    if (!composite)
+    if (!renderer->isEmbeddedObject() || !toRenderEmbeddedObject(renderer)->allowsAcceleratedCompositing())
         return false;
 
     // FIXME: this seems bogus. If we don't know the layout position/size of the plugin yet, would't that be handled elsewhere?
