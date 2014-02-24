@@ -216,10 +216,7 @@ void RTCPeerConnection::createOffer(PassOwnPtr<RTCSessionDescriptionCallback> su
     if (throwExceptionIfSignalingStateClosed(m_signalingState, exceptionState))
         return;
 
-    if (!successCallback) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "RTCSessionDescriptionCallback"));
-        return;
-    }
+    ASSERT(successCallback);
 
     blink::WebMediaConstraints constraints = MediaConstraintsImpl::create(mediaConstraints, exceptionState);
     if (exceptionState.hadException())
@@ -234,10 +231,7 @@ void RTCPeerConnection::createAnswer(PassOwnPtr<RTCSessionDescriptionCallback> s
     if (throwExceptionIfSignalingStateClosed(m_signalingState, exceptionState))
         return;
 
-    if (!successCallback) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "RTCSessionDescriptionCallback"));
-        return;
-    }
+    ASSERT(successCallback);
 
     blink::WebMediaConstraints constraints = MediaConstraintsImpl::create(mediaConstraints, exceptionState);
     if (exceptionState.hadException())
@@ -339,14 +333,8 @@ void RTCPeerConnection::addIceCandidate(RTCIceCandidate* iceCandidate, PassOwnPt
         exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(1, "RTCIceCandidate"));
         return;
     }
-    if (!successCallback) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(2, "Function"));
-        return;
-    }
-    if (!errorCallback) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::argumentNullOrIncorrectType(3, "RTCErrorCallback"));
-        return;
-    }
+    ASSERT(successCallback);
+    ASSERT(errorCallback);
 
     RefPtr<RTCVoidRequest> request = RTCVoidRequestImpl::create(executionContext(), successCallback, errorCallback);
 
