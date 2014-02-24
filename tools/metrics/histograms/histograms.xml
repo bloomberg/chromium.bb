@@ -36441,7 +36441,7 @@ other types of suffix sets.
 </fieldtrial>
 
 <fieldtrial name="TrackedSplitPreferences" separator=".">
-  <group name="extension.settings" label="Extension IDs dictionary"/>
+  <group name="extensions.settings" label="Extension IDs dictionary"/>
   <affected-histogram name="Settings.TrackedSplitPreferenceChanged"/>
 </fieldtrial>
 
