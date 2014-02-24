@@ -49,7 +49,7 @@ while (@files) {
         }
     }
     close(F);
-    my $copyright = join(" / ", values %copyrights);
+    my $copyright = join(" / ", sort values %copyrights);
     print "$file\t";
     if (check_is_generated_file($file_header)) {
         print "GENERATED FILE";
@@ -140,11 +140,13 @@ sub start_copyright_parsing() {
 
         my $copyright_indicator_regex =
             '(?:copyright|copr\.|\x{00a9}|\xc2\xa9|\(c\))';
+        my $full_copyright_indicator_regex =
+            sprintf '(?:\W|^)%s(?::\s*|\s+)(\w.*)$', $copyright_indicator_regex;
         my $copyright_disindicator_regex =
             '\b(?:info(?:rmation)?|notice|and|or)\b';
 
         my $copyright = '';
-        if ($line =~ m%\W$copyright_indicator_regex(?::\s*|\s+)(\w.*)$%i) {
+        if ($line =~ m%$full_copyright_indicator_regex%i) {
             my $match = $1;
             if ($match !~ m%^\s*$copyright_disindicator_regex%i) {
                 $match =~ s/([,.])?\s*$//;
