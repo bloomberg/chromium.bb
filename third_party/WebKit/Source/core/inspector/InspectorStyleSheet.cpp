@@ -659,6 +659,7 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties() con
         const bool disabled = it->sourceData.disabled;
 
         TypeBuilder::CSS::CSSProperty::Status::Enum status = disabled ? TypeBuilder::CSS::CSSProperty::Status::Disabled : TypeBuilder::CSS::CSSProperty::Status::Active;
+        bool relevantPropertyStatus = true;
 
         RefPtr<TypeBuilder::CSS::CSSProperty> property = TypeBuilder::CSS::CSSProperty::create()
             .setName(name)
@@ -725,7 +726,7 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties() con
                 // Default "implicit" == false.
                 if (implicit)
                     property->setImplicit(true);
-                status = TypeBuilder::CSS::CSSProperty::Status::Style;
+                relevantPropertyStatus = false;
 
                 String shorthand = m_style->getPropertyShorthand(name);
                 if (!shorthand.isEmpty()) {
@@ -739,8 +740,7 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties() con
             }
         }
 
-        // Default "status" == "style".
-        if (status != TypeBuilder::CSS::CSSProperty::Status::Style)
+        if (relevantPropertyStatus)
             property->setStatus(status);
     }
 
