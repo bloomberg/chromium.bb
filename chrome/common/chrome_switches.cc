@@ -1518,6 +1518,9 @@ const char kEnableSpdyProxyAuth[]           = "enable-spdy-proxy-auth";
 // Disables the app banner <meta> tag.
 const char kDisableAppBanners[]              = "disable-app-banners";
 
+// Disables support for playing videos on Chromecast devices.
+const char kDisableCast[]                    = "disable-cast";
+
 // Disables the new NTP.
 const char kDisableNewNTP[]                  = "disable-new-ntp";
 
@@ -1527,9 +1530,6 @@ const char kDisableZeroSuggest[] = "disable-zero-suggest";
 // Enable the accessibility tab switcher.
 const char kEnableAccessibilityTabSwitcher[] =
     "enable-accessibility-tab-switcher";
-
-// Enables support for playing videos on Chromecast devices.
-const char kEnableCast[]                    = "enable-cast";
 
 // Enables Contextual Search
 const char kEnableContextualSearch[]        = "contextual-search";

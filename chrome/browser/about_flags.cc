@@ -1950,11 +1950,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableFastTextAutosizing)
   },
   {
-    "enable-cast",
-    IDS_FLAGS_ENABLE_CAST_NAME,
-    IDS_FLAGS_ENABLE_CAST_DESCRIPTION,
+    "disable-cast",
+    IDS_FLAGS_DISABLE_CAST_NAME,
+    IDS_FLAGS_DISABLE_CAST_DESCRIPTION,
     kOsAndroid,
-    SINGLE_VALUE_TYPE(switches::kEnableCast)
+    SINGLE_VALUE_TYPE(switches::kDisableCast)
   },
 #endif
   {
