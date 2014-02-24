@@ -164,7 +164,7 @@ remoting.HostNativeMessaging.prototype.handleIncomingMessage_ =
       this.version_ = getStringAttr(message, 'version');
       // Old versions of the native messaging host do not return this list.
       // Those versions default to the empty list of supported features.
-      getArrayAttr(message, 'supportedFeatures', []);
+      this.supportedFeatures_ = getArrayAttr(message, 'supportedFeatures', []);
       onDone();
       break;
 
