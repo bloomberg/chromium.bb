@@ -32,6 +32,7 @@
 #define AnimationEffect_h
 
 #include "CSSPropertyNames.h"
+#include "heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
@@ -40,7 +41,8 @@ namespace WebCore {
 
 class AnimatableValue;
 
-class AnimationEffect : public RefCounted<AnimationEffect> {
+class AnimationEffect : public RefCountedWillBeGarbageCollectedFinalized<AnimationEffect> {
+    DECLARE_GC_INFO;
 public:
     enum CompositeOperation {
         CompositeReplace,
@@ -63,6 +65,8 @@ public:
 
     virtual bool affects(CSSPropertyID) { return false; };
     virtual bool isKeyframeEffectModel() const { return false; }
+
+    virtual void trace(Visitor*) = 0;
 };
 
 } // namespace WebCore

@@ -797,7 +797,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* element, const 
 
 // This function is used by the WebAnimations JavaScript API method animate().
 // FIXME: Remove this when animate() switches away from resolution-dependent parsing.
-PassRefPtr<KeyframeEffectModel> StyleResolver::createKeyframeEffectModel(Element& element, const Vector<RefPtr<MutableStylePropertySet> >& propertySetVector, KeyframeEffectModel::KeyframeVector& keyframes)
+PassRefPtrWillBeRawPtr<KeyframeEffectModel> StyleResolver::createKeyframeEffectModel(Element& element, const Vector<RefPtr<MutableStylePropertySet> >& propertySetVector, KeyframeEffectModel::KeyframeVector& keyframes)
 {
     ASSERT(propertySetVector.size() == keyframes.size());
 

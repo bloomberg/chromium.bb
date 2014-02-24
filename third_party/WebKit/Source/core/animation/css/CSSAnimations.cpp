@@ -114,7 +114,7 @@ static void resolveKeyframes(StyleResolver* resolver, Element* element, const El
         const StyleKeyframe* styleKeyframe = styleKeyframes[i].get();
         // It's OK to pass a null element here.
         RefPtr<RenderStyle> keyframeStyle = resolver->styleForKeyframe(element, style, parentStyle, styleKeyframe, name);
-        RefPtr<Keyframe> keyframe = Keyframe::create();
+        RefPtrWillBeRawPtr<Keyframe> keyframe = Keyframe::create();
         const Vector<double>& offsets = styleKeyframe->keys();
         ASSERT(!offsets.isEmpty());
         keyframe->setOffset(offsets[0]);
@@ -159,13 +159,13 @@ static void resolveKeyframes(StyleResolver* resolver, Element* element, const El
     keyframes.shrink(targetIndex + 1);
 
     // Add 0% and 100% keyframes if absent.
-    RefPtr<Keyframe> startKeyframe = keyframes[0];
+    RefPtrWillBeRawPtr<Keyframe> startKeyframe = keyframes[0];
     if (startKeyframe->offset()) {
         startKeyframe = Keyframe::create();
         startKeyframe->setOffset(0);
         keyframes.prepend(startKeyframe);
     }
-    RefPtr<Keyframe> endKeyframe = keyframes[keyframes.size() - 1];
+    RefPtrWillBeRawPtr<Keyframe> endKeyframe = keyframes[keyframes.size() - 1];
     if (endKeyframe->offset() != 1) {
         endKeyframe = Keyframe::create();
         endKeyframe->setOffset(1);
@@ -231,7 +231,7 @@ static void resolveKeyframes(StyleResolver* resolver, Element* element, const El
                 ASSERT(i && i != numKeyframes - 1);
                 continue;
             }
-            RefPtr<Keyframe> clonedKeyframe = Keyframe::create();
+            RefPtrWillBeRawPtr<Keyframe> clonedKeyframe = Keyframe::create();
             clonedKeyframe->setOffset(keyframe->offset());
             clonedKeyframe->setComposite(keyframe->composite());
             clonedKeyframe->setPropertyValue(property, keyframe->propertyValue(property));
@@ -511,7 +511,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         InertAnimation* inertAnimation = newTransition.animation.get();
         OwnPtr<TransitionEventDelegate> eventDelegate = adoptPtr(new TransitionEventDelegate(element, id));
 
-        RefPtr<AnimationEffect> effect = inertAnimation->effect();
+        RefPtrWillBeRawPtr<AnimationEffect> effect = inertAnimation->effect();
 
         if (retargetedCompositorTransitions.contains(id)) {
             const std::pair<RefPtr<Animation>, double>& oldTransition = retargetedCompositorTransitions.get(id);
@@ -573,17 +573,17 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, const
 
     KeyframeEffectModel::KeyframeVector keyframes;
 
-    RefPtr<Keyframe> startKeyframe = Keyframe::create();
+    RefPtrWillBeRawPtr<Keyframe> startKeyframe = Keyframe::create();
     startKeyframe->setPropertyValue(id, from.get());
     startKeyframe->setOffset(0);
     keyframes.append(startKeyframe);
 
-    RefPtr<Keyframe> endKeyframe = Keyframe::create();
+    RefPtrWillBeRawPtr<Keyframe> endKeyframe = Keyframe::create();
     endKeyframe->setPropertyValue(id, to.get());
     endKeyframe->setOffset(1);
     keyframes.append(endKeyframe);
 
-    RefPtr<KeyframeEffectModel> effect = KeyframeEffectModel::create(keyframes);
+    RefPtrWillBeRawPtr<KeyframeEffectModel> effect = KeyframeEffectModel::create(keyframes);
 
     Timing timing;
     bool isPaused;

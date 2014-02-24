@@ -33,6 +33,7 @@
 
 #include "core/animation/AnimationEffect.h"
 #include "core/animation/TimedItem.h"
+#include "heap/Handle.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
@@ -45,7 +46,7 @@ class Animation FINAL : public TimedItem {
 public:
     enum Priority { DefaultPriority, TransitionPriority };
 
-    static PassRefPtr<Animation> create(PassRefPtr<Element>, PassRefPtr<AnimationEffect>, const Timing&, Priority = DefaultPriority, PassOwnPtr<EventDelegate> = nullptr);
+    static PassRefPtr<Animation> create(PassRefPtr<Element>, PassRefPtrWillBeRawPtr<AnimationEffect>, const Timing&, Priority = DefaultPriority, PassOwnPtr<EventDelegate> = nullptr);
     // Web Animations API Bindings constructors.
     static PassRefPtr<Animation> create(Element*, Vector<Dictionary> keyframeDictionaryVector, Dictionary timingInput);
     static PassRefPtr<Animation> create(Element*, Vector<Dictionary> keyframeDictionaryVector, double timingInput);
@@ -99,10 +100,10 @@ private:
     static PassRefPtr<Animation> createUnsafe(Element*, Vector<Dictionary> keyframeDictionaryVector, double timingInput);
     static PassRefPtr<Animation> createUnsafe(Element*, Vector<Dictionary> keyframeDictionaryVector);
 
-    Animation(PassRefPtr<Element>, PassRefPtr<AnimationEffect>, const Timing&, Priority, PassOwnPtr<EventDelegate>);
+    Animation(PassRefPtr<Element>, PassRefPtrWillBeRawPtr<AnimationEffect>, const Timing&, Priority, PassOwnPtr<EventDelegate>);
 
     RefPtr<Element> m_target;
-    RefPtr<AnimationEffect> m_effect;
+    RefPtrWillBePersistent<AnimationEffect> m_effect;
 
     bool m_activeInAnimationStack;
     OwnPtr<AnimationEffect::CompositableValueList> m_compositableValues;

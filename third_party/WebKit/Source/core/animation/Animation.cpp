@@ -46,7 +46,7 @@
 
 namespace WebCore {
 
-PassRefPtr<Animation> Animation::create(PassRefPtr<Element> target, PassRefPtr<AnimationEffect> effect, const Timing& timing, Priority priority, PassOwnPtr<EventDelegate> eventDelegate)
+PassRefPtr<Animation> Animation::create(PassRefPtr<Element> target, PassRefPtrWillBeRawPtr<AnimationEffect> effect, const Timing& timing, Priority priority, PassOwnPtr<EventDelegate> eventDelegate)
 {
     return adoptRef(new Animation(target, effect, timing, priority, eventDelegate));
 }
@@ -232,7 +232,7 @@ void Animation::populateTiming(Timing& timing, Dictionary timingInputDictionary)
     timing.assertValid();
 }
 
-static PassRefPtr<KeyframeEffectModel> createKeyframeEffectModel(Element* element, Vector<Dictionary> keyframeDictionaryVector)
+static PassRefPtrWillBeRawPtr<KeyframeEffectModel> createKeyframeEffectModel(Element* element, Vector<Dictionary> keyframeDictionaryVector)
 {
     KeyframeEffectModel::KeyframeVector keyframes;
     Vector<RefPtr<MutableStylePropertySet> > propertySetVector;
@@ -241,7 +241,7 @@ static PassRefPtr<KeyframeEffectModel> createKeyframeEffectModel(Element* elemen
         RefPtr<MutableStylePropertySet> propertySet = MutableStylePropertySet::create();
         propertySetVector.append(propertySet);
 
-        RefPtr<Keyframe> keyframe = Keyframe::create();
+        RefPtrWillBeRawPtr<Keyframe> keyframe = Keyframe::create();
         keyframes.append(keyframe);
 
         double offset;
@@ -284,13 +284,13 @@ static PassRefPtr<KeyframeEffectModel> createKeyframeEffectModel(Element* elemen
     }
 
     // FIXME: Replace this with code that just parses, when that code is available.
-    RefPtr<KeyframeEffectModel> effect = StyleResolver::createKeyframeEffectModel(*element, propertySetVector, keyframes);
+    RefPtrWillBeRawPtr<KeyframeEffectModel> effect = StyleResolver::createKeyframeEffectModel(*element, propertySetVector, keyframes);
     return effect;
 }
 
 PassRefPtr<Animation> Animation::createUnsafe(Element* element, Vector<Dictionary> keyframeDictionaryVector, Dictionary timingInput)
 {
-    RefPtr<KeyframeEffectModel> effect = createKeyframeEffectModel(element, keyframeDictionaryVector);
+    RefPtrWillBeRawPtr<KeyframeEffectModel> effect = createKeyframeEffectModel(element, keyframeDictionaryVector);
 
     Timing timing;
     populateTiming(timing, timingInput);
@@ -300,7 +300,7 @@ PassRefPtr<Animation> Animation::createUnsafe(Element* element, Vector<Dictionar
 
 PassRefPtr<Animation> Animation::createUnsafe(Element* element, Vector<Dictionary> keyframeDictionaryVector, double timingInput)
 {
-    RefPtr<KeyframeEffectModel> effect = createKeyframeEffectModel(element, keyframeDictionaryVector);
+    RefPtrWillBeRawPtr<KeyframeEffectModel> effect = createKeyframeEffectModel(element, keyframeDictionaryVector);
 
     Timing timing;
     if (!std::isnan(timingInput))
@@ -311,13 +311,13 @@ PassRefPtr<Animation> Animation::createUnsafe(Element* element, Vector<Dictionar
 
 PassRefPtr<Animation> Animation::createUnsafe(Element* element, Vector<Dictionary> keyframeDictionaryVector)
 {
-    RefPtr<KeyframeEffectModel> effect = createKeyframeEffectModel(element, keyframeDictionaryVector);
+    RefPtrWillBeRawPtr<KeyframeEffectModel> effect = createKeyframeEffectModel(element, keyframeDictionaryVector);
     Timing timing;
 
     return create(element, effect, timing);
 }
 
-Animation::Animation(PassRefPtr<Element> target, PassRefPtr<AnimationEffect> effect, const Timing& timing, Priority priority, PassOwnPtr<EventDelegate> eventDelegate)
+Animation::Animation(PassRefPtr<Element> target, PassRefPtrWillBeRawPtr<AnimationEffect> effect, const Timing& timing, Priority priority, PassOwnPtr<EventDelegate> eventDelegate)
     : TimedItem(timing, eventDelegate)
     , m_target(target)
     , m_effect(effect)

@@ -94,6 +94,9 @@ const double accuracyForKeyframeEasing = 0.0000001;
 
 namespace WebCore {
 
+DEFINE_GC_INFO(Keyframe);
+DEFINE_GC_INFO(AnimationEffect);
+
 Keyframe::Keyframe()
     : m_offset(nullValue())
     , m_composite(AnimationEffect::CompositeReplace)
@@ -134,9 +137,9 @@ PropertySet Keyframe::properties() const
     return properties;
 }
 
-PassRefPtr<Keyframe> Keyframe::cloneWithOffset(double offset) const
+PassRefPtrWillBeRawPtr<Keyframe> Keyframe::cloneWithOffset(double offset) const
 {
-    RefPtr<Keyframe> theClone = clone();
+    RefPtrWillBeRawPtr<Keyframe> theClone = clone();
     theClone->setOffset(offset);
     return theClone.release();
 }
@@ -387,6 +390,11 @@ PassRefPtr<AnimationEffect::CompositableValue> KeyframeEffectModel::PropertySpec
     if (const TimingFunction* timingFunction = (*before)->easing())
         fraction = timingFunction->evaluate(fraction, accuracyForKeyframeEasing);
     return BlendedCompositableValue::create((*before)->value(), (*after)->value(), fraction);
+}
+
+void KeyframeEffectModel::trace(Visitor* visitor)
+{
+    visitor->trace(m_keyframes);
 }
 
 } // namespace

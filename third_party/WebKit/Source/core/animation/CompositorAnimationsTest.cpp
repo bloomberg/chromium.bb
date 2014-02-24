@@ -72,9 +72,9 @@ protected:
     Timing m_timing;
     CompositorAnimationsImpl::CompositorTiming m_compositorTiming;
     KeyframeEffectModel::KeyframeVector m_keyframeVector2;
-    RefPtr<KeyframeEffectModel> m_keyframeAnimationEffect2;
+    RefPtrWillBePersistent<KeyframeEffectModel> m_keyframeAnimationEffect2;
     KeyframeEffectModel::KeyframeVector m_keyframeVector5;
-    RefPtr<KeyframeEffectModel> m_keyframeAnimationEffect5;
+    RefPtrWillBePersistent<KeyframeEffectModel> m_keyframeAnimationEffect5;
 
     virtual void SetUp()
     {
@@ -140,16 +140,16 @@ public:
         return timing;
     }
 
-    PassRefPtr<Keyframe> createReplaceOpKeyframe(CSSPropertyID id, AnimatableValue* value, double offset = 0)
+    PassRefPtrWillBeRawPtr<Keyframe> createReplaceOpKeyframe(CSSPropertyID id, AnimatableValue* value, double offset = 0)
     {
-        RefPtr<Keyframe> keyframe = Keyframe::create();
+        RefPtrWillBeRawPtr<Keyframe> keyframe = Keyframe::create();
         keyframe->setPropertyValue(id, value);
         keyframe->setComposite(AnimationEffect::CompositeReplace);
         keyframe->setOffset(offset);
         return keyframe;
     }
 
-    PassRefPtr<Keyframe> createDefaultKeyframe(CSSPropertyID id, AnimationEffect::CompositeOperation op, double offset = 0)
+    PassRefPtrWillBeRawPtr<Keyframe> createDefaultKeyframe(CSSPropertyID id, AnimationEffect::CompositeOperation op, double offset = 0)
     {
         RefPtr<AnimatableValue> value;
         if (id == CSSPropertyWebkitTransform)
@@ -157,7 +157,7 @@ public:
         else
             value = AnimatableDouble::create(10.0);
 
-        RefPtr<Keyframe> keyframe = createReplaceOpKeyframe(id, value.get(), offset);
+        RefPtrWillBeRawPtr<Keyframe> keyframe = createReplaceOpKeyframe(id, value.get(), offset);
         keyframe->setComposite(op);
         return keyframe;
     }
@@ -182,12 +182,12 @@ public:
         return frames;
     }
 
-    PassRefPtr<KeyframeEffectModel> createKeyframeEffectModel(PassRefPtr<Keyframe> prpFrom, PassRefPtr<Keyframe> prpTo, PassRefPtr<Keyframe> prpC = nullptr, PassRefPtr<Keyframe> prpD = nullptr)
+    PassRefPtrWillBeRawPtr<KeyframeEffectModel> createKeyframeEffectModel(PassRefPtrWillBeRawPtr<Keyframe> prpFrom, PassRefPtrWillBeRawPtr<Keyframe> prpTo, PassRefPtrWillBeRawPtr<Keyframe> prpC = nullptr, PassRefPtrWillBeRawPtr<Keyframe> prpD = nullptr)
     {
-        RefPtr<Keyframe> from = prpFrom;
-        RefPtr<Keyframe> to = prpTo;
-        RefPtr<Keyframe> c = prpC;
-        RefPtr<Keyframe> d = prpD;
+        RefPtrWillBeRawPtr<Keyframe> from = prpFrom;
+        RefPtrWillBeRawPtr<Keyframe> to = prpTo;
+        RefPtrWillBeRawPtr<Keyframe> c = prpC;
+        RefPtrWillBeRawPtr<Keyframe> d = prpD;
 
         EXPECT_EQ(from->offset(), 0);
         KeyframeEffectModel::KeyframeVector frames;
@@ -208,7 +208,7 @@ public:
         if (!HasFatalFailure()) {
             return KeyframeEffectModel::create(frames);
         }
-        return PassRefPtr<KeyframeEffectModel>();
+        return PassRefPtrWillBeRawPtr<KeyframeEffectModel>();
     }
 
 };
@@ -218,15 +218,15 @@ public:
 
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorKeyframeMultipleCSSProperties)
 {
-    RefPtr<Keyframe> keyframeGoodMultiple = createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace);
+    RefPtrWillBeRawPtr<Keyframe> keyframeGoodMultiple = createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace);
     keyframeGoodMultiple->setPropertyValue(CSSPropertyWebkitTransform, AnimatableTransform::create(TransformOperations()).get());
     EXPECT_TRUE(isCandidateHelperForSingleKeyframe(keyframeGoodMultiple.get()));
 
-    RefPtr<Keyframe> keyframeBadMultipleOp = createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeAdd);
+    RefPtrWillBeRawPtr<Keyframe> keyframeBadMultipleOp = createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeAdd);
     keyframeBadMultipleOp->setPropertyValue(CSSPropertyWebkitTransform, AnimatableDouble::create(10.0).get());
     EXPECT_FALSE(isCandidateHelperForSingleKeyframe(keyframeBadMultipleOp.get()));
 
-    RefPtr<Keyframe> keyframeBadMultipleID = createDefaultKeyframe(CSSPropertyColor, AnimationEffect::CompositeReplace);
+    RefPtrWillBeRawPtr<Keyframe> keyframeBadMultipleID = createDefaultKeyframe(CSSPropertyColor, AnimationEffect::CompositeReplace);
     keyframeBadMultipleID->setPropertyValue(CSSPropertyOpacity, AnimatableDouble::create(10.0).get());
     EXPECT_FALSE(isCandidateHelperForSingleKeyframe(keyframeBadMultipleID.get()));
 }
@@ -235,17 +235,17 @@ TEST_F(AnimationCompositorAnimationsTest, isNotCandidateForCompositorAnimationTr
 {
     TransformOperations ops;
     ops.operations().append(TranslateTransformOperation::create(Length(2, WebCore::Fixed), Length(2, WebCore::Fixed), TransformOperation::TranslateX));
-    RefPtr<Keyframe> goodKeyframe = createReplaceOpKeyframe(CSSPropertyWebkitTransform, AnimatableTransform::create(ops).get());
+    RefPtrWillBeRawPtr<Keyframe> goodKeyframe = createReplaceOpKeyframe(CSSPropertyWebkitTransform, AnimatableTransform::create(ops).get());
     EXPECT_TRUE(isCandidateHelperForSingleKeyframe(goodKeyframe.get()));
 
     ops.operations().append(TranslateTransformOperation::create(Length(50, WebCore::Percent), Length(2, WebCore::Fixed), TransformOperation::TranslateX));
-    RefPtr<Keyframe> badKeyframe = createReplaceOpKeyframe(CSSPropertyWebkitTransform, AnimatableTransform::create(ops).get());
+    RefPtrWillBeRawPtr<Keyframe> badKeyframe = createReplaceOpKeyframe(CSSPropertyWebkitTransform, AnimatableTransform::create(ops).get());
     EXPECT_FALSE(isCandidateHelperForSingleKeyframe(badKeyframe.get()));
 
     TransformOperations ops2;
     Length calcLength = Length(100, WebCore::Percent).blend(Length(100, WebCore::Fixed), 0.5, WebCore::ValueRangeAll);
     ops2.operations().append(TranslateTransformOperation::create(calcLength, Length(0, WebCore::Fixed), TransformOperation::TranslateX));
-    RefPtr<Keyframe> badKeyframe2 = createReplaceOpKeyframe(CSSPropertyWebkitTransform, AnimatableTransform::create(ops2).get());
+    RefPtrWillBeRawPtr<Keyframe> badKeyframe2 = createReplaceOpKeyframe(CSSPropertyWebkitTransform, AnimatableTransform::create(ops2).get());
     EXPECT_FALSE(isCandidateHelperForSingleKeyframe(badKeyframe2.get()));
 }
 
@@ -656,7 +656,7 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositor)
     KeyframeEffectModel::KeyframeVector basicFramesVector;
     basicFramesVector.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace, 0.0).get());
     basicFramesVector.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace, 1.0).get());
-    RefPtr<KeyframeEffectModel> basicFrames = KeyframeEffectModel::create(basicFramesVector).get();
+    RefPtrWillBeRawPtr<KeyframeEffectModel> basicFrames = KeyframeEffectModel::create(basicFramesVector).get();
 
     EXPECT_TRUE(isCandidateForAnimationOnCompositor(linearTiming, *basicFrames.get()));
     EXPECT_TRUE(isCandidateForAnimationOnCompositor(cubicTiming, *basicFrames.get()));
@@ -667,7 +667,7 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositor)
     nonBasicFramesVector.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace, 0.0).get());
     nonBasicFramesVector.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace, 0.5).get());
     nonBasicFramesVector.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace, 1.0).get());
-    RefPtr<KeyframeEffectModel> nonBasicFrames = KeyframeEffectModel::create(nonBasicFramesVector).get();
+    RefPtrWillBeRawPtr<KeyframeEffectModel> nonBasicFrames = KeyframeEffectModel::create(nonBasicFramesVector).get();
 
     EXPECT_TRUE(CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(linearTiming, *nonBasicFrames.get()));
     EXPECT_FALSE(CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(cubicTiming, *nonBasicFrames.get()));
@@ -680,7 +680,7 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositor)
 TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimation)
 {
     // Animation to convert
-    RefPtr<KeyframeEffectModel> effect = createKeyframeEffectModel(
+    RefPtrWillBeRawPtr<KeyframeEffectModel> effect = createKeyframeEffectModel(
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(2.0).get(), 0),
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(5.0).get(), 1.0));
     // --
@@ -725,7 +725,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimation)
 TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationDuration)
 {
     // Animation to convert
-    RefPtr<KeyframeEffectModel> effect = createKeyframeEffectModel(
+    RefPtrWillBeRawPtr<KeyframeEffectModel> effect = createKeyframeEffectModel(
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(2.0).get(), 0),
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(5.0).get(), 1.0));
 
@@ -772,7 +772,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationDuration)
 TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimationLinear)
 {
     // Animation to convert
-    RefPtr<KeyframeEffectModel> effect = createKeyframeEffectModel(
+    RefPtrWillBeRawPtr<KeyframeEffectModel> effect = createKeyframeEffectModel(
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(2.0).get(), 0),
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(-1.0).get(), 0.25),
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(20.0).get(), 0.5),
@@ -825,7 +825,7 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
 TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationStartDelay)
 {
     // Animation to convert
-    RefPtr<KeyframeEffectModel> effect = createKeyframeEffectModel(
+    RefPtrWillBeRawPtr<KeyframeEffectModel> effect = createKeyframeEffectModel(
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(2.0).get(), 0),
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(5.0).get(), 1.0));
 
@@ -874,7 +874,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationStartDelay
 TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimationChained)
 {
     // Animation to convert
-    RefPtr<KeyframeEffectModel> effect = createKeyframeEffectModel(
+    RefPtrWillBeRawPtr<KeyframeEffectModel> effect = createKeyframeEffectModel(
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(2.0).get(), 0),
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(-1.0).get(), 0.25),
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(20.0).get(), 0.5),
@@ -934,7 +934,7 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
 TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimation)
 {
     // Animation to convert
-    RefPtr<KeyframeEffectModel> effect = createKeyframeEffectModel(
+    RefPtrWillBeRawPtr<KeyframeEffectModel> effect = createKeyframeEffectModel(
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(2.0).get(), 0),
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(-1.0).get(), 0.25),
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(20.0).get(), 0.5),
@@ -994,7 +994,7 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimation)
 TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimationNegativeStartDelay)
 {
     // Animation to convert
-    RefPtr<KeyframeEffectModel> effect = createKeyframeEffectModel(
+    RefPtrWillBeRawPtr<KeyframeEffectModel> effect = createKeyframeEffectModel(
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(2.0).get(), 0),
         createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(5.0).get(), 1.0));
 

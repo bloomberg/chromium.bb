@@ -119,7 +119,7 @@ public:
         RuleMatchingBehavior = MatchAllRules);
 
     PassRefPtr<RenderStyle> styleForKeyframe(Element*, const RenderStyle&, RenderStyle* parentStyle, const StyleKeyframe*, const AtomicString& animationName);
-    static PassRefPtr<KeyframeEffectModel> createKeyframeEffectModel(Element&, const Vector<RefPtr<MutableStylePropertySet> >&, KeyframeEffectModel::KeyframeVector&);
+    static PassRefPtrWillBeRawPtr<KeyframeEffectModel> createKeyframeEffectModel(Element&, const Vector<RefPtr<MutableStylePropertySet> >&, KeyframeEffectModel::KeyframeVector&);
 
     PassRefPtr<RenderStyle> pseudoStyleForElement(Element*, const PseudoStyleRequest&, RenderStyle* parentStyle);
 

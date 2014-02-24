@@ -33,6 +33,7 @@
 
 #include "core/animation/AnimatableValue.h"
 #include "core/animation/AnimationEffect.h"
+#include "heap/Handle.h"
 #include "platform/animation/TimingFunction.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
@@ -48,13 +49,14 @@ typedef HashSet<CSSPropertyID> PropertySet;
 class KeyframeEffectModelTest;
 
 // Represents the keyframes set through the API.
-class Keyframe : public RefCounted<Keyframe> {
+class Keyframe : public RefCountedWillBeGarbageCollectedFinalized<Keyframe> {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<Keyframe> create()
+    static PassRefPtrWillBeRawPtr<Keyframe> create()
     {
-        return adoptRef(new Keyframe);
+        return adoptRefWillBeNoop(new Keyframe);
     }
-    static bool compareOffsets(const RefPtr<Keyframe>& a, const RefPtr<Keyframe>& b)
+    static bool compareOffsets(const RefPtrWillBeRawPtr<Keyframe>& a, const RefPtrWillBeRawPtr<Keyframe>& b)
     {
         return a->offset() < b->offset();
     }
@@ -68,8 +70,10 @@ public:
     void clearPropertyValue(CSSPropertyID);
     const AnimatableValue* propertyValue(CSSPropertyID) const;
     PropertySet properties() const;
-    PassRefPtr<Keyframe> clone() const { return adoptRef(new Keyframe(*this)); }
-    PassRefPtr<Keyframe> cloneWithOffset(double offset) const;
+    PassRefPtrWillBeRawPtr<Keyframe> clone() const { return adoptRefWillBeNoop(new Keyframe(*this)); }
+    PassRefPtrWillBeRawPtr<Keyframe> cloneWithOffset(double offset) const;
+
+    void trace(Visitor*) { }
 private:
     Keyframe();
     Keyframe(const Keyframe&);
@@ -83,12 +87,12 @@ private:
 class KeyframeEffectModel FINAL : public AnimationEffect {
 public:
     class PropertySpecificKeyframe;
-    typedef Vector<RefPtr<Keyframe> > KeyframeVector;
+    typedef WillBeHeapVector<RefPtrWillBeMember<Keyframe> > KeyframeVector;
     typedef Vector<OwnPtr<PropertySpecificKeyframe> > PropertySpecificKeyframeVector;
     // FIXME: Implement accumulation.
-    static PassRefPtr<KeyframeEffectModel> create(const KeyframeVector& keyframes)
+    static PassRefPtrWillBeRawPtr<KeyframeEffectModel> create(const KeyframeVector& keyframes)
     {
-        return adoptRef(new KeyframeEffectModel(keyframes));
+        return adoptRefWillBeNoop(new KeyframeEffectModel(keyframes));
     }
 
     virtual bool affects(CSSPropertyID property) OVERRIDE
@@ -140,6 +144,8 @@ public:
         ensureKeyframeGroups();
         return m_keyframeGroups->get(id)->keyframes();
     }
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     KeyframeEffectModel(const KeyframeVector& keyframes);
