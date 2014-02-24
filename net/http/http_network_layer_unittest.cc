@@ -136,7 +136,7 @@ class HttpNetworkLayerTest : public PlatformTest {
       MockRead data_reads[],
       int data_reads_size,
       std::string method,
-      std::string content_of_retry,
+      std::string content,
       bool retry_expected,
       unsigned int expected_retry_info_size) {
     std::string trailer =
@@ -161,8 +161,8 @@ class HttpNetworkLayerTest : public PlatformTest {
     size_t data_reads2_index = 0;
     data_reads2[data_reads2_index++] = MockRead("HTTP/1.0 200 OK\r\n"
                                                 "Server: not-proxy\r\n\r\n");
-    if (!content_of_retry.empty())
-      data_reads2[data_reads2_index++] = MockRead(content_of_retry.c_str());
+    if (!content.empty())
+      data_reads2[data_reads2_index++] = MockRead(content.c_str());
     data_reads2[data_reads2_index++] = MockRead(SYNCHRONOUS, OK);
 
     MockWrite data_writes2[] = {
@@ -175,10 +175,10 @@ class HttpNetworkLayerTest : public PlatformTest {
     // Expect that we get "content" and not "Bypass message", and that there's
     // a "not-proxy" "Server:" header in the final response.
     if (retry_expected) {
-      ExecuteRequestExpectingContentAndHeader(method, content_of_retry,
+      ExecuteRequestExpectingContentAndHeader(method, content,
                                               "server", "not-proxy");
     } else {
-      ExecuteRequestExpectingContentAndHeader(method, "Bypass message", "", "");
+      ExecuteRequestExpectingContentAndHeader(method, content, "", "");
     }
 
     // We should also observe the bad proxy in the retry list.
@@ -671,6 +671,24 @@ TEST_F(HttpNetworkLayerTest, ServerFallbackWithNoViaHeader) {
                                  arraysize(data_reads), 1u);
 }
 
+TEST_F(HttpNetworkLayerTest, NoServerFallbackWith304Response) {
+  // Verify that Chrome will not be induced to bypass the Chrome proxy when
+  // the Chrome Proxy via header is absent on a 304.
+  std::string chrome_proxy = GetChromeProxy();
+  ConfigureTestDependencies(ProxyService::CreateFixedFromPacResult(
+      "PROXY " + chrome_proxy + "; PROXY good:8080"));
+
+  MockRead data_reads[] = {
+    MockRead("HTTP/1.1 304 Not Modified\r\n"
+             "Connection: keep-alive\r\n\r\n"),
+    MockRead(SYNCHRONOUS, OK),
+  };
+
+  TestProxyFallbackByMethodWithMockReads(chrome_proxy, std::string(),
+                                         data_reads, arraysize(data_reads),
+                                         "GET", std::string(), false, 0);
+}
+
 TEST_F(HttpNetworkLayerTest, NoServerFallbackWithChainedViaHeader) {
   // Verify that Chrome will not be induced to bypass the Chrome proxy when
   // the Chrome Proxy via header is present, even if that header is chained.
@@ -688,12 +706,13 @@ TEST_F(HttpNetworkLayerTest, NoServerFallbackWithChainedViaHeader) {
 
   TestProxyFallbackByMethodWithMockReads(chrome_proxy, std::string(),
                                          data_reads, arraysize(data_reads),
-                                         "GET", std::string(), false, 0);
+                                         "GET", "Bypass message", false, 0);
 }
 
 TEST_F(HttpNetworkLayerTest, NoServerFallbackWithDeprecatedViaHeader) {
   // Verify that Chrome will not be induced to bypass the Chrome proxy when
-  // the Chrome Proxy via header is present, even if that header is chained.
+  // the deprecated Chrome Proxy via header is present, even if that header is
+  // chained.
   std::string chrome_proxy = GetChromeProxy();
   ConfigureTestDependencies(ProxyService::CreateFixedFromPacResult(
       "PROXY " + chrome_proxy + "; PROXY good:8080"));
@@ -708,7 +727,7 @@ TEST_F(HttpNetworkLayerTest, NoServerFallbackWithDeprecatedViaHeader) {
 
   TestProxyFallbackByMethodWithMockReads(chrome_proxy, std::string(),
                                          data_reads, arraysize(data_reads),
-                                         "GET", std::string(), false, 0);
+                                         "GET", "Bypass message", false, 0);
 }
 
 #if defined(DATA_REDUCTION_FALLBACK_HOST)
