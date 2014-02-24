@@ -35,9 +35,11 @@
 
 namespace WebCore {
 
-PassRefPtr<SpeechInputResultList> SpeechInputResultList::create(const SpeechInputResultArray& results)
+DEFINE_GC_INFO(SpeechInputResultList);
+
+PassRefPtrWillBeRawPtr<SpeechInputResultList> SpeechInputResultList::create(const SpeechInputResultArray& results)
 {
-    return adoptRef(new SpeechInputResultList(results));
+    return adoptRefWillBeNoop(new SpeechInputResultList(results));
 }
 
 SpeechInputResult* SpeechInputResultList::item(unsigned index)
@@ -46,9 +48,14 @@ SpeechInputResult* SpeechInputResultList::item(unsigned index)
 }
 
 SpeechInputResultList::SpeechInputResultList(const SpeechInputResultArray& results)
-    : m_results(results) // Takes a copy of the array of RefPtrs.
+    : m_results(results) // Copies the incoming result array.
 {
     ScriptWrappable::init(this);
+}
+
+void SpeechInputResultList::trace(Visitor* visitor)
+{
+    visitor->trace(m_results);
 }
 
 } // namespace WebCore

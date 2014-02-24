@@ -98,7 +98,7 @@ void SpeechInputClientImpl::setRecognitionResult(int requestId, const WebSpeechI
     ASSERT(m_listener);
     WebCore::SpeechInputResultArray webcoreResults(results.size());
     for (size_t i = 0; i < results.size(); ++i)
-        webcoreResults[i] = results[i];
+        webcoreResults[i] = PassRefPtrWillBeRawPtr<WebCore::SpeechInputResult>(results[i]);
     m_listener->setRecognitionResult(requestId, webcoreResults);
 }
 

@@ -38,7 +38,7 @@ void WebSpeechInputResult::reset()
     m_private.reset();
 }
 
-WebSpeechInputResult::WebSpeechInputResult(const PassRefPtr<WebCore::SpeechInputResult>& value)
+WebSpeechInputResult::WebSpeechInputResult(const PassRefPtrWillBeRawPtr<WebCore::SpeechInputResult>& value)
     : m_private(value)
 {
 }
@@ -53,7 +53,7 @@ void WebSpeechInputResult::assign(const WebSpeechInputResult& other)
     m_private = WebCore::SpeechInputResult::create(*other.m_private.get());
 }
 
-WebSpeechInputResult::operator PassRefPtr<WebCore::SpeechInputResult>() const
+WebSpeechInputResult::operator PassRefPtrWillBeRawPtr<WebCore::SpeechInputResult>() const
 {
     return m_private.get();
 }

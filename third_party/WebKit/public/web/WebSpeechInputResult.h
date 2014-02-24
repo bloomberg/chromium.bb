@@ -56,8 +56,8 @@ public:
     BLINK_EXPORT void reset();
 
 #if BLINK_IMPLEMENTATION
-    WebSpeechInputResult(const WTF::PassRefPtr<WebCore::SpeechInputResult>&);
-    operator WTF::PassRefPtr<WebCore::SpeechInputResult>() const;
+    explicit WebSpeechInputResult(const PassRefPtrWillBeRawPtr<WebCore::SpeechInputResult>&);
+    operator PassRefPtrWillBeRawPtr<WebCore::SpeechInputResult>() const;
 #endif
 
 private:

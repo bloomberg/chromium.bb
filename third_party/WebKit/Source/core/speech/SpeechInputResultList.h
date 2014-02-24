@@ -30,18 +30,22 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/speech/SpeechInputResult.h"
+#include "heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class SpeechInputResultList : public RefCounted<SpeechInputResultList>, public ScriptWrappable {
+class SpeechInputResultList : public RefCountedWillBeGarbageCollectedFinalized<SpeechInputResultList>, public ScriptWrappable {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<SpeechInputResultList> create(const SpeechInputResultArray& results);
+    static PassRefPtrWillBeRawPtr<SpeechInputResultList> create(const SpeechInputResultArray& results);
 
     // Methods from the IDL.
     size_t length() { return m_results.size(); }
     SpeechInputResult* item(unsigned index);
+
+    void trace(Visitor *);
 
 private:
     explicit SpeechInputResultList(const SpeechInputResultArray& results);
