@@ -76,6 +76,18 @@ class JsonManifest : public Manifest {
   // if not.
   bool MatchesSchema(ErrorInfo* error_info);
 
+  bool GetKeyUrl(const Json::Value& dictionary,
+                 const nacl::string& key,
+                 nacl::string* full_url,
+                 PnaclOptions* pnacl_options,
+                 ErrorInfo* error_info) const;
+
+  bool GetURLFromISADictionary(const Json::Value& dictionary,
+                               const nacl::string& parent_key,
+                               nacl::string* url,
+                               PnaclOptions* pnacl_options,
+                               ErrorInfo* error_info) const;
+
   const pp::URLUtil_Dev* url_util_;
   nacl::string manifest_base_url_;
   nacl::string sandbox_isa_;
