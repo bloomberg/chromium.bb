@@ -30,7 +30,6 @@ ASH_EXPORT extern const char kAshDisableAlternateShelfLayout[];
 #if defined(OS_CHROMEOS)
 ASH_EXPORT extern const char kAshDisableAudioDeviceMenu[];
 #endif
-ASH_EXPORT extern const char kAshDisableAutoMaximizing[];
 ASH_EXPORT extern const char kAshDisableDockedWindows[];
 ASH_EXPORT extern const char kAshDisableDragAndDropAppListToLauncher[];
 ASH_EXPORT extern const char kAshDisableDragOffShelf[];

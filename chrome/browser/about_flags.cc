@@ -1189,13 +1189,6 @@ const Experiment kExperiments[] = {
         ash::switches::kAshEnableAlternateFrameCaptionButtonStyle,
         ash::switches::kAshDisableAlternateFrameCaptionButtonStyle),
   },
-  {
-    "ash-disable-auto-maximizing",
-    IDS_FLAGS_ASH_AUTO_MAXIMIZING_NAME,
-    IDS_FLAGS_ASH_AUTO_MAXIMIZING_DESCRIPTION,
-    kOsWin | kOsLinux | kOsCrOS,
-    SINGLE_VALUE_TYPE(ash::switches::kAshDisableAutoMaximizing)
-  },
   { "ash-disable-drag-and-drop-applist-to-launcher",
     IDS_FLAGS_DND_APPLIST_TO_LAUNCHER_NAME,
     IDS_FLAGS_DND_APPLIST_TO_LAUNCHER_DESCRIPTION,

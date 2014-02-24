@@ -6297,12 +6297,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ASH_AUTO_WINDOW_PLACEMENT_DESCRIPTION" desc="Description for the option to enable/disable the auto window placement functionality.">
         Disable automatic window placement for one and two browser / app windows.
       </message>
-      <message name="IDS_FLAGS_ASH_AUTO_MAXIMIZING_NAME" desc="Name for the option to disable the auto window maximizing functionality.">
-        Disable automatic window maximization
-      </message>
-      <message name="IDS_FLAGS_ASH_AUTO_MAXIMIZING_DESCRIPTION" desc="Description for the option to disable the auto window maximizing functionality.">
-        Disable automatic window maximization for browser / app windows if they are started the first time.
-      </message>
       <message name="IDS_FLAGS_DISABLE_GESTURE_REQUIREMENT_FOR_MEDIA_PLAYBACK_NAME" desc="Title for the flag to disable gesture requiment for media playback">
         Disable gesture requirement for media playback.
       </message>

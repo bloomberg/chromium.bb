@@ -40,7 +40,6 @@ namespace {
 // equal to this width, the window will get opened in maximized mode. This value
 // can be reduced to a "tame" number if the feature is disabled.
 const int kForceMaximizeWidthLimit = 1366;
-const int kForceMaximizeWidthLimitDisabled = 640;
 
 // The time in milliseconds which should be used to visually move a window
 // through an automatic "intelligent" window management option.
@@ -201,13 +200,7 @@ aura::Window* GetReferenceWindow(const aura::Window* root_window,
 
 // static
 int WindowPositioner::GetForceMaximizedWidthLimit() {
-  static int maximum_limit = 0;
-  if (!maximum_limit) {
-    maximum_limit = CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kAshDisableAutoMaximizing) ?
-        kForceMaximizeWidthLimitDisabled : kForceMaximizeWidthLimit;
-  }
-  return maximum_limit;
+  return kForceMaximizeWidthLimit;
 }
 
 // static

@@ -58,9 +58,6 @@ const char kAshDisableAudioDeviceMenu[] =
     "ash-disable-audio-device-menu";
 #endif
 
-// Disable auto window maximization logic.
-const char kAshDisableAutoMaximizing[] = "ash-disable-auto-maximizing";
-
 // Disable ability to dock windows at the desktop edge.
 const char kAshDisableDockedWindows[] = "ash-disable-docked-windows";
 
