@@ -313,8 +313,7 @@ scoped_ptr<RenderWidgetHostIterator> RenderWidgetHost::GetRenderWidgetHosts() {
 
     // Add only active RenderViewHosts.
     RenderViewHost* rvh = RenderViewHost::From(widget);
-    if (RenderViewHostImpl::IsRVHStateActive(
-            static_cast<RenderViewHostImpl*>(rvh)->rvh_state()))
+    if (!static_cast<RenderViewHostImpl*>(rvh)->is_swapped_out())
       hosts->Add(widget);
   }
 

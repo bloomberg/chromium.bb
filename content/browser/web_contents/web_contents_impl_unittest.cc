@@ -513,7 +513,6 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
   EXPECT_TRUE(contents()->GetRenderManagerForTesting()->
       IsOnSwappedOutList(pending_rfh));
   EXPECT_EQ(pending_rvh_delete_count, 0);
-  pending_rvh->OnSwappedOut(false);
 
   // Close contents and ensure RVHs are deleted.
   DeleteContents();
@@ -711,7 +710,6 @@ TEST_F(WebContentsImplTest, NavigateDoesNotUseUpSiteInstance) {
   EXPECT_TRUE(contents()->GetRenderManagerForTesting()->IsOnSwappedOutList(
       orig_rfh));
   EXPECT_EQ(orig_rvh_delete_count, 0);
-  orig_rvh->OnSwappedOut(false);
 
   // Close contents and ensure RVHs are deleted.
   DeleteContents();
@@ -1140,7 +1138,7 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationCanceled) {
   EXPECT_TRUE(contents()->cross_navigation_pending());
 
   // Simulate swap out message when the response arrives.
-  orig_rvh->OnSwappedOut(false);
+  orig_rvh->set_is_swapped_out(true);
 
   // Suppose the navigation doesn't get a chance to commit, and the user
   // navigates in the current RVH's SiteInstance.
@@ -1152,7 +1150,7 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationCanceled) {
   SiteInstance* instance2 = contents()->GetSiteInstance();
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(orig_rvh, rvh());
-  EXPECT_EQ(RenderViewHostImpl::STATE_DEFAULT, orig_rvh->rvh_state());
+  EXPECT_FALSE(orig_rvh->is_swapped_out());
   EXPECT_EQ(instance1, instance2);
   EXPECT_TRUE(contents()->GetPendingRenderViewHost() == NULL);
 }

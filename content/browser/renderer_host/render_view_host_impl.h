@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -66,7 +65,6 @@ class RenderWidgetHostDelegate;
 class SessionStorageNamespace;
 class SessionStorageNamespaceImpl;
 class TestRenderViewHost;
-class TimeoutMonitor;
 struct FileChooserParams;
 struct Referrer;
 struct ShowDesktopNotificationHostMsgParams;
@@ -101,39 +99,6 @@ class CONTENT_EXPORT RenderViewHostImpl
     : public RenderViewHost,
       public RenderWidgetHostImpl {
  public:
-  // Keeps track of the state of the RenderViewHostImpl, particularly with
-  // respect to swap out.
-  enum RenderViewHostImplState {
-    // The standard state for a RVH handling the communication with a
-    // RenderView.
-    STATE_DEFAULT = 0,
-    // The RVH has sent the SwapOut request to the renderer, but has not
-    // received the SwapOutACK yet. The new page has not been committed yet
-    // either.
-    STATE_WAITING_FOR_UNLOAD_ACK,
-    // The RVH received the SwapOutACK from the RenderView, but the new page has
-    // not been committed yet.
-    STATE_WAITING_FOR_COMMIT,
-    // The RVH is waiting for the CloseACK from the RenderView.
-    STATE_WAITING_FOR_CLOSE,
-    // The RVH has not received the SwapOutACK yet, but the new page has
-    // committed in a different RVH. The number of active views of the RVH
-    // SiteInstanceImpl is not zero. Upon reception of the SwapOutACK, the RVH
-    // will be swapped out.
-    STATE_PENDING_SWAP_OUT,
-    // The RVH has not received the SwapOutACK yet, but the new page has
-    // committed in a different RVH. The number of active views of the RVH
-    // SiteInstanceImpl is zero. Upon reception of the SwapOutACK, the RVH will
-    // be shutdown.
-    STATE_PENDING_SHUTDOWN,
-    // The RVH is swapped out, and it is being used as a placeholder to allow
-    // for cross-process communication.
-    STATE_SWAPPED_OUT,
-  };
-  // Helper function to determine whether the RVH state should contribute to the
-  // number of active views of a SiteInstance or not.
-  static bool IsRVHStateActive(RenderViewHostImplState rvh_state);
-
   // Convenience function, just like RenderViewHost::FromID.
   static RenderViewHostImpl* FromID(int render_process_id, int render_view_id);
 
@@ -315,10 +280,7 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   // Whether this RenderViewHost has been swapped out to be displayed by a
   // different process.
-  bool IsSwappedOut() const { return rvh_state_ == STATE_SWAPPED_OUT; }
-
-  // The current state of this RVH.
-  RenderViewHostImplState rvh_state() const { return rvh_state_; }
+  bool is_swapped_out() const { return is_swapped_out_; }
 
   // Called on the pending RenderViewHost when the network response is ready to
   // commit.  We should ensure that the old RenderViewHost runs its unload
@@ -351,15 +313,11 @@ class CONTENT_EXPORT RenderViewHostImpl
   // out.
   void OnSwappedOut(bool timed_out);
 
-  // Called when the RenderFrameHostManager has swapped in a new
-  // RenderFrameHost. Should |this| RVH switch to the pending shutdown state,
-  // |pending_delete_on_swap_out| will be executed upon reception of the
-  // SwapOutACK, or when the unload timer times out.
-  void WasSwappedOut(const base::Closure& pending_delete_on_swap_out);
-
-  // Set |this| as pending shutdown. |on_swap_out| will be called
-  // when the SwapOutACK is received, or when the unload timer times out.
-  void SetPendingShutdown(const base::Closure& on_swap_out);
+  // Called to notify the renderer that it has been visibly swapped out and
+  // replaced by another RenderViewHost, after an earlier call to SwapOut.
+  // It is now safe for the process to exit if there are no other active
+  // RenderViews.
+  void WasSwappedOut();
 
   // Close the page ignoring whether it has unload events registers.
   // This is called after the beforeunload and unload events have fired
@@ -490,8 +448,9 @@ class CONTENT_EXPORT RenderViewHostImpl
     return is_waiting_for_beforeunload_ack_;
   }
 
-  // Whether the RVH is waiting for the unload ack from the renderer.
-  bool IsWaitingForUnloadACK() const;
+  bool is_waiting_for_unload_ack() {
+    return is_waiting_for_unload_ack_;
+  }
 
   // Update the FrameTree to use this RenderViewHost's main frame
   // RenderFrameHost. Called when the RenderViewHost is committed.
@@ -508,18 +467,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnDidStartProvisionalLoadForFrame(int parent_routing_id,
                                          bool main_frame,
                                          const GURL& url);
-
-  // Increases the refcounting on this RVH. This is done by the FrameTree on
-  // creation of a RenderFrameHost.
-  void increment_ref_count() { ++frames_ref_count_; }
-
-  // Decreases the refcounting on this RVH. This is done by the FrameTree on
-  // destruction of a RenderFrameHost.
-  void decrement_ref_count() { --frames_ref_count_; }
-
-  // Returns the refcount on this RVH, that is the number of RenderFrameHosts
-  // currently using it.
-  int ref_count() { return frames_ref_count_; }
 
   // NOTE: Do not add functions that just send an IPC message that are called in
   // one or two places. Have the caller send the IPC message directly (unless
@@ -635,14 +582,11 @@ class CONTENT_EXPORT RenderViewHostImpl
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, BasicRenderFrameHost);
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, RoutingIdSane);
 
-  // Updates the state of this RenderViewHost and clears any waiting state
-  // that is no longer relevant.
-  void SetState(RenderViewHostImplState rvh_state);
+  // Sets whether this RenderViewHost is swapped out in favor of another,
+  // and clears any waiting state that is no longer relevant.
+  void SetSwappedOut(bool is_swapped_out);
 
   bool CanAccessFilesOfPageState(const PageState& state) const;
-
-  // The number of RenderFrameHosts which have a reference to this RVH.
-  int frames_ref_count_;
 
   // Our delegate, which wants to know about changes in the RenderView.
   RenderViewHostDelegate* delegate_;
@@ -678,23 +622,29 @@ class CONTENT_EXPORT RenderViewHostImpl
   // first commit.
   bool has_accessed_initial_document_;
 
-  // The current state of this RVH.
-  RenderViewHostImplState rvh_state_;
+  // Whether this RenderViewHost is currently swapped out, such that the view is
+  // being rendered by another process.
+  bool is_swapped_out_;
 
   // Routing ID for the main frame's RenderFrameHost.
   int main_frame_routing_id_;
 
   // Set to true when there is a pending ViewMsg_ShouldClose message.  This
   // ensures we don't spam the renderer with multiple beforeunload requests.
-  // When either this value or IsWaitingForUnloadACK is true, the value of
+  // When either this value or is_waiting_for_unload_ack_ is true, the value of
   // unload_ack_is_for_cross_site_transition_ indicates whether this is for a
   // cross-site transition or a tab close attempt.
-  // TODO(clamy): Remove this boolean and add one more state to the state
-  // machine.
   bool is_waiting_for_beforeunload_ack_;
 
+  // Set to true when there is a pending ViewMsg_Close message.  Also see
+  // is_waiting_for_beforeunload_ack_, unload_ack_is_for_cross_site_transition_.
+  bool is_waiting_for_unload_ack_;
+
+  // Set to true when waiting for ViewHostMsg_SwapOut_ACK has timed out.
+  bool has_timed_out_on_unload_;
+
   // Valid only when is_waiting_for_beforeunload_ack_ or
-  // IsWaitingForUnloadACK is true.  This tells us if the unload request
+  // is_waiting_for_unload_ack_ is true.  This tells us if the unload request
   // is for closing the entire tab ( = false), or only this RenderViewHost in
   // the case of a cross-site transition ( = true).
   bool unload_ack_is_for_cross_site_transition_;
@@ -728,17 +678,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Manages all the android mediaplayer objects and handling IPCs for video.
   scoped_ptr<BrowserMediaPlayerManager> media_player_manager_;
 #endif
-
-  // Used to swap out or shutdown this RVH when the unload event is taking too
-  // long to execute, depending on the number of active views in the
-  // SiteInstance.
-  scoped_ptr<TimeoutMonitor> unload_event_monitor_timeout_;
-
-  // Called after receiving the SwapOutACK when the RVH is in state pending
-  // shutdown. Also called if the unload timer times out.
-  base::Closure pending_shutdown_on_swap_out_;
-
-  base::WeakPtrFactory<RenderViewHostImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostImpl);
 };

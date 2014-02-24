@@ -17,6 +17,7 @@
 #include "content/browser/geolocation/geolocation_dispatcher_host.h"
 #include "content/browser/power_monitor_message_broadcaster.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/render_process_host.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -126,8 +127,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   virtual void SetWebRtcLogMessageCallback(
       base::Callback<void(const std::string&)> callback) OVERRIDE;
 #endif
-  virtual void ResumeDeferredNavigation(const GlobalRequestID& request_id)
-      OVERRIDE;
 
   // IPC::Sender via RenderProcessHost.
   virtual bool Send(IPC::Message* msg) OVERRIDE;
@@ -141,6 +140,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   virtual void OnProcessLaunched() OVERRIDE;
 
   scoped_refptr<AudioRendererHost> audio_renderer_host() const;
+
+  // Tells the ResourceDispatcherHost to resume a deferred navigation without
+  // transferring it to a new renderer process.
+  void ResumeDeferredNavigation(const GlobalRequestID& request_id);
 
   // Call this function when it is evident that the child process is actively
   // performing some operation, for example if we just received an IPC message.

@@ -151,11 +151,12 @@ void TestWebContents::CommitPendingNavigation() {
     page_id = GetMaxPageIDForSiteInstance(rvh->GetSiteInstance()) + 1;
   }
 
-  rvh->SendNavigate(page_id, entry->GetURL());
-  // Simulate the SwapOut_ACK. This is needed when cross-site navigation happens
-  // (old_rvh != rvh).
+  // Simulate the SwapOut_ACK that happens when we swap out the old
+  // RVH, before the navigation commits. This is needed when
+  // cross-site navigation happens (old_rvh != rvh).
   if (old_rvh != rvh)
     static_cast<RenderViewHostImpl*>(old_rvh)->OnSwappedOut(false);
+  rvh->SendNavigate(page_id, entry->GetURL());
 }
 
 void TestWebContents::ProceedWithCrossSiteNavigation() {

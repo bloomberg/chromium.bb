@@ -2779,7 +2779,7 @@ void WebContentsImpl::RenderViewCreated(RenderViewHost* render_view_host) {
   // Don't send notifications if we are just creating a swapped-out RVH for
   // the opener chain.  These won't be used for view-source or WebUI, so it's
   // ok to return early.
-  if (static_cast<RenderViewHostImpl*>(render_view_host)->IsSwappedOut())
+  if (static_cast<RenderViewHostImpl*>(render_view_host)->is_swapped_out())
     return;
 
   if (delegate_)
@@ -3061,7 +3061,7 @@ void WebContentsImpl::RequestOpenURL(RenderViewHost* rvh,
                                      bool user_gesture) {
   // If this came from a swapped out RenderViewHost, we only allow the request
   // if we are still in the same BrowsingInstance.
-  if (static_cast<RenderViewHostImpl*>(rvh)->IsSwappedOut() &&
+  if (static_cast<RenderViewHostImpl*>(rvh)->is_swapped_out() &&
       !rvh->GetSiteInstance()->IsRelatedSiteInstance(GetSiteInstance())) {
     return;
   }
@@ -3232,7 +3232,7 @@ void WebContentsImpl::RunJavaScriptMessage(
   // showing an interstitial as it's shown over the previous page and we don't
   // want the hidden page's dialogs to interfere with the interstitial.
   bool suppress_this_message =
-      static_cast<RenderViewHostImpl*>(rvh)->IsSwappedOut() ||
+      static_cast<RenderViewHostImpl*>(rvh)->is_swapped_out() ||
       ShowingInterstitialPage() ||
       !delegate_ ||
       delegate_->ShouldSuppressDialogs() ||
@@ -3277,7 +3277,7 @@ void WebContentsImpl::RunBeforeUnloadConfirm(RenderViewHost* rvh,
     delegate_->WillRunBeforeUnloadConfirm();
 
   bool suppress_this_message =
-      rvhi->rvh_state() != RenderViewHostImpl::STATE_DEFAULT ||
+      rvhi->is_swapped_out() ||
       !delegate_ ||
       delegate_->ShouldSuppressDialogs() ||
       !delegate_->GetJavaScriptDialogManager();
