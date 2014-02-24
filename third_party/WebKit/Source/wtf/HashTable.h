@@ -73,7 +73,7 @@ namespace WTF {
         typedef HashTableIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> iterator;
         typedef HashTableConstIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> const_iterator;
         typedef Value ValueType;
-        typedef const ValueType& ReferenceType;
+        typedef typename Traits::IteratorConstGetType GetType;
         typedef const ValueType* PointerType;
 
         friend class HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>;
@@ -101,12 +101,12 @@ namespace WTF {
         {
         }
 
-        PointerType get() const
+        GetType get() const
         {
             return m_position;
         }
-        ReferenceType operator*() const { return *get(); }
-        PointerType operator->() const { return get(); }
+        typename Traits::IteratorConstReferenceType operator*() const { return Traits::getToReferenceConstConversion(get()); }
+        GetType operator->() const { return get(); }
 
         const_iterator& operator++()
         {
