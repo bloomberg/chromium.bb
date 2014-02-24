@@ -1,26 +1,25 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_CHILD_FLING_CURVE_CONFIGURATION_H_
-#define WEBKIT_CHILD_FLING_CURVE_CONFIGURATION_H_
+#ifndef CONTENT_CHILD_FLING_CURVE_CONFIGURATION_H_
+#define CONTENT_CHILD_FLING_CURVE_CONFIGURATION_H_
 
 #include <vector>
 
 #include "base/synchronization/lock.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
-#include "webkit/child/webkit_child_export.h"
 
 namespace blink {
 class WebGestureCurve;
 }
 
-namespace webkit_glue {
+namespace content {
 
 // A class to manage dynamically adjustable parameters controlling the
 // shape of the fling deacceleration function.
-class WEBKIT_CHILD_EXPORT FlingCurveConfiguration {
+class FlingCurveConfiguration {
  public:
   FlingCurveConfiguration();
   virtual ~FlingCurveConfiguration();
@@ -54,6 +53,6 @@ class WEBKIT_CHILD_EXPORT FlingCurveConfiguration {
   DISALLOW_COPY_AND_ASSIGN(FlingCurveConfiguration);
 };
 
-} // namespace webkit_glue
+} // namespace content
 
-#endif // WEBKIT_CHILD_FLING_CURVE_CONFIGURATION_H_
+#endif // CONTENT_CHILD_FLING_CURVE_CONFIGURATION_H_

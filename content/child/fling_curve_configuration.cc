@@ -1,14 +1,14 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/child/fling_curve_configuration.h"
+#include "content/child/fling_curve_configuration.h"
 
 #include "base/logging.h"
 #include "third_party/WebKit/public/platform/WebGestureCurve.h"
 #include "webkit/child/touch_fling_gesture_curve.h"
 
-namespace webkit_glue {
+namespace content {
 
 FlingCurveConfiguration::FlingCurveConfiguration() { }
 
@@ -37,7 +37,8 @@ blink::WebGestureCurve* FlingCurveConfiguration::CreateCore(
     p2 = coefs[2];
   }
 
-  return TouchFlingGestureCurve::Create(velocity, p0, p1, p2, cumulativeScroll);
+  return webkit_glue::TouchFlingGestureCurve::Create(velocity, p0, p1, p2,
+      cumulativeScroll);
 }
 
 blink::WebGestureCurve* FlingCurveConfiguration::CreateForTouchPad(
@@ -52,4 +53,4 @@ blink::WebGestureCurve* FlingCurveConfiguration::CreateForTouchScreen(
   return CreateCore(touchscreen_coefs_, velocity, cumulativeScroll);
 }
 
-} // namespace webkit_glue
+} // namespace content

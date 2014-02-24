@@ -7,12 +7,12 @@
 #include "base/memory/discardable_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
+#include "content/child/fling_curve_configuration.h"
 #include "content/child/web_discardable_memory_impl.h"
 #include "content/child/webthread_impl.h"
 #include "content/child/worker_task_runner.h"
 #include "third_party/WebKit/public/platform/WebWaitableEvent.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "webkit/child/fling_curve_configuration.h"
 
 #if defined(OS_ANDROID)
 #include "webkit/child/fling_animator_impl_android.h"
@@ -46,7 +46,7 @@ class WebWaitableEventImpl : public blink::WebWaitableEvent {
 
 WebKitPlatformSupportChildImpl::WebKitPlatformSupportChildImpl()
     : current_thread_slot_(&DestroyCurrentThread),
-      fling_curve_configuration_(new webkit_glue::FlingCurveConfiguration) {}
+      fling_curve_configuration_(new FlingCurveConfiguration) {}
 
 WebKitPlatformSupportChildImpl::~WebKitPlatformSupportChildImpl() {}
 

@@ -58,8 +58,6 @@
       'sources': [
         'fling_animator_impl_android.cc',
         'fling_animator_impl_android.h',
-        'fling_curve_configuration.cc',
-        'fling_curve_configuration.h',
         'ftp_directory_listing_response_delegate.cc',
         'ftp_directory_listing_response_delegate.h',
         'multipart_response_delegate.cc',

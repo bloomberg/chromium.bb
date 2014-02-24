@@ -21,11 +21,9 @@
 #include "content/child/webthemeengine_impl_android.h"
 #endif
 
-namespace webkit_glue {
-class FlingCurveConfiguration;
-}
-
 namespace content {
+
+class FlingCurveConfiguration;
 
 class CONTENT_EXPORT WebKitPlatformSupportChildImpl :
     public webkit_glue::WebKitPlatformSupportImpl {
@@ -67,7 +65,7 @@ class CONTENT_EXPORT WebKitPlatformSupportChildImpl :
   WebThemeEngineImpl native_theme_engine_;
   WebFallbackThemeEngineImpl fallback_theme_engine_;
   base::ThreadLocalStorage::Slot current_thread_slot_;
-  scoped_ptr<webkit_glue::FlingCurveConfiguration> fling_curve_configuration_;
+  scoped_ptr<FlingCurveConfiguration> fling_curve_configuration_;
 };
 
 }  // namespace content
