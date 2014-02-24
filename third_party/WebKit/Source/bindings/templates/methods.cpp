@@ -182,6 +182,9 @@ if (!{{argument.name}}.isUndefinedOrNull() && !{{argument.name}}.isObject()) {
 
 {######################################}
 {% macro cpp_method_call(method, v8_set_return_value, cpp_value) %}
+{% if method.is_implemented_by and not method.is_static %}
+ASSERT(imp);
+{% endif %}
 {% if method.is_call_with_script_state %}
 ScriptState* currentState = ScriptState::current();
 if (!currentState)

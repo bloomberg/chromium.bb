@@ -101,6 +101,7 @@ def generate_attribute(interface, attribute):
         'is_getter_raises_exception': (  # [RaisesException]
             'RaisesException' in extended_attributes and
             extended_attributes['RaisesException'] in [None, 'Getter']),
+        'is_implemented_by': 'ImplementedBy' in extended_attributes,
         'is_initialized_by_event_constructor':
             'InitializedByEventConstructor' in extended_attributes,
         'is_keep_alive_for_gc': is_keep_alive_for_gc(interface, attribute),
@@ -197,7 +198,7 @@ def getter_expression(interface, attribute, contents):
     arguments.extend(v8_utilities.call_with_arguments(attribute))
     if ('ImplementedBy' in attribute.extended_attributes and
         not attribute.is_static):
-        arguments.append('imp')
+        arguments.append('*imp')
     if attribute.is_nullable:
         arguments.append('isNull')
     if contents['is_getter_raises_exception']:
@@ -293,7 +294,7 @@ def setter_expression(interface, attribute, contents):
 
     if ('ImplementedBy' in extended_attributes and
         not attribute.is_static):
-        arguments.append('imp')
+        arguments.append('*imp')
     idl_type = attribute.idl_type
     if idl_type == 'EventHandler':
         getter_name = v8_utilities.scoped_name(interface, attribute, cpp_name(attribute))

@@ -38,6 +38,9 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {% elif not (attribute.is_static or attribute.is_unforgeable) %}
     {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
     {% endif %}
+    {% if attribute.is_implemented_by and not attribute.is_static %}
+    ASSERT(imp);
+    {% endif %}
     {% if interface_name == 'Window' and attribute.idl_type == 'EventHandler' %}
     if (!imp->document())
         return;
@@ -59,6 +62,10 @@ const v8::PropertyCallbackInfo<v8::Value>& info
           attribute.is_nullable or
           attribute.reflect_only or
           attribute.idl_type == 'EventHandler' %}
+    {# FIXME: Remove this duplicate #}
+    {% if attribute.is_implemented_by and not attribute.is_static %}
+    ASSERT(imp);
+    {% endif %}
     {{attribute.cpp_type}} {{attribute.cpp_value}} = {{attribute.cpp_value_original}};
     {% endif %}
     {# Checks #}
@@ -212,6 +219,7 @@ v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
     {% elif not attribute.is_static %}
     {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
     {% endif %}{# imp #}
+    {# FIXME: move ASSERT(imp) here. #}
     {% if attribute.idl_type == 'EventHandler' and interface_name == 'Window' %}
     if (!imp->document())
         return;
@@ -219,6 +227,10 @@ v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
     {% if attribute.idl_type != 'EventHandler' %}
     {{attribute.v8_value_to_local_cpp_value}};
     {% elif not is_node %}{# EventHandler hack #}
+    {# FIXME: duplicate of below; remove #}
+    {% if attribute.is_implemented_by and not attribute.is_static %}
+    ASSERT(imp);
+    {% endif %}
     moveEventListenerToNewWrapper(info.Holder(), {{attribute.event_handler_getter_expression}}, jsValue, {{v8_class}}::eventListenerCacheIndex, info.GetIsolate());
     {% endif %}
     {% if attribute.enum_validation_expression %}
@@ -232,6 +244,9 @@ v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
            not(attribute.idl_type == 'DOMString' and is_node)) %}
     {# Skip on compact node DOMString getters #}
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    {% endif %}
+    {% if attribute.is_implemented_by and not attribute.is_static %}
+    ASSERT(imp);
     {% endif %}
     {% if attribute.is_call_with_execution_context or
           attribute.is_setter_call_with_execution_context %}
