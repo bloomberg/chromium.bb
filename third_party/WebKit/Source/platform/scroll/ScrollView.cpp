@@ -41,7 +41,6 @@ ScrollView::ScrollView()
     , m_verticalScrollbarMode(ScrollbarAuto)
     , m_horizontalScrollbarLock(false)
     , m_verticalScrollbarLock(false)
-    , m_canBlitOnScroll(true)
     , m_scrollbarsAvoidingResizer(0)
     , m_scrollbarsSuppressed(false)
     , m_inUpdateScrollbars(false)
@@ -164,14 +163,9 @@ void ScrollView::setCanHaveScrollbars(bool canScroll)
     setScrollbarModes(newHorizontalMode, newVerticalMode);
 }
 
-void ScrollView::setCanBlitOnScroll(bool b)
+bool ScrollView::shouldAttemptToScrollUsingFastPath() const
 {
-    m_canBlitOnScroll = b;
-}
-
-bool ScrollView::canBlitOnScroll() const
-{
-    return m_canBlitOnScroll;
+    return true;
 }
 
 void ScrollView::setPaintsEntireContents(bool paintsEntireContents)
@@ -544,15 +538,8 @@ void ScrollView::scrollContents(const IntSize& scrollDelta)
         window->invalidateContentsAndRootView(panScrollIconDirtyRect);
     }
 
-    if (canBlitOnScroll()) { // The main frame can just blit the WebView window
-        // FIXME: Find a way to scroll subframes with this faster path
-        if (!scrollContentsFastPath(-scrollDelta, scrollViewRect, clipRect))
-            scrollContentsSlowPath(updateRect);
-    } else {
-       // We need to go ahead and repaint the entire backing store.  Do it now before moving the
-       // windowed plugins.
-       scrollContentsSlowPath(updateRect);
-    }
+    if (!shouldAttemptToScrollUsingFastPath() || !scrollContentsFastPath(-scrollDelta, scrollViewRect, clipRect))
+        scrollContentsSlowPath(updateRect);
 
     // Invalidate the overhang areas if they are visible.
     updateOverhangAreas();

@@ -311,9 +311,8 @@ void FrameView::recalculateScrollbarOverlayStyle()
 
 void FrameView::clear()
 {
-    setCanBlitOnScroll(true);
-
     reset();
+    // FIXME: Why don't we set m_cannotBlitToWindow to false here?
 
     setScrollbarsSuppressed(true);
 }
@@ -985,8 +984,6 @@ void FrameView::layout(bool allowSubtree)
 
     ASSERT(partialLayout().isStopping() || !rootForThisLayout->needsLayout());
 
-    updateCanBlitOnScrollRecursively();
-
     if (document->hasListenerType(Document::OVERFLOWCHANGED_LISTENER))
         updateOverflowStatus(layoutSize().width() < contentsWidth(), layoutSize().height() < contentsHeight());
 
@@ -1225,19 +1222,24 @@ void FrameView::adjustMediaTypeForPrinting(bool printing)
 
 bool FrameView::useSlowRepaints(bool considerOverlap) const
 {
-    bool mustBeSlow = m_slowRepaintObjectCount > 0;
+    if (m_slowRepaintObjectCount > 0)
+        return true;
 
     if (contentsInCompositedLayer())
-        return mustBeSlow;
+        return false;
 
     // The chromium compositor does not support scrolling a non-composited frame within a composited page through
     // the fast scrolling path, so force slow scrolling in that case.
     if (m_frame->ownerElement() && !hasCompositedContent() && m_frame->page() && m_frame->page()->mainFrame()->view()->hasCompositedContent())
         return true;
 
-    bool isOverlapped = m_isOverlapped && considerOverlap;
+    if (m_isOverlapped && considerOverlap)
+        return true;
 
-    if (mustBeSlow || m_cannotBlitToWindow || isOverlapped || !m_contentIsOpaque)
+    if (m_cannotBlitToWindow)
+        return true;
+
+    if (!m_contentIsOpaque)
         return true;
 
     if (FrameView* parentView = parentFrameView())
@@ -1251,17 +1253,13 @@ bool FrameView::useSlowRepaintsIfNotOverlapped() const
     return useSlowRepaints(false);
 }
 
-void FrameView::updateCanBlitOnScrollRecursively()
+bool FrameView::shouldAttemptToScrollUsingFastPath() const
 {
-    // FIXME: useSlowRepaints reads compositing state in nested frames. Compositing state on the nested
+    // FIXME: useSlowRepaints reads compositing state in parent frames. Compositing state on the parent
     // frames is not necessarily up to date.
     // https://code.google.com/p/chromium/issues/detail?id=343766
     DisableCompositingQueryAsserts disabler;
-
-    for (Frame* frame = m_frame.get(); frame; frame = frame->tree().traverseNext(m_frame.get())) {
-        if (FrameView* view = frame->view())
-            view->setCanBlitOnScroll(!view->useSlowRepaints());
-    }
+    return !useSlowRepaints();
 }
 
 bool FrameView::contentsInCompositedLayer() const
@@ -1279,14 +1277,11 @@ bool FrameView::contentsInCompositedLayer() const
 void FrameView::setCannotBlitToWindow()
 {
     m_cannotBlitToWindow = true;
-    updateCanBlitOnScrollRecursively();
 }
 
 void FrameView::addSlowRepaintObject()
 {
     if (!m_slowRepaintObjectCount++) {
-        updateCanBlitOnScrollRecursively();
-
         if (Page* page = m_frame->page()) {
             if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
                 scrollingCoordinator->frameViewHasSlowRepaintObjectsDidChange(this);
@@ -1299,8 +1294,6 @@ void FrameView::removeSlowRepaintObject()
     ASSERT(m_slowRepaintObjectCount > 0);
     m_slowRepaintObjectCount--;
     if (!m_slowRepaintObjectCount) {
-        updateCanBlitOnScrollRecursively();
-
         if (Page* page = m_frame->page()) {
             if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
                 scrollingCoordinator->frameViewHasSlowRepaintObjectsDidChange(this);
@@ -1327,14 +1320,11 @@ void FrameView::removeViewportConstrainedObject(RenderObject* object)
 {
     if (m_viewportConstrainedObjects && m_viewportConstrainedObjects->contains(object)) {
         m_viewportConstrainedObjects->remove(object);
+
         if (Page* page = m_frame->page()) {
             if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
                 scrollingCoordinator->frameViewFixedObjectsDidChange(this);
         }
-
-        // FIXME: In addFixedObject() we only call this if there's a platform widget,
-        // why isn't the same check being made here?
-        updateCanBlitOnScrollRecursively();
     }
 }
 
@@ -1508,7 +1498,6 @@ void FrameView::setIsOverlapped(bool isOverlapped)
         return;
 
     m_isOverlapped = isOverlapped;
-    updateCanBlitOnScrollRecursively();
 }
 
 void FrameView::setContentIsOpaque(bool contentIsOpaque)
@@ -1517,7 +1506,6 @@ void FrameView::setContentIsOpaque(bool contentIsOpaque)
         return;
 
     m_contentIsOpaque = contentIsOpaque;
-    updateCanBlitOnScrollRecursively();
 }
 
 void FrameView::restoreScrollbar()

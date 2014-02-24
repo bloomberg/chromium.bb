@@ -974,7 +974,7 @@ void RenderBoxModelObject::calculateBackgroundImageGeometry(const FillLayer* fil
     bool fixedAttachment = fillLayer->attachment() == FixedBackgroundAttachment;
 
 #if ENABLE(FAST_MOBILE_SCROLLING)
-    if (view()->frameView() && view()->frameView()->canBlitOnScroll()) {
+    if (view()->frameView() && view()->frameView()->shouldAttemptToScrollUsingFastPath()) {
         // As a side effect of an optimization to blit on scroll, we do not honor the CSS
         // property "background-attachment: fixed" because it may result in rendering
         // artifacts. Note, these artifacts only appear if we are blitting on scroll of
