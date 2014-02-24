@@ -29,6 +29,11 @@ SyncInternalsMessageHandler::SyncInternalsMessageHandler()
 SyncInternalsMessageHandler::~SyncInternalsMessageHandler() {
   if (js_controller_)
     js_controller_->RemoveJsEventHandler(this);
+
+  ProfileSyncService* service = GetProfileSyncService();
+  if (service && service->HasObserver(this)) {
+    service->RemoveObserver(this);
+  }
 }
 
 void SyncInternalsMessageHandler::RegisterMessages() {
