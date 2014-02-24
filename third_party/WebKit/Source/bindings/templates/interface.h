@@ -192,12 +192,6 @@ private:
     {% endif %}
 };
 
-template<>
-class WrapperTypeTraits<{{cpp_class}} > {
-public:
-    static const WrapperTypeInfo* wrapperTypeInfo() { return &{{v8_class}}::wrapperTypeInfo; }
-};
-
 {% if has_custom_to_v8 %}
 class {{cpp_class}};
 v8::Handle<v8::Value> toV8({{cpp_class}}*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
