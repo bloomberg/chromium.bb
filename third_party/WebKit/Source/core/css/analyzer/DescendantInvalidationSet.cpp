@@ -43,10 +43,14 @@ DescendantInvalidationSet::DescendantInvalidationSet()
 
 void DescendantInvalidationSet::combine(const DescendantInvalidationSet& other)
 {
-    m_allDescendantsMightBeInvalid = m_allDescendantsMightBeInvalid || other.m_allDescendantsMightBeInvalid;
     // No longer bother combining data structures, since the whole subtree is deemed invalid.
-    if (m_allDescendantsMightBeInvalid)
+    if (wholeSubtreeInvalid())
         return;
+
+    if (other.wholeSubtreeInvalid()) {
+        setWholeSubtreeInvalid();
+        return;
+    }
 
     if (other.m_classes) {
         HashSet<AtomicString>::const_iterator end = other.m_classes->end();
@@ -90,20 +94,26 @@ HashSet<AtomicString>& DescendantInvalidationSet::ensureTagNameSet()
 
 void DescendantInvalidationSet::addClass(const AtomicString& className)
 {
+    if (wholeSubtreeInvalid())
+        return;
     ensureClassSet().add(className);
 }
 
 void DescendantInvalidationSet::addId(const AtomicString& id)
 {
+    if (wholeSubtreeInvalid())
+        return;
     ensureIdSet().add(id);
 }
 
 void DescendantInvalidationSet::addTagName(const AtomicString& tagName)
 {
+    if (wholeSubtreeInvalid())
+        return;
     ensureTagNameSet().add(tagName);
 }
 
-void DescendantInvalidationSet::getClasses(Vector<AtomicString>& classes)
+void DescendantInvalidationSet::getClasses(Vector<AtomicString>& classes) const
 {
     if (!m_classes)
         return;
