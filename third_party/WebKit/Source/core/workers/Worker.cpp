@@ -55,7 +55,10 @@ PassRefPtr<Worker> Worker::create(ExecutionContext* context, const String& url, 
     ASSERT(isMainThread());
     Document* document = toDocument(context);
     UseCounter::count(context, UseCounter::WorkerStart);
-    ASSERT(document->page());
+    if (!document->page()) {
+        exceptionState.throwDOMException(InvalidAccessError, "The context provided is invalid.");
+        return nullptr;
+    }
     WorkerGlobalScopeProxyProvider* proxyProvider = WorkerGlobalScopeProxyProvider::from(*document->page());
     ASSERT(proxyProvider);
 
