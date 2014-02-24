@@ -600,7 +600,14 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, UnloadExtensionWhileHidden) {
 }
 
 // Verify active NaCl embeds cause many keepalive impulses to be sent.
-IN_PROC_BROWSER_TEST_F(AppBackgroundPageNaClTest, BackgroundKeepaliveActive) {
+// Disabled on Windows due to flakiness: http://crbug.com/346278
+#if defined(OS_WIN)
+#define MAYBE_BackgroundKeepaliveActive DISABLED_BackgroundKeepaliveActive
+#else
+#define MAYBE_BackgroundKeepaliveActive BackgroundKeepaliveActive
+#endif
+IN_PROC_BROWSER_TEST_F(AppBackgroundPageNaClTest,
+                       MAYBE_BackgroundKeepaliveActive) {
   ExtensionTestMessageListener nacl_modules_loaded("nacl_modules_loaded", true);
   LaunchTestingApp();
   extensions::ProcessManager* manager =
