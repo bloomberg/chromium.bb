@@ -33,12 +33,12 @@ function test()
         treeElement = treeOutline.findTreeElement(node);
         InspectorTest.addResult("=== initial inline style text ===");
         InspectorTest.addResult(treeElement.title.textContent);
-        InspectorTest.addSniffer(WebInspector.ElementsTreeUpdater.prototype, "_updateModifiedNodes", onStyleUpdated);
-        InspectorTest.evaluateInPage("updateStyleText()");
+        InspectorTest.evaluateInPage("updateStyleText()", onStyleUpdated);
     }
 
     function onStyleUpdated()
     {
+        WebInspector.panels.elements.treeOutline._updateModifiedNodes();
         InspectorTest.addResult("=== inline style text after change ===");
         InspectorTest.addResult(treeElement.title.textContent);
         InspectorTest.completeTest();
