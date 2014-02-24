@@ -19,8 +19,3 @@
 #define PROXIED_IFACE(iface_str, iface_struct)
 #define UNDEFINE_PROXIED_IFACE
 #endif
-
-#ifndef UNPROXIED_IFACE
-#define UNPROXIED_IFACE(iface_str, iface_struct)
-#define UNDEFINE_UNPROXIED_IFACE
-#endif

@@ -310,11 +310,9 @@ const void* InternalGetInterface(const char* name) {
     return custom_interface;
 
   // TODO(brettw) put these in a hash map for better performance.
-  #define UNPROXIED_IFACE(iface_str, iface_struct) \
+  #define PROXIED_IFACE(iface_str, iface_struct) \
       if (strcmp(name, iface_str) == 0) \
         return ppapi::thunk::Get##iface_struct##_Thunk();
-  #define PROXIED_IFACE(iface_str, iface_struct) \
-      UNPROXIED_IFACE(iface_str, iface_struct)
 
   #include "ppapi/thunk/interfaces_ppb_private.h"
   #include "ppapi/thunk/interfaces_ppb_private_flash.h"
@@ -323,7 +321,6 @@ const void* InternalGetInterface(const char* name) {
   #include "ppapi/thunk/interfaces_ppb_public_dev_channel.h"
   #include "ppapi/thunk/interfaces_ppb_public_stable.h"
 
-  #undef UNPROXIED_API
   #undef PROXIED_IFACE
 
   #define LEGACY_IFACE(iface_str, function_name) \
