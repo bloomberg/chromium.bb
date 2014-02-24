@@ -392,9 +392,12 @@ tc-test-bot() {
   # Build the un-sandboxed toolchain
   echo "@@@BUILD_STEP compile_toolchain@@@"
 
+  # Assume Linux, where the x86-32 host tools are default.
   HOST_ARCH=x86_32 ${PNACL_BUILD} build-all
-  # Make 64-bit versions of the build tools such as fpcmp (used for llvm
-  # test suite and for some reason it matters that they match the build machine)
+  # However, make 64-bit versions of the build tools such as fpcmp
+  # (used for llvm test suite and for some reason it matters that they
+  # match the build machine)
+  local build_arch=x86_64
   ${PNACL_BUILD} llvm-configure
   PNACL_MAKE_OPTS=BUILD_DIRS_ONLY=1 ${PNACL_BUILD} llvm-make
 
@@ -432,7 +435,10 @@ tc-test-bot() {
       echo "@@@BUILD_STEP llvm-test-suite ${arch} ${opt} @@@"
       python ${LLVM_TEST} --testsuite-prereq --arch ${arch}
       python ${LLVM_TEST} --testsuite-clean
+      # TODO(jvoung): use default instead of specifying --llvm-buildpath
+      # once this builder uses the toolchain_build infrastructure.
       python ${LLVM_TEST} \
+        --llvm-buildpath="$(pwd)/pnacl/build/llvm_${build_arch}" \
         --testsuite-configure --testsuite-run --testsuite-report \
         --arch ${arch} ${opt} -v -c || handle-error
     done
