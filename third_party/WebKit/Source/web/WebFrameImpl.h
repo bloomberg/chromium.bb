@@ -129,7 +129,7 @@ public:
         int extensionGroup, WebVector<v8::Local<v8::Value> >* results) OVERRIDE;
     virtual v8::Handle<v8::Value> callFunctionEvenIfScriptDisabled(
         v8::Handle<v8::Function>,
-        v8::Handle<v8::Object>,
+        v8::Handle<v8::Value>,
         int argc,
         v8::Handle<v8::Value> argv[]) OVERRIDE;
     virtual v8::Local<v8::Context> mainWorldScriptContext() const OVERRIDE;
