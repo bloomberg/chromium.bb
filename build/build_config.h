@@ -30,10 +30,6 @@
 #define OS_NACL 1
 #elif defined(__linux__)
 #define OS_LINUX 1
-// Use TOOLKIT_GTK on linux if TOOLKIT_VIEWS isn't defined.
-#if !defined(TOOLKIT_VIEWS) && defined(USE_X11) && !defined(USE_AURA)
-#define TOOLKIT_GTK
-#endif
 #if defined(__GLIBC__) && !defined(__UCLIBC__)
 // we really are using glibc, not uClibc pretending to be glibc
 #define LIBC_GLIBC
@@ -43,17 +39,20 @@
 #define TOOLKIT_VIEWS 1
 #elif defined(__FreeBSD__)
 #define OS_FREEBSD 1
-#define TOOLKIT_GTK
 #elif defined(__OpenBSD__)
 #define OS_OPENBSD 1
-#define TOOLKIT_GTK
 #elif defined(__sun)
 #define OS_SOLARIS 1
-#define TOOLKIT_GTK
 #elif defined(__QNXNTO__)
 #define OS_QNX 1
 #else
 #error Please add support for your platform in build/build_config.h
+#endif
+
+// Use TOOLKIT_GTK on X11 if TOOLKIT_VIEWS and USE_AURA aren't defined.
+#if defined(USE_X11) && !defined(TOOLKIT_VIEWS) && !defined(USE_AURA) && \
+    !defined(OS_NACL)
+#define TOOLKIT_GTK
 #endif
 
 #if defined(USE_OPENSSL) && defined(USE_NSS)
