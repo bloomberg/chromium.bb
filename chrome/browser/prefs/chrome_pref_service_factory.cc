@@ -261,7 +261,9 @@ base::FilePath GetPrefFilePathFromProfilePath(
 scoped_ptr<PrefHashStoreImpl> GetPrefHashStoreImpl(
     const base::FilePath& profile_path) {
   // TODO(erikwright): Enable this on Android when race condition is sorted out.
-#if defined(OS_ANDROID)
+  // TODO(erikwright): Enable this on Chrome OS once MACs are moved out of Local
+  // State.
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   return scoped_ptr<PrefHashStoreImpl>();
 #else
   std::string seed = ResourceBundle::GetSharedInstance().GetRawDataResource(
