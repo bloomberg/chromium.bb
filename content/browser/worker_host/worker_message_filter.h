@@ -43,7 +43,6 @@ class WorkerMessageFilter : public BrowserMessageFilter {
                       int* route_id);
   void OnForwardToWorker(const IPC::Message& message);
   void OnDocumentDetached(unsigned long long document_id);
-  void OnCreateMessagePort(int* route_id, int* message_port_id);
 
   int render_process_id_;
   ResourceContext* const resource_context_;
