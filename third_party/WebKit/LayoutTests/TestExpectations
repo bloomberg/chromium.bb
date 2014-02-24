@@ -638,10 +638,6 @@ crbug.com/310292 [ Mac ] http/tests/security/video-poster-cross-origin-crash.htm
 crbug.com/310323 [ Debug ] http/tests/plugins/third-party-cookie-accept-policy.html [ Crash Pass ]
 crbug.com/310323 [ Debug ] http/tests/security/contentSecurityPolicy/report-multiple-violations-02.html [ Crash Pass ]
 
-crbug.com/231880 [ Win7 Debug ] fast/dom/Window/open-window-min-size.html [ Failure Pass ]
-crbug.com/338544 [ Win7 Release ] fast/dom/Window/open-window-min-size.html [ Failure ]
-crbug.com/231880 [ Mac XP Release ] fast/dom/Window/open-window-min-size.html [ Failure Pass ]
-
 crbug.com/311164 fast/js/mozilla/strict/15.4.4.6.html [ Failure Pass ]
 
 crbug.com/311301 fast/history/history_reload.html [ Failure Pass ]
@@ -719,6 +715,11 @@ crbug.com/321857 [ Win7 Debug ] fast/filesystem/workers/file-writer-events-share
 crbug.com/323858 [ XP ] fast/workers/storage/interrupt-database.html [ Pass Timeout ]
 
 crbug.com/343892 [ Linux Mac ] fast/workers/shared-worker-name.html [ Pass Crash ]
+
+crbug.com/345831 fast/events/scroll-event-during-modal-dialog.html [ Failure ]
+crbug.com/345831 fast/events/show-modal-dialog-onblur-onfocus.html [ Failure ]
+crbug.com/345831 fast/harness/show-modal-dialog.html [ Failure ]
+crbug.com/345831 fast/dom/Window/open-window-min-size.html [ Timeout Failure ]
 
 # Template tests that need a merge from upstream to match spec (and subsequent Blink) changes
 crbug.com/325442 w3c/web-platform-tests/html-templates/definitions/template-contents-owner-test-001.html [ Failure ]
