@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/spdy/buffered_spdy_framer.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/tools/balsa/balsa_headers.h"
@@ -161,7 +162,7 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface, public SMInterface {
                              int64 len,
                              uint32 flags,
                              bool compress) OVERRIDE;
-  BufferedSpdyFramer* spdy_framer() { return buffered_spdy_framer_; }
+  BufferedSpdyFramer* spdy_framer() { return buffered_spdy_framer_.get(); }
 
   const OutputOrdering& output_ordering() const {
     return client_output_ordering_;
@@ -172,6 +173,7 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface, public SMInterface {
     forward_ip_header_ = value;
   }
   SpdyMajorVersion spdy_version() const {
+    DCHECK(buffered_spdy_framer_);
     return buffered_spdy_framer_->protocol_version();
   }
 
@@ -191,7 +193,7 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface, public SMInterface {
   virtual void GetOutput() OVERRIDE;
 
  private:
-  BufferedSpdyFramer* buffered_spdy_framer_;
+  scoped_ptr<BufferedSpdyFramer> buffered_spdy_framer_;
   bool valid_spdy_session_;  // True if we have seen valid data on this session.
                              // Use this to fail fast when junk is sent to our
                              // port.

@@ -51,7 +51,7 @@ SpdySM::SpdySM(SMConnection* connection,
   buffered_spdy_framer_->set_visitor(this);
 }
 
-SpdySM::~SpdySM() { delete buffered_spdy_framer_; }
+SpdySM::~SpdySM() { }
 
 void SpdySM::InitSMConnection(SMConnectionPoolInterface* connection_pool,
                               SMInterface* sm_interface,
@@ -327,8 +327,7 @@ void SpdySM::ResetForNewInterface(int32 server_idx) {
 
 void SpdySM::ResetForNewConnection() {
   // seq_num is not cleared, intentionally.
-  delete buffered_spdy_framer_;
-  buffered_spdy_framer_ = NULL;
+  buffered_spdy_framer_.reset();
   valid_spdy_session_ = false;
   client_output_ordering_.Reset();
   next_outgoing_stream_id_ = 2;
@@ -618,7 +617,7 @@ void SpdySM::GetOutput() {
 
 void SpdySM::CreateFramer(SpdyMajorVersion spdy_version) {
   DCHECK(!buffered_spdy_framer_);
-  buffered_spdy_framer_ = new BufferedSpdyFramer(spdy_version, true);
+  buffered_spdy_framer_.reset(new BufferedSpdyFramer(spdy_version, true));
   buffered_spdy_framer_->set_visitor(this);
 }
 
