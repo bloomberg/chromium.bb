@@ -46,6 +46,13 @@ class CONTENT_EXPORT ResourceConverter {
                            v8::Handle<v8::Context> context,
                            PP_Var* result,
                            bool* was_resource) = 0;
+
+  // Attempts to convert a PP_Var to a V8 object. |var| must have type
+  // PP_VARTYPE_RESOURCE. On success, writes the resulting value to |result| and
+  // returns true. If an error occurs, returns false.
+  virtual bool ToV8Value(const PP_Var& var,
+                         v8::Handle<v8::Context> context,
+                         v8::Handle<v8::Value>* result) = 0;
 };
 
 class ResourceConverterImpl : public ResourceConverter {
@@ -59,6 +66,9 @@ class ResourceConverterImpl : public ResourceConverter {
                            v8::Handle<v8::Context> context,
                            PP_Var* result,
                            bool* was_resource) OVERRIDE;
+  virtual bool ToV8Value(const PP_Var& var,
+                         v8::Handle<v8::Context> context,
+                         v8::Handle<v8::Value>* result) OVERRIDE;
 
  private:
   // Creates a resource var with the given |pending_renderer_id| and

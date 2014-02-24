@@ -21,6 +21,8 @@
 #include "third_party/WebKit/public/web/WebDOMFileSystem.h"
 #include "third_party/WebKit/public/web/WebDOMMediaStreamTrack.h"
 
+using ppapi::ResourceVar;
+
 namespace content {
 namespace {
 
@@ -203,6 +205,45 @@ void ResourceConverterImpl::Flush(const base::Callback<void(bool)>& callback) {
       base::Bind(&FlushComplete, callback, browser_vars));
   browser_host_create_messages_.clear();
   browser_vars.clear();
+}
+
+bool ResourceConverterImpl::ToV8Value(const PP_Var& var,
+                                      v8::Handle<v8::Context> context,
+                                      v8::Handle<v8::Value>* result) {
+  DCHECK(var.type == PP_VARTYPE_RESOURCE);
+
+  ResourceVar* resource = ResourceVar::FromPPVar(var);
+  if (!resource) {
+    NOTREACHED();
+    return false;
+  }
+  PP_Resource resource_id = resource->GetPPResource();
+
+  // Get the renderer-side resource host for this resource.
+  content::RendererPpapiHost* renderer_ppapi_host =
+      content::RendererPpapiHost::GetForPPInstance(instance_);
+  if (!renderer_ppapi_host) {
+    // This should never happen: the RendererPpapiHost is owned by the module
+    // and should outlive instances associated with it. However, if it doesn't
+    // for some reason, we do not want to crash.
+    NOTREACHED();
+    return false;
+  }
+  ::ppapi::host::PpapiHost* ppapi_host =
+      renderer_ppapi_host->GetPpapiHost();
+  ::ppapi::host::ResourceHost* resource_host =
+      ppapi_host->GetResourceHost(resource_id);
+  if (resource_host == NULL) {
+    LOG(ERROR) << "No resource host for resource #" << resource_id;
+    return false;
+  }
+
+  // Convert to the appropriate type of resource host.
+  // TODO(mgiuca): Convert FileSystemHost resources into DOMFileSystem V8
+  // objects. (http://crbug.com/345158)
+  LOG(ERROR) << "The type of resource #" << resource_id
+             << " cannot be converted to a JavaScript object.";
+  return false;
 }
 
 scoped_refptr<HostResourceVar> ResourceConverterImpl::CreateResourceVar(

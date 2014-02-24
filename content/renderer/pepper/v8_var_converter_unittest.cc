@@ -56,6 +56,11 @@ class MockResourceConverter : public content::ResourceConverter {
     *was_resource = false;
     return true;
   }
+  virtual bool ToV8Value(const PP_Var& var,
+                         v8::Handle<v8::Context> context,
+                         v8::Handle<v8::Value>* result) OVERRIDE {
+    return false;
+  }
 };
 
 // Maps PP_Var IDs to the V8 value handle they correspond to.
