@@ -75,7 +75,7 @@ class CommandLine;
 class PepperDeviceTest;
 class SkBitmap;
 struct PP_NetAddress_Private;
-struct FrameMsg_Navigate_Params;
+struct ViewMsg_Navigate_Params;
 struct ViewMsg_PostMessage_Params;
 struct ViewMsg_StopFinding_Params;
 
@@ -804,13 +804,13 @@ class CONTENT_EXPORT RenderViewImpl
     CONNECTION_ERROR,
   };
 
-  static bool IsReload(const FrameMsg_Navigate_Params& params);
+  static blink::WebReferrerPolicy GetReferrerPolicyFromRequest(
+      blink::WebFrame* frame,
+      const blink::WebURLRequest& request);
 
   static Referrer GetReferrerFromRequest(
       blink::WebFrame* frame,
       const blink::WebURLRequest& request);
-
-  static void NotifyTimezoneChange(blink::WebFrame* frame);
 
   void UpdateTitle(blink::WebFrame* frame, const base::string16& title,
                    blink::WebTextDirection title_direction);
@@ -924,6 +924,7 @@ class CONTENT_EXPORT RenderViewImpl
   void OnPluginActionAt(const gfx::Point& location,
                         const blink::WebPluginAction& action);
   void OnMoveOrResizeStarted();
+  void OnNavigate(const ViewMsg_Navigate_Params& params);
   void OnPostMessageEvent(const ViewMsg_PostMessage_Params& params);
   void OnReleaseDisambiguationPopupDIB(TransportDIB::Handle dib_handle);
   void OnReloadFrame();
@@ -1024,12 +1025,8 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Returns true if the |params| navigation is to an entry that has been
   // cropped due to a recent navigation the browser did not know about.
-  bool IsBackForwardToStaleEntry(const FrameMsg_Navigate_Params& params,
+  bool IsBackForwardToStaleEntry(const ViewMsg_Navigate_Params& params,
                                  bool is_reload);
-
-  // TODO(nasko): Remove this method when code is migrated to use
-  // RenderFrameObserver.
-  void OnNavigate(const FrameMsg_Navigate_Params& params);
 
   // Make this RenderView show an empty, unscriptable page.
   void NavigateToSwappedOutURL(blink::WebFrame* frame);
@@ -1162,7 +1159,6 @@ class CONTENT_EXPORT RenderViewImpl
   bool is_loading_;
 
   // The gesture that initiated the current navigation.
-  // TODO(nasko): Move to RenderFrame, as this is per-frame state.
   NavigationGesture navigation_gesture_;
 
   // Used for popups.
@@ -1182,8 +1178,7 @@ class CONTENT_EXPORT RenderViewImpl
   // the WebDataSource::ExtraData attribute.  We use pending_navigation_state_
   // as a temporary holder for the state until the WebDataSource corresponding
   // to the new navigation is created.  See DidCreateDataSource.
-  // TODO(nasko): Move to RenderFrame, as this is per-frame state.
-  scoped_ptr<FrameMsg_Navigate_Params> pending_navigation_params_;
+  scoped_ptr<ViewMsg_Navigate_Params> pending_navigation_params_;
 
   // Timer used to delay the updating of nav state (see SyncNavigationState).
   base::OneShotTimer<RenderViewImpl> nav_state_sync_timer_;

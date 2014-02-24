@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/utf_string_conversions.h"
-#include "content/common/frame_messages.h"
+#include "content/common/view_messages.h"
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/accessibility/renderer_accessibility_complete.h"
 #include "content/renderer/render_view_impl.h"
@@ -62,10 +62,6 @@ class RendererAccessibilityTest : public RenderViewTest {
     return static_cast<RenderViewImpl*>(view_);
   }
 
-  RenderFrameImpl* frame() {
-    return static_cast<RenderFrameImpl*>(view()->GetMainRenderFrame());
-  }
-
   virtual void SetUp() {
     RenderViewTest::SetUp();
     sink_ = &render_thread_->sink();
@@ -96,7 +92,6 @@ class RendererAccessibilityTest : public RenderViewTest {
   IPC::TestSink* sink_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererAccessibilityTest);
-
 };
 
 TEST_F(RendererAccessibilityTest, EditableTextModeFocusEvents) {
@@ -359,15 +354,15 @@ TEST_F(RendererAccessibilityTest,
   // message that was queued up before will be quickly discarded
   // because the element it was referring to no longer exists,
   // so the event here is from loading this new page.
-  FrameMsg_Navigate_Params nav_params;
+  ViewMsg_Navigate_Params nav_params;
   nav_params.url = GURL("data:text/html,<p>Hello, again.</p>");
-  nav_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
+  nav_params.navigation_type = ViewMsg_Navigate_Type::NORMAL;
   nav_params.transition = PAGE_TRANSITION_TYPED;
   nav_params.current_history_list_length = 1;
   nav_params.current_history_list_offset = 0;
   nav_params.pending_history_list_offset = 1;
   nav_params.page_id = -1;
-  frame()->OnNavigate(nav_params);
+  view()->OnNavigate(nav_params);
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_TRUE(sink_->GetUniqueMessageMatching(
       AccessibilityHostMsg_Events::ID));

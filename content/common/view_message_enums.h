@@ -26,6 +26,33 @@ struct ViewHostMsg_UpdateRect_Flags {
   }
 };
 
+struct ViewMsg_Navigate_Type {
+ public:
+  enum Value {
+    // Reload the page.
+    RELOAD,
+
+    // Reload the page, ignoring any cache entries.
+    RELOAD_IGNORING_CACHE,
+
+    // Reload the page using the original request URL.
+    RELOAD_ORIGINAL_REQUEST_URL,
+
+    // The navigation is the result of session restore and should honor the
+    // page's cache policy while restoring form state. This is set to true if
+    // restoring a tab/session from the previous session and the previous
+    // session did not crash. If this is not set and the page was restored then
+    // the page's cache policy is ignored and we load from the cache.
+    RESTORE,
+
+    // Like RESTORE, except that the navigation contains POST data.
+    RESTORE_WITH_POST,
+
+    // Navigation type not categorized by the other types.
+    NORMAL
+  };
+};
+
 // Note: keep enums in content/browser/resources/accessibility/accessibility.js
 // in sync with these two enums.
 enum AccessibilityModeFlag {

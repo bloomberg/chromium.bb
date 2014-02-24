@@ -32,7 +32,7 @@
 #include "ui/base/window_open_disposition.h"
 
 class SkBitmap;
-class FrameMsg_Navigate;
+class ViewMsg_Navigate;
 struct AccessibilityHostMsg_EventParams;
 struct AccessibilityHostMsg_LocationChangeParams;
 struct MediaPlayerAction;
@@ -40,7 +40,7 @@ struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_OpenURL_Params;
 struct ViewHostMsg_SelectionBounds_Params;
 struct ViewHostMsg_ShowPopup_Params;
-struct FrameMsg_Navigate_Params;
+struct ViewMsg_Navigate_Params;
 struct ViewMsg_PostMessage_Params;
 
 namespace base {
@@ -277,13 +277,9 @@ class CONTENT_EXPORT RenderViewHostImpl
   // If a cross-site request is in progress, we may be suspended while waiting
   // for the onbeforeunload handler, so this function might buffer the message
   // rather than sending it.
-  // TODO(nasko): Remove this method once all callers are converted to use
-  // RenderFrameHostImpl.
-  void Navigate(const FrameMsg_Navigate_Params& message);
+  void Navigate(const ViewMsg_Navigate_Params& message);
 
   // Load the specified URL, this is a shortcut for Navigate().
-  // TODO(nasko): Remove this method once all callers are converted to use
-  // RenderFrameHostImpl.
   void NavigateToURL(const GURL& url);
 
   // Returns whether navigation messages are currently suspended for this
@@ -668,15 +664,13 @@ class CONTENT_EXPORT RenderViewHostImpl
   // them.  This will be true when a RenderViewHost is created for a cross-site
   // request, until we hear back from the onbeforeunload handler of the old
   // RenderViewHost.
-  // TODO(nasko): Move to RenderFrameHost, as this is per-frame state.
   bool navigations_suspended_;
 
   // We only buffer the params for a suspended navigation while we have a
   // pending RVH for a WebContentsImpl.  There will only ever be one suspended
   // navigation, because WebContentsImpl will destroy the pending RVH and create
   // a new one if a second navigation occurs.
-  // TODO(nasko): Move to RenderFrameHost, as this is per-frame state.
-  scoped_ptr<FrameMsg_Navigate_Params> suspended_nav_params_;
+  scoped_ptr<ViewMsg_Navigate_Params> suspended_nav_params_;
 
   // Whether the initial empty page of this view has been accessed by another
   // page, making it unsafe to show the pending URL.  Usually false unless
@@ -685,7 +679,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   bool has_accessed_initial_document_;
 
   // The current state of this RVH.
-  // TODO(nasko): Move to RenderFrameHost, as this is per-frame state.
   RenderViewHostImplState rvh_state_;
 
   // Routing ID for the main frame's RenderFrameHost.
@@ -698,14 +691,12 @@ class CONTENT_EXPORT RenderViewHostImpl
   // cross-site transition or a tab close attempt.
   // TODO(clamy): Remove this boolean and add one more state to the state
   // machine.
-  // TODO(nasko): Move to RenderFrameHost, as this is per-frame state.
   bool is_waiting_for_beforeunload_ack_;
 
   // Valid only when is_waiting_for_beforeunload_ack_ or
   // IsWaitingForUnloadACK is true.  This tells us if the unload request
   // is for closing the entire tab ( = false), or only this RenderViewHost in
   // the case of a cross-site transition ( = true).
-  // TODO(nasko): Move to RenderFrameHost, as this is per-frame state.
   bool unload_ack_is_for_cross_site_transition_;
 
   bool are_javascript_messages_suppressed_;
@@ -728,7 +719,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   base::TerminationStatus render_view_termination_status_;
 
   // When the last ShouldClose message was sent.
-  // TODO(nasko): Move to RenderFrameHost, as this is per-frame state.
   base::TimeTicks send_should_close_start_time_;
 
   // Set to true if we requested the on screen keyboard to be displayed.
@@ -742,12 +732,10 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Used to swap out or shutdown this RVH when the unload event is taking too
   // long to execute, depending on the number of active views in the
   // SiteInstance.
-  // TODO(nasko): Move to RenderFrameHost, as this is per-frame state.
   scoped_ptr<TimeoutMonitor> unload_event_monitor_timeout_;
 
   // Called after receiving the SwapOutACK when the RVH is in state pending
   // shutdown. Also called if the unload timer times out.
-  // TODO(nasko): Move to RenderFrameHost, as this is per-frame state.
   base::Closure pending_shutdown_on_swap_out_;
 
   base::WeakPtrFactory<RenderViewHostImpl> weak_factory_;

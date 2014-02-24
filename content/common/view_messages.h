@@ -71,6 +71,7 @@
 #define IPC_MESSAGE_START ViewMsgStart
 
 IPC_ENUM_TRAITS(AccessibilityMode)
+IPC_ENUM_TRAITS(ViewMsg_Navigate_Type::Value)
 IPC_ENUM_TRAITS(blink::WebMediaPlayerAction::Type)
 IPC_ENUM_TRAITS(blink::WebPluginAction::Type)
 IPC_ENUM_TRAITS(blink::WebPopupType)
@@ -477,6 +478,98 @@ IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
   IPC_STRUCT_MEMBER(std::vector<ui::LatencyInfo>, latency_info)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(ViewMsg_Navigate_Params)
+  // The page_id for this navigation, or -1 if it is a new navigation.  Back,
+  // Forward, and Reload navigations should have a valid page_id.  If the load
+  // succeeds, then this page_id will be reflected in the resultant
+  // FrameHostMsg_DidCommitProvisionalLoad message.
+  IPC_STRUCT_MEMBER(int32, page_id)
+
+  // If page_id is -1, then pending_history_list_offset will also be -1.
+  // Otherwise, it contains the offset into the history list corresponding to
+  // the current navigation.
+  IPC_STRUCT_MEMBER(int, pending_history_list_offset)
+
+  // Informs the RenderView of where its current page contents reside in
+  // session history and the total size of the session history list.
+  IPC_STRUCT_MEMBER(int, current_history_list_offset)
+  IPC_STRUCT_MEMBER(int, current_history_list_length)
+
+  // Informs the RenderView the session history should be cleared. In that
+  // case, the RenderView needs to notify the browser that the clearing was
+  // succesful when the navigation commits.
+  IPC_STRUCT_MEMBER(bool, should_clear_history_list)
+
+  // The URL to load.
+  IPC_STRUCT_MEMBER(GURL, url)
+
+  // Base URL for use in WebKit's SubstituteData.
+  // Is only used with data: URLs.
+  IPC_STRUCT_MEMBER(GURL, base_url_for_data_url)
+
+  // History URL for use in WebKit's SubstituteData.
+  // Is only used with data: URLs.
+  IPC_STRUCT_MEMBER(GURL, history_url_for_data_url)
+
+  // The URL to send in the "Referer" header field. Can be empty if there is
+  // no referrer.
+  IPC_STRUCT_MEMBER(content::Referrer, referrer)
+
+  // Any redirect URLs that occurred before |url|. Useful for cross-process
+  // navigations; defaults to empty.
+  IPC_STRUCT_MEMBER(std::vector<GURL>, redirects)
+
+  // The type of transition.
+  IPC_STRUCT_MEMBER(content::PageTransition, transition)
+
+  // Informs the RenderView the pending navigation should replace the current
+  // history entry when it commits. This is used for cross-process redirects so
+  // the transferred navigation can recover the navigation state.
+  IPC_STRUCT_MEMBER(bool, should_replace_current_entry)
+
+  // Opaque history state (received by ViewHostMsg_UpdateState).
+  IPC_STRUCT_MEMBER(content::PageState, page_state)
+
+  // Type of navigation.
+  IPC_STRUCT_MEMBER(ViewMsg_Navigate_Type::Value, navigation_type)
+
+  // The time the request was created
+  IPC_STRUCT_MEMBER(base::Time, request_time)
+
+  // Extra headers (separated by \n) to send during the request.
+  IPC_STRUCT_MEMBER(std::string, extra_headers)
+
+  // The following two members identify a previous request that has been
+  // created before this navigation is being transferred to a new render view.
+  // This serves the purpose of recycling the old request.
+  // Unless this refers to a transferred navigation, these values are -1 and -1.
+  IPC_STRUCT_MEMBER(int, transferred_request_child_id)
+  IPC_STRUCT_MEMBER(int, transferred_request_request_id)
+
+  // Whether or not we should allow the url to download.
+  IPC_STRUCT_MEMBER(bool, allow_download)
+
+  // Whether or not the user agent override string should be used.
+  IPC_STRUCT_MEMBER(bool, is_overriding_user_agent)
+
+  // True if this was a post request.
+  IPC_STRUCT_MEMBER(bool, is_post)
+
+  // If is_post is true, holds the post_data information from browser. Empty
+  // otherwise.
+  IPC_STRUCT_MEMBER(std::vector<unsigned char>, browser_initiated_post_data)
+
+  // Whether or not this url should be allowed to access local file://
+  // resources.
+  IPC_STRUCT_MEMBER(bool, can_load_local_resources)
+
+  // If not empty, which frame to navigate.
+  IPC_STRUCT_MEMBER(std::string, frame_to_navigate)
+
+  // The navigationStart time to expose to JS for this navigation.
+  IPC_STRUCT_MEMBER(base::TimeTicks, browser_navigation_start)
+IPC_STRUCT_END()
+
 IPC_STRUCT_BEGIN(ViewMsg_New_Params)
   // Renderer-wide preferences.
   IPC_STRUCT_MEMBER(content::RendererPreferences, renderer_preferences)
@@ -676,6 +769,10 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetInitialFocus,
 // The parameter specifies the location in the render view's coordinates.
 IPC_MESSAGE_ROUTED1(ViewMsg_ShowContextMenu,
                     gfx::Point /* location where menu should be shown */)
+
+// Tells the renderer to perform the specified navigation, interrupting any
+// existing navigation.
+IPC_MESSAGE_ROUTED1(ViewMsg_Navigate, ViewMsg_Navigate_Params)
 
 IPC_MESSAGE_ROUTED0(ViewMsg_Stop)
 

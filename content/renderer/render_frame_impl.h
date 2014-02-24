@@ -24,7 +24,6 @@
 class TransportDIB;
 struct FrameMsg_BuffersSwapped_Params;
 struct FrameMsg_CompositorFrameSwapped_Params;
-struct FrameMsg_Navigate_Params;
 
 namespace blink {
 class WebInputEvent;
@@ -330,10 +329,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // TODO(jam): move this to WebFrameClient
   virtual void showContextMenu(const blink::WebContextMenuData& data);
-
-  // TODO(nasko): Make all tests in RenderViewImplTest friends and then move
-  // this back to private member.
-  void OnNavigate(const FrameMsg_Navigate_Params& params);
 
  protected:
   RenderFrameImpl(RenderViewImpl* render_view, int32 routing_id);

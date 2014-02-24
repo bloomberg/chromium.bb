@@ -12,7 +12,6 @@
 #include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/common/devtools_messages.h"
-#include "content/common/frame_messages.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/devtools/devtools_agent_filter.h"
@@ -106,7 +105,7 @@ bool DevToolsAgent::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
-  if (message.type() == FrameMsg_Navigate::ID ||
+  if (message.type() == ViewMsg_Navigate::ID ||
       message.type() == ViewMsg_Close::ID)
     ContinueProgram();  // Don't want to swallow the message.
 

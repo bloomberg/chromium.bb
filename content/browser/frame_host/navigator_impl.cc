@@ -32,16 +32,16 @@ namespace content {
 
 namespace {
 
-FrameMsg_Navigate_Type::Value GetNavigationType(
+ViewMsg_Navigate_Type::Value GetNavigationType(
     BrowserContext* browser_context, const NavigationEntryImpl& entry,
     NavigationController::ReloadType reload_type) {
   switch (reload_type) {
     case NavigationControllerImpl::RELOAD:
-      return FrameMsg_Navigate_Type::RELOAD;
+      return ViewMsg_Navigate_Type::RELOAD;
     case NavigationControllerImpl::RELOAD_IGNORING_CACHE:
-      return FrameMsg_Navigate_Type::RELOAD_IGNORING_CACHE;
+      return ViewMsg_Navigate_Type::RELOAD_IGNORING_CACHE;
     case NavigationControllerImpl::RELOAD_ORIGINAL_REQUEST_URL:
-      return FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
+      return ViewMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
     case NavigationControllerImpl::NO_RELOAD:
       break;  // Fall through to rest of function.
   }
@@ -51,17 +51,17 @@ FrameMsg_Navigate_Type::Value GetNavigationType(
   if (entry.restore_type() ==
       NavigationEntryImpl::RESTORE_LAST_SESSION_EXITED_CLEANLY) {
     if (entry.GetHasPostData())
-      return FrameMsg_Navigate_Type::RESTORE_WITH_POST;
-    return FrameMsg_Navigate_Type::RESTORE;
+      return ViewMsg_Navigate_Type::RESTORE_WITH_POST;
+    return ViewMsg_Navigate_Type::RESTORE;
   }
 
-  return FrameMsg_Navigate_Type::NORMAL;
+  return ViewMsg_Navigate_Type::NORMAL;
 }
 
 void MakeNavigateParams(const NavigationEntryImpl& entry,
                         const NavigationControllerImpl& controller,
                         NavigationController::ReloadType reload_type,
-                        FrameMsg_Navigate_Params* params) {
+                        ViewMsg_Navigate_Params* params) {
   params->page_id = entry.GetPageID();
   params->should_clear_history_list = entry.should_clear_history_list();
   params->should_replace_current_entry = entry.should_replace_entry();
@@ -332,13 +332,13 @@ bool NavigatorImpl::NavigateToEntry(
   // Used for page load time metrics.
   current_load_start_ = base::TimeTicks::Now();
 
-  // Navigate in the desired RenderFrameHost.
+  // Navigate in the desired RenderViewHost.
   // TODO(creis): As a temporary hack, we currently do cross-process subframe
   // navigations in a top-level frame of the new process.  Thus, we don't yet
-  // need to store the correct frame ID in FrameMsg_Navigate_Params.
-  FrameMsg_Navigate_Params navigate_params;
+  // need to store the correct frame ID in ViewMsg_Navigate_Params.
+  ViewMsg_Navigate_Params navigate_params;
   MakeNavigateParams(entry, *controller_, reload_type, &navigate_params);
-  dest_render_frame_host->Navigate(navigate_params);
+  dest_render_frame_host->render_view_host()->Navigate(navigate_params);
 
   if (entry.GetPageID() == -1) {
     // HACK!!  This code suppresses javascript: URLs from being added to

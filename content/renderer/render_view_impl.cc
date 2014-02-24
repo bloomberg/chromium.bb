@@ -42,7 +42,6 @@
 #include "content/common/database_messages.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/common/drag_messages.h"
-#include "content/common/frame_messages.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/input_messages.h"
 #include "content/common/java_bridge_messages.h"
@@ -362,13 +361,12 @@ const size_t kContentIntentDelayMilliseconds = 700;
 static RenderViewImpl* (*g_create_render_view_impl)(RenderViewImplParams*) =
     NULL;
 
-// static
-bool RenderViewImpl::IsReload(const FrameMsg_Navigate_Params& params) {
+static bool IsReload(const ViewMsg_Navigate_Params& params) {
   return
-      params.navigation_type == FrameMsg_Navigate_Type::RELOAD ||
-      params.navigation_type == FrameMsg_Navigate_Type::RELOAD_IGNORING_CACHE ||
+      params.navigation_type == ViewMsg_Navigate_Type::RELOAD ||
+      params.navigation_type == ViewMsg_Navigate_Type::RELOAD_IGNORING_CACHE ||
       params.navigation_type ==
-          FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
+          ViewMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
 }
 
 // static
@@ -377,6 +375,67 @@ Referrer RenderViewImpl::GetReferrerFromRequest(
     const WebURLRequest& request) {
   return Referrer(GURL(request.httpHeaderField(WebString::fromUTF8("Referer"))),
                   request.referrerPolicy());
+}
+
+NOINLINE static void CrashIntentionally() {
+  // NOTE(shess): Crash directly rather than using NOTREACHED() so
+  // that the signature is easier to triage in crash reports.
+  volatile int* zero = NULL;
+  *zero = 0;
+}
+
+#if defined(ADDRESS_SANITIZER)
+NOINLINE static void MaybeTriggerAsanError(const GURL& url) {
+  // NOTE(rogerm): We intentionally perform an invalid heap access here in
+  //     order to trigger an Address Sanitizer (ASAN) error report.
+  static const char kCrashDomain[] = "crash";
+  static const char kHeapOverflow[] = "/heap-overflow";
+  static const char kHeapUnderflow[] = "/heap-underflow";
+  static const char kUseAfterFree[] = "/use-after-free";
+  static const int kArraySize = 5;
+
+  if (!url.DomainIs(kCrashDomain, sizeof(kCrashDomain) - 1))
+    return;
+
+  if (!url.has_path())
+    return;
+
+  scoped_ptr<int[]> array(new int[kArraySize]);
+  std::string crash_type(url.path());
+  int dummy = 0;
+  if (crash_type == kHeapOverflow) {
+    dummy = array[kArraySize];
+  } else if (crash_type == kHeapUnderflow ) {
+    dummy = array[-1];
+  } else if (crash_type == kUseAfterFree) {
+    int* dangling = array.get();
+    array.reset();
+    dummy = dangling[kArraySize / 2];
+  }
+
+  // Make sure the assignments to the dummy value aren't optimized away.
+  base::debug::Alias(&dummy);
+}
+#endif  // ADDRESS_SANITIZER
+
+static void MaybeHandleDebugURL(const GURL& url) {
+  if (!url.SchemeIs(kChromeUIScheme))
+    return;
+  if (url == GURL(kChromeUICrashURL)) {
+    CrashIntentionally();
+  } else if (url == GURL(kChromeUIKillURL)) {
+    base::KillProcess(base::GetCurrentProcessHandle(), 1, false);
+  } else if (url == GURL(kChromeUIHangURL)) {
+    for (;;) {
+      base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
+    }
+  } else if (url == GURL(kChromeUIShorthangURL)) {
+    base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(20));
+  }
+
+#if defined(ADDRESS_SANITIZER)
+  MaybeTriggerAsanError(url);
+#endif  // ADDRESS_SANITIZER
 }
 
 // Returns false unless this is a top-level navigation.
@@ -417,8 +476,7 @@ static bool IsNonLocalTopLevelNavigation(const GURL& url,
   return false;
 }
 
-// static
-void RenderViewImpl::NotifyTimezoneChange(blink::WebFrame* frame) {
+static void NotifyTimezoneChange(blink::WebFrame* frame) {
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   v8::Context::Scope context_scope(frame->mainWorldScriptContext());
   v8::Date::DateTimeConfigurationChangeNotification(v8::Isolate::GetCurrent());
@@ -1140,7 +1198,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnSetEditCommandsForNextKeyEvent)
     IPC_MESSAGE_HANDLER(InputMsg_Undo, OnUndo)
     IPC_MESSAGE_HANDLER(InputMsg_Unselect, OnUnselect)
-    IPC_MESSAGE_HANDLER(FrameMsg_Navigate, OnNavigate)
+    IPC_MESSAGE_HANDLER(ViewMsg_Navigate, OnNavigate)
     IPC_MESSAGE_HANDLER(ViewMsg_Stop, OnStop)
     IPC_MESSAGE_HANDLER(ViewMsg_ReloadFrame, OnReloadFrame)
     IPC_MESSAGE_HANDLER(ViewMsg_SetName, OnSetName)
@@ -1252,12 +1310,182 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void RenderViewImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
+void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
+  MaybeHandleDebugURL(params.url);
+  if (!webview())
+    return;
+
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, Navigate(params.url));
+
+  bool is_reload = IsReload(params);
+  WebURLRequest::CachePolicy cache_policy =
+      WebURLRequest::UseProtocolCachePolicy;
+
+  // If this is a stale back/forward (due to a recent navigation the browser
+  // didn't know about), ignore it.
+  if (IsBackForwardToStaleEntry(params, is_reload))
+    return;
+
+  // Swap this renderer back in if necessary.
+  if (is_swapped_out_) {
+    // We marked the view as hidden when swapping the view out, so be sure to
+    // reset the visibility state before navigating to the new URL.
+    webview()->setVisibilityState(visibilityState(), false);
+
+    // If this is an attempt to reload while we are swapped out, we should not
+    // reload swappedout://, but the previous page, which is stored in
+    // params.state.  Setting is_reload to false will treat this like a back
+    // navigation to accomplish that.
+    is_reload = false;
+    cache_policy = WebURLRequest::ReloadIgnoringCacheData;
+
+    // We refresh timezone when a view is swapped in since timezone
+    // can get out of sync when the system timezone is updated while
+    // the view is swapped out.
+    NotifyTimezoneChange(webview()->mainFrame());
+
+    SetSwappedOut(false);
+  }
+
+  if (params.should_clear_history_list) {
+    CHECK_EQ(params.pending_history_list_offset, -1);
+    CHECK_EQ(params.current_history_list_offset, -1);
+    CHECK_EQ(params.current_history_list_length, 0);
+  }
+  history_list_offset_ = params.current_history_list_offset;
+  history_list_length_ = params.current_history_list_length;
+  if (history_list_length_ >= 0)
+    history_page_ids_.resize(history_list_length_, -1);
+  if (params.pending_history_list_offset >= 0 &&
+      params.pending_history_list_offset < history_list_length_)
+    history_page_ids_[params.pending_history_list_offset] = params.page_id;
+
+  GetContentClient()->SetActiveURL(params.url);
+
+  WebFrame* frame = webview()->mainFrame();
+  if (!params.frame_to_navigate.empty()) {
+    frame = webview()->findFrameByName(
+        WebString::fromUTF8(params.frame_to_navigate));
+    CHECK(frame) << "Invalid frame name passed: " << params.frame_to_navigate;
+  }
+
+  if (is_reload && frame->currentHistoryItem().isNull()) {
+    // We cannot reload if we do not have any history state.  This happens, for
+    // example, when recovering from a crash.
+    is_reload = false;
+    cache_policy = WebURLRequest::ReloadIgnoringCacheData;
+  }
+
+  pending_navigation_params_.reset(new ViewMsg_Navigate_Params(params));
+
+  // If we are reloading, then WebKit will use the history state of the current
+  // page, so we should just ignore any given history state.  Otherwise, if we
+  // have history state, then we need to navigate to it, which corresponds to a
+  // back/forward navigation event.
+  if (is_reload) {
+    bool reload_original_url =
+        (params.navigation_type ==
+            ViewMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL);
+    bool ignore_cache = (params.navigation_type ==
+                             ViewMsg_Navigate_Type::RELOAD_IGNORING_CACHE);
+
+    if (reload_original_url)
+      frame->reloadWithOverrideURL(params.url, true);
+    else
+      frame->reload(ignore_cache);
+  } else if (params.page_state.IsValid()) {
+    // We must know the page ID of the page we are navigating back to.
+    DCHECK_NE(params.page_id, -1);
+    WebHistoryItem item = PageStateToHistoryItem(params.page_state);
+    if (!item.isNull()) {
+      // Ensure we didn't save the swapped out URL in UpdateState, since the
+      // browser should never be telling us to navigate to swappedout://.
+      CHECK(item.urlString() != WebString::fromUTF8(kSwappedOutURL));
+      frame->loadHistoryItem(item, cache_policy);
+    }
+  } else if (!params.base_url_for_data_url.is_empty()) {
+    // A loadData request with a specified base URL.
+    std::string mime_type, charset, data;
+    if (net::DataURL::Parse(params.url, &mime_type, &charset, &data)) {
+      frame->loadData(
+          WebData(data.c_str(), data.length()),
+          WebString::fromUTF8(mime_type),
+          WebString::fromUTF8(charset),
+          params.base_url_for_data_url,
+          params.history_url_for_data_url,
+          false);
+    } else {
+      CHECK(false) <<
+          "Invalid URL passed: " << params.url.possibly_invalid_spec();
+    }
+  } else {
+    // Navigate to the given URL.
+    WebURLRequest request(params.url);
+
+    // A session history navigation should have been accompanied by state.
+    CHECK_EQ(params.page_id, -1);
+
+    if (frame->isViewSourceModeEnabled())
+      request.setCachePolicy(WebURLRequest::ReturnCacheDataElseLoad);
+
+    if (params.referrer.url.is_valid()) {
+      WebString referrer = WebSecurityPolicy::generateReferrerHeader(
+          params.referrer.policy,
+          params.url,
+          WebString::fromUTF8(params.referrer.url.spec()));
+      if (!referrer.isEmpty())
+        request.setHTTPReferrer(referrer, params.referrer.policy);
+    }
+
+    if (!params.extra_headers.empty()) {
+      for (net::HttpUtil::HeadersIterator i(params.extra_headers.begin(),
+                                            params.extra_headers.end(), "\n");
+           i.GetNext(); ) {
+        request.addHTTPHeaderField(WebString::fromUTF8(i.name()),
+                                   WebString::fromUTF8(i.values()));
+      }
+    }
+
+    if (params.is_post) {
+      request.setHTTPMethod(WebString::fromUTF8("POST"));
+
+      // Set post data.
+      WebHTTPBody http_body;
+      http_body.initialize();
+      const char* data = NULL;
+      if (params.browser_initiated_post_data.size()) {
+        data = reinterpret_cast<const char*>(
+            &params.browser_initiated_post_data.front());
+      }
+      http_body.appendData(
+          WebData(data, params.browser_initiated_post_data.size()));
+      request.setHTTPBody(http_body);
+    }
+
+    frame->loadRequest(request);
+
+    // If this is a cross-process navigation, the browser process will send
+    // along the proper navigation start value.
+    if (!params.browser_navigation_start.is_null() &&
+        frame->provisionalDataSource()) {
+      // browser_navigation_start is likely before this process existed, so we
+      // can't use InterProcessTimeTicksConverter. Instead, the best we can do
+      // is just ensure we don't report a bogus value in the future.
+      base::TimeTicks navigation_start = std::min(
+          base::TimeTicks::Now(), params.browser_navigation_start);
+      double navigation_start_seconds =
+          (navigation_start - base::TimeTicks()).InSecondsF();
+      frame->provisionalDataSource()->setNavigationStartTime(
+          navigation_start_seconds);
+    }
+  }
+
+  // In case LoadRequest failed before DidCreateDataSource was called.
+  pending_navigation_params_.reset();
 }
 
 bool RenderViewImpl::IsBackForwardToStaleEntry(
-    const FrameMsg_Navigate_Params& params,
+    const ViewMsg_Navigate_Params& params,
     bool is_reload) {
   // Make sure this isn't a back/forward to an entry we have already cropped
   // or replaced from our history, before the browser knew about it.  If so,
@@ -2917,14 +3145,14 @@ void RenderViewImpl::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
 
 void RenderViewImpl::PopulateDocumentStateFromPending(
     DocumentState* document_state) {
-  const FrameMsg_Navigate_Params& params = *pending_navigation_params_.get();
+  const ViewMsg_Navigate_Params& params = *pending_navigation_params_.get();
   document_state->set_request_time(params.request_time);
 
   InternalDocumentStateData* internal_data =
       InternalDocumentStateData::FromDocumentState(document_state);
 
   if (!params.url.SchemeIs(kJavaScriptScheme) &&
-      params.navigation_type == FrameMsg_Navigate_Type::RESTORE) {
+      params.navigation_type == ViewMsg_Navigate_Type::RESTORE) {
     // We're doing a load of a page that was restored from the last session. By
     // default this prefers the cache over loading (LOAD_PREFERRING_CACHE) which
     // can result in stale data for pages that are set to expire. We explicitly
@@ -2949,12 +3177,12 @@ void RenderViewImpl::PopulateDocumentStateFromPending(
   internal_data->set_is_overriding_user_agent(params.is_overriding_user_agent);
   internal_data->set_must_reset_scroll_and_scale_state(
       params.navigation_type ==
-          FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL);
+          ViewMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL);
   document_state->set_can_load_local_resources(params.can_load_local_resources);
 }
 
 NavigationState* RenderViewImpl::CreateNavigationStateFromPending() {
-  const FrameMsg_Navigate_Params& params = *pending_navigation_params_.get();
+  const ViewMsg_Navigate_Params& params = *pending_navigation_params_.get();
   NavigationState* navigation_state = NULL;
 
   // A navigation resulting from loading a javascript URL should not be treated

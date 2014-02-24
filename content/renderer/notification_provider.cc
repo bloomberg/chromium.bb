@@ -6,7 +6,7 @@
 
 #include "base/strings/string_util.h"
 #include "content/common/desktop_notification_messages.h"
-#include "content/common/frame_messages.h"
+#include "content/common/view_messages.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -101,7 +101,7 @@ bool NotificationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
-  if (message.type() == FrameMsg_Navigate::ID)
+  if (message.type() == ViewMsg_Navigate::ID)
     OnNavigate();  // Don't want to swallow the message.
 
   return handled;

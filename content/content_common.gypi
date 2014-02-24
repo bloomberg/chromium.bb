@@ -175,8 +175,6 @@
     'common/font_list_ozone.cc',
     'common/font_list_pango.cc',
     'common/font_list_win.cc',
-    'common/frame_message_enums.h',
-    'common/frame_messages.h',
     'common/frame_param.cc',
     'common/frame_param.h',
     'common/frame_param_macros.h',
