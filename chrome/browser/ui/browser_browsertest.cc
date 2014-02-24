@@ -2018,6 +2018,30 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, FullscreenBookmarkBar) {
 }
 #endif
 
+class ShowModalDialogTest : public BrowserTest {
+ public:
+  ShowModalDialogTest() {}
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitch(switches::kDisablePopupBlocking);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(ShowModalDialogTest, BasicTest) {
+  // This navigation should show a modal dialog that will be immediately
+  // closed, but the fact that it was shown should be recorded.
+  GURL url = ui_test_utils::GetTestUrl(
+      base::FilePath(), base::FilePath().AppendASCII("showmodaldialog.html"));
+
+  base::string16 expected_title(ASCIIToUTF16("SUCCESS"));
+  content::TitleWatcher title_watcher(
+      browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Verify that we set a mark on successful dialog show.
+  ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+}
+
 IN_PROC_BROWSER_TEST_F(BrowserTest, DisallowFileUrlUniversalAccessTest) {
   GURL url = ui_test_utils::GetTestUrl(
       base::FilePath(),

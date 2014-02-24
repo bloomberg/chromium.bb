@@ -144,6 +144,7 @@ class CONTENT_EXPORT RenderWidget
   virtual void didChangeCursor(const blink::WebCursorInfo&);
   virtual void closeWidgetSoon();
   virtual void show(blink::WebNavigationPolicy);
+  virtual void runModal() {}
   virtual blink::WebRect windowRect();
   virtual void setToolTipText(const blink::WebString& text,
                               blink::WebTextDirection hint);
