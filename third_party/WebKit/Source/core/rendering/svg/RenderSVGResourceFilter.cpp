@@ -225,12 +225,13 @@ bool RenderSVGResourceFilter::applyResource(RenderObject* object, RenderStyle*, 
 
     if (deferredFiltersEnabled) {
         SkiaImageFilterBuilder builder(context);
-        FloatRect oldBounds = context->getClipBounds();
-        m_objects.set(object, oldBounds);
+        m_objects.add(object);
         RefPtr<ImageFilter> imageFilter = builder.build(lastEffect, ColorSpaceDeviceRGB);
         FloatRect boundaries = enclosingIntRect(filterData->boundaries);
+        context->save();
+        // Clip drawing of filtered image to primitive boundaries.
+        context->clipRect(boundaries);
         if (filterElement->hasAttribute(SVGNames::filterResAttr)) {
-            context->save();
             // Get boundaries in device coords.
             FloatSize size = context->getCTM().mapSize(boundaries.size());
             // Compute the scale amount required so that the resulting offscreen is exactly filterResX by filterResY pixels.
@@ -238,15 +239,9 @@ bool RenderSVGResourceFilter::applyResource(RenderObject* object, RenderStyle*, 
                 filterElement->filterResX()->currentValue()->value() / size.width(),
                 filterElement->filterResY()->currentValue()->value() / size.height());
             // Scale the CTM so the primitive is drawn to filterRes.
-            context->translate(boundaries.x(), boundaries.y());
             context->scale(filterResScale);
-            context->translate(-boundaries.x(), -boundaries.y());
             // Create a resize filter with the inverse scale.
             imageFilter = builder.buildResize(1 / filterResScale.width(), 1 / filterResScale.height(), imageFilter.get());
-            // Clip the context so that the offscreen created in beginLayer()
-            // is clipped to filterResX by filerResY. Use Replace mode since
-            // this clip may be larger than the parent device.
-            context->clipRectReplace(boundaries);
         }
         context->beginLayer(1, CompositeSourceOver, &boundaries, ColorFilterNone, imageFilter.get());
         return true;
@@ -294,18 +289,8 @@ void RenderSVGResourceFilter::postApplyResource(RenderObject* object, GraphicsCo
     ASSERT_UNUSED(resourceMode, resourceMode == ApplyToDefaultMode);
 
     if (object->document().settings()->deferredFiltersEnabled()) {
-        SVGFilterElement* filterElement = toSVGFilterElement(element());
-        if (filterElement->hasAttribute(SVGNames::filterResAttr)) {
-            // Restore the clip bounds before endLayer(), so the filtered
-            // image draw is clipped to the original device bounds, not the
-            // clip we set before the beginLayer() above.
-            FloatRect oldBounds = m_objects.get(object);
-            context->clipRectReplace(oldBounds);
-            context->endLayer();
-            context->restore();
-        } else {
-            context->endLayer();
-        }
+        context->endLayer();
+        context->restore();
         m_objects.remove(object);
         return;
     }
