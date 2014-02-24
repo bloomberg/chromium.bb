@@ -952,33 +952,38 @@ camera.util.MouseScroller.prototype.onMouseUp_ = function(event) {
  */
 camera.util.PerformanceMonitor = function() {
   /**
+   * Stores an array of probes, as an array of pair (timestamp, duration) of
+   * measurements.
+   *
+   * @type {Array.<number, number>}
+   * @private
+   */
+  this.probes_ = [];
+
+  /**
    * @type {?number}
    * @private
    */
-  this.timer_ = null;
+  this.tailStartTime_ = null;
 
-  /**
-   * @type {number}
-   * @private
-   */
-  this.framesCount_ = 0;
-
-  /**
-   * @type {number}
-   * @private
-   */
-  this.timesSum_ = 0;
-
-  /**
-   * @type {number}
-   * @private
-   */
-  this.fps_ = 0;
+  // No more properties, seal the object.
+  Object.seal(this);
 };
 
+/**
+ * Length of history tail in milliseconds. Older probes will be discarded.
+ * @type {number}
+ * @const
+ */
+camera.util.PerformanceMonitor.HISTORY_LENGTH = 10 * 1000;
+
 camera.util.PerformanceMonitor.prototype = {
+  /**
+   * @return {number} Number of measurements per second.
+   */
   get fps() {
-    return this.fps_;
+    return this.tailStartTime_ ? this.probes_.length /
+        (performance.now() - this.tailStartTime_) * 1000 : 0;
   }
 };
 
@@ -986,36 +991,14 @@ camera.util.PerformanceMonitor.prototype = {
  * Starts the monitor.
  */
 camera.util.PerformanceMonitor.prototype.start = function() {
-  if (this.timer_)
-    return;
-
-  this.timer_ = setInterval(this.flushStats_.bind(this), 1000);
+  this.tailStartTime_ = performance.now();
 };
 
 /**
  * Stops the monitor.
  */
 camera.util.PerformanceMonitor.prototype.stop = function() {
-  if (!this.timer_)
-    return;
-
-  clearTimeout(this.timer_);
-  this.timer_ = null;
-};
-
-/**
- * Flushes current stats and convert them to a FPS value.
- * @private
- */
-camera.util.PerformanceMonitor.prototype.flushStats_ = function() {
-  if (!this.framesCount_) {
-    this.fps_ = 0;
-    return;
-  }
-
-  this.fps_ = (this.framesCount_ / this.timesSum_);
-  this.framesCount_ = 0;
-  this.timesSum_ = 0;
+  this.tailStartTime_ = null;
 };
 
 /**
@@ -1034,8 +1017,18 @@ camera.util.PerformanceMonitor.prototype.startMeasuring = function() {
  */
 camera.util.PerformanceMonitor.prototype.finishMeasuring_ = function(
     startTime) {
-  this.framesCount_++;
-  this.timesSum_ += (performance.now() - startTime) / 1000;
+  this.probes_.push([performance.now(), performance.now() - startTime]);
+  // Discard old probes.
+  var threshold =
+      performance.now() - camera.util.PerformanceMonitor.HISTORY_LENGTH;
+  var i = 0;
+  while (i < this.probes_.length && this.probes_[i][0] < threshold) {
+    i++;
+  }
+  if (i > 0) {
+    this.tailStartTime_ = this.probes_[i][0];
+    this.probes_.splice(0, i);
+  }
 };
 
 /**
