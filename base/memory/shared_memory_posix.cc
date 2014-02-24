@@ -339,12 +339,12 @@ void SharedMemory::Close() {
   }
 }
 
-void SharedMemory::Lock() {
+void SharedMemory::LockDeprecated() {
   g_thread_lock_.Get().Acquire();
   LockOrUnlockCommon(F_LOCK);
 }
 
-void SharedMemory::Unlock() {
+void SharedMemory::UnlockDeprecated() {
   LockOrUnlockCommon(F_ULOCK);
   g_thread_lock_.Get().Release();
 }

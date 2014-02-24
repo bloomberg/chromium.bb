@@ -344,8 +344,9 @@ int StatsTable::RegisterThread(const std::string& name) {
   // Registering a thread requires that we lock the shared memory
   // so that two threads don't grab the same slot.  Fortunately,
   // thread creation shouldn't happen in inner loops.
+  // TODO(viettrungluu): crbug.com/345734: Use a different locking mechanism.
   {
-    SharedMemoryAutoLock lock(internal_->shared_memory());
+    SharedMemoryAutoLockDeprecated lock(internal_->shared_memory());
     slot = FindEmptyThread();
     if (!slot) {
       return 0;
@@ -568,7 +569,7 @@ int StatsTable::AddCounter(const std::string& name) {
   {
     // To add a counter to the shared memory, we need the
     // shared memory lock.
-    SharedMemoryAutoLock lock(internal_->shared_memory());
+    SharedMemoryAutoLockDeprecated lock(internal_->shared_memory());
 
     // We have space, so create a new counter.
     counter_id = FindCounterOrEmptyRow(name);

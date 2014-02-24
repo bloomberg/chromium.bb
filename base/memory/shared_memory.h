@@ -32,15 +32,11 @@ class FilePath;
 // the underlying OS handle to a shared memory segment.
 #if defined(OS_WIN)
 typedef HANDLE SharedMemoryHandle;
-typedef HANDLE SharedMemoryLock;
 #elif defined(OS_POSIX)
 // A SharedMemoryId is sufficient to identify a given shared memory segment on a
 // system, but insufficient to map it.
 typedef FileDescriptor SharedMemoryHandle;
 typedef ino_t SharedMemoryId;
-// On POSIX, the lock is implemented as a lockf() on the mapped file,
-// so no additional member (or definition of SharedMemoryLock) is
-// needed.
 #endif
 
 // Options for creating a shared memory object.
@@ -74,8 +70,8 @@ class BASE_EXPORT SharedMemory {
 
 #if defined(OS_WIN)
   // Similar to the default constructor, except that this allows for
-  // calling Lock() to acquire the named mutex before either Create or Open
-  // are called on Windows.
+  // calling LockDeprecated() to acquire the named mutex before either Create or
+  // Open are called on Windows.
   explicit SharedMemory(const std::wstring& name);
 #endif
 
@@ -243,24 +239,18 @@ class BASE_EXPORT SharedMemory {
     return ShareToProcessCommon(process, new_handle, true, SHARE_CURRENT_MODE);
   }
 
+  // DEPRECATED (crbug.com/345734):
   // Locks the shared memory.
   //
   // WARNING: on POSIX the memory locking primitive only works across
-  // processes, not across threads.  The Lock method is not currently
+  // processes, not across threads.  The LockDeprecated method is not currently
   // used in inner loops, so we protect against multiple threads in a
   // critical section using a class global lock.
-  void Lock();
+  void LockDeprecated();
 
-#if defined(OS_WIN)
-  // A Lock() implementation with a timeout that also allows setting
-  // security attributes on the mutex. sec_attr may be NULL.
-  // Returns true if the Lock() has been acquired, false if the timeout was
-  // reached.
-  bool Lock(uint32 timeout_ms, SECURITY_ATTRIBUTES* sec_attr);
-#endif
-
+  // DEPRECATED (crbug.com/345734):
   // Releases the shared memory lock.
-  void Unlock();
+  void UnlockDeprecated();
 
  private:
 #if defined(OS_POSIX) && !defined(OS_NACL)
@@ -290,28 +280,29 @@ class BASE_EXPORT SharedMemory {
   bool               read_only_;
   size_t             requested_size_;
 #if !defined(OS_POSIX)
-  SharedMemoryLock   lock_;
+  HANDLE             lock_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(SharedMemory);
 };
 
+// DEPRECATED (crbug.com/345734):
 // A helper class that acquires the shared memory lock while
-// the SharedMemoryAutoLock is in scope.
-class SharedMemoryAutoLock {
+// the SharedMemoryAutoLockDeprecated is in scope.
+class SharedMemoryAutoLockDeprecated {
  public:
-  explicit SharedMemoryAutoLock(SharedMemory* shared_memory)
+  explicit SharedMemoryAutoLockDeprecated(SharedMemory* shared_memory)
       : shared_memory_(shared_memory) {
-    shared_memory_->Lock();
+    shared_memory_->LockDeprecated();
   }
 
-  ~SharedMemoryAutoLock() {
-    shared_memory_->Unlock();
+  ~SharedMemoryAutoLockDeprecated() {
+    shared_memory_->UnlockDeprecated();
   }
 
  private:
   SharedMemory* shared_memory_;
-  DISALLOW_COPY_AND_ASSIGN(SharedMemoryAutoLock);
+  DISALLOW_COPY_AND_ASSIGN(SharedMemoryAutoLockDeprecated);
 };
 
 }  // namespace base

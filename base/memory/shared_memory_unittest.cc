@@ -122,12 +122,12 @@ class MultipleLockThread : public PlatformThread::Delegate {
     volatile int* const ptr = static_cast<int*>(memory2.memory());
 
     for (int idx = 0; idx < 20; idx++) {
-      memory2.Lock();
+      memory2.LockDeprecated();
       int i = (id_ << 16) + idx;
       *ptr = i;
       PlatformThread::Sleep(TimeDelta::FromMilliseconds(1));
       EXPECT_EQ(*ptr, i);
-      memory2.Unlock();
+      memory2.UnlockDeprecated();
     }
 
     memory2.Close();
@@ -624,13 +624,13 @@ class SharedMemoryProcessTest : public MultiProcessTest {
     int *ptr = static_cast<int*>(memory.memory());
 
     for (int idx = 0; idx < 20; idx++) {
-      memory.Lock();
+      memory.LockDeprecated();
       int i = (1 << 16) + idx;
       *ptr = i;
       PlatformThread::Sleep(TimeDelta::FromMilliseconds(10));
       if (*ptr != i)
         errors++;
-      memory.Unlock();
+      memory.UnlockDeprecated();
     }
 
     memory.Close();

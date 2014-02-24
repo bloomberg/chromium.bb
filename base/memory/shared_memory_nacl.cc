@@ -130,11 +130,11 @@ void SharedMemory::Close() {
   }
 }
 
-void SharedMemory::Lock() {
+void SharedMemory::LockDeprecated() {
   NOTIMPLEMENTED();
 }
 
-void SharedMemory::Unlock() {
+void SharedMemory::UnlockDeprecated() {
   NOTIMPLEMENTED();
 }
 

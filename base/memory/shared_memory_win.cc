@@ -230,27 +230,22 @@ void SharedMemory::Close() {
   }
 }
 
-void SharedMemory::Lock() {
-  Lock(INFINITE, NULL);
-}
-
-bool SharedMemory::Lock(uint32 timeout_ms, SECURITY_ATTRIBUTES* sec_attr) {
+void SharedMemory::LockDeprecated() {
   if (lock_ == NULL) {
     std::wstring name = name_;
     name.append(L"lock");
-    lock_ = CreateMutex(sec_attr, FALSE, name.c_str());
+    lock_ = CreateMutex(NULL, FALSE, name.c_str());
     if (lock_ == NULL) {
       DPLOG(ERROR) << "Could not create mutex.";
-      return false;  // there is nothing good we can do here.
+      NOTREACHED();
+      return;  // There is nothing good we can do here.
     }
   }
-  DWORD result = WaitForSingleObject(lock_, timeout_ms);
-
-  // Return false for WAIT_ABANDONED, WAIT_TIMEOUT or WAIT_FAILED.
-  return (result == WAIT_OBJECT_0);
+  DWORD result = WaitForSingleObject(lock_, INFINITE);
+  DCHECK_EQ(result, WAIT_OBJECT_0);
 }
 
-void SharedMemory::Unlock() {
+void SharedMemory::UnlockDeprecated() {
   DCHECK(lock_ != NULL);
   ReleaseMutex(lock_);
 }
