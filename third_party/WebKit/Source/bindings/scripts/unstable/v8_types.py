@@ -453,8 +453,7 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index):
             'V8{idl_type}::toNative(v8::Handle<v8::{idl_type}>::Cast({v8_value})) : 0')
     else:
         cpp_expression_format = (
-            'V8{idl_type}::hasInstance({v8_value}, info.GetIsolate()) ? '
-            'V8{idl_type}::toNative(v8::Handle<v8::Object>::Cast({v8_value})) : 0')
+            'V8{idl_type}::toNativeWithTypeCheck(info.GetIsolate(), {v8_value})')
 
     return cpp_expression_format.format(arguments=arguments, idl_type=idl_type, v8_value=v8_value)
 

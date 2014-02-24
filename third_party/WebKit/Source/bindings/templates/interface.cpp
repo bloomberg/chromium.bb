@@ -1117,6 +1117,16 @@ bool {{v8_class}}::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isola
 
 
 {##############################################################################}
+{% block to_native_with_type_check %}
+{{cpp_class}}* {{v8_class}}::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+{
+    return hasInstance(value, isolate) ? fromInternalPointer(v8::Handle<v8::Object>::Cast(value)->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex)) : 0;
+}
+
+{% endblock %}
+
+
+{##############################################################################}
 {% block install_per_context_attributes %}
 {% if has_per_context_enabled_attributes %}
 void {{v8_class}}::installPerContextEnabledProperties(v8::Handle<v8::Object> instanceTemplate, {{cpp_class}}* impl, v8::Isolate* isolate)
