@@ -6,7 +6,28 @@
   "incognito": "split",  // Run a separate instance for the incognito mode.
   "manifest_version": 2,
   "background": {
-    "scripts": ["test_cases.js", "background.js"]
+    "scripts": [
+      // List background.js first because the testcase namespace is defined
+      // here.
+      "background.js",
+      "drive_specific.js",
+      "execute_default_task.js",
+      "file_display.js",
+      "hide_search_box.js",
+      "keyboard_operations.js",
+      "multi_profile.js",
+      "navigation_list.js",
+      "open_special_types.js",
+      "restore_geometry.js",
+      "restore_prefs.js",
+      "share_dialog.js",
+      "suggest_app_dialog.js",
+      "tab_index.js",
+      "thumbnails.js",
+      "transfer_between_windows.js",
+      "transfer.js",
+      "traverse.js"
+    ]
   },
   "permissions": [
     "tabs",
