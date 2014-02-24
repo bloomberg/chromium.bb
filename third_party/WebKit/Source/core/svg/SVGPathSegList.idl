@@ -26,6 +26,7 @@
 
 [
     StrictTypeChecking,
+    SetWrapperReferenceTo(SVGElement contextElement),
     ImplementedAs=SVGPathSegListTearOff
 ] interface SVGPathSegList {
     readonly attribute unsigned long numberOfItems;
