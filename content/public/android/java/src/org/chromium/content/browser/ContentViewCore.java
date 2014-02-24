@@ -16,7 +16,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Rect;
-import android.hardware.display.DisplayManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -437,72 +436,6 @@ public class ContentViewCore
     }
 
     /**
-     * DisplayManager listener used to detect screen orientation changes and
-     * inform the ContentViewCore of any change.
-     */
-    private class DisplayOrientationListener
-            implements DisplayManager.DisplayListener {
-
-        private final DisplayManager mDisplayManager;
-        private int mPreviousOrientation;
-
-        public DisplayOrientationListener(Context context) {
-            mDisplayManager =
-                    (DisplayManager) getContext().getSystemService(Context.DISPLAY_SERVICE);
-            mDisplayManager.registerDisplayListener(this, null);
-
-            mPreviousOrientation = getOrientation();
-            sendOrientationChangeEvent(mPreviousOrientation);
-        }
-
-        @Override
-        public void onDisplayAdded(int displayId) {
-        }
-
-        @Override
-        public void onDisplayChanged(int displayId) {
-            int orientation = getOrientation();
-            if (orientation == mPreviousOrientation) {
-                return;
-            }
-
-            sendOrientationChangeEvent(orientation);
-            mPreviousOrientation = orientation;
-        }
-
-        @Override
-        public void onDisplayRemoved(int displayId) {
-        }
-
-        /**
-         * Gets the screen orientation from Android.
-         */
-        private int getOrientation() {
-            WindowManager windowManager =
-                    (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
-            switch (windowManager.getDefaultDisplay().getRotation()) {
-                case Surface.ROTATION_90:
-                    return 90;
-                case Surface.ROTATION_180:
-                    return 180;
-                case Surface.ROTATION_270:
-                    return -90;
-                case Surface.ROTATION_0:
-                    return 0;
-                default:
-                    throw new IllegalStateException(
-                            "Display.getRotation() shouldn't return that value");
-            }
-        }
-
-        private void destroy() {
-            mDisplayManager.unregisterDisplayListener(this);
-        }
-    }
-
-    private DisplayOrientationListener mDisplayListener;
-
-    /**
      * Used by UMA stat for tracking accidental double tap navigations. Specifies the amount of
      * time after a double tap within which actions will be recorded to the UMA stat.
      */
@@ -787,6 +720,8 @@ public class ContentViewCore
                 resetGestureDetectors();
             }
         };
+
+        sendOrientationChangeEvent();
     }
 
     @CalledByNative
@@ -1643,8 +1578,6 @@ public class ContentViewCore
     @SuppressWarnings("javadoc")
     public void onAttachedToWindow() {
         setAccessibilityState(mAccessibilityManager.isEnabled());
-
-        mDisplayListener = new DisplayOrientationListener(mContext);
     }
 
     /**
@@ -1656,9 +1589,6 @@ public class ContentViewCore
         hidePopupDialog();
         mZoomControlsDelegate.dismissZoomPicker();
         unregisterAccessibilityContentObserver();
-
-        mDisplayListener.destroy();
-        mDisplayListener = null;
     }
 
     /**
@@ -1713,7 +1643,15 @@ public class ContentViewCore
             manager.restartInput(mContainerView);
         }
         mContainerViewInternals.super_onConfigurationChanged(newConfig);
-
+        // Make sure the size is up to date in JavaScript's window.onorientationchanged.
+        mContainerView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                    int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                mContainerView.removeOnLayoutChangeListener(this);
+                sendOrientationChangeEvent();
+            }
+        });
         // To request layout has side effect, but it seems OK as it only happen in
         // onConfigurationChange and layout has to be changed in most case.
         mContainerView.requestLayout();
@@ -2186,12 +2124,32 @@ public class ContentViewCore
     }
 
     /**
-     * Send the screen orientation value to the renderer.
+     * Get the screen orientation from the OS and push it to WebKit.
+     *
+     * TODO(husky): Add a hook for mock orientations.
      */
-    private void sendOrientationChangeEvent(int orientation) {
+    private void sendOrientationChangeEvent() {
         if (mNativeContentViewCore == 0) return;
 
-        nativeSendOrientationChangeEvent(mNativeContentViewCore, orientation);
+        WindowManager windowManager =
+                (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
+        switch (windowManager.getDefaultDisplay().getRotation()) {
+            case Surface.ROTATION_90:
+                nativeSendOrientationChangeEvent(mNativeContentViewCore, 90);
+                break;
+            case Surface.ROTATION_180:
+                nativeSendOrientationChangeEvent(mNativeContentViewCore, 180);
+                break;
+            case Surface.ROTATION_270:
+                nativeSendOrientationChangeEvent(mNativeContentViewCore, -90);
+                break;
+            case Surface.ROTATION_0:
+                nativeSendOrientationChangeEvent(mNativeContentViewCore, 0);
+                break;
+            default:
+                Log.w(TAG, "Unknown rotation!");
+                break;
+        }
     }
 
     /**
