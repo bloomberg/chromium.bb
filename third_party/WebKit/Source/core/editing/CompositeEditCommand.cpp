@@ -1234,15 +1234,17 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
         applyStyle(styleInEmptyParagraph.get());
 
     if (preserveSelection && startIndex != -1) {
-        // Fragment creation (using createMarkup) incorrectly uses regular
-        // spaces instead of nbsps for some spaces that were rendered (11475), which
-        // causes spaces to be collapsed during the move operation.  This results
-        // in a call to rangeFromLocationAndLength with a location past the end
-        // of the document (which will return null).
-        RefPtr<Range> start = PlainTextRange(destinationIndex + startIndex).createRangeForSelection(*document().documentElement());
-        RefPtr<Range> end = PlainTextRange(destinationIndex + endIndex).createRangeForSelection(*document().documentElement());
-        if (start && end)
-            setEndingSelection(VisibleSelection(start->startPosition(), end->startPosition(), DOWNSTREAM, originalIsDirectional));
+        if (Element* documentElement = document().documentElement()) {
+            // Fragment creation (using createMarkup) incorrectly uses regular
+            // spaces instead of nbsps for some spaces that were rendered (11475), which
+            // causes spaces to be collapsed during the move operation. This results
+            // in a call to rangeFromLocationAndLength with a location past the end
+            // of the document (which will return null).
+            RefPtr<Range> start = PlainTextRange(destinationIndex + startIndex).createRangeForSelection(*documentElement);
+            RefPtr<Range> end = PlainTextRange(destinationIndex + endIndex).createRangeForSelection(*documentElement);
+            if (start && end)
+                setEndingSelection(VisibleSelection(start->startPosition(), end->startPosition(), DOWNSTREAM, originalIsDirectional));
+        }
     }
 }
 
