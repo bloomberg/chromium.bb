@@ -102,7 +102,7 @@ class ProtectedMemoryLocker {
       : mutex_(mutex),
         allocator_(allocator) {
     // Lock the mutex
-    int rv = pthread_mutex_lock(mutex_);
+    __attribute__((unused)) int rv = pthread_mutex_lock(mutex_);
     assert(rv == 0);
 
     // Unprotect the memory
@@ -114,7 +114,7 @@ class ProtectedMemoryLocker {
     allocator_->Protect();
 
     // Then unlock the mutex
-    int rv = pthread_mutex_unlock(mutex_);
+    __attribute__((unused)) int rv = pthread_mutex_unlock(mutex_);
     assert(rv == 0);
   };
 
