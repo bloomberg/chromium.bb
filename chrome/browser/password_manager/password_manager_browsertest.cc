@@ -592,9 +592,14 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, DeleteFrameBeforeSubmit) {
   // The only thing we check here is that there is no use-after-free reported.
 }
 
-// Flaky, see: http://crbug.com/163072
+// Disabled on Windows due to flakiness: http://crbug.com/163072
+#if defined(OS_WIN)
+#define MAYBE_PasswordValueAccessible DISABLED_PasswordValueAccessible
+#else
+#define MAYBE_PasswordValueAccessible PasswordValueAccessible
+#endif
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
-                       DISABLED_PasswordValueAccessible) {
+                       MAYBE_PasswordValueAccessible) {
   NavigateToFile("/password/form_and_link.html");
 
   // Click on a link to open a new tab, then switch back to the first one.
