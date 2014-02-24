@@ -37,12 +37,6 @@ namespace blink {
 
 class WebUserGestureToken;
 
-class WebUserGestureHandler {
-public:
-    virtual ~WebUserGestureHandler() { }
-    virtual void onGesture() = 0;
-};
-
 class WebUserGestureIndicator {
 public:
     // Returns true if a user gesture is currently being processed.
@@ -55,8 +49,6 @@ public:
     // continue processing the user gesture later on using a
     // WebScopedUserGesture.
     BLINK_EXPORT static WebUserGestureToken currentUserGestureToken();
-
-    BLINK_EXPORT static void setHandler(WebUserGestureHandler*);
 };
 
 }
