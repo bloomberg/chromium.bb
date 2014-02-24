@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "core/rendering/CompositedLayerMapping.h"
+#include "core/rendering/compositing/CompositedLayerMapping.h"
 
 #include "FrameTestHelpers.h"
 #include "URLTestHelpers.h"

@@ -45,7 +45,7 @@
 #ifndef RenderLayer_h
 #define RenderLayer_h
 
-#include "core/rendering/CompositedLayerMappingPtr.h"
+#include "core/rendering/compositing/CompositedLayerMappingPtr.h"
 #include "core/rendering/LayerPaintingInfo.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderLayerBlendInfo.h"

@@ -58,9 +58,9 @@
 #include "core/html/track/TextTrackCueList.h"
 #include "core/html/track/TextTrackList.h"
 #include "core/loader/FrameLoader.h"
-#include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/compositing/RenderLayerCompositor.h"
 // FIXME: Remove dependency on modules/encryptedmedia (http://crbug.com/242754).
 #include "modules/encryptedmedia/MediaKeyNeededEvent.h"
 #include "modules/encryptedmedia/MediaKeys.h"

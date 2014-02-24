@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "core/rendering/CompositedLayerMapping.h"
+#include "core/rendering/compositing/CompositedLayerMapping.h"
 
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
@@ -46,10 +46,10 @@
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderIFrame.h"
 #include "core/rendering/RenderImage.h"
-#include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderLayerStackingNodeIterator.h"
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/rendering/style/KeyframeList.h"
 #include "platform/LengthFunctions.h"
 #include "platform/fonts/FontCache.h"

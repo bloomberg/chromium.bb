@@ -23,7 +23,7 @@
 #ifndef RenderLayerModelObject_h
 #define RenderLayerModelObject_h
 
-#include "core/rendering/CompositedLayerMappingPtr.h"
+#include "core/rendering/compositing/CompositedLayerMappingPtr.h"
 #include "core/rendering/RenderObject.h"
 
 namespace WebCore {

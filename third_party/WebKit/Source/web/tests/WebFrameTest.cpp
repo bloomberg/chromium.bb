@@ -34,6 +34,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <v8.h>
 #include "FrameTestHelpers.h"
 #include "RuntimeEnabledFeatures.h"
 #include "SkBitmap.h"
@@ -65,28 +66,27 @@
 #include "core/editing/SpellChecker.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/events/MouseEvent.h"
-#include "core/html/HTMLFormElement.h"
-#include "core/loader/FrameLoadRequest.h"
-#include "core/page/EventHandler.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
+#include "core/html/HTMLFormElement.h"
+#include "core/loader/FrameLoadRequest.h"
+#include "core/page/EventHandler.h"
 #include "core/rendering/HitTestResult.h"
-#include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/TextAutosizer.h"
+#include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/network/ResourceError.h"
 #include "platform/scroll/ScrollbarTheme.h"
-#include "v8.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebUnitTestSupport.h"
-#include "wtf/dtoa/utils.h"
 #include "wtf/Forward.h"
+#include "wtf/dtoa/utils.h"
 #include <map>
 
 using namespace blink;

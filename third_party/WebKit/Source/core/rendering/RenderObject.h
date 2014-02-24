@@ -30,7 +30,7 @@
 #include "core/dom/Position.h"
 #include "core/dom/StyleEngine.h"
 #include "core/fetch/ImageResourceClient.h"
-#include "core/rendering/CompositingState.h"
+#include "core/rendering/compositing/CompositingState.h"
 #include "core/rendering/PaintPhase.h"
 #include "core/rendering/RenderObjectChildList.h"
 #include "core/rendering/ScrollAlignment.h"

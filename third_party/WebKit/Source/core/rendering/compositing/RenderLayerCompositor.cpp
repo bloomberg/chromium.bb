@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "core/rendering/RenderLayerCompositor.h"
+#include "core/rendering/compositing/RenderLayerCompositor.h"
 
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
@@ -47,7 +47,6 @@
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingConstraints.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
-#include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderApplet.h"
 #include "core/rendering/RenderEmbeddedObject.h"
@@ -59,6 +58,7 @@
 #include "core/rendering/RenderReplica.h"
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "platform/OverscrollTheme.h"
 #include "platform/TraceEvent.h"
 #include "platform/geometry/TransformState.h"

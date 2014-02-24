@@ -44,9 +44,9 @@
 #include "config.h"
 #include "core/rendering/RenderLayerBlendInfo.h"
 
-#include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerModelObject.h"
+#include "core/rendering/compositing/CompositedLayerMapping.h"
 
 namespace WebCore {
 

@@ -44,10 +44,10 @@
 #include "config.h"
 #include "core/rendering/RenderLayerRepainter.h"
 
-#include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/FilterEffectRenderer.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/compositing/CompositedLayerMapping.h"
 
 namespace WebCore {
 

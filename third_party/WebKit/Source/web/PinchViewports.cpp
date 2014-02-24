@@ -36,7 +36,7 @@
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
-#include "core/rendering/RenderLayerCompositor.h"
+#include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/scroll/Scrollbar.h"
