@@ -6,6 +6,9 @@
   'variables': {
     'chromium_code': 1,
   },
+  'includes': [
+    'url_srcs.gypi',
+  ],
   'targets': [
     {
       # Note, this target_name cannot be 'url', because that will generate
@@ -20,35 +23,7 @@
         '../third_party/icu/icu.gyp:icuuc',
       ],
       'sources': [
-        'gurl.cc',
-        'gurl.h',
-        'third_party/mozilla/url_parse.cc',
-        'third_party/mozilla/url_parse.h',
-        'url_canon.h',
-        'url_canon_etc.cc',
-        'url_canon_filesystemurl.cc',
-        'url_canon_fileurl.cc',
-        'url_canon_host.cc',
-        'url_canon_icu.cc',
-        'url_canon_icu.h',
-        'url_canon_internal.cc',
-        'url_canon_internal.h',
-        'url_canon_internal_file.h',
-        'url_canon_ip.cc',
-        'url_canon_ip.h',
-        'url_canon_mailtourl.cc',
-        'url_canon_path.cc',
-        'url_canon_pathurl.cc',
-        'url_canon_query.cc',
-        'url_canon_relative.cc',
-        'url_canon_stdstring.cc',
-        'url_canon_stdstring.h',
-        'url_canon_stdurl.cc',
-        'url_file.h',
-        'url_parse_file.cc',
-        'url_parse_internal.h',
-        'url_util.cc',
-        'url_util.h',
+        '<@(gurl_sources)',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -79,16 +54,10 @@
         'url_util_unittest.cc',
       ],
       'conditions': [
-        ['os_posix==1 and OS!="mac" and OS!="ios"',
+        ['os_posix==1 and OS!="mac" and OS!="ios" and linux_use_tcmalloc==1',
           {
-            'conditions': [
-              ['linux_use_tcmalloc==1',
-                {
-                  'dependencies': [
-                    '../base/allocator/allocator.gyp:allocator',
-                  ],
-                }
-              ],
+            'dependencies': [
+              '../base/allocator/allocator.gyp:allocator',
             ],
           }
         ],
