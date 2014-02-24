@@ -34,8 +34,10 @@
 #include "modules/mediastream/UserMediaRequest.h"
 
 #include "bindings/v8/Dictionary.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/SpaceSplitString.h"
 #include "modules/mediastream/MediaConstraintsImpl.h"
 #include "modules/mediastream/MediaStream.h"
@@ -73,8 +75,10 @@ PassRefPtr<UserMediaRequest> UserMediaRequest::create(ExecutionContext* context,
     if (exceptionState.hadException())
         return nullptr;
 
-    if (audio.isNull() && video.isNull())
+    if (audio.isNull() && video.isNull()) {
+        exceptionState.throwDOMException(SyntaxError, "At least one of audio and video must be requested");
         return nullptr;
+    }
 
     return adoptRef(new UserMediaRequest(context, controller, audio, video, successCallback, errorCallback));
 }
@@ -153,10 +157,8 @@ void UserMediaRequest::fail(const String& description)
     if (!executionContext())
         return;
 
-    if (m_errorCallback) {
-        RefPtr<NavigatorUserMediaError> error = NavigatorUserMediaError::create(NavigatorUserMediaError::NamePermissionDenied, description, String());
-        m_errorCallback->handleEvent(error.get());
-    }
+    RefPtr<NavigatorUserMediaError> error = NavigatorUserMediaError::create(NavigatorUserMediaError::NamePermissionDenied, description, String());
+    m_errorCallback->handleEvent(error.get());
 }
 
 void UserMediaRequest::failConstraint(const String& constraintName, const String& description)
@@ -165,10 +167,8 @@ void UserMediaRequest::failConstraint(const String& constraintName, const String
     if (!executionContext())
         return;
 
-    if (m_errorCallback) {
-        RefPtr<NavigatorUserMediaError> error = NavigatorUserMediaError::create(NavigatorUserMediaError::NameConstraintNotSatisfied, description, constraintName);
-        m_errorCallback->handleEvent(error.get());
-    }
+    RefPtr<NavigatorUserMediaError> error = NavigatorUserMediaError::create(NavigatorUserMediaError::NameConstraintNotSatisfied, description, constraintName);
+    m_errorCallback->handleEvent(error.get());
 }
 
 void UserMediaRequest::contextDestroyed()

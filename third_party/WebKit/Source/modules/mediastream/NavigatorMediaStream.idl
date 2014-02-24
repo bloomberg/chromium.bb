@@ -22,5 +22,5 @@
 ] partial interface Navigator {
     [RaisesException] void webkitGetUserMedia(Dictionary options,
                                               NavigatorUserMediaSuccessCallback successCallback,
-                                              optional NavigatorUserMediaErrorCallback errorCallback);
+                                              NavigatorUserMediaErrorCallback errorCallback);
 };

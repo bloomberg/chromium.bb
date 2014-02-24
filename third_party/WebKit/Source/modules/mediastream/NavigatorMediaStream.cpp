@@ -60,8 +60,7 @@ void NavigatorMediaStream::webkitGetUserMedia(Navigator& navigator, const Dictio
 
     RefPtr<UserMediaRequest> request = UserMediaRequest::create(navigator.frame()->document(), userMedia, options, successCallback, errorCallback, exceptionState);
     if (!request) {
-        if (!exceptionState.hadException())
-            exceptionState.throwDOMException(NotSupportedError, "Failed to request user media.");
+        ASSERT(exceptionState.hadException());
         return;
     }
 
