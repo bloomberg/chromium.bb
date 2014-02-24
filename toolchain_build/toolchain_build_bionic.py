@@ -27,7 +27,7 @@ import toolchain_main
 from file_update import Mkdir, Rmdir, Symlink
 from file_update import NeedsUpdate, UpdateFromTo, UpdateText
 
-BIONIC_VERSION = '1a26187c4121548a46c55dfd13eaf1dfd2f5afa5'
+BIONIC_VERSION = '2f4b48addef8af9666dd91814afcb4ddaf13101b'
 ARCHES = ['arm']
 
 BUILD_SCRIPT = os.path.abspath(__file__)
@@ -330,13 +330,11 @@ def ConfigureAndBuildArmCXX(config=False):
   tcpath = ReplaceArch(tcpath, arch)
 
   # Prep work path
-  workpath = os.path.join(TOOLCHAIN_BUILD_OUT, 'cxx_$GCC_bionic_work')
+  workpath = os.path.join(TOOLCHAIN_BUILD_OUT, 'gcc_$GCC_bionic_work')
   workpath = ReplaceArch(workpath, arch)
-  Mkdir(workpath)
-  Symlink('../gcc_libs_arm_work/gcc' , os.path.join(workpath, 'gcc'))
 
   # Prep install path
-  inspath = os.path.join(TOOLCHAIN_BUILD_OUT, 'cxx_$GCC_bionic_install')
+  inspath = os.path.join(TOOLCHAIN_BUILD_OUT, 'gcc_$GCC_bionic_install')
   inspath = ReplaceArch(inspath, arch)
 
   dstpath = ReplaceArch(os.path.join(workpath, '$NACL-nacl/libstdc++-v3'), arch)
