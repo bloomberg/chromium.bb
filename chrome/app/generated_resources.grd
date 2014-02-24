@@ -5656,6 +5656,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ENABLE_FAST_TEXT_AUTOSIZING_DESCRIPTION" desc="Description of the flag to enable fast text autosizing.">
           Faster text autosizing implementation.
         </message>
+        <message name="IDS_FLAGS_ENABLE_CAST_NAME" desc="Name of the flag to enable Chromecast support.">
+          Enable experimental Chromecast support
+        </message>
+        <message name="IDS_FLAGS_ENABLE_CAST_DESCRIPTION" desc="Description of the flag to enable Chromecast support.">
+          Enable experimental Chromecast support allowing to play and control videos from the Web on Chromecast devices.
+        </message>
       </if>
       <message name="IDS_TOUCH_EVENTS_NAME" desc="Title of the touch-events flag." >
         Enable touch events

@@ -1949,6 +1949,13 @@ const Experiment kExperiments[] = {
     kOsAndroid,
     SINGLE_VALUE_TYPE(switches::kEnableFastTextAutosizing)
   },
+  {
+    "enable-cast",
+    IDS_FLAGS_ENABLE_CAST_NAME,
+    IDS_FLAGS_ENABLE_CAST_DESCRIPTION,
+    kOsAndroid,
+    SINGLE_VALUE_TYPE(switches::kEnableCast)
+  },
 #endif
   {
     "prefetch-search-results",
