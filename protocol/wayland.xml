@@ -1059,21 +1059,32 @@
     </request>
 
     <request name="frame">
-      <description summary="request repaint feedback">
-	Request notification when the next frame is displayed. Useful
-	for throttling redrawing operations, and driving animations.
+      <description summary="request a frame throttling hint">
+	Request a notification when it is a good time start drawing a new
+	frame, by creating a frame callback. This is useful for throttling
+	redrawing operations, and driving animations.
+
+	When a client is animating on a wl_surface, it can use the 'frame'
+	request to get notified when it is a good time to draw and commit the
+	next frame of animation. If the client commits an update earlier than
+	that, it is likely that some updates will not make it to the display,
+	and the client is wasting resources by drawing too often.
+
 	The frame request will take effect on the next wl_surface.commit.
 	The notification will only be posted for one frame unless
-	requested again.
+	requested again. For a wl_surface, the notifications are posted in
+	the order the frame requests were committed.
+
+	The server must send the notifications so that a client
+	will not send excessive updates, while still allowing
+	the highest possible update rate for clients that wait for the reply
+	before drawing again. The server should give some time for the client
+	to draw and commit after sending the frame callback events to let them
+	hit the next output refresh.
 
 	A server should avoid signalling the frame callbacks if the
 	surface is not visible in any way, e.g. the surface is off-screen,
 	or completely obscured by other opaque surfaces.
-
-	A client can request a frame callback even without an attach,
-	damage, or any other state changes. wl_surface.commit triggers a
-	display update, so the callback event will arrive after the next
-	output refresh where the surface is visible.
 
 	The object returned by this request will be destroyed by the
 	compositor after the callback is fired and as such the client must not
