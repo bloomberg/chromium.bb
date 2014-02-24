@@ -104,7 +104,7 @@ TEST_F(FeedbackUploaderTest, QueueMultiple) {
   EXPECT_EQ(dispatched_reports_[3], kReportFour);
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_ANDROID)
 // crbug.com/330547
 #define MAYBE_QueueMultipleWithFailures DISABLED_QueueMultipleWithFailures
 #else
