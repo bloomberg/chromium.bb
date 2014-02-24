@@ -421,18 +421,7 @@
   ...
   fun:disk_cache::EntryImpl::WriteDataImpl*
 }
-{
-  bug_66835a
-  ThreadSanitizer:Race
-  fun:getenv
-  fun:::EnvironmentImpl::GetVarImpl
-  fun:::EnvironmentImpl::GetVar
-  fun:ShellIntegrationLinux::GetDesktopName
-  fun:::GetIsDefaultWebClient
-  fun:ShellIntegration::GetDefaultBrowser
-  fun:::RecordDefaultBrowserUMAStat
-  fun:base::internal::RunnableAdapter::Run
-}
+
 {
   bug_66835b
   ThreadSanitizer:Race

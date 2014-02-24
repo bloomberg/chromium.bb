@@ -63,14 +63,6 @@ void RecordMicroArchitectureStats() {
                               base::SysInfo::NumberOfProcessors());
 }
 
-void RecordDefaultBrowserUMAStat() {
-  // Record whether Chrome is the default browser or not.
-  ShellIntegration::DefaultWebClientState default_state =
-      ShellIntegration::GetDefaultBrowser();
-  UMA_HISTOGRAM_ENUMERATION("DefaultBrowser.State", default_state,
-                            ShellIntegration::NUM_DEFAULT_STATES);
-}
-
 void RecordLinuxGlibcVersion() {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   Version version(gnu_get_libc_version());
@@ -139,12 +131,6 @@ void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
   about_flags::PrefServiceFlagsStorage flags_storage_(
       g_browser_process->local_state());
   about_flags::RecordUMAStatistics(&flags_storage_);
-
-  // Querying the default browser state can be slow, do it in the background.
-  content::BrowserThread::GetBlockingPool()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&RecordDefaultBrowserUMAStat),
-        base::TimeDelta::FromSeconds(45));
 }
 
 void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
