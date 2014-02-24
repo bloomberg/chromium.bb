@@ -50,6 +50,8 @@ For more information of cros build usage:
     self.clean_binpkg = True
     self.ssh_hostname = None
     self.ssh_port = None
+    self.ssh_username = None
+    self.ssh_private_key = None
     # The installation root of packages.
     self.root = None
 
@@ -79,6 +81,9 @@ For more information of cros build usage:
     parser.add_argument(
         '--emerge-args', default=None,
         help='Extra arguments to pass to emerge.')
+    parser.add_argument(
+        '--private-key', type='path', default=None,
+        help='SSH identify file (private key).')
 
   def GetLatestPackage(self, board, pkg):
     """Returns the path to the latest |pkg| for |board|."""
@@ -135,13 +140,13 @@ For more information of cros build usage:
     pkg_name = os.path.basename(latest_pkg)
     pkg_dirname = os.path.basename(os.path.dirname(latest_pkg))
     pkg_dir = os.path.join(pkgroot, pkg_dirname)
-    device.RunCommand(['mkdir', '-p', pkg_dir])
+    device.RunCommand(['mkdir', '-p', pkg_dir], remote_sudo=True)
 
     logging.info('Copying %s to device...', latest_pkg)
-    device.CopyToDevice(latest_pkg, pkg_dir)
+    device.CopyToDevice(latest_pkg, pkg_dir, remote_sudo=True)
 
     portage_tmpdir = os.path.join(device.work_dir, 'portage-tmp')
-    device.RunCommand(['mkdir', '-p', portage_tmpdir])
+    device.RunCommand(['mkdir', '-p', portage_tmpdir], remote_sudo=True)
     logging.info('Use portage temp dir %s', portage_tmpdir)
 
     logging.info('Installing %s...', latest_pkg)
@@ -165,7 +170,8 @@ For more information of cros build usage:
       cmd.append(extra_args)
 
     try:
-      result = device.RunCommand(cmd, extra_env=extra_env, capture_output=True)
+      result = device.RunCommand(cmd, extra_env=extra_env,
+                                 capture_output=True, remote_sudo=True)
       logging.debug(result.output)
     except Exception:
       logging.error('Failed to emerge package %s', pkg)
@@ -175,7 +181,7 @@ For more information of cros build usage:
     finally:
       # Free up the space for other packages.
       device.RunCommand(['rm', '-rf', portage_tmpdir, pkg_dir],
-                        error_code_ok=True)
+                        error_code_ok=True, remote_sudo=True)
 
   def _Unmerge(self, device, pkg, root):
     """Unmerges |pkg| on |device|.
@@ -189,7 +195,7 @@ For more information of cros build usage:
     cmd = ['emerge', '--unmerge', pkg]
     cmd.append('--root=%s' % root)
     try:
-      result = device.RunCommand(cmd, capture_output=True)
+      result = device.RunCommand(cmd, capture_output=True, remote_sudo=True)
       logging.debug(result.output)
     except Exception:
       logging.error('Failed to unmerge package %s', pkg)
@@ -200,12 +206,13 @@ For more information of cros build usage:
   def _IsPathWritable(self, device, path):
     """Returns True if |path| on |device| is writable."""
     tmp_file = os.path.join(path, 'tmp.cros_flash')
-    result = device.RunCommand(['touch', tmp_file], error_code_ok=True)
+    result = device.RunCommand(['touch', tmp_file], remote_sudo=True,
+                               error_code_ok=True)
 
     if result.returncode != 0:
       return False
 
-    device.RunCommand(['rm', tmp_file], error_code_ok=True)
+    device.RunCommand(['rm', tmp_file], error_code_ok=True, remote_sudo=True)
 
     return True
 
@@ -224,7 +231,9 @@ For more information of cros build usage:
 
     if parsed.scheme == 'ssh':
       self.ssh_hostname = parsed.hostname
+      self.ssh_username = parsed.username
       self.ssh_port = parsed.port
+      self.ssh_private_key = self.options.private_key
     else:
       cros_build_lib.Die('Does not support device %s' % self.options.device)
 
@@ -235,7 +244,8 @@ For more information of cros build usage:
 
     try:
       with remote_access.ChromiumOSDeviceHandler(
-          self.ssh_hostname, port=self.ssh_port,
+          self.ssh_hostname, port=self.ssh_port, username=self.ssh_username,
+          private_key=self.ssh_private_key,
           base_dir=self.DEVICE_BASE_DIR) as device:
         board = cros_build_lib.GetBoard(device_board=device.board,
                                         override_board=self.options.board)

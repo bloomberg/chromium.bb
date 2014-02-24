@@ -26,6 +26,7 @@ del _path
 
 LOCALHOST = 'localhost'
 LOCALHOST_IP = '127.0.0.1'
+ROOT_ACCOUNT = 'root'
 
 REBOOT_MARKER = '/tmp/awaiting_reboot'
 REBOOT_MAX_WAIT = 120
@@ -127,8 +128,10 @@ class SSHConnectionError(Exception):
 class RemoteAccess(object):
   """Provides access to a remote test machine."""
 
-  def __init__(self, remote_host, tempdir, port=None,
-               debug_level=logging.DEBUG, interactive=True):
+  DEFAULT_USERNAME = ROOT_ACCOUNT
+
+  def __init__(self, remote_host, tempdir, port=None, username=None,
+               private_key=None, debug_level=logging.DEBUG, interactive=True):
     """Construct the object.
 
     Args:
@@ -137,21 +140,27 @@ class RemoteAccess(object):
       tempdir: A directory that RemoteAccess can use to store temporary files.
                It's the responsibility of the caller to remove it.
       port: The ssh port of the test machine to connect to.
+      username: The ssh login username (default: root).
+      private_key: The identify file to pass to `ssh -i` (default: testing_rsa).
       debug_level: Logging level to use for all RunCommand invocations.
       interactive: If set to False, pass /dev/null into stdin for the sh cmd.
     """
     self.tempdir = tempdir
     self.remote_host = remote_host
     self.port = port if port else DEFAULT_SSH_PORT
+    self.username = username if username else self.DEFAULT_USERNAME
     self.debug_level = debug_level
-    self.private_key = os.path.join(tempdir, os.path.basename(TEST_PRIVATE_KEY))
+    private_key_src = private_key if private_key else TEST_PRIVATE_KEY
+    self.private_key = os.path.join(
+        tempdir, os.path.basename(private_key_src))
+
     self.interactive = interactive
-    shutil.copyfile(TEST_PRIVATE_KEY, self.private_key)
+    shutil.copyfile(private_key_src, self.private_key)
     os.chmod(self.private_key, stat.S_IRUSR)
 
   @property
   def target_ssh_url(self):
-    return 'root@%s' % self.remote_host
+    return '%s@%s' % (self.username, self.remote_host)
 
   def _GetSSHCmd(self, connect_settings=None):
     if connect_settings is None:
@@ -166,7 +175,7 @@ class RemoteAccess(object):
     return cmd
 
   def RemoteSh(self, cmd, connect_settings=None, error_code_ok=False,
-               ssh_error_ok=False, **kwargs):
+               remote_sudo=False, ssh_error_ok=False, **kwargs):
     """Run a sh command on the remote device through ssh.
 
     Args:
@@ -178,6 +187,7 @@ class RemoteAccess(object):
                      See ssh_error_ok.
       ssh_error_ok: Does not throw an exception when the ssh command itself
                     fails (return code 255).
+      remote_sudo: If set, run the command in remote shell with sudo.
       **kwargs: See cros_build_lib.RunCommand documentation.
 
     Returns:
@@ -195,10 +205,16 @@ class RemoteAccess(object):
     kwargs.setdefault('debug_level', self.debug_level)
 
     ssh_cmd = self._GetSSHCmd(connect_settings)
+    ssh_cmd += [self.target_ssh_url, '--']
+
+    if remote_sudo and self.username != ROOT_ACCOUNT:
+      # Prepend sudo to cmd.
+      ssh_cmd.append('sudo')
+
     if isinstance(cmd, basestring):
-      ssh_cmd += [self.target_ssh_url, '--', cmd]
+      ssh_cmd += [cmd]
     else:
-      ssh_cmd += [self.target_ssh_url, '--'] + cmd
+      ssh_cmd += cmd
 
     try:
       result = cros_build_lib.RunCommand(ssh_cmd, **kwargs)
@@ -247,7 +263,11 @@ class RemoteAccess(object):
   def RemoteReboot(self):
     """Reboot the remote device."""
     logging.info('Rebooting %s...', self.remote_host)
-    self.RemoteSh('touch %s && reboot' % REBOOT_MARKER)
+    if self.username != ROOT_ACCOUNT:
+      self.RemoteSh('sudo sh -c "touch %s && sudo reboot"' % REBOOT_MARKER)
+    else:
+      self.RemoteSh('touch %s && reboot' % REBOOT_MARKER)
+
     time.sleep(CHECK_INTERVAL)
     try:
       timeout_util.WaitForReturnTrue(self._CheckIfRebooted, REBOOT_MAX_WAIT,
@@ -257,7 +277,8 @@ class RemoteAccess(object):
                          % (REBOOT_MAX_WAIT,))
 
   def Rsync(self, src, dest, to_local=False, follow_symlinks=False,
-            recursive=True, inplace=False, verbose=False, sudo=False, **kwargs):
+            recursive=True, inplace=False, verbose=False, sudo=False,
+            remote_sudo=False, **kwargs):
     """Rsync a path to the remote device.
 
     Rsync a path to the remote device. If |to_local| is set True, it
@@ -274,6 +295,7 @@ class RemoteAccess(object):
         conserves space, but has some side effects - see rsync man page.
       verbose: If set, print more verbose output during rsync file transfer.
       sudo: If set, invoke the command via sudo.
+      remote_sudo: If set, run the command in remote shell with sudo.
       **kwargs: See cros_build_lib.RunCommand documentation.
     """
     kwargs.setdefault('debug_level', self.debug_level)
@@ -285,7 +307,11 @@ class RemoteAccess(object):
     # In cases where the developer sets up a ssh daemon manually on a device
     # with a dev image, the ssh login $PATH can be incorrect, and the target
     # rsync will not be found.  So we try to provide the right $PATH here.
-    rsync_cmd += ['--rsync-path', 'PATH=/usr/local/bin:$PATH rsync']
+    rsync_sudo = 'sudo' if (
+        remote_sudo and self.username != ROOT_ACCOUNT) else ''
+    rsync_cmd += ['--rsync-path',
+                  'PATH=/usr/local/bin:$PATH %s rsync' % rsync_sudo]
+
     if verbose:
       rsync_cmd.append('--progress')
     if recursive:
@@ -320,12 +346,18 @@ class RemoteAccess(object):
       recursive: Whether to recursively copy entire directories.
       verbose: If set, print more verbose output during scp file transfer.
       sudo: If set, invoke the command via sudo.
+      remote_sudo: If set, run the command in remote shell with sudo.
       **kwargs: See cros_build_lib.RunCommand documentation.
 
     Returns:
       A CommandResult object containing the information and return code of
       the scp command.
     """
+    remote_sudo = kwargs.pop('remote_sudo', False)
+    if remote_sudo and self.username != ROOT_ACCOUNT:
+      # TODO: Implement scp with remote sudo.
+      raise NotImplementedError('Cannot run scp with sudo!')
+
     kwargs.setdefault('debug_level', self.debug_level)
     scp_cmd = (['scp', '-P', str(self.port)] +
                CompileSSHConnectSettings(ConnectTimeout=60) +
@@ -405,23 +437,28 @@ class RemoteDevice(object):
 
   DEFAULT_BASE_DIR = '/tmp/remote-access'
 
-  def __init__(self, hostname, port=None, base_dir=DEFAULT_BASE_DIR,
-               connect_settings=None, debug_level=logging.DEBUG):
+  def __init__(self, hostname, port=None, username=None,
+               base_dir=DEFAULT_BASE_DIR, connect_settings=None,
+               private_key=None, debug_level=logging.DEBUG):
     """Initializes a RemoteDevice object.
 
     Args:
       hostname: The hostname of the device.
       port: The ssh port of the device.
-      debug_level: Setting debug level for logging.
+      username: The ssh login username.
       base_dir: The base directory of the working directory on the device.
       connect_settings: Default SSH connection settings.
+      private_key: The identify file to pass to `ssh -i`.
+      debug_level: Setting debug level for logging.
     """
     self.hostname = hostname
     self.port = port
+    self.username = username
     # The tempdir is for storing the rsa key and/or some temp files.
     self.tempdir = osutils.TempDir(prefix='ssh-tmp')
     self.connect_settings = (connect_settings if connect_settings else
                              CompileSSHConnectSettings())
+    self.private_key = private_key
     self.agent = self._SetupSSH()
     self.debug_level = debug_level
     # Setup a working directory on the device.
@@ -438,7 +475,8 @@ class RemoteDevice(object):
 
   def _SetupSSH(self):
     """Setup the ssh connection with device."""
-    return RemoteAccess(self.hostname, self.tempdir.tempdir, port=self.port)
+    return RemoteAccess(self.hostname, self.tempdir.tempdir, port=self.port,
+                        username=self.username, private_key=self.private_key)
 
   def _HasRsync(self):
     """Checks if rsync exists on the device."""
@@ -523,22 +561,27 @@ class RemoteDevice(object):
     """
     kwargs.setdefault('debug_level', self.debug_level)
     kwargs.setdefault('connect_settings', self.connect_settings)
-
+    new_cmd = cmd
     # Handle setting environment variables on the device by copying
     # and sourcing a temporary environment file.
     extra_env = kwargs.pop('extra_env', None)
     if extra_env:
       env_list = ['export %s=%s' % (k, cros_build_lib.ShellQuote(v))
                   for k, v in extra_env.iteritems()]
+      remote_sudo = kwargs.pop('remote_sudo', False)
       with tempfile.NamedTemporaryFile(dir=self.tempdir.tempdir,
                                        prefix='env') as f:
         osutils.WriteFile(f.name, '\n'.join(env_list))
         self.CopyToWorkDir(f.name)
         env_file = os.path.join(self.work_dir, os.path.basename(f.name))
-        cmd = ['source', '%s;' % env_file] + cmd
+        new_cmd = ['source', '%s;' % env_file]
+        if remote_sudo:
+          new_cmd += ['sudo', '-E']
+
+        new_cmd += cmd
 
     try:
-      return self.agent.RemoteSh(cmd, **kwargs)
+      return self.agent.RemoteSh(new_cmd, **kwargs)
     except SSHConnectionError:
       logging.error('Error connecting to device %s', self.hostname)
       raise
@@ -559,7 +602,8 @@ class ChromiumOSDevice(RemoteDevice):
   def _RemountRootfsAsWritable(self):
     """Attempts to Remount the root partition."""
     logging.info("Remounting '/' with rw...")
-    self.RunCommand(self.MOUNT_ROOTFS_RW_CMD, error_code_ok=True)
+    self.RunCommand(self.MOUNT_ROOTFS_RW_CMD, error_code_ok=True,
+                    remote_sudo=True)
 
   def _RootfsIsReadOnly(self):
     """Returns True if rootfs on is mounted as read-only."""
@@ -579,7 +623,7 @@ class ChromiumOSDevice(RemoteDevice):
     logging.info('Disabling rootfs verification on device...')
     self.RunCommand(
         [self.MAKE_DEV_SSD_BIN, '--remove_rootfs_verification', '--force'],
-        error_code_ok=True)
+        error_code_ok=True, remote_sudo=True)
     # TODO(yjhong): Make sure an update is not pending.
     logging.info('Need to reboot to actually disable the verification.')
     self.Reboot()
