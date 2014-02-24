@@ -1059,6 +1059,8 @@ protected:
 
     virtual PassRefPtr<Document> cloneDocumentWithoutChildren();
 
+    bool importContainerNodeChildren(ContainerNode* oldContainerNode, PassRefPtr<ContainerNode> newContainerNode, ExceptionState&);
+
 private:
     friend class Node;
     friend class IgnoreDestructiveWriteCountIncrementer;

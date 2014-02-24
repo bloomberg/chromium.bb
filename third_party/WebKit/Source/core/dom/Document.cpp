@@ -132,6 +132,7 @@
 #include "core/html/HTMLNameCollection.h"
 #include "core/html/HTMLScriptElement.h"
 #include "core/html/HTMLStyleElement.h"
+#include "core/html/HTMLTemplateElement.h"
 #include "core/html/HTMLTitleElement.h"
 #include "core/html/PluginDocument.h"
 #include "core/html/forms/FormController.h"
@@ -884,6 +885,20 @@ PassRefPtr<Text> Document::createEditingTextNode(const String& text)
     return Text::createEditingText(*this, text);
 }
 
+bool Document::importContainerNodeChildren(ContainerNode* oldContainerNode, PassRefPtr<ContainerNode> newContainerNode, ExceptionState& exceptionState)
+{
+    for (Node* oldChild = oldContainerNode->firstChild(); oldChild; oldChild = oldChild->nextSibling()) {
+        RefPtr<Node> newChild = importNode(oldChild, true, exceptionState);
+        if (exceptionState.hadException())
+            return false;
+        newContainerNode->appendChild(newChild.release(), exceptionState);
+        if (exceptionState.hadException())
+            return false;
+    }
+
+    return true;
+}
+
 PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionState& exceptionState)
 {
     if (!importedNode) {
@@ -917,14 +932,11 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionSt
         newElement->cloneDataFromElement(*oldElement);
 
         if (deep) {
-            for (Node* oldChild = oldElement->firstChild(); oldChild; oldChild = oldChild->nextSibling()) {
-                RefPtr<Node> newChild = importNode(oldChild, true, exceptionState);
-                if (exceptionState.hadException())
-                    return nullptr;
-                newElement->appendChild(newChild.release(), exceptionState);
-                if (exceptionState.hadException())
-                    return nullptr;
-            }
+            if (!importContainerNodeChildren(oldElement, newElement, exceptionState))
+                return nullptr;
+            if (oldElement->hasTagName(templateTag)
+                && !importContainerNodeChildren(toHTMLTemplateElement(oldElement)->content(), toHTMLTemplateElement(newElement)->content(), exceptionState))
+                return nullptr;
         }
 
         return newElement.release();
@@ -940,16 +952,8 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionSt
         }
         DocumentFragment* oldFragment = toDocumentFragment(importedNode);
         RefPtr<DocumentFragment> newFragment = createDocumentFragment();
-        if (deep) {
-            for (Node* oldChild = oldFragment->firstChild(); oldChild; oldChild = oldChild->nextSibling()) {
-                RefPtr<Node> newChild = importNode(oldChild, true, exceptionState);
-                if (exceptionState.hadException())
-                    return nullptr;
-                newFragment->appendChild(newChild.release(), exceptionState);
-                if (exceptionState.hadException())
-                    return nullptr;
-            }
-        }
+        if (deep && !importContainerNodeChildren(oldFragment, newFragment, exceptionState))
+            return nullptr;
 
         return newFragment.release();
     }
