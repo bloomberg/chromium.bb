@@ -33,6 +33,8 @@ crbug.com/336925 inspector/elements/styles/styles-add-blank-property.html [ Pass
 
 crbug.com/344238 inspector/timeline/timeline-auto-record.html [ Pass Failure ]
 crbug.com/344238 virtual/deferred/inspector/timeline/timeline-auto-record.html [ Pass Failure ]
+crbug.com/346119 virtual/deferred/inspector/timeline/timeline-start-time.html [ Pass Failure ]
+crbug.com/346119 inspector/timeline/timeline-start-time.html [ Pass Failure ]
 
 # -----------------------------------------------------------------
 # Plugin tests
