@@ -8,6 +8,8 @@
 #
 # However, today we have many "bad" dependencies on some of these flags from,
 # e.g. base, so they need to be global.
+#
+# See also build/config/features.gni
 
 declare_args() {
   # Indicates if Ash is enabled. Ash is the Aura SHell which provides a
@@ -22,6 +24,10 @@ declare_args() {
   # of a replacement for GDI or GTK.
   use_aura = is_linux || use_ozone || is_win || is_chromeos || use_ash
 
+  # XInput2 multitouch support. Zero means disabled, nonzero indicates the
+  # minimum XI2 version. For example, use_xi2_mt=2 means XI2.2 or above.
+  use_xi2_mt = 2
+
   # True means the UI is built useing the "views" framework.
   toolkit_views = is_win || is_chromeos || use_aura
 }
@@ -30,10 +36,27 @@ declare_args() {
 #
 # These variables depend on other variables and can't be set externally.
 
+if (is_linux) {
+  use_cairo = true
+  use_pango = true
+} else {
+  use_cairo = false
+  use_pango = false
+}
+
 # Indicates if the UI toolkit depends on GTK.
 toolkit_uses_gtk = is_linux && !is_chromeos && !use_aura && !use_ozone
+
+# Use GPU accelerated cross process image transport by default on linux builds
+# with the Aura window manager.
+ui_compositor_image_transport = use_aura && is_linux
+
+use_default_render_theme = use_aura || is_linux
 
 # Indicates if the UI toolkit depends on X11.
 use_x11 = is_linux && !use_ozone
 
 use_glib = is_linux
+
+use_clipboard_aurax11 = is_linux && use_aura && use_x11
+

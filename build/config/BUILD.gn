@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/crypto.gni")
+import("//build/config/features.gni")
 import("//build/config/ui.gni")
 
 declare_args() {
@@ -33,23 +35,51 @@ config("feature_flags") {
       "ENABLE_TASK_MANAGER=1",
       "ENABLE_EXTENSIONS=1",
       "ENABLE_PLUGIN_INSTALLATION=1",
-      "ENABLE_PLUGINS=1",
       "ENABLE_SESSION_SERVICE=1",
       "ENABLE_THEMES=1",
       "ENABLE_AUTOFILL_DIALOG=1",
       "ENABLE_BACKGROUND=1",
       "ENABLE_AUTOMATION=1",
       "ENABLE_GOOGLE_NOW=1",
-      "ENABLE_PRINTING=1",
       "ENABLE_CAPTIVE_PORTAL_DETECTION=1",
       "ENABLE_APP_LIST=1",
-      "ENABLE_MESSAGE_CENTER=1",
       "ENABLE_SETTINGS_APP=1",
       "ENABLE_MANAGED_USERS=1",
+      "V8_DEPRECATION_WARNINGS",  # Don't use deprecated V8 APIs anywhere.
   ]
 
+  if (cld_version > 0) {
+    defines += [ "CLD_VERSION=$cld_version" ]
+  }
+  if (enable_mdns) {
+    defines += [ "ENABLE_MDNS=1" ]
+  }
+  if (enable_pepper_cdms) {
+    # TODO(brettw) should probably be "=1"
+    defines += [ "ENABLE_PEPPER_CDMS" ]
+  }
+  if (enable_plugins) {
+    defines += [ "ENABLE_PLUGINS=1" ]
+  }
+  if (enable_printing > 0) {
+    defines += [ "ENABLE_PRINTING=1" ]
+    if (enable_printing < 2) {
+      defines += [ "ENABLE_FULL_PRINTING=1" ]
+    }
+  }
+  if (enable_spellcheck) {
+    defines += [ "ENABLE_SPELLCHECK=1" ]
+  }
+  if (use_udev) {
+    # TODO(brettw) should probably be "=1".
+    defines += [ "USE_UDEV" ]
+  }
   if (toolkit_views) {
     defines += [ "TOOLKIT_VIEWS=1" ]
+  }
+  if (ui_compositor_image_transport) {
+    # TODO(brettw) should probably be "=1".
+    defines += [ "UI_COMPOSITOR_IMAGE_TRANSPORT" ]
   }
   if (use_ash) {
     defines += [ "USE_ASH=1" ]
@@ -57,14 +87,32 @@ config("feature_flags") {
   if (use_aura) {
     defines += [ "USE_AURA=1" ]
   }
+  if (use_cairo) {
+    defines += [ "USE_CAIRO=1" ]
+  }
+  if (use_clipboard_aurax11) {
+    defines += [ "USE_CLIPBOARD_AURAX11=1" ]
+  }
+  if (use_default_render_theme) {
+    defines += [ "USE_DEFAULT_RENDER_THEME=1" ]
+  }
   if (use_glib) {
     defines += [ "USE_GLIB=1" ]
+  }
+  if (use_nss) {
+    defines += [ "USE_NSS=1" ]
+  }
+  if (use_openssl) {
+    defines += [ "USE_OPENSSL=1" ]
   }
   if (use_ozone) {
     defines += [ "USE_OZONE=1" ]
   }
   if (use_x11) {
     defines += [ "USE_X11=1" ]
+    if (use_xi2_mt > 0) {
+      defines += [ "USE_XI2_MT=$use_xi2_mt" ]
+    }
   }
 }
 

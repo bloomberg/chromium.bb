@@ -30,8 +30,6 @@ void PrintToplevelHelp() {
 
   OutputString(
       "\n"
-      "  When run with no arguments \"gn gen\" is assumed.\n"
-      "\n"
       "Common switches:\n");
   PrintShortHelp(
       "--args: Specifies build arguments overrides. "

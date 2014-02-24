@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 # This file declares build flags for the SSL library configuration.
+#
+# TODO(brettw) this should probably be moved to src/crypto or somewhere, and
+# the global build dependency on it should be removed.
 
 declare_args() {
   # Use OpenSSL instead of NSS. This is used for Android and is experimental

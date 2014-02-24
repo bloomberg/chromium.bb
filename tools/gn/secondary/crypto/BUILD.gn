@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("ssl/flags.gni")
+import("//build/config/crypto.gni")
 
 crypto_minimal_sources = [
   "hmac.cc",
