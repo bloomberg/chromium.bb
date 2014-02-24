@@ -163,7 +163,7 @@ class PerfTest(object):
     _metrics_regex = re.compile(r'^(?P<metric>Time|Malloc|JS Heap):')
     _statistics_keys = ['avg', 'median', 'stdev', 'min', 'max', 'unit', 'values']
     _score_regex = re.compile(r'^(?P<key>' + r'|'.join(_statistics_keys) + r')\s+(?P<value>([0-9\.]+(,\s+)?)+)\s*(?P<unit>.*)')
-    _console_regex = re.compile(r'^CONSOLE MESSAGE:')
+    _console_regex = re.compile(r'^CONSOLE (MESSAGE|WARNING):')
 
     def _run_with_driver(self, driver, time_out_ms):
         output = self.run_single(driver, self.test_path(), time_out_ms)
@@ -237,13 +237,14 @@ class PerfTest(object):
         # These stderr messages come from content_shell on Linux.
         re.compile(r'INFO:SkFontHost_fontconfig.cpp'),
         re.compile(r'Running without the SUID sandbox'),
-    ]
+        # crbug.com/345229
+        re.compile(r'InitializeSandbox\(\) called with multiple threads in process gpu-process')]
 
     _lines_to_ignore_in_parser_result = [
-        re.compile(r'^Running \d+ times$'),
-        re.compile(r'^Ignoring warm-up '),
-        re.compile(r'^Info:'),
-        re.compile(r'^\d+(.\d+)?(\s*(runs\/s|ms|fps))?$'),
+        re.compile(r'^\s*Running \d+ times$'),
+        re.compile(r'^\s*Ignoring warm-up '),
+        re.compile(r'^\s*Info:'),
+        re.compile(r'^\s*\d+(.\d+)?(\s*(runs\/s|ms|fps))?$'),
         # Following are for handle existing test like Dromaeo
         re.compile(re.escape("""main frame - has 1 onunload handler(s)""")),
         re.compile(re.escape("""frame "<!--framePath //<!--frame0-->-->" - has 1 onunload handler(s)""")),
