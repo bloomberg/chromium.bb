@@ -55,4 +55,12 @@ std::string TestPersonalDataManager::CountryCodeForCurrentTimezone()
   return timezone_country_code_;
 }
 
+const std::string& TestPersonalDataManager::GetDefaultCountryCodeForNewAddress()
+    const {
+  if (default_country_code_.empty())
+    return PersonalDataManager::GetDefaultCountryCodeForNewAddress();
+
+  return default_country_code_;
+}
+
 }  // namespace autofill

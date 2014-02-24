@@ -1463,11 +1463,43 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
   EXPECT_TRUE(SectionHasField(SECTION_SHIPPING, ADDRESS_HOME_SORTING_CODE));
 }
 
+// A shim to install a TestPersonalDataManager instead of the real thing.
+class TestPersonalDataManagerService
+    : public autofill::PersonalDataManagerService {
+ public:
+  static BrowserContextKeyedService* Build(content::BrowserContext* profile) {
+    return new TestPersonalDataManagerService();
+  }
+
+  TestPersonalDataManagerService() {}
+  virtual ~TestPersonalDataManagerService() {}
+
+  virtual PersonalDataManager* GetPersonalDataManager() OVERRIDE {
+    return &test_data_manager_;
+  }
+  TestPersonalDataManager* GetTestPersonalDataManager() {
+    return &test_data_manager_;
+  }
+
+ private:
+  TestPersonalDataManager test_data_manager_;
+  DISALLOW_COPY_AND_ASSIGN(TestPersonalDataManagerService);
+};
+
 // Changing the data source to or from Wallet preserves the shipping country,
 // but not the billing country because Wallet only supports US billing
 // addresses.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
                        ChangingDataSourcePreservesCountry) {
+  // Set the default country to Canada.
+  static_cast<TestPersonalDataManagerService*>(
+      autofill::PersonalDataManagerFactory::GetInstance()->
+          SetTestingFactoryAndUse(
+              browser()->profile(),
+              TestPersonalDataManagerService::Build))->
+                  GetTestPersonalDataManager()->set_default_country_code("CA");
+
+  InitializeController();
   AutofillProfile verified_profile(test::GetVerifiedProfile());
   controller()->GetTestingManager()->AddTestingProfile(&verified_profile);
 
@@ -1487,12 +1519,18 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerI18nTest,
   // Select "Add new shipping address...".
   controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(2);
 
+  // Default shipping country matches timezone, but default billing is always
+  // US in Wallet mode.
   scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
-  ASSERT_EQ(ASCIIToUTF16("United States"),
+  ASSERT_EQ(ASCIIToUTF16("Canada"),
             view->GetTextContentsOfInput(ADDRESS_HOME_COUNTRY));
+  ASSERT_EQ(ASCIIToUTF16("United States"),
+            view->GetTextContentsOfInput(ADDRESS_BILLING_COUNTRY));
 
   // Switch the shipping country.
   view->SetTextContentsOfInput(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("Belarus"));
+  EXPECT_EQ(ASCIIToUTF16("Belarus"),
+            view->GetTextContentsOfInput(ADDRESS_HOME_COUNTRY));
   view->ActivateInput(ADDRESS_HOME_COUNTRY);
 
   // Switch to using Autofill instead of Wallet.

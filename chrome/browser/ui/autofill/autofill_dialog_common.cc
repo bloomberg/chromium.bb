@@ -212,8 +212,10 @@ void BuildInputsForSection(DialogSection dialog_section,
                                inputs);
         DCHECK_EQ(inputs->back().type, ADDRESS_BILLING_COUNTRY);
         inputs->back().length = DetailInput::NONE;
+        const std::string& app_locale =
+            g_browser_process->GetApplicationLocale();
         inputs->back().initial_value =
-            base::ASCIIToUTF16(hardcoded_country_code);
+            AutofillCountry(hardcoded_country_code, app_locale).name();
       } else {
         BuildInputs(kBillingInputs, arraysize(kBillingInputs), inputs);
       }

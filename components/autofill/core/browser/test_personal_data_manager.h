@@ -36,9 +36,14 @@ class TestPersonalDataManager : public PersonalDataManager {
       const CreditCard& imported_credit_card) OVERRIDE;
 
   virtual std::string CountryCodeForCurrentTimezone() const OVERRIDE;
+  virtual const std::string& GetDefaultCountryCodeForNewAddress() const
+      OVERRIDE;
 
   void set_timezone_country_code(const std::string& timezone_country_code) {
     timezone_country_code_ = timezone_country_code;
+  }
+  void set_default_country_code(const std::string& default_country_code) {
+    default_country_code_ = default_country_code;
   }
 
   const AutofillProfile& imported_profile() { return imported_profile_; }
@@ -50,6 +55,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   AutofillProfile imported_profile_;
   CreditCard imported_credit_card_;
   std::string timezone_country_code_;
+  std::string default_country_code_;
 };
 
 }  // namespace autofill
