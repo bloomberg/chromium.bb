@@ -120,12 +120,6 @@ Press any key to continue exploring.
   </message>
 
   <!-- File Manager -->
-  <message name="IDS_FLAGS_FILE_MANAGER_SHOW_CHECKBOXES_NAME" desc="Name of the about:flag option to show the selecting checkboxes to the Files app.">
-    Show selecting checkboxes
-  </message>
-  <message name="IDS_FLAGS_FILE_MANAGER_SHOW_CHECKBOXES_DESCRIPTION" desc="Description of the about:flag option to show the selecting checkboxes to the Files app.">
-    Show selecting checkboxes in the Files.app.
-  </message>
   <message name="IDS_FLAGS_FILE_MANAGER_ENABLE_NEW_AUDIO_PLAYER_NAME" desc="Name of the about:flag option to enable the new audio player app.">
     Enable the new audio player
   </message>

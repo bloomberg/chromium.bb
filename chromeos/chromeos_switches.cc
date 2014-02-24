@@ -134,9 +134,6 @@ const char kEnterpriseEnrollmentModulusLimit[] =
 const char kEnterpriseEnrollmentSkipRobotAuth[] =
     "enterprise-enrollment-skip-robot-auth";
 
-// Shows the selecting checkboxes in the Files.app.
-const char kFileManagerShowCheckboxes[]     = "file-manager-show-checkboxes";
-
 // Enables the new audio player in the Files.app.
 const char kFileManagerEnableNewAudioPlayer[] =
     "file-manager-enable-new-audio-player";
