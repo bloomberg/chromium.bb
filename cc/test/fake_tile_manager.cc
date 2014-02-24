@@ -25,6 +25,8 @@ class FakeRasterWorkerPool : public RasterWorkerPool {
          ++it) {
       internal::RasterWorkerPoolTask* task = it->task;
 
+      task->WillSchedule();
+      task->ScheduleOnOriginThread(this);
       task->DidSchedule();
 
       completed_tasks_.push_back(task);
@@ -35,7 +37,9 @@ class FakeRasterWorkerPool : public RasterWorkerPool {
       internal::WorkerPoolTask* task = completed_tasks_.front().get();
 
       task->WillComplete();
+      task->CompleteOnOriginThread(this);
       task->DidComplete();
+
       task->RunReplyOnOriginThread();
 
       completed_tasks_.pop_front();
@@ -49,15 +53,12 @@ class FakeRasterWorkerPool : public RasterWorkerPool {
   }
 
   // Overridden from internal::WorkerPoolTaskClient:
-  virtual SkCanvas* AcquireCanvasForRaster(internal::RasterWorkerPoolTask* task)
-      OVERRIDE {
+  virtual SkCanvas* AcquireCanvasForRaster(internal::WorkerPoolTask* task,
+                                           const Resource* resource) OVERRIDE {
     return NULL;
   }
-  virtual void OnRasterCompleted(internal::RasterWorkerPoolTask* task,
-                                 const PicturePileImpl::Analysis& analysis)
-      OVERRIDE {}
-  virtual void OnImageDecodeCompleted(internal::WorkerPoolTask* task) OVERRIDE {
-  }
+  virtual void ReleaseCanvasForRaster(internal::WorkerPoolTask* task,
+                                      const Resource* resource) OVERRIDE {}
 
  private:
   // Overridden from RasterWorkerPool:

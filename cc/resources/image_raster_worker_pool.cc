@@ -131,14 +131,15 @@ void ImageRasterWorkerPool::CheckForCompletedTasks() {
 }
 
 SkCanvas* ImageRasterWorkerPool::AcquireCanvasForRaster(
-    internal::RasterWorkerPoolTask* task) {
-  return resource_provider()->MapImageRasterBuffer(task->resource()->id());
+    internal::WorkerPoolTask* task,
+    const Resource* resource) {
+  return resource_provider()->MapImageRasterBuffer(resource->id());
 }
 
-void ImageRasterWorkerPool::OnRasterCompleted(
-    internal::RasterWorkerPoolTask* task,
-    const PicturePileImpl::Analysis& analysis) {
-  resource_provider()->UnmapImageRasterBuffer(task->resource()->id());
+void ImageRasterWorkerPool::ReleaseCanvasForRaster(
+    internal::WorkerPoolTask* task,
+    const Resource* resource) {
+  resource_provider()->UnmapImageRasterBuffer(resource->id());
 }
 
 void ImageRasterWorkerPool::OnRasterTasksFinished() {
