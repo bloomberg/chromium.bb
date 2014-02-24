@@ -17,3 +17,7 @@ fun:*__num_get_signed_integral*
 fun:*__num_get_unsigned_integral*
 # getresuid/getresgid added in clang r200925
 fun:*GetRESIds*
+
+# False positives in SSE intrinsics. To be fixed in Clang.
+# http://://code.google.com/p/memory-sanitizer/issues/detail?id=48
+fun:*S32A_Opaque_BlitRow32_SSE2*
