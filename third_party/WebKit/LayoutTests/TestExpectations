@@ -769,6 +769,8 @@ crbug.com/342574 [ Debug ] fast/css-generated-content/crash-selection-editing-re
 
 crbug.com/331186 [ Debug ] css3/flexbox/position-absolute-child.html [ Slow ]
 
+crbug.com/346151 css3/filters/effect-reference-hidpi-hw.html [ Pass ImageOnlyFailure ]
+
 crbug.com/333242 svg/dynamic-updates/SVGUseElement-dom-href1-attr.html [ Pass ImageOnlyFailure ]
 crbug.com/333242 svg/dynamic-updates/SVGUseElement-svgdom-href1-prop.html [ Pass ImageOnlyFailure ]
 
