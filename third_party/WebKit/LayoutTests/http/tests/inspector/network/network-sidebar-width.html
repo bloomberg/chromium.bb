@@ -12,24 +12,30 @@ function test()
     function step2()
     {
         var panel = WebInspector.panel("network");
-        var setting = WebInspector.settings.createSetting(panel._panelName + "SidebarWidth", undefined);
-        WebInspector.settings[panel._panelName + "SidebarWidth"] = setting;
+        var settingName = "networkPanelSplitViewState";
+        var setting = WebInspector.settings.createSetting(settingName, undefined);
+        WebInspector.settings[settingName] = setting;
         var request = WebInspector.panel("network").requests[WebInspector.panel("network").requests.length - 1];
 
-        oldSetting = setting.get();
+        settingValue = setting.get();
+        settingValue.vertical = settingValue.vertical || {};
+        var oldSize = settingValue.vertical.size;
         WebInspector.inspectorView.showPanel("network");
 
-        setting.set(undefined);
+        delete settingValue.vertical.size;
+        setting.set(settingValue);
         panel._showRequest(request);
         InspectorTest.addResult("Sidebar width: " + panel._splitView.sidebarElement().offsetWidth);
         panel._toggleGridMode();
 
-        setting.set(242);
+        settingValue.vertical.size = 242;
+        setting.set(settingValue);
         panel._showRequest(request);
         InspectorTest.addResult("Sidebar width: " + panel._splitView.sidebarElement().offsetWidth);
         panel._closeVisibleRequest(request);
 
-        setting.set(oldSetting);
+        settingValue.vertical.size = oldSize;
+        setting.set(settingValue);
 
         InspectorTest.completeTest();
     }
