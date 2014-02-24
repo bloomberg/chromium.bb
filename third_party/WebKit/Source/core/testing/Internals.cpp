@@ -761,7 +761,7 @@ void Internals::setEnableMockPagePopup(bool enabled, ExceptionState& exceptionSt
     page->chrome().client().setPagePopupDriver(s_pagePopupDriver);
 }
 
-PassRefPtr<PagePopupController> Internals::pagePopupController()
+PassRefPtrWillBeRawPtr<PagePopupController> Internals::pagePopupController()
 {
     return s_pagePopupDriver ? s_pagePopupDriver->pagePopupController() : 0;
 }

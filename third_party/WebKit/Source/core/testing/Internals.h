@@ -137,7 +137,7 @@ public:
     Vector<String> formControlStateOfHistoryItem(ExceptionState&);
     void setFormControlStateOfHistoryItem(const Vector<String>&, ExceptionState&);
     void setEnableMockPagePopup(bool, ExceptionState&);
-    PassRefPtr<PagePopupController> pagePopupController();
+    PassRefPtrWillBeRawPtr<PagePopupController> pagePopupController();
 
     PassRefPtr<ClientRect> unscaledViewportRect(ExceptionState&);
 

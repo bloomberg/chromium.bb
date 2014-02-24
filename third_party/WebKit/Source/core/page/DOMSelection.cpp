@@ -47,6 +47,8 @@
 
 namespace WebCore {
 
+DEFINE_GC_INFO(DOMSelection);
+
 static Node* selectionShadowAncestor(Frame* frame)
 {
     Node* node = frame->selection().selection().base().anchorNode();

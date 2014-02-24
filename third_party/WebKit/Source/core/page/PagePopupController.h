@@ -32,6 +32,7 @@
 #define PagePopupController_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 
@@ -39,9 +40,10 @@ namespace WebCore {
 
 class PagePopupClient;
 
-class PagePopupController : public RefCounted<PagePopupController>, public ScriptWrappable {
+class PagePopupController : public RefCountedWillBeGarbageCollectedFinalized<PagePopupController>, public ScriptWrappable {
+    DECLARE_GC_INFO;
 public:
-    static PassRefPtr<PagePopupController> create(PagePopupClient*);
+    static PassRefPtrWillBeRawPtr<PagePopupController> create(PagePopupClient*);
     void setValueAndClosePopup(int numValue, const String& stringValue);
     void setValue(const String&);
     void closePopup();
@@ -50,6 +52,8 @@ public:
     String formatShortMonth(int year, int zeroBaseMonth);
     void clearPagePopupClient();
     void histogramEnumeration(const String& name, int sample, int boundaryValue);
+
+    void trace(Visitor*) { }
 
 private:
     explicit PagePopupController(PagePopupClient*);

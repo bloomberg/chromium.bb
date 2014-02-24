@@ -29,6 +29,7 @@
  */
 
 [
+    WillBeGarbageCollected,
     NoInterfaceObject,
     RuntimeEnabled=PagePopup
 ] interface PagePopupController {

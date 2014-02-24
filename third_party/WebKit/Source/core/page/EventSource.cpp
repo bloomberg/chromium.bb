@@ -55,6 +55,8 @@
 
 namespace WebCore {
 
+DEFINE_GC_INFO(EventSource);
+
 const unsigned long long EventSource::defaultReconnectDelay = 3000;
 
 inline EventSource::EventSource(ExecutionContext* context, const KURL& url, const Dictionary& eventSourceInit)
@@ -72,7 +74,7 @@ inline EventSource::EventSource(ExecutionContext* context, const KURL& url, cons
     eventSourceInit.get("withCredentials", m_withCredentials);
 }
 
-PassRefPtr<EventSource> EventSource::create(ExecutionContext* context, const String& url, const Dictionary& eventSourceInit, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<EventSource> EventSource::create(ExecutionContext* context, const String& url, const Dictionary& eventSourceInit, ExceptionState& exceptionState)
 {
     if (url.isEmpty()) {
         exceptionState.throwDOMException(SyntaxError, "Cannot open an EventSource to an empty URL.");
@@ -97,7 +99,7 @@ PassRefPtr<EventSource> EventSource::create(ExecutionContext* context, const Str
         return nullptr;
     }
 
-    RefPtr<EventSource> source = adoptRef(new EventSource(context, fullURL, eventSourceInit));
+    RefPtrWillBeRawPtr<EventSource> source = adoptRefCountedWillBeRefCountedGarbageCollected(new EventSource(context, fullURL, eventSourceInit));
 
     source->setPendingActivity(source.get());
     source->scheduleInitialConnect();

@@ -36,6 +36,7 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
 #include "core/loader/ThreadableLoaderClient.h"
+#include "heap/Handle.h"
 #include "platform/Timer.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/RefPtr.h"
@@ -50,11 +51,12 @@ class ResourceResponse;
 class TextResourceDecoder;
 class ThreadableLoader;
 
-class EventSource FINAL : public RefCounted<EventSource>, public ScriptWrappable, public EventTargetWithInlineData, private ThreadableLoaderClient, public ActiveDOMObject {
-    WTF_MAKE_FAST_ALLOCATED;
-    REFCOUNTED_EVENT_TARGET(EventSource);
+class EventSource FINAL : public RefCountedWillBeRefCountedGarbageCollected<EventSource>, public ScriptWrappable, public EventTargetWithInlineData, private ThreadableLoaderClient, public ActiveDOMObject {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+    DECLARE_GC_INFO;
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<EventSource>);
 public:
-    static PassRefPtr<EventSource> create(ExecutionContext*, const String& url, const Dictionary&, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<EventSource> create(ExecutionContext*, const String& url, const Dictionary&, ExceptionState&);
     virtual ~EventSource();
 
     static const unsigned long long defaultReconnectDelay;
@@ -85,6 +87,8 @@ public:
     // loader, and therefore the methods of this class for receiving
     // asynchronous events from the loader won't be invoked.
     virtual void stop() OVERRIDE;
+
+    void trace(Visitor*) { }
 
 private:
     EventSource(ExecutionContext*, const KURL&, const Dictionary&);

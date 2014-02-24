@@ -28,6 +28,7 @@
 #define TreeScope_h
 
 #include "core/dom/DocumentOrderedMap.h"
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/text/AtomicString.h"
 
@@ -167,7 +168,7 @@ private:
 
     OwnPtr<IdTargetObserverRegistry> m_idTargetObserverRegistry;
 
-    mutable RefPtr<DOMSelection> m_selection;
+    mutable RefPtrWillBePersistent<DOMSelection> m_selection;
 };
 
 inline bool TreeScope::hasElementWithId(StringImpl* id) const

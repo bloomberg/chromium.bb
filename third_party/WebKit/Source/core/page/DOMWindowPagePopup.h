@@ -31,6 +31,7 @@
 #ifndef DOMWindowPagePopup_h
 #define DOMWindowPagePopup_h
 
+#include "heap/Handle.h"
 #include "platform/Supplementable.h"
 
 namespace WebCore {
@@ -50,7 +51,7 @@ private:
     explicit DOMWindowPagePopup(PagePopupClient*);
     static const char* supplementName();
 
-    RefPtr<PagePopupController> m_controller;
+    RefPtrWillBePersistent<PagePopupController> m_controller;
 };
 
 }

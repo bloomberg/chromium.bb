@@ -28,6 +28,7 @@
 
 #include "core/page/PagePopupClient.h"
 #include "core/page/PagePopupDriver.h"
+#include "heap/Handle.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
@@ -53,7 +54,7 @@ private:
 
     RefPtr<MockPagePopup> m_mockPagePopup;
     Frame* m_mainFrame;
-    RefPtr<PagePopupController> m_pagePopupController;
+    RefPtrWillBePersistent<PagePopupController> m_pagePopupController;
 };
 
 }
