@@ -41,26 +41,7 @@ def _GetBasePath():
     imp.find_module(module_name, paths)
     return CHECKOUT_BASE_PATH
   except ImportError:
-    pass
-
-  try:
-    paths = [os.path.join(BOOTSTRAP_BASE_PATH, module_path)]
-    imp.find_module(module_name, paths)
-    return BOOTSTRAP_BASE_PATH
-  except ImportError:
-    pass
-
-  return None
-
-
-def _Bootstrap(bootstrap_deps_url):
-  """Grab all the deps listed in the file at bootstrap_deps_url."""
-  bootstrap_txt = urllib2.urlopen(
-      BASE_URL + 'src/tools/telemetry_tools/telemetry_bootstrap.py').read()
-  bootstrap = imp.new_module('bootstrap')
-  exec bootstrap_txt in bootstrap.__dict__
-  bootstrap.DownloadDeps(BOOTSTRAP_BASE_PATH, bootstrap_deps_url)
-
+    raise Exception('Unnable to compute base path')
 
 def ListBootstrapDeps(base_path, subdir):
   """List the deps required for telemetry."""
@@ -72,9 +53,6 @@ def ListBootstrapDeps(base_path, subdir):
 
 
 def Main():
-  if not _GetBasePath():
-    _Bootstrap(BASE_URL + 'src/tools/perf/' + DEPS_FILE)
-
   new_base_path = _GetBasePath()
   new_perf_path = os.path.join(new_base_path, PERF_DIR)
   new_telemetry_path = os.path.join(new_base_path, TELEMETRY_DIR)
@@ -82,14 +60,6 @@ def Main():
   if '--print-bootstrap-deps-cros' in sys.argv:
     print ListBootstrapDeps(new_base_path, CROS_DIR)
     return 0
-
-  if '--print-bootstrap-deps' in sys.argv:
-    print ListBootstrapDeps(new_base_path, PERF_DIR)
-    return 0
-
-  sys.path.append(new_perf_path)
-  import page_sets
-  page_set_filenames = page_sets.GetAllPageSetFilenames()
 
   old_benchmark_names = {
     "image_decoding_benchmark": "image_decoding",
@@ -112,6 +82,7 @@ def Main():
 
   sys.path.append(new_telemetry_path)
   from telemetry.page import page_measurement_runner
+  from telemetry.core import environment
   # There are bots that are hard-coded to run some specific named tests.
   # Convert these to the current naming conventions by overriding them
   # in the runner.
@@ -126,7 +97,8 @@ def Main():
       return old_benchmark_names[arg]
 
   runner = MeasurementRunner()
-  return runner.Run(new_perf_path, page_set_filenames)
+  env = environment.Environment([new_perf_path])
+  return runner.Run(env)
 
 
 if __name__ == '__main__':
