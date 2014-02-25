@@ -225,8 +225,9 @@ ProfileKeyedAPIFactory<SystemInfoAPI>* SystemInfoAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
-SystemInfoAPI::SystemInfoAPI(Profile* profile) : profile_(profile) {
-  EventRouter* router = ExtensionSystem::Get(profile_)->event_router();
+SystemInfoAPI::SystemInfoAPI(content::BrowserContext* context)
+    : browser_context_(context) {
+  EventRouter* router = ExtensionSystem::Get(browser_context_)->event_router();
   router->RegisterObserver(this, system_storage::OnAttached::kEventName);
   router->RegisterObserver(this, system_storage::OnDetached::kEventName);
   router->RegisterObserver(this, system_display::OnDisplayChanged::kEventName);
@@ -236,7 +237,8 @@ SystemInfoAPI::~SystemInfoAPI() {
 }
 
 void SystemInfoAPI::Shutdown() {
-  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
+  ExtensionSystem::Get(browser_context_)->event_router()->UnregisterObserver(
+      this);
 }
 
 void SystemInfoAPI::OnListenerAdded(const EventListenerInfo& details) {

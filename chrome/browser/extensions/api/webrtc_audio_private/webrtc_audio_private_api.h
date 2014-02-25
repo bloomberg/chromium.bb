@@ -9,7 +9,6 @@
 #include "base/system_monitor/system_monitor.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/webrtc_audio_private.h"
 #include "content/public/browser/render_view_host.h"
 #include "media/audio/audio_device_name.h"
@@ -22,7 +21,7 @@ class WebrtcAudioPrivateEventService
     : public ProfileKeyedAPI,
       public base::SystemMonitor::DevicesChangedObserver {
  public:
-  explicit WebrtcAudioPrivateEventService(Profile* profile);
+  explicit WebrtcAudioPrivateEventService(content::BrowserContext* context);
   virtual ~WebrtcAudioPrivateEventService();
 
   // ProfileKeyedAPI implementation.
@@ -40,7 +39,7 @@ class WebrtcAudioPrivateEventService
 
   void SignalEvent();
 
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
 };
 
 // Common base for WebrtcAudioPrivate functions, that provides a

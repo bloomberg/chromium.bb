@@ -22,7 +22,7 @@ class TCPSocketEventDispatcher
     : public ProfileKeyedAPI,
       public base::SupportsWeakPtr<TCPSocketEventDispatcher> {
  public:
-  explicit TCPSocketEventDispatcher(Profile* profile);
+  explicit TCPSocketEventDispatcher(content::BrowserContext* context);
   virtual ~TCPSocketEventDispatcher();
 
   // Socket is active, start receving from it.
@@ -35,7 +35,7 @@ class TCPSocketEventDispatcher
   static ProfileKeyedAPIFactory<TCPSocketEventDispatcher>* GetFactoryInstance();
 
   // Convenience method to get the SocketEventDispatcher for a profile.
-  static TCPSocketEventDispatcher* Get(Profile* profile);
+  static TCPSocketEventDispatcher* Get(content::BrowserContext* context);
 
  private:
   typedef ApiResourceManager<ResumableTCPSocket>::ApiResourceData SocketData;

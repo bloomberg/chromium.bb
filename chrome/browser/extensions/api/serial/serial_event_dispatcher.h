@@ -18,13 +18,13 @@ namespace api {
 // Per-profile dispatcher for events on serial connections.
 class SerialEventDispatcher : public ProfileKeyedAPI {
  public:
-  explicit SerialEventDispatcher(Profile* profile);
+  explicit SerialEventDispatcher(content::BrowserContext* context);
   virtual ~SerialEventDispatcher();
 
   // Start receiving data and firing events for a connection.
   void PollConnection(const std::string& extension_id, int connection_id);
 
-  static SerialEventDispatcher* Get(Profile* profile);
+  static SerialEventDispatcher* Get(content::BrowserContext* context);
 
   // ProfileKeyedAPI implementation.
   static ProfileKeyedAPIFactory<SerialEventDispatcher>* GetFactoryInstance();

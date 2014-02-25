@@ -12,12 +12,16 @@
 
 class Profile;
 
+namespace content {
+class BrowserContext;
+}
+
 namespace extensions {
 
 class ExtensionWebUIOverrideRegistrar : public ProfileKeyedAPI,
                              public content::NotificationObserver {
  public:
-  explicit ExtensionWebUIOverrideRegistrar(Profile* profile);
+  explicit ExtensionWebUIOverrideRegistrar(content::BrowserContext* context);
   virtual ~ExtensionWebUIOverrideRegistrar();
 
   // ProfileKeyedAPI implementation.

@@ -13,12 +13,16 @@
 class GURL;
 class Profile;
 
+namespace content {
+class BrowserContext;
+}
+
 namespace extensions {
 
 class PluginManager : public ProfileKeyedAPI,
                       public content::NotificationObserver {
  public:
-  explicit PluginManager(Profile* profile);
+  explicit PluginManager(content::BrowserContext* context);
   virtual ~PluginManager();
 
   // ProfileKeyedAPI implementation.

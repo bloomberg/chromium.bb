@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_context.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_set.h"
@@ -18,18 +19,24 @@
 namespace extensions {
 
 ExtensionKeybindingRegistry::ExtensionKeybindingRegistry(
-    Profile* profile, ExtensionFilter extension_filter, Delegate* delegate)
-    : profile_(profile),
+    content::BrowserContext* context,
+    ExtensionFilter extension_filter,
+    Delegate* delegate)
+    : profile_(Profile::FromBrowserContext(context)),
       extension_filter_(extension_filter),
       delegate_(delegate) {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                 content::Source<Profile>(profile->GetOriginalProfile()));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 content::Source<Profile>(profile->GetOriginalProfile()));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_COMMAND_ADDED,
-                 content::Source<Profile>(profile->GetOriginalProfile()));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_COMMAND_REMOVED,
-                 content::Source<Profile>(profile->GetOriginalProfile()));
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED,
+                 content::Source<Profile>(profile_->GetOriginalProfile()));
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 content::Source<Profile>(profile_->GetOriginalProfile()));
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_COMMAND_ADDED,
+                 content::Source<Profile>(profile_->GetOriginalProfile()));
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_COMMAND_REMOVED,
+                 content::Source<Profile>(profile_->GetOriginalProfile()));
 }
 
 ExtensionKeybindingRegistry::~ExtensionKeybindingRegistry() {

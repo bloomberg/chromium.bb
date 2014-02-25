@@ -32,7 +32,8 @@ static base::LazyInstance<
         LAZY_INSTANCE_INITIALIZER;
 
 WebrtcAudioPrivateEventService::WebrtcAudioPrivateEventService(
-    Profile* profile) : profile_(profile) {
+    content::BrowserContext* context)
+    : browser_context_(context) {
   // In unit tests, the SystemMonitor may not be created.
   base::SystemMonitor* system_monitor = base::SystemMonitor::Get();
   if (system_monitor)
@@ -77,12 +78,11 @@ void WebrtcAudioPrivateEventService::OnDevicesChanged(
 void WebrtcAudioPrivateEventService::SignalEvent() {
   using api::webrtc_audio_private::OnSinksChanged::kEventName;
 
-  EventRouter* router =
-      ExtensionSystem::Get(profile_)->event_router();
+  EventRouter* router = ExtensionSystem::Get(browser_context_)->event_router();
   if (!router || !router->HasEventListener(kEventName))
     return;
   ExtensionService* extension_service =
-      ExtensionSystem::Get(profile_)->extension_service();
+      ExtensionSystem::Get(browser_context_)->extension_service();
   const ExtensionSet* extensions = extension_service->extensions();
   for (ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {

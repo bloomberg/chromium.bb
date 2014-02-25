@@ -16,7 +16,7 @@ namespace extensions {
 class SpellcheckAPI : public ProfileKeyedAPI,
                       public content::NotificationObserver {
  public:
-  explicit SpellcheckAPI(Profile* profile);
+  explicit SpellcheckAPI(content::BrowserContext* context);
   virtual ~SpellcheckAPI();
 
   // ProfileKeyedAPI implementation.

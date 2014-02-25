@@ -11,7 +11,9 @@
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/speech/tts_controller.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 const char *TtsEventTypeToString(TtsEventType event_type);
 TtsEventType TtsEventTypeFromString(const std::string& str);
@@ -62,11 +64,8 @@ class TtsGetVoicesFunction : public ChromeSyncExtensionFunction {
 
 class TtsAPI : public ProfileKeyedAPI {
  public:
-  explicit TtsAPI(Profile* profile);
+  explicit TtsAPI(content::BrowserContext* context);
   virtual ~TtsAPI();
-
-  // Convenience method to get the TtsAPI for a profile.
-  static TtsAPI* Get(Profile* profile);
 
   // ProfileKeyedAPI implementation.
   static ProfileKeyedAPIFactory<TtsAPI>* GetFactoryInstance();

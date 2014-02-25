@@ -21,7 +21,7 @@ namespace extensions {
 class SettingsOverridesAPI : public ProfileKeyedAPI,
                              public content::NotificationObserver {
  public:
-  explicit SettingsOverridesAPI(Profile* profile);
+  explicit SettingsOverridesAPI(content::BrowserContext* context);
   virtual ~SettingsOverridesAPI();
 
   // ProfileKeyedAPI implementation.

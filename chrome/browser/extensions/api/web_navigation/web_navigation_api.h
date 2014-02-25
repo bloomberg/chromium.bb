@@ -226,7 +226,7 @@ class WebNavigationGetAllFramesFunction : public ChromeSyncExtensionFunction {
 class WebNavigationAPI : public ProfileKeyedAPI,
                          public extensions::EventRouter::Observer {
  public:
-  explicit WebNavigationAPI(Profile* profile);
+  explicit WebNavigationAPI(content::BrowserContext* context);
   virtual ~WebNavigationAPI();
 
   // BrowserContextKeyedService implementation.
@@ -242,7 +242,7 @@ class WebNavigationAPI : public ProfileKeyedAPI,
  private:
   friend class ProfileKeyedAPIFactory<WebNavigationAPI>;
 
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
 
   // ProfileKeyedAPI implementation.
   static const char* service_name() {

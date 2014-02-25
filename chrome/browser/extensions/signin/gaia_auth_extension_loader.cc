@@ -11,9 +11,9 @@
 #include "base/logging.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
 #include "grit/browser_resources.h"
@@ -25,21 +25,22 @@
 #include "chromeos/chromeos_switches.h"
 #endif
 
+using content::BrowserContext;
 using content::BrowserThread;
 
 namespace {
 
-extensions::ComponentLoader* GetComponentLoader(Profile* profile) {
+extensions::ComponentLoader* GetComponentLoader(BrowserContext* context) {
   extensions::ExtensionSystem* extension_system =
-      extensions::ExtensionSystem::Get(profile);
+      extensions::ExtensionSystem::Get(context);
   ExtensionService* extension_service = extension_system->extension_service();
   return extension_service->component_loader();
 }
 
-void LoadGaiaAuthExtension(Profile* profile) {
+void LoadGaiaAuthExtension(BrowserContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  extensions::ComponentLoader* component_loader = GetComponentLoader(profile);
+  extensions::ComponentLoader* component_loader = GetComponentLoader(context);
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAuthExtensionPath)) {
     base::FilePath auth_extension_path =
@@ -75,19 +76,19 @@ void LoadGaiaAuthExtension(Profile* profile) {
                         base::FilePath(FILE_PATH_LITERAL("gaia_auth")));
 }
 
-void UnloadGaiaAuthExtension(Profile* profile) {
+void UnloadGaiaAuthExtension(BrowserContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const char kGaiaAuthId[] = "mfffpogegjflfpflabcdkioaeobkgjik";
-  GetComponentLoader(profile)->Remove(kGaiaAuthId);
+  GetComponentLoader(context)->Remove(kGaiaAuthId);
 }
 
 }  // namespace
 
 namespace extensions {
 
-GaiaAuthExtensionLoader::GaiaAuthExtensionLoader(Profile* profile)
-    : profile_(profile), load_count_(0) {}
+GaiaAuthExtensionLoader::GaiaAuthExtensionLoader(BrowserContext* context)
+    : browser_context_(context), load_count_(0) {}
 
 GaiaAuthExtensionLoader::~GaiaAuthExtensionLoader() {
   DCHECK_EQ(0, load_count_);
@@ -95,27 +96,27 @@ GaiaAuthExtensionLoader::~GaiaAuthExtensionLoader() {
 
 void GaiaAuthExtensionLoader::LoadIfNeeded() {
   if (load_count_ == 0)
-    LoadGaiaAuthExtension(profile_);
+    LoadGaiaAuthExtension(browser_context_);
   ++load_count_;
 }
 
 void GaiaAuthExtensionLoader::UnloadIfNeeded() {
   --load_count_;
   if (load_count_ == 0)
-    UnloadGaiaAuthExtension(profile_);
+    UnloadGaiaAuthExtension(browser_context_);
 }
 
 void GaiaAuthExtensionLoader::Shutdown() {
   if (load_count_ > 0) {
-    UnloadGaiaAuthExtension(profile_);
+    UnloadGaiaAuthExtension(browser_context_);
     load_count_ = 0;
   }
 }
 
 // static
-GaiaAuthExtensionLoader* GaiaAuthExtensionLoader::Get(Profile* profile) {
+GaiaAuthExtensionLoader* GaiaAuthExtensionLoader::Get(BrowserContext* context) {
   return ProfileKeyedAPIFactory<GaiaAuthExtensionLoader>::GetForProfile(
-      profile);
+      context);
 }
 
 static base::LazyInstance<ProfileKeyedAPIFactory<GaiaAuthExtensionLoader> >

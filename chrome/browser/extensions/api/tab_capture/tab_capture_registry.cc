@@ -105,8 +105,8 @@ TabCaptureRequest::TabCaptureRequest(
 TabCaptureRequest::~TabCaptureRequest() {
 }
 
-TabCaptureRegistry::TabCaptureRegistry(Profile* profile)
-    : profile_(profile) {
+TabCaptureRegistry::TabCaptureRegistry(content::BrowserContext* context)
+    : profile_(Profile::FromBrowserContext(context)) {
   MediaCaptureDevicesDispatcher::GetInstance()->AddObserver(this);
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -121,8 +121,8 @@ TabCaptureRegistry::~TabCaptureRegistry() {
 }
 
 // static
-TabCaptureRegistry* TabCaptureRegistry::Get(Profile* profile) {
-  return ProfileKeyedAPIFactory<TabCaptureRegistry>::GetForProfile(profile);
+TabCaptureRegistry* TabCaptureRegistry::Get(content::BrowserContext* context) {
+  return ProfileKeyedAPIFactory<TabCaptureRegistry>::GetForProfile(context);
 }
 
 static base::LazyInstance<ProfileKeyedAPIFactory<TabCaptureRegistry> >

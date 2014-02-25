@@ -27,18 +27,20 @@ ProfileKeyedAPIFactory<UDPSocketEventDispatcher>*
 }
 
 // static
-UDPSocketEventDispatcher* UDPSocketEventDispatcher::Get(Profile* profile) {
+UDPSocketEventDispatcher* UDPSocketEventDispatcher::Get(
+    content::BrowserContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   return ProfileKeyedAPIFactory<UDPSocketEventDispatcher>::GetForProfile(
-      profile);
+      context);
 }
 
-UDPSocketEventDispatcher::UDPSocketEventDispatcher(Profile* profile)
+UDPSocketEventDispatcher::UDPSocketEventDispatcher(
+    content::BrowserContext* context)
     : thread_id_(Socket::kThreadId),
-      profile_(profile) {
+      profile_(Profile::FromBrowserContext(context)) {
   ApiResourceManager<ResumableUDPSocket>* manager =
-      ApiResourceManager<ResumableUDPSocket>::Get(profile);
+      ApiResourceManager<ResumableUDPSocket>::Get(profile_);
   DCHECK(manager) << "There is no socket manager. "
     "If this assertion is failing during a test, then it is likely that "
     "TestExtensionSystem is failing to provide an instance of "

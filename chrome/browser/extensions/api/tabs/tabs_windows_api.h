@@ -16,11 +16,11 @@ class WindowsEventRouter;
 
 class TabsWindowsAPI : public ProfileKeyedAPI, public EventRouter::Observer {
  public:
-  explicit TabsWindowsAPI(Profile* profile);
+  explicit TabsWindowsAPI(content::BrowserContext* context);
   virtual ~TabsWindowsAPI();
 
   // Convenience method to get the TabsWindowsAPI for a profile.
-  static TabsWindowsAPI* Get(Profile* profile);
+  static TabsWindowsAPI* Get(content::BrowserContext* context);
 
   TabsEventRouter* tabs_event_router();
   WindowsEventRouter* windows_event_router();
@@ -38,7 +38,7 @@ class TabsWindowsAPI : public ProfileKeyedAPI, public EventRouter::Observer {
  private:
   friend class ProfileKeyedAPIFactory<TabsWindowsAPI>;
 
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
 
   // ProfileKeyedAPI implementation.
   static const char* service_name() {

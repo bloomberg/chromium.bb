@@ -17,6 +17,10 @@
 
 class Profile;
 
+namespace content {
+class BrowserContext;
+}
+
 namespace ui {
 class Accelerator;
 }
@@ -45,7 +49,7 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver {
 
   // If |extension_filter| is not ALL_EXTENSIONS, only keybindings by
   // by extensions that match the filter will be registered.
-  ExtensionKeybindingRegistry(Profile* profile,
+  ExtensionKeybindingRegistry(content::BrowserContext* context,
                               ExtensionFilter extension_filter,
                               Delegate* delegate);
 

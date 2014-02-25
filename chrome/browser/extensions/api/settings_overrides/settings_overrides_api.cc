@@ -9,6 +9,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
@@ -69,14 +70,16 @@ TemplateURLData ConvertSearchProvider(
 }
 }  // namespace
 
-SettingsOverridesAPI::SettingsOverridesAPI(Profile* profile)
-    : profile_(profile),
-      url_service_(TemplateURLServiceFactory::GetForProfile(profile)) {
-  DCHECK(profile);
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                 content::Source<Profile>(profile));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 content::Source<Profile>(profile));
+SettingsOverridesAPI::SettingsOverridesAPI(content::BrowserContext* context)
+    : profile_(Profile::FromBrowserContext(context)),
+      url_service_(TemplateURLServiceFactory::GetForProfile(profile_)) {
+  DCHECK(profile_);
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED,
+                 content::Source<Profile>(profile_));
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 content::Source<Profile>(profile_));
 }
 
 SettingsOverridesAPI::~SettingsOverridesAPI() {

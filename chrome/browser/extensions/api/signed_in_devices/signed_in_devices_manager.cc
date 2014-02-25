@@ -104,8 +104,8 @@ ProfileKeyedAPIFactory<SignedInDevicesManager>*
 SignedInDevicesManager::SignedInDevicesManager()
     : profile_(NULL) {}
 
-SignedInDevicesManager::SignedInDevicesManager(Profile* profile)
-    : profile_(profile) {
+SignedInDevicesManager::SignedInDevicesManager(content::BrowserContext* context)
+    : profile_(Profile::FromBrowserContext(context)) {
   extensions::EventRouter* router = extensions::ExtensionSystem::Get(
       profile_)->event_router();
 
@@ -169,4 +169,3 @@ void SignedInDevicesManager::Observe(
 }
 
 }  // namespace extensions
-

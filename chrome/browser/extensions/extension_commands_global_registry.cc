@@ -7,16 +7,16 @@
 #include "base/lazy_instance.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/global_shortcut_listener.h"
-#include "chrome/browser/profiles/profile.h"
 #include "extensions/common/extension.h"
 
 namespace extensions {
 
 ExtensionCommandsGlobalRegistry::ExtensionCommandsGlobalRegistry(
-    Profile* profile)
-    : ExtensionKeybindingRegistry(
-          profile, ExtensionKeybindingRegistry::ALL_EXTENSIONS, NULL),
-      profile_(profile) {
+    content::BrowserContext* context)
+    : ExtensionKeybindingRegistry(context,
+                                  ExtensionKeybindingRegistry::ALL_EXTENSIONS,
+                                  NULL),
+      browser_context_(context) {
   Init();
 }
 
@@ -39,10 +39,10 @@ ExtensionCommandsGlobalRegistry::GetFactoryInstance() {
 }
 
 // static
-ExtensionCommandsGlobalRegistry*
-ExtensionCommandsGlobalRegistry::Get(Profile* profile) {
-  return ProfileKeyedAPIFactory<
-      ExtensionCommandsGlobalRegistry>::GetForProfile(profile);
+ExtensionCommandsGlobalRegistry* ExtensionCommandsGlobalRegistry::Get(
+    content::BrowserContext* context) {
+  return ProfileKeyedAPIFactory<ExtensionCommandsGlobalRegistry>::GetForProfile(
+      context);
 }
 
 void ExtensionCommandsGlobalRegistry::AddExtensionKeybinding(
@@ -53,7 +53,7 @@ void ExtensionCommandsGlobalRegistry::AddExtensionKeybinding(
     return;
 
   extensions::CommandService* command_service =
-      extensions::CommandService::Get(profile_);
+      extensions::CommandService::Get(browser_context_);
   // Add all the active global keybindings, if any.
   extensions::CommandMap commands;
   if (!command_service->GetNamedCommands(

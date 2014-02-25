@@ -14,10 +14,12 @@
 #include "extensions/browser/event_router.h"
 
 class Profile;
+
 namespace content {
-  class NotificationDetails;
-  class NotificationObserver;
-  class NotificationRegistrar;
+class BrowserContext;
+class NotificationDetails;
+class NotificationObserver;
+class NotificationRegistrar;
 }  // namespace content
 
 namespace extensions {
@@ -58,7 +60,7 @@ class SignedInDevicesManager
  public:
   // Default constructor used for testing.
   SignedInDevicesManager();
-  explicit SignedInDevicesManager(Profile* profile);
+  explicit SignedInDevicesManager(content::BrowserContext* context);
   virtual ~SignedInDevicesManager();
 
   // ProfileKeyedAPI implementation.
@@ -96,4 +98,3 @@ class SignedInDevicesManager
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_SIGNED_IN_DEVICES_SIGNED_IN_DEVICES_MANAGER_H__
-

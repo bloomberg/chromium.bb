@@ -20,6 +20,7 @@
 class Profile;
 
 namespace content {
+class BrowserContext;
 class StreamHandle;
 }
 
@@ -29,9 +30,9 @@ class StreamsPrivateAPI : public ProfileKeyedAPI,
                           public content::NotificationObserver {
  public:
   // Convenience method to get the StreamsPrivateAPI for a profile.
-  static StreamsPrivateAPI* Get(Profile* profile);
+  static StreamsPrivateAPI* Get(content::BrowserContext* context);
 
-  explicit StreamsPrivateAPI(Profile* profile);
+  explicit StreamsPrivateAPI(content::BrowserContext* context);
   virtual ~StreamsPrivateAPI();
 
   void ExecuteMimeTypeHandler(const std::string& extension_id,

@@ -19,6 +19,10 @@
 
 class Profile;
 
+namespace content {
+class BrowserContext;
+}
+
 namespace extensions {
 
 struct TabCaptureRequest;
@@ -33,7 +37,7 @@ class TabCaptureRegistry : public ProfileKeyedAPI,
   typedef std::vector<std::pair<int, tab_capture::TabCaptureState> >
       RegistryCaptureInfo;
 
-  static TabCaptureRegistry* Get(Profile* profile);
+  static TabCaptureRegistry* Get(content::BrowserContext* context);
 
   // Used by ProfileKeyedAPI.
   static ProfileKeyedAPIFactory<TabCaptureRegistry>* GetFactoryInstance();
@@ -58,7 +62,7 @@ class TabCaptureRegistry : public ProfileKeyedAPI,
   friend class ProfileKeyedAPIFactory<TabCaptureRegistry>;
   friend class FullscreenObserver;
 
-  explicit TabCaptureRegistry(Profile* profile);
+  explicit TabCaptureRegistry(content::BrowserContext* context);
   virtual ~TabCaptureRegistry();
 
   // Used by ProfileKeyedAPI.

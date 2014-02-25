@@ -18,7 +18,7 @@ class SystemInfoAPI : public ProfileKeyedAPI,
   // ProfileKeyedAPI implementation.
   static ProfileKeyedAPIFactory<SystemInfoAPI>* GetFactoryInstance();
 
-  explicit SystemInfoAPI(Profile* profile);
+  explicit SystemInfoAPI(content::BrowserContext* context);
   virtual ~SystemInfoAPI();
 
   // BrowserContextKeyedService implementation.
@@ -37,7 +37,7 @@ class SystemInfoAPI : public ProfileKeyedAPI,
   }
   static const bool kServiceIsNULLWhileTesting = true;
 
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemInfoAPI);
 };

@@ -31,18 +31,20 @@ ProfileKeyedAPIFactory<TCPSocketEventDispatcher>*
 }
 
 // static
-TCPSocketEventDispatcher* TCPSocketEventDispatcher::Get(Profile* profile) {
+TCPSocketEventDispatcher* TCPSocketEventDispatcher::Get(
+    content::BrowserContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   return ProfileKeyedAPIFactory<TCPSocketEventDispatcher>::GetForProfile(
-      profile);
+      context);
 }
 
-TCPSocketEventDispatcher::TCPSocketEventDispatcher(Profile* profile)
+TCPSocketEventDispatcher::TCPSocketEventDispatcher(
+    content::BrowserContext* context)
     : thread_id_(Socket::kThreadId),
-      profile_(profile) {
+      profile_(Profile::FromBrowserContext(context)) {
   ApiResourceManager<ResumableTCPSocket>* manager =
-      ApiResourceManager<ResumableTCPSocket>::Get(profile);
+      ApiResourceManager<ResumableTCPSocket>::Get(profile_);
   DCHECK(manager) << "There is no socket manager. "
     "If this assertion is failing during a test, then it is likely that "
     "TestExtensionSystem is failing to provide an instance of "

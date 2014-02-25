@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
@@ -78,23 +77,6 @@ class SessionsRestoreFunction : public ChromeSyncExtensionFunction {
   bool RestoreLocalSession(const SessionId& session_id, Browser* browser);
   bool RestoreForeignSession(const SessionId& session_id,
                              Browser* browser);
-};
-
-class SessionsAPI : public ProfileKeyedAPI {
- public:
-  explicit SessionsAPI(Profile* profile);
-  virtual ~SessionsAPI();
-
-  // ProfileKeyedAPI implementation.
-  static ProfileKeyedAPIFactory<SessionsAPI>* GetFactoryInstance();
- private:
-  friend class ProfileKeyedAPIFactory<SessionsAPI>;
-
-  // ProfileKeyedAPI implementation.
-  static const char* service_name() {
-    return "SessionsAPI";
-  }
-  static const bool kServiceIsNULLWhileTesting = true;
 };
 
 }  // namespace extensions

@@ -23,7 +23,7 @@ class TCPServerSocketEventDispatcher
     : public ProfileKeyedAPI,
       public base::SupportsWeakPtr<TCPServerSocketEventDispatcher> {
  public:
-  explicit TCPServerSocketEventDispatcher(Profile* profile);
+  explicit TCPServerSocketEventDispatcher(content::BrowserContext* context);
   virtual ~TCPServerSocketEventDispatcher();
 
   // Server socket is active, start accepting connections from it.
@@ -37,7 +37,7 @@ class TCPServerSocketEventDispatcher
       GetFactoryInstance();
 
   // Convenience method to get the SocketEventDispatcher for a profile.
-  static TCPServerSocketEventDispatcher* Get(Profile* profile);
+  static TCPServerSocketEventDispatcher* Get(content::BrowserContext* context);
 
  private:
   typedef ApiResourceManager<ResumableTCPServerSocket>::ApiResourceData

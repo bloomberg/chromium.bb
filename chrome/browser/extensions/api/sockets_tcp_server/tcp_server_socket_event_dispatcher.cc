@@ -29,18 +29,19 @@ ProfileKeyedAPIFactory<TCPServerSocketEventDispatcher>*
 
 // static
 TCPServerSocketEventDispatcher* TCPServerSocketEventDispatcher::Get(
-    Profile* profile) {
+    content::BrowserContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   return ProfileKeyedAPIFactory<TCPServerSocketEventDispatcher>::GetForProfile(
-      profile);
+      context);
 }
 
-TCPServerSocketEventDispatcher::TCPServerSocketEventDispatcher(Profile* profile)
+TCPServerSocketEventDispatcher::TCPServerSocketEventDispatcher(
+    content::BrowserContext* context)
     : thread_id_(Socket::kThreadId),
-      profile_(profile) {
+      profile_(Profile::FromBrowserContext(context)) {
   ApiResourceManager<ResumableTCPServerSocket>* server_manager =
-      ApiResourceManager<ResumableTCPServerSocket>::Get(profile);
+      ApiResourceManager<ResumableTCPServerSocket>::Get(profile_);
   DCHECK(server_manager) << "There is no server socket manager. "
     "If this assertion is failing during a test, then it is likely that "
     "TestExtensionSystem is failing to provide an instance of "
@@ -48,7 +49,7 @@ TCPServerSocketEventDispatcher::TCPServerSocketEventDispatcher(Profile* profile)
   server_sockets_ = server_manager->data_;
 
   ApiResourceManager<ResumableTCPSocket>* client_manager =
-      ApiResourceManager<ResumableTCPSocket>::Get(profile);
+      ApiResourceManager<ResumableTCPSocket>::Get(profile_);
   DCHECK(client_manager) << "There is no client socket manager. "
     "If this assertion is failing during a test, then it is likely that "
     "TestExtensionSystem is failing to provide an instance of "

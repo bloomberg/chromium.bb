@@ -14,13 +14,12 @@
 #include "chrome/browser/extensions/global_shortcut_listener.h"
 #include "ui/base/accelerators/accelerator.h"
 
-class Profile;
-
-namespace extensions {
-class Extension;
+namespace content {
+class BrowserContext;
 }
 
 namespace extensions {
+class Extension;
 
 // ExtensionCommandsGlobalRegistry is a class that handles the cross-platform
 // implementation of the global shortcut registration for the Extension Commands
@@ -40,9 +39,9 @@ class ExtensionCommandsGlobalRegistry
 
   // Convenience method to get the ExtensionCommandsGlobalRegistry for a
   // profile.
-  static ExtensionCommandsGlobalRegistry* Get(Profile* profile);
+  static ExtensionCommandsGlobalRegistry* Get(content::BrowserContext* context);
 
-  explicit ExtensionCommandsGlobalRegistry(Profile* profile);
+  explicit ExtensionCommandsGlobalRegistry(content::BrowserContext* context);
   virtual ~ExtensionCommandsGlobalRegistry();
 
  private:
@@ -65,8 +64,8 @@ class ExtensionCommandsGlobalRegistry
   // registered for has been pressed.
   virtual void OnKeyPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
-  // Weak pointer to our profile. Not owned by us.
-  Profile* profile_;
+  // Weak pointer to our browser context. Not owned by us.
+  content::BrowserContext* browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionCommandsGlobalRegistry);
 };

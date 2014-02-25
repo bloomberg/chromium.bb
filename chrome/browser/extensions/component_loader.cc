@@ -15,7 +15,6 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -296,8 +295,7 @@ void ComponentLoader::AddHangoutServicesExtension() {
 }
 
 void ComponentLoader::AddHotwordHelperExtension() {
-  Profile* profile = static_cast<Profile*>(browser_context_);
-  if (HotwordServiceFactory::IsHotwordAllowed(profile)) {
+  if (HotwordServiceFactory::IsHotwordAllowed(browser_context_)) {
     Add(IDR_HOTWORD_HELPER_MANIFEST,
         base::FilePath(FILE_PATH_LITERAL("hotword_helper")));
   }

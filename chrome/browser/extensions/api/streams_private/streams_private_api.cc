@@ -29,15 +29,15 @@ const char kOnExecuteMimeTypeHandler[] =
 namespace extensions {
 
 // static
-StreamsPrivateAPI* StreamsPrivateAPI::Get(Profile* profile) {
-  return GetFactoryInstance()->GetForProfile(profile);
+StreamsPrivateAPI* StreamsPrivateAPI::Get(content::BrowserContext* context) {
+  return GetFactoryInstance()->GetForProfile(context);
 }
 
-StreamsPrivateAPI::StreamsPrivateAPI(Profile* profile)
-    : profile_(profile),
-      weak_ptr_factory_(this) {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 content::Source<Profile>(profile));
+StreamsPrivateAPI::StreamsPrivateAPI(content::BrowserContext* context)
+    : profile_(Profile::FromBrowserContext(context)), weak_ptr_factory_(this) {
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 content::Source<Profile>(profile_));
 }
 
 StreamsPrivateAPI::~StreamsPrivateAPI() {

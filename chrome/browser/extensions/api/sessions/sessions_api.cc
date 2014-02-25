@@ -576,19 +576,4 @@ bool SessionsRestoreFunction::RunImpl() {
       : RestoreLocalSession(*session_id, browser);
 }
 
-SessionsAPI::SessionsAPI(Profile* profile) {
-}
-
-SessionsAPI::~SessionsAPI() {
-}
-
-static base::LazyInstance<ProfileKeyedAPIFactory<SessionsAPI> >
-    g_factory = LAZY_INSTANCE_INITIALIZER;
-
-// static
-ProfileKeyedAPIFactory<SessionsAPI>*
-    SessionsAPI::GetFactoryInstance() {
-  return g_factory.Pointer();
-}
-
 }  // namespace extensions

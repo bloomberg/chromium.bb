@@ -22,7 +22,7 @@ class UDPSocketEventDispatcher
     : public ProfileKeyedAPI,
       public base::SupportsWeakPtr<UDPSocketEventDispatcher> {
  public:
-  explicit UDPSocketEventDispatcher(Profile* profile);
+  explicit UDPSocketEventDispatcher(content::BrowserContext* context);
   virtual ~UDPSocketEventDispatcher();
 
   // Socket is active, start receving from it.
@@ -35,7 +35,7 @@ class UDPSocketEventDispatcher
   static ProfileKeyedAPIFactory<UDPSocketEventDispatcher>* GetFactoryInstance();
 
   // Convenience method to get the SocketEventDispatcher for a profile.
-  static UDPSocketEventDispatcher* Get(Profile* profile);
+  static UDPSocketEventDispatcher* Get(content::BrowserContext* context);
 
  private:
   typedef ApiResourceManager<ResumableUDPSocket>::ApiResourceData SocketData;

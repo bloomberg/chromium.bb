@@ -10,7 +10,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api_constants.h"
 #include "chrome/browser/speech/tts_controller.h"
@@ -342,12 +341,7 @@ bool TtsGetVoicesFunction::RunImpl() {
   return true;
 }
 
-// static
-TtsAPI* TtsAPI::Get(Profile* profile) {
-  return ProfileKeyedAPIFactory<TtsAPI>::GetForProfile(profile);
-}
-
-TtsAPI::TtsAPI(Profile* profile) {
+TtsAPI::TtsAPI(content::BrowserContext* context) {
   ExtensionFunctionRegistry* registry =
       ExtensionFunctionRegistry::GetInstance();
   registry->RegisterFunction<ExtensionTtsEngineSendTtsEventFunction>();

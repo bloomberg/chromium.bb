@@ -35,15 +35,16 @@ ProfileKeyedAPIFactory<SerialEventDispatcher>*
 }
 
 // static
-SerialEventDispatcher* SerialEventDispatcher::Get(Profile* profile) {
-  return ProfileKeyedAPIFactory<SerialEventDispatcher>::GetForProfile(profile);
+SerialEventDispatcher* SerialEventDispatcher::Get(
+    content::BrowserContext* context) {
+  return ProfileKeyedAPIFactory<SerialEventDispatcher>::GetForProfile(context);
 }
 
-SerialEventDispatcher::SerialEventDispatcher(Profile* profile)
+SerialEventDispatcher::SerialEventDispatcher(content::BrowserContext* context)
     : thread_id_(SerialConnection::kThreadId),
-      profile_(profile) {
+      profile_(Profile::FromBrowserContext(context)) {
   ApiResourceManager<SerialConnection>* manager =
-      ApiResourceManager<SerialConnection>::Get(profile);
+      ApiResourceManager<SerialConnection>::Get(profile_);
   DCHECK(manager) << "No serial connection manager.";
   connections_ = manager->data_;
 }
