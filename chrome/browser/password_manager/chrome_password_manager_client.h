@@ -9,11 +9,19 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/password_manager/content_password_manager_driver.h"
 #include "chrome/browser/password_manager/password_manager_client.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "ui/gfx/rect.h"
 
 class PasswordGenerationManager;
 class PasswordManager;
 class Profile;
+
+namespace autofill {
+class PasswordGenerationPopupObserver;
+class PasswordGenerationPopupControllerImpl;
+class PasswordGenerator;
+}
 
 namespace content {
 class WebContents;
@@ -22,6 +30,7 @@ class WebContents;
 // ChromePasswordManagerClient implements the PasswordManagerClient interface.
 class ChromePasswordManagerClient
     : public PasswordManagerClient,
+      public content::WebContentsObserver,
       public content::WebContentsUserData<ChromePasswordManagerClient> {
  public:
   virtual ~ChromePasswordManagerClient();
@@ -40,6 +49,9 @@ class ChromePasswordManagerClient
       const std::string& experiment_name) OVERRIDE;
   virtual bool IsPasswordSyncEnabled() OVERRIDE;
 
+  // Hides any visible generation UI.
+  void HidePasswordGenerationPopup();
+
   // Convenience method to allow //chrome code easy access to a PasswordManager
   // from a WebContents instance.
   static PasswordManager* GetManagerFromWebContents(
@@ -50,19 +62,49 @@ class ChromePasswordManagerClient
   static PasswordGenerationManager* GetGenerationManagerFromWebContents(
       content::WebContents* contents);
 
+  // Observer for PasswordGenerationPopup events. Used for testing.
+  void SetTestObserver(autofill::PasswordGenerationPopupObserver* observer);
+
  private:
   explicit ChromePasswordManagerClient(content::WebContents* web_contents);
   friend class content::WebContentsUserData<ChromePasswordManagerClient>;
+
+  // content::WebContentsObserver overrides.
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Callback method to be triggered when authentication is successful for a
   // given password authentication request.  If authentication is disabled or
   // not supported, this will be triggered directly.
   void CommitFillPasswordForm(autofill::PasswordFormFillData* fill_data);
 
+  // Given |bounds| in the renderers coordinate system, return the same bounds
+  // in the screens coordinate system.
+  gfx::RectF GetBoundsInScreenSpace(const gfx::RectF& bounds);
+
+  // Causes the password generation UI to be shown for the specified form.
+  // The popup will be anchored at |element_bounds|. The generated password
+  // will be no longer than |max_length|.
+  void ShowPasswordGenerationPopup(const gfx::RectF& bounds,
+                                   int max_length,
+                                   const autofill::PasswordForm& form);
+
+  // Causes the password editing UI to be shown anchored at |element_bounds|.
+  void ShowPasswordEditingPopup(
+      const gfx::RectF& bounds, const autofill::PasswordForm& form);
+
   Profile* GetProfile();
 
-  content::WebContents* web_contents_;
   ContentPasswordManagerDriver driver_;
+
+  // Observer for password generation popup.
+  autofill::PasswordGenerationPopupObserver* observer_;
+
+  // Controls how passwords are generated.
+  scoped_ptr<autofill::PasswordGenerator> password_generator_;
+
+  // Controls the popup
+  base::WeakPtr<
+    autofill::PasswordGenerationPopupControllerImpl> popup_controller_;
 
   // Allows authentication callbacks to be destroyed when this client is gone.
   base::WeakPtrFactory<ChromePasswordManagerClient> weak_factory_;

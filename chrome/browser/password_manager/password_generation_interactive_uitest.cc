@@ -65,10 +65,9 @@ class PasswordGenerationInteractiveTest : public InProcessBrowserTest {
     autofill::test::DisableSystemServices(browser()->profile());
 
     // Set observer for popup.
-    PasswordGenerationManager* generation_manager =
-        ChromePasswordManagerClient::GetGenerationManagerFromWebContents(
-            GetWebContents());
-    generation_manager->SetTestObserver(&observer_);
+    ChromePasswordManagerClient* client =
+        ChromePasswordManagerClient::FromWebContents(GetWebContents());
+    client->SetTestObserver(&observer_);
 
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
     GURL url = embedded_test_server()->GetURL("/password/signup_form.html");
@@ -77,10 +76,9 @@ class PasswordGenerationInteractiveTest : public InProcessBrowserTest {
 
   virtual void CleanUpOnMainThread() OVERRIDE {
     // Clean up UI.
-    PasswordGenerationManager* generation_manager =
-        ChromePasswordManagerClient::GetGenerationManagerFromWebContents(
-            GetWebContents());
-    generation_manager->HidePopup();
+    ChromePasswordManagerClient* client =
+        ChromePasswordManagerClient::FromWebContents(GetWebContents());
+    client->HidePasswordGenerationPopup();
   }
 
   content::WebContents* GetWebContents() {

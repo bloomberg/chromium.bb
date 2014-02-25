@@ -30,7 +30,7 @@ class TestPasswordManagerDriver : public PasswordManagerDriver {
   TestPasswordManagerDriver(content::WebContents* web_contents,
                             PasswordManagerClient* client)
       : password_manager_(client),
-        password_generation_manager_(web_contents, client),
+        password_generation_manager_(client),
         is_off_the_record_(false) {}
   virtual ~TestPasswordManagerDriver() {}
 

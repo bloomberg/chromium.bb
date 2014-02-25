@@ -23,7 +23,7 @@ ContentPasswordManagerDriver::ContentPasswordManagerDriver(
     PasswordManagerClient* client)
     : WebContentsObserver(web_contents),
       password_manager_(client),
-      password_generation_manager_(web_contents, client) {
+      password_generation_manager_(client) {
   DCHECK(web_contents);
 }
 
@@ -34,6 +34,19 @@ void ContentPasswordManagerDriver::FillPasswordForm(
   DCHECK(web_contents());
   web_contents()->GetRenderViewHost()->Send(new AutofillMsg_FillPasswordForm(
       web_contents()->GetRenderViewHost()->GetRoutingID(), form_data));
+}
+
+void ContentPasswordManagerDriver::AllowPasswordGenerationForForm(
+    autofill::PasswordForm* form) {
+  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
+  host->Send(new AutofillMsg_FormNotBlacklisted(host->GetRoutingID(), *form));
+}
+
+void ContentPasswordManagerDriver::AccountCreationFormsFound(
+    const std::vector<autofill::FormData>& forms) {
+  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
+  host->Send(new AutofillMsg_AccountCreationFormsDetected(host->GetRoutingID(),
+                                                          forms));
 }
 
 bool ContentPasswordManagerDriver::DidLastPageLoadEncounterSSLErrors() {
@@ -62,13 +75,6 @@ PasswordManager* ContentPasswordManagerDriver::GetPasswordManager() {
   return &password_manager_;
 }
 
-void ContentPasswordManagerDriver::AccountCreationFormsFound(
-    const std::vector<autofill::FormData>& forms) {
-  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
-  host->Send(new AutofillMsg_AccountCreationFormsDetected(host->GetRoutingID(),
-                                                          forms));
-}
-
 void ContentPasswordManagerDriver::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
@@ -88,15 +94,6 @@ bool ContentPasswordManagerDriver::OnMessageReceived(
   IPC_MESSAGE_FORWARD(AutofillHostMsg_PasswordFormSubmitted,
                       &password_manager_,
                       PasswordManager::OnPasswordFormSubmitted)
-  IPC_MESSAGE_FORWARD(AutofillHostMsg_ShowPasswordGenerationPopup,
-                      &password_generation_manager_,
-                      PasswordGenerationManager::OnShowPasswordGenerationPopup)
-  IPC_MESSAGE_FORWARD(AutofillHostMsg_ShowPasswordEditingPopup,
-                      &password_generation_manager_,
-                      PasswordGenerationManager::OnShowPasswordEditingPopup)
-  IPC_MESSAGE_FORWARD(AutofillHostMsg_HidePasswordGenerationPopup,
-                      &password_generation_manager_,
-                      PasswordGenerationManager::OnHidePasswordGenerationPopup)
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -107,10 +104,4 @@ autofill::AutofillManager* ContentPasswordManagerDriver::GetAutofillManager() {
   autofill::AutofillDriverImpl* driver =
       autofill::AutofillDriverImpl::FromWebContents(web_contents());
   return driver ? driver->autofill_manager() : NULL;
-}
-
-void ContentPasswordManagerDriver::AllowPasswordGenerationForForm(
-    autofill::PasswordForm* form) {
-  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
-  host->Send(new AutofillMsg_FormNotBlacklisted(host->GetRoutingID(), *form));
 }

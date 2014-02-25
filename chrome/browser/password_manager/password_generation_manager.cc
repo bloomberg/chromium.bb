@@ -7,10 +7,6 @@
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_client.h"
 #include "chrome/browser/password_manager/password_manager_driver.h"
-#include "chrome/browser/ui/autofill/password_generation_popup_controller_impl.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -18,24 +14,13 @@
 #include "components/autofill/core/browser/password_generator.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
-#include "ui/gfx/rect.h"
 
 PasswordGenerationManager::PasswordGenerationManager(
-    content::WebContents* contents,
     PasswordManagerClient* client)
-    : web_contents_(contents),
-      observer_(NULL),
-      client_(client),
+    : client_(client),
       driver_(client->GetDriver()) {}
 
 PasswordGenerationManager::~PasswordGenerationManager() {}
-
-void PasswordGenerationManager::SetTestObserver(
-    autofill::PasswordGenerationPopupObserver* observer) {
-  observer_ = observer;
-}
 
 void PasswordGenerationManager::DetectAccountCreationForms(
     const std::vector<autofill::FormStructure*>& forms) {
@@ -71,68 +56,4 @@ bool PasswordGenerationManager::IsGenerationEnabled() const {
   }
 
   return true;
-}
-
-gfx::RectF PasswordGenerationManager::GetBoundsInScreenSpace(
-    const gfx::RectF& bounds) {
-  gfx::Rect client_area;
-  web_contents_->GetView()->GetContainerBounds(&client_area);
-  return bounds + client_area.OffsetFromOrigin();
-}
-
-void PasswordGenerationManager::OnShowPasswordGenerationPopup(
-    const gfx::RectF& bounds,
-    int max_length,
-    const autofill::PasswordForm& form) {
-  // TODO(gcasto): Validate data in PasswordForm.
-
-  // Only implemented for Aura right now.
-#if defined(USE_AURA)
-  // Convert element_bounds to be in screen space.
-  gfx::RectF element_bounds_in_screen_space = GetBoundsInScreenSpace(bounds);
-
-  password_generator_.reset(new autofill::PasswordGenerator(max_length));
-
-  popup_controller_ =
-      autofill::PasswordGenerationPopupControllerImpl::GetOrCreate(
-          popup_controller_,
-          element_bounds_in_screen_space,
-          form,
-          password_generator_.get(),
-          driver_->GetPasswordManager(),
-          observer_,
-          web_contents_,
-          web_contents_->GetView()->GetNativeView());
-  popup_controller_->Show(true /* display_password */);
-#endif  // #if defined(USE_AURA)
-}
-
-void PasswordGenerationManager::OnShowPasswordEditingPopup(
-    const gfx::RectF& bounds,
-    const autofill::PasswordForm& form) {
-  // Only implemented for Aura right now.
-#if defined(USE_AURA)
-  gfx::RectF element_bounds_in_screen_space = GetBoundsInScreenSpace(bounds);
-
-  popup_controller_ =
-      autofill::PasswordGenerationPopupControllerImpl::GetOrCreate(
-          popup_controller_,
-          element_bounds_in_screen_space,
-          form,
-          password_generator_.get(),
-          driver_->GetPasswordManager(),
-          observer_,
-          web_contents_,
-          web_contents_->GetView()->GetNativeView());
-  popup_controller_->Show(false /* display_password */);
-#endif  // #if defined(USE_AURA)
-}
-
-void PasswordGenerationManager::OnHidePasswordGenerationPopup() {
-  HidePopup();
-}
-
-void PasswordGenerationManager::HidePopup() {
-  if (popup_controller_)
-    popup_controller_->HideAndDestroy();
 }
