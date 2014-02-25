@@ -153,10 +153,8 @@ public class SyncTest extends ChromiumTestShellTestBase {
     private void setupTestAccountAndSignInToSync(
             final String syncClientIdentifier)
             throws InterruptedException {
-        Account defaultTestAccount = SyncTestUtil.setupTestAccount(mAccountManager,
-                SyncTestUtil.DEFAULT_TEST_ACCOUNT, SyncTestUtil.DEFAULT_PASSWORD,
-                SyncTestUtil.CHROME_SYNC_OAUTH2_SCOPE, SyncTestUtil.LOGIN_OAUTH2_SCOPE,
-                SyncTestUtil.USERINFO_SCOPE);
+        Account defaultTestAccount = SyncTestUtil.setupTestAccountThatAcceptsAllAuthTokens(
+                mAccountManager, SyncTestUtil.DEFAULT_TEST_ACCOUNT, SyncTestUtil.DEFAULT_PASSWORD);
 
         UniqueIdentificationGeneratorFactory.registerGenerator(
                 UuidBasedUniqueIdentificationGenerator.GENERATOR_ID,

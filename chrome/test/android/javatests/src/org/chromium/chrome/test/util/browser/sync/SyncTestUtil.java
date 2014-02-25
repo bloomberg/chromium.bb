@@ -44,12 +44,6 @@ public final class SyncTestUtil {
 
     public static final String DEFAULT_TEST_ACCOUNT = "test@gmail.com";
     public static final String DEFAULT_PASSWORD = "myPassword";
-    public static final String CHROME_SYNC_OAUTH2_SCOPE =
-            "oauth2:https://www.googleapis.com/auth/chromesync";
-    public static final String LOGIN_OAUTH2_SCOPE =
-            "oauth2:https://www.google.com/accounts/OAuthLogin";
-    public static final String USERINFO_SCOPE =
-            "oauth2:https://www.googleapis.com/auth/userinfo.profile";
     private static final String TAG = "SyncTestUtil";
 
     public static final long UI_TIMEOUT_MS = scaleTimeout(20000);
@@ -292,7 +286,7 @@ public final class SyncTestUtil {
     }
 
     /**
-     * Sets up a test Google account on the device.
+     * Sets up a test Google account on the device with specified auth token types.
      */
     public static Account setupTestAccount(MockAccountManager accountManager, String accountName,
                                            String password, String... allowedAuthTokenTypes) {
@@ -305,6 +299,19 @@ public final class SyncTestUtil {
                 accountHolder.hasBeenAccepted(authTokenType, true);
             }
         }
+        accountManager.addAccountHolderExplicitly(accountHolder.build());
+        return account;
+    }
+
+    /**
+     * Sets up a test Google account on the device, that accepts all auth tokens.
+     */
+    public static Account setupTestAccountThatAcceptsAllAuthTokens(
+            MockAccountManager accountManager,
+            String accountName, String password) {
+        Account account = AccountManagerHelper.createAccountFromName(accountName);
+        AccountHolder.Builder accountHolder =
+                AccountHolder.create().account(account).password(password).alwaysAccept(true);
         accountManager.addAccountHolderExplicitly(accountHolder.build());
         return account;
     }
