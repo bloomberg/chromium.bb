@@ -216,6 +216,7 @@ TileManager::~TileManager() {
 
   RasterTaskQueue empty[NUM_RASTER_WORKER_POOL_TYPES];
   raster_worker_pool_delegate_->ScheduleTasks(empty);
+  orphan_raster_tasks_.clear();
 
   // This should finish all pending tasks and release any uninitialized
   // resources.
@@ -244,8 +245,12 @@ void TileManager::CleanUpReleasedTiles() {
        it != released_tiles_.end();
        ++it) {
     Tile* tile = *it;
+    ManagedTileState& mts = tile->managed_state();
 
-    FreeResourcesForTile(tile);
+    for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
+      FreeResourceForTile(tile, static_cast<RasterMode>(mode));
+      orphan_raster_tasks_.push_back(mts.tile_versions[mode].raster_task_);
+    }
 
     DCHECK(tiles_.find(tile->id()) != tiles_.end());
     tiles_.erase(tile->id());
@@ -839,6 +844,11 @@ void TileManager::ScheduleTasks(
   // scheduled tasks and effectively cancels all tasks not present
   // in |raster_tasks_|.
   raster_worker_pool_delegate_->ScheduleTasks(raster_queue_);
+
+  // It's now safe to clean up orphan tasks as raster worker pool is not
+  // allowed to keep around unreferenced raster tasks after ScheduleTasks() has
+  // been called.
+  orphan_raster_tasks_.clear();
 
   did_check_for_completed_tasks_since_last_schedule_tasks_ = false;
 }
