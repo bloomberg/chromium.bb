@@ -426,10 +426,10 @@ void MarkupAccumulator::appendAttribute(StringBuilder& result, const Element& el
 
     result.append(' ');
 
-    if (documentIsHTML && !attributeIsInSerializedNamespace(attribute))
+    QualifiedName prefixedName = attribute.name();
+    if (documentIsHTML && !attributeIsInSerializedNamespace(attribute)) {
         result.append(attribute.name().localName());
-    else {
-        QualifiedName prefixedName = attribute.name();
+    } else {
         if (attribute.namespaceURI() == XLinkNames::xlinkNamespaceURI) {
             if (!attribute.prefix())
                 prefixedName.setPrefix(xlinkAtom);
@@ -445,16 +445,16 @@ void MarkupAccumulator::appendAttribute(StringBuilder& result, const Element& el
 
     result.append('=');
 
-    if (element.isURLAttribute(attribute))
+    if (element.isURLAttribute(attribute)) {
         appendQuotedURLAttributeValue(result, element, attribute);
-    else {
+    } else {
         result.append('"');
         appendAttributeValue(result, attribute.value(), documentIsHTML);
         result.append('"');
     }
 
     if (!documentIsHTML && namespaces && shouldAddNamespaceAttribute(attribute, *namespaces))
-        appendNamespace(result, attribute.prefix(), attribute.namespaceURI(), *namespaces);
+        appendNamespace(result, prefixedName.prefix(), prefixedName.namespaceURI(), *namespaces);
 }
 
 void MarkupAccumulator::appendCDATASection(StringBuilder& result, const String& section)
