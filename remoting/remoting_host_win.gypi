@@ -203,7 +203,10 @@
             'host/remoting_me2me_host.cc',
             'host/sas_injector.h',
             'host/sas_injector_win.cc',
+            'host/setup/me2me_native_messaging_host.cc',
+            'host/setup/me2me_native_messaging_host.h',
             'host/setup/me2me_native_messaging_host_main.cc',
+            'host/setup/me2me_native_messaging_host_main.h',
             'host/verify_config_window_win.cc',
             'host/verify_config_window_win.h',
             'host/win/chromoting_module.cc',
@@ -316,12 +319,34 @@
             'VCLinkerTool': {
               'EntryPointSymbol': 'HostEntryPoint',
               'IgnoreAllDefaultLibraries': 'true',
-              'ImportLibrary': '$(OutDir)\\lib\\remoting_host_exe.lib',
               'OutputFile': '$(OutDir)\\remoting_host.exe',
               'SubSystem': '2', # /SUBSYSTEM:WINDOWS
             },
           },
         },  # end of target 'remoting_host_exe'
+        {
+          'target_name': 'remoting_me2me_native_messaging_host',
+          'type': 'executable',
+          'product_name': 'remoting_native_messaging_host',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'defines' : [
+            'BINARY=BINARY_NATIVE_MESSAGING_HOST',
+          ],
+          'dependencies': [
+            'remoting_core',
+            'remoting_windows_resources',
+          ],
+          'sources': [
+            '<(SHARED_INTERMEDIATE_DIR)/remoting/version.rc',
+            'host/setup/me2me_native_messaging_host_entry_point.cc',
+          ],
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'IgnoreAllDefaultLibraries': 'true',
+              'SubSystem': '1', # /SUBSYSTEM:CONSOLE
+            },
+          },
+        },  # end of target 'remoting_me2me_native_messaging_host'
         {
           'target_name': 'remoting_host_messages',
           'type': 'none',

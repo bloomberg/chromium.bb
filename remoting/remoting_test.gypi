@@ -100,6 +100,8 @@
         'host/register_support_host_request_unittest.cc',
         'host/remote_input_filter_unittest.cc',
         'host/resizing_host_observer_unittest.cc',
+        'host/setup/me2me_native_messaging_host.cc',
+        'host/setup/me2me_native_messaging_host.h',
         'host/screen_capturer_fake.cc',
         'host/screen_capturer_fake.h',
         'host/screen_resolution_unittest.cc',

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/host/setup/me2me_native_messaging_host_main.h"
+
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
@@ -51,7 +53,7 @@ bool IsProcessElevated() {
 }
 #endif  // defined(OS_WIN)
 
-int Me2MeNativeMessagingHostMain() {
+int StartMe2MeNativeMessagingHost() {
   // Mac OS X requires that the main thread be a UI message loop in order to
   // receive distributed notifications from the System Preferences pane. An
   // IO thread is needed for the pairing registry and URL context getter.
@@ -213,14 +215,14 @@ int Me2MeNativeMessagingHostMain() {
   return kSuccessExitCode;
 }
 
-}  // namespace remoting
-
-int main(int argc, char** argv) {
+int Me2MeNativeMessagingHostMain(int argc, char** argv) {
   // This object instance is required by Chrome code (such as MessageLoop).
   base::AtExitManager exit_manager;
 
   CommandLine::Init(argc, argv);
   remoting::InitHostLogging();
 
-  return remoting::Me2MeNativeMessagingHostMain();
+  return StartMe2MeNativeMessagingHost();
 }
+
+}  // namespace remoting

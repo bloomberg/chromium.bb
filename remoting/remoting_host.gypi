@@ -413,8 +413,6 @@
             'host/setup/daemon_controller_delegate_win.h',
             'host/setup/daemon_installer_win.cc',
             'host/setup/daemon_installer_win.h',
-            'host/setup/me2me_native_messaging_host.cc',
-            'host/setup/me2me_native_messaging_host.h',
             'host/setup/oauth_client.cc',
             'host/setup/oauth_client.h',
             'host/setup/oauth_helper.cc',
@@ -563,44 +561,6 @@
             'host/it2me/it2me_native_messaging_host.h',
           ],
         },  # end of target 'remoting_it2me_host_static'
-        {
-          'target_name': 'remoting_me2me_native_messaging_host',
-          'type': 'executable',
-          'product_name': 'remoting_native_messaging_host',
-          'variables': { 'enable_wexit_time_destructors': 1, },
-          'dependencies': [
-            '../base/base.gyp:base',
-            'remoting_host',
-            'remoting_host_setup_base',
-            'remoting_native_messaging_base',
-          ],
-          'sources': [
-            'host/setup/me2me_native_messaging_host_main.cc',
-          ],
-          'conditions': [
-            ['OS=="linux" and linux_use_tcmalloc==1', {
-              'dependencies': [
-                '../base/allocator/allocator.gyp:allocator',
-              ],
-            }],
-            ['OS=="win"', {
-              'defines' : [
-                'BINARY=BINARY_NATIVE_MESSAGING_HOST',
-              ],
-              'dependencies': [
-                'remoting_windows_resources',
-              ],
-              'sources': [
-                '<(SHARED_INTERMEDIATE_DIR)/remoting/version.rc',
-              ],
-              'msvs_settings': {
-                'VCLinkerTool': {
-                  'SubSystem': '1', # /SUBSYSTEM:CONSOLE
-                },
-              },
-            }],
-          ],
-        },  # end of target 'remoting_me2me_native_messaging_host'
         {
           'target_name': 'remoting_it2me_native_messaging_host',
           'type': 'executable',
@@ -845,6 +805,32 @@
             }],  # OS=linux
           ],  # end of 'conditions'
         },  # end of target 'remoting_me2me_host'
+        {
+          'target_name': 'remoting_me2me_native_messaging_host',
+          'type': 'executable',
+          'product_name': 'remoting_native_messaging_host',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'dependencies': [
+            '../base/base.gyp:base',
+            'remoting_host',
+            'remoting_host_setup_base',
+            'remoting_native_messaging_base',
+          ],
+          'sources': [
+            'host/setup/me2me_native_messaging_host.cc',
+            'host/setup/me2me_native_messaging_host.h',
+            'host/setup/me2me_native_messaging_host_entry_point.cc',
+            'host/setup/me2me_native_messaging_host_main.cc',
+            'host/setup/me2me_native_messaging_host_main.h',
+          ],
+          'conditions': [
+            ['OS=="linux" and linux_use_tcmalloc==1', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
+          ],
+        },  # end of target 'remoting_me2me_native_messaging_host'
       ],  # end of 'targets'
     }],  # OS!="win"
 

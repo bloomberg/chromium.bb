@@ -52,10 +52,7 @@ const char kProcessTypeController[] = "controller";
 const char kProcessTypeDaemon[] = "daemon";
 const char kProcessTypeDesktop[] = "desktop";
 const char kProcessTypeHost[] = "host";
-const char kProcessTypeNativeMessagingHost[] = "native_messaging_host";
 const char kProcessTypeRdpDesktopSession[] = "rdp_desktop_session";
-
-const char kExtensionOriginPrefix[] = "chrome-extension://";
 
 namespace {
 
@@ -146,8 +143,6 @@ MainRoutineFn SelectMainRoutine(const std::string& process_type) {
     main_routine = &ElevatedControllerMain;
   } else if (process_type == kProcessTypeRdpDesktopSession) {
     main_routine = &RdpDesktopSessionMain;
-  } else if (process_type == kProcessTypeNativeMessagingHost) {
-    main_routine = &Me2MeNativeMessagingHostMain;
 #endif  // defined(OS_WIN)
   }
 
@@ -211,21 +206,6 @@ int HostMain(int argc, char** argv) {
   std::string process_type = kProcessTypeHost;
   if (command_line->HasSwitch(kProcessTypeSwitchName)) {
     process_type = command_line->GetSwitchValueASCII(kProcessTypeSwitchName);
-  } else {
-    // Assume that it is the native messaging host starting if "--type" is
-    // missing and the first argument looks like an origin that represents
-    // an extension.
-    CommandLine::StringVector args = command_line->GetArgs();
-    if (!args.empty()) {
-#if defined(OS_WIN)
-      std::string origin = base::UTF16ToUTF8(args[0]);
-#else
-      std::string origin = args[0];
-#endif
-      if (StartsWithASCII(origin, kExtensionOriginPrefix, true)) {
-        process_type = kProcessTypeNativeMessagingHost;
-      }
-    }
   }
 
   MainRoutineFn main_routine = SelectMainRoutine(process_type);
