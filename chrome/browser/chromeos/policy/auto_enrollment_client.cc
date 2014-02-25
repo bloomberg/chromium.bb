@@ -99,7 +99,7 @@ AutoEnrollmentClient::AutoEnrollmentClient(
       device_id_(base::GenerateGUID()),
       power_initial_(power_initial),
       power_limit_(power_limit),
-      requests_sent_(0),
+      modulus_updates_received_(0),
       device_management_service_(service),
       local_state_(local_state) {
   request_context_ = new SystemPolicyRequestContext(
@@ -265,8 +265,6 @@ void AutoEnrollmentClient::SendRequest(int power) {
     return;
   }
 
-  requests_sent_++;
-
   // Only power-of-2 moduli are supported for now. These are computed by taking
   // the lower |power| bits of the hash.
   uint64 remainder = 0;
@@ -307,6 +305,8 @@ void AutoEnrollmentClient::OnRequestCompletion(
       response.auto_enrollment_response();
   if (enrollment_response.has_expected_modulus()) {
     // Server is asking us to retry with a different modulus.
+    modulus_updates_received_++;
+
     int64 modulus = enrollment_response.expected_modulus();
     int power = NextPowerOf2(modulus);
     if ((GG_INT64_C(1) << power) != modulus) {
@@ -314,7 +314,7 @@ void AutoEnrollmentClient::OnRequestCompletion(
                    << "modulus. Using the closest power-of-2 instead "
                    << "(" << modulus << " vs 2^" << power << ")";
     }
-    if (requests_sent_ >= 2) {
+    if (modulus_updates_received_ >= 2) {
       LOG(ERROR) << "Auto enrollment error: already retried with an updated "
                  << "modulus but the server asked for a new one again: "
                  << power;
