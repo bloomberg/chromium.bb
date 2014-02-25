@@ -35,6 +35,7 @@
 namespace WebCore {
 
 class Database;
+class DatabaseBackendBase;
 class DatabaseContext;
 class DatabaseTaskSynchronizer;
 class DatabaseThread;
@@ -57,7 +58,8 @@ public:
     DatabaseThread* databaseThread();
 
     void setHasOpenDatabases() { m_hasOpenDatabases = true; }
-
+    void didOpenDatabase(DatabaseBackendBase&);
+    void didCloseDatabase(DatabaseBackendBase&);
     // When the database cleanup is done, cleanupSync will be signalled.
     bool stopDatabases(DatabaseTaskSynchronizer*);
 
@@ -69,9 +71,13 @@ public:
 private:
     explicit DatabaseContext(ExecutionContext*);
 
+    void stopSyncDatabases();
     void stopDatabases() { stopDatabases(0); }
 
     RefPtr<DatabaseThread> m_databaseThread;
+    // The contents of m_openSyncDatabases are raw pointers. It's safe because
+    // DatabaseBackendSync is always closed before destruction.
+    HashSet<DatabaseBackendBase*> m_openSyncDatabases;
     bool m_hasOpenDatabases; // This never changes back to false, even after the database thread is closed.
     bool m_isRegistered;
     bool m_hasRequestedTermination;

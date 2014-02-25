@@ -254,6 +254,7 @@ void DatabaseBackendBase::closeDatabase()
 
     m_sqliteDatabase.close();
     m_opened = false;
+    databaseContext()->didCloseDatabase(*this);
     // See comment at the top this file regarding calling removeOpenDatabase().
     DatabaseTracker::tracker().removeOpenDatabase(this);
     {
@@ -408,6 +409,7 @@ bool DatabaseBackendBase::performOpenAndVerify(bool shouldSetVersionInNewDatabas
     ASSERT(m_databaseAuthorizer);
     m_sqliteDatabase.setAuthorizer(m_databaseAuthorizer);
 
+    databaseContext()->didOpenDatabase(*this);
     // See comment at the top this file regarding calling addOpenDatabase().
     DatabaseTracker::tracker().addOpenDatabase(this);
     m_opened = true;

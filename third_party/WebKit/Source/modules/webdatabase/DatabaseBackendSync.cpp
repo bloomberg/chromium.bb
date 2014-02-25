@@ -44,10 +44,10 @@ DatabaseBackendSync::~DatabaseBackendSync()
     // For DatabaseBackendSync, we open the SQLite database on the script context
     // thread. And hence we should also close it on that same thread. This means
     // that the SQLite database need to be closed here in the destructor.
-
-    ASSERT(m_databaseContext->isContextThread());
-    if (opened())
+    if (opened()) {
+        ASSERT(m_databaseContext->isContextThread());
         closeDatabase();
+    }
 }
 
 bool DatabaseBackendSync::openAndVerifyVersion(bool setVersionInNewDatabase, DatabaseError& error, String& errorMessage)

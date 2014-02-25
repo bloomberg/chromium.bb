@@ -112,7 +112,6 @@ DatabaseContext::DatabaseContext(ExecutionContext* context)
 
 DatabaseContext::~DatabaseContext()
 {
-    stopDatabases();
     ASSERT(!m_databaseThread || m_databaseThread->terminationRequested());
 
     // For debug accounting only. We must call this last. The assertions assume
@@ -164,8 +163,42 @@ DatabaseThread* DatabaseContext::databaseThread()
     return m_databaseThread.get();
 }
 
+void DatabaseContext::didOpenDatabase(DatabaseBackendBase& database)
+{
+    if (!database.isSyncDatabase())
+        return;
+    ASSERT(isContextThread());
+    m_openSyncDatabases.add(&database);
+}
+
+void DatabaseContext::didCloseDatabase(DatabaseBackendBase& database)
+{
+    if (!database.isSyncDatabase())
+        return;
+    ASSERT(isContextThread());
+    m_openSyncDatabases.remove(&database);
+}
+
+void DatabaseContext::stopSyncDatabases()
+{
+    // SQLite is "multi-thread safe", but each database handle can only be used
+    // on a single thread at a time.
+    //
+    // For DatabaseBackendSync, we open the SQLite database on the script
+    // context thread. And hence we should also close it on that same
+    // thread. This means that the SQLite database need to be closed here in the
+    // destructor.
+    ASSERT(isContextThread());
+    Vector<DatabaseBackendBase*> syncDatabases;
+    copyToVector(m_openSyncDatabases, syncDatabases);
+    m_openSyncDatabases.clear();
+    for (size_t i = 0; i < syncDatabases.size(); ++i)
+        syncDatabases[i]->closeImmediately();
+}
+
 bool DatabaseContext::stopDatabases(DatabaseTaskSynchronizer* cleanupSync)
 {
+    stopSyncDatabases();
     if (m_isRegistered) {
         DatabaseManager::manager().unregisterDatabaseContext(this);
         m_isRegistered = false;
