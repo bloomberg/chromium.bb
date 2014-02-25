@@ -385,7 +385,10 @@ int Combobox::GetSelectedRow() {
 }
 
 void Combobox::SetSelectedRow(int row) {
+  int prev_index = selected_index_;
   SetSelectedIndex(row);
+  if (selected_index_ != prev_index)
+    OnPerformAction();
 }
 
 base::string16 Combobox::GetTextForRow(int row) {
