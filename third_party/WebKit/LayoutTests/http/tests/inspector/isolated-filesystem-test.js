@@ -8,8 +8,10 @@ InspectorTest.createIsolatedFileSystemManager = function(workspace, fileSystemMa
     return manager;
 }
 
-var MockIsolatedFileSystem = function(path, manager)
+var MockIsolatedFileSystem = function(manager, path, name, rootURL)
 {
+    MockIsolatedFileSystem._isolatedFileSystemMocks = MockIsolatedFileSystem._isolatedFileSystemMocks || {};
+    MockIsolatedFileSystem._isolatedFileSystemMocks[path] = this;
     this.originalTimestamp = 1000000;
     this.modificationTimestampDelta = 1000;
     this._path = path;
@@ -59,7 +61,7 @@ MockIsolatedFileSystem.prototype = {
             var isExcluded = false;
             for (var j = 0; j < files[i].length; ++j) {
                 if (files[i][j] === "/") {
-                    if (this._manager.fileSystemMapping.isFileExcluded(this._path, files[i].substr(0, j + 1)))
+                    if (this._manager.mapping().isFileExcluded(this._path, files[i].substr(0, j + 1)))
                         isExcluded = true;
                 }
             }
@@ -81,11 +83,13 @@ MockIsolatedFileSystem.prototype = {
     }
 }
 
+WebInspector.IsolatedFileSystem = MockIsolatedFileSystem;
+
 var MockIsolatedFileSystemManager = function() {};
 MockIsolatedFileSystemManager.prototype = {
     addMockFileSystem: function(path, skipAddFileSystem)
     {
-        var fileSystem = new MockIsolatedFileSystem(path, this);
+        var fileSystem = new MockIsolatedFileSystem(this, path, "", "");
         this._fileSystems = this._fileSystems || {};
         this._fileSystems[path] = fileSystem;
         if (!skipAddFileSystem)
@@ -107,7 +111,24 @@ MockIsolatedFileSystemManager.prototype = {
         this.dispatchEventToListeners(WebInspector.IsolatedFileSystemManager.Events.FileSystemRemoved, fileSystem);
     },
 
+    mapping: function()
+    {
+        return this.fileSystemMapping;
+    },
+
     __proto__: WebInspector.Object.prototype
+}
+
+InspectorTest.addMockFileSystem = function(path)
+{
+    var fileSystem = { fileSystemName: "", rootURL: "", fileSystemPath: path };
+    WebInspector.isolatedFileSystemDispatcher.fileSystemAdded("", fileSystem);
+    return MockIsolatedFileSystem._isolatedFileSystemMocks[path];
+}
+
+InspectorTest.addFilesToMockFileSystem = function(path, files)
+{
+    MockIsolatedFileSystem._isolatedFileSystemMocks[path]._addFiles(files);
 }
 
 };

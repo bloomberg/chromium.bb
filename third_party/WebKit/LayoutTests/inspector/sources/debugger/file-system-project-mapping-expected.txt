@@ -66,6 +66,19 @@ Loading script.
  - hasDivergedFromVM: true
  - sourceFrame._muted: true
 
+Running: testLiveEditReload
+Adding file system.
+Adding file system mapping.
+Page reloaded.
+Page reloaded.
+==Source frame contents start==
+function f()
+{
+    return "live-edited string";
+}
+
+==Source frame contents end==
+
 Running: testExcludingFolders
 Adding file system.
 Adding exclusion pattern and excluded folder.

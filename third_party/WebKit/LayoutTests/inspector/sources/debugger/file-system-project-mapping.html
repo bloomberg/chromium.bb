@@ -4,6 +4,8 @@
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
 <script src="../../../http/tests/inspector/workspace-test.js"></script>
 <script src="../../../http/tests/inspector/isolated-filesystem-test.js"></script>
+<script src="../../../http/tests/inspector/live-edit-test.js"></script>
+<script src="resources/edit-me.js"></script>
 <script>
 function test()
 {
@@ -209,6 +211,67 @@ function test()
 
                 InspectorTest.testFileSystemMapping.removeFileMapping(fileSystemPath, "http://localhost/", "/");
                 next();
+            }
+        },
+
+        function testLiveEditReload(next)
+        {
+            InspectorTest.showScriptSource("edit-me.js", didShowScriptSource);
+            
+            function didShowScriptSource(sourceFrame)
+            {
+                var scriptURL = sourceFrame._uiSourceCode.url;
+
+                var fileContent = "function f()\n{\n    return 0;\n}\n";
+                var fileSystemPath = "/var/www";
+                var fileSystemProjectId = WebInspector.FileSystemProjectDelegate.projectId(fileSystemPath);
+                var filePath = "/html/edit-me.js"; 
+                var files = {};
+                files[filePath] = fileContent;
+                InspectorTest.addResult("Adding file system.");
+                InspectorTest.addMockFileSystem(fileSystemPath)
+                InspectorTest.addResult("Adding file system mapping.");
+                WebInspector.isolatedFileSystemManager.mapping().addMappingForResource(scriptURL, fileSystemPath, filePath.substr(1));
+                InspectorTest.addFilesToMockFileSystem(fileSystemPath, files);
+                // Now that we've set everything up, we need to reload a page to remove all network resources.
+                InspectorTest.reloadPage(pageReloaded);
+            }
+
+            function pageReloaded()
+            {
+                // Now reload again as part of test.
+                InspectorTest.reloadPage(pageReloadedAgain);
+            }
+
+            function pageReloadedAgain()
+            {
+                InspectorTest.showScriptSource("edit-me.js", didShowFile);
+            }
+
+            function didShowFile(sourceFrame)
+            {
+                replaceInSource(sourceFrame, "return 0;", "return \"live-edited string\";", didEditScriptSource);
+            }
+
+            function didEditScriptSource()
+            {
+                InspectorTest.evaluateInPage("f()", didEvaluateInPage)
+            }
+
+            function didEvaluateInPage(result)
+            {
+                InspectorTest.assertEquals("live-edited string", result.description, "edited function returns wrong result");
+                var panel = WebInspector.panel("sources");
+                InspectorTest.dumpSourceFrameContents(panel.visibleView);
+                next();
+            }
+
+            function replaceInSource(sourceFrame, string, replacement, callback)
+            {
+                InspectorTest.addSniffer(WebInspector.debuggerModel, "_didEditScriptSource", callback);
+                InspectorTest.replaceInSource(sourceFrame, string, replacement);
+                InspectorTest.commitSource(sourceFrame);
+
             }
         },
 
