@@ -18,6 +18,7 @@ import copy
 import json
 import logging
 import re
+import ssl
 import time
 import urllib2
 
@@ -404,6 +405,11 @@ class Rietveld(object):
           if (not 'Name or service not known' in e.reason and
               not 'EOF occurred in violation of protocol' in e.reason):
             # Usually internal GAE flakiness.
+            raise
+        except ssl.SSLError, e:
+          if retry >= (maxtries - 1):
+            raise
+          if not 'timed out' in e.reason:
             raise
         # If reaching this line, loop again. Uses a small backoff.
         time.sleep(1+maxtries*2)
