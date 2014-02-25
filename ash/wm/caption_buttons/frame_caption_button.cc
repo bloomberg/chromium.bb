@@ -28,12 +28,10 @@ FrameCaptionButton::FrameCaptionButton(views::ButtonListener* listener,
                                        CaptionButtonIcon icon)
     : CustomButton(listener),
       icon_(icon),
-      paint_as_active_(false),
       last_paint_scale_(1.0f),
-      icon_image_id_(-1),
-      inactive_icon_image_id_(-1),
-      hovered_background_image_id_(-1),
-      pressed_background_image_id_(-1),
+      normal_image_id_(-1),
+      hovered_image_id_(-1),
+      pressed_image_id_(-1),
       swap_images_animation_(new gfx::SlideAnimation(this)) {
   swap_images_animation_->Reset(1);
   EnableCanvasFlippingForRTLUI(true);
@@ -44,18 +42,16 @@ FrameCaptionButton::~FrameCaptionButton() {
 
 void FrameCaptionButton::SetImages(CaptionButtonIcon icon,
                                    Animate animate,
-                                   int icon_image_id,
-                                   int inactive_icon_image_id,
-                                   int hovered_background_image_id,
-                                   int pressed_background_image_id) {
+                                   int normal_image_id,
+                                   int hovered_image_id,
+                                   int pressed_image_id) {
   // The early return is dependant on |animate| because callers use SetImages()
   // with ANIMATE_NO to progress the crossfade animation to the end.
   if (icon == icon_ &&
       (animate == ANIMATE_YES || !swap_images_animation_->is_animating()) &&
-      icon_image_id == icon_image_id_ &&
-      inactive_icon_image_id == inactive_icon_image_id_ &&
-      hovered_background_image_id == hovered_background_image_id_ &&
-      pressed_background_image_id == pressed_background_image_id_) {
+      normal_image_id == normal_image_id_ &&
+      hovered_image_id == hovered_image_id_ &&
+      pressed_image_id == pressed_image_id_) {
     return;
   }
 
@@ -66,18 +62,14 @@ void FrameCaptionButton::SetImages(CaptionButtonIcon icon,
   }
 
   icon_ = icon;
-  icon_image_id_ = icon_image_id;
-  inactive_icon_image_id_ = inactive_icon_image_id;
-  hovered_background_image_id_ = hovered_background_image_id;
-  pressed_background_image_id_ = pressed_background_image_id;
+  normal_image_id_ = normal_image_id;
+  hovered_image_id_ = hovered_image_id;
+  pressed_image_id_ = pressed_image_id;
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  icon_image_ = *rb.GetImageSkiaNamed(icon_image_id);
-  inactive_icon_image_ = *rb.GetImageSkiaNamed(inactive_icon_image_id);
-  hovered_background_image_ = *rb.GetImageSkiaNamed(
-      hovered_background_image_id);
-  pressed_background_image_ = *rb.GetImageSkiaNamed(
-      pressed_background_image_id);
+  normal_image_ = *rb.GetImageSkiaNamed(normal_image_id);
+  hovered_image_ = *rb.GetImageSkiaNamed(hovered_image_id);
+  pressed_image_ = *rb.GetImageSkiaNamed(pressed_image_id);
 
   if (animate == ANIMATE_YES) {
     swap_images_animation_->Reset(0);
@@ -95,8 +87,7 @@ bool FrameCaptionButton::IsAnimatingImageSwap() const {
 }
 
 gfx::Size FrameCaptionButton::GetPreferredSize() {
-  return hovered_background_image_.isNull() ?
-      gfx::Size() : hovered_background_image_.size();
+  return normal_image_.isNull() ? gfx::Size() : normal_image_.size();
 }
 
 const char* FrameCaptionButton::GetClassName() const {
@@ -162,19 +153,20 @@ void FrameCaptionButton::StateChanged() {
 void FrameCaptionButton::PaintWithAnimationEndState(
     gfx::Canvas* canvas,
     int opacity) {
-  SkPaint paint;
-  paint.setAlpha(opacity);
-  if (state() == STATE_HOVERED)
-    canvas->DrawImageInt(hovered_background_image_, 0, 0, paint);
-  else if (state() == STATE_PRESSED)
-    canvas->DrawImageInt(pressed_background_image_, 0, 0, paint);
+  gfx::ImageSkia img;
+  if (state() == STATE_HOVERED) {
+    img = hovered_image_;
+  } else if (state() == STATE_PRESSED) {
+    img = pressed_image_;
+  } else {
+    img = normal_image_;
+  }
 
-  gfx::ImageSkia icon_image = paint_as_active_ ?
-      icon_image_ : inactive_icon_image_;
-  canvas->DrawImageInt(icon_image,
-                       (width() - icon_image.width()) / 2,
-                       (height() - icon_image.height()) / 2,
-                       paint);
+  if (!img.isNull()) {
+    SkPaint paint;
+    paint.setAlpha(opacity);
+    canvas->DrawImageInt(img, 0, 0, paint);
+  }
 }
 
 }  // namespace ash

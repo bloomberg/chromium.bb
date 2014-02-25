@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/caption_buttons/alternate_frame_size_button_delegate.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -74,14 +75,9 @@ class ASH_EXPORT FrameCaptionButtonContainerView
   // FrameCaptionButtonContainerView will keep track of the images to use for
   // |icon| even if none of the buttons currently use |icon|.
   void SetButtonImages(CaptionButtonIcon icon,
-                       int icon_image_id,
-                       int inactive_icon_image_id,
-                       int hovered_background_image_id,
-                       int pressed_background_image_id);
-
-  // Sets whether the buttons should be painted as active. Does not schedule
-  // a repaint.
-  void SetPaintAsActive(bool paint_as_active);
+                       int normal_image_id,
+                       int hovered_image_id,
+                       int pressed_image_id);
 
   // Tell the window controls to reset themselves to the normal state.
   void ResetWindowControls();
@@ -95,22 +91,19 @@ class ASH_EXPORT FrameCaptionButtonContainerView
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
  private:
   friend class FrameCaptionButtonContainerViewTest;
 
   struct ButtonIconIds {
     ButtonIconIds();
-    ButtonIconIds(int icon_id,
-                  int inactive_icon_id,
-                  int hovered_background_id,
-                  int pressed_background_id);
+    ButtonIconIds(int normal_id, int hovered_id, int pressed_id);
     ~ButtonIconIds();
 
-    int icon_image_id;
-    int inactive_icon_image_id;
-    int hovered_background_image_id;
-    int pressed_background_image_id;
+    int normal_image_id;
+    int hovered_image_id;
+    int pressed_image_id;
   };
 
   // Sets |button|'s icon to |icon|. If |animate| is ANIMATE_YES, the button
@@ -139,6 +132,9 @@ class ASH_EXPORT FrameCaptionButtonContainerView
 
   // The widget that the buttons act on.
   views::Widget* frame_;
+
+  // The close button separator.
+  gfx::ImageSkia button_separator_;
 
   // The buttons. In the normal button style, at most one of |minimize_button_|
   // and |size_button_| is visible.

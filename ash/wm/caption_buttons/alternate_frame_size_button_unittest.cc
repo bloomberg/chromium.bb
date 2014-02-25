@@ -68,10 +68,9 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
       for (int icon = 0; icon < CAPTION_BUTTON_ICON_COUNT; ++icon) {
         caption_button_container_->SetButtonImages(
             static_cast<CaptionButtonIcon>(icon),
-            IDR_AURA_WINDOW_CONTROL_ICON_CLOSE,
-            IDR_AURA_WINDOW_CONTROL_ICON_CLOSE_I,
-            IDR_AURA_WINDOW_CONTROL_BACKGROUND_H,
-            IDR_AURA_WINDOW_CONTROL_BACKGROUND_P);
+            IDR_AURA_WINDOW_CLOSE,
+            IDR_AURA_WINDOW_CLOSE_H,
+            IDR_AURA_WINDOW_CLOSE_P);
       }
 
       AddChildView(caption_button_container_);

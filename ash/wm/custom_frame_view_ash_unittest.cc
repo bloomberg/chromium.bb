@@ -61,7 +61,7 @@ TEST_F(CustomFrameViewAshTest, HeaderHeight) {
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::ImageSkia* close_button =
-      rb.GetImageSkiaNamed(IDR_AURA_WINDOW_CONTROL_BACKGROUND_H);
+      rb.GetImageSkiaNamed(IDR_AURA_WINDOW_MAXIMIZED_CLOSE);
 
   // |kSeparatorSize| should match |kHeaderContentSeparatorSize| in
   // header_painter.cc
@@ -75,6 +75,7 @@ TEST_F(CustomFrameViewAshTest, HeaderHeight) {
             delegate->custom_frame_view()->GetHeaderView()->height());
 
   widget->Maximize();
+  close_button = rb.GetImageSkiaNamed(IDR_AURA_WINDOW_MAXIMIZED_CLOSE2);
   EXPECT_EQ(close_button->height() + kSeparatorSize,
             delegate->custom_frame_view()->GetHeaderView()->height());
 }

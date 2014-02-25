@@ -37,10 +37,9 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
   // animation is progressed to the end.
   void SetImages(CaptionButtonIcon icon,
                  Animate animate,
-                 int icon_image_id,
-                 int inactive_icon_image_id,
-                 int hovered_background_image_id,
-                 int pressed_background_image_id);
+                 int normal_image_id,
+                 int hovered_image_id,
+                 int pressed_image_id);
 
   // Returns true if the button is crossfading to new visuals set in
   // SetImages().
@@ -50,10 +49,6 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-
-  void set_paint_as_active(bool paint_as_active) {
-    paint_as_active_ = paint_as_active;
-  }
 
   CaptionButtonIcon icon() const {
     return icon_;
@@ -72,21 +67,16 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
   // The button's current icon.
   CaptionButtonIcon icon_;
 
-  // Whether the button should be painted as active.
-  bool paint_as_active_;
-
   // The scale at which the button was previously painted.
   float last_paint_scale_;
 
   // The images and image ids used to paint the button.
-  int icon_image_id_;
-  int inactive_icon_image_id_;
-  int hovered_background_image_id_;
-  int pressed_background_image_id_;
-  gfx::ImageSkia icon_image_;
-  gfx::ImageSkia inactive_icon_image_;
-  gfx::ImageSkia hovered_background_image_;
-  gfx::ImageSkia pressed_background_image_;
+  int normal_image_id_;
+  int hovered_image_id_;
+  int pressed_image_id_;
+  gfx::ImageSkia normal_image_;
+  gfx::ImageSkia hovered_image_;
+  gfx::ImageSkia pressed_image_;
 
   // The image to crossfade from.
   gfx::ImageSkia crossfade_image_;

@@ -115,19 +115,18 @@ void PanelFrameView::OnPaint(gfx::Canvas* canvas) {
   if (!header_painter_)
     return;
   bool paint_as_active = ShouldPaintAsActive();
-  caption_button_container_->SetPaintAsActive(paint_as_active);
-
   int theme_frame_id = 0;
   if (paint_as_active)
-    theme_frame_id = IDR_AURA_WINDOW_HEADER_BASE_ACTIVE;
+    theme_frame_id = IDR_AURA_BROWSER_WINDOW_HEADER_BASE_RESTORED_ACTIVE;
   else
-    theme_frame_id = IDR_AURA_WINDOW_HEADER_BASE_INACTIVE;
+    theme_frame_id = IDR_AURA_BROWSER_WINDOW_HEADER_BASE_RESTORED_INACTIVE;
 
-  HeaderPainter::Mode header_mode = paint_as_active ?
-      HeaderPainter::MODE_ACTIVE : HeaderPainter::MODE_INACTIVE;
-  header_painter_->PaintHeader(canvas, header_mode, theme_frame_id, 0);
+  header_painter_->PaintHeader(
+      canvas,
+      theme_frame_id,
+      0);
   header_painter_->PaintTitleBar(canvas, title_font_list_);
-  header_painter_->PaintHeaderContentSeparator(canvas, header_mode);
+  header_painter_->PaintHeaderContentSeparator(canvas);
 }
 
 gfx::Rect PanelFrameView::GetBoundsForClientView() const {
