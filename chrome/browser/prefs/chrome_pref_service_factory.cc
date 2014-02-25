@@ -433,6 +433,8 @@ void UpdatePrefHashStoreIfRequired(
     const base::FilePath& profile_path) {
   scoped_ptr<PrefHashStoreImpl> pref_hash_store_impl(
       GetPrefHashStoreImpl(profile_path));
+  if (!pref_hash_store_impl)
+    return;
 
   const PrefHashStoreImpl::StoreVersion current_version =
       pref_hash_store_impl->GetCurrentVersion();
