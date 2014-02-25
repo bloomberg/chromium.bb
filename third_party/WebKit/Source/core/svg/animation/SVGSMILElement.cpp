@@ -1021,7 +1021,7 @@ SVGSMILElement::RestartedInterval SVGSMILElement::maybeRestartInterval(SMILTime 
     }
 
     if (elapsed >= m_intervalEnd) {
-        if (resolveNextInterval())
+        if (resolveNextInterval() && elapsed >= m_intervalBegin)
             return DidRestartInterval;
     }
     return DidNotRestartInterval;
@@ -1198,7 +1198,7 @@ bool SVGSMILElement::progress(SMILTime elapsed, SVGSMILElement* resultElement, b
     if ((oldActiveState == Active && m_activeState != Active) || restartedInterval == DidRestartInterval) {
         smilEndEventSender().dispatchEventSoon(this);
         endedActiveInterval();
-        if (restartedInterval == DidNotRestartInterval && m_activeState != Frozen && this == resultElement)
+        if (!animationIsContributing && this == resultElement)
             clearAnimatedType(m_targetElement);
     }
 
