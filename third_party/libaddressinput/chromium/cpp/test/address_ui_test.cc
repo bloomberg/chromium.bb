@@ -70,7 +70,7 @@ class AddressUiTest : public testing::TestWithParam<std::string> {};
 
 // Verifies that a region code consists of two characters, for example "TW".
 TEST_P(AddressUiTest, RegionCodeHasTwoCharacters) {
-  EXPECT_EQ(2, GetParam().size());
+  EXPECT_EQ(2U, GetParam().size());
 }
 
 // Verifies that BuildComponents() returns valid UI components for a region

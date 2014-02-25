@@ -17,8 +17,8 @@ static const char kFakeInsecureUrl[] = "http://example.com";
 class ChromeDownloaderImplTest : public testing::Test {
  public:
   ChromeDownloaderImplTest()
-      : success_(false),
-        fake_factory_(&factory_) {}
+      : fake_factory_(&factory_),
+        success_(false) {}
   virtual ~ChromeDownloaderImplTest() {}
 
  protected:

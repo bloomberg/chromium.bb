@@ -28,7 +28,7 @@ class RegionCodeTest : public testing::TestWithParam<std::string> {};
 
 // Verifies that a region code consists of two characters, for example "ZA".
 TEST_P(RegionCodeTest, RegionCodeHasTwoCharacters) {
-  EXPECT_EQ(2, GetParam().length());
+  EXPECT_EQ(2U, GetParam().length());
 }
 
 // Test all region codes.
