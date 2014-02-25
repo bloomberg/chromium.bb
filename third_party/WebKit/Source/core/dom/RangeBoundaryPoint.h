@@ -49,8 +49,8 @@ public:
     void setOffset(int offset);
 
     void setToBeforeChild(Node&);
-    void setToStartOfNode(PassRefPtr<Node>);
-    void setToEndOfNode(PassRefPtr<Node>);
+    void setToStartOfNode(Node&);
+    void setToEndOfNode(Node&);
 
     void childBeforeWillBeRemoved();
     void invalidateOffset() const;
@@ -144,18 +144,16 @@ inline void RangeBoundaryPoint::setToBeforeChild(Node& child)
     m_offsetInContainer = m_childBeforeBoundary ? invalidOffset : 0;
 }
 
-inline void RangeBoundaryPoint::setToStartOfNode(PassRefPtr<Node> container)
+inline void RangeBoundaryPoint::setToStartOfNode(Node& container)
 {
-    ASSERT(container);
-    m_containerNode = container;
+    m_containerNode = PassRefPtr<Node>(container);
     m_offsetInContainer = 0;
     m_childBeforeBoundary = nullptr;
 }
 
-inline void RangeBoundaryPoint::setToEndOfNode(PassRefPtr<Node> container)
+inline void RangeBoundaryPoint::setToEndOfNode(Node& container)
 {
-    ASSERT(container);
-    m_containerNode = container;
+    m_containerNode = PassRefPtr<Node>(container);
     if (m_containerNode->offsetInCharacters()) {
         m_offsetInContainer = m_containerNode->maxCharacterOffset();
         m_childBeforeBoundary = nullptr;

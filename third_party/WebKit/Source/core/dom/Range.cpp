@@ -120,8 +120,8 @@ void Range::setDocument(Document& document)
     ASSERT(m_ownerDocument);
     m_ownerDocument->detachRange(this);
     m_ownerDocument = &document;
-    m_start.setToStartOfNode(&document);
-    m_end.setToStartOfNode(&document);
+    m_start.setToStartOfNode(document);
+    m_end.setToStartOfNode(document);
     m_ownerDocument->attachRange(this);
 }
 
@@ -1347,8 +1347,8 @@ void Range::selectNodeContents(Node* refNode, ExceptionState& exceptionState)
     if (m_ownerDocument != refNode->document())
         setDocument(refNode->document());
 
-    m_start.setToStartOfNode(refNode);
-    m_end.setToEndOfNode(refNode);
+    m_start.setToStartOfNode(*refNode);
+    m_end.setToEndOfNode(*refNode);
 }
 
 void Range::surroundContents(PassRefPtr<Node> passNewParent, ExceptionState& exceptionState)
@@ -1649,9 +1649,9 @@ void Range::nodeChildrenChanged(ContainerNode* container)
     boundaryNodeChildrenChanged(m_end, container);
 }
 
-static inline void boundaryNodeChildrenWillBeRemoved(RangeBoundaryPoint& boundary, ContainerNode* container)
+static inline void boundaryNodeChildrenWillBeRemoved(RangeBoundaryPoint& boundary, ContainerNode& container)
 {
-    for (Node* nodeToBeRemoved = container->firstChild(); nodeToBeRemoved; nodeToBeRemoved = nodeToBeRemoved->nextSibling()) {
+    for (Node* nodeToBeRemoved = container.firstChild(); nodeToBeRemoved; nodeToBeRemoved = nodeToBeRemoved->nextSibling()) {
         if (boundary.childBefore() == nodeToBeRemoved) {
             boundary.setToStartOfNode(container);
             return;
@@ -1666,10 +1666,9 @@ static inline void boundaryNodeChildrenWillBeRemoved(RangeBoundaryPoint& boundar
     }
 }
 
-void Range::nodeChildrenWillBeRemoved(ContainerNode* container)
+void Range::nodeChildrenWillBeRemoved(ContainerNode& container)
 {
-    ASSERT(container);
-    ASSERT(container->document() == m_ownerDocument);
+    ASSERT(container.document() == m_ownerDocument);
     boundaryNodeChildrenWillBeRemoved(m_start, container);
     boundaryNodeChildrenWillBeRemoved(m_end, container);
 }

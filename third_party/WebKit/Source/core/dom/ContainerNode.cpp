@@ -528,7 +528,7 @@ void ContainerNode::removeChildren()
         document().removeFocusedElementOfSubtree(this, true);
 
         // Removing a node from a selection can cause widget updates.
-        document().nodeChildrenWillBeRemoved(this);
+        document().nodeChildrenWillBeRemoved(*this);
     }
 
 
