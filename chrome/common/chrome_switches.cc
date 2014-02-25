@@ -343,6 +343,13 @@ const char kDisableExtensionsHttpThrottling[] =
 const char kDisableExtensionsResourceWhitelist[] =
     "disable-extensions-resource-whitelist";
 
+// Disables embedding of Flash fullscreen widgets within the browser window.
+// This restores the old code paths where Flash fullscreen would display in its
+// own separate, always-on-top window.  In addition, this disables the new logic
+// which would prevent fullscreening the browser window during screen-capture of
+// a tab.  http://crbug.com/256870 and http://crbug.com/290403
+const char kDisableFullscreenWithinTab[] = "disable-fullscreen-within-tab";
+
 // Disables Google Now integration.
 const char kDisableGoogleNowIntegration[] = "disable-google-now-integration";
 
@@ -528,14 +535,6 @@ const char kDnsPrefetchDisable[]            = "dns-prefetch-disable";
 // Requests that a running browser process dump its collected histograms to a
 // given file. The file is overwritten if it exists.
 const char kDumpBrowserHistograms[]         = "dump-browser-histograms";
-
-// If set, Flash fullscreen widgets are embedded within the browser window and
-// with the same UX as HTML5 fullscreen.
-//
-// TODO(miu): This feature is a work in-progress.  It should not be enabled by
-// default until going through a formal UX review, and all comments/concerns on
-// the crbug are addressed.  http://crbug.com/290403
-const char kEmbedFlashFullscreen[] = "embed-flash-fullscreen";
 
 // Enables the <adview> tag in packaged apps.
 const char kEnableAdview[]                  = "enable-adview";

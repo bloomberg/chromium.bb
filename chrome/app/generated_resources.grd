@@ -6997,12 +6997,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_PASSWORD_BUBBLE_DESCRIPTION" desc="Description for the flag to enable the Manage Passwords Bubble feature.">
         Enables the Passwords Bubble. The Passwords Bubble provides an easy way to store and manage passwords for a website. It replaced the infobad for saving passwords.
       </message>
-      <message name="IDS_FLAGS_FULLSCREEN_WITHIN_TAB_NAME" desc="Name of about:flags option to enable new fullscreen-within-tab behaviors.">
-        Fullscreen-within-tab UI
-      </message>
-      <message name="IDS_FLAGS_FULLSCREEN_WITHIN_TAB_DESCRIPTION" desc="Description for the about:flags option to enable new fullscreen-within-tab behaviors.">
-        When enabled, Pepper/Flash fullscreen widgets are embedded within the browser window to make the fullscreen user experience consistent with all other browser fullscreen modes. In addition, while screen-capturing a tab, the browser window will not fullscreen. This allows the user to retain control of their desktop to work in other browser tabs or applications.
-      </message>
       <message name="IDS_FLAGS_ENABLE_PERMISSIONS_BUBBLES_NAME" desc="Title for the flag to enable showing permissions requests in bubbles.">
         Use Bubbles for Permission Requests
       </message>

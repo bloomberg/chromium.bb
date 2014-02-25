@@ -1572,8 +1572,12 @@ void Browser::EnumerateDirectory(WebContents* web_contents,
 }
 
 bool Browser::EmbedsFullscreenWidget() const {
-  return CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kEmbedFlashFullscreen);
+#if defined(TOOLKIT_GTK)
+  return false;
+#else
+  return !CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kDisableFullscreenWithinTab);
+#endif
 }
 
 void Browser::ToggleFullscreenModeForTab(WebContents* web_contents,

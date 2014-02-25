@@ -1896,15 +1896,6 @@ const Experiment kExperiments[] = {
     kOsWin | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnableSavePasswordBubble)
   },
-#endif
-  {
-    "fullscreen-within-tab",
-    IDS_FLAGS_FULLSCREEN_WITHIN_TAB_NAME,
-    IDS_FLAGS_FULLSCREEN_WITHIN_TAB_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kEmbedFlashFullscreen)
-  },
-#if defined(USE_AURA) || defined(OS_WIN)
   {
     "enable-permissions-bubbles",
     IDS_FLAGS_ENABLE_PERMISSIONS_BUBBLES_NAME,
