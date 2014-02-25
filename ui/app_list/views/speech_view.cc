@@ -34,6 +34,8 @@ const int kLogoMarginLeft = 30;
 const int kLogoMarginTop = 28;
 const int kLogoWidth = 104;
 const int kLogoHeight = 36;
+const int kIndicatorCenterOffsetY = -1;
+const int kIndicatorRadiusMinOffset = -3;
 const int kIndicatorRadiusMax = 100;
 const int kIndicatorAnimationDuration = 100;
 const SkColor kShadowColor = SkColorSetARGB(0.3 * 255, 0, 0, 0);
@@ -61,6 +63,7 @@ void SoundLevelIndicator::Paint(gfx::Canvas* canvas) {
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(kSoundLevelIndicatorColor);
+  paint.setAntiAlias(true);
   canvas->DrawCircle(bounds().CenterPoint(), width() / 2, paint);
 }
 
@@ -159,7 +162,7 @@ void SpeechView::Reset() {
 }
 
 int SpeechView::GetIndicatorRadius(uint8 level) {
-  int radius_min = mic_button_->width() / 2;
+  int radius_min = mic_button_->width() / 2 + kIndicatorRadiusMinOffset;
   int range = kIndicatorRadiusMax - radius_min;
   return level * range / kuint8max + radius_min;
 }
@@ -202,7 +205,7 @@ void SpeechView::OnSpeechSoundLevelChanged(uint8 level) {
 
   gfx::Point origin = mic_button_->bounds().CenterPoint();
   int radius = GetIndicatorRadius(level);
-  origin.Offset(-radius, -radius);
+  origin.Offset(-radius, -radius + kIndicatorCenterOffsetY);
   gfx::Rect indicator_bounds =
       gfx::Rect(origin, gfx::Size(radius * 2, radius * 2));
   if (indicator_->visible()) {
