@@ -58,6 +58,23 @@ const EVP_CIPHER* GetAESCipherByKeyLength(unsigned int key_length_bytes) {
   }
 }
 
+const EVP_MD* GetDigest(blink::WebCryptoAlgorithmId id) {
+  switch (id) {
+    case blink::WebCryptoAlgorithmIdSha1:
+      return EVP_sha1();
+    case blink::WebCryptoAlgorithmIdSha224:
+      return EVP_sha224();
+    case blink::WebCryptoAlgorithmIdSha256:
+      return EVP_sha256();
+    case blink::WebCryptoAlgorithmIdSha384:
+      return EVP_sha384();
+    case blink::WebCryptoAlgorithmIdSha512:
+      return EVP_sha512();
+    default:
+      return NULL;
+  }
+}
+
 // OpenSSL constants for EVP_CipherInit_ex(), do not change
 enum CipherOperation { kDoDecrypt = 0, kDoEncrypt = 1 };
 
@@ -155,27 +172,9 @@ Status DigestSha(blink::WebCryptoAlgorithmId algorithm,
                  blink::WebArrayBuffer* buffer) {
   crypto::OpenSSLErrStackTracer(FROM_HERE);
 
-  const EVP_MD* digest_algorithm;
-  switch (algorithm) {
-    case blink::WebCryptoAlgorithmIdSha1:
-      digest_algorithm = EVP_sha1();
-      break;
-    case blink::WebCryptoAlgorithmIdSha224:
-      digest_algorithm = EVP_sha224();
-      break;
-    case blink::WebCryptoAlgorithmIdSha256:
-      digest_algorithm = EVP_sha256();
-      break;
-    case blink::WebCryptoAlgorithmIdSha384:
-      digest_algorithm = EVP_sha384();
-      break;
-    case blink::WebCryptoAlgorithmIdSha512:
-      digest_algorithm = EVP_sha512();
-      break;
-    default:
-      // Not a SHA algorithm.
-      return Status::ErrorUnexpected();
-  }
+  const EVP_MD* digest_algorithm = GetDigest(algorithm);
+  if (!digest_algorithm)
+    return Status::ErrorUnexpected();
 
   crypto::ScopedOpenSSL<EVP_MD_CTX, EVP_MD_CTX_destroy> digest_context(
       EVP_MD_CTX_create());
@@ -261,34 +260,10 @@ Status SignHmac(SymKey* key,
                 blink::WebArrayBuffer* buffer) {
   blink::WebArrayBuffer result;
 
-  const EVP_MD* evp_sha = 0;
-  unsigned int hmac_expected_length = 0;
-  // Note that HMAC length is determined by the hash used.
-  switch (hash.id()) {
-    case blink::WebCryptoAlgorithmIdSha1:
-      evp_sha = EVP_sha1();
-      hmac_expected_length = SHA_DIGEST_LENGTH;
-      break;
-    case blink::WebCryptoAlgorithmIdSha224:
-      evp_sha = EVP_sha224();
-      hmac_expected_length = SHA224_DIGEST_LENGTH;
-      break;
-    case blink::WebCryptoAlgorithmIdSha256:
-      evp_sha = EVP_sha256();
-      hmac_expected_length = SHA256_DIGEST_LENGTH;
-      break;
-    case blink::WebCryptoAlgorithmIdSha384:
-      evp_sha = EVP_sha384();
-      hmac_expected_length = SHA384_DIGEST_LENGTH;
-      break;
-    case blink::WebCryptoAlgorithmIdSha512:
-      evp_sha = EVP_sha512();
-      hmac_expected_length = SHA512_DIGEST_LENGTH;
-      break;
-    default:
-      // Not a digest algorithm.
-      return Status::ErrorUnsupported();
-  }
+  const EVP_MD* digest_algorithm = GetDigest(hash.id());
+  if (!digest_algorithm)
+    return Status::ErrorUnsupported();
+  unsigned int hmac_expected_length = EVP_MD_size(digest_algorithm);
 
   const std::vector<unsigned char>& raw_key = key->key();
 
@@ -307,7 +282,7 @@ Status SignHmac(SymKey* key,
   crypto::OpenSSLErrStackTracer(FROM_HERE);
 
   unsigned int hmac_actual_length;
-  unsigned char* const success = HMAC(evp_sha,
+  unsigned char* const success = HMAC(digest_algorithm,
                                       raw_key_voidp,
                                       raw_key.size(),
                                       data.bytes(),
