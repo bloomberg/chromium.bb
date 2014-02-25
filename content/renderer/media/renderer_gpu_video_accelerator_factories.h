@@ -71,6 +71,10 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   virtual ~RendererGpuVideoAcceleratorFactories();
 
  private:
+  // Helper to bind |context_provider| to the |task_runner_| thread after
+  // construction.
+  void BindContext();
+
   // Helper to get a pointer to the WebGraphicsContext3DCommandBufferImpl,
   // if it has not been lost yet.
   WebGraphicsContext3DCommandBufferImpl* GetContext3d();

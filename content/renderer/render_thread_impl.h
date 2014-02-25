@@ -20,7 +20,6 @@
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/renderer/media/renderer_gpu_video_accelerator_factories.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -54,6 +53,7 @@ class ForwardingMessageFilter;
 
 namespace media {
 class AudioHardwareConfig;
+class GpuVideoAcceleratorFactories;
 }
 
 namespace v8 {
@@ -264,7 +264,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   // not sent for at least one notification delay.
   void PostponeIdleNotification();
 
-  scoped_refptr<RendererGpuVideoAcceleratorFactories> GetGpuFactories();
+  scoped_refptr<media::GpuVideoAcceleratorFactories> GetGpuFactories();
 
   scoped_refptr<cc::ContextProvider> OffscreenCompositorContextProvider();
   scoped_refptr<webkit::gpu::ContextProviderWebContext>

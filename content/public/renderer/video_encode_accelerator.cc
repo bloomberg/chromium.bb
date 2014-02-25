@@ -5,6 +5,7 @@
 #include "content/public/renderer/video_encode_accelerator.h"
 
 #include "content/renderer/render_thread_impl.h"
+#include "media/filters/gpu_video_accelerator_factories.h"
 
 namespace content {
 
@@ -12,8 +13,8 @@ scoped_ptr<media::VideoEncodeAccelerator>
 CreateVideoEncodeAccelerator(media::VideoEncodeAccelerator::Client* client) {
   scoped_ptr<media::VideoEncodeAccelerator> vea;
 
-  scoped_refptr<RendererGpuVideoAcceleratorFactories> gpu_factories =
-        RenderThreadImpl::current()->GetGpuFactories();
+  scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories =
+      RenderThreadImpl::current()->GetGpuFactories();
   if (gpu_factories.get())
     vea = gpu_factories->CreateVideoEncodeAccelerator(client).Pass();
 

@@ -19,7 +19,6 @@
 
 namespace content {
 
-RendererGpuVideoAcceleratorFactories::~RendererGpuVideoAcceleratorFactories() {}
 RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories(
     GpuChannelHost* gpu_channel_host,
     const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy,
@@ -27,7 +26,19 @@ RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories(
     : task_runner_(message_loop_proxy),
       gpu_channel_host_(gpu_channel_host),
       context_provider_(context_provider),
-      thread_safe_sender_(ChildThread::current()->thread_safe_sender()) {}
+      thread_safe_sender_(ChildThread::current()->thread_safe_sender()) {
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&RendererGpuVideoAcceleratorFactories::BindContext, this));
+}
+
+RendererGpuVideoAcceleratorFactories::~RendererGpuVideoAcceleratorFactories() {}
+
+void RendererGpuVideoAcceleratorFactories::BindContext() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  if (!context_provider_->BindToCurrentThread())
+    context_provider_ = NULL;
+}
 
 WebGraphicsContext3DCommandBufferImpl*
 RendererGpuVideoAcceleratorFactories::GetContext3d() {
