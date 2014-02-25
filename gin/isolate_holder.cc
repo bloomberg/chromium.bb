@@ -56,13 +56,6 @@ IsolateHolder::IsolateHolder()
   Init(ArrayBufferAllocator::SharedInstance());
 }
 
-IsolateHolder::IsolateHolder(v8::Isolate* isolate)
-    : isolate_owner_(false),
-      isolate_(isolate) {
-  EnsureV8Initialized(false);
-  Init(NULL);
-}
-
 IsolateHolder::IsolateHolder(v8::Isolate* isolate,
                              v8::ArrayBuffer::Allocator* allocator)
     : isolate_owner_(false), isolate_(isolate) {

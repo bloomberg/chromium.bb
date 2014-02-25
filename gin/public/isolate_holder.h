@@ -29,9 +29,6 @@ class GIN_EXPORT IsolateHolder {
   IsolateHolder();
   IsolateHolder(v8::Isolate* isolate, v8::ArrayBuffer::Allocator* allocator);
 
-  // TODO(jochen): Remove.
-  explicit IsolateHolder(v8::Isolate* isolate);
-
   ~IsolateHolder();
 
   v8::Isolate* isolate() { return isolate_; }
