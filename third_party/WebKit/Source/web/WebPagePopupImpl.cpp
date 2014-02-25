@@ -294,14 +294,14 @@ void WebPagePopupImpl::animate(double)
 
 void WebPagePopupImpl::enterForceCompositingMode(bool enter)
 {
+    if (!m_page)
+        return;
     if (m_page->settings().forceCompositingMode() == enter)
         return;
 
     TRACE_EVENT1("webkit", "WebPagePopupImpl::enterForceCompositingMode", "enter", enter);
     m_page->settings().setForceCompositingMode(enter);
     if (enter) {
-        if (!m_page)
-            return;
         Frame* mainFrame = m_page->mainFrame();
         if (!mainFrame)
             return;
@@ -313,7 +313,8 @@ void WebPagePopupImpl::didExitCompositingMode()
 {
     setIsAcceleratedCompositingActive(false);
     m_widgetClient->didInvalidateRect(IntRect(0, 0, size().width, size().height));
-    m_page->mainFrame()->document()->setNeedsStyleRecalc(SubtreeStyleChange);
+    if (m_page)
+        m_page->mainFrame()->document()->setNeedsStyleRecalc(SubtreeStyleChange);
 }
 
 void WebPagePopupImpl::willCloseLayerTreeView()
