@@ -9,18 +9,22 @@
 #include "core/dom/Document.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 
 namespace WebCore {
 
 PageAnimator::PageAnimator(Page* page)
     : m_page(page)
+    , m_animationFramePending(false)
     , m_servicingAnimations(false)
 {
 }
 
 void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
 {
+    m_animationFramePending = false;
     TemporaryChange<bool> servicing(m_servicingAnimations, true);
 
     for (RefPtr<Frame> frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
@@ -34,6 +38,14 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
 
     for (size_t i = 0; i < documents.size(); ++i)
         documents[i]->serviceScriptedAnimations(monotonicAnimationStartTime);
+}
+
+void PageAnimator::scheduleVisualUpdate()
+{
+    if (m_animationFramePending || m_servicingAnimations)
+        return;
+    m_page->chrome().scheduleAnimation();
+    ASSERT(m_animationFramePending);
 }
 
 }

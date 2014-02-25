@@ -13,12 +13,15 @@ class PageAnimator {
 public:
     explicit PageAnimator(Page*);
 
+    void scheduleVisualUpdate();
     void serviceScriptedAnimations(double monotonicAnimationStartTime);
 
+    void setAnimationFramePending() { m_animationFramePending = true; }
     bool isServicingAnimations() const { return m_servicingAnimations; }
 
 private:
     Page* m_page;
+    bool m_animationFramePending;
     bool m_servicingAnimations;
 };
 

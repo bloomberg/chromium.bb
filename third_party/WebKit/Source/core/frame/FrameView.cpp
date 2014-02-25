@@ -1789,8 +1789,7 @@ void FrameView::scheduleRelayout()
     if (m_hasPendingLayout)
         return;
     m_hasPendingLayout = true;
-    if (!page()->animator().isServicingAnimations())
-        scheduleAnimation();
+    page()->animator().scheduleVisualUpdate();
 }
 
 static bool isObjectAncestorContainerOf(RenderObject* ancestor, RenderObject* descendant)
@@ -1839,8 +1838,7 @@ void FrameView::scheduleRelayoutOfSubtree(RenderObject* relayoutRoot)
         ASSERT(!m_layoutSubtreeRoot->container() || !m_layoutSubtreeRoot->container()->needsLayout());
         InspectorInstrumentation::didInvalidateLayout(m_frame.get());
         m_hasPendingLayout = true;
-        if (!page()->animator().isServicingAnimations())
-            scheduleAnimation();
+        page()->animator().scheduleVisualUpdate();
     }
 }
 
