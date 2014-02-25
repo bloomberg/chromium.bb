@@ -447,7 +447,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 
   // Tell BrowserList not to keep the browser process alive. Once all the
   // browsers get dealloc'd, it will stop the RunLoop and fall back into main().
-  chrome::EndKeepAlive();
+  chrome::DecrementKeepAliveCount();
 
   // Reset all pref watching, as this object outlives the prefs system.
   profilePrefRegistrar_.reset();
@@ -694,7 +694,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 - (void)applicationDidFinishLaunching:(NSNotification*)notify {
   // Notify BrowserList to keep the application running so it doesn't go away
   // when all the browser windows get closed.
-  chrome::StartKeepAlive();
+  chrome::IncrementKeepAliveCount();
 
   [self setUpdateCheckInterval];
 

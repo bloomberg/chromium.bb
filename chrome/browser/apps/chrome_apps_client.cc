@@ -66,14 +66,14 @@ apps::AppWindow* ChromeAppsClient::CreateAppWindow(
 #endif
 }
 
-void ChromeAppsClient::StartKeepAlive() {
+void ChromeAppsClient::IncrementKeepAliveCount() {
 #if !defined(OS_ANDROID)
-  chrome::StartKeepAlive();
+  chrome::IncrementKeepAliveCount();
 #endif
 }
 
-void ChromeAppsClient::EndKeepAlive() {
+void ChromeAppsClient::DecrementKeepAliveCount() {
 #if !defined(OS_ANDROID)
-  chrome::EndKeepAlive();
+  chrome::DecrementKeepAliveCount();
 #endif
 }

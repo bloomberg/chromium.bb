@@ -33,8 +33,8 @@ AppWindow* ShellAppsClient::CreateAppWindow(
   return new AppWindow(context, new ShellAppWindowDelegate, extension);
 }
 
-void ShellAppsClient::StartKeepAlive() {}
+void ShellAppsClient::IncrementKeepAliveCount() {}
 
-void ShellAppsClient::EndKeepAlive() {}
+void ShellAppsClient::DecrementKeepAliveCount() {}
 
 }  // namespace apps

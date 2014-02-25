@@ -239,7 +239,7 @@ class BackgroundModeManager
   // chrome running while waiting for apps to load. This is called when we no
   // longer need to do this (either because the user has chosen to exit chrome
   // manually, or all apps have been loaded).
-  void EndKeepAliveForStartup();
+  void DecrementKeepAliveCountForStartup();
 
   // Return an appropriate name for a Preferences menu entry.  Preferences is
   // sometimes called Options or Settings.

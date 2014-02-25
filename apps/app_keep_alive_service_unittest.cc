@@ -19,7 +19,7 @@ class AppKeepAliveServiceUnitTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     while (chrome::WillKeepAlive())
-      chrome::EndKeepAlive();
+      chrome::DecrementKeepAliveCount();
     testing::Test::TearDown();
   }
 

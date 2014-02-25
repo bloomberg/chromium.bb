@@ -31,8 +31,8 @@ class ChromeAppsClient : public apps::AppsClient {
   virtual apps::AppWindow* CreateAppWindow(
       content::BrowserContext* context,
       const extensions::Extension* extension) OVERRIDE;
-  virtual void StartKeepAlive() OVERRIDE;
-  virtual void EndKeepAlive() OVERRIDE;
+  virtual void IncrementKeepAliveCount() OVERRIDE;
+  virtual void DecrementKeepAliveCount() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAppsClient);
 };

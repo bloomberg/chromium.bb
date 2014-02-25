@@ -6,13 +6,9 @@
 
 #include "chrome/browser/lifetime/application_lifetime.h"
 
-ScopedKeepAlive::ScopedKeepAlive() {
-  chrome::StartKeepAlive();
-}
+ScopedKeepAlive::ScopedKeepAlive() { chrome::IncrementKeepAliveCount(); }
 
-ScopedKeepAlive::~ScopedKeepAlive() {
-  chrome::EndKeepAlive();
-}
+ScopedKeepAlive::~ScopedKeepAlive() { chrome::DecrementKeepAliveCount(); }
 
 KeepAliveServiceImpl::KeepAliveServiceImpl() {
 }

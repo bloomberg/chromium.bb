@@ -64,13 +64,13 @@ UserManagerView::UserManagerView(Profile* profile)
 }
 
 UserManagerView::~UserManagerView() {
-  chrome::EndKeepAlive();  // Remove shutdown prevention.
+  chrome::DecrementKeepAliveCount();  // Remove shutdown prevention.
 }
 
 // static
 void UserManagerView::Show(const base::FilePath& profile_path_to_focus) {
   // Prevent the browser process from shutting down while this window is open.
-  chrome::StartKeepAlive();
+  chrome::IncrementKeepAliveCount();
 
   ProfileMetrics::LogProfileSwitchUser(ProfileMetrics::OPEN_USER_MANAGER);
   if (instance_) {

@@ -37,10 +37,10 @@ class AppsClient {
       content::BrowserContext* context,
       const extensions::Extension* extension) = 0;
 
-  // Tells the embedding application to stay running. The application may close
-  // after a matching number of calls to EndKeepAlive() are made.
-  virtual void StartKeepAlive() = 0;
-  virtual void EndKeepAlive() = 0;
+  // A positive keep-alive count is a request for the embedding application to
+  // keep running after all windows are closed. The count starts at zero.
+  virtual void IncrementKeepAliveCount() = 0;
+  virtual void DecrementKeepAliveCount() = 0;
 
   // Return the apps client.
   static AppsClient* Get();

@@ -83,13 +83,14 @@ void SessionEnding();
 
 // Tells the BrowserList to keep the application alive after the last Browser
 // closes. This is implemented as a count, so callers should pair their calls
-// to StartKeepAlive() with matching calls to EndKeepAlive() when they no
+// to IncrementKeepAliveCount() with matching calls to DecrementKeepAliveCount()
+// when they no
 // longer need to keep the application running.
-void StartKeepAlive();
+void IncrementKeepAliveCount();
 
 // Stops keeping the application alive after the last Browser is closed.
-// Should match a previous call to StartKeepAlive().
-void EndKeepAlive();
+// Should match a previous call to IncrementKeepAliveCount().
+void DecrementKeepAliveCount();
 
 // Returns true if application will continue running after the last Browser
 // closes.

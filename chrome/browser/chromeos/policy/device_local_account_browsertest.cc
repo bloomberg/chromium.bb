@@ -607,7 +607,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, FullscreenDisallowed) {
 
   // Ensure that the browser stays alive, even though no windows are opened
   // during session start.
-  chrome::StartKeepAlive();
+  chrome::IncrementKeepAliveCount();
 
   // Start login into the device-local account.
   host->StartSignInScreen(LoginScreenContext());
@@ -629,7 +629,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, FullscreenDisallowed) {
   ASSERT_TRUE(browser);
   BrowserWindow* browser_window = browser->window();
   ASSERT_TRUE(browser_window);
-  chrome::EndKeepAlive();
+  chrome::DecrementKeepAliveCount();
 
   // Verify that an attempt to enter fullscreen mode is denied.
   EXPECT_FALSE(browser_window->IsFullscreen());
@@ -690,7 +690,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsUncached) {
 
   // Ensure that the browser stays alive, even though no windows are opened
   // during session start.
-  chrome::StartKeepAlive();
+  chrome::IncrementKeepAliveCount();
 
   // Start listening for app/extension installation results.
   content::WindowedNotificationObserver hosted_app_observer(
@@ -789,7 +789,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsCached) {
 
   // Ensure that the browser stays alive, even though no windows are opened
   // during session start.
-  chrome::StartKeepAlive();
+  chrome::IncrementKeepAliveCount();
 
   // Start listening for app/extension installation results.
   content::WindowedNotificationObserver hosted_app_observer(
@@ -915,7 +915,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExternalData) {
 
   // Ensure that the browser stays alive, even though no windows are opened
   // during session start.
-  chrome::StartKeepAlive();
+  chrome::IncrementKeepAliveCount();
 
   // Start login into the device-local account.
   host->StartSignInScreen(LoginScreenContext());

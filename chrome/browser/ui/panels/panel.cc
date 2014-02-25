@@ -155,7 +155,7 @@ bool PanelExtensionWindowController::IsVisibleToExtension(
 Panel::~Panel() {
   DCHECK(!collection_);
   // Invoked by native panel destructor. Do not access native_panel_ here.
-  chrome::EndKeepAlive();  // Remove shutdown prevention.
+  chrome::DecrementKeepAliveCount();  // Remove shutdown prevention.
 }
 
 PanelManager* Panel::manager() const {
@@ -538,7 +538,7 @@ void Panel::Initialize(const GURL& url,
                     ThemeServiceFactory::GetForProfile(profile_)));
 
   // Prevent the browser process from shutting down while this window is open.
-  chrome::StartKeepAlive();
+  chrome::IncrementKeepAliveCount();
 
   UpdateAppIcon();
 }

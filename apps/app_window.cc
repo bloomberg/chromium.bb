@@ -232,7 +232,7 @@ void AppWindow::Init(const GURL& url,
   }
 
   // Prevent the browser process from shutting down while this window is open.
-  AppsClient::Get()->StartKeepAlive();
+  AppsClient::Get()->IncrementKeepAliveCount();
 
   UpdateExtensionAppIcon();
 
@@ -245,7 +245,7 @@ AppWindow::~AppWindow() {
   registrar_.RemoveAll();
 
   // Remove shutdown prevention.
-  AppsClient::Get()->EndKeepAlive();
+  AppsClient::Get()->DecrementKeepAliveCount();
 }
 
 void AppWindow::RequestMediaAccessPermission(

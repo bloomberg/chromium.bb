@@ -296,7 +296,7 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
   default_host_ = this;
 
   // Make sure chrome won't exit while we are at login/oobe screen.
-  chrome::StartKeepAlive();
+  chrome::IncrementKeepAliveCount();
 
   bool is_registered = StartupUtils::IsDeviceRegistered();
   bool zero_delay_enabled = WizardController::IsZeroDelayEnabled();
@@ -374,7 +374,7 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
   ResetLoginWindowAndView();
 
   // Let chrome process exit after login/oobe screen if needed.
-  chrome::EndKeepAlive();
+  chrome::DecrementKeepAliveCount();
 
   default_host_ = NULL;
   // TODO(tengs): This should be refactored. See crbug.com/314934.

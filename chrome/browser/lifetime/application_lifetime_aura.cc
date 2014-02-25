@@ -44,8 +44,8 @@ void HandleAppExitingForPlatform() {
 #if defined(OS_CHROMEOS)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableZeroBrowsersOpenForTests)) {
-    // App is exiting, call EndKeepAlive() on behalf of Aura Shell.
-    EndKeepAlive();
+    // App is exiting, call DecrementKeepAliveCount() on behalf of Aura Shell.
+    DecrementKeepAliveCount();
     // Make sure we have notified the session manager that we are exiting.
     // This might be called from FastShutdown() or CloseAllBrowsers(), but not
     // if something prevents a browser from closing before SetTryingToQuit()

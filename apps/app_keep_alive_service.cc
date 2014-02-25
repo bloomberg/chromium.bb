@@ -34,7 +34,7 @@ void AppKeepAliveService::OnAppStart(Profile* profile,
     return;
 
   if (running_apps_.insert(app_id).second)
-    chrome::StartKeepAlive();
+    chrome::IncrementKeepAliveCount();
 }
 
 void AppKeepAliveService::OnAppStop(Profile* profile,
@@ -43,7 +43,7 @@ void AppKeepAliveService::OnAppStop(Profile* profile,
     return;
 
   if (running_apps_.erase(app_id))
-    chrome::EndKeepAlive();
+    chrome::DecrementKeepAliveCount();
 }
 
 void AppKeepAliveService::OnAppActivated(Profile* profile,
@@ -62,7 +62,7 @@ void AppKeepAliveService::OnChromeTerminating() {
   if (!base::MessageLoop::current() ||
       base::MessageLoop::current()->is_running()) {
     while (keep_alives--)
-      chrome::EndKeepAlive();
+      chrome::DecrementKeepAliveCount();
   }
 }
 

@@ -31,8 +31,8 @@ class ShellAppsClient : public AppsClient {
   virtual AppWindow* CreateAppWindow(content::BrowserContext* context,
                                      const extensions::Extension* extension)
       OVERRIDE;
-  virtual void StartKeepAlive() OVERRIDE;
-  virtual void EndKeepAlive() OVERRIDE;
+  virtual void IncrementKeepAliveCount() OVERRIDE;
+  virtual void DecrementKeepAliveCount() OVERRIDE;
 
   content::BrowserContext* browser_context_;
 

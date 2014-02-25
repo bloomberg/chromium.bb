@@ -300,7 +300,7 @@ void SessionEnding() {
   content::ImmediateShutdownAndExitProcess();
 }
 
-void StartKeepAlive() {
+void IncrementKeepAliveCount() {
   // Increment the browser process refcount as long as we're keeping the
   // application alive.
   if (!WillKeepAlive())
@@ -308,7 +308,7 @@ void StartKeepAlive() {
   ++g_keep_alive_count;
 }
 
-void EndKeepAlive() {
+void DecrementKeepAliveCount() {
   DCHECK_GT(g_keep_alive_count, 0);
   --g_keep_alive_count;
 

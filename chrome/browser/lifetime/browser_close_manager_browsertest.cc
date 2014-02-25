@@ -877,7 +877,7 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithBackgroundModeBrowserTest,
   {
     RepeatedNotificationObserver close_observer(
         chrome::NOTIFICATION_BROWSER_CLOSED, 1);
-    chrome::StartKeepAlive();
+    chrome::IncrementKeepAliveCount();
     chrome::CloseAllBrowsers();
     close_observer.Wait();
   }
@@ -889,7 +889,7 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithBackgroundModeBrowserTest,
   ui_test_utils::BrowserAddedObserver new_browser_observer;
   chrome::NewEmptyWindow(profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
   new_browser_observer.WaitForSingleNewBrowser();
-  chrome::EndKeepAlive();
+  chrome::DecrementKeepAliveCount();
   EXPECT_FALSE(IsBackgroundModeSuspended());
   RepeatedNotificationObserver close_observer(
       chrome::NOTIFICATION_BROWSER_CLOSED, 1);
@@ -924,7 +924,7 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithBackgroundModeBrowserTest,
   RepeatedNotificationObserver close_observer(
       chrome::NOTIFICATION_BROWSER_CLOSED, 1);
   EXPECT_FALSE(IsBackgroundModeSuspended());
-  chrome::StartKeepAlive();
+  chrome::IncrementKeepAliveCount();
   browser()->window()->Close();
   close_observer.Wait();
   EXPECT_FALSE(browser_shutdown::IsTryingToQuit());

@@ -316,7 +316,7 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
     Profile* profile = browser->profile();
 
     // Close the browser.
-    chrome::StartKeepAlive();
+    chrome::IncrementKeepAliveCount();
     CloseBrowserSynchronously(browser, close_all_windows);
 
     SessionServiceTestHelper helper;
@@ -329,7 +329,7 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
     ui_test_utils::BrowserAddedObserver window_observer;
     chrome::NewEmptyWindow(profile, chrome::HOST_DESKTOP_TYPE_NATIVE);
     Browser* new_browser = window_observer.WaitForSingleNewBrowser();
-    chrome::EndKeepAlive();
+    chrome::DecrementKeepAliveCount();
 
     return new_browser;
   }
