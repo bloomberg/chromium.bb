@@ -110,10 +110,13 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
     bool is_solid_color = false;
     for (int i = 0; i < rasterize_repeat_count_; ++i) {
       SkBitmap bitmap;
-      bitmap.allocPixels(SkImageInfo::MakeN32Premul(content_rect.width(),
-                                                    content_rect.height()));
+      bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                       content_rect.width(),
+                       content_rect.height());
+      bitmap.allocPixels();
 
-      SkCanvas canvas(bitmap);
+      SkBitmapDevice device(bitmap);
+      SkCanvas canvas(&device);
       PicturePileImpl::Analysis analysis;
 
       base::TimeTicks start = Now();

@@ -6,26 +6,28 @@
 #define SKIA_EXT_ANALYSIS_CANVAS_H_
 
 #include "base/compiler_specific.h"
+#include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
 namespace skia {
 
+class AnalysisDevice;
+
 // Does not render anything, but gathers statistics about a region
 // (specified as a clip rectangle) of an SkPicture as the picture is
 // played back through it.
-// To use: play a picture into the canvas, and then check result.
+// To use: create a SkBitmap with kNo_Config, create an AnalysisDevice
+// using that bitmap, and create an AnalysisCanvas using the device.
+// Play a picture into the canvas, and then check result.
 class SK_API AnalysisCanvas : public SkCanvas, public SkDrawPictureCallback {
  public:
-  AnalysisCanvas(int width, int height);
+  AnalysisCanvas(AnalysisDevice*);
   virtual ~AnalysisCanvas();
 
   // Returns true when a SkColor can be used to represent result.
   bool GetColorIfSolid(SkColor* color) const;
   bool HasText() const;
-
-  void SetForceNotSolid(bool flag);
-  void SetForceNotTransparent(bool flag);
 
   // SkDrawPictureCallback override.
   virtual bool abortDrawing() OVERRIDE;
@@ -48,69 +50,103 @@ class SK_API AnalysisCanvas : public SkCanvas, public SkDrawPictureCallback {
 
   virtual void restore() OVERRIDE;
 
-  virtual void clear(SkColor) OVERRIDE;
-  virtual void drawPaint(const SkPaint& paint) OVERRIDE;
-  virtual void drawPoints(PointMode,
-                          size_t count,
-                          const SkPoint pts[],
-                          const SkPaint&) OVERRIDE;
-  virtual void drawOval(const SkRect&, const SkPaint&) OVERRIDE;
-  virtual void drawRect(const SkRect&, const SkPaint&) OVERRIDE;
-  virtual void drawRRect(const SkRRect&, const SkPaint&) OVERRIDE;
-  virtual void drawPath(const SkPath& path, const SkPaint&) OVERRIDE;
-  virtual void drawBitmap(const SkBitmap&,
-                          SkScalar left,
-                          SkScalar top,
-                          const SkPaint* paint = NULL) OVERRIDE;
-  virtual void drawBitmapRectToRect(const SkBitmap&,
-                                    const SkRect* src,
-                                    const SkRect& dst,
-                                    const SkPaint* paint,
-                                    DrawBitmapRectFlags flags) OVERRIDE;
-  virtual void drawBitmapMatrix(const SkBitmap&,
-                                const SkMatrix&,
-                                const SkPaint* paint = NULL) OVERRIDE;
-  virtual void drawBitmapNine(const SkBitmap& bitmap,
-                              const SkIRect& center,
-                              const SkRect& dst,
-                              const SkPaint* paint = NULL) OVERRIDE;
-  virtual void drawSprite(const SkBitmap&, int left, int top,
-                          const SkPaint* paint = NULL) OVERRIDE;
-  virtual void drawText(const void* text,
-                        size_t byteLength,
-                        SkScalar x,
-                        SkScalar y,
-                        const SkPaint&) OVERRIDE;
-  virtual void drawPosText(const void* text,
-                           size_t byteLength,
-                           const SkPoint pos[],
-                           const SkPaint&) OVERRIDE;
-  virtual void drawPosTextH(const void* text,
-                            size_t byteLength,
-                            const SkScalar xpos[],
-                            SkScalar constY,
-                            const SkPaint&) OVERRIDE;
-  virtual void drawTextOnPath(const void* text,
-                              size_t byteLength,
-                              const SkPath& path,
-                              const SkMatrix* matrix,
-                              const SkPaint&) OVERRIDE;
-  virtual void drawVertices(VertexMode,
-                            int vertexCount,
-                            const SkPoint vertices[],
-                            const SkPoint texs[],
-                            const SkColor colors[],
-                            SkXfermode*,
-                            const uint16_t indices[],
-                            int indexCount,
-                            const SkPaint&) OVERRIDE;
-
  private:
   typedef SkCanvas INHERITED;
 
   int saved_stack_size_;
   int force_not_solid_stack_level_;
   int force_not_transparent_stack_level_;
+};
+
+// TODO(robertphillips): Once Skia's SkBaseDevice API is refactored to
+// remove the bitmap-specific entry points, it might make sense for this
+// to be derived from SkBaseDevice (rather than SkBitmapDevice)
+class SK_API AnalysisDevice : public SkBitmapDevice {
+ public:
+  AnalysisDevice(const SkBitmap& bitmap);
+  virtual ~AnalysisDevice();
+
+  bool GetColorIfSolid(SkColor* color) const;
+  bool HasText() const;
+
+  void SetForceNotSolid(bool flag);
+  void SetForceNotTransparent(bool flag);
+
+ protected:
+  // SkBaseDevice overrides.
+  virtual void clear(SkColor color) OVERRIDE;
+  virtual void drawPaint(const SkDraw& draw, const SkPaint& paint) OVERRIDE;
+  virtual void drawPoints(const SkDraw& draw,
+                          SkCanvas::PointMode mode,
+                          size_t count,
+                          const SkPoint points[],
+                          const SkPaint& paint) OVERRIDE;
+  virtual void drawRect(const SkDraw& draw,
+                        const SkRect& rect,
+                        const SkPaint& paint) OVERRIDE;
+  virtual void drawRRect(const SkDraw& draw,
+                         const SkRRect& rr,
+                         const SkPaint& paint) OVERRIDE;
+  virtual void drawOval(const SkDraw& draw,
+                        const SkRect& oval,
+                        const SkPaint& paint) OVERRIDE;
+  virtual void drawPath(const SkDraw& draw,
+                        const SkPath& path,
+                        const SkPaint& paint,
+                        const SkMatrix* pre_path_matrix = NULL,
+                        bool path_is_mutable = false) OVERRIDE;
+  virtual void drawBitmap(const SkDraw& draw,
+                          const SkBitmap& bitmap,
+                          const SkMatrix& matrix,
+                          const SkPaint& paint) OVERRIDE;
+  virtual void drawSprite(const SkDraw& draw,
+                          const SkBitmap& bitmap,
+                          int x,
+                          int y,
+                          const SkPaint& paint) OVERRIDE;
+  virtual void drawBitmapRect(const SkDraw& draw,
+                              const SkBitmap& bitmap,
+                              const SkRect* src_or_null,
+                              const SkRect& dst,
+                              const SkPaint& paint,
+                              SkCanvas::DrawBitmapRectFlags flags) OVERRIDE;
+  virtual void drawText(const SkDraw& draw,
+                        const void* text,
+                        size_t len,
+                        SkScalar x,
+                        SkScalar y,
+                        const SkPaint& paint) OVERRIDE;
+  virtual void drawPosText(const SkDraw& draw,
+                           const void* text,
+                           size_t len,
+                           const SkScalar pos[],
+                           SkScalar const_y,
+                           int scalars_per_pos,
+                           const SkPaint& paint) OVERRIDE;
+  virtual void drawTextOnPath(const SkDraw& draw,
+                              const void* text,
+                              size_t len,
+                              const SkPath& path,
+                              const SkMatrix* matrix,
+                              const SkPaint& paint) OVERRIDE;
+  virtual void drawVertices(const SkDraw& draw,
+                            SkCanvas::VertexMode vertex_mode,
+                            int vertex_count,
+                            const SkPoint verts[],
+                            const SkPoint texs[],
+                            const SkColor colors[],
+                            SkXfermode* xmode,
+                            const uint16_t indices[],
+                            int index_count,
+                            const SkPaint& paint) OVERRIDE;
+  virtual void drawDevice(const SkDraw& draw,
+                          SkBaseDevice* device,
+                          int x,
+                          int y,
+                          const SkPaint& paint) OVERRIDE;
+
+ private:
+  typedef SkBitmapDevice INHERITED;
 
   bool is_forced_not_solid_;
   bool is_forced_not_transparent_;
