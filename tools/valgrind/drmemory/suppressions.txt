@@ -432,3 +432,24 @@ skia.dll!SkScalerContext::getImage
 skia.dll!SkGlyphCache::findImage
 skia.dll!D1G_NoBounder_RectClip
 skia.dll!SkDraw::drawText
+
+HANDLE LEAK
+name=http://crbug.com/346842
+system call NtGdiCreateDIBSection
+GDI32.dll!CreateDIBSection
+skia.dll!HDCOffscreen::draw
+skia.dll!SkScalerContext_GDI::generateImage
+skia.dll!SkScalerContext::getImage
+skia.dll!SkGlyphCache::findImage
+skia.dll!D1G_NoBounder_RectClip
+skia.dll!SkDraw::drawPosText
+skia.dll!SkBitmapDevice::drawPosText
+skia.dll!SkCanvas::drawPosText
+gfx.dll!gfx::internal::SkiaTextRenderer::DrawPosText
+gfx.dll!gfx::RenderTextWin::DrawVisualText
+gfx.dll!gfx::RenderText::Draw
+gfx.dll!gfx::Canvas::DrawStringRectWithShadows
+*!autofill::AutofillDialogControllerImpl::GetGeneratedCardImage
+*!autofill::AutofillDialogControllerImpl::GetDialogOverlay
+*!autofill::AutofillDialogControllerTest_WalletFirstRun_Test::TestBody
+*!testing::internal::HandleExceptionsInMethodIfSupported<>
