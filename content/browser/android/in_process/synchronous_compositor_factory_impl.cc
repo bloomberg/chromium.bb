@@ -208,25 +208,9 @@ void SynchronousCompositorFactoryImpl::CompositorInitializedHardwareDraw() {
 }
 
 void SynchronousCompositorFactoryImpl::CompositorReleasedHardwareDraw() {
-  bool should_release_resources = false;
-  {
-    base::AutoLock lock(num_hardware_compositor_lock_);
-    DCHECK_GT(num_hardware_compositors_, 0u);
-    num_hardware_compositors_--;
-    should_release_resources = num_hardware_compositors_ == 0u;
-  }
-  if (should_release_resources)
-    ReleaseGlobalHardwareResources();
-}
-
-void SynchronousCompositorFactoryImpl::ReleaseGlobalHardwareResources() {
-  {
-    base::AutoLock lock(offscreen_context_for_compositor_thread_lock_);
-    offscreen_context_for_compositor_thread_ = NULL;
-  }
-
-  // TODO(boliu): Properly clean up command buffer server of main thread
-  // context here.
+  base::AutoLock lock(num_hardware_compositor_lock_);
+  DCHECK_GT(num_hardware_compositors_, 0u);
+  num_hardware_compositors_--;
 }
 
 bool SynchronousCompositorFactoryImpl::CanCreateMainThreadContext() {

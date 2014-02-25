@@ -66,7 +66,6 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
           scoped_refptr<gfx::GLSurface> surface);
 
  private:
-  void ReleaseGlobalHardwareResources();
   bool CanCreateMainThreadContext();
   scoped_refptr<StreamTextureFactorySynchronousImpl::ContextProvider>
       TryCreateStreamTextureFactory();
