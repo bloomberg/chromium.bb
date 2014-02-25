@@ -6,7 +6,6 @@
 
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/animation/slide_animation.h"
-#include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 
 namespace ash {
@@ -30,6 +29,7 @@ FrameCaptionButton::FrameCaptionButton(views::ButtonListener* listener,
     : CustomButton(listener),
       icon_(icon),
       paint_as_active_(false),
+      last_paint_scale_(1.0f),
       icon_image_id_(-1),
       inactive_icon_image_id_(-1),
       hovered_background_image_id_(-1),
@@ -59,8 +59,11 @@ void FrameCaptionButton::SetImages(CaptionButtonIcon icon,
     return;
   }
 
-  if (animate == ANIMATE_YES)
-    crossfade_icon_image_ = GetIconImageToPaint();
+  if (animate == ANIMATE_YES) {
+    gfx::Canvas canvas(size(), last_paint_scale_, false);
+    OnPaint(&canvas);
+    crossfade_image_ = gfx::ImageSkia(canvas.ExtractImageRep());
+  }
 
   icon_ = icon;
   icon_image_id_ = icon_image_id;
@@ -101,35 +104,30 @@ const char* FrameCaptionButton::GetClassName() const {
 }
 
 void FrameCaptionButton::OnPaint(gfx::Canvas* canvas) {
-  if (hover_animation_->is_animating() || state() == STATE_HOVERED) {
-    int hovered_background_alpha = hover_animation_->is_animating() ?
-        hover_animation_->CurrentValueBetween(0, 255) : 255;
-    SkPaint paint;
-    paint.setAlpha(hovered_background_alpha);
-    canvas->DrawImageInt(hovered_background_image_, 0, 0, paint);
-  } else if (state() == STATE_PRESSED) {
-    canvas->DrawImageInt(pressed_background_image_, 0, 0);
+  // TODO(pkotwicz): Take |CustomButton::hover_animation_| into account once
+  // the button has separate images for the icon and background.
+
+  last_paint_scale_ = canvas->image_scale();
+  double animation_value = swap_images_animation_->GetCurrentValue();
+  int alpha = static_cast<int>(animation_value * 255);
+  int crossfade_alpha = 0;
+  if (animation_value < kFadeOutRatio) {
+     crossfade_alpha = static_cast<int>(
+         255 * (1 - animation_value / kFadeOutRatio));
   }
+  if (crossfade_alpha > 0 && !crossfade_image_.isNull()) {
+    gfx::Canvas composed_canvas(size(), last_paint_scale_, false);
+    PaintWithAnimationEndState(&composed_canvas, alpha);
 
-  int icon_alpha = swap_images_animation_->CurrentValueBetween(0, 255);
-  int crossfade_icon_alpha = 0;
-  if (icon_alpha < static_cast<int>(kFadeOutRatio * 255))
-     crossfade_icon_alpha = static_cast<int>(255 - icon_alpha / kFadeOutRatio);
-
-  gfx::ImageSkia icon_image = GetIconImageToPaint();
-  if (crossfade_icon_alpha > 0 && !crossfade_icon_image_.isNull()) {
-    gfx::Canvas icon_canvas(icon_image.size(), canvas->image_scale(), false);
     SkPaint paint;
-    paint.setAlpha(icon_alpha);
-    icon_canvas.DrawImageInt(icon_image, 0, 0, paint);
-
-    paint.setAlpha(crossfade_icon_alpha);
+    paint.setAlpha(crossfade_alpha);
     paint.setXfermodeMode(SkXfermode::kPlus_Mode);
-    icon_canvas.DrawImageInt(crossfade_icon_image_, 0, 0, paint);
+    composed_canvas.DrawImageInt(crossfade_image_, 0, 0, paint);
 
-    PaintCentered(canvas, gfx::ImageSkia(icon_canvas.ExtractImageRep()), 255);
+    canvas->DrawImageInt(
+        gfx::ImageSkia(composed_canvas.ExtractImageRep()), 0, 0);
   } else {
-    PaintCentered(canvas, icon_image, icon_alpha);
+    PaintWithAnimationEndState(canvas, alpha);
   }
 }
 
@@ -161,18 +159,21 @@ void FrameCaptionButton::StateChanged() {
     swap_images_animation_->Reset(1);
 }
 
-const gfx::ImageSkia& FrameCaptionButton::GetIconImageToPaint() const {
-  return paint_as_active_ ? icon_image_ : inactive_icon_image_;
-}
-
-void FrameCaptionButton::PaintCentered(gfx::Canvas* canvas,
-                                       const gfx::ImageSkia& to_center,
-                                       int alpha) {
+void FrameCaptionButton::PaintWithAnimationEndState(
+    gfx::Canvas* canvas,
+    int opacity) {
   SkPaint paint;
-  paint.setAlpha(alpha);
-  canvas->DrawImageInt(to_center,
-                       (width() - to_center.width()) / 2,
-                       (height() - to_center.height()) / 2,
+  paint.setAlpha(opacity);
+  if (state() == STATE_HOVERED)
+    canvas->DrawImageInt(hovered_background_image_, 0, 0, paint);
+  else if (state() == STATE_PRESSED)
+    canvas->DrawImageInt(pressed_background_image_, 0, 0, paint);
+
+  gfx::ImageSkia icon_image = paint_as_active_ ?
+      icon_image_ : inactive_icon_image_;
+  canvas->DrawImageInt(icon_image,
+                       (width() - icon_image.width()) / 2,
+                       (height() - icon_image.height()) / 2,
                        paint);
 }
 

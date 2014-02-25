@@ -65,19 +65,18 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
   virtual void StateChanged() OVERRIDE;
 
  private:
-  // Returns the icon image to paint based on |paint_as_active_|.
-  const gfx::ImageSkia& GetIconImageToPaint() const;
-
-  // Paints |to_center| centered within the button with |alpha|.
-  void PaintCentered(gfx::Canvas* canvas,
-                     const gfx::ImageSkia& to_center,
-                     int alpha);
+  // Paints the button as it will look at the end of |swap_images_animation_|
+  // but with |opacity|.
+  void PaintWithAnimationEndState(gfx::Canvas* canvas, int opacity);
 
   // The button's current icon.
   CaptionButtonIcon icon_;
 
   // Whether the button should be painted as active.
   bool paint_as_active_;
+
+  // The scale at which the button was previously painted.
+  float last_paint_scale_;
 
   // The images and image ids used to paint the button.
   int icon_image_id_;
@@ -89,8 +88,8 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
   gfx::ImageSkia hovered_background_image_;
   gfx::ImageSkia pressed_background_image_;
 
-  // The icon image to crossfade from.
-  gfx::ImageSkia crossfade_icon_image_;
+  // The image to crossfade from.
+  gfx::ImageSkia crossfade_image_;
 
   // Crossfade animation started when the button's images are changed by
   // SetImages().
