@@ -25,12 +25,11 @@
 #define TEXT_LINE_SIZE 1024
 
 /*
- * TODO(sbc): remove this test once rewinddir() declaration
- * gets added to the prebuilt newlib toolchain:
- * http://codereview.chromium.org/86593002/
+ * TODO(sbc): remove this test once gethostname() declaration
+ * gets added to the prebuilt newlib toolchain
  */
 #ifndef __GLIBC__
-extern "C" void rewinddir(DIR *dirp);
+extern "C" int gethostname(char *name, size_t len);
 #endif
 
 /*
@@ -571,6 +570,28 @@ bool test_readdir(const char *test_file) {
 }
 
 /*
+ * Not strictly speaking a syscall, but we have a 'fake' implementation
+ * that we want to test.
+ */
+bool test_gethostname() {
+  char hostname[256];
+  ASSERT_EQ(gethostname(hostname, 1), -1);
+#ifdef __GLIBC__
+  // glibc only provides a stub gethostbyname() that returns
+  // ENOSYS in all cases.
+  ASSERT_EQ(errno, ENOSYS);
+#else
+  ASSERT_EQ(errno, ENAMETOOLONG);
+
+  errno = 0;
+  ASSERT_EQ(gethostname(hostname, 256), 0);
+  ASSERT_EQ(errno, 0);
+  ASSERT_EQ(strcmp(hostname, "naclhost"), 0);
+#endif
+  return passed("test_gethostname", "all");
+}
+
+/*
  * function testSuite()
  *
  *   Run through a complete sequence of file tests.
@@ -593,6 +614,7 @@ bool testSuite(const char *test_file) {
   ret &= test_getcwd();
   ret &= test_mkdir_rmdir(test_file);
   ret &= test_readdir(test_file);
+  ret &= test_gethostname();
   return ret;
 }
 

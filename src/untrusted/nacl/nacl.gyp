@@ -25,6 +25,7 @@
       'ftruncate.c',
       'getcwd.c',
       'getdents.c',
+      'gethostname.c',
       'getpagesize.c',
       'getpid.c',
       'gettimeofday.c',

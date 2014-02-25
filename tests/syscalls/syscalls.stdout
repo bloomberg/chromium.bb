@@ -8,4 +8,5 @@ TEST PASSED: test_chdir: all
 TEST PASSED: test_getcwd: all
 TEST PASSED: test_mkdir_rmdir: all
 TEST PASSED: test_readdir: all
+TEST PASSED: test_gethostname: all
 All tests PASSED
