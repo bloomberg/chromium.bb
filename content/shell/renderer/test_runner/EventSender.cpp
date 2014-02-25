@@ -66,11 +66,13 @@ struct SavedEvent {
     WebMouseEvent::Button buttonType; // For MouseUp.
     WebPoint pos; // For MouseMove.
     int milliseconds; // For LeapForward.
+    int modifiers;
 
     SavedEvent()
         : type(Unspecified)
         , buttonType(WebMouseEvent::ButtonNone)
-        , milliseconds(0) { }
+        , milliseconds(0)
+        , modifiers(0) { }
 };
 
 WebDragData currentDragData;
@@ -116,11 +118,11 @@ void advanceEventTime(int32_t deltaMs)
     timeOffsetMs += deltaMs;
 }
 
-void initMouseEvent(WebInputEvent::Type t, WebMouseEvent::Button b, const WebPoint& pos, WebMouseEvent* e, double ts)
+void initMouseEvent(WebInputEvent::Type t, WebMouseEvent::Button b, const WebPoint& pos, WebMouseEvent* e, double ts, int modifiers)
 {
     e->type = t;
     e->button = b;
-    e->modifiers = 0;
+    e->modifiers = modifiers;
     e->x = pos.x;
     e->y = pos.y;
     e->globalX = pos.x;
@@ -129,7 +131,7 @@ void initMouseEvent(WebInputEvent::Type t, WebMouseEvent::Button b, const WebPoi
     e->clickCount = clickCount;
 }
 
-void applyKeyModifier(const string& modifierName, WebInputEvent* event)
+int getKeyModifier(const string& modifierName)
 {
     const char* characters = modifierName.c_str();
     if (!strcmp(characters, "ctrlKey")
@@ -137,32 +139,42 @@ void applyKeyModifier(const string& modifierName, WebInputEvent* event)
         || !strcmp(characters, "addSelectionKey")
 #endif
         ) {
-        event->modifiers |= WebInputEvent::ControlKey;
-    } else if (!strcmp(characters, "shiftKey") || !strcmp(characters, "rangeSelectionKey"))
-        event->modifiers |= WebInputEvent::ShiftKey;
-    else if (!strcmp(characters, "altKey")) {
-        event->modifiers |= WebInputEvent::AltKey;
+        return WebInputEvent::ControlKey;
+    } else if (!strcmp(characters, "shiftKey") || !strcmp(characters, "rangeSelectionKey")) {
+        return WebInputEvent::ShiftKey;
+    } else if (!strcmp(characters, "altKey")) {
+        return WebInputEvent::AltKey;
 #ifdef __APPLE__
     } else if (!strcmp(characters, "metaKey") || !strcmp(characters, "addSelectionKey")) {
-        event->modifiers |= WebInputEvent::MetaKey;
+        return WebInputEvent::MetaKey;
 #else
     } else if (!strcmp(characters, "metaKey")) {
-        event->modifiers |= WebInputEvent::MetaKey;
+        return WebInputEvent::MetaKey;
 #endif
     } else if (!strcmp(characters, "autoRepeat")) {
-        event->modifiers |= WebInputEvent::IsAutoRepeat;
+        return WebInputEvent::IsAutoRepeat;
+    } else if (!strcmp(characters, "copyKey")) {
+#ifdef __APPLE__
+        return WebInputEvent::AltKey;
+#else
+        return WebInputEvent::ControlKey;
+#endif
     }
+
+    return 0;
 }
 
-void applyKeyModifiers(const CppVariant* argument, WebInputEvent* event)
+int getKeyModifiers(const CppVariant* argument)
 {
+    int modifiers = 0;
     if (argument->isObject()) {
-        vector<string> modifiers = argument->toStringVector();
-        for (vector<string>::const_iterator i = modifiers.begin(); i != modifiers.end(); ++i)
-            applyKeyModifier(*i, event);
+        vector<string> modifierNames = argument->toStringVector();
+        for (vector<string>::const_iterator i = modifierNames.begin(); i != modifierNames.end(); ++i)
+            modifiers |= getKeyModifier(*i);
     } else if (argument->isString()) {
-        applyKeyModifier(argument->toString(), event);
+        modifiers |= getKeyModifier(argument->toString());
     }
+    return modifiers;
 }
 
 // Get the edit command corresponding to a keyboard event.
@@ -340,7 +352,7 @@ void EventSender::reset()
 void EventSender::doDragDrop(const WebDragData& dragData, WebDragOperationsMask mask)
 {
     WebMouseEvent event;
-    initMouseEvent(WebInputEvent::MouseDown, pressedButton, lastMousePos, &event, getCurrentEventTimeSec(m_delegate));
+    initMouseEvent(WebInputEvent::MouseDown, pressedButton, lastMousePos, &event, getCurrentEventTimeSec(m_delegate), 0);
     WebPoint clientPoint(event.x, event.y);
     WebPoint screenPoint(event.globalX, event.globalY);
     currentDragData = dragData;
@@ -414,9 +426,10 @@ void EventSender::mouseDown(const CppArgumentList& arguments, CppVariant* result
 
     WebMouseEvent event;
     pressedButton = buttonType;
-    initMouseEvent(WebInputEvent::MouseDown, buttonType, lastMousePos, &event, getCurrentEventTimeSec(m_delegate));
+    int modifiers = 0;
     if (arguments.size() >= 2 && (arguments[1].isObject() || arguments[1].isString()))
-        applyKeyModifiers(&(arguments[1]), &event);
+        modifiers = getKeyModifiers(&(arguments[1]));
+    initMouseEvent(WebInputEvent::MouseDown, buttonType, lastMousePos, &event, getCurrentEventTimeSec(m_delegate), modifiers);
     webview()->handleInputEvent(event);
 }
 
@@ -433,17 +446,20 @@ void EventSender::mouseUp(const CppArgumentList& arguments, CppVariant* result)
 
     WebMouseEvent::Button buttonType = getButtonTypeFromButtonNumber(buttonNumber);
 
+    int modifiers = 0;
+    if (arguments.size() >= 2 && (arguments[1].isObject() || arguments[1].isString()))
+        modifiers = getKeyModifiers(&(arguments[1]));
+
     if (isDragMode() && !replayingSavedEvents) {
         SavedEvent savedEvent;
         savedEvent.type = SavedEvent::MouseUp;
         savedEvent.buttonType = buttonType;
+        savedEvent.modifiers = modifiers;
         mouseEventQueue.push_back(savedEvent);
         replaySavedEvents();
     } else {
         WebMouseEvent event;
-        initMouseEvent(WebInputEvent::MouseUp, buttonType, lastMousePos, &event, getCurrentEventTimeSec(m_delegate));
-        if (arguments.size() >= 2 && (arguments[1].isObject() || arguments[1].isString()))
-            applyKeyModifiers(&(arguments[1]), &event);
+        initMouseEvent(WebInputEvent::MouseUp, buttonType, lastMousePos, &event, getCurrentEventTimeSec(m_delegate), modifiers);
         doMouseUp(event);
     }
 }
@@ -470,10 +486,14 @@ void EventSender::finishDragAndDrop(const WebMouseEvent& e, blink::WebDragOperat
     WebPoint clientPoint(e.x, e.y);
     WebPoint screenPoint(e.globalX, e.globalY);
     currentDragEffect = dragEffect;
-    if (currentDragEffect)
-        webview()->dragTargetDrop(clientPoint, screenPoint, 0);
-    else
+    if (currentDragEffect) {
+        // Specifically pass any keyboard modifiers to the drop
+        // method. This allows tests to control the drop type
+        // (i.e. copy or move).
+        webview()->dragTargetDrop(clientPoint, screenPoint, e.modifiers);
+    } else {
         webview()->dragTargetDragLeave();
+    }
     webview()->dragSourceEndedAt(clientPoint, screenPoint, currentDragEffect);
     webview()->dragSourceSystemDragEnded();
 
@@ -491,16 +511,19 @@ void EventSender::mouseMoveTo(const CppArgumentList& arguments, CppVariant* resu
 
     WebPoint mousePos(arguments[0].toInt32(), arguments[1].toInt32());
 
+    int modifiers = 0;
+    if (arguments.size() >= 3 && (arguments[2].isObject() || arguments[2].isString()))
+        modifiers = getKeyModifiers(&(arguments[2]));
+
     if (isDragMode() && pressedButton == WebMouseEvent::ButtonLeft && !replayingSavedEvents) {
         SavedEvent savedEvent;
         savedEvent.type = SavedEvent::MouseMove;
         savedEvent.pos = mousePos;
+        savedEvent.modifiers = modifiers;
         mouseEventQueue.push_back(savedEvent);
     } else {
         WebMouseEvent event;
-        initMouseEvent(WebInputEvent::MouseMove, pressedButton, mousePos, &event, getCurrentEventTimeSec(m_delegate));
-        if (arguments.size() >= 3 && (arguments[2].isObject() || arguments[2].isString()))
-            applyKeyModifiers(&(arguments[2]), &event);
+        initMouseEvent(WebInputEvent::MouseMove, pressedButton, mousePos, &event, getCurrentEventTimeSec(m_delegate), modifiers);
         doMouseMove(event);
     }
 }
@@ -626,7 +649,7 @@ void EventSender::keyDown(const CppArgumentList& arguments, CppVariant* result)
     eventDown.setKeyIdentifierFromWindowsKeyCode();
 
     if (arguments.size() >= 2 && (arguments[1].isObject() || arguments[1].isString())) {
-        applyKeyModifiers(&(arguments[1]), &eventDown);
+        eventDown.modifiers = getKeyModifiers(&(arguments[1]));
 #if WIN32 || __APPLE__ || defined(ANDROID) || defined(TOOLKIT_GTK)
         eventDown.isSystemKey = WebInputEventFactory::isSystemKeyEvent(eventDown);
 #endif
@@ -663,7 +686,7 @@ void EventSender::keyDown(const CppArgumentList& arguments, CppVariant* result)
 
     if (code == VKEY_ESCAPE && !currentDragData.isNull()) {
         WebMouseEvent event;
-        initMouseEvent(WebInputEvent::MouseDown, pressedButton, lastMousePos, &event, getCurrentEventTimeSec(m_delegate));
+        initMouseEvent(WebInputEvent::MouseDown, pressedButton, lastMousePos, &event, getCurrentEventTimeSec(m_delegate), 0);
         finishDragAndDrop(event, blink::WebDragOperationNone);
     }
 
@@ -802,7 +825,7 @@ void EventSender::replaySavedEvents()
         switch (e.type) {
         case SavedEvent::MouseMove: {
             WebMouseEvent event;
-            initMouseEvent(WebInputEvent::MouseMove, pressedButton, e.pos, &event, getCurrentEventTimeSec(m_delegate));
+            initMouseEvent(WebInputEvent::MouseMove, pressedButton, e.pos, &event, getCurrentEventTimeSec(m_delegate), e.modifiers);
             doMouseMove(event);
             break;
         }
@@ -811,7 +834,7 @@ void EventSender::replaySavedEvents()
             break;
         case SavedEvent::MouseUp: {
             WebMouseEvent event;
-            initMouseEvent(WebInputEvent::MouseUp, e.buttonType, lastMousePos, &event, getCurrentEventTimeSec(m_delegate));
+            initMouseEvent(WebInputEvent::MouseUp, e.buttonType, lastMousePos, &event, getCurrentEventTimeSec(m_delegate), e.modifiers);
             doMouseUp(event);
             break;
         }
@@ -874,11 +897,11 @@ void EventSender::contextClick(const CppArgumentList& arguments, CppVariant* res
     // test the case where both the left and right mouse buttons are pressed.
     if (pressedButton == WebMouseEvent::ButtonNone)
         pressedButton = WebMouseEvent::ButtonRight;
-    initMouseEvent(WebInputEvent::MouseDown, WebMouseEvent::ButtonRight, lastMousePos, &event, getCurrentEventTimeSec(m_delegate));
+    initMouseEvent(WebInputEvent::MouseDown, WebMouseEvent::ButtonRight, lastMousePos, &event, getCurrentEventTimeSec(m_delegate), 0);
     webview()->handleInputEvent(event);
 
 #ifdef WIN32
-    initMouseEvent(WebInputEvent::MouseUp, WebMouseEvent::ButtonRight, lastMousePos, &event, getCurrentEventTimeSec(m_delegate));
+    initMouseEvent(WebInputEvent::MouseUp, WebMouseEvent::ButtonRight, lastMousePos, &event, getCurrentEventTimeSec(m_delegate), 0);
     webview()->handleInputEvent(event);
 
     pressedButton = WebMouseEvent::ButtonNone;
@@ -1081,7 +1104,7 @@ void EventSender::sendCurrentTouchEvent(const WebInputEvent::Type type)
 void EventSender::mouseDragBegin(const CppArgumentList& arguments, CppVariant* result)
 {
     WebMouseWheelEvent event;
-    initMouseEvent(WebInputEvent::MouseWheel, WebMouseEvent::ButtonNone, lastMousePos, &event, getCurrentEventTimeSec(m_delegate));
+    initMouseEvent(WebInputEvent::MouseWheel, WebMouseEvent::ButtonNone, lastMousePos, &event, getCurrentEventTimeSec(m_delegate), 0);
     event.phase = WebMouseWheelEvent::PhaseBegan;
     event.hasPreciseScrollingDeltas = true;
     webview()->handleInputEvent(event);
@@ -1090,7 +1113,7 @@ void EventSender::mouseDragBegin(const CppArgumentList& arguments, CppVariant* r
 void EventSender::mouseDragEnd(const CppArgumentList& arguments, CppVariant* result)
 {
     WebMouseWheelEvent event;
-    initMouseEvent(WebInputEvent::MouseWheel, WebMouseEvent::ButtonNone, lastMousePos, &event, getCurrentEventTimeSec(m_delegate));
+    initMouseEvent(WebInputEvent::MouseWheel, WebMouseEvent::ButtonNone, lastMousePos, &event, getCurrentEventTimeSec(m_delegate), 0);
     event.phase = WebMouseWheelEvent::PhaseEnded;
     event.hasPreciseScrollingDeltas = true;
     webview()->handleInputEvent(event);
@@ -1099,7 +1122,7 @@ void EventSender::mouseDragEnd(const CppArgumentList& arguments, CppVariant* res
 void EventSender::mouseMomentumBegin(const CppArgumentList& arguments, CppVariant* result)
 {
     WebMouseWheelEvent event;
-    initMouseEvent(WebInputEvent::MouseWheel, WebMouseEvent::ButtonNone, lastMousePos, &event, getCurrentEventTimeSec(m_delegate));
+    initMouseEvent(WebInputEvent::MouseWheel, WebMouseEvent::ButtonNone, lastMousePos, &event, getCurrentEventTimeSec(m_delegate), 0);
     event.momentumPhase = WebMouseWheelEvent::PhaseBegan;
     event.hasPreciseScrollingDeltas = true;
     webview()->handleInputEvent(event);
@@ -1117,7 +1140,7 @@ void EventSender::mouseMomentumScrollBy(const CppArgumentList& arguments, CppVar
 void EventSender::mouseMomentumEnd(const CppArgumentList& arguments, CppVariant* result)
 {
     WebMouseWheelEvent event;
-    initMouseEvent(WebInputEvent::MouseWheel, WebMouseEvent::ButtonNone, lastMousePos, &event, getCurrentEventTimeSec(m_delegate));
+    initMouseEvent(WebInputEvent::MouseWheel, WebMouseEvent::ButtonNone, lastMousePos, &event, getCurrentEventTimeSec(m_delegate), 0);
     event.momentumPhase = WebMouseWheelEvent::PhaseEnded;
     event.hasPreciseScrollingDeltas = true;
     webview()->handleInputEvent(event);
@@ -1147,7 +1170,7 @@ void EventSender::initMouseWheelEvent(const CppArgumentList& arguments, CppVaria
     if (arguments.size() > 3 && arguments[3].isBool())
         hasPreciseScrollingDeltas = arguments[3].toBoolean();
 
-    initMouseEvent(WebInputEvent::MouseWheel, pressedButton, lastMousePos, event, getCurrentEventTimeSec(m_delegate));
+    initMouseEvent(WebInputEvent::MouseWheel, pressedButton, lastMousePos, event, getCurrentEventTimeSec(m_delegate), 0);
     event->wheelTicksX = static_cast<float>(horizontal);
     event->wheelTicksY = static_cast<float>(vertical);
     event->deltaX = event->wheelTicksX;
@@ -1371,7 +1394,7 @@ void EventSender::gestureEvent(WebInputEvent::Type type, const CppArgumentList& 
     // Long press might start a drag drop session. Complete it if so.
     if (type == WebInputEvent::GestureLongPress && !currentDragData.isNull()) {
         WebMouseEvent mouseEvent;
-        initMouseEvent(WebInputEvent::MouseDown, pressedButton, point, &mouseEvent, getCurrentEventTimeSec(m_delegate));
+        initMouseEvent(WebInputEvent::MouseDown, pressedButton, point, &mouseEvent, getCurrentEventTimeSec(m_delegate), 0);
         finishDragAndDrop(mouseEvent, blink::WebDragOperationNone);
     }
 }
