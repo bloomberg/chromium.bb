@@ -16,7 +16,7 @@ import sys
 # https://code.google.com/p/chromium/wiki/UpdatingClang
 # Reverting problematic clang rolls is safe, though.
 # Note: this revision is only used for Windows. Other platforms use update.sh.
-LLVM_WINDOWS_REVISION = '202097'
+LLVM_WIN_REVISION = 'HEAD'
 
 # Path constants. (All of these should be absolute paths.)
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -92,9 +92,9 @@ def RunCommand(command, tries=1):
 
 def Checkout(name, url, dir):
   """Checkout the SVN module at url into dir. Use name for the log message."""
-  print "Checking out %s r%s into '%s'" % (name, LLVM_WINDOWS_REVISION, dir)
+  print "Checking out %s r%s into '%s'" % (name, LLVM_WIN_REVISION, dir)
   RunCommand(['svn', 'checkout', '--force',
-              url + '@' + LLVM_WINDOWS_REVISION, dir], tries=2)
+              url + '@' + LLVM_WIN_REVISION, dir], tries=2)
 
 
 vs_version = None
@@ -111,8 +111,8 @@ def GetVSVersion():
 
 
 def UpdateClang():
-  print 'Updating Clang to %s...' % (LLVM_WINDOWS_REVISION)
-  if ReadStampFile() == LLVM_WINDOWS_REVISION:
+  print 'Updating Clang to %s...' % (LLVM_WIN_REVISION)
+  if LLVM_WIN_REVISION != 'HEAD' and ReadStampFile() == LLVM_WIN_REVISION:
     print 'Already up to date.'
     return 0
 
@@ -159,7 +159,7 @@ def UpdateClang():
         shutil.copy(os.path.join(root, f), asan_rt_lib_dst_dir)
         print "Copying %s to %s" % (f, asan_rt_lib_dst_dir)
 
-  WriteStampFile(LLVM_WINDOWS_REVISION)
+  WriteStampFile(LLVM_WIN_REVISION)
   print 'Clang update was successful.'
   return 0
 
