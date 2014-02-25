@@ -19,6 +19,11 @@ if (typeof(__install_onload_handler) == 'undefined')
 // value to ~15.
 var __test_timeout = 0;
 
+// Suppress all modal dialogs. They can cause the page cycler to hang.
+window.alert = function() {}
+window.confirm = function() {}
+window.prompt = function() {}
+
 function __set_cookie(name, value) {
   document.cookie = name + "=" + value + "; path=/";
 }
