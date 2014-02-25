@@ -74,10 +74,7 @@ void WaveShaperNode::setOversample(const String& type, ExceptionState& exception
     } else {
         exceptionState.throwDOMException(
             InvalidStateError,
-            ExceptionMessages::failedToSet(
-                "oversample",
-                "WaveShaperNode",
-                "invalid oversample '" + type + "': must be 'none', '2x', or '4x'."));
+            "The value provided ('" + type + "') is not one of 'none', '2x', or '4x'.");
     }
 }
 

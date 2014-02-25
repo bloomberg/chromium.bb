@@ -23,13 +23,13 @@ PASS context.createPeriodicWave(null, null) threw exception SyntaxError: Failed 
 PASS context.createPeriodicWave(new Float32Array(10), null) threw exception SyntaxError: Failed to execute 'createPeriodicWave' on 'AudioContext': invalid imaginary array.
 PASS context.createPeriodicWave(new Float32Array(4100), new Float32Array(4100)) threw exception IndexSizeError: Failed to execute 'createPeriodicWave' on 'AudioContext': length of real array (4100) exceeds allowed maximum of 4096.
 PASS context.createPeriodicWave(new Float32Array(10), new Float32Array(7)) threw exception IndexSizeError: Failed to execute 'createPeriodicWave' on 'AudioContext': length of real array (10) and length of imaginary array (7) must match..
-PASS node.fftSize = 42 threw exception IndexSizeError: Failed to set the 'fftSize' property on 'AnalyserNode': Failed to set the 'fftSize' property on 'AnalyserNode': FFT size (42) must be a power of two between 32 and 2048, inclusive.
-PASS node.fftSize = 16 threw exception IndexSizeError: Failed to set the 'fftSize' property on 'AnalyserNode': Failed to set the 'fftSize' property on 'AnalyserNode': FFT size (16) must be a power of two between 32 and 2048, inclusive.
-PASS node.fftSize = 4096 threw exception IndexSizeError: Failed to set the 'fftSize' property on 'AnalyserNode': Failed to set the 'fftSize' property on 'AnalyserNode': FFT size (4096) must be a power of two between 32 and 2048, inclusive.
-PASS node.minDecibels = -10 threw exception IndexSizeError: Failed to set the 'minDecibels' property on 'AnalyserNode': Failed to set the 'minDecibels' property on 'AnalyserNode': minDecibels (-10) must be less than or equal maxDecibels (-30)..
-PASS node.maxDecibels = -150 threw exception IndexSizeError: Failed to set the 'maxDecibels' property on 'AnalyserNode': Failed to set the 'maxDecibels' property on 'AnalyserNode': maxDecibels (-150) must be greater than or equal minDecibels (-100)..
-PASS node.smoothingTimeConstant = -0.1 threw exception IndexSizeError: Failed to set the 'smoothingTimeConstant' property on 'AnalyserNode': Failed to set the 'smoothingTimeConstant' property on 'AnalyserNode': smoothing value (-0.1) must be between 0 and 1, inclusive..
-PASS node.smoothingTimeConstant = 1.5 threw exception IndexSizeError: Failed to set the 'smoothingTimeConstant' property on 'AnalyserNode': Failed to set the 'smoothingTimeConstant' property on 'AnalyserNode': smoothing value (1.5) must be between 0 and 1, inclusive..
+PASS node.fftSize = 42 threw exception IndexSizeError: Failed to set the 'fftSize' property on 'AnalyserNode': The value provided (42 is not a power of two..
+PASS node.fftSize = 16 threw exception IndexSizeError: Failed to set the 'fftSize' property on 'AnalyserNode': The FTT size provided (16) is outside the range [32, 2048]..
+PASS node.fftSize = 4096 threw exception IndexSizeError: Failed to set the 'fftSize' property on 'AnalyserNode': The FTT size provided (4096) is outside the range [32, 2048]..
+PASS node.minDecibels = -10 threw exception IndexSizeError: Failed to set the 'minDecibels' property on 'AnalyserNode': The minDecibels provided (-10) is greater than the maximum bound (-30)..
+PASS node.maxDecibels = -150 threw exception IndexSizeError: Failed to set the 'maxDecibels' property on 'AnalyserNode': The maxDecibels provided (-150) is less than the minimum bound (-100)..
+PASS node.smoothingTimeConstant = -0.1 threw exception IndexSizeError: Failed to set the 'smoothingTimeConstant' property on 'AnalyserNode': The smoothing value provided (-0.1) is outside the range [0, 1]..
+PASS node.smoothingTimeConstant = 1.5 threw exception IndexSizeError: Failed to set the 'smoothingTimeConstant' property on 'AnalyserNode': The smoothing value provided (1.5) is outside the range [0, 1]..
 PASS node.getChannelData(2) threw exception IndexSizeError: Failed to execute 'getChannelData' on 'AudioBuffer': channel index (2) exceeds number of channels (1).
 PASS node.connect(null, 0, 0) threw exception SyntaxError: Failed to execute 'connect' on 'AudioNode': invalid destination node..
 PASS node.connect(context.destination, 100, 0) threw exception IndexSizeError: Failed to execute 'connect' on 'AudioNode': output index (100) exceeds number of outputs (1)..
@@ -40,11 +40,11 @@ PASS node.connect(otherContext.destination) threw exception SyntaxError: Failed 
 PASS node.channelCount = 99 threw exception NotSupportedError: Failed to set the 'channelCount' property on 'AudioNode': channel count (99) must be between 1 and 32..
 PASS node.channelCountMode = mode threw exception InvalidStateError: Failed to set the 'channelCountMode' property on 'AudioNode': invalid mode 'fancy'; must be 'max', 'clamped-max', or 'explicit'..
 PASS node.channelInterpretation = mode threw exception InvalidStateError: Failed to set the 'channelInterpretation' property on 'AudioNode': invalid interpretation 'fancy'; must be 'speakers' or 'discrete'..
-PASS context.destination.channelCount = 99 threw exception IndexSizeError: Failed to set the 'channelCount' property on 'AudioNode': Failed to set the 'channelCount' property on 'AudioDestinationNode': channel count (99) must be between 1 and 2..
+PASS context.destination.channelCount = 99 threw exception IndexSizeError: Failed to set the 'channelCount' property on 'AudioNode': The channel count provided (99) is outside the range [1, 2]..
 PASS new webkitOfflineAudioContext(99, 100, context.sampleRate) threw exception SyntaxError: Failed to construct 'OfflineAudioContext': number of channels (99) exceeds maximum (10)..
 PASS new webkitOfflineAudioContext(1, 100, 1) threw exception SyntaxError: Failed to construct 'OfflineAudioContext': sample rate (1) must be in the range 44100-96000 Hz..
 PASS new webkitOfflineAudioContext(1, 100, 1e6) threw exception SyntaxError: Failed to construct 'OfflineAudioContext': sample rate (1.00000e+6) must be in the range 44100-96000 Hz..
-PASS node.oversample = '9x' threw exception InvalidStateError: Failed to set the 'oversample' property on 'WaveShaperNode': Failed to set the 'oversample' property on 'WaveShaperNode': invalid oversample '9x': must be 'none', '2x', or '4x'..
+PASS node.oversample = '9x' threw exception InvalidStateError: Failed to set the 'oversample' property on 'WaveShaperNode': The value provided ('9x') is not one of 'none', '2x', or '4x'..
 PASS source = context.createBufferSource() did not throw exception.
 PASS source.buffer = buffer did not throw exception.
 PASS source.start() did not throw exception.

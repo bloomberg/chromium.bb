@@ -750,12 +750,7 @@ Dictionary::ConversionContext& Dictionary::ConversionContext::setConversionType(
 
 void Dictionary::ConversionContext::throwTypeError(const String& detail)
 {
-    if (forConstructor()) {
-        exceptionState().throwTypeError(detail);
-    } else {
-        ASSERT(!methodName().isEmpty());
-        exceptionState().throwTypeError(ExceptionMessages::failedToExecute(interfaceName(), methodName(), detail));
-    }
+    exceptionState().throwTypeError(detail);
 }
 
 } // namespace WebCore

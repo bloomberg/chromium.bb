@@ -74,13 +74,9 @@ void AnalyserNode::setFftSize(unsigned size, ExceptionState& exceptionState)
     if (!m_analyser.setFftSize(size)) {
         exceptionState.throwDOMException(
             IndexSizeError,
-            ExceptionMessages::failedToSet(
-                "fftSize",
-                "AnalyserNode",
-                "FFT size (" + String::number(size)
-                + ") must be a power of two between "
-                + String::number(RealtimeAnalyser::MinFFTSize) + " and "
-                + String::number(RealtimeAnalyser::MaxFFTSize) + ", inclusive"));
+            (size < RealtimeAnalyser::MinFFTSize || size > RealtimeAnalyser::MaxFFTSize) ?
+                ExceptionMessages::indexOutsideRange("FTT size", size, RealtimeAnalyser::MinFFTSize, ExceptionMessages::InclusiveBound, RealtimeAnalyser::MaxFFTSize, ExceptionMessages::InclusiveBound)
+                : ("The value provided (" + String::number(size) + " is not a power of two."));
     }
 }
 
@@ -91,12 +87,7 @@ void AnalyserNode::setMinDecibels(float k, ExceptionState& exceptionState)
     } else {
         exceptionState.throwDOMException(
             IndexSizeError,
-            ExceptionMessages::failedToSet(
-                "minDecibels",
-                "AnalyserNode",
-                "minDecibels (" + String::number(k)
-                + ") must be less than or equal maxDecibels (" + String::number(maxDecibels())
-                + ")."));
+            ExceptionMessages::indexExceedsMaximumBound("minDecibels", k, maxDecibels()));
     }
 }
 
@@ -107,12 +98,7 @@ void AnalyserNode::setMaxDecibels(float k, ExceptionState& exceptionState)
     } else {
         exceptionState.throwDOMException(
             IndexSizeError,
-            ExceptionMessages::failedToSet(
-                "maxDecibels",
-                "AnalyserNode",
-                "maxDecibels (" + String::number(k)
-                + ") must be greater than or equal minDecibels (" + String::number(minDecibels())
-                + ")."));
+            ExceptionMessages::indexExceedsMinimumBound("maxDecibels", k, minDecibels()));
     }
 }
 
@@ -123,11 +109,7 @@ void AnalyserNode::setSmoothingTimeConstant(float k, ExceptionState& exceptionSt
     } else {
         exceptionState.throwDOMException(
             IndexSizeError,
-            ExceptionMessages::failedToSet(
-                "smoothingTimeConstant",
-                "AnalyserNode",
-                "smoothing value (" + String::number(k)
-                + ") must be between 0 and 1, inclusive."));
+            ExceptionMessages::indexOutsideRange("smoothing value", k, 0.0f, ExceptionMessages::InclusiveBound, 1.0f, ExceptionMessages::InclusiveBound));
     }
 }
 

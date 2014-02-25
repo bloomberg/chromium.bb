@@ -110,11 +110,11 @@ public:
         result.append(" provided (");
         result.append(formatNumber(given));
         result.append(") is outside the range ");
-        result.append(lowerBound == ExclusiveBound ? '(' : '[');
+        result.append(lowerType == ExclusiveBound ? '(' : '[');
         result.append(formatNumber(lowerBound));
         result.append(", ");
         result.append(formatNumber(upperBound));
-        result.append(upperBound == ExclusiveBound ? ')' : ']');
+        result.append(upperType == ExclusiveBound ? ')' : ']');
         result.append('.');
         return result.toString();
     }

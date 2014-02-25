@@ -24,7 +24,7 @@ EXPECTED (textCue.pauseOnExit == 'true') OK
 
 On setting, the text track cue writing direction must be set to the value ... is a case-sensitive match for the new value, if any. If none of the values match, then the user agent must instead throw a SyntaxError exception.
 http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-vertical
-TEST(textCue.vertical = 'RL') THROWS(DOMException.SYNTAX_ERR: Failed to set the 'vertical' property on 'VTTCue': Failed to set the 'vertical' property on 'TextTrackCue': The value provided ('RL') is invalid. Only 'rl', 'lr', and the empty string are accepted.) OK
+TEST(textCue.vertical = 'RL') THROWS(DOMException.SYNTAX_ERR: Failed to set the 'vertical' property on 'VTTCue': The value provided ('RL') is invalid. Only 'rl', 'lr', and the empty string are accepted.) OK
 EXPECTED (textCue.vertical == '') OK
 RUN(textCue.vertical = 'rl')
 EXPECTED (textCue.vertical == 'rl') OK
@@ -34,8 +34,8 @@ EXPECTED (textCue.snapToLines == 'false') OK
 
 On setting, if the text track cue snap-to-lines flag is not set, and the new value is negative or greater than 100, then throw an IndexSizeError exception.
 http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-line
-TEST(textCue.line = -2) THROWS(DOMException.INDEX_SIZE_ERR: Failed to set the 'line' property on 'VTTCue': Failed to set the 'line' property on 'TextTrackCue': The snap-to-lines flag is not set, and the value provided (-2) is not between 0 and 100.) OK
-TEST(textCue.line = 102) THROWS(DOMException.INDEX_SIZE_ERR: Failed to set the 'line' property on 'VTTCue': Failed to set the 'line' property on 'TextTrackCue': The snap-to-lines flag is not set, and the value provided (102) is not between 0 and 100.) OK
+TEST(textCue.line = -2) THROWS(DOMException.INDEX_SIZE_ERR: Failed to set the 'line' property on 'VTTCue': The snap-to-lines flag is not set, and the value provided (-2) is not between 0 and 100.) OK
+TEST(textCue.line = 102) THROWS(DOMException.INDEX_SIZE_ERR: Failed to set the 'line' property on 'VTTCue': The snap-to-lines flag is not set, and the value provided (102) is not between 0 and 100.) OK
 EXPECTED (textCue.line == '-1') OK
 RUN(textCue.line = 42)
 EXPECTED (textCue.line == '42') OK
@@ -61,7 +61,7 @@ EXPECTED (textCue.size == '57') OK
 
 On setting, the text track cue alignment must be set to the value ... is a case-sensitive match for the new value, if any. If none of the values match, then the user agent must instead throw a SyntaxError exception.
 http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-align
-TEST(textCue.align = 'End') THROWS(DOMException.SYNTAX_ERR: Failed to set the 'align' property on 'VTTCue': Failed to set the 'align' property on 'TextTrackCue': The value provided ('End') is invalid. Only 'start', 'middle', 'end', 'left', and 'right' are accepted.) OK
+TEST(textCue.align = 'End') THROWS(DOMException.SYNTAX_ERR: Failed to set the 'align' property on 'VTTCue': The value provided ('End') is invalid. Only 'start', 'middle', 'end', 'left', and 'right' are accepted.) OK
 EXPECTED (textCue.align == 'middle') OK
 RUN(textCue.align = 'end')
 EXPECTED (textCue.align == 'end') OK

@@ -261,7 +261,7 @@ void MediaController::setVolume(double level, ExceptionState& exceptionState)
     // If the new value is outside the range 0.0 to 1.0 inclusive, then, on setting, an
     // IndexSizeError exception must be raised instead.
     if (level < 0 || level > 1) {
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToSet("volume", "MediaController", "The value provided (" + String::number(level) + ") is not in the range [0.0, 1.0]."));
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexOutsideRange("volume", level, 0.0, ExceptionMessages::InclusiveBound, 1.0, ExceptionMessages::InclusiveBound));
         return;
     }
 

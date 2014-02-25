@@ -277,7 +277,7 @@ void VTTCue::setVertical(const String& value, ExceptionState& exceptionState)
     else if (value == verticalGrowingRightKeyword())
         direction = VerticalGrowingRight;
     else
-        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToSet("vertical", "TextTrackCue", "The value provided ('" + value + "') is invalid. Only 'rl', 'lr', and the empty string are accepted."));
+        exceptionState.throwDOMException(SyntaxError, "The value provided ('" + value + "') is invalid. Only 'rl', 'lr', and the empty string are accepted.");
 
     if (direction == m_writingDirection)
         return;
@@ -303,7 +303,7 @@ void VTTCue::setLine(int position, ExceptionState& exceptionState)
     // On setting, if the text track cue snap-to-lines flag is not set, and the new
     // value is negative or greater than 100, then throw an IndexSizeError exception.
     if (!m_snapToLines && (position < 0 || position > 100)) {
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToSet("line", "TextTrackCue", "The snap-to-lines flag is not set, and the value provided (" + String::number(position) + ") is not between 0 and 100."));
+        exceptionState.throwDOMException(IndexSizeError, "The snap-to-lines flag is not set, and the value provided (" + String::number(position) + ") is not between 0 and 100.");
         return;
     }
 
@@ -390,7 +390,7 @@ void VTTCue::setAlign(const String& value, ExceptionState& exceptionState)
     else if (value == rightKeyword())
         alignment = Right;
     else
-        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToSet("align", "TextTrackCue", "The value provided ('" + value + "') is invalid. Only 'start', 'middle', 'end', 'left', and 'right' are accepted."));
+        exceptionState.throwDOMException(SyntaxError, "The value provided ('" + value + "') is invalid. Only 'start', 'middle', 'end', 'left', and 'right' are accepted.");
 
     if (alignment == m_cueAlignment)
         return;
