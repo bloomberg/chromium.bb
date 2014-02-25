@@ -155,7 +155,7 @@ void TextFieldInputType::setValue(const String& sanitizedValue, bool valueChange
     InputType::setValue(sanitizedValue, valueChanged, DispatchNoEvent);
 
     if (valueChanged)
-        updateView();
+        input->updateView();
 
     unsigned max = visibleValue().length();
     if (input->focused())

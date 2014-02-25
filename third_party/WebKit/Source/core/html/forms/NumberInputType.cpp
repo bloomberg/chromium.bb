@@ -112,7 +112,7 @@ const AtomicString& NumberInputType::formControlType() const
 void NumberInputType::setValue(const String& sanitizedValue, bool valueChanged, TextFieldEventBehavior eventBehavior)
 {
     if (!valueChanged && sanitizedValue.isEmpty() && !element().innerTextValue().isEmpty())
-        updateView();
+        element().updateView();
     TextFieldInputType::setValue(sanitizedValue, valueChanged, eventBehavior);
 }
 

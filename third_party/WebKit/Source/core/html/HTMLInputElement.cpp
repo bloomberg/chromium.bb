@@ -1031,6 +1031,11 @@ void HTMLInputElement::setValueInternal(const String& sanitizedValue, TextFieldE
     setNeedsValidityCheck();
 }
 
+void HTMLInputElement::updateView()
+{
+    m_inputTypeView->updateView();
+}
+
 double HTMLInputElement::valueAsDate() const
 {
     return m_inputType->valueAsDate();
