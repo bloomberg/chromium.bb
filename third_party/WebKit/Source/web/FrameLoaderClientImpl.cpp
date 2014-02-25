@@ -777,11 +777,11 @@ void FrameLoaderClientImpl::dispatchWillInsertBody()
         m_webFrame->viewImpl()->willInsertBody(m_webFrame);
 }
 
-PassOwnPtr<WebServiceWorkerProvider> FrameLoaderClientImpl::createServiceWorkerProvider(PassOwnPtr<WebServiceWorkerProviderClient> client)
+PassOwnPtr<WebServiceWorkerProvider> FrameLoaderClientImpl::createServiceWorkerProvider()
 {
     if (!m_webFrame->client())
         return nullptr;
-    return adoptPtr(m_webFrame->client()->createServiceWorkerProvider(m_webFrame, client.leakPtr()));
+    return adoptPtr(m_webFrame->client()->createServiceWorkerProvider(m_webFrame));
 }
 
 SharedWorkerRepositoryClient* FrameLoaderClientImpl::sharedWorkerRepositoryClient()

@@ -27,6 +27,9 @@ private:
     explicit NavigatorServiceWorker(Navigator&);
     ServiceWorkerContainer* serviceWorker();
 
+    // DOMWindowProperty override.
+    virtual void willDetachGlobalObjectFromFrame() OVERRIDE;
+
     RefPtr<ServiceWorkerContainer> m_serviceWorker;
 };
 

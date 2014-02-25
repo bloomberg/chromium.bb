@@ -33,15 +33,12 @@
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/CallbackPromiseAdapter.h"
 #include "bindings/v8/ScriptPromiseResolver.h"
-#include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/frame/Frame.h"
-#include "core/loader/FrameLoaderClient.h"
 #include "modules/serviceworkers/RegistrationOptionList.h"
 #include "modules/serviceworkers/ServiceWorker.h"
+#include "modules/serviceworkers/ServiceWorkerContainerClient.h"
 #include "modules/serviceworkers/ServiceWorkerError.h"
 #include "public/platform/WebServiceWorkerProvider.h"
-#include "public/platform/WebServiceWorkerProviderClient.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 
@@ -56,6 +53,14 @@ PassRefPtr<ServiceWorkerContainer> ServiceWorkerContainer::create()
 
 ServiceWorkerContainer::~ServiceWorkerContainer()
 {
+}
+
+void ServiceWorkerContainer::detachClient()
+{
+    if (m_provider) {
+        m_provider->setClient(0);
+        m_provider = 0;
+    }
 }
 
 ScriptPromise ServiceWorkerContainer::registerServiceWorker(ExecutionContext* executionContext, const String& url, const Dictionary& dictionary)
@@ -101,6 +106,7 @@ ScriptPromise ServiceWorkerContainer::unregisterServiceWorker(ExecutionContext* 
 }
 
 ServiceWorkerContainer::ServiceWorkerContainer()
+    : m_provider(0)
 {
     ScriptWrappable::init(this);
 }
@@ -108,10 +114,10 @@ ServiceWorkerContainer::ServiceWorkerContainer()
 WebServiceWorkerProvider* ServiceWorkerContainer::ensureProvider(ExecutionContext* executionContext)
 {
     if (!m_provider) {
-        // FIXME: This is temporarily hooked up here until we hook up to the loading process, or should be replaced with an interface that is dedicated for scripting.
-        m_provider = toDocument(executionContext)->frame()->loader().client()->createServiceWorkerProvider(nullptr);
+        m_provider = ServiceWorkerContainerClient::from(executionContext)->provider();
+        m_provider->setClient(this);
     }
-    return m_provider.get();
+    return m_provider;
 }
 
 } // namespace WebCore

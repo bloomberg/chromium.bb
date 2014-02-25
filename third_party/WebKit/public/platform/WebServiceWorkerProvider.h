@@ -38,15 +38,22 @@ namespace blink {
 class WebString;
 class WebURL;
 class WebServiceWorker;
+class WebServiceWorkerProviderClient;
 struct WebServiceWorkerError;
 
+// Created on the main thread, and may be passed to another script context
+// thread (e.g. worker thread) later. All methods of this class must be called
+// on the single script context thread.
 class WebServiceWorkerProvider {
 public:
+    // Called when a client wants to start listening to the service worker events. Must be cleared before the client becomes invalid.
+    virtual void setClient(WebServiceWorkerProviderClient*) { }
+
     // The WebServiceWorker and WebServiceWorkerError ownership are passed to the WebServiceWorkerCallbacks implementation.
     typedef WebCallbacks<WebServiceWorker, WebServiceWorkerError> WebServiceWorkerCallbacks;
     virtual void registerServiceWorker(const WebURL& pattern, const WebURL& scriptUrl, WebServiceWorkerCallbacks*) { }
-
     virtual void unregisterServiceWorker(const WebURL& pattern, WebServiceWorkerCallbacks*) { }
+
     virtual ~WebServiceWorkerProvider() { }
 };
 

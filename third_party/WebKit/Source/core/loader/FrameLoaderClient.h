@@ -227,7 +227,7 @@ class FetchRequest;
 
         virtual void dispatchDidChangeResourcePriority(unsigned long /*identifier*/, ResourceLoadPriority) { }
 
-        virtual PassOwnPtr<blink::WebServiceWorkerProvider> createServiceWorkerProvider(PassOwnPtr<blink::WebServiceWorkerProviderClient>) = 0;
+        virtual PassOwnPtr<blink::WebServiceWorkerProvider> createServiceWorkerProvider() = 0;
 
         virtual SharedWorkerRepositoryClient* sharedWorkerRepositoryClient() { return 0; }
 

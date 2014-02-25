@@ -552,6 +552,8 @@
       'serviceworkers/ServiceWorker.h',
       'serviceworkers/ServiceWorkerContainer.cpp',
       'serviceworkers/ServiceWorkerContainer.h',
+      'serviceworkers/ServiceWorkerContainerClient.cpp',
+      'serviceworkers/ServiceWorkerContainerClient.h',
       'serviceworkers/ServiceWorkerError.cpp',
       'serviceworkers/ServiceWorkerError.h',
       'serviceworkers/ServiceWorkerGlobalScope.cpp',

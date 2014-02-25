@@ -146,7 +146,7 @@ void EmptyFrameLoaderClient::didRequestAutocomplete(PassRefPtr<FormState>)
 {
 }
 
-PassOwnPtr<blink::WebServiceWorkerProvider> EmptyFrameLoaderClient::createServiceWorkerProvider(PassOwnPtr<blink::WebServiceWorkerProviderClient>)
+PassOwnPtr<blink::WebServiceWorkerProvider> EmptyFrameLoaderClient::createServiceWorkerProvider()
 {
     return nullptr;
 }

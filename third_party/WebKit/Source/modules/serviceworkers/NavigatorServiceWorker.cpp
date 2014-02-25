@@ -46,4 +46,10 @@ ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker()
     return m_serviceWorker.get();
 }
 
+void NavigatorServiceWorker::willDetachGlobalObjectFromFrame()
+{
+    m_serviceWorker->detachClient();
+    m_serviceWorker = nullptr;
+}
+
 } // namespace WebCore

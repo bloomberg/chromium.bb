@@ -42,6 +42,8 @@
 #include "core/workers/Worker.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerMessagingProxy.h"
+#include "modules/serviceworkers/ServiceWorkerContainerClient.h"
+#include "public/platform/WebServiceWorkerProvider.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebWorkerPermissionClientProxy.h"
@@ -59,6 +61,7 @@ WebCore::WorkerGlobalScopeProxy* WorkerGlobalScopeProxyProviderImpl::createWorke
         provideLocalFileSystemToWorker(workerClients.get(), LocalFileSystemClient::create());
         provideDatabaseClientToWorker(workerClients.get(), DatabaseClientImpl::create());
         providePermissionClientToWorker(workerClients.get(), adoptPtr(webFrame->client()->createWorkerPermissionClientProxy(webFrame)));
+        provideServiceWorkerContainerClientToWorker(workerClients.get(), adoptPtr(webFrame->client()->createServiceWorkerProvider(webFrame)));
         return new WorkerMessagingProxy(worker, workerClients.release());
     }
     ASSERT_NOT_REACHED();

@@ -92,7 +92,9 @@ public:
     virtual WebApplicationCacheHost* createApplicationCacheHost(WebFrame*, WebApplicationCacheHostClient*) { return 0; }
 
     // May return null. Takes ownership of the client.
+    // FIXME: Deprecate the second argument.
     virtual WebServiceWorkerProvider* createServiceWorkerProvider(WebFrame*, WebServiceWorkerProviderClient*) { return 0; }
+    virtual WebServiceWorkerProvider* createServiceWorkerProvider(WebFrame* frame) { return createServiceWorkerProvider(frame, 0); }
 
     // May return null.
     virtual WebWorkerPermissionClientProxy* createWorkerPermissionClientProxy(WebFrame*) { return 0; }
