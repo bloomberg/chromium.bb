@@ -165,7 +165,8 @@ void TextInputController::UnmarkText() {
 }
 
 void TextInputController::DoCommand(const std::string& text) {
-  view_->mainFrame()->executeCommand(blink::WebString::fromUTF8(text));
+  if (view_->mainFrame())
+    view_->mainFrame()->executeCommand(blink::WebString::fromUTF8(text));
 }
 
 void TextInputController::SetMarkedText(const std::string& text,
@@ -197,10 +198,13 @@ void TextInputController::SetMarkedText(const std::string& text,
 }
 
 bool TextInputController::HasMarkedText() {
-  return view_->mainFrame()->hasMarkedText();
+  return view_->mainFrame() && view_->mainFrame()->hasMarkedText();
 }
 
 std::vector<int> TextInputController::MarkedRange() {
+  if (!view_->mainFrame())
+    return std::vector<int>();
+
   blink::WebRange range = view_->mainFrame()->markedRange();
   std::vector<int> int_array(2);
   int_array[0] = range.startOffset();
@@ -210,6 +214,9 @@ std::vector<int> TextInputController::MarkedRange() {
 }
 
 std::vector<int> TextInputController::SelectedRange() {
+  if (!view_->mainFrame())
+    return std::vector<int>();
+
   blink::WebRange range = view_->mainFrame()->selectionRange();
   std::vector<int> int_array(2);
   int_array[0] = range.startOffset();
@@ -222,8 +229,11 @@ std::vector<int> TextInputController::FirstRectForCharacterRange(
     unsigned location,
     unsigned length) {
   blink::WebRect rect;
-  if (!view_->focusedFrame()->firstRectForCharacterRange(location, length, rect))
+  if (!view_->focusedFrame() ||
+      !view_->focusedFrame()->firstRectForCharacterRange(
+          location, length, rect)) {
     return std::vector<int>();
+  }
 
   std::vector<int> int_array(4);
   int_array[0] = rect.x;
