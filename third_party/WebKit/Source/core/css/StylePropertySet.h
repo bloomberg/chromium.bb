@@ -211,8 +211,6 @@ public:
     CSSStyleDeclaration* ensureCSSStyleDeclaration();
     int findPropertyIndex(CSSPropertyID) const;
 
-    Vector<CSSProperty, 4> m_propertyVector;
-
 private:
     explicit MutableStylePropertySet(CSSParserMode);
     explicit MutableStylePropertySet(const StylePropertySet&);
@@ -223,6 +221,8 @@ private:
     OwnPtr<PropertySetCSSStyleDeclaration> m_cssomWrapper;
 
     friend class StylePropertySet;
+
+    Vector<CSSProperty, 4> m_propertyVector;
 };
 
 DEFINE_TYPE_CASTS(MutableStylePropertySet, StylePropertySet, set, set->isMutable(), set.isMutable());
