@@ -2465,7 +2465,11 @@ void Node::registerScopedHTMLStyleChild()
 void Node::unregisterScopedHTMLStyleChild()
 {
     ASSERT(hasScopedHTMLStyleChild());
-    setHasScopedHTMLStyleChild(numberOfScopedHTMLStyleChildren());
+    for (Element* child = ElementTraversal::firstWithin(*this); child; child = ElementTraversal::nextSibling(*child)) {
+        if (child->hasTagName(HTMLNames::styleTag) && toHTMLStyleElement(child)->isRegisteredAsScoped())
+            return;
+    }
+    setHasScopedHTMLStyleChild(false);
 }
 
 size_t Node::numberOfScopedHTMLStyleChildren() const
