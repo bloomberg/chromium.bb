@@ -535,27 +535,18 @@ static inline void computeExpansionForJustifiedText(BidiRun* firstRun, BidiRun* 
 
 void RenderBlockFlow::updateLogicalWidthForAlignment(const ETextAlign& textAlign, const RootInlineBox* rootInlineBox, BidiRun* trailingSpaceRun, float& logicalLeft, float& totalLogicalWidth, float& availableLogicalWidth, int expansionOpportunityCount)
 {
-    TextDirection direction;
-    if (rootInlineBox && rootInlineBox->renderer()->style()->unicodeBidi() == Plaintext)
-        direction = rootInlineBox->direction();
-    else
-        direction = style()->direction();
-
     // Armed with the total width of the line (without justification),
     // we now examine our text-align property in order to determine where to position the
     // objects horizontally. The total width of the line can be increased if we end up
     // justifying text.
-    switch (textAlign) {
+    switch (simplifiedTextAlign(textAlign, rootInlineBox)) {
     case LEFT:
-    case WEBKIT_LEFT:
         updateLogicalWidthForLeftAlignedBlock(style()->isLeftToRightDirection(), trailingSpaceRun, logicalLeft, totalLogicalWidth, availableLogicalWidth);
         break;
     case RIGHT:
-    case WEBKIT_RIGHT:
         updateLogicalWidthForRightAlignedBlock(style()->isLeftToRightDirection(), trailingSpaceRun, logicalLeft, totalLogicalWidth, availableLogicalWidth);
         break;
     case CENTER:
-    case WEBKIT_CENTER:
         updateLogicalWidthForCenterAlignedBlock(style()->isLeftToRightDirection(), trailingSpaceRun, logicalLeft, totalLogicalWidth, availableLogicalWidth);
         break;
     case JUSTIFY:
@@ -565,20 +556,13 @@ void RenderBlockFlow::updateLogicalWidthForAlignment(const ETextAlign& textAlign
                 totalLogicalWidth -= trailingSpaceRun->m_box->logicalWidth();
                 trailingSpaceRun->m_box->setLogicalWidth(0);
             }
-            break;
+        } else {
+            ETextAlign adjustedTextAlign = style()->isLeftToRightDirection() ? LEFT : RIGHT;
+            updateLogicalWidthForAlignment(adjustedTextAlign, rootInlineBox, trailingSpaceRun, logicalLeft, totalLogicalWidth, availableLogicalWidth, expansionOpportunityCount);
         }
-        // Fall through
-    case TASTART:
-        if (direction == LTR)
-            updateLogicalWidthForLeftAlignedBlock(style()->isLeftToRightDirection(), trailingSpaceRun, logicalLeft, totalLogicalWidth, availableLogicalWidth);
-        else
-            updateLogicalWidthForRightAlignedBlock(style()->isLeftToRightDirection(), trailingSpaceRun, logicalLeft, totalLogicalWidth, availableLogicalWidth);
         break;
-    case TAEND:
-        if (direction == LTR)
-            updateLogicalWidthForRightAlignedBlock(style()->isLeftToRightDirection(), trailingSpaceRun, logicalLeft, totalLogicalWidth, availableLogicalWidth);
-        else
-            updateLogicalWidthForLeftAlignedBlock(style()->isLeftToRightDirection(), trailingSpaceRun, logicalLeft, totalLogicalWidth, availableLogicalWidth);
+    default:
+        ASSERT_NOT_REACHED();
         break;
     }
 }

@@ -65,6 +65,7 @@ class RenderTable;
 class RenderTheme;
 class RenderView;
 class ResourceLoadPriorityOptimizer;
+class RootInlineBox;
 class TransformState;
 
 struct PaintInfo;
@@ -779,6 +780,11 @@ public:
     // Anonymous blocks that are part of of a continuation chain will return their inline continuation's outline style instead.
     // This is typically only relevant when repainting.
     virtual RenderStyle* outlineStyleForRepaint() const { return style(); }
+
+    // Return LEFT, RIGHT, CENTER or JUSTIFY considering text alignment and direction.
+    // If a specific RootInlineBox is specified, it will be used to calculate the direction to be considered,
+    // otherwise the default direction for the associated style will be used.
+    ETextAlign simplifiedTextAlign(const ETextAlign&, const RootInlineBox* = 0) const;
 
     virtual CursorDirective getCursor(const LayoutPoint&, Cursor&) const;
 

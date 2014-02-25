@@ -3240,8 +3240,21 @@ static void computeLogicalLeftPositionedOffset(LayoutUnit& logicalLeftPos, const
     if (containerBlock->isHorizontalWritingMode() != child->isHorizontalWritingMode() && containerBlock->style()->isFlippedBlocksWritingMode()) {
         logicalLeftPos = containerLogicalWidth - logicalWidthValue - logicalLeftPos;
         logicalLeftPos += (child->isHorizontalWritingMode() ? containerBlock->borderRight() : containerBlock->borderBottom());
-    } else
-        logicalLeftPos += (child->isHorizontalWritingMode() ? containerBlock->borderLeft() : containerBlock->borderTop());
+    } else if (child->isHorizontalWritingMode()) {
+        RenderStyle* blockStyle = containerBlock->style();
+        bool containerBlockIsLTR = isLeftToRightDirection(blockStyle->direction());
+        ETextAlign textAlignForContainerBlock = containerBlock->simplifiedTextAlign(blockStyle->textAlign());
+        if (containerBlockIsLTR && textAlignForContainerBlock == RIGHT) {
+            logicalLeftPos = containerLogicalWidth - (logicalWidthValue + child->borderLogicalWidth() + child->style()->logicalRight().value());
+            logicalLeftPos += containerBlock->borderLogicalRight();
+        } else if (!containerBlockIsLTR && textAlignForContainerBlock == LEFT) {
+            logicalLeftPos += containerBlock->borderAndPaddingLogicalLeft() + logicalWidthValue;
+        } else {
+            logicalLeftPos += containerBlock->borderLeft();
+        }
+    } else {
+        logicalLeftPos += containerBlock->borderTop();
+    }
 }
 
 void RenderBox::shrinkToFitWidth(const LayoutUnit availableSpace, const LayoutUnit logicalLeftValue, const LayoutUnit bordersPlusPadding, LogicalExtentComputedValues& computedValues) const

@@ -3203,6 +3203,39 @@ PositionWithAffinity RenderObject::createPositionWithAffinity(const Position& po
     return createPositionWithAffinity(0, DOWNSTREAM);
 }
 
+ETextAlign RenderObject::simplifiedTextAlign(const ETextAlign& textAlign, const RootInlineBox* rootInlineBox) const
+{
+    TextDirection direction;
+    if (rootInlineBox && rootInlineBox->renderer()->style()->unicodeBidi() == Plaintext)
+        direction = rootInlineBox->direction();
+    else
+        direction = style()->direction();
+
+    bool isLTR = isLeftToRightDirection(direction);
+
+    switch (textAlign) {
+    case LEFT:
+    case WEBKIT_LEFT:
+        return LEFT;
+    case RIGHT:
+    case WEBKIT_RIGHT:
+        return RIGHT;
+    case CENTER:
+    case WEBKIT_CENTER:
+        return CENTER;
+    case TASTART:
+        return isLTR ? LEFT : RIGHT;
+    case TAEND:
+        return isLTR ? RIGHT : LEFT;
+    default:
+        break;
+    }
+
+    // The point of this method is to return only LEFT, RIGHT, CENTER or
+    // JUSTIFY, so we can only return JUSTIFY if this point is reached.
+    return JUSTIFY;
+}
+
 CursorDirective RenderObject::getCursor(const LayoutPoint&, Cursor&) const
 {
     return SetCursorBasedOnStyle;
