@@ -142,6 +142,7 @@ void OmniboxView::SetUserText(const base::string16& text,
 
 void OmniboxView::ShowURL() {
   SetFocus();
+  controller_->GetToolbarModel()->set_origin_chip_enabled(false);
   controller_->GetToolbarModel()->set_url_replacement_enabled(false);
   model_->UpdatePermanentText();
   RevertWithoutResettingSearchTermReplacement();
