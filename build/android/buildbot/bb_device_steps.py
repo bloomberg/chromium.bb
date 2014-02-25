@@ -452,7 +452,7 @@ def RunGPUTests(options):
 
   bb_annotations.PrintNamedStep('gpu_tests')
   revision = _GetRevision(options)
-  RunCmd(['content/test/gpu/run_gpu_test',
+  RunCmd(['content/test/gpu/run_gpu_test.py',
           'pixel',
           '--browser',
           'android-content-shell',
@@ -468,7 +468,7 @@ def RunGPUTests(options):
               options.build_properties.get('buildername', 'noname'))])
 
   bb_annotations.PrintNamedStep('webgl_conformance_tests')
-  RunCmd(['content/test/gpu/run_gpu_test',
+  RunCmd(['content/test/gpu/run_gpu_test.py',
           '--browser=android-content-shell', 'webgl_conformance',
           '--webgl-conformance-version=1.0.1'])
 
