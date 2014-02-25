@@ -173,11 +173,10 @@ private:
 
 } // namespace
 
-PassRefPtr<MIDIOutput> MIDIOutput::create(MIDIAccess* access, unsigned portIndex, const String& id, const String& manufacturer, const String& name, const String& version)
+PassRefPtrWillBeRawPtr<MIDIOutput> MIDIOutput::create(MIDIAccess* access, unsigned portIndex, const String& id, const String& manufacturer, const String& name, const String& version)
 {
     ASSERT(access);
-    RefPtr<MIDIOutput> output = adoptRef(new MIDIOutput(access, portIndex, id, manufacturer, name, version));
-    return output.release();
+    return adoptRefCountedWillBeRefCountedGarbageCollected(new MIDIOutput(access, portIndex, id, manufacturer, name, version));
 }
 
 MIDIOutput::MIDIOutput(MIDIAccess* access, unsigned portIndex, const String& id, const String& manufacturer, const String& name, const String& version)
@@ -230,6 +229,11 @@ void MIDIOutput::send(Uint8Array* data, ExceptionState& exceptionState)
 void MIDIOutput::send(Vector<unsigned> unsignedData, ExceptionState& exceptionState)
 {
     send(unsignedData, 0.0, exceptionState);
+}
+
+void MIDIOutput::trace(Visitor* visitor)
+{
+    MIDIPort::trace(visitor);
 }
 
 } // namespace WebCore

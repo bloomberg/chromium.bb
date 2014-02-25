@@ -40,12 +40,7 @@ using namespace WebCore;
 
 namespace blink {
 
-WebMIDIPermissionRequest::WebMIDIPermissionRequest(const PassRefPtr<WebCore::MIDIAccess>& midi)
-    : m_private(midi)
-{
-}
-
-WebMIDIPermissionRequest::WebMIDIPermissionRequest(WebCore::MIDIAccess* midi)
+WebMIDIPermissionRequest::WebMIDIPermissionRequest(const PassRefPtrWillBeRawPtr<WebCore::MIDIAccess>& midi)
     : m_private(midi)
 {
 }

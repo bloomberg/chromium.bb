@@ -66,4 +66,9 @@ void MIDIInput::didReceiveMIDIData(unsigned portIndex, const unsigned char* data
     dispatchEvent(MIDIMessageEvent::create(timeStamp, array));
 }
 
+void MIDIInput::trace(Visitor* visitor)
+{
+    MIDIPort::trace(visitor);
+}
+
 } // namespace WebCore

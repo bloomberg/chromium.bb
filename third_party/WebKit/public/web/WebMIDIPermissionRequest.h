@@ -60,8 +60,7 @@ public:
     BLINK_EXPORT bool equals(const WebMIDIPermissionRequest&) const;
 
 #if BLINK_IMPLEMENTATION
-    explicit WebMIDIPermissionRequest(const PassRefPtr<WebCore::MIDIAccess>&);
-    explicit WebMIDIPermissionRequest(WebCore::MIDIAccess*);
+    explicit WebMIDIPermissionRequest(const PassRefPtrWillBeRawPtr<WebCore::MIDIAccess>&);
 
     WebCore::MIDIAccess* midiAccess() const { return m_private.get(); }
 #endif

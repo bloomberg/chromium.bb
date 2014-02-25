@@ -34,7 +34,6 @@
 #include "WebMIDIClient.h"
 #include "WebMIDIPermissionRequest.h"
 #include "modules/webmidi/MIDIAccess.h"
-#include "wtf/RefPtr.h"
 
 using WebCore::MIDIAccess;
 
@@ -45,7 +44,7 @@ MIDIClientProxy::MIDIClientProxy(WebMIDIClient* client)
 {
 }
 
-void MIDIClientProxy::requestSysExPermission(PassRefPtr<MIDIAccess> access)
+void MIDIClientProxy::requestSysExPermission(PassRefPtrWillBeRawPtr<MIDIAccess> access)
 {
     if (m_client)
         m_client->requestSysExPermission(WebMIDIPermissionRequest(access));

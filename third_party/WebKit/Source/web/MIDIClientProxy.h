@@ -31,8 +31,8 @@
 #ifndef MIDIClientProxy_h
 #define MIDIClientProxy_h
 
+#include "heap/Handle.h"
 #include "modules/webmidi/MIDIClient.h"
-#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 class MIDIAccess;
@@ -47,7 +47,7 @@ public:
     explicit MIDIClientProxy(WebMIDIClient*);
 
     // WebCore::MIDIClient
-    virtual void requestSysExPermission(PassRefPtr<WebCore::MIDIAccess>) OVERRIDE;
+    virtual void requestSysExPermission(PassRefPtrWillBeRawPtr<WebCore::MIDIAccess>) OVERRIDE;
     virtual void cancelSysExPermissionRequest(WebCore::MIDIAccess*) OVERRIDE;
 
 private:

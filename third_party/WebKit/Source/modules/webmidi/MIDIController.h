@@ -32,7 +32,7 @@
 #define MIDIController_h
 
 #include "core/page/Page.h"
-#include "wtf/RefPtr.h"
+#include "heap/Handle.h"
 
 namespace WebCore {
 
@@ -43,7 +43,7 @@ class MIDIController FINAL : public Supplement<Page> {
 public:
     virtual ~MIDIController();
 
-    void requestSysExPermission(PassRefPtr<MIDIAccess>);
+    void requestSysExPermission(PassRefPtrWillBeRawPtr<MIDIAccess>);
     void cancelSysExPermissionRequest(MIDIAccess*);
 
     static PassOwnPtr<MIDIController> create(MIDIClient*);

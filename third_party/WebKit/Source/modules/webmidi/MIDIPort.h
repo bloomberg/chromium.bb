@@ -60,7 +60,7 @@ public:
 
     MIDIAccess* midiAccess() const { return m_access; }
 
-    void trace(Visitor*);
+    virtual void trace(Visitor*);
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect);
 
