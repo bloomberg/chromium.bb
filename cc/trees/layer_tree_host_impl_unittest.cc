@@ -5962,5 +5962,30 @@ TEST_F(LayerTreeHostImplVirtualViewportTest, FlingScrollBubblesToInner) {
   }
 }
 
+class LayerTreeHostImplWithImplicitLimitsTest : public LayerTreeHostImplTest {
+ public:
+  virtual void SetUp() OVERRIDE {
+    LayerTreeSettings settings = DefaultSettings();
+    settings.max_unused_resource_memory_percentage = 50;
+    settings.max_memory_for_prepaint_percentage = 50;
+    CreateHostImpl(settings, CreateOutputSurface());
+  }
+};
+
+TEST_F(LayerTreeHostImplWithImplicitLimitsTest, ImplicitMemoryLimits) {
+  // Set up a memory policy and percentages which could cause
+  // 32-bit integer overflows.
+  ManagedMemoryPolicy mem_policy(300 * 1024 * 1024);  // 300MB
+
+  // Verify implicit limits are calculated correctly with no overflows
+  host_impl_->SetMemoryPolicy(mem_policy);
+  EXPECT_EQ(host_impl_->global_tile_state().hard_memory_limit_in_bytes,
+            300u * 1024u * 1024u);
+  EXPECT_EQ(host_impl_->global_tile_state().soft_memory_limit_in_bytes,
+            150u * 1024u * 1024u);
+  EXPECT_EQ(host_impl_->global_tile_state().unused_memory_limit_in_bytes,
+            75u * 1024u * 1024u);
+}
+
 }  // namespace
 }  // namespace cc

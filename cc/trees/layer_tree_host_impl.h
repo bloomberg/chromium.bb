@@ -347,6 +347,9 @@ class CC_EXPORT LayerTreeHostImpl
   TopControlsManager* top_controls_manager() {
     return top_controls_manager_.get();
   }
+  const GlobalStateThatImpactsTilePriority& global_tile_state() {
+    return global_tile_state_;
+  }
 
   Proxy* proxy() const { return proxy_; }
 
