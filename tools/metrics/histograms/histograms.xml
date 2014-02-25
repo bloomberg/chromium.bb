@@ -3814,6 +3814,23 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Event.ActionAfterDoubleTapNoDelay" enum="ActionAfterDoubleTap">
+  <summary>
+    On non-mobile sites, gesture taps are delayed to prevent double taps from
+    sending a click event. This stat tracks the user's first action within 5
+    seconds after a double tap gesture when the gesture tap delay is disabled.
+  </summary>
+</histogram>
+
+<histogram name="Event.ActionAfterDoubleTapWithDelay"
+    enum="ActionAfterDoubleTap">
+  <summary>
+    On non-mobile sites, gesture taps are delayed to prevent double taps from
+    sending a click event. This stat tracks the user's first action within 5
+    seconds after a double tap gesture when gesture tap events are delayed.
+  </summary>
+</histogram>
+
 <histogram name="Event.AggregatedLatency.Renderer2" units="microseconds">
   <summary>
     Time between initiation of any input event and the renderer receiving and
@@ -4138,6 +4155,15 @@ other types of suffix sets.
   <summary>
     Time between initial creation of touch event and the resulting frame from
     ScrollUpdate is swapped.
+  </summary>
+</histogram>
+
+<histogram name="Event.SingleTapType" enum="TapDelayType">
+  <summary>
+    On non-mobile sites, gesture taps are delayed to prevent double taps from
+    sending a click event. This stat counts the number of taps that are delayed
+    by the double-tap delay versus those that are sent immediately on mobile
+    sites.
   </summary>
 </histogram>
 
@@ -21691,33 +21717,6 @@ other types of suffix sets.
   <obsolete>
     Deprecated as of 7/2013.
   </obsolete>
-</histogram>
-
-<histogram name="Touchscreen.ActionAfterDoubleTapNoDelay"
-    enum="ActionAfterDoubleTap">
-  <summary>
-    On non-mobile sites, gesture taps are delayed to prevent double taps from
-    sending a click event. This stat tracks the user's first action within 5
-    seconds after a double tap gesture when the gesture tap delay is disabled.
-  </summary>
-</histogram>
-
-<histogram name="Touchscreen.ActionAfterDoubleTapWithDelay"
-    enum="ActionAfterDoubleTap">
-  <summary>
-    On non-mobile sites, gesture taps are delayed to prevent double taps from
-    sending a click event. This stat tracks the user's first action within 5
-    seconds after a double tap gesture when gesture tap events are delayed.
-  </summary>
-</histogram>
-
-<histogram name="Touchscreen.SingleTapType" enum="TapDelayType">
-  <summary>
-    On non-mobile sites, gesture taps are delayed to prevent double taps from
-    sending a click event. This stat counts the number of taps that are delayed
-    by the double-tap delay versus those that are sent immediately on mobile
-    sites.
-  </summary>
 </histogram>
 
 <histogram name="Translate.AlwaysTranslateLang">
