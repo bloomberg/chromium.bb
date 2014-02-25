@@ -1299,7 +1299,7 @@ int RenderInline::baselinePosition(FontBaseline baselineType, bool firstLine, Li
     return fontMetrics.ascent(baselineType) + (lineHeight(firstLine, direction, linePositionMode) - fontMetrics.height()) / 2;
 }
 
-LayoutSize RenderInline::offsetForInFlowPositionedInline(const RenderBox* child) const
+LayoutSize RenderInline::offsetForInFlowPositionedInline(const RenderBox& child) const
 {
     // FIXME: This function isn't right with mixed writing modes.
 
@@ -1322,18 +1322,18 @@ LayoutSize RenderInline::offsetForInFlowPositionedInline(const RenderBox* child)
         blockPosition = layer()->staticBlockPosition();
     }
 
-    if (!child->style()->hasStaticInlinePosition(style()->isHorizontalWritingMode()))
+    if (!child.style()->hasStaticInlinePosition(style()->isHorizontalWritingMode()))
         logicalOffset.setWidth(inlinePosition);
 
     // This is not terribly intuitive, but we have to match other browsers.  Despite being a block display type inside
     // an inline, we still keep our x locked to the left of the relative positioned inline.  Arguably the correct
     // behavior would be to go flush left to the block that contains the inline, but that isn't what other browsers
     // do.
-    else if (!child->style()->isOriginalDisplayInlineType())
+    else if (!child.style()->isOriginalDisplayInlineType())
         // Avoid adding in the left border/padding of the containing block twice.  Subtract it out.
-        logicalOffset.setWidth(inlinePosition - child->containingBlock()->borderAndPaddingLogicalLeft());
+        logicalOffset.setWidth(inlinePosition - child.containingBlock()->borderAndPaddingLogicalLeft());
 
-    if (!child->style()->hasStaticBlockPosition(style()->isHorizontalWritingMode()))
+    if (!child.style()->hasStaticBlockPosition(style()->isHorizontalWritingMode()))
         logicalOffset.setHeight(blockPosition);
 
     return style()->isHorizontalWritingMode() ? logicalOffset : logicalOffset.transposedSize();

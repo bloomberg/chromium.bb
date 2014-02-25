@@ -104,6 +104,31 @@ static RenderLayer::UpdateLayerPositionsFlags updateLayerPositionFlags(RenderLay
     return flags;
 }
 
+class FrameViewLayoutStateMaintainer {
+    WTF_MAKE_NONCOPYABLE(FrameViewLayoutStateMaintainer);
+public:
+    FrameViewLayoutStateMaintainer(RenderObject& root)
+        : m_view(*root.view())
+        , m_disabled(m_view.frameView()->isSubtreeLayout() && m_view.shouldDisableLayoutStateForSubtree(root))
+    {
+        if (m_view.frameView()->isSubtreeLayout())
+            m_view.pushLayoutState(root);
+        if (m_disabled)
+            m_view.disableLayoutState();
+    }
+
+    ~FrameViewLayoutStateMaintainer()
+    {
+        if (m_disabled)
+            m_view.enableLayoutState();
+        if (m_view.frameView()->isSubtreeLayout())
+            m_view.popLayoutState();
+    }
+private:
+    RenderView& m_view;
+    bool m_disabled;
+};
+
 FrameView::FrameView(Frame* frame)
     : m_frame(frame)
     , m_canHaveScrollbars(true)
@@ -758,17 +783,10 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
     // FIXME: The 300 other lines in layout() probably belong in other helper functions
     // so that a single human could understand what layout() is actually doing.
 
+    FrameViewLayoutStateMaintainer statePusher(*rootForThisLayout);
+    forceLayoutParentViewIfNeeded();
+
     {
-        bool disableLayoutState = false;
-        if (inSubtreeLayout) {
-            RenderView* view = rootForThisLayout->view();
-            disableLayoutState = view->shouldDisableLayoutStateForSubtree(rootForThisLayout);
-            view->pushLayoutState(rootForThisLayout);
-        }
-        LayoutStateDisabler layoutStateDisabler(disableLayoutState ? rootForThisLayout->view() : 0);
-
-        forceLayoutParentViewIfNeeded();
-
         // Text Autosizing requires two-pass layout which is incompatible with partial layout.
         // If enabled, only do partial layout for the second layout.
         // FIXME (crbug.com/256657): Do not do two layouts for text autosizing.
@@ -787,9 +805,6 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
         rootForThisLayout->layout();
         gatherDebugLayoutRects(rootForThisLayout);
     }
-
-    if (inSubtreeLayout)
-        rootForThisLayout->view()->popLayoutState(rootForThisLayout);
 
     lifecycle().advanceTo(DocumentLifecycle::AfterPerformLayout);
 }

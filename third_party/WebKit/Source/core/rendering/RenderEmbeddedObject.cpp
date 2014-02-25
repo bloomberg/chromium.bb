@@ -231,7 +231,7 @@ void RenderEmbeddedObject::layout()
     if (newSize == oldSize && !childBox->needsLayout())
         return;
 
-    LayoutStateMaintainer statePusher(this, locationOffset());
+    LayoutStateMaintainer statePusher(*this, locationOffset());
 
     childBox->setLocation(LayoutPoint(borderLeft(), borderTop()) + LayoutSize(paddingLeft(), paddingTop()));
     childBox->style()->setHeight(Length(newSize.height(), Fixed));

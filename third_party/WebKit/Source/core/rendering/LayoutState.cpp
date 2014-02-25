@@ -33,26 +33,26 @@
 
 namespace WebCore {
 
-LayoutState::LayoutState(LayoutState* prev, RenderBox* renderer, const LayoutSize& offset, LayoutUnit pageLogicalHeight, bool pageLogicalHeightChanged, ColumnInfo* columnInfo)
+LayoutState::LayoutState(LayoutState* prev, RenderBox& renderer, const LayoutSize& offset, LayoutUnit pageLogicalHeight, bool pageLogicalHeightChanged, ColumnInfo* columnInfo)
     : m_columnInfo(columnInfo)
     , m_next(prev)
     , m_shapeInsideInfo(0)
 #ifndef NDEBUG
-    , m_renderer(renderer)
+    , m_renderer(&renderer)
 #endif
 {
     ASSERT(m_next);
 
-    bool fixed = renderer->isOutOfFlowPositioned() && renderer->style()->position() == FixedPosition;
+    bool fixed = renderer.isOutOfFlowPositioned() && renderer.style()->position() == FixedPosition;
     if (fixed) {
         // FIXME: This doesn't work correctly with transforms.
-        FloatPoint fixedOffset = renderer->view()->localToAbsolute(FloatPoint(), IsFixed);
+        FloatPoint fixedOffset = renderer.view()->localToAbsolute(FloatPoint(), IsFixed);
         m_paintOffset = LayoutSize(fixedOffset.x(), fixedOffset.y()) + offset;
     } else
         m_paintOffset = prev->m_paintOffset + offset;
 
-    if (renderer->isOutOfFlowPositioned() && !fixed) {
-        if (RenderObject* container = renderer->container()) {
+    if (renderer.isOutOfFlowPositioned() && !fixed) {
+        if (RenderObject* container = renderer.container()) {
             if (container->isInFlowPositioned() && container->isRenderInline())
                 m_paintOffset += toRenderInline(container)->offsetForInFlowPositionedInline(renderer);
         }
@@ -60,17 +60,17 @@ LayoutState::LayoutState(LayoutState* prev, RenderBox* renderer, const LayoutSiz
 
     m_layoutOffset = m_paintOffset;
 
-    if (renderer->isInFlowPositioned() && renderer->hasLayer())
-        m_paintOffset += renderer->layer()->offsetForInFlowPosition();
+    if (renderer.isInFlowPositioned() && renderer.hasLayer())
+        m_paintOffset += renderer.layer()->offsetForInFlowPosition();
 
     m_clipped = !fixed && prev->m_clipped;
     if (m_clipped)
         m_clipRect = prev->m_clipRect;
 
-    if (renderer->hasOverflowClip()) {
-        LayoutSize deltaSize = RuntimeEnabledFeatures::repaintAfterLayoutEnabled() ? LayoutSize() : renderer->view()->layoutDelta();
+    if (renderer.hasOverflowClip()) {
+        LayoutSize deltaSize = RuntimeEnabledFeatures::repaintAfterLayoutEnabled() ? LayoutSize() : renderer.view()->layoutDelta();
 
-        LayoutRect clipRect(toPoint(m_paintOffset) + deltaSize, renderer->cachedSizeForOverflowClip());
+        LayoutRect clipRect(toPoint(m_paintOffset) + deltaSize, renderer.cachedSizeForOverflowClip());
         if (m_clipped)
             m_clipRect.intersect(clipRect);
         else {
@@ -78,16 +78,16 @@ LayoutState::LayoutState(LayoutState* prev, RenderBox* renderer, const LayoutSiz
             m_clipped = true;
         }
 
-        m_paintOffset -= renderer->scrolledContentOffset();
+        m_paintOffset -= renderer.scrolledContentOffset();
     }
 
     // If we establish a new page height, then cache the offset to the top of the first page.
     // We can compare this later on to figure out what part of the page we're actually on,
-    if (pageLogicalHeight || m_columnInfo || renderer->isRenderFlowThread()) {
+    if (pageLogicalHeight || m_columnInfo || renderer.isRenderFlowThread()) {
         m_pageLogicalHeight = pageLogicalHeight;
-        bool isFlipped = renderer->style()->isFlippedBlocksWritingMode();
-        m_pageOffset = LayoutSize(m_layoutOffset.width() + (!isFlipped ? renderer->borderLeft() + renderer->paddingLeft() : renderer->borderRight() + renderer->paddingRight()),
-                               m_layoutOffset.height() + (!isFlipped ? renderer->borderTop() + renderer->paddingTop() : renderer->borderBottom() + renderer->paddingBottom()));
+        bool isFlipped = renderer.style()->isFlippedBlocksWritingMode();
+        m_pageOffset = LayoutSize(m_layoutOffset.width() + (!isFlipped ? renderer.borderLeft() + renderer.paddingLeft() : renderer.borderRight() + renderer.paddingRight()),
+            m_layoutOffset.height() + (!isFlipped ? renderer.borderTop() + renderer.paddingTop() : renderer.borderBottom() + renderer.paddingBottom()));
         m_pageLogicalHeightChanged = pageLogicalHeightChanged;
     } else {
         // If we don't establish a new page height, then propagate the old page height and offset down.
@@ -97,17 +97,17 @@ LayoutState::LayoutState(LayoutState* prev, RenderBox* renderer, const LayoutSiz
 
         // Disable pagination for objects we don't support. For now this includes overflow:scroll/auto, inline blocks and
         // writing mode roots.
-        if (renderer->isUnsplittableForPagination())
+        if (renderer.isUnsplittableForPagination())
             m_pageLogicalHeight = 0;
     }
 
     if (!m_columnInfo)
         m_columnInfo = m_next->m_columnInfo;
 
-    if (renderer->isRenderBlock()) {
-        const RenderBlock* renderBlock = toRenderBlock(renderer);
-        m_shapeInsideInfo = renderBlock->shapeInsideInfo();
-        if (!m_shapeInsideInfo && m_next->m_shapeInsideInfo && renderBlock->allowsShapeInsideInfoSharing(m_next->m_shapeInsideInfo->owner()))
+    if (renderer.isRenderBlock()) {
+        const RenderBlock& renderBlock = toRenderBlock(renderer);
+        m_shapeInsideInfo = renderBlock.shapeInsideInfo();
+        if (!m_shapeInsideInfo && m_next->m_shapeInsideInfo && renderBlock.allowsShapeInsideInfoSharing(m_next->m_shapeInsideInfo->owner()))
             m_shapeInsideInfo = m_next->m_shapeInsideInfo;
     }
 
@@ -119,12 +119,12 @@ LayoutState::LayoutState(LayoutState* prev, RenderBox* renderer, const LayoutSiz
 #endif
     }
 
-    m_isPaginated = m_pageLogicalHeight || m_columnInfo || renderer->isRenderFlowThread();
+    m_isPaginated = m_pageLogicalHeight || m_columnInfo || renderer.isRenderFlowThread();
 
     // FIXME: <http://bugs.webkit.org/show_bug.cgi?id=13443> Apply control clip if present.
 }
 
-LayoutState::LayoutState(RenderObject* root)
+LayoutState::LayoutState(RenderObject& root)
     : m_clipped(false)
     , m_isPaginated(false)
     , m_pageLogicalHeightChanged(false)
@@ -137,10 +137,10 @@ LayoutState::LayoutState(RenderObject* root)
     , m_shapeInsideInfo(0)
     , m_pageLogicalHeight(0)
 #ifndef NDEBUG
-    , m_renderer(root)
+    , m_renderer(&root)
 #endif
 {
-    RenderObject* container = root->container();
+    RenderObject* container = root.container();
     FloatPoint absContentPoint = container->localToAbsolute(FloatPoint(), UseTransforms);
     m_paintOffset = LayoutSize(absContentPoint.x(), absContentPoint.y());
 
@@ -169,14 +169,14 @@ void LayoutState::clearPaginationInformation()
     m_columnInfo = m_next->m_columnInfo;
 }
 
-LayoutUnit LayoutState::pageLogicalOffset(const RenderBox* child, LayoutUnit childLogicalOffset) const
+LayoutUnit LayoutState::pageLogicalOffset(const RenderBox& child, const LayoutUnit& childLogicalOffset) const
 {
-    if (child->isHorizontalWritingMode())
+    if (child.isHorizontalWritingMode())
         return m_layoutOffset.height() + childLogicalOffset - m_pageOffset.height();
     return m_layoutOffset.width() + childLogicalOffset - m_pageOffset.width();
 }
 
-void LayoutState::addForcedColumnBreak(RenderBox* child, LayoutUnit childLogicalOffset)
+void LayoutState::addForcedColumnBreak(const RenderBox& child, const LayoutUnit& childLogicalOffset)
 {
     if (!m_columnInfo || m_columnInfo->columnHeight())
         return;

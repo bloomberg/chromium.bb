@@ -139,11 +139,18 @@ public:
 
     bool doingFullRepaint() const { return m_frameView->needsFullRepaint(); }
 
-    // Subtree push/pop
-    void pushLayoutState(RenderObject*);
-    void popLayoutState(RenderObject*) { return popLayoutState(); } // Just doing this to keep popLayoutState() private and to make the subtree calls symmetrical.
+    // Subtree push
+    void pushLayoutState(RenderObject&);
 
-    bool shouldDisableLayoutStateForSubtree(RenderObject*) const;
+    void popLayoutState()
+    {
+        LayoutState* state = m_layoutState;
+        m_layoutState = state->m_next;
+        delete state;
+        popLayoutStateForCurrentFlowThread();
+    }
+
+    bool shouldDisableLayoutStateForSubtree(RenderObject&) const;
 
     // Returns true if layoutState should be used for its cached offset and clip.
     bool layoutStateEnabled() const { return m_layoutStateDisableCount == 0 && m_layoutState; }
@@ -194,6 +201,14 @@ public:
     double layoutViewportWidth() const;
     double layoutViewportHeight() const;
 
+    // Suspends the LayoutState optimization. Used under transforms that cannot be represented by
+    // LayoutState (common in SVG) and when manipulating the render tree during layout in ways
+    // that can trigger repaint of a non-child (e.g. when a list item moves its list marker around).
+    // Note that even when disabled, LayoutState is still used to store layoutDelta.
+    // These functions may only be accessed by LayoutStateMaintainer or LayoutStateDisabler.
+    void disableLayoutState() { m_layoutStateDisableCount++; }
+    void enableLayoutState() { ASSERT(m_layoutStateDisableCount > 0); m_layoutStateDisableCount--; }
+
 private:
     virtual void mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0) const OVERRIDE;
     virtual const RenderObject* pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const OVERRIDE;
@@ -207,12 +222,12 @@ private:
     bool rootFillsViewportBackground(RenderBox* rootBox) const;
 
     // These functions may only be accessed by LayoutStateMaintainer.
-    bool pushLayoutState(RenderBox* renderer, const LayoutSize& offset, LayoutUnit pageHeight = 0, bool pageHeightChanged = false, ColumnInfo* colInfo = 0)
+    bool pushLayoutState(RenderBox& renderer, const LayoutSize& offset, LayoutUnit pageHeight = 0, bool pageHeightChanged = false, ColumnInfo* colInfo = 0)
     {
         // We push LayoutState even if layoutState is disabled because it stores layoutDelta too.
-        if (!doingFullRepaint() || m_layoutState->isPaginated() || renderer->hasColumns() || renderer->flowThreadContainingBlock()
-            || (renderer->isRenderBlock() && toRenderBlock(renderer)->shapeInsideInfo())
-            || (m_layoutState->shapeInsideInfo() && renderer->isRenderBlock() && !toRenderBlock(renderer)->allowsShapeInsideInfoSharing(m_layoutState->shapeInsideInfo()->owner()))
+        if (!doingFullRepaint() || m_layoutState->isPaginated() || renderer.hasColumns() || renderer.flowThreadContainingBlock()
+            || (renderer.isRenderBlock() && toRenderBlock(renderer).shapeInsideInfo())
+            || (m_layoutState->shapeInsideInfo() && renderer.isRenderBlock() && !toRenderBlock(renderer).allowsShapeInsideInfoSharing(m_layoutState->shapeInsideInfo()->owner()))
             ) {
             pushLayoutStateForCurrentFlowThread(renderer);
             m_layoutState = new LayoutState(m_layoutState, renderer, offset, pageHeight, pageHeightChanged, colInfo);
@@ -220,22 +235,6 @@ private:
         }
         return false;
     }
-
-    void popLayoutState()
-    {
-        LayoutState* state = m_layoutState;
-        m_layoutState = state->m_next;
-        delete state;
-        popLayoutStateForCurrentFlowThread();
-    }
-
-    // Suspends the LayoutState optimization. Used under transforms that cannot be represented by
-    // LayoutState (common in SVG) and when manipulating the render tree during layout in ways
-    // that can trigger repaint of a non-child (e.g. when a list item moves its list marker around).
-    // Note that even when disabled, LayoutState is still used to store layoutDelta.
-    // These functions may only be accessed by LayoutStateMaintainer or LayoutStateDisabler.
-    void disableLayoutState() { m_layoutStateDisableCount++; }
-    void enableLayoutState() { ASSERT(m_layoutStateDisableCount > 0); m_layoutStateDisableCount--; }
 
     void layoutContent(const LayoutState&);
 #ifndef NDEBUG
@@ -245,7 +244,7 @@ private:
     void positionDialog(RenderBox*);
     void positionDialogs();
 
-    void pushLayoutStateForCurrentFlowThread(const RenderObject*);
+    void pushLayoutStateForCurrentFlowThread(const RenderObject&);
     void popLayoutStateForCurrentFlowThread();
 
     friend class LayoutStateMaintainer;
@@ -283,9 +282,9 @@ class LayoutStateMaintainer {
     WTF_MAKE_NONCOPYABLE(LayoutStateMaintainer);
 public:
     // ctor to push now
-    LayoutStateMaintainer(RenderBox* root, LayoutSize offset, LayoutUnit pageHeight = 0, bool pageHeightChanged = false, ColumnInfo* colInfo = 0)
-        : m_view(root->view())
-        , m_disabled(root->shouldDisableLayoutState())
+    explicit LayoutStateMaintainer(RenderBox& root, const LayoutSize& offset, LayoutUnit pageHeight = 0, bool pageHeightChanged = false, ColumnInfo* colInfo = 0)
+        : m_view(*root.view())
+        , m_disabled(root.shouldDisableLayoutState())
         , m_didStart(false)
         , m_didEnd(false)
         , m_didCreateLayoutState(false)
@@ -294,8 +293,8 @@ public:
     }
 
     // ctor to maybe push later
-    LayoutStateMaintainer(RenderBox* root)
-        : m_view(root->view())
+    explicit LayoutStateMaintainer(RenderBox& root)
+        : m_view(*root.view())
         , m_disabled(false)
         , m_didStart(false)
         , m_didEnd(false)
@@ -308,13 +307,13 @@ public:
         ASSERT(m_didStart == m_didEnd);   // if this fires, it means that someone did a push(), but forgot to pop().
     }
 
-    void push(RenderBox* root, LayoutSize offset, LayoutUnit pageHeight = 0, bool pageHeightChanged = false, ColumnInfo* colInfo = 0)
+    void push(RenderBox& root, const LayoutSize& offset, LayoutUnit pageHeight = 0, bool pageHeightChanged = false, ColumnInfo* colInfo = 0)
     {
         ASSERT(!m_didStart);
         // We push state even if disabled, because we still need to store layoutDelta
-        m_didCreateLayoutState = m_view->pushLayoutState(root, offset, pageHeight, pageHeightChanged, colInfo);
+        m_didCreateLayoutState = m_view.pushLayoutState(root, offset, pageHeight, pageHeightChanged, colInfo);
         if (m_disabled && m_didCreateLayoutState)
-            m_view->disableLayoutState();
+            m_view.disableLayoutState();
         m_didStart = true;
     }
 
@@ -323,9 +322,9 @@ public:
         if (m_didStart) {
             ASSERT(!m_didEnd);
             if (m_didCreateLayoutState) {
-                m_view->popLayoutState();
+                m_view.popLayoutState();
                 if (m_disabled)
-                    m_view->enableLayoutState();
+                    m_view.enableLayoutState();
             }
 
             m_didEnd = true;
@@ -335,7 +334,7 @@ public:
     bool didPush() const { return m_didStart; }
 
 private:
-    RenderView* m_view;
+    RenderView& m_view;
     bool m_disabled : 1;        // true if the offset and clip part of layoutState is disabled
     bool m_didStart : 1;        // true if we did a push or disable
     bool m_didEnd : 1;          // true if we popped or re-enabled
@@ -345,20 +344,18 @@ private:
 class LayoutStateDisabler {
     WTF_MAKE_NONCOPYABLE(LayoutStateDisabler);
 public:
-    LayoutStateDisabler(RenderView* view)
-        : m_view(view)
+    LayoutStateDisabler(const RenderBox& root)
+        : m_view(*root.view())
     {
-        if (m_view)
-            m_view->disableLayoutState();
+        m_view.disableLayoutState();
     }
 
     ~LayoutStateDisabler()
     {
-        if (m_view)
-            m_view->enableLayoutState();
+        m_view.enableLayoutState();
     }
 private:
-    RenderView* m_view;
+    RenderView& m_view;
 };
 
 } // namespace WebCore

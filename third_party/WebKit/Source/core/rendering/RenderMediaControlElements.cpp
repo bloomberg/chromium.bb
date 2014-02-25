@@ -51,7 +51,7 @@ void RenderTextTrackContainerElement::layout()
 
     DeprecatedScheduleStyleRecalcDuringLayout marker(node()->document().lifecycle());
 
-    LayoutStateDisabler layoutStateDisabler(view());
+    LayoutStateDisabler layoutStateDisabler(*this);
     static_cast<MediaControlTextTrackContainerElement*>(node())->updateSizes();
 }
 

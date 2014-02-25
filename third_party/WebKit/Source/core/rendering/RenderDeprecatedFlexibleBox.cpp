@@ -258,7 +258,7 @@ void RenderDeprecatedFlexibleBox::layoutBlock(bool relayoutChildren)
         return;
 
     LayoutRepainter repainter(*this, checkForRepaintDuringLayout());
-    LayoutStateMaintainer statePusher(this, locationOffset());
+    LayoutStateMaintainer statePusher(*this, locationOffset());
 
     RenderFlowThread* flowThread = flowThreadContainingBlock();
     if (updateRegionsAndShapesLogicalSize(flowThread))
@@ -300,7 +300,7 @@ void RenderDeprecatedFlexibleBox::layoutBlock(bool relayoutChildren)
     updateLayerTransform();
 
     if (view()->layoutState()->pageLogicalHeight())
-        setPageLogicalOffset(view()->layoutState()->pageLogicalOffset(this, logicalTop()));
+        setPageLogicalOffset(view()->layoutState()->pageLogicalOffset(*this, logicalTop()));
 
     // Update our scrollbars if we're overflow:auto/scroll/hidden now that we know if
     // we overflow or not.

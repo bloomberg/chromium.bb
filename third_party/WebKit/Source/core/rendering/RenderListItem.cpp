@@ -292,7 +292,7 @@ void RenderListItem::updateMarkerLocation()
         if (markerParent != lineBoxParent || m_marker->preferredLogicalWidthsDirty()) {
             // Removing and adding the marker can trigger repainting in
             // containers other than ourselves, so we need to disable LayoutState.
-            LayoutStateDisabler layoutStateDisabler(view());
+            LayoutStateDisabler layoutStateDisabler(*this);
             updateFirstLetter();
             m_marker->remove();
             if (markerParent)

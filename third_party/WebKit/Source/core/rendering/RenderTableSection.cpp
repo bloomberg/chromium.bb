@@ -619,7 +619,7 @@ int RenderTableSection::calcRowLogicalHeight()
 
     RenderTableCell* cell;
 
-    LayoutStateMaintainer statePusher(this);
+    LayoutStateMaintainer statePusher(*this);
 
     m_rowPos.resize(m_grid.size() + 1);
 
@@ -675,7 +675,7 @@ int RenderTableSection::calcRowLogicalHeight()
                     if (!statePusher.didPush()) {
                         // Technically, we should also push state for the row, but since
                         // rows don't push a coordinate transform, that's not necessary.
-                        statePusher.push(this, locationOffset());
+                        statePusher.push(*this, locationOffset());
                     }
                     cell->clearIntrinsicPadding();
                     cell->clearOverrideSize();
@@ -716,7 +716,7 @@ void RenderTableSection::layout()
     // can be called in a loop (e.g during parsing). Doing it now ensures we have a stable-enough structure.
     m_grid.shrinkToFit();
 
-    LayoutStateMaintainer statePusher(this, locationOffset());
+    LayoutStateMaintainer statePusher(*this, locationOffset());
 
     const Vector<int>& columnPos = table()->columnPositions();
 
@@ -871,7 +871,7 @@ void RenderTableSection::layoutRows()
     int vspacing = table()->vBorderSpacing();
     unsigned nEffCols = table()->numEffCols();
 
-    LayoutStateMaintainer statePusher(this, locationOffset());
+    LayoutStateMaintainer statePusher(*this, locationOffset());
 
     for (unsigned r = 0; r < totalRows; r++) {
         // Set the row's x/y position and width/height.
@@ -956,7 +956,7 @@ void RenderTableSection::layoutRows()
 
             setLogicalPositionForCell(cell, c);
 
-            if (!cell->needsLayout() && view()->layoutState()->pageLogicalHeight() && view()->layoutState()->pageLogicalOffset(cell, cell->logicalTop()) != cell->pageLogicalOffset())
+            if (!cell->needsLayout() && view()->layoutState()->pageLogicalHeight() && view()->layoutState()->pageLogicalOffset(*cell, cell->logicalTop()) != cell->pageLogicalOffset())
                 layouter.setChildNeedsLayout(cell);
 
             cell->layoutIfNeeded();

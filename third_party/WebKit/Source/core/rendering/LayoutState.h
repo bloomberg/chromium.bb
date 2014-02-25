@@ -60,8 +60,8 @@ public:
     {
     }
 
-    LayoutState(LayoutState*, RenderBox*, const LayoutSize& offset, LayoutUnit pageHeight, bool pageHeightChanged, ColumnInfo*);
-    LayoutState(RenderObject*);
+    LayoutState(LayoutState*, RenderBox&, const LayoutSize& offset, LayoutUnit pageHeight, bool pageHeightChanged, ColumnInfo*);
+    explicit LayoutState(RenderObject&);
 
     // LayoutState is allocated out of the rendering partition.
     void* operator new(size_t);
@@ -73,9 +73,9 @@ public:
 
     // The page logical offset is the object's offset from the top of the page in the page progression
     // direction (so an x-offset in vertical text and a y-offset for horizontal text).
-    LayoutUnit pageLogicalOffset(const RenderBox*, LayoutUnit childLogicalOffset) const;
+    LayoutUnit pageLogicalOffset(const RenderBox&, const LayoutUnit& childLogicalOffset) const;
 
-    void addForcedColumnBreak(RenderBox*, LayoutUnit childLogicalOffset);
+    void addForcedColumnBreak(const RenderBox&, const LayoutUnit& childLogicalOffset);
 
     LayoutUnit pageLogicalHeight() const { return m_pageLogicalHeight; }
     bool pageLogicalHeightChanged() const { return m_pageLogicalHeightChanged; }

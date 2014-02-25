@@ -428,7 +428,7 @@ void RenderTable::layout()
     recalcBordersInRowDirection();
 
     LayoutRepainter repainter(*this, checkForRepaintDuringLayout());
-    LayoutStateMaintainer statePusher(this, locationOffset());
+    LayoutStateMaintainer statePusher(*this, locationOffset());
 
     setLogicalHeight(0);
 
@@ -574,7 +574,7 @@ void RenderTable::layout()
     statePusher.pop();
 
     if (view()->layoutState()->pageLogicalHeight())
-        setPageLogicalOffset(view()->layoutState()->pageLogicalOffset(this, logicalTop()));
+        setPageLogicalOffset(view()->layoutState()->pageLogicalOffset(*this, logicalTop()));
 
     bool didFullRepaint = repainter.repaintAfterLayout();
     // Repaint with our new bounds if they are different from our old bounds.

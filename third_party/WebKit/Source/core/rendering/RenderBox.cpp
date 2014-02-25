@@ -308,7 +308,7 @@ void RenderBox::layout()
         return;
     }
 
-    LayoutStateMaintainer statePusher(this, locationOffset());
+    LayoutStateMaintainer statePusher(*this, locationOffset());
     while (child) {
         child->layoutIfNeeded();
         ASSERT(!child->needsLayout());
@@ -1928,7 +1928,7 @@ LayoutSize RenderBox::offsetFromContainer(RenderObject* o, const LayoutPoint& po
         offset -= toRenderBox(o)->scrolledContentOffset();
 
     if (style()->position() == AbsolutePosition && o->isInFlowPositioned() && o->isRenderInline())
-        offset += toRenderInline(o)->offsetForInFlowPositionedInline(this);
+        offset += toRenderInline(o)->offsetForInFlowPositionedInline(*this);
 
     if (offsetDependsOnPoint)
         *offsetDependsOnPoint |= o->isRenderFlowThread();
@@ -2088,7 +2088,7 @@ void RenderBox::computeRectForRepaint(const RenderLayerModelObject* repaintConta
         fixed = true;
 
     if (position == AbsolutePosition && o->isInFlowPositioned() && o->isRenderInline()) {
-        topLeft += toRenderInline(o)->offsetForInFlowPositionedInline(this);
+        topLeft += toRenderInline(o)->offsetForInFlowPositionedInline(*this);
     } else if (styleToUse->hasInFlowPosition() && layer()) {
         // Apply the relative position offset when invalidating a rectangle.  The layer
         // is translated, but the render box isn't, so we need to do this to get the

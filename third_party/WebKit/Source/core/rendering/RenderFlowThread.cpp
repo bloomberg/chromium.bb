@@ -211,7 +211,7 @@ void RenderFlowThread::repaintRectangleInRegions(const LayoutRect& repaintRect) 
     if (!shouldRepaint(repaintRect) || !hasValidRegionInfo())
         return;
 
-    LayoutStateDisabler layoutStateDisabler(view()); // We can't use layout state to repaint, since the regions are somewhere else.
+    LayoutStateDisabler layoutStateDisabler(*this); // We can't use layout state to repaint, since the regions are somewhere else.
 
     // We can't use currentFlowThread as it is possible to have interleaved flow threads and the wrong one could be used.
     // Let each region figure out the proper enclosing flow thread.
@@ -566,7 +566,7 @@ const RenderBox* RenderFlowThread::currentStatePusherRenderBox() const
     return 0;
 }
 
-void RenderFlowThread::pushFlowThreadLayoutState(const RenderObject* object)
+void RenderFlowThread::pushFlowThreadLayoutState(const RenderObject& object)
 {
     if (const RenderBox* currentBoxDescendant = currentStatePusherRenderBox()) {
         LayoutState* layoutState = currentBoxDescendant->view()->layoutState();
@@ -577,7 +577,7 @@ void RenderFlowThread::pushFlowThreadLayoutState(const RenderObject* object)
         }
     }
 
-    m_statePusherObjectsStack.add(object);
+    m_statePusherObjectsStack.add(&object);
 }
 
 void RenderFlowThread::popFlowThreadLayoutState()

@@ -896,7 +896,7 @@ float RenderView::zoomFactor() const
     return m_frameView->frame().pageZoomFactor();
 }
 
-void RenderView::pushLayoutState(RenderObject* root)
+void RenderView::pushLayoutState(RenderObject& root)
 {
     ASSERT(m_layoutStateDisableCount == 0);
     ASSERT(m_layoutState == 0);
@@ -905,9 +905,9 @@ void RenderView::pushLayoutState(RenderObject* root)
     m_layoutState = new LayoutState(root);
 }
 
-bool RenderView::shouldDisableLayoutStateForSubtree(RenderObject* renderer) const
+bool RenderView::shouldDisableLayoutStateForSubtree(RenderObject& renderer) const
 {
-    RenderObject* o = renderer;
+    RenderObject* o = &renderer;
     while (o) {
         if (o->shouldDisableLayoutState())
             return true;
@@ -961,7 +961,7 @@ FlowThreadController* RenderView::flowThreadController()
     return m_flowThreadController.get();
 }
 
-void RenderView::pushLayoutStateForCurrentFlowThread(const RenderObject* object)
+void RenderView::pushLayoutStateForCurrentFlowThread(const RenderObject& object)
 {
     if (!m_flowThreadController)
         return;

@@ -1686,7 +1686,7 @@ bool RenderBlock::simplifiedLayout()
     if ((!posChildNeedsLayout() && !needsSimplifiedNormalFlowLayout()) || normalChildNeedsLayout() || selfNeedsLayout())
         return false;
 
-    LayoutStateMaintainer statePusher(this, locationOffset());
+    LayoutStateMaintainer statePusher(*this, locationOffset());
 
     if (needsPositionedMovementLayout() && !tryLayoutDoingPositionedMovementOnly())
         return false;
@@ -1862,7 +1862,7 @@ void RenderBlock::markForPaginationRelayoutIfNeeded(SubtreeLayoutScope& layoutSc
     if (needsLayout())
         return;
 
-    if (view()->layoutState()->pageLogicalHeightChanged() || (view()->layoutState()->pageLogicalHeight() && view()->layoutState()->pageLogicalOffset(this, logicalTop()) != pageLogicalOffset()))
+    if (view()->layoutState()->pageLogicalHeightChanged() || (view()->layoutState()->pageLogicalHeight() && view()->layoutState()->pageLogicalOffset(*this, logicalTop()) != pageLogicalOffset()))
         layoutScope.setChildNeedsLayout(this);
 }
 
@@ -4544,7 +4544,7 @@ void RenderBlock::updateFirstLetterStyle(RenderObject* firstLetterBlock, RenderO
         newFirstLetter->setStyle(pseudoStyle);
 
         // Move the first letter into the new renderer.
-        LayoutStateDisabler layoutStateDisabler(view());
+        LayoutStateDisabler layoutStateDisabler(*this);
         while (RenderObject* child = firstLetter->firstChild()) {
             if (child->isText())
                 toRenderText(child)->removeAndDestroyTextBoxes();
@@ -4706,7 +4706,7 @@ void RenderBlock::updateFirstLetter()
 
     // Our layout state is not valid for the repaints we are going to trigger by
     // adding and removing children of firstLetterContainer.
-    LayoutStateDisabler layoutStateDisabler(view());
+    LayoutStateDisabler layoutStateDisabler(*this);
 
     createFirstLetterRenderer(firstLetterBlock, currChild, length);
 }

@@ -241,7 +241,7 @@ void RenderFlexibleBox::layoutBlock(bool relayoutChildren)
     LayoutUnit previousHeight = logicalHeight();
     setLogicalHeight(borderAndPaddingLogicalHeight() + scrollbarLogicalHeight());
 
-    LayoutStateMaintainer statePusher(this, locationOffset());
+    LayoutStateMaintainer statePusher(*this, locationOffset());
 
     RenderFlowThread* flowThread = flowThreadContainingBlock();
     if (updateRegionsAndShapesLogicalSize(flowThread))

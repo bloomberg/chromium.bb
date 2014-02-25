@@ -219,7 +219,7 @@ bool RenderBlockFlow::shouldRelayoutForPagination(LayoutUnit& pageLogicalHeight,
         // maximum page break distance.
         if (!pageLogicalHeight) {
             LayoutUnit distanceBetweenBreaks = max<LayoutUnit>(colInfo->maximumDistanceBetweenForcedBreaks(),
-                view()->layoutState()->pageLogicalOffset(this, borderBefore() + paddingBefore() + layoutOverflowLogicalBottom) - colInfo->forcedBreakOffset());
+                view()->layoutState()->pageLogicalOffset(*this, borderBefore() + paddingBefore() + layoutOverflowLogicalBottom) - colInfo->forcedBreakOffset());
             columnHeight = max(colInfo->minimumColumnHeight(), distanceBetweenBreaks);
         }
     } else if (layoutOverflowLogicalBottom > boundedMultiply(pageLogicalHeight, desiredColumnCount)) {
@@ -291,7 +291,7 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     bool hasSpecifiedPageLogicalHeight = false;
     checkForPaginationLogicalHeightChange(pageLogicalHeight, pageLogicalHeightChanged, hasSpecifiedPageLogicalHeight);
 
-    LayoutStateMaintainer statePusher(this, locationOffset(), pageLogicalHeight, pageLogicalHeightChanged, columnInfo());
+    LayoutStateMaintainer statePusher(*this, locationOffset(), pageLogicalHeight, pageLogicalHeightChanged, columnInfo());
 
     // Regions changing widths can force us to relayout our children.
     RenderFlowThread* flowThread = flowThreadContainingBlock();
@@ -414,7 +414,7 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
 
     RenderView* renderView = view();
     if (renderView->layoutState()->m_pageLogicalHeight)
-        setPageLogicalOffset(renderView->layoutState()->pageLogicalOffset(this, logicalTop()));
+        setPageLogicalOffset(renderView->layoutState()->pageLogicalOffset(*this, logicalTop()));
 
     updateLayerTransform();
 
@@ -1560,7 +1560,7 @@ LayoutUnit RenderBlockFlow::applyBeforeBreak(RenderBox* child, LayoutUnit logica
                 if (flowThread->addForcedRegionBreak(offsetFromLogicalTopOfFirstPage() + logicalOffset, child, true, &offsetBreakAdjustment))
                     return logicalOffset + offsetBreakAdjustment;
             } else {
-                view()->layoutState()->addForcedColumnBreak(child, logicalOffset);
+                view()->layoutState()->addForcedColumnBreak(*child, logicalOffset);
             }
         }
         return nextPageLogicalTop(logicalOffset, IncludePageBoundary);
@@ -1589,7 +1589,7 @@ LayoutUnit RenderBlockFlow::applyAfterBreak(RenderBox* child, LayoutUnit logical
                 if (flowThread->addForcedRegionBreak(offsetFromLogicalTopOfFirstPage() + logicalOffset + marginOffset, child, false, &offsetBreakAdjustment))
                     return logicalOffset + marginOffset + offsetBreakAdjustment;
             } else {
-                view()->layoutState()->addForcedColumnBreak(child, logicalOffset);
+                view()->layoutState()->addForcedColumnBreak(*child, logicalOffset);
             }
         }
         return nextPageLogicalTop(logicalOffset, IncludePageBoundary);
@@ -1875,7 +1875,7 @@ void RenderBlockFlow::repaintOverhangingFloats(bool paintAllDescendants)
 
     // FIXME: Avoid disabling LayoutState. At the very least, don't disable it for floats originating
     // in this block. Better yet would be to push extra state for the containers of other floats.
-    LayoutStateDisabler layoutStateDisabler(view());
+    LayoutStateDisabler layoutStateDisabler(*this);
     const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
     FloatingObjectSetIterator end = floatingObjectSet.end();
     for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {

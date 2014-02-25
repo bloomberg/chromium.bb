@@ -303,6 +303,7 @@ public:
     virtual void willRemoveScrollbar(Scrollbar*, ScrollbarOrientation) OVERRIDE;
 
     virtual bool shouldAttemptToScrollUsingFastPath() const OVERRIDE;
+    bool isSubtreeLayout() const { return !!m_layoutSubtreeRoot; }
 
 protected:
     virtual bool scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect) OVERRIDE;
@@ -393,7 +394,6 @@ private:
 
     void setLayoutSizeInternal(const IntSize&);
 
-    bool isSubtreeLayout() const { return !!m_layoutSubtreeRoot; }
     bool repaintAllowed() const
     {
         if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled())

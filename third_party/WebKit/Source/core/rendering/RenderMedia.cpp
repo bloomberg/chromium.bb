@@ -64,7 +64,7 @@ void RenderMedia::layout()
     if (newSize == oldSize && !controlsNeedLayout)
         return;
 
-    LayoutStateMaintainer statePusher(this, locationOffset());
+    LayoutStateMaintainer statePusher(*this, locationOffset());
 
     controlsRenderer->setLocation(LayoutPoint(borderLeft(), borderTop()) + LayoutSize(paddingLeft(), paddingTop()));
     controlsRenderer->style()->setHeight(Length(newSize.height(), Fixed));
