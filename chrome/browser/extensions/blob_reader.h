@@ -19,6 +19,7 @@ namespace net {
 class URLFetcher;
 }
 
+// This class may only be used from the UI thread.
 class BlobReader : public net::URLFetcherDelegate {
  public:
   // |blob_data| contains the portion of the Blob requested. |blob_total_size|

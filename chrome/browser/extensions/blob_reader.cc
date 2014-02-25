@@ -8,6 +8,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
@@ -18,6 +19,7 @@ BlobReader::BlobReader(Profile* profile,
                        const std::string& blob_uuid,
                        BlobReadCallback callback)
     : callback_(callback) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   GURL blob_url;
   if (StartsWithASCII(blob_uuid, "blob:blobinternal", true)) {
     // TODO(michaeln): remove support for deprecated blob urls
@@ -33,9 +35,11 @@ BlobReader::BlobReader(Profile* profile,
 }
 
 BlobReader::~BlobReader() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 
 void BlobReader::SetByteRange(int64 offset, int64 length) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   CHECK_GE(offset, 0);
   CHECK_GT(length, 0);
   CHECK_LE(offset, kint64max - length);
@@ -49,11 +53,13 @@ void BlobReader::SetByteRange(int64 offset, int64 length) {
 }
 
 void BlobReader::Start() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   fetcher_->Start();
 }
 
 // Overridden from net::URLFetcherDelegate.
 void BlobReader::OnURLFetchComplete(const net::URLFetcher* source) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   scoped_ptr<std::string> response(new std::string);
   int64 first = 0, last = 0, length = 0;
   source->GetResponseAsString(response.get());

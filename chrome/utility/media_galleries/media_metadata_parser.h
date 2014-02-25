@@ -9,6 +9,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/extensions/api/media_galleries.h"
 
+namespace base {
+class Thread;
+}
+
 namespace media {
 class DataSource;
 }
@@ -35,13 +39,14 @@ class MediaMetadataParser {
   void Start(const MetadataCallback& callback);
 
  private:
-  void PopulateAudioVideoMetadata();
+  // Only accessed on |media_thread_| from this class.
+  media::DataSource* const source_;
 
-  media::DataSource* source_;
+  const std::string mime_type_;
 
-  MetadataCallback callback_;
-
-  scoped_ptr<MediaMetadata> metadata_;
+  // Thread that blocking media parsing operations run on while the main thread
+  // handles messages from the browser process.
+  scoped_ptr<base::Thread> media_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaMetadataParser);
 };

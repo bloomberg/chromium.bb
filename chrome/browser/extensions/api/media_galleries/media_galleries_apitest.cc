@@ -28,6 +28,7 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
+#include "media/base/test_data_util.h"
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
 #include "chrome/browser/media_galleries/fileapi/picasa_finder.h"
@@ -194,6 +195,7 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
   // with no default media galleries, such as CHROMEOS. This fake gallery is
   // pre-populated with a test.jpg and test.txt.
   void MakeSingleFakeGallery() {
+    ASSERT_FALSE(fake_gallery_temp_dir_.IsValid());
     ASSERT_TRUE(fake_gallery_temp_dir_.CreateUniqueTempDir());
 
     MediaGalleriesPreferences* preferences = GetAndInitializePreferences();
@@ -213,16 +215,19 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
 
     content::RunAllPendingInMessageLoop();
 
-    base::FilePath test_data_path(GetCommonDataDir());
-    base::FilePath write_path = fake_gallery_temp_dir_.path();
-
     // Valid file, should show up in JS as a FileEntry.
-    ASSERT_TRUE(base::CopyFile(test_data_path.AppendASCII("test.jpg"),
-                               write_path.AppendASCII("test.jpg")));
+    AddFileToSingleFakeGallery(GetCommonDataDir().AppendASCII("test.jpg"));
 
     // Invalid file, should not show up as a FileEntry in JS at all.
-    ASSERT_TRUE(base::CopyFile(test_data_path.AppendASCII("test.txt"),
-                               write_path.AppendASCII("test.txt")));
+    AddFileToSingleFakeGallery(GetCommonDataDir().AppendASCII("test.txt"));
+  }
+
+  void AddFileToSingleFakeGallery(const base::FilePath& source_path) {
+    ASSERT_TRUE(fake_gallery_temp_dir_.IsValid());
+
+    ASSERT_TRUE(base::CopyFile(
+        source_path,
+        fake_gallery_temp_dir_.path().Append(source_path.BaseName())));
   }
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
@@ -564,4 +569,21 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest, MAYBE_Scan) {
                                  dummy_data.c_str(), dummy_data.size()));
 
   ASSERT_TRUE(RunMediaGalleriesTest("scan")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest, GetMetadata) {
+  RemoveAllGalleries();
+  MakeSingleFakeGallery();
+
+  AddFileToSingleFakeGallery(media::GetTestDataFilePath("90rotation.mp4"));
+  AddFileToSingleFakeGallery(media::GetTestDataFilePath("id3_png_test.mp3"));
+
+  base::ListValue custom_args;
+#if defined(USE_PROPRIETARY_CODECS)
+  custom_args.AppendBoolean(true);
+#else
+  custom_args.AppendBoolean(false);
+#endif
+  ASSERT_TRUE(RunMediaGalleriesTestWithArg("media_metadata", custom_args))
+      << message_;
 }

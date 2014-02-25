@@ -23,6 +23,7 @@
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/extensions/blob_reader.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/media_galleries/fileapi/safe_media_metadata_parser.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller.h"
 #include "chrome/browser/media_galleries/media_galleries_histograms.h"
@@ -790,27 +791,50 @@ void MediaGalleriesGetMetadataFunction::OnPreferencesInit(
       GetProfile(),
       blob_uuid,
       base::Bind(&MediaGalleriesGetMetadataFunction::SniffMimeType, this,
-                 mime_type_only));
+                 mime_type_only, blob_uuid));
   reader->SetByteRange(0, net::kMaxBytesToSniff);
   reader->Start();
 }
 
 void MediaGalleriesGetMetadataFunction::SniffMimeType(
-    bool mime_type_only, scoped_ptr<std::string> blob_header,
-    int64 /* total_blob_length */) {
+    bool mime_type_only, const std::string& blob_uuid,
+    scoped_ptr<std::string> blob_header, int64 total_blob_length) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  MediaGalleries::MediaMetadata metadata;
 
   std::string mime_type;
   bool mime_type_sniffed = net::SniffMimeTypeFromLocalData(
       blob_header->c_str(), blob_header->size(), &mime_type);
-  if (mime_type_sniffed)
+
+  if (!mime_type_sniffed) {
+    SendResponse(false);
+    return;
+  }
+
+  if (mime_type_only) {
+    MediaGalleries::MediaMetadata metadata;
     metadata.mime_type = mime_type;
+    SetResult(metadata.ToValue().release());
+    SendResponse(true);
+    return;
+  }
 
-  // TODO(tommycli): Kick off SafeMediaMetadataParser if |mime_type_only| false.
+  scoped_refptr<metadata::SafeMediaMetadataParser> parser(
+      new metadata::SafeMediaMetadataParser(GetProfile(), blob_uuid,
+                                            total_blob_length, mime_type));
+  parser->Start(base::Bind(
+      &MediaGalleriesGetMetadataFunction::OnSafeMediaMetadataParserDone,
+      this, parser));
+}
 
-  SetResult(metadata.ToValue().release());
+void MediaGalleriesGetMetadataFunction::OnSafeMediaMetadataParserDone(
+    metadata::SafeMediaMetadataParser* /* parser */, bool parse_success,
+    base::DictionaryValue* metadata_dictionary) {
+  if (!parse_success) {
+    SendResponse(false);
+    return;
+  }
+
+  SetResult(metadata_dictionary->DeepCopy());
   SendResponse(true);
 }
 

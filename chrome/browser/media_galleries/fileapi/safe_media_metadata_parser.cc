@@ -14,24 +14,6 @@ using content::BrowserThread;
 
 namespace metadata {
 
-namespace {
-
-// Completes the Blob byte request by forwarding it to the utility process.
-void OnBlobReaderDone(
-    const base::WeakPtr<content::UtilityProcessHost>& utility_process_host,
-    int64 request_id,
-    scoped_ptr<std::string> data,
-    int64 /* blob_total_size */) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  if (!utility_process_host.get())
-    return;
-  utility_process_host->Send(new ChromeUtilityMsg_RequestBlobBytes_Finished(
-      request_id, *data));
-}
-
-}  // namespace
-
 SafeMediaMetadataParser::SafeMediaMetadataParser(Profile* profile,
                                                  const std::string& blob_uuid,
                                                  int64 blob_size,
@@ -67,6 +49,7 @@ void SafeMediaMetadataParser::StartWorkOnIOThread(
 
   utility_process_host_ = content::UtilityProcessHost::Create(
       this, base::MessageLoopProxy::current())->AsWeakPtr();
+  utility_process_host_->StartBatchMode();
 
   utility_process_host_->Send(
       new ChromeUtilityMsg_ParseMediaMetadata(mime_type_, blob_size_));
@@ -82,6 +65,8 @@ void SafeMediaMetadataParser::OnParseMediaMetadataFinished(
   if (parser_state_ != STARTED_PARSING_STATE)
     return;
 
+  utility_process_host_->EndBatchMode();
+
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
@@ -93,14 +78,42 @@ void SafeMediaMetadataParser::OnParseMediaMetadataFinished(
 void SafeMediaMetadataParser::OnUtilityProcessRequestBlobBytes(
     int64 request_id, int64 byte_start, int64 length) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&SafeMediaMetadataParser::StartBlobReaderOnUIThread, this,
+                 request_id, byte_start, length));
+}
+
+void SafeMediaMetadataParser::StartBlobReaderOnUIThread(
+    int64 request_id, int64 byte_start, int64 length) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // BlobReader is self-deleting.
-  BlobReader* reader = new BlobReader(
-      profile_,
-      blob_uuid_,
-      base::Bind(&OnBlobReaderDone, utility_process_host_, request_id));
+  BlobReader* reader = new BlobReader(profile_, blob_uuid_, base::Bind(
+      &SafeMediaMetadataParser::OnBlobReaderDoneOnUIThread, this, request_id));
   reader->SetByteRange(byte_start, length);
   reader->Start();
+}
+
+void SafeMediaMetadataParser::OnBlobReaderDoneOnUIThread(
+    int64 request_id, scoped_ptr<std::string> data,
+    int64 /* blob_total_size */) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&SafeMediaMetadataParser::FinishRequestBlobBytes, this,
+                 request_id, base::Passed(data.Pass())));
+}
+
+void SafeMediaMetadataParser::FinishRequestBlobBytes(
+    int64 request_id, scoped_ptr<std::string> data) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!utility_process_host_.get())
+    return;
+  utility_process_host_->Send(new ChromeUtilityMsg_RequestBlobBytes_Finished(
+      request_id, *data));
 }
 
 void SafeMediaMetadataParser::OnProcessCrashed(int exit_code) {

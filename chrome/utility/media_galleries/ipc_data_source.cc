@@ -4,6 +4,7 @@
 
 #include "chrome/utility/media_galleries/ipc_data_source.h"
 
+#include "base/message_loop/message_loop_proxy.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "content/public/utility/utility_thread.h"
 
@@ -11,12 +12,17 @@ namespace metadata {
 
 IPCDataSource::IPCDataSource(int64 total_size)
     : total_size_(total_size),
+      utility_task_runner_(base::MessageLoopProxy::current()),
       next_request_id_(0) {
+  data_source_thread_checker_.DetachFromThread();
 }
 
-IPCDataSource::~IPCDataSource() {}
+IPCDataSource::~IPCDataSource() {
+  DCHECK(utility_thread_checker_.CalledOnValidThread());
+}
 
 void IPCDataSource::set_host(media::DataSourceHost* host) {
+  DCHECK(data_source_thread_checker_.CalledOnValidThread());
   DataSource::set_host(host);
   if (media::DataSource::host()) {
     media::DataSource::host()->SetTotalBytes(total_size_);
@@ -24,11 +30,55 @@ void IPCDataSource::set_host(media::DataSourceHost* host) {
 }
 
 void IPCDataSource::Stop(const base::Closure& callback) {
+  DCHECK(data_source_thread_checker_.CalledOnValidThread());
   callback.Run();
 }
 
 void IPCDataSource::Read(int64 position, int size, uint8* data,
                          const DataSource::ReadCB& read_cb) {
+  DCHECK(data_source_thread_checker_.CalledOnValidThread());
+  utility_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&IPCDataSource::ReadOnUtilityThread, base::Unretained(this),
+                 position, size, data, read_cb));
+}
+
+bool IPCDataSource::GetSize(int64* size_out) {
+  DCHECK(data_source_thread_checker_.CalledOnValidThread());
+  *size_out = total_size_;
+  return true;
+}
+
+bool IPCDataSource::IsStreaming() {
+  DCHECK(data_source_thread_checker_.CalledOnValidThread());
+  return false;
+}
+
+void IPCDataSource::SetBitrate(int bitrate) {
+  DCHECK(data_source_thread_checker_.CalledOnValidThread());
+}
+
+bool IPCDataSource::OnMessageReceived(const IPC::Message& message) {
+  DCHECK(utility_thread_checker_.CalledOnValidThread());
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(IPCDataSource, message)
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RequestBlobBytes_Finished,
+                        OnRequestBlobBytesFinished)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+IPCDataSource::Request::Request()
+    : destination(NULL) {
+}
+
+IPCDataSource::Request::~Request() {
+}
+
+void IPCDataSource::ReadOnUtilityThread(int64 position, int size, uint8* data,
+                                        const DataSource::ReadCB& read_cb) {
+  DCHECK(utility_thread_checker_.CalledOnValidThread());
   CHECK_GE(total_size_, 0);
   CHECK_GE(position, 0);
   CHECK_GE(size, 0);
@@ -49,37 +99,9 @@ void IPCDataSource::Read(int64 position, int size, uint8* data,
       request_id, position, clamped_size));
 }
 
-bool IPCDataSource::GetSize(int64* size_out) {
-  *size_out = total_size_;
-  return true;
-}
-
-bool IPCDataSource::IsStreaming() {
-  return false;
-}
-
-void IPCDataSource::SetBitrate(int bitrate) {
-}
-
-bool IPCDataSource::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(IPCDataSource, message)
-    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RequestBlobBytes_Finished,
-                        OnRequestBlobBytesFinished)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-IPCDataSource::Request::Request()
-    : destination(NULL) {
-}
-
-IPCDataSource::Request::~Request() {
-}
-
 void IPCDataSource::OnRequestBlobBytesFinished(int64 request_id,
                                                const std::string& bytes) {
+  DCHECK(utility_thread_checker_.CalledOnValidThread());
   std::map<int64, Request>::iterator it = pending_requests_.find(request_id);
 
   if (it == pending_requests_.end())

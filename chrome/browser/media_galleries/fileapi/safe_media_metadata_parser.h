@@ -57,10 +57,16 @@ class SafeMediaMetadataParser : public content::UtilityProcessHostClient {
       bool parse_success,
       const base::DictionaryValue& metadata_dictionary);
 
-  // Notification when the utility process requests a byte range from the blob.
-  // Runs on the IO thread.
+  // Sequence of functions that bounces from the IO thread to the UI thread to
+  // read the blob data, then sends the data back to the utility process.
   void OnUtilityProcessRequestBlobBytes(int64 request_id, int64 byte_start,
                                         int64 length);
+  void StartBlobReaderOnUIThread(int64 request_id, int64 byte_start,
+                                 int64 length);
+  void OnBlobReaderDoneOnUIThread(int64 request_id,
+                                  scoped_ptr<std::string> data,
+                                  int64 /* blob_total_size */);
+  void FinishRequestBlobBytes(int64 request_id, scoped_ptr<std::string> data);
 
   // UtilityProcessHostClient implementation.
   // Runs on the IO thread.

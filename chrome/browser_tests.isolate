@@ -41,7 +41,9 @@
     ['OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
         'isolate_dependency_tracked': [
+          '../media/test/data/90rotation.mp4',
           '../media/test/data/bear-320x240-multitrack.webm',
+          '../media/test/data/id3_png_test.mp3',
           '../media/test/data/no_streams.webm',
           '../media/test/data/sfx.ogg',
           '../ppapi/tests/test_case.html',
