@@ -206,8 +206,7 @@ private:
     float multiplierFromBlock(const RenderBlock*);
     void applyMultiplier(RenderObject*, float);
     bool mightBeWiderOrNarrowerDescendant(const RenderBlock*);
-    bool isWiderDescendant(Cluster*);
-    bool isNarrowerDescendant(Cluster*);
+    bool isWiderOrNarrowerDescendant(Cluster*);
     bool isLayoutRoot(const RenderBlock*) const;
 
     Cluster* currentCluster() const;
