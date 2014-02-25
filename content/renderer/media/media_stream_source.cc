@@ -17,7 +17,6 @@ void MediaStreamSource::StopSource() {
     stop_callback_.Run(owner());
 
   owner().setReadyState(blink::WebMediaStreamSource::ReadyStateEnded);
-  owner().setExtraData(NULL);
 }
 
 }  // namespace content

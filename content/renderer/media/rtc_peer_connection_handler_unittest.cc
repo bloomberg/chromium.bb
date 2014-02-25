@@ -418,6 +418,36 @@ TEST_F(RTCPeerConnectionHandlerTest, addAndRemoveStream) {
   EXPECT_EQ(0u, mock_peer_connection_->local_streams()->count());
 }
 
+TEST_F(RTCPeerConnectionHandlerTest, addStreamWithStoppedAudioAndVideoTrack) {
+  std::string stream_label = "local_stream";
+  blink::WebMediaStream local_stream(
+      CreateLocalMediaStream(stream_label));
+  blink::WebMediaConstraints constraints;
+
+  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
+  local_stream.audioTracks(audio_tracks);
+  MediaStreamVideoSource* native_audio_source =
+      static_cast<MediaStreamVideoSource*>(
+          audio_tracks[0].source().extraData());
+  native_audio_source->StopSource();
+
+  blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
+  local_stream.videoTracks(video_tracks);
+  MediaStreamVideoSource* native_video_source =
+      static_cast<MediaStreamVideoSource*>(
+          video_tracks[0].source().extraData());
+  native_video_source->StopSource();
+
+  EXPECT_TRUE(pc_handler_->addStream(local_stream, constraints));
+  EXPECT_EQ(stream_label, mock_peer_connection_->stream_label());
+  EXPECT_EQ(
+      1u,
+      mock_peer_connection_->local_streams()->at(0)->GetAudioTracks().size());
+  EXPECT_EQ(
+      1u,
+      mock_peer_connection_->local_streams()->at(0)->GetVideoTracks().size());
+}
+
 TEST_F(RTCPeerConnectionHandlerTest, GetStatsNoSelector) {
   scoped_refptr<MockRTCStatsRequest> request(
       new talk_base::RefCountedObject<MockRTCStatsRequest>());
