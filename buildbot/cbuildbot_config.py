@@ -1061,7 +1061,7 @@ chrome_pfq.add_config('falco-chrome-pfq',
   boards=['falco'],
   hw_tests=HWTestConfig.DefaultListPFQ(),
   upload_hw_test_artifacts=True,
-  important=False,
+  important=True,
 )
 
 chromium_info = chromium_pfq.derive(
