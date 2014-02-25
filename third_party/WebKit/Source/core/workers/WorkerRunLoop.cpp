@@ -42,14 +42,17 @@
 
 namespace WebCore {
 
-class WorkerRunLoop::Task {
-    WTF_MAKE_NONCOPYABLE(Task); WTF_MAKE_FAST_ALLOCATED;
+class WorkerRunLoopTask : public blink::WebThread::Task {
+    WTF_MAKE_NONCOPYABLE(WorkerRunLoopTask); WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<Task> create(const WorkerRunLoop& runLoop, PassOwnPtr<ExecutionContextTask> task)
+    static PassOwnPtr<WorkerRunLoopTask> create(const WorkerRunLoop& runLoop, PassOwnPtr<ExecutionContextTask> task)
     {
-        return adoptPtr(new Task(runLoop, task));
+        return adoptPtr(new WorkerRunLoopTask(runLoop, task));
     }
-    void run()
+
+    virtual ~WorkerRunLoopTask() { }
+
+    virtual void run() OVERRIDE
     {
         WorkerGlobalScope* workerGlobalScope = m_runLoop.context();
         if ((!workerGlobalScope->isClosing() && !m_runLoop.terminated()) || m_task->isCleanupTask())
@@ -57,7 +60,7 @@ public:
     }
 
 private:
-    Task(const WorkerRunLoop& runLoop, PassOwnPtr<ExecutionContextTask> task)
+    WorkerRunLoopTask(const WorkerRunLoop& runLoop, PassOwnPtr<ExecutionContextTask> task)
         : m_runLoop(runLoop)
         , m_task(task)
     {
@@ -170,7 +173,7 @@ MessageQueueWaitResult WorkerRunLoop::runDebuggerTask(WaitMode waitMode)
     return run(m_debuggerMessageQueue, waitMode);
 }
 
-MessageQueueWaitResult WorkerRunLoop::run(MessageQueue<Task>& queue, WaitMode waitMode)
+MessageQueueWaitResult WorkerRunLoop::run(MessageQueue<blink::WebThread::Task>& queue, WaitMode waitMode)
 {
     ASSERT(m_context);
     ASSERT(m_context->thread());
@@ -178,12 +181,12 @@ MessageQueueWaitResult WorkerRunLoop::run(MessageQueue<Task>& queue, WaitMode wa
 
     bool nextTimeoutEventIsIdleWatchdog;
     MessageQueueWaitResult result;
-    OwnPtr<WorkerRunLoop::Task> task;
+    OwnPtr<blink::WebThread::Task> task;
     do {
         double absoluteTime = 0.0;
         nextTimeoutEventIsIdleWatchdog = false;
         if (waitMode == WaitForMessage) {
-            absoluteTime = m_sharedTimer->isActive() ? m_sharedTimer->fireTime() : MessageQueue<Task>::infiniteTime();
+            absoluteTime = m_sharedTimer->isActive() ? m_sharedTimer->fireTime() : MessageQueue<blink::WebThread::Task>::infiniteTime();
 
             // Do a script engine idle notification if the next event is distant enough.
             const double kMinIdleTimespan = 0.3; // seconds
@@ -239,7 +242,7 @@ void WorkerRunLoop::runCleanupTasks()
     ASSERT(m_debuggerMessageQueue.killed());
 
     while (true) {
-        OwnPtr<WorkerRunLoop::Task> task = m_debuggerMessageQueue.tryGetMessageIgnoringKilled();
+        OwnPtr<blink::WebThread::Task> task = m_debuggerMessageQueue.tryGetMessageIgnoringKilled();
         if (!task)
             task = m_messageQueue.tryGetMessageIgnoringKilled();
         if (!task)
@@ -256,18 +259,18 @@ void WorkerRunLoop::terminate()
 
 bool WorkerRunLoop::postTask(PassOwnPtr<ExecutionContextTask> task)
 {
-    return m_messageQueue.append(Task::create(*this, task));
+    return m_messageQueue.append(WorkerRunLoopTask::create(*this, task));
 }
 
 void WorkerRunLoop::postTaskAndTerminate(PassOwnPtr<ExecutionContextTask> task)
 {
     m_debuggerMessageQueue.kill();
-    m_messageQueue.appendAndKill(Task::create(*this, task));
+    m_messageQueue.appendAndKill(WorkerRunLoopTask::create(*this, task));
 }
 
 bool WorkerRunLoop::postDebuggerTask(PassOwnPtr<ExecutionContextTask> task)
 {
-    bool posted = m_debuggerMessageQueue.append(Task::create(*this, task));
+    bool posted = m_debuggerMessageQueue.append(WorkerRunLoopTask::create(*this, task));
     if (posted)
         postTask(TickleDebuggerQueueTask::create(this));
     return posted;

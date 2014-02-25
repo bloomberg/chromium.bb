@@ -33,6 +33,7 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "public/platform/WebThread.h"
 #include "wtf/Functional.h"
 #include "wtf/MessageQueue.h"
 #include "wtf/OwnPtr.h"
@@ -61,6 +62,8 @@ namespace WebCore {
         void terminate();
         bool terminated() const { return m_messageQueue.killed(); }
 
+        WorkerGlobalScope* context() const { return m_context; }
+
         // Returns true if the loop is still alive, false if it has been terminated.
         bool postTask(PassOwnPtr<ExecutionContextTask>);
 
@@ -69,20 +72,16 @@ namespace WebCore {
         // Returns true if the loop is still alive, false if it has been terminated.
         bool postDebuggerTask(PassOwnPtr<ExecutionContextTask>);
 
-        class Task;
-
     private:
         friend class RunLoopSetup;
-        MessageQueueWaitResult run(MessageQueue<Task>&, WaitMode);
+        MessageQueueWaitResult run(MessageQueue<blink::WebThread::Task>&, WaitMode);
 
         // Runs any clean up tasks that are currently in the queue and returns.
         // This should only be called when the context is closed or loop has been terminated.
         void runCleanupTasks();
 
-        WorkerGlobalScope* context() const { return m_context; }
-
-        MessageQueue<Task> m_messageQueue;
-        MessageQueue<Task> m_debuggerMessageQueue;
+        MessageQueue<blink::WebThread::Task> m_messageQueue;
+        MessageQueue<blink::WebThread::Task> m_debuggerMessageQueue;
         OwnPtr<WorkerSharedTimer> m_sharedTimer;
         WorkerGlobalScope* m_context;
         int m_nestedCount;
