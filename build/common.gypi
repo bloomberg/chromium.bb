@@ -654,15 +654,8 @@
           'enable_autofill_dialog%': 1
         }],
 
-        ['OS=="android" and android_webview_build==0', {
+        ['OS=="android"', {
           'enable_webrtc%': 1,
-        }],
-
-        # Disable WebRTC for building WebView as part of Android system.
-        # TODO(boliu): Decide if we want WebRTC, and if so, also merge
-        # the necessary third_party repositories.
-        ['OS=="android" and android_webview_build==1', {
-          'enable_webrtc%': 0,
         }],
 
         ['OS=="ios"', {
