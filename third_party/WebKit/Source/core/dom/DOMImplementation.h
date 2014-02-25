@@ -47,7 +47,7 @@ public:
 
     void ref() { m_document.ref(); }
     void deref() { m_document.deref(); }
-    Document* document() { return &m_document; }
+    Document& document() const { return m_document; }
 
     // DOM methods & attributes for DOMImplementation
     static bool hasFeature(const String& feature, const String& version);

@@ -19,7 +19,7 @@
  */
 
 [
-    SetWrapperReferenceFrom=document,
+    SetWrapperReferenceFromReference=document,
 ] interface DOMImplementation {
 
     // DOM Level 1

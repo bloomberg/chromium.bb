@@ -85,6 +85,7 @@ Replaceable
 # Source/core/page/RuntimeEnabledFeatures.in
 RuntimeEnabled=*
 SetWrapperReferenceFrom=document|element|owner|ownerNode|virtualOwnerNode
+SetWrapperReferenceFromReference=document|element|owner|ownerNode|virtualOwnerNode
 SetWrapperReferenceTo=*
 SetterCallWith=ExecutionContext|ScriptState|ScriptArguments|ActiveWindow|FirstWindow
 SpecialWrapFor=*

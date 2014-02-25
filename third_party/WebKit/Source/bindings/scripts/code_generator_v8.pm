@@ -513,7 +513,7 @@ sub HeaderFilesForInterface
 sub NeedsVisitDOMWrapper
 {
     my $interface = shift;
-    return ExtendedAttributeContains($interface->extendedAttributes->{"Custom"}, "VisitDOMWrapper") || $interface->extendedAttributes->{"SetWrapperReferenceFrom"} || $interface->extendedAttributes->{"SetWrapperReferenceTo"} || SVGTypeNeedsToHoldContextElement($interface->name);
+    return ExtendedAttributeContains($interface->extendedAttributes->{"Custom"}, "VisitDOMWrapper") || $interface->extendedAttributes->{"SetWrapperReferenceFrom"} || $interface->extendedAttributes->{"SetWrapperReferenceFromReference"} || $interface->extendedAttributes->{"SetWrapperReferenceTo"} || SVGTypeNeedsToHoldContextElement($interface->name);
 }
 
 sub GenerateVisitDOMWrapper
@@ -574,23 +574,37 @@ END
     }
 
     my $isReachableMethod = $interface->extendedAttributes->{"SetWrapperReferenceFrom"};
-    if ($isReachableMethod) {
+    my $isReachableReferenceMethod = $interface->extendedAttributes->{"SetWrapperReferenceFromReference"};
+
+    if ($isReachableMethod || $isReachableReferenceMethod) {
         AddToImplIncludes("bindings/v8/V8GCController.h");
         AddToImplIncludes("core/dom/Element.h");
-        $code .= <<END;
+        if ($isReachableMethod) {
+            $code .= <<END;
     if (Node* owner = impl->${isReachableMethod}()) {
         Node* root = V8GCController::opaqueRootForGC(owner, isolate);
         isolate->SetReferenceFromGroup(v8::UniqueId(reinterpret_cast<intptr_t>(root)), wrapper);
         return;
     }
 END
+        } else {
+            $code .= <<END;
+    Node* root = V8GCController::opaqueRootForGC(&impl->${isReachableReferenceMethod}(), isolate);
+    isolate->SetReferenceFromGroup(v8::UniqueId(reinterpret_cast<intptr_t>(root)), wrapper);
+}
+
+END
+        }
     }
 
-    $code .= <<END;
+    if (!$isReachableReferenceMethod) {
+        $code .= <<END;
     setObjectGroup(object, wrapper, isolate);
 }
 
 END
+    }
+
     $implementation{nameSpaceWebCore}->add($code);
 }
 
