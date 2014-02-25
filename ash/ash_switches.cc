@@ -158,11 +158,6 @@ const char kAshOverviewDelayOnAltTab[] = "ash-overview-delay-on-alt-tab";
 // is positioned on the right with -100 offset. (above than primary)
 const char kAshSecondaryDisplayLayout[] = "ash-secondary-display-layout";
 
-// Use the old behavior where the user can pick the width of a side maximized
-// window. The user selects the width of the side maximized window based on how
-// far off the edge of the work area they drag the window.
-const char kAshMultipleSnapWindowWidths[] = "ash-multiple-snap-window-widths";
-
 // Enables the heads-up display for tracking touch points.
 const char kAshTouchHud[] = "ash-touch-hud";
 
@@ -193,11 +188,8 @@ const char kForceAshToDesktop[] = "ash-force-desktop";
 #endif
 
 bool UseAlternateFrameCaptionButtonStyle() {
-  // For the sake of simplicity, the alternate caption button style is only
-  // used if snapped windows are always 50% of the screen's width.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(kAshEnableAlternateFrameCaptionButtonStyle) &&
-      !command_line->HasSwitch(kAshMultipleSnapWindowWidths);
+  return CommandLine::ForCurrentProcess()->
+      HasSwitch(kAshEnableAlternateFrameCaptionButtonStyle);
 }
 
 bool UseAlternateShelfLayout() {

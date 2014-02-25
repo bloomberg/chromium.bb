@@ -1068,13 +1068,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableMinimizeOnSecondLauncherItemClick)
   },
   {
-    "multiple-snap-window-widths",
-    IDS_MULTIPLE_SNAP_WINDOW_WIDTHS_NAME,
-    IDS_MULTIPLE_SNAP_WINDOW_WIDTHS_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(ash::switches::kAshMultipleSnapWindowWidths)
-  },
-  {
     "disable-overview-mode",
     IDS_FLAGS_DISABLE_OVERVIEW_MODE_NAME,
     IDS_FLAGS_DISABLE_OVERVIEW_MODE_DESCRIPTION,

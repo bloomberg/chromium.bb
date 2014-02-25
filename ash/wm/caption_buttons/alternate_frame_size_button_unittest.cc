@@ -132,7 +132,6 @@ class AlternateFrameSizeButtonTest : public AshTestBase {
     CommandLine* command_line = CommandLine::ForCurrentProcess();
     command_line->AppendSwitch(
         switches::kAshEnableAlternateFrameCaptionButtonStyle);
-    CHECK(!command_line->HasSwitch(switches::kAshMultipleSnapWindowWidths));
 
     TestWidgetDelegate* delegate = new TestWidgetDelegate();
     window_state_ = ash::wm::GetWindowState(

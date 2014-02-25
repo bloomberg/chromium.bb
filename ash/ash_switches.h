@@ -60,7 +60,6 @@ ASH_EXPORT extern const char kAshHideNotificationsForFactory[];
 ASH_EXPORT extern const char kAshHostWindowBounds[];
 ASH_EXPORT extern const char kAshOverviewDelayOnAltTab[];
 ASH_EXPORT extern const char kAshSecondaryDisplayLayout[];
-ASH_EXPORT extern const char kAshMultipleSnapWindowWidths[];
 ASH_EXPORT extern const char kAshTouchHud[];
 ASH_EXPORT extern const char kAshUseAlternateShelfLayout[];
 ASH_EXPORT extern const char kAshUseFirstDisplayAsInternal[];

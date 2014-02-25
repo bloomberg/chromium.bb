@@ -6474,12 +6474,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SHOW_TOUCH_HUD_DESCRIPTION" desc="Description for the flag to show a heads-up display for tracking touch-points.">
         Enables a heads-up display at the top-left corner of the screen that lists information about the touch-points on the screen.
       </message>
-      <message name="IDS_MULTIPLE_SNAP_WINDOW_WIDTHS_NAME" desc="Name for the flag for allowing side maximizing a window to several widths">
-        Allow a window to be side maximized to several widths.
-      </message>
-      <message name="IDS_MULTIPLE_SNAP_WINDOW_WIDTHS_DESCRIPTION" desc="Description for the flag for allowing side maximizing a window to several widths.">
-        Allow a window to be side maximized to several widths. The width is selected based on how far beyond the edge of the screen a window is dragged.
-      </message>
       <message name="IDS_FLAGS_ALLOW_NACL_SOCKET_API_NAME" desc="Name for the NaCl Socket API feature.">
         NaCl Socket API.
       </message>

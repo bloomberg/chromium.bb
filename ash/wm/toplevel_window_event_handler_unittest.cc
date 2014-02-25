@@ -416,7 +416,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
     internal::SnapSizer sizer(window_state, location,
         internal::SnapSizer::RIGHT_EDGE,
         internal::SnapSizer::OTHER_INPUT);
-    gfx::Rect snapped_bounds = sizer.GetSnapBounds(target->bounds());
+    gfx::Rect snapped_bounds = sizer.target_bounds();
 
     end.Offset(100, 0);
     generator.GestureScrollSequence(location, end,
@@ -437,7 +437,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
     internal::SnapSizer sizer(window_state, location,
         internal::SnapSizer::LEFT_EDGE,
         internal::SnapSizer::OTHER_INPUT);
-    gfx::Rect snapped_bounds = sizer.GetSnapBounds(target->bounds());
+    gfx::Rect snapped_bounds = sizer.target_bounds();
     end = location = target->GetBoundsInRootWindow().CenterPoint();
     end.Offset(-100, 0);
     generator.GestureScrollSequence(location, end,
@@ -558,7 +558,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragForUnresizableWindow) {
     internal::SnapSizer sizer(window_state, location,
         internal::SnapSizer::RIGHT_EDGE,
         internal::SnapSizer::OTHER_INPUT);
-    gfx::Rect snapped_bounds = sizer.GetSnapBounds(target->bounds());
+    gfx::Rect snapped_bounds = sizer.target_bounds();
 
     end.Offset(100, 0);
     generator.GestureScrollSequence(location, end,
@@ -583,7 +583,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragForUnresizableWindow) {
     internal::SnapSizer sizer(window_state, location,
         internal::SnapSizer::LEFT_EDGE,
         internal::SnapSizer::OTHER_INPUT);
-    gfx::Rect snapped_bounds = sizer.GetSnapBounds(target->bounds());
+    gfx::Rect snapped_bounds = sizer.target_bounds();
     end = location = target->GetBoundsInRootWindow().CenterPoint();
     end.Offset(-100, 0);
     generator.GestureScrollSequence(location, end,

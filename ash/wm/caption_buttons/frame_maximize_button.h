@@ -24,7 +24,6 @@ class FrameMaximizeButtonObserver;
 
 namespace internal {
 class PhantomWindowController;
-class SnapSizer;
 }
 
 class MaximizeBubbleController;
@@ -122,26 +121,17 @@ class ASH_EXPORT FrameMaximizeButton : public FrameCaptionButton,
   // |update_timer_|.
   void UpdateSnapFromEventLocation();
 
-  // Updates |snap_type_| based on a mouse drag. If |select_default| is set,
-  // the single button click default setting of the snap sizer should be used.
-  // Set |is_touch| to true to make touch snapping at the corners possible.
-  void UpdateSnap(const gfx::Point& location,
-                  bool select_default,
-                  bool is_touch);
+  // Updates |snap_type_| based on a mouse drag.
+  void UpdateSnap(const gfx::Point& location);
 
   // Returns the type of snap based on the specified location.
   SnapType SnapTypeForLocation(const gfx::Point& location) const;
 
   // Returns the bounds of the resulting window for the specified type.
-  gfx::Rect ScreenBoundsForType(SnapType type,
-                                const internal::SnapSizer& snap_sizer) const;
+  gfx::Rect ScreenBoundsForType(SnapType type) const;
 
-  // Converts location to screen coordinates and returns it. These are the
-  // coordinates used by the SnapSizer.
-  gfx::Point LocationForSnapSizer(const gfx::Point& location) const;
-
-  // Snaps the window to the current snap position.
-  void Snap(internal::SnapSizer* snap_sizer);
+  // Snaps the window to the current snap position determined by |snap_type_|.
+  void Snap();
 
   // Determine the maximize type of this window.
   MaximizeBubbleFrameState GetMaximizeBubbleFrameState() const;
@@ -166,13 +156,8 @@ class ASH_EXPORT FrameMaximizeButton : public FrameCaptionButton,
   // Location of the press.
   gfx::Point press_location_;
 
-  // True if the press was triggered by a gesture/touch.
-  bool press_is_gesture_;
-
   // Current snap type.
   SnapType snap_type_;
-
-  scoped_ptr<internal::SnapSizer> snap_sizer_;
 
   scoped_ptr<EscapeEventFilter> escape_event_filter_;
 

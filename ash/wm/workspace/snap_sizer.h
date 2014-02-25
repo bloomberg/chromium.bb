@@ -30,7 +30,6 @@ class ASH_EXPORT SnapSizer {
   };
 
   enum InputType {
-    TOUCH_MAXIMIZE_BUTTON_INPUT,
     TOUCH_DRAG_INPUT,
     OTHER_INPUT
   };
@@ -56,37 +55,22 @@ class ASH_EXPORT SnapSizer {
   // Updates the target bounds based on a mouse move.
   void Update(const gfx::Point& location);
 
-  // Bounds to position the window at.
+  // Returns bounds to position the window at.
   const gfx::Rect& target_bounds() const { return target_bounds_; }
 
-  // Returns the appropriate snap bounds (e.g. if a window is already snapped,
-  // then it returns the next snap-bounds).
-  gfx::Rect GetSnapBounds(const gfx::Rect& bounds);
-
-  // Set the snap sizer to the button press default size and prevent resizing.
-  void SelectDefaultSizeAndDisableResize();
-
-  // Returns the target bounds based on the edge and the provided |size_index|.
-  // For unit test purposes this function is not private.
-  gfx::Rect GetTargetBoundsForSize(size_t size_index) const;
-
-  // Returns true when snapping sequence is at its last (docking) step.
+  // Returns true when snapping sequence is at its end (docking).
   bool end_of_sequence() const { return end_of_sequence_; }
 
  private:
-  // Calculates the amount to increment by. This returns one of -1, 0 or 1 and
-  // is intended to by applied to |size_index_|. |x| is the current
-  // x-coordinate, and |reference_x| is used to determine whether to increase
-  // or decrease the position. It's one of |last_adjust_x_| or |last_update_x_|.
-  int CalculateIncrement(int x, int reference_x) const;
+  // Returns the target bounds based on the edge.
+  gfx::Rect CalculateTargetBounds() const;
 
-  // Changes the bounds. |x| is the current x-coordinate and |delta| the amount
-  // to increase by. |delta| comes from CalculateIncrement() and is applied
-  // to |size_index_|.
-  void ChangeBounds(int x, int delta);
-
-  // Returns the target bounds based on the edge and |size_index_|.
-  gfx::Rect GetTargetBounds() const;
+  // Check if we can advance [to docked state]. |x| is the current x-coordinate
+  // and |reference_x| is one of |last_adjust_x_| or |last_update_x_|. It is
+  // used to determine whether the position continues to change in the original
+  // direction. If we advance in the same direction then the snapping sequence
+  // reaches its end (and additional drag may cause docking).
+  void CheckEndOfSequence(int x, int reference_x);
 
   // Returns true if the specified point is along the edge of the screen.
   bool AlongEdge(int x) const;
@@ -102,17 +86,8 @@ class ASH_EXPORT SnapSizer {
   // Time Update() was last invoked.
   base::TimeTicks time_last_update_;
 
-  // Index into |kSizes| that dictates the width of the screen the target
-  // bounds should get.
-  int size_index_;
-
-  // Set to true when an attempt is made to increment |size_index_| past
-  // the size of |usable_width_|.
+  // Set to true after a sufficient drag in the same direction.
   bool end_of_sequence_;
-
-  // If set, |size_index_| will get ignored and the single button default
-  // setting will be used instead.
-  bool resize_disabled_;
 
   // Number of times Update() has been invoked since last ChangeBounds().
   int num_moves_since_adjust_;
@@ -130,10 +105,6 @@ class ASH_EXPORT SnapSizer {
   // touch & drag operation of the maximizer button. It changes the behavior of
   // the drag / resize behavior when the dragging starts close to the border.
   const InputType input_type_;
-
-  // A list of usable window widths for size. This gets created when the
-  // sizer gets created.
-  const std::vector<int> usable_width_;
 
   DISALLOW_COPY_AND_ASSIGN(SnapSizer);
 };

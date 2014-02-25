@@ -9,6 +9,7 @@
 #include "ash/caps_lock_delegate.h"
 #include "ash/display/display_manager.h"
 #include "ash/ime_control_delegate.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/brightness_control_delegate.h"
@@ -469,9 +470,6 @@ TEST_F(AcceleratorControllerTest, IsRegistered) {
 }
 
 TEST_F(AcceleratorControllerTest, WindowSnap) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAshMultipleSnapWindowWidths);
-
   scoped_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
   const ui::Accelerator dummy;
@@ -482,27 +480,18 @@ TEST_F(AcceleratorControllerTest, WindowSnap) {
 
   {
     GetController()->PerformAction(WINDOW_SNAP_LEFT, dummy);
-    gfx::Rect snap_left = window->bounds();
-    GetController()->PerformAction(WINDOW_SNAP_LEFT, dummy);
-    EXPECT_NE(window->bounds().ToString(), snap_left.ToString());
-    GetController()->PerformAction(WINDOW_SNAP_LEFT, dummy);
-    EXPECT_NE(window->bounds().ToString(), snap_left.ToString());
-
-    // It should cycle back to the first snapped position.
-    GetController()->PerformAction(WINDOW_SNAP_LEFT, dummy);
-    EXPECT_EQ(window->bounds().ToString(), snap_left.ToString());
+    gfx::Rect expected_bounds = ScreenUtil::GetDisplayWorkAreaBoundsInParent(
+        window.get());
+    expected_bounds.set_width(expected_bounds.width() / 2);
+    EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
   }
   {
     GetController()->PerformAction(WINDOW_SNAP_RIGHT, dummy);
-    gfx::Rect snap_right = window->bounds();
-    GetController()->PerformAction(WINDOW_SNAP_RIGHT, dummy);
-    EXPECT_NE(window->bounds().ToString(), snap_right.ToString());
-    GetController()->PerformAction(WINDOW_SNAP_RIGHT, dummy);
-    EXPECT_NE(window->bounds().ToString(), snap_right.ToString());
-
-    // It should cycle back to the first snapped position.
-    GetController()->PerformAction(WINDOW_SNAP_RIGHT, dummy);
-    EXPECT_EQ(window->bounds().ToString(), snap_right.ToString());
+    gfx::Rect expected_bounds = ScreenUtil::GetDisplayWorkAreaBoundsInParent(
+        window.get());
+    expected_bounds.set_width(expected_bounds.width() / 2);
+    expected_bounds.set_x(expected_bounds.width());
+    EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
   }
   {
     gfx::Rect normal_bounds = window_state->GetRestoreBoundsInParent();
