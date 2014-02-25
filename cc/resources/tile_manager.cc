@@ -904,8 +904,7 @@ scoped_refptr<internal::RasterWorkerPoolTask> TileManager::CreateRasterTask(
                  tile->id(),
                  base::Passed(&resource),
                  mts.raster_mode),
-      &decode_tasks,
-      context_provider_);
+      &decode_tasks);
 }
 
 void TileManager::OnImageDecodeTaskCompleted(int layer_id,

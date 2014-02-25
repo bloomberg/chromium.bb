@@ -19,7 +19,6 @@ class SkPixelRef;
 
 namespace cc {
 
-class ContextProvider;
 class Resource;
 class ResourceProvider;
 
@@ -156,8 +155,7 @@ class CC_EXPORT RasterWorkerPool : public internal::WorkerPoolTaskClient {
       int source_frame_number,
       RenderingStatsInstrumentation* rendering_stats,
       const base::Callback<void(const PicturePileImpl::Analysis&, bool)>& reply,
-      internal::WorkerPoolTask::Vector* dependencies,
-      ContextProvider* context_provider);
+      internal::WorkerPoolTask::Vector* dependencies);
 
   static scoped_refptr<internal::WorkerPoolTask> CreateImageDecodeTask(
       SkPixelRef* pixel_ref,

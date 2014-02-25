@@ -139,10 +139,20 @@ void DirectRasterWorkerPool::ScheduleRunTasksOnOriginThread() {
 }
 
 void DirectRasterWorkerPool::RunTasksOnOriginThread() {
+  TRACE_EVENT0("cc", "DirectRasterWorkerPool::RunTasksOnOriginThread");
+
   DCHECK(run_tasks_on_origin_thread_pending_);
   run_tasks_on_origin_thread_pending_ = false;
 
   if (!raster_tasks_.items.empty()) {
+    DCHECK(context_provider_);
+    DCHECK(context_provider_->ContextGL());
+    // TODO(alokp): Use a trace macro to push/pop markers.
+    // Using push/pop functions directly incurs cost to evaluate function
+    // arguments even when tracing is disabled.
+    context_provider_->ContextGL()->PushGroupMarkerEXT(
+        0, "DirectRasterWorkerPool::RunTasksOnOriginThread");
+
     GrContext* gr_context = context_provider_->GrContext();
     // TODO(alokp): Implement TestContextProvider::GrContext().
     if (gr_context)
@@ -161,23 +171,22 @@ void DirectRasterWorkerPool::RunTasksOnOriginThread() {
            it != task->dependencies().end();
            ++it) {
         internal::WorkerPoolTask* dependency = it->get();
-
         if (dependency->HasCompleted())
           continue;
 
         RunTaskOnOriginThread(dependency);
-
         completed_tasks_.push_back(dependency);
       }
 
       RunTaskOnOriginThread(task);
-
       completed_tasks_.push_back(task);
     }
 
     // TODO(alokp): Implement TestContextProvider::GrContext().
     if (gr_context)
       gr_context->flush();
+
+    context_provider_->ContextGL()->PopGroupMarkerEXT();
   }
 
   RunTaskOnOriginThread(raster_required_for_activation_finished_task());

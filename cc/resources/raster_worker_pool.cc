@@ -21,7 +21,6 @@
 #include "skia/ext/paint_simplifier.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
-#include "third_party/skia/include/gpu/GrContext.h"
 
 namespace cc {
 namespace {
@@ -81,8 +80,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
       int source_frame_number,
       RenderingStatsInstrumentation* rendering_stats,
       const base::Callback<void(const PicturePileImpl::Analysis&, bool)>& reply,
-      internal::WorkerPoolTask::Vector* dependencies,
-      ContextProvider* context_provider)
+      internal::WorkerPoolTask::Vector* dependencies)
       : internal::RasterWorkerPoolTask(resource, dependencies),
         picture_pile_(picture_pile),
         content_rect_(content_rect),
@@ -94,7 +92,6 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
         source_frame_number_(source_frame_number),
         rendering_stats_(rendering_stats),
         reply_(reply),
-        context_provider_(context_provider),
         canvas_(NULL) {}
 
   // Overridden from internal::Task:
@@ -102,10 +99,8 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
     TRACE_EVENT0("cc", "RasterWorkerPoolTaskImpl::RunOnWorkerThread");
 
     DCHECK(picture_pile_);
-    Analyze(picture_pile_->GetCloneForDrawingOnThread(thread_index));
-    if (!canvas_ || analysis_.is_solid_color)
-      return;
-    Raster(picture_pile_->GetCloneForDrawingOnThread(thread_index));
+    if (canvas_)
+      AnalyzeAndRaster(picture_pile_->GetCloneForDrawingOnThread(thread_index));
   }
 
   // Overridden from internal::WorkerPoolTask:
@@ -116,21 +111,8 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   }
   virtual void RunOnOriginThread() OVERRIDE {
     TRACE_EVENT0("cc", "RasterWorkerPoolTaskImpl::RunOnOriginThread");
-
-    Analyze(picture_pile_);
-    if (!canvas_ || analysis_.is_solid_color)
-      return;
-    // TODO(alokp): Use a trace macro to push/pop markers.
-    // Using push/pop functions directly incurs cost to evaluate function
-    // arguments even when tracing is disabled.
-    DCHECK(context_provider_);
-    context_provider_->ContextGL()->PushGroupMarkerEXT(
-        0,
-        base::StringPrintf(
-            "Raster-%d-%d-%p", source_frame_number_, layer_id_, tile_id_)
-            .c_str());
-    Raster(picture_pile_);
-    context_provider_->ContextGL()->PopGroupMarkerEXT();
+    if (canvas_)
+      AnalyzeAndRaster(picture_pile_);
   }
   virtual void CompleteOnOriginThread(internal::WorkerPoolTaskClient* client)
       OVERRIDE {
@@ -153,6 +135,17 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
     res->SetInteger("source_frame_number", source_frame_number_);
     res->SetInteger("layer_id", layer_id_);
     return res.PassAs<base::Value>();
+  }
+
+  void AnalyzeAndRaster(PicturePileImpl* picture_pile) {
+    DCHECK(picture_pile);
+    DCHECK(canvas_);
+
+    Analyze(picture_pile);
+    if (analysis_.is_solid_color)
+      return;
+
+    Raster(picture_pile);
   }
 
   void Analyze(PicturePileImpl* picture_pile) {
@@ -238,7 +231,6 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   int source_frame_number_;
   RenderingStatsInstrumentation* rendering_stats_;
   const base::Callback<void(const PicturePileImpl::Analysis&, bool)> reply_;
-  ContextProvider* context_provider_;
   SkCanvas* canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterWorkerPoolTaskImpl);
@@ -525,8 +517,7 @@ RasterWorkerPool::CreateRasterTask(
     int source_frame_number,
     RenderingStatsInstrumentation* rendering_stats,
     const base::Callback<void(const PicturePileImpl::Analysis&, bool)>& reply,
-    internal::WorkerPoolTask::Vector* dependencies,
-    ContextProvider* context_provider) {
+    internal::WorkerPoolTask::Vector* dependencies) {
   return make_scoped_refptr(new RasterWorkerPoolTaskImpl(resource,
                                                          picture_pile,
                                                          content_rect,
@@ -538,8 +529,7 @@ RasterWorkerPool::CreateRasterTask(
                                                          source_frame_number,
                                                          rendering_stats,
                                                          reply,
-                                                         dependencies,
-                                                         context_provider));
+                                                         dependencies));
 }
 
 // static

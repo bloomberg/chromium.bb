@@ -9,6 +9,8 @@
 
 namespace cc {
 
+class ContextProvider;
+
 class CC_EXPORT DirectRasterWorkerPool : public RasterWorkerPool {
  public:
   virtual ~DirectRasterWorkerPool();
