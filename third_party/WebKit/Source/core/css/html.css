@@ -771,6 +771,10 @@ input[type="button"]:active:disabled, input[type="submit"]:active:disabled, inpu
     border-style: outset
 }
 
+datalist {
+    display: none
+}
+
 area, param {
     display: none
 }
@@ -805,6 +809,21 @@ input[type="color"]::-webkit-color-swatch {
     border: 1px solid #777777;
     flex: 1;
     -webkit-user-modify: read-only !important;
+}
+
+input[type="color"][list] {
+    -webkit-appearance: menulist;
+    width: 88px;
+    height: 23px
+}
+
+input[type="color"][list]::-webkit-color-swatch-wrapper {
+    padding-left: 8px;
+    padding-right: 24px;
+}
+
+input[type="color"][list]::-webkit-color-swatch {
+    border-color: #000000;
 }
 
 input::-webkit-calendar-picker-indicator {
