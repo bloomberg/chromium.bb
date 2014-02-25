@@ -64,7 +64,7 @@ struct ClipRectsContext {
     ClipRectsType clipRectsType;
     OverlayScrollbarSizeRelevancy overlayScrollbarSizeRelevancy;
     ShouldRespectOverflowClip respectOverflowClip;
-    const LayoutSize& subPixelAccumulation;
+    LayoutSize subPixelAccumulation;
 };
 
 class RenderLayerClipper {

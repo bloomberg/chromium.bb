@@ -169,6 +169,7 @@ void RenderLayerClipper::calculateRects(const ClipRectsContext& clipRectsContext
 {
     if (clipRectsContext.rootLayer != m_renderer->layer() && m_renderer->layer()->parent()) {
         backgroundRect = backgroundClipRect(clipRectsContext);
+        backgroundRect.move(roundedIntSize(clipRectsContext.subPixelAccumulation));
         backgroundRect.intersect(paintDirtyRect);
     } else {
         backgroundRect = paintDirtyRect;
