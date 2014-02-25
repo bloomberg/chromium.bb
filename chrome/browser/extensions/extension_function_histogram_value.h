@@ -748,7 +748,9 @@ enum HistogramValue {
   ACTIVITYLOGPRIVATE_DELETEACTIVITIES,
   NETWORKINGPRIVATE_SETWIFITDLSENABLEDSTATE,
   NETWORKINGPRIVATE_GETWIFITDLSSTATUS,
-  ENUM_BOUNDARY  // Last entry: Add new entries above.
+  // Last entry: Add new entries above and ensure to update
+  // tools/metrics/histograms/histograms/histograms.xml.
+  ENUM_BOUNDARY
 };
 
 }  // namespace functions

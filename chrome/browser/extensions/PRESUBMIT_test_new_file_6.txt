@@ -1,6 +1,8 @@
 // End enum marker is before start enum marker
 
-  ENUM_BOUNDARY // Last entry: Add new entries above.
+  // Last entry: Add new entries above and ensure to update
+  // tools/metrics/histograms/histograms/histograms.xml.
+  ENUM_BOUNDARY
 //
 enum HistogramValue {
   UNKNOWN = 0,

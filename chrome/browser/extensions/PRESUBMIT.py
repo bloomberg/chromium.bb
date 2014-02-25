@@ -29,7 +29,7 @@ class HistogramValueChecker(object):
   # The markers we look for in the above source file as delimiters of the enum
   # definition.
   ENUM_START_MARKER = "enum HistogramValue {"
-  ENUM_END_MARKER = "  ENUM_BOUNDARY"
+  ENUM_END_MARKER = "  // Last entry:"
 
   def __init__(self, input_api, output_api):
     self.input_api = input_api

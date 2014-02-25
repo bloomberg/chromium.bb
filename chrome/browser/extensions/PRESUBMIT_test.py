@@ -226,6 +226,11 @@ class HistogramValueCheckerTest(unittest.TestCase):
                       "We should not get a warning for a deletion outside of "
                       "the enum")
 
+  def testCommentIsNotEnumEndMarker(self):
+    results = self._RunTest(self.TEST_FILE_PATTERN % "11")
+    self.assertEquals(1, len(results),
+                      "We should get a warning if '// Last Entry' is not the "
+                      "enum end marker")
 
 if __name__ == '__main__':
   unittest.main()
