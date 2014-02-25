@@ -168,11 +168,7 @@ const void *__%(wrapper_prefix)s_PPBGetInterface(const char *name) {
     wrapper->real_iface = iface;
   }
 
-  if (wrapper->wrapped_iface) {
-    return wrapper->wrapped_iface;
-  } else {
-    return wrapper->real_iface;
-  }
+  return wrapper->wrapped_iface;
 }
 
 const void *__%(wrapper_prefix)s_PPPGetInterface(const char *name) {
@@ -189,11 +185,7 @@ const void *__%(wrapper_prefix)s_PPPGetInterface(const char *name) {
     wrapper->real_iface = iface;
   }
 
-  if (wrapper->wrapped_iface) {
-    return wrapper->wrapped_iface;
-  } else {
-    return wrapper->real_iface;
-  }
+  return wrapper->wrapped_iface;
 }
 """ % { 'wrapper_struct' : self.GetWrapperMetadataName(),
         'wrapper_prefix' : self.wrapper_prefix,
@@ -251,13 +243,11 @@ const void *__%(wrapper_prefix)s_PPPGetInterface(const char *name) {
     # Get typedefs for PPB_GetInterface.
     out.Write('#include "%s"\n' % self.GetHeaderName('ppb.h'))
 
-    # Get a conservative list of all #includes that are needed,
-    # whether it requires wrapping or not. We currently depend on the macro
-    # string for comparison, even when it is not wrapped, to decide when
-    # to use the original/real interface.
+    # Only include headers where *some* interface needs wrapping.
     header_files = set()
     for iface in iface_releases:
-      header_files.add(iface.header_file)
+      if iface.needs_wrapping:
+        header_files.add(iface.header_file)
     for header in sorted(header_files):
       out.Write('#include "%s"\n' % header)
     out.Write('\n')
@@ -324,9 +314,8 @@ const void *__%(wrapper_prefix)s_PPPGetInterface(const char *name) {
                   iface.struct_name)
         continue
 
-      out.Write('static struct %s %s_Wrappers_%s = {\n' % (iface.struct_name,
-                                                           self.wrapper_prefix,
-                                                           iface.struct_name))
+      out.Write('static const struct %s %s_Wrappers_%s = {\n' % (
+          iface.struct_name, self.wrapper_prefix, iface.struct_name))
       methods = []
       for member in iface.node.GetListOf('Member'):
         # Skip the method if it's not actually in the release.
@@ -362,8 +351,8 @@ const void *__%(wrapper_prefix)s_PPPGetInterface(const char *name) {
     for iface in iface_releases:
       iface_macro = self.cgen.GetInterfaceMacro(iface.node, iface.version)
       if iface.needs_wrapping:
-        wrap_iface = '(void *) &%s_Wrappers_%s' % (self.wrapper_prefix,
-                                                   iface.struct_name)
+        wrap_iface = '(const void *) &%s_Wrappers_%s' % (self.wrapper_prefix,
+                                                         iface.struct_name)
         out.Write("""static struct %s %s = {
   .iface_macro = %s,
   .wrapped_iface = %s,

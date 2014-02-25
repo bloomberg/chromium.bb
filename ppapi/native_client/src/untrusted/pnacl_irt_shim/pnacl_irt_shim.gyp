@@ -29,9 +29,6 @@
           'shim_entry.c',
           'shim_ppapi.c',
         ],
-        'include_dirs': [
-          '../../../..',
-        ],
         'extra_args': [
           '--strip-debug',
         ],

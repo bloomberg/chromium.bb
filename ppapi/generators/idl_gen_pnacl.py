@@ -48,7 +48,7 @@ class PnaclGen(WrapperGen):
   def OwnHeaderFile(self):
     """Return the header file that specifies the API of this wrapper.
     We do not generate the header files.  """
-    return 'ppapi/generators/pnacl_shim.h'
+    return 'ppapi/native_client/src/untrusted/pnacl_irt_shim/pnacl_shim.h'
 
 
   def InterfaceVersionNeedsWrapping(self, iface, version):
