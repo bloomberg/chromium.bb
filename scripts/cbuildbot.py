@@ -17,6 +17,7 @@ import glob
 import logging
 import optparse
 import os
+import pickle
 import sys
 import time
 import traceback
@@ -1255,6 +1256,13 @@ def _CreateParser():
                                'in conjunction with --debug, the tree status '
                                'will not be ignored as it usually is in a '
                                '--debug run.')
+  group.add_remote_option('--mock-slave-status', dest='mock_slave_status',
+                          default=None, action='store',
+                          metavar='MOCK_SLAVE_STATUS_PICKLE_FILE',
+                          help='Override the result of the _FetchSlaveStatuses '
+                               'method of MasterSlaveSyncCompletionStage, by '
+                               'specifying a file with a pickle of the result '
+                               'to be returned.')
 
   parser.add_option_group(group)
 
@@ -1677,5 +1685,11 @@ def main(argv):
     if options.mock_tree_status is not None:
       stack.Add(mock.patch.object, timeout_util, '_GetStatus',
                 return_value=options.mock_tree_status)
+
+    if options.mock_slave_status is not None:
+      with open(options.mock_slave_status, 'r') as f:
+        mock_status = pickle.load(f)
+      stack.Add(mock.patch.object, stages.MasterSlaveSyncCompletionStage,
+                '_FetchSlaveStatuses', return_value=mock_status)
 
     _RunBuildStagesWrapper(options, build_config)
