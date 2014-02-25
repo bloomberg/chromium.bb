@@ -1454,7 +1454,9 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
   // No need to draw the surface if we are inside a drawRect. It will be done
   // later.
   if (!about_to_validate_and_paint_) {
-    scoped_ack.Reset();
+    // If we reach here, then the frame will be displayed by a future draw
+    // call, so don't make the callback.
+    (void)scoped_ack.Release();
     if (use_core_animation_) {
       DCHECK(compositing_iosurface_layer_);
       compositing_iosurface_layer_async_timer_.Reset();
@@ -1473,6 +1475,13 @@ bool RenderWidgetHostViewMac::DrawIOSurfaceWithoutCoreAnimation() {
   CHECK(!use_core_animation_);
   CHECK(compositing_iosurface_);
 
+  // If there is a pending frame, it should be acked by the end of this
+  // function. Note that the ack should happen only after all drawing is
+  // complete, so that the ack happens after any blocking due to vsync.
+  base::ScopedClosureRunner scoped_ack(
+      base::Bind(&RenderWidgetHostViewMac::SendPendingSwapAck,
+                 weak_factory_.GetWeakPtr()));
+
   GLint old_gl_surface_order = 0;
   GLint new_gl_surface_order = allow_overlapping_views_ ? -1 : 1;
   [compositing_iosurface_context_->nsgl_context()
@@ -1489,7 +1498,6 @@ bool RenderWidgetHostViewMac::DrawIOSurfaceWithoutCoreAnimation() {
       underlay_view_->compositing_iosurface_ &&
       underlay_view_has_drawn_) {
     [underlay_view_->cocoa_view() setNeedsDisplayInRect:NSMakeRect(0, 0, 1, 1)];
-    SendPendingSwapAck();
     return true;
   }
 
@@ -1525,7 +1533,6 @@ bool RenderWidgetHostViewMac::DrawIOSurfaceWithoutCoreAnimation() {
   }
 
   SendPendingLatencyInfoToHost();
-  SendPendingSwapAck();
   return true;
 }
 
