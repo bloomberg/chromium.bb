@@ -3185,11 +3185,6 @@ static void Pnacl_M25_PPB_NaCl_Private_ReportTranslationFinished(PP_Instance ins
   iface->ReportTranslationFinished(instance, success);
 }
 
-static PP_ExternalPluginResult Pnacl_M25_PPB_NaCl_Private_ReportNaClError(PP_Instance instance, PP_NaClError message_id) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  return iface->ReportNaClError(instance, message_id);
-}
-
 static PP_FileHandle Pnacl_M25_PPB_NaCl_Private_OpenNaClExecutable(PP_Instance instance, const char* file_url, uint64_t* file_token_lo, uint64_t* file_token_hi) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   return iface->OpenNaClExecutable(instance, file_url, file_token_lo, file_token_hi);
@@ -3203,6 +3198,11 @@ static void Pnacl_M25_PPB_NaCl_Private_DispatchEvent(PP_Instance instance, PP_Na
 static void Pnacl_M25_PPB_NaCl_Private_SetReadOnlyProperty(PP_Instance instance, struct PP_Var* key, struct PP_Var* value) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   iface->SetReadOnlyProperty(instance, *key, *value);
+}
+
+static void Pnacl_M25_PPB_NaCl_Private_ReportLoadError(PP_Instance instance, PP_NaClError error, PP_Bool is_installed) {
+  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
+  iface->ReportLoadError(instance, error, is_installed);
 }
 
 /* End wrapper methods for PPB_NaCl_Private_1_0 */
@@ -5086,10 +5086,10 @@ static struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .GetNumberOfProcessors = (int32_t (*)(void))&Pnacl_M25_PPB_NaCl_Private_GetNumberOfProcessors,
     .GetNexeFd = (int32_t (*)(PP_Instance instance, const char* pexe_url, uint32_t abi_version, uint32_t opt_level, const char* last_modified, const char* etag, PP_Bool has_no_store_header, const char* sandbox_isa, const char* extra_flags, PP_Bool* is_hit, PP_FileHandle* nexe_handle, struct PP_CompletionCallback callback))&Pnacl_M25_PPB_NaCl_Private_GetNexeFd,
     .ReportTranslationFinished = (void (*)(PP_Instance instance, PP_Bool success))&Pnacl_M25_PPB_NaCl_Private_ReportTranslationFinished,
-    .ReportNaClError = (PP_ExternalPluginResult (*)(PP_Instance instance, PP_NaClError message_id))&Pnacl_M25_PPB_NaCl_Private_ReportNaClError,
     .OpenNaClExecutable = (PP_FileHandle (*)(PP_Instance instance, const char* file_url, uint64_t* file_token_lo, uint64_t* file_token_hi))&Pnacl_M25_PPB_NaCl_Private_OpenNaClExecutable,
     .DispatchEvent = (void (*)(PP_Instance instance, PP_NaClEventType event_type, const char* resource_url, PP_Bool length_is_computable, uint64_t loaded_bytes, uint64_t total_bytes))&Pnacl_M25_PPB_NaCl_Private_DispatchEvent,
-    .SetReadOnlyProperty = (void (*)(PP_Instance instance, struct PP_Var key, struct PP_Var value))&Pnacl_M25_PPB_NaCl_Private_SetReadOnlyProperty
+    .SetReadOnlyProperty = (void (*)(PP_Instance instance, struct PP_Var key, struct PP_Var value))&Pnacl_M25_PPB_NaCl_Private_SetReadOnlyProperty,
+    .ReportLoadError = (void (*)(PP_Instance instance, PP_NaClError error, PP_Bool is_installed))&Pnacl_M25_PPB_NaCl_Private_ReportLoadError
 };
 
 static struct PPB_NetAddress_Private_0_1 Pnacl_Wrappers_PPB_NetAddress_Private_0_1 = {

@@ -151,7 +151,7 @@ void PnaclResources::ReadResourceInfo(
 }
 
 void PnaclResources::ReadResourceInfoError(const nacl::string& msg) {
-  coordinator_->ReportNonPpapiError(ERROR_PNACL_RESOURCE_FETCH, msg);
+  coordinator_->ReportNonPpapiError(PP_NACL_ERROR_PNACL_RESOURCE_FETCH, msg);
 }
 
 bool PnaclResources::ParseResourceInfo(const nacl::string& buf,
@@ -208,7 +208,7 @@ void PnaclResources::StartLoad(
     if (!manifest_->ResolveURL(url_with_platform_prefix, &full_url,
                                &error_info)) {
       coordinator_->ReportNonPpapiError(
-          ERROR_PNACL_RESOURCE_FETCH,
+          PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
           nacl::string("failed to resolve ") +
           url_with_platform_prefix + ": " +
           error_info.message() + ".");
@@ -222,7 +222,7 @@ void PnaclResources::StartLoad(
       // not actually installed. This shouldn't actually occur since
       // ReadResourceInfo() should happen first, and error out.
       coordinator_->ReportNonPpapiError(
-          ERROR_PNACL_RESOURCE_FETCH,
+          PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
         nacl::string("The Portable Native Client (pnacl) component is not "
                      "installed. Please consult chrome://components for more "
                      "information."));

@@ -277,7 +277,7 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
         nacl::MutexLocker take(&mu_);
         *p->op_complete_ptr = true;  // done...
         p->file_info->desc = -1;       // but failed.
-        p->error_info->SetReport(ERROR_MANIFEST_OPEN,
+        p->error_info->SetReport(PP_NACL_ERROR_MANIFEST_OPEN,
                                  "ServiceRuntime: StreamAsFile failed");
         NaClXCondVarBroadcast(&cv_);
         return;
@@ -298,7 +298,7 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
                 "OpenManifestEntry_MainThreadContinuation: "
                 "GetReadonlyPnaclFd failed\n");
         // TODO(jvoung): Separate the error codes?
-        p->error_info->SetReport(ERROR_MANIFEST_OPEN,
+        p->error_info->SetReport(PP_NACL_ERROR_MANIFEST_OPEN,
                                  "ServiceRuntime: GetPnaclFd failed");
       }
       nacl::MutexLocker take(&mu_);
@@ -319,7 +319,7 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
     *p->op_complete_ptr = true;  // done...
     p->file_info->desc = -1;  // but failed.
     p->error_info->SetReport(
-        ERROR_MANIFEST_OPEN,
+        PP_NACL_ERROR_MANIFEST_OPEN,
         "ServiceRuntime: Translating OpenManifestEntry files not supported");
     NaClXCondVarBroadcast(&cv_);
     return;
@@ -346,7 +346,7 @@ void PluginReverseInterface::StreamAsFile_MainThreadContinuation(
     NaClLog(4,
             "StreamAsFile_MainThreadContinuation: !PP_OK, setting desc -1\n");
     p->file_info->desc = -1;
-    p->error_info->SetReport(ERROR_MANIFEST_OPEN,
+    p->error_info->SetReport(PP_NACL_ERROR_MANIFEST_OPEN,
                              "Plugin StreamAsFile failed at callback");
   }
   *p->op_complete_ptr = true;
@@ -478,13 +478,13 @@ bool ServiceRuntime::LoadModule(nacl::DescWrapper* nacl_desc,
   CHECK(nacl_desc);
   // Create the command channel to the sel_ldr and load the nexe from nacl_desc.
   if (!subprocess_->SetupCommand(&command_channel_)) {
-    error_info->SetReport(ERROR_SEL_LDR_COMMUNICATION_CMD_CHANNEL,
+    error_info->SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_CMD_CHANNEL,
                           "ServiceRuntime: command channel creation failed");
     return false;
   }
 
   if (!subprocess_->LoadModule(&command_channel_, nacl_desc)) {
-    error_info->SetReport(ERROR_SEL_LDR_COMMUNICATION_CMD_CHANNEL,
+    error_info->SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_CMD_CHANNEL,
                           "ServiceRuntime: load module failed");
     return false;
   }
@@ -501,7 +501,7 @@ bool ServiceRuntime::InitReverseService(ErrorInfo* error_info) {
                                 &out_conn_cap);
 
   if (NACL_SRPC_RESULT_OK != rpc_result) {
-    error_info->SetReport(ERROR_SEL_LDR_COMMUNICATION_REV_SETUP,
+    error_info->SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_REV_SETUP,
                           "ServiceRuntime: reverse setup rpc failed");
     return false;
   }
@@ -512,7 +512,7 @@ bool ServiceRuntime::InitReverseService(ErrorInfo* error_info) {
   nacl::DescWrapper* conn_cap = plugin_->wrapper_factory()->MakeGenericCleanup(
       out_conn_cap);
   if (conn_cap == NULL) {
-    error_info->SetReport(ERROR_SEL_LDR_COMMUNICATION_WRAPPER,
+    error_info->SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_WRAPPER,
                           "ServiceRuntime: wrapper allocation failure");
     return false;
   }
@@ -520,7 +520,7 @@ bool ServiceRuntime::InitReverseService(ErrorInfo* error_info) {
   NaClLog(4, "ServiceRuntime::InitReverseService: starting reverse service\n");
   reverse_service_ = new nacl::ReverseService(conn_cap, rev_interface_->Ref());
   if (!reverse_service_->Start()) {
-    error_info->SetReport(ERROR_SEL_LDR_COMMUNICATION_REV_SERVICE,
+    error_info->SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_REV_SERVICE,
                           "ServiceRuntime: starting reverse services failed");
     return false;
   }
@@ -538,7 +538,7 @@ bool ServiceRuntime::StartModule(ErrorInfo* error_info) {
                                 &load_status);
 
   if (NACL_SRPC_RESULT_OK != rpc_result) {
-    error_info->SetReport(ERROR_SEL_LDR_START_MODULE,
+    error_info->SetReport(PP_NACL_ERROR_SEL_LDR_START_MODULE,
                           "ServiceRuntime: could not start nacl module");
     return false;
   }
@@ -549,7 +549,7 @@ bool ServiceRuntime::StartModule(ErrorInfo* error_info) {
   }
   if (LOAD_OK != load_status) {
     error_info->SetReport(
-        ERROR_SEL_LDR_START_STATUS,
+        PP_NACL_ERROR_SEL_LDR_START_STATUS,
         NaClErrorString(static_cast<NaClErrorCode>(load_status)));
     return false;
   }
@@ -567,7 +567,7 @@ void ServiceRuntime::StartSelLdr(const SelLdrStartParams& params,
     if (main_service_runtime_) {
       ErrorInfo error_info;
       error_info.SetReport(
-          ERROR_SEL_LDR_CREATE_LAUNCHER,
+          PP_NACL_ERROR_SEL_LDR_CREATE_LAUNCHER,
           "ServiceRuntime: failed to create sel_ldr launcher");
       plugin_->ReportLoadError(error_info);
     }
@@ -604,7 +604,7 @@ void ServiceRuntime::StartSelLdrContinuation(int32_t pp_error,
       }
       ErrorInfo error_info;
       error_info.SetReportWithConsoleOnlyError(
-          ERROR_SEL_LDR_LAUNCH,
+          PP_NACL_ERROR_SEL_LDR_LAUNCH,
           "ServiceRuntime: failed to start",
           error_message);
       plugin_->ReportLoadError(error_info);

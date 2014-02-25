@@ -8,9 +8,8 @@ TestNaClBrowserDelegate::TestNaClBrowserDelegate() {}
 
 TestNaClBrowserDelegate::~TestNaClBrowserDelegate() {}
 
-void TestNaClBrowserDelegate::ShowNaClInfobar(int render_process_id,
-                                              int render_view_id,
-                                              int error_id) {}
+void TestNaClBrowserDelegate::ShowMissingArchInfobar(int render_process_id,
+                                                     int render_view_id) {}
 
 bool TestNaClBrowserDelegate::DialogsAreSuppressed() {
   return false;

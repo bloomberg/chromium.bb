@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "components/nacl/common/nacl_host_messages.h"
 #include "components/nacl/common/nacl_types.h"
@@ -67,6 +68,19 @@ typedef std::map<PP_Instance, InstanceInfo> InstanceInfoMap;
 
 base::LazyInstance<InstanceInfoMap> g_instance_info =
     LAZY_INSTANCE_INITIALIZER;
+
+void HistogramEnumerate(const std::string& name,
+                        int32_t sample,
+                        int32_t boundary_value) {
+  base::HistogramBase* counter =
+      base::LinearHistogram::FactoryGet(
+          name,
+          1,
+          boundary_value,
+          boundary_value + 1,
+          base::HistogramBase::kUmaTargetedHistogramFlag);
+  counter->Add(sample);
+}
 
 static int GetRoutingID(PP_Instance instance) {
   // Check that we are on the main renderer thread.
@@ -320,21 +334,6 @@ void ReportTranslationFinished(PP_Instance instance, PP_Bool success) {
   g_pnacl_resource_host.Get()->ReportTranslationFinished(instance, success);
 }
 
-PP_ExternalPluginResult ReportNaClError(PP_Instance instance,
-                              PP_NaClError error_id) {
-  IPC::Sender* sender = content::RenderThread::Get();
-
-  if (!sender->Send(
-          new NaClHostMsg_NaClErrorStatus(
-              // TODO(dschuff): does this enum need to be sent as an int,
-              // or is it safe to include the appropriate headers in
-              // render_messages.h?
-              GetRoutingID(instance), static_cast<int>(error_id)))) {
-    return PP_EXTERNAL_PLUGIN_FAILED;
-  }
-  return PP_EXTERNAL_PLUGIN_OK;
-}
-
 PP_FileHandle OpenNaClExecutable(PP_Instance instance,
                                  const char* file_url,
                                  uint64_t* nonce_lo,
@@ -385,6 +384,14 @@ blink::WebString EventTypeToString(PP_NaClEventType event_type) {
 }
 
 struct ProgressEvent {
+  explicit ProgressEvent(PP_Instance instance_param,
+                         PP_NaClEventType event_type_param)
+      : instance(instance_param),
+        event_type(event_type_param),
+        length_is_computable(false),
+        loaded_bytes(0),
+        total_bytes(0) {
+  }
   PP_Instance instance;
   PP_NaClEventType event_type;
   std::string resource_url;
@@ -401,9 +408,7 @@ void DispatchEvent(PP_Instance instance,
                    PP_Bool length_is_computable,
                    uint64_t loaded_bytes,
                    uint64_t total_bytes) {
-  ProgressEvent p;
-  p.instance = instance;
-  p.event_type = event_type;
+  ProgressEvent p(instance, event_type);
   p.length_is_computable = PP_ToBool(length_is_computable);
   p.loaded_bytes = loaded_bytes;
   p.total_bytes = total_bytes;
@@ -471,6 +476,36 @@ void SetReadOnlyProperty(PP_Instance instance,
   plugin_instance->SetEmbedProperty(key, value);
 }
 
+void ReportLoadError(PP_Instance instance,
+                     PP_NaClError error,
+                     PP_Bool is_installed) {
+  // Check that we are on the main renderer thread.
+  DCHECK(content::RenderThread::Get());
+
+  if (error == PP_NACL_ERROR_MANIFEST_PROGRAM_MISSING_ARCH) {
+    // A special case: the manifest may otherwise be valid but is missing
+    // a program/file compatible with the user's sandbox.
+    IPC::Sender* sender = content::RenderThread::Get();
+    sender->Send(
+        new NaClHostMsg_MissingArchError(GetRoutingID(instance)));
+  }
+  // TODO(dmichael): Move the following actions here:
+  // - Set ready state to DONE.
+  // - Set last error string.
+  // - Print error message to JavaScript console.
+
+  // Inform JavaScript that loading encountered an error and is complete.
+  DispatchEvent(instance, PP_NACL_EVENT_ERROR, NULL, PP_FALSE, 0, 0);
+  DispatchEvent(instance, PP_NACL_EVENT_LOADEND, NULL, PP_FALSE, 0, 0);
+
+  HistogramEnumerate("NaCl.LoadStatus.Plugin", error,
+                     PP_NACL_ERROR_MAX);
+  std::string uma_name = (is_installed == PP_TRUE) ?
+                         "NaCl.LoadStatus.Plugin.InstalledApp" :
+                         "NaCl.LoadStatus.Plugin.NotInstalledApp";
+  HistogramEnumerate(uma_name, error, PP_NACL_ERROR_MAX);
+}
+
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
@@ -482,10 +517,10 @@ const PPB_NaCl_Private nacl_interface = {
   &GetNumberOfProcessors,
   &GetNexeFd,
   &ReportTranslationFinished,
-  &ReportNaClError,
   &OpenNaClExecutable,
   &DispatchEvent,
-  &SetReadOnlyProperty
+  &SetReadOnlyProperty,
+  &ReportLoadError
 };
 
 }  // namespace

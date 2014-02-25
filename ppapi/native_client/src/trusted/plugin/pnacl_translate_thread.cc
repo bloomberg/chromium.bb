@@ -59,7 +59,7 @@ void PnaclTranslateThread::RunTranslate(
   report_translate_finished_ = finish_callback;
   translate_thread_.reset(new NaClThread);
   if (translate_thread_ == NULL) {
-    TranslateFailed(ERROR_PNACL_THREAD_CREATE,
+    TranslateFailed(PP_NACL_ERROR_PNACL_THREAD_CREATE,
                     "could not allocate thread struct.");
     return;
   }
@@ -68,7 +68,7 @@ void PnaclTranslateThread::RunTranslate(
                                 DoTranslateThread,
                                 this,
                                 kArbitraryStackSize)) {
-    TranslateFailed(ERROR_PNACL_THREAD_CREATE,
+    TranslateFailed(PP_NACL_ERROR_PNACL_THREAD_CREATE,
                     "could not create thread.");
     translate_thread_.reset(NULL);
   }
@@ -149,7 +149,7 @@ void PnaclTranslateThread::DoTranslate() {
     llc_subprocess_.reset(
       StartSubprocess(resources_->GetLlcUrl(), manifest_, &error_info));
     if (llc_subprocess_ == NULL) {
-      TranslateFailed(ERROR_PNACL_LLC_SETUP,
+      TranslateFailed(PP_NACL_ERROR_PNACL_LLC_SETUP,
                       "Compile process could not be created: " +
                       error_info.message());
       return;
@@ -219,11 +219,11 @@ void PnaclTranslateThread::DoTranslate() {
     if (llc_subprocess_->srpc_client()->GetLastError() ==
         NACL_SRPC_RESULT_APP_ERROR) {
       // The error message is only present if the error was returned from llc
-      TranslateFailed(ERROR_PNACL_LLC_INTERNAL,
+      TranslateFailed(PP_NACL_ERROR_PNACL_LLC_INTERNAL,
                       nacl::string("Stream init failed: ") +
                       nacl::string(params.outs()[0]->arrays.str));
     } else {
-      TranslateFailed(ERROR_PNACL_LLC_INTERNAL,
+      TranslateFailed(PP_NACL_ERROR_PNACL_LLC_INTERNAL,
                       "Stream init internal error");
     }
     return;
@@ -258,7 +258,7 @@ void PnaclTranslateThread::DoTranslate() {
           // and call StreamEnd, which returns a string describing the error,
           // which we can then send to the Javascript console. Otherwise just
           // fail here, since the translator has probably crashed or asserted.
-          TranslateFailed(ERROR_PNACL_LLC_INTERNAL,
+          TranslateFailed(PP_NACL_ERROR_PNACL_LLC_INTERNAL,
                           "Compile stream chunk failed. "
                           "The PNaCl translator has probably crashed.");
           return;
@@ -282,10 +282,10 @@ void PnaclTranslateThread::DoTranslate() {
     if (llc_subprocess_->srpc_client()->GetLastError() ==
         NACL_SRPC_RESULT_APP_ERROR) {
       // The error string is only present if the error was sent back from llc.
-      TranslateFailed(ERROR_PNACL_LLC_INTERNAL,
+      TranslateFailed(PP_NACL_ERROR_PNACL_LLC_INTERNAL,
                       params.outs()[3]->arrays.str);
     } else {
-      TranslateFailed(ERROR_PNACL_LLC_INTERNAL,
+      TranslateFailed(PP_NACL_ERROR_PNACL_LLC_INTERNAL,
                       "Compile StreamEnd internal error");
     }
     return;
@@ -328,7 +328,7 @@ bool PnaclTranslateThread::RunLdSubprocess(int modules_used,
   for (i = 0; i < obj_files_->size(); i++) {
     // Reset object file for reading first.
     if (!(*obj_files_)[i]->Reset()) {
-      TranslateFailed(ERROR_PNACL_LD_SETUP,
+      TranslateFailed(PP_NACL_ERROR_PNACL_LD_SETUP,
                       "Link process could not reset object file");
       return false;
     }
@@ -347,7 +347,7 @@ bool PnaclTranslateThread::RunLdSubprocess(int modules_used,
     ld_subprocess_.reset(
       StartSubprocess(resources_->GetLdUrl(), manifest_, &error_info));
     if (ld_subprocess_ == NULL) {
-      TranslateFailed(ERROR_PNACL_LD_SETUP,
+      TranslateFailed(PP_NACL_ERROR_PNACL_LD_SETUP,
                       "Link process could not be created: " +
                       error_info.message());
       return false;
@@ -397,7 +397,7 @@ bool PnaclTranslateThread::RunLdSubprocess(int modules_used,
                                                lib_dependencies.c_str());
   }
   if (!success) {
-    TranslateFailed(ERROR_PNACL_LD_INTERNAL,
+    TranslateFailed(PP_NACL_ERROR_PNACL_LD_INTERNAL,
                     "link failed.");
     return false;
   }
@@ -414,7 +414,7 @@ bool PnaclTranslateThread::RunLdSubprocess(int modules_used,
 }
 
 void PnaclTranslateThread::TranslateFailed(
-    enum PluginErrorCode err_code,
+    PP_NaClError err_code,
     const nacl::string& error_string) {
   PLUGIN_PRINTF(("PnaclTranslateThread::TranslateFailed (error_string='%s')\n",
                  error_string.c_str()));

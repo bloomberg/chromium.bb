@@ -14,8 +14,8 @@ class NaClBrowserDelegateImpl : public NaClBrowserDelegate {
   explicit NaClBrowserDelegateImpl(extensions::InfoMap* extension_info_map);
   virtual ~NaClBrowserDelegateImpl();
 
-  virtual void ShowNaClInfobar(int render_process_id, int render_view_id,
-                               int error_id) OVERRIDE;
+  virtual void ShowMissingArchInfobar(int render_process_id,
+                                      int render_view_id) OVERRIDE;
   virtual bool DialogsAreSuppressed() OVERRIDE;
   virtual bool GetCacheDirectory(base::FilePath* cache_dir) OVERRIDE;
   virtual bool GetPluginDirectory(base::FilePath* plugin_dir) OVERRIDE;

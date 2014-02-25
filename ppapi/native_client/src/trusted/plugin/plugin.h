@@ -272,7 +272,7 @@ class Plugin : public pp::Instance {
                           int maximum,
                           int out_of_range_replacement);
   void HistogramEnumerateOsArch(const std::string& sandbox_isa);
-  void HistogramEnumerateLoadStatus(PluginErrorCode error_code,
+  void HistogramEnumerateLoadStatus(PP_NaClError error_code,
                                     bool is_installed);
   void HistogramEnumerateSelLdrLoadStatus(NaClErrorCode error_code,
                                           bool is_installed);

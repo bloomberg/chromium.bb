@@ -255,7 +255,7 @@ bool IsValidISADictionary(const Json::Value& dictionary,
 
   // An ISA to URL dictionary has to be an object.
   if (!dictionary.isObject()) {
-    error_info->SetReport(ERROR_MANIFEST_SCHEMA_VALIDATE,
+    error_info->SetReport(PP_NACL_ERROR_MANIFEST_SCHEMA_VALIDATE,
                           nacl::string("manifest: ") + parent_key +
                           " property is not an ISA to URL dictionary");
     return false;
@@ -310,7 +310,7 @@ bool IsValidISADictionary(const Json::Value& dictionary,
            parent_key != kProgramKey &&
            !IsValidUrlSpec(property_value, property_name, parent_key,
                            sandbox_isa, &error_string))) {
-        error_info->SetReport(ERROR_MANIFEST_SCHEMA_VALIDATE,
+        error_info->SetReport(PP_NACL_ERROR_MANIFEST_SCHEMA_VALIDATE,
                               nacl::string("manifest: ") + error_string);
         return false;
       }
@@ -322,7 +322,7 @@ bool IsValidISADictionary(const Json::Value& dictionary,
                      property_name.c_str()));
       if (!IsValidUrlSpec(property_value, property_name, parent_key,
                           sandbox_isa, &error_string)) {
-        error_info->SetReport(ERROR_MANIFEST_SCHEMA_VALIDATE,
+        error_info->SetReport(PP_NACL_ERROR_MANIFEST_SCHEMA_VALIDATE,
                               nacl::string("manifest: ") + error_string);
         return false;
       }
@@ -334,7 +334,7 @@ bool IsValidISADictionary(const Json::Value& dictionary,
 
     if (!has_portable) {
       error_info->SetReport(
-          ERROR_MANIFEST_PROGRAM_MISSING_ARCH,
+          PP_NACL_ERROR_MANIFEST_PROGRAM_MISSING_ARCH,
           nacl::string("manifest: no version of ") + parent_key +
           " given for portable.");
       return false;
@@ -347,7 +347,7 @@ bool IsValidISADictionary(const Json::Value& dictionary,
 
     if (!has_isa && !has_portable) {
       error_info->SetReport(
-          ERROR_MANIFEST_PROGRAM_MISSING_ARCH,
+          PP_NACL_ERROR_MANIFEST_PROGRAM_MISSING_ARCH,
           nacl::string("manifest: no version of ") + parent_key +
           " given for current arch and no portable version found.");
       return false;
@@ -378,7 +378,7 @@ bool JsonManifest::Init(const nacl::string& manifest_json,
   Json::Reader reader;
   if (!reader.parse(manifest_json, dictionary_)) {
     std::string json_error = reader.getFormatedErrorMessages();
-    error_info->SetReport(ERROR_MANIFEST_PARSING,
+    error_info->SetReport(PP_NACL_ERROR_MANIFEST_PARSING,
                           "manifest JSON parsing failed: " + json_error);
     return false;
   }
@@ -394,7 +394,7 @@ bool JsonManifest::MatchesSchema(ErrorInfo* error_info) {
   }
   if (!dictionary_.isObject()) {
     error_info->SetReport(
-        ERROR_MANIFEST_SCHEMA_VALIDATE,
+        PP_NACL_ERROR_MANIFEST_SCHEMA_VALIDATE,
         "manifest: is not a json dictionary.");
     return false;
   }
@@ -416,7 +416,7 @@ bool JsonManifest::MatchesSchema(ErrorInfo* error_info) {
   // A manifest file must have a program section.
   if (!dictionary_.isMember(kProgramKey)) {
     error_info->SetReport(
-        ERROR_MANIFEST_SCHEMA_VALIDATE,
+        PP_NACL_ERROR_MANIFEST_SCHEMA_VALIDATE,
         nacl::string("manifest: missing '") + kProgramKey + "' section.");
     return false;
   }
@@ -453,7 +453,7 @@ bool JsonManifest::MatchesSchema(ErrorInfo* error_info) {
     const Json::Value& files = dictionary_[kFilesKey];
     if (!files.isObject()) {
       error_info->SetReport(
-          ERROR_MANIFEST_SCHEMA_VALIDATE,
+          PP_NACL_ERROR_MANIFEST_SCHEMA_VALIDATE,
           nacl::string("manifest: '") + kFilesKey + "' is not a dictionary.");
     }
     Json::Value::Members members = files.getMemberNames();
@@ -483,7 +483,7 @@ bool JsonManifest::GetURLFromISADictionary(const Json::Value& dictionary,
   // a matching entry (sandbox_isa_ or portable) for NaCl.
   if (!IsValidISADictionary(dictionary, parent_key, sandbox_isa_, true,
                             error_info)) {
-    error_info->SetReport(ERROR_MANIFEST_RESOLVE_URL,
+    error_info->SetReport(PP_NACL_ERROR_MANIFEST_RESOLVE_URL,
                           "architecture " + sandbox_isa_ +
                           " is not found for file " + parent_key);
     return false;
@@ -524,7 +524,7 @@ bool JsonManifest::GetKeyUrl(const Json::Value& dictionary,
                              ErrorInfo* error_info) const {
   DCHECK(full_url != NULL && pnacl_options != NULL && error_info != NULL);
   if (!dictionary.isMember(key)) {
-    error_info->SetReport(ERROR_MANIFEST_RESOLVE_URL,
+    error_info->SetReport(PP_NACL_ERROR_MANIFEST_RESOLVE_URL,
                           "file key not found in manifest");
     return false;
   }
@@ -547,7 +547,7 @@ bool JsonManifest::ResolveURL(const nacl::string& relative_url,
                                       relative_url);
   if (!resolved_url.is_string()) {
     error_info->SetReport(
-        ERROR_MANIFEST_RESOLVE_URL,
+        PP_NACL_ERROR_MANIFEST_RESOLVE_URL,
         "could not resolve url '" + relative_url +
         "' relative to manifest base url '" + manifest_base_url_.c_str() +
         "'.");
@@ -608,7 +608,7 @@ bool JsonManifest::ResolveKey(const nacl::string& key,
   }
   nacl::string::const_iterator p = find(key.begin(), key.end(), '/');
   if (p == key.end()) {
-    error_info->SetReport(ERROR_MANIFEST_RESOLVE_URL,
+    error_info->SetReport(PP_NACL_ERROR_MANIFEST_RESOLVE_URL,
                           nacl::string("ResolveKey: invalid key, no slash: ")
                           + key);
     return false;
@@ -617,7 +617,7 @@ bool JsonManifest::ResolveKey(const nacl::string& key,
   // generalize to permit other sections?
   nacl::string prefix(key.begin(), p);
   if (prefix != kFilesKey) {
-    error_info->SetReport(ERROR_MANIFEST_RESOLVE_URL,
+    error_info->SetReport(PP_NACL_ERROR_MANIFEST_RESOLVE_URL,
                           nacl::string("ResolveKey: invalid key: not \"files\""
                                        " prefix: ") + key);
     return false;
@@ -628,13 +628,13 @@ bool JsonManifest::ResolveKey(const nacl::string& key,
   const Json::Value& files = dictionary_[kFilesKey];
   if (!files.isObject()) {
     error_info->SetReport(
-        ERROR_MANIFEST_RESOLVE_URL,
+        PP_NACL_ERROR_MANIFEST_RESOLVE_URL,
         nacl::string("ResolveKey: no \"files\" dictionary"));
     return false;
   }
   if (!files.isMember(rest)) {
     error_info->SetReport(
-        ERROR_MANIFEST_RESOLVE_URL,
+        PP_NACL_ERROR_MANIFEST_RESOLVE_URL,
         nacl::string("ResolveKey: no such \"files\" entry: ") + key);
     return false;
   }

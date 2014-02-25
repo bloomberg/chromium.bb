@@ -236,15 +236,16 @@ void Plugin::HistogramEnumerateOsArch(const std::string& sandbox_isa) {
   HistogramEnumerate("NaCl.Client.OSArch", os_arch, kNaClOSArchMax, -1);
 }
 
-void Plugin::HistogramEnumerateLoadStatus(PluginErrorCode error_code,
+void Plugin::HistogramEnumerateLoadStatus(PP_NaClError error_code,
                                           bool is_installed) {
-  HistogramEnumerate("NaCl.LoadStatus.Plugin", error_code, ERROR_MAX,
-                     ERROR_UNKNOWN);
+  HistogramEnumerate("NaCl.LoadStatus.Plugin", error_code, PP_NACL_ERROR_MAX,
+                     PP_NACL_ERROR_UNKNOWN);
 
   // Gather data to see if being installed changes load outcomes.
   const char* name = is_installed ? "NaCl.LoadStatus.Plugin.InstalledApp" :
       "NaCl.LoadStatus.Plugin.NotInstalledApp";
-  HistogramEnumerate(name, error_code, ERROR_MAX, ERROR_UNKNOWN);
+  HistogramEnumerate(name, error_code, PP_NACL_ERROR_MAX,
+                     PP_NACL_ERROR_UNKNOWN);
 }
 
 void Plugin::HistogramEnumerateSelLdrLoadStatus(NaClErrorCode error_code,
@@ -365,7 +366,7 @@ void Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
                  static_cast<void*>(service_runtime)));
   if (NULL == service_runtime) {
     error_info.SetReport(
-        ERROR_SEL_LDR_INIT,
+        PP_NACL_ERROR_SEL_LDR_INIT,
         "sel_ldr init failure " + main_subprocess_.description());
     ReportLoadError(error_info);
     return;
@@ -404,7 +405,7 @@ bool Plugin::LoadNaClModuleContinuationIntern(ErrorInfo* error_info) {
     // less confusing for developers.
     NaClLog(LOG_ERROR, "LoadNaClModuleContinuationIntern: "
             "StartSrpcServices failed\n");
-    error_info->SetReport(ERROR_START_PROXY_MODULE,
+    error_info->SetReport(PP_NACL_ERROR_START_PROXY_MODULE,
                           "could not initialize module.");
     return false;
   }
@@ -421,11 +422,11 @@ bool Plugin::LoadNaClModuleContinuationIntern(ErrorInfo* error_info) {
   } else if (ipc_result == PP_EXTERNAL_PLUGIN_ERROR_MODULE) {
     NaClLog(LOG_ERROR, "LoadNaClModuleContinuationIntern: "
             "Got PP_EXTERNAL_PLUGIN_ERROR_MODULE\n");
-    error_info->SetReport(ERROR_START_PROXY_MODULE,
+    error_info->SetReport(PP_NACL_ERROR_START_PROXY_MODULE,
                           "could not initialize module.");
     return false;
   } else if (ipc_result == PP_EXTERNAL_PLUGIN_ERROR_INSTANCE) {
-    error_info->SetReport(ERROR_START_PROXY_INSTANCE,
+    error_info->SetReport(PP_NACL_ERROR_START_PROXY_INSTANCE,
                           "could not create instance.");
     return false;
   }
@@ -440,7 +441,7 @@ NaClSubprocess* Plugin::LoadHelperNaClModule(nacl::DescWrapper* wrapper,
   nacl::scoped_ptr<NaClSubprocess> nacl_subprocess(
       new NaClSubprocess("helper module", NULL, NULL));
   if (NULL == nacl_subprocess.get()) {
-    error_info->SetReport(ERROR_SEL_LDR_INIT,
+    error_info->SetReport(PP_NACL_ERROR_SEL_LDR_INIT,
                           "unable to allocate helper subprocess.");
     return NULL;
   }
@@ -475,7 +476,7 @@ NaClSubprocess* Plugin::LoadHelperNaClModule(nacl::DescWrapper* wrapper,
   // manifest is a per-plugin-instance object, not a per
   // NaClSubprocess object.
   if (!nacl_subprocess->StartSrpcServices()) {
-    error_info->SetReport(ERROR_SRPC_CONNECTION_FAIL,
+    error_info->SetReport(PP_NACL_ERROR_SRPC_CONNECTION_FAIL,
                           "SRPC connection failure for " +
                           nacl_subprocess->description());
     return NULL;
@@ -710,18 +711,19 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
     if (pp_error == PP_ERROR_ABORTED) {
       ReportLoadAbort();
     } else if (pp_error == PP_ERROR_NOACCESS) {
-      error_info.SetReport(ERROR_NEXE_NOACCESS_URL,
+      error_info.SetReport(PP_NACL_ERROR_NEXE_NOACCESS_URL,
                            "access to nexe url was denied.");
       ReportLoadError(error_info);
     } else {
-      error_info.SetReport(ERROR_NEXE_LOAD_URL, "could not load nexe url.");
+      error_info.SetReport(PP_NACL_ERROR_NEXE_LOAD_URL,
+                           "could not load nexe url.");
       ReportLoadError(error_info);
     }
     return;
   }
   int32_t file_desc_ok_to_close = DUP(info.get_desc());
   if (file_desc_ok_to_close == NACL_NO_FILE_DESC) {
-    error_info.SetReport(ERROR_NEXE_FH_DUP,
+    error_info.SetReport(PP_NACL_ERROR_NEXE_FH_DUP,
                          "could not duplicate loaded file handle.");
     ReportLoadError(error_info);
     return;
@@ -729,7 +731,7 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
   struct stat stat_buf;
   if (0 != fstat(file_desc_ok_to_close, &stat_buf)) {
     CLOSE(file_desc_ok_to_close);
-    error_info.SetReport(ERROR_NEXE_STAT, "could not stat nexe file.");
+    error_info.SetReport(PP_NACL_ERROR_NEXE_STAT, "could not stat nexe file.");
     ReportLoadError(error_info);
     return;
   }
@@ -843,7 +845,7 @@ void Plugin::NexeDidCrash(int32_t pp_error) {
       // The error is not quite right.  In particular, the crash
       // reported by this path could be due to NaCl application
       // crashes that occur after the PPAPI proxy has started.
-      error_info.SetReport(ERROR_START_PROXY_CRASH,
+      error_info.SetReport(PP_NACL_ERROR_START_PROXY_CRASH,
                            "Nexe crashed during startup");
       ReportLoadError(error_info);
     }
@@ -929,7 +931,7 @@ void Plugin::NaClManifestBufferReady(int32_t pp_error) {
     if (pp_error == PP_ERROR_ABORTED) {
       ReportLoadAbort();
     } else {
-      error_info.SetReport(ERROR_MANIFEST_LOAD_URL,
+      error_info.SetReport(PP_NACL_ERROR_MANIFEST_LOAD_URL,
                            "could not load manifest url.");
       ReportLoadError(error_info);
     }
@@ -939,14 +941,14 @@ void Plugin::NaClManifestBufferReady(int32_t pp_error) {
   const std::deque<char>& buffer = nexe_downloader_.buffer();
   size_t buffer_size = buffer.size();
   if (buffer_size > kNaClManifestMaxFileBytes) {
-    error_info.SetReport(ERROR_MANIFEST_TOO_LARGE,
+    error_info.SetReport(PP_NACL_ERROR_MANIFEST_TOO_LARGE,
                          "manifest file too large.");
     ReportLoadError(error_info);
     return;
   }
   nacl::scoped_array<char> json_buffer(new char[buffer_size + 1]);
   if (json_buffer == NULL) {
-    error_info.SetReport(ERROR_MANIFEST_MEMORY_ALLOC,
+    error_info.SetReport(PP_NACL_ERROR_MANIFEST_MEMORY_ALLOC,
                          "could not allocate manifest memory.");
     ReportLoadError(error_info);
     return;
@@ -976,11 +978,11 @@ void Plugin::NaClManifestFileDidOpen(int32_t pp_error) {
     if (pp_error == PP_ERROR_ABORTED) {
       ReportLoadAbort();
     } else if (pp_error == PP_ERROR_NOACCESS) {
-      error_info.SetReport(ERROR_MANIFEST_NOACCESS_URL,
+      error_info.SetReport(PP_NACL_ERROR_MANIFEST_NOACCESS_URL,
                            "access to manifest url was denied.");
       ReportLoadError(error_info);
     } else {
-      error_info.SetReport(ERROR_MANIFEST_LOAD_URL,
+      error_info.SetReport(PP_NACL_ERROR_MANIFEST_LOAD_URL,
                            "could not load manifest url.");
       ReportLoadError(error_info);
     }
@@ -999,23 +1001,23 @@ void Plugin::NaClManifestFileDidOpen(int32_t pp_error) {
         CHECK(0);
         break;
       case file_utils::PLUGIN_FILE_ERROR_MEM_ALLOC:
-        error_info.SetReport(ERROR_MANIFEST_MEMORY_ALLOC,
+        error_info.SetReport(PP_NACL_ERROR_MANIFEST_MEMORY_ALLOC,
                              "could not allocate manifest memory.");
         break;
       case file_utils::PLUGIN_FILE_ERROR_OPEN:
-        error_info.SetReport(ERROR_MANIFEST_OPEN,
+        error_info.SetReport(PP_NACL_ERROR_MANIFEST_OPEN,
                              "could not open manifest file.");
         break;
       case file_utils::PLUGIN_FILE_ERROR_FILE_TOO_LARGE:
-        error_info.SetReport(ERROR_MANIFEST_TOO_LARGE,
+        error_info.SetReport(PP_NACL_ERROR_MANIFEST_TOO_LARGE,
                              "manifest file too large.");
         break;
       case file_utils::PLUGIN_FILE_ERROR_STAT:
-        error_info.SetReport(ERROR_MANIFEST_STAT,
+        error_info.SetReport(PP_NACL_ERROR_MANIFEST_STAT,
                              "could not stat manifest file.");
         break;
       case file_utils::PLUGIN_FILE_ERROR_READ:
-        error_info.SetReport(ERROR_MANIFEST_READ,
+        error_info.SetReport(PP_NACL_ERROR_MANIFEST_READ,
                              "could not read manifest file.");
         break;
     }
@@ -1085,7 +1087,7 @@ void Plugin::RequestNaClManifest(const nacl::string& url) {
   if (!nmf_resolved_url.is_string()) {
     ErrorInfo error_info;
     error_info.SetReport(
-        ERROR_MANIFEST_RESOLVE_URL,
+        PP_NACL_ERROR_MANIFEST_RESOLVE_URL,
         nacl::string("could not resolve URL \"") + url.c_str() +
         "\" relative to \"" + plugin_base_url().c_str() + "\".");
     ReportLoadError(error_info);
@@ -1233,21 +1235,16 @@ void Plugin::ReportLoadSuccess(LengthComputable length_computable,
       PP_NACL_EVENT_LOADEND, url, length_computable, loaded_bytes, total_bytes);
 
   // UMA
-  HistogramEnumerateLoadStatus(ERROR_LOAD_SUCCESS, is_installed_);
+  HistogramEnumerateLoadStatus(PP_NACL_ERROR_LOAD_SUCCESS, is_installed_);
 }
 
 
 void Plugin::ReportLoadError(const ErrorInfo& error_info) {
   PLUGIN_PRINTF(("Plugin::ReportLoadError (error='%s')\n",
                  error_info.message().c_str()));
-  // For errors the user (and not just the developer) should know about,
-  // report them to the renderer so the browser can display a message.
-  if (error_info.error_code() == ERROR_MANIFEST_PROGRAM_MISSING_ARCH) {
-    // A special case: the manifest may otherwise be valid but is missing
-    // a program/file compatible with the user's sandbox.
-    nacl_interface()->ReportNaClError(pp_instance(),
-                                      PP_NACL_MANIFEST_MISSING_ARCH);
-  }
+  nacl_interface_->ReportLoadError(pp_instance(),
+                                   error_info.error_code(),
+                                   PP_FromBool(is_installed_));
 
   // Set the readyState attribute to indicate we need to start over.
   set_nacl_ready_state(DONE);
@@ -1258,12 +1255,6 @@ void Plugin::ReportLoadError(const ErrorInfo& error_info) {
   set_last_error_string(message);
   AddToConsole(nacl::string("NaCl module load failed: ") +
                error_info.console_message());
-  // Inform JavaScript that loading encountered an error and is complete.
-  EnqueueProgressEvent(PP_NACL_EVENT_ERROR);
-  EnqueueProgressEvent(PP_NACL_EVENT_LOADEND);
-
-  // UMA
-  HistogramEnumerateLoadStatus(error_info.error_code(), is_installed_);
 }
 
 
@@ -1281,7 +1272,7 @@ void Plugin::ReportLoadAbort() {
   EnqueueProgressEvent(PP_NACL_EVENT_LOADEND);
 
   // UMA
-  HistogramEnumerateLoadStatus(ERROR_LOAD_ABORTED, is_installed_);
+  HistogramEnumerateLoadStatus(PP_NACL_ERROR_LOAD_ABORTED, is_installed_);
 }
 
 void Plugin::UpdateDownloadProgress(

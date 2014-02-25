@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Mon Feb 10 11:05:29 2014. */
+/* From private/ppb_nacl_private.idl modified Mon Feb 24 12:10:24 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -32,13 +32,93 @@
  * @addtogroup Enums
  * @{
  */
-/** NaCl-specific errors that should be reported to the user */
+/** NaCl-specific errors that should be reported to the user.
+ *  These error codes are reported via UMA so, if you edit them:
+ *   1) make sure you understand UMA first.
+ *   2) update src/tools/histograms/histograms.xml in
+ *   svn://svn.chromium.org/chrome-internal/trunk/src-internal
+ *  Values are explicitly specified to make sure they don't shift around when
+ *  edited, and also to make reading about:histograms easier.
+ */
 typedef enum {
-  /**
-   *  The manifest program element does not contain a program usable on the
-   *  user's architecture
+  PP_NACL_ERROR_LOAD_SUCCESS = 0,
+  PP_NACL_ERROR_LOAD_ABORTED = 1,
+  PP_NACL_ERROR_UNKNOWN = 2,
+  PP_NACL_ERROR_MANIFEST_RESOLVE_URL = 3,
+  PP_NACL_ERROR_MANIFEST_LOAD_URL = 4,
+  PP_NACL_ERROR_MANIFEST_STAT = 5,
+  PP_NACL_ERROR_MANIFEST_TOO_LARGE = 6,
+  PP_NACL_ERROR_MANIFEST_OPEN = 7,
+  PP_NACL_ERROR_MANIFEST_MEMORY_ALLOC = 8,
+  PP_NACL_ERROR_MANIFEST_READ = 9,
+  PP_NACL_ERROR_MANIFEST_PARSING = 10,
+  PP_NACL_ERROR_MANIFEST_SCHEMA_VALIDATE = 11,
+  PP_NACL_ERROR_MANIFEST_GET_NEXE_URL = 12,
+  PP_NACL_ERROR_NEXE_LOAD_URL = 13,
+  PP_NACL_ERROR_NEXE_ORIGIN_PROTOCOL = 14,
+  PP_NACL_ERROR_NEXE_FH_DUP = 15,
+  PP_NACL_ERROR_NEXE_STAT = 16,
+  PP_NACL_ERROR_ELF_CHECK_IO = 17,
+  PP_NACL_ERROR_ELF_CHECK_FAIL = 18,
+  PP_NACL_ERROR_SEL_LDR_INIT = 19,
+  PP_NACL_ERROR_SEL_LDR_CREATE_LAUNCHER = 20,
+  PP_NACL_ERROR_SEL_LDR_FD = 21,
+  PP_NACL_ERROR_SEL_LDR_LAUNCH = 22,
+  /* Deprecated, safe to reuse the value because it's never logged in UMA.
    */
-  PP_NACL_MANIFEST_MISSING_ARCH = 0
+  PP_NACL_ERROR_SEL_LDR_SEND_NEXE = 24,
+  PP_NACL_ERROR_SEL_LDR_HANDLE_PASSING = 25,
+  PP_NACL_ERROR_SEL_LDR_START_MODULE = 26,
+  PP_NACL_ERROR_SEL_LDR_START_STATUS = 27,
+  PP_NACL_ERROR_SRPC_CONNECTION_FAIL = 28,
+  PP_NACL_ERROR_START_PROXY_CHECK_PPP = 29,
+  PP_NACL_ERROR_START_PROXY_ALLOC = 30,
+  PP_NACL_ERROR_START_PROXY_MODULE = 31,
+  PP_NACL_ERROR_START_PROXY_INSTANCE = 32,
+  PP_NACL_ERROR_SEL_LDR_COMMUNICATION_CMD_CHANNEL = 33,
+  PP_NACL_ERROR_SEL_LDR_COMMUNICATION_REV_SETUP = 34,
+  PP_NACL_ERROR_SEL_LDR_COMMUNICATION_WRAPPER = 35,
+  PP_NACL_ERROR_SEL_LDR_COMMUNICATION_REV_SERVICE = 36,
+  PP_NACL_ERROR_START_PROXY_CRASH = 37,
+  PP_NACL_ERROR_MANIFEST_PROGRAM_MISSING_ARCH = 38,
+  PP_NACL_ERROR_PNACL_CACHE_OPEN_INPROGRESS = 39,
+  PP_NACL_ERROR_PNACL_CACHE_OPEN_NOACCESS = 40,
+  PP_NACL_ERROR_PNACL_CACHE_OPEN_NOQUOTA = 41,
+  PP_NACL_ERROR_PNACL_CACHE_OPEN_NOSPACE = 42,
+  PP_NACL_ERROR_PNACL_CACHE_OPEN_OTHER = 43,
+  PP_NACL_ERROR_PNACL_CACHE_DIRECTORY_CREATE = 44,
+  PP_NACL_ERROR_PNACL_CACHE_FILEOPEN_NOACCESS = 45,
+  PP_NACL_ERROR_PNACL_CACHE_FILEOPEN_NOQUOTA = 46,
+  PP_NACL_ERROR_PNACL_CACHE_FILEOPEN_NOSPACE = 47,
+  PP_NACL_ERROR_PNACL_CACHE_FILEOPEN_NOTAFILE = 48,
+  PP_NACL_ERROR_PNACL_CACHE_FILEOPEN_OTHER = 49,
+  PP_NACL_ERROR_PNACL_CACHE_FETCH_NOACCESS = 50,
+  PP_NACL_ERROR_PNACL_CACHE_FETCH_NOTFOUND = 51,
+  PP_NACL_ERROR_PNACL_CACHE_FETCH_OTHER = 52,
+  PP_NACL_ERROR_PNACL_CACHE_FINALIZE_COPY_NOQUOTA = 53,
+  PP_NACL_ERROR_PNACL_CACHE_FINALIZE_COPY_NOSPACE = 54,
+  PP_NACL_ERROR_PNACL_CACHE_FINALIZE_COPY_OTHER = 55,
+  PP_NACL_ERROR_PNACL_CACHE_FINALIZE_RENAME_NOACCESS = 56,
+  PP_NACL_ERROR_PNACL_CACHE_FINALIZE_RENAME_OTHER = 57,
+  PP_NACL_ERROR_PNACL_RESOURCE_FETCH = 58,
+  PP_NACL_ERROR_PNACL_PEXE_FETCH_ABORTED = 59,
+  PP_NACL_ERROR_PNACL_PEXE_FETCH_NOACCESS = 60,
+  PP_NACL_ERROR_PNACL_PEXE_FETCH_OTHER = 61,
+  PP_NACL_ERROR_PNACL_THREAD_CREATE = 62,
+  PP_NACL_ERROR_PNACL_LLC_SETUP = 63,
+  PP_NACL_ERROR_PNACL_LD_SETUP = 64,
+  PP_NACL_ERROR_PNACL_LLC_INTERNAL = 65,
+  PP_NACL_ERROR_PNACL_LD_INTERNAL = 66,
+  PP_NACL_ERROR_PNACL_CREATE_TEMP = 67,
+  /* This entry is no longer used, but should not be removed, because UMA
+   */
+  PP_NACL_ERROR_PNACL_NOT_ENABLED = 68,
+  PP_NACL_ERROR_MANIFEST_NOACCESS_URL = 69,
+  PP_NACL_ERROR_NEXE_NOACCESS_URL = 70,
+  PP_NACL_ERROR_PNACL_CRASH_THROTTLED = 71,
+  /* If you add a code, read the enum comment above on how to update
+   */
+  PP_NACL_ERROR_MAX
 } PP_NaClError;
 
 /** Event types that NaCl may use when reporting load progress or errors. */
@@ -165,9 +245,6 @@ struct PPB_NaCl_Private_1_0 {
    * the plugin.)
    */
   void (*ReportTranslationFinished)(PP_Instance instance, PP_Bool success);
-  /* Display a UI message to the user. */
-  PP_ExternalPluginResult (*ReportNaClError)(PP_Instance instance,
-                                             PP_NaClError message_id);
   /* Opens a NaCl executable file in the application's extension directory
    * corresponding to the file URL and returns a file descriptor, or an invalid
    * handle on failure. |metadata| is left unchanged on failure.
@@ -191,6 +268,10 @@ struct PPB_NaCl_Private_1_0 {
   void (*SetReadOnlyProperty)(PP_Instance instance,
                               struct PP_Var key,
                               struct PP_Var value);
+  /* Report an error that occured while attempting to load a nexe. */
+  void (*ReportLoadError)(PP_Instance instance,
+                          PP_NaClError error,
+                          PP_Bool is_installed);
 };
 
 typedef struct PPB_NaCl_Private_1_0 PPB_NaCl_Private;

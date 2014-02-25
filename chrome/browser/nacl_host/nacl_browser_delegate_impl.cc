@@ -110,10 +110,8 @@ NaClBrowserDelegateImpl::NaClBrowserDelegateImpl(
 NaClBrowserDelegateImpl::~NaClBrowserDelegateImpl() {
 }
 
-void NaClBrowserDelegateImpl::ShowNaClInfobar(int render_process_id,
-                                              int render_view_id,
-                                              int error_id) {
-  DCHECK_EQ(PP_NACL_MANIFEST_MISSING_ARCH, error_id);
+void NaClBrowserDelegateImpl::ShowMissingArchInfobar(int render_process_id,
+                                                     int render_view_id) {
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(&NaClInfoBarDelegate::Create, render_process_id,

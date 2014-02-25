@@ -50,7 +50,8 @@ bool NaClHostMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnGetNexeFd)
     IPC_MESSAGE_HANDLER(NaClHostMsg_ReportTranslationFinished,
                         OnTranslationFinished)
-    IPC_MESSAGE_HANDLER(NaClHostMsg_NaClErrorStatus, OnNaClErrorStatus)
+    IPC_MESSAGE_HANDLER(NaClHostMsg_MissingArchError,
+                        OnMissingArchError)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(NaClHostMsg_OpenNaClExecutable,
                                     OnOpenNaClExecutable)
     IPC_MESSAGE_HANDLER(NaClHostMsg_NaClGetNumProcessors,
@@ -167,10 +168,9 @@ void NaClHostMessageFilter::OnTranslationFinished(int instance, bool success) {
       render_process_id_, instance, success);
 }
 
-void NaClHostMessageFilter::OnNaClErrorStatus(int render_view_id,
-                                              int error_id) {
-  nacl::NaClBrowser::GetDelegate()->ShowNaClInfobar(render_process_id_,
-                                                    render_view_id, error_id);
+void NaClHostMessageFilter::OnMissingArchError(int render_view_id) {
+  nacl::NaClBrowser::GetDelegate()->
+      ShowMissingArchInfobar(render_process_id_, render_view_id);
 }
 
 void NaClHostMessageFilter::OnOpenNaClExecutable(int render_view_id,
