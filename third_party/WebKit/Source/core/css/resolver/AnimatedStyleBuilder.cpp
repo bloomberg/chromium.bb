@@ -225,6 +225,27 @@ void setOnFillLayers(FillLayer* fillLayer, const AnimatableValue* value, StyleRe
     }
 }
 
+FontWeight animatableValueToFontWeight(const AnimatableValue* value)
+{
+    int index = round(toAnimatableDouble(value)->toDouble() / 100) - 1;
+
+    static const FontWeight weights[] = {
+        FontWeight100,
+        FontWeight200,
+        FontWeight300,
+        FontWeight400,
+        FontWeight500,
+        FontWeight600,
+        FontWeight700,
+        FontWeight800,
+        FontWeight900
+    };
+
+    index = clampTo<int>(index, 0, WTF_ARRAY_LENGTH(weights) - 1);
+
+    return weights[index];
+}
+
 } // namespace
 
 // FIXME: Generate this function.
@@ -350,6 +371,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         return;
     case CSSPropertyFontSize:
         style->setFontSize(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0));
+        return;
+    case CSSPropertyFontWeight:
+        style->setFontWeight(animatableValueToFontWeight(value));
         return;
     case CSSPropertyHeight:
         style->setHeight(animatableValueToLength(value, state, NonNegativeValues));

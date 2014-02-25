@@ -500,6 +500,7 @@ void CSSPropertyAnimation::ensurePropertyMap()
         // FIXME: Should we introduce an option to pass the computed font size here, allowing consumers to
         // enable text zoom rather than Text Autosizing? See http://crbug.com/227545.
         &RenderStyle::specifiedFontSize));
+    gPropertyWrappers->append(new PropertyWrapper<FontWeight>(CSSPropertyFontWeight, &RenderStyle::fontWeight));
     gPropertyWrappers->append(new PropertyWrapper<unsigned short>(CSSPropertyWebkitColumnRuleWidth, &RenderStyle::columnRuleWidth));
     gPropertyWrappers->append(new PropertyWrapper<float>(CSSPropertyWebkitColumnGap, &RenderStyle::columnGap));
     gPropertyWrappers->append(new PropertyWrapper<unsigned short>(CSSPropertyWebkitColumnCount, &RenderStyle::columnCount));

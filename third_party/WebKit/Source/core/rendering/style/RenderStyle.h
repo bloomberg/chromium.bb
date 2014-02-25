@@ -560,6 +560,7 @@ public:
     float specifiedFontSize() const;
     float computedFontSize() const;
     int fontSize() const;
+    FontWeight fontWeight() const;
 
     float textAutosizingMultiplier() const { return visual->m_textAutosizingMultiplier; }
 
@@ -1087,6 +1088,7 @@ public:
     bool setFontDescription(const FontDescription&);
     // Only used for blending font sizes when animating and for text autosizing.
     void setFontSize(float);
+    void setFontWeight(FontWeight);
 
     void setTextAutosizingMultiplier(float v)
     {

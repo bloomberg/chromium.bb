@@ -1176,6 +1176,7 @@ const FontDescription& RenderStyle::fontDescription() const { return inherited->
 float RenderStyle::specifiedFontSize() const { return fontDescription().specifiedSize(); }
 float RenderStyle::computedFontSize() const { return fontDescription().computedSize(); }
 int RenderStyle::fontSize() const { return fontDescription().computedPixelSize(); }
+FontWeight RenderStyle::fontWeight() const { return fontDescription().weight(); }
 
 float RenderStyle::wordSpacing() const { return fontDescription().wordSpacing(); }
 float RenderStyle::letterSpacing() const { return fontDescription().letterSpacing(); }
@@ -1244,6 +1245,15 @@ void RenderStyle::setFontSize(float size)
         desc.setComputedSize(min(maximumAllowedFontSize, autosizedFontSize));
     }
 
+    setFontDescription(desc);
+    font().update(currentFontSelector);
+}
+
+void RenderStyle::setFontWeight(FontWeight weight)
+{
+    FontSelector* currentFontSelector = font().fontSelector();
+    FontDescription desc(fontDescription());
+    desc.setWeight(weight);
     setFontDescription(desc);
     font().update(currentFontSelector);
 }
