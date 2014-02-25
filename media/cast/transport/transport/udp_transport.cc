@@ -122,7 +122,11 @@ void UdpTransport::OnReceived(int result) {
   scoped_ptr<Packet> packet(
       new Packet(recv_buf_->data(), recv_buf_->data() + result));
   packet_receiver_.Run(packet.Pass());
-  ReceiveOnePacket();
+
+  // TODO(hguihot): Read packet iteratively when crbug.com/344628 is fixed.
+  io_thread_proxy_->PostTask(
+      FROM_HERE,
+      base::Bind(&UdpTransport::ReceiveOnePacket, weak_factory_.GetWeakPtr()));
 }
 
 bool UdpTransport::SendPacket(const Packet& packet) {
