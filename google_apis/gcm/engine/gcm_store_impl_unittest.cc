@@ -57,11 +57,13 @@ class GCMStoreImplTest : public testing::Test {
   base::MessageLoop message_loop_;
   base::ScopedTempDir temp_directory_;
   bool expected_success_;
+  uint64 next_persistent_id_;
   scoped_ptr<base::RunLoop> run_loop_;
 };
 
 GCMStoreImplTest::GCMStoreImplTest()
-    : expected_success_(true) {
+    : expected_success_(true),
+      next_persistent_id_(base::Time::Now().ToInternalValue()) {
   EXPECT_TRUE(temp_directory_.CreateUniqueTempDir());
   run_loop_.reset(new base::RunLoop());
 }
@@ -76,7 +78,7 @@ scoped_ptr<GCMStore> GCMStoreImplTest::BuildGCMStore() {
 }
 
 std::string GCMStoreImplTest::GetNextPersistentId() {
-  return base::Uint64ToString(base::Time::Now().ToInternalValue());
+  return base::Uint64ToString(next_persistent_id_++);
 }
 
 void GCMStoreImplTest::PumpLoop() { message_loop_.RunUntilIdle(); }
