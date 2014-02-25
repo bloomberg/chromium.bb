@@ -329,14 +329,29 @@ bool DismissVirtualKeyboard() {
 
 typedef HWND (*MetroRootWindow) ();
 
-bool IsEnrolledToDomain() {
-  LPWSTR domain;
-  NETSETUP_JOIN_STATUS join_status;
-  if(::NetGetJoinInformation(NULL, &domain, &join_status) != NERR_Success)
-    return false;
-  ::NetApiBufferFree(domain);
+enum DomainEnrollementState {UNKNOWN = -1, NOT_ENROLLED, ENROLLED};
+static volatile long int g_domain_state = UNKNOWN;
 
-  return join_status == ::NetSetupDomainName;
+bool IsEnrolledToDomain() {
+  // Doesn't make any sense to retry inside a user session because joining a
+  // domain will only kick in on a restart.
+  if (g_domain_state == UNKNOWN) {
+    LPWSTR domain;
+    NETSETUP_JOIN_STATUS join_status;
+    if(::NetGetJoinInformation(NULL, &domain, &join_status) != NERR_Success)
+      return false;
+    ::NetApiBufferFree(domain);
+    ::InterlockedCompareExchange(&g_domain_state,
+                                 join_status == ::NetSetupDomainName ?
+                                     ENROLLED : NOT_ENROLLED,
+                                 UNKNOWN);
+  }
+
+  return g_domain_state == ENROLLED;
+}
+
+void SetDomainStateForTesting(bool state) {
+  g_domain_state = state ? ENROLLED : NOT_ENROLLED;
 }
 
 }  // namespace win
