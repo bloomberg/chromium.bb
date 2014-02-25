@@ -23,11 +23,13 @@ if (window.testRunner) {
   });
 }
 document.body.textContent = 'FAIL (expected if outside the virtual/threaded suite)';
-document.body.classList.add('start');
-document.body.offsetTop;
-setTimeout(function() {
-  document.body.addEventListener('webkitAnimationStart', function() {
-    document.body.textContent = 'PASS';
-  });
-}, 0);
+requestAnimationFrame(function() {
+  document.body.classList.add('start');
+  document.body.offsetTop;
+  setTimeout(function() {
+    document.body.addEventListener('webkitAnimationStart', function() {
+      document.body.textContent = 'PASS';
+    });
+  }, 0);
+});
 </script>

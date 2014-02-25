@@ -16,7 +16,6 @@
       width: 200px;
       height: 200px;
       background-color: red;
-      -webkit-animation-name: anim1, anim2;
       -webkit-animation-duration: 300ms, 300ms;
       -webkit-animation-delay: 0s, 100ms;
       -webkit-transition-property: top, width;
@@ -53,28 +52,28 @@
         document.getElementById('result').innerHTML += "PASS: Number of active animations at " + time + "ms is (" + current + ") as expected<br>";
       else
         document.getElementById('result').innerHTML += "FAIL: Number of active animations at " + time + "ms is (" + current + ") but was expecting (" + expected + ")<br>";
-      if (isLast)
+      if (isLast && window.testRunner)
         testRunner.notifyDone();
     }
-    
-    function startTest() {
-      if (window.testRunner) {
-        testRunner.dumpAsText();
-        testRunner.waitUntilDone();
-        
-        var target = document.getElementById('target');
-        target.style.top = '200px';
-        target.style.width = '100px';
-        
-        setTimeout(sample.bind(null, 0, 4, false), 0);
-        setTimeout(sample.bind(null, 200, 4, false), 200);
-        setTimeout(sample.bind(null, 500, 0, true), 500);
-      }
+
+    if (window.testRunner) {
+      testRunner.dumpAsText();
+      testRunner.waitUntilDone();
     }
     
+    requestAnimationFrame(function() {
+      var target = document.getElementById('target');
+      target.style.webkitAnimationName = 'anim1, anim2';
+      target.style.top = '200px';
+      target.style.width = '100px';
+      
+      requestAnimationFrame(sample.bind(null, 0, 4, false));
+      setTimeout(sample.bind(null, 200, 4, false), 200);
+      setTimeout(sample.bind(null, 500, 0, true), 500);
+    });
    </script>
 </head>
-<body onload="startTest()">
+<body>
   <h1>Test for DRT numberOfActiveAnimations() API</h1>
 
   <div id="target"></div>

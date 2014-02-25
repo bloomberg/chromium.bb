@@ -50,32 +50,29 @@ void updateAnimationTiming(Document& document)
 {
     document.timeline()->serviceAnimations();
     document.transitionTimeline()->serviceAnimations();
-    if (!document.childNeedsStyleRecalc())
-        document.animationClock().unfreeze();
 }
 
-void dispatchAnimationEvents(Document& document)
+} // namespace
+
+void DocumentAnimations::dispatchAnimationEvents(Document& document)
 {
     document.timeline()->dispatchEvents();
     document.transitionTimeline()->dispatchEvents();
 }
 
-void dispatchAnimationEventsAsync(Document& document)
+void DocumentAnimations::dispatchAnimationEventsAsync(Document& document)
 {
     document.timeline()->dispatchEventsAsync();
     document.transitionTimeline()->dispatchEventsAsync();
 }
 
-} // namespace
-
-void DocumentAnimations::serviceOnAnimationFrame(Document& document, double monotonicAnimationStartTime)
+void DocumentAnimations::updateAnimationTimingForAnimationFrame(Document& document, double monotonicAnimationStartTime)
 {
     document.animationClock().updateTime(monotonicAnimationStartTime);
     updateAnimationTiming(document);
-    dispatchAnimationEvents(document);
 }
 
-void DocumentAnimations::serviceBeforeGetComputedStyle(Node& node, CSSPropertyID property)
+void DocumentAnimations::updateAnimationTimingForGetComputedStyle(Node& node, CSSPropertyID property)
 {
     if (!node.isElementNode())
         return;
@@ -90,13 +87,15 @@ void DocumentAnimations::serviceBeforeGetComputedStyle(Node& node, CSSPropertyID
     }
 }
 
-void DocumentAnimations::serviceAfterStyleRecalc(Document& document)
+void DocumentAnimations::startPendingAnimations(Document& document)
 {
-    if (document.cssPendingAnimations().startPendingAnimations() && document.view())
+    ASSERT(document.lifecycle().state() == DocumentLifecycle::CompositingClean);
+    if (document.cssPendingAnimations().startPendingAnimations()) {
+        ASSERT(document.view());
         document.view()->scheduleAnimation();
+    }
 
     document.animationClock().unfreeze();
-    dispatchAnimationEventsAsync(document);
 }
 
 } // namespace WebCore

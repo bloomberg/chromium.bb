@@ -400,8 +400,18 @@ void RenderLayerCompositor::updateCompositingLayers()
         return;
 
     lifecycle().advanceTo(DocumentLifecycle::InCompositingUpdate);
-    DocumentLifecycle::Scope lifecycleScope(lifecycle(), DocumentLifecycle::CompositingClean);
 
+    updateCompositingLayersInternal();
+
+    lifecycle().advanceTo(DocumentLifecycle::CompositingClean);
+
+    DocumentAnimations::startPendingAnimations(m_renderView->document());
+    DocumentAnimations::dispatchAnimationEventsAsync(m_renderView->document());
+    ASSERT(m_renderView->document().lifecycle().state() == DocumentLifecycle::CompositingClean);
+}
+
+void RenderLayerCompositor::updateCompositingLayersInternal()
+{
     if (isMainFrame() && m_renderView->frameView())
         finishCompositingUpdateForFrameTree(&m_renderView->frameView()->frame());
 

@@ -250,6 +250,8 @@ private:
 
     void updateDirectCompositingReasons(RenderLayer*);
 
+    void updateCompositingLayersInternal();
+
     // Returns indirect reasons that a layer should be composited because of something in its subtree.
     CompositingReasons subtreeReasonsForCompositing(RenderObject*, bool hasCompositedDescendants, bool has3DTransformedDescendants) const;
 
