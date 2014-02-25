@@ -232,8 +232,6 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
   // Queues used when scheduling raster tasks.
   RasterTaskQueue raster_queue_[NUM_RASTER_WORKER_POOL_TYPES];
 
-  std::vector<scoped_refptr<internal::Task> > orphan_raster_tasks_;
-
   DISALLOW_COPY_AND_ASSIGN(TileManager);
 };
 

@@ -113,7 +113,7 @@ struct CC_EXPORT RasterTaskQueue {
       return item.required_for_activation;
     }
 
-    internal::RasterWorkerPoolTask* task;
+    scoped_refptr<internal::RasterWorkerPoolTask> task;
     bool required_for_activation;
   };
 

@@ -86,6 +86,8 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTaskQueue* queue) {
                     kRasterFinishedTaskPriority,
                     queue->items.size());
 
+  raster_tasks_.Swap(queue);
+
   SetTaskGraph(&graph_);
 
   set_raster_finished_task(new_raster_finished_task);

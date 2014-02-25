@@ -311,8 +311,7 @@ TEST_P(RasterWorkerPoolTest, FalseThrottling) {
   // Schedule another task to replace the still-pending task. Because the old
   // task is not a throttled task in the new task set, it should not prevent
   // DidFinishRunningTasks from getting signaled.
-  RasterTaskVector tasks;
-  tasks.swap(tasks_);
+  tasks_.clear();
   AppendTask(1u);
   ScheduleTasks();
 
