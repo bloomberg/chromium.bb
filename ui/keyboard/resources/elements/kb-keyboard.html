@@ -922,8 +922,6 @@
        */
       keyTyped: function(detail) {
         var builder = this.$.keyCodeMetadata;
-        if (this.shift)
-          detail.shiftModifier = this.shift.isActive();
         if (this.ctrl)
           detail.controlModifier = this.ctrl.isActive();
         if (this.alt)
