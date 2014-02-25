@@ -64,6 +64,10 @@ class OobeBaseTest : public ExtensionApiTest {
 
   scoped_ptr<FakeGaia> fake_gaia_;
   NetworkPortalDetectorTestImpl* network_portal_detector_;
+
+  // Whether to use background networking. Note this is only effective when it
+  // is set before SetUpCommandLine is invoked.
+  bool needs_background_networking_;
 };
 
 }  // namespace chromeos

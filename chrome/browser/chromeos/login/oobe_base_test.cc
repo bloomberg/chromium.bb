@@ -36,7 +36,8 @@ const char kStubEthernetServicePath[] = "eth1";
 
 OobeBaseTest::OobeBaseTest()
     : fake_gaia_(new FakeGaia()),
-      network_portal_detector_(NULL) {
+      network_portal_detector_(NULL),
+      needs_background_networking_(false) {
   set_exit_when_last_browser_closes(false);
   set_chromeos_user_ = false;
 }
@@ -90,7 +91,8 @@ void OobeBaseTest::SetUpCommandLine(CommandLine* command_line) {
   ExtensionApiTest::SetUpCommandLine(command_line);
   command_line->AppendSwitch(chromeos::switches::kLoginManager);
   command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
-  command_line->AppendSwitch(::switches::kDisableBackgroundNetworking);
+  if (!needs_background_networking_)
+    command_line->AppendSwitch(::switches::kDisableBackgroundNetworking);
   command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
 
   // Create gaia and webstore URL from test server url but using different

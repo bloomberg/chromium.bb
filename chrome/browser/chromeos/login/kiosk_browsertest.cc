@@ -9,6 +9,7 @@
 #include "ash/desktop_background/desktop_background_controller_observer.h"
 #include "ash/shell.h"
 #include "base/path_service.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
@@ -37,6 +38,13 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
+
+using net::test_server::BasicHttpResponse;
+using net::test_server::HttpRequest;
+using net::test_server::HttpResponse;
 
 namespace em = enterprise_management;
 
@@ -619,55 +627,6 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchInDiagnosticMode) {
   WaitForAppLaunchSuccess();
 }
 
-IN_PROC_BROWSER_TEST_F(KioskTest, LaunchOfflineEnabledAppNoNetwork) {
-  set_test_app_id(kTestOfflineEnabledKioskApp);
-  SetupAppProfile("chromeos/app_mode/offline_enabled_app_profile");
-
-  PrepareAppLaunch();
-  SimulateNetworkOffline();
-
-  LaunchApp(test_app_id(), false);
-  WaitForAppLaunchSuccess();
-}
-
-IN_PROC_BROWSER_TEST_F(KioskTest, LaunchOfflineEnabledAppNoUpdate) {
-  set_test_app_id(kTestOfflineEnabledKioskApp);
-  SetupAppProfile("chromeos/app_mode/offline_enabled_app_profile");
-
-  GURL webstore_url = GetTestWebstoreUrl();
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      ::switches::kAppsGalleryUpdateURL,
-      webstore_url.Resolve(
-          "/chromeos/app_mode/webstore/update_check/no_update.xml").spec());
-
-  PrepareAppLaunch();
-  SimulateNetworkOnline();
-
-  LaunchApp(test_app_id(), false);
-  WaitForAppLaunchSuccess();
-
-  EXPECT_EQ("1.0.0", GetInstalledAppVersion().GetString());
-}
-
-IN_PROC_BROWSER_TEST_F(KioskTest, LaunchOfflineEnabledAppHasUpdate) {
-  set_test_app_id(kTestOfflineEnabledKioskApp);
-  SetupAppProfile("chromeos/app_mode/offline_enabled_app_profile");
-
-  GURL webstore_url = GetTestWebstoreUrl();
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      ::switches::kAppsGalleryUpdateURL,
-      webstore_url.Resolve(
-          "/chromeos/app_mode/webstore/update_check/has_update.xml").spec());
-
-  PrepareAppLaunch();
-  SimulateNetworkOnline();
-
-  LaunchApp(test_app_id(), false);
-  WaitForAppLaunchSuccess();
-
-  EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
-}
-
 IN_PROC_BROWSER_TEST_F(KioskTest, AutolaunchWarningCancel) {
   EnableConsumerKioskMode();
   // Start UI, find menu entry for this app and launch it.
@@ -891,6 +850,132 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableAfter2ndSigninScreen) {
   content::WindowedNotificationObserver(
       chrome::NOTIFICATION_KIOSK_ENABLE_WARNING_VISIBLE,
       content::NotificationService::AllSources()).Wait();
+}
+
+class KioskUpdateTest : public KioskTest {
+ public:
+  KioskUpdateTest() {}
+  virtual ~KioskUpdateTest() {}
+
+ protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    // Needs background networking so that ExtensionDownloader works.
+    needs_background_networking_ = true;
+
+    KioskTest::SetUpCommandLine(command_line);
+  }
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    KioskTest::SetUpOnMainThread();
+
+    GURL webstore_url = GetTestWebstoreUrl();
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        ::switches::kAppsGalleryUpdateURL,
+        webstore_url.Resolve("/update_check.xml").spec());
+
+    embedded_test_server()->RegisterRequestHandler(
+        base::Bind(&KioskUpdateTest::HandleRequest,
+                   base::Unretained(this)));
+  }
+
+  void SetUpdateCheckContent(const std::string& update_check_file,
+                             const std::string& app_id,
+                             const GURL& crx_download_url,
+                             const std::string& crx_fp,
+                             const std::string& crx_size,
+                             const std::string& version) {
+    base::FilePath test_data_dir;
+    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+    base::FilePath update_file =
+        test_data_dir.AppendASCII(update_check_file.c_str());
+    ASSERT_TRUE(base::ReadFileToString(update_file, &update_check_content_));
+
+    ReplaceSubstringsAfterOffset(&update_check_content_, 0, "$AppId", app_id);
+    ReplaceSubstringsAfterOffset(
+        &update_check_content_, 0, "$CrxDownloadUrl", crx_download_url.spec());
+    ReplaceSubstringsAfterOffset(&update_check_content_, 0, "$FP", crx_fp);
+    ReplaceSubstringsAfterOffset(&update_check_content_, 0, "$Size", crx_size);
+    ReplaceSubstringsAfterOffset(
+        &update_check_content_, 0, "$Version", version);
+  }
+
+ private:
+  scoped_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
+    GURL request_url = GURL("http://localhost").Resolve(request.relative_url);
+    std::string request_path = request_url.path();
+    if (!update_check_content_.empty() &&
+        request_path == "/update_check.xml") {
+      scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
+      http_response->set_code(net::HTTP_OK);
+      http_response->set_content_type("text/xml");
+      http_response->set_content(update_check_content_);
+      return http_response.PassAs<HttpResponse>();
+    }
+
+    return scoped_ptr<HttpResponse>();
+  }
+
+  std::string update_check_content_;
+
+  DISALLOW_COPY_AND_ASSIGN(KioskUpdateTest);
+};
+
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppNoNetwork) {
+  set_test_app_id(kTestOfflineEnabledKioskApp);
+  SetupAppProfile("chromeos/app_mode/offline_enabled_app_profile");
+
+  PrepareAppLaunch();
+  SimulateNetworkOffline();
+
+  LaunchApp(test_app_id(), false);
+  WaitForAppLaunchSuccess();
+}
+
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppNoUpdate) {
+  set_test_app_id(kTestOfflineEnabledKioskApp);
+  SetupAppProfile("chromeos/app_mode/offline_enabled_app_profile");
+
+  SetUpdateCheckContent(
+      "chromeos/app_mode/webstore/update_check/no_update.xml",
+      kTestOfflineEnabledKioskApp,
+      GURL(),
+      "",
+      "",
+      "");
+
+  PrepareAppLaunch();
+  SimulateNetworkOnline();
+
+  LaunchApp(test_app_id(), false);
+  WaitForAppLaunchSuccess();
+
+  EXPECT_EQ("1.0.0", GetInstalledAppVersion().GetString());
+}
+
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppHasUpdate) {
+  set_test_app_id(kTestOfflineEnabledKioskApp);
+  SetupAppProfile("chromeos/app_mode/offline_enabled_app_profile");
+
+  GURL webstore_url = GetTestWebstoreUrl();
+  GURL crx_download_url = webstore_url.Resolve(
+      "/chromeos/app_mode/webstore/downloads/"
+      "ajoggoflpgplnnjkjamcmbepjdjdnpdp.crx");
+
+  SetUpdateCheckContent(
+      "chromeos/app_mode/webstore/update_check/has_update.xml",
+      kTestOfflineEnabledKioskApp,
+      crx_download_url,
+      "ca08d1d120429f49a2b5b1d4db67ce4234390f0758b580e25fba5226a0526209",
+      "2294",
+      "2.0.0");
+
+  PrepareAppLaunch();
+  SimulateNetworkOnline();
+
+  LaunchApp(test_app_id(), false);
+  WaitForAppLaunchSuccess();
+
+  EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
 }
 
 class KioskEnterpriseTest : public KioskTest {
