@@ -4,6 +4,7 @@
 
 if (!window.WebInspector)
     window.WebInspector = {};
+InspectorTest.importScript("../../../../../Source/devtools/front_end/HeapSnapshotCommon.js");
 InspectorTest.importScript("../../../../../Source/devtools/front_end/HeapSnapshot.js");
 InspectorTest.importScript("../../../../../Source/devtools/front_end/JSHeapSnapshot.js");
 InspectorTest.importScript("../../../../../Source/devtools/front_end/UIString.js");
