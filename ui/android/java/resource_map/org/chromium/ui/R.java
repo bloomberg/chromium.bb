@@ -73,5 +73,7 @@ public final class R {
         public static int autofill_text_height;
         public static int autofill_text_divider_height;
         public static int color_button_height;
+        public static int config_min_scaling_span;
+        public static int config_min_scaling_touch_major;
     }
 }

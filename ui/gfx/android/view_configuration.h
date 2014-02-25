@@ -28,6 +28,9 @@ class GFX_EXPORT ViewConfiguration {
   static int GetTouchSlopInPixels();
   static int GetDoubleTapSlopInPixels();
 
+  static int GetMinScalingSpanInPixels();
+  static int GetMinScalingTouchMajorInPixels();
+
   // Registers methods with JNI and returns true if succeeded.
   static bool RegisterViewConfiguration(JNIEnv* env);
 };
