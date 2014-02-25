@@ -117,11 +117,10 @@ public:
     virtual void transitionToCommittedForNewPage() OVERRIDE;
     virtual PassRefPtr<WebCore::Frame> createFrame(const WebCore::KURL&, const WTF::AtomicString& name, const WebCore::Referrer&, WebCore::HTMLFrameOwnerElement*) OVERRIDE;
     virtual PassRefPtr<WebCore::Widget> createPlugin(
-        const WebCore::IntSize&, WebCore::HTMLPlugInElement*, const WebCore::KURL&,
+        WebCore::HTMLPlugInElement*, const WebCore::KURL&,
         const Vector<WTF::String>&, const Vector<WTF::String>&,
-        const WTF::String&, bool loadManually) OVERRIDE;
+        const WTF::String&, bool loadManually, DetachedPluginPolicy) OVERRIDE;
     virtual PassRefPtr<WebCore::Widget> createJavaAppletWidget(
-        const WebCore::IntSize&,
         WebCore::HTMLAppletElement*,
         const WebCore::KURL& /* base_url */,
         const Vector<WTF::String>& paramNames,

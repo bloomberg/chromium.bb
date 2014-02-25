@@ -44,12 +44,10 @@ class WebAXObject;
 class WebAutofillClient;
 class WebDevToolsAgent;
 class WebDevToolsAgentClient;
-class WebDocument;
 class WebDragData;
 class WebFrame;
 class WebFrameClient;
 class WebGraphicsContext3D;
-class WebHelperPlugin;
 class WebHitTestResult;
 class WebNode;
 class WebPageOverlay;
@@ -315,11 +313,6 @@ public:
     // Performs the specified media player action on the node at the given location.
     virtual void performMediaPlayerAction(
         const WebMediaPlayerAction&, const WebPoint& location) = 0;
-
-    // Creates a Helper Plugin of |pluginType| for |hostDocument|. Caller owns
-    // the returned object, and must call closeAndDeleteSoon() to free the Plugin.
-    virtual WebHelperPlugin* createHelperPlugin(
-        const WebString& pluginType, const WebDocument& hostDocument) = 0;
 
     // Performs the specified plugin action on the node at the given location.
     virtual void performPluginAction(
