@@ -521,8 +521,10 @@ void GraphicsContext::beginLayer(float opacity, CompositeOperator op, const Floa
     // Filters will adjust the clip to accomodate for filter bounds, but
     // need the kClipToLayer_SaveFlag to do so. We also save the clip here, so
     // it is restored back before the filtered layer is drawn in restore().
+    // The matrix also needs to be saved, in order to be correctly passed to
+    // the filter CTM during restore().
     if (imageFilter)
-        saveFlags = static_cast<SkCanvas::SaveFlags>(saveFlags | SkCanvas::kClipToLayer_SaveFlag | SkCanvas::kClip_SaveFlag);
+        saveFlags = SkCanvas::kARGB_ClipLayer_SaveFlag;
 
     if (bounds) {
         SkRect skBounds = WebCoreFloatRectToSKRect(*bounds);
