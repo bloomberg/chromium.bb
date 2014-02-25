@@ -109,7 +109,8 @@ def OverrideConfigForTrybot(build_config, options):
     # developers will get better testing for their changes.
     if (my_config['build_type'] == constants.PALADIN_TYPE
         and not my_config['arm']):
-      my_config['vm_tests'] = constants.SIMPLE_AU_TEST_TYPE
+      my_config['vm_tests'] = [constants.SIMPLE_AU_TEST_TYPE,
+                               constants.CROS_VM_TEST_TYPE]
       my_config['quick_unit'] = False
 
   return copy_config
@@ -373,8 +374,8 @@ _settings = dict(
 # pgo_use -- Uses PGO data.
   pgo_use=False,
 
-# vm_tests -- Run vm test type defined in constants.
-  vm_tests=constants.SIMPLE_AU_TEST_TYPE,
+# vm_tests -- A list of vm tests to run.
+  vm_tests=[constants.SIMPLE_AU_TEST_TYPE],
 
 # A list of HWTestConfig objects to run.
   hw_tests=[],
@@ -760,7 +761,7 @@ arm = _config(
   arm=True,
   # VM/tests are broken on arm.
   unittests=False,
-  vm_tests=None,
+  vm_tests=[],
 )
 
 amd64 = _config()
@@ -829,7 +830,7 @@ full_paladin = _config(
 # cannot run on the builders, at least until we've implemented an emulator.
 # Disable the VM tests and unit tests to be safe.
 incompatible_instruction_set = _config(
-  vm_tests=None,
+  vm_tests=[],
   unittests=False,
 )
 
@@ -863,7 +864,7 @@ sonic = _config(
   unittests=True,
   upload_hw_test_artifacts=False,
   build_tests=False,
-  vm_tests=None,
+  vm_tests=[],
   signer_tests=False,
   sync_chrome=False,
   chrome_sdk=False,
@@ -929,14 +930,14 @@ incremental.add_config('amd64-generic-incremental',
   amd64,
   boards=['amd64-generic'],
   # This builder runs on a VM, so it can't run VM tests.
-  vm_tests=None,
+  vm_tests=[],
 )
 
 incremental.add_config('x32-generic-incremental',
   amd64,
   boards=['x32-generic'],
   # This builder runs on a VM, so it can't run VM tests.
-  vm_tests=None,
+  vm_tests=[],
 )
 
 paladin.add_config('x86-generic-paladin',
@@ -978,7 +979,7 @@ telemetry = _config(
   build_type=constants.INCREMENTAL_TYPE,
   uprev=False,
   overlays=constants.PUBLIC_OVERLAYS,
-  vm_tests=constants.TELEMETRY_SUITE_TEST_TYPE,
+  vm_tests=[constants.TELEMETRY_SUITE_TEST_TYPE],
   description='Telemetry Builds',
 )
 
@@ -1069,7 +1070,7 @@ chromium_info = chromium_pfq.derive(
   use_lkgm=True,
   important=False,
   manifest_version=False,
-  vm_tests=constants.SMOKE_SUITE_TEST_TYPE,
+  vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
   disk_vm_layout='usb',
 )
 
@@ -1084,7 +1085,7 @@ chrome_info_no_pdf = chrome_info.derive(
 
 chrome_perf = chrome_info.derive(
   description='Chrome Performance test bot',
-  vm_tests=None,
+  vm_tests=[],
   upload_hw_test_artifacts=True,
   hw_tests=[HWTestConfig('perf_v2', pool=constants.HWTEST_CHROME_PERF_POOL,
                          timeout=90 * 60, critical=True, num=1)],
@@ -1272,7 +1273,7 @@ internal_paladin = internal.derive(official_chrome, paladin,
   manifest=constants.OFFICIAL_MANIFEST,
   overlays=constants.BOTH_OVERLAYS,
   prebuilts=constants.PRIVATE,
-  vm_tests=None,
+  vm_tests=[],
   description=paladin['description'] + ' (internal)',
 )
 
@@ -1360,7 +1361,7 @@ internal_pfq_branch.add_config('x86-alex-pre-flight-branch',
 _test_ap = internal.derive(
   description='WiFi AP images used in testing',
   profile='testbed-ap',
-  vm_tests=None,
+  vm_tests=[],
 )
 
 _config.add_group('test-ap-group',
@@ -1411,7 +1412,7 @@ internal_paladin.add_config('link-tot-paladin',
 internal_paladin.add_config('x86-mario-paladin',
   boards=['x86-mario'],
   paladin_builder_name='x86-mario paladin',
-  vm_tests=constants.SIMPLE_AU_TEST_TYPE,
+  vm_tests=[constants.SIMPLE_AU_TEST_TYPE],
 )
 
 internal_paladin.add_config('x86-alex-paladin',
@@ -1554,6 +1555,7 @@ internal_paladin.add_config('panther-paladin',
 internal_paladin.add_config('stout-paladin',
   boards=['stout'],
   paladin_builder_name='stout paladin',
+  vm_tests = [constants.CROS_VM_TEST_TYPE],
 )
 
 internal_paladin.add_config('stout32-paladin',
@@ -1674,7 +1676,8 @@ _release = full.derive(official, internal,
     'https://commondatastorage.googleapis.com/chromeos-dev-installer',
   dev_installer_prebuilts=True,
   git_sync=False,
-  vm_tests=constants.SMOKE_SUITE_TEST_TYPE,
+  vm_tests=[constants.SMOKE_SUITE_TEST_TYPE, constants.DEV_MODE_TEST_TYPE,
+            constants.CROS_VM_TEST_TYPE],
   disk_vm_layout='usb',
   hw_tests=HWTestConfig.DefaultList(file_bugs=True),
   upload_hw_test_artifacts=True,
@@ -1690,7 +1693,7 @@ _release = full.derive(official, internal,
 _grouped_variant_release = _release.derive(
   chrome_sdk=False,
   unittests=None,
-  vm_tests=None,
+  vm_tests=[],
 )
 
 ### Master release config.
@@ -1789,14 +1792,14 @@ release_pgo.add_group('daisy-release-pgo',
 _release.add_config('bayleybay-release',
   boards=['bayleybay'],
   hw_tests=[],
-  vm_tests=None,
+  vm_tests=[],
   unittests=False,
 )
 
 _release.add_config('beltino-release',
   boards=['beltino'],
   hw_tests=[],
-  vm_tests=None,
+  vm_tests=[],
 )
 
 _release.add_config('butterfly-release',
@@ -1819,7 +1822,7 @@ _release.add_config('fox_wtm2-release',
   boards=['fox_wtm2'],
   # Until these are configured and ready, disable them.
   signer_tests=False,
-  vm_tests=None,
+  vm_tests=[],
   hw_tests=[],
 )
 
@@ -1848,7 +1851,7 @@ _release.add_config('lumpy-release',
 _release.add_config('monroe-release',
   boards=['monroe'],
   hw_tests=[],
-  vm_tests=None,
+  vm_tests=[],
 )
 
 _release.add_config('panther-release',
@@ -1917,7 +1920,7 @@ _release.add_config('wolf-release',
 _release.add_config('zako-release',
   boards=['zako'],
   hw_tests=[],
-  vm_tests=None,
+  vm_tests=[],
 )
 
 ### Arm release configs.
@@ -1961,7 +1964,7 @@ _arm_release.add_config('nyan_big-release',
 _brillo_release = _release.derive(brillo,
   dev_installer_prebuilts=False,
   signer_tests=False,
-  vm_tests=None,
+  vm_tests=[],
 )
 
 _brillo_release.add_config('duck-release',
@@ -1995,7 +1998,7 @@ _release.add_config('stumpy_moblab-release',
   build_tests=False,
   signer_tests=False,
   hw_tests=[],
-  vm_tests=None,
+  vm_tests=[],
 )
 
 # Factory and Firmware releases much inherit from these classes.  Modifications
@@ -2020,7 +2023,7 @@ _firmware = _config(
   build_tests=False,
   chrome_sdk=False,
   unittests=False,
-  vm_tests=None,
+  vm_tests=[],
   hw_tests=[],
   dev_installer_prebuilts=False,
   upload_hw_test_artifacts=False,

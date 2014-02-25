@@ -271,9 +271,11 @@ FULL_AU_TEST_TYPE = 'full_suite'
 SIMPLE_AU_TEST_TYPE = 'pfq_suite'
 SMOKE_SUITE_TEST_TYPE = 'smoke_suite'
 TELEMETRY_SUITE_TEST_TYPE = 'telemetry_suite'
-
+CROS_VM_TEST_TYPE = 'cros_vm_test'
+DEV_MODE_TEST_TYPE = 'dev_mode_test'
 VALID_VM_TEST_TYPES = [FULL_AU_TEST_TYPE, SIMPLE_AU_TEST_TYPE,
-                       SMOKE_SUITE_TEST_TYPE, TELEMETRY_SUITE_TEST_TYPE]
+                       SMOKE_SUITE_TEST_TYPE, TELEMETRY_SUITE_TEST_TYPE,
+                       CROS_VM_TEST_TYPE, DEV_MODE_TEST_TYPE]
 
 CHROMIUMOS_OVERLAY_DIR = 'src/third_party/chromiumos-overlay'
 VERSION_FILE = os.path.join(CHROMIUMOS_OVERLAY_DIR,

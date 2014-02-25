@@ -153,8 +153,9 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
   def testValidVMTestType(self):
     """Verify vm_tests has an expected value"""
     for build_name, config in cbuildbot_config.config.iteritems():
-      self.assertTrue(
-          config['vm_tests'] in constants.VALID_VM_TEST_TYPES + [None],
+      for test_type in config['vm_tests']:
+        self.assertTrue(
+          test_type in constants.VALID_VM_TEST_TYPES,
           'Config %s: has unexpected vm test type value.' % build_name)
 
   def testBuildType(self):
@@ -189,10 +190,10 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
             'Config %s: has chrome_sdk but not sync_chrome.' % build_name)
 
   def testARMNoVMTest(self):
-    """Verify ARM builds don't get VMTests turned on by accident"""
+    """Verify ARM builds don't get VMTests turned on by accident."""
     for build_name, config in cbuildbot_config.config.iteritems():
       if build_name.startswith('arm-') or config['arm']:
-        self.assertTrue(config['vm_tests'] is None,
+        self.assertTrue(not config['vm_tests'],
                         "ARM builder %s can't run vm tests!" % build_name)
 
   def testHWTestsIFFArchivingHWTestArtifacts(self):

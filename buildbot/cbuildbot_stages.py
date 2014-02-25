@@ -2768,12 +2768,19 @@ class VMTestStage(ArchivingStage):
           prefix = ''
         self.PrintDownloadLink(filename, prefix)
 
-  def PerformStage(self):
-    # These directories are used later to archive test artifacts.
-    test_results_dir = commands.CreateTestRoot(self._build_root)
-    test_basename = constants.VM_TEST_RESULTS % dict(attempt=self._attempt)
-    try:
-      test_type = self._run.config.vm_tests
+  def _RunTest(self, test_type, test_results_dir):
+    """Run a VM test.
+
+    Args:
+      test_type: Any test in constants.VALID_VM_TEST_TYPES
+      test_results_dir: The base directory to store the results.
+    """
+    if test_type == constants.CROS_VM_TEST_TYPE:
+      commands.RunCrosVMTest(self._current_board, self.GetImageDirSymlink())
+    elif test_type == constants.DEV_MODE_TEST_TYPE:
+      commands.RunDevModeTest(
+        self._build_root, self._current_board, self.GetImageDirSymlink())
+    else:
       commands.RunTestSuite(self._build_root,
                             self._current_board,
                             self.GetImageDirSymlink(),
@@ -2783,14 +2790,14 @@ class VMTestStage(ArchivingStage):
                             whitelist_chrome_crashes=self._chrome_rev is None,
                             archive_dir=self.bot_archive_root)
 
-      # TODO (yjhong): Temporarily disable running cros_vm_test on
-      # canary builders (crbug.com/345923).
-      if self._run.config.build_type != constants.CANARY_TYPE:
-        commands.RunCrosVMTest(self._current_board, self.GetImageDirSymlink())
-
-      if self._run.config.build_type == constants.CANARY_TYPE:
-        commands.RunDevModeTest(
-            self._build_root, self._current_board, self.GetImageDirSymlink())
+  def PerformStage(self):
+    # These directories are used later to archive test artifacts.
+    test_results_dir = commands.CreateTestRoot(self._build_root)
+    test_basename = constants.VM_TEST_RESULTS % dict(attempt=self._attempt)
+    try:
+      for test_type in self._run.config.vm_tests:
+        cros_build_lib.Info('Running VM test %s.', test_type)
+        self._RunTest(test_type, test_results_dir)
 
     except Exception:
       cros_build_lib.Error(_VM_TEST_ERROR_MSG %
