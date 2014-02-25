@@ -403,10 +403,10 @@ LayoutUnit RootInlineBox::selectionTop() const
     if (m_hasAnnotationsBefore)
         selectionTop -= !renderer()->style()->isFlippedLinesWritingMode() ? computeOverAnnotationAdjustment(m_lineTop) : computeUnderAnnotationAdjustment(m_lineTop);
 
-    if (renderer()->style()->isFlippedLinesWritingMode())
+    if (renderer()->style()->isFlippedLinesWritingMode() || !prevRootBox())
         return selectionTop;
 
-    LayoutUnit prevBottom = prevRootBox() ? prevRootBox()->selectionBottom() : block()->borderBefore() + block()->paddingBefore();
+    LayoutUnit prevBottom = prevRootBox()->selectionBottom();
     if (prevBottom < selectionTop && block()->containsFloats()) {
         // This line has actually been moved further down, probably from a large line-height, but possibly because the
         // line was forced to clear floats.  If so, let's check the offsets, and only be willing to use the previous
