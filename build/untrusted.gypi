@@ -1406,7 +1406,7 @@
                  '--build', 'newlib_translate',
                  '--root', '<(DEPTH)',
                  '--name', '>(out_pnacl_newlib_mips_nexe)',
-                 '--link_flags=^(translate_flags) >(translate_flags) -Wl,-L>(tc_lib_dir_pnacl_translate)/lib-mips',
+                 '--link_flags=^(translate_flags) >(translate_flags) -Wl,-L>(tc_lib_dir_pnacl_translate)/lib-mips32',
                  '>(out_pnacl_newlib)',
                ],
              }],
@@ -1603,11 +1603,57 @@
              ],
            }], # end ia32
         ], # end ia32 or x64
-        # TODO(jvoung): implement MIPS clause.
-        # Do they want the IRT ABI to be biased toward --target=mipsel-...-nacl
-        # or do they want it to be le32 along with -expand-byval, etc.
-        # (then the shim isn't necessary)?
-      }], # end pnacl actions for building ABI-biased native libraries
+      }],
+      # MIPS
+      # The shim is not biased since the IRT itself is not biased.
+      ['target_arch=="mipsel"', {
+        'target_conditions': [
+          ['disable_pnacl==0 and pnacl_native_biased==1 and nlib_target!="" and build_pnacl_newlib!=0', {
+            'variables': {
+               'tool_name': 'pnacl_newlib_mips',
+               'out_pnacl_newlib_mips%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libmips/>(nlib_target)',
+               'objdir_pnacl_newlib_mips%': '>(INTERMEDIATE_DIR)/<(tool_name)/>(_target_name)',
+             },
+            'actions': [
+              {
+                'action_name': 'build newlib mips nlib (via pnacl)',
+                'variables': {
+                  'source_list_pnacl_newlib_mips%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                },
+                'msvs_cygwin_shell': 0,
+                'description': 'building >(out_pnacl_newlib_mips)',
+                'inputs': [
+                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                  '>@(extra_deps)',
+                  '>@(extra_deps_pnacl_newlib)',
+                  '^(source_list_pnacl_newlib_mips)',
+                  '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep'
+                ],
+                'outputs': ['>(out_pnacl_newlib_mips)'],
+                'action': [
+                  'python',
+                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
+                  '>@(extra_args)',
+                  '--arch', 'mips',
+                  '--build', 'newlib_nlib_pnacl',
+                  '--root', '<(DEPTH)',
+                  '--name', '>(out_pnacl_newlib_mips)',
+                  '--objdir', '>(objdir_pnacl_newlib_mips)',
+                  '--include-dirs=>(tc_include_dir_pnacl_newlib) ^(include_dirs) >(_include_dirs)',
+                  '--compile_flags=--pnacl-allow-translate -arch mips ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
+                  '--gomadir', '<(gomadir)',
+                  '--defines=^(defines) >(_defines)',
+                  '--link_flags=-B>(tc_lib_dir_pnacl_newlib) ^(link_flags) >(_link_flags)',
+                  '--source-list=^(source_list_pnacl_newlib_mips)',
+                ],
+              },
+            ],
+          }],
+        ],
+      }], # end MIPS
+      # end pnacl actions for building ABI-biased native libraries
     ], # end conditions for pnacl biased nlib
   },
 }
