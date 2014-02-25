@@ -99,6 +99,9 @@ TEST(TimeTicks, WinRollover) {
     for (int index = 0; index < kThreads; index++) {
       DWORD rv = WaitForSingleObject(threads[index], INFINITE);
       EXPECT_EQ(rv, WAIT_OBJECT_0);
+      // Since using _beginthreadex() (as opposed to _beginthread),
+      // an explicit CloseHandle() is supposed to be called.
+      CloseHandle(threads[index]);
     }
 
     CloseHandle(g_rollover_test_start);
