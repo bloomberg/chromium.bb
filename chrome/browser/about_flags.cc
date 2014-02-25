@@ -1546,6 +1546,15 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisablePrivetLocalPrinting)
   },
 #endif  // ENABLE_MDNS
+#if defined(OS_WIN)
+  {
+    "enable-cloud-print-xps",
+    IDS_FLAGS_ENABLE_CLOUD_PRINT_XPS_NAME,
+    IDS_FLAGS_ENABLE_CLOUD_PRINT_XPS_DESCRIPTION,
+    kOsWin,
+    SINGLE_VALUE_TYPE(switches::kEnableCloudPrintXps)
+  },
+#endif
 #if defined(OS_MACOSX)
   {
     "disable-app-shims",

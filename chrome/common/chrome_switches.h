@@ -451,9 +451,10 @@ extern const char kRelauncherProcess[];
 
 #if defined(OS_WIN)
 extern const char kDebugPrint[];
+extern const char kEnableCloudPrintXps[];
 extern const char kEnableProfileShortcutManager[];
-extern const char kForceImmersive[];
 extern const char kForceDesktop[];
+extern const char kForceImmersive[];
 extern const char kPrintRaster[];
 extern const char kRelaunchShortcut[];
 extern const char kViewerConnect[];

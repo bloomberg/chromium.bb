@@ -137,6 +137,9 @@ void ServiceProcessControl::Launch(const base::Closure& success_task,
   static const char* const kSwitchesToCopy[] = {
     switches::kCloudPrintServiceURL,
     switches::kCloudPrintSetupProxy,
+#if defined(OS_WIN)
+    switches::kEnableCloudPrintXps,
+#endif
     switches::kEnableLogging,
     switches::kIgnoreUrlFetcherCertRequests,
     switches::kLang,

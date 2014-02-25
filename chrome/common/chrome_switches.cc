@@ -1607,6 +1607,9 @@ const char kEnablePermissionsBubbles[]      = "enable-permissions-bubbles";
 // Enables support to debug printing subsystem.
 const char kDebugPrint[]                    = "debug-print";
 
+// Fallback to XPS. By default connector uses CDD.
+const char kEnableCloudPrintXps[]           = "enable-cloud-print-xps";
+
 // Force-enables the profile shortcut manager. This is needed for tests since
 // they use a custom-user-data-dir which disables this.
 const char kEnableProfileShortcutManager[]  = "enable-profile-shortcut-manager";

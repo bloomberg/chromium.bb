@@ -5625,6 +5625,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_PRIVET_LOCAL_PRINTING_DESCRIPTION">
         Disable printing to printers on the local network using the Privet protocol.
       </message>
+      <if expr="is_win">
+        <message name="IDS_FLAGS_ENABLE_CLOUD_PRINT_XPS_NAME">
+          Enable XPS in <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph>
+        </message>
+        <message name="IDS_FLAGS_ENABLE_CLOUD_PRINT_XPS_DESCRIPTION">
+          Fallback to XPS. By default <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> uses CDD.
+        </message>
+      </if>
       <message name="IDS_FLAGS_TOUCH_OPTIMIZED_UI_NAME" desc="Title of the touch-optimized UI flag." >
         Touch Optimized UI
       </message>
