@@ -116,7 +116,8 @@ protected:
     {
         MockCanvasContext mainMock;
         OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock));
-        OwnPtr<SkDeferredCanvas> canvas = adoptPtr(SkDeferredCanvas::Create(SkSurface::NewRasterPMColor(300, 150)));
+        RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRasterPMColor(300, 150));
+        OwnPtr<SkDeferredCanvas> canvas = adoptPtr(SkDeferredCanvas::Create(surface.get()));
 
         ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 
@@ -138,7 +139,8 @@ protected:
     void prepareMailboxWithBitmapTest()
     {
         MockCanvasContext mainMock;
-        OwnPtr<SkDeferredCanvas> canvas = adoptPtr(SkDeferredCanvas::Create(SkSurface::NewRasterPMColor(300, 150)));
+        RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRasterPMColor(300, 150));
+        OwnPtr<SkDeferredCanvas> canvas = adoptPtr(SkDeferredCanvas::Create(surface.get()));
         OwnPtr<MockWebGraphicsContext3DProvider> mainMockProvider = adoptPtr(new MockWebGraphicsContext3DProvider(&mainMock));
         Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(mainMockProvider.release(), canvas.release(), 0, NonOpaque)));
         bridge->m_lastImageId = 1;

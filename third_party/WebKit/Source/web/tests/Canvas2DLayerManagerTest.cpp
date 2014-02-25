@@ -128,7 +128,8 @@ private:
 
 static PassOwnPtr<SkDeferredCanvas> createCanvas()
 {
-    return adoptPtr(SkDeferredCanvas::Create(SkSurface::NewRasterPMColor(1, 1)));
+    RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRasterPMColor(1, 1));
+    return adoptPtr(SkDeferredCanvas::Create(surface.get()));
 }
 
 } // unnamed namespace

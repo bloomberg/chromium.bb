@@ -46,7 +46,6 @@ class WebURLResponse;
 class FakeWebPlugin : public WebPlugin {
 public:
     FakeWebPlugin(blink::WebFrame*, const blink::WebPluginParams&);
-    virtual ~FakeWebPlugin();
 
     // WebPlugin methods:
     virtual bool initialize(blink::WebPluginContainer*) OVERRIDE;
@@ -67,6 +66,9 @@ public:
     virtual void didFinishLoadingFrameRequest(const blink::WebURL&, void* notifyData) OVERRIDE { }
     virtual void didFailLoadingFrameRequest(const blink::WebURL&, void* notifyData, const blink::WebURLError&) OVERRIDE { }
     virtual bool isPlaceholder() OVERRIDE { return false; }
+
+protected:
+    virtual ~FakeWebPlugin();
 
 private:
     WebFrame* m_frame;

@@ -55,6 +55,7 @@ void FakeWebPlugin::destroy()
 {
     m_container = 0;
     m_frame = 0;
+    delete this;
 }
 
 } // namespace  WebKit
