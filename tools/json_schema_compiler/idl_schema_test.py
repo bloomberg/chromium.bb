@@ -221,6 +221,46 @@ class IdlSchemaTest(unittest.TestCase):
     self.assertEquals('Foo', params[0]['$ref'])
     self.assertEquals('enum', params[1]['$ref'])
 
+  def testObjectTypes(self):
+    schema = idl_schema.Load('test/idl_object_types.idl')[0]
+
+    foo_type = getType(schema, 'FooType')
+    self.assertEquals('object', foo_type['type'])
+    self.assertEquals('integer', foo_type['properties']['x']['type'])
+    self.assertEquals('object', foo_type['properties']['y']['type'])
+    self.assertEquals(
+        'any',
+        foo_type['properties']['y']['additionalProperties']['type'])
+    self.assertEquals('object', foo_type['properties']['z']['type'])
+    self.assertEquals(
+        'any',
+        foo_type['properties']['z']['additionalProperties']['type'])
+    self.assertEquals('Window', foo_type['properties']['z']['isInstanceOf'])
+
+    bar_type = getType(schema, 'BarType')
+    self.assertEquals('object', bar_type['type'])
+    self.assertEquals('any', bar_type['properties']['x']['type'])
+
+  def testObjectTypesInFunctions(self):
+    schema = idl_schema.Load('test/idl_object_types.idl')[0]
+
+    params = getParams(schema, 'objectFunction1')
+    self.assertEquals('object', params[0]['type'])
+    self.assertEquals('any', params[0]['additionalProperties']['type'])
+    self.assertEquals('ImageData', params[0]['isInstanceOf'])
+
+    params = getParams(schema, 'objectFunction2')
+    self.assertEquals('any', params[0]['type'])
+
+  def testObjectTypesWithOptionalFields(self):
+    schema = idl_schema.Load('test/idl_object_types.idl')[0]
+
+    baz_type = getType(schema, 'BazType')
+    self.assertEquals(True, baz_type['properties']['x']['optional'])
+    self.assertEquals('integer', baz_type['properties']['x']['type'])
+    self.assertEquals(True, baz_type['properties']['foo']['optional'])
+    self.assertEquals('FooType', baz_type['properties']['foo']['$ref'])
+
 
 if __name__ == '__main__':
   unittest.main()

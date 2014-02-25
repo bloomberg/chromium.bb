@@ -15,6 +15,11 @@ namespace idl_object_types {
     any x;
   };
 
+  dictionary BazType {
+    long? x;
+    FooType? foo;
+  };
+
   interface Functions {
     static void objectFunction1([instanceOf=ImageData]object icon);
     static void objectFunction2(any some_arg);
