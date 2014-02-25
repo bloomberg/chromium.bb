@@ -77,6 +77,7 @@ private:
     END_DECLARE_ANIMATED_PROPERTIES
 
     SVGImageLoader m_imageLoader;
+    bool m_needsLoaderURIUpdate : 1;
 };
 
 DEFINE_NODE_TYPE_CASTS(SVGImageElement, hasTagName(SVGNames::imageTag));

@@ -47,6 +47,7 @@ inline SVGImageElement::SVGImageElement(Document& document)
     , m_height(SVGAnimatedLength::create(this, SVGNames::heightAttr, SVGLength::create(LengthModeHeight)))
     , m_preserveAspectRatio(SVGAnimatedPreserveAspectRatio::create(this, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create()))
     , m_imageLoader(this)
+    , m_needsLoaderURIUpdate(true)
 {
     ScriptWrappable::init(this);
 
@@ -149,7 +150,10 @@ void SVGImageElement::svgAttributeChanged(const QualifiedName& attrName)
         updateRelativeLengthsInformation();
 
     if (SVGURIReference::isKnownAttribute(attrName)) {
-        m_imageLoader.updateFromElementIgnoringPreviousError();
+        if (inDocument())
+            m_imageLoader.updateFromElementIgnoringPreviousError();
+        else
+            m_needsLoaderURIUpdate = true;
         return;
     }
 
@@ -186,7 +190,7 @@ RenderObject* SVGImageElement::createRenderer(RenderStyle*)
 
 bool SVGImageElement::haveLoadedRequiredResources()
 {
-    return !m_imageLoader.hasPendingActivity();
+    return !m_needsLoaderURIUpdate && !m_imageLoader.hasPendingActivity();
 }
 
 void SVGImageElement::attach(const AttachContext& context)
@@ -206,9 +210,14 @@ Node::InsertionNotificationRequest SVGImageElement::insertedInto(ContainerNode* 
     SVGGraphicsElement::insertedInto(rootParent);
     if (!rootParent->inDocument())
         return InsertionDone;
-    // Update image loader, as soon as we're living in the tree.
-    // We can only resolve base URIs properly, after that!
-    m_imageLoader.updateFromElement();
+
+    // We can only resolve base URIs properly after tree insertion - hence, URI mutations while
+    // detached are deferred until this point.
+    if (m_needsLoaderURIUpdate) {
+        m_imageLoader.updateFromElementIgnoringPreviousError();
+        m_needsLoaderURIUpdate = false;
+    }
+
     return InsertionDone;
 }
 
