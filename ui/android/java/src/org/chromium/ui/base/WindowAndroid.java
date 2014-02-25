@@ -158,18 +158,6 @@ public class WindowAndroid {
     }
 
     /**
-     * TODO(tedchoc): Delete this method.  Use getActivity() below.
-     *
-     * @return Activity context, it could be null. Note, in most cases, you probably
-     * just need Application Context returned by getApplicationContext().
-     * @see #getApplicationContext()
-     */
-    @Deprecated
-    public Context getContext() {
-        return null;
-    }
-
-    /**
      * @return A reference to owning Activity.  The returned WeakReference will never be null, but
      *         the contained Activity can be null (either if it has been garbage collected or if
      *         this is in the context of a WebView that was not created using an Activity).

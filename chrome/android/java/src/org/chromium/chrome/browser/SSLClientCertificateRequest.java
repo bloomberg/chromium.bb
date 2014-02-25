@@ -229,12 +229,11 @@ public class SSLClientCertificateRequest {
             final int port) {
         ThreadUtils.assertOnUiThread();
 
-        final Context context = window.getContext();
-        if (context == null || !(context instanceof Activity)) {
-            Log.w(TAG, "Context not activity.");
+        final Activity activity = window.getActivity().get();
+        if (activity == null) {
+            Log.w(TAG, "Certificate request on GC'd activity.");
             return false;
         }
-        final Activity activity = (Activity) context;
 
         // Build the list of principals from encoded versions.
         Principal[] principals = null;

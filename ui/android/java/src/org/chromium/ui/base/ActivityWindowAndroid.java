@@ -7,7 +7,6 @@ package org.chromium.ui.base;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
 import android.graphics.Bitmap;
@@ -98,12 +97,6 @@ public class ActivityWindowAndroid extends WindowAndroid {
             }
         }
         return false;
-    }
-
-    @Override
-    @Deprecated
-    public Context getContext() {
-        return mActivityRef.get();
     }
 
     @Override
