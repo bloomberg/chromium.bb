@@ -20,6 +20,9 @@
     ['msan==1', {
       'sanitizer_type': 'msan',
     }],
+    ['tsan==1', {
+      'sanitizer_type': 'tsan',
+    }],
     ['verbose_libraries_build==1', {
       'verbose_libraries_build_flag': '--verbose',
     }, {
