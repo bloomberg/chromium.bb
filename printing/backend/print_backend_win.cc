@@ -232,8 +232,9 @@ bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(
   DCHECK_EQ(name, base::UTF8ToUTF16(printer_name));
 
   PrinterSemanticCapsAndDefaults caps;
-  UserDefaultDevMode user_settings;
-  if (user_settings.Init(printer_handle)) {
+
+  scoped_ptr<DEVMODE[]> user_settings = CreateDevMode(printer_handle, NULL);
+  if (user_settings) {
     if (user_settings.get()->dmFields & DM_COLOR)
       caps.color_default = (user_settings.get()->dmColor == DMCOLOR_COLOR);
 

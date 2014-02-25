@@ -12,24 +12,27 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "printing/backend/printing_info_win.h"
+#include "printing/backend/win_helper.h"
 #include "printing/printing_test.h"
 #include "printing/printing_context.h"
 #include "printing/printing_context_win.h"
 #include "printing/print_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace printing {
+
 // This test is automatically disabled if no printer is available.
 class PrintingContextTest : public PrintingTest<testing::Test> {
  public:
-  void PrintSettingsCallback(printing::PrintingContext::Result result) {
+  void PrintSettingsCallback(PrintingContext::Result result) {
     result_ = result;
   }
 
  protected:
-  printing::PrintingContext::Result result() const { return result_; }
+  PrintingContext::Result result() const { return result_; }
 
  private:
-  printing::PrintingContext::Result result_;
+  PrintingContext::Result result_;
 };
 
 // This is a fake PrintDlgEx implementation that sets the right fields in
@@ -45,10 +48,9 @@ HRESULT WINAPI PrintDlgExMock(LPPRINTDLGEX lppd) {
   lppd->lpPageRanges[0].nFromPage = 1;
   lppd->lpPageRanges[0].nToPage = 5;
 
-  // Painful paperwork.
-  std::wstring printer_name = PrintingContextTest::GetDefaultPrinter();
-  HANDLE printer;
-  if (!OpenPrinter(const_cast<wchar_t*>(printer_name.c_str()), &printer, NULL))
+  base::string16 printer_name = PrintingContextTest::GetDefaultPrinter();
+  ScopedPrinterHandle printer;
+  if (!printer.OpenPrinter(printer_name.c_str()))
     return E_FAIL;
 
   scoped_ptr<uint8[]> buffer;
@@ -58,7 +60,7 @@ HRESULT WINAPI PrintDlgExMock(LPPRINTDLGEX lppd) {
   lppd->hDevMode = NULL;
   lppd->hDevNames = NULL;
 
-  printing::PrinterInfo2 info_2;
+  PrinterInfo2 info_2;
   if (info_2.Init(printer)) {
     dev_mode = info_2.get()->pDevMode;
   }
@@ -67,8 +69,8 @@ HRESULT WINAPI PrintDlgExMock(LPPRINTDLGEX lppd) {
     goto Cleanup;
   }
 
-  if (!printing::PrintingContextWin::AllocateContext(printer_name, dev_mode,
-      &lppd->hDC)) {
+  if (!PrintingContextWin::AllocateContext(printer_name, dev_mode,
+                                           &lppd->hDC)) {
     result = E_FAIL;
     goto Cleanup;
   }
@@ -137,7 +139,6 @@ Cleanup:
       GlobalFree(lppd->hDevNames);
     }
   }
-  ClosePrinter(printer);
   return result;
 }
 
@@ -145,12 +146,11 @@ TEST_F(PrintingContextTest, Base) {
   if (IsTestCaseDisabled())
     return;
 
-  printing::PrintSettings settings;
+  PrintSettings settings;
   settings.set_device_name(GetDefaultPrinter());
   // Initialize it.
-  scoped_ptr<printing::PrintingContext> context(
-      printing::PrintingContext::Create(std::string()));
-  EXPECT_EQ(printing::PrintingContext::OK, context->InitWithSettings(settings));
+  scoped_ptr<PrintingContext> context(PrintingContext::Create(std::string()));
+  EXPECT_EQ(PrintingContext::OK, context->InitWithSettings(settings));
 
   // The print may lie to use and may not support world transformation.
   // Verify right now.
@@ -165,12 +165,14 @@ TEST_F(PrintingContextTest, PrintAll) {
     return;
 
   std::string dummy_locale;
-  printing::PrintingContextWin context(dummy_locale);
+  PrintingContextWin context(dummy_locale);
   context.SetPrintDialog(&PrintDlgExMock);
   context.AskUserForSettings(
       NULL, 123, false, base::Bind(&PrintingContextTest::PrintSettingsCallback,
                                    base::Unretained(this)));
-  EXPECT_EQ(printing::PrintingContext::OK, result());
-  printing::PrintSettings settings = context.settings();
+  EXPECT_EQ(PrintingContext::OK, result());
+  PrintSettings settings = context.settings();
   EXPECT_EQ(settings.ranges().size(), 0);
 }
+
+}  // namespace printing
