@@ -40,7 +40,7 @@ class BitmapFetcherTestDelegate : public BitmapFetcherDelegate {
     url_ = url;
     if (NULL != bitmap) {
       success_ = true;
-      bitmap->deepCopyTo(&bitmap_, bitmap->getConfig());
+      bitmap->deepCopyTo(&bitmap_);
     }
     // For async calls, we need to quit the message loop so the test can
     // continue.

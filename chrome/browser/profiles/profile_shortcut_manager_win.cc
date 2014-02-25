@@ -147,7 +147,7 @@ SkBitmap BadgeIcon(const SkBitmap& app_icon_bitmap,
   const SkBitmap& badged_bitmap =
       offscreen_canvas->getDevice()->accessBitmap(false);
   SkBitmap badged_bitmap_copy;
-  badged_bitmap.deepCopyTo(&badged_bitmap_copy, badged_bitmap.getConfig());
+  badged_bitmap.deepCopyTo(&badged_bitmap_copy);
   return badged_bitmap_copy;
 }
 
@@ -613,7 +613,7 @@ SkBitmap GetImageResourceSkBitmapCopy(int resource_id) {
 
   const SkBitmap* image_bitmap = image.ToSkBitmap();
   SkBitmap bitmap_copy;
-  image_bitmap->deepCopyTo(&bitmap_copy, image_bitmap->getConfig());
+  image_bitmap->deepCopyTo(&bitmap_copy);
   return bitmap_copy;
 }
 

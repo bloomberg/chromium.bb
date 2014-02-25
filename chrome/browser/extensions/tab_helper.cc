@@ -206,8 +206,7 @@ void TabHelper::GenerateContainerIcon(std::map<int, SkBitmap>* bitmaps,
 
   const SkBitmap& generated_icon =
       canvas->getDevice()->accessBitmap(false);
-  generated_icon.deepCopyTo(&(*bitmaps)[output_size],
-                            generated_icon.getConfig());
+  generated_icon.deepCopyTo(&(*bitmaps)[output_size]);
 }
 
 TabHelper::TabHelper(content::WebContents* web_contents)
