@@ -672,6 +672,6 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefIndicatorTest, CheckPolicyIndicators) {
 
 INSTANTIATE_TEST_CASE_P(PolicyPrefIndicatorTestInstance,
                         PolicyPrefIndicatorTest,
-                        testing::ValuesIn(SplitPoliciesIntoChunks(50)));
+                        testing::ValuesIn(SplitPoliciesIntoChunks(10)));
 
 }  // namespace policy
