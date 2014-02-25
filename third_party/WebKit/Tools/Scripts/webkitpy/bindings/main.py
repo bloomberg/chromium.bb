@@ -162,16 +162,16 @@ class BindingsTests(object):
             os.write(list_file, list_contents)
             return list_filename
 
-        def compute_dependencies(idl_files_list_filename,
-                                 event_names_filename):
-            # Dummy files, required by compute_dependencies but not checked
+        def compute_interfaces_info(idl_files_list_filename,
+                                    event_names_filename):
+            # Dummy files, required by compute_interfaces_info but not checked
             _, window_constructors_file = provider.newtempfile()
             _, workerglobalscope_constructors_file = provider.newtempfile()
             _, sharedworkerglobalscope_constructors_file = provider.newtempfile()
             _, dedicatedworkerglobalscope_constructors_file = provider.newtempfile()
             _, serviceworkersglobalscope_constructors_file = provider.newtempfile()
             cmd = ['python',
-                   'bindings/scripts/compute_dependencies.py',
+                   'bindings/scripts/compute_interfaces_info.py',
                    '--idl-files-list', idl_files_list_filename,
                    '--interface-dependencies-file', self.interface_dependencies_filename,
                    '--interfaces-info-file', self.interfaces_info_filename,
@@ -190,15 +190,15 @@ class BindingsTests(object):
         if self.reset_results and self.verbose:
             print 'Reset results: EventInterfaces.in'
         try:
-            # We first compute dependencies for testing files only,
+            # We first compute interfaces info for testing files only,
             # so we can compare EventInterfaces.in.
-            compute_dependencies(test_idl_files_list_filename,
-                                 self.event_names_filename)
+            compute_interfaces_info(test_idl_files_list_filename,
+                                    self.event_names_filename)
 
-            # We then compute dependencies for all IDL files, as code generator
-            # output depends on inheritance (both ancestor chain and inherited
-            # extended attributes), and some real interfaces are special-cased,
-            # such as Node.
+            # We then compute interfaces info for all IDL files, as code
+            # generator output depends on inheritance (both ancestor chain and
+            # inherited extended attributes), and some real interfaces are
+            # special-cased, such as Node.
             # For example, when testing the behavior of interfaces that inherit
             # from Node, we also need to know that these inherit from
             # EventTarget, since this is also special-cased and Node inherits
@@ -207,10 +207,10 @@ class BindingsTests(object):
             #
             # Don't overwrite the event names file generated for testing IDLs
             _, dummy_event_names_filename = provider.newtempfile()
-            compute_dependencies(all_idl_files_list_filename,
-                                 dummy_event_names_filename)
+            compute_interfaces_info(all_idl_files_list_filename,
+                                    dummy_event_names_filename)
         except ScriptError, e:
-            print 'ERROR: compute_dependencies.py'
+            print 'ERROR: compute_interfaces_info.py'
             print e.output
             return e.exit_code
         return 0

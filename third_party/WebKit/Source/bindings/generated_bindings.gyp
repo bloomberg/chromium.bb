@@ -170,13 +170,13 @@
   },
 
   'targets': [{
-    'target_name': 'interface_dependencies',
+    'target_name': 'interfaces_info',
     'type': 'none',
     'dependencies': [
       '../core/core_generated.gyp:generated_testing_idls',
     ],
     'actions': [{
-      'action_name': 'compute_interface_dependencies',
+      'action_name': 'compute_interfaces_info',
       'variables': {
         # Write list of static IDL files to a file, so that the command line
         # doesn't exceed OS length limits.
@@ -185,7 +185,7 @@
         'idl_files_list': '<|(idl_files_list.tmp <@(static_idl_files))',
       },
       'inputs': [
-        'scripts/compute_dependencies.py',
+        'scripts/compute_interfaces_info.py',
         '<(idl_files_list)',
         '<@(static_idl_files)',
         '<@(generated_idl_files)',
@@ -198,7 +198,7 @@
        ],
        'action': [
          'python',
-         'scripts/compute_dependencies.py',
+         'scripts/compute_interfaces_info.py',
          '--idl-files-list',
          '<(idl_files_list)',
          '--interface-dependencies-file',
@@ -221,7 +221,7 @@
          '--',
          '<@(generated_idl_files)',
        ],
-       'message': 'Computing dependencies between IDL files, and generating global scope constructor IDLs files and list of Event interfaces',
+       'message': 'Computing global information about IDL files, and generating global scope constructor IDLs files and list of Event interfaces',
       }]
     },
     {
@@ -231,7 +231,7 @@
       # https://code.google.com/p/gyp/wiki/InputFormatReference#Linking_Dependencies
       'hard_dependency': 1,
       'dependencies': [
-        'interface_dependencies',
+        'interfaces_info',
         '../core/core_generated.gyp:generated_testing_idls',
       ],
       'sources': [
