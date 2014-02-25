@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/appcache/appcache_test_helper.h"
+#include "content/test/appcache_test_helper.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -13,7 +13,7 @@
 #include "webkit/browser/appcache/appcache_group.h"
 #include "webkit/browser/appcache/appcache_service.h"
 
-namespace appcache {
+namespace content {
 
 AppCacheTestHelper::AppCacheTestHelper()
     : group_id_(0),
@@ -24,24 +24,24 @@ AppCacheTestHelper::AppCacheTestHelper()
 AppCacheTestHelper::~AppCacheTestHelper() {}
 
 void AppCacheTestHelper::OnGroupAndNewestCacheStored(
-    AppCacheGroup* /*group*/,
-    AppCache* /*newest_cache*/,
+    appcache::AppCacheGroup* /*group*/,
+    appcache::AppCache* /*newest_cache*/,
     bool success,
     bool /*would_exceed_quota*/) {
   ASSERT_TRUE(success);
   base::MessageLoop::current()->Quit();
 }
 
-void AppCacheTestHelper::AddGroupAndCache(AppCacheService* appcache_service,
-                                          const GURL& manifest_url) {
-  AppCacheGroup* appcache_group =
-      new AppCacheGroup(appcache_service->storage(),
-                        manifest_url,
-                        ++group_id_);
-  AppCache* appcache = new AppCache(appcache_service->storage(),
-                                    ++appcache_id_);
-  AppCacheEntry entry(AppCacheEntry::MANIFEST,
-                      ++response_id_);
+void AppCacheTestHelper::AddGroupAndCache(appcache::AppCacheService*
+    appcache_service, const GURL& manifest_url) {
+  appcache::AppCacheGroup* appcache_group =
+      new appcache::AppCacheGroup(appcache_service->storage(),
+                                  manifest_url,
+                                  ++group_id_);
+  appcache::AppCache* appcache = new appcache::AppCache(
+      appcache_service->storage(), ++appcache_id_);
+  appcache::AppCacheEntry entry(appcache::AppCacheEntry::MANIFEST,
+                                ++response_id_);
   appcache->AddEntry(manifest_url, entry);
   appcache->set_complete(true);
   appcache_group->AddCache(appcache);
@@ -52,9 +52,9 @@ void AppCacheTestHelper::AddGroupAndCache(AppCacheService* appcache_service,
   base::MessageLoop::current()->Run();
 }
 
-void AppCacheTestHelper::GetOriginsWithCaches(AppCacheService* appcache_service,
-                                              std::set<GURL>* origins) {
-  appcache_info_ = new AppCacheInfoCollection;
+void AppCacheTestHelper::GetOriginsWithCaches(appcache::AppCacheService*
+    appcache_service, std::set<GURL>* origins) {
+  appcache_info_ = new appcache::AppCacheInfoCollection;
   origins_ = origins;
   appcache_service->GetAllAppCacheInfo(
       appcache_info_.get(),
@@ -66,7 +66,7 @@ void AppCacheTestHelper::GetOriginsWithCaches(AppCacheService* appcache_service,
 }
 
 void AppCacheTestHelper::OnGotAppCacheInfo(int rv) {
-  typedef std::map<GURL, AppCacheInfoVector> InfoByOrigin;
+  typedef std::map<GURL, appcache::AppCacheInfoVector> InfoByOrigin;
 
   origins_->clear();
   for (InfoByOrigin::const_iterator origin =
@@ -77,4 +77,4 @@ void AppCacheTestHelper::OnGotAppCacheInfo(int rv) {
   base::MessageLoop::current()->Quit();
 }
 
-}  // namespace appcache
+}  // namespace content

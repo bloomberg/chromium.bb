@@ -1,17 +1,19 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BROWSER_APPCACHE_APPCACHE_TEST_HELPER_H_
-#define WEBKIT_BROWSER_APPCACHE_APPCACHE_TEST_HELPER_H_
+#ifndef CONTENT_PUBLIC_TEST_APPCACHE_TEST_HELPER_H_
+#define CONTENT_PUBLIC_TEST_APPCACHE_TEST_HELPER_H_
 
 #include <set>
 
 #include "webkit/browser/appcache/appcache_storage.h"
 
 namespace appcache {
-
 class AppCacheService;
+}
+
+namespace content {
 
 // Helper class for inserting data into a ChromeAppCacheService and reading it
 // back.
@@ -19,10 +21,10 @@ class AppCacheTestHelper : public appcache::AppCacheStorage::Delegate {
  public:
   AppCacheTestHelper();
   virtual ~AppCacheTestHelper();
-  void AddGroupAndCache(AppCacheService* appcache_service,
+  void AddGroupAndCache(appcache::AppCacheService* appcache_service,
                         const GURL& manifest_url);
 
-  void GetOriginsWithCaches(AppCacheService* appcache_service,
+  void GetOriginsWithCaches(appcache::AppCacheService* appcache_service,
                             std::set<GURL>* origins);
  private:
   virtual void OnGroupAndNewestCacheStored(
@@ -41,6 +43,6 @@ class AppCacheTestHelper : public appcache::AppCacheStorage::Delegate {
   DISALLOW_COPY_AND_ASSIGN(AppCacheTestHelper);
 };
 
-}  // namespace appcache
+}  // namespace content
 
-#endif  // WEBKIT_BROWSER_APPCACHE_APPCACHE_TEST_HELPER_H_
+#endif  // CONTENT_PUBLIC_TEST_APPCACHE_TEST_HELPER_H_

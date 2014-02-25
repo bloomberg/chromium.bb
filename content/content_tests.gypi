@@ -116,6 +116,8 @@
         'browser/renderer_host/media/mock_media_observer.h',
         'gpu/gpu_idirect3d9_mock_win.cc',
         'gpu/gpu_idirect3d9_mock_win.h',
+        'test/appcache_test_helper.cc',
+        'test/appcache_test_helper.h',
         'test/content_test_suite.cc',
         'test/content_test_suite.h',
         'test/mock_google_streaming_server.cc',
@@ -180,10 +182,6 @@
         'test/weburl_loader_mock.h',
         'test/weburl_loader_mock_factory.cc',
         'test/weburl_loader_mock_factory.h',
-
-        # TODO(kinuko): Those files should be moved to content/public/test.
-        '../webkit/browser/appcache/appcache_test_helper.cc',
-        '../webkit/browser/appcache/appcache_test_helper.h',
       ],
       'conditions': [
         ['OS == "ios"', {
