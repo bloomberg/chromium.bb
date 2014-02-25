@@ -38,8 +38,6 @@ private:
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLDivElement, hasTagName(HTMLNames::divTag));
-
 } // namespace WebCore
 
 #endif // HTMLDivElement_h

@@ -80,8 +80,6 @@ private:
     RefPtr<MeterValueElement> m_value;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLMeterElement, hasTagName(HTMLNames::meterTag));
-
 } // namespace
 
 #endif

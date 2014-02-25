@@ -40,8 +40,6 @@ private:
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLTableCaptionElement, hasTagName(HTMLNames::captionTag));
-
 } // namespace
 
 #endif

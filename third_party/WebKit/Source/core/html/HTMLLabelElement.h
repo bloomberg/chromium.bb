@@ -57,8 +57,6 @@ private:
     virtual void focus(bool restorePreviousSelection, FocusType) OVERRIDE;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLLabelElement, hasTagName(HTMLNames::labelTag));
-
 } //namespace
 
 #endif

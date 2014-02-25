@@ -123,8 +123,6 @@ private:
     bool m_formWasSetByParser;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLImageElement, hasTagName(HTMLNames::imgTag));
-
 } //namespace
 
 #endif

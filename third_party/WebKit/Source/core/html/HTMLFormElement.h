@@ -185,8 +185,6 @@ private:
     Timer<HTMLFormElement> m_requestAutocompleteTimer;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLFormElement, hasTagName(HTMLNames::formTag));
-
 } // namespace WebCore
 
 #endif // HTMLFormElement_h

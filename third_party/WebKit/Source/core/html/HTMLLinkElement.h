@@ -204,8 +204,6 @@ private:
     int m_beforeLoadRecurseCount;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLLinkElement, hasTagName(HTMLNames::linkTag));
-
 } //namespace
 
 #endif

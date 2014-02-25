@@ -66,8 +66,6 @@ private:
     void processViewportContentAttribute(const String& content, ViewportDescription::Type origin);
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLMetaElement, hasTagName(HTMLNames::metaTag));
-
 } // namespace WebCore
 
 #endif

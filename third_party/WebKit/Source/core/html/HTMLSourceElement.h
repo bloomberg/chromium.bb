@@ -56,8 +56,6 @@ private:
     Timer<HTMLSourceElement> m_errorEventTimer;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLSourceElement, hasTagName(HTMLNames::sourceTag));
-
 } // namespace WebCore
 
 #endif

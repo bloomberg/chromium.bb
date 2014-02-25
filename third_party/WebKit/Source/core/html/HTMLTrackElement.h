@@ -84,8 +84,6 @@ private:
     Timer<HTMLTrackElement> m_loadTimer;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLTrackElement, hasTagName(HTMLNames::trackTag));
-
 }
 
 #endif

@@ -44,8 +44,6 @@ private:
     virtual bool supportsFocus() const OVERRIDE;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLSummaryElement, hasTagName(HTMLNames::summaryTag));
-
 }
 
 #endif // HTMLSummaryElement_h

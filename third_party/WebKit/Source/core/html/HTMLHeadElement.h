@@ -36,8 +36,6 @@ private:
     explicit HTMLHeadElement(Document&);
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLHeadElement, hasTagName(HTMLNames::headTag));
-
 } // namespace
 
 #endif

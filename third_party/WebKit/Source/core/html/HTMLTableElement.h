@@ -100,8 +100,6 @@ private:
     RefPtr<StylePropertySet> m_sharedCellStyle;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLTableElement, hasTagName(HTMLNames::tableTag));
-
 } //namespace
 
 #endif

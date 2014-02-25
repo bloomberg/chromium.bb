@@ -43,8 +43,6 @@ private:
     bool m_ignoreTitleUpdatesWhenChildrenChange;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLTitleElement, hasTagName(HTMLNames::titleTag));
-
 } //namespace
 
 #endif

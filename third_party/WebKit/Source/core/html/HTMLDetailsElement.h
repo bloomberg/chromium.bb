@@ -43,8 +43,6 @@ private:
     bool m_isOpen;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLDetailsElement, hasTagName(HTMLNames::detailsTag));
-
 } // namespace WebCore
 
 #endif // HTMLDetailsElement_h

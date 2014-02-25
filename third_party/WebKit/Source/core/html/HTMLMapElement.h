@@ -53,8 +53,6 @@ private:
     AtomicString m_name;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLMapElement, hasTagName(HTMLNames::mapTag));
-
 } //namespace
 
 #endif

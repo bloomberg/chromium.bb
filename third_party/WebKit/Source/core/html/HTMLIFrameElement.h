@@ -53,8 +53,6 @@ private:
     bool m_didLoadNonEmptyDocument;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLIFrameElement, hasTagName(HTMLNames::iframeTag));
-
 } // namespace WebCore
 
 #endif // HTMLIFrameElement_h

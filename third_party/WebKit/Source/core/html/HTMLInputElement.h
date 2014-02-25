@@ -400,7 +400,5 @@ private:
     OwnPtr<ListAttributeTargetObserver> m_listAttributeTargetObserver;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLInputElement, hasTagName(HTMLNames::inputTag));
-
 } //namespace
 #endif

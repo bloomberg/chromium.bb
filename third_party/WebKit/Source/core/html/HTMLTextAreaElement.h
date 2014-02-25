@@ -130,8 +130,6 @@ private:
     String m_suggestedValue;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLTextAreaElement, hasTagName(HTMLNames::textareaTag));
-
 } //namespace
 
 #endif

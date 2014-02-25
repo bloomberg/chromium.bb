@@ -40,8 +40,6 @@ private:
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLHtmlElement, hasTagName(HTMLNames::htmlTag));
-
 } // namespace
 
 #endif

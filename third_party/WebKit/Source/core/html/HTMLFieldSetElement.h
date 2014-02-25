@@ -62,8 +62,6 @@ private:
     mutable uint64_t m_documentVersion;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLFieldSetElement, hasTagName(HTMLNames::fieldsetTag));
-
 } // namespace
 
 #endif

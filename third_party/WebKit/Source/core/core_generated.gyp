@@ -274,6 +274,23 @@
             '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],
         },
+{
+          'action_name': 'HTMLElementTypeHelpers',
+          'inputs': [
+            '<@(make_element_type_helpers_files)',
+            'html/HTMLTagNames.in',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLElementTypeHelpers.h',
+          ],
+          'action': [
+            'python',
+            '../build/scripts/make_element_type_helpers.py',
+            'html/HTMLTagNames.in',
+            '--output_dir',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
+          ],
+        },
         {
           'action_name': 'SVGNames',
           'inputs': [

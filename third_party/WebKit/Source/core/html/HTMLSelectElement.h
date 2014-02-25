@@ -206,8 +206,6 @@ private:
     mutable bool m_shouldRecalcListItems;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLSelectElement, hasTagName(HTMLNames::selectTag));
-
 } // namespace
 
 #endif

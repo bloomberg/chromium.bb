@@ -93,8 +93,6 @@ private:
     AtomicString m_defaultPosterURL;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLVideoElement, hasTagName(HTMLNames::videoTag));
-
 } //namespace
 
 #endif

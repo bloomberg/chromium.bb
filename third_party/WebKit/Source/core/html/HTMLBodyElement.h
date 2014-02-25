@@ -66,8 +66,6 @@ private:
     virtual int scrollWidth() OVERRIDE;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLBodyElement, hasTagName(HTMLNames::bodyTag));
-
 } //namespace
 
 #endif

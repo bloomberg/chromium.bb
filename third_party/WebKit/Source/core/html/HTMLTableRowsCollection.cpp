@@ -56,7 +56,7 @@ static bool isInFoot(Element* row)
 static inline HTMLTableRowElement* findTableRowElementInChildren(Element& current)
 {
     for (Element* child = ElementTraversal::firstWithin(current); child; child = ElementTraversal::nextSibling(*child)) {
-        if (child->hasTagName(trTag))
+        if (isHTMLTableRowElement(child))
             return toHTMLTableRowElement(child);
     }
     return 0;
@@ -70,7 +70,7 @@ HTMLTableRowElement* HTMLTableRowsCollection::rowAfter(HTMLTableElement* table, 
     // Continue only if there is none.
     if (previous && previous->parentNode() != table) {
         for (child = ElementTraversal::nextSibling(*previous); child; child = ElementTraversal::nextSibling(*child)) {
-            if (child->hasTagName(trTag))
+            if (isHTMLTableRowElement(child))
                 return toHTMLTableRowElement(child);
         }
     }
@@ -95,7 +95,7 @@ HTMLTableRowElement* HTMLTableRowsCollection::rowAfter(HTMLTableElement* table, 
     else if (isInBody(previous))
         child = ElementTraversal::nextSibling(*previous->parentNode());
     for (; child; child = ElementTraversal::nextSibling(*child)) {
-        if (child->hasTagName(trTag))
+        if (isHTMLTableRowElement(child))
             return toHTMLTableRowElement(child);
         if (child->hasTagName(tbodyTag)) {
             if (HTMLTableRowElement* row = findTableRowElementInChildren(*child))
@@ -123,18 +123,18 @@ HTMLTableRowElement* HTMLTableRowsCollection::lastRow(HTMLTableElement* table)
     for (Node* child = table->lastChild(); child; child = child->previousSibling()) {
         if (child->hasTagName(tfootTag)) {
             for (Node* grandchild = child->lastChild(); grandchild; grandchild = grandchild->previousSibling()) {
-                if (grandchild->hasTagName(trTag))
+                if (isHTMLTableRowElement(grandchild))
                     return toHTMLTableRowElement(grandchild);
             }
         }
     }
 
     for (Node* child = table->lastChild(); child; child = child->previousSibling()) {
-        if (child->hasTagName(trTag))
+        if (isHTMLTableRowElement(child))
             return toHTMLTableRowElement(child);
         if (child->hasTagName(tbodyTag)) {
             for (Node* grandchild = child->lastChild(); grandchild; grandchild = grandchild->previousSibling()) {
-                if (grandchild->hasTagName(trTag))
+                if (isHTMLTableRowElement(grandchild))
                     return toHTMLTableRowElement(grandchild);
             }
         }
@@ -143,7 +143,7 @@ HTMLTableRowElement* HTMLTableRowsCollection::lastRow(HTMLTableElement* table)
     for (Node* child = table->lastChild(); child; child = child->previousSibling()) {
         if (child->hasTagName(theadTag)) {
             for (Node* grandchild = child->lastChild(); grandchild; grandchild = grandchild->previousSibling()) {
-                if (grandchild->hasTagName(trTag))
+                if (isHTMLTableRowElement(grandchild))
                     return toHTMLTableRowElement(grandchild);
             }
         }
@@ -158,7 +158,7 @@ HTMLTableRowElement* HTMLTableRowsCollection::lastRow(HTMLTableElement* table)
 HTMLTableRowsCollection::HTMLTableRowsCollection(ContainerNode* table)
     : HTMLCollection(table, TableRows, OverridesItemAfter)
 {
-    ASSERT(table->hasTagName(tableTag));
+    ASSERT(isHTMLTableElement(table));
 }
 
 PassRefPtr<HTMLTableRowsCollection> HTMLTableRowsCollection::create(ContainerNode* table, CollectionType)

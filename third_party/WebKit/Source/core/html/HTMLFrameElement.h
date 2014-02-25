@@ -50,8 +50,6 @@ private:
     bool m_frameBorderSet;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLFrameElement, hasTagName(HTMLNames::frameTag));
-
 } // namespace WebCore
 
 #endif // HTMLFrameElement_h

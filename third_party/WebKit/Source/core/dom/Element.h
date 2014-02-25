@@ -668,6 +668,9 @@ private:
 };
 
 DEFINE_NODE_TYPE_CASTS(Element, isElementNode());
+template <typename T> bool isElementOfType(const Element&);
+template <typename T> inline bool isElementOfType(const Node& node) { return node.isElementNode() && isElementOfType<const T>(toElement(node)); }
+template <> inline bool isElementOfType<const Element>(const Element&) { return true; }
 
 inline bool isDisabledFormControl(const Node* node)
 {

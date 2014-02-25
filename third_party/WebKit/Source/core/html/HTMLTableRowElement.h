@@ -49,8 +49,6 @@ private:
     explicit HTMLTableRowElement(Document&);
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLTableRowElement, hasTagName(HTMLNames::trTag));
-
 } // namespace
 
 #endif

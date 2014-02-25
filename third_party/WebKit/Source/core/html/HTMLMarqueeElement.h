@@ -68,8 +68,6 @@ private:
     RenderMarquee* renderMarquee() const;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLMarqueeElement, hasTagName(HTMLNames::marqueeTag));
-
 } // namespace WebCore
 
 #endif // HTMLMarqueeElement_h

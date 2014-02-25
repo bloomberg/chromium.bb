@@ -64,8 +64,6 @@ private:
     bool m_shouldRecalculateItemCount : 1;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLOListElement, hasTagName(HTMLNames::olTag));
-
 } //namespace
 
 #endif

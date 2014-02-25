@@ -84,8 +84,6 @@ private:
     bool m_noresize;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLFrameSetElement, hasTagName(HTMLNames::framesetTag));
-
 } // namespace WebCore
 
 #endif // HTMLFrameSetElement_h

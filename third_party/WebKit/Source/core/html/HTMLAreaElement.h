@@ -67,8 +67,6 @@ private:
     Shape m_shape;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLAreaElement, hasTagName(HTMLNames::areaTag));
-
 } //namespace
 
 #endif

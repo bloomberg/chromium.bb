@@ -49,8 +49,6 @@ private:
     virtual InsertionNotificationRequest insertedInto(ContainerNode* insertionPoint) OVERRIDE;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLShadowElement, hasTagName(HTMLNames::shadowTag));
-
 } // namespace WebCore
 
 #endif // HTMLShadowElement_h

@@ -72,8 +72,6 @@ private:
     OwnPtr<ScriptLoader> m_loader;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLScriptElement, hasTagName(HTMLNames::scriptTag));
-
 } //namespace
 
 #endif

@@ -74,14 +74,6 @@ private:
     String m_returnValue;
 };
 
-inline bool isHTMLDialogElement(const Node& node)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(RuntimeEnabledFeatures::dialogElementEnabled());
-    return node.hasTagName(HTMLNames::dialogTag);
-}
-
-DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(HTMLDialogElement);
-
 } // namespace WebCore
 
 #endif

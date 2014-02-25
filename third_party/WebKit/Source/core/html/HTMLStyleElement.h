@@ -100,8 +100,6 @@ private:
     ScopedStyleRegistrationState m_scopedStyleRegistrationState;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLStyleElement, hasTagName(HTMLNames::styleTag));
-
 } //namespace
 
 #endif

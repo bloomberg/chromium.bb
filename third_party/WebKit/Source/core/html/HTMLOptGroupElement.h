@@ -62,8 +62,6 @@ private:
     RefPtr<RenderStyle> m_style;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLOptGroupElement, hasTagName(HTMLNames::optgroupTag));
-
 } //namespace
 
 #endif

@@ -42,8 +42,6 @@ private:
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLParamElement, hasTagName(HTMLNames::paramTag));
-
 } // namespace WebCore
 
 #endif

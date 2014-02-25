@@ -55,8 +55,6 @@ private:
     virtual bool isInteractiveContent() const OVERRIDE;
 };
 
-DEFINE_NODE_TYPE_CASTS(HTMLEmbedElement, hasTagName(HTMLNames::embedTag));
-
 }
 
 #endif
