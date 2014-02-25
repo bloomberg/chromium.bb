@@ -78,6 +78,7 @@ MessageInTransit::MessageInTransit(OwnedBuffer,
     : owns_main_buffer_(true),
       main_buffer_size_(other.main_buffer_size()),
       main_buffer_(base::AlignedAlloc(main_buffer_size_, kMessageAlignment)) {
+  DCHECK(!other.dispatchers_.get());
   DCHECK_GE(main_buffer_size_, sizeof(Header));
   DCHECK_EQ(main_buffer_size_ % kMessageAlignment, 0u);
 
@@ -111,6 +112,17 @@ MessageInTransit::~MessageInTransit() {
     main_buffer_ = NULL;
 #endif
   }
+
+  if (dispatchers_.get()) {
+    for (size_t i = 0; i < dispatchers_->size(); i++) {
+      if (!(*dispatchers_)[i])
+        continue;
+
+      DCHECK((*dispatchers_)[i]->HasOneRef());
+      (*dispatchers_)[i]->Close();
+    }
+    dispatchers_.reset();
+  }
 }
 
 // static
@@ -129,6 +141,19 @@ bool MessageInTransit::GetNextMessageSize(const void* buffer,
   *next_message_size =
       RoundUpMessageAlignment(sizeof(Header) + header->data_size);
   return true;
+}
+
+void MessageInTransit::SetDispatchers(
+    scoped_ptr<std::vector<scoped_refptr<Dispatcher> > > dispatchers) {
+  DCHECK(dispatchers.get());
+  DCHECK(owns_main_buffer_);
+  DCHECK(!dispatchers_.get());
+
+  dispatchers_ = dispatchers.Pass();
+#ifndef NDEBUG
+  for (size_t i = 0; i < dispatchers_->size(); i++)
+    DCHECK(!(*dispatchers_)[i] || (*dispatchers_)[i]->HasOneRef());
+#endif
 }
 
 }  // namespace system

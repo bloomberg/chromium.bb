@@ -7,7 +7,11 @@
 
 #include <stdint.h>
 
+#include <vector>
+
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
+#include "mojo/system/dispatcher.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {
@@ -47,8 +51,9 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
                    uint32_t num_bytes,
                    uint32_t num_handles,
                    const void* bytes);
-  // "Copy" constructor. The input |MessageInTransit| may own its buffer or not.
-  // The constructed |MessageInTransit| will own its buffer.
+  // "Copy" constructor. The input |MessageInTransit| may own its buffer or not;
+  // however, it must not have any dispatchers. The constructed
+  // |MessageInTransit| will own its buffer.
   MessageInTransit(OwnedBuffer,
                    const MessageInTransit& other);
 
@@ -78,6 +83,13 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   static bool GetNextMessageSize(const void* buffer,
                                  size_t buffer_size,
                                  size_t* next_message_size);
+
+  // Makes this message "own" the given set of dispatchers. The dispatchers must
+  // not be referenced from anywhere else (in particular, not from the handle
+  // table), i.e., each dispatcher must have a reference count of 1. This
+  // message must also own its main buffer and not already have dispatchers.
+  void SetDispatchers(
+      scoped_ptr<std::vector<scoped_refptr<Dispatcher> > > dispatchers);
 
   // Gets the "main" buffer for a |MessageInTransit|. A |MessageInTransit| can
   // be serialized by writing the main buffer. The returned pointer will be
@@ -120,6 +132,13 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
     header()->destination_id = destination_id;
   }
 
+  // Gets the dispatchers attached to this message; this may return null if
+  // there are none. Note that the caller may mutate the set of dispatchers
+  // (e.g., take ownership of all the dispatchers, leaving the vector empty).
+  std::vector<scoped_refptr<Dispatcher> >* dispatchers() {
+    return dispatchers_.get();
+  }
+
   // TODO(vtl): Add whatever's necessary to transport handles.
 
   // Rounds |n| up to a multiple of |kMessageAlignment|.
@@ -157,6 +176,13 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   bool owns_main_buffer_;
   size_t main_buffer_size_;
   void* main_buffer_;
+
+  // Any dispatchers that may be attached to this message. This is only
+  // supported if this message owns its main buffer. These dispatchers should be
+  // "owned" by this message, i.e., have a ref count of exactly 1. (We allow a
+  // dispatcher entry to be null, in case it couldn't be duplicated for some
+  // reason.)
+  scoped_ptr<std::vector<scoped_refptr<Dispatcher> > > dispatchers_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageInTransit);
 };
