@@ -339,7 +339,7 @@ void SearchProvider::Start(const AutocompleteInput& input,
 
   // Can't return search/suggest results for bogus input or without a profile.
   if (!profile_ || (input.type() == AutocompleteInput::INVALID)) {
-    Stop(false);
+    Stop(true);
     return;
   }
 
@@ -361,7 +361,7 @@ void SearchProvider::Start(const AutocompleteInput& input,
 
   if (!default_provider && !keyword_provider) {
     // No valid providers.
-    Stop(false);
+    Stop(true);
     return;
   }
 
@@ -393,7 +393,7 @@ void SearchProvider::Start(const AutocompleteInput& input,
       match.allowed_to_be_default_match = true;
       matches_.push_back(match);
     }
-    Stop(false);
+    Stop(true);
     return;
   }
 
