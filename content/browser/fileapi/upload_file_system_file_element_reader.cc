@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/fileapi/upload_file_system_file_element_reader.h"
+#include "content/browser/fileapi/upload_file_system_file_element_reader.h"
 
 #include <algorithm>
 
@@ -12,10 +12,10 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
-namespace fileapi {
+namespace content {
 
 UploadFileSystemFileElementReader::UploadFileSystemFileElementReader(
-    FileSystemContext* file_system_context,
+    fileapi::FileSystemContext* file_system_context,
     const GURL& url,
     uint64 range_offset,
     uint64 range_length,
@@ -114,4 +114,4 @@ void UploadFileSystemFileElementReader::OnRead(
     callback.Run(result);
 }
 
-}  // namespace fileapi
+}  // namespace content

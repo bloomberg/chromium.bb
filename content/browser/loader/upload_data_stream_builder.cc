@@ -5,12 +5,12 @@
 #include "content/browser/loader/upload_data_stream_builder.h"
 
 #include "base/logging.h"
+#include "content/browser/fileapi/upload_file_system_file_element_reader.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/base/upload_file_element_reader.h"
 #include "webkit/browser/blob/blob_data_handle.h"
 #include "webkit/browser/blob/blob_storage_context.h"
-#include "webkit/browser/fileapi/upload_file_system_file_element_reader.h"
 #include "webkit/common/resource_request_body.h"
 
 using webkit_blob::BlobData;
@@ -123,7 +123,7 @@ scoped_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
         break;
       case ResourceRequestBody::Element::TYPE_FILE_FILESYSTEM:
         element_readers.push_back(
-            new fileapi::UploadFileSystemFileElementReader(
+            new content::UploadFileSystemFileElementReader(
                 file_system_context,
                 element.filesystem_url(),
                 element.offset(),

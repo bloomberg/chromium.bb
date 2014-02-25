@@ -1,30 +1,32 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BROWSER_FILEAPI_UPLOAD_FILE_SYSTEM_FILE_ELEMENT_READER_H_
-#define WEBKIT_BROWSER_FILEAPI_UPLOAD_FILE_SYSTEM_FILE_ELEMENT_READER_H_
+#ifndef CONTENT_BROWSER_FILEAPI_UPLOAD_FILE_SYSTEM_FILE_ELEMENT_READER_H_
+#define CONTENT_BROWSER_FILEAPI_UPLOAD_FILE_SYSTEM_FILE_ELEMENT_READER_H_
 
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "content/common/content_export.h"
 #include "net/base/upload_element_reader.h"
 #include "url/gurl.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace webkit_blob {
 class FileStreamReader;
 }
 
 namespace fileapi {
-
 class FileSystemContext;
+}
+
+namespace content {
 
 // An UploadElementReader implementation for filesystem file.
-class WEBKIT_STORAGE_BROWSER_EXPORT UploadFileSystemFileElementReader
-    : public net::UploadElementReader {
+class CONTENT_EXPORT UploadFileSystemFileElementReader :
+    NON_EXPORTED_BASE(public net::UploadElementReader) {
  public:
   UploadFileSystemFileElementReader(
-      FileSystemContext* file_system_context,
+      fileapi::FileSystemContext* file_system_context,
       const GURL& url,
       uint64 range_offset,
       uint64 range_length,
@@ -43,7 +45,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT UploadFileSystemFileElementReader
   void OnGetLength(const net::CompletionCallback& callback, int64 result);
   void OnRead(const net::CompletionCallback& callback, int result);
 
-  scoped_refptr<FileSystemContext> file_system_context_;
+  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
   const GURL url_;
   const uint64 range_offset_;
   const uint64 range_length_;
@@ -59,6 +61,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT UploadFileSystemFileElementReader
   DISALLOW_COPY_AND_ASSIGN(UploadFileSystemFileElementReader);
 };
 
-}  // namespace fileapi
+}  // namespace content
 
-#endif  // WEBKIT_BROWSER_FILEAPI_UPLOAD_FILE_SYSTEM_FILE_ELEMENT_READER_H_
+#endif  // CONTENT_BROWSER_FILEAPI_UPLOAD_FILE_SYSTEM_FILE_ELEMENT_READER_H_

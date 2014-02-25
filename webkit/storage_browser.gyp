@@ -193,8 +193,6 @@
         'browser/fileapi/timed_task_helper.h',
         'browser/fileapi/transient_file_util.cc',
         'browser/fileapi/transient_file_util.h',
-        'browser/fileapi/upload_file_system_file_element_reader.cc',
-        'browser/fileapi/upload_file_system_file_element_reader.h',
         'browser/quota/quota_callbacks.h',
         'browser/quota/quota_client.h',
         'browser/quota/quota_database.cc',

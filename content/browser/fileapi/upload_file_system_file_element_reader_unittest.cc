@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/fileapi/upload_file_system_file_element_reader.h"
+#include "content/browser/fileapi/upload_file_system_file_element_reader.h"
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
@@ -21,7 +21,6 @@ using content::AsyncFileTestHelper;
 using fileapi::FileSystemContext;
 using fileapi::FileSystemType;
 using fileapi::FileSystemURL;
-using fileapi::UploadFileSystemFileElementReader;
 
 namespace content {
 

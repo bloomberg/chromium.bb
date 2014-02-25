@@ -504,6 +504,8 @@
     'browser/fileapi/chrome_blob_storage_context.h',
     'browser/fileapi/fileapi_message_filter.cc',
     'browser/fileapi/fileapi_message_filter.h',
+    'browser/fileapi/upload_file_system_file_element_reader.cc',
+    'browser/fileapi/upload_file_system_file_element_reader.h',
     'browser/font_list_async.cc',
     'browser/frame_host/debug_urls.cc',
     'browser/frame_host/debug_urls.h',
