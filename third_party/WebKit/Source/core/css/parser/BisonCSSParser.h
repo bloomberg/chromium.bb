@@ -98,7 +98,7 @@ public:
     static PassRefPtrWillBeRawPtr<CSSValue> parseAnimationTimingFunctionValue(const String&);
     bool parseDeclaration(MutableStylePropertySet*, const String&, CSSParserObserver*, StyleSheetContents* contextStyleSheet);
     static PassRefPtr<ImmutableStylePropertySet> parseInlineStyleDeclaration(const String&, Element*);
-    PassRefPtr<MediaQuerySet> parseMediaQueryList(const String&);
+    PassRefPtrWillBeRawPtr<MediaQuerySet> parseMediaQueryList(const String&);
     PassOwnPtr<Vector<double> > parseKeyframeKeyList(const String&);
 
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, const Document&);
@@ -145,13 +145,13 @@ public:
     void endDeclarationsForMarginBox();
 
     MediaQueryExp* createFloatingMediaQueryExp(const AtomicString&, CSSParserValueList*);
-    PassOwnPtr<MediaQueryExp> sinkFloatingMediaQueryExp(MediaQueryExp*);
-    Vector<OwnPtr<MediaQueryExp> >* createFloatingMediaQueryExpList();
-    PassOwnPtr<Vector<OwnPtr<MediaQueryExp> > > sinkFloatingMediaQueryExpList(Vector<OwnPtr<MediaQueryExp> >*);
-    MediaQuery* createFloatingMediaQuery(MediaQuery::Restrictor, const AtomicString&, PassOwnPtr<Vector<OwnPtr<MediaQueryExp> > >);
-    MediaQuery* createFloatingMediaQuery(PassOwnPtr<Vector<OwnPtr<MediaQueryExp> > >);
+    PassOwnPtrWillBeRawPtr<MediaQueryExp> sinkFloatingMediaQueryExp(MediaQueryExp*);
+    WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> >* createFloatingMediaQueryExpList();
+    PassOwnPtrWillBeRawPtr<WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> > > sinkFloatingMediaQueryExpList(WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> >*);
+    MediaQuery* createFloatingMediaQuery(MediaQuery::Restrictor, const AtomicString&, PassOwnPtrWillBeRawPtr<WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> > >);
+    MediaQuery* createFloatingMediaQuery(PassOwnPtrWillBeRawPtr<WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> > >);
     MediaQuery* createFloatingNotAllQuery();
-    PassOwnPtr<MediaQuery> sinkFloatingMediaQuery(MediaQuery*);
+    PassOwnPtrWillBeRawPtr<MediaQuery> sinkFloatingMediaQuery(MediaQuery*);
 
     Vector<RefPtr<StyleKeyframe> >* createFloatingKeyframeVector();
     PassOwnPtr<Vector<RefPtr<StyleKeyframe> > > sinkFloatingKeyframeVector(Vector<RefPtr<StyleKeyframe> >*);
@@ -181,7 +181,7 @@ public:
     StyleSheetContents* m_styleSheet;
     RefPtrWillBePersistent<StyleRuleBase> m_rule;
     RefPtr<StyleKeyframe> m_keyframe;
-    RefPtr<MediaQuerySet> m_mediaList;
+    RefPtrWillBePersistent<MediaQuerySet> m_mediaList;
     OwnPtr<CSSParserValueList> m_valueList;
     bool m_supportsCondition;
 
@@ -291,16 +291,16 @@ private:
 
     WillBePersistentHeapVector<RefPtrWillBeMember<StyleRuleBase> > m_parsedRules;
     Vector<RefPtr<StyleKeyframe> > m_parsedKeyframes;
-    Vector<RefPtr<MediaQuerySet> > m_parsedMediaQuerySets;
+    WillBePersistentHeapVector<RefPtrWillBeMember<MediaQuerySet> > m_parsedMediaQuerySets;
     WillBePersistentHeapVector<OwnPtrWillBeMember<RuleList> > m_parsedRuleLists;
     Vector<CSSParserSelector*> m_floatingSelectors;
     Vector<Vector<OwnPtr<CSSParserSelector> >*> m_floatingSelectorVectors;
     Vector<CSSParserValueList*> m_floatingValueLists;
     Vector<CSSParserFunction*> m_floatingFunctions;
 
-    OwnPtr<MediaQuery> m_floatingMediaQuery;
-    OwnPtr<MediaQueryExp> m_floatingMediaQueryExp;
-    OwnPtr<Vector<OwnPtr<MediaQueryExp> > > m_floatingMediaQueryExpList;
+    OwnPtrWillBePersistent<MediaQuery> m_floatingMediaQuery;
+    OwnPtrWillBePersistent<MediaQueryExp> m_floatingMediaQueryExp;
+    OwnPtrWillBePersistent<WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> > > m_floatingMediaQueryExpList;
 
     OwnPtr<Vector<RefPtr<StyleKeyframe> > > m_floatingKeyframeVector;
 

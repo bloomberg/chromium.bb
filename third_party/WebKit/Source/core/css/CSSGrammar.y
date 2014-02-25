@@ -85,7 +85,7 @@ using namespace HTMLNames;
     MediaQueryExp* mediaQueryExp;
     CSSParserValue value;
     CSSParserValueList* valueList;
-    Vector<OwnPtr<MediaQueryExp> >* mediaQueryExpList;
+    WillBeHeapVector<OwnPtrWillBeMember<MediaQueryExp> >* mediaQueryExpList;
     StyleKeyframe* keyframe;
     Vector<RefPtr<StyleKeyframe> >* keyframeRuleList;
     float val;

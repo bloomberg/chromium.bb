@@ -22,6 +22,7 @@
 #define MediaList_h
 
 #include "core/dom/ExceptionCode.h"
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -37,43 +38,45 @@ class ExceptionState;
 class MediaList;
 class MediaQuery;
 
-class MediaQuerySet : public RefCounted<MediaQuerySet> {
+class MediaQuerySet : public RefCountedWillBeGarbageCollected<MediaQuerySet> {
 public:
-    static PassRefPtr<MediaQuerySet> create()
+    static PassRefPtrWillBeRawPtr<MediaQuerySet> create()
     {
-        return adoptRef(new MediaQuerySet());
+        return adoptRefWillBeNoop(new MediaQuerySet());
     }
-    static PassRefPtr<MediaQuerySet> create(const String& mediaString);
+    static PassRefPtrWillBeRawPtr<MediaQuerySet> create(const String& mediaString);
     ~MediaQuerySet();
 
     bool set(const String&);
     bool add(const String&);
     bool remove(const String&);
 
-    void addMediaQuery(PassOwnPtr<MediaQuery>);
+    void addMediaQuery(PassOwnPtrWillBeRawPtr<MediaQuery>);
 
-    const Vector<OwnPtr<MediaQuery> >& queryVector() const { return m_queries; }
+    const WillBeHeapVector<OwnPtrWillBeMember<MediaQuery> >& queryVector() const { return m_queries; }
 
     String mediaText() const;
 
-    PassRefPtr<MediaQuerySet> copy() const { return adoptRef(new MediaQuerySet(*this)); }
+    PassRefPtrWillBeRawPtr<MediaQuerySet> copy() const { return adoptRefWillBeNoop(new MediaQuerySet(*this)); }
+
+    void trace(Visitor*);
 
 private:
     MediaQuerySet();
     MediaQuerySet(const MediaQuerySet&);
 
-    Vector<OwnPtr<MediaQuery> > m_queries;
+    WillBeHeapVector<OwnPtrWillBeMember<MediaQuery> > m_queries;
 };
 
-class MediaList : public RefCounted<MediaList> {
+class MediaList : public RefCountedWillBeGarbageCollectedFinalized<MediaList> {
 public:
-    static PassRefPtr<MediaList> create(MediaQuerySet* mediaQueries, CSSStyleSheet* parentSheet)
+    static PassRefPtrWillBeRawPtr<MediaList> create(MediaQuerySet* mediaQueries, CSSStyleSheet* parentSheet)
     {
-        return adoptRef(new MediaList(mediaQueries, parentSheet));
+        return adoptRefWillBeNoop(new MediaList(mediaQueries, parentSheet));
     }
-    static PassRefPtr<MediaList> create(MediaQuerySet* mediaQueries, CSSRule* parentRule)
+    static PassRefPtrWillBeRawPtr<MediaList> create(MediaQuerySet* mediaQueries, CSSRule* parentRule)
     {
-        return adoptRef(new MediaList(mediaQueries, parentRule));
+        return adoptRefWillBeNoop(new MediaList(mediaQueries, parentRule));
     }
 
     ~MediaList();
@@ -95,12 +98,14 @@ public:
 
     void reattach(MediaQuerySet*);
 
+    void trace(Visitor*);
+
 private:
     MediaList();
     MediaList(MediaQuerySet*, CSSStyleSheet* parentSheet);
     MediaList(MediaQuerySet*, CSSRule* parentRule);
 
-    RefPtr<MediaQuerySet> m_mediaQueries;
+    RefPtrWillBeMember<MediaQuerySet> m_mediaQueries;
     CSSStyleSheet* m_parentStyleSheet;
     CSSRule* m_parentRule;
 };

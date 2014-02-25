@@ -87,7 +87,7 @@ public:
     void clearOwnerRule() { m_ownerRule = 0; }
     Document* ownerDocument() const;
     MediaQuerySet* mediaQueries() const { return m_mediaQueries.get(); }
-    void setMediaQueries(PassRefPtr<MediaQuerySet>);
+    void setMediaQueries(PassRefPtrWillBeRawPtr<MediaQuerySet>);
     void setTitle(const String& title) { m_title = title; }
 
     class RuleMutationScope {
@@ -131,7 +131,7 @@ private:
     bool m_isInlineStylesheet;
     bool m_isDisabled;
     String m_title;
-    RefPtr<MediaQuerySet> m_mediaQueries;
+    RefPtrWillBePersistent<MediaQuerySet> m_mediaQueries;
 
     Node* m_ownerNode;
     CSSRule* m_ownerRule;
@@ -139,7 +139,7 @@ private:
     TextPosition m_startPosition;
     bool m_loadCompleted;
 
-    mutable RefPtr<MediaList> m_mediaCSSOMWrapper;
+    mutable RefPtrWillBePersistent<MediaList> m_mediaCSSOMWrapper;
     mutable Vector<RefPtr<CSSRule> > m_childRuleCSSOMWrappers;
     mutable OwnPtr<CSSRuleList> m_ruleListCSSOMWrapper;
 };

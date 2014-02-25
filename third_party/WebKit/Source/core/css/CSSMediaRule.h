@@ -47,7 +47,7 @@ private:
 
     MediaQuerySet* mediaQueries() const;
 
-    mutable RefPtr<MediaList> m_mediaCSSOMWrapper;
+    mutable RefPtrWillBePersistent<MediaList> m_mediaCSSOMWrapper;
 };
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSMediaRule, MEDIA_RULE);

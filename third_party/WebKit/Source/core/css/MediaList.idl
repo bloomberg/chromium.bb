@@ -25,6 +25,7 @@
 
 // Introduced in DOM Level 2:
 [
+    WillBeGarbageCollected
 ] interface MediaList {
 
     [TreatNullAs=NullString, TreatReturnedNullStringAs=Null] attribute DOMString mediaText;

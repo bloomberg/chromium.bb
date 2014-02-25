@@ -107,7 +107,7 @@ PassRefPtr<FontFace> FontFace::create(ExecutionContext* context, const AtomicStr
         return nullptr;
     }
 
-    RefPtr<FontFace> fontFace = adoptRef<FontFace>(new FontFace(src));
+    RefPtr<FontFace> fontFace = adoptRefCountedWillBeRefCountedGarbageCollected<FontFace>(new FontFace(src));
     fontFace->setFamily(context, family, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
@@ -160,7 +160,7 @@ PassRefPtr<FontFace> FontFace::create(Document* document, const StyleRuleFontFac
     if (!src || !src->isValueList())
         return nullptr;
 
-    RefPtr<FontFace> fontFace = adoptRef<FontFace>(new FontFace(src));
+    RefPtr<FontFace> fontFace = adoptRefCountedWillBeRefCountedGarbageCollected<FontFace>(new FontFace(src));
 
     if (fontFace->setFamilyValue(toCSSValueList(family.get()))
         && fontFace->setPropertyFromStyle(properties, CSSPropertyFontStyle)
@@ -453,7 +453,7 @@ unsigned FontFace::traitsMask() const
         traitsMask |= FontWeight400Mask;
     }
 
-    if (RefPtr<CSSValue> fontVariant = m_variant) {
+    if (RefPtrWillBeRawPtr<CSSValue> fontVariant = m_variant) {
         // font-variant descriptor can be a value list.
         if (fontVariant->isPrimitiveValue()) {
             RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
@@ -537,6 +537,17 @@ void FontFace::initCSSFontFace(Document* document)
             m_cssFontFace->addSource(source.release());
         }
     }
+}
+
+void FontFace::trace(Visitor* visitor)
+{
+    visitor->trace(m_src);
+    visitor->trace(m_style);
+    visitor->trace(m_weight);
+    visitor->trace(m_stretch);
+    visitor->trace(m_unicodeRange);
+    visitor->trace(m_variant);
+    visitor->trace(m_featureSettings);
 }
 
 } // namespace WebCore

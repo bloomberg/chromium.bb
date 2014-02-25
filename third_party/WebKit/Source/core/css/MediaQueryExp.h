@@ -38,10 +38,10 @@
 namespace WebCore {
 class CSSParserValueList;
 
-class MediaQueryExp {
-    WTF_MAKE_FAST_ALLOCATED;
+class MediaQueryExp : public NoBaseWillBeGarbageCollectedFinalized<MediaQueryExp> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtr<MediaQueryExp> create(const AtomicString& mediaFeature, CSSParserValueList*);
+    static PassOwnPtrWillBeRawPtr<MediaQueryExp> create(const AtomicString& mediaFeature, CSSParserValueList*);
     ~MediaQueryExp();
 
     AtomicString mediaFeature() const { return m_mediaFeature; }
@@ -59,13 +59,17 @@ public:
 
     String serialize() const;
 
-    PassOwnPtr<MediaQueryExp> copy() const { return adoptPtr(new MediaQueryExp(*this)); }
+    PassOwnPtrWillBeRawPtr<MediaQueryExp> copy() const { return adoptPtrWillBeNoop(new MediaQueryExp(*this)); }
+
+    void trace(Visitor* visitor) { visitor->trace(m_value); }
+
+    MediaQueryExp(const MediaQueryExp& other);
 
 private:
     MediaQueryExp(const AtomicString& mediaFeature, PassRefPtrWillBeRawPtr<CSSValue>);
 
     AtomicString m_mediaFeature;
-    RefPtr<CSSValue> m_value;
+    RefPtrWillBeMember<CSSValue> m_value;
 };
 
 } // namespace

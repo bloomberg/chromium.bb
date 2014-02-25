@@ -363,7 +363,7 @@ void StyleRuleGroup::traceAfterDispatch(Visitor* visitor)
     StyleRuleBase::traceAfterDispatch(visitor);
 }
 
-StyleRuleMedia::StyleRuleMedia(PassRefPtr<MediaQuerySet> media, WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> >& adoptRules)
+StyleRuleMedia::StyleRuleMedia(PassRefPtrWillBeRawPtr<MediaQuerySet> media, WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> >& adoptRules)
     : StyleRuleGroup(Media, adoptRules)
     , m_mediaQueries(media)
 {
