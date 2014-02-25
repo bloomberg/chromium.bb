@@ -183,9 +183,11 @@
 
     'remoting_webapp_template_files': [
       'webapp/html/butterbar.html',
+      'webapp/html/client_plugin.html',
       'webapp/html/dialog_auth.html',
+      'webapp/html/dialog_client_connect_failed.html',
+      'webapp/html/dialog_client_connecting.html',
       'webapp/html/dialog_client_host_needs_upgrade.html',
-      'webapp/html/dialog_client.html',
       'webapp/html/dialog_client_pin_prompt.html',
       'webapp/html/dialog_client_session_finished.html',
       'webapp/html/dialog_client_third_party_auth.html',

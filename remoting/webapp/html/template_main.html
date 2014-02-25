@@ -27,7 +27,7 @@ found in the LICENSE file.
          hidden, but are shown appropriately when the mode changes. -->
     <section id="loading-mode" data-ui-mode="">
       <em>Loading&hellip;</em>
-    </section> <!-- loading-mode -->
+    </section>
 
     <div id="daemon-plugin-container"></div>
     <div id="host-plugin-container"></div>
@@ -37,14 +37,11 @@ found in the LICENSE file.
     <div class="inset" data-ui-mode="home" hidden>
 
       <meta-include src="webapp/html/ui_header.html"/>
-
       <meta-include src="webapp/html/butterbar.html"/>
-
       <meta-include src="webapp/html/ui_it2me.html"/>
-
       <meta-include src="webapp/html/ui_me2me.html"/>
 
-    </div> <!-- inset -->
+    </div>
 
     <meta-include src="webapp/html/dialog_auth.html"/>
 
@@ -59,19 +56,26 @@ found in the LICENSE file.
       <div class="box-spacer"></div>
 
       <meta-include src="webapp/html/dialog_token_refresh_failed.html"/>
-
       <meta-include src="webapp/html/dialog_host_setup.html"/>
-
       <meta-include src="webapp/html/dialog_host_install.html"/>
-
       <meta-include src="webapp/html/dialog_host.html"/>
 
-      <meta-include src="webapp/html/dialog_client.html"/>
+      <div id="client-dialog"
+           class="kd-modaldialog"
+           data-ui-mode="home.client">
+
+        <meta-include src="webapp/html/dialog_client_unconnected.html"/>
+        <meta-include src="webapp/html/dialog_client_connecting.html"/>
+        <meta-include src="webapp/html/dialog_client_host_needs_upgrade.html"/>
+        <meta-include src="webapp/html/dialog_client_pin_prompt.html"/>
+        <meta-include src="webapp/html/dialog_client_third_party_auth.html"/>
+        <meta-include src="webapp/html/dialog_client_connect_failed.html"/>
+        <meta-include src="webapp/html/dialog_client_session_finished.html"/>
+
+      </div>
 
       <meta-include src="webapp/html/dialog_connection_history.html"/>
-
       <meta-include src="webapp/html/dialog_confirm_host_delete.html"/>
-
       <meta-include src="webapp/html/dialog_manage_pairings.html"/>
 
       <div class="box-spacer"></div>
@@ -84,13 +88,12 @@ found in the LICENSE file.
          hidden>
 
       <meta-include src="webapp/html/toolbar.html"/>
-
       <meta-include src="webapp/html/client_plugin.html"/>
 
-    </div> <!-- session-mode -->
+    </div>
 
     <div id="statistics" dir="ltr" class="selectable" hidden>
-    </div> <!-- statistics -->
+    </div>
 
   </body>
 </html>

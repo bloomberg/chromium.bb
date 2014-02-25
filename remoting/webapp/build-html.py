@@ -31,13 +31,34 @@ class HtmlChecker(HTMLParser):
 
 
 class GenerateWebappHtml:
-  def __init__(self, js_files):
+  def __init__(self, template_files, js_files):
     self.js_files = js_files
+
+    self.templates_expected = set()
+    for template in template_files:
+      self.templates_expected.add(os.path.basename(template))
+
+    self.templates_found = set()
 
   def includeJavascript(self, output):
     for js_path in sorted(self.js_files):
       js_file = os.path.basename(js_path)
       output.write('    <script src="' + js_file + '"></script>\n')
+
+  def verifyTemplateList(self):
+    """Verify that all the expected templates were found."""
+    if self.templates_expected > self.templates_found:
+      extra = self.templates_expected - self.templates_found
+      print 'Extra templates specified:', extra
+      return False
+    return True
+
+  def validateTemplate(self, template_path):
+    template = os.path.basename(template_path)
+    if template in self.templates_expected:
+      self.templates_found.add(template)
+      return True
+    return False
 
   def processTemplate(self, output, template_file, indent):
     with open(template_file, 'r') as input:
@@ -61,7 +82,12 @@ class GenerateWebappHtml:
             r'^(\s*)<meta-include src="(.+)"\s*/>\s*$',
             line)
         if m:
-          self.processTemplate(output, m.group(2), indent + len(m.group(1)))
+          prefix = m.group(1)
+          template_name = m.group(2)
+          if not self.validateTemplate(template_name):
+            error('Found template not in list of expected templates: %s' %
+                  template_name)
+          self.processTemplate(output, template_name, indent + len(prefix))
           continue
 
         m = re.match(r'^\s*<meta-include type="javascript"\s*/>\s*$', line)
@@ -76,10 +102,14 @@ class GenerateWebappHtml:
 
 
 def show_usage():
-  print 'Usage: %s <output-file> <input-template> <js-file>+' % sys.argv[0]
+  print ('Usage: %s <output-file> <input-template> '
+         '[--templates <template-files...>] '
+         '[--js <js-files...>]' % sys.argv[0])
+  print 'where:'
   print '  <output-file> Path to HTML output file'
   print '  <input-template> Path to input template'
-  print '  <js-file> One or more Javascript files to include in HTML output'
+  print '  <template-files> The html template files used by <input-template>'
+  print '  <js-files> The Javascript files to include in HTML <head>'
 
 
 def main():
@@ -89,12 +119,27 @@ def main():
 
   out_file = sys.argv[1]
   main_template_file = sys.argv[2]
-  js_files = sys.argv[3:]
+
+  template_files = []
+  js_files = []
+  for arg in sys.argv[3:]:
+    if arg == '--js' or arg == '--template':
+      arg_type = arg
+    elif arg_type == '--js':
+      js_files.append(arg)
+    elif arg_type == '--template':
+      template_files.append(arg)
+    else:
+      error('Unrecognized argument: %s' % arg)
 
   # Generate the main HTML file from the templates.
   with open(out_file, 'w') as output:
-    gen = GenerateWebappHtml(js_files)
+    gen = GenerateWebappHtml(template_files, js_files)
     gen.processTemplate(output, main_template_file, 0)
+
+    # Verify that all the expected templates were found.
+    if not gen.verifyTemplateList():
+      error('Extra templates specified')
 
   # Verify that the generated HTML file is valid.
   with open(out_file, 'r') as input:
