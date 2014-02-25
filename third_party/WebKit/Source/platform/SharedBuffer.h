@@ -28,17 +28,15 @@
 #define SharedBuffer_h
 
 #include "platform/PlatformExport.h"
+#include "platform/PurgeableVector.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
-#include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
-
-class PurgeableBuffer;
 
 class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
 public:
@@ -47,17 +45,15 @@ public:
     static PassRefPtr<SharedBuffer> create(const char* c, int i) { return adoptRef(new SharedBuffer(c, i)); }
     static PassRefPtr<SharedBuffer> create(const unsigned char* c, int i) { return adoptRef(new SharedBuffer(c, i)); }
 
-    static PassRefPtr<SharedBuffer> adoptVector(Vector<char>& vector);
+    static PassRefPtr<SharedBuffer> createPurgeable(const char* c, int i) { return adoptRef(new SharedBuffer(c, i, PurgeableVector::Purgeable)); }
 
-    // The buffer must be in non-purgeable state before adopted to a SharedBuffer.
-    // It will stay that way until released.
-    static PassRefPtr<SharedBuffer> adoptPurgeableBuffer(PassOwnPtr<PurgeableBuffer>);
+    static PassRefPtr<SharedBuffer> adoptVector(Vector<char>&);
 
     ~SharedBuffer();
 
-    // Calling this function will force internal segmented buffers
-    // to be merged into a flat buffer. Use getSomeData() whenever possible
-    // for better performance.
+    // Calling this function will force internal segmented buffers to be merged
+    // into a flat buffer. Use getSomeData() whenever possible for better
+    // performance.
     const char* data() const;
 
     unsigned size() const;
@@ -71,11 +67,6 @@ public:
     void clear();
 
     PassRefPtr<SharedBuffer> copy() const;
-
-    bool hasPurgeableBuffer() const { return m_purgeableBuffer.get(); }
-
-    // Ensure this buffer has no other clients before calling this.
-    PassOwnPtr<PurgeableBuffer> releasePurgeableBuffer();
 
     // Return the number of consecutive bytes after "position". "data"
     // points to the first byte.
@@ -91,8 +82,6 @@ public:
     //      }
     unsigned getSomeData(const char*& data, unsigned position = 0) const;
 
-    void createPurgeableBuffer() const;
-
     // Creates an ArrayBuffer and copies this SharedBuffer's contents to that
     // ArrayBuffer without merging segmented buffers into a flat buffer.
     PassRefPtr<ArrayBuffer> getAsArrayBuffer() const;
@@ -101,23 +90,29 @@ public:
     // SkData without merging segmented buffers into a flat buffer.
     PassRefPtr<SkData> getAsSkData() const;
 
+    // See PurgeableVector::lock().
+    bool lock() { return m_buffer.lock(); }
+
+    // WARNING: Calling unlock() on a SharedBuffer that wasn't created with the
+    // purgeability option does an extra memcpy(). Please use
+    // SharedBuffer::createPurgeable() if you intend to call unlock().
+    void unlock() { m_buffer.unlock(); }
+
+    bool isLocked() const { return m_buffer.isLocked(); }
+
 private:
     SharedBuffer();
     explicit SharedBuffer(size_t);
     SharedBuffer(const char*, int);
+    SharedBuffer(const char*, int, PurgeableVector::PurgeableOption);
     SharedBuffer(const unsigned char*, int);
 
-    // Calling this function will force internal segmented buffers
-    // to be merged into a flat buffer. Use getSomeData() whenever possible
-    // for better performance.
-    // As well, be aware that this method does *not* return any purgeable
-    // memory, which can be a source of bugs.
-    const Vector<char>& buffer() const;
+    // See SharedBuffer::data().
+    void mergeSegmentsIntoBuffer() const;
 
     unsigned m_size;
-    mutable Vector<char> m_buffer;
+    mutable PurgeableVector m_buffer;
     mutable Vector<char*> m_segments;
-    mutable OwnPtr<PurgeableBuffer> m_purgeableBuffer;
 };
 
 } // namespace WebCore

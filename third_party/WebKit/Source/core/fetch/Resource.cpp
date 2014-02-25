@@ -35,7 +35,6 @@
 #include "core/fetch/ResourcePtr.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "platform/Logging.h"
-#include "platform/PurgeableBuffer.h"
 #include "platform/SharedBuffer.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
@@ -215,7 +214,7 @@ void Resource::appendData(const char* data, int length)
     if (m_data)
         m_data->append(data, length);
     else
-        m_data = SharedBuffer::create(data, length);
+        m_data = SharedBuffer::createPurgeable(data, length);
     setEncodedSize(m_data->size());
 }
 
@@ -353,24 +352,15 @@ bool Resource::unlock()
     if (hasClients() || m_proxyResource || m_resourceToRevalidate || !m_loadFinishTime || !isSafeToUnlock())
         return false;
 
-    if (m_purgeableData) {
-        ASSERT(!m_data);
-        return true;
-    }
     if (!m_data)
         return false;
+    if (!m_data->isLocked())
+        return true;
 
-    // Should not make buffer purgeable if it has refs other than this since we don't want two copies.
     if (!m_data->hasOneRef())
         return false;
 
-    m_data->createPurgeableBuffer();
-    if (!m_data->hasPurgeableBuffer())
-        return false;
-
-    m_purgeableData = m_data->releasePurgeableBuffer();
-    m_purgeableData->unlock();
-    m_data.clear();
+    m_data->unlock();
     return true;
 }
 
@@ -842,7 +832,7 @@ bool Resource::canUseCacheValidator() const
 
 bool Resource::isPurgeable() const
 {
-    return m_purgeableData && !m_purgeableData->isLocked();
+    return m_data && !m_data->isLocked();
 }
 
 bool Resource::wasPurged() const
@@ -852,18 +842,17 @@ bool Resource::wasPurged() const
 
 bool Resource::lock()
 {
-    if (!m_purgeableData)
+    if (!m_data)
+        return true;
+    if (m_data->isLocked())
         return true;
 
-    ASSERT(!m_data);
     ASSERT(!hasClients());
 
-    if (!m_purgeableData->lock()) {
+    if (!m_data->lock()) {
         m_wasPurged = true;
         return false;
     }
-
-    m_data = SharedBuffer::adoptPurgeableBuffer(m_purgeableData.release());
     return true;
 }
 

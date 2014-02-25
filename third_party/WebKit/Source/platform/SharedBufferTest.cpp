@@ -30,7 +30,12 @@
 
 #include "config.h"
 
+#include <algorithm>
+#include <cstdlib>
+
 #include "platform/SharedBuffer.h"
+#include "platform/TestingPlatformSupport.h"
+#include "public/platform/WebDiscardableMemory.h"
 
 #include "wtf/ArrayBuffer.h"
 #include "wtf/RefPtr.h"
@@ -94,29 +99,14 @@ TEST(SharedBufferTest, getAsArrayBufferLargeSegments)
 
 TEST(SharedBufferTest, copy)
 {
-    char testData[] = "Habitasse integer eros tincidunt a scelerisque! Enim elit? Scelerisque magnis,"
-        "et montes ultrices tristique a! Pid. Velit turpis, dapibus integer rhoncus sociis amet facilisis,"
-        "adipiscing pulvinar nascetur magnis tempor sit pulvinar, massa urna enim porttitor sociis sociis proin enim?"
-        "Lectus, platea dolor, integer a. A habitasse hac nunc, nunc, nec placerat vut in sit nunc nec, sed. Sociis,"
-        "vut! Hac, velit rhoncus facilisis. Rhoncus et, enim, sed et in tristique nunc montes,"
-        "natoque nunc sagittis elementum parturient placerat dolor integer? Pulvinar,"
-        "magnis dignissim porttitor ac pulvinar mid tempor. A risus sed mid! Magnis elit duis urna,"
-        "cras massa, magna duis. Vut magnis pid a! Penatibus aliquet porttitor nunc, adipiscing massa odio lundium,"
-        "risus elementum ac turpis massa pellentesque parturient augue. Purus amet turpis pid aliquam?"
-        "Dolor est tincidunt? Dolor? Dignissim porttitor sit in aliquam! Tincidunt, non nunc, rhoncus dictumst!"
-        "Porta augue etiam. Cursus augue nunc lacus scelerisque. Rhoncus lectus, integer hac, nec pulvinar augue massa,"
-        "integer amet nisi facilisis? A! A, enim velit pulvinar elit in non scelerisque in et ultricies amet est!"
-        "in porttitor montes lorem et, hac aliquet pellentesque a sed? Augue mid purus ridiculus vel dapibus,"
-        "sagittis sed, tortor auctor nascetur rhoncus nec, rhoncus, magna integer. Sit eu massa vut?"
-        "Porta augue porttitor elementum, enim, rhoncus pulvinar duis integer scelerisque rhoncus natoque,"
-        "mattis dignissim massa ac pulvinar urna, nunc ut. Sagittis, aliquet penatibus proin lorem, pulvinar lectus,"
-        "augue proin! Ac, arcu quis. Placerat habitasse, ridiculus ridiculus.";
+    Vector<char> testData(10000);
+    std::generate(testData.begin(), testData.end(), &std::rand);
 
-    unsigned length = strlen(testData);
-    RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::create(testData, length);
-    sharedBuffer->append(testData, length);
-    sharedBuffer->append(testData, length);
-    sharedBuffer->append(testData, length);
+    unsigned length = testData.size();
+    RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::create(testData.data(), length);
+    sharedBuffer->append(testData.data(), length);
+    sharedBuffer->append(testData.data(), length);
+    sharedBuffer->append(testData.data(), length);
     // sharedBuffer must contain data more than segmentSize (= 0x1000) to check copy().
     ASSERT_EQ(length * 4, sharedBuffer->size());
 
@@ -124,8 +114,44 @@ TEST(SharedBufferTest, copy)
     ASSERT_EQ(length * 4, clone->size());
     ASSERT_EQ(0, memcmp(clone->data(), sharedBuffer->data(), clone->size()));
 
-    clone->append(testData, length);
+    clone->append(testData.data(), length);
     ASSERT_EQ(length * 5, clone->size());
+}
+
+TEST(SharedBufferTest, constructorWithSizeOnly)
+{
+    unsigned length = 10000;
+    RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::create(length);
+    ASSERT_EQ(length, sharedBuffer->size());
+
+    // The internal flat buffer should have been resized to |length| therefore getSomeData() should
+    // directly return the full size.
+    const char* data;
+    ASSERT_EQ(length, sharedBuffer->getSomeData(data, 0));
+}
+
+TEST(SharedBufferTest, createPurgeable)
+{
+    Vector<char> testData(30000);
+    std::generate(testData.begin(), testData.end(), &std::rand);
+
+    TestingPlatformSupport::Config config;
+    config.hasDiscardableMemorySupport = true;
+    TestingPlatformSupport platformWithDiscardableMemorySupport(config);
+
+    unsigned length = testData.size();
+    RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::createPurgeable(testData.data(), length);
+    ASSERT_EQ(length, sharedBuffer->size());
+    // Merge the segments into a single vector.
+    const char* data = sharedBuffer->data();
+    ASSERT_EQ(0, memcmp(data, testData.data(), length));
+
+    // Do another append + merge the segments again.
+    size_t previousTestDataSize = testData.size();
+    testData.resize(2 * previousTestDataSize);
+    std::generate(testData.begin() + previousTestDataSize, testData.end(), &std::rand);
+    sharedBuffer->append(testData.data() + previousTestDataSize, previousTestDataSize);
+    ASSERT_EQ(0, memcmp(data, testData.data(), length));
 }
 
 } // namespace
