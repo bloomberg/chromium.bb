@@ -238,15 +238,27 @@ bool ShouldForceOnlineSignIn(const User* user) {
   //   to supervised users: A supervised user whose oauth token status is
   //   unknown may still log in offline. The token will be invalidated inside
   //   the session in case it has been revoked.
+  // * Public sessions are ignored.
   if (user->is_logged_in())
     return false;
+
+  const User::OAuthTokenStatus token_status = user->oauth_token_status();
   const bool is_locally_managed_user =
       user->GetType() == User::USER_TYPE_LOCALLY_MANAGED;
-  const User::OAuthTokenStatus token_status = user->oauth_token_status();
+  const bool is_public_session =
+      user->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT;
+
+  if (is_locally_managed_user &&
+      token_status == User::OAUTH_TOKEN_STATUS_UNKNOWN) {
+    return false;
+  }
+
+  if (is_public_session)
+    return false;
+
   return user->force_online_signin() ||
          (token_status == User::OAUTH2_TOKEN_STATUS_INVALID) ||
-         (!is_locally_managed_user &&
-          token_status == User::OAUTH_TOKEN_STATUS_UNKNOWN);
+         (token_status == User::OAUTH_TOKEN_STATUS_UNKNOWN);
 }
 
 }  // namespace
