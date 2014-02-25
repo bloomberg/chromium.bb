@@ -79,63 +79,72 @@ import v8_types
 from v8_utilities import capitalize, cpp_name, conditional_string, v8_class_name
 
 
-def generate_header_and_cpp(definitions, interface_name, interfaces_info, cache_dir):
-    try:
-        interface = definitions.interfaces[interface_name]
-    except KeyError:
-        raise Exception('%s not in IDL definitions' % interface_name)
+class CodeGeneratorV8(object):
+    def __init__(self, interfaces_info, cache_dir):
+        interfaces_info = interfaces_info or {}
+        self.interfaces_info = interfaces_info
+        self.jinja_env = initialize_jinja_env(cache_dir)
 
-    # Store other interfaces for introspection
-    interfaces.update(definitions.interfaces)
+        # Set global type info
+        v8_types.set_ancestors(dict(
+            (interface_name, interface_info['ancestors'])
+            for interface_name, interface_info in interfaces_info.iteritems()
+            if 'ancestors' in interface_info))
+        v8_types.set_callback_interfaces(set(
+            interface_name
+            for interface_name, interface_info in interfaces_info.iteritems()
+            if interface_info['is_callback_interface']))
+        v8_types.set_implemented_as_interfaces(dict(
+            (interface_name, interface_info['implemented_as'])
+            for interface_name, interface_info in interfaces_info.iteritems()
+            if 'implemented_as' in interface_info))
+        v8_types.set_will_be_garbage_collected_types(set(
+            interface_name
+            for interface_name, interface_info in interfaces_info.iteritems()
+            if 'inherited_extended_attributes' in interface_info and
+                'WillBeGarbageCollected' in interface_info['inherited_extended_attributes']))
 
-    # Set up Jinja
-    jinja_env = initialize_jinja_env(cache_dir)
-    if interface.is_callback:
-        header_template_filename = 'callback_interface.h'
-        cpp_template_filename = 'callback_interface.cpp'
-        generate_contents = v8_callback_interface.generate_callback_interface
-    else:
-        header_template_filename = 'interface.h'
-        cpp_template_filename = 'interface.cpp'
-        generate_contents = v8_interface.generate_interface
-    header_template = jinja_env.get_template(header_template_filename)
-    cpp_template = jinja_env.get_template(cpp_template_filename)
+    def generate_code(self, definitions, interface_name):
+        """Returns .h/.cpp code as (header_text, cpp_text)."""
+        try:
+            interface = definitions.interfaces[interface_name]
+        except KeyError:
+            raise Exception('%s not in IDL definitions' % interface_name)
 
-    # Set type info, both local and global
-    interface_info = interfaces_info[interface_name]
+        # Store other interfaces for introspection
+        interfaces.update(definitions.interfaces)
 
-    v8_types.set_callback_functions(definitions.callback_functions.keys())
-    v8_types.set_enums((enum.name, enum.values)
-                       for enum in definitions.enumerations.values())
-    v8_types.set_ancestors(dict(
-        (interface_name, interface_info['ancestors'])
-        for interface_name, interface_info in interfaces_info.iteritems()
-        if 'ancestors' in interface_info))
-    v8_types.set_callback_interfaces(set(
-        interface_name
-        for interface_name, interface_info in interfaces_info.iteritems()
-        if interface_info['is_callback_interface']))
-    v8_types.set_implemented_as_interfaces(dict(
-        (interface_name, interface_info['implemented_as'])
-        for interface_name, interface_info in interfaces_info.iteritems()
-        if 'implemented_as' in interface_info))
-    v8_types.set_will_be_garbage_collected_types(set(
-        interface_name
-        for interface_name, interface_info in interfaces_info.iteritems()
-        if 'inherited_extended_attributes' in interface_info and
-            'WillBeGarbageCollected' in interface_info['inherited_extended_attributes']))
+        # Set local type info
+        v8_types.set_callback_functions(definitions.callback_functions.keys())
+        v8_types.set_enums((enum.name, enum.values)
+                           for enum in definitions.enumerations.values())
 
-    # Generate contents (input parameters for Jinja)
-    template_contents = generate_contents(interface)
-    template_contents['header_includes'].add(interface_info['include_path'])
-    template_contents['header_includes'] = sorted(template_contents['header_includes'])
-    includes.update(interface_info.get('dependencies_include_paths', []))
-    template_contents['cpp_includes'] = sorted(includes)
+        # Select appropriate Jinja template and contents function
+        if interface.is_callback:
+            header_template_filename = 'callback_interface.h'
+            cpp_template_filename = 'callback_interface.cpp'
+            generate_contents = v8_callback_interface.generate_callback_interface
+        else:
+            header_template_filename = 'interface.h'
+            cpp_template_filename = 'interface.cpp'
+            generate_contents = v8_interface.generate_interface
+        header_template = self.jinja_env.get_template(header_template_filename)
+        cpp_template = self.jinja_env.get_template(cpp_template_filename)
 
-    # Render Jinja templates
-    header_text = header_template.render(template_contents)
-    cpp_text = cpp_template.render(template_contents)
-    return header_text, cpp_text
+        # Generate contents (input parameters for Jinja)
+        template_contents = generate_contents(interface)
+
+        # Add includes for interface itself and any dependencies
+        interface_info = self.interfaces_info[interface_name]
+        template_contents['header_includes'].add(interface_info['include_path'])
+        template_contents['header_includes'] = sorted(template_contents['header_includes'])
+        includes.update(interface_info.get('dependencies_include_paths', []))
+        template_contents['cpp_includes'] = sorted(includes)
+
+        # Render Jinja templates
+        header_text = header_template.render(template_contents)
+        cpp_text = cpp_template.render(template_contents)
+        return header_text, cpp_text
 
 
 def initialize_jinja_env(cache_dir):

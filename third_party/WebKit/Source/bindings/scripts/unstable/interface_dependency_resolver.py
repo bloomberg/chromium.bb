@@ -62,7 +62,7 @@ class InvalidPartialInterfaceError(Exception):
     pass
 
 
-class InterfaceDependencyResolver:
+class InterfaceDependencyResolver(object):
     def __init__(self, interfaces_info, reader):
         """Initialize dependency resolver.
 

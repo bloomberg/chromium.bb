@@ -47,7 +47,7 @@ import re
 # Base classes
 
 
-class BaseIdl:
+class BaseIdl(object):
     """Abstract base class, used for JSON serialization."""
     __metaclass__ = abc.ABCMeta
 
@@ -63,7 +63,7 @@ class BaseIdl:
         pass
 
 
-class TypedObject:
+class TypedObject(object):
     """Object with a type, such as an Attribute or Operation (return value).
 
     The type can be an actual type, or can be a typedef, which must be resolved
@@ -329,7 +329,7 @@ def resolve_typedefs(idl_type, typedefs):
     return str(IdlType.from_string(idl_type).resolve_typedefs(typedefs))
 
 
-class IdlType:
+class IdlType(object):
     # FIXME: replace type strings with these objects,
     # so don't need to parse everywhere types are used.
     # Types are stored internally as strings, not objects,

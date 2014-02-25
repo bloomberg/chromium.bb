@@ -39,12 +39,12 @@ from v8_globals import includes
 import v8_types
 import v8_utilities
 
-CALLBACK_INTERFACE_H_INCLUDES = set([
+CALLBACK_INTERFACE_H_INCLUDES = frozenset([
     'bindings/v8/ActiveDOMCallback.h',
     'bindings/v8/DOMWrapperWorld.h',
     'bindings/v8/ScopedPersistent.h',
 ])
-CALLBACK_INTERFACE_CPP_INCLUDES = set([
+CALLBACK_INTERFACE_CPP_INCLUDES = frozenset([
     'bindings/v8/V8Binding.h',
     'bindings/v8/V8Callback.h',
     'core/dom/ExecutionContext.h',
@@ -89,7 +89,7 @@ def generate_callback_interface(callback_interface):
         'conditional_string': v8_utilities.conditional_string(callback_interface),
         'cpp_class': name,
         'v8_class': v8_utilities.v8_class_name(callback_interface),
-        'header_includes': CALLBACK_INTERFACE_H_INCLUDES,
+        'header_includes': set(CALLBACK_INTERFACE_H_INCLUDES),
         'methods': methods,
     }
     return template_contents

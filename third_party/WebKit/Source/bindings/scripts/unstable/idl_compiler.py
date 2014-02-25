@@ -36,17 +36,17 @@ Until then, please work on the Perl IDL compiler.
 For details, see bug http://crbug.com/239771
 """
 
-import optparse
+from optparse import OptionParser
 import os
 import cPickle as pickle
 import sys
 
-import code_generator_v8
-import idl_reader
+from code_generator_v8 import CodeGeneratorV8
+from idl_reader import IdlReader
 # from utilities import write_file  # FIXME: import once in same directory
 
 def parse_options():
-    parser = optparse.OptionParser()
+    parser = OptionParser()
     parser.add_option('--idl-attributes-file')
     parser.add_option('--output-directory')
     parser.add_option('--interfaces-info-file')
@@ -88,9 +88,11 @@ def main():
     else:
         interfaces_info = None
 
-    reader = idl_reader.IdlReader(interfaces_info, options.idl_attributes_file, output_directory)
+    reader = IdlReader(interfaces_info, options.idl_attributes_file, output_directory)
     definitions = reader.read_idl_definitions(idl_filename)
-    header_text, cpp_text = code_generator_v8.generate_header_and_cpp(definitions, interface_name, interfaces_info, output_directory)
+
+    code_generator = CodeGeneratorV8(interfaces_info, output_directory)
+    header_text, cpp_text = code_generator.generate_code(definitions, interface_name)
 
     header_filename = output_directory + 'V8%s.h' % interface_name
     cpp_filename = output_directory + 'V8%s.cpp' % interface_name

@@ -44,13 +44,13 @@ import v8_utilities
 from v8_utilities import capitalize, conditional_string, cpp_name, has_extended_attribute_value, runtime_enabled_function_name
 
 
-INTERFACE_H_INCLUDES = set([
+INTERFACE_H_INCLUDES = frozenset([
     'bindings/v8/V8Binding.h',
     'bindings/v8/V8DOMWrapper.h',
     'bindings/v8/WrapperTypeInfo.h',
     'heap/Handle.h',
 ])
-INTERFACE_CPP_INCLUDES = set([
+INTERFACE_CPP_INCLUDES = frozenset([
     'RuntimeEnabledFeatures.h',
     'bindings/v8/ExceptionState.h',
     'bindings/v8/V8DOMConfiguration.h',
@@ -66,7 +66,7 @@ INTERFACE_CPP_INCLUDES = set([
 def generate_interface(interface):
     includes.clear()
     includes.update(INTERFACE_CPP_INCLUDES)
-    header_includes = INTERFACE_H_INCLUDES
+    header_includes = set(INTERFACE_H_INCLUDES)
 
     parent_interface = interface.parent
     if parent_interface:

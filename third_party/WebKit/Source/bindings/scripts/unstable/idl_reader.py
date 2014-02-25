@@ -36,7 +36,7 @@ import idl_validator
 import interface_dependency_resolver
 
 
-class IdlReader:
+class IdlReader(object):
     def __init__(self, interfaces_info=None, idl_attributes_filename=None, outputdir=''):
         if idl_attributes_filename:
             self.extended_attribute_validator = idl_validator.IDLExtendedAttributeValidator(idl_attributes_filename)
