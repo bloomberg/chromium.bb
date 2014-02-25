@@ -49,7 +49,6 @@
 #include "content/renderer/media/webcontentdecryptionmodule_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_clipboard_client.h"
-#include "content/renderer/screen_orientation/screen_orientation_dispatcher.h"
 #include "content/renderer/webclipboard_impl.h"
 #include "content/renderer/webcrypto/webcrypto_impl.h"
 #include "content/renderer/webgraphicscontext3d_provider_impl.h"
@@ -1067,18 +1066,6 @@ void RendererWebKitPlatformSupportImpl::vibrate(unsigned int milliseconds) {
 
 void RendererWebKitPlatformSupportImpl::cancelVibration() {
   RenderThread::Get()->Send(new ViewHostMsg_CancelVibration());
-}
-
-//------------------------------------------------------------------------------
-
-void RendererWebKitPlatformSupportImpl::setScreenOrientationListener(
-    blink::WebScreenOrientationListener* listener) {
-  if (!screen_orientation_dispatcher_) {
-    screen_orientation_dispatcher_.reset(
-        new ScreenOrientationDispatcher(RenderThread::Get()));
-  }
-
-  screen_orientation_dispatcher_->setListener(listener);
 }
 
 //------------------------------------------------------------------------------

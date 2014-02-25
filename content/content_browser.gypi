@@ -1108,8 +1108,6 @@
     'browser/resource_context_impl.h',
     'browser/safe_util_win.cc',
     'browser/safe_util_win.h',
-    'browser/screen_orientation/screen_orientation_dispatcher_host.cc',
-    'browser/screen_orientation/screen_orientation_dispatcher_host.h',
     'browser/service_worker/embedded_worker_instance.cc',
     'browser/service_worker/embedded_worker_instance.h',
     'browser/service_worker/embedded_worker_registry.cc',

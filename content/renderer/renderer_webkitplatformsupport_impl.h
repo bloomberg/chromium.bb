@@ -31,7 +31,6 @@ namespace blink {
 class WebDeviceMotionData;
 class WebDeviceOrientationData;
 class WebGraphicsContext3DProvider;
-class WebScreenOrientationListener;
 }
 
 namespace content {
@@ -39,7 +38,6 @@ class DeviceMotionEventPump;
 class DeviceOrientationEventPump;
 class QuotaMessageFilter;
 class RendererClipboardClient;
-class ScreenOrientationDispatcher;
 class ThreadSafeSender;
 class WebClipboardImpl;
 class WebCryptoImpl;
@@ -152,8 +150,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
       blink::WebStorageQuotaCallbacks) OVERRIDE;
   virtual void vibrate(unsigned int milliseconds);
   virtual void cancelVibration();
-  virtual void setScreenOrientationListener(
-    blink::WebScreenOrientationListener*) OVERRIDE;
 
   // Disables the WebSandboxSupport implementation for testing.
   // Tests that do not set up a full sandbox environment should call
@@ -221,8 +217,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   webkit::WebCompositorSupportImpl compositor_support_;
 
   scoped_ptr<WebCryptoImpl> web_crypto_;
-
-  scoped_ptr<ScreenOrientationDispatcher> screen_orientation_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererWebKitPlatformSupportImpl);
 };
