@@ -230,15 +230,14 @@ void RecordSAMLScrapingVerificationResultInHistogram(bool success) {
 }
 
 bool ShouldForceOnlineSignIn(const User* user) {
-  // Force online sign-in if the user is not logged in and at least one of the
-  // following is true:
+  // Public sessions are always allowed to log in offline.
+  // Supervised user are allowed to log in offline if their OAuth token status
+  // is unknown or valid.
+  // For all other users, force online sign in if:
   // * The flag to force online sign-in is set for the user.
-  // * The user's oauth token is invalid.
-  // * The user's oauth token status is unknown. This condition does not apply
-  //   to supervised users: A supervised user whose oauth token status is
-  //   unknown may still log in offline. The token will be invalidated inside
-  //   the session in case it has been revoked.
-  // * Public sessions are ignored.
+  // * The user's OAuth token is invalid.
+  // * The user's OAuth token status is unknown (except supervised users,
+  //   see above).
   if (user->is_logged_in())
     return false;
 
