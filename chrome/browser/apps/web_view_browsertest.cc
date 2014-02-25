@@ -1885,15 +1885,14 @@ IN_PROC_BROWSER_TEST_P(WebViewCaptureTest,
   TestHelper("testScreenshotCapture", "web_view/shim", NO_TEST_SERVER);
 }
 
-// Threaded compositing is always enabled on Aura.
-#if !defined(USE_AURA)
+// Threaded compositing is always enabled on Aura and Mac.
+#if !defined(USE_AURA) && !defined(OS_MACOSX)
 INSTANTIATE_TEST_CASE_P(WithoutThreadedCompositor,
     WebViewCaptureTest,
     ::testing::Values(std::string(switches::kDisableThreadedCompositing)));
 #endif
 
-// http://crbug.com/171744
-#if !defined(OS_MACOSX)
+#if defined(USE_AURA) || defined(OS_MACOSX)
 INSTANTIATE_TEST_CASE_P(WithThreadedCompositor,
     WebViewCaptureTest,
     ::testing::Values(std::string(switches::kEnableThreadedCompositing)));
