@@ -11,6 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/location.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/geolocation_provider.h"
@@ -296,8 +297,8 @@ void LocationRequest::OnPositionReported(const content::Geoposition& position) {
   }
 }
 
-LocationManager::LocationManager(Profile* profile)
-    : profile_(profile) {
+LocationManager::LocationManager(content::BrowserContext* context)
+    : profile_(Profile::FromBrowserContext(context)) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -438,8 +439,8 @@ ProfileKeyedAPIFactory<LocationManager>* LocationManager::GetFactoryInstance() {
 }
 
  // static
-LocationManager* LocationManager::Get(Profile* profile) {
-  return ProfileKeyedAPIFactory<LocationManager>::GetForProfile(profile);
+LocationManager* LocationManager::Get(content::BrowserContext* context) {
+  return ProfileKeyedAPIFactory<LocationManager>::GetForProfile(context);
 }
 
 }  // namespace extensions

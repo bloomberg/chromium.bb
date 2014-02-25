@@ -20,6 +20,10 @@
 
 class Profile;
 
+namespace content {
+class BrowserContext;
+}
+
 namespace extensions {
 
 class LogPrivateAPI : public ProfileKeyedAPI,
@@ -27,9 +31,9 @@ class LogPrivateAPI : public ProfileKeyedAPI,
                       public net::NetLog::ThreadSafeObserver {
  public:
   // Convenience method to get the LogPrivateAPI for a profile.
-  static LogPrivateAPI* Get(Profile* profile);
+  static LogPrivateAPI* Get(content::BrowserContext* context);
 
-  explicit LogPrivateAPI(Profile* profile);
+  explicit LogPrivateAPI(content::BrowserContext* context);
   virtual ~LogPrivateAPI();
 
   void StartNetInternalsWatch(const std::string& extension_id);

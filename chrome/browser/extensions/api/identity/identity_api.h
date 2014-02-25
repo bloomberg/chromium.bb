@@ -27,13 +27,16 @@
 
 class GoogleServiceAuthError;
 class MockGetAuthTokenFunction;
-class Profile;
 
 #if defined(OS_CHROMEOS)
 namespace chromeos {
 class DeviceOAuth2TokenService;
 }
 #endif
+
+namespace content {
+class BrowserContext;
+}
 
 namespace extensions {
 
@@ -256,7 +259,7 @@ class IdentityAPI : public ProfileKeyedAPI,
  public:
   typedef std::map<ExtensionTokenKey, IdentityTokenCacheValue> CachedTokens;
 
-  explicit IdentityAPI(Profile* profile);
+  explicit IdentityAPI(content::BrowserContext* context);
   virtual ~IdentityAPI();
 
   // Request serialization queue for getAuthToken.
@@ -293,7 +296,7 @@ class IdentityAPI : public ProfileKeyedAPI,
   }
   static const bool kServiceIsNULLWhileTesting = true;
 
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
   IdentityMintRequestQueue mint_queue_;
   CachedTokens token_cache_;
   AccountTracker account_tracker_;

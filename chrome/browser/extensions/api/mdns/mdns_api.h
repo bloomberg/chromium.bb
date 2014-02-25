@@ -14,6 +14,10 @@
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 
+namespace content {
+class BrowserContext;
+}
+
 namespace extensions {
 
 class DnsSdRegistry;
@@ -26,10 +30,10 @@ class MDnsAPI : public ProfileKeyedAPI,
                 public EventRouter::Observer,
                 public DnsSdRegistry::DnsSdObserver {
  public:
-  explicit MDnsAPI(Profile* profile);
+  explicit MDnsAPI(content::BrowserContext* context);
   virtual ~MDnsAPI();
 
-  static MDnsAPI* Get(Profile* profile);
+  static MDnsAPI* Get(content::BrowserContext* context);
 
   // ProfileKeyedAPI implementation.
   static ProfileKeyedAPIFactory<MDnsAPI>* GetFactoryInstance();
@@ -66,7 +70,7 @@ class MDnsAPI : public ProfileKeyedAPI,
 
   // Ensure methods are only called on UI thread.
   base::ThreadChecker thread_checker_;
-  Profile* const profile_;
+  content::BrowserContext* const browser_context_;
   // Lazily created on first access and destroyed with this API class.
   scoped_ptr<DnsSdRegistry> dns_sd_registry_;
   // Current set of service types registered with the registry.

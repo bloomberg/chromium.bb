@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/event_router.h"
@@ -26,9 +27,8 @@ namespace image_writer {
 
 using content::BrowserThread;
 
-OperationManager::OperationManager(Profile* profile)
-    : profile_(profile),
-      weak_factory_(this) {
+OperationManager::OperationManager(content::BrowserContext* context)
+    : profile_(Profile::FromBrowserContext(context)), weak_factory_(this) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -238,9 +238,8 @@ void OperationManager::Observe(int type,
   }
 }
 
-OperationManager* OperationManager::Get(Profile* profile) {
-  return ProfileKeyedAPIFactory<OperationManager>::
-      GetForProfile(profile);
+OperationManager* OperationManager::Get(content::BrowserContext* context) {
+  return ProfileKeyedAPIFactory<OperationManager>::GetForProfile(context);
 }
 
 static base::LazyInstance<ProfileKeyedAPIFactory<OperationManager> >

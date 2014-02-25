@@ -19,6 +19,10 @@
 
 class Profile;
 
+namespace content {
+class BrowserContext;
+}
+
 namespace extensions {
 
 class MediaGalleriesPrivateEventRouter;
@@ -28,7 +32,7 @@ class MediaGalleriesPrivateEventRouter;
 class MediaGalleriesPrivateAPI : public ProfileKeyedAPI,
                                  public EventRouter::Observer {
  public:
-  explicit MediaGalleriesPrivateAPI(Profile* profile);
+  explicit MediaGalleriesPrivateAPI(content::BrowserContext* context);
   virtual ~MediaGalleriesPrivateAPI();
 
   // BrowserContextKeyedService implementation.
@@ -38,7 +42,7 @@ class MediaGalleriesPrivateAPI : public ProfileKeyedAPI,
   static ProfileKeyedAPIFactory<MediaGalleriesPrivateAPI>* GetFactoryInstance();
 
   // Convenience method to get the MediaGalleriesPrivateAPI for a profile.
-  static MediaGalleriesPrivateAPI* Get(Profile* profile);
+  static MediaGalleriesPrivateAPI* Get(content::BrowserContext* context);
 
   // EventRouter::Observer implementation.
   virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;

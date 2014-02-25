@@ -109,14 +109,14 @@ class MessageService : public ProfileKeyedAPI,
   // NOTE: this can be called from any thread.
   static void AllocatePortIdPair(int* port1, int* port2);
 
-  explicit MessageService(Profile* profile);
+  explicit MessageService(content::BrowserContext* context);
   virtual ~MessageService();
 
   // ProfileKeyedAPI implementation.
   static ProfileKeyedAPIFactory<MessageService>* GetFactoryInstance();
 
   // Convenience method to get the MessageService for a browser context.
-  static MessageService* Get(content::BrowserContext* profile);
+  static MessageService* Get(content::BrowserContext* context);
 
   // Given an extension's ID, opens a channel between the given renderer "port"
   // and every listening context owned by that extension. |channel_name| is
@@ -175,7 +175,8 @@ class MessageService : public ProfileKeyedAPI,
   // A map of channel ID to information about the extension that is waiting
   // for that channel to open. Used for lazy background pages.
   typedef std::string ExtensionID;
-  typedef std::pair<Profile*, ExtensionID> PendingLazyBackgroundPageChannel;
+  typedef std::pair<content::BrowserContext*, ExtensionID>
+      PendingLazyBackgroundPageChannel;
   typedef std::map<int, PendingLazyBackgroundPageChannel>
       PendingLazyBackgroundPageChannelMap;
 
@@ -219,7 +220,7 @@ class MessageService : public ProfileKeyedAPI,
   // to open a channel. Returns true if a task was queued.
   // Takes ownership of |params| if true is returned.
   bool MaybeAddPendingLazyBackgroundPageOpenChannelTask(
-      Profile* profile,
+      content::BrowserContext* context,
       const Extension* extension,
       OpenChannelParams* params);
 

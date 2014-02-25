@@ -9,7 +9,9 @@
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace extensions {
 
@@ -109,7 +111,7 @@ class VirtualKeyboardPrivateGetKeyboardConfigFunction
 
 class InputAPI : public ProfileKeyedAPI {
  public:
-  explicit InputAPI(Profile* profile);
+  explicit InputAPI(content::BrowserContext* context);
   virtual ~InputAPI();
 
   // ProfileKeyedAPI implementation.

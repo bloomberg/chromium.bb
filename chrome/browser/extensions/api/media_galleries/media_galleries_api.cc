@@ -259,9 +259,9 @@ class SelectDirectoryDialog : public ui::SelectFileDialog::Listener,
 
 }  // namespace
 
-MediaGalleriesEventRouter::MediaGalleriesEventRouter(Profile* profile)
-    : profile_(profile),
-      weak_ptr_factory_(this) {
+MediaGalleriesEventRouter::MediaGalleriesEventRouter(
+    content::BrowserContext* context)
+    : profile_(Profile::FromBrowserContext(context)), weak_ptr_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(profile_);
   media_scan_manager()->AddObserver(profile_, this);
@@ -287,11 +287,13 @@ MediaGalleriesEventRouter::GetFactoryInstance() {
 }
 
 // static
-MediaGalleriesEventRouter* MediaGalleriesEventRouter::Get(Profile* profile) {
-  DCHECK(media_file_system_registry()->GetPreferences(profile)->
-             IsInitialized());
+MediaGalleriesEventRouter* MediaGalleriesEventRouter::Get(
+    content::BrowserContext* context) {
+  DCHECK(media_file_system_registry()
+             ->GetPreferences(Profile::FromBrowserContext(context))
+             ->IsInitialized());
   return ProfileKeyedAPIFactory<MediaGalleriesEventRouter>::GetForProfile(
-      profile);
+      context);
 }
 
 bool MediaGalleriesEventRouter::ExtensionHasScanProgressListener(

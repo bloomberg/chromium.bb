@@ -200,10 +200,11 @@ void HistoryEventRouter::DispatchEvent(
   }
 }
 
-HistoryAPI::HistoryAPI(Profile* profile) : profile_(profile) {
-  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+HistoryAPI::HistoryAPI(content::BrowserContext* context)
+    : browser_context_(context) {
+  ExtensionSystem::Get(browser_context_)->event_router()->RegisterObserver(
       this, api::history::OnVisited::kEventName);
-  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+  ExtensionSystem::Get(browser_context_)->event_router()->RegisterObserver(
       this, api::history::OnVisitRemoved::kEventName);
 }
 
@@ -211,7 +212,8 @@ HistoryAPI::~HistoryAPI() {
 }
 
 void HistoryAPI::Shutdown() {
-  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
+  ExtensionSystem::Get(browser_context_)->event_router()->UnregisterObserver(
+      this);
 }
 
 static base::LazyInstance<ProfileKeyedAPIFactory<HistoryAPI> >
@@ -228,8 +230,10 @@ void ProfileKeyedAPIFactory<HistoryAPI>::DeclareFactoryDependencies() {
 }
 
 void HistoryAPI::OnListenerAdded(const EventListenerInfo& details) {
-  history_event_router_.reset(new HistoryEventRouter(profile_));
-  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
+  history_event_router_.reset(
+      new HistoryEventRouter(Profile::FromBrowserContext(browser_context_)));
+  ExtensionSystem::Get(browser_context_)->event_router()->UnregisterObserver(
+      this);
 }
 
 void HistoryFunction::Run() {

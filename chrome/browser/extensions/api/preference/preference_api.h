@@ -93,7 +93,7 @@ class PreferenceAPI : public PreferenceAPIBase,
                       public EventRouter::Observer,
                       public ContentSettingsStore::Observer {
  public:
-  explicit PreferenceAPI(Profile* profile);
+  explicit PreferenceAPI(content::BrowserContext* context);
   virtual ~PreferenceAPI();
 
   // BrowserContextKeyedService implementation.
@@ -103,7 +103,7 @@ class PreferenceAPI : public PreferenceAPIBase,
   static ProfileKeyedAPIFactory<PreferenceAPI>* GetFactoryInstance();
 
   // Convenience method to get the PreferenceAPI for a profile.
-  static PreferenceAPI* Get(Profile* profile);
+  static PreferenceAPI* Get(content::BrowserContext* context);
 
   // EventRouter::Observer implementation.
   virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;

@@ -65,9 +65,9 @@ namespace {
 static const char kChromiumDomainRedirectUrlPattern[] =
     "https://%s.chromiumapp.org/";
 
-std::string GetPrimaryAccountId(Profile* profile) {
+std::string GetPrimaryAccountId(content::BrowserContext* context) {
   SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile);
+      SigninManagerFactory::GetForProfile(Profile::FromBrowserContext(context));
   return signin_manager->GetAuthenticatedAccountId();
 }
 
@@ -677,9 +677,9 @@ const base::Time& IdentityTokenCacheValue::expiration_time() const {
   return expiration_time_;
 }
 
-IdentityAPI::IdentityAPI(Profile* profile)
-    : profile_(profile),
-      account_tracker_(profile) {
+IdentityAPI::IdentityAPI(content::BrowserContext* context)
+    : browser_context_(context),
+      account_tracker_(Profile::FromBrowserContext(context)) {
   account_tracker_.AddObserver(this);
 }
 
@@ -725,7 +725,8 @@ const IdentityAPI::CachedTokens& IdentityAPI::GetAllCachedTokens() {
 }
 
 void IdentityAPI::ReportAuthError(const GoogleServiceAuthError& error) {
-  account_tracker_.ReportAuthError(GetPrimaryAccountId(profile_), error);
+  account_tracker_.ReportAuthError(GetPrimaryAccountId(browser_context_),
+                                   error);
 }
 
 void IdentityAPI::Shutdown() {
@@ -752,10 +753,12 @@ void IdentityAPI::OnAccountSignInChanged(const AccountIds& ids,
 
   scoped_ptr<base::ListValue> args =
       api::identity::OnSignInChanged::Create(account_info, is_signed_in);
-  scoped_ptr<Event> event(new Event(
-      api::identity::OnSignInChanged::kEventName, args.Pass(), profile_));
+  scoped_ptr<Event> event(new Event(api::identity::OnSignInChanged::kEventName,
+                                    args.Pass(),
+                                    browser_context_));
 
-  ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(event.Pass());
+  ExtensionSystem::Get(browser_context_)->event_router()->BroadcastEvent(
+      event.Pass());
 }
 
 template <>

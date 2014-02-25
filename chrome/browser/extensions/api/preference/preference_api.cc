@@ -376,7 +376,8 @@ bool PreferenceAPIBase::DoesExtensionControlPref(
       extension_id, pref_key, from_incognito);
 }
 
-PreferenceAPI::PreferenceAPI(Profile* profile) : profile_(profile) {
+PreferenceAPI::PreferenceAPI(content::BrowserContext* context)
+    : profile_(Profile::FromBrowserContext(context)) {
   for (size_t i = 0; i < arraysize(kPrefMapping); ++i) {
     std::string event_name;
     APIPermission::ID permission = APIPermission::kInvalid;
@@ -408,8 +409,8 @@ ProfileKeyedAPIFactory<PreferenceAPI>* PreferenceAPI::GetFactoryInstance() {
 }
 
 // static
-PreferenceAPI* PreferenceAPI::Get(Profile* profile) {
-  return ProfileKeyedAPIFactory<PreferenceAPI>::GetForProfile(profile);
+PreferenceAPI* PreferenceAPI::Get(content::BrowserContext* context) {
+  return ProfileKeyedAPIFactory<PreferenceAPI>::GetForProfile(context);
 }
 
 void PreferenceAPI::OnListenerAdded(const EventListenerInfo& details) {

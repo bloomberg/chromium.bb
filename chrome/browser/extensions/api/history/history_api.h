@@ -56,7 +56,7 @@ class HistoryEventRouter : public content::NotificationObserver {
 class HistoryAPI : public ProfileKeyedAPI,
                    public EventRouter::Observer {
  public:
-  explicit HistoryAPI(Profile* profile);
+  explicit HistoryAPI(content::BrowserContext* context);
   virtual ~HistoryAPI();
 
   // BrowserContextKeyedService implementation.
@@ -71,7 +71,7 @@ class HistoryAPI : public ProfileKeyedAPI,
  private:
   friend class ProfileKeyedAPIFactory<HistoryAPI>;
 
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
 
   // ProfileKeyedAPI implementation.
   static const char* service_name() {

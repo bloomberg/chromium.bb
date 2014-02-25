@@ -175,13 +175,15 @@ void ExtensionOmniboxEventRouter::OnInputCancelled(
       DispatchEventToExtension(extension_id, event.Pass());
 }
 
-OmniboxAPI::OmniboxAPI(Profile* profile)
-    : profile_(profile),
-      url_service_(TemplateURLServiceFactory::GetForProfile(profile)) {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                 content::Source<Profile>(profile));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 content::Source<Profile>(profile));
+OmniboxAPI::OmniboxAPI(content::BrowserContext* context)
+    : profile_(Profile::FromBrowserContext(context)),
+      url_service_(TemplateURLServiceFactory::GetForProfile(profile_)) {
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED,
+                 content::Source<Profile>(profile_));
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 content::Source<Profile>(profile_));
   if (url_service_) {
     template_url_sub_ = url_service_->RegisterOnLoadedCallback(
         base::Bind(&OmniboxAPI::OnTemplateURLsLoaded,
@@ -211,8 +213,8 @@ ProfileKeyedAPIFactory<OmniboxAPI>* OmniboxAPI::GetFactoryInstance() {
 }
 
 // static
-OmniboxAPI* OmniboxAPI::Get(Profile* profile) {
-  return ProfileKeyedAPIFactory<OmniboxAPI>::GetForProfile(profile);
+OmniboxAPI* OmniboxAPI::Get(content::BrowserContext* context) {
+  return ProfileKeyedAPIFactory<OmniboxAPI>::GetForProfile(context);
 }
 
 void OmniboxAPI::Observe(int type,

@@ -10,8 +10,8 @@
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "url/gurl.h"
 
-class Profile;
 namespace content {
+class BrowserContext;
 class WebContents;
 }
 
@@ -50,9 +50,9 @@ class IncognitoConnectability : public ProfileKeyedAPI {
     int last_checked_invocation_count_;
   };
 
-  // Returns the IncognitoConnectability object for |profile|. |profile| must
+  // Returns the IncognitoConnectability object for |context|. |context| must
   // be off-the-record.
-  static IncognitoConnectability* Get(Profile* profile);
+  static IncognitoConnectability* Get(content::BrowserContext* context);
 
   // Returns true if |url| is allowed to connect from this profile, false
   // otherwise. If unknown, this call will block and prompt the user.
@@ -63,7 +63,7 @@ class IncognitoConnectability : public ProfileKeyedAPI {
  private:
   friend class ProfileKeyedAPIFactory<IncognitoConnectability>;
 
-  explicit IncognitoConnectability(Profile* profile);
+  explicit IncognitoConnectability(content::BrowserContext* context);
   virtual ~IncognitoConnectability();
 
   typedef std::map<std::string, std::set<GURL> > ExtensionToOriginsMap;

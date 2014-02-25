@@ -23,6 +23,10 @@
 
 class Profile;
 
+namespace content {
+class BrowserContext;
+}
+
 namespace extensions {
 
 class PushMessagingInvalidationMapper;
@@ -110,11 +114,11 @@ class PushMessagingGetChannelIdFunction
 class PushMessagingAPI : public ProfileKeyedAPI,
                          public content::NotificationObserver {
  public:
-  explicit PushMessagingAPI(Profile* profile);
+  explicit PushMessagingAPI(content::BrowserContext* context);
   virtual ~PushMessagingAPI();
 
   // Convenience method to get the PushMessagingAPI for a profile.
-  static PushMessagingAPI* Get(Profile* profile);
+  static PushMessagingAPI* Get(content::BrowserContext* context);
 
   // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;

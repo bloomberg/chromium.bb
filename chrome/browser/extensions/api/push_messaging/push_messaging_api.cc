@@ -281,7 +281,8 @@ void PushMessagingGetChannelIdFunction::OnObfuscatedGaiaIdFetchFailure(
   }
 }
 
-PushMessagingAPI::PushMessagingAPI(Profile* profile) : profile_(profile) {
+PushMessagingAPI::PushMessagingAPI(content::BrowserContext* context)
+    : profile_(Profile::FromBrowserContext(context)) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
                  content::Source<Profile>(profile_->GetOriginalProfile()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
@@ -294,8 +295,8 @@ PushMessagingAPI::~PushMessagingAPI() {
 }
 
 // static
-PushMessagingAPI* PushMessagingAPI::Get(Profile* profile) {
-  return ProfileKeyedAPIFactory<PushMessagingAPI>::GetForProfile(profile);
+PushMessagingAPI* PushMessagingAPI::Get(content::BrowserContext* context) {
+  return ProfileKeyedAPIFactory<PushMessagingAPI>::GetForProfile(context);
 }
 
 void PushMessagingAPI::Shutdown() {

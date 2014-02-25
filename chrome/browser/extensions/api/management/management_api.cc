@@ -710,23 +710,22 @@ void ManagementEventRouter::Observe(
   ExtensionSystem::Get(profile)->event_router()->BroadcastEvent(event.Pass());
 }
 
-ManagementAPI::ManagementAPI(Profile* profile)
-    : profile_(profile) {
-  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, management::OnInstalled::kEventName);
-  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, management::OnUninstalled::kEventName);
-  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, management::OnEnabled::kEventName);
-  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, management::OnDisabled::kEventName);
+ManagementAPI::ManagementAPI(content::BrowserContext* context)
+    : browser_context_(context) {
+  EventRouter* event_router =
+      ExtensionSystem::Get(browser_context_)->event_router();
+  event_router->RegisterObserver(this, management::OnInstalled::kEventName);
+  event_router->RegisterObserver(this, management::OnUninstalled::kEventName);
+  event_router->RegisterObserver(this, management::OnEnabled::kEventName);
+  event_router->RegisterObserver(this, management::OnDisabled::kEventName);
 }
 
 ManagementAPI::~ManagementAPI() {
 }
 
 void ManagementAPI::Shutdown() {
-  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
+  ExtensionSystem::Get(browser_context_)->event_router()->UnregisterObserver(
+      this);
 }
 
 static base::LazyInstance<ProfileKeyedAPIFactory<ManagementAPI> >
@@ -738,8 +737,10 @@ ProfileKeyedAPIFactory<ManagementAPI>* ManagementAPI::GetFactoryInstance() {
 }
 
 void ManagementAPI::OnListenerAdded(const EventListenerInfo& details) {
-  management_event_router_.reset(new ManagementEventRouter(profile_));
-  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
+  management_event_router_.reset(
+      new ManagementEventRouter(Profile::FromBrowserContext(browser_context_)));
+  ExtensionSystem::Get(browser_context_)->event_router()->UnregisterObserver(
+      this);
 }
 
 }  // namespace extensions

@@ -15,13 +15,18 @@
 #include "chrome/browser/extensions/api/image_writer_private/image_writer_private_api.h"
 #include "chrome/browser/extensions/api/image_writer_private/operation.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/image_writer_private.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "url/gurl.h"
 
 namespace image_writer_api = extensions::api::image_writer_private;
+
+class Profile;
+
+namespace content {
+class BrowserContext;
+}
 
 namespace extensions {
 namespace image_writer {
@@ -37,7 +42,7 @@ class OperationManager
  public:
   typedef std::string ExtensionId;
 
-  explicit OperationManager(Profile* profile);
+  explicit OperationManager(content::BrowserContext* context);
   virtual ~OperationManager();
 
   virtual void Shutdown() OVERRIDE;
@@ -80,7 +85,7 @@ class OperationManager
   // ProfileKeyedAPI
   static ProfileKeyedAPIFactory<OperationManager>*
       GetFactoryInstance();
-  static OperationManager* Get(Profile* profile);
+  static OperationManager* Get(content::BrowserContext* context);
 
   Profile* profile() { return profile_; }
 

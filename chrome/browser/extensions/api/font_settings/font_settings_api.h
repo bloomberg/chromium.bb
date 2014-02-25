@@ -19,6 +19,10 @@
 
 class Profile;
 
+namespace content {
+class BrowserContext;
+}
+
 namespace extensions {
 
 // This class observes pref changed events on a profile and dispatches the
@@ -72,7 +76,7 @@ class FontSettingsEventRouter {
 // doing so caused a regression in perf tests. See crbug.com/163466.
 class FontSettingsAPI : public ProfileKeyedAPI {
  public:
-  explicit FontSettingsAPI(Profile* profile);
+  explicit FontSettingsAPI(content::BrowserContext* context);
   virtual ~FontSettingsAPI();
 
   // ProfileKeyedAPI implementation.

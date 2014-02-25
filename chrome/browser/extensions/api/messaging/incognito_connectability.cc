@@ -41,17 +41,19 @@ int IncognitoConnectability::ScopedAlertTracker::GetAndResetAlertCount() {
   return result;
 }
 
-IncognitoConnectability::IncognitoConnectability(Profile* profile) {
-  CHECK(profile->IsOffTheRecord());
+IncognitoConnectability::IncognitoConnectability(
+    content::BrowserContext* context) {
+  CHECK(context->IsOffTheRecord());
 }
 
 IncognitoConnectability::~IncognitoConnectability() {
 }
 
 // static
-IncognitoConnectability* IncognitoConnectability::Get(Profile* profile) {
+IncognitoConnectability* IncognitoConnectability::Get(
+    content::BrowserContext* context) {
   return ProfileKeyedAPIFactory<IncognitoConnectability>::GetForProfile(
-      profile);
+      context);
 }
 
 bool IncognitoConnectability::Query(const Extension* extension,

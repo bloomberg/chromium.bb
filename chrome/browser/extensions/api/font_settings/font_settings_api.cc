@@ -204,9 +204,9 @@ void FontSettingsEventRouter::OnFontPrefChanged(
       pref_name);
 }
 
-FontSettingsAPI::FontSettingsAPI(Profile* profile)
-    : font_settings_event_router_(new FontSettingsEventRouter(profile)) {
-}
+FontSettingsAPI::FontSettingsAPI(content::BrowserContext* context)
+    : font_settings_event_router_(
+          new FontSettingsEventRouter(Profile::FromBrowserContext(context))) {}
 
 FontSettingsAPI::~FontSettingsAPI() {
 }

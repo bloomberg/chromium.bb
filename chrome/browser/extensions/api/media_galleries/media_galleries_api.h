@@ -50,7 +50,7 @@ class MediaGalleriesEventRouter : public ProfileKeyedAPI,
   GetFactoryInstance();
 
   // Convenience method to get the MediaGalleriesAPI for a profile.
-  static MediaGalleriesEventRouter* Get(Profile* profile);
+  static MediaGalleriesEventRouter* Get(content::BrowserContext* context);
 
   bool ExtensionHasScanProgressListener(const std::string& extension_id) const;
 
@@ -70,7 +70,7 @@ class MediaGalleriesEventRouter : public ProfileKeyedAPI,
                                 const std::string& event_name,
                                 scoped_ptr<base::ListValue> event_args);
 
-  explicit MediaGalleriesEventRouter(Profile* profile);
+  explicit MediaGalleriesEventRouter(content::BrowserContext* context);
   virtual ~MediaGalleriesEventRouter();
 
   // ProfileKeyedAPI implementation.

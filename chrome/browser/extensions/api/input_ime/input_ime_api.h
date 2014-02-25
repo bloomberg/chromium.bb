@@ -216,7 +216,7 @@ class InputImeHideInputViewFunction : public AsyncExtensionFunction {
 class InputImeAPI : public ProfileKeyedAPI,
                     public content::NotificationObserver {
  public:
-  explicit InputImeAPI(Profile* profile);
+  explicit InputImeAPI(content::BrowserContext* context);
   virtual ~InputImeAPI();
 
   // ProfileKeyedAPI implementation.

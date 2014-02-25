@@ -20,6 +20,7 @@
 #include "chrome/browser/feedback/system_logs/scrubbed_system_logs_fetcher.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_net_log.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/log_private.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -66,14 +67,16 @@ void CollectLogInfo(
 }  // namespace
 
 // static
-LogPrivateAPI* LogPrivateAPI::Get(Profile* profile) {
-  return GetFactoryInstance()->GetForProfile(profile);
+LogPrivateAPI* LogPrivateAPI::Get(content::BrowserContext* context) {
+  return GetFactoryInstance()->GetForProfile(context);
 }
 
-LogPrivateAPI::LogPrivateAPI(Profile* profile)
-  : profile_(profile), logging_net_internals_(false) {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 content::Source<Profile>(profile));
+LogPrivateAPI::LogPrivateAPI(content::BrowserContext* context)
+    : profile_(Profile::FromBrowserContext(context)),
+      logging_net_internals_(false) {
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 content::Source<Profile>(profile_));
 }
 
 LogPrivateAPI::~LogPrivateAPI() {

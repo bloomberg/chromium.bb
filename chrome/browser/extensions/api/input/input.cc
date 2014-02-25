@@ -154,8 +154,7 @@ bool VirtualKeyboardPrivateGetKeyboardConfigFunction::RunImpl() {
   return false;
 }
 
-InputAPI::InputAPI(Profile* profile) {
-}
+InputAPI::InputAPI(content::BrowserContext* context) {}
 
 InputAPI::~InputAPI() {
 }

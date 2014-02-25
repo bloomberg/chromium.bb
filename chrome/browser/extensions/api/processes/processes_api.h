@@ -18,10 +18,12 @@
 #include "content/public/browser/render_widget_host.h"
 #include "extensions/browser/event_router.h"
 
-class Profile;
-
 namespace base {
 class ListValue;
+}
+
+namespace content {
+class BrowserContext;
 }
 
 namespace extensions {
@@ -31,7 +33,7 @@ namespace extensions {
 class ProcessesEventRouter : public TaskManagerModelObserver,
                              public content::NotificationObserver {
  public:
-  explicit ProcessesEventRouter(Profile* profile);
+  explicit ProcessesEventRouter(content::BrowserContext* context);
   virtual ~ProcessesEventRouter();
 
   // Called when an extension process wants to listen to process events.
@@ -76,7 +78,7 @@ class ProcessesEventRouter : public TaskManagerModelObserver,
   // Used for tracking registrations to process related notifications.
   content::NotificationRegistrar registrar_;
 
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
 
   // TaskManager to observe for updates.
   TaskManagerModel* model_;
@@ -95,7 +97,7 @@ class ProcessesEventRouter : public TaskManagerModelObserver,
 class ProcessesAPI : public ProfileKeyedAPI,
                      public EventRouter::Observer {
  public:
-  explicit ProcessesAPI(Profile* profile);
+  explicit ProcessesAPI(content::BrowserContext* context);
   virtual ~ProcessesAPI();
 
   // BrowserContextKeyedService implementation.
@@ -105,7 +107,7 @@ class ProcessesAPI : public ProfileKeyedAPI,
   static ProfileKeyedAPIFactory<ProcessesAPI>* GetFactoryInstance();
 
   // Convenience method to get the ProcessesAPI for a profile.
-  static ProcessesAPI* Get(Profile* profile);
+  static ProcessesAPI* Get(content::BrowserContext* context);
 
   ProcessesEventRouter* processes_event_router();
 
@@ -116,7 +118,7 @@ class ProcessesAPI : public ProfileKeyedAPI,
  private:
   friend class ProfileKeyedAPIFactory<ProcessesAPI>;
 
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
 
   // ProfileKeyedAPI implementation.
   static const char* service_name() {

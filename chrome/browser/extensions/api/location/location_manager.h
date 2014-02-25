@@ -16,6 +16,7 @@
 class Profile;
 
 namespace content {
+class BrowserContext;
 struct Geoposition;
 }  // namespace content
 
@@ -38,7 +39,7 @@ class LocationManager
       public content::NotificationObserver,
       public base::SupportsWeakPtr<LocationManager> {
  public:
-  explicit LocationManager(Profile* profile);
+  explicit LocationManager(content::BrowserContext* context);
   virtual ~LocationManager();
 
   // Adds location request for the given extension, and starts the location
@@ -58,7 +59,7 @@ class LocationManager
   static ProfileKeyedAPIFactory<LocationManager>* GetFactoryInstance();
 
   // Convenience method to get the LocationManager for a profile.
-  static LocationManager* Get(Profile* profile);
+  static LocationManager* Get(content::BrowserContext* context);
 
  private:
   friend class LocationRequest;

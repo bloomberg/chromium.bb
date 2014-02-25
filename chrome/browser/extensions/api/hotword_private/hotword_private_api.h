@@ -19,7 +19,7 @@ namespace extensions {
 // event.
 class HotwordPrivateEventService : public ProfileKeyedAPI  {
  public:
-  explicit HotwordPrivateEventService(Profile* profile);
+  explicit HotwordPrivateEventService(content::BrowserContext* context);
   virtual ~HotwordPrivateEventService();
 
   // ProfileKeyedAPI implementation.

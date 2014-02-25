@@ -33,6 +33,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
@@ -42,6 +43,7 @@
 #include "net/base/completion_callback.h"
 #include "url/gurl.h"
 
+using content::BrowserContext;
 using content::SiteInstance;
 using content::WebContents;
 
@@ -118,9 +120,10 @@ static base::StaticAtomicSequenceNumber g_next_channel_id;
 static base::StaticAtomicSequenceNumber g_channel_id_overflow_count;
 
 static content::RenderProcessHost* GetExtensionProcess(
-    Profile* profile, const std::string& extension_id) {
+    BrowserContext* context,
+    const std::string& extension_id) {
   SiteInstance* site_instance =
-      ExtensionSystem::Get(profile)->process_manager()->GetSiteInstanceForURL(
+      ExtensionSystem::Get(context)->process_manager()->GetSiteInstanceForURL(
           Extension::GetBaseURLFromExtensionId(extension_id));
   return site_instance->HasProcess() ? site_instance->GetProcess() : NULL;
 }
@@ -159,9 +162,9 @@ void MessageService::AllocatePortIdPair(int* port1, int* port2) {
   *port2 = port2_id;
 }
 
-MessageService::MessageService(Profile* profile)
+MessageService::MessageService(BrowserContext* context)
     : lazy_background_task_queue_(
-          ExtensionSystem::Get(profile)->lazy_background_task_queue()),
+          ExtensionSystem::Get(context)->lazy_background_task_queue()),
       weak_factory_(this) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  content::NotificationService::AllBrowserContextsAndSources());
@@ -183,9 +186,8 @@ ProfileKeyedAPIFactory<MessageService>* MessageService::GetFactoryInstance() {
 }
 
 // static
-MessageService* MessageService::Get(content::BrowserContext* context) {
-  Profile* profile = Profile::FromBrowserContext(context);
-  return ProfileKeyedAPIFactory<MessageService>::GetForProfile(profile);
+MessageService* MessageService::Get(BrowserContext* context) {
+  return ProfileKeyedAPIFactory<MessageService>::GetForProfile(context);
 }
 
 void MessageService::OpenChannelToExtension(
@@ -199,9 +201,9 @@ void MessageService::OpenChannelToExtension(
       content::RenderProcessHost::FromID(source_process_id);
   if (!source)
     return;
-  Profile* profile = Profile::FromBrowserContext(source->GetBrowserContext());
+  BrowserContext* context = source->GetBrowserContext();
 
-  ExtensionSystem* extension_system = ExtensionSystem::Get(profile);
+  ExtensionSystem* extension_system = ExtensionSystem::Get(context);
   DCHECK(extension_system);
   const Extension* target_extension = extension_system->extension_service()->
       extensions()->GetByID(target_extension_id);
@@ -214,7 +216,7 @@ void MessageService::OpenChannelToExtension(
   // Only running ephemeral apps can receive messages. Idle cached ephemeral
   // apps are invisible and should not be connectable.
   if (target_extension->is_ephemeral() &&
-      util::IsExtensionIdle(target_extension_id, profile)) {
+      util::IsExtensionIdle(target_extension_id, context)) {
     DispatchOnDisconnect(
         source, receiver_port_id, kReceivingEndDoesntExistError);
     return;
@@ -267,17 +269,15 @@ void MessageService::OpenChannelToExtension(
   WebContents* source_contents = tab_util::GetWebContentsByID(
       source_process_id, source_routing_id);
 
-  if (profile->IsOffTheRecord() &&
-      !util::IsIncognitoEnabled(target_extension_id, profile)) {
+  if (context->IsOffTheRecord() &&
+      !util::IsIncognitoEnabled(target_extension_id, context)) {
     // Give the user a chance to accept an incognito connection if they haven't
     // already - but only for spanning-mode incognito. We don't want the
     // complication of spinning up an additional process here which might need
     // to do some setup that we're not expecting.
-    if (!is_web_connection ||
-        IncognitoInfo::IsSplitMode(target_extension) ||
-        !IncognitoConnectability::Get(profile)->Query(target_extension,
-                                                      source_contents,
-                                                      source_url)) {
+    if (!is_web_connection || IncognitoInfo::IsSplitMode(target_extension) ||
+        !IncognitoConnectability::Get(context)
+             ->Query(target_extension, source_contents, source_url)) {
       DispatchOnDisconnect(
           source, receiver_port_id, kReceivingEndDoesntExistError);
       return;
@@ -288,7 +288,8 @@ void MessageService::OpenChannelToExtension(
   // process, we will use the incognito EPM to find the right extension process,
   // which depends on whether the extension uses spanning or split mode.
   MessagePort* receiver = new ExtensionMessagePort(
-      GetExtensionProcess(profile, target_extension_id), MSG_ROUTING_CONTROL,
+      GetExtensionProcess(context, target_extension_id),
+      MSG_ROUTING_CONTROL,
       target_extension_id);
 
   // Include info about the opener's tab (if it was a tab).
@@ -321,7 +322,7 @@ void MessageService::OpenChannelToExtension(
     pending_tls_channel_id_channels_[GET_CHANNEL_ID(params->receiver_port_id)]
         = PendingMessagesQueue();
     property_provider_.GetDomainBoundCert(
-        profile,
+        Profile::FromBrowserContext(context),
         source_url,
         base::Bind(&MessageService::GotDomainBoundCert,
                    weak_factory_.GetWeakPtr(),
@@ -332,9 +333,8 @@ void MessageService::OpenChannelToExtension(
   // The target might be a lazy background page. In that case, we have to check
   // if it is loaded and ready, and if not, queue up the task and load the
   // page.
-  if (MaybeAddPendingLazyBackgroundPageOpenChannelTask(profile,
-                                                       target_extension,
-                                                       params)) {
+  if (MaybeAddPendingLazyBackgroundPageOpenChannelTask(
+          context, target_extension, params)) {
     return;
   }
 
@@ -654,7 +654,7 @@ void MessageService::DispatchMessage(int source_port_id,
 }
 
 bool MessageService::MaybeAddPendingLazyBackgroundPageOpenChannelTask(
-    Profile* profile,
+    BrowserContext* context,
     const Extension* extension,
     OpenChannelParams* params) {
   if (!BackgroundInfo::HasLazyBackgroundPage(extension))
@@ -664,18 +664,21 @@ bool MessageService::MaybeAddPendingLazyBackgroundPageOpenChannelTask(
   // using the original profile since that is what the extension process
   // will use.
   if (!IncognitoInfo::IsSplitMode(extension))
-    profile = profile->GetOriginalProfile();
+    context = ExtensionsBrowserClient::Get()->GetOriginalContext(context);
 
-  if (!lazy_background_task_queue_->ShouldEnqueueTask(profile, extension))
+  if (!lazy_background_task_queue_->ShouldEnqueueTask(context, extension))
     return false;
 
-  pending_lazy_background_page_channels_[
-      GET_CHANNEL_ID(params->receiver_port_id)] =
-      PendingLazyBackgroundPageChannel(profile, extension->id());
+  pending_lazy_background_page_channels_
+      [GET_CHANNEL_ID(params->receiver_port_id)] =
+          PendingLazyBackgroundPageChannel(context, extension->id());
   scoped_ptr<OpenChannelParams> scoped_params(params);
-  lazy_background_task_queue_->AddPendingTask(profile, extension->id(),
+  lazy_background_task_queue_->AddPendingTask(
+      context,
+      extension->id(),
       base::Bind(&MessageService::PendingLazyBackgroundPageOpenChannel,
-                 weak_factory_.GetWeakPtr(), base::Passed(&scoped_params),
+                 weak_factory_.GetWeakPtr(),
+                 base::Passed(&scoped_params),
                  params->source->GetID()));
   return true;
 }
@@ -692,11 +695,11 @@ void MessageService::GotDomainBoundCert(scoped_ptr<OpenChannelParams> params,
     return;
   }
 
-  Profile* profile = Profile::FromBrowserContext(
-      params->source->GetBrowserContext());
+  BrowserContext* context = params->source->GetBrowserContext();
 
-  const Extension* target_extension = ExtensionSystem::Get(profile)->
-      extension_service()->extensions()->GetByID(params->target_extension_id);
+  const Extension* target_extension =
+      ExtensionSystem::Get(context)->extension_service()->extensions()->GetByID(
+          params->target_extension_id);
   if (!target_extension) {
     pending_tls_channel_id_channels_.erase(channel_id);
     DispatchOnDisconnect(
@@ -705,9 +708,8 @@ void MessageService::GotDomainBoundCert(scoped_ptr<OpenChannelParams> params,
     return;
   }
   PendingMessagesQueue& pending_messages = pending_for_tls_channel_id->second;
-  if (MaybeAddPendingLazyBackgroundPageOpenChannelTask(profile,
-                                                       target_extension,
-                                                       params.get())) {
+  if (MaybeAddPendingLazyBackgroundPageOpenChannelTask(
+          context, target_extension, params.get())) {
     // Lazy background queue took ownership. Release ours.
     ignore_result(params.release());
     // Messages queued up waiting for the TLS channel ID now need to be queued

@@ -30,6 +30,7 @@ class ListValue;
 }
 
 namespace content {
+class BrowserContext;
 class WebContents;
 }
 
@@ -85,14 +86,14 @@ class OmniboxSendSuggestionsFunction : public ChromeSyncExtensionFunction {
 class OmniboxAPI : public ProfileKeyedAPI,
                    public content::NotificationObserver {
  public:
-  explicit OmniboxAPI(Profile* profile);
+  explicit OmniboxAPI(content::BrowserContext* context);
   virtual ~OmniboxAPI();
 
   // ProfileKeyedAPI implementation.
   static ProfileKeyedAPIFactory<OmniboxAPI>* GetFactoryInstance();
 
   // Convenience method to get the OmniboxAPI for a profile.
-  static OmniboxAPI* Get(Profile* profile);
+  static OmniboxAPI* Get(content::BrowserContext* context);
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

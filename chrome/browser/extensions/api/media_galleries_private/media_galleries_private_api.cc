@@ -81,15 +81,16 @@ bool GetGalleryFilePathAndId(const std::string& gallery_id,
 //                      MediaGalleriesPrivateAPI                             //
 ///////////////////////////////////////////////////////////////////////////////
 
-MediaGalleriesPrivateAPI::MediaGalleriesPrivateAPI(Profile* profile)
-    : profile_(profile),
-      weak_ptr_factory_(this) {
+MediaGalleriesPrivateAPI::MediaGalleriesPrivateAPI(
+    content::BrowserContext* context)
+    : profile_(Profile::FromBrowserContext(context)), weak_ptr_factory_(this) {
   DCHECK(profile_);
-  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+  EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
+  event_router->RegisterObserver(
       this, media_galleries_private::OnDeviceAttached::kEventName);
-  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+  event_router->RegisterObserver(
       this, media_galleries_private::OnDeviceDetached::kEventName);
-  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
+  event_router->RegisterObserver(
       this, media_galleries_private::OnGalleryChanged::kEventName);
 }
 
@@ -114,9 +115,10 @@ ProfileKeyedAPIFactory<MediaGalleriesPrivateAPI>*
 }
 
 // static
-MediaGalleriesPrivateAPI* MediaGalleriesPrivateAPI::Get(Profile* profile) {
-  return
-      ProfileKeyedAPIFactory<MediaGalleriesPrivateAPI>::GetForProfile(profile);
+MediaGalleriesPrivateAPI* MediaGalleriesPrivateAPI::Get(
+    content::BrowserContext* context) {
+  return ProfileKeyedAPIFactory<MediaGalleriesPrivateAPI>::GetForProfile(
+      context);
 }
 
 void MediaGalleriesPrivateAPI::OnListenerAdded(

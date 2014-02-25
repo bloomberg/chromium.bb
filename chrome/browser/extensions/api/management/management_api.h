@@ -193,7 +193,7 @@ class ManagementEventRouter : public content::NotificationObserver {
 class ManagementAPI : public ProfileKeyedAPI,
                       public extensions::EventRouter::Observer {
  public:
-  explicit ManagementAPI(Profile* profile);
+  explicit ManagementAPI(content::BrowserContext* context);
   virtual ~ManagementAPI();
 
   // BrowserContextKeyedService implementation.
@@ -209,7 +209,7 @@ class ManagementAPI : public ProfileKeyedAPI,
  private:
   friend class ProfileKeyedAPIFactory<ManagementAPI>;
 
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
 
   // ProfileKeyedAPI implementation.
   static const char* service_name() {

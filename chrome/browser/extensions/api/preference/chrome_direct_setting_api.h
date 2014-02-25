@@ -11,13 +11,17 @@
 
 class Profile;
 
+namespace content {
+class BrowserContext;
+}
+
 namespace extensions {
 namespace chromedirectsetting {
 
 class ChromeDirectSettingAPI : public ProfileKeyedAPI,
                                public EventRouter::Observer {
  public:
-  explicit ChromeDirectSettingAPI(Profile* profile);
+  explicit ChromeDirectSettingAPI(content::BrowserContext* context);
 
   virtual ~ChromeDirectSettingAPI();
 
@@ -34,7 +38,7 @@ class ChromeDirectSettingAPI : public ProfileKeyedAPI,
   bool IsPreferenceOnWhitelist(const std::string& pref_key);
 
   // Convenience method to get the ChromeDirectSettingAPI for a profile.
-  static ChromeDirectSettingAPI* Get(Profile* profile);
+  static ChromeDirectSettingAPI* Get(content::BrowserContext* context);
 
  private:
   friend class ProfileKeyedAPIFactory<ChromeDirectSettingAPI>;
@@ -57,4 +61,3 @@ class ChromeDirectSettingAPI : public ProfileKeyedAPI,
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_PREFERENCE_CHROME_DIRECT_SETTING_API_H__
-
