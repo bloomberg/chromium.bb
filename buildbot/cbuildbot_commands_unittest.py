@@ -410,14 +410,14 @@ ca-t3/pk-g4-4.0.1-r333
     self._TestChromeLKGM(1234)
     self.assertCommandContains(['svn', 'cat', '-r', '1234'])
 
-  def testAbortHWTests(self):
-    commands.AbortHWTests('my-version', debug=False)
+  def testAbortCQHWTests(self):
+    commands.AbortCQHWTests('my-version', debug=False)
     self.assertCommandContains(['cp', '-'], input='')
-    self.assertCommandContains(['-i', 'my-version'])
+    self.assertCommandContains(['-i', 'paladin/my-version'])
 
   def testHWTestsAborted(self, aborted=True):
     self.PatchObject(gs.GSContext, 'Exists', return_value=aborted)
-    self.assertEqual(commands.HaveHWTestsBeenAborted('my-version'), aborted)
+    self.assertEqual(commands.HaveCQHWTestsBeenAborted('my-version'), aborted)
 
   def testHWTestsNotAborted(self):
     self.testHWTestsAborted(aborted=False)

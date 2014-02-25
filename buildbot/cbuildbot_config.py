@@ -15,12 +15,13 @@ import json
 GS_PATH_DEFAULT = 'default' # Means gs://chromeos-image-archive/ + bot_id
 
 # Contains the valid build config suffixes in the order that they are dumped.
+CONFIG_TYPE_PALADIN = 'paladin'
 CONFIG_TYPE_RELEASE = 'release'
 CONFIG_TYPE_FULL = 'full'
 CONFIG_TYPE_FIRMWARE = 'firmware'
 
 CONFIG_TYPE_DUMP_ORDER = (
-    'paladin',
+    CONFIG_TYPE_PALADIN,
     constants.PRE_CQ_BUILDER_NAME,
     'pre-cq',
     'pre-cq-launcher',

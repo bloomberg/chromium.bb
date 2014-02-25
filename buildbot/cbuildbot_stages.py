@@ -1281,13 +1281,11 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
 
   def _AbortCQHWTests(self):
     """Abort any HWTests started by the CQ."""
-    manifest_manager = self._run.attrs.manifest_manager
     if (cbuildbot_config.IsCQType(self._run.config.build_type) and
-        manifest_manager is not None and
         self._run.manifest_branch == 'master'):
-      release_tag = manifest_manager.current_version
-      if release_tag and not commands.HaveHWTestsBeenAborted(release_tag):
-        commands.AbortHWTests(release_tag, self._run.options.debug)
+      version = self._run.GetVersion()
+      if not commands.HaveCQHWTestsBeenAborted(version):
+        commands.AbortCQHWTests(version, self._run.options.debug)
 
   def _HandleStageException(self, exception):
     """Decide whether an exception should be treated as fatal."""
@@ -2841,13 +2839,15 @@ class HWTestStage(ArchivingStage):
   def _CheckAborted(self):
     """Checks with GS to see if HWTest for this build's release_tag was aborted.
 
+    We currently only support aborting HWTests for the CQ, so this method only
+    returns True for paladin builders.
+
     Returns:
       True if HWTest have been aborted for this build's release_tag.
       False otherwise.
     """
-    aborted = (self.archive_stage.release_tag and
-               cbuildbot_config.IsCQType(self._run.config.build_type) and
-               commands.HaveHWTestsBeenAborted(self.archive_stage.release_tag))
+    aborted = (cbuildbot_config.IsCQType(self._run.config.build_type) and
+               commands.HaveCQHWTestsBeenAborted(self._run.GetVersion()))
     return aborted
 
   # Disable complaint about calling _HandleStageException.

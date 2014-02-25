@@ -960,7 +960,7 @@ class HWTestStageTest(AbstractStageTest):
     self.StartPatcher(ArchiveStageMock())
 
     self.mox.StubOutWithMock(lab_status, 'CheckLabStatus')
-    self.mox.StubOutWithMock(commands, 'HaveHWTestsBeenAborted')
+    self.mox.StubOutWithMock(commands, 'HaveCQHWTestsBeenAborted')
     self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
     self.mox.StubOutWithMock(cros_build_lib, 'PrintBuildbotStepWarnings')
     self.mox.StubOutWithMock(cros_build_lib, 'PrintBuildbotStepFailure')
@@ -996,6 +996,11 @@ class HWTestStageTest(AbstractStageTest):
       fails: Whether the command as a whole should fail.
       timeout: Whether the the hw tests should time out.
     """
+    if config.IsCQType(self.run.config.build_type):
+      version = self.run.GetVersion()
+      for _ in range(1 + int(fails)):
+        commands.HaveCQHWTestsBeenAborted(version).AndReturn(False)
+
     lab_status.CheckLabStatus(mox.IgnoreArg())
     m = commands.RunHWTestSuite(mox.IgnoreArg(),
                                 self.suite,
@@ -1015,8 +1020,6 @@ class HWTestStageTest(AbstractStageTest):
 
       # Make sure failures are logged correctly.
       if fails:
-        if self.run.attrs.release_tag:
-          commands.HaveHWTestsBeenAborted(self.run.attrs.release_tag)
         cros_build_lib.PrintBuildbotStepFailure()
         cros_build_lib.Error(mox.IgnoreArg())
       else:
@@ -1331,7 +1334,7 @@ class AUTestStageTest(AbstractStageTest,
     self.StartPatcher(self.archive_mock)
     self.PatchObject(commands, 'ArchiveFile', autospec=True,
                      return_value='foo.txt')
-    self.PatchObject(commands, 'HaveHWTestsBeenAborted', autospec=True,
+    self.PatchObject(commands, 'HaveCQHWTestsBeenAborted', autospec=True,
                      return_value=False)
     self.PatchObject(lab_status, 'CheckLabStatus', autospec=True)
 
