@@ -127,11 +127,22 @@ NSImage* GetImageFromResourceID(int resourceId) {
 }
 
 - (void)updateAvatarButtonAndLayoutParent:(BOOL)layoutParent {
-  // The button text has a white drop shadow.
+  // The button text has a black foreground and a white drop shadow for regular
+  // windows, and a light text with a dark drop shadow for guest windows
+  // which are themed with a dark background.
+  // TODO(noms): Figure out something similar for themed windows, if possible.
   base::scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
   [shadow setShadowOffset:NSMakeSize(0, -1)];
   [shadow setShadowBlurRadius:0];
-  [shadow setShadowColor:[NSColor whiteColor]];
+
+  NSColor* foregroundColor;
+  if (!browser_->profile()->IsGuestSession()) {
+    foregroundColor = [NSColor blackColor];
+    [shadow setShadowColor:[NSColor colorWithCalibratedWhite:1.0 alpha:0.7]];
+  } else {
+    foregroundColor = [NSColor colorWithCalibratedWhite:1.0 alpha:0.9];
+    [shadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0 alpha:0.4]];
+  }
 
   base::scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
       [[NSMutableParagraphStyle alloc] init]);
@@ -145,6 +156,7 @@ NSImage* GetImageFromResourceID(int resourceId) {
       [[NSAttributedString alloc]
           initWithString:buttonTitle
               attributes:@{ NSShadowAttributeName : shadow.get(),
+                            NSForegroundColorAttributeName : foregroundColor,
                             NSParagraphStyleAttributeName : paragraphStyle }]);
   [button_ setAttributedTitle:attributedTitle];
   [button_ sizeToFit];
