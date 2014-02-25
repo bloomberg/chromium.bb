@@ -657,9 +657,9 @@ void Gtk2UI::NotifyWindowManagerStartupComplete() {
 void Gtk2UI::GetScrollbarColors(GdkColor* thumb_active_color,
                                 GdkColor* thumb_inactive_color,
                                 GdkColor* track_color) {
-  const GdkColor* theme_thumb_active = NULL;
-  const GdkColor* theme_thumb_inactive = NULL;
-  const GdkColor* theme_trough_color = NULL;
+  GdkColor* theme_thumb_active = NULL;
+  GdkColor* theme_thumb_inactive = NULL;
+  GdkColor* theme_trough_color = NULL;
   gtk_widget_style_get(GTK_WIDGET(fake_frame_),
                        "scrollbar-slider-prelight-color", &theme_thumb_active,
                        "scrollbar-slider-normal-color", &theme_thumb_inactive,
@@ -672,6 +672,10 @@ void Gtk2UI::GetScrollbarColors(GdkColor* thumb_active_color,
     *thumb_active_color = *theme_thumb_active;
     *thumb_inactive_color = *theme_thumb_inactive;
     *track_color = *theme_trough_color;
+
+    gdk_color_free(theme_thumb_active);
+    gdk_color_free(theme_thumb_inactive);
+    gdk_color_free(theme_trough_color);
     return;
   }
 
@@ -744,14 +748,20 @@ void Gtk2UI::GetScrollbarColors(GdkColor* thumb_active_color,
 
   // Override any of the default colors with ones that were specified by the
   // theme.
-  if (theme_thumb_active)
+  if (theme_thumb_active) {
     *thumb_active_color = *theme_thumb_active;
+    gdk_color_free(theme_thumb_active);
+  }
 
-  if (theme_thumb_inactive)
+  if (theme_thumb_inactive) {
     *thumb_inactive_color = *theme_thumb_inactive;
+    gdk_color_free(theme_thumb_inactive);
+  }
 
-  if (theme_trough_color)
+  if (theme_trough_color) {
     *track_color = *theme_trough_color;
+    gdk_color_free(theme_trough_color);
+  }
 }
 
 void Gtk2UI::SetXDGIconTheme() {
