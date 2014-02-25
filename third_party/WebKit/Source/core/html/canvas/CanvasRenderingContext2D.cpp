@@ -573,9 +573,16 @@ void CanvasRenderingContext2D::setGlobalCompositeOperation(const String& operati
     c->setCompositeOperation(op, blendMode);
 }
 
-void CanvasRenderingContext2D::setCurrentTransform(PassRefPtr<SVGMatrixTearOff> passMatrixTearOff)
+void CanvasRenderingContext2D::setCurrentTransform(PassRefPtr<SVGMatrixTearOff> passMatrixTearOff, ExceptionState& exceptionState)
 {
     RefPtr<SVGMatrixTearOff> matrixTearOff = passMatrixTearOff;
+
+    // FIXME: bindings should do null checking and throw: http://crbug.com/321518
+    if (!matrixTearOff) {
+        exceptionState.throwDOMException(TypeError, "currentTransform only accepts a SVGMatrix.");
+        return;
+    }
+
     const AffineTransform& transform = matrixTearOff->value();
     setTransform(transform.a(), transform.b(), transform.c(), transform.d(), transform.e(), transform.f());
 }
