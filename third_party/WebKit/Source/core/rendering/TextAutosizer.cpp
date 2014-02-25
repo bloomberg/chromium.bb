@@ -190,10 +190,13 @@ bool TextAutosizer::processSubtree(RenderObject* layoutRoot)
     if (!textAutosizingEnabled)
         return false;
 
-    InspectorInstrumentation::willAutosizeText(layoutRoot);
-
     Frame* mainFrame = m_document->page()->mainFrame();
     TextAutosizingWindowInfo windowInfo;
+
+    if (!mainFrame->loader().stateMachine()->committedFirstRealDocumentLoad())
+        return false;
+
+    InspectorInstrumentation::willAutosizeText(layoutRoot);
 
     // Window area, in logical (density-independent) pixels.
     windowInfo.windowSize = m_document->settings()->textAutosizingWindowSizeOverride();
