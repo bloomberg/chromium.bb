@@ -76,6 +76,7 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/TextAutosizer.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
+#include "platform/UserGestureIndicator.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/network/ResourceError.h"
 #include "platform/scroll/ScrollbarTheme.h"
@@ -4638,6 +4639,60 @@ TEST_F(WebFrameTest, SimulateFragmentAnchorMiddleClick)
     WebCore::FrameLoadRequest frameRequest(document, WebCore::ResourceRequest(destination));
     frameRequest.setTriggeringEvent(event);
     webViewHelper.webViewImpl()->page()->mainFrame()->loader().load(frameRequest);
+}
+
+class TestNewWindowWebViewClient : public WebViewClient {
+public:
+    virtual WebView* createView(WebFrame*, const WebURLRequest&, const WebWindowFeatures&,
+        const WebString&, WebNavigationPolicy, bool) OVERRIDE
+    {
+        EXPECT_TRUE(false);
+        return 0;
+    }
+};
+
+class TestNewWindowWebFrameClient : public WebFrameClient {
+public:
+    TestNewWindowWebFrameClient()
+        : m_decidePolicyCallCount(0)
+    {
+    }
+
+    virtual WebNavigationPolicy decidePolicyForNavigation(WebFrame*, WebDataSource::ExtraData*, const WebURLRequest&,
+        WebNavigationType, WebNavigationPolicy policy, bool) OVERRIDE
+    {
+        m_decidePolicyCallCount++;
+        return policy;
+    }
+
+    int decidePolicyCallCount() const { return m_decidePolicyCallCount; }
+
+private:
+    int m_decidePolicyCallCount;
+};
+
+TEST_F(WebFrameTest, ModifiedClickNewWindow)
+{
+    registerMockedHttpURLLoad("ctrl_click.html");
+    registerMockedHttpURLLoad("hello_world.html");
+    TestNewWindowWebViewClient webViewClient;
+    TestNewWindowWebFrameClient webFrameClient;
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "ctrl_click.html", true, &webFrameClient, &webViewClient);
+
+    WebCore::Document* document = webViewHelper.webViewImpl()->page()->mainFrame()->document();
+    WebCore::KURL destination = toKURL(m_baseURL + "hello_world.html");
+
+    // ctrl+click event
+    RefPtr<WebCore::Event> event = WebCore::MouseEvent::create(WebCore::EventTypeNames::click, false, false,
+        document->domWindow(), 0, 0, 0, 0, 0, 0, 0, true, false, false, false, 0, nullptr, nullptr);
+    WebCore::FrameLoadRequest frameRequest(document, WebCore::ResourceRequest(destination));
+    frameRequest.setTriggeringEvent(event);
+    WebCore::UserGestureIndicator gesture(WebCore::DefinitelyProcessingUserGesture);
+    webViewHelper.webViewImpl()->page()->mainFrame()->loader().load(frameRequest);
+
+    // decidePolicyForNavigation should be called both for the original request and the ctrl+click.
+    EXPECT_EQ(2, webFrameClient.decidePolicyCallCount());
 }
 
 TEST_F(WebFrameTest, BackToReload)
