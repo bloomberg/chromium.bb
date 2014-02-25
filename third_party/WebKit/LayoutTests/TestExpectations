@@ -783,6 +783,8 @@ crbug.com/333882 [ Win ] inspector/elements/edit-trimmed-attribute-value.html [ 
 crbug.com/333882 [ Win7 ] inspector/elements/styles/styles-change-node-while-editing.html [ Pass Failure ]
 crbug.com/333882 [ Win ] inspector/elements/styles/undo-add-rule-crash.html [ Pass Timeout ]
 
+crbug.com/342077 [ Linux Android ] fast/text/chromium-linux-fontconfig-renderstyle.html [ NeedsRebaseline ]
+
 crbug.com/333880 [ Win7 Debug ] media/W3C/video/events/event_order_loadstart_progress.html [ Pass Failure ]
 
 crbug.com/345649 fast/repaint/delete-into-nested-block.html [ Pass Failure ]
