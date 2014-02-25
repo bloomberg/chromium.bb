@@ -19,13 +19,15 @@
 namespace {
 
 const int kMaximumReportedProfileCount = 5;
+const int kMaximumDaysOfDisuse = 4 * 7;  // Should be integral number of weeks.
 
 struct ProfileCounts {
   size_t total;
   size_t signedin;
   size_t managed;
+  size_t unused;
 
-  ProfileCounts() : total(0), signedin(0), managed(0) {}
+  ProfileCounts() : total(0), signedin(0), managed(0), unused(0) {}
 };
 
 ProfileMetrics::ProfileType GetProfileType(
@@ -59,11 +61,19 @@ bool CountProfileInformation(ProfileManager* manager, ProfileCounts* counts) {
   if (!number_of_profiles)
     return false;
 
+  // Maximum age for "active" profile is 4 weeks.
+  base::Time oldest = base::Time::Now() -
+      base::TimeDelta::FromDays(kMaximumDaysOfDisuse);
+
   for (size_t i = 0; i < number_of_profiles; ++i) {
-    if (info_cache.ProfileIsManagedAtIndex(i))
-      counts->managed++;
-    if (!info_cache.GetUserNameOfProfileAtIndex(i).empty())
-      counts->signedin++;
+    if (info_cache.GetProfileActiveTimeAtIndex(i) < oldest) {
+      counts->unused++;
+    } else {
+      if (info_cache.ProfileIsManagedAtIndex(i))
+        counts->managed++;
+      if (!info_cache.GetUserNameOfProfileAtIndex(i).empty())
+        counts->signedin++;
+    }
   }
   return true;
 }
@@ -130,6 +140,8 @@ void ProfileMetrics::LogNumberOfProfiles(ProfileManager* manager) {
                              100 * counts.managed / counts.total);
     UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfSignedInProfiles",
                              counts.signedin);
+    UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfUnusedProfiles",
+                             counts.unused);
 
     UpdateReportedOSProfileStatistics(counts.total, counts.signedin);
   }
