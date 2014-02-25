@@ -388,8 +388,6 @@ Status ImportKey(blink::WebCryptoKeyFormat format,
     case blink::WebCryptoKeyFormatRaw:
       return ImportKeyRaw(
           key_data, algorithm_or_null, extractable, usage_mask, key);
-      return platform::ImportKeyRaw(
-          algorithm_or_null, key_data, extractable, usage_mask, key);
     case blink::WebCryptoKeyFormatSpki:
       return platform::ImportKeySpki(
           algorithm_or_null, key_data, extractable, usage_mask, key);
