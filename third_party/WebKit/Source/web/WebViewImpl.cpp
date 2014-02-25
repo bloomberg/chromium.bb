@@ -2512,6 +2512,12 @@ void WebViewImpl::setInitialFocus(bool reverse)
 
 void WebViewImpl::clearFocusedNode()
 {
+    // Deprecated API. Use clearFocusedElement instead.
+    clearFocusedElement();
+}
+
+void WebViewImpl::clearFocusedElement()
+{
     RefPtr<Frame> frame = focusedWebCoreFrame();
     if (!frame)
         return;

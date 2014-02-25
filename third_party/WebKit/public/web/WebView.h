@@ -180,9 +180,12 @@ public:
     // Focus the first (last if reverse is true) focusable node.
     virtual void setInitialFocus(bool reverse) = 0;
 
-    // Clears the focused node (and selection if a text field is focused)
+    // Clears the focused element (and selection if a text field is focused)
     // to ensure that a text field on the page is not eating keystrokes we
     // send it.
+    virtual void clearFocusedElement() = 0;
+
+    // Deprecated API. Will be removed soon..
     virtual void clearFocusedNode() = 0;
 
     // Scrolls the node currently in focus into view.

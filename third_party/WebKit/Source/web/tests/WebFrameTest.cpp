@@ -2719,7 +2719,7 @@ TEST_F(WebFrameTest, ClearFocusedNodeTest)
     webViewHelper.initializeAndLoad(m_baseURL + "iframe_clear_focused_node_test.html", true);
 
     // Clear the focused node.
-    webViewHelper.webView()->clearFocusedNode();
+    webViewHelper.webView()->clearFocusedElement();
 
     // Now retrieve the FocusedNode and test it should be null.
     EXPECT_EQ(0, webViewHelper.webViewImpl()->focusedElement());

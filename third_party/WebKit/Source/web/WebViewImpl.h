@@ -205,7 +205,9 @@ public:
     virtual WebFrame* focusedFrame() OVERRIDE;
     virtual void setFocusedFrame(WebFrame*) OVERRIDE;
     virtual void setInitialFocus(bool reverse) OVERRIDE;
+    // Deprecated Api. Please use clearFocusedElement instead.
     virtual void clearFocusedNode() OVERRIDE;
+    virtual void clearFocusedElement() OVERRIDE;
     virtual void scrollFocusedNodeIntoView() OVERRIDE;
     virtual void scrollFocusedNodeIntoRect(const WebRect&) OVERRIDE;
     virtual void zoomToFindInPageRect(const WebRect&) OVERRIDE;
