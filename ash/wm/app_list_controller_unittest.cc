@@ -8,6 +8,7 @@
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/window_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 
@@ -40,6 +41,53 @@ TEST_F(AppListControllerTest, RemainVisibleWhenFocusingToApplistContainer) {
   wm::ActivateWindow(window.get());
 
   EXPECT_TRUE(Shell::GetInstance()->GetAppListTargetVisibility());
+}
+
+// Tests that clicking outside the app-list bubble closes it.
+TEST_F(AppListControllerTest, ClickOutsideBubbleClosesBubble) {
+  Shell* shell = Shell::GetInstance();
+  shell->ToggleAppList(NULL);
+
+  aura::Window* app_window = shell->GetAppListWindow();
+  ASSERT_TRUE(app_window);
+  aura::test::EventGenerator generator(shell->GetPrimaryRootWindow(),
+                                       app_window);
+  // Click on the bubble itself. The bubble should remain visible.
+  generator.ClickLeftButton();
+  EXPECT_TRUE(shell->GetAppListTargetVisibility());
+
+  // Click outside the bubble. This should close it.
+  gfx::Rect app_window_bounds = app_window->GetBoundsInRootWindow();
+  gfx::Point point_outside =
+      gfx::Point(app_window_bounds.right(), app_window_bounds.y()) +
+      gfx::Vector2d(10, 0);
+  EXPECT_TRUE(shell->GetPrimaryRootWindow()->bounds().Contains(point_outside));
+  generator.MoveMouseToInHost(point_outside);
+  generator.ClickLeftButton();
+  EXPECT_FALSE(shell->GetAppListTargetVisibility());
+}
+
+// Tests that clicking outside the app-list bubble closes it.
+TEST_F(AppListControllerTest, TapOutsideBubbleClosesBubble) {
+  Shell* shell = Shell::GetInstance();
+  shell->ToggleAppList(NULL);
+
+  aura::Window* app_window = shell->GetAppListWindow();
+  ASSERT_TRUE(app_window);
+  gfx::Rect app_window_bounds = app_window->GetBoundsInRootWindow();
+
+  aura::test::EventGenerator generator(shell->GetPrimaryRootWindow());
+  // Click on the bubble itself. The bubble should remain visible.
+  generator.GestureTapAt(app_window_bounds.CenterPoint());
+  EXPECT_TRUE(shell->GetAppListTargetVisibility());
+
+  // Click outside the bubble. This should close it.
+  gfx::Point point_outside =
+      gfx::Point(app_window_bounds.right(), app_window_bounds.y()) +
+      gfx::Vector2d(10, 0);
+  EXPECT_TRUE(shell->GetPrimaryRootWindow()->bounds().Contains(point_outside));
+  generator.GestureTapAt(point_outside);
+  EXPECT_FALSE(shell->GetAppListTargetVisibility());
 }
 
 }  // namespace ash

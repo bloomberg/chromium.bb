@@ -289,6 +289,9 @@ void AppListController::ScheduleAnimation() {
 }
 
 void AppListController::ProcessLocatedEvent(ui::LocatedEvent* event) {
+  if (!view_ || !is_visible_)
+    return;
+
   // If the event happened on a menu, then the event should not close the app
   // list.
   aura::Window* target = static_cast<aura::Window*>(event->target());
@@ -307,16 +310,9 @@ void AppListController::ProcessLocatedEvent(ui::LocatedEvent* event) {
     }
   }
 
-  if (view_ && is_visible_) {
-    aura::Window* window = view_->GetWidget()->GetNativeView();
-    gfx::Point window_local_point(event->root_location());
-    aura::Window::ConvertPointToTarget(window->GetRootWindow(),
-                                       window,
-                                       &window_local_point);
-    // Use HitTest to respect the hit test mask of the bubble.
-    if (!window->HitTest(window_local_point))
-      SetVisible(false, window);
-  }
+  aura::Window* window = view_->GetWidget()->GetNativeView();
+  if (!window->Contains(target))
+    SetVisible(false, window);
 }
 
 void AppListController::UpdateBounds() {

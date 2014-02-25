@@ -670,22 +670,6 @@ bool Window::ContainsPoint(const gfx::Point& local_point) const {
   return gfx::Rect(bounds().size()).Contains(local_point);
 }
 
-bool Window::HitTest(const gfx::Point& local_point) {
-  gfx::Rect local_bounds(bounds().size());
-  if (!delegate_ || !delegate_->HasHitTestMask())
-    return local_bounds.Contains(local_point);
-
-  gfx::Path mask;
-  delegate_->GetHitTestMask(&mask);
-
-  SkRegion clip_region;
-  clip_region.setRect(local_bounds.x(), local_bounds.y(),
-                      local_bounds.width(), local_bounds.height());
-  SkRegion mask_region;
-  return mask_region.setPath(mask, clip_region) &&
-      mask_region.contains(local_point.x(), local_point.y());
-}
-
 Window* Window::GetEventHandlerForPoint(const gfx::Point& local_point) {
   return GetWindowForPoint(local_point, true, true);
 }
@@ -871,6 +855,22 @@ int64 Window::GetPropertyInternal(const void* key,
   if (iter == prop_map_.end())
     return default_value;
   return iter->second.value;
+}
+
+bool Window::HitTest(const gfx::Point& local_point) {
+  gfx::Rect local_bounds(bounds().size());
+  if (!delegate_ || !delegate_->HasHitTestMask())
+    return local_bounds.Contains(local_point);
+
+  gfx::Path mask;
+  delegate_->GetHitTestMask(&mask);
+
+  SkRegion clip_region;
+  clip_region.setRect(local_bounds.x(), local_bounds.y(),
+                      local_bounds.width(), local_bounds.height());
+  SkRegion mask_region;
+  return mask_region.setPath(mask, clip_region) &&
+      mask_region.contains(local_point.x(), local_point.y());
 }
 
 void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {

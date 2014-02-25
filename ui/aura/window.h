@@ -256,13 +256,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // within this Window's bounds.
   bool ContainsPoint(const gfx::Point& local_point) const;
 
-  // Returns true if the mouse pointer at relative-to-this-Window's-origin
-  // |local_point| can trigger an event for this Window.
-  // TODO(beng): A Window can supply a hit-test mask to cause some portions of
-  // itself to not trigger events, causing the events to fall through to the
-  // Window behind.
-  bool HitTest(const gfx::Point& local_point);
-
   // Returns the Window that most closely encloses |local_point| for the
   // purposes of event targeting.
   Window* GetEventHandlerForPoint(const gfx::Point& local_point);
@@ -354,6 +347,13 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
                             int64 value,
                             int64 default_value);
   int64 GetPropertyInternal(const void* key, int64 default_value) const;
+
+  // Returns true if the mouse pointer at relative-to-this-Window's-origin
+  // |local_point| can trigger an event for this Window.
+  // TODO(beng): A Window can supply a hit-test mask to cause some portions of
+  // itself to not trigger events, causing the events to fall through to the
+  // Window behind.
+  bool HitTest(const gfx::Point& local_point);
 
   // Changes the bounds of the window without condition.
   void SetBoundsInternal(const gfx::Rect& new_bounds);

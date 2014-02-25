@@ -298,7 +298,7 @@ aura::Window* WindowOverview::GetEventTarget(ui::LocatedEvent* event) {
   // If the target window doesn't actually contain the event location (i.e.
   // mouse down over the window and mouse up elsewhere) then do not select the
   // window.
-  if (!target->HitTest(event->location()))
+  if (!target->ContainsPoint(event->location()))
     return NULL;
 
   return GetTargetedWindow(target);

@@ -470,42 +470,6 @@ TEST_F(WindowTest, MoveCursorToWithComplexTransform) {
       gfx::Screen::GetScreenFor(root)->GetCursorScreenPoint().ToString());
 }
 
-TEST_F(WindowTest, HitTest) {
-  Window w1(new ColorTestWindowDelegate(SK_ColorWHITE));
-  w1.set_id(1);
-  w1.Init(aura::WINDOW_LAYER_TEXTURED);
-  w1.SetBounds(gfx::Rect(10, 20, 50, 60));
-  w1.Show();
-  ParentWindow(&w1);
-
-  // Points are in the Window's coordinates.
-  EXPECT_TRUE(w1.HitTest(gfx::Point(1, 1)));
-  EXPECT_FALSE(w1.HitTest(gfx::Point(-1, -1)));
-
-  // TODO(beng): clip Window to parent.
-}
-
-TEST_F(WindowTest, HitTestMask) {
-  MaskedWindowDelegate d1(gfx::Rect(5, 6, 20, 30));
-  Window w1(&d1);
-  w1.Init(aura::WINDOW_LAYER_NOT_DRAWN);
-  w1.SetBounds(gfx::Rect(10, 20, 50, 60));
-  w1.Show();
-  ParentWindow(&w1);
-
-  // Points inside the mask.
-  EXPECT_TRUE(w1.HitTest(gfx::Point(5, 6)));  // top-left
-  EXPECT_TRUE(w1.HitTest(gfx::Point(15, 21)));  // center
-  EXPECT_TRUE(w1.HitTest(gfx::Point(24, 35)));  // bottom-right
-
-  // Points outside the mask.
-  EXPECT_FALSE(w1.HitTest(gfx::Point(0, 0)));
-  EXPECT_FALSE(w1.HitTest(gfx::Point(60, 80)));
-  EXPECT_FALSE(w1.HitTest(gfx::Point(4, 6)));
-  EXPECT_FALSE(w1.HitTest(gfx::Point(5, 5)));
-  EXPECT_FALSE(w1.HitTest(gfx::Point(25, 36)));
-}
-
 TEST_F(WindowTest, GetEventHandlerForPoint) {
   scoped_ptr<Window> w1(
       CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(10, 10, 500, 500),

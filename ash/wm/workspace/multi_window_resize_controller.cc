@@ -539,7 +539,7 @@ bool MultiWindowResizeController::IsOverWindow(
   gfx::Point window_loc(location_in_screen);
   aura::Window::ConvertPointToTarget(
       window->GetRootWindow(), window, &window_loc);
-  return window->HitTest(window_loc) &&
+  return window->ContainsPoint(window_loc) &&
       window->delegate()->GetNonClientComponent(window_loc) == component;
 }
 
