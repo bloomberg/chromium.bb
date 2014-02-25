@@ -6,23 +6,23 @@ module mojo {
 
 [Peer=ViewClient]
 interface View {
-  void SetId(int32 id);
-  void GetId();
+  SetId(int32 id);
+  GetId();
 };
 
 [Peer=View]
 interface ViewClient {
-  void OnGotId(int32 id);
+  OnGotId(int32 id);
 };
 
 [Peer=ViewManagerClient]
 interface ViewManager {
-  void CreateView();
+  CreateView();
 };
 
 [Peer=ViewManager]
 interface ViewManagerClient {
-  void OnViewCreated(View view);
+  OnViewCreated(View view);
 };
 
 }

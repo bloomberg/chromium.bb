@@ -39,21 +39,21 @@ struct Event {
 
 [Peer=NativeViewportClient]
 interface NativeViewport {
-  void Create(Rect bounds);
-  void Show();
-  void Hide();
-  void Close();
-  void SetBounds(Rect bounds);
-  void CreateGLES2Context(handle<message_pipe> gles2_client);
-  void AckEvent(Event event);
+  Create(Rect bounds);
+  Show();
+  Hide();
+  Close();
+  SetBounds(Rect bounds);
+  CreateGLES2Context(handle<message_pipe> gles2_client);
+  AckEvent(Event event);
 };
 
 [Peer=NativeViewport]
 interface NativeViewportClient {
-  void OnCreated();
-  void OnBoundsChanged(Rect bounds);
-  void OnDestroyed();
-  void OnEvent(Event event);
+  OnCreated();
+  OnBoundsChanged(Rect bounds);
+  OnDestroyed();
+  OnEvent(Event event);
 };
 
 }

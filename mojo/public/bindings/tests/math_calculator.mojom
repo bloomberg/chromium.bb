@@ -6,14 +6,14 @@ module math {
 
 [Peer=CalculatorUI]
 interface Calculator {
-  void Clear() @0;
-  void Add(double value @0) @1;
-  void Multiply(double value @0) @2;
+  Clear() @0;
+  Add(double value @0) @1;
+  Multiply(double value @0) @2;
 };
 
 [Peer=Calculator]
 interface CalculatorUI {
-  void Output(double value @0) @0;
+  Output(double value @0) @0;
 };
 
 }

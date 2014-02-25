@@ -131,8 +131,8 @@ class Parser(object):
       p[0] = ListFromConcat(p[1], p[2])
 
   def p_method(self, p):
-    """method : VOID NAME LPAREN parameters RPAREN ordinal SEMI"""
-    p[0] = ('METHOD', p[2], p[4], p[6])
+    """method : NAME LPAREN parameters RPAREN ordinal SEMI"""
+    p[0] = ('METHOD', p[1], p[3], p[5])
 
   def p_parameters(self, p):
     """parameters : parameter

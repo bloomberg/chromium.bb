@@ -6,12 +6,12 @@ module mojo {
 
 [Peer=TestClient]
 interface TestService {
-  void Test(string test_string);
+  Test(string test_string);
 };
 
 [Peer=TestService]
 interface TestClient {
-  void AckTest();
+  AckTest();
 };
 
 }

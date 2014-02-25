@@ -8,12 +8,12 @@ module mojo {
 interface Shell {
   // Loads url. mojo:{service} will result in the user of the value of the
   // --origin flag to the shell being used.
-  void Connect(string url, handle<message_pipe> client_handle);
+  Connect(string url, handle<message_pipe> client_handle);
 };
 
 [Peer=Shell]
 interface ShellClient {
-  void AcceptConnection(string url, handle<message_pipe> client_handle);
+  AcceptConnection(string url, handle<message_pipe> client_handle);
 };
 
 }

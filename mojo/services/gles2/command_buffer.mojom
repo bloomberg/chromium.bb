@@ -21,36 +21,36 @@ struct ShmHandle {
 };
 
 interface CommandBufferSyncClient {
-  void DidInitialize(bool success);
-  void DidMakeProgress(CommandBufferState state);
+  DidInitialize(bool success);
+  DidMakeProgress(CommandBufferState state);
 };
 
 [Peer=CommandBufferClient]
 interface CommandBuffer {
-  void Initialize(CommandBufferSyncClient sync_client,
+  Initialize(CommandBufferSyncClient sync_client,
                   ShmHandle shared_state);
-  void SetGetBuffer(int32 buffer);
-  void Flush(int32 put_offset);
-  void MakeProgress(int32 last_get_offset);
-  void RegisterTransferBuffer(int32 id, ShmHandle transfer_buffer, uint32 size);
-  void DestroyTransferBuffer(int32 id);
-  void Echo();
+  SetGetBuffer(int32 buffer);
+  Flush(int32 put_offset);
+  MakeProgress(int32 last_get_offset);
+  RegisterTransferBuffer(int32 id, ShmHandle transfer_buffer, uint32 size);
+  DestroyTransferBuffer(int32 id);
+  Echo();
 
   // TODO(piman): move to somewhere else (native_viewport?).
-  void RequestAnimationFrames();
-  void CancelAnimationFrames();
+  RequestAnimationFrames();
+  CancelAnimationFrames();
 
   // TODO(piman): sync points
 };
 
 [Peer=CommandBuffer]
 interface CommandBufferClient {
-  void DidDestroy();
-  void EchoAck();
-  void LostContext(int32 lost_reason);  // TODO(piman): enum
+  DidDestroy();
+  EchoAck();
+  LostContext(int32 lost_reason);  // TODO(piman): enum
 
   // TODO(piman): move to somewhere else (native_viewport?).
-  void DrawAnimationFrame();
+  DrawAnimationFrame();
 };
 
 }
