@@ -220,8 +220,10 @@ MediaStreamImpl::GetVideoFrameProvider(
 
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
   web_stream.videoTracks(video_tracks);
-  if (video_tracks.isEmpty())
+  if (video_tracks.isEmpty() ||
+      !MediaStreamVideoTrack::GetTrack(video_tracks[0])) {
     return NULL;
+  }
 
   return new RTCVideoRenderer(video_tracks[0], error_cb, repaint_cb);
 }
