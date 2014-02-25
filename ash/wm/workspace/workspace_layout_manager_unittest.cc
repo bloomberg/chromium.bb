@@ -686,24 +686,6 @@ TEST_F(WorkspaceLayoutManagerSoloTest, RootWindowResizeShrinksWindows) {
   EXPECT_EQ(old_bounds.height(), window->bounds().height());
 }
 
-// Tests that a maximized window with too-large restore bounds will be restored
-// to smaller than the full work area.
-TEST_F(WorkspaceLayoutManagerSoloTest, BoundsWithScreenEdgeVisible) {
-  // Create a window with bounds that fill the screen.
-  gfx::Rect bounds = Shell::GetScreen()->GetPrimaryDisplay().bounds();
-  scoped_ptr<aura::Window> window(CreateTestWindow(bounds));
-  // Maximize it, which writes the old bounds to restore bounds.
-  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
-  // Restore it.
-  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
-  // It should have the default maximized window bounds, inset by the grid size.
-  int grid_size = internal::WorkspaceWindowResizer::kScreenEdgeInset;
-  gfx::Rect max_bounds =
-      ash::ScreenUtil::GetMaximizedWindowBoundsInParent(window.get());
-  max_bounds.Inset(grid_size, grid_size);
-  EXPECT_EQ(max_bounds.ToString(), window->bounds().ToString());
-}
-
 // Verifies maximizing sets the restore bounds, and restoring
 // restores the bounds.
 TEST_F(WorkspaceLayoutManagerSoloTest, MaximizeSetsRestoreBounds) {

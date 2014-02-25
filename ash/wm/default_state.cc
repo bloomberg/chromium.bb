@@ -33,20 +33,6 @@ bool IsPanel(aura::Window* window) {
       window->parent()->id() == internal::kShellWindowId_DockedContainer;
 }
 
-gfx::Rect BoundsWithScreenEdgeVisible(
-    aura::Window* window,
-    const gfx::Rect& restore_bounds) {
-  gfx::Rect max_bounds =
-      ash::ScreenUtil::GetMaximizedWindowBoundsInParent(window);
-  // If the restore_bounds are more than 1 grid step away from the size the
-  // window would be when maximized, inset it.
-  max_bounds.Inset(ash::internal::WorkspaceWindowResizer::kScreenEdgeInset,
-                   ash::internal::WorkspaceWindowResizer::kScreenEdgeInset);
-  if (restore_bounds.Contains(max_bounds))
-    return max_bounds;
-  return restore_bounds;
-}
-
 void MoveToDisplayForRestore(WindowState* window_state) {
   if (!window_state->HasRestoreBounds())
     return;
@@ -408,13 +394,8 @@ void DefaultState::UpdateBoundsFromShowType(WindowState* window_state,
       AdjustBoundsToEnsureMinimumWindowVisibility(
           work_area_in_parent, &bounds_in_parent);
 
-      if (window_state->IsSnapped()) {
+      if (window_state->IsSnapped())
         window_state->AdjustSnappedBounds(&bounds_in_parent);
-      } else {
-        bounds_in_parent = BoundsWithScreenEdgeVisible(
-            window,
-            bounds_in_parent);
-      }
       break;
     }
     case SHOW_TYPE_MAXIMIZED:
