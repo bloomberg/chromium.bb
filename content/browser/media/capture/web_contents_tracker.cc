@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/media/web_contents_tracker.h"
+#include "content/browser/media/capture/web_contents_tracker.h"
 
 #include "base/message_loop/message_loop_proxy.h"
 #include "content/public/browser/browser_thread.h"

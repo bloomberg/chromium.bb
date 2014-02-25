@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_CONTENT_VIDEO_CAPTURE_DEVICE_CORE_H_
-#define CONTENT_BROWSER_RENDERER_CONTENT_VIDEO_CAPTURE_DEVICE_CORE_H_
+#ifndef CONTENT_BROWSER_MEDIA_CAPTURE_CONTENT_VIDEO_CAPTURE_DEVICE_CORE_H_
+#define CONTENT_BROWSER_MEDIA_CAPTURE_CONTENT_VIDEO_CAPTURE_DEVICE_CORE_H_
 
 #include <string>
 
@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
-#include "content/browser/renderer_host/media/video_capture_oracle.h"
+#include "content/browser/media/capture/video_capture_oracle.h"
 #include "content/common/content_export.h"
 #include "media/video/capture/video_capture_device.h"
 
@@ -194,4 +194,4 @@ class CONTENT_EXPORT ContentVideoCaptureDeviceCore
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_CONTENT_VIDEO_CAPTURE_DEVICE_CORE_H_
+#endif  // CONTENT_BROWSER_MEDIA_CAPTURE_CONTENT_VIDEO_CAPTURE_DEVICE_CORE_H_

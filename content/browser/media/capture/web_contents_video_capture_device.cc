@@ -48,7 +48,7 @@
 // Turning on verbose logging will cause the effective frame rate to be logged
 // at 5-second intervals.
 
-#include "content/browser/renderer_host/media/web_contents_video_capture_device.h"
+#include "content/browser/media/capture/web_contents_video_capture_device.h"
 
 #include "base/basictypes.h"
 #include "base/bind.h"
@@ -62,9 +62,9 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "content/browser/renderer_host/media/content_video_capture_device_core.h"
-#include "content/browser/renderer_host/media/video_capture_oracle.h"
-#include "content/browser/renderer_host/media/web_contents_capture_util.h"
+#include "content/browser/media/capture/content_video_capture_device_core.h"
+#include "content/browser/media/capture/video_capture_oracle.h"
+#include "content/browser/media/capture/web_contents_capture_util.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/port/browser/render_widget_host_view_frame_subscriber.h"

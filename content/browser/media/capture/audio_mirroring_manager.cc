@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/media/audio_mirroring_manager.h"
+#include "content/browser/media/capture/audio_mirroring_manager.h"
 
 #include "content/public/browser/browser_thread.h"
 

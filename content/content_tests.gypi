@@ -423,6 +423,10 @@
         'browser/loader/resource_scheduler_unittest.cc',
         'browser/loader/upload_data_stream_builder_unittest.cc',
         'browser/mach_broker_mac_unittest.cc',
+        'browser/media/capture/audio_mirroring_manager_unittest.cc',
+        'browser/media/capture/video_capture_oracle_unittest.cc',
+        'browser/media/capture/web_contents_audio_input_stream_unittest.cc',
+        'browser/media/capture/web_contents_video_capture_device_unittest.cc',
         'browser/media/media_internals_unittest.cc',
         'browser/media/webrtc_identity_store_unittest.cc',
         'browser/net/sqlite_persistent_cookie_store_unittest.cc',
@@ -443,7 +447,6 @@
         'browser/renderer_host/input/touch_disposition_gesture_filter_unittest.cc',
         'browser/renderer_host/input/touch_event_queue_unittest.cc',
         'browser/renderer_host/media/audio_input_device_manager_unittest.cc',
-        'browser/renderer_host/media/audio_mirroring_manager_unittest.cc',
         'browser/renderer_host/media/audio_renderer_host_unittest.cc',
         'browser/renderer_host/media/device_request_message_filter_unittest.cc',
         'browser/renderer_host/media/media_stream_dispatcher_host_unittest.cc',
@@ -454,9 +457,6 @@
         'browser/renderer_host/media/video_capture_controller_unittest.cc',
         'browser/renderer_host/media/video_capture_host_unittest.cc',
         'browser/renderer_host/media/video_capture_manager_unittest.cc',
-        'browser/renderer_host/media/video_capture_oracle_unittest.cc',
-        'browser/renderer_host/media/web_contents_audio_input_stream_unittest.cc',
-        'browser/renderer_host/media/web_contents_video_capture_device_unittest.cc',
         'browser/renderer_host/pepper/browser_ppapi_host_test.cc',
         'browser/renderer_host/pepper/browser_ppapi_host_test.h',
         'browser/renderer_host/pepper/pepper_file_system_browser_host_unittest.cc',
@@ -735,7 +735,7 @@
         }],
         ['enable_webrtc==1 and (OS=="linux" or OS=="mac" or OS=="win")', {
           'sources': [
-            'browser/renderer_host/media/desktop_capture_device_unittest.cc',
+            'browser/media/capture/desktop_capture_device_unittest.cc',
           ],
           'dependencies': [
             '../third_party/webrtc/modules/modules.gyp:desktop_capture',
@@ -743,7 +743,7 @@
         }],
         ['enable_webrtc==1 and chromeos==1', {
           'sources': [
-            'browser/renderer_host/media/desktop_capture_device_aura_unittest.cc',
+            'browser/media/capture/desktop_capture_device_aura_unittest.cc',
           ],
         }],
         # TODO(jrg): remove the OS=="android" section?

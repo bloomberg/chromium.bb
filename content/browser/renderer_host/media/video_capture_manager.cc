@@ -13,9 +13,9 @@
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "content/browser/media/capture/web_contents_video_capture_device.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
-#include "content/browser/renderer_host/media/web_contents_video_capture_device.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "content/public/common/content_switches.h"
@@ -27,9 +27,9 @@
 #include "media/video/capture/video_capture_device.h"
 
 #if defined(ENABLE_SCREEN_CAPTURE)
-#include "content/browser/renderer_host/media/desktop_capture_device.h"
+#include "content/browser/media/capture/desktop_capture_device.h"
 #if defined(USE_AURA)
-#include "content/browser/renderer_host/media/desktop_capture_device_aura.h"
+#include "content/browser/media/capture/desktop_capture_device_aura.h"
 #endif
 #endif
 

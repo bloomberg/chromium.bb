@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/media/desktop_capture_device_aura.h"
+#include "content/browser/media/capture/desktop_capture_device_aura.h"
 
 #include "base/logging.h"
 #include "base/timer/timer.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "content/browser/compositor/image_transport_factory.h"
-#include "content/browser/renderer_host/media/content_video_capture_device_core.h"
+#include "content/browser/media/capture/content_video_capture_device_core.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/base/video_util.h"

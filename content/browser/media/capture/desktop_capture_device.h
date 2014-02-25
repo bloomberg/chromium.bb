@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_DESKTOP_CAPTURE_DEVICE_H_
-#define CONTENT_BROWSER_RENDERER_HOST_MEDIA_DESKTOP_CAPTURE_DEVICE_H_
+#ifndef CONTENT_BROWSER_MEDIA_CAPTURE_DESKTOP_CAPTURE_DEVICE_H_
+#define CONTENT_BROWSER_MEDIA_CAPTURE_DESKTOP_CAPTURE_DEVICE_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -51,4 +51,4 @@ class CONTENT_EXPORT DesktopCaptureDevice : public media::VideoCaptureDevice {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_DESKTOP_CAPTURE_DEVICE_H_
+#endif  // CONTENT_BROWSER_MEDIA_CAPTURE_DESKTOP_CAPTURE_DEVICE_H_

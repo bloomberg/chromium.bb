@@ -12,8 +12,8 @@
 // same thread.  This can be any thread, and the decision is locked-in by
 // WebContentsTracker when Start() is called.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_WEB_CONTENTS_TRACKER_H_
-#define CONTENT_BROWSER_RENDERER_HOST_MEDIA_WEB_CONTENTS_TRACKER_H_
+#ifndef CONTENT_BROWSER_MEDIA_CAPTURE_WEB_CONTENTS_TRACKER_H_
+#define CONTENT_BROWSER_MEDIA_CAPTURE_WEB_CONTENTS_TRACKER_H_
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
@@ -83,4 +83,4 @@ class CONTENT_EXPORT WebContentsTracker
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_WEB_CONTENTS_TRACKER_H_
+#endif  // CONTENT_BROWSER_MEDIA_CAPTURE_WEB_CONTENTS_TRACKER_H_

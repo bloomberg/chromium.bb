@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/media/web_contents_audio_input_stream.h"
+#include "content/browser/media/capture/web_contents_audio_input_stream.h"
 
 #include <string>
 
@@ -11,9 +11,9 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "content/browser/renderer_host/media/audio_mirroring_manager.h"
-#include "content/browser/renderer_host/media/web_contents_capture_util.h"
-#include "content/browser/renderer_host/media/web_contents_tracker.h"
+#include "content/browser/media/capture/audio_mirroring_manager.h"
+#include "content/browser/media/capture/web_contents_capture_util.h"
+#include "content/browser/media/capture/web_contents_tracker.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/audio/virtual_audio_input_stream.h"
 #include "media/audio/virtual_audio_output_stream.h"

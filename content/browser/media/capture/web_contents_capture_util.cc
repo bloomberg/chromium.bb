@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/media/web_contents_capture_util.h"
+#include "content/browser/media/capture/web_contents_capture_util.h"
 
 #include "base/basictypes.h"
 #include "base/strings/string_number_conversions.h"

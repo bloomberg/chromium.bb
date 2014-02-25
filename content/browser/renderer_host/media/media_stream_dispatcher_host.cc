@@ -5,7 +5,6 @@
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 
 #include "content/browser/browser_main_loop.h"
-#include "content/browser/renderer_host/media/web_contents_capture_util.h"
 #include "content/common/media/media_stream_messages.h"
 #include "content/common/media/media_stream_options.h"
 #include "url/gurl.h"

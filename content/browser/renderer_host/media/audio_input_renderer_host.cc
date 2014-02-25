@@ -8,12 +8,12 @@
 #include "base/memory/shared_memory.h"
 #include "base/metrics/histogram.h"
 #include "base/process/process.h"
+#include "content/browser/media/capture/web_contents_audio_input_stream.h"
+#include "content/browser/media/capture/web_contents_capture_util.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/audio_input_sync_writer.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
-#include "content/browser/renderer_host/media/web_contents_audio_input_stream.h"
-#include "content/browser/renderer_host/media/web_contents_capture_util.h"
 #include "media/audio/audio_manager_base.h"
 
 namespace content {

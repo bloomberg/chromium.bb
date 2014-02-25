@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/media/web_contents_video_capture_device.h"
+#include "content/browser/media/capture/web_contents_video_capture_device.h"
 
 #include "base/bind_helpers.h"
 #include "base/debug/debugger.h"
@@ -11,9 +11,9 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/media/capture/video_capture_oracle.h"
+#include "content/browser/media/capture/web_contents_capture_util.h"
 #include "content/browser/renderer_host/media/video_capture_buffer_pool.h"
-#include "content/browser/renderer_host/media/video_capture_oracle.h"
-#include "content/browser/renderer_host/media/web_contents_capture_util.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/port/browser/render_widget_host_view_frame_subscriber.h"

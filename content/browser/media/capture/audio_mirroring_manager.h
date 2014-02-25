@@ -24,8 +24,8 @@
 // #2 and #3 above may occur in any order, as it is the job of
 // AudioMirroringManager to realize when the players can be "matched up."
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_MIRRORING_MANAGER_H_
-#define CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_MIRRORING_MANAGER_H_
+#ifndef CONTENT_BROWSER_MEDIA_CAPTURE_AUDIO_MIRRORING_MANAGER_H_
+#define CONTENT_BROWSER_MEDIA_CAPTURE_AUDIO_MIRRORING_MANAGER_H_
 
 #include <map>
 #include <utility>
@@ -105,4 +105,4 @@ class CONTENT_EXPORT AudioMirroringManager {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_MIRRORING_MANAGER_H_
+#endif  // CONTENT_BROWSER_MEDIA_CAPTURE_AUDIO_MIRRORING_MANAGER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/media/video_capture_oracle.h"
+#include "content/browser/media/capture/video_capture_oracle.h"
 
 #include "base/debug/trace_event.h"
 

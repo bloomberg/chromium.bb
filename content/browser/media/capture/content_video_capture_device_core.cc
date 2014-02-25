@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/media/content_video_capture_device_core.h"
+#include "content/browser/media/capture/content_video_capture_device_core.h"
 
 #include "base/basictypes.h"
 #include "base/bind.h"

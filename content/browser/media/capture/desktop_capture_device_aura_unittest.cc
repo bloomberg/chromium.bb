@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/media/desktop_capture_device_aura.h"
+#include "content/browser/media/capture/desktop_capture_device_aura.h"
 
 #include "base/synchronization/waitable_event.h"
 #include "content/browser/browser_thread_impl.h"

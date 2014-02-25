@@ -13,8 +13,8 @@
 // navigation, crash/reload, etc. events; and take appropriate actions to
 // provide a seamless, uninterrupted mirroring experience.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_WEB_CONTENTS_AUDIO_INPUT_STREAM_H_
-#define CONTENT_BROWSER_RENDERER_HOST_MEDIA_WEB_CONTENTS_AUDIO_INPUT_STREAM_H_
+#ifndef CONTENT_BROWSER_MEDIA_CAPTURE_WEB_CONTENTS_AUDIO_INPUT_STREAM_H_
+#define CONTENT_BROWSER_MEDIA_CAPTURE_WEB_CONTENTS_AUDIO_INPUT_STREAM_H_
 
 #include <string>
 
@@ -89,4 +89,4 @@ class CONTENT_EXPORT WebContentsAudioInputStream
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_WEB_CONTENTS_AUDIO_INPUT_STREAM_H_
+#endif  // CONTENT_BROWSER_MEDIA_CAPTURE_WEB_CONTENTS_AUDIO_INPUT_STREAM_H_
