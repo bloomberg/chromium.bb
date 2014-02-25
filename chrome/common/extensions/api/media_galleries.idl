@@ -149,7 +149,7 @@ namespace mediaGalleries {
 
     // Show the user the scan results and let them add any or all of them as
     // galleries. This should be used after the 'finish' onScanProgress()
-    // event has happened. A galleries the app has access to are returned, not
+    // event has happened. All galleries the app has access to are returned, not
     // just the newly added galleries.
     static void addScanResults(MediaFileSystemsCallback callback);
 
