@@ -19,7 +19,6 @@ class Layer;
 }
 
 namespace gfx {
-class Rect;
 class Size;
 class SizeF;
 class Vector2dF;
@@ -57,11 +56,8 @@ class CONTENT_EXPORT ContentViewCore {
   // |out_size| is returned with the size of the content.
   virtual void GetScaledContentBitmap(
       float scale,
-      gfx::Size* out_size,
       const base::Callback<void(bool, const SkBitmap&)>& result_callback) = 0;
   virtual float GetDpiScale() const = 0;
-  virtual void RequestContentClipping(const gfx::Rect& clipping,
-                                      const gfx::Size& content_size) = 0;
   virtual void PauseVideo() = 0;
   virtual void PauseOrResumeGeolocation(bool should_pause) = 0;
 

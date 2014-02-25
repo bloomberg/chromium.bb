@@ -698,7 +698,6 @@ void ContentViewCoreImpl::ShowPastePopup(int x_dip, int y_dip) {
 
 void ContentViewCoreImpl::GetScaledContentBitmap(
     float scale,
-    gfx::Size* out_size,
     const base::Callback<void(bool, const SkBitmap&)>& result_callback) {
   RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
   if (!view) {
@@ -706,7 +705,7 @@ void ContentViewCoreImpl::GetScaledContentBitmap(
     return;
   }
 
-  view->GetScaledContentBitmap(scale, out_size, result_callback);
+  view->GetScaledContentBitmap(scale, result_callback);
 }
 
 void ContentViewCoreImpl::StartContentIntent(const GURL& content_url) {
@@ -1050,14 +1049,6 @@ float ContentViewCoreImpl::GetTouchPaddingDip() {
 
 float ContentViewCoreImpl::GetDpiScale() const {
   return dpi_scale_;
-}
-
-void ContentViewCoreImpl::RequestContentClipping(
-    const gfx::Rect& clipping,
-    const gfx::Size& content_size) {
-  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
-  if (rwhv)
-    rwhv->RequestContentClipping(clipping, content_size);
 }
 
 jboolean ContentViewCoreImpl::SendMouseMoveEvent(JNIEnv* env,

@@ -253,7 +253,6 @@ void RenderWidgetHostViewAndroid::SetBounds(const gfx::Rect& rect) {
 
 void RenderWidgetHostViewAndroid::GetScaledContentBitmap(
     float scale,
-    gfx::Size* out_size,
     const base::Callback<void(bool, const SkBitmap&)>& result_callback) {
   if (!IsSurfaceAvailableForCopy()) {
     result_callback.Run(false, SkBitmap());
@@ -268,7 +267,6 @@ void RenderWidgetHostViewAndroid::GetScaledContentBitmap(
   DCHECK_GT(device_scale_factor, 0);
   gfx::Size dst_size(
       gfx::ToCeiledSize(gfx::ScaleSize(bounds, scale / device_scale_factor)));
-  *out_size = dst_size;
   CopyFromCompositingSurface(
       src_subrect, dst_size, result_callback, SkBitmap::kARGB_8888_Config);
 }
@@ -353,7 +351,6 @@ void RenderWidgetHostViewAndroid::MovePluginWindows(
 void RenderWidgetHostViewAndroid::Focus() {
   host_->Focus();
   host_->SetInputMethodActive(true);
-  ResetClipping();
   if (overscroll_effect_enabled_)
     overscroll_effect_->Enable();
 }
@@ -665,23 +662,13 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
                         base::TimeTicks::Now() - start_time);
     return;
   }
-  scoped_ptr<cc::CopyOutputRequest> request;
-  if ((src_subrect_in_pixel.size() == dst_size_in_pixel) &&
-      (bitmap_config == SkBitmap::kARGB_8888_Config)) {
-      request = cc::CopyOutputRequest::CreateBitmapRequest(base::Bind(
-          &RenderWidgetHostViewAndroid::PrepareBitmapCopyOutputResult,
-          dst_size_in_pixel,
-          bitmap_config,
-          start_time,
-          callback));
-  } else {
-      request = cc::CopyOutputRequest::CreateRequest(base::Bind(
+  scoped_ptr<cc::CopyOutputRequest> request =
+      cc::CopyOutputRequest::CreateRequest(base::Bind(
           &RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult,
           dst_size_in_pixel,
           bitmap_config,
           start_time,
           callback));
-  }
   request->set_area(src_subrect_in_pixel);
   layer_->RequestCopyOfOutput(request.Pass());
 }
@@ -982,8 +969,6 @@ void RenderWidgetHostViewAndroid::BuffersSwapped(
   ImageTransportFactoryAndroid::GetInstance()->AcquireTexture(
       texture_id_in_layer_, mailbox.name);
 
-  ResetClipping();
-
   current_mailbox_ = mailbox;
   last_output_surface_id_ = output_surface_id;
 
@@ -1271,50 +1256,6 @@ void RenderWidgetHostViewAndroid::SelectRange(const gfx::Point& start,
 void RenderWidgetHostViewAndroid::MoveCaret(const gfx::Point& point) {
   if (host_)
     host_->MoveCaret(point);
-}
-
-void RenderWidgetHostViewAndroid::RequestContentClipping(
-    const gfx::Rect& clipping,
-    const gfx::Size& content_size) {
-  // A focused view provides its own clipping.
-  if (HasFocus())
-    return;
-
-  ClipContents(clipping, content_size);
-}
-
-void RenderWidgetHostViewAndroid::ResetClipping() {
-  ClipContents(gfx::Rect(gfx::Point(), content_size_in_layer_),
-               content_size_in_layer_);
-}
-
-void RenderWidgetHostViewAndroid::ClipContents(const gfx::Rect& clipping,
-                                               const gfx::Size& content_size) {
-  if (!texture_id_in_layer_ || content_size_in_layer_.IsEmpty())
-    return;
-
-  gfx::Size clipped_content(content_size_in_layer_);
-  clipped_content.SetToMin(clipping.size());
-  texture_layer_->SetBounds(clipped_content);
-  texture_layer_->SetNeedsDisplay();
-
-  if (texture_size_in_layer_.IsEmpty()) {
-    texture_layer_->SetUV(gfx::PointF(), gfx::PointF());
-    return;
-  }
-
-  gfx::PointF offset(
-      clipping.x() + content_size_in_layer_.width() - content_size.width(),
-      clipping.y() + content_size_in_layer_.height() - content_size.height());
-  offset.SetToMax(gfx::PointF());
-
-  gfx::Vector2dF uv_scale(1.f / texture_size_in_layer_.width(),
-                          1.f / texture_size_in_layer_.height());
-  texture_layer_->SetUV(
-      gfx::PointF(offset.x() * uv_scale.x(),
-                  offset.y() * uv_scale.y()),
-      gfx::PointF((offset.x() + clipped_content.width()) * uv_scale.x(),
-                  (offset.y() + clipped_content.height()) * uv_scale.y()));
 }
 
 SkColor RenderWidgetHostViewAndroid::GetCachedBackgroundColor() const {

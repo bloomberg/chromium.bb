@@ -226,7 +226,6 @@ class RenderWidgetHostViewAndroid
 
   void GetScaledContentBitmap(
       float scale,
-      gfx::Size* out_size,
       const base::Callback<void(bool, const SkBitmap&)>& result_callback);
   bool PopulateBitmapWithContents(jobject jbitmap);
 
@@ -236,9 +235,6 @@ class RenderWidgetHostViewAndroid
   void SelectRange(const gfx::Point& start, const gfx::Point& end);
 
   void MoveCaret(const gfx::Point& point);
-
-  void RequestContentClipping(const gfx::Rect& clipping,
-                              const gfx::Size& content_size);
 
   // Returns true when animation ticks are still needed. This avoids a separate
   // round-trip for requesting follow-up animation.
