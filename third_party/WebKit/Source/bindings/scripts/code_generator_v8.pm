@@ -5367,10 +5367,6 @@ END
         # Can inline the function call into the return statement to avoid overhead of using a Ref<> temporary
         $return = $functionString;
         $returnIsRef = 0;
-
-        if ($interfaceName eq "SVGTransformList" and IsRefPtrType($returnType)) {
-            $return = "WTF::getPtr(" . $return . ")";
-        }
     }
 
     if ($function->extendedAttributes->{"RaisesException"}) {
