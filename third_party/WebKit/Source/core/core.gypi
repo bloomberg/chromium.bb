@@ -1933,6 +1933,8 @@
             'dom/IgnoreDestructiveWriteCountIncrementer.h',
             'dom/LiveNodeList.cpp',
             'dom/LiveNodeList.h',
+            'dom/LiveNodeListBase.cpp',
+            'dom/LiveNodeListBase.h',
             'dom/MessageChannel.cpp',
             'dom/MessageChannel.h',
             'dom/MessagePort.cpp',

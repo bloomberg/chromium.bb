@@ -24,107 +24,15 @@
 #ifndef LiveNodeList_h
 #define LiveNodeList_h
 
-#include "HTMLNames.h"
-#include "core/dom/Document.h"
+#include "core/dom/LiveNodeListBase.h"
 #include "core/dom/NodeList.h"
 #include "core/html/CollectionIndexCache.h"
 #include "core/html/CollectionType.h"
-#include "wtf/Forward.h"
-#include "wtf/RefPtr.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
 class Element;
-
-enum NodeListRootType {
-    NodeListIsRootedAtNode,
-    NodeListIsRootedAtDocument,
-    NodeListIsRootedAtDocumentIfOwnerHasItemrefAttr,
-};
-
-class LiveNodeListBase {
-public:
-    LiveNodeListBase(ContainerNode* ownerNode, NodeListRootType rootType, NodeListInvalidationType invalidationType,
-        CollectionType collectionType)
-        : m_ownerNode(ownerNode)
-        , m_rootType(rootType)
-        , m_invalidationType(invalidationType)
-        , m_collectionType(collectionType)
-    {
-        ASSERT(m_ownerNode);
-        ASSERT(m_rootType == static_cast<unsigned>(rootType));
-        ASSERT(m_invalidationType == static_cast<unsigned>(invalidationType));
-        ASSERT(m_collectionType == static_cast<unsigned>(collectionType));
-
-        document().registerNodeList(this);
-    }
-
-    virtual ~LiveNodeListBase()
-    {
-        document().unregisterNodeList(this);
-    }
-
-    ContainerNode& rootNode() const;
-
-    void didMoveToDocument(Document& oldDocument, Document& newDocument);
-    ALWAYS_INLINE bool hasIdNameCache() const { return !isLiveNodeListType(type()); }
-    ALWAYS_INLINE bool isRootedAtDocument() const { return m_rootType == NodeListIsRootedAtDocument || m_rootType == NodeListIsRootedAtDocumentIfOwnerHasItemrefAttr; }
-    ALWAYS_INLINE NodeListInvalidationType invalidationType() const { return static_cast<NodeListInvalidationType>(m_invalidationType); }
-    ALWAYS_INLINE CollectionType type() const { return static_cast<CollectionType>(m_collectionType); }
-    ContainerNode* ownerNode() const { return m_ownerNode.get(); }
-    ALWAYS_INLINE void invalidateCache(const QualifiedName* attrName) const
-    {
-        if (!attrName || shouldInvalidateTypeOnAttributeChange(invalidationType(), *attrName))
-            invalidateCache();
-        else if (hasIdNameCache() && (*attrName == HTMLNames::idAttr || *attrName == HTMLNames::nameAttr))
-            invalidateIdNameCacheMaps();
-    }
-    virtual void invalidateCache(Document* oldDocument = 0) const = 0;
-
-    static bool shouldInvalidateTypeOnAttributeChange(NodeListInvalidationType, const QualifiedName&);
-
-protected:
-    Document& document() const { return m_ownerNode->document(); }
-
-    ALWAYS_INLINE NodeListRootType rootType() const { return static_cast<NodeListRootType>(m_rootType); }
-
-    template <typename Collection>
-    static Element* iterateForPreviousNode(const Collection&, Node* current);
-    template <typename Collection>
-    static Element* itemBefore(const Collection&, const Element* previousItem);
-
-private:
-    void invalidateIdNameCacheMaps() const;
-
-    RefPtr<ContainerNode> m_ownerNode; // Cannot be null.
-    const unsigned m_rootType : 2;
-    const unsigned m_invalidationType : 4;
-    const unsigned m_collectionType : 5;
-};
-
-ALWAYS_INLINE bool LiveNodeListBase::shouldInvalidateTypeOnAttributeChange(NodeListInvalidationType type, const QualifiedName& attrName)
-{
-    switch (type) {
-    case InvalidateOnClassAttrChange:
-        return attrName == HTMLNames::classAttr;
-    case InvalidateOnNameAttrChange:
-        return attrName == HTMLNames::nameAttr;
-    case InvalidateOnIdNameAttrChange:
-        return attrName == HTMLNames::idAttr || attrName == HTMLNames::nameAttr;
-    case InvalidateOnForAttrChange:
-        return attrName == HTMLNames::forAttr;
-    case InvalidateForFormControls:
-        return attrName == HTMLNames::nameAttr || attrName == HTMLNames::idAttr || attrName == HTMLNames::forAttr
-            || attrName == HTMLNames::formAttr || attrName == HTMLNames::typeAttr;
-    case InvalidateOnHRefAttrChange:
-        return attrName == HTMLNames::hrefAttr;
-    case DoNotInvalidateOnAttributeChanges:
-        return false;
-    case InvalidateOnAnyAttrChange:
-        return true;
-    }
-    return false;
-}
 
 class LiveNodeList : public NodeList, public LiveNodeListBase {
 public:

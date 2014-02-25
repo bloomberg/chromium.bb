@@ -3,6 +3,7 @@
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
  * Copyright (C) 2004, 2006, 2007, 2008, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2014 Samsung Electronics. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -21,18 +22,30 @@
  */
 
 #include "config.h"
-#include "core/dom/LiveNodeList.h"
+#include "core/dom/LiveNodeListBase.h"
+
+#include "core/html/HTMLCollection.h"
 
 namespace WebCore {
 
-Node* LiveNodeList::virtualOwnerNode() const
+ContainerNode& LiveNodeListBase::rootNode() const
 {
-    return ownerNode();
+    if (isRootedAtDocument() && m_ownerNode->inDocument())
+        return m_ownerNode->document();
+    return *m_ownerNode;
 }
 
-void LiveNodeList::invalidateCache(Document*) const
+void LiveNodeListBase::didMoveToDocument(Document& oldDocument, Document& newDocument)
 {
-    m_collectionIndexCache.invalidate();
+    invalidateCache(&oldDocument);
+    oldDocument.unregisterNodeList(this);
+    newDocument.registerNodeList(this);
+}
+
+void LiveNodeListBase::invalidateIdNameCacheMaps() const
+{
+    ASSERT(hasIdNameCache());
+    static_cast<const HTMLCollection*>(this)->invalidateIdNameCacheMaps();
 }
 
 } // namespace WebCore

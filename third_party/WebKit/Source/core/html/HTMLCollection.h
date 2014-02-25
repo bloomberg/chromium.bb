@@ -24,7 +24,8 @@
 #ifndef HTMLCollection_h
 #define HTMLCollection_h
 
-#include "core/dom/LiveNodeList.h"
+#include "core/dom/LiveNodeListBase.h"
+#include "core/html/CollectionIndexCache.h"
 #include "core/html/CollectionType.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
