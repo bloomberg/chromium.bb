@@ -159,7 +159,9 @@ MojoResult MessagePipe::EnqueueMessage(
     }
   }
 
-  return endpoints_[port]->EnqueueMessage(message.Pass(), transports);
+  // The endpoint's |EnqueueMessage()| may not report failure.
+  endpoints_[port]->EnqueueMessage(message.Pass(), transports);
+  return MOJO_RESULT_OK;
 }
 
 void MessagePipe::Attach(unsigned port,

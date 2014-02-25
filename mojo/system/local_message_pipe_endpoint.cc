@@ -48,7 +48,7 @@ void LocalMessagePipeEndpoint::OnPeerClose() {
   }
 }
 
-MojoResult LocalMessagePipeEndpoint::EnqueueMessage(
+void LocalMessagePipeEndpoint::EnqueueMessage(
     scoped_ptr<MessageInTransit> message,
     std::vector<DispatcherTransport>* transports) {
   DCHECK(is_open_);
@@ -78,8 +78,6 @@ MojoResult LocalMessagePipeEndpoint::EnqueueMessage(
     waiter_list_.AwakeWaitersForStateChange(SatisfiedFlags(),
                                             SatisfiableFlags());
   }
-
-  return MOJO_RESULT_OK;
 }
 
 void LocalMessagePipeEndpoint::CancelAllWaiters() {

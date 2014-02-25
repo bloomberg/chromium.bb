@@ -39,10 +39,11 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeEndpoint {
   virtual void Close() = 0;
   virtual void OnPeerClose() = 0;
   // Implements |MessagePipe::EnqueueMessage()| (see its description for
-  // details).
-  virtual MojoResult EnqueueMessage(
-      scoped_ptr<MessageInTransit> message,
-      std::vector<DispatcherTransport>* transports) = 0;
+  // details). A major difference is that this |EnqueueMessage()| cannot report
+  // failure (if, e.g., a channel is torn down at this point, it should silently
+  // swallow the message).
+  virtual void EnqueueMessage(scoped_ptr<MessageInTransit> message,
+                              std::vector<DispatcherTransport>* transports) = 0;
 
   // Implementations must override these if they represent a local endpoint,
   // i.e., one for which there's a |MessagePipeDispatcher| (and thus a handle).

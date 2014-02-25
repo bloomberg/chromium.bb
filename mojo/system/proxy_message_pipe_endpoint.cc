@@ -53,7 +53,7 @@ void ProxyMessagePipeEndpoint::OnPeerClose() {
                            0, 0, NULL)));
 }
 
-MojoResult ProxyMessagePipeEndpoint::EnqueueMessage(
+void ProxyMessagePipeEndpoint::EnqueueMessage(
     scoped_ptr<MessageInTransit> message,
     std::vector<DispatcherTransport>* transports) {
   DCHECK(!transports || !transports->empty());
@@ -62,7 +62,6 @@ MojoResult ProxyMessagePipeEndpoint::EnqueueMessage(
     AttachAndCloseDispatchers(message.get(), transports);
 
   EnqueueMessageInternal(message.Pass());
-  return MOJO_RESULT_OK;
 }
 
 void ProxyMessagePipeEndpoint::Attach(scoped_refptr<Channel> channel,
