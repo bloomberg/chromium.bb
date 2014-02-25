@@ -108,7 +108,7 @@ public class AppBannerView extends SwipableOverlayView implements View.OnClickLi
      */
     public AppBannerView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mIsLayoutLTR = !LocalizationUtils.isSystemLayoutDirectionRtl();
+        mIsLayoutLTR = !LocalizationUtils.isLayoutRtl();
         mSpaceMain = new Point();
         mSpaceForLogo = new Point();
         mSpaceForRating = new Point();

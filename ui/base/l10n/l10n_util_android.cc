@@ -17,10 +17,6 @@
 
 namespace l10n_util {
 
-jboolean IsRTL(JNIEnv* env, jclass clazz) {
-  return base::i18n::IsRTL();
-}
-
 jint GetFirstStrongCharacterDirection(JNIEnv* env, jclass clazz,
                                       jstring string) {
   return base::i18n::GetFirstStrongCharacterDirection(
@@ -34,18 +30,18 @@ std::string GetDefaultLocale() {
   return ConvertJavaStringToUTF8(locale);
 }
 
-bool IsSystemLayoutDirectionRtl() {
-  static bool is_system_layout_direction_rtl_cached = false;
-  static bool system_layout_direction_rtl_cache;
+bool IsLayoutRtl() {
+  static bool is_layout_rtl_cached = false;
+  static bool layout_rtl_cache;
 
-  if (!is_system_layout_direction_rtl_cached) {
-    is_system_layout_direction_rtl_cached = true;
+  if (!is_layout_rtl_cached) {
+    is_layout_rtl_cached = true;
     JNIEnv* env = base::android::AttachCurrentThread();
-    system_layout_direction_rtl_cache = static_cast<bool>(
-        Java_LocalizationUtils_isSystemLayoutDirectionRtl(env));
+    layout_rtl_cache =
+        static_cast<bool>(Java_LocalizationUtils_isLayoutRtl(env));
   }
 
-  return system_layout_direction_rtl_cache;
+  return layout_rtl_cache;
 }
 
 namespace {

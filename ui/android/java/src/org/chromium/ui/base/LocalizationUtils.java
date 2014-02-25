@@ -23,7 +23,7 @@ public class LocalizationUtils {
     public static final int RIGHT_TO_LEFT = 1;
     public static final int LEFT_TO_RIGHT = 2;
 
-    private static Boolean sIsSystemLayoutDirectionRtl;
+    private static Boolean sIsLayoutRtl;
 
     private LocalizationUtils() { /* cannot be instantiated */ }
 
@@ -62,27 +62,23 @@ public class LocalizationUtils {
     }
 
     /**
-     * @return true if the system default layout direction is RTL, false otherwise.
-     *         RTL layout support is from Jelly Bean MR1, so if the version is lower
-     *         than that, it is always false.
+     * Returns whether the Android layout direction is RTL.
+     *
+     * Note that the locale direction can be different from layout direction. Two known cases:
+     * - RTL languages on Android 4.1, due to the lack of RTL layout support on 4.1.
+     * - When user turned on force RTL layout option under developer options.
+     *
+     * Therefore, only this function should be used to query RTL for layout purposes.
      */
     @CalledByNative
-    public static boolean isSystemLayoutDirectionRtl() {
-        if (sIsSystemLayoutDirectionRtl == null) {
-            sIsSystemLayoutDirectionRtl = Boolean.valueOf(
+    public static boolean isLayoutRtl() {
+        if (sIsLayoutRtl == null) {
+            sIsLayoutRtl = Boolean.valueOf(
                     ApiCompatibilityUtils.getLayoutDirectionFromLocale(Locale.getDefault()) ==
                     View.LAYOUT_DIRECTION_RTL);
         }
 
-        return sIsSystemLayoutDirectionRtl.booleanValue();
-    }
-
-    /**
-     * Jni binding to base::i18n::IsRTL.
-     * @return true if the current locale is right to left.
-     */
-    public static boolean isRtl() {
-        return nativeIsRTL();
+        return sIsLayoutRtl.booleanValue();
     }
 
     /**
@@ -103,8 +99,6 @@ public class LocalizationUtils {
     public static String getDurationString(long timeInMillis) {
         return nativeGetDurationString(timeInMillis);
     }
-
-    private static native boolean nativeIsRTL();
 
     private static native int nativeGetFirstStrongCharacterDirection(String string);
 

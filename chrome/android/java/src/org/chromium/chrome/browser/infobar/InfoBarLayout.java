@@ -114,7 +114,7 @@ public class InfoBarLayout extends ViewGroup implements View.OnClickListener {
             int iconResourceId) {
         super(context);
         mIndicesOfRows = new ArrayList<Integer>();
-        mLayoutRTL = LocalizationUtils.isSystemLayoutDirectionRtl();
+        mLayoutRTL = LocalizationUtils.isLayoutRtl();
         mInfoBarView = infoBarView;
 
         // Determine what backgrounds we'll be needing for the buttons.

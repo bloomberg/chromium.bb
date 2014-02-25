@@ -39,7 +39,7 @@ public class RatingView extends View {
 
     public RatingView(Context context, AttributeSet params) {
         super(context, params);
-        mIsLayoutLTR = !LocalizationUtils.isSystemLayoutDirectionRtl();
+        mIsLayoutLTR = !LocalizationUtils.isLayoutRtl();
         mDrawingRect = new Rect();
 
         // Cache the Bitmaps.

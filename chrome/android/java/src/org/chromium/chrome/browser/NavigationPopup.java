@@ -174,7 +174,7 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
             mFadePadding = (int) (fadeLength * (1 - FADE_STOP));
             mListItemHeight = (int) (density * LIST_ITEM_HEIGHT_DP);
             mPadding = (int) (density * PADDING_DP);
-            mIsLayoutDirectionRTL = LocalizationUtils.isSystemLayoutDirectionRtl();
+            mIsLayoutDirectionRTL = LocalizationUtils.isLayoutRtl();
         }
 
         public TextView createListItem() {
