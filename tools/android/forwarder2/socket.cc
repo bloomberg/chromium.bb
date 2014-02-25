@@ -96,8 +96,10 @@ void Socket::Close() {
 
 bool Socket::InitSocketInternal() {
   socket_ = socket(family_, SOCK_STREAM, 0);
-  if (socket_ < 0)
+  if (socket_ < 0) {
+    PLOG(ERROR) << "socket";
     return false;
+  }
   tools::DisableNagle(socket_);
   int reuse_addr = 1;
   setsockopt(socket_, SOL_SOCKET, SO_REUSEADDR, &reuse_addr,
@@ -171,6 +173,7 @@ bool Socket::BindAndListen() {
   errno = 0;
   if (HANDLE_EINTR(bind(socket_, addr_ptr_, addr_len_)) < 0 ||
       HANDLE_EINTR(listen(socket_, SOMAXCONN)) < 0) {
+    PLOG(ERROR) << "bind/listen";
     SetSocketError();
     return false;
   }
