@@ -330,7 +330,7 @@ def NewlibLibcScript(arch):
  * libraries that make up what -lc means semantically.
  */
 OUTPUT_FORMAT(%s)
-GROUP ( libcrt_common.a libnacl.a )
+GROUP ( libnacl.a libcrt_common.a )
 """
   if arch == 'arm':
     # Listing three formats instead of one makes -EL/-EB switches work
