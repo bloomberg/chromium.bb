@@ -6,7 +6,7 @@ Also it detects that after switching to another view it gets the proper time ran
 
 mode = Events
 range = 0 - 1
-time range = 1390988669.115434 - 1390988669.27943
+time range = 1390988669.115434 - 1390988670.116917
 records count: 80
 
 mode = Events

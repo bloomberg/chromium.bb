@@ -37,7 +37,8 @@ function test()
         ]}
     ];
 
-    var view = WebInspector.showPanel("timeline")._currentViews[0];
+    var panel = WebInspector.showPanel("timeline");
+    var view = panel._currentViews[0];
     var model = view._presentationModel;
 
     function printRecord(record)
@@ -66,7 +67,7 @@ function test()
     dumpRecords();
 
     InspectorTest.addResult("Filtered by 'bar':");
-    view._filters._textFilterUI.setValue("bar");
+    panel._filters._textFilterUI.setValue("bar");
     dumpRecords();
 
     InspectorTest.addResult("Collapsed 'bar04' and 'foo13':");
@@ -83,7 +84,7 @@ function test()
     dumpRecords();
 
     InspectorTest.addResult("Filtered by 'foo':");
-    view._filters._textFilterUI.setValue("foo");
+    panel._filters._textFilterUI.setValue("foo");
     dumpRecords();
 
     InspectorTest.completeTest();
