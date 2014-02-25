@@ -35,11 +35,12 @@
 #include "core/frame/ContentSecurityPolicyResponseHeaders.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
+#include "core/frame/UseCounter.h"
+#include "core/frame/csp/CSPSource.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/PingLoader.h"
-#include "core/frame/UseCounter.h"
 #include "platform/JSONValues.h"
 #include "platform/NotImplemented.h"
 #include "platform/ParsingUtilities.h"
@@ -149,93 +150,6 @@ static bool isSourceListNone(const UChar* begin, const UChar* end)
 
     return true;
 }
-
-class CSPSource {
-public:
-    CSPSource(ContentSecurityPolicy* policy, const String& scheme, const String& host, int port, const String& path, bool hostHasWildcard, bool portHasWildcard)
-        : m_policy(policy)
-        , m_scheme(scheme)
-        , m_host(host)
-        , m_port(port)
-        , m_path(path)
-        , m_hostHasWildcard(hostHasWildcard)
-        , m_portHasWildcard(portHasWildcard)
-    {
-    }
-
-    bool matches(const KURL& url) const
-    {
-        if (!schemeMatches(url))
-            return false;
-        if (isSchemeOnly())
-            return true;
-        return hostMatches(url) && portMatches(url) && pathMatches(url);
-    }
-
-private:
-    bool schemeMatches(const KURL& url) const
-    {
-        if (m_scheme.isEmpty()) {
-            String protectedResourceScheme(m_policy->securityOrigin()->protocol());
-            if (equalIgnoringCase("http", protectedResourceScheme))
-                return url.protocolIs("http") || url.protocolIs("https");
-            return equalIgnoringCase(url.protocol(), protectedResourceScheme);
-        }
-        return equalIgnoringCase(url.protocol(), m_scheme);
-    }
-
-    bool hostMatches(const KURL& url) const
-    {
-        const String& host = url.host();
-        if (equalIgnoringCase(host, m_host))
-            return true;
-        return m_hostHasWildcard && host.endsWith("." + m_host, false);
-
-    }
-
-    bool pathMatches(const KURL& url) const
-    {
-        if (m_path.isEmpty())
-            return true;
-
-        String path = decodeURLEscapeSequences(url.path());
-
-        if (m_path.endsWith("/"))
-            return path.startsWith(m_path, false);
-
-        return path == m_path;
-    }
-
-    bool portMatches(const KURL& url) const
-    {
-        if (m_portHasWildcard)
-            return true;
-
-        int port = url.port();
-
-        if (port == m_port)
-            return true;
-
-        if (!port)
-            return isDefaultPortForProtocol(m_port, url.protocol());
-
-        if (!m_port)
-            return isDefaultPortForProtocol(port, url.protocol());
-
-        return false;
-    }
-
-    bool isSchemeOnly() const { return m_host.isEmpty(); }
-
-    ContentSecurityPolicy* m_policy;
-    String m_scheme;
-    String m_host;
-    int m_port;
-    String m_path;
-
-    bool m_hostHasWildcard;
-    bool m_portHasWildcard;
-};
 
 class CSPSourceList {
 public:

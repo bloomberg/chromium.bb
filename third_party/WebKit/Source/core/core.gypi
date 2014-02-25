@@ -1092,6 +1092,7 @@
             'frame/SuspendableTimer.cpp',
             'frame/SuspendableTimer.h',
             'frame/UseCounter.cpp',
+            'frame/csp/CSPSource.cpp',
             'inspector/AsyncCallStackTracker.cpp',
             'inspector/AsyncCallStackTracker.h',
             'inspector/BindingVisitors.h',
