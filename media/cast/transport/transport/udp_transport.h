@@ -60,7 +60,7 @@ class UdpTransport : public PacketSender {
   scoped_refptr<net::IOBuffer> recv_buf_;
   net::IPEndPoint recv_addr_;
   PacketReceiverCallback packet_receiver_;
-  const CastTransportStatusCallback& status_callback_;
+  const CastTransportStatusCallback status_callback_;
   base::WeakPtrFactory<UdpTransport> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UdpTransport);
