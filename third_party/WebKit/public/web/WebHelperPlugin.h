@@ -36,31 +36,27 @@
 
 namespace blink {
 
-class WebFrame;
 class WebFrameClient;
 class WebPlugin;
 class WebWidgetClient;
 
-// FIXME: Remove WebWidget inheritance.
 class WebHelperPlugin : public WebWidget {
 public:
-    // FIXME: These functions are going away. Please do not use.
-    BLINK_EXPORT static WebHelperPlugin* create(WebWidgetClient*) { return 0; }
+    BLINK_EXPORT static WebHelperPlugin* create(WebWidgetClient*);
+
     virtual void initializeFrame(WebFrameClient*) = 0;
 
-    // May return null if initialization fails. If the returned pointer is
-    // non-null, the caller must free it by calling destroy().
-    BLINK_EXPORT static WebHelperPlugin* create(const WebString& PluginType, WebFrame*);
-
-    // Returns a WebPlugin corresponding to the instantiated plugin. This will
-    // never return null.
+    // The returned pointer may be 0 even if initialization was successful.
+    // For example, if the plugin cannot be found or the plugin is disabled.
+    // If not 0, the returned pointer is valid for the lifetime of this object.
     virtual WebPlugin* getPlugin() = 0;
 
-    // Initiates destruction of the WebHelperPlugin.
-    virtual void destroy() = 0;
+    // Initiate the process of closing and destroying the helper plugin.
+    // Must be called before WebView is closed.
+    virtual void closeAndDeleteSoon() = 0;
 
 protected:
-    virtual ~WebHelperPlugin() { }
+    ~WebHelperPlugin() { }
 };
 
 } // namespace blink
@@ -72,7 +68,7 @@ template<> struct OwnedPtrDeleter<blink::WebHelperPlugin> {
     static void deletePtr(blink::WebHelperPlugin* plugin)
     {
         if (plugin)
-            plugin->destroy();
+            plugin->closeAndDeleteSoon();
     }
 };
 

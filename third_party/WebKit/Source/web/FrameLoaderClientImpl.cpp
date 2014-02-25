@@ -616,13 +616,13 @@ PassRefPtr<Frame> FrameLoaderClientImpl::createFrame(
 }
 
 PassRefPtr<Widget> FrameLoaderClientImpl::createPlugin(
+    const IntSize& size, // FIXME: how do we use this?
     HTMLPlugInElement* element,
     const KURL& url,
     const Vector<String>& paramNames,
     const Vector<String>& paramValues,
     const String& mimeType,
-    bool loadManually,
-    DetachedPluginPolicy policy)
+    bool loadManually)
 {
     if (!m_webFrame->client())
         return nullptr;
@@ -645,20 +645,22 @@ PassRefPtr<Widget> FrameLoaderClientImpl::createPlugin(
     if (!webPlugin->initialize(container.get()))
         return nullptr;
 
-    if (policy != AllowDetachedPlugin && !element->renderer())
+    // The element might have been removed during plugin initialization!
+    if (!element->renderer())
         return nullptr;
 
     return container;
 }
 
 PassRefPtr<Widget> FrameLoaderClientImpl::createJavaAppletWidget(
+    const IntSize& size,
     HTMLAppletElement* element,
     const KURL& /* baseURL */,
     const Vector<String>& paramNames,
     const Vector<String>& paramValues)
 {
-    return createPlugin(element, KURL(), paramNames, paramValues,
-        "application/x-java-applet", false, FailOnDetachedPlugin);
+    return createPlugin(size, element, KURL(), paramNames, paramValues,
+        "application/x-java-applet", false);
 }
 
 ObjectContentType FrameLoaderClientImpl::objectContentType(

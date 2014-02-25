@@ -48,6 +48,7 @@
 #include "WebNavigationPolicy.h"
 #include "WebView.h"
 #include "core/page/PagePopupDriver.h"
+#include "platform/Timer.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -96,8 +97,11 @@ class WebAXObject;
 class WebActiveGestureAnimation;
 class WebDevToolsAgentClient;
 class WebDevToolsAgentPrivate;
+class WebDocument;
 class WebFrameImpl;
 class WebGestureEvent;
+class WebHelperPlugin;
+class WebHelperPluginImpl;
 class WebImage;
 class WebKeyboardEvent;
 class WebLayerTreeView;
@@ -239,6 +243,9 @@ public:
     virtual void performMediaPlayerAction(
         const WebMediaPlayerAction& action,
         const WebPoint& location) OVERRIDE;
+    virtual WebHelperPlugin* createHelperPlugin(
+        const WebString& pluginType,
+        const WebDocument& hostDocument) OVERRIDE;
     virtual void performPluginAction(
         const WebPluginAction&,
         const WebPoint&) OVERRIDE;
@@ -603,6 +610,13 @@ private:
     virtual bool handleKeyEvent(const WebKeyboardEvent&) OVERRIDE;
     virtual bool handleCharEvent(const WebKeyboardEvent&) OVERRIDE;
 
+    friend class WebHelperPluginImpl;
+    // Take ownership of the Helper Plugin and destroy it asynchronously.
+    // Called by WebHelperPluginImpl::closeAndDeleteSoon() to ensure the Helper
+    // Plugin is closed at the correct time.
+    void closeAndDeleteHelperPluginSoon(WebHelperPluginImpl*);
+    void closePendingHelperPlugins(WebCore::Timer<WebViewImpl>*);
+
     WebCore::InputMethodContext* inputMethodContext();
     WebPlugin* focusedPluginIfInputMethodSupported(WebCore::Frame*);
 
@@ -771,6 +785,9 @@ private:
     WebColor m_baseBackgroundColor;
     WebColor m_backgroundColorOverride;
     float m_zoomFactorOverride;
+
+    WebCore::Timer<WebViewImpl> m_helperPluginCloseTimer;
+    Vector<WebHelperPluginImpl*> m_helperPluginsPendingClose;
 };
 
 // We have no ways to check if the specified WebView is an instance of

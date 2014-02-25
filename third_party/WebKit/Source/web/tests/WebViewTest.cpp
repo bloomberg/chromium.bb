@@ -42,6 +42,7 @@
 #include "WebFrame.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
+#include "WebHelperPlugin.h"
 #include "WebHitTestResult.h"
 #include "WebInputEvent.h"
 #include "WebSettings.h"
@@ -59,6 +60,7 @@
 #include "core/page/Chrome.h"
 #include "core/frame/Settings.h"
 #include "platform/KeyboardCodes.h"
+#include "platform/Timer.h"
 #include "platform/graphics/Color.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebDragData.h"
@@ -172,6 +174,54 @@ public:
 
 private:
     OwnPtr<WebLayerTreeView> m_layerTreeView;
+};
+
+class HelperPluginCreatingWebViewClient : public WebViewClient {
+public:
+    // WebViewClient methods
+    virtual blink::WebWidget* createPopupMenu(blink::WebPopupType popupType) OVERRIDE
+    {
+        EXPECT_EQ(WebPopupTypeHelperPlugin, popupType);
+        // The caller owns the object, but we retain a pointer for use in closeWidgetNow().
+        m_helperPluginWebWidget = blink::WebHelperPlugin::create(this);
+        return m_helperPluginWebWidget;
+    }
+
+    virtual void initializeHelperPluginWebFrame(blink::WebHelperPlugin* plugin) OVERRIDE
+    {
+        ASSERT_TRUE(m_webFrameClient);
+        plugin->initializeFrame(m_webFrameClient);
+    }
+
+    // WebWidgetClient methods
+    virtual void closeWidgetSoon() OVERRIDE
+    {
+        ASSERT_TRUE(m_helperPluginWebWidget);
+        // m_helperPluginWebWidget->close() must be called asynchronously.
+        if (!m_closeTimer.isActive())
+            m_closeTimer.startOneShot(0);
+    }
+
+    void closeWidgetNow(WebCore::Timer<HelperPluginCreatingWebViewClient>* timer)
+    {
+        m_helperPluginWebWidget->close();
+        m_helperPluginWebWidget = 0;
+    }
+
+    // Local methods
+    HelperPluginCreatingWebViewClient()
+        : m_helperPluginWebWidget(0)
+        , m_webFrameClient(0)
+        , m_closeTimer(this, &HelperPluginCreatingWebViewClient::closeWidgetNow)
+    {
+    }
+
+    void setWebFrameClient(WebFrameClient* client) { m_webFrameClient = client; }
+
+private:
+    WebWidget* m_helperPluginWebWidget;
+    WebFrameClient* m_webFrameClient;
+    WebCore::Timer<HelperPluginCreatingWebViewClient> m_closeTimer;
 };
 
 class DateTimeChooserWebViewClient : public WebViewClient {
@@ -1269,6 +1319,25 @@ TEST_F(WebViewTest, ShadowRoot)
         EXPECT_TRUE(shadowRoot.isNull());
     }
 }
+
+TEST_F(WebViewTest, HelperPlugin)
+{
+    HelperPluginCreatingWebViewClient client;
+    WebViewImpl* webViewImpl = m_webViewHelper.initialize(true, 0, &client);
+
+    WebFrameImpl* frame = toWebFrameImpl(webViewImpl->mainFrame());
+    client.setWebFrameClient(frame->client());
+
+    OwnPtr<WebHelperPlugin> helperPlugin = adoptPtr(webViewImpl->createHelperPlugin("dummy-plugin-type", frame->document()));
+    EXPECT_TRUE(helperPlugin);
+    EXPECT_EQ(0, helperPlugin->getPlugin()); // Invalid plugin type means no plugin.
+
+    helperPlugin.clear();
+    runPendingTasks();
+
+    m_webViewHelper.reset(); // Explicitly reset to break dependency on locally scoped client.
+}
+
 
 class ViewCreatingWebViewClient : public WebViewClient {
 public:

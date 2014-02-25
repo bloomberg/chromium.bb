@@ -447,8 +447,9 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
     WTF_LOG(Plugins, "   Loaded URL: %s", url.string().utf8().data());
     m_loadedUrl = url;
 
+    IntSize contentSize = roundedIntSize(LayoutSize(renderer->contentWidth(), renderer->contentHeight()));
     bool loadManually = document().isPluginDocument() && !document().containsPlugins() && toPluginDocument(document()).shouldLoadPluginManually();
-    RefPtr<Widget> widget = frame->loader().client()->createPlugin(this, url, paramNames, paramValues, mimeType, loadManually, FrameLoaderClient::FailOnDetachedPlugin);
+    RefPtr<Widget> widget = frame->loader().client()->createPlugin(contentSize, this, url, paramNames, paramValues, mimeType, loadManually);
 
     if (!widget) {
         if (!renderer->showsUnavailablePluginIndicator())

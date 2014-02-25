@@ -171,14 +171,9 @@ class FetchRequest;
         virtual void transitionToCommittedForNewPage() = 0;
 
         virtual PassRefPtr<Frame> createFrame(const KURL&, const AtomicString& name, const Referrer&, HTMLFrameOwnerElement*) = 0;
-        // Whether or not plugin creation should fail if the HTMLPlugInElement isn't in the DOM after plugin initialization.
-        enum DetachedPluginPolicy {
-            FailOnDetachedPlugin,
-            AllowDetachedPlugin,
-        };
-        virtual PassRefPtr<Widget> createPlugin(HTMLPlugInElement*, const KURL&, const Vector<String>&, const Vector<String>&, const String&, bool loadManually, DetachedPluginPolicy) = 0;
+        virtual PassRefPtr<Widget> createPlugin(const IntSize&, HTMLPlugInElement*, const KURL&, const Vector<String>&, const Vector<String>&, const String&, bool loadManually) = 0;
 
-        virtual PassRefPtr<Widget> createJavaAppletWidget(HTMLAppletElement*, const KURL& baseURL, const Vector<String>& paramNames, const Vector<String>& paramValues) = 0;
+        virtual PassRefPtr<Widget> createJavaAppletWidget(const IntSize&, HTMLAppletElement*, const KURL& baseURL, const Vector<String>& paramNames, const Vector<String>& paramValues) = 0;
 
         virtual ObjectContentType objectContentType(const KURL&, const String& mimeType, bool shouldPreferPlugInsForImages) = 0;
 
