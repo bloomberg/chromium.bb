@@ -93,7 +93,7 @@ PassOwnPtr<FontCustomPlatformData> FontCustomPlatformData::create(SharedBuffer* 
     buffer = transcodeBuffer.get();
 
     RefPtr<SkMemoryStream> stream = adoptRef(new SkMemoryStream(buffer->getAsSkData().get()));
-#if OS(WIN) && !ENABLE(GDI_FONTS_ON_WINDOWS)
+#if OS(WIN)
     RefPtr<SkTypeface> typeface = adoptRef(FontCache::fontCache()->fontManager()->createFromStream(stream.get()));
 #else
     RefPtr<SkTypeface> typeface = adoptRef(SkTypeface::CreateFromStream(stream.get()));

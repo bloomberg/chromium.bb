@@ -142,7 +142,7 @@ PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDesc
         style |= SkTypeface::kItalic;
 
     // FIXME: Use SkFontStyle and matchFamilyStyle instead of legacyCreateTypeface.
-#if OS(WIN) && !ENABLE(GDI_FONTS_ON_WINDOWS)
+#if OS(WIN)
     if (m_fontManager)
         return adoptRef(m_fontManager->legacyCreateTypeface(name.data(), style));
 #endif

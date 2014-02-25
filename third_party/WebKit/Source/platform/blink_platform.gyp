@@ -303,7 +303,7 @@
           ['exclude', 'fonts/harfbuzz/HarfBuzzFaceCoreText\\.cpp$'],
         ],
       }],
-      ['OS != "linux" and OS != "mac" and (OS != "win" or (OS == "win" and "ENABLE_GDI_FONTS_ON_WINDOWS=1" in feature_defines))', {
+      ['OS != "linux" and OS != "mac" and OS != "win"', {
         'sources/': [
           ['exclude', 'VDMX[^/]+\\.(cpp|h)$'],
         ],
@@ -323,33 +323,17 @@
           ['include', 'fonts/skia/SkiaFontWin\\.(cpp|h)$'],
           ['include', 'fonts/win/UniscribeHelper\\.(cpp|h)$'],
           ['include', 'fonts/win/UniscribeHelperTextRun\\.(cpp|h)$'],
+          ['include', 'fonts/skia/SimpleFontDataSkia\\.cpp$'],
+          ['include', 'fonts/skia/GlyphPageTreeNodeSkia\\.cpp$'],
+          ['include', 'fonts/skia/FontCacheSkiaWin\\.cpp$'],
+          ['include', 'fonts/skia/FontCustomPlatformDataSkia\\.cpp$'],
+          ['include', 'fonts/skia/FontCustomPlatformDataSkia\\.cpp$'],
+
 
           # SystemInfo.cpp is useful and we don't want to copy it.
           ['include', 'win/SystemInfo\\.cpp$'],
         ],
         'conditions': [
-          ['"ENABLE_GDI_FONTS_ON_WINDOWS=1" in feature_defines', {
-            'sources/': [
-              ['include', 'fonts/win/FontCustomPlatformDataWin\\.cpp$'],
-              ['exclude', 'fonts/skia/SimpleFontDataSkia\\.cpp$'],
-              ['exclude', 'fonts/skia/GlyphPageTreeNodeSkia\\.cpp$'],
-              ['exclude', 'fonts/skia/FontCacheSkia\\.cpp$'],
-              ['exclude', 'fonts/skia/FontCacheSkiaWin\\.cpp$'],
-              ['exclude', 'fonts/skia/FontCustomPlatformDataSkia\\.cpp$'],
-            ],
-          },{ # ENABLE_GDI_FONTS_ON_WINDOWS!=1
-            'sources/': [
-              ['include', 'fonts/skia/SimpleFontDataSkia\\.cpp$'],
-              ['include', 'fonts/skia/GlyphPageTreeNodeSkia\\.cpp$'],
-              ['include', 'fonts/skia/FontCacheSkiaWin\\.cpp$'],
-              ['include', 'fonts/skia/FontCustomPlatformDataSkia\\.cpp$'],
-              ['include', 'fonts/skia/FontCustomPlatformDataSkia\\.cpp$'],
-              ['exclude', 'fonts/win/FontCustomPlatformDataWin\\.cpp$'],
-              ['exclude', 'fonts/win/SimpleFontDataWin\\.cpp$'],
-              ['exclude', 'fonts/GlyphPageTreeNodeWin\\.cpp$'],
-              ['exclude', 'fonts/FontCacheWin\\.cpp$'],
-            ],
-          }],
           ['"ENABLE_HARFBUZZ_ON_WINDOWS=1" in feature_defines', {
             'sources/': [
               ['include', 'fonts/harfbuzz/FontHarfBuzz\\.cpp$'],

@@ -53,12 +53,12 @@ using namespace WTF;
 
 namespace WebCore {
 
-#if !OS(WIN) || ENABLE(GDI_FONTS_ON_WINDOWS)
+#if !OS(WIN)
 FontCache::FontCache()
     : m_purgePreventCount(0)
 {
 }
-#endif // !OS(WIN) || ENABLE(GDI_FONTS_ON_WINDOWS)
+#endif // !OS(WIN)
 
 typedef HashMap<FontCacheKey, OwnPtr<FontPlatformData>, FontCacheKeyHash, FontCacheKeyTraits> FontPlatformDataCache;
 

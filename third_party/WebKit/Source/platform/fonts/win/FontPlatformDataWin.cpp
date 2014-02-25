@@ -174,22 +174,6 @@ FontPlatformData::FontPlatformData()
 #endif
 }
 
-#if ENABLE(GDI_FONTS_ON_WINDOWS) && !USE(HARFBUZZ)
-FontPlatformData::FontPlatformData(HFONT font, float size, FontOrientation orientation)
-    : m_font(RefCountedHFONT::create(font))
-    , m_textSize(size)
-    , m_syntheticBold(false)
-    , m_syntheticItalic(false)
-    , m_orientation(orientation)
-    , m_scriptCache(0)
-    , m_typeface(CreateTypefaceFromHFont(font, 0))
-    , m_isHashTableDeletedValue(false)
-    , m_useSubpixelPositioning(false)
-{
-    m_paintTextFlags = computePaintTextFlags(fontFamilyName());
-}
-#endif
-
 // FIXME: this constructor is needed for SVG fonts but doesn't seem to do much
 FontPlatformData::FontPlatformData(float size, bool bold, bool oblique)
     : m_textSize(size)
@@ -294,53 +278,17 @@ FontPlatformData::~FontPlatformData()
 
 String FontPlatformData::fontFamilyName() const
 {
-#if ENABLE(GDI_FONTS_ON_WINDOWS)
-    HWndDC dc(0);
-    HGDIOBJ oldFont = static_cast<HFONT>(SelectObject(dc, hfont()));
-    WCHAR name[LF_FACESIZE];
-    unsigned resultLength = GetTextFace(dc, LF_FACESIZE, name);
-    if (resultLength > 0)
-        resultLength--; // ignore the null terminator
-    SelectObject(dc, oldFont);
-    return String(name, resultLength);
-#else
     // FIXME: This returns the requested name, perhaps a better solution would be to
     // return the list of names provided by SkTypeface::createFamilyNameIterator.
     ASSERT(typeface());
     SkString familyName;
     typeface()->getFamilyName(&familyName);
     return String::fromUTF8(familyName.c_str());
-#endif
 }
 
 bool FontPlatformData::isFixedPitch() const
 {
-#if ENABLE(GDI_FONTS_ON_WINDOWS)
-    // TEXTMETRICS have this. Set m_treatAsFixedPitch based off that.
-    HWndDC dc(0);
-    HGDIOBJ oldFont = SelectObject(dc, hfont());
-
-    // Yes, this looks backwards, but the fixed pitch bit is actually set if the font
-    // is *not* fixed pitch. Unbelievable but true.
-    TEXTMETRIC textMetric = { 0 };
-    if (!GetTextMetrics(dc, &textMetric)) {
-        if (ensureFontLoaded(hfont())) {
-            // Retry GetTextMetrics.
-            // FIXME: Handle gracefully the error if this call also fails.
-            // See http://crbug.com/6401.
-            if (!GetTextMetrics(dc, &textMetric))
-                WTF_LOG_ERROR("Unable to get the text metrics after second attempt");
-        }
-    }
-
-    bool treatAsFixedPitch = !(textMetric.tmPitchAndFamily & TMPF_FIXED_PITCH);
-
-    SelectObject(dc, oldFont);
-
-    return treatAsFixedPitch;
-#else
     return typeface() && typeface()->isFixedPitch();
-#endif
 }
 
 bool FontPlatformData::operator==(const FontPlatformData& a) const
@@ -406,7 +354,7 @@ bool FontPlatformData::ensureFontLoaded(HFONT font)
 
 bool FontPlatformData::defaultUseSubpixelPositioning()
 {
-#if OS(WIN) && !ENABLE(GDI_FONTS_ON_WINDOWS)
+#if OS(WIN)
     return FontCache::fontCache()->useSubpixelPositioning();
 #else
     return false;

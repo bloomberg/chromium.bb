@@ -69,10 +69,6 @@ public:
     // set everything to NULL.
     FontPlatformData(WTF::HashTableDeletedValueType);
     FontPlatformData();
-#if ENABLE(GDI_FONTS_ON_WINDOWS)
-    // This constructor takes ownership of the HFONT
-    FontPlatformData(HFONT, float size, FontOrientation);
-#endif
     FontPlatformData(float size, bool bold, bool oblique);
     FontPlatformData(const FontPlatformData&);
     FontPlatformData(const FontPlatformData&, float textSize);
@@ -102,14 +98,7 @@ public:
     FontOrientation orientation() const { return m_orientation; }
     void setOrientation(FontOrientation orientation) { m_orientation = orientation; }
 
-#if ENABLE(GDI_FONTS_ON_WINDOWS)
-    unsigned hash() const
-    {
-        return m_font ? m_font->hash() : NULL;
-    }
-#else
     unsigned hash() const;
-#endif
 
     bool operator==(const FontPlatformData&) const;
 

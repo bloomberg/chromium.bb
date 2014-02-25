@@ -37,7 +37,7 @@
 
 namespace WebCore {
 
-#if (!ENABLE(GDI_FONTS_ON_WINDOWS) || !OS(WIN)) && !OS(MACOSX)
+#if !OS(MACOSX)
 unsigned FontPlatformData::hash() const
 {
     unsigned h = SkTypeface::UniqueID(m_typeface.get());
