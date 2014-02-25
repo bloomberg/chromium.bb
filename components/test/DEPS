@@ -3,4 +3,5 @@ include_rules = [
   "+ui/base/android/ui_base_jni_registrar.h",
   "+ui/base/resource/resource_bundle.h",
   "+ui/gfx/android/gfx_jni_registrar.h",
+  "+ui/gl/gl_surface.h",  # To initialize GL for tests.
 ]

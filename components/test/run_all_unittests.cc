@@ -10,6 +10,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#if !defined(OS_IOS)
+#include "ui/gl/gl_surface.h"
+#endif
+
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
 #include "ui/base/android/ui_base_jni_registrar.h"
@@ -25,7 +29,9 @@ class ComponentsTestSuite : public base::TestSuite {
  private:
   virtual void Initialize() OVERRIDE {
     base::TestSuite::Initialize();
-
+#if !defined(OS_IOS)
+    gfx::GLSurface::InitializeOneOffForTests(true);
+#endif
 #if defined(OS_ANDROID)
     // Register JNI bindings for android.
     JNIEnv* env = base::android::AttachCurrentThread();
