@@ -153,8 +153,8 @@ FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
     , m_useSubpixelPositioning(false)
 {
 #if !USE(HARFBUZZ)
-    m_font = 0;
-    m_scriptCache = 0;
+    m_font = nullptr;
+    m_scriptCache = nullptr;
 #endif
 }
 
@@ -169,8 +169,8 @@ FontPlatformData::FontPlatformData()
     , m_useSubpixelPositioning(false)
 {
 #if !USE(HARFBUZZ)
-    m_font = 0;
-    m_scriptCache = 0;
+    m_font = nullptr;
+    m_scriptCache = nullptr;
 #endif
 }
 
@@ -186,8 +186,8 @@ FontPlatformData::FontPlatformData(float size, bool bold, bool oblique)
     , m_useSubpixelPositioning(false)
 {
 #if !USE(HARFBUZZ)
-    m_font = 0;
-    m_scriptCache = 0;
+    m_font = nullptr;
+    m_scriptCache = nullptr;
 #endif
 }
 
@@ -203,7 +203,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& data)
 {
 #if !USE(HARFBUZZ)
     m_font = data.m_font;
-    m_scriptCache = 0;
+    m_scriptCache = nullptr;
 #endif
 }
 
@@ -219,7 +219,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& data, float textSize)
 {
 #if !USE(HARFBUZZ)
     m_font = data.m_font;
-    m_scriptCache = 0;
+    m_scriptCache = nullptr;
 #endif
 }
 
@@ -242,8 +242,8 @@ FontPlatformData::FontPlatformData(PassRefPtr<SkTypeface> tf, const char* family
     SkLOGFONTFromTypeface(m_typeface.get(), &logFont);
     logFont.lfHeight = -textSize;
     HFONT hFont = CreateFontIndirect(&logFont);
-    m_font = hFont ? RefCountedHFONT::create(hFont) : 0;
-    m_scriptCache = 0;
+    m_font = hFont ? RefCountedHFONT::create(hFont) : nullptr;
+    m_scriptCache = nullptr;
 #endif
 }
 
@@ -261,7 +261,7 @@ FontPlatformData& FontPlatformData::operator=(const FontPlatformData& data)
         m_font = data.m_font;
         // The following fields will get re-computed if necessary.
         ScriptFreeCache(&m_scriptCache);
-        m_scriptCache = 0;
+        m_scriptCache = nullptr;
         m_scriptFontProperties.clear();
 #endif
     }
@@ -272,7 +272,7 @@ FontPlatformData::~FontPlatformData()
 {
 #if !USE(HARFBUZZ)
     ScriptFreeCache(&m_scriptCache);
-    m_scriptCache = 0;
+    m_scriptCache = nullptr;
 #endif
 }
 
