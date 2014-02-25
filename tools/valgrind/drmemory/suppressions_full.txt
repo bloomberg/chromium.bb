@@ -1946,3 +1946,55 @@ name=http://crbug.com/125807
 *!operator new
 *!TransportSecurityPersister::TransportSecurityPersister
 *!TransportSecurityPersisterTest::TransportSecurityPersisterTest
+
+UNINITIALIZED READ
+name=bug_113076
+*!media::ConvertYUVToRGB32_C
+*!media::LinearScaleYUVToRGB32RowWithRange_C
+*!media::ScaleYUVToRGB32WithRect
+
+UNINITIALIZED READ
+name=bug_343248
+osmesa.dll!LINTERP
+osmesa.dll!INTERP_4F
+osmesa.dll!_tnl_generic_interp
+
+UNADDRESSABLE ACCESS
+name=bug_340752
+blink_heap.dll!WebCore::ThreadState::visitStack
+blink_heap.dll!WebCore::ThreadState::trace
+blink_heap.dll!WebCore::ThreadState::visitRoots
+
+UNINITIALIZED READ
+name=bug_343663
+blink_web.dll!WebCore::RenderBlock::computeInlinePreferredLogicalWidths
+
+UNINITIALIZED READ
+name=bug_343797
+...
+blink_web.dll!WebCore::MediaQueryExp::create
+blink_web.dll!WebCore::BisonCSSParser::createFloatingMediaQueryExp
+blink_web.dll!cssyyparse
+
+UNINITIALIZED READ
+name=bug_343915
+blink_web.dll!WebCore::BisonCSSParser::parseFlex
+blink_web.dll!WebCore::BisonCSSParser::parseValue
+blink_web.dll!cssyyparse
+
+UNADDRESSABLE ACCESS
+name=BUG_343958
+blink_web.dll!WebCore::Node::getFlag
+blink_web.dll!WebCore::Node::inDocument
+blink_web.dll!WebCore::Node::isDescendantOf
+blink_web.dll!WebCore::CompositeEditCommand::cloneParagraphUnderNewElement
+blink_web.dll!WebCore::CompositeEditCommand::moveParagraphWithClones
+
+UNINITIALIZED READ
+name=BUG_344076
+blink_web.dll!WebCore::Editor::canSmartReplaceWithPasteboard
+blink_web.dll!WebCore::Editor::pasteAsPlainTextWithPasteboard
+blink_web.dll!WebCore::Editor::pasteAsPlainText
+blink_web.dll!WebCore::executePasteAndMatchStyle
+blink_web.dll!WebCore::Editor::Command::execute
+blink_web.dll!WebCore::Document::execCommand
