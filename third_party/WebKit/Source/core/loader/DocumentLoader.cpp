@@ -543,7 +543,7 @@ void DocumentLoader::dataReceived(Resource* resource, const char* data, int leng
 
 void DocumentLoader::checkLoadComplete()
 {
-    if (!m_frame || isLoading())
+    if (!m_frame || isLoading() || !m_committed)
         return;
     m_frame->domWindow()->finishedLoading();
 }
