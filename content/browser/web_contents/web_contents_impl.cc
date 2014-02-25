@@ -2850,6 +2850,10 @@ void WebContentsImpl::RenderViewTerminated(RenderViewHost* rvh,
     return;
   }
 
+  // Cancel any visible dialogs so they are not left dangling over the sad tab.
+  if (dialog_manager_)
+    dialog_manager_->CancelActiveAndPendingDialogs(this);
+
   ClearPowerSaveBlockers(rvh);
   SetIsLoading(rvh, false, NULL);
   NotifyDisconnected();
