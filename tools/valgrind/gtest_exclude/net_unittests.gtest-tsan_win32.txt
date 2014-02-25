@@ -32,12 +32,11 @@ DiskCacheEntryTest.EvictOldEntries
 DiskCacheEntryTest.NewEvictionEvictOldEntries
 
 # Hang. crbug.com/265647.
-NetworkChangeNotifierWinTest.NetChangeWinBasic
-NetworkChangeNotifierWinTest.NetChangeWinSignal
-NetworkChangeNotifierWinTest.NetChangeWinFailSignal*
+NetworkChangeNotifierWinTest.NetChangeWin*
 
 # Fails frequently. crbug.com/310348
-EmbeddedTestServerThreadingTestInstantiation.*
+# Flaky failing tests: crbug.com/343565-c#2
+EmbeddedTestServerThreadingTestInstantiation*
 
 # Hang: crbug.com/331468
 MultiThreadedCertVerifierTest.DifferentCACerts
@@ -52,10 +51,6 @@ HttpServerTest.RequestWithTooLargeBody
 TransportClientSocketPoolTest.IPv6FallbackSocketIPv6FinishesFirst
 NextProto_SpdyStreamTest.SendLargeDataAfterOpenRequestResponse_2
 NextProto_SpdyStreamTest.SendLargeDataAfterOpenRequestResponse_4
-
-# Flaky failing tests: crbug.com/343565-c#2
-EmbeddedTestServerThreadingTestInstantiation_EmbeddedTestServerThreadingTest.RunTest_0
-EmbeddedTestServerThreadingTestInstantiation_EmbeddedTestServerThreadingTest.RunTest_1
 
 # Failing test: crbug.com/344428
 MDnsTest.TransactionWithCache
