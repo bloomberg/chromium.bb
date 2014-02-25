@@ -31,7 +31,9 @@
 
 typedef SVGPoint SVGPOINT;
 
-interface TestSVG {
+[
+    DependentLifetime,
+] interface TestSVG {
     [Reflect] attribute SVGAnimatedString animatedReflectedAttribute;
 
     attribute SVGPoint mutablePoint;
@@ -42,5 +44,4 @@ interface TestSVG {
 
     SVGPoint svgPointMethod(SVGPoint item, unsigned long index);
     [StrictTypeChecking, RaisesException]  SVGPoint strictSVGPointMethod(SVGPoint item, unsigned long index);
-
 };

@@ -19,7 +19,7 @@
  */
 
 [
-    DependentLifetime
+    DependentLifetime,
 ] interface NodeFilter {
     // Constants returned by acceptNode
     const short               FILTER_ACCEPT                  = 1;
@@ -44,4 +44,3 @@
     [CallWith=ScriptState] short acceptNode([Default=Undefined] optional Node n);
 
 };
-

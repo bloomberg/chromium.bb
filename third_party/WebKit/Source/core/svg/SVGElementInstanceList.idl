@@ -23,7 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface SVGElementInstanceList {
+[
+    DependentLifetime,
+] interface SVGElementInstanceList {
     readonly attribute unsigned long length;
 
     SVGElementInstance item([Default=Undefined] optional unsigned long index);

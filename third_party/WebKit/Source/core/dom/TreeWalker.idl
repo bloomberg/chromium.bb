@@ -18,9 +18,9 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// Introduced in DOM Level 2:
+// Introduced in DOM Level 2
 [
-    SetWrapperReferenceTo(NodeFilter filter)
+    SetWrapperReferenceTo(NodeFilter filter),
 ] interface TreeWalker {
     readonly attribute Node root;
     readonly attribute unsigned long whatToShow;
@@ -36,4 +36,3 @@
     [CallWith=ScriptState] Node previousNode();
     [CallWith=ScriptState] Node nextNode();
 };
-

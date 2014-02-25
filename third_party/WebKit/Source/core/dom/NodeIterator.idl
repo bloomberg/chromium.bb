@@ -18,9 +18,9 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// Introduced in DOM Level 2:
+// Introduced in DOM Level 2
 [
-    SetWrapperReferenceTo(NodeFilter filter)
+    SetWrapperReferenceTo(NodeFilter filter),
 ] interface NodeIterator {
     readonly attribute Node root;
     readonly attribute unsigned long whatToShow;
@@ -33,4 +33,3 @@
     [CallWith=ScriptState, RaisesException] Node previousNode();
     void detach();
 };
-

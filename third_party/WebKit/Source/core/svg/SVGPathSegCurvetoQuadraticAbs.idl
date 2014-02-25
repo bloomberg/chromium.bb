@@ -32,4 +32,3 @@
     attribute float x1;
     attribute float y1;
 };
-

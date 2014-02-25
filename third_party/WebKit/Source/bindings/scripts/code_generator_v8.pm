@@ -5154,12 +5154,10 @@ sub GenerateToV8Converters
 
     my $passRefPtrType = GetPassRefPtrType($interface);
 
-    # FIXME: Do we really need to treat /SVG/ as dependent DOM objects?
     my $wrapperConfiguration = "WrapperConfiguration::Independent";
     if (InheritsExtendedAttribute($interface, "ActiveDOMObject")
         || InheritsExtendedAttribute($interface, "DependentLifetime")
-        || NeedsVisitDOMWrapper($interface)
-        || $v8ClassName =~ /SVG/) {
+        || NeedsVisitDOMWrapper($interface)) {
         $wrapperConfiguration = "WrapperConfiguration::Dependent";
     }
 

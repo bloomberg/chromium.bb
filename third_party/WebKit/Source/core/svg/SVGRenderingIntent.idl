@@ -23,7 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface SVGRenderingIntent {
+[
+    DependentLifetime,
+] interface SVGRenderingIntent {
     // Rendering Intent Types
     const unsigned short RENDERING_INTENT_UNKNOWN               = 0;
     const unsigned short RENDERING_INTENT_AUTO                  = 1;

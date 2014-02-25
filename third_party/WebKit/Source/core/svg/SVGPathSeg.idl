@@ -26,6 +26,7 @@
 
 [
     Custom=Wrap,
+    DependentLifetime,
 ] interface SVGPathSeg {
     // Path Segment Types
     const unsigned short PATHSEG_UNKNOWN = 0;
@@ -52,4 +53,3 @@
     readonly attribute unsigned short pathSegType;
     readonly attribute DOMString pathSegTypeAsLetter;
 };
-

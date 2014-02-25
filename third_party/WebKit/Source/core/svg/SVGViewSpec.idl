@@ -23,7 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface SVGViewSpec {
+[
+    DependentLifetime,
+] interface SVGViewSpec {
       [ImplementedAs=transformFromJavascript] readonly attribute SVGTransformList transform;
       readonly attribute SVGElement viewTarget;
       readonly attribute DOMString viewBoxString;
