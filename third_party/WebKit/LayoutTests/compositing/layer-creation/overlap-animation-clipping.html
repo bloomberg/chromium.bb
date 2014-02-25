@@ -78,7 +78,11 @@
         // Make sure we don't include the #layers element in the tree. The text size
         // might differ between platforms.
         layersElement.style.display = "none";
-        layersElement.innerText = window.internals.layerTreeAsText(document);
+        var layerText = window.internals.layerTreeAsText(document);
+        // The animation can progress before the start event is handled, so remove the
+        // effects as they can vary.
+        layerText = layerText.replace(/\[[^)]+/g, '...');
+        layersElement.innerText = layerText;
         layersElement.style.display = "block";
         testRunner.notifyDone();
       }
