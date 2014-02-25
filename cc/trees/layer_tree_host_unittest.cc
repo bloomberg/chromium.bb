@@ -817,6 +817,77 @@ class LayerTreeHostTestUndrawnLayersDamageLater : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestUndrawnLayersDamageLater);
 
+// Tests that if a layer is not drawn because of some reason in the parent,
+// causing its content bounds to not be computed, then when it is later drawn,
+// its content bounds get pushed.
+class LayerTreeHostTestUndrawnLayersPushContentBoundsLater
+    : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestUndrawnLayersPushContentBoundsLater()
+      : root_layer_(Layer::Create()) {}
+
+  virtual void SetupTree() OVERRIDE {
+    root_layer_->SetIsDrawable(true);
+    root_layer_->SetBounds(gfx::Size(20, 20));
+    layer_tree_host()->SetRootLayer(root_layer_);
+
+    parent_layer_ = Layer::Create();
+    parent_layer_->SetBounds(gfx::Size(20, 20));
+    parent_layer_->SetOpacity(0.0f);
+    root_layer_->AddChild(parent_layer_);
+
+    child_layer_ = Layer::Create();
+    child_layer_->SetBounds(gfx::Size(15, 15));
+    parent_layer_->AddChild(child_layer_);
+
+    LayerTreeHostTest::SetupTree();
+  }
+
+  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    LayerImpl* root = host_impl->active_tree()->root_layer();
+    LayerImpl* parent = root->children()[0];
+    LayerImpl* child = parent->children()[0];
+
+    switch (host_impl->active_tree()->source_frame_number()) {
+      case 0:
+        EXPECT_EQ(0.f, parent->opacity());
+        EXPECT_EQ(gfx::SizeF(), child->content_bounds());
+        break;
+      case 1:
+        EXPECT_EQ(1.f, parent->opacity());
+        EXPECT_EQ(gfx::SizeF(15.f, 15.f), child->content_bounds());
+        EndTest();
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  virtual void DidCommit() OVERRIDE {
+    switch (layer_tree_host()->source_frame_number()) {
+      case 1:
+        parent_layer_->SetOpacity(1.0f);
+        break;
+      case 2:
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+ private:
+  scoped_refptr<Layer> root_layer_;
+  scoped_refptr<Layer> parent_layer_;
+  scoped_refptr<Layer> child_layer_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostTestUndrawnLayersPushContentBoundsLater);
+
 // If the layerTreeHost says it can't draw, Then we should not try to draw.
 class LayerTreeHostTestCanDrawBlocksDrawing : public LayerTreeHostTest {
  public:

@@ -440,9 +440,13 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   virtual bool SupportsLCDText() const;
 
+  void SetNeedsPushProperties();
   bool needs_push_properties() const { return needs_push_properties_; }
   bool descendant_needs_push_properties() const {
     return num_dependents_need_push_properties_ > 0;
+  }
+  void reset_needs_push_properties_for_testing() {
+    needs_push_properties_ = false;
   }
 
   virtual void RunMicroBenchmark(MicroBenchmark* benchmark);
@@ -476,7 +480,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // Called when the blend mode or filters have been changed.
   void SetNeedsFilterContextIfNeeded();
 
-  void SetNeedsPushProperties();
   void AddDependentNeedsPushProperties();
   void RemoveDependentNeedsPushProperties();
   bool parent_should_know_need_push_properties() const {

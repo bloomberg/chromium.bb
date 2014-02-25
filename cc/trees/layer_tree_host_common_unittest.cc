@@ -7223,6 +7223,58 @@ TEST_F(LayerTreeHostCommonTest, ContentsScaleForAnimatingLayer) {
   }
 }
 
+TEST_F(LayerTreeHostCommonTest,
+       ChangeInContentBoundsOrScaleTriggersPushProperties) {
+  MockContentLayerClient delegate;
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> child = CreateDrawableContentLayer(&delegate);
+  root->AddChild(child);
+
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
+  host->SetRootLayer(root);
+
+  gfx::Transform identity_matrix;
+  SetLayerPropertiesForTesting(root.get(),
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(100, 100),
+                               true,
+                               false);
+  SetLayerPropertiesForTesting(child.get(),
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(),
+                               gfx::Size(100, 100),
+                               true,
+                               false);
+
+  root->reset_needs_push_properties_for_testing();
+  child->reset_needs_push_properties_for_testing();
+
+  // This will change both layers' content bounds.
+  ExecuteCalculateDrawProperties(root.get());
+  EXPECT_TRUE(root->needs_push_properties());
+  EXPECT_TRUE(child->needs_push_properties());
+
+  root->reset_needs_push_properties_for_testing();
+  child->reset_needs_push_properties_for_testing();
+
+  // This will change only the child layer's contents scale and content bounds,
+  // since the root layer is not a ContentsScalingLayer.
+  ExecuteCalculateDrawProperties(root.get(), 2.f);
+  EXPECT_FALSE(root->needs_push_properties());
+  EXPECT_TRUE(child->needs_push_properties());
+
+  root->reset_needs_push_properties_for_testing();
+  child->reset_needs_push_properties_for_testing();
+
+  // This will not change either layer's contents scale or content bounds.
+  ExecuteCalculateDrawProperties(root.get(), 2.f);
+  EXPECT_FALSE(root->needs_push_properties());
+  EXPECT_FALSE(child->needs_push_properties());
+}
+
 TEST_F(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
   MockContentLayerClient delegate;
   gfx::Transform identity_matrix;

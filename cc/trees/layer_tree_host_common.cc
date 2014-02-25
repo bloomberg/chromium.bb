@@ -989,6 +989,9 @@ static inline void UpdateLayerContentsScale(
   if (!layer->raster_scale_is_unknown())
     raster_scale = layer->raster_scale();
 
+  gfx::Size old_content_bounds = layer->content_bounds();
+  float old_contents_scale_x = layer->contents_scale_x();
+  float old_contents_scale_y = layer->contents_scale_y();
 
   float contents_scale = raster_scale * device_scale_factor * page_scale_factor;
   CalculateContentsScale(layer,
@@ -996,6 +999,11 @@ static inline void UpdateLayerContentsScale(
                          device_scale_factor,
                          page_scale_factor,
                          animating_transform_to_screen);
+
+  if (layer->content_bounds() != old_content_bounds ||
+      layer->contents_scale_x() != old_contents_scale_x ||
+      layer->contents_scale_y() != old_contents_scale_y)
+    layer->SetNeedsPushProperties();
 }
 
 static inline RenderSurface* CreateOrReuseRenderSurface(Layer* layer) {
