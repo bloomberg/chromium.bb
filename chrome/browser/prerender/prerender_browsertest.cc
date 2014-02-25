@@ -774,8 +774,10 @@ class HangingFirstRequestProtocolHandler
       net::NetworkDelegate* network_delegate) const OVERRIDE {
     if (first_run_) {
       first_run_ = false;
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE, callback_);
+      if (!callback_.is_null()) {
+        BrowserThread::PostTask(
+            BrowserThread::UI, FROM_HERE, callback_);
+      }
       return new HangingURLRequestJob(request, network_delegate);
     }
     return new content::URLRequestMockHTTPJob(request, network_delegate, file_);
@@ -3034,17 +3036,41 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderFavicon) {
 
 // Checks that when a prerendered page is swapped in to a referring page, the
 // unload handlers on the referring page are executed.
-// Fails about 50% on CrOS, 5-10% on linux, win, mac. http://crbug.com/128986
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderUnload) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderUnload) {
+  // Matches URL in prerender_loader_with_unload.html.
+  const GURL unload_url("http://unload-url.test");
+  base::FilePath empty_file = ui_test_utils::GetTestFilePath(
+      base::FilePath(), base::FilePath(FILE_PATH_LITERAL("empty.html")));
+  RequestCounter unload_counter;
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&CreateCountingProtocolHandlerOnIO,
+                 unload_url, empty_file, unload_counter.AsWeakPtr()));
+
   set_loader_path("files/prerender/prerender_loader_with_unload.html");
   PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
-  base::string16 expected_title = base::ASCIIToUTF16("Unloaded");
-  content::TitleWatcher title_watcher(
-      current_browser()->tab_strip_model()->GetActiveWebContents(),
-      expected_title);
   NavigateToDestURL();
-  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+  unload_counter.WaitForCount(1);
 }
+
+// Checks that a hanging unload on the referring page of a prerender swap does
+// not crash the browser on exit.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHangingUnload) {
+  // Matches URL in prerender_loader_with_unload.html.
+  const GURL hang_url("http://unload-url.test");
+  base::FilePath empty_file = ui_test_utils::GetTestFilePath(
+      base::FilePath(), base::FilePath(FILE_PATH_LITERAL("empty.html")));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&CreateHangingFirstRequestProtocolHandlerOnIO,
+                 hang_url, empty_file,
+                 base::Closure()));
+
+  set_loader_path("files/prerender/prerender_loader_with_unload.html");
+  PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
+  NavigateToDestURL();
+}
+
 
 // Checks that when the history is cleared, prerendering is cancelled and
 // prerendering history is cleared.

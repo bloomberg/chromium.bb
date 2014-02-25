@@ -5,7 +5,11 @@
 
 <script>
   function UnloadHandler() {
-    document.title = 'Unloaded';
+    // Signal to the browser the unload happened by hitting a URL. Must
+    // be synchronous so the request isn't cancelled.
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'http://unload-url.test', false);
+    xhr.send();
   }
 
   addEventListener('unload', UnloadHandler, false);

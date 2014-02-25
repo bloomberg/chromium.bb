@@ -119,6 +119,7 @@ bool NeedMatchCompleteDummyForFinalStatus(FinalStatus final_status) {
   return final_status != FINAL_STATUS_USED &&
       final_status != FINAL_STATUS_TIMED_OUT &&
       final_status != FINAL_STATUS_MANAGER_SHUTDOWN &&
+      final_status != FINAL_STATUS_PROFILE_DESTROYED &&
       final_status != FINAL_STATUS_APP_TERMINATING &&
       final_status != FINAL_STATUS_WINDOW_OPENER &&
       final_status != FINAL_STATUS_CACHE_OR_HISTORY_CLEARED &&
@@ -287,6 +288,10 @@ PrerenderManager::PrerenderManager(Profile* profile,
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_COOKIE_CHANGED,
       content::NotificationService::AllBrowserContextsAndSources());
+
+  notification_registrar_.Add(
+      this, chrome::NOTIFICATION_PROFILE_DESTROYED,
+      content::Source<Profile>(profile_));
 
   MediaCaptureDevicesDispatcher::GetInstance()->AddObserver(this);
 }
@@ -1581,13 +1586,24 @@ bool PrerenderManager::IsEnabled() const {
 void PrerenderManager::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
-  Profile* profile = content::Source<Profile>(source).ptr();
-  if (!profile || !profile_->IsSameProfile(profile) ||
-      profile->IsOffTheRecord()) {
-    return;
+  switch (type) {
+    case chrome::NOTIFICATION_COOKIE_CHANGED: {
+      Profile* profile = content::Source<Profile>(source).ptr();
+      if (!profile || !profile_->IsSameProfile(profile) ||
+          profile->IsOffTheRecord()) {
+        return;
+      }
+      CookieChanged(content::Details<ChromeCookieDetails>(details).ptr());
+      break;
+    }
+    case chrome::NOTIFICATION_PROFILE_DESTROYED:
+      DestroyAllContents(FINAL_STATUS_PROFILE_DESTROYED);
+      on_close_web_contents_deleters_.clear();
+      break;
+    default:
+      NOTREACHED() << "Unexpected notification sent.";
+      break;
   }
-  DCHECK(type == chrome::NOTIFICATION_COOKIE_CHANGED);
-  CookieChanged(content::Details<ChromeCookieDetails>(details).ptr());
 }
 
 void PrerenderManager::OnCreatingAudioStream(int render_process_id,

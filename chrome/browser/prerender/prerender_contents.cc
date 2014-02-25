@@ -430,10 +430,8 @@ void PrerenderContents::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_PROFILE_DESTROYED:
-      Destroy(FINAL_STATUS_PROFILE_DESTROYED);
-      return;
-
+    // TODO(davidben): Try to remove this in favor of relying on
+    // FINAL_STATUS_PROFILE_DESTROYED.
     case chrome::NOTIFICATION_APP_TERMINATING:
       Destroy(FINAL_STATUS_APP_TERMINATING);
       return;
