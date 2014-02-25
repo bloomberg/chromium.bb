@@ -20,6 +20,8 @@
 #include "chrome/browser/search/local_ntp_source.h"
 #include "chrome/browser/search/most_visited_iframe_source.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/search/suggestions/suggestions_service.h"
+#include "chrome/browser/search/suggestions/suggestions_source.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -114,6 +116,10 @@ InstantService::InstantService(Profile* profile)
       profile_, new FaviconSource(profile_, FaviconSource::FAVICON));
   content::URLDataSource::Add(profile_, new LocalNtpSource(profile_));
   content::URLDataSource::Add(profile_, new MostVisitedIframeSource());
+  if (suggestions::SuggestionsService::IsEnabled()) {
+    content::URLDataSource::Add(
+        profile_, new suggestions::SuggestionsSource(profile_));
+  }
 
   profile_pref_registrar_.Init(profile_->GetPrefs());
   profile_pref_registrar_.Add(

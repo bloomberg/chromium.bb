@@ -22,13 +22,13 @@
 
 namespace {
 
-const char* html_header =
-    "<!DOCTYPE HTML>\n<html>\n<head>\n<title>TopSites Thumbnails</title>\n"
+const char kHtmlHeader[] =
+    "<!DOCTYPE html>\n<html>\n<head>\n<title>TopSites Thumbnails</title>\n"
     "<meta charset=\"utf-8\">\n"
     "<style type=\"text/css\">\nimg.thumb {border: 1px solid black;}\n"
     "li {white-space: nowrap;}\n</style>\n";
-const char* html_body = "</head>\n<body>\n";
-const char* html_footer = "</body>\n</html>\n";
+const char kHtmlBody[] = "</head>\n<body>\n";
+const char kHtmlFooter[] = "</body>\n</html>\n";
 
 // If |want_thumbnails| == true, then renders elements in |mvurl_list| that have
 // thumbnails, with their thumbnails. Otherwise renders elements in |mvurl_list|
@@ -137,8 +137,8 @@ void ThumbnailListSource::OnMostVisitedURLsAvailable(
 
   // Render HTML to embed URLs and thumbnails.
   std::vector<std::string> out;
-  out.push_back(html_header);
-  out.push_back(html_body);
+  out.push_back(kHtmlHeader);
+  out.push_back(kHtmlBody);
   if (num_mv_with_thumb > 0) {
     out.push_back("<h2>TopSites URLs with Thumbnails</h2>\n");
     RenderMostVisitedURLList(mvurl_list, base64_encoded_pngs, true, &out);
@@ -147,7 +147,7 @@ void ThumbnailListSource::OnMostVisitedURLsAvailable(
     out.push_back("<h2>TopSites URLs without Thumbnails</h2>\n");
     RenderMostVisitedURLList(mvurl_list, base64_encoded_pngs, false, &out);
   }
-  out.push_back(html_footer);
+  out.push_back(kHtmlFooter);
 
   std::string out_html = JoinString(out, "");
   callback.Run(base::RefCountedString::TakeString(&out_html));

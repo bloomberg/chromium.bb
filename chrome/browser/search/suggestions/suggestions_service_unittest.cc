@@ -7,6 +7,7 @@
 #include <map>
 #include <string>
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
@@ -29,6 +30,9 @@ namespace {
 
 const char kFakeSuggestionsURL[] = "https://mysuggestions.com/proto";
 
+const char kTestTitle[] = "a title";
+const char kTestUrl[] = "http://go.com";
+
 scoped_ptr<net::FakeURLFetcher> CreateURLFetcher(
     const GURL& url, net::URLFetcherDelegate* delegate,
     const std::string& response_data, net::HttpStatusCode response_code,
@@ -50,9 +54,20 @@ scoped_ptr<net::FakeURLFetcher> CreateURLFetcher(
 namespace suggestions {
 
 class SuggestionsServiceTest : public testing::Test {
+ public:
+  void CheckSuggestionsData(const SuggestionsProfile& suggestions_profile) {
+    EXPECT_EQ(1, suggestions_profile.suggestions_size());
+    EXPECT_EQ(kTestTitle, suggestions_profile.suggestions(0).title());
+    EXPECT_EQ(kTestUrl, suggestions_profile.suggestions(0).url());
+    ++suggestions_data_check_count_;
+  }
+
+  int suggestions_data_check_count_;
+
  protected:
   SuggestionsServiceTest()
-    : factory_(NULL, base::Bind(&CreateURLFetcher)) {
+    : suggestions_data_check_count_(0),
+      factory_(NULL, base::Bind(&CreateURLFetcher)) {
     profile_ = profile_builder_.Build();
   }
   virtual ~SuggestionsServiceTest() {}
@@ -110,25 +125,30 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsData) {
   SuggestionsService* suggestions_service = CreateSuggestionsService();
   EXPECT_TRUE(suggestions_service != NULL);
 
-  // Suggestions profile is instantiated empty.
-  EXPECT_EQ(0, suggestions_service->suggestions().suggestions_size());
   SuggestionsProfile suggestions_profile;
   ChromeSuggestion* suggestion = suggestions_profile.add_suggestions();
-  suggestion->set_title("a title");
-  suggestion->set_url("http://go.com");
+  suggestion->set_title(kTestTitle);
+  suggestion->set_url(kTestUrl);
   factory_.SetFakeResponse(GURL(kFakeSuggestionsURL),
                            suggestions_profile.SerializeAsString(),
                            net::HTTP_OK,
                            net::URLRequestStatus::SUCCESS);
-  suggestions_service->FetchSuggestionsData();
 
-  // For testing only: wait until suggestion fetch is complete.
+  // Send the request. The data will be returned to the callback.
+  suggestions_service->FetchSuggestionsData(
+      base::Bind(&SuggestionsServiceTest::CheckSuggestionsData,
+                 base::Unretained(this)));
+
+  // Send the request a second time.
+  suggestions_service->FetchSuggestionsData(
+      base::Bind(&SuggestionsServiceTest::CheckSuggestionsData,
+                 base::Unretained(this)));
+
+  // (Testing only) wait until suggestion fetch is complete.
   base::MessageLoop::current()->RunUntilIdle();
 
-  SuggestionsProfile returned_profile = suggestions_service->suggestions();
-  EXPECT_EQ(1, returned_profile.suggestions_size());
-  EXPECT_EQ("a title", returned_profile.suggestions(0).title());
-  EXPECT_EQ("http://go.com", returned_profile.suggestions(0).url());
+  // Ensure that CheckSuggestionsData() ran twice.
+  EXPECT_EQ(2, suggestions_data_check_count_);
 }
 
 }  // namespace suggestions
