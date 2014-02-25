@@ -33,7 +33,7 @@ class UpdateMaskHandler(webapp2.RequestHandler):
 
     # Short-circuit if a parameter is missing.
     if not (test_run and expectation):
-      self.response.header['Content-Type'] = 'json/application'
+      self.response.headers['Content-Type'] = 'json/application'
       self.response.write(json.dumps(
           {'error': '\'test_run\' and \'expectation\' must be '
                     'supplied to update a mask.'}))
@@ -43,7 +43,7 @@ class UpdateMaskHandler(webapp2.RequestHandler):
     self.ispy = ispy_utils.ISpyUtils(self.bucket)
     # Short-circuit if the failure does not exist.
     if not self.ispy.FailureExists(test_run, expectation):
-      self.response.header['Content-Type'] = 'json/application'
+      self.response.headers['Content-Type'] = 'json/application'
       self.response.write(json.dumps(
         {'error': 'Could not update mask because failure does not exist.'}))
       return

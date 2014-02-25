@@ -86,7 +86,10 @@ class ISpyApi(object):
     Returns:
       Ordered list of Chrome versions.
     """
-    return json.loads(self._cloud_bucket.DownloadFile(version_file))
+    try:
+      return json.loads(self._cloud_bucket.DownloadFile(version_file))
+    except:
+      return []
 
   def _GetExpectationNameWithVersion(self, device_type, expectation,
                                      chrome_version, version_file):
