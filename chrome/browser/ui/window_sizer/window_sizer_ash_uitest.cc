@@ -69,10 +69,8 @@ void OpenBrowserUsingShelfOnRootWindow(aura::Window* root_window) {
 
 #if defined(OS_WIN)
 #define MAYBE_OpenBrowserUsingShelfOnOtherDisplay DISABLED_OpenBrowserUsingShelfOnOtherDisplay
-#define MAYBE_OpenBrowserUsingContextMenuOnOtherDisplay DISABLED_OpenBrowserUsingContextMenuOnOtherDisplay
 #else
 #define MAYBE_OpenBrowserUsingShelfOnOtherDisplay OpenBrowserUsingShelfOnOtherDisplay
-#define MAYBE_OpenBrowserUsingContextMenuOnOtherDisplay OpenBrowserUsingContextMenuOnOtherDisplay
 #endif
 
 IN_PROC_BROWSER_TEST_F(WindowSizerTest,
@@ -163,8 +161,9 @@ void OpenBrowserUsingContextMenuOnRootWindow(aura::Window* root_window) {
 
 }  // namespace
 
+// Test is flaky: http://crbug.com/346799
 IN_PROC_BROWSER_TEST_F(WindowSizerContextMenuTest,
-                       MAYBE_OpenBrowserUsingContextMenuOnOtherDisplay) {
+                       DISABLED_OpenBrowserUsingContextMenuOnOtherDisplay) {
   // Don't shutdown when closing the last browser window.
   chrome::IncrementKeepAliveCount();
 
