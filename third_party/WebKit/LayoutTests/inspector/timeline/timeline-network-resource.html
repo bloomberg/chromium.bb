@@ -18,7 +18,7 @@ function test()
     var requestId;
     var scriptUrl = "timeline-network-resource.js";
 
-    WebInspector.showPanel("timeline");
+    WebInspector.TimelineModel._doNotAssignEndTime = true;
     var model = WebInspector.panels.timeline._model;
     var presentationModel = InspectorTest.timelinePresentationModel();
     presentationModel.setGlueRecords(true);

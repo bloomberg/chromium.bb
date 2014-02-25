@@ -16,10 +16,8 @@ function test()
     timeline._currentViews[0]._automaticallySizeWindow = true;
     function setWindowTimesHook(startTime, endTime)
     {
-        if (startTime) {
+        if (startTime)
             InspectorTest.addResult("time delta: " + (endTime - startTime));
-            InspectorTest.assertEquals(1, endTime - startTime, "panel.setWindowTimes called with time delta");
-        }
     }
     timeline.setWindowTimes = setWindowTimesHook;
     var model = timeline._model;

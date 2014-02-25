@@ -2,158 +2,169 @@ Test timeline records coalescing
 
 Test: main thread only
 {
-    cpuTime : 0.003999
-    duration : 0.016
-    endTime : 1.016001
-    startTime : 1.000001
+    cpuTime : 3.999
+    duration : 16
+    endTime : 1016.001
+    startTime : 1000.001
     timeByCategory : {
-        other : 0.000002
-        scripting : 0.003997
+        other : 0.002
+        rendering : 0
+        scripting : 3.997
     }
 }
 {
-    cpuTime : 0.010999
-    duration : 0.016
-    endTime : 1.032001
-    startTime : 1.016001
+    cpuTime : 10.999
+    duration : 16
+    endTime : 1032.001
+    startTime : 1016.001
     timeByCategory : {
-        other : 0.002003
-        rendering : 0.005999
-        scripting : 0.002997
+        other : 2.003
+        rendering : 5.999
+        scripting : 2.997
     }
 }
 {
-    cpuTime : 0.001999
-    duration : 0.016
-    endTime : 1.048001
-    startTime : 1.032001
+    cpuTime : 1.999
+    duration : 16
+    endTime : 1048.001
+    startTime : 1032.001
     timeByCategory : {
-        other : 0.001999
+        other : 1.999
+        rendering : 0
     }
 }
 Test: impl-side only
 {
     cpuTime : 0
-    duration : 0.03
-    endTime : 1.03
-    startTime : 1
+    duration : 30
+    endTime : 1030
+    startTime : 1000
     timeByCategory : {
+        rendering : 0
     }
 }
 {
     cpuTime : 0
-    duration : 0.016
-    endTime : 1.046
-    startTime : 1.03
+    duration : 16
+    endTime : 1046
+    startTime : 1030
     timeByCategory : {
+        other : 0
+        rendering : 0
     }
 }
 {
-    cpuTime : 0.002997
-    duration : 0.032
-    endTime : 1.078
-    startTime : 1.046
+    cpuTime : 2.997
+    duration : 32
+    endTime : 1078
+    startTime : 1046
     timeByCategory : {
-        painting : 0.002997
+        other : 0
+        painting : 2.997
+        rendering : 0
     }
 }
 {
     cpuTime : 0
-    duration : 0.003
-    endTime : 1.081
-    startTime : 1.078
+    duration : 3
+    endTime : 1081
+    startTime : 1078
     timeByCategory : {
+        other : 0
+        rendering : 0
     }
 }
 Test: impl-side with commits
 {
-    cpuTime : 0.032999
-    duration : 0.046
-    endTime : 1.046
-    startTime : 1
+    cpuTime : 32.999
+    duration : 46
+    endTime : 1046
+    startTime : 1000
     timeByCategory : {
-        other : 0.001004
-        painting : 0.001999
-        rendering : 0.011999
-        scripting : 0.017997
+        other : 1.004
+        painting : 1.999
+        rendering : 11.999
+        scripting : 17.997
     }
 }
 {
-    cpuTime : 0.011999
-    duration : 0.016
-    endTime : 1.062
-    startTime : 1.046
+    cpuTime : 11.999
+    duration : 16
+    endTime : 1062
+    startTime : 1046
     timeByCategory : {
-        other : 0.001002
-        painting : 0.010997
+        other : 1.002
+        painting : 10.997
         rendering : 0
     }
 }
 Test: impl-side with interleaving commits
 {
-    cpuTime : 0.012999
-    duration : 0.014001
-    endTime : 1.014001
-    startTime : 1
+    cpuTime : 12.999
+    duration : 14.001
+    endTime : 1014.001
+    startTime : 1000
     timeByCategory : {
-        other : 0.000002
-        painting : 0.012997
+        other : 0.002
+        painting : 12.997
         rendering : 0
     }
 }
 {
-    cpuTime : 0.012999
-    duration : 0.016
-    endTime : 1.030001
-    startTime : 1.014001
+    cpuTime : 12.999
+    duration : 16
+    endTime : 1030.001
+    startTime : 1014.001
     timeByCategory : {
-        other : 0.000003
-        painting : 0.003999
+        other : 0.003
+        painting : 3.999
         rendering : 0
-        scripting : 0.008997
+        scripting : 8.997
     }
 }
 {
-    cpuTime : 0.008002
-    duration : 0.016
-    endTime : 1.046001
-    startTime : 1.030001
+    cpuTime : 8.002
+    duration : 16
+    endTime : 1046.001
+    startTime : 1030.001
     timeByCategory : {
-        other : 0.000005
-        painting : 0.007997
+        other : 0.005
+        painting : 7.997
         rendering : 0
     }
 }
 Test: pre-frame time accounting
 {
-    cpuTime : 0.000999
-    duration : 0.003001
-    endTime : 1.035001
-    startTime : 1.032
+    cpuTime : 0.999
+    duration : 3.001
+    endTime : 1035.001
+    startTime : 1032
     timeByCategory : {
-        other : 0.000003
-        painting : 0.000598
-        rendering : 0.000398
+        other : 0.003
+        painting : 0.598
+        rendering : 0.398
     }
 }
 {
     cpuTime : 0
-    duration : 0.028
-    endTime : 1.063001
-    startTime : 1.035001
+    duration : 28
+    endTime : 1063.001
+    startTime : 1035.001
     timeByCategory : {
+        other : 0
+        rendering : 0
     }
 }
 {
-    cpuTime : 0.026998
-    duration : 0.008001
-    endTime : 1.071002
-    startTime : 1.063001
+    cpuTime : 26.998
+    duration : 8.001
+    endTime : 1071.002
+    startTime : 1063.001
     timeByCategory : {
-        other : 0.012005
-        painting : 0.002998
-        rendering : 0.002998
-        scripting : 0.008997
+        other : 12.005
+        painting : 2.998
+        rendering : 2.998
+        scripting : 8.997
     }
 }
 

@@ -6,56 +6,56 @@ Also it detects that after switching to another view it gets the proper time ran
 
 mode = Events
 range = 0 - 1
-time range = 1390988669.115434 - 1390988670.116917
+time range = 1390988669115.4338 - 1390988670116.917
 records count: 80
 
 mode = Events
 range = 0.25 - 0.75
-time range = 1390988669.3658047 - 1390988669.8665462
+time range = 1390988669365.8047 - 1390988669866.5461
 records count: 49
 
 mode = Events
 range = 0.33 - 0.66
-time range = 1390988669.4459233 - 1390988669.7764127
+time range = 1390988669445.9233 - 1390988669776.4126
 records count: 34
 
 mode = Memory
 range = 0 - 1
-time range = 1390988669.115434 - 1390988670.116917
+time range = 1390988669115.4338 - 1390988670116.917
 records count: 80
 
 mode = Memory
 range = 0.25 - 0.75
-time range = 1390988669.3658047 - 1390988669.8665462
+time range = 1390988669365.8047 - 1390988669866.5461
 records count: 49
 
 mode = Memory
 range = 0.33 - 0.66
-time range = 1390988669.4459233 - 1390988669.7764127
+time range = 1390988669445.9233 - 1390988669776.4126
 records count: 34
 
 mode = Frames
 range = 0 - 1
-time range = 1390988669.115716 - 1390988670.098158
+time range = 1390988669115.716 - 1390988670098.158
 records count: 77
 
 mode = Frames
 range = 0.25 - 0.75
-time range = 1390988669.4384089 - 1390988670.098158
+time range = 1390988669438.409 - 1390988670098.158
 records count: 47
 
 mode = Frames
 range = 0.33 - 0.66
-time range = 1390988669.535377 - 1390988670.098158
+time range = 1390988669535.377 - 1390988670098.158
 records count: 38
 
 --------------------------------------------------------
 mode = Frames
-time range = 1390988669.264497 - 1390988670.098158
+time range = 1390988669264.497 - 1390988670098.158
 
 mode = Events
-time range = 1390988669.264497 - 1390988670.098158
+time range = 1390988669264.497 - 1390988670098.158
 
 mode = Memory
-time range = 1390988669.264497 - 1390988670.098158
+time range = 1390988669264.497 - 1390988670098.158
 

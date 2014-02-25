@@ -19,6 +19,7 @@ function performActions()
 
 function test()
 {
+    WebInspector.TimelineModel._doNotAssignEndTime = true;
     InspectorTest.startTimeline(function() {
         InspectorTest.evaluateInPage("performActions()");
     });

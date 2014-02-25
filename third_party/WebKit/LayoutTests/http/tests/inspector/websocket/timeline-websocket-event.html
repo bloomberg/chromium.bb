@@ -16,6 +16,7 @@ function test()
     InspectorTest.startTimeline(function() {
         InspectorTest.evaluateInPage("performActions()");
     });
+    WebInspector.TimelineModel._doNotAssignEndTime = true;
 
     InspectorTest.waitForRecordType("WebSocketDestroy", finish);
 
