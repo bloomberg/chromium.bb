@@ -605,7 +605,7 @@ TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
   CountedBrowserAccessibility::reset();
   const int32 busy_state = 1 << ui::AX_STATE_BUSY;
   const int32 readonly_state = 1 << ui::AX_STATE_READ_ONLY;
-  const int32 enabled_state = 1 << blink::WebAXStateEnabled;
+  const int32 enabled_state = 1 << ui::AX_STATE_ENABLED;
   scoped_ptr<content::LegacyRenderWidgetHostHWND> accessible_hwnd(
       content::LegacyRenderWidgetHostHWND::Create(GetDesktopWindow()));
   scoped_ptr<BrowserAccessibilityManager> manager(

@@ -30,7 +30,7 @@ class AppListButton : public views::ImageButton {
   virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
 
  private:
   ShelfButtonHost* host_;

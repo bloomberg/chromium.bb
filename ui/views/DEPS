@@ -4,6 +4,7 @@ include_rules = [
   "+skia/ext",
   "+third_party/iaccessible2",
   "+third_party/skia",
+  "+ui/accessibility",
   "+ui/aura",
   "+ui/base",
   "+ui/compositor",

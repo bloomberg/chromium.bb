@@ -5,7 +5,7 @@
 #include "ash/system/tray/actionable_view.h"
 
 #include "ash/ash_constants.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/gfx/canvas.h"
 
 namespace ash {
@@ -63,8 +63,8 @@ void ActionableView::SetAccessibleName(const base::string16& name) {
   accessible_name_ = name;
 }
 
-void ActionableView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
+void ActionableView::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_BUTTON;
   state->name = accessible_name_;
 }
 

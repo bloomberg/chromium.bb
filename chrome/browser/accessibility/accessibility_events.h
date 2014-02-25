@@ -7,7 +7,7 @@
 
 #include <string>
 #include "base/compiler_specific.h"
-#include "ui/base/accessibility/accessibility_types.h"
+#include "ui/accessibility/ax_enums.h"
 
 class AccessibilityControlInfo;
 class AccessibilityMenuInfo;
@@ -22,15 +22,15 @@ class DictionaryValue;
 // event and AccessibilityEventInfo details. Will not send if the profile's
 // pause level is nonzero (using profile->PauseAccessibilityEvents).
 void SendControlAccessibilityNotification(
-    ui::AccessibilityTypes::Event event,
+    ui::AXEvent event,
     AccessibilityControlInfo* info);
 
 void SendMenuAccessibilityNotification(
-    ui::AccessibilityTypes::Event event,
+    ui::AXEvent event,
     AccessibilityMenuInfo* info);
 
 void SendWindowAccessibilityNotification(
-    ui::AccessibilityTypes::Event event,
+    ui::AXEvent event,
     AccessibilityWindowInfo* info);
 
 // Abstract parent class for accessibility event information passed to event

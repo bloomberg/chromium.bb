@@ -174,7 +174,7 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
           AccessibilityAlertInfo event(
               profile, l10n_util::GetStringUTF8(IDS_A11Y_ALERT_WINDOW_NEEDED));
           SendControlAccessibilityNotification(
-              ui::AccessibilityTypes::EVENT_ALERT, &event);
+              ui::AX_EVENT_ALERT, &event);
           break;
         }
         case ash::A11Y_ALERT_NONE:

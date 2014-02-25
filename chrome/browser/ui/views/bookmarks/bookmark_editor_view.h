@@ -89,7 +89,7 @@ class BookmarkEditorView : public BookmarkEditor,
 
   // views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
 
   // views::TreeViewController:
   virtual void OnTreeViewSelectionChanged(views::TreeView* tree_view) OVERRIDE;

@@ -182,7 +182,7 @@ const char* NativeViewHost::GetClassName() const {
 
 void NativeViewHost::OnFocus() {
   native_wrapper_->SetFocus();
-  NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_FOCUS, true);
+  NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
 }
 
 gfx::NativeViewAccessible NativeViewHost::GetNativeViewAccessible() {

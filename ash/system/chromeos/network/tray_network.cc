@@ -25,7 +25,7 @@
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/image_view.h"
@@ -101,9 +101,9 @@ class NetworkTrayView : public TrayItemView,
   }
 
   // views::View override.
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE {
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE {
     state->name = connection_status_string_;
-    state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
+    state->role = ui::AX_ROLE_BUTTON;
   }
 
   // network_icon::AnimationObserver
@@ -123,7 +123,7 @@ class NetworkTrayView : public TrayItemView,
     if (new_connection_status_string != connection_status_string_) {
       connection_status_string_ = new_connection_status_string;
       if(!connection_status_string_.empty())
-        NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_ALERT, true);
+        NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
     }
   }
 

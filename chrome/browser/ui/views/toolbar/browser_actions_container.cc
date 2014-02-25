@@ -29,7 +29,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -360,8 +360,8 @@ int BrowserActionsContainer::OnPerformDrop(
 }
 
 void BrowserActionsContainer::GetAccessibleState(
-    ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_GROUPING;
+    ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_GROUP;
   state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_EXTENSIONS);
 }
 

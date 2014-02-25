@@ -29,7 +29,7 @@
 #include "grit/ui_strings.h"
 #include "net/base/escape.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
@@ -220,9 +220,9 @@ void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {
   views::Textfield::OnGestureEvent(event);
 }
 
-void OmniboxViewViews::GetAccessibleState(ui::AccessibleViewState* state) {
+void OmniboxViewViews::GetAccessibleState(ui::AXViewState* state) {
   location_bar_view_->GetAccessibleState(state);
-  state->role = ui::AccessibilityTypes::ROLE_TEXT;
+  state->role = ui::AX_ROLE_TEXT_FIELD;
 }
 
 bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {

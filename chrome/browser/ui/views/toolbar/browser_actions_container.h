@@ -170,7 +170,7 @@ class BrowserActionsContainer
   virtual int OnDragUpdated(const ui::DropTargetEvent& event) OVERRIDE;
   virtual void OnDragExited() OVERRIDE;
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
 
   // Overridden from views::MenuButtonListener:
   virtual void OnMenuButtonClicked(views::View* source,

@@ -47,6 +47,7 @@
         '../third_party/libusb/libusb.gyp:libusb',
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/zlib/zlib.gyp:zlib',
+        '../ui/accessibility/accessibility.gyp:accessibility',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
         '../ui/events/events.gyp:events',
         '../ui/gfx/gfx.gyp:gfx',

@@ -4,7 +4,7 @@
 
 #include "ui/views/window/non_client_view.h"
 
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/views/rect_based_targeting_utils.h"
@@ -177,8 +177,8 @@ void NonClientView::ViewHierarchyChanged(
   }
 }
 
-void NonClientView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_CLIENT;
+void NonClientView::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_CLIENT;
   state->name = accessible_name_;
 }
 
@@ -312,8 +312,8 @@ bool NonClientFrameView::HitTestRect(const gfx::Rect& rect) const {
 ////////////////////////////////////////////////////////////////////////////////
 // NonClientFrameView, protected:
 
-void NonClientFrameView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_CLIENT;
+void NonClientFrameView::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_CLIENT;
 }
 
 const char* NonClientFrameView::GetClassName() const {

@@ -140,7 +140,7 @@ bool ChromeViewsDelegate::GetSavedWindowPlacement(
 }
 
 void ChromeViewsDelegate::NotifyAccessibilityEvent(
-    views::View* view, ui::AccessibilityTypes::Event event_type) {
+    views::View* view, ui::AXEvent event_type) {
   AccessibilityEventRouterViews::GetInstance()->HandleAccessibilityEvent(
       view, event_type);
 }

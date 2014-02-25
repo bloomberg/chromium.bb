@@ -76,7 +76,7 @@ class BrowserActionView : public views::View {
 
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
  protected:
@@ -130,7 +130,7 @@ class BrowserActionButton : public views::MenuButton,
 
   // Overridden from views::View:
   virtual bool CanHandleAccelerators() const OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,

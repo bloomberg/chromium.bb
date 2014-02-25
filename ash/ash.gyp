@@ -733,6 +733,7 @@
       'dependencies': [
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
+        '../ui/accessibility/accessibility.gyp:ax_gen',
         '../ui/app_list/app_list.gyp:app_list_test_support',
         '../ui/views/views.gyp:views_test_support',
         'ash',

@@ -84,7 +84,7 @@ class VIEWS_EXPORT ImageView : public View {
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual bool GetTooltipText(const gfx::Point& p,
                               base::string16* tooltip) const OVERRIDE;
   virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;

@@ -12,7 +12,7 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "grit/ash_resources.h"
 #include "skia/ext/image_operations.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -392,8 +392,8 @@ void ShelfButton::OnMouseExited(const ui::MouseEvent& event) {
   host_->MouseExitedButton(this);
 }
 
-void ShelfButton::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
+void ShelfButton::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_BUTTON;
   state->name = host_->GetAccessibleName(this);
 }
 

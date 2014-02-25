@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_ACCESSIBILITY_NATIVE_VIEW_ACCESSIBILITY_H_
 #define UI_VIEWS_ACCESSIBILITY_NATIVE_VIEW_ACCESSIBILITY_H_
 
-#include "ui/base/accessibility/accessibility_types.h"
+#include "ui/accessibility/ax_enums.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
 
@@ -18,7 +18,7 @@ class VIEWS_EXPORT NativeViewAccessibility {
   static NativeViewAccessibility* Create(View* view);
 
   virtual void NotifyAccessibilityEvent(
-      ui::AccessibilityTypes::Event event_type) {}
+      ui::AXEvent event_type) {}
 
   virtual gfx::NativeViewAccessible GetNativeObject();
 

@@ -22,7 +22,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/webui/extensions/extension_info_ui.h"
 #include "extensions/common/extension.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
@@ -112,8 +112,8 @@ void PageActionImageView::ExecuteAction(
   }
 }
 
-void PageActionImageView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
+void PageActionImageView::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_BUTTON;
   state->name = base::UTF8ToUTF16(tooltip_);
 }
 

@@ -191,7 +191,7 @@ class VIEWS_EXPORT Textfield : public View,
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual ui::TextInputClient* GetTextInputClient() OVERRIDE;
   virtual gfx::Point GetKeyboardContextMenuLocation() OVERRIDE;
   virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE;

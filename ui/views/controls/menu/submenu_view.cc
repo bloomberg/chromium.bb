@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/compiler_specific.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
@@ -165,11 +165,11 @@ gfx::Size SubmenuView::GetPreferredSize() {
       height + insets.height());
 }
 
-void SubmenuView::GetAccessibleState(ui::AccessibleViewState* state) {
+void SubmenuView::GetAccessibleState(ui::AXViewState* state) {
   // Inherit most of the state from the parent menu item, except the role.
   if (GetMenuItem())
     GetMenuItem()->GetAccessibleState(state);
-  state->role = ui::AccessibilityTypes::ROLE_MENUPOPUP;
+  state->role = ui::AX_ROLE_MENU_LIST_POPUP;
 }
 
 ui::TextInputClient* SubmenuView::GetTextInputClient() {
@@ -349,10 +349,10 @@ void SubmenuView::ShowAt(Widget* parent,
   }
 
   GetScrollViewContainer()->NotifyAccessibilityEvent(
-      ui::AccessibilityTypes::EVENT_MENUSTART,
+      ui::AX_EVENT_MENU_START,
       true);
   NotifyAccessibilityEvent(
-      ui::AccessibilityTypes::EVENT_MENUPOPUPSTART,
+      ui::AX_EVENT_MENU_POPUP_START,
       true);
 }
 
@@ -363,9 +363,9 @@ void SubmenuView::Reposition(const gfx::Rect& bounds) {
 
 void SubmenuView::Close() {
   if (host_) {
-    NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_MENUPOPUPEND, true);
+    NotifyAccessibilityEvent(ui::AX_EVENT_MENU_POPUP_END, true);
     GetScrollViewContainer()->NotifyAccessibilityEvent(
-        ui::AccessibilityTypes::EVENT_MENUEND, true);
+        ui::AX_EVENT_MENU_END, true);
 
     host_->DestroyMenuHost();
     host_ = NULL;

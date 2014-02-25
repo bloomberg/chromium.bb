@@ -60,7 +60,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
 
   // Overridden from views::View:
   virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const ui::Event& event)

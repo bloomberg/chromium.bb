@@ -36,7 +36,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
@@ -492,13 +492,13 @@ bool DownloadItemView::GetTooltipText(const gfx::Point& p,
   return true;
 }
 
-void DownloadItemView::GetAccessibleState(ui::AccessibleViewState* state) {
+void DownloadItemView::GetAccessibleState(ui::AXViewState* state) {
   state->name = accessible_name_;
-  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
+  state->role = ui::AX_ROLE_BUTTON;
   if (model_.IsDangerous()) {
-    state->state = ui::AccessibilityTypes::STATE_UNAVAILABLE;
+    state->state = ui::AX_STATE_DISABLED;
   } else {
-    state->state = ui::AccessibilityTypes::STATE_HASPOPUP;
+    state->state = ui::AX_STATE_HASPOPUP;
   }
 }
 
@@ -1317,7 +1317,7 @@ void DownloadItemView::UpdateAccessibleName() {
   // has changed so they can announce it immediately.
   if (new_name != accessible_name_) {
     accessible_name_ = new_name;
-    NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_NAME_CHANGED, true);
+    NotifyAccessibilityEvent(ui::AX_EVENT_TEXT_CHANGED, true);
   }
 }
 

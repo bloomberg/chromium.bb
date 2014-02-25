@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
@@ -138,9 +138,9 @@ bool Link::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
       (event.key_code() == ui::VKEY_RETURN);
 }
 
-void Link::GetAccessibleState(ui::AccessibleViewState* state) {
+void Link::GetAccessibleState(ui::AXViewState* state) {
   Label::GetAccessibleState(state);
-  state->role = ui::AccessibilityTypes::ROLE_LINK;
+  state->role = ui::AX_ROLE_LINK;
 }
 
 void Link::OnEnabledChanged() {

@@ -16,8 +16,8 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
+#include "ui/accessibility/ax_enums.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drop_target_event.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
@@ -46,7 +46,7 @@ class Transform;
 }
 
 namespace ui {
-struct AccessibleViewState;
+struct AXViewState;
 class Compositor;
 class Layer;
 class NativeTheme;
@@ -934,7 +934,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Accessibility -------------------------------------------------------------
 
   // Modifies |state| to reflect the current accessible state of this view.
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) { }
+  virtual void GetAccessibleState(ui::AXViewState* state) { }
 
   // Returns an instance of the native accessibility interface for this view.
   virtual gfx::NativeViewAccessible GetNativeViewAccessible();
@@ -945,7 +945,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // cases where the view is a native control that's already sending a
   // native accessibility event and the duplicate event would cause
   // problems.
-  void NotifyAccessibilityEvent(ui::AccessibilityTypes::Event event_type,
+  void NotifyAccessibilityEvent(ui::AXEvent event_type,
                                 bool send_native_event);
 
   // Scrolling -----------------------------------------------------------------

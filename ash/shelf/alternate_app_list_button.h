@@ -39,7 +39,7 @@ class AlternateAppListButton : public views::ImageButton {
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
 
   // ui::EventHandler overrides:
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;

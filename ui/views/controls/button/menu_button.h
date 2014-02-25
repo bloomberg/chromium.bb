@@ -62,7 +62,7 @@ class VIEWS_EXPORT MenuButton : public TextButton {
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual bool OnKeyReleased(const ui::KeyEvent& event) OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
 
  protected:
   // Paint the menu marker image.

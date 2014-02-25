@@ -32,7 +32,6 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/test/test_browser_thread.h"
 #include "grit/generated_resources.h"
-#include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/events/keycodes/keyboard_codes.h"

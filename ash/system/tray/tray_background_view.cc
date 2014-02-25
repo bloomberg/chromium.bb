@@ -18,9 +18,9 @@
 #include "ash/system/tray/tray_event_filter.h"
 #include "ash/wm/window_animations.h"
 #include "grit/ash_resources.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
@@ -377,8 +377,8 @@ void TrayBackgroundView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
 }
 
-void TrayBackgroundView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
+void TrayBackgroundView::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_BUTTON;
   state->name = GetAccessibleNameForTray();
 }
 

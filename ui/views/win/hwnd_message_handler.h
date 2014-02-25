@@ -17,7 +17,7 @@
 #include "base/strings/string16.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/win_util.h"
-#include "ui/base/accessibility/accessibility_types.h"
+#include "ui/accessibility/ax_enums.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/base/win/window_event_target.h"
 #include "ui/events/event.h"

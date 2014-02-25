@@ -6,7 +6,7 @@
 
 #include "grit/ui_resources.h"
 #include "grit/ui_strings.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -109,8 +109,8 @@ void MessageView::RequestFocusOnCloseButton() {
   close_button_->RequestFocus();
 }
 
-void MessageView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
+void MessageView::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_BUTTON;
   state->name = accessible_name_;
 }
 

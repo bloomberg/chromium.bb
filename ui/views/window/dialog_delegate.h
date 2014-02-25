@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
-#include "ui/base/accessibility/accessibility_types.h"
+#include "ui/accessibility/ax_enums.h"
 #include "ui/base/models/dialog_model.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -105,7 +105,7 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
 
  protected:
   // Overridden from WidgetDelegate:
-  virtual ui::AccessibilityTypes::Role GetAccessibleWindowRole() const OVERRIDE;
+  virtual ui::AXRole GetAccessibleWindowRole() const OVERRIDE;
 };
 
 // A DialogDelegate implementation that is-a View. Used to override GetWidget()

@@ -620,7 +620,7 @@ std::string BrowserAccessibility::GetTextRecursive() const {
 }
 
 int BrowserAccessibility::GetStaticTextLenRecursive() const {
-  if (role_ == blink::WebAXRoleStaticText)
+  if (role_ == ui::AX_ROLE_STATIC_TEXT)
     return static_cast<int>(GetStringAttribute(ui::AX_ATTR_VALUE).size());
 
   int len = 0;

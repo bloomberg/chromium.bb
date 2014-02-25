@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/display.h"
@@ -84,7 +84,7 @@ void ToastContentsView::SetContents(MessageView* view,
   // The notification type should be ALERT, otherwise the accessibility message
   // won't be read for this view which returns ROLE_WINDOW.
   if (already_has_contents && a11y_feedback_for_updates)
-    NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_ALERT, false);
+    NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, false);
 }
 
 void ToastContentsView::RevealWithAnimation(gfx::Point origin) {
@@ -277,10 +277,10 @@ gfx::Size ToastContentsView::GetPreferredSize() {
   return child_count() ? GetToastSizeForView(child_at(0)) : gfx::Size();
 }
 
-void ToastContentsView::GetAccessibleState(ui::AccessibleViewState* state) {
+void ToastContentsView::GetAccessibleState(ui::AXViewState* state) {
   if (child_count() > 0)
     child_at(0)->GetAccessibleState(state);
-  state->role = ui::AccessibilityTypes::ROLE_WINDOW;
+  state->role = ui::AX_ROLE_WINDOW;
 }
 
 void ToastContentsView::ClickOnNotification(

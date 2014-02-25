@@ -22,7 +22,7 @@ class InfoBarContainerView : public views::AccessiblePaneView,
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
 
   // InfobarContainer:
   virtual void PlatformSpecificAddInfoBar(InfoBar* infobar,

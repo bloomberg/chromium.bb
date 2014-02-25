@@ -5,7 +5,7 @@
 #include "ui/views/controls/resize_area.h"
 
 #include "base/logging.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/resize_area_delegate.h"
 
@@ -73,8 +73,8 @@ void ResizeArea::OnMouseCaptureLost() {
   ReportResizeAmount(initial_position_, true);
 }
 
-void ResizeArea::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_SEPARATOR;
+void ResizeArea::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_SPLITTER;
 }
 
 void ResizeArea::ReportResizeAmount(int resize_amount, bool last_update) {

@@ -6,7 +6,7 @@
 
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/events/event.h"
 
 BubbleIconView::BubbleIconView(CommandUpdater* command_updater, int command_id)
@@ -20,9 +20,9 @@ BubbleIconView::BubbleIconView(CommandUpdater* command_updater, int command_id)
 BubbleIconView::~BubbleIconView() {
 }
 
-void BubbleIconView::GetAccessibleState(ui::AccessibleViewState* state) {
+void BubbleIconView::GetAccessibleState(ui::AXViewState* state) {
   views::ImageView::GetAccessibleState(state);
-  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
+  state->role = ui::AX_ROLE_BUTTON;
 }
 
 bool BubbleIconView::GetTooltipText(const gfx::Point& p,

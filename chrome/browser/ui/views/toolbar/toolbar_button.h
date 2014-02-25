@@ -44,7 +44,7 @@ class ToolbarButton : public views::LabelButton,
   virtual void OnMouseCaptureLost() OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
 
   // views::ContextMenuController:
   virtual void ShowContextMenuForView(View* source,

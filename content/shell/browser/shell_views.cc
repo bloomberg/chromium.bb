@@ -15,7 +15,6 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"

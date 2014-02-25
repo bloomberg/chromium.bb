@@ -2,36 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_ACCESSIBILITY_ACCESSIBLE_VIEW_STATE_H_
-#define UI_BASE_ACCESSIBILITY_ACCESSIBLE_VIEW_STATE_H_
+#ifndef UI_ACCESSIBILITY_AX_VIEW_STATE_H_
+#define UI_ACCESSIBILITY_AX_VIEW_STATE_H_
 
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/strings/string16.h"
-#include "ui/base/accessibility/accessibility_types.h"
-#include "ui/base/ui_base_export.h"
+#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_export.h"
 
 namespace ui {
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// AccessibleViewState
+// AXViewState
 //
 //   A cross-platform struct for storing the core accessibility information
 //   that should be provided about any UI view to assistive technology (AT).
 //
 ////////////////////////////////////////////////////////////////////////////////
-struct UI_BASE_EXPORT AccessibleViewState {
+struct AX_EXPORT AXViewState {
  public:
-  AccessibleViewState();
-  ~AccessibleViewState();
+  AXViewState();
+  ~AXViewState();
 
   // The view's role, like button or list box.
-  AccessibilityTypes::Role role;
+  AXRole role;
 
   // The view's state, a bitmask containing fields such as checked
   // (for a checkbox) and protected (for a password text box).
-  AccessibilityTypes::State state;
+  uint32 state;
 
   // The view's name / label.
   base::string16 name;
@@ -70,4 +70,4 @@ struct UI_BASE_EXPORT AccessibleViewState {
 
 }  // namespace ui
 
-#endif  // UI_BASE_ACCESSIBILITY_ACCESSIBLE_VIEW_STATE_H_
+#endif  // UI_ACCESSIBILITY_AX_VIEW_STATE_H_

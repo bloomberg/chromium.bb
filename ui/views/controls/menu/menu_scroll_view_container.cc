@@ -6,7 +6,7 @@
 
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_border.h"
@@ -254,15 +254,15 @@ gfx::Size MenuScrollViewContainer::GetPreferredSize() {
 }
 
 void MenuScrollViewContainer::GetAccessibleState(
-    ui::AccessibleViewState* state) {
+    ui::AXViewState* state) {
   // Get the name from the submenu view.
   content_view_->GetAccessibleState(state);
 
   // Now change the role.
-  state->role = ui::AccessibilityTypes::ROLE_MENUBAR;
+  state->role = ui::AX_ROLE_MENU_BAR;
   // Some AT (like NVDA) will not process focus events on menu item children
   // unless a parent claims to be focused.
-  state->state = ui::AccessibilityTypes::STATE_FOCUSED;
+  state->state = ui::AX_STATE_FOCUSED;
 }
 
 void MenuScrollViewContainer::OnBoundsChanged(

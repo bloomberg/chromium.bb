@@ -16,8 +16,8 @@
 #include "base/timer/timer.h"
 #include "extensions/common/extension.h"
 #include "grit/generated_resources.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/aura/window.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -100,7 +100,7 @@ void CreateAndShowWidgetWithContent(views::WidgetDelegate* delegate,
   widget->SetBounds(bounds);
 
   // Allow to use the message for spoken feedback.
-  view->NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_ALERT, true);
+  view->NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
 }
 
 }  // namespace
@@ -202,9 +202,9 @@ class IdleAppNameNotificationDelegateView
     views::WidgetDelegateView::OnPaint(canvas);
   }
 
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE {
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE {
     state->name = spoken_text_;
-    state->role = ui::AccessibilityTypes::ROLE_ALERT;
+    state->role = ui::AX_ROLE_ALERT;
   }
 
   // ImplicitAnimationObserver overrides
@@ -268,7 +268,7 @@ bool IdleAppNameNotificationView::IsVisible() {
 }
 
 base::string16 IdleAppNameNotificationView::GetShownTextForTest() {
-  ui::AccessibleViewState state;
+  ui::AXViewState state;
   DCHECK(view_);
   view_->GetAccessibleState(&state);
   return state.name;

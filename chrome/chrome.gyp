@@ -857,6 +857,7 @@
           'type': 'static_library',
           'dependencies': [
             'chrome_resources.gyp:theme_resources',
+            '../ui/accessibility/accessibility.gyp:ax_gen',
             '../skia/skia.gyp:skia',
           ],
           'include_dirs': [

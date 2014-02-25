@@ -45,7 +45,7 @@ class VIEWS_EXPORT Link : public Label {
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
   virtual bool SkipDefaultKeyEventProcessing(
       const ui::KeyEvent& event) OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual void OnEnabledChanged() OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;

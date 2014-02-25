@@ -45,7 +45,7 @@ class TrayItemMore : public ActionableView {
 
   // Overridden from views::View.
   virtual void Layout() OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
 
   SystemTrayItem* owner_;
   // True if |more_| should be shown.

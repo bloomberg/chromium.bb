@@ -7,7 +7,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 #include "grit/generated_resources.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // static
@@ -47,8 +47,8 @@ void InfoBarContainerView::Layout() {
   }
 }
 
-void InfoBarContainerView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_GROUPING;
+void InfoBarContainerView::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_GROUP;
   state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_INFOBAR_CONTAINER);
 }
 

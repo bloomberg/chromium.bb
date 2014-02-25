@@ -124,7 +124,7 @@ class InfoBarView : public InfoBar,
   virtual void PlatformSpecificOnHeightsRecalculated() OVERRIDE;
 
   // views::View:
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
 

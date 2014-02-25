@@ -101,7 +101,7 @@ class VIEWS_EXPORT Combobox : public MenuDelegate,
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual ui::TextInputClient* GetTextInputClient() OVERRIDE;
   virtual void Layout() OVERRIDE;
 

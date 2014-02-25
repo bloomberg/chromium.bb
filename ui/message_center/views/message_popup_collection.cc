@@ -13,7 +13,7 @@
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "ui/base/accessibility/accessibility_types.h"
+#include "ui/accessibility/ax_enums.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/screen.h"
@@ -203,7 +203,7 @@ void MessagePopupCollection::UpdateWidgets() {
 
     if (views::ViewsDelegate::views_delegate) {
       views::ViewsDelegate::views_delegate->NotifyAccessibilityEvent(
-          toast, ui::AccessibilityTypes::EVENT_ALERT);
+          toast, ui::AX_EVENT_ALERT);
     }
 
     message_center_->DisplayedNotification((*iter)->id());

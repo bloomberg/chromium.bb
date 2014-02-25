@@ -9,7 +9,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ui_resources.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
@@ -545,8 +545,8 @@ void Combobox::OnBlur() {
   SchedulePaint();
 }
 
-void Combobox::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_COMBOBOX;
+void Combobox::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_COMBO_BOX;
   state->name = accessible_name_;
   state->value = model_->GetItemAt(selected_index_);
   state->index = selected_index_;
@@ -773,7 +773,7 @@ void Combobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
 }
 
 void Combobox::OnPerformAction() {
-  NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_VALUE_CHANGED, false);
+  NotifyAccessibilityEvent(ui::AX_EVENT_VALUE_CHANGED, false);
   SchedulePaint();
 
   // This combobox may be deleted by the listener.

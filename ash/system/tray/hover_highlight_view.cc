@@ -8,7 +8,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/view_click_listener.h"
 #include "grit/ui_resources.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
@@ -137,12 +137,12 @@ bool HoverHighlightView::PerformAction(const ui::Event& event) {
   return true;
 }
 
-void HoverHighlightView::GetAccessibleState(ui::AccessibleViewState* state) {
+void HoverHighlightView::GetAccessibleState(ui::AXViewState* state) {
   ActionableView::GetAccessibleState(state);
 
   if (checkable_) {
-    state->role = ui::AccessibilityTypes::ROLE_CHECKBUTTON;
-    state->state = checked_ ? ui::AccessibilityTypes::STATE_CHECKED : 0;
+    state->role = ui::AX_ROLE_CHECK_BOX;
+    state->state = checked_ ? ui::AX_STATE_CHECKED : 0;
   }
 }
 

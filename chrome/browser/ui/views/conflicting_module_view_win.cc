@@ -16,7 +16,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/button/label_button.h"
@@ -211,14 +211,14 @@ void ConflictingModuleView::ButtonPressed(views::Button* sender,
 }
 
 void ConflictingModuleView::GetAccessibleState(
-    ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_ALERT;
+    ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_ALERT;
 }
 
 void ConflictingModuleView::ViewHierarchyChanged(
   const ViewHierarchyChangedDetails& details) {
   if (details.is_add && details.child == this)
-    NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_ALERT, true);
+    NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
 }
 
 void ConflictingModuleView::Observe(

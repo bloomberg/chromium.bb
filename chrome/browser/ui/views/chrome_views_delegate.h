@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "build/build_config.h"
-#include "ui/base/accessibility/accessibility_types.h"
+#include "ui/accessibility/ax_enums.h"
 #include "ui/views/views_delegate.h"
 
 class ChromeViewsDelegate : public views::ViewsDelegate {
@@ -27,7 +27,7 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
       gfx::Rect* bounds,
       ui::WindowShowState* show_state) const OVERRIDE;
   virtual void NotifyAccessibilityEvent(
-      views::View* view, ui::AccessibilityTypes::Event event_type) OVERRIDE;
+      views::View* view, ui::AXEvent event_type) OVERRIDE;
   virtual void NotifyMenuItemFocused(const base::string16& menu_name,
                                      const base::string16& menu_item_name,
                                      int item_index,

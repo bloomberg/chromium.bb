@@ -18,7 +18,7 @@
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -394,7 +394,7 @@ void InfoBarView::PlatformSpecificShow(bool animate) {
   // that if we gain focus we'll know what the previously-focused element was.
   SetFocusManager(GetFocusManager());
 
-  NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_ALERT, true);
+  NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
 }
 
 void InfoBarView::PlatformSpecificHide(bool animate) {
@@ -424,11 +424,11 @@ void InfoBarView::PlatformSpecificOnHeightsRecalculated() {
   InvalidateLayout();
 }
 
-void InfoBarView::GetAccessibleState(ui::AccessibleViewState* state) {
+void InfoBarView::GetAccessibleState(ui::AXViewState* state) {
   state->name = l10n_util::GetStringUTF16(
       (delegate()->GetInfoBarType() == InfoBarDelegate::WARNING_TYPE) ?
           IDS_ACCNAME_INFOBAR_WARNING : IDS_ACCNAME_INFOBAR_PAGE_ACTION);
-  state->role = ui::AccessibilityTypes::ROLE_ALERT;
+  state->role = ui::AX_ROLE_ALERT;
 }
 
 gfx::Size InfoBarView::GetPreferredSize() {
@@ -446,6 +446,6 @@ void InfoBarView::OnWillChangeFocus(View* focused_before, View* focused_now) {
   // infobar.
   if (focused_before && focused_now && !Contains(focused_before) &&
       Contains(focused_now)) {
-    NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_ALERT, true);
+    NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
   }
 }

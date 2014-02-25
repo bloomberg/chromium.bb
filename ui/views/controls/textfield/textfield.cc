@@ -8,7 +8,7 @@
 
 #include "base/debug/trace_event.h"
 #include "grit/ui_strings.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drag_utils.h"
@@ -126,7 +126,7 @@ void Textfield::SetText(const base::string16& new_text) {
   model_->SetText(new_text);
   OnCaretBoundsChanged();
   SchedulePaint();
-  NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_TEXT_CHANGED, true);
+  NotifyAccessibilityEvent(ui::AX_EVENT_TEXT_CHANGED, true);
 }
 
 void Textfield::AppendText(const base::string16& new_text) {
@@ -586,13 +586,13 @@ void Textfield::OnBlur() {
   SchedulePaint();
 }
 
-void Textfield::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_TEXT;
+void Textfield::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_TEXT_FIELD;
   state->name = accessible_name_;
   if (read_only())
-    state->state |= ui::AccessibilityTypes::STATE_READONLY;
+    state->state |= ui::AX_STATE_READ_ONLY;
   if (text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD)
-    state->state |= ui::AccessibilityTypes::STATE_PROTECTED;
+    state->state |= ui::AX_STATE_PROTECTED;
   state->value = text();
 
   const gfx::Range range = GetSelectedRange();
@@ -1303,7 +1303,7 @@ void Textfield::UpdateAfterChange(bool text_changed, bool cursor_changed) {
   if (text_changed) {
     if (controller_)
       controller_->ContentsChanged(this, text());
-    NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_TEXT_CHANGED, true);
+    NotifyAccessibilityEvent(ui::AX_EVENT_TEXT_CHANGED, true);
   }
   if (cursor_changed) {
     cursor_visible_ = true;
@@ -1313,8 +1313,7 @@ void Textfield::UpdateAfterChange(bool text_changed, bool cursor_changed) {
     if (!text_changed) {
       // TEXT_CHANGED implies SELECTION_CHANGED, so we only need to fire
       // this if only the selection changed.
-      NotifyAccessibilityEvent(
-          ui::AccessibilityTypes::EVENT_SELECTION_CHANGED, true);
+      NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION_CHANGED, true);
     }
   }
   if (text_changed || cursor_changed) {

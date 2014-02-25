@@ -88,7 +88,7 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
 
   // ui::EventHandler overrides:
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;

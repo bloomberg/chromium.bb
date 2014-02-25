@@ -7,7 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "grit/generated_resources.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/image/image.h"
@@ -66,7 +66,7 @@ class PermissionMenuButton : public views::MenuButton,
   virtual void SetText(const base::string16& text) OVERRIDE;
 
   // Overridden from views::View.
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
 
  private:
   // Overridden from views::MenuButtonListener.
@@ -120,7 +120,7 @@ void PermissionMenuButton::SetText(const base::string16& text) {
   SizeToPreferredSize();
 }
 
-void PermissionMenuButton::GetAccessibleState(ui::AccessibleViewState* state) {
+void PermissionMenuButton::GetAccessibleState(ui::AXViewState* state) {
   MenuButton::GetAccessibleState(state);
   state->value = text();
 }

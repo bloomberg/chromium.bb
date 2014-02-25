@@ -26,8 +26,8 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -204,10 +204,10 @@ ui::ModalType NetworkConfigView::GetModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
 }
 
-void NetworkConfigView::GetAccessibleState(ui::AccessibleViewState* state) {
+void NetworkConfigView::GetAccessibleState(ui::AXViewState* state) {
   state->name =
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OTHER_WIFI_NETWORKS);
-  state->role = ui::AccessibilityTypes::ROLE_DIALOG;
+  state->role = ui::AX_ROLE_DIALOG;
 }
 
 void NetworkConfigView::ButtonPressed(views::Button* sender,

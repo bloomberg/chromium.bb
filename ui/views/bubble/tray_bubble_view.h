@@ -161,7 +161,7 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView,
   virtual int GetHeightForWidth(int width) OVERRIDE;
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
 
   // Overridden from MouseWatcherListener
   virtual void MouseMovedOutOfHost() OVERRIDE;

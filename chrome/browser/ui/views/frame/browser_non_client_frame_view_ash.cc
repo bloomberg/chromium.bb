@@ -22,9 +22,9 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/ash_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
@@ -321,8 +321,8 @@ bool BrowserNonClientFrameViewAsh::HitTestRect(const gfx::Rect& rect) const {
 }
 
 void BrowserNonClientFrameViewAsh::GetAccessibleState(
-    ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_TITLEBAR;
+    ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_TITLE_BAR;
 }
 
 gfx::Size BrowserNonClientFrameViewAsh::GetMinimumSize() {

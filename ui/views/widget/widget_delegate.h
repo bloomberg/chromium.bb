@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "ui/base/accessibility/accessibility_types.h"
+#include "ui/accessibility/ax_enums.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/view.h"
 
@@ -60,7 +60,7 @@ class VIEWS_EXPORT WidgetDelegate {
   // ui::MODAL_TYPE_NONE (not modal).
   virtual ui::ModalType GetModalType() const;
 
-  virtual ui::AccessibilityTypes::Role GetAccessibleWindowRole() const;
+  virtual ui::AXRole GetAccessibleWindowRole() const;
 
   // Returns the title to be read with screen readers.
   virtual base::string16 GetAccessibleWindowTitle() const;

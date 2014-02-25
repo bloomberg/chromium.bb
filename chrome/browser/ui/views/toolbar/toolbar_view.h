@@ -98,7 +98,7 @@ class ToolbarView : public views::AccessiblePaneView,
 
   // Overridden from AccessiblePaneView
   virtual bool SetPaneFocus(View* initial_focus) OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
 
   // Overridden from views::MenuButtonListener:
   virtual void OnMenuButtonClicked(views::View* source,

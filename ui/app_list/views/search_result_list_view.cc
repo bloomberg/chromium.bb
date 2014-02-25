@@ -86,7 +86,7 @@ void SearchResultListView::SetSelectedIndex(int selected_index) {
     SearchResultView* selected_view  = GetResultViewAt(selected_index_);
     selected_view->ClearSelectedAction();
     selected_view->SchedulePaint();
-    selected_view->NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_FOCUS,
+    selected_view->NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS,
                                             true);
   }
   if (auto_launch_animation_)

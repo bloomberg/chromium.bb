@@ -5,6 +5,7 @@ include_rules = [
   "+sync",
   "+third_party/google_toolbox_for_mac/src",
   "+third_party/skia",
+  "+ui/accessibility",
   "+ui/aura",
   "+ui/base",
   "+ui/compositor",

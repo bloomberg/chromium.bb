@@ -22,7 +22,7 @@ class VIEWS_EXPORT RadioButton : public Checkbox {
 
   // Overridden from View:
   virtual const char* GetClassName() const OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual View* GetSelectedViewForGroup(int group) OVERRIDE;
   virtual bool IsGroupFocusTraversable() const OVERRIDE;
   virtual void OnFocus() OVERRIDE;

@@ -332,7 +332,7 @@ bool BoundedLabel::HitTestRect(const gfx::Rect& rect) const {
   return label_->HitTestRect(rect);
 }
 
-void BoundedLabel::GetAccessibleState(ui::AccessibleViewState* state) {
+void BoundedLabel::GetAccessibleState(ui::AXViewState* state) {
   label_->GetAccessibleState(state);
 }
 

@@ -14,7 +14,7 @@
 #include <set>
 
 #include "third_party/iaccessible2/ia2_api_all.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/views/accessibility/native_view_accessibility.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/view.h"
@@ -60,7 +60,7 @@ NativeViewAccessibilityWin
 
   // NativeViewAccessibility.
   virtual void NotifyAccessibilityEvent(
-      ui::AccessibilityTypes::Event event_type) OVERRIDE;
+      ui::AXEvent event_type) OVERRIDE;
   virtual gfx::NativeViewAccessible GetNativeObject() OVERRIDE;
   virtual void Destroy() OVERRIDE;
 
@@ -339,15 +339,15 @@ NativeViewAccessibilityWin
 
   // Returns a conversion from the event (as defined in accessibility_types.h)
   // to an MSAA event.
-  static int32 MSAAEvent(ui::AccessibilityTypes::Event event);
+  static int32 MSAAEvent(ui::AXEvent event);
 
   // Returns a conversion from the Role (as defined in accessibility_types.h)
   // to an MSAA role.
-  static int32 MSAARole(ui::AccessibilityTypes::Role role);
+  static int32 MSAARole(ui::AXRole role);
 
   // Returns a conversion from the State (as defined in accessibility_types.h)
   // to MSAA states set.
-  static int32 MSAAState(ui::AccessibilityTypes::State state);
+  static int32 MSAAState(uint32 state);
 
  protected:
   NativeViewAccessibilityWin();

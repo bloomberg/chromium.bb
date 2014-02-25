@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_strings.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/display.h"
@@ -121,11 +121,11 @@ void ToolbarButton::OnGestureEvent(ui::GestureEvent* event) {
   LabelButton::OnGestureEvent(event);
 }
 
-void ToolbarButton::GetAccessibleState(ui::AccessibleViewState* state) {
+void ToolbarButton::GetAccessibleState(ui::AXViewState* state) {
   CustomButton::GetAccessibleState(state);
-  state->role = ui::AccessibilityTypes::ROLE_BUTTONDROPDOWN;
+  state->role = ui::AX_ROLE_BUTTON_DROP_DOWN;
   state->default_action = l10n_util::GetStringUTF16(IDS_APP_ACCACTION_PRESS);
-  state->state = ui::AccessibilityTypes::STATE_HASPOPUP;
+  state->state = ui::AX_STATE_HASPOPUP;
 }
 
 void ToolbarButton::ShowContextMenuForView(View* source,

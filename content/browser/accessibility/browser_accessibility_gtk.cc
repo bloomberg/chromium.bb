@@ -259,7 +259,7 @@ static AtkStateSet* browser_accessibility_ref_state_set(AtkObject* atk_object) {
     atk_state_set_add_state(state_set, ATK_STATE_FOCUSABLE);
   if (obj->manager()->GetFocus(NULL) == obj)
     atk_state_set_add_state(state_set, ATK_STATE_FOCUSED);
-  if (state & (1 << blink::WebAXStateEnabled))
+  if (state & (1 << ui::AX_STATE_ENABLED))
     atk_state_set_add_state(state_set, ATK_STATE_ENABLED);
 
   return state_set;

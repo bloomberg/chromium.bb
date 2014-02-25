@@ -12,8 +12,8 @@
 #include "chrome/browser/ui/views/accessibility/accessibility_event_router_views.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/accessibility/accessibility_types.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
@@ -46,7 +46,7 @@ class AccessibilityViewsDelegate : public views::TestViewsDelegate {
 
   // Overridden from views::TestViewsDelegate:
   virtual void NotifyAccessibilityEvent(
-      views::View* view, ui::AccessibilityTypes::Event event_type) OVERRIDE {
+      views::View* view, ui::AXEvent event_type) OVERRIDE {
     AccessibilityEventRouterViews::GetInstance()->HandleAccessibilityEvent(
         view, event_type);
   }
@@ -76,12 +76,12 @@ class AccessibilityWindowDelegate : public views::WidgetDelegate {
 class ViewWithNameAndRole : public views::View {
  public:
   explicit ViewWithNameAndRole(const base::string16& name,
-                               ui::AccessibilityTypes::Role role)
+                               ui::AXRole role)
       : name_(name),
         role_(role) {
   }
 
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE {
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE {
     views::View::GetAccessibleState(state);
     state->name = name_;
     state->role = role_;
@@ -91,7 +91,7 @@ class ViewWithNameAndRole : public views::View {
 
  private:
   base::string16 name_;
-  ui::AccessibilityTypes::Role role_;
+  ui::AXRole role_;
   DISALLOW_COPY_AND_ASSIGN(ViewWithNameAndRole);
 };
 
@@ -170,7 +170,7 @@ class AccessibilityEventRouterViewsTest
 
  protected:
   // Handle Focus event.
-  virtual void OnControlEvent(ui::AccessibilityTypes::Event event,
+  virtual void OnControlEvent(ui::AXEvent event,
                             const AccessibilityControlInfo* info) {
     control_event_count_++;
     last_control_type_ = info->type();
@@ -256,7 +256,7 @@ TEST_F(AccessibilityEventRouterViewsTest, TestToolbarContext) {
   // Create a toolbar with a button.
   views::View* contents = new ViewWithNameAndRole(
       ASCIIToUTF16(kToolbarNameASCII),
-      ui::AccessibilityTypes::ROLE_TOOLBAR);
+      ui::AX_ROLE_TOOLBAR);
   views::LabelButton* button = new views::LabelButton(
       NULL, ASCIIToUTF16(kButtonNameASCII));
   button->SetStyle(views::Button::STYLE_BUTTON);
@@ -286,7 +286,7 @@ TEST_F(AccessibilityEventRouterViewsTest, TestAlertContext) {
   // Create an alert with static text and a button, similar to an infobar.
   views::View* contents = new ViewWithNameAndRole(
       base::string16(),
-      ui::AccessibilityTypes::ROLE_ALERT);
+      ui::AX_ROLE_ALERT);
   views::Label* label = new views::Label(ASCIIToUTF16(kAlertTextASCII));
   contents->AddChildView(label);
   views::LabelButton* button = new views::LabelButton(
@@ -319,10 +319,10 @@ TEST_F(AccessibilityEventRouterViewsTest, StateChangeAfterNotification) {
   // Create a toolbar with a button.
   views::View* contents = new ViewWithNameAndRole(
       ASCIIToUTF16(kContentsNameASCII),
-      ui::AccessibilityTypes::ROLE_CLIENT);
+      ui::AX_ROLE_CLIENT);
   ViewWithNameAndRole* child = new ViewWithNameAndRole(
       ASCIIToUTF16(kOldNameASCII),
-      ui::AccessibilityTypes::ROLE_PUSHBUTTON);
+      ui::AX_ROLE_BUTTON);
   child->SetFocusable(true);
   contents->AddChildView(child);
 
@@ -355,10 +355,10 @@ TEST_F(AccessibilityEventRouterViewsTest, NotificationOnDeletedObject) {
   // Create a toolbar with a button.
   views::View* contents = new ViewWithNameAndRole(
       ASCIIToUTF16(kContentsNameASCII),
-      ui::AccessibilityTypes::ROLE_CLIENT);
+      ui::AX_ROLE_CLIENT);
   ViewWithNameAndRole* child = new ViewWithNameAndRole(
       ASCIIToUTF16(kNameASCII),
-      ui::AccessibilityTypes::ROLE_PUSHBUTTON);
+      ui::AX_ROLE_BUTTON);
   child->SetFocusable(true);
   contents->AddChildView(child);
 
@@ -401,7 +401,7 @@ TEST_F(AccessibilityEventRouterViewsTest, AlertsFromWindowAndControl) {
 
   // Send an alert event from the button and let the event loop run.
   control_event_count_ = 0;
-  button->NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_ALERT, true);
+  button->NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
   base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(kTypeAlert, last_control_type_);
@@ -411,7 +411,7 @@ TEST_F(AccessibilityEventRouterViewsTest, AlertsFromWindowAndControl) {
   // Send an alert event from the window and let the event loop run.
   control_event_count_ = 0;
   window->GetRootView()->NotifyAccessibilityEvent(
-      ui::AccessibilityTypes::EVENT_ALERT, true);
+      ui::AX_EVENT_ALERT, true);
   base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_EQ(1, control_event_count_);

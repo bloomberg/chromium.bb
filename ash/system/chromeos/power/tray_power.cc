@@ -21,7 +21,7 @@
 #include "grit/ash_strings.h"
 #include "third_party/icu/source/i18n/unicode/fieldpos.h"
 #include "third_party/icu/source/i18n/unicode/fmtable.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
@@ -61,9 +61,9 @@ class PowerTrayView : public views::ImageView {
   }
 
   // Overriden from views::View.
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE {
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE {
     state->name = accessible_name_;
-    state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
+    state->role = ui::AX_ROLE_BUTTON;
   }
 
   void UpdateStatus(bool battery_alert) {
@@ -72,7 +72,7 @@ class PowerTrayView : public views::ImageView {
 
     if (battery_alert) {
       accessible_name_ = PowerStatus::Get()->GetAccessibleNameString();
-      NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_ALERT, true);
+      NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
     }
   }
 
@@ -103,7 +103,7 @@ class PowerTrayView : public views::ImageView {
 
     accessible_name_ =  ui::ResourceBundle::GetSharedInstance().
         GetLocalizedString(IDS_CHARGER_REPLACEMENT_ACCESSIBILTY_NOTIFICATION);
-    NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_ALERT, true);
+    NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
     ++spring_charger_spoken_notification_count_;
 
     if (spring_charger_spoken_notification_count_ == 1) {

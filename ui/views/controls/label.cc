@@ -14,7 +14,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
@@ -288,9 +288,9 @@ bool Label::GetTooltipText(const gfx::Point& p, base::string16* tooltip) const {
   return false;
 }
 
-void Label::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_STATICTEXT;
-  state->state = ui::AccessibilityTypes::STATE_READONLY;
+void Label::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_STATIC_TEXT;
+  state->state = ui::AX_STATE_READ_ONLY;
   state->name = text_;
 }
 

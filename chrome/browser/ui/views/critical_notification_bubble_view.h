@@ -32,7 +32,7 @@ class CriticalNotificationBubbleView : public views::BubbleDelegateView,
   virtual void WindowClosing() OVERRIDE;
 
   // views::View overrides:
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE;
 

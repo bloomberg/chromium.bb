@@ -23,7 +23,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"
 #include "ui/views/background.h"
@@ -164,10 +164,10 @@ bool BookmarkEditorView::HandleKeyEvent(views::Textfield* sender,
     return false;
 }
 
-void BookmarkEditorView::GetAccessibleState(ui::AccessibleViewState* state) {
+void BookmarkEditorView::GetAccessibleState(ui::AXViewState* state) {
   state->name =
       l10n_util::GetStringUTF16(IDS_BOOKMARK_EDITOR_TITLE);
-  state->role = ui::AccessibilityTypes::ROLE_DIALOG;
+  state->role = ui::AX_ROLE_DIALOG;
 }
 
 void BookmarkEditorView::ButtonPressed(views::Button* sender,

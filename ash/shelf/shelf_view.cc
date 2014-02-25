@@ -35,10 +35,10 @@
 #include "base/metrics/histogram.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -1529,8 +1529,8 @@ views::FocusTraversable* ShelfView::GetPaneFocusTraversable() {
   return this;
 }
 
-void ShelfView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_TOOLBAR;
+void ShelfView::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_TOOLBAR;
   state->name = l10n_util::GetStringUTF16(IDS_ASH_SHELF_ACCESSIBLE_NAME);
 }
 

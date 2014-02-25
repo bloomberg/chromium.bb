@@ -8,7 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/views/controls/button/checkbox.h"
@@ -133,8 +133,8 @@ void MessageBoxView::SetLink(const base::string16& text,
   ResetLayoutManager();
 }
 
-void MessageBoxView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_ALERT;
+void MessageBoxView::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_ALERT;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -146,7 +146,7 @@ void MessageBoxView::ViewHierarchyChanged(
     if (prompt_field_)
       prompt_field_->SelectAll(true);
 
-    NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_ALERT, true);
+    NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
   }
 }
 

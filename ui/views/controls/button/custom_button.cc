@@ -4,7 +4,7 @@
 
 #include "ui/views/controls/button/custom_button.h"
 
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/animation/throb_animation.h"
@@ -101,7 +101,7 @@ void CustomButton::SetHotTracked(bool is_hot_tracked) {
     SetState(is_hot_tracked ? STATE_HOVERED : STATE_NORMAL);
 
   if (is_hot_tracked)
-    NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_FOCUS, true);
+    NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
 }
 
 bool CustomButton::IsHotTracked() const {
@@ -284,17 +284,17 @@ void CustomButton::OnDragDone() {
   SetState(STATE_NORMAL);
 }
 
-void CustomButton::GetAccessibleState(ui::AccessibleViewState* state) {
+void CustomButton::GetAccessibleState(ui::AXViewState* state) {
   Button::GetAccessibleState(state);
   switch (state_) {
     case STATE_HOVERED:
-      state->state = ui::AccessibilityTypes::STATE_HOTTRACKED;
+      state->state = ui::AX_STATE_HOVERED;
       break;
     case STATE_PRESSED:
-      state->state = ui::AccessibilityTypes::STATE_PRESSED;
+      state->state = ui::AX_STATE_PRESSED;
       break;
     case STATE_DISABLED:
-      state->state = ui::AccessibilityTypes::STATE_UNAVAILABLE;
+      state->state = ui::AX_STATE_DISABLED;
       break;
     case STATE_NORMAL:
     case STATE_COUNT:

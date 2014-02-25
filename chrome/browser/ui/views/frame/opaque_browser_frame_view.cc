@@ -31,7 +31,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -350,8 +350,8 @@ bool OpaqueBrowserFrameView::HitTestRect(const gfx::Rect& rect) const {
 }
 
 void OpaqueBrowserFrameView::GetAccessibleState(
-    ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_TITLEBAR;
+    ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_TITLE_BAR;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -40,7 +40,7 @@ class VIEWS_EXPORT ProgressBar : public View {
   // Overridden from View:
   virtual bool GetTooltipText(const gfx::Point& p,
                               base::string16* tooltip) const OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
 
  private:
   static const char kViewClassName[];

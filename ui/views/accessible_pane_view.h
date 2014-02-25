@@ -44,7 +44,7 @@ class VIEWS_EXPORT AccessiblePaneView : public View,
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator)
       OVERRIDE;
   virtual void SetVisible(bool flag) OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual void RequestFocus() OVERRIDE;
 
   // Overridden from FocusChangeListener:

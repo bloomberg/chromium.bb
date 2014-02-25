@@ -9,7 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "grit/ui_strings.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -150,15 +150,15 @@ bool MenuItemView::GetTooltipText(const gfx::Point& p,
   return !tooltip->empty();
 }
 
-void MenuItemView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_MENUITEM;
+void MenuItemView::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_MENU_ITEM;
 
   base::string16 item_text;
   if (IsContainer()) {
     // The first child is taking over, just use its accessible name instead of
     // |title_|.
     View* child = child_at(0);
-    ui::AccessibleViewState state;
+    ui::AXViewState state;
     child->GetAccessibleState(&state);
     item_text = state.name;
   } else {
@@ -168,12 +168,12 @@ void MenuItemView::GetAccessibleState(ui::AccessibleViewState* state) {
 
   switch (GetType()) {
     case SUBMENU:
-      state->state |= ui::AccessibilityTypes::STATE_HASPOPUP;
+      state->state |= ui::AX_STATE_HASPOPUP;
       break;
     case CHECKBOX:
     case RADIO:
       state->state |= GetDelegate()->IsItemChecked(GetCommand()) ?
-          ui::AccessibilityTypes::STATE_CHECKED : 0;
+          ui::AX_STATE_CHECKED : 0;
       break;
     case NORMAL:
     case SEPARATOR:

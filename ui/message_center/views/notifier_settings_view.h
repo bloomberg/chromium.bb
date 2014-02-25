@@ -71,7 +71,7 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
     // Overridden from views::ButtonListener:
     virtual void ButtonPressed(views::Button* button,
                                const ui::Event& event) OVERRIDE;
-    virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+    virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
 
     bool ShouldHaveLearnMoreButton() const;
     // Helper function to reset the layout when the view has substantially

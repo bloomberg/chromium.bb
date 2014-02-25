@@ -5,7 +5,7 @@
 #include "ui/views/controls/button/image_button.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -195,7 +195,7 @@ void ToggleImageButton::SetToggled(bool toggled) {
   toggled_ = toggled;
   SchedulePaint();
 
-  NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_VALUE_CHANGED, true);
+  NotifyAccessibilityEvent(ui::AX_EVENT_VALUE_CHANGED, true);
 }
 
 void ToggleImageButton::SetToggledImage(ButtonState state,
@@ -246,7 +246,7 @@ bool ToggleImageButton::GetTooltipText(const gfx::Point& p,
   return true;
 }
 
-void ToggleImageButton::GetAccessibleState(ui::AccessibleViewState* state) {
+void ToggleImageButton::GetAccessibleState(ui::AXViewState* state) {
   ImageButton::GetAccessibleState(state);
   GetTooltipText(gfx::Point(), &state->name);
 }

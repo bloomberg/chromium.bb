@@ -34,7 +34,7 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
   // Overridden from LabelButton:
   virtual void Layout() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
   virtual const gfx::ImageSkia& GetImage(ButtonState for_state) OVERRIDE;

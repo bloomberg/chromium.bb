@@ -67,7 +67,7 @@ class NetworkConfigView : public views::DialogDelegateView,
   virtual ui::ModalType GetModalType() const OVERRIDE;
 
   // views::View overrides.
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
 
   // views::ButtonListener overrides.
   virtual void ButtonPressed(

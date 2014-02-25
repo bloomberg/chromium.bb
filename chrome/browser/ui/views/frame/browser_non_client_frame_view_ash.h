@@ -55,7 +55,7 @@ class BrowserNonClientFrameViewAsh
   virtual void Layout() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
   virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual gfx::Size GetMinimumSize() OVERRIDE;
   virtual void OnThemeChanged() OVERRIDE;
 

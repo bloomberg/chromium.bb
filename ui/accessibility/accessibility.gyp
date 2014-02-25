@@ -14,6 +14,7 @@
       'export_dependent_settings': [
         'ax_gen',
       ],
+      'hard_dependency': 1,
       'dependencies': [
         '../../base/base.gyp:base',
         '../gfx/gfx.gyp:gfx',
@@ -26,11 +27,13 @@
       'sources': [
         # All .cc, .h under accessibility, except unittests
         'ax_node.cc',
+        'ax_node.h',
         'ax_node_data.cc',
         'ax_node_data.h',
-        'ax_node.h',
         'ax_serializable_tree.cc',
         'ax_serializable_tree.h',
+        'ax_text_utils.cc',
+        'ax_text_utils.h',
         'ax_tree.cc',
         'ax_tree.h',
         'ax_tree_serializer.cc',
@@ -38,6 +41,8 @@
         'ax_tree_source.h',
         'ax_tree_update.cc',
         'ax_tree_update.h',
+        'ax_view_state.cc',
+        'ax_view_state.cc',
       ]
     },
     {

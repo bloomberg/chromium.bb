@@ -16,7 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkRect.h"
-#include "ui/base/accessibility/accessibility_types.h"
+#include "ui/accessibility/ax_enums.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/compositor.h"
@@ -1326,7 +1326,7 @@ gfx::NativeViewAccessible View::GetNativeViewAccessible() {
 }
 
 void View::NotifyAccessibilityEvent(
-    ui::AccessibilityTypes::Event event_type,
+    ui::AXEvent event_type,
     bool send_native_event) {
   if (ViewsDelegate::views_delegate)
     ViewsDelegate::views_delegate->NotifyAccessibilityEvent(this, event_type);
@@ -1597,7 +1597,7 @@ void View::OnFocus() {
   // TODO(beng): Investigate whether it's possible for us to move this to
   //             Focus().
   // Notify assistive technologies of the focus change.
-  NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_FOCUS, true);
+  NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
 }
 
 void View::OnBlur() {

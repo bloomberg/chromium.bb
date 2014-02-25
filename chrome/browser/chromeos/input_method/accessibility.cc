@@ -38,7 +38,7 @@ void Accessibility::InputMethodChanged(InputMethodManager* imm,
   AccessibilityAlertInfo event(ProfileManager::GetActiveUserProfile(),
                                medium_name);
   SendControlAccessibilityNotification(
-      ui::AccessibilityTypes::EVENT_ALERT, &event);
+      ui::AX_EVENT_ALERT, &event);
 }
 
 }  // namespace input_method

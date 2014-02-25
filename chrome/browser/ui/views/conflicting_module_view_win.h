@@ -49,7 +49,7 @@ class ConflictingModuleView : public views::BubbleDelegateView,
                              const ui::Event& event) OVERRIDE;
 
   // views::View implementation.
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE;
 

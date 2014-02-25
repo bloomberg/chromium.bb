@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkPaint.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/insets.h"
 #include "ui/views/painter.h"
@@ -150,8 +150,8 @@ void ImageView::OnPaint(gfx::Canvas* canvas) {
   Painter::PaintFocusPainter(this, canvas, focus_painter_.get());
 }
 
-void ImageView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_GRAPHIC;
+void ImageView::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_IMAGE;
   state->name = tooltip_text_;
 }
 

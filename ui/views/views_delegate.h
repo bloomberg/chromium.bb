@@ -12,7 +12,7 @@
 #endif
 
 #include "base/strings/string16.h"
-#include "ui/base/accessibility/accessibility_types.h"
+#include "ui/accessibility/ax_enums.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
@@ -76,7 +76,7 @@ class VIEWS_EXPORT ViewsDelegate {
 
   virtual void NotifyAccessibilityEvent(
       View* view,
-      ui::AccessibilityTypes::Event event_type) = 0;
+      ui::AXEvent event_type) = 0;
 
   // For accessibility, notify the delegate that a menu item was focused
   // so that alternate feedback (speech / magnified text) can be provided.

@@ -267,7 +267,7 @@ void SystemTrayBubble::InitView(views::View* anchor,
 
   if (bubble_view_->CanActivate()) {
     bubble_view_->NotifyAccessibilityEvent(
-        ui::AccessibilityTypes::EVENT_ALERT, true);
+        ui::AX_EVENT_ALERT, true);
   }
 }
 

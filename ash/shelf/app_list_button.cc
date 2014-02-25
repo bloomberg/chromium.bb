@@ -11,7 +11,7 @@
 #include "ash/shelf/shelf_constants.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
@@ -123,8 +123,8 @@ void AppListButton::OnMouseExited(const ui::MouseEvent& event) {
   host_->MouseExitedButton(this);
 }
 
-void AppListButton::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
+void AppListButton::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_BUTTON;
   state->name = host_->GetAccessibleName(this);
 }
 

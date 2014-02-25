@@ -5,7 +5,7 @@
 #include "ui/views/accessible_pane_view.h"
 
 #include "base/message_loop/message_loop.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/widget/widget.h"
@@ -207,8 +207,8 @@ void AccessiblePaneView::SetVisible(bool flag) {
   View::SetVisible(flag);
 }
 
-void AccessiblePaneView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_PANE;
+void AccessiblePaneView::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_PANE;
 }
 
 void AccessiblePaneView::RequestFocus() {

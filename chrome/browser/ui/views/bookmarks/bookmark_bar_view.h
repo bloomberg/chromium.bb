@@ -182,7 +182,7 @@ class BookmarkBarView : public DetachableToolbarView,
   virtual const char* GetClassName() const OVERRIDE;
 
   // AccessiblePaneView:
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
 
   // gfx::AnimationDelegate:
   virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;

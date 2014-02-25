@@ -533,6 +533,7 @@
         '../net/net.gyp:net',
         '../third_party/zlib/zlib.gyp:minizip',
         '../third_party/zlib/zlib.gyp:zlib',
+        '../ui/accessibility/accessibility.gyp:ax_gen',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/ui.gyp:ui',

@@ -29,7 +29,7 @@ class ZoomView : public views::ImageView {
 
  private:
   // views::ImageView:
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual bool GetTooltipText(const gfx::Point& p,
                               base::string16* tooltip) const OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;

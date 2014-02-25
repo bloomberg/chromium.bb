@@ -32,7 +32,7 @@ class VIEWS_EXPORT ResizeArea : public View {
   virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
 
  private:
   // Report the amount the user resized by to the delegate, accounting for

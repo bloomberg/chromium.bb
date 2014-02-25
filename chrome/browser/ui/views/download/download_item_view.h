@@ -86,7 +86,7 @@ class DownloadItemView : public views::ButtonListener,
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual bool GetTooltipText(const gfx::Point& p,
                               base::string16* tooltip) const OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual void OnThemeChanged() OVERRIDE;
 
   // Overridden from ui::EventHandler:

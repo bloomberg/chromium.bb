@@ -113,8 +113,8 @@
 #include "grit/ui_resources.h"
 #include "grit/ui_strings.h"
 #include "grit/webkit_resources.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -1863,8 +1863,8 @@ void BrowserView::ChildPreferredSizeChanged(View* child) {
   Layout();
 }
 
-void BrowserView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_CLIENT;
+void BrowserView::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_CLIENT;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

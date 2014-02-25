@@ -454,7 +454,7 @@ class BrowserView : public BrowserWindow,
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE;
   virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
 
   // Overridden from ui::AcceleratorTarget:
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;

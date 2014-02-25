@@ -7,7 +7,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 
 using content::WebContents;
 
@@ -19,8 +19,8 @@ PageActionWithBadgeView::PageActionWithBadgeView(
 }
 
 void PageActionWithBadgeView::GetAccessibleState(
-    ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_GROUPING;
+    ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_GROUP;
 }
 
 gfx::Size PageActionWithBadgeView::GetPreferredSize() {

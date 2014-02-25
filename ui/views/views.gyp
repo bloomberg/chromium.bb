@@ -28,6 +28,8 @@
         '../../third_party/icu/icu.gyp:icui18n',
         '../../third_party/icu/icu.gyp:icuuc',
         '../../url/url.gyp:url_lib',
+        '../accessibility/accessibility.gyp:accessibility',
+        '../accessibility/accessibility.gyp:ax_gen',
         '../base/strings/ui_strings.gyp:ui_strings',
         '../compositor/compositor.gyp:compositor',
         '../events/events.gyp:events',
@@ -38,6 +40,9 @@
         '../resources/ui_resources.gyp:ui_resources',
         '../ui.gyp:ui',
         '../wm/wm.gyp:wm_public',
+      ],
+      'export_dependent_settings': [
+        '../accessibility/accessibility.gyp:ax_gen',
       ],
       'defines': [
         'VIEWS_IMPLEMENTATION',
@@ -715,6 +720,7 @@
         '../../third_party/icu/icu.gyp:icui18n',
         '../../third_party/icu/icu.gyp:icuuc',
         '../../url/url.gyp:url_lib',
+        '../accessibility/accessibility.gyp:accessibility',
         '../base/strings/ui_strings.gyp:ui_strings',
         '../compositor/compositor.gyp:compositor',
         '../compositor/compositor.gyp:compositor_test_support',

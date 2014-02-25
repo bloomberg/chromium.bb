@@ -7,7 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/border.h"
@@ -150,11 +150,11 @@ TEST(LabelTest, Accessibility) {
   base::string16 test_text(ASCIIToUTF16("My special text."));
   label.SetText(test_text);
 
-  ui::AccessibleViewState state;
+  ui::AXViewState state;
   label.GetAccessibleState(&state);
-  EXPECT_EQ(ui::AccessibilityTypes::ROLE_STATICTEXT, state.role);
+  EXPECT_EQ(ui::AX_ROLE_STATIC_TEXT, state.role);
   EXPECT_EQ(test_text, state.name);
-  EXPECT_TRUE(ui::AccessibilityTypes::STATE_READONLY & state.state);
+  EXPECT_TRUE(ui::AX_STATE_READ_ONLY & state.state);
 }
 
 TEST(LabelTest, SingleLineSizing) {

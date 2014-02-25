@@ -5,7 +5,7 @@
 #include "ui/views/controls/button/button.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 
 namespace views {
 
@@ -53,8 +53,8 @@ bool Button::GetTooltipText(const gfx::Point& p,
   return true;
 }
 
-void Button::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
+void Button::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_BUTTON;
   state->name = accessible_name_;
 }
 

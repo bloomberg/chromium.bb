@@ -22,7 +22,7 @@
 #include "extensions/common/manifest_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
@@ -88,10 +88,10 @@ void BrowserActionView::Layout() {
                      BrowserActionsContainer::IconHeight());
 }
 
-void BrowserActionView::GetAccessibleState(ui::AccessibleViewState* state) {
+void BrowserActionView::GetAccessibleState(ui::AXViewState* state) {
   state->name = l10n_util::GetStringUTF16(
       IDS_ACCNAME_EXTENSIONS_BROWSER_ACTION);
-  state->role = ui::AccessibilityTypes::ROLE_GROUPING;
+  state->role = ui::AX_ROLE_GROUP;
 }
 
 gfx::Size BrowserActionView::GetPreferredSize() {
@@ -177,9 +177,9 @@ bool BrowserActionButton::CanHandleAccelerators() const {
   return true;
 }
 
-void BrowserActionButton::GetAccessibleState(ui::AccessibleViewState* state) {
+void BrowserActionButton::GetAccessibleState(ui::AXViewState* state) {
   views::MenuButton::GetAccessibleState(state);
-  state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
+  state->role = ui::AX_ROLE_BUTTON;
 }
 
 void BrowserActionButton::ButtonPressed(views::Button* sender,

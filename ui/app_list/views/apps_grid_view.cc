@@ -953,7 +953,7 @@ void AppsGridView::SetSelectedItemByIndex(const Index& index) {
   selected_view_ = new_selection;
   selected_view_->SchedulePaint();
   selected_view_->NotifyAccessibilityEvent(
-      ui::AccessibilityTypes::EVENT_FOCUS, true);
+      ui::AX_EVENT_FOCUS, true);
 }
 
 bool AppsGridView::IsValidIndex(const Index& index) const {

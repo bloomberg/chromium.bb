@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_ACCESSIBILITY_ACCESSIBLE_TEXT_UTILS_H_
-#define UI_BASE_ACCESSIBILITY_ACCESSIBLE_TEXT_UTILS_H_
+#ifndef UI_ACCESSIBILITY_AX_TEXT_UTILS_H_
+#define UI_ACCESSIBILITY_AX_TEXT_UTILS_H_
 
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
-#include "ui/base/ui_base_export.h"
+#include "ui/accessibility/ax_export.h"
 
 namespace ui {
 
@@ -42,7 +42,7 @@ enum TextBoundaryDirection {
 // (depending on |direction|) from the given |start_offset| until the
 // given boundary is found, and return the offset of that boundary,
 // using the vector of line break character offsets in |line_breaks|.
-size_t UI_BASE_EXPORT
+size_t AX_EXPORT
     FindAccessibleTextBoundary(const base::string16& text,
                                const std::vector<int>& line_breaks,
                                TextBoundaryType boundary,
@@ -51,4 +51,4 @@ size_t UI_BASE_EXPORT
 
 }  // namespace ui
 
-#endif  // UI_BASE_ACCESSIBILITY_ACCESSIBLE_TEXT_UTILS_H_
+#endif  // UI_ACCESSIBILITY_AX_TEXT_UTILS_H_

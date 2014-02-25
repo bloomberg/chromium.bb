@@ -114,7 +114,7 @@ const char* ReloadButton::GetClassName() const {
   return kViewClassName;
 }
 
-void ReloadButton::GetAccessibleState(ui::AccessibleViewState* state) {
+void ReloadButton::GetAccessibleState(ui::AXViewState* state) {
   if (menu_enabled_)
     ToolbarButton::GetAccessibleState(state);
   else

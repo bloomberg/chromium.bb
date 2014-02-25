@@ -19,7 +19,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "grit/locale_settings.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
@@ -319,14 +319,14 @@ void ExtensionMessageBubbleView::LinkClicked(views::Link* source,
 }
 
 void ExtensionMessageBubbleView::GetAccessibleState(
-    ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_ALERT;
+    ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_ALERT;
 }
 
 void ExtensionMessageBubbleView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   if (details.is_add && details.child == this)
-    NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_ALERT, true);
+    NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
 }
 
 }  // namespace extensions

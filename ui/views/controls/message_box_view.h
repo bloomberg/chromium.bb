@@ -83,7 +83,7 @@ class VIEWS_EXPORT MessageBoxView : public View {
   void SetLink(const base::string16& text, LinkListener* listener);
 
   // View:
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
 
  protected:
   // View:

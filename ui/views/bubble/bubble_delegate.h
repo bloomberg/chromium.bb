@@ -40,7 +40,7 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   virtual bool ShouldShowCloseButton() const OVERRIDE;
   virtual View* GetContentsView() OVERRIDE;
   virtual NonClientFrameView* CreateNonClientFrameView(Widget* widget) OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
 
   // WidgetObserver overrides:
   virtual void OnWidgetDestroying(Widget* widget) OVERRIDE;

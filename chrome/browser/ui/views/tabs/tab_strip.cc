@@ -30,7 +30,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/default_theme_provider.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -1450,8 +1450,8 @@ int TabStrip::OnPerformDrop(const DropTargetEvent& event) {
   return GetDropEffect(event);
 }
 
-void TabStrip::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_PAGETABLIST;
+void TabStrip::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_TAB_LIST;
 }
 
 views::View* TabStrip::GetEventHandlerForRect(const gfx::Rect& rect) {

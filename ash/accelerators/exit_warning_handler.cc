@@ -12,8 +12,8 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "grit/ash_strings.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/aura/window.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -94,9 +94,9 @@ class ExitWarningWidgetDelegateView : public views::WidgetDelegateView {
     views::WidgetDelegateView::OnPaint(canvas);
   }
 
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE {
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE {
     state->name = accessible_name_;
-    state->role = ui::AccessibilityTypes::ROLE_ALERT;
+    state->role = ui::AX_ROLE_ALERT;
   }
 
  private:
@@ -195,7 +195,7 @@ void ExitWarningHandler::Show() {
   widget_->GetNativeView()->SetName("ExitWarningWindow");
   widget_->Show();
 
-  delegate->NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_ALERT, true);
+  delegate->NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, true);
 }
 
 void ExitWarningHandler::Hide() {

@@ -173,7 +173,7 @@ class VIEWS_EXPORT Label : public View {
   virtual const char* GetClassName() const OVERRIDE;
   virtual View* GetTooltipHandlerForPoint(const gfx::Point& point) OVERRIDE;
   virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   // Gets the tooltip text for labels that are wider than their bounds, except
   // when the label is multiline, in which case it just returns false (no
   // tooltip).  If a custom tooltip has been specified with SetTooltipText()

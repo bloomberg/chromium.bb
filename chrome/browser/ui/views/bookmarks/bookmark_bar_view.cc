@@ -61,7 +61,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -402,9 +402,9 @@ class BookmarkBarView::ButtonSeparatorView : public views::View {
     return gfx::Size(kSeparatorWidth, 1);
   }
 
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE {
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE {
     state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_SEPARATOR);
-    state->role = ui::AccessibilityTypes::ROLE_SEPARATOR;
+    state->role = ui::AX_ROLE_SPLITTER;
   }
 
  private:
@@ -919,8 +919,8 @@ const char* BookmarkBarView::GetClassName() const {
   return kViewClassName;
 }
 
-void BookmarkBarView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_TOOLBAR;
+void BookmarkBarView::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_TOOLBAR;
   state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_BOOKMARKS);
 }
 

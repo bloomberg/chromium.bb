@@ -19,7 +19,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -295,7 +295,7 @@ gfx::Size BookmarkBubbleView::GetMinimumSize() {
   return size;
 }
 
-void BookmarkBubbleView::GetAccessibleState(ui::AccessibleViewState* state) {
+void BookmarkBubbleView::GetAccessibleState(ui::AXViewState* state) {
   BubbleDelegateView::GetAccessibleState(state);
   state->name =
       l10n_util::GetStringUTF16(

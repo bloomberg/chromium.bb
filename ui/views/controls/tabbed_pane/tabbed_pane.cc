@@ -5,7 +5,7 @@
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 
 #include "base/logging.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
@@ -364,12 +364,12 @@ void TabbedPane::OnFocus() {
   View* selected_tab = GetSelectedTab();
   if (selected_tab) {
     selected_tab->NotifyAccessibilityEvent(
-        ui::AccessibilityTypes::EVENT_FOCUS, true);
+        ui::AX_EVENT_FOCUS, true);
   }
 }
 
-void TabbedPane::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_PAGETABLIST;
+void TabbedPane::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_TAB_LIST;
 }
 
 }  // namespace views

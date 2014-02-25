@@ -70,7 +70,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
@@ -593,7 +593,7 @@ void LocationBarView::OnFocus() {
   // Chrome OS.  It is noop on Win. This should be removed once
   // Chrome OS migrates to aura, which uses Views' textfield that receives
   // focus. See crbug.com/106428.
-  NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_FOCUS, false);
+  NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, false);
 
   // Then focus the native location view which implements accessibility for
   // Windows.
@@ -1123,11 +1123,11 @@ bool LocationBarView::HasFocus() const {
   return omnibox_view_->model()->has_focus();
 }
 
-void LocationBarView::GetAccessibleState(ui::AccessibleViewState* state) {
+void LocationBarView::GetAccessibleState(ui::AXViewState* state) {
   if (!IsInitialized())
     return;
 
-  state->role = ui::AccessibilityTypes::ROLE_LOCATION_BAR;
+  state->role = ui::AX_ROLE_LOCATION_BAR;
   state->name = l10n_util::GetStringUTF16(IDS_ACCNAME_LOCATION);
   state->value = omnibox_view_->GetText();
 
@@ -1138,7 +1138,7 @@ void LocationBarView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->selection_end = entry_end;
 
   if (is_popup_mode_) {
-    state->state |= ui::AccessibilityTypes::STATE_READONLY;
+    state->state |= ui::AX_STATE_READ_ONLY;
   } else {
     state->set_value_callback =
         base::Bind(&LocationBarView::AccessibilitySetValue,

@@ -7,7 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "grit/ui_strings.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -244,11 +244,11 @@ bool MenuButton::OnKeyReleased(const ui::KeyEvent& event) {
   return false;
 }
 
-void MenuButton::GetAccessibleState(ui::AccessibleViewState* state) {
+void MenuButton::GetAccessibleState(ui::AXViewState* state) {
   CustomButton::GetAccessibleState(state);
-  state->role = ui::AccessibilityTypes::ROLE_BUTTONMENU;
+  state->role = ui::AX_ROLE_POP_UP_BUTTON;
   state->default_action = l10n_util::GetStringUTF16(IDS_APP_ACCACTION_PRESS);
-  state->state = ui::AccessibilityTypes::STATE_HASPOPUP;
+  state->state = ui::AX_STATE_HASPOPUP;
 }
 
 void MenuButton::PaintMenuMarker(gfx::Canvas* canvas) {

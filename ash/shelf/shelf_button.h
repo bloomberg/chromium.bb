@@ -102,7 +102,7 @@ class ASH_EXPORT ShelfButton : public views::CustomButton {
   virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE;
   virtual void OnFocus() OVERRIDE;

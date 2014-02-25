@@ -9,7 +9,7 @@
 #include "base/i18n/rtl.h"
 #include "base/message_loop/message_loop.h"
 #include "grit/ui_resources.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -246,7 +246,7 @@ void TreeView::SetSelectedNode(TreeModelNode* model_node) {
   if (changed) {
     // TODO(dmazzoni): Decide if EVENT_SELECTION_CHANGED is a better choice for
     // sub-item selection event.
-    NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_FOCUS, true);
+    NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
   }
 }
 
@@ -404,14 +404,14 @@ void TreeView::ShowContextMenu(const gfx::Point& p,
   View::ShowContextMenu(p, source_type);
 }
 
-void TreeView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_OUTLINE;
-  state->state = ui::AccessibilityTypes::STATE_READONLY;
+void TreeView::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_TREE;
+  state->state = ui::AX_STATE_READ_ONLY;
   if (!selected_node_)
     return;
 
   // Get selected item info.
-  state->role = ui::AccessibilityTypes::ROLE_OUTLINEITEM;
+  state->role = ui::AX_ROLE_TREE_ITEM;
   state->name = selected_node_->model_node()->GetTitle();
 }
 

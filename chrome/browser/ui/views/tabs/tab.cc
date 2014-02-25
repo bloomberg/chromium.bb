@@ -24,7 +24,7 @@
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/models/list_selection_model.h"
@@ -1077,8 +1077,8 @@ void Tab::OnGestureEvent(ui::GestureEvent* event) {
   event->SetHandled();
 }
 
-void Tab::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_PAGETAB;
+void Tab::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_TAB;
   state->name = data_.title;
 }
 

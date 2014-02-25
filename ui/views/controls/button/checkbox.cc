@@ -5,7 +5,7 @@
 #include "ui/views/controls/button/checkbox.h"
 
 #include "grit/ui_resources.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/painter.h"
@@ -94,10 +94,10 @@ const char* Checkbox::GetClassName() const {
   return kViewClassName;
 }
 
-void Checkbox::GetAccessibleState(ui::AccessibleViewState* state) {
+void Checkbox::GetAccessibleState(ui::AXViewState* state) {
   LabelButton::GetAccessibleState(state);
-  state->role = ui::AccessibilityTypes::ROLE_CHECKBUTTON;
-  state->state = checked() ? ui::AccessibilityTypes::STATE_CHECKED : 0;
+  state->role = ui::AX_ROLE_CHECK_BOX;
+  state->state = checked() ? ui::AX_STATE_CHECKED : 0;
 }
 
 void Checkbox::OnFocus() {

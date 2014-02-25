@@ -4,7 +4,7 @@
 
 #include "ui/views/bubble/bubble_delegate.h"
 
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/rect.h"
@@ -141,8 +141,8 @@ NonClientFrameView* BubbleDelegateView::CreateNonClientFrameView(
   return frame;
 }
 
-void BubbleDelegateView::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_DIALOG;
+void BubbleDelegateView::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_DIALOG;
 }
 
 void BubbleDelegateView::OnWidgetDestroying(Widget* widget) {

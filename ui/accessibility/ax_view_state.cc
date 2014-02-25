@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 
 namespace ui {
 
-AccessibleViewState::AccessibleViewState()
-    : role(AccessibilityTypes::ROLE_CLIENT),
+AXViewState::AXViewState()
+    : role(AX_ROLE_CLIENT),
       state(0),
       selection_start(-1),
       selection_end(-1),
       index(-1),
       count(-1) { }
 
-AccessibleViewState::~AccessibleViewState() { }
+AXViewState::~AXViewState() { }
 
 }  // namespace ui

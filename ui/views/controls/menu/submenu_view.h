@@ -58,7 +58,7 @@ class VIEWS_EXPORT SubmenuView : public PrefixDelegate,
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // Override from View.
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual ui::TextInputClient* GetTextInputClient() OVERRIDE;
 
   // Painting.

@@ -18,7 +18,7 @@
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/common/accessibility_messages.h"
 #include "content/public/common/content_client.h"
-#include "ui/base/accessibility/accessible_text_utils.h"
+#include "ui/accessibility/ax_text_utils.h"
 #include "ui/base/win/accessibility_ids_win.h"
 #include "ui/base/win/accessibility_misc_utils.h"
 

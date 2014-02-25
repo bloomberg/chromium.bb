@@ -142,7 +142,7 @@ class EntryView : public views::View {
   // views::View:
   virtual void Layout() OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual bool OnKeyReleased(const ui::KeyEvent& event) OVERRIDE;
@@ -178,7 +178,7 @@ gfx::Size EntryView::GetPreferredSize() {
   return size;
 }
 
-void EntryView::GetAccessibleState(ui::AccessibleViewState* state) {
+void EntryView::GetAccessibleState(ui::AXViewState* state) {
   DCHECK_EQ(1, child_count());
   child_at(0)->GetAccessibleState(state);
 }
@@ -406,7 +406,7 @@ void NotifierSettingsView::NotifierButton::ButtonPressed(
 }
 
 void NotifierSettingsView::NotifierButton::GetAccessibleState(
-    ui::AccessibleViewState* state) {
+    ui::AXViewState* state) {
   static_cast<views::View*>(checkbox_)->GetAccessibleState(state);
 }
 

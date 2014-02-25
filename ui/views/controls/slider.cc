@@ -12,7 +12,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -104,7 +104,7 @@ void Slider::SetValueInternal(float value, SliderChangeReason reason) {
   }
   if (accessibility_events_enabled_ && GetWidget()) {
     NotifyAccessibilityEvent(
-        ui::AccessibilityTypes::EVENT_VALUE_CHANGED, true);
+        ui::AX_EVENT_VALUE_CHANGED, true);
   }
 }
 
@@ -323,8 +323,8 @@ void Slider::AnimationProgressed(const gfx::Animation* animation) {
   SchedulePaint();
 }
 
-void Slider::GetAccessibleState(ui::AccessibleViewState* state) {
-  state->role = ui::AccessibilityTypes::ROLE_SLIDER;
+void Slider::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_SLIDER;
   state->name = accessible_name_;
   state->value = base::UTF8ToUTF16(
       base::StringPrintf("%d%%", (int)(value_ * 100 + 0.5)));

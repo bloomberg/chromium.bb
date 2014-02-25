@@ -11,8 +11,8 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/aura/window.h"
-#include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_delegate.h"
@@ -482,9 +482,9 @@ void TrayBubbleView::OnMouseExited(const ui::MouseEvent& event) {
     delegate_->OnMouseExitedView();
 }
 
-void TrayBubbleView::GetAccessibleState(ui::AccessibleViewState* state) {
+void TrayBubbleView::GetAccessibleState(ui::AXViewState* state) {
   if (delegate_ && params_.can_activate) {
-    state->role = ui::AccessibilityTypes::ROLE_WINDOW;
+    state->role = ui::AX_ROLE_WINDOW;
     state->name = delegate_->GetAccessibleNameForBubble();
   }
 }

@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "grit/ui_resources.h"
-#include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/widget/widget.h"
 
@@ -94,9 +94,9 @@ const char* RadioButton::GetClassName() const {
   return kViewClassName;
 }
 
-void RadioButton::GetAccessibleState(ui::AccessibleViewState* state) {
+void RadioButton::GetAccessibleState(ui::AXViewState* state) {
   Checkbox::GetAccessibleState(state);
-  state->role = ui::AccessibilityTypes::ROLE_RADIOBUTTON;
+  state->role = ui::AX_ROLE_RADIO_BUTTON;
 }
 
 View* RadioButton::GetSelectedViewForGroup(int group) {

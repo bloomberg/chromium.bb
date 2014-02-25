@@ -47,11 +47,6 @@
         'base/accelerators/platform_accelerator_cocoa.mm',
         'base/accelerators/platform_accelerator_gtk.cc',
         'base/accelerators/platform_accelerator_gtk.h',
-        'base/accessibility/accessibility_types.h',
-        'base/accessibility/accessible_text_utils.cc',
-        'base/accessibility/accessible_text_utils.h',
-        'base/accessibility/accessible_view_state.cc',
-        'base/accessibility/accessible_view_state.h',
         'base/android/ui_base_jni_registrar.cc',
         'base/android/ui_base_jni_registrar.h',
         'base/android/view_android.cc',
@@ -546,8 +541,6 @@
         }],
         ['OS=="android"', {
           'sources!': [
-            'base/accessibility/accessible_text_utils.cc',
-            'base/accessibility/accessible_view_state.cc',
             'base/default_theme_provider.cc',
             'base/dragdrop/drag_utils.cc',
             'base/dragdrop/drag_utils.h',

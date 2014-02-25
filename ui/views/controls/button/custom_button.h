@@ -84,7 +84,7 @@ class VIEWS_EXPORT CustomButton : public Button,
   virtual void ShowContextMenu(const gfx::Point& p,
                                ui::MenuSourceType source_type) OVERRIDE;
   virtual void OnDragDone() OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual void VisibilityChanged(View* starting_from, bool is_visible) OVERRIDE;
 
   // Overridden from gfx::AnimationDelegate:

@@ -263,7 +263,7 @@ class LocationBarView : public LocationBar,
   // views::View:
   virtual const char* GetClassName() const OVERRIDE;
   virtual bool HasFocus() const OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 
   // views::ButtonListener:

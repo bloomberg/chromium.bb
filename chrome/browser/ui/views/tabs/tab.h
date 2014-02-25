@@ -180,7 +180,7 @@ class Tab : public gfx::AnimationDelegate,
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
-  virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
 
   // Overridden from ui::EventHandler:
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
