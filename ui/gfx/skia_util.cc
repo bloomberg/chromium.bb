@@ -104,10 +104,9 @@ skia::RefPtr<SkDrawLooper> CreateShadowDrawLooper(
   if (shadows.empty())
     return skia::RefPtr<SkDrawLooper>();
 
-  skia::RefPtr<SkLayerDrawLooper> looper =
-      skia::AdoptRef(new SkLayerDrawLooper);
+  SkLayerDrawLooper::Builder looper_builder;
 
-  looper->addLayer();  // top layer of the original.
+  looper_builder.addLayer();  // top layer of the original.
 
   SkLayerDrawLooper::LayerInfo layer_info;
   layer_info.fPaintBits |= SkLayerDrawLooper::kMaskFilter_Bit;
@@ -130,12 +129,12 @@ skia::RefPtr<SkDrawLooper> CreateShadowDrawLooper(
         SkColorFilter::CreateModeFilter(shadow.color(),
                                         SkXfermode::kSrcIn_Mode));
 
-    SkPaint* paint = looper->addLayer(layer_info);
+    SkPaint* paint = looper_builder.addLayer(layer_info);
     paint->setMaskFilter(blur_mask.get());
     paint->setColorFilter(color_filter.get());
   }
 
-  return looper;
+  return skia::AdoptRef<SkDrawLooper>(looper_builder.detachLooper());
 }
 
 bool BitmapsAreEqual(const SkBitmap& bitmap1, const SkBitmap& bitmap2) {
