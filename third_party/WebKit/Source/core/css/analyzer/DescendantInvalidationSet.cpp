@@ -121,4 +121,15 @@ void DescendantInvalidationSet::getClasses(Vector<AtomicString>& classes) const
         classes.append(*it);
 }
 
+void DescendantInvalidationSet::setWholeSubtreeInvalid()
+{
+    if (m_allDescendantsMightBeInvalid)
+        return;
+
+    m_allDescendantsMightBeInvalid = true;
+    m_classes = nullptr;
+    m_ids = nullptr;
+    m_tagNames = nullptr;
+}
+
 } // namespace WebCore

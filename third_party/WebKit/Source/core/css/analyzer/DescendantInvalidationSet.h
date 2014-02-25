@@ -78,17 +78,6 @@ private:
     OwnPtr<HashSet<AtomicString> > m_tagNames;
 };
 
-inline void DescendantInvalidationSet::setWholeSubtreeInvalid()
-{
-    if (m_allDescendantsMightBeInvalid)
-        return;
-
-    m_allDescendantsMightBeInvalid = true;
-    m_classes = nullptr;
-    m_ids = nullptr;
-    m_tagNames = nullptr;
-}
-
 } // namespace WebCore
 
 #endif // DescendantInvalidationSet_h
