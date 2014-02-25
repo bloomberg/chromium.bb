@@ -1,4 +1,3 @@
-CONSOLE WARNING: 'HTMLVideoElement.webkitExitFullScreen()' is deprecated. Please use 'Document.exitFullscreen()' and 'Document.webkitExitFullscreen()' instead.
 Tests that video controls are shwon after exiting fullscreen
 EVENT(canplaythrough)
 ** Move mouse to the play button and start playing the video **
@@ -6,7 +5,7 @@ EVENT(canplaythrough)
 ** Test that controls are shown when controls attribute is present **
 EVENT(webkitfullscreenchange)
 
-RUN(video.webkitExitFullScreen())
+RUN(document.webkitExitFullscreen())
 EVENT(webkitfullscreenchange)
 
 ** The controls should be shown after exiting the fullscreen

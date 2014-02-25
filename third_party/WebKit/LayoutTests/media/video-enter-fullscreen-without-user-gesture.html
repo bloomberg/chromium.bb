@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>Test that video webkitEnterFullScreen() works without any user gesture if the requirement is removed.</title>
+        <title>Test that video webkitRequestFullscreen() works without any user gesture if the requirement is removed.</title>
         <script src=media-controls.js></script>
         <script src=media-file.js></script>
         <script src=video-test.js></script>
@@ -13,7 +13,7 @@
                 consoleWrite("");
                 consoleWrite("* No user gesture initiated");
                 testExpected("video.paused", true);
-                run("video.webkitEnterFullScreen()");
+                run("video.webkitRequestFullscreen()");
                 waitForEvent('webkitfullscreenchange', fullscreenchange);
             }
 
@@ -32,7 +32,7 @@
     </head>
 
     <body onload="start()">
-    <p>Test that video webkitEnterFullScreen() works without any user gesture if the requirement is removed.</p>
+    <p>Test that video webkitRequestFullscreen() works without any user gesture if the requirement is removed.</p>
     <video controls></video>
     </body>
 </html>

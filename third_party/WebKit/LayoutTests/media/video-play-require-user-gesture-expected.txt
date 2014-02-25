@@ -1,11 +1,9 @@
-CONSOLE WARNING: 'HTMLVideoElement.webkitEnterFullScreen()' is deprecated. Please use 'Element.requestFullscreen()' and 'Element.webkitRequestFullscreen()' instead.
-Test that video play(), pause() and webkitEnterFullScreen() should not work unless a user clicked on the play button.
+Test that video play() does not work unless a user clicked on the play button.
 
 EVENT(canplaythrough)
 
 * No user gesture initiated
 RUN(video.play())
-TEST(video.webkitEnterFullScreen()) THROWS(DOMException.INVALID_STATE_ERR: Failed to execute 'webkitEnterFullScreen' on 'HTMLVideoElement': This element may only enter fullscreen mode in response to a user gesture ('click', for example).) OK
 EXPECTED (video.paused == 'true') OK
 
 * User gesture initiated
@@ -13,6 +11,5 @@ EVENT(playing)
 RUN(video.pause())
 EVENT(pause)
 EXPECTED (video.paused == 'true') OK
-RUN(video.webkitEnterFullScreen())
 END OF TEST
 

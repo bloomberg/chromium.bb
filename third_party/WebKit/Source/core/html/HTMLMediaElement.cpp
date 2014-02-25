@@ -317,8 +317,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     if (document.settings()) {
         if (document.settings()->mediaPlaybackRequiresUserGesture())
             addBehaviorRestriction(RequireUserGestureForPlayRestriction);
-        if (document.settings()->mediaFullscreenRequiresUserGesture())
-            addBehaviorRestriction(RequireUserGestureForFullscreenRestriction);
     }
 
     // We must always have a ShadowRoot so children like <source> will not render
@@ -3455,14 +3453,6 @@ void HTMLMediaElement::enterFullscreen()
 
     if (document().settings() && document().settings()->fullScreenEnabled())
         FullscreenElementStack::from(document()).requestFullScreenForElement(this, 0, FullscreenElementStack::ExemptIFrameAllowFullScreenRequirement);
-}
-
-void HTMLMediaElement::exitFullscreen()
-{
-    WTF_LOG(Media, "HTMLMediaElement::exitFullscreen");
-
-    if (document().settings() && document().settings()->fullScreenEnabled() && isFullscreen())
-        FullscreenElementStack::from(document()).webkitCancelFullScreen();
 }
 
 void HTMLMediaElement::didBecomeFullscreenElement()

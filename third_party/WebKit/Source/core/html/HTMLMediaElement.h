@@ -250,7 +250,6 @@ public:
 
     bool isFullscreen() const;
     virtual void enterFullscreen() OVERRIDE FINAL;
-    void exitFullscreen();
 
     virtual bool hasClosedCaptions() const OVERRIDE FINAL;
     virtual bool closedCaptionsVisible() const OVERRIDE FINAL;
@@ -303,12 +302,10 @@ protected:
     enum BehaviorRestrictionFlags {
         NoRestrictions = 0,
         RequireUserGestureForPlayRestriction = 1 << 0,
-        RequireUserGestureForFullscreenRestriction = 1 << 1,
     };
     typedef unsigned BehaviorRestrictions;
 
     bool userGestureRequiredForPlay() const { return m_restrictions & RequireUserGestureForPlayRestriction; }
-    bool userGestureRequiredForFullscreen() const { return m_restrictions & RequireUserGestureForFullscreenRestriction; }
 
     void addBehaviorRestriction(BehaviorRestrictions restriction) { m_restrictions |= restriction; }
     void removeBehaviorRestriction(BehaviorRestrictions restriction) { m_restrictions &= ~restriction; }

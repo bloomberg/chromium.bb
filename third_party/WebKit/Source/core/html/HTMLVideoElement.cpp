@@ -120,17 +120,6 @@ void HTMLVideoElement::parseAttribute(const QualifiedName& name, const AtomicStr
         HTMLMediaElement::parseAttribute(name, value);
 }
 
-bool HTMLVideoElement::supportsFullscreen() const
-{
-    if (!document().page())
-        return false;
-
-    if (!player())
-        return false;
-
-    return true;
-}
-
 unsigned HTMLVideoElement::videoWidth() const
 {
     if (!player())
@@ -205,41 +194,6 @@ bool HTMLVideoElement::hasAvailableVideoFrame() const
         return false;
 
     return player()->hasVideo() && player()->readyState() >= MediaPlayer::HaveCurrentData;
-}
-
-void HTMLVideoElement::webkitEnterFullscreen(ExceptionState& exceptionState)
-{
-    if (isFullscreen())
-        return;
-
-    // Generate an exception if this isn't called in response to a user gesture, or if the
-    // element does not support fullscreen.
-    if (userGestureRequiredForFullscreen() && !UserGestureIndicator::processingUserGesture()) {
-        exceptionState.throwDOMException(InvalidStateError, "This element may only enter fullscreen mode in response to a user gesture ('click', for example).");
-        return;
-    }
-    if (!supportsFullscreen()) {
-        exceptionState.throwDOMException(InvalidStateError, "This element does not support fullscreen mode.");
-        return;
-    }
-
-    enterFullscreen();
-}
-
-void HTMLVideoElement::webkitExitFullscreen()
-{
-    if (isFullscreen())
-        exitFullscreen();
-}
-
-bool HTMLVideoElement::webkitSupportsFullscreen()
-{
-    return supportsFullscreen();
-}
-
-bool HTMLVideoElement::webkitDisplayingFullscreen()
-{
-    return isFullscreen();
 }
 
 void HTMLVideoElement::didMoveToNewDocument(Document& oldDocument)

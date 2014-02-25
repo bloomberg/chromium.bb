@@ -1,6 +1,7 @@
 <p>Test for <a href="https://bugs.webkit.org/show_bug.cgi?id=61461">bug 61461</a>: 
-Handle entering full screen security restrictions</p>
-<p>To test manually, click the video "full screen" button - the page should enter full screen mode.</p>
+Handle entering full screen security restrictions.
+Note that the original pass condition has been reversed.</p>
+<p>To test manually, click the video "full screen" button - the page should NOT enter full screen mode.</p>
 <script src="full-screen-test.js"></script>
 <script src="../media/media-file.js"></script>
 <script>
@@ -10,16 +11,15 @@ function canplaythrough() {
 
     runWithKeyDown(function() {
         var video = frame.contentDocument.getElementsByTagName('video')[0];
-        video.webkitEnterFullScreen();
+        video.webkitRequestFullscreen();
     });
 }
 
 function runTest() {
     var frame = document.getElementById('frame');
 
-    waitForEvent(frame.contentDocument, 'webkitfullscreenchange', function() { 
-            test("document.getElementById('frame').contentDocument.width==document.width")
-            endTest();
+    waitForEvent(frame.contentDocument, 'webkitfullscreenerror', function() {
+        endTest();
     });
 
     var video = frame.contentDocument.getElementsByTagName('video')[0];

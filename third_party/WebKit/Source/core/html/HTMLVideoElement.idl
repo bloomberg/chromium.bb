@@ -32,16 +32,6 @@
     readonly attribute unsigned long videoHeight;
     [Reflect, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString poster;
 
-    [DeprecateAs=PrefixedVideoSupportsFullscreen] readonly attribute boolean webkitSupportsFullscreen;
-    [DeprecateAs=PrefixedVideoDisplayingFullscreen] readonly attribute boolean webkitDisplayingFullscreen;
-
-    [DeprecateAs=PrefixedVideoEnterFullscreen, RaisesException, PerWorldBindings, ActivityLogging=ForAllWorlds] void webkitEnterFullscreen();
-    [DeprecateAs=PrefixedVideoExitFullscreen] void webkitExitFullscreen();
-
-    // Note the different capitalization of the "S" in FullScreen.
-    [DeprecateAs=PrefixedVideoEnterFullScreen, ImplementedAs=webkitEnterFullscreen, RaisesException, PerWorldBindings, ActivityLogging=ForAllWorlds] void webkitEnterFullScreen();
-    [DeprecateAs=PrefixedVideoExitFullScreen, ImplementedAs=webkitExitFullscreen] void webkitExitFullScreen();
-
     // The number of frames that have been decoded and made available for
     // playback.
     [MeasureAs=PrefixedVideoDecodedFrameCount] readonly attribute unsigned long webkitDecodedFrameCount;
