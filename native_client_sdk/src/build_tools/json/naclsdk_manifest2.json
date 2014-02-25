@@ -206,12 +206,45 @@
       "version": 30
     },
     {
-      "archives": [],
-      "description": "Chrome 31 bundle, revision xxxxx",
+      "archives": [
+        {
+          "checksum": {
+            "sha1": "c669f3d3a31bcb389d36889151a3af6354b5343f"
+          },
+          "host_os": "all",
+          "size": 76764755,
+          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/31.0.1650.57/naclports.tar.bz2"
+        },
+        {
+          "checksum": {
+            "sha1": "bbd7fad94968b7658b7ad9d1c01f831bc61441d0"
+          },
+          "host_os": "linux",
+          "size": 281391254,
+          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/31.0.1650.57/naclsdk_linux.tar.bz2"
+        },
+        {
+          "checksum": {
+            "sha1": "a0b53095e6a6218ad86dc6b85e76850bb7e51c34"
+          },
+          "host_os": "mac",
+          "size": 248249368,
+          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/31.0.1650.57/naclsdk_mac.tar.bz2"
+        },
+        {
+          "checksum": {
+            "sha1": "6c2032210ff8ddef5db31308216f3e81a3532a5c"
+          },
+          "host_os": "win",
+          "size": 267524603,
+          "url": "https://commondatastorage.googleapis.com/nativeclient-mirror/nacl/nacl_sdk/31.0.1650.57/naclsdk_win.tar.bz2"
+        }
+      ],
+      "description": "Chrome 31 bundle. Chrome revision: 235101. NaCl revision: 12181",
       "name": "pepper_31",
       "recommended": "no",
       "repath": "pepper_31",
-      "revision": 0,
+      "revision": 235101,
       "stability": "post_stable",
       "version": 31
     },
@@ -234,6 +267,16 @@
       "revision": 0,
       "stability": "post_stable",
       "version": 33
+    },
+    {
+      "archives": [],
+      "description": "Chrome 34 bundle, revision xxxxx",
+      "name": "pepper_34",
+      "recommended": "no",
+      "repath": "pepper_34",
+      "revision": 0,
+      "stability": "post_stable",
+      "version": 34
     },
     {
       "archives": [],
