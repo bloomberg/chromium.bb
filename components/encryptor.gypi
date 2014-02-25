@@ -20,6 +20,8 @@
         'encryptor/encryptor_password_mac.h',
         'encryptor/encryptor_password_mac.mm',
         'encryptor/encryptor_posix.cc',
+        'encryptor/encryptor_switches.cc',
+        'encryptor/encryptor_switches.h',
         'encryptor/encryptor_win.cc',
         'encryptor/ie7_password_win.cc',
         'encryptor/ie7_password_win.h',

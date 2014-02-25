@@ -447,7 +447,6 @@ extern const char kDisableSystemFullscreenForTesting[];
 extern const char kEnableSimplifiedFullscreen[];
 extern const char kKeychainReauthorize[];
 extern const char kRelauncherProcess[];
-extern const char kUseMockKeychain[];
 #endif
 
 #if defined(OS_WIN)

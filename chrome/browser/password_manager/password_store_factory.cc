@@ -14,6 +14,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/encryptor/encryptor_switches.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_default.h"
@@ -145,7 +146,8 @@ BrowserContextKeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
                             WebDataService::FromBrowserContext(profile));
 #elif defined(OS_MACOSX)
   crypto::AppleKeychain* keychain =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseMockKeychain) ?
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          encryptor::switches::kUseMockKeychain) ?
           new crypto::MockAppleKeychain() : new crypto::AppleKeychain();
   ps = new PasswordStoreMac(
       main_thread_runner, db_thread_runner, keychain, login_db.release());

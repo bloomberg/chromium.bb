@@ -1598,9 +1598,6 @@ const char kKeychainReauthorize[]           = "keychain-reauthorize";
 // chrome/browser/mac/relauncher.h.
 const char kRelauncherProcess[]             = "relauncher";
 
-// Uses mock keychain for testing purposes, which prevents blocking dialogs
-// from causing timeouts.
-const char kUseMockKeychain[]               = "use-mock-keychain";
 #endif
 
 // Use bubbles for content permissions requests instead of infobars.

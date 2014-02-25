@@ -6,10 +6,12 @@
 
 #include <CommonCrypto/CommonCryptor.h>  // for kCCBlockSizeAES128
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/encryptor/encryptor_password_mac.h"
+#include "components/encryptor/encryptor_switches.h"
 #include "crypto/apple_keychain.h"
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
@@ -40,9 +42,12 @@ const char kEncryptionVersionPrefix[] = "v10";
 // key is passed to the caller.  Returns NULL key in the case password access
 // is denied or key generation error occurs.
 crypto::SymmetricKey* GetEncryptionKey() {
+  static bool mock_keychain_command_line_flag =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          encryptor::switches::kUseMockKeychain);
 
   std::string password;
-  if (use_mock_keychain) {
+  if (use_mock_keychain || mock_keychain_command_line_flag) {
     password = "mock_password";
   } else {
     AppleKeychain keychain;
