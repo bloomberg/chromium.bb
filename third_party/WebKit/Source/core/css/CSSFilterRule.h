@@ -41,7 +41,10 @@ class StyleRuleCSSStyleDeclaration;
 
 class CSSFilterRule FINAL : public CSSRule {
 public:
-    static PassRefPtr<CSSFilterRule> create(StyleRuleFilter* rule, CSSStyleSheet* sheet) { return adoptRef(new CSSFilterRule(rule, sheet)); }
+    static PassRefPtrWillBeRawPtr<CSSFilterRule> create(StyleRuleFilter* rule, CSSStyleSheet* sheet)
+    {
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSFilterRule(rule, sheet));
+    }
 
     virtual ~CSSFilterRule();
 
@@ -50,6 +53,8 @@ public:
     virtual void reattach(StyleRuleBase*) OVERRIDE;
 
     CSSStyleDeclaration* style() const;
+
+    virtual void trace(Visitor* visitor) OVERRIDE { CSSRule::trace(visitor); }
 
 private:
     CSSFilterRule(StyleRuleFilter*, CSSStyleSheet* parent);

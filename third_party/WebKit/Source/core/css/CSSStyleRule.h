@@ -33,7 +33,10 @@ class StyleRule;
 
 class CSSStyleRule FINAL : public CSSRule {
 public:
-    static PassRefPtr<CSSStyleRule> create(StyleRule* rule, CSSStyleSheet* sheet) { return adoptRef(new CSSStyleRule(rule, sheet)); }
+    static PassRefPtrWillBeRawPtr<CSSStyleRule> create(StyleRule* rule, CSSStyleSheet* sheet)
+    {
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSStyleRule(rule, sheet));
+    }
 
     virtual ~CSSStyleRule();
 
@@ -48,6 +51,8 @@ public:
 
     // FIXME: Not CSSOM. Remove.
     StyleRule* styleRule() const { return m_styleRule.get(); }
+
+    virtual void trace(Visitor* visitor) OVERRIDE { CSSRule::trace(visitor); }
 
 private:
     CSSStyleRule(StyleRule*, CSSStyleSheet*);

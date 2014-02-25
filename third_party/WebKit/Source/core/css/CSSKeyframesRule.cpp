@@ -183,9 +183,9 @@ CSSKeyframeRule* CSSKeyframesRule::item(unsigned index) const
         return 0;
 
     ASSERT(m_childRuleCSSOMWrappers.size() == m_keyframesRule->keyframes().size());
-    RefPtr<CSSKeyframeRule>& rule = m_childRuleCSSOMWrappers[index];
+    RefPtrWillBeMember<CSSKeyframeRule>& rule = m_childRuleCSSOMWrappers[index];
     if (!rule)
-        rule = adoptRef(new CSSKeyframeRule(m_keyframesRule->keyframes()[index].get(), const_cast<CSSKeyframesRule*>(this)));
+        rule = adoptRefCountedWillBeRefCountedGarbageCollected(new CSSKeyframeRule(m_keyframesRule->keyframes()[index].get(), const_cast<CSSKeyframesRule*>(this)));
 
     return rule.get();
 }
@@ -201,6 +201,14 @@ void CSSKeyframesRule::reattach(StyleRuleBase* rule)
 {
     ASSERT(rule);
     m_keyframesRule = toStyleRuleKeyframes(rule);
+}
+
+void CSSKeyframesRule::trace(Visitor* visitor)
+{
+    CSSRule::trace(visitor);
+#if ENABLE(OILPAN)
+    m_childRuleCSSOMWrappers.trace(visitor);
+#endif
 }
 
 } // namespace WebCore

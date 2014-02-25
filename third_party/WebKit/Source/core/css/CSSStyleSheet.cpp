@@ -224,7 +224,7 @@ CSSRule* CSSStyleSheet::item(unsigned index)
         m_childRuleCSSOMWrappers.grow(ruleCount);
     ASSERT(m_childRuleCSSOMWrappers.size() == ruleCount);
 
-    RefPtr<CSSRule>& cssRule = m_childRuleCSSOMWrappers[index];
+    RefPtrWillBeMember<CSSRule>& cssRule = m_childRuleCSSOMWrappers[index];
     if (!cssRule) {
         if (index == 0 && m_contents->hasCharsetRule()) {
             ASSERT(!m_contents->ruleAt(0));
@@ -290,7 +290,7 @@ unsigned CSSStyleSheet::insertRule(const String& ruleString, unsigned index, Exc
         return 0;
     }
     if (!m_childRuleCSSOMWrappers.isEmpty())
-        m_childRuleCSSOMWrappers.insert(index, RefPtr<CSSRule>());
+        m_childRuleCSSOMWrappers.insert(index, RefPtrWillBeMember<CSSRule>(nullptr));
 
     return index;
 }

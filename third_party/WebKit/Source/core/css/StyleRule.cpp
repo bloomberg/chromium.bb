@@ -42,12 +42,12 @@ struct SameSizeAsStyleRuleBase : public RefCountedWillBeRefCountedGarbageCollect
 
 COMPILE_ASSERT(sizeof(StyleRuleBase) <= sizeof(SameSizeAsStyleRuleBase), StyleRuleBase_should_stay_small);
 
-PassRefPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet* parentSheet) const
+PassRefPtrWillBeRawPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet* parentSheet) const
 {
     return createCSSOMWrapper(parentSheet, 0);
 }
 
-PassRefPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSRule* parentRule) const
+PassRefPtrWillBeRawPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSRule* parentRule) const
 {
     return createCSSOMWrapper(0, parentRule);
 }
@@ -202,9 +202,9 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> StyleRuleBase::copy() const
     return nullptr;
 }
 
-PassRefPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet* parentSheet, CSSRule* parentRule) const
+PassRefPtrWillBeRawPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet* parentSheet, CSSRule* parentRule) const
 {
-    RefPtr<CSSRule> rule;
+    RefPtrWillBeRawPtr<CSSRule> rule;
     StyleRuleBase* self = const_cast<StyleRuleBase*>(this);
     switch (type()) {
     case Style:

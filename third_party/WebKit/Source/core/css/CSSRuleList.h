@@ -22,6 +22,7 @@
 #ifndef CSSRuleList_h
 #define CSSRuleList_h
 
+#include "heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
@@ -55,7 +56,7 @@ public:
     virtual void ref() OVERRIDE { ++m_refCount; }
     virtual void deref() OVERRIDE;
 
-    Vector<RefPtr<CSSRule> >& rules() { return m_rules; }
+    WillBePersistentHeapVector<RefPtrWillBeMember<CSSRule> >& rules() { return m_rules; }
 
     virtual CSSStyleSheet* styleSheet() const OVERRIDE { return 0; }
 
@@ -66,7 +67,7 @@ private:
     virtual unsigned length() const OVERRIDE { return m_rules.size(); }
     virtual CSSRule* item(unsigned index) const OVERRIDE { return index < m_rules.size() ? m_rules[index].get() : 0; }
 
-    Vector<RefPtr<CSSRule> > m_rules;
+    WillBePersistentHeapVector<RefPtrWillBeMember<CSSRule> > m_rules;
     unsigned m_refCount;
 };
 
@@ -84,6 +85,12 @@ private:
     virtual CSSRule* item(unsigned index) const OVERRIDE { return m_rule->item(index); }
     virtual CSSStyleSheet* styleSheet() const OVERRIDE { return m_rule->parentStyleSheet(); }
 
+    // FIXME: oilpan: This is always a subclass of CSSRule, so it should be
+    // RawPtrWillBeMember<Rule>, but that would leak right now in Oilpan mode:
+    // m_ruleListCSSOMWrapper is an OwnPtr pointing at CSSRuleList, which is a
+    // superclass of this class, and this points at things that have an
+    // m_ruleListCSSOMWrapper field. When LiveCSSRuleList is moved to the GCed
+    // heap, this can be fixed.
     Rule* m_rule;
 };
 

@@ -34,6 +34,7 @@ public:
     virtual CSSRule::Type type() const OVERRIDE { return UNKNOWN_RULE; }
     virtual String cssText() const OVERRIDE { return String(); }
     virtual void reattach(StyleRuleBase*) OVERRIDE { }
+    virtual void trace(Visitor* visitor) OVERRIDE { CSSRule::trace(visitor); }
 };
 
 } // namespace WebCore

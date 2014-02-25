@@ -77,8 +77,8 @@ public:
 #endif // !ENABLE(OILPAN)
 
     // FIXME: There shouldn't be any need for the null parent version.
-    PassRefPtr<CSSRule> createCSSOMWrapper(CSSStyleSheet* parentSheet = 0) const;
-    PassRefPtr<CSSRule> createCSSOMWrapper(CSSRule* parentRule) const;
+    PassRefPtrWillBeRawPtr<CSSRule> createCSSOMWrapper(CSSStyleSheet* parentSheet = 0) const;
+    PassRefPtrWillBeRawPtr<CSSRule> createCSSOMWrapper(CSSRule* parentRule) const;
 
     void trace(Visitor*);
     void traceAfterDispatch(Visitor*) { };
@@ -93,7 +93,7 @@ protected:
 private:
     void destroy();
 
-    PassRefPtr<CSSRule> createCSSOMWrapper(CSSStyleSheet* parentSheet, CSSRule* parentRule) const;
+    PassRefPtrWillBeRawPtr<CSSRule> createCSSOMWrapper(CSSStyleSheet* parentSheet, CSSRule* parentRule) const;
 
     unsigned m_type : 5;
 };

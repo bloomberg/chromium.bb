@@ -38,6 +38,7 @@
 #include "wtf/Locker.h"
 #include "wtf/RawPtr.h"
 #include "wtf/RefCounted.h"
+#include "wtf/TypeTraits.h"
 
 namespace WebCore {
 

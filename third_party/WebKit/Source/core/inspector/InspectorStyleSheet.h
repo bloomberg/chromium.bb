@@ -29,6 +29,7 @@
 #include "core/css/CSSPropertySourceData.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/inspector/InspectorStyleTextEditor.h"
+#include "heap/Handle.h"
 #include "platform/JSONValues.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
@@ -51,7 +52,7 @@ class InspectorPageAgent;
 class InspectorResourceAgent;
 class InspectorStyleSheet;
 
-typedef Vector<RefPtr<CSSRule> > CSSRuleVector;
+typedef WillBePersistentHeapVector<RefPtrWillBeMember<CSSRule> > CSSRuleVector;
 typedef String ErrorString;
 
 class InspectorCSSId {

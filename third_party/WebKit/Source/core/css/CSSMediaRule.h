@@ -32,7 +32,10 @@ class StyleRuleMedia;
 
 class CSSMediaRule FINAL : public CSSGroupingRule {
 public:
-    static PassRefPtr<CSSMediaRule> create(StyleRuleMedia* rule, CSSStyleSheet* sheet) { return adoptRef(new CSSMediaRule(rule, sheet)); }
+    static PassRefPtrWillBeRawPtr<CSSMediaRule> create(StyleRuleMedia* rule, CSSStyleSheet* sheet)
+    {
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSMediaRule(rule, sheet));
+    }
 
     virtual ~CSSMediaRule();
 
@@ -41,6 +44,8 @@ public:
     virtual String cssText() const OVERRIDE;
 
     MediaList* media() const;
+
+    virtual void trace(Visitor* visitor) OVERRIDE { CSSGroupingRule::trace(visitor); }
 
 private:
     CSSMediaRule(StyleRuleMedia*, CSSStyleSheet*);

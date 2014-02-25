@@ -34,7 +34,10 @@ class StyleRuleImport;
 
 class CSSImportRule FINAL : public CSSRule {
 public:
-    static PassRefPtr<CSSImportRule> create(StyleRuleImport* rule, CSSStyleSheet* sheet) { return adoptRef(new CSSImportRule(rule, sheet)); }
+    static PassRefPtrWillBeRawPtr<CSSImportRule> create(StyleRuleImport* rule, CSSStyleSheet* sheet)
+    {
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSImportRule(rule, sheet));
+    }
 
     virtual ~CSSImportRule();
 
@@ -45,6 +48,8 @@ public:
     String href() const;
     MediaList* media() const;
     CSSStyleSheet* styleSheet() const;
+
+    virtual void trace(Visitor* visitor) OVERRIDE { CSSRule::trace(visitor); }
 
 private:
     CSSImportRule(StyleRuleImport*, CSSStyleSheet*);

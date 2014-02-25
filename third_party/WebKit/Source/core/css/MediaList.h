@@ -107,6 +107,7 @@ private:
 
     RefPtrWillBeMember<MediaQuerySet> m_mediaQueries;
     CSSStyleSheet* m_parentStyleSheet;
+    // Cleared in the ~CSSMediaRule and ~CSSImportRule destructors.
     CSSRule* m_parentRule;
 };
 

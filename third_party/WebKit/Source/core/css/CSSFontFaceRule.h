@@ -33,7 +33,10 @@ class StyleRuleCSSStyleDeclaration;
 
 class CSSFontFaceRule FINAL : public CSSRule {
 public:
-    static PassRefPtr<CSSFontFaceRule> create(StyleRuleFontFace* rule, CSSStyleSheet* sheet) { return adoptRef(new CSSFontFaceRule(rule, sheet)); }
+    static PassRefPtrWillBeRawPtr<CSSFontFaceRule> create(StyleRuleFontFace* rule, CSSStyleSheet* sheet)
+    {
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSFontFaceRule(rule, sheet));
+    }
 
     virtual ~CSSFontFaceRule();
 
@@ -44,6 +47,8 @@ public:
     CSSStyleDeclaration* style() const;
 
     StyleRuleFontFace* styleRule() const { return m_fontFaceRule.get(); }
+
+    virtual void trace(Visitor* visitor) OVERRIDE { CSSRule::trace(visitor); }
 
 private:
     CSSFontFaceRule(StyleRuleFontFace*, CSSStyleSheet* parent);

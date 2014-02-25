@@ -34,7 +34,10 @@ class StyleRuleCSSStyleDeclaration;
 
 class CSSPageRule FINAL : public CSSRule {
 public:
-    static PassRefPtr<CSSPageRule> create(StyleRulePage* rule, CSSStyleSheet* sheet) { return adoptRef(new CSSPageRule(rule, sheet)); }
+    static PassRefPtrWillBeRawPtr<CSSPageRule> create(StyleRulePage* rule, CSSStyleSheet* sheet)
+    {
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSPageRule(rule, sheet));
+    }
 
     virtual ~CSSPageRule();
 
@@ -46,6 +49,8 @@ public:
 
     String selectorText() const;
     void setSelectorText(const String&);
+
+    virtual void trace(Visitor* visitor) OVERRIDE { CSSRule::trace(visitor); }
 
 private:
     CSSPageRule(StyleRulePage*, CSSStyleSheet*);

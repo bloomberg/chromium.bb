@@ -30,9 +30,9 @@ class ExceptionState;
 
 class CSSCharsetRule FINAL : public CSSRule {
 public:
-    static PassRefPtr<CSSCharsetRule> create(CSSStyleSheet* parent, const String& encoding)
+    static PassRefPtrWillBeRawPtr<CSSCharsetRule> create(CSSStyleSheet* parent, const String& encoding)
     {
-        return adoptRef(new CSSCharsetRule(parent, encoding));
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSCharsetRule(parent, encoding));
     }
 
     virtual ~CSSCharsetRule() { }
@@ -43,6 +43,8 @@ public:
 
     const String& encoding() const { return m_encoding; }
     void setEncoding(const String& encoding) { m_encoding = encoding; }
+
+    virtual void trace(Visitor* visitor) OVERRIDE { CSSRule::trace(visitor); }
 
 private:
     CSSCharsetRule(CSSStyleSheet* parent, const String& encoding);

@@ -48,7 +48,7 @@ struct WrapperTypeInfo;
         template<typename V8T, typename T>
         static inline v8::Handle<v8::Object> associateObjectWithWrapper(PassRefPtr<T>, const WrapperTypeInfo*, v8::Handle<v8::Object>, v8::Isolate*, WrapperConfiguration::Lifetime);
         template<typename V8T, typename T>
-        static inline v8::Handle<v8::Object> associateObjectWithWrapper(RawPtr<T>, const WrapperTypeInfo*, v8::Handle<v8::Object>, v8::Isolate*, WrapperConfiguration::Lifetime);
+        static inline v8::Handle<v8::Object> associateObjectWithWrapper(RawPtr<T> object, const WrapperTypeInfo* type, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate, WrapperConfiguration::Lifetime lifetime) { return associateObjectWithWrapper<V8T, T>(object.get(), type, wrapper, isolate, lifetime); }
         template<typename V8T, typename T>
         static inline v8::Handle<v8::Object> associateObjectWithWrapper(T*, const WrapperTypeInfo*, v8::Handle<v8::Object>, v8::Isolate*, WrapperConfiguration::Lifetime);
         static inline void setNativeInfo(v8::Handle<v8::Object>, const WrapperTypeInfo*, void*);
@@ -103,12 +103,12 @@ struct WrapperTypeInfo;
     }
 
     template<typename V8T, typename T>
-    inline v8::Handle<v8::Object> V8DOMWrapper::associateObjectWithWrapper(RawPtr<T> object, const WrapperTypeInfo* type, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate, WrapperConfiguration::Lifetime lifetime)
+    inline v8::Handle<v8::Object> V8DOMWrapper::associateObjectWithWrapper(T* object, const WrapperTypeInfo* type, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate, WrapperConfiguration::Lifetime lifetime)
     {
-        setNativeInfoWithPersistentHandle(wrapper, type, V8T::toInternalPointer(object.get()), new Persistent<T>(object));
+        setNativeInfoWithPersistentHandle(wrapper, type, V8T::toInternalPointer(object), new Persistent<T>(object));
         ASSERT(isDOMWrapper(wrapper));
-        WrapperConfiguration configuration = buildWrapperConfiguration(object.get(), lifetime);
-        DOMDataStore::setWrapper<V8T>(object.get(), wrapper, isolate, configuration);
+        WrapperConfiguration configuration = buildWrapperConfiguration(object, lifetime);
+        DOMDataStore::setWrapper<V8T>(object, wrapper, isolate, configuration);
         return wrapper;
     }
 

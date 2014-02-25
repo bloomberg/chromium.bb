@@ -47,13 +47,15 @@ public:
     unsigned length() const;
     CSSRule* item(unsigned index) const;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 protected:
     CSSGroupingRule(StyleRuleGroup* groupRule, CSSStyleSheet* parent);
 
     void appendCSSTextForItems(StringBuilder&) const;
 
     RefPtrWillBePersistent<StyleRuleGroup> m_groupRule;
-    mutable Vector<RefPtr<CSSRule> > m_childRuleCSSOMWrappers;
+    mutable WillBeHeapVector<RefPtrWillBeMember<CSSRule> > m_childRuleCSSOMWrappers;
     mutable OwnPtr<CSSRuleList> m_ruleListCSSOMWrapper;
 };
 

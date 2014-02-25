@@ -54,6 +54,7 @@ public:
         : m_ptr(other.get())
     {
     }
+
     template<typename U>
     RawPtr(const RawPtr<U>& other)
         : m_ptr(other.get())
@@ -99,6 +100,7 @@ public:
     operator T*() const { return m_ptr; }
     T& operator*() const { return *m_ptr; }
     T* operator->() const { return m_ptr; }
+    bool operator!() const { return !m_ptr; }
 
     void swap(RawPtr& o)
     {

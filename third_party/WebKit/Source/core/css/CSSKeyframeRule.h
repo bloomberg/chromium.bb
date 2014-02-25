@@ -85,6 +85,8 @@ public:
 
     CSSStyleDeclaration* style() const;
 
+    virtual void trace(Visitor* visitor) OVERRIDE { CSSRule::trace(visitor); }
+
 private:
     CSSKeyframeRule(StyleKeyframe*, CSSKeyframesRule* parent);
 

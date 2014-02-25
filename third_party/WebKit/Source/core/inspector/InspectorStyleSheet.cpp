@@ -455,7 +455,7 @@ static PassRefPtr<CSSRuleList> asCSSRuleList(CSSStyleSheet* styleSheet)
         return nullptr;
 
     RefPtr<StaticCSSRuleList> list = StaticCSSRuleList::create();
-    Vector<RefPtr<CSSRule> >& listRules = list->rules();
+    WillBePersistentHeapVector<RefPtrWillBeMember<CSSRule> >& listRules = list->rules();
     for (unsigned i = 0, size = styleSheet->length(); i < size; ++i) {
         CSSRule* item = styleSheet->item(i);
         if (item->type() == CSSRule::CHARSET_RULE)
@@ -1084,7 +1084,7 @@ bool InspectorStyleSheet::deleteRule(const InspectorCSSId& id, ExceptionState& e
 {
     if (!checkPageStyleSheet(exceptionState))
         return false;
-    RefPtr<CSSStyleRule> rule = ruleForId(id);
+    RefPtrWillBeRawPtr<CSSStyleRule> rule = ruleForId(id);
     if (!rule) {
         exceptionState.throwDOMException(NotFoundError, "No style rule could be found for the provided ID.");
         return false;

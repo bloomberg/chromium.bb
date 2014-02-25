@@ -29,7 +29,7 @@
 
 namespace WebCore {
 
-struct SameSizeAsCSSRule : public RefCounted<SameSizeAsCSSRule> {
+struct SameSizeAsCSSRule : public RefCountedWillBeRefCountedGarbageCollected<SameSizeAsCSSRule> {
     virtual ~SameSizeAsCSSRule();
     unsigned char bitfields;
     void* pointerUnion;
@@ -48,6 +48,15 @@ const CSSParserContext& CSSRule::parserContext() const
 {
     CSSStyleSheet* styleSheet = parentStyleSheet();
     return styleSheet ? styleSheet->contents()->parserContext() : strictCSSParserContext();
+}
+
+void CSSRule::trace(Visitor* visitor)
+{
+    // This makes the parent link strong, which is different from the
+    // pre-oilpan world, where the parent link is mysteriously zeroed under
+    // some circumstances.
+    if (m_parentIsRule)
+        visitor->trace(m_parentRule);
 }
 
 } // namespace WebCore

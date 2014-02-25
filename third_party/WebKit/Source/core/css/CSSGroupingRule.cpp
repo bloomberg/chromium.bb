@@ -86,7 +86,7 @@ unsigned CSSGroupingRule::insertRule(const String& ruleString, unsigned index, E
 
     m_groupRule->wrapperInsertRule(index, newRule);
 
-    m_childRuleCSSOMWrappers.insert(index, RefPtr<CSSRule>());
+    m_childRuleCSSOMWrappers.insert(index, RefPtrWillBeMember<CSSRule>(nullptr));
     return index;
 }
 
@@ -128,7 +128,7 @@ CSSRule* CSSGroupingRule::item(unsigned index) const
     if (index >= length())
         return 0;
     ASSERT(m_childRuleCSSOMWrappers.size() == m_groupRule->childRules().size());
-    RefPtr<CSSRule>& rule = m_childRuleCSSOMWrappers[index];
+    RefPtrWillBeMember<CSSRule>& rule = m_childRuleCSSOMWrappers[index];
     if (!rule)
         rule = m_groupRule->childRules()[index]->createCSSOMWrapper(const_cast<CSSGroupingRule*>(this));
     return rule.get();
@@ -149,6 +149,14 @@ void CSSGroupingRule::reattach(StyleRuleBase* rule)
         if (m_childRuleCSSOMWrappers[i])
             m_childRuleCSSOMWrappers[i]->reattach(m_groupRule->childRules()[i].get());
     }
+}
+
+void CSSGroupingRule::trace(Visitor* visitor)
+{
+    CSSRule::trace(visitor);
+#if ENABLE(OILPAN)
+    visitor->trace(m_childRuleCSSOMWrappers);
+#endif
 }
 
 } // namespace WebCore

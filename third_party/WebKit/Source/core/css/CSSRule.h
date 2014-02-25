@@ -23,6 +23,8 @@
 #ifndef CSSRule_h
 #define CSSRule_h
 
+#include "heap/Handle.h"
+#include "heap/Visitor.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
@@ -32,7 +34,10 @@ class CSSParserContext;
 class CSSStyleSheet;
 class StyleRuleBase;
 
-class CSSRule : public RefCounted<CSSRule> {
+// FIXME: oilpan: CSSRuleList redirects increments and decrements of its
+// reference counts to its CSSRule. That means this has to be
+// RefCountedGarbageCollected instead of just GarbageCollected for now.
+class CSSRule : public RefCountedWillBeRefCountedGarbageCollected<CSSRule> {
 public:
     virtual ~CSSRule() { }
 
@@ -72,6 +77,8 @@ public:
         m_parentRule = rule;
     }
 
+    virtual void trace(Visitor*);
+
     CSSStyleSheet* parentStyleSheet() const
     {
         if (m_parentIsRule)
@@ -102,7 +109,7 @@ private:
     unsigned char m_parentIsRule : 1;
 
     union {
-        CSSRule* m_parentRule;
+        CSSRule* m_parentRule; // Should be Member, but no Members in unions.
         CSSStyleSheet* m_parentStyleSheet;
     };
 };

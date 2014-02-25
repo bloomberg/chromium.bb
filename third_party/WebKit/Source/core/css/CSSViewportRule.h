@@ -42,9 +42,9 @@ class StyleRuleCSSStyleDeclaration;
 
 class CSSViewportRule FINAL: public CSSRule {
 public:
-    static PassRefPtr<CSSViewportRule> create(StyleRuleViewport* viewportRule, CSSStyleSheet* sheet)
+    static PassRefPtrWillBeRawPtr<CSSViewportRule> create(StyleRuleViewport* viewportRule, CSSStyleSheet* sheet)
     {
-        return adoptRef(new CSSViewportRule(viewportRule, sheet));
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSViewportRule(viewportRule, sheet));
     }
     virtual ~CSSViewportRule();
 
@@ -53,6 +53,8 @@ public:
     virtual void reattach(StyleRuleBase*) OVERRIDE;
 
     CSSStyleDeclaration* style() const;
+
+    virtual void trace(Visitor* visitor) OVERRIDE { CSSRule::trace(visitor); }
 
 private:
     CSSViewportRule(StyleRuleViewport*, CSSStyleSheet*);

@@ -218,7 +218,11 @@ void ElementRuleCollector::appendCSSOMWrapperForRule(CSSStyleSheet* parentStyleS
     // |parentStyleSheet| is 0 if and only if the |rule| is coming from User Agent. In this case,
     // it is safe to create CSSOM wrappers without parentStyleSheets as they will be used only
     // by inspector which will not try to edit them.
-    RefPtr<CSSRule> cssRule = parentStyleSheet ? findStyleRule(parentStyleSheet, rule) : rule->createCSSOMWrapper();
+    RefPtrWillBeRawPtr<CSSRule> cssRule;
+    if (parentStyleSheet)
+        cssRule = findStyleRule(parentStyleSheet, rule);
+    else
+        cssRule = rule->createCSSOMWrapper();
     ASSERT(!parentStyleSheet || cssRule);
     ensureRuleList()->rules().append(cssRule);
 }

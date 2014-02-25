@@ -74,7 +74,10 @@ DEFINE_STYLE_RULE_TYPE_CASTS(Keyframes);
 
 class CSSKeyframesRule FINAL : public CSSRule {
 public:
-    static PassRefPtr<CSSKeyframesRule> create(StyleRuleKeyframes* rule, CSSStyleSheet* sheet) { return adoptRef(new CSSKeyframesRule(rule, sheet)); }
+    static PassRefPtrWillBeRawPtr<CSSKeyframesRule> create(StyleRuleKeyframes* rule, CSSStyleSheet* sheet)
+    {
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSKeyframesRule(rule, sheet));
+    }
 
     virtual ~CSSKeyframesRule();
 
@@ -98,11 +101,13 @@ public:
     bool isVendorPrefixed() const { return m_isPrefixed; }
     void setVendorPrefixed(bool isPrefixed) { m_isPrefixed = isPrefixed; }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     CSSKeyframesRule(StyleRuleKeyframes*, CSSStyleSheet* parent);
 
     RefPtrWillBePersistent<StyleRuleKeyframes> m_keyframesRule;
-    mutable Vector<RefPtr<CSSKeyframeRule> > m_childRuleCSSOMWrappers;
+    mutable WillBeHeapVector<RefPtrWillBeMember<CSSKeyframeRule> > m_childRuleCSSOMWrappers;
     mutable OwnPtr<CSSRuleList> m_ruleListCSSOMWrapper;
     bool m_isPrefixed;
 };

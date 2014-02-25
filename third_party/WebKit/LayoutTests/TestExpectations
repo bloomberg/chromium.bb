@@ -1310,3 +1310,7 @@ crbug.com/339373 http/tests/websocket/zero-length-text.html [ Skip ]
 crbug.com/327581 http/tests/inspector/websocket/websocket-handshake.html [ Skip ]
 
 crbug.com/339778 [ Debug ] fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
+
+# Temporary until the oilpan test bots understand the special oilpan test expectations
+crbug.com/345630 fast/dom/StyleSheet/gc-parent-rule.html [ Failure Pass ]
+crbug.com/345655 fast/dom/StyleSheet/detached-parent-rule-without-wrapper.html [ Failure Pass ]

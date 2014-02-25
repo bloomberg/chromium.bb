@@ -38,9 +38,9 @@ class StyleRuleSupports;
 
 class CSSSupportsRule FINAL : public CSSGroupingRule {
 public:
-    static PassRefPtr<CSSSupportsRule> create(StyleRuleSupports* rule, CSSStyleSheet* sheet)
+    static PassRefPtrWillBeRawPtr<CSSSupportsRule> create(StyleRuleSupports* rule, CSSStyleSheet* sheet)
     {
-        return adoptRef(new CSSSupportsRule(rule, sheet));
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSSupportsRule(rule, sheet));
     }
 
     virtual ~CSSSupportsRule() { }
@@ -49,6 +49,8 @@ public:
     virtual String cssText() const OVERRIDE;
 
     String conditionText() const;
+
+    virtual void trace(Visitor* visitor) OVERRIDE { CSSGroupingRule::trace(visitor); }
 
 private:
     CSSSupportsRule(StyleRuleSupports*, CSSStyleSheet*);
