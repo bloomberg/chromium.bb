@@ -81,8 +81,6 @@ private:
 
 class MockScrollAnimatorNone : public ScrollAnimatorNone {
 public:
-    MockScrollAnimatorNone()
-        : ScrollAnimatorNone(new MockScrollableArea(true)) { }
     MockScrollAnimatorNone(ScrollableArea* scrollableArea)
         : ScrollAnimatorNone(scrollableArea) { }
 
@@ -181,7 +179,9 @@ class ScrollAnimatorNoneTest : public testing::Test {
 public:
     struct SavePerAxisData : public ScrollAnimatorNone::PerAxisData {
         SavePerAxisData(const ScrollAnimatorNone::PerAxisData& data)
-            : ScrollAnimatorNone::PerAxisData(&m_mockScrollAnimatorNone, 0, 768)
+            : m_mockScrollableArea(true)
+            , m_mockScrollAnimatorNone(&m_mockScrollableArea)
+            , ScrollAnimatorNone::PerAxisData(&m_mockScrollAnimatorNone, 0, 768)
         {
             this->m_currentVelocity = data.m_currentVelocity;
             this->m_desiredPosition = data.m_desiredPosition;
@@ -203,10 +203,13 @@ public:
         {
             return m_currentVelocity == other.m_currentVelocity && m_desiredPosition == other.m_desiredPosition && m_desiredVelocity == other.m_desiredVelocity && m_startPosition == other.m_startPosition && m_startTime == other.m_startTime && m_startVelocity == other.m_startVelocity && m_animationTime == other.m_animationTime && m_lastAnimationTime == other.m_lastAnimationTime && m_attackPosition == other.m_attackPosition && m_attackTime == other.m_attackTime && m_attackCurve == other.m_attackCurve && m_releasePosition == other.m_releasePosition && m_releaseTime == other.m_releaseTime && m_releaseCurve == other.m_releaseCurve;
         }
+        MockScrollableArea m_mockScrollableArea;
         MockScrollAnimatorNone m_mockScrollAnimatorNone;
     };
 
     ScrollAnimatorNoneTest()
+        : m_mockScrollableArea(true)
+        , m_mockScrollAnimatorNone(&m_mockScrollableArea)
     {
     }
 
@@ -241,6 +244,7 @@ public:
     static double kStartTime;
     static double kEndTime;
     float m_currentPosition;
+    MockScrollableArea m_mockScrollableArea;
     MockScrollAnimatorNone m_mockScrollAnimatorNone;
     bool m_scrollingDown;
     ScrollAnimatorNone::PerAxisData* m_data;

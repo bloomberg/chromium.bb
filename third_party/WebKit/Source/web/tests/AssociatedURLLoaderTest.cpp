@@ -120,9 +120,9 @@ public:
         Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
     }
 
-    WebURLLoader* createAssociatedURLLoader(const WebURLLoaderOptions options = WebURLLoaderOptions())
+    PassOwnPtr<WebURLLoader> createAssociatedURLLoader(const WebURLLoaderOptions options = WebURLLoaderOptions())
     {
-        return mainFrame()->createAssociatedURLLoader(options);
+        return adoptPtr(mainFrame()->createAssociatedURLLoader(options));
     }
 
     // WebURLLoaderClient implementation.
@@ -276,7 +276,7 @@ protected:
     WTF::String m_frameFilePath;
     FrameTestHelpers::WebViewHelper m_helper;
 
-    WebURLLoader* m_expectedLoader;
+    OwnPtr<WebURLLoader> m_expectedLoader;
     WebURLResponse m_actualResponse;
     WebURLResponse m_expectedResponse;
     WebURLRequest m_expectedNewRequest;

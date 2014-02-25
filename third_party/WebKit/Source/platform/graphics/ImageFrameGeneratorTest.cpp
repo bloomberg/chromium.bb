@@ -115,7 +115,9 @@ protected:
     PassOwnPtr<ScaledImageFragment> decode(size_t index)
     {
         ImageDecoder* decoder = 0;
-        return m_generator->decode(index, &decoder);
+        OwnPtr<ScaledImageFragment> fragment = m_generator->decode(index, &decoder);
+        delete decoder;
+        return fragment.release();
     }
 
     RefPtr<SharedBuffer> m_data;
