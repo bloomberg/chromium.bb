@@ -95,7 +95,6 @@ cr.define('speech', function() {
   SpeechManager.prototype.onHotwordRecognized_ = function(confidence) {
     if (this.state != SpeechState.HOTWORD_RECOGNIZING)
       return;
-    this.setState_(SpeechState.READY);
     this.pluginManager_.stopRecognizer();
     this.speechRecognitionManager_.start();
   };
