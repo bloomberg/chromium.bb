@@ -72,18 +72,9 @@ void RasterizeAndRecordBenchmark::RecordRasterResults(
 
   base::DictionaryValue* results = NULL;
   results_value->GetAsDictionary(&results);
-
   DCHECK(results);
-  DCHECK(results->HasKey("pixels_rasterized"));
-  DCHECK(results->HasKey("rasterize_time_ms"));
 
-  int pixels_rasterized;
-  results->GetInteger("pixels_rasterized", &pixels_rasterized);
-  double rasterize_time_ms;
-  results->GetDouble("rasterize_time_ms", &rasterize_time_ms);
-
-  results_->SetInteger("pixels_rasterized", pixels_rasterized);
-  results_->SetDouble("rasterize_time_ms", rasterize_time_ms);
+  results_->MergeDictionary(results);
 
   NotifyDone(results_.PassAs<base::Value>());
 }

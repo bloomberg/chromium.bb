@@ -30,6 +30,9 @@ class RasterizeAndRecordMicro(page_measurement.PageMeasurement):
                       default=120,
                       help='The length of time to wait for the micro ' +
                       'benchmark to finish, expressed in seconds.')
+    parser.add_option('--report-detailed-results',
+                      action='store_true',
+                      help='Whether to report additional detailed results.')
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs([
@@ -98,7 +101,31 @@ class RasterizeAndRecordMicro(page_measurement.PageMeasurement):
     pixels_rasterized = data['pixels_rasterized']
     rasterize_time = data['rasterize_time_ms']
 
-    results.Add('pixels_recorded', '', pixels_recorded)
+    results.Add('pixels_recorded', 'pixels', pixels_recorded)
     results.Add('record_time', 'ms', record_time)
-    results.Add('pixels_rasterized', '', pixels_rasterized)
+    results.Add('pixels_rasterized', 'pixels', pixels_rasterized)
     results.Add('rasterize_time', 'ms', rasterize_time)
+
+    if self.options.report_detailed_results:
+      pixels_rasterized_with_non_solid_color = \
+          data['pixels_rasterized_with_non_solid_color']
+      pixels_rasterized_as_opaque = \
+          data['pixels_rasterized_as_opaque']
+      total_layers = data['total_layers']
+      total_picture_layers = data['total_picture_layers']
+      total_picture_layers_with_no_content = \
+          data['total_picture_layers_with_no_content']
+      total_picture_layers_off_screen = \
+          data['total_picture_layers_off_screen']
+
+      results.Add('pixels_rasterized_with_non_solid_color', 'pixels',
+          pixels_rasterized_with_non_solid_color)
+      results.Add('pixels_rasterized_as_opaque', 'pixels',
+          pixels_rasterized_as_opaque)
+      results.Add('total_layers', 'count', total_layers)
+      results.Add('total_picture_layers', 'count', total_picture_layers)
+      results.Add('total_picture_layers_with_no_content', 'count',
+          total_picture_layers_with_no_content)
+      results.Add('total_picture_layers_off_screen', 'count',
+          total_picture_layers_off_screen)
+
