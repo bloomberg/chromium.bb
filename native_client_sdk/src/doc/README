@@ -14,8 +14,10 @@ documentation. Some of the files and directories here are special:
 * _static/: Static files, like CSS, for the documentation. This should be seen
   as part of the infrastructure - the real CSS comes from the real doc
   publishing server.
-* _build/: Build artifacts (not checked into source control).
+* doxygen/: Contains scripts for building doxygen docs.
 * Makefile & README
+
+All output is written to native_client_sdk/doc_generated/...
 
 How to build
 ------------
@@ -23,39 +25,16 @@ How to build
 To build the docs you will needs sphinx installed (and sphinx-build in your
 path). On debian/ubuntu this command is part of the ``python-sphinx`` package.
 
-There are many different output formats that can be generated using the targets
-in the included Makefile.  The three most commonly used ones are ``devsite``,
-``devsite-prod`` and ``devsite-staging``.
-
-The ``devsite`` configuration is for generating docs for local viewing and is
-also the default make target.  To build this config simply run::
+There are two primary make targets: ``chromesite`` and ``chromesite_rst``. The
+``chromesite`` target will build all documentation, including the doxygen docs.
+This usually takes about a minute. To build this config, run::
 
   make
 
-To rebuild all the pages always, add ``SPHINXOPTS=-a``, e.g.::
+The ``chromesite_rst`` target will only build the ReST docs. This is usually
+much faster. The default target is ``chromesite``. To build this config, run::
 
-  make SPHINXOPTS=-a
-
-To emit docs suitable for pushing to production use::
-
-  make devsite-prod
-
-Note that "production use" (and the staging target) are closely tied to the
-Google documentation infrastructure, so it will be of very limited use outside
-Google. Links to related documents here can be google.com specific. Production
-mode contains devsite-specific templating and non-HTML constructs. The
-``devsite-staging`` target is exactly the same except that the html pages are
-all rooted under a folder called $USER, which allows each user to stage his own
-copy of the docs.
-
-When building in production mode you can specify the name of the subfolder in
-which the docs are rooted by specifying ``SPHINXOPTS=-Ddevsite_foldername=``.
-For example::
-
-  make devsite-prod SPHINXOPTS=-Ddevsite_foldername=pepper_32
-
-See https://sites.google.com/a/google.com/nativeclient/documents/how-to-update-developer-documentation#TOC-Staging-ReStructuredText-output-on-devsite
-for more information on staging.
+  make chromesite_rst
 
 Local HTTP server to view the docs
 ----------------------------------
@@ -68,7 +47,7 @@ run::
 This will start a webserver on the local machine, and allows the pages
 to be viewed by in a browser by navigating to::
 
-  http://localhost:8009/
+  http://localhost:8000/native-client
 
 Serving through a server and not just file:/// because this way the <link>
 relative paths to CSS actually work.

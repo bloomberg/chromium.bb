@@ -2,18 +2,9 @@
 
 :orphan:
 
-####################################################
-Examples of ReST markup for devsite (Document title)
-####################################################
-
-This is an auto-generated table of contents for this document. ``:local:`` and
-``:backlinks: none`` are required to make the devsite look consistent;
-``:depth:`` level can be controlled.
-
-.. contents::
-  :local:
-  :backlinks: none
-  :depth: 2
+#######################################################
+Examples of ReST markup for chromesite (Document title)
+#######################################################
 
 Document structure
 ==================
@@ -21,9 +12,6 @@ Document structure
 A document starts with a Sphinx target which serves as the document name
 throughout the tree. It can serve as a link target in other documents that want
 to link to this one (see the Links section below).
-
-It follows with the document title (which doesn't get generated to the HTML body
-in production mode, but is picked up by the devsite from ``<head><title>``.
 
 Basic markup
 ============
@@ -67,8 +55,8 @@ To other documents within the tree
 ----------------------------------
 
 Internal links to other documents are created :doc:`like this <overview>`. The
-document name within the angle brackets is relative to the root dir of the
-devsite doc tree and does not have an extension.
+document name within the angle brackets is relative to the root dir of the doc
+tree and does not have an extension.
 
 Here's a link to a document in a subdirectory: :doc:`the tutorial
 <devguide/tutorial/tutorial-part1>`. And a link to a subdirectory index page
@@ -96,7 +84,7 @@ Definition lists
 
 Can be used to define a group of related terms. Internal formatting is supported
 within the definition. No special formatting needs to be done for the definition
-name/title - it's handled by the devsite.
+name/title - it's handled by the chromesite documentation server.
 
 Apple
   The apple is the pomaceous fruit of the apple tree, species Malus domestica in
@@ -112,9 +100,9 @@ Pear
 Notes and Admonitions
 =====================
 
-The devsite supports special "notes" that are indented and have a background
-color. We'll generate them with the ``Note`` directive, providing the class
-explicitly. The class is one of  ``note``, ``caution``, ``warning``,
+The documentation server supports special "notes" that are indented and have a
+background color. We'll generate them with the ``Note`` directive, providing
+the class explicitly. The class is one of  ``note``, ``caution``, ``warning``,
 ``special``.
 
 .. Note::
@@ -134,9 +122,8 @@ Also:
 Source code
 ===========
 
-Here's source code that will be pretty-printed on the devsite. Outside
-production mode, it's just a plain ``<pre>`` that presents pre-formatted code
-without coloring:
+Here's source code that will be pretty-printed. It's just a plain ``<pre>``
+that presents pre-formatted code with coloring:
 
 .. naclcode::
 
@@ -184,20 +171,6 @@ Sub-sub-subsection heading
 """"""""""""""""""""""""""
 
 It's probably not the best idea to go this far (renders to ``<h5>``).
-
-Expandable sections
-===================
-
-The devsite can render expandable sections when a special ``class`` is applied.
-This can be achieved by specifying the ``rst-class`` immediately before a
-section (or any other element), as follows:
-
-.. rst-class:: expandable
-
-Expandable Section
-------------------
-
-Look, ma! I'm expandable!
 
 Lists
 =====

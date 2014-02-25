@@ -225,7 +225,7 @@ def GenerateDocs(root_dirname, channel, pepper_version, branch):
     out_dirname_c = os.path.join(out_dirname, 'c')
     doxyfile_c = os.path.join(doxyfile_dirname, 'Doxyfile.c.%s' % channel)
     doxyfile_c_template = os.path.join(SCRIPT_DIR, 'Doxyfile.c.template')
-    rst_index_c = os.path.join(root_dirname, pepper_dirname, 'c', 'index.rst')
+    rst_index_c = os.path.join(DOC_DIR, pepper_dirname, 'c', 'index.rst')
     GenerateDoxyfile(doxyfile_c_template, out_dirname_c, svn_dirname,
                      doxyfile_c)
     RunDoxygen(out_dirname_c, doxyfile_c)
@@ -236,8 +236,7 @@ def GenerateDocs(root_dirname, channel, pepper_version, branch):
     out_dirname_cpp = os.path.join(out_dirname, 'cpp')
     doxyfile_cpp = os.path.join(doxyfile_dirname, 'Doxyfile.cpp.%s' % channel)
     doxyfile_cpp_template = os.path.join(SCRIPT_DIR, 'Doxyfile.cpp.template')
-    rst_index_cpp = os.path.join(root_dirname, pepper_dirname, 'cpp',
-                                 'index.rst')
+    rst_index_cpp = os.path.join(DOC_DIR, pepper_dirname, 'cpp', 'index.rst')
     GenerateDoxyfile(doxyfile_cpp_template, out_dirname_cpp, svn_dirname,
                      doxyfile_cpp)
     RunDoxygen(out_dirname_cpp, doxyfile_cpp)
