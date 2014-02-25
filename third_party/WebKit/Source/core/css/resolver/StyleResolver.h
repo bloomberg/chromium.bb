@@ -91,6 +91,8 @@ const unsigned styleSharingListSize = 40;
 typedef WTF::Deque<Element*, styleSharingListSize> StyleSharingList;
 
 struct CSSPropertyValue {
+    STACK_ALLOCATED();
+public:
     CSSPropertyValue(CSSPropertyID property, CSSValue* value)
         : property(property), value(value) { }
     // Stores value=propertySet.getPropertyCSSValue(id).get().

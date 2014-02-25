@@ -85,6 +85,7 @@ DEFINE_CSS_VALUE_TYPE_CASTS(CSSValueList, isValueList());
 // Objects of this class are intended to be stack-allocated and scoped to a single function.
 // Please take care not to pass these around as they do hold onto a raw pointer.
 class CSSValueListInspector {
+    STACK_ALLOCATED();
 public:
     CSSValueListInspector(CSSValue* value) : m_list((value && value->isValueList()) ? toCSSValueList(value) : 0) { }
     CSSValue* item(size_t index) const { ASSERT_WITH_SECURITY_IMPLICATION(index < length()); return m_list->itemWithoutBoundsCheck(index); }
@@ -99,6 +100,7 @@ private:
 // Objects of this class are intended to be stack-allocated and scoped to a single function.
 // Please take care not to pass these around as they do hold onto a raw pointer.
 class CSSValueListIterator {
+    STACK_ALLOCATED();
 public:
     CSSValueListIterator(CSSValue* value) : m_inspector(value), m_position(0) { }
     bool hasMore() const { return m_position < m_inspector.length(); }

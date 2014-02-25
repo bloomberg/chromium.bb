@@ -1017,6 +1017,24 @@ T* adoptRefCountedGarbageCollected(T* ptr)
         void* operator new(size_t, void* location) { return location; }             \
     DISALLOW_ALLOCATION()
 
+// These macros insert annotations that the Blink GC plugin for clang uses for
+// verification. STACK_ALLOCATED is used to declare that objects of this type
+// are always stack allocated. NO_TRACE_CHECKING is used to make the plugin
+// ignore a particular field when checking for proper tracing. When using
+// NO_TRACE_CHECKING a bug-number should be provided as an argument where the
+// bug describes what needs to happen to remove the NO_TRACE_CHECKING again.
+#if COMPILER(CLANG)
+#define STACK_ALLOCATED()                               \
+    private:                                            \
+        __attribute__((annotate("blink_stack_allocated")))    \
+        void* operator new(size_t) = delete;
+#define NO_TRACE_CHECKING(bug)                      \
+    __attribute__((annotate("blink_no_trace_checking")))
+#else
+#define STACK_ALLOCATED() DISALLOW_ALLOCATION()
+#define NO_TRACE_CHECKING(bug)
+#endif
+
 NO_SANITIZE_ADDRESS
 void HeapObjectHeader::checkHeader() const
 {
