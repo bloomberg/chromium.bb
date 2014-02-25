@@ -8,11 +8,11 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/logging_win.h"
 #include "base/path_service.h"
-#include "base/platform_file.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
@@ -37,12 +37,11 @@ TruncateResult TruncateLogFileIfNeeded(const base::FilePath& log_file) {
   if (base::GetFileSize(log_file, &log_size) &&
       log_size > kMaxInstallerLogFileSize) {
     // Cause the old log file to be deleted when we are done with it.
-    const int file_flags = base::PLATFORM_FILE_OPEN |
-                           base::PLATFORM_FILE_READ |
-                           base::PLATFORM_FILE_SHARE_DELETE |
-                           base::PLATFORM_FILE_DELETE_ON_CLOSE;
-    base::win::ScopedHandle old_log_file(
-        base::CreatePlatformFile(log_file, file_flags, NULL, NULL));
+    uint32 file_flags = base::File::FLAG_OPEN |
+                        base::File::FLAG_READ |
+                        base::File::FLAG_SHARE_DELETE |
+                        base::File::FLAG_DELETE_ON_CLOSE;
+    base::File old_log_file(log_file, file_flags);
 
     if (old_log_file.IsValid()) {
       result = LOGFILE_DELETED;
@@ -51,10 +50,9 @@ TruncateResult TruncateLogFileIfNeeded(const base::FilePath& log_file) {
       if (base::Move(log_file, tmp_log)) {
         int64 offset = log_size - kTruncatedInstallerLogFileSize;
         std::string old_log_data(kTruncatedInstallerLogFileSize, 0);
-        int bytes_read = base::ReadPlatformFile(old_log_file,
-                                                offset,
-                                                &old_log_data[0],
-                                                kTruncatedInstallerLogFileSize);
+        int bytes_read = old_log_file.Read(offset,
+                                           &old_log_data[0],
+                                           kTruncatedInstallerLogFileSize);
         if (bytes_read > 0 &&
             (bytes_read == file_util::WriteFile(log_file,
                                                 &old_log_data[0],

@@ -14,6 +14,7 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
 #include "base/win/scoped_handle.h"
@@ -190,13 +191,12 @@ class InstallUtil {
     bool EvaluatePath(const base::FilePath& path) const;
 
    protected:
-    static bool OpenForInfo(const base::FilePath& path,
-                            base::win::ScopedHandle* handle);
-    static bool GetInfo(const base::win::ScopedHandle& handle,
+    static bool OpenForInfo(const base::FilePath& path, base::File* file);
+    static bool GetInfo(const base::File& file,
                         BY_HANDLE_FILE_INFORMATION* info);
 
     base::FilePath path_to_match_;
-    base::win::ScopedHandle file_handle_;
+    base::File file_;
     BY_HANDLE_FILE_INFORMATION file_info_;
 
    private:

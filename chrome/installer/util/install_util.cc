@@ -560,38 +560,35 @@ base::string16 InstallUtil::GetCurrentDate() {
 }
 
 // Open |path| with minimal access to obtain information about it, returning
-// true and populating |handle| on success.
+// true and populating |file| on success.
 // static
 bool InstallUtil::ProgramCompare::OpenForInfo(const base::FilePath& path,
-                                              base::win::ScopedHandle* handle) {
-  DCHECK(handle);
-  handle->Set(base::CreatePlatformFile(path, base::PLATFORM_FILE_OPEN, NULL,
-                                       NULL));
-  return handle->IsValid();
+                                              base::File* file) {
+  DCHECK(file);
+  file->Initialize(path, base::File::FLAG_OPEN);
+  return file->IsValid();
 }
 
-// Populate |info| for |handle|, returning true on success.
+// Populate |info| for |file|, returning true on success.
 // static
-bool InstallUtil::ProgramCompare::GetInfo(const base::win::ScopedHandle& handle,
+bool InstallUtil::ProgramCompare::GetInfo(const base::File& file,
                                           BY_HANDLE_FILE_INFORMATION* info) {
-  DCHECK(handle.IsValid());
-  return GetFileInformationByHandle(
-      const_cast<base::win::ScopedHandle&>(handle), info) != 0;
+  DCHECK(file.IsValid());
+  return GetFileInformationByHandle(file.GetPlatformFile(), info) != 0;
 }
 
 InstallUtil::ProgramCompare::ProgramCompare(const base::FilePath& path_to_match)
     : path_to_match_(path_to_match),
-      file_handle_(base::kInvalidPlatformFileValue),
       file_info_() {
   DCHECK(!path_to_match_.empty());
-  if (!OpenForInfo(path_to_match_, &file_handle_)) {
+  if (!OpenForInfo(path_to_match_, &file_)) {
     PLOG(WARNING) << "Failed opening " << path_to_match_.value()
                   << "; falling back to path string comparisons.";
-  } else if (!GetInfo(file_handle_, &file_info_)) {
+  } else if (!GetInfo(file_, &file_info_)) {
     PLOG(WARNING) << "Failed getting information for "
                   << path_to_match_.value()
                   << "; falling back to path string comparisons.";
-    file_handle_.Close();
+    file_.Close();
   }
 }
 
@@ -621,15 +618,15 @@ bool InstallUtil::ProgramCompare::EvaluatePath(
 
   // If the paths don't match and we couldn't open the expected file, we've done
   // our best.
-  if (!file_handle_.IsValid())
+  if (!file_.IsValid())
     return false;
 
   // Open the program and see if it references the expected file.
-  base::win::ScopedHandle handle;
+  base::File file;
   BY_HANDLE_FILE_INFORMATION info = {};
 
-  return (OpenForInfo(path, &handle) &&
-          GetInfo(handle, &info) &&
+  return (OpenForInfo(path, &file) &&
+          GetInfo(file, &info) &&
           info.dwVolumeSerialNumber == file_info_.dwVolumeSerialNumber &&
           info.nFileIndexHigh == file_info_.nFileIndexHigh &&
           info.nFileIndexLow == file_info_.nFileIndexLow);

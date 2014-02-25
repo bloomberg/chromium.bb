@@ -5,9 +5,9 @@
 #include <string>
 
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/platform_file.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/installer/util/logging_installer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -74,11 +74,10 @@ TEST(LoggingInstallerTest, TestInUseNeedsTruncation) {
   EXPECT_EQ(test_data.size(), file_size);
 
   // Prevent the log file from being moved or deleted.
-  const int file_flags = base::PLATFORM_FILE_OPEN |
-                         base::PLATFORM_FILE_READ |
-                         base::PLATFORM_FILE_EXCLUSIVE_READ;
-  base::win::ScopedHandle temp_platform_file(
-      base::CreatePlatformFile(temp_file, file_flags, NULL, NULL));
+  uint32 file_flags = base::File::FLAG_OPEN |
+                      base::File::FLAG_READ |
+                      base::File::FLAG_EXCLUSIVE_READ;
+  base::File temp_platform_file(temp_file, file_flags);
   ASSERT_TRUE(temp_platform_file.IsValid());
 
   EXPECT_EQ(installer::LOGFILE_UNTOUCHED,
@@ -104,13 +103,12 @@ TEST(LoggingInstallerTest, TestMoveFailsNeedsTruncation) {
 
   // Create an inconvenient, non-deletable file in the location that
   // TruncateLogFileIfNeeded would like to move the log file to.
-  const int file_flags = base::PLATFORM_FILE_CREATE |
-                         base::PLATFORM_FILE_READ |
-                         base::PLATFORM_FILE_EXCLUSIVE_READ;
+  uint32 file_flags = base::File::FLAG_CREATE |
+                      base::File::FLAG_READ |
+                      base::File::FLAG_EXCLUSIVE_READ;
   base::FilePath temp_file_move_dest(
       temp_file.value() + FILE_PATH_LITERAL(".tmp"));
-  base::win::ScopedHandle temp_move_destination_file(
-      base::CreatePlatformFile(temp_file_move_dest, file_flags, NULL, NULL));
+  base::File temp_move_destination_file(temp_file_move_dest, file_flags);
   ASSERT_TRUE(temp_move_destination_file.IsValid());
 
   EXPECT_EQ(installer::LOGFILE_DELETED,

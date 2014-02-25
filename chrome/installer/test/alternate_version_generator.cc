@@ -34,11 +34,11 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/platform_file.h"
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_util.h"
@@ -151,11 +151,13 @@ class MappedFile {
  public:
   MappedFile() : size_(), mapping_(), view_() { }
   ~MappedFile();
-  bool Initialize(base::PlatformFile file);
+  bool Initialize(base::File file);
   void* data() const { return view_; }
   size_t size() const { return size_; }
+
  private:
   size_t size_;
+  base::File file_;
   HANDLE mapping_;
   void* view_;
   DISALLOW_COPY_AND_ASSIGN(MappedFile);
@@ -174,16 +176,16 @@ MappedFile::~MappedFile() {
   }
 }
 
-bool MappedFile::Initialize(base::PlatformFile file) {
+bool MappedFile::Initialize(base::File file) {
   DCHECK(mapping_ == NULL);
   bool result = false;
-  base::PlatformFileInfo file_info;
+  base::File::Info file_info;
 
-  if (base::GetPlatformFileInfo(file, &file_info)) {
+  if (file.GetInfo(&file_info)) {
     if (file_info.size <=
         static_cast<int64>(std::numeric_limits<DWORD>::max())) {
-      mapping_ = CreateFileMapping(file, NULL, PAGE_READWRITE, 0,
-                                   static_cast<DWORD>(file_info.size), NULL);
+      mapping_ = CreateFileMapping(file.GetPlatformFile(), NULL, PAGE_READWRITE,
+                                   0, static_cast<DWORD>(file_info.size), NULL);
       if (mapping_ != NULL) {
         view_ = MapViewOfFile(mapping_, FILE_MAP_WRITE, 0, 0,
                               static_cast<size_t>(file_info.size));
@@ -202,6 +204,7 @@ bool MappedFile::Initialize(base::PlatformFile file) {
   } else {
     PLOG(DFATAL) << "GetPlatformFileInfo failed";
   }
+  file_ = file.Pass();
   return result;
 }
 
@@ -352,29 +355,24 @@ bool UpdateVersionIfMatch(const base::FilePath& image_file,
   }
 
   bool result = false;
-  base::win::ScopedHandle image_handle(base::CreatePlatformFile(
-      image_file,
-      (base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ |
-       base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_EXCLUSIVE_READ |
-       base::PLATFORM_FILE_EXCLUSIVE_WRITE), NULL, NULL));
+  uint32 flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
+                 base::File::FLAG_WRITE | base::File::FLAG_EXCLUSIVE_READ |
+                 base::File::FLAG_EXCLUSIVE_WRITE;
+  base::File file(image_file, flags);
   // It turns out that the underlying CreateFile can fail due to unhelpful
   // security software locking the newly created DLL. So add a few brief
   // retries to help tests that use this pass on machines thusly encumbered.
   int retries = 3;
-  while (!image_handle.IsValid() && retries-- > 0) {
+  while (!file.IsValid() && retries-- > 0) {
     LOG(WARNING) << "Failed to open \"" << image_file.value() << "\"."
                  << " Retrying " << retries << " more times.";
     Sleep(1000);
-    image_handle.Set(base::CreatePlatformFile(
-      image_file,
-      (base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ |
-       base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_EXCLUSIVE_READ |
-       base::PLATFORM_FILE_EXCLUSIVE_WRITE), NULL, NULL));
+    file.Initialize(image_file, flags);
   }
 
-  if (image_handle.IsValid()) {
+  if (file.IsValid()) {
     MappedFile image_mapping;
-    if (image_mapping.Initialize(image_handle)) {
+    if (image_mapping.Initialize(file.Pass())) {
       base::win::PEImageAsData image(
           reinterpret_cast<HMODULE>(image_mapping.data()));
       // PEImage class does not support other-architecture images.
