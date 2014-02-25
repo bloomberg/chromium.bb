@@ -25,9 +25,11 @@
 import fnmatch
 import os
 import cPickle as pickle
-from shutil import rmtree
+import shutil
 import tempfile
+
 from webkitpy.common.checkout.scm.detection import detect_scm_system
+from webkitpy.common.system import executive
 from webkitpy.common.system.executive import ScriptError
 
 PASS_MESSAGE = 'All tests PASS!'
@@ -62,43 +64,51 @@ reference_event_names_filename = os.path.join(reference_directory, 'EventInterfa
 
 class ScopedTempFileProvider(object):
     def __init__(self):
-        self.files = []
-        self.directories = []
+        self.file_handles = []
+        self.file_paths = []
+        self.dir_paths = []
 
-    def __del__(self):
-        for filename in self.files:
-            os.remove(filename)
-        for directory in self.directories:
-            rmtree(directory)
+    def __enter__(self):
+        return self
 
-    def newtempfile(self):
-        file_handle, path = tempfile.mkstemp()
-        self.files.append(path)
-        return file_handle, path
+    def __exit__(self, exc_type, exc_value, traceback):
+        for file_handle in self.file_handles:
+            os.close(file_handle)
+        for file_path in self.file_paths:
+            os.remove(file_path)
+        for dir_path in self.dir_paths:
+            # Temporary directories are used as output directories, so they
+            # contains unknown files (they aren't empty), hence use rmtree
+            shutil.rmtree(dir_path)
 
-    def newtempdir(self):
-        path = tempfile.mkdtemp()
-        self.directories.append(path)
-        return path
+    def new_temp_file(self):
+        file_handle, file_path = tempfile.mkstemp()
+        self.file_handles.append(file_handle)
+        self.file_paths.append(file_path)
+        return file_handle, file_path
 
-provider = ScopedTempFileProvider()
+    def new_temp_dir(self):
+        dir_path = tempfile.mkdtemp()
+        self.dir_paths.append(dir_path)
+        return dir_path
 
 
 class BindingsTests(object):
-    def __init__(self, reset_results, test_python, verbose, executive):
+    def __init__(self, reset_results, test_python, verbose, provider):
         self.reset_results = reset_results
         self.test_python = test_python
         self.verbose = verbose
-        self.executive = executive
-        _, self.interface_dependencies_filename = provider.newtempfile()
-        _, self.interfaces_info_filename = provider.newtempfile()
+        self.executive = executive.Executive()
+        self.provider = provider
+        _, self.interface_dependencies_filename = provider.new_temp_file()
+        _, self.interfaces_info_filename = provider.new_temp_file()
         # Generate output into the reference directory if resetting results, or
         # a temp directory if not.
         if reset_results:
             self.output_directory = reference_directory
         else:
-            self.output_directory = provider.newtempdir()
-        self.output_directory_py = provider.newtempdir()
+            self.output_directory = provider.new_temp_dir()
+        self.output_directory_py = provider.new_temp_dir()
         self.event_names_filename = os.path.join(self.output_directory, 'EventInterfaces.in')
 
     def run_command(self, cmd):
@@ -156,7 +166,7 @@ class BindingsTests(object):
             return idl_paths
 
         def write_list_file(idl_paths):
-            list_file, list_filename = provider.newtempfile()
+            list_file, list_filename = self.provider.new_temp_file()
             list_contents = ''.join(idl_path + '\n'
                                     for idl_path in idl_paths)
             os.write(list_file, list_contents)
@@ -165,11 +175,11 @@ class BindingsTests(object):
         def compute_interfaces_info(idl_files_list_filename,
                                     event_names_filename):
             # Dummy files, required by compute_interfaces_info but not checked
-            _, window_constructors_file = provider.newtempfile()
-            _, workerglobalscope_constructors_file = provider.newtempfile()
-            _, sharedworkerglobalscope_constructors_file = provider.newtempfile()
-            _, dedicatedworkerglobalscope_constructors_file = provider.newtempfile()
-            _, serviceworkersglobalscope_constructors_file = provider.newtempfile()
+            _, window_constructors_file = self.provider.new_temp_file()
+            _, workerglobalscope_constructors_file = self.provider.new_temp_file()
+            _, sharedworkerglobalscope_constructors_file = self.provider.new_temp_file()
+            _, dedicatedworkerglobalscope_constructors_file = self.provider.new_temp_file()
+            _, serviceworkersglobalscope_constructors_file = self.provider.new_temp_file()
             cmd = ['python',
                    'bindings/scripts/compute_interfaces_info.py',
                    '--idl-files-list', idl_files_list_filename,
@@ -206,7 +216,7 @@ class BindingsTests(object):
             # computing dependencies for the real Node.idl file.
             #
             # Don't overwrite the event names file generated for testing IDLs
-            _, dummy_event_names_filename = provider.newtempfile()
+            _, dummy_event_names_filename = self.provider.new_temp_file()
             compute_interfaces_info(all_idl_files_list_filename,
                                     dummy_event_names_filename)
         except ScriptError, e:
@@ -310,3 +320,8 @@ class BindingsTests(object):
         print
         print FAIL_MESSAGE
         return -1
+
+
+def run_bindings_tests(reset_results, test_python, verbose):
+    with ScopedTempFileProvider() as provider:
+        return BindingsTests(reset_results, test_python, verbose, provider).main()

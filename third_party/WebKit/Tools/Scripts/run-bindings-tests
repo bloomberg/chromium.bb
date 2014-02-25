@@ -29,7 +29,7 @@
 # patch. This makes it easier to track and review changes in generated code.
 
 import sys
-from webkitpy.common.system import executive
+from webkitpy.bindings.main import run_bindings_tests
 
 def main(argv):
     """Runs Blink bindings IDL compiler on test IDL files and compares the
@@ -40,13 +40,11 @@ def main(argv):
        --test-python: Run tests for Python compiler as well.
        --verbose: Show output on success and logging messages (not just failure)
     """
-    reset_results = "--reset-results" in argv
-    test_python = "--test-python" in argv
-    verbose = "--verbose" in argv
+    reset_results = '--reset-results' in argv
+    test_python = '--test-python' in argv
+    verbose = '--verbose' in argv
 
-    from webkitpy.bindings.main import BindingsTests
-
-    return BindingsTests(reset_results, test_python, verbose, executive.Executive()).main()
+    return run_bindings_tests(reset_results, test_python, verbose)
 
 
 if __name__ == '__main__':
