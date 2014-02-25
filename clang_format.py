@@ -41,23 +41,7 @@ def FindClangFormatToolInChromiumTree():
                            gclient_utils.GetMacWinOrLinux(),
                            'clang-format' + gclient_utils.GetExeSuffix())
   if not os.path.exists(tool_path):
-    # TODO(nick): After March 2014, eliminate the following advisory.
-    error_text = '''\n  GIT CL FORMAT - WINTER WEATHER ADVISORY
-
-    clang-format binaries now come with every Chrome checkout!
-
-    Unfortunately, your depot_tools scripts tried to find clang-format binaries
-    in your Chrome checkout, but failed. This is expected if you haven't synced
-    since the binaries were added.
-
-    'git cl format' will probably not work until you sync your Chrome tree.
-    Sorry about that.
-
-    Contact nick@chromium.org if you have any additional questions.\n\n'''
-
-    error_text += 'File does not exist: %s' % tool_path
-
-    raise NotFoundError(error_text)
+    raise NotFoundError('File does not exist: %s' % tool_path)
   return tool_path
 
 
@@ -66,11 +50,7 @@ def FindClangFormatScriptInChromiumTree(script_name):
   script_path = os.path.join(_FindChromiumSourceRoot(), 'third_party',
                              'clang_format', 'script', script_name)
   if not os.path.exists(script_path):
-    # TODO(thakis): Remove the fallback to the old location after a few weeks.
-    script_path = os.path.join(_FindChromiumSourceRoot(), 'third_party',
-                               'clang_format', 'scripts', script_name)
-    if not os.path.exists(script_path):
-      raise NotFoundError('File does not exist: %s' % script_path)
+    raise NotFoundError('File does not exist: %s' % script_path)
   return script_path
 
 
