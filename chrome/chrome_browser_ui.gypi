@@ -80,6 +80,8 @@
         'browser/ui/android/autofill/autofill_dialog_controller_android.h',
         'browser/ui/android/autofill/autofill_dialog_result.cc',
         'browser/ui/android/autofill/autofill_dialog_result.h',
+        'browser/ui/android/autofill/autofill_logger_android.cc',
+        'browser/ui/android/autofill/autofill_logger_android.h',
         'browser/ui/android/autofill/autofill_popup_view_android.cc',
         'browser/ui/android/autofill/autofill_popup_view_android.h',
         'browser/ui/android/content_settings/popup_blocked_infobar_delegate.cc',

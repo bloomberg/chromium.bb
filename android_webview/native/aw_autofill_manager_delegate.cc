@@ -167,6 +167,10 @@ bool AwAutofillManagerDelegate::IsAutocompleteEnabled() {
 void AwAutofillManagerDelegate::DetectAccountCreationForms(
     const std::vector<autofill::FormStructure*>& forms) {}
 
+void AwAutofillManagerDelegate::DidFillOrPreviewField(
+    const base::string16& autofilled_value,
+    const base::string16& profile_full_name) {}
+
 void AwAutofillManagerDelegate::SuggestionSelected(JNIEnv* env,
                                                    jobject object,
                                                    jint position) {

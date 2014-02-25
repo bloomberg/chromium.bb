@@ -465,12 +465,14 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
   size_t variant = 0;
   FormStructure* form_structure = NULL;
   AutofillField* autofill_field = NULL;
+  bool is_credit_card = false;
   // NOTE: RefreshDataModels may invalidate |data_model| because it causes the
   // PersonalDataManager to reload Mac address book entries. Thus it must come
   // before GetProfileOrCreditCard.
   if (!RefreshDataModels() ||
       !driver_->RendererIsAvailable() ||
-      !GetProfileOrCreditCard(unique_id, &data_model, &variant) ||
+      !GetProfileOrCreditCard(
+          unique_id, &data_model, &variant, &is_credit_card) ||
       !GetCachedFormAndField(form, field, &form_structure, &autofill_field))
     return;
 
@@ -478,6 +480,12 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
   DCHECK(autofill_field);
 
   FormData result = form;
+
+  base::string16 profile_full_name;
+  if (!is_credit_card) {
+    profile_full_name = data_model->GetInfo(
+        AutofillType(NAME_FULL), app_locale_);
+  }
 
   // If the relevant section is auto-filled, we should fill |field| but not the
   // rest of the form.
@@ -492,6 +500,9 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
         // Mark the cached field as autofilled, so that we can detect when a
         // user edits an autofilled field (for metrics).
         autofill_field->is_autofilled = true;
+
+        if (!is_credit_card && !value.empty())
+          manager_delegate_->DidFillOrPreviewField(value, profile_full_name);
         break;
       }
     }
@@ -529,6 +540,9 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
       // Mark the cached field as autofilled, so that we can detect when a user
       // edits an autofilled field (for metrics).
       form_structure->field(i)->is_autofilled = true;
+
+      if (!is_credit_card && !value.empty())
+        manager_delegate_->DidFillOrPreviewField(value, profile_full_name);
     }
   }
 
@@ -585,7 +599,9 @@ void AutofillManager::OnHidePopup() {
 void AutofillManager::RemoveAutofillProfileOrCreditCard(int unique_id) {
   const AutofillDataModel* data_model = NULL;
   size_t variant = 0;
-  if (!GetProfileOrCreditCard(unique_id, &data_model, &variant)) {
+  bool unused_is_credit_card = false;
+  if (!GetProfileOrCreditCard(
+          unique_id, &data_model, &variant, &unused_is_credit_card)) {
     NOTREACHED();
     return;
   }
@@ -834,13 +850,15 @@ bool AutofillManager::RefreshDataModels() const {
 bool AutofillManager::GetProfileOrCreditCard(
     int unique_id,
     const AutofillDataModel** data_model,
-    size_t* variant) const {
+    size_t* variant,
+    bool* is_credit_card) const {
   // Unpack the |unique_id| into component parts.
   GUIDPair credit_card_guid;
   GUIDPair profile_guid;
   UnpackGUIDs(unique_id, &credit_card_guid, &profile_guid);
   DCHECK(!base::IsValidGUID(credit_card_guid.first) ||
          !base::IsValidGUID(profile_guid.first));
+  *is_credit_card = false;
 
   // Find the profile that matches the |profile_guid|, if one is specified.
   // Otherwise find the credit card that matches the |credit_card_guid|,
@@ -851,6 +869,7 @@ bool AutofillManager::GetProfileOrCreditCard(
   } else if (base::IsValidGUID(credit_card_guid.first)) {
     *data_model = personal_data_->GetCreditCardByGUID(credit_card_guid.first);
     *variant = credit_card_guid.second;
+    *is_credit_card = true;
   }
 
   return !!*data_model;

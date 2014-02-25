@@ -99,6 +99,12 @@ class AutofillManagerDelegate {
   // account creation forms.
   virtual void DetectAccountCreationForms(
       const std::vector<autofill::FormStructure*>& forms) = 0;
+
+  // Inform the delegate that the field has been filled.
+  virtual void DidFillOrPreviewField(
+      const base::string16& autofilled_value,
+      const base::string16& profile_full_name) = 0;
+
 };
 
 }  // namespace autofill

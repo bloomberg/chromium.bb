@@ -215,11 +215,14 @@ class AutofillManager : public AutofillDownloadManager::Observer {
   bool RefreshDataModels() const;
 
   // Unpacks |unique_id| and fills |form_group| and |variant| with the
-  // appropriate data source and variant index.  Returns false if the unpacked
-  // id cannot be found.
+  // appropriate data source and variant index. Sets |is_credit_card| to true
+  // if |data_model| points to a CreditCard data model, false if it's a
+  // profile data model.
+  // Returns false if the unpacked id cannot be found.
   bool GetProfileOrCreditCard(int unique_id,
                               const AutofillDataModel** data_model,
-                              size_t* variant) const WARN_UNUSED_RESULT;
+                              size_t* variant,
+                              bool* is_credit_card) const WARN_UNUSED_RESULT;
 
   // Fills |form_structure| cached element corresponding to |form|.
   // Returns false if the cached element was not found.

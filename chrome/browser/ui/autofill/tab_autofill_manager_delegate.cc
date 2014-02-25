@@ -27,6 +27,10 @@
 #include "content/public/browser/web_contents_view.h"
 #include "ui/gfx/rect.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/ui/android/autofill/autofill_logger_android.h"
+#endif
+
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(autofill::TabAutofillManagerDelegate);
 
 namespace autofill {
@@ -191,6 +195,15 @@ void TabAutofillManagerDelegate::DetectAccountCreationForms(
           web_contents_);
   if (manager)
     manager->DetectAccountCreationForms(forms);
+}
+
+void TabAutofillManagerDelegate::DidFillOrPreviewField(
+    const base::string16& autofilled_value,
+    const base::string16& profile_full_name) {
+#if defined(OS_ANDROID)
+  AutofillLoggerAndroid::DidFillOrPreviewField(
+      autofilled_value, profile_full_name);
+#endif  // defined(OS_ANDROID)
 }
 
 }  // namespace autofill

@@ -46,6 +46,7 @@
 #include "chrome/browser/sync/profile_sync_service_android.h"
 #include "chrome/browser/ui/android/autofill/autofill_dialog_controller_android.h"
 #include "chrome/browser/ui/android/autofill/autofill_dialog_result.h"
+#include "chrome/browser/ui/android/autofill/autofill_logger_android.h"
 #include "chrome/browser/ui/android/autofill/autofill_popup_view_android.h"
 #include "chrome/browser/ui/android/chrome_http_auth_handler.h"
 #include "chrome/browser/ui/android/context_menu_helper.h"
@@ -91,6 +92,8 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
         RegisterAutofillDialogControllerAndroid },
   { "AutofillDialogResult",
     autofill::AutofillDialogResult::RegisterAutofillDialogResult },
+  { "AutofillLoggerAndroid",
+    autofill::AutofillLoggerAndroid::Register },
   { "AutofillPopup",
     autofill::AutofillPopupViewAndroid::RegisterAutofillPopupViewAndroid },
   { "AutoLoginDelegate", AutoLoginInfoBarDelegateAndroid::Register },
