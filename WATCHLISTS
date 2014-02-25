@@ -480,10 +480,6 @@
     'service_worker': {
       'filepath': 'content/(browser|renderer|child)/service_worker/',
     },
-    'shell_window': {
-      'filepath': 'chrome/browser/ui/(views/|gtk/|cocoa/|)'\
-                  'extensions/(shell|app|native)'
-    },
     'site_instance': {
       'filepath': 'content/browser/site_instance|'\
         'content/browser/browsing_instance',
@@ -826,7 +822,6 @@
                        'horo+watch@chromium.org',
                        'alecflett+watch@chromium.org',
                        'jsbell+serviceworker@chromium.org'],
-    'shell_window': ['jeremya+watch@chromium.org'],
     'site_instance': ['creis+watch@chromium.org', 'ajwong+watch@chromium.org'],
     'spellcheck': ['groby+spellwatch@chromium.org',
                    'rlp@chromium.org',
