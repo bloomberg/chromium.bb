@@ -334,7 +334,7 @@ FastTextAutosizer::Supercluster* FastTextAutosizer::getSupercluster(const Render
         return 0;
 
     BlockSet* roots = &m_fingerprintMapper.getTentativeClusterRoots(fingerprint);
-    if (roots->size() < 2)
+    if (!roots || roots->size() < 2 || !roots->contains(block))
         return 0;
 
     SuperclusterMap::AddResult addResult = m_superclusters.add(fingerprint, PassOwnPtr<Supercluster>());
