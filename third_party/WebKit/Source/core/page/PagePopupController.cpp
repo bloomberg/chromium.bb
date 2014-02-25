@@ -37,8 +37,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(PagePopupController);
-
 PagePopupController::PagePopupController(PagePopupClient* client)
     : m_popupClient(client)
 {

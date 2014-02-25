@@ -43,7 +43,6 @@ namespace WebCore {
 class ExecutionContext;
 
 class StorageQuota FINAL : public RefCountedWillBeGarbageCollectedFinalized<StorageQuota>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<StorageQuota> create()
     {

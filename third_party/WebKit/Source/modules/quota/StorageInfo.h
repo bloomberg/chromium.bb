@@ -40,7 +40,6 @@
 namespace WebCore {
 
 class StorageInfo FINAL : public RefCountedWillBeGarbageCollectedFinalized<StorageInfo>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<StorageInfo> create(unsigned long long usage, unsigned long long quota)
     {

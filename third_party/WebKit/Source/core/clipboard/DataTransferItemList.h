@@ -47,7 +47,6 @@ class File;
 class ExceptionState;
 
 class DataTransferItemList : public RefCountedWillBeGarbageCollectedFinalized<DataTransferItemList>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<DataTransferItemList> create(PassRefPtrWillBeRawPtr<Clipboard>, PassRefPtrWillBeRawPtr<DataObject>);
     ~DataTransferItemList();

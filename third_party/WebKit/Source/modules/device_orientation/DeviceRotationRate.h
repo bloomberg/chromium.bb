@@ -34,7 +34,6 @@
 namespace WebCore {
 
 class DeviceRotationRate : public RefCountedWillBeGarbageCollectedFinalized<DeviceRotationRate>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<DeviceRotationRate> create(PassRefPtrWillBeRawPtr<DeviceMotionData::RotationRate> rotationRate)
     {

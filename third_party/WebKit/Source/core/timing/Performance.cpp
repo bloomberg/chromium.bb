@@ -44,8 +44,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(Performance);
-
 static const size_t defaultResourceTimingBufferSize = 150;
 
 Performance::Performance(Frame* frame)

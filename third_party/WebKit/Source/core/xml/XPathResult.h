@@ -40,7 +40,6 @@ class ExceptionState;
 class Node;
 
 class XPathResult : public RefCountedWillBeGarbageCollectedFinalized<XPathResult>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     enum XPathResultType {
         ANY_TYPE = 0,

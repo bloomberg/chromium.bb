@@ -36,7 +36,6 @@
 namespace WebCore {
 
 class Gamepad: public RefCountedWillBeGarbageCollectedFinalized<Gamepad>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<Gamepad> create()
     {

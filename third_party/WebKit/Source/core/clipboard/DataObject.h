@@ -51,7 +51,6 @@ class SharedBuffer;
 // during a drag-n-drop operation. This is the data that WebCore is aware
 // of and is not specific to a platform.
 class DataObject : public RefCountedWillBeGarbageCollectedFinalized<DataObject>, public Supplementable<DataObject> {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<DataObject> createFromPasteboard(PasteMode);
     static PassRefPtrWillBeRawPtr<DataObject> create();

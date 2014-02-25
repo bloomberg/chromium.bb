@@ -49,7 +49,6 @@ class ExecutionContext;
 class MIDIAccessPromise;
 
 class MIDIAccess FINAL : public RefCountedWillBeRefCountedGarbageCollected<MIDIAccess>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData, public MIDIAccessorClient {
-    DECLARE_GC_INFO;
     DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<MIDIAccess>);
 public:
     virtual ~MIDIAccess();

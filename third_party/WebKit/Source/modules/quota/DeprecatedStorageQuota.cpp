@@ -46,8 +46,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(DeprecatedStorageQuota);
-
 DeprecatedStorageQuota::DeprecatedStorageQuota(Type type)
     : m_type(type)
 {

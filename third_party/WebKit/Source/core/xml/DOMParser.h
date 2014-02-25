@@ -31,7 +31,6 @@ class Document;
 class ExceptionState;
 
 class DOMParser : public RefCountedWillBeGarbageCollectedFinalized<DOMParser>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<DOMParser> create()
     {

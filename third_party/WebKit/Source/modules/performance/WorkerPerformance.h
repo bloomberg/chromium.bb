@@ -43,7 +43,6 @@ namespace WebCore {
 class ExecutionContext;
 
 class WorkerPerformance : public RefCountedWillBeGarbageCollectedFinalized<WorkerPerformance>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<WorkerPerformance> create() { return adoptRefWillBeNoop(new WorkerPerformance()); }
     ~WorkerPerformance();

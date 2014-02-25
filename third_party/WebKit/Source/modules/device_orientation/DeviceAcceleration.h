@@ -34,7 +34,6 @@
 namespace WebCore {
 
 class DeviceAcceleration : public RefCountedWillBeGarbageCollectedFinalized<DeviceAcceleration>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<DeviceAcceleration> create(PassRefPtrWillBeRawPtr<DeviceMotionData::Acceleration> acceleration)
     {

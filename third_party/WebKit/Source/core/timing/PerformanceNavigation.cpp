@@ -37,8 +37,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(PerformanceNavigation);
-
 PerformanceNavigation::PerformanceNavigation(Frame* frame)
     : DOMWindowProperty(frame)
 {

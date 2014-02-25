@@ -36,13 +36,16 @@
 namespace WebCore {
 
 class Geoposition : public RefCountedWillBeGarbageCollectedFinalized<Geoposition>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<Geoposition> create(PassRefPtrWillBeRawPtr<Coordinates> coordinates, DOMTimeStamp timestamp)
     {
         return adoptRefWillBeNoop(new Geoposition(coordinates, timestamp));
     }
-    void trace(Visitor*);
+
+    void trace(Visitor* visitor)
+    {
+        visitor->trace(m_coordinates);
+    }
 
     DOMTimeStamp timestamp() const { return m_timestamp; }
     Coordinates* coords() const { return m_coordinates.get(); }

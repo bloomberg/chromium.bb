@@ -42,8 +42,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(DeprecatedStorageInfo);
-
 DeprecatedStorageInfo::DeprecatedStorageInfo()
 {
     ScriptWrappable::init(this);

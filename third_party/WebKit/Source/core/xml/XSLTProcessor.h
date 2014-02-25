@@ -40,7 +40,6 @@ class Document;
 class DocumentFragment;
 
 class XSLTProcessor : public RefCountedWillBeGarbageCollectedFinalized<XSLTProcessor>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<XSLTProcessor> create()
     {

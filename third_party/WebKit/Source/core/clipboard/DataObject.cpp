@@ -39,8 +39,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(DataObject);
-
 PassRefPtrWillBeRawPtr<DataObject> DataObject::createFromPasteboard(PasteMode pasteMode)
 {
     RefPtrWillBeRawPtr<DataObject> dataObject = create();

@@ -25,8 +25,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(DOMParser);
-
 PassRefPtr<Document> DOMParser::parseFromString(const String& str, const String& contentType, ExceptionState& exceptionState)
 {
     // HTML5 is very explicit about which types we're allowed to support here:

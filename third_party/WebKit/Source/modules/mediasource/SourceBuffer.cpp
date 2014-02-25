@@ -72,8 +72,6 @@ static bool throwExceptionIfRemovedOrUpdating(bool isRemoved, bool isUpdating, E
 
 } // namespace
 
-DEFINE_GC_INFO(SourceBuffer);
-
 PassRefPtrWillBeRawPtr<SourceBuffer> SourceBuffer::create(PassOwnPtr<WebSourceBuffer> webSourceBuffer, MediaSource* source, GenericEventQueue* asyncEventQueue)
 {
     RefPtrWillBeRawPtr<SourceBuffer> sourceBuffer(adoptRefCountedWillBeRefCountedGarbageCollected(new SourceBuffer(webSourceBuffer, source, asyncEventQueue)));

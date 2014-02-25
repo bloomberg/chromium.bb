@@ -39,7 +39,6 @@ namespace WebCore {
 // This class holds one speech recognition result including the text and other related
 // fields, as received from the embedder.
 class SpeechInputResult : public RefCountedWillBeGarbageCollectedFinalized<SpeechInputResult>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<SpeechInputResult> create(const SpeechInputResult& source);
     static PassRefPtrWillBeRawPtr<SpeechInputResult> create(const String& utterance, double confidence);

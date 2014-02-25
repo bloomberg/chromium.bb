@@ -50,7 +50,6 @@ class KeyframeEffectModelTest;
 
 // Represents the keyframes set through the API.
 class Keyframe : public RefCountedWillBeGarbageCollectedFinalized<Keyframe> {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<Keyframe> create()
     {

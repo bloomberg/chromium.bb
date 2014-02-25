@@ -47,7 +47,6 @@ class NotificationClient;
 class NotificationPermissionCallback;
 
 class Notification FINAL : public RefCountedWillBeRefCountedGarbageCollected<Notification>, public NotificationBase {
-    DECLARE_GC_INFO;
     DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<Notification>);
 
 public:

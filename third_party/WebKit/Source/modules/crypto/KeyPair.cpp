@@ -36,8 +36,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(KeyPair);
-
 PassRefPtrWillBeRawPtr<KeyPair> KeyPair::create(const blink::WebCryptoKey& publicKey, const blink::WebCryptoKey& privateKey)
 {
     ASSERT(publicKey.type() == blink::WebCryptoKeyTypePublic);

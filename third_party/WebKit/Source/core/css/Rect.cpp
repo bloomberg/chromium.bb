@@ -7,8 +7,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(RectBase);
-
 void RectBase::trace(Visitor* visitor)
 {
     visitor->trace(m_top);

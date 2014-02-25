@@ -39,8 +39,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(DataTransferItem);
-
 PassRefPtrWillBeRawPtr<DataTransferItem> DataTransferItem::create(PassRefPtrWillBeRawPtr<Clipboard> clipboard, PassRefPtrWillBeRawPtr<DataObjectItem> item)
 {
     return adoptRefWillBeNoop(new DataTransferItem(clipboard, item));

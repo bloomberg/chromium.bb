@@ -37,8 +37,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(Crypto);
-
 namespace {
 
 bool isIntegerArray(ArrayBufferView* array)

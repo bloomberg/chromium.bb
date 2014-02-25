@@ -38,8 +38,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(MIDIAccessPromise);
-
 PassRefPtrWillBeRawPtr<MIDIAccessPromise> MIDIAccessPromise::create(ExecutionContext* context, const Dictionary& options)
 {
     RefPtrWillBeRawPtr<MIDIAccessPromise> midiAccessPromise(adoptRefCountedWillBeRefCountedGarbageCollected(new MIDIAccessPromise(context, options)));

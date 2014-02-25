@@ -38,7 +38,6 @@
 namespace WebCore {
 
 class SpeechSynthesisUtterance FINAL : public RefCountedWillBeRefCountedGarbageCollected<SpeechSynthesisUtterance>, public PlatformSpeechSynthesisUtteranceClient, public ScriptWrappable, public ContextLifecycleObserver, public EventTargetWithInlineData {
-    DECLARE_GC_INFO;
     DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<SpeechSynthesisUtterance>);
 public:
     static PassRefPtrWillBeRawPtr<SpeechSynthesisUtterance> create(ExecutionContext*, const String&);

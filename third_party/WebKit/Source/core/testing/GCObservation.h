@@ -40,7 +40,6 @@
 namespace WebCore {
 
 class GCObservation : public RefCountedWillBeGarbageCollectedFinalized<GCObservation> {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<GCObservation> create(v8::Handle<v8::Value> observedValue)
     {

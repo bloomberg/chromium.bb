@@ -47,7 +47,6 @@ class StringCallback;
 class ExecutionContext;
 
 class DataTransferItem : public RefCountedWillBeGarbageCollectedFinalized<DataTransferItem>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<DataTransferItem> create(PassRefPtrWillBeRawPtr<Clipboard>, PassRefPtrWillBeRawPtr<DataObjectItem>);
     ~DataTransferItem();

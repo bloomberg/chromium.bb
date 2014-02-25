@@ -35,8 +35,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(UserTiming);
-
 namespace {
 
 typedef HashMap<String, NavigationTimingFunction> RestrictedKeyMap;

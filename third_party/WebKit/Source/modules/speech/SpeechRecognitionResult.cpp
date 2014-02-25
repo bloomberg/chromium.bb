@@ -29,8 +29,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(SpeechRecognitionResult);
-
 SpeechRecognitionResult::~SpeechRecognitionResult()
 {
 }

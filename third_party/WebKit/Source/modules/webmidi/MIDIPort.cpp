@@ -35,8 +35,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(MIDIPort);
-
 MIDIPort::MIDIPort(MIDIAccess* access, const String& id, const String& manufacturer, const String& name, MIDIPortTypeCode type, const String& version)
     : m_id(id)
     , m_manufacturer(manufacturer)

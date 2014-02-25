@@ -39,7 +39,6 @@
 namespace WebCore {
 
 class CSSBasicShape : public RefCountedWillBeGarbageCollected<CSSBasicShape> {
-    DECLARE_GC_INFO;
 public:
     enum Type {
         CSSBasicShapeRectangleType,

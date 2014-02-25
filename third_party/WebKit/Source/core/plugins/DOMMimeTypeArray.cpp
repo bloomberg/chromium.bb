@@ -27,8 +27,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(DOMMimeTypeArray);
-
 DOMMimeTypeArray::DOMMimeTypeArray(Frame* frame)
     : DOMWindowProperty(frame)
 {

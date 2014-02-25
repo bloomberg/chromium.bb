@@ -56,7 +56,6 @@ typedef int ExceptionCode;
 
 class XMLHttpRequest FINAL : public RefCountedWillBeRefCountedGarbageCollected<XMLHttpRequest>, public ScriptWrappable, public XMLHttpRequestEventTarget, private ThreadableLoaderClient, public ActiveDOMObject {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
-    DECLARE_GC_INFO;
     DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<XMLHttpRequest>);
 public:
     static PassRefPtrWillBeRawPtr<XMLHttpRequest> create(ExecutionContext*, PassRefPtr<SecurityOrigin> = nullptr);

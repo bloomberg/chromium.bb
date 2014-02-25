@@ -42,9 +42,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(NotificationCenter);
-DEFINE_GC_INFO(NotificationCenter::NotificationRequestCallback);
-
 PassRefPtrWillBeRawPtr<NotificationCenter> NotificationCenter::create(ExecutionContext* context, NotificationClient* client)
 {
     RefPtrWillBeRawPtr<NotificationCenter> notificationCenter = adoptRefWillBeNoop(new NotificationCenter(context, client));

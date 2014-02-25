@@ -64,7 +64,6 @@ class MediaKeys;
 class MediaKeySession FINAL
     : public RefCountedWillBeRefCountedGarbageCollected<MediaKeySession>, public ActiveDOMObject, public ScriptWrappable, public EventTargetWithInlineData
     , private ContentDecryptionModuleSessionClient {
-    DECLARE_GC_INFO;
     DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<MediaKeySession>);
 public:
     static PassRefPtrWillBeRawPtr<MediaKeySession> create(ExecutionContext*, ContentDecryptionModule*, WeakPtr<MediaKeys>);

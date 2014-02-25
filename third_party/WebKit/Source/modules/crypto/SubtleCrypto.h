@@ -45,7 +45,6 @@ class ExceptionState;
 class Key;
 
 class SubtleCrypto : public RefCountedWillBeGarbageCollectedFinalized<SubtleCrypto>,  public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<SubtleCrypto> create()
     {

@@ -35,7 +35,6 @@ class DOMPlugin;
 class Frame;
 
 class DOMMimeType FINAL : public RefCountedWillBeGarbageCollectedFinalized<DOMMimeType>, public ScriptWrappable, public FrameDestructionObserver {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<DOMMimeType> create(PassRefPtr<PluginData> pluginData, Frame* frame, unsigned index)
     {

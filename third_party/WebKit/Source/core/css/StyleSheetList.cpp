@@ -29,8 +29,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(StyleSheetList);
-
 using namespace HTMLNames;
 
 StyleSheetList::StyleSheetList(TreeScope* treeScope)

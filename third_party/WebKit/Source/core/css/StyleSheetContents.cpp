@@ -38,8 +38,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(StyleSheetContents);
-
 // Rough size estimate for the memory cache.
 unsigned StyleSheetContents::estimatedSizeInBytes() const
 {

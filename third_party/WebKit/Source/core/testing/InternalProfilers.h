@@ -39,7 +39,6 @@
 namespace WebCore {
 
 class InternalProfilers : public RefCountedWillBeGarbageCollected<InternalProfilers> {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<InternalProfilers> create()
     {

@@ -29,10 +29,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(DeviceMotionData::Acceleration);
-DEFINE_GC_INFO(DeviceMotionData::RotationRate);
-DEFINE_GC_INFO(DeviceMotionData);
-
 PassRefPtrWillBeRawPtr<DeviceMotionData::Acceleration> DeviceMotionData::Acceleration::create(
     bool canProvideX, double x, bool canProvideY, double y, bool canProvideZ, double z)
 {

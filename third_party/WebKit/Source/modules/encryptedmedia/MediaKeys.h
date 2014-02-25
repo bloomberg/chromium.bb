@@ -54,7 +54,6 @@ class ExceptionState;
 // References are held by JS and HTMLMediaElement.
 // The ContentDecryptionModule has the same lifetime as this object.
 class MediaKeys : public RefCountedWillBeGarbageCollectedFinalized<MediaKeys>, public ContextLifecycleObserver, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<MediaKeys> create(ExecutionContext*, const String& keySystem, ExceptionState&);
     ~MediaKeys();

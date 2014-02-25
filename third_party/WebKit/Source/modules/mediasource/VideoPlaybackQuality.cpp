@@ -37,8 +37,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(VideoPlaybackQuality);
-
 PassRefPtrWillBeRawPtr<VideoPlaybackQuality> VideoPlaybackQuality::create(
     const Document& document, unsigned totalVideoFrames, unsigned droppedVideoFrames, unsigned corruptedVideoFrames)
 {

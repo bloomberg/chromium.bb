@@ -39,8 +39,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(DataObjectItem);
-
 PassRefPtrWillBeRawPtr<DataObjectItem> DataObjectItem::createFromString(const String& type, const String& data)
 {
     RefPtrWillBeRawPtr<DataObjectItem> item = adoptRefWillBeNoop(new DataObjectItem(StringKind, type));

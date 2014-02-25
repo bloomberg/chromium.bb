@@ -861,6 +861,8 @@ class GarbageCollected {
     void* operator new[](size_t size);
     void operator delete[](void* p);
 public:
+    typedef T GarbageCollectedBase;
+
     void* operator new(size_t size)
     {
         return Heap::allocate<T>(size);

@@ -33,7 +33,6 @@
 namespace WebCore {
 
 class PositionOptions : public RefCountedWillBeGarbageCollected<PositionOptions> {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<PositionOptions> create() { return adoptRefWillBeNoop(new PositionOptions()); }
     void trace(Visitor*) { }

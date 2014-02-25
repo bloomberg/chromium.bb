@@ -42,7 +42,6 @@ namespace WebCore {
 class Frame;
 
 class PerformanceNavigation FINAL : public RefCountedWillBeGarbageCollectedFinalized<PerformanceNavigation>, public ScriptWrappable, public DOMWindowProperty {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<PerformanceNavigation> create(Frame* frame)
     {

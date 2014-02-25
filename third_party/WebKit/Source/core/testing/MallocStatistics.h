@@ -34,7 +34,6 @@
 namespace WebCore {
 
 class MallocStatistics : public RefCountedWillBeGarbageCollected<MallocStatistics> {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<MallocStatistics> create()
     {

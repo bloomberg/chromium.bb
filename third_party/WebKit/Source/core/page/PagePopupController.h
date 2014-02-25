@@ -41,7 +41,6 @@ namespace WebCore {
 class PagePopupClient;
 
 class PagePopupController : public RefCountedWillBeGarbageCollectedFinalized<PagePopupController>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<PagePopupController> create(PagePopupClient*);
     void setValueAndClosePopup(int numValue, const String& stringValue);

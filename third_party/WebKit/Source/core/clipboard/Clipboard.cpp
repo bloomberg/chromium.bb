@@ -44,8 +44,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(Clipboard);
-
 // These "conversion" methods are called by both WebCore and WebKit, and never make sense to JS, so we don't
 // worry about security for these. They don't allow access to the pasteboard anyway.
 static DragOperation dragOpFromIEOp(const String& op)

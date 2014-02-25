@@ -55,7 +55,6 @@ class VoidCallback;
 
 // FIXME: oilpan: Change this to GarbageCollectedFinalized once we move ActiveDOMObject to oilpan.
 class NotificationCenter FINAL : public RefCountedWillBeGarbageCollectedFinalized<NotificationCenter>, public ScriptWrappable, public ActiveDOMObject {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<NotificationCenter> create(ExecutionContext*, NotificationClient*);
 
@@ -81,7 +80,6 @@ private:
     NotificationCenter(ExecutionContext*, NotificationClient*);
 
     class NotificationRequestCallback : public RefCountedWillBeGarbageCollectedFinalized<NotificationRequestCallback> {
-        DECLARE_GC_INFO;
     public:
         static PassRefPtrWillBeRawPtr<NotificationRequestCallback> createAndStartTimer(NotificationCenter*, PassOwnPtr<VoidCallback>);
         void startTimer();

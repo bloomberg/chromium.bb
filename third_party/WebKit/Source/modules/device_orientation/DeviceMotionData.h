@@ -38,11 +38,9 @@ class WebDeviceMotionData;
 namespace WebCore {
 
 class DeviceMotionData : public RefCountedWillBeGarbageCollected<DeviceMotionData> {
-    DECLARE_GC_INFO;
 public:
 
     class Acceleration : public RefCountedWillBeGarbageCollected<DeviceMotionData::Acceleration> {
-        DECLARE_GC_INFO;
     public:
         static PassRefPtrWillBeRawPtr<Acceleration> create(bool canProvideX, double x, bool canProvideY, double y, bool canProvideZ, double z);
         void trace(Visitor*) { }
@@ -68,7 +66,6 @@ public:
     };
 
     class RotationRate : public RefCountedWillBeGarbageCollected<DeviceMotionData::RotationRate> {
-        DECLARE_GC_INFO;
     public:
         static PassRefPtrWillBeRawPtr<RotationRate> create(bool canProvideAlpha, double alpha, bool canProvideBeta,  double beta, bool canProvideGamma, double gamma);
         void trace(Visitor*) { }

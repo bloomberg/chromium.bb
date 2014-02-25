@@ -38,8 +38,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(MediaKeySession);
-
 PassOwnPtr<MediaKeySession::PendingAction> MediaKeySession::PendingAction::CreatePendingUpdate(PassRefPtr<Uint8Array> data)
 {
     return adoptPtr(new PendingAction(Update, data));

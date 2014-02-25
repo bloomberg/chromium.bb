@@ -40,7 +40,6 @@ namespace WebCore {
 class Document;
 
 class VideoPlaybackQuality : public RefCountedWillBeGarbageCollected<VideoPlaybackQuality> {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<VideoPlaybackQuality> create(const Document&, unsigned totalVideoFrames, unsigned droppedVideoFrames, unsigned corruptedVideoFrames);
 

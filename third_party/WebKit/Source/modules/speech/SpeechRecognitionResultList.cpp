@@ -29,8 +29,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(SpeechRecognitionResultList);
-
 PassRefPtrWillBeRawPtr<SpeechRecognitionResultList> SpeechRecognitionResultList::create(const WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionResult> >& results)
 {
     return adoptRefWillBeNoop(new SpeechRecognitionResultList(results));

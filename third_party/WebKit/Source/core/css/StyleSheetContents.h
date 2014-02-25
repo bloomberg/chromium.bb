@@ -46,7 +46,6 @@ class StyleRuleFontFace;
 class StyleRuleImport;
 
 class StyleSheetContents : public RefCountedWillBeGarbageCollectedFinalized<StyleSheetContents> {
-    DECLARE_GC_INFO
 public:
     static PassRefPtrWillBeRawPtr<StyleSheetContents> create(const CSSParserContext& context)
     {

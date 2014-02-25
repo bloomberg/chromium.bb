@@ -28,8 +28,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(GamepadList);
-
 GamepadList::~GamepadList()
 {
 }

@@ -27,8 +27,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(DOMMimeType);
-
 DOMMimeType::DOMMimeType(PassRefPtr<PluginData> pluginData, Frame* frame, unsigned index)
     : FrameDestructionObserver(frame)
     , m_pluginData(pluginData)

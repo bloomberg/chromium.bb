@@ -37,7 +37,6 @@ class Node;
 
 class DragState : public NoBaseWillBeGarbageCollectedFinalized<DragState> {
     WTF_MAKE_NONCOPYABLE(DragState);
-    DECLARE_GC_INFO;
 public:
     DragState() { }
     RefPtr<Node> m_dragSrc; // element that may be a drag source, for the current mouse gesture

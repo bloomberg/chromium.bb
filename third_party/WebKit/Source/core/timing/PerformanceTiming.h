@@ -46,7 +46,6 @@ class Frame;
 class ResourceLoadTiming;
 
 class PerformanceTiming FINAL : public RefCountedWillBeGarbageCollectedFinalized<PerformanceTiming>, public ScriptWrappable, public DOMWindowProperty {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<PerformanceTiming> create(Frame* frame)
     {

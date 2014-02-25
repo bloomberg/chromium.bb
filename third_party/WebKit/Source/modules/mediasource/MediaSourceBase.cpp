@@ -68,8 +68,6 @@ static bool throwExceptionIfClosedOrUpdating(bool isOpen, bool isUpdating, Excep
 
 } // namespace
 
-DEFINE_GC_INFO(MediaSourceBase);
-
 MediaSourceBase::MediaSourceBase(ExecutionContext* context)
     : ActiveDOMObject(context)
     , m_readyState(closedKeyword())

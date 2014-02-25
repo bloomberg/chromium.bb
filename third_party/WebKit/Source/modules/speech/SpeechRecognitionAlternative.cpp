@@ -29,8 +29,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(SpeechRecognitionAlternative);
-
 PassRefPtrWillBeRawPtr<SpeechRecognitionAlternative> SpeechRecognitionAlternative::create(const String& transcript, double confidence)
 {
     return adoptRefWillBeNoop(new SpeechRecognitionAlternative(transcript, confidence));

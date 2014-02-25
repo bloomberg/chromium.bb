@@ -45,7 +45,6 @@ class Expression;
 }
 
 class XPathExpression : public RefCountedWillBeGarbageCollectedFinalized<XPathExpression>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<XPathExpression> create()
     {

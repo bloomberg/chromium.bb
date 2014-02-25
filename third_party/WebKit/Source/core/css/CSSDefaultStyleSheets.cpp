@@ -42,8 +42,6 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-DEFINE_GC_INFO(CSSDefaultStyleSheets);
-
 CSSDefaultStyleSheets& CSSDefaultStyleSheets::instance()
 {
 #if ENABLE(OILPAN)

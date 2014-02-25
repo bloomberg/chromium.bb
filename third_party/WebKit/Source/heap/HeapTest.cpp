@@ -115,7 +115,6 @@ private:
 };
 
 class SimpleObject : public GarbageCollected<SimpleObject> {
-    DECLARE_GC_INFO;
 public:
     static SimpleObject* create() { return new SimpleObject(); }
     void trace(Visitor*) { }
@@ -128,7 +127,6 @@ private:
 #undef DEFINE_VISITOR_METHODS
 
 class HeapTestSuperClass : public GarbageCollectedFinalized<HeapTestSuperClass> {
-    DECLARE_GC_INFO
 public:
     static HeapTestSuperClass* create()
     {
@@ -181,7 +179,6 @@ private:
 int HeapTestSubClass::s_destructorCalls = 0;
 
 class HeapAllocatedArray : public GarbageCollected<HeapAllocatedArray> {
-    DECLARE_GC_INFO
 public:
     HeapAllocatedArray()
     {
@@ -212,7 +209,6 @@ static void clearOutOldGarbage(HeapStats* heapStats)
 }
 
 class IntWrapper : public GarbageCollectedFinalized<IntWrapper> {
-    DECLARE_GC_INFO
 public:
     static IntWrapper* create(int x)
     {
@@ -327,7 +323,6 @@ void CheckWithSlack(T expected, T actual, int slack)
 }
 
 class TraceCounter : public GarbageCollectedFinalized<TraceCounter> {
-    DECLARE_GC_INFO
 public:
     static TraceCounter* create()
     {
@@ -348,7 +343,6 @@ private:
 };
 
 class ClassWithMember : public GarbageCollected<ClassWithMember> {
-    DECLARE_GC_INFO
 public:
     static ClassWithMember* create()
     {
@@ -377,7 +371,6 @@ private:
 };
 
 class SimpleFinalizedObject : public GarbageCollectedFinalized<SimpleFinalizedObject> {
-    DECLARE_GC_INFO
 public:
     static SimpleFinalizedObject* create()
     {
@@ -400,7 +393,6 @@ private:
 int SimpleFinalizedObject::s_destructorCalls = 0;
 
 class TestTypedHeapClass : public GarbageCollected<TestTypedHeapClass> {
-    DECLARE_GC_INFO
 public:
     static TestTypedHeapClass* create()
     {
@@ -414,7 +406,6 @@ private:
 };
 
 class Bar : public GarbageCollectedFinalized<Bar> {
-    DECLARE_GC_INFO
 public:
     static Bar* create()
     {
@@ -445,7 +436,6 @@ protected:
 unsigned Bar::s_live = 0;
 
 class Baz : public GarbageCollected<Baz> {
-    DECLARE_GC_INFO
 public:
     static Baz* create(Bar* bar)
     {
@@ -540,7 +530,6 @@ private:
 };
 
 class ConstructorAllocation : public GarbageCollected<ConstructorAllocation> {
-    DECLARE_GC_INFO
 public:
     static ConstructorAllocation* create() { return new ConstructorAllocation(); }
 
@@ -556,7 +545,6 @@ private:
 };
 
 class LargeObject : public GarbageCollectedFinalized<LargeObject> {
-    DECLARE_GC_INFO
 public:
     ~LargeObject()
     {
@@ -585,7 +573,6 @@ private:
 int LargeObject::s_destructorCalls = 0;
 
 class RefCountedAndGarbageCollected : public RefCountedGarbageCollected<RefCountedAndGarbageCollected> {
-    DECLARE_GC_INFO
 public:
     static PassRefPtr<RefCountedAndGarbageCollected> create()
     {
@@ -610,7 +597,6 @@ private:
 int RefCountedAndGarbageCollected::s_destructorCalls = 0;
 
 class RefCountedAndGarbageCollected2 : public HeapTestOtherSuperClass, public RefCountedGarbageCollected<RefCountedAndGarbageCollected2> {
-    DECLARE_GC_INFO
 public:
     static RefCountedAndGarbageCollected2* create()
     {
@@ -770,7 +756,6 @@ private:
 class SuperClass;
 
 class PointsBack : public RefCountedWillBeGarbageCollectedFinalized<PointsBack> {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<PointsBack> create()
     {
@@ -809,7 +794,6 @@ private:
 int PointsBack::s_aliveCount = 0;
 
 class SuperClass : public RefCountedWillBeGarbageCollectedFinalized<SuperClass> {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<SuperClass> create(PassRefPtrWillBeRawPtr<PointsBack> pointsBack)
     {
@@ -856,7 +840,6 @@ private:
 
 int SuperClass::s_aliveCount = 0;
 class SubData : public NoBaseWillBeGarbageCollectedFinalized<SubData> {
-    DECLARE_GC_INFO
 public:
     SubData() { ++s_aliveCount; }
     ~SubData() { --s_aliveCount; }
@@ -904,7 +887,6 @@ private:
 int SubClass::s_aliveCount = 0;
 
 class TransitionRefCounted : public RefCountedWillBeRefCountedGarbageCollected<TransitionRefCounted> {
-    DECLARE_GC_INFO
 public:
     static PassRefPtrWillBeRawPtr<TransitionRefCounted> create()
     {
@@ -1478,7 +1460,6 @@ TEST(HeapTest, LargeObjects)
 }
 
 class Container : public GarbageCollected<Container> {
-    DECLARE_GC_INFO
 public:
     static Container* create() { return new Container(); }
     HeapHashMap<Member<IntWrapper>, Member<IntWrapper> > map;
@@ -1501,7 +1482,6 @@ struct ShouldBeTraced {
 };
 
 class OffHeapContainer : public GarbageCollectedFinalized<OffHeapContainer> {
-    DECLARE_GC_INFO
 public:
     static OffHeapContainer* create() { return new OffHeapContainer(); }
 
@@ -2288,26 +2268,5 @@ TEST(HeapTest, CollectionNesting)
     EXPECT_EQ(1u, map->get(key).size());
     EXPECT_EQ(0, IntWrapper::s_destructorCalls);
 }
-
-DEFINE_GC_INFO(Bar);
-DEFINE_GC_INFO(Baz);
-DEFINE_GC_INFO(ClassWithMember);
-DEFINE_GC_INFO(ConstructorAllocation);
-DEFINE_GC_INFO(Container);
-DEFINE_GC_INFO(HeapAllocatedArray);
-DEFINE_GC_INFO(HeapTestSuperClass);
-DEFINE_GC_INFO(IntWrapper);
-DEFINE_GC_INFO(LargeObject);
-DEFINE_GC_INFO(OffHeapContainer);
-DEFINE_GC_INFO(PointsBack);
-DEFINE_GC_INFO(RefCountedAndGarbageCollected);
-DEFINE_GC_INFO(RefCountedAndGarbageCollected2);
-DEFINE_GC_INFO(SimpleFinalizedObject);
-DEFINE_GC_INFO(SimpleObject);
-DEFINE_GC_INFO(SuperClass);
-DEFINE_GC_INFO(SubData);
-DEFINE_GC_INFO(TestTypedHeapClass);
-DEFINE_GC_INFO(TraceCounter);
-DEFINE_GC_INFO(TransitionRefCounted);
 
 } // namespace

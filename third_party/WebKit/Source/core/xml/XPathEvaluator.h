@@ -42,7 +42,6 @@ class XPathNSResolver;
 class XPathResult;
 
 class XPathEvaluator : public RefCountedWillBeGarbageCollectedFinalized<XPathEvaluator>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<XPathEvaluator> create()
     {

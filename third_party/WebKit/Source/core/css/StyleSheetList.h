@@ -34,7 +34,6 @@ class HTMLStyleElement;
 class StyleSheet;
 
 class StyleSheetList : public RefCountedWillBeGarbageCollectedFinalized<StyleSheetList> {
-    DECLARE_GC_INFO
 public:
     static PassRefPtrWillBeRawPtr<StyleSheetList> create(TreeScope* treeScope) { return adoptRefWillBeNoop(new StyleSheetList(treeScope)); }
     ~StyleSheetList();

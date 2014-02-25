@@ -46,7 +46,6 @@ class Algorithm;
 class CryptoResult;
 
 class Key : public RefCountedWillBeGarbageCollectedFinalized<Key>,  public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<Key> create(const blink::WebCryptoKey& key)
     {

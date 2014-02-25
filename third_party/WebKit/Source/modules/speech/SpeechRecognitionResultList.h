@@ -35,7 +35,6 @@
 namespace WebCore {
 
 class SpeechRecognitionResultList : public RefCountedWillBeGarbageCollectedFinalized<SpeechRecognitionResultList>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<SpeechRecognitionResultList> create(const WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionResult> >&);
 

@@ -40,8 +40,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(Key);
-
 namespace {
 
 const char* keyTypeToString(blink::WebCryptoKeyType type)

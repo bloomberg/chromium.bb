@@ -40,7 +40,6 @@
 namespace WebCore {
 
 class WorkerCrypto : public RefCountedWillBeGarbageCollectedFinalized<WorkerCrypto>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<WorkerCrypto> create()
     {

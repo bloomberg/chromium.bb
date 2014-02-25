@@ -29,8 +29,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(DeviceOrientationData);
-
 PassRefPtrWillBeRawPtr<DeviceOrientationData> DeviceOrientationData::create()
 {
     return adoptRefWillBeNoop(new DeviceOrientationData);

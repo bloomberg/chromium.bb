@@ -43,8 +43,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(SubtleCrypto);
-
 namespace {
 
 bool parseAlgorithm(const Dictionary& rawAlgorithm, AlgorithmOperation operationType, blink::WebCryptoAlgorithm &algorithm, ExceptionState& exceptionState, CryptoResult* result)

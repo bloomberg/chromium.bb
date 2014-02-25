@@ -60,8 +60,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(CSSValue);
-
 struct SameSizeAsCSSValue : public RefCountedWillBeRefCountedGarbageCollected<SameSizeAsCSSValue> {
     uint32_t bitfields;
 };

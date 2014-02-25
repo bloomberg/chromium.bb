@@ -37,7 +37,6 @@ namespace WebCore {
 class ExecutionContext;
 
 class SpeechGrammar : public RefCountedWillBeGarbageCollectedFinalized<SpeechGrammar>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<SpeechGrammar> create(); // FIXME: The spec is not clear on what the constructor should look like.
     static PassRefPtrWillBeRawPtr<SpeechGrammar> create(const KURL& src, double weight);

@@ -37,8 +37,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(WorkerPerformance);
-
 WorkerPerformance::WorkerPerformance()
 {
     ScriptWrappable::init(this);

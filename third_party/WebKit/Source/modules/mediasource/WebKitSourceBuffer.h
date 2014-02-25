@@ -48,7 +48,6 @@ class TimeRanges;
 class WebKitMediaSource;
 
 class WebKitSourceBuffer FINAL : public RefCountedWillBeGarbageCollectedFinalized<WebKitSourceBuffer>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<WebKitSourceBuffer> create(PassOwnPtr<blink::WebSourceBuffer>, PassRefPtrWillBeRawPtr<WebKitMediaSource>);
 

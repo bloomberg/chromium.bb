@@ -31,8 +31,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(SpeechGrammarList);
-
 PassRefPtrWillBeRawPtr<SpeechGrammarList> SpeechGrammarList::create()
 {
     return adoptRefWillBeNoop(new SpeechGrammarList);

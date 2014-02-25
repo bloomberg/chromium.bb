@@ -45,7 +45,6 @@ class ExceptionState;
 class PlatformSpeechSynthesizerClient;
 
 class SpeechSynthesis FINAL : public RefCountedWillBeRefCountedGarbageCollected<SpeechSynthesis>, public PlatformSpeechSynthesizerClient, public ScriptWrappable, public ContextLifecycleObserver, public EventTargetWithInlineData {
-    DECLARE_GC_INFO;
     DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<SpeechSynthesis>);
 public:
     static PassRefPtrWillBeRawPtr<SpeechSynthesis> create(ExecutionContext*);

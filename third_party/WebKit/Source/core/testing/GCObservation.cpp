@@ -33,8 +33,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(GCObservation);
-
 static void setWeakCallback(const v8::WeakCallbackData<v8::Value, GCObservation>& data)
 {
     data.GetParameter()->setWasCollected();

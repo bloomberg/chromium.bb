@@ -27,7 +27,6 @@
 namespace WebCore {
 
 class Counter : public RefCountedWillBeGarbageCollected<Counter> {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<Counter> create(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> identifier, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> listStyle, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> separator)
     {

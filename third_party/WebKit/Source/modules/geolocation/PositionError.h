@@ -35,7 +35,6 @@
 namespace WebCore {
 
 class PositionError : public RefCountedWillBeGarbageCollectedFinalized<PositionError>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     enum ErrorCode {
         PERMISSION_DENIED = 1,

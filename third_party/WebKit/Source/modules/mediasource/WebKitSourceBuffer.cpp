@@ -52,8 +52,6 @@ static bool throwExceptionIfRemoved(bool isRemoved, ExceptionState& exceptionSta
     return false;
 }
 
-DEFINE_GC_INFO(WebKitSourceBuffer);
-
 PassRefPtrWillBeRawPtr<WebKitSourceBuffer> WebKitSourceBuffer::create(PassOwnPtr<WebSourceBuffer> webSourceBuffer, PassRefPtrWillBeRawPtr<WebKitMediaSource> source)
 {
     return adoptRefWillBeNoop(new WebKitSourceBuffer(webSourceBuffer, source));

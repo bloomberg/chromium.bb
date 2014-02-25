@@ -44,7 +44,6 @@ class StorageQuotaCallback;
 class StorageUsageCallback;
 
 class DeprecatedStorageQuota : public RefCountedWillBeGarbageCollectedFinalized<DeprecatedStorageQuota>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     enum Type {
         Temporary,

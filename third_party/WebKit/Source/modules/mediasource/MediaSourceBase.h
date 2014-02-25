@@ -50,7 +50,6 @@ class ExceptionState;
 class GenericEventQueue;
 
 class MediaSourceBase : public RefCountedWillBeRefCountedGarbageCollected<MediaSourceBase>, public HTMLMediaSource, public ActiveDOMObject, public EventTargetWithInlineData {
-    DECLARE_GC_INFO;
     DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<MediaSourceBase>);
 public:
     static const AtomicString& openKeyword();

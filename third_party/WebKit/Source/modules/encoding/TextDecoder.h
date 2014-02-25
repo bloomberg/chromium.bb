@@ -44,7 +44,6 @@ namespace WebCore {
 class ExceptionState;
 
 class TextDecoder FINAL : public RefCountedWillBeGarbageCollectedFinalized<TextDecoder> {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<TextDecoder> create(const String& label, const Dictionary&, ExceptionState&);
     ~TextDecoder();

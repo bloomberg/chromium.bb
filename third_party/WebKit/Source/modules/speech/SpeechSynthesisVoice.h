@@ -36,7 +36,6 @@
 namespace WebCore {
 
 class SpeechSynthesisVoice FINAL : public RefCountedWillBeGarbageCollectedFinalized<SpeechSynthesisVoice>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<SpeechSynthesisVoice> create(PassRefPtr<PlatformSpeechSynthesisVoice>);
 

@@ -37,8 +37,6 @@ using namespace WTF;
 
 namespace WebCore {
 
-DEFINE_GC_INFO(CSSBasicShape);
-
 static String buildRectangleString(const String& x, const String& y, const String& width, const String& height, const String& radiusX, const String& radiusY, const String& layoutBox)
 {
     const char opening[] = "rectangle(";

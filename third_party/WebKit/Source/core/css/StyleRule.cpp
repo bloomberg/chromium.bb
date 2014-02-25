@@ -36,8 +36,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(StyleRuleBase);
-
 struct SameSizeAsStyleRuleBase : public RefCountedWillBeRefCountedGarbageCollected<SameSizeAsStyleRuleBase> {
     unsigned bitfields;
 };

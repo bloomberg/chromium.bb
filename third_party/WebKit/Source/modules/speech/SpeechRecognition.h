@@ -45,7 +45,6 @@ class SpeechRecognitionController;
 class SpeechRecognitionError;
 
 class SpeechRecognition FINAL : public RefCountedWillBeRefCountedGarbageCollected<SpeechRecognition>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData {
-    DECLARE_GC_INFO;
     DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<SpeechRecognition>);
 public:
     static PassRefPtrWillBeRawPtr<SpeechRecognition> create(ExecutionContext*);

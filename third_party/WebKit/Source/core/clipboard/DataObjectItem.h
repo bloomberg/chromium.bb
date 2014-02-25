@@ -44,7 +44,6 @@ namespace WebCore {
 class Blob;
 
 class DataObjectItem : public RefCountedWillBeGarbageCollectedFinalized<DataObjectItem> {
-    DECLARE_GC_INFO;
 public:
     enum Kind {
         StringKind,

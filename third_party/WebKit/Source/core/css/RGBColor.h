@@ -36,7 +36,6 @@ namespace WebCore {
     class CSSPrimitiveValue;
 
     class RGBColor : public RefCountedWillBeGarbageCollected<RGBColor> {
-        DECLARE_GC_INFO
     public:
         static PassRefPtrWillBeRawPtr<RGBColor> create(unsigned rgbColor);
 

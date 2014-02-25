@@ -32,7 +32,6 @@ class ExceptionState;
 class Node;
 
 class XMLSerializer : public RefCountedWillBeGarbageCollectedFinalized<XMLSerializer>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<XMLSerializer> create()
     {

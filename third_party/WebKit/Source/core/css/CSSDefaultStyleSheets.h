@@ -32,7 +32,6 @@ class RuleSet;
 class StyleSheetContents;
 
 class CSSDefaultStyleSheets : public NoBaseWillBeGarbageCollected<CSSDefaultStyleSheets> {
-    DECLARE_GC_INFO
 public:
     static CSSDefaultStyleSheets& instance();
 

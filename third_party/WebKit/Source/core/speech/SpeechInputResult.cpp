@@ -30,8 +30,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(SpeechInputResult);
-
 PassRefPtrWillBeRawPtr<SpeechInputResult> SpeechInputResult::create(const String& utterance, double confidence)
 {
     return adoptRefWillBeNoop(new SpeechInputResult(utterance, confidence));

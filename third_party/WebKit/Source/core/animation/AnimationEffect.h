@@ -42,7 +42,6 @@ namespace WebCore {
 class AnimatableValue;
 
 class AnimationEffect : public RefCountedWillBeGarbageCollectedFinalized<AnimationEffect> {
-    DECLARE_GC_INFO;
 public:
     enum CompositeOperation {
         CompositeReplace,

@@ -38,7 +38,6 @@ namespace WebCore {
 // holding a WebPrivatePtr (a RefPtr) to this result object. When/if such pointers
 // can be to GCed objects, we can drop the extra reference counting layer.
 class SpeechRecognitionResult : public RefCountedWillBeGarbageCollected<SpeechRecognitionResult>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     ~SpeechRecognitionResult();
     static PassRefPtrWillBeRawPtr<SpeechRecognitionResult> create(const WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionAlternative> >&, bool final);

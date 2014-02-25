@@ -306,8 +306,6 @@ EventHandler::~EventHandler()
     ASSERT(!m_fakeMouseMoveEventTimer.isActive());
 }
 
-DEFINE_GC_INFO(DragState);
-
 DragState& EventHandler::dragState()
 {
 #if ENABLE(OILPAN)

@@ -47,8 +47,6 @@ enum ParseState {
 
 namespace WebCore {
 
-DEFINE_GC_INFO(CSSCalcExpressionNode);
-
 static CalculationCategory unitCategory(CSSPrimitiveValue::UnitTypes type)
 {
     switch (type) {

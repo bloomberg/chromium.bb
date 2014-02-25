@@ -36,7 +36,6 @@ namespace WebCore {
 class ExecutionContext;
 
 class SpeechRecognitionAlternative : public RefCountedWillBeGarbageCollectedFinalized<SpeechRecognitionAlternative>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<SpeechRecognitionAlternative> create(const String&, double);
 

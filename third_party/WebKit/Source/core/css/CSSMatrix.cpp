@@ -40,8 +40,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(CSSMatrix);
-
 CSSMatrix::CSSMatrix(const TransformationMatrix& m)
     : m_matrix(m)
 {

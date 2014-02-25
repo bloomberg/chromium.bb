@@ -50,7 +50,6 @@ class Range;
 
 // State available during IE's events for drag and drop and copy/paste
 class Clipboard : public RefCountedWillBeGarbageCollectedFinalized<Clipboard>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     // Whether this clipboard is serving a drag-drop or copy-paste request.
     enum ClipboardType {

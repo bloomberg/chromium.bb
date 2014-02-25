@@ -42,7 +42,6 @@ namespace WebCore {
 class Frame;
 
 class MemoryInfo : public RefCountedWillBeGarbageCollectedFinalized<MemoryInfo>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<MemoryInfo> create(Frame* frame)
     {

@@ -34,7 +34,6 @@
 namespace WebCore {
 
 class Coordinates : public RefCountedWillBeGarbageCollectedFinalized<Coordinates>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<Coordinates> create(double latitude, double longitude, bool providesAltitude, double altitude, double accuracy, bool providesAltitudeAccuracy, double altitudeAccuracy, bool providesHeading, double heading, bool providesSpeed, double speed)
     {

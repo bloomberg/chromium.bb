@@ -36,8 +36,6 @@ namespace WebCore {
 
 using namespace XPath;
 
-DEFINE_GC_INFO(XPathResult);
-
 XPathResult::XPathResult(Document* document, const Value& value)
     : m_value(value)
     , m_nodeSetPosition(0)

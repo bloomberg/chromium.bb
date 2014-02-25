@@ -39,8 +39,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(MediaKeys);
-
 PassRefPtrWillBeRawPtr<MediaKeys> MediaKeys::create(ExecutionContext* context, const String& keySystem, ExceptionState& exceptionState)
 {
     // From <http://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-media-keys-constructor>:

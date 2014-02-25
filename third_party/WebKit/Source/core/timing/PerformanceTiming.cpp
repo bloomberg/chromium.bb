@@ -42,8 +42,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(PerformanceTiming);
-
 static unsigned long long toIntegerMilliseconds(double seconds)
 {
     ASSERT(seconds >= 0);

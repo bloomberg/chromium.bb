@@ -33,8 +33,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(PerformanceEntry);
-
 PerformanceEntry::PerformanceEntry(const String& name, const String& entryType, double startTime, double finishTime)
     : m_name(name)
     , m_entryType(entryType)

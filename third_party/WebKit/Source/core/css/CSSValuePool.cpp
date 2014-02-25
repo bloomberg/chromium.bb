@@ -32,8 +32,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(CSSValuePool);
-
 CSSValuePool& cssValuePool()
 {
 #if ENABLE(OILPAN)

@@ -41,7 +41,6 @@
 namespace WebCore {
 
 class PerformanceEntry : public RefCountedWillBeGarbageCollectedFinalized<PerformanceEntry>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     virtual ~PerformanceEntry();
 

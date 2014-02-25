@@ -60,8 +60,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(XMLHttpRequest);
-
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, xmlHttpRequestCounter, ("XMLHttpRequest"));
 
 // Histogram enum to see when we can deprecate xhr.send(ArrayBuffer).

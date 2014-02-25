@@ -36,7 +36,6 @@ class Frame;
 class PluginData;
 
 class DOMPluginArray FINAL : public RefCountedWillBeGarbageCollected<DOMPluginArray>, public ScriptWrappable, public DOMWindowProperty {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<DOMPluginArray> create(Frame* frame)
     {

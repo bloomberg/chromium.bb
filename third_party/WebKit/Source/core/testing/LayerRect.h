@@ -44,7 +44,6 @@ namespace WebCore {
 class Node;
 
 class LayerRect : public RefCountedWillBeGarbageCollectedFinalized<LayerRect> {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<LayerRect> create(PassRefPtr<Node> node, const String& layerType, PassRefPtr<ClientRect> rect)
     {

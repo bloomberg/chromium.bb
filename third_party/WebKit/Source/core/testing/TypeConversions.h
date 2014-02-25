@@ -33,7 +33,6 @@
 namespace WebCore {
 
 class TypeConversions : public RefCountedWillBeGarbageCollected<TypeConversions> {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<TypeConversions> create()
     {

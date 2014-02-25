@@ -37,7 +37,6 @@ namespace WebCore {
 class ExecutionContext;
 
 class SpeechGrammarList : public RefCountedWillBeGarbageCollectedFinalized<SpeechGrammarList>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<SpeechGrammarList> create();
 

@@ -94,9 +94,6 @@ const double accuracyForKeyframeEasing = 0.0000001;
 
 namespace WebCore {
 
-DEFINE_GC_INFO(Keyframe);
-DEFINE_GC_INFO(AnimationEffect);
-
 Keyframe::Keyframe()
     : m_offset(nullValue())
     , m_composite(AnimationEffect::CompositeReplace)

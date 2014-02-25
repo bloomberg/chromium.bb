@@ -136,12 +136,6 @@
 namespace WebCore {
 
 // FIXME: oilpan: These will be removed soon.
-DEFINE_GC_INFO(InternalRuntimeFlags);
-DEFINE_GC_INFO(TypeConversions);
-DEFINE_GC_INFO(MallocStatistics);
-DEFINE_GC_INFO(LayerRect);
-DEFINE_GC_INFO(Internals);
-
 static MockPagePopupDriver* s_pagePopupDriver = 0;
 
 using namespace HTMLNames;

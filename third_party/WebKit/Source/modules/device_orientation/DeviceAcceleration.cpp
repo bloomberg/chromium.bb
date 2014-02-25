@@ -28,8 +28,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(DeviceAcceleration);
-
 DeviceAcceleration::DeviceAcceleration(PassRefPtrWillBeRawPtr<DeviceMotionData::Acceleration> acceleration)
     : m_acceleration(acceleration)
 {

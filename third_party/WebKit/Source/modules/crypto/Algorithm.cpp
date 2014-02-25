@@ -36,8 +36,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(Algorithm);
-
 PassRefPtrWillBeRawPtr<Algorithm> Algorithm::create(const blink::WebCryptoAlgorithm& algorithm)
 {
     return adoptRefWillBeNoop(new Algorithm(algorithm));

@@ -36,7 +36,6 @@ class MutableStylePropertySet;
 class StylePropertySet;
 
 class StyleRuleBase : public RefCountedWillBeGarbageCollectedFinalized<StyleRuleBase> {
-    DECLARE_GC_INFO;
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     enum Type {

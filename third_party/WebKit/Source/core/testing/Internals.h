@@ -69,7 +69,6 @@ class ShadowRoot;
 class TypeConversions;
 
 class Internals FINAL : public RefCountedWillBeGarbageCollectedFinalized<Internals>, public ContextLifecycleObserver {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<Internals> create(Document*);
     virtual ~Internals();

@@ -27,8 +27,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(DOMPluginArray);
-
 DOMPluginArray::DOMPluginArray(Frame* frame)
     : DOMWindowProperty(frame)
 {

@@ -42,6 +42,7 @@
 #include "wtf/ListHashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
+#include "wtf/TypeTraits.h"
 
 #ifndef NDEBUG
 #define DEBUG_ONLY(x) x
@@ -91,19 +92,6 @@ struct GCInfo {
     bool m_nonTrivialFinalizer;
 };
 
-// Template struct to detect whether type T inherits from
-// GarbageCollectedFinalized.
-template<typename T>
-struct IsGarbageCollectedFinalized {
-    typedef char TrueType;
-    struct FalseType {
-        char dummy[2];
-    };
-    template<typename U> static TrueType has(GarbageCollectedFinalized<U>*);
-    static FalseType has(...);
-    static bool const value = sizeof(has(static_cast<T*>(0))) == sizeof(TrueType);
-};
-
 // The FinalizerTraitImpl specifies how to finalize objects. Object
 // that inherit from GarbageCollectedFinalized are finalized by
 // calling their 'finalize' method which by default will call the
@@ -130,35 +118,13 @@ struct FinalizerTraitImpl<T, false> {
 // behavior is not desired.
 template<typename T>
 struct FinalizerTrait {
-    static const bool nonTrivialFinalizer = IsGarbageCollectedFinalized<T>::value;
+    static const bool nonTrivialFinalizer = WTF::IsSubclassOfTemplate<T, GarbageCollectedFinalized>::value;
     static void finalize(void* obj) { FinalizerTraitImpl<T, nonTrivialFinalizer>::finalize(obj); }
 };
 
-// Macros to declare and define GCInfo structures for objects
-// allocated in the Blink garbage-collected heap.
-#define DECLARE_GC_INFO                                                       \
-public:                                                                       \
-    static const GCInfo s_gcInfo;                                             \
-    template<typename Any> friend struct FinalizerTrait;                      \
-private:                                                                      \
-
-#define DEFINE_GC_INFO(Type)                                                  \
-const GCInfo Type::s_gcInfo = {                                               \
-    #Type,                                                                    \
-    TraceTrait<Type>::trace,                                                  \
-    FinalizerTrait<Type>::finalize,                                           \
-    FinalizerTrait<Type>::nonTrivialFinalizer,                                \
-};                                                                            \
-
 // Trait to get the GCInfo structure for types that have their
 // instances allocated in the Blink garbage-collected heap.
-template<typename T>
-struct GCInfoTrait {
-    static const GCInfo* get()
-    {
-        return &T::s_gcInfo;
-    }
-};
+template<typename T> struct GCInfoTrait;
 
 template<typename T>
 const char* getTypeMarker()
@@ -544,6 +510,42 @@ template<typename T> bool ObjectAliveTrait<Member<T> >::isAlive(Visitor* visitor
 {
     return visitor->isMarked(obj.get());
 }
+
+template<typename T>
+struct GCInfoAtBase {
+    static const GCInfo* get()
+    {
+        static char pseudoTypeMarker = 'a';
+        static const GCInfo gcInfo = {
+            &pseudoTypeMarker,
+            TraceTrait<T>::trace,
+            FinalizerTrait<T>::finalize,
+            FinalizerTrait<T>::nonTrivialFinalizer,
+        };
+        return &gcInfo;
+    }
+};
+
+template<typename T> class GarbageCollected;
+template<typename T, bool = WTF::IsSubclassOfTemplate<T, GarbageCollected>::value> struct GetGarbageCollectedBase;
+
+template<typename T>
+struct GetGarbageCollectedBase<T, true> {
+    typedef typename T::GarbageCollectedBase type;
+};
+
+template<typename T>
+struct GetGarbageCollectedBase<T, false> {
+    typedef T type;
+};
+
+template<typename T>
+struct GCInfoTrait {
+    static const GCInfo* get()
+    {
+        return GCInfoAtBase<typename GetGarbageCollectedBase<T>::type>::get();
+    }
+};
 
 }
 

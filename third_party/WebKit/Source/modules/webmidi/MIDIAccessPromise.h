@@ -50,7 +50,6 @@ class ExecutionContext;
 struct MIDIOptions;
 
 class MIDIAccessPromise FINAL : public RefCountedWillBeRefCountedGarbageCollected<MIDIAccessPromise>, public ScriptWrappable, public ActiveDOMObject {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<MIDIAccessPromise> create(ExecutionContext*, const Dictionary&);
     virtual ~MIDIAccessPromise();

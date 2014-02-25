@@ -37,8 +37,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(XSLTProcessor);
-
 static inline void transformTextStringToXHTMLDocumentString(String& text)
 {
     // Modify the output so that it is a well-formed XHTML document with a <pre> tag enclosing the text.

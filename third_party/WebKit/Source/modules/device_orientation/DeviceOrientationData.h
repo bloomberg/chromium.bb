@@ -37,7 +37,6 @@ class WebDeviceOrientationData;
 namespace WebCore {
 
 class DeviceOrientationData : public RefCountedWillBeGarbageCollected<DeviceOrientationData> {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<DeviceOrientationData> create();
     static PassRefPtrWillBeRawPtr<DeviceOrientationData> create(bool canProvideAlpha, double alpha, bool canProvideBeta, double beta, bool canProvideGamma, double gamma, bool canProvideAbsolute = false, bool absolute = false);

@@ -45,7 +45,6 @@ class LayerRect;
 class Node;
 
 class LayerRectList : public RefCountedWillBeGarbageCollected<LayerRectList> {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<LayerRectList> create()
     {

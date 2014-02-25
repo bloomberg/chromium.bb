@@ -7,8 +7,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(Pair);
-
 void Pair::trace(Visitor* visitor)
 {
     visitor->trace(m_first);

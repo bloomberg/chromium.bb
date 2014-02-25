@@ -58,7 +58,6 @@ class Stream;
 class TimeRanges;
 
 class SourceBuffer FINAL : public RefCountedWillBeRefCountedGarbageCollected<SourceBuffer>, public ActiveDOMObject, public EventTargetWithInlineData, public ScriptWrappable, public FileReaderLoaderClient {
-    DECLARE_GC_INFO;
     DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<SourceBuffer>);
 public:
     static PassRefPtrWillBeRawPtr<SourceBuffer> create(PassOwnPtr<blink::WebSourceBuffer>, MediaSource*, GenericEventQueue*);

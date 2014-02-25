@@ -7,8 +7,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(Counter);
-
 void Counter::trace(Visitor* visitor)
 {
     visitor->trace(m_identifier);

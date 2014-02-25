@@ -41,8 +41,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(WebKitNotification);
-
 PassRefPtrWillBeRawPtr<WebKitNotification> WebKitNotification::create(const String& title, const String& body, const String& iconUrl, ExecutionContext* context, ExceptionState& es, PassRefPtrWillBeRawPtr<NotificationCenter> provider)
 {
     RefPtrWillBeRawPtr<WebKitNotification> notification = adoptRefCountedWillBeRefCountedGarbageCollected(new WebKitNotification(title, body, iconUrl, context, es, provider));

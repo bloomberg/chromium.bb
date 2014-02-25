@@ -49,7 +49,6 @@ class TreeScope;
 class VisibleSelection;
 
 class DOMSelection FINAL : public RefCountedWillBeGarbageCollectedFinalized<DOMSelection>, public ScriptWrappable, public DOMWindowProperty {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<DOMSelection> create(const TreeScope* treeScope)
     {

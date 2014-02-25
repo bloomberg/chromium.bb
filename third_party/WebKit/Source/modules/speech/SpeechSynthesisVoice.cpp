@@ -28,8 +28,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(SpeechSynthesisVoice);
-
 PassRefPtrWillBeRawPtr<SpeechSynthesisVoice> SpeechSynthesisVoice::create(PassRefPtr<PlatformSpeechSynthesisVoice> voice)
 {
     return adoptRefWillBeNoop(new SpeechSynthesisVoice(voice));

@@ -40,8 +40,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(Notification);
-
 PassRefPtrWillBeRawPtr<Notification> Notification::create(ExecutionContext* context, const String& title, const Dictionary& options)
 {
     NotificationClient* client = NotificationController::clientFrom(toDocument(context)->page());

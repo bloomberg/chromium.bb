@@ -55,8 +55,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(EventSource);
-
 const unsigned long long EventSource::defaultReconnectDelay = 3000;
 
 inline EventSource::EventSource(ExecutionContext* context, const KURL& url, const Dictionary& eventSourceInit)

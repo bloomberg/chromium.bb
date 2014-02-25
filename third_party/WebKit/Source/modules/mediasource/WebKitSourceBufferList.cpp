@@ -37,8 +37,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(WebKitSourceBufferList);
-
 WebKitSourceBufferList::WebKitSourceBufferList(ExecutionContext* context, GenericEventQueue* asyncEventQueue)
     : m_executionContext(context)
     , m_asyncEventQueue(asyncEventQueue)

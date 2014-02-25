@@ -28,8 +28,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(DeviceRotationRate);
-
 DeviceRotationRate::DeviceRotationRate(PassRefPtrWillBeRawPtr<DeviceMotionData::RotationRate> rotationRate)
     : m_rotationRate(rotationRate)
 {

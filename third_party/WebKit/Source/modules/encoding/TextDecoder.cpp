@@ -38,8 +38,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(TextDecoder);
-
 PassRefPtrWillBeRawPtr<TextDecoder> TextDecoder::create(const String& label, const Dictionary& options, ExceptionState& exceptionState)
 {
     const String& encodingLabel = label.isNull() ? String("utf-8") : label;

@@ -44,7 +44,6 @@ class ExecutionContext;
 class URLRegistrable;
 
 class DOMURL FINAL : public RefCountedWillBeGarbageCollectedFinalized<DOMURL>, public ScriptWrappable, public DOMURLUtils {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<DOMURL> create(const String& url, ExceptionState& exceptionState)
     {

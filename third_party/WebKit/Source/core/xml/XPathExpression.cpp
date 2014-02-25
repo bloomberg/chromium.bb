@@ -38,8 +38,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(XPathExpression);
-
 using namespace XPath;
 
 PassRefPtrWillBeRawPtr<XPathExpression> XPathExpression::createExpression(const String& expression, PassRefPtrWillBeRawPtr<XPathNSResolver> resolver, ExceptionState& exceptionState)

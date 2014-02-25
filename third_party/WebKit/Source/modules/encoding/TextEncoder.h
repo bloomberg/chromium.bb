@@ -45,7 +45,6 @@ class Dictionary;
 class ExceptionState;
 
 class TextEncoder FINAL : public RefCountedWillBeGarbageCollectedFinalized<TextEncoder> {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<TextEncoder> create(const String& utfLabel, ExceptionState&);
     ~TextEncoder();

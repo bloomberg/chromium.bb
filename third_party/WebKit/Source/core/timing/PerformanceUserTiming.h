@@ -45,7 +45,6 @@ typedef unsigned long long (PerformanceTiming::*NavigationTimingFunction)() cons
 typedef WillBeHeapHashMap<String, PerformanceEntryVector> PerformanceEntryMap;
 
 class UserTiming : public RefCountedWillBeGarbageCollected<UserTiming> {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<UserTiming> create(Performance* performance)
     {

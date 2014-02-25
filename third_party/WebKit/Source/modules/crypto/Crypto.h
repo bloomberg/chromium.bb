@@ -41,7 +41,6 @@ namespace WebCore {
 class ExceptionState;
 
 class Crypto : public RefCountedWillBeGarbageCollectedFinalized<Crypto>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<Crypto> create() { return adoptRefWillBeNoop(new Crypto()); }
 

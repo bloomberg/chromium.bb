@@ -37,8 +37,6 @@
 
 namespace WebCore {
 
-DEFINE_GC_INFO(SpeechRecognition);
-
 PassRefPtrWillBeRawPtr<SpeechRecognition> SpeechRecognition::create(ExecutionContext* context)
 {
     RefPtrWillBeRawPtr<SpeechRecognition> speechRecognition(adoptRefCountedWillBeRefCountedGarbageCollected(new SpeechRecognition(context)));

@@ -77,8 +77,6 @@ static PassRefPtrWillBeRawPtr<PositionError> createPositionError(GeolocationErro
     return PositionError::create(code, error->message());
 }
 
-DEFINE_GC_INFO(Geolocation::GeoNotifier);
-
 Geolocation::GeoNotifier::GeoNotifier(Geolocation* geolocation, PassOwnPtr<PositionCallback> successCallback, PassOwnPtr<PositionErrorCallback> errorCallback, PassRefPtrWillBeRawPtr<PositionOptions> options)
     : m_geolocation(geolocation)
     , m_successCallback(successCallback)
@@ -250,8 +248,6 @@ void Geolocation::Watchers::getNotifiersVector(GeoNotifierVector& copy) const
 {
     copyValuesToVector(m_idToNotifierMap, copy);
 }
-
-DEFINE_GC_INFO(Geolocation);
 
 PassRefPtrWillBeRawPtr<Geolocation> Geolocation::create(ExecutionContext* context)
 {

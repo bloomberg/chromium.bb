@@ -41,7 +41,6 @@
 namespace WebCore {
 
 class Algorithm : public RefCountedWillBeGarbageCollectedFinalized<Algorithm>, public ScriptWrappable {
-    DECLARE_GC_INFO;
 public:
     static PassRefPtrWillBeRawPtr<Algorithm> create(const blink::WebCryptoAlgorithm&);
 
