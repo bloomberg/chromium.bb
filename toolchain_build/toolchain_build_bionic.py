@@ -27,7 +27,7 @@ import toolchain_main
 from file_update import Mkdir, Rmdir, Symlink
 from file_update import NeedsUpdate, UpdateFromTo, UpdateText
 
-BIONIC_VERSION = '2f4b48addef8af9666dd91814afcb4ddaf13101b'
+BIONIC_VERSION = 'd6702ad3ef14cbf2a0b5a7fa93bfa44307922744'
 ARCHES = ['arm']
 
 BUILD_SCRIPT = os.path.abspath(__file__)
