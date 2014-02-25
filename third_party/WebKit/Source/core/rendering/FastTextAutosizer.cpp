@@ -229,6 +229,8 @@ bool FastTextAutosizer::clusterHasEnoughTextToAutosize(Cluster* cluster, const R
         return true;
 
     static const float minLinesOfText = 4;
+    // FIXME: This can be optimized because we only care if the text length is above a certain
+    //        value, so we can stop computing the text length if we reach our target.
     if (textLength(cluster) >= widthProvider->contentLogicalWidth() * minLinesOfText)
         return true;
 
@@ -245,11 +247,18 @@ float FastTextAutosizer::textLength(Cluster* cluster)
     bool measureLocalText = TextAutosizer::containerShouldBeAutosized(root);
     RenderObject* descendant = root->nextInPreOrder(root);
     while (descendant) {
-        // FIXME: We should skip over text from descendant clusters (see:
-        //        clusters-sufficient-text-except-in-root.html). This currently includes text
-        //        from descendant clusters.
-
-        if (measureLocalText && descendant->isText()) {
+        if (descendant->isRenderBlock()) {
+            RenderBlock* block = toRenderBlock(descendant);
+            if (TextAutosizer::isAutosizingContainer(block)) {
+                // Note: Ideally we would check isWiderOrNarrowerDescendant here but we only know that
+                //       after the block has entered layout, which may not be the case.
+                bool isAutosizingClusterRoot = isLayoutRoot(block) || TextAutosizer::isIndependentDescendant(block);
+                if (isAutosizingClusterRoot || !TextAutosizer::containerShouldBeAutosized(block)) {
+                    descendant = descendant->nextInPreOrderAfterChildren(root);
+                    continue;
+                }
+            }
+        } else if (measureLocalText && descendant->isText()) {
             // Note: Using text().stripWhiteSpace().length() instead of renderedTextLength() because
             // the lineboxes will not be built until layout. These values can be different.
             length += toRenderText(descendant)->text().stripWhiteSpace().length() * descendant->style()->specifiedFontSize();
