@@ -343,7 +343,7 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
 
     var scopeChain = [];
     var scopeType = [];
-    for (var i = 0; i < frameMirror.scopeCount(); i++) {
+    for (var i = 0, n = frameMirror.scopeCount(); i < n; ++i) {
         var scopeMirror = frameMirror.scope(i);
         scopeType.push(scopeMirror.scopeType());
         scopeChain.push(DebuggerScript._buildScopeObject(scopeMirror));
