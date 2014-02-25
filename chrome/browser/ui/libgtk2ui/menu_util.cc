@@ -235,10 +235,10 @@ void SetMenuItemInfo(GtkWidget* widget, void* block_activation_ptr) {
         if (GTK_IS_IMAGE_MENU_ITEM(widget)) {
           gfx::Image icon;
           if (model->GetIconAt(id, &icon)) {
-            gtk_image_menu_item_set_image(
-                GTK_IMAGE_MENU_ITEM(widget),
-                gtk_image_new_from_pixbuf(
-                    GdkPixbufFromSkBitmap(*icon.ToSkBitmap())));
+            GdkPixbuf* pixbuf = GdkPixbufFromSkBitmap(*icon.ToSkBitmap());
+            gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(widget),
+                gtk_image_new_from_pixbuf(pixbuf));
+            g_object_unref(pixbuf);
           } else {
             gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(widget), NULL);
           }
