@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/dom/DatasetDOMStringMap.h"
 
-#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Element.h"
@@ -197,7 +196,7 @@ bool DatasetDOMStringMap::contains(const String& name)
 void DatasetDOMStringMap::setItem(const String& name, const String& value, ExceptionState& exceptionState)
 {
     if (!isValidPropertyName(name)) {
-        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToSet(name, "DOMStringMap", "'" + name + "' is not a valid property name."));
+        exceptionState.throwDOMException(SyntaxError, "'" + name + "' is not a valid property name.");
         return;
     }
 

@@ -47,10 +47,14 @@ public:
     };
 
     static String failedToConstruct(const String& type, const String& detail = String());
+    static String failedToEnumerate(const String& type, const String& detail = String());
     static String failedToExecute(const String& method, const String& type, const String& detail = String());
     static String failedToGet(const String& property, const String& type, const String& detail);
     static String failedToSet(const String& property, const String& type, const String& detail);
     static String failedToDelete(const String& property, const String& type, const String& detail);
+    static String failedToGetIndexed(const String& type, const String& detail);
+    static String failedToSetIndexed(const String& type, const String& detail);
+    static String failedToDeleteIndexed(const String& type, const String& detail);
 
     static String incorrectPropertyType(const String& property, const String& detail);
 

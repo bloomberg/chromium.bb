@@ -151,7 +151,7 @@ static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> j
 static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
     TestEventTarget* imp = V8TestEventTarget::toNative(info.Holder());
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::IndexedDeletionContext, "TestEventTarget", info.Holder(), info.GetIsolate());
     DeleteResult result = imp->anonymousIndexedDeleter(index, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -215,7 +215,8 @@ static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCal
 {
     TestEventTarget* imp = V8TestEventTarget::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    v8::String::Utf8Value namedProperty(name);
+    ExceptionState exceptionState(ExceptionState::GetterContext, *namedProperty, "TestEventTarget", info.Holder(), info.GetIsolate());
     bool result = imp->namedPropertyQuery(propertyName, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -251,7 +252,7 @@ static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
 {
     TestEventTarget* imp = V8TestEventTarget::toNative(info.Holder());
     Vector<String> names;
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::EnumerationContext, "TestEventTarget", info.Holder(), info.GetIsolate());
     imp->namedPropertyEnumerator(names, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;

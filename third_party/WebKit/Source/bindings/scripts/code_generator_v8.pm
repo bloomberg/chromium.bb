@@ -3684,6 +3684,7 @@ sub GenerateImplementationIndexedPropertyGetter
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
     my $methodName = GetImplName($indexedGetterFunction) || "anonymousIndexedGetter";
+    my $interfaceName = $interface->name;
 
     my $returnType = $indexedGetterFunction->type;
     my $nativeType = GetNativeType($returnType);
@@ -3697,7 +3698,7 @@ sub GenerateImplementationIndexedPropertyGetter
     $getterCode .= "{\n";
     $getterCode .= "    ${implClassName}* imp = ${v8ClassName}::toNative(info.Holder());\n";
     if ($raisesExceptions) {
-        $getterCode .= "    ExceptionState exceptionState(info.Holder(), info.GetIsolate());\n";
+        $getterCode .= "    ExceptionState exceptionState(ExceptionState::IndexedGetterContext, \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
     }
     $getterCode .= $methodCallCode . "\n";
     if ($raisesExceptions) {
@@ -3799,7 +3800,7 @@ sub GenerateImplementationIndexedPropertySetter
 
     my $extraArguments = "";
     if ($raisesExceptions || IsIntegerType($type)) {
-        $code .= "    ExceptionState exceptionState(info.Holder(), info.GetIsolate());\n";
+        $code .= "    ExceptionState exceptionState(ExceptionState::IndexedSetterContext, \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
         if ($raisesExceptions) {
             $extraArguments = ", exceptionState";
         }
@@ -4052,6 +4053,7 @@ sub GenerateImplementationNamedPropertyGetter
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
     my $methodName = GetImplName($namedGetterFunction) || "anonymousNamedGetter";
+    my $interfaceName = $interface->name;
 
     my $returnType = $namedGetterFunction->type;
     my $isNull = GenerateIsNullExpression($returnType, "result");
@@ -4073,7 +4075,8 @@ sub GenerateImplementationNamedPropertyGetter
     $code .= "    ${implClassName}* imp = ${v8ClassName}::toNative(info.Holder());\n";
     $code .= "    AtomicString propertyName = toCoreAtomicString(name);\n";
     if ($raisesExceptions) {
-        $code .= "    ExceptionState exceptionState(info.Holder(), info.GetIsolate());\n";
+        $code .= "    v8::String::Utf8Value namedProperty(name);\n";
+        $code .= "    ExceptionState exceptionState(ExceptionState::GetterContext, *namedProperty, \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
     }
     $code .= $methodCallCode . "\n";
     if ($raisesExceptions) {
@@ -4118,7 +4121,8 @@ sub GenerateImplementationNamedPropertySetter
 
     my $extraArguments = "";
     if ($raisesExceptions || IsIntegerType($type)) {
-        $code .= "    ExceptionState exceptionState(info.Holder(), info.GetIsolate());\n";
+        $code .= "    v8::String::Utf8Value namedProperty(name);\n";
+        $code .= "    ExceptionState exceptionState(ExceptionState::SetterContext, *namedProperty, \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
         if ($raisesExceptions) {
             $extraArguments = ", exceptionState";
         }
@@ -4143,6 +4147,7 @@ sub GenerateImplementationIndexedPropertyDeleter
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
     my $methodName = GetImplName($indexedDeleterFunction) || "anonymousIndexedDeleter";
+    my $interfaceName = $interface->name;
 
     my $raisesExceptions = $indexedDeleterFunction->extendedAttributes->{"RaisesException"};
 
@@ -4151,7 +4156,7 @@ sub GenerateImplementationIndexedPropertyDeleter
     $code .= "    ${implClassName}* imp = ${v8ClassName}::toNative(info.Holder());\n";
     my $extraArguments = "";
     if ($raisesExceptions) {
-        $code .= "    ExceptionState exceptionState(info.Holder(), info.GetIsolate());\n";
+        $code .= "    ExceptionState exceptionState(ExceptionState::IndexedDeletionContext, \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
         $extraArguments = ", exceptionState";
     }
     $code .= "    DeleteResult result = imp->${methodName}(index$extraArguments);\n";
@@ -4172,6 +4177,7 @@ sub GenerateImplementationNamedPropertyDeleter
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
     my $methodName = GetImplName($namedDeleterFunction) || "anonymousNamedDeleter";
+    my $interfaceName = $interface->name;
 
     my $raisesExceptions = $namedDeleterFunction->extendedAttributes->{"RaisesException"};
 
@@ -4181,7 +4187,8 @@ sub GenerateImplementationNamedPropertyDeleter
     $code .= "    AtomicString propertyName = toCoreAtomicString(name);\n";
     my $extraArguments = "";
     if ($raisesExceptions) {
-        $code .= "    ExceptionState exceptionState(info.Holder(), info.GetIsolate());\n";
+        $code .= "    v8::String::Utf8Value namedProperty(name);\n";
+        $code .= "    ExceptionState exceptionState(ExceptionState::DeletionContext, *namedProperty, \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
         $extraArguments .= ", exceptionState";
     }
     $code .= "    DeleteResult result = imp->${methodName}(propertyName$extraArguments);\n";
@@ -4200,13 +4207,14 @@ sub GenerateImplementationNamedPropertyEnumerator
     my $interface = shift;
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
+    my $interfaceName = $interface->name;
 
     $implementation{nameSpaceInternal}->add(<<END);
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
     ${implClassName}* imp = ${v8ClassName}::toNative(info.Holder());
     Vector<String> names;
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::EnumerationContext, \"${interfaceName}\", info.Holder(), info.GetIsolate());
     imp->namedPropertyEnumerator(names, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -4224,13 +4232,15 @@ sub GenerateImplementationNamedPropertyQuery
     my $interface = shift;
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
+    my $interfaceName = $interface->name;
 
     $implementation{nameSpaceInternal}->add(<<END);
 static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
     ${implClassName}* imp = ${v8ClassName}::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    v8::String::Utf8Value namedProperty(name);
+    ExceptionState exceptionState(ExceptionState::GetterContext, *namedProperty, "${interfaceName}", info.Holder(), info.GetIsolate());
     bool result = imp->namedPropertyQuery(propertyName, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;

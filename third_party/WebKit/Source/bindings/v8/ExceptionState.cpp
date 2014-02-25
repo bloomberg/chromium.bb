@@ -131,8 +131,17 @@ String ExceptionState::addExceptionContext(const String& message) const
             processedMessage = ExceptionMessages::failedToGet(propertyName(), interfaceName(), message);
         else if (m_context == SetterContext)
             processedMessage = ExceptionMessages::failedToSet(propertyName(), interfaceName(), message);
-    } else if (!propertyName() && interfaceName() && m_context == ConstructionContext) {
-        processedMessage = ExceptionMessages::failedToConstruct(interfaceName(), message);
+    } else if (!propertyName() && interfaceName()) {
+        if (m_context == ConstructionContext)
+            processedMessage = ExceptionMessages::failedToConstruct(interfaceName(), message);
+        else if (m_context == EnumerationContext)
+            processedMessage = ExceptionMessages::failedToEnumerate(interfaceName(), message);
+        else if (m_context == IndexedDeletionContext)
+            processedMessage = ExceptionMessages::failedToDeleteIndexed(interfaceName(), message);
+        else if (m_context == IndexedGetterContext)
+            processedMessage = ExceptionMessages::failedToGetIndexed(interfaceName(), message);
+        else if (m_context == IndexedSetterContext)
+            processedMessage = ExceptionMessages::failedToSetIndexed(interfaceName(), message);
     }
     return processedMessage;
 }

@@ -41,6 +41,11 @@ String ExceptionMessages::failedToConstruct(const String& type, const String& de
     return "Failed to construct '" + type + (!detail.isEmpty() ? String("': " + detail) : String("'"));
 }
 
+String ExceptionMessages::failedToEnumerate(const String& type, const String& detail)
+{
+    return "Failed to enumerate the properties of '" + type + (!detail.isEmpty() ? String("': " + detail) : String("'"));
+}
+
 String ExceptionMessages::failedToExecute(const String& method, const String& type, const String& detail)
 {
     return "Failed to execute '" + method + "' on '" + type + (!detail.isEmpty() ? String("': " + detail) : String("'"));
@@ -59,6 +64,21 @@ String ExceptionMessages::failedToSet(const String& property, const String& type
 String ExceptionMessages::failedToDelete(const String& property, const String& type, const String& detail)
 {
     return "Failed to delete the '" + property + "' property from '" + type + "': " + detail;
+}
+
+String ExceptionMessages::failedToGetIndexed(const String& type, const String& detail)
+{
+    return "Failed to read an indexed property from '" + type + "': " + detail;
+}
+
+String ExceptionMessages::failedToSetIndexed(const String& type, const String& detail)
+{
+    return "Failed to set an indexed property on '" + type + "': " + detail;
+}
+
+String ExceptionMessages::failedToDeleteIndexed(const String& type, const String& detail)
+{
+    return "Failed to delete an indexed property from '" + type + "': " + detail;
 }
 
 String ExceptionMessages::incorrectPropertyType(const String& property, const String& detail)

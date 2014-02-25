@@ -50,6 +50,11 @@ public:
         DeletionContext,
         GetterContext,
         SetterContext,
+        EnumerationContext,
+        QueryContext,
+        IndexedGetterContext,
+        IndexedSetterContext,
+        IndexedDeletionContext,
         UnknownContext, // FIXME: Remove this once we've flipped over to the new API.
     };
 
@@ -75,7 +80,7 @@ public:
         , m_propertyName(0)
         , m_interfaceName(interfaceName)
         , m_creationContext(creationContext)
-        , m_isolate(isolate) { ASSERT(m_context == ConstructionContext); }
+        , m_isolate(isolate) { ASSERT(m_context == ConstructionContext || m_context == EnumerationContext || m_context == IndexedSetterContext || m_context == IndexedGetterContext || m_context == IndexedDeletionContext); }
 
     virtual void throwDOMException(const ExceptionCode&, const String& message);
     virtual void throwTypeError(const String& message);

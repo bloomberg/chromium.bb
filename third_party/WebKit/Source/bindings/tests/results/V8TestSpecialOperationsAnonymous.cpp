@@ -168,7 +168,8 @@ static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCal
 {
     TestSpecialOperationsAnonymous* imp = V8TestSpecialOperationsAnonymous::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    v8::String::Utf8Value namedProperty(name);
+    ExceptionState exceptionState(ExceptionState::GetterContext, *namedProperty, "TestSpecialOperationsAnonymous", info.Holder(), info.GetIsolate());
     bool result = imp->namedPropertyQuery(propertyName, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -204,7 +205,7 @@ static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
 {
     TestSpecialOperationsAnonymous* imp = V8TestSpecialOperationsAnonymous::toNative(info.Holder());
     Vector<String> names;
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::EnumerationContext, "TestSpecialOperationsAnonymous", info.Holder(), info.GetIsolate());
     imp->namedPropertyEnumerator(names, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;

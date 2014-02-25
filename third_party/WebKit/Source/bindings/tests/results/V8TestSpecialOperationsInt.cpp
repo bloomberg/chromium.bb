@@ -91,7 +91,7 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> jsValue, 
 {
     TestSpecialOperationsInt* imp = V8TestSpecialOperationsInt::toNative(info.Holder());
     V8TRYCATCH_EXCEPTION_VOID(unsigned, propertyValue, toUInt32(jsValue, exceptionState), exceptionState);
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::IndexedSetterContext, "TestSpecialOperationsInt", info.Holder(), info.GetIsolate());
     bool result = imp->anonymousIndexedSetter(index, propertyValue);
     if (!result)
         return;
@@ -137,7 +137,8 @@ static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value>
     TestSpecialOperationsInt* imp = V8TestSpecialOperationsInt::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyName, name);
     V8TRYCATCH_EXCEPTION_VOID(unsigned, propertyValue, toUInt32(jsValue, exceptionState), exceptionState);
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    v8::String::Utf8Value namedProperty(name);
+    ExceptionState exceptionState(ExceptionState::SetterContext, *namedProperty, "TestSpecialOperationsInt", info.Holder(), info.GetIsolate());
     bool result = imp->anonymousNamedSetter(propertyName, propertyValue);
     if (!result)
         return;
@@ -155,7 +156,8 @@ static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCal
 {
     TestSpecialOperationsInt* imp = V8TestSpecialOperationsInt::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    v8::String::Utf8Value namedProperty(name);
+    ExceptionState exceptionState(ExceptionState::GetterContext, *namedProperty, "TestSpecialOperationsInt", info.Holder(), info.GetIsolate());
     bool result = imp->namedPropertyQuery(propertyName, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -175,7 +177,7 @@ static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
 {
     TestSpecialOperationsInt* imp = V8TestSpecialOperationsInt::toNative(info.Holder());
     Vector<String> names;
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::EnumerationContext, "TestSpecialOperationsInt", info.Holder(), info.GetIsolate());
     imp->namedPropertyEnumerator(names, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
