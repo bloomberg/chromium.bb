@@ -436,6 +436,13 @@ class ArchivingStageMixin(object):
         this queue.  If None then upload it directly now.
       kwargs: Pass to self.GetMetadata.
     """
+    metadata_for = '[no config]'
+    if config is not None:
+      metadata_for = config.name
+      if stage is not None:
+        metadata_for = '%s:%s' % (metadata_for, stage)
+
+    cros_build_lib.Info('Creating metadata for %s run now.', metadata_for)
     metadata = self.GetMetadata(config=config, stage=stage, **kwargs)
     filename = constants.METADATA_JSON
     if stage is not None:
@@ -443,11 +450,16 @@ class ArchivingStageMixin(object):
     metadata_json = os.path.join(self.archive_path, filename)
 
     # Stages may run in parallel, so we have to do atomic updates on this.
+    cros_build_lib.Info('Writing metadata for %s to %s.', metadata_for,
+                        metadata_json)
     osutils.WriteFile(metadata_json, json.dumps(metadata), atomic=True)
 
     if upload_queue is not None:
+      cros_build_lib.Info('Adding metadata for %s to upload queue.',
+                          metadata_for)
       upload_queue.put([filename])
     else:
+      cros_build_lib.Info('Uploading metadata for %s now.', metadata_for)
       self.UploadArtifact(filename, archive=False)
 
 
@@ -4109,8 +4121,6 @@ class ReportStage(bs.BuilderStage, ArchivingStageMixin):
       builder_run: BuilderRun object for this run.
       final_status: Final status string for this run.
     """
-    cros_build_lib.Info('Uploading metadata for %s run now.',
-                        builder_run.config.name)
     self.UploadMetadata(
         config=builder_run.config, final_status=final_status,
         sync_instance=self._sync_instance,
