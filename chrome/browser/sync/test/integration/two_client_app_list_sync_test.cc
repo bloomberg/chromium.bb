@@ -480,7 +480,6 @@ class TwoClientAppListSyncFolderTest : public TwoClientAppListSyncTest {
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     TwoClientAppListSyncTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(app_list::switches::kEnableFolderUI);
   }
 
  private:

@@ -1737,9 +1737,11 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestWithMultiMonitor,
   EXPECT_EQ(3, model_->item_count());
   EXPECT_TRUE(grid_view->forward_events_to_drag_and_drop_host_for_test());
 
-  // Move it where the item originally was and check that it disappears again.
-  generator.MoveMouseTo(bounds_grid_1.CenterPoint().x(),
-                        bounds_grid_1.CenterPoint().y());
+  // Move it to an empty slot on grid_view.
+  gfx::Rect empty_slot_rect = bounds_grid_1;
+  empty_slot_rect.Offset(0, bounds_grid_1.height());
+  generator.MoveMouseTo(empty_slot_rect.CenterPoint().x(),
+                        empty_slot_rect.CenterPoint().y());
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(2, model_->item_count());
   EXPECT_FALSE(grid_view->forward_events_to_drag_and_drop_host_for_test());

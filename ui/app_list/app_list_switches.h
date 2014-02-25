@@ -11,7 +11,7 @@ namespace app_list {
 namespace switches {
 
 APP_LIST_EXPORT extern const char kEnableExperimentalAppList[];
-APP_LIST_EXPORT extern const char kEnableFolderUI[];
+APP_LIST_EXPORT extern const char kDisableFolderUI[];
 APP_LIST_EXPORT extern const char kDisableVoiceSearch[];
 APP_LIST_EXPORT extern const char kEnableAppInfo[];
 

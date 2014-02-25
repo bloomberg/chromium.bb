@@ -12,8 +12,8 @@ namespace switches {
 // If set, the experimental app list will be used.
 const char kEnableExperimentalAppList[] = "enable-experimental-app-list";
 
-// If set, folder will be enabled in app list UI.
-const char kEnableFolderUI[] = "enable-app-list-folder-ui";
+// If set, folder will be disabled in app list UI.
+const char kDisableFolderUI[] = "disable-app-list-folder-ui";
 
 // If set, the voice search is disabled in app list UI.
 const char kDisableVoiceSearch[] = "disable-app-list-voice-search";
@@ -21,8 +21,9 @@ const char kDisableVoiceSearch[] = "disable-app-list-voice-search";
 // If set, the app info context menu item is available in the app list UI.
 const char kEnableAppInfo[] = "enable-app-list-app-info";
 
+// Folder UI is enabled by default.
 bool IsFolderUIEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(kEnableFolderUI);
+  return !CommandLine::ForCurrentProcess()->HasSwitch(kDisableFolderUI);
 }
 
 bool IsVoiceSearchEnabled() {

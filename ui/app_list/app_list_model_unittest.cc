@@ -232,7 +232,6 @@ class AppListModelFolderTest : public AppListModelTest {
 
   // testing::Test overrides:
   virtual void SetUp() OVERRIDE {
-    CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableFolderUI);
     AppListModelTest::SetUp();
   }
   virtual void TearDown() OVERRIDE {

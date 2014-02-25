@@ -1673,11 +1673,11 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
-    "enable-app-list-folder",
-    IDS_FLAGS_ENABLE_APP_LIST_FOLDER,
-    IDS_FLAGS_ENABLE_APP_LIST_FOLDER_DESCRIPTION,
+    "disable-app-list-folder-ui",
+    IDS_FLAGS_DISABLE_APP_LIST_FOLDER,
+    IDS_FLAGS_DISABLE_APP_LIST_FOLDER_DESCRIPTION,
     kOsWin | kOsLinux | kOsCrOS,
-    SINGLE_VALUE_TYPE(app_list::switches::kEnableFolderUI)
+    SINGLE_VALUE_TYPE(app_list::switches::kDisableFolderUI)
   },
   {
     "disable-app-list-voice-search",
