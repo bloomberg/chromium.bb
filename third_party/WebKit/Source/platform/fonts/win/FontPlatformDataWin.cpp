@@ -354,11 +354,7 @@ bool FontPlatformData::ensureFontLoaded(HFONT font)
 
 bool FontPlatformData::defaultUseSubpixelPositioning()
 {
-#if OS(WIN)
     return FontCache::fontCache()->useSubpixelPositioning();
-#else
-    return false;
-#endif
 }
 
 #ifndef NDEBUG
