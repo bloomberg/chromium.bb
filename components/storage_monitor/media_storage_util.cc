@@ -18,6 +18,8 @@
 
 using content::BrowserThread;
 
+namespace storage_monitor {
+
 namespace {
 
 // MediaDeviceNotification.DeviceInfo histogram values.
@@ -244,3 +246,5 @@ bool MediaStorageUtil::IsRemovableStorageAttached(const std::string& id) {
   }
   return false;
 }
+
+}  // namespace storage_monitor

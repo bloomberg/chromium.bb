@@ -13,6 +13,8 @@
 #include "components/storage_monitor/storage_info.h"
 #include "content/public/browser/browser_thread.h"
 
+namespace storage_monitor {
+
 namespace {
 
 const char kDiskImageModelName[] = "Disk Image";
@@ -385,3 +387,5 @@ bool StorageMonitorMac::FindDiskWithMountPoint(
 StorageMonitor* StorageMonitor::CreateInternal() {
   return new StorageMonitorMac();
 }
+
+}  // namespace storage_monitor

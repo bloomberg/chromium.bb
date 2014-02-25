@@ -15,6 +15,7 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using content::BrowserThread;
+using storage_monitor::StorageMonitor;
 
 namespace {
 

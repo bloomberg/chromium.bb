@@ -44,6 +44,9 @@ using content::NavigationController;
 using content::RenderProcessHost;
 using content::WebContents;
 using fileapi::IsolatedContext;
+using storage_monitor::MediaStorageUtil;
+using storage_monitor::StorageInfo;
+using storage_monitor::StorageMonitor;
 
 namespace {
 

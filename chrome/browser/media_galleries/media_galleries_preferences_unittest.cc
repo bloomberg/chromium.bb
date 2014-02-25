@@ -36,6 +36,9 @@
 #endif
 
 using base::ASCIIToUTF16;
+using storage_monitor::MediaStorageUtil;
+using storage_monitor::StorageInfo;
+using storage_monitor::TestStorageMonitor;
 
 namespace {
 

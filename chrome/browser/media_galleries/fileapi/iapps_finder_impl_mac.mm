@@ -93,7 +93,7 @@ NSString* const kITunesRecentDatabasePathsKey = @"iTunesRecentDatabasePaths";
 
 void FindIPhotoLibrary(const IAppsFinderCallback& callback) {
   FindIAppsOnFileThread(
-      StorageInfo::IPHOTO,
+      storage_monitor::StorageInfo::IPHOTO,
       base::Bind(&FindMostRecentDatabase,
                  base::scoped_nsobject<NSString>(kIPhotoRecentDatabasesKey),
                  base::Bind(&ExtractIPhotoPath)),
@@ -102,7 +102,7 @@ void FindIPhotoLibrary(const IAppsFinderCallback& callback) {
 
 void FindITunesLibrary(const IAppsFinderCallback& callback) {
   FindIAppsOnFileThread(
-      StorageInfo::ITUNES,
+      storage_monitor::StorageInfo::ITUNES,
       base::Bind(&FindMostRecentDatabase,
                  base::scoped_nsobject<NSString>(kITunesRecentDatabasePathsKey),
                  base::Bind(&ExtractITunesPath)),

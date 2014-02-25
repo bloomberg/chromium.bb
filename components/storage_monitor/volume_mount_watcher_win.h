@@ -20,6 +20,8 @@
 #include "components/storage_monitor/storage_info.h"
 #include "components/storage_monitor/storage_monitor.h"
 
+namespace storage_monitor {
+
 class TestVolumeMountWatcherWin;
 
 // This class watches the volume mount points and sends notifications to
@@ -115,5 +117,7 @@ class VolumeMountWatcherWin {
 
   DISALLOW_COPY_AND_ASSIGN(VolumeMountWatcherWin);
 };
+
+}  // namespace storage_monitor
 
 #endif  // COMPONENTS_STORAGE_MONITOR_VOLUME_MOUNT_WATCHER_WIN_H_

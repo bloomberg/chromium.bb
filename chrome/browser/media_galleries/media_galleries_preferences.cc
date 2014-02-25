@@ -43,6 +43,9 @@
 using base::DictionaryValue;
 using base::ListValue;
 using extensions::ExtensionPrefs;
+using storage_monitor::MediaStorageUtil;
+using storage_monitor::StorageInfo;
+using storage_monitor::StorageMonitor;
 
 namespace {
 

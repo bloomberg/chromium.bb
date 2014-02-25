@@ -19,6 +19,8 @@
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace storage_monitor {
+
 namespace {
 
 // Sample mtp device storage information.
@@ -159,3 +161,5 @@ TEST_F(MediaTransferProtocolDeviceObserverLinuxTest, StorageWithInvalidInfo) {
   EXPECT_EQ(0, observer().attach_calls());
   EXPECT_EQ(0, observer().detach_calls());
 }
+
+}  // namespace storage_monitor

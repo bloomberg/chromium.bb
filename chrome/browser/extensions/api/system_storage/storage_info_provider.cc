@@ -8,8 +8,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "components/storage_monitor/storage_info.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
+
+using storage_monitor::StorageInfo;
+using storage_monitor::StorageMonitor;
 
 namespace extensions {
 

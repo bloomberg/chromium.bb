@@ -19,6 +19,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/synchronization/lock.h"
 
+namespace storage_monitor {
+
 // Clients use this listener interface to get notifications about
 // events happening as a particular ImageCapture device is interacted with.
 // Clients drive the interaction through the ImageCaptureDeviceManager
@@ -50,6 +52,8 @@ class ImageCaptureDeviceListener {
   virtual void DeviceRemoved() = 0;
 };
 
+}  // namespace storage_monitor
+
 // Interface to a camera device found by ImageCaptureCore. This class manages a
 // session to the camera and provides the backing interactions to present the
 // media files on it to the filesystem delegate. FilePaths will be artificial,
@@ -59,12 +63,13 @@ class ImageCaptureDeviceListener {
     : NSObject<ICCameraDeviceDelegate, ICCameraDeviceDownloadDelegate> {
  @private
   base::scoped_nsobject<ICCameraDevice> camera_;
-  base::WeakPtr<ImageCaptureDeviceListener> listener_;
+  base::WeakPtr<storage_monitor::ImageCaptureDeviceListener> listener_;
   bool closing_;
 }
 
 - (id)initWithCameraDevice:(ICCameraDevice*)cameraDevice;
-- (void)setListener:(base::WeakPtr<ImageCaptureDeviceListener>)listener;
+- (void)setListener:
+        (base::WeakPtr<storage_monitor::ImageCaptureDeviceListener>)listener;
 - (void)open;
 - (void)close;
 

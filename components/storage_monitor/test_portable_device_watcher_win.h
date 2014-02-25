@@ -13,6 +13,8 @@
 #include "base/strings/string16.h"
 #include "components/storage_monitor/portable_device_watcher_win.h"
 
+namespace storage_monitor {
+
 class TestPortableDeviceWatcherWin : public PortableDeviceWatcherWin {
  public:
   // MTP device PnP identifiers.
@@ -72,5 +74,7 @@ class TestPortableDeviceWatcherWin : public PortableDeviceWatcherWin {
 
   DISALLOW_COPY_AND_ASSIGN(TestPortableDeviceWatcherWin);
 };
+
+}  // namespace storage_monitor
 
 #endif  // COMPONENTS_STORAGE_MONITOR_TEST_PORTABLE_DEVICE_WATCHER_WIN_H_

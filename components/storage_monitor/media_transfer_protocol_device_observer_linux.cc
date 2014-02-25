@@ -15,6 +15,8 @@
 #include "components/storage_monitor/removable_device_constants.h"
 #include "device/media_transfer_protocol/mtp_storage_info.pb.h"
 
+namespace storage_monitor {
+
 namespace {
 
 // Device root path constant.
@@ -237,3 +239,5 @@ bool MediaTransferProtocolDeviceObserverLinux::GetLocationForDeviceId(
 
   return false;
 }
+
+}  // namespace storage_monitor

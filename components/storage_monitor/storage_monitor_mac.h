@@ -12,6 +12,8 @@
 #include "base/memory/weak_ptr.h"
 #include "components/storage_monitor/storage_monitor.h"
 
+namespace storage_monitor {
+
 class ImageCaptureDeviceManager;
 
 // This class posts notifications to listeners when a new disk
@@ -68,5 +70,7 @@ class StorageMonitorMac : public StorageMonitor,
 
   DISALLOW_COPY_AND_ASSIGN(StorageMonitorMac);
 };
+
+}  // namespace storage_monitor
 
 #endif  // COMPONENTS_STORAGE_MONITOR_STORAGE_MONITOR_MAC_H_

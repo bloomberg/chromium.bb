@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/api/system_storage/system_storage_api.h"
 
+using storage_monitor::StorageMonitor;
+
 namespace extensions {
 
 using api::system_storage::StorageUnitInfo;

@@ -32,8 +32,8 @@ class MockMediaGalleriesScanResultDialogController
     MediaGalleryPrefInfo test_pref_info;
     test_pref_info.pref_id = 1;
     test_pref_info.display_name = base::ASCIIToUTF16("Test Gallery");
-    test_pref_info.device_id =
-        StorageInfo::MakeDeviceId(StorageInfo::FIXED_MASS_STORAGE, "blah");
+    test_pref_info.device_id = storage_monitor::StorageInfo::MakeDeviceId(
+        storage_monitor::StorageInfo::FIXED_MASS_STORAGE, "blah");
     test_pref_info.type = MediaGalleryPrefInfo::kScanResult;
 
     OrderedScanResults result;

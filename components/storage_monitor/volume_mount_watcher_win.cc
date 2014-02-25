@@ -27,6 +27,8 @@
 
 using content::BrowserThread;
 
+namespace storage_monitor {
+
 namespace {
 
 const DWORD kMaxPathBufLen = MAX_PATH + 1;
@@ -526,3 +528,5 @@ void VolumeMountWatcherWin::EjectDevice(
       FROM_HERE,
       base::Bind(&EjectDeviceInThreadPool, device, callback, task_runner_, 0));
 }
+
+}  // namespace storage_monitor

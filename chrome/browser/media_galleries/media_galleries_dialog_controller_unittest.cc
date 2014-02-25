@@ -26,6 +26,9 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #endif
 
+using storage_monitor::StorageInfo;
+using storage_monitor::TestStorageMonitor;
+
 namespace {
 
 std::string GalleryName(const MediaGalleryPrefInfo& gallery) {

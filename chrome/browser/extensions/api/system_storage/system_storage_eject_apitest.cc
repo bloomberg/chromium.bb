@@ -24,6 +24,8 @@ namespace {
 
 using extensions::test::TestStorageUnitInfo;
 using extensions::test::kRemovableStorageData;
+using storage_monitor::StorageMonitor;
+using storage_monitor::TestStorageMonitor;
 
 }  // namespace
 

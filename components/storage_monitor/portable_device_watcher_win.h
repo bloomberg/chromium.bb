@@ -20,6 +20,8 @@ namespace base {
 class SequencedTaskRunner;
 }
 
+namespace storage_monitor {
+
 class TestPortableDeviceWatcherWin;
 
 // This class watches the portable device mount points and sends notifications
@@ -138,5 +140,7 @@ class PortableDeviceWatcherWin {
 
   DISALLOW_COPY_AND_ASSIGN(PortableDeviceWatcherWin);
 };
+
+}  // namespace storage_monitor
 
 #endif  // COMPONENTS_STORAGE_MONITOR_PORTABLE_DEVICE_WATCHER_WIN_H_

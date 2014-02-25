@@ -31,6 +31,8 @@ const char* const kKnownFileSystems[] = {
 
 }  // namespace
 
+namespace storage_monitor {
+
 MtabWatcherLinux::MtabWatcherLinux(const base::FilePath& mtab_path,
                                    base::WeakPtr<Delegate> delegate)
     : mtab_path_(mtab_path),
@@ -100,3 +102,5 @@ void MtabWatcherLinux::OnFilePathChanged(
 
   ReadMtab();
 }
+
+}  // namespace storage_monitor

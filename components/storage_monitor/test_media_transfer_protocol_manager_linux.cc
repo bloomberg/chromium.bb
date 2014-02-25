@@ -6,6 +6,8 @@
 
 #include "device/media_transfer_protocol/mtp_file_entry.pb.h"
 
+namespace storage_monitor {
+
 TestMediaTransferProtocolManagerLinux::
 TestMediaTransferProtocolManagerLinux() {}
 
@@ -84,3 +86,5 @@ void TestMediaTransferProtocolManagerLinux::GetFileInfoById(
     const GetFileInfoCallback& callback) {
   callback.Run(MtpFileEntry(), true);
 }
+
+}  // namespace storage_monitor

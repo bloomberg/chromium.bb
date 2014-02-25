@@ -7,6 +7,8 @@
 
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 
+namespace storage_monitor {
+
 // A dummy MediaTransferProtocolManager implementation.
 class TestMediaTransferProtocolManagerLinux
     : public device::MediaTransferProtocolManager {
@@ -53,5 +55,7 @@ class TestMediaTransferProtocolManagerLinux
 
   DISALLOW_COPY_AND_ASSIGN(TestMediaTransferProtocolManagerLinux);
 };
+
+}  // namespace storage_monitor
 
 #endif  // COMPONENTS_STORAGE_MONITOR_TEST_MEDIA_TRANSFER_PROTOCOL_MANAGER_LINUX_H_

@@ -102,7 +102,7 @@ class MediaScanManagerTest : public MediaScanManagerObserver,
   }
 
   virtual void SetUp() OVERRIDE {
-    ASSERT_TRUE(TestStorageMonitor::CreateAndInstall());
+    ASSERT_TRUE(storage_monitor::TestStorageMonitor::CreateAndInstall());
 
     extensions::TestExtensionSystem* extension_system(
         static_cast<extensions::TestExtensionSystem*>(
@@ -139,7 +139,7 @@ class MediaScanManagerTest : public MediaScanManagerObserver,
   virtual void TearDown() OVERRIDE {
     media_scan_manager_->RemoveObserver(profile_.get());
     media_scan_manager_.reset();
-    TestStorageMonitor::Destroy();
+    storage_monitor::TestStorageMonitor::Destroy();
   }
 
   // Create a test folder in the test specific scoped temp dir and return the
@@ -271,7 +271,7 @@ class MediaScanManagerTest : public MediaScanManagerObserver,
   chromeos::ScopedTestUserManager test_user_manager_;
 #endif
 
-  TestStorageMonitor monitor_;
+  storage_monitor::TestStorageMonitor monitor_;
   scoped_ptr<TestingProfile> profile_;
   MediaGalleriesPreferences* gallery_prefs_;
 

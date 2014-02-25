@@ -262,7 +262,7 @@ void BrowserProcessImpl::StartTearDown() {
   // FILE thread would be gone when we try to release it in the dtor and
   // Valgrind would report a leak on almost every single browser_test.
   // TODO(gbillock): Make this unnecessary.
-  StorageMonitor::Destroy();
+  storage_monitor::StorageMonitor::Destroy();
 #endif
 
   message_center::MessageCenter::Shutdown();
@@ -944,7 +944,7 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-  StorageMonitor::Create();
+  storage_monitor::StorageMonitor::Create();
 #endif
 
   platform_part_->PreMainMessageLoopRun();

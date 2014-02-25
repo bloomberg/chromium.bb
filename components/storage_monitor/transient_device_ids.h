@@ -16,6 +16,8 @@
 #include "base/basictypes.h"
 #include "base/threading/thread_checker.h"
 
+namespace storage_monitor {
+
 class TransientDeviceIds {
  public:
   TransientDeviceIds();
@@ -41,5 +43,7 @@ class TransientDeviceIds {
 
   DISALLOW_COPY_AND_ASSIGN(TransientDeviceIds);
 };
+
+}  // namespace storage_monitor
 
 #endif  // COMPONENTS_STORAGE_MONITOR_TRANSIENT_DEVICE_IDS_H_

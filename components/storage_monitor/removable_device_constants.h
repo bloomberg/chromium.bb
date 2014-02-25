@@ -9,6 +9,8 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 
+namespace storage_monitor {
+
 // Prefix constants used in device unique id.
 extern const char kFSUniqueIdPrefix[];
 extern const char kVendorModelSerialPrefix[];
@@ -23,5 +25,7 @@ extern const base::char16 kWPDDevInterfaceGUID[];
 #endif
 
 extern const base::FilePath::CharType kDCIMDirectoryName[];
+
+}  // namespace storage_monitor
 
 #endif  // COMPONENTS_STORAGE_MONITOR_REMOVABLE_DEVICE_CONSTANTS_H_

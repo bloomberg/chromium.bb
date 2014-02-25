@@ -13,7 +13,10 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/extensions/api/system_info/system_info_provider.h"
 #include "chrome/common/extensions/api/system_storage.h"
-#include "components/storage_monitor/storage_info.h"
+
+namespace storage_monitor {
+class StorageInfo;
+}
 
 namespace extensions {
 
@@ -21,7 +24,7 @@ namespace systeminfo {
 
 // Build StorageUnitInfo struct from StorageInfo instance. The |unit|
 // parameter is the output value.
-void BuildStorageUnitInfo(const StorageInfo& info,
+void BuildStorageUnitInfo(const storage_monitor::StorageInfo& info,
                           api::system_storage::StorageUnitInfo* unit);
 
 }  // namespace systeminfo

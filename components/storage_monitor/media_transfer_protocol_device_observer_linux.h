@@ -16,6 +16,8 @@ namespace base {
 class FilePath;
 }
 
+namespace storage_monitor {
+
 // Gets the mtp device information given a |storage_name|. On success,
 // fills in |id|, |name| and |location|.
 typedef void (*GetStorageInfoFunc)(
@@ -84,5 +86,7 @@ class MediaTransferProtocolDeviceObserverLinux
 
   DISALLOW_COPY_AND_ASSIGN(MediaTransferProtocolDeviceObserverLinux);
 };
+
+}  // namespace storage_monitor
 
 #endif  // COMPONENTS_STORAGE_MONITOR_MEDIA_TRANSFER_PROTOCOL_DEVICE_OBSERVER_LINUX_H_

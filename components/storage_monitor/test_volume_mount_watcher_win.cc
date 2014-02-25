@@ -12,6 +12,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/storage_monitor/storage_info.h"
 
+namespace storage_monitor {
+
 namespace {
 
 base::FilePath GetTempRoot() {
@@ -151,3 +153,5 @@ VolumeMountWatcherWin::GetAttachedDevicesCallbackType
 void TestVolumeMountWatcherWin::ShutdownWorkerPool() {
   device_info_worker_pool_->Shutdown();
 }
+
+}  // namespace storage_monitor

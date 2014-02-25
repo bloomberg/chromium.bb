@@ -7,6 +7,8 @@
 #include "components/storage_monitor/storage_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace storage_monitor {
+
 const char kMtpDeviceId[] = "mtp:VendorModelSerial:ABC:1233:1237912873";
 const char kUniqueId[] = "VendorModelSerial:ABC:1233:1237912873";
 const char kImageCaptureDeviceId[] = "ic:xyz";
@@ -36,3 +38,5 @@ TEST(StorageInfoTest, TestImageCaptureDeviceId) {
   EXPECT_EQ(StorageInfo::MAC_IMAGE_CAPTURE, type);
   EXPECT_EQ("xyz", id);
 }
+
+}  // namespace storage_monitor

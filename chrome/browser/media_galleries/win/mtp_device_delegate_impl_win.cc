@@ -47,7 +47,8 @@ bool GetStorageInfoOnUIThread(const base::string16& storage_path,
   base::RemoveChars(storage_path, L"\\\\", &storage_device_id);
   DCHECK(!storage_device_id.empty());
   // TODO(gbillock): Take the StorageMonitor as an argument.
-  StorageMonitor* monitor = StorageMonitor::GetInstance();
+  storage_monitor::StorageMonitor* monitor =
+      storage_monitor::StorageMonitor::GetInstance();
   DCHECK(monitor);
   return monitor->GetMTPStorageInfoFromDeviceId(
       base::UTF16ToUTF8(storage_device_id), pnp_device_id, storage_object_id);

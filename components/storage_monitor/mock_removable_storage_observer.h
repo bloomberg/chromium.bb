@@ -8,6 +8,8 @@
 #include "components/storage_monitor/removable_storage_observer.h"
 #include "components/storage_monitor/storage_info.h"
 
+namespace storage_monitor {
+
 class MockRemovableStorageObserver : public RemovableStorageObserver {
  public:
   MockRemovableStorageObserver();
@@ -35,5 +37,7 @@ class MockRemovableStorageObserver : public RemovableStorageObserver {
   StorageInfo last_attached_;
   StorageInfo last_detached_;
 };
+
+}  // namespace storage_monitor
 
 #endif  // COMPONENTS_STORAGE_MONITOR_MOCK_REMOVABLE_STORAGE_OBSERVER_H_

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// chromeos::StorageMonitorCros implementation.
-
 #include "components/storage_monitor/storage_monitor_chromeos.h"
 
 #include "base/files/file_path.h"
@@ -19,13 +17,15 @@
 #include "content/public/browser/browser_thread.h"
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 
-namespace chromeos {
+using chromeos::disks::DiskMountManager;
+
+namespace storage_monitor {
 
 namespace {
 
 // Constructs a device id using uuid or manufacturer (vendor and product) id
 // details.
-std::string MakeDeviceUniqueId(const disks::DiskMountManager::Disk& disk) {
+std::string MakeDeviceUniqueId(const DiskMountManager::Disk& disk) {
   std::string uuid = disk.fs_uuid();
   if (!uuid.empty())
     return kFSUniqueIdPrefix + uuid;
@@ -44,15 +44,15 @@ std::string MakeDeviceUniqueId(const disks::DiskMountManager::Disk& disk) {
 
 // Returns true if the requested device is valid, else false. On success, fills
 // in |info|.
-bool GetDeviceInfo(const disks::DiskMountManager::MountPointInfo& mount_info,
+bool GetDeviceInfo(const DiskMountManager::MountPointInfo& mount_info,
                    bool has_dcim,
                    StorageInfo* info) {
   DCHECK(info);
   std::string source_path = mount_info.source_path;
 
-  const disks::DiskMountManager::Disk* disk =
-      disks::DiskMountManager::GetInstance()->FindDiskBySourcePath(source_path);
-  if (!disk || disk->device_type() == DEVICE_TYPE_UNKNOWN)
+  const DiskMountManager::Disk* disk =
+      DiskMountManager::GetInstance()->FindDiskBySourcePath(source_path);
+  if (!disk || disk->device_type() == chromeos::DEVICE_TYPE_UNKNOWN)
     return false;
 
   std::string unique_id = MakeDeviceUniqueId(*disk);
@@ -79,7 +79,7 @@ bool GetDeviceInfo(const disks::DiskMountManager::MountPointInfo& mount_info,
 
 // Returns whether the mount point in |mount_info| is a media device or not.
 bool CheckMountedPathOnFileThread(
-    const disks::DiskMountManager::MountPointInfo& mount_info) {
+    const DiskMountManager::MountPointInfo& mount_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   return MediaStorageUtil::HasDcim(base::FilePath(mount_info.mount_path));
 }
@@ -93,15 +93,15 @@ StorageMonitorCros::StorageMonitorCros()
 }
 
 StorageMonitorCros::~StorageMonitorCros() {
-  disks::DiskMountManager* manager = disks::DiskMountManager::GetInstance();
+  DiskMountManager* manager = DiskMountManager::GetInstance();
   if (manager) {
     manager->RemoveObserver(this);
   }
 }
 
 void StorageMonitorCros::Init() {
-  DCHECK(disks::DiskMountManager::GetInstance());
-  disks::DiskMountManager::GetInstance()->AddObserver(this);
+  DCHECK(DiskMountManager::GetInstance());
+  DiskMountManager::GetInstance()->AddObserver(this);
   CheckExistingMountPoints();
 
   if (!media_transfer_protocol_manager_) {
@@ -117,10 +117,10 @@ void StorageMonitorCros::Init() {
 
 void StorageMonitorCros::CheckExistingMountPoints() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  const disks::DiskMountManager::MountPointMap& mount_point_map =
-      disks::DiskMountManager::GetInstance()->mount_points();
-  for (disks::DiskMountManager::MountPointMap::const_iterator it =
-           mount_point_map.begin(); it != mount_point_map.end(); ++it) {
+  const DiskMountManager::MountPointMap& mount_point_map =
+      DiskMountManager::GetInstance()->mount_points();
+  for (DiskMountManager::MountPointMap::const_iterator it =
+      mount_point_map.begin(); it != mount_point_map.end(); ++it) {
     BrowserThread::PostTaskAndReplyWithResult(
         BrowserThread::FILE, FROM_HERE,
         base::Bind(&CheckMountedPathOnFileThread, it->second),
@@ -139,33 +139,29 @@ void StorageMonitorCros::CheckExistingMountPoints() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void StorageMonitorCros::OnDiskEvent(
-    disks::DiskMountManager::DiskEvent event,
-    const disks::DiskMountManager::Disk* disk) {
-}
+void StorageMonitorCros::OnDiskEvent(DiskMountManager::DiskEvent event,
+                                     const DiskMountManager::Disk* disk) {}
 
-void StorageMonitorCros::OnDeviceEvent(
-    disks::DiskMountManager::DeviceEvent event,
-    const std::string& device_path) {
-}
+void StorageMonitorCros::OnDeviceEvent(DiskMountManager::DeviceEvent event,
+                                       const std::string& device_path) {}
 
 void StorageMonitorCros::OnMountEvent(
-    disks::DiskMountManager::MountEvent event,
-    MountError error_code,
-    const disks::DiskMountManager::MountPointInfo& mount_info) {
+    DiskMountManager::MountEvent event,
+    chromeos::MountError error_code,
+    const DiskMountManager::MountPointInfo& mount_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Ignore mount points that are not devices.
-  if (mount_info.mount_type != MOUNT_TYPE_DEVICE)
+  if (mount_info.mount_type != chromeos::MOUNT_TYPE_DEVICE)
     return;
   // Ignore errors.
-  if (error_code != MOUNT_ERROR_NONE)
+  if (error_code != chromeos::MOUNT_ERROR_NONE)
     return;
-  if (mount_info.mount_condition != disks::MOUNT_CONDITION_NONE)
+  if (mount_info.mount_condition != chromeos::disks::MOUNT_CONDITION_NONE)
     return;
 
   switch (event) {
-    case disks::DiskMountManager::MOUNTING: {
+    case DiskMountManager::MOUNTING: {
       if (ContainsKey(mount_map_, mount_info.mount_path)) {
         NOTREACHED();
         return;
@@ -178,7 +174,7 @@ void StorageMonitorCros::OnMountEvent(
                      weak_ptr_factory_.GetWeakPtr(), mount_info));
       break;
     }
-    case disks::DiskMountManager::UNMOUNTING: {
+    case DiskMountManager::UNMOUNTING: {
       MountMap::iterator it = mount_map_.find(mount_info.mount_path);
       if (it == mount_map_.end())
         return;
@@ -189,11 +185,9 @@ void StorageMonitorCros::OnMountEvent(
   }
 }
 
-void StorageMonitorCros::OnFormatEvent(
-    disks::DiskMountManager::FormatEvent event,
-    FormatError error_code,
-    const std::string& device_path) {
-}
+void StorageMonitorCros::OnFormatEvent(DiskMountManager::FormatEvent event,
+                                       chromeos::FormatError error_code,
+                                       const std::string& device_path) {}
 
 void StorageMonitorCros::SetMediaTransferProtocolManagerForTest(
     device::MediaTransferProtocolManager* test_manager) {
@@ -234,7 +228,7 @@ bool StorageMonitorCros::GetStorageInfoForPath(
 void NotifyUnmountResult(
     base::Callback<void(StorageMonitor::EjectStatus)> callback,
     chromeos::MountError error_code) {
-  if (error_code == MOUNT_ERROR_NONE)
+  if (error_code == chromeos::MOUNT_ERROR_NONE)
     callback.Run(StorageMonitor::EJECT_OK);
   else
     callback.Run(StorageMonitor::EJECT_FAILURE);
@@ -266,7 +260,7 @@ void StorageMonitorCros::EjectDevice(
     return;
   }
 
-  disks::DiskMountManager* manager = disks::DiskMountManager::GetInstance();
+  DiskMountManager* manager = DiskMountManager::GetInstance();
   if (!manager) {
     callback.Run(EJECT_FAILURE);
     return;
@@ -282,7 +276,8 @@ StorageMonitorCros::media_transfer_protocol_manager() {
 }
 
 void StorageMonitorCros::AddMountedPath(
-    const disks::DiskMountManager::MountPointInfo& mount_info, bool has_dcim) {
+    const DiskMountManager::MountPointInfo& mount_info,
+    bool has_dcim) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (ContainsKey(mount_map_, mount_info.mount_path)) {
@@ -305,8 +300,8 @@ void StorageMonitorCros::AddMountedPath(
   receiver()->ProcessAttach(info);
 }
 
-}  // namespace chromeos
-
 StorageMonitor* StorageMonitor::CreateInternal() {
-  return new chromeos::StorageMonitorCros();
+  return new StorageMonitorCros();
 }
+
+}  // namespace storage_monitor

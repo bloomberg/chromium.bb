@@ -25,6 +25,8 @@ const char kImageCaptureDeviceId[] = "ic:xyz";
 
 using content::BrowserThread;
 
+namespace storage_monitor {
+
 class MediaStorageUtilTest : public testing::Test {
  public:
   MediaStorageUtilTest()
@@ -150,3 +152,5 @@ TEST_F(MediaStorageUtilTest, DetectDeviceFiltered) {
 
   EXPECT_TRUE(devices.find(kImageCaptureDeviceId) != devices.end());
 }
+
+}  // namespace storage_monitor

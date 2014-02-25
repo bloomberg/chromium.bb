@@ -15,6 +15,8 @@
 @class ImageCaptureDevice;
 @class ImageCaptureDeviceManagerImpl;
 
+namespace storage_monitor {
+
 // Upon creation, begins monitoring for any attached devices using the
 // ImageCapture API. Notifies clients of the presence of such devices
 // (i.e. cameras,  USB cards) using the SystemMonitor and makes them
@@ -44,5 +46,7 @@ class ImageCaptureDeviceManager {
  private:
   base::scoped_nsobject<ImageCaptureDeviceManagerImpl> device_browser_;
 };
+
+}  // namespace storage_monitor
 
 #endif  // COMPONENTS_STORAGE_MONITOR_IMAGE_CAPTURE_DEVICE_MANAGER_H_

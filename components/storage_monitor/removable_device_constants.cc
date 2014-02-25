@@ -4,6 +4,8 @@
 
 #include "components/storage_monitor/removable_device_constants.h"
 
+namespace storage_monitor {
+
 const char kFSUniqueIdPrefix[] = "UUID:";
 const char kVendorModelSerialPrefix[] = "VendorModelSerial:";
 
@@ -17,3 +19,5 @@ const base::char16 kWPDDevInterfaceGUID[] =
 #endif
 
 const base::FilePath::CharType kDCIMDirectoryName[] = FILE_PATH_LITERAL("DCIM");
+
+}  // namespace storage_monitor

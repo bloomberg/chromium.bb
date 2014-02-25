@@ -67,7 +67,7 @@ typedef base::Callback<void(const std::vector<MediaFileSystemInfo>&)>
 // Tracks usage of filesystems by extensions.
 // This object lives on the UI thread.
 class MediaFileSystemRegistry
-    : public RemovableStorageObserver,
+    : public storage_monitor::RemovableStorageObserver,
       public MediaGalleriesPreferences::GalleryChangeObserver {
  public:
   MediaFileSystemRegistry();
@@ -88,7 +88,8 @@ class MediaFileSystemRegistry
   MediaScanManager* media_scan_manager();
 
   // RemovableStorageObserver implementation.
-  virtual void OnRemovableStorageDetached(const StorageInfo& info) OVERRIDE;
+  virtual void OnRemovableStorageDetached(
+      const storage_monitor::StorageInfo& info) OVERRIDE;
 
  private:
   class MediaFileSystemContextImpl;

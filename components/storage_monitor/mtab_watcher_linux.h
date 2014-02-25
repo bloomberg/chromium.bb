@@ -20,6 +20,8 @@
 #include "base/files/file_path_watcher.h"
 #include "base/memory/weak_ptr.h"
 
+namespace storage_monitor {
+
 class MtabWatcherLinux {
  public:
   // (mount point, mount device)
@@ -58,5 +60,7 @@ class MtabWatcherLinux {
 
   DISALLOW_COPY_AND_ASSIGN(MtabWatcherLinux);
 };
+
+}  // namespace storage_monitor
 
 #endif  // COMPONENTS_STORAGE_MONITOR_MTAB_WATCHER_LINUX_H_

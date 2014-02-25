@@ -207,6 +207,8 @@ const char kTestFileContents[] = "test";
 
 @end
 
+namespace storage_monitor {
+
 class TestCameraListener
     : public ImageCaptureDeviceListener,
       public base::SupportsWeakPtr<TestCameraListener> {
@@ -432,3 +434,5 @@ TEST_F(ImageCaptureDeviceManagerTest, TestSubdirectories) {
 
   [camera didRemoveDevice:device];
 }
+
+}  // namespace storage_monitor

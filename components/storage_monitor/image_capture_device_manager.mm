@@ -11,7 +11,8 @@
 
 namespace {
 
-ImageCaptureDeviceManager* g_image_capture_device_manager = NULL;
+storage_monitor::ImageCaptureDeviceManager* g_image_capture_device_manager =
+    NULL;
 
 }  // namespace
 
@@ -30,10 +31,11 @@ ImageCaptureDeviceManager* g_image_capture_device_manager = NULL;
   // Guaranteed to outlive this class.
   // TODO(gbillock): Update when ownership chains go up through
   // a StorageMonitor subclass.
-  StorageMonitor::Receiver* notifications_;
+  storage_monitor::StorageMonitor::Receiver* notifications_;
 }
 
-- (void)setNotifications:(StorageMonitor::Receiver*)notifications;
+- (void)setNotifications:
+        (storage_monitor::StorageMonitor::Receiver*)notifications;
 - (void)close;
 
 // The UUIDs passed here are available in the device attach notifications.
@@ -58,7 +60,8 @@ ImageCaptureDeviceManager* g_image_capture_device_manager = NULL;
   return self;
 }
 
-- (void)setNotifications:(StorageMonitor::Receiver*)notifications {
+- (void)setNotifications:
+            (storage_monitor::StorageMonitor::Receiver*)notifications {
   notifications_ = notifications;
 }
 
@@ -97,9 +100,9 @@ ImageCaptureDeviceManager* g_image_capture_device_manager = NULL;
   [cameras_ addObject:addedDevice];
 
   // TODO(gbillock): use [cameraDevice mountPoint] here when possible.
-  StorageInfo info(
-      StorageInfo::MakeDeviceId(
-          StorageInfo::MAC_IMAGE_CAPTURE,
+  storage_monitor::StorageInfo info(
+      storage_monitor::StorageInfo::MakeDeviceId(
+          storage_monitor::StorageInfo::MAC_IMAGE_CAPTURE,
           base::SysNSStringToUTF8([cameraDevice UUIDString])),
       base::SysNSStringToUTF16([cameraDevice name]),
       "",
@@ -121,11 +124,13 @@ ImageCaptureDeviceManager* g_image_capture_device_manager = NULL;
   // May delete |device|.
   [cameras_ removeObject:device];
 
-  notifications_->ProcessDetach(
-      StorageInfo::MakeDeviceId(StorageInfo::MAC_IMAGE_CAPTURE, uuid));
+  notifications_->ProcessDetach(storage_monitor::StorageInfo::MakeDeviceId(
+      storage_monitor::StorageInfo::MAC_IMAGE_CAPTURE, uuid));
 }
 
 @end  // ImageCaptureDeviceManagerImpl
+
+namespace storage_monitor {
 
 ImageCaptureDeviceManager::ImageCaptureDeviceManager() {
   device_browser_.reset([[ImageCaptureDeviceManagerImpl alloc] init]);
@@ -163,3 +168,5 @@ ImageCaptureDevice* ImageCaptureDeviceManager::deviceForUUID(
 id<ICDeviceBrowserDelegate> ImageCaptureDeviceManager::device_browser() {
   return device_browser_.get();
 }
+
+}  // namespace storage_monitor

@@ -20,6 +20,8 @@ const char kIPhotoPrefix[] = "iphoto:";
 
 }  // namespace
 
+namespace storage_monitor {
+
 StorageInfo::StorageInfo() : total_size_in_bytes_(0) {
 }
 
@@ -151,3 +153,5 @@ bool StorageInfo::IsPicasaDevice(const std::string& device_id) {
   Type type;
   return CrackDeviceId(device_id, &type, NULL) && type == PICASA;
 }
+
+}  // namespace storage_monitor

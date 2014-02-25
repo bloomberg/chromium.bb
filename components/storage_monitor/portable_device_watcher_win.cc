@@ -25,6 +25,8 @@
 #include "components/storage_monitor/storage_info.h"
 #include "content/public/browser/browser_thread.h"
 
+namespace storage_monitor {
+
 namespace {
 
 // Name of the client application that communicates with the MTP device.
@@ -666,3 +668,5 @@ void PortableDeviceWatcherWin::HandleDeviceDetachEvent(
   }
   device_map_.erase(device_iter);
 }
+
+}  // namespace storage_monitor

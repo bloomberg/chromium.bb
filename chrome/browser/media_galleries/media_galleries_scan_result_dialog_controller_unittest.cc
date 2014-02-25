@@ -86,7 +86,7 @@ class MediaGalleriesScanResultDialogControllerTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    ASSERT_TRUE(TestStorageMonitor::CreateAndInstall());
+    ASSERT_TRUE(storage_monitor::TestStorageMonitor::CreateAndInstall());
 
     extensions::TestExtensionSystem* extension_system(
         static_cast<extensions::TestExtensionSystem*>(
@@ -106,7 +106,7 @@ class MediaGalleriesScanResultDialogControllerTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    TestStorageMonitor::Destroy();
+    storage_monitor::TestStorageMonitor::Destroy();
   }
 
   void StartDialog() {
@@ -210,7 +210,7 @@ class MediaGalleriesScanResultDialogControllerTest : public testing::Test {
   chromeos::ScopedTestUserManager test_user_manager_;
 #endif
 
-  TestStorageMonitor monitor_;
+  storage_monitor::TestStorageMonitor monitor_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<MediaGalleriesPreferences> gallery_prefs_;
 

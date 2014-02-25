@@ -33,7 +33,7 @@ typedef MTPDeviceAsyncDelegate::ReadDirectorySuccessCallback
 // interactions with it are done on the UI thread, but it may be
 // created/destroyed on another thread.
 class MTPDeviceDelegateImplMac::DeviceListener
-    : public ImageCaptureDeviceListener,
+    : public storage_monitor::ImageCaptureDeviceListener,
       public base::SupportsWeakPtr<DeviceListener> {
  public:
   DeviceListener(MTPDeviceDelegateImplMac* delegate)
@@ -69,7 +69,8 @@ class MTPDeviceDelegateImplMac::DeviceListener
 void MTPDeviceDelegateImplMac::DeviceListener::OpenCameraSession(
     const std::string& device_id) {
   camera_device_.reset(
-      [ImageCaptureDeviceManager::deviceForUUID(device_id) retain]);
+      [storage_monitor::ImageCaptureDeviceManager::deviceForUUID(device_id)
+          retain]);
   [camera_device_ setListener:AsWeakPtr()];
   [camera_device_ open];
 }
@@ -480,10 +481,11 @@ void CreateMTPDeviceAsyncDelegate(
     const CreateMTPDeviceAsyncDelegateCallback& cb) {
   std::string device_name = base::FilePath(device_location).BaseName().value();
   std::string device_id;
-  StorageInfo::Type type;
-  bool cracked = StorageInfo::CrackDeviceId(device_name, &type, &device_id);
+  storage_monitor::StorageInfo::Type type;
+  bool cracked = storage_monitor::StorageInfo::CrackDeviceId(
+      device_name, &type, &device_id);
   DCHECK(cracked);
-  DCHECK_EQ(StorageInfo::MAC_IMAGE_CAPTURE, type);
+  DCHECK_EQ(storage_monitor::StorageInfo::MAC_IMAGE_CAPTURE, type);
 
   cb.Run(new MTPDeviceDelegateImplMac(device_id, device_location));
 }

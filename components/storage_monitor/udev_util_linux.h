@@ -15,6 +15,8 @@ namespace base {
 class FilePath;
 }
 
+namespace storage_monitor {
+
 // Deleter for ScopedUdevObject.
 struct UdevDeleter {
   void operator()(struct udev* udev);
@@ -38,5 +40,7 @@ std::string GetUdevDevicePropertyValue(struct udev_device* udev_device,
 bool GetUdevDevicePropertyValueByPath(const base::FilePath& device_path,
                                       const char* key,
                                       std::string* result);
+
+}  // namespace storage_monitor
 
 #endif  // COMPONENTS_STORAGE_MONITOR_UDEV_UTIL_LINUX_H_

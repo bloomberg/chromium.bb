@@ -174,7 +174,8 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
         content::BrowserThread::IO));
     ASSERT_TRUE(io_thread_->Start());
 
-    TestStorageMonitor* monitor = TestStorageMonitor::CreateAndInstall();
+    storage_monitor::TestStorageMonitor* monitor =
+        storage_monitor::TestStorageMonitor::CreateAndInstall();
     manager_.SetNotifications(monitor->receiver());
 
     camera_ = [MockMTPICCameraDevice alloc];
@@ -190,7 +191,7 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
 
     delegate_->CancelPendingTasksAndDeleteDelegate();
 
-    TestStorageMonitor::Destroy();
+    storage_monitor::TestStorageMonitor::Destroy();
 
     io_thread_->Stop();
   }
@@ -297,7 +298,7 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
   scoped_ptr<content::TestBrowserThread> file_thread_;
   scoped_ptr<content::TestBrowserThread> io_thread_;
   base::ScopedTempDir temp_dir_;
-  ImageCaptureDeviceManager manager_;
+  storage_monitor::ImageCaptureDeviceManager manager_;
   MockMTPICCameraDevice* camera_;
 
   // This object needs special deletion inside the above |task_runner_|.

@@ -13,6 +13,8 @@
 #include "base/memory/ref_counted.h"
 #include "components/storage_monitor/storage_monitor_win.h"
 
+namespace storage_monitor {
+
 class TestPortableDeviceWatcherWin;
 class TestVolumeMountWatcherWin;
 
@@ -33,5 +35,7 @@ class TestStorageMonitorWin: public StorageMonitorWin {
  private:
   DISALLOW_COPY_AND_ASSIGN(TestStorageMonitorWin);
 };
+
+}  // namespace storage_monitor
 
 #endif  // COMPONENTS_STORAGE_MONITOR_TEST_STORAGE_MONITOR_WIN_H_

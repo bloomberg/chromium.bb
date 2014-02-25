@@ -90,7 +90,7 @@ void FindITunesLibraryOnFileThread(const iapps::IAppsFinderCallback& callback) {
 // ITunesFinderWin will try a default location as well.
 void FindITunesLibrary(const IAppsFinderCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  FindIAppsOnFileThread(StorageInfo::ITUNES,
+  FindIAppsOnFileThread(storage_monitor::StorageInfo::ITUNES,
                         base::Bind(FindITunesLibraryOnFileThread), callback);
 }
 

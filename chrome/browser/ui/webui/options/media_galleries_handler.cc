@@ -138,7 +138,7 @@ void MediaGalleriesHandler::HandleForgetGallery(const base::ListValue* args) {
   }
 
   media_galleries::UsageCount(media_galleries::WEBUI_FORGET_GALLERY);
-  DCHECK(StorageMonitor::GetInstance()->IsInitialized());
+  DCHECK(storage_monitor::StorageMonitor::GetInstance()->IsInitialized());
   MediaGalleriesPreferences* preferences =
       g_browser_process->media_file_system_registry()->GetPreferences(
           Profile::FromWebUI(web_ui()));
@@ -149,7 +149,7 @@ void MediaGalleriesHandler::FileSelected(const base::FilePath& path,
                                          int index,
                                          void* params) {
   media_galleries::UsageCount(media_galleries::WEBUI_ADD_GALLERY);
-  DCHECK(StorageMonitor::GetInstance()->IsInitialized());
+  DCHECK(storage_monitor::StorageMonitor::GetInstance()->IsInitialized());
   MediaGalleriesPreferences* preferences =
       g_browser_process->media_file_system_registry()->GetPreferences(
           Profile::FromWebUI(web_ui()));

@@ -44,6 +44,8 @@
 #endif  // OS_MACOSX
 
 using extensions::PlatformAppBrowserTest;
+using storage_monitor::StorageInfo;
+using storage_monitor::StorageMonitor;
 
 namespace {
 

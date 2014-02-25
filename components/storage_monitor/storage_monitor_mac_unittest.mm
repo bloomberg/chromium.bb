@@ -21,6 +21,8 @@
 
 uint64 kTestSize = 1000000ULL;
 
+namespace storage_monitor {
+
 namespace {
 
 StorageInfo CreateStorageInfo(
@@ -171,3 +173,5 @@ TEST_F(StorageMonitorMacTest, DMG) {
   UpdateDisk(info, StorageMonitorMac::UPDATE_DEVICE_ADDED);
   EXPECT_EQ(0, mock_storage_observer_->attach_calls());
 }
+
+}  // namespace storage_monitor

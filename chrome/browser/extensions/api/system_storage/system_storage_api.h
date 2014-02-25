@@ -41,7 +41,7 @@ class SystemStorageEjectDeviceFunction
   void OnStorageMonitorInit(const std::string& transient_device_id);
 
   // Eject device request handler.
-  void HandleResponse(StorageMonitor::EjectStatus status);
+  void HandleResponse(storage_monitor::StorageMonitor::EjectStatus status);
 };
 
 class SystemStorageGetAvailableCapacityFunction

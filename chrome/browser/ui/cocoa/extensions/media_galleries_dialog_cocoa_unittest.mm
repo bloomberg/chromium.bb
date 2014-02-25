@@ -20,9 +20,9 @@ using ::testing::ReturnRef;
 MediaGalleryPrefInfo MakePrefInfoForTesting(MediaGalleryPrefId pref_id) {
   MediaGalleryPrefInfo gallery;
   gallery.pref_id = pref_id;
-  gallery.device_id =
-      StorageInfo::MakeDeviceId(StorageInfo::FIXED_MASS_STORAGE,
-                                base::Int64ToString(pref_id));
+  gallery.device_id = storage_monitor::StorageInfo::MakeDeviceId(
+      storage_monitor::StorageInfo::FIXED_MASS_STORAGE,
+      base::Int64ToString(pref_id));
   gallery.display_name = base::ASCIIToUTF16("name");
   return gallery;
 }

@@ -48,7 +48,8 @@ typedef base::Callback<void(const IAppsFinderCallback&)> IAppsFinderTask;
 // bouncing to the FILE thread to run |task| and then turning the result into a
 // device id and posting it to |callback| on the UI thread.  If |task| does not
 // find the iApps's library, |callback| gets an empty string.
-void FindIAppsOnFileThread(StorageInfo::Type type, const IAppsFinderTask& task,
+void FindIAppsOnFileThread(storage_monitor::StorageInfo::Type type,
+                           const IAppsFinderTask& task,
                            const IAppsFinderCallback& callback);
 
 }  // namespace iapps

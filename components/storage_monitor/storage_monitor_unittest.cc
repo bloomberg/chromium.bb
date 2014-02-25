@@ -18,6 +18,8 @@ void SetLatch(bool* called) {
 
 }  // namespace
 
+namespace storage_monitor {
+
 TEST(StorageMonitorTest, TestInitialize) {
   TestStorageMonitor::Destroy();
   TestStorageMonitor monitor;
@@ -133,3 +135,5 @@ TEST(StorageMonitorTest, GetAllAvailableStorageAttachDetach) {
   devices = monitor.GetAllAvailableStorages();
   EXPECT_EQ(0U, devices.size());
 }
+
+}  // namespace storage_monitor

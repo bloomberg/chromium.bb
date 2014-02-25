@@ -406,7 +406,7 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   // Do not use the real StorageMonitor for tests, which introduces another
   // source of variability and potential slowness.
-  ASSERT_TRUE(TestStorageMonitor::CreateForBrowserTests());
+  ASSERT_TRUE(storage_monitor::TestStorageMonitor::CreateForBrowserTests());
 #endif
 
   // Pump any pending events that were created as a result of creating a

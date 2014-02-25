@@ -141,8 +141,9 @@ class MediaGalleriesGetAllMediaFileSystemMetadataFunction
 
   // Callback to run upon getting the list of available devices.
   // Sends the list of media filesystem metadata back to the extension.
-  void OnGetGalleries(const MediaGalleryPrefIdSet& permitted_gallery_ids,
-                      const MediaStorageUtil::DeviceIdSet* available_devices);
+  void OnGetGalleries(
+      const MediaGalleryPrefIdSet& permitted_gallery_ids,
+      const storage_monitor::MediaStorageUtil::DeviceIdSet* available_devices);
 };
 
 class MediaGalleriesAddUserSelectedFolderFunction

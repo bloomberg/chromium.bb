@@ -50,7 +50,7 @@ class MediaGalleriesDialog {
 // the dialog and owns itself.
 class MediaGalleriesDialogController
     : public ui::SelectFileDialog::Listener,
-      public RemovableStorageObserver,
+      public storage_monitor::RemovableStorageObserver,
       public MediaGalleriesPreferences::GalleryChangeObserver {
  public:
   struct GalleryPermission {
@@ -137,8 +137,10 @@ class MediaGalleriesDialogController
 
   // RemovableStorageObserver implementation.
   // Used to keep dialog in sync with removable device status.
-  virtual void OnRemovableStorageAttached(const StorageInfo& info) OVERRIDE;
-  virtual void OnRemovableStorageDetached(const StorageInfo& info) OVERRIDE;
+  virtual void OnRemovableStorageAttached(
+      const storage_monitor::StorageInfo& info) OVERRIDE;
+  virtual void OnRemovableStorageDetached(
+      const storage_monitor::StorageInfo& info) OVERRIDE;
 
   // MediaGalleriesPreferences::GalleryChangeObserver implementations.
   // Used to keep the dialog in sync when the preferences change.

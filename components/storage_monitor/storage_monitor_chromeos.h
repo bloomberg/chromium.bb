@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// chromeos::StorageMonitorCros listens for mount point changes and notifies
-// listeners about the addition and deletion of media devices.
-// This class lives on the UI thread.
+// StorageMonitorCros listens for mount point changes and notifies listeners
+// about the addition and deletion of media devices. This class lives on the
+// UI thread.
 
 #ifndef COMPONENTS_STORAGE_MONITOR_STORAGE_MONITOR_CHROMEOS_H_
 #define COMPONENTS_STORAGE_MONITOR_STORAGE_MONITOR_CHROMEOS_H_
@@ -23,12 +23,12 @@
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/storage_monitor/storage_monitor.h"
 
+namespace storage_monitor {
+
 class MediaTransferProtocolDeviceObserverLinux;
 
-namespace chromeos {
-
 class StorageMonitorCros : public StorageMonitor,
-                           public disks::DiskMountManager::Observer {
+                           public chromeos::disks::DiskMountManager::Observer {
  public:
   // Should only be called by browser start up code.
   // Use StorageMonitor::GetInstance() instead.
@@ -43,18 +43,22 @@ class StorageMonitorCros : public StorageMonitor,
   void SetMediaTransferProtocolManagerForTest(
       device::MediaTransferProtocolManager* test_manager);
 
-  // disks::DiskMountManager::Observer implementation.
-  virtual void OnDiskEvent(disks::DiskMountManager::DiskEvent event,
-                           const disks::DiskMountManager::Disk* disk) OVERRIDE;
-  virtual void OnDeviceEvent(disks::DiskMountManager::DeviceEvent event,
-                             const std::string& device_path) OVERRIDE;
+  // chromeos::disks::DiskMountManager::Observer implementation.
+  virtual void OnDiskEvent(
+      chromeos::disks::DiskMountManager::DiskEvent event,
+      const chromeos::disks::DiskMountManager::Disk* disk) OVERRIDE;
+  virtual void OnDeviceEvent(
+      chromeos::disks::DiskMountManager::DeviceEvent event,
+      const std::string& device_path) OVERRIDE;
   virtual void OnMountEvent(
-      disks::DiskMountManager::MountEvent event,
-      MountError error_code,
-      const disks::DiskMountManager::MountPointInfo& mount_info) OVERRIDE;
-  virtual void OnFormatEvent(disks::DiskMountManager::FormatEvent event,
-                             FormatError error_code,
-                             const std::string& device_path) OVERRIDE;
+      chromeos::disks::DiskMountManager::MountEvent event,
+      chromeos::MountError error_code,
+      const chromeos::disks::DiskMountManager::MountPointInfo& mount_info)
+      OVERRIDE;
+  virtual void OnFormatEvent(
+      chromeos::disks::DiskMountManager::FormatEvent event,
+      chromeos::FormatError error_code,
+      const std::string& device_path) OVERRIDE;
 
   // StorageMonitor implementation.
   virtual bool GetStorageInfoForPath(const base::FilePath& path,
@@ -76,8 +80,9 @@ class StorageMonitorCros : public StorageMonitor,
   // Adds the mount point in |mount_info| to |mount_map_| and send a media
   // device attach notification. |has_dcim| is true if the attached device has
   // a DCIM folder.
-  void AddMountedPath(const disks::DiskMountManager::MountPointInfo& mount_info,
-                      bool has_dcim);
+  void AddMountedPath(
+      const chromeos::disks::DiskMountManager::MountPointInfo& mount_info,
+      bool has_dcim);
 
   // Mapping of relevant mount points and their corresponding mount devices.
   MountMap mount_map_;
@@ -92,6 +97,6 @@ class StorageMonitorCros : public StorageMonitor,
   DISALLOW_COPY_AND_ASSIGN(StorageMonitorCros);
 };
 
-}  // namespace chromeos
+}  // namespace storage_monitor
 
 #endif  // COMPONENTS_STORAGE_MONITOR_STORAGE_MONITOR_CHROMEOS_H_

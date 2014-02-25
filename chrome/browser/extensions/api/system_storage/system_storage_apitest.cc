@@ -10,7 +10,6 @@
 #include "chrome/browser/extensions/api/system_storage/storage_info_provider.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
-#include "components/storage_monitor/storage_info.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "components/storage_monitor/test_storage_monitor.h"
 
@@ -19,6 +18,8 @@ namespace {
 using extensions::StorageUnitInfoList;
 using extensions::test::TestStorageUnitInfo;
 using extensions::test::kRemovableStorageData;
+using storage_monitor::StorageMonitor;
+using storage_monitor::TestStorageMonitor;
 
 const struct TestStorageUnitInfo kTestingData[] = {
   {"dcim:device:001", "0xbeaf", 4098, 1},

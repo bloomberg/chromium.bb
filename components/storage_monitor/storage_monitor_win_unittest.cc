@@ -34,6 +34,8 @@ typedef std::vector<int> DeviceIndices;
 
 // StorageMonitorWinTest -------------------------------------------------------
 
+namespace storage_monitor {
+
 class StorageMonitorWinTest : public testing::Test {
  public:
   StorageMonitorWinTest();
@@ -544,3 +546,5 @@ TEST_F(StorageMonitorWinTest, GetMTPStorageInfoFromDeviceId) {
   }
   DoMTPDeviceTest(TestPortableDeviceWatcherWin::kMTPDeviceWithValidInfo, false);
 }
+
+}  // namespace storage_monitor

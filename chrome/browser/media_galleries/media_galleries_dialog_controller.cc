@@ -30,6 +30,8 @@
 
 using extensions::APIPermission;
 using extensions::Extension;
+using storage_monitor::StorageInfo;
+using storage_monitor::StorageMonitor;
 
 namespace {
 

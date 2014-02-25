@@ -9,6 +9,8 @@
 #include "components/storage_monitor/removable_storage_observer.h"
 #include "components/storage_monitor/transient_device_ids.h"
 
+namespace storage_monitor {
+
 namespace {
 
 StorageMonitor* g_storage_monitor = NULL;
@@ -192,3 +194,5 @@ void StorageMonitor::ProcessDetach(const std::string& id) {
         &RemovableStorageObserver::OnRemovableStorageDetached, info);
   }
 }
+
+}  // namespace storage_monitor

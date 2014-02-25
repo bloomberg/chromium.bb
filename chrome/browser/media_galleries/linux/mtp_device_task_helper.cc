@@ -19,6 +19,8 @@
 #include "webkit/browser/fileapi/async_file_util.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
+using storage_monitor::StorageMonitor;
+
 namespace {
 
 // Does nothing.

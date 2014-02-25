@@ -9,6 +9,8 @@
 #include "components/storage_monitor/test_portable_device_watcher_win.h"
 #include "components/storage_monitor/test_volume_mount_watcher_win.h"
 
+namespace storage_monitor {
+
 TestStorageMonitorWin::TestStorageMonitorWin(
     TestVolumeMountWatcherWin* volume_mount_watcher,
     TestPortableDeviceWatcherWin* portable_device_watcher)
@@ -32,3 +34,5 @@ TestStorageMonitorWin::volume_mount_watcher() {
 StorageMonitor::Receiver* TestStorageMonitorWin::receiver() const {
   return StorageMonitor::receiver();
 }
+
+}  // namespace storage_monitor

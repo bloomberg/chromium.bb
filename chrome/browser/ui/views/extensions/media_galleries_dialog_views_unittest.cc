@@ -22,8 +22,9 @@ namespace {
 MediaGalleryPrefInfo MakePrefInfoForTesting(MediaGalleryPrefId id) {
   MediaGalleryPrefInfo gallery;
   gallery.pref_id = id;
-  gallery.device_id = StorageInfo::MakeDeviceId(StorageInfo::FIXED_MASS_STORAGE,
-                                                base::Int64ToString(id));
+  gallery.device_id = storage_monitor::StorageInfo::MakeDeviceId(
+      storage_monitor::StorageInfo::FIXED_MASS_STORAGE,
+      base::Int64ToString(id));
   gallery.display_name = base::ASCIIToUTF16("Display Name");
   return gallery;
 }

@@ -28,7 +28,7 @@ class ListValue;
 namespace extensions {
 
 class MediaGalleriesPrivateEventRouter
-    : public RemovableStorageObserver,
+    : public storage_monitor::RemovableStorageObserver,
       public base::SupportsWeakPtr<MediaGalleriesPrivateEventRouter> {
  public:
   explicit MediaGalleriesPrivateEventRouter(Profile* profile);
@@ -40,8 +40,10 @@ class MediaGalleriesPrivateEventRouter
 
  private:
   // RemovableStorageObserver implementation.
-  virtual void OnRemovableStorageAttached(const StorageInfo& info) OVERRIDE;
-  virtual void OnRemovableStorageDetached(const StorageInfo& info) OVERRIDE;
+  virtual void OnRemovableStorageAttached(
+      const storage_monitor::StorageInfo& info) OVERRIDE;
+  virtual void OnRemovableStorageDetached(
+      const storage_monitor::StorageInfo& info) OVERRIDE;
 
   void DispatchEvent(const std::string& event_name,
                      scoped_ptr<base::ListValue> event_args);

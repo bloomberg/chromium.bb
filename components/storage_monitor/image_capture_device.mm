@@ -7,6 +7,8 @@
 #include "base/file_util.h"
 #include "content/public/browser/browser_thread.h"
 
+namespace storage_monitor {
+
 namespace {
 
 base::File::Error RenameFile(const base::FilePath& downloaded_filename,
@@ -50,6 +52,8 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
 
 }  // namespace
 
+}  // namespace storage_monitor
+
 @implementation ImageCaptureDevice
 
 - (id)initWithCameraDevice:(ICCameraDevice*)cameraDevice {
@@ -69,7 +73,8 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
   [super dealloc];
 }
 
-- (void)setListener:(base::WeakPtr<ImageCaptureDeviceListener>)listener {
+- (void)setListener:(base::WeakPtr<storage_monitor::ImageCaptureDeviceListener>)
+        listener {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   listener_ = listener;
 }
@@ -99,7 +104,7 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
 
   // Find the file with that name and start download.
   for (ICCameraItem* item in [camera_ mediaFiles]) {
-    std::string itemName = PathForCameraItem(item).value();
+    std::string itemName = storage_monitor::PathForCameraItem(item).value();
     if (itemName == name) {
       // To create save options for ImageCapture, we need to
       // split the target filename into directory/name
@@ -137,10 +142,11 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
   else
     info.size = [base::mac::ObjCCastStrict<ICCameraFile>(item) fileSize];
 
-  base::FilePath path = PathForCameraItem(item);
+  base::FilePath path = storage_monitor::PathForCameraItem(item);
 
-  info.last_modified = NSDateToBaseTime([item modificationDate]);
-  info.creation_time = NSDateToBaseTime([item creationDate]);
+  info.last_modified =
+      storage_monitor::NSDateToBaseTime([item modificationDate]);
+  info.creation_time = storage_monitor::NSDateToBaseTime([item creationDate]);
   info.last_accessed = info.last_modified;
 
   if (listener_)
@@ -183,7 +189,7 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
   if (closing_)
     return;
 
-  std::string name = PathForCameraItem(file).value();
+  std::string name = storage_monitor::PathForCameraItem(file).value();
 
   if (error) {
     DVLOG(1) << "error..."
@@ -214,8 +220,9 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
   content::BrowserThread::PostTaskAndReplyWithResult(
       content::BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(&RenameFile, savedPath, saveAsPath),
-      base::Bind(&ReturnRenameResultToListener, listener_, name));
+      base::Bind(&storage_monitor::RenameFile, savedPath, saveAsPath),
+      base::Bind(
+          &storage_monitor::ReturnRenameResultToListener, listener_, name));
 }
 
 @end  // ImageCaptureDevice

@@ -26,6 +26,9 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using storage_monitor::StorageInfo;
+using storage_monitor::StorageMonitor;
+
 namespace {
 
 // Comparator for sorting OrderedScanResults -- more files first and then sorts

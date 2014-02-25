@@ -28,6 +28,14 @@
 #include "extensions/browser/extension_system.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using storage_monitor::PortableDeviceWatcherWin;
+using storage_monitor::StorageInfo;
+using storage_monitor::StorageMonitor;
+using storage_monitor::TestPortableDeviceWatcherWin;
+using storage_monitor::TestStorageMonitor;
+using storage_monitor::TestStorageMonitorWin;
+using storage_monitor::TestVolumeMountWatcherWin;
+
 namespace {
 
 typedef std::map<MediaGalleryPrefId, MediaFileSystemInfo> FSInfoMap;

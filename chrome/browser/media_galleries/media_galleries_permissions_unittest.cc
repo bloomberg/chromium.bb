@@ -52,7 +52,7 @@ class MediaGalleriesPermissionsTest : public extensions::ExtensionPrefsTest {
     prefs_.pref_service()->CommitPendingWrite();
     message_loop_.RunUntilIdle();
 
-    TestStorageMonitor::Destroy();
+    storage_monitor::TestStorageMonitor::Destroy();
 
     testing::Test::TearDown();
   }
@@ -60,7 +60,7 @@ class MediaGalleriesPermissionsTest : public extensions::ExtensionPrefsTest {
   virtual void Initialize() OVERRIDE {
     file_thread_.Start();
 
-    ASSERT_TRUE(TestStorageMonitor::CreateAndInstall());
+    ASSERT_TRUE(storage_monitor::TestStorageMonitor::CreateAndInstall());
     profile_.reset(new TestingProfile);
     gallery_prefs_.reset(new MediaGalleriesPreferences(profile_.get()));
     base::RunLoop loop;

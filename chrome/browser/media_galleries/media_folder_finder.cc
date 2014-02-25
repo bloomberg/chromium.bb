@@ -23,6 +23,9 @@
 #include "chromeos/dbus/cros_disks_client.h"
 #endif
 
+using storage_monitor::StorageInfo;
+using storage_monitor::StorageMonitor;
+
 typedef base::Callback<void(const std::vector<base::FilePath>& /*roots*/)>
     DefaultScanRootsCallback;
 using content::BrowserThread;

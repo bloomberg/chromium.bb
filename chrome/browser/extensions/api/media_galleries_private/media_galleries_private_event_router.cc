@@ -18,6 +18,8 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
 
+using storage_monitor::StorageMonitor;
+
 namespace media_galleries_private = extensions::api::media_galleries_private;
 
 namespace extensions {
@@ -82,7 +84,7 @@ void MediaGalleriesPrivateEventRouter::OnGalleryChanged(
 }
 
 void MediaGalleriesPrivateEventRouter::OnRemovableStorageAttached(
-    const StorageInfo& info) {
+    const storage_monitor::StorageInfo& info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   EventRouter* router =
       extensions::ExtensionSystem::Get(profile_)->event_router();
@@ -111,7 +113,7 @@ void MediaGalleriesPrivateEventRouter::OnRemovableStorageAttached(
 }
 
 void MediaGalleriesPrivateEventRouter::OnRemovableStorageDetached(
-    const StorageInfo& info) {
+    const storage_monitor::StorageInfo& info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   EventRouter* router =
       extensions::ExtensionSystem::Get(profile_)->event_router();

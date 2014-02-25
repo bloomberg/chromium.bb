@@ -21,6 +21,10 @@
 #include "extensions/common/extension.h"
 #include "url/gurl.h"
 
+using storage_monitor::StorageInfo;
+using storage_monitor::StorageMonitor;
+using storage_monitor::TestStorageMonitor;
+
 namespace {
 
 // Id of test extension from

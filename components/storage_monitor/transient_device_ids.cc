@@ -11,6 +11,8 @@
 #include "base/stl_util.h"
 #include "components/storage_monitor/storage_info.h"
 
+namespace storage_monitor {
+
 TransientDeviceIds::TransientDeviceIds() {}
 
 TransientDeviceIds::~TransientDeviceIds() {}
@@ -39,3 +41,5 @@ std::string TransientDeviceIds::DeviceIdFromTransientId(
     return std::string();
   return it->second;
 }
+
+}  // namespace storage_monitor

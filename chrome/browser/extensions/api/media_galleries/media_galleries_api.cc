@@ -55,6 +55,8 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using content::WebContents;
+using storage_monitor::MediaStorageUtil;
+using storage_monitor::StorageInfo;
 using web_modal::WebContentsModalDialogManager;
 
 namespace extensions {

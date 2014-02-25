@@ -16,6 +16,8 @@
 
 // StorageMonitorWin -------------------------------------------------------
 
+namespace storage_monitor {
+
 StorageMonitorWin::StorageMonitorWin(
     VolumeMountWatcherWin* volume_mount_watcher,
     PortableDeviceWatcherWin* portable_device_watcher)
@@ -162,3 +164,5 @@ StorageMonitor* StorageMonitor::CreateInternal() {
   return new StorageMonitorWin(new VolumeMountWatcherWin(),
                                new PortableDeviceWatcherWin());
 }
+
+}  // namespace storage_monitor

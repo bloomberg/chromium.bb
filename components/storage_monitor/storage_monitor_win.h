@@ -14,6 +14,8 @@ namespace base {
 class FilePath;
 }
 
+namespace storage_monitor {
+
 class PortableDeviceWatcherWin;
 class TestStorageMonitorWin;
 class VolumeMountWatcherWin;
@@ -77,5 +79,7 @@ class StorageMonitorWin : public StorageMonitor {
 
   DISALLOW_COPY_AND_ASSIGN(StorageMonitorWin);
 };
+
+}  // namespace storage_monitor
 
 #endif  // COMPONENTS_STORAGE_MONITOR_STORAGE_MONITOR_WIN_H_

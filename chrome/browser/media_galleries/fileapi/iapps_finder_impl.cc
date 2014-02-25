@@ -12,14 +12,14 @@ namespace iapps {
 
 namespace {
 
-void PostResultToUIThread(StorageInfo::Type type,
+void PostResultToUIThread(storage_monitor::StorageInfo::Type type,
                           const IAppsFinderCallback& callback,
                           const std::string& unique_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
   std::string device_id;
   if (!unique_id.empty())
-    device_id = StorageInfo::MakeDeviceId(type, unique_id);
+    device_id = storage_monitor::StorageInfo::MakeDeviceId(type, unique_id);
 
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                    base::Bind(callback, device_id));
@@ -27,7 +27,8 @@ void PostResultToUIThread(StorageInfo::Type type,
 
 }  // namespace
 
-void FindIAppsOnFileThread(StorageInfo::Type type, const IAppsFinderTask& task,
+void FindIAppsOnFileThread(storage_monitor::StorageInfo::Type type,
+                           const IAppsFinderTask& task,
                            const IAppsFinderCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!task.is_null());

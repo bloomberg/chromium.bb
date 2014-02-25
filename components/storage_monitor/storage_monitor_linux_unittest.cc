@@ -26,6 +26,8 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace storage_monitor {
+
 namespace {
 
 const char kValidFS[] = "vfat";
@@ -679,3 +681,5 @@ TEST_F(StorageMonitorLinuxTest, DevicePartitionSize) {
 }
 
 }  // namespace
+
+}  // namespace storage_monitor

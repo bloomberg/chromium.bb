@@ -28,6 +28,8 @@
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
 
+namespace storage_monitor {
+
 class MediaTransferProtocolDeviceObserverLinux;
 
 class StorageMonitorLinux : public StorageMonitor,
@@ -138,5 +140,7 @@ class StorageMonitorLinux : public StorageMonitor,
 
   DISALLOW_COPY_AND_ASSIGN(StorageMonitorLinux);
 };
+
+}  // namespace storage_monitor
 
 #endif  // COMPONENTS_STORAGE_MONITOR_STORAGE_MONITOR_LINUX_H_

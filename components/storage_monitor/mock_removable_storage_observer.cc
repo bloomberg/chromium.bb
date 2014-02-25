@@ -4,6 +4,8 @@
 
 #include "components/storage_monitor/mock_removable_storage_observer.h"
 
+namespace storage_monitor {
+
 MockRemovableStorageObserver::MockRemovableStorageObserver()
     : attach_calls_(0), detach_calls_(0) {
 }
@@ -22,3 +24,5 @@ void MockRemovableStorageObserver::OnRemovableStorageDetached(
   detach_calls_++;
   last_detached_ = info;
 }
+
+}  // namespace storage_monitor

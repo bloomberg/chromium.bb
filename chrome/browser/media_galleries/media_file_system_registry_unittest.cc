@@ -55,6 +55,9 @@
 #endif
 
 using content::BrowserThread;
+using storage_monitor::StorageInfo;
+using storage_monitor::StorageMonitor;
+using storage_monitor::TestStorageMonitor;
 
 // Not anonymous so it can be friends with MediaFileSystemRegistry.
 class TestMediaFileSystemContext : public MediaFileSystemContext {
@@ -779,7 +782,8 @@ void MediaFileSystemRegistryTest::SetUp() {
   ASSERT_TRUE(base::CreateDirectory(empty_dir_));
   dcim_dir_ = galleries_dir_.path().AppendASCII("with_dcim");
   ASSERT_TRUE(base::CreateDirectory(dcim_dir_));
-  ASSERT_TRUE(base::CreateDirectory(dcim_dir_.Append(kDCIMDirectoryName)));
+  ASSERT_TRUE(base::CreateDirectory(
+      dcim_dir_.Append(storage_monitor::kDCIMDirectoryName)));
 }
 
 void MediaFileSystemRegistryTest::TearDown() {

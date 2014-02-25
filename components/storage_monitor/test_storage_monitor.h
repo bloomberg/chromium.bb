@@ -9,6 +9,8 @@
 
 #include "components/storage_monitor/storage_monitor.h"
 
+namespace storage_monitor {
+
 class TestStorageMonitor : public StorageMonitor {
  public:
   TestStorageMonitor();
@@ -71,5 +73,7 @@ class TestStorageMonitor : public StorageMonitor {
       media_transfer_protocol_manager_;
 #endif
 };
+
+}  // namespace storage_monitor
 
 #endif  // COMPONENTS_STORAGE_MONITOR_TEST_STORAGE_MONITOR_H_
