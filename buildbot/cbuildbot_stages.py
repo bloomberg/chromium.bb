@@ -2839,6 +2839,7 @@ class HWTestStage(ArchivingStage):
       False otherwise.
     """
     aborted = (self.archive_stage.release_tag and
+               cbuildbot_config.IsCQType(self._run.config.build_type) and
                commands.HaveHWTestsBeenAborted(self.archive_stage.release_tag))
     return aborted
 
