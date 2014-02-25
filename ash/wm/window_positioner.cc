@@ -464,7 +464,7 @@ gfx::Rect WindowPositioner::SmartPopupPosition(
       // When any window is maximized we cannot find any free space.
       if (window_state->IsMaximizedOrFullscreen())
         return gfx::Rect(0, 0, 0, 0);
-      if (window_state->IsNormalShowState())
+      if (window_state->IsNormalOrSnapped())
         regions.push_back(&windows[i]->bounds());
     }
   }

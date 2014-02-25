@@ -62,10 +62,11 @@ DragDetails::DragDetails(aura::Window* window,
       should_attach_to_shelf(window->type() == ui::wm::WINDOW_TYPE_PANEL &&
                              wm::GetWindowState(window)->panel_attached()) {
   wm::WindowState* window_state = wm::GetWindowState(window);
-  if (window_state->IsNormalShowState() &&
+  if (window_state->IsNormalOrSnapped() &&
       window_state->HasRestoreBounds() &&
-      window_component == HTCAPTION)
+      window_component == HTCAPTION) {
     restore_bounds = window_state->GetRestoreBoundsInScreen();
+  }
 }
 
 DragDetails::~DragDetails() {

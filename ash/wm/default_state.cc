@@ -150,8 +150,7 @@ bool DefaultState::ProcessCompoundEvents(WindowState* window_state,
         window_state->ToggleFullscreen();
       } else if (window_state->IsMaximized()) {
         window_state->Restore();
-      } else if (window_state->IsNormalShowType() ||
-                 window_state->IsSnapped()) {
+      } else if (window_state->IsNormalOrSnapped()) {
         if (window_state->CanMaximize())
           window_state->Maximize();
       }
@@ -196,7 +195,7 @@ bool DefaultState::ProcessCompoundEvents(WindowState* window_state,
       // - The window is snapped or has the normal show type.
       if (window->delegate()->GetMaximumSize().width() != 0)
         return true;
-      if (!window_state->IsNormalShowType() && !window_state->IsSnapped())
+      if (!window_state->IsNormalOrSnapped())
         return true;
       gfx::Rect work_area =
           ScreenUtil::GetDisplayWorkAreaBoundsInParent(window);
@@ -366,7 +365,7 @@ void DefaultState::UpdateBoundsFromShowType(WindowState* window_state,
   // clicking the window border for example).
   gfx::Rect restore;
   if (old_show_type == SHOW_TYPE_MINIMIZED &&
-      window_state->IsNormalShowState() &&
+      window_state->IsNormalOrSnapped() &&
       window_state->HasRestoreBounds() &&
       !window_state->unminimize_to_restore_bounds()) {
     restore = window_state->GetRestoreBoundsInScreen();
@@ -452,7 +451,7 @@ void DefaultState::UpdateBoundsFromShowType(WindowState* window_state,
     }
   }
 
-  if (window_state->IsNormalShowState())
+  if (window_state->IsNormalOrSnapped())
     window_state->ClearRestoreBounds();
 
   // Set the restore rectangle to the previously set restore rectangle.

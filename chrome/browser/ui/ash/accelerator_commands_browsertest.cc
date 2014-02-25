@@ -133,7 +133,7 @@ class AcceleratorCommandsFullscreenBrowserTest
     if (initial_show_state_ == ui::SHOW_STATE_MAXIMIZED)
       return window_state->IsMaximized();
     else
-      return window_state->IsNormalShowState();
+      return window_state->IsNormalShowType();
   }
 
   bool put_browser_in_immersive() const {

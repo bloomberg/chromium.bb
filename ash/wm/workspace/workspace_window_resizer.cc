@@ -69,7 +69,7 @@ scoped_ptr<WindowResizer> CreateWindowResizer(
   // It may be possible to refactor and eliminate chaining.
   WindowResizer* window_resizer = NULL;
 
-  if (!window_state->IsNormalShowState())
+  if (!window_state->IsNormalOrSnapped())
     return scoped_ptr<WindowResizer>();
 
   int bounds_change = WindowResizer::GetBoundsChangeForWindowComponent(
@@ -745,7 +745,7 @@ bool WorkspaceWindowResizer::UpdateMagnetismWindow(const gfx::Rect& bounds,
       wm::WindowState* other_state = wm::GetWindowState(*i);
       if (other_state->window() == GetTarget() ||
           !other_state->window()->IsVisible() ||
-          !other_state->IsNormalShowState() ||
+          !other_state->IsNormalOrSnapped() ||
           !other_state->CanResize()) {
         continue;
       }

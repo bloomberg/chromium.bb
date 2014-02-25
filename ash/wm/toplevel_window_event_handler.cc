@@ -45,9 +45,9 @@ bool CanStartTwoFingerMove(aura::Window* window,
   // We allow moving a window via two fingers when the hittest components are
   // HTCLIENT. This is done so that a window can be dragged via two fingers when
   // the tab strip is full and hitting the caption area is difficult. We check
-  // the window type and the show state so that we do not steal touches from the
+  // the window type and the show type so that we do not steal touches from the
   // web contents.
-  if (!ash::wm::GetWindowState(window)->IsNormalShowState() ||
+  if (!wm::GetWindowState(window)->IsNormalOrSnapped() ||
       window->type() != ui::wm::WINDOW_TYPE_NORMAL) {
     return false;
   }
@@ -336,7 +336,7 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
       // window_resizer_->IsMove() instead of the hittest component at |event|'s
       // location.
       if (GetWindowComponent(target, *event) != HTCAPTION ||
-          !wm::GetWindowState(target)->IsNormalShowState()) {
+          !wm::GetWindowState(target)->IsNormalOrSnapped()) {
         return;
       }
 
@@ -355,7 +355,7 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
       event->StopPropagation();
       return;
     case ui::ET_GESTURE_MULTIFINGER_SWIPE:
-      if (!wm::GetWindowState(target)->IsNormalShowState())
+      if (!wm::GetWindowState(target)->IsNormalOrSnapped())
         return;
 
       CompleteDrag(DRAG_COMPLETE);

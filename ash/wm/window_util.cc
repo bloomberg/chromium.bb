@@ -58,7 +58,7 @@ bool IsWindowMinimized(aura::Window* window) {
 
 void CenterWindow(aura::Window* window) {
   wm::WindowState* window_state = wm::GetWindowState(window);
-  if (!window_state->IsNormalShowState())
+  if (!window_state->IsNormalOrSnapped())
     return;
   const gfx::Display display =
       Shell::GetScreen()->GetDisplayNearestWindow(window);

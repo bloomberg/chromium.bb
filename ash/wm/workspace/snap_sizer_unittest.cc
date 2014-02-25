@@ -159,7 +159,7 @@ TEST_F(SnapSizerTest, RestoreBounds) {
       CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
   wm::WindowState* window_state = wm::GetWindowState(window.get());
 
-  EXPECT_TRUE(window_state->IsNormalShowState());
+  EXPECT_TRUE(window_state->IsNormalShowType());
 
   // 1) Start with restored window with restore bounds set.
   gfx::Rect restore_bounds = window->GetBoundsInScreen();

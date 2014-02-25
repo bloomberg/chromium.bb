@@ -211,8 +211,7 @@ TEST_F(AlternateFrameSizeButtonTest, ClickSizeButtonTogglesMaximize) {
 // Test that clicking + dragging to a button adjacent to the size button snaps
 // the window left or right.
 TEST_F(AlternateFrameSizeButtonTest, ButtonDrag) {
-  EXPECT_TRUE(window_state()->IsNormalShowState());
-  EXPECT_FALSE(window_state()->IsSnapped());
+  EXPECT_TRUE(window_state()->IsNormalShowType());
 
   // 1) Test by dragging the mouse.
   // Snap right.
@@ -271,8 +270,7 @@ TEST_F(AlternateFrameSizeButtonTest, ButtonDrag) {
 // Test that clicking, dragging, and overshooting the minimize button a bit
 // horizontally still snaps the window left.
 TEST_F(AlternateFrameSizeButtonTest, SnapLeftOvershootMinimize) {
-  EXPECT_TRUE(window_state()->IsNormalShowState());
-  EXPECT_FALSE(window_state()->IsSnapped());
+  EXPECT_TRUE(window_state()->IsNormalShowType());
 
   aura::test::EventGenerator& generator = GetEventGenerator();
   generator.MoveMouseTo(CenterPointInScreen(size_button()));
@@ -289,16 +287,14 @@ TEST_F(AlternateFrameSizeButtonTest, SnapLeftOvershootMinimize) {
 
 // Test that right clicking the size button has no effect.
 TEST_F(AlternateFrameSizeButtonTest, RightMouseButton) {
-  EXPECT_TRUE(window_state()->IsNormalShowState());
-  EXPECT_FALSE(window_state()->IsSnapped());
+  EXPECT_TRUE(window_state()->IsNormalShowType());
 
   aura::test::EventGenerator& generator = GetEventGenerator();
   generator.MoveMouseTo(CenterPointInScreen(size_button()));
   generator.PressRightButton();
   generator.ReleaseRightButton();
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(window_state()->IsNormalShowState());
-  EXPECT_FALSE(window_state()->IsSnapped());
+  EXPECT_TRUE(window_state()->IsNormalShowType());
 }
 
 // Test that upon releasing the mouse button after having pressed the size

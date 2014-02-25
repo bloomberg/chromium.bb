@@ -140,14 +140,18 @@ bool WindowState::IsMaximizedOrFullscreen() const {
       show_state == ui::SHOW_STATE_MAXIMIZED;
 }
 
-bool WindowState::IsNormalShowState() const {
-  ui::WindowShowState state = GetShowState();
-  return state == ui::SHOW_STATE_NORMAL || state == ui::SHOW_STATE_DEFAULT;
+bool WindowState::IsSnapped() const {
+  return window_show_type_ == SHOW_TYPE_LEFT_SNAPPED ||
+      window_show_type_ == SHOW_TYPE_RIGHT_SNAPPED;
 }
 
 bool WindowState::IsNormalShowType() const {
   return window_show_type_ == SHOW_TYPE_NORMAL ||
       window_show_type_ == SHOW_TYPE_DEFAULT;
+}
+
+bool WindowState::IsNormalOrSnapped() const {
+  return IsNormalShowType() || IsSnapped();
 }
 
 bool WindowState::IsActive() const {
@@ -157,11 +161,6 @@ bool WindowState::IsActive() const {
 bool WindowState::IsDocked() const {
   return window_->parent() &&
       window_->parent()->id() == internal::kShellWindowId_DockedContainer;
-}
-
-bool WindowState::IsSnapped() const {
-  return window_show_type_ == SHOW_TYPE_LEFT_SNAPPED ||
-      window_show_type_ == SHOW_TYPE_RIGHT_SNAPPED;
 }
 
 bool WindowState::CanMaximize() const {

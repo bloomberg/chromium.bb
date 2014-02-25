@@ -516,7 +516,7 @@ TEST_P(DockedWindowResizerTest, AttachMinimizeRestore) {
   window_state->Restore();
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(window->IsVisible());
-  EXPECT_TRUE(window_state->IsNormalShowState());
+  EXPECT_TRUE(window_state->IsNormalShowType());
 }
 
 // Maximize a docked window and check that it is maximized and no longer docked.

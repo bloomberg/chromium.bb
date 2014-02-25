@@ -27,11 +27,11 @@ TEST_F(AcceleratorCommandsTest, ToggleMinimized) {
 
   ToggleMinimized();
   EXPECT_TRUE(window_state->IsMinimized());
-  EXPECT_FALSE(window_state->IsNormalShowState());
+  EXPECT_FALSE(window_state->IsNormalShowType());
 
   ToggleMinimized();
   EXPECT_FALSE(window_state->IsMinimized());
-  EXPECT_TRUE(window_state->IsNormalShowState());
+  EXPECT_TRUE(window_state->IsNormalShowType());
 }
 
 }  // namespace accelerators

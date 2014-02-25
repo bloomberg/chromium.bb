@@ -226,7 +226,7 @@ TEST_F(FrameMaximizeButtonTest, MAYBE_ResizeButtonDrag) {
   aura::test::EventGenerator generator(window->GetRootWindow(), center);
 
   wm::WindowState* window_state = wm::GetWindowState(window);
-  EXPECT_TRUE(window_state->IsNormalShowState());
+  EXPECT_TRUE(window_state->IsNormalShowType());
 
   // Snap right.
   {
@@ -327,15 +327,6 @@ TEST_F(FrameMaximizeButtonTest, MAYBE_ResizeButtonDrag) {
   // Test with gesture events.
 }
 
-#if defined(OS_WIN)
-// RootWindow and Display can't resize on Windows Ash. http://crbug.com/165962
-#define MAYBE_TouchDragResizeCloseToCornerDiffersFromMouse \
-        DISABLED_TouchDragResizeCloseToCornerDiffersFromMouse
-#else
-#define MAYBE_TouchDragResizeCloseToCornerDiffersFromMouse \
-        TouchDragResizeCloseToCornerDiffersFromMouse
-#endif
-
 // Test that closing the (browser) window with an opened balloon does not
 // crash the system. In other words: Make sure that shutting down the frame
 // destroys the opened balloon in an orderly fashion.
@@ -349,7 +340,7 @@ TEST_F(FrameMaximizeButtonTest, MaximizeButtonExternalShutDown) {
 
   aura::test::EventGenerator generator(window->GetRootWindow(), off_pos);
   EXPECT_FALSE(maximize_button->maximizer());
-  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalShowState());
+  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalShowType());
 
   // Move the mouse cursor over the button to bring up the maximizer bubble.
   generator.MoveMouseTo(button_pos);
@@ -372,7 +363,7 @@ TEST_F(FrameMaximizeButtonTest, MaximizeOnHoverThenClick) {
 
   aura::test::EventGenerator generator(window->GetRootWindow(), off_pos);
   EXPECT_FALSE(maximize_button->maximizer());
-  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalShowState());
+  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalShowType());
 
   // Move the mouse cursor over the button to bring up the maximizer bubble.
   generator.MoveMouseTo(button_pos);
@@ -395,7 +386,7 @@ TEST_F(FrameMaximizeButtonTest, MaximizeLeftButtonDragOut) {
 
   aura::test::EventGenerator generator(window->GetRootWindow(), off_pos);
   EXPECT_FALSE(maximize_button->maximizer());
-  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalShowState());
+  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalShowType());
   EXPECT_FALSE(maximize_button->phantom_window_open());
 
   // Move the mouse cursor over the button to bring up the maximizer bubble.
@@ -441,7 +432,7 @@ TEST_F(FrameMaximizeButtonTest, MaximizeLeftByButton) {
 
   aura::test::EventGenerator generator(window->GetRootWindow(), off_pos);
   EXPECT_FALSE(maximize_button->maximizer());
-  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalShowState());
+  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalShowType());
   EXPECT_FALSE(maximize_button->phantom_window_open());
 
   // Move the mouse cursor over the button to bring up the maximizer bubble.
@@ -478,7 +469,7 @@ TEST_F(FrameMaximizeButtonTest, MaximizeKeepFocus) {
 
   aura::test::EventGenerator generator(window->GetRootWindow(), off_pos);
   EXPECT_FALSE(maximize_button->maximizer());
-  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalShowState());
+  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalShowType());
 
   aura::Window* active =
       aura::client::GetFocusClient(window)->GetFocusedWindow();
@@ -535,7 +526,7 @@ TEST_F(FrameMaximizeButtonTest, OnlyLeftButtonMaximizes) {
   aura::test::EventGenerator generator(window->GetRootWindow(), off_pos);
   EXPECT_FALSE(maximize_button->maximizer());
   wm::WindowState* window_state = wm::GetWindowState(window);
-  EXPECT_TRUE(window_state->IsNormalShowState());
+  EXPECT_TRUE(window_state->IsNormalShowType());
   EXPECT_FALSE(window_state->IsMaximized());
 
   // Move the mouse cursor over the button.
@@ -793,7 +784,7 @@ TEST_F(FrameMaximizeButtonTest, LossOfActivationWhileMaximizeBubbleOpenAborts) {
   maximize_button->set_bubble_appearance_delay_ms(0);
 
   gfx::Rect initial_bounds = window->GetBoundsInScreen();
-  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalShowState());
+  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalShowType());
   EXPECT_TRUE(widget()->IsActive());
 
   // Move the mouse over the maximize button in order to bring up the maximizer
@@ -822,7 +813,7 @@ TEST_F(FrameMaximizeButtonTest, LossOfActivationWhileMaximizeBubbleOpenAborts) {
   // Test that we have properly reset the state of the now inactive window.
   EXPECT_FALSE(maximize_button->maximizer());
   EXPECT_FALSE(maximize_button->phantom_window_open());
-  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalShowState());
+  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalShowType());
   EXPECT_EQ(initial_bounds.ToString(), window->GetBoundsInScreen().ToString());
 }
 

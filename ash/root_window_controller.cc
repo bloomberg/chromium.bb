@@ -120,7 +120,7 @@ void ReparentWindow(aura::Window* window, aura::Window* new_parent) {
   gfx::Rect restore_bounds;
   bool has_restore_bounds = state->HasRestoreBounds();
 
-  bool update_bounds = (state->IsNormalShowState() || state->IsMinimized()) &&
+  bool update_bounds = (state->IsNormalOrSnapped() || state->IsMinimized()) &&
       new_parent->id() != internal::kShellWindowId_DockedContainer;
   gfx::Rect local_bounds;
   if (update_bounds) {
