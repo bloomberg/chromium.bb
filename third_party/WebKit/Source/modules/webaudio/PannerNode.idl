@@ -29,7 +29,6 @@
     // Panning model
     const unsigned short EQUALPOWER = 0;
     const unsigned short HRTF = 1;
-    const unsigned short SOUNDFIELD = 2;
 
     // Distance model
     const unsigned short LINEAR_DISTANCE = 0;

@@ -114,8 +114,6 @@ function runTest() {
     // Check that the .panningModel attribute can be set to all legal values.
     var panningModels = [{value: "equalpower", integerValue: panner.EQUALPOWER},
                          {value: "HRTF", integerValue: panner.HRTF},
-                         // FIXME: enable "soundfield" once feature is implemented: https://bugs.webkit.org/show_bug.cgi?id=77367
-                         // {value: "soundfield", integerValue: panner.SOUNDFIELD}
                         ];
 
     for (var i = 0; i < panningModels.length; ++i) {

@@ -43,8 +43,7 @@ class PLATFORM_EXPORT Panner {
 public:
     enum {
         PanningModelEqualPower = 0,
-        PanningModelHRTF = 1,
-        PanningModelSoundField = 2
+        PanningModelHRTF = 1
     };
 
     typedef unsigned PanningModel;

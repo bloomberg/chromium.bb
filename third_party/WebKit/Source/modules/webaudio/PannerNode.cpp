@@ -167,8 +167,6 @@ String PannerNode::panningModel() const
         return "equalpower";
     case HRTF:
         return "HRTF";
-    case SOUNDFIELD:
-        return "soundfield";
     default:
         ASSERT_NOT_REACHED();
         return "HRTF";
@@ -181,8 +179,6 @@ void PannerNode::setPanningModel(const String& model)
         setPanningModel(EQUALPOWER);
     else if (model == "HRTF")
         setPanningModel(HRTF);
-    else if (model == "soundfield")
-        setPanningModel(SOUNDFIELD);
     else
         ASSERT_NOT_REACHED();
 }
@@ -200,10 +196,6 @@ bool PannerNode::setPanningModel(unsigned model)
             m_panner = newPanner.release();
             m_panningModel = model;
         }
-        break;
-    case SOUNDFIELD:
-        // FIXME: Implement sound field model. See // https://bugs.webkit.org/show_bug.cgi?id=77367.
-        context()->executionContext()->addConsoleMessage(JSMessageSource, WarningMessageLevel, "'soundfield' panning model not implemented.");
         break;
     default:
         return false;

@@ -51,8 +51,6 @@ PassOwnPtr<Panner> Panner::create(PanningModel model, float sampleRate, HRTFData
         panner = adoptPtr(new HRTFPanner(sampleRate, databaseLoader));
         break;
 
-    // FIXME: sound field panning is not yet implemented...
-    case PanningModelSoundField:
     default:
         ASSERT_NOT_REACHED();
         return nullptr;

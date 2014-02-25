@@ -51,7 +51,6 @@ public:
     enum {
         EQUALPOWER = 0,
         HRTF = 1,
-        SOUNDFIELD = 2,
     };
 
     // These must be defined as in the .idl file and must match those

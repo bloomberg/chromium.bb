@@ -50,7 +50,7 @@ void V8PannerNode::panningModelAttributeSetterCustom(v8::Local<v8::Value> value,
 
     if (value->IsString()) {
         String model = toCoreString(value.As<v8::String>());
-        if (model == "equalpower" || model == "HRTF" || model == "soundfield") {
+        if (model == "equalpower" || model == "HRTF") {
             imp->setPanningModel(model);
             return;
         }
