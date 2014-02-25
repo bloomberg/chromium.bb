@@ -60,7 +60,7 @@ class SpdyFramerVisitor : public BufferedSpdyFramerVisitorInterface {
                                        bool));
   MOCK_METHOD1(OnSettings, void(bool clear_persisted));
   MOCK_METHOD3(OnSetting, void(SpdySettingsIds, uint8, uint32));
-  MOCK_METHOD1(OnPing, void(SpdyPingId unique_id));
+  MOCK_METHOD2(OnPing, void(SpdyPingId unique_id, bool is_ack));
   MOCK_METHOD2(OnRstStream, void(SpdyStreamId, SpdyRstStreamStatus));
   MOCK_METHOD2(OnGoAway, void(SpdyStreamId, SpdyGoAwayStatus));
   MOCK_METHOD2(OnWindowUpdate, void(SpdyStreamId, uint32));
@@ -292,7 +292,7 @@ TEST_P(SpdySMProxyTest, OnStreamFrameData_SPDY2) {
   SpdyHeaderBlock block;
   testing::MockFunction<void(int)> checkpoint;  // NOLINT
 
-  scoped_ptr<SpdyFrame> frame(spdy_framer_->CreatePingFrame(12));
+  scoped_ptr<SpdyFrame> frame(spdy_framer_->CreatePingFrame(12, false));
   block["method"] = "GET";
   block["url"] = "http://www.example.com/path";
   block["scheme"] = "http";
@@ -325,7 +325,7 @@ TEST_P(SpdySMProxyTest, OnStreamFrameData) {
   SpdyHeaderBlock block;
   testing::MockFunction<void(int)> checkpoint;  // NOLINT
 
-  scoped_ptr<SpdyFrame> frame(spdy_framer_->CreatePingFrame(12));
+  scoped_ptr<SpdyFrame> frame(spdy_framer_->CreatePingFrame(12, false));
   block[":method"] = "GET";
   block[":host"] = "www.example.com";
   block[":path"] = "/path";

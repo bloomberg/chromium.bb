@@ -78,7 +78,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
   virtual void OnSetting(SpdySettingsIds id, uint8 flags, uint32 value) = 0;
 
   // Called when a PING frame has been parsed.
-  virtual void OnPing(SpdyPingId unique_id) = 0;
+  virtual void OnPing(SpdyPingId unique_id, bool is_ack) = 0;
 
   // Called when a RST_STREAM frame has been parsed.
   virtual void OnRstStream(SpdyStreamId stream_id,
@@ -140,7 +140,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
   virtual void OnSettings(bool clear_persisted) OVERRIDE;
   virtual void OnSetting(
       SpdySettingsIds id, uint8 flags, uint32 value) OVERRIDE;
-  virtual void OnPing(SpdyPingId unique_id) OVERRIDE;
+  virtual void OnPing(SpdyPingId unique_id, bool is_ack) OVERRIDE;
   virtual void OnRstStream(SpdyStreamId stream_id,
                            SpdyRstStreamStatus status) OVERRIDE;
   virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
@@ -172,7 +172,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
   SpdyFrame* CreateRstStream(SpdyStreamId stream_id,
                              SpdyRstStreamStatus status) const;
   SpdyFrame* CreateSettings(const SettingsMap& values) const;
-  SpdyFrame* CreatePingFrame(uint32 unique_id) const;
+  SpdyFrame* CreatePingFrame(uint32 unique_id, bool is_ack) const;
   SpdyFrame* CreateGoAway(
       SpdyStreamId last_accepted_stream_id,
       SpdyGoAwayStatus status) const;

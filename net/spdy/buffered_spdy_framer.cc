@@ -186,8 +186,8 @@ void BufferedSpdyFramer::OnSetting(SpdySettingsIds id,
   visitor_->OnSetting(id, flags, value);
 }
 
-void BufferedSpdyFramer::OnPing(SpdyPingId unique_id) {
-  visitor_->OnPing(unique_id);
+void BufferedSpdyFramer::OnPing(SpdyPingId unique_id, bool is_ack) {
+  visitor_->OnPing(unique_id, is_ack);
 }
 
 void BufferedSpdyFramer::OnRstStream(SpdyStreamId stream_id,
@@ -295,8 +295,10 @@ SpdyFrame* BufferedSpdyFramer::CreateSettings(
 }
 
 // TODO(jgraettinger): Eliminate uses of this method (prefer SpdyPingIR).
-SpdyFrame* BufferedSpdyFramer::CreatePingFrame(uint32 unique_id) const {
+SpdyFrame* BufferedSpdyFramer::CreatePingFrame(uint32 unique_id,
+                                               bool is_ack) const {
   SpdyPingIR ping_ir(unique_id);
+  ping_ir.set_is_ack(is_ack);
   return spdy_framer_.SerializePing(ping_ir);
 }
 

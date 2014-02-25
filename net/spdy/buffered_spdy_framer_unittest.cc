@@ -87,7 +87,7 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
     setting_count_++;
   }
 
-  virtual void OnPing(SpdyPingId unique_id) OVERRIDE {}
+  virtual void OnPing(SpdyPingId unique_id, bool is_ack) OVERRIDE {}
 
   virtual void OnRstStream(SpdyStreamId stream_id,
                            SpdyRstStreamStatus status) OVERRIDE {

@@ -755,7 +755,8 @@ void SpdyFramer::ProcessControlFrameHeader(uint16 control_frame_type_field) {
     case PING:
       if (current_frame_length_ != GetPingSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
-      } else if (current_frame_flags_ != 0) {
+      } else if ((protocol_version() < 4 && current_frame_flags_ != 0) ||
+                 (current_frame_flags_ & ~PING_FLAG_ACK)) {
         set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
       }
       break;
@@ -1481,6 +1482,8 @@ size_t SpdyFramer::ProcessControlFramePayload(const char* data, size_t len) {
         break;
       case PING: {
           SpdyPingId id = 0;
+          bool is_ack =
+              spdy_version_ >= 4 && (current_frame_flags_ & PING_FLAG_ACK);
           bool successful_read = true;
           if (spdy_version_ < 4) {
             uint32 id32 = 0;
@@ -1491,7 +1494,7 @@ size_t SpdyFramer::ProcessControlFramePayload(const char* data, size_t len) {
           }
           DCHECK(successful_read);
           DCHECK(reader.IsDoneReading());
-          visitor_->OnPing(id);
+          visitor_->OnPing(id, is_ack);
         }
         break;
       case WINDOW_UPDATE: {
@@ -1954,7 +1957,11 @@ SpdySerializedFrame* SpdyFramer::SerializePing(const SpdyPingIR& ping) const {
     builder.WriteControlFrameHeader(*this, PING, kNoFlags);
     builder.WriteUInt32(static_cast<uint32>(ping.id()));
   } else {
-    builder.WriteFramePrefix(*this, PING, 0, 0);
+    uint8 flags = 0;
+    if (ping.is_ack()) {
+      flags |= PING_FLAG_ACK;
+    }
+    builder.WriteFramePrefix(*this, PING, flags, 0);
     builder.WriteUInt64(ping.id());
   }
   DCHECK_EQ(GetPingSize(), builder.length());

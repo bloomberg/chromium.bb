@@ -206,11 +206,13 @@ base::Value* NetLogSpdyRstCallback(SpdyStreamId stream_id,
 }
 
 base::Value* NetLogSpdyPingCallback(SpdyPingId unique_id,
+                                    bool is_ack,
                                     const char* type,
                                     NetLog::LogLevel /* log_level */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("unique_id", unique_id);
   dict->SetString("type", type);
+  dict->SetBoolean("is_ack", is_ack);
   return dict;
 }
 
@@ -2390,7 +2392,7 @@ void SpdySession::OnGoAway(SpdyStreamId last_accepted_stream_id,
   MaybeFinishGoingAway();
 }
 
-void SpdySession::OnPing(SpdyPingId unique_id) {
+void SpdySession::OnPing(SpdyPingId unique_id, bool is_ack) {
   CHECK(in_io_loop_);
 
   if (availability_state_ == STATE_CLOSED)
@@ -2398,11 +2400,12 @@ void SpdySession::OnPing(SpdyPingId unique_id) {
 
   net_log_.AddEvent(
       NetLog::TYPE_SPDY_SESSION_PING,
-      base::Bind(&NetLogSpdyPingCallback, unique_id, "received"));
+      base::Bind(&NetLogSpdyPingCallback, unique_id, is_ack, "received"));
 
   // Send response to a PING from server.
-  if (unique_id % 2 == 0) {
-    WritePingFrame(unique_id);
+  if ((protocol_ >= kProtoSPDY4a2 && !is_ack) ||
+      (protocol_ < kProtoSPDY4a2 && unique_id % 2 == 0)) {
+    WritePingFrame(unique_id, true);
     return;
   }
 
@@ -2647,7 +2650,7 @@ void SpdySession::SendPrefacePingIfNoneInFlight() {
 }
 
 void SpdySession::SendPrefacePing() {
-  WritePingFrame(next_ping_id_);
+  WritePingFrame(next_ping_id_, false);
 }
 
 void SpdySession::SendWindowUpdateFrame(SpdyStreamId stream_id,
@@ -2673,18 +2676,18 @@ void SpdySession::SendWindowUpdateFrame(SpdyStreamId stream_id,
   EnqueueSessionWrite(priority, WINDOW_UPDATE, window_update_frame.Pass());
 }
 
-void SpdySession::WritePingFrame(uint32 unique_id) {
+void SpdySession::WritePingFrame(uint32 unique_id, bool is_ack) {
   DCHECK(buffered_spdy_framer_.get());
   scoped_ptr<SpdyFrame> ping_frame(
-      buffered_spdy_framer_->CreatePingFrame(unique_id));
+      buffered_spdy_framer_->CreatePingFrame(unique_id, is_ack));
   EnqueueSessionWrite(HIGHEST, PING, ping_frame.Pass());
 
   if (net_log().IsLoggingAllEvents()) {
     net_log().AddEvent(
         NetLog::TYPE_SPDY_SESSION_PING,
-        base::Bind(&NetLogSpdyPingCallback, unique_id, "sent"));
+        base::Bind(&NetLogSpdyPingCallback, unique_id, is_ack, "sent"));
   }
-  if (unique_id % 2 != 0) {
+  if (!is_ack) {
     next_ping_id_ += 2;
     ++pings_in_flight_;
     PlanToCheckPingStatus();

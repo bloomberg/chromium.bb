@@ -668,7 +668,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                              RequestPriority priority);
 
   // Send the PING frame.
-  void WritePingFrame(uint32 unique_id);
+  void WritePingFrame(uint32 unique_id, bool is_ack);
 
   // Post a CheckPingStatus call after delay. Don't post if there is already
   // CheckPingStatus running.
@@ -784,7 +784,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   virtual void OnError(SpdyFramer::SpdyError error_code) OVERRIDE;
   virtual void OnStreamError(SpdyStreamId stream_id,
                              const std::string& description) OVERRIDE;
-  virtual void OnPing(SpdyPingId unique_id) OVERRIDE;
+  virtual void OnPing(SpdyPingId unique_id, bool is_ack) OVERRIDE;
   virtual void OnRstStream(SpdyStreamId stream_id,
                            SpdyRstStreamStatus status) OVERRIDE;
   virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,

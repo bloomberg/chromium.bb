@@ -111,7 +111,7 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface, public SMInterface {
                          uint32 value) OVERRIDE {}
 
   // Called when a PING frame has been parsed.
-  virtual void OnPing(SpdyPingId unique_id) OVERRIDE {}
+  virtual void OnPing(SpdyPingId unique_id, bool is_ack) OVERRIDE {}
 
   // Called when a RST_STREAM frame has been parsed.
   virtual void OnRstStream(SpdyStreamId stream_id,

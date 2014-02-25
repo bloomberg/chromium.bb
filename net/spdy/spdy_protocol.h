@@ -301,6 +301,10 @@ enum SpdyControlFlags {
   CONTROL_FLAG_UNIDIRECTIONAL = 2
 };
 
+enum SpdyPingFlags {
+  PING_FLAG_ACK = 0x1,
+};
+
 enum SpdyHeadersFlags {
   HEADERS_FLAG_PRIORITY = 0x08
 };
@@ -609,13 +613,18 @@ class NET_EXPORT_PRIVATE SpdySettingsIR : public SpdyFrameIR {
 
 class NET_EXPORT_PRIVATE SpdyPingIR : public SpdyFrameIR {
  public:
-  explicit SpdyPingIR(SpdyPingId id) : id_(id) {}
+  explicit SpdyPingIR(SpdyPingId id) : id_(id), is_ack_(false) {}
   SpdyPingId id() const { return id_; }
+
+  // ACK logic is valid only for SPDY versions 4 and above.
+  bool is_ack() const { return is_ack_; }
+  void set_is_ack(bool is_ack) { is_ack_ = is_ack; }
 
   virtual void Visit(SpdyFrameVisitor* visitor) const OVERRIDE;
 
  private:
   SpdyPingId id_;
+  bool is_ack_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdyPingIR);
 };

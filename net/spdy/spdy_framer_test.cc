@@ -151,7 +151,7 @@ class SpdyFramerTestUtil {
                            uint32 value) OVERRIDE {
       LOG(FATAL);
     }
-    virtual void OnPing(uint64 unique_id) OVERRIDE {
+    virtual void OnPing(SpdyPingId unique_id, bool is_ack) OVERRIDE {
       LOG(FATAL);
     }
     virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
@@ -343,7 +343,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     setting_count_++;
   }
 
-  virtual void OnPing(uint64 unique_id) OVERRIDE {
+  virtual void OnPing(SpdyPingId unique_id, bool is_ack) OVERRIDE {
     DLOG(FATAL);
   }
 
@@ -2355,10 +2355,27 @@ TEST_P(SpdyFramerTest, CreatePingFrame) {
       0x12, 0x34, 0x56, 0x78,
       0x9a, 0xbc, 0xde, 0xff,
     };
+    const unsigned char kV4FrameDataWithAck[] = {
+      0x00, 0x10, 0x06, 0x01,
+      0x00, 0x00, 0x00, 0x00,
+      0x12, 0x34, 0x56, 0x78,
+      0x9a, 0xbc, 0xde, 0xff,
+    };
     scoped_ptr<SpdyFrame> frame;
     if (IsSpdy4()) {
-      frame.reset(framer.SerializePing(SpdyPingIR(0x123456789abcdeffull)));
+      const SpdyPingId kPingId = 0x123456789abcdeffULL;
+      SpdyPingIR ping_ir(kPingId);
+      // Tests SpdyPingIR when the ping is not an ack.
+      ASSERT_FALSE(ping_ir.is_ack());
+      frame.reset(framer.SerializePing(ping_ir));
       CompareFrame(kDescription, *frame, kV4FrameData, arraysize(kV4FrameData));
+
+      // Tests SpdyPingIR when the ping is an ack.
+      ping_ir.set_is_ack(true);
+      frame.reset(framer.SerializePing(ping_ir));
+      CompareFrame(kDescription, *frame,
+                   kV4FrameDataWithAck, arraysize(kV4FrameDataWithAck));
+
     } else {
       frame.reset(framer.SerializePing(SpdyPingIR(0x12345678ull)));
       CompareFrame(kDescription, *frame, kV3FrameData, arraysize(kV3FrameData));
@@ -3900,21 +3917,25 @@ TEST_P(SpdyFramerTest, PingFrameFlags) {
     scoped_ptr<SpdyFrame> frame(framer.SerializePing(SpdyPingIR(42)));
     SetFrameFlags(frame.get(), flags, spdy_version_);
 
-    if (flags != 0) {
-      EXPECT_CALL(visitor, OnError(_));
+    if (spdy_version_ >= SPDY4 &&
+        flags == PING_FLAG_ACK) {
+      EXPECT_CALL(visitor, OnPing(42, true));
+    } else if (flags == 0) {
+      EXPECT_CALL(visitor, OnPing(42, false));
     } else {
-      EXPECT_CALL(visitor, OnPing(42));
+      EXPECT_CALL(visitor, OnError(_));
     }
 
     framer.ProcessInput(frame->data(), frame->size());
-    if (flags != 0) {
+    if ((spdy_version_ >= SPDY4 && flags == PING_FLAG_ACK) ||
+        flags == 0) {
+      EXPECT_EQ(SpdyFramer::SPDY_RESET, framer.state());
+      EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code())
+          << SpdyFramer::ErrorCodeToString(framer.error_code());
+    } else {
       EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
       EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS,
                 framer.error_code())
-          << SpdyFramer::ErrorCodeToString(framer.error_code());
-    } else {
-      EXPECT_EQ(SpdyFramer::SPDY_RESET, framer.state());
-      EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code())
           << SpdyFramer::ErrorCodeToString(framer.error_code());
     }
   }

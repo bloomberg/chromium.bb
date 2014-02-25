@@ -185,7 +185,7 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   virtual void OnSetting(SpdySettingsIds id, uint8 flags, uint32 value) = 0;
 
   // Called when a PING frame has been parsed.
-  virtual void OnPing(SpdyPingId unique_id) = 0;
+  virtual void OnPing(SpdyPingId unique_id, bool is_ack) = 0;
 
   // Called when a GOAWAY frame has been parsed.
   virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,

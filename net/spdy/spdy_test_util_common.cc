@@ -237,7 +237,7 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
   virtual void OnSettings(bool clear_persisted) OVERRIDE {}
   virtual void OnSetting(
       SpdySettingsIds id, uint8 flags, uint32 value) OVERRIDE {}
-  virtual void OnPing(SpdyPingId unique_id) OVERRIDE {}
+  virtual void OnPing(SpdyPingId unique_id, bool is_ack) OVERRIDE {}
   virtual void OnRstStream(SpdyStreamId stream_id,
                            SpdyRstStreamStatus status) OVERRIDE {}
   virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
@@ -868,8 +868,9 @@ SpdyFrame* SpdyTestUtil::ConstructSpdySettings(
   return CreateFramer()->SerializeSettings(settings_ir);
 }
 
-SpdyFrame* SpdyTestUtil::ConstructSpdyPing(uint32 ping_id) const {
+SpdyFrame* SpdyTestUtil::ConstructSpdyPing(uint32 ping_id, bool is_ack) const {
   SpdyPingIR ping_ir(ping_id);
+  ping_ir.set_is_ack(is_ack);
   return CreateFramer()->SerializePing(ping_ir);
 }
 

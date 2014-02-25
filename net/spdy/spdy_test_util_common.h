@@ -365,7 +365,7 @@ class SpdyTestUtil {
 
   // Construct a SPDY PING frame.
   // Returns the constructed frame.  The caller takes ownership of the frame.
-  SpdyFrame* ConstructSpdyPing(uint32 ping_id) const;
+  SpdyFrame* ConstructSpdyPing(uint32 ping_id, bool is_ack) const;
 
   // Construct a SPDY GOAWAY frame with last_good_stream_id = 0.
   // Returns the constructed frame.  The caller takes ownership of the frame.
