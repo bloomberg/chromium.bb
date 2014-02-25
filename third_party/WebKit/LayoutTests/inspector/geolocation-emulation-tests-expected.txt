@@ -1,0 +1,17 @@
+CONSOLE MESSAGE: line 18: PositionUnavailable
+CONSOLE MESSAGE: line 11: Latitude: -510 Longitude: 500
+CONSOLE MESSAGE: line 11: Latitude: 100 Longitude: 200
+Tests that geolocation emulation with latitude and longitude works as expected.
+
+
+Running: setUp
+
+Running: testGeolocationUnavailable
+
+Running: testOverridenGeolocation
+
+Running: testClearOverridenGeolocation
+
+Running: testInvalidParam
+error: Protocol Error: Invalid type of argument 'latitude' for method 'Geolocation.setGeolocationOverride' call. It must be 'number' but it is 'boolean'.
+
