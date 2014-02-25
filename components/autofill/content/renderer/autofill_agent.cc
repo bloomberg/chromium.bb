@@ -127,6 +127,7 @@ AutofillAgent::AutofillAgent(content::RenderView* render_view,
       did_set_node_text_(false),
       has_new_forms_for_browser_(false),
       ignore_text_changes_(false),
+      is_popup_possibly_visible_(false),
       weak_ptr_factory_(this) {
   render_view->GetWebView()->setAutofillClient(this);
 
@@ -218,7 +219,7 @@ void AutofillAgent::ZoomLevelChanged() {
   // Any time the zoom level changes, the page's content moves, so any Autofill
   // popups should be hidden. This is only needed for the new Autofill UI
   // because WebKit already knows to hide the old UI when this occurs.
-  HideAutofillUI();
+  HidePopup();
 }
 
 void AutofillAgent::FocusedNodeChanged(const blink::WebNode& node) {
@@ -240,11 +241,11 @@ void AutofillAgent::FocusedNodeChanged(const blink::WebNode& node) {
 }
 
 void AutofillAgent::OrientationChangeEvent(int orientation) {
-  HideAutofillUI();
+  HidePopup();
 }
 
 void AutofillAgent::DidChangeScrollOffset(blink::WebFrame*) {
-  HideAutofillUI();
+  HidePopup();
 }
 
 void AutofillAgent::didRequestAutocomplete(blink::WebFrame* frame,
@@ -276,7 +277,7 @@ void AutofillAgent::didRequestAutocomplete(blink::WebFrame* frame,
 
   // Cancel any pending Autofill requests and hide any currently showing popups.
   ++autofill_query_id_;
-  HideAutofillUI();
+  HidePopup();
 
   in_flight_request_form_ = form;
   Send(new AutofillHostMsg_RequestAutocomplete(routing_id(), form_data, url));
@@ -294,7 +295,7 @@ void AutofillAgent::InputElementClicked(const WebInputElement& element,
 }
 
 void AutofillAgent::InputElementLostFocus() {
-  HideAutofillUI();
+  HidePopup();
 }
 
 void AutofillAgent::textFieldDidEndEditing(const WebInputElement& element) {
@@ -510,13 +511,15 @@ void AutofillAgent::ShowSuggestions(const WebInputElement& element,
         (element.selectionStart() != element.selectionEnd() ||
          element.selectionEnd() != static_cast<int>(value.length()))))) {
     // Any popup currently showing is obsolete.
-    HideAutofillUI();
+    HidePopup();
     return;
   }
 
   element_ = element;
-  if (password_autofill_agent_->ShowSuggestions(element))
+  if (password_autofill_agent_->ShowSuggestions(element)) {
+    is_popup_possibly_visible_ = true;
     return;
+  }
 
   // If autocomplete is disabled at the field level, ensure that the native
   // UI won't try to show a warning, since that may conflict with a custom
@@ -574,6 +577,7 @@ void AutofillAgent::QueryAutofillSuggestions(const WebInputElement& element,
   TrimStringVectorForIPC(&data_list_values);
   TrimStringVectorForIPC(&data_list_labels);
 
+  is_popup_possibly_visible_ = true;
   Send(new AutofillHostMsg_SetDataList(routing_id(),
                                        data_list_values,
                                        data_list_labels));
@@ -612,11 +616,15 @@ void AutofillAgent::SetNodeText(const base::string16& value,
   node->setEditingValue(value.substr(0, node->maxLength()));
 }
 
-void AutofillAgent::HideAutofillUI() {
+void AutofillAgent::HidePopup() {
+  if (!is_popup_possibly_visible_)
+    return;
+
   if (!element_.isNull())
     OnClearPreviewedForm();
 
-  Send(new AutofillHostMsg_HideAutofillUI(routing_id()));
+  is_popup_possibly_visible_ = false;
+  Send(new AutofillHostMsg_HidePopup(routing_id()));
 }
 
 // TODO(isherman): Decide if we want to support non-password autofill with AJAX.

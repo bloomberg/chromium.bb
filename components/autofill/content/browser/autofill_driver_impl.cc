@@ -197,8 +197,8 @@ bool AutofillDriverImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_FORWARD(AutofillHostMsg_DidEndTextFieldEditing,
                         autofill_manager_.get(),
                         AutofillManager::OnDidEndTextFieldEditing)
-    IPC_MESSAGE_FORWARD(AutofillHostMsg_HideAutofillUI, autofill_manager_.get(),
-                        AutofillManager::OnHideAutofillUI)
+    IPC_MESSAGE_FORWARD(AutofillHostMsg_HidePopup, autofill_manager_.get(),
+                        AutofillManager::OnHidePopup)
     IPC_MESSAGE_FORWARD(AutofillHostMsg_AddPasswordFormMapping,
                         autofill_manager_.get(),
                         AutofillManager::OnAddPasswordFormMapping)

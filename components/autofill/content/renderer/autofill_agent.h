@@ -173,8 +173,8 @@ class AutofillAgent : public content::RenderViewObserver,
   // Set |node| to display the given |value|.
   void SetNodeText(const base::string16& value, blink::WebInputElement* node);
 
-  // Hides any currently showing Autofill UI.
-  void HideAutofillUI();
+  // Hides any currently showing Autofill popup.
+  void HidePopup();
 
   FormCache form_cache_;
 
@@ -221,6 +221,11 @@ class AutofillAgent : public content::RenderViewObserver,
   // a composition when we are defocusing the WebView and we don't want to
   // trigger an autofill popup to show.
   bool ignore_text_changes_;
+
+  // Whether the Autofill popup is possibly visible.  This is tracked as a
+  // performance improvement, so that the IPC channel isn't flooded with
+  // messages to close the Autofill popup when it can't possibly be showing.
+  bool is_popup_possibly_visible_;
 
   // Timestamp of first time forms are seen.
   base::TimeTicks forms_seen_timestamp_;

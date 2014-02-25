@@ -229,8 +229,8 @@ IPC_MESSAGE_ROUTED2(AutofillHostMsg_RequestAutocomplete,
 // Send when a text field is done editing.
 IPC_MESSAGE_ROUTED0(AutofillHostMsg_DidEndTextFieldEditing)
 
-// Instructs the browser to hide the Autofill UI.
-IPC_MESSAGE_ROUTED0(AutofillHostMsg_HideAutofillUI)
+// Instructs the browser to hide the Autofill popup if it is open.
+IPC_MESSAGE_ROUTED0(AutofillHostMsg_HidePopup)
 
 // Instructs the browser to show the password generation popup at the
 // specified location. This location should be specified in the renderers
