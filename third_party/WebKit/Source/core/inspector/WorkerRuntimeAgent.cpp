@@ -92,7 +92,7 @@ void WorkerRuntimeAgent::willEvaluateWorkerScript(WorkerGlobalScope* context, in
     m_paused = true;
     MessageQueueWaitResult result;
     do {
-        result = context->thread()->runLoop().runDebuggerTask(context);
+        result = context->thread()->runLoop().runDebuggerTask();
     // Keep waiting until execution is resumed.
     } while (result == MessageQueueMessageReceived && m_paused);
 }

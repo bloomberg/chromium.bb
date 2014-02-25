@@ -48,13 +48,15 @@ namespace WebCore {
         WorkerRunLoop();
         ~WorkerRunLoop();
 
+        void setWorkerGlobalScope(WorkerGlobalScope*);
+
         // Blocking call. Waits for tasks and timers, invokes the callbacks.
-        void run(WorkerGlobalScope*);
+        void run();
 
         enum WaitMode { WaitForMessage, DontWaitForMessage };
 
         // Waits for a single debugger task and returns.
-        MessageQueueWaitResult runDebuggerTask(WorkerGlobalScope*, WaitMode = WaitForMessage);
+        MessageQueueWaitResult runDebuggerTask(WaitMode = WaitForMessage);
 
         void terminate();
         bool terminated() const { return m_messageQueue.killed(); }
@@ -71,15 +73,18 @@ namespace WebCore {
 
     private:
         friend class RunLoopSetup;
-        MessageQueueWaitResult run(MessageQueue<Task>&, WorkerGlobalScope*, WaitMode);
+        MessageQueueWaitResult run(MessageQueue<Task>&, WaitMode);
 
         // Runs any clean up tasks that are currently in the queue and returns.
         // This should only be called when the context is closed or loop has been terminated.
-        void runCleanupTasks(WorkerGlobalScope*);
+        void runCleanupTasks();
+
+        WorkerGlobalScope* context() const { return m_context; }
 
         MessageQueue<Task> m_messageQueue;
         MessageQueue<Task> m_debuggerMessageQueue;
         OwnPtr<WorkerSharedTimer> m_sharedTimer;
+        WorkerGlobalScope* m_context;
         int m_nestedCount;
     };
 

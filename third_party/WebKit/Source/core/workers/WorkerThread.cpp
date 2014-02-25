@@ -114,6 +114,7 @@ void WorkerThread::workerThread()
         MutexLocker lock(m_threadCreationMutex);
         ThreadState::attach();
         m_workerGlobalScope = createWorkerGlobalScope(m_startupData.release());
+        m_runLoop.setWorkerGlobalScope(workerGlobalScope());
 
         if (m_runLoop.terminated()) {
             // The worker was terminated before the thread had a chance to run. Since the context didn't exist yet,
@@ -158,7 +159,7 @@ void WorkerThread::workerThread()
 void WorkerThread::runEventLoop()
 {
     // Does not return until terminated.
-    m_runLoop.run(m_workerGlobalScope.get());
+    m_runLoop.run();
 }
 
 class WorkerThreadShutdownFinishTask : public ExecutionContextTask {
