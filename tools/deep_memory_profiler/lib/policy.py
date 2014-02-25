@@ -284,6 +284,8 @@ class Policy(object):
     else:
       return None
 
+  JSON_COMMENT_REGEX = re.compile(r'//.*')
+
   @staticmethod
   def _parse_json(policy_f):
     """Parses policy file in json format.
@@ -298,7 +300,9 @@ class Policy(object):
     Returns:
          A loaded policy object.
     """
-    policy = json.load(policy_f)
+    policy_json = policy_f.read()
+    policy_json = re.sub(Policy.JSON_COMMENT_REGEX, '', policy_json)
+    policy = json.loads(policy_json)
 
     rules = []
     for rule in policy['rules']:
