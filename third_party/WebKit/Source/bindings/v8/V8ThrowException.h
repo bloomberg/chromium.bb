@@ -47,10 +47,6 @@ public:
     }
     static v8::Handle<v8::Value> createDOMException(int, const String& sanitizedMessage, const String& unsanitizedMessage, const v8::Handle<v8::Object>& creationContext, v8::Isolate*);
 
-    static v8::Handle<v8::Value> throwDOMException(int ec, const v8::Handle<v8::Object>& creationContext, v8::Isolate* isolate)
-    {
-        return throwDOMException(ec, String(), creationContext, isolate);
-    }
     static v8::Handle<v8::Value> throwDOMException(int ec, const String& message, const v8::Handle<v8::Object>& creationContext, v8::Isolate* isolate)
     {
         return throwDOMException(ec, message, String(), creationContext, isolate);
