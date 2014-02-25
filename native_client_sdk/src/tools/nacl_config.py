@@ -44,7 +44,7 @@ ARCH_BASE_NAME = {
   'x86_64': 'x86'
 }
 
-NACL_TOOLCHAINS = ('newlib', 'glibc', 'pnacl')
+NACL_TOOLCHAINS = ('newlib', 'glibc', 'pnacl', 'bionic')
 HOST_TOOLCHAINS = ('linux', 'mac', 'win')
 VALID_TOOLCHAINS = list(HOST_TOOLCHAINS) + list(NACL_TOOLCHAINS) + ['host']
 
@@ -119,7 +119,8 @@ def CheckValidToolchainArch(toolchain, arch, arch_required=False):
       ExpectArch(arch, VALID_ARCHES)
 
     if arch == 'arm':
-      Expect(toolchain == 'newlib', 'The arm arch only supports newlib.')
+      Expect(toolchain in ['newlib', 'bionic'],
+             'The arm arch only supports newlib.')
 
 
 def GetArchName(arch):

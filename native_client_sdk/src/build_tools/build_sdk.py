@@ -979,8 +979,7 @@ def main(args):
     BuildStepMakePepperDirs(pepperdir, ['include', 'toolchain', 'tools'])
     BuildStepDownloadToolchains(toolchains)
     BuildStepUntarToolchains(pepperdir, toolchains)
-
-  BuildStepBuildToolchains(pepperdir, toolchains)
+    BuildStepBuildToolchains(pepperdir, toolchains)
 
   BuildStepUpdateHelpers(pepperdir, True)
   BuildStepUpdateUserProjects(pepperdir, toolchains,

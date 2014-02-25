@@ -14,9 +14,13 @@
 # your project only builds in one or the other then this should be overridden
 # accordingly.
 #
-VALID_TOOLCHAINS ?= pnacl newlib glibc
-TOOLCHAIN ?= $(word 1,$(VALID_TOOLCHAINS))
+ALL_TOOLCHAINS ?= pnacl newlib glibc
+ifneq ($(ENABLE_BIONIC),)
+ALL_TOOLCHAINS += bionic
+endif
 
+VALID_TOOLCHAINS ?= $(ALL_TOOLCHAINS)
+TOOLCHAIN ?= $(word 1,$(VALID_TOOLCHAINS))
 
 #
 # Top Make file, which we want to trigger a rebuild on if it changes
@@ -60,7 +64,7 @@ endef
 #
 # The target for all versions
 #
-USABLE_TOOLCHAINS=$(filter $(OSNAME) pnacl newlib glibc,$(VALID_TOOLCHAINS))
+USABLE_TOOLCHAINS=$(filter $(OSNAME) $(ALL_TOOLCHAINS),$(VALID_TOOLCHAINS))
 
 ifeq ($(NO_HOST_BUILDS),1)
 USABLE_TOOLCHAINS:=$(filter-out $(OSNAME),$(USABLE_TOOLCHAINS))
@@ -411,7 +415,7 @@ ifneq (,$(findstring $(TOOLCHAIN),win))
 include $(NACL_SDK_ROOT)/tools/host_vc.mk
 endif
 
-ifneq (,$(findstring $(TOOLCHAIN),glibc newlib))
+ifneq (,$(findstring $(TOOLCHAIN),glibc newlib bionic))
 include $(NACL_SDK_ROOT)/tools/nacl_gcc.mk
 endif
 

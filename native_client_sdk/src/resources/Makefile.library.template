@@ -63,7 +63,7 @@ $(foreach src,$(SOURCES),$(eval $(call COMPILE_RULE,$(src),$(CFLAGS))))
 $(eval $(call LIB_RULE,$(TARGET),$(SOURCES)))
 
 [[if target['TYPE'] != 'static-lib':]]
-ifeq ($(TOOLCHAIN),glibc)
+ifneq (,$(findstring $(TOOLCHAIN),glibc bionic))
 $(eval $(call SO_RULE,$(TARGET),$(SOURCES),$(LIBS),$(DEPS)))
 endif
 [[]]

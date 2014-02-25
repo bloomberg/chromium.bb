@@ -13,6 +13,7 @@
 # We always link with the C++ compiler but include -Wl,-as-needed flag
 # in LDFLAGS so the linker should drop libc++ unless it's actually needed.
 #
+ifneq ($(TOOLCHAIN),bionic)
 X86_32_CC := $(NACL_COMPILER_PREFIX) $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_32 --tool=cc)
 X86_32_CXX := $(NACL_COMPILER_PREFIX) $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_32 --tool=c++)
 X86_32_LINK := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_32 --tool=c++)
@@ -26,8 +27,9 @@ X86_64_LINK := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_64 --tool=c++)
 X86_64_LIB := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_64 --tool=ar)
 X86_64_STRIP := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_64 --tool=strip)
 X86_64_NM := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a x86_64 --tool=nm)
+endif
 
-ifneq ($(TOOLCHAIN),glibc)
+ifeq (,$(findstring $(TOOLCHAIN),glibc))
 ARM_CC := $(NACL_COMPILER_PREFIX) $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a arm --tool=cc)
 ARM_CXX := $(NACL_COMPILER_PREFIX) $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a arm --tool=c++)
 ARM_LINK := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) -a arm --tool=c++)
@@ -142,8 +144,10 @@ endef
 # Determine which architectures to build for.  The user can set NACL_ARCH or
 # ARCHES in the environment to control this.
 #
+ifneq ($(TOOLCHAIN),bionic)
 VALID_ARCHES := x86_32 x86_64
-ifeq (newlib,$(TOOLCHAIN))
+endif
+ifneq (glibc,$(TOOLCHAIN))
 VALID_ARCHES += arm
 endif
 
@@ -205,6 +209,23 @@ $(LIBDIR)/$(TOOLCHAIN)_x86_64/$(CONFIG)/lib$(1).so: $(OUTDIR)/lib$(1)_x86_64.so
 ifneq ($(6),1)
 GLIBC_SO_LIST += $(OUTDIR)/lib$(1)_x86_64.so
 GLIBC_REMAP += -n lib$(1)_x86_64.so,lib$(1).so
+endif
+endif
+
+ifneq (,$(findstring arm,$(ARCHES)))
+all: $(OUTDIR)/lib$(1)_arm.so
+$(OUTDIR)/lib$(1)_arm.so: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_arm_pic)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
+	$(call LOG,LINK,$$@,$(ARM_LINK) -o $$@ $$(filter %.o,$$^) $(LDFLAGS_SHARED) -marm $(NACL_LDFLAGS) $(ARM_LDFLAGS) $(LDFLAGS) $(foreach path,$(5),-L$(path)/$(TOOLCHAIN)_arm/$(CONFIG)) $(foreach lib,$(3),-l$(lib)))
+	$(call LOG,VALIDATE,$$@,$(NCVAL) $$@)
+
+$(STAMPDIR)/$(1).stamp: $(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG)/lib$(1).so
+install: $(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG)/lib$(1).so
+$(LIBDIR)/$(TOOLCHAIN)_arm/$(CONFIG)/lib$(1).so: $(OUTDIR)/lib$(1)_arm.so
+	$(MKDIR) -p $$(dir $$@)
+	$(call LOG,CP  ,$$@,$(OSHELPERS) cp $$^ $$@)
+ifneq ($(6),1)
+GLIBC_SO_LIST += $(OUTDIR)/lib$(1)_arm.so
+GLIBC_REMAP += -n lib$(1)_arm.so,lib$(1).so
 endif
 endif
 endef

@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'pnacl', 'linux', 'win'],
+  'TOOLS': ['bionic', 'newlib', 'glibc', 'pnacl', 'linux', 'win'],
   'SEARCH': [
     '../../../../third_party/jsoncpp/overrides/include/json',
     '../../../../third_party/jsoncpp/overrides/src/lib_json',
