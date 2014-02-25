@@ -179,12 +179,12 @@ void WebMediaPlayerClientImpl::setWebLayer(blink::WebLayer* layer)
 
 void WebMediaPlayerClientImpl::addTextTrack(WebInbandTextTrack* textTrack)
 {
-    m_client->mediaPlayerDidAddTrack(textTrack);
+    m_client->mediaPlayerDidAddTextTrack(textTrack);
 }
 
 void WebMediaPlayerClientImpl::removeTextTrack(WebInbandTextTrack* textTrack)
 {
-    m_client->mediaPlayerDidRemoveTrack(textTrack);
+    m_client->mediaPlayerDidRemoveTextTrack(textTrack);
 }
 
 void WebMediaPlayerClientImpl::mediaSourceOpened(WebMediaSource* webMediaSource)
