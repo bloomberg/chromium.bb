@@ -609,10 +609,7 @@ void AutofillAgent::FillAutofillFormData(const WebNode& node,
 void AutofillAgent::SetNodeText(const base::string16& value,
                                 blink::WebInputElement* node) {
   did_set_node_text_ = true;
-  base::string16 substring = value;
-  substring = substring.substr(0, node->maxLength());
-
-  node->setEditingValue(substring);
+  node->setEditingValue(value.substr(0, node->maxLength()));
 }
 
 void AutofillAgent::HideAutofillUI() {
