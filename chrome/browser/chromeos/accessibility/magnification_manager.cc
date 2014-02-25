@@ -194,16 +194,18 @@ class MagnificationManagerImpl : public MagnificationManager,
     }
 
     AccessibilityStatusEventDetails details(
-        enabled_, type_, ash::A11Y_NOTIFICATION_NONE);
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
-        content::NotificationService::AllSources(),
-        content::Details<AccessibilityStatusEventDetails>(&details));
+        ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
+        enabled_,
+        type_,
+        ash::A11Y_NOTIFICATION_NONE);
 
 #if defined(OS_CHROMEOS)
-    if (ash::Shell::GetInstance() && AccessibilityManager::Get()) {
-      ash::Shell::GetInstance()->SetCursorCompositingEnabled(
-          AccessibilityManager::Get()->ShouldEnableCursorCompositing());
+    if (AccessibilityManager::Get()) {
+      AccessibilityManager::Get()->NotifyAccessibilityStatusChanged(details);
+      if (ash::Shell::GetInstance()) {
+        ash::Shell::GetInstance()->SetCursorCompositingEnabled(
+            AccessibilityManager::Get()->ShouldEnableCursorCompositing());
+      }
     }
 #endif
   }

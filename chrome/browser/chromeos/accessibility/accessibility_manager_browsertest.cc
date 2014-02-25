@@ -42,24 +42,19 @@ const int kTestAutoclickDelayMs = 2000;
 // with UserManager::kLocallyManagedUserDomain.
 const char kTestLocallyManagedUserName[] = "test@locally-managed.localhost";
 
-class MockAccessibilityObserver : public content::NotificationObserver {
+class MockAccessibilityObserver {
  public:
   MockAccessibilityObserver() : observed_(false),
                                 observed_enabled_(false),
-                                observed_type_(-1) {
-    registrar_.Add(
-        this,
-        chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
-        content::NotificationService::AllSources());
-    registrar_.Add(
-        this,
-        chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE,
-        content::NotificationService::AllSources());
-    registrar_.Add(
-        this,
-        chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD,
-        content::NotificationService::AllSources());
+                                observed_type_(-1)
+  {
+    AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
+    CHECK(accessibility_manager);
+    accessibility_subscription_ = accessibility_manager->RegisterCallback(
+        base::Bind(&MockAccessibilityObserver::OnAccessibilityStatusChanged,
+                   base::Unretained(this)));
   }
+
   virtual ~MockAccessibilityObserver() {}
 
   bool observed() const { return observed_; }
@@ -69,31 +64,12 @@ class MockAccessibilityObserver : public content::NotificationObserver {
   void reset() { observed_ = false; }
 
  private:
-  // content::NotificationObserver implimentation:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
-    AccessibilityStatusEventDetails* accessibility_status =
-        content::Details<AccessibilityStatusEventDetails>(
-            details).ptr();
-    ASSERT_FALSE(observed_);
-
-    switch (type) {
-      case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK:
-        observed_ = true;
-        observed_enabled_ = accessibility_status->enabled;
-        observed_type_ = type;
-        break;
-      case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE:
-        observed_ = true;
-        observed_enabled_ = accessibility_status->enabled;
-        observed_type_ = type;
-        break;
-      case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD:
-        observed_ = true;
-        observed_enabled_ = accessibility_status->enabled;
-        observed_type_ = type;
-        break;
+  void OnAccessibilityStatusChanged(
+      const AccessibilityStatusEventDetails& details) {
+    if (details.notification_type != ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER) {
+      observed_type_ = details.notification_type;
+      observed_enabled_ = details.enabled;
+      observed_ = true;
     }
   }
 
@@ -101,7 +77,7 @@ class MockAccessibilityObserver : public content::NotificationObserver {
   bool observed_enabled_;
   int observed_type_;
 
-  content::NotificationRegistrar registrar_;
+  scoped_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAccessibilityObserver);
 };
@@ -471,7 +447,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
   EXPECT_TRUE(observer.observed());
   EXPECT_TRUE(observer.observed_enabled());
   EXPECT_EQ(observer.observed_type(),
-            chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK);
+            ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK);
   EXPECT_TRUE(IsSpokenFeedbackEnabled());
 
   observer.reset();
@@ -479,7 +455,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
   EXPECT_TRUE(observer.observed());
   EXPECT_FALSE(observer.observed_enabled());
   EXPECT_EQ(observer.observed_type(),
-            chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK);
+            ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK);
   EXPECT_FALSE(IsSpokenFeedbackEnabled());
 
   observer.reset();
@@ -487,7 +463,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
   EXPECT_TRUE(observer.observed());
   EXPECT_TRUE(observer.observed_enabled());
   EXPECT_EQ(observer.observed_type(),
-            chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE);
+            ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE);
   EXPECT_TRUE(IsHighContrastEnabled());
 
   observer.reset();
@@ -495,7 +471,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
   EXPECT_TRUE(observer.observed());
   EXPECT_FALSE(observer.observed_enabled());
   EXPECT_EQ(observer.observed_type(),
-            chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE);
+            ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE);
   EXPECT_FALSE(IsHighContrastEnabled());
 
   observer.reset();
@@ -503,7 +479,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
   EXPECT_TRUE(observer.observed());
   EXPECT_TRUE(observer.observed_enabled());
   EXPECT_EQ(observer.observed_type(),
-            chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD);
+            ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD);
   EXPECT_TRUE(IsVirtualKeyboardEnabled());
 
   observer.reset();
@@ -511,7 +487,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
   EXPECT_TRUE(observer.observed());
   EXPECT_FALSE(observer.observed_enabled());
   EXPECT_EQ(observer.observed_type(),
-            chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD);
+            ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD);
   EXPECT_FALSE(IsVirtualKeyboardEnabled());
 }
 
@@ -530,7 +506,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
   EXPECT_TRUE(observer.observed());
   EXPECT_TRUE(observer.observed_enabled());
   EXPECT_EQ(observer.observed_type(),
-            chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK);
+            ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK);
   EXPECT_TRUE(IsSpokenFeedbackEnabled());
 
   observer.reset();
@@ -538,7 +514,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
   EXPECT_TRUE(observer.observed());
   EXPECT_FALSE(observer.observed_enabled());
   EXPECT_EQ(observer.observed_type(),
-            chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK);
+            ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK);
   EXPECT_FALSE(IsSpokenFeedbackEnabled());
 
   observer.reset();
@@ -546,7 +522,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
   EXPECT_TRUE(observer.observed());
   EXPECT_TRUE(observer.observed_enabled());
   EXPECT_EQ(observer.observed_type(),
-            chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE);
+            ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE);
   EXPECT_TRUE(IsHighContrastEnabled());
 
   observer.reset();
@@ -554,7 +530,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
   EXPECT_TRUE(observer.observed());
   EXPECT_FALSE(observer.observed_enabled());
   EXPECT_EQ(observer.observed_type(),
-            chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE);
+            ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE);
   EXPECT_FALSE(IsHighContrastEnabled());
 
   observer.reset();
@@ -562,7 +538,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
   EXPECT_TRUE(observer.observed());
   EXPECT_TRUE(observer.observed_enabled());
   EXPECT_EQ(observer.observed_type(),
-            chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD);
+            ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD);
   EXPECT_TRUE(IsVirtualKeyboardEnabled());
 
   observer.reset();
@@ -570,7 +546,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityManagerTest,
   EXPECT_TRUE(observer.observed());
   EXPECT_FALSE(observer.observed_enabled());
   EXPECT_EQ(observer.observed_type(),
-            chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD);
+            ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD);
   EXPECT_FALSE(IsVirtualKeyboardEnabled());
 }
 

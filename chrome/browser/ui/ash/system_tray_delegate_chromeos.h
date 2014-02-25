@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
 #include "chrome/browser/chromeos/events/system_key_event_listener.h"
@@ -232,6 +233,9 @@ class SystemTrayDelegateChromeOS
   // Overridden from ash::SessionStateObserver
   virtual void UserAddedToSession(const std::string& user_id) OVERRIDE;
 
+  void OnAccessibilityStatusChanged(
+      const AccessibilityStatusEventDetails& details);
+
   base::WeakPtrFactory<SystemTrayDelegateChromeOS> weak_ptr_factory_;
   scoped_ptr<content::NotificationRegistrar> registrar_;
   scoped_ptr<PrefChangeRegistrar> local_state_registrar_;
@@ -249,6 +253,7 @@ class SystemTrayDelegateChromeOS
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
   scoped_ptr<ash::VolumeControlDelegate> volume_control_delegate_;
   scoped_ptr<CrosSettingsObserverSubscription> device_settings_observer_;
+  scoped_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayDelegateChromeOS);
 };

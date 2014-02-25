@@ -275,22 +275,12 @@ SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
   registrar_->Add(this,
                   chrome::NOTIFICATION_PROFILE_DESTROYED,
                   content::NotificationService::AllSources());
-  registrar_->Add(
-      this,
-      chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
-      content::NotificationService::AllSources());
-  registrar_->Add(
-      this,
-      chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
-      content::NotificationService::AllSources());
-  registrar_->Add(
-      this,
-      chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE,
-      content::NotificationService::AllSources());
-  registrar_->Add(
-      this,
-      chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD,
-      content::NotificationService::AllSources());
+
+  AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
+  CHECK(accessibility_manager);
+  accessibility_subscription_ = accessibility_manager->RegisterCallback(
+      base::Bind(&SystemTrayDelegateChromeOS::OnAccessibilityStatusChanged,
+                 base::Unretained(this)));
 }
 
 void SystemTrayDelegateChromeOS::Initialize() {
@@ -358,6 +348,9 @@ SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
 
   // Unregister content notifications befure destroying any components.
   registrar_.reset();
+
+  // Unregister a11y status subscription.
+  accessibility_subscription_.reset();
 
   DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
   input_method::InputMethodManager::Get()->RemoveObserver(this);
@@ -1162,15 +1155,6 @@ void SystemTrayDelegateChromeOS::Observe(
       SetProfile(ProfileManager::GetActiveUserProfile());
       break;
     }
-    case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK:
-    case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE:
-    case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER:
-    case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD: {
-      AccessibilityStatusEventDetails* accessibility_status =
-          content::Details<AccessibilityStatusEventDetails>(details).ptr();
-      OnAccessibilityModeChanged(accessibility_status->notify);
-      break;
-    }
     default:
       NOTREACHED();
   }
@@ -1329,6 +1313,14 @@ void SystemTrayDelegateChromeOS::OnStoreError(policy::CloudPolicyStore* store) {
 void SystemTrayDelegateChromeOS::UserAddedToSession(
     const std::string& user_id) {
   GetSystemTrayNotifier()->NotifyUserAddedToSession();
+}
+
+void SystemTrayDelegateChromeOS::OnAccessibilityStatusChanged(
+    const AccessibilityStatusEventDetails& details) {
+  if (details.notification_type == ACCESSIBILITY_MANAGER_SHUTDOWN)
+    accessibility_subscription_.reset();
+  else
+    OnAccessibilityModeChanged(details.notify);
 }
 
 ash::SystemTrayDelegate* CreateSystemTrayDelegate() {

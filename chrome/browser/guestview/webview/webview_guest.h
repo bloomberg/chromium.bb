@@ -11,6 +11,10 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#endif
+
 namespace extensions {
 class ScriptExecutor;
 }  // namespace extensions
@@ -188,6 +192,12 @@ class WebViewGuest : public GuestView,
   static void RemoveWebViewFromExtensionRendererState(
       content::WebContents* web_contents);
 
+#if defined(OS_CHROMEOS)
+  // Notification of a change in the state of an accessibility setting.
+  void OnAccessibilityStatusChanged(
+    const chromeos::AccessibilityStatusEventDetails& details);
+#endif
+
   void InjectChromeVoxIfNeeded(content::RenderViewHost* render_view_host);
 
   ObserverList<extensions::TabHelper::ScriptExecutionObserver>
@@ -218,6 +228,12 @@ class WebViewGuest : public GuestView,
 
   // Stores the current zoom factor.
   double current_zoom_factor_;
+
+#if defined(OS_CHROMEOS)
+  // Subscription to receive notifications on changes to a11y settings.
+  scoped_ptr<chromeos::AccessibilityStatusSubscription>
+      accessibility_subscription_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(WebViewGuest);
 };

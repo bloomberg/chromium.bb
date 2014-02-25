@@ -853,22 +853,6 @@ enum NotificationType {
   // EnterPuk dialog, either because the user cancelled, or entered a
   // PIN or PUK.
   NOTIFICATION_ENTER_PIN_ENDED,
-
-  // Sent when large cursor is toggled.
-  NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_LARGE_CURSOR,
-
-  // Sent when high contrast mode is toggled.
-  NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE,
-
-  // Sent when screen magnifier is toggled.
-  NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
-
-  // Sent when spoken feedback is toggled.
-  NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
-
-  // Sent when a11y on-screen keyboard is toggled.
-  NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD,
-
 #endif
 
 #if defined(TOOLKIT_VIEWS)

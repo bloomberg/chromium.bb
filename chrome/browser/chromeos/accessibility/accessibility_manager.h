@@ -9,6 +9,7 @@
 
 #include "ash/accessibility_delegate.h"
 #include "ash/session_state_observer.h"
+#include "base/callback_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/time/time.h"
@@ -26,20 +27,41 @@ class Profile;
 
 namespace chromeos {
 
+enum AccessibilityNotificationType {
+  ACCESSIBILITY_MANAGER_SHUTDOWN,
+  ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE,
+  ACCESSIBILITY_TOGGLE_LARGE_CURSOR,
+  ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
+  ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
+  ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD
+};
+
 struct AccessibilityStatusEventDetails {
   AccessibilityStatusEventDetails(
+      AccessibilityNotificationType notification_type,
       bool enabled,
       ash::AccessibilityNotificationVisibility notify);
 
   AccessibilityStatusEventDetails(
+      AccessibilityNotificationType notification_type,
       bool enabled,
       ash::MagnifierType magnifier_type,
       ash::AccessibilityNotificationVisibility notify);
 
+  AccessibilityNotificationType notification_type;
   bool enabled;
   ash::MagnifierType magnifier_type;
   ash::AccessibilityNotificationVisibility notify;
 };
+
+typedef base::Callback<void(const AccessibilityStatusEventDetails&)>
+    AccessibilityStatusCallback;
+
+typedef base::CallbackList<void(const AccessibilityStatusEventDetails&)>
+    AccessibilityStatusCallbackList;
+
+typedef AccessibilityStatusCallbackList::Subscription
+    AccessibilityStatusSubscription;
 
 // AccessibilityManager changes the statuses of accessibility features
 // watching profile notifications and pref-changes.
@@ -144,6 +166,15 @@ class AccessibilityManager : public content::NotificationObserver,
   // Injects ChromeVox scripts into given |render_view_host|.
   void InjectChromeVox(content::RenderViewHost* render_view_host);
 
+  // Register a callback to be notified when the status of an accessibility
+  // option changes.
+  scoped_ptr<AccessibilityStatusSubscription> RegisterCallback(
+      const AccessibilityStatusCallback& cb);
+
+  // Notify registered callbacks of a status change in an accessibility setting.
+  void NotifyAccessibilityStatusChanged(
+      AccessibilityStatusEventDetails& details);
+
  protected:
   AccessibilityManager();
   virtual ~AccessibilityManager();
@@ -169,7 +200,6 @@ class AccessibilityManager : public content::NotificationObserver,
   void CheckBrailleState();
   void ReceiveBrailleDisplayState(
       scoped_ptr<extensions::api::braille_display_private::DisplayState> state);
-
 
   void SetProfile(Profile* profile);
 
@@ -221,6 +251,8 @@ class AccessibilityManager : public content::NotificationObserver,
   bool should_speak_chrome_vox_announcements_on_user_screen_;
 
   bool system_sounds_enabled_;
+
+  AccessibilityStatusCallbackList callback_list_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityManager);
 };

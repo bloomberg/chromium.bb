@@ -209,17 +209,21 @@ void UnloadChromeVoxExtension(Profile* profile) {
 // AccessibilityStatusEventDetails
 
 AccessibilityStatusEventDetails::AccessibilityStatusEventDetails(
+    AccessibilityNotificationType notification_type,
     bool enabled,
     ash::AccessibilityNotificationVisibility notify)
-  : enabled(enabled),
+  : notification_type(notification_type),
+    enabled(enabled),
     magnifier_type(ash::kDefaultMagnifierType),
     notify(notify) {}
 
 AccessibilityStatusEventDetails::AccessibilityStatusEventDetails(
+    AccessibilityNotificationType notification_type,
     bool enabled,
     ash::MagnifierType magnifier_type,
     ash::AccessibilityNotificationVisibility notify)
-  : enabled(enabled),
+  : notification_type(notification_type),
+    enabled(enabled),
     magnifier_type(magnifier_type),
     notify(notify) {}
 
@@ -334,6 +338,11 @@ AccessibilityManager::AccessibilityManager()
 
 AccessibilityManager::~AccessibilityManager() {
   CHECK(this == g_accessibility_manager);
+  AccessibilityStatusEventDetails details(
+      ACCESSIBILITY_MANAGER_SHUTDOWN,
+      false,
+      ash::A11Y_NOTIFICATION_NONE);
+  NotifyAccessibilityStatusChanged(details);
 }
 
 bool AccessibilityManager::ShouldShowAccessibilityMenu() {
@@ -394,11 +403,12 @@ void AccessibilityManager::UpdateLargeCursorFromPref() {
 
   large_cursor_enabled_ = enabled;
 
-  AccessibilityStatusEventDetails details(enabled, ash::A11Y_NOTIFICATION_NONE);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_LARGE_CURSOR,
-      content::NotificationService::AllSources(),
-      content::Details<AccessibilityStatusEventDetails>(&details));
+  AccessibilityStatusEventDetails details(
+      ACCESSIBILITY_TOGGLE_LARGE_CURSOR,
+      enabled,
+      ash::A11Y_NOTIFICATION_NONE);
+
+  NotifyAccessibilityStatusChanged(details);
 
 #if defined(USE_ASH)
   // Large cursor is implemented only in ash.
@@ -486,12 +496,12 @@ void AccessibilityManager::UpdateSpokenFeedbackFromPref() {
   ExtensionAccessibilityEventRouter::GetInstance()->
       SetAccessibilityEnabled(enabled);
 
-  AccessibilityStatusEventDetails details(enabled,
-                                          spoken_feedback_notification_);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
-      content::NotificationService::AllSources(),
-      content::Details<AccessibilityStatusEventDetails>(&details));
+  AccessibilityStatusEventDetails details(
+      ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
+      enabled,
+      spoken_feedback_notification_);
+
+  NotifyAccessibilityStatusChanged(details);
 
   if (enabled) {
     LoadChromeVox();
@@ -601,11 +611,12 @@ void AccessibilityManager::UpdateHighContrastFromPref() {
 
   high_contrast_enabled_ = enabled;
 
-  AccessibilityStatusEventDetails detail(enabled, ash::A11Y_NOTIFICATION_NONE);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE,
-      content::NotificationService::AllSources(),
-      content::Details<AccessibilityStatusEventDetails>(&detail));
+  AccessibilityStatusEventDetails details(
+      ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE,
+      enabled,
+      ash::A11Y_NOTIFICATION_NONE);
+
+  NotifyAccessibilityStatusChanged(details);
 
 #if defined(USE_ASH)
   ash::Shell::GetInstance()->high_contrast_controller()->SetEnabled(enabled);
@@ -712,11 +723,12 @@ void AccessibilityManager::UpdateVirtualKeyboardFromPref() {
     return;
   virtual_keyboard_enabled_ = enabled;
 
-  AccessibilityStatusEventDetails detail(enabled, ash::A11Y_NOTIFICATION_NONE);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD,
-      content::NotificationService::AllSources(),
-      content::Details<AccessibilityStatusEventDetails>(&detail));
+  AccessibilityStatusEventDetails details(
+      ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD,
+      enabled,
+      ash::A11Y_NOTIFICATION_NONE);
+
+  NotifyAccessibilityStatusChanged(details);
 
 #if defined(USE_ASH)
   keyboard::SetAccessibilityKeyboardEnabled(enabled);
@@ -840,6 +852,17 @@ base::TimeDelta AccessibilityManager::PlayShutdownSound() {
 
 void AccessibilityManager::InjectChromeVox(RenderViewHost* render_view_host) {
   LoadChromeVoxExtension(profile_, render_view_host);
+}
+
+scoped_ptr<AccessibilityStatusSubscription>
+    AccessibilityManager::RegisterCallback(
+        const AccessibilityStatusCallback& cb) {
+  return callback_list_.Add(cb);
+}
+
+void AccessibilityManager::NotifyAccessibilityStatusChanged(
+    AccessibilityStatusEventDetails& details) {
+  callback_list_.Notify(details);
 }
 
 void AccessibilityManager::UpdateChromeOSAccessibilityHistograms() {

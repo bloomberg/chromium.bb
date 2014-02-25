@@ -107,12 +107,50 @@ void PrepareNonNewProfile(const std::string& name) {
 
 }  // namespace
 
-class MagnificationManagerTest : public InProcessBrowserTest,
-                                 public content::NotificationObserver {
+class MockMagnificationObserver {
+ public:
+  MockMagnificationObserver() : observed_(false),
+                                observed_enabled_(false),
+                                magnifier_type_(-1)
+  {
+    AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
+    CHECK(accessibility_manager);
+    accessibility_subscription_ = accessibility_manager->RegisterCallback(
+        base::Bind(&MockMagnificationObserver::OnAccessibilityStatusChanged,
+                   base::Unretained(this)));
+  }
+
+  virtual ~MockMagnificationObserver() {}
+
+  bool observed() const { return observed_; }
+  bool observed_enabled() const { return observed_enabled_; }
+  int magnifier_type() const { return magnifier_type_; }
+
+  void reset() { observed_ = false; }
+
+ private:
+  void OnAccessibilityStatusChanged(
+      const AccessibilityStatusEventDetails& details) {
+    if (details.notification_type == ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER) {
+      magnifier_type_ = details.magnifier_type;
+      observed_enabled_ = details.enabled;
+      observed_ = true;
+    }
+  }
+
+  bool observed_;
+  bool observed_enabled_;
+  int magnifier_type_;
+
+  scoped_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockMagnificationObserver);
+};
+
+
+class MagnificationManagerTest : public InProcessBrowserTest {
  protected:
-  MagnificationManagerTest() : observed_(false),
-                               observed_enabled_(false),
-                               observed_type_(ash::kDefaultMagnifierType) {}
+  MagnificationManagerTest() {}
   virtual ~MagnificationManagerTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -122,37 +160,11 @@ class MagnificationManagerTest : public InProcessBrowserTest,
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    registrar_.Add(
-        this,
-        chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
-        content::NotificationService::AllSources());
-
     // Set the login-screen profile.
     MagnificationManager::Get()->SetProfileForTest(
         ProfileManager::GetActiveUserProfile());
   }
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
-    switch (type) {
-      case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER: {
-        AccessibilityStatusEventDetails* accessibility_status =
-            content::Details<AccessibilityStatusEventDetails>(details).ptr();
-
-        observed_ = true;
-        observed_enabled_ = accessibility_status->enabled;
-        observed_type_ = accessibility_status->magnifier_type;
-        break;
-      }
-    }
-  }
-
-  bool observed_;
-  bool observed_enabled_;
-  ash::MagnifierType observed_type_;
-  content::NotificationRegistrar registrar_;
   DISALLOW_COPY_AND_ASSIGN(MagnificationManagerTest);
 };
 
@@ -505,6 +517,28 @@ IN_PROC_BROWSER_TEST_F(MagnificationManagerTest, InvalidScalePref) {
 
   // Confirms that the actual scale is set to the maximum scale.
   EXPECT_EQ(4.0, GetFullScreenMagnifierScale());
+}
+
+IN_PROC_BROWSER_TEST_F(MagnificationManagerTest,
+                       ChangingTypeInvokesNotification) {
+  MockMagnificationObserver observer;
+
+  EXPECT_FALSE(observer.observed());
+
+  // Set full screen magnifier, and confirm the observer is called.
+  SetMagnifierEnabled(true);
+  SetMagnifierType(ash::MAGNIFIER_FULL);
+  EXPECT_TRUE(observer.observed());
+  EXPECT_TRUE(observer.observed_enabled());
+  EXPECT_EQ(observer.magnifier_type(), ash::MAGNIFIER_FULL);
+  EXPECT_EQ(GetMagnifierType(), ash::MAGNIFIER_FULL);
+  observer.reset();
+
+  // Set full screen magnifier again, and confirm the observer is not called.
+  SetMagnifierType(ash::MAGNIFIER_FULL);
+  EXPECT_FALSE(observer.observed());
+  EXPECT_EQ(GetMagnifierType(), ash::MAGNIFIER_FULL);
+  observer.reset();
 }
 
 }  // namespace chromeos

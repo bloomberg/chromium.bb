@@ -136,11 +136,11 @@ WizardController::WizardController(chromeos::LoginDisplayHost* host,
       weak_factory_(this) {
   DCHECK(default_controller_ == NULL);
   default_controller_ = this;
-
-  registrar_.Add(
-      this,
-      chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
-      content::NotificationService::AllSources());
+  AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
+  CHECK(accessibility_manager);
+  accessibility_subscription_ = accessibility_manager->RegisterCallback(
+      base::Bind(&WizardController::OnAccessibilityStatusChanged,
+                 base::Unretained(this)));
 }
 
 WizardController::~WizardController() {
@@ -826,18 +826,17 @@ void WizardController::HideErrorScreen(WizardScreen* parent_screen) {
   SetCurrentScreen(parent_screen);
 }
 
-void WizardController::Observe(int type,
-                               const content::NotificationSource& source,
-                               const content::NotificationDetails& details) {
-  if (type != chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK) {
-    NOTREACHED();
+void WizardController::OnAccessibilityStatusChanged(
+    const AccessibilityStatusEventDetails& details) {
+  enum AccessibilityNotificationType type = details.notification_type;
+  if (type == ACCESSIBILITY_MANAGER_SHUTDOWN) {
+    accessibility_subscription_.reset();
+    return;
+  } else if (type != ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK || !details.enabled) {
     return;
   }
-  const AccessibilityStatusEventDetails* a11y_details =
-      content::Details<const AccessibilityStatusEventDetails>(details).ptr();
+
   CrasAudioHandler* cras = CrasAudioHandler::Get();
-  if (!a11y_details->enabled)
-    return;
   if (cras->IsOutputMuted()) {
     cras->SetOutputMute(false);
     cras->SetOutputVolumePercent(kMinAudibleOutputVolumePercent);

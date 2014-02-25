@@ -139,9 +139,12 @@ WebViewGuest::WebViewGuest(WebContents* guest_web_contents,
       content::Source<WebContents>(guest_web_contents));
 
 #if defined(OS_CHROMEOS)
-  notification_registrar_.Add(this,
-      chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
-      content::NotificationService::AllSources());
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  CHECK(accessibility_manager);
+  accessibility_subscription_ = accessibility_manager->RegisterCallback(
+      base::Bind(&WebViewGuest::OnAccessibilityStatusChanged,
+                 base::Unretained(this)));
 #endif
 
   AttachWebViewHelpers(guest_web_contents);
@@ -475,11 +478,6 @@ void WebViewGuest::Observe(int type,
                    is_top_level);
       break;
     }
-#if defined(OS_CHROMEOS)
-    case chrome::NOTIFICATION_CROS_ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK:
-      InjectChromeVoxIfNeeded(guest_web_contents()->GetRenderViewHost());
-      break;
-#endif
     default:
       NOTREACHED() << "Unexpected notification sent.";
       break;
@@ -749,6 +747,18 @@ void WebViewGuest::SizeChanged(const gfx::Size& old_size,
   args->SetInteger(webview::kNewWidth, new_size.width());
   DispatchEvent(new GuestView::Event(webview::kEventSizeChanged, args.Pass()));
 }
+
+#if defined(OS_CHROMEOS)
+void WebViewGuest::OnAccessibilityStatusChanged(
+    const chromeos::AccessibilityStatusEventDetails& details) {
+  if (details.notification_type == chromeos::ACCESSIBILITY_MANAGER_SHUTDOWN) {
+    accessibility_subscription_.reset();
+  } else if (details.notification_type ==
+      chromeos::ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK) {
+    InjectChromeVoxIfNeeded(guest_web_contents()->GetRenderViewHost());
+  }
+}
+#endif
 
 void WebViewGuest::InjectChromeVoxIfNeeded(
     content::RenderViewHost* render_view_host) {
