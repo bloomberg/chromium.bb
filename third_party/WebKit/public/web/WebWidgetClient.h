@@ -120,10 +120,6 @@ public:
     // Called to show the widget according to the given policy.
     virtual void show(WebNavigationPolicy) { }
 
-    // Called to block execution of the current thread until the widget is
-    // closed.
-    virtual void runModal() { }
-
     // Called to enter/exit fullscreen mode. If enterFullScreen returns true,
     // then WebWidget::{will,Did}EnterFullScreen should bound resizing the
     // WebWidget into fullscreen mode. Similarly, when exitFullScreen is

@@ -38,13 +38,7 @@
             iframe.name = functionName;
             document.body.appendChild(iframe);
 
-            // showModalDialog only works on mac in the DRT.  So run this test only if its defined and print output only on failure.
-            // This'll keep the output consistent on all platforms.
-            if (functionName == "showModalDialog") {
-                if (window.showModalDialog != undefined)
-                    shouldBe("typeof window." + functionName, "object", true);
-            } else
-                shouldBe("typeof window." + functionName, "object");
+            shouldBe("typeof window." + functionName, "object");
 
             document.body.removeChild(iframe);
         }

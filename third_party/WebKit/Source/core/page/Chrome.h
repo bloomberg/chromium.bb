@@ -87,10 +87,6 @@ public:
 
     void show(NavigationPolicy = NavigationPolicyIgnore) const;
 
-    bool canRunModal() const;
-    bool canRunModalNow() const;
-    void runModal() const;
-
     void setWindowFeatures(const WindowFeatures&) const;
 
     bool toolbarsVisible() const;

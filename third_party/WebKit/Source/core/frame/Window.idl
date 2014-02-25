@@ -61,10 +61,6 @@
                             DOMString name,
                             optional DOMString options);
 
-    [Custom] any showModalDialog(DOMString url,
-                                       optional any dialogArgs,
-                                       optional DOMString featureArgs);
-
     void alert([Default=NullString] optional DOMString message);
     boolean confirm([Default=NullString] optional DOMString message);
     [TreatReturnedNullStringAs=Null] DOMString prompt([Default=NullString] optional DOMString message,

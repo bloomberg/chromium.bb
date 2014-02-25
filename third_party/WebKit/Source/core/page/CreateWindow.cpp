@@ -114,7 +114,7 @@ static Frame* createWindow(Frame* openerFrame, Frame* lookupFrame, const FrameLo
 }
 
 Frame* createWindow(const String& urlString, const AtomicString& frameName, const WindowFeatures& windowFeatures,
-    DOMWindow* callingWindow, Frame* firstFrame, Frame* openerFrame, DOMWindow::PrepareDialogFunction function, void* functionContext)
+    DOMWindow* callingWindow, Frame* firstFrame, Frame* openerFrame)
 {
     Frame* activeFrame = callingWindow->frame();
 
@@ -144,9 +144,6 @@ Frame* createWindow(const String& urlString, const AtomicString& frameName, cons
 
     if (newFrame->domWindow()->isInsecureScriptAccess(callingWindow, completedURL))
         return newFrame;
-
-    if (function)
-        function(newFrame->domWindow(), functionContext);
 
     if (created) {
         FrameLoadRequest request(callingWindow->document(), ResourceRequest(completedURL, referrer));

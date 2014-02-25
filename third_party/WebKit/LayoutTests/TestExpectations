@@ -714,11 +714,6 @@ crbug.com/323858 [ XP ] fast/workers/storage/interrupt-database.html [ Pass Time
 
 crbug.com/343892 [ Linux Mac ] fast/workers/shared-worker-name.html [ Pass Crash ]
 
-crbug.com/345831 fast/events/scroll-event-during-modal-dialog.html [ Failure ]
-crbug.com/345831 fast/events/show-modal-dialog-onblur-onfocus.html [ Failure ]
-crbug.com/345831 fast/harness/show-modal-dialog.html [ Failure ]
-crbug.com/345831 fast/dom/Window/open-window-min-size.html [ Timeout Failure ]
-
 # Template tests that need a merge from upstream to match spec (and subsequent Blink) changes
 crbug.com/325442 w3c/web-platform-tests/html-templates/definitions/template-contents-owner-test-001.html [ Failure ]
 crbug.com/325442 w3c/web-platform-tests/html-templates/template-element/node-document-changes.html [ Failure ]

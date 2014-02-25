@@ -113,14 +113,12 @@ PASS cachedFunctions[53]() is setInterval
 PASS cachedFunctions[53]() is setInterval
 PASS cachedFunctions[54]() is setTimeout
 PASS cachedFunctions[54]() is setTimeout
-PASS cachedFunctions[55]() is showModalDialog
-PASS cachedFunctions[55]() is showModalDialog
-PASS cachedFunctions[56]() is status
-PASS cachedFunctions[56]() is status
-PASS cachedFunctions[57]() is stop
-PASS cachedFunctions[57]() is stop
-PASS cachedFunctions[58]() is window
-PASS cachedFunctions[58]() is window
+PASS cachedFunctions[55]() is status
+PASS cachedFunctions[55]() is status
+PASS cachedFunctions[56]() is stop
+PASS cachedFunctions[56]() is stop
+PASS cachedFunctions[57]() is window
+PASS cachedFunctions[57]() is window
 PASS successfullyParsed is true
 
 TEST COMPLETE

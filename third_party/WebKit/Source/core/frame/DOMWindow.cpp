@@ -311,26 +311,6 @@ bool DOMWindow::allowPopUp()
     return m_frame && allowPopUp(m_frame);
 }
 
-bool DOMWindow::canShowModalDialog(const Frame* frame)
-{
-    if (!frame)
-        return false;
-    FrameHost* host = frame->host();
-    if (!host)
-        return false;
-    return host->chrome().canRunModal();
-}
-
-bool DOMWindow::canShowModalDialogNow(const Frame* frame)
-{
-    if (!frame)
-        return false;
-    FrameHost* host = frame->host();
-    if (!host)
-        return false;
-    return host->chrome().canRunModalNow();
-}
-
 DOMWindow::DOMWindow(Frame* frame)
     : FrameDestructionObserver(frame)
     , m_shouldPrintWhenFinishedLoading(false)
@@ -1844,32 +1824,6 @@ PassRefPtr<DOMWindow> DOMWindow::open(const String& urlString, const AtomicStrin
     WindowFeatures windowFeatures(windowFeaturesString);
     Frame* result = createWindow(urlString, frameName, windowFeatures, callingWindow, firstFrame, m_frame);
     return result ? result->domWindow() : 0;
-}
-
-void DOMWindow::showModalDialog(const String& urlString, const String& dialogFeaturesString,
-    DOMWindow* callingWindow, DOMWindow* enteredWindow, PrepareDialogFunction function, void* functionContext)
-{
-    if (!isCurrentlyDisplayedInFrame())
-        return;
-    Frame* activeFrame = callingWindow->frame();
-    if (!activeFrame)
-        return;
-    Frame* firstFrame = enteredWindow->frame();
-    if (!firstFrame)
-        return;
-
-    if (!canShowModalDialogNow(m_frame) || !enteredWindow->allowPopUp())
-        return;
-
-    UseCounter::countDeprecation(this, UseCounter::ShowModalDialog);
-
-    WindowFeatures windowFeatures(dialogFeaturesString, screenAvailableRect(m_frame->view()));
-    Frame* dialogFrame = createWindow(urlString, emptyAtom, windowFeatures,
-        callingWindow, firstFrame, m_frame, function, functionContext);
-    if (!dialogFrame)
-        return;
-    UserGestureIndicatorDisabler disabler;
-    dialogFrame->host()->chrome().runModal();
 }
 
 DOMWindow* DOMWindow::anonymousIndexedGetter(uint32_t index)

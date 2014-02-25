@@ -302,68 +302,6 @@ void V8Window::toStringMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& i
     v8SetReturnValue(info, domWrapper->ObjectProtoToString());
 }
 
-class DialogHandler {
-public:
-    explicit DialogHandler(v8::Handle<v8::Value> dialogArguments)
-        : m_dialogArguments(dialogArguments)
-    {
-    }
-
-    void dialogCreated(DOMWindow*, v8::Isolate*);
-    v8::Handle<v8::Value> returnValue(v8::Isolate*) const;
-
-private:
-    v8::Handle<v8::Value> m_dialogArguments;
-    v8::Handle<v8::Context> m_dialogContext;
-};
-
-inline void DialogHandler::dialogCreated(DOMWindow* dialogFrame, v8::Isolate* isolate)
-{
-    // FIXME: It's wrong to use the current world. Instead we should use the world
-    // from which the modal dialog was requested.
-    m_dialogContext = dialogFrame->frame() ? toV8Context(isolate, dialogFrame->frame(), DOMWrapperWorld::current(isolate)) : v8::Local<v8::Context>();
-    if (m_dialogContext.IsEmpty())
-        return;
-    if (m_dialogArguments.IsEmpty())
-        return;
-    v8::Context::Scope scope(m_dialogContext);
-    m_dialogContext->Global()->Set(v8AtomicString(isolate, "dialogArguments"), m_dialogArguments);
-}
-
-inline v8::Handle<v8::Value> DialogHandler::returnValue(v8::Isolate* isolate) const
-{
-    if (m_dialogContext.IsEmpty())
-        return v8::Undefined(isolate);
-    v8::Context::Scope scope(m_dialogContext);
-    v8::Handle<v8::Value> returnValue = m_dialogContext->Global()->Get(v8AtomicString(isolate, "returnValue"));
-    if (returnValue.IsEmpty())
-        return v8::Undefined(isolate);
-    return returnValue;
-}
-
-static void setUpDialog(DOMWindow* dialog, void* handler)
-{
-    static_cast<DialogHandler*>(handler)->dialogCreated(dialog, v8::Isolate::GetCurrent());
-}
-
-void V8Window::showModalDialogMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    DOMWindow* impl = V8Window::toNative(info.Holder());
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "showModalDialog", "Window", info.Holder(), info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), exceptionState)) {
-        exceptionState.throwIfNeeded();
-        return;
-    }
-
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, urlString, info[0]);
-    DialogHandler handler(info[1]);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, dialogFeaturesString, info[2]);
-
-    impl->showModalDialog(urlString, dialogFeaturesString, callingDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), setUpDialog, &handler);
-
-    v8SetReturnValue(info, handler.returnValue(info.GetIsolate()));
-}
-
 void V8Window::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     DOMWindow* impl = V8Window::toNative(info.Holder());

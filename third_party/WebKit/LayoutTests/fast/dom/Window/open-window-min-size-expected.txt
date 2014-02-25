@@ -1,9 +1,0 @@
-CONSOLE WARNING: Chromium is considering deprecating showModalDialog. Please use window.open and postMessage instead.
-PASS successfullyParsed is true
-
-TEST COMPLETE
-PASS 100 is >= 100
-PASS 100 is >= 100
-PASS 100 is >= 100
-PASS 100 is >= 100
-

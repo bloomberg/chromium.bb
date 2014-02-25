@@ -38,7 +38,7 @@ struct FrameLoadRequest;
 struct WindowFeatures;
 
 Frame* createWindow(const String& urlString, const AtomicString& frameName, const WindowFeatures&,
-    DOMWindow* callingWindow, Frame* firstFrame, Frame* openerFrame, DOMWindow::PrepareDialogFunction = 0, void* functionContext = 0);
+    DOMWindow* callingWindow, Frame* firstFrame, Frame* openerFrame);
 
 void createWindowForRequest(const FrameLoadRequest&, Frame* openerFrame, NavigationPolicy, ShouldSendReferrer);
 
