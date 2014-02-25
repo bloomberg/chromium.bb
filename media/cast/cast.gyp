@@ -85,7 +85,6 @@
             'sender_logging',
             'test/utility/utility.gyp:cast_test_utility',
             'transport/cast_transport.gyp:cast_transport',
-            '<(DEPTH)/base/base.gyp:run_all_unittests',
             '<(DEPTH)/base/base.gyp:test_support_base',
             '<(DEPTH)/net/net.gyp:net',
             '<(DEPTH)/testing/gmock.gyp:gmock',
@@ -97,6 +96,7 @@
             '<(DEPTH)/third_party/webrtc/',
           ],
           'sources': [
+            '<(DEPTH)/media/base/run_all_unittests.cc',
             'audio_receiver/audio_decoder_unittest.cc',
             'audio_receiver/audio_receiver_unittest.cc',
             'audio_sender/audio_encoder_unittest.cc',
