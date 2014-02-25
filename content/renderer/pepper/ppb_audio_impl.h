@@ -23,27 +23,14 @@ class PepperPlatformAudioOutput;
 
 // Some of the backend functionality of this class is implemented by the
 // PPB_Audio_Shared so it can be shared with the proxy.
+//
+// TODO(teravest): PPB_Audio is no longer supported in-process. Clean this up
+// to look more like typical HostResource implementations.
 class PPB_Audio_Impl : public ppapi::Resource,
                        public ppapi::PPB_Audio_Shared,
                        public AudioHelper {
  public:
-  // Trusted initialization. You must call Init after this.
-  //
-  // Untrusted initialization should just call the static Create() function
-  // to properly create & initialize this class.
   explicit PPB_Audio_Impl(PP_Instance instance);
-
-  // Creation function for untrusted plugins. This handles all initialization
-  // and will return 0 on failure.
-  static PP_Resource Create(PP_Instance instance,
-                            PP_Resource config_id,
-                            const ppapi::AudioCallbackCombined& audio_callback,
-                            void* user_data);
-
-  // Initialization function for trusted init.
-  bool Init(PP_Resource config_id,
-            const ppapi::AudioCallbackCombined& user_callback,
-            void* user_data);
 
   // Resource overrides.
   virtual ppapi::thunk::PPB_Audio_API* AsPPB_Audio_API() OVERRIDE;

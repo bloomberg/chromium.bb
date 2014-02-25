@@ -46,49 +46,8 @@ PPB_Audio_Impl::~PPB_Audio_Impl() {
   }
 }
 
-// static
-PP_Resource PPB_Audio_Impl::Create(
-    PP_Instance instance,
-    PP_Resource config,
-    const ppapi::AudioCallbackCombined& audio_callback,
-    void* user_data) {
-  scoped_refptr<PPB_Audio_Impl> audio(new PPB_Audio_Impl(instance));
-  if (!audio->Init(config, audio_callback, user_data))
-    return 0;
-  return audio->GetReference();
-}
-
 PPB_Audio_API* PPB_Audio_Impl::AsPPB_Audio_API() {
   return this;
-}
-
-bool PPB_Audio_Impl::Init(PP_Resource config,
-                          const ppapi::AudioCallbackCombined& callback,
-                          void* user_data) {
-  // Validate the config and keep a reference to it.
-  EnterResourceNoLock<PPB_AudioConfig_API> enter(config, true);
-  if (enter.failed())
-    return false;
-  config_ = config;
-
-  if (!callback.IsValid())
-    return false;
-  SetCallback(callback, user_data);
-
-  PepperPluginInstanceImpl* instance = static_cast<PepperPluginInstanceImpl*>(
-      PepperPluginInstance::Get(pp_instance()));
-  if (!instance)
-    return false;
-
-  // When the stream is created, we'll get called back on StreamCreated().
-  CHECK(!audio_);
-  audio_ = PepperPlatformAudioOutput::Create(
-      static_cast<int>(enter.object()->GetSampleRate()),
-      static_cast<int>(enter.object()->GetSampleFrameCount()),
-      instance->GetRenderView()->GetRoutingID(),
-      instance->render_frame()->GetRoutingID(),
-      this);
-  return audio_ != NULL;
 }
 
 PP_Resource PPB_Audio_Impl::GetCurrentConfig() {

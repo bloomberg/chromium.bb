@@ -1495,21 +1495,7 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, AudioConfig) {
       LIST_TEST(AudioConfig_InvalidConfigs));
 }
 
-// Flaky on ChromeOS dbg, http://crbug.com/277564.
-#if defined(OS_CHROMEOS) && !defined(NDEBUG)
-#define MAYBE_Audio DISABLED_Audio
-#else
-#define MAYBE_Audio Audio
-#endif
-IN_PROC_BROWSER_TEST_F(PPAPITest, MAYBE_Audio) {
-  RunTest(LIST_TEST(Audio_Creation)
-          LIST_TEST(Audio_DestroyNoStop)
-          LIST_TEST(Audio_Failures)
-          LIST_TEST(Audio_AudioCallback1)
-          LIST_TEST(Audio_AudioCallback2)
-          LIST_TEST(Audio_AudioCallback3)
-          LIST_TEST(Audio_AudioCallback4));
-}
+// PPB_Audio is not supported in-process.
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, Audio) {
   RunTest(LIST_TEST(Audio_Creation)
           LIST_TEST(Audio_DestroyNoStop)

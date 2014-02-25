@@ -37,9 +37,7 @@ PP_Resource ResourceCreationImpl::CreateAudio1_0(
     PP_Resource config_id,
     PPB_Audio_Callback_1_0 audio_callback,
     void* user_data) {
-  return PPB_Audio_Impl::Create(
-      instance, config_id, ppapi::AudioCallbackCombined(audio_callback),
-      user_data);
+  return 0;  // Not supported in-process.
 }
 
 PP_Resource ResourceCreationImpl::CreateAudio(
@@ -47,9 +45,7 @@ PP_Resource ResourceCreationImpl::CreateAudio(
     PP_Resource config_id,
     PPB_Audio_Callback audio_callback,
     void* user_data) {
-  return PPB_Audio_Impl::Create(
-      instance, config_id, ppapi::AudioCallbackCombined(audio_callback),
-      user_data);
+  return 0;  // Not supported in-process.
 }
 
 PP_Resource ResourceCreationImpl::CreateAudioConfig(
