@@ -42,6 +42,7 @@
 #include "content/renderer/context_menu_params_builder.h"
 #include "content/renderer/dom_automation_controller.h"
 #include "content/renderer/internal_document_state_data.h"
+#include "content/renderer/media/webrtc_uma_histograms.h"
 #include "content/renderer/npapi/plugin_channel_host.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -1702,6 +1703,14 @@ void RenderFrameImpl::willStartUsingPeerConnectionHandler(
   DCHECK(!frame_ || frame_ == frame);
 #if defined(ENABLE_WEBRTC)
   static_cast<RTCPeerConnectionHandler*>(handler)->associateWithFrame(frame);
+
+  // This is triggered by Blink right after it creates
+  // RTCPeerConnection, and at this point we have the origin (via
+  // |frame|). Increment the UMA stat that counts the number of unique
+  // origins calling RTCPeerConnection.
+  UpdateWebRTCUniqueOriginMethodCount(
+      WEBKIT_RTC_PEER_CONNECTION,
+      frame->document().securityOrigin().toString());
 #endif
 }
 

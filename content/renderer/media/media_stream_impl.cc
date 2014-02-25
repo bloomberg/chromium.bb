@@ -128,7 +128,13 @@ void MediaStreamImpl::requestUserMedia(
                             &options.optional_video);
     }
 
-    security_origin = GURL(user_media_request.securityOrigin().toString());
+    base::string16 security_origin_string =
+        user_media_request.securityOrigin().toString();
+    security_origin = GURL(security_origin_string);
+
+    UpdateWebRTCUniqueOriginMethodCount(WEBKIT_GET_USER_MEDIA,
+                                        security_origin_string);
+
     // Get the WebFrame that requested a MediaStream.
     // The frame is needed to tell the MediaStreamDispatcher when a stream goes
     // out of scope.
