@@ -42,7 +42,8 @@ class ContextTestBase : public content::ContentBrowserTest {
             gpu_channel_host.get(),
             blink::WebGraphicsContext3D::Attributes(),
             GURL(),
-            WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits()));
+            WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(),
+            NULL));
     CHECK(context_.get());
     context_->makeContextCurrent();
     context_support_ = context_->GetContextSupport();
@@ -129,7 +130,8 @@ class BrowserGpuChannelHostFactoryTest : public ContextTestBase {
             GetGpuChannel(),
             blink::WebGraphicsContext3D::Attributes(),
             GURL(),
-            WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits()));
+            WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(),
+            NULL));
   }
 };
 

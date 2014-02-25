@@ -940,9 +940,16 @@ bool RendererWebKitPlatformSupportImpl::processMemorySizesInBytes(
 
 //------------------------------------------------------------------------------
 
+
 blink::WebGraphicsContext3D*
 RendererWebKitPlatformSupportImpl::createOffscreenGraphicsContext3D(
+#ifdef ENABLE_EXPLICIT_GL_SHARE_GROUPS
+    const blink::WebGraphicsContext3D::Attributes& attributes,
+    blink::WebGraphicsContext3D* share_context) {
+#else
     const blink::WebGraphicsContext3D::Attributes& attributes) {
+    blink::WebGraphicsContext3D* share_context = NULL;
+#endif
   if (!RenderThreadImpl::current())
     return NULL;
 
@@ -966,7 +973,8 @@ RendererWebKitPlatformSupportImpl::createOffscreenGraphicsContext3D(
       gpu_channel_host.get(),
       attributes,
       GURL(attributes.topDocumentURL),
-      limits);
+      limits,
+      static_cast<WebGraphicsContext3DCommandBufferImpl*>(share_context));
 }
 
 //------------------------------------------------------------------------------

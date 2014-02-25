@@ -2780,7 +2780,8 @@ RenderWidget::CreateGraphicsContext3D(
           gpu_channel_host.get(),
           attributes,
           false /* bind generates resources */,
-          limits));
+          limits,
+          NULL));
   return context.Pass();
 }
 

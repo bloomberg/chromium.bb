@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
@@ -73,13 +74,58 @@ class WebGraphicsContext3DCommandBufferImpl
     size_t mapped_memory_reclaim_limit;
   };
 
+  class ShareGroup : public base::RefCountedThreadSafe<ShareGroup> {
+   public:
+    ShareGroup();
+
+    WebGraphicsContext3DCommandBufferImpl* GetAnyContextLocked() {
+      // In order to ensure that the context returned is not removed while
+      // in use, the share group's lock should be aquired before calling this
+      // function.
+      lock_.AssertAcquired();
+      if (contexts_.empty())
+        return NULL;
+      return contexts_.front();
+    }
+
+    void AddContextLocked(WebGraphicsContext3DCommandBufferImpl* context) {
+      lock_.AssertAcquired();
+      contexts_.push_back(context);
+    }
+
+    void RemoveContext(WebGraphicsContext3DCommandBufferImpl* context) {
+      base::AutoLock auto_lock(lock_);
+      contexts_.erase(std::remove(contexts_.begin(), contexts_.end(), context),
+          contexts_.end());
+    }
+
+    void RemoveAllContexts() {
+      base::AutoLock auto_lock(lock_);
+      contexts_.clear();
+    }
+
+    base::Lock& lock() {
+      return lock_;
+    }
+
+   private:
+    friend class base::RefCountedThreadSafe<ShareGroup>;
+    virtual ~ShareGroup();
+
+    std::vector<WebGraphicsContext3DCommandBufferImpl*> contexts_;
+    base::Lock lock_;
+
+    DISALLOW_COPY_AND_ASSIGN(ShareGroup);
+  };
+
   WebGraphicsContext3DCommandBufferImpl(
       int surface_id,
       const GURL& active_url,
       GpuChannelHost* host,
       const Attributes& attributes,
       bool bind_generates_resources,
-      const SharedMemoryLimits& limits);
+      const SharedMemoryLimits& limits,
+      WebGraphicsContext3DCommandBufferImpl* share_context);
 
   virtual ~WebGraphicsContext3DCommandBufferImpl();
 
@@ -104,7 +150,8 @@ class WebGraphicsContext3DCommandBufferImpl
           GpuChannelHost* host,
           const WebGraphicsContext3D::Attributes& attributes,
           const GURL& active_url,
-          const SharedMemoryLimits& limits);
+          const SharedMemoryLimits& limits,
+          WebGraphicsContext3DCommandBufferImpl* share_context);
 
   size_t GetMappedMemoryLimit() {
     return mem_limits_.mapped_memory_reclaim_limit;
@@ -663,7 +710,8 @@ class WebGraphicsContext3DCommandBufferImpl
   // thread).
   bool MaybeInitializeGL();
 
-  bool InitializeCommandBuffer(bool onscreen);
+  bool InitializeCommandBuffer(bool onscreen,
+      WebGraphicsContext3DCommandBufferImpl* share_context);
 
   void Destroy();
 
@@ -722,6 +770,7 @@ class WebGraphicsContext3DCommandBufferImpl
   SharedMemoryLimits mem_limits_;
 
   uint32_t flush_id_;
+  scoped_refptr<ShareGroup> share_group_;
 };
 
 }  // namespace content

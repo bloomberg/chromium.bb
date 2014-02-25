@@ -88,7 +88,8 @@ CmdBufferImageTransportFactory::CmdBufferImageTransportFactory() {
                                                 gpu_channel_host.get(),
                                                 attrs,
                                                 false,
-                                                limits));
+                                                limits,
+                                                NULL));
   context_->setContextLostCallback(context_lost_listener_.get());
   if (context_->makeContextCurrent())
     context_->pushGroupMarkerEXT(

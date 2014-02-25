@@ -444,7 +444,8 @@ GpuProcessTransportFactory::CreateContextCommon(int surface_id) {
           gpu_channel_host.get(),
           attrs,
           false,
-          WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits()));
+          WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(),
+          NULL));
   return context.Pass();
 }
 

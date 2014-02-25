@@ -38,7 +38,8 @@ class ContextProviderCommandBufferBrowserTest : public ContentBrowserTest {
             gpu_channel_host.get(),
             blink::WebGraphicsContext3D::Attributes(),
             GURL("chrome://gpu/ContextProviderCommandBufferTest"),
-            WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits()));
+            WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(),
+            NULL));
     return context.Pass();
   }
 };

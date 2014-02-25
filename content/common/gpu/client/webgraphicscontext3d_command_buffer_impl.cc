@@ -22,7 +22,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
-#include "base/synchronization/lock.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
@@ -43,12 +42,28 @@ namespace content {
 namespace {
 
 static base::LazyInstance<base::Lock>::Leaky
-    g_all_shared_contexts_lock = LAZY_INSTANCE_INITIALIZER;
+    g_default_share_groups_lock = LAZY_INSTANCE_INITIALIZER;
 
-typedef std::multimap<GpuChannelHost*, WebGraphicsContext3DCommandBufferImpl*>
-    ContextMap;
-static base::LazyInstance<ContextMap> g_all_shared_contexts =
+typedef std::map<GpuChannelHost*,
+    scoped_refptr<WebGraphicsContext3DCommandBufferImpl::ShareGroup> >
+    ShareGroupMap;
+static base::LazyInstance<ShareGroupMap> g_default_share_groups =
     LAZY_INSTANCE_INITIALIZER;
+
+scoped_refptr<WebGraphicsContext3DCommandBufferImpl::ShareGroup>
+    GetDefaultShareGroupForHost(GpuChannelHost* host) {
+  base::AutoLock lock(g_default_share_groups_lock.Get());
+
+  ShareGroupMap& share_groups = g_default_share_groups.Get();
+  ShareGroupMap::iterator it = share_groups.find(host);
+  if (it == share_groups.end()) {
+    scoped_refptr<WebGraphicsContext3DCommandBufferImpl::ShareGroup> group =
+        new WebGraphicsContext3DCommandBufferImpl::ShareGroup();
+    share_groups[host] = group;
+    return group;
+  }
+  return it->second;
+}
 
 uint32_t GenFlushID() {
   static base::subtle::Atomic32 flush_id = 0;
@@ -202,13 +217,21 @@ WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits::SharedMemoryLimits()
       max_transfer_buffer_size(kDefaultMaxTransferBufferSize),
       mapped_memory_reclaim_limit(gpu::gles2::GLES2Implementation::kNoLimit) {}
 
+WebGraphicsContext3DCommandBufferImpl::ShareGroup::ShareGroup() {
+}
+
+WebGraphicsContext3DCommandBufferImpl::ShareGroup::~ShareGroup() {
+  DCHECK(contexts_.empty());
+}
+
 WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
     int surface_id,
     const GURL& active_url,
     GpuChannelHost* host,
     const Attributes& attributes,
     bool bind_generates_resources,
-    const SharedMemoryLimits& limits)
+    const SharedMemoryLimits& limits,
+    WebGraphicsContext3DCommandBufferImpl* share_context)
     : initialize_failed_(false),
       visible_(false),
       host_(host),
@@ -226,6 +249,15 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
       bind_generates_resources_(bind_generates_resources),
       mem_limits_(limits),
       flush_id_(0) {
+  if (share_context) {
+    DCHECK(!attributes_.shareResources);
+    share_group_ = share_context->share_group_;
+  } else {
+    share_group_ = attributes_.shareResources
+        ? GetDefaultShareGroupForHost(host)
+        : scoped_refptr<WebGraphicsContext3DCommandBufferImpl::ShareGroup>(
+            new ShareGroup());
+  }
 }
 
 WebGraphicsContext3DCommandBufferImpl::
@@ -295,19 +327,14 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
 }
 
 bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
-    bool onscreen) {
+    bool onscreen, WebGraphicsContext3DCommandBufferImpl* share_context) {
   if (!host_.get())
     return false;
-  // We need to lock g_all_shared_contexts to ensure that the context we picked
-  // for our share group isn't deleted.
-  // (There's also a lock in our destructor.)
-  base::AutoLock lock(g_all_shared_contexts_lock.Get());
-  CommandBufferProxyImpl* share_group = NULL;
-  if (attributes_.shareResources) {
-    ContextMap& all_contexts = g_all_shared_contexts.Get();
-    ContextMap::const_iterator it = all_contexts.find(host_.get());
-    if (it != all_contexts.end())
-      share_group = it->second->command_buffer_.get();
+
+  CommandBufferProxyImpl* share_group_command_buffer = NULL;
+
+  if (share_context) {
+    share_group_command_buffer = share_context->command_buffer_.get();
   }
 
   std::vector<int32> attribs;
@@ -329,14 +356,14 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
   if (onscreen) {
     command_buffer_.reset(host_->CreateViewCommandBuffer(
         surface_id_,
-        share_group,
+        share_group_command_buffer,
         attribs,
         active_url_,
         gpu_preference_));
   } else {
     command_buffer_.reset(host_->CreateOffscreenCommandBuffer(
         gfx::Size(1, 1),
-        share_group,
+        share_group_command_buffer,
         attribs,
         active_url_,
         gpu_preference_));
@@ -349,14 +376,27 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
   return command_buffer_->Initialize();
 }
 
-bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
-    bool onscreen) {
+bool WebGraphicsContext3DCommandBufferImpl::CreateContext(bool onscreen) {
   // Ensure the gles2 library is initialized first in a thread safe way.
   g_gles2_initializer.Get();
 
-  if (!command_buffer_ &&
-      !InitializeCommandBuffer(onscreen)) {
-    return false;
+  scoped_refptr<gpu::gles2::ShareGroup> gles2_share_group;
+
+  scoped_ptr<base::AutoLock> share_group_lock;
+  bool add_to_share_group = false;
+  if (!command_buffer_) {
+    WebGraphicsContext3DCommandBufferImpl* share_context = NULL;
+
+    share_group_lock.reset(new base::AutoLock(share_group_->lock()));
+    share_context = share_group_->GetAnyContextLocked();
+
+    if (!InitializeCommandBuffer(onscreen, share_context))
+      return false;
+
+    if (share_context)
+      gles2_share_group = share_context->GetImplementation()->share_group();
+
+    add_to_share_group = true;
   }
 
   // Create the GLES2 helper, which writes the command buffer protocol.
@@ -372,19 +412,6 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
   transfer_buffer_ .reset(new gpu::TransferBuffer(gles2_helper_.get()));
 
   DCHECK(host_.get());
-  scoped_ptr<base::AutoLock> lock;
-  scoped_refptr<gpu::gles2::ShareGroup> share_group;
-  if (attributes_.shareResources) {
-    // Make sure two clients don't try to create a new ShareGroup
-    // simultaneously.
-    lock.reset(new base::AutoLock(g_all_shared_contexts_lock.Get()));
-    ContextMap& all_contexts = g_all_shared_contexts.Get();
-    ContextMap::const_iterator it = all_contexts.find(host_.get());
-    if (it != all_contexts.end()) {
-      share_group = it->second->GetImplementation()->share_group();
-      DCHECK(share_group);
-    }
-  }
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   bool free_command_buffer_when_invisible =
@@ -393,18 +420,12 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
   // Create the object exposing the OpenGL API.
   real_gl_.reset(new gpu::gles2::GLES2Implementation(
       gles2_helper_.get(),
-      share_group,
+      gles2_share_group,
       transfer_buffer_.get(),
       bind_generates_resources_,
       free_command_buffer_when_invisible,
       command_buffer_.get()));
   gl_ = real_gl_.get();
-
-  if (attributes_.shareResources) {
-    // Don't add ourselves to the list before others can get to our ShareGroup.
-    g_all_shared_contexts.Get().insert(std::make_pair(host_.get(), this));
-    lock.reset();
-  }
 
   if (!real_gl_->Initialize(
       mem_limits_.start_transfer_buffer_size,
@@ -413,6 +434,9 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
       mem_limits_.mapped_memory_reclaim_limit)) {
     return false;
   }
+
+  if (add_to_share_group)
+    share_group_->AddContextLocked(this);
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableGpuClientTracing)) {
@@ -440,17 +464,7 @@ uint32_t WebGraphicsContext3DCommandBufferImpl::lastFlushID() {
 DELEGATE_TO_GL_R(insertSyncPoint, InsertSyncPointCHROMIUM, unsigned int)
 
 void WebGraphicsContext3DCommandBufferImpl::Destroy() {
-  if (host_.get()) {
-    base::AutoLock lock(g_all_shared_contexts_lock.Get());
-    ContextMap& all_contexts = g_all_shared_contexts.Get();
-    ContextMap::iterator it = std::find(
-        all_contexts.begin(),
-        all_contexts.end(),
-        std::pair<GpuChannelHost* const,
-                  WebGraphicsContext3DCommandBufferImpl*>(host_.get(), this));
-    if (it != all_contexts.end())
-      all_contexts.erase(it);
-  }
+  share_group_->RemoveContext(this);
 
   if (gl_) {
     // First flush the context to ensure that any pending frees of resources
@@ -1168,15 +1182,21 @@ WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
     GpuChannelHost* host,
     const WebGraphicsContext3D::Attributes& attributes,
     const GURL& active_url,
-    const SharedMemoryLimits& limits) {
+    const SharedMemoryLimits& limits,
+    WebGraphicsContext3DCommandBufferImpl* share_context) {
   if (!host)
     return NULL;
+
+  if (share_context && share_context->IsCommandBufferContextLost())
+    return NULL;
+
   return new WebGraphicsContext3DCommandBufferImpl(0,
                                                    active_url,
                                                    host,
                                                    attributes,
                                                    false,
-                                                   limits);
+                                                   limits,
+                                                   share_context);
 }
 
 DELEGATE_TO_GL_5(texImageIOSurface2DCHROMIUM, TexImageIOSurface2DCHROMIUM,
@@ -1349,10 +1369,12 @@ void WebGraphicsContext3DCommandBufferImpl::OnGpuChannelLost() {
     context_lost_callback_->onContextLost();
   }
 
+  share_group_->RemoveAllContexts();
+
   DCHECK(host_.get());
   {
-    base::AutoLock lock(g_all_shared_contexts_lock.Get());
-    g_all_shared_contexts.Get().erase(host_.get());
+    base::AutoLock lock(g_default_share_groups_lock.Get());
+    g_default_share_groups.Get().erase(host_.get());
   }
 }
 

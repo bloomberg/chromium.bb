@@ -403,7 +403,8 @@ CreateGpuProcessViewContext(
                                                 gpu_channel_host.get(),
                                                 attributes,
                                                 false,
-                                                limits));
+                                                limits,
+                                                NULL));
 }
 
 scoped_ptr<cc::OutputSurface> CompositorImpl::CreateOutputSurface(
