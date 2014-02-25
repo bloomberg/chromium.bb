@@ -181,7 +181,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
         $('oauth-enroll-cancel-button').textContent =
             loadTimeData.getString('oauthEnrollCancelAutoEnrollmentGoBack');
       }
-      this.classList.toggle('saml', false);
 
       this.showStep(STEP_SIGNIN);
     },
@@ -203,6 +202,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      */
     showStep: function(step) {
       this.currentStep_ = step;
+      this.classList.toggle('saml', false);
       $('oauth-enroll-cancel-button').hidden = true;
       $('oauth-enroll-try-again-button').hidden = true;
       $('oauth-enroll-explain-button').hidden = true;
@@ -332,7 +332,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
                     [msg.attemptToken]);
       }
 
-      if (msg.method == 'authPageLoaded') {
+      if (msg.method == 'authPageLoaded' && this.currentStep_ == STEP_SIGNIN) {
         if (msg.isSAML) {
           $('oauth-saml-notice-message').textContent = loadTimeData.getStringF(
               'samlNotice',
