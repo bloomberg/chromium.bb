@@ -23,8 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface SVGAnimatedRect {
+[
+    SetWrapperReferenceTo(SVGElement contextElement),
+] interface SVGAnimatedRect {
     readonly attribute SVGRect baseVal;
     readonly attribute SVGRect animVal;
 };
-

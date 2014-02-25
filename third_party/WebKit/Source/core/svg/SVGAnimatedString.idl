@@ -23,8 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface SVGAnimatedString {
+[
+    SetWrapperReferenceTo(SVGElement contextElement),
+] interface SVGAnimatedString {
     [RaisesException=Setter] attribute DOMString baseVal;
     readonly attribute DOMString animVal;
 };
-

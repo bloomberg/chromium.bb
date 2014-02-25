@@ -23,8 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface SVGAnimatedLength {
+[
+    SetWrapperReferenceTo(SVGElement contextElement),
+] interface SVGAnimatedLength {
     readonly attribute SVGLength baseVal;
     readonly attribute SVGLength animVal;
 };
-

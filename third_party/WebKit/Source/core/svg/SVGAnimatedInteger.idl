@@ -24,6 +24,7 @@
  */
 
 [
+    SetWrapperReferenceTo(SVGElement contextElement),
     StrictTypeChecking,
 ] interface SVGAnimatedInteger {
     [RaisesException=Setter] attribute long baseVal;

@@ -25,6 +25,7 @@
  */
 
 [
+    SetWrapperReferenceTo(SVGElement contextElement),
     StrictTypeChecking,
 ] interface SVGAnimatedNumber {
     [RaisesException=Setter] attribute float baseVal;

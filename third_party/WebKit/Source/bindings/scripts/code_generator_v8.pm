@@ -539,17 +539,6 @@ END
     V8WrapperInstantiationScope scope(creationContext, isolate);
 END
     }
-    if (SVGTypeNeedsToHoldContextElement($interface->name)) {
-        AddToImplIncludes("V8SVGElement.h");
-        $code .= <<END;
-    SVGElement* contextElement = impl->contextElement();
-    if (contextElement) {
-        if (!DOMDataStore::containsWrapper<V8SVGElement>(contextElement, isolate))
-            wrap(contextElement, creationContext, isolate);
-        DOMDataStore::setWrapperReference<V8SVGElement>(wrapper, contextElement, isolate);
-    }
-END
-    }
     for my $setReference (@{$interface->extendedAttributes->{"SetWrapperReferenceTo"}}) {
         my $setReferenceType = $setReference->type;
         my $setReferenceV8Type = "V8".$setReferenceType;
@@ -6099,8 +6088,6 @@ sub GetSVGWrappedTypeNeedingTearOff
 sub IsSVGAnimatedType
 {
     my $type = shift;
-
-    return 0 if $svgTypeNewPropertyImplementation{$type};
 
     return $type =~ /^SVGAnimated/;
 }
