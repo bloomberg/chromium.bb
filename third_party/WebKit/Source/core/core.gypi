@@ -1574,6 +1574,8 @@
             'rendering/compositing/CompositedLayerMapping.cpp',
             'rendering/compositing/CompositedLayerMapping.h',
             'rendering/compositing/CompositedLayerMappingPtr.h',
+            'rendering/compositing/CompositingReasonFinder.cpp',
+            'rendering/compositing/CompositingReasonFinder.h',
             'rendering/compositing/CompositingState.h',
             'rendering/compositing/RenderLayerCompositor.cpp',
             'rendering/compositing/RenderLayerCompositor.h',

@@ -208,22 +208,21 @@ struct CompositingRecursionData {
 #endif
 };
 
-
 RenderLayerCompositor::RenderLayerCompositor(RenderView* renderView)
     : m_renderView(renderView)
+    , m_compositingReasonFinder(*renderView)
     , m_hasAcceleratedCompositing(true)
-    , m_compositingTriggers(static_cast<ChromeClient::CompositingTriggerFlags>(ChromeClient::AllTriggers))
     , m_showRepaintCounter(false)
     , m_needsToRecomputeCompositingRequirements(false)
     , m_needsToUpdateLayerTreeGeometry(false)
     , m_compositing(false)
     , m_compositingLayersNeedRebuild(false)
     , m_forceCompositingMode(false)
-    , m_inPostLayoutUpdate(false)
     , m_needsUpdateCompositingRequirementsState(false)
     , m_isTrackingRepaints(false)
     , m_rootLayerAttachment(RootLayerUnattached)
 {
+    ASSERT(renderView);
 }
 
 RenderLayerCompositor::~RenderLayerCompositor()
@@ -256,9 +255,9 @@ void RenderLayerCompositor::cacheAcceleratedCompositingFlags()
         // We allow the chrome to override the settings, in case the page is rendered
         // on a chrome that doesn't allow accelerated compositing.
         if (hasAcceleratedCompositing) {
-            if (Page* page = this->page()) {
-                m_compositingTriggers = page->chrome().client().allowedCompositingTriggers();
-                hasAcceleratedCompositing = m_compositingTriggers;
+            if (page()) {
+                m_compositingReasonFinder.updateTriggers();
+                hasAcceleratedCompositing = m_compositingReasonFinder.hasTriggers();
             }
         }
 
@@ -266,7 +265,7 @@ void RenderLayerCompositor::cacheAcceleratedCompositingFlags()
         forceCompositingMode = settings->forceCompositingMode() && hasAcceleratedCompositing;
 
         if (forceCompositingMode && !isMainFrame())
-            forceCompositingMode = requiresCompositingForScrollableFrame();
+            forceCompositingMode = m_compositingReasonFinder.requiresCompositingForScrollableFrame();
     }
 
     if (hasAcceleratedCompositing != m_hasAcceleratedCompositing || showRepaintCounter != m_showRepaintCounter || forceCompositingMode != m_forceCompositingMode)
@@ -287,7 +286,7 @@ bool RenderLayerCompositor::layerSquashingEnabled() const
 
 bool RenderLayerCompositor::canRender3DTransforms() const
 {
-    return hasAcceleratedCompositing() && (m_compositingTriggers & ChromeClient::ThreeDTransformTrigger);
+    return hasAcceleratedCompositing() && m_compositingReasonFinder.has3DTransformTrigger();
 }
 
 void RenderLayerCompositor::setCompositingLayersNeedRebuild(bool needRebuild)
@@ -411,8 +410,6 @@ void RenderLayerCompositor::updateCompositingLayers()
 
     if (!m_needsToRecomputeCompositingRequirements && !m_compositing)
         return;
-
-    TemporaryChange<bool> postLayoutChange(m_inPostLayoutUpdate, true);
 
     bool needCompositingRequirementsUpdate = m_needsToRecomputeCompositingRequirements;
     bool needHierarchyAndGeometryUpdate = m_compositingLayersNeedRebuild;
@@ -701,7 +698,7 @@ bool RenderLayerCompositor::updateSquashingAssignment(RenderLayer* layer, Squash
 bool RenderLayerCompositor::updateLayerIfViewportConstrained(RenderLayer* layer)
 {
     RenderLayer::ViewportConstrainedNotCompositedReason viewportConstrainedNotCompositedReason = RenderLayer::NoNotCompositedReason;
-    requiresCompositingForPosition(layer->renderer(), layer, &viewportConstrainedNotCompositedReason);
+    m_compositingReasonFinder.requiresCompositingForPosition(layer->renderer(), layer, &viewportConstrainedNotCompositedReason, &m_needsToRecomputeCompositingRequirements);
 
     if (layer->viewportConstrainedNotCompositedReason() != viewportConstrainedNotCompositedReason) {
         ASSERT(layer->renderer()->style()->position() == FixedPosition);
@@ -923,7 +920,7 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
     CompositingReasons reasonsToComposite = CompositingReasonNone;
 
     // First accumulate the straightforward compositing reasons.
-    CompositingReasons directReasons = directReasonsForCompositing(layer);
+    CompositingReasons directReasons = m_compositingReasonFinder.directReasons(layer, &m_needsToRecomputeCompositingRequirements);
 
     // Video is special. It's the only RenderLayer type that can both have
     // RenderLayer children and whose children can't use its backing to render
@@ -1262,14 +1259,6 @@ void RenderLayerCompositor::removeCompositedChildren(RenderLayer* layer)
 
     GraphicsLayer* hostingLayer = layer->compositedLayerMapping()->parentForSublayers();
     hostingLayer->removeAllChildren();
-}
-
-bool RenderLayerCompositor::canAccelerateVideoRendering(RenderVideo* o) const
-{
-    if (!m_hasAcceleratedCompositing)
-        return false;
-
-    return o->supportsAcceleratedRendering();
 }
 
 void RenderLayerCompositor::updateGraphicsLayersMappedToRenderLayer(RenderLayer* layer)
@@ -1725,7 +1714,7 @@ void RenderLayerCompositor::updateDirectCompositingReasons(RenderLayer* layer)
     CompositingReasons layerReasons = layer->compositingReasons();
 
     layerReasons &= ~CompositingReasonComboAllDirectReasons;
-    layerReasons |= directReasonsForCompositing(layer);
+    layerReasons |= m_compositingReasonFinder.directReasons(layer, &m_needsToRecomputeCompositingRequirements);
     layer->setCompositingReasons(layerReasons);
 }
 
@@ -1745,51 +1734,6 @@ bool RenderLayerCompositor::canBeComposited(const RenderLayer* layer) const
     // FIXME: We disable accelerated compositing for elements in a RenderFlowThread as it doesn't work properly.
     // See http://webkit.org/b/84900 to re-enable it.
     return m_hasAcceleratedCompositing && layer->isSelfPaintingLayer() && layer->renderer()->flowThreadState() == RenderObject::NotInsideFlowThread;
-}
-
-CompositingReasons RenderLayerCompositor::directReasonsForCompositing(const RenderLayer* layer) const
-{
-    RenderObject* renderer = layer->renderer();
-    CompositingReasons directReasons = CompositingReasonNone;
-
-    if (requiresCompositingForTransform(renderer))
-        directReasons |= CompositingReason3DTransform;
-
-    // Only zero or one of the following conditions will be true for a given RenderLayer.
-    if (requiresCompositingForVideo(renderer))
-        directReasons |= CompositingReasonVideo;
-    else if (requiresCompositingForCanvas(renderer))
-        directReasons |= CompositingReasonCanvas;
-    else if (requiresCompositingForPlugin(renderer))
-        directReasons |= CompositingReasonPlugin;
-    else if (requiresCompositingForFrame(renderer))
-        directReasons |= CompositingReasonIFrame;
-
-    if (requiresCompositingForBackfaceVisibilityHidden(renderer))
-        directReasons |= CompositingReasonBackfaceVisibilityHidden;
-
-    if (requiresCompositingForAnimation(renderer))
-        directReasons |= CompositingReasonAnimation;
-
-    if (requiresCompositingForTransition(renderer))
-        directReasons |= CompositingReasonAnimation;
-
-    if (requiresCompositingForFilters(renderer))
-        directReasons |= CompositingReasonFilters;
-
-    if (requiresCompositingForPosition(renderer, layer))
-        directReasons |= renderer->style()->position() == FixedPosition ? CompositingReasonPositionFixed : CompositingReasonPositionSticky;
-
-    if (requiresCompositingForOverflowScrolling(layer))
-        directReasons |= CompositingReasonOverflowScrollingTouch;
-
-    if (requiresCompositingForOverflowScrollingParent(layer))
-        directReasons |= CompositingReasonOverflowScrollingParent;
-
-    if (requiresCompositingForOutOfFlowClipping(layer))
-        directReasons |= CompositingReasonOutOfFlowClipping;
-
-    return directReasons;
 }
 
 // Return true if the given layer has some ancestor in the RenderLayer hierarchy that clips,
@@ -1833,139 +1777,6 @@ bool RenderLayerCompositor::clippedByAncestor(const RenderLayer* layer) const
 bool RenderLayerCompositor::clipsCompositingDescendants(const RenderLayer* layer) const
 {
     return layer->hasCompositingDescendant() && layer->renderer()->hasClipOrOverflowClip();
-}
-
-bool RenderLayerCompositor::requiresCompositingForScrollableFrame() const
-{
-    // Need this done first to determine overflow.
-    ASSERT(!m_renderView->needsLayout());
-    if (isMainFrame())
-        return false;
-
-    if (!(m_compositingTriggers & ChromeClient::ScrollableInnerFrameTrigger))
-        return false;
-
-    FrameView* frameView = m_renderView->frameView();
-    return frameView->isScrollable();
-}
-
-bool RenderLayerCompositor::requiresCompositingForTransform(RenderObject* renderer) const
-{
-    if (!(m_compositingTriggers & ChromeClient::ThreeDTransformTrigger))
-        return false;
-
-    RenderStyle* style = renderer->style();
-    // Note that we ask the renderer if it has a transform, because the style may have transforms,
-    // but the renderer may be an inline that doesn't suppport them.
-    return renderer->hasTransform() && style->transform().has3DOperation();
-}
-
-bool RenderLayerCompositor::requiresCompositingForVideo(RenderObject* renderer) const
-{
-    if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && renderer->isVideo()) {
-        HTMLMediaElement* media = toHTMLMediaElement(renderer->node());
-        if (media->isFullscreen())
-            return true;
-    }
-
-    if (!(m_compositingTriggers & ChromeClient::VideoTrigger))
-        return false;
-
-    if (renderer->isVideo()) {
-        RenderVideo* video = toRenderVideo(renderer);
-        return video->shouldDisplayVideo() && canAccelerateVideoRendering(video);
-    }
-    return false;
-}
-
-bool RenderLayerCompositor::requiresCompositingForCanvas(RenderObject* renderer) const
-{
-    if (!(m_compositingTriggers & ChromeClient::CanvasTrigger))
-        return false;
-
-    if (renderer->isCanvas()) {
-        HTMLCanvasElement* canvas = toHTMLCanvasElement(renderer->node());
-        return canvas->renderingContext() && canvas->renderingContext()->isAccelerated();
-    }
-    return false;
-}
-
-bool RenderLayerCompositor::requiresCompositingForPlugin(RenderObject* renderer) const
-{
-    if (!(m_compositingTriggers & ChromeClient::PluginTrigger))
-        return false;
-
-    if (!renderer->isEmbeddedObject() || !toRenderEmbeddedObject(renderer)->allowsAcceleratedCompositing())
-        return false;
-
-    // FIXME: this seems bogus. If we don't know the layout position/size of the plugin yet, would't that be handled elsewhere?
-    m_needsToRecomputeCompositingRequirements = true;
-
-    RenderWidget* pluginRenderer = toRenderWidget(renderer);
-    // If we can't reliably know the size of the plugin yet, don't change compositing state.
-    if (pluginRenderer->needsLayout())
-        return pluginRenderer->hasLayer() && pluginRenderer->layer()->hasCompositedLayerMapping();
-
-    // Don't go into compositing mode if height or width are zero, or size is 1x1.
-    IntRect contentBox = pixelSnappedIntRect(pluginRenderer->contentBoxRect());
-    return contentBox.height() * contentBox.width() > 1;
-}
-
-bool RenderLayerCompositor::requiresCompositingForFrame(RenderObject* renderer) const
-{
-    if (!renderer->isRenderPart())
-        return false;
-
-    RenderPart* frameRenderer = toRenderPart(renderer);
-
-    if (!frameRenderer->requiresAcceleratedCompositing())
-        return false;
-
-    if (frameRenderer->node() && frameRenderer->node()->isFrameOwnerElement() && toHTMLFrameOwnerElement(frameRenderer->node())->contentFrame() && toHTMLFrameOwnerElement(frameRenderer->node())->contentFrame()->remotePlatformLayer())
-        return true;
-
-    // FIXME: this seems bogus. If we don't know the layout position/size of the frame yet, wouldn't that be handled elsehwere?
-    m_needsToRecomputeCompositingRequirements = true;
-
-    RenderLayerCompositor* innerCompositor = frameContentsCompositor(frameRenderer);
-    if (!innerCompositor)
-        return false;
-
-    // If we can't reliably know the size of the iframe yet, don't change compositing state.
-    if (renderer->needsLayout())
-        return frameRenderer->hasLayer() && frameRenderer->layer()->hasCompositedLayerMapping();
-
-    // Don't go into compositing mode if height or width are zero.
-    IntRect contentBox = pixelSnappedIntRect(frameRenderer->contentBoxRect());
-    return contentBox.height() * contentBox.width() > 0;
-}
-
-bool RenderLayerCompositor::requiresCompositingForBackfaceVisibilityHidden(RenderObject* renderer) const
-{
-    return canRender3DTransforms() && renderer->style()->backfaceVisibility() == BackfaceVisibilityHidden;
-}
-
-bool RenderLayerCompositor::requiresCompositingForAnimation(RenderObject* renderer) const
-{
-    if (!(m_compositingTriggers & ChromeClient::AnimationTrigger))
-        return false;
-
-    return shouldCompositeForActiveAnimations(*renderer);
-}
-
-bool RenderLayerCompositor::requiresCompositingForTransition(RenderObject* renderer) const
-{
-    if (!(m_compositingTriggers & ChromeClient::AnimationTrigger))
-        return false;
-
-    if (Settings* settings = m_renderView->document().settings()) {
-        if (!settings->acceleratedCompositingForTransitionEnabled())
-            return false;
-    }
-
-    return renderer->style()->transitionForProperty(CSSPropertyOpacity)
-        || renderer->style()->transitionForProperty(CSSPropertyWebkitFilter)
-        || renderer->style()->transitionForProperty(CSSPropertyWebkitTransform);
 }
 
 CompositingReasons RenderLayerCompositor::subtreeReasonsForCompositing(RenderObject* renderer, bool hasCompositedDescendants, bool has3DTransformedDescendants) const
@@ -2018,151 +1829,9 @@ CompositingReasons RenderLayerCompositor::subtreeReasonsForCompositing(RenderObj
     return subtreeReasons;
 }
 
-bool RenderLayerCompositor::requiresCompositingForFilters(RenderObject* renderer) const
-{
-    if (!(m_compositingTriggers & ChromeClient::FilterTrigger))
-        return false;
-
-    return renderer->hasFilter();
-}
-
-bool RenderLayerCompositor::requiresCompositingForOverflowScrollingParent(const RenderLayer* layer) const
-{
-    return !!layer->scrollParent();
-}
-
-bool RenderLayerCompositor::requiresCompositingForOutOfFlowClipping(const RenderLayer* layer) const
-{
-    return m_renderView->compositorDrivenAcceleratedScrollingEnabled() && layer->isUnclippedDescendant();
-}
-
-static bool isViewportConstrainedFixedOrStickyLayer(const RenderLayer* layer)
-{
-    if (layer->renderer()->isStickyPositioned())
-        return !layer->enclosingOverflowClipLayer(ExcludeSelf);
-
-    if (layer->renderer()->style()->position() != FixedPosition)
-        return false;
-
-    for (const RenderLayerStackingNode* stackingContainer = layer->stackingNode(); stackingContainer;
-        stackingContainer = stackingContainer->ancestorStackingContainerNode()) {
-        if (stackingContainer->layer()->compositingState() != NotComposited
-            && stackingContainer->layer()->renderer()->style()->position() == FixedPosition)
-            return false;
-    }
-
-    return true;
-}
-
-bool RenderLayerCompositor::requiresCompositingForPosition(RenderObject* renderer, const RenderLayer* layer, RenderLayer::ViewportConstrainedNotCompositedReason* viewportConstrainedNotCompositedReason) const
-{
-    // position:fixed elements that create their own stacking context (e.g. have an explicit z-index,
-    // opacity, transform) can get their own composited layer. A stacking context is required otherwise
-    // z-index and clipping will be broken.
-    if (!renderer->isPositioned())
-        return false;
-
-    EPosition position = renderer->style()->position();
-    bool isFixed = renderer->isOutOfFlowPositioned() && position == FixedPosition;
-    if (isFixed && !layer->stackingNode()->isStackingContainer())
-        return false;
-
-    bool isSticky = renderer->isInFlowPositioned() && position == StickyPosition;
-    if (!isFixed && !isSticky)
-        return false;
-
-    // FIXME: acceleratedCompositingForFixedPositionEnabled should probably be renamed acceleratedCompositingForViewportConstrainedPositionEnabled().
-    if (Settings* settings = m_renderView->document().settings()) {
-        if (!settings->acceleratedCompositingForFixedPositionEnabled())
-            return false;
-    }
-
-    if (isSticky)
-        return isViewportConstrainedFixedOrStickyLayer(layer);
-
-    RenderObject* container = renderer->container();
-    // If the renderer is not hooked up yet then we have to wait until it is.
-    if (!container) {
-        m_needsToRecomputeCompositingRequirements = true;
-        return false;
-    }
-
-    // Don't promote fixed position elements that are descendants of a non-view container, e.g. transformed elements.
-    // They will stay fixed wrt the container rather than the enclosing frame.
-    if (container != m_renderView) {
-        if (viewportConstrainedNotCompositedReason)
-            *viewportConstrainedNotCompositedReason = RenderLayer::NotCompositedForNonViewContainer;
-        return false;
-    }
-
-    // If the fixed-position element does not have any scrollable ancestor between it and
-    // its container, then we do not need to spend compositor resources for it. Start by
-    // assuming we can opt-out (i.e. no scrollable ancestor), and refine the answer below.
-    bool hasScrollableAncestor = false;
-
-    // The FrameView has the scrollbars associated with the top level viewport, so we have to
-    // check the FrameView in addition to the hierarchy of ancestors.
-    FrameView* frameView = m_renderView->frameView();
-    if (frameView && frameView->isScrollable())
-        hasScrollableAncestor = true;
-
-    RenderLayer* ancestor = layer->parent();
-    while (ancestor && !hasScrollableAncestor) {
-        if (frameView->containsScrollableArea(ancestor->scrollableArea()))
-            hasScrollableAncestor = true;
-        if (ancestor->renderer() == m_renderView)
-            break;
-        ancestor = ancestor->parent();
-    }
-
-    if (!hasScrollableAncestor) {
-        if (viewportConstrainedNotCompositedReason)
-            *viewportConstrainedNotCompositedReason = RenderLayer::NotCompositedForUnscrollableAncestors;
-        return false;
-    }
-
-    // Subsequent tests depend on layout. If we can't tell now, just keep things the way they are until layout is done.
-    if (!m_inPostLayoutUpdate) {
-        m_needsToRecomputeCompositingRequirements = true;
-        return layer->hasCompositedLayerMapping();
-    }
-
-    bool paintsContent = layer->isVisuallyNonEmpty() || layer->hasVisibleDescendant();
-    if (!paintsContent) {
-        if (viewportConstrainedNotCompositedReason)
-            *viewportConstrainedNotCompositedReason = RenderLayer::NotCompositedForNoVisibleContent;
-        return false;
-    }
-
-    // Fixed position elements that are invisible in the current view don't get their own layer.
-    if (FrameView* frameView = m_renderView->frameView()) {
-        LayoutRect viewBounds = frameView->viewportConstrainedVisibleContentRect();
-        LayoutRect layerBounds = layer->calculateLayerBounds(rootRenderLayer(), 0,
-            RenderLayer::DefaultCalculateLayerBoundsFlags
-            | RenderLayer::ExcludeHiddenDescendants
-            | RenderLayer::DontConstrainForMask
-            | RenderLayer::IncludeCompositedDescendants
-            | RenderLayer::PretendLayerHasOwnBacking);
-        if (!viewBounds.intersects(enclosingIntRect(layerBounds))) {
-            if (viewportConstrainedNotCompositedReason) {
-                *viewportConstrainedNotCompositedReason = RenderLayer::NotCompositedForBoundsOutOfView;
-                m_needsToRecomputeCompositingRequirements = true;
-            }
-            return false;
-        }
-    }
-
-    return true;
-}
-
-bool RenderLayerCompositor::requiresCompositingForOverflowScrolling(const RenderLayer* layer) const
-{
-    return layer->needsCompositedScrolling();
-}
-
 bool RenderLayerCompositor::isRunningAcceleratedTransformAnimation(RenderObject* renderer) const
 {
-    if (!(m_compositingTriggers & ChromeClient::AnimationTrigger))
+    if (!m_compositingReasonFinder.hasAnimationTrigger())
         return false;
     return hasActiveAnimations(*renderer, CSSPropertyWebkitTransform);
 }
@@ -2613,7 +2282,7 @@ bool RenderLayerCompositor::layerHas3DContent(const RenderLayer* layer) const
 
 void RenderLayerCompositor::updateViewportConstraintStatus(RenderLayer* layer)
 {
-    if (isViewportConstrainedFixedOrStickyLayer(layer))
+    if (CompositingReasonFinder::isViewportConstrainedFixedOrStickyLayer(layer))
         addViewportConstrainedLayer(layer);
     else
         removeViewportConstrainedLayer(layer);

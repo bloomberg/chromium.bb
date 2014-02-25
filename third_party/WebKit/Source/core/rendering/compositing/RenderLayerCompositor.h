@@ -28,6 +28,7 @@
 
 #include "core/page/ChromeClient.h"
 #include "core/rendering/RenderLayer.h"
+#include "core/rendering/compositing/CompositingReasonFinder.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "wtf/HashMap.h"
 
@@ -41,7 +42,6 @@ class RenderPart;
 class RenderVideo;
 class ScrollingCoordinator;
 class StickyPositionViewportConstraints;
-
 
 enum CompositingUpdateType {
     CompositingUpdateAfterStyleChange,
@@ -60,6 +60,7 @@ enum CompositingUpdateType {
 class RenderLayerCompositor FINAL : public GraphicsLayerClient {
     WTF_MAKE_FAST_ALLOCATED;
 public:
+    // FIXME: This constructor should take a reference.
     explicit RenderLayerCompositor(RenderView*);
     virtual ~RenderLayerCompositor();
 
@@ -164,9 +165,6 @@ public:
 
     void clearMappingForAllRenderLayers();
 
-    // Use by RenderVideo to ask if it should try to use accelerated compositing.
-    bool canAccelerateVideoRendering(RenderVideo*) const;
-
     // Walk the tree looking for layers with 3d transforms. Useful in case you need
     // to know if there is non-affine content, e.g. for drawing into an image.
     bool has3DContent() const;
@@ -250,9 +248,6 @@ private:
     // Whether the layer could ever be composited.
     bool canBeComposited(const RenderLayer*) const;
 
-    // Returns all direct reasons that a layer should be composited.
-    CompositingReasons directReasonsForCompositing(const RenderLayer*) const;
-
     void updateDirectCompositingReasons(RenderLayer*);
 
     // Returns indirect reasons that a layer should be composited because of something in its subtree.
@@ -317,23 +312,6 @@ private:
     GraphicsLayerFactory* graphicsLayerFactory() const;
     ScrollingCoordinator* scrollingCoordinator() const;
 
-    // Whether a running transition or animation enforces the need for a compositing layer.
-    bool requiresCompositingForAnimation(RenderObject*) const;
-    // Whether a (not necessarily running) transition enforces the need for a compositing layer.
-    bool requiresCompositingForTransition(RenderObject*) const;
-    bool requiresCompositingForTransform(RenderObject*) const;
-    bool requiresCompositingForVideo(RenderObject*) const;
-    bool requiresCompositingForCanvas(RenderObject*) const;
-    bool requiresCompositingForPlugin(RenderObject*) const;
-    bool requiresCompositingForFrame(RenderObject*) const;
-    bool requiresCompositingForBackfaceVisibilityHidden(RenderObject*) const;
-    bool requiresCompositingForFilters(RenderObject*) const;
-    bool requiresCompositingForOverflowScrollingParent(const RenderLayer*) const;
-    bool requiresCompositingForOutOfFlowClipping(const RenderLayer*) const;
-    bool requiresCompositingForScrollableFrame() const;
-    bool requiresCompositingForPosition(RenderObject*, const RenderLayer*, RenderLayer::ViewportConstrainedNotCompositedReason* = 0) const;
-    bool requiresCompositingForOverflowScrolling(const RenderLayer*) const;
-
     void addViewportConstrainedLayer(RenderLayer*);
 
     FixedPositionViewportConstraints computeFixedViewportConstraints(RenderLayer*) const;
@@ -356,9 +334,9 @@ private:
     OwnPtr<GraphicsLayer> m_rootContentLayer;
     OwnPtr<GraphicsLayer> m_rootTransformLayer;
 
-    bool m_hasAcceleratedCompositing;
-    ChromeClient::CompositingTriggerFlags m_compositingTriggers;
+    CompositingReasonFinder m_compositingReasonFinder;
 
+    bool m_hasAcceleratedCompositing;
     bool m_showRepaintCounter;
 
     // FIXME: This should absolutely not be mutable.
@@ -368,7 +346,6 @@ private:
     bool m_compositing;
     bool m_compositingLayersNeedRebuild;
     bool m_forceCompositingMode;
-    bool m_inPostLayoutUpdate; // true when it's OK to trust layout information (e.g. layer sizes and positions)
     bool m_needsUpdateCompositingRequirementsState;
 
     bool m_isTrackingRepaints; // Used for testing.
