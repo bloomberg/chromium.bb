@@ -9,7 +9,7 @@ from caching_file_system import CachingFileSystem
 from empty_dir_file_system import EmptyDirFileSystem
 from extensions_paths import LOCAL_GCS_DIR, LOCAL_GCS_DEBUG_CONF
 from local_file_system import LocalFileSystem
-from path_util import IsDirectory
+from path_util import IsDirectory, ToDirectory
 
 class CloudStorageFileSystemProvider(object):
   '''Provides CloudStorageFileSystem bound to a GCS bucket.
@@ -77,7 +77,7 @@ class CloudStorageFileSystemProvider(object):
       debug_bucket_prefix = properties.get('remote_bucket_prefix', None)
 
     if environment.IsDevServer() and use_local_fs:
-      return LocalFileSystem(os.path.join(LOCAL_GCS_DIR, bucket))
+      return LocalFileSystem(ToDirectory(os.path.join(LOCAL_GCS_DIR, bucket)))
 
     # gcs_file_system has strong dependencies on runtime appengine APIs,
     # so we only import it when we are sure we are not on preview.py or tests.
