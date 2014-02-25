@@ -1590,9 +1590,11 @@ void AppsGridView::MoveItemToFolder(views::View* item_view,
     if (item_list_->FindItemIndex(folder_item_id, &folder_item_index)) {
       int target_view_index = view_model_.GetIndexOfView(target_view);
       view_model_.Remove(target_view_index);
+      gfx::Rect target_view_bounds = target_view->bounds();
       delete target_view;
       views::View* target_folder_view =
           CreateViewForItemAtIndex(folder_item_index);
+      target_folder_view->SetBoundsRect(target_view_bounds);
       view_model_.Add(target_folder_view, target_view_index);
       AddChildView(target_folder_view);
     } else {
