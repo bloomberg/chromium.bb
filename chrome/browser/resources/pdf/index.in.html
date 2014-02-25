@@ -9,11 +9,12 @@
   <meta charset="utf-8">
   <script src="polymer_loader.js"></script>
   <link rel="import" href="../../../../third_party/polymer/polymer-selector/polymer-selector.html">
-  <link rel="import" href="html_office/elements/viewer-toolbar/viewer-toolbar.html">
   <link rel="import" href="html_office/elements/viewer-button/viewer-button.html">
-  <link rel="import" href="html_office/elements/viewer-page-indicator/viewer-page-indicator.html">
-  <link rel="import" href="html_office/elements/viewer-progress-bar/viewer-progress-bar.html">
   <link rel="import" href="html_office/elements/viewer-error-screen/viewer-error-screen.html">
+  <link rel="import" href="html_office/elements/viewer-page-indicator/viewer-page-indicator.html">
+  <link rel="import" href="html_office/elements/viewer-password-screen/viewer-password-screen.html">
+  <link rel="import" href="html_office/elements/viewer-progress-bar/viewer-progress-bar.html">
+  <link rel="import" href="html_office/elements/viewer-toolbar/viewer-toolbar.html">
   <style>
     body {
       background-color: #ccc;
@@ -34,6 +35,10 @@
       visibility: hidden;
       z-index: 2;
     }
+    viewer-password-screen {
+      visibility: hidden;
+      z-index: 2;
+    }
     #plugin {
       height: 100%;
       position: fixed;
@@ -49,6 +54,7 @@
 <body>
 
 <div id="sizer"></div>
+<viewer-password-screen id="password-screen"></viewer-password-screen>
 <viewer-page-indicator id="page-indicator"></viewer-page-indicator>
 <viewer-progress-bar id="progress-bar"></viewer-progress-bar>
 

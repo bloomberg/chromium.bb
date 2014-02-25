@@ -387,55 +387,6 @@ Polymer={},"function"==typeof window.Polymer&&(Polymer={}),function(a){function 
     });
   ;
 
-  Polymer('viewer-toolbar', {
-    fadingIn: false,
-    timerId_: undefined,
-    inInitialFadeIn_: false,
-    ready: function() {
-      this.parentNode.addEventListener('mousemove', function(e) {
-        var rect = this.getBoundingClientRect();
-        if (e.clientX >= rect.left && e.clientX <= rect.right &&
-            e.clientY >= rect.top && e.clientY <= rect.bottom) {
-          this.fadingIn = true;
-          // If we hover over the toolbar, cancel the initial fade in.
-          if (this.inInitialFadeIn_)
-            this.inInitialFadeIn_ = false;
-        } else {
-          // Initially we want to keep the toolbar up for a longer period.
-          if (!this.inInitialFadeIn_)
-            this.fadingIn = false;
-        }
-      }.bind(this));
-    },
-    initialFadeIn: function() {
-      this.inInitialFadeIn_ = true;
-      this.fadeIn();
-      this.fadeOutAfterDelay(6000);
-    },
-    fadingInChanged: function() {
-      if (this.fadingIn) {
-        this.fadeIn();
-      } else {
-        if (this.timerId_ === undefined)
-          this.fadeOutAfterDelay(3000);
-      }
-    },
-    fadeIn: function() {
-      this.style.opacity = 1;
-      clearTimeout(this.timerId_);
-      this.timerId_ = undefined;
-    },
-    fadeOutAfterDelay: function(delay) {
-      this.timerId_ = setTimeout(
-        function() {
-          this.style.opacity = 0;
-          this.timerId_ = undefined;
-          this.inInitialFadeIn_ = false;
-        }.bind(this), delay);
-    }
-  });
-;
-
   (function() {
     var dpi = '';
 
@@ -467,6 +418,9 @@ Polymer={},"function"==typeof window.Polymer&&(Polymer={}),function(a){function 
   })();
 ;
 
+  Polymer('viewer-error-screen', {});
+;
+
   Polymer('viewer-page-indicator', {
     text: '1',
     timerId: undefined,
@@ -492,6 +446,55 @@ Polymer={},"function"==typeof window.Polymer&&(Polymer={}),function(a){function 
         this.style.opacity = 0;
         this.timerId = undefined;
       }.bind(this), displayTime);
+    }
+  });
+;
+
+  Polymer('viewer-password-screen', {
+    text: 'This document is password protected. Please enter a password.',
+    active: false,
+    timerId: undefined,
+    ready: function () {
+      this.activeChanged();
+    },
+    accept: function() {
+      this.successMessage = '✔'  // Tick.
+      this.$.successMessage.style.color = 'rgb(0,125,0)';
+      this.active = false;
+    },
+    deny: function() {
+      this.successMessage = '✘';  // Cross.
+      this.$.successMessage.style.color = 'rgb(255,0,0)';
+      this.$.password.disabled = false;
+      this.$.submit.disabled = false;
+      this.$.password.focus();
+      this.$.password.select();
+    },
+    submit: function(e) {
+      // Prevent the default form submission behavior.
+      e.preventDefault();
+      if (this.$.password.value.length == 0)
+        return;
+      this.successMessage = '...';
+      this.$.successMessage.style.color = 'rgb(0,0,0)';
+      this.$.password.disabled = true;
+      this.$.submit.disabled = true;
+      this.fire('password-submitted', {password: this.$.password.value});
+    },
+    activeChanged: function() {
+      clearTimeout(this.timerId);
+      this.timerId = undefined;
+      if (this.active) {
+        this.style.visibility = 'visible';
+        this.style.opacity = 1;
+        this.successMessage = '';
+        this.$.password.focus();
+      } else {
+        this.style.opacity = 0;
+        this.timerId = setTimeout(function() {
+          this.style.visibility = 'hidden'
+        }.bind(this), 400);
+      }
     }
   });
 ;
@@ -537,4 +540,56 @@ Polymer={},"function"==typeof window.Polymer&&(Polymer={}),function(a){function 
   });
 ;
 
-  Polymer('viewer-error-screen', {});
+  Polymer('viewer-toolbar', {
+    fadingIn: false,
+    timerId_: undefined,
+    inInitialFadeIn_: false,
+    ready: function() {
+      this.mousemoveCallback = function(e) {
+        var rect = this.getBoundingClientRect();
+        if (e.clientX >= rect.left && e.clientX <= rect.right &&
+            e.clientY >= rect.top && e.clientY <= rect.bottom) {
+          this.fadingIn = true;
+          // If we hover over the toolbar, cancel the initial fade in.
+          if (this.inInitialFadeIn_)
+            this.inInitialFadeIn_ = false;
+        } else {
+          // Initially we want to keep the toolbar up for a longer period.
+          if (!this.inInitialFadeIn_)
+            this.fadingIn = false;
+        }
+      }.bind(this);
+    },
+    attached: function() {
+      this.parentNode.addEventListener('mousemove', this.mousemoveCallback);
+    },
+    detached: function() {
+      this.parentNode.removeEventListener('mousemove', this.mousemoveCallback);
+    },
+    initialFadeIn: function() {
+      this.inInitialFadeIn_ = true;
+      this.fadeIn();
+      this.fadeOutAfterDelay(6000);
+    },
+    fadingInChanged: function() {
+      if (this.fadingIn) {
+        this.fadeIn();
+      } else {
+        if (this.timerId_ === undefined)
+          this.fadeOutAfterDelay(3000);
+      }
+    },
+    fadeIn: function() {
+      this.style.opacity = 1;
+      clearTimeout(this.timerId_);
+      this.timerId_ = undefined;
+    },
+    fadeOutAfterDelay: function(delay) {
+      this.timerId_ = setTimeout(
+        function() {
+          this.style.opacity = 0;
+          this.timerId_ = undefined;
+          this.inInitialFadeIn_ = false;
+        }.bind(this), delay);
+    }
+  });

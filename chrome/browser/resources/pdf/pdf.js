@@ -33,6 +33,9 @@ var viewerErrorScreen;
 // The viewport object.
 var viewport;
 
+// The element displaying the password screen.
+var viewerPasswordScreen;
+
 // The document dimensions.
 var documentDimensions;
 
@@ -55,7 +58,18 @@ function updateProgress(progress) {
     viewerErrorScreen.style.visibility = 'visible';
     sizer.style.display = 'none';
     viewerToolbar.style.visibility = 'hidden';
+    if (viewerPasswordScreen.active) {
+      viewerPasswordScreen.deny();
+      viewerPasswordScreen.active = false;
+    }
   }
+}
+
+function onPasswordSubmitted(event) {
+  plugin.postMessage({
+    type: 'getPasswordComplete',
+    password: event.detail.password
+  });
 }
 
 // Called when a message is received from the plugin.
@@ -65,6 +79,11 @@ function handleMessage(message) {
       documentDimensions = message.data;
       viewport.setDocumentDimensions(documentDimensions);
       viewerToolbar.style.visibility = 'visible';
+      // If we received the document dimensions, the password was good so we can
+      // dismiss the password screen.
+      if (viewerPasswordScreen.active)
+        viewerPasswordScreen.accept();
+
       viewerPageIndicator.initialFadeIn();
       viewerToolbar.initialFadeIn();
       break;
@@ -74,6 +93,13 @@ function handleMessage(message) {
     case 'goToPage':
       viewport.goToPage(message.data.page);
       break;
+    case 'getPassword':
+      // If the password screen isn't up, put it up. Otherwise we're responding
+      // to an incorrect password so deny it.
+      if (!viewerPasswordScreen.active)
+        viewerPasswordScreen.active = true;
+      else
+        viewerPasswordScreen.deny();
   }
 }
 
@@ -113,6 +139,9 @@ function load() {
   viewerToolbar = $('toolbar');
   viewerPageIndicator = $('page-indicator');
   viewerProgressBar = $('progress-bar');
+  viewerPasswordScreen = $('password-screen');
+  viewerPasswordScreen.addEventListener('password-submitted',
+                                        onPasswordSubmitted);
   viewerErrorScreen = $('error-screen');
   viewerErrorScreen.text = 'Failed to load PDF document';
 
