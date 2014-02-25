@@ -34,7 +34,7 @@ function test()
             var property = allProperties[i];
             if (!property.status)
                 continue;
-            InspectorTest.addResult("['" + property.name + "':'" + property.value + "'" + (property.priority ? " !important" : "") + (("parsedOk" in property) ? " non-parsed" : "") +"] @" + InspectorTest.rangeText(property.range));
+            InspectorTest.addResult("['" + property.name + "':'" + property.value + "'" + (property.important ? " !important" : "") + (("parsedOk" in property) ? " non-parsed" : "") +"] @" + InspectorTest.rangeText(property.range));
         }
     }
     

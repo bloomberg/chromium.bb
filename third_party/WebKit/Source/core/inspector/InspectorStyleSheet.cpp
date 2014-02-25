@@ -644,7 +644,6 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties() con
     RefPtr<Array<TypeBuilder::CSS::ShorthandEntry> > shorthandEntries = Array<TypeBuilder::CSS::ShorthandEntry>::create();
     HashMap<String, RefPtr<TypeBuilder::CSS::CSSProperty> > propertyNameToPreviousActiveProperty;
     HashSet<String> foundShorthands;
-    String previousPriority;
     String previousStatus;
     OwnPtr<Vector<unsigned> > lineEndings(m_parentStyleSheet ? m_parentStyleSheet->lineEndings() : PassOwnPtr<Vector<unsigned> >());
     RefPtr<CSSRuleSourceData> sourceData = extractSourceData();
@@ -672,9 +671,8 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties() con
         if (it->hasRawText())
             property->setText(it->rawText);
 
-        // Default "priority" == "".
         if (propertyEntry.important)
-            property->setPriority("important");
+            property->setImportant(true);
         if (it->hasSource) {
             // The property range is relative to the style body start.
             // Should be converted into an absolute range (relative to the stylesheet start)
@@ -684,6 +682,7 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties() con
             absolutePropertyRange.end += ruleBodyRangeStart;
             property->setRange(buildSourceRangeObject(absolutePropertyRange, lineEndings.get()));
         }
+
         if (!disabled) {
             if (it->hasSource) {
                 ASSERT(sourceData);
@@ -698,10 +697,11 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties() con
                 HashMap<String, RefPtr<TypeBuilder::CSS::CSSProperty> >::iterator activeIt = propertyNameToPreviousActiveProperty.find(canonicalPropertyName);
                 if (activeIt != propertyNameToPreviousActiveProperty.end()) {
                     if (propertyEntry.parsedOk) {
-                        bool successPriority = activeIt->value->getString(TypeBuilder::CSS::CSSProperty::Priority, &previousPriority);
+                        bool previousImportant;
+                        bool successImportant = activeIt->value->getBoolean(TypeBuilder::CSS::CSSProperty::Important, &previousImportant);
                         bool successStatus = activeIt->value->getString(TypeBuilder::CSS::CSSProperty::Status, &previousStatus);
                         if (successStatus && previousStatus != "inactive") {
-                            if (propertyEntry.important || !successPriority) // Priority not set == "not important".
+                            if (propertyEntry.important || !successImportant) // Important not set == "not important".
                                 shouldInactivate = true;
                             else if (status == TypeBuilder::CSS::CSSProperty::Status::Active) {
                                 // Inactivate a non-important property following the same-named important property.
