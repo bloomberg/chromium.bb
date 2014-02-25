@@ -189,17 +189,6 @@
 #endif
 
 
-/* NO_RETURN_WITH_VALUE */
-
-#ifndef NO_RETURN_WITH_VALUE
-#if !COMPILER(MSVC)
-#define NO_RETURN_WITH_VALUE NO_RETURN
-#else
-#define NO_RETURN_WITH_VALUE
-#endif
-#endif
-
-
 /* WARN_UNUSED_RETURN */
 
 #if COMPILER(GCC)
