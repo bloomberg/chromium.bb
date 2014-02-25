@@ -43,16 +43,6 @@ template <typename T> class WebVector;
 
 class WebAutofillClient {
 public:
-    enum {
-        MenuItemIDAutocompleteEntry = 0,
-        MenuItemIDWarningMessage = -1,
-        MenuItemIDPasswordEntry = -2,
-        MenuItemIDSeparator = -3,
-        MenuItemIDClearForm = -4,
-        MenuItemIDAutofillOptions = -5,
-        MenuItemIDDataListEntry = -6
-    };
-
     // Informs the browser an interactive autocomplete has been requested.
     virtual void didRequestAutocomplete(WebFrame*, const WebFormElement&) { }
 
