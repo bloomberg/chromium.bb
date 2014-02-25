@@ -108,8 +108,8 @@ bool ImageBuffer::isValid() const
 static SkBitmap deepSkBitmapCopy(const SkBitmap& bitmap)
 {
     SkBitmap tmp;
-    if (!bitmap.deepCopyTo(&tmp, bitmap.config()))
-        bitmap.copyTo(&tmp, bitmap.config());
+    if (!bitmap.deepCopyTo(&tmp))
+        bitmap.copyTo(&tmp, bitmap.colorType());
 
     return tmp;
 }
