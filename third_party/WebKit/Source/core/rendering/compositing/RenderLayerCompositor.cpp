@@ -278,6 +278,8 @@ void RenderLayerCompositor::cacheAcceleratedCompositingFlags()
 
 bool RenderLayerCompositor::layerSquashingEnabled() const
 {
+    if (RuntimeEnabledFeatures::bleedingEdgeFastPathsEnabled())
+        return true;
     if (Settings* settings = m_renderView->document().settings())
         return settings->layerSquashingEnabled();
 
@@ -434,13 +436,17 @@ void RenderLayerCompositor::updateCompositingLayers()
         {
             TRACE_EVENT0("blink_rendering", "RenderLayerCompositor::computeCompositingRequirements");
             OverlapMap overlapTestRequestMap;
+            // Turn off the overlap map test if bleeding edge features are on.
+            OverlapMap* overlapMap = 0;
+            if (!RuntimeEnabledFeatures::bleedingEdgeFastPathsEnabled())
+                overlapMap = &overlapTestRequestMap;
 
             // FIXME: Passing these unclippedDescendants down and keeping track
             // of them dynamically, we are requiring a full tree walk. This
             // should be removed as soon as proper overlap testing based on
             // scrolling and animation bounds is implemented (crbug.com/252472).
             Vector<RenderLayer*> unclippedDescendants;
-            computeCompositingRequirements(0, updateRoot, &overlapTestRequestMap, recursionData, saw3DTransform, unclippedDescendants);
+            computeCompositingRequirements(0, updateRoot, overlapMap, recursionData, saw3DTransform, unclippedDescendants);
         }
 
         {
@@ -1030,7 +1036,8 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
                 if (!willBeCompositedOrSquashed) {
                     // make layer compositing
                     childRecursionData.m_compositingAncestor = layer;
-                    overlapMap->beginNewOverlapTestingContext();
+                    if (overlapMap)
+                        overlapMap->beginNewOverlapTestingContext();
                     willBeCompositedOrSquashed = true;
                     willHaveForegroundLayer = true;
 
