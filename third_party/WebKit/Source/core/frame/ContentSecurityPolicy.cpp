@@ -43,6 +43,7 @@
 #include "platform/JSONValues.h"
 #include "platform/NotImplemented.h"
 #include "platform/ParsingUtilities.h"
+#include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/FormData.h"
 #include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/KURL.h"
@@ -69,70 +70,6 @@ template<> struct DefaultHash<Vector<uint8_t> > {
 
 namespace WebCore {
 
-typedef std::pair<unsigned, Vector<uint8_t> > SourceHashValue;
-
-// Normally WebKit uses "static" for internal linkage, but using "static" for
-// these functions causes a compile error because these functions are used as
-// template parameters.
-namespace {
-
-bool isDirectiveNameCharacter(UChar c)
-{
-    return isASCIIAlphanumeric(c) || c == '-';
-}
-
-bool isDirectiveValueCharacter(UChar c)
-{
-    return isASCIISpace(c) || (c >= 0x21 && c <= 0x7e); // Whitespace + VCHAR
-}
-
-// Only checks for general Base64 encoded chars, not '=' chars since '=' is
-// positional and may only appear at the end of a Base64 encoded string.
-bool isBase64EncodedCharacter(UChar c)
-{
-    return isASCIIAlphanumeric(c) || c == '+' || c == '/';
-}
-
-bool isNonceCharacter(UChar c)
-{
-    return isBase64EncodedCharacter(c) || c == '=';
-}
-
-bool isSourceCharacter(UChar c)
-{
-    return !isASCIISpace(c);
-}
-
-bool isPathComponentCharacter(UChar c)
-{
-    return c != '?' && c != '#';
-}
-
-bool isHostCharacter(UChar c)
-{
-    return isASCIIAlphanumeric(c) || c == '-';
-}
-
-bool isSchemeContinuationCharacter(UChar c)
-{
-    return isASCIIAlphanumeric(c) || c == '+' || c == '-' || c == '.';
-}
-
-bool isNotASCIISpace(UChar c)
-{
-    return !isASCIISpace(c);
-}
-
-bool isNotColonOrSlash(UChar c)
-{
-    return c != ':' && c != '/';
-}
-
-bool isMediaTypeCharacter(UChar c)
-{
-    return !isASCIISpace(c) && c != '/';
-}
-
 // CSP 1.0 Directives
 static const char connectSrc[] = "connect-src";
 static const char defaultSrc[] = "default-src";
@@ -155,7 +92,7 @@ static const char pluginTypes[] = "plugin-types";
 static const char reflectedXSS[] = "reflected-xss";
 static const char referrer[] = "referrer";
 
-bool isDirectiveName(const String& name)
+static bool isDirectiveName(const String& name)
 {
     return (equalIgnoringCase(name, connectSrc)
         || equalIgnoringCase(name, defaultSrc)
@@ -178,7 +115,7 @@ bool isDirectiveName(const String& name)
     );
 }
 
-UseCounter::Feature getUseCounterType(ContentSecurityPolicy::HeaderType type)
+static UseCounter::Feature getUseCounterType(ContentSecurityPolicy::HeaderType type)
 {
     switch (type) {
     case ContentSecurityPolicy::Enforce:
@@ -189,8 +126,6 @@ UseCounter::Feature getUseCounterType(ContentSecurityPolicy::HeaderType type)
     ASSERT_NOT_REACHED();
     return UseCounter::NumberOfFeatures;
 }
-
-} // namespace
 
 static ReferrerPolicy mergeReferrerPolicies(ReferrerPolicy a, ReferrerPolicy b)
 {
@@ -312,7 +247,7 @@ public:
     bool allowInline() const { return m_allowInline; }
     bool allowEval() const { return m_allowEval; }
     bool allowNonce(const String& nonce) const { return !nonce.isNull() && m_nonces.contains(nonce); }
-    bool allowHash(const SourceHashValue& hashValue) const { return m_hashes.contains(hashValue); }
+    bool allowHash(const CSPHashValue& hashValue) const { return m_hashes.contains(hashValue); }
     uint8_t hashAlgorithmsUsed() const { return m_hashAlgorithmsUsed; }
 
     bool isHashOrNoncePresent() const { return !m_nonces.isEmpty() || m_hashAlgorithmsUsed != ContentSecurityPolicy::HashAlgorithmsNone; }
@@ -340,7 +275,7 @@ private:
     bool m_allowInline;
     bool m_allowEval;
     HashSet<String> m_nonces;
-    HashSet<SourceHashValue> m_hashes;
+    HashSet<CSPHashValue> m_hashes;
     uint8_t m_hashAlgorithmsUsed;
 };
 
@@ -740,7 +675,7 @@ void CSPSourceList::addSourceNonce(const String& nonce)
 
 void CSPSourceList::addSourceHash(const ContentSecurityPolicy::HashAlgorithms& algorithm, const Vector<uint8_t>& hash)
 {
-    m_hashes.add(SourceHashValue(algorithm, hash));
+    m_hashes.add(CSPHashValue(algorithm, hash));
     m_hashAlgorithmsUsed |= algorithm;
 }
 
@@ -860,7 +795,7 @@ public:
     bool allowInline() const { return m_sourceList.allowInline(); }
     bool allowEval() const { return m_sourceList.allowEval(); }
     bool allowNonce(const String& nonce) const { return m_sourceList.allowNonce(nonce.stripWhiteSpace()); }
-    bool allowHash(const SourceHashValue& hashValue) const { return m_sourceList.allowHash(hashValue); }
+    bool allowHash(const CSPHashValue& hashValue) const { return m_sourceList.allowHash(hashValue); }
     bool isHashOrNoncePresent() const { return m_sourceList.isHashOrNoncePresent(); }
 
     uint8_t hashAlgorithmsUsed() const { return m_sourceList.hashAlgorithmsUsed(); }
@@ -901,8 +836,8 @@ public:
     bool allowChildContextFromSource(const KURL&, ContentSecurityPolicy::ReportingStatus) const;
     bool allowScriptNonce(const String&) const;
     bool allowStyleNonce(const String&) const;
-    bool allowScriptHash(const SourceHashValue&) const;
-    bool allowStyleHash(const SourceHashValue&) const;
+    bool allowScriptHash(const CSPHashValue&) const;
+    bool allowStyleHash(const CSPHashValue&) const;
 
     const String& evalDisabledErrorMessage() const { return m_evalDisabledErrorMessage; }
     ReflectedXSSDisposition reflectedXSSDisposition() const { return m_reflectedXSSDisposition; }
@@ -934,7 +869,7 @@ private:
     bool checkEval(SourceListDirective*) const;
     bool checkInline(SourceListDirective*) const;
     bool checkNonce(SourceListDirective*, const String&) const;
-    bool checkHash(SourceListDirective*, const SourceHashValue&) const;
+    bool checkHash(SourceListDirective*, const CSPHashValue&) const;
     bool checkSource(SourceListDirective*, const KURL&) const;
     bool checkMediaType(MediaListDirective*, const String& type, const String& typeAttribute) const;
     bool checkAncestors(SourceListDirective*, Frame*) const;
@@ -1048,7 +983,7 @@ bool CSPDirectiveList::checkNonce(SourceListDirective* directive, const String& 
     return !directive || directive->allowNonce(nonce);
 }
 
-bool CSPDirectiveList::checkHash(SourceListDirective* directive, const SourceHashValue& hashValue) const
+bool CSPDirectiveList::checkHash(SourceListDirective* directive, const CSPHashValue& hashValue) const
 {
     return !directive || directive->allowHash(hashValue);
 }
@@ -1349,12 +1284,12 @@ bool CSPDirectiveList::allowStyleNonce(const String& nonce) const
     return checkNonce(operativeDirective(m_styleSrc.get()), nonce);
 }
 
-bool CSPDirectiveList::allowScriptHash(const SourceHashValue& hashValue) const
+bool CSPDirectiveList::allowScriptHash(const CSPHashValue& hashValue) const
 {
     return checkHash(operativeDirective(m_scriptSrc.get()), hashValue);
 }
 
-bool CSPDirectiveList::allowStyleHash(const SourceHashValue& hashValue) const
+bool CSPDirectiveList::allowStyleHash(const CSPHashValue& hashValue) const
 {
     return checkHash(operativeDirective(m_styleSrc.get()), hashValue);
 }
@@ -1402,7 +1337,7 @@ bool CSPDirectiveList::parseDirective(const UChar* begin, const UChar* end, Stri
         return false;
 
     const UChar* nameBegin = position;
-    skipWhile<UChar, isDirectiveNameCharacter>(position, end);
+    skipWhile<UChar, isCSPDirectiveNameCharacter>(position, end);
 
     // The directive-name must be non-empty.
     if (nameBegin == position) {
@@ -1425,7 +1360,7 @@ bool CSPDirectiveList::parseDirective(const UChar* begin, const UChar* end, Stri
     skipWhile<UChar, isASCIISpace>(position, end);
 
     const UChar* valueBegin = position;
-    skipWhile<UChar, isDirectiveValueCharacter>(position, end);
+    skipWhile<UChar, isCSPDirectiveValueCharacter>(position, end);
 
     if (position != end) {
         m_policy->reportInvalidDirectiveValueCharacter(name, String(valueBegin, end - valueBegin));
@@ -1782,8 +1717,8 @@ bool isAllowedByAllWithNonce(const CSPDirectiveListVector& policies, const Strin
     return true;
 }
 
-template<bool (CSPDirectiveList::*allowed)(const SourceHashValue&) const>
-bool isAllowedByAllWithHash(const CSPDirectiveListVector& policies, const SourceHashValue& hashValue)
+template<bool (CSPDirectiveList::*allowed)(const CSPHashValue&) const>
+bool isAllowedByAllWithHash(const CSPDirectiveListVector& policies, const CSPHashValue& hashValue)
 {
     for (size_t i = 0; i < policies.size(); ++i) {
         if (!(policies[i].get()->*allowed)(hashValue))
@@ -1886,7 +1821,7 @@ bool ContentSecurityPolicy::allowScriptHash(const String& source) const
         sourceSha1.addBytes(UTF8Encoding().normalizeAndEncode(source, WTF::EntitiesForUnencodables));
         sourceSha1.computeHash(digest);
 
-        if (isAllowedByAllWithHash<&CSPDirectiveList::allowScriptHash>(m_policies, SourceHashValue(HashAlgorithmsSha1, Vector<uint8_t>(digest))))
+        if (isAllowedByAllWithHash<&CSPDirectiveList::allowScriptHash>(m_policies, CSPHashValue(HashAlgorithmsSha1, Vector<uint8_t>(digest))))
             return true;
     }
 
@@ -1901,7 +1836,7 @@ bool ContentSecurityPolicy::allowStyleHash(const String& source) const
         sourceSha1.addBytes(UTF8Encoding().normalizeAndEncode(source, WTF::EntitiesForUnencodables));
         sourceSha1.computeHash(digest);
 
-        if (isAllowedByAllWithHash<&CSPDirectiveList::allowStyleHash>(m_policies, SourceHashValue(HashAlgorithmsSha1, Vector<uint8_t>(digest))))
+        if (isAllowedByAllWithHash<&CSPDirectiveList::allowStyleHash>(m_policies, CSPHashValue(HashAlgorithmsSha1, Vector<uint8_t>(digest))))
             return true;
     }
 

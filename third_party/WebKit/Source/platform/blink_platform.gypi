@@ -693,6 +693,8 @@
       'mhtml/MHTMLArchive.h',
       'mhtml/MHTMLParser.cpp',
       'mhtml/MHTMLParser.h',
+      'network/ContentSecurityPolicyParsers.cpp',
+      'network/ContentSecurityPolicyParsers.h',
       'network/DNS.cpp',
       'network/DNS.h',
       'network/HTTPHeaderMap.cpp',
