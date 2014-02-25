@@ -6,8 +6,8 @@
 Pepper C API Reference (Stable)
 ##########################################
 
-This page lists the C API for Pepper 32. Apps that use this API can
-run in Chrome 32 or higher.
+This page lists the C API for Pepper 33. Apps that use this API can
+run in Chrome 33 or higher.
 
 `Interfaces <group___interfaces.html>`_
 =======================================

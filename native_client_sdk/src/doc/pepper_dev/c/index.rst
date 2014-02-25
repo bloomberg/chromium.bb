@@ -13,15 +13,17 @@ run in Chrome 34 or higher.
 =======================================
   * `PPB_Audio <struct_p_p_b___audio__1__1.html>`_
 
-  * `PPB_AudioConfig <struct_p_p_b___audio_config__1__1.html>`_
+  * `PPB_AudioBuffer <struct_p_p_b___audio_buffer__0__1.html>`_
 
-  * `PPB_AudioFrame <struct_p_p_b___audio_frame__0__1.html>`_
+  * `PPB_AudioConfig <struct_p_p_b___audio_config__1__1.html>`_
 
   * `PPB_Console <struct_p_p_b___console__1__0.html>`_
 
   * `PPB_Core <struct_p_p_b___core__1__0.html>`_
 
   * `PPB_FileIO <struct_p_p_b___file_i_o__1__1.html>`_
+
+  * `PPB_FileMapping <struct_p_p_b___file_mapping__0__1.html>`_
 
   * `PPB_FileRef <struct_p_p_b___file_ref__1__2.html>`_
 
@@ -45,7 +47,7 @@ run in Chrome 34 or higher.
 
   * `PPB_Instance <struct_p_p_b___instance__1__0.html>`_
 
-  * `PPB_KeyboardInputEvent <struct_p_p_b___keyboard_input_event__1__0.html>`_
+  * `PPB_KeyboardInputEvent <struct_p_p_b___keyboard_input_event__1__2.html>`_
 
   * `PPB_MediaStreamAudioTrack <struct_p_p_b___media_stream_audio_track__0__1.html>`_
 
@@ -83,7 +85,7 @@ run in Chrome 34 or higher.
 
   * `PPB_URLResponseInfo <struct_p_p_b___u_r_l_response_info__1__0.html>`_
 
-  * `PPB_Var <struct_p_p_b___var__1__1.html>`_
+  * `PPB_Var <struct_p_p_b___var__1__2.html>`_
 
   * `PPB_VarArray <struct_p_p_b___var_array__1__0.html>`_
 
@@ -209,15 +211,17 @@ Files
 
   * `ppb_audio.h <ppb__audio_8h.html>`_
 
-  * `ppb_audio_config.h <ppb__audio__config_8h.html>`_
+  * `ppb_audio_buffer.h <ppb__audio__buffer_8h.html>`_
 
-  * `ppb_audio_frame.h <ppb__audio__frame_8h.html>`_
+  * `ppb_audio_config.h <ppb__audio__config_8h.html>`_
 
   * `ppb_console.h <ppb__console_8h.html>`_
 
   * `ppb_core.h <ppb__core_8h.html>`_
 
   * `ppb_file_io.h <ppb__file__io_8h.html>`_
+
+  * `ppb_file_mapping.h <ppb__file__mapping_8h.html>`_
 
   * `ppb_file_ref.h <ppb__file__ref_8h.html>`_
 

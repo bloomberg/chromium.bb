@@ -13,9 +13,9 @@ run in Chrome 34 or higher.
 ==========================
   * `Audio <classpp_1_1_audio.html>`_
 
-  * `AudioConfig <classpp_1_1_audio_config.html>`_
+  * `AudioBuffer <classpp_1_1_audio_buffer.html>`_
 
-  * `AudioFrame <classpp_1_1_audio_frame.html>`_
+  * `AudioConfig <classpp_1_1_audio_config.html>`_
 
   * `CompletionCallback <classpp_1_1_completion_callback.html>`_
 
@@ -132,9 +132,9 @@ Files
 =====
   * `audio.h <audio_8h.html>`_
 
-  * `audio_config.h <audio__config_8h.html>`_
+  * `audio_buffer.h <audio__buffer_8h.html>`_
 
-  * `audio_frame.h <audio__frame_8h.html>`_
+  * `audio_config.h <audio__config_8h.html>`_
 
   * `completion_callback.h <completion__callback_8h.html>`_
 

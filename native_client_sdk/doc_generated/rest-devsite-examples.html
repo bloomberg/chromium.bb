@@ -1,50 +1,12 @@
 {{+bindTo:partials.standard_nacl_article}}
 
-<section id="examples-of-rest-markup-for-devsite-document-title">
-<h1 id="examples-of-rest-markup-for-devsite-document-title">Examples of ReST markup for devsite (Document title)</h1>
-<p>This is an auto-generated table of contents for this document. <code>:local:</code> and
-<code>:backlinks: none</code> are required to make the devsite look consistent;
-<code>:depth:</code> level can be controlled.</p>
-<div class="contents local" id="contents" style="display: none">
-<ul class="small-gap">
-<li><a class="reference internal" href="#document-structure" id="id1">Document structure</a></li>
-<li><p class="first"><a class="reference internal" href="#basic-markup" id="id2">Basic markup</a></p>
-<ul class="small-gap">
-<li><a class="reference internal" href="#unicode-samples" id="id3">Unicode samples</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#images" id="id4">Images</a></li>
-<li><p class="first"><a class="reference internal" href="#links" id="id5">Links</a></p>
-<ul class="small-gap">
-<li><a class="reference internal" href="#to-other-documents-within-the-tree" id="id6">To other documents within the tree</a></li>
-<li><a class="reference internal" href="#to-sections-inside-documents" id="id7">To sections inside documents</a></li>
-<li><a class="reference internal" href="#to-external-locations" id="id8">To external locations</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#definition-lists" id="id9">Definition lists</a></li>
-<li><a class="reference internal" href="#notes-and-admonitions" id="id10">Notes and Admonitions</a></li>
-<li><a class="reference internal" href="#source-code" id="id11">Source code</a></li>
-<li><p class="first"><a class="reference internal" href="#section-heading" id="id12">Section heading</a></p>
-<ul class="small-gap">
-<li><a class="reference internal" href="#subsection-heading" id="id13">Subsection heading</a></li>
-</ul>
-</li>
-<li><p class="first"><a class="reference internal" href="#expandable-sections" id="id14">Expandable sections</a></p>
-<ul class="small-gap">
-<li><a class="reference internal" href="#expandable-section" id="id15">Expandable Section</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#lists" id="id16">Lists</a></li>
-<li><a class="reference internal" href="#tables" id="id17">Tables</a></li>
-</ul>
-
-</div><section id="document-structure">
+<section id="examples-of-rest-markup-for-chromesite-document-title">
+<h1 id="examples-of-rest-markup-for-chromesite-document-title">Examples of ReST markup for chromesite (Document title)</h1>
+<section id="document-structure">
 <h2 id="document-structure">Document structure</h2>
 <p>A document starts with a Sphinx target which serves as the document name
 throughout the tree. It can serve as a link target in other documents that want
 to link to this one (see the Links section below).</p>
-<p>It follows with the document title (which doesn&#8217;t get generated to the HTML body
-in production mode, but is picked up by the devsite from <code>&lt;head&gt;&lt;title&gt;</code>.</p>
 </section><section id="basic-markup">
 <h2 id="basic-markup">Basic markup</h2>
 <p>In general, follow the rules from <a class="reference external" href="http://sphinx-doc.org/rest.html">http://sphinx-doc.org/rest.html</a></p>
@@ -70,8 +32,8 @@ get adulation by the public, but because it is fun to program.
 <section id="to-other-documents-within-the-tree">
 <h3 id="to-other-documents-within-the-tree">To other documents within the tree</h3>
 <p>Internal links to other documents are created <a class="reference internal" href="/native-client/overview.html"><em>like this</em></a>. The
-document name within the angle brackets is relative to the root dir of the
-devsite doc tree and does not have an extension.</p>
+document name within the angle brackets is relative to the root dir of the doc
+tree and does not have an extension.</p>
 <p>Here&#8217;s a link to a document in a subdirectory: <a class="reference internal" href="/native-client/devguide/tutorial/tutorial-part1.html"><em>the tutorial</em></a>. And a link to a subdirectory index page
 <a class="reference internal" href="/native-client/devguide/index.html"><em>devguide index</em></a>.</p>
 </section><section id="to-sections-inside-documents">
@@ -89,7 +51,7 @@ Section Heading</em></a>.</p>
 <h2 id="definition-lists">Definition lists</h2>
 <p>Can be used to define a group of related terms. Internal formatting is supported
 within the definition. No special formatting needs to be done for the definition
-name/title - it&#8217;s handled by the devsite.</p>
+name/title - it&#8217;s handled by the chromesite documentation server.</p>
 <dl class="docutils">
 <dt>Apple</dt>
 <dd>The apple is the pomaceous fruit of the apple tree, species Malus domestica in
@@ -104,9 +66,9 @@ family Rosaceae.</dd>
 </dl>
 </section><section id="notes-and-admonitions">
 <h2 id="notes-and-admonitions">Notes and Admonitions</h2>
-<p>The devsite supports special &#8220;notes&#8221; that are indented and have a background
-color. We&#8217;ll generate them with the <code>Note</code> directive, providing the class
-explicitly. The class is one of  <code>note</code>, <code>caution</code>, <code>warning</code>,
+<p>The documentation server supports special &#8220;notes&#8221; that are indented and have a
+background color. We&#8217;ll generate them with the <code>Note</code> directive, providing
+the class explicitly. The class is one of  <code>note</code>, <code>caution</code>, <code>warning</code>,
 <code>special</code>.</p>
 <aside class="note">
 <p>This is a note.</p>
@@ -119,9 +81,8 @@ Caution &#8211; you have been warned.
 </aside>
 </section><section id="source-code">
 <h2 id="source-code">Source code</h2>
-<p>Here&#8217;s source code that will be pretty-printed on the devsite. Outside
-production mode, it&#8217;s just a plain <code>&lt;pre&gt;</code> that presents pre-formatted code
-without coloring:</p>
+<p>Here&#8217;s source code that will be pretty-printed. It&#8217;s just a plain <code>&lt;pre&gt;</code>
+that presents pre-formatted code with coloring:</p>
 <pre class="prettyprint">
 #include &lt;iostream&gt;
 
@@ -153,15 +114,7 @@ signes (<code>#</code>) from above and below.</p>
 <section id="sub-sub-subsection-heading">
 <h5 id="sub-sub-subsection-heading">Sub-sub-subsection heading</h5>
 <p>It&#8217;s probably not the best idea to go this far (renders to <code>&lt;h5&gt;</code>).</p>
-</section></section></section></section><section id="expandable-sections">
-<h2 id="expandable-sections">Expandable sections</h2>
-<p>The devsite can render expandable sections when a special <code>class</code> is applied.
-This can be achieved by specifying the <code>rst-class</code> immediately before a
-section (or any other element), as follows:</p>
-<section class="expandable" id="expandable-section">
-<h3 id="expandable-section">Expandable Section</h3>
-<p>Look, ma! I&#8217;m expandable!</p>
-</section></section><section id="lists">
+</section></section></section></section><section id="lists">
 <h2 id="lists">Lists</h2>
 <p>Auto-numbered ordered lists:</p>
 <ol class="arabic simple">

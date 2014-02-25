@@ -17,8 +17,8 @@ Data Fields</h2><table class="memberdecls">
 <tr><td class="memItemLeft" align="right" valign="top">int32_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html#a3ad96bc4cd30dd580871a789a749819c">GetAttrib</a> )(<a class="el" href="group___typedefs.html#gafdc3895ee80f4750d0d95ae1b677e9b7">PP_Resource</a> audio_track, <a class="el" href="group___enums.html#ga2f729c238ba74adc778c0d0bc17c453f">PP_MediaStreamAudioTrack_Attrib</a> attrib, int32_t *value)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="struct_p_p___var.html">PP_Var</a>(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html#a54bbc279f3440f49fbb9ad357ba4d224">GetId</a> )(<a class="el" href="group___typedefs.html#gafdc3895ee80f4750d0d95ae1b677e9b7">PP_Resource</a> audio_track)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="group___enums.html#ga4f272d99be14aacafe08dfd4ef830918">PP_Bool</a>(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html#a21037392fc0a6fb893881fddb204002f">HasEnded</a> )(<a class="el" href="group___typedefs.html#gafdc3895ee80f4750d0d95ae1b677e9b7">PP_Resource</a> audio_track)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">int32_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html#af63b07a557e11a5bbee56a90b9071535">GetFrame</a> )(<a class="el" href="group___typedefs.html#gafdc3895ee80f4750d0d95ae1b677e9b7">PP_Resource</a> audio_track, <a class="el" href="group___typedefs.html#gafdc3895ee80f4750d0d95ae1b677e9b7">PP_Resource</a> *frame, struct <a class="el" href="struct_p_p___completion_callback.html">PP_CompletionCallback</a> callback)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">int32_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html#aef0d773171eaaf01357982088795e3c4">RecycleFrame</a> )(<a class="el" href="group___typedefs.html#gafdc3895ee80f4750d0d95ae1b677e9b7">PP_Resource</a> audio_track, <a class="el" href="group___typedefs.html#gafdc3895ee80f4750d0d95ae1b677e9b7">PP_Resource</a> frame)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int32_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html#af7941e0bcb6c2aac5bb2dc7397d22b96">GetBuffer</a> )(<a class="el" href="group___typedefs.html#gafdc3895ee80f4750d0d95ae1b677e9b7">PP_Resource</a> audio_track, <a class="el" href="group___typedefs.html#gafdc3895ee80f4750d0d95ae1b677e9b7">PP_Resource</a> *buffer, struct <a class="el" href="struct_p_p___completion_callback.html">PP_CompletionCallback</a> callback)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int32_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html#af43b8871ebeeed2466437fcb23ce994d">RecycleBuffer</a> )(<a class="el" href="group___typedefs.html#gafdc3895ee80f4750d0d95ae1b677e9b7">PP_Resource</a> audio_track, <a class="el" href="group___typedefs.html#gafdc3895ee80f4750d0d95ae1b677e9b7">PP_Resource</a> buffer)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html#a459bc28c5a626eb4a59a81286e9f8a58">Close</a> )(<a class="el" href="group___typedefs.html#gafdc3895ee80f4750d0d95ae1b677e9b7">PP_Resource</a> audio_track)</td></tr>
 </table>
 <hr /><h2>Field Documentation</h2>
@@ -33,7 +33,7 @@ Data Fields</h2><table class="memberdecls">
 </div>
 <div class="memdoc">
 <p>Closes the MediaStream audio track and disconnects it from the audio source. </p>
-<p>After calling <code><a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html#a459bc28c5a626eb4a59a81286e9f8a58" title="Closes the MediaStream audio track and disconnects it from the audio source.">Close()</a></code>, no new frames will be received.</p>
+<p>After calling <code><a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html#a459bc28c5a626eb4a59a81286e9f8a58" title="Closes the MediaStream audio track and disconnects it from the audio source.">Close()</a></code>, no new buffers will be received.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
 <table class="params">
 <tr><td class="paramdir">[in]</td><td class="paramname">audio_track</td><td>A <code>PP_Resource</code> corresponding to a MediaStream audio track resource. </td></tr>
@@ -52,18 +52,18 @@ Data Fields</h2><table class="memberdecls">
 </table>
 </div>
 <div class="memdoc">
-<p>Configures underlying frame buffers for incoming frames. </p>
-<p>If the application doesn't want to drop frames, then the <code>PP_MEDIASTREAMAUDIOTRACK_ATTRIB_BUFFERED_FRAMES</code> should be chosen such that inter-frame processing time variability won't overrun the input buffer. If the buffer is overfilled, then frames will be dropped. The application can detect this by examining the timestamp on returned frames. If <code><a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html#a73f0f222f60ceed5f662ef3db7dee21b" title="Configures underlying frame buffers for incoming frames.">Configure()</a></code> is not called, default settings will be used. Example usage from plugin code: </p>
+<p>Configures underlying buffers for incoming audio samples. </p>
+<p>If the application doesn't want to drop samples, then the <code>PP_MEDIASTREAMAUDIOTRACK_ATTRIB_BUFFERS</code> should be chosen such that inter-buffer processing time variability won't overrun all the input buffers. If all buffers are filled, then samples will be dropped. The application can detect this by examining the timestamp on returned buffers. If <code><a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html#a73f0f222f60ceed5f662ef3db7dee21b" title="Configures underlying buffers for incoming audio samples.">Configure()</a></code> is not called, default settings will be used. Example usage from plugin code: </p>
 <div class="fragment"><pre class="fragment"> int32_t attribs[] = {
-     <a class="code" href="group___enums.html#gga2f729c238ba74adc778c0d0bc17c453fafd82a0ca09456944d9966cd25987ce38" title="The maximum number of frames to hold in the input buffer.">PP_MEDIASTREAMAUDIOTRACK_ATTRIB_BUFFERED_FRAMES</a>, 4,
-     <a class="code" href="group___enums.html#gga2f729c238ba74adc778c0d0bc17c453fa13c3fa0a2740301acda8b218bac8b972" title="The duration of audio frames in milliseconds.">PP_MEDIASTREAMAUDIOTRACK_ATTRIB_DURATION</a>, 10,
+     <a class="code" href="group___enums.html#gga2f729c238ba74adc778c0d0bc17c453fae157f98fb5bc32ca0e193e5b8198c7dc" title="The maximum number of buffers to hold audio samples.">PP_MEDIASTREAMAUDIOTRACK_ATTRIB_BUFFERS</a>, 4,
+     <a class="code" href="group___enums.html#gga2f729c238ba74adc778c0d0bc17c453fa13c3fa0a2740301acda8b218bac8b972" title="The duration of an audio buffer in milliseconds.">PP_MEDIASTREAMAUDIOTRACK_ATTRIB_DURATION</a>, 10,
      <a class="code" href="group___enums.html#gga2f729c238ba74adc778c0d0bc17c453fa5f1f0d353fe407fe10ac3c0e908aba4f" title="Attribute list terminator.">PP_MEDIASTREAMAUDIOTRACK_ATTRIB_NONE</a>};
  track_if-&gt;Configure(track, attribs, callback);
 </pre></div><dl class="params"><dt><b>Parameters:</b></dt><dd>
 <table class="params">
 <tr><td class="paramdir">[in]</td><td class="paramname">audio_track</td><td>A <code>PP_Resource</code> corresponding to an audio resource. </td></tr>
 <tr><td class="paramdir">[in]</td><td class="paramname">attrib_list</td><td>A list of attribute name-value pairs in which each attribute is immediately followed by the corresponding desired value. The list is terminated by <code>PP_MEDIASTREAMAUDIOTRACK_ATTRIB_NONE</code>. </td></tr>
-<tr><td class="paramdir">[in]</td><td class="paramname">callback</td><td>A <code><a class="el" href="struct_p_p___completion_callback.html" title="PP_CompletionCallback is a common mechanism for supporting potentially asynchronous calls in browser ...">PP_CompletionCallback</a></code> to be called upon completion of <code><a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html#a73f0f222f60ceed5f662ef3db7dee21b" title="Configures underlying frame buffers for incoming frames.">Configure()</a></code>.</td></tr>
+<tr><td class="paramdir">[in]</td><td class="paramname">callback</td><td>A <code><a class="el" href="struct_p_p___completion_callback.html" title="PP_CompletionCallback is a common mechanism for supporting potentially asynchronous calls in browser ...">PP_CompletionCallback</a></code> to be called upon completion of <code><a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html#a73f0f222f60ceed5f662ef3db7dee21b" title="Configures underlying buffers for incoming audio samples.">Configure()</a></code>.</td></tr>
 </table>
 </dd>
 </dl>
@@ -92,27 +92,27 @@ Data Fields</h2><table class="memberdecls">
 <dl class="return"><dt><b>Returns:</b></dt><dd>An int32_t containing a result code from <code><a class="el" href="pp__errors_8h.html" title="This file defines an enumeration of all PPAPI error codes.">pp_errors.h</a></code>. </dd></dl>
 </div>
 </div>
-<a class="anchor" id="af63b07a557e11a5bbee56a90b9071535"></a><!-- doxytag: member="PPB_MediaStreamAudioTrack::GetFrame" ref="af63b07a557e11a5bbee56a90b9071535" args=")(PP_Resource audio_track, PP_Resource *frame, struct PP_CompletionCallback callback)" -->
+<a class="anchor" id="af7941e0bcb6c2aac5bb2dc7397d22b96"></a><!-- doxytag: member="PPB_MediaStreamAudioTrack::GetBuffer" ref="af7941e0bcb6c2aac5bb2dc7397d22b96" args=")(PP_Resource audio_track, PP_Resource *buffer, struct PP_CompletionCallback callback)" -->
 <div class="memitem">
 <div class="memproto">
 <table class="memname">
 <tr>
-<td class="memname">int32_t(* <a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html#af63b07a557e11a5bbee56a90b9071535">PPB_MediaStreamAudioTrack::GetFrame</a>)(<a class="el" href="group___typedefs.html#gafdc3895ee80f4750d0d95ae1b677e9b7">PP_Resource</a> audio_track, <a class="el" href="group___typedefs.html#gafdc3895ee80f4750d0d95ae1b677e9b7">PP_Resource</a> *frame, struct <a class="el" href="struct_p_p___completion_callback.html">PP_CompletionCallback</a> callback)</td>
+<td class="memname">int32_t(* <a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html#af7941e0bcb6c2aac5bb2dc7397d22b96">PPB_MediaStreamAudioTrack::GetBuffer</a>)(<a class="el" href="group___typedefs.html#gafdc3895ee80f4750d0d95ae1b677e9b7">PP_Resource</a> audio_track, <a class="el" href="group___typedefs.html#gafdc3895ee80f4750d0d95ae1b677e9b7">PP_Resource</a> *buffer, struct <a class="el" href="struct_p_p___completion_callback.html">PP_CompletionCallback</a> callback)</td>
 </tr>
 </table>
 </div>
 <div class="memdoc">
-<p>Gets the next audio frame from the MediaStream track. </p>
-<p>If internal processing is slower than the incoming frame rate, new frames will be dropped from the incoming stream. Once the input buffer is full, frames will be dropped until <code><a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html#aef0d773171eaaf01357982088795e3c4" title="Recycles a frame returned by GetFrame(), so the track can reuse the underlying buffer of this frame...">RecycleFrame()</a></code> is called to free a spot for another frame to be buffered. If there are no frames in the input buffer, <code>PP_OK_COMPLETIONPENDING</code> will be returned immediately and the <code>callback</code> will be called, when a new frame is received or an error happens.</p>
+<p>Gets the next audio buffer from the MediaStream track. </p>
+<p>If internal processing is slower than the incoming buffer rate, new buffers will be dropped from the incoming stream. Once all buffers are full, audio samples will be dropped until <code><a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html#af43b8871ebeeed2466437fcb23ce994d" title="Recycles a buffer returned by GetBuffer(), so the track can reuse the buffer.">RecycleBuffer()</a></code> is called to free a slot for another buffer. If there are no audio data in the input buffer, <code>PP_OK_COMPLETIONPENDING</code> will be returned immediately and the <code>callback</code> will be called, when a new buffer of audio samples is received or an error happens.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
 <table class="params">
 <tr><td class="paramdir">[in]</td><td class="paramname">audio_track</td><td>A <code>PP_Resource</code> corresponding to an audio resource. </td></tr>
-<tr><td class="paramdir">[out]</td><td class="paramname">frame</td><td>A <code>PP_Resource</code> corresponding to an AudioFrame resource. </td></tr>
-<tr><td class="paramdir">[in]</td><td class="paramname">callback</td><td>A <code><a class="el" href="struct_p_p___completion_callback.html" title="PP_CompletionCallback is a common mechanism for supporting potentially asynchronous calls in browser ...">PP_CompletionCallback</a></code> to be called upon completion of <a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html#af63b07a557e11a5bbee56a90b9071535" title="Gets the next audio frame from the MediaStream track.">GetFrame()</a>.</td></tr>
+<tr><td class="paramdir">[out]</td><td class="paramname">buffer</td><td>A <code>PP_Resource</code> corresponding to an AudioBuffer resource. </td></tr>
+<tr><td class="paramdir">[in]</td><td class="paramname">callback</td><td>A <code><a class="el" href="struct_p_p___completion_callback.html" title="PP_CompletionCallback is a common mechanism for supporting potentially asynchronous calls in browser ...">PP_CompletionCallback</a></code> to be called upon completion of <a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html#af7941e0bcb6c2aac5bb2dc7397d22b96" title="Gets the next audio buffer from the MediaStream track.">GetBuffer()</a>.</td></tr>
 </table>
 </dd>
 </dl>
-<dl class="return"><dt><b>Returns:</b></dt><dd>An int32_t containing a result code from <code><a class="el" href="pp__errors_8h.html" title="This file defines an enumeration of all PPAPI error codes.">pp_errors.h</a></code>. Returns PP_ERROR_NOMEMORY if <code>max_buffered_frames</code> frames buffer was not allocated successfully. </dd></dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>An int32_t containing a result code from <code><a class="el" href="pp__errors_8h.html" title="This file defines an enumeration of all PPAPI error codes.">pp_errors.h</a></code>. </dd></dl>
 </div>
 </div>
 <a class="anchor" id="a54bbc279f3440f49fbb9ad357ba4d224"></a><!-- doxytag: member="PPB_MediaStreamAudioTrack::GetId" ref="a54bbc279f3440f49fbb9ad357ba4d224" args=")(PP_Resource audio_track)" -->
@@ -146,7 +146,7 @@ Data Fields</h2><table class="memberdecls">
 </div>
 <div class="memdoc">
 <p>Checks whether the underlying MediaStream track has ended. </p>
-<p>Calls to GetFrame while the track has ended are safe to make and will complete, but will fail.</p>
+<p>Calls to GetBuffer while the track has ended are safe to make and will complete, but will fail.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
 <table class="params">
 <tr><td class="paramdir">[in]</td><td class="paramname">audio_track</td><td>The <code>PP_Resource</code> to check.</td></tr>
@@ -176,22 +176,22 @@ Data Fields</h2><table class="memberdecls">
 <dl class="return"><dt><b>Returns:</b></dt><dd>A <code>PP_Bool</code> with <code>PP_TRUE</code> if the given resource is a Mediastream audio track resource or <code>PP_FALSE</code> otherwise. </dd></dl>
 </div>
 </div>
-<a class="anchor" id="aef0d773171eaaf01357982088795e3c4"></a><!-- doxytag: member="PPB_MediaStreamAudioTrack::RecycleFrame" ref="aef0d773171eaaf01357982088795e3c4" args=")(PP_Resource audio_track, PP_Resource frame)" -->
+<a class="anchor" id="af43b8871ebeeed2466437fcb23ce994d"></a><!-- doxytag: member="PPB_MediaStreamAudioTrack::RecycleBuffer" ref="af43b8871ebeeed2466437fcb23ce994d" args=")(PP_Resource audio_track, PP_Resource buffer)" -->
 <div class="memitem">
 <div class="memproto">
 <table class="memname">
 <tr>
-<td class="memname">int32_t(* <a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html#aef0d773171eaaf01357982088795e3c4">PPB_MediaStreamAudioTrack::RecycleFrame</a>)(<a class="el" href="group___typedefs.html#gafdc3895ee80f4750d0d95ae1b677e9b7">PP_Resource</a> audio_track, <a class="el" href="group___typedefs.html#gafdc3895ee80f4750d0d95ae1b677e9b7">PP_Resource</a> frame)</td>
+<td class="memname">int32_t(* <a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html#af43b8871ebeeed2466437fcb23ce994d">PPB_MediaStreamAudioTrack::RecycleBuffer</a>)(<a class="el" href="group___typedefs.html#gafdc3895ee80f4750d0d95ae1b677e9b7">PP_Resource</a> audio_track, <a class="el" href="group___typedefs.html#gafdc3895ee80f4750d0d95ae1b677e9b7">PP_Resource</a> buffer)</td>
 </tr>
 </table>
 </div>
 <div class="memdoc">
-<p>Recycles a frame returned by <code><a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html#af63b07a557e11a5bbee56a90b9071535" title="Gets the next audio frame from the MediaStream track.">GetFrame()</a></code>, so the track can reuse the underlying buffer of this frame. </p>
-<p>And the frame will become invalid. The caller should release all references it holds to <code>frame</code> and not use it anymore.</p>
+<p>Recycles a buffer returned by <code><a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html#af7941e0bcb6c2aac5bb2dc7397d22b96" title="Gets the next audio buffer from the MediaStream track.">GetBuffer()</a></code>, so the track can reuse the buffer. </p>
+<p>And the buffer will become invalid. The caller should release all references it holds to <code>buffer</code> and not use it anymore.</p>
 <dl class="params"><dt><b>Parameters:</b></dt><dd>
 <table class="params">
 <tr><td class="paramdir">[in]</td><td class="paramname">audio_track</td><td>A <code>PP_Resource</code> corresponding to an audio resource. </td></tr>
-<tr><td class="paramdir">[in]</td><td class="paramname">frame</td><td>A <code>PP_Resource</code> corresponding to an AudioFrame resource returned by <code><a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html#af63b07a557e11a5bbee56a90b9071535" title="Gets the next audio frame from the MediaStream track.">GetFrame()</a></code>.</td></tr>
+<tr><td class="paramdir">[in]</td><td class="paramname">buffer</td><td>A <code>PP_Resource</code> corresponding to an AudioBuffer resource returned by <code><a class="el" href="struct_p_p_b___media_stream_audio_track__0__1.html#af7941e0bcb6c2aac5bb2dc7397d22b96" title="Gets the next audio buffer from the MediaStream track.">GetBuffer()</a></code>.</td></tr>
 </table>
 </dd>
 </dl>
