@@ -1573,34 +1573,34 @@ void GraphicsContext::canvasClip(const Path& pathToClip, WindRule clipRule)
     path.setFillType(previousFillType);
 }
 
-bool GraphicsContext::clipRect(const SkRect& rect, AntiAliasingMode aa, SkRegion::Op op)
+void GraphicsContext::clipRect(const SkRect& rect, AntiAliasingMode aa, SkRegion::Op op)
 {
     if (paintingDisabled())
-        return false;
+        return;
 
     realizeCanvasSave(SkCanvas::kClip_SaveFlag);
 
-    return m_canvas->clipRect(rect, op, aa == AntiAliased);
+    m_canvas->clipRect(rect, op, aa == AntiAliased);
 }
 
-bool GraphicsContext::clipPath(const SkPath& path, AntiAliasingMode aa, SkRegion::Op op)
+void GraphicsContext::clipPath(const SkPath& path, AntiAliasingMode aa, SkRegion::Op op)
 {
     if (paintingDisabled())
-        return false;
+        return;
 
     realizeCanvasSave(SkCanvas::kClip_SaveFlag);
 
-    return m_canvas->clipPath(path, op, aa == AntiAliased);
+    m_canvas->clipPath(path, op, aa == AntiAliased);
 }
 
-bool GraphicsContext::clipRRect(const SkRRect& rect, AntiAliasingMode aa, SkRegion::Op op)
+void GraphicsContext::clipRRect(const SkRRect& rect, AntiAliasingMode aa, SkRegion::Op op)
 {
     if (paintingDisabled())
-        return false;
+        return;
 
     realizeCanvasSave(SkCanvas::kClip_SaveFlag);
 
-    return m_canvas->clipRRect(rect, op, aa == AntiAliased);
+    m_canvas->clipRRect(rect, op, aa == AntiAliased);
 }
 
 void GraphicsContext::rotate(float angleInRadians)
