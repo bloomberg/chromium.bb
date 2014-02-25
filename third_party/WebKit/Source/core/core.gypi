@@ -575,7 +575,6 @@
             'animation/AnimatableVisibility.h',
             'animation/Animation.cpp',
             'animation/Animation.h',
-            'animation/AnimationClock.cpp',
             'animation/AnimationClock.h',
             'animation/AnimationEffect.h',
             'animation/AnimationHelpers.h',

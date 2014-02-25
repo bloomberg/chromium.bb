@@ -1821,6 +1821,8 @@ void Document::updateStyle(StyleRecalcChange change)
     if (m_focusedElement && !m_focusedElement->isFocusable())
         clearFocusedElementSoon();
 
+    DocumentAnimations::serviceAfterStyleRecalc(*this);
+
     InspectorInstrumentation::didRecalculateStyle(cookie);
 }
 

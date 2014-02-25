@@ -41,14 +41,22 @@ namespace WebCore {
 void CSSPendingAnimations::add(Player* player)
 {
     ASSERT(player->source()->isAnimation());
-    m_pending.append(player);
+    // The actual start time is either this value, or the time that
+    // this animation, or an animation that it is synchronized with
+    // is started on the compositor.
+    const double defaultStartTime = player->timeline()->currentTime();
+    m_pending.append(std::make_pair(player, defaultStartTime));
 }
 
 bool CSSPendingAnimations::startPendingAnimations()
 {
+    // FIXME: This is called from within style recalc, at which point compositor state is not up to date.
+    // https://code.google.com/p/chromium/issues/detail?id=339847
+    DisableCompositingQueryAsserts disabler;
+
     bool startedOnCompositor = false;
     for (size_t i = 0; i < m_pending.size(); ++i) {
-        if (m_pending[i]->maybeStartAnimationOnCompositor())
+        if (m_pending[i].first->maybeStartAnimationOnCompositor())
             startedOnCompositor = true;
     }
 
@@ -57,11 +65,11 @@ bool CSSPendingAnimations::startPendingAnimations()
     // start immediately.
     if (startedOnCompositor) {
         for (size_t i = 0; i < m_pending.size(); ++i)
-            m_waitingForCompositorAnimationStart.append(m_pending[i]);
+            m_waitingForCompositorAnimationStart.append(m_pending[i].first);
     } else {
         for (size_t i = 0; i < m_pending.size(); ++i) {
-            m_pending[i]->setStartTime(m_pending[i]->timeline()->currentTime());
-            m_pending[i]->update();
+            m_pending[i].first->setStartTime(m_pending[i].second);
+            m_pending[i].first->update();
         }
     }
     m_pending.clear();

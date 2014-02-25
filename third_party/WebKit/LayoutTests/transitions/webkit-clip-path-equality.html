@@ -13,22 +13,17 @@ if (window.testRunner) {
   testRunner.waitUntilDone();
 }
 var target = document.getElementById('target');
-var result = '';
 onload = function() {
   target.style.webkitClipPath = getComputedStyle(target).webkitClipPath;
-  requestAnimationFrame(step1);
-};
-function step1() {
   target.offsetTop;
+  var result = '';
   if (window.internals) {
     result = (internals.numberOfActiveAnimations() == 0) ?
         'PASS - No transition started.' :
         'FAIL - Unexpected transition started.';
   }
   target.style.webkitClipPath = 'circle(0px, 0px, 200px)';
-  requestAnimationFrame(step2);
-}
-function step2() {
+  target.offsetTop;
   if (window.internals) {
     result += (internals.numberOfActiveAnimations() == 1) ?
         '\nPASS - Transition started.' :

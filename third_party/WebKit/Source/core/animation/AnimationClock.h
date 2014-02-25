@@ -36,13 +36,6 @@
 
 namespace WebCore {
 
-// FIXME: This value is used to suppress updates when time is required outside of a frame.
-// The purpose of allowing the clock to update during such periods is to allow animations
-// to have an appropriate start time and for getComputedStyle to attempt to catch-up to a
-// compositor animation. However a more accurate system might be to attempt to phase-lock
-// with the frame clock.
-const double minTimeBeforeUnsynchronizedAnimationClockTick = 0.005;
-
 class AnimationClock {
 public:
     static PassOwnPtr<AnimationClock> create(WTF::TimeFunction monotonicallyIncreasingTime = WTF::monotonicallyIncreasingTime)
@@ -50,9 +43,22 @@ public:
         return adoptPtr(new AnimationClock(monotonicallyIncreasingTime));
     }
 
-    void updateTime(double time);
-    double currentTime();
+    void updateTime(double time)
+    {
+        if (time > m_time)
+            m_time = time;
+        m_frozen = true;
+    }
+
+    double currentTime()
+    {
+        if (!m_frozen)
+            updateTime(m_monotonicallyIncreasingTime());
+        return m_time;
+    }
+
     void unfreeze() { m_frozen = false; }
+
     void resetTimeForTesting() { m_time = 0; m_frozen = true; }
 
 private:

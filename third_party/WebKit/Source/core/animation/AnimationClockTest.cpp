@@ -48,7 +48,7 @@ protected:
 
     static double mockTimeFunction()
     {
-        return mockTime;
+        return mockTime++;
     }
 
     static double mockTime;
@@ -59,29 +59,21 @@ double AnimationAnimationClockTest::mockTime;
 
 TEST_F(AnimationAnimationClockTest, CurrentTime)
 {
-    // Current time should not advance until minTimeBeforeUnsynchronizedTick has elapsed
     EXPECT_EQ(200, animationClock->currentTime());
-    mockTime = 200 + minTimeBeforeUnsynchronizedAnimationClockTick / 2.0;
     EXPECT_EQ(200, animationClock->currentTime());
-
-    mockTime = 200 + minTimeBeforeUnsynchronizedAnimationClockTick;
-    EXPECT_EQ(mockTime, animationClock->currentTime());
+    animationClock->unfreeze();
+    EXPECT_EQ(201, animationClock->currentTime());
+    EXPECT_EQ(201, animationClock->currentTime());
 }
 
 TEST_F(AnimationAnimationClockTest, UpdateTime)
 {
     animationClock->updateTime(100);
     EXPECT_EQ(100, animationClock->currentTime());
-    mockTime = 200;
     EXPECT_EQ(100, animationClock->currentTime());
-
-    animationClock->unfreeze();
-    EXPECT_EQ(200, animationClock->currentTime());
-
-    animationClock->updateTime(300);
-    EXPECT_EQ(300, animationClock->currentTime());
-    mockTime = 400;
-    EXPECT_EQ(300, animationClock->currentTime());
+    animationClock->updateTime(150);
+    EXPECT_EQ(150, animationClock->currentTime());
+    EXPECT_EQ(150, animationClock->currentTime());
 }
 
 }
