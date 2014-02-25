@@ -8,6 +8,7 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chrome_page_zoom.h"
 #include "chrome/browser/devtools/devtools_window.h"
+#include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -32,6 +34,7 @@
 #include "chrome/browser/sessions/tab_restore_service_delegate.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
+#include "chrome/browser/ui/accelerator_utils.h"
 #include "chrome/browser/ui/bookmarks/bookmark_prompt_controller.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
@@ -74,7 +77,9 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
+#include "extensions/browser/extension_system.h"
 #include "net/base/escape.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "webkit/common/user_agent/user_agent_util.h"
 
 #if defined(OS_WIN)
@@ -106,6 +111,47 @@ using web_modal::WebContentsModalDialogManager;
 
 namespace chrome {
 namespace {
+
+bool GetBookmarkOverrideCommand(
+    Profile* profile,
+    const extensions::Extension** extension,
+    extensions::Command* command,
+    extensions::CommandService::ExtensionCommandType* command_type) {
+  DCHECK(extension);
+  DCHECK(command);
+  DCHECK(command_type);
+
+  ui::Accelerator bookmark_page_accelerator =
+      chrome::GetPrimaryChromeAcceleratorForCommandId(IDC_BOOKMARK_PAGE);
+  if (bookmark_page_accelerator.key_code() == ui::VKEY_UNKNOWN)
+    return false;
+
+  extensions::CommandService* command_service =
+      extensions::CommandService::Get(profile);
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  // Extension service may be NULL during test execution.
+  if (!extension_service)
+    return false;
+  const extensions::ExtensionSet* extension_set =
+      extension_service->extensions();
+  for (extensions::ExtensionSet::const_iterator i = extension_set->begin();
+       i != extension_set->end(); ++i) {
+    extensions::Command prospective_command;
+    extensions::CommandService::ExtensionCommandType prospective_command_type;
+    if (command_service->GetBoundExtensionCommand((*i)->id(),
+                                                  bookmark_page_accelerator,
+                                                  &prospective_command,
+                                                  &prospective_command_type)) {
+      *extension = i->get();
+      *command = prospective_command;
+      *command_type = prospective_command_type;
+      return true;
+    }
+  }
+
+  return false;
+}
 
 void BookmarkCurrentPageInternal(Browser* browser, bool from_star) {
   content::RecordAction(UserMetricsAction("Star"));
@@ -664,6 +710,30 @@ void Exit() {
 }
 
 void BookmarkCurrentPage(Browser* browser) {
+  const extensions::Extension* extension = NULL;
+  extensions::Command command;
+  extensions::CommandService::ExtensionCommandType command_type;
+  if (GetBookmarkOverrideCommand(browser->profile(),
+                                 &extension,
+                                 &command,
+                                 &command_type)) {
+    switch (command_type) {
+      case extensions::CommandService::NAMED:
+        NOTIMPLEMENTED();
+        return;
+
+      case extensions::CommandService::BROWSER_ACTION:
+        // BookmarkCurrentPage is called through a user gesture, so it is safe
+        // to call ShowBrowserActionPopup.
+        browser->window()->ShowBrowserActionPopup(extension);
+        return;
+
+      case extensions::CommandService::PAGE_ACTION:
+        browser->window()->ShowPageActionPopup(extension);
+        return;
+    };
+  }
+
   BookmarkCurrentPageInternal(browser, false);
 }
 

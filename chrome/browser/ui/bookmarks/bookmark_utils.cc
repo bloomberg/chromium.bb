@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
@@ -292,6 +293,17 @@ bool ShouldShowAppsShortcutInBookmarkBar(
   chrome::HostDesktopType host_desktop_type) {
   return IsAppsShortcutEnabled(profile, host_desktop_type) &&
       profile->GetPrefs()->GetBoolean(prefs::kShowAppsShortcutInBookmarkBar);
+}
+
+BookmarkShortcutDisposition GetBookmarkShortcutDisposition(
+    const extensions::CommandService* command_service,
+    const extensions::Extension* extension) {
+  if (command_service->OverridesBookmarkShortcut(extension))
+    return BOOKMARK_SHORTCUT_DISPOSITION_OVERRIDDEN;
+
+  return extensions::CommandService::RemovesBookmarkShortcut(extension) ?
+      BOOKMARK_SHORTCUT_DISPOSITION_REMOVED :
+      BOOKMARK_SHORTCUT_DISPOSITION_UNCHANGED;
 }
 
 }  // namespace chrome

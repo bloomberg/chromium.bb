@@ -214,3 +214,9 @@ int
 TestBrowserWindow::GetRenderViewHeightInsetWithDetachedBookmarkBar() {
   return 0;
 }
+
+void TestBrowserWindow::ShowPageActionPopup(
+    const extensions::Extension* extension) {}
+
+void TestBrowserWindow::ShowBrowserActionPopup(
+    const extensions::Extension* extension) {}

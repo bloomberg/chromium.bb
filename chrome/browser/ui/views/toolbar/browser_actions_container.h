@@ -214,6 +214,13 @@ class BrowserActionsContainer
   // Moves a browser action with |id| to |new_index|.
   void MoveBrowserAction(const std::string& extension_id, size_t new_index);
 
+  // Shows the popup for |extension| if possible. Returns true if a new popup
+  // was shown. Showing the popup will grant tab permissions if
+  // |grant_tab_permissions| is true. Only pass true for this argument for
+  // popups triggered interactively, not popups triggered by an API.
+  bool ShowPopup(const extensions::Extension* extension,
+                 bool grant_tab_permissions);
+
   // Hide the current popup.
   void HidePopup();
 
@@ -312,11 +319,12 @@ class BrowserActionsContainer
   bool ShouldDisplayBrowserAction(const extensions::Extension* extension);
 
   // Show a popup. Returns true if a new popup was shown. Showing the popup will
-  // grant tab permissions if |should_grant| is true. Popup's shown via an API
-  // should not grant permissions.
+  // grant tab permissions if |grant_tab_permissions| is true. Only pass true
+  // for this argument for popups triggered interactively, not popups triggered
+  // by an API.
   bool ShowPopup(BrowserActionButton* button,
                  ExtensionPopup::ShowAction show_action,
-                 bool should_grant);
+                 bool grant_tab_permissions);
 
   // The vector of browser actions (icons/image buttons for each action). Note
   // that not every BrowserAction in the ToolbarModel will necessarily be in

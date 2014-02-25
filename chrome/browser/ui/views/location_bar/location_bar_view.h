@@ -184,7 +184,7 @@ class LocationBarView : public LocationBar,
                                    bool preview_enabled);
 
   // Retrieves the PageAction View which is associated with |page_action|.
-  views::View* GetPageActionView(ExtensionAction* page_action);
+  PageActionWithBadgeView* GetPageActionView(ExtensionAction* page_action);
 
   // Toggles the star on or off.
   void SetStarToggled(bool on);

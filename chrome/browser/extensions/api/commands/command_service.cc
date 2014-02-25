@@ -113,24 +113,14 @@ bool CanAutoAssign(const ui::Accelerator& accelerator,
     // Not a global command, check if Chrome shortcut and whether
     // we can override it.
     if (accelerator ==
-        chrome::GetPrimaryChromeAcceleratorForCommandId(IDC_BOOKMARK_PAGE)) {
-      using extensions::SettingsOverrides;
-      using extensions::FeatureSwitch;
-      const SettingsOverrides* settings_overrides =
-          SettingsOverrides::Get(extension);
-      if (settings_overrides &&
-          SettingsOverrides::RemovesBookmarkShortcut(*settings_overrides) &&
-          (extensions::PermissionsData::HasAPIPermission(
-              extension,
-              extensions::APIPermission::kBookmarkManagerPrivate) ||
-           FeatureSwitch::enable_override_bookmarks_ui()->IsEnabled())) {
-        // If this check fails it either means we have an API to override a
-        // key that isn't a ChromeAccelerator (and the API can therefore be
-        // deprecated) or the IsChromeAccelerator isn't consistently
-        // returning true for all accelerators.
-        DCHECK(chrome::IsChromeAccelerator(accelerator, profile));
-        return true;
-      }
+        chrome::GetPrimaryChromeAcceleratorForCommandId(IDC_BOOKMARK_PAGE) &&
+        extensions::CommandService::RemovesBookmarkShortcut(extension)) {
+      // If this check fails it either means we have an API to override a
+      // key that isn't a ChromeAccelerator (and the API can therefore be
+      // deprecated) or the IsChromeAccelerator isn't consistently
+      // returning true for all accelerators.
+      DCHECK(chrome::IsChromeAccelerator(accelerator, profile));
+      return true;
     }
 
     return !chrome::IsChromeAccelerator(accelerator, profile);
@@ -189,28 +179,43 @@ bool CommandService::IsMediaKey(const ui::Accelerator& accelerator) {
           accelerator.key_code() == ui::VKEY_MEDIA_STOP);
 }
 
-bool CommandService::GetBrowserActionCommand(
-    const std::string& extension_id,
-    QueryType type,
-    extensions::Command* command,
-    bool* active) {
+// static
+bool CommandService::RemovesBookmarkShortcut(
+    const extensions::Extension* extension) {
+  using extensions::SettingsOverrides;
+  const SettingsOverrides* settings_overrides =
+      SettingsOverrides::Get(extension);
+
+  return settings_overrides &&
+      SettingsOverrides::RemovesBookmarkShortcut(*settings_overrides) &&
+      (extensions::PermissionsData::HasAPIPermission(
+          extension,
+          extensions::APIPermission::kBookmarkManagerPrivate) ||
+       extensions::FeatureSwitch::enable_override_bookmarks_ui()->
+           IsEnabled());
+}
+
+bool CommandService::GetBrowserActionCommand(const std::string& extension_id,
+                                             QueryType type,
+                                             extensions::Command* command,
+                                             bool* active) const {
   return GetExtensionActionCommand(
       extension_id, type, command, active, BROWSER_ACTION);
 }
 
-bool CommandService::GetPageActionCommand(
-    const std::string& extension_id,
-    QueryType type,
-    extensions::Command* command,
-    bool* active) {
+bool CommandService::GetPageActionCommand(const std::string& extension_id,
+                                          QueryType type,
+                                          extensions::Command* command,
+                                          bool* active) const {
   return GetExtensionActionCommand(
       extension_id, type, command, active, PAGE_ACTION);
 }
 
-bool CommandService::GetNamedCommands(const std::string& extension_id,
-                                      QueryType type,
-                                      CommandScope scope,
-                                      extensions::CommandMap* command_map) {
+bool CommandService::GetNamedCommands(
+    const std::string& extension_id,
+    QueryType type,
+    CommandScope scope,
+    extensions::CommandMap* command_map) const {
   const ExtensionSet& extensions =
       ExtensionRegistry::Get(profile_)->enabled_extensions();
   const Extension* extension = extensions.GetByID(extension_id);
@@ -351,8 +356,8 @@ bool CommandService::SetScope(const std::string& extension_id,
   return true;
 }
 
-Command CommandService::FindCommandByName(
-    const std::string& extension_id, const std::string& command) {
+Command CommandService::FindCommandByName(const std::string& extension_id,
+                                          const std::string& command) const {
   const base::DictionaryValue* bindings =
       profile_->GetPrefs()->GetDictionary(prefs::kExtensionCommands);
   for (base::DictionaryValue::Iterator it(*bindings); !it.IsAtEnd();
@@ -385,6 +390,67 @@ Command CommandService::FindCommandByName(
   }
 
   return Command();
+}
+
+bool CommandService::GetBoundExtensionCommand(
+    const std::string& extension_id,
+    const ui::Accelerator& accelerator,
+    extensions::Command* command,
+    ExtensionCommandType* command_type) const {
+  const ExtensionSet& extensions =
+      ExtensionRegistry::Get(profile_)->enabled_extensions();
+  const Extension* extension = extensions.GetByID(extension_id);
+  CHECK(extension);
+
+  extensions::Command prospective_command;
+  extensions::CommandMap command_map;
+  bool active = false;
+  if (GetBrowserActionCommand(extension_id,
+                              extensions::CommandService::ACTIVE_ONLY,
+                              &prospective_command,
+                              &active) && active &&
+          accelerator == prospective_command.accelerator()) {
+    if (command)
+      *command = prospective_command;
+    if (command_type)
+      *command_type = BROWSER_ACTION;
+    return true;
+  } else if (GetPageActionCommand(extension_id,
+                                  extensions::CommandService::ACTIVE_ONLY,
+                                  &prospective_command,
+                                  &active) && active &&
+                 accelerator == prospective_command.accelerator()) {
+    if (command)
+      *command = prospective_command;
+    if (command_type)
+      *command_type = PAGE_ACTION;
+    return true;
+  } else if (GetNamedCommands(extension_id,
+                              extensions::CommandService::ACTIVE_ONLY,
+                              extensions::CommandService::REGULAR,
+                              &command_map)) {
+    for (extensions::CommandMap::const_iterator it = command_map.begin();
+         it != command_map.end(); ++it) {
+      if (accelerator == it->second.accelerator()) {
+        if (command)
+          *command = it->second;
+        if (command_type)
+          *command_type = NAMED;
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+bool CommandService::OverridesBookmarkShortcut(
+    const extensions::Extension* extension) const {
+  return RemovesBookmarkShortcut(extension) &&
+      GetBoundExtensionCommand(
+          extension->id(),
+          chrome::GetPrimaryChromeAcceleratorForCommandId(IDC_BOOKMARK_PAGE),
+          NULL,
+          NULL);
 }
 
 void CommandService::AssignInitialKeybindings(const Extension* extension) {
@@ -499,7 +565,7 @@ bool CommandService::GetExtensionActionCommand(
     QueryType query_type,
     extensions::Command* command,
     bool* active,
-    ExtensionActionType action_type) {
+    ExtensionCommandType action_type) const {
   const ExtensionSet& extensions =
       ExtensionRegistry::Get(profile_)->enabled_extensions();
   const Extension* extension = extensions.GetByID(extension_id);
@@ -516,6 +582,9 @@ bool CommandService::GetExtensionActionCommand(
     case PAGE_ACTION:
       requested_command = CommandsInfo::GetPageActionCommand(extension);
       break;
+    case NAMED:
+      NOTREACHED();
+      return false;
   }
   if (!requested_command)
     return false;

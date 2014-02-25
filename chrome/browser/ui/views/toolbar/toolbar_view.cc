@@ -12,6 +12,8 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/extensions/extension_action.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -29,8 +31,10 @@
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/extensions/extension_message_bubble_view.h"
+#include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
+#include "chrome/browser/ui/views/location_bar/page_action_with_badge_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/location_bar/translate_icon_view.h"
 #include "chrome/browser/ui/views/outdated_upgrade_bubble_view.h"
@@ -316,6 +320,22 @@ views::View* ToolbarView::GetTranslateBubbleAnchor() {
   views::View* translate_icon_view = location_bar()->translate_icon_view();
   return (translate_icon_view && translate_icon_view->visible()) ?
       translate_icon_view : app_menu_;
+}
+
+void ToolbarView::ShowPageActionPopup(const extensions::Extension* extension) {
+  extensions::ExtensionActionManager* extension_manager =
+      extensions::ExtensionActionManager::Get(browser_->profile());
+  ExtensionAction* extension_action =
+      extension_manager->GetPageAction(*extension);
+  if (extension_action) {
+    location_bar_->GetPageActionView(extension_action)->image_view()->
+        ExecuteAction(ExtensionPopup::SHOW);
+  }
+}
+
+void ToolbarView::ShowBrowserActionPopup(
+    const extensions::Extension* extension) {
+  browser_actions_->ShowPopup(extension, true);
 }
 
 views::MenuButton* ToolbarView::app_menu() const {

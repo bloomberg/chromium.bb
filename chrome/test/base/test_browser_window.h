@@ -151,6 +151,10 @@ class TestBrowserWindow : public BrowserWindow {
       const autofill::PasswordForm& form,
       autofill::PasswordGenerator* generator) OVERRIDE {}
   virtual int GetRenderViewHeightInsetWithDetachedBookmarkBar() OVERRIDE;
+  virtual void ShowPageActionPopup(
+      const extensions::Extension* extension) OVERRIDE;
+  virtual void ShowBrowserActionPopup(
+      const extensions::Extension* extension) OVERRIDE;
 
  protected:
   virtual void DestroyBrowser() OVERRIDE {}

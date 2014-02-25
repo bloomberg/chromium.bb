@@ -82,6 +82,12 @@ class ToolbarView : public views::AccessiblePaneView,
   // Returns the view to which the Translate bubble should be anchored.
   views::View* GetTranslateBubbleAnchor();
 
+  // Shows the extension's page action, if present.
+  void ShowPageActionPopup(const extensions::Extension* extension);
+
+  // Shows the extension's browser action, if present.
+  void ShowBrowserActionPopup(const extensions::Extension* extension);
+
   // Accessors...
   Browser* browser() const { return browser_; }
   BrowserActionsContainer* browser_actions() const { return browser_actions_; }

@@ -24,7 +24,19 @@ class PageNavigator;
 class WebContents;
 }
 
+namespace extensions {
+class CommandService;
+class Extension;
+}
+
 namespace chrome {
+
+// The ways in which extensions may customize the bookmark shortcut.
+enum BookmarkShortcutDisposition {
+  BOOKMARK_SHORTCUT_DISPOSITION_UNCHANGED,
+  BOOKMARK_SHORTCUT_DISPOSITION_REMOVED,
+  BOOKMARK_SHORTCUT_DISPOSITION_OVERRIDDEN
+};
 
 // Number of bookmarks we'll open before prompting the user to see if they
 // really want to open all.
@@ -100,6 +112,12 @@ bool IsAppsShortcutEnabled(Profile* profile,
 bool ShouldShowAppsShortcutInBookmarkBar(
     Profile* profile,
     chrome::HostDesktopType host_desktop_type);
+
+// Indicates how the bookmark shortcut has been changed by |extension|, if at
+// all.
+BookmarkShortcutDisposition GetBookmarkShortcutDisposition(
+    const extensions::CommandService* command_service,
+    const extensions::Extension* extension);
 
 }  // namespace chrome
 

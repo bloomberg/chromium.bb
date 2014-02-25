@@ -2503,6 +2503,16 @@ int BrowserView::GetRenderViewHeightInsetWithDetachedBookmarkBar() {
       bookmark_bar_view_->GetFullyDetachedToolbarOverlap();
 }
 
+void BrowserView::ShowPageActionPopup(
+    const extensions::Extension* extension) {
+  toolbar_->ShowPageActionPopup(extension);
+}
+
+void BrowserView::ShowBrowserActionPopup(
+    const extensions::Extension* extension) {
+  toolbar_->ShowBrowserActionPopup(extension);
+}
+
 void BrowserView::DoCutCopyPaste(void (content::RenderWidgetHost::*method)(),
                                  int command_id) {
   WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();

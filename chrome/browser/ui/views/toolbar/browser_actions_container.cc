@@ -510,6 +510,27 @@ void BrowserActionsContainer::MoveBrowserAction(const std::string& extension_id,
   }
 }
 
+bool BrowserActionsContainer::ShowPopup(const extensions::Extension* extension,
+                                        bool should_grant) {
+  // Do not override other popups and only show in active window. The window
+  // must also have a toolbar, otherwise it should not be showing popups.
+  // TODO(justinlin): Remove toolbar check when http://crbug.com/308645 is
+  // fixed.
+  if (popup_ ||
+      !browser_->window()->IsActive() ||
+      !browser_->window()->IsToolbarVisible()) {
+    return false;
+  }
+
+  for (BrowserActionViews::iterator it = browser_action_views_.begin();
+       it != browser_action_views_.end(); ++it) {
+    BrowserActionButton* button = (*it)->button();
+    if (button && button->extension() == extension)
+      return ShowPopup(button, ExtensionPopup::SHOW, should_grant);
+  }
+  return false;
+}
+
 void BrowserActionsContainer::HidePopup() {
   // Remove this as an observer and clear |popup_| and |popup_button_| here,
   // since we might change them before OnWidgetDestroying() gets called.
@@ -691,23 +712,7 @@ void BrowserActionsContainer::BrowserActionMoved(const Extension* extension,
 
 bool BrowserActionsContainer::BrowserActionShowPopup(
     const extensions::Extension* extension) {
-  // Do not override other popups and only show in active window. The window
-  // must also have a toolbar, otherwise it should not be showing popups.
-  // TODO(justinlin): Remove toolbar check when http://crbug.com/308645 is
-  // fixed.
-  if (popup_ ||
-      !browser_->window()->IsActive() ||
-      !browser_->window()->IsToolbarVisible()) {
-    return false;
-  }
-
-  for (BrowserActionViews::iterator it = browser_action_views_.begin();
-       it != browser_action_views_.end(); ++it) {
-    BrowserActionButton* button = (*it)->button();
-    if (button && button->extension() == extension)
-      return ShowPopup(button, ExtensionPopup::SHOW, false);
-  }
-  return false;
+  return ShowPopup(extension, false);
 }
 
 void BrowserActionsContainer::VisibleCountChanged() {

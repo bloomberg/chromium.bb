@@ -621,7 +621,8 @@ void LocationBarView::SetPreviewEnabledPageAction(ExtensionAction* page_action,
   SchedulePaint();
 }
 
-views::View* LocationBarView::GetPageActionView(ExtensionAction *page_action) {
+PageActionWithBadgeView* LocationBarView::GetPageActionView(
+    ExtensionAction* page_action) {
   DCHECK(page_action);
   for (PageActionViews::const_iterator i(page_action_views_.begin());
        i != page_action_views_.end(); ++i) {

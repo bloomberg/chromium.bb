@@ -755,3 +755,13 @@ BrowserWindowCocoa::GetRenderViewHeightInsetWithDetachedBookmarkBar() {
   // RenderWidgetHostView in (2) and (3).
   return 0;
 }
+
+void BrowserWindowCocoa::ShowPageActionPopup(
+    const extensions::Extension* extension) {
+  NOTIMPLEMENTED();
+}
+
+void BrowserWindowCocoa::ShowBrowserActionPopup(
+    const extensions::Extension* extension) {
+  NOTIMPLEMENTED();
+}
