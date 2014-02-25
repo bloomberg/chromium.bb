@@ -20,6 +20,9 @@ extern "C" HANDLE WINAPI CreateFileWRedirect(
     DWORD flags_and_attributes,
     HANDLE template_file);
 
+// Returns the count of CreateFile calls redirected so far.
+extern "C" int GetRedirectCount();
+
 // Partial reimplementation of kernel32!CreateFile (very partial: only handles
 // reading and writing to files in the User Data directory).
 HANDLE CreateFileNTDLL(

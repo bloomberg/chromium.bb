@@ -40,6 +40,15 @@
           ],
         },
       },
+      'conditions': [
+        ['component=="shared_library"', {
+          # In component builds, all targets depend on chrome_redirects by
+          # default. Remove it here to avoid a circular dependency.
+          'dependencies!': [
+            '../chrome_elf/chrome_elf.gyp:chrome_redirects',
+          ],
+        }],
+      ],
     },
     {
       'target_name': 'chrome_elf_unittests_exe',
@@ -168,6 +177,7 @@
           ],
           'sources': [
             'chrome_redirects.def',
+            'chrome_redirects_main.cc',
           ],
           'dependencies': [
             'chrome_elf_lib',

@@ -6,3 +6,4 @@ LIBRARY  "chrome_redirects.dll"
 
 EXPORTS
   CreateFileW=CreateFileWRedirect
+  GetRedirectCount

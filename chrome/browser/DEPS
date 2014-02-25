@@ -4,6 +4,7 @@ include_rules = [
   "+chrome/app",
   "+chrome/installer",
   "+chrome_elf/blacklist",
+  "+chrome_elf/create_file",
   "+chromeos",
   "+components/autofill/content/browser",
   "+components/autofill/content/common",

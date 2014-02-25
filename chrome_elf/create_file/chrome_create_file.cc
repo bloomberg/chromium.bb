@@ -44,6 +44,9 @@ PathIsPrefixFunction g_path_is_prefix_func;
 PathFindFileName g_path_find_filename_func;
 SHGetFolderPathFunction g_get_folder_func;
 
+// Record the number of calls we've redirected so far.
+int g_redirect_count = 0;
+
 // Populates the g_*_func pointers to functions which will be used in
 // ShouldBypass(). Chrome_elf cannot have a load-time dependency on shell32 or
 // shlwapi as this would induce a load-time dependency on user32.dll. Instead,
@@ -93,6 +96,7 @@ HANDLE WINAPI CreateFileWRedirect(
     DWORD flags_and_attributes,
     HANDLE template_file) {
   if (ShouldBypass(file_name)) {
+    ++g_redirect_count;
     return CreateFileNTDLL(file_name,
                            desired_access,
                            share_mode,
@@ -109,6 +113,10 @@ HANDLE WINAPI CreateFileWRedirect(
                     flags_and_attributes,
                     template_file);
 
+}
+
+int GetRedirectCount() {
+  return g_redirect_count;
 }
 
 HANDLE CreateFileNTDLL(
