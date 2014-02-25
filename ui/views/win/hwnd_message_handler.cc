@@ -363,7 +363,9 @@ void HWNDMessageHandler::Init(HWND parent, const gfx::Rect& bounds) {
 
   // Create the window.
   WindowImpl::Init(parent, bounds);
-
+  // TODO(ananta)
+  // Remove the scrolling hack code once we have scrolling working well.
+#if defined(ENABLE_SCROLL_HACK)
   // Certain trackpad drivers on Windows have bugs where in they don't generate
   // WM_MOUSEWHEEL messages for the trackpoint and trackpad scrolling gestures
   // unless there is an entry for Chrome with the class name of the Window.
@@ -382,6 +384,8 @@ void HWNDMessageHandler::Init(HWND parent, const gfx::Rect& bounds) {
       needs_scroll_styles_ = true;
     }
   }
+#endif
+
   prop_window_target_.reset(new ui::ViewProp(hwnd(),
                             ui::WindowEventTarget::kWin32InputEventTarget,
                             static_cast<ui::WindowEventTarget*>(this)));

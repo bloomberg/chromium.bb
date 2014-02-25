@@ -268,4 +268,27 @@ LRESULT LegacyRenderWidgetHostHWND::OnSetCursor(UINT message,
   return 0;
 }
 
+LRESULT LegacyRenderWidgetHostHWND::OnNCCalcSize(UINT message,
+                                                 WPARAM w_param,
+                                                 LPARAM l_param) {
+  // Prevent scrollbars, etc from drawing.
+  return 0;
+}
+
+LRESULT LegacyRenderWidgetHostHWND::OnSize(UINT message,
+                                           WPARAM w_param,
+                                           LPARAM l_param) {
+  // Certain trackpad drivers on Windows have bugs where in they don't generate
+  // WM_MOUSEWHEEL messages for the trackpoint and trackpad scrolling gestures
+  // unless there is an entry for Chrome with the class name of the Window.
+  // Additionally others check if the window WS_VSCROLL/WS_HSCROLL styles and
+  // generate the legacy WM_VSCROLL/WM_HSCROLL messages.
+  // We add these styles to ensure that trackpad/trackpoint scrolling
+  // work.
+  long current_style = ::GetWindowLong(hwnd(), GWL_STYLE);
+  ::SetWindowLong(hwnd(), GWL_STYLE,
+                  current_style | WS_VSCROLL | WS_HSCROLL);
+  return 0;
+}
+
 }  // namespace content
