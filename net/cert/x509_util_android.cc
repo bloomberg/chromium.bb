@@ -16,10 +16,6 @@ void NotifyKeyChainChanged(JNIEnv* env, jclass clazz) {
   CertDatabase::GetInstance()->OnAndroidKeyChainChanged();
 }
 
-void NotifyClientCertificatesChanged(JNIEnv* env, jclass clazz) {
-  CertDatabase::GetInstance()->OnAndroidKeyStoreChanged();
-}
-
 void RecordCertVerifyCapabilitiesHistogram(JNIEnv* env,
                                            jclass clazz,
                                            jboolean found_system_trust_roots) {
