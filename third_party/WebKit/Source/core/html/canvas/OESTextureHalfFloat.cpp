@@ -29,7 +29,7 @@
 
 namespace WebCore {
 
-OESTextureHalfFloat::OESTextureHalfFloat(WebGLRenderingContext* context)
+OESTextureHalfFloat::OESTextureHalfFloat(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
@@ -40,17 +40,17 @@ OESTextureHalfFloat::~OESTextureHalfFloat()
 {
 }
 
-WebGLExtension::ExtensionName OESTextureHalfFloat::name() const
+WebGLExtensionName OESTextureHalfFloat::name() const
 {
     return OESTextureHalfFloatName;
 }
 
-PassRefPtr<OESTextureHalfFloat> OESTextureHalfFloat::create(WebGLRenderingContext* context)
+PassRefPtr<OESTextureHalfFloat> OESTextureHalfFloat::create(WebGLRenderingContextBase* context)
 {
     return adoptRef(new OESTextureHalfFloat(context));
 }
 
-bool OESTextureHalfFloat::supported(WebGLRenderingContext* context)
+bool OESTextureHalfFloat::supported(WebGLRenderingContextBase* context)
 {
     return context->extensionsUtil()->supportsExtension("GL_OES_texture_half_float");
 }

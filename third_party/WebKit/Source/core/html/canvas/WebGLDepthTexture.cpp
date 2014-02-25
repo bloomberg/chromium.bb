@@ -29,7 +29,7 @@
 
 namespace WebCore {
 
-WebGLDepthTexture::WebGLDepthTexture(WebGLRenderingContext* context)
+WebGLDepthTexture::WebGLDepthTexture(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
@@ -40,17 +40,17 @@ WebGLDepthTexture::~WebGLDepthTexture()
 {
 }
 
-WebGLExtension::ExtensionName WebGLDepthTexture::name() const
+WebGLExtensionName WebGLDepthTexture::name() const
 {
     return WebGLDepthTextureName;
 }
 
-PassRefPtr<WebGLDepthTexture> WebGLDepthTexture::create(WebGLRenderingContext* context)
+PassRefPtr<WebGLDepthTexture> WebGLDepthTexture::create(WebGLRenderingContextBase* context)
 {
     return adoptRef(new WebGLDepthTexture(context));
 }
 
-bool WebGLDepthTexture::supported(WebGLRenderingContext* context)
+bool WebGLDepthTexture::supported(WebGLRenderingContextBase* context)
 {
     Extensions3DUtil* extensionsUtil = context->extensionsUtil();
     // Emulating the UNSIGNED_INT_24_8_WEBGL texture internal format in terms

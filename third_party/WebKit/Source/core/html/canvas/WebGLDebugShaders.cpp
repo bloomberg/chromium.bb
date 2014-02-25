@@ -27,12 +27,12 @@
 #include "core/html/canvas/WebGLDebugShaders.h"
 
 #include "bindings/v8/ExceptionState.h"
-#include "core/html/canvas/WebGLRenderingContext.h"
+#include "core/html/canvas/WebGLRenderingContextBase.h"
 #include "core/html/canvas/WebGLShader.h"
 
 namespace WebCore {
 
-WebGLDebugShaders::WebGLDebugShaders(WebGLRenderingContext* context)
+WebGLDebugShaders::WebGLDebugShaders(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
@@ -42,12 +42,12 @@ WebGLDebugShaders::~WebGLDebugShaders()
 {
 }
 
-WebGLExtension::ExtensionName WebGLDebugShaders::name() const
+WebGLExtensionName WebGLDebugShaders::name() const
 {
     return WebGLDebugShadersName;
 }
 
-PassRefPtr<WebGLDebugShaders> WebGLDebugShaders::create(WebGLRenderingContext* context)
+PassRefPtr<WebGLDebugShaders> WebGLDebugShaders::create(WebGLRenderingContextBase* context)
 {
     return adoptRef(new WebGLDebugShaders(context));
 }
@@ -61,7 +61,7 @@ String WebGLDebugShaders::getTranslatedShaderSource(WebGLShader* shader)
     return m_context->webGraphicsContext3D()->getTranslatedShaderSourceANGLE(shader->object());
 }
 
-bool WebGLDebugShaders::supported(WebGLRenderingContext* context)
+bool WebGLDebugShaders::supported(WebGLRenderingContextBase* context)
 {
     return context->extensionsUtil()->supportsExtension("GL_ANGLE_translated_shader_source");
 }

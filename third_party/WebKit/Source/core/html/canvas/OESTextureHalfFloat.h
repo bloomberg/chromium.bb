@@ -34,15 +34,15 @@ namespace WebCore {
 
 class OESTextureHalfFloat FINAL : public WebGLExtension, public ScriptWrappable {
 public:
-    static PassRefPtr<OESTextureHalfFloat> create(WebGLRenderingContext*);
-    static bool supported(WebGLRenderingContext*);
+    static PassRefPtr<OESTextureHalfFloat> create(WebGLRenderingContextBase*);
+    static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
     virtual ~OESTextureHalfFloat();
-    virtual ExtensionName name() const OVERRIDE;
+    virtual WebGLExtensionName name() const OVERRIDE;
 
 private:
-    OESTextureHalfFloat(WebGLRenderingContext*);
+    OESTextureHalfFloat(WebGLRenderingContextBase*);
 };
 
 } // namespace WebCore

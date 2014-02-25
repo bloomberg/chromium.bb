@@ -34,19 +34,19 @@ namespace WebCore {
 
 class WebGLDrawBuffers FINAL : public WebGLExtension, public ScriptWrappable {
 public:
-    static PassRefPtr<WebGLDrawBuffers> create(WebGLRenderingContext*);
-    static bool supported(WebGLRenderingContext*);
+    static PassRefPtr<WebGLDrawBuffers> create(WebGLRenderingContextBase*);
+    static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
     virtual ~WebGLDrawBuffers();
-    virtual ExtensionName name() const OVERRIDE;
+    virtual WebGLExtensionName name() const OVERRIDE;
 
     void drawBuffersWEBGL(const Vector<GLenum>& buffers);
 
 private:
-    WebGLDrawBuffers(WebGLRenderingContext*);
+    WebGLDrawBuffers(WebGLRenderingContextBase*);
 
-    static bool satisfiesWebGLRequirements(WebGLRenderingContext*);
+    static bool satisfiesWebGLRequirements(WebGLRenderingContextBase*);
 };
 
 } // namespace WebCore

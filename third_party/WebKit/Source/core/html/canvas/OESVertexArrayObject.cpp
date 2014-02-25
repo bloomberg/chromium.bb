@@ -28,12 +28,12 @@
 #include "core/html/canvas/OESVertexArrayObject.h"
 
 #include "bindings/v8/ExceptionState.h"
-#include "core/html/canvas/WebGLRenderingContext.h"
+#include "core/html/canvas/WebGLRenderingContextBase.h"
 #include "core/html/canvas/WebGLVertexArrayObjectOES.h"
 
 namespace WebCore {
 
-OESVertexArrayObject::OESVertexArrayObject(WebGLRenderingContext* context)
+OESVertexArrayObject::OESVertexArrayObject(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
@@ -44,12 +44,12 @@ OESVertexArrayObject::~OESVertexArrayObject()
 {
 }
 
-WebGLExtension::ExtensionName OESVertexArrayObject::name() const
+WebGLExtensionName OESVertexArrayObject::name() const
 {
     return OESVertexArrayObjectName;
 }
 
-PassRefPtr<OESVertexArrayObject> OESVertexArrayObject::create(WebGLRenderingContext* context)
+PassRefPtr<OESVertexArrayObject> OESVertexArrayObject::create(WebGLRenderingContextBase* context)
 {
     return adoptRef(new OESVertexArrayObject(context));
 }
@@ -107,7 +107,7 @@ void OESVertexArrayObject::bindVertexArrayOES(WebGLVertexArrayObjectOES* arrayOb
     }
 }
 
-bool OESVertexArrayObject::supported(WebGLRenderingContext* context)
+bool OESVertexArrayObject::supported(WebGLRenderingContextBase* context)
 {
     return context->extensionsUtil()->supportsExtension("GL_OES_vertex_array_object");
 }

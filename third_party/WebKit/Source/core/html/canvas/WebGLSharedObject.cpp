@@ -28,11 +28,11 @@
 #include "core/html/canvas/WebGLSharedObject.h"
 
 #include "core/html/canvas/WebGLContextGroup.h"
-#include "core/html/canvas/WebGLRenderingContext.h"
+#include "core/html/canvas/WebGLRenderingContextBase.h"
 
 namespace WebCore {
 
-WebGLSharedObject::WebGLSharedObject(WebGLRenderingContext* context)
+WebGLSharedObject::WebGLSharedObject(WebGLRenderingContextBase* context)
     : WebGLObject(context),
       m_contextGroup(context->contextGroup())
 {

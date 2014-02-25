@@ -36,15 +36,15 @@ class WebGLTexture;
 
 class WebGLCompressedTextureS3TC FINAL : public WebGLExtension, public ScriptWrappable {
 public:
-    static PassRefPtr<WebGLCompressedTextureS3TC> create(WebGLRenderingContext*);
-    static bool supported(WebGLRenderingContext*);
+    static PassRefPtr<WebGLCompressedTextureS3TC> create(WebGLRenderingContextBase*);
+    static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
     virtual ~WebGLCompressedTextureS3TC();
-    virtual ExtensionName name() const OVERRIDE;
+    virtual WebGLExtensionName name() const OVERRIDE;
 
 private:
-    WebGLCompressedTextureS3TC(WebGLRenderingContext*);
+    WebGLCompressedTextureS3TC(WebGLRenderingContextBase*);
 };
 
 } // namespace WebCore

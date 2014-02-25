@@ -27,16 +27,16 @@
 
 #include "core/html/canvas/WebGLShader.h"
 
-#include "core/html/canvas/WebGLRenderingContext.h"
+#include "core/html/canvas/WebGLRenderingContextBase.h"
 
 namespace WebCore {
 
-PassRefPtr<WebGLShader> WebGLShader::create(WebGLRenderingContext* ctx, GLenum type)
+PassRefPtr<WebGLShader> WebGLShader::create(WebGLRenderingContextBase* ctx, GLenum type)
 {
     return adoptRef(new WebGLShader(ctx, type));
 }
 
-WebGLShader::WebGLShader(WebGLRenderingContext* ctx, GLenum type)
+WebGLShader::WebGLShader(WebGLRenderingContextBase* ctx, GLenum type)
     : WebGLSharedObject(ctx)
     , m_type(type)
     , m_source("")

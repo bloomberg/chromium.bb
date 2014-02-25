@@ -29,7 +29,7 @@
 
 namespace WebCore {
 
-WebGLDrawBuffers::WebGLDrawBuffers(WebGLRenderingContext* context)
+WebGLDrawBuffers::WebGLDrawBuffers(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
@@ -40,18 +40,18 @@ WebGLDrawBuffers::~WebGLDrawBuffers()
 {
 }
 
-WebGLExtension::ExtensionName WebGLDrawBuffers::name() const
+WebGLExtensionName WebGLDrawBuffers::name() const
 {
-    return WebGLExtension::WebGLDrawBuffersName;
+    return WebGLDrawBuffersName;
 }
 
-PassRefPtr<WebGLDrawBuffers> WebGLDrawBuffers::create(WebGLRenderingContext* context)
+PassRefPtr<WebGLDrawBuffers> WebGLDrawBuffers::create(WebGLRenderingContextBase* context)
 {
     return adoptRef(new WebGLDrawBuffers(context));
 }
 
 // static
-bool WebGLDrawBuffers::supported(WebGLRenderingContext* context)
+bool WebGLDrawBuffers::supported(WebGLRenderingContextBase* context)
 {
     return (context->extensionsUtil()->supportsExtension("GL_EXT_draw_buffers")
         && satisfiesWebGLRequirements(context));
@@ -97,7 +97,7 @@ void WebGLDrawBuffers::drawBuffersWEBGL(const Vector<GLenum>& buffers)
 }
 
 // static
-bool WebGLDrawBuffers::satisfiesWebGLRequirements(WebGLRenderingContext* webglContext)
+bool WebGLDrawBuffers::satisfiesWebGLRequirements(WebGLRenderingContextBase* webglContext)
 {
     blink::WebGraphicsContext3D* context = webglContext->webGraphicsContext3D();
     Extensions3DUtil* extensionsUtil = webglContext->extensionsUtil();

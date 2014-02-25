@@ -39,15 +39,15 @@ public:
         UNMASKED_RENDERER_WEBGL = 0x9246
     };
 
-    static PassRefPtr<WebGLDebugRendererInfo> create(WebGLRenderingContext*);
-    static bool supported(WebGLRenderingContext*);
+    static PassRefPtr<WebGLDebugRendererInfo> create(WebGLRenderingContextBase*);
+    static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
     virtual ~WebGLDebugRendererInfo();
-    virtual ExtensionName name() const OVERRIDE;
+    virtual WebGLExtensionName name() const OVERRIDE;
 
 private:
-    WebGLDebugRendererInfo(WebGLRenderingContext*);
+    WebGLDebugRendererInfo(WebGLRenderingContextBase*);
 };
 
 } // namespace WebCore

@@ -27,11 +27,11 @@
 
 #include "core/html/canvas/WebGLCompressedTextureS3TC.h"
 
-#include "core/html/canvas/WebGLRenderingContext.h"
+#include "core/html/canvas/WebGLRenderingContextBase.h"
 
 namespace WebCore {
 
-WebGLCompressedTextureS3TC::WebGLCompressedTextureS3TC(WebGLRenderingContext* context)
+WebGLCompressedTextureS3TC::WebGLCompressedTextureS3TC(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
@@ -45,17 +45,17 @@ WebGLCompressedTextureS3TC::~WebGLCompressedTextureS3TC()
 {
 }
 
-WebGLExtension::ExtensionName WebGLCompressedTextureS3TC::name() const
+WebGLExtensionName WebGLCompressedTextureS3TC::name() const
 {
     return WebGLCompressedTextureS3TCName;
 }
 
-PassRefPtr<WebGLCompressedTextureS3TC> WebGLCompressedTextureS3TC::create(WebGLRenderingContext* context)
+PassRefPtr<WebGLCompressedTextureS3TC> WebGLCompressedTextureS3TC::create(WebGLRenderingContextBase* context)
 {
     return adoptRef(new WebGLCompressedTextureS3TC(context));
 }
 
-bool WebGLCompressedTextureS3TC::supported(WebGLRenderingContext* context)
+bool WebGLCompressedTextureS3TC::supported(WebGLRenderingContextBase* context)
 {
     Extensions3DUtil* extensionsUtil = context->extensionsUtil();
     return extensionsUtil->supportsExtension("GL_EXT_texture_compression_s3tc")

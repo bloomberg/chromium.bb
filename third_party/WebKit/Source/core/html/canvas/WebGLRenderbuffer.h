@@ -36,7 +36,7 @@ class WebGLRenderbuffer FINAL : public WebGLSharedObject, public ScriptWrappable
 public:
     virtual ~WebGLRenderbuffer();
 
-    static PassRefPtr<WebGLRenderbuffer> create(WebGLRenderingContext*);
+    static PassRefPtr<WebGLRenderbuffer> create(WebGLRenderingContextBase*);
 
     void setInternalFormat(GLenum internalformat)
     {
@@ -61,7 +61,7 @@ public:
     void deleteEmulatedStencilBuffer(blink::WebGraphicsContext3D* context3d);
 
 protected:
-    WebGLRenderbuffer(WebGLRenderingContext*);
+    WebGLRenderbuffer(WebGLRenderingContextBase*);
 
     virtual void deleteObjectImpl(blink::WebGraphicsContext3D*, Platform3DObject) OVERRIDE;
 

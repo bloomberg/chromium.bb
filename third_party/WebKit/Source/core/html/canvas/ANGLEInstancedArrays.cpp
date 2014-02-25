@@ -32,11 +32,11 @@
 
 #include "core/html/canvas/ANGLEInstancedArrays.h"
 
-#include "core/html/canvas/WebGLRenderingContext.h"
+#include "core/html/canvas/WebGLRenderingContextBase.h"
 
 namespace WebCore {
 
-ANGLEInstancedArrays::ANGLEInstancedArrays(WebGLRenderingContext* context)
+ANGLEInstancedArrays::ANGLEInstancedArrays(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
@@ -47,17 +47,17 @@ ANGLEInstancedArrays::~ANGLEInstancedArrays()
 {
 }
 
-WebGLExtension::ExtensionName ANGLEInstancedArrays::name() const
+WebGLExtensionName ANGLEInstancedArrays::name() const
 {
     return ANGLEInstancedArraysName;
 }
 
-PassRefPtr<ANGLEInstancedArrays> ANGLEInstancedArrays::create(WebGLRenderingContext* context)
+PassRefPtr<ANGLEInstancedArrays> ANGLEInstancedArrays::create(WebGLRenderingContextBase* context)
 {
     return adoptRef(new ANGLEInstancedArrays(context));
 }
 
-bool ANGLEInstancedArrays::supported(WebGLRenderingContext* context)
+bool ANGLEInstancedArrays::supported(WebGLRenderingContextBase* context)
 {
     return context->extensionsUtil()->supportsExtension("GL_ANGLE_instanced_arrays");
 }

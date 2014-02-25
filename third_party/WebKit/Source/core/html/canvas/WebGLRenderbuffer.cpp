@@ -27,11 +27,11 @@
 
 #include "core/html/canvas/WebGLRenderbuffer.h"
 
-#include "core/html/canvas/WebGLRenderingContext.h"
+#include "core/html/canvas/WebGLRenderingContextBase.h"
 
 namespace WebCore {
 
-PassRefPtr<WebGLRenderbuffer> WebGLRenderbuffer::create(WebGLRenderingContext* ctx)
+PassRefPtr<WebGLRenderbuffer> WebGLRenderbuffer::create(WebGLRenderingContextBase* ctx)
 {
     return adoptRef(new WebGLRenderbuffer(ctx));
 }
@@ -41,7 +41,7 @@ WebGLRenderbuffer::~WebGLRenderbuffer()
     deleteObject(0);
 }
 
-WebGLRenderbuffer::WebGLRenderbuffer(WebGLRenderingContext* ctx)
+WebGLRenderbuffer::WebGLRenderbuffer(WebGLRenderingContextBase* ctx)
     : WebGLSharedObject(ctx)
     , m_internalFormat(GL_RGBA4)
     , m_width(0)

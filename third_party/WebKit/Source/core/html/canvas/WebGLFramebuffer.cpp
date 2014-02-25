@@ -27,7 +27,7 @@
 
 #include "core/html/canvas/WebGLFramebuffer.h"
 
-#include "core/html/canvas/WebGLRenderingContext.h"
+#include "core/html/canvas/WebGLRenderingContextBase.h"
 #include "platform/NotImplemented.h"
 
 namespace WebCore {
@@ -253,12 +253,12 @@ WebGLFramebuffer::WebGLAttachment::~WebGLAttachment()
 {
 }
 
-PassRefPtr<WebGLFramebuffer> WebGLFramebuffer::create(WebGLRenderingContext* ctx)
+PassRefPtr<WebGLFramebuffer> WebGLFramebuffer::create(WebGLRenderingContextBase* ctx)
 {
     return adoptRef(new WebGLFramebuffer(ctx));
 }
 
-WebGLFramebuffer::WebGLFramebuffer(WebGLRenderingContext* ctx)
+WebGLFramebuffer::WebGLFramebuffer(WebGLRenderingContextBase* ctx)
     : WebGLContextObject(ctx)
     , m_hasEverBeenBound(false)
 {
@@ -330,7 +330,7 @@ bool WebGLFramebuffer::isAttachmentComplete(WebGLAttachment* attachedObject, GLe
             }
         } else if (object->isTexture()) {
             GLenum type = attachedObject->type();
-            if (!(context()->m_webglDepthTexture && internalformat == GL_DEPTH_COMPONENT
+            if (!(context()->extensionEnabled(WebGLDepthTextureName) && internalformat == GL_DEPTH_COMPONENT
                 && (type == GL_UNSIGNED_SHORT || type == GL_UNSIGNED_INT))) {
                 *reason = "the attached texture is not a depth texture";
                 return false;
@@ -353,14 +353,14 @@ bool WebGLFramebuffer::isAttachmentComplete(WebGLAttachment* attachedObject, GLe
             }
         } else if (object->isTexture()) {
             GLenum type = attachedObject->type();
-            if (!(context()->m_webglDepthTexture && internalformat == GL_DEPTH_STENCIL_OES
+            if (!(context()->extensionEnabled(WebGLDepthTextureName) && internalformat == GL_DEPTH_STENCIL_OES
                 && type == GL_UNSIGNED_INT_24_8_OES)) {
                 *reason = "the attached texture is not a DEPTH_STENCIL texture";
                 return false;
             }
         }
     } else if (attachment == GL_COLOR_ATTACHMENT0
-        || (context()->m_webglDrawBuffers && attachment > GL_COLOR_ATTACHMENT0
+        || (context()->extensionEnabled(WebGLDrawBuffersName) && attachment > GL_COLOR_ATTACHMENT0
             && attachment < static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + context()->maxColorAttachments()))) {
         if (object->isRenderbuffer()) {
             if (!isColorRenderable(internalformat)) {
@@ -381,8 +381,8 @@ bool WebGLFramebuffer::isAttachmentComplete(WebGLAttachment* attachedObject, GLe
                 && type != GL_UNSIGNED_SHORT_5_6_5
                 && type != GL_UNSIGNED_SHORT_4_4_4_4
                 && type != GL_UNSIGNED_SHORT_5_5_5_1
-                && !(type == GL_FLOAT && context()->m_oesTextureFloat)
-                && !(type == GL_HALF_FLOAT_OES && context()->m_oesTextureHalfFloat)) {
+                && !(type == GL_FLOAT && context()->extensionEnabled(OESTextureFloatName))
+                && !(type == GL_HALF_FLOAT_OES && context()->extensionEnabled(OESTextureHalfFloatName))) {
                 *reason = "unsupported type: The attached texture is not supported to be rendered to";
                 return false;
             }
@@ -583,7 +583,7 @@ void WebGLFramebuffer::drawBuffers(const Vector<GLenum>& bufs)
 
 void WebGLFramebuffer::drawBuffersIfNecessary(bool force)
 {
-    if (!context()->m_webglDrawBuffers)
+    if (!context()->extensionEnabled(WebGLDrawBuffersName))
         return;
     bool reset = force;
     // This filtering works around graphics driver bugs on Mac OS X.

@@ -49,16 +49,16 @@ WebGLContextGroup::~WebGLContextGroup()
 blink::WebGraphicsContext3D* WebGLContextGroup::getAWebGraphicsContext3D()
 {
     ASSERT(!m_contexts.isEmpty());
-    HashSet<WebGLRenderingContext*>::iterator it = m_contexts.begin();
+    HashSet<WebGLRenderingContextBase*>::iterator it = m_contexts.begin();
     return (*it)->webGraphicsContext3D();
 }
 
-void WebGLContextGroup::addContext(WebGLRenderingContext* context)
+void WebGLContextGroup::addContext(WebGLRenderingContextBase* context)
 {
     m_contexts.add(context);
 }
 
-void WebGLContextGroup::removeContext(WebGLRenderingContext* context)
+void WebGLContextGroup::removeContext(WebGLRenderingContextBase* context)
 {
     // We must call detachAndRemoveAllObjects before removing the last context.
     if (m_contexts.size() == 1 && m_contexts.contains(context))
@@ -85,13 +85,13 @@ void WebGLContextGroup::detachAndRemoveAllObjects()
     }
 }
 
-void WebGLContextGroup::loseContextGroup(WebGLRenderingContext::LostContextMode mode)
+void WebGLContextGroup::loseContextGroup(WebGLRenderingContextBase::LostContextMode mode)
 {
     // Detach must happen before loseContextImpl, which destroys the GraphicsContext3D
     // and prevents groupObjects from being properly deleted.
     detachAndRemoveAllObjects();
 
-    for (HashSet<WebGLRenderingContext*>::iterator it = m_contexts.begin(); it != m_contexts.end(); ++it)
+    for (HashSet<WebGLRenderingContextBase*>::iterator it = m_contexts.begin(); it != m_contexts.end(); ++it)
         (*it)->loseContextImpl(mode);
 }
 

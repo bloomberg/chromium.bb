@@ -27,11 +27,11 @@
 
 #include "core/html/canvas/WebGLContextObject.h"
 
-#include "core/html/canvas/WebGLRenderingContext.h"
+#include "core/html/canvas/WebGLRenderingContextBase.h"
 
 namespace WebCore {
 
-WebGLContextObject::WebGLContextObject(WebGLRenderingContext* context)
+WebGLContextObject::WebGLContextObject(WebGLRenderingContextBase* context)
     : WebGLObject(context)
     , m_context(context)
 {

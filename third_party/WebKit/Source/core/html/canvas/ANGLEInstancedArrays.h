@@ -36,23 +36,23 @@
 
 namespace WebCore {
 
-class WebGLRenderingContext;
+class WebGLRenderingContextBase;
 
 class ANGLEInstancedArrays FINAL : public WebGLExtension, public ScriptWrappable {
 public:
-    static PassRefPtr<ANGLEInstancedArrays> create(WebGLRenderingContext*);
-    static bool supported(WebGLRenderingContext*);
+    static PassRefPtr<ANGLEInstancedArrays> create(WebGLRenderingContextBase*);
+    static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
     virtual ~ANGLEInstancedArrays();
-    virtual ExtensionName name() const OVERRIDE;
+    virtual WebGLExtensionName name() const OVERRIDE;
 
     void drawArraysInstancedANGLE(GLenum mode, GLint first, GLsizei count, GLsizei primcount);
     void drawElementsInstancedANGLE(GLenum mode, GLsizei count, GLenum type, GLintptr offset, GLsizei primcount);
     void vertexAttribDivisorANGLE(GLuint index, GLuint divisor);
 
 private:
-    ANGLEInstancedArrays(WebGLRenderingContext*);
+    ANGLEInstancedArrays(WebGLRenderingContextBase*);
 };
 
 } // namespace WebCore

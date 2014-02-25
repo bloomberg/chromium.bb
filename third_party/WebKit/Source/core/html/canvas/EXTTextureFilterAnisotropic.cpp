@@ -29,7 +29,7 @@
 
 namespace WebCore {
 
-EXTTextureFilterAnisotropic::EXTTextureFilterAnisotropic(WebGLRenderingContext* context)
+EXTTextureFilterAnisotropic::EXTTextureFilterAnisotropic(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
@@ -40,17 +40,17 @@ EXTTextureFilterAnisotropic::~EXTTextureFilterAnisotropic()
 {
 }
 
-WebGLExtension::ExtensionName EXTTextureFilterAnisotropic::name() const
+WebGLExtensionName EXTTextureFilterAnisotropic::name() const
 {
     return EXTTextureFilterAnisotropicName;
 }
 
-PassRefPtr<EXTTextureFilterAnisotropic> EXTTextureFilterAnisotropic::create(WebGLRenderingContext* context)
+PassRefPtr<EXTTextureFilterAnisotropic> EXTTextureFilterAnisotropic::create(WebGLRenderingContextBase* context)
 {
     return adoptRef(new EXTTextureFilterAnisotropic(context));
 }
 
-bool EXTTextureFilterAnisotropic::supported(WebGLRenderingContext* context)
+bool EXTTextureFilterAnisotropic::supported(WebGLRenderingContextBase* context)
 {
     return context->extensionsUtil()->supportsExtension("GL_EXT_texture_filter_anisotropic");
 }

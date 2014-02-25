@@ -31,7 +31,7 @@
 namespace WebCore {
 
 class WebGLContextGroup;
-class WebGLRenderingContext;
+class WebGLRenderingContextBase;
 
 // WebGLSharedObject the base class for objects that can be shared by multiple
 // WebGLRenderingContexts.
@@ -47,7 +47,7 @@ public:
     virtual bool isShader() const { return false; }
     virtual bool isTexture() const { return false; }
 
-    virtual bool validate(const WebGLContextGroup* contextGroup, const WebGLRenderingContext*) const OVERRIDE FINAL
+    virtual bool validate(const WebGLContextGroup* contextGroup, const WebGLRenderingContextBase*) const OVERRIDE FINAL
     {
         return contextGroup == m_contextGroup;
     }
@@ -55,7 +55,7 @@ public:
     void detachContextGroup();
 
 protected:
-    WebGLSharedObject(WebGLRenderingContext*);
+    WebGLSharedObject(WebGLRenderingContextBase*);
 
     virtual bool hasGroupOrContext() const OVERRIDE FINAL
     {

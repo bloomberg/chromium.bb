@@ -34,15 +34,15 @@ namespace WebCore {
 
 class OESTextureFloatLinear FINAL : public WebGLExtension, public ScriptWrappable {
 public:
-    static PassRefPtr<OESTextureFloatLinear> create(WebGLRenderingContext*);
-    static bool supported(WebGLRenderingContext*);
+    static PassRefPtr<OESTextureFloatLinear> create(WebGLRenderingContextBase*);
+    static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
     virtual ~OESTextureFloatLinear();
-    virtual ExtensionName name() const OVERRIDE;
+    virtual WebGLExtensionName name() const OVERRIDE;
 
 private:
-    OESTextureFloatLinear(WebGLRenderingContext*);
+    OESTextureFloatLinear(WebGLRenderingContextBase*);
 };
 
 } // namespace WebCore

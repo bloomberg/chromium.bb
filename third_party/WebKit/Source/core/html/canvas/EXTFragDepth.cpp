@@ -29,7 +29,7 @@
 
 namespace WebCore {
 
-EXTFragDepth::EXTFragDepth(WebGLRenderingContext* context)
+EXTFragDepth::EXTFragDepth(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
@@ -40,17 +40,17 @@ EXTFragDepth::~EXTFragDepth()
 {
 }
 
-WebGLExtension::ExtensionName EXTFragDepth::name() const
+WebGLExtensionName EXTFragDepth::name() const
 {
     return EXTFragDepthName;
 }
 
-PassRefPtr<EXTFragDepth> EXTFragDepth::create(WebGLRenderingContext* context)
+PassRefPtr<EXTFragDepth> EXTFragDepth::create(WebGLRenderingContextBase* context)
 {
     return adoptRef(new EXTFragDepth(context));
 }
 
-bool EXTFragDepth::supported(WebGLRenderingContext* context)
+bool EXTFragDepth::supported(WebGLRenderingContextBase* context)
 {
     return context->extensionsUtil()->supportsExtension("GL_EXT_frag_depth");
 }

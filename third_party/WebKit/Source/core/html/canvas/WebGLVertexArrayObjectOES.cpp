@@ -27,16 +27,16 @@
 
 #include "core/html/canvas/WebGLVertexArrayObjectOES.h"
 
-#include "core/html/canvas/WebGLRenderingContext.h"
+#include "core/html/canvas/WebGLRenderingContextBase.h"
 
 namespace WebCore {
 
-PassRefPtr<WebGLVertexArrayObjectOES> WebGLVertexArrayObjectOES::create(WebGLRenderingContext* ctx, VaoType type)
+PassRefPtr<WebGLVertexArrayObjectOES> WebGLVertexArrayObjectOES::create(WebGLRenderingContextBase* ctx, VaoType type)
 {
     return adoptRef(new WebGLVertexArrayObjectOES(ctx, type));
 }
 
-WebGLVertexArrayObjectOES::WebGLVertexArrayObjectOES(WebGLRenderingContext* ctx, VaoType type)
+WebGLVertexArrayObjectOES::WebGLVertexArrayObjectOES(WebGLRenderingContextBase* ctx, VaoType type)
     : WebGLContextObject(ctx)
     , m_type(type)
     , m_hasEverBeenBound(false)

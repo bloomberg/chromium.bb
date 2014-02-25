@@ -32,17 +32,17 @@
 
 namespace WebCore {
 
-class WebGLRenderingContext;
+class WebGLRenderingContextBase;
 class WebGLVertexArrayObjectOES;
 
 class OESVertexArrayObject FINAL : public WebGLExtension, public ScriptWrappable {
 public:
-    static PassRefPtr<OESVertexArrayObject> create(WebGLRenderingContext*);
-    static bool supported(WebGLRenderingContext*);
+    static PassRefPtr<OESVertexArrayObject> create(WebGLRenderingContextBase*);
+    static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
     virtual ~OESVertexArrayObject();
-    virtual ExtensionName name() const OVERRIDE;
+    virtual WebGLExtensionName name() const OVERRIDE;
 
     PassRefPtr<WebGLVertexArrayObjectOES> createVertexArrayOES();
     void deleteVertexArrayOES(WebGLVertexArrayObjectOES*);
@@ -50,7 +50,7 @@ public:
     void bindVertexArrayOES(WebGLVertexArrayObjectOES*);
 
 private:
-    OESVertexArrayObject(WebGLRenderingContext*);
+    OESVertexArrayObject(WebGLRenderingContextBase*);
 };
 
 } // namespace WebCore

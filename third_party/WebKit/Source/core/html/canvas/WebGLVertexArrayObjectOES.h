@@ -42,7 +42,7 @@ public:
 
     virtual ~WebGLVertexArrayObjectOES();
 
-    static PassRefPtr<WebGLVertexArrayObjectOES> create(WebGLRenderingContext*, VaoType);
+    static PassRefPtr<WebGLVertexArrayObjectOES> create(WebGLRenderingContextBase*, VaoType);
 
     // Cached values for vertex attrib range checks
     struct VertexAttribState {
@@ -85,7 +85,7 @@ public:
     void setVertexAttribDivisor(GLuint index, GLuint divisor);
 
 private:
-    WebGLVertexArrayObjectOES(WebGLRenderingContext*, VaoType);
+    WebGLVertexArrayObjectOES(WebGLRenderingContextBase*, VaoType);
 
     virtual void deleteObjectImpl(blink::WebGraphicsContext3D*, Platform3DObject) OVERRIDE;
 

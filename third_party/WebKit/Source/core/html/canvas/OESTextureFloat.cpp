@@ -29,7 +29,7 @@
 
 namespace WebCore {
 
-OESTextureFloat::OESTextureFloat(WebGLRenderingContext* context)
+OESTextureFloat::OESTextureFloat(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
@@ -44,17 +44,17 @@ OESTextureFloat::~OESTextureFloat()
 {
 }
 
-WebGLExtension::ExtensionName OESTextureFloat::name() const
+WebGLExtensionName OESTextureFloat::name() const
 {
     return OESTextureFloatName;
 }
 
-PassRefPtr<OESTextureFloat> OESTextureFloat::create(WebGLRenderingContext* context)
+PassRefPtr<OESTextureFloat> OESTextureFloat::create(WebGLRenderingContextBase* context)
 {
     return adoptRef(new OESTextureFloat(context));
 }
 
-bool OESTextureFloat::supported(WebGLRenderingContext* context)
+bool OESTextureFloat::supported(WebGLRenderingContextBase* context)
 {
     return context->extensionsUtil()->supportsExtension("GL_OES_texture_float");
 }

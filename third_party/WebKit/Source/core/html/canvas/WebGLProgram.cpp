@@ -27,16 +27,16 @@
 
 #include "core/html/canvas/WebGLProgram.h"
 
-#include "core/html/canvas/WebGLRenderingContext.h"
+#include "core/html/canvas/WebGLRenderingContextBase.h"
 
 namespace WebCore {
 
-PassRefPtr<WebGLProgram> WebGLProgram::create(WebGLRenderingContext* ctx)
+PassRefPtr<WebGLProgram> WebGLProgram::create(WebGLRenderingContextBase* ctx)
 {
     return adoptRef(new WebGLProgram(ctx));
 }
 
-WebGLProgram::WebGLProgram(WebGLRenderingContext* ctx)
+WebGLProgram::WebGLProgram(WebGLRenderingContextBase* ctx)
     : WebGLSharedObject(ctx)
     , m_linkStatus(false)
     , m_linkCount(0)

@@ -34,15 +34,15 @@ namespace WebCore {
 
 class WebGLDepthTexture FINAL : public WebGLExtension, public ScriptWrappable {
 public:
-    static PassRefPtr<WebGLDepthTexture> create(WebGLRenderingContext*);
-    static bool supported(WebGLRenderingContext*);
+    static PassRefPtr<WebGLDepthTexture> create(WebGLRenderingContextBase*);
+    static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
     virtual ~WebGLDepthTexture();
-    virtual ExtensionName name() const OVERRIDE;
+    virtual WebGLExtensionName name() const OVERRIDE;
 
 private:
-    WebGLDepthTexture(WebGLRenderingContext*);
+    WebGLDepthTexture(WebGLRenderingContextBase*);
 };
 
 } // namespace WebCore

@@ -27,11 +27,11 @@
 
 #include "core/html/canvas/WebGLLoseContext.h"
 
-#include "core/html/canvas/WebGLRenderingContext.h"
+#include "core/html/canvas/WebGLRenderingContextBase.h"
 
 namespace WebCore {
 
-WebGLLoseContext::WebGLLoseContext(WebGLRenderingContext* context)
+WebGLLoseContext::WebGLLoseContext(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
@@ -47,12 +47,12 @@ void WebGLLoseContext::lose(bool force)
         WebGLExtension::lose(true);
 }
 
-WebGLExtension::ExtensionName WebGLLoseContext::name() const
+WebGLExtensionName WebGLLoseContext::name() const
 {
     return WebGLLoseContextName;
 }
 
-PassRefPtr<WebGLLoseContext> WebGLLoseContext::create(WebGLRenderingContext* context)
+PassRefPtr<WebGLLoseContext> WebGLLoseContext::create(WebGLRenderingContextBase* context)
 {
     return adoptRef(new WebGLLoseContext(context));
 }
@@ -60,7 +60,7 @@ PassRefPtr<WebGLLoseContext> WebGLLoseContext::create(WebGLRenderingContext* con
 void WebGLLoseContext::loseContext()
 {
     if (!isLost())
-        m_context->forceLostContext(WebGLRenderingContext::SyntheticLostContext);
+        m_context->forceLostContext(WebGLRenderingContextBase::SyntheticLostContext);
 }
 
 void WebGLLoseContext::restoreContext()
@@ -69,7 +69,7 @@ void WebGLLoseContext::restoreContext()
         m_context->forceRestoreContext();
 }
 
-bool WebGLLoseContext::supported(WebGLRenderingContext*)
+bool WebGLLoseContext::supported(WebGLRenderingContextBase*)
 {
     return true;
 }

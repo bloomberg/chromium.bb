@@ -34,17 +34,17 @@ class WebGraphicsContext3D;
 
 namespace WebCore {
 
-class WebGLRenderingContext;
+class WebGLRenderingContextBase;
 
 // WebGLContextObject the base class for objects that are owned by a specific
-// WebGLRenderingContext.
+// WebGLRenderingContextBase.
 class WebGLContextObject : public WebGLObject {
 public:
     virtual ~WebGLContextObject();
 
-    WebGLRenderingContext* context() const { return m_context; }
+    WebGLRenderingContextBase* context() const { return m_context; }
 
-    virtual bool validate(const WebGLContextGroup*, const WebGLRenderingContext* context) const OVERRIDE FINAL
+    virtual bool validate(const WebGLContextGroup*, const WebGLRenderingContextBase* context) const OVERRIDE FINAL
     {
         return context == m_context;
     }
@@ -52,7 +52,7 @@ public:
     void detachContext();
 
 protected:
-    WebGLContextObject(WebGLRenderingContext*);
+    WebGLContextObject(WebGLRenderingContextBase*);
 
     virtual bool hasGroupOrContext() const OVERRIDE FINAL
     {
@@ -62,7 +62,7 @@ protected:
     virtual blink::WebGraphicsContext3D* getAWebGraphicsContext3D() const OVERRIDE FINAL;
 
 private:
-    WebGLRenderingContext* m_context;
+    WebGLRenderingContextBase* m_context;
 };
 
 } // namespace WebCore

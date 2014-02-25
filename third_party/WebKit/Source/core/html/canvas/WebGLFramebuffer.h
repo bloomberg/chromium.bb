@@ -64,7 +64,7 @@ public:
 
     virtual ~WebGLFramebuffer();
 
-    static PassRefPtr<WebGLFramebuffer> create(WebGLRenderingContext*);
+    static PassRefPtr<WebGLFramebuffer> create(WebGLRenderingContextBase*);
 
     void setAttachmentForBoundFramebuffer(GLenum attachment, GLenum texTarget, WebGLTexture*, GLint level);
     void setAttachmentForBoundFramebuffer(GLenum attachment, WebGLRenderbuffer*);
@@ -102,7 +102,7 @@ public:
     GLenum getDrawBuffer(GLenum);
 
 protected:
-    WebGLFramebuffer(WebGLRenderingContext*);
+    WebGLFramebuffer(WebGLRenderingContextBase*);
 
     virtual void deleteObjectImpl(blink::WebGraphicsContext3D*, Platform3DObject) OVERRIDE;
 

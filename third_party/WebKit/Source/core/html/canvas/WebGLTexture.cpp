@@ -27,16 +27,16 @@
 
 #include "core/html/canvas/WebGLTexture.h"
 
-#include "core/html/canvas/WebGLRenderingContext.h"
+#include "core/html/canvas/WebGLRenderingContextBase.h"
 
 namespace WebCore {
 
-PassRefPtr<WebGLTexture> WebGLTexture::create(WebGLRenderingContext* ctx)
+PassRefPtr<WebGLTexture> WebGLTexture::create(WebGLRenderingContextBase* ctx)
 {
     return adoptRef(new WebGLTexture(ctx));
 }
 
-WebGLTexture::WebGLTexture(WebGLRenderingContext* ctx)
+WebGLTexture::WebGLTexture(WebGLRenderingContextBase* ctx)
     : WebGLSharedObject(ctx)
     , m_target(0)
     , m_minFilter(GL_NEAREST_MIPMAP_LINEAR)

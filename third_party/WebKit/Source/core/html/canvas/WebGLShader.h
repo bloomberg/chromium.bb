@@ -37,7 +37,7 @@ class WebGLShader FINAL : public WebGLSharedObject, public ScriptWrappable {
 public:
     virtual ~WebGLShader();
 
-    static PassRefPtr<WebGLShader> create(WebGLRenderingContext*, GLenum);
+    static PassRefPtr<WebGLShader> create(WebGLRenderingContextBase*, GLenum);
 
     GLenum type() const { return m_type; }
     const String& source() const { return m_source; }
@@ -45,7 +45,7 @@ public:
     void setSource(const String& source) { m_source = source; }
 
 private:
-    WebGLShader(WebGLRenderingContext*, GLenum);
+    WebGLShader(WebGLRenderingContextBase*, GLenum);
 
     virtual void deleteObjectImpl(blink::WebGraphicsContext3D*, Platform3DObject) OVERRIDE;
 

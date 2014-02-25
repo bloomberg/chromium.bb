@@ -26,7 +26,8 @@
 #ifndef WebGLExtension_h
 #define WebGLExtension_h
 
-#include "core/html/canvas/WebGLRenderingContext.h"
+#include "core/html/canvas/WebGLExtensionName.h"
+#include "core/html/canvas/WebGLRenderingContextBase.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
@@ -34,36 +35,14 @@ namespace WebCore {
 class WebGLExtension : public RefCounted<WebGLExtension> {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    // Extension names are needed to properly wrap instances in JavaScript objects.
-    enum ExtensionName {
-        ANGLEInstancedArraysName,
-        EXTFragDepthName,
-        EXTTextureFilterAnisotropicName,
-        OESElementIndexUintName,
-        OESStandardDerivativesName,
-        OESTextureFloatLinearName,
-        OESTextureFloatName,
-        OESTextureHalfFloatLinearName,
-        OESTextureHalfFloatName,
-        OESVertexArrayObjectName,
-        WebGLCompressedTextureATCName,
-        WebGLCompressedTexturePVRTCName,
-        WebGLCompressedTextureS3TCName,
-        WebGLDebugRendererInfoName,
-        WebGLDebugShadersName,
-        WebGLDepthTextureName,
-        WebGLDrawBuffersName,
-        WebGLLoseContextName,
-    };
-
-    WebGLRenderingContext* context() { return m_context; }
+    WebGLRenderingContextBase* context() { return m_context; }
 
     virtual ~WebGLExtension();
-    virtual ExtensionName name() const = 0;
+    virtual WebGLExtensionName name() const = 0;
 
     // Lose this extension. Passing true = force loss. Some extensions
     // like WEBGL_lose_context are not normally lost when the context
-    // is lost but must be lost when destroying their WebGLRenderingContext.
+    // is lost but must be lost when destroying their WebGLRenderingContextBase.
     virtual void lose(bool)
     {
         m_context = 0;
@@ -75,9 +54,9 @@ public:
     }
 
 protected:
-    WebGLExtension(WebGLRenderingContext*);
+    WebGLExtension(WebGLRenderingContextBase*);
 
-    WebGLRenderingContext* m_context;
+    WebGLRenderingContextBase* m_context;
 };
 
 } // namespace WebCore

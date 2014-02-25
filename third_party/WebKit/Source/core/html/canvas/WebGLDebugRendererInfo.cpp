@@ -29,7 +29,7 @@
 
 namespace WebCore {
 
-WebGLDebugRendererInfo::WebGLDebugRendererInfo(WebGLRenderingContext* context)
+WebGLDebugRendererInfo::WebGLDebugRendererInfo(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
@@ -39,17 +39,17 @@ WebGLDebugRendererInfo::~WebGLDebugRendererInfo()
 {
 }
 
-WebGLExtension::ExtensionName WebGLDebugRendererInfo::name() const
+WebGLExtensionName WebGLDebugRendererInfo::name() const
 {
     return WebGLDebugRendererInfoName;
 }
 
-PassRefPtr<WebGLDebugRendererInfo> WebGLDebugRendererInfo::create(WebGLRenderingContext* context)
+PassRefPtr<WebGLDebugRendererInfo> WebGLDebugRendererInfo::create(WebGLRenderingContextBase* context)
 {
     return adoptRef(new WebGLDebugRendererInfo(context));
 }
 
-bool WebGLDebugRendererInfo::supported(WebGLRenderingContext*)
+bool WebGLDebugRendererInfo::supported(WebGLRenderingContextBase*)
 {
     return true;
 }

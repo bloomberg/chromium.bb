@@ -29,7 +29,7 @@
 
 namespace WebCore {
 
-OESStandardDerivatives::OESStandardDerivatives(WebGLRenderingContext* context)
+OESStandardDerivatives::OESStandardDerivatives(WebGLRenderingContextBase* context)
     : WebGLExtension(context)
 {
     ScriptWrappable::init(this);
@@ -40,17 +40,17 @@ OESStandardDerivatives::~OESStandardDerivatives()
 {
 }
 
-WebGLExtension::ExtensionName OESStandardDerivatives::name() const
+WebGLExtensionName OESStandardDerivatives::name() const
 {
     return OESStandardDerivativesName;
 }
 
-PassRefPtr<OESStandardDerivatives> OESStandardDerivatives::create(WebGLRenderingContext* context)
+PassRefPtr<OESStandardDerivatives> OESStandardDerivatives::create(WebGLRenderingContextBase* context)
 {
     return adoptRef(new OESStandardDerivatives(context));
 }
 
-bool OESStandardDerivatives::supported(WebGLRenderingContext* context)
+bool OESStandardDerivatives::supported(WebGLRenderingContextBase* context)
 {
     return context->extensionsUtil()->supportsExtension("GL_OES_standard_derivatives");
 }

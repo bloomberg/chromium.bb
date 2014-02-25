@@ -34,15 +34,15 @@ namespace WebCore {
 
 class OESElementIndexUint FINAL : public WebGLExtension, public ScriptWrappable {
 public:
-    static PassRefPtr<OESElementIndexUint> create(WebGLRenderingContext*);
-    static bool supported(WebGLRenderingContext*);
+    static PassRefPtr<OESElementIndexUint> create(WebGLRenderingContextBase*);
+    static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
     virtual ~OESElementIndexUint();
-    virtual ExtensionName name() const OVERRIDE;
+    virtual WebGLExtensionName name() const OVERRIDE;
 
 private:
-    OESElementIndexUint(WebGLRenderingContext*);
+    OESElementIndexUint(WebGLRenderingContextBase*);
 };
 
 } // namespace WebCore
