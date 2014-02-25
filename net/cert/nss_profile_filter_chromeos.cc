@@ -60,8 +60,15 @@ NSSProfileFilterChromeOS& NSSProfileFilterChromeOS::operator=(
 
 void NSSProfileFilterChromeOS::Init(crypto::ScopedPK11Slot public_slot,
                                     crypto::ScopedPK11Slot private_slot) {
-  public_slot_ = public_slot.Pass();
-  private_slot_ = private_slot.Pass();
+  // crypto::ScopedPK11Slot actually holds a reference counted object.
+  // Because scoped_ptr<T> assignment is a no-op if it already points to
+  // the same pointer, a reference would be leaked because .Pass() does
+  // not release its reference, and the receiving object won't free
+  // its copy.
+  if (public_slot_.get() != public_slot.get())
+    public_slot_ = public_slot.Pass();
+  if (private_slot_.get() != private_slot.get())
+    private_slot_ = private_slot.Pass();
 }
 
 bool NSSProfileFilterChromeOS::IsModuleAllowed(PK11SlotInfo* slot) const {
