@@ -440,7 +440,8 @@ static bool anyAttributeMatches(Element& element, CSSSelector::Match match, cons
 
     const AtomicString& selectorValue =  selector.value();
 
-    for (size_t i = 0; i < element.attributeCount(); ++i) {
+    unsigned attributeCount = element.attributeCount();
+    for (size_t i = 0; i < attributeCount; ++i) {
         const Attribute* attributeItem = element.attributeItem(i);
 
         if (!attributeItem->matches(selectorAttr))

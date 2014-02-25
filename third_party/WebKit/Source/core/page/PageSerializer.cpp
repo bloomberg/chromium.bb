@@ -78,7 +78,8 @@ static bool isCharsetSpecifyingNode(const Node& node)
         return false;
     HTMLAttributeList attributes;
     if (element.hasAttributes()) {
-        for (unsigned i = 0; i < element.attributeCount(); ++i) {
+        unsigned attributeCount = element.attributeCount();
+        for (unsigned i = 0; i < attributeCount; ++i) {
             const Attribute* attribute = element.attributeItem(i);
             // FIXME: We should deal appropriately with the attribute if they have a namespace.
             attributes.append(std::make_pair(attribute->name().localName(), attribute->value().string()));

@@ -1248,7 +1248,8 @@ const AtomicString& Element::locateNamespacePrefix(const AtomicString& namespace
         return prefix();
 
     if (hasAttributes()) {
-        for (unsigned i = 0; i < attributeCount(); i++) {
+        unsigned attributeCount = this->attributeCount();
+        for (unsigned i = 0; i < attributeCount; ++i) {
             const Attribute* attr = attributeItem(i);
 
             if (attr->prefix() == xmlnsAtom && attr->value() == namespaceToLocate)
@@ -2691,6 +2692,8 @@ void Element::normalizeAttributes()
 {
     if (!hasAttributes())
         return;
+    // attributeCount() cannot be cached before the loop because the attributes
+    // list is altered while iterating.
     for (unsigned i = 0; i < attributeCount(); ++i) {
         if (RefPtr<Attr> attr = attrIfExists(attributeItem(i)->name()))
             attr->normalize();
@@ -3179,7 +3182,8 @@ void Element::detachAllAttrNodesFromElement()
     AttrNodeList* attrNodeList = attrNodeListForElement(this);
     ASSERT(attrNodeList);
 
-    for (unsigned i = 0; i < attributeCount(); ++i) {
+    unsigned attributeCount = this->attributeCount();
+    for (unsigned i = 0; i < attributeCount; ++i) {
         const Attribute* attribute = attributeItem(i);
         if (RefPtr<Attr> attrNode = findAttrNodeInList(*attrNodeList, attribute->name()))
             attrNode->detachFromElementWithValue(attribute->value());
@@ -3246,7 +3250,8 @@ void Element::cloneAttributesFromElement(const Element& other)
     else
         m_elementData = other.m_elementData->makeUniqueCopy();
 
-    for (unsigned i = 0; i < m_elementData->length(); ++i) {
+    unsigned length = m_elementData->length();
+    for (unsigned i = 0; i < length; ++i) {
         const Attribute* attribute = const_cast<const ElementData*>(m_elementData.get())->attributeItem(i);
         attributeChangedFromParserOrByCloning(attribute->name(), attribute->value(), ModifiedByCloning);
     }

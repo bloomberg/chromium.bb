@@ -100,11 +100,11 @@ bool ElementData::isEquivalent(const ElementData* other) const
     if (!other)
         return isEmpty();
 
-    unsigned len = length();
-    if (len != other->length())
+    unsigned length = this->length();
+    if (length != other->length())
         return false;
 
-    for (unsigned i = 0; i < len; i++) {
+    for (unsigned i = 0; i < length; ++i) {
         const Attribute* attribute = attributeItem(i);
         const Attribute* otherAttr = other->getAttributeItem(attribute->name());
         if (!otherAttr || attribute->value() != otherAttr->value())
@@ -117,7 +117,8 @@ bool ElementData::isEquivalent(const ElementData* other) const
 size_t ElementData::getAttrIndex(Attr* attr) const
 {
     // This relies on the fact that Attr's QualifiedName == the Attribute's name.
-    for (unsigned i = 0; i < length(); ++i) {
+    unsigned length = this->length();
+    for (unsigned i = 0; i < length; ++i) {
         if (attributeItem(i)->name() == attr->qualifiedName())
             return i;
     }
@@ -127,7 +128,8 @@ size_t ElementData::getAttrIndex(Attr* attr) const
 size_t ElementData::getAttributeItemIndexSlowCase(const AtomicString& name, bool shouldIgnoreAttributeCase) const
 {
     // Continue to checking case-insensitively and/or full namespaced names if necessary:
-    for (unsigned i = 0; i < length(); ++i) {
+    unsigned length = this->length();
+    for (unsigned i = 0; i < length; ++i) {
         const Attribute* attribute = attributeItem(i);
         // FIXME: Why check the prefix? Namespace is all that should matter
         // and all HTML/SVG attributes have a null namespace!
@@ -196,8 +198,9 @@ UniqueElementData::UniqueElementData(const ShareableElementData& other)
     ASSERT(!other.m_inlineStyle || !other.m_inlineStyle->isMutable());
     m_inlineStyle = other.m_inlineStyle;
 
-    m_attributeVector.reserveCapacity(other.length());
-    for (unsigned i = 0; i < other.length(); ++i)
+    unsigned length = other.length();
+    m_attributeVector.reserveCapacity(length);
+    for (unsigned i = 0; i < length; ++i)
         m_attributeVector.uncheckedAppend(other.m_attributeArray[i]);
 }
 
@@ -214,7 +217,8 @@ PassRefPtr<ShareableElementData> UniqueElementData::makeShareableCopy() const
 
 Attribute* UniqueElementData::getAttributeItem(const QualifiedName& name)
 {
-    for (unsigned i = 0; i < length(); ++i) {
+    unsigned length = this->length();
+    for (unsigned i = 0; i < length; ++i) {
         if (m_attributeVector.at(i).name().matches(name))
             return &m_attributeVector.at(i);
     }

@@ -1341,7 +1341,8 @@ bool Node::isDefaultNamespace(const AtomicString& namespaceURIMaybeEmpty) const
                 return elem->namespaceURI() == namespaceURI;
 
             if (elem->hasAttributes()) {
-                for (unsigned i = 0; i < elem->attributeCount(); i++) {
+                unsigned attributeCount = elem->attributeCount();
+                for (unsigned i = 0; i < attributeCount; ++i) {
                     const Attribute* attr = elem->attributeItem(i);
 
                     if (attr->localName() == xmlnsAtom)
@@ -1426,7 +1427,8 @@ const AtomicString& Node::lookupNamespaceURI(const String& prefix) const
                 return elem->namespaceURI();
 
             if (elem->hasAttributes()) {
-                for (unsigned i = 0; i < elem->attributeCount(); i++) {
+                unsigned attributeCount = elem->attributeCount();
+                for (unsigned i = 0; i < attributeCount; ++i) {
                     const Attribute* attr = elem->attributeItem(i);
 
                     if (attr->prefix() == xmlnsAtom && attr->localName() == prefix) {

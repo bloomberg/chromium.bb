@@ -154,7 +154,8 @@ public:
     const AtomicString& idForStyleResolution() const;
 
     // Internal methods that assume the existence of attribute storage, one should use hasAttributes()
-    // before calling them.
+    // before calling them. This is not a trivial getter and its return value should be cached for
+    // performance.
     size_t attributeCount() const;
     const Attribute* attributeItem(unsigned index) const;
     const Attribute* getAttributeItem(const QualifiedName&) const;

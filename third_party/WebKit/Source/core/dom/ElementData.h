@@ -62,6 +62,7 @@ public:
 
     const StylePropertySet* presentationAttributeStyle() const;
 
+    // This is not a trivial getter and its return value should be cached for performance.
     size_t length() const;
     bool isEmpty() const { return !length(); }
 
@@ -203,8 +204,8 @@ inline size_t ElementData::getAttributeItemIndex(const QualifiedName& name, bool
 {
     const Attribute* begin = attributeBase();
     // Cache length for performance as ElementData::length() contains a conditional branch.
-    unsigned len = length();
-    for (unsigned i = 0; i < len; ++i) {
+    unsigned length = this->length();
+    for (unsigned i = 0; i < length; ++i) {
         const Attribute& attribute = begin[i];
         if (attribute.name().matchesPossiblyIgnoringCase(name, shouldIgnoreCase))
             return i;
@@ -217,12 +218,12 @@ inline size_t ElementData::getAttributeItemIndex(const QualifiedName& name, bool
 inline size_t ElementData::getAttributeItemIndex(const AtomicString& name, bool shouldIgnoreAttributeCase) const
 {
     // Cache length for performance as ElementData::length() contains a conditional branch.
-    unsigned len = length();
+    unsigned length = this->length();
     bool doSlowCheck = shouldIgnoreAttributeCase;
 
     // Optimize for the case where the attribute exists and its name exactly matches.
     const Attribute* begin = attributeBase();
-    for (unsigned i = 0; i < len; ++i) {
+    for (unsigned i = 0; i < length; ++i) {
         const Attribute& attribute = begin[i];
         // FIXME: Why check the prefix? Namespaces should be all that matter.
         // Most attributes (all of HTML and CSS) have no namespace.
@@ -242,7 +243,8 @@ inline size_t ElementData::getAttributeItemIndex(const AtomicString& name, bool 
 inline const Attribute* ElementData::getAttributeItem(const QualifiedName& name) const
 {
     const Attribute* begin = attributeBase();
-    for (unsigned i = 0; i < length(); ++i) {
+    unsigned length = this->length();
+    for (unsigned i = 0; i < length; ++i) {
         const Attribute& attribute = begin[i];
         if (attribute.name().matches(name))
             return &attribute;
