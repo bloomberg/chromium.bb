@@ -337,10 +337,6 @@ class ASH_EXPORT ShelfLayoutManager :
       const gfx::Rect& dock_bounds,
       DockedWindowLayoutManagerObserver::Reason reason) OVERRIDE;
 
-  // Generates insets for inward edge based on the current shelf alignment.
-  // TODO(sad): Remove this (crbug.com/318879)
-  gfx::Insets GetInsetsForAlignment(int distance) const;
-
   // The RootWindow is cached so that we don't invoke Shell::GetInstance() from
   // our destructor. We avoid that as at the time we're deleted Shell is being
   // deleted too.

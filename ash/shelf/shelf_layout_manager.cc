@@ -1161,20 +1161,5 @@ void ShelfLayoutManager::OnLockStateEvent(LockStateObserver::EventType event) {
   }
 }
 
-gfx::Insets ShelfLayoutManager::GetInsetsForAlignment(int distance) const {
-  switch (GetAlignment()) {
-    case SHELF_ALIGNMENT_BOTTOM:
-      return gfx::Insets(distance, 0, 0, 0);
-    case SHELF_ALIGNMENT_LEFT:
-      return gfx::Insets(0, 0, 0, distance);
-    case SHELF_ALIGNMENT_RIGHT:
-      return gfx::Insets(0, distance, 0, 0);
-    case SHELF_ALIGNMENT_TOP:
-      return gfx::Insets(0, 0, distance, 0);
-  }
-  NOTREACHED();
-  return gfx::Insets();
-}
-
 }  // namespace internal
 }  // namespace ash
