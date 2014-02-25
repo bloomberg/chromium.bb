@@ -1124,7 +1124,7 @@ bool MenuController::OnKeyDown(ui::KeyboardCode key_code) {
       break;
 
     case ui::VKEY_F4:
-      if (!accept_on_f4_)
+      if (!is_combobox_)
         break;
       // Fallthrough to accept on F4, so combobox menus match Windows behavior.
     case ui::VKEY_RETURN:
@@ -1191,7 +1191,7 @@ MenuController::MenuController(ui::NativeTheme* theme,
       menu_config_(theme),
       closing_event_time_(base::TimeDelta()),
       menu_start_time_(base::TimeTicks()),
-      accept_on_f4_(false),
+      is_combobox_(false),
       item_selected_by_touch_(false) {
   active_instance_ = this;
 }
@@ -2116,10 +2116,14 @@ bool MenuController::SelectByChar(base::char16 character) {
   if (details.first_match != -1)
     return AcceptOrSelect(item, details);
 
-  // If no mnemonics found, look at first character of titles.
-  details = FindChildForMnemonic(item, key, &TitleMatchesMnemonic);
-  if (details.first_match != -1)
-    return AcceptOrSelect(item, details);
+  if (is_combobox_) {
+    item->GetSubmenu()->GetTextInputClient()->InsertChar(character, 0);
+  } else {
+    // If no mnemonics found, look at first character of titles.
+    details = FindChildForMnemonic(item, key, &TitleMatchesMnemonic);
+    if (details.first_match != -1)
+      return AcceptOrSelect(item, details);
+  }
 
   return false;
 }

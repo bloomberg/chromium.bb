@@ -43,7 +43,8 @@ SubmenuView::SubmenuView(MenuItemView* parent)
       minimum_preferred_width_(0),
       resize_open_menu_(false),
       scroll_animator_(new ScrollAnimator(this)),
-      roundoff_error_(0) {
+      roundoff_error_(0),
+      prefix_selector_(this) {
   DCHECK(parent);
   // We'll delete ourselves, otherwise the ScrollView would delete us on close.
   set_owned_by_client();
@@ -171,6 +172,10 @@ void SubmenuView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_MENUPOPUP;
 }
 
+ui::TextInputClient* SubmenuView::GetTextInputClient() {
+  return &prefix_selector_;
+}
+
 void SubmenuView::PaintChildren(gfx::Canvas* canvas) {
   View::PaintChildren(canvas);
 
@@ -293,6 +298,35 @@ void SubmenuView::OnGestureEvent(ui::GestureEvent* event) {
   }
   if (handled)
     event->SetHandled();
+}
+
+int SubmenuView::GetRowCount() {
+  return GetMenuItemCount();
+}
+
+int SubmenuView::GetSelectedRow() {
+  int row = 0;
+  for (int i = 0; i < child_count(); ++i) {
+    if (child_at(i)->id() != MenuItemView::kMenuItemViewID)
+      continue;
+
+    if (static_cast<MenuItemView*>(child_at(i))->IsSelected())
+      return row;
+
+    row++;
+  }
+
+  return -1;
+}
+
+void SubmenuView::SetSelectedRow(int row) {
+  GetMenuItem()->GetMenuController()->SetSelection(
+      GetMenuItemAt(row),
+      MenuController::SELECTION_DEFAULT);
+}
+
+base::string16 SubmenuView::GetTextForRow(int row) {
+  return GetMenuItemAt(row)->title();
 }
 
 bool SubmenuView::IsShowing() {

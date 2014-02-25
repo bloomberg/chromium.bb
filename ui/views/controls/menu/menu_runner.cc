@@ -186,7 +186,7 @@ MenuRunner::RunResult MenuRunnerImpl::RunMenuAt(
     controller = new MenuController(theme, !for_drop_, this);
     owns_controller_ = true;
   }
-  controller->set_accept_on_f4((types & MenuRunner::COMBOBOX) != 0);
+  controller->set_is_combobox((types & MenuRunner::COMBOBOX) != 0);
   controller_ = controller;
   menu_->set_controller(controller_);
   menu_->PrepareForRun(owns_controller_,

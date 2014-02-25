@@ -101,7 +101,7 @@ class VIEWS_EXPORT MenuController : public base::MessagePumpDispatcher,
   // Returns the time from the event which closed the menu - or 0.
   base::TimeDelta closing_event_time() const { return closing_event_time_; }
 
-  void set_accept_on_f4(bool accept_on_f4) { accept_on_f4_ = accept_on_f4; }
+  void set_is_combobox(bool is_combobox) { is_combobox_ = is_combobox; }
 
   // Various events, forwarded from the submenu.
   //
@@ -582,8 +582,9 @@ class VIEWS_EXPORT MenuController : public base::MessagePumpDispatcher,
   // screen coordinates). Otherwise this will be (0, 0).
   gfx::Point menu_start_mouse_press_loc_;
 
-  // Whether the menu should accept on F4, like Windows native Combobox menus.
-  bool accept_on_f4_;
+  // Controls behavior differences between a combobox and other types of menu
+  // (like a context menu).
+  bool is_combobox_;
 
   // Set to true if the menu item was selected by touch.
   bool item_selected_by_touch_;
