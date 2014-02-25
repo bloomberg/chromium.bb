@@ -226,13 +226,13 @@ def _StopTracing(controllers):
     controller.StopTracing()
 
 
-def _PullTraces(controllers, output, compress, write_html):
+def _PullTraces(controllers, output, compress, write_json):
   _PrintMessage('Downloading...', eol='')
   trace_files = []
   for controller in controllers:
     trace_files.append(controller.PullTrace())
 
-  if write_html:
+  if not write_json:
     html_file = os.path.splitext(trace_files[0])[0] + '.html'
     _PackageTracesAsHtml(trace_files, html_file)
     trace_files = [html_file]
@@ -254,7 +254,7 @@ def _PullTraces(controllers, output, compress, write_html):
   return result
 
 
-def _CaptureAndPullTrace(controllers, interval, output, compress, write_html):
+def _CaptureAndPullTrace(controllers, interval, output, compress, write_json):
   trace_type = ' + '.join(map(str, controllers))
   try:
     _StartTracing(controllers, interval)
@@ -270,7 +270,7 @@ def _CaptureAndPullTrace(controllers, interval, output, compress, write_html):
   if interval:
     _PrintMessage('done')
 
-  return _PullTraces(controllers, output, compress, write_html)
+  return _PullTraces(controllers, output, compress, write_json)
 
 
 def _ComputeChromeCategories(options):
@@ -348,8 +348,8 @@ def main():
 
   output_options = optparse.OptionGroup(parser, 'Output options')
   output_options.add_option('-o', '--output', help='Save trace output to file.')
-  output_options.add_option('--html', help='Package trace into a standalone '
-                            'html file.', action='store_true')
+  output_options.add_option('--json', help='Save trace as raw JSON instead of '
+                            'HTML.', action='store_true')
   output_options.add_option('--view', help='Open resulting trace file in a '
                             'browser.', action='store_true')
   parser.add_option_group(output_options)
@@ -412,7 +412,7 @@ When in doubt, just try out --trace-frame-viewer.
                                 options.time if not options.continuous else 0,
                                 options.output,
                                 options.compress,
-                                options.html)
+                                options.json)
   if options.view:
     webbrowser.open(result)
 
