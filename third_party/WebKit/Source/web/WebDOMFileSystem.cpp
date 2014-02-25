@@ -32,8 +32,14 @@
 #include "WebDOMFileSystem.h"
 
 #include "V8DOMFileSystem.h"
+#include "V8DirectoryEntry.h"
+#include "V8FileEntry.h"
+#include "WebFrameImpl.h"
 #include "bindings/v8/WrapperTypeInfo.h"
+#include "core/dom/Document.h"
 #include "modules/filesystem/DOMFileSystem.h"
+#include "modules/filesystem/DirectoryEntry.h"
+#include "modules/filesystem/FileEntry.h"
 #include <v8.h>
 
 using namespace WebCore;
@@ -47,6 +53,20 @@ WebDOMFileSystem WebDOMFileSystem::fromV8Value(v8::Handle<v8::Value> value)
     v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
     DOMFileSystem* domFileSystem = V8DOMFileSystem::toNative(object);
     ASSERT(domFileSystem);
+    return WebDOMFileSystem(domFileSystem);
+}
+
+WebDOMFileSystem WebDOMFileSystem::create(
+    WebFrame* frame,
+    WebFileSystemType type,
+    const WebString& name,
+    const WebURL& rootURL,
+    SerializableType serializableType)
+{
+    ASSERT(frame && toWebFrameImpl(frame)->frame());
+    RefPtr<DOMFileSystem> domFileSystem = DOMFileSystem::create(toWebFrameImpl(frame)->frame()->document(), name, static_cast<WebCore::FileSystemType>(type), rootURL);
+    if (serializableType == SerializableTypeSerializable)
+        domFileSystem->makeClonable();
     return WebDOMFileSystem(domFileSystem);
 }
 
@@ -88,6 +108,25 @@ WebURL WebDOMFileSystem::rootURL() const
 {
     ASSERT(m_private.get());
     return m_private->rootURL();
+}
+
+v8::Handle<v8::Value> WebDOMFileSystem::toV8Value()
+{
+    if (!m_private.get())
+        return v8::Handle<v8::Value>();
+    return toV8(m_private.get(), v8::Handle<v8::Object>(), toIsolate(m_private->executionContext()));
+}
+
+v8::Handle<v8::Value> WebDOMFileSystem::createV8Entry(
+    const WebString& path,
+    EntryType entryType)
+{
+    if (!m_private.get())
+        return v8::Handle<v8::Value>();
+    if (entryType == EntryTypeDirectory)
+        return toV8(DirectoryEntry::create(m_private.get(), path), v8::Handle<v8::Object>(), toIsolate(m_private->executionContext()));
+    ASSERT(entryType == EntryTypeFile);
+    return toV8(FileEntry::create(m_private.get(), path), v8::Handle<v8::Object>(), toIsolate(m_private->executionContext()));
 }
 
 WebDOMFileSystem::WebDOMFileSystem(const WTF::PassRefPtr<DOMFileSystem>& domFileSystem)

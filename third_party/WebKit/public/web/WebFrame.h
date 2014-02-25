@@ -318,16 +318,17 @@ public:
     virtual v8::Local<v8::Context> mainWorldScriptContext() const = 0;
 
     // Creates an instance of file system object.
+    // FIXME: Deprecate this.
     virtual v8::Handle<v8::Value> createFileSystem(WebFileSystemType,
         const WebString& name,
         const WebString& rootURL) = 0;
     // Creates an instance of serializable file system object.
-    // FIXME: Remove this API after we have a better way of creating serialized
-    // file system object.
+    // FIXME: Deprecate this.
     virtual v8::Handle<v8::Value> createSerializableFileSystem(WebFileSystemType,
         const WebString& name,
         const WebString& rootURL) = 0;
     // Creates an instance of file or directory entry object.
+    // FIXME: Deprecate this.
     virtual v8::Handle<v8::Value> createFileEntry(WebFileSystemType,
         const WebString& fileSystemName,
         const WebString& fileSystemRootURL,

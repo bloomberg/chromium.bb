@@ -45,8 +45,19 @@ namespace WebCore { class DOMFileSystem; }
 
 namespace blink {
 
+class WebFrame;
+
 class WebDOMFileSystem {
 public:
+    enum SerializableType {
+        SerializableTypeSerializable,
+        SerializableTypeNotSerializable,
+    };
+    enum EntryType {
+        EntryTypeFile,
+        EntryTypeDirectory,
+    };
+
     ~WebDOMFileSystem() { reset(); }
 
     WebDOMFileSystem() { }
@@ -59,12 +70,26 @@ public:
 
     BLINK_EXPORT static WebDOMFileSystem fromV8Value(v8::Handle<v8::Value>);
 
+    // FIXME: Deprecate the last argument when all filesystems become
+    // serializable.
+    BLINK_EXPORT static WebDOMFileSystem create(
+        WebFrame*,
+        WebFileSystemType,
+        const WebString& name,
+        const WebURL& rootURL,
+        SerializableType = SerializableTypeNotSerializable);
+
     BLINK_EXPORT void reset();
     BLINK_EXPORT void assign(const WebDOMFileSystem&);
 
     BLINK_EXPORT WebString name() const;
     BLINK_EXPORT WebFileSystem::Type type() const;
     BLINK_EXPORT WebURL rootURL() const;
+
+    BLINK_EXPORT v8::Handle<v8::Value> toV8Value();
+    BLINK_EXPORT v8::Handle<v8::Value> createV8Entry(
+        const WebString& path,
+        EntryType);
 
     bool isNull() const { return m_private.isNull(); }
 
