@@ -4,7 +4,7 @@
 
 #include "ipc/ipc_message.h"
 
-#include "base/atomicops.h"
+#include "base/atomic_sequence_num.h"
 #include "base/logging.h"
 #include "build/build_config.h"
 
@@ -14,7 +14,7 @@
 
 namespace {
 
-base::subtle::Atomic32 g_ref_num = 0;
+base::StaticAtomicSequenceNumber g_ref_num;
 
 // Create a reference number for identifying IPC messages in traces. The return
 // values has the reference number stored in the upper 24 bits, leaving the low
@@ -22,7 +22,7 @@ base::subtle::Atomic32 g_ref_num = 0;
 inline uint32 GetRefNumUpper24() {
   base::debug::TraceLog* trace_log = base::debug::TraceLog::GetInstance();
   int32 pid = trace_log ? trace_log->process_id() : 0;
-  int32 count = base::subtle::NoBarrier_AtomicIncrement(&g_ref_num, 1);
+  int32 count = g_ref_num.GetNext();
   // The 24 bit hash is composed of 14 bits of the count and 10 bits of the
   // Process ID. With the current trace event buffer cap, the 14-bit count did
   // not appear to wrap during a trace. Note that it is not a big deal if
