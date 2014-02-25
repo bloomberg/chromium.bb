@@ -114,14 +114,13 @@ static inline void appendArc(Vector<FloatPoint>& vertices, const FloatPoint& arc
 {
     float startAngle = atan2(startArcVertex.y() - arcCenter.y(), startArcVertex.x() - arcCenter.x());
     float endAngle = atan2(endArcVertex.y() - arcCenter.y(), endArcVertex.x() - arcCenter.x());
-    const float twoPI = piFloat * 2;
     if (startAngle < 0)
-        startAngle += twoPI;
+        startAngle += twoPiFloat;
     if (endAngle < 0)
-        endAngle += twoPI;
-    float angle = (startAngle > endAngle) ? (startAngle - endAngle) : (startAngle + twoPI - endAngle);
+        endAngle += twoPiFloat;
+    float angle = (startAngle > endAngle) ? (startAngle - endAngle) : (startAngle + twoPiFloat - endAngle);
     const float arcSegmentCount = 6; // An even number so that one arc vertex will be eactly arcRadius from arcCenter.
-    float arcSegmentAngle =  ((padding) ? -angle : twoPI - angle) / arcSegmentCount;
+    float arcSegmentAngle =  ((padding) ? -angle : twoPiFloat - angle) / arcSegmentCount;
 
     vertices.append(startArcVertex);
     for (unsigned i = 1; i < arcSegmentCount; ++i) {

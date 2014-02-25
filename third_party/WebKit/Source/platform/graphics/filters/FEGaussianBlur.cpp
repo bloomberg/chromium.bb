@@ -41,7 +41,7 @@ using namespace std;
 
 static inline float gaussianKernelFactor()
 {
-    return 3 / 4.f * sqrtf(2 * piFloat);
+    return 3 / 4.f * sqrtf(twoPiFloat);
 }
 
 static const unsigned gMaxKernelSize = 1000;

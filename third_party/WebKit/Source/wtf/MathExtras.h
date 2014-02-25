@@ -49,6 +49,9 @@ const float piOverTwoFloat = static_cast<float>(M_PI_2);
 const double piOverFourDouble = M_PI_4;
 const float piOverFourFloat = static_cast<float>(M_PI_4);
 
+const double twoPiDouble = piDouble * 2.0;
+const float twoPiFloat = piFloat * 2.0f;
+
 #if OS(MACOSX)
 
 // Work around a bug in the Mac OS X libc where ceil(-0.1) return +0.

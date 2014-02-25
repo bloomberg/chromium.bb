@@ -315,7 +315,7 @@ void Path::closeSubpath()
 void Path::addEllipse(const FloatPoint& p, float radiusX, float radiusY, float startAngle, float endAngle, bool anticlockwise)
 {
     ASSERT(ellipseIsRenderable(startAngle, endAngle));
-    ASSERT(startAngle >= 0 && startAngle < 2 * piFloat);
+    ASSERT(startAngle >= 0 && startAngle < twoPiFloat);
     ASSERT((anticlockwise && (startAngle - endAngle) >= 0) || (!anticlockwise && (endAngle - startAngle) >= 0));
 
     SkScalar cx = WebCoreFloatToSkScalar(p.x());
@@ -363,7 +363,7 @@ void Path::addRect(const FloatRect& rect)
 void Path::addEllipse(const FloatPoint& p, float radiusX, float radiusY, float rotation, float startAngle, float endAngle, bool anticlockwise)
 {
     ASSERT(ellipseIsRenderable(startAngle, endAngle));
-    ASSERT(startAngle >= 0 && startAngle < 2 * piFloat);
+    ASSERT(startAngle >= 0 && startAngle < twoPiFloat);
     ASSERT((anticlockwise && (startAngle - endAngle) >= 0) || (!anticlockwise && (endAngle - startAngle) >= 0));
 
     if (!rotation) {
@@ -485,8 +485,8 @@ bool Path::unionPath(const Path& other)
 #if !ASSERT_DISABLED
 bool ellipseIsRenderable(float startAngle, float endAngle)
 {
-    return (std::abs(endAngle - startAngle) < 2 * piFloat)
-        || WebCoreFloatNearlyEqual(std::abs(endAngle - startAngle), 2 * piFloat);
+    return (std::abs(endAngle - startAngle) < twoPiFloat)
+        || WebCoreFloatNearlyEqual(std::abs(endAngle - startAngle), twoPiFloat);
 }
 #endif
 

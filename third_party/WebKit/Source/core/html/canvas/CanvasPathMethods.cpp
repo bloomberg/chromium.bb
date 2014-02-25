@@ -135,7 +135,6 @@ namespace {
 
 float adjustEndAngle(float startAngle, float endAngle, bool anticlockwise)
 {
-    float twoPi = 2 * piFloat;
     float newEndAngle = endAngle;
     /* http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#dom-context-2d-arc
      * If the anticlockwise argument is false and endAngle-startAngle is equal to or greater than 2pi, or,
@@ -143,10 +142,10 @@ float adjustEndAngle(float startAngle, float endAngle, bool anticlockwise)
      * then the arc is the whole circumference of this ellipse, and the point at startAngle along this circle's circumference,
      * measured in radians clockwise from the ellipse's semi-major axis, acts as both the start point and the end point.
      */
-    if (!anticlockwise && endAngle - startAngle >= twoPi)
-        newEndAngle = startAngle + twoPi;
-    else if (anticlockwise && startAngle - endAngle >= twoPi)
-        newEndAngle = startAngle - twoPi;
+    if (!anticlockwise && endAngle - startAngle >= twoPiFloat)
+        newEndAngle = startAngle + twoPiFloat;
+    else if (anticlockwise && startAngle - endAngle >= twoPiFloat)
+        newEndAngle = startAngle - twoPiFloat;
 
     /*
      * Otherwise, the arc is the path along the circumference of this ellipse from the start point to the end point,
@@ -159,9 +158,9 @@ float adjustEndAngle(float startAngle, float endAngle, bool anticlockwise)
      * We preserve backward-compatibility.
      */
     else if (!anticlockwise && startAngle > endAngle)
-        newEndAngle = startAngle + (twoPi - fmodf(startAngle - endAngle, twoPi));
+        newEndAngle = startAngle + (twoPiFloat - fmodf(startAngle - endAngle, twoPiFloat));
     else if (anticlockwise && startAngle < endAngle)
-        newEndAngle = startAngle - (twoPi - fmodf(endAngle - startAngle, twoPi));
+        newEndAngle = startAngle - (twoPiFloat - fmodf(endAngle - startAngle, twoPiFloat));
 
     ASSERT(ellipseIsRenderable(startAngle, newEndAngle));
     return newEndAngle;
@@ -180,17 +179,16 @@ inline FloatPoint getPointOnEllipse(float radiusX, float radiusY, float theta)
 void canonicalizeAngle(float* startAngle, float* endAngle)
 {
     // Make 0 <= startAngle < 2*PI
-    float twoPi = 2 * piFloat;
     float newStartAngle = *startAngle;
     if (newStartAngle < 0)
-        newStartAngle = twoPi + fmodf(newStartAngle, -twoPi);
+        newStartAngle = twoPiFloat + fmodf(newStartAngle, -twoPiFloat);
     else
-        newStartAngle = fmodf(newStartAngle, twoPi);
+        newStartAngle = fmodf(newStartAngle, twoPiFloat);
 
     float delta = newStartAngle - *startAngle;
     *startAngle = newStartAngle;
     *endAngle = *endAngle + delta;
-    ASSERT(newStartAngle >= 0 && newStartAngle < twoPi);
+    ASSERT(newStartAngle >= 0 && newStartAngle < twoPiFloat);
 }
 
 /*
@@ -227,7 +225,7 @@ void canonicalizeAngle(float* startAngle, float* endAngle)
 void degenerateEllipse(CanvasPathMethods* path, float x, float y, float radiusX, float radiusY, float rotation, float startAngle, float endAngle, bool anticlockwise)
 {
     ASSERT(ellipseIsRenderable(startAngle, endAngle));
-    ASSERT(startAngle >= 0 && startAngle < 2 * piFloat);
+    ASSERT(startAngle >= 0 && startAngle < twoPiFloat);
     ASSERT((anticlockwise && (startAngle - endAngle) >= 0) || (!anticlockwise && (endAngle - startAngle) >= 0));
 
     FloatPoint center(x, y);
@@ -238,14 +236,13 @@ void degenerateEllipse(CanvasPathMethods* path, float x, float y, float radiusX,
     if ((!radiusX && !radiusY) || startAngle == endAngle)
         return;
 
-    float halfPiFloat = piFloat * 0.5;
     if (!anticlockwise) {
-        // startAngle - fmodf(startAngle, halfPiFloat) + halfPiFloat is the one of (0, 0.5Pi, Pi, 1.5Pi, 2Pi)
+        // startAngle - fmodf(startAngle, piOverTwoFloat) + piOverTwoFloat is the one of (0, 0.5Pi, Pi, 1.5Pi, 2Pi)
         // that is the closest to startAngle on the clockwise direction.
-        for (float angle = startAngle - fmodf(startAngle, halfPiFloat) + halfPiFloat; angle < endAngle; angle += halfPiFloat)
+        for (float angle = startAngle - fmodf(startAngle, piOverTwoFloat) + piOverTwoFloat; angle < endAngle; angle += piOverTwoFloat)
             lineToFloatPoint(path, center + rotationMatrix.mapPoint(getPointOnEllipse(radiusX, radiusY, angle)));
     } else {
-        for (float angle = startAngle - fmodf(startAngle, halfPiFloat); angle > endAngle; angle -= halfPiFloat)
+        for (float angle = startAngle - fmodf(startAngle, piOverTwoFloat); angle > endAngle; angle -= piOverTwoFloat)
             lineToFloatPoint(path, center + rotationMatrix.mapPoint(getPointOnEllipse(radiusX, radiusY, angle)));
     }
 

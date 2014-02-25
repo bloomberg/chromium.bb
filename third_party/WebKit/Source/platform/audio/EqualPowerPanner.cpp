@@ -101,8 +101,8 @@ void EqualPowerPanner::pan(double azimuth, double /*elevation*/, const AudioBus*
         }
     }
 
-    desiredGainL = cos(0.5 * piDouble * desiredPanPosition);
-    desiredGainR = sin(0.5 * piDouble * desiredPanPosition);
+    desiredGainL = cos(piOverTwoDouble * desiredPanPosition);
+    desiredGainR = sin(piOverTwoDouble * desiredPanPosition);
 
     // Don't de-zipper on first render call.
     if (m_isFirstRender) {
