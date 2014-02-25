@@ -822,18 +822,27 @@ void RenderWidgetHostViewMac::SetBounds(const gfx::Rect& rect) {
   // Ignore the position of |rect| for non-popup rwhvs. This is because
   // background tabs do not have a window, but the window is required for the
   // coordinate conversions. Popups are always for a visible tab.
-  if (IsPopup()) {
+  //
+  // Note: If |cocoa_view_| has been removed from the view hierarchy, it's still
+  // valid for resizing to be requested (e.g., during tab capture, to size the
+  // view to screen-capture resolution). In this case, simply treat the view as
+  // relative to the screen.
+  BOOL isRelativeToScreen = IsPopup() ||
+      ![[cocoa_view_ superview] isKindOfClass:[BaseView class]];
+  if (isRelativeToScreen) {
     // The position of |rect| is screen coordinate system and we have to
     // consider Cocoa coordinate system is upside-down and also multi-screen.
     NSPoint origin_global = NSPointFromCGPoint(rect.origin().ToCGPoint());
     NSSize size = NSMakeSize(rect.width(), rect.height());
     size = [cocoa_view_ convertSize:size toView:nil];
     origin_global.y = FlipYFromRectToScreen(origin_global.y, size.height);
-    [popup_window_ setFrame:NSMakeRect(origin_global.x, origin_global.y,
-                                       size.width, size.height)
-                    display:YES];
+    NSRect frame = NSMakeRect(origin_global.x, origin_global.y,
+                              size.width, size.height);
+    if (IsPopup())
+      [popup_window_ setFrame:frame display:YES];
+    else
+      [cocoa_view_ setFrame:frame];
   } else {
-    DCHECK([[cocoa_view_ superview] isKindOfClass:[BaseView class]]);
     BaseView* superview = static_cast<BaseView*>([cocoa_view_ superview]);
     gfx::Rect rect2 = [superview flipNSRectToRect:[cocoa_view_ frame]];
     rect2.set_width(rect.width());
