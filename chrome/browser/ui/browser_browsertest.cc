@@ -497,38 +497,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CrossProcessNavCancelsDialogs) {
   EXPECT_FALSE(contents->GetRenderProcessHost()->IgnoreInputEvents());
 }
 
-// Make sure that dialogs are closed after a renderer process dies, and that
-// subsequent navigations work.  See http://crbug/com/343265.
-IN_PROC_BROWSER_TEST_F(BrowserTest, SadTabCancelsDialogs) {
-  ASSERT_TRUE(test_server()->Start());
-  host_resolver()->AddRule("www.example.com", "127.0.0.1");
-  GURL beforeunload_url(test_server()->GetURL("files/beforeunload.html"));
-  ui_test_utils::NavigateToURL(browser(), beforeunload_url);
-
-  // Start a navigation to trigger the beforeunload dialog.
-  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
-  contents->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
-      base::string16(),
-      ASCIIToUTF16("window.location.href = 'data:text/html,foo'"));
-  AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
-  EXPECT_TRUE(alert->IsValid());
-  AppModalDialogQueue* dialog_queue = AppModalDialogQueue::GetInstance();
-  EXPECT_TRUE(dialog_queue->HasActiveDialog());
-
-  // Crash the renderer process and ensure the dialog is gone.
-  content::RenderProcessHost* child_process = contents->GetRenderProcessHost();
-  content::RenderProcessHostWatcher crash_observer(
-      child_process,
-      content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  base::KillProcess(child_process->GetHandle(), 0, false);
-  crash_observer.Wait();
-  EXPECT_FALSE(dialog_queue->HasActiveDialog());
-
-  // Make sure subsequent navigations work.
-  GURL url2("http://www.example.com/files/empty.html");
-  ui_test_utils::NavigateToURL(browser(), url2);
-}
-
 // Test for crbug.com/22004.  Reloading a page with a before unload handler and
 // then canceling the dialog should not leave the throbber spinning.
 IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
