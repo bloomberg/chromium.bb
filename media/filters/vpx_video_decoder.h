@@ -81,6 +81,10 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
   vpx_codec_ctx* vpx_codec_;
   vpx_codec_ctx* vpx_codec_alpha_;
 
+  // Memory pool used for VP9 decoding.
+  class MemoryPool;
+  scoped_refptr<MemoryPool> memory_pool_;
+
   VideoFramePool frame_pool_;
 
   DISALLOW_COPY_AND_ASSIGN(VpxVideoDecoder);

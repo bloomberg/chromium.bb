@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -13,11 +14,13 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
+#include "media/base/limits.h"
 #include "media/base/media_switches.h"
 #include "media/base/pipeline.h"
 #include "media/base/video_decoder_config.h"
@@ -30,6 +33,7 @@
 #define VPX_CODEC_DISABLE_COMPAT 1
 extern "C" {
 #include "third_party/libvpx/source/libvpx/vpx/vpx_decoder.h"
+#include "third_party/libvpx/source/libvpx/vpx/vpx_frame_buffer.h"
 #include "third_party/libvpx/source/libvpx/vpx/vp8dx.h"
 }
 
@@ -65,6 +69,136 @@ static int GetThreadCount(const VideoDecoderConfig& config) {
   decode_threads = std::max(decode_threads, 0);
   decode_threads = std::min(decode_threads, kMaxDecodeThreads);
   return decode_threads;
+}
+
+// Maximum number of frame buffers that can be used (by both chromium and libvpx
+// combined) for VP9 Decoding.
+// TODO(vigneshv): Investigate if this can be relaxed to a higher number.
+static const uint32 kVP9MaxFrameBuffers = VP9_MAXIMUM_REF_BUFFERS +
+                                          VPX_MAXIMUM_WORK_BUFFERS +
+                                          limits::kMaxVideoFrames;
+
+class VpxVideoDecoder::MemoryPool
+    : public base::RefCountedThreadSafe<VpxVideoDecoder::MemoryPool> {
+ public:
+  MemoryPool();
+
+  // Callback that will be called by libvpx when it needs a frame buffer.
+  // Parameters:
+  // |user_priv|  Private data passed to libvpx (pointer to memory pool).
+  // |min_size|   Minimum size needed by libvpx to decompress the next frame.
+  // |fb|         Pointer to the frame buffer to update.
+  // Returns 0 on success. Returns < 0 on failure.
+  static int32 GetVP9FrameBuffer(void* user_priv, size_t min_size,
+                                 vpx_codec_frame_buffer* fb);
+
+  // Callback that will be called by libvpx when the frame buffer is no longer
+  // being used by libvpx. Parameters:
+  // |user_priv|  Private data passed to libvpx (pointer to memory pool).
+  // |fb|         Pointer to the frame buffer that's being released.
+  static int32 ReleaseVP9FrameBuffer(void *user_priv,
+                                     vpx_codec_frame_buffer *fb);
+
+  // Generates a "no_longer_needed" closure that holds a reference
+  // to this pool.
+  base::Closure CreateFrameCallback(void* fb_priv_data);
+
+ private:
+  friend class base::RefCountedThreadSafe<VpxVideoDecoder::MemoryPool>;
+  ~MemoryPool();
+
+  // Reference counted frame buffers used for VP9 decoding. Reference counting
+  // is done manually because both chromium and libvpx has to release this
+  // before a buffer can be re-used.
+  struct VP9FrameBuffer {
+    VP9FrameBuffer() : ref_cnt(0) {}
+    std::vector<uint8> data;
+    uint32 ref_cnt;
+  };
+
+  // Gets the next available frame buffer for use by libvpx.
+  VP9FrameBuffer* GetFreeFrameBuffer(size_t min_size);
+
+  // Method that gets called when a VideoFrame that references this pool gets
+  // destroyed.
+  void OnVideoFrameDestroyed(VP9FrameBuffer* frame_buffer);
+
+  // Frame buffers to be used by libvpx for VP9 Decoding.
+  std::vector<VP9FrameBuffer*> frame_buffers_;
+
+  DISALLOW_COPY_AND_ASSIGN(MemoryPool);
+};
+
+VpxVideoDecoder::MemoryPool::MemoryPool() {}
+
+VpxVideoDecoder::MemoryPool::~MemoryPool() {
+  STLDeleteElements(&frame_buffers_);
+}
+
+VpxVideoDecoder::MemoryPool::VP9FrameBuffer*
+    VpxVideoDecoder::MemoryPool::GetFreeFrameBuffer(size_t min_size) {
+  // Check if a free frame buffer exists.
+  size_t i = 0;
+  for (; i < frame_buffers_.size(); ++i) {
+    if (frame_buffers_[i]->ref_cnt == 0)
+      break;
+  }
+
+  if (i == frame_buffers_.size()) {
+    // Maximum number of frame buffers reached.
+    if (i == kVP9MaxFrameBuffers)
+      return NULL;
+
+    // Create a new frame buffer.
+    frame_buffers_.push_back(new VP9FrameBuffer());
+  }
+
+  // Resize the frame buffer if necessary.
+  if (frame_buffers_[i]->data.size() < min_size)
+    frame_buffers_[i]->data.resize(min_size);
+  return frame_buffers_[i];
+}
+
+int32 VpxVideoDecoder::MemoryPool::GetVP9FrameBuffer(
+    void* user_priv, size_t min_size, vpx_codec_frame_buffer* fb) {
+  DCHECK(user_priv);
+  DCHECK(fb);
+
+  VpxVideoDecoder::MemoryPool* memory_pool =
+      static_cast<VpxVideoDecoder::MemoryPool*>(user_priv);
+
+  VP9FrameBuffer* fb_to_use = memory_pool->GetFreeFrameBuffer(min_size);
+  if (fb_to_use == NULL)
+    return -1;
+
+  fb->data = &fb_to_use->data[0];
+  fb->size = fb_to_use->data.size();
+  ++fb_to_use->ref_cnt;
+
+  // Set the frame buffer's private data to point at the external frame buffer.
+  fb->priv = static_cast<void*>(fb_to_use);
+  return 0;
+}
+
+int32 VpxVideoDecoder::MemoryPool::ReleaseVP9FrameBuffer(
+    void *user_priv, vpx_codec_frame_buffer *fb) {
+  VP9FrameBuffer* frame_buffer = static_cast<VP9FrameBuffer*>(fb->priv);
+  --frame_buffer->ref_cnt;
+  return 0;
+}
+
+base::Closure VpxVideoDecoder::MemoryPool::CreateFrameCallback(
+    void* fb_priv_data) {
+  VP9FrameBuffer* frame_buffer = static_cast<VP9FrameBuffer*>(fb_priv_data);
+  ++frame_buffer->ref_cnt;
+  return BindToCurrentLoop(
+             base::Bind(&MemoryPool::OnVideoFrameDestroyed, this,
+                        frame_buffer));
+}
+
+void VpxVideoDecoder::MemoryPool::OnVideoFrameDestroyed(
+    VP9FrameBuffer* frame_buffer) {
+  --frame_buffer->ref_cnt;
 }
 
 VpxVideoDecoder::VpxVideoDecoder(
@@ -142,6 +276,19 @@ bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
   if (!vpx_codec_)
     return false;
 
+  // We use our own buffers for VP9 so that there is no need to copy data after
+  // decoding.
+  if (config.codec() == kCodecVP9) {
+    memory_pool_ = new MemoryPool();
+    if (vpx_codec_set_frame_buffer_functions(vpx_codec_,
+                                             &MemoryPool::GetVP9FrameBuffer,
+                                             &MemoryPool::ReleaseVP9FrameBuffer,
+                                             memory_pool_)) {
+      LOG(ERROR) << "Failed to configure external buffers.";
+      return false;
+    }
+  }
+
   if (config.format() == VideoFrame::YV12A) {
     vpx_codec_alpha_ = InitializeVpxContext(vpx_codec_alpha_, config);
     if (!vpx_codec_alpha_)
@@ -156,6 +303,7 @@ void VpxVideoDecoder::CloseDecoder() {
     vpx_codec_destroy(vpx_codec_);
     delete vpx_codec_;
     vpx_codec_ = NULL;
+    memory_pool_ = NULL;
   }
   if (vpx_codec_alpha_) {
     vpx_codec_destroy(vpx_codec_alpha_);
@@ -341,6 +489,21 @@ void VpxVideoDecoder::CopyVpxImageTo(const vpx_image* vpx_image,
         vpx_image->fmt == VPX_IMG_FMT_YV12);
 
   gfx::Size size(vpx_image->d_w, vpx_image->d_h);
+
+  if (!vpx_codec_alpha_ && memory_pool_) {
+    *video_frame = VideoFrame::WrapExternalYuvData(
+                       VideoFrame::YV12,
+                       size, gfx::Rect(size), config_.natural_size(),
+                       vpx_image->stride[VPX_PLANE_Y],
+                       vpx_image->stride[VPX_PLANE_U],
+                       vpx_image->stride[VPX_PLANE_V],
+                       vpx_image->planes[VPX_PLANE_Y],
+                       vpx_image->planes[VPX_PLANE_U],
+                       vpx_image->planes[VPX_PLANE_V],
+                       kNoTimestamp(),
+                       memory_pool_->CreateFrameCallback(vpx_image->fb_priv));
+    return;
+  }
 
   *video_frame = frame_pool_.CreateFrame(
       vpx_codec_alpha_ ? VideoFrame::YV12A : VideoFrame::YV12,
