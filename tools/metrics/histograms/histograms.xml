@@ -5312,17 +5312,27 @@ other types of suffix sets.
 
 <histogram name="ExtensionToolbarModel.BrowserActionsCount">
   <summary>
-    The number of icons the Browser Actions Container knows about (visible or
-    not). Measured once per startup per profile.
+    The number of icons the Browser Actions Container knows about (visible or in
+    the overflow bucket). Does not count icons that have been permanently hidden
+    by the user. Measured once per startup per (non-incognito) profile.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionToolbarModel.BrowserActionsPermanentlyHidden">
+  <summary>
+    The number of Browser Action icons the user has elected to permanently hide
+    (as opposed to putting them in the overflow bucket). Measured once per
+    startup per (non-incognito) profile.
   </summary>
 </histogram>
 
 <histogram name="ExtensionToolbarModel.BrowserActionsVisible">
   <summary>
-    The number of visible icons in the Browser Actions Container. 0 means all
-    icons are hidden. MAX_INT means the toolbar is always showing all icons.
-    Measured once per startup per profile for those profiles who have one or
-    more browser actions showing in the toolbar.
+    The number of visible icons in the Browser Actions Container (visible as in
+    number of icons not in the overflow bucket). 0 means all icons are in the
+    overflow bucket. MAX_INT means the toolbar is always showing all icons.
+    Measured once per startup per (non-incognito) profile but only for those
+    profiles that have one or more browser actions showing in the toolbar.
   </summary>
 </histogram>
 

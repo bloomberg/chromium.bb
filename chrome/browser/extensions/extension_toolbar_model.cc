@@ -342,6 +342,7 @@ void ExtensionToolbarModel::Populate(
       extensions::ExtensionActionManager::Get(profile_);
 
   // Create the lists.
+  int hidden = 0;
   for (extensions::ExtensionSet::const_iterator it =
            service->extensions()->begin();
        it != service->extensions()->end(); ++it) {
@@ -350,6 +351,7 @@ void ExtensionToolbarModel::Populate(
       continue;
     if (!extensions::ExtensionActionAPI::GetBrowserActionVisibility(
             extension_prefs_, extension->id())) {
+      ++hidden;
       continue;
     }
 
@@ -384,6 +386,8 @@ void ExtensionToolbarModel::Populate(
   toolbar_items_.insert(toolbar_items_.end(), unsorted.begin(),
                         unsorted.end());
 
+  UMA_HISTOGRAM_COUNTS_100(
+      "ExtensionToolbarModel.BrowserActionsPermanentlyHidden", hidden);
   UMA_HISTOGRAM_COUNTS_100("ExtensionToolbarModel.BrowserActionsCount",
                            toolbar_items_.size());
 
