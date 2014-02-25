@@ -75,8 +75,8 @@ void AnalyserNode::setFftSize(unsigned size, ExceptionState& exceptionState)
         exceptionState.throwDOMException(
             IndexSizeError,
             (size < RealtimeAnalyser::MinFFTSize || size > RealtimeAnalyser::MaxFFTSize) ?
-                ExceptionMessages::indexOutsideRange("FTT size", size, RealtimeAnalyser::MinFFTSize, ExceptionMessages::InclusiveBound, RealtimeAnalyser::MaxFFTSize, ExceptionMessages::InclusiveBound)
-                : ("The value provided (" + String::number(size) + " is not a power of two."));
+                ExceptionMessages::indexOutsideRange("FFT size", size, RealtimeAnalyser::MinFFTSize, ExceptionMessages::InclusiveBound, RealtimeAnalyser::MaxFFTSize, ExceptionMessages::InclusiveBound)
+                : ("The value provided (" + String::number(size) + ") is not a power of two."));
     }
 }
 
