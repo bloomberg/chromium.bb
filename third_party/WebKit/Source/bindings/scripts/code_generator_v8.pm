@@ -540,12 +540,13 @@ END
 END
     }
     if (SVGTypeNeedsToHoldContextElement($interface->name)) {
-        AddToImplIncludes("V8SVGPathElement.h");
+        AddToImplIncludes("V8SVGElement.h");
         $code .= <<END;
-    if (impl->contextElement()) {
-        if (!DOMDataStore::containsWrapper<V8SVGElement>(impl->contextElement(), isolate))
-            wrap(impl->contextElement(), creationContext, isolate);
-        DOMDataStore::setWrapperReference<V8SVGElement>(wrapper, impl->contextElement(), isolate);
+    SVGElement* contextElement = impl->contextElement();
+    if (contextElement) {
+        if (!DOMDataStore::containsWrapper<V8SVGElement>(contextElement, isolate))
+            wrap(contextElement, creationContext, isolate);
+        DOMDataStore::setWrapperReference<V8SVGElement>(wrapper, contextElement, isolate);
     }
 END
     }
