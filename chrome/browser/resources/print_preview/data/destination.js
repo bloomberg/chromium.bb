@@ -29,86 +29,74 @@ cr.define('print_preview', function() {
                        connectionStatus, opt_params) {
     /**
      * ID of the destination.
-     * @type {string}
-     * @private
+     * @private {string}
      */
     this.id_ = id;
 
     /**
      * Type of the destination.
-     * @type {!print_preview.Destination.Type}
-     * @private
+     * @private {!print_preview.Destination.Type}
      */
     this.type_ = type;
 
     /**
      * Origin of the destination.
-     * @type {!print_preview.Destination.Origin}
-     * @private
+     * @private {!print_preview.Destination.Origin}
      */
     this.origin_ = origin;
 
     /**
      * Display name of the destination.
-     * @type {string}
-     * @private
+     * @private {string}
      */
     this.displayName_ = displayName || '';
 
     /**
      * Whether the destination has been used recently.
-     * @type {boolean}
-     * @private
+     * @private {boolean}
      */
     this.isRecent_ = isRecent;
 
     /**
      * Tags associated with the destination.
-     * @type {!Array.<string>}
-     * @private
+     * @private {!Array.<string>}
      */
     this.tags_ = (opt_params && opt_params.tags) || [];
 
     /**
      * Print capabilities of the destination.
-     * @type {print_preview.Cdd}
-     * @private
+     * @private {print_preview.Cdd}
      */
     this.capabilities_ = null;
 
     /**
      * Whether the destination is owned by the user.
-     * @type {boolean}
-     * @private
+     * @private {boolean}
      */
     this.isOwned_ = (opt_params && opt_params.isOwned) || false;
 
     /**
      * Cache of destination location fetched from tags.
-     * @type {?string}
-     * @private
+     * @private {?string}
      */
     this.location_ = null;
 
     /**
      * Printer description.
-     * @type {?string}
-     * @private
+     * @private {string}
      */
     this.description_ = (opt_params && opt_params.description) || '';
 
     /**
      * Connection status of the destination.
-     * @type {!print_preview.Destination.ConnectionStatus}
-     * @private
+     * @private {!print_preview.Destination.ConnectionStatus}
      */
     this.connectionStatus_ = connectionStatus;
 
     /**
      * Number of milliseconds since the epoch when the printer was last
      * accessed.
-     * @type {number}
-     * @private
+     * @private {number}
      */
     this.lastAccessTime_ = (opt_params && opt_params.lastAccessTime) ||
                            Date.now();
@@ -116,16 +104,14 @@ cr.define('print_preview', function() {
     /**
      * Whether the user has accepted the terms-of-service for the print
      * destination. Only applies to the FedEx Office cloud-based printer.
-     * {@code} null if terms-of-service does not apply to the print destination.
-     * @type {?boolean}
-     * @private
+     * {@code null} if terms-of-service does not apply to the print destination.
+     * @private {?boolean}
      */
-    this.isTosAccepted_ = (opt_params && opt_params.isTosAccepted) || false;
+    this.isTosAccepted_ = opt_params && opt_params.isTosAccepted;
 
     /**
      * Cloud ID for Privet printers.
-     * @type {?string}
-     * @private
+     * @private {string}
      */
     this.cloudID_ = (opt_params && opt_params.cloudID) || '';
   };
@@ -252,7 +238,7 @@ cr.define('print_preview', function() {
               Destination.ConnectionStatus.UNREGISTERED);
     },
 
-    /** @return {boolean} Whether the destination is a privet local printer */
+    /** @return {boolean} Whether the destination is a Privet local printer */
     get isPrivet() {
       return this.origin_ == Destination.Origin.PRIVET;
     },
@@ -398,10 +384,10 @@ cr.define('print_preview', function() {
 
     /**
      * @return {!Array.<string>} Properties (besides display name) to match
-     * search queries against.
+     *     search queries against.
      */
     get extraPropertiesToMatch() {
-      return [this.location, this.description_];
+      return [this.location, this.description];
     },
 
     /**
