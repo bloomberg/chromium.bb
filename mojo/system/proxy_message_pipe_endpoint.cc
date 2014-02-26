@@ -68,11 +68,10 @@ void ProxyMessagePipeEndpoint::EnqueueMessage(
   }
 
   if (is_running()) {
+    message->SerializeAndCloseDispatchers(channel_.get());
+
     message->set_source_id(local_id_);
     message->set_destination_id(remote_id_);
-    // If it fails at this point, the message gets dropped. (This is no
-    // different from any other in-transit errors.)
-    // Note: |WriteMessage()| will destroy the message even on failure.
     if (!channel_->WriteMessage(message.Pass()))
       LOG(WARNING) << "Failed to write message to channel";
   } else {

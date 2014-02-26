@@ -6,6 +6,7 @@
 
 #include <errno.h>
 #include <string.h>
+#include <sys/uio.h>
 #include <unistd.h>
 
 #include <algorithm>
@@ -263,9 +264,11 @@ void RawChannelPosix::OnFileCanReadWithoutBlocking(int fd) {
                &read_buffer_[read_buffer_start], read_buffer_num_valid_bytes_,
                &message_size) &&
            read_buffer_num_valid_bytes_ >= message_size) {
+      // TODO(vtl): FIXME -- replace "unowned buffer" |MessageInTransit|s with
+      // some sort of "view" abstraction.
       MessageInTransit message(MessageInTransit::UNOWNED_BUFFER, message_size,
                                &read_buffer_[read_buffer_start]);
-      DCHECK_EQ(message.main_buffer_size(), message_size);
+      DCHECK_EQ(message.total_size(), message_size);
 
       // Dispatch the message.
       delegate()->OnReadMessage(message);
@@ -351,6 +354,49 @@ void RawChannelPosix::CallOnFatalError(Delegate::FatalError fatal_error) {
   delegate()->OnFatalError(fatal_error);
 }
 
+// TODO(vtl): This will collide with yzshen's work. This is just a hacky,
+// minimally-invasive function that does what I want (write/resume writing a
+// |MessageInTransit| that may consist of more than one buffer).
+ssize_t WriteMessageInTransit(int fd,
+                              MessageInTransit* message,
+                              size_t offset,
+                              size_t* bytes_to_write) {
+  *bytes_to_write = message->total_size() - offset;
+  if (!message->secondary_buffer_size()) {
+    // Only write from the main buffer.
+    DCHECK_LT(offset, message->main_buffer_size());
+    DCHECK_LE(*bytes_to_write, message->main_buffer_size());
+    return HANDLE_EINTR(
+        write(fd,
+              static_cast<const char*>(message->main_buffer()) + offset,
+              *bytes_to_write));
+  }
+  if (offset >= message->main_buffer_size()) {
+    // Only write from the secondary buffer.
+    DCHECK_LT(offset - message->main_buffer_size(),
+              message->secondary_buffer_size());
+    DCHECK_LE(*bytes_to_write, message->secondary_buffer_size());
+    return HANDLE_EINTR(
+        write(fd,
+              static_cast<const char*>(message->secondary_buffer()) +
+                  (offset - message->main_buffer_size()),
+              *bytes_to_write));
+  }
+  // Write from both buffers. (Note that using |writev()| is measurably slower
+  // than using |write()| -- at least in a microbenchmark -- but much faster
+  // than using two |write()|s.)
+  DCHECK_EQ(*bytes_to_write, message->main_buffer_size() - offset +
+                                 message->secondary_buffer_size());
+  struct iovec iov[2] = {
+    { const_cast<char*>(
+          static_cast<const char*>(message->main_buffer()) + offset),
+      message->main_buffer_size() - offset },
+    { const_cast<void*>(message->secondary_buffer()),
+      message->secondary_buffer_size() }
+  };
+  return HANDLE_EINTR(writev(fd, iov, 2));
+}
+
 bool RawChannelPosix::WriteFrontMessageNoLock() {
   write_lock_.AssertAcquired();
 
@@ -358,13 +404,12 @@ bool RawChannelPosix::WriteFrontMessageNoLock() {
   DCHECK(!write_message_queue_.empty());
 
   MessageInTransit* message = write_message_queue_.front();
-  DCHECK_LT(write_message_offset_, message->main_buffer_size());
-  size_t bytes_to_write = message->main_buffer_size() - write_message_offset_;
-  ssize_t bytes_written = HANDLE_EINTR(
-      write(fd_.get().fd,
-            static_cast<const char*>(message->main_buffer()) +
-                write_message_offset_,
-            bytes_to_write));
+  DCHECK_LT(write_message_offset_, message->total_size());
+  size_t bytes_to_write;
+  ssize_t bytes_written = WriteMessageInTransit(fd_.get().fd,
+                                                message,
+                                                write_message_offset_,
+                                                &bytes_to_write);
   if (bytes_written < 0) {
     if (errno != EAGAIN && errno != EWOULDBLOCK) {
       PLOG(ERROR) << "write of size " << bytes_to_write;

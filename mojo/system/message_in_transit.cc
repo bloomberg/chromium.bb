@@ -48,16 +48,15 @@ MessageInTransit::MessageInTransit(OwnedBuffer,
                                    uint32_t num_bytes,
                                    uint32_t num_handles,
                                    const void* bytes)
-    : owns_main_buffer_(true),
+    : owns_buffers_(true),
       main_buffer_size_(RoundUpMessageAlignment(sizeof(Header) + num_bytes)),
-      main_buffer_(base::AlignedAlloc(main_buffer_size_, kMessageAlignment)) {
+      main_buffer_(base::AlignedAlloc(main_buffer_size_, kMessageAlignment)),
+      secondary_buffer_size_(0),
+      secondary_buffer_(NULL) {
   DCHECK_LE(num_bytes, kMaxMessageNumBytes);
   DCHECK_LE(num_handles, kMaxMessageNumHandles);
 
-  // Note: If dispatchers are subsequently attached (in particular, if
-  // |num_handles| is nonzero), then |total_size| will have to be adjusted.
-  // TODO(vtl): Figure out where we should really set this.
-  header()->total_size = static_cast<uint32_t>(main_buffer_size_);
+  // |total_size| is updated below, from the other values.
   header()->type = type;
   header()->subtype = subtype;
   header()->source_id = kInvalidEndpointId;
@@ -66,6 +65,9 @@ MessageInTransit::MessageInTransit(OwnedBuffer,
   header()->num_handles = num_handles;
   header()->reserved0 = 0;
   header()->reserved1 = 0;
+  // Note: If dispatchers are subsequently attached (in particular, if
+  // |num_handles| is nonzero), then |total_size| will have to be adjusted.
+  UpdateTotalSize();
 
   if (bytes) {
     memcpy(MessageInTransit::bytes(), bytes, num_bytes);
@@ -78,16 +80,20 @@ MessageInTransit::MessageInTransit(OwnedBuffer,
 
 MessageInTransit::MessageInTransit(OwnedBuffer,
                                    const MessageInTransit& other)
-    : owns_main_buffer_(true),
+    : owns_buffers_(true),
       main_buffer_size_(other.main_buffer_size()),
-      main_buffer_(base::AlignedAlloc(main_buffer_size_, kMessageAlignment)) {
+      main_buffer_(base::AlignedAlloc(main_buffer_size_, kMessageAlignment)),
+      secondary_buffer_size_(other.secondary_buffer_size()),
+      secondary_buffer_(secondary_buffer_size_ ?
+                            base::AlignedAlloc(secondary_buffer_size_,
+                                               kMessageAlignment) : NULL) {
   DCHECK(!other.dispatchers_.get());
   DCHECK_GE(main_buffer_size_, sizeof(Header));
   DCHECK_EQ(main_buffer_size_ % kMessageAlignment, 0u);
 
-  memcpy(main_buffer_, other.main_buffer_, main_buffer_size_);
+  memcpy(main_buffer_, other.main_buffer(), main_buffer_size_);
+  memcpy(secondary_buffer_, other.secondary_buffer(), secondary_buffer_size_);
 
-  // TODO(vtl): This will change.
   DCHECK_EQ(main_buffer_size_,
             RoundUpMessageAlignment(sizeof(Header) + num_bytes()));
 }
@@ -95,24 +101,41 @@ MessageInTransit::MessageInTransit(OwnedBuffer,
 MessageInTransit::MessageInTransit(UnownedBuffer,
                                    size_t message_size,
                                    void* buffer)
-    : owns_main_buffer_(false),
-      main_buffer_size_(message_size),
-      main_buffer_(buffer) {
-  DCHECK_GE(main_buffer_size_, sizeof(Header));
-  DCHECK_EQ(main_buffer_size_ % kMessageAlignment, 0u);
-  DCHECK(main_buffer_);
+    : owns_buffers_(false),
+      main_buffer_size_(0),
+      main_buffer_(NULL),
+      secondary_buffer_size_(0),
+      secondary_buffer_(NULL) {
+  DCHECK_GE(message_size, sizeof(Header));
+  DCHECK_EQ(message_size % kMessageAlignment, 0u);
+  DCHECK(buffer);
+
+  Header* header = static_cast<Header*>(buffer);
+  DCHECK_EQ(header->total_size, message_size);
+
+  main_buffer_size_ =
+      RoundUpMessageAlignment(sizeof(Header) + header->num_bytes);
+  DCHECK_LE(main_buffer_size_, message_size);
+  main_buffer_ = buffer;
   DCHECK_EQ(reinterpret_cast<uintptr_t>(main_buffer_) % kMessageAlignment, 0u);
-  // TODO(vtl): This will change.
-  DCHECK_EQ(main_buffer_size_,
-            RoundUpMessageAlignment(sizeof(Header) + num_bytes()));
+
+  if (message_size > main_buffer_size_) {
+    secondary_buffer_size_ = message_size - main_buffer_size_;
+    secondary_buffer_ = static_cast<char*>(buffer) + main_buffer_size_;
+    DCHECK_EQ(reinterpret_cast<uintptr_t>(secondary_buffer_) %
+                  kMessageAlignment, 0u);
+  }
 }
 
 MessageInTransit::~MessageInTransit() {
-  if (owns_main_buffer_) {
+  if (owns_buffers_) {
     base::AlignedFree(main_buffer_);
+    base::AlignedFree(secondary_buffer_);  // Okay if null.
 #ifndef NDEBUG
     main_buffer_size_ = 0;
     main_buffer_ = NULL;
+    secondary_buffer_size_ = 0;
+    secondary_buffer_ = NULL;
 #endif
   }
 
@@ -149,7 +172,7 @@ bool MessageInTransit::GetNextMessageSize(const void* buffer,
 void MessageInTransit::SetDispatchers(
     scoped_ptr<std::vector<scoped_refptr<Dispatcher> > > dispatchers) {
   DCHECK(dispatchers.get());
-  DCHECK(owns_main_buffer_);
+  DCHECK(owns_buffers_);
   DCHECK(!dispatchers_.get());
 
   dispatchers_ = dispatchers.Pass();
@@ -157,6 +180,56 @@ void MessageInTransit::SetDispatchers(
   for (size_t i = 0; i < dispatchers_->size(); i++)
     DCHECK(!(*dispatchers_)[i] || (*dispatchers_)[i]->HasOneRef());
 #endif
+}
+
+void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {
+  DCHECK(channel);
+  DCHECK(owns_buffers_);
+  DCHECK(!secondary_buffer_);
+  CHECK_EQ(num_handles(),
+           dispatchers_.get() ? dispatchers_->size() : static_cast<size_t>(0));
+
+  if (!num_handles())
+    return;
+
+  // The size of the secondary buffer. We'll start with the size of the entry
+  // size table (which will contain the size of the data for each handle), and
+  // add to it as we go along.
+  size_t size = RoundUpMessageAlignment(num_handles() * sizeof(uint32_t));
+  // The maximum size that we'll need for the secondary buffer. We'll allocate
+  // this much.
+  size_t max_size = size;
+  // TODO(vtl): Iterate through dispatchers and query their maximum size (and
+  // add each, rounded up, to |max_size|).
+
+  secondary_buffer_ = base::AlignedAlloc(max_size, kMessageAlignment);
+  // TODO(vtl): I wonder if it's faster to clear everything once, or to only
+  // clear padding as needed.
+  memset(secondary_buffer_, 0, max_size);
+
+  uint32_t* entry_size_table = static_cast<uint32_t*>(secondary_buffer_);
+  for (size_t i = 0; i < dispatchers_->size(); i++) {
+    // The entry size table entry is already zero by default.
+    if (!(*dispatchers_)[i])
+      continue;
+
+    // TODO(vtl): Serialize this dispatcher (getting its actual size, and adding
+    // that (rounded up) to |size|.
+    entry_size_table[i] = 0;
+
+    DCHECK((*dispatchers_)[i]->HasOneRef());
+    (*dispatchers_)[i]->Close();
+  }
+
+  secondary_buffer_size_ = static_cast<uint32_t>(size);
+  UpdateTotalSize();
+}
+
+void MessageInTransit::UpdateTotalSize() {
+  DCHECK_EQ(main_buffer_size_ % kMessageAlignment, 0u);
+  DCHECK_EQ(secondary_buffer_size_ % kMessageAlignment, 0u);
+  header()->total_size =
+      static_cast<uint32_t>(main_buffer_size_ + secondary_buffer_size_);
 }
 
 }  // namespace system

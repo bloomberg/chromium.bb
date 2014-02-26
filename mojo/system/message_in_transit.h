@@ -17,6 +17,8 @@
 namespace mojo {
 namespace system {
 
+class Channel;
+
 // This class is used to represent data in transit. It is thread-unsafe.
 class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
  public:
@@ -87,30 +89,48 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   // Makes this message "own" the given set of dispatchers. The dispatchers must
   // not be referenced from anywhere else (in particular, not from the handle
   // table), i.e., each dispatcher must have a reference count of 1. This
-  // message must also own its main buffer and not already have dispatchers.
+  // message must also own its buffers and not already have dispatchers.
   void SetDispatchers(
       scoped_ptr<std::vector<scoped_refptr<Dispatcher> > > dispatchers);
 
-  // Gets the "main" buffer for a |MessageInTransit|. A |MessageInTransit| can
-  // be serialized by writing the main buffer. The returned pointer will be
-  // aligned to a multiple of |kMessageAlignment| bytes, and the size of the
-  // buffer (see below) will also be a multiple of |kMessageAlignment|.
-  //
-  // The main buffer always consists of the header (of type |Header|, which is
-  // an internal detail), followed by the message data, accessed by |bytes()|
-  // (of size |num_bytes()|, and also |kMessageAlignment|-aligned), and then any
-  // necessary padding to make |main_buffer_size()| a multiple of
-  // |kMessageAlignment|.
-  // TODO(vtl): Add a "secondary" buffer, so that this makes more sense.
-  const void* main_buffer() const { return main_buffer_; }
+  // Serializes any dispatchers to the secondary buffer. This message must own
+  // its buffers (in order to have dispatchers in the first place), and the
+  // secondary buffer must not yet exist (so this must only be called once). The
+  // caller must ensure (e.g., by holding on to a reference) that |channel|
+  // stays alive through the call.
+  void SerializeAndCloseDispatchers(Channel* channel);
 
-  // Gets the size of the main buffer (in number of bytes).
+  // |MessageInTransit| buffers: A |MessageInTransit| can be serialized by
+  // writing the main buffer and then, if it has one, the secondary buffer. Both
+  // buffers are |kMessageAlignment|-byte aligned and a multiple of
+  // |kMessageAlignment| bytes in size.
+  //
+  // The main buffer consists of the header (of type |Header|, which is an
+  // internal detail of this class) followed immediately by the message data
+  // (accessed by |bytes()| and of size |num_bytes()|, and also
+  // |kMessageAlignment|-byte aligned), and then any padding needed to make the
+  // main buffer a multiple of |kMessageAlignment| bytes in size.
+  //
+  // The secondary buffer consists first of a table of |uint32_t|s with
+  // |num_handles()| entries; each entry in the table is the (unpadded) size of
+  // the data for a handle (a size of 0 indicates in invalid handle/null
+  // dispatcher). The table is followed by padding, then the first entry and
+  // padding, the second entry and padding, etc. (padding as required to
+  // maintain |kMessageAlignment|-byte alignment).
+
+  // Gets the main buffer and its size (in number of bytes), respectively.
+  const void* main_buffer() const { return main_buffer_; }
   size_t main_buffer_size() const { return main_buffer_size_; }
 
+  // Gets the secondary buffer and its size (in number of bytes), respectively.
+  const void* secondary_buffer() const { return secondary_buffer_; }
+  size_t secondary_buffer_size() const { return secondary_buffer_size_; }
+
+  // Gets the total size of the message (see comment in |Header|, below).
+  size_t total_size() const { return header()->total_size; }
+
   // Gets the size of the message data.
-  uint32_t num_bytes() const {
-    return header()->num_bytes;
-  }
+  uint32_t num_bytes() const { return header()->num_bytes; }
 
   // Gets the message data (of size |num_bytes()| bytes).
   const void* bytes() const {
@@ -118,9 +138,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   }
   void* bytes() { return static_cast<char*>(main_buffer_) + sizeof(Header); }
 
-  uint32_t num_handles() const {
-    return header()->num_handles;
-  }
+  uint32_t num_handles() const { return header()->num_handles; }
 
   Type type() const { return header()->type; }
   Subtype subtype() const { return header()->subtype; }
@@ -139,8 +157,6 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
     return dispatchers_.get();
   }
 
-  // TODO(vtl): Add whatever's necessary to transport handles.
-
   // Rounds |n| up to a multiple of |kMessageAlignment|.
   static inline size_t RoundUpMessageAlignment(size_t n) {
     return (n + kMessageAlignment - 1) & ~(kMessageAlignment - 1);
@@ -155,12 +171,14 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   struct Header {
     // Total size of the message, including the header, the message data
     // ("bytes") including padding (to make it a multiple of |kMessageAlignment|
-    // bytes), and serialized handle information (TODO(vtl)).
+    // bytes), and serialized handle information. Note that this may not be the
+    // correct value if dispatchers are attached but
+    // |SerializeAndCloseDispatchers()| has not been called.
     uint32_t total_size;
-    Type type;
-    Subtype subtype;
-    EndpointId source_id;
-    EndpointId destination_id;
+    Type type;  // 2 bytes.
+    Subtype subtype;  // 2 bytes.
+    EndpointId source_id;  // 4 bytes.
+    EndpointId destination_id;  // 4 bytes.
     // Size of actual message data.
     uint32_t num_bytes;
     // Number of handles "attached".
@@ -175,9 +193,17 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   }
   Header* header() { return static_cast<Header*>(main_buffer_); }
 
-  bool owns_main_buffer_;
+  void UpdateTotalSize();
+
+  // Whether we own |main_buffer_| and |secondary_buffer_| or not (that is, we
+  // own neither).
+  bool owns_buffers_;
+
   size_t main_buffer_size_;
   void* main_buffer_;
+
+  size_t secondary_buffer_size_;
+  void* secondary_buffer_;  // May be null.
 
   // Any dispatchers that may be attached to this message. This is only
   // supported if this message owns its main buffer. These dispatchers should be
