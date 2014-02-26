@@ -25,8 +25,15 @@ function test()
 
     function step1()
     {
-        WebInspector.showPanel("elements");
-        InspectorTest.selectNodeAndWaitForStyles("inspected", step2);
+        InspectorTest.addSniffer(WebInspector.CSSStyleSheetHeader.prototype, "pushSourceMapping", sourceMappingSniffer, true);
+
+        function sourceMappingSniffer(sourceMapping)
+        {
+            if (sourceMapping instanceof WebInspector.SASSSourceMapping) {
+                WebInspector.showPanel("elements");
+                InspectorTest.selectNodeAndWaitForStyles("inspected", step2);
+            }
+        }
     }
 
     function step2()
