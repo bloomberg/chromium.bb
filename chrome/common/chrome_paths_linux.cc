@@ -59,8 +59,8 @@ bool GetUserMediaDirectory(const std::string& xdg_name,
 bool GetDefaultUserDataDirectory(base::FilePath* result) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
   base::FilePath config_dir(GetXDGDirectory(env.get(),
-                                      kXdgConfigHomeEnvVar,
-                                      kDotConfigDir));
+                                            kXdgConfigHomeEnvVar,
+                                            kDotConfigDir));
 #if defined(GOOGLE_CHROME_BUILD)
   *result = config_dir.Append("google-chrome");
 #else
@@ -88,8 +88,8 @@ void GetUserCacheDirectory(const base::FilePath& profile_dir,
   if (!PathService::Get(base::DIR_CACHE, &cache_dir))
     return;
   base::FilePath config_dir(GetXDGDirectory(env.get(),
-                                      kXdgConfigHomeEnvVar,
-                                      kDotConfigDir));
+                                            kXdgConfigHomeEnvVar,
+                                            kDotConfigDir));
 
   if (!config_dir.AppendRelativePath(profile_dir, &cache_dir))
     return;
@@ -109,7 +109,7 @@ bool GetUserDownloadsDirectorySafe(base::FilePath* result) {
 }
 
 bool GetUserDownloadsDirectory(base::FilePath* result) {
-  *result = base::nix::GetXDGUserDirectory("DOWNLOAD", kDownloadsDir);
+  *result = GetXDGUserDirectory("DOWNLOAD", kDownloadsDir);
   return true;
 }
 
