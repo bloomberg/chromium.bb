@@ -70,7 +70,7 @@ class WalletClient : public net::URLFetcherDelegate {
 
   // The type of error returned by Online Wallet.
   enum ErrorType {
-    // Errors to display to users.
+    // Errors to display to users ----------------------------------------------
     BUYER_ACCOUNT_ERROR,                // Risk deny, unsupported country, or
                                         // account closed.
     BUYER_LEGAL_ADDRESS_NOT_SUPPORTED,  // User's Buyer Legal Address is
@@ -81,18 +81,21 @@ class WalletClient : public net::URLFetcherDelegate {
     UNSUPPORTED_MERCHANT,               // Merchant is blacklisted due to
                                         // compliance violation.
 
-    // API errors.
-    BAD_REQUEST,              // Request was very malformed or sent to the
-                              // wrong endpoint.
-    INVALID_PARAMS,           // API call had missing or invalid parameters.
-    UNSUPPORTED_API_VERSION,  // The server API version of the request is no
-                              // longer supported.
+    // API errors --------------------------------------------------------------
+    // Request was very malformed or sent to the wrong endpoint.
+    BAD_REQUEST,
+    // API call had missing or invalid parameters.
+    INVALID_PARAMS,
+    // The server API version of the request is no longer supported.
+    UNSUPPORTED_API_VERSION,
+    // The user agent is not supported or a bad Google API key was provided.
+    UNSUPPORTED_USER_AGENT_OR_API_KEY,
 
-    // Server errors.
+    // Server errors -----------------------------------------------------------
     INTERNAL_ERROR,           // Unknown server side error.
     SERVICE_UNAVAILABLE,      // Online Wallet is down.
 
-    // Other errors.
+    // Other errors ------------------------------------------------------------
     MALFORMED_RESPONSE,       // The response from Wallet was malformed.
     NETWORK_ERROR,            // The response code of the server was something
                               // other than a 200 or 400.

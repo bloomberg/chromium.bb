@@ -80,6 +80,8 @@ WalletClient::ErrorType StringToErrorType(const std::string& error_type) {
     return WalletClient::SERVICE_UNAVAILABLE;
   if (LowerCaseEqualsASCII(trimmed, "unsupported_api_version"))
     return WalletClient::UNSUPPORTED_API_VERSION;
+  if (LowerCaseEqualsASCII(trimmed, "unsupported_user_agent"))
+    return WalletClient::UNSUPPORTED_USER_AGENT_OR_API_KEY;
 
   DVLOG(1) << "Unknown wallet error string: \"" << error_type << '"';
   return WalletClient::UNKNOWN_ERROR;
@@ -168,6 +170,8 @@ AutofillMetrics::WalletErrorMetric ErrorTypeToUmaMetric(
       return AutofillMetrics::WALLET_NETWORK_ERROR;
     case WalletClient::UNKNOWN_ERROR:
       return AutofillMetrics::WALLET_UNKNOWN_ERROR;
+    case WalletClient::UNSUPPORTED_USER_AGENT_OR_API_KEY:
+      return AutofillMetrics::WALLET_UNSUPPORTED_USER_AGENT_OR_API_KEY;
   }
 
   NOTREACHED();
@@ -740,6 +744,9 @@ void WalletClient::HandleWalletError(WalletClient::ErrorType error_type) {
       break;
     case WalletClient::UNKNOWN_ERROR:
       error_message = "WALLET_UNKNOWN_ERROR";
+      break;
+    case WalletClient::UNSUPPORTED_USER_AGENT_OR_API_KEY:
+      error_message = "WALLET_UNSUPPORTED_USER_AGENT_OR_API_KEY";
       break;
   }
 

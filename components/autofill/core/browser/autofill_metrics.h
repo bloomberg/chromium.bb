@@ -299,6 +299,8 @@ class AutofillMetrics {
     WALLET_BUYER_LEGAL_ADDRESS_NOT_SUPPORTED,
     // Wallet's Know Your Customer(KYC) action is pending/failed for this user.
     WALLET_UNVERIFIED_KNOW_YOUR_CUSTOMER_STATUS,
+    // Chrome version is unsupported or provided API key not allowed.
+    WALLET_UNSUPPORTED_USER_AGENT_OR_API_KEY,
     NUM_WALLET_ERROR_METRICS
   };
 

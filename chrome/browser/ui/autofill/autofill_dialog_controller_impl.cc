@@ -449,6 +449,11 @@ scoped_ptr<DialogNotification> GetWalletError(
       error_code = 74;
       break;
 
+    case wallet::WalletClient::UNSUPPORTED_USER_AGENT_OR_API_KEY:
+      error_ids = IDS_AUTOFILL_WALLET_UNSUPPORTED_AGENT_OR_API_KEY;
+      error_code = 75;
+      break;
+
     default:
       break;
   }
