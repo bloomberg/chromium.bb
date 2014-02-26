@@ -5041,4 +5041,48 @@ class LayerTreeHostTestSimpleSwapPromiseMonitor : public LayerTreeHostTest {
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestSimpleSwapPromiseMonitor);
 
+class LayerTreeHostTestHighResRequiredAfterEvictingUIResources
+    : public LayerTreeHostTest {
+ protected:
+  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+    settings->impl_side_painting = true;
+  }
+
+  virtual void SetupTree() OVERRIDE {
+    LayerTreeHostTest::SetupTree();
+    ui_resource_ = FakeScopedUIResource::Create(layer_tree_host());
+  }
+
+  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    host_impl->EvictAllUIResources();
+    // Existence of evicted UI resources will trigger NEW_CONTENT_TAKES_PRIORITY
+    // mode. Active tree should require high-res to draw after entering this
+    // mode to ensure that high-res tiles are also required for a pending tree
+    // to be activated.
+    EXPECT_TRUE(host_impl->active_tree()->RequiresHighResToDraw());
+  }
+
+  virtual void DidCommit() OVERRIDE {
+    int frame = layer_tree_host()->source_frame_number();
+    switch (frame) {
+      case 1:
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 2:
+        ui_resource_.reset();
+        EndTest();
+        break;
+    }
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+  FakeContentLayerClient client_;
+  scoped_ptr<FakeScopedUIResource> ui_resource_;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestHighResRequiredAfterEvictingUIResources);
+
 }  // namespace cc
