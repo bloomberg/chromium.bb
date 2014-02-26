@@ -433,6 +433,11 @@ void ResourceLoader::Cancel() {
 
 void ResourceLoader::StartRequestInternal() {
   DCHECK(!request_->is_pending());
+
+  if (!request_->status().is_success()) {
+    return;
+  }
+
   request_->Start();
 
   delegate_->DidStartRequest(this);
