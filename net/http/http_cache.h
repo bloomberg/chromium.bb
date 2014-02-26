@@ -203,7 +203,9 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
       SetHttpNetworkTransactionFactoryForTesting(
           scoped_ptr<HttpTransactionFactory> new_network_layer);
 
- protected:
+ private:
+  // Types --------------------------------------------------------------------
+
   // Disk cache entry data indices.
   enum {
     kResponseInfoIndex = 0,
@@ -213,16 +215,13 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
     // Must remain at the end of the enum.
     kNumCacheEntryDataIndices
   };
-  friend class ViewCacheHelper;
-
- private:
-  // Types --------------------------------------------------------------------
 
   class MetadataWriter;
   class QuicServerInfoFactoryAdaptor;
   class Transaction;
   class WorkItem;
   friend class Transaction;
+  friend class ViewCacheHelper;
   struct PendingOp;  // Info for an entry under construction.
 
   typedef std::list<Transaction*> TransactionList;
