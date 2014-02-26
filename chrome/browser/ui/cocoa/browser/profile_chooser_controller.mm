@@ -774,7 +774,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                                    availableTextWidth,
                                    kProfileButtonHeight)
                 profile:browser_->profile()
-            profileName:base::SysUTF16ToNSString(item.name)
+            profileName:base::SysUTF16ToNSString(
+                profiles::GetAvatarNameForProfile(browser_->profile()))
          editingAllowed:!isGuestSession_]);
 
   [container addSubview:profileName];

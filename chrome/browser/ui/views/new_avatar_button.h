@@ -5,13 +5,14 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_NEW_AVATAR_BUTTON_H_
 #define CHROME_BROWSER_UI_VIEWS_NEW_AVATAR_BUTTON_H_
 
-#include "chrome/browser/profiles/avatar_menu.h"
-#include "chrome/browser/profiles/avatar_menu_observer.h"
+#include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "ui/views/controls/button/menu_button.h"
+
+class Browser;
 
 // Avatar button that displays the active profile's name in the caption area.
 class NewAvatarButton : public views::MenuButton,
-                        public AvatarMenuObserver {
+                        public ProfileInfoCacheObserver {
  public:
   // Different button styles that can be applied.
   enum AvatarButtonStyle {
@@ -32,10 +33,19 @@ class NewAvatarButton : public views::MenuButton,
   friend class NewAvatarMenuButtonTest;
   FRIEND_TEST_ALL_PREFIXES(NewAvatarMenuButtonTest, SignOut);
 
-  // AvatarMenuObserver:
-  virtual void OnAvatarMenuChanged(AvatarMenu* avatar_menu) OVERRIDE;
+  // ProfileInfoCacheObserver:
+  virtual void OnProfileAdded(const base::FilePath& profile_path) OVERRIDE;
+  virtual void OnProfileWasRemoved(
+      const base::FilePath& profile_path,
+      const base::string16& profile_name) OVERRIDE;
+  virtual void OnProfileNameChanged(
+      const base::FilePath& profile_path,
+      const base::string16& old_profile_name) OVERRIDE;
 
-  scoped_ptr<AvatarMenu> avatar_menu_;
+  // Called when the profile info cache has changed, which means we might
+  // have to re-display the profile name.
+  void UpdateAvatarButtonAndRelayoutParent();
+
   Browser* browser_;
 
   DISALLOW_COPY_AND_ASSIGN(NewAvatarButton);

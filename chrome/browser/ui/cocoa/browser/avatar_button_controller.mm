@@ -150,7 +150,7 @@ NSImage* GetImageFromResourceID(int resourceId) {
   [paragraphStyle setAlignment:NSLeftTextAlignment];
 
   NSString* buttonTitle = base::SysUTF16ToNSString(
-      profiles::GetActiveProfileDisplayName(browser_));
+      profiles::GetAvatarNameForProfile(browser_->profile()));
 
   base::scoped_nsobject<NSAttributedString> attributedTitle(
       [[NSAttributedString alloc]

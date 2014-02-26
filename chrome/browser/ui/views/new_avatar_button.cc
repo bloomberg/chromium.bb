@@ -8,6 +8,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/ui/browser.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -97,16 +98,13 @@ NewAvatarButton::NewAvatarButton(
         rb->GetImageNamed(IDR_AVATAR_GLASS_BUTTON_DROPARROW).ToImageSkia());
   }
 
-  avatar_menu_.reset(new AvatarMenu(
-      &g_browser_process->profile_manager()->GetProfileInfoCache(),
-      this,
-      browser_));
-  avatar_menu_->RebuildMenu();
-
+  g_browser_process->profile_manager()->GetProfileInfoCache().AddObserver(this);
   SchedulePaint();
 }
 
 NewAvatarButton::~NewAvatarButton() {
+  g_browser_process->profile_manager()->
+      GetProfileInfoCache().RemoveObserver(this);
 }
 
 void NewAvatarButton::OnPaint(gfx::Canvas* canvas) {
@@ -134,10 +132,27 @@ void NewAvatarButton::OnPaint(gfx::Canvas* canvas) {
   PaintMenuMarker(canvas);
 }
 
-void NewAvatarButton::OnAvatarMenuChanged(AvatarMenu* avatar_menu) {
+void NewAvatarButton::OnProfileAdded(const base::FilePath& profile_path) {
+  UpdateAvatarButtonAndRelayoutParent();
+}
+
+void NewAvatarButton::OnProfileWasRemoved(
+      const base::FilePath& profile_path,
+      const base::string16& profile_name) {
+  UpdateAvatarButtonAndRelayoutParent();
+}
+
+void NewAvatarButton::OnProfileNameChanged(
+      const base::FilePath& profile_path,
+      const base::string16& old_profile_name) {
+  UpdateAvatarButtonAndRelayoutParent();
+}
+
+void NewAvatarButton::UpdateAvatarButtonAndRelayoutParent() {
   // We want the button to resize if the new text is shorter.
   ClearMaxTextSize();
-  SetText(GetElidedText(profiles::GetActiveProfileDisplayName(browser_)));
+  SetText(GetElidedText(
+      profiles::GetAvatarNameForProfile(browser_->profile())));
 
   // Because the width of the button might have changed, the parent browser
   // frame needs to recalculate the button bounds and redraw it.

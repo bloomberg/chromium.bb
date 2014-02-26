@@ -598,9 +598,8 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
   current_profile_photo_ =
       new EditableProfilePhoto(this, avatar_item.icon, !is_guest);
   view->SetBoundsRect(current_profile_photo_->bounds());
-  current_profile_name_ =
-      new EditableProfileName(this, avatar_item.name, !is_guest);
-
+  current_profile_name_ = new EditableProfileName(
+      this, profiles::GetAvatarNameForProfile(browser_->profile()), !is_guest);
   layout->StartRow(1, 0);
   layout->AddView(current_profile_photo_, 1, 3);
   layout->AddView(current_profile_name_);
@@ -651,8 +650,8 @@ views::View* ProfileChooserView::CreateCurrentProfileEditableView(
   current_profile_photo_ =
       new EditableProfilePhoto(this, avatar_item.icon, true);
   view->SetBoundsRect(current_profile_photo_->bounds());
-  current_profile_name_ =
-      new EditableProfileName(this, avatar_item.name, true);
+  current_profile_name_ = new EditableProfileName(
+      this, profiles::GetAvatarNameForProfile(browser_->profile()), true);
 
   layout->StartRow(1, 0);
   layout->AddView(current_profile_photo_, 1, 3);

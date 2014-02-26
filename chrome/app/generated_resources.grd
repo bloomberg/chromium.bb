@@ -11664,6 +11664,12 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_NUMBERED_PROFILE_NAME" desc="The name given to a newly created profile. Displayed in wrench menu and settings UI.">
         User <ph name="VALUE">$1<ex>1</ex></ph>
       </message>
+      <message name="IDS_NEW_NUMBERED_PROFILE_NAME" desc="The name given to a newly created profile. Displayed in wrench menu and settings UI using the --new-profile-management flag.">
+        Person <ph name="VALUE">$1<ex>1</ex></ph>
+      </message>
+      <message name="IDS_SINGLE_PROFILE_DISPLAY_NAME" desc="The name displayed by the avatar button if only one profile exists.">
+        You
+      </message>
       <message name="IDS_GUEST_PROFILE_NAME" desc="The name given to the guest
       browsing profile. Displayed in the avatar menu bubble and button UI.">
         Guest

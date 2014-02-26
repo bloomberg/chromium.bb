@@ -24,6 +24,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -35,8 +36,10 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
@@ -124,6 +127,20 @@ class ProfileManagerTest : public testing::Test {
         base::UTF8ToUTF16(name),
         base::UTF8ToUTF16(ProfileInfoCache::GetDefaultAvatarIconUrl(0)),
         is_managed ? "Dummy ID" : std::string());
+  }
+
+  // Helper function to add a profile with |profile_name| to
+  // |profile_manager|'s ProfileInfoCache, and return the profile created.
+  Profile* AddProfileToCache(ProfileManager* profile_manager,
+                             const std::string& path_suffix,
+                             const base::string16& profile_name) {
+    ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+    size_t num_profiles = cache.GetNumberOfProfiles();
+    base::FilePath path = temp_dir_.path().AppendASCII(path_suffix);
+    cache.AddProfileToCache(path, profile_name,
+                            base::string16(), 0, std::string());
+    EXPECT_EQ(num_profiles + 1, cache.GetNumberOfProfiles());
+    return profile_manager->GetProfile(path);
   }
 
 #if defined(OS_CHROMEOS)
@@ -835,10 +852,8 @@ TEST_F(ProfileManagerTest, ActiveProfileDeleted) {
   // Create and load two profiles.
   const std::string profile_name1 = "New Profile 1";
   const std::string profile_name2 = "New Profile 2";
-  base::FilePath dest_path1 =
-      temp_dir_.path().AppendASCII(profile_name1);
-  base::FilePath dest_path2 =
-      temp_dir_.path().AppendASCII(profile_name2);
+  base::FilePath dest_path1 = temp_dir_.path().AppendASCII(profile_name1);
+  base::FilePath dest_path2 = temp_dir_.path().AppendASCII(profile_name2);
 
   MockObserver mock_observer;
   EXPECT_CALL(mock_observer, OnProfileCreated(
@@ -864,6 +879,122 @@ TEST_F(ProfileManagerTest, ActiveProfileDeleted) {
   EXPECT_EQ(dest_path2, profile_manager->GetLastUsedProfile()->GetPath());
   EXPECT_EQ(profile_name2, local_state->GetString(prefs::kProfileLastUsed));
 }
+
+TEST_F(ProfileManagerTest, ProfileDisplayNameResetsDefaultName) {
+  if (!profiles::IsMultipleProfilesEnabled())
+    return;
+
+  // The command line is reset at the end of every test by the test suite.
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kNewProfileManagement);
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  EXPECT_EQ(0u, cache.GetNumberOfProfiles());
+
+  // Only one local profile means we display IDS_SINGLE_PROFILE_DISPLAY_NAME.
+  const base::string16 default_profile_name =
+      l10n_util::GetStringUTF16(IDS_SINGLE_PROFILE_DISPLAY_NAME);
+  const base::string16 profile_name1 = cache.ChooseNameForNewProfile(0);
+  Profile* profile1 = AddProfileToCache(profile_manager,
+                                        "path_1", profile_name1);
+  EXPECT_EQ(default_profile_name, profiles::GetAvatarNameForProfile(profile1));
+
+  // Multiple profiles means displaying the actual profile names.
+  const base::string16 profile_name2 = cache.ChooseNameForNewProfile(1);
+  Profile* profile2 = AddProfileToCache(profile_manager,
+                                        "path_2", profile_name2);
+  EXPECT_EQ(profile_name1, profiles::GetAvatarNameForProfile(profile1));
+  EXPECT_EQ(profile_name2, profiles::GetAvatarNameForProfile(profile2));
+
+  // Deleting a profile means returning to the default name.
+  profile_manager->ScheduleProfileForDeletion(profile2->GetPath(),
+                                              ProfileManager::CreateCallback());
+  // Spin the message loop so that all the callbacks can finish running.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(default_profile_name, profiles::GetAvatarNameForProfile(profile1));
+}
+
+TEST_F(ProfileManagerTest, ProfileDisplayNamePreservesCustomName) {
+  if (!profiles::IsMultipleProfilesEnabled())
+    return;
+
+  // The command line is reset at the end of every test by the test suite.
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kNewProfileManagement);
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  EXPECT_EQ(0u, cache.GetNumberOfProfiles());
+
+  // Only one local profile means we display IDS_SINGLE_PROFILE_DISPLAY_NAME.
+  const base::string16 default_profile_name =
+      l10n_util::GetStringUTF16(IDS_SINGLE_PROFILE_DISPLAY_NAME);
+  const base::string16 profile_name1 = cache.ChooseNameForNewProfile(0);
+  Profile* profile1 = AddProfileToCache(profile_manager,
+                                        "path_1", profile_name1);
+  EXPECT_EQ(default_profile_name, profiles::GetAvatarNameForProfile(profile1));
+
+  // We should display custom names for local profiles.
+  const base::string16 custom_profile_name = ASCIIToUTF16("Batman");
+  cache.SetNameOfProfileAtIndex(0, custom_profile_name);
+  EXPECT_EQ(custom_profile_name, cache.GetNameOfProfileAtIndex(0));
+  EXPECT_EQ(custom_profile_name, profiles::GetAvatarNameForProfile(profile1));
+
+  // Multiple profiles means displaying the actual profile names.
+  const base::string16 profile_name2 = cache.ChooseNameForNewProfile(1);
+  Profile* profile2 = AddProfileToCache(profile_manager,
+                                        "path_2", profile_name2);
+  EXPECT_EQ(custom_profile_name, profiles::GetAvatarNameForProfile(profile1));
+  EXPECT_EQ(profile_name2, profiles::GetAvatarNameForProfile(profile2));
+
+  // Deleting a profile means returning to the original, custom name.
+  profile_manager->ScheduleProfileForDeletion(profile2->GetPath(),
+                                              ProfileManager::CreateCallback());
+  // Spin the message loop so that all the callbacks can finish running.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(custom_profile_name, profiles::GetAvatarNameForProfile(profile1));
+}
+
+TEST_F(ProfileManagerTest, ProfileDisplayNamePreservesSignedInName) {
+  if (!profiles::IsMultipleProfilesEnabled())
+    return;
+
+    // The command line is reset at the end of every test by the test suite.
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kNewProfileManagement);
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  EXPECT_EQ(0u, cache.GetNumberOfProfiles());
+
+  // Only one local profile means we display IDS_SINGLE_PROFILE_DISPLAY_NAME.
+  const base::string16 default_profile_name =
+      l10n_util::GetStringUTF16(IDS_SINGLE_PROFILE_DISPLAY_NAME);
+  const base::string16 profile_name1 = cache.ChooseNameForNewProfile(0);
+  Profile* profile1 = AddProfileToCache(profile_manager,
+                                        "path_1", profile_name1);
+  EXPECT_EQ(default_profile_name, profiles::GetAvatarNameForProfile(profile1));
+
+  // We should display the actual profile name for signed in profiles.
+  cache.SetUserNameOfProfileAtIndex(0, ASCIIToUTF16("user@gmail.com"));
+  EXPECT_EQ(profile_name1, cache.GetNameOfProfileAtIndex(0));
+  EXPECT_EQ(profile_name1, profiles::GetAvatarNameForProfile(profile1));
+
+  // Multiple profiles means displaying the actual profile names.
+  const base::string16 profile_name2 = cache.ChooseNameForNewProfile(1);
+  Profile* profile2 = AddProfileToCache(profile_manager,
+                                        "path_2", profile_name2);
+  EXPECT_EQ(profile_name1, profiles::GetAvatarNameForProfile(profile1));
+  EXPECT_EQ(profile_name2, profiles::GetAvatarNameForProfile(profile2));
+
+  // Deleting a profile means returning to the original, actual profile name.
+  profile_manager->ScheduleProfileForDeletion(profile2->GetPath(),
+                                              ProfileManager::CreateCallback());
+  // Spin the message loop so that all the callbacks can finish running.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(profile_name1, profiles::GetAvatarNameForProfile(profile1));
+}
 #endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX)
@@ -876,10 +1007,8 @@ TEST_F(ProfileManagerTest, ActiveProfileDeletedNeedsToLoadNextProfile) {
   // Create and load one profile, and just create a second profile.
   const std::string profile_name1 = "New Profile 1";
   const std::string profile_name2 = "New Profile 2";
-  base::FilePath dest_path1 =
-      temp_dir_.path().AppendASCII(profile_name1);
-  base::FilePath dest_path2 =
-      temp_dir_.path().AppendASCII(profile_name2);
+  base::FilePath dest_path1 = temp_dir_.path().AppendASCII(profile_name1);
+  base::FilePath dest_path2 = temp_dir_.path().AppendASCII(profile_name2);
 
   MockObserver mock_observer;
   EXPECT_CALL(mock_observer, OnProfileCreated(
@@ -925,12 +1054,9 @@ TEST_F(ProfileManagerTest, ActiveProfileDeletedNextProfileDeletedToo) {
   const std::string profile_name1 = "New Profile 1";
   const std::string profile_name2 = "New Profile 2";
   const std::string profile_name3 = "New Profile 3";
-  base::FilePath dest_path1 =
-      temp_dir_.path().AppendASCII(profile_name1);
-  base::FilePath dest_path2 =
-      temp_dir_.path().AppendASCII(profile_name2);
-  base::FilePath dest_path3 =
-      temp_dir_.path().AppendASCII(profile_name3);
+  base::FilePath dest_path1 = temp_dir_.path().AppendASCII(profile_name1);
+  base::FilePath dest_path2 = temp_dir_.path().AppendASCII(profile_name2);
+  base::FilePath dest_path3 = temp_dir_.path().AppendASCII(profile_name3);
 
   MockObserver mock_observer;
   EXPECT_CALL(mock_observer, OnProfileCreated(
