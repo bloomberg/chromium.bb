@@ -38,7 +38,7 @@ typedef unsigned BorderEdgeFlags;
 enum BackgroundBleedAvoidance {
     BackgroundBleedNone,
     BackgroundBleedShrinkBackground,
-    BackgroundBleedUseTransparencyLayer,
+    BackgroundBleedClipBackground,
     BackgroundBleedBackgroundOverBorder
 };
 

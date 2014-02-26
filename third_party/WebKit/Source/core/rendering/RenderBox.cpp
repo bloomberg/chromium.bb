@@ -1204,7 +1204,7 @@ BackgroundBleedAvoidance RenderBox::determineBackgroundBleedAvoidance(GraphicsCo
     if (!style->hasAppearance() && borderObscuresBackground() && backgroundHasOpaqueTopLayer())
         return BackgroundBleedBackgroundOverBorder;
 
-    return BackgroundBleedUseTransparencyLayer;
+    return BackgroundBleedClipBackground;
 }
 
 void RenderBox::paintBoxDecorations(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
@@ -1227,20 +1227,13 @@ void RenderBox::paintBoxDecorationsWithRect(PaintInfo& paintInfo, const LayoutPo
         paintBoxShadow(paintInfo, paintRect, style(), Normal);
 
     GraphicsContextStateSaver stateSaver(*paintInfo.context, false);
-    if (bleedAvoidance == BackgroundBleedUseTransparencyLayer) {
-        // To avoid the background color bleeding out behind the border, we'll render background and border
-        // into a transparency layer, and then clip that in one go (which requires setting up the clip before
-        // beginning the layer).
-        RoundedRect border = style()->getRoundedBorderFor(paintRect);
+    if (bleedAvoidance == BackgroundBleedClipBackground) {
         stateSaver.save();
+        RoundedRect border = style()->getRoundedBorderFor(paintRect);
         paintInfo.context->clipRoundedRect(border);
-        paintInfo.context->beginTransparencyLayer(1);
     }
 
     paintBackgroundWithBorderAndBoxShadow(paintInfo, paintRect, bleedAvoidance);
-
-    if (bleedAvoidance == BackgroundBleedUseTransparencyLayer)
-        paintInfo.context->endLayer();
 }
 
 void RenderBox::paintBackgroundWithBorderAndBoxShadow(PaintInfo& paintInfo, const LayoutRect& paintRect, BackgroundBleedAvoidance bleedAvoidance)

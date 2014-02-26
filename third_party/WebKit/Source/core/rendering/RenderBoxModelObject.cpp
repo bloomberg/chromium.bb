@@ -537,7 +537,7 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
         if (boxShadowShouldBeAppliedToBackground)
             applyBoxShadowForBackground(context, this);
 
-        if (hasRoundedBorder && bleedAvoidance != BackgroundBleedUseTransparencyLayer) {
+        if (hasRoundedBorder && bleedAvoidance != BackgroundBleedClipBackground) {
             RoundedRect border = backgroundRoundedRectAdjustedForBleedAvoidance(context, rect, bleedAvoidance, box, boxSize, includeLeftEdge, includeRightEdge);
             if (border.isRenderable())
                 context->fillRoundedRect(border, bgColor);
@@ -554,8 +554,8 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
         return;
     }
 
-    // BorderFillBox radius clipping is taken care of by BackgroundBleedUseTransparencyLayer
-    bool clipToBorderRadius = hasRoundedBorder && !(isBorderFill && bleedAvoidance == BackgroundBleedUseTransparencyLayer);
+    // BorderFillBox radius clipping is taken care of by BackgroundBleedClipBackground
+    bool clipToBorderRadius = hasRoundedBorder && !(isBorderFill && bleedAvoidance == BackgroundBleedClipBackground);
     GraphicsContextStateSaver clipToBorderStateSaver(*context, clipToBorderRadius);
     if (clipToBorderRadius) {
         RoundedRect border = isBorderFill ? backgroundRoundedRectAdjustedForBleedAvoidance(context, rect, bleedAvoidance, box, boxSize, includeLeftEdge, includeRightEdge) : getBackgroundRoundedRect(rect, box, boxSize.width(), boxSize.height(), includeLeftEdge, includeRightEdge);
@@ -1762,7 +1762,7 @@ void RenderBoxModelObject::paintBorder(const PaintInfo& info, const LayoutRect& 
             && (haveAllSolidEdges || (!outerBorder.isRounded() && !innerBorder.isRounded()))) {
             Path path;
 
-            if (outerBorder.isRounded() && bleedAvoidance != BackgroundBleedUseTransparencyLayer)
+            if (outerBorder.isRounded() && bleedAvoidance != BackgroundBleedClipBackground)
                 path.addRoundedRect(outerBorder);
             else
                 path.addRect(outerBorder.rect());
@@ -1795,12 +1795,12 @@ void RenderBoxModelObject::paintBorder(const PaintInfo& info, const LayoutRect& 
                 innerThird.setRect(innerThirdRect);
                 outerThird.setRect(outerThirdRect);
 
-                if (outerThird.isRounded() && bleedAvoidance != BackgroundBleedUseTransparencyLayer)
+                if (outerThird.isRounded() && bleedAvoidance != BackgroundBleedClipBackground)
                     path.addRoundedRect(outerThird);
                 else
                     path.addRect(outerThird.rect());
 
-                if (innerThird.isRounded() && bleedAvoidance != BackgroundBleedUseTransparencyLayer)
+                if (innerThird.isRounded() && bleedAvoidance != BackgroundBleedClipBackground)
                     path.addRoundedRect(innerThird);
                 else
                     path.addRect(innerThird.rect());
@@ -1839,7 +1839,7 @@ void RenderBoxModelObject::paintBorder(const PaintInfo& info, const LayoutRect& 
     GraphicsContextStateSaver stateSaver(*graphicsContext, clipToOuterBorder);
     if (clipToOuterBorder) {
         // Clip to the inner and outer radii rects.
-        if (bleedAvoidance != BackgroundBleedUseTransparencyLayer)
+        if (bleedAvoidance != BackgroundBleedClipBackground)
             graphicsContext->clipRoundedRect(outerBorder);
         // isRenderable() check avoids issue described in https://bugs.webkit.org/show_bug.cgi?id=38787
         // The inside will be clipped out later (in clipBorderSideForComplexInnerPath)
@@ -1945,7 +1945,7 @@ void RenderBoxModelObject::drawBoxSideFromPath(GraphicsContext* graphicsContext,
         {
             GraphicsContextStateSaver stateSaver(*graphicsContext);
             LayoutRect outerRect = borderRect;
-            if (bleedAvoidance == BackgroundBleedUseTransparencyLayer) {
+            if (bleedAvoidance == BackgroundBleedClipBackground) {
                 outerRect.inflate(1);
                 ++outerBorderTopWidth;
                 ++outerBorderBottomWidth;
