@@ -32,22 +32,15 @@
 #define WebHelperPlugin_h
 
 #include "../platform/WebCommon.h"
-#include "WebWidget.h"
 
 namespace blink {
 
 class WebFrame;
-class WebFrameClient;
 class WebPlugin;
-class WebWidgetClient;
+class WebString;
 
-// FIXME: Remove WebWidget inheritance.
-class WebHelperPlugin : public WebWidget {
+class WebHelperPlugin {
 public:
-    // FIXME: These functions are going away. Please do not use.
-    BLINK_EXPORT static WebHelperPlugin* create(WebWidgetClient*) { return 0; }
-    virtual void initializeFrame(WebFrameClient*) = 0;
-
     // May return null if initialization fails. If the returned pointer is
     // non-null, the caller must free it by calling destroy().
     BLINK_EXPORT static WebHelperPlugin* create(const WebString& PluginType, WebFrame*);

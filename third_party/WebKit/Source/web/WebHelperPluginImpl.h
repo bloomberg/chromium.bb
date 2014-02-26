@@ -56,7 +56,6 @@ class WebHelperPluginImpl FINAL : public WebHelperPlugin {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     // WebHelperPlugin methods:
-    virtual void initializeFrame(WebFrameClient*) OVERRIDE;
     virtual WebPlugin* getPlugin() OVERRIDE;
     virtual void destroy() OVERRIDE;
 

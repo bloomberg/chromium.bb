@@ -62,7 +62,6 @@ class WebFrame;
 class WebGeolocationClient;
 class WebGeolocationService;
 class WebGestureEvent;
-class WebHelperPlugin;
 class WebHitTestResult;
 class WebImage;
 class WebInputElement;
@@ -147,11 +146,6 @@ public:
     // files in the directory. Returns false if the WebFileChooserCompletion
     // will never be called.
     virtual bool enumerateChosenDirectory(const WebString& path, WebFileChooserCompletion*) { return false; }
-
-    // Creates the main WebFrame for the specified WebHelperPlugin.
-    // Called by WebHelperPlugin to provide the WebFrameClient interface for the WebFrame.
-    // FIXME: Remove this once WebHelperPlugin is de-widgetized.
-    virtual void initializeHelperPluginWebFrame(WebHelperPlugin*) { }
 
     // Navigational --------------------------------------------------------
 

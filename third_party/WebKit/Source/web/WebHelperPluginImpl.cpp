@@ -102,10 +102,6 @@ void WebHelperPluginImpl::destroy()
     m_destructionTimer.startOneShot(0);
 }
 
-void WebHelperPluginImpl::initializeFrame(WebFrameClient*)
-{
-}
-
 WebPlugin* WebHelperPluginImpl::getPlugin()
 {
     ASSERT(m_pluginContainer);
