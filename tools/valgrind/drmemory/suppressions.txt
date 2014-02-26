@@ -449,10 +449,6 @@ gfx.dll!gfx::internal::SkiaTextRenderer::DrawPosText
 gfx.dll!gfx::RenderTextWin::DrawVisualText
 gfx.dll!gfx::RenderText::Draw
 gfx.dll!gfx::Canvas::DrawStringRectWithShadows
-*!autofill::AutofillDialogControllerImpl::GetGeneratedCardImage
-*!autofill::AutofillDialogControllerImpl::GetDialogOverlay
-*!autofill::AutofillDialogControllerTest_WalletFirstRun_Test::TestBody
-*!testing::internal::HandleExceptionsInMethodIfSupported<>
 
 HANDLE LEAK
 name=http://crbug.com/346993
