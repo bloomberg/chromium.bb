@@ -47,12 +47,14 @@ class MockAccountReconcilor : public testing::StrictMock<AccountReconcilor> {
 // static
 BrowserContextKeyedService* MockAccountReconcilor::Build(
     content::BrowserContext* profile) {
-  return new MockAccountReconcilor(static_cast<Profile*>(profile));
+  AccountReconcilor* reconcilor =
+      new MockAccountReconcilor(static_cast<Profile*>(profile));
+  reconcilor->Initialize(false /* start_reconcile_if_tokens_available */);
+  return reconcilor;
 }
 
 MockAccountReconcilor::MockAccountReconcilor(Profile* profile)
-    : testing::StrictMock<AccountReconcilor>(profile) {
-}
+    : testing::StrictMock<AccountReconcilor>(profile) {}
 
 }  // namespace
 

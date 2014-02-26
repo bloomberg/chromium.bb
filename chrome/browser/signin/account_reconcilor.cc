@@ -163,6 +163,21 @@ AccountReconcilor::AccountReconcilor(Profile* profile)
       are_gaia_accounts_set_(false),
       requests_(NULL) {
   VLOG(1) << "AccountReconcilor::AccountReconcilor";
+}
+
+AccountReconcilor::~AccountReconcilor() {
+  VLOG(1) << "AccountReconcilor::~AccountReconcilor";
+  // Make sure shutdown was called first.
+  DCHECK(!registered_with_token_service_);
+  DCHECK(registrar_.IsEmpty());
+  DCHECK(!reconciliation_timer_.IsRunning());
+  DCHECK(!requests_);
+  DCHECK_EQ(0u, user_id_fetchers_.size());
+  DCHECK_EQ(0u, refresh_token_fetchers_.size());
+}
+
+void AccountReconcilor::Initialize(bool start_reconcile_if_tokens_available) {
+  VLOG(1) << "AccountReconcilor::Initialize";
   RegisterWithSigninManager();
 
   // If this profile is not connected, the reconcilor should do nothing but
@@ -171,17 +186,15 @@ AccountReconcilor::AccountReconcilor(Profile* profile)
     RegisterWithCookieMonster();
     RegisterWithTokenService();
     StartPeriodicReconciliation();
-  }
-}
 
-AccountReconcilor::~AccountReconcilor() {
-  // Make sure shutdown was called first.
-  DCHECK(!registered_with_token_service_);
-  DCHECK(registrar_.IsEmpty());
-  DCHECK(!reconciliation_timer_.IsRunning());
-  DCHECK(!requests_);
-  DCHECK_EQ(0u, user_id_fetchers_.size());
-  DCHECK_EQ(0u, refresh_token_fetchers_.size());
+    // Start a reconcile if the tokens are already loaded.
+    ProfileOAuth2TokenService* token_service =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+    if (start_reconcile_if_tokens_available &&
+        token_service->GetAccounts().size() > 0) {
+      StartReconcile();
+    }
+  }
 }
 
 void AccountReconcilor::Shutdown() {

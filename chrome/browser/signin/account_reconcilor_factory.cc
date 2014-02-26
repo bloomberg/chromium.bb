@@ -33,7 +33,10 @@ AccountReconcilorFactory* AccountReconcilorFactory::GetInstance() {
 
 BrowserContextKeyedService* AccountReconcilorFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new AccountReconcilor(static_cast<Profile*>(context));
+  AccountReconcilor* reconcilor =
+      new AccountReconcilor(static_cast<Profile*>(context));
+  reconcilor->Initialize(true /* start_reconcile_if_tokens_available */);
+  return reconcilor;
 }
 
 void AccountReconcilorFactory::RegisterProfilePrefs(

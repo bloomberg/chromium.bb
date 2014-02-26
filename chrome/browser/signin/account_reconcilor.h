@@ -38,6 +38,8 @@ class AccountReconcilor : public BrowserContextKeyedService,
   explicit AccountReconcilor(Profile* profile);
   virtual ~AccountReconcilor();
 
+  void Initialize(bool start_reconcile_if_tokens_available);
+
   // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
