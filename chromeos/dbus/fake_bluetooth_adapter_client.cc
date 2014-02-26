@@ -15,6 +15,13 @@
 
 namespace chromeos {
 
+namespace {
+
+// Default interval for delayed tasks.
+const int kSimulationIntervalMs = 750;
+
+}  // namespace
+
 const char FakeBluetoothAdapterClient::kAdapterPath[] =
     "/fake/hci0";
 const char FakeBluetoothAdapterClient::kAdapterName[] =
@@ -69,7 +76,8 @@ void FakeBluetoothAdapterClient::Properties::Set(
 FakeBluetoothAdapterClient::FakeBluetoothAdapterClient()
     : visible_(true),
       second_visible_(false),
-      discovering_count_(0) {
+      discovering_count_(0),
+      simulation_interval_ms_(kSimulationIntervalMs) {
   properties_.reset(new Properties(base::Bind(
       &FakeBluetoothAdapterClient::OnPropertyChanged, base::Unretained(this))));
 
@@ -125,14 +133,14 @@ void FakeBluetoothAdapterClient::StartDiscovery(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   if (object_path != dbus::ObjectPath(kAdapterPath)) {
-    error_callback.Run(kNoResponseError, "");
+    PostDelayedTask(base::Bind(error_callback, kNoResponseError, ""));
     return;
   }
 
   ++discovering_count_;
   VLOG(1) << "StartDiscovery: " << object_path.value() << ", "
           << "count is now " << discovering_count_;
-  callback.Run();
+  PostDelayedTask(callback);
 
   if (discovering_count_ == 1) {
     properties_->discovering.ReplaceValue(true);
@@ -149,20 +157,20 @@ void FakeBluetoothAdapterClient::StopDiscovery(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   if (object_path != dbus::ObjectPath(kAdapterPath)) {
-    error_callback.Run(kNoResponseError, "");
+    PostDelayedTask(base::Bind(error_callback, kNoResponseError, ""));
     return;
   }
 
   if (!discovering_count_) {
     LOG(WARNING) << "StopDiscovery called when not discovering";
-    error_callback.Run(kNoResponseError, "");
+    PostDelayedTask(base::Bind(error_callback, kNoResponseError, ""));
     return;
   }
 
   --discovering_count_;
   VLOG(1) << "StopDiscovery: " << object_path.value() << ", "
           << "count is now " << discovering_count_;
-  callback.Run();
+  PostDelayedTask(callback);
 
   if (discovering_count_ == 0) {
     FakeBluetoothDeviceClient* device_client =
@@ -192,6 +200,10 @@ void FakeBluetoothAdapterClient::RemoveDevice(
       static_cast<FakeBluetoothDeviceClient*>(
           DBusThreadManager::Get()->GetBluetoothDeviceClient());
   device_client->RemoveDevice(dbus::ObjectPath(kAdapterPath), device_path);
+}
+
+void FakeBluetoothAdapterClient::SetSimulationIntervalMs(int interval_ms) {
+  simulation_interval_ms_ = interval_ms;
 }
 
 void FakeBluetoothAdapterClient::SetVisible(
@@ -245,6 +257,13 @@ void FakeBluetoothAdapterClient::OnPropertyChanged(
   FOR_EACH_OBSERVER(BluetoothAdapterClient::Observer, observers_,
                     AdapterPropertyChanged(dbus::ObjectPath(kAdapterPath),
                                            property_name));
+}
+
+void FakeBluetoothAdapterClient::PostDelayedTask(
+    const base::Closure& callback) {
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, callback,
+      base::TimeDelta::FromMilliseconds(simulation_interval_ms_));
 }
 
 }  // namespace chromeos

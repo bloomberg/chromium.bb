@@ -146,7 +146,7 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
   // callers should retrieve the current set of discovered devices by calling
   // GetDevices() and checking for those with IsPaired() as false.
   virtual void StartDiscovering(const base::Closure& callback,
-                                const ErrorCallback& error_callback) = 0;
+                                const ErrorCallback& error_callback);
 
   // Requests that an earlier call to StartDiscovering() be cancelled; the
   // adapter may not actually cease discovering devices if other callers
@@ -154,7 +154,7 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
   // success |callback| will be called, on failure |error_callback| will be
   // called instead.
   virtual void StopDiscovering(const base::Closure& callback,
-                               const ErrorCallback& error_callback) = 0;
+                               const ErrorCallback& error_callback);
 
   // Requests the list of devices from the adapter, all are returned
   // including those currently connected and those paired. Use the
@@ -179,6 +179,41 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
   friend class base::RefCounted<BluetoothAdapter>;
   BluetoothAdapter();
   virtual ~BluetoothAdapter();
+
+  // Internal methods for initiating and terminating device discovery sessions.
+  // An implementation of BluetoothAdapter keeps an internal reference count to
+  // make sure that the underlying controller is constantly searching for nearby
+  // devices and retrieving information from them as long as there are clients
+  // who have requested discovery. These methods behave in the following way:
+  //
+  // On a call to AddDiscoverySession:
+  //    - If there is a pending request to the subsystem, queue this request to
+  //      execute once the pending requests are done.
+  //    - If the count is 0, issue a request to the subsystem to start
+  //      device discovery. On success, increment the count to 1.
+  //    - If the count is greater than 0, increment the count and return
+  //      success.
+  //    As long as the count is non-zero, the underlying controller will be
+  //    discovering for devices. This means that Chrome will restart device
+  //    scan and inquiry sessions if they ever end, unless these sessions
+  //    terminate due to an unexpected reason.
+  //
+  // On a call to RemoveDiscoverySession:
+  //    - If there is a pending request to the subsystem, queue this request to
+  //      execute once the pending requests are done.
+  //    - If the count is 0, return failure, as there is no active discovery
+  //      session.
+  //    - If the count is 1, issue a request to the subsystem to stop device
+  //      discovery and decrement the count to 0 on success.
+  //    - If the count is greater than 1, decrement the count and return
+  //      success.
+  //
+  // These methods invoke |callback| for success and |error_callback| for
+  // failures.
+  virtual void AddDiscoverySession(const base::Closure& callback,
+                                   const ErrorCallback& error_callback) = 0;
+  virtual void RemoveDiscoverySession(const base::Closure& callback,
+                                      const ErrorCallback& error_callback) = 0;
 
   // Devices paired with, connected to, discovered by, or visible to the
   // adapter. The key is the Bluetooth address of the device and the value

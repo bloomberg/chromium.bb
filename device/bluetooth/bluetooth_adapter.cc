@@ -16,6 +16,16 @@ BluetoothAdapter::~BluetoothAdapter() {
   STLDeleteValues(&devices_);
 }
 
+void BluetoothAdapter::StartDiscovering(const base::Closure& callback,
+                                        const ErrorCallback& error_callback) {
+  AddDiscoverySession(callback, error_callback);
+}
+
+void BluetoothAdapter::StopDiscovering(const base::Closure& callback,
+                                       const ErrorCallback& error_callback) {
+  RemoveDiscoverySession(callback, error_callback);
+}
+
 BluetoothAdapter::DeviceList BluetoothAdapter::GetDevices() {
   ConstDeviceList const_devices =
     const_cast<const BluetoothAdapter *>(this)->GetDevices();

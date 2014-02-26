@@ -67,6 +67,12 @@ class MockBluetoothAdapter : public BluetoothAdapter {
       void(const BluetoothOutOfBandPairingDataCallback& callback,
            const ErrorCallback& error_callback));
  protected:
+  MOCK_METHOD2(AddDiscoverySession,
+               void(const base::Closure& callback,
+                    const ErrorCallback& error_callback));
+  MOCK_METHOD2(RemoveDiscoverySession,
+               void(const base::Closure& callback,
+                    const ErrorCallback& error_callback));
   virtual ~MockBluetoothAdapter();
 };
 

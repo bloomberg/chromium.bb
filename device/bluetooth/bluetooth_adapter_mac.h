@@ -63,13 +63,6 @@ class BluetoothAdapterMac : public BluetoothAdapter {
       const base::Closure& callback,
       const ErrorCallback& error_callback) OVERRIDE;
   virtual bool IsDiscovering() const OVERRIDE;
-
-  virtual void StartDiscovering(
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) OVERRIDE;
-  virtual void StopDiscovering(
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) OVERRIDE;
   virtual void ReadLocalOutOfBandPairingData(
       const BluetoothOutOfBandPairingDataCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE;
@@ -95,6 +88,14 @@ class BluetoothAdapterMac : public BluetoothAdapter {
 
   BluetoothAdapterMac();
   virtual ~BluetoothAdapterMac();
+
+  // BluetoothAdapter override.
+  virtual void AddDiscoverySession(
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE;
+  virtual void RemoveDiscoverySession(
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE;
 
   void Init();
   void InitForTest(scoped_refptr<base::SequencedTaskRunner> ui_task_runner);

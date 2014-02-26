@@ -53,7 +53,9 @@ void OnUnregisterAgentError(const std::string& error_name,
 namespace chromeos {
 
 BluetoothAdapterChromeOS::BluetoothAdapterChromeOS()
-    : weak_ptr_factory_(this) {
+    : num_discovery_sessions_(0),
+      discovery_request_pending_(false),
+      weak_ptr_factory_(this) {
   DBusThreadManager::Get()->GetBluetoothAdapterClient()->AddObserver(this);
   DBusThreadManager::Get()->GetBluetoothDeviceClient()->AddObserver(this);
   DBusThreadManager::Get()->GetBluetoothInputClient()->AddObserver(this);
@@ -209,38 +211,6 @@ bool BluetoothAdapterChromeOS::IsDiscovering() const {
           GetProperties(object_path_);
 
   return properties->discovering.value();
-}
-
-void BluetoothAdapterChromeOS::StartDiscovering(
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
-  // BlueZ counts discovery sessions, and permits multiple sessions for a
-  // single connection, so issue a StartDiscovery() call for every use
-  // within Chromium for the right behavior.
-  DBusThreadManager::Get()->GetBluetoothAdapterClient()->
-      StartDiscovery(
-          object_path_,
-          base::Bind(&BluetoothAdapterChromeOS::OnStartDiscovery,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     callback),
-          base::Bind(&BluetoothAdapterChromeOS::OnStartDiscoveryError,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     error_callback));
-}
-
-void BluetoothAdapterChromeOS::StopDiscovering(
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
-  // Inform BlueZ to stop one of our open discovery sessions.
-  DBusThreadManager::Get()->GetBluetoothAdapterClient()->
-      StopDiscovery(
-          object_path_,
-          base::Bind(&BluetoothAdapterChromeOS::OnStopDiscovery,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     callback),
-          base::Bind(&BluetoothAdapterChromeOS::OnStopDiscoveryError,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     error_callback));
 }
 
 void BluetoothAdapterChromeOS::ReadLocalOutOfBandPairingData(
@@ -759,6 +729,17 @@ void BluetoothAdapterChromeOS::DiscoverableChanged(bool discoverable) {
 
 void BluetoothAdapterChromeOS::DiscoveringChanged(
     bool discovering) {
+  // If the adapter stopped discovery due to a reason other than a request by
+  // us, reset the count to 0.
+  if (!discovering && !discovery_request_pending_
+      && num_discovery_sessions_ > 0) {
+    num_discovery_sessions_ = 0;
+    // TODO(armansito): When we implement the DiscoverySession API, all
+    // active DiscoverySession instances need to be notified to update
+    // themselves. We want to do this before we notify the other observers
+    // so that any DiscoverySession objects that those observers might own
+    // have been marked as inactive.
+  }
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                     AdapterDiscoveringChanged(this, discovering));
 }
@@ -801,8 +782,106 @@ void BluetoothAdapterChromeOS::OnPropertyChangeCompleted(
     error_callback.Run();
 }
 
+void BluetoothAdapterChromeOS::AddDiscoverySession(
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  VLOG(1) << __func__;
+  if (discovery_request_pending_) {
+    // The pending request is either to stop a previous session or to start a
+    // new one. Either way, queue this one.
+    DCHECK(num_discovery_sessions_ == 1 || num_discovery_sessions_ == 0);
+    VLOG(1) << "Pending request to initiate device discovery. Queueing request "
+            << "to start a new discovery session.";
+    discovery_request_queue_.push(std::make_pair(callback, error_callback));
+    return;
+  }
+
+  // The adapter is already discovering.
+  if (num_discovery_sessions_ > 0) {
+    DCHECK(IsDiscovering());
+    DCHECK(!discovery_request_pending_);
+    num_discovery_sessions_++;
+    callback.Run();
+    return;
+  }
+
+  // There are no active discovery sessions.
+  DCHECK(num_discovery_sessions_ == 0);
+
+  // This is the first request to start device discovery.
+  discovery_request_pending_ = true;
+  DBusThreadManager::Get()->GetBluetoothAdapterClient()->
+      StartDiscovery(
+          object_path_,
+          base::Bind(&BluetoothAdapterChromeOS::OnStartDiscovery,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     callback),
+          base::Bind(&BluetoothAdapterChromeOS::OnStartDiscoveryError,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     error_callback));
+}
+
+void BluetoothAdapterChromeOS::RemoveDiscoverySession(
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  VLOG(1) << __func__;
+  // There are active sessions other than the one currently being removed.
+  if (num_discovery_sessions_ > 1) {
+    DCHECK(IsDiscovering());
+    DCHECK(!discovery_request_pending_);
+    num_discovery_sessions_--;
+    callback.Run();
+    return;
+  }
+
+  // If there is a pending request to BlueZ, then queue this request.
+  if (discovery_request_pending_) {
+    VLOG(1) << "Pending request to initiate device discovery. Queueing request "
+            << "to stop discovery session.";
+    // TODO(armansito): We should never hit this case once we have the
+    // DiscoverySession API, as there would be no active DiscoverySession
+    // objects to allow calling this method while a call is pending to either
+    // return the first active or deactivate the last active DiscoverySession
+    // object in the first place. For now, report error.
+    error_callback.Run();
+    return;
+  }
+
+  // There are no active sessions. Return error.
+  if (num_discovery_sessions_ == 0) {
+    // TODO(armansito): This should never happen once we have the
+    // DiscoverySession API. Replace this case with an assert once it's
+    // implemented. (See crbug.com/3445008).
+    VLOG(1) << "No active discovery sessions. Returning error.";
+    error_callback.Run();
+    return;
+  }
+
+  // There is exactly one active discovery session. Request BlueZ to stop
+  // discovery.
+  DCHECK(num_discovery_sessions_ == 1);
+  discovery_request_pending_ = true;
+  DBusThreadManager::Get()->GetBluetoothAdapterClient()->
+      StopDiscovery(
+          object_path_,
+          base::Bind(&BluetoothAdapterChromeOS::OnStopDiscovery,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     callback),
+          base::Bind(&BluetoothAdapterChromeOS::OnStopDiscoveryError,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     error_callback));
+}
+
 void BluetoothAdapterChromeOS::OnStartDiscovery(const base::Closure& callback) {
+  // Report success on the original request and increment the count.
+  DCHECK(discovery_request_pending_);
+  DCHECK(num_discovery_sessions_ == 0);
+  discovery_request_pending_ = false;
+  num_discovery_sessions_++;
   callback.Run();
+
+  // Try to add a new discovery session for each queued request.
+  ProcessQueuedDiscoveryRequests();
 }
 
 void BluetoothAdapterChromeOS::OnStartDiscoveryError(
@@ -811,11 +890,27 @@ void BluetoothAdapterChromeOS::OnStartDiscoveryError(
     const std::string& error_message) {
   LOG(WARNING) << object_path_.value() << ": Failed to start discovery: "
                << error_name << ": " << error_message;
+
+  // Failed to start discovery. This can only happen if the count is at 0.
+  DCHECK(num_discovery_sessions_ == 0);
+  DCHECK(discovery_request_pending_);
+  discovery_request_pending_ = false;
   error_callback.Run();
+
+  // Try to add a new discovery session for each queued request.
+  ProcessQueuedDiscoveryRequests();
 }
 
 void BluetoothAdapterChromeOS::OnStopDiscovery(const base::Closure& callback) {
+  // Report success on the original request and decrement the count.
+  DCHECK(discovery_request_pending_);
+  DCHECK(num_discovery_sessions_ == 1);
+  discovery_request_pending_ = false;
+  num_discovery_sessions_--;
   callback.Run();
+
+  // Try to add a new discovery session for each queued request.
+  ProcessQueuedDiscoveryRequests();
 }
 
 void BluetoothAdapterChromeOS::OnStopDiscoveryError(
@@ -824,7 +919,29 @@ void BluetoothAdapterChromeOS::OnStopDiscoveryError(
     const std::string& error_message) {
   LOG(WARNING) << object_path_.value() << ": Failed to stop discovery: "
                << error_name << ": " << error_message;
+
+  // Failed to stop discovery. This can only happen if the count is at 1.
+  DCHECK(discovery_request_pending_);
+  DCHECK(num_discovery_sessions_ == 1);
+  discovery_request_pending_ = false;
   error_callback.Run();
+
+  // Try to add a new discovery session for each queued request.
+  ProcessQueuedDiscoveryRequests();
+}
+
+void BluetoothAdapterChromeOS::ProcessQueuedDiscoveryRequests() {
+  while (!discovery_request_queue_.empty()) {
+    DiscoveryCallbackPair callbacks = discovery_request_queue_.front();
+    discovery_request_queue_.pop();
+    AddDiscoverySession(callbacks.first, callbacks.second);
+
+    // If the queued request resulted in a pending call, then let it
+    // asynchonously process the remaining queued requests once the pending
+    // call returns.
+    if (discovery_request_pending_)
+      return;
+  }
 }
 
 }  // namespace chromeos

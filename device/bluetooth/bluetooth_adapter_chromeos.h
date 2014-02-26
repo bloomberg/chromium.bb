@@ -5,6 +5,7 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_CHROMEOS_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_CHROMEOS_H_
 
+#include <queue>
 #include <string>
 
 #include "base/memory/weak_ptr.h"
@@ -59,12 +60,6 @@ class BluetoothAdapterChromeOS
       const base::Closure& callback,
       const ErrorCallback& error_callback) OVERRIDE;
   virtual bool IsDiscovering() const OVERRIDE;
-  virtual void StartDiscovering(
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) OVERRIDE;
-  virtual void StopDiscovering(
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) OVERRIDE;
   virtual void ReadLocalOutOfBandPairingData(
       const device::BluetoothAdapter::BluetoothOutOfBandPairingDataCallback&
           callback,
@@ -76,6 +71,12 @@ class BluetoothAdapterChromeOS
   friend class BluetoothDeviceChromeOS;
   friend class BluetoothProfileChromeOS;
   friend class BluetoothProfileChromeOSTest;
+
+  // typedef for callback parameters that are passed to AddDiscoverySession
+  // and RemoveDiscoverySession. This is used to queue incoming requests while
+  // a call to BlueZ is pending.
+  typedef std::pair<base::Closure, ErrorCallback> DiscoveryCallbackPair;
+  typedef std::queue<DiscoveryCallbackPair> DiscoveryCallbackQueue;
 
   BluetoothAdapterChromeOS();
   virtual ~BluetoothAdapterChromeOS();
@@ -244,6 +245,14 @@ class BluetoothAdapterChromeOS
                                  const ErrorCallback& error_callback,
                                  bool success);
 
+  // BluetoothAdapter override.
+  virtual void AddDiscoverySession(
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE;
+  virtual void RemoveDiscoverySession(
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE;
+
   // Called by dbus:: on completion of the D-Bus method call to start discovery.
   void OnStartDiscovery(const base::Closure& callback);
   void OnStartDiscoveryError(const ErrorCallback& error_callback,
@@ -255,6 +264,41 @@ class BluetoothAdapterChromeOS
   void OnStopDiscoveryError(const ErrorCallback& error_callback,
                             const std::string& error_name,
                             const std::string& error_message);
+
+  // Processes the queued discovery requests. For each DiscoveryCallbackPair in
+  // the queue, this method will try to add a new discovery session. This method
+  // is called whenever a pending D-Bus call to start or stop discovery has
+  // ended (with either success or failure).
+  void ProcessQueuedDiscoveryRequests();
+
+  // Number of discovery sessions that have been added.
+  int num_discovery_sessions_;
+
+  // True, if there is a pending request to start or stop discovery.
+  bool discovery_request_pending_;
+
+  // List of queued requests to add new discovery sessions. While there is a
+  // pending request to BlueZ to start or stop discovery, many requests from
+  // within Chrome to start or stop discovery sessions may occur. We only
+  // queue requests to add new sessions to be processed later. All requests to
+  // remove a session while a call is pending immediately return failure. Note
+  // that since BlueZ keeps its own reference count of applications that have
+  // requested discovery, dropping our count to 0 won't necessarily result in
+  // the controller actually stopping discovery if, for example, an application
+  // other than Chrome, such as bt_console, was also used to start discovery.
+  //
+  // TODO(armansito): With the new API, it will not be possible to have requests
+  // to remove a discovery session while a call is pending. If the pending
+  // request is to start discovery, |num_discovery_sessions_| is 0. Since no
+  // active instance of DiscoverySession exists, clients can only make calls to
+  // request new sessions. Likewise, if the pending request is to stop
+  // discovery, |num_discovery_sessions_| is 1 and we're currently processing
+  // the request to stop the last active DiscoverySession. We should make sure
+  // that this invariant holds via asserts once we implement DiscoverySession
+  // and have fully removed the deprecated methods. For now, just return an
+  // error in the removal case to support the deprecated methods. (See
+  // crbug.com/3445008).
+  DiscoveryCallbackQueue discovery_request_queue_;
 
   // Object path of the adapter we track.
   dbus::ObjectPath object_path_;

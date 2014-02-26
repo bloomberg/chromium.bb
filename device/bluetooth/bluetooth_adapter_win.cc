@@ -97,32 +97,6 @@ bool BluetoothAdapterWin::IsDiscovering() const {
       discovery_status_ == DISCOVERY_STOPPING;
 }
 
-// If the method is called when |discovery_status_| is DISCOVERY_STOPPING,
-// starting again is handled by BluetoothAdapterWin::DiscoveryStopped().
-void BluetoothAdapterWin::StartDiscovering(
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
-  if (discovery_status_ == DISCOVERING) {
-    num_discovery_listeners_++;
-    callback.Run();
-    return;
-  }
-  on_start_discovery_callbacks_.push_back(
-      std::make_pair(callback, error_callback));
-  MaybePostStartDiscoveryTask();
-}
-
-void BluetoothAdapterWin::StopDiscovering(
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
-  if (discovery_status_ == NOT_DISCOVERING) {
-    error_callback.Run();
-    return;
-  }
-  on_stop_discovery_callbacks_.push_back(callback);
-  MaybePostStopDiscoveryTask();
-}
-
 void BluetoothAdapterWin::DiscoveryStarted(bool success) {
   discovery_status_ = success ? DISCOVERING : NOT_DISCOVERING;
   for (std::vector<std::pair<base::Closure, ErrorCallback> >::const_iterator
@@ -224,6 +198,32 @@ void BluetoothAdapterWin::DevicesUpdated(
        ++iter) {
     devices_[(*iter)->address] = new BluetoothDeviceWin(**iter);
   }
+}
+
+// If the method is called when |discovery_status_| is DISCOVERY_STOPPING,
+// starting again is handled by BluetoothAdapterWin::DiscoveryStopped().
+void BluetoothAdapterWin::AddDiscoverySession(
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  if (discovery_status_ == DISCOVERING) {
+    num_discovery_listeners_++;
+    callback.Run();
+    return;
+  }
+  on_start_discovery_callbacks_.push_back(
+      std::make_pair(callback, error_callback));
+  MaybePostStartDiscoveryTask();
+}
+
+void BluetoothAdapterWin::RemoveDiscoverySession(
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  if (discovery_status_ == NOT_DISCOVERING) {
+    error_callback.Run();
+    return;
+  }
+  on_stop_discovery_callbacks_.push_back(callback);
+  MaybePostStopDiscoveryTask();
 }
 
 void BluetoothAdapterWin::Init() {
