@@ -62,25 +62,28 @@ FileError GetLocallyStoredResourceEntry(
       entry->file_specific_info().is_hosted_document())
     return FILE_ERROR_OK;
 
-  // When no dirty cache is found, use the original resource entry as is.
+  // When cache is not found, use the original resource entry as is.
   FileCacheEntry cache_entry;
-  if (!cache->GetCacheEntry(local_id, &cache_entry) || !cache_entry.is_dirty())
+  if (!cache->GetCacheEntry(local_id, &cache_entry))
     return FILE_ERROR_OK;
 
-  // If the cache is dirty, obtain the file info from the cache file itself.
+  // When cache is non-dirty and obsolete (old hash), use the original entry.
+  if (!cache_entry.is_dirty() &&
+      entry->file_specific_info().md5() != cache_entry.md5())
+    return FILE_ERROR_OK;
+
+  // If there's a valid cache, obtain the file info from the cache file itself.
   base::FilePath local_cache_path;
   error = cache->GetFile(local_id, &local_cache_path);
   if (error != FILE_ERROR_OK)
     return error;
 
-  // TODO(rvargas): Convert this code to use base::File::Info.
   base::File::Info file_info;
-  if (!base::GetFileInfo(local_cache_path,
-                         reinterpret_cast<base::File::Info*>(&file_info))) {
+  if (!base::GetFileInfo(local_cache_path, &file_info))
     return FILE_ERROR_NOT_FOUND;
-  }
 
-  SetPlatformFileInfoToResourceEntry(file_info, entry);
+  // TODO(hashimoto): crbug.com/346625. Also reflect timestamps.
+  entry->mutable_file_info()->set_size(file_info.size);
   return FILE_ERROR_OK;
 }
 

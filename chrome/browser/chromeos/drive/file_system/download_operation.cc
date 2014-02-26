@@ -131,17 +131,13 @@ FileError CheckPreConditionForEnsureFileDownloaded(
   if (error != FILE_ERROR_OK)
     return error;
 
-  // If the cache file is dirty, the modified file info needs to be stored in
-  // |entry|.
-  // TODO(kinaba): crbug.com/246469. The logic below is a duplicate of that in
-  // drive::FileSystem::CheckLocalModificationAndRun. We should merge them once
-  // the drive::FS side is also converted to run fully on blocking pool.
-  if (cache_entry.is_dirty()) {
-    base::File::Info file_info;
-    if (base::GetFileInfo(*cache_file_path,
-                          reinterpret_cast<base::File::Info*>(&file_info)))
-      SetPlatformFileInfoToResourceEntry(file_info, entry);
-  }
+  // If the cache file is to be returned as the download result, the file info
+  // of the cache needs to be returned via |entry|.
+  // TODO(kinaba): crbug.com/246469. The logic below is similar to that in
+  // drive::FileSystem::CheckLocalModificationAndRun. We should merge them.
+  base::File::Info file_info;
+  if (base::GetFileInfo(*cache_file_path, &file_info))
+    SetPlatformFileInfoToResourceEntry(file_info, entry);
 
   return FILE_ERROR_OK;
 }
