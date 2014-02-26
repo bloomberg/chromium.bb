@@ -127,21 +127,6 @@ static int computePaintTextFlags(String fontFamilyName)
     return textFlags;
 }
 
-#if !USE(HARFBUZZ)
-PassRefPtr<SkTypeface> CreateTypefaceFromHFont(HFONT hfont, int* size)
-{
-    LOGFONT info;
-    GetObject(hfont, sizeof(info), &info);
-    if (size) {
-        int height = info.lfHeight;
-        if (height < 0)
-            height = -height;
-        *size = height;
-    }
-    return adoptRef(SkCreateTypefaceFromLOGFONT(info));
-}
-#endif
-
 FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
     : m_textSize(-1)
     , m_syntheticBold(false)

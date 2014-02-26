@@ -156,6 +156,19 @@ void paintSkiaText(GraphicsContext* context,
         numGlyphs, glyphs, advances, offsets, origin, textRect);
 }
 #if !USE(HARFBUZZ)
+static inline PassRefPtr<SkTypeface> CreateTypefaceFromHFont(HFONT hfont, int* size)
+{
+    LOGFONT info;
+    GetObject(hfont, sizeof(info), &info);
+    if (size) {
+        int height = info.lfHeight;
+        if (height < 0)
+            height = -height;
+        *size = height;
+    }
+    return adoptRef(SkCreateTypefaceFromLOGFONT(info));
+}
+
 void paintSkiaText(GraphicsContext* context,
     const FontPlatformData& data,
     HFONT hfont,
