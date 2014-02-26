@@ -279,7 +279,7 @@ deps = {
     Var("llvm_url") + "/cfe/trunk/tools/clang-format@198831",
 
   "src/third_party/webpagereplay":
-    (Var("googlecode_url") % "web-page-replay") + "/trunk@540",
+    (Var("googlecode_url") % "web-page-replay") + "/trunk@544",
 
   "src/third_party/pywebsocket/src":
     (Var("googlecode_url") % "pywebsocket") + "/trunk/src@662",
