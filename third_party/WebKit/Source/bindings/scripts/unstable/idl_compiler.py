@@ -64,14 +64,14 @@ def parse_options():
     return options, idl_filename
 
 
-# FIXME: import from utilities once moved into same directory
-def write_file(new_lines, destination_filename, only_if_changed):
+# FIXME: import from utilities once moved into same directory (lines vs. text)
+def write_file(new_text, destination_filename, only_if_changed):
     if only_if_changed and os.path.isfile(destination_filename):
         with open(destination_filename) as destination_file:
-            if destination_file.readlines() == new_lines:
+            if destination_file.read() == new_text:
                 return
     with open(destination_filename, 'w') as destination_file:
-        destination_file.write(''.join(new_lines))
+        destination_file.write(new_text)
 
 
 def main():
