@@ -17,6 +17,7 @@ from driver_log import Log
 import driver_tools
 import pathtools
 import os
+import shutil
 
 EXTRA_ENV = {
   'INPUTS'             : '',
@@ -127,6 +128,8 @@ def Compress(f_input, f_output):
     os.rename(f_input, f_temp)
     os.rename(current_smallest_file, f_input)
     os.remove(f_temp)
+  elif current_smallest_file == f_input:
+    shutil.copyfile(current_smallest_file, f_output)
   else:
     os.rename(current_smallest_file, f_output)
 
