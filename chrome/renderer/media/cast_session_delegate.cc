@@ -9,7 +9,6 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "chrome/renderer/media/cast_threads.h"
 #include "chrome/renderer/media/cast_transport_sender_ipc.h"
-#include "content/public/renderer/p2p_socket_client.h"
 #include "content/public/renderer/render_thread.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"

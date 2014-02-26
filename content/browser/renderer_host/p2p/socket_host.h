@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_HOST_H_
 
 #include "content/common/content_export.h"
-#include "content/public/common/p2p_socket_type.h"
+#include "content/common/p2p_socket_type.h"
 #include "net/base/ip_endpoint.h"
 #include "net/udp/datagram_socket.h"
 

@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "content/common/p2p_messages.h"
-#include "content/public/renderer/p2p_socket_client_delegate.h"
+#include "content/renderer/p2p/socket_client_delegate.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/render_thread_impl.h"
 #include "crypto/random.h"

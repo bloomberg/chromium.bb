@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "content/browser/renderer_host/p2p/socket_host_throttler.h"
+#include "content/common/p2p_socket_type.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/p2p_socket_type.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/network_change_notifier.h"
 

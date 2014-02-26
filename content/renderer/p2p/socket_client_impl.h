@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "content/public/common/p2p_socket_type.h"
-#include "content/public/renderer/p2p_socket_client.h"
+#include "content/common/p2p_socket_type.h"
+#include "content/renderer/p2p/socket_client.h"
 #include "net/base/ip_endpoint.h"
 
 namespace base {

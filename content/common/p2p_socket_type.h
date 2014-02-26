@@ -1,12 +1,12 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // This file defines some basic types used by the P2P-related IPC
 // messages.
 
-#ifndef CONTENT_PUBLIC_COMMON_P2P_SOCKET_TYPE_H_
-#define CONTENT_PUBLIC_COMMON_P2P_SOCKET_TYPE_H_
+#ifndef CONTENT_COMMON_P2P_SOCKET_TYPE_H_
+#define CONTENT_COMMON_P2P_SOCKET_TYPE_H_
 
 namespace content {
 
@@ -33,4 +33,4 @@ enum P2PSocketType {
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_COMMON_P2P_SOCKET_TYPE_H_
+#endif  // CONTENT_COMMON_P2P_SOCKET_TYPE_H_

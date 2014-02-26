@@ -1,14 +1,14 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_RENDERER_P2P_SOCKET_CLIENT_DELEGATE_H_
-#define CONTENT_PUBLIC_RENDERER_P2P_SOCKET_CLIENT_DELEGATE_H_
+#ifndef CONTENT_RENDERER_P2P_SOCKET_CLIENT_DELEGATE_H_
+#define CONTENT_RENDERER_P2P_SOCKET_CLIENT_DELEGATE_H_
 
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "content/public/common/p2p_socket_type.h"
+#include "content/common/p2p_socket_type.h"
 #include "net/base/ip_endpoint.h"
 
 namespace content {
@@ -43,4 +43,4 @@ class P2PSocketClientDelegate {
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_RENDERER_P2P_SOCKET_CLIENT_DELEGATE_H_
+#endif  // CONTENT_RENDERER_P2P_SOCKET_CLIENT_DELEGATE_H_

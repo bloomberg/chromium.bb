@@ -29,7 +29,7 @@
 #include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
-#include "content/public/common/p2p_socket_type.h"
+#include "content/common/p2p_socket_type.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "net/base/net_util.h"
 
