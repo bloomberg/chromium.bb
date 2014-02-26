@@ -49,28 +49,9 @@ void LocalMessagePipeEndpoint::OnPeerClose() {
 }
 
 void LocalMessagePipeEndpoint::EnqueueMessage(
-    scoped_ptr<MessageInTransit> message,
-    std::vector<DispatcherTransport>* transports) {
+    scoped_ptr<MessageInTransit> message) {
   DCHECK(is_open_);
   DCHECK(is_peer_open_);
-  DCHECK(!transports || !transports->empty());
-
-  // "Move" the dispatchers
-  if (transports) {
-    scoped_ptr<std::vector<scoped_refptr<Dispatcher> > >
-        dispatchers(new std::vector<scoped_refptr<Dispatcher> >());
-    dispatchers->reserve(transports->size());
-    for (size_t i = 0; i < transports->size(); i++) {
-      if ((*transports)[i].is_valid()) {
-        dispatchers->push_back(
-            (*transports)[i].CreateEquivalentDispatcherAndClose());
-      } else {
-        LOG(WARNING) << "Enqueueing null dispatcher";
-        dispatchers->push_back(scoped_refptr<Dispatcher>());
-      }
-    }
-    message->SetDispatchers(dispatchers.Pass());
-  }
 
   bool was_empty = message_queue_.empty();
   message_queue_.push_back(message.release());

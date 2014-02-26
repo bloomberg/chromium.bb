@@ -157,10 +157,27 @@ MojoResult MessagePipe::EnqueueMessage(
         }
       }
     }
+
+    // Clone the dispatchers and attach them to the message. (This must be done
+    // as a separate loop, since we want to leave the dispatchers alone on
+    // failure.)
+    scoped_ptr<std::vector<scoped_refptr<Dispatcher> > >
+        dispatchers(new std::vector<scoped_refptr<Dispatcher> >());
+    dispatchers->reserve(transports->size());
+    for (size_t i = 0; i < transports->size(); i++) {
+      if ((*transports)[i].is_valid()) {
+        dispatchers->push_back(
+            (*transports)[i].CreateEquivalentDispatcherAndClose());
+      } else {
+        LOG(WARNING) << "Enqueueing null dispatcher";
+        dispatchers->push_back(scoped_refptr<Dispatcher>());
+      }
+    }
+    message->SetDispatchers(dispatchers.Pass());
   }
 
   // The endpoint's |EnqueueMessage()| may not report failure.
-  endpoints_[port]->EnqueueMessage(message.Pass(), transports);
+  endpoints_[port]->EnqueueMessage(message.Pass());
   return MOJO_RESULT_OK;
 }
 

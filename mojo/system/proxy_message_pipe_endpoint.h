@@ -47,9 +47,7 @@ class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint
   // |MessagePipeEndpoint| implementation:
   virtual void Close() OVERRIDE;
   virtual void OnPeerClose() OVERRIDE;
-  virtual void EnqueueMessage(
-      scoped_ptr<MessageInTransit> message,
-      std::vector<DispatcherTransport>* transports) OVERRIDE;
+  virtual void EnqueueMessage(scoped_ptr<MessageInTransit> message) OVERRIDE;
   virtual void Attach(scoped_refptr<Channel> channel,
                       MessageInTransit::EndpointId local_id) OVERRIDE;
   virtual void Run(MessageInTransit::EndpointId remote_id) OVERRIDE;
@@ -63,11 +61,6 @@ class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint
     return remote_id_ != MessageInTransit::kInvalidEndpointId;
   }
 
-  // "Attaches" |transports| (which must be non-null and nonempty) to |message|
-  // by "serializing" them in an appropriate way, and closes each dispatcher.
-  // (Note that this simply modifies |*message|, and doesn't take ownership.)
-  void AttachAndCloseDispatchers(MessageInTransit* message,
-                                 std::vector<DispatcherTransport>* transports);
   void EnqueueMessageInternal(scoped_ptr<MessageInTransit> message);
 
 #ifdef NDEBUG

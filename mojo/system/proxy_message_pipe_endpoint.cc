@@ -54,12 +54,13 @@ void ProxyMessagePipeEndpoint::OnPeerClose() {
 }
 
 void ProxyMessagePipeEndpoint::EnqueueMessage(
-    scoped_ptr<MessageInTransit> message,
-    std::vector<DispatcherTransport>* transports) {
-  DCHECK(!transports || !transports->empty());
-
-  if (transports)
-    AttachAndCloseDispatchers(message.get(), transports);
+    scoped_ptr<MessageInTransit> message) {
+  if (message->dispatchers() && !message->dispatchers()->empty()) {
+    // Since the dispatchers are attached to the message, they'll be closed on
+    // message destruction.
+    LOG(ERROR) << "Sending handles over remote message pipes not yet supported "
+                  "(sent handles will simply be closed)";
+  }
 
   EnqueueMessageInternal(message.Pass());
 }
@@ -94,19 +95,6 @@ void ProxyMessagePipeEndpoint::Run(MessageInTransit::EndpointId remote_id) {
        ++it)
     EnqueueMessageInternal(make_scoped_ptr(*it));
   paused_message_queue_.clear();
-}
-
-void ProxyMessagePipeEndpoint::AttachAndCloseDispatchers(
-    MessageInTransit* message,
-    std::vector<DispatcherTransport>* transports) {
-  DCHECK(transports);
-  DCHECK(!transports->empty());
-
-  // TODO(vtl)
-  LOG(ERROR) << "Sending handles over remote message pipes not yet supported "
-                "(closing sent handles)";
-  for (size_t i = 0; i < transports->size(); i++)
-    (*transports)[i].Close();
 }
 
 // Note: We may have to enqueue messages even when our (local) peer isn't open
