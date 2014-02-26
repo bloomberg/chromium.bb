@@ -231,7 +231,7 @@ Document* AXRenderObject::topDocument() const
 {
     if (!document())
         return 0;
-    return document()->topDocument();
+    return &document()->topDocument();
 }
 
 bool AXRenderObject::shouldNotifyActiveDescendant() const

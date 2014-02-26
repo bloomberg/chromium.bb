@@ -5334,7 +5334,7 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
     if (!frame->loader().client()->allowWebGL(settings && settings->webGLEnabled()))
         return;
 
-    blink::WebGraphicsContext3D::Attributes attributes = m_requestedAttributes->attributes(canvas()->document().topDocument()->url().string(), settings);
+    blink::WebGraphicsContext3D::Attributes attributes = m_requestedAttributes->attributes(canvas()->document().topDocument().url().string(), settings);
     OwnPtr<blink::WebGraphicsContext3D> context = adoptPtr(blink::Platform::current()->createOffscreenGraphicsContext3D(attributes));
     if (!context) {
         if (m_contextLostMode == RealLostContext) {

@@ -79,7 +79,7 @@ enum PostType { PostSynchronously, PostAsynchronously };
 class AXObjectCache {
     WTF_MAKE_NONCOPYABLE(AXObjectCache); WTF_MAKE_FAST_ALLOCATED;
 public:
-    explicit AXObjectCache(const Document*);
+    explicit AXObjectCache(Document&);
     ~AXObjectCache();
 
     static AXObject* focusedUIElementForPage(const Page*);
@@ -211,7 +211,7 @@ protected:
     bool isNodeInUse(Node* n) { return m_textMarkerNodes.contains(n); }
 
 private:
-    Document* m_document;
+    Document& m_document;
     HashMap<AXID, RefPtr<AXObject> > m_objects;
     HashMap<RenderObject*, AXID> m_renderObjectMapping;
     HashMap<Widget*, AXID> m_widgetObjectMapping;

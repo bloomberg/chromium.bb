@@ -2193,10 +2193,10 @@ AXObjectCache* Document::existingAXObjectCache() const
 
     // If the renderer is gone then we are in the process of destruction.
     // This method will be called before m_frame = 0.
-    if (!topDocument()->renderView())
+    if (!topDocument().renderView())
         return 0;
 
-    return topDocument()->m_axObjectCache.get();
+    return topDocument().m_axObjectCache.get();
 }
 
 AXObjectCache* Document::axObjectCache() const
@@ -2208,16 +2208,16 @@ AXObjectCache* Document::axObjectCache() const
     // document.  This is because we need to be able to get from any WebCoreAXObject
     // to any other WebCoreAXObject on the same page.  Using a single cache allows
     // lookups across nested webareas (i.e. multiple documents).
-    Document* topDocument = this->topDocument();
+    Document& topDocument = this->topDocument();
 
     // If the document has already been detached, do not make a new axObjectCache.
-    if (!topDocument->renderView())
+    if (!topDocument.renderView())
         return 0;
 
     ASSERT(topDocument == this || !m_axObjectCache);
-    if (!topDocument->m_axObjectCache)
-        topDocument->m_axObjectCache = adoptPtr(new AXObjectCache(topDocument));
-    return topDocument->m_axObjectCache.get();
+    if (!topDocument.m_axObjectCache)
+        topDocument.m_axObjectCache = adoptPtr(new AXObjectCache(topDocument));
+    return topDocument.m_axObjectCache.get();
 }
 
 PassRefPtr<DocumentParser> Document::createParser()
@@ -3942,7 +3942,7 @@ String Document::lastModified() const
 
 const KURL& Document::firstPartyForCookies() const
 {
-    return topDocument()->url();
+    return topDocument().url();
 }
 
 static bool isValidNameNonASCII(const LChar* characters, unsigned length)
@@ -4310,14 +4310,15 @@ Document* Document::parentDocument() const
     return parent->document();
 }
 
-Document* Document::topDocument() const
+Document& Document::topDocument() const
 {
     Document* doc = const_cast<Document*>(this);
     Element* element;
     while ((element = doc->ownerElement()))
         doc = &element->document();
 
-    return doc;
+    ASSERT(doc);
+    return *doc;
 }
 
 WeakPtr<Document> Document::contextDocument()

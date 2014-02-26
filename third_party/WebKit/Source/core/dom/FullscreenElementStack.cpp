@@ -257,19 +257,18 @@ void FullscreenElementStack::requestFullScreenForElement(Element* element, unsig
 
 void FullscreenElementStack::webkitCancelFullScreen()
 {
-    ASSERT(document()->topDocument());
     // The Mozilla "cancelFullScreen()" API behaves like the W3C "fully exit fullscreen" behavior, which
     // is defined as:
     // "To fully exit fullscreen act as if the exitFullscreen() method was invoked on the top-level browsing
     // context's document and subsequently empty that document's fullscreen element stack."
-    if (!fullscreenElementFrom(*document()->topDocument()))
+    if (!fullscreenElementFrom(document()->topDocument()))
         return;
 
     // To achieve that aim, remove all the elements from the top document's stack except for the first before
     // calling webkitExitFullscreen():
     Vector<RefPtr<Element> > replacementFullscreenElementStack;
-    replacementFullscreenElementStack.append(fullscreenElementFrom(*document()->topDocument()));
-    FullscreenElementStack& topFullscreenElementStack = from(*document()->topDocument());
+    replacementFullscreenElementStack.append(fullscreenElementFrom(document()->topDocument()));
+    FullscreenElementStack& topFullscreenElementStack = from(document()->topDocument());
     topFullscreenElementStack.m_fullScreenElementStack.swap(replacementFullscreenElementStack);
     topFullscreenElementStack.webkitExitFullscreen();
 }
@@ -445,7 +444,7 @@ void FullscreenElementStack::webkitDidExitFullScreenForElement(Element*)
     // the exiting document.
     Document* exitingDocument = document();
     if (m_fullScreenChangeEventTargetQueue.isEmpty() && m_fullScreenErrorEventTargetQueue.isEmpty())
-        exitingDocument = document()->topDocument();
+        exitingDocument = &document()->topDocument();
     ASSERT(exitingDocument);
     from(*exitingDocument).m_fullScreenChangeDelayTimer.startOneShot(0);
 }

@@ -387,7 +387,7 @@ void LocalFrame::disconnectOwnerElement()
 {
     if (ownerElement()) {
         if (Document* doc = document())
-            doc->topDocument()->clearAXObjectCache();
+            doc->topDocument().clearAXObjectCache();
         ownerElement()->clearContentFrame();
         if (page())
             page()->decrementSubframeCount();

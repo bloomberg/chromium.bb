@@ -107,10 +107,10 @@ void AXComputedObjectAttributeCache::clear()
 bool AXObjectCache::gAccessibilityEnabled = false;
 bool AXObjectCache::gInlineTextBoxAccessibility = false;
 
-AXObjectCache::AXObjectCache(const Document* doc)
-    : m_notificationPostTimer(this, &AXObjectCache::notificationPostTimerFired)
+AXObjectCache::AXObjectCache(Document& document)
+    : m_document(document)
+    , m_notificationPostTimer(this, &AXObjectCache::notificationPostTimerFired)
 {
-    m_document = const_cast<Document*>(doc);
     m_computedObjectAttributeCache = AXComputedObjectAttributeCache::create();
 }
 
@@ -447,7 +447,7 @@ AXObject* AXObjectCache::rootObject()
     if (!gAccessibilityEnabled)
         return 0;
 
-    return getOrCreate(m_document->view());
+    return getOrCreate(m_document.view());
 }
 
 AXObject* AXObjectCache::getOrCreate(AccessibilityRole role)

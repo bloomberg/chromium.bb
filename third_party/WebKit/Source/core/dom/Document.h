@@ -806,7 +806,7 @@ public:
     bool inDesignMode() const;
 
     Document* parentDocument() const;
-    Document* topDocument() const;
+    Document& topDocument() const;
     WeakPtr<Document> contextDocument();
 
     ScriptRunner* scriptRunner() { return m_scriptRunner.get(); }

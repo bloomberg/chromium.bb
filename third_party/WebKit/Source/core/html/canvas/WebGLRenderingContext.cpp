@@ -79,7 +79,7 @@ PassOwnPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTMLCanvasElemen
         defaultAttrs = WebGLContextAttributes::create();
         attrs = defaultAttrs.get();
     }
-    blink::WebGraphicsContext3D::Attributes attributes = attrs->attributes(document.topDocument()->url().string(), settings);
+    blink::WebGraphicsContext3D::Attributes attributes = attrs->attributes(document.topDocument().url().string(), settings);
     OwnPtr<blink::WebGraphicsContext3D> context = adoptPtr(blink::Platform::current()->createOffscreenGraphicsContext3D(attributes));
     if (!context || !context->makeContextCurrent()) {
         canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "Could not create a WebGL context."));
