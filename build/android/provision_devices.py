@@ -10,6 +10,7 @@ Usage:
   ./provision_devices.py [-d <device serial number>]
 """
 
+import logging
 import optparse
 import os
 import re
@@ -19,6 +20,8 @@ import time
 
 from pylib import android_commands
 from pylib import constants
+from pylib import device_settings
+
 
 def KillHostHeartbeat():
   ps = subprocess.Popen(['ps', 'aux'], stdout = subprocess.PIPE)
@@ -65,6 +68,21 @@ def PushAndLaunchAdbReboot(devices, target):
   LaunchHostHeartbeat()
 
 
+def _ConfigureLocalProperties(adb):
+  """Set standard readonly testing device properties prior to reboot."""
+  local_props = [
+      'ro.monkey=1',
+      'ro.test_harness=1',
+      'ro.audio.silent=1',
+      'ro.setupwizard.mode=DISABLED',
+      ]
+  adb.SetProtectedFileContents(android_commands.LOCAL_PROPERTIES_PATH,
+                               '\n'.join(local_props))
+  # Android will not respect the local props file if it is world writable.
+  adb.RunShellCommandWithSU('chmod 644 %s' %
+                            android_commands.LOCAL_PROPERTIES_PATH)
+
+
 def ProvisionDevices(options):
   if options.device is not None:
     devices = [options.device]
@@ -72,12 +90,22 @@ def ProvisionDevices(options):
     devices = android_commands.GetAttachedDevices()
   for device in devices:
     android_cmd = android_commands.AndroidCommands(device)
+    _ConfigureLocalProperties(android_cmd)
+    device_settings.ConfigureContentSettingsDict(
+        android_cmd, device_settings.DETERMINISTIC_DEVICE_SETTINGS)
+    # TODO(tonyg): We eventually want network on. However, currently radios
+    # can cause perfbots to drain faster than they charge.
+    if 'perf' in os.environ.get('BUILDBOT_BUILDERNAME', '').lower():
+      device_settings.ConfigureContentSettingsDict(
+          android_cmd, device_settings.NETWORK_DISABLED_SETTINGS)
     android_cmd.RunShellCommandWithSU('date -u %f' % time.time())
   if options.auto_reconnect:
     PushAndLaunchAdbReboot(devices, options.target)
 
 
 def main(argv):
+  logging.basicConfig(level=logging.INFO)
+
   parser = optparse.OptionParser()
   parser.add_option('-d', '--device',
                     help='The serial number of the device to be provisioned')
