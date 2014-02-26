@@ -1,1 +1,117 @@
-#<skip - need to generate expectation>
+ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
+    IA2_ROLE_SECTION READONLY
+        IA2_ROLE_LABEL
+            ROLE_SYSTEM_STATICTEXT name='Default: '
+            ROLE_SYSTEM_TEXT name='Default: ' FOCUSABLE
+        IA2_ROLE_LABEL
+            ROLE_SYSTEM_STATICTEXT name='Button: '
+            ROLE_SYSTEM_PUSHBUTTON name='Button: ' FOCUSABLE
+        ROLE_SYSTEM_CHECKBUTTON name='Checkbox: ' FOCUSABLE
+        IA2_ROLE_LABEL
+            ROLE_SYSTEM_STATICTEXT name='Color: '
+            IA2_ROLE_COLOR_CHOOSER name='Color: ' FOCUSABLE
+        IA2_ROLE_LABEL
+            ROLE_SYSTEM_STATICTEXT name='Date: '
+            ROLE_SYSTEM_CLIENT name='Date: Month/Day/Year' FOCUSABLE
+                IA2_ROLE_SECTION
+                    IA2_ROLE_SECTION
+                        ROLE_SYSTEM_SPINBUTTON name='Month' FOCUSABLE
+                        ROLE_SYSTEM_STATICTEXT name='/'
+                        ROLE_SYSTEM_SPINBUTTON name='Day' FOCUSABLE
+                        ROLE_SYSTEM_STATICTEXT name='/'
+                        ROLE_SYSTEM_SPINBUTTON name='Year' FOCUSABLE
+                ROLE_SYSTEM_SPINBUTTON
+                    ROLE_SYSTEM_PUSHBUTTON
+                    ROLE_SYSTEM_PUSHBUTTON
+        IA2_ROLE_LABEL
+            ROLE_SYSTEM_STATICTEXT name='Datetime: '
+            ROLE_SYSTEM_TEXT name='Datetime: ' FOCUSABLE
+        IA2_ROLE_LABEL
+            ROLE_SYSTEM_STATICTEXT name='Datetime-local: '
+            ROLE_SYSTEM_CLIENT name='Datetime-local: Month/Day/YearHours:MinutesAM/PM' FOCUSABLE
+                IA2_ROLE_SECTION
+                    IA2_ROLE_SECTION
+                        ROLE_SYSTEM_SPINBUTTON name='Month' FOCUSABLE
+                        ROLE_SYSTEM_STATICTEXT name='/'
+                        ROLE_SYSTEM_SPINBUTTON name='Day' FOCUSABLE
+                        ROLE_SYSTEM_STATICTEXT name='/'
+                        ROLE_SYSTEM_SPINBUTTON name='Year' FOCUSABLE
+                        ROLE_SYSTEM_SPINBUTTON name='Hours' FOCUSABLE
+                        ROLE_SYSTEM_STATICTEXT name=':'
+                        ROLE_SYSTEM_SPINBUTTON name='Minutes' FOCUSABLE
+                        ROLE_SYSTEM_SPINBUTTON name='AM/PM' FOCUSABLE
+                ROLE_SYSTEM_SPINBUTTON
+                    ROLE_SYSTEM_PUSHBUTTON
+                    ROLE_SYSTEM_PUSHBUTTON
+        IA2_ROLE_LABEL
+            ROLE_SYSTEM_STATICTEXT name='Email: '
+            ROLE_SYSTEM_TEXT name='Email: ' FOCUSABLE
+        IA2_ROLE_LABEL
+            ROLE_SYSTEM_STATICTEXT name='File: '
+            ROLE_SYSTEM_PUSHBUTTON name='Choose File' FOCUSABLE
+        IA2_ROLE_LABEL
+            ROLE_SYSTEM_STATICTEXT name='Image: '
+            ROLE_SYSTEM_PUSHBUTTON name='Image: ' FOCUSABLE
+        IA2_ROLE_LABEL
+            ROLE_SYSTEM_STATICTEXT name='Month: '
+            ROLE_SYSTEM_CLIENT name='Month: Month, Year' FOCUSABLE
+                IA2_ROLE_SECTION
+                    IA2_ROLE_SECTION
+                        ROLE_SYSTEM_SPINBUTTON name='Month' FOCUSABLE
+                        ROLE_SYSTEM_STATICTEXT name=', '
+                        ROLE_SYSTEM_SPINBUTTON name='Year' FOCUSABLE
+                ROLE_SYSTEM_SPINBUTTON
+                    ROLE_SYSTEM_PUSHBUTTON
+                    ROLE_SYSTEM_PUSHBUTTON
+        IA2_ROLE_LABEL
+            ROLE_SYSTEM_STATICTEXT name='Number: '
+            ROLE_SYSTEM_TEXT name='Number: ' FOCUSABLE
+        IA2_ROLE_LABEL
+            ROLE_SYSTEM_STATICTEXT name='Password: '
+            ROLE_SYSTEM_TEXT name='Password: ' FOCUSABLE
+        ROLE_SYSTEM_RADIOBUTTON name='Radio: ' FOCUSABLE
+        IA2_ROLE_LABEL
+            ROLE_SYSTEM_STATICTEXT name='Range: '
+            ROLE_SYSTEM_SLIDER name='Range: ' FOCUSABLE
+        IA2_ROLE_LABEL
+            ROLE_SYSTEM_STATICTEXT name='Reset: '
+            ROLE_SYSTEM_PUSHBUTTON name='Reset' FOCUSABLE
+        IA2_ROLE_LABEL
+            ROLE_SYSTEM_STATICTEXT name='Search:'
+            ROLE_SYSTEM_TEXT name='Search:' FOCUSABLE
+        IA2_ROLE_LABEL
+            ROLE_SYSTEM_STATICTEXT name='Submit: '
+            ROLE_SYSTEM_PUSHBUTTON name='Submit' FOCUSABLE
+        IA2_ROLE_LABEL
+            ROLE_SYSTEM_STATICTEXT name='Tel: '
+            ROLE_SYSTEM_TEXT name='Tel: ' FOCUSABLE
+        IA2_ROLE_LABEL
+            ROLE_SYSTEM_STATICTEXT name='Text: '
+            ROLE_SYSTEM_TEXT name='Text: ' FOCUSABLE
+        IA2_ROLE_LABEL
+            ROLE_SYSTEM_STATICTEXT name='Time: '
+            ROLE_SYSTEM_CLIENT name='Time: Hours:MinutesAM/PM' FOCUSABLE
+                IA2_ROLE_SECTION
+                    IA2_ROLE_SECTION
+                        ROLE_SYSTEM_SPINBUTTON name='Hours' FOCUSABLE
+                        ROLE_SYSTEM_STATICTEXT name=':'
+                        ROLE_SYSTEM_SPINBUTTON name='Minutes' FOCUSABLE
+                        ROLE_SYSTEM_SPINBUTTON name='AM/PM' FOCUSABLE
+                ROLE_SYSTEM_SPINBUTTON
+                    ROLE_SYSTEM_PUSHBUTTON
+                    ROLE_SYSTEM_PUSHBUTTON
+        IA2_ROLE_LABEL
+            ROLE_SYSTEM_STATICTEXT name='Url: '
+            ROLE_SYSTEM_TEXT name='Url: ' FOCUSABLE
+        IA2_ROLE_LABEL
+            ROLE_SYSTEM_STATICTEXT name='Week: '
+            ROLE_SYSTEM_CLIENT name='Week: Week Week, Year' FOCUSABLE
+                IA2_ROLE_SECTION
+                    IA2_ROLE_SECTION
+                        ROLE_SYSTEM_STATICTEXT name='Week '
+                        ROLE_SYSTEM_SPINBUTTON name='Week' FOCUSABLE
+                        ROLE_SYSTEM_STATICTEXT name=', '
+                        ROLE_SYSTEM_SPINBUTTON name='Year' FOCUSABLE
+                ROLE_SYSTEM_SPINBUTTON
+                    ROLE_SYSTEM_PUSHBUTTON
+                    ROLE_SYSTEM_PUSHBUTTON

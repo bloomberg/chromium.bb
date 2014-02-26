@@ -1,5 +1,5 @@
 ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
     IA2_ROLE_SECTION READONLY
-        ROLE_SYSTEM_TEXT name='One word is ' READONLY
-        ROLE_SYSTEM_TEXT name='emphasized' READONLY
-        ROLE_SYSTEM_TEXT name='.' READONLY
+        ROLE_SYSTEM_STATICTEXT name='One word is '
+        ROLE_SYSTEM_STATICTEXT name='emphasized'
+        ROLE_SYSTEM_STATICTEXT name='.'

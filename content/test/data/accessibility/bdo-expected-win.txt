@@ -2,6 +2,6 @@
 # wrong, so we assume this is correct.
 ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
     IA2_ROLE_SECTION READONLY
-        ROLE_SYSTEM_TEXT name='Some LTR text' READONLY
-        ROLE_SYSTEM_TEXT name='Some RTL text ' READONLY
-        ROLE_SYSTEM_TEXT name='with some LTR text embedded' READONLY
+        ROLE_SYSTEM_STATICTEXT name='Some LTR text'
+        ROLE_SYSTEM_STATICTEXT name='Some RTL text '
+        ROLE_SYSTEM_STATICTEXT name='with some LTR text embedded'

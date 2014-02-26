@@ -2,6 +2,6 @@
 # wrong, so we assume this is correct.
 ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
     IA2_ROLE_SECTION READONLY
-        ROLE_SYSTEM_TEXT name='Supercali' READONLY
-        ROLE_SYSTEM_TEXT name='fragilistic' READONLY
-        ROLE_SYSTEM_TEXT name='expialidocious' READONLY
+        ROLE_SYSTEM_STATICTEXT name='Supercali'
+        ROLE_SYSTEM_STATICTEXT name='fragilistic'
+        ROLE_SYSTEM_STATICTEXT name='expialidocious'

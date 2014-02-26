@@ -1,9 +1,9 @@
 ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
     IA2_ROLE_SECTION READONLY
-        ROLE_SYSTEM_TEXT name='Test for modal dialog opened in an iframe. ' READONLY
+        ROLE_SYSTEM_STATICTEXT name='Test for modal dialog opened in an iframe. '
         ROLE_SYSTEM_CLIENT FOCUSABLE
             IA2_ROLE_SCROLL_PANE
                 ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
                     ROLE_SYSTEM_DIALOG READONLY
-                        ROLE_SYSTEM_TEXT name='Text in the dialog.' READONLY
+                        ROLE_SYSTEM_STATICTEXT name='Text in the dialog.'
                 ROLE_SYSTEM_SCROLLBAR
