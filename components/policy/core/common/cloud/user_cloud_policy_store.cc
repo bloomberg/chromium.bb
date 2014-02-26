@@ -53,6 +53,10 @@ const base::FilePath::CharType kKeyCacheFile[] =
 const char kMetricPolicyHasVerifiedCachedKey[] =
     "Enterprise.PolicyHasVerifiedCachedKey";
 
+// Maximum policy and key size that will be loaded, in bytes.
+const size_t kPolicySizeLimit = 1024 * 1024;
+const size_t kKeySizeLimit = 16 * 1024;
+
 // Loads policy from the backing file. Returns a PolicyLoadResult with the
 // results of the fetch.
 policy::PolicyLoadResult LoadPolicyFromDisk(
@@ -67,9 +71,8 @@ policy::PolicyLoadResult LoadPolicyFromDisk(
     return result;
   }
   std::string data;
-  // TODO(atwilson): Enforce a policy/key maxsize when ReadFileToString() can
-  // accept a max_size (http://crbug.com/339417).
-  if (!base::ReadFileToString(policy_path, &data) ||
+
+  if (!base::ReadFileToString(policy_path, &data, kPolicySizeLimit) ||
       !result.policy.ParseFromString(data)) {
     LOG(WARNING) << "Failed to read or parse policy data from "
                  << policy_path.value();
@@ -77,7 +80,7 @@ policy::PolicyLoadResult LoadPolicyFromDisk(
     return result;
   }
 
-  if (!base::ReadFileToString(key_path, &data) ||
+  if (!base::ReadFileToString(key_path, &data, kKeySizeLimit) ||
       !result.key.ParseFromString(data)) {
     // Log an error on missing key data, but do not trigger a load failure
     // for now since there are still old unsigned cached policy blobs in the
