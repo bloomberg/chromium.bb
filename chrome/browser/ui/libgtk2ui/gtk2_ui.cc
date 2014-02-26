@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/libgtk2ui/app_indicator_icon.h"
 #include "chrome/browser/ui/libgtk2ui/chrome_gtk_frame.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_border.h"
+#include "chrome/browser/ui/libgtk2ui/gtk2_signal_registrar.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_util.h"
 #include "chrome/browser/ui/libgtk2ui/native_theme_gtk2.h"
 #include "chrome/browser/ui/libgtk2ui/print_dialog_gtk2.h"
@@ -51,10 +52,7 @@
 // TODO(erg): There's still a lot that needs ported or done for the first time:
 //
 // - Render and inject the omnibox background.
-// - Listen for the "style-set" signal on |fake_frame_| and recreate theme
-//   colors and images.
 // - Make sure to test with a light on dark theme, too.
-// - Everything else that we're not doing.
 
 namespace {
 
@@ -319,6 +317,8 @@ Gtk2UI::Gtk2UI() {
 }
 
 void Gtk2UI::Initialize() {
+  signals_.reset(new Gtk2SignalRegistrar);
+
   // Create our fake widgets.
   fake_window_ = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   fake_frame_ = chrome_gtk_frame_new();
@@ -330,10 +330,10 @@ void Gtk2UI::Initialize() {
   // properties, too, which we query for some colors.
   gtk_widget_realize(fake_frame_);
   gtk_widget_realize(fake_window_);
-  // TODO: Also listen for "style-set" on the fake frame.
 
-  // TODO(erg): Be lazy about generating this data and connect it to the
-  // style-set signal handler.
+  signals_->Connect(fake_frame_, "style-set",
+                    G_CALLBACK(&OnStyleSetThunk), this);
+
   LoadGtkValues();
   SetXDGIconTheme();
 
@@ -642,6 +642,16 @@ ui::SelectFileDialog* Gtk2UI::CreateSelectFileDialog(
     ui::SelectFileDialog::Listener* listener,
     ui::SelectFilePolicy* policy) const {
   return SelectFileDialogImpl::Create(listener, policy);
+}
+
+void Gtk2UI::AddNativeThemeChangeObserver(
+    views::NativeThemeChangeObserver* observer) {
+  theme_change_observers_.AddObserver(observer);
+}
+
+void Gtk2UI::RemoveNativeThemeChangeObserver(
+    views::NativeThemeChangeObserver* observer) {
+  theme_change_observers_.RemoveObserver(observer);
 }
 
 bool Gtk2UI::UnityIsRunning() {
@@ -1307,14 +1317,6 @@ gfx::Insets Gtk2UI::GetButtonInsets() const {
   return button_insets_;
 }
 
-void Gtk2UI::AddGtkBorder(Gtk2Border* border) {
-  border_list_.AddObserver(border);
-}
-
-void Gtk2UI::RemoveGtkBorder(Gtk2Border* border) {
-  border_list_.RemoveObserver(border);
-}
-
 void Gtk2UI::UpdateButtonInsets() {
   GtkWidget* window = gtk_offscreen_window_new();
   GtkWidget* button = gtk_button_new();
@@ -1341,6 +1343,14 @@ void Gtk2UI::UpdateButtonInsets() {
 
 void Gtk2UI::ClearAllThemeData() {
   gtk_images_.clear();
+}
+
+void Gtk2UI::OnStyleSet(GtkWidget* widget, GtkStyle* previous_style) {
+  ClearAllThemeData();
+  LoadGtkValues();
+
+  FOR_EACH_OBSERVER(views::NativeThemeChangeObserver, theme_change_observers_,
+                    OnNativeThemeChanged());
 }
 
 }  // namespace libgtk2ui

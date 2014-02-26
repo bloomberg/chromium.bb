@@ -9,6 +9,7 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/linux_ui/native_theme_change_observer.h"
 
 namespace gfx {
 class Canvas;
@@ -23,21 +24,21 @@ namespace libgtk2ui {
 class Gtk2UI;
 
 // Draws a gtk button border, and manages the memory of the resulting pixbufs.
-class Gtk2Border : public views::Border {
+class Gtk2Border : public views::Border,
+                   public views::NativeThemeChangeObserver {
  public:
   Gtk2Border(Gtk2UI* gtk2_ui,
              views::LabelButton* owning_button,
              scoped_ptr<views::Border> border);
   virtual ~Gtk2Border();
 
-  // Called on theme changes. We invalidate the layout and drop our cached GTK
-  // rendered images.
-  void InvalidateGtkImages();
-
   // Overridden from views::Border:
   virtual void Paint(const views::View& view, gfx::Canvas* canvas) OVERRIDE;
   virtual gfx::Insets GetInsets() const OVERRIDE;
   virtual gfx::Size GetMinimumSize() const OVERRIDE;
+
+  // Overridden from views::NativeThemeChangeObserver:
+  virtual void OnNativeThemeChanged() OVERRIDE;
 
  private:
   void PaintState(const ui::NativeTheme::State state,

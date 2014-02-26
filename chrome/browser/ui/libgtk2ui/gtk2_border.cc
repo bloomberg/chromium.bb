@@ -76,23 +76,11 @@ Gtk2Border::Gtk2Border(Gtk2UI* gtk2_ui,
     : gtk2_ui_(gtk2_ui),
       owning_button_(owning_button),
       border_(border.Pass()) {
-  gtk2_ui_->AddGtkBorder(this);
+  gtk2_ui_->AddNativeThemeChangeObserver(this);
 }
 
 Gtk2Border::~Gtk2Border() {
-  gtk2_ui_->RemoveGtkBorder(this);
-}
-
-void Gtk2Border::InvalidateGtkImages() {
-  for (int i = 0; i < kNumberOfFocusedStates; ++i) {
-    for (int j = 0; j < views::Button::STATE_COUNT; ++j) {
-      button_images_[i][j] = gfx::ImageSkia();
-    }
-  }
-
-  // Our owning view must have its layout invalidated because the insets could
-  // have changed.
-  owning_button_->InvalidateLayout();
+  gtk2_ui_->RemoveNativeThemeChangeObserver(this);
 }
 
 void Gtk2Border::Paint(const views::View& view, gfx::Canvas* canvas) {
@@ -146,6 +134,18 @@ gfx::Size Gtk2Border::GetMinimumSize() const {
 
   gfx::Insets insets = GetInsets();
   return gfx::Size(insets.width(), insets.height());
+}
+
+void Gtk2Border::OnNativeThemeChanged() {
+  for (int i = 0; i < kNumberOfFocusedStates; ++i) {
+    for (int j = 0; j < views::Button::STATE_COUNT; ++j) {
+      button_images_[i][j] = gfx::ImageSkia();
+    }
+  }
+
+  // Our owning view must have its layout invalidated because the insets could
+  // have changed.
+  owning_button_->InvalidateLayout();
 }
 
 void Gtk2Border::PaintState(const ui::NativeTheme::State state,

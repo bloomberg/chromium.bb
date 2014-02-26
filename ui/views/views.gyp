@@ -321,6 +321,7 @@
         'layout/layout_manager.h',
         'linux_ui/linux_ui.h',
         'linux_ui/linux_ui.cc',
+        'linux_ui/native_theme_change_observer.h',
         'linux_ui/status_icon_linux.h',
         'linux_ui/status_icon_linux.cc',
         'linux_ui/window_button_order_observer.h',

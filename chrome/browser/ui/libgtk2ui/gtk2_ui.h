@@ -11,6 +11,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
+#include "chrome/browser/ui/libgtk2ui/gtk2_signal.h"
+#include "chrome/browser/ui/libgtk2ui/gtk2_signal_registrar.h"
 #include "chrome/browser/ui/libgtk2ui/libgtk2ui_export.h"
 #include "chrome/browser/ui/libgtk2ui/owned_widget_gtk2.h"
 #include "ui/gfx/color_utils.h"
@@ -31,6 +33,7 @@ class Image;
 
 namespace libgtk2ui {
 class Gtk2Border;
+class Gtk2SignalRegistrar;
 class GConfTitlebarListener;
 
 // Interface to GTK2 desktop features.
@@ -52,11 +55,6 @@ class Gtk2UI : public views::LinuxUI {
 
   // Returns the current insets for a button.
   gfx::Insets GetButtonInsets() const;
-
-  // We keep track of live Gtk2Border objects since we must alert them to theme
-  // changes.
-  void AddGtkBorder(Gtk2Border* border);
-  void RemoveGtkBorder(Gtk2Border* border);
 
   // ui::LinuxInputMethodContextFactory:
   virtual scoped_ptr<ui::LinuxInputMethodContext> CreateInputMethodContext(
@@ -105,6 +103,10 @@ class Gtk2UI : public views::LinuxUI {
       views::WindowButtonOrderObserver* observer) OVERRIDE;
   virtual void RemoveWindowButtonOrderObserver(
       views::WindowButtonOrderObserver* observer) OVERRIDE;
+  virtual void AddNativeThemeChangeObserver(
+      views::NativeThemeChangeObserver* observer) OVERRIDE;
+  virtual void RemoveNativeThemeChangeObserver(
+      views::NativeThemeChangeObserver* observer) OVERRIDE;
   virtual bool UnityIsRunning() OVERRIDE;
   virtual void NotifyWindowManagerStartupComplete() OVERRIDE;
 
@@ -188,10 +190,16 @@ class Gtk2UI : public views::LinuxUI {
   // Frees all calculated images and color data.
   void ClearAllThemeData();
 
+  // Handles signal from GTK that our theme has been changed.
+  CHROMEGTK_CALLBACK_1(Gtk2UI, void, OnStyleSet, GtkStyle*);
+
   GtkWidget* fake_window_;
   GtkWidget* fake_frame_;
   OwnedWidgetGtk fake_label_;
   OwnedWidgetGtk fake_entry_;
+
+  // Tracks all the signals we have connected to on various widgets.
+  scoped_ptr<Gtk2SignalRegistrar> signals_;
 
   // Tints and colors calculated by LoadGtkValues() that are given to the
   // caller while |use_gtk_| is true.
@@ -230,8 +238,8 @@ class Gtk2UI : public views::LinuxUI {
   // Objects to notify when the window frame button order changes.
   ObserverList<views::WindowButtonOrderObserver> observer_list_;
 
-  // Borders to notify when the theme state changes.
-  ObserverList<Gtk2Border> border_list_;
+  // Observers to notify when the theme state changes.
+  ObserverList<views::NativeThemeChangeObserver> theme_change_observers_;
 
   // Image cache of lazily created images.
   mutable ImageCache gtk_images_;

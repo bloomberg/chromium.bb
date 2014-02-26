@@ -30,6 +30,7 @@ namespace views {
 class Border;
 class LabelButton;
 class View;
+class NativeThemeChangeObserver;
 class WindowButtonOrderObserver;
 
 // Adapter class with targets to render like different toolkits. Set by any
@@ -114,6 +115,12 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   // Removes the observer from the LinuxUI's list.
   virtual void RemoveWindowButtonOrderObserver(
       WindowButtonOrderObserver* observer) = 0;
+
+  // Notifies the observer when the native theme changes.
+  virtual void AddNativeThemeChangeObserver(
+      NativeThemeChangeObserver* observer) = 0;
+  virtual void RemoveNativeThemeChangeObserver(
+      NativeThemeChangeObserver* observer) = 0;
 
   // Determines whether the user's window manager is Unity.
   virtual bool UnityIsRunning() = 0;
