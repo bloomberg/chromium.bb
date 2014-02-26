@@ -12,7 +12,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "extensions/common/switches.h"
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Processes) {
+// Test is flaky: http://crbug.com/346990
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Processes) {
   ASSERT_TRUE(RunExtensionTest("processes/api")) << message_;
 }
 
