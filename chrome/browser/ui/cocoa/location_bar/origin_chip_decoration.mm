@@ -34,30 +34,36 @@ const CGFloat kOuterRightPadding = 3;
 // be scaled down.
 const CGFloat kIconSize = 19;
 
-const ui::NinePartImageIds kDefaultNormalImageIds =
-    IMAGE_GRID(IDR_ORIGIN_CHIP_NORMAL);
-const ui::NinePartImageIds kDefaultHoverImageIds =
-    IMAGE_GRID(IDR_ORIGIN_CHIP_HOVER);
-const ui::NinePartImageIds kDefaultPressedImageIds =
-    IMAGE_GRID(IDR_ORIGIN_CHIP_PRESSED);
+const ui::NinePartImageIds kNormalImages[3] = {
+  IMAGE_GRID(IDR_ORIGIN_CHIP_NORMAL),
+  IMAGE_GRID(IDR_ORIGIN_CHIP_HOVER),
+  IMAGE_GRID(IDR_ORIGIN_CHIP_PRESSED)
+};
 
-// TODO(macourteau): add these once the assets have landed.
-// const ui::NinePartImageIds kEVNormalImageIds = {};
-// const ui::NinePartImageIds kEVHoverImageIds = {};
-// const ui::NinePartImageIds kEVPressedImageIds = {};
-// const ui::NinePartImageIds kBrokenSSLNormalImageIds = {};
-// const ui::NinePartImageIds kBrokenSSLHoverImageIds = {};
-// const ui::NinePartImageIds kBrokenSSLPressedImageIds = {};
-// const ui::NinePartImageIds kMalwareNormalImageIds = {};
-// const ui::NinePartImageIds kMalwareHoverImageIds = {};
-// const ui::NinePartImageIds kMalwarePressedImageIds = {};
+const ui::NinePartImageIds kMalwareImages[3] = {
+  IMAGE_GRID(IDR_ORIGIN_CHIP_MALWARE_NORMAL),
+  IMAGE_GRID(IDR_ORIGIN_CHIP_MALWARE_HOVER),
+  IMAGE_GRID(IDR_ORIGIN_CHIP_MALWARE_PRESSED)
+};
+
+const ui::NinePartImageIds kBrokenSSLImages[3] = {
+  IMAGE_GRID(IDR_ORIGIN_CHIP_BROKENSSL_NORMAL),
+  IMAGE_GRID(IDR_ORIGIN_CHIP_BROKENSSL_HOVER),
+  IMAGE_GRID(IDR_ORIGIN_CHIP_BROKENSSL_PRESSED)
+};
+
+const ui::NinePartImageIds kEVImages[3] = {
+  IMAGE_GRID(IDR_ORIGIN_CHIP_EV_NORMAL),
+  IMAGE_GRID(IDR_ORIGIN_CHIP_EV_HOVER),
+  IMAGE_GRID(IDR_ORIGIN_CHIP_EV_PRESSED)
+};
 
 }  // namespace
 
 OriginChipDecoration::OriginChipDecoration(LocationBarViewMac* owner)
-    : ButtonDecoration(kDefaultNormalImageIds, IDR_LOCATION_BAR_HTTP,
-                       kDefaultHoverImageIds, IDR_LOCATION_BAR_HTTP,
-                       kDefaultPressedImageIds, IDR_LOCATION_BAR_HTTP, 0),
+    : ButtonDecoration(kNormalImages[0], IDR_LOCATION_BAR_HTTP,
+                       kNormalImages[1], IDR_LOCATION_BAR_HTTP,
+                       kNormalImages[2], IDR_LOCATION_BAR_HTTP, 0),
       attributes_([[NSMutableDictionary alloc] init]),
       info_(this, owner->browser()->profile()),
       owner_(owner) {
@@ -86,8 +92,28 @@ void OriginChipDecoration::Update() {
   if (!web_contents || !info_.Update(web_contents, owner_->GetToolbarModel()))
     return;
 
-  // TODO(macourteau): switch the background images and label color based on
-  // the |info_.security_level()| and |info_.url_malware()|.
+  if (info_.is_url_malware()) {
+    SetBackgroundImageIds(kMalwareImages[0],
+                          kMalwareImages[1],
+                          kMalwareImages[2]);
+  } else if (info_.security_level() == ToolbarModel::SECURITY_ERROR) {
+    SetBackgroundImageIds(kBrokenSSLImages[0],
+                          kBrokenSSLImages[1],
+                          kBrokenSSLImages[2]);
+  } else if (info_.security_level() == ToolbarModel::EV_SECURE) {
+    SetBackgroundImageIds(kEVImages[0],
+                          kEVImages[1],
+                          kEVImages[2]);
+  } else {
+    SetBackgroundImageIds(kNormalImages[0],
+                          kNormalImages[1],
+                          kNormalImages[2]);
+  }
+
+  NSColor* foreground_color =
+      info_.is_url_malware() ? [NSColor whiteColor] : [NSColor blackColor];
+  [attributes_ setObject:foreground_color
+                  forKey:NSForegroundColorAttributeName];
 
   label_.reset([base::SysUTF16ToNSString(info_.label()) retain]);
   SetIcon(info_.icon());

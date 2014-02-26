@@ -86,6 +86,18 @@ void ButtonDecoration::SetIcon(int icon_id) {
   pressed_icon_id_ = icon_id;
 }
 
+void ButtonDecoration::SetBackgroundImageIds(
+    ui::NinePartImageIds normal_image_ids,
+    ui::NinePartImageIds hover_image_ids,
+    ui::NinePartImageIds pressed_image_ids) {
+  DCHECK(IsValidNinePartImageIds(normal_image_ids));
+  DCHECK(IsValidNinePartImageIds(hover_image_ids));
+  DCHECK(IsValidNinePartImageIds(pressed_image_ids));
+  normal_image_ids_ = normal_image_ids;
+  hover_image_ids_ = hover_image_ids;
+  pressed_image_ids_ = pressed_image_ids;
+}
+
 ui::NinePartImageIds ButtonDecoration::GetBackgroundImageIds() const {
   switch (state_) {
     case kButtonStateHover:

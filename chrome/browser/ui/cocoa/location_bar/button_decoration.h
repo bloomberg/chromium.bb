@@ -44,6 +44,11 @@ class ButtonDecoration : public LocationBarDecoration {
   // Changes the icon for all button states.
   void SetIcon(int icon_id);
 
+  // Changes the background image for all button states.
+  void SetBackgroundImageIds(ui::NinePartImageIds normal_image_ids,
+                             ui::NinePartImageIds hover_image_ids,
+                             ui::NinePartImageIds pressed_image_ids);
+
   ui::NinePartImageIds GetBackgroundImageIds() const;
   NSImage* GetIconImage() const;
 
