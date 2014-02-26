@@ -153,7 +153,6 @@ bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code)  {
 }
 
 void ShellBrowserMainParts::PostMainMessageLoopRun() {
-  devtools_delegate_->Stop();
   DestroyViewsDelegate();
   DestroyRootWindow();
   BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
@@ -189,6 +188,7 @@ void ShellBrowserMainParts::CreateRootWindow() {
 void ShellBrowserMainParts::DestroyRootWindow() {
   // We should close widget before destroying root window.
   webview_window_.reset();
+  devtools_delegate_->Stop();
   wm_test_helper_->dispatcher()->RemoveRootWindowObserver(this);
   wm_test_helper_->dispatcher()->PrepareForShutdown();
   wm_test_helper_.reset();
