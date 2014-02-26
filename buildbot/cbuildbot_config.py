@@ -819,6 +819,7 @@ paladin = _config(
   description='Commit Queue',
   upload_standalone_images=False,
   chroot_replace=True,
+  images=['test', 'factory_test']
 )
 
 # Used for paladin builders that build from source.
@@ -878,6 +879,9 @@ brillo = _config(
 
   # TODO(gauravsh): Should be set to True once testing works.
   build_tests=False,
+  # TODO(akeshet): factory_test images cannot be build without build_tests=True.
+  #                Remove the following line when build_tests is True.
+  images=['test'],
   signer_tests=False,
   vm_tests=[],
   hw_tests=[],
