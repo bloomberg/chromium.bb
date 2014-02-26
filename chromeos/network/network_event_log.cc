@@ -4,6 +4,7 @@
 
 #include "chromeos/network/network_event_log.h"
 
+#include <cmath>
 #include <list>
 
 #include "base/files/file_path.h"
@@ -17,11 +18,44 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "net/base/escape.h"
+#include "third_party/icu/source/i18n/unicode/datefmt.h"
+#include "third_party/icu/source/i18n/unicode/dtptngen.h"
+#include "third_party/icu/source/i18n/unicode/smpdtfmt.h"
 
 namespace chromeos {
 namespace network_event_log {
 
 namespace {
+
+std::string IcuFormattedString(const base::Time& time,
+                               const std::string& format) {
+  UErrorCode status = U_ZERO_ERROR;
+  scoped_ptr<icu::DateTimePatternGenerator> generator(
+      icu::DateTimePatternGenerator::createInstance(status));
+  DCHECK(U_SUCCESS(status));
+  icu::UnicodeString generated_pattern =
+      generator->getBestPattern(icu::UnicodeString(format.c_str()), status);
+  DCHECK(U_SUCCESS(status));
+  icu::SimpleDateFormat formatter(generated_pattern, status);
+  DCHECK(U_SUCCESS(status));
+  icu::UnicodeString formatted;
+  formatter.format(static_cast<UDate>(time.ToDoubleT() * 1000), formatted);
+  base::string16 formatted16(formatted.getBuffer(),
+                             static_cast<size_t>(formatted.length()));
+  return base::UTF16ToUTF8(formatted16);
+}
+
+std::string DateAndTimeWithMicroseconds(const base::Time& time) {
+  std::string formatted = IcuFormattedString(time, "yyMMddHHmmss");
+  // icu only supports milliseconds, but sometimes we need microseconds, so
+  // append '.' + usecs to the end of the formatted string.
+  int usecs = static_cast<int>(fmod(time.ToDoubleT() * 1000000, 1000000));
+  return base::StringPrintf("%s.%06d", formatted.c_str(), usecs);
+}
+
+std::string TimeWithSeconds(const base::Time& time) {
+  return IcuFormattedString(time, "HHmmss");
+}
 
 class NetworkEventLog;
 NetworkEventLog* g_network_event_log = NULL;
@@ -89,7 +123,8 @@ std::string LogEntry::ToString(bool show_time,
 }
 
 void LogEntry::ToDictionary(base::DictionaryValue* output) const {
-  output->SetString("timestamp", base::TimeFormatShortDateAndTime(time));
+  output->SetString("timestamp", DateAndTimeWithMicroseconds(time));
+  output->SetString("timestampshort", TimeWithSeconds(time));
   output->SetString("level", kLogLevelName[log_level]);
   output->SetString("file",
                     base::StringPrintf("%s:%d ", file.c_str(), file_line));

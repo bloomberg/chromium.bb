@@ -122,6 +122,8 @@ NetworkUI::NetworkUI(content::WebUI* web_ui)
   html->AddLocalizedString("logLevelDebugText", IDS_NETWORK_LOG_LEVEL_DEBUG);
   html->AddLocalizedString("logLevelFileinfoText",
                            IDS_NETWORK_LOG_LEVEL_FILEINFO);
+  html->AddLocalizedString("logLevelTimeDetailText",
+                           IDS_NETWORK_LOG_LEVEL_TIME_DETAIL);
   html->AddLocalizedString("logEntryFormat", IDS_NETWORK_LOG_ENTRY);
   html->SetJsonPath(kStringsJsFile);
 

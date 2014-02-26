@@ -55,9 +55,14 @@ var NetworkUI = function() {
     var fileinfo = '';
     if ($('log-fileinfo').checked)
       fileinfo = logEntry['file'];
+    var timestamp = '';
+    if ($('log-timedetail').checked)
+      timestamp = logEntry['timestamp'];
+    else
+      timestamp = logEntry['timestampshort'];
     textWrapper.textContent = loadTimeData.getStringF(
       'logEntryFormat',
-      logEntry['timestamp'],
+      timestamp,
       fileinfo,
       logEntry['event'],
       logEntry['description']);
@@ -170,6 +175,8 @@ var NetworkUI = function() {
     $('log-debug').onclick = sendRefresh;
     $('log-fileinfo').checked = false;
     $('log-fileinfo').onclick = sendRefresh;
+    $('log-timedetail').checked = false;
+    $('log-timedetail').onclick = sendRefresh;
     setRefresh();
     sendRefresh();
   });

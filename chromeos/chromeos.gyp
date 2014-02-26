@@ -24,6 +24,7 @@
         '../build/linux/system.gyp:ssl',
         '../dbus/dbus.gyp:dbus',
         '../net/net.gyp:net',
+        '../third_party/icu/icu.gyp:icui18n',
         '../third_party/libxml/libxml.gyp:libxml',
         '../ui/display/display.gyp:display',
         '../url/url.gyp:url_lib',
