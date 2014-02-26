@@ -195,6 +195,7 @@ void OmniboxResultView::ShowKeyword(bool show_keyword) {
 
 void OmniboxResultView::Invalidate() {
   keyword_icon_->SetImage(GetKeywordIcon());
+  match_contents_render_text_.reset();
   SchedulePaint();
 }
 
