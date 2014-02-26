@@ -931,7 +931,9 @@ TEST_F(RenderWidgetHostViewAuraTest, FullscreenResize) {
 }
 
 // Swapping a frame should notify the window.
-TEST_F(RenderWidgetHostViewAuraTest, SwapNotifiesWindow) {
+// http://crbug.com/347311 - Disabled due to memory leaks on Linux, as a
+// result of triggering some error condition.
+TEST_F(RenderWidgetHostViewAuraTest, DISABLED_SwapNotifiesWindow) {
   gfx::Size view_size(100, 100);
   gfx::Rect view_rect(view_size);
 
@@ -1347,7 +1349,9 @@ class RenderWidgetHostViewAuraCopyRequestTest
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAuraCopyRequestTest);
 };
 
-TEST_F(RenderWidgetHostViewAuraCopyRequestTest, DestroyedAfterCopyRequest) {
+// http://crbug.com/347311 - Disabled due to intermittent failures on Linux.
+TEST_F(RenderWidgetHostViewAuraCopyRequestTest,
+       DISABLED_DestroyedAfterCopyRequest) {
   gfx::Rect view_rect(100, 100);
   scoped_ptr<cc::CopyOutputRequest> request;
 
