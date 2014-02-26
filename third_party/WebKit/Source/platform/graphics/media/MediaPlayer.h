@@ -103,8 +103,8 @@ public:
     virtual void mediaPlayerSetWebLayer(blink::WebLayer*) = 0;
     virtual void mediaPlayerSetOpaque(bool) = 0;
 
-    virtual void mediaPlayerDidAddTextTrack(blink::WebInbandTextTrack*) = 0;
-    virtual void mediaPlayerDidRemoveTextTrack(blink::WebInbandTextTrack*) = 0;
+    virtual void mediaPlayerDidAddTrack(blink::WebInbandTextTrack*) = 0;
+    virtual void mediaPlayerDidRemoveTrack(blink::WebInbandTextTrack*) = 0;
 
     virtual void mediaPlayerMediaSourceOpened(blink::WebMediaSource*) = 0;
 };

@@ -79,14 +79,14 @@ Node::InsertionNotificationRequest HTMLTrackElement::insertedInto(ContainerNode*
     HTMLElement::insertedInto(insertionPoint);
     HTMLMediaElement* parent = mediaElement();
     if (insertionPoint == parent)
-        parent->didAddTrackElement(this);
+        parent->didAddTrack(this);
     return InsertionDone;
 }
 
 void HTMLTrackElement::removedFrom(ContainerNode* insertionPoint)
 {
     if (!parentNode() && isHTMLMediaElement(*insertionPoint))
-        toHTMLMediaElement(insertionPoint)->didRemoveTrackElement(this);
+        toHTMLMediaElement(insertionPoint)->didRemoveTrack(this);
     HTMLElement::removedFrom(insertionPoint);
 }
 
@@ -313,3 +313,4 @@ HTMLMediaElement* HTMLTrackElement::mediaElement() const
 }
 
 }
+

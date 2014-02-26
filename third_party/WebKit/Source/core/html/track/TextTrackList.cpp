@@ -258,14 +258,6 @@ ExecutionContext* TextTrackList::executionContext() const
     return m_owner->executionContext();
 }
 
-void TextTrackList::clearOwnerAndClients()
-{
-    m_owner = 0;
-
-    for (unsigned i = 0; i < length(); ++i)
-        item(i)->clearClient();
-}
-
 void TextTrackList::scheduleTrackEvent(const AtomicString& eventName, PassRefPtr<TextTrack> track)
 {
     TrackEventInit initializer;

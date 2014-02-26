@@ -68,7 +68,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(removetrack);
 
-    void clearOwnerAndClients();
+    void clearOwner() { m_owner = 0; }
     Node* owner() const;
 
     void scheduleChangeEvent();
