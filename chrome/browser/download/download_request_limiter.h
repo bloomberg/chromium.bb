@@ -70,6 +70,7 @@ class DownloadRequestLimiter
   // TabDownloadState prompts the user with an infobar as necessary.
   // TabDownloadState deletes itself (by invoking
   // DownloadRequestLimiter::Remove) as necessary.
+  // TODO(gbillock): just make this class implement PermissionBubbleRequest.
   class TabDownloadState : public content::NotificationObserver,
                            public content::WebContentsObserver {
    public:
@@ -101,7 +102,7 @@ class DownloadRequestLimiter
     }
 
     // Promote protected accessor to public.
-    content::WebContents* web_contents() {
+    content::WebContents* web_contents() const {
       return content::WebContentsObserver::web_contents();
     }
 
@@ -133,8 +134,8 @@ class DownloadRequestLimiter
    private:
     // Are we showing a prompt to the user?  Determined by whether
     // we have an outstanding weak pointer--weak pointers are only
-    // given to the info bar delegate.
-    bool is_showing_prompt() const { return factory_.HasWeakPtrs(); }
+    // given to the info bar delegate or permission bubble request.
+    bool is_showing_prompt() const;
 
     // content::NotificationObserver method.
     virtual void Observe(int type,

@@ -598,6 +598,8 @@
         'browser/download/download_item_model.h',
         'browser/download/download_path_reservation_tracker.cc',
         'browser/download/download_path_reservation_tracker.h',
+        'browser/download/download_permission_request.cc',
+        'browser/download/download_permission_request.h',
         'browser/download/download_prefs.cc',
         'browser/download/download_prefs.h',
         'browser/download/download_query.cc',

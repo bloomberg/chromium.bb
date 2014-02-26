@@ -52,6 +52,7 @@ class PermissionBubbleManager
 
  private:
   friend class PermissionBubbleManagerTest;
+  friend class DownloadRequestLimiterTest;
   friend class content::WebContentsUserData<PermissionBubbleManager>;
 
   explicit PermissionBubbleManager(content::WebContents* web_contents);

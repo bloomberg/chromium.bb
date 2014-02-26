@@ -168,8 +168,10 @@ void PermissionBubbleManager::Closing() {
 
 void PermissionBubbleManager::ShowBubble() {
   if (view_ && !bubble_showing_ && requests_.size()) {
-    view_->Show(requests_, accept_states_, customization_mode_);
+    // Note: this should appear above Show() for testing, since in that
+    // case we may do in-line calling of finalization.
     bubble_showing_ = true;
+    view_->Show(requests_, accept_states_, customization_mode_);
   }
 }
 

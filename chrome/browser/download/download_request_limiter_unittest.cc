@@ -9,6 +9,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/download/download_request_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_controller.h"
@@ -16,6 +17,40 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::WebContents;
+
+class DownloadRequestLimiterTest;
+
+class FakePermissionBubbleView : public PermissionBubbleView {
+ public:
+  explicit FakePermissionBubbleView(DownloadRequestLimiterTest *test)
+      : test_(test), delegate_(NULL) {}
+
+  virtual ~FakePermissionBubbleView() {
+    if (delegate_)
+      delegate_->SetView(NULL);
+  }
+
+  void Close() {
+    if (delegate_)
+      delegate_->Closing();
+  }
+
+  // PermissionBubbleView:
+  virtual void SetDelegate(Delegate* delegate) OVERRIDE {
+    delegate_ = delegate;
+  }
+
+  virtual void Show(
+      const std::vector<PermissionBubbleRequest*>& requests,
+      const std::vector<bool>& accept_state,
+      bool customization_mode) OVERRIDE;
+
+  virtual void Hide() OVERRIDE {}
+
+ private:
+  DownloadRequestLimiterTest* test_;
+  Delegate* delegate_;
+};
 
 class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
  public:
@@ -28,6 +63,14 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
   virtual void SetUp() {
     ChromeRenderViewHostTestHarness::SetUp();
     InfoBarService::CreateForWebContents(web_contents());
+
+    PermissionBubbleManager::CreateForWebContents(web_contents());
+    view_.reset(new FakePermissionBubbleView(this));
+    PermissionBubbleManager* manager =
+      PermissionBubbleManager::FromWebContents(web_contents());
+    manager->SetView(view_.get());
+    manager->SetCoalesceIntervalForTesting(0);
+
     testing_action_ = ACCEPT;
     ask_allow_count_ = cancel_count_ = continue_count_ = 0;
     download_request_limiter_ = new DownloadRequestLimiter();
@@ -40,10 +83,18 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
         content_settings_.get());
   }
 
+  int GetAction() {
+    return testing_action_;
+  }
+
+  void AskAllow() {
+    ask_allow_count_++;
+  }
+
   void FakeCreate(
       InfoBarService* infobar_service,
       base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host) {
-    ask_allow_count_++;
+    AskAllow();
     switch (testing_action_) {
       case ACCEPT:
         host->Accept();
@@ -93,6 +144,7 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
   }
 
   void AboutToNavigateRenderView() {
+    view_->Close();
     DownloadRequestLimiter::TabDownloadState* state =
         download_request_limiter_->GetDownloadState(
             web_contents(), NULL, false);
@@ -147,7 +199,25 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
  private:
   DownloadRequestInfoBarDelegate::FakeCreateCallback fake_create_callback_;
   TestingProfile profile_;
+  scoped_ptr<FakePermissionBubbleView> view_;
 };
+
+void FakePermissionBubbleView::Show(
+    const std::vector<PermissionBubbleRequest*>& requests,
+    const std::vector<bool>& accept_state,
+    bool customization_mode) {
+  test_->AskAllow();
+  int action = test_->GetAction();
+  if (action == DownloadRequestLimiterTest::ACCEPT) {
+    delegate_->Accept();
+  } else if (action == DownloadRequestLimiterTest::CANCEL) {
+    delegate_->Deny();
+  } else if (action == DownloadRequestLimiterTest::WAIT) {
+    // do nothing.
+  } else {
+    delegate_->Closing();
+  }
+}
 
 TEST_F(DownloadRequestLimiterTest,
        DownloadRequestLimiter_Allow) {
@@ -327,6 +397,10 @@ TEST_F(DownloadRequestLimiterTest,
 TEST_F(DownloadRequestLimiterTest,
        DownloadRequestLimiter_RawWebContents) {
   scoped_ptr<WebContents> web_contents(CreateTestWebContents());
+
+  // DownloadRequestLimiter won't try to make a permission bubble if there's
+  // no permission bubble manager, so don't put one on the test WebContents.
+
   // DownloadRequestLimiter won't try to make an infobar if it doesn't have an
   // InfoBarService, and we want to test that it will Cancel() instead of
   // prompting when it doesn't have a InfoBarService, so unset the delegate.

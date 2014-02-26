@@ -12224,6 +12224,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_MULTI_DOWNLOAD_WARNING" desc="Warning invoked if multiple downloads are attempted without user interaction.">
         This site is attempting to download multiple files. Do you want to allow this?
       </message>
+      <message name="IDS_MULTI_DOWNLOAD_PERMISSION_FRAGMENT" desc="Permission request shown if multiple downloads are attempted without user interaction and there are multiple permissions requested. Follows a prompt: 'This site would like to:'">
+        download multiple files.
+      </message>
       <message name="IDS_MULTI_DOWNLOAD_WARNING_ALLOW" desc="Text on the allow button in the IDS_MULTI_DOWNLOAD_WARNING dialog">
         Allow
       </message>

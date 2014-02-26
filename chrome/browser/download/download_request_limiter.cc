@@ -8,10 +8,12 @@
 #include "base/stl_util.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/download/download_permission_request.h"
 #include "chrome/browser/download/download_request_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
@@ -91,10 +93,16 @@ void DownloadRequestLimiter::TabDownloadState::DidGetUserGesture() {
     return;
   }
 
+  bool promptable = (InfoBarService::FromWebContents(web_contents()) != NULL);
+  if (PermissionBubbleManager::Enabled()) {
+    promptable =
+        (PermissionBubbleManager::FromWebContents(web_contents()) != NULL);
+  }
+
   // See PromptUserForDownload(): if there's no InfoBarService, then
   // DOWNLOADS_NOT_ALLOWED is functionally equivalent to PROMPT_BEFORE_DOWNLOAD.
   if ((status_ != DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS) &&
-      (!InfoBarService::FromWebContents(web_contents()) ||
+      (!promptable ||
        (status_ != DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED))) {
     // Revert to default status.
     host_->Remove(this, web_contents());
@@ -119,6 +127,19 @@ void DownloadRequestLimiter::TabDownloadState::PromptUserForDownload(
   DCHECK(web_contents_);
   if (is_showing_prompt())
     return;
+
+  if (PermissionBubbleManager::Enabled()) {
+    PermissionBubbleManager* bubble_manager =
+        PermissionBubbleManager::FromWebContents(web_contents_);
+    if (bubble_manager) {
+      bubble_manager->AddRequest(new DownloadPermissionRequest(
+          factory_.GetWeakPtr()));
+    } else {
+      Cancel();
+    }
+    return;
+  }
+
   DownloadRequestInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents_), factory_.GetWeakPtr());
 }
@@ -161,6 +182,10 @@ DownloadRequestLimiter::TabDownloadState::TabDownloadState()
       status_(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD),
       download_count_(0),
       factory_(this) {
+}
+
+bool DownloadRequestLimiter::TabDownloadState::is_showing_prompt() const {
+  return factory_.HasWeakPtrs();
 }
 
 void DownloadRequestLimiter::TabDownloadState::Observe(
