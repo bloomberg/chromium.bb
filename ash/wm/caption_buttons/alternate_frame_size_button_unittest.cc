@@ -10,7 +10,6 @@
 #include "ash/wm/caption_buttons/frame_caption_button.h"
 #include "ash/wm/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm/workspace/snap_sizer.h"
 #include "base/command_line.h"
 #include "grit/ash_resources.h"
 #include "ui/aura/test/event_generator.h"
@@ -95,13 +94,9 @@ class AlternateFrameSizeButtonTest : public AshTestBase {
     return view->GetBoundsInScreen().CenterPoint();
   }
 
-  // Returns true if the window is snapped to |edge|.
-  bool IsSnapped(internal::SnapSizer::Edge edge) const {
-    ash::wm::WindowShowType show_type = window_state()->window_show_type();
-    if (edge == internal::SnapSizer::LEFT_EDGE)
-      return show_type == ash::wm::SHOW_TYPE_LEFT_SNAPPED;
-    else
-      return show_type == ash::wm::SHOW_TYPE_RIGHT_SNAPPED;
+  // Returns true if the window has |show_type|.
+  bool HasShowType(wm::WindowShowType show_type) const {
+    return window_state()->window_show_type() == show_type;
   }
 
   // Returns true if all three buttons are in the normal state.
@@ -221,7 +216,7 @@ TEST_F(AlternateFrameSizeButtonTest, ButtonDrag) {
   generator.MoveMouseTo(CenterPointInScreen(close_button()));
   generator.ReleaseLeftButton();
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(IsSnapped(internal::SnapSizer::RIGHT_EDGE));
+  EXPECT_TRUE(HasShowType(wm::SHOW_TYPE_RIGHT_SNAPPED));
 
   // Snap left.
   generator.MoveMouseTo(CenterPointInScreen(size_button()));
@@ -229,7 +224,7 @@ TEST_F(AlternateFrameSizeButtonTest, ButtonDrag) {
   generator.MoveMouseTo(CenterPointInScreen(minimize_button()));
   generator.ReleaseLeftButton();
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(IsSnapped(internal::SnapSizer::LEFT_EDGE));
+  EXPECT_TRUE(HasShowType(wm::SHOW_TYPE_LEFT_SNAPPED));
 
   // 2) Test with scroll gestures.
   // Snap right.
@@ -239,7 +234,7 @@ TEST_F(AlternateFrameSizeButtonTest, ButtonDrag) {
       base::TimeDelta::FromMilliseconds(100),
       3);
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(IsSnapped(internal::SnapSizer::RIGHT_EDGE));
+  EXPECT_TRUE(HasShowType(wm::SHOW_TYPE_RIGHT_SNAPPED));
 
   // Snap left.
   generator.GestureScrollSequence(
@@ -248,7 +243,7 @@ TEST_F(AlternateFrameSizeButtonTest, ButtonDrag) {
       base::TimeDelta::FromMilliseconds(100),
       3);
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(IsSnapped(internal::SnapSizer::LEFT_EDGE));
+  EXPECT_TRUE(HasShowType(wm::SHOW_TYPE_LEFT_SNAPPED));
 
   // 3) Test with tap gestures.
   const int touch_default_radius =
@@ -258,12 +253,12 @@ TEST_F(AlternateFrameSizeButtonTest, ButtonDrag) {
   generator.MoveMouseTo(CenterPointInScreen(size_button()));
   generator.PressMoveAndReleaseTouchTo(CenterPointInScreen(close_button()));
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(IsSnapped(internal::SnapSizer::RIGHT_EDGE));
+  EXPECT_TRUE(HasShowType(wm::SHOW_TYPE_RIGHT_SNAPPED));
   // Snap left.
   generator.MoveMouseTo(CenterPointInScreen(size_button()));
   generator.PressMoveAndReleaseTouchTo(CenterPointInScreen(minimize_button()));
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(IsSnapped(internal::SnapSizer::LEFT_EDGE));
+  EXPECT_TRUE(HasShowType(wm::SHOW_TYPE_LEFT_SNAPPED));
   ui::GestureConfiguration::set_default_radius(touch_default_radius);
 }
 
@@ -282,7 +277,7 @@ TEST_F(AlternateFrameSizeButtonTest, SnapLeftOvershootMinimize) {
   generator.MoveMouseBy(-minimize_button()->width(), 0);
   generator.ReleaseLeftButton();
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(IsSnapped(internal::SnapSizer::LEFT_EDGE));
+  EXPECT_TRUE(HasShowType(wm::SHOW_TYPE_LEFT_SNAPPED));
 }
 
 // Test that right clicking the size button has no effect.
@@ -329,7 +324,7 @@ TEST_F(AlternateFrameSizeButtonTest, ResetButtonsAfterClick) {
   // Release the mouse, snapping the window left.
   generator.ReleaseLeftButton();
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(IsSnapped(internal::SnapSizer::LEFT_EDGE));
+  EXPECT_TRUE(HasShowType(wm::SHOW_TYPE_LEFT_SNAPPED));
 
   // None of the buttons should stay pressed and the buttons should have their
   // regular icons.
@@ -361,7 +356,7 @@ TEST_F(AlternateFrameSizeButtonTest, ResetButtonsAfterClick) {
   // Release the mouse. The window should stay snapped left.
   generator.ReleaseLeftButton();
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(IsSnapped(internal::SnapSizer::LEFT_EDGE));
+  EXPECT_TRUE(HasShowType(wm::SHOW_TYPE_LEFT_SNAPPED));
 
   // The buttons should stay unpressed and the buttons should now have their
   // regular icons.

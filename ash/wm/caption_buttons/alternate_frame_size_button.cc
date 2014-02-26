@@ -9,8 +9,8 @@
 #include "ash/shell.h"
 #include "ash/touch/touch_uma.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_util.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
-#include "ash/wm/workspace/snap_sizer.h"
 #include "ui/gfx/vector2d.h"
 #include "ui/views/widget/widget.h"
 
@@ -200,20 +200,16 @@ void AlternateFrameSizeButton::UpdateSnapType(const ui::LocatedEvent& event) {
   }
 
   if (snap_type_ == SNAP_LEFT || snap_type_ == SNAP_RIGHT) {
+    aura::Window* window = frame_->GetNativeWindow();
     if (!phantom_window_controller_.get()) {
       phantom_window_controller_.reset(
-          new internal::PhantomWindowController(frame_->GetNativeWindow()));
+          new internal::PhantomWindowController(window));
     }
-
-    using internal::SnapSizer;
-    SnapSizer snap_sizer(wm::GetWindowState(frame_->GetNativeWindow()),
-                         gfx::Point(),
-                         snap_type_ == SNAP_LEFT ?
-                             SnapSizer::LEFT_EDGE : SnapSizer::RIGHT_EDGE,
-                         SnapSizer::OTHER_INPUT);
+    gfx::Rect phantom_bounds_in_parent = (snap_type_ == SNAP_LEFT) ?
+        wm::GetDefaultLeftSnappedWindowBoundsInParent(window) :
+        wm::GetDefaultRightSnappedWindowBoundsInParent(window);
     phantom_window_controller_->Show(ScreenUtil::ConvertRectToScreen(
-          frame_->GetNativeView()->parent(),
-          snap_sizer.target_bounds()));
+          window->parent(), phantom_bounds_in_parent));
   } else {
     phantom_window_controller_.reset();
   }
@@ -238,14 +234,18 @@ bool AlternateFrameSizeButton::CommitSnap(const ui::LocatedEvent& event) {
 
   if (in_snap_mode_ &&
       (snap_type_ == SNAP_LEFT || snap_type_ == SNAP_RIGHT)) {
-    using internal::SnapSizer;
-    SnapSizer::SnapWindow(ash::wm::GetWindowState(frame_->GetNativeWindow()),
-                          snap_type_ == SNAP_LEFT ?
-                              SnapSizer::LEFT_EDGE : SnapSizer::RIGHT_EDGE);
-    ash::Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-        snap_type_ == SNAP_LEFT ?
-            ash::UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_LEFT :
-            ash::UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_RIGHT);
+    wm::WindowState* window_state =
+        wm::GetWindowState(frame_->GetNativeWindow());
+    UserMetricsRecorder* metrics = Shell::GetInstance()->metrics();
+    if (snap_type_ == SNAP_LEFT) {
+      window_state->SnapLeftWithDefaultWidth();
+      metrics->RecordUserMetricsAction(
+          UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_LEFT);
+    } else {
+      window_state->SnapRightWithDefaultWidth();
+      metrics->RecordUserMetricsAction(
+          UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_RIGHT);
+    }
     SetButtonsToNormalMode(AlternateFrameSizeButtonDelegate::ANIMATE_NO);
     return true;
   }

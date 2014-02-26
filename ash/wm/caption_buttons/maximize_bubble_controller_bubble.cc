@@ -348,8 +348,8 @@ MaximizeBubbleControllerBubble::MaximizeBubbleControllerBubble(
       appearance_delay_ms_(appearance_delay_ms) {
   set_margins(gfx::Insets());
 
-  // The window needs to be owned by the root so that the SnapSizer does not
-  // cover it upon animation.
+  // The window needs to be owned by the root so that the phantom window does
+  // not cover it upon animation.
   aura::Window* parent = Shell::GetContainer(
       Shell::GetTargetRootWindow(),
       internal::kShellWindowId_ShelfContainer);

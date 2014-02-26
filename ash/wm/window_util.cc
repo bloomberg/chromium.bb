@@ -14,6 +14,7 @@
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/rect.h"
@@ -25,6 +26,23 @@
 
 namespace ash {
 namespace wm {
+
+namespace {
+
+// Returns the default width of a snapped window.
+int GetDefaultSnappedWindowWidth(aura::Window* window) {
+  const float kSnappedWidthWorkspaceRatio = 0.5f;
+
+  int work_area_width =
+      ScreenUtil::GetDisplayWorkAreaBoundsInParent(window).width();
+  int min_width = window->delegate() ?
+      window->delegate()->GetMinimumSize().width() : 0;
+  int ideal_width =
+      static_cast<int>(work_area_width * kSnappedWidthWorkspaceRatio);
+  return std::min(work_area_width, std::max(ideal_width, min_width));
+}
+
+}  // namespace
 
 // TODO(beng): replace many of these functions with the corewm versions.
 void ActivateWindow(aura::Window* window) {
@@ -76,6 +94,26 @@ void CenterWindow(aura::Window* window) {
     center.ClampToCenteredSize(size);
     window->SetBounds(center);
   }
+}
+
+
+gfx::Rect GetDefaultLeftSnappedWindowBoundsInParent(aura::Window* window) {
+  gfx::Rect work_area_in_parent(ScreenUtil::GetDisplayWorkAreaBoundsInParent(
+      window));
+  return gfx::Rect(work_area_in_parent.x(),
+                   work_area_in_parent.y(),
+                   GetDefaultSnappedWindowWidth(window),
+                   work_area_in_parent.height());
+}
+
+gfx::Rect GetDefaultRightSnappedWindowBoundsInParent(aura::Window* window) {
+  gfx::Rect work_area_in_parent(ScreenUtil::GetDisplayWorkAreaBoundsInParent(
+      window));
+  int width = GetDefaultSnappedWindowWidth(window);
+  return gfx::Rect(work_area_in_parent.right() - width,
+                   work_area_in_parent.y(),
+                   width,
+                   work_area_in_parent.height());
 }
 
 void AdjustBoundsSmallerThan(const gfx::Size& max_size, gfx::Rect* bounds) {

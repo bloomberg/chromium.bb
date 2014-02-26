@@ -24,7 +24,6 @@
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/snap_sizer.h"
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_tree_client.h"
@@ -1539,8 +1538,7 @@ TEST_P(DockedWindowResizerTest, SideSnapDocked) {
   EXPECT_FALSE(window_state->IsSnapped());
 
   // Side snap at right edge.
-  internal::SnapSizer::SnapWindow(window_state,
-                                  internal::SnapSizer::RIGHT_EDGE);
+  window_state->SnapRightWithDefaultWidth();
   // The window should be snapped at the right edge and the dock should close.
   gfx::Rect work_area(ScreenUtil::GetDisplayWorkAreaBoundsInParent(w1.get()));
   EXPECT_EQ(0, docked_width(manager));
@@ -1562,8 +1560,7 @@ TEST_P(DockedWindowResizerTest, SideSnapDocked) {
   EXPECT_FALSE(window_state->IsSnapped());
 
   // Side snap at left edge.
-  internal::SnapSizer::SnapWindow(window_state,
-                                  internal::SnapSizer::LEFT_EDGE);
+  window_state->SnapLeftWithDefaultWidth();
   // The window should be snapped at the right edge and the dock should close.
   EXPECT_EQ(work_area.ToString(),
             ScreenUtil::GetDisplayWorkAreaBoundsInParent(w1.get()).ToString());

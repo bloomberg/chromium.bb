@@ -11,9 +11,7 @@
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/snap_sizer.h"
 #include "ui/aura/window.h"
-#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/gestures/gesture_types.h"
 #include "ui/gfx/rect.h"
@@ -84,13 +82,10 @@ SystemGestureStatus SystemPinchHandler::ProcessGestureEvent(
       pinch_factor_ = 1.0;
       phantom_state_ = PHANTOM_WINDOW_NORMAL;
 
-      if (event.details().swipe_left() || event.details().swipe_right()) {
-        // Snap for left/right swipes.
-        ui::ScopedLayerAnimationSettings settings(
-            target_->layer()->GetAnimator());
-        internal::SnapSizer::SnapWindow(window_state,
-            event.details().swipe_left() ? internal::SnapSizer::LEFT_EDGE :
-                                           internal::SnapSizer::RIGHT_EDGE);
+      if (event.details().swipe_left()) {
+        window_state->SnapLeftWithDefaultWidth();
+      } else if (event.details().swipe_right()) {
+        window_state->SnapRightWithDefaultWidth();
       } else if (event.details().swipe_up()) {
         if (!window_state->IsMaximizedOrFullscreen())
           window_state->Maximize();

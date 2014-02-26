@@ -11,7 +11,6 @@
 #include "ash/wm/caption_buttons/maximize_bubble_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/snap_sizer.h"
 #include "base/command_line.h"
 #include "grit/ash_resources.h"
 #include "ui/aura/client/focus_client.h"
@@ -237,10 +236,8 @@ TEST_F(FrameMaximizeButtonTest, MAYBE_ResizeButtonDrag) {
 
     EXPECT_FALSE(window_state->IsMaximized());
     EXPECT_FALSE(window_state->IsMinimized());
-    internal::SnapSizer sizer(window_state, center,
-        internal::SnapSizer::RIGHT_EDGE,
-        internal::SnapSizer::OTHER_INPUT);
-    EXPECT_EQ(sizer.target_bounds().ToString(), window->bounds().ToString());
+    EXPECT_EQ(wm::GetDefaultRightSnappedWindowBoundsInParent(window).ToString(),
+              window->bounds().ToString());
   }
 
   // Snap left.
@@ -254,10 +251,8 @@ TEST_F(FrameMaximizeButtonTest, MAYBE_ResizeButtonDrag) {
 
     EXPECT_FALSE(window_state->IsMaximized());
     EXPECT_FALSE(window_state->IsMinimized());
-    internal::SnapSizer sizer(window_state, center,
-        internal::SnapSizer::LEFT_EDGE,
-        internal::SnapSizer::OTHER_INPUT);
-    EXPECT_EQ(sizer.target_bounds().ToString(), window->bounds().ToString());
+    EXPECT_EQ(wm::GetDefaultLeftSnappedWindowBoundsInParent(window).ToString(),
+              window->bounds().ToString());
   }
 
   // Minimize.
@@ -305,10 +300,8 @@ TEST_F(FrameMaximizeButtonTest, MAYBE_ResizeButtonDrag) {
 
     EXPECT_FALSE(window_state->IsMaximized());
     EXPECT_FALSE(window_state->IsMinimized());
-    internal::SnapSizer sizer(window_state, center,
-        internal::SnapSizer::LEFT_EDGE,
-        internal::SnapSizer::OTHER_INPUT);
-    EXPECT_EQ(sizer.target_bounds().ToString(), window->bounds().ToString());
+    EXPECT_EQ(wm::GetDefaultLeftSnappedWindowBoundsInParent(window).ToString(),
+              window->bounds().ToString());
   }
 
   // Minimize.
@@ -452,10 +445,8 @@ TEST_F(FrameMaximizeButtonTest, MaximizeLeftByButton) {
   wm::WindowState* window_state = wm::GetWindowState(window);
   EXPECT_FALSE(window_state->IsMaximized());
   EXPECT_FALSE(window_state->IsMinimized());
-  internal::SnapSizer sizer(window_state, button_pos,
-                            internal::SnapSizer::LEFT_EDGE,
-                            internal::SnapSizer::OTHER_INPUT);
-  EXPECT_EQ(sizer.target_bounds().ToString(), window->bounds().ToString());
+  EXPECT_EQ(wm::GetDefaultLeftSnappedWindowBoundsInParent(window).ToString(),
+            window->bounds().ToString());
 }
 
 // Test that the activation focus does not change when the bubble gets shown.

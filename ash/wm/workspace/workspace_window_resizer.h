@@ -25,7 +25,7 @@ namespace internal {
 
 class DockedWindowLayoutManager;
 class PhantomWindowController;
-class SnapSizer;
+class TwoStepEdgeCycler;
 class WindowSize;
 
 // WindowResizer implementation for workspaces. This enforces that windows are
@@ -184,8 +184,9 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // is a grid and the caption is being dragged.
   scoped_ptr<PhantomWindowController> snap_phantom_window_controller_;
 
-  // Used to determine the target position of a snap.
-  scoped_ptr<SnapSizer> snap_sizer_;
+  // Used to determine whether the window should be snapped or docked when
+  // the user drags a window to the edge of the screen.
+  scoped_ptr<TwoStepEdgeCycler> edge_cycler_;
 
   // Last SnapType.
   SnapType snap_type_;

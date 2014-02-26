@@ -16,7 +16,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
-#include "ash/wm/workspace/snap_sizer.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
@@ -562,9 +561,8 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
   wm::WindowState* window_state = wm::GetWindowState(window_.get());
 
   {
-    internal::SnapSizer snap_sizer(window_state, gfx::Point(),
-        internal::SnapSizer::LEFT_EDGE, internal::SnapSizer::OTHER_INPUT);
-    gfx::Rect expected_bounds(snap_sizer.target_bounds());
+    gfx::Rect expected_bounds_in_parent(
+        wm::GetDefaultLeftSnappedWindowBoundsInParent(window_.get()));
 
     scoped_ptr<WindowResizer> resizer(CreateResizerForTest(
         window_.get(), gfx::Point(), HTCAPTION));
@@ -572,23 +570,24 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
     resizer->Drag(CalculateDragPoint(*resizer, 0, 10), 0);
     resizer->CompleteDrag();
 
-    EXPECT_EQ(expected_bounds.ToString(), window_->bounds().ToString());
+    EXPECT_EQ(expected_bounds_in_parent.ToString(),
+              window_->bounds().ToString());
     ASSERT_TRUE(window_state->HasRestoreBounds());
     EXPECT_EQ("20,30 400x60",
               window_state->GetRestoreBoundsInScreen().ToString());
   }
   // Try the same with the right side.
   {
-    internal::SnapSizer snap_sizer(window_state, gfx::Point(),
-        internal::SnapSizer::RIGHT_EDGE, internal::SnapSizer::OTHER_INPUT);
-    gfx::Rect expected_bounds(snap_sizer.target_bounds());
+    gfx::Rect expected_bounds_in_parent(
+        wm::GetDefaultRightSnappedWindowBoundsInParent(window_.get()));
 
     scoped_ptr<WindowResizer> resizer(CreateResizerForTest(
         window_.get(), gfx::Point(), HTCAPTION));
     ASSERT_TRUE(resizer.get());
     resizer->Drag(CalculateDragPoint(*resizer, 800, 10), 0);
     resizer->CompleteDrag();
-    EXPECT_EQ(expected_bounds.ToString(), window_->bounds().ToString());
+    EXPECT_EQ(expected_bounds_in_parent.ToString(),
+              window_->bounds().ToString());
     ASSERT_TRUE(window_state->HasRestoreBounds());
     EXPECT_EQ("20,30 400x60",
               window_state->GetRestoreBoundsInScreen().ToString());
@@ -673,13 +672,13 @@ TEST_F(WorkspaceWindowResizerTest, CancelSnapPhantom) {
 
 // Verifies that dragging a snapped window unsnaps it.
 TEST_F(WorkspaceWindowResizerTest, DragSnapped) {
-  ash::wm::WindowState* window_state = ash::wm::GetWindowState(window_.get());
+  wm::WindowState* window_state = ash::wm::GetWindowState(window_.get());
 
   const gfx::Rect kInitialBounds(100, 100, 100, 100);
   window_->SetBounds(kInitialBounds);
   window_->Show();
 
-  internal::SnapSizer::SnapWindow(window_state, internal::SnapSizer::LEFT_EDGE);
+  window_state->SnapLeftWithDefaultWidth();
   EXPECT_EQ(wm::SHOW_TYPE_LEFT_SNAPPED, window_state->window_show_type());
   gfx::Rect snapped_bounds = window_->bounds();
   EXPECT_NE(snapped_bounds.ToString(), kInitialBounds.ToString());
@@ -698,13 +697,13 @@ TEST_F(WorkspaceWindowResizerTest, DragSnapped) {
 
 // Verifies the behavior of resizing a side snapped window.
 TEST_F(WorkspaceWindowResizerTest, ResizeSnapped) {
-  ash::wm::WindowState* window_state = ash::wm::GetWindowState(window_.get());
+  wm::WindowState* window_state = ash::wm::GetWindowState(window_.get());
 
   const gfx::Rect kInitialBounds(100, 100, 100, 100);
   window_->SetBounds(kInitialBounds);
   window_->Show();
 
-  internal::SnapSizer::SnapWindow(window_state, internal::SnapSizer::LEFT_EDGE);
+  window_state->SnapLeftWithDefaultWidth();
   EXPECT_EQ(wm::SHOW_TYPE_LEFT_SNAPPED, window_state->window_show_type());
   gfx::Rect snapped_bounds = window_->bounds();
   EXPECT_NE(snapped_bounds.ToString(), kInitialBounds.ToString());

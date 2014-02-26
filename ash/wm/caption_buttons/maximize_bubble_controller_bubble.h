@@ -21,9 +21,9 @@ class MaximizeBubbleController;
 
 // The class which creates and manages the bubble menu element.
 // It creates a 'bubble border' and the content accordingly.
-// Note: Since the SnapSizer will show animations on top of the maximize button
-// this menu gets created as a separate window and the SnapSizer will be
-// created underneath this window.
+// Note: Since the phantom window will show animations on top of the maximize
+// button this menu gets created as a separate window and the phantom window
+// will be created underneath this window.
 class MaximizeBubbleControllerBubble : public views::BubbleDelegateView,
                                        public views::MouseWatcherListener {
  public:
@@ -35,7 +35,7 @@ class MaximizeBubbleControllerBubble : public views::BubbleDelegateView,
                                  SnapType initial_snap_type);
   virtual ~MaximizeBubbleControllerBubble();
 
-  // The window of the menu under which the SnapSizer will get created.
+  // The window of the menu under which the phantom window will get created.
   aura::Window* GetBubbleWindow();
 
   // Overridden from views::BubbleDelegateView.

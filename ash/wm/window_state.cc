@@ -205,12 +205,12 @@ void WindowState::Maximize() {
   window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
 }
 
-void WindowState::SnapLeft(const gfx::Rect& bounds) {
-  SnapWindow(SHOW_TYPE_LEFT_SNAPPED, bounds);
+void WindowState::SnapLeftWithDefaultWidth() {
+  SnapWindowWithDefaultWidth(SHOW_TYPE_LEFT_SNAPPED);
 }
 
-void WindowState::SnapRight(const gfx::Rect& bounds) {
-  SnapWindow(SHOW_TYPE_RIGHT_SNAPPED, bounds);
+void WindowState::SnapRightWithDefaultWidth() {
+  SnapWindowWithDefaultWidth(SHOW_TYPE_RIGHT_SNAPPED);
 }
 
 void WindowState::RequestBounds(const gfx::Rect& requested_bounds) {
@@ -338,10 +338,15 @@ void WindowState::AdjustSnappedBounds(gfx::Rect* bounds) {
   bounds->set_height(maximized_bounds.height());
 }
 
-void WindowState::SnapWindow(WindowShowType left_or_right,
-                             const gfx::Rect& bounds) {
+void WindowState::SnapWindowWithDefaultWidth(WindowShowType left_or_right) {
+  DCHECK(left_or_right == SHOW_TYPE_LEFT_SNAPPED ||
+         left_or_right == SHOW_TYPE_RIGHT_SNAPPED);
+  gfx::Rect bounds_in_parent(left_or_right == SHOW_TYPE_LEFT_SNAPPED ?
+      GetDefaultLeftSnappedWindowBoundsInParent(window()) :
+      GetDefaultRightSnappedWindowBoundsInParent(window()));
+
   if (window_show_type_ == left_or_right) {
-    window_->SetBounds(bounds);
+    window_->SetBounds(bounds_in_parent);
     return;
   }
 
@@ -352,10 +357,8 @@ void WindowState::SnapWindow(WindowShowType left_or_right,
       GetRestoreBoundsInScreen() : window_->GetBoundsInScreen());
   // Set the window's restore bounds so that WorkspaceLayoutManager knows
   // which width to use when the snapped window is moved to the edge.
-  SetRestoreBoundsInParent(bounds);
+  SetRestoreBoundsInParent(bounds_in_parent);
 
-  DCHECK(left_or_right == SHOW_TYPE_LEFT_SNAPPED ||
-         left_or_right == SHOW_TYPE_RIGHT_SNAPPED);
   OnWMEvent(left_or_right == SHOW_TYPE_LEFT_SNAPPED ?
             SNAP_LEFT : SNAP_RIGHT);
 
@@ -367,7 +370,7 @@ void WindowState::SnapWindow(WindowShowType left_or_right,
   // setting the bounds otherwise to avoid stopping the slide animation which
   // was started as a result of OnWindowShowTypeChanged().
   if (IsDocked())
-    window_->SetBounds(bounds);
+    window_->SetBounds(bounds_in_parent);
   SetRestoreBoundsInScreen(restore_bounds_in_screen);
 }
 

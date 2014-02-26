@@ -9,7 +9,6 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/snap_sizer.h"
 #include "ash/wm/workspace_controller.h"
 #include "ash/wm/workspace_controller_test_helper.h"
 #include "ui/aura/client/aura_constants.h"
@@ -200,7 +199,7 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisWhenSideSnapped) {
       window.get()).work_area();
 
   wm::WindowState* window_state = wm::GetWindowState(window.get());
-  internal::SnapSizer::SnapWindow(window_state, internal::SnapSizer::LEFT_EDGE);
+  window_state->SnapLeftWithDefaultWidth();
 
   gfx::Rect snapped_bounds_in_screen = window->GetBoundsInScreen();
   EXPECT_EQ(work_area_in_screen.x(), snapped_bounds_in_screen.x());
@@ -349,7 +348,7 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickCaptionTogglesMaximize) {
   EXPECT_EQ(restore_bounds.ToString(), window->bounds().ToString());
 
   // 3) Double clicking a snapped window should maximize.
-  internal::SnapSizer::SnapWindow(window_state, internal::SnapSizer::LEFT_EDGE);
+  window_state->SnapLeftWithDefaultWidth();
   EXPECT_TRUE(window_state->IsSnapped());
   generator.MoveMouseTo(window->GetBoundsInRootWindow().CenterPoint());
   generator.DoubleClickLeftButton();

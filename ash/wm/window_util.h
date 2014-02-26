@@ -48,6 +48,16 @@ ASH_EXPORT bool IsWindowMinimized(aura::Window* window);
 // Moves the window to the center of the display.
 ASH_EXPORT void CenterWindow(aura::Window* window);
 
+// Returns the bounds of a left snapped window with default width in parent
+// coordinates.
+ASH_EXPORT gfx::Rect GetDefaultLeftSnappedWindowBoundsInParent(
+    aura::Window* window);
+
+// Returns the bounds of a right snapped window with default width in parent
+// coordinates.
+ASH_EXPORT gfx::Rect GetDefaultRightSnappedWindowBoundsInParent(
+    aura::Window* window);
+
 // Adjusts |bounds| so that the size does not exceed |max_size|.
 ASH_EXPORT void AdjustBoundsSmallerThan(const gfx::Size& max_size,
                                         gfx::Rect* bounds);

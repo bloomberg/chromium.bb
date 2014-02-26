@@ -10,7 +10,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_observer.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/snap_sizer.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "ui/aura/client/cursor_client.h"
@@ -587,15 +586,13 @@ void ToplevelWindowEventHandler::SetWindowShowTypeFromGesture(
     case wm::SHOW_TYPE_LEFT_SNAPPED:
       if (window_state->CanSnap()) {
         window_state->SetRestoreBoundsInParent(pre_drag_window_bounds_);
-        internal::SnapSizer::SnapWindow(window_state,
-                                        internal::SnapSizer::LEFT_EDGE);
+        window_state->SnapLeftWithDefaultWidth();
       }
       break;
     case wm::SHOW_TYPE_RIGHT_SNAPPED:
       if (window_state->CanSnap()) {
         window_state->SetRestoreBoundsInParent(pre_drag_window_bounds_);
-        internal::SnapSizer::SnapWindow(window_state,
-                                        internal::SnapSizer::RIGHT_EDGE);
+        window_state->SnapRightWithDefaultWidth();
       }
       break;
     default:

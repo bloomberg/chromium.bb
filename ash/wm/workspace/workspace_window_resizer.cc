@@ -25,7 +25,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
-#include "ash/wm/workspace/snap_sizer.h"
+#include "ash/wm/workspace/two_step_edge_cycler.h"
 #include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/client/aura_constants.h"
@@ -108,6 +108,10 @@ scoped_ptr<WindowResizer> CreateWindowResizer(
 namespace internal {
 
 namespace {
+
+// Snapping distance used instead of WorkspaceWindowResizer::kScreenEdgeInset
+// when resizing a window using touchscreen.
+const int kScreenEdgeInsetForTouchDrag = 32;
 
 // Returns true if the window should stick to the edge.
 bool ShouldStickToEdge(int distance_from_edge, int sticky_size) {
@@ -352,7 +356,7 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
     sticky_size = 0;
   } else if ((details().bounds_change & kBoundsChange_Resizes) &&
       details().source == aura::client::WINDOW_MOVE_SOURCE_TOUCH) {
-    sticky_size = SnapSizer::kScreenEdgeInsetForTouchDrag;
+    sticky_size = kScreenEdgeInsetForTouchDrag;
   } else {
     sticky_size = kScreenEdgeInset;
   }
@@ -400,7 +404,7 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
   } else {
     snap_type_ = SNAP_NONE;
     snap_phantom_window_controller_.reset();
-    snap_sizer_.reset();
+    edge_cycler_.reset();
     SetDraggedWindowDocked(false);
   }
 }
@@ -429,11 +433,14 @@ void WorkspaceWindowResizer::CompleteDrag() {
           details().restore_bounds);
     }
     if (!dock_layout_->is_dragged_window_docked()) {
-      Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-          snap_type_ == SNAP_LEFT ?
-              UMA_DRAG_MAXIMIZE_LEFT :
-              UMA_DRAG_MAXIMIZE_RIGHT);
-      snap_sizer_->SnapWindowToTargetBounds();
+      UserMetricsRecorder* metrics = Shell::GetInstance()->metrics();
+      if (snap_type_ == SNAP_LEFT) {
+        metrics->RecordUserMetricsAction(UMA_DRAG_MAXIMIZE_LEFT);
+        window_state()->SnapLeftWithDefaultWidth();
+      } else {
+        metrics->RecordUserMetricsAction(UMA_DRAG_MAXIMIZE_RIGHT);
+        window_state()->SnapRightWithDefaultWidth();
+      }
       snapped = true;
     }
   }
@@ -896,7 +903,7 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
   snap_type_ = GetSnapType(location);
   if (snap_type_ == SNAP_NONE || snap_type_ != last_type) {
     snap_phantom_window_controller_.reset();
-    snap_sizer_.reset();
+    edge_cycler_.reset();
     if (snap_type_ == SNAP_NONE) {
       SetDraggedWindowDocked(false);
       return;
@@ -915,19 +922,13 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
   if (!can_snap && !can_dock) {
     snap_type_ = SNAP_NONE;
     snap_phantom_window_controller_.reset();
-    snap_sizer_.reset();
+    edge_cycler_.reset();
     return;
   }
-  if (!snap_sizer_) {
-    SnapSizer::Edge edge = (snap_type_ == SNAP_LEFT) ?
-        SnapSizer::LEFT_EDGE : SnapSizer::RIGHT_EDGE;
-    SnapSizer::InputType input =
-        details().source == aura::client::WINDOW_MOVE_SOURCE_TOUCH ?
-            SnapSizer::TOUCH_DRAG_INPUT : SnapSizer::OTHER_INPUT;
-    snap_sizer_.reset(new SnapSizer(window_state(), location, edge, input));
-  } else {
-    snap_sizer_->Update(location);
-  }
+  if (!edge_cycler_)
+    edge_cycler_.reset(new TwoStepEdgeCycler(location));
+  else
+    edge_cycler_->OnMove(location);
 
   // Update phantom window with snapped or docked guide bounds.
   // Windows that cannot be snapped or are less wide than kMaxDockWidth can get
@@ -937,14 +938,16 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
       (!can_snap ||
        GetTarget()->bounds().width() <=
            DockedWindowLayoutManager::kMaxDockWidth ||
-       snap_sizer_->end_of_sequence() ||
+       edge_cycler_->use_second_mode() ||
        dock_layout_->is_dragged_window_docked());
   if (should_dock) {
     SetDraggedWindowDocked(true);
     phantom_bounds = ScreenUtil::ConvertRectFromScreen(
         GetTarget()->parent(), dock_layout_->dragged_bounds());
   } else {
-    phantom_bounds = snap_sizer_->target_bounds();
+    phantom_bounds = (snap_type_ == SNAP_LEFT) ?
+        wm::GetDefaultLeftSnappedWindowBoundsInParent(GetTarget()) :
+        wm::GetDefaultRightSnappedWindowBoundsInParent(GetTarget());
   }
 
   if (!snap_phantom_window_controller_) {
@@ -997,10 +1000,10 @@ SnapType WorkspaceWindowResizer::GetSnapType(
     gfx::Rect display_bounds(ScreenUtil::GetDisplayBoundsInParent(GetTarget()));
     int inset_left = 0;
     if (area.x() == display_bounds.x())
-      inset_left = SnapSizer::kScreenEdgeInsetForTouchDrag;
+      inset_left = kScreenEdgeInsetForTouchDrag;
     int inset_right = 0;
     if (area.right() == display_bounds.right())
-      inset_right = SnapSizer::kScreenEdgeInsetForTouchDrag;
+      inset_right = kScreenEdgeInsetForTouchDrag;
     area.Inset(inset_left, 0, inset_right, 0);
   }
   if (location.x() <= area.x())

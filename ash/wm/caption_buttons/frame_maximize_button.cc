@@ -13,8 +13,8 @@
 #include "ash/wm/caption_buttons/maximize_bubble_controller.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_util.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
-#include "ash/wm/workspace/snap_sizer.h"
 #include "grit/ash_strings.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -25,8 +25,6 @@
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
-
-using ash::internal::SnapSizer;
 
 namespace ash {
 
@@ -443,16 +441,13 @@ gfx::Rect FrameMaximizeButton::ScreenBoundsForType(SnapType type) const {
   aura::Window* window = frame_->GetNativeWindow();
   switch (type) {
     case SNAP_LEFT:
-    case SNAP_RIGHT: {
-      SnapSizer::Edge snap_edge = (type == SNAP_LEFT) ?
-          SnapSizer::LEFT_EDGE : SnapSizer::RIGHT_EDGE;
-      SnapSizer snap_sizer(wm::GetWindowState(window),
-                           gfx::Point(),
-                           snap_edge,
-                           SnapSizer::OTHER_INPUT);
-      return ScreenUtil::ConvertRectToScreen(window->parent(),
-                                             snap_sizer.target_bounds());
-    }
+      return ScreenUtil::ConvertRectToScreen(
+          window->parent(),
+          wm::GetDefaultLeftSnappedWindowBoundsInParent(window));
+    case SNAP_RIGHT:
+      return ScreenUtil::ConvertRectToScreen(
+          window->parent(),
+          wm::GetDefaultRightSnappedWindowBoundsInParent(window));
     case SNAP_MAXIMIZE:
       return ScreenUtil::ConvertRectToScreen(
           window->parent(),
@@ -480,22 +475,18 @@ gfx::Rect FrameMaximizeButton::ScreenBoundsForType(SnapType type) const {
 
 void FrameMaximizeButton::Snap() {
   Shell* shell = Shell::GetInstance();
+  wm::WindowState* window_state = wm::GetWindowState(frame_->GetNativeWindow());
   switch (snap_type_) {
     case SNAP_LEFT:
-    case SNAP_RIGHT: {
-      SnapSizer::Edge snap_edge = (snap_type_ == SNAP_LEFT) ?
-          SnapSizer::LEFT_EDGE : SnapSizer::RIGHT_EDGE;
-      SnapSizer snap_sizer(wm::GetWindowState(frame_->GetNativeWindow()),
-                           gfx::Point(),
-                           snap_edge,
-                           SnapSizer::OTHER_INPUT);
-      snap_sizer.SnapWindowToTargetBounds();
+      window_state->SnapLeftWithDefaultWidth();
       shell->metrics()->RecordUserMetricsAction(
-          snap_type_ == SNAP_LEFT ?
-              UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_LEFT :
-              UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_RIGHT);
+          UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_LEFT);
       break;
-    }
+    case SNAP_RIGHT:
+      window_state->SnapRightWithDefaultWidth();
+      shell->metrics()->RecordUserMetricsAction(
+          UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_RIGHT);
+      break;
     case SNAP_MAXIMIZE:
       frame_->Maximize();
       shell->metrics()->RecordUserMetricsAction(

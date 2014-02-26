@@ -480,17 +480,14 @@ TEST_F(AcceleratorControllerTest, WindowSnap) {
 
   {
     GetController()->PerformAction(WINDOW_SNAP_LEFT, dummy);
-    gfx::Rect expected_bounds = ScreenUtil::GetDisplayWorkAreaBoundsInParent(
+    gfx::Rect expected_bounds = wm::GetDefaultLeftSnappedWindowBoundsInParent(
         window.get());
-    expected_bounds.set_width(expected_bounds.width() / 2);
     EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
   }
   {
     GetController()->PerformAction(WINDOW_SNAP_RIGHT, dummy);
-    gfx::Rect expected_bounds = ScreenUtil::GetDisplayWorkAreaBoundsInParent(
+    gfx::Rect expected_bounds = wm::GetDefaultRightSnappedWindowBoundsInParent(
         window.get());
-    expected_bounds.set_width(expected_bounds.width() / 2);
-    expected_bounds.set_x(expected_bounds.width());
     EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
   }
   {

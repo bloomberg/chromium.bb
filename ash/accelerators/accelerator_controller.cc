@@ -52,7 +52,6 @@
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/snap_sizer.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
@@ -581,9 +580,10 @@ bool HandleWindowSnap(int action) {
     base::RecordAction(UserMetricsAction("Accel_Window_Snap_Right"));
   }
 
-  internal::SnapSizer::SnapWindow(window_state,
-      action == WINDOW_SNAP_LEFT ? internal::SnapSizer::LEFT_EDGE :
-      internal::SnapSizer::RIGHT_EDGE);
+  if (action == WINDOW_SNAP_LEFT)
+    window_state->SnapLeftWithDefaultWidth();
+  else
+    window_state->SnapRightWithDefaultWidth();
   return true;
 }
 

@@ -115,8 +115,8 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   void Deactivate();
   void Restore();
   void ToggleFullscreen();
-  void SnapLeft(const gfx::Rect& bounds);
-  void SnapRight(const gfx::Rect& bounds);
+  void SnapLeftWithDefaultWidth();
+  void SnapRightWithDefaultWidth();
 
   // A window is requested to be the given bounds. The request may or
   // may not be fulfilled depending on the requested bounds and window's
@@ -299,9 +299,8 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // workspace if the window represented by |window_state| is side snapped.
   void AdjustSnappedBounds(gfx::Rect* bounds);
 
-  // Snaps the window to left or right of the desktop with given bounds.
-  void SnapWindow(WindowShowType left_or_right,
-                  const gfx::Rect& bounds);
+  // Snaps the window left or right with the default width.
+  void SnapWindowWithDefaultWidth(WindowShowType left_or_right);
 
   // Sets the window show type and updates the show state if necessary.
   // Note that this does not update the window bounds.

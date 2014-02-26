@@ -18,7 +18,6 @@
 #include "ash/wm/gestures/long_press_affordance_handler.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/snap_sizer.h"
 #include "base/command_line.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -580,8 +579,8 @@ TEST_P(SystemGestureEventFilterTest, DragLeftNearEdgeSnaps) {
     gfx::Point(bounds.x() + bounds.width() / 2, bounds.y() + 5),
     gfx::Point(bounds.x() + bounds.width() / 2, bounds.y() + 5),
   };
-  aura::test::EventGenerator generator(root_window,
-                                       toplevel->GetNativeWindow());
+  aura::Window* toplevel_window = toplevel->GetNativeWindow();
+  aura::test::EventGenerator generator(root_window, toplevel_window);
 
   // Check that dragging left snaps before reaching the screen edge.
   gfx::Rect work_area =
@@ -590,14 +589,9 @@ TEST_P(SystemGestureEventFilterTest, DragLeftNearEdgeSnaps) {
   generator.GestureMultiFingerScroll(
       kTouchPoints, points, 120, kSteps, drag_x, 0);
 
-  internal::SnapSizer snap_sizer(
-      wm::GetWindowState(toplevel->GetNativeWindow()),
-      gfx::Point(),
-      internal::SnapSizer::LEFT_EDGE,
-      internal::SnapSizer::OTHER_INPUT);
-  gfx::Rect expected_bounds(snap_sizer.target_bounds());
-  EXPECT_EQ(expected_bounds.ToString(),
-            toplevel->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ(wm::GetDefaultLeftSnappedWindowBoundsInParent(
+                toplevel_window).ToString(),
+            toplevel_window->bounds().ToString());
 }
 
 TEST_P(SystemGestureEventFilterTest, DragRightNearEdgeSnaps) {
@@ -613,8 +607,8 @@ TEST_P(SystemGestureEventFilterTest, DragRightNearEdgeSnaps) {
     gfx::Point(bounds.x() + bounds.width() / 2, bounds.y() + 5),
     gfx::Point(bounds.x() + bounds.width() / 2, bounds.y() + 5),
   };
-  aura::test::EventGenerator generator(root_window,
-                                       toplevel->GetNativeWindow());
+  aura::Window* toplevel_window = toplevel->GetNativeWindow();
+  aura::test::EventGenerator generator(root_window, toplevel_window);
 
   // Check that dragging right snaps before reaching the screen edge.
   gfx::Rect work_area =
@@ -622,14 +616,9 @@ TEST_P(SystemGestureEventFilterTest, DragRightNearEdgeSnaps) {
   int drag_x = work_area.right() - 20 - points[0].x();
   generator.GestureMultiFingerScroll(
       kTouchPoints, points, 120, kSteps, drag_x, 0);
-  internal::SnapSizer snap_sizer(
-      wm::GetWindowState(toplevel->GetNativeWindow()),
-      gfx::Point(),
-      internal::SnapSizer::RIGHT_EDGE,
-      internal::SnapSizer::OTHER_INPUT);
-  gfx::Rect expected_bounds(snap_sizer.target_bounds());
-  EXPECT_EQ(expected_bounds.ToString(),
-            toplevel->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ(wm::GetDefaultRightSnappedWindowBoundsInParent(
+                toplevel_window).ToString(),
+            toplevel_window->bounds().ToString());
 }
 
 // Tests that the window manager does not consume gesture events targetted to
