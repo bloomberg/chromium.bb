@@ -3011,7 +3011,7 @@ void Document::processHttpEquivXFrameOptions(const AtomicString& content)
     FrameLoader& frameLoader = frame->loader();
     unsigned long requestIdentifier = loader()->mainResourceIdentifier();
     if (frameLoader.shouldInterruptLoadForXFrameOptions(content, url(), requestIdentifier)) {
-        String message = "Refused to display '" + url().elidedString() + "' in a frame because it set 'X-LocalFrame-Options' to '" + content + "'.";
+        String message = "Refused to display '" + url().elidedString() + "' in a frame because it set 'X-Frame-Options' to '" + content + "'.";
         frameLoader.stopAllLoaders();
         // Stopping the loader isn't enough, as we're already parsing the document; to honor the header's
         // intent, we must navigate away from the possibly partially-rendered document to a location that
