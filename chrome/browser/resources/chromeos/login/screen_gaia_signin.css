@@ -9,7 +9,7 @@
   width: 722px; /* Should be the same as #user-image.loading width. */
 }
 
-#gaia-signin.no-right-panel {
+#gaia-signin:not(.saml).no-right-panel {
   width: 522px;
 }
 
