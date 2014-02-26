@@ -130,16 +130,19 @@ input_method::InputMethodDescriptors
   input_method::InputMethodDescriptors result;
   for (size_t i = 0; i < component_extension_imes_.size(); ++i) {
     for (size_t j = 0; j < component_extension_imes_[i].engines.size(); ++j) {
+      const std::string input_method_id =
+          extension_ime_util::GetComponentInputMethodID(
+              component_extension_imes_[i].id,
+              component_extension_imes_[i].engines[j].engine_id);
       result.push_back(
           input_method::InputMethodDescriptor(
-              extension_ime_util::GetComponentInputMethodID(
-                  component_extension_imes_[i].id,
-                  component_extension_imes_[i].engines[j].engine_id),
+              input_method_id,
               component_extension_imes_[i].engines[j].display_name,
               std::string(), // TODO(uekawa): Set short name.
               component_extension_imes_[i].engines[j].layouts,
               component_extension_imes_[i].engines[j].language_codes,
-              false,  // Do not use IME on login screen.
+              // Enables extension based xkb keyboards on login screen.
+              extension_ime_util::IsKeyboardLayoutExtension(input_method_id),
               component_extension_imes_[i].options_page_url,
               component_extension_imes_[i].input_view_url));
     }

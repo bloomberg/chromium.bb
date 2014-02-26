@@ -106,7 +106,8 @@ void InputMethodEngine::Initialize(
       std::string(), // TODO(uekawa): Set short name.
       layouts,
       languages,
-      false,  // is_login_keyboard
+      extension_ime_util::IsKeyboardLayoutExtension(
+          imm_id_), // is_login_keyboard
       options_page,
       input_view);
 

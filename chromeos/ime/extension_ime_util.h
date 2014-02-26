@@ -48,6 +48,11 @@ bool CHROMEOS_EXPORT IsComponentExtensionIME(
 bool CHROMEOS_EXPORT IsMemberOfExtension(const std::string& input_method_id,
                                          const std::string& extension_id);
 
+// Returns true if the |input_method_id| is the extension based xkb keyboard,
+// otherwise returns false.
+bool CHROMEOS_EXPORT IsKeyboardLayoutExtension(
+    const std::string& input_method_id);
+
 }  // namespace extension_ime_util
 
 }  // namespace chromeos

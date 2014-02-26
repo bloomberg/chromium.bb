@@ -12,6 +12,8 @@ const char kExtensionIMEPrefix[] = "_ext_ime_";
 const int kExtensionIMEPrefixLength =
     sizeof(kExtensionIMEPrefix) / sizeof(kExtensionIMEPrefix[0]) - 1;
 const char kComponentExtensionIMEPrefix[] = "_comp_ime_";
+const char kExtensionXkbIdPrefix[] =
+    "_comp_ime_fgoepimhcoialccpbmpnnblemnepkkao";
 const int kComponentExtensionIMEPrefixLength =
     sizeof(kComponentExtensionIMEPrefix) /
         sizeof(kComponentExtensionIMEPrefix[0]) - 1;
@@ -67,6 +69,10 @@ bool IsMemberOfExtension(const std::string& input_method_id,
   return StartsWithASCII(input_method_id,
                          kExtensionIMEPrefix + extension_id,
                          true);  // Case sensitive.
+}
+
+bool IsKeyboardLayoutExtension(const std::string& input_method_id) {
+  return StartsWithASCII(input_method_id, kExtensionXkbIdPrefix, true);
 }
 
 }  // namespace extension_ime_util

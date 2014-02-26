@@ -27,6 +27,11 @@ struct WhitelistedComponentExtensionIME {
   const char* path;
 } whitelisted_component_extension[] = {
   {
+    // ChromeOS xkb extension.
+    "fgoepimhcoialccpbmpnnblemnepkkao",
+    "/usr/share/chromeos-assets/input_methods/xkb",
+  },
+  {
     // ChromeOS Keyboards extension.
     "jhffeifommiaekmbkkjlpmilogcfdohp",
     "/usr/share/chromeos-assets/input_methods/keyboard_layouts",
