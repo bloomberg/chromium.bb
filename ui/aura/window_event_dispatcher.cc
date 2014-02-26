@@ -547,6 +547,9 @@ bool WindowEventDispatcher::CanDispatchToTarget(ui::EventTarget* target) {
 ui::EventDispatchDetails WindowEventDispatcher::PreDispatchEvent(
     ui::EventTarget* target,
     ui::Event* event) {
+  Window* target_window = static_cast<Window*>(target);
+  CHECK(window()->Contains(target_window));
+
   if (!dispatching_held_event_) {
     bool can_be_held = IsEventCandidateForHold(*event);
     if (!move_hold_count_ || !can_be_held) {
@@ -558,7 +561,6 @@ ui::EventDispatchDetails WindowEventDispatcher::PreDispatchEvent(
     }
   }
 
-  Window* target_window = static_cast<Window*>(target);
   if (event->IsMouseEvent()) {
     PreDispatchMouseEvent(target_window, static_cast<ui::MouseEvent*>(event));
   } else if (event->IsScrollEvent()) {

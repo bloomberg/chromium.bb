@@ -38,6 +38,8 @@ class AURA_EXPORT WindowTargeter : public ui::EventTargeter {
       const ui::LocatedEvent& event) OVERRIDE;
 
  private:
+  Window* FindTargetForKeyEvent(Window* root_window,
+                                const ui::KeyEvent& event);
   Window* FindTargetInRootWindow(Window* root_window,
                                  const ui::LocatedEvent& event);
 

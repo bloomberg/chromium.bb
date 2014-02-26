@@ -421,34 +421,46 @@ TEST_F(ExtendedDesktopTest, Capture) {
   EXPECT_EQ(r1_w1.get(),
             aura::client::GetCaptureWindow(r2_w1->GetRootWindow()));
 
-  aura::test::EventGenerator generator2(root_windows[1]);
-  generator2.MoveMouseToCenterOf(r2_w1.get());
-  generator2.ClickLeftButton();
+  aura::test::EventGenerator& generator = GetEventGenerator();
+  generator.MoveMouseToCenterOf(r2_w1.get());
+  // |r1_w1| will receive the events because it has capture.
+  EXPECT_EQ("1 1 0", r1_d1.GetMouseMotionCountsAndReset());
+  EXPECT_EQ("0 0 0", r1_d2.GetMouseMotionCountsAndReset());
+  EXPECT_EQ("0 0 0", r2_d1.GetMouseMotionCountsAndReset());
+
+  generator.ClickLeftButton();
   EXPECT_EQ("0 0 0", r2_d1.GetMouseMotionCountsAndReset());
   EXPECT_EQ("0 0", r2_d1.GetMouseButtonCountsAndReset());
   // The mouse is outside. On chromeos, the mouse is warped to the
   // dest root window, but it's not implemented on Win yet, so
   // no mouse move event on Win.
-  EXPECT_EQ("1 1 0", r1_d1.GetMouseMotionCountsAndReset());
+  EXPECT_EQ("0 0 0", r1_d1.GetMouseMotionCountsAndReset());
   EXPECT_EQ("1 1", r1_d1.GetMouseButtonCountsAndReset());
-  // Emulate passive grab. (15,15) on 1st display is (-985,15) on 2nd
-  // display.
-  generator2.MoveMouseTo(-985, 15);
+
+  generator.MoveMouseTo(15, 15);
   EXPECT_EQ("0 1 0", r1_d1.GetMouseMotionCountsAndReset());
+  EXPECT_EQ("0 0 0", r1_d2.GetMouseMotionCountsAndReset());
 
   r1_w2->SetCapture();
   EXPECT_EQ(r1_w2.get(),
             aura::client::GetCaptureWindow(r2_w1->GetRootWindow()));
-  generator2.MoveMouseBy(10, 10);
-  generator2.ClickLeftButton();
+  generator.MoveMouseBy(10, 10);
+  // |r1_w2| has the capture. So it will receive the mouse-move event.
+  EXPECT_EQ("0 0 0", r1_d1.GetMouseMotionCountsAndReset());
+  EXPECT_EQ("0 1 0", r1_d2.GetMouseMotionCountsAndReset());
+  EXPECT_EQ("0 0 0", r2_d1.GetMouseMotionCountsAndReset());
+
+  generator.ClickLeftButton();
   EXPECT_EQ("0 0 0", r2_d1.GetMouseMotionCountsAndReset());
   EXPECT_EQ("0 0", r2_d1.GetMouseButtonCountsAndReset());
-  EXPECT_EQ("1 1 0", r1_d2.GetMouseMotionCountsAndReset());
+  EXPECT_EQ("0 0 0", r1_d2.GetMouseMotionCountsAndReset());
   EXPECT_EQ("1 1", r1_d2.GetMouseButtonCountsAndReset());
+
   r1_w2->ReleaseCapture();
   EXPECT_EQ(NULL, aura::client::GetCaptureWindow(r2_w1->GetRootWindow()));
-  generator2.MoveMouseTo(15, 15);
-  generator2.ClickLeftButton();
+
+  generator.MoveMouseToCenterOf(r2_w1.get());
+  generator.ClickLeftButton();
   EXPECT_EQ("1 1 0", r2_d1.GetMouseMotionCountsAndReset());
   EXPECT_EQ("1 1", r2_d1.GetMouseButtonCountsAndReset());
   // Make sure the mouse_moved_handler_ is properly reset.
