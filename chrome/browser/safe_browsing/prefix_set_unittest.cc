@@ -482,7 +482,7 @@ TEST_F(PrefixSetTest, CorruptionExcess) {
   ASSERT_FALSE(prefix_set.get());
 }
 
-// Test that files which had 64-bit size_t can be read.
+// Test that files which had 64-bit size_t are discarded.
 TEST_F(PrefixSetTest, SizeTRecovery) {
   base::FilePath filename;
   ASSERT_TRUE(GetPrefixSetFile(&filename));
@@ -499,10 +499,7 @@ TEST_F(PrefixSetTest, SizeTRecovery) {
   ASSERT_EQ(sizeof(val), fwrite(&val, 1, sizeof(val), file.get()));
 
   // Write two index values with 64-bit "size_t".
-  std::pair<SBPrefix, uint64> item;
-  memset(&item, 0, sizeof(item));  // Includes any padding.
-  item.first = 17;
-  item.second = 0;
+  std::pair<SBPrefix, uint64> item = std::make_pair(17, 0);
   ASSERT_EQ(sizeof(item), fwrite(&item, 1, sizeof(item), file.get()));
   item.first = 100042;
   item.second = 1;
@@ -522,15 +519,7 @@ TEST_F(PrefixSetTest, SizeTRecovery) {
 
   scoped_ptr<safe_browsing::PrefixSet>
       prefix_set(safe_browsing::PrefixSet::LoadFile(filename));
-  ASSERT_TRUE(prefix_set.get());
-
-  std::vector<SBPrefix> prefixes_copy;
-  prefix_set->GetPrefixes(&prefixes_copy);
-  EXPECT_EQ(prefixes_copy.size(), 4u);
-  EXPECT_EQ(prefixes_copy[0], 17);
-  EXPECT_EQ(prefixes_copy[1], 40);
-  EXPECT_EQ(prefixes_copy[2], 100042);
-  EXPECT_EQ(prefixes_copy[3], 100065);
+  ASSERT_FALSE(prefix_set.get());
 }
 
 }  // namespace

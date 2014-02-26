@@ -173,27 +173,14 @@ PrefixSet* PrefixSet::LoadFile(const base::FilePath& filter_name) {
   IndexVector index;
   const size_t index_bytes = sizeof(index[0]) * header.index_size;
 
-  // For a time, the second element of the index_ pair was a size_t rather than
-  // a fixed-size value.  This structure will be used to check, read and convert
-  // in case a 64-bit size_t was written.
-  std::vector<std::pair<SBPrefix,uint64> > alt_index;
-  const size_t alt_index_bytes = sizeof(alt_index[0]) * header.index_size;
-
   std::vector<uint16> deltas;
   const size_t deltas_bytes = sizeof(deltas[0]) * header.deltas_size;
 
   // Check for bogus sizes before allocating any space.
   const size_t expected_bytes =
       sizeof(header) + index_bytes + deltas_bytes + sizeof(MD5Digest);
-  bool read_alt_index = false;
-  if (static_cast<int64>(expected_bytes) != size_64) {
-    const size_t alt_expected_bytes =
-        sizeof(header) + alt_index_bytes + deltas_bytes + sizeof(MD5Digest);
-    if (static_cast<int64>(alt_expected_bytes) != size_64)
-      return NULL;
-
-    read_alt_index = true;
-  }
+  if (static_cast<int64>(expected_bytes) != size_64)
+    return NULL;
 
   // The file looks valid, start building the digest.
   base::MD5Context context;
@@ -204,24 +191,7 @@ PrefixSet* PrefixSet::LoadFile(const base::FilePath& filter_name) {
   // Read the index vector.  Herb Sutter indicates that vectors are
   // guaranteed to be contiuguous, so reading to where element 0 lives
   // is valid.
-  if (read_alt_index) {
-    alt_index.resize(header.index_size);
-    read = fread(&(alt_index[0]), sizeof(alt_index[0]), alt_index.size(),
-                 file.get());
-    if (read != alt_index.size())
-      return NULL;
-    base::MD5Update(&context,
-                    base::StringPiece(reinterpret_cast<char*>(&(alt_index[0])),
-                                      alt_index_bytes));
-
-    index.reserve(alt_index.size());
-    for (size_t i = 0; i < alt_index.size(); ++i) {
-      const uint32 ofs = static_cast<uint32>(alt_index[i].second);
-      if (static_cast<uint64>(ofs) != alt_index[i].second)
-        return NULL;
-      index.push_back(std::make_pair(alt_index[i].first, ofs));
-    }
-  } else if (header.index_size) {
+  if (header.index_size) {
     index.resize(header.index_size);
     read = fread(&(index[0]), sizeof(index[0]), index.size(), file.get());
     if (read != index.size())
