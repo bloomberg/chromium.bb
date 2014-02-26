@@ -89,7 +89,7 @@ time_t Time::ToTimeT() const {
 Time Time::FromDoubleT(double dt) {
   if (dt == 0 || IsNaN(dt))
     return Time();  // Preserve 0 so we can tell it doesn't exist.
-  if (dt == std::numeric_limits<double>::max())
+  if (dt == std::numeric_limits<double>::infinity())
     return Max();
   return Time(static_cast<int64>((dt *
                                   static_cast<double>(kMicrosecondsPerSecond)) +
@@ -101,7 +101,7 @@ double Time::ToDoubleT() const {
     return 0;  // Preserve 0 so we can tell it doesn't exist.
   if (is_max()) {
     // Preserve max without offset to prevent overflow.
-    return std::numeric_limits<double>::max();
+    return std::numeric_limits<double>::infinity();
   }
   return (static_cast<double>(us_ - kTimeTToMicrosecondsOffset) /
           static_cast<double>(kMicrosecondsPerSecond));
@@ -120,7 +120,7 @@ Time Time::FromTimeSpec(const timespec& ts) {
 Time Time::FromJsTime(double ms_since_epoch) {
   // The epoch is a valid time, so this constructor doesn't interpret
   // 0 as the null time.
-  if (ms_since_epoch == std::numeric_limits<double>::max())
+  if (ms_since_epoch == std::numeric_limits<double>::infinity())
     return Max();
   return Time(static_cast<int64>(ms_since_epoch * kMicrosecondsPerMillisecond) +
               kTimeTToMicrosecondsOffset);
@@ -133,7 +133,7 @@ double Time::ToJsTime() const {
   }
   if (is_max()) {
     // Preserve max without offset to prevent overflow.
-    return std::numeric_limits<double>::max();
+    return std::numeric_limits<double>::infinity();
   }
   return (static_cast<double>(us_ - kTimeTToMicrosecondsOffset) /
           kMicrosecondsPerMillisecond);

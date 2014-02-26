@@ -493,13 +493,13 @@ TEST_F(TimeTest, MaxConversions) {
   Time t = Time::Max();
   EXPECT_EQ(std::numeric_limits<int64>::max(), t.ToInternalValue());
 
-  t = Time::FromDoubleT(std::numeric_limits<double>::max());
+  t = Time::FromDoubleT(std::numeric_limits<double>::infinity());
   EXPECT_TRUE(t.is_max());
-  EXPECT_EQ(std::numeric_limits<double>::max(), t.ToDoubleT());
+  EXPECT_EQ(std::numeric_limits<double>::infinity(), t.ToDoubleT());
 
-  t = Time::FromJsTime(std::numeric_limits<double>::max());
+  t = Time::FromJsTime(std::numeric_limits<double>::infinity());
   EXPECT_TRUE(t.is_max());
-  EXPECT_EQ(std::numeric_limits<double>::max(), t.ToJsTime());
+  EXPECT_EQ(std::numeric_limits<double>::infinity(), t.ToJsTime());
 
   t = Time::FromTimeT(std::numeric_limits<time_t>::max());
   EXPECT_TRUE(t.is_max());
@@ -518,9 +518,10 @@ TEST_F(TimeTest, MaxConversions) {
 #endif
 
 #if defined(OS_MACOSX)
-  t = Time::FromCFAbsoluteTime(std::numeric_limits<CFAbsoluteTime>::max());
+  t = Time::FromCFAbsoluteTime(std::numeric_limits<CFAbsoluteTime>::infinity());
   EXPECT_TRUE(t.is_max());
-  EXPECT_EQ(std::numeric_limits<CFAbsoluteTime>::max(), t.ToCFAbsoluteTime());
+  EXPECT_EQ(std::numeric_limits<CFAbsoluteTime>::infinity(),
+            t.ToCFAbsoluteTime());
 #endif
 
 #if defined(OS_WIN)
