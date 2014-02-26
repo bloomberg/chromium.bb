@@ -5,11 +5,11 @@
 #include "ui/views/corewm/tooltip_aura.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "ui/aura/test/aura_test_base.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
-#include "ui/views/test/views_test_base.h"
 
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
@@ -17,7 +17,7 @@ using base::UTF8ToUTF16;
 namespace views {
 namespace corewm {
 
-typedef ViewsTestBase TooltipAuraTest;
+typedef aura::test::AuraTestBase TooltipAuraTest;
 
 TEST_F(TooltipAuraTest, TrimTooltipToFitTests) {
   const gfx::FontList font_list;

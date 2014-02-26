@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/views/corewm/image_grid.h"
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/views/test/views_test_base.h"
+#include "ui/aura/test/aura_test_base.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/views/corewm/image_grid.h"
 
 namespace views {
 namespace corewm {
@@ -23,7 +24,7 @@ gfx::Image* CreateImage(const gfx::Size& size) {
 
 }  // namespace
 
-typedef ViewsTestBase ImageGridTest;
+typedef aura::test::AuraTestBase ImageGridTest;
 
 // Test that an ImageGrid's layers are transformed correctly when SetSize() is
 // called.

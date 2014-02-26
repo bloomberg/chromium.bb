@@ -7,11 +7,12 @@
 #include "ui/aura/client/visibility_client.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/layout_manager.h"
+#include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/views/corewm/transient_window_observer.h"
 #include "ui/views/corewm/window_util.h"
-#include "ui/views/test/views_test_base.h"
+#include "ui/views/corewm/wm_state.h"
 
 using aura::Window;
 
@@ -49,10 +50,20 @@ class TestTransientWindowObserver : public TransientWindowObserver {
   DISALLOW_COPY_AND_ASSIGN(TestTransientWindowObserver);
 };
 
-class TransientWindowManagerTest : public views::ViewsTestBase {
+class TransientWindowManagerTest : public aura::test::AuraTestBase {
  public:
   TransientWindowManagerTest() {}
   virtual ~TransientWindowManagerTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    AuraTestBase::SetUp();
+    wm_state_.reset(new views::corewm::WMState);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    wm_state_.reset();
+    AuraTestBase::TearDown();
+  }
 
  protected:
   // Creates a transient window that is transient to |parent|.
@@ -61,18 +72,20 @@ class TransientWindowManagerTest : public views::ViewsTestBase {
     window->set_id(id);
     window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
     window->Init(aura::WINDOW_LAYER_TEXTURED);
-    aura::client::ParentWindowWithContext(window, GetContext(), gfx::Rect());
+    aura::client::ParentWindowWithContext(window, root_window(), gfx::Rect());
     AddTransientChild(parent, window);
     return window;
   }
 
  private:
+  scoped_ptr<views::corewm::WMState> wm_state_;
+
   DISALLOW_COPY_AND_ASSIGN(TransientWindowManagerTest);
 };
 
 // Various assertions for transient children.
 TEST_F(TransientWindowManagerTest, TransientChildren) {
-  scoped_ptr<Window> parent(CreateTestWindowWithId(0, GetContext()));
+  scoped_ptr<Window> parent(CreateTestWindowWithId(0, root_window()));
   scoped_ptr<Window> w1(CreateTestWindowWithId(1, parent.get()));
   scoped_ptr<Window> w3(CreateTestWindowWithId(3, parent.get()));
   Window* w2 = CreateTestWindowWithId(2, parent.get());
@@ -108,7 +121,7 @@ TEST_F(TransientWindowManagerTest, TransientChildren) {
 
 // Tests that transient children are stacked as a unit when using stack above.
 TEST_F(TransientWindowManagerTest, TransientChildrenGroupAbove) {
-  scoped_ptr<Window> parent(CreateTestWindowWithId(0, GetContext()));
+  scoped_ptr<Window> parent(CreateTestWindowWithId(0, root_window()));
   scoped_ptr<Window> w1(CreateTestWindowWithId(1, parent.get()));
   Window* w11 = CreateTestWindowWithId(11, parent.get());
   scoped_ptr<Window> w2(CreateTestWindowWithId(2, parent.get()));
@@ -184,7 +197,7 @@ TEST_F(TransientWindowManagerTest, TransientChildrenGroupAbove) {
 
 // Tests that transient children are stacked as a unit when using stack below.
 TEST_F(TransientWindowManagerTest, TransientChildrenGroupBelow) {
-  scoped_ptr<Window> parent(CreateTestWindowWithId(0, GetContext()));
+  scoped_ptr<Window> parent(CreateTestWindowWithId(0, root_window()));
   scoped_ptr<Window> w1(CreateTestWindowWithId(1, parent.get()));
   Window* w11 = CreateTestWindowWithId(11, parent.get());
   scoped_ptr<Window> w2(CreateTestWindowWithId(2, parent.get()));
@@ -301,14 +314,14 @@ TEST_F(TransientWindowManagerTest, NotifyDelegateAfterDeletingTransients) {
 
 TEST_F(TransientWindowManagerTest, StackTransientsWhoseLayersHaveNoDelegate) {
   // Create a window with several transients, then a couple windows on top.
-  scoped_ptr<Window> window1(CreateTestWindowWithId(1, GetContext()));
+  scoped_ptr<Window> window1(CreateTestWindowWithId(1, root_window()));
   scoped_ptr<Window> window11(CreateTransientChild(11, window1.get()));
   scoped_ptr<Window> window12(CreateTransientChild(12, window1.get()));
   scoped_ptr<Window> window13(CreateTransientChild(13, window1.get()));
-  scoped_ptr<Window> window2(CreateTestWindowWithId(2, GetContext()));
-  scoped_ptr<Window> window3(CreateTestWindowWithId(3, GetContext()));
+  scoped_ptr<Window> window2(CreateTestWindowWithId(2, root_window()));
+  scoped_ptr<Window> window3(CreateTestWindowWithId(3, root_window()));
 
-  EXPECT_EQ("1 11 12 13 2 3", ChildWindowIDsAsString(GetContext()));
+  EXPECT_EQ("1 11 12 13 2 3", ChildWindowIDsAsString(root_window()));
 
   // Remove the delegates of a couple of transients, as if they are closing
   // and animating out.
@@ -317,55 +330,55 @@ TEST_F(TransientWindowManagerTest, StackTransientsWhoseLayersHaveNoDelegate) {
 
   // Move window1 to the front.  All transients should move with it, and their
   // order should be preserved.
-  GetContext()->StackChildAtTop(window1.get());
+  root_window()->StackChildAtTop(window1.get());
 
-  EXPECT_EQ("2 3 1 11 12 13", ChildWindowIDsAsString(GetContext()));
+  EXPECT_EQ("2 3 1 11 12 13", ChildWindowIDsAsString(root_window()));
 }
 
 TEST_F(TransientWindowManagerTest,
        StackTransientsLayersRelativeToOtherTransients) {
   // Create a window with several transients, then a couple windows on top.
-  scoped_ptr<Window> window1(CreateTestWindowWithId(1, GetContext()));
+  scoped_ptr<Window> window1(CreateTestWindowWithId(1, root_window()));
   scoped_ptr<Window> window11(CreateTransientChild(11, window1.get()));
   scoped_ptr<Window> window12(CreateTransientChild(12, window1.get()));
   scoped_ptr<Window> window13(CreateTransientChild(13, window1.get()));
 
-  EXPECT_EQ("1 11 12 13", ChildWindowIDsAsString(GetContext()));
+  EXPECT_EQ("1 11 12 13", ChildWindowIDsAsString(root_window()));
 
   // Stack 11 above 12.
-  GetContext()->StackChildAbove(window11.get(), window12.get());
-  EXPECT_EQ("1 12 11 13", ChildWindowIDsAsString(GetContext()));
+  root_window()->StackChildAbove(window11.get(), window12.get());
+  EXPECT_EQ("1 12 11 13", ChildWindowIDsAsString(root_window()));
 
   // Stack 13 below 12.
-  GetContext()->StackChildBelow(window13.get(), window12.get());
-  EXPECT_EQ("1 13 12 11", ChildWindowIDsAsString(GetContext()));
+  root_window()->StackChildBelow(window13.get(), window12.get());
+  EXPECT_EQ("1 13 12 11", ChildWindowIDsAsString(root_window()));
 
   // Stack 11 above 1.
-  GetContext()->StackChildAbove(window11.get(), window1.get());
-  EXPECT_EQ("1 11 13 12", ChildWindowIDsAsString(GetContext()));
+  root_window()->StackChildAbove(window11.get(), window1.get());
+  EXPECT_EQ("1 11 13 12", ChildWindowIDsAsString(root_window()));
 
   // Stack 12 below 13.
-  GetContext()->StackChildBelow(window12.get(), window13.get());
-  EXPECT_EQ("1 11 12 13", ChildWindowIDsAsString(GetContext()));
+  root_window()->StackChildBelow(window12.get(), window13.get());
+  EXPECT_EQ("1 11 12 13", ChildWindowIDsAsString(root_window()));
 }
 
 TEST_F(TransientWindowManagerTest,
        StackTransientsLayersRelativeToOtherTransientsNoLayerDelegate) {
   // Create a window with several transients, then a couple windows on top.
-  scoped_ptr<Window> window1(CreateTestWindowWithId(1, GetContext()));
+  scoped_ptr<Window> window1(CreateTestWindowWithId(1, root_window()));
   scoped_ptr<Window> window11(CreateTransientChild(11, window1.get()));
   scoped_ptr<Window> window12(CreateTransientChild(12, window1.get()));
   scoped_ptr<Window> window13(CreateTransientChild(13, window1.get()));
-  scoped_ptr<Window> window2(CreateTestWindowWithId(2, GetContext()));
-  scoped_ptr<Window> window3(CreateTestWindowWithId(3, GetContext()));
+  scoped_ptr<Window> window2(CreateTestWindowWithId(2, root_window()));
+  scoped_ptr<Window> window3(CreateTestWindowWithId(3, root_window()));
 
-  EXPECT_EQ("1 11 12 13 2 3", ChildWindowIDsAsString(GetContext()));
+  EXPECT_EQ("1 11 12 13 2 3", ChildWindowIDsAsString(root_window()));
 
   window1->layer()->set_delegate(NULL);
 
   // Stack 1 at top.
-  GetContext()->StackChildAtTop(window1.get());
-  EXPECT_EQ("2 3 1 11 12 13", ChildWindowIDsAsString(GetContext()));
+  root_window()->StackChildAtTop(window1.get());
+  EXPECT_EQ("2 3 1 11 12 13", ChildWindowIDsAsString(root_window()));
 }
 
 class StackingMadrigalLayoutManager : public aura::LayoutManager {
@@ -456,10 +469,10 @@ class StackingMadrigalVisibilityClient : public aura::client::VisibilityClient {
 // child. A fix is made to Window::StackAbove to prevent this, and this test
 // verifies this fix.
 TEST_F(TransientWindowManagerTest, StackingMadrigal) {
-  new StackingMadrigalLayoutManager(GetContext());
-  StackingMadrigalVisibilityClient visibility_client(GetContext());
+  new StackingMadrigalLayoutManager(root_window());
+  StackingMadrigalVisibilityClient visibility_client(root_window());
 
-  scoped_ptr<Window> window1(CreateTestWindowWithId(1, GetContext()));
+  scoped_ptr<Window> window1(CreateTestWindowWithId(1, root_window()));
   scoped_ptr<Window> window11(CreateTransientChild(11, window1.get()));
 
   visibility_client.set_ignored_window(window11.get());
@@ -486,7 +499,7 @@ TEST_F(TransientWindowManagerTest, StackingMadrigal) {
   // resulting in window12's layer being below window1's layer (though the
   // windows themselves would still be correctly stacked, so events would pass
   // through.)
-  GetContext()->StackChildAbove(window1.get(), window12.get());
+  root_window()->StackChildAbove(window1.get(), window12.get());
 
   // Both window12 and its layer should be stacked above window1.
   EXPECT_TRUE(aura::test::WindowIsAbove(window12.get(), window1.get()));
@@ -497,13 +510,13 @@ TEST_F(TransientWindowManagerTest, StackingMadrigal) {
 // transient with a NULL layer delegate causes that primary window to be moved,
 // but the layer order not changed to match.  http://crbug.com/112562
 TEST_F(TransientWindowManagerTest, StackOverClosingTransient) {
-  scoped_ptr<Window> window1(CreateTestWindowWithId(1, GetContext()));
+  scoped_ptr<Window> window1(CreateTestWindowWithId(1, root_window()));
   scoped_ptr<Window> transient1(CreateTransientChild(11, window1.get()));
-  scoped_ptr<Window> window2(CreateTestWindowWithId(2, GetContext()));
+  scoped_ptr<Window> window2(CreateTestWindowWithId(2, root_window()));
   scoped_ptr<Window> transient2(CreateTransientChild(21, window2.get()));
 
   // Both windows and layers are stacked in creation order.
-  Window* root = GetContext();
+  Window* root = root_window();
   ASSERT_EQ(4u, root->children().size());
   EXPECT_EQ(root->children()[0], window1.get());
   EXPECT_EQ(root->children()[1], transient1.get());
@@ -514,11 +527,11 @@ TEST_F(TransientWindowManagerTest, StackOverClosingTransient) {
   EXPECT_EQ(root->layer()->children()[1], transient1->layer());
   EXPECT_EQ(root->layer()->children()[2], window2->layer());
   EXPECT_EQ(root->layer()->children()[3], transient2->layer());
-  EXPECT_EQ("1 11 2 21", ChildWindowIDsAsString(GetContext()));
+  EXPECT_EQ("1 11 2 21", ChildWindowIDsAsString(root_window()));
 
   // This brings window1 and its transient to the front.
   root->StackChildAtTop(window1.get());
-  EXPECT_EQ("2 21 1 11", ChildWindowIDsAsString(GetContext()));
+  EXPECT_EQ("2 21 1 11", ChildWindowIDsAsString(root_window()));
 
   EXPECT_EQ(root->children()[0], window2.get());
   EXPECT_EQ(root->children()[1], transient2.get());
@@ -557,7 +570,7 @@ TEST_F(TransientWindowManagerTest, StackOverClosingTransient) {
   EXPECT_EQ(root->layer()->children()[2], transient2->layer());
 
   // Open another window on top.
-  scoped_ptr<Window> window3(CreateTestWindowWithId(3, GetContext()));
+  scoped_ptr<Window> window3(CreateTestWindowWithId(3, root_window()));
 
   ASSERT_EQ(4u, root->children().size());
   EXPECT_EQ(root->children()[0], window1.get());
@@ -604,7 +617,7 @@ TEST_F(TransientWindowManagerTest, StackOverClosingTransient) {
 
 // Verifies TransientWindowObserver is notified appropriately.
 TEST_F(TransientWindowManagerTest, TransientWindowObserverNotified) {
-  scoped_ptr<Window> parent(CreateTestWindowWithId(0, GetContext()));
+  scoped_ptr<Window> parent(CreateTestWindowWithId(0, root_window()));
   scoped_ptr<Window> w1(CreateTestWindowWithId(1, parent.get()));
 
   TestTransientWindowObserver test_observer;

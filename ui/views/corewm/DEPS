@@ -8,10 +8,6 @@ include_rules = [
 
 # TODO: temporary, don't add more.
 specific_include_rules = {
-  "image_grid_unittest.cc": [
-    "+ui/views/test/views_test_base.h",
-  ],
-
   "tooltip_controller.cc": [
     "+ui/views/widget/tooltip_manager.h",
   ],
@@ -29,18 +25,6 @@ specific_include_rules = {
   "window_animations.cc": [
     "+ui/views/view.h",
     "+ui/views/widget/widget.h",
-  ],
-
-  "transient_window_manager_unittest.cc": [
-    "+ui/views/test/views_test_base.h",
-  ],
-
-  "cursor_manager_unittest.cc": [
-    "+ui/views/test/views_test_base.h",
-  ],
-
-  "tooltip_aura_unittest.cc": [
-    "+ui/views/test/views_test_base.h",
   ],
 
   "tooltip_aura.cc": [

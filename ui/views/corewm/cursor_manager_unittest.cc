@@ -5,8 +5,8 @@
 #include "ui/views/corewm/cursor_manager.h"
 
 #include "ui/aura/client/cursor_client_observer.h"
+#include "ui/aura/test/aura_test_base.h"
 #include "ui/views/corewm/native_cursor_manager.h"
-#include "ui/views/test/views_test_base.h"
 
 namespace {
 
@@ -50,7 +50,7 @@ class TestingCursorManager : public views::corewm::NativeCursorManager {
 
 }  // namespace
 
-class CursorManagerTest : public views::ViewsTestBase {
+class CursorManagerTest : public aura::test::AuraTestBase {
  protected:
   CursorManagerTest()
       : delegate_(new TestingCursorManager),
