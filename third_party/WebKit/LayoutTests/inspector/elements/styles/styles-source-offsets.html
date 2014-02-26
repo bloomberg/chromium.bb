@@ -32,7 +32,7 @@ function test()
         var allProperties = style.cssProperties;
         for (var i = 0; i < allProperties.length; ++i) {
             var property = allProperties[i];
-            if (!property.status)
+            if (!property.range)
                 continue;
             InspectorTest.addResult("['" + property.name + "':'" + property.value + "'" + (property.important ? " !important" : "") + (("parsedOk" in property) ? " non-parsed" : "") +"] @" + InspectorTest.rangeText(property.range));
         }

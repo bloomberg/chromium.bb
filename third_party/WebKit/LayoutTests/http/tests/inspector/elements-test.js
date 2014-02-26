@@ -623,10 +623,10 @@ InspectorTest.dumpStyle = function(style, currentIndent)
     }
     for (var i = 0; i < style.cssProperties.length; ++i) {
         var property = style.cssProperties[i];
-        if (property.status !== "disabled")
-            InspectorTest.addResult(currentIndent + "['" + property.name + "':'" + property.value + "'" + (property.important ? " is-important" : "") + (("parsedOk" in property) ? " non-parsed" : "") +"] @" + InspectorTest.rangeText(property.range) + " " + (property.status || "style"));
+        if (!property.disabled)
+            InspectorTest.addResult(currentIndent + "['" + property.name + "':'" + property.value + "'" + (property.important ? " is-important" : "") + (("parsedOk" in property) ? " non-parsed" : "") +"] @" + InspectorTest.rangeText(property.range) + " ");
         else
-            InspectorTest.addResult(currentIndent + "[text='" + property.text + "'] " + property.status);
+            InspectorTest.addResult(currentIndent + "[text='" + property.text + "'] disabled");
     }
 }
 
@@ -640,10 +640,10 @@ InspectorTest.dumpCSSStyleDeclaration = function(style, currentIndent)
     var properties = style.allProperties;
     for (var i = 0; i < properties.length; ++i) {
         var property = properties[i];
-        if (property.status !== "disabled")
-            InspectorTest.addResult(currentIndent + "['" + property.name + "':'" + property.value + "'" + (property.important ? " is-important" : "") + (!property["parsedOk"] ? " non-parsed" : "") +"] @" + InspectorTest.rangeText(property.range) + " " + (property.status || "style"));
+        if (!property.disabled)
+            InspectorTest.addResult(currentIndent + "['" + property.name + "':'" + property.value + "'" + (property.important ? " is-important" : "") + (!property["parsedOk"] ? " non-parsed" : "") +"] @" + InspectorTest.rangeText(property.range) + " ");
         else
-            InspectorTest.addResult(currentIndent + "[text='" + property.text + "'] " + property.status);
+            InspectorTest.addResult(currentIndent + "[text='" + property.text + "'] disabled");
     }
 }
 

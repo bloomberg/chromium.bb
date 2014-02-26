@@ -106,13 +106,7 @@ function test()
         InspectorTest.addResult("");
         InspectorTest.addResult(isRule ? "rule" : "style");
         InspectorTest.addResult((isRule ? (ruleOrStyle.selectorList.text + ": [" + ruleOrStyle.origin + "]") : "raw style"));
-        for (var i = 0; i < style.cssProperties.length; ++i) {
-            var property = style.cssProperties[i];
-            if (property.status !== "disabled")
-                InspectorTest.addResult("['" + property.name + "':'" + property.value + "'" + (property.priority === "important" ? " is-important" : "") + (("parsedOk" in property) ? " non-parsed" : "") +"] @" + InspectorTest.rangeText(property.range) + " " + (property.status || "style"));
-            else
-                InspectorTest.addResult("[text='" + property.text + "'] " + property.status);
-        }
+        InspectorTest.dumpStyle(style);
     }
 }
 </script>

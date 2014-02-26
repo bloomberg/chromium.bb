@@ -642,9 +642,7 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties() con
 {
     RefPtr<Array<TypeBuilder::CSS::CSSProperty> > propertiesObject = Array<TypeBuilder::CSS::CSSProperty>::create();
     RefPtr<Array<TypeBuilder::CSS::ShorthandEntry> > shorthandEntries = Array<TypeBuilder::CSS::ShorthandEntry>::create();
-    HashMap<String, RefPtr<TypeBuilder::CSS::CSSProperty> > propertyNameToPreviousActiveProperty;
     HashSet<String> foundShorthands;
-    String previousStatus;
     OwnPtr<Vector<unsigned> > lineEndings(m_parentStyleSheet ? m_parentStyleSheet->lineEndings() : PassOwnPtr<Vector<unsigned> >());
     RefPtr<CSSRuleSourceData> sourceData = extractSourceData();
     unsigned ruleBodyRangeStart = sourceData ? sourceData->ruleBodyRange.start : 0;
@@ -655,10 +653,6 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties() con
     for (Vector<InspectorStyleProperty>::iterator it = properties.begin(), itEnd = properties.end(); it != itEnd; ++it) {
         const CSSPropertySourceData& propertyEntry = it->sourceData;
         const String& name = propertyEntry.name;
-        const bool disabled = it->sourceData.disabled;
-
-        TypeBuilder::CSS::CSSProperty::Status::Enum status = disabled ? TypeBuilder::CSS::CSSProperty::Status::Disabled : TypeBuilder::CSS::CSSProperty::Status::Active;
-        bool relevantPropertyStatus = true;
 
         RefPtr<TypeBuilder::CSS::CSSProperty> property = TypeBuilder::CSS::CSSProperty::create()
             .setName(name)
@@ -681,67 +675,27 @@ PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyle::styleWithProperties() con
             absolutePropertyRange.start += ruleBodyRangeStart;
             absolutePropertyRange.end += ruleBodyRangeStart;
             property->setRange(buildSourceRangeObject(absolutePropertyRange, lineEndings.get()));
-        }
-
-        if (!disabled) {
-            if (it->hasSource) {
+            if (!propertyEntry.disabled) {
                 ASSERT(sourceData);
                 property->setImplicit(false);
+            }
+            property->setDisabled(propertyEntry.disabled);
+        } else if (!propertyEntry.disabled) {
+            bool implicit = m_style->isPropertyImplicit(name);
+            // Default "implicit" == false.
+            if (implicit)
+                property->setImplicit(true);
 
-                // Parsed property overrides any property with the same name. Non-parsed property overrides
-                // previous non-parsed property with the same name (if any).
-                bool shouldInactivate = false;
-                CSSPropertyID propertyId = cssPropertyID(name);
-                // Canonicalize property names to treat non-prefixed and vendor-prefixed property names the same (opacity vs. -webkit-opacity).
-                String canonicalPropertyName = propertyId ? getPropertyNameString(propertyId) : name;
-                HashMap<String, RefPtr<TypeBuilder::CSS::CSSProperty> >::iterator activeIt = propertyNameToPreviousActiveProperty.find(canonicalPropertyName);
-                if (activeIt != propertyNameToPreviousActiveProperty.end()) {
-                    if (propertyEntry.parsedOk) {
-                        bool previousImportant;
-                        bool successImportant = activeIt->value->getBoolean(TypeBuilder::CSS::CSSProperty::Important, &previousImportant);
-                        bool successStatus = activeIt->value->getString(TypeBuilder::CSS::CSSProperty::Status, &previousStatus);
-                        if (successStatus && previousStatus != "inactive") {
-                            if (propertyEntry.important || !successImportant) // Important not set == "not important".
-                                shouldInactivate = true;
-                            else if (status == TypeBuilder::CSS::CSSProperty::Status::Active) {
-                                // Inactivate a non-important property following the same-named important property.
-                                status = TypeBuilder::CSS::CSSProperty::Status::Inactive;
-                            }
-                        }
-                    } else {
-                        bool previousParsedOk;
-                        bool success = activeIt->value->getBoolean(TypeBuilder::CSS::CSSProperty::ParsedOk, &previousParsedOk);
-                        if (success && !previousParsedOk)
-                            shouldInactivate = true;
-                    }
-                } else
-                    propertyNameToPreviousActiveProperty.set(canonicalPropertyName, property);
-
-                if (shouldInactivate) {
-                    activeIt->value->setStatus(TypeBuilder::CSS::CSSProperty::Status::Inactive);
-                    propertyNameToPreviousActiveProperty.set(canonicalPropertyName, property);
-                }
-            } else {
-                bool implicit = m_style->isPropertyImplicit(name);
-                // Default "implicit" == false.
-                if (implicit)
-                    property->setImplicit(true);
-                relevantPropertyStatus = false;
-
-                String shorthand = m_style->getPropertyShorthand(name);
-                if (!shorthand.isEmpty()) {
-                    if (foundShorthands.add(shorthand).isNewEntry) {
-                        RefPtr<TypeBuilder::CSS::ShorthandEntry> entry = TypeBuilder::CSS::ShorthandEntry::create()
-                            .setName(shorthand)
-                            .setValue(shorthandValue(shorthand));
-                        shorthandEntries->addItem(entry);
-                    }
+            String shorthand = m_style->getPropertyShorthand(name);
+            if (!shorthand.isEmpty()) {
+                if (foundShorthands.add(shorthand).isNewEntry) {
+                    RefPtr<TypeBuilder::CSS::ShorthandEntry> entry = TypeBuilder::CSS::ShorthandEntry::create()
+                        .setName(shorthand)
+                        .setValue(shorthandValue(shorthand));
+                    shorthandEntries->addItem(entry);
                 }
             }
         }
-
-        if (relevantPropertyStatus)
-            property->setStatus(status);
     }
 
     RefPtr<TypeBuilder::CSS::CSSStyle> result = TypeBuilder::CSS::CSSStyle::create()

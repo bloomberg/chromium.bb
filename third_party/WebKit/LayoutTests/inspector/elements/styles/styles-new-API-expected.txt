@@ -10,135 +10,135 @@ OK
 
 === Matched rules for body ===
 body: [user-agent] {
-    ['display':'block'] @[undefined-undefined] style
-    ['margin-top':'8px'] @[undefined-undefined] style
-    ['margin-right':'8px'] @[undefined-undefined] style
-    ['margin-bottom':'8px'] @[undefined-undefined] style
-    ['margin-left':'8px'] @[undefined-undefined] style
+    ['display':'block'] @[undefined-undefined] 
+    ['margin-top':'8px'] @[undefined-undefined] 
+    ['margin-right':'8px'] @[undefined-undefined] 
+    ['margin-bottom':'8px'] @[undefined-undefined] 
+    ['margin-left':'8px'] @[undefined-undefined] 
 }
 body: [regular, 20:0-20:4] {
-    ['property':'imported-media-screen-stylesheet' non-parsed] @[21:4-21:47] active
+    ['property':'imported-media-screen-stylesheet' non-parsed] @[21:4-21:47] 
 }
 body: [regular, 20:0-20:4] {
-    ['property':'imported-media-screen-stylesheet' non-parsed] @[21:4-21:47] active
+    ['property':'imported-media-screen-stylesheet' non-parsed] @[21:4-21:47] 
 }
 body: [regular, 9:0-9:4] {
-    ['font-size':'12px'] @[10:4-10:20] active
+    ['font-size':'12px'] @[10:4-10:20] 
     ['foo':'bar !
 
-    important /* !important property not recognized by WebCore */' is-important non-parsed] @[11:4-13:66] active
-    ['height':'100% !important' is-important] @[14:4-14:28] active
-    ['colorz':'"!important"' non-parsed] @[15:4-15:25] active
-    ['important':'!important' non-parsed] @[16:4-16:25] active
-    ['color':'yellow'] @[17:4-17:18] active
-    ['color':'"badcolor" ! important /* good property with strange value */' is-important non-parsed] @[18:4-18:73] active
+    important /* !important property not recognized by WebCore */' is-important non-parsed] @[11:4-13:66] 
+    ['height':'100% !important' is-important] @[14:4-14:28] 
+    ['colorz':'"!important"' non-parsed] @[15:4-15:25] 
+    ['important':'!important' non-parsed] @[16:4-16:25] 
+    ['color':'yellow'] @[17:4-17:18] 
+    ['color':'"badcolor" ! important /* good property with strange value */' is-important non-parsed] @[18:4-18:73] 
 }
 body.main1: [regular, 21:29-21:67] {
-    ['color':'#F00BAA'] @[21:81-21:96] active
-    ['zoo':'moo /* not an !important unrecognized property */' non-parsed] @[21:96-21:149] active
+    ['color':'#F00BAA'] @[21:81-21:96] 
+    ['zoo':'moo /* not an !important unrecognized property */' non-parsed] @[21:96-21:149] 
 }
 body.main2: [regular, 23:0-23:10] {
-    ['background':'green /* value !important comment */ !important /* no semicolon, very !important */' is-important] @[23:11-23:106] active
-    ['background-image':'initial' is-important] @[undefined-undefined] style
-    ['background-repeat-x':'initial' is-important] @[undefined-undefined] style
-    ['background-repeat-y':'initial' is-important] @[undefined-undefined] style
-    ['background-attachment':'initial' is-important] @[undefined-undefined] style
-    ['background-position-x':'initial' is-important] @[undefined-undefined] style
-    ['background-position-y':'initial' is-important] @[undefined-undefined] style
-    ['background-origin':'initial' is-important] @[undefined-undefined] style
-    ['background-clip':'initial' is-important] @[undefined-undefined] style
-    ['background-color':'green' is-important] @[undefined-undefined] style
-    ['background-size':'initial' is-important] @[undefined-undefined] style
+    ['background':'green /* value !important comment */ !important /* no semicolon, very !important */' is-important] @[23:11-23:106] 
+    ['background-image':'initial' is-important] @[undefined-undefined] 
+    ['background-repeat-x':'initial' is-important] @[undefined-undefined] 
+    ['background-repeat-y':'initial' is-important] @[undefined-undefined] 
+    ['background-attachment':'initial' is-important] @[undefined-undefined] 
+    ['background-position-x':'initial' is-important] @[undefined-undefined] 
+    ['background-position-y':'initial' is-important] @[undefined-undefined] 
+    ['background-origin':'initial' is-important] @[undefined-undefined] 
+    ['background-clip':'initial' is-important] @[undefined-undefined] 
+    ['background-color':'green' is-important] @[undefined-undefined] 
+    ['background-size':'initial' is-important] @[undefined-undefined] 
 }
 body.mainpage: [regular, 3:0-3:13] {
-    ['text-decoration':'none'] @[4:4-4:26] active
-    ['badproperty':'1badvalue1' non-parsed] @[5:5-5:29] active
-    ['text-decoration-line':'none'] @[undefined-undefined] style
-    ['text-decoration-style':'initial'] @[undefined-undefined] style
-    ['text-decoration-color':'initial'] @[undefined-undefined] style
+    ['text-decoration':'none'] @[4:4-4:26] 
+    ['badproperty':'1badvalue1' non-parsed] @[5:5-5:29] 
+    ['text-decoration-line':'none'] @[undefined-undefined] 
+    ['text-decoration-style':'initial'] @[undefined-undefined] 
+    ['text-decoration-color':'initial'] @[undefined-undefined] 
 }
 body.mainpage: [regular, 8:0-8:13] {
-    ['prop1':'val1' non-parsed] @[9:4-9:16] active
-    ['prop2':'val2' non-parsed] @[10:4-10:16] active
+    ['prop1':'val1' non-parsed] @[9:4-9:16] 
+    ['prop2':'val2' non-parsed] @[10:4-10:16] 
 }
 
 === Pseudo rules for body ===
 PseudoId=4
 body::after: [regular, 26:0-26:11] {
-    ['content':'"After body"'] @[27:4-27:26] active
+    ['content':'"After body"'] @[27:4-27:26] 
 }
 
 === Inherited styles for body ===
 Level=1
 [NO STYLE]
 html: [user-agent] {
-    ['display':'block'] @[undefined-undefined] style
+    ['display':'block'] @[undefined-undefined] 
 }
 html: [regular, 4:0-4:4] {
-    ['font-weight':'400'] @[5:4-5:21] active
+    ['font-weight':'400'] @[5:4-5:21] 
 }
 
 === Inline style for body ===
-['font-weight':'normal'] @[0:0-0:20] active
-['width':'85%'] @[0:21-0:32] active
-['background-image':'url(bar.png)'] @[0:33-0:63] active
+['font-weight':'normal'] @[0:0-0:20] 
+['width':'85%'] @[0:21-0:32] 
+['background-image':'url(bar.png)'] @[0:33-0:63] 
 
 Running: test_forcedState
 === BODY with forced :hover ===
 body: [user-agent] {
-    ['display':'block'] @[undefined-undefined] style
-    ['margin-top':'8px'] @[undefined-undefined] style
-    ['margin-right':'8px'] @[undefined-undefined] style
-    ['margin-bottom':'8px'] @[undefined-undefined] style
-    ['margin-left':'8px'] @[undefined-undefined] style
+    ['display':'block'] @[undefined-undefined] 
+    ['margin-top':'8px'] @[undefined-undefined] 
+    ['margin-right':'8px'] @[undefined-undefined] 
+    ['margin-bottom':'8px'] @[undefined-undefined] 
+    ['margin-left':'8px'] @[undefined-undefined] 
 }
 body: [regular, 20:0-20:4] {
-    ['property':'imported-media-screen-stylesheet' non-parsed] @[21:4-21:47] active
+    ['property':'imported-media-screen-stylesheet' non-parsed] @[21:4-21:47] 
 }
 body: [regular, 20:0-20:4] {
-    ['property':'imported-media-screen-stylesheet' non-parsed] @[21:4-21:47] active
+    ['property':'imported-media-screen-stylesheet' non-parsed] @[21:4-21:47] 
 }
 body: [regular, 9:0-9:4] {
-    ['font-size':'12px'] @[10:4-10:20] active
+    ['font-size':'12px'] @[10:4-10:20] 
     ['foo':'bar !
 
-    important /* !important property not recognized by WebCore */' is-important non-parsed] @[11:4-13:66] active
-    ['height':'100% !important' is-important] @[14:4-14:28] active
-    ['colorz':'"!important"' non-parsed] @[15:4-15:25] active
-    ['important':'!important' non-parsed] @[16:4-16:25] active
-    ['color':'yellow'] @[17:4-17:18] active
-    ['color':'"badcolor" ! important /* good property with strange value */' is-important non-parsed] @[18:4-18:73] active
+    important /* !important property not recognized by WebCore */' is-important non-parsed] @[11:4-13:66] 
+    ['height':'100% !important' is-important] @[14:4-14:28] 
+    ['colorz':'"!important"' non-parsed] @[15:4-15:25] 
+    ['important':'!important' non-parsed] @[16:4-16:25] 
+    ['color':'yellow'] @[17:4-17:18] 
+    ['color':'"badcolor" ! important /* good property with strange value */' is-important non-parsed] @[18:4-18:73] 
 }
 body.main1: [regular, 21:29-21:67] {
-    ['color':'#F00BAA'] @[21:81-21:96] active
-    ['zoo':'moo /* not an !important unrecognized property */' non-parsed] @[21:96-21:149] active
+    ['color':'#F00BAA'] @[21:81-21:96] 
+    ['zoo':'moo /* not an !important unrecognized property */' non-parsed] @[21:96-21:149] 
 }
 body.main2: [regular, 23:0-23:10] {
-    ['background':'green /* value !important comment */ !important /* no semicolon, very !important */' is-important] @[23:11-23:106] active
-    ['background-image':'initial' is-important] @[undefined-undefined] style
-    ['background-repeat-x':'initial' is-important] @[undefined-undefined] style
-    ['background-repeat-y':'initial' is-important] @[undefined-undefined] style
-    ['background-attachment':'initial' is-important] @[undefined-undefined] style
-    ['background-position-x':'initial' is-important] @[undefined-undefined] style
-    ['background-position-y':'initial' is-important] @[undefined-undefined] style
-    ['background-origin':'initial' is-important] @[undefined-undefined] style
-    ['background-clip':'initial' is-important] @[undefined-undefined] style
-    ['background-color':'green' is-important] @[undefined-undefined] style
-    ['background-size':'initial' is-important] @[undefined-undefined] style
+    ['background':'green /* value !important comment */ !important /* no semicolon, very !important */' is-important] @[23:11-23:106] 
+    ['background-image':'initial' is-important] @[undefined-undefined] 
+    ['background-repeat-x':'initial' is-important] @[undefined-undefined] 
+    ['background-repeat-y':'initial' is-important] @[undefined-undefined] 
+    ['background-attachment':'initial' is-important] @[undefined-undefined] 
+    ['background-position-x':'initial' is-important] @[undefined-undefined] 
+    ['background-position-y':'initial' is-important] @[undefined-undefined] 
+    ['background-origin':'initial' is-important] @[undefined-undefined] 
+    ['background-clip':'initial' is-important] @[undefined-undefined] 
+    ['background-color':'green' is-important] @[undefined-undefined] 
+    ['background-size':'initial' is-important] @[undefined-undefined] 
 }
 body.mainpage: [regular, 3:0-3:13] {
-    ['text-decoration':'none'] @[4:4-4:26] active
-    ['badproperty':'1badvalue1' non-parsed] @[5:5-5:29] active
-    ['text-decoration-line':'none'] @[undefined-undefined] style
-    ['text-decoration-style':'initial'] @[undefined-undefined] style
-    ['text-decoration-color':'initial'] @[undefined-undefined] style
+    ['text-decoration':'none'] @[4:4-4:26] 
+    ['badproperty':'1badvalue1' non-parsed] @[5:5-5:29] 
+    ['text-decoration-line':'none'] @[undefined-undefined] 
+    ['text-decoration-style':'initial'] @[undefined-undefined] 
+    ['text-decoration-color':'initial'] @[undefined-undefined] 
 }
 body.mainpage: [regular, 8:0-8:13] {
-    ['prop1':'val1' non-parsed] @[9:4-9:16] active
-    ['prop2':'val2' non-parsed] @[10:4-10:16] active
+    ['prop1':'val1' non-parsed] @[9:4-9:16] 
+    ['prop2':'val2' non-parsed] @[10:4-10:16] 
 }
 body:hover: [regular, 13:0-13:10] {
-    ['color':'#CDE'] @[14:2-14:14] active
+    ['color':'#CDE'] @[14:2-14:14] 
 }
 
 Running: test_textNodeComputedStyles
@@ -149,7 +149,7 @@ OK
 Running: test_tableStyles
 
 === Attributes style for table ===
-['width':'50%'] @[undefined-undefined] style
+['width':'50%'] @[undefined-undefined] 
 
 === Stylesheet-for-inline-style text ===
 
@@ -286,124 +286,124 @@ Running: test_addRule
 
 === Matched rules after rule added ===
 body: [user-agent] {
-    ['display':'block'] @[undefined-undefined] style
-    ['margin-top':'8px'] @[undefined-undefined] style
-    ['margin-right':'8px'] @[undefined-undefined] style
-    ['margin-bottom':'8px'] @[undefined-undefined] style
-    ['margin-left':'8px'] @[undefined-undefined] style
+    ['display':'block'] @[undefined-undefined] 
+    ['margin-top':'8px'] @[undefined-undefined] 
+    ['margin-right':'8px'] @[undefined-undefined] 
+    ['margin-bottom':'8px'] @[undefined-undefined] 
+    ['margin-left':'8px'] @[undefined-undefined] 
 }
 body: [regular, 20:0-20:4] {
-    ['property':'imported-media-screen-stylesheet' non-parsed] @[21:4-21:47] active
+    ['property':'imported-media-screen-stylesheet' non-parsed] @[21:4-21:47] 
 }
 body: [regular, 20:0-20:4] {
-    ['property':'imported-media-screen-stylesheet' non-parsed] @[21:4-21:47] active
+    ['property':'imported-media-screen-stylesheet' non-parsed] @[21:4-21:47] 
 }
 body: [regular, 9:0-9:4] {
-    ['font-size':'12px'] @[10:4-10:20] active
+    ['font-size':'12px'] @[10:4-10:20] 
     ['foo':'bar !
 
-    important /* !important property not recognized by WebCore */' is-important non-parsed] @[11:4-13:66] active
-    ['height':'100% !important' is-important] @[14:4-14:28] active
-    ['colorz':'"!important"' non-parsed] @[15:4-15:25] active
-    ['important':'!important' non-parsed] @[16:4-16:25] active
-    ['color':'yellow'] @[17:4-17:18] active
-    ['color':'"badcolor" ! important /* good property with strange value */' is-important non-parsed] @[18:4-18:73] active
+    important /* !important property not recognized by WebCore */' is-important non-parsed] @[11:4-13:66] 
+    ['height':'100% !important' is-important] @[14:4-14:28] 
+    ['colorz':'"!important"' non-parsed] @[15:4-15:25] 
+    ['important':'!important' non-parsed] @[16:4-16:25] 
+    ['color':'yellow'] @[17:4-17:18] 
+    ['color':'"badcolor" ! important /* good property with strange value */' is-important non-parsed] @[18:4-18:73] 
 }
 html *, body[foo="bar"]: [regular, 0:0-0:6; 0:8-0:23] {
-    ['color':'white'] @[1:4-1:17] active
-    ['background':'black'] @[1:18-1:36] active
-    ['background-image':'initial'] @[undefined-undefined] style
-    ['background-repeat-x':'initial'] @[undefined-undefined] style
-    ['background-repeat-y':'initial'] @[undefined-undefined] style
-    ['background-attachment':'initial'] @[undefined-undefined] style
-    ['background-position-x':'initial'] @[undefined-undefined] style
-    ['background-position-y':'initial'] @[undefined-undefined] style
-    ['background-origin':'initial'] @[undefined-undefined] style
-    ['background-clip':'initial'] @[undefined-undefined] style
-    ['background-color':'black'] @[undefined-undefined] style
-    ['background-size':'initial'] @[undefined-undefined] style
+    ['color':'white'] @[1:4-1:17] 
+    ['background':'black'] @[1:18-1:36] 
+    ['background-image':'initial'] @[undefined-undefined] 
+    ['background-repeat-x':'initial'] @[undefined-undefined] 
+    ['background-repeat-y':'initial'] @[undefined-undefined] 
+    ['background-attachment':'initial'] @[undefined-undefined] 
+    ['background-position-x':'initial'] @[undefined-undefined] 
+    ['background-position-y':'initial'] @[undefined-undefined] 
+    ['background-origin':'initial'] @[undefined-undefined] 
+    ['background-clip':'initial'] @[undefined-undefined] 
+    ['background-color':'black'] @[undefined-undefined] 
+    ['background-size':'initial'] @[undefined-undefined] 
 }
 body: [regular, 2:1-2:5] {
-    ['text-align':'justify'] @[2:11-2:31] active
+    ['text-align':'justify'] @[2:11-2:31] 
 }
 body: [inspector, 0:0-0:4] {
-    ['font-family':'serif'] @[1:4-1:23] active
+    ['font-family':'serif'] @[1:4-1:23] 
 }
 body.main1: [regular, 21:29-21:67] {
-    ['color':'#F00BAA'] @[21:81-21:96] active
-    ['zoo':'moo /* not an !important unrecognized property */' non-parsed] @[21:96-21:149] active
+    ['color':'#F00BAA'] @[21:81-21:96] 
+    ['zoo':'moo /* not an !important unrecognized property */' non-parsed] @[21:96-21:149] 
 }
 body.main2: [regular, 23:0-23:10] {
-    ['background':'green /* value !important comment */ !important /* no semicolon, very !important */' is-important] @[23:11-23:106] active
-    ['background-image':'initial' is-important] @[undefined-undefined] style
-    ['background-repeat-x':'initial' is-important] @[undefined-undefined] style
-    ['background-repeat-y':'initial' is-important] @[undefined-undefined] style
-    ['background-attachment':'initial' is-important] @[undefined-undefined] style
-    ['background-position-x':'initial' is-important] @[undefined-undefined] style
-    ['background-position-y':'initial' is-important] @[undefined-undefined] style
-    ['background-origin':'initial' is-important] @[undefined-undefined] style
-    ['background-clip':'initial' is-important] @[undefined-undefined] style
-    ['background-color':'green' is-important] @[undefined-undefined] style
-    ['background-size':'initial' is-important] @[undefined-undefined] style
+    ['background':'green /* value !important comment */ !important /* no semicolon, very !important */' is-important] @[23:11-23:106] 
+    ['background-image':'initial' is-important] @[undefined-undefined] 
+    ['background-repeat-x':'initial' is-important] @[undefined-undefined] 
+    ['background-repeat-y':'initial' is-important] @[undefined-undefined] 
+    ['background-attachment':'initial' is-important] @[undefined-undefined] 
+    ['background-position-x':'initial' is-important] @[undefined-undefined] 
+    ['background-position-y':'initial' is-important] @[undefined-undefined] 
+    ['background-origin':'initial' is-important] @[undefined-undefined] 
+    ['background-clip':'initial' is-important] @[undefined-undefined] 
+    ['background-color':'green' is-important] @[undefined-undefined] 
+    ['background-size':'initial' is-important] @[undefined-undefined] 
 }
 
 Running: test_disableProperty
 
 === After property manipulations ===
 [text='/* height : 100% ; */'] disabled
-['border':'1px solid'] @[31:26-31:44] active
-['border-width':'2px'] @[31:45-31:63] inactive
-['googles':'abra' non-parsed] @[31:65-31:79] active
-['foo':'.bar' non-parsed] @[31:80-31:90] active
-['-moz-goog':'1***' non-parsed] @[31:91-31:107] active
-['font-size':'12px'] @[32:4-32:20] active
-['border-width':'1px'] @[33:4-33:22] active
+['border':'1px solid'] @[31:26-31:44] 
+['border-width':'2px'] @[31:45-31:63] 
+['googles':'abra' non-parsed] @[31:65-31:79] 
+['foo':'.bar' non-parsed] @[31:80-31:90] 
+['-moz-goog':'1***' non-parsed] @[31:91-31:107] 
+['font-size':'12px'] @[32:4-32:20] 
+['border-width':'1px'] @[33:4-33:22] 
 [text='/* font-size: 14px; */'] disabled
-['padding-top':'1px'] @[35:4-35:20] active
-['border-top-width':'1px'] @[undefined-undefined] style
-['border-right-width':'1px'] @[undefined-undefined] style
-['border-bottom-width':'1px'] @[undefined-undefined] style
-['border-left-width':'1px'] @[undefined-undefined] style
-['border-top-style':'solid'] @[undefined-undefined] style
-['border-right-style':'solid'] @[undefined-undefined] style
-['border-bottom-style':'solid'] @[undefined-undefined] style
-['border-left-style':'solid'] @[undefined-undefined] style
-['border-top-color':'initial'] @[undefined-undefined] style
-['border-right-color':'initial'] @[undefined-undefined] style
-['border-bottom-color':'initial'] @[undefined-undefined] style
-['border-left-color':'initial'] @[undefined-undefined] style
-['border-image-source':'initial'] @[undefined-undefined] style
-['border-image-slice':'initial'] @[undefined-undefined] style
-['border-image-width':'initial'] @[undefined-undefined] style
-['border-image-outset':'initial'] @[undefined-undefined] style
-['border-image-repeat':'initial'] @[undefined-undefined] style
+['padding-top':'1px'] @[35:4-35:20] 
+['border-top-width':'1px'] @[undefined-undefined] 
+['border-right-width':'1px'] @[undefined-undefined] 
+['border-bottom-width':'1px'] @[undefined-undefined] 
+['border-left-width':'1px'] @[undefined-undefined] 
+['border-top-style':'solid'] @[undefined-undefined] 
+['border-right-style':'solid'] @[undefined-undefined] 
+['border-bottom-style':'solid'] @[undefined-undefined] 
+['border-left-style':'solid'] @[undefined-undefined] 
+['border-top-color':'initial'] @[undefined-undefined] 
+['border-right-color':'initial'] @[undefined-undefined] 
+['border-bottom-color':'initial'] @[undefined-undefined] 
+['border-left-color':'initial'] @[undefined-undefined] 
+['border-image-source':'initial'] @[undefined-undefined] 
+['border-image-slice':'initial'] @[undefined-undefined] 
+['border-image-width':'initial'] @[undefined-undefined] 
+['border-image-outset':'initial'] @[undefined-undefined] 
+['border-image-repeat':'initial'] @[undefined-undefined] 
 
 === After property enabled ===
 [text='/* height : 100% ; */'] disabled
-['border':'1px solid'] @[31:26-31:44] active
-['border-width':'2px'] @[31:45-31:63] inactive
-['googles':'abra' non-parsed] @[31:65-31:79] active
-['foo':'.bar' non-parsed] @[31:80-31:90] active
-['-moz-goog':'1***' non-parsed] @[31:91-31:107] active
-['font-size':'12px'] @[32:4-32:20] inactive
-['border-width':'1px'] @[33:4-33:22] active
-['font-size':'14px'] @[34:4-34:20] active
-['padding-top':'1px'] @[35:4-35:20] active
-['border-top-width':'1px'] @[undefined-undefined] style
-['border-right-width':'1px'] @[undefined-undefined] style
-['border-bottom-width':'1px'] @[undefined-undefined] style
-['border-left-width':'1px'] @[undefined-undefined] style
-['border-top-style':'solid'] @[undefined-undefined] style
-['border-right-style':'solid'] @[undefined-undefined] style
-['border-bottom-style':'solid'] @[undefined-undefined] style
-['border-left-style':'solid'] @[undefined-undefined] style
-['border-top-color':'initial'] @[undefined-undefined] style
-['border-right-color':'initial'] @[undefined-undefined] style
-['border-bottom-color':'initial'] @[undefined-undefined] style
-['border-left-color':'initial'] @[undefined-undefined] style
-['border-image-source':'initial'] @[undefined-undefined] style
-['border-image-slice':'initial'] @[undefined-undefined] style
-['border-image-width':'initial'] @[undefined-undefined] style
-['border-image-outset':'initial'] @[undefined-undefined] style
-['border-image-repeat':'initial'] @[undefined-undefined] style
+['border':'1px solid'] @[31:26-31:44] 
+['border-width':'2px'] @[31:45-31:63] 
+['googles':'abra' non-parsed] @[31:65-31:79] 
+['foo':'.bar' non-parsed] @[31:80-31:90] 
+['-moz-goog':'1***' non-parsed] @[31:91-31:107] 
+['font-size':'12px'] @[32:4-32:20] 
+['border-width':'1px'] @[33:4-33:22] 
+['font-size':'14px'] @[34:4-34:20] 
+['padding-top':'1px'] @[35:4-35:20] 
+['border-top-width':'1px'] @[undefined-undefined] 
+['border-right-width':'1px'] @[undefined-undefined] 
+['border-bottom-width':'1px'] @[undefined-undefined] 
+['border-left-width':'1px'] @[undefined-undefined] 
+['border-top-style':'solid'] @[undefined-undefined] 
+['border-right-style':'solid'] @[undefined-undefined] 
+['border-bottom-style':'solid'] @[undefined-undefined] 
+['border-left-style':'solid'] @[undefined-undefined] 
+['border-top-color':'initial'] @[undefined-undefined] 
+['border-right-color':'initial'] @[undefined-undefined] 
+['border-bottom-color':'initial'] @[undefined-undefined] 
+['border-left-color':'initial'] @[undefined-undefined] 
+['border-image-source':'initial'] @[undefined-undefined] 
+['border-image-slice':'initial'] @[undefined-undefined] 
+['border-image-width':'initial'] @[undefined-undefined] 
+['border-image-outset':'initial'] @[undefined-undefined] 
+['border-image-repeat':'initial'] @[undefined-undefined] 
 
