@@ -4,7 +4,7 @@
   <div class="content-area">
     <div i18n-content="changePicturePageDescription"></div>
     <div id="user-images-area">
-      <grid id="user-image-grid" class="user-image-picker"></grid>
+      <grid id="user-image-grid" class="user-image-picker" tabindex="1"></grid>
       <div id="user-image-preview">
         <img id="user-image-preview-img" i18n-values="alt:previewAltText">
         <div class="user-image-stream-area">
@@ -15,9 +15,12 @@
           </div>
           <div class="spinner"></div>
         </div>
-        <button id="flip-photo" class="custom-appearance"></button>
-        <button id="discard-photo"></button>
-        <button id="take-photo"></button>
+        <button id="discard-photo" i18n-values="title:discardPhoto"
+            tabindex="2"></button>
+        <button id="take-photo" i18n-values="title:takePhoto" tabindex="2">
+        </button>
+        <button id="flip-photo" class="custom-appearance"
+            i18n-values="title:flipPhoto" tabindex="1"></button>
       </div>
     </div>
     <div id="user-image-attribution">
@@ -28,7 +31,8 @@
   </div>
   <div class="action-area">
     <div class="button-strip">
-      <button id="change-picture-overlay-confirm" i18n-content="done"></button>
+      <button id="change-picture-overlay-confirm" i18n-content="done"
+              tabindex="2"></button>
     </div>
   </div>
 </div>

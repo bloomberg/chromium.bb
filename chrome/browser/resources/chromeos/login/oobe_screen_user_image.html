@@ -5,7 +5,7 @@
          i18n-content="userImageScreenDescription"></p>
     </div>
     <div id="user-image-screen-main">
-      <grid id="user-image-grid"
+      <grid id="user-image-grid" tabindex="1"
           aria-labelledby="user-image-screen-description">
       </grid>
       <div id="user-image-preview">
@@ -19,10 +19,12 @@
           <div class="spinner"></div>
         </div>
         <p id="user-image-preview-caption"></p>
-        <button id="discard-photo" i18n-values="title:discardPhoto"></button>
-        <button id="take-photo" i18n-values="title:takePhoto"></button>
+        <button id="discard-photo" i18n-values="title:discardPhoto"
+            tabindex="2"></button>
+        <button id="take-photo" i18n-values="title:takePhoto" tabindex="2">
+        </button>
         <button id="flip-photo" class="custom-appearance"
-            i18n-values="title:flipPhoto"></button>
+            i18n-values="title:flipPhoto" tabindex="1"></button>
       </div>
       <div id="user-image-attribution">
         <span i18n-content="authorCredit"></span>

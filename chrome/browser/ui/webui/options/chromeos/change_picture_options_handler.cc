@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/options/chromeos/change_picture_options_handler.h"
 
+#include "ash/audio/sounds.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -24,10 +25,12 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "chromeos/audio/chromeos_sounds.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/url_constants.h"
+#include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/data_url.h"
@@ -82,6 +85,13 @@ ChangePictureOptionsHandler::ChangePictureOptionsHandler()
       content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
       content::NotificationService::AllSources());
+
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  media::SoundsManager* manager = media::SoundsManager::Get();
+  manager->Initialize(SOUND_OBJECT_DELETE,
+                      bundle.GetRawDataResource(IDR_SOUND_OBJECT_DELETE_WAV));
+  manager->Initialize(SOUND_CAMERA_SNAP,
+                      bundle.GetRawDataResource(IDR_SOUND_CAMERA_SNAP_WAV));
 }
 
 ChangePictureOptionsHandler::~ChangePictureOptionsHandler() {
@@ -100,6 +110,10 @@ void ChangePictureOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TEXT));
   localized_strings->SetString("takePhoto",
       l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_TAKE_PHOTO));
+  localized_strings->SetString("discardPhoto",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_DISCARD_PHOTO));
+  localized_strings->SetString("flipPhoto",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_FLIP_PHOTO));
   localized_strings->SetString("chooseFile",
       l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_CHOOSE_FILE));
   localized_strings->SetString("profilePhoto",
@@ -113,6 +127,10 @@ void ChangePictureOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_SET_WALLPAPER_AUTHOR_TEXT));
   localized_strings->SetString("photoFromCamera",
       l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_PHOTO_FROM_CAMERA));
+  localized_strings->SetString("photoFlippedAccessibleText",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_PHOTO_FLIP_ACCESSIBLE_TEXT));
+  localized_strings->SetString("photoFlippedBackAccessibleText",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_PHOTO_FLIPBACK_ACCESSIBLE_TEXT));
   localized_strings->SetString("photoCaptureAccessibleText",
       l10n_util::GetStringUTF16(IDS_OPTIONS_PHOTO_CAPTURE_ACCESSIBLE_TEXT));
   localized_strings->SetString("photoDiscardAccessibleText",
@@ -123,8 +141,14 @@ void ChangePictureOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("chooseFile",
       base::Bind(&ChangePictureOptionsHandler::HandleChooseFile,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("takePhoto",
+      base::Bind(&ChangePictureOptionsHandler::HandleTakePhoto,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("photoTaken",
       base::Bind(&ChangePictureOptionsHandler::HandlePhotoTaken,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("discardPhoto",
+      base::Bind(&ChangePictureOptionsHandler::HandleDiscardPhoto,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("checkCameraPresence",
       base::Bind(&ChangePictureOptionsHandler::HandleCheckCameraPresence,
@@ -149,6 +173,7 @@ void ChangePictureOptionsHandler::SendDefaultImages() {
         "author", l10n_util::GetStringUTF16(kDefaultImageAuthorIDs[i]));
     image_data->SetString(
         "website", l10n_util::GetStringUTF16(kDefaultImageWebsiteIDs[i]));
+    image_data->SetString("title", GetDefaultImageDescription(i));
     image_urls.Append(image_data.release());
   }
   web_ui()->CallJavascriptFunction("ChangePictureOptions.setDefaultImages",
@@ -180,6 +205,18 @@ void ChangePictureOptionsHandler::HandleChooseFile(
       FILE_PATH_LITERAL(""),
       GetBrowserWindow(),
       NULL);
+}
+
+void ChangePictureOptionsHandler::HandleTakePhoto(
+    const base::ListValue* args) {
+  DCHECK(args->empty());
+  ash::PlaySystemSoundIfSpokenFeedback(SOUND_CAMERA_SNAP);
+}
+
+void ChangePictureOptionsHandler::HandleDiscardPhoto(
+    const base::ListValue* args) {
+  DCHECK(args->empty());
+  ash::PlaySystemSoundIfSpokenFeedback(SOUND_OBJECT_DELETE);
 }
 
 void ChangePictureOptionsHandler::HandlePhotoTaken(

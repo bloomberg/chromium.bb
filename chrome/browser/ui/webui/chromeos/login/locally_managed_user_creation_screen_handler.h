@@ -124,6 +124,8 @@ class LocallyManagedUserCreationScreenHandler : public BaseScreenHandler {
 
   void HandleGetImages();
   void HandlePhotoTaken(const std::string& image_url);
+  void HandleTakePhoto();
+  void HandleDiscardPhoto();
   void HandleCheckCameraPresence();
   void HandleSelectImage(const std::string& image_url,
                          const std::string& image_type);

@@ -224,6 +224,10 @@ html[dir=rtl] #flip-photo {
 
 #user-image-preview .perspective-box {
   -webkit-perspective: 600px;
+  border: solid 1px #cacaca;
+  border-radius: 4px;
+  padding: 2px;
+  width: 220px;
 }
 
 #user-image-attribution {

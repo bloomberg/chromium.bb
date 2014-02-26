@@ -4,19 +4,24 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/user_image_screen_handler.h"
 
+#include "ash/audio/sounds.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
+#include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "chromeos/audio/chromeos_sounds.h"
+#include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "net/base/data_url.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
 namespace {
@@ -32,6 +37,12 @@ UserImageScreenHandler::UserImageScreenHandler()
       screen_(NULL),
       show_on_init_(false),
       is_ready_(false) {
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  media::SoundsManager* manager = media::SoundsManager::Get();
+  manager->Initialize(SOUND_OBJECT_DELETE,
+                      bundle.GetRawDataResource(IDR_SOUND_OBJECT_DELETE_WAV));
+  manager->Initialize(SOUND_CAMERA_SNAP,
+                      bundle.GetRawDataResource(IDR_SOUND_CAMERA_SNAP_WAV));
 }
 
 UserImageScreenHandler::~UserImageScreenHandler() {
@@ -89,6 +100,10 @@ void UserImageScreenHandler::DeclareLocalizedValues(
   builder->Add("okButtonText", IDS_OK);
   builder->Add("authorCredit", IDS_OPTIONS_SET_WALLPAPER_AUTHOR_TEXT);
   builder->Add("photoFromCamera", IDS_OPTIONS_CHANGE_PICTURE_PHOTO_FROM_CAMERA);
+  builder->Add("photoFlippedAccessibleText",
+               IDS_OPTIONS_PHOTO_FLIP_ACCESSIBLE_TEXT);
+  builder->Add("photoFlippedBackAccessibleText",
+               IDS_OPTIONS_PHOTO_FLIPBACK_ACCESSIBLE_TEXT);
   builder->Add("photoCaptureAccessibleText",
                IDS_OPTIONS_PHOTO_CAPTURE_ACCESSIBLE_TEXT);
   builder->Add("photoDiscardAccessibleText",
@@ -99,6 +114,8 @@ void UserImageScreenHandler::DeclareLocalizedValues(
 void UserImageScreenHandler::RegisterMessages() {
   AddCallback("getImages", &UserImageScreenHandler::HandleGetImages);
   AddCallback("screenReady", &UserImageScreenHandler::HandleScreenReady);
+  AddCallback("takePhoto", &UserImageScreenHandler::HandleTakePhoto);
+  AddCallback("discardPhoto", &UserImageScreenHandler::HandleDiscardPhoto);
   AddCallback("photoTaken", &UserImageScreenHandler::HandlePhotoTaken);
   AddCallback("selectImage", &UserImageScreenHandler::HandleSelectImage);
   AddCallback("checkCameraPresence",
@@ -165,6 +182,14 @@ void UserImageScreenHandler::HandlePhotoTaken(const std::string& image_url) {
 
   if (screen_)
     screen_->OnPhotoTaken(raw_data);
+}
+
+void UserImageScreenHandler::HandleTakePhoto() {
+  ash::PlaySystemSoundIfSpokenFeedback(SOUND_CAMERA_SNAP);
+}
+
+void UserImageScreenHandler::HandleDiscardPhoto() {
+  ash::PlaySystemSoundIfSpokenFeedback(SOUND_OBJECT_DELETE);
 }
 
 void UserImageScreenHandler::HandleCheckCameraPresence() {

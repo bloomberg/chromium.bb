@@ -108,10 +108,7 @@ cr.define('login', function() {
 
       // Toggle 'animation' class for the duration of WebKit transition.
       $('flip-photo').addEventListener(
-          'click', function(e) {
-            previewElement.classList.add('animation');
-            imageGrid.flipPhoto = !imageGrid.flipPhoto;
-          });
+          'click', this.handleFlipPhoto_.bind(this));
       $('user-image-stream-crop').addEventListener(
           'webkitTransitionEnd', function(e) {
             previewElement.classList.remove('animation');
@@ -198,7 +195,7 @@ cr.define('login', function() {
 
       // Camera selection
       if (imageGrid.selectionType == 'camera') {
-        $('flip-photo').tabIndex = 0;
+        $('flip-photo').tabIndex = 1;
         // No current image selected.
         if (imageGrid.cameraLive) {
           imageGrid.previewElement.classList.remove('phototaken');
@@ -242,10 +239,24 @@ cr.define('login', function() {
     },
 
     /**
+     * Handle camera-photo flip.
+     */
+    handleFlipPhoto_: function() {
+      var imageGrid = $('user-image-grid');
+      imageGrid.previewElement.classList.add('animation');
+      imageGrid.flipPhoto = !imageGrid.flipPhoto;
+      var flipMessageId = imageGrid.flipPhoto ?
+         'photoFlippedAccessibleText' : 'photoFlippedBackAccessibleText';
+      this.announceAccessibleMessage_(
+          loadTimeData.getString(flipMessageId));
+    },
+
+    /**
      * Handle photo capture from the live camera stream.
      */
     handleTakePhoto_: function(e) {
       $('user-image-grid').takePhoto();
+      chrome.send('takePhoto');
     },
 
     /**
@@ -272,6 +283,7 @@ cr.define('login', function() {
     handleDiscardPhoto_: function(e) {
       var imageGrid = $('user-image-grid');
       imageGrid.discardPhoto();
+      chrome.send('discardPhoto');
       this.announceAccessibleMessage_(
           loadTimeData.getString('photoDiscardAccessibleText'));
     },

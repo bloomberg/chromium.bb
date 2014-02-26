@@ -2115,6 +2115,12 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_CHANGE_PICTURE_FLIP_PHOTO" desc="The text on the button to flip the camera image horizontally.">
     Flip camera image horizontally
   </message>
+  <message name="IDS_OPTIONS_PHOTO_FLIP_ACCESSIBLE_TEXT" desc="The accessible message to speak to announce horizontal flip of camera image.">
+    Photo flipped
+  </message>
+  <message name="IDS_OPTIONS_PHOTO_FLIPBACK_ACCESSIBLE_TEXT" desc="The accessible message to speak to announce horizontal back-flip of camera image to not-flipped state.">
+    Photo flipped back
+  </message>
   <message name="IDS_OPTIONS_CHANGE_PICTURE_PREVIEW_ALT" desc="Alt text for the big preview of user image.">
     User image preview
   </message>

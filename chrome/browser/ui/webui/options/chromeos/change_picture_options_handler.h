@@ -68,8 +68,14 @@ class ChangePictureOptionsHandler : public ::options::OptionsPageUIHandler,
   // Opens a file selection dialog to choose user image from file.
   void HandleChooseFile(const base::ListValue* args);
 
+  // Handles 'take-photo' button click.
+  void HandleTakePhoto(const base::ListValue* args);
+
   // Handles photo taken with WebRTC UI.
   void HandlePhotoTaken(const base::ListValue* args);
+
+  // Handles 'discard-photo' button click.
+  void HandleDiscardPhoto(const base::ListValue* args);
 
   // Handles camera presence check request.
   void HandleCheckCameraPresence(const base::ListValue* args);
