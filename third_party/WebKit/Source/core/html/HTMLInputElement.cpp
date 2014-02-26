@@ -166,7 +166,7 @@ HTMLInputElement::~HTMLInputElement()
     // setForm(0) may register this to a document-level radio button group.
     // We should unregister it to avoid accessing a deleted object.
     if (isRadioButton())
-        document().formController()->radioButtonGroupScope().removeButton(this);
+        document().formController().radioButtonGroupScope().removeButton(this);
     if (m_hasTouchEventHandler)
         document().didRemoveTouchEventHandler(this);
 }
@@ -1433,7 +1433,7 @@ void HTMLInputElement::didMoveToNewDocument(Document& oldDocument)
         imageLoader()->elementDidMoveToNewDocument();
 
     if (isRadioButton())
-        oldDocument.formController()->radioButtonGroupScope().removeButton(this);
+        oldDocument.formController().radioButtonGroupScope().removeButton(this);
     if (m_hasTouchEventHandler)
         oldDocument.didRemoveTouchEventHandler(this);
 
@@ -1726,7 +1726,7 @@ RadioButtonGroupScope* HTMLInputElement::radioButtonGroupScope() const
     if (HTMLFormElement* formElement = form())
         return &formElement->radioButtonGroupScope();
     if (inDocument())
-        return &document().formController()->radioButtonGroupScope();
+        return &document().formController().radioButtonGroupScope();
     return 0;
 }
 

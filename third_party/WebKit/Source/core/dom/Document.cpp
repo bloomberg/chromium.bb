@@ -1431,11 +1431,11 @@ Node::NodeType Document::nodeType() const
     return DOCUMENT_NODE;
 }
 
-FormController* Document::formController()
+FormController& Document::formController()
 {
     if (!m_formController)
         m_formController = FormController::create();
-    return m_formController.get();
+    return *m_formController;
 }
 
 Vector<String> Document::formElementsState() const
@@ -1449,7 +1449,7 @@ void Document::setStateForNewFormElements(const Vector<String>& stateVector)
 {
     if (!stateVector.size() && !m_formController)
         return;
-    formController()->setStateForNewFormElements(stateVector);
+    formController().setStateForNewFormElements(stateVector);
 }
 
 FrameView* Document::view() const

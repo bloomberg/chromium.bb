@@ -84,7 +84,7 @@ PassRefPtr<HTMLFormElement> HTMLFormElement::create(Document& document)
 
 HTMLFormElement::~HTMLFormElement()
 {
-    document().formController()->willDeleteForm(this);
+    document().formController().willDeleteForm(this);
 }
 
 bool HTMLFormElement::rendererIsNeeded(const RenderStyle& style)
@@ -775,7 +775,7 @@ bool HTMLFormElement::shouldAutocomplete() const
 void HTMLFormElement::finishParsingChildren()
 {
     HTMLElement::finishParsingChildren();
-    document().formController()->restoreControlStateIn(*this);
+    document().formController().restoreControlStateIn(*this);
     m_didFinishParsingChildren = true;
 }
 
