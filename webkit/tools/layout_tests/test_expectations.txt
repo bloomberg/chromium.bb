@@ -33,6 +33,8 @@
 
 Bug(dcarney) http/tests/security/naked-global-object.html [ NeedsManualRebaseline ]
 
+crbug.com/342077 [ Linux Android ] fast/text/chromium-linux-fontconfig-renderstyle.html [ NeedsRebaseline ]
+
 # Can be removed after we've rolled to r164251 and are using test_expectations_w3c.txt as well.
 crbug.com/330086 w3c/web-platform-tests/html-templates/additions-to-parsing-xhtml-documents/node-document.html [ Failure ]
 crbug.com/330086 w3c/web-platform-tests/html-templates/additions-to-parsing-xhtml-documents/template-child-nodes.html [ Failure ]
