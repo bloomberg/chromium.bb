@@ -589,9 +589,14 @@ void Combobox::UpdateFromModel() {
 
   int num_items = model()->GetItemCount();
   int width = 0;
+  bool text_item_appended = false;
   for (int i = 0; i < num_items; ++i) {
+    // When STYLE_ACTION is used, the first item and the following separators
+    // are not added to the dropdown menu. It is assumed that the first item is
+    // always selected and rendered on the top of the action button.
     if (model()->IsItemSeparatorAt(i)) {
-      menu->AppendSeparator();
+      if (text_item_appended || style_ != STYLE_ACTION)
+        menu->AppendSeparator();
       continue;
     }
 
@@ -601,7 +606,10 @@ void Combobox::UpdateFromModel() {
     // text is displayed correctly in right-to-left UIs.
     base::i18n::AdjustStringForLocaleDirection(&text);
 
-    menu->AppendMenuItem(i + kFirstMenuItemId, text, MenuItemView::NORMAL);
+    if (style_ != STYLE_ACTION || i > 0) {
+      menu->AppendMenuItem(i + kFirstMenuItemId, text, MenuItemView::NORMAL);
+      text_item_appended = true;
+    }
 
     if (style_ != STYLE_ACTION || i == selected_index_)
       width = std::max(width, gfx::GetStringWidth(text, font_list));
