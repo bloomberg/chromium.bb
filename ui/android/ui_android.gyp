@@ -20,6 +20,18 @@
       'includes': [ '../../build/android/java_cpp_template.gypi' ],
     },
     {
+      'target_name': 'bitmap_format_java',
+      'type': 'none',
+      'sources': [
+        'java/BitmapFormat.template',
+      ],
+      'variables': {
+        'package_name': 'org/chromium/ui/gfx',
+        'template_deps': ['../gfx/android/bitmap_config_list.h'],
+      },
+      'includes': [ '../../build/android/java_cpp_template.gypi' ],
+    },
+    {
       'target_name': 'ui_java',
       'type': 'none',
       'variables': {
@@ -32,6 +44,7 @@
       'dependencies': [
         '../../base/base.gyp:base_java',
         'window_open_disposition_java',
+        'bitmap_format_java',
       ],
       'includes': [ '../../build/java.gypi' ],
     },

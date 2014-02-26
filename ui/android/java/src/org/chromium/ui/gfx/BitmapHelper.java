@@ -75,4 +75,26 @@ public class BitmapHelper {
 
         return inSampleSize;
     }
+
+    /**
+     * Provides a matching integer constant for the Bitmap.Config value passed.
+     *
+     * @param bitmapConfig The Bitmap Configuration value.
+     * @return Matching integer constant for the Bitmap.Config value passed.
+     */
+    @CalledByNative
+    private static int bitmapConfig(Bitmap.Config bitmapConfig) {
+        switch (bitmapConfig) {
+            case ALPHA_8:
+                return BitmapFormat.FORMAT_ALPHA_8;
+            case ARGB_4444:
+                return BitmapFormat.FORMAT_ARGB_4444;
+            case ARGB_8888:
+                return BitmapFormat.FORMAT_ARGB_8888;
+            case RGB_565:
+                return BitmapFormat.FORMAT_RGB_565;
+            default:
+                return BitmapFormat.FORMAT_NO_CONFIG;
+        }
+    }
 }

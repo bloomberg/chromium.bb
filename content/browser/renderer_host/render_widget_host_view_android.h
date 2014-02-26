@@ -226,6 +226,7 @@ class RenderWidgetHostViewAndroid
 
   void GetScaledContentBitmap(
       float scale,
+      SkBitmap::Config bitmap_config,
       const base::Callback<void(bool, const SkBitmap&)>& result_callback);
   bool PopulateBitmapWithContents(jobject jbitmap);
 

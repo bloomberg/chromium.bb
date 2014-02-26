@@ -253,6 +253,7 @@ void RenderWidgetHostViewAndroid::SetBounds(const gfx::Rect& rect) {
 
 void RenderWidgetHostViewAndroid::GetScaledContentBitmap(
     float scale,
+    SkBitmap::Config bitmap_config,
     const base::Callback<void(bool, const SkBitmap&)>& result_callback) {
   if (!IsSurfaceAvailableForCopy()) {
     result_callback.Run(false, SkBitmap());
@@ -268,7 +269,7 @@ void RenderWidgetHostViewAndroid::GetScaledContentBitmap(
   gfx::Size dst_size(
       gfx::ToCeiledSize(gfx::ScaleSize(bounds, scale / device_scale_factor)));
   CopyFromCompositingSurface(
-      src_subrect, dst_size, result_callback, SkBitmap::kARGB_8888_Config);
+      src_subrect, dst_size, result_callback, bitmap_config);
 }
 
 bool RenderWidgetHostViewAndroid::PopulateBitmapWithContents(jobject jbitmap) {

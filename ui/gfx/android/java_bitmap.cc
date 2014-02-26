@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "jni/BitmapHelper_jni.h"
 #include "skia/ext/image_operations.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/size.h"
 
 using base::android::AttachCurrentThread;
@@ -100,6 +99,24 @@ SkBitmap CreateSkBitmapFromResource(const char* name, gfx::Size size) {
   SkBitmap bitmap = CreateSkBitmapFromJavaBitmap(jbitmap);
   return skia::ImageOperations::Resize(
       bitmap, skia::ImageOperations::RESIZE_BOX, size.width(), size.height());
+}
+
+SkBitmap::Config ConvertToSkiaConfig(jobject bitmap_config) {
+  int jbitmap_config =
+      Java_BitmapHelper_bitmapConfig(AttachCurrentThread(), bitmap_config);
+  switch (jbitmap_config) {
+    case BITMAP_FORMAT_ALPHA_8:
+      return SkBitmap::kA8_Config;
+    case BITMAP_FORMAT_ARGB_4444:
+      return SkBitmap::kARGB_4444_Config;
+    case BITMAP_FORMAT_ARGB_8888:
+      return SkBitmap::kARGB_8888_Config;
+    case BITMAP_FORMAT_RGB_565:
+      return SkBitmap::kRGB_565_Config;
+    case BITMAP_FORMAT_NO_CONFIG:
+    default:
+      return SkBitmap::kNo_Config;
+  }
 }
 
 }  //  namespace gfx

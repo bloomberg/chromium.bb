@@ -698,14 +698,15 @@ void ContentViewCoreImpl::ShowPastePopup(int x_dip, int y_dip) {
 
 void ContentViewCoreImpl::GetScaledContentBitmap(
     float scale,
+    jobject jbitmap_config,
     const base::Callback<void(bool, const SkBitmap&)>& result_callback) {
   RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
   if (!view) {
     result_callback.Run(false, SkBitmap());
     return;
   }
-
-  view->GetScaledContentBitmap(scale, result_callback);
+  SkBitmap::Config skbitmap_format = gfx::ConvertToSkiaConfig(jbitmap_config);
+  view->GetScaledContentBitmap(scale, skbitmap_format, result_callback);
 }
 
 void ContentViewCoreImpl::StartContentIntent(const GURL& content_url) {

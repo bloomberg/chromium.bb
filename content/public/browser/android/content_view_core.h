@@ -56,6 +56,7 @@ class CONTENT_EXPORT ContentViewCore {
   // |out_size| is returned with the size of the content.
   virtual void GetScaledContentBitmap(
       float scale,
+      jobject bitmap_config,
       const base::Callback<void(bool, const SkBitmap&)>& result_callback) = 0;
   virtual float GetDpiScale() const = 0;
   virtual void PauseVideo() = 0;
