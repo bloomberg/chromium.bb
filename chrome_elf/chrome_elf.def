@@ -8,4 +8,7 @@ EXPORTS
   CreateFileW=CreateFileWRedirect
   GetRedirectCount
   IsBlacklistInitialized
+  kRegistryBeaconPath
+  kBeaconVersion
+  kBeaconState
   SignalChromeElf
