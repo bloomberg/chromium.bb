@@ -69,8 +69,8 @@ function test()
 
     var groupMessages = messagesElement.querySelector(".console-group-messages");
 
-    var url1 = groupMessages.childNodes[0].message.url;
-    var url2 = groupMessages.childNodes[1].message.url;
+    var url1 = groupMessages.childNodes[0].message.consoleMessage().url;
+    var url2 = groupMessages.childNodes[1].message.consoleMessage().url;
 
     InspectorTest.runTestSuite([
         function beforeFilter(next)

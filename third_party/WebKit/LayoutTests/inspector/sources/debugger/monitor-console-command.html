@@ -73,7 +73,7 @@ var test = function()
                 return;
             }
 
-            InspectorTest.addResult("Console message received: " + message.message);
+            InspectorTest.addResult("Console message received: " + message.messageText);
             InspectorTest.evaluateInConsole("unmonitor(" + functionName + ")");
             InspectorTest.addResult("Stop monitoring.");
             next();

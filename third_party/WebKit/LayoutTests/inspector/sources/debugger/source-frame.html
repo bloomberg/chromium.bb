@@ -55,7 +55,7 @@ function test()
             {
                 if (this !== shownSourceFrame)
                     return;
-                InspectorTest.addResult("Message added to source frame: " + message.message);
+                InspectorTest.addResult("Message added to source frame: " + message.messageText);
                 WebInspector.console.requestClearMessages();
             }
 
