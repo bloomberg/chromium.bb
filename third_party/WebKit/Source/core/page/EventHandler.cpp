@@ -2860,7 +2860,8 @@ bool EventHandler::sendContextMenuEventForKey()
 
     PlatformMouseEvent mouseEvent(position, globalPosition, RightButton, eventType, 1, false, false, false, false, WTF::currentTime());
 
-    return !dispatchMouseEvent(EventTypeNames::contextmenu, targetNode, true, 0, mouseEvent, false);
+    handleMousePressEvent(mouseEvent);
+    return sendContextMenuEvent(mouseEvent);
 }
 
 bool EventHandler::sendContextMenuEventForGesture(const PlatformGestureEvent& event)

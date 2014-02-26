@@ -741,6 +741,9 @@ crbug.com/315514 [ Linux ] storage/websql/test-authorizer.html [ Failure ]
 
 crbug.com/315913 [ Win7 Debug ] editing/spelling/inline-spelling-markers-hidpi.html [ ImageOnlyFailure ]
 
+# Macs do not support keyboard events to show a context menu.
+crbug.com/345913 [ Mac ] editing/spelling/spelling-on-context-menu-key.html [ Failure ]
+
 crbug.com/316349 [ Mac Debug ] inspector-protocol/page/enable-disable.html [ Failure Pass ]
 
 crbug.com/316460 [ Mac ] svg/as-object/nested-embedded-svg-size-changes.html [ Failure Pass ]

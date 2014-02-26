@@ -1,0 +1,11 @@
+Spell check selects the misspelled word on context menu key. To test manually, type 'wellcome home.' place the cursor on 'wellcome', and press the context menu key. The test succeeds when 'wellcome' is selected after the context menu key.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS window.getSelection().toString() is "wellcome"
+PASS window.getSelection().toString() is "wellcome"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+wellcome home.
