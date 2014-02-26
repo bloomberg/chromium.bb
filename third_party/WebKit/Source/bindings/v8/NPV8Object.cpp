@@ -556,7 +556,7 @@ bool _NPN_Enumerate(NPP npp, NPObject* npObject, NPIdentifier** identifier, uint
         // Convert the results into an array of NPIdentifiers.
         v8::Handle<v8::Array> props = v8::Handle<v8::Array>::Cast(propsObj);
         *count = props->Length();
-        *identifier = static_cast<NPIdentifier*>(malloc(sizeof(NPIdentifier*) * *count));
+        *identifier = static_cast<NPIdentifier*>(calloc(*count, sizeof(NPIdentifier)));
         for (uint32_t i = 0; i < *count; ++i) {
             v8::Local<v8::Value> name = props->Get(v8::Integer::New(context->GetIsolate(), i));
             (*identifier)[i] = getStringIdentifier(v8::Local<v8::String>::Cast(name));
