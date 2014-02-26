@@ -1,17 +1,16 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/ime/ibus_keymap.h"
+#include "ui/base/ime/chromeos/ime_keymap.h"
 
 #define XK_MISCELLANY
 #include <X11/keysymdef.h>
 #include <X11/XF86keysym.h>
 
-namespace chromeos {
-namespace input_method {
+namespace ui {
 
-std::string GetIBusKey(int keyval) {
+std::string FromXKeycodeToKeyValue(int keyval) {
   // TODO: Ensure all keys are supported.
   switch (keyval) {
     case XK_Escape:
@@ -99,5 +98,4 @@ std::string GetIBusKey(int keyval) {
   }
 }
 
-}  // namespace input_method
-}  // namespace chromeos
+}  // namespace ui

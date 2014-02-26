@@ -219,8 +219,6 @@
         'ime/extension_ime_util.h',
         'ime/fake_xkeyboard.cc',
         'ime/fake_xkeyboard.h',
-        'ime/ibus_keymap.cc',
-        'ime/ibus_keymap.h',
         'ime/composition_text.cc',
         'ime/composition_text.h',
         'ime/input_method_delegate.h',

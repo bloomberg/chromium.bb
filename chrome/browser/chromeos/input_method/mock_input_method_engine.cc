@@ -14,7 +14,6 @@
 #include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/composition_text.h"
 #include "chromeos/ime/extension_ime_util.h"
-#include "chromeos/ime/ibus_keymap.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "ui/base/ime/candidate_window.h"
 #include "ui/events/event.h"

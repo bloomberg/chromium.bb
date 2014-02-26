@@ -13,6 +13,8 @@
     'chromeos/character_composer.h',
     'chromeos/ime_bridge.cc',
     'chromeos/ime_bridge.h',
+    'chromeos/ime_keymap.cc',
+    'chromeos/ime_keymap.h',
     'chromeos/mock_ime_candidate_window_handler.cc',
     'chromeos/mock_ime_candidate_window_handler.h',
     'chromeos/mock_ime_engine_handler.cc',

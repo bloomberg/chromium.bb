@@ -25,11 +25,11 @@
 #include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/composition_text.h"
 #include "chromeos/ime/extension_ime_util.h"
-#include "chromeos/ime/ibus_keymap.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ime/candidate_window.h"
+#include "ui/base/ime/chromeos/ime_keymap.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
@@ -531,7 +531,7 @@ void GetExtensionKeyboardEventFromKeyEvent(
   ext_event->shift_key = event.IsShiftDown();
   ext_event->caps_lock = event.IsCapsLockDown();
 
-  uint32 ibus_keyval = 0;
+  uint32 x11_keysym = 0;
   if (event.HasNativeEvent()) {
     const base::NativeEvent& native_event = event.native_event();
     DCHECK(native_event);
@@ -539,7 +539,7 @@ void GetExtensionKeyboardEventFromKeyEvent(
     XKeyEvent* x_key = &(static_cast<XEvent*>(native_event)->xkey);
     KeySym keysym = NoSymbol;
     ::XLookupString(x_key, NULL, 0, &keysym, NULL);
-    ibus_keyval = keysym;
+    x11_keysym = keysym;
   } else {
     // Convert ui::KeyEvent.key_code to DOM UIEvent key.
     // XKeysymForWindowsKeyCode converts key_code to XKeySym, but it
@@ -547,10 +547,10 @@ void GetExtensionKeyboardEventFromKeyEvent(
     //
     // TODO(komatsu): Support CapsLock states.
     // TODO(komatsu): Support non-us keyboard layouts.
-    ibus_keyval = ui::XKeysymForWindowsKeyCode(event.key_code(),
-                                               event.IsShiftDown());
+    x11_keysym = ui::XKeysymForWindowsKeyCode(event.key_code(),
+                                              event.IsShiftDown());
   }
-  ext_event->key = input_method::GetIBusKey(ibus_keyval);
+  ext_event->key = ui::FromXKeycodeToKeyValue(x11_keysym);
 }
 }  // namespace
 
