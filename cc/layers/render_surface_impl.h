@@ -25,8 +25,6 @@ class DelegatedRendererLayerImpl;
 class QuadSink;
 class RenderPassSink;
 class LayerImpl;
-template <typename LayerType>
-class LayerIterator;
 
 struct AppendQuadsData;
 
@@ -176,7 +174,7 @@ class CC_EXPORT RenderSurfaceImpl {
   int target_render_surface_layer_index_history_;
   int current_layer_index_history_;
 
-  friend class LayerIterator<LayerImpl>;
+  friend struct LayerIteratorActions;
 
   DISALLOW_COPY_AND_ASSIGN(RenderSurfaceImpl);
 };

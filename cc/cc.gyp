@@ -162,6 +162,7 @@
         'layers/layer_client.h',
         'layers/layer_impl.cc',
         'layers/layer_impl.h',
+        'layers/layer_iterator.cc',
         'layers/layer_iterator.h',
         'layers/layer_lists.cc',
         'layers/layer_lists.h',

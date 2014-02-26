@@ -91,8 +91,12 @@ TEST_F(OcclusionTrackerPerfTest, UnoccludedContentRect_FullyOccluded) {
   ASSERT_EQ(1u, rsll.size());
   EXPECT_EQ(1u, rsll[0]->render_surface()->layer_list().size());
 
-  LayerIterator<LayerImpl> begin = LayerIterator<LayerImpl>::Begin(&rsll);
-  LayerIterator<LayerImpl> end = LayerIterator<LayerImpl>::End(&rsll);
+  typedef LayerIterator<LayerImpl,
+                        LayerImpl::LayerListType,
+                        LayerImpl::RenderSurfaceType,
+                        LayerIteratorActions::FrontToBack> IteratorType;
+  IteratorType begin = IteratorType::Begin(&rsll);
+  IteratorType end = IteratorType::End(&rsll);
 
   LayerIteratorPosition<LayerImpl> pos = begin;
 
@@ -166,8 +170,12 @@ TEST_F(OcclusionTrackerPerfTest, UnoccludedContentRect_10OpaqueLayers) {
   EXPECT_EQ(static_cast<size_t>(kNumOpaqueLayers),
             rsll[0]->render_surface()->layer_list().size());
 
-  LayerIterator<LayerImpl> begin = LayerIterator<LayerImpl>::Begin(&rsll);
-  LayerIterator<LayerImpl> end = LayerIterator<LayerImpl>::End(&rsll);
+  typedef LayerIterator<LayerImpl,
+                        LayerImpl::LayerListType,
+                        LayerImpl::RenderSurfaceType,
+                        LayerIteratorActions::FrontToBack> IteratorType;
+  IteratorType begin = IteratorType::Begin(&rsll);
+  IteratorType end = IteratorType::End(&rsll);
 
   // The opaque_layers add occlusion.
   for (int i = 0; i < kNumOpaqueLayers - 1; ++i) {
