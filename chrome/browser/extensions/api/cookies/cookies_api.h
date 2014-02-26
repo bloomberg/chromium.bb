@@ -196,7 +196,7 @@ class CookiesGetAllCookieStoresFunction : public CookiesFunction {
 class CookiesAPI : public ProfileKeyedAPI,
                    public extensions::EventRouter::Observer {
  public:
-  explicit CookiesAPI(Profile* profile);
+  explicit CookiesAPI(content::BrowserContext* context);
   virtual ~CookiesAPI();
 
   // BrowserContextKeyedService implementation.
@@ -212,7 +212,7 @@ class CookiesAPI : public ProfileKeyedAPI,
  private:
   friend class ProfileKeyedAPIFactory<CookiesAPI>;
 
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
 
   // ProfileKeyedAPI implementation.
   static const char* service_name() {

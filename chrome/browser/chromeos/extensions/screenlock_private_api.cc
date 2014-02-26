@@ -12,6 +12,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
+#include "ui/gfx/image/image.h"
 
 namespace screenlock = extensions::api::screenlock_private;
 
@@ -244,8 +245,9 @@ bool ScreenlockPrivateAcceptAuthAttemptFunction::RunImpl() {
   return true;
 }
 
-ScreenlockPrivateEventRouter::ScreenlockPrivateEventRouter(Profile* profile)
-    : profile_(profile) {
+ScreenlockPrivateEventRouter::ScreenlockPrivateEventRouter(
+    content::BrowserContext* context)
+    : browser_context_(context) {
   chromeos::SessionManagerClient* session_manager =
       chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
   if (!session_manager->HasObserver(this))
@@ -272,8 +274,9 @@ void ScreenlockPrivateEventRouter::DispatchEvent(
     args->Append(arg);
   scoped_ptr<extensions::Event> event(new extensions::Event(
       event_name, args.Pass()));
-  extensions::ExtensionSystem::Get(profile_)->event_router()->
-      BroadcastEvent(event.Pass());
+  extensions::ExtensionSystem::Get(browser_context_)
+      ->event_router()
+      ->BroadcastEvent(event.Pass());
 }
 
 static base::LazyInstance<extensions::ProfileKeyedAPIFactory<

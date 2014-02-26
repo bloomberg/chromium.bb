@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/feedback_private/feedback_service.h"
 #include "chrome/browser/feedback/tracing_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
 #include "grit/generated_resources.h"

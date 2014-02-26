@@ -31,7 +31,7 @@ const int kDevicePattern = 0xAAAAAAAA; // 10101010
 class MockOperationManager : public OperationManager {
  public:
   MockOperationManager();
-  explicit MockOperationManager(Profile* profile);
+  explicit MockOperationManager(content::BrowserContext* context);
   virtual ~MockOperationManager();
 
   MOCK_METHOD3(OnProgress, void(const ExtensionId& extension_id,

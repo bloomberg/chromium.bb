@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_PROFILE_KEYED_API_FACTORY_H_
 #define CHROME_BROWSER_EXTENSIONS_API_PROFILE_KEYED_API_FACTORY_H_
 
-#include "chrome/browser/profiles/incognito_helpers.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
@@ -61,15 +59,10 @@ class ProfileKeyedAPI : public BrowserContextKeyedService {
 template <typename T>
 class ProfileKeyedAPIFactory : public BrowserContextKeyedServiceFactory {
  public:
-  // TODO(yoz): Delete this one.
-  static T* GetForProfile(Profile* profile) {
-    return static_cast<T*>(
-        T::GetFactoryInstance()->GetServiceForBrowserContext(profile, true));
-  }
-
+  // TODO(yoz): Rename to Get().
   static T* GetForProfile(content::BrowserContext* context) {
-    return static_cast<T*>(T::GetFactoryInstance()->GetServiceForBrowserContext(
-        Profile::FromBrowserContext(context), true));
+    return static_cast<T*>(
+        T::GetFactoryInstance()->GetServiceForBrowserContext(context, true));
   }
 
   // Declare dependencies on other factories.
@@ -99,8 +92,8 @@ class ProfileKeyedAPIFactory : public BrowserContextKeyedServiceFactory {
  private:
   // BrowserContextKeyedServiceFactory implementation.
   virtual BrowserContextKeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE {
-    return new T(static_cast<Profile*>(profile));
+      content::BrowserContext* context) const OVERRIDE {
+    return new T(context);
   }
 
   // BrowserContextKeyedBaseFactory implementation.
@@ -108,10 +101,10 @@ class ProfileKeyedAPIFactory : public BrowserContextKeyedServiceFactory {
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE {
     if (T::kServiceRedirectedInIncognito)
-      return chrome::GetBrowserContextRedirectedInIncognito(context);
+      return ExtensionsBrowserClient::Get()->GetOriginalContext(context);
 
     if (T::kServiceHasOwnInstanceInIncognito)
-      return chrome::GetBrowserContextOwnInstanceInIncognito(context);
+      return context;
 
     return BrowserContextKeyedServiceFactory::GetBrowserContextToUse(context);
   }

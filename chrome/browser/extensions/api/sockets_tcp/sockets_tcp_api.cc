@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/api/socket/tcp_socket.h"
 #include "chrome/browser/extensions/api/sockets_tcp/tcp_socket_event_dispatcher.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/sockets/sockets_manifest_data.h"
 #include "content/public/common/socket_permission_request.h"
 #include "net/base/net_errors.h"

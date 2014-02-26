@@ -51,8 +51,8 @@ class ImageWriterFakeImageBurnerClient
 #endif
 
 MockOperationManager::MockOperationManager() : OperationManager(NULL) {}
-MockOperationManager::MockOperationManager(Profile* profile)
-    : OperationManager(profile) {}
+MockOperationManager::MockOperationManager(content::BrowserContext* context)
+    : OperationManager(context) {}
 MockOperationManager::~MockOperationManager() {}
 
 ImageWriterUnitTestBase::ImageWriterUnitTestBase()

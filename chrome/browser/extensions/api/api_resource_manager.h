@@ -88,9 +88,9 @@ class ApiResourceManager : public ProfileKeyedAPI,
 
   // For Testing.
   static ApiResourceManager<T>* CreateApiResourceManagerForTest(
-      Profile* profile,
+      content::BrowserContext* context,
       content::BrowserThread::ID thread_id) {
-    ApiResourceManager* manager = new ApiResourceManager<T>(profile);
+    ApiResourceManager* manager = new ApiResourceManager<T>(context);
     manager->thread_id_ = thread_id;
     manager->data_ = new ApiResourceData(thread_id);
     return manager;
