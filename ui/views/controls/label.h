@@ -43,10 +43,12 @@ class VIEWS_EXPORT Label : public View {
   };
 
   enum ElideBehavior {
-    NO_ELIDE,         // Do not elide the label text; truncate as needed.
-    ELIDE_IN_MIDDLE,  // Add ellipsis in the middle of the string as needed.
-    ELIDE_AT_END,     // Add ellipsis at the end of the string as needed.
-    ELIDE_AS_EMAIL,   // Elide while retaining username/domain chars as needed.
+    NO_ELIDE,            // Do not elide the label text; truncate as needed.
+    ELIDE_AT_BEGINNING,  // Add ellipsis at the start of the string as needed.
+    ELIDE_IN_MIDDLE,     // Add ellipsis in the middle of the string as needed.
+    ELIDE_AT_END,        // Add ellipsis at the end of the string as needed.
+    ELIDE_AS_EMAIL,      // Elide while retaining username/domain chars
+                         // as needed.
   };
 
   // Internal class name.
