@@ -36,7 +36,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/test_screen.h"
-#include "ui/compositor/test/test_context_factory.h"
+#include "ui/compositor/test/in_process_context_factory.h"
 #endif
 
 #if defined(OS_WIN) || defined(USE_AURA)
@@ -585,7 +585,7 @@ class RenderWidgetHostTest : public testing::Test {
     process_ = new RenderWidgetHostProcess(browser_context_.get());
 #if defined(USE_AURA)
     ImageTransportFactory::InitializeForUnitTests(
-        scoped_ptr<ui::ContextFactory>(new ui::TestContextFactory));
+        scoped_ptr<ui::ContextFactory>(new ui::InProcessContextFactory));
     aura::Env::CreateInstance();
     screen_.reset(aura::TestScreen::Create());
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());

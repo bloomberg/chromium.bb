@@ -5,8 +5,6 @@
 #include "content/test/content_test_suite.h"
 
 #include "base/base_paths.h"
-#include "base/base_switches.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "content/public/test/test_content_client_initializer.h"
@@ -14,12 +12,14 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if !defined(OS_IOS)
-#include "ui/gl/gl_surface.h"
-#endif
-
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
+#endif
+
+#if !defined(OS_IOS)
+#include "base/base_switches.h"
+#include "base/command_line.h"
+#include "ui/gl/gl_surface.h"
 #endif
 
 namespace {
@@ -70,14 +70,12 @@ void ContentTestSuite::Initialize() {
 #endif
 
   ContentTestSuiteBase::Initialize();
-
 #if !defined(OS_IOS)
   // When running in a child process for Mac sandbox tests, the sandbox exists
   // to initialize GL, so don't do it here.
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestChildProcess))
-    gfx::GLSurface::InitializeOneOffForTests();
+    gfx::GLSurface::InitializeOneOffForTests(true);
 #endif
-
   testing::TestEventListeners& listeners =
       testing::UnitTest::GetInstance()->listeners();
   listeners.Append(new TestInitializationListener);
