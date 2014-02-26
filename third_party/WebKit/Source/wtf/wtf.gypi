@@ -95,8 +95,6 @@
             'PrintStream.cpp',
             'PrintStream.h',
             'ProcessID.h',
-            'QuantizedAllocation.cpp',
-            'QuantizedAllocation.h',
             'RefCounted.h',
             'RefCountedLeakCounter.cpp',
             'RefCountedLeakCounter.h',

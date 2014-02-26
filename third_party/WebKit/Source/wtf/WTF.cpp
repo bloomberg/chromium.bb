@@ -33,7 +33,6 @@
 
 #include "wtf/DefaultAllocator.h"
 #include "wtf/FastMalloc.h"
-#include "wtf/QuantizedAllocation.h"
 
 #ifndef NDEBUG
 #include "wtf/MainThread.h"
@@ -81,7 +80,6 @@ void Partitions::initialize()
     spinLockLock(&lock);
     if (!s_initialized) {
         s_initialized = true;
-        QuantizedAllocation::init();
         m_bufferAllocator.init();
     }
     spinLockUnlock(&lock);

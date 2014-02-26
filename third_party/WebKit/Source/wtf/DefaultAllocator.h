@@ -38,7 +38,6 @@
 #include "wtf/Assertions.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/PartitionAlloc.h"
-#include "wtf/QuantizedAllocation.h"
 #include "wtf/WTF.h"
 
 #include <string.h>
@@ -47,9 +46,20 @@ namespace WTF {
 
 class DefaultAllocatorDummyVisitor;
 
+class DefaultAllocatorQuantizer {
+public:
+    template<typename T>
+    static size_t quantizedSize(size_t count)
+    {
+        RELEASE_ASSERT(count <= kMaxUnquantizedAllocation / sizeof(T));
+        return partitionAllocActualSize(Partitions::getBufferPartition(), count * sizeof(T));
+    }
+    static const size_t kMaxUnquantizedAllocation = kGenericMaxDirectMapped;
+};
+
 class DefaultAllocator {
 public:
-    typedef WTF::QuantizedAllocation Quantizer;
+    typedef DefaultAllocatorQuantizer Quantizer;
     typedef DefaultAllocatorDummyVisitor Visitor;
     static const bool isGarbageCollected = false;
     template<typename T, typename Traits>

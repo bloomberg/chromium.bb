@@ -177,12 +177,17 @@ TEST_P(PurgeableVectorTestWithPlatformSupport, reserveCapacityUsesExactCapacityW
     EXPECT_EQ(data, purgeableVector.data());
     EXPECT_EQ(0, memcmp(purgeableVector.data(), testData.data(), testData.size()));
 
-    // Appending one extra byte should cause a reallocation since the first
-    // allocation happened while the purgeable vector was empty. This behavior
-    // helps us guarantee that there is no memory waste on very small vectors
-    // (which SharedBuffer requires).
-    purgeableVector.append(testData.data(), 1);
-    EXPECT_NE(data, purgeableVector.data());
+    // This test is not reliable if the PurgeableVector uses a plain WTF::Vector
+    // for storage, as it does if discardable memory is not supported; the vectors
+    // capacity will always be expanded to fill the PartitionAlloc bucket.
+    if (isDiscardableMemorySupported()) {
+        // Appending one extra byte should cause a reallocation since the first
+        // allocation happened while the purgeable vector was empty. This behavior
+        // helps us guarantee that there is no memory waste on very small vectors
+        // (which SharedBuffer requires).
+        purgeableVector.append(testData.data(), 1);
+        EXPECT_NE(data, purgeableVector.data());
+    }
 }
 
 TEST_P(PurgeableVectorTestWithPlatformSupport, appendReservesCapacityIfNeeded)
