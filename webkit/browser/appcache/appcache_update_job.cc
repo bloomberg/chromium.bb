@@ -812,6 +812,8 @@ void AppCacheUpdateJob::OnGroupAndNewestCacheStored(AppCacheGroup* group,
     stored_state_ = STORED;
     MaybeCompleteUpdate();  // will definitely complete
   } else {
+    stored_state_ = UNSTORED;
+
     // Restore inprogress_cache_ to get the proper events delivered
     // and the proper cleanup to occur.
     if (newest_cache != group->newest_complete_cache())
@@ -1379,15 +1381,26 @@ void AppCacheUpdateJob::ClearPendingMasterEntries() {
 }
 
 void AppCacheUpdateJob::DiscardInprogressCache() {
+  if (stored_state_ == STORING) {
+    // We can make no assumptions about whether the StoreGroupAndCacheTask
+    // actually completed or not. This condition should only be reachable
+    // during shutdown. Free things up and return to do no harm.
+    inprogress_cache_ = NULL;
+    added_master_entries_.clear();
+    return;
+  }
+
   storage_->DoomResponses(manifest_url_, stored_response_ids_);
 
   if (!inprogress_cache_.get()) {
     // We have to undo the changes we made, if any, to the existing cache.
-    for (std::vector<GURL>::iterator iter = added_master_entries_.begin();
-         iter != added_master_entries_.end(); ++iter) {
-      DCHECK(group_->newest_complete_cache());
-      group_->newest_complete_cache()->RemoveEntry(*iter);
+    if (group_ && group_->newest_complete_cache()) {
+      for (std::vector<GURL>::iterator iter = added_master_entries_.begin();
+           iter != added_master_entries_.end(); ++iter) {
+        group_->newest_complete_cache()->RemoveEntry(*iter);
+      }
     }
+    added_master_entries_.clear();
     return;
   }
 
@@ -1396,6 +1409,7 @@ void AppCacheUpdateJob::DiscardInprogressCache() {
     (*hosts.begin())->AssociateNoCache(GURL());
 
   inprogress_cache_ = NULL;
+  added_master_entries_.clear();
 }
 
 void AppCacheUpdateJob::DiscardDuplicateResponses() {
