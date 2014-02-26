@@ -412,7 +412,7 @@ static const AtomicString& mediaSliderThumbShadowPartId()
 const AtomicString& SliderThumbElement::shadowPseudoId() const
 {
     HTMLInputElement* input = hostInput();
-    if (!input)
+    if (!input || !input->renderer())
         return sliderThumbShadowPartId();
 
     RenderStyle* sliderStyle = input->renderer()->style();
@@ -451,10 +451,10 @@ const AtomicString& SliderContainerElement::shadowPseudoId() const
     DEFINE_STATIC_LOCAL(const AtomicString, mediaSliderContainer, ("-webkit-media-slider-container", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, sliderContainer, ("-webkit-slider-container", AtomicString::ConstructFromLiteral));
 
-    if (!shadowHost()->hasTagName(inputTag))
+    if (!shadowHost() || !shadowHost()->renderer())
         return sliderContainer;
 
-    RenderStyle* sliderStyle = toHTMLInputElement(shadowHost())->renderer()->style();
+    RenderStyle* sliderStyle = shadowHost()->renderer()->style();
     switch (sliderStyle->appearance()) {
     case MediaSliderPart:
     case MediaSliderThumbPart:
