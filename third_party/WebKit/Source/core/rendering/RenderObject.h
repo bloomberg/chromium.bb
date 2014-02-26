@@ -707,6 +707,7 @@ public:
 
     // returns the containing block level element for this element.
     RenderBlock* containingBlock() const;
+    RenderObject* clippingContainer() const;
 
     bool canContainFixedPositionObjects() const
     {

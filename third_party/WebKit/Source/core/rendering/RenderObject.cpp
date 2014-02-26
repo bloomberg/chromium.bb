@@ -818,6 +818,15 @@ RenderBlock* RenderObject::containingBlock() const
     return toRenderBlock(o);
 }
 
+RenderObject* RenderObject::clippingContainer() const
+{
+    for (RenderObject* container = containingBlock(); container; container = container->containingBlock()) {
+        if (container->hasClipOrOverflowClip())
+            return container;
+    }
+    return 0;
+}
+
 static bool mustRepaintFillLayers(const RenderObject* renderer, const FillLayer* layer)
 {
     // Nobody will use multiple layers without wanting fancy positioning.

@@ -1763,29 +1763,18 @@ bool RenderLayerCompositor::clippedByAncestor(const RenderLayer* layer) const
     if (!layer->hasCompositedLayerMapping() || !layer->parent())
         return false;
 
-    // FIXME: need to double-check if semantics of ancestorCompositingLayer() work correctly here?
     const RenderLayer* compositingAncestor = layer->ancestorCompositingLayer();
     if (!compositingAncestor)
         return false;
 
-    // If the compositingAncestor clips, that will be taken care of by clipsCompositingDescendants(),
-    // so we only care about clipping between its first child that is our ancestor (the computeClipRoot),
-    // and layer.
-    const RenderLayer* computeClipRoot = 0;
-    const RenderLayer* curr = layer;
-    while (curr) {
-        const RenderLayer* next = curr->parent();
-        if (next == compositingAncestor) {
-            computeClipRoot = curr;
-            break;
-        }
-        curr = next;
-    }
-
-    if (!computeClipRoot || computeClipRoot == layer)
+    RenderObject* clippingContainer = layer->renderer()->clippingContainer();
+    if (!clippingContainer)
         return false;
 
-    return layer->clipper().backgroundClipRect(ClipRectsContext(computeClipRoot, TemporaryClipRects)).rect() != PaintInfo::infiniteRect();
+    if (compositingAncestor->renderer()->isDescendantOf(clippingContainer))
+        return false;
+
+    return true;
 }
 
 // Return true if the given layer is a stacking context and has compositing child
