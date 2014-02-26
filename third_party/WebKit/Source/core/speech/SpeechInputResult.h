@@ -56,6 +56,7 @@ private:
 };
 
 typedef WillBeHeapVector<RefPtrWillBeMember<SpeechInputResult> > SpeechInputResultArray;
+typedef WillBePersistentHeapVector<RefPtrWillBeMember<SpeechInputResult> > WillBePersistentSpeechInputResultArray;
 
 } // namespace WebCore
 

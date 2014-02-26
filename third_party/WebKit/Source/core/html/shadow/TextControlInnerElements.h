@@ -134,7 +134,7 @@ private:
     bool m_capturing;
     SpeechInputState m_state;
     int m_listenerId;
-    SpeechInputResultArray m_results;
+    WillBePersistentSpeechInputResultArray m_results;
 };
 
 DEFINE_TYPE_CASTS(InputFieldSpeechButtonElement, Element, element, element->isInputFieldSpeechButtonElement(), element.isInputFieldSpeechButtonElement());

@@ -314,6 +314,11 @@ class PersistentHeapCollectionBase
     // Never allocate these objects with new. Use Persistent<Collection> instead.
     DISALLOW_ALLOCATION();
 public:
+    PersistentHeapCollectionBase() { }
+
+    template<typename OtherCollection>
+    PersistentHeapCollectionBase(const OtherCollection& other) : Collection(other) { }
+
     void trace(Visitor* visitor) { visitor->trace(*static_cast<Collection*>(this)); }
 };
 
@@ -332,7 +337,16 @@ template<
 class PersistentHeapHashSet : public PersistentHeapCollectionBase<HeapHashSet<ValueArg, HashArg, TraitsArg> > { };
 
 template<typename T, size_t inlineCapacity = 0>
-class PersistentHeapVector : public PersistentHeapCollectionBase<HeapVector<T, inlineCapacity> > { };
+class PersistentHeapVector : public PersistentHeapCollectionBase<HeapVector<T, inlineCapacity> > {
+public:
+    PersistentHeapVector() { }
+
+    template<size_t otherCapacity>
+    PersistentHeapVector(const HeapVector<T, otherCapacity>& other)
+        : PersistentHeapCollectionBase<HeapVector<T, inlineCapacity> >(other)
+    {
+    }
+};
 
 // Members are used in classes to contain strong pointers to other oilpan heap
 // allocated objects.
