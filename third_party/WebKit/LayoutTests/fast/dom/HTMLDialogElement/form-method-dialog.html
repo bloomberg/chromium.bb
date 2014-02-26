@@ -33,6 +33,8 @@
     <input id="no-dialog-ancestor-1" type="submit" value="Clicking me shouldn't submit">
     <input id="no-dialog-ancestor-2" formmethod="dialog" type="submit" value="I also don't submit">
 </form>
+<form id="form_without_submit_button" method="dialog">
+</form>
 <script>
 window.jsTestIsAsync = true;
 
@@ -74,6 +76,14 @@ function checkDialogs(button, targetDialog, expectedResult)
 function $(id)
 {
     return document.getElementById(id);
+}
+
+function testDialogWithoutSubmitButton()
+{
+    debug('Submitting a form without submit button (this should not crash)');
+    form = $('form_without_submit_button');
+    form.submit();
+    debug('');
 }
 
 function testClosedDialog()
@@ -188,6 +198,8 @@ function test()
         checkDialogs(button, tests[i].targetDialog, tests[i].result);
         debug('');
     }
+
+    testDialogWithoutSubmitButton();
 
     testClosedDialog();
 

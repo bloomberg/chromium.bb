@@ -59,6 +59,8 @@ PASS inner; dialog.returnValue is "init"
 PASS host; dialog.open is false
 PASS host; dialog.returnValue is "Yes"
 
+Submitting a form without submit button (this should not crash)
+
 Clicking a button in a closed dialog
 PASS dialog.open is false
 PASS dialog.returnValue is "init"
@@ -92,3 +94,4 @@ TEST COMPLETE
 
 
   
+
