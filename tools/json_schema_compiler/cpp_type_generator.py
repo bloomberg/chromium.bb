@@ -59,6 +59,12 @@ class CppTypeGenerator(object):
     """
     return '%s_NONE' % self.FollowRef(type_).unix_name.upper()
 
+  def GetEnumLastValue(self, type_):
+    """Gets the enum value in the given model.Property indicating the last value
+    for the type.
+    """
+    return '%s_LAST' % self.FollowRef(type_).unix_name.upper()
+
   def GetEnumValue(self, type_, enum_value):
     """Gets the enum value of the given model.Property of the given type.
 

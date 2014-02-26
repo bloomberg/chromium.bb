@@ -138,14 +138,18 @@ class _Generator(object):
     return dependency_order
 
   def _GenerateEnumDeclaration(self, enum_name, type_):
-    """Generate the declaration of a C++ enum.
+    """Generate a code object with the  declaration of a C++ enum.
     """
     c = Code()
     c.Sblock('enum %s {' % enum_name)
     c.Append(self._type_helper.GetEnumNoneValue(type_) + ',')
     for value in type_.enum_values:
-      c.Append(self._type_helper.GetEnumValue(type_, value) + ',')
-    return c.Eblock('};')
+      current_enum_string = self._type_helper.GetEnumValue(type_, value)
+      c.Append(current_enum_string + ',')
+    c.Append('%s = %s,' % (
+        self._type_helper.GetEnumLastValue(type_), current_enum_string))
+    c.Eblock('};')
+    return c
 
   def _GenerateFields(self, props):
     """Generates the field declarations when declaring a type.
@@ -205,19 +209,15 @@ class _Generator(object):
     elif type_.property_type == PropertyType.ENUM:
       if type_.description:
         c.Comment(type_.description)
-      c.Sblock('enum %(classname)s {')
-      c.Append('%s,' % self._type_helper.GetEnumNoneValue(type_))
-      for value in type_.enum_values:
-        c.Append('%s,' % self._type_helper.GetEnumValue(type_, value))
+      c.Cblock(self._GenerateEnumDeclaration(classname, type_));
       # Top level enums are in a namespace scope so the methods shouldn't be
       # static. On the other hand, those declared inline (e.g. in an object) do.
       maybe_static = '' if is_toplevel else 'static '
-      (c.Eblock('};')
-        .Append()
+      (c.Append()
         .Append('%sstd::string ToString(%s as_enum);' %
-                    (maybe_static, classname))
+                (maybe_static, classname))
         .Append('%s%s Parse%s(const std::string& as_string);' %
-                    (maybe_static, classname, classname))
+                (maybe_static, classname, classname))
       )
     elif type_.property_type in (PropertyType.CHOICES,
                                  PropertyType.OBJECT):
