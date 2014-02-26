@@ -44,6 +44,12 @@ class HotwordService : public BrowserContextKeyedService {
   // and language.
   virtual bool IsHotwordAllowed();
 
+  // Used in the case of an error with the current hotword extension. Tries
+  // to reload the extension or in the case of failure, tries to re-download it.
+  // Returns true upon successful attempt at reload or if the extension has
+  // already loaded successfully by some other means.
+  virtual bool RetryHotwordExtension();
+
  private:
   Profile* profile_;
 

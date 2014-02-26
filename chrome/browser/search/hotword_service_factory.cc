@@ -43,6 +43,12 @@ bool HotwordServiceFactory::IsHotwordAllowed(BrowserContext* context) {
   return hotword_service && hotword_service->IsHotwordAllowed();
 }
 
+// static
+bool HotwordServiceFactory::RetryHotwordExtension(Profile* profile) {
+  HotwordService* hotword_service = GetForProfile(profile);
+  return hotword_service && hotword_service->RetryHotwordExtension();
+}
+
 HotwordServiceFactory::HotwordServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "HotwordService",

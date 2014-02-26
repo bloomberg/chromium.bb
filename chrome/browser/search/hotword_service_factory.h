@@ -29,6 +29,10 @@ class HotwordServiceFactory : public BrowserContextKeyedServiceFactory {
   // Returns true if hotwording is allowed for |context|.
   static bool IsHotwordAllowed(content::BrowserContext* context);
 
+  // Passes control to the individual service to deal with reloading the
+  // hotword extension as necessary.
+  static bool RetryHotwordExtension(Profile* profile);
+
  private:
   friend struct DefaultSingletonTraits<HotwordServiceFactory>;
 

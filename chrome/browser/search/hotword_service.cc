@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -146,4 +147,17 @@ bool HotwordService::IsHotwordAllowed() {
   return !group.empty() &&
       group != hotword_internal::kHotwordFieldTrialDisabledGroupName &&
       DoesHotwordSupportLanguage(profile_);
+}
+
+bool HotwordService::RetryHotwordExtension() {
+  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  extensions::ExtensionSystem* extension_system =
+      extensions::ExtensionSystem::Get(profile_);
+  if (!extension_system || !extension_system->extension_service())
+    return false;
+  ExtensionService* extension_service = extension_system->extension_service();
+
+  extension_service->ReloadExtension(extension_misc::kHotwordExtensionId);
+  return true;
 }
