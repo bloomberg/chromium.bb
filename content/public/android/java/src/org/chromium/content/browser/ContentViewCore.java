@@ -1132,6 +1132,7 @@ public class ContentViewCore
      * Goes to the navigation entry before the current one.
      */
     public void goBack() {
+        reportActionAfterDoubleTapUMA(UMAActionAfterDoubleTap.NAVIGATE_BACK);
         if (mWebContents != null) mWebContents.getNavigationController().goBack();
     }
 
