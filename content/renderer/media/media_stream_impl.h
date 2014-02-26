@@ -19,6 +19,7 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "content/renderer/media/media_stream_client.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
+#include "content/renderer/media/media_stream_source.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -30,7 +31,8 @@ namespace content {
 class MediaStreamAudioRenderer;
 class MediaStreamDependencyFactory;
 class MediaStreamDispatcher;
-class MediaStreamSource;
+class MediaStreamVideoSource;
+class VideoCapturerDelegate;
 class WebRtcAudioRenderer;
 class WebRtcLocalAudioRenderer;
 
@@ -114,6 +116,12 @@ class CONTENT_EXPORT MediaStreamImpl
   // Returns the WebKit representation of a MediaStream given an URL.
   // This is virtual for test purposes.
   virtual blink::WebMediaStream GetMediaStream(const GURL& url);
+
+  // Creates a MediaStreamVideoSource object.
+  // This is virtual for test purposes.
+  virtual MediaStreamVideoSource* CreateVideoSource(
+      const StreamDeviceInfo& device,
+      const MediaStreamSource::SourceStoppedCallback& stop_callback);
 
  private:
   // Class for storing information about a WebKit request to create a

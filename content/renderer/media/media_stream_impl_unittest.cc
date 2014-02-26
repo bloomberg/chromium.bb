@@ -8,7 +8,7 @@
 #include "content/renderer/media/media_stream_impl.h"
 #include "content/renderer/media/mock_media_stream_dependency_factory.h"
 #include "content/renderer/media/mock_media_stream_dispatcher.h"
-#include "content/renderer/media/video_capture_impl_manager.h"
+#include "content/renderer/media/mock_media_stream_video_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
@@ -17,6 +17,18 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 
 namespace content {
+
+class MockMediaStreamVideoCapturerSource : public MockMediaStreamVideoSource {
+ public:
+  MockMediaStreamVideoCapturerSource(
+      const StreamDeviceInfo& device,
+      const SourceStoppedCallback& stop_callback,
+      MediaStreamDependencyFactory* factory)
+  : MockMediaStreamVideoSource(factory, false) {
+    SetDeviceInfo(device);
+    SetStopCallback(stop_callback);
+  }
+};
 
 class MediaStreamImplUnderTest : public MediaStreamImpl {
  public:
@@ -30,7 +42,9 @@ class MediaStreamImplUnderTest : public MediaStreamImpl {
   MediaStreamImplUnderTest(MediaStreamDispatcher* media_stream_dispatcher,
                            MediaStreamDependencyFactory* dependency_factory)
       : MediaStreamImpl(NULL, media_stream_dispatcher, dependency_factory),
-        state_(REQUEST_NOT_STARTED) {
+        state_(REQUEST_NOT_STARTED),
+        factory_(dependency_factory),
+        video_source_(NULL) {
   }
 
   void RequestUserMedia() {
@@ -52,6 +66,15 @@ class MediaStreamImplUnderTest : public MediaStreamImpl {
     return last_generated_stream_;
   }
 
+  virtual MediaStreamVideoSource* CreateVideoSource(
+      const StreamDeviceInfo& device,
+      const MediaStreamSource::SourceStoppedCallback& stop_callback) OVERRIDE {
+    video_source_ = new MockMediaStreamVideoCapturerSource(device,
+                                                           stop_callback,
+                                                           factory_);
+    return video_source_;
+  }
+
   using MediaStreamImpl::OnLocalMediaStreamStop;
   using MediaStreamImpl::OnLocalSourceStopped;
 
@@ -59,11 +82,17 @@ class MediaStreamImplUnderTest : public MediaStreamImpl {
     return last_generated_stream_;
   }
 
+  MockMediaStreamVideoCapturerSource* last_created_video_source() const {
+    return video_source_;
+  }
+
   RequestState request_state() const { return state_; }
 
  private:
   blink::WebMediaStream last_generated_stream_;
   RequestState state_;
+  MediaStreamDependencyFactory* factory_;
+  MockMediaStreamVideoCapturerSource* video_source_;
 };
 
 class MediaStreamImplTest : public ::testing::Test {
@@ -79,7 +108,7 @@ class MediaStreamImplTest : public ::testing::Test {
   blink::WebMediaStream RequestLocalMediaStream() {
     ms_impl_->RequestUserMedia();
     FakeMediaStreamDispatcherComplete();
-    ChangeVideoSourceStateToLive();
+    StartMockedVideoSource();
 
     EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_SUCCEEDED,
               ms_impl_->request_state());
@@ -110,16 +139,18 @@ class MediaStreamImplTest : public ::testing::Test {
                                 ms_dispatcher_->video_array());
   }
 
-  void ChangeVideoSourceStateToLive() {
-    if (dependency_factory_->last_video_source() != NULL) {
-      dependency_factory_->last_video_source()->SetLive();
-    }
+  void StartMockedVideoSource() {
+    MockMediaStreamVideoCapturerSource* video_source =
+        ms_impl_->last_created_video_source();
+    if (video_source->SourceHasAttemptedToStart())
+      video_source->StartMockedSource();
   }
 
-  void ChangeVideoSourceStateToEnded() {
-    if (dependency_factory_->last_video_source() != NULL) {
-      dependency_factory_->last_video_source()->SetEnded();
-    }
+  void FailToStartMockedVideoSource() {
+    MockMediaStreamVideoCapturerSource* video_source =
+        ms_impl_->last_created_video_source();
+    if (video_source->SourceHasAttemptedToStart())
+      video_source->FailToStartMockedSource();
   }
 
  protected:
@@ -256,7 +287,7 @@ TEST_F(MediaStreamImplTest, FrameWillClose) {
 TEST_F(MediaStreamImplTest, MediaSourceFailToStart) {
   ms_impl_->RequestUserMedia();
   FakeMediaStreamDispatcherComplete();
-  ChangeVideoSourceStateToEnded();
+  FailToStartMockedVideoSource();
   EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_FAILED,
             ms_impl_->request_state());
   EXPECT_EQ(1, ms_dispatcher_->request_stream_counter());
@@ -272,8 +303,11 @@ TEST_F(MediaStreamImplTest, MediaStreamImplShutDown) {
   EXPECT_EQ(1, ms_dispatcher_->request_stream_counter());
   EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_NOT_COMPLETE,
             ms_impl_->request_state());
+
+  MockMediaStreamVideoCapturerSource* video_source =
+      ms_impl_->last_created_video_source();
   ms_impl_.reset();
-  ChangeVideoSourceStateToLive();
+  video_source->StartMockedSource();
 }
 
 // This test what happens if the WebFrame is closed while the MediaStream is
@@ -284,13 +318,12 @@ TEST_F(MediaStreamImplTest, ReloadFrameWhileGeneratingStream) {
   EXPECT_EQ(1, ms_dispatcher_->request_stream_counter());
   EXPECT_EQ(0, ms_dispatcher_->stop_audio_device_counter());
   EXPECT_EQ(0, ms_dispatcher_->stop_video_device_counter());
-  ChangeVideoSourceStateToLive();
   EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_NOT_COMPLETE,
             ms_impl_->request_state());
 }
 
 // This test what happens if the WebFrame is closed while the sources are being
-// started by MediaStreamDependencyFactory.
+// started.
 TEST_F(MediaStreamImplTest, ReloadFrameWhileGeneratingSources) {
   ms_impl_->RequestUserMedia();
   FakeMediaStreamDispatcherComplete();
@@ -298,7 +331,6 @@ TEST_F(MediaStreamImplTest, ReloadFrameWhileGeneratingSources) {
   ms_impl_->FrameWillClose(NULL);
   EXPECT_EQ(1, ms_dispatcher_->stop_audio_device_counter());
   EXPECT_EQ(1, ms_dispatcher_->stop_video_device_counter());
-  ChangeVideoSourceStateToLive();
   EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_NOT_COMPLETE,
             ms_impl_->request_state());
 }

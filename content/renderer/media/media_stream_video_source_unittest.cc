@@ -3,27 +3,52 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <vector>
 
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/media/mock_media_stream_dependency_factory.h"
+#include "content/renderer/media/mock_media_stream_video_source.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 
-class DummyMediaStreamVideoSource : public MediaStreamVideoSource {
+class ConstraintsFactory {
  public:
-  DummyMediaStreamVideoSource(MediaStreamDependencyFactory* factory)
-      : MediaStreamVideoSource(factory) {
+  void AddMandatory(const std::string& key, int value) {
+    mandatory_.push_back(blink::WebMediaConstraint(base::UTF8ToUTF16(key),
+                                                   base::IntToString16(value)));
+  }
+  void AddMandatory(const std::string& key, double value) {
+    mandatory_.push_back(blink::WebMediaConstraint(
+        base::UTF8ToUTF16(key),
+        base::UTF8ToUTF16(base::DoubleToString(value))));
   }
 
-  virtual ~DummyMediaStreamVideoSource() {
+  void AddOptional(const std::string& key, int value) {
+    optional_.push_back(blink::WebMediaConstraint(base::UTF8ToUTF16(key),
+                                                  base::IntToString16(value)));
   }
 
-  void OnNewFrame(const scoped_refptr<media::VideoFrame>& frame) {
-    MediaStreamVideoSource::DeliverVideoFrame(frame);
+  void AddOptional(const std::string& key, double value) {
+    optional_.push_back(blink::WebMediaConstraint(
+        base::UTF8ToUTF16(key),
+        base::UTF8ToUTF16(base::DoubleToString(value))));
   }
+
+  blink::WebMediaConstraints CreateConstraints() {
+    blink::WebVector<blink::WebMediaConstraint> mandatory(mandatory_);
+    blink::WebVector<blink::WebMediaConstraint> optional(optional_);
+    blink::WebMediaConstraints constraints;
+    constraints.initialize(optional, mandatory);
+    return constraints;
+  }
+
+ private:
+  std::vector<blink::WebMediaConstraint> mandatory_;
+  std::vector<blink::WebMediaConstraint> optional_;
 };
 
 class MediaStreamVideoSourceTest
@@ -31,11 +56,24 @@ class MediaStreamVideoSourceTest
  public:
   MediaStreamVideoSourceTest()
       : number_of_successful_constraints_applied_(0),
-        number_of_failed_constraints_applied_(0) {
+        number_of_failed_constraints_applied_(0),
+        mock_source_(new MockMediaStreamVideoSource(&factory_, true)) {
+    media::VideoCaptureFormats formats;
+    formats.push_back(media::VideoCaptureFormat(
+        gfx::Size(1280, 720), 30, media::PIXEL_FORMAT_I420));
+    formats.push_back(media::VideoCaptureFormat(
+        gfx::Size(640, 480), 30, media::PIXEL_FORMAT_I420));
+    formats.push_back(media::VideoCaptureFormat(
+        gfx::Size(640, 400), 30, media::PIXEL_FORMAT_I420));
+    formats.push_back(media::VideoCaptureFormat(
+        gfx::Size(352, 288), 30, media::PIXEL_FORMAT_I420));
+    formats.push_back(media::VideoCaptureFormat(
+        gfx::Size(320, 240), 30, media::PIXEL_FORMAT_I420));
+    mock_source_->SetSupportedFormats(formats);
     webkit_source_.initialize(base::UTF8ToUTF16("dummy_source_id"),
                               blink::WebMediaStreamSource::TypeVideo,
                               base::UTF8ToUTF16("dummy_source_name"));
-    webkit_source_.setExtraData(new DummyMediaStreamVideoSource(&factory_));
+    webkit_source_.setExtraData(mock_source_);
   }
 
  protected:
@@ -46,8 +84,8 @@ class MediaStreamVideoSourceTest
     blink::WebMediaStreamTrack track;
     track.initialize(base::UTF8ToUTF16(id), webkit_source_);
 
-    DummyMediaStreamVideoSource* source =
-        static_cast<DummyMediaStreamVideoSource*>(track.source().extraData());
+    MediaStreamVideoSource* source =
+        static_cast<MediaStreamVideoSource*>(track.source().extraData());
 
     source->AddTrack(track,
                      constraints,
@@ -57,24 +95,29 @@ class MediaStreamVideoSourceTest
     return track;
   }
 
-  // Simulate that the underlying device start successfully.
-  void StartSource() {
-    factory_.last_video_source()->SetLive();
-  }
+  blink::WebMediaStreamTrack CreateTrackAndStartSource(
+      const blink::WebMediaConstraints& constraints,
+      int expected_width,
+      int expected_height,
+      int expected_frame_rate) {
+    blink::WebMediaStreamTrack track = CreateTrack("123", constraints);
 
-  // Simulate that the underlying device fail to start.
-  void FailToStartSource() {
-    factory_.last_video_source()->SetEnded();
-  }
+    mock_source_->CompleteGetSupportedFormats();
+    const media::VideoCaptureParams& format = mock_source()->start_params();
+    EXPECT_EQ(expected_width, format.requested_format.frame_size.width());
+    EXPECT_EQ(expected_height, format.requested_format.frame_size.height());
+    EXPECT_EQ(expected_frame_rate, format.requested_format.frame_rate);
 
-  void VerifyFrame(int width, int height, int num) {
-    DummyMediaStreamVideoSource* source =
-      static_cast<DummyMediaStreamVideoSource*>(webkit_source_.extraData());
-    MockVideoSource* adapter =
-        static_cast<MockVideoSource*>(source->GetAdapter());
-    EXPECT_EQ(width, adapter->GetLastFrameWidth());
-    EXPECT_EQ(height, adapter->GetLastFrameHeight());
-    EXPECT_EQ(num, adapter->GetFrameNum());
+    MediaStreamVideoSource* source =
+        static_cast<MediaStreamVideoSource*>(track.source().extraData());
+    EXPECT_TRUE(source->GetAdapter() != NULL);
+
+    EXPECT_EQ(0, NumberOfSuccessConstraintsCallbacks());
+    mock_source_->StartMockedSource();
+    // Once the source has started successfully we expect that the
+    // ConstraintsCallback in MediaStreamSource::AddTrack completes.
+    EXPECT_EQ(1, NumberOfSuccessConstraintsCallbacks());
+    return track;
   }
 
   int NumberOfSuccessConstraintsCallbacks() const {
@@ -84,6 +127,8 @@ class MediaStreamVideoSourceTest
   int NumberOfFailedConstraintsCallbacks() const {
     return number_of_failed_constraints_applied_;
   }
+
+  MockMediaStreamVideoSource* mock_source() { return mock_source_; }
 
  private:
   void OnConstraintsApplied(MediaStreamSource* source, bool success) {
@@ -99,57 +144,213 @@ class MediaStreamVideoSourceTest
   int number_of_failed_constraints_applied_;
   MockMediaStreamDependencyFactory factory_;
   blink::WebMediaStreamSource webkit_source_;
+  // |mock_source_| is owned by |webkit_source_|.
+  MockMediaStreamVideoSource* mock_source_;
 };
 
-TEST_F(MediaStreamVideoSourceTest, AddTrackAndStartAdapter) {
+TEST_F(MediaStreamVideoSourceTest, AddTrackAndStartSource) {
   blink::WebMediaConstraints constraints;
+  constraints.initialize();
   blink::WebMediaStreamTrack track = CreateTrack("123", constraints);
-  StartSource();
+  mock_source()->CompleteGetSupportedFormats();
+  mock_source()->StartMockedSource();
   EXPECT_EQ(1, NumberOfSuccessConstraintsCallbacks());
 }
 
-TEST_F(MediaStreamVideoSourceTest, AddTwoTracksBeforeAdapterStart) {
+TEST_F(MediaStreamVideoSourceTest, AddTwoTracksBeforeSourceStarts) {
   blink::WebMediaConstraints constraints;
+  constraints.initialize();
   blink::WebMediaStreamTrack track1 = CreateTrack("123", constraints);
+  mock_source()->CompleteGetSupportedFormats();
   blink::WebMediaStreamTrack track2 = CreateTrack("123", constraints);
   EXPECT_EQ(0, NumberOfSuccessConstraintsCallbacks());
-  StartSource();
+  mock_source()->StartMockedSource();
   EXPECT_EQ(2, NumberOfSuccessConstraintsCallbacks());
 }
 
-TEST_F(MediaStreamVideoSourceTest, AddTrackAfterAdapterStart) {
+TEST_F(MediaStreamVideoSourceTest, AddTrackAfterSourceStarts) {
   blink::WebMediaConstraints constraints;
+  constraints.initialize();
   blink::WebMediaStreamTrack track1 = CreateTrack("123", constraints);
-  StartSource();
+  mock_source()->CompleteGetSupportedFormats();
+  mock_source()->StartMockedSource();
   EXPECT_EQ(1, NumberOfSuccessConstraintsCallbacks());
   blink::WebMediaStreamTrack track2 = CreateTrack("123", constraints);
   EXPECT_EQ(2, NumberOfSuccessConstraintsCallbacks());
 }
 
-TEST_F(MediaStreamVideoSourceTest, AddTrackAndFailToStartAdapter) {
+TEST_F(MediaStreamVideoSourceTest, AddTrackAndFailToStartSource) {
   blink::WebMediaConstraints constraints;
+  constraints.initialize();
   blink::WebMediaStreamTrack track = CreateTrack("123", constraints);
-  FailToStartSource();
+  mock_source()->CompleteGetSupportedFormats();
+  mock_source()->FailToStartMockedSource();
   EXPECT_EQ(1, NumberOfFailedConstraintsCallbacks());
 }
 
-TEST_F(MediaStreamVideoSourceTest, DeliverVideoFrame) {
+TEST_F(MediaStreamVideoSourceTest, AddTwoTracksBeforeGetSupportedFormats) {
   blink::WebMediaConstraints constraints;
-  blink::WebMediaStreamTrack track = CreateTrack("123", constraints);
-  StartSource();
-  DummyMediaStreamVideoSource* source =
-      static_cast<DummyMediaStreamVideoSource*>(track.source().extraData());
-  VerifyFrame(0, 0, 0);
-  const int kWidth = 640;
-  const int kHeight = 480;
-  scoped_refptr<media::VideoFrame> frame =
-      media::VideoFrame::CreateBlackFrame(gfx::Size(kWidth, kHeight));
-  ASSERT_TRUE(frame.get());
-  source->OnNewFrame(frame);
-  VerifyFrame(640, 480, 1);
-  source->OnNewFrame(frame);
-  VerifyFrame(640, 480, 2);
-  source->RemoveTrack(track);
+  constraints.initialize();
+  blink::WebMediaStreamTrack track1 = CreateTrack("123", constraints);
+  blink::WebMediaStreamTrack track2 = CreateTrack("123", constraints);
+  mock_source()->CompleteGetSupportedFormats();
+  mock_source()->StartMockedSource();
+  EXPECT_EQ(2, NumberOfSuccessConstraintsCallbacks());
 }
+
+// Test that the capture output is CIF if we set max constraints to CIF.
+// and the capture device support CIF.
+TEST_F(MediaStreamVideoSourceTest, MandatoryConstraintCif5Fps) {
+  ConstraintsFactory factory;
+  factory.AddMandatory(MediaStreamVideoSource::kMaxWidth, 352);
+  factory.AddMandatory(MediaStreamVideoSource::kMaxHeight, 288);
+  factory.AddMandatory(MediaStreamVideoSource::kMaxFrameRate, 5);
+
+  CreateTrackAndStartSource(factory.CreateConstraints(), 352, 288, 5);
+}
+
+// Test that the capture output is 720P if the camera support it and the
+// optional constraint is set to 720P.
+TEST_F(MediaStreamVideoSourceTest, MandatoryMinVgaOptional720P) {
+  ConstraintsFactory factory;
+  factory.AddMandatory(MediaStreamVideoSource::kMinWidth, 640);
+  factory.AddMandatory(MediaStreamVideoSource::kMinHeight, 480);
+  factory.AddOptional(MediaStreamVideoSource::kMinWidth, 1280);
+  factory.AddOptional(MediaStreamVideoSource::kMinAspectRatio,
+                      1280.0 / 720);
+
+  CreateTrackAndStartSource(factory.CreateConstraints(), 1280, 720, 30);
+}
+
+// Test that the capture output have aspect ratio 4:3 if a mandatory constraint
+// require it even if an optional constraint request a higher resolution
+// that don't have this aspect ratio.
+TEST_F(MediaStreamVideoSourceTest, MandatoryAspectRatio4To3) {
+  ConstraintsFactory factory;
+  factory.AddMandatory(MediaStreamVideoSource::kMinWidth, 640);
+  factory.AddMandatory(MediaStreamVideoSource::kMinHeight, 480);
+  factory.AddMandatory(MediaStreamVideoSource::kMaxAspectRatio,
+                       640.0 / 480);
+  factory.AddOptional(MediaStreamVideoSource::kMinWidth, 1280);
+
+  CreateTrackAndStartSource(factory.CreateConstraints(), 640, 480, 30);
+}
+
+// Test that ApplyConstraints fail if the mandatory aspect ratio
+// is set higher than supported.
+TEST_F(MediaStreamVideoSourceTest, MandatoryAspectRatioTooHigh) {
+  ConstraintsFactory factory;
+  factory.AddMandatory(MediaStreamVideoSource::kMinAspectRatio, 2);
+  CreateTrack("123", factory.CreateConstraints());
+  mock_source()->CompleteGetSupportedFormats();
+  EXPECT_EQ(1, NumberOfFailedConstraintsCallbacks());
+}
+
+// Test that the source ignores an optional aspect ratio that is higher than
+// supported.
+TEST_F(MediaStreamVideoSourceTest, OptionalAspectRatioTooHigh) {
+  ConstraintsFactory factory;
+  factory.AddOptional(MediaStreamVideoSource::kMinAspectRatio, 2);
+  CreateTrack("123", factory.CreateConstraints());
+  mock_source()->CompleteGetSupportedFormats();
+
+  const media::VideoCaptureParams& params = mock_source()->start_params();
+  double aspect_ratio =
+      static_cast<double>(params.requested_format.frame_size.width()) /
+      params.requested_format.frame_size.height();
+  EXPECT_LT(aspect_ratio, 2);
+}
+
+// Test that the source starts video with the default resolution if the
+// that is the only supported.
+TEST_F(MediaStreamVideoSourceTest, DefaultCapability) {
+  media::VideoCaptureFormats formats;
+  formats.push_back(media::VideoCaptureFormat(
+      gfx::Size(MediaStreamVideoSource::kDefaultWidth,
+                MediaStreamVideoSource::kDefaultHeight),
+      MediaStreamVideoSource::kDefaultFrameRate,
+      media::PIXEL_FORMAT_I420));
+  mock_source()->SetSupportedFormats(formats);
+
+  blink::WebMediaConstraints constraints;
+  constraints.initialize();
+  CreateTrackAndStartSource(constraints,
+                            MediaStreamVideoSource::kDefaultWidth,
+                            MediaStreamVideoSource::kDefaultHeight,
+                            30);
+}
+
+TEST_F(MediaStreamVideoSourceTest, InvalidMandatoryConstraint) {
+  ConstraintsFactory factory;
+  factory.AddMandatory("weird key", 640);
+
+  CreateTrack("123", factory.CreateConstraints());
+  mock_source()->CompleteGetSupportedFormats();
+  EXPECT_EQ(1, NumberOfFailedConstraintsCallbacks());
+}
+
+// Test that the source ignores an unknown optional constraint.
+TEST_F(MediaStreamVideoSourceTest, InvalidOptionalConstraint) {
+  ConstraintsFactory factory;
+  factory.AddOptional("weird key", 640);
+
+  CreateTrackAndStartSource(factory.CreateConstraints(),
+                            MediaStreamVideoSource::kDefaultWidth,
+                            MediaStreamVideoSource::kDefaultHeight,
+                            30);
+}
+
+// Tests that the source starts video with the max width and height set by
+// constraints for screencast.
+TEST_F(MediaStreamVideoSourceTest, ScreencastResolutionWithConstraint) {
+  media::VideoCaptureFormats formats;
+      formats.push_back(media::VideoCaptureFormat(
+          gfx::Size(480, 270), 30, media::PIXEL_FORMAT_I420));
+  mock_source()->SetSupportedFormats(formats);
+  ConstraintsFactory factory;
+  factory.AddMandatory(MediaStreamVideoSource::kMaxWidth, 480);
+  factory.AddMandatory(MediaStreamVideoSource::kMaxHeight, 270);
+
+  CreateTrackAndStartSource(factory.CreateConstraints(), 480, 270, 30);
+  EXPECT_EQ(480, mock_source()->max_requested_height());
+  EXPECT_EQ(270, mock_source()->max_requested_width());
+}
+
+// Test that optional constraints are applied in order.
+TEST_F(MediaStreamVideoSourceTest, OptionalConstraints) {
+  ConstraintsFactory factory;
+  // Min width of 2056 pixels can not be fulfilled.
+  factory.AddOptional(MediaStreamVideoSource::kMinWidth, 2056);
+  factory.AddOptional(MediaStreamVideoSource::kMinWidth, 641);
+  // Since min width is set to 641 pixels, max width 640 can not be fulfilled.
+  factory.AddOptional(MediaStreamVideoSource::kMaxWidth, 640);
+  CreateTrackAndStartSource(factory.CreateConstraints(), 1280, 720, 30);
+}
+
+// Test that the webrtc video adapter can be created and that it received
+// video frames if the source deliver video frames.
+TEST_F(MediaStreamVideoSourceTest, AdapterReceiveVideoFrame) {
+  ConstraintsFactory factory;
+  CreateTrackAndStartSource(factory.CreateConstraints(),
+                            MediaStreamVideoSource::kDefaultWidth,
+                            MediaStreamVideoSource::kDefaultHeight,
+                            MediaStreamVideoSource::kDefaultFrameRate);
+  ASSERT_TRUE(mock_source()->GetAdapter());
+  MockVideoSource* adapter = static_cast<MockVideoSource*>(
+      mock_source()->GetAdapter());
+  EXPECT_EQ(0, adapter->GetFrameNum());
+
+  scoped_refptr<media::VideoFrame> frame =
+      media::VideoFrame::CreateBlackFrame(
+          gfx::Size(MediaStreamVideoSource::kDefaultWidth,
+                    MediaStreamVideoSource::kDefaultHeight));
+   mock_source()->DeliverVideoFrame(frame);
+   EXPECT_EQ(1, adapter->GetFrameNum());
+   EXPECT_EQ(MediaStreamVideoSource::kDefaultWidth,
+             adapter->GetLastFrameWidth());
+   EXPECT_EQ(MediaStreamVideoSource::kDefaultHeight,
+             adapter->GetLastFrameHeight());
+}
+
 
 }  // namespace content

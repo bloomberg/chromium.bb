@@ -10,9 +10,10 @@
 #include "base/values.h"
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_audio_source.h"
-#include "content/renderer/media/media_stream_video_source.h"
+#include "content/renderer/media/media_stream_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/mock_media_stream_dependency_factory.h"
+#include "content/renderer/media/mock_media_stream_video_source.h"
 #include "content/renderer/media/mock_peer_connection_impl.h"
 #include "content/renderer/media/mock_web_rtc_peer_connection_handler_client.h"
 #include "content/renderer/media/peer_connection_tracker.h"
@@ -230,7 +231,8 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
                             blink::WebMediaStreamSource::TypeVideo,
                             blink::WebString::fromUTF8("video_track"));
     video_source.setExtraData(
-        new MediaStreamVideoSource(mock_dependency_factory_.get()));
+        new MockMediaStreamVideoSource(mock_dependency_factory_.get(),
+                                       false));
 
     blink::WebVector<blink::WebMediaStreamTrack> audio_tracks(
         static_cast<size_t>(1));
@@ -426,8 +428,8 @@ TEST_F(RTCPeerConnectionHandlerTest, addStreamWithStoppedAudioAndVideoTrack) {
 
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
   local_stream.audioTracks(audio_tracks);
-  MediaStreamVideoSource* native_audio_source =
-      static_cast<MediaStreamVideoSource*>(
+  MediaStreamAudioSource* native_audio_source =
+      static_cast<MediaStreamAudioSource*>(
           audio_tracks[0].source().extraData());
   native_audio_source->StopSource();
 

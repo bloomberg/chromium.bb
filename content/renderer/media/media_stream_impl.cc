@@ -317,12 +317,18 @@ void MediaStreamImpl::OnStreamGenerated(
   request_info->generated = true;
 
   // WebUserMediaRequest don't have an implementation in unit tests.
-  // Therefore we need to check for isNull here.
+  // Therefore we need to check for isNull here and initialize the
+  // constraints.
   blink::WebUserMediaRequest* request = &(request_info->request);
-  blink::WebMediaConstraints audio_constraints = request->isNull() ?
-      blink::WebMediaConstraints() : request->audioConstraints();
-  blink::WebMediaConstraints video_constraints = request->isNull() ?
-      blink::WebMediaConstraints() : request->videoConstraints();
+  blink::WebMediaConstraints audio_constraints;
+  blink::WebMediaConstraints video_constraints;
+  if (request->isNull()) {
+    audio_constraints.initialize();
+    video_constraints.initialize();
+  } else {
+    audio_constraints = request->audioConstraints();
+    video_constraints = request->videoConstraints();
+  }
 
   blink::WebVector<blink::WebMediaStreamTrack> audio_track_vector(
       audio_array.size());
@@ -437,12 +443,10 @@ void MediaStreamImpl::InitializeSourceObject(
            << ", name = " << webkit_source->name().utf8();
 
   if (type == blink::WebMediaStreamSource::TypeVideo) {
-    MediaStreamVideoCapturerSource* video_source(
-        new content::MediaStreamVideoCapturerSource(
+    webkit_source->setExtraData(
+        CreateVideoSource(
             device,
-            base::Bind(&MediaStreamImpl::OnLocalSourceStopped, AsWeakPtr()),
-            dependency_factory_));
-    webkit_source->setExtraData(video_source);
+            base::Bind(&MediaStreamImpl::OnLocalSourceStopped, AsWeakPtr())));
   } else {
     DCHECK_EQ(blink::WebMediaStreamSource::TypeAudio, type);
     MediaStreamAudioSource* audio_source(
@@ -454,6 +458,16 @@ void MediaStreamImpl::InitializeSourceObject(
     webkit_source->setExtraData(audio_source);
   }
   local_sources_.push_back(LocalStreamSource(frame, *webkit_source));
+}
+
+MediaStreamVideoSource* MediaStreamImpl::CreateVideoSource(
+    const StreamDeviceInfo& device,
+    const MediaStreamSource::SourceStoppedCallback& stop_callback) {
+  return new content::MediaStreamVideoCapturerSource(
+      device,
+      stop_callback,
+      new VideoCapturerDelegate(device),
+      dependency_factory_);
 }
 
 void MediaStreamImpl::CreateVideoTracks(
