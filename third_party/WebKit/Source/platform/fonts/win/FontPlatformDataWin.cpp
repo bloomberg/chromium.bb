@@ -37,7 +37,7 @@
 #if USE(HARFBUZZ)
 #include "platform/fonts/harfbuzz/HarfBuzzFace.h"
 #endif
-#include "platform/fonts/skia/SkiaFontWin.h"
+#include "platform/fonts/win/SkiaFontWin.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/win/HWndDC.h"
 #include "public/platform/Platform.h"

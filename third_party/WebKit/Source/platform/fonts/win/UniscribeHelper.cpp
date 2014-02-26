@@ -33,8 +33,8 @@
 
 #include "platform/fonts/Character.h"
 #include "platform/fonts/Font.h"
-#include "platform/fonts/skia/SkiaFontWin.h"
 #include "platform/fonts/win/FontFallbackWin.h"
+#include "platform/fonts/win/SkiaFontWin.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/win/HWndDC.h"
 #include "third_party/skia/include/core/SkPoint.h"

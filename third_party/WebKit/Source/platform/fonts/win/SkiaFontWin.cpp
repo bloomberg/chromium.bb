@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "platform/fonts/skia/SkiaFontWin.h"
+#include "platform/fonts/win/SkiaFontWin.h"
 
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/win/FontPlatformDataWin.h"
@@ -68,8 +68,7 @@ static void skiaDrawText(GraphicsContext* context,
         SkPoint* pos = storage.get();
         for (unsigned i = 0; i < numGlyphs; i++) {
             // GDI has dv go up, so we negate it
-            pos[i].set(x + SkIntToScalar(offsets[i].du),
-                       y + -SkIntToScalar(offsets[i].dv));
+            pos[i].set(x + SkIntToScalar(offsets[i].du), y + -SkIntToScalar(offsets[i].dv));
             x += SkIntToScalar(advances[i]);
         }
         context->drawPosText(glyphs, numGlyphs * sizeof(uint16_t), pos, textRect, *paint);
@@ -80,8 +79,7 @@ static void skiaDrawText(GraphicsContext* context,
             xpos[i] = x;
             x += SkIntToScalar(advances[i]);
         }
-        context->drawPosTextH(glyphs, numGlyphs * sizeof(uint16_t),
-                             xpos, y, textRect, *paint);
+        context->drawPosTextH(glyphs, numGlyphs * sizeof(uint16_t), xpos, y, textRect, *paint);
     }
 }
 
@@ -155,7 +153,7 @@ void paintSkiaText(GraphicsContext* context,
     const SkRect& textRect)
 {
     paintSkiaText(context, data, data.typeface(), data.size(), data.paintTextFlags(),
-                  numGlyphs, glyphs, advances, offsets, origin, textRect);
+        numGlyphs, glyphs, advances, offsets, origin, textRect);
 }
 #if !USE(HARFBUZZ)
 void paintSkiaText(GraphicsContext* context,
@@ -179,4 +177,4 @@ void paintSkiaText(GraphicsContext* context,
     paintSkiaText(context, data, face.get(), size, paintTextFlags, numGlyphs, glyphs, advances, offsets, origin, textRect);
 }
 #endif
-}  // namespace WebCore
+} // namespace WebCore

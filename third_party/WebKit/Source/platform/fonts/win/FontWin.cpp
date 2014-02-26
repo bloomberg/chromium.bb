@@ -37,8 +37,8 @@
 #include "platform/fonts/FontPlatformFeatures.h"
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/SimpleFontData.h"
-#include "platform/fonts/skia/SkiaFontWin.h"
 #include "platform/fonts/win/FontPlatformDataWin.h"
+#include "platform/fonts/win/SkiaFontWin.h"
 #include "platform/fonts/win/UniscribeHelperTextRun.h"
 #include "platform/graphics/GraphicsContext.h"
 

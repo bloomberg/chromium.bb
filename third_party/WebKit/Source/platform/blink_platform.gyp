@@ -316,19 +316,18 @@
 
           ['include', 'clipboard/ClipboardUtilitiesWin\\.(cpp|h)$'],
 
+          ['include', 'fonts/opentype/'],
+          ['include', 'fonts/skia/FontCustomPlatformDataSkia\\.cpp$'],
+          ['include', 'fonts/skia/FontCustomPlatformDataSkia\\.cpp$'],
+          ['include', 'fonts/skia/GlyphPageTreeNodeSkia\\.cpp$'],
+          ['include', 'fonts/skia/SimpleFontDataSkia\\.cpp$'],
+          ['include', 'fonts/win/FontCacheSkiaWin\\.cpp$'],
           ['include', 'fonts/win/FontFallbackWin\\.(cpp|h)$'],
           ['include', 'fonts/win/FontPlatformDataWin\\.(cpp|h)$'],
           ['include', 'fonts/win/FontWin\\.cpp$'],
-          ['include', 'fonts/opentype/'],
-          ['include', 'fonts/skia/SkiaFontWin\\.(cpp|h)$'],
+          ['include', 'fonts/win/SkiaFontWin\\.(cpp|h)$'],
           ['include', 'fonts/win/UniscribeHelper\\.(cpp|h)$'],
           ['include', 'fonts/win/UniscribeHelperTextRun\\.(cpp|h)$'],
-          ['include', 'fonts/skia/SimpleFontDataSkia\\.cpp$'],
-          ['include', 'fonts/skia/GlyphPageTreeNodeSkia\\.cpp$'],
-          ['include', 'fonts/skia/FontCacheSkiaWin\\.cpp$'],
-          ['include', 'fonts/skia/FontCustomPlatformDataSkia\\.cpp$'],
-          ['include', 'fonts/skia/FontCustomPlatformDataSkia\\.cpp$'],
-
 
           # SystemInfo.cpp is useful and we don't want to copy it.
           ['include', 'win/SystemInfo\\.cpp$'],

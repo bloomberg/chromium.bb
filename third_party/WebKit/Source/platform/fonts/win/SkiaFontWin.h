@@ -31,8 +31,8 @@
 #ifndef SkiaFontWin_h
 #define SkiaFontWin_h
 
-#include <windows.h>
 #include <usp10.h>
+#include <windows.h>
 
 struct SkPoint;
 struct SkRect;
@@ -69,6 +69,6 @@ void paintSkiaText(GraphicsContext*,
     const SkRect& textRect);
 #endif
 
-}  // namespace WebCore
+} // namespace WebCore
 
-#endif  // SkiaFontWin_h
+#endif // SkiaFontWin_h
