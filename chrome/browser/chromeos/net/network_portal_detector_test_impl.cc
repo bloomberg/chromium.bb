@@ -65,10 +65,11 @@ void NetworkPortalDetectorTestImpl::RemoveObserver(Observer* observer) {
 
 NetworkPortalDetector::CaptivePortalState
 NetworkPortalDetectorTestImpl::GetCaptivePortalState(
-    const chromeos::NetworkState* network) {
-  if (!network || !portal_state_map_.count(network->path()))
+    const std::string& service_path) {
+  CaptivePortalStateMap::iterator it = portal_state_map_.find(service_path);
+  if (it == portal_state_map_.end())
     return CaptivePortalState();
-  return portal_state_map_[network->path()];
+  return it->second;
 }
 
 bool NetworkPortalDetectorTestImpl::IsEnabled() {

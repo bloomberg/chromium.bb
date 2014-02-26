@@ -278,7 +278,8 @@ bool OAuth2LoginVerifier::DelayNetworkCall(const base::Closure& callback) {
   NetworkPortalDetector* detector = NetworkPortalDetector::Get();
   if (!default_network ||
       default_network->connection_state() == shill::kStatePortal ||
-      (detector && detector->GetCaptivePortalState(default_network).status !=
+      (detector &&
+       detector->GetCaptivePortalState(default_network->path()).status !=
            NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE)) {
     // If network is offline, defer the token fetching until online.
     LOG(WARNING) << "Network is offline. Deferring call.";

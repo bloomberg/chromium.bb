@@ -42,7 +42,7 @@ class NetworkPortalDetectorStubImpl : public NetworkPortalDetector {
   }
   virtual void RemoveObserver(Observer* /* observer */) OVERRIDE {}
   virtual CaptivePortalState GetCaptivePortalState(
-      const NetworkState* /* network */) OVERRIDE {
+      const std::string& /* service_path */) OVERRIDE {
     return CaptivePortalState();
   }
   virtual bool IsEnabled() OVERRIDE { return false; }

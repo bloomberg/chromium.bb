@@ -131,9 +131,12 @@ void NetworkPortalDetectorImpl::AddAndFireObserver(Observer* observer) {
   if (!observer)
     return;
   AddObserver(observer);
+  CaptivePortalState portal_state;
   const NetworkState* network =
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
-  observer->OnPortalDetectionCompleted(network, GetCaptivePortalState(network));
+  if (network)
+    portal_state = GetCaptivePortalState(network->path());
+  observer->OnPortalDetectionCompleted(network, portal_state);
 }
 
 void NetworkPortalDetectorImpl::RemoveObserver(Observer* observer) {
@@ -168,12 +171,11 @@ void NetworkPortalDetectorImpl::Enable(bool start_detection) {
 }
 
 NetworkPortalDetectorImpl::CaptivePortalState
-NetworkPortalDetectorImpl::GetCaptivePortalState(const NetworkState* network) {
+NetworkPortalDetectorImpl::GetCaptivePortalState(
+    const std::string& service_path) {
   DCHECK(CalledOnValidThread());
-  if (!network)
-    return CaptivePortalState();
   CaptivePortalStateMap::const_iterator it =
-      portal_state_map_.find(network->path());
+      portal_state_map_.find(service_path);
   if (it == portal_state_map_.end())
     return CaptivePortalState();
   return it->second;
@@ -242,7 +244,7 @@ void NetworkPortalDetectorImpl::DefaultNetworkChanged(
     // Initiate Captive Portal detection if network's captive
     // portal state is unknown (e.g. for freshly created networks),
     // offline or if network connection state was changed.
-    CaptivePortalState state = GetCaptivePortalState(default_network);
+    CaptivePortalState state = GetCaptivePortalState(default_network->path());
     if (state.status == CAPTIVE_PORTAL_STATUS_UNKNOWN ||
         state.status == CAPTIVE_PORTAL_STATUS_OFFLINE ||
         (!network_changed && connection_state_changed)) {

@@ -62,7 +62,7 @@ void ConfigureErrorScreen(ErrorScreen* screen,
       break;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL:
       screen->SetErrorState(ErrorScreen::ERROR_STATE_PORTAL,
-                            network->name());
+                            network ? network->name() : std::string());
       screen->FixCaptivePortal();
       break;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED:

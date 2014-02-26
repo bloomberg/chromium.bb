@@ -31,7 +31,7 @@ class NetworkPortalDetectorTestImpl : public NetworkPortalDetector {
   virtual void AddAndFireObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual CaptivePortalState GetCaptivePortalState(
-      const chromeos::NetworkState* network) OVERRIDE;
+      const std::string& service_path) OVERRIDE;
   virtual bool IsEnabled() OVERRIDE;
   virtual void Enable(bool start_detection) OVERRIDE;
   virtual bool StartDetectionIfIdle() OVERRIDE;

@@ -155,12 +155,9 @@ class NetworkPortalDetectorImplTest
 
   void CheckPortalState(NetworkPortalDetector::CaptivePortalStatus status,
                         int response_code,
-                        const std::string& network_service_path) {
-    const NetworkState* network =
-        NetworkHandler::Get()->network_state_handler()->GetNetworkState(
-            network_service_path);
+                        const std::string& service_path) {
     NetworkPortalDetector::CaptivePortalState state =
-        network_portal_detector()->GetCaptivePortalState(network);
+        network_portal_detector()->GetCaptivePortalState(service_path);
     ASSERT_EQ(status, state.status);
     ASSERT_EQ(response_code, state.response_code);
   }

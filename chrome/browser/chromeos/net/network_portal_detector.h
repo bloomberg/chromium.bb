@@ -75,9 +75,9 @@ class NetworkPortalDetector {
   // Removes |observer| from the observers list.
   virtual void RemoveObserver(Observer* observer) = 0;
 
-  // Returns Captive Portal state for a given |network|.
+  // Returns Captive Portal state for the network specified by |service_path|.
   virtual CaptivePortalState GetCaptivePortalState(
-      const chromeos::NetworkState* network) = 0;
+      const std::string& service_path) = 0;
 
   // Returns true if portal detection is enabled.
   virtual bool IsEnabled() = 0;
