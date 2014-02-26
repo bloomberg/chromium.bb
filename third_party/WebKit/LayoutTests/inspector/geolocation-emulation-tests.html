@@ -18,21 +18,37 @@ function overrideGeolocation()
         console.log(error.message);
     }
 
-    var mockLatitude = 100;
-    var mockLongitude = 200;
-    var mockAccuracy = 94;
+    navigator.geolocation.getCurrentPosition(testSuccess, testFailed);
+}
 
-    if (window.internals)
-        internals.setGeolocationPosition(document, mockLatitude, mockLongitude, mockAccuracy);
+function overridenTimestampGeolocation()
+{
+    function testSuccess(position)
+    {
+        if ((new Date(position.timestamp)).toDateString() == (new Date()).toDateString())
+            console.log("PASSED");
+        else
+            console.log("Unexpected error occured. Test failed.");
+    }
+
+    function testFailed(error)
+    {
+        console.log(error.message);
+    }
 
     navigator.geolocation.getCurrentPosition(testSuccess, testFailed);
 }
 
 function setup()
 {
+    var mockLatitude = 100;
+    var mockLongitude = 200;
+    var mockAccuracy = 94;
+
     if (window.internals) {
         internals.setGeolocationClientMock(document);
         internals.setGeolocationPermission(document, true);
+        internals.setGeolocationPosition(document, mockLatitude, mockLongitude, mockAccuracy);
     }
 }
 
@@ -70,6 +86,13 @@ function test()
         {
             GeolocationAgent.setGeolocationOverride(true, 500, 100);
             next();
+        },
+
+        function testTimestampOfOverridenPosition(next)
+        {
+            GeolocationAgent.setGeolocationOverride(-510, 500, 100);
+            InspectorTest.addConsoleSniffer(next);
+            InspectorTest.evaluateInPage("overridenTimestampGeolocation()");
         }
     ]);
 }

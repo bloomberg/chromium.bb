@@ -59,7 +59,7 @@ void GeolocationInspectorAgent::setGeolocationOverride(ErrorString* error, const
 
     m_geolocationOverridden = true;
     if (latitude && longitude && accuracy)
-        m_geolocationPosition = GeolocationPosition::create(currentTimeMS(), *latitude, *longitude, *accuracy);
+        m_geolocationPosition = GeolocationPosition::create(currentTime(), *latitude, *longitude, *accuracy);
     else
         m_geolocationPosition.clear();
 
