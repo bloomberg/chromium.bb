@@ -461,11 +461,7 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, DeleteSelfAtLoad) {
 #endif  // !defined(USE_AURA) || defined(OS_WIN)
 
 #if defined(ENABLE_PLUGINS)
-
-class PepperContentSettingsTest : public ContentSettingsTest {
- public:
-  PepperContentSettingsTest() {}
-
+class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
  protected:
   static const char* const kExternalClearKeyMimeType;
 
@@ -520,15 +516,15 @@ class PepperContentSettingsTest : public ContentSettingsTest {
              base::StringPrintf("?mimetype=%s", mime_type));
     ui_test_utils::NavigateToURL(browser(), url);
 
-    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle()) << mime_type;
+    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
     EXPECT_EQ(!expect_loaded,
               TabSpecificContentSettings::FromWebContents(web_contents)->
-                  IsContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS)) << mime_type;
+                  IsContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS));
   }
 
   void RunJavaScriptBlockedTest(const char* html_file,
                                 bool expect_is_javascript_content_blocked) {
-    // Because JavaScript is disabled, <title> will be the only title set.
+    // Because JavaScript is blocked, <title> will be the only title set.
     // Checking for it ensures that the page loaded, though that is not always
     // sufficient - see below.
     const char* const kExpectedTitle = "Initial Title";
@@ -539,7 +535,7 @@ class PepperContentSettingsTest : public ContentSettingsTest {
     base::string16 expected_title(base::ASCIIToUTF16(kExpectedTitle));
     content::TitleWatcher title_watcher(web_contents, expected_title);
 
-    // Because JavaScript is disabled, we cannot rely on JavaScript to set a
+    // Because JavaScript is blocked, we cannot rely on JavaScript to set a
     // title, telling us the test is complete.
     // As a result, it is possible to reach the IsContentBlocked() checks below
     // before the blocked content can be reported to the browser process.
@@ -561,7 +557,7 @@ class PepperContentSettingsTest : public ContentSettingsTest {
     ui_test_utils::NavigateToURL(browser(), url);
 
     // Always wait for the page to load.
-    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle()) << html_file;
+    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
     if (expect_is_javascript_content_blocked) {
       javascript_content_blocked_observer.Wait();
@@ -575,10 +571,8 @@ class PepperContentSettingsTest : public ContentSettingsTest {
     }
 
     EXPECT_EQ(expect_is_javascript_content_blocked,
-              tab_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT))
-        << html_file;
-    EXPECT_FALSE(tab_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS))
-        << html_file;
+              tab_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+    EXPECT_FALSE(tab_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS));
   }
 
  private:
@@ -613,63 +607,126 @@ class PepperContentSettingsTest : public ContentSettingsTest {
   }
 };
 
-const char* const PepperContentSettingsTest::kExternalClearKeyMimeType =
+const char* const
+PepperContentSettingsSpecialCasesTest::kExternalClearKeyMimeType =
     "application/x-ppapi-clearkey-cdm";
 
-// Tests Pepper plugins that use JavaScript instead of Plug-ins settings.
-IN_PROC_BROWSER_TEST_F(PepperContentSettingsTest, PluginSpecialCases) {
+class PepperContentSettingsSpecialCasesPluginsBlockedTest
+    : public PepperContentSettingsSpecialCasesTest {
+ public:
+  virtual void SetUpOnMainThread() OVERRIDE {
+    PepperContentSettingsSpecialCasesTest::SetUpOnMainThread();
+    browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
+        CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_BLOCK);
+  }
+};
+
+class PepperContentSettingsSpecialCasesJavaScriptBlockedTest
+    : public PepperContentSettingsSpecialCasesTest {
+ public:
+  virtual void SetUpOnMainThread() OVERRIDE {
+    PepperContentSettingsSpecialCasesTest::SetUpOnMainThread();
+    browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
+        CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_ALLOW);
+    browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
+        CONTENT_SETTINGS_TYPE_JAVASCRIPT, CONTENT_SETTING_BLOCK);
+  }
+};
+
+#if defined(ENABLE_PEPPER_CDMS)
+// A sanity check to verify that the plugin that is used as a baseline below
+// can be loaded.
+IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesTest, Baseline) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
     return;
 #endif
-
-  HostContentSettingsMap* content_settings =
-      browser()->profile()->GetHostContentSettingsMap();
-
-  // First, verify that this plugin can be loaded.
-  content_settings->SetDefaultContentSetting(
+  browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_ALLOW);
 
-#if defined(ENABLE_PEPPER_CDMS)
   RunLoadPepperPluginTest(kExternalClearKeyMimeType, true);
-#endif  // defined(ENABLE_PEPPER_CDMS)
-
-  // Next, test behavior when plug-ins are blocked.
-  content_settings->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_BLOCK);
-
-#if defined(ENABLE_PEPPER_CDMS)
-  // The plugin we loaded above does not load now.
-  RunLoadPepperPluginTest(kExternalClearKeyMimeType, false);
-
-#if defined(WIDEVINE_CDM_AVAILABLE)
-  RunLoadPepperPluginTest(kWidevineCdmPluginMimeType, true);
-#endif  // defined(WIDEVINE_CDM_AVAILABLE)
-#endif  // defined(ENABLE_PEPPER_CDMS)
-
-#if !defined(DISABLE_NACL)
-  RunLoadPepperPluginTest("application/x-nacl", true);
-#endif  // !defined(DISABLE_NACL)
-
-  // Finally, test behavior when (just) JavaScript is blocked.
-  content_settings->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_ALLOW);
-  content_settings->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_JAVASCRIPT, CONTENT_SETTING_BLOCK);
-
-#if defined(ENABLE_PEPPER_CDMS)
-  // This plugin has no special behavior and does not require JavaScript.
-  RunJavaScriptBlockedTest("load_clearkey_no_js.html", false);
-
-#if defined(WIDEVINE_CDM_AVAILABLE)
-  RunJavaScriptBlockedTest("load_widevine_no_js.html", true);
-#endif  // defined(WIDEVINE_CDM_AVAILABLE)
-#endif  // defined(ENABLE_PEPPER_CDMS)
-
-#if !defined(DISABLE_NACL)
-  RunJavaScriptBlockedTest("load_nacl_no_js.html", true);
-#endif  // !defined(DISABLE_NACL)
 }
+#endif  // defined(ENABLE_PEPPER_CDMS)
+
+// The following tests verify that Pepper plugins that use JavaScript settings
+// instead of Plug-ins settings still work when Plug-ins are blocked.
+
+#if defined(ENABLE_PEPPER_CDMS)
+// The plugin successfully loaded above is blocked.
+IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesPluginsBlockedTest,
+                       Normal) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+    return;
+#endif
+  RunLoadPepperPluginTest(kExternalClearKeyMimeType, false);
+}
+
+#if defined(WIDEVINE_CDM_AVAILABLE)
+IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesPluginsBlockedTest,
+                       WidevineCdm) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+    return;
+#endif
+  RunLoadPepperPluginTest(kWidevineCdmPluginMimeType, true);
+}
+#endif  // defined(WIDEVINE_CDM_AVAILABLE)
+#endif  // defined(ENABLE_PEPPER_CDMS)
+
+#if !defined(DISABLE_NACL)
+IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesPluginsBlockedTest,
+                       NaCl) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+    return;
+#endif
+  RunLoadPepperPluginTest("application/x-nacl", true);
+}
+#endif  // !defined(DISABLE_NACL)
+
+// The following tests verify that those same Pepper plugins do not work when
+// JavaScript is blocked.
+
+#if defined(ENABLE_PEPPER_CDMS)
+// A plugin with no special behavior is not blocked when JavaScript is blocked.
+IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesJavaScriptBlockedTest,
+                       Normal) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+    return;
+#endif
+  RunJavaScriptBlockedTest("load_clearkey_no_js.html", false);
+}
+
+#if defined(WIDEVINE_CDM_AVAILABLE)
+IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesJavaScriptBlockedTest,
+                       WidevineCdm) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+    return;
+#endif
+  RunJavaScriptBlockedTest("load_widevine_no_js.html", true);
+}
+#endif  // defined(WIDEVINE_CDM_AVAILABLE)
+#endif  // defined(ENABLE_PEPPER_CDMS)
+
+#if !defined(DISABLE_NACL)
+IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesJavaScriptBlockedTest,
+                       NaCl) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+    return;
+#endif
+  RunJavaScriptBlockedTest("load_nacl_no_js.html", true);
+}
+#endif  // !defined(DISABLE_NACL)
 
 #endif  // defined(ENABLE_PLUGINS)
