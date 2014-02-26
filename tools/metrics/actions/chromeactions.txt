@@ -1249,7 +1249,6 @@
 0xaa0f56a837e6fc61	MobileFreAttemptSignIn
 0xe18a359c1fcb3fbb	MobileFreSignInSuccessful
 0x1d68dcd4ec7fdadc	MobileFreSkipSignIn
-0xc1f6ed72ec9320f0	MobileMWSession
 0xd593c486af2f742f	MobileMenuAddToBookmarks
 0x952e55d25fd7f645	MobileMenuAllBookmarks
 0x012de2560a8ce076	MobileMenuBack

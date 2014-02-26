@@ -258,7 +258,6 @@ def AddAndroidActions(actions):
   actions.add('MobileMenuSettings')
   actions.add('MobileMenuShare')
   actions.add('MobileMenuShow')
-  actions.add('MobileMWSession')
   actions.add('MobileNTPBookmark')
   actions.add('MobileNTPForeignSession')
   actions.add('MobileNTPMostVisited')
