@@ -32,7 +32,7 @@
             '../native_client/tools.gyp:prep_toolchain',
             '../base/base_nacl.gyp:base_nacl',
             '../gpu/gpu_nacl.gyp:gpu_ipc_nacl',
-            '../ipc/ipc_untrusted.gyp:ipc_untrusted',
+            '../ipc/ipc_nacl.gyp:ipc_nacl',
             '../ppapi/ppapi_shared_untrusted.gyp:ppapi_shared_untrusted',
             '../components/tracing_untrusted.gyp:tracing_untrusted',
           ],

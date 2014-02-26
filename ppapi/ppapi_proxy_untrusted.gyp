@@ -36,7 +36,7 @@
             '../gpu/gpu_nacl.gyp:gles2_implementation_nacl',
             '../gpu/gpu_nacl.gyp:gles2_cmd_helper_nacl',
             '../gpu/gpu_nacl.gyp:gpu_ipc_nacl',
-            '../ipc/ipc_untrusted.gyp:ipc_untrusted',
+            '../ipc/ipc_nacl.gyp:ipc_nacl',
             '../ppapi/ppapi_shared_untrusted.gyp:ppapi_shared_untrusted',
             '../ppapi/ppapi_ipc_untrusted.gyp:ppapi_ipc_untrusted',
             '../third_party/khronos/khronos.gyp:khronos_headers',
