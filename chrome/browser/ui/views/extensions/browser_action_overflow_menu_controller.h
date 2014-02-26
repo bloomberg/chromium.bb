@@ -10,12 +10,15 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 
 class Browser;
 class BrowserActionsContainer;
 class BrowserActionView;
+
+class IconUpdater;
 
 namespace views {
 class MenuRunner;
@@ -114,6 +117,11 @@ class BrowserActionOverflowMenuController : public views::MenuDelegate {
 
   // Whether this controller is being used for drop.
   bool for_drop_;
+
+  // The vector keeps all icon updaters associated with menu item views in the
+  // controller. The icon updater will update the menu item view's icon when
+  // the browser action view's icon has been updated.
+  ScopedVector<IconUpdater> icon_updaters_;
 
   friend class base::DeleteHelper<BrowserActionOverflowMenuController>;
 

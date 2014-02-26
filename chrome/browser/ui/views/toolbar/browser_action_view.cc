@@ -63,16 +63,7 @@ BrowserActionView::~BrowserActionView() {
 }
 
 gfx::ImageSkia BrowserActionView::GetIconWithBadge() {
-  int tab_id = delegate_->GetCurrentTabId();
-
-  const ExtensionAction* action =
-      extensions::ExtensionActionManager::Get(browser_->profile())->
-      GetBrowserAction(*button_->extension());
-  gfx::Size spacing(0, ToolbarView::kVertSpacing);
-  gfx::ImageSkia icon = *button_->icon_factory().GetIcon(tab_id).ToImageSkia();
-  if (!button_->IsEnabled(tab_id))
-    icon = gfx::ImageSkiaOperations::CreateTransparentImage(icon, .25);
-  return action->GetIconWithBadge(icon, tab_id, spacing);
+  return button_->GetIconWithBadge();
 }
 
 void BrowserActionView::Layout() {
@@ -122,7 +113,8 @@ BrowserActionButton::BrowserActionButton(const Extension* extension,
       icon_factory_(browser->profile(), extension, browser_action_, this),
       delegate_(delegate),
       context_menu_(NULL),
-      called_registered_extension_command_(false) {
+      called_registered_extension_command_(false),
+      icon_observer_(NULL) {
   SetBorder(views::Border::NullBorder());
   set_alignment(TextButton::ALIGN_CENTER);
   set_context_menu_controller(this);
@@ -311,6 +303,8 @@ void BrowserActionButton::Observe(int type,
 
 void BrowserActionButton::OnIconUpdated() {
   UpdateState();
+  if (icon_observer_)
+    icon_observer_->OnIconUpdated(GetIconWithBadge());
 }
 
 bool BrowserActionButton::Activate() {
@@ -391,6 +385,15 @@ void BrowserActionButton::SetButtonNotPushed() {
 
 bool BrowserActionButton::IsEnabled(int tab_id) const {
   return browser_action_->GetIsVisible(tab_id);
+}
+
+gfx::ImageSkia BrowserActionButton::GetIconWithBadge() {
+  int tab_id = delegate_->GetCurrentTabId();
+  gfx::Size spacing(0, ToolbarView::kVertSpacing);
+  gfx::ImageSkia icon = *icon_factory_.GetIcon(tab_id).ToImageSkia();
+  if (!IsEnabled(tab_id))
+    icon = gfx::ImageSkiaOperations::CreateTransparentImage(icon, .25);
+  return browser_action_->GetIconWithBadge(icon, tab_id, spacing);
 }
 
 gfx::ImageSkia BrowserActionButton::GetIconForTest() {

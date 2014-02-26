@@ -21,6 +21,43 @@
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/widget/widget.h"
 
+// In the browser actions container's chevron menu, a menu item view's icon
+// comes from BrowserActionView::GetIconWithBadge() (which comes from the
+// browser action button's icon) when the menu item view is created. But, the
+// browser action button's icon may not be loaded in time because it is read
+// from file system in another thread.
+// The IconUpdater will update the menu item view's icon when the browser
+// action button's icon has been updated.
+class IconUpdater : public BrowserActionButton::IconObserver {
+ public:
+  IconUpdater(views::MenuItemView* menu_item_view,
+              BrowserActionButton* button)
+      : menu_item_view_(menu_item_view),
+        button_(button) {
+    DCHECK(menu_item_view);
+    DCHECK(button);
+    button->set_icon_observer(this);
+  }
+  virtual ~IconUpdater() {
+    button_->set_icon_observer(NULL);
+  }
+
+  // Overridden from BrowserActionButton::IconObserver:
+  virtual void OnIconUpdated(const gfx::ImageSkia& icon) OVERRIDE {
+    menu_item_view_->SetIcon(icon);
+  }
+
+ private:
+  // The menu item view whose icon might be updated.
+  views::MenuItemView* menu_item_view_;
+
+  // The button to be observed. When its icon changes, update the corresponding
+  // menu item view's icon.
+  BrowserActionButton* button_;
+
+  DISALLOW_COPY_AND_ASSIGN(IconUpdater);
+};
+
 BrowserActionOverflowMenuController::BrowserActionOverflowMenuController(
     BrowserActionsContainer* owner,
     Browser* browser,
@@ -42,7 +79,7 @@ BrowserActionOverflowMenuController::BrowserActionOverflowMenuController(
   size_t command_id = 1;  // Menu id 0 is reserved, start with 1.
   for (size_t i = start_index; i < views_->size(); ++i) {
     BrowserActionView* view = (*views_)[i];
-    menu_->AppendMenuItemWithIcon(
+    views::MenuItemView* menu_item = menu_->AppendMenuItemWithIcon(
         command_id,
         base::UTF8ToUTF16(view->button()->extension()->name()),
         view->GetIconWithBadge());
@@ -53,6 +90,8 @@ BrowserActionOverflowMenuController::BrowserActionOverflowMenuController(
         GetBrowserAction(*view->button()->extension())->
         GetTitle(owner_->GetCurrentTabId()));
     menu_->SetTooltip(tooltip, command_id);
+
+    icon_updaters_.push_back(new IconUpdater(menu_item, view->button()));
 
     ++command_id;
   }

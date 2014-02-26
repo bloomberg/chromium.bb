@@ -111,6 +111,16 @@ class BrowserActionButton : public views::MenuButton,
                             public content::NotificationObserver,
                             public ExtensionActionIconFactory::Observer {
  public:
+  // The IconObserver will receive a notification when the button's icon has
+  // been updated.
+  class IconObserver {
+   public:
+    virtual void OnIconUpdated(const gfx::ImageSkia& icon) = 0;
+
+   protected:
+    virtual ~IconObserver() {}
+  };
+
   BrowserActionButton(const extensions::Extension* extension,
                       Browser* browser_,
                       BrowserActionView::Delegate* delegate);
@@ -120,6 +130,10 @@ class BrowserActionButton : public views::MenuButton,
 
   ExtensionAction* browser_action() const { return browser_action_; }
   const extensions::Extension* extension() { return extension_; }
+
+  void set_icon_observer(IconObserver* icon_observer) {
+    icon_observer_ = icon_observer;
+  }
 
   // Called to update the display to match the browser action's state.
   void UpdateState();
@@ -177,6 +191,9 @@ class BrowserActionButton : public views::MenuButton,
   // Returns icon factory for the button.
   ExtensionActionIconFactory& icon_factory() { return icon_factory_; }
 
+  // Gets the icon of this button and its badge.
+  gfx::ImageSkia GetIconWithBadge();
+
   // Returns button icon so it can be accessed during tests.
   gfx::ImageSkia GetIconForTest();
 
@@ -229,6 +246,10 @@ class BrowserActionButton : public views::MenuButton,
 
   // Responsible for running the menu.
   scoped_ptr<views::MenuRunner> menu_runner_;
+
+  // The observer that we need to notify when the icon of the button has been
+  // updated.
+  IconObserver* icon_observer_;
 
   friend class base::DeleteHelper<BrowserActionButton>;
 
