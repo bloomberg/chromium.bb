@@ -1381,5 +1381,5 @@ remoting.ClientSession.prototype.onMouseMove_ = function(event) {
 remoting.ClientSession.prototype.sendClipboardItem = function(mimeType, item) {
   if (!this.plugin_)
     return;
-  this.plugin_.sendClipboardItem(mimeType, item)
+  this.plugin_.sendClipboardItem(mimeType, item);
 };

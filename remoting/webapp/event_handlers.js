@@ -26,7 +26,7 @@ function onLoad() {
     if (remoting.currentMode == remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME) {
       remoting.setMode(remoting.AppMode.CLIENT_UNCONNECTED);
     } else {
-      remoting.setMode(remoting.AppMode.HOME);
+      goHome();
     }
   };
   /** @param {Event} event The event. */

@@ -175,7 +175,7 @@ remoting.HostTableEntry.prototype.updateStatus = function(opt_forEdit) {
   if (clickToConnect) {
     if (!this.onConnectReference_) {
       /** @type {string} */
-      var encodedHostId = encodeURIComponent(this.host.hostId)
+      var encodedHostId = encodeURIComponent(this.host.hostId);
       this.onConnectReference_ = function() {
         remoting.connectMe2Me(encodedHostId);
       };
