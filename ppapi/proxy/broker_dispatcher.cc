@@ -24,8 +24,9 @@ bool BrokerDispatcher::InitBrokerWithChannel(
     base::ProcessId peer_pid,
     const IPC::ChannelHandle& channel_handle,
     bool is_client) {
-  return ProxyChannel::InitWithChannel(delegate, peer_pid, channel_handle,
-                                       is_client);
+  InitWithChannel(delegate, peer_pid);
+  ConnectChannel(channel_handle, is_client);
+  return true;
 }
 
 bool BrokerDispatcher::OnMessageReceived(const IPC::Message& msg) {

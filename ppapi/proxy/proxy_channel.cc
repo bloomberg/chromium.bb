@@ -25,18 +25,19 @@ ProxyChannel::~ProxyChannel() {
   DVLOG(1) << "ProxyChannel::~ProxyChannel()";
 }
 
-bool ProxyChannel::InitWithChannel(Delegate* delegate,
-                                   base::ProcessId peer_pid,
-                                   const IPC::ChannelHandle& channel_handle,
-                                   bool is_client) {
+void ProxyChannel::InitWithChannel(Delegate* delegate,
+                                   base::ProcessId peer_pid) {
   delegate_ = delegate;
   peer_pid_ = peer_pid;
+  channel_.reset(new IPC::SyncChannel(this, delegate->GetIPCMessageLoop(),
+                                      delegate->GetShutdownEvent()));
+}
+
+void ProxyChannel::ConnectChannel(const IPC::ChannelHandle& channel_handle,
+                                  bool is_client) {
   IPC::Channel::Mode mode = is_client ? IPC::Channel::MODE_CLIENT
                                       : IPC::Channel::MODE_SERVER;
-  channel_.reset(new IPC::SyncChannel(channel_handle, mode, this,
-                                      delegate->GetIPCMessageLoop(), true,
-                                      delegate->GetShutdownEvent()));
-  return true;
+  channel_->Init(channel_handle, mode, true);
 }
 
 void ProxyChannel::InitWithTestSink(IPC::TestSink* test_sink) {
