@@ -462,6 +462,37 @@ public:
     }
 };
 
+template<bool needsTracing, typename T>
+struct StdPairHelper;
+
+template<typename T>
+struct StdPairHelper<false, T>  {
+    static void trace(Visitor*, T*) { }
+};
+
+template<typename T>
+struct StdPairHelper<true, T> {
+    static void trace(Visitor* visitor, T* t)
+    {
+        visitor->trace(*t);
+    }
+};
+
+// This trace trait for std::pair will null weak members if their referent is
+// collected. If you have a collection that contain weakness it does not remove
+// entries from the collection that contain nulled weak members.
+template<typename T, typename U>
+class TraceTrait<std::pair<T, U> > {
+public:
+    static const bool firstNeedsTracing = WTF::NeedsTracing<T>::value || WTF::IsWeak<T>::value;
+    static const bool secondNeedsTracing = WTF::NeedsTracing<U>::value || WTF::IsWeak<U>::value;
+    static void trace(Visitor* visitor, std::pair<T, U>* pair)
+    {
+        StdPairHelper<firstNeedsTracing, T>::trace(visitor, &pair->first);
+        StdPairHelper<secondNeedsTracing, U>::trace(visitor, &pair->second);
+    }
+};
+
 // WeakMember is similar to Member in that it is used to point to other oilpan
 // heap allocated objects.
 // However instead of creating a strong pointer to the object, the WeakMember creates
@@ -769,6 +800,11 @@ template<typename T> inline T* getPtr(const WebCore::Member<T>& p)
 {
     return p.get();
 }
+
+template<typename T, typename U>
+struct NeedsTracing<std::pair<T, U> > {
+    static const bool value = NeedsTracing<T>::value || NeedsTracing<U>::value || IsWeak<T>::value || IsWeak<U>::value;
+};
 
 } // namespace WTF
 
