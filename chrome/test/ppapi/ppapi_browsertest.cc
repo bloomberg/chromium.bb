@@ -486,13 +486,18 @@ TEST_PPAPI_NACL(HostResolverPrivate_ResolveIPv4)
 
 // URLLoader tests. These are split into multiple test fixtures because if we
 // run them all together, they tend to time out.
-IN_PROC_BROWSER_TEST_F(PPAPITest, URLLoader1) {
+IN_PROC_BROWSER_TEST_F(PPAPITest, URLLoader0) {
   RunTestViaHTTP(
       LIST_TEST(URLLoader_BasicGET)
       LIST_TEST(URLLoader_BasicPOST)
       LIST_TEST(URLLoader_BasicFilePOST)
       LIST_TEST(URLLoader_BasicFileRangePOST)
       LIST_TEST(URLLoader_CompoundBodyPOST)
+  );
+}
+
+IN_PROC_BROWSER_TEST_F(PPAPITest, URLLoader1) {
+  RunTestViaHTTP(
       LIST_TEST(URLLoader_EmptyDataPOST)
       LIST_TEST(URLLoader_BinaryDataPOST)
       LIST_TEST(URLLoader_CustomRequestHeader)
@@ -523,13 +528,17 @@ IN_PROC_BROWSER_TEST_F(PPAPITest, URLLoader3) {
       LIST_TEST(URLLoader_PrefetchBufferThreshold)
   );
 }
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, URLLoader1) {
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, URLLoader0) {
   RunTestViaHTTP(
       LIST_TEST(URLLoader_BasicGET)
       LIST_TEST(URLLoader_BasicPOST)
       LIST_TEST(URLLoader_BasicFilePOST)
       LIST_TEST(URLLoader_BasicFileRangePOST)
       LIST_TEST(URLLoader_CompoundBodyPOST)
+  );
+}
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, URLLoader1) {
+  RunTestViaHTTP(
       LIST_TEST(URLLoader_EmptyDataPOST)
       LIST_TEST(URLLoader_BinaryDataPOST)
       LIST_TEST(URLLoader_CustomRequestHeader)
@@ -560,13 +569,17 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, URLLoader3) {
       LIST_TEST(URLLoader_PrefetchBufferThreshold)
   );
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, URLLoader1) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, URLLoader0) {
   RunTestViaHTTP(
       LIST_TEST(URLLoader_BasicGET)
       LIST_TEST(URLLoader_BasicPOST)
       LIST_TEST(URLLoader_BasicFilePOST)
       LIST_TEST(URLLoader_BasicFileRangePOST)
       LIST_TEST(URLLoader_CompoundBodyPOST)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, URLLoader1) {
+  RunTestViaHTTP(
       LIST_TEST(URLLoader_EmptyDataPOST)
       LIST_TEST(URLLoader_BinaryDataPOST)
       LIST_TEST(URLLoader_CustomRequestHeader)
@@ -605,13 +618,17 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, URLLoader3) {
 #else
 #define MAYBE_URLLoader_BasicFilePOST URLLoader_BasicFilePOST
 #endif
-IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, URLLoader1) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, URLLoader0) {
   RunTestViaHTTP(
       LIST_TEST(URLLoader_BasicGET)
       LIST_TEST(URLLoader_BasicPOST)
       LIST_TEST(MAYBE_URLLoader_BasicFilePOST)
       LIST_TEST(URLLoader_BasicFileRangePOST)
       LIST_TEST(URLLoader_CompoundBodyPOST)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, URLLoader1) {
+  RunTestViaHTTP(
       LIST_TEST(URLLoader_EmptyDataPOST)
       LIST_TEST(URLLoader_BinaryDataPOST)
       LIST_TEST(URLLoader_CustomRequestHeader)
@@ -643,13 +660,17 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, URLLoader3) {
       LIST_TEST(URLLoader_PrefetchBufferThreshold)
   );
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, URLLoader1) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, URLLoader0) {
   RunTestViaHTTP(
       LIST_TEST(URLLoader_BasicGET)
       LIST_TEST(URLLoader_BasicPOST)
       LIST_TEST(URLLoader_BasicFilePOST)
       LIST_TEST(URLLoader_BasicFileRangePOST)
       LIST_TEST(URLLoader_CompoundBodyPOST)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, URLLoader1) {
+  RunTestViaHTTP(
       LIST_TEST(URLLoader_EmptyDataPOST)
       LIST_TEST(URLLoader_BinaryDataPOST)
       LIST_TEST(URLLoader_CustomRequestHeader)
