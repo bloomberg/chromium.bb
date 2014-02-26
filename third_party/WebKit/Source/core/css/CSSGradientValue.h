@@ -252,4 +252,13 @@ DEFINE_CSS_VALUE_TYPE_CASTS(CSSRadialGradientValue, isRadialGradientValue());
 
 } // namespace WebCore
 
+namespace WTF {
+
+// This must be declared in the WTF namespace to please the compiler.
+template<>
+struct NeedsTracing<WebCore::CSSGradientColorStop> {
+    static const bool value = true;
+};
+
+} // namespace WTF
 #endif // CSSGradientValue_h
