@@ -69,6 +69,8 @@ public:
     virtual bool allowScriptExtension(const String& extensionName, int extensionGroup, int worldId) OVERRIDE;
 
     virtual bool hasWebView() const OVERRIDE;
+    virtual WebCore::LocalFrame* opener() const OVERRIDE;
+    virtual void setOpener(WebCore::LocalFrame*) OVERRIDE;
     virtual WebCore::LocalFrame* parent() const OVERRIDE;
     virtual WebCore::LocalFrame* top() const OVERRIDE;
     virtual WebCore::LocalFrame* previousSibling() const OVERRIDE;
@@ -105,7 +107,6 @@ public:
     virtual void loadURLExternally(const WebCore::ResourceRequest&, WebCore::NavigationPolicy, const String& suggestedName = String()) OVERRIDE;
     virtual bool navigateBackForward(int offset) const OVERRIDE;
     virtual void didAccessInitialDocument() OVERRIDE;
-    virtual void didDisownOpener() OVERRIDE;
     virtual void didDisplayInsecureContent() OVERRIDE;
     virtual void didRunInsecureContent(WebCore::SecurityOrigin*, const WebCore::KURL& insecureURL) OVERRIDE;
     virtual void didDetectXSS(const WebCore::KURL&, bool didBlockEntirePage) OVERRIDE;

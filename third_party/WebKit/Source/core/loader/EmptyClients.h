@@ -176,6 +176,9 @@ public:
 
     virtual bool hasWebView() const OVERRIDE { return true; } // mainly for assertions
 
+    virtual LocalFrame* opener() const OVERRIDE { return 0; }
+    virtual void setOpener(LocalFrame*) OVERRIDE { }
+
     virtual LocalFrame* parent() const OVERRIDE { return 0; }
     virtual LocalFrame* top() const OVERRIDE { return 0; }
     virtual LocalFrame* previousSibling() const OVERRIDE { return 0; }

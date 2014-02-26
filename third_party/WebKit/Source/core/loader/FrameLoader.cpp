@@ -151,7 +151,6 @@ FrameLoader::FrameLoader(LocalFrame* frame, FrameLoaderClient* client)
     , m_isComplete(false)
     , m_checkTimer(this, &FrameLoader::checkTimerFired)
     , m_shouldCallCheckCompleted(false)
-    , m_opener(0)
     , m_didAccessInitialDocument(false)
     , m_didAccessInitialDocumentTimer(this, &FrameLoader::didAccessInitialDocumentTimerFired)
     , m_forcedSandboxFlags(SandboxNone)
@@ -160,9 +159,6 @@ FrameLoader::FrameLoader(LocalFrame* frame, FrameLoaderClient* client)
 
 FrameLoader::~FrameLoader()
 {
-    HashSet<LocalFrame*>::iterator end = m_openedFrames.end();
-    for (HashSet<LocalFrame*>::iterator it = m_openedFrames.begin(); it != end; ++it)
-        (*it)->loader().m_opener = 0;
 }
 
 void FrameLoader::init()
@@ -524,22 +520,14 @@ void FrameLoader::scheduleCheckCompleted()
 
 LocalFrame* FrameLoader::opener()
 {
-    return m_opener;
+    ASSERT(m_client);
+    return m_client->opener();
 }
 
 void FrameLoader::setOpener(LocalFrame* opener)
 {
-    if (m_opener && !opener)
-        m_client->didDisownOpener();
-
-    if (m_opener)
-        m_opener->loader().m_openedFrames.remove(m_frame);
-    if (opener)
-        opener->loader().m_openedFrames.add(m_frame);
-    m_opener = opener;
-
-    if (m_frame->document())
-        m_frame->document()->initSecurityContext();
+    ASSERT(m_client);
+    m_client->setOpener(opener);
 }
 
 bool FrameLoader::allowPlugins(ReasonForCallingAllowPlugins reason)

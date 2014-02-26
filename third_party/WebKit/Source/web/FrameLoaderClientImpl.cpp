@@ -238,6 +238,17 @@ bool FrameLoaderClientImpl::hasWebView() const
     return m_webFrame->viewImpl();
 }
 
+LocalFrame* FrameLoaderClientImpl::opener() const
+{
+    WebFrameImpl* opener = toWebFrameImpl(m_webFrame->opener());
+    return opener ? opener->frame() : 0;
+}
+
+void FrameLoaderClientImpl::setOpener(LocalFrame* opener)
+{
+    m_webFrame->setOpener(WebFrameImpl::fromFrame(opener));
+}
+
 LocalFrame* FrameLoaderClientImpl::parent() const
 {
     WebFrameImpl* frame = toWebFrameImpl(m_webFrame->parent());
@@ -534,12 +545,6 @@ void FrameLoaderClientImpl::didAccessInitialDocument()
 {
     if (m_webFrame->client())
         m_webFrame->client()->didAccessInitialDocument(m_webFrame);
-}
-
-void FrameLoaderClientImpl::didDisownOpener()
-{
-    if (m_webFrame->client())
-        m_webFrame->client()->didDisownOpener(m_webFrame);
 }
 
 void FrameLoaderClientImpl::didDisplayInsecureContent()

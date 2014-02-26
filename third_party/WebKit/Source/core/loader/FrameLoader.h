@@ -270,9 +270,6 @@ private:
     Timer<FrameLoader> m_checkTimer;
     bool m_shouldCallCheckCompleted;
 
-    LocalFrame* m_opener;
-    HashSet<LocalFrame*> m_openedFrames;
-
     bool m_didAccessInitialDocument;
     Timer<FrameLoader> m_didAccessInitialDocumentTimer;
 

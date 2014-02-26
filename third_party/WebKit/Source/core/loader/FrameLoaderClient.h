@@ -93,6 +93,9 @@ class FetchRequest;
 
         virtual bool hasWebView() const = 0; // mainly for assertions
 
+        virtual LocalFrame* opener() const = 0;
+        virtual void setOpener(LocalFrame*) = 0;
+
         virtual LocalFrame* parent() const = 0;
         virtual LocalFrame* top() const = 0;
         virtual LocalFrame* previousSibling() const = 0;
@@ -141,11 +144,6 @@ class FetchRequest;
         // It is no longer safe to display a provisional URL, since a URL spoof
         // is now possible.
         virtual void didAccessInitialDocument() { }
-
-        // This frame has set its opener to null, disowning it for the lifetime of the frame.
-        // See http://html.spec.whatwg.org/#dom-opener.
-        // FIXME: JSC should allow disowning opener. - <https://bugs.webkit.org/show_bug.cgi?id=103913>.
-        virtual void didDisownOpener() { }
 
         // This frame has displayed inactive content (such as an image) from an
         // insecure source.  Inactive content cannot spread to other frames.

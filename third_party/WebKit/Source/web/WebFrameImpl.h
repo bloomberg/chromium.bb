@@ -38,6 +38,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "public/platform/WebFileSystemType.h"
 #include "wtf/Compiler.h"
+#include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -95,7 +96,7 @@ public:
     virtual bool hasVerticalScrollbar() const OVERRIDE;
     virtual WebView* view() const OVERRIDE;
     virtual WebFrame* opener() const OVERRIDE;
-    virtual void setOpener(const WebFrame*) OVERRIDE;
+    virtual void setOpener(WebFrame*) OVERRIDE;
     virtual void appendChild(WebFrame*) OVERRIDE;
     virtual void removeChild(WebFrame*) OVERRIDE;
     virtual WebFrame* parent() const OVERRIDE;
@@ -436,12 +437,16 @@ private:
 
     // The embedder retains a reference to the WebCore LocalFrame while it is active in the DOM. This
     // reference is released when the frame is removed from the DOM or the entire page is closed.
+    // FIXME: These will need to change to WebFrame when we introduce WebFrameProxy.
     RefPtr<WebCore::LocalFrame> m_frame;
     WebFrameImpl* m_parent;
     WebFrameImpl* m_previousSibling;
     WebFrameImpl* m_nextSibling;
     WebFrameImpl* m_firstChild;
     WebFrameImpl* m_lastChild;
+
+    WebFrameImpl* m_opener;
+    WTF::HashSet<WebFrameImpl*> m_openedFrames;
 
     // Indicate whether the current LocalFrame is local or remote. Remote frames are
     // rendered in a different process from their parent frames.

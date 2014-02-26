@@ -638,14 +638,24 @@ WebView* WebFrameImpl::view() const
 
 WebFrame* WebFrameImpl::opener() const
 {
-    if (!frame())
-        return 0;
-    return fromFrame(frame()->loader().opener());
+    return m_opener;
 }
 
-void WebFrameImpl::setOpener(const WebFrame* webFrame)
+void WebFrameImpl::setOpener(WebFrame* opener)
 {
-    frame()->loader().setOpener(webFrame ? toWebFrameImpl(webFrame)->frame() : 0);
+    WebFrameImpl* openerImpl = toWebFrameImpl(opener);
+    if (m_opener && !openerImpl && m_client)
+        m_client->didDisownOpener(this);
+
+    if (m_opener)
+        m_opener->m_openedFrames.remove(this);
+    if (openerImpl)
+        openerImpl->m_openedFrames.add(this);
+    m_opener = openerImpl;
+
+    ASSERT(m_frame);
+    if (m_frame && m_frame->document())
+        m_frame->document()->initSecurityContext();
 }
 
 void WebFrameImpl::appendChild(WebFrame* child)
@@ -2105,6 +2115,7 @@ WebFrameImpl::WebFrameImpl(WebFrameClient* client)
     , m_nextSibling(0)
     , m_firstChild(0)
     , m_lastChild(0)
+    , m_opener(0)
     , m_client(client)
     , m_permissionClient(0)
     , m_currentActiveMatchFrame(0)
@@ -2128,6 +2139,10 @@ WebFrameImpl::WebFrameImpl(WebFrameClient* client)
 
 WebFrameImpl::~WebFrameImpl()
 {
+    HashSet<WebFrameImpl*>::iterator end = m_openedFrames.end();
+    for (HashSet<WebFrameImpl*>::iterator it = m_openedFrames.begin(); it != end; ++it)
+        (*it)->m_opener = 0;
+
     blink::Platform::current()->decrementStatsCounter(webFrameActiveCount);
     frameCount--;
 
