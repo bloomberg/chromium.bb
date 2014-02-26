@@ -177,16 +177,8 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
 
     /** Called when the user taps on a host entry. */
     public void connectToHost(HostInfo host) {
-        if (host.jabberId.isEmpty() || host.publicKey.isEmpty()) {
-            // TODO(lambroslambrou): If these keys are not present, treat this as a connection
-            // failure and reload the host list (see crbug.com/304719).
-            Toast.makeText(this, getString(R.string.error_reading_host),
-                    Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        JniInterface.connectToHost(mAccount.name, mToken, host.jabberId, host.id, host.publicKey,
-                this);
+        SessionConnector connector = new SessionConnector(this, this, mHostListLoader);
+        connector.connectToHost(mAccount.name, mToken, host);
     }
 
     private void refreshHostList() {
