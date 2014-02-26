@@ -264,4 +264,7 @@ interface PPB_NaCl_Private {
   void ReportLoadError([in] PP_Instance instance,
                        [in] PP_NaClError error,
                        [in] PP_Bool is_installed);
+
+  /* Performs internal cleanup when an instance is destroyed. */
+  void InstanceDestroyed([in] PP_Instance instance);
 };

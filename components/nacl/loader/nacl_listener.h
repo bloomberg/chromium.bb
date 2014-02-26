@@ -11,6 +11,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "components/nacl/common/nacl_types.h"
+#include "components/nacl/loader/nacl_trusted_listener.h"
 #include "ipc/ipc_listener.h"
 
 namespace IPC {
@@ -64,6 +65,8 @@ class NaClListener : public IPC::Listener {
   // NaClChromeMainArgs object.
   int number_of_cores_;
 #endif
+
+  scoped_refptr<NaClTrustedListener> trusted_listener_;
 
   // Used to identify what thread we're on.
   base::MessageLoop* main_loop_;

@@ -3161,6 +3161,11 @@ static void Pnacl_M25_PPB_NaCl_Private_ReportLoadError(PP_Instance instance, PP_
   iface->ReportLoadError(instance, error, is_installed);
 }
 
+static void Pnacl_M25_PPB_NaCl_Private_InstanceDestroyed(PP_Instance instance) {
+  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
+  iface->InstanceDestroyed(instance);
+}
+
 /* End wrapper methods for PPB_NaCl_Private_1_0 */
 
 /* Begin wrapper methods for PPB_NetAddress_Private_0_1 */
@@ -5045,7 +5050,8 @@ static const struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .OpenNaClExecutable = (PP_FileHandle (*)(PP_Instance instance, const char* file_url, uint64_t* file_token_lo, uint64_t* file_token_hi))&Pnacl_M25_PPB_NaCl_Private_OpenNaClExecutable,
     .DispatchEvent = (void (*)(PP_Instance instance, PP_NaClEventType event_type, const char* resource_url, PP_Bool length_is_computable, uint64_t loaded_bytes, uint64_t total_bytes))&Pnacl_M25_PPB_NaCl_Private_DispatchEvent,
     .SetReadOnlyProperty = (void (*)(PP_Instance instance, struct PP_Var key, struct PP_Var value))&Pnacl_M25_PPB_NaCl_Private_SetReadOnlyProperty,
-    .ReportLoadError = (void (*)(PP_Instance instance, PP_NaClError error, PP_Bool is_installed))&Pnacl_M25_PPB_NaCl_Private_ReportLoadError
+    .ReportLoadError = (void (*)(PP_Instance instance, PP_NaClError error, PP_Bool is_installed))&Pnacl_M25_PPB_NaCl_Private_ReportLoadError,
+    .InstanceDestroyed = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_InstanceDestroyed
 };
 
 static const struct PPB_NetAddress_Private_0_1 Pnacl_Wrappers_PPB_NetAddress_Private_0_1 = {

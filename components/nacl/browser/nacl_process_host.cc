@@ -580,13 +580,14 @@ void NaClProcessHost::OnResourcesReady() {
   if (!nacl_browser->IsReady()) {
     SendErrorToRenderer("could not acquire shared resources needed by NaCl");
     delete this;
-  } else if (!SendStart()) {
+  } else if (!StartNaClExecution()) {
     delete this;
   }
 }
 
 bool NaClProcessHost::ReplyToRenderer(
-    const IPC::ChannelHandle& channel_handle) {
+    const IPC::ChannelHandle& ppapi_channel_handle,
+    const IPC::ChannelHandle& trusted_channel_handle) {
 #if defined(OS_WIN)
   // If we are on 64-bit Windows, the NaCl process's sandbox is
   // managed by a different process from the renderer's sandbox.  We
@@ -601,7 +602,7 @@ bool NaClProcessHost::ReplyToRenderer(
   }
 #endif
 
-  FileDescriptor handle_for_renderer;
+  FileDescriptor imc_handle_for_renderer;
 #if defined(OS_WIN)
   // Copy the handle into the renderer process.
   HANDLE handle_in_renderer;
@@ -616,7 +617,7 @@ bool NaClProcessHost::ReplyToRenderer(
     SendErrorToRenderer("DuplicateHandle() failed");
     return false;
   }
-  handle_for_renderer = reinterpret_cast<FileDescriptor>(
+  imc_handle_for_renderer = reinterpret_cast<FileDescriptor>(
       handle_in_renderer);
 #else
   // No need to dup the imc_handle - we don't pass it anywhere else so
@@ -624,15 +625,16 @@ bool NaClProcessHost::ReplyToRenderer(
   FileDescriptor imc_handle;
   imc_handle.fd = internal_->socket_for_renderer;
   imc_handle.auto_close = true;
-  handle_for_renderer = imc_handle;
+  imc_handle_for_renderer = imc_handle;
 #endif
 
   const ChildProcessData& data = process_->GetData();
   SendMessageToRenderer(
-      NaClLaunchResult(handle_for_renderer,
-                             channel_handle,
-                             base::GetProcId(data.handle),
-                             data.id),
+      NaClLaunchResult(imc_handle_for_renderer,
+                       ppapi_channel_handle,
+                       trusted_channel_handle,
+                       base::GetProcId(data.handle),
+                       data.id),
       std::string() /* error_message */);
   internal_->socket_for_renderer = NACL_INVALID_HANDLE;
   return true;
@@ -767,21 +769,17 @@ bool NaClProcessHost::StartNaClExecution() {
   return true;
 }
 
-bool NaClProcessHost::SendStart() {
-  if (!enable_ppapi_proxy()) {
-    if (!ReplyToRenderer(IPC::ChannelHandle()))
-      return false;
-  }
-  return StartNaClExecution();
-}
-
 // This method is called when NaClProcessHostMsg_PpapiChannelCreated is
 // received.
 void NaClProcessHost::OnPpapiChannelsCreated(
     const IPC::ChannelHandle& browser_channel_handle,
-    const IPC::ChannelHandle& renderer_channel_handle) {
-  // Only renderer processes should create a channel.
-  DCHECK(enable_ppapi_proxy());
+    const IPC::ChannelHandle& ppapi_renderer_channel_handle,
+    const IPC::ChannelHandle& trusted_renderer_channel_handle) {
+  if (!enable_ppapi_proxy()) {
+    ReplyToRenderer(IPC::ChannelHandle(), trusted_renderer_channel_handle);
+    return;
+  }
+
   if (!ipc_proxy_channel_.get()) {
     DCHECK_EQ(PROCESS_TYPE_NACL_LOADER, process_->GetData().process_type);
 
@@ -830,7 +828,8 @@ void NaClProcessHost::OnPpapiChannelsCreated(
     ipc_proxy_channel_->Send(new PpapiMsg_InitializeNaClDispatcher(args));
 
     // Let the renderer know that the IPC channels are established.
-    ReplyToRenderer(renderer_channel_handle);
+    ReplyToRenderer(ppapi_renderer_channel_handle,
+                    trusted_renderer_channel_handle);
   } else {
     // Attempt to open more than 1 browser channel is not supported.
     // Shut down the NaCl process.
@@ -842,7 +841,7 @@ bool NaClProcessHost::StartWithLaunchedProcess() {
   NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
 
   if (nacl_browser->IsReady()) {
-    return SendStart();
+    return StartNaClExecution();
   } else if (nacl_browser->IsOk()) {
     nacl_browser->WaitForResources(
         base::Bind(&NaClProcessHost::OnResourcesReady,

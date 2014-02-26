@@ -279,11 +279,12 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
     return;
   }
 
+  IPC::ChannelHandle browser_handle;
+  IPC::ChannelHandle ppapi_renderer_handle;
+
   if (params.enable_ipc_proxy) {
-    IPC::ChannelHandle browser_handle =
-        IPC::Channel::GenerateVerifiedChannelID("nacl");
-    IPC::ChannelHandle renderer_handle =
-        IPC::Channel::GenerateVerifiedChannelID("nacl");
+    browser_handle = IPC::Channel::GenerateVerifiedChannelID("nacl");
+    ppapi_renderer_handle = IPC::Channel::GenerateVerifiedChannelID("nacl");
 
 #if defined(OS_LINUX)
     if (params.enable_nonsfi_mode) {
@@ -314,7 +315,7 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
       // Send back to the client side IPC channel FD to the host.
       browser_handle.socket =
           base::FileDescriptor(browser_client_ppapi_fd, true);
-      renderer_handle.socket =
+      ppapi_renderer_handle.socket =
           base::FileDescriptor(renderer_client_ppapi_fd, true);
     } else {
 #endif
@@ -323,15 +324,28 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
       // communicate with the host and to initialize the IPC dispatchers.
       SetUpIPCAdapter(&browser_handle, io_thread_.message_loop_proxy(),
                       nap, NACL_CHROME_DESC_BASE);
-      SetUpIPCAdapter(&renderer_handle, io_thread_.message_loop_proxy(),
+      SetUpIPCAdapter(&ppapi_renderer_handle, io_thread_.message_loop_proxy(),
                       nap, NACL_CHROME_DESC_BASE + 1);
 #if defined(OS_LINUX)
     }
 #endif
-    if (!Send(new NaClProcessHostMsg_PpapiChannelsCreated(
-            browser_handle, renderer_handle)))
-      LOG(ERROR) << "Failed to send IPC channel handle to NaClProcessHost.";
   }
+
+  // The argument passed to GenerateVerifiedChannelID() here MUST be "nacl".
+  // Using an alternate channel name prevents the pipe from being created on
+  // Windows when the sandbox is enabled.
+  IPC::ChannelHandle trusted_renderer_handle =
+      IPC::Channel::GenerateVerifiedChannelID("nacl");
+  trusted_listener_ = new NaClTrustedListener(
+      trusted_renderer_handle, io_thread_.message_loop_proxy(),
+      &shutdown_event_);
+#if defined(OS_POSIX)
+  trusted_renderer_handle.socket = base::FileDescriptor(
+      trusted_listener_->TakeClientFileDescriptor(), true);
+#endif
+  if (!Send(new NaClProcessHostMsg_PpapiChannelsCreated(
+          browser_handle, ppapi_renderer_handle, trusted_renderer_handle)))
+    LOG(ERROR) << "Failed to send IPC channel handle to NaClProcessHost.";
 
   std::vector<nacl::FileDescriptor> handles = params.handles;
 

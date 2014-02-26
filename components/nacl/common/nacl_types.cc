@@ -60,18 +60,21 @@ NaClLaunchParams::~NaClLaunchParams() {
 
 NaClLaunchResult::NaClLaunchResult()
     : imc_channel_handle(IPC::InvalidPlatformFileForTransit()),
-      ipc_channel_handle(),
+      ppapi_ipc_channel_handle(),
+      trusted_ipc_channel_handle(),
       plugin_pid(base::kNullProcessId),
       plugin_child_id(0) {
 }
 
 NaClLaunchResult::NaClLaunchResult(
     FileDescriptor imc_channel_handle,
-    const IPC::ChannelHandle& ipc_channel_handle,
+    const IPC::ChannelHandle& ppapi_ipc_channel_handle,
+    const IPC::ChannelHandle& trusted_ipc_channel_handle,
     base::ProcessId plugin_pid,
     int plugin_child_id)
     : imc_channel_handle(imc_channel_handle),
-      ipc_channel_handle(ipc_channel_handle),
+      ppapi_ipc_channel_handle(ppapi_ipc_channel_handle),
+      trusted_ipc_channel_handle(trusted_ipc_channel_handle),
       plugin_pid(plugin_pid),
       plugin_child_id(plugin_child_id) {
 }

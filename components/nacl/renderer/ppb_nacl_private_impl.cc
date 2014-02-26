@@ -12,8 +12,10 @@
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "components/nacl/common/nacl_host_messages.h"
+#include "components/nacl/common/nacl_messages.h"
 #include "components/nacl/common/nacl_types.h"
 #include "components/nacl/renderer/pnacl_translation_resource_host.h"
+#include "components/nacl/renderer/trusted_plugin_channel.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_init.h"
@@ -69,6 +71,14 @@ typedef std::map<PP_Instance, InstanceInfo> InstanceInfoMap;
 base::LazyInstance<InstanceInfoMap> g_instance_info =
     LAZY_INSTANCE_INITIALIZER;
 
+typedef std::map<PP_Instance, nacl::TrustedPluginChannel*>
+    InstanceTrustedChannelMap;
+
+base::LazyInstance<InstanceTrustedChannelMap> g_channel_map =
+    LAZY_INSTANCE_INITIALIZER;
+
+base::WaitableEvent* g_shutdown_event;
+
 void HistogramEnumerate(const std::string& name,
                         int32_t sample,
                         int32_t boundary_value) {
@@ -104,6 +114,9 @@ void LaunchSelLdr(PP_Instance instance,
                   void* imc_handle,
                   struct PP_Var* error_message,
                   PP_CompletionCallback callback) {
+  CHECK(ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->
+            BelongsToCurrentThread());
+
   nacl::FileDescriptor result_socket;
   IPC::Sender* sender = content::RenderThread::Get();
   DCHECK(sender);
@@ -163,7 +176,7 @@ void LaunchSelLdr(PP_Instance instance,
     return;
   }
   result_socket = launch_result.imc_channel_handle;
-  instance_info.channel_handle = launch_result.ipc_channel_handle;
+  instance_info.channel_handle = launch_result.ppapi_ipc_channel_handle;
   instance_info.plugin_pid = launch_result.plugin_pid;
   instance_info.plugin_child_id = launch_result.plugin_child_id;
   // Don't save instance_info if channel handle is invalid.
@@ -175,12 +188,21 @@ void LaunchSelLdr(PP_Instance instance,
   if (!invalid_handle)
     g_instance_info.Get()[instance] = instance_info;
 
+  // Stash the trusted handle as well.
+  invalid_handle = launch_result.trusted_ipc_channel_handle.name.empty();
+#if defined(OS_POSIX)
+  if (!invalid_handle)
+    invalid_handle = (launch_result.trusted_ipc_channel_handle.socket.fd == -1);
+#endif
+  if (!invalid_handle) {
+    if (g_shutdown_event == NULL)
+      g_shutdown_event = new base::WaitableEvent(true, false);
+    g_channel_map.Get()[instance] = new nacl::TrustedPluginChannel(
+        launch_result.trusted_ipc_channel_handle, callback, g_shutdown_event);
+  }
+
   *(static_cast<NaClHandle*>(imc_handle)) =
       nacl::ToNativeHandle(result_socket);
-  ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
-      FROM_HERE,
-      base::Bind(callback.func, callback.user_data,
-                 static_cast<int32_t>(PP_OK)));
 }
 
 PP_ExternalPluginResult StartPpapiProxy(PP_Instance instance) {
@@ -506,6 +528,18 @@ void ReportLoadError(PP_Instance instance,
   HistogramEnumerate(uma_name, error, PP_NACL_ERROR_MAX);
 }
 
+void InstanceDestroyed(PP_Instance instance) {
+  InstanceTrustedChannelMap& map = g_channel_map.Get();
+  InstanceTrustedChannelMap::iterator it = map.find(instance);
+  if (it == map.end()) {
+    DLOG(ERROR) << "Could not find instance ID";
+    return;
+  }
+  nacl::TrustedPluginChannel* instance_info = it->second;
+  map.erase(it);
+  delete instance_info;
+}
+
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
@@ -520,7 +554,8 @@ const PPB_NaCl_Private nacl_interface = {
   &OpenNaClExecutable,
   &DispatchEvent,
   &SetReadOnlyProperty,
-  &ReportLoadError
+  &ReportLoadError,
+  &InstanceDestroyed
 };
 
 }  // namespace

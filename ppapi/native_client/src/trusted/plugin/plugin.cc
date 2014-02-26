@@ -633,6 +633,9 @@ Plugin::~Plugin() {
   }
   url_downloaders_.erase(url_downloaders_.begin(), url_downloaders_.end());
 
+  // Clean up accounting for our instance inside the NaCl interface.
+  nacl_interface_->InstanceDestroyed(pp_instance());
+
   // ShutDownSubprocesses shuts down the main subprocess, which shuts
   // down the main ServiceRuntime object, which kills the subprocess.
   // As a side effect of the subprocess being killed, the reverse

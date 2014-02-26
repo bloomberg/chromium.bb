@@ -122,7 +122,8 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
 
   // Sends the reply message to the renderer who is waiting for the plugin
   // to load. Returns true on success.
-  bool ReplyToRenderer(const IPC::ChannelHandle& channel_handle);
+  bool ReplyToRenderer(const IPC::ChannelHandle& ppapi_channel_handle,
+                       const IPC::ChannelHandle& trusted_channel_handle);
 
   // Sends the reply with error message to the renderer.
   void SendErrorToRenderer(const std::string& error_message);
@@ -135,10 +136,6 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // Sends the message to the NaCl process to load the plugin. Returns true
   // on success.
   bool StartNaClExecution();
-
-  // Called once all initialization is complete and the NaCl process is
-  // ready to go. Returns true on success.
-  bool SendStart();
 
   // Does post-process-launching tasks for starting the NaCl process once
   // we have a connection.
@@ -167,7 +164,8 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // created.
   void OnPpapiChannelsCreated(
       const IPC::ChannelHandle& browser_channel_handle,
-      const IPC::ChannelHandle& renderer_channel_handle);
+      const IPC::ChannelHandle& ppapi_renderer_channel_handle,
+      const IPC::ChannelHandle& trusted_renderer_channel_handle);
 
   GURL manifest_url_;
   ppapi::PpapiPermissions permissions_;

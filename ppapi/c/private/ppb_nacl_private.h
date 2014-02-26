@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Mon Feb 24 12:10:24 2014. */
+/* From private/ppb_nacl_private.idl modified Tue Feb 25 09:18:09 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -272,6 +272,8 @@ struct PPB_NaCl_Private_1_0 {
   void (*ReportLoadError)(PP_Instance instance,
                           PP_NaClError error,
                           PP_Bool is_installed);
+  /* Performs internal cleanup when an instance is destroyed. */
+  void (*InstanceDestroyed)(PP_Instance instance);
 };
 
 typedef struct PPB_NaCl_Private_1_0 PPB_NaCl_Private;
