@@ -105,7 +105,11 @@
           'target_name': 'app_shell_pak',
           'type': 'none',
           'dependencies': [
+            # Need dev-tools related resources in shell_resources.pak and devtools_resources.pak.
             '../content/content_shell_and_tests.gyp:generate_content_shell_resources',
+            '../content/browser/devtools/devtools_resources.gyp:devtools_resources',
+            # Need features JSON files in common_resources.pak.
+            'chrome_resources.gyp:chrome_resources',
           ],
           'variables': {
             'repack_path': '<(DEPTH)/tools/grit/grit/format/repack.py',
@@ -116,6 +120,9 @@
               'variables': {
                 'pak_inputs': [
                   '<(SHARED_INTERMEDIATE_DIR)/content/shell_resources.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/webkit/devtools_resources.pak',
+                  '<(grit_out_dir)/common_resources.pak',
+                  '<(grit_out_dir)/extensions_api_resources.pak',
                 ],
               },
               'inputs': [
@@ -140,9 +147,6 @@
           'dependencies': [
             'app_shell_pak',
             'apps',
-            'chrome_resources.gyp:packed_resources',
-            # For resources.pak for features JSON files.
-            'chrome_resources.gyp:packed_extra_resources',
             'test_support_common',
             '../base/base.gyp:base',
             '../base/base.gyp:base_prefs_test_support',

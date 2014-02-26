@@ -3,7 +3,6 @@ include_rules = [
   # Chrome pieces for app_shell bring-up.
   "+chrome/browser/extensions/extension_protocols.h",
   "+chrome/browser/extensions/extension_resource_protocols.h",
-  "+chrome/common/chrome_paths.h",
   "+chrome/common/extensions/features/base_feature_provider.h",
   "+chrome/common/extensions/extension_file_util.h",
 
