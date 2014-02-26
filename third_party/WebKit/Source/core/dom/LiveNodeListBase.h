@@ -33,8 +33,7 @@ namespace WebCore {
 
 enum NodeListRootType {
     NodeListIsRootedAtNode,
-    NodeListIsRootedAtDocument,
-    NodeListIsRootedAtDocumentIfOwnerHasItemrefAttr,
+    NodeListIsRootedAtDocument
 };
 
 class LiveNodeListBase {
@@ -63,7 +62,7 @@ public:
 
     void didMoveToDocument(Document& oldDocument, Document& newDocument);
     ALWAYS_INLINE bool hasIdNameCache() const { return !isLiveNodeListType(type()); }
-    ALWAYS_INLINE bool isRootedAtDocument() const { return m_rootType == NodeListIsRootedAtDocument || m_rootType == NodeListIsRootedAtDocumentIfOwnerHasItemrefAttr; }
+    ALWAYS_INLINE bool isRootedAtDocument() const { return m_rootType == NodeListIsRootedAtDocument; }
     ALWAYS_INLINE NodeListInvalidationType invalidationType() const { return static_cast<NodeListInvalidationType>(m_invalidationType); }
     ALWAYS_INLINE CollectionType type() const { return static_cast<CollectionType>(m_collectionType); }
     ContainerNode* ownerNode() const { return m_ownerNode.get(); }
@@ -92,7 +91,7 @@ private:
     void invalidateIdNameCacheMaps() const;
 
     RefPtr<ContainerNode> m_ownerNode; // Cannot be null.
-    const unsigned m_rootType : 2;
+    const unsigned m_rootType : 1;
     const unsigned m_invalidationType : 4;
     const unsigned m_collectionType : 5;
 };
