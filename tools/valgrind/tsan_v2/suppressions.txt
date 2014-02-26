@@ -212,3 +212,8 @@ race:cc::s_next_layer_id
 
 # http://crbug.com/345618
 race:WebCore::AudioDestinationNode::render
+
+# http://crbug.com/244383
+race:IPC::SyncChannel::SyncChannel
+race:ppapi::proxy::ProxyChannel::InitWithChannel
+race:ppapi::proxy::PluginDispatcher::InitPluginWithChannel
