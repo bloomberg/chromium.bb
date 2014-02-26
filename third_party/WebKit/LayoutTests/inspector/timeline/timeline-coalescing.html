@@ -49,35 +49,35 @@ function test()
         // Assure we do coalesce on levels lower than root, but do not coalesce between different parents.
         {"startTime":2000.000,"data":{},"endTime":2399.999,"type":"Program","children":[
             {"startTime":2000.001,"data":{},"endTime":2199.998,"type":"FunctionCall","children":[
-                {"startTime":2000.002, "endTime":2099.9,"type":"Layout","frameId":"2","data":{}},
-                {"startTime":2100.000, "endTime":2199.9,"type":"Layout","frameId":"2","data":{}}
+                {"startTime":2000.002, "endTime":2099.9,"type":"DecodeImage","frameId":"2","data":{}},
+                {"startTime":2100.000, "endTime":2199.9,"type":"DecodeImage","frameId":"2","data":{}}
             ]},
             {"startTime":2200.001,"data":{},"endTime":2399.998,"type":"FunctionCall","children":[
-                {"startTime":2200.002, "endTime":2299.9,"type":"Layout","frameId":"2","data":{}},
-                {"startTime":2300.000, "endTime":2399.9,"type":"Layout","frameId":"2","data":{}}
+                {"startTime":2200.002, "endTime":2299.9,"type":"DecodeImage","frameId":"2","data":{}},
+                {"startTime":2300.000, "endTime":2399.9,"type":"DecodeImage","frameId":"2","data":{}}
             ]},
         ]},
 
         // Assure we only coalesce timestamp records with the same message.
         {"startTime":3100.000,"data":{},"endTime":3199.999,"type":"Program","children":[
-            {"startTime":3100.001, "endTime":3199.9,"type":"TimeStamp","frameId":"2","data":{ message: "foo" }}
+            {"startTime":3100.001, "endTime":3199.9,"type":"Rasterize","frameId":"2","data":{ message: "foo" }}
         ]},
         {"startTime":3200.000,"data":{},"endTime":3299.999,"type":"Program","children":[
-            {"startTime":3200.001, "endTime":3299.9,"type":"TimeStamp","frameId":"2","data":{ message: "foo" }}
+            {"startTime":3200.001, "endTime":3299.9,"type":"Rasterize","frameId":"2","data":{ message: "foo" }}
         ]},
         {"startTime":3300.000,"data":{},"endTime":3399.999,"type":"Program","children":[
-            {"startTime":3300.001, "endTime":3399.9,"type":"TimeStamp","frameId":"2","data":{ message: "bar" }}
+            {"startTime":3300.001, "endTime":3399.9,"type":"Rasterize","frameId":"2","data":{ message: "bar" }}
         ]},
 
         // Assure we only coalesce event records with the same type.
         {"startTime":4100.000,"data":{},"endTime":4199.999,"type":"Program","children":[
-            {"startTime":4100.001, "endTime":4199.9,"type":"EventDispatch","frameId":"2","data":{ type: "mouseover" }}
+            {"startTime":4100.001, "endTime":4199.9,"type":"Paint","frameId":"2","data":{ type: "mouseover" }}
         ]},
         {"startTime":4200.000,"data":{},"endTime":4299.999,"type":"Program","children":[
-            {"startTime":4200.001, "endTime":4299.9,"type":"EventDispatch","frameId":"2","data":{ type: "mouseover" }}
+            {"startTime":4200.001, "endTime":4299.9,"type":"Paint","frameId":"2","data":{ type: "mouseover" }}
         ]},
         {"startTime":4300.000,"data":{},"endTime":4399.999,"type":"Program","children":[
-            {"startTime":4300.001, "endTime":4399.9,"type":"EventDispatch","frameId":"2","data":{ type: "keydown" }}
+            {"startTime":4300.001, "endTime":4399.9,"type":"Paint","frameId":"2","data":{ type: "keydown" }}
         ]}
     ];
 
