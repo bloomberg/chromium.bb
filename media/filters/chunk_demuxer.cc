@@ -1523,6 +1523,7 @@ void ChunkDemuxer::SetDuration(double duration) {
   // This can be different if the value of |duration| doesn't fit the range or
   // precision of TimeDelta.
   TimeDelta min_duration = TimeDelta::FromInternalValue(1);
+  // Don't use TimeDelta::Max() here, as we want the largest finite time delta.
   TimeDelta max_duration = TimeDelta::FromInternalValue(kint64max - 1);
   double min_duration_in_seconds = min_duration.InSecondsF();
   double max_duration_in_seconds = max_duration.InSecondsF();

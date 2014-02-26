@@ -104,8 +104,7 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
 
     int tile_size = content_rect.width() * content_rect.height();
 
-    base::TimeDelta min_time =
-        base::TimeDelta::FromInternalValue(std::numeric_limits<int64>::max());
+    base::TimeDelta min_time = base::TimeDelta::Max();
 
     bool is_solid_color = false;
     for (int i = 0; i < rasterize_repeat_count_; ++i) {

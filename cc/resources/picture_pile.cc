@@ -228,8 +228,7 @@ bool PicturePile::Update(
     bool gather_pixel_refs = num_raster_threads > 1;
 
     {
-      base::TimeDelta best_duration = base::TimeDelta::FromInternalValue(
-          std::numeric_limits<int64>::max());
+      base::TimeDelta best_duration = base::TimeDelta::Max();
       for (int i = 0; i < repeat_count; i++) {
         base::TimeTicks start_time = stats_instrumentation->StartRecording();
         picture = Picture::Create(record_rect,
