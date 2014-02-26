@@ -9,12 +9,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/actionbar_keyboard"
             android:title="@string/actionbar_keyboard"
-            android:icon="@android:drawable/ic_menu_edit"
-            android:showAsAction="ifRoom|withText"/>
+            android:icon="@drawable/ic_action_keyboard"
+            android:showAsAction="ifRoom"/>
     <item android:id="@+id/actionbar_hide"
             android:title="@string/actionbar_hide"
             android:icon="@android:drawable/ic_menu_close_clear_cancel"
-            android:showAsAction="ifRoom|withText"/>
+            android:showAsAction="ifRoom"/>
     <item android:id="@+id/actionbar_send_ctrl_alt_del"
             android:title="@string/actionbar_send_ctrl_alt_del"
             android:showAsAction="withText"/>

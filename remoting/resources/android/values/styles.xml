@@ -6,10 +6,10 @@
 -->
 
 <resources>
-    <style name="MainTheme" parent="@android:style/Theme.DeviceDefault">
+    <style name="MainTheme" parent="@android:style/Theme.Holo">
         <item name="android:actionBarStyle">@style/MainActionBar</item>
     </style>
-    <style name="MainActionBar" parent="@android:style/Widget.DeviceDefault.ActionBar">
+    <style name="MainActionBar" parent="@android:style/Widget.Holo.ActionBar">
         <item name="android:displayOptions">showHome</item>
     </style>
 </resources>

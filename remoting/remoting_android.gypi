@@ -52,6 +52,30 @@
               ],
             },
             {
+              'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/drawable-hdpi',
+              'files': [
+                'resources/android/drawable-hdpi/ic_action_keyboard.png',
+              ],
+            },
+            {
+              'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/drawable-mdpi',
+              'files': [
+                'resources/android/drawable-mdpi/ic_action_keyboard.png',
+              ],
+            },
+            {
+              'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/drawable-xhdpi',
+              'files': [
+                'resources/android/drawable-xhdpi/ic_action_keyboard.png',
+              ],
+            },
+            {
+              'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/drawable-xxhdpi',
+              'files': [
+                'resources/android/drawable-xxhdpi/ic_action_keyboard.png',
+              ],
+            },
+            {
               'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/layout',
               'files': [
                 'resources/android/layout/account_dropdown.xml',
