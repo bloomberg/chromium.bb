@@ -121,7 +121,7 @@ static bool IsCodedSizeSupported(const gfx::Size& coded_size) {
 
   base::CPU cpu;
   bool hw_large_video_support =
-      (cpu.vendor_name() == "GenuineIntel") && cpu.model() >= 58;
+      (cpu.vendor_name() == "GenuineIntel") && cpu.model() >= 55;
   bool os_large_video_support = true;
 #if defined(OS_WIN)
   os_large_video_support = false;
