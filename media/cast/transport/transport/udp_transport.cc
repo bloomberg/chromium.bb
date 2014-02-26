@@ -39,6 +39,7 @@ bool IsEqual(const net::IPEndPoint& addr1, const net::IPEndPoint& addr2) {
 }  // namespace
 
 UdpTransport::UdpTransport(
+    net::NetLog* net_log,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_proxy,
     const net::IPEndPoint& local_end_point,
     const net::IPEndPoint& remote_end_point,
@@ -48,7 +49,7 @@ UdpTransport::UdpTransport(
       remote_addr_(remote_end_point),
       udp_socket_(new net::UDPSocket(net::DatagramSocket::DEFAULT_BIND,
                                      net::RandIntCallback(),
-                                     NULL,
+                                     net_log,
                                      net::NetLog::Source())),
       send_pending_(false),
       recv_buf_(new net::IOBuffer(kMaxPacketSize)),
@@ -103,6 +104,7 @@ void UdpTransport::ReceiveOnePacket() {
 
 void UdpTransport::OnReceived(int result) {
   DCHECK(io_thread_proxy_->RunsTasksOnCurrentThread());
+
   if (result < 0) {
     LOG(ERROR) << "Failed to receive packet: " << result << "."
                << " Stop receiving packets.";

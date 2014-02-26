@@ -424,6 +424,7 @@ int main(int argc, char** argv) {
 
   scoped_ptr<media::cast::transport::CastTransportSender> transport_sender(
       media::cast::transport::CastTransportSender::CreateCastTransportSender(
+          NULL,
           clock.get(),
           config,
           base::Bind(&UpdateCastTransportStatus),

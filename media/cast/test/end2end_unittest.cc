@@ -481,6 +481,7 @@ class End2EndTest : public ::testing::Test {
                                          video_receiver_config_,
                                          &receiver_to_sender_));
     transport_sender_.reset(new transport::CastTransportSenderImpl(
+        NULL,
         testing_clock_,
         transport_config_,
         base::Bind(&UpdateCastTransportStatus),

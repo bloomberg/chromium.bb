@@ -27,6 +27,7 @@ class CastTransportSenderImpl : public CastTransportSender {
   // Note that SetPacketReceiver does not work if an external
   // transport is provided.
   CastTransportSenderImpl(
+      net::NetLog* net_log,
       base::TickClock* clock,
       const CastTransportConfig& config,
       const CastTransportStatusCallback& status_callback,

@@ -17,6 +17,7 @@
 namespace net {
 class IOBuffer;
 class IPEndPoint;
+class NetLog;
 }  // namespace net
 
 namespace media {
@@ -35,6 +36,7 @@ class UdpTransport : public PacketSender {
   // to. If the value is 0.0.0.0:0 the the end point is set to the source
   // address of the first packet received.
   UdpTransport(
+      net::NetLog* net_log,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_proxy,
       const net::IPEndPoint& local_end_point,
       const net::IPEndPoint& remote_end_point,

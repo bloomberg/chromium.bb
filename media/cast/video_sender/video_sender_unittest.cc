@@ -94,6 +94,7 @@ class VideoSenderTest : public ::testing::Test {
                             GetLoggingConfigWithRawEventsAndStatsEnabled());
     transport::CastTransportConfig transport_config;
     transport_sender_.reset(new transport::CastTransportSenderImpl(
+        NULL,
         testing_clock_,
         transport_config,
         base::Bind(&UpdateCastTransportStatus),

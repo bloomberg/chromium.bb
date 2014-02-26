@@ -13,22 +13,29 @@ namespace cast {
 namespace transport {
 
 CastTransportSender* CastTransportSender::CreateCastTransportSender(
+    net::NetLog* net_log,
     base::TickClock* clock,
     const CastTransportConfig& config,
     const CastTransportStatusCallback& status_callback,
     const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner) {
-  return new CastTransportSenderImpl(
-      clock, config, status_callback, transport_task_runner.get(), NULL);
+  return new CastTransportSenderImpl(net_log,
+                                     clock,
+                                     config,
+                                     status_callback,
+                                     transport_task_runner.get(),
+                                     NULL);
 }
 
 CastTransportSenderImpl::CastTransportSenderImpl(
+    net::NetLog* net_log,
     base::TickClock* clock,
     const CastTransportConfig& config,
     const CastTransportStatusCallback& status_callback,
     const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner,
     PacketSender* external_transport)
     : transport_(external_transport ? NULL
-                                    : new UdpTransport(transport_task_runner,
+                                    : new UdpTransport(net_log,
+                                                       transport_task_runner,
                                                        config.local_endpoint,
                                                        config.receiver_endpoint,
                                                        status_callback)),

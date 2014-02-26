@@ -81,6 +81,7 @@ class AudioSenderTest : public ::testing::Test {
     transport_config.audio_rtp_config.payload_type = 127;
     transport_config.audio_channels = 2;
     transport_sender_.reset(new transport::CastTransportSenderImpl(
+        NULL,
         testing_clock_,
         transport_config,
         base::Bind(&UpdateCastTransportStatus),

@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/media/cast_transport_host_filter.h"
+
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/net/chrome_net_log.h"
 #include "media/cast/transport/cast_transport_sender.h"
 
 namespace cast {
@@ -67,8 +70,9 @@ void CastTransportHostFilter::OnNew(
     id_map_.Remove(channel_id);
   }
 
-  sender = media::cast::transport::CastTransportSender::
-      CreateCastTransportSender(
+  sender =
+      media::cast::transport::CastTransportSender::CreateCastTransportSender(
+          g_browser_process->net_log(),
           &clock_,
           config,
           base::Bind(&CastTransportHostFilter::NotifyStatusChange,

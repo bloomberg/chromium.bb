@@ -31,6 +31,10 @@
 #include "media/cast/transport/cast_transport_config.h"
 #include "media/cast/transport/cast_transport_defines.h"
 
+namespace net {
+class NetLog;
+}  // namespace net
+
 namespace media {
 namespace cast {
 namespace transport {
@@ -46,6 +50,7 @@ typedef base::Callback<void(const RtcpSenderInfo& sender_info,
 class CastTransportSender : public base::NonThreadSafe {
  public:
   static CastTransportSender* CreateCastTransportSender(
+      net::NetLog* net_log,
       base::TickClock* clock,
       const CastTransportConfig& config,
       const CastTransportStatusCallback& status_callback,

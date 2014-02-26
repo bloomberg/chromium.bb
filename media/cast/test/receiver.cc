@@ -280,6 +280,7 @@ int main(int argc, char** argv) {
 
   scoped_ptr<media::cast::transport::UdpTransport> transport(
       new media::cast::transport::UdpTransport(
+          NULL,
           main_message_loop.message_loop_proxy(),
           local_end_point,
           remote_end_point,
