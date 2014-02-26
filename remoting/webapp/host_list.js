@@ -305,8 +305,10 @@ remoting.HostList.prototype.display = function() {
   var enabled = (state == remoting.HostController.State.STARTING) ||
       (state == remoting.HostController.State.STARTED);
   var canChangeLocalHostState =
-      (state != remoting.HostController.State.NOT_IMPLEMENTED &&
-       state != remoting.HostController.State.UNKNOWN) &&
+      (state != remoting.HostController.State.NOT_IMPLEMENTED) &&
+      (state != remoting.HostController.State.UNKNOWN) &&
+      (state != remoting.HostController.State.NOT_INSTALLED ||
+       remoting.isMe2MeInstallable()) &&
       (enabled || this.lastError_ == '');
 
   remoting.updateModalUi(enabled ? 'enabled' : 'disabled', 'data-daemon-state');
