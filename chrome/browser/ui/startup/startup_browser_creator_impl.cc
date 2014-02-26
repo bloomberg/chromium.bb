@@ -834,10 +834,6 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(
 #endif
   }
 
-  // In kiosk mode, we want to always be fullscreen, so switch to that now.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
-    chrome::ToggleFullscreenMode(browser);
-
   bool first_tab = true;
   ProtocolHandlerRegistry* registry = profile_ ?
       ProtocolHandlerRegistryFactory::GetForProfile(profile_) : NULL;
@@ -888,6 +884,11 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(
   // to take care of that.
   if (!browser_creator_ || browser_creator_->show_main_browser_window())
     browser->window()->Show();
+
+  // In kiosk mode, we want to always be fullscreen, so switch to that now.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kStartFullscreen))
+    chrome::ToggleFullscreenMode(browser);
 
   return browser;
 }

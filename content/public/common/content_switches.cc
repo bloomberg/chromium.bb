@@ -844,6 +844,10 @@ const char kSkipGpuDataLoading[]            = "skip-gpu-data-loading";
 // Specifies the request key for the continuous speech recognition webservice.
 const char kSpeechRecognitionWebserviceKey[] = "speech-service-key";
 
+// Specifies if the browser should start in fullscreen mode, like if the user
+// had pressed F11 right after startup.
+const char kStartFullscreen[] = "start-fullscreen";
+
 // Specifies if the |StatsCollectionController| needs to be bound in the
 // renderer. This binding happens on per-frame basis and hence can potentially
 // be a performance bottleneck. One should only enable it when running a test
