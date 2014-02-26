@@ -186,7 +186,7 @@ bool WrapperClass_Enumerate(NPObject* object, NPIdentifier** values,
   if (!result_converter.has_exception()) {
     if (property_count > 0) {
       *values = static_cast<NPIdentifier*>(
-          malloc(sizeof(NPIdentifier) * property_count));
+          calloc(property_count, sizeof(NPIdentifier)));
       *count = 0;  // Will be the number of items successfully converted.
       for (uint32_t i = 0; i < property_count; ++i) {
         if (!((*values)[i] = PPVarToNPIdentifier(properties[i]))) {
