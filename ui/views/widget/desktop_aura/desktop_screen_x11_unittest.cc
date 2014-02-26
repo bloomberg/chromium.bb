@@ -4,18 +4,83 @@
 
 #include "ui/views/widget/desktop_aura/desktop_screen_x11.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/base/x/x11_util.h"
 #include "ui/gfx/display_observer.h"
+#include "ui/gfx/x/x11_atom_cache.h"
+#include "ui/gfx/x/x11_types.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
-#include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
 
 namespace views {
 
 const int64 kFirstDisplay = 5321829;
 const int64 kSecondDisplay = 928310;
+
+// Class which waits till the X11 window associated with the widget passed into
+// the constructor is activated. We cannot listen for the widget's activation
+// because the _NET_ACTIVE_WINDOW property is changed after the widget is
+// activated.
+class ActivationWaiter : public base::MessagePumpDispatcher {
+ public:
+  explicit ActivationWaiter(views::Widget* widget)
+      : x_root_window_(DefaultRootWindow(gfx::GetXDisplay())),
+        widget_xid_(0),
+        active_(false) {
+    const char* kAtomToCache[] = {
+        "_NET_ACTIVE_WINDOW",
+        NULL
+    };
+    atom_cache_.reset(new ui::X11AtomCache(gfx::GetXDisplay(), kAtomToCache));
+    widget_xid_ = widget->GetNativeWindow()->GetDispatcher()->host()->
+         GetAcceleratedWidget();
+    base::MessagePumpX11::Current()->AddDispatcherForRootWindow(this);
+  }
+
+  virtual ~ActivationWaiter() {
+    base::MessagePumpX11::Current()->RemoveDispatcherForRootWindow(this);
+  }
+
+  // Blocks till |widget_xid_| becomes active.
+  void Wait() {
+    if (active_)
+      return;
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE {
+    ::Window xid;
+    if (event->type == PropertyNotify &&
+        event->xproperty.window == x_root_window_ &&
+        event->xproperty.atom == atom_cache_->GetAtom("_NET_ACTIVE_WINDOW") &&
+        ui::GetXIDProperty(x_root_window_, "_NET_ACTIVE_WINDOW", &xid) &&
+        xid == widget_xid_) {
+      active_ = true;
+      if (!quit_closure_.is_null())
+        quit_closure_.Run();
+    }
+    return POST_DISPATCH_NONE;
+  }
+
+ private:
+  scoped_ptr<ui::X11AtomCache> atom_cache_;
+  ::Window x_root_window_;
+  ::Window widget_xid_;
+
+  bool active_;
+  base::Closure quit_closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(ActivationWaiter);
+};
 
 class DesktopScreenX11Test : public views::ViewsTestBase,
                              public gfx::DisplayObserver {
@@ -31,9 +96,6 @@ class DesktopScreenX11Test : public views::ViewsTestBase,
     displays.push_back(gfx::Display(kFirstDisplay, gfx::Rect(0, 0, 640, 480)));
     screen_.reset(new DesktopScreenX11(displays));
     screen_->AddObserver(this);
-
-    // We want to have a synchronous activation behavior.
-    X11DesktopHandler::get()->SetWMSupportsActiveWindowForTests(false);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -226,7 +288,10 @@ TEST_F(DesktopScreenX11Test, GetWindowAtScreenPoint) {
 
   // Bring the third window in front. It overlaps with the first window.
   // Hit-testing on the intersecting region should give the third window.
+  ActivationWaiter activation_waiter(window_three);
   window_three->Activate();
+  activation_waiter.Wait();
+
   EXPECT_EQ(window_three->GetNativeWindow(),
             screen()->GetWindowAtScreenPoint(gfx::Point(115, 115)));
 

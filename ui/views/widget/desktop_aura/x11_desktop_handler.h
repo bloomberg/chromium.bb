@@ -53,12 +53,6 @@ class VIEWS_EXPORT X11DesktopHandler : public base::MessagePumpDispatcher,
   virtual void OnWindowInitialized(aura::Window* window) OVERRIDE;
   virtual void OnWillDestroyEnv() OVERRIDE;
 
-  // Allows to override wm_supports_active_window_ value for tests. If the WM
-  // supports _NET_ACTIVE_WINDOW, activation is async otherwise it is sync.
-  void SetWMSupportsActiveWindowForTests(bool value) {
-    wm_supports_active_window_ = value;
-  }
-
  private:
   explicit X11DesktopHandler();
   virtual ~X11DesktopHandler();
