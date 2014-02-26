@@ -112,22 +112,22 @@ class StatisticsUnitTest(unittest.TestCase):
     time_stamps_b = [0, 1, 2, 3, 5, 7]
     time_stamps_c = [0, 2, 3, 4]
     time_stamps_d = [0, 2, 3, 4, 5]
-    d_abs_a = statistics.FrameDiscrepancy(time_stamps_a, True,
-                                           interval_multiplier)
-    d_abs_b = statistics.FrameDiscrepancy(time_stamps_b, True,
-                                           interval_multiplier)
-    d_abs_c = statistics.FrameDiscrepancy(time_stamps_c, True,
-                                           interval_multiplier)
-    d_abs_d = statistics.FrameDiscrepancy(time_stamps_d, True,
-                                           interval_multiplier)
-    d_rel_a = statistics.FrameDiscrepancy(time_stamps_a, False,
-                                           interval_multiplier)
-    d_rel_b = statistics.FrameDiscrepancy(time_stamps_b, False,
-                                           interval_multiplier)
-    d_rel_c = statistics.FrameDiscrepancy(time_stamps_c, False,
-                                           interval_multiplier)
-    d_rel_d = statistics.FrameDiscrepancy(time_stamps_d, False,
-                                           interval_multiplier)
+    d_abs_a = statistics.TimestampsDiscrepancy(time_stamps_a, True,
+                                               interval_multiplier)
+    d_abs_b = statistics.TimestampsDiscrepancy(time_stamps_b, True,
+                                               interval_multiplier)
+    d_abs_c = statistics.TimestampsDiscrepancy(time_stamps_c, True,
+                                               interval_multiplier)
+    d_abs_d = statistics.TimestampsDiscrepancy(time_stamps_d, True,
+                                               interval_multiplier)
+    d_rel_a = statistics.TimestampsDiscrepancy(time_stamps_a, False,
+                                               interval_multiplier)
+    d_rel_b = statistics.TimestampsDiscrepancy(time_stamps_b, False,
+                                               interval_multiplier)
+    d_rel_c = statistics.TimestampsDiscrepancy(time_stamps_c, False,
+                                               interval_multiplier)
+    d_rel_d = statistics.TimestampsDiscrepancy(time_stamps_d, False,
+                                               interval_multiplier)
 
     self.assertTrue(d_abs_a < d_abs_b)
     self.assertTrue(d_rel_a < d_rel_b)
@@ -166,3 +166,21 @@ class StatisticsUnitTest(unittest.TestCase):
     self.assertEquals(0, statistics.ArithmeticMean(4.0, 0))
     self.assertEquals(0, statistics.ArithmeticMean(4.0, []))
 
+  def testDurationsDiscrepancy(self):
+    durations = []
+    d = statistics.DurationsDiscrepancy(durations)
+    self.assertEquals(d, 1.0)
+
+    durations = [4]
+    d = statistics.DurationsDiscrepancy(durations)
+    self.assertEquals(d, 1.0)
+
+    durations_a = [1, 1, 1, 1, 1]
+    durations_b = [1, 1, 2, 1, 1]
+    durations_c = [1, 2, 1, 2, 1]
+
+    d_a = statistics.DurationsDiscrepancy(durations_a)
+    d_b = statistics.DurationsDiscrepancy(durations_b)
+    d_c = statistics.DurationsDiscrepancy(durations_c)
+
+    self.assertTrue(d_a < d_b < d_c)

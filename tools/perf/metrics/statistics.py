@@ -86,14 +86,14 @@ def Discrepancy(samples, interval_multiplier=10000):
   return max_local_discrepancy
 
 
-def FrameDiscrepancy(frame_timestamps, absolute=True,
-                     interval_multiplier=10000):
-  """A discrepancy based metric for measuring jank.
+def TimestampsDiscrepancy(timestamps, absolute=True,
+                          interval_multiplier=10000):
+  """A discrepancy based metric for measuring timestamp jank.
 
-  FrameDiscrepancy quantifies the largest area of jank observed in a series
-  of timestamps.  Note that this is different form metrics based on the
-  max_frame_time. For example, the time stamp series A = [0,1,2,3,5,6] and
-  B = [0,1,2,3,5,7] have the same max_frame_time = 2, but
+  TimestampsDiscrepancy quantifies the largest area of jank observed in a series
+  of timestamps.  Note that this is different from metrics based on the
+  max_time_interval. For example, the time stamp series A = [0,1,2,3,5,6] and
+  B = [0,1,2,3,5,7] have the same max_time_interval = 2, but
   Discrepancy(B) > Discrepancy(A).
 
   Two variants of discrepancy can be computed:
@@ -107,25 +107,25 @@ def FrameDiscrepancy(frame_timestamps, absolute=True,
 
   Absolute discrepancy also characterizes the largest area of jank, but its
   value wouldn't change (except for imprecisions due to a low
-  interval_multiplier) if additional 'good' frames were added to an
+  |interval_multiplier|) if additional 'good' intervals were added to an
   exisiting list of time stamps.  Its range is [0,inf] and the unit is
   milliseconds.
 
   The time stamp series C = [0,2,3,4] and D = [0,2,3,4,5] have the same
   absolute discrepancy, but D has lower relative discrepancy than C.
 
-  frame_timestamps may be a list of lists S = [S_1, S_2, ..., S_N], where each
+  |timestamps| may be a list of lists S = [S_1, S_2, ..., S_N], where each
   S_i is a time stamp series. In that case, the discrepancy D(S) is:
   D(S) = max(D(S_1), D(S_2), ..., D(S_N))
   """
-  if not frame_timestamps:
+  if not timestamps:
     return 1.0
 
-  if isinstance(frame_timestamps[0], list):
-    range_discrepancies = [FrameDiscrepancy(r) for r in frame_timestamps]
+  if isinstance(timestamps[0], list):
+    range_discrepancies = [TimestampsDiscrepancy(r) for r in timestamps]
     return max(range_discrepancies)
 
-  samples, sample_scale = NormalizeSamples(frame_timestamps)
+  samples, sample_scale = NormalizeSamples(timestamps)
   discrepancy = Discrepancy(samples, interval_multiplier)
   inv_sample_count = 1.0 / len(samples)
   if absolute:
@@ -135,6 +135,28 @@ def FrameDiscrepancy(frame_timestamps, absolute=True,
     # Compute relative discrepancy
     discrepancy = Clamp((discrepancy-inv_sample_count) / (1.0-inv_sample_count))
   return discrepancy
+
+
+def DurationsDiscrepancy(durations, absolute=True,
+                         interval_multiplier=10000):
+  """A discrepancy based metric for measuring duration jank.
+
+  DurationsDiscrepancy computes a jank metric which measures how irregular a
+  given sequence of intervals is. In order to minimize jank, each duration
+  should be equally long. This is similar to how timestamp jank works,
+  and we therefore reuse the timestamp discrepancy function above to compute a
+  similar duration discrepancy number.
+
+  Because timestamp discrepancy is defined in terms of timestamps, we first
+  convert the list of durations to monotonically increasing timestamps.
+
+  Args:
+    durations: List of interval lengths in milliseconds.
+    absolute: See TimestampsDiscrepancy.
+    interval_multiplier: See TimestampsDiscrepancy.
+  """
+  timestamps = reduce(lambda x, y: x + [x[-1] + y], durations, [0])[1:]
+  return TimestampsDiscrepancy(timestamps, absolute, interval_multiplier)
 
 
 def ArithmeticMean(numerator, denominator):

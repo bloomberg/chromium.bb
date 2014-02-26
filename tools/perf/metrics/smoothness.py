@@ -82,22 +82,34 @@ class SmoothnessMetric(Metric):
       mean_mouse_wheel_scroll_latency = statistics.ArithmeticMean(
           self._stats.mouse_wheel_scroll_latency,
           len(self._stats.mouse_wheel_scroll_latency))
+      mouse_wheel_scroll_latency_discrepancy = statistics.DurationsDiscrepancy(
+          self._stats.mouse_wheel_scroll_latency)
       results.Add('mean_mouse_wheel_scroll_latency', 'ms',
                   round(mean_mouse_wheel_scroll_latency, 3))
+      results.Add('mouse_wheel_scroll_latency_discrepancy', '',
+                  round(mouse_wheel_scroll_latency_discrepancy, 4))
 
     if self._stats.touch_scroll_latency:
       mean_touch_scroll_latency = statistics.ArithmeticMean(
           self._stats.touch_scroll_latency,
           len(self._stats.touch_scroll_latency))
+      touch_scroll_latency_discrepancy = statistics.DurationsDiscrepancy(
+          self._stats.touch_scroll_latency)
       results.Add('mean_touch_scroll_latency', 'ms',
                   round(mean_touch_scroll_latency, 3))
+      results.Add('touch_scroll_latency_discrepancy', '',
+                  round(touch_scroll_latency_discrepancy, 4))
 
     if self._stats.js_touch_scroll_latency:
       mean_js_touch_scroll_latency = statistics.ArithmeticMean(
           self._stats.js_touch_scroll_latency,
           len(self._stats.js_touch_scroll_latency))
+      js_touch_scroll_latency_discrepancy = statistics.DurationsDiscrepancy(
+          self._stats.js_touch_scroll_latency)
       results.Add('mean_js_touch_scroll_latency', 'ms',
                   round(mean_js_touch_scroll_latency, 3))
+      results.Add('js_touch_scroll_latency_discrepancy', '',
+                  round(js_touch_scroll_latency_discrepancy, 4))
 
     # List of raw frame times.
     frame_times = FlattenList(self._stats.frame_times)
@@ -109,8 +121,9 @@ class SmoothnessMetric(Metric):
     results.Add('mean_frame_time', 'ms', round(mean_frame_time, 3))
 
     # Absolute discrepancy of frame time stamps.
-    jank = statistics.FrameDiscrepancy(self._stats.frame_timestamps)
-    results.Add('jank', '', round(jank, 4))
+    frame_discrepancy = statistics.TimestampsDiscrepancy(
+        self._stats.frame_timestamps)
+    results.Add('jank', '', round(frame_discrepancy, 4))
 
     # Are we hitting 60 fps for 95 percent of all frames?
     # We use 19ms as a somewhat looser threshold, instead of 1000.0/60.0.
