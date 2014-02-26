@@ -32,13 +32,15 @@
 // Set needsDisplay for this view and all descendants.
 - (void)cr_recursivelySetNeedsDisplay:(BOOL)flag;
 
-// Return whether or not CoreAnimation layer squashing exists for this view.
-- (BOOL)cr_supportsLayerSquashing;
+// Set the specified view to have a CoreAnimation layer if CoreAnimation is
+// enabled at the command line.
+- (void)cr_setWantsLayer:(BOOL)wantsLayer;
 
-// Set the specified view to have a CoreAnimation layer (if CoreAnimation is
-// enabled), and squash all child views into this layer (if the API is
-// available and not disabled at the command line).
-- (void)cr_setWantsLayer:(BOOL)wantsLayer withSquashing:(BOOL)squashing;
+// Set the specified view to have a CoreAnimation layer with all child views
+// squashed into this layer. Do not give this view a layer if CoreAnimation is
+// not enabled at the command line, or if the layer squashing API is not
+// availabble.
+- (void)cr_setWantsSquashedLayer;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_NSVIEW_ADDITIONS_H_

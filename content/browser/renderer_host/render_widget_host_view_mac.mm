@@ -430,7 +430,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
                   initWithRenderWidgetHostViewMac:this] autorelease];
 
   if (GetCoreAnimationStatus() == CORE_ANIMATION_ENABLED) {
-    EnableCoreAnimation();
+    use_core_animation_ = true;
   }
 
   render_widget_host_->SetView(this);
@@ -449,7 +449,7 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
 
   // Make sure that the layer doesn't reach into the now-invalid object.
   DestroyCompositedIOSurfaceAndLayer(kDestroyContext);
-  software_layer_.reset();
+  DestroySoftwareLayer();
 
   // We are owned by RenderWidgetHostViewCocoa, so if we go away before the
   // RenderWidgetHost does we need to tell it not to hold a stale pointer to
@@ -473,31 +473,6 @@ void RenderWidgetHostViewMac::SetAllowOverlappingViews(bool overlapping) {
 
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewMac, RenderWidgetHostView implementation:
-
-void RenderWidgetHostViewMac::EnableCoreAnimation() {
-  if (use_core_animation_)
-    return;
-
-  use_core_animation_ = true;
-
-  // Un-bind the GL context from this view because the CoreAnimation path will
-  // not use explicit setView and clearDrawable calls.
-  ClearBoundContextDrawable();
-
-  software_layer_.reset([[CALayer alloc] init]);
-  if (!software_layer_)
-    LOG(ERROR) << "Failed to create CALayer for software rendering";
-  [software_layer_ setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
-  [software_layer_ setDelegate:cocoa_view_];
-  [software_layer_ setContentsGravity:kCAGravityTopLeft];
-  [software_layer_ setFrame:NSRectToCGRect([cocoa_view_ bounds])];
-  if ([software_layer_ respondsToSelector:@selector(setContentsScale:)])
-    [software_layer_ setContentsScale:backing_store_scale_factor_];
-  [software_layer_ setNeedsDisplay];
-
-  [cocoa_view_ setLayer:software_layer_];
-  [cocoa_view_ setWantsLayer:YES];
-}
 
 bool RenderWidgetHostViewMac::CreateCompositedIOSurface() {
   int current_window_number = use_core_animation_ ?
@@ -543,22 +518,65 @@ bool RenderWidgetHostViewMac::CreateCompositedIOSurface() {
   return true;
 }
 
-bool RenderWidgetHostViewMac::CreateCompositedIOSurfaceLayer() {
+void RenderWidgetHostViewMac::CreateSoftwareLayerAndDestroyCompositedLayer() {
+  TRACE_EVENT0(
+      "browser",
+      "RenderWidgetHostViewMac::CreateSoftwareLayerAndDestroyCompositedLayer");
+
+  if (software_layer_ || !use_core_animation_)
+    return;
+
+  ScopedCAActionDisabler disabler;
+
+  // Create the layer.
+  software_layer_.reset([[SoftwareLayer alloc]
+      initWithRenderWidgetHostViewMac:this]);
+  if (!software_layer_) {
+    LOG(ERROR) << "Failed to create CALayer for software rendering";
+    return;
+  }
+
+  // Make the layer current and get rid of the old layer, if there is one.
+  [cocoa_view_ setLayer:software_layer_];
+  [cocoa_view_ setWantsLayer:YES];
+  DestroyCompositedIOSurfaceAndLayer(kDestroyContext);
+}
+
+void RenderWidgetHostViewMac::DestroySoftwareLayer() {
+  if (!software_layer_)
+    return;
+
+  ScopedCAActionDisabler disabler;
+
+  if ([cocoa_view_ layer] == software_layer_.get())
+    [cocoa_view_ setWantsLayer:NO];
+  [software_layer_ removeFromSuperlayer];
+  [software_layer_ disableRendering];
+  software_layer_.reset();
+}
+
+bool RenderWidgetHostViewMac::CreateCompositedLayerAndDestroySoftwareLayer() {
+  TRACE_EVENT0(
+      "browser",
+      "RenderWidgetHostViewMac::CreateCompositedLayerAndDestroySoftwareLayer");
+
   if (compositing_iosurface_layer_ || !use_core_animation_)
     return true;
 
   ScopedCAActionDisabler disabler;
 
-  // Create the GL CoreAnimation layer.
+  // Create the layer.
+  compositing_iosurface_layer_.reset([[CompositingIOSurfaceLayer alloc]
+      initWithRenderWidgetHostViewMac:this]);
   if (!compositing_iosurface_layer_) {
-    compositing_iosurface_layer_.reset([[CompositingIOSurfaceLayer alloc]
-        initWithRenderWidgetHostViewMac:this]);
-    if (!compositing_iosurface_layer_) {
-      LOG(ERROR) << "Failed to create CALayer for IOSurface";
-      return false;
-    }
-    [software_layer_ addSublayer:compositing_iosurface_layer_];
+    LOG(ERROR) << "Failed to create CALayer for IOSurface";
+    return false;
   }
+
+  // Make the layer current and get rid of the old layer, if there is one.
+  [cocoa_view_ setLayer:compositing_iosurface_layer_];
+  [cocoa_view_ setWantsLayer:YES];
+  DestroySoftwareLayer();
 
   // Creating the CompositingIOSurfaceLayer may attempt to draw in setLayer,
   // which, if it fails, will promptly tear down everything that was just
@@ -575,7 +593,8 @@ void RenderWidgetHostViewMac::DestroyCompositedIOSurfaceAndLayer(
 
   compositing_iosurface_.reset();
   if (compositing_iosurface_layer_) {
-    [software_layer_ setNeedsDisplay];
+    if ([cocoa_view_ layer] == compositing_iosurface_layer_.get())
+      [cocoa_view_ setWantsLayer:NO];
     [compositing_iosurface_layer_ removeFromSuperlayer];
     [compositing_iosurface_layer_ disableCompositing];
     compositing_iosurface_layer_.reset();
@@ -737,8 +756,11 @@ void RenderWidgetHostViewMac::UpdateBackingStoreScaleFactor() {
 
   ScopedCAActionDisabler disabler;
 
-  if ([software_layer_ respondsToSelector:@selector(setContentsScale:)])
-    [software_layer_ setContentsScale:backing_store_scale_factor_];
+  if (software_layer_) {
+    [software_layer_ disableRendering];
+    software_layer_.reset();
+    CreateSoftwareLayerAndDestroyCompositedLayer();
+  }
 
   // Dynamically calling setContentsScale on a CAOpenGLLayer for which
   // setAsynchronous is dynamically toggled can result in flashes of corrupt
@@ -747,7 +769,7 @@ void RenderWidgetHostViewMac::UpdateBackingStoreScaleFactor() {
   if (compositing_iosurface_layer_) {
     [compositing_iosurface_layer_ disableCompositing];
     compositing_iosurface_layer_.reset();
-    CreateCompositedIOSurfaceLayer();
+    CreateCompositedLayerAndDestroySoftwareLayer();
   }
 
   render_widget_host_->NotifyScreenInfoChanged();
@@ -770,7 +792,7 @@ void RenderWidgetHostViewMac::WasShown() {
   if (!use_core_animation_)
     [[cocoa_view_ window] disableScreenUpdatesUntilFlush];
 
-  [compositing_iosurface_layer_ setNeedsDisplay];
+  [[cocoa_view_ layer] setNeedsDisplay];
 }
 
 void RenderWidgetHostViewMac::WasHidden() {
@@ -1436,7 +1458,7 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
 
   // Create the layer for the composited content only after the IOSurface has
   // been initialized.
-  if (!CreateCompositedIOSurfaceLayer()) {
+  if (!CreateCompositedLayerAndDestroySoftwareLayer()) {
     LOG(ERROR) << "Failed to create CompositingIOSurface layer";
     GotAcceleratedCompositingError();
     return;
@@ -1929,6 +1951,9 @@ void RenderWidgetHostViewMac::GotAcceleratedFrame() {
 }
 
 void RenderWidgetHostViewMac::GotSoftwareFrame() {
+  CreateSoftwareLayerAndDestroyCompositedLayer();
+  [software_layer_ setNeedsDisplay];
+
   if (last_frame_was_accelerated_) {
     last_frame_was_accelerated_ = false;
 
@@ -2101,8 +2126,7 @@ void RenderWidgetHostViewMac::TickPendingLatencyInfoDelay() {
   base::MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&RenderWidgetHostViewMac::TickPendingLatencyInfoDelay,
                  pending_latency_info_delay_weak_ptr_factory_.GetWeakPtr()));
-  [software_layer_ setNeedsDisplay];
-  [compositing_iosurface_layer_ setNeedsDisplay];
+  [[cocoa_view_ layer] setNeedsDisplay];
 }
 
 void RenderWidgetHostViewMac::AddPendingSwapAck(
@@ -2871,10 +2895,8 @@ void RenderWidgetHostViewMac::SendPendingSwapAck() {
   // this is not sufficient.
   ScopedCAActionDisabler disabler;
   CGRect frame = NSRectToCGRect([renderWidgetHostView_->cocoa_view() bounds]);
-  [renderWidgetHostView_->software_layer_ setFrame:frame];
-  [renderWidgetHostView_->software_layer_ setNeedsDisplay];
-  [renderWidgetHostView_->compositing_iosurface_layer_ setFrame:frame];
-  [renderWidgetHostView_->compositing_iosurface_layer_ setNeedsDisplay];
+  [[self layer] setFrame:frame];
+  [[self layer] setNeedsDisplay];
 }
 
 - (void)callSetNeedsDisplayInRect {
@@ -2884,8 +2906,7 @@ void RenderWidgetHostViewMac::SendPendingSwapAck() {
   renderWidgetHostView_->call_set_needs_display_in_rect_pending_ = false;
   renderWidgetHostView_->invalid_rect_ = NSZeroRect;
 
-  if (renderWidgetHostView_->compositing_iosurface_layer_)
-    [renderWidgetHostView_->compositing_iosurface_layer_ setNeedsDisplay];
+  [[self layer] setNeedsDisplay];
 }
 
 // Fills with white the parts of the area to the right and bottom for |rect|
@@ -2941,10 +2962,12 @@ void RenderWidgetHostViewMac::SendPendingSwapAck() {
 
 - (void)drawRect:(NSRect)dirtyRect {
   TRACE_EVENT0("browser", "RenderWidgetHostViewCocoa::drawRect");
-  CHECK(!renderWidgetHostView_->use_core_animation_);
 
-  if (!renderWidgetHostView_->render_widget_host_) {
-    // TODO(shess): Consider using something more noticable?
+  if (!renderWidgetHostView_->render_widget_host_ ||
+      renderWidgetHostView_->use_core_animation_) {
+    // When using CoreAnimation, this path is used to paint the contents area
+    // white before any frames come in. When layers to draw frames exist, this
+    // is not hit.
     [[NSColor whiteColor] set];
     NSRectFill(dirtyRect);
     return;
@@ -3877,10 +3900,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 
   // Resize the view's layers to match the new window size.
   ScopedCAActionDisabler disabler;
-  [renderWidgetHostView_->software_layer_
-      setFrame:NSRectToCGRect([self bounds])];
-  [renderWidgetHostView_->compositing_iosurface_layer_
-      setFrame:NSRectToCGRect([self bounds])];
+  [[self layer] setFrame:NSRectToCGRect([self bounds])];
 }
 
 - (void)undo:(id)sender {
@@ -4079,45 +4099,6 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   renderWidgetHostView_->KillSelf();
 }
 
-// Delegate methods for the software CALayer
-- (void)drawLayer:(CALayer*)layer
-        inContext:(CGContextRef)context {
-  TRACE_EVENT0("browser", "CompositingIOSurfaceLayer::drawLayer");
-
-  DCHECK(renderWidgetHostView_->use_core_animation_);
-  DCHECK([layer isEqual:renderWidgetHostView_->software_layer_]);
-
-  CGRect clipRect = CGContextGetClipBoundingBox(context);
-
-  if (!renderWidgetHostView_->render_widget_host_ ||
-      renderWidgetHostView_->render_widget_host_->is_hidden()) {
-    CGContextSetFillColorWithColor(context,
-                                   CGColorGetConstantColor(kCGColorWhite));
-    CGContextFillRect(context, clipRect);
-    return;
-  }
-
-  renderWidgetHostView_->about_to_validate_and_paint_ = true;
-  BackingStoreMac* backingStore = static_cast<BackingStoreMac*>(
-      renderWidgetHostView_->render_widget_host_->GetBackingStore(true));
-  renderWidgetHostView_->about_to_validate_and_paint_ = false;
-
-  [self drawBackingStore:backingStore
-               dirtyRect:clipRect
-               inContext:context];
-}
-
-- (void)setNeedsDisplay:(BOOL)flag {
-  [renderWidgetHostView_->software_layer_ setNeedsDisplay];
-  [super setNeedsDisplay:flag];
-}
-
-- (void)setNeedsDisplayInRect:(NSRect)rect {
-  [renderWidgetHostView_->software_layer_
-      setNeedsDisplayInRect:NSRectToCGRect(rect)];
-  [super setNeedsDisplayInRect:rect];
-}
-
 @end
 
 //
@@ -4155,3 +4136,52 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
 @end
+
+@implementation SoftwareLayer
+
+- (id)initWithRenderWidgetHostViewMac:(content::RenderWidgetHostViewMac*)r {
+  if (self = [super init]) {
+    renderWidgetHostView_ = r;
+
+    ScopedCAActionDisabler disabler;
+    [self setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
+    [self setContentsGravity:kCAGravityTopLeft];
+    [self setFrame:NSRectToCGRect(
+        [renderWidgetHostView_->cocoa_view() bounds])];
+    if ([self respondsToSelector:(@selector(setContentsScale:))]) {
+      [self setContentsScale:
+          renderWidgetHostView_->backing_store_scale_factor_];
+    }
+
+    // Ensure that the transition between frames not be animated.
+    [self setActions:@{ @"contents" : [NSNull null] }];
+
+    [self setNeedsDisplay];
+  }
+  return self;
+}
+
+- (void)drawInContext:(CGContextRef)context {
+  TRACE_EVENT0("browser", "SoftwareLayer::drawInContext");
+
+  CGRect clipRect = CGContextGetClipBoundingBox(context);
+  if (!renderWidgetHostView_) {
+    CGContextSetFillColorWithColor(context,
+                                   CGColorGetConstantColor(kCGColorWhite));
+    CGContextFillRect(context, clipRect);
+  } else {
+    renderWidgetHostView_->about_to_validate_and_paint_ = true;
+    BackingStoreMac* backingStore = static_cast<BackingStoreMac*>(
+        renderWidgetHostView_->render_widget_host_->GetBackingStore(true));
+    renderWidgetHostView_->about_to_validate_and_paint_ = false;
+    [renderWidgetHostView_->cocoa_view() drawBackingStore:backingStore
+                                                dirtyRect:clipRect
+                                                inContext:context];
+  }
+}
+
+- (void)disableRendering {
+  renderWidgetHostView_ = NULL;
+}
+
+@end  // implementation SoftwareLayer

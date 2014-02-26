@@ -22,7 +22,7 @@ CGFloat kCurveSize = 8;
     // Give this view its own layer so that it can appear over the web contents
     // view's layer. Layer squashing is not necessary for this view because
     // NSTextField will correctly anti-alias text on 10.8 and beyond.
-    [self cr_setWantsLayer:YES withSquashing:NO];
+    [self cr_setWantsLayer:YES];
   }
   return self;
 }

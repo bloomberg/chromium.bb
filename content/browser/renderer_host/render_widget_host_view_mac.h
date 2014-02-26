@@ -179,6 +179,19 @@ class RenderWidgetHostViewMacEditCommandHelper;
                              actualRange:(NSRangePointer)actualRange;
 @end
 
+@interface SoftwareLayer : CALayer {
+ @private
+  content::RenderWidgetHostViewMac* renderWidgetHostView_;
+}
+
+- (id)initWithRenderWidgetHostViewMac:(content::RenderWidgetHostViewMac*)r;
+
+// Invalidate the RenderWidgetHostViewMac because it may be going away. If
+// displayed again, it will draw white.
+- (void)disableRendering;
+
+@end
+
 namespace content {
 class RenderWidgetHostImpl;
 
@@ -337,9 +350,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
 
   void SetTextInputActive(bool active);
 
-  // Change this view to use CoreAnimation to draw.
-  void EnableCoreAnimation();
-
   // Sends completed plugin IME notification and text back to the renderer.
   void PluginImeCompositionCompleted(const base::string16& text, int plugin_id);
 
@@ -430,7 +440,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   ui::TextInputType text_input_type_;
   bool can_compose_inline_;
 
-  base::scoped_nsobject<CALayer> software_layer_;
+  // The CoreAnimation layer for software compositing. Note that at most one of
+  // |software_layer_| and |compositing_iosurface_layer_| may be non-NULL.
+  base::scoped_nsobject<SoftwareLayer> software_layer_;
 
   // Accelerated compositing structures. These may be dynamically created and
   // destroyed together in Create/DestroyCompositedIOSurfaceAndLayer.
@@ -524,8 +536,11 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   // invoke it from the message loop.
   void ShutdownHost();
 
+  void CreateSoftwareLayerAndDestroyCompositedLayer();
+  void DestroySoftwareLayer();
+
   bool CreateCompositedIOSurface();
-  bool CreateCompositedIOSurfaceLayer();
+  bool CreateCompositedLayerAndDestroySoftwareLayer();
   enum DestroyContextBehavior {
     kLeaveContextBoundToView,
     kDestroyContext,

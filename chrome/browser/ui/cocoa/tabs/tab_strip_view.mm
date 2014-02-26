@@ -42,7 +42,7 @@
 
     // Give this view its own layer, and squash child layers into this layer
     // so that the text in the infobar have sub-pixel anti-aliasing.
-    [self cr_setWantsLayer:YES withSquashing:YES];
+    [self cr_setWantsSquashedLayer];
   }
   return self;
 }

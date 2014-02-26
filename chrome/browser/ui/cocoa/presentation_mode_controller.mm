@@ -203,7 +203,7 @@ const CGFloat kFloatingBarVerticalOffset = 22;
   // above the window contents. For this to happen, the window will need its
   // own layer. This comes with a performance penalty when not fullscreen, so
   // do not enable this by default.
-  [[window contentView] cr_setWantsLayer:YES withSquashing:NO];
+  [[window contentView] cr_setWantsLayer:YES];
 
   // Disable these notifications on Lion as they cause crashes.
   // TODO(rohitrao): Figure out what happens if a fullscreen window changes
@@ -242,7 +242,7 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 
   // Remove the layer that was created.
   NSWindow* window = [browserController_ window];
-  [[window contentView] cr_setWantsLayer:NO withSquashing:NO];
+  [[window contentView] cr_setWantsLayer:NO];
 
   [self cleanup];
 }

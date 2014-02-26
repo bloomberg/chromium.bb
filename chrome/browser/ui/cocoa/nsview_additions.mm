@@ -88,22 +88,25 @@
     [child cr_recursivelySetNeedsDisplay:flag];
 }
 
-- (BOOL)cr_supportsLayerSquashing {
-  return [self respondsToSelector:@selector(setCanDrawSubviewsIntoLayer:)];
-}
-
-- (void)cr_setWantsLayer:(BOOL)wantsLayer
-           withSquashing:(BOOL)squashing {
+- (void)cr_setWantsLayer:(BOOL)wantsLayer {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseCoreAnimation))
     return;
   [self setWantsLayer:wantsLayer];
+}
 
+- (void)cr_setWantsSquashedLayer {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseCoreAnimation))
+    return;
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableCoreAnimationLayerSquashing))
     return;
-  if ([self cr_supportsLayerSquashing])
-    [self setCanDrawSubviewsIntoLayer:squashing];
+  if (![self respondsToSelector:@selector(setCanDrawSubviewsIntoLayer:)])
+    return;
+
+  [self setWantsLayer:YES];
+  [self setCanDrawSubviewsIntoLayer:YES];
 }
 
 @end

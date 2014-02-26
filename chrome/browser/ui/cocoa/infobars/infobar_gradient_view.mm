@@ -26,14 +26,9 @@
   if ((self = [super initWithFrame:frame])) {
     hasTip_ = YES;
 
-    // If layer squashing is not supported, then do not give infobars their own
-    // view, so that they will have sub-pixel anti-aliasing, except when a
-    // superview requests a layer (presentation mode only).
-    if ([self cr_supportsLayerSquashing]) {
-      // Give this view its own layer and squash child layers into this layer
-      // so that the text in the tabs have sub-pixel anti-aliasing.
-      [self cr_setWantsLayer:YES withSquashing:YES];
-    }
+    // Give this view its own layer and squash child layers into this layer
+    // so that the text in the tabs have sub-pixel anti-aliasing.
+    [self cr_setWantsSquashedLayer];
   }
   return self;
 }
