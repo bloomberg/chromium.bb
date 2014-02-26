@@ -5,32 +5,132 @@
 #include "content/renderer/pepper/pepper_media_stream_video_track_host.h"
 
 #include "base/logging.h"
+#include "media/base/yuv_convert.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_video_frame.h"
+#include "ppapi/host/dispatch_host_message.h"
+#include "ppapi/host/host_message_context.h"
+#include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/media_stream_buffer.h"
+#include "third_party/libyuv/include/libyuv.h"
 
 using media::VideoFrame;
+using ppapi::host::HostMessageContext;
+using ppapi::MediaStreamVideoTrackShared;
 
 namespace {
 
-// TODO(penghuang): make it configurable.
-const int32_t kNumberOfFrames = 4;
+const int32_t kDefaultNumberOfBuffers = 4;
+const int32_t kMaxNumberOfBuffers = 8;
+// Filter mode for scaling frames.
+const libyuv::FilterMode kFilterMode = libyuv::kFilterBox;
 
 PP_VideoFrame_Format ToPpapiFormat(VideoFrame::Format format) {
   switch (format) {
     case VideoFrame::YV12:
       return PP_VIDEOFRAME_FORMAT_YV12;
-    case VideoFrame::YV16:
-      return PP_VIDEOFRAME_FORMAT_YV16;
     case VideoFrame::I420:
       return PP_VIDEOFRAME_FORMAT_I420;
-    case VideoFrame::YV12A:
-      return PP_VIDEOFRAME_FORMAT_YV12A;
-    case VideoFrame::YV12J:
-      return PP_VIDEOFRAME_FORMAT_YV12J;
     default:
       DVLOG(1) << "Unsupported pixel format " << format;
       return PP_VIDEOFRAME_FORMAT_UNKNOWN;
+  }
+}
+
+VideoFrame::Format FromPpapiFormat(PP_VideoFrame_Format format) {
+  switch (format) {
+    case PP_VIDEOFRAME_FORMAT_YV12:
+      return VideoFrame::YV12;
+    case PP_VIDEOFRAME_FORMAT_I420:
+      return VideoFrame::I420;
+    default:
+      DVLOG(1) << "Unsupported pixel format " << format;
+      return VideoFrame::UNKNOWN;
+  }
+}
+
+// Compute size base on the size of frame received from MediaStreamVideoSink
+// and size specified by plugin.
+gfx::Size GetTargetSize(const gfx::Size& source,
+                        const gfx::Size& plugin) {
+  return gfx::Size(plugin.width() ? plugin.width() : source.width(),
+                   plugin.height() ? plugin.height() : source.height());
+}
+
+// Compute format base on the format of frame received from MediaStreamVideoSink
+// and format specified by plugin.
+PP_VideoFrame_Format GetTargetFormat(PP_VideoFrame_Format source,
+                                     PP_VideoFrame_Format plugin) {
+  return plugin != PP_VIDEOFRAME_FORMAT_UNKNOWN ? plugin : source;
+}
+
+void ConvertFromMediaVideoFrame(const scoped_refptr<media::VideoFrame>& src,
+                                PP_VideoFrame_Format dst_format,
+                                const gfx::Size& dst_size,
+                                uint8_t* dst) {
+  CHECK(src->format() == VideoFrame::YV12 ||
+        src->format() == VideoFrame::I420);
+  if (dst_format == PP_VIDEOFRAME_FORMAT_BGRA) {
+    if (src->coded_size() == dst_size) {
+      libyuv::I420ToARGB(src->data(VideoFrame::kYPlane),
+                         src->stride(VideoFrame::kYPlane),
+                         src->data(VideoFrame::kUPlane),
+                         src->stride(VideoFrame::kUPlane),
+                         src->data(VideoFrame::kVPlane),
+                         src->stride(VideoFrame::kVPlane),
+                         dst,
+                         dst_size.width() * 4,
+                         dst_size.width(),
+                         dst_size.height());
+    } else {
+      media::ScaleYUVToRGB32(src->data(VideoFrame::kYPlane),
+                             src->data(VideoFrame::kUPlane),
+                             src->data(VideoFrame::kVPlane),
+                             dst,
+                             src->coded_size().width(),
+                             src->coded_size().height(),
+                             dst_size.width(),
+                             dst_size.height(),
+                             src->stride(VideoFrame::kYPlane),
+                             src->stride(VideoFrame::kUPlane),
+                             dst_size.width() * 4,
+                             media::YV12,
+                             media::ROTATE_0,
+                             media::FILTER_BILINEAR);
+    }
+  } else if (dst_format == PP_VIDEOFRAME_FORMAT_YV12 ||
+             dst_format == PP_VIDEOFRAME_FORMAT_I420) {
+    static const size_t kPlanesOrder[][3] = {
+      { VideoFrame::kYPlane, VideoFrame::kVPlane, VideoFrame::kUPlane }, // YV12
+      { VideoFrame::kYPlane, VideoFrame::kUPlane, VideoFrame::kVPlane }, // I420
+    };
+    const int plane_order = (dst_format == PP_VIDEOFRAME_FORMAT_YV12) ? 0 : 1;
+    int dst_width = dst_size.width();
+    int dst_height = dst_size.height();
+    libyuv::ScalePlane(src->data(kPlanesOrder[plane_order][0]),
+                       src->stride(kPlanesOrder[plane_order][0]),
+                       src->coded_size().width(),
+                       src->coded_size().height(),
+                       dst, dst_width, dst_width, dst_height,
+                       kFilterMode);
+    dst += dst_width * dst_height;
+    const int src_halfwidth = (src->coded_size().width() + 1) >> 1;
+    const int src_halfheight = (src->coded_size().height() + 1) >> 1;
+    const int dst_halfwidth = (dst_width + 1) >> 1;
+    const int dst_halfheight = (dst_height + 1) >> 1;
+    libyuv::ScalePlane(src->data(kPlanesOrder[plane_order][1]),
+                       src->stride(kPlanesOrder[plane_order][1]),
+                       src_halfwidth, src_halfheight,
+                       dst, dst_halfwidth, dst_halfwidth, dst_halfheight,
+                       kFilterMode);
+    dst += dst_halfwidth * dst_halfheight;
+    libyuv::ScalePlane(src->data(kPlanesOrder[plane_order][2]),
+                       src->stride(kPlanesOrder[plane_order][2]),
+                       src_halfwidth, src_halfheight,
+                       dst, dst_halfwidth, dst_halfwidth, dst_halfheight,
+                       kFilterMode);
+  } else {
+    NOTREACHED();
   }
 }
 
@@ -46,13 +146,38 @@ PepperMediaStreamVideoTrackHost::PepperMediaStreamVideoTrackHost(
     : PepperMediaStreamTrackHostBase(host, instance, resource),
       track_(track),
       connected_(false),
-      frame_format_(VideoFrame::UNKNOWN),
+      number_of_buffers_(kDefaultNumberOfBuffers),
+      source_frame_format_(PP_VIDEOFRAME_FORMAT_UNKNOWN),
+      plugin_frame_format_(PP_VIDEOFRAME_FORMAT_UNKNOWN),
       frame_data_size_(0) {
   DCHECK(!track_.isNull());
 }
 
 PepperMediaStreamVideoTrackHost::~PepperMediaStreamVideoTrackHost() {
   OnClose();
+}
+
+void PepperMediaStreamVideoTrackHost::InitBuffers() {
+  gfx::Size size = GetTargetSize(source_frame_size_, plugin_frame_size_);
+  DCHECK(!size.IsEmpty());
+
+  PP_VideoFrame_Format format =
+    GetTargetFormat(source_frame_format_, plugin_frame_format_);
+  DCHECK_NE(format, PP_VIDEOFRAME_FORMAT_UNKNOWN);
+
+  if (format == PP_VIDEOFRAME_FORMAT_BGRA) {
+    frame_data_size_ = size.width() * size.height() * 4;
+  } else {
+    frame_data_size_ = VideoFrame::AllocationSize(FromPpapiFormat(format),
+                                                  size);
+  }
+
+  DCHECK_GT(frame_data_size_, 0U);
+  int32_t buffer_size =
+      sizeof(ppapi::MediaStreamBuffer::Video) + frame_data_size_;
+  bool result = PepperMediaStreamTrackHostBase::InitBuffers(number_of_buffers_,
+                                                            buffer_size);
+  CHECK(result);
 }
 
 void PepperMediaStreamVideoTrackHost::OnClose() {
@@ -70,53 +195,35 @@ void PepperMediaStreamVideoTrackHost::OnVideoFrame(
   if (ppformat == PP_VIDEOFRAME_FORMAT_UNKNOWN)
     return;
 
-  if (frame_size_ != frame->coded_size() || frame_format_ != frame->format()) {
-    frame_size_ = frame->coded_size();
-    frame_format_ = frame->format();
-    // TODO(penghuang): Support changing |frame_size_| & |frame_format_| more
-    // than once.
-    DCHECK(!frame_data_size_);
-    frame_data_size_ = VideoFrame::AllocationSize(frame_format_, frame_size_);
-    int32_t size = sizeof(ppapi::MediaStreamBuffer::Video) + frame_data_size_;
-    bool result = InitBuffers(kNumberOfFrames, size);
-    // TODO(penghuang): Send PP_ERROR_NOMEMORY to plugin.
-    CHECK(result);
+  if (source_frame_size_.IsEmpty()) {
+    source_frame_size_ = frame->coded_size();
+    source_frame_format_ = ppformat;
+    InitBuffers();
   }
 
   int32_t index = buffer_manager()->DequeueBuffer();
   // Drop frames if the underlying buffer is full.
-  if (index < 0)
+  if (index < 0) {
+    DVLOG(1) << "A frame is dropped.";
     return;
+  }
 
-  // TODO(penghuang): support format conversion and size scaling.
+  CHECK(frame->coded_size() == source_frame_size_) << "Frame size is changed";
+  CHECK_EQ(ppformat, source_frame_format_) << "Frame format is changed.";
+
+  gfx::Size size = GetTargetSize(source_frame_size_, plugin_frame_size_);
+  PP_VideoFrame_Format format = GetTargetFormat(source_frame_format_,
+                                                plugin_frame_format_);
   ppapi::MediaStreamBuffer::Video* buffer =
       &(buffer_manager()->GetBufferPointer(index)->video);
   buffer->header.size = buffer_manager()->buffer_size();
   buffer->header.type = ppapi::MediaStreamBuffer::TYPE_VIDEO;
   buffer->timestamp = frame->GetTimestamp().InSecondsF();
-  buffer->format = ppformat;
-  buffer->size.width = frame->coded_size().width();
-  buffer->size.height = frame->coded_size().height();
+  buffer->format = format;
+  buffer->size.width = size.width();
+  buffer->size.height = size.height();
   buffer->data_size = frame_data_size_;
-
-  COMPILE_ASSERT(VideoFrame::kYPlane == 0, y_plane_should_be_0);
-  COMPILE_ASSERT(VideoFrame::kUPlane == 1, u_plane_should_be_1);
-  COMPILE_ASSERT(VideoFrame::kVPlane == 2, v_plane_should_be_2);
-
-  uint8_t* dst = buffer->data;
-  size_t num_planes = VideoFrame::NumPlanes(frame->format());
-  for (size_t i = 0; i < num_planes; ++i) {
-    const uint8_t* src = frame->data(i);
-    const size_t row_bytes = frame->row_bytes(i);
-    const size_t src_stride = frame->stride(i);
-    int rows = frame->rows(i);
-    for (int j = 0; j < rows; ++j) {
-      memcpy(dst, src, row_bytes);
-      dst += row_bytes;
-      src += src_stride;
-    }
-  }
-
+  ConvertFromMediaVideoFrame(frame, format, size, buffer->data);
   SendEnqueueBufferMessageToPlugin(index);
 }
 
@@ -125,6 +232,55 @@ void PepperMediaStreamVideoTrackHost::DidConnectPendingHostToResource() {
     MediaStreamVideoSink::AddToVideoTrack(this, track_);
     connected_ = true;
   }
+}
+
+int32_t PepperMediaStreamVideoTrackHost::OnResourceMessageReceived(
+    const IPC::Message& msg,
+    HostMessageContext* context) {
+  IPC_BEGIN_MESSAGE_MAP(PepperMediaStreamVideoTrackHost, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+        PpapiHostMsg_MediaStreamVideoTrack_Configure,
+        OnHostMsgConfigure)
+  IPC_END_MESSAGE_MAP()
+  return PepperMediaStreamTrackHostBase::OnResourceMessageReceived(msg,
+                                                                   context);
+}
+
+int32_t PepperMediaStreamVideoTrackHost::OnHostMsgConfigure(
+    HostMessageContext* context,
+    const MediaStreamVideoTrackShared::Attributes& attributes) {
+  CHECK(MediaStreamVideoTrackShared::VerifyAttributes(attributes));
+
+  bool changed = false;
+  gfx::Size new_size(attributes.width, attributes.height);
+  if (GetTargetSize(source_frame_size_, plugin_frame_size_) !=
+      GetTargetSize(source_frame_size_, new_size)) {
+      changed = true;
+  }
+  plugin_frame_size_ = new_size;
+
+  int32_t buffers = attributes.buffers ?
+      std::min(kMaxNumberOfBuffers, attributes.buffers) :
+      kDefaultNumberOfBuffers;
+  if (buffers != number_of_buffers_)
+    changed = true;
+  number_of_buffers_ = buffers;
+
+  if (GetTargetFormat(source_frame_format_, plugin_frame_format_) !=
+      GetTargetFormat(source_frame_format_, attributes.format)) {
+    changed = true;
+  }
+  plugin_frame_format_ = attributes.format;
+
+  // If the first frame has been received, we will re-initialize buffers with
+  // new settings. Otherwise, we will initialize buffer when we receive
+  // the first frame, because plugin can only provide part of attributes
+  // which are not enough to initialize buffers.
+  if (changed && !source_frame_size_.IsEmpty())
+    InitBuffers();
+
+  context->reply_msg = PpapiPluginMsg_MediaStreamVideoTrack_ConfigureReply();
+  return PP_OK;
 }
 
 }  // namespace content

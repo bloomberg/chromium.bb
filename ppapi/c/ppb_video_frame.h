@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_video_frame.idl modified Wed Jan 22 21:25:01 2014. */
+/* From ppb_video_frame.idl modified Tue Feb 11 14:41:52 2014. */
 
 #ifndef PPAPI_C_PPB_VIDEO_FRAME_H_
 #define PPAPI_C_PPB_VIDEO_FRAME_H_
@@ -36,21 +36,17 @@ typedef enum {
    */
   PP_VIDEOFRAME_FORMAT_YV12 = 1,
   /**
-   * 16bpp YVU planar 1x1 Y, 2x1 VU samples.
+   * 12bpp YUV planar 1x1 Y, 2x2 UV samples.
    */
-  PP_VIDEOFRAME_FORMAT_YV16 = 2,
+  PP_VIDEOFRAME_FORMAT_I420 = 2,
   /**
-   * 12bpp YVU planar 1x1 Y, 2x2 UV samples.
+   * 32bpp BGRA.
    */
-  PP_VIDEOFRAME_FORMAT_I420 = 3,
+  PP_VIDEOFRAME_FORMAT_BGRA = 3,
   /**
-   * 20bpp YVU planar 1x1 Y, 2x2 VU, 1x1 A samples.
+   * The last format.
    */
-  PP_VIDEOFRAME_FORMAT_YV12A = 4,
-  /**
-   * JPEG color range version of YV12.
-   */
-  PP_VIDEOFRAME_FORMAT_YV12J = 5
+  PP_VIDEOFRAME_FORMAT_LAST = PP_VIDEOFRAME_FORMAT_BGRA
 } PP_VideoFrame_Format;
 /**
  * @}

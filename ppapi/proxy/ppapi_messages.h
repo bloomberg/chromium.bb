@@ -62,6 +62,7 @@
 #include "ppapi/shared_impl/file_growth.h"
 #include "ppapi/shared_impl/file_path.h"
 #include "ppapi/shared_impl/file_ref_create_info.h"
+#include "ppapi/shared_impl/media_stream_video_track_shared.h"
 #include "ppapi/shared_impl/ppapi_nacl_plugin_args.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
@@ -121,6 +122,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(PP_UDPSocket_Option,
                           PP_UDPSOCKET_OPTION_RECV_BUFFER_SIZE)
 IPC_ENUM_TRAITS(PP_VideoDecodeError_Dev)
 IPC_ENUM_TRAITS(PP_VideoDecoder_Profile)
+IPC_ENUM_TRAITS_MAX_VALUE(PP_VideoFrame_Format, PP_VIDEOFRAME_FORMAT_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(PP_Point)
   IPC_STRUCT_TRAITS_MEMBER(x)
@@ -239,6 +241,13 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(ppapi::FlashSiteSetting)
   IPC_STRUCT_TRAITS_MEMBER(site)
   IPC_STRUCT_TRAITS_MEMBER(permission)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(ppapi::MediaStreamVideoTrackShared::Attributes)
+  IPC_STRUCT_TRAITS_MEMBER(buffers)
+  IPC_STRUCT_TRAITS_MEMBER(width)
+  IPC_STRUCT_TRAITS_MEMBER(height)
+  IPC_STRUCT_TRAITS_MEMBER(format)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(ppapi::ViewData)
@@ -1445,6 +1454,10 @@ IPC_MESSAGE_CONTROL1(PpapiPluginMsg_MediaStreamAudioTrack_CreateFromPendingHost,
                      std::string /* track_id */)
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_MediaStreamVideoTrack_CreateFromPendingHost,
                      std::string /* track_id */)
+IPC_MESSAGE_CONTROL1(
+    PpapiHostMsg_MediaStreamVideoTrack_Configure,
+    ppapi::MediaStreamVideoTrackShared::Attributes /* attributes */)
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_MediaStreamVideoTrack_ConfigureReply)
 
 // Message for init buffers. It also takes a shared memory handle which is put
 // in the outer ResourceReplyMessage.

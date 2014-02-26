@@ -33,14 +33,14 @@ class PepperMediaStreamTrackHostBase
   // Also see |MediaStreamBufferManager|.
   void SendEnqueueBufferMessageToPlugin(int32_t index);
 
- private:
-  // Subclasses must implement this method to clean up when the track is closed.
-  virtual void OnClose() = 0;
-
   // ResourceMessageHandler overrides:
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) OVERRIDE;
+
+ private:
+  // Subclasses must implement this method to clean up when the track is closed.
+  virtual void OnClose() = 0;
 
   // Message handlers:
   int32_t OnHostMsgEnqueueBuffer(ppapi::host::HostMessageContext* context,

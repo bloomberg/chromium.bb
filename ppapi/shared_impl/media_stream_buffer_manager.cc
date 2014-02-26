@@ -26,7 +26,6 @@ bool MediaStreamBufferManager::SetBuffers(int32_t number_of_buffers,
                                           scoped_ptr<base::SharedMemory> shm,
                                           bool enqueue_all_buffers) {
   DCHECK(shm);
-  DCHECK(!shm_);
   DCHECK_GT(number_of_buffers, 0);
   DCHECK_GT(buffer_size,
             static_cast<int32_t>(sizeof(MediaStreamBuffer::Header)));
@@ -35,11 +34,13 @@ bool MediaStreamBufferManager::SetBuffers(int32_t number_of_buffers,
   number_of_buffers_ = number_of_buffers;
   buffer_size_ = buffer_size;
 
-  int32_t size = number_of_buffers_ * buffer_size;
+  size_t size = number_of_buffers_ * buffer_size;
   shm_ = shm.Pass();
   if (!shm_->Map(size))
     return false;
 
+  buffer_queue_.clear();
+  buffers_.clear();
   uint8_t* p = reinterpret_cast<uint8_t*>(shm_->memory());
   for (int32_t i = 0; i < number_of_buffers; ++i) {
     if (enqueue_all_buffers)
@@ -59,15 +60,16 @@ int32_t MediaStreamBufferManager::DequeueBuffer() {
 }
 
 void MediaStreamBufferManager::EnqueueBuffer(int32_t index) {
-  DCHECK_GE(index, 0);
-  DCHECK_LT(index, number_of_buffers_);
+  CHECK_GE(index, 0) << "Invalid buffer index";
+  CHECK_LT(index, number_of_buffers_) << "Invalid buffer index";
   buffer_queue_.push_back(index);
   delegate_->OnNewBufferEnqueued();
 }
 
-MediaStreamBuffer* MediaStreamBufferManager::GetBufferPointer(int32_t index) {
-  DCHECK_GE(index, 0);
-  DCHECK_LT(index, number_of_buffers_);
+MediaStreamBuffer* MediaStreamBufferManager::GetBufferPointer(
+    int32_t index) {
+  CHECK_GE(index, 0) << "Invalid buffer index";
+  CHECK_LT(index, number_of_buffers_) << "Invalid buffer index";
   return buffers_[index];
 }
 

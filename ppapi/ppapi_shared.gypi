@@ -42,6 +42,8 @@
           'shared_impl/media_stream_buffer.h',
           'shared_impl/media_stream_buffer_manager.cc',
           'shared_impl/media_stream_buffer_manager.h',
+          'shared_impl/media_stream_video_track_shared.h',
+          'shared_impl/media_stream_video_track_shared.cc',
           'shared_impl/platform_file.cc',
           'shared_impl/platform_file.h',
           'shared_impl/ppapi_globals.cc',

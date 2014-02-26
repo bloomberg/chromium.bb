@@ -52,13 +52,17 @@ class PPAPI_PROXY_EXPORT MediaStreamVideoTrackResource
 
   void ReleaseFrames();
 
+  // IPC message handlers.
+  void OnPluginMsgConfigureReply(const ResourceMessageReplyParams& params);
+
   // Allocated frame resources by |GetFrame()|.
   typedef std::map<PP_Resource, scoped_refptr<VideoFrameResource> > FrameMap;
   FrameMap frames_;
 
   PP_Resource* get_frame_output_;
-
   scoped_refptr<TrackedCallback> get_frame_callback_;
+
+  scoped_refptr<TrackedCallback> configure_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoTrackResource);
 };

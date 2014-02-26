@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_media_stream_video_track.idl modified Thu Jan 23 14:09:56 2014. */
+/* From ppb_media_stream_video_track.idl modified Wed Feb 19 11:06:48 2014. */
 
 #ifndef PPAPI_C_PPB_MEDIA_STREAM_VIDEO_TRACK_H_
 #define PPAPI_C_PPB_MEDIA_STREAM_VIDEO_TRACK_H_
@@ -45,23 +45,38 @@ typedef enum {
    * request at least 2 to make sure latency doesn't cause lost frames. If
    * the plugin expects to hold on to more than one frame at a time (e.g. to do
    * multi-frame processing), it should request that many more.
+   * If this attribute is not specified or value 0 is specified for this
+   * attribute, the default value will be used.
    */
   PP_MEDIASTREAMVIDEOTRACK_ATTRIB_BUFFERED_FRAMES = 1,
   /**
    * The width of video frames in pixels. It should be a multiple of 4.
+   * If the specified size is different from the video source (webcam),
+   * frames will be scaled to specified size.
+   * If this attribute is not specified or value 0 is specified, the original
+   * frame size of the video track will be used.
    *
    * Maximum value: 4096 (4K resolution).
    */
   PP_MEDIASTREAMVIDEOTRACK_ATTRIB_WIDTH = 2,
   /**
    * The height of video frames in pixels. It should be a multiple of 4.
+   * If the specified size is different from the video source (webcam),
+   * frames will be scaled to specified size.
+   * If this attribute is not specified or value 0 is specified, the original
+   * frame size of the video track will be used.
    *
    * Maximum value: 4096 (4K resolution).
    */
   PP_MEDIASTREAMVIDEOTRACK_ATTRIB_HEIGHT = 3,
   /**
    * The format of video frames. The attribute value is
-   * a <code>PP_VideoFrame_Format</code>.
+   * a <code>PP_VideoFrame_Format</code>. If the specified format is different
+   * from the video source (webcam), frames will be converted to specified
+   * format.
+   * If this attribute is not specified or value
+   * <code>PP_VIDEOFRAME_FORMAT_UNKNOWN</code> is specified, the orignal frame
+   * format of the video track will be used.
    */
   PP_MEDIASTREAMVIDEOTRACK_ATTRIB_FORMAT = 4
 } PP_MediaStreamVideoTrack_Attrib;
@@ -91,8 +106,9 @@ struct PPB_MediaStreamVideoTrack_0_1 { /* dev */
    * chosen such that inter-frame processing time variability won't overrun the
    * input buffer. If the buffer is overfilled, then frames will be dropped.
    * The application can detect this by examining the timestamp on returned
-   * frames. If <code>Configure()</code> is not called, default settings will be
-   * used.
+   * frames. If some attributes are not specified, default values will be used
+   * for those unspecified attributes. If <code>Configure()</code> is not
+   * called, default settings will be used.
    * Example usage from plugin code:
    * @code
    * int32_t attribs[] = {
@@ -111,6 +127,11 @@ struct PPB_MediaStreamVideoTrack_0_1 { /* dev */
    * completion of <code>Configure()</code>.
    *
    * @return An int32_t containing a result code from <code>pp_errors.h</code>.
+   * Returns <code>PP_ERROR_INPROGRESS</code> if there is a pending call of
+   * <code>Configure()</code> or <code>GetFrame()</code>, or the plugin
+   * holds some frames which are not recycled with <code>RecycleFrame()</code>.
+   * If an error is returned, all attributes and the underlying buffer will not
+   * be changed.
    */
   int32_t (*Configure)(PP_Resource video_track,
                        const int32_t attrib_list[],

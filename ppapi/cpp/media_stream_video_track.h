@@ -55,8 +55,9 @@ class MediaStreamVideoTrack : public Resource {
   /// chosen such that inter-frame processing time variability won't overrun the
   /// input buffer. If the buffer is overfilled, then frames will be dropped.
   /// The application can detect this by examining the timestamp on returned
-  /// frames. If <code>Configure()</code> is not called, default settings will
-  /// be used.
+  /// frames. If some attributes are not specified, default values will be used
+  /// for those unspecified attributes. If <code>Configure()</code> is not
+  /// called, default settings will be used.
   /// Example usage from plugin code:
   /// @code
   /// int32_t attribs[] = {
@@ -73,6 +74,11 @@ class MediaStreamVideoTrack : public Resource {
   /// completion of <code>Configure()</code>.
   ///
   /// @return An int32_t containing a result code from <code>pp_errors.h</code>.
+  /// Returns <code>PP_ERROR_INPROGRESS</code> if there is a pending call of
+  /// <code>Configure()</code> or <code>GetFrame()</code>, or the plugin
+  /// holds some frames which are not recycled with <code>RecycleFrame()</code>.
+  /// If an error is returned, all attributes and the underlying buffer will not
+  /// be changed.
   int32_t Configure(const int32_t attributes[],
                     const CompletionCallback& callback);
 

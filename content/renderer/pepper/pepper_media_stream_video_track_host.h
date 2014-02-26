@@ -9,6 +9,8 @@
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "content/renderer/pepper/pepper_media_stream_track_host_base.h"
 #include "media/base/video_frame.h"
+#include "ppapi/c/ppb_video_frame.h"
+#include "ppapi/shared_impl/media_stream_video_track_shared.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "ui/gfx/size.h"
 
@@ -25,6 +27,8 @@ class PepperMediaStreamVideoTrackHost : public PepperMediaStreamTrackHostBase,
  private:
   virtual ~PepperMediaStreamVideoTrackHost();
 
+  void InitBuffers();
+
   // PepperMediaStreamTrackHostBase overrides:
   virtual void OnClose() OVERRIDE;
 
@@ -35,16 +39,35 @@ class PepperMediaStreamVideoTrackHost : public PepperMediaStreamTrackHostBase,
   // ResourceHost overrides:
   virtual void DidConnectPendingHostToResource() OVERRIDE;
 
+  // ResourceMessageHandler overrides:
+  virtual int32_t OnResourceMessageReceived(
+      const IPC::Message& msg,
+      ppapi::host::HostMessageContext* context) OVERRIDE;
+
+  // Message handlers:
+  int32_t OnHostMsgConfigure(
+      ppapi::host::HostMessageContext* context,
+      const ppapi::MediaStreamVideoTrackShared::Attributes& attributes);
+
   blink::WebMediaStreamTrack track_;
 
   // True if it has been added to |blink::WebMediaStreamTrack| as a sink.
   bool connected_;
 
-  // Frame size.
-  gfx::Size frame_size_;
+  // Number of buffers.
+  int32_t number_of_buffers_;
 
-  // Frame format.
-  media::VideoFrame::Format frame_format_;
+  // Size of frames which are received from MediaStreamVideoSink.
+  gfx::Size source_frame_size_;
+
+  // Plugin specified frame size.
+  gfx::Size plugin_frame_size_;
+
+  // Format of frames which are received from MediaStreamVideoSink.
+  PP_VideoFrame_Format source_frame_format_;
+
+  // Plugin specified frame format.
+  PP_VideoFrame_Format plugin_frame_format_;
 
   // The size of frame pixels in bytes.
   uint32_t frame_data_size_;
