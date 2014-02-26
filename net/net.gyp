@@ -2057,6 +2057,7 @@
         'tools/tld_cleanup/tld_cleanup_util_unittest.cc',
         'udp/udp_socket_unittest.cc',
         'url_request/url_fetcher_impl_unittest.cc',
+        'url_request/url_fetcher_response_writer_unittest.cc',
         'url_request/url_request_context_builder_unittest.cc',
         'url_request/url_request_filter_unittest.cc',
         'url_request/url_request_ftp_job_unittest.cc',
