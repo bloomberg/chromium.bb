@@ -108,7 +108,13 @@ bool QuicServerInfo::ParseInner(const string& data) {
   return true;
 }
 
-string QuicServerInfo::Serialize() const {
+string QuicServerInfo::Serialize() {
+  string pickled_data = SerializeInner();
+  state_.Clear();
+  return pickled_data;
+}
+
+string QuicServerInfo::SerializeInner() const {
   Pickle p(sizeof(Pickle::Header));
 
   if (!p.WriteInt(kQuicCryptoConfigVersion) ||

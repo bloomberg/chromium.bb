@@ -444,6 +444,13 @@ int QuicCryptoClientStream::DoLoadQuicServerInfo(
 
 void QuicCryptoClientStream::DoLoadQuicServerInfoComplete(
     QuicCryptoClientConfig::CachedState* cached) {
+  LoadQuicServerInfo(cached);
+  QuicServerInfo::State* state = cached->quic_server_info()->mutable_state();
+  state->Clear();
+}
+
+void QuicCryptoClientStream::LoadQuicServerInfo(
+    QuicCryptoClientConfig::CachedState* cached) {
   next_state_ = STATE_SEND_CHLO;
 
   // If someone else already saved a server config, we don't want to overwrite

@@ -231,9 +231,6 @@ void QuicCryptoClientConfig::CachedState::InitializeFrom(
   ++generation_counter_;
 }
 
-// TODO(rtenneti): LoadQuicServerInfo and SaveQuicServerInfo have duplication of
-// data in CachedState and QuicServerInfo. We should eliminate the duplication
-// of data.
 // An issue to be solved: while we are loading the data from disk cache, it is
 // possible for another request for the same hostname update the CachedState
 // because that request has sent FillInchoateClientHello and got REJ message.

@@ -98,6 +98,8 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   int DoLoadQuicServerInfo(QuicCryptoClientConfig::CachedState* cached);
   void DoLoadQuicServerInfoComplete(
       QuicCryptoClientConfig::CachedState* cached);
+  // LoadQuicServerInfo is a helper function for DoLoadQuicServerInfoComplete.
+  void LoadQuicServerInfo(QuicCryptoClientConfig::CachedState* cached);
 
   State next_state_;
   // num_client_hellos_ contains the number of client hello messages that this

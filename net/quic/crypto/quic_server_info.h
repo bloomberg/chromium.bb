@@ -82,12 +82,15 @@ class NET_EXPORT_PRIVATE QuicServerInfo {
   // object. It returns true iff the parse was successful. The public member
   // fields will be set to something sane in any case.
   bool Parse(const std::string& data);
-  std::string Serialize() const;
+  std::string Serialize();
   State state_;
 
  private:
   // ParseInner is a helper function for Parse.
   bool ParseInner(const std::string& data);
+
+  // SerializeInner is a helper function for Serialize.
+  std::string SerializeInner() const;
 
   // This is the QUIC server hostname for which we restore the crypto_config.
   const std::string hostname_;
