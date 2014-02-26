@@ -130,7 +130,7 @@ static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo
 {
     {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
     {% if getter.is_raises_exception %}
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::IndexedGetterContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
     {% set getter_name = getter.name or 'anonymousIndexedGetter' %}
     {% set getter_arguments = ['index', 'exceptionState']
@@ -177,7 +177,7 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> jsValue, 
     {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
     {{setter.v8_value_to_local_cpp_value}};
     {% if setter.has_exception_state %}
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::IndexedSetterContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
     {% if setter.has_strict_type_checking %}
     {# Type checking for interface types (if interface not implemented, throw
@@ -232,7 +232,7 @@ static void indexedPropertyDeleter(uint32_t index, const v8::PropertyCallbackInf
 {
     {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
     {% if deleter.is_raises_exception %}
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::IndexedDeletionContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
     {% set deleter_name = deleter.name or 'anonymousIndexedDeleter' %}
     {% set deleter_arguments = ['index', 'exceptionState']
@@ -286,7 +286,8 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
     {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     {% if getter.is_raises_exception %}
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    v8::String::Utf8Value namedProperty(name);
+    ExceptionState exceptionState(ExceptionState::GetterContext, *namedProperty, "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
     {% if getter.union_arguments %}
     {{union_type_method_call(getter) | indent}}
@@ -343,7 +344,8 @@ static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value>
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, propertyName, name);
     {{setter.v8_value_to_local_cpp_value}};
     {% if setter.has_exception_state %}
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    v8::String::Utf8Value namedProperty(name);
+    ExceptionState exceptionState(ExceptionState::SetterContext, *namedProperty, "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
     {% set setter_name = setter.name or 'anonymousNamedSetter' %}
     {% set setter_arguments =
@@ -393,7 +395,8 @@ static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCal
 {
     {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    v8::String::Utf8Value namedProperty(name);
+    ExceptionState exceptionState(ExceptionState::GetterContext, *namedProperty, "{{interface_name}}", info.Holder(), info.GetIsolate());
     bool result = imp->namedPropertyQuery(propertyName, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -434,7 +437,8 @@ static void namedPropertyDeleter(v8::Local<v8::String> name, const v8::PropertyC
     {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name);
     {% if deleter.is_raises_exception %}
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    v8::String::Utf8Value namedProperty(name);
+    ExceptionState exceptionState(ExceptionState::DeletionContext, *namedProperty, "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
     {% set deleter_name = deleter.name or 'anonymousNamedDeleter' %}
     {% set deleter_arguments = ['propertyName', 'exceptionState']
@@ -479,7 +483,7 @@ static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
 {
     {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
     Vector<String> names;
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::EnumerationContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
     imp->namedPropertyEnumerator(names, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
