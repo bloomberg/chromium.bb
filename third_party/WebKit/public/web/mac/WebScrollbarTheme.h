@@ -52,6 +52,15 @@ public:
     BLINK_EXPORT static void updateScrollbars(
         float initialButtonDelay, float autoscrollButtonDelay,
         bool jumpOnTrackClick, ScrollerStyle preferredScrollerStyle, bool redraw);
+
+    // The above function is temporary; once Chrome code calls this version,
+    // we'll implement it directly and remove the above.
+    BLINK_EXPORT static void updateScrollbars(
+        float initialButtonDelay, float autoscrollButtonDelay,
+        ScrollerStyle preferredScrollerStyle, bool redraw)
+    {
+        updateScrollbars(initialButtonDelay, autoscrollButtonDelay, false, preferredScrollerStyle, redraw);
+    }
 };
 
 } // namespace blink

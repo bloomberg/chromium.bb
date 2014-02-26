@@ -33,26 +33,6 @@
 
 #include "config.h"
 
-#include "WebAXEnums.h"
-#include "WebAXObject.h"
-#include "WebConsoleMessage.h"
-#include "WebContentSecurityPolicy.h"
-#include "WebFontDescription.h"
-#include "WebFormElement.h"
-#include "WebGeolocationError.h"
-#include "WebGeolocationPosition.h"
-#include "WebIconURL.h"
-#include "WebInputElement.h"
-#include "WebNavigatorContentUtilsClient.h"
-#include "WebNotificationPresenter.h"
-#include "WebPageVisibilityState.h"
-#include "WebSettings.h"
-#include "WebSpeechRecognizerClient.h"
-#include "WebTextAffinity.h"
-#include "WebTextCheckingResult.h"
-#include "WebTextCheckingType.h"
-#include "WebTextDecorationType.h"
-#include "WebView.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "core/accessibility/AXObject.h"
 #include "core/accessibility/AXObjectCache.h"
@@ -85,6 +65,7 @@
 #include "platform/Cursor.h"
 #include "platform/FileMetadata.h"
 #include "platform/FileSystemType.h"
+#include "platform/PlatformMouseEvent.h"
 #include "platform/drm/ContentDecryptionModuleSession.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontSmoothingMode.h"
@@ -116,13 +97,35 @@
 #include "public/platform/WebMediaStreamSource.h"
 #include "public/platform/WebReferrerPolicy.h"
 #include "public/platform/WebScrollbar.h"
+#include "public/platform/WebScrollbarBehavior.h"
 #include "public/platform/WebStorageQuotaError.h"
 #include "public/platform/WebStorageQuotaType.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebURLResponse.h"
+#include "public/web/WebAXEnums.h"
+#include "public/web/WebAXObject.h"
+#include "public/web/WebConsoleMessage.h"
+#include "public/web/WebContentSecurityPolicy.h"
+#include "public/web/WebFontDescription.h"
+#include "public/web/WebFormElement.h"
+#include "public/web/WebGeolocationError.h"
+#include "public/web/WebGeolocationPosition.h"
+#include "public/web/WebIconURL.h"
+#include "public/web/WebInputElement.h"
+#include "public/web/WebInputEvent.h"
 #include "public/web/WebNavigationPolicy.h"
+#include "public/web/WebNavigatorContentUtilsClient.h"
+#include "public/web/WebNotificationPresenter.h"
+#include "public/web/WebPageVisibilityState.h"
 #include "public/web/WebSerializedScriptValueVersion.h"
+#include "public/web/WebSettings.h"
+#include "public/web/WebSpeechRecognizerClient.h"
+#include "public/web/WebTextAffinity.h"
+#include "public/web/WebTextCheckingResult.h"
+#include "public/web/WebTextCheckingType.h"
+#include "public/web/WebTextDecorationType.h"
 #include "public/web/WebTouchAction.h"
+#include "public/web/WebView.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/StringImpl.h"
 
@@ -435,6 +438,11 @@ COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayerClient::MediaKeyErrorCodeOutput, Medi
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayerClient::MediaKeyErrorCodeHardwareChange, MediaPlayerClient::HardwareChangeError);
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayerClient::MediaKeyErrorCodeDomain, MediaPlayerClient::DomainError);
 
+COMPILE_ASSERT_MATCHING_ENUM(WebMouseEvent::ButtonNone, NoButton);
+COMPILE_ASSERT_MATCHING_ENUM(WebMouseEvent::ButtonLeft, LeftButton);
+COMPILE_ASSERT_MATCHING_ENUM(WebMouseEvent::ButtonMiddle, MiddleButton);
+COMPILE_ASSERT_MATCHING_ENUM(WebMouseEvent::ButtonRight, RightButton);
+
 COMPILE_ASSERT_MATCHING_ENUM(WebContentDecryptionModuleSession::Client::MediaKeyErrorCodeUnknown, ContentDecryptionModuleSessionClient::UnknownError);
 COMPILE_ASSERT_MATCHING_ENUM(WebContentDecryptionModuleSession::Client::MediaKeyErrorCodeClient, ContentDecryptionModuleSessionClient::ClientError);
 
@@ -466,6 +474,11 @@ COMPILE_ASSERT_MATCHING_ENUM(WebScrollbar::AllParts, AllParts);
 COMPILE_ASSERT_MATCHING_ENUM(WebScrollbar::ScrollbarOverlayStyleDefault, ScrollbarOverlayStyleDefault);
 COMPILE_ASSERT_MATCHING_ENUM(WebScrollbar::ScrollbarOverlayStyleDark, ScrollbarOverlayStyleDark);
 COMPILE_ASSERT_MATCHING_ENUM(WebScrollbar::ScrollbarOverlayStyleLight, ScrollbarOverlayStyleLight);
+
+COMPILE_ASSERT_MATCHING_ENUM(WebScrollbarBehavior::ButtonNone, NoButton);
+COMPILE_ASSERT_MATCHING_ENUM(WebScrollbarBehavior::ButtonLeft, LeftButton);
+COMPILE_ASSERT_MATCHING_ENUM(WebScrollbarBehavior::ButtonMiddle, MiddleButton);
+COMPILE_ASSERT_MATCHING_ENUM(WebScrollbarBehavior::ButtonRight, RightButton);
 
 COMPILE_ASSERT_MATCHING_ENUM(WebSettings::EditingBehaviorMac, EditingMacBehavior);
 COMPILE_ASSERT_MATCHING_ENUM(WebSettings::EditingBehaviorWin, EditingWindowsBehavior);

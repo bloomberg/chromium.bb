@@ -85,6 +85,7 @@ class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
 class WebSandboxSupport;
 class WebScreenOrientationListener;
+class WebScrollbarBehavior;
 class WebSocketHandle;
 class WebSocketStreamHandle;
 class WebSpeechSynthesizer;
@@ -399,6 +400,12 @@ public:
 
     // Supplies the system monitor color profile.
     virtual void screenColorProfile(WebVector<char>* profile) { }
+
+
+    // Scrollbar ----------------------------------------------------------
+
+    // Must return non-null.
+    virtual WebScrollbarBehavior* scrollbarBehavior() { return 0; }
 
 
     // Sudden Termination --------------------------------------------------
