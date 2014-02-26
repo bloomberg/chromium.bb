@@ -77,7 +77,7 @@ void WebAuthFlow::Start() {
   crypto::RandBytes(WriteInto(&random_bytes, 33), 32);
   base::Base64Encode(random_bytes, &app_window_key_);
 
-  // identityPrivate.onWebFlowRequest(shell_window_key, provider_url_, mode_)
+  // identityPrivate.onWebFlowRequest(app_window_key, provider_url_, mode_)
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->AppendString(app_window_key_);
   args->AppendString(provider_url_.spec());

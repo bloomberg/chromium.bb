@@ -13,8 +13,7 @@ namespace apps {
 
 namespace {
 
-// TODO(jamescook): Move this to app_window/generic. http://crbug.com/344073
-const char kDefaultTestApp[] = "shell_window/generic";
+const char kDefaultTestApp[] = "app_window/generic";
 
 class AppWindowTest : public PlatformAppBrowserTest {
  protected:

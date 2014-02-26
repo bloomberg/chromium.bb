@@ -22,7 +22,7 @@ namespace {
 
 const int kNumTestApps = 2;
 const char* kTestApps[] = {
-  "platform_apps/shell_window/generic",
+  "platform_apps/app_window/generic",
   "platform_apps/minimal"
 };
 
