@@ -921,15 +921,9 @@ class PatchSeries(object):
       yield
       # Reaching here means it was applied cleanly, thus return.
       return
-    except (MemoryError, RuntimeError):
-      # Skip transactional rollback; if these occur, at least via
-      # the scenarios where they're *supposed* to be raised, we really
-      # should let things fail hard here.
-      raise
-    except:
-      # pylint: disable=W0702
+    except Exception:
       logging.info("Rewinding transaction: failed changes: %s .",
-                   ', '.join(map(str, commits)))
+                   ', '.join(map(str, commits)), exc_info=True)
 
       for project_dir, sha1 in resets:
         git.RunGit(project_dir, ['reset', '--hard', sha1])
