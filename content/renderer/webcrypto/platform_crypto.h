@@ -122,10 +122,18 @@ Status GenerateSecretKey(const blink::WebCryptoAlgorithm& algorithm,
 
 // Preconditions:
 //  * algorithm.id() is for an RSA algorithm.
-//  * algorithm.rsaKeyGenParams() is non-null.
+//  * public_exponent, modulus_length_bits and hash_or_null are the same as what
+//    is in algorithm. They are split out for convenience.
+//  * hash_or_null.isNull() may be true if a hash is not applicable to the
+//    algorithm
+//  * modulus_length_bits is not 0
+//  * public_exponent is not empty.
 Status GenerateRsaKeyPair(const blink::WebCryptoAlgorithm& algorithm,
                           bool extractable,
                           blink::WebCryptoKeyUsageMask usage_mask,
+                          unsigned int modulus_length_bits,
+                          const CryptoData& public_exponent,
+                          const blink::WebCryptoAlgorithm& hash,
                           blink::WebCryptoKey* public_key,
                           blink::WebCryptoKey* private_key);
 

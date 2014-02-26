@@ -39,7 +39,7 @@ CONTENT_EXPORT void Init();
 //          WebCryptoImpl     (Implements the blink::WebCrypto interface for
 //                |            asynchronous completions)
 //                |
-//                |      [shared_crypto_unittests.cc]
+//                |      [shared_crypto_unittest.cc]
 //                |           /
 //                |          /   (The blink::WebCrypto interface is not
 //                |         /     testable from the chromium side because

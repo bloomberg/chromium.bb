@@ -11,6 +11,9 @@
 #include "crypto/secure_util.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
+#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
+#include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
+#endif
 #include "third_party/WebKit/public/platform/WebCryptoKey.h"
 
 namespace content {
@@ -154,17 +157,8 @@ Status SignHmac(const blink::WebCryptoAlgorithm& algorithm,
   if (status.IsError())
     return status;
 
-  const blink::WebCryptoHmacParams* params = algorithm.hmacParams();
-  if (!params)
-    return Status::ErrorUnexpected();
-
-  if (!IsHashAlgorithm(params->hash().id()))
-    return Status::ErrorUnexpected();
-
-  if (params->hash().id() != GetInnerHashAlgorithm(key.algorithm()).id())
-    return Status::ErrorUnexpected();
-
-  return platform::SignHmac(sym_key, params->hash(), data, buffer);
+  return platform::SignHmac(
+      sym_key, key.algorithm().hmacParams()->hash(), data, buffer);
 }
 
 Status VerifyHmac(const blink::WebCryptoAlgorithm& algorithm,
@@ -195,17 +189,13 @@ Status SignRsaSsaPkcs1v1_5(const blink::WebCryptoAlgorithm& algorithm,
   if (status.IsError())
     return status;
 
-  const blink::WebCryptoRsaSsaParams* params = algorithm.rsaSsaParams();
-  if (!params)
-    return Status::ErrorUnexpected();
-
-  if (!IsHashAlgorithm(params->hash().id()))
-    return Status::ErrorUnexpected();
-
-  // TODO(eroman): Verify the key has not been used with any other hash.
-
+#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
   return platform::SignRsaSsaPkcs1v1_5(
-      private_key, params->hash(), data, buffer);
+      private_key, key.algorithm().rsaHashedParams()->hash(), data, buffer);
+#else
+  return platform::SignRsaSsaPkcs1v1_5(
+      private_key, algorithm.rsaSsaParams()->hash(), data, buffer);
+#endif
 }
 
 Status VerifyRsaSsaPkcs1v1_5(const blink::WebCryptoAlgorithm& algorithm,
@@ -218,17 +208,20 @@ Status VerifyRsaSsaPkcs1v1_5(const blink::WebCryptoAlgorithm& algorithm,
   if (status.IsError())
     return status;
 
-  const blink::WebCryptoRsaSsaParams* params = algorithm.rsaSsaParams();
-  if (!params)
-    return Status::ErrorUnexpected();
-
-  if (!IsHashAlgorithm(params->hash().id()))
-    return Status::ErrorUnexpected();
-
-  // TODO(eroman): Verify the key has not been used with any other hash.
-
+#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
   return platform::VerifyRsaSsaPkcs1v1_5(
-      public_key, params->hash(), signature, data, signature_match);
+      public_key,
+      key.algorithm().rsaHashedParams()->hash(),
+      signature,
+      data,
+      signature_match);
+#else
+  return platform::VerifyRsaSsaPkcs1v1_5(public_key,
+                                         algorithm.rsaSsaParams()->hash(),
+                                         signature,
+                                         data,
+                                         signature_match);
+#endif
 }
 
 Status ImportKeyRaw(const CryptoData& key_data,
@@ -240,6 +233,7 @@ Status ImportKeyRaw(const CryptoData& key_data,
     return Status::ErrorMissingAlgorithmImportRawKey();
 
   switch (algorithm_or_null.id()) {
+    case blink::WebCryptoAlgorithmIdAesCtr:
     case blink::WebCryptoAlgorithmIdAesCbc:
     case blink::WebCryptoAlgorithmIdAesGcm:
     case blink::WebCryptoAlgorithmIdAesKw:
@@ -249,7 +243,6 @@ Status ImportKeyRaw(const CryptoData& key_data,
     case blink::WebCryptoAlgorithmIdHmac:
       return platform::ImportKeyRaw(
           algorithm_or_null, key_data, extractable, usage_mask, key);
-
     default:
       return Status::ErrorUnsupported();
   }
@@ -334,7 +327,12 @@ Status GenerateSecretKey(const blink::WebCryptoAlgorithm& algorithm,
       break;
     }
     case blink::WebCryptoAlgorithmIdHmac: {
+#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
+      const blink::WebCryptoHmacKeyGenParams* params =
+          algorithm.hmacKeyGenParams();
+#else
       const blink::WebCryptoHmacKeyParams* params = algorithm.hmacKeyParams();
+#endif
       DCHECK(params);
       if (params->hasLengthBytes()) {
         keylen_bytes = params->optionalLengthBytes();
@@ -365,14 +363,43 @@ Status GenerateKeyPair(const blink::WebCryptoAlgorithm& algorithm,
                        blink::WebCryptoKey* public_key,
                        blink::WebCryptoKey* private_key) {
   // TODO(padolph): Handle other asymmetric algorithm key generation.
-  switch (algorithm.id()) {
-    case blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5:
-    case blink::WebCryptoAlgorithmIdRsaOaep:
-    case blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
-      if (!algorithm.rsaKeyGenParams())
-        return Status::ErrorUnexpected();
-      return platform::GenerateRsaKeyPair(
-          algorithm, extractable, usage_mask, public_key, private_key);
+  switch (algorithm.paramsType()) {
+#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
+    case blink::WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams:
+    case blink::WebCryptoAlgorithmParamsTypeRsaKeyGenParams: {
+      const blink::WebCryptoRsaKeyGenParams* params = NULL;
+      blink::WebCryptoAlgorithm hash_or_null =
+          blink::WebCryptoAlgorithm::createNull();
+      if (algorithm.rsaHashedKeyGenParams()) {
+        params = algorithm.rsaHashedKeyGenParams();
+        hash_or_null = algorithm.rsaHashedKeyGenParams()->hash();
+      } else {
+        params = algorithm.rsaKeyGenParams();
+      }
+#else
+    case blink::WebCryptoAlgorithmParamsTypeRsaKeyGenParams: {
+      const blink::WebCryptoRsaKeyGenParams* params =
+          algorithm.rsaKeyGenParams();
+      blink::WebCryptoAlgorithm hash_or_null =
+          blink::WebCryptoAlgorithm::createNull();
+#endif
+
+      if (!params->modulusLengthBits())
+        return Status::ErrorGenerateRsaZeroModulus();
+
+      CryptoData publicExponent(params->publicExponent());
+      if (!publicExponent.byte_length())
+        return Status::ErrorGenerateKeyPublicExponent();
+
+      return platform::GenerateRsaKeyPair(algorithm,
+                                          extractable,
+                                          usage_mask,
+                                          params->modulusLengthBits(),
+                                          publicExponent,
+                                          hash_or_null,
+                                          public_key,
+                                          private_key);
+    }
     default:
       return Status::ErrorUnsupported();
   }

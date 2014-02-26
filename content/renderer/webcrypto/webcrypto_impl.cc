@@ -9,6 +9,9 @@
 #include "content/renderer/webcrypto/shared_crypto.h"
 #include "content/renderer/webcrypto/webcrypto_util.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
+#include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
+#endif
 
 namespace content {
 

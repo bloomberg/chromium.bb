@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebArrayBuffer.h"
+#include "third_party/WebKit/public/platform/WebCrypto.h" // TODO(eroman): delete
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebCryptoKey.h"
 
@@ -217,48 +218,35 @@ blink::WebCryptoAlgorithm GetInnerHashAlgorithm(
 CONTENT_EXPORT blink::WebCryptoAlgorithm CreateAlgorithm(
     blink::WebCryptoAlgorithmId id);
 
-// Creates an HMAC algorithm whose inner hash algorithm is determined by the
-// specified algorithm ID. It is an error to call this method with a hash
+// Creates an HMAC import algorithm whose inner hash algorithm is determined by
+// the specified algorithm ID. It is an error to call this method with a hash
 // algorithm that is not SHA*.
-CONTENT_EXPORT blink::WebCryptoAlgorithm CreateHmacAlgorithmByHashId(
+CONTENT_EXPORT blink::WebCryptoAlgorithm CreateHmacImportAlgorithm(
     blink::WebCryptoAlgorithmId hash_id);
-
-// Creates an HMAC algorithm whose parameters struct is compatible with key
-// generation. It is an error to call this with a hash_id that is not a SHA*.
-// The key_length_bytes parameter is optional, with zero meaning unspecified.
-CONTENT_EXPORT blink::WebCryptoAlgorithm CreateHmacKeyGenAlgorithm(
-    blink::WebCryptoAlgorithmId hash_id,
-    unsigned int key_length_bytes);
 
 // Creates an RSASSA-PKCS1-v1_5 algorithm. It is an error to call this with a
 // hash_id that is not a SHA*.
-blink::WebCryptoAlgorithm CreateRsaSsaAlgorithm(
+blink::WebCryptoAlgorithm CreateRsaSsaImportAlgorithm(
     blink::WebCryptoAlgorithmId hash_id);
 
 // Creates an RSA-OAEP algorithm. It is an error to call this with a hash_id
 // that is not a SHA*.
-blink::WebCryptoAlgorithm CreateRsaOaepAlgorithm(
+blink::WebCryptoAlgorithm CreateRsaOaepImportAlgorithm(
     blink::WebCryptoAlgorithmId hash_id);
 
-// Creates an RSA algorithm with ID algorithm_id, whose parameters struct is
-// compatible with key generation.
-CONTENT_EXPORT blink::WebCryptoAlgorithm CreateRsaKeyGenAlgorithm(
-    blink::WebCryptoAlgorithmId algorithm_id,
-    unsigned int modulus_length,
-    const std::vector<uint8>& public_exponent);
-
-// Creates an AES-CBC algorithm.
-CONTENT_EXPORT blink::WebCryptoAlgorithm CreateAesCbcAlgorithm(
-    const std::vector<uint8>& iv);
-
-// Creates and AES-GCM algorithm.
-blink::WebCryptoAlgorithm CreateAesGcmAlgorithm(
-    const std::vector<uint8>& iv,
-    const std::vector<uint8>& additional_data,
-    uint8 tag_length_bytes);
-
+// TODO(eroman): Move to shared_crypto.cc
 // Returns the internal block size for SHA-*
 unsigned int ShaBlockSizeBytes(blink::WebCryptoAlgorithmId hash_id);
+
+#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
+bool CreateSecretKeyAlgorithm(const blink::WebCryptoAlgorithm& algorithm,
+                              unsigned keylen_bytes,
+                              blink::WebCryptoKeyAlgorithm* key_algorithm);
+#else
+bool CreateSecretKeyAlgorithm(const blink::WebCryptoAlgorithm& algorithm,
+                              unsigned keylen_bytes,
+                              blink::WebCryptoAlgorithm* key_algorithm);
+#endif
 
 }  // namespace webcrypto
 

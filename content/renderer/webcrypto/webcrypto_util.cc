@@ -8,6 +8,9 @@
 #include "base/logging.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
+#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
+#include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
+#endif
 
 namespace content {
 
@@ -210,6 +213,24 @@ bool IsHashAlgorithm(blink::WebCryptoAlgorithmId alg_id) {
          alg_id == blink::WebCryptoAlgorithmIdSha512;
 }
 
+#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
+blink::WebCryptoAlgorithm GetInnerHashAlgorithm(
+    const blink::WebCryptoAlgorithm& algorithm) {
+  DCHECK(!algorithm.isNull());
+  switch (algorithm.paramsType()) {
+    case blink::WebCryptoAlgorithmParamsTypeHmacImportParams:
+      return algorithm.hmacImportParams()->hash();
+    case blink::WebCryptoAlgorithmParamsTypeHmacKeyGenParams:
+      return algorithm.hmacKeyGenParams()->hash();
+    case blink::WebCryptoAlgorithmParamsTypeRsaHashedImportParams:
+      return algorithm.rsaHashedImportParams()->hash();
+    case blink::WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams:
+      return algorithm.rsaHashedKeyGenParams()->hash();
+    default:
+      return blink::WebCryptoAlgorithm::createNull();
+  }
+}
+#else
 blink::WebCryptoAlgorithm GetInnerHashAlgorithm(
     const blink::WebCryptoAlgorithm& algorithm) {
   DCHECK(!algorithm.isNull());
@@ -233,82 +254,50 @@ blink::WebCryptoAlgorithm GetInnerHashAlgorithm(
   }
   return blink::WebCryptoAlgorithm::createNull();
 }
+#endif
 
 blink::WebCryptoAlgorithm CreateAlgorithm(blink::WebCryptoAlgorithmId id) {
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(id, NULL);
 }
 
-blink::WebCryptoAlgorithm CreateHmacAlgorithmByHashId(
+blink::WebCryptoAlgorithm CreateHmacImportAlgorithm(
     blink::WebCryptoAlgorithmId hash_id) {
   DCHECK(IsHashAlgorithm(hash_id));
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
       blink::WebCryptoAlgorithmIdHmac,
+#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
+      new blink::WebCryptoHmacImportParams(CreateAlgorithm(hash_id)));
+#else
       new blink::WebCryptoHmacParams(CreateAlgorithm(hash_id)));
+#endif
 }
 
-blink::WebCryptoAlgorithm CreateHmacKeyGenAlgorithm(
-    blink::WebCryptoAlgorithmId hash_id,
-    unsigned int key_length_bytes) {
-  DCHECK(IsHashAlgorithm(hash_id));
-  // key_length_bytes == 0 means unspecified
-  return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
-      blink::WebCryptoAlgorithmIdHmac,
-      new blink::WebCryptoHmacKeyParams(
-          CreateAlgorithm(hash_id), (key_length_bytes != 0), key_length_bytes));
-}
-
-blink::WebCryptoAlgorithm CreateRsaSsaAlgorithm(
+blink::WebCryptoAlgorithm CreateRsaSsaImportAlgorithm(
     blink::WebCryptoAlgorithmId hash_id) {
   DCHECK(IsHashAlgorithm(hash_id));
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
       blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
+      new blink::WebCryptoRsaHashedImportParams(CreateAlgorithm(hash_id)));
+#else
       new blink::WebCryptoRsaSsaParams(CreateAlgorithm(hash_id)));
+#endif
 }
 
-blink::WebCryptoAlgorithm CreateRsaOaepAlgorithm(
+blink::WebCryptoAlgorithm CreateRsaOaepImportAlgorithm(
     blink::WebCryptoAlgorithmId hash_id) {
   DCHECK(IsHashAlgorithm(hash_id));
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
       blink::WebCryptoAlgorithmIdRsaOaep,
+#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
+      new blink::WebCryptoRsaHashedImportParams(
+          CreateAlgorithm(hash_id)));
+#else
       new blink::WebCryptoRsaOaepParams(
           CreateAlgorithm(hash_id), false, NULL, 0));
+#endif
 }
 
-blink::WebCryptoAlgorithm CreateRsaKeyGenAlgorithm(
-    blink::WebCryptoAlgorithmId algorithm_id,
-    unsigned int modulus_length,
-    const std::vector<uint8>& public_exponent) {
-  DCHECK(algorithm_id == blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5 ||
-         algorithm_id == blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5 ||
-         algorithm_id == blink::WebCryptoAlgorithmIdRsaOaep);
-  return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
-      algorithm_id,
-      new blink::WebCryptoRsaKeyGenParams(
-          modulus_length,
-          webcrypto::Uint8VectorStart(public_exponent),
-          public_exponent.size()));
-}
-
-blink::WebCryptoAlgorithm CreateAesCbcAlgorithm(const std::vector<uint8>& iv) {
-  return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
-      blink::WebCryptoAlgorithmIdAesCbc,
-      new blink::WebCryptoAesCbcParams(Uint8VectorStart(iv), iv.size()));
-}
-
-blink::WebCryptoAlgorithm CreateAesGcmAlgorithm(
-    const std::vector<uint8>& iv,
-    const std::vector<uint8>& additional_data,
-    uint8 tag_length_bytes) {
-  return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
-      blink::WebCryptoAlgorithmIdAesCbc,
-      new blink::WebCryptoAesGcmParams(Uint8VectorStart(iv),
-                                       iv.size(),
-                                       additional_data.size() != 0,
-                                       Uint8VectorStart(additional_data),
-                                       additional_data.size(),
-                                       tag_length_bytes != 0,
-                                       tag_length_bytes));
-}
 
 unsigned int ShaBlockSizeBytes(blink::WebCryptoAlgorithmId hash_id) {
   switch (hash_id) {
@@ -324,6 +313,41 @@ unsigned int ShaBlockSizeBytes(blink::WebCryptoAlgorithmId hash_id) {
       return 0;
   }
 }
+
+#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
+bool CreateSecretKeyAlgorithm(const blink::WebCryptoAlgorithm& algorithm,
+                              unsigned keylen_bytes,
+                              blink::WebCryptoKeyAlgorithm* key_algorithm) {
+  switch (algorithm.id()) {
+    case blink::WebCryptoAlgorithmIdHmac: {
+      blink::WebCryptoAlgorithm hash = GetInnerHashAlgorithm(algorithm);
+      if (hash.isNull())
+        return false;
+      *key_algorithm = blink::WebCryptoKeyAlgorithm::adoptParamsAndCreate(
+          algorithm.id(),
+          new blink::WebCryptoHmacKeyAlgorithmParams(hash));
+      return true;
+    }
+    case blink::WebCryptoAlgorithmIdAesKw:
+    case blink::WebCryptoAlgorithmIdAesCbc:
+    case blink::WebCryptoAlgorithmIdAesCtr:
+    case blink::WebCryptoAlgorithmIdAesGcm:
+      *key_algorithm = blink::WebCryptoKeyAlgorithm::adoptParamsAndCreate(
+          algorithm.id(),
+          new blink::WebCryptoAesKeyAlgorithmParams(keylen_bytes * 8));
+      return true;
+    default:
+      return false;
+  }
+}
+#else
+bool CreateSecretKeyAlgorithm(const blink::WebCryptoAlgorithm& algorithm,
+                              unsigned keylen_bytes,
+                              blink::WebCryptoAlgorithm* key_algorithm) {
+  *key_algorithm = algorithm;
+  return true;
+}
+#endif
 
 }  // namespace webcrypto
 
