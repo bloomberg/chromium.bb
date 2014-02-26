@@ -445,13 +445,4 @@ base::File::Error NetErrorToFileError(int error) {
   }
 }
 
-#if defined(OS_CHROMEOS)
-FileSystemInfo GetFileSystemInfoForChromeOS(const GURL& origin_url) {
-  FileSystemType mount_type = fileapi::kFileSystemTypeExternal;
-  return FileSystemInfo(fileapi::GetFileSystemName(origin_url, mount_type),
-                        fileapi::GetFileSystemRootURI(origin_url, mount_type),
-                        mount_type);
-}
-#endif
-
 }  // namespace fileapi

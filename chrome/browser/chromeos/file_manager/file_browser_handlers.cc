@@ -42,6 +42,10 @@ using content::SiteInstance;
 using content::WebContents;
 using extensions::Extension;
 using fileapi::FileSystemURL;
+using file_manager::util::EntryDefinition;
+using file_manager::util::EntryDefinitionList;
+using file_manager::util::FileDefinition;
+using file_manager::util::FileDefinitionList;
 
 namespace file_manager {
 namespace file_browser_handlers {
@@ -174,36 +178,28 @@ class FileBrowserHandlerExecutor {
   // This object is responsible to delete itself.
   virtual ~FileBrowserHandlerExecutor();
 
-  struct FileDefinition {
-    FileDefinition();
-    ~FileDefinition();
-
-    base::FilePath virtual_path;
-    base::FilePath absolute_path;
-    bool is_directory;
-  };
-
-  typedef std::vector<FileDefinition> FileDefinitionList;
-
   // Checks legitimacy of file url and grants file RO access permissions from
   // handler (target) extension and its renderer process.
-  static FileDefinitionList SetupFileAccessPermissions(
+  static scoped_ptr<FileDefinitionList> SetupFileAccessPermissions(
       scoped_refptr<fileapi::FileSystemContext> file_system_context_handler,
       const scoped_refptr<const Extension>& handler_extension,
       const std::vector<FileSystemURL>& file_urls);
 
   void ExecuteDoneOnUIThread(bool success);
-  void ExecuteFileActionsOnUIThread(const FileDefinitionList& file_list);
-  void SetupPermissionsAndDispatchEvent(const std::string& file_system_name,
-                                        const GURL& file_system_root,
-                                        const FileDefinitionList& file_list,
-                                        int handler_pid_in,
-                                        extensions::ExtensionHost* host);
+  void ExecuteAfterSetupFileAccess(scoped_ptr<FileDefinitionList> file_list);
+  void ExecuteFileActionsOnUIThread(
+      scoped_ptr<FileDefinitionList> file_definition_list,
+      scoped_ptr<EntryDefinitionList> entry_definition_list);
+  void SetupPermissionsAndDispatchEvent(
+      scoped_ptr<FileDefinitionList> file_definition_list,
+      scoped_ptr<EntryDefinitionList> entry_definition_list,
+      int handler_pid_in,
+      extensions::ExtensionHost* host);
 
   // Registers file permissions from |handler_host_permissions_| with
   // ChildProcessSecurityPolicy for process with id |handler_pid|.
   void SetupHandlerHostFileAccessPermissions(
-      const FileDefinitionList& file_list,
+      FileDefinitionList* file_definition_list,
       const Extension* extension,
       int handler_pid);
 
@@ -216,15 +212,8 @@ class FileBrowserHandlerExecutor {
   DISALLOW_COPY_AND_ASSIGN(FileBrowserHandlerExecutor);
 };
 
-FileBrowserHandlerExecutor::FileDefinition::FileDefinition()
-    : is_directory(false) {
-}
-
-FileBrowserHandlerExecutor::FileDefinition::~FileDefinition() {
-}
-
 // static
-FileBrowserHandlerExecutor::FileDefinitionList
+scoped_ptr<FileDefinitionList>
 FileBrowserHandlerExecutor::SetupFileAccessPermissions(
     scoped_refptr<fileapi::FileSystemContext> file_system_context_handler,
     const scoped_refptr<const Extension>& handler_extension,
@@ -235,7 +224,7 @@ FileBrowserHandlerExecutor::SetupFileAccessPermissions(
   fileapi::ExternalFileSystemBackend* backend =
       file_system_context_handler->external_backend();
 
-  FileDefinitionList file_list;
+  scoped_ptr<FileDefinitionList> file_definition_list(new FileDefinitionList);
   for (size_t i = 0; i < file_urls.size(); ++i) {
     const FileSystemURL& url = file_urls[i];
 
@@ -264,13 +253,14 @@ FileBrowserHandlerExecutor::SetupFileAccessPermissions(
     backend->GrantFileAccessToExtension(handler_extension->id(), virtual_path);
 
     // Output values.
-    FileDefinition file;
-    file.virtual_path = virtual_path;
-    file.is_directory = file_info.is_directory;
-    file.absolute_path = local_path;
-    file_list.push_back(file);
+    FileDefinition file_definition;
+    file_definition.virtual_path = virtual_path;
+    file_definition.is_directory = file_info.is_directory;
+    file_definition.absolute_path = local_path;
+    file_definition_list->push_back(file_definition);
   }
-  return file_list;
+
+  return file_definition_list.Pass();
 }
 
 FileBrowserHandlerExecutor::FileBrowserHandlerExecutor(
@@ -304,8 +294,22 @@ void FileBrowserHandlerExecutor::Execute(
                  file_system_context,
                  extension_,
                  file_urls),
-      base::Bind(&FileBrowserHandlerExecutor::ExecuteFileActionsOnUIThread,
+      base::Bind(&FileBrowserHandlerExecutor::ExecuteAfterSetupFileAccess,
                  weak_ptr_factory_.GetWeakPtr()));
+}
+
+void FileBrowserHandlerExecutor::ExecuteAfterSetupFileAccess(
+    scoped_ptr<FileDefinitionList> file_definition_list) {
+  // Outlives the conversion process, since bound to the callback.
+  const FileDefinitionList& file_definition_list_ref =
+      *file_definition_list.get();
+  file_manager::util::ConvertFileDefinitionListToEntryDefinitionList(
+      profile_,
+      extension_->id(),
+      file_definition_list_ref,
+      base::Bind(&FileBrowserHandlerExecutor::ExecuteFileActionsOnUIThread,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(&file_definition_list)));
 }
 
 void FileBrowserHandlerExecutor::ExecuteDoneOnUIThread(bool success) {
@@ -319,10 +323,11 @@ void FileBrowserHandlerExecutor::ExecuteDoneOnUIThread(bool success) {
 }
 
 void FileBrowserHandlerExecutor::ExecuteFileActionsOnUIThread(
-    const FileDefinitionList& file_list) {
+    scoped_ptr<FileDefinitionList> file_definition_list,
+    scoped_ptr<EntryDefinitionList> entry_definition_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (file_list.empty()) {
+  if (file_definition_list->empty() || entry_definition_list->empty()) {
     ExecuteDoneOnUIThread(false);
     return;
   }
@@ -334,13 +339,11 @@ void FileBrowserHandlerExecutor::ExecuteFileActionsOnUIThread(
     return;
   }
 
-  fileapi::FileSystemInfo info =
-      fileapi::GetFileSystemInfoForChromeOS(
-          Extension::GetBaseURLFromExtensionId(extension_->id()).GetOrigin());
-
   if (handler_pid > 0) {
-    SetupPermissionsAndDispatchEvent(info.name, info.root_url,
-                                     file_list, handler_pid, NULL);
+    SetupPermissionsAndDispatchEvent(file_definition_list.Pass(),
+                                     entry_definition_list.Pass(),
+                                     handler_pid,
+                                     NULL);
   } else {
     // We have to wake the handler background page before we proceed.
     extensions::LazyBackgroundTaskQueue* queue =
@@ -351,18 +354,20 @@ void FileBrowserHandlerExecutor::ExecuteFileActionsOnUIThread(
       return;
     }
     queue->AddPendingTask(
-        profile_, extension_->id(),
+        profile_,
+        extension_->id(),
         base::Bind(
             &FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent,
             weak_ptr_factory_.GetWeakPtr(),
-            info.name, info.root_url, file_list, handler_pid));
+            base::Passed(file_definition_list.Pass()),
+            base::Passed(entry_definition_list.Pass()),
+            handler_pid));
   }
 }
 
 void FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent(
-    const std::string& file_system_name,
-    const GURL& file_system_root,
-    const FileDefinitionList& file_list,
+    scoped_ptr<FileDefinitionList> file_definition_list,
+    scoped_ptr<EntryDefinitionList> entry_definition_list,
     int handler_pid_in,
     extensions::ExtensionHost* host) {
   int handler_pid = host ? host->render_process_host()->GetID() :
@@ -381,7 +386,7 @@ void FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent(
   }
 
   SetupHandlerHostFileAccessPermissions(
-      file_list, extension_.get(), handler_pid);
+      file_definition_list.get(), extension_.get(), handler_pid);
 
   scoped_ptr<base::ListValue> event_args(new base::ListValue());
   event_args->Append(new base::StringValue(action_id_));
@@ -391,15 +396,17 @@ void FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent(
   // dispatchEvent() method from event_binding.js.
   base::ListValue* file_entries = new base::ListValue();
   details->Set("entries", file_entries);
-  for (FileDefinitionList::const_iterator iter = file_list.begin();
-       iter != file_list.end();
+
+  for (EntryDefinitionList::const_iterator iter =
+           entry_definition_list->begin();
+       iter != entry_definition_list->end();
        ++iter) {
     base::DictionaryValue* file_def = new base::DictionaryValue();
     file_entries->Append(file_def);
-    file_def->SetString("fileSystemName", file_system_name);
-    file_def->SetString("fileSystemRoot", file_system_root.spec());
+    file_def->SetString("fileSystemName", iter->file_system_name);
+    file_def->SetString("fileSystemRoot", iter->file_system_root_url);
     file_def->SetString("fileFullPath",
-                        "/" + iter->virtual_path.AsUTF8Unsafe());
+                        "/" + iter->full_path.AsUTF8Unsafe());
     file_def->SetBoolean("fileIsDirectory", iter->is_directory);
   }
 
@@ -412,13 +419,13 @@ void FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent(
 }
 
 void FileBrowserHandlerExecutor::SetupHandlerHostFileAccessPermissions(
-    const FileDefinitionList& file_list,
+    FileDefinitionList* file_definition_list,
     const Extension* extension,
     int handler_pid) {
   const FileBrowserHandler* action = FindFileBrowserHandlerForActionId(
       extension_, action_id_);
-  for (FileDefinitionList::const_iterator iter = file_list.begin();
-       iter != file_list.end();
+  for (FileDefinitionList::const_iterator iter = file_definition_list->begin();
+       iter != file_definition_list->end();
        ++iter) {
     if (!action)
       continue;

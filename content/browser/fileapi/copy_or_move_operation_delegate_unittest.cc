@@ -208,9 +208,10 @@ class CopyOrMoveOperationTestHelper {
     // Prepare the origin's root directory.
     fileapi::FileSystemBackend* backend =
         file_system_context_->GetFileSystemBackend(src_type_);
-    backend->OpenFileSystem(origin_, src_type_,
-                            fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-                            base::Bind(&ExpectOk));
+    backend->ResolveURL(
+        FileSystemURL::CreateForTest(origin_, src_type_, base::FilePath()),
+        fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+        base::Bind(&ExpectOk));
     backend = file_system_context_->GetFileSystemBackend(dest_type_);
     if (dest_type_ == fileapi::kFileSystemTypeTest) {
       TestFileSystemBackend* test_backend =
@@ -222,9 +223,10 @@ class CopyOrMoveOperationTestHelper {
       if (init_copy_or_move_validator)
         test_backend->InitializeCopyOrMoveFileValidatorFactory(factory.Pass());
     }
-    backend->OpenFileSystem(origin_, dest_type_,
-                            fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-                            base::Bind(&ExpectOk));
+    backend->ResolveURL(
+        FileSystemURL::CreateForTest(origin_, dest_type_, base::FilePath()),
+        fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+        base::Bind(&ExpectOk));
     base::RunLoop().RunUntilIdle();
 
     // Grant relatively big quota initially.

@@ -40,6 +40,8 @@
 using chromeos::disks::DiskMountManager;
 using content::BrowserThread;
 using content::ChildProcessSecurityPolicy;
+using file_manager::util::EntryDefinition;
+using file_manager::util::FileDefinition;
 using fileapi::FileSystemURL;
 
 namespace extensions {
@@ -262,13 +264,22 @@ bool FileBrowserPrivateRequestFileSystemFunction::RunImpl() {
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  // TODO(satorux): Handle the file system ID. crbug.com/322305.
-  DCHECK_EQ("compatible", params->volume_id);
-
   if (!dispatcher() || !render_view_host() || !render_view_host()->GetProcess())
     return false;
 
   set_log_on_completion(true);
+
+  using file_manager::VolumeManager;
+  using file_manager::VolumeInfo;
+  VolumeManager* volume_manager = VolumeManager::Get(GetProfile());
+  if (!volume_manager)
+    return false;
+
+  VolumeInfo volume_info;
+  if (!volume_manager->FindVolumeInfoById(params->volume_id, &volume_info)) {
+    DidFail(base::File::FILE_ERROR_NOT_FOUND);
+    return false;
+  }
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderViewHost(
@@ -284,16 +295,42 @@ bool FileBrowserPrivateRequestFileSystemFunction::RunImpl() {
     return false;
   }
 
-  fileapi::FileSystemInfo info =
-      fileapi::GetFileSystemInfoForChromeOS(source_url_.GetOrigin());
+  FileDefinition file_definition;
+  if (!file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
+           GetProfile(),
+           extension_id(),
+           volume_info.mount_path,
+           &file_definition.virtual_path)) {
+    DidFail(base::File::FILE_ERROR_INVALID_OPERATION);
+    return false;
+  }
+  file_definition.is_directory = true;
+
+  file_manager::util::ConvertFileDefinitionToEntryDefinition(
+      GetProfile(),
+      extension_id(),
+      file_definition,
+      base::Bind(
+          &FileBrowserPrivateRequestFileSystemFunction::OnEntryDefinition,
+          this));
+  return true;
+}
+
+void FileBrowserPrivateRequestFileSystemFunction::OnEntryDefinition(
+    const EntryDefinition& entry_definition) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (entry_definition.error != base::File::FILE_OK) {
+    DidFail(entry_definition.error);
+    return;
+  }
 
   base::DictionaryValue* dict = new base::DictionaryValue();
   SetResult(dict);
-  dict->SetString("name", info.name);
-  dict->SetString("root_url", info.root_url.spec());
+  dict->SetString("name", entry_definition.file_system_name);
+  dict->SetString("root_url", entry_definition.file_system_root_url);
   dict->SetInteger("error", drive::FILE_ERROR_OK);
   SendResponse(true);
-  return true;
 }
 
 void FileWatchFunctionBase::Respond(bool success) {

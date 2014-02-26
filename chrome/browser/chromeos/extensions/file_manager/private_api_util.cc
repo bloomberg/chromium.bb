@@ -168,6 +168,10 @@ void VolumeInfoToVolumeMetadata(
       volume_metadata->volume_type =
           file_browser_private::VOLUME_TYPE_CLOUD_DEVICE;
       break;
+    case VOLUME_TYPE_TESTING:
+      volume_metadata->volume_type =
+          file_browser_private::VOLUME_TYPE_TESTING;
+      break;
   }
 
   // Fill device_type iff the volume is removable partition.

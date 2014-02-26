@@ -23,6 +23,11 @@ class FileBrowserHandlerInternalSelectFileFunction;
 
 namespace file_manager {
 
+namespace util {
+struct EntryDefinition;
+struct FileDefinition;
+}
+
 // Interface that is used by FileBrowserHandlerInternalSelectFileFunction to
 // select the file path that should be reported back to the extension function
 // caller.  Nobody will take the ownership of the interface implementation, so
@@ -109,39 +114,29 @@ class FileBrowserHandlerInternalSelectFileFunction
 
  private:
   // Grants file access permissions for the created file to the caller.
-  // Inside this method, |virtual_path_| value is set.
-  void GrantPermissions();
+  // Inside this method,
+  void GrantPermissions(
+      const base::FilePath& full_path,
+      const file_manager::util::FileDefinition& file_definition,
+      const file_manager::util::EntryDefinition& entry_definition);
 
   // Creates dictionary value that will be used to as the extension function's
   // callback argument and ends extension function execution by calling
   // |SendResponse(true)|.
   // The |results_| value will be set to dictionary containing two properties:
   // * boolean 'success', which will be equal to |success|.
-  // * object 'entry', which will be set only when |success| if true and
-  //   will contain information needed to create a FileEntry object for the
-  //   selected file. It contains following properties:
-  //   * 'file_system_name' set to |file_system_name_|
-  //   * 'file_system_root' set to |file_system_root_|
-  //   * 'file_full_path' set to |virtual_path_| (with leading '/')
-  //   * 'file_is_directory' set to |false|.
-  //   |file_system_name_|, |file_system_root_| and |virtual_path_| are ignored
-  //   if |success| if false.
-  void Respond(bool success);
+  // * object 'entry', which will be set only when |success| is true, and the
+  //   conversion to |entry_definition| was successful. In such case, it will
+  //   contain information needed to create a FileEntry object for the selected
+  //   file.
+  void Respond(const file_manager::util::EntryDefinition& entry_definition,
+               bool success);
 
   // Factory used to create FileSelector to be used for prompting user to select
   // file.
   scoped_ptr<file_manager::FileSelectorFactory> file_selector_factory_;
   // Whether user gesture check is disabled. This should be true only in tests.
   bool user_gesture_check_enabled_;
-
-  // Full file system path of the selected file.
-  base::FilePath full_path_;
-  // Selected file's virtual path in extension function caller's file system.
-  base::FilePath virtual_path_;
-  // Extension function caller's file system name.
-  std::string file_system_name_;
-  // Extension function caller's file system root URL.
-  GURL file_system_root_;
 
   // List of permissions and paths that have to be granted for the selected
   // files.

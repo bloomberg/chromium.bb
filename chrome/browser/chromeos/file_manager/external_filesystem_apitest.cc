@@ -9,6 +9,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/file_manager/drive_test_util.h"
+#include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
@@ -82,12 +83,14 @@ const char kTestRootFeed[] =
 
 // Sets up the initial file system state for native local and restricted native
 // local file systems. The hierarchy is the same as for the drive file system.
-bool InitializeLocalFileSystem(base::ScopedTempDir* tmp_dir,
+// The directory is created at unique_temp_dir/|mount_point_name| path.
+bool InitializeLocalFileSystem(std::string mount_point_name,
+                               base::ScopedTempDir* tmp_dir,
                                base::FilePath* mount_point_dir) {
   if (!tmp_dir->CreateUniqueTempDir())
     return false;
 
-  *mount_point_dir = tmp_dir->path().AppendASCII("mount");
+  *mount_point_dir = tmp_dir->path().AppendASCII(mount_point_name);
   // Create the mount point.
   if (!base::CreateDirectory(*mount_point_dir))
     return false;
@@ -241,7 +244,8 @@ class LocalFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
 
   // FileSystemExtensionApiTestBase OVERRIDE.
   virtual void InitTestFileSystem() OVERRIDE {
-    ASSERT_TRUE(InitializeLocalFileSystem(&tmp_dir_, &mount_point_dir_))
+    ASSERT_TRUE(InitializeLocalFileSystem(
+        kLocalMountPointName, &tmp_dir_, &mount_point_dir_))
         << "Failed to initialize file system.";
   }
 
@@ -252,6 +256,8 @@ class LocalFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
                            fileapi::kFileSystemTypeNativeLocal,
                            fileapi::FileSystemMountOption(),
                            mount_point_dir_));
+    VolumeManager::Get(browser()->profile())->AddVolumeInfoForTesting(
+        mount_point_dir_);
   }
 
  private:
@@ -268,7 +274,8 @@ class RestrictedFileSystemExtensionApiTest
 
   // FileSystemExtensionApiTestBase OVERRIDE.
   virtual void InitTestFileSystem() OVERRIDE {
-    ASSERT_TRUE(InitializeLocalFileSystem(&tmp_dir_, &mount_point_dir_))
+    ASSERT_TRUE(InitializeLocalFileSystem(
+        kRestrictedMountPointName, &tmp_dir_, &mount_point_dir_))
         << "Failed to initialize file system.";
   }
 
@@ -279,6 +286,8 @@ class RestrictedFileSystemExtensionApiTest
                            fileapi::kFileSystemTypeRestrictedNativeLocal,
                            fileapi::FileSystemMountOption(),
                            mount_point_dir_));
+    VolumeManager::Get(browser()->profile())->AddVolumeInfoForTesting(
+        mount_point_dir_);
   }
 
  private:

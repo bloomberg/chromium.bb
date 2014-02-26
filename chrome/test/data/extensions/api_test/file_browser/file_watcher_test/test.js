@@ -212,97 +212,94 @@ function initTests(callback) {
      */
     valid: false,
     /**
-     * Mount point root directory entry.
-     * @type {DirectoryEntry}
+     * TODO(tbarzic) : We should not need to have this. The watch api should
+     * have the same behavior for local and drive file system.
+     * @type {boolean}}
      */
-    mountPoint: null,
-    // TODO(tbarzic) : We should not need to have this. The watch api should
-    // have the same behavior for local and drive file system.
     isOnDrive: false,
     /**
      * Set of entries that are being watched during the tests.
      * @type {Object.<Entry>}
      */
-    entries: {}
+    entries: {},
+    /**
+     * File system for the testing volume.
+     * @type {DOMFileSystem}
+     */
+    fileSystem: null
   };
 
-  // Get the file system.
-  chrome.fileBrowserPrivate.requestFileSystem(
-    'compatible', function(fileSystem) {
-    if(!fileSystem) {
-      callback(testParams, 'Failed to get file system,');
+  chrome.fileBrowserPrivate.getVolumeMetadataList(function(volumeMetadataList) {
+    var possibleVolumeTypes = ['testing', 'drive'];
+
+    var sortedVolumeMetadataList = volumeMetadataList.filter(function(volume) {
+      return possibleVolumeTypes.indexOf(volume.volumeType) != -1;
+    }).sort(function(volumeA, volumeB) {
+      return possibleVolumeTypes.indexOf(volumeA.volumeType) >
+             possibleVolumeTypes.indexOf(volumeB.volumeType);
+    });
+
+    if (sortedVolumeMetadataList.length == 0) {
+      callback(
+          testParams, 'No volumes available, which could be used for testing.');
       return;
     }
 
-    var possibleMountPoints = ['local/', 'drive/'];
+    chrome.fileBrowserPrivate.requestFileSystem(
+        sortedVolumeMetadataList[0].volumeId,
+        function(fileSystem) {
+          if (!fileSystem) {
+            callback(testParams, 'Failed to acquire the testing volume.');
+            return;
+          }
 
-    function tryNextMountPoint() {
-      if (possibleMountPoints.length == 0) {
-        callback(testParams, 'No mount point found.');
-        return;
-      }
+          testParams.fileSystem = fileSystem;
+          testParams.isOnDrive =
+              sortedVolumeMetadataList[0].volumeType == 'drive';
 
-      var mountPointPath = possibleMountPoints.shift();
+          var testWatchEntries = [
+            {name: 'file',
+             path: getPath('test_dir/test_file.xul', testParams.isOnDrive),
+             type: 'file'},
+            {name: 'dir', path: getPath('test_dir/', testParams.isOnDrive),
+             type: 'dir'},
+            {name: 'subdir',
+             path: getPath('test_dir/subdir', testParams.isOnDrive),
+             type: 'dir'},
+          ];
 
-      // Try to get the current mount point path. On failure,
-      // |tryNextMountPoint| is called.
-      fileSystem.root.getDirectory(
-          mountPointPath, {},
-          function(mountPoint) {
-            // The test mount point has been found. Get all the entries that
-            // will be watched during the test.
-            testParams.mountPoint = mountPoint;
-            testParams.isOnDrive = mountPointPath == 'drive/';
+          // Gets the first entry in |testWatchEntries| list.
+          var getNextEntry = function() {
+            // If the list is empty, the test has been successfully
+            // initialized, so call callback.
+            if (testWatchEntries.length == 0) {
+              testParams.valid = true;
+              callback(testParams, 'Success.');
+              return;
+            }
 
-            var testWatchEntries = [
-              {name: 'file',
-               path: getPath('test_dir/test_file.xul', testParams.isOnDrive),
-               type: 'file'},
-              {name: 'dir', path: getPath('test_dir/', testParams.isOnDrive),
-               type: 'dir'},
-              {name: 'subdir',
-               path: getPath('test_dir/subdir', testParams.isOnDrive),
-               type: 'dir'},
-            ];
+            var testEntry = testWatchEntries.shift();
 
-            // Gets the first entry in |testWatchEntries| list.
-            function getNextEntry() {
-              // If the list is empty, the test has been successfully
-              // initialized, so call callback.
-              if (testWatchEntries.length == 0) {
-                testParams.valid = true;
-                callback(testParams, 'Success.');
-                return;
-              }
+            var getFunction = null;
+            if (testEntry.type == 'file') {
+              getFunction = fileSystem.root.getFile.bind(fileSystem.root);
+            } else {
+              getFunction = fileSystem.root.getDirectory.bind(fileSystem.root);
+            }
 
-              var testEntry = testWatchEntries.shift();
+            getFunction(testEntry.path, {},
+                function(entry) {
+                  testParams.entries[testEntry.name] = entry;
+                  getNextEntry();
+                },
+                callback.bind(null, testParams,
+                    'Unable to get entry: \'' + testEntry.path + '\'.'));
+          };
 
-              var getFunction = null;
-              if (testEntry.type == 'file') {
-                getFunction = mountPoint.getFile.bind(mountPoint);
-              } else {
-                getFunction = mountPoint.getDirectory.bind(mountPoint);
-              }
-
-              getFunction(testEntry.path, {},
-                  function(entry) {
-                    testParams.entries[testEntry.name] = entry;
-                    getNextEntry();
-                  },
-                  callback.bind(null, testParams,
-                      'Unable to get entry: \'' + testEntry.path + '\'.'));
-            };
-
-            // Trigger getting the watched entries.
-            getNextEntry();
-
-          },
-          tryNextMountPoint);
-    };
-
-    // Trigger getting the test mount point.
-    tryNextMountPoint();
-  })
+          // Trigger getting the watched entries.
+          getNextEntry();
+        });
+  });
 };
 
 // Starts the test.
@@ -345,7 +342,7 @@ initTests(function(testParams, errorMessage) {
                                          'changed', 'added');
       testEventListener.start();
 
-      testParams.mountPoint.getDirectory(
+      testParams.fileSystem.root.getDirectory(
           getPath('test_dir/subdir/subsubdir', testParams.isOnDrive),
           {create: true, exclusive: true},
           testEventListener.onFileSystemOperation.bind(testEventListener),
@@ -361,7 +358,7 @@ initTests(function(testParams, errorMessage) {
                                          'changed', 'added');
       testEventListener.start();
 
-      testParams.mountPoint.getFile(
+      testParams.fileSystem.root.getFile(
           getPath('test_dir/subdir/file', testParams.isOnDrive),
           {create: true, exclusive: true},
           testEventListener.onFileSystemOperation.bind(testEventListener),
@@ -378,7 +375,7 @@ initTests(function(testParams, errorMessage) {
 
       testEventListener.start();
 
-      testParams.mountPoint.getFile(
+      testParams.fileSystem.root.getFile(
           getPath('test_dir/subdir/file', testParams.isOnDrive),
           {},
           function(entry) {
@@ -399,7 +396,7 @@ initTests(function(testParams, errorMessage) {
                                          'changed', 'deleted');
       testEventListener.start();
 
-      testParams.mountPoint.getFile(
+      testParams.fileSystem.root.getFile(
           getPath('test_dir/subdir/renamed', testParams.isOnDrive), {},
           function(entry) {
             entry.remove(
@@ -426,7 +423,7 @@ initTests(function(testParams, errorMessage) {
       }
       testEventListener.start();
 
-      testParams.mountPoint.getFile(
+      testParams.fileSystem.root.getFile(
           getPath('test_dir/test_file.xul', testParams.isOnDrive), {},
           function(entry) {
             entry.remove(
@@ -447,7 +444,7 @@ initTests(function(testParams, errorMessage) {
                                          'changed', 'deleted');
       testEventListener.start();
 
-      testParams.mountPoint.getDirectory(
+      testParams.fileSystem.root.getDirectory(
           getPath('test_dir/subdir/subsubdir', testParams.isOnDrive), {},
           function(entry) {
             entry.removeRecursively(
@@ -474,7 +471,7 @@ initTests(function(testParams, errorMessage) {
                                          'changed', 'deleted');
       testEventListener.start();
 
-      testParams.mountPoint.getDirectory(
+      testParams.fileSystem.root.getDirectory(
           getPath('test_dir/subdir', testParams.isOnDrive), {},
           function(entry) {
             entry.removeRecursively(

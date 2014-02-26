@@ -143,13 +143,12 @@ bool PluginPrivateFileSystemBackend::CanHandleType(FileSystemType type) const {
 void PluginPrivateFileSystemBackend::Initialize(FileSystemContext* context) {
 }
 
-void PluginPrivateFileSystemBackend::OpenFileSystem(
-    const GURL& origin_url,
-    FileSystemType type,
+void PluginPrivateFileSystemBackend::ResolveURL(
+    const FileSystemURL& url,
     OpenFileSystemMode mode,
     const OpenFileSystemCallback& callback) {
   // We never allow opening a new plugin-private filesystem via usual
-  // OpenFileSystem.
+  // ResolveURL.
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, GURL(), std::string(),

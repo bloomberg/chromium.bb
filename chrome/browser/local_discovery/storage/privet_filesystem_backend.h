@@ -29,11 +29,9 @@ class PrivetFileSystemBackend : public fileapi::FileSystemBackend {
   virtual bool CanHandleType(fileapi::FileSystemType type) const OVERRIDE;
   virtual void Initialize(fileapi::FileSystemContext* context) OVERRIDE;
 
-  virtual void OpenFileSystem(
-      const GURL& origin_url,
-      fileapi::FileSystemType type,
-      fileapi::OpenFileSystemMode mode,
-      const OpenFileSystemCallback& callback) OVERRIDE;
+  virtual void ResolveURL(const fileapi::FileSystemURL& url,
+                          fileapi::OpenFileSystemMode mode,
+                          const OpenFileSystemCallback& callback) OVERRIDE;
 
   virtual fileapi::AsyncFileUtil* GetAsyncFileUtil(
       fileapi::FileSystemType type) OVERRIDE;

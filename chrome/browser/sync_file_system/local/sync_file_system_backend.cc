@@ -108,25 +108,30 @@ void SyncFileSystemBackend::Initialize(fileapi::FileSystemContext* context) {
       fileapi::kFileSystemTypeSyncableForInternalSync);
 }
 
-void SyncFileSystemBackend::OpenFileSystem(
-    const GURL& origin_url,
-    fileapi::FileSystemType type,
-    fileapi::OpenFileSystemMode mode,
-    const OpenFileSystemCallback& callback) {
-  DCHECK(CanHandleType(type));
+void SyncFileSystemBackend::ResolveURL(const fileapi::FileSystemURL& url,
+                                       fileapi::OpenFileSystemMode mode,
+                                       const OpenFileSystemCallback& callback) {
+  DCHECK(CanHandleType(url.type()));
 
   if (skip_initialize_syncfs_service_for_testing_) {
-    GetDelegate()->OpenFileSystem(origin_url, type, mode, callback,
-                                  GetSyncableFileSystemRootURI(origin_url));
+    GetDelegate()->OpenFileSystem(url.origin(),
+                                  url.type(),
+                                  mode,
+                                  callback,
+                                  GetSyncableFileSystemRootURI(url.origin()));
     return;
   }
 
   // It is safe to pass Unretained(this) since |context_| owns it.
   SyncStatusCallback initialize_callback =
       base::Bind(&SyncFileSystemBackend::DidInitializeSyncFileSystemService,
-                 base::Unretained(this), make_scoped_refptr(context_),
-                 origin_url, type, mode, callback);
-  InitializeSyncFileSystemService(origin_url, initialize_callback);
+                 base::Unretained(this),
+                 make_scoped_refptr(context_),
+                 url.origin(),
+                 url.type(),
+                 mode,
+                 callback);
+  InitializeSyncFileSystemService(url.origin(), initialize_callback);
 }
 
 fileapi::AsyncFileUtil* SyncFileSystemBackend::GetAsyncFileUtil(

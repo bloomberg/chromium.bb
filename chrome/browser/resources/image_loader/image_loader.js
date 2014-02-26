@@ -23,15 +23,34 @@ function ImageLoader() {
    */
   this.worker_ = new Worker();
 
-  // Grant permissions to the local file system and initialize the cache.
-  chrome.fileBrowserPrivate.requestFileSystem(
-    'compatible',
-    function(filesystem) {
-      this.cache_.initialize(function() {
-        this.worker_.start();
-      }.bind(this));
-    }.bind(this));
+  // Grant permissions to all volumes, initialize the cache and then start the
+  // worker.
+  chrome.fileBrowserPrivate.getVolumeMetadataList(function(volumeMetadataList) {
+    var initPromises = volumeMetadataList.map(function(volumeMetadata) {
+      var requestPromise = new Promise(function(callback) {
+        chrome.fileBrowserPrivate.requestFileSystem(
+            volumeMetadata.volumeId,
+            callback);
+      });
+      return requestPromise;
+    });
+    initPromises.push(new Promise(this.cache_.initialize.bind(this.cache_)));
 
+    // After all initializatino promises are done, start the worker.
+    Promise.all(initPromises).then(this.worker_.start.bind(this.worker_));
+
+    // Listen for mount events, and grant permissions to volumes being mounted.
+    chrome.fileBrowserPrivate.onMountCompleted.addListener(
+        function(event) {
+          // TODO(mtomasz): Get rid of mountPath when possible.
+          if (event.eventType == 'mount' && event.volumeMetadata.mountPath) {
+            chrome.fileBrowserPrivate.requestFileSystem(
+                event.volumeMetadata.volumeId, function() {});
+          }
+        });
+  }.bind(this));
+
+  // Listen for incoming requests.
   chrome.extension.onMessageExternal.addListener(function(request,
                                                           sender,
                                                           sendResponse) {

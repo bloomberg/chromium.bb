@@ -101,6 +101,8 @@ std::string VolumeTypeToString(VolumeType type) {
       return "archive";
     case VOLUME_TYPE_CLOUD_DEVICE:
       return "cloud_device";
+    case VOLUME_TYPE_TESTING:
+      return "testing";
   }
   NOTREACHED();
   return "";
@@ -131,13 +133,25 @@ VolumeInfo CreateDriveVolumeInfo(Profile* profile) {
   return volume_info;
 }
 
-VolumeInfo CreateDownloadsVolumeInfo(
-    const base::FilePath& downloads_path) {
+VolumeInfo CreateDownloadsVolumeInfo(const base::FilePath& downloads_path) {
   VolumeInfo volume_info;
   volume_info.type = VOLUME_TYPE_DOWNLOADS_DIRECTORY;
   volume_info.device_type = chromeos::DEVICE_TYPE_UNKNOWN;
   // Keep source_path empty.
   volume_info.mount_path = downloads_path;
+  volume_info.mount_condition = chromeos::disks::MOUNT_CONDITION_NONE;
+  volume_info.is_parent = false;
+  volume_info.is_read_only = false;
+  volume_info.volume_id = GenerateVolumeId(volume_info);
+  return volume_info;
+}
+
+VolumeInfo CreateTestingVolumeInfo(const base::FilePath& path) {
+  VolumeInfo volume_info;
+  volume_info.type = VOLUME_TYPE_TESTING;
+  volume_info.device_type = chromeos::DEVICE_TYPE_UNKNOWN;
+  // Keep source_path empty.
+  volume_info.mount_path = path;
   volume_info.mount_condition = chromeos::disks::MOUNT_CONDITION_NONE;
   volume_info.is_parent = false;
   volume_info.is_read_only = false;
@@ -380,6 +394,14 @@ bool VolumeManager::RegisterDownloadsDirectoryForTesting(
       CreateDownloadsVolumeInfo(path),
       false /* is_remounting */);
   return success;
+}
+
+void VolumeManager::AddVolumeInfoForTesting(const base::FilePath& path) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DoMountEvent(
+      chromeos::MOUNT_ERROR_NONE,
+      CreateTestingVolumeInfo(path),
+      false /* is_remounting */);
 }
 
 void VolumeManager::OnFileSystemMounted() {

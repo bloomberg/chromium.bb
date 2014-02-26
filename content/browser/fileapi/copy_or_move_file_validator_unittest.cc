@@ -70,8 +70,8 @@ class CopyOrMoveFileValidatorTestHelper {
     // Sets up source.
     fileapi::FileSystemBackend* src_file_system_backend =
         file_system_context_->GetFileSystemBackend(src_type_);
-    src_file_system_backend->OpenFileSystem(
-        origin_, src_type_,
+    src_file_system_backend->ResolveURL(
+        FileSystemURL::CreateForTest(origin_, src_type_, base::FilePath()),
         fileapi::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
         base::Bind(&ExpectOk));
     base::RunLoop().RunUntilIdle();

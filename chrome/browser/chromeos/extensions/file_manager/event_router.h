@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/drive/job_list.h"
 #include "chrome/browser/chromeos/drive/sync_client.h"
 #include "chrome/browser/chromeos/file_manager/file_watcher.h"
+#include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
@@ -29,6 +30,8 @@
 
 class PrefChangeRegistrar;
 class Profile;
+
+using file_manager::util::EntryDefinition;
 
 namespace base {
 class ListValue;
@@ -149,6 +152,12 @@ class EventRouter
       const base::FilePath& path,
       bool error,
       const std::vector<std::string>& extension_ids);
+
+  // Sends directory change event, after converting the file definition to entry
+  // definition.
+  void DispatchDirectoryChangeEventWithEntryDefinition(
+      bool watcher_error,
+      const EntryDefinition& entry_definition);
 
   // If needed, opens a file manager window for the removable device mounted at
   // |mount_path|. Disk.mount_path() is empty, since it is being filled out

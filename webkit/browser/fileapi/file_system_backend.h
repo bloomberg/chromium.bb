@@ -57,17 +57,15 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemBackend {
   // do additional initialization which depends on FileSystemContext here.
   virtual void Initialize(FileSystemContext* context) = 0;
 
-  // Opens the filesystem for the given |origin_url| and |type|.
-  // This verifies if it is allowed to request (or create) the filesystem
-  // and if it can access (or create) the root directory.
-  // If |mode| is CREATE_IF_NONEXISTENT calling this may also create
-  // the root directory (and/or related database entries etc) for
-  // the filesystem if it doesn't exist.
-  virtual void OpenFileSystem(
-      const GURL& origin_url,
-      FileSystemType type,
-      OpenFileSystemMode mode,
-      const OpenFileSystemCallback& callback) = 0;
+  // Resolves the filesystem root URL and the name for the given |url|.
+  // This verifies if it is allowed to request (or create) the filesystem and if
+  // it can access (or create) the root directory.
+  // If |mode| is CREATE_IF_NONEXISTENT calling this may also create the root
+  // directory (and/or related database entries etc) for the filesystem if it
+  // doesn't exist.
+  virtual void ResolveURL(const FileSystemURL& url,
+                          OpenFileSystemMode mode,
+                          const OpenFileSystemCallback& callback) = 0;
 
   // Returns the specialized AsyncFileUtil for this backend.
   virtual AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) = 0;

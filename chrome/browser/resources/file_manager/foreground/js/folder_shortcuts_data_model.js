@@ -529,12 +529,13 @@ FolderShortcutsDataModel.prototype = {
    * @private
    */
   convertUrlToStoredPath_: function(url) {
-    if (url.indexOf(this.lastDriveRootURL_ + '/') !== 0) {
+    // Root URLs contain a trailing slash.
+    if (url.indexOf(this.lastDriveRootURL_) !== 0) {
       console.warn(url + ' is not a drive URL.');
       return null;
     }
 
-    return STORED_DRIVE_MOUNT_PATH + decodeURIComponent(
+    return STORED_DRIVE_MOUNT_PATH + '/' + decodeURIComponent(
         url.substr(this.lastDriveRootURL_.length));
   },
 };

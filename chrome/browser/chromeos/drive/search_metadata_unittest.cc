@@ -229,11 +229,8 @@ TEST_F(SearchMetadataTest, SearchMetadata_RegularFiles) {
   ASSERT_TRUE(result);
   ASSERT_EQ(2U, result->size());
 
-  // The results should be sorted by the last accessed time in descending order.
-  EXPECT_EQ(6, result->at(0).entry.file_info().last_accessed());
-  EXPECT_EQ(2, result->at(1).entry.file_info().last_accessed());
-
-  // All base names should contain "File".
+  // All base names should contain "File". The results should be sorted by the
+  // last accessed time in descending order.
   EXPECT_EQ("drive/root/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt",
             result->at(0).path.AsUTF8Unsafe());
   EXPECT_EQ("drive/root/Directory 1/SubDirectory File 1.txt",

@@ -272,8 +272,9 @@ FileError SearchMetadataOnBlockingPool(ResourceMetadata* resource_metadata,
     base::FilePath path = resource_metadata->GetFilePath(candidate.local_id);
     if (path.empty())
       return FILE_ERROR_FAILED;
+    bool is_directory = candidate.entry.file_info().is_directory();
     results->push_back(MetadataSearchResult(
-        path, candidate.entry, candidate.highlighted_base_name));
+        path, is_directory, candidate.highlighted_base_name));
   }
 
   // Reverse the order here because |result_candidates| puts the most

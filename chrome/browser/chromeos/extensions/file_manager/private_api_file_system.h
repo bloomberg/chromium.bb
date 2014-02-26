@@ -23,6 +23,12 @@ namespace fileapi {
 class FileSystemContext;
 }
 
+namespace file_manager {
+namespace util {
+struct EntryDefinition;
+}  // namespace util
+}  // namespace file_manager
+
 namespace extensions {
 
 // Implements the chrome.fileBrowserPrivate.requestFileSystem method.
@@ -54,6 +60,10 @@ class FileBrowserPrivateRequestFileSystemFunction
       int child_id,
       Profile* profile,
       scoped_refptr<const extensions::Extension> extension);
+
+  // Called when the entry definition is computed.
+  void OnEntryDefinition(
+      const file_manager::util::EntryDefinition& entry_definition);
 };
 
 // Base class for FileBrowserPrivateAddFileWatchFunction and

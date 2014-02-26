@@ -8,13 +8,13 @@
 #define CHROME_BROWSER_CHROMEOS_FILE_MANAGER_FILEAPI_UTIL_H_
 
 #include <string>
+
+#include "base/callback_forward.h"
+#include "base/files/file.h"
+#include "base/files/file_path.h"
 #include "url/gurl.h"
 
 class Profile;
-
-namespace base {
-class FilePath;
-}
 
 namespace content {
 class RenderViewHost;
@@ -26,6 +26,39 @@ class FileSystemContext;
 
 namespace file_manager {
 namespace util {
+
+// Structure information necessary to create a EntryDefinition, and therefore
+// an Entry object on the JavaScript side.
+struct FileDefinition {
+  base::FilePath virtual_path;
+  base::FilePath absolute_path;
+  bool is_directory;
+};
+
+// Contains all information needed to create an Entry object in custom bindings.
+struct EntryDefinition {
+  EntryDefinition();
+  ~EntryDefinition();
+
+  std::string file_system_root_url;  // Used to create DOMFileSystem.
+  std::string file_system_name;      // Value of DOMFileSystem.name.
+  base::FilePath full_path;    // Value of Entry.fullPath.
+  bool is_directory;           // Whether to create FileEntry or DirectoryEntry.
+  base::File::Error error;
+};
+
+typedef std::vector<FileDefinition> FileDefinitionList;
+typedef std::vector<EntryDefinition> EntryDefinitionList;
+
+// The callback used by ConvertFileDefinitionToEntryDefinition. Returns the
+// result of the conversion.
+typedef base::Callback<void(const EntryDefinition& entry_definition)>
+    EntryDefinitionCallback;
+
+// The callback used by ConvertFileDefinitionListToEntryDefinitionList. Returns
+// the result of the conversion as a list.
+typedef base::Callback<void(scoped_ptr<
+    EntryDefinitionList> entry_definition_list)> EntryDefinitionListCallback;
 
 // Returns a file system context associated with the given profile and the
 // extension ID.
@@ -70,6 +103,24 @@ bool ConvertAbsoluteFilePathToRelativeFileSystemPath(
     const std::string& extension_id,
     const base::FilePath& absolute_path,
     base::FilePath* relative_path);
+
+// Converts a file definition to a entry definition and returns the result
+// via a callback. |profile| cannot be null. Must be called on UI thread.
+void ConvertFileDefinitionToEntryDefinition(
+    Profile* profile,
+    const std::string& extension_id,
+    const FileDefinition& file_definition,
+    const EntryDefinitionCallback& callback);
+
+// Converts a list of file definitions into a list of entry definitions and
+// returns it via |callback|. The method is safe, |file_definition_list| is
+// copied internally. The output list has the same order of items and size as
+// the input vector. |profile| cannot be null. Must be called on UI thread.
+void ConvertFileDefinitionListToEntryDefinitionList(
+    Profile* profile,
+    const std::string& extension_id,
+    const FileDefinitionList& file_definition_list,
+    const EntryDefinitionListCallback& callback);
 
 }  // namespace util
 }  // namespace file_manager

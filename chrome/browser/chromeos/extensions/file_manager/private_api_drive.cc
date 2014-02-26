@@ -20,6 +20,13 @@
 
 using content::BrowserThread;
 
+using file_manager::util::EntryDefinition;
+using file_manager::util::EntryDefinitionCallback;
+using file_manager::util::EntryDefinitionList;
+using file_manager::util::EntryDefinitionListCallback;
+using file_manager::util::FileDefinition;
+using file_manager::util::FileDefinitionList;
+
 namespace extensions {
 namespace {
 
@@ -67,6 +74,31 @@ void FillDriveEntryPropertiesValue(
       new bool(file_specific_info.is_hosted_document()));
   properties->content_mime_type.reset(
       new std::string(file_specific_info.content_mime_type()));
+}
+
+// Creates entry definition list for (metadata) search result info list.
+template <class T>
+void ConvertSearchResultInfoListToEntryDefinitionList(
+    Profile* profile,
+    const std::string& extension_id,
+    const std::vector<T>& search_result_info_list,
+    const EntryDefinitionListCallback& callback) {
+  FileDefinitionList file_definition_list;
+
+  for (size_t i = 0; i < search_result_info_list.size(); ++i) {
+    FileDefinition file_definition;
+    file_definition.virtual_path =
+        file_manager::util::ConvertDrivePathToRelativeFileSystemPath(
+            profile, extension_id, search_result_info_list.at(i).path);
+    file_definition.is_directory = search_result_info_list.at(i).is_directory;
+    file_definition_list.push_back(file_definition);
+  }
+
+  file_manager::util::ConvertFileDefinitionListToEntryDefinitionList(
+      profile,
+      extension_id,
+      file_definition_list,  // Safe, since copied internally.
+      callback);
 }
 
 }  // namespace
@@ -382,28 +414,43 @@ bool FileBrowserPrivateSearchDriveFunction::RunImpl() {
 void FileBrowserPrivateSearchDriveFunction::OnSearch(
     drive::FileError error,
     const GURL& next_link,
-    scoped_ptr<std::vector<drive::SearchResultInfo> > results) {
+    scoped_ptr<SearchResultInfoList> results) {
   if (error != drive::FILE_ERROR_OK) {
     SendResponse(false);
     return;
   }
 
+  // Outlives the following conversion, since the pointer is bound to the
+  // callback.
   DCHECK(results.get());
+  const SearchResultInfoList& results_ref = *results.get();
 
+  ConvertSearchResultInfoListToEntryDefinitionList(
+      GetProfile(),
+      extension_->id(),
+      results_ref,
+      base::Bind(&FileBrowserPrivateSearchDriveFunction::OnEntryDefinitionList,
+                 this,
+                 next_link,
+                 base::Passed(&results)));
+}
+
+void FileBrowserPrivateSearchDriveFunction::OnEntryDefinitionList(
+    const GURL& next_link,
+    scoped_ptr<SearchResultInfoList> search_result_info_list,
+    scoped_ptr<EntryDefinitionList> entry_definition_list) {
+  DCHECK_EQ(search_result_info_list->size(), entry_definition_list->size());
   base::ListValue* entries = new base::ListValue();
 
   // Convert Drive files to something File API stack can understand.
-  fileapi::FileSystemInfo info =
-      fileapi::GetFileSystemInfoForChromeOS(source_url_.GetOrigin());
-  for (size_t i = 0; i < results->size(); ++i) {
+  for (EntryDefinitionList::const_iterator it = entry_definition_list->begin();
+       it != entry_definition_list->end();
+       ++it) {
     base::DictionaryValue* entry = new base::DictionaryValue();
-    entry->SetString("fileSystemName", info.name);
-    entry->SetString("fileSystemRoot", info.root_url.spec());
-    entry->SetString("fileFullPath",
-        "/" + file_manager::util::ConvertDrivePathToRelativeFileSystemPath(
-            GetProfile(), extension_->id(),
-            results->at(i).path).AsUTF8Unsafe());
-    entry->SetBoolean("fileIsDirectory", results->at(i).is_directory);
+    entry->SetString("fileSystemName", it->file_system_name);
+    entry->SetString("fileSystemRoot", it->file_system_root_url);
+    entry->SetString("fileFullPath", "/" + it->full_path.AsUTF8Unsafe());
+    entry->SetBoolean("fileIsDirectory", it->is_directory);
     entries->Append(entry);
   }
 
@@ -475,33 +522,50 @@ void FileBrowserPrivateSearchDriveMetadataFunction::OnSearchMetadata(
     return;
   }
 
+  // Outlives the following conversion, since the pointer is bound to the
+  // callback.
   DCHECK(results.get());
+  const drive::MetadataSearchResultVector& results_ref = *results.get();
 
+  ConvertSearchResultInfoListToEntryDefinitionList(
+      GetProfile(),
+      extension_->id(),
+      results_ref,
+      base::Bind(
+          &FileBrowserPrivateSearchDriveMetadataFunction::OnEntryDefinitionList,
+          this,
+          base::Passed(&results)));
+}
+
+void FileBrowserPrivateSearchDriveMetadataFunction::OnEntryDefinitionList(
+    scoped_ptr<drive::MetadataSearchResultVector> search_result_info_list,
+    scoped_ptr<EntryDefinitionList> entry_definition_list) {
+  DCHECK_EQ(search_result_info_list->size(), entry_definition_list->size());
   base::ListValue* results_list = new base::ListValue();
 
   // Convert Drive files to something File API stack can understand.  See
   // file_browser_handler_custom_bindings.cc and
   // file_browser_private_custom_bindings.js for how this is magically
   // converted to a FileEntry.
-  fileapi::FileSystemInfo info =
-      fileapi::GetFileSystemInfoForChromeOS(source_url_.GetOrigin());
-  for (size_t i = 0; i < results->size(); ++i) {
+  for (size_t i = 0; i < entry_definition_list->size(); ++i) {
     base::DictionaryValue* result_dict = new base::DictionaryValue();
 
     // FileEntry fields.
     base::DictionaryValue* entry = new base::DictionaryValue();
-    entry->SetString("fileSystemName", info.name);
-    entry->SetString("fileSystemRoot", info.root_url.spec());
-    entry->SetString("fileFullPath",
-        "/" + file_manager::util::ConvertDrivePathToRelativeFileSystemPath(
-            GetProfile(), extension_->id(),
-            results->at(i).path).AsUTF8Unsafe());
+    entry->SetString(
+        "fileSystemName", entry_definition_list->at(i).file_system_name);
+    entry->SetString(
+        "fileSystemRoot", entry_definition_list->at(i).file_system_root_url);
+    entry->SetString(
+        "fileFullPath",
+        "/" + entry_definition_list->at(i).full_path.AsUTF8Unsafe());
     entry->SetBoolean("fileIsDirectory",
-                      results->at(i).entry.file_info().is_directory());
+                      entry_definition_list->at(i).is_directory);
 
     result_dict->Set("entry", entry);
-    result_dict->SetString("highlightedBaseName",
-                           results->at(i).highlighted_base_name);
+    result_dict->SetString(
+        "highlightedBaseName",
+        search_result_info_list->at(i).highlighted_base_name);
     results_list->Append(result_dict);
   }
 

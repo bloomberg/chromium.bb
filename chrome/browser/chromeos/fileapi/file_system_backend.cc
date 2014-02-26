@@ -93,15 +93,51 @@ bool FileSystemBackend::CanHandleType(fileapi::FileSystemType type) const {
 void FileSystemBackend::Initialize(fileapi::FileSystemContext* context) {
 }
 
-void FileSystemBackend::OpenFileSystem(
-    const GURL& origin_url,
-    fileapi::FileSystemType type,
-    fileapi::OpenFileSystemMode mode,
-    const OpenFileSystemCallback& callback) {
-  // TODO(nhiroki): Deprecate OpenFileSystem for non-sandboxed filesystem.
-  // (http://crbug.com/297412)
-  NOTREACHED();
-  callback.Run(GURL(), std::string(), base::File::FILE_ERROR_SECURITY);
+void FileSystemBackend::ResolveURL(const fileapi::FileSystemURL& url,
+                                   fileapi::OpenFileSystemMode mode,
+                                   const OpenFileSystemCallback& callback) {
+  std::string id;
+  fileapi::FileSystemType type;
+  base::FilePath path;
+  fileapi::FileSystemMountOption option;
+  if (!mount_points_->CrackVirtualPath(
+           url.virtual_path(), &id, &type, &path, &option) &&
+      !system_mount_points_->CrackVirtualPath(
+           url.virtual_path(), &id, &type, &path, &option)) {
+    // Not under a mount point, so return an error, since the root is not
+    // accessible.
+    GURL root_url = GURL(fileapi::GetExternalFileSystemRootURIString(
+        url.origin(), std::string()));
+    callback.Run(root_url, std::string(), base::File::FILE_ERROR_SECURITY);
+    return;
+  }
+
+  std::string name;
+  // Construct a URL restricted to the found mount point.
+  std::string root_url =
+      fileapi::GetExternalFileSystemRootURIString(url.origin(), id);
+
+  // For removable and archives, the file system root is the external mount
+  // point plus the inner mount point.
+  if (id == "archive" || id == "removable") {
+    std::vector<std::string> components;
+    url.virtual_path().GetComponents(&components);
+    DCHECK_EQ(id, components.at(0));
+    if (components.size() < 2) {
+      // Unable to access /archive and /removable directories directly. The
+      // inner mount name must be specified.
+      callback.Run(
+          GURL(root_url), std::string(), base::File::FILE_ERROR_SECURITY);
+      return;
+    }
+    std::string inner_mount_name = components[1];
+    root_url += inner_mount_name + "/";
+    name = inner_mount_name;
+  } else {
+    name = id;
+  }
+
+  callback.Run(GURL(root_url), name, base::File::FILE_OK);
 }
 
 fileapi::FileSystemQuotaUtil* FileSystemBackend::GetQuotaUtil() {

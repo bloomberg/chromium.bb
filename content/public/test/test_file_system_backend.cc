@@ -179,13 +179,11 @@ bool TestFileSystemBackend::CanHandleType(FileSystemType type) const {
 void TestFileSystemBackend::Initialize(FileSystemContext* context) {
 }
 
-void TestFileSystemBackend::OpenFileSystem(
-    const GURL& origin_url,
-    FileSystemType type,
-    fileapi::OpenFileSystemMode mode,
-    const OpenFileSystemCallback& callback) {
-  callback.Run(GetFileSystemRootURI(origin_url, type),
-               GetFileSystemName(origin_url, type),
+void TestFileSystemBackend::ResolveURL(const FileSystemURL& url,
+                                       fileapi::OpenFileSystemMode mode,
+                                       const OpenFileSystemCallback& callback) {
+  callback.Run(GetFileSystemRootURI(url.origin(), url.type()),
+               GetFileSystemName(url.origin(), url.type()),
                base::File::FILE_OK);
 }
 

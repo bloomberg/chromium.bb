@@ -34,16 +34,15 @@ struct SearchResultInfo {
 // Struct to represent a search result for SearchMetadata().
 struct MetadataSearchResult {
   MetadataSearchResult(const base::FilePath& in_path,
-                       const ResourceEntry& in_entry,
+                       bool is_directory,
                        const std::string& in_highlighted_base_name)
       : path(in_path),
-        entry(in_entry),
-        highlighted_base_name(in_highlighted_base_name) {
-  }
+        is_directory(is_directory),
+        highlighted_base_name(in_highlighted_base_name) {}
 
   // The two members are used to create FileEntry object.
   base::FilePath path;
-  ResourceEntry entry;
+  bool is_directory;
 
   // The base name to be displayed in the UI. The parts matched the search
   // query are highlighted with <b> tag. Meta characters are escaped like &lt;

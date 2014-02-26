@@ -8,7 +8,7 @@
  implemented_in="chrome/browser/chromeos/extensions/file_manager/file_browser_private_api_functions.h"]
 namespace fileBrowserPrivate {
 // Type of the mounted volume.
-enum VolumeType { drive, downloads, removable, archive, cloud_device };
+enum VolumeType { drive, downloads, removable, archive, cloud_device, testing };
 
 // Device type. Available if this is removable volume.
 enum DeviceType { usb, sd, optical, mobile, unknown };

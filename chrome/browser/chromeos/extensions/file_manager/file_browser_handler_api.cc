@@ -54,6 +54,8 @@ using content::BrowserThread;
 using extensions::api::file_browser_handler_internal::FileEntryInfo;
 using file_manager::FileSelector;
 using file_manager::FileSelectorFactory;
+using file_manager::util::EntryDefinition;
+using file_manager::util::FileDefinition;
 
 namespace SelectFile =
     extensions::api::file_browser_handler_internal::SelectFile;
@@ -309,54 +311,71 @@ void FileBrowserHandlerInternalSelectFileFunction::OnFilePathSelected(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!success) {
-    Respond(false);
+    Respond(EntryDefinition(), false);
     return;
   }
 
-  full_path_ = full_path;
-
-  fileapi::FileSystemInfo info =
-      fileapi::GetFileSystemInfoForChromeOS(source_url_.GetOrigin());
-  file_system_name_ = info.name;
-  file_system_root_ = info.root_url;
-
-  GrantPermissions();
-
-  Respond(true);
-}
-
-void FileBrowserHandlerInternalSelectFileFunction::GrantPermissions() {
   fileapi::ExternalFileSystemBackend* external_backend =
       file_manager::util::GetFileSystemContextForRenderViewHost(
           GetProfile(), render_view_host())->external_backend();
   DCHECK(external_backend);
 
-  external_backend->GetVirtualPath(full_path_, &virtual_path_);
-  DCHECK(!virtual_path_.empty());
+  FileDefinition file_definition;
+  file_definition.is_directory = false;
+
+  external_backend->GetVirtualPath(full_path, &file_definition.virtual_path);
+  DCHECK(!file_definition.virtual_path.empty());
+
+  file_manager::util::ConvertFileDefinitionToEntryDefinition(
+      GetProfile(),
+      extension_id(),
+      file_definition,
+      base::Bind(
+          &FileBrowserHandlerInternalSelectFileFunction::GrantPermissions,
+          this,
+          full_path,
+          file_definition));
+}
+
+void FileBrowserHandlerInternalSelectFileFunction::GrantPermissions(
+    const base::FilePath& full_path,
+    const FileDefinition& file_definition,
+    const EntryDefinition& entry_definition) {
+  fileapi::ExternalFileSystemBackend* external_backend =
+      file_manager::util::GetFileSystemContextForRenderViewHost(
+          GetProfile(), render_view_host())->external_backend();
+  DCHECK(external_backend);
 
   // Grant access to this particular file to target extension. This will
   // ensure that the target extension can access only this FS entry and
   // prevent from traversing FS hierarchy upward.
-  external_backend->GrantFileAccessToExtension(extension_id(), virtual_path_);
+  external_backend->GrantFileAccessToExtension(extension_id(),
+                                               file_definition.virtual_path);
 
   // Grant access to the selected file to target extensions render view process.
   content::ChildProcessSecurityPolicy::GetInstance()->GrantCreateReadWriteFile(
-      render_view_host()->GetProcess()->GetID(), full_path_);
+      render_view_host()->GetProcess()->GetID(), full_path);
+
+  Respond(entry_definition, true);
 }
 
-void FileBrowserHandlerInternalSelectFileFunction::Respond(bool success) {
+void FileBrowserHandlerInternalSelectFileFunction::Respond(
+    const EntryDefinition& entry_definition,
+    bool success) {
   scoped_ptr<SelectFile::Results::Result> result(
       new SelectFile::Results::Result());
   result->success = success;
 
   // If the file was selected, add 'entry' object which will be later used to
   // create a FileEntry instance for the selected file.
-  if (success) {
+  if (success && entry_definition.error == base::File::FILE_OK) {
     result->entry.reset(new FileEntryInfo());
-    result->entry->file_system_name = file_system_name_;
-    result->entry->file_system_root = file_system_root_.spec();
-    result->entry->file_full_path = "/" + virtual_path_.AsUTF8Unsafe();
-    result->entry->file_is_directory = false;
+    // TODO(mtomasz): Make the response fields consistent with other files.
+    result->entry->file_system_name = entry_definition.file_system_name;
+    result->entry->file_system_root = entry_definition.file_system_root_url;
+    result->entry->file_full_path =
+        "/" + entry_definition.full_path.AsUTF8Unsafe();
+    result->entry->file_is_directory = entry_definition.is_directory;
   }
 
   results_ = SelectFile::Results::Create(*result);

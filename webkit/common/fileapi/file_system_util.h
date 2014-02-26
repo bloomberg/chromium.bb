@@ -168,15 +168,6 @@ WEBKIT_STORAGE_COMMON_EXPORT std::string GetExternalFileSystemRootURIString(
 WEBKIT_STORAGE_COMMON_EXPORT base::File::Error
 NetErrorToFileError(int error);
 
-#if defined(OS_CHROMEOS)
-// Returns the filesystem info that can be specified by |origin_url|.
-// TODO(nhiroki): This should be deprecated and use
-// GetExternalFileSystemRootURIString() to get separate file systems for each
-// mount type. http://crbug.com/284963.
-WEBKIT_STORAGE_COMMON_EXPORT FileSystemInfo
-GetFileSystemInfoForChromeOS(const GURL& origin_url);
-#endif
-
 }  // namespace fileapi
 
 #endif  // WEBKIT_COMMON_FILEAPI_FILE_SYSTEM_UTIL_H_

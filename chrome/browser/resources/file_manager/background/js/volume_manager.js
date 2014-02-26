@@ -168,23 +168,23 @@ volumeManagerUtil.validateError = function(error) {
 
 /**
  * Returns the root entry of a volume mounted at mountPath.
- * TODO(mtomasz): Migrate to volumeId, once requestFileSystem can handle it.
+ * TODO(mtomasz): Remove this method.
  *
- * @param {string} mountPath The mounted path of the volume.
+ * @param {string} volumeId ID of the volume to be mounted.
  * @param {function(DirectoryEntry)} successCallback Called when the root entry
  *     is found.
  * @param {function(FileError)} errorCallback Called when an error is found.
  * @private
  */
 volumeManagerUtil.getRootEntry_ = function(
-    mountPath, successCallback, errorCallback) {
+    volumeId, successCallback, errorCallback) {
   // We always request FileSystem here, because requestFileSystem() grants
   // permissions if necessary, especially for Drive File System at first mount
   // time.
   // Note that we actually need to request FileSystem after multi file system
   // support, so this will be more natural code then.
   chrome.fileBrowserPrivate.requestFileSystem(
-      'compatible',
+      volumeId,
       function(fileSystem) {
         // TODO(hidehiko): chrome.runtime.lastError should have error reason.
         if (!fileSystem) {
@@ -192,9 +192,7 @@ volumeManagerUtil.getRootEntry_ = function(
           return;
         }
 
-        fileSystem.root.getDirectory(
-            mountPath.substring(1),  // Strip leading '/'.
-            {create: false}, successCallback, errorCallback);
+        successCallback(fileSystem.root);
       });
 };
 
@@ -205,7 +203,7 @@ volumeManagerUtil.getRootEntry_ = function(
  */
 volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
   volumeManagerUtil.getRootEntry_(
-      volumeMetadata.mountPath,
+      volumeMetadata.volumeId,
       function(entry) {
         if (volumeMetadata.volumeType === util.VolumeType.DRIVE) {
           // After file system is mounted, we "read" drive grand root
@@ -369,8 +367,9 @@ VolumeInfoList.prototype.findByEntry = function(entry) {
     var volumeInfo = this.item(i);
     if (!volumeInfo.root)
       continue;
+    // URL of the root always contains the trailing slash.
     if (util.isSameEntry(entry, volumeInfo.root) ||
-        entry.toURL().indexOf(volumeInfo.root.toURL() + '/') === 0) {
+        entry.toURL().indexOf(volumeInfo.root.toURL()) === 0) {
       return volumeInfo;
     }
     // Additionally, check fake entries.
@@ -674,18 +673,19 @@ VolumeManager.prototype.getLocationInfo = function(entry) {
   var isReadOnly;
   var isRootEntry;
   if (volumeInfo.volumeType === util.VolumeType.DRIVE) {
-    // For Drive, the roots are /root and /other, instead of /.
+    // For Drive, the roots are /root and /other, instead of /. Root URLs
+    // contain trailing slashes.
     // TODO(mtomasz): Simplify once switching to filesystem per volume.
-    if (entry.toURL() === volumeInfo.root.toURL() + '/root' ||
-        entry.toURL().indexOf(volumeInfo.root.toURL() + '/root/') === 0) {
+    if (entry.toURL() === volumeInfo.root.toURL() + 'root' ||
+        entry.toURL().indexOf(volumeInfo.root.toURL() + 'root/') === 0) {
       rootType = RootType.DRIVE;
       isReadOnly = volumeInfo.isReadOnly;
-      isRootEntry = entry.toURL() === volumeInfo.root.toURL() + '/root';
-    } else if (entry.toURL() === volumeInfo.root.toURL() + '/other' ||
-        entry.toURL().indexOf(volumeInfo.root.toURL() + '/other/') === 0) {
+      isRootEntry = entry.toURL() === volumeInfo.root.toURL() + 'root';
+    } else if (entry.toURL() === volumeInfo.root.toURL() + 'other' ||
+        entry.toURL().indexOf(volumeInfo.root.toURL() + 'other/') === 0) {
       rootType = RootType.DRIVE_OTHER;
       isReadOnly = true;
-      isRootEntry = entry.toURL() === volumeInfo.root.toURL() + '/other';
+      isRootEntry = entry.toURL() === volumeInfo.root.toURL() + 'other';
     } else {
       // Accessing Drive files outside of /drive/root and /drive/other is not
       // allowed, but can happen. Therefore returning null.

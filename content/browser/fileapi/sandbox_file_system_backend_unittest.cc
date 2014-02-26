@@ -20,6 +20,7 @@
 #include "webkit/browser/fileapi/sandbox_file_system_backend_delegate.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
+using fileapi::FileSystemURL;
 using fileapi::SandboxFileSystemBackend;
 using fileapi::SandboxFileSystemBackendDelegate;
 
@@ -117,8 +118,9 @@ class SandboxFileSystemBackendTest : public testing::Test {
                    fileapi::OpenFileSystemMode mode,
                    base::FilePath* root_path) {
     base::File::Error error = base::File::FILE_OK;
-    backend_->OpenFileSystem(
-        origin_url, type, mode,
+      backend_->ResolveURL(
+        FileSystemURL::CreateForTest(origin_url, type, base::FilePath()),
+        mode,
         base::Bind(&DidOpenFileSystem, &error));
     base::RunLoop().RunUntilIdle();
     if (error != base::File::FILE_OK)

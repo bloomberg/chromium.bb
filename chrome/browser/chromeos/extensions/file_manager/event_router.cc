@@ -48,6 +48,8 @@ using chromeos::NetworkHandler;
 using content::BrowserThread;
 using drive::DriveIntegrationService;
 using drive::DriveIntegrationServiceFactory;
+using file_manager::util::EntryDefinition;
+using file_manager::util::FileDefinition;
 
 namespace file_browser_private = extensions::api::file_browser_private;
 
@@ -679,28 +681,48 @@ void EventRouter::DispatchDirectoryChangeEvent(
 
   for (size_t i = 0; i < extension_ids.size(); ++i) {
     const std::string& extension_id = extension_ids[i];
-    const GURL target_origin_url(
-        extensions::Extension::GetBaseURLFromExtensionId(extension_id));
-    // This will be replaced with a real Entry in custom bindings.
-    const fileapi::FileSystemInfo info =
-        fileapi::GetFileSystemInfoForChromeOS(target_origin_url.GetOrigin());
 
-    file_browser_private::FileWatchEvent event;
-    event.event_type = got_error ?
-        file_browser_private::FILE_WATCH_EVENT_TYPE_ERROR :
-        file_browser_private::FILE_WATCH_EVENT_TYPE_CHANGED;
-    event.entry.additional_properties.SetString("fileSystemName", info.name);
-    event.entry.additional_properties.SetString("fileSystemRoot",
-                                                info.root_url.spec());
-    event.entry.additional_properties.SetString("fileFullPath",
-                                                "/" + virtual_path.value());
-    event.entry.additional_properties.SetBoolean("fileIsDirectory", true);
+    FileDefinition file_definition;
+    file_definition.virtual_path = virtual_path;
+    file_definition.is_directory = true;
 
-    BroadcastEvent(
+    file_manager::util::ConvertFileDefinitionToEntryDefinition(
         profile_,
-        file_browser_private::OnDirectoryChanged::kEventName,
-        file_browser_private::OnDirectoryChanged::Create(event));
+        extension_id,
+        file_definition,
+        base::Bind(
+            &EventRouter::DispatchDirectoryChangeEventWithEntryDefinition,
+            weak_factory_.GetWeakPtr(),
+            got_error));
   }
+}
+
+void EventRouter::DispatchDirectoryChangeEventWithEntryDefinition(
+    bool watcher_error,
+    const EntryDefinition& entry_definition) {
+  if (entry_definition.error != base::File::FILE_OK) {
+    DVLOG(1) << "Unable to dispatch event because resolving the entry "
+             << "definition failed.";
+    return;
+  }
+
+  file_browser_private::FileWatchEvent event;
+  event.event_type = watcher_error
+      ? file_browser_private::FILE_WATCH_EVENT_TYPE_ERROR
+      : file_browser_private::FILE_WATCH_EVENT_TYPE_CHANGED;
+
+  event.entry.additional_properties.SetString(
+      "fileSystemName", entry_definition.file_system_name);
+  event.entry.additional_properties.SetString(
+      "fileSystemRoot", entry_definition.file_system_root_url);
+  event.entry.additional_properties.SetString(
+      "fileFullPath", "/" + entry_definition.full_path.value());
+  event.entry.additional_properties.SetBoolean("fileIsDirectory",
+                                               entry_definition.is_directory);
+
+  BroadcastEvent(profile_,
+                 file_browser_private::OnDirectoryChanged::kEventName,
+                 file_browser_private::OnDirectoryChanged::Create(event));
 }
 
 void EventRouter::ShowRemovableDeviceInFileManager(

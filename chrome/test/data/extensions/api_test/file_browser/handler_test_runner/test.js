@@ -6,8 +6,8 @@
  * Runs test to verify that file browser tasks can successfully be executed.
  * The test does the following:
  * - Open external filesystem.
- * - Get the test mount point root. The root is determined by probing exitents
- *   of root directories 'local' or 'drive'.
+ * - Get the test file system. The root is determined by probing volumes with
+ *   whitelisted ids.
  * - Get files 'test_dir/test_file.xul' and 'test_dir/test_file.tiff'
  *   on the test mount point.
  *   Chrome part of the test should ensure that these actually exist.
@@ -180,51 +180,42 @@ function run() {
    * Called when the test mount point has been determined. It starts resolving
    * test cases (i.e. getting file entries for the test file paths).
    *
-   * @param {DirectoryEntry} mountPointEntry The mount points root dir entry.
+   * @param {DOMFileSystem} fileSystem The testing volume.
+   * @param {string} volumeType Type of the volume.
    */
-  function onFoundMountPoint(mountPointEntry) {
-    var isOnDrive = mountPointEntry.fullPath == '/drive';
+  function onGotFileSystem(fileSystem, volumeType) {
+    var isOnDrive = volumeType == 'drive';
     kTestCases.forEach(function(testCase) {
-      mountPointEntry.getFile(
+      fileSystem.root.getFile(
           (isOnDrive ? 'root/' : '') + testCase.path, {},
           onGotEntry.bind(null, testCase.mimeType),
           onError.bind(null, 'Unable to get file: ' + testCase.path));
     });
   }
 
-  /**
-   * Callback for chrome.fileBrowserPrivate.requestFileSystem.
-   * When the local fileSystem is found, tries to get the test mount point root
-   * dir by probing for existence of possible mount point root dirs.
-   * The Chrome should have enabled either 'local/' or 'drive/' mount point.
-   *
-   * @param {FileSystem} fileSystem External file system.
-   */
-  function onGotFileSystem(fileSystem) {
-    if (!fileSystem) {
-      onError('Failed to get file system for test.');
+  chrome.fileBrowserPrivate.getVolumeMetadataList(function(volumeMetadataList) {
+    // Try to acquire the first volume which is either TESTING or DRIVE type.
+    var possibleVolumeTypes = ['testing', 'drive'];
+    var sortedVolumeMetadataList = volumeMetadataList.filter(function(volume) {
+      return possibleVolumeTypes.indexOf(volume.volumeType) != -1;
+    }).sort(function(volumeA, volumeB) {
+      return possibleVolumeTypes.indexOf(volumeA.volumeType) >
+             possibleVolumeTypes.indexOf(volumeB.volumeType);
+    });
+    if (sortedVolumeMetadataList.length == 0) {
+      onError('No volumes available, which could be used for testing.');
       return;
     }
-
-    var possibleMountPoints = ['local/', 'drive/'];
-
-    function tryNextMountPoint() {
-      if (possibleMountPoints.length == 0) {
-        onError('Unable to find mounted mount point.');
-        return;
-      }
-
-      var mountPointRoot = possibleMountPoints.shift();
-
-      fileSystem.root.getDirectory(mountPointRoot, {},
-                                   onFoundMountPoint,
-                                   tryNextMountPoint);
-    }
-
-    tryNextMountPoint();
-  }
-
-  chrome.fileBrowserPrivate.requestFileSystem('compatible', onGotFileSystem);
+    chrome.fileBrowserPrivate.requestFileSystem(
+        sortedVolumeMetadataList[0].volumeId,
+        function(fileSystem) {
+          if (!fileSystem) {
+            onError('Failed to acquire the testing volume.');
+            return;
+          }
+          onGotFileSystem(fileSystem, sortedVolumeMetadataList[0].volumeType);
+        });
+  });
 }
 
 // Start the testing.

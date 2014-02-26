@@ -45,7 +45,8 @@ enum VolumeType {
   VOLUME_TYPE_DOWNLOADS_DIRECTORY,
   VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
   VOLUME_TYPE_MOUNTED_ARCHIVE_FILE,
-  VOLUME_TYPE_CLOUD_DEVICE
+  VOLUME_TYPE_CLOUD_DEVICE,
+  VOLUME_TYPE_TESTING
 };
 
 struct VolumeInfo {
@@ -130,8 +131,13 @@ class VolumeManager : public BrowserContextKeyedService,
   bool FindVolumeInfoById(const std::string& volume_id,
                           VolumeInfo* result) const;
 
-  // For testing purpose, adds the custom |path| as the "Downloads" folder.
+  // For testing purpose, registers a native local file system poniting to
+  // |path| with DOWNLOADS type, and adds its volume info.
   bool RegisterDownloadsDirectoryForTesting(const base::FilePath& path);
+
+  // For testing purpose, adds a volume info pointing to |path|, with TESTING
+  // type. Assumes that the mount point is already registered.
+  void AddVolumeInfoForTesting(const base::FilePath& path);
 
   // drive::DriveIntegrationServiceObserver overrides.
   virtual void OnFileSystemMounted() OVERRIDE;

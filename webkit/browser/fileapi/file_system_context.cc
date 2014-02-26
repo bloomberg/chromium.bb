@@ -307,30 +307,19 @@ void FileSystemContext::OpenFileSystem(
     return;
   }
 
-  backend->OpenFileSystem(origin_url, type, mode, callback);
+  backend->ResolveURL(
+      CreateCrackedFileSystemURL(origin_url, type, base::FilePath()),
+      mode,
+      callback);
 }
 
 void FileSystemContext::ResolveURL(
     const FileSystemURL& url,
     const ResolveURLCallback& callback) {
+  // TODO(nhiroki, kinuko): Remove this thread restriction, so it can be called
+  // on either UI or IO thread.
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!callback.is_null());
-
-  if (!FileSystemContext::IsSandboxFileSystem(url.type())) {
-#ifdef OS_CHROMEOS
-    // Do not have to open a non-sandboxed filesystem.
-    // TODO(nhiroki): For now we assume this path is called only on ChromeOS,
-    // but this assumption may be broken in the future and we should handle
-    // more generally. http://crbug.com/304062.
-    FileSystemInfo info = GetFileSystemInfoForChromeOS(url.origin());
-    DidOpenFileSystemForResolveURL(
-        url, callback, info.root_url, info.name, base::File::FILE_OK);
-    return;
-#endif
-    callback.Run(base::File::FILE_ERROR_SECURITY,
-                 FileSystemInfo(), base::FilePath(), false);
-    return;
-  }
 
   FileSystemBackend* backend = GetFileSystemBackend(url.type());
   if (!backend) {
@@ -339,11 +328,13 @@ void FileSystemContext::ResolveURL(
     return;
   }
 
-  backend->OpenFileSystem(
-      url.origin(), url.type(),
+  backend->ResolveURL(
+      url,
       OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
       base::Bind(&FileSystemContext::DidOpenFileSystemForResolveURL,
-                 this, url, callback));
+                 this,
+                 url,
+                 callback));
 }
 
 void FileSystemContext::DeleteFileSystem(
