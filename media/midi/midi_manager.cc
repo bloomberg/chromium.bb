@@ -6,12 +6,12 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/debug/trace_event.h"
 
 namespace media {
 
 #if !defined(OS_MACOSX) && !defined(OS_WIN) && !defined(USE_ALSA) && \
-    !defined(OS_ANDROID)
-// TODO(toyoshim): implement MidiManager for other platforms.
+    !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 MidiManager* MidiManager::Create() {
   return new MidiManager;
 }
@@ -52,6 +52,7 @@ void MidiManager::DispatchSendMidiData(MidiManagerClient* client,
 }
 
 bool MidiManager::Initialize() {
+  TRACE_EVENT0("midi", "MidiManager::Initialize");
   return false;
 }
 

@@ -19,6 +19,7 @@
 #include <mmsystem.h>
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -501,6 +502,7 @@ MidiManagerWin::MidiManagerWin()
 }
 
 bool MidiManagerWin::Initialize() {
+  TRACE_EVENT0("midi", "MidiManagerWin::Initialize");
   const UINT num_in_devices = midiInGetNumDevs();
   in_devices_.reserve(num_in_devices);
   for (UINT device_id = 0; device_id < num_in_devices; ++device_id) {

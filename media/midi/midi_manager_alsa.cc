@@ -61,7 +61,7 @@ class MidiManagerAlsa::MidiDeviceInfo
         midi_out_, reinterpret_cast<const void*>(&data[0]), data.size());
     if (static_cast<size_t>(result) != data.size()) {
       // TODO(toyoshim): Handle device disconnection.
-      LOG(ERROR) << "snd_rawmidi_write fails: " << strerror(-result);
+      VLOG(1) << "snd_rawmidi_write fails: " << strerror(-result);
     }
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
@@ -130,7 +130,7 @@ MidiManagerAlsa::MidiManagerAlsa()
 bool MidiManagerAlsa::Initialize() {
   // TODO(toyoshim): Make Initialize() asynchronous.
   // See http://crbug.com/339746.
-  TRACE_EVENT0("midi", "MidiManagerMac::Initialize");
+  TRACE_EVENT0("midi", "MidiManagerAlsa::Initialize");
 
   // Enumerate only hardware MIDI devices because software MIDIs running in
   // the browser process is not secure.
@@ -145,12 +145,12 @@ bool MidiManagerAlsa::Initialize() {
     snd_ctl_t* handle;
     int err = snd_ctl_open(&handle, id.c_str(), 0);
     if (err != 0) {
-      DLOG(ERROR) << "snd_ctl_open fails: " << snd_strerror(err);
+      VLOG(1) << "snd_ctl_open fails: " << snd_strerror(err);
       continue;
     }
     err = snd_ctl_card_info(handle, card);
     if (err != 0) {
-      DLOG(ERROR) << "snd_ctl_card_info fails: " << snd_strerror(err);
+      VLOG(1) << "snd_ctl_card_info fails: " << snd_strerror(err);
       snd_ctl_close(handle);
       continue;
     }
@@ -171,7 +171,7 @@ bool MidiManagerAlsa::Initialize() {
       scoped_refptr<MidiDeviceInfo> port = new MidiDeviceInfo(
           this, id, card, output ? midi_out : midi_in, device);
       if (!port->IsOpened()) {
-        DLOG(ERROR) << "MidiDeviceInfo open fails";
+        VLOG(1) << "MidiDeviceInfo open fails";
         continue;
       }
       if (input) {
@@ -187,7 +187,7 @@ bool MidiManagerAlsa::Initialize() {
   }
 
   if (pipe(pipe_fd_) < 0) {
-    DPLOG(ERROR) << "pipe() failed";
+    VPLOG(1) << "pipe() failed";
     return false;
   }
   event_thread_.Start();
@@ -266,7 +266,7 @@ void MidiManagerAlsa::EventReset() {
 
 void MidiManagerAlsa::EventLoop() {
   if (HANDLE_EINTR(poll(&poll_fds_[0], poll_fds_.size(), -1)) < 0) {
-    DPLOG(ERROR) << "Couldn't poll(). Stop to poll input MIDI devices.";
+    VPLOG(1) << "Couldn't poll(). Stop to poll input MIDI devices.";
     // TODO(toyoshim): Handle device disconnection, and try to reconnect?
     return;
   }
@@ -292,7 +292,7 @@ void MidiManagerAlsa::EventLoop() {
         in_devices_[i]->GetPollDescriptorsRevents(&poll_fds_[fds_index]);
     if (revents & (POLLERR | POLLNVAL)) {
       // TODO(toyoshim): Handle device disconnection.
-      LOG(ERROR) << "snd_rawmidi_descriptors_revents fails";
+      VLOG(1) << "snd_rawmidi_descriptors_revents fails";
       poll_fds_[fds_index].events = 0;
     }
     if (revents & POLLIN) {

@@ -5,6 +5,7 @@
 #include "media/midi/midi_manager_usb.h"
 
 #include "base/callback.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -34,6 +35,7 @@ MidiManagerUsb::~MidiManagerUsb() {
 }
 
 bool MidiManagerUsb::Initialize() {
+  TRACE_EVENT0("midi", "MidiManagerUsb::Initialize");
   Initialize(base::Bind(Noop));
   return true;
 }

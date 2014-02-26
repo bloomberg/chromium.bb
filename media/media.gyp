@@ -22,9 +22,16 @@
         'media_use_libvpx%': 1,
       }],
       # Enable ALSA and Pulse for runtime selection.
-      ['(OS=="linux" or OS=="freebsd" or OS=="solaris") and embedded!=1 and use_cras==0', {
+      ['(OS=="linux" or OS=="freebsd" or OS=="solaris") and embedded!=1', {
+        # ALSA is always needed for Web MIDI even if the cras is enabled.
         'use_alsa%': 1,
-        'use_pulseaudio%': 1,
+        'conditions': [
+          ['use_cras==1', {
+            'use_pulseaudio%': 0,
+          }, {
+            'use_pulseaudio%': 1,
+          }],
+        ],
       }, {
         'use_alsa%': 0,
         'use_pulseaudio%': 0,
