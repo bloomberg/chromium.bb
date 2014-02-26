@@ -55,12 +55,14 @@ const size_t kMaximumCloseReasonLength = 125 - kWebSocketCloseCodeLength;
 // used for close codes received from a renderer that we are intending to send
 // out over the network. See ParseClose() for the restrictions on incoming close
 // codes. The |code| parameter is type int for convenience of implementation;
-// the real type is uint16.
+// the real type is uint16. Code 1005 is treated specially; it cannot be set
+// explicitly by Javascript but the renderer uses it to indicate we should send
+// a Close frame with no payload.
 bool IsStrictlyValidCloseStatusCode(int code) {
   static const int kInvalidRanges[] = {
       // [BAD, OK)
       0,    1000,   // 1000 is the first valid code
-      1005, 1007,   // 1005 and 1006 MUST NOT be set.
+      1006, 1007,   // 1006 MUST NOT be set.
       1014, 3000,   // 1014 unassigned; 1015 up to 2999 are reserved.
       5000, 65536,  // Codes above 5000 are invalid.
   };
@@ -864,6 +866,7 @@ ChannelState WebSocketChannel::SendClose(uint16 code,
   if (code == kWebSocketErrorNoStatusReceived) {
     // Special case: translate kWebSocketErrorNoStatusReceived into a Close
     // frame with no payload.
+    DCHECK(reason.empty());
     body = new IOBuffer(0);
   } else {
     const size_t payload_length = kWebSocketCloseCodeLength + reason.length();
