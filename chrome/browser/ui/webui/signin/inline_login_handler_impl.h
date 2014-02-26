@@ -47,6 +47,7 @@ class InlineLoginHandlerImpl : public GaiaAuthConsumer,
   std::string password_;
   std::string session_index_;
   bool choose_what_to_sync_;
+  bool complete_login_triggered_;
 
   DISALLOW_COPY_AND_ASSIGN(InlineLoginHandlerImpl);
 };

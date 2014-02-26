@@ -17,6 +17,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
+#include "chrome/browser/ui/sync/one_click_signin_histogram.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -33,7 +34,9 @@ namespace {
 } // empty namespace
 
 InlineLoginHandlerImpl::InlineLoginHandlerImpl()
-      : weak_factory_(this), choose_what_to_sync_(false) {
+      : weak_factory_(this),
+        choose_what_to_sync_(false),
+        complete_login_triggered_(false) {
 }
 
 InlineLoginHandlerImpl::~InlineLoginHandlerImpl() {}
@@ -89,8 +92,10 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
   net::GetValueForKeyInQuery(current_url, "readOnlyEmail", &read_only_email);
   if (!read_only_email.empty())
     params.SetString("readOnlyEmail", read_only_email);
-}
 
+  OneClickSigninHelper::LogHistogramValue(
+      source, one_click_signin::HISTOGRAM_SHOWN);
+}
 
 void InlineLoginHandlerImpl::HandleSwitchToFullTabMessage(
     const base::ListValue* args) {
@@ -111,10 +116,17 @@ void InlineLoginHandlerImpl::HandleSwitchToFullTabMessage(
 }
 
 void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {
-  if (!email_.empty() || !password_.empty() || !session_index_.empty()) {
-    LOG(ERROR) << "InlineLoginHandlerImpl::CompleteLogin called more than once";
+  if (complete_login_triggered_) {
+    // Gaia is supposed to trigger CompleteLogin by sending a completelogin
+    // message to Chrome, since Gaia does not always do this, Chrome injects
+    // some code into the Gaia page to handle that. This may result in duplicate
+    // completelogin messages when Gaia does send the message.
+    // TODO(guohui): coordinate with Gaia team to only send the completeLogin
+    // message on Chrome versions that do not inject similar code into Gaia.
+    VLOG(1) << "InlineLoginHandlerImpl::CompleteLogin called more than once";
     return;
-  };
+  }
+  complete_login_triggered_ = true;
 
   content::WebContents* contents = web_ui()->GetWebContents();
   const GURL& current_url = contents->GetURL();
@@ -161,6 +173,15 @@ void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {
   dict->GetBoolean("chooseWhatToSync", &choose_what_to_sync_);
 
   signin::Source source = signin::GetSourceForPromoURL(current_url);
+  OneClickSigninHelper::LogHistogramValue(
+      source, one_click_signin::HISTOGRAM_ACCEPTED);
+  bool switch_to_advanced =
+      choose_what_to_sync_ && (source != signin::SOURCE_SETTINGS);
+  OneClickSigninHelper::LogHistogramValue(
+      source,
+      switch_to_advanced ? one_click_signin::HISTOGRAM_WITH_ADVANCED :
+                           one_click_signin::HISTOGRAM_WITH_DEFAULTS);
+
   OneClickSigninHelper::CanOfferFor can_offer =
       source == signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT ?
       OneClickSigninHelper::CAN_OFFER_FOR_SECONDARY_ACCOUNT :
@@ -262,15 +283,18 @@ void InlineLoginHandlerImpl::HandleLoginError(const std::string& error_msg) {
   SyncStarterCallback(OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
 
   Browser* browser = GetDesktopBrowser();
-  if (browser)
+  if (browser) {
+    VLOG(1) << "InlineLoginHandlerImpl::HandleLoginError shows error message: "
+            << error_msg;
     OneClickSigninHelper::ShowSigninErrorBubble(browser, error_msg);
+  }
 
   email_.clear();
   password_.clear();
   session_index_.clear();
 }
 
- Browser* InlineLoginHandlerImpl::GetDesktopBrowser() {
+Browser* InlineLoginHandlerImpl::GetDesktopBrowser() {
   Browser* browser = chrome::FindBrowserWithWebContents(
       web_ui()->GetWebContents());
   if (!browser) {
@@ -283,16 +307,24 @@ void InlineLoginHandlerImpl::HandleLoginError(const std::string& error_msg) {
 void InlineLoginHandlerImpl::SyncStarterCallback(
     OneClickSigninSyncStarter::SyncSetupResult result) {
   content::WebContents* contents = web_ui()->GetWebContents();
-  const GURL& current_url = contents->GetURL();
+  const GURL& current_url = contents->GetVisibleURL();
+  if (current_url.GetOrigin().spec() != chrome::kChromeUIChromeSigninURL) {
+    // Do nothing if the current tab has navigated away from inline signin.
+    return;
+  }
+
+  signin::Source source = signin::GetSourceForPromoURL(current_url);
+  DCHECK(source != signin::SOURCE_UNKNOWN);
   bool auto_close = signin::IsAutoCloseEnabledInURL(current_url);
-  if (auto_close) {
+
+  if (result == OneClickSigninSyncStarter::SYNC_SETUP_FAILURE) {
+    OneClickSigninHelper::RedirectToNtpOrAppsPage(contents, source);
+  } else if (auto_close) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&InlineLoginHandlerImpl::CloseTab,
                    weak_factory_.GetWeakPtr()));
   } else {
-     signin::Source source = signin::GetSourceForPromoURL(current_url);
-     DCHECK(source != signin::SOURCE_UNKNOWN);
      OneClickSigninHelper::RedirectToNtpOrAppsPageIfNecessary(contents, source);
   }
 }

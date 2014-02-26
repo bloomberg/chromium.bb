@@ -288,74 +288,11 @@ void AddEmailToOneClickRejectedList(Profile* profile,
   updater->AppendIfNotPresent(new base::StringValue(email));
 }
 
-void LogHistogramValue(signin::Source source, int action) {
-  switch (source) {
-    case signin::SOURCE_START_PAGE:
-      UMA_HISTOGRAM_ENUMERATION("Signin.StartPageActions", action,
-                                one_click_signin::HISTOGRAM_MAX);
-      break;
-    case signin::SOURCE_NTP_LINK:
-      UMA_HISTOGRAM_ENUMERATION("Signin.NTPLinkActions", action,
-                                one_click_signin::HISTOGRAM_MAX);
-      break;
-    case signin::SOURCE_MENU:
-      UMA_HISTOGRAM_ENUMERATION("Signin.MenuActions", action,
-                                one_click_signin::HISTOGRAM_MAX);
-      break;
-    case signin::SOURCE_SETTINGS:
-      UMA_HISTOGRAM_ENUMERATION("Signin.SettingsActions", action,
-                                one_click_signin::HISTOGRAM_MAX);
-      break;
-    case signin::SOURCE_EXTENSION_INSTALL_BUBBLE:
-      UMA_HISTOGRAM_ENUMERATION("Signin.ExtensionInstallBubbleActions", action,
-                                one_click_signin::HISTOGRAM_MAX);
-      break;
-    case signin::SOURCE_WEBSTORE_INSTALL:
-      UMA_HISTOGRAM_ENUMERATION("Signin.WebstoreInstallActions", action,
-                                one_click_signin::HISTOGRAM_MAX);
-      break;
-    case signin::SOURCE_APP_LAUNCHER:
-      UMA_HISTOGRAM_ENUMERATION("Signin.AppLauncherActions", action,
-                                one_click_signin::HISTOGRAM_MAX);
-      break;
-    case signin::SOURCE_APPS_PAGE_LINK:
-      UMA_HISTOGRAM_ENUMERATION("Signin.AppsPageLinkActions", action,
-                                one_click_signin::HISTOGRAM_MAX);
-      break;
-    case signin::SOURCE_BOOKMARK_BUBBLE:
-      UMA_HISTOGRAM_ENUMERATION("Signin.BookmarkBubbleActions", action,
-                                one_click_signin::HISTOGRAM_MAX);
-      break;
-    default:
-      // This switch statement needs to be updated when the enum Source changes.
-      COMPILE_ASSERT(signin::SOURCE_UNKNOWN == 11,
-                     kSourceEnumHasChangedButNotThisSwitchStatement);
-      NOTREACHED();
-      return;
-  }
-  UMA_HISTOGRAM_ENUMERATION("Signin.AllAccessPointActions", action,
-                            one_click_signin::HISTOGRAM_MAX);
-}
-
 void LogOneClickHistogramValue(int action) {
   UMA_HISTOGRAM_ENUMERATION("Signin.OneClickActions", action,
                             one_click_signin::HISTOGRAM_MAX);
   UMA_HISTOGRAM_ENUMERATION("Signin.AllAccessPointActions", action,
                             one_click_signin::HISTOGRAM_MAX);
-}
-
-void RedirectToNtpOrAppsPage(content::WebContents* contents,
-                             signin::Source source) {
-  VLOG(1) << "RedirectToNtpOrAppsPage";
-  // Redirect to NTP/Apps page and display a confirmation bubble
-  GURL url(source == signin::SOURCE_APPS_PAGE_LINK ?
-           chrome::kChromeUIAppsURL : chrome::kChromeUINewTabURL);
-  content::OpenURLParams params(url,
-                                content::Referrer(),
-                                CURRENT_TAB,
-                                content::PAGE_TRANSITION_AUTO_TOPLEVEL,
-                                false);
-  contents->OpenURL(params);
 }
 
 void RedirectToNtpOrAppsPageWithIds(int child_id,
@@ -366,7 +303,7 @@ void RedirectToNtpOrAppsPageWithIds(int child_id,
   if (!web_contents)
     return;
 
-  RedirectToNtpOrAppsPage(web_contents, source);
+  OneClickSigninHelper::RedirectToNtpOrAppsPage(web_contents, source);
 }
 
 // Start syncing with the given user information.
@@ -658,6 +595,57 @@ OneClickSigninHelper::~OneClickSigninHelper() {
   // WebContentsDestroyed() should always be called before the object is
   // deleted.
   DCHECK(!web_contents());
+}
+
+// static
+void OneClickSigninHelper::LogHistogramValue(
+    signin::Source source, int action) {
+  switch (source) {
+    case signin::SOURCE_START_PAGE:
+      UMA_HISTOGRAM_ENUMERATION("Signin.StartPageActions", action,
+                                one_click_signin::HISTOGRAM_MAX);
+      break;
+    case signin::SOURCE_NTP_LINK:
+      UMA_HISTOGRAM_ENUMERATION("Signin.NTPLinkActions", action,
+                                one_click_signin::HISTOGRAM_MAX);
+      break;
+    case signin::SOURCE_MENU:
+      UMA_HISTOGRAM_ENUMERATION("Signin.MenuActions", action,
+                                one_click_signin::HISTOGRAM_MAX);
+      break;
+    case signin::SOURCE_SETTINGS:
+      UMA_HISTOGRAM_ENUMERATION("Signin.SettingsActions", action,
+                                one_click_signin::HISTOGRAM_MAX);
+      break;
+    case signin::SOURCE_EXTENSION_INSTALL_BUBBLE:
+      UMA_HISTOGRAM_ENUMERATION("Signin.ExtensionInstallBubbleActions", action,
+                                one_click_signin::HISTOGRAM_MAX);
+      break;
+    case signin::SOURCE_WEBSTORE_INSTALL:
+      UMA_HISTOGRAM_ENUMERATION("Signin.WebstoreInstallActions", action,
+                                one_click_signin::HISTOGRAM_MAX);
+      break;
+    case signin::SOURCE_APP_LAUNCHER:
+      UMA_HISTOGRAM_ENUMERATION("Signin.AppLauncherActions", action,
+                                one_click_signin::HISTOGRAM_MAX);
+      break;
+    case signin::SOURCE_APPS_PAGE_LINK:
+      UMA_HISTOGRAM_ENUMERATION("Signin.AppsPageLinkActions", action,
+                                one_click_signin::HISTOGRAM_MAX);
+      break;
+    case signin::SOURCE_BOOKMARK_BUBBLE:
+      UMA_HISTOGRAM_ENUMERATION("Signin.BookmarkBubbleActions", action,
+                                one_click_signin::HISTOGRAM_MAX);
+      break;
+    default:
+      // This switch statement needs to be updated when the enum Source changes.
+      COMPILE_ASSERT(signin::SOURCE_UNKNOWN == 11,
+                     kSourceEnumHasChangedButNotThisSwitchStatement);
+      NOTREACHED();
+      return;
+  }
+  UMA_HISTOGRAM_ENUMERATION("Signin.AllAccessPointActions", action,
+                            one_click_signin::HISTOGRAM_MAX);
 }
 
 // static
@@ -1087,6 +1075,21 @@ bool OneClickSigninHelper::HandleCrossAccountError(
   }
 
   return false;
+}
+
+// static
+void OneClickSigninHelper::RedirectToNtpOrAppsPage(
+    content::WebContents* contents, signin::Source source) {
+  VLOG(1) << "RedirectToNtpOrAppsPage";
+  // Redirect to NTP/Apps page and display a confirmation bubble
+  GURL url(source == signin::SOURCE_APPS_PAGE_LINK ?
+           chrome::kChromeUIAppsURL : chrome::kChromeUINewTabURL);
+  content::OpenURLParams params(url,
+                                content::Referrer(),
+                                CURRENT_TAB,
+                                content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                false);
+  contents->OpenURL(params);
 }
 
 // static

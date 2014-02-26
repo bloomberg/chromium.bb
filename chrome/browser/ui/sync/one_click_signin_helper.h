@@ -85,6 +85,8 @@ class OneClickSigninHelper
     // interstitial.
   };
 
+  static void LogHistogramValue(signin::Source source, int action);
+
   static void CreateForWebContentsWithPasswordManager(
       content::WebContents* contents,
       PasswordManager* password_manager);
@@ -137,6 +139,9 @@ class OneClickSigninHelper
       signin::Source source,
       OneClickSigninSyncStarter::StartSyncMode start_mode,
       OneClickSigninSyncStarter::Callback sync_callback);
+
+  static void RedirectToNtpOrAppsPage(
+      content::WebContents* contents, signin::Source source);
 
   // If the |source| is not settings page/webstore, redirects to
   // the NTP/Apps page.
