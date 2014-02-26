@@ -803,6 +803,11 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "thumbnailsDownloads"),
                       TestParameter(IN_GUEST_MODE, "thumbnailsDownloads")));
 
+INSTANTIATE_TEST_CASE_P(
+    CopyBetweenWindows,
+    FileManagerBrowserTest,
+    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "copyBetweenWindows")));
+
 // Structure to describe an account info.
 struct TestAccountInfo {
   const char* const email;

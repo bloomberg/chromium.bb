@@ -11,6 +11,7 @@
       // here.
       "background.js",
       "drive_specific.js",
+      "copy_between_windows.js",
       "execute_default_task.js",
       "file_display.js",
       "hide_search_box.js",
@@ -24,7 +25,6 @@
       "suggest_app_dialog.js",
       "tab_index.js",
       "thumbnails.js",
-      "transfer_between_windows.js",
       "transfer.js",
       "traverse.js"
     ]

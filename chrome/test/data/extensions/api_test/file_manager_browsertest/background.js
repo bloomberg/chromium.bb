@@ -462,8 +462,12 @@ window.addEventListener('load', function() {
     },
     // Run the test case.
     function(testCaseName) {
-      if (!testcase[testCaseName])
+      if (!testcase[testCaseName]) {
+        chrome.test.runTests([function() {
+          chrome.test.fail(testCaseName + ' is not found.');
+        }]);
         return;
+      }
       chrome.test.runTests([testcase[testCaseName]]);
     }
   ];
