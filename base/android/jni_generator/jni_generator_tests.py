@@ -271,7 +271,7 @@ class TestGenerator(unittest.TestCase):
     ]
     self.assertListEquals(golden_natives, natives)
     h = jni_generator.InlHeaderFileGenerator('', 'org/chromium/TestJni',
-                                             natives, [], TestOptions())
+                                             natives, [], [], TestOptions())
     self.assertGoldenTextEquals(h.GetContent())
 
   def testInnerClassNatives(self):
@@ -290,7 +290,7 @@ class TestGenerator(unittest.TestCase):
     ]
     self.assertListEquals(golden_natives, natives)
     h = jni_generator.InlHeaderFileGenerator('', 'org/chromium/TestJni',
-                                             natives, [], TestOptions())
+                                             natives, [], [], TestOptions())
     self.assertGoldenTextEquals(h.GetContent())
 
   def testInnerClassNativesMultiple(self):
@@ -317,7 +317,7 @@ class TestGenerator(unittest.TestCase):
     ]
     self.assertListEquals(golden_natives, natives)
     h = jni_generator.InlHeaderFileGenerator('', 'org/chromium/TestJni',
-                                             natives, [], TestOptions())
+                                             natives, [], [], TestOptions())
     self.assertGoldenTextEquals(h.GetContent())
 
   def testInnerClassNativesBothInnerAndOuter(self):
@@ -343,7 +343,7 @@ class TestGenerator(unittest.TestCase):
     ]
     self.assertListEquals(golden_natives, natives)
     h = jni_generator.InlHeaderFileGenerator('', 'org/chromium/TestJni',
-                                             natives, [], TestOptions())
+                                             natives, [], [], TestOptions())
     self.assertGoldenTextEquals(h.GetContent())
 
   def testCalledByNatives(self):
@@ -652,7 +652,7 @@ class TestGenerator(unittest.TestCase):
     ]
     self.assertListEquals(golden_called_by_natives, called_by_natives)
     h = jni_generator.InlHeaderFileGenerator('', 'org/chromium/TestJni',
-                                             [], called_by_natives,
+                                             [], called_by_natives, [],
                                              TestOptions())
     self.assertGoldenTextEquals(h.GetContent())
 
@@ -746,34 +746,19 @@ public boolean add(E);
                           jni_from_javap7.GetContent())
 
   def testFromJavaP(self):
-    contents = """
-public abstract class java.io.InputStream extends
-  java.lang.Object implements java.io.Closeable{
-public java.io.InputStream();
-  Signature: ()V
-public int available()   throws java.io.IOException;
-  Signature: ()I
-public void close()   throws java.io.IOException;
-  Signature: ()V
-public void mark(int);
-  Signature: (I)V
-public boolean markSupported();
-  Signature: ()Z
-public abstract int read()   throws java.io.IOException;
-  Signature: ()I
-public int read(byte[])   throws java.io.IOException;
-  Signature: ([B)I
-public int read(byte[], int, int)   throws java.io.IOException;
-  Signature: ([BII)I
-public synchronized void reset()   throws java.io.IOException;
-  Signature: ()V
-public long skip(long)   throws java.io.IOException;
-  Signature: (J)J
-}
-"""
+    contents = self._ReadGoldenFile(os.path.join(os.path.dirname(sys.argv[0]),
+        'testInputStream.javap'))
     jni_from_javap = jni_generator.JNIFromJavaP(contents.split('\n'),
                                                 TestOptions())
     self.assertEquals(10, len(jni_from_javap.called_by_natives))
+    self.assertGoldenTextEquals(jni_from_javap.GetContent())
+
+  def testConstantsFromJavaP(self):
+    contents = self._ReadGoldenFile(os.path.join(os.path.dirname(sys.argv[0]),
+        'testMotionEvent.javap'))
+    jni_from_javap = jni_generator.JNIFromJavaP(contents.split('\n'),
+                                                TestOptions())
+    self.assertEquals(86, len(jni_from_javap.called_by_natives))
     self.assertGoldenTextEquals(jni_from_javap.GetContent())
 
   def testREForNatives(self):
@@ -943,7 +928,7 @@ class Foo {
     ]
     self.assertListEquals(golden_natives, natives)
     h = jni_generator.InlHeaderFileGenerator('', 'org/chromium/TestJni',
-                                             natives, [], test_options)
+                                             natives, [], [], test_options)
     self.assertGoldenTextEquals(h.GetContent())
 
   def testPureNativeMethodsOption(self):

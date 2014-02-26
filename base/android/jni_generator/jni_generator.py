@@ -83,6 +83,12 @@ class CalledByNative(object):
     self.static_cast = GetStaticCastForReturnType(self.return_type)
 
 
+class ConstantField(object):
+  def __init__(self, **kwargs):
+    self.name = kwargs['name']
+    self.value = kwargs['value']
+
+
 def JavaDataTypeToC(java_type):
   """Returns a C datatype for the given java type."""
   java_pod_type_map = {
@@ -523,9 +529,24 @@ class JNIFromJavaP(object):
           signature=JniParams.ParseJavaPSignature(contents[lineno + 1]),
           is_constructor=True)]
     self.called_by_natives = MangleCalledByNatives(self.called_by_natives)
+
+    self.constant_fields = []
+    re_constant_field = re.compile('public static final int (?P<name>.*?);')
+    re_constant_field_value = re.compile(
+        '.*?Constant value: int (?P<value>(-*[0-9]+)?)')
+    for lineno, content in enumerate(contents[2:], 2):
+      match = re.match(re_constant_field, content)
+      if not match:
+        continue
+      value = re.match(re_constant_field_value, contents[lineno + 2])
+      if value:
+        self.constant_fields.append(
+            ConstantField(name=match.group('name'),
+                          value=value.group('value')))
+
     self.inl_header_file_generator = InlHeaderFileGenerator(
         self.namespace, self.fully_qualified_class, [],
-        self.called_by_natives, options)
+        self.called_by_natives, self.constant_fields, options)
 
   def GetContent(self):
     return self.inl_header_file_generator.GetContent()
@@ -533,7 +554,8 @@ class JNIFromJavaP(object):
   @staticmethod
   def CreateFromClass(class_file, options):
     class_name = os.path.splitext(os.path.basename(class_file))[0]
-    p = subprocess.Popen(args=[options.javap, '-s', class_name],
+    p = subprocess.Popen(args=[options.javap, '-c', '-verbose',
+                               '-s', class_name],
                          cwd=os.path.dirname(class_file),
                          stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)
@@ -557,7 +579,7 @@ class JNIFromJavaSource(object):
                         fully_qualified_class)
     inl_header_file_generator = InlHeaderFileGenerator(
         jni_namespace, fully_qualified_class, natives, called_by_natives,
-        options)
+        [], options)
     self.content = inl_header_file_generator.GetContent()
 
   def _RemoveComments(self, contents, options):
@@ -593,13 +615,14 @@ class InlHeaderFileGenerator(object):
   """Generates an inline header file for JNI integration."""
 
   def __init__(self, namespace, fully_qualified_class, natives,
-               called_by_natives, options):
+               called_by_natives, constant_fields, options):
     self.namespace = namespace
     self.fully_qualified_class = fully_qualified_class
     self.class_name = self.fully_qualified_class.split('/')[-1]
     self.natives = natives
     self.called_by_natives = called_by_natives
     self.header_guard = fully_qualified_class.replace('/', '_') + '_JNI'
+    self.constant_fields = constant_fields
     self.options = options
     self.init_native = self.ExtractInitNative(options)
 
@@ -639,6 +662,8 @@ $METHOD_ID_DEFINITIONS
 $OPEN_NAMESPACE
 $FORWARD_DECLARATIONS
 
+$CONSTANT_FIELDS
+
 // Step 2: method stubs.
 $METHOD_STUBS
 
@@ -655,6 +680,7 @@ $JNI_REGISTER_NATIVES
         'CLASS_PATH_DEFINITIONS': self.GetClassPathDefinitionsString(),
         'METHOD_ID_DEFINITIONS': self.GetMethodIDDefinitionsString(),
         'FORWARD_DECLARATIONS': self.GetForwardDeclarationsString(),
+        'CONSTANT_FIELDS': self.GetConstantFieldsString(),
         'METHOD_STUBS': self.GetMethodStubsString(),
         'OPEN_NAMESPACE': self.GetOpenNamespaceString(),
         'JNI_NATIVE_METHODS': self.GetJNINativeMethodsString(),
@@ -691,6 +717,15 @@ jmethodID g_${JAVA_CLASS}_${METHOD_ID_VAR_NAME} = NULL;""")
     for native in self.natives:
       if native.type != 'method':
         ret += [self.GetForwardDeclaration(native)]
+    return '\n'.join(ret)
+
+  def GetConstantFieldsString(self):
+    if not self.constant_fields:
+      return ''
+    ret = ['enum Java_%s_constant_fields {' % self.class_name]
+    for c in self.constant_fields:
+      ret += ['  %s = %s,' % (c.name, c.value)]
+    ret += ['};']
     return '\n'.join(ret)
 
   def GetMethodStubsString(self):
