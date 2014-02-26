@@ -124,7 +124,8 @@ void GetDefaultScanRoots(const DefaultScanRootsCallback& callback,
   for (size_t i = 0; i < storages.size(); ++i) {
     StorageInfo::Type type;
     if (!StorageInfo::CrackDeviceId(storages[i].device_id(), &type, NULL) ||
-        type != StorageInfo::FIXED_MASS_STORAGE) {
+        (type != StorageInfo::FIXED_MASS_STORAGE &&
+         type != StorageInfo::REMOVABLE_MASS_STORAGE_NO_DCIM)) {
       continue;
     }
     base::FilePath path(storages[i].location());
