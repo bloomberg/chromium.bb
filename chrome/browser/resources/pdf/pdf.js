@@ -181,7 +181,7 @@ function load() {
         // Go to the previous page if there are no horizontal scrollbars.
         if (!viewport.documentHasScrollbars().x) {
           viewport.goToPage(viewport.getMostVisiblePage() - 1);
-          // Since we do the movement of the page
+          // Since we do the movement of the page.
           e.preventDefault();
         }
         return;
@@ -189,6 +189,7 @@ function load() {
         // Go to the previous page if we are fit-to-page.
         if (isFitToPageEnabled()) {
           viewport.goToPage(viewport.getMostVisiblePage() - 1);
+          // Since we do the movement of the page.
           e.preventDefault();
         }
         return;
@@ -196,6 +197,7 @@ function load() {
         // Go to the next page if there are no horizontal scrollbars.
         if (!viewport.documentHasScrollbars().x) {
           viewport.goToPage(viewport.getMostVisiblePage() + 1);
+          // Since we do the movement of the page.
           e.preventDefault();
         }
         return;
@@ -203,29 +205,39 @@ function load() {
         // Go to the next page if we are fit-to-page.
         if (isFitToPageEnabled()) {
           viewport.goToPage(viewport.getMostVisiblePage() + 1);
+          // Since we do the movement of the page.
           e.preventDefault();
         }
         return;
       case 187:  // +/= key.
       case 107:  // Numpad + key.
-        if (e.ctrlKey)
+        if (e.ctrlKey || e.metaKey) {
           viewport.zoomIn();
+          // Since we do the zooming of the page.
+          e.preventDefault();
+        }
         return;
       case 189:  // -/_ key.
       case 109:  // Numpad - key.
-        if (e.ctrlKey)
+        if (e.ctrlKey || e.metaKey) {
           viewport.zoomOut();
+          // Since we do the zooming of the page.
+          e.preventDefault();
+        }
         return;
       case 83:  // s key.
-        if (e.ctrlKey) {
+        if (e.ctrlKey || e.metaKey) {
           // Simulate a click on the button so that the <a download ...>
           // attribute is used.
           $('save-button-link').click();
+          // Since we do the saving of the page.
+          e.preventDefault();
         }
         return;
       case 80:  // p key.
-        if (e.ctrlKey) {
+        if (e.ctrlKey || e.metaKey) {
           print();
+          // Since we do the printing of the page.
           e.preventDefault();
         }
         return;
