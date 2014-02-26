@@ -2082,14 +2082,12 @@ cr.define('login', function() {
         var screen = this.parentNode;
         var self = this;
         focusedPod.addEventListener('webkitTransitionEnd', function f(e) {
-          if (e.target == focusedPod) {
-            focusedPod.removeEventListener('webkitTransitionEnd', f);
-            focusedPod.reset(true);
-            // Notify screen that it is ready.
-            screen.onShow();
-            if (!focusedPod.user.isApp)
-              chrome.send('loadWallpaper', [focusedPod.user.username]);
-          }
+          focusedPod.removeEventListener('webkitTransitionEnd', f);
+          focusedPod.reset(true);
+          // Notify screen that it is ready.
+          screen.onShow();
+          if (!focusedPod.user.isApp)
+            chrome.send('loadWallpaper', [focusedPod.user.username]);
         });
         // Guard timer for 1 second -- it would conver all possible animations.
         ensureTransitionEndEvent(focusedPod, 1000);
