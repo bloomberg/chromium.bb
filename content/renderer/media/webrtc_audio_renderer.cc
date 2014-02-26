@@ -334,9 +334,6 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
   // User must call Play() before any audio can be heard.
   state_ = PAUSED;
 
-  UMA_HISTOGRAM_ENUMERATION("WebRTC.AudioOutputChannelLayout",
-                            source_params.channel_layout(),
-                            media::CHANNEL_LAYOUT_MAX);
   UMA_HISTOGRAM_ENUMERATION("WebRTC.AudioOutputFramesPerBuffer",
                             source_params.frames_per_buffer(),
                             kUnexpectedAudioBufferSize);

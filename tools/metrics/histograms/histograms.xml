@@ -23109,6 +23109,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="WebRTC.AudioOutputChannelLayout" enum="ChannelLayout">
+  <obsolete>
+    Removed from code on 2014/2/25.
+  </obsolete>
   <summary>Audio output channel layout in WebRTC.</summary>
 </histogram>
 
