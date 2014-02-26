@@ -56,8 +56,6 @@
       # include the header generated above.
       'hard_dependency': 1,
       'sources': [
-        'fling_animator_impl_android.cc',
-        'fling_animator_impl_android.h',
         'ftp_directory_listing_response_delegate.cc',
         'ftp_directory_listing_response_delegate.h',
         'multipart_response_delegate.cc',

@@ -15,7 +15,7 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 #if defined(OS_ANDROID)
-#include "webkit/child/fling_animator_impl_android.h"
+#include "content/child/fling_animator_impl_android.h"
 #endif
 
 using blink::WebFallbackThemeEngine;
@@ -70,8 +70,9 @@ WebKitPlatformSupportChildImpl::createFlingAnimationCurve(
     const blink::WebFloatPoint& velocity,
     const blink::WebSize& cumulative_scroll) {
 #if defined(OS_ANDROID)
-  return webkit_glue::FlingAnimatorImpl::CreateAndroidGestureCurve(
-      velocity, cumulative_scroll);
+  return content::FlingAnimatorImpl::CreateAndroidGestureCurve(
+      velocity,
+      cumulative_scroll);
 #endif
 
   if (device_source == blink::WebGestureEvent::Touchscreen)

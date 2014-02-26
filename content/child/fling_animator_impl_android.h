@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_CHILD_FLING_ANIMATOR_IMPL_ANDROID_H_
-#define WEBKIT_CHILD_FLING_ANIMATOR_IMPL_ANDROID_H_
+#ifndef CONTENT_CHILDFLING_ANIMATOR_IMPL_ANDROID_H_
+#define CONTENT_CHILDFLING_ANIMATOR_IMPL_ANDROID_H_
 
 
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
@@ -11,15 +11,14 @@
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "ui/gfx/android/scroller.h"
 #include "ui/gfx/point_f.h"
-#include "webkit/child/webkit_child_export.h"
 
 namespace blink {
 class WebGestureCurveTarget;
 }
 
-namespace webkit_glue {
+namespace content {
 
-class WEBKIT_CHILD_EXPORT FlingAnimatorImpl : public blink::WebGestureCurve {
+class FlingAnimatorImpl : public blink::WebGestureCurve {
  public:
   FlingAnimatorImpl();
   virtual ~FlingAnimatorImpl();
@@ -45,4 +44,4 @@ class WEBKIT_CHILD_EXPORT FlingAnimatorImpl : public blink::WebGestureCurve {
 
 }  // namespace webkit_glue
 
-#endif  // WEBKIT_CHILD_FLING_ANIMATOR_IMPL_ANDROID_H_
+#endif  // CONTENT_CHILDFLING_ANIMATOR_IMPL_ANDROID_H_

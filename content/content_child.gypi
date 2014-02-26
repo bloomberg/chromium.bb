@@ -53,6 +53,8 @@
     'child/fileapi/webfilewriter_base.h',
     'child/fileapi/webfilewriter_impl.cc',
     'child/fileapi/webfilewriter_impl.h',
+    'child/fling_animator_impl_android.cc',
+    'child/fling_animator_impl_android.h',
     'child/fling_curve_configuration.cc',
     'child/fling_curve_configuration.h',
     'child/image_decoder.cc',

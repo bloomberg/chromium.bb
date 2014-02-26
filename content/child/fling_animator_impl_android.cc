@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/child/fling_animator_impl_android.h"
+#include "content/child/fling_animator_impl_android.h"
 
 #include "base/logging.h"
 #include "third_party/WebKit/public/platform/WebFloatSize.h"
@@ -11,7 +11,7 @@
 #include "ui/gfx/frame_time.h"
 #include "ui/gfx/vector2d.h"
 
-namespace webkit_glue {
+namespace content {
 
 namespace {
 
@@ -93,4 +93,4 @@ FlingAnimatorImpl* FlingAnimatorImpl::CreateAndroidGestureCurve(
   return gesture_curve;
 }
 
-}  // namespace webkit_glue
+}  // namespace content
