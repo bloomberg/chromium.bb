@@ -42,6 +42,10 @@ please rebaseline them in a separate CL, after checking that tests fail in ToT.
 In CL, please set:
 NOTRY=true
 TBR=(someone in Source/bindings/OWNERS or WATCHLISTS:bindings)
+
+We are currently switching to *Python*!
+Please make sure to update the Python compiler (as well as Perl).
+https://codereview.chromium.org/166333002
 """
 
 DEPENDENCY_IDL_FILES = set([
@@ -94,9 +98,8 @@ class ScopedTempFileProvider(object):
 
 
 class BindingsTests(object):
-    def __init__(self, reset_results, test_python, verbose, provider):
+    def __init__(self, reset_results, verbose, provider):
         self.reset_results = reset_results
-        self.test_python = test_python
         self.verbose = verbose
         self.executive = executive.Executive()
         self.provider = provider
@@ -286,8 +289,6 @@ class BindingsTests(object):
                 return False
             if self.reset_results and self.verbose:
                 print 'Reset results: %s' % input_filename
-            if not self.test_python:
-                continue
             if input_filename == SKIP_PYTHON:
                 if self.verbose:
                     print 'SKIP: %s' % input_filename
@@ -300,11 +301,10 @@ class BindingsTests(object):
                                      self.event_names_filename)
         passed &= self.identical_output_files(self.output_directory)
         passed &= self.no_excess_files(self.output_directory)
-        if self.test_python:
-            if self.verbose:
-                print
-                print 'Python:'
-            passed &= self.identical_output_files(self.output_directory_py)
+        if self.verbose:
+            print
+            print 'Python:'
+        passed &= self.identical_output_files(self.output_directory_py)
         passed &= self.no_excess_files(self.output_directory_py)
         return passed
 
@@ -323,6 +323,6 @@ class BindingsTests(object):
         return -1
 
 
-def run_bindings_tests(reset_results, test_python, verbose):
+def run_bindings_tests(reset_results, verbose):
     with ScopedTempFileProvider() as provider:
-        return BindingsTests(reset_results, test_python, verbose, provider).main()
+        return BindingsTests(reset_results, verbose, provider).main()
