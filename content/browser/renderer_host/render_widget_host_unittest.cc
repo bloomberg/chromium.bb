@@ -4,6 +4,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/timer/timer.h"
@@ -21,6 +22,7 @@
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_widget_host_view_port.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/test_render_view_host.h"
@@ -575,6 +577,9 @@ class RenderWidgetHostTest : public testing::Test {
  protected:
   // testing::Test
   virtual void SetUp() {
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    command_line->AppendSwitch(switches::kValidateInputEventStream);
+
     browser_context_.reset(new TestBrowserContext());
     delegate_.reset(new MockRenderWidgetHostDelegate());
     process_ = new RenderWidgetHostProcess(browser_context_.get());
@@ -1149,7 +1154,7 @@ TEST_F(RenderWidgetHostTest, UnhandledWheelEvent) {
 }
 
 TEST_F(RenderWidgetHostTest, UnhandledGestureEvent) {
-  SimulateGestureEvent(WebInputEvent::GestureScrollUpdate,
+  SimulateGestureEvent(WebInputEvent::GestureTwoFingerTap,
                        WebGestureEvent::Touchscreen);
 
   // Make sure we sent the input event to the renderer.
@@ -1158,9 +1163,9 @@ TEST_F(RenderWidgetHostTest, UnhandledGestureEvent) {
   process_->sink().ClearMessages();
 
   // Send the simulated response from the renderer back.
-  SendInputEventACK(WebInputEvent::GestureScrollUpdate,
+  SendInputEventACK(WebInputEvent::GestureTwoFingerTap,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(WebInputEvent::GestureScrollUpdate, view_->gesture_event_type());
+  EXPECT_EQ(WebInputEvent::GestureTwoFingerTap, view_->gesture_event_type());
   EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, view_->ack_result());
 }
 
@@ -2536,11 +2541,11 @@ TEST_F(RenderWidgetHostTest, InputEventRWHLatencyComponent) {
   SendInputEventACK(WebInputEvent::MouseMove, INPUT_EVENT_ACK_STATE_CONSUMED);
 
   // Tests RWHI::ForwardGestureEvent().
-  SimulateGestureEvent(WebInputEvent::GestureScrollUpdate,
+  SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
                        WebGestureEvent::Touchscreen);
   CheckLatencyInfoComponentInMessage(
-      process_, GetLatencyComponentId(), WebInputEvent::GestureScrollUpdate);
-  SendInputEventACK(WebInputEvent::GestureScrollUpdate,
+      process_, GetLatencyComponentId(), WebInputEvent::GestureScrollBegin);
+  SendInputEventACK(WebInputEvent::GestureScrollBegin,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
 
   // Tests RWHI::ForwardGestureEventWithLatencyInfo().

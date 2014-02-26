@@ -15,6 +15,7 @@
 #include "content/browser/renderer_host/input/touch_action_filter.h"
 #include "content/browser/renderer_host/input/touch_event_queue.h"
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
+#include "content/common/input/input_event_stream_validator.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 
 namespace IPC {
@@ -241,6 +242,7 @@ private:
   scoped_ptr<TouchEventQueue> touch_event_queue_;
   scoped_ptr<GestureEventQueue> gesture_event_queue_;
   TouchActionFilter touch_action_filter_;
+  InputEventStreamValidator event_stream_validator_;
 
   DISALLOW_COPY_AND_ASSIGN(InputRouterImpl);
 };

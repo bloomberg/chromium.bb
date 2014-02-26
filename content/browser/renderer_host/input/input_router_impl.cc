@@ -240,6 +240,7 @@ void InputRouterImpl::SendKeyboardEvent(const NativeWebKeyboardEvent& key_event,
 
 void InputRouterImpl::SendGestureEvent(
     const GestureEventWithLatencyInfo& original_gesture_event) {
+  event_stream_validator_.OnEvent(original_gesture_event.event);
   GestureEventWithLatencyInfo gesture_event(original_gesture_event);
   if (touch_action_filter_.FilterGestureEvent(&gesture_event.event))
     return;

@@ -949,6 +949,9 @@ const char kUtilityProcessEnableMDns[]      = "utility-enable-mdns";
 
 const char kUtilityProcessRunningElevated[] = "utility-run-elevated";
 
+// In debug builds, asserts that the stream of input events is valid.
+const char kValidateInputEventStream[] = "validate-input-event-stream";
+
 // Will add kWaitForDebugger to every child processes. If a value is passed, it
 // will be used as a filter to determine if the child process should have the
 // kWaitForDebugger flag passed on or not.

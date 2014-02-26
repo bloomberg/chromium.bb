@@ -2152,8 +2152,8 @@ TEST_F(GestureRecognizerTest, GestureEventPinchFromTap) {
                        kTouchId1, tes.Now());
   DispatchEventUsingWindowDispatcher(&move3);
   EXPECT_2_EVENTS(delegate->events(),
-                  ui::ET_GESTURE_PINCH_BEGIN,
-                  ui::ET_GESTURE_SCROLL_BEGIN);
+                  ui::ET_GESTURE_SCROLL_BEGIN,
+                  ui::ET_GESTURE_PINCH_BEGIN);
   EXPECT_EQ(gfx::Rect(10, 10, 55, 191).ToString(),
             delegate->bounding_box().ToString());
 

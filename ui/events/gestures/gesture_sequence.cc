@@ -1322,15 +1322,15 @@ bool GestureSequence::PinchStart(const TouchEvent& event,
   const GesturePoint* point1 = GetPointByPointId(0);
   const GesturePoint* point2 = GetPointByPointId(1);
 
-  pinch_distance_current_ = BoundingBoxDiagonal(bounding_box_);
-  pinch_distance_start_ = pinch_distance_current_;
-  latest_multi_scroll_update_location_ = bounding_box_.CenterPoint();
-  AppendPinchGestureBegin(*point1, *point2, gestures);
-
   if (state_ == GS_PENDING_TWO_FINGER_TAP ||
       state_ == GS_PENDING_PINCH) {
     AppendScrollGestureBegin(point, bounding_box_.CenterPoint(), gestures);
   }
+
+  pinch_distance_current_ = BoundingBoxDiagonal(bounding_box_);
+  pinch_distance_start_ = pinch_distance_current_;
+  latest_multi_scroll_update_location_ = bounding_box_.CenterPoint();
+  AppendPinchGestureBegin(*point1, *point2, gestures);
 
   return true;
 }
