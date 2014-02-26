@@ -233,15 +233,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
     panel_attached_ = panel_attached;
   }
 
-  // Indicates that an in progress drag should be continued after the
-  // window is reparented to another container.
-  bool continue_drag_after_reparent() const {
-    return continue_drag_after_reparent_;
-  }
-  void set_continue_drag_after_reparent(bool value) {
-    continue_drag_after_reparent_ = value;
-  }
-
   // True if the window is ignored by the shelf layout manager for
   // purposes of darkening the shelf.
   bool ignored_by_shelf() const { return ignored_by_shelf_; }
@@ -331,7 +322,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool window_position_managed_;
   bool bounds_changed_by_user_;
   bool panel_attached_;
-  bool continue_drag_after_reparent_;
   bool ignored_by_shelf_;
   bool can_consume_system_keys_;
   bool top_row_keys_are_function_keys_;

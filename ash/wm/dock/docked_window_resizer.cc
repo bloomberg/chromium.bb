@@ -197,9 +197,6 @@ void DockedWindowResizer::StartedDragging() {
   // panels and windows that are already docked. Those do not need reparenting.
   if (GetTarget()->type() != ui::wm::WINDOW_TYPE_PANEL &&
       GetTarget()->parent()->id() == kShellWindowId_DefaultContainer) {
-    // The window is going to be reparented - avoid completing the drag.
-    window_state_->set_continue_drag_after_reparent(true);
-
     // Reparent the window into the docked windows container in order to get it
     // on top of other docked windows.
     aura::Window* docked_container = Shell::GetContainer(

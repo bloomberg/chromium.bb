@@ -98,8 +98,6 @@ class ToplevelWindowEventHandler::ScopedWindowResizer
   WindowResizer* resizer() { return resizer_.get(); }
 
   // WindowObserver overrides:
-  virtual void OnWindowHierarchyChanging(
-      const HierarchyChangeParams& params) OVERRIDE;
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
   // WindowStateObserver overrides:
@@ -130,17 +128,6 @@ ToplevelWindowEventHandler::ScopedWindowResizer::~ScopedWindowResizer() {
 bool ToplevelWindowEventHandler::ScopedWindowResizer::IsMove() const {
   return resizer_->details().bounds_change ==
       WindowResizer::kBoundsChange_Repositions;
-}
-
-void ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowHierarchyChanging(
-    const HierarchyChangeParams& params) {
-  if (params.receiver != resizer_->GetTarget())
-    return;
-  wm::WindowState* state = wm::GetWindowState(params.receiver);
-  if (state->continue_drag_after_reparent())
-    state->set_continue_drag_after_reparent(false);
-  else
-    handler_->CompleteDrag(DRAG_COMPLETE);
 }
 
 void
