@@ -372,6 +372,10 @@ bool AccessibilityManager::ShouldEnableCursorCompositing() {
   if (!profile_)
     return false;
   PrefService* pref_service = profile_->GetPrefs();
+  // TODO(hshi): support cursor compositing when virtual keyboard is enabled.
+  // See http://www.crbug.com/347009
+  if (pref_service->GetBoolean(prefs::kVirtualKeyboardEnabled))
+    return false;
   // Enable cursor compositing when one or more of the listed accessibility
   // features are turned on.
   if (pref_service->GetBoolean(prefs::kLargeCursorEnabled) ||
@@ -736,6 +740,11 @@ void AccessibilityManager::UpdateVirtualKeyboardFromPref() {
     ash::Shell::GetInstance()->CreateKeyboard();
   else if (!keyboard::IsKeyboardEnabled())
     ash::Shell::GetInstance()->DeactivateKeyboard();
+#endif
+
+#if defined(OS_CHROMEOS)
+  ash::Shell::GetInstance()->SetCursorCompositingEnabled(
+      ShouldEnableCursorCompositing());
 #endif
 }
 
