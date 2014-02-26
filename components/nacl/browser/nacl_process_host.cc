@@ -96,6 +96,22 @@ void FindAddressSpace(base::ProcessHandle process,
   }
 }
 
+#ifdef _DLL
+
+bool IsInPath(const std::string& path_env_var, const std::string& dir) {
+  std::vector<std::string> split;
+  base::SplitString(path_env_var, ';', &split);
+  for (std::vector<std::string>::const_iterator i(split.begin());
+       i != split.end();
+       ++i) {
+    if (*i == dir)
+      return true;
+  }
+  return false;
+}
+
+#endif  // _DLL
+
 }  // namespace
 
 namespace nacl {
@@ -512,6 +528,33 @@ bool NaClProcessHost::LaunchSelLdr() {
       SendErrorToRenderer("could not get path to nacl64.exe");
       return false;
     }
+
+#ifdef _DLL
+    // When using the DLL CRT on Windows, we need to amend the PATH to include
+    // the location of the x64 CRT DLLs. This is only the case when using a
+    // component=shared_library build (i.e. generally dev debug builds). The
+    // x86 CRT DLLs are in e.g. out\Debug for chrome.exe etc., so the x64 ones
+    // are put in out\Debug\x64 which we add to the PATH here so that loader
+    // can find them. See http://crbug.com/346034.
+    scoped_ptr<base::Environment> env(base::Environment::Create());
+    static const char kPath[] = "PATH";
+    std::string old_path;
+    base::FilePath module_path;
+    if (!PathService::Get(base::FILE_MODULE, &module_path)) {
+      SendErrorToRenderer("could not get path to current module");
+      return false;
+    }
+    std::string x64_crt_path =
+        base::WideToUTF8(module_path.DirName().Append(L"x64").value());
+    if (!env->GetVar(kPath, &old_path)) {
+      env->SetVar(kPath, x64_crt_path);
+    } else if (!IsInPath(old_path, x64_crt_path)) {
+      std::string new_path(old_path);
+      new_path.append(";");
+      new_path.append(x64_crt_path);
+      env->SetVar(kPath, new_path);
+    }
+#endif  // _DLL
   }
 #endif
 
