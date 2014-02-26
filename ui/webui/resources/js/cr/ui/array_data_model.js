@@ -213,6 +213,24 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * Updates the existing item with the new item.
+     *
+     * The existing item and the new item are regarded as the same item and the
+     * permutation tracks these indexes.
+     *
+     * @param {*} oldItem Old item that is contained in the model. If the item
+     *     is not found in the model, the method call is just ignored.
+     * @param {*} newItem New item.
+     */
+    replaceItem: function(oldItem, newItem) {
+      var index = this.indexOf(oldItem);
+      if (index < 0)
+        return;
+      this.array_[this.indexes_[index]] = newItem;
+      this.updateIndex(index);
+    },
+
+    /**
      * Use this to update a given item in the array. This does not remove and
      * reinsert a new item.
      * This dispatches a change event.

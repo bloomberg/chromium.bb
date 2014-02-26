@@ -401,32 +401,6 @@ FileFilter.prototype.filter = function(entry) {
 };
 
 /**
- * Array data model that can replace its item.
- * @param {Array} array Array to be used internal.
- */
-function ReplacableArrayDataModel(array) {
-  cr.ui.ArrayDataModel.call(this, array);
-}
-
-ReplacableArrayDataModel.prototype = {
-  __proto__: cr.ui.ArrayDataModel.prototype
-};
-
-/**
- * Replace the contents of item and publish a 'change' event.
- * If the old item is not found in the list, the new item is just ignored.
- * @param {*} oldItem Old item.
- * @param {*} newItem New item.
- */
-ReplacableArrayDataModel.prototype.replaceItem = function(oldItem, newItem) {
-  var index = this.indexOf(oldItem);
-  if (index >= 0) {
-    this.array_[this.indexes_[index]] = newItem;
-    this.updateIndex(index);
-  }
-};
-
-/**
  * A context of DirectoryContents.
  * TODO(yoshiki): remove this. crbug.com/224869.
  *
@@ -438,7 +412,7 @@ function FileListContext(fileFilter, metadataCache) {
   /**
    * @type {cr.ui.ArrayDataModel}
    */
-  this.fileList = new ReplacableArrayDataModel([]);
+  this.fileList = new cr.ui.ArrayDataModel([]);
 
   /**
    * @type {MetadataCache}
