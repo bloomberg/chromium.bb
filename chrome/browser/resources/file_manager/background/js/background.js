@@ -853,7 +853,10 @@ Background.prototype.onRestarted_ = function() {
   // Reopen audio player.
   audioPlayerInitializationQueue.run(function(callback) {
     audioPlayer.reopen(function() {
-      audioPlayer.setIcon(AUDIO_PLAYER_ICON);
+      // If the audioPlayer is reopened, change its window's icon. Otherwise
+      // there is no reopened window so just skip the call of setIcon.
+      if (audioPlayer.rawAppWindow)
+        audioPlayer.setIcon(AUDIO_PLAYER_ICON);
     });
     callback();
   });
