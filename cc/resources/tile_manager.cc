@@ -448,16 +448,16 @@ void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
       continue;
     }
 
-    // Note that if the tile is visible_and_ready_to_draw, then we always want
-    // the priority to be NOW_AND_READY_TO_DRAW_BIN, even if HIGH_PRIORITY_BIN
-    // is something different. The reason for this is that if we're prioritizing
-    // the pending tree, we still want visible tiles to take the highest
-    // priority.
-    ManagedTileBin priority_bin =
-        mts.visible_and_ready_to_draw ? NOW_AND_READY_TO_DRAW_BIN : mts.bin;
+    // In almost all concievable cases (all in practice right now), we can't get
+    // memory back from visible-active-tree tiles. Further, active-tree tiles
+    // can still be used for animations. Further, ready-to-draw tiles won't
+    // delay activation since they are already rastered. So we should keep
+    // these tiles around in all cases.
+    if (mts.visible_and_ready_to_draw)
+      mts.bin = NOW_AND_READY_TO_DRAW_BIN;
 
     // Insert the tile into a priority set.
-    tiles->InsertTile(tile, priority_bin);
+    tiles->InsertTile(tile, mts.bin);
   }
 }
 
@@ -631,6 +631,7 @@ void TileManager::AssignGpuMemoryToTiles(
   size_t resources_left = resources_allocatable;
   bool oomed_soft = false;
   bool oomed_hard = false;
+  bool have_hit_soft_memory = false;  // Soft memory comes after hard.
 
   // Memory we assign to raster tasks now will be deducted from our memory
   // in future iterations if priorities change. By assigning at most half
@@ -667,6 +668,12 @@ void TileManager::AssignGpuMemoryToTiles(
     const size_t raster_bytes_if_rastered = raster_bytes + bytes_if_allocated;
     const size_t tile_bytes_left =
         (tile_uses_hard_limit) ? hard_bytes_left : soft_bytes_left;
+
+    // Hard-limit is reserved for tiles that would cause a calamity
+    // if they were to go away, so by definition they are the highest
+    // priority memory, and must be at the front of the list.
+    DCHECK(!(have_hit_soft_memory && tile_uses_hard_limit));
+    have_hit_soft_memory |= !tile_uses_hard_limit;
 
     size_t tile_bytes = 0;
     size_t tile_resources = 0;
