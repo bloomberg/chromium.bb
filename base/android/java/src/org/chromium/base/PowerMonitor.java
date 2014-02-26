@@ -44,7 +44,13 @@ public class PowerMonitor implements ApplicationStatus.ApplicationStateListener 
         sInstance = LazyHolder.INSTANCE;
     }
 
+    /**
+     * Create a PowerMonitor instance if none exists.
+     * @param context The context to register broadcast receivers for.  The application context
+     *                will be used from this parameter.
+     */
     public static void create(Context context) {
+        context = context.getApplicationContext();
         if (sInstance == null) {
             sInstance = LazyHolder.INSTANCE;
             ApplicationStatus.registerApplicationStateListener(sInstance);
