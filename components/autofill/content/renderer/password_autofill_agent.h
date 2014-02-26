@@ -174,10 +174,6 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
   blink::WebFrame* CurrentOrChildFrameWithSavedForms(
       const blink::WebFrame* current_frame);
 
-  void set_user_gesture_occurred(bool occurred) {
-    user_gesture_occurred_ = occurred;
-  }
-
   // The logins we have filled so far with their associated info.
   LoginToPasswordInfoMap login_to_password_info_;
 
@@ -192,8 +188,6 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
   FrameToPasswordFormMap provisionally_saved_forms_;
 
   PasswordValueGatekeeper gatekeeper_;
-
-  bool user_gesture_occurred_;
 
   base::WeakPtrFactory<PasswordAutofillAgent> weak_ptr_factory_;
 
