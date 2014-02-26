@@ -28,6 +28,9 @@ var gDtmfSender = null;
 /** @private */
 var gDtmfOnToneChange = function(tone) {};
 
+/** @private */
+var gHasSeenCryptoInSdp = 'no-crypto-seen';
+
 /**
  * Sets the transform to apply just before setting the local description and
  * sending to the peer.
@@ -185,6 +188,10 @@ function createDtmfSender(peerConnection) {
   gDtmfSender.ontonechange = gDtmfOnToneChange;
 }
 
+function hasSeenCryptoInSdp() {
+  returnToTest(gHasSeenCryptoInSdp);
+}
+
 // Internals.
 /** @private */
 function success_(method) {
@@ -205,6 +212,8 @@ function iceCallback_(event) {
 /** @private */
 function setLocalAndSendMessage_(session_description) {
   session_description.sdp = gTransformOutgoingSdp(session_description.sdp);
+  if (session_description.sdp.search('a=crypto') != -1)
+    gHasSeenCryptoInSdp = 'crypto-seen';
   peerConnection.setLocalDescription(
     session_description,
     function() { success_('setLocalDescription'); },
