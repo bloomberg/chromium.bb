@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
 #include "base/prefs/pref_member.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/threading/thread_checker.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/sync_notifier/synced_notification.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
@@ -30,7 +30,7 @@ struct Notifier;
 }
 
 namespace notifier {
-class SyncedNotificationAppInfo;
+class SyncedNotificationAppInfoTemp;
 
 // The name of our first synced notification service.
 // TODO(petewil): remove this hardcoding once we have the synced notification
@@ -166,10 +166,10 @@ class ChromeNotifierService : public syncer::SyncableService,
   void BuildServiceListValueInplace(
       std::set<std::string> services, base::ListValue* list_value);
 
-  SyncedNotificationAppInfo* FindAppInfo(const std::string& app_id) const;
+  SyncedNotificationAppInfoTemp* FindAppInfo(const std::string& app_id) const;
 
   const Notification CreateWelcomeNotificationForService(
-      SyncedNotificationAppInfo* app_info);
+      SyncedNotificationAppInfoTemp* app_info);
 
   // Preferences for storing which SyncedNotificationServices are enabled
   StringListPrefMember enabled_sending_services_prefs_;
@@ -186,8 +186,9 @@ class ChromeNotifierService : public syncer::SyncableService,
   std::set<std::string> initialized_sending_services_;
   bool synced_notification_first_run_;
   static bool avoid_bitmap_fetching_for_test_;
+  base::ThreadChecker thread_checker_;
 
-  ScopedVector<SyncedNotificationAppInfo> app_info_data_;
+  ScopedVector<SyncedNotificationAppInfoTemp> app_info_data_;
   // TODO(petewil): Consider whether a map would better suit our data.
   // If there are many entries, lookup time may trump locality of reference.
   ScopedVector<SyncedNotification> notification_data_;

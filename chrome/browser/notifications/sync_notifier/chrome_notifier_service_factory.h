@@ -18,7 +18,7 @@ class ChromeNotifierService;
 class ChromeNotifierServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   static ChromeNotifierService* GetForProfile(
-      Profile* profile, Profile::ServiceAccessType sat);
+      Profile* profile, Profile::ServiceAccessType service_access_type);
 
   static ChromeNotifierServiceFactory* GetInstance();
 

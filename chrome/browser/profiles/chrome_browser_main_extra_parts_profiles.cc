@@ -162,6 +162,7 @@
 #else
 #include "chrome/browser/media_galleries/media_galleries_preferences_factory.h"
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service_factory.h"
+#include "chrome/browser/notifications/sync_notifier/synced_notification_app_info_service_factory.h"
 #include "chrome/browser/profile_resetter/automatic_profile_resetter_factory.h"
 #endif
 
@@ -353,6 +354,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if !defined(OS_ANDROID)
   MediaGalleriesPreferencesFactory::GetInstance();
   notifier::ChromeNotifierServiceFactory::GetInstance();
+  notifier::SyncedNotificationAppInfoServiceFactory::GetInstance();
 #endif
   NTPResourceCacheFactory::GetInstance();
   PasswordStoreFactory::GetInstance();

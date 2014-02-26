@@ -245,7 +245,7 @@ TEST_F(ChromeNotifierServiceTest, ProcessSyncChangesEmptyModel) {
   // this test more robust.
 }
 
-// Process sync changes when there is no local data.
+// Process sync changes when there is local data.
 TEST_F(ChromeNotifierServiceTest, ProcessSyncChangesNonEmptyModel) {
   ChromeNotifierService notifier(profile_.get(), notification_manager());
   notifier.set_avoid_bitmap_fetching_for_test(true);
@@ -667,7 +667,7 @@ TEST_F(ChromeNotifierServiceTest, CheckFindAppInfo) {
   ChromeNotifierService notifier(profile_.get(), notification_manager());
   notifier.set_avoid_bitmap_fetching_for_test(true);
 
-  SyncedNotificationAppInfo* app_info =
+  SyncedNotificationAppInfoTemp* app_info =
       notifier.FindAppInfo(kFirstSyncedNotificationServiceId);
   EXPECT_TRUE(app_info != NULL);
 }

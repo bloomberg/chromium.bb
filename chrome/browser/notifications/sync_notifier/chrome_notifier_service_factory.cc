@@ -15,7 +15,7 @@ namespace notifier {
 
 // static
 ChromeNotifierService* ChromeNotifierServiceFactory::GetForProfile(
-    Profile* profile, Profile::ServiceAccessType sat) {
+    Profile* profile, Profile::ServiceAccessType service_access_type) {
   return static_cast<ChromeNotifierService*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }

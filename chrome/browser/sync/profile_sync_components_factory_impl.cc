@@ -59,6 +59,7 @@
 #include "chrome/browser/webdata/autocomplete_syncable_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -81,6 +82,8 @@
 #if !defined(OS_ANDROID)
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service_factory.h"
+#include "chrome/browser/notifications/sync_notifier/synced_notification_app_info_service.h"
+#include "chrome/browser/notifications/sync_notifier/synced_notification_app_info_service_factory.h"
 #endif
 
 #if defined(ENABLE_SPELLCHECK)
@@ -372,7 +375,21 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
             profile_,
             pss));
 
-  // TODO(petewil): Enable the data type controller once we have a handler.
+  // Synced Notification App Infos are enabled by default.
+  // For now we only enable it on Dev and Canary.
+  // TODO(petewil): Enable on stable once we have tested on stable.
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == chrome::VersionInfo::CHANNEL_UNKNOWN ||
+      channel == chrome::VersionInfo::CHANNEL_DEV ||
+      channel == chrome::VersionInfo::CHANNEL_CANARY) {
+    pss->RegisterDataTypeController(new UIDataTypeController(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+        base::Bind(&ChromeReportUnrecoverableError),
+        syncer::SYNCED_NOTIFICATION_APP_INFO,
+        this,
+        profile_,
+        pss));
+  }
 
 #if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_CHROMEOS)
   // Dictionary sync is enabled by default.
@@ -487,6 +504,14 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
               profile_, Profile::EXPLICIT_ACCESS);
       return notifier_service ? notifier_service->AsWeakPtr()
           : base::WeakPtr<syncer::SyncableService>();
+    }
+
+    case syncer::SYNCED_NOTIFICATION_APP_INFO: {
+      notifier::SyncedNotificationAppInfoService* app_info =
+          notifier::SyncedNotificationAppInfoServiceFactory::GetForProfile(
+              profile_, Profile::EXPLICIT_ACCESS);
+      return app_info ? app_info->AsWeakPtr()
+                      : base::WeakPtr<syncer::SyncableService>();
     }
 #endif
 #if defined(ENABLE_SPELLCHECK)
