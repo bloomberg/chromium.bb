@@ -61,8 +61,6 @@ class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint
     return remote_id_ != MessageInTransit::kInvalidEndpointId;
   }
 
-  void EnqueueMessageInternal(scoped_ptr<MessageInTransit> message);
-
 #ifdef NDEBUG
   void AssertConsistentState() const {}
 #else

@@ -46,15 +46,20 @@ void ProxyMessagePipeEndpoint::OnPeerClose() {
   DCHECK(is_peer_open_);
 
   is_peer_open_ = false;
-  EnqueueMessageInternal(make_scoped_ptr(
+  EnqueueMessage(make_scoped_ptr(
       new MessageInTransit(MessageInTransit::OWNED_BUFFER,
                            MessageInTransit::kTypeMessagePipe,
                            MessageInTransit::kSubtypeMessagePipePeerClosed,
                            0, 0, NULL)));
 }
 
+// Note: We may have to enqueue messages even when our (local) peer isn't open
+// -- it may have been written to and closed immediately, before we were ready.
+// This case is handled in |Run()| (which will call us).
 void ProxyMessagePipeEndpoint::EnqueueMessage(
     scoped_ptr<MessageInTransit> message) {
+  DCHECK(is_open_);
+
   if (message->dispatchers() && !message->dispatchers()->empty()) {
     // Since the dispatchers are attached to the message, they'll be closed on
     // message destruction.
@@ -62,7 +67,17 @@ void ProxyMessagePipeEndpoint::EnqueueMessage(
                   "(sent handles will simply be closed)";
   }
 
-  EnqueueMessageInternal(message.Pass());
+  if (is_running()) {
+    message->set_source_id(local_id_);
+    message->set_destination_id(remote_id_);
+    // If it fails at this point, the message gets dropped. (This is no
+    // different from any other in-transit errors.)
+    // Note: |WriteMessage()| will destroy the message even on failure.
+    if (!channel_->WriteMessage(message.Pass()))
+      LOG(WARNING) << "Failed to write message to channel";
+  } else {
+    paused_message_queue_.push_back(message.release());
+  }
 }
 
 void ProxyMessagePipeEndpoint::Attach(scoped_refptr<Channel> channel,
@@ -93,28 +108,8 @@ void ProxyMessagePipeEndpoint::Run(MessageInTransit::EndpointId remote_id) {
   for (std::deque<MessageInTransit*>::iterator it =
            paused_message_queue_.begin(); it != paused_message_queue_.end();
        ++it)
-    EnqueueMessageInternal(make_scoped_ptr(*it));
+    EnqueueMessage(make_scoped_ptr(*it));
   paused_message_queue_.clear();
-}
-
-// Note: We may have to enqueue messages even when our (local) peer isn't open
-// -- it may have been written to and closed immediately, before we were ready.
-// This case is handled in |Run()| (which will call us).
-void ProxyMessagePipeEndpoint::EnqueueMessageInternal(
-    scoped_ptr<MessageInTransit> message) {
-  DCHECK(is_open_);
-
-  if (is_running()) {
-    message->set_source_id(local_id_);
-    message->set_destination_id(remote_id_);
-    // If it fails at this point, the message gets dropped. (This is no
-    // different from any other in-transit errors.)
-    // Note: |WriteMessage()| will destroy the message even on failure.
-    if (!channel_->WriteMessage(message.Pass()))
-      LOG(WARNING) << "Failed to write message to channel";
-  } else {
-    paused_message_queue_.push_back(message.release());
-  }
 }
 
 #ifndef NDEBUG
