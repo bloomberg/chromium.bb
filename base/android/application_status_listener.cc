@@ -39,6 +39,9 @@ ApplicationStatusListener::ApplicationStatusListener(
     : callback_(callback) {
   DCHECK(!callback_.is_null());
   g_observers.Get().AddObserver(this);
+
+  Java_ApplicationStatus_registerThreadSafeNativeApplicationStateListener(
+      base::android::AttachCurrentThread());
 }
 
 ApplicationStatusListener::~ApplicationStatusListener() {
@@ -51,10 +54,7 @@ void ApplicationStatusListener::Notify(ApplicationState state) {
 
 // static
 bool ApplicationStatusListener::RegisterBindings(JNIEnv* env) {
-  bool result = RegisterNativesImpl(env);
-  if (result)
-    Java_ApplicationStatus_registerThreadSafeNativeApplicationStateListener(env);
-  return result;
+  return RegisterNativesImpl(env);
 }
 
 // static

@@ -53,14 +53,17 @@ public class ApplicationStatus {
     /** Last activity that was shown (or null if none or it was destroyed). */
     private static Activity sActivity;
 
+    /** A lazily initialized listener that forwards application state changes to native. */
+    private static ApplicationStateListener sNativeApplicationStateListener;
+
     /**
-     *
+     * A map of which observers listen to state changes from which {@link Activity}.
      */
     private static final Map<Activity, ActivityInfo> sActivityInfo =
             new HashMap<Activity, ActivityInfo>();
 
     /**
-     *
+     * A list of observers to be notified when any {@link Activity} has a state change.
      */
     private static final ObserverList<ActivityStateListener> sGeneralActivityStateListeners =
             new ObserverList<ActivityStateListener>();
@@ -374,12 +377,15 @@ public class ApplicationStatus {
         ThreadUtils.runOnUiThread(new Runnable () {
             @Override
             public void run() {
-                registerApplicationStateListener(new ApplicationStateListener() {
+                if (sNativeApplicationStateListener != null) return;
+
+                sNativeApplicationStateListener = new ApplicationStateListener() {
                     @Override
                     public void onApplicationStateChange(int newState) {
                         nativeOnApplicationStateChange(newState);
                     }
-                });
+                };
+                registerApplicationStateListener(sNativeApplicationStateListener);
             }
         });
     }
