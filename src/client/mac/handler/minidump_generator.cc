@@ -62,7 +62,7 @@ using MacStringUtils::IntegerValueAtIndex;
 
 namespace google_breakpad {
 
-#if __LP64__
+#if defined(__LP64__) && __LP64__
 #define LC_SEGMENT_ARCH LC_SEGMENT_64
 #else
 #define LC_SEGMENT_ARCH LC_SEGMENT
@@ -627,8 +627,11 @@ bool MinidumpGenerator::WriteContextPPC(breakpad_thread_state_data_t state,
   MDRawContextPPC *context_ptr = context.get();
   context_ptr->context_flags = MD_CONTEXT_PPC_BASE;
 
-#define AddReg(a) context_ptr->a = REGISTER_FROM_THREADSTATE(machine_state, a)
-#define AddGPR(a) context_ptr->gpr[a] = REGISTER_FROM_THREADSTATE(machine_state, r ## a)
+#define AddReg(a) context_ptr->a = static_cast<__typeof__(context_ptr->a)>( \
+    REGISTER_FROM_THREADSTATE(machine_state, a))
+#define AddGPR(a) context_ptr->gpr[a] = \
+    static_cast<__typeof__(context_ptr->a)>( \
+    REGISTER_FROM_THREADSTATE(machine_state, r ## a)
 
   AddReg(srr0);
   AddReg(cr);
@@ -690,8 +693,11 @@ bool MinidumpGenerator::WriteContextPPC64(
   MDRawContextPPC64 *context_ptr = context.get();
   context_ptr->context_flags = MD_CONTEXT_PPC_BASE;
 
-#define AddReg(a) context_ptr->a = REGISTER_FROM_THREADSTATE(machine_state, a)
-#define AddGPR(a) context_ptr->gpr[a] = REGISTER_FROM_THREADSTATE(machine_state, r ## a)
+#define AddReg(a) context_ptr->a = static_cast<__typeof__(context_ptr->a)>( \
+    REGISTER_FROM_THREADSTATE(machine_state, a))
+#define AddGPR(a) context_ptr->gpr[a] = \
+    static_cast<__typeof__(context_ptr->a)>( \
+    REGISTER_FROM_THREADSTATE(machine_state, r ## a)
 
   AddReg(srr0);
   AddReg(cr);
@@ -789,7 +795,8 @@ bool MinidumpGenerator::WriteContextX86(breakpad_thread_state_data_t state,
   *register_location = context.location();
   MDRawContextX86 *context_ptr = context.get();
 
-#define AddReg(a) context_ptr->a = REGISTER_FROM_THREADSTATE(machine_state, a)
+#define AddReg(a) context_ptr->a = static_cast<__typeof__(context_ptr->a)>( \
+    REGISTER_FROM_THREADSTATE(machine_state, a))
 
   context_ptr->context_flags = MD_CONTEXT_X86;
   AddReg(eax);
@@ -828,7 +835,7 @@ bool MinidumpGenerator::WriteContextX86_64(
   *register_location = context.location();
   MDRawContextAMD64 *context_ptr = context.get();
 
-#define AddReg(a) context_ptr->a = static_cast<typeof(context_ptr->a)>( \
+#define AddReg(a) context_ptr->a = static_cast<__typeof__(context_ptr->a)>( \
     REGISTER_FROM_THREADSTATE(machine_state, a))
 
   context_ptr->context_flags = MD_CONTEXT_AMD64;
