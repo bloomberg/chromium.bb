@@ -179,9 +179,9 @@ class ScrollAnimatorNoneTest : public testing::Test {
 public:
     struct SavePerAxisData : public ScrollAnimatorNone::PerAxisData {
         SavePerAxisData(const ScrollAnimatorNone::PerAxisData& data)
-            : m_mockScrollableArea(true)
+            : ScrollAnimatorNone::PerAxisData(&m_mockScrollAnimatorNone, 0, 768)
+            , m_mockScrollableArea(true)
             , m_mockScrollAnimatorNone(&m_mockScrollableArea)
-            , ScrollAnimatorNone::PerAxisData(&m_mockScrollAnimatorNone, 0, 768)
         {
             this->m_currentVelocity = data.m_currentVelocity;
             this->m_desiredPosition = data.m_desiredPosition;
