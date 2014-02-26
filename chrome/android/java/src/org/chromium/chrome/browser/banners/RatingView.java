@@ -44,7 +44,7 @@ public class RatingView extends View {
 
         // Cache the Bitmaps.
         Resources res = getResources();
-        Bitmap starHalf = BitmapFactory.decodeResource(res, R.drawable.btn_star_mini_half);
+        Bitmap starHalf = BitmapFactory.decodeResource(res, R.drawable.btn_star_half);
         if (!mIsLayoutLTR) {
             // RTL mode requires flipping the Bitmap.
             int width = starHalf.getWidth();
@@ -54,8 +54,8 @@ public class RatingView extends View {
             starHalf = Bitmap.createBitmap(starHalf, 0, 0, width, height, m, false);
         }
         mStarHalf = starHalf;
-        mStarFull = BitmapFactory.decodeResource(res, R.drawable.btn_star_mini_full);
-        mStarEmpty = BitmapFactory.decodeResource(res, R.drawable.btn_star_mini_empty);
+        mStarFull = BitmapFactory.decodeResource(res, R.drawable.btn_star_full);
+        mStarEmpty = BitmapFactory.decodeResource(res, R.drawable.btn_star_empty);
     }
 
     /**

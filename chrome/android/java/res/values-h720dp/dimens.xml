@@ -17,10 +17,9 @@
     <dimen name="app_banner_icon_margin_end">16dp</dimen>
 
     <dimen name="app_banner_title_text_size">21sp</dimen>
-    <dimen name="app_banner_title_margin_top">8dp</dimen>
+    <dimen name="app_banner_title_margin_top">2dp</dimen>
 
-    <dimen name="app_banner_logo_height">24dp</dimen>
+    <dimen name="app_banner_logo_height">26dp</dimen>
+    <dimen name="app_banner_logo_margin_top">6dp</dimen>
     <dimen name="app_banner_logo_margin_bottom">2dp</dimen>
-
-    <dimen name="app_banner_star_height">16dp</dimen>
 </resources>

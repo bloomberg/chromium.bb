@@ -10,27 +10,32 @@
         android:background="@drawable/card_background_default"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
+    <!-- View showing the icon. -->
     <ImageView
             android:id="@+id/app_icon"
             android:adjustViewBounds="true"
             android:layout_width="wrap_content"
             android:layout_height="@dimen/app_banner_icon_size"
             android:layout_marginEnd="@dimen/app_banner_icon_margin_end" />
+
+    <!-- View showing the app's title. -->
     <TextView
             android:id="@+id/app_title"
             android:textAppearance="@style/AppBannerTitle"
             android:includeFontPadding="false"
-            android:minLines="1"
-            android:maxLines="1"
+            android:lines="1"
             android:ellipsize="end"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/app_banner_title_margin_top"
             android:layout_marginBottom="@dimen/app_banner_title_margin_bottom" />
+
+    <!-- Button that triggers installation and opening of the app. -->
     <Button
             android:id="@+id/app_install_button"
-            android:background="@color/app_banner_install_button_bg"
+            android:background="@drawable/app_banner_button_install"
             android:minHeight="@dimen/app_banner_button_height"
+            android:lines="1"
             android:textAppearance="@style/AppBannerButton"
             android:paddingStart="@dimen/app_banner_button_padding_sides"
             android:paddingEnd="@dimen/app_banner_button_padding_sides"
@@ -40,16 +45,29 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/app_banner_button_margin_top"
             android:layout_marginStart="@dimen/app_banner_button_margin_start" />
+
+    <!-- Logo for the store. -->
     <ImageView
             android:id="@+id/store_logo"
             android:src="@drawable/google_play_logo"
             android:adjustViewBounds="true"
             android:layout_width="wrap_content"
             android:layout_height="@dimen/app_banner_logo_height"
+            android:layout_marginTop="@dimen/app_banner_logo_margin_top"
             android:layout_marginBottom="@dimen/app_banner_logo_margin_bottom" />
+
+    <!-- View showing how well the app is rated. -->
     <org.chromium.chrome.browser.banners.RatingView
             android:id="@+id/app_rating"
             android:adjustViewBounds="true"
             android:layout_width="wrap_content"
             android:layout_height="@dimen/app_banner_star_height" />
+
+    <!-- View covering the entire banner.  Used to indicate the banner is highlighted. -->
+    <View
+            android:id="@+id/banner_highlight"
+            android:background="@color/app_banner_card_highlight"
+            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 </org.chromium.chrome.browser.banners.AppBannerView>

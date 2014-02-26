@@ -43,7 +43,7 @@
     <dimen name="app_banner_margin_sides">8dp</dimen>
     <dimen name="app_banner_margin_bottom">8dp</dimen>
     <dimen name="app_banner_padding">8dp</dimen>
-    <dimen name="app_banner_padding_content">4dp</dimen>
+    <dimen name="app_banner_padding_controls">4dp</dimen>
 
     <dimen name="app_banner_button_text_size">14sp</dimen>
     <dimen name="app_banner_button_height">28dp</dimen>
@@ -59,8 +59,9 @@
     <dimen name="app_banner_title_margin_top">0dp</dimen>
     <dimen name="app_banner_title_margin_bottom">8dp</dimen>
 
-    <dimen name="app_banner_logo_height">22dp</dimen>
-    <dimen name="app_banner_logo_margin_bottom">3dp</dimen>
+    <dimen name="app_banner_logo_height">24dp</dimen>
+    <dimen name="app_banner_logo_margin_top">4dp</dimen>
+    <dimen name="app_banner_logo_margin_bottom">0dp</dimen>
 
     <dimen name="app_banner_star_height">16dp</dimen>
 </resources>

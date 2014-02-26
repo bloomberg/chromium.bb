@@ -81,7 +81,7 @@ public abstract class SwipableOverlayView extends FrameLayout {
     private static final int DRAGGED_CANCEL = 0;
     private static final int DRAGGED_RIGHT = 1;
 
-    protected static final long MS_ANIMATION_DURATION = 200;
+    protected static final long MS_ANIMATION_DURATION = 300;
 
     // Detects when the user is dragging the View.
     private final GestureDetector mGestureDetector;
