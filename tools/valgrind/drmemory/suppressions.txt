@@ -453,3 +453,11 @@ gfx.dll!gfx::Canvas::DrawStringRectWithShadows
 *!autofill::AutofillDialogControllerImpl::GetDialogOverlay
 *!autofill::AutofillDialogControllerTest_WalletFirstRun_Test::TestBody
 *!testing::internal::HandleExceptionsInMethodIfSupported<>
+
+HANDLE LEAK
+name=http://crbug.com/346993
+system call NtDuplicateObject
+KERNELBASE.dll!DuplicateHandle
+KERNEL32.dll!DuplicateHandle
+base.dll!base::`anonymous namespace'::ThreadFunc
+KERNEL32.dll!BaseThreadInitThunk
