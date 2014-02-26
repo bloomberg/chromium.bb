@@ -131,7 +131,7 @@ void CastSessionDelegate::StartSendingInternal() {
     return;
 
   // No audio or video, wait.
-  if (!audio_config_ && !video_config_)
+  if (!audio_config_ || !video_config_)
     return;
 
   Initialize();
