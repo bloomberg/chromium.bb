@@ -17,6 +17,11 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+#include "net/proxy/proxy_config.h"
+#include "net/proxy/proxy_config_service_fixed.h"
+#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+
 using net::URLFetcher;
 using net::URLFetcherDelegate;
 using net::URLRequestContextGetter;
@@ -51,6 +56,11 @@ BuildURLRequestContext(bool use_cache) {
   builder.set_file_enabled(true);
   builder.set_data_enabled(true);
   builder.set_ftp_enabled(true);
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  // TODO(wtc): Remove this once http://crbug.com/146421 is fixed.
+  builder.set_proxy_config_service(
+      new net::ProxyConfigServiceFixed(net::ProxyConfig::CreateDirect()));
+#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
   if (!use_cache)
     builder.DisableHttpCache();
   scoped_ptr<net::URLRequestContext> context(builder.Build());
