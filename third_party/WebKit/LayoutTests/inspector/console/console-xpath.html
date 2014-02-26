@@ -16,8 +16,7 @@ function test()
 
     function addMessageSniffer(message)
     {
-        var uiMessage = InspectorTest.toViewMessage(message);
-        if (uiMessage.toString().indexOf("complete") !== -1) {
+        if (message.toString().indexOf("complete") !== -1) {
             InspectorTest.dumpConsoleMessages();
             InspectorTest.completeTest();
         }

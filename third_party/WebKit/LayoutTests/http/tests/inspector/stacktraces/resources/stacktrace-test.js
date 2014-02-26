@@ -5,7 +5,7 @@ function test() {
         var indices = WebInspector.consoleView._visibleMessagesIndices;
         for (var i = 0; i < indices.length; ++i) {
             var m = WebInspector.console.messages[indices[i]];
-            InspectorTest.addResult("Message[" + i + "]: " + WebInspector.displayNameForURL(m.url) + ":" + m.line + " " + m.messageText);
+            InspectorTest.addResult("Message[" + i + "]: " + WebInspector.displayNameForURL(m.url) + ":" + m.line + " " + m.message);
             var trace = m.stackTrace;
             if (!trace) {
                 InspectorTest.addResult("FAIL: no stack trace attached to message #" + i);

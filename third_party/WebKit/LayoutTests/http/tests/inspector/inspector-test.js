@@ -36,11 +36,6 @@ InspectorTest.Output = {   // override in window.initialize_yourName
     }
 };
 
-InspectorTest.toViewMessage = function(message)
-{
-    return WebInspector.consoleView._messageToViewMessage.get(message);
-}
-
 InspectorTest.completeTest = function()
 {
     InspectorTest.Output.testComplete();
@@ -57,7 +52,7 @@ InspectorTest.evaluateInConsole = function(code, callback)
     WebInspector.consoleView.prompt.proxyElement.dispatchEvent(event);
     InspectorTest.addConsoleSniffer(
         function(commandResult) {
-            callback(InspectorTest.toViewMessage(commandResult).toMessageElement().textContent);
+            callback(commandResult.toMessageElement().textContent);
         });
 }
 

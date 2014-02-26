@@ -23,7 +23,7 @@ InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassN
     var visibleMessagesIndices = WebInspector.consoleView._visibleMessagesIndices;
     for (var i = 0; i < visibleMessagesIndices.length; ++i) {
         var message = WebInspector.console.messages[visibleMessagesIndices[i]];
-        var element = InspectorTest.toViewMessage(message).toMessageElement();
+        var element = message.toMessageElement();
 
         if (dumpClassNames) {
             var classNames = [];
@@ -41,9 +41,8 @@ InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassN
             InspectorTest.addResult(messageText + (dumpClassNames ? " " + classNames.join(" > ") : ""));
         }
 
-        var uiMessage = InspectorTest.toViewMessage(message);
-        if (printOriginatingCommand && uiMessage.originatingCommand) {
-            var originatingElement = uiMessage.originatingCommand.toMessageElement();
+        if (printOriginatingCommand && message.originatingCommand) {
+            var originatingElement = message.originatingCommand.toMessageElement();
             InspectorTest.addResult("Originating from: " + originatingElement.textContent.replace(/\u200b/g, ""));
         }
     }
@@ -52,7 +51,7 @@ InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassN
 
 InspectorTest.dumpConsoleTableMessage = function(message)
 {
-    var table = InspectorTest.toViewMessage(message).toMessageElement();
+    var table = message.toMessageElement();
     var headers = table.querySelectorAll("th div");
     if (!headers.length)
         return false;
@@ -83,7 +82,7 @@ InspectorTest.dumpConsoleMessagesWithStyles = function(sortMessages)
     var result = [];
     var indices = WebInspector.consoleView._visibleMessagesIndices;
     for (var i = 0; i < indices.length; ++i) {
-        var element = InspectorTest.toViewMessage(WebInspector.console.messages[indices[i]]).toMessageElement();
+        var element = WebInspector.console.messages[indices[i]].toMessageElement();
         var messageText = InspectorTest.prepareConsoleMessageText(element)
         InspectorTest.addResult(messageText);
         var spans = element.querySelectorAll(".console-message-text > span > span");
@@ -96,7 +95,7 @@ InspectorTest.dumpConsoleMessagesWithClasses = function(sortMessages) {
     var result = [];
     var indices = WebInspector.consoleView._visibleMessagesIndices;
     for (var i = 0; i < indices.length; ++i) {
-        var element = InspectorTest.toViewMessage(WebInspector.console.messages[indices[i]]).toMessageElement();
+        var element = WebInspector.console.messages[indices[i]].toMessageElement();
         var messageText = InspectorTest.prepareConsoleMessageText(element)
         result.push(messageText + " " + element.getAttribute("class"));
     }
@@ -111,7 +110,7 @@ InspectorTest.expandConsoleMessages = function(callback)
     var indices = WebInspector.consoleView._visibleMessagesIndices;
     for (var i = 0; i < indices.length; ++i) {
         var message = WebInspector.console.messages[indices[i]];
-        var element = InspectorTest.toViewMessage(message).toMessageElement();
+        var element = message.toMessageElement();
         var node = element;
         while (node) {
             if (node.treeElementForTest)
@@ -136,7 +135,7 @@ InspectorTest.checkConsoleMessagesDontHaveParameters = function()
         InspectorTest.addResult("Message: " + WebInspector.displayNameForURL(m.url) + ":" + m.line + " " + m.message);
         if ("_parameters" in m) {
             if (m._parameters)
-                InspectorTest.addResult("FAILED: message parameters list is not empty: " + m.parameters);
+                InspectorTest.addResult("FAILED: message parameters list is not empty: " + m._parameters);
             else
                 InspectorTest.addResult("SUCCESS: message parameters list is empty. ");
         } else {
