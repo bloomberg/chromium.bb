@@ -607,12 +607,6 @@ Shell::Shell(ShellDelegate* delegate)
   // TODO: Move this initialization into Shell::Init().
   output_configurator_->Init(!gpu_support_->IsPanelFittingDisabled());
   user_metrics_recorder_.reset(new UserMetricsRecorder);
-
-  base::MessagePumpX11::Current()->AddDispatcherForRootWindow(
-      output_configurator());
-  // We can't do this with a root window listener because XI_HierarchyChanged
-  // messages don't have a target window.
-  base::MessagePumpX11::Current()->AddObserver(output_configurator());
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
@@ -751,9 +745,6 @@ Shell::~Shell() {
     output_configurator_->RemoveObserver(display_error_observer_.get());
   if (projecting_observer_)
     output_configurator_->RemoveObserver(projecting_observer_.get());
-  base::MessagePumpX11::Current()->RemoveDispatcherForRootWindow(
-      output_configurator());
-  base::MessagePumpX11::Current()->RemoveObserver(output_configurator());
   display_change_observer_.reset();
 #endif  // defined(OS_CHROMEOS)
 

@@ -12,11 +12,10 @@
 #include "base/basictypes.h"
 #include "base/event_types.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_pump_dispatcher.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/display/native_display_observer.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/display/display_constants.h"
 
@@ -29,11 +28,12 @@ typedef XID RRMode;
 
 namespace chromeos {
 
+class NativeDisplayDelegate;
+
 // This class interacts directly with the underlying Xrandr API to manipulate
 // CTRCs and Outputs.
 class CHROMEOS_EXPORT OutputConfigurator
-    : public base::MessagePumpDispatcher,
-      public base::MessagePumpObserver {
+    : public NativeDisplayObserver {
  public:
   typedef uint64_t OutputProtectionClientId;
   static const OutputProtectionClientId kInvalidClientId = 0;
@@ -156,68 +156,6 @@ class CHROMEOS_EXPORT OutputConfigurator
     virtual void SetSoftwareMirroring(bool enabled) = 0;
   };
 
-  // Interface for classes that perform display configuration actions on behalf
-  // of OutputConfigurator.
-  class NativeDisplayDelegate {
-   public:
-    virtual ~NativeDisplayDelegate() {}
-
-    // Initializes the XRandR extension, saving the base event ID to
-    // |event_base|.
-    virtual void InitXRandRExtension(int* event_base) = 0;
-
-    // Tells XRandR to update its configuration in response to |event|, an
-    // RRScreenChangeNotify event.
-    virtual void UpdateXRandRConfiguration(const base::NativeEvent& event) = 0;
-
-    // Grabs the X server and refreshes XRandR-related resources.  While
-    // the server is grabbed, other clients are blocked.  Must be balanced
-    // by a call to UngrabServer().
-    virtual void GrabServer() = 0;
-
-    // Ungrabs the server and frees XRandR-related resources.
-    virtual void UngrabServer() = 0;
-
-    // Flushes all pending requests and waits for replies.
-    virtual void SyncWithServer() = 0;
-
-    // Sets the window's background color to |color_argb|.
-    virtual void SetBackgroundColor(uint32 color_argb) = 0;
-
-    // Enables DPMS and forces it to the "on" state.
-    virtual void ForceDPMSOn() = 0;
-
-    // Returns information about the current outputs. This method may block for
-    // 60 milliseconds or more. The returned outputs are not fully initialized;
-    // the rest of the work happens in
-    // OutputConfigurator::UpdateCachedOutputs().
-    virtual std::vector<OutputSnapshot> GetOutputs() = 0;
-
-    // Adds |mode| to |output|.
-    virtual void AddOutputMode(RROutput output, RRMode mode) = 0;
-
-    // Calls XRRSetCrtcConfig() with the given options but some of our default
-    // output count and rotation arguments. Returns true on success.
-    virtual bool ConfigureCrtc(RRCrtc crtc,
-                               RRMode mode,
-                               RROutput output,
-                               int x,
-                               int y) = 0;
-
-    // Called to set the frame buffer (underlying XRR "screen") size.  Has
-    // a side-effect of disabling all CRTCs.
-    virtual void CreateFrameBuffer(
-        int width,
-        int height,
-        const std::vector<OutputConfigurator::OutputSnapshot>& outputs) = 0;
-
-    // Gets HDCP state of output.
-    virtual bool GetHDCPState(RROutput id, ui::HDCPState* state) = 0;
-
-    // Sets HDCP state of output.
-    virtual bool SetHDCPState(RROutput id, ui::HDCPState state) = 0;
-  };
-
   class TouchscreenDelegate {
    public:
     virtual ~TouchscreenDelegate() {}
@@ -242,23 +180,13 @@ class CHROMEOS_EXPORT OutputConfigurator
   // Helper class used by tests.
   class TestApi {
    public:
-    TestApi(OutputConfigurator* configurator, int xrandr_event_base)
-        : configurator_(configurator),
-          xrandr_event_base_(xrandr_event_base) {}
+    TestApi(OutputConfigurator* configurator)
+        : configurator_(configurator) {}
     ~TestApi() {}
 
     const std::vector<OutputSnapshot>& cached_outputs() const {
       return configurator_->cached_outputs_;
     }
-
-    // Dispatches an RRScreenChangeNotify event to |configurator_|.
-    void SendScreenChangeEvent();
-
-    // Dispatches an RRNotify_OutputChange event to |configurator_|.
-    void SendOutputChangeEvent(RROutput output,
-                               RRCrtc crtc,
-                               RRMode mode,
-                               bool connected);
 
     // If |configure_timer_| is started, stops the timer, runs
     // ConfigureOutputs(), and returns true; returns false otherwise.
@@ -266,8 +194,6 @@ class CHROMEOS_EXPORT OutputConfigurator
 
    private:
     OutputConfigurator* configurator_;  // not owned
-
-    int xrandr_event_base_;
 
     DISALLOW_COPY_AND_ASSIGN(TestApi);
   };
@@ -348,17 +274,8 @@ class CHROMEOS_EXPORT OutputConfigurator
   // current set of connected outputs).
   bool SetDisplayMode(ui::OutputState new_state);
 
-  // Called when an RRNotify event is received.  The implementation is
-  // interested in the cases of RRNotify events which correspond to output
-  // add/remove events.  Note that Output add/remove events are sent in response
-  // to our own reconfiguration operations so spurious events are common.
-  // Spurious events will have no effect.
-  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
-
-  // Overridden from base::MessagePumpObserver:
-  virtual base::EventStatus WillProcessEvent(
-      const base::NativeEvent& event) OVERRIDE;
-  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
+  // NativeDisplayDelegate::Observer overrides:
+  virtual void OnConfigurationChanged() OVERRIDE;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -375,10 +292,6 @@ class CHROMEOS_EXPORT OutputConfigurator
   const std::map<int, float>& GetMirroredDisplayAreaRatioMap() {
     return mirrored_display_area_ratio_map_;
   }
-
-  // Configure outputs with |kConfigureDelayMs| delay,
-  // so that time-consuming ConfigureOutputs() won't be called multiple times.
-  void ScheduleConfigureOutputs();
 
   // Registers a client for output protection and requests a client id. Returns
   // 0 if requesting failed.
@@ -505,10 +418,6 @@ class CHROMEOS_EXPORT OutputConfigurator
   // If this flag is set to false, any attempts to change the output
   // configuration to immediately fail without changing the state.
   bool configure_display_;
-
-  // The base of the event numbers used to represent XRandr events used in
-  // decoding events regarding output add/remove.
-  int xrandr_event_base_;
 
   // The current display state.
   ui::OutputState output_state_;

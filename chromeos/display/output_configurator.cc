@@ -6,7 +6,6 @@
 
 #include <X11/Xlib.h>
 #include <X11/extensions/Xrandr.h>
-#include <X11/extensions/XInput2.h>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -150,26 +149,6 @@ OutputConfigurator::OutputSnapshot::OutputSnapshot()
 
 OutputConfigurator::OutputSnapshot::~OutputSnapshot() {}
 
-void OutputConfigurator::TestApi::SendScreenChangeEvent() {
-  XRRScreenChangeNotifyEvent event = {0};
-  event.type = xrandr_event_base_ + RRScreenChangeNotify;
-  configurator_->Dispatch(reinterpret_cast<const base::NativeEvent>(&event));
-}
-
-void OutputConfigurator::TestApi::SendOutputChangeEvent(RROutput output,
-                                                        RRCrtc crtc,
-                                                        RRMode mode,
-                                                        bool connected) {
-  XRROutputChangeNotifyEvent event = {0};
-  event.type = xrandr_event_base_ + RRNotify;
-  event.subtype = RRNotify_OutputChange;
-  event.output = output;
-  event.crtc = crtc;
-  event.mode = mode;
-  event.connection = connected ? RR_Connected : RR_Disconnected;
-  configurator_->Dispatch(reinterpret_cast<const base::NativeEvent>(&event));
-}
-
 bool OutputConfigurator::TestApi::TriggerConfigureTimeout() {
   if (configurator_->configure_timer_.get() &&
       configurator_->configure_timer_->IsRunning()) {
@@ -236,21 +215,28 @@ OutputConfigurator::OutputConfigurator()
       mirroring_controller_(NULL),
       is_panel_fitting_enabled_(false),
       configure_display_(base::SysInfo::IsRunningOnChromeOS()),
-      xrandr_event_base_(0),
       output_state_(ui::OUTPUT_STATE_INVALID),
       power_state_(DISPLAY_POWER_ALL_ON),
       next_output_protection_client_id_(1) {}
 
-OutputConfigurator::~OutputConfigurator() {}
+OutputConfigurator::~OutputConfigurator() {
+  if (native_display_delegate_)
+    native_display_delegate_->RemoveObserver(this);
+}
 
 void OutputConfigurator::SetNativeDisplayDelegateForTesting(
     scoped_ptr<NativeDisplayDelegate> delegate) {
+  DCHECK(!native_display_delegate_);
+
   native_display_delegate_ = delegate.Pass();
+  native_display_delegate_->AddObserver(this);
   configure_display_ = true;
 }
 
 void OutputConfigurator::SetTouchscreenDelegateForTesting(
     scoped_ptr<TouchscreenDelegate> delegate) {
+  DCHECK(!touchscreen_delegate_);
+
   touchscreen_delegate_ = delegate.Pass();
 }
 
@@ -264,8 +250,10 @@ void OutputConfigurator::Init(bool is_panel_fitting_enabled) {
   if (!configure_display_)
     return;
 
-  if (!native_display_delegate_)
+  if (!native_display_delegate_) {
     native_display_delegate_.reset(new NativeDisplayDelegateX11());
+    native_display_delegate_->AddObserver(this);
+  }
 
   if (!touchscreen_delegate_)
     touchscreen_delegate_.reset(new TouchscreenDelegateX11());
@@ -276,7 +264,7 @@ void OutputConfigurator::Start(uint32 background_color_argb) {
     return;
 
   native_display_delegate_->GrabServer();
-  native_display_delegate_->InitXRandRExtension(&xrandr_event_base_);
+  native_display_delegate_->Initialize();
 
   UpdateCachedOutputs();
   if (cached_outputs_.size() > 1 && background_color_argb)
@@ -295,7 +283,6 @@ void OutputConfigurator::Start(uint32 background_color_argb) {
 bool OutputConfigurator::ApplyProtections(const DisplayProtections& requests) {
   for (std::vector<OutputSnapshot>::const_iterator it = cached_outputs_.begin();
        it != cached_outputs_.end(); ++it) {
-    RROutput this_id = it->output;
     uint32_t all_desired = 0;
     DisplayProtections::const_iterator request_it = requests.find(
         it->display_id);
@@ -312,7 +299,7 @@ bool OutputConfigurator::ApplyProtections(const DisplayProtections& requests) {
             (all_desired & ui::OUTPUT_PROTECTION_METHOD_HDCP)
                 ? ui::HDCP_STATE_DESIRED
                 : ui::HDCP_STATE_UNDESIRED;
-        if (!native_display_delegate_->SetHDCPState(this_id, new_desired_state))
+        if (!native_display_delegate_->SetHDCPState(*it, new_desired_state))
           return false;
         break;
       }
@@ -369,7 +356,6 @@ bool OutputConfigurator::QueryOutputProtectionStatus(
   *link_mask = 0;
   for (std::vector<OutputSnapshot>::const_iterator it = cached_outputs_.begin();
        it != cached_outputs_.end(); ++it) {
-    RROutput this_id = it->output;
     if (it->display_id != display_id)
       continue;
     *link_mask |= it->type;
@@ -381,7 +367,7 @@ bool OutputConfigurator::QueryOutputProtectionStatus(
       case ui::OUTPUT_TYPE_DVI:
       case ui::OUTPUT_TYPE_HDMI: {
         ui::HDCPState state;
-        if (!native_display_delegate_->GetHDCPState(this_id, &state))
+        if (!native_display_delegate_->GetHDCPState(*it, &state))
           return false;
         if (state == ui::HDCP_STATE_ENABLED)
           enabled |= ui::OUTPUT_PROTECTION_METHOD_HDCP;
@@ -453,6 +439,13 @@ bool OutputConfigurator::EnableOutputProtection(
 
 void OutputConfigurator::Stop() {
   configure_display_ = false;
+
+  // Since we need to stop processing configuration updates, we can just destroy
+  // the display delegate.
+  if (native_display_delegate_) {
+    native_display_delegate_->RemoveObserver(this);
+    native_display_delegate_.reset();
+  }
 }
 
 bool OutputConfigurator::SetDisplayPower(DisplayPowerState power_state,
@@ -520,78 +513,19 @@ bool OutputConfigurator::SetDisplayMode(ui::OutputState new_state) {
   return success;
 }
 
-uint32_t OutputConfigurator::Dispatch(const base::NativeEvent& event) {
-  if (!configure_display_)
-    return POST_DISPATCH_PERFORM_DEFAULT;
-
-  if (event->type - xrandr_event_base_ == RRScreenChangeNotify) {
-    VLOG(1) << "Received RRScreenChangeNotify event";
-    native_display_delegate_->UpdateXRandRConfiguration(event);
-    return POST_DISPATCH_PERFORM_DEFAULT;
+void OutputConfigurator::OnConfigurationChanged() {
+  // Configure outputs with |kConfigureDelayMs| delay,
+  // so that time-consuming ConfigureOutputs() won't be called multiple times.
+  if (configure_timer_.get()) {
+    configure_timer_->Reset();
+  } else {
+    configure_timer_.reset(new base::OneShotTimer<OutputConfigurator>());
+    configure_timer_->Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kConfigureDelayMs),
+        this,
+        &OutputConfigurator::ConfigureOutputs);
   }
-
-  // Bail out early for everything except RRNotify_OutputChange events
-  // about an output getting connected or disconnected.
-  if (event->type - xrandr_event_base_ != RRNotify)
-    return POST_DISPATCH_PERFORM_DEFAULT;
-  const XRRNotifyEvent* notify_event = reinterpret_cast<XRRNotifyEvent*>(event);
-  if (notify_event->subtype != RRNotify_OutputChange)
-    return POST_DISPATCH_PERFORM_DEFAULT;
-  const XRROutputChangeNotifyEvent* output_change_event =
-      reinterpret_cast<XRROutputChangeNotifyEvent*>(event);
-  const int action = output_change_event->connection;
-  if (action != RR_Connected && action != RR_Disconnected)
-    return POST_DISPATCH_PERFORM_DEFAULT;
-
-  const bool connected = (action == RR_Connected);
-  VLOG(1) << "Received RRNotify_OutputChange event:"
-          << " output=" << output_change_event->output
-          << " crtc=" << output_change_event->crtc
-          << " mode=" << output_change_event->mode
-          << " action=" << (connected ? "connected" : "disconnected");
-
-  bool found_changed_output = false;
-  for (std::vector<OutputSnapshot>::const_iterator it = cached_outputs_.begin();
-       it != cached_outputs_.end(); ++it) {
-    if (it->output == output_change_event->output) {
-      if (connected && it->crtc == output_change_event->crtc &&
-          it->current_mode == output_change_event->mode) {
-        VLOG(1) << "Ignoring event describing already-cached state";
-        return POST_DISPATCH_PERFORM_DEFAULT;
-      }
-      found_changed_output = true;
-      break;
-    }
-  }
-
-  if (!connected && !found_changed_output) {
-    VLOG(1) << "Ignoring event describing already-disconnected output";
-    return POST_DISPATCH_PERFORM_DEFAULT;
-  }
-
-  // Connecting/disconnecting a display may generate multiple events. Defer
-  // configuring outputs to avoid grabbing X and configuring displays
-  // multiple times.
-  ScheduleConfigureOutputs();
-  return POST_DISPATCH_PERFORM_DEFAULT;
-}
-
-base::EventStatus OutputConfigurator::WillProcessEvent(
-    const base::NativeEvent& event) {
-  // XI_HierarchyChanged events are special. There is no window associated with
-  // these events. So process them directly from here.
-  if (configure_display_ && event->type == GenericEvent &&
-      event->xgeneric.evtype == XI_HierarchyChanged) {
-    VLOG(1) << "Received XI_HierarchyChanged event";
-    // Defer configuring outputs to not stall event processing.
-    // This also takes care of same event being received twice.
-    ScheduleConfigureOutputs();
-  }
-
-  return base::EVENT_CONTINUE;
-}
-
-void OutputConfigurator::DidProcessEvent(const base::NativeEvent& event) {
 }
 
 void OutputConfigurator::AddObserver(Observer* observer) {
@@ -623,19 +557,6 @@ void OutputConfigurator::ResumeDisplays() {
   // Force probing to ensure that we pick up any changes that were made
   // while the system was suspended.
   SetDisplayPower(power_state_, kSetDisplayPowerForceProbe);
-}
-
-void OutputConfigurator::ScheduleConfigureOutputs() {
-  if (configure_timer_.get()) {
-    configure_timer_->Reset();
-  } else {
-    configure_timer_.reset(new base::OneShotTimer<OutputConfigurator>());
-    configure_timer_->Start(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(kConfigureDelayMs),
-        this,
-        &OutputConfigurator::ConfigureOutputs);
-  }
 }
 
 void OutputConfigurator::UpdateCachedOutputs() {
@@ -750,7 +671,7 @@ bool OutputConfigurator::FindMirrorMode(OutputSnapshot* internal_output,
           !external_info.interlaced;
       if (can_fit) {
         RRMode mode = external_it->first;
-        native_display_delegate_->AddOutputMode(internal_output->output, mode);
+        native_display_delegate_->AddMode(*internal_output, mode);
         internal_output->mode_infos.insert(std::make_pair(mode, external_info));
         internal_output->mirror_mode = mode;
         external_output->mirror_mode = mode;
@@ -944,11 +865,10 @@ bool OutputConfigurator::EnterState(ui::OutputState output_state,
       bool configure_succeeded =false;
 
       while (true) {
-        if (native_display_delegate_->ConfigureCrtc(output.crtc,
-                                                    output.current_mode,
-                                                    output.output,
-                                                    output.x,
-                                                    output.y)) {
+        if (native_display_delegate_->Configure(output,
+                                                output.current_mode,
+                                                output.x,
+                                                output.y)) {
           configure_succeeded = true;
           break;
         }

@@ -8,13 +8,17 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/dpms.h>
 #include <X11/extensions/Xrandr.h>
+#include <X11/extensions/XInput2.h>
 
 #include <utility>
 
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_x11.h"
 #include "base/x11/edid_parser_x11.h"
 #include "base/x11/x11_error_tracker.h"
+#include "chromeos/display/native_display_event_dispatcher_x11.h"
+#include "chromeos/display/native_display_observer.h"
 #include "chromeos/display/output_util.h"
 
 namespace chromeos {
@@ -47,21 +51,112 @@ RRMode GetOutputNativeMode(const XRROutputInfo* output_info) {
 
 }  // namespace
 
+////////////////////////////////////////////////////////////////////////////////
+// NativeDisplayDelegateX11::HelperDelegateX11
+
+class NativeDisplayDelegateX11::HelperDelegateX11
+    : public NativeDisplayDelegateX11::HelperDelegate {
+ public:
+  HelperDelegateX11(NativeDisplayDelegateX11* delegate)
+      : delegate_(delegate) {}
+  virtual ~HelperDelegateX11() {}
+
+  // NativeDisplayDelegateX11::HelperDelegate overrides:
+  virtual void UpdateXRandRConfiguration(
+      const base::NativeEvent& event) OVERRIDE {
+    XRRUpdateConfiguration(event);
+  }
+  virtual const std::vector<OutputConfigurator::OutputSnapshot>&
+      GetCachedOutputs() const OVERRIDE {
+    return delegate_->cached_outputs_;
+  }
+  virtual void NotifyDisplayObservers() OVERRIDE {
+    FOR_EACH_OBSERVER(NativeDisplayObserver,
+                      delegate_->observers_,
+                      OnConfigurationChanged());
+  }
+
+ private:
+  NativeDisplayDelegateX11* delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(HelperDelegateX11);
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeDisplayDelegateX11::MessagePumpObserverX11
+
+class NativeDisplayDelegateX11::MessagePumpObserverX11
+    : public base::MessagePumpObserver {
+ public:
+  MessagePumpObserverX11(HelperDelegate* delegate);
+  virtual ~MessagePumpObserverX11();
+
+  // base::MessagePumpObserver overrides:
+  virtual base::EventStatus WillProcessEvent(
+      const base::NativeEvent& event) OVERRIDE;
+  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
+
+ private:
+  HelperDelegate* delegate_;  // Not owned.
+
+  DISALLOW_COPY_AND_ASSIGN(MessagePumpObserverX11);
+};
+
+NativeDisplayDelegateX11::MessagePumpObserverX11::MessagePumpObserverX11(
+    HelperDelegate* delegate) : delegate_(delegate) {}
+
+NativeDisplayDelegateX11::MessagePumpObserverX11::~MessagePumpObserverX11() {}
+
+base::EventStatus
+NativeDisplayDelegateX11::MessagePumpObserverX11::WillProcessEvent(
+    const base::NativeEvent& event) {
+  // XI_HierarchyChanged events are special. There is no window associated with
+  // these events. So process them directly from here.
+  if (event->type == GenericEvent &&
+      event->xgeneric.evtype == XI_HierarchyChanged) {
+    VLOG(1) << "Received XI_HierarchyChanged event";
+    // Defer configuring outputs to not stall event processing.
+    // This also takes care of same event being received twice.
+    delegate_->NotifyDisplayObservers();
+  }
+
+  return base::EVENT_CONTINUE;
+}
+
+void NativeDisplayDelegateX11::MessagePumpObserverX11::DidProcessEvent(
+    const base::NativeEvent& event) {
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeDisplayDelegateX11 implementation:
+
 NativeDisplayDelegateX11::NativeDisplayDelegateX11()
     : display_(base::MessagePumpX11::GetDefaultXDisplay()),
       window_(DefaultRootWindow(display_)),
       screen_(NULL) {}
 
-NativeDisplayDelegateX11::~NativeDisplayDelegateX11() {}
-
-void NativeDisplayDelegateX11::InitXRandRExtension(int* event_base) {
-  int error_base_ignored = 0;
-  XRRQueryExtension(display_, event_base, &error_base_ignored);
+NativeDisplayDelegateX11::~NativeDisplayDelegateX11() {
+  base::MessagePumpX11::Current()->RemoveDispatcherForRootWindow(
+      message_pump_dispatcher_.get());
+  base::MessagePumpX11::Current()->RemoveObserver(message_pump_observer_.get());
 }
 
-void NativeDisplayDelegateX11::UpdateXRandRConfiguration(
-    const base::NativeEvent& event) {
-  XRRUpdateConfiguration(event);
+void NativeDisplayDelegateX11::Initialize() {
+  int error_base_ignored = 0;
+  int xrandr_event_base = 0;
+  XRRQueryExtension(display_, &xrandr_event_base, &error_base_ignored);
+
+  helper_delegate_.reset(new HelperDelegateX11(this));
+  message_pump_dispatcher_.reset(new NativeDisplayEventDispatcherX11(
+      helper_delegate_.get(), xrandr_event_base));
+  message_pump_observer_.reset(new MessagePumpObserverX11(
+      helper_delegate_.get()));
+
+  base::MessagePumpX11::Current()->AddDispatcherForRootWindow(
+      message_pump_dispatcher_.get());
+  // We can't do this with a root window listener because XI_HierarchyChanged
+  // messages don't have a target window.
+  base::MessagePumpX11::Current()->AddObserver(message_pump_observer_.get());
 }
 
 void NativeDisplayDelegateX11::GrabServer() {
@@ -108,37 +203,47 @@ std::vector<OutputConfigurator::OutputSnapshot>
 NativeDisplayDelegateX11::GetOutputs() {
   CHECK(screen_) << "Server not grabbed";
 
-  std::vector<OutputConfigurator::OutputSnapshot> outputs;
+  cached_outputs_.clear();
   RRCrtc last_used_crtc = None;
 
-  for (int i = 0; i < screen_->noutput && outputs.size() < 2; ++i) {
+  for (int i = 0; i < screen_->noutput && cached_outputs_.size() < 2; ++i) {
     RROutput output_id = screen_->outputs[i];
     XRROutputInfo* output_info = XRRGetOutputInfo(display_, screen_, output_id);
     if (output_info->connection == RR_Connected) {
       OutputConfigurator::OutputSnapshot output =
           InitOutputSnapshot(output_id, output_info, &last_used_crtc, i);
-      VLOG(2) << "Found display " << outputs.size() << ":"
+      VLOG(2) << "Found display " << cached_outputs_.size() << ":"
               << " output=" << output.output << " crtc=" << output.crtc
               << " current_mode=" << output.current_mode;
-      outputs.push_back(output);
+      cached_outputs_.push_back(output);
     }
     XRRFreeOutputInfo(output_info);
   }
 
-  return outputs;
+  return cached_outputs_;
 }
 
-void NativeDisplayDelegateX11::AddOutputMode(RROutput output, RRMode mode) {
+void NativeDisplayDelegateX11::AddMode(
+    const OutputConfigurator::OutputSnapshot& output, RRMode mode) {
   CHECK(screen_) << "Server not grabbed";
-  VLOG(1) << "AddOutputMode: output=" << output << " mode=" << mode;
-  XRRAddOutputMode(display_, output, mode);
+  VLOG(1) << "AddOutputMode: output=" << output.output << " mode=" << mode;
+  XRRAddOutputMode(display_, output.output, mode);
 }
 
-bool NativeDisplayDelegateX11::ConfigureCrtc(RRCrtc crtc,
-                                             RRMode mode,
-                                             RROutput output,
-                                             int x,
-                                             int y) {
+bool NativeDisplayDelegateX11::Configure(
+    const OutputConfigurator::OutputSnapshot& output,
+    RRMode mode,
+    int x,
+    int y) {
+  return ConfigureCrtc(output.crtc, mode, output.output, x, y);
+}
+
+bool NativeDisplayDelegateX11::ConfigureCrtc(
+    RRCrtc crtc,
+    RRMode mode,
+    RROutput output,
+    int x,
+    int y) {
   CHECK(screen_) << "Server not grabbed";
   VLOG(1) << "ConfigureCrtc: crtc=" << crtc << " mode=" << mode
           << " output=" << output << " x=" << x << " y=" << y;
@@ -271,7 +376,8 @@ OutputConfigurator::OutputSnapshot NativeDisplayDelegateX11::InitOutputSnapshot(
   return output;
 }
 
-bool NativeDisplayDelegateX11::GetHDCPState(RROutput id, ui::HDCPState* state) {
+bool NativeDisplayDelegateX11::GetHDCPState(
+    const OutputConfigurator::OutputSnapshot& output, ui::HDCPState* state) {
   unsigned char* values = NULL;
   int actual_format = 0;
   unsigned long nitems = 0;
@@ -285,7 +391,7 @@ bool NativeDisplayDelegateX11::GetHDCPState(RROutput id, ui::HDCPState* state) {
   // TODO(kcwu): Move this to x11_util (similar method calls in this file and
   // output_util.cc)
   success = XRRGetOutputProperty(display_,
-                                 id,
+                                 output.output,
                                  prop,
                                  0,
                                  100,
@@ -328,7 +434,8 @@ bool NativeDisplayDelegateX11::GetHDCPState(RROutput id, ui::HDCPState* state) {
   return ok;
 }
 
-bool NativeDisplayDelegateX11::SetHDCPState(RROutput id, ui::HDCPState state) {
+bool NativeDisplayDelegateX11::SetHDCPState(
+    const OutputConfigurator::OutputSnapshot& output, ui::HDCPState state) {
   Atom name = XInternAtom(display_, kContentProtectionAtomName, False);
   Atom value = None;
   switch (state) {
@@ -345,7 +452,7 @@ bool NativeDisplayDelegateX11::SetHDCPState(RROutput id, ui::HDCPState state) {
   base::X11ErrorTracker err_tracker;
   unsigned char* data = reinterpret_cast<unsigned char*>(&value);
   XRRChangeOutputProperty(
-      display_, id, name, XA_ATOM, 32, PropModeReplace, data, 1);
+      display_, output.output, name, XA_ATOM, 32, PropModeReplace, data, 1);
   if (err_tracker.FoundNewError()) {
     LOG(ERROR) << "XRRChangeOutputProperty failed";
     return false;
@@ -451,6 +558,14 @@ bool NativeDisplayDelegateX11::IsOutputAspectPreservingScaling(RROutput id) {
     XFree(props);
 
   return ret;
+}
+
+void NativeDisplayDelegateX11::AddObserver(NativeDisplayObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void NativeDisplayDelegateX11::RemoveObserver(NativeDisplayObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 }  // namespace chromeos
