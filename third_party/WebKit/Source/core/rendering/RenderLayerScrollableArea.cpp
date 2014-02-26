@@ -395,6 +395,9 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
     if (m_box->node())
         m_box->node()->document().enqueueScrollEventForNode(m_box->node());
 
+    if (AXObjectCache* cache = m_box->document().existingAXObjectCache())
+        cache->handleScrollPositionChanged(m_box);
+
     InspectorInstrumentation::didScrollLayer(m_box);
 }
 

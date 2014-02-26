@@ -151,6 +151,7 @@ COMPILE_ASSERT_MATCHING_ENUM(WebAXEventMenuListValueChanged, AXObjectCache::AXMe
 COMPILE_ASSERT_MATCHING_ENUM(WebAXEventRowCollapsed, AXObjectCache::AXRowCollapsed);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXEventRowCountChanged, AXObjectCache::AXRowCountChanged);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXEventRowExpanded, AXObjectCache::AXRowExpanded);
+COMPILE_ASSERT_MATCHING_ENUM(WebAXEventScrollPositionChanged, AXObjectCache::AXScrollPositionChanged);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXEventScrolledToAnchor, AXObjectCache::AXScrolledToAnchor);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXEventSelectedChildrenChanged, AXObjectCache::AXSelectedChildrenChanged);
 COMPILE_ASSERT_MATCHING_ENUM(WebAXEventSelectedTextChanged, AXObjectCache::AXSelectedTextChanged);

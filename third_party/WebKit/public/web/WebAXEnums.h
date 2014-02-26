@@ -56,6 +56,7 @@ enum WebAXEvent {
     WebAXEventRowCollapsed,
     WebAXEventRowCountChanged,
     WebAXEventRowExpanded,
+    WebAXEventScrollPositionChanged,
     WebAXEventScrolledToAnchor,
     WebAXEventSelectedChildrenChanged,
     WebAXEventSelectedTextChanged,

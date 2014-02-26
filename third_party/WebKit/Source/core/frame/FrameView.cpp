@@ -1654,6 +1654,9 @@ void FrameView::scrollPositionChanged()
     if (m_didScrollTimer.isActive())
         m_didScrollTimer.stop();
     m_didScrollTimer.startOneShot(resourcePriorityUpdateDelayAfterScroll);
+
+    if (AXObjectCache* cache = m_frame->document()->existingAXObjectCache())
+        cache->handleScrollPositionChanged(this);
 }
 
 void FrameView::didScrollTimerFired(Timer<FrameView>*)

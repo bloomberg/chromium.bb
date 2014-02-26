@@ -1030,4 +1030,14 @@ void AXObjectCache::handleScrolledToAnchor(const Node* anchorNode)
     postPlatformNotification(AXObject::firstAccessibleObjectFromNode(anchorNode), AXScrolledToAnchor);
 }
 
+void AXObjectCache::handleScrollPositionChanged(ScrollView* scrollView)
+{
+    postPlatformNotification(getOrCreate(scrollView), AXScrollPositionChanged);
+}
+
+void AXObjectCache::handleScrollPositionChanged(RenderObject* renderObject)
+{
+    postPlatformNotification(getOrCreate(renderObject), AXScrollPositionChanged);
+}
+
 } // namespace WebCore

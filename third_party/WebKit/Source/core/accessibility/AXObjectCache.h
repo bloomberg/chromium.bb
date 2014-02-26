@@ -128,7 +128,13 @@ public:
     void handleFocusedUIElementChanged(Node* oldFocusedNode, Node* newFocusedNode);
     void handleScrolledToAnchor(const Node* anchorNode);
     void handleAriaExpandedChange(Node*);
+
+    // Called when scroll bars are added / removed (as the view resizes).
     void handleScrollbarUpdate(ScrollView*);
+
+    // Called when the scroll offset changes.
+    void handleScrollPositionChanged(ScrollView*);
+    void handleScrollPositionChanged(RenderObject*);
 
     void handleAttributeChanged(const QualifiedName& attrName, Element*);
     void recomputeIsIgnored(RenderObject* renderer);
@@ -172,6 +178,7 @@ public:
         AXRowCollapsed,
         AXRowCountChanged,
         AXRowExpanded,
+        AXScrollPositionChanged,
         AXScrolledToAnchor,
         AXSelectedChildrenChanged,
         AXSelectedTextChanged,
