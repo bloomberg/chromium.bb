@@ -148,24 +148,27 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   const base::string16 parsed_scheme(URLFixerUpper::SegmentURL(text, parts));
   if (scheme)
     *scheme = parsed_scheme;
-  if (canonicalized_url) {
-    *canonicalized_url = URLFixerUpper::FixupURL(
-        base::UTF16ToUTF8(text), base::UTF16ToUTF8(desired_tld));
-  }
+
+  // Try to fixup and canonicalize the user's typing.  We use this to help
+  // determine if it's safe to return "URL" as the type of anything that has an
+  // explicit, non-HTTP[S] scheme.  (HTTP[S] and "no scheme" inputs get more
+  // sophisticated heuristics below.)  If we can't canonicalize such inputs, we
+  // shouldn't mark them as "URL"s, because the rest of the autocomplete system
+  // isn't going to be able to produce navigable URL matches for them, which can
+  // lead to DCHECK failures later.
+  GURL placeholder_canonicalized_url;
+  if (!canonicalized_url)
+    canonicalized_url = &placeholder_canonicalized_url;
+  *canonicalized_url = URLFixerUpper::FixupURL(base::UTF16ToUTF8(text),
+                                               base::UTF16ToUTF8(desired_tld));
+  Type return_value_for_non_http_url =
+      canonicalized_url->is_valid() ? URL : QUERY;
 
   if (LowerCaseEqualsASCII(parsed_scheme, content::kFileScheme)) {
     // A user might or might not type a scheme when entering a file URL.  In
     // either case, |parsed_scheme| will tell us that this is a file URL, but
     // |parts->scheme| might be empty, e.g. if the user typed "C:\foo".
     return URL;
-  }
-
-  if (LowerCaseEqualsASCII(parsed_scheme, content::kFileSystemScheme)) {
-    // This could theoretically be a strange search, but let's check.
-    // If it's got an inner_url with a scheme, it's a URL, whether it's valid or
-    // not.
-    if (parts->inner_parsed() && parts->inner_parsed()->scheme.is_valid())
-      return URL;
   }
 
   // If the user typed a scheme, and it's HTTP or HTTPS, we know how to parse it
@@ -177,31 +180,29 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   if (parts->scheme.is_nonempty() &&
       !LowerCaseEqualsASCII(parsed_scheme, content::kHttpScheme) &&
       !LowerCaseEqualsASCII(parsed_scheme, content::kHttpsScheme)) {
-    // See if we know how to handle the URL internally.
-    if (ProfileIOData::IsHandledProtocol(UTF16ToASCII(parsed_scheme)))
-      return URL;
-
-    // There are also some schemes that we convert to other things before they
-    // reach the renderer or else the renderer handles internally without
-    // reaching the net::URLRequest logic.  We thus won't catch these above, but
-    // we should still claim to handle them.
-    if (LowerCaseEqualsASCII(parsed_scheme, content::kViewSourceScheme) ||
+    // See if we know how to handle the URL internally.  There are some schemes
+    // that we convert to other things before they reach the renderer or else
+    // the renderer handles internally without reaching the net::URLRequest
+    // logic.  They thus won't be listed as "handled protocols", but we should
+    // still claim to handle them.
+    if (ProfileIOData::IsHandledProtocol(UTF16ToASCII(parsed_scheme)) ||
+        LowerCaseEqualsASCII(parsed_scheme, content::kViewSourceScheme) ||
         LowerCaseEqualsASCII(parsed_scheme, content::kJavaScriptScheme) ||
         LowerCaseEqualsASCII(parsed_scheme, content::kDataScheme))
-      return URL;
+      return return_value_for_non_http_url;
 
-    // Finally, check and see if the user has explicitly opened this scheme as
-    // a URL before, or if the "scheme" is actually a username.  We need to do
-    // this last because some schemes (e.g. "javascript") may be treated as
-    // "blocked" by the external protocol handler because we don't want pages to
-    // open them, but users still can.
-    // TODO(viettrungluu): get rid of conversion.
+    // Not an internal protocol.  Check and see if the user has explicitly
+    // opened this scheme as a URL before, or if the "scheme" is actually a
+    // username.  We need to do this after the check above because some
+    // handlable schemes (e.g. "javascript") may be treated as "blocked" by the
+    // external protocol handler because we don't want pages to open them, but
+    // users still can.
     ExternalProtocolHandler::BlockState block_state =
         ExternalProtocolHandler::GetBlockState(
             base::UTF16ToUTF8(parsed_scheme));
     switch (block_state) {
       case ExternalProtocolHandler::DONT_BLOCK:
-        return URL;
+        return return_value_for_non_http_url;
 
       case ExternalProtocolHandler::BLOCK:
         // If we don't want the user to open the URL, don't let it be navigated
@@ -223,8 +224,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
         DCHECK_EQ(std::string(content::kHttpScheme),
                   base::UTF16ToUTF8(http_scheme));
 
-        if (http_type == URL &&
-            http_parts.username.is_nonempty() &&
+        if ((http_type == URL) && http_parts.username.is_nonempty() &&
             http_parts.password.is_nonempty()) {
           // Manually re-jigger the parsed parts to match |text| (without the
           // http scheme added).
@@ -246,10 +246,9 @@ AutocompleteInput::Type AutocompleteInput::Parse(
           *parts = http_parts;
           if (scheme)
             scheme->clear();
-          if (canonicalized_url)
-            *canonicalized_url = http_canonicalized_url;
+          *canonicalized_url = http_canonicalized_url;
 
-          return http_type;
+          return URL;
         }
 
         // We don't know about this scheme and it doesn't look like the user

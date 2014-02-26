@@ -114,11 +114,13 @@ TEST(AutocompleteInputTest, InputType) {
     { ASCIIToUTF16("192.168.0.256"), AutocompleteInput::QUERY },
     { ASCIIToUTF16("[foo.com]"), AutocompleteInput::QUERY },
     { ASCIIToUTF16("filesystem:http://a.com/t/bar"), AutocompleteInput::URL },
-    { ASCIIToUTF16("filesystem:http:foo"), AutocompleteInput::URL },
-    { ASCIIToUTF16("filesystem:file://"), AutocompleteInput::URL },
-    { ASCIIToUTF16("filesystem:http"), AutocompleteInput::URL },
-    { ASCIIToUTF16("filesystem:"), AutocompleteInput::URL },
-    { ASCIIToUTF16("ftp:"), AutocompleteInput::URL },
+    { ASCIIToUTF16("filesystem:http://a.com/"), AutocompleteInput::QUERY },
+    { ASCIIToUTF16("filesystem:file://"), AutocompleteInput::QUERY },
+    { ASCIIToUTF16("filesystem:http"), AutocompleteInput::QUERY },
+    { ASCIIToUTF16("filesystem:"), AutocompleteInput::QUERY },
+    { ASCIIToUTF16("chrome-search://"), AutocompleteInput::QUERY },
+    { ASCIIToUTF16("chrome-devtools:"), AutocompleteInput::QUERY },
+    { ASCIIToUTF16("about://f;"), AutocompleteInput::QUERY },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_cases); ++i) {
