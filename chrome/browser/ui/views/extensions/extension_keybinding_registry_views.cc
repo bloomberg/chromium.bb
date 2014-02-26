@@ -29,9 +29,7 @@ ExtensionKeybindingRegistryViews::ExtensionKeybindingRegistryViews(
 }
 
 ExtensionKeybindingRegistryViews::~ExtensionKeybindingRegistryViews() {
-  for (EventTargets::const_iterator iter = event_targets_.begin();
-       iter != event_targets_.end(); ++iter)
-    focus_manager_->UnregisterAccelerator(iter->first, this);
+  focus_manager_->UnregisterAccelerators(this);
 }
 
 void ExtensionKeybindingRegistryViews::AddExtensionKeybinding(
@@ -56,19 +54,15 @@ void ExtensionKeybindingRegistryViews::AddExtensionKeybinding(
   for (; iter != commands.end(); ++iter) {
     if (!command_name.empty() && (iter->second.command_name() != command_name))
       continue;
+    if (!IsAcceleratorRegistered(iter->second.accelerator())) {
+      focus_manager_->RegisterAccelerator(iter->second.accelerator(),
+                                          ui::AcceleratorManager::kHighPriority,
+                                          this);
+    }
 
-    event_targets_[iter->second.accelerator()].push_back(
-        std::make_pair(extension->id(), iter->second.command_name()));
-    // Shortcuts except media keys have only one target in the list. See comment
-    // about |event_targets_|.
-    if (!extensions::CommandService::IsMediaKey(iter->second.accelerator()))
-      DCHECK_EQ(1u, event_targets_[iter->second.accelerator()].size());
-    if (event_targets_[iter->second.accelerator()].size() > 1)
-      continue;   // It is already registered with the focus manager.
-
-    focus_manager_->RegisterAccelerator(
-        iter->second.accelerator(),
-        ui::AcceleratorManager::kHighPriority, this);
+    AddEventTarget(iter->second.accelerator(),
+                   extension->id(),
+                   iter->second.command_name());
   }
 }
 

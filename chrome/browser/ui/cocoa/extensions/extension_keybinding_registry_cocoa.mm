@@ -45,15 +45,12 @@ bool ExtensionKeybindingRegistryCocoa::ProcessKeyEvent(
   ui::Accelerator accelerator(
       static_cast<ui::KeyboardCode>(event.windowsKeyCode),
       content::GetModifiersFromNativeWebKeyboardEvent(event));
-  EventTargets::iterator targets = event_targets_.find(accelerator);
-  if (targets == event_targets_.end())
+
+  std::string extension_id;
+  std::string command_name;
+  if (!GetFirstTarget(accelerator, &extension_id, &command_name))
     return false;
 
-  TargetList::const_iterator first_target = targets->second.begin();
-  DCHECK(!targets->second.empty());
-
-  std::string extension_id = first_target->first;
-  std::string command_name = first_target->second;
   int type = 0;
   if (command_name == values::kPageActionCommandEvent) {
     type = chrome::NOTIFICATION_EXTENSION_COMMAND_PAGE_ACTION_MAC;
@@ -73,8 +70,6 @@ bool ExtensionKeybindingRegistryCocoa::ProcessKeyEvent(
       content::Source<Profile>(profile_),
       content::Details<
           std::pair<const std::string, gfx::NativeWindow> >(&details));
-  // We expect only one target for these types of events.
-  DCHECK_EQ(1u, targets->second.size());
   return true;
 }
 
@@ -95,13 +90,9 @@ void ExtensionKeybindingRegistryCocoa::AddExtensionKeybinding(
     if (!command_name.empty() && (iter->second.command_name() != command_name))
       continue;
 
-    ui::Accelerator accelerator(iter->second.accelerator());
-    event_targets_[accelerator].push_back(
-        std::make_pair(extension->id(), iter->second.command_name()));
-     // Shortcuts except media keys have only one target in the list. See
-     // comment about |event_targets_|.
-     if (!extensions::CommandService::IsMediaKey(iter->second.accelerator()))
-        DCHECK_EQ(1u, event_targets_[iter->second.accelerator()].size());
+    AddEventTarget(iter->second.accelerator(),
+                   extension->id(),
+                   iter->second.command_name());
   }
 
   // Mac implemenetation behaves like GTK with regards to what is kept in the
@@ -113,11 +104,9 @@ void ExtensionKeybindingRegistryCocoa::AddExtensionKeybinding(
           extensions::CommandService::ACTIVE_ONLY,
           &browser_action,
           NULL)) {
-    ui::Accelerator accelerator(browser_action.accelerator());
-    event_targets_[accelerator].push_back(
-        std::make_pair(extension->id(), browser_action.command_name()));
-    // We should have only one target. See comment about |event_targets_|.
-    DCHECK_EQ(1u, event_targets_[accelerator].size());
+    AddEventTarget(browser_action.accelerator(),
+                   extension->id(),
+                   browser_action.command_name());
   }
 
   // Add the Page Action (if any).
@@ -127,11 +116,9 @@ void ExtensionKeybindingRegistryCocoa::AddExtensionKeybinding(
           extensions::CommandService::ACTIVE_ONLY,
           &page_action,
           NULL)) {
-    ui::Accelerator accelerator(page_action.accelerator());
-    event_targets_[accelerator].push_back(
-        std::make_pair(extension->id(), page_action.command_name()));
-    // We should have only one target. See comment about |event_targets_|.
-    DCHECK_EQ(1u, event_targets_[accelerator].size());
+    AddEventTarget(page_action.accelerator(),
+                   extension->id(),
+                   page_action.command_name());
   }
 }
 

@@ -21,11 +21,8 @@ ExtensionCommandsGlobalRegistry::ExtensionCommandsGlobalRegistry(
 }
 
 ExtensionCommandsGlobalRegistry::~ExtensionCommandsGlobalRegistry() {
-  for (EventTargets::const_iterator iter = event_targets_.begin();
-       iter != event_targets_.end(); ++iter) {
-    GlobalShortcutListener::GetInstance()->UnregisterAccelerator(
-        iter->first, this);
-  }
+  if (!IsEventTargetsEmpty())
+    GlobalShortcutListener::GetInstance()->UnregisterAccelerators(this);
 }
 
 static base::LazyInstance<
@@ -73,18 +70,13 @@ void ExtensionCommandsGlobalRegistry::AddExtensionKeybinding(
             << " " << command_name.c_str()
             << " key: " << accelerator.GetShortcutText();
 
-    if (event_targets_.find(accelerator) == event_targets_.end()) {
+    if (!IsAcceleratorRegistered(accelerator)) {
       if (!GlobalShortcutListener::GetInstance()->RegisterAccelerator(
               accelerator, this))
         continue;
     }
 
-    event_targets_[accelerator].push_back(
-        std::make_pair(extension->id(), iter->second.command_name()));
-    // Shortcuts except media keys have only one target in the list. See comment
-    // about |event_targets_|.
-    if (!extensions::CommandService::IsMediaKey(accelerator))
-      DCHECK_EQ(1u, event_targets_[accelerator].size());
+    AddEventTarget(accelerator, extension->id(), iter->second.command_name());
   }
 }
 

@@ -131,6 +131,42 @@ void ExtensionKeybindingRegistry::CommandExecuted(
       DispatchEventToExtension(extension_id, event.Pass());
 }
 
+bool ExtensionKeybindingRegistry::IsAcceleratorRegistered(
+    const ui::Accelerator& accelerator) const {
+  return event_targets_.find(accelerator) != event_targets_.end();
+}
+
+void ExtensionKeybindingRegistry::AddEventTarget(
+    const ui::Accelerator& accelerator,
+    const std::string& extension_id,
+    const std::string& command_name) {
+  event_targets_[accelerator].push_back(
+      std::make_pair(extension_id, command_name));
+  // Shortcuts except media keys have only one target in the list. See comment
+  // about |event_targets_|.
+  if (!extensions::CommandService::IsMediaKey(accelerator))
+    DCHECK_EQ(1u, event_targets_[accelerator].size());
+}
+
+bool ExtensionKeybindingRegistry::GetFirstTarget(
+    const ui::Accelerator& accelerator,
+    std::string* extension_id,
+    std::string* command_name) const {
+  EventTargets::const_iterator targets = event_targets_.find(accelerator);
+  if (targets == event_targets_.end())
+    return false;
+
+  DCHECK(!targets->second.empty());
+  TargetList::const_iterator first_target = targets->second.begin();
+  *extension_id = first_target->first;
+  *command_name = first_target->second;
+  return true;
+}
+
+bool ExtensionKeybindingRegistry::IsEventTargetsEmpty() const {
+  return event_targets_.empty();
+}
+
 void ExtensionKeybindingRegistry::Observe(
     int type,
     const content::NotificationSource& source,

@@ -60,6 +60,20 @@ void GlobalShortcutListener::UnregisterAccelerator(
     StopListening();
 }
 
+void GlobalShortcutListener::UnregisterAccelerators(Observer* observer) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  AcceleratorMap::iterator it = accelerator_map_.begin();
+  while (it != accelerator_map_.end()) {
+    if (it->second == observer) {
+      AcceleratorMap::iterator to_remove = it++;
+      UnregisterAccelerator(to_remove->first, observer);
+    } else {
+      ++it;
+    }
+  }
+}
+
 void GlobalShortcutListener::NotifyKeyPressed(
     const ui::Accelerator& accelerator) {
   AcceleratorMap::iterator iter = accelerator_map_.find(accelerator);

@@ -36,7 +36,6 @@ ExtensionKeybindingRegistryGtk::~ExtensionKeybindingRegistryGtk() {
   if (accel_group_) {
     gtk_accel_group_disconnect(accel_group_,
                                NULL);  // Remove all closures.
-    event_targets_.clear();
 
     gtk_window_remove_accel_group(window_, accel_group_);
     g_object_unref(accel_group_);
@@ -52,7 +51,7 @@ gboolean ExtensionKeybindingRegistryGtk::HasPriorityHandler(
   ui::Accelerator accelerator = ui::AcceleratorForGdkKeyCodeAndModifier(
       event->keyval, static_cast<GdkModifierType>(event->state));
 
-  return event_targets_.find(accelerator) != event_targets_.end();
+  return IsAcceleratorRegistered(accelerator);
 }
 
 void ExtensionKeybindingRegistryGtk::AddExtensionKeybinding(
@@ -73,13 +72,7 @@ void ExtensionKeybindingRegistryGtk::AddExtensionKeybinding(
       continue;
 
     ui::Accelerator accelerator(iter->second.accelerator());
-    event_targets_[accelerator].push_back(
-        std::make_pair(extension->id(), iter->second.command_name()));
-
-    // Shortcuts except media keys have only one target in the list. See comment
-    // about |event_targets_|.
-    if (!extensions::CommandService::IsMediaKey(iter->second.accelerator()))
-      DCHECK_EQ(1u, event_targets_[accelerator].size());
+    AddEventTarget(accelerator, extension->id(), iter->second.command_name());
 
     if (!accel_group_) {
       accel_group_ = gtk_accel_group_new();
@@ -103,11 +96,9 @@ void ExtensionKeybindingRegistryGtk::AddExtensionKeybinding(
           extensions::CommandService::ACTIVE_ONLY,
           &browser_action,
           NULL)) {
-    ui::Accelerator accelerator(browser_action.accelerator());
-    event_targets_[accelerator].push_back(
-        std::make_pair(extension->id(), browser_action.command_name()));
-    // We should have only one target. See comment about |event_targets_|.
-    DCHECK_EQ(1u, event_targets_[accelerator].size());
+    AddEventTarget(browser_action.accelerator(),
+                   extension->id(),
+                   browser_action.command_name());
   }
 
   // Add the Page Action (if any).
@@ -117,11 +108,8 @@ void ExtensionKeybindingRegistryGtk::AddExtensionKeybinding(
           extensions::CommandService::ACTIVE_ONLY,
           &page_action,
           NULL)) {
-    ui::Accelerator accelerator(page_action.accelerator());
-    event_targets_[accelerator].push_back(
-        std::make_pair(extension->id(), page_action.command_name()));
-    // We should have only one target. See comment about |event_targets_|.
-    DCHECK_EQ(1u, event_targets_[accelerator].size());
+    AddEventTarget(
+        page_action.accelerator(), extension->id(), page_action.command_name());
   }
 }
 

@@ -39,9 +39,13 @@ class GlobalShortcutListener {
   // consideration.
   bool RegisterAccelerator(const ui::Accelerator& accelerator,
                            Observer* observer);
+
   // Stop listening for the given |accelerator|.
   void UnregisterAccelerator(const ui::Accelerator& accelerator,
                              Observer* observer);
+
+  // Stop listening for all accelerators of the given |observer|.
+  void UnregisterAccelerators(Observer* observer);
 
  protected:
   GlobalShortcutListener();
