@@ -678,7 +678,8 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 {##############################################################################}
 {% block visit_dom_wrapper %}
-{% if reachable_node_function or set_wrapper_reference_to_list %}
+{% if reachable_node_function or reachable_node_reference_function or
+      set_wrapper_reference_to_list %}
 void {{v8_class}}::visitDOMWrapper(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
 {
     {{cpp_class}}* impl = fromInternalPointer(object);
@@ -700,8 +701,13 @@ void {{v8_class}}::visitDOMWrapper(void* object, const v8::Persistent<v8::Object
         isolate->SetReferenceFromGroup(v8::UniqueId(reinterpret_cast<intptr_t>(root)), wrapper);
         return;
     }
+    {% elif reachable_node_reference_function %}
+    Node* root = V8GCController::opaqueRootForGC(&impl->{{reachable_node_reference_function}}(), isolate);
+    isolate->SetReferenceFromGroup(v8::UniqueId(reinterpret_cast<intptr_t>(root)), wrapper);
     {% endif %}
+    {% if reachable_node_function or set_wrapper_reference_to_list %}
     setObjectGroup(object, wrapper, isolate);
+    {% endif %}
 }
 
 {% endif %}

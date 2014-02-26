@@ -95,7 +95,8 @@ def generate_interface(interface):
 
     # [SetWrapperReferenceFrom]
     reachable_node_function = extended_attributes.get('SetWrapperReferenceFrom')
-    if reachable_node_function:
+    reachable_node_reference_function = extended_attributes.get('SetWrapperReferenceFromReference')
+    if reachable_node_function or reachable_node_reference_function:
         includes.update(['bindings/v8/V8GCController.h',
                          'core/dom/Element.h'])
 
@@ -133,7 +134,9 @@ def generate_interface(interface):
         'has_visit_dom_wrapper': (
             # [Custom=Wrap], [SetWrapperReferenceFrom]
             has_extended_attribute_value(interface, 'Custom', 'VisitDOMWrapper') or
-            reachable_node_function or set_wrapper_reference_to_list),
+            reachable_node_function or
+            reachable_node_reference_function or
+            set_wrapper_reference_to_list),
         'header_includes': header_includes,
         'interface_name': interface.name,
         'is_active_dom_object': 'ActiveDOMObject' in extended_attributes,  # [ActiveDOMObject]
@@ -150,6 +153,7 @@ def generate_interface(interface):
         'pass_ref_ptr': 'PassRefPtrWillBeRawPtr'
                         if is_will_be_garbage_collected else 'PassRefPtr',
         'reachable_node_function': reachable_node_function,
+        'reachable_node_reference_function': reachable_node_reference_function,
         'ref_ptr': 'RefPtrWillBeRawPtr'
                    if is_will_be_garbage_collected else 'RefPtr',
         'runtime_enabled_function': runtime_enabled_function_name(interface),  # [RuntimeEnabled]
