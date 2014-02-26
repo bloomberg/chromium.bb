@@ -479,6 +479,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
     [self addSubviewToPermanentList:dragBlockingView_];
 
     newTabButton_ = [view getNewTabButton];
+    [newTabButton_ setWantsLayer:YES];
     [self addSubviewToPermanentList:newTabButton_];
     [newTabButton_ setTarget:self];
     [newTabButton_ setAction:@selector(clickNewTabButton:)];
