@@ -18,12 +18,6 @@ def web_socket_transfer_data(request):
     data = struct.pack('!H', 1000) + 'close_frame[:2]=%r' % close_frame[:2]
     request.connection.write(stream.create_close_frame(data))
 
-    # If the following assertion fails, AssertionError will be raised,
-    # which will prevent pywebsocket from sending a close frame.
-    # In this case, the client will fail to finish closing handshake, thus
-    # closeEvent.wasClean will become false.
-    assert close_frame[:2] == '\x88\x80'
-
-    # Pretend we have received a close frame from the client.
-    # After this function exits, pywebsocket will send a close frame automatically.
-    request.client_terminated = True
+    # Tell pywebsocket we have sent a close frame to the client, so it can close
+    # the connection.
+    request.server_terminated = True
