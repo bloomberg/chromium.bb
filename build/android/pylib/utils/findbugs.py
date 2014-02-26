@@ -107,8 +107,19 @@ def _Run(exclude, known_bugs, classes_to_analyze, auxiliary_classes,
     for classes in auxiliary_classes:
       system_classes.append(os.path.abspath(classes))
 
-  cmd = '%s -textui -sortByClass ' % os.path.join(chrome_src, 'third_party',
-                                                  'findbugs', 'bin', 'findbugs')
+  findbugs_javacmd = 'java'
+  findbugs_home = os.path.join(chrome_src, 'third_party', 'findbugs')
+  findbugs_jar = os.path.join(findbugs_home, 'lib', 'findbugs.jar')
+  findbugs_pathsep = ':'
+  findbugs_maxheap = '768'
+
+  cmd = '%s ' % findbugs_javacmd
+  cmd = '%s -classpath %s%s' % (cmd, findbugs_jar, findbugs_pathsep)
+  cmd = '%s -Xmx%sm ' % (cmd, findbugs_maxheap)
+  cmd = '%s -Dfindbugs.home="%s" ' % (cmd, findbugs_home)
+  cmd = '%s -jar %s ' % (cmd, findbugs_jar)
+
+  cmd = '%s -textui -sortByClass ' % cmd
   cmd = '%s -pluginList %s' % (cmd, os.path.join(chrome_src, 'tools', 'android',
                                                  'findbugs_plugin', 'lib',
                                                  'chromiumPlugin.jar'))
@@ -123,7 +134,6 @@ def _Run(exclude, known_bugs, classes_to_analyze, auxiliary_classes,
 
   if findbug_args:
     cmd = '%s %s ' % (cmd, findbug_args)
-
 
   chrome_classes = _GetChromeClasses(release_version)
   if not chrome_classes:
