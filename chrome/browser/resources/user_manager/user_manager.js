@@ -1,13 +1,13 @@
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-<include src="../chromeos/login/screen.js"></include>
-<include src="../chromeos/login/bubble.js"></include>
-<include src="../chromeos/login/display_manager.js"></include>
+<include src="../login/screen.js"></include>
+<include src="../login/bubble.js"></include>
+<include src="../login/display_manager.js"></include>
 <include src="control_bar.js"></include>
-<include src="../chromeos/login/screen_account_picker.js"></include>
-<include src="../chromeos/login/user_pod_row.js"></include>
-<include src="../chromeos/login/resource_loader.js"></include>
+<include src="../login/screen_account_picker.js"></include>
+<include src="../login/user_pod_row.js"></include>
+<include src="../login/resource_loader.js"></include>
 
 cr.define('cr.ui', function() {
   var DisplayManager = cr.ui.login.DisplayManager;
