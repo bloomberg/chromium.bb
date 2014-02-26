@@ -21,3 +21,11 @@ class RasterizeAndRecordMicroKeyMobileSites(test.Test):
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   test = rasterize_and_record_micro.RasterizeAndRecordMicro
   page_set = 'page_sets/key_mobile_sites.json'
+
+
+class RasterizeAndRecordMicroKeySilkCases(test.Test):
+  """Measures rasterize and record performance on the silk sites.
+
+  http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
+  test = rasterize_and_record_micro.RasterizeAndRecordMicro
+  page_set = 'page_sets/key_silk_cases.json'
