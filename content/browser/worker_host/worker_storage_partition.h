@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_WORKER_HOST_WORKER_STORAGE_PARTITION_H_
 
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 
 namespace quota {
 class QuotaManager;
@@ -39,7 +40,7 @@ class IndexedDBContextImpl;
 // This class is effectively a struct, but we make it a class because we want to
 // define copy constructors, assignment operators, and an Equals() function for
 // it which makes it look awkward as a struct.
-class WorkerStoragePartition {
+class CONTENT_EXPORT WorkerStoragePartition {
  public:
   WorkerStoragePartition(
       net::URLRequestContextGetter* url_request_context,

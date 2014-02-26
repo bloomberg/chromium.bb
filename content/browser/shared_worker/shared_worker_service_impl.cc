@@ -4,7 +4,11 @@
 
 #include "content/browser/shared_worker/shared_worker_service_impl.h"
 
+#include "content/browser/shared_worker/shared_worker_host.h"
+#include "content/browser/shared_worker/shared_worker_instance.h"
 #include "content/browser/shared_worker/shared_worker_message_filter.h"
+#include "content/browser/worker_host/worker_document_set.h"
+#include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/worker_service_observer.h"
@@ -50,8 +54,51 @@ void SharedWorkerServiceImpl::CreateWorker(
     ResourceContext* resource_context,
     const WorkerStoragePartition& partition,
     bool* url_mismatch) {
-  // TODO(horo): implement this.
-  NOTIMPLEMENTED();
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  *url_mismatch = false;
+  SharedWorkerInstance* existing_instance =
+      FindSharedWorkerInstance(
+          params.url, params.name, partition, resource_context);
+  if (existing_instance) {
+    if (params.url != existing_instance->url()) {
+      *url_mismatch = true;
+      return;
+    }
+    if (existing_instance->load_failed()) {
+      filter->Send(new ViewMsg_WorkerScriptLoadFailed(route_id));
+      return;
+    }
+    existing_instance->AddFilter(filter, route_id);
+    existing_instance->worker_document_set()->Add(
+        filter, params.document_id, filter->render_process_id(),
+        params.render_frame_route_id);
+    filter->Send(new ViewMsg_WorkerCreated(route_id));
+    return;
+  }
+
+  scoped_ptr<SharedWorkerInstance> instance(new SharedWorkerInstance(
+      params.url,
+      params.name,
+      params.content_security_policy,
+      params.security_policy_type,
+      resource_context,
+      partition));
+  instance->AddFilter(filter, route_id);
+  instance->worker_document_set()->Add(
+      filter, params.document_id, filter->render_process_id(),
+      params.render_frame_route_id);
+
+  scoped_ptr<SharedWorkerHost> worker(new SharedWorkerHost(instance.release()));
+  worker->Init(filter);
+  const int worker_route_id = worker->worker_route_id();
+  worker_hosts_.push_back(worker.release());
+
+  FOR_EACH_OBSERVER(
+      WorkerServiceObserver, observers_,
+      WorkerCreated(params.url,
+                    params.name,
+                    filter->render_process_id(),
+                    worker_route_id));
 }
 
 void SharedWorkerServiceImpl::ForwardToWorker(
@@ -139,6 +186,23 @@ void SharedWorkerServiceImpl::OnSharedWorkerMessageFilterClosing(
     SharedWorkerMessageFilter* filter) {
   // TODO(horo): implement this.
   NOTIMPLEMENTED();
+}
+
+SharedWorkerInstance* SharedWorkerServiceImpl::FindSharedWorkerInstance(
+    const GURL& url,
+    const base::string16& name,
+    const WorkerStoragePartition& partition,
+    ResourceContext* resource_context) {
+  for (ScopedVector<SharedWorkerHost>::const_iterator iter =
+           worker_hosts_.begin();
+       iter != worker_hosts_.end();
+       ++iter) {
+    SharedWorkerInstance* instance = (*iter)->instance();
+    if (instance &&
+        instance->Matches(url, name, partition, resource_context))
+      return instance;
+  }
+  return NULL;
 }
 
 }  // namespace content

@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_SHARED_WORKER_SHARED_WORKER_SERVICE_IMPL_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "content/public/browser/notification_observer.h"
@@ -20,6 +21,8 @@ class Message;
 
 namespace content {
 
+class SharedWorkerInstance;
+class SharedWorkerHost;
 class SharedWorkerMessageFilter;
 class ResourceContext;
 class WorkerServiceObserver;
@@ -88,6 +91,13 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
   SharedWorkerServiceImpl();
   virtual ~SharedWorkerServiceImpl();
 
+  SharedWorkerInstance* FindSharedWorkerInstance(
+      const GURL& url,
+      const base::string16& name,
+      const WorkerStoragePartition& worker_partition,
+      ResourceContext* resource_context);
+
+  ScopedVector<SharedWorkerHost> worker_hosts_;
   ObserverList<WorkerServiceObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerServiceImpl);
