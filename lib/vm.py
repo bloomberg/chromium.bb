@@ -68,11 +68,11 @@ def CreateVMImage(image=None, board=None, updatable=True):
   if board:
     cmd.extend(['--board', board])
 
-  msg = 'Failed to create the VM image.'
+  msg = 'Failed to create the VM image'
   try:
     cros_build_lib.RunCommand(cmd, enter_chroot=True, cwd=constants.SOURCE_ROOT)
-  except:
-    logging.error(msg)
+  except cros_build_lib.RunCommandError as e:
+    logging.error('%s: %s', msg, str(e))
     raise VMCreationError(msg)
 
   if not os.path.exists(vm_image_path):
