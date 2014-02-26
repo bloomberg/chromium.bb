@@ -153,8 +153,10 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   // "Header" for the data. Must be a multiple of |kMessageAlignment| bytes in
   // size. Must be POD.
   struct Header {
-    // Total size of data following the "header".
-    uint32_t data_size;
+    // Total size of the message, including the header, the message data
+    // ("bytes") including padding (to make it a multiple of |kMessageAlignment|
+    // bytes), and serialized handle information (TODO(vtl)).
+    uint32_t total_size;
     Type type;
     Subtype subtype;
     EndpointId source_id;

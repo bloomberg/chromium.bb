@@ -54,7 +54,10 @@ MessageInTransit::MessageInTransit(OwnedBuffer,
   DCHECK_LE(num_bytes, kMaxMessageNumBytes);
   DCHECK_LE(num_handles, kMaxMessageNumHandles);
 
-  header()->data_size = num_bytes;
+  // Note: If dispatchers are subsequently attached (in particular, if
+  // |num_handles| is nonzero), then |total_size| will have to be adjusted.
+  // TODO(vtl): Figure out where we should really set this.
+  header()->total_size = static_cast<uint32_t>(main_buffer_size_);
   header()->type = type;
   header()->subtype = subtype;
   header()->source_id = kInvalidEndpointId;
@@ -138,8 +141,8 @@ bool MessageInTransit::GetNextMessageSize(const void* buffer,
     return false;
 
   const Header* header = static_cast<const Header*>(buffer);
-  *next_message_size =
-      RoundUpMessageAlignment(sizeof(Header) + header->data_size);
+  *next_message_size = header->total_size;
+  DCHECK_EQ(*next_message_size % kMessageAlignment, 0u);
   return true;
 }
 
