@@ -1136,6 +1136,9 @@ TEST_F(End2EndTest, VideoLogging) {
     expected_event_count_for_frame +=
         map_it->second.counter[kVideoFrameDecoded];
 
+    EXPECT_GT(map_it->second.counter[kVideoAckReceived], 0);
+    expected_event_count_for_frame += map_it->second.counter[kVideoAckReceived];
+
     // Verify that there were no other events logged with respect to this
     // frame.
     // (i.e. Total event count = expected event count)

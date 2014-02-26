@@ -9,6 +9,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_environment.h"
+#include "media/cast/logging/simple_event_subscriber.h"
 #include "media/cast/test/fake_gpu_video_accelerator_factories.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/test/utility/video_utility.h"
@@ -90,7 +91,7 @@ class VideoSenderTest : public ::testing::Test {
                             task_runner_,
                             task_runner_,
                             task_runner_,
-                            GetDefaultCastSenderLoggingConfig());
+                            GetLoggingConfigWithRawEventsAndStatsEnabled());
     transport::CastTransportConfig transport_config;
     transport_sender_.reset(new transport::CastTransportSenderImpl(
         testing_clock_,
@@ -251,6 +252,36 @@ TEST_F(VideoSenderTest, ResendTimer) {
   EXPECT_GE(
       transport_.number_of_rtp_packets() + transport_.number_of_rtcp_packets(),
       3);
+}
+
+TEST_F(VideoSenderTest, LogAckReceivedEvent) {
+  InitEncoder(false);
+  SimpleEventSubscriber event_subscriber;
+  cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber);
+
+  int num_frames = 10;
+  for (int i = 0; i < num_frames; i++) {
+    scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
+
+    base::TimeTicks capture_time;
+    video_sender_->InsertRawVideoFrame(video_frame, capture_time);
+  }
+
+  task_runner_->RunTasks();
+
+  RtcpCastMessage cast_feedback(1);
+  cast_feedback.ack_frame_id_ = num_frames - 1;
+
+  video_sender_->OnReceivedCastFeedback(cast_feedback);
+
+  std::vector<FrameEvent> frame_events;
+  event_subscriber.GetFrameEventsAndReset(&frame_events);
+
+  ASSERT_TRUE(!frame_events.empty());
+  EXPECT_EQ(kVideoAckReceived, frame_events.rbegin()->type);
+  EXPECT_EQ(num_frames - 1u, frame_events.rbegin()->frame_id);
+
+  cast_environment_->Logging()->RemoveRawEventSubscriber(&event_subscriber);
 }
 
 }  // namespace cast

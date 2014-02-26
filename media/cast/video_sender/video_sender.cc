@@ -4,6 +4,7 @@
 
 #include "media/cast/video_sender/video_sender.h"
 
+#include <cstring>
 #include <list>
 
 #include "base/bind.h"
@@ -152,6 +153,8 @@ VideoSender::VideoSender(
       CastEnvironment::MAIN, FROM_HERE,
       base::Bind(initialization_status, STATUS_INITIALIZED));
   cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber_);
+
+  memset(frame_id_to_rtp_timestamp_, 0, sizeof(frame_id_to_rtp_timestamp_));
 }
 
 VideoSender::~VideoSender() {
@@ -199,11 +202,14 @@ void VideoSender::SendEncodedVideoFrameMainThread(
             << static_cast<int>(encoded_frame->frame_id);
   }
 
-  cast_environment_->Logging()->InsertFrameEvent(
-      last_send_time_,
-      kVideoFrameEncoded,
-      encoded_frame->rtp_timestamp,
-      encoded_frame->frame_id);
+  uint32 frame_id = encoded_frame->frame_id;
+  cast_environment_->Logging()->InsertFrameEvent(last_send_time_,
+                                                 kVideoFrameEncoded,
+                                                 encoded_frame->rtp_timestamp,
+                                                 frame_id);
+
+  // Only use lowest 8 bits as key.
+  frame_id_to_rtp_timestamp_[frame_id & 0xff] = encoded_frame->rtp_timestamp;
 
   last_sent_frame_id_ = static_cast<int>(encoded_frame->frame_id);
   cast_environment_->PostTask(
@@ -437,8 +443,12 @@ void VideoSender::ReceivedAck(uint32 acked_frame_id) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   last_acked_frame_id_ = static_cast<int>(acked_frame_id);
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
-  cast_environment_->Logging()->InsertGenericEvent(
-      now, kVideoAckReceived, acked_frame_id);
+
+  RtpTimestamp rtp_timestamp =
+      frame_id_to_rtp_timestamp_[acked_frame_id & 0xff];
+  cast_environment_->Logging()->InsertFrameEvent(
+      now, kVideoAckReceived, rtp_timestamp, acked_frame_id);
+
   VLOG(1) << "ReceivedAck:" << static_cast<int>(acked_frame_id);
   last_acked_frame_id_ = acked_frame_id;
   UpdateFramesInFlight();

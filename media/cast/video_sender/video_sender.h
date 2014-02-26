@@ -15,6 +15,7 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/congestion_control/congestion_control.h"
+#include "media/cast/logging/logging_defines.h"
 #include "media/cast/rtcp/rtcp.h"
 #include "media/cast/rtcp/sender_rtcp_event_subscriber.h"
 #include "media/filters/gpu_video_accelerator_factories.h"
@@ -128,6 +129,14 @@ class VideoSender : public base::NonThreadSafe,
   base::TimeTicks last_checked_skip_count_time_;
   int last_skip_count_;
   CongestionControl congestion_control_;
+
+  // This is a "good enough" mapping for finding the RTP timestamp associated
+  // with a video frame. The key is the lowest 8 bits of frame id (which is
+  // what is sent via RTCP). This map is used for logging purposes. The only
+  // time when this mapping will be incorrect is when it receives an ACK for a
+  // old enough frame such that 8-bit wrap around has already occurred, which
+  // should be pretty rare.
+  RtpTimestamp frame_id_to_rtp_timestamp_[256];
 
   bool initialized_;
   base::WeakPtrFactory<VideoSender> weak_factory_;
