@@ -212,7 +212,8 @@ void NewWebSocketChannelImpl::close(int code, const String& reason)
 {
     WTF_LOG(Network, "NewWebSocketChannelImpl %p close(%d, %s)", this, code, reason.utf8().data());
     ASSERT(m_handle);
-    m_handle->close(static_cast<unsigned short>(code), reason);
+    unsigned short codeToSend = static_cast<unsigned short>(code == CloseEventCodeNotSpecified ? CloseEventCodeNoStatusRcvd : code);
+    m_handle->close(codeToSend, reason);
 }
 
 void NewWebSocketChannelImpl::fail(const String& reason, MessageLevel level, const String& sourceURL, unsigned lineNumber)
