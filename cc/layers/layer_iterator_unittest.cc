@@ -50,10 +50,7 @@ class TestLayer : public Layer {
   EXPECT_EQ(contrib, layer->count_representing_contributing_surface_);         \
   EXPECT_EQ(itself, layer->count_representing_itself_);
 
-typedef LayerIterator<Layer,
-                      RenderSurfaceLayerList,
-                      RenderSurface,
-                      LayerIteratorActions::FrontToBack> FrontToBack;
+typedef LayerIterator<Layer> FrontToBack;
 
 void ResetCounts(RenderSurfaceLayerList* render_surface_layer_list) {
   for (unsigned surface_index = 0;

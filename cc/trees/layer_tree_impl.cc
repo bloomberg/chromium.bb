@@ -482,10 +482,7 @@ void LayerTreeImpl::UpdateDrawProperties() {
     // LayerIterator is used here instead of CallFunctionForSubtree to only
     // UpdateTilePriorities on layers that will be visible (and thus have valid
     // draw properties) and not because any ordering is required.
-    typedef LayerIterator<LayerImpl,
-                          LayerImplList,
-                          RenderSurfaceImpl,
-                          LayerIteratorActions::FrontToBack> LayerIteratorType;
+    typedef LayerIterator<LayerImpl> LayerIteratorType;
     LayerIteratorType end = LayerIteratorType::End(&render_surface_layer_list_);
     for (LayerIteratorType it =
              LayerIteratorType::Begin(&render_surface_layer_list_);
@@ -739,10 +736,7 @@ scoped_ptr<base::Value> LayerTreeImpl::AsValue() const {
   state->Set("root_layer", root_layer_->AsValue().release());
 
   scoped_ptr<base::ListValue> render_surface_layer_list(new base::ListValue());
-  typedef LayerIterator<LayerImpl,
-                        LayerImplList,
-                        RenderSurfaceImpl,
-                        LayerIteratorActions::FrontToBack> LayerIteratorType;
+  typedef LayerIterator<LayerImpl> LayerIteratorType;
   LayerIteratorType end = LayerIteratorType::End(&render_surface_layer_list_);
   for (LayerIteratorType it = LayerIteratorType::Begin(
            &render_surface_layer_list_); it != end; ++it) {
