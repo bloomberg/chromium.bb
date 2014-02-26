@@ -254,8 +254,8 @@ class BindingsTests(object):
         return all([self.identical_file(reference_filename, output_filename)
                     for (reference_filename, output_filename) in file_pairs])
 
-    def no_excess_files(self):
-        generated_files = set(os.listdir(self.output_directory))
+    def no_excess_files(self, check_directory):
+        generated_files = set(os.listdir(check_directory))
         generated_files.add('.svn')  # Subversion working copy directory
         excess_files = [output_file
                         for output_file in os.listdir(reference_directory)
@@ -299,12 +299,13 @@ class BindingsTests(object):
         passed = self.identical_file(reference_event_names_filename,
                                      self.event_names_filename)
         passed &= self.identical_output_files(self.output_directory)
+        passed &= self.no_excess_files(self.output_directory)
         if self.test_python:
             if self.verbose:
                 print
                 print 'Python:'
             passed &= self.identical_output_files(self.output_directory_py)
-        passed &= self.no_excess_files()
+        passed &= self.no_excess_files(self.output_directory_py)
         return passed
 
     def main(self):

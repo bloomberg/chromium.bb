@@ -94,8 +94,8 @@ def main():
     code_generator = CodeGeneratorV8(interfaces_info, output_directory)
     header_text, cpp_text = code_generator.generate_code(definitions, interface_name)
 
-    header_filename = output_directory + 'V8%s.h' % interface_name
-    cpp_filename = output_directory + 'V8%s.cpp' % interface_name
+    header_filename = os.path.join(output_directory, 'V8%s.h' % interface_name)
+    cpp_filename = os.path.join(output_directory, 'V8%s.cpp' % interface_name)
     write_file(header_text, header_filename, only_if_changed)
     write_file(cpp_text, cpp_filename, only_if_changed)
 
