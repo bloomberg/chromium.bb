@@ -783,15 +783,6 @@ class LayerTreeHostAnimationTestContinuousAnimate
         num_draw_layers_(0) {
   }
 
-  virtual void SetupTree() OVERRIDE {
-    LayerTreeHostAnimationTest::SetupTree();
-    // Create a fake content layer so we actually produce new content for every
-    // animation frame.
-    content_ = FakeContentLayer::Create(&client_);
-    content_->set_always_update_resources(true);
-    layer_tree_host()->root_layer()->AddChild(content_);
-  }
-
   virtual void BeginTest() OVERRIDE {
     PostSetNeedsCommitToMainThread();
   }
@@ -825,79 +816,9 @@ class LayerTreeHostAnimationTestContinuousAnimate
  private:
   int num_commit_complete_;
   int num_draw_layers_;
-  FakeContentLayerClient client_;
-  scoped_refptr<FakeContentLayer> content_;
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestContinuousAnimate);
-
-class LayerTreeHostAnimationTestCancelAnimateCommit
-    : public LayerTreeHostAnimationTest {
- public:
-  LayerTreeHostAnimationTestCancelAnimateCommit() : num_animate_calls_(0) {}
-
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
-
-  virtual void Animate(base::TimeTicks) OVERRIDE {
-    // No-op animate will cancel the commit.
-    if (++num_animate_calls_ == 2) {
-      EndTest();
-      return;
-    }
-    layer_tree_host()->SetNeedsAnimate();
-  }
-
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* tree_impl) OVERRIDE {
-    FAIL() << "Commit should have been canceled.";
-  }
-
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    FAIL() << "Draw should have been canceled.";
-  }
-
-  virtual void AfterTest() OVERRIDE { EXPECT_EQ(2, num_animate_calls_); }
-
- private:
-  int num_animate_calls_;
-  FakeContentLayerClient client_;
-  scoped_refptr<FakeContentLayer> content_;
-};
-
-MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestCancelAnimateCommit);
-
-class LayerTreeHostAnimationTestForceRedraw
-    : public LayerTreeHostAnimationTest {
- public:
-  LayerTreeHostAnimationTestForceRedraw()
-      : num_animate_(0), num_draw_layers_(0) {}
-
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
-
-  virtual void Animate(base::TimeTicks) OVERRIDE {
-    num_animate_++;
-    layer_tree_host()->SetNeedsAnimate();
-  }
-
-  virtual void Layout() OVERRIDE {
-    layer_tree_host()->SetNextCommitForcesRedraw();
-  }
-
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    num_draw_layers_++;
-    EndTest();
-  }
-
-  virtual void AfterTest() OVERRIDE {
-    EXPECT_EQ(2, num_animate_);
-    EXPECT_EQ(1, num_draw_layers_);
-  }
-
- private:
-  int num_animate_;
-  int num_draw_layers_;
-};
-
-MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestForceRedraw);
 
 // Make sure the main thread can still execute animations when CanDraw() is not
 // true.
