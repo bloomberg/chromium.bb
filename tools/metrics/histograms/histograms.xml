@@ -23074,11 +23074,17 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="WebRTC.AudioInputFramesPerBuffer" enum="AudioFramesPerBuffer">
+  <obsolete>
+    No longer exists in the code as of 2014/2/25.
+  </obsolete>
   <summary>Size of WebRTC audio input buffers (in audio frames).</summary>
 </histogram>
 
 <histogram name="WebRTC.AudioInputFramesPerBufferUnexpected"
     units="audio frames">
+  <obsolete>
+    No longer exists in the code as of 2014/2/25.
+  </obsolete>
   <summary>
     Size of WebRTC audio input buffers (atypical values, in audio frames).
   </summary>
