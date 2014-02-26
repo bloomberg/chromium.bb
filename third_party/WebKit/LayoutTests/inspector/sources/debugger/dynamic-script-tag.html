@@ -20,7 +20,7 @@ var test = function()
 
             function processMessage(message)
             {
-                if (message._messageText.indexOf("DYNAMIC") !== -1)
+                if (message.messageText.indexOf("DYNAMIC") !== -1)
                     --consoleMessagesCount;
             }
 

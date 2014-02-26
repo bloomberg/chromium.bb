@@ -57,7 +57,7 @@ InspectorTest.makeXHR = function(method, url, async, user, password, headers, wi
 
     function innerCallback(msg)
     {
-        if (msg._messageText.indexOf("XHR loaded") !== -1)
+        if (msg.messageText.indexOf("XHR loaded") !== -1)
             callback();
         else
             InspectorTest.addConsoleSniffer(innerCallback);
