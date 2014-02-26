@@ -51,7 +51,7 @@ SET TO=\%OUTPUT%\%BUILDTYPE%%ARCH%
 
 REM Figure out what files to copy based on the component type (shared/static).
 IF EXIST "%FROM%\base.dll" (
-SET TOCOPY=setup.exe setup.exe.manifest chrome.7z *.dll
+SET TOCOPY=setup.exe chrome.7z *.dll
 SET ARCHIVETODELETE=chrome.packed.7z
 SET INSTALLER=setup.exe
 ) ELSE (
