@@ -186,7 +186,7 @@ bool ViaHeaderContains(WebFrame* frame, const std::string& via_value) {
   // Multiple via headers have already been coalesced and hence each value
   // separated by a comma corresponds to a proxy. The value added by a proxy is
   // not expected to contain any commas.
-  // Example., Via: 1.0 Compression proxy, 1.1 Google promise preview
+  // Example., Via: 1.0 Compression proxy, 1.1 Google Instant Proxy Preview
   base::SplitString(
       frame->dataSource()->response().httpHeaderField(kViaHeaderName).utf8(),
       ',', &values);
@@ -275,8 +275,9 @@ void GetPreviewState(WebFrame* frame,
   if (data_reduction_proxy_was_used) {
     if (came_from_websearch) {
       *preview_state = ViaHeaderContains(
-          frame, "1.1 Google Promise Preview") ? PREVIEW : PREVIEW_NOT_USED;
-    } else if (ViaHeaderContains(frame, "1.1 Google Promise Original")) {
+          frame,
+          "1.1 Google Instant Proxy Preview") ? PREVIEW : PREVIEW_NOT_USED;
+    } else if (ViaHeaderContains(frame, "1.1 Google Instant Proxy")) {
       *preview_state = PREVIEW_WAS_SHOWN;
       *preview_experiment_id = GetQueryStringBasedExperiment(
           GURL(frame->document().referrer()));
