@@ -67,16 +67,16 @@ String DOMURL::createObjectURL(ExecutionContext* executionContext, Blob* blob)
 {
     if (!executionContext || !blob)
         return String();
-    return createPublicURL(executionContext, blob);
+    return createPublicURL(executionContext, blob, blob->uuid());
 }
 
-String DOMURL::createPublicURL(ExecutionContext* executionContext, URLRegistrable* registrable)
+String DOMURL::createPublicURL(ExecutionContext* executionContext, URLRegistrable* registrable, const String& uuid)
 {
     KURL publicURL = BlobURL::createPublicURL(executionContext->securityOrigin());
     if (publicURL.isEmpty())
         return String();
 
-    executionContext->publicURLManager().registerURL(executionContext->securityOrigin(), publicURL, registrable);
+    executionContext->publicURLManager().registerURL(executionContext->securityOrigin(), publicURL, registrable, uuid);
 
     return publicURL.string();
 }
@@ -89,6 +89,14 @@ void DOMURL::revokeObjectURL(ExecutionContext* executionContext, const String& u
     KURL url(KURL(), urlString);
     MemoryCache::removeURLFromCache(executionContext, url);
     executionContext->publicURLManager().revoke(url);
+}
+
+void DOMURL::revokeObjectUUID(ExecutionContext* executionContext, const String& uuid)
+{
+    if (!executionContext)
+        return;
+
+    executionContext->publicURLManager().revoke(uuid);
 }
 
 } // namespace WebCore

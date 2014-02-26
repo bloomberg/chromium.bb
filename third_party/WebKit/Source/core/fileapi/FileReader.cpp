@@ -228,7 +228,16 @@ void FileReader::readInternal(Blob* blob, FileReaderLoader::ReadType type, Excep
         return;
     }
 
-    m_blob = blob;
+    if (blob->hasBeenClosed()) {
+        exceptionState.throwDOMException(InvalidStateError, String(blob->isFile() ? "File" : "Blob") + " has been closed.");
+        return;
+    }
+
+    // "Snapshot" the Blob data rather than the Blob itself as ongoing
+    // read operations should not be affected if close() is called on
+    // the Blob being read.
+    m_blobDataHandle = blob->blobDataHandle();
+    m_blobType = blob->type();
     m_readType = type;
     m_state = LOADING;
     m_loadingState = LoadingStatePending;
@@ -243,8 +252,9 @@ void FileReader::executePendingRead()
 
     m_loader = adoptPtr(new FileReaderLoader(m_readType, this));
     m_loader->setEncoding(m_encoding);
-    m_loader->setDataType(m_blob->type());
-    m_loader->start(executionContext(), m_blob->blobDataHandle());
+    m_loader->setDataType(m_blobType);
+    m_loader->start(executionContext(), m_blobDataHandle);
+    m_blobDataHandle = nullptr;
 }
 
 static void delayedAbort(ExecutionContext*, FileReader* reader)

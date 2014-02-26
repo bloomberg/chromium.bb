@@ -59,14 +59,16 @@ public:
 
     virtual unsigned long long size() const { return m_blobDataHandle->size(); }
     virtual PassRefPtr<Blob> slice(long long start = 0, long long end = std::numeric_limits<long long>::max(), const String& contentType = String()) const;
+    virtual void close(ExecutionContext*);
 
-    String type() const {  return m_blobDataHandle->type(); }
+    String type() const { return m_blobDataHandle->type(); }
     String uuid() const { return m_blobDataHandle->uuid(); }
     PassRefPtr<BlobDataHandle> blobDataHandle() const { return m_blobDataHandle; }
     // True for all File instances, including the user-built ones.
     virtual bool isFile() const { return false; }
     // Only true for File instances that are backed by platform files.
     virtual bool hasBackingFile() const { return false; }
+    bool hasBeenClosed() const { return m_hasBeenClosed; }
 
     // Used by the JavaScript Blob and File constructors.
     virtual void appendTo(BlobData&) const;
@@ -74,13 +76,15 @@ public:
     // URLRegistrable to support PublicURLs.
     virtual URLRegistry& registry() const OVERRIDE FINAL;
 
-    static void clampSliceOffsets(long long size, long long& start, long long& end);
 protected:
     explicit Blob(PassRefPtr<BlobDataHandle>);
 
+    static void clampSliceOffsets(long long size, long long& start, long long& end);
 private:
     Blob();
+
     RefPtr<BlobDataHandle> m_blobDataHandle;
+    bool m_hasBeenClosed;
 };
 
 } // namespace WebCore

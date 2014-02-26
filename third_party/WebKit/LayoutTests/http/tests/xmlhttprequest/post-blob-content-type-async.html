@@ -43,7 +43,7 @@
           url += testCase.allowOrigin || "";
           if (testCase.shouldThrow !== undefined) {
               try {
-                  testBlobContentTypeAsync(url, mime, file);
+                  testBlobContentTypeAsync(url, mime, file, testCase.closeBeforeSend);
               } catch (e) {
                   testPassed("Exception should be thrown.")
                   runNextAsyncTest();
@@ -53,7 +53,7 @@
       }
   }
 
-  function testBlobContentTypeAsync(url, mimeType, fileName) {
+  function testBlobContentTypeAsync(url, mimeType, fileName, closeBeforeSend) {
       var blob;
       if (fileName) {
           if (mimeType !== "")
@@ -70,6 +70,8 @@
       xhr = new XMLHttpRequest();
       xhr.onloadend = reportResult;
       xhr.open("POST", url, true);
+      if (closeBeforeSend)
+          blob.close();
       xhr.send(blob);
   }
 

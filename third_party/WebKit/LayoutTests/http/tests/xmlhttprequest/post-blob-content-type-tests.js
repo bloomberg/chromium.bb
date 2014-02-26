@@ -31,6 +31,10 @@ var xhrBlobTestCases = [{
     mime: '',
     expectedMime: ''
 }, {
+    mime: '',
+    expectedMime: '',
+    closeBeforeSend: true
+}, {
     mime: '\u0422\u0435\u0441\u0442',
     expectedMime: '',
     shouldThrow: true
@@ -66,4 +70,9 @@ var xhrBlobTestCases = [{
     expectedMime: '',
     shouldThrow: true,
     file: 'hello.txt'
+}, {
+    mime: '',
+    expectedMime: '',
+    file: 'hello.txt',
+    closeBeforeSend: true
 }];

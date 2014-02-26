@@ -27,8 +27,10 @@
 #include "config.h"
 #include "core/html/PublicURLManager.h"
 
+#include "core/fetch/MemoryCache.h"
 #include "core/html/URLRegistry.h"
 #include "platform/weborigin/KURL.h"
+#include "wtf/Vector.h"
 #include "wtf/text/StringHash.h"
 
 namespace WebCore {
@@ -46,14 +48,14 @@ PublicURLManager::PublicURLManager(ExecutionContext* context)
 {
 }
 
-void PublicURLManager::registerURL(SecurityOrigin* origin, const KURL& url, URLRegistrable* registrable)
+void PublicURLManager::registerURL(SecurityOrigin* origin, const KURL& url, URLRegistrable* registrable, const String& uuid)
 {
     if (m_isStopped)
         return;
 
-    RegistryURLMap::ValueType* found = m_registryToURL.add(&registrable->registry(), URLSet()).storedValue;
+    RegistryURLMap::ValueType* found = m_registryToURL.add(&registrable->registry(), URLMap()).storedValue;
     found->key->registerURL(origin, url, registrable);
-    found->value.add(url.string());
+    found->value.add(url.string(), uuid);
 }
 
 void PublicURLManager::revoke(const KURL& url)
@@ -67,6 +69,27 @@ void PublicURLManager::revoke(const KURL& url)
     }
 }
 
+void PublicURLManager::revoke(const String& uuid)
+{
+    // A linear scan; revoking by UUID is assumed rare.
+    Vector<String> urlsToRemove;
+    for (RegistryURLMap::iterator i = m_registryToURL.begin(); i != m_registryToURL.end(); ++i) {
+        URLRegistry* registry = i->key;
+        URLMap& registeredURLs = i->value;
+        for (URLMap::iterator j = registeredURLs.begin(); j != registeredURLs.end(); ++j) {
+            if (uuid == j->value) {
+                KURL url(ParsedURLString, j->key);
+                MemoryCache::removeURLFromCache(executionContext(), url);
+                registry->unregisterURL(url);
+                urlsToRemove.append(j->key);
+            }
+        }
+        for (unsigned j = 0; j < urlsToRemove.size(); j++)
+            registeredURLs.remove(urlsToRemove[j]);
+        urlsToRemove.clear();
+    }
+}
+
 void PublicURLManager::stop()
 {
     if (m_isStopped)
@@ -74,8 +97,8 @@ void PublicURLManager::stop()
 
     m_isStopped = true;
     for (RegistryURLMap::iterator i = m_registryToURL.begin(); i != m_registryToURL.end(); ++i) {
-        for (URLSet::iterator j = i->value.begin(); j != i->value.end(); ++j)
-            i->key->unregisterURL(KURL(ParsedURLString, *j));
+        for (URLMap::iterator j = i->value.begin(); j != i->value.end(); ++j)
+            i->key->unregisterURL(KURL(ParsedURLString, j->key));
     }
 
     m_registryToURL.clear();

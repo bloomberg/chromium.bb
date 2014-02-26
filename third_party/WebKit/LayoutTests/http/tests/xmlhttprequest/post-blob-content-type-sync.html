@@ -21,7 +21,7 @@
           url += testCase.allowOrigin || "";
           if (testCase.shouldThrow !== undefined) {
               try {
-                  testBlobContentTypeSync(url, file, mime, expectedMime);
+                  testBlobContentTypeSync(url, file, mime, expectedMime, testCase.closeBeforeSend);
               } catch (e) {
                   testPassed("Exception should be thrown.")
               }
@@ -31,7 +31,7 @@
       }
   }
 
-  function testBlobContentTypeSync(url, fileName, mimeType, expectedMime) {
+  function testBlobContentTypeSync(url, fileName, mimeType, expectedMime, closeBeforeSend) {
       var blob;
       if (fileName) {
           if (mimeType !== "")
@@ -47,6 +47,8 @@
 
       xhr = new XMLHttpRequest();
       xhr.open("POST", url, false);
+      if (closeBeforeSend)
+          blob.close();
       xhr.send(blob);
       if (xhr.status === 200) {
           postedMimeType = JSON.parse(xhr.response)['content-type'] || "";

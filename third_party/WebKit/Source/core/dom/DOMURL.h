@@ -62,7 +62,8 @@ public:
     static String createObjectURL(ExecutionContext*, Blob*);
     static void revokeObjectURL(ExecutionContext*, const String&);
 
-    static String createPublicURL(ExecutionContext*, URLRegistrable*);
+    static String createPublicURL(ExecutionContext*, URLRegistrable*, const String& uuid = String());
+    static void revokeObjectUUID(ExecutionContext*, const String&);
 
     virtual KURL url() const OVERRIDE { return m_url; }
     virtual void setURL(const KURL& url) OVERRIDE { m_url = url; }

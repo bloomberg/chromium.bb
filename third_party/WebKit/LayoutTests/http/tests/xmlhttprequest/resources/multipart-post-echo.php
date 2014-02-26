@@ -18,7 +18,7 @@ foreach ($_FILES as $key => $value) {
     } else {
         $fp = fopen($file['tmp_name'], 'r');
         if ($fp) {
-            $content = fread($fp, $file['size']);
+            $content = $file['size'] > 0 ? fread($fp, $file['size']) : "";
             fclose($fp);
         }
         $values[] = $key . '=' . $file['name'] . ':' . $file['type'] . ':' . $content;

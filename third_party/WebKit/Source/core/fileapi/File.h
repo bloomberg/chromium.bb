@@ -32,6 +32,7 @@
 
 namespace WebCore {
 
+class ExecutionContext;
 struct FileMetadata;
 class KURL;
 
@@ -75,7 +76,7 @@ public:
         return adoptRef(new File(url, metadata));
     }
 
-    KURL fileSystemURL() const { ASSERT(m_hasBackingFile); return m_fileSystemURL; }
+    KURL fileSystemURL() const { ASSERT(hasValidFileSystemURL()); return m_fileSystemURL; }
 
     // Create a file with a name exposed to the author (via File.name and associated DOM properties) that differs from the one provided in the path.
     static PassRefPtr<File> createWithName(const String& path, const String& name, ContentTypeLookupPolicy policy = WellKnownContentTypes)
@@ -87,16 +88,17 @@ public:
 
     virtual unsigned long long size() const OVERRIDE;
     virtual PassRefPtr<Blob> slice(long long start = 0, long long end = std::numeric_limits<long long>::max(), const String& contentType = String()) const OVERRIDE;
+    virtual void close(ExecutionContext*) OVERRIDE;
 
     virtual bool isFile() const OVERRIDE { return true; }
     virtual bool hasBackingFile() const OVERRIDE { return m_hasBackingFile; }
 
     virtual void appendTo(BlobData&) const OVERRIDE;
 
-    const String& path() const { ASSERT(m_hasBackingFile); return m_path; }
-    const String& name() const { return m_name; }
+    const String& path() const { ASSERT(hasValidFilePath()); return m_path; }
+    const String name() const { return m_name; }
 
-    // This returns the current date and time if the file's last modifiecation date is not known (per spec: http://www.w3.org/TR/FileAPI/#dfn-lastModifiedDate).
+    // This returns the current date and time if the file's last modification date is not known (per spec: http://www.w3.org/TR/FileAPI/#dfn-lastModifiedDate).
     double lastModifiedDate() const;
 
     // Returns the relative path of this file in the context of a directory selection.
@@ -116,6 +118,14 @@ private:
     File(const String& name, const FileMetadata&);
     File(const KURL& fileSystemURL, const FileMetadata&);
 
+    void invalidateSnapshotMetadata() { m_snapshotSize = -1; }
+
+#ifndef NDEBUG
+    bool hasValidFileSystemURL() const { return hasBackingFile(); }
+    // Instances not backed by a file must have an empty path set.
+    bool hasValidFilePath() const { return hasBackingFile() || m_path.isEmpty(); }
+#endif
+
     bool m_hasBackingFile;
     String m_path;
     String m_name;
@@ -124,7 +134,7 @@ private:
 
     // If m_snapshotSize is negative (initialized to -1 by default), the snapshot metadata is invalid and we retrieve the latest metadata synchronously in size(), lastModifiedTime() and slice().
     // Otherwise, the snapshot metadata are used directly in those methods.
-    const long long m_snapshotSize;
+    long long m_snapshotSize;
     const double m_snapshotModificationTime;
 
     String m_relativePath;

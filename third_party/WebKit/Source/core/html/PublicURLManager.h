@@ -45,8 +45,9 @@ class PublicURLManager FINAL : public ActiveDOMObject {
 public:
     static PassOwnPtr<PublicURLManager> create(ExecutionContext*);
 
-    void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*);
+    void registerURL(SecurityOrigin*, const KURL&, URLRegistrable*, const String& uuid = String());
     void revoke(const KURL&);
+    void revoke(const String& uuid);
 
     // ActiveDOMObject interface.
     virtual void stop() OVERRIDE;
@@ -54,12 +55,16 @@ public:
 private:
     PublicURLManager(ExecutionContext*);
 
-    typedef HashSet<String> URLSet;
-    typedef HashMap<URLRegistry*, URLSet > RegistryURLMap;
+    // One or more URLs can be associated with the same unique ID.
+    // Objects need be revoked by unique ID in some cases.
+    typedef String URLString;
+    typedef HashMap<URLString, String> URLMap;
+    typedef HashMap<URLRegistry*, URLMap> RegistryURLMap;
+
     RegistryURLMap m_registryToURL;
     bool m_isStopped;
 };
 
 } // namespace WebCore
 
-#endif // PUBLICURLMANAGER_h
+#endif // PublicURLManager_h

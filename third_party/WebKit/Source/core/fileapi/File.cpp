@@ -162,7 +162,7 @@ double File::lastModifiedDate() const
         return m_snapshotModificationTime * msPerSecond;
 
     time_t modificationTime;
-    if (getFileModificationTime(m_path, modificationTime) && isValidFileTime(modificationTime))
+    if (hasBackingFile() && getFileModificationTime(m_path, modificationTime) && isValidFileTime(modificationTime))
         return modificationTime * msPerSecond;
 
     return currentTime() * msPerSecond;
@@ -176,7 +176,7 @@ unsigned long long File::size() const
     // FIXME: JavaScript cannot represent sizes as large as unsigned long long, we need to
     // come up with an exception to throw if file size is not representable.
     long long size;
-    if (!getFileSize(m_path, size))
+    if (!hasBackingFile() || !getFileSize(m_path, size))
         return 0;
     return static_cast<unsigned long long>(size);
 }
@@ -215,7 +215,7 @@ void File::captureSnapshot(long long& snapshotSize, double& snapshotModification
     // Obtains a snapshot of the file by capturing its current size and modification time. This is used when we slice a file for the first time.
     // If we fail to retrieve the size or modification time, probably due to that the file has been deleted, 0 size is returned.
     FileMetadata metadata;
-    if (!getFileMetadata(m_path, metadata)) {
+    if (!hasBackingFile() || !getFileMetadata(m_path, metadata)) {
         snapshotSize = 0;
         snapshotModificationTime = invalidFileTime();
         return;
@@ -223,6 +223,21 @@ void File::captureSnapshot(long long& snapshotSize, double& snapshotModification
 
     snapshotSize = metadata.length;
     snapshotModificationTime = metadata.modificationTime;
+}
+
+void File::close(ExecutionContext* executionContext)
+{
+    if (!hasBeenClosed()) {
+        // Reset the File to its closed representation, an empty
+        // Blob. The name isn't cleared, as it should still be
+        // available.
+        m_hasBackingFile = false;
+        m_path = String();
+        m_fileSystemURL = KURL();
+        invalidateSnapshotMetadata();
+        m_relativePath = String();
+        Blob::close(executionContext);
+    }
 }
 
 void File::appendTo(BlobData& blobData) const

@@ -121,7 +121,8 @@ private:
     };
     LoadingState m_loadingState;
 
-    RefPtr<Blob> m_blob;
+    String m_blobType;
+    RefPtr<BlobDataHandle> m_blobDataHandle;
     FileReaderLoader::ReadType m_readType;
     String m_encoding;
 
