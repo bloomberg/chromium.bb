@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -553,8 +553,9 @@ bool MainUIWindow::SpawnTarget() {
     if (INVALID_HANDLE_VALUE == pipe_handle_)
       AddDebugMessage(L"Failed to create pipe. Error %d", ::GetLastError());
 
-    if (!sandbox::AddKnownSidToKernelObject(pipe_handle_, WinWorldSid,
-                                            FILE_ALL_ACCESS))
+    if (!sandbox::AddKnownSidToObject(pipe_handle_, SE_KERNEL_OBJECT,
+                                      WinWorldSid, GRANT_ACCESS,
+                                      FILE_ALL_ACCESS))
       AddDebugMessage(L"Failed to set security on pipe. Error %d",
                       ::GetLastError());
 
