@@ -714,12 +714,12 @@ blink::WebCookieJar* RenderFrameImpl::cookieJar(blink::WebFrame* frame) {
 }
 
 blink::WebServiceWorkerProvider* RenderFrameImpl::createServiceWorkerProvider(
-    blink::WebFrame* frame,
-    blink::WebServiceWorkerProviderClient* client) {
+    blink::WebFrame* frame) {
   DCHECK(!frame_ || frame_ == frame);
+  // TODO(kinuko): Get the provider_id for the frame (via dataSource) and
+  // pass it to the WebServiceWorkerProviderImpl constructor.
   return new WebServiceWorkerProviderImpl(
-      ChildThread::current()->thread_safe_sender(),
-      make_scoped_ptr(client));
+      ChildThread::current()->thread_safe_sender());
 }
 
 void RenderFrameImpl::didAccessInitialDocument(blink::WebFrame* frame) {

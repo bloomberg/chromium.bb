@@ -193,8 +193,7 @@ class CONTENT_EXPORT RenderFrameImpl
       createWorkerPermissionClientProxy(blink::WebFrame* frame);
   virtual blink::WebCookieJar* cookieJar(blink::WebFrame* frame);
   virtual blink::WebServiceWorkerProvider* createServiceWorkerProvider(
-      blink::WebFrame* frame,
-      blink::WebServiceWorkerProviderClient*);
+      blink::WebFrame* frame);
   virtual void didAccessInitialDocument(blink::WebFrame* frame);
   virtual blink::WebFrame* createChildFrame(blink::WebFrame* parent,
                                              const blink::WebString& name);

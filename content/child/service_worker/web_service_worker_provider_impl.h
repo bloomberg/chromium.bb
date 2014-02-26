@@ -9,10 +9,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerProvider.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerProviderClient.h"
 
 namespace blink {
 class WebURL;
+class WebServiceWorkerProviderClient;
 }
 
 namespace content {
@@ -22,12 +22,12 @@ class ThreadSafeSender;
 class WebServiceWorkerProviderImpl
     : NON_EXPORTED_BASE(public blink::WebServiceWorkerProvider) {
  public:
-  WebServiceWorkerProviderImpl(
-      ThreadSafeSender* thread_safe_sender,
-      scoped_ptr<blink::WebServiceWorkerProviderClient> client);
+  // TODO(kinuko): This should be given the provider_id from the network
+  // layer.
+  explicit WebServiceWorkerProviderImpl(ThreadSafeSender* thread_safe_sender);
   virtual ~WebServiceWorkerProviderImpl();
 
-  int provider_id() const { return provider_id_; }
+  virtual void setClient(blink::WebServiceWorkerProviderClient* client);
 
   virtual void registerServiceWorker(const blink::WebURL& pattern,
                                      const blink::WebURL& script_url,
@@ -37,9 +37,8 @@ class WebServiceWorkerProviderImpl
                                        WebServiceWorkerCallbacks*);
 
  private:
-  const int provider_id_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
-  scoped_ptr<blink::WebServiceWorkerProviderClient> client_;
+  blink::WebServiceWorkerProviderClient* client_;
 
   DISALLOW_COPY_AND_ASSIGN(WebServiceWorkerProviderImpl);
 };
