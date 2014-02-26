@@ -298,18 +298,6 @@ protected:
 
     void setControllerInternal(PassRefPtr<MediaController>);
 
-    // Restrictions to change default behaviors.
-    enum BehaviorRestrictionFlags {
-        NoRestrictions = 0,
-        RequireUserGestureForPlayRestriction = 1 << 0,
-    };
-    typedef unsigned BehaviorRestrictions;
-
-    bool userGestureRequiredForPlay() const { return m_restrictions & RequireUserGestureForPlayRestriction; }
-
-    void addBehaviorRestriction(BehaviorRestrictions restriction) { m_restrictions |= restriction; }
-    void removeBehaviorRestriction(BehaviorRestrictions restriction) { m_restrictions &= ~restriction; }
-
     bool ignoreTrackDisplayUpdateRequests() const { return m_ignoreTrackDisplayUpdate > 0; }
     void beginIgnoringTrackDisplayUpdateRequests();
     void endIgnoringTrackDisplayUpdateRequests();
@@ -436,8 +424,6 @@ private:
 
     void changeNetworkStateFromLoadingToIdle();
 
-    void removeBehaviorsRestrictionsAfterFirstUserGesture();
-
     const AtomicString& mediaGroup() const;
     void setMediaGroup(const AtomicString&);
     void updateMediaController();
@@ -497,8 +483,6 @@ private:
     blink::WebLayer* m_webLayer;
     bool m_opaque;
 
-    BehaviorRestrictions m_restrictions;
-
     MediaPlayer::Preload m_preload;
 
     DisplayMode m_displayMode;
@@ -516,6 +500,7 @@ private:
     PendingActionFlags m_pendingActionFlags;
 
     // FIXME: MediaElement has way too many state bits.
+    bool m_userGestureRequiredForPlay : 1;
     bool m_playing : 1;
     bool m_shouldDelayLoadEvent : 1;
     bool m_haveFiredLoadedData : 1;

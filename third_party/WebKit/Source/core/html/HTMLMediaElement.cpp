@@ -275,7 +275,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_loadState(WaitingForSource)
     , m_webLayer(0)
     , m_opaque(false)
-    , m_restrictions(NoRestrictions)
     , m_preload(MediaPlayer::Auto)
     , m_displayMode(Unknown)
     , m_cachedTime(MediaPlayer::invalidTime())
@@ -284,6 +283,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_fragmentStartTime(MediaPlayer::invalidTime())
     , m_fragmentEndTime(MediaPlayer::invalidTime())
     , m_pendingActionFlags(0)
+    , m_userGestureRequiredForPlay(false)
     , m_playing(false)
     , m_shouldDelayLoadEvent(false)
     , m_haveFiredLoadedData(false)
@@ -314,10 +314,8 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     WTF_LOG(Media, "HTMLMediaElement::HTMLMediaElement");
     ScriptWrappable::init(this);
 
-    if (document.settings()) {
-        if (document.settings()->mediaPlaybackRequiresUserGesture())
-            addBehaviorRestriction(RequireUserGestureForPlayRestriction);
-    }
+    if (document.settings() && document.settings()->mediaPlaybackRequiresUserGesture())
+        m_userGestureRequiredForPlay = true;
 
     // We must always have a ShadowRoot so children like <source> will not render
     // as they never have an insertion point.
@@ -618,7 +616,7 @@ void HTMLMediaElement::load()
     WTF_LOG(Media, "HTMLMediaElement::load()");
 
     if (UserGestureIndicator::processingUserGesture())
-        removeBehaviorsRestrictionsAfterFirstUserGesture();
+        m_userGestureRequiredForPlay = false;
 
     prepareForLoad();
     loadInternal();
@@ -855,7 +853,7 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
     if (url.protocolIs(mediaSourceBlobProtocol)) {
         if (isMediaStreamURL(url.string())) {
             loadType = blink::WebMediaPlayer::LoadTypeMediaStream;
-            removeBehaviorRestriction(RequireUserGestureForPlayRestriction);
+            m_userGestureRequiredForPlay = false;
         } else {
             m_mediaSource = HTMLMediaSource::lookup(url.string());
 
@@ -1605,7 +1603,7 @@ void HTMLMediaElement::setReadyState(MediaPlayer::ReadyState state)
                 scheduleEvent(EventTypeNames::playing);
         }
 
-        if (m_autoplaying && m_paused && autoplay() && !document().isSandboxed(SandboxAutomaticFeatures) && !userGestureRequiredForPlay()) {
+        if (m_autoplaying && m_paused && autoplay() && !document().isSandboxed(SandboxAutomaticFeatures) && !m_userGestureRequiredForPlay) {
             m_paused = false;
             invalidateCachedTime();
             scheduleEvent(EventTypeNames::play);
@@ -2123,10 +2121,10 @@ void HTMLMediaElement::play()
 {
     WTF_LOG(Media, "HTMLMediaElement::play()");
 
-    if (userGestureRequiredForPlay() && !UserGestureIndicator::processingUserGesture())
+    if (m_userGestureRequiredForPlay && !UserGestureIndicator::processingUserGesture())
         return;
     if (UserGestureIndicator::processingUserGesture())
-        removeBehaviorsRestrictionsAfterFirstUserGesture();
+        m_userGestureRequiredForPlay = false;
 
     playInternal();
 }
@@ -3868,11 +3866,6 @@ MediaPlayerClient::CORSMode HTMLMediaElement::mediaPlayerCORSMode() const
     if (equalIgnoringCase(crossOriginMode, "use-credentials"))
         return UseCredentials;
     return Anonymous;
-}
-
-void HTMLMediaElement::removeBehaviorsRestrictionsAfterFirstUserGesture()
-{
-    m_restrictions = NoRestrictions;
 }
 
 void HTMLMediaElement::mediaPlayerSetWebLayer(blink::WebLayer* webLayer)
