@@ -17,46 +17,14 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/message_center/fake_message_center_tray_delegate.h"
 #include "ui/message_center/fake_notifier_settings_provider.h"
 #include "ui/message_center/message_center_impl.h"
 #include "ui/message_center/message_center_tray.h"
-#include "ui/message_center/message_center_tray_delegate.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/notifier_settings.h"
 
 namespace message_center {
-class FakeMessageCenterTrayDelegate : public MessageCenterTrayDelegate {
- public:
-  FakeMessageCenterTrayDelegate(MessageCenter* message_center,
-                                base::Closure quit_closure)
-      : tray_(this, message_center),
-        quit_closure_(quit_closure),
-        displayed_first_run_balloon_(false) {}
-
-  virtual void DisplayFirstRunBalloon() OVERRIDE {
-    displayed_first_run_balloon_ = true;
-    base::MessageLoop::current()->PostTask(FROM_HERE, quit_closure_);
-  }
-
-  virtual void OnMessageCenterTrayChanged() OVERRIDE {}
-  virtual bool ShowPopups() OVERRIDE { return true; }
-  virtual void HidePopups() OVERRIDE {}
-  virtual bool ShowMessageCenter() OVERRIDE { return true; }
-  virtual bool ShowNotifierSettings() OVERRIDE { return true; }
-  virtual bool IsContextMenuEnabled() const OVERRIDE { return true; }
-  virtual void HideMessageCenter() OVERRIDE {}
-  virtual MessageCenterTray* GetMessageCenterTray() OVERRIDE {
-    return &tray_;
-  }
-
-  bool displayed_first_run_balloon() const {
-    return displayed_first_run_balloon_;
-  }
- private:
-  MessageCenterTray tray_;
-  base::Closure quit_closure_;
-  bool displayed_first_run_balloon_;
-};
 
 class MessageCenterNotificationManagerTest : public testing::Test {
  protected:

@@ -163,6 +163,8 @@
       'sources': [
         'fake_message_center.h',
         'fake_message_center.cc',
+        'fake_message_center_tray_delegate.h',
+        'fake_message_center_tray_delegate.cc',
         'fake_notifier_settings_provider.h',
         'fake_notifier_settings_provider.cc',
       ],

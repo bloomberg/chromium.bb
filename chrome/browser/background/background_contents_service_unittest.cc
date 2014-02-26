@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
@@ -30,14 +31,11 @@
 #include "url/gurl.h"
 
 #if defined(ENABLE_NOTIFICATIONS)
+#include "chrome/browser/notifications/message_center_notification_manager.h"
 #include "chrome/browser/notifications/notification.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
+#include "ui/message_center/fake_message_center_tray_delegate.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
-#endif
-
-#if defined(USE_ASH)
-#include "ash/test/ash_test_helper.h"
 #endif
 
 class BackgroundContentsServiceTest : public testing::Test {
@@ -130,13 +128,14 @@ class NotificationWaiter : public message_center::MessageCenterObserver {
   virtual ~NotificationWaiter() {}
 
   void WaitForNotificationAdded() {
+    DCHECK(!run_loop_.running());
     message_center::MessageCenter* message_center =
         message_center::MessageCenter::Get();
     if (message_center->HasNotification(target_id_))
       return;
 
     message_center->AddObserver(this);
-    base::MessageLoop::current()->Run();
+    run_loop_.Run();
     message_center->RemoveObserver(this);
   }
 
@@ -145,10 +144,11 @@ class NotificationWaiter : public message_center::MessageCenterObserver {
   virtual void OnNotificationAdded(
       const std::string& notification_id) OVERRIDE {
     if (notification_id == target_id_)
-      base::MessageLoop::current()->Quit();
+      run_loop_.Quit();
   }
 
   std::string target_id_;
+  base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationWaiter);
 };
@@ -156,13 +156,15 @@ class NotificationWaiter : public message_center::MessageCenterObserver {
 class BackgroundContentsServiceNotificationTest
     : public BrowserWithTestWindowTest {
  public:
-  BackgroundContentsServiceNotificationTest()
-      : profile_(NULL) {}
+  BackgroundContentsServiceNotificationTest() {}
   virtual ~BackgroundContentsServiceNotificationTest() {}
 
   // Overridden from testing::Test
   virtual void SetUp() {
     BrowserWithTestWindowTest::SetUp();
+    if (!NotificationUIManager::DelegatesToMessageCenter())
+      return;
+
     // In ChromeOS environment, BrowserWithTestWindowTest initializes
     // MessageCenter.
 #if !defined(OS_CHROMEOS)
@@ -171,13 +173,17 @@ class BackgroundContentsServiceNotificationTest
     profile_manager_.reset(new TestingProfileManager(
         TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
-    profile_ = profile_manager_->CreateTestingProfile("Default");
+    MessageCenterNotificationManager* manager =
+        static_cast<MessageCenterNotificationManager*>(
+            g_browser_process->notification_ui_manager());
+    manager->SetMessageCenterTrayDelegateForTest(
+        new message_center::FakeMessageCenterTrayDelegate(
+            message_center::MessageCenter::Get(), base::Closure()));
   }
 
   virtual void TearDown() {
     g_browser_process->notification_ui_manager()->CancelAll();
     profile_manager_.reset();
-    profile_ = NULL;
 #if !defined(OS_CHROMEOS)
     message_center::MessageCenter::Shutdown();
 #endif
@@ -185,8 +191,6 @@ class BackgroundContentsServiceNotificationTest
   }
 
  protected:
-  Profile* profile() { return profile_; }
-
   // Creates crash notification for the specified extension and returns
   // the created one.
   const Notification* CreateCrashNotification(
@@ -195,7 +199,8 @@ class BackgroundContentsServiceNotificationTest
         BackgroundContentsService::GetNotificationIdForExtensionForTesting(
             extension->id());
     NotificationWaiter waiter(notification_id);
-    BackgroundContentsService::ShowBalloonForTesting(extension.get(), profile_);
+    BackgroundContentsService::ShowBalloonForTesting(
+        extension.get(), profile());
     waiter.WaitForNotificationAdded();
 
     return g_browser_process->notification_ui_manager()->FindById(
@@ -204,7 +209,6 @@ class BackgroundContentsServiceNotificationTest
 
  private:
   scoped_ptr<TestingProfileManager> profile_manager_;
-  TestingProfile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundContentsServiceNotificationTest);
 };
@@ -346,8 +350,7 @@ TEST_F(BackgroundContentsServiceTest, TestApplicationIDLinkage) {
 // Test fails because of NOTIMPLEMENTED in fullscreen_aura.cc used by the
 // notification system.
 // TODO(mukai): Fix in notification side.
-// Flake on Windows too: crbug.com/344582
-#if defined(OS_CHROMEOS) || (!defined(OS_LINUX) && !defined(OS_WIN))
+#if defined(OS_CHROMEOS) || !defined(OS_LINUX)
 #define MAYBE_TestShowBalloon TestShowBalloon
 #define MAYBE_TestShowBalloonNoIcon TestShowBalloonNoIcon
 #else
@@ -356,6 +359,9 @@ TEST_F(BackgroundContentsServiceTest, TestApplicationIDLinkage) {
 #endif
 
 TEST_F(BackgroundContentsServiceNotificationTest, MAYBE_TestShowBalloon) {
+  if (!NotificationUIManager::DelegatesToMessageCenter())
+    return;
+
   scoped_refptr<extensions::Extension> extension =
       extension_test_util::LoadManifest("image_loading_tracker", "app.json");
   ASSERT_TRUE(extension.get());
@@ -368,6 +374,9 @@ TEST_F(BackgroundContentsServiceNotificationTest, MAYBE_TestShowBalloon) {
 // Verify if a test notification can show the default extension icon for
 // a crash notification for an extension without icon.
 TEST_F(BackgroundContentsServiceNotificationTest, MAYBE_TestShowBalloonNoIcon) {
+  if (!NotificationUIManager::DelegatesToMessageCenter())
+    return;
+
   // Extension manifest file with no 'icon' field.
   scoped_refptr<extensions::Extension> extension =
       extension_test_util::LoadManifest("app", "manifest.json");
