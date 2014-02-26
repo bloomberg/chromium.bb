@@ -563,63 +563,6 @@
             'host/it2me/it2me_native_messaging_host.h',
           ],
         },  # end of target 'remoting_it2me_host_static'
-        {
-          'target_name': 'remoting_it2me_native_messaging_host',
-          'type': 'executable',
-          'variables': { 'enable_wexit_time_destructors': 1, },
-          'dependencies': [
-            '../base/base.gyp:base',
-            'remoting_base',
-            'remoting_breakpad',
-            'remoting_host',
-            'remoting_it2me_host_static',
-            'remoting_native_messaging_base',
-            'remoting_protocol',
-          ],
-          'sources': [
-            'host/it2me/it2me_native_messaging_host_main.cc',
-          ],
-          'conditions': [
-            ['OS=="linux"', {
-              'dependencies': [
-                # Always use GTK on Linux, even for Aura builds.
-                '../build/linux/system.gyp:gtk',
-              ],
-            }],
-            ['OS=="linux" and linux_use_tcmalloc==1', {
-              'dependencies': [
-                '../base/allocator/allocator.gyp:allocator',
-              ],
-            }],
-            ['OS=="win"', {
-              'product_name': 'remote_assistance_host',
-              'defines' : [
-                'BINARY=BINARY_REMOTE_ASSISTANCE_HOST',
-              ],
-              'dependencies': [
-                'remoting_windows_resources',
-              ],
-              'sources': [
-                '<(SHARED_INTERMEDIATE_DIR)/remoting/version.rc',
-              ],
-              'msvs_settings': {
-                'VCManifestTool': {
-                  'EmbedManifest': 'true',
-                  'AdditionalManifestFiles': [
-                    'host/win/common-controls.manifest',
-                    'host/win/dpi_aware.manifest',
-                  ],
-                },
-                'VCLinkerTool': {
-                  'SubSystem': '1', # /SUBSYSTEM:CONSOLE
-                  'AdditionalDependencies': [
-                    'comctl32.lib',
-                  ],
-                },
-              },
-            }],
-          ],
-        },  # end of target 'remoting_it2me_native_messaging_host'
 
         # Generates native messaging manifest files.
         {
@@ -833,6 +776,38 @@
             }],
           ],
         },  # end of target 'remoting_me2me_native_messaging_host'
+        {
+          'target_name': 'remoting_it2me_native_messaging_host',
+          'type': 'executable',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'dependencies': [
+            '../base/base.gyp:base',
+            'remoting_base',
+            'remoting_breakpad',
+            'remoting_host',
+            'remoting_it2me_host_static',
+            'remoting_native_messaging_base',
+            'remoting_protocol',
+          ],
+          'sources': [
+            'host/it2me/it2me_native_messaging_host_entry_point.cc',
+            'host/it2me/it2me_native_messaging_host_main.cc',
+            'host/it2me/it2me_native_messaging_host_main.h',
+          ],
+          'conditions': [
+            ['OS=="linux"', {
+              'dependencies': [
+                # Always use GTK on Linux, even for Aura builds.
+                '../build/linux/system.gyp:gtk',
+              ],
+            }],
+            ['OS=="linux" and linux_use_tcmalloc==1', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
+          ],
+        },  # end of target 'remoting_it2me_native_messaging_host'
       ],  # end of 'targets'
     }],  # OS!="win"
 

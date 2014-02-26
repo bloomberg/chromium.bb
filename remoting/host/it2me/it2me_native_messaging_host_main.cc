@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "remoting/host/it2me/it2me_native_messaging_host_main.h"
+
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
@@ -31,7 +33,7 @@ namespace remoting {
 
 // Creates a It2MeNativeMessagingHost instance, attaches it to stdin/stdout and
 // runs the message loop until It2MeNativeMessagingHost signals shutdown.
-int It2MeNativeMessagingHostMain() {
+int StartIt2MeNativeMessagingHost() {
 #if defined(OS_MACOSX)
   // Needed so we don't leak objects when threads are created.
   base::mac::ScopedNSAutoreleasePool pool;
@@ -112,15 +114,14 @@ int It2MeNativeMessagingHostMain() {
   return kSuccessExitCode;
 }
 
-}  // namespace remoting
-
-int main(int argc, char** argv) {
+int It2MeNativeMessagingHostMain(int argc, char** argv) {
   // This object instance is required by Chrome code (such as MessageLoop).
   base::AtExitManager exit_manager;
 
   CommandLine::Init(argc, argv);
   remoting::InitHostLogging();
 
-  return remoting::It2MeNativeMessagingHostMain();
+  return StartIt2MeNativeMessagingHost();
 }
 
+}  // namespace remoting
