@@ -125,12 +125,6 @@ void OnNetworkWaitTimedOut(const base::Closure& runner_quit_task) {
   runner_quit_task.Run();
 }
 
-// Helper function for DeviceOAuth2TokenServiceFactory::Get().
-void CopyTokenService(DeviceOAuth2TokenService** out_token_service,
-                      DeviceOAuth2TokenService* in_token_service) {
-  *out_token_service = in_token_service;
-}
-
 // Helper functions for CanConfigureNetwork mock.
 class ScopedCanConfigureNetwork {
  public:
@@ -1039,12 +1033,11 @@ class KioskEnterpriseTest : public KioskTest {
     access_token_info.email = kTestEnterpriseServiceAccountId;
     fake_gaia_->IssueOAuthToken(kTestLoginToken, access_token_info);
 
-    DeviceOAuth2TokenService* token_service = NULL;
-    DeviceOAuth2TokenServiceFactory::Get(
-        base::Bind(&CopyTokenService, &token_service));
+    DeviceOAuth2TokenService* token_service =
+        DeviceOAuth2TokenServiceFactory::Get();
+    token_service->SetAndSaveRefreshToken(
+        kTestRefreshToken, DeviceOAuth2TokenService::StatusCallback());
     base::RunLoop().RunUntilIdle();
-    ASSERT_TRUE(token_service);
-    token_service->SetAndSaveRefreshToken(kTestRefreshToken);
   }
 
   static void StorePolicyCallback(bool result) {

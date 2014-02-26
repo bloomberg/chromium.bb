@@ -763,7 +763,6 @@
         'browser/chromeos/session_length_limiter_unittest.cc',
         'browser/chromeos/proxy_config_service_impl_unittest.cc',
         'browser/chromeos/settings/cros_settings_unittest.cc',
-        'browser/chromeos/settings/device_oauth2_token_service_factory_unittest.cc',
         'browser/chromeos/settings/device_oauth2_token_service_unittest.cc',
         'browser/chromeos/settings/device_settings_provider_unittest.cc',
         'browser/chromeos/settings/device_settings_service_unittest.cc',

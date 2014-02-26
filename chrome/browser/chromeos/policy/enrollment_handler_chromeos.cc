@@ -311,8 +311,9 @@ void EnrollmentHandlerChromeOS::HandleLockDeviceResult(
     case EnterpriseInstallAttributes::LOCK_SUCCESS:
       // Get the token service so we can store our robot refresh token.
       enrollment_step_ = STEP_STORE_ROBOT_AUTH;
-      chromeos::DeviceOAuth2TokenServiceFactory::Get(
-          base::Bind(&EnrollmentHandlerChromeOS::DidGetTokenService,
+      chromeos::DeviceOAuth2TokenServiceFactory::Get()->SetAndSaveRefreshToken(
+          refresh_token_,
+          base::Bind(&EnrollmentHandlerChromeOS::HandleRobotAuthTokenStored,
                      weak_ptr_factory_.GetWeakPtr()));
       return;
     case EnterpriseInstallAttributes::LOCK_NOT_READY:
@@ -351,18 +352,10 @@ void EnrollmentHandlerChromeOS::HandleLockDeviceResult(
       EnrollmentStatus::STATUS_LOCK_ERROR));
 }
 
-void EnrollmentHandlerChromeOS::DidGetTokenService(
-    chromeos::DeviceOAuth2TokenService* token_service) {
+void EnrollmentHandlerChromeOS::HandleRobotAuthTokenStored(bool result) {
   CHECK_EQ(STEP_STORE_ROBOT_AUTH, enrollment_step_);
-  // Store the robot API auth refresh token.
-  if (!token_service) {
-    LOG(ERROR) << "Failed to store API refresh token (no token service).";
-    ReportResult(EnrollmentStatus::ForStatus(
-        EnrollmentStatus::STATUS_ROBOT_REFRESH_STORE_FAILED));
-    return;
-  }
 
-  if (!token_service->SetAndSaveRefreshToken(refresh_token_)) {
+  if (!result) {
     LOG(ERROR) << "Failed to store API refresh token.";
     ReportResult(EnrollmentStatus::ForStatus(
         EnrollmentStatus::STATUS_ROBOT_REFRESH_STORE_FAILED));

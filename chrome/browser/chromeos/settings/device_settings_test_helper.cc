@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/mock_owner_key_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -196,7 +197,10 @@ ScopedDeviceSettingsTestHelper::~ScopedDeviceSettingsTestHelper() {
 DeviceSettingsTestBase::DeviceSettingsTestBase()
     : ui_thread_(content::BrowserThread::UI, &loop_),
       file_thread_(content::BrowserThread::FILE, &loop_),
-      owner_key_util_(new MockOwnerKeyUtil()) {}
+      owner_key_util_(new MockOwnerKeyUtil()),
+      fake_dbus_thread_manager_(new FakeDBusThreadManager()) {
+  fake_dbus_thread_manager_->SetFakeClients();
+}
 
 DeviceSettingsTestBase::~DeviceSettingsTestBase() {
   base::RunLoop().RunUntilIdle();
@@ -204,7 +208,8 @@ DeviceSettingsTestBase::~DeviceSettingsTestBase() {
 
 void DeviceSettingsTestBase::SetUp() {
   // Initialize DBusThreadManager with a stub implementation.
-  DBusThreadManager::InitializeWithStub();
+  chromeos::DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager_);
+
   NetworkHandler::Initialize();
   loop_.RunUntilIdle();
 

@@ -382,8 +382,7 @@ class PrintPreviewHandler::AccessTokenService
  public:
   explicit AccessTokenService(PrintPreviewHandler* handler)
       : OAuth2TokenService::Consumer("print_preview"),
-        handler_(handler),
-        weak_factory_(this) {
+        handler_(handler) {
   }
 
   void RequestToken(const std::string& type) {
@@ -404,35 +403,13 @@ class PrintPreviewHandler::AccessTokenService
       }
     } else if (type == "device") {
 #if defined(OS_CHROMEOS)
-      chromeos::DeviceOAuth2TokenServiceFactory::Get(
-          base::Bind(
-              &AccessTokenService::DidGetTokenService,
-              weak_factory_.GetWeakPtr(),
-              type));
-      return;
+      chromeos::DeviceOAuth2TokenService* token_service =
+          chromeos::DeviceOAuth2TokenServiceFactory::Get();
+      account_id = token_service->GetRobotAccountId();
+      service = token_service;
 #endif
     }
 
-    ContinueRequestToken(type, service, account_id);
-  }
-
-#if defined(OS_CHROMEOS)
-  // Continuation of RequestToken().
-  void DidGetTokenService(const std::string& type,
-                          chromeos::DeviceOAuth2TokenService* token_service) {
-    std::string account_id;
-    if (token_service)
-      account_id = token_service->GetRobotAccountId();
-    ContinueRequestToken(type,
-                         token_service,
-                         account_id);
-  }
-#endif
-
-  // Continuation of RequestToken().
-  void ContinueRequestToken(const std::string& type,
-                            OAuth2TokenService* service,
-                            const std::string& account_id) {
     if (service) {
       OAuth2TokenService::ScopeSet oauth_scopes;
       oauth_scopes.insert(cloud_print::kCloudPrintAuth);
@@ -472,7 +449,6 @@ class PrintPreviewHandler::AccessTokenService
                    linked_ptr<OAuth2TokenService::Request> > Requests;
   Requests requests_;
   PrintPreviewHandler* handler_;
-  base::WeakPtrFactory<AccessTokenService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessTokenService);
 };

@@ -469,7 +469,7 @@ OAuth2TokenService::StartRequestForClientWithContext(
     Consumer* consumer) {
   DCHECK(CalledOnValidThread());
 
-  scoped_ptr<RequestImpl> request = CreateRequest(account_id, consumer);
+  scoped_ptr<RequestImpl> request(new RequestImpl(account_id, consumer));
   FOR_EACH_OBSERVER(DiagnosticsObserver, diagnostics_observer_list_,
                     OnAccessTokenRequested(account_id,
                                            consumer->id(),
@@ -506,12 +506,6 @@ OAuth2TokenService::StartRequestForClientWithContext(
                      scopes);
   }
   return request.PassAs<Request>();
-}
-
-scoped_ptr<OAuth2TokenService::RequestImpl> OAuth2TokenService::CreateRequest(
-    const std::string& account_id,
-    Consumer* consumer) {
-  return scoped_ptr<RequestImpl>(new RequestImpl(account_id, consumer));
 }
 
 void OAuth2TokenService::FetchOAuth2Token(RequestImpl* request,

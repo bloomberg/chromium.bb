@@ -265,13 +265,6 @@ class OAuth2TokenService : public base::NonThreadSafe {
   virtual void FireRefreshTokenRevoked(const std::string& account_id);
   virtual void FireRefreshTokensLoaded();
 
-  // Creates a request implementation. Can be overriden by derived classes to
-  // provide additional control of token consumption. |consumer| will outlive
-  // the created request.
-  virtual scoped_ptr<RequestImpl> CreateRequest(
-      const std::string& account_id,
-      Consumer* consumer);
-
   // Fetches an OAuth token for the specified client/scopes. Virtual so it can
   // be overridden for tests and for platform-specific behavior on Android.
   virtual void FetchOAuth2Token(RequestImpl* request,

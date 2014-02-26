@@ -23,10 +23,6 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace chromeos {
-class DeviceOAuth2TokenService;
-}
-
 namespace enterprise_management {
 class PolicyFetchResponse;
 }
@@ -136,14 +132,14 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
       const std::string& device_id,
       EnterpriseInstallAttributes::LockResult lock_result);
 
+  // Handles completion of the robot token store operation.
+  void HandleRobotAuthTokenStored(bool result);
+
   // Drops any ongoing actions.
   void Stop();
 
   // Reports the result of the enrollment process to the initiator.
   void ReportResult(EnrollmentStatus status);
-
-  // Continuation of OnStoreLoaded().
-  void DidGetTokenService(chromeos::DeviceOAuth2TokenService* token_service);
 
   DeviceCloudPolicyStoreChromeOS* store_;
   EnterpriseInstallAttributes* install_attributes_;
@@ -174,7 +170,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   // initialization.
   int lockbox_init_duration_;
 
-  // Used for locking the device and getting the OAuth2 token service.
+  // Used for locking the device.
   base::WeakPtrFactory<EnrollmentHandlerChromeOS> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(EnrollmentHandlerChromeOS);
