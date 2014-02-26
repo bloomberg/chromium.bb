@@ -37,6 +37,7 @@ IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::EncodedVideoFrame)
   IPC_STRUCT_TRAITS_MEMBER(key_frame)
   IPC_STRUCT_TRAITS_MEMBER(frame_id)
   IPC_STRUCT_TRAITS_MEMBER(last_referenced_frame_id)
+  IPC_STRUCT_TRAITS_MEMBER(rtp_timestamp)
   IPC_STRUCT_TRAITS_MEMBER(data)
 IPC_STRUCT_TRAITS_END()
 
