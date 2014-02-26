@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
@@ -11,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/path_service.h"
 #include "base/platform_file.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
@@ -23,8 +21,6 @@
 #include "chrome/browser/extensions/api/messaging/native_message_process_host.h"
 #include "chrome/browser/extensions/api/messaging/native_messaging_test_util.h"
 #include "chrome/browser/extensions/api/messaging/native_process_launcher.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "content/public/browser/browser_thread.h"
@@ -44,13 +40,6 @@ using content::BrowserThread;
 namespace {
 
 const char kTestMessage[] = "{\"text\": \"Hello.\"}";
-
-base::FilePath GetTestDir() {
-  base::FilePath test_dir;
-  PathService::Get(chrome::DIR_TEST_DATA, &test_dir);
-  test_dir = test_dir.AppendASCII("native_messaging");
-  return test_dir;
-}
 
 }  // namespace
 
@@ -107,15 +96,9 @@ class NativeMessagingTest : public ::testing::Test,
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    // Change the user data dir so native apps will be looked for in the test
-    // directory.
-    ASSERT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir_));
-    ASSERT_TRUE(PathService::Override(chrome::DIR_USER_DATA, GetTestDir()));
   }
 
   virtual void TearDown() OVERRIDE {
-    // Change the user data dir back for other tests.
-    ASSERT_TRUE(PathService::Override(chrome::DIR_USER_DATA, user_data_dir_));
     if (native_message_process_host_.get()) {
       BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE,
                                 native_message_process_host_.release());
@@ -159,19 +142,24 @@ class NativeMessagingTest : public ::testing::Test,
   }
 
   base::FilePath CreateTempFileWithMessage(const std::string& message) {
-    base::FilePath filename = temp_dir_.path().AppendASCII("input");
-    base::CreateTemporaryFile(&filename);
+    base::FilePath filename;
+    if (!base::CreateTemporaryFileInDir(temp_dir_.path(), &filename))
+      return base::FilePath();
+
     std::string message_with_header = FormatMessage(message);
-    EXPECT_TRUE(file_util::WriteFile(
-        filename, message_with_header.data(), message_with_header.size()));
+    int bytes_written = file_util::WriteFile(
+        filename, message_with_header.data(), message_with_header.size());
+    if (bytes_written < 0 ||
+        (message_with_header.size() != static_cast<size_t>(bytes_written))) {
+      return base::FilePath();
+    }
     return filename;
   }
 
-  // Force the channel to be dev.
   base::ScopedTempDir temp_dir_;
+  // Force the channel to be dev.
   ScopedCurrentChannel current_channel_;
   scoped_ptr<NativeMessageProcessHost> native_message_process_host_;
-  base::FilePath user_data_dir_;
   scoped_ptr<base::RunLoop> run_loop_;
   content::TestBrowserThreadBundle thread_bundle_;
   std::string last_message_;
@@ -183,6 +171,7 @@ class NativeMessagingTest : public ::testing::Test,
 TEST_F(NativeMessagingTest, SingleSendMessageRead) {
   base::FilePath temp_output_file = temp_dir_.path().AppendASCII("output");
   base::FilePath temp_input_file = CreateTempFileWithMessage(kTestMessage);
+  ASSERT_FALSE(temp_input_file.empty());
 
   scoped_ptr<NativeProcessLauncher> launcher =
       FakeLauncher::Create(temp_input_file, temp_output_file).Pass();
