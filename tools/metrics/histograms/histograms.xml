@@ -26180,6 +26180,13 @@ other types of suffix sets.
   <int value="683" label="WEBVIEW_GETZOOM"/>
   <int value="684" label="DEVELOPERPRIVATE_REQUESTFILESOURCE"/>
   <int value="685" label="DEVELOPERPRIVATE_OPENDEVTOOLS"/>
+  <int value="686" label="ACTIVITYLOGPRIVATE_DELETEACTIVITIES"/>
+  <int value="687" label="NETWORKINGPRIVATE_SETWIFITDLSENABLEDSTATE"/>
+  <int value="688" label="NETWORKINGPRIVATE_GETWIFITDLSSTATUS"/>
+  <int value="689" label="SCREENLOCKPRIVATE_HIDEBUTTON"/>
+  <int value="690" label="SCREENLOCKPRIVATE_SETAUTHTYPE"/>
+  <int value="691" label="SCREENLOCKPRIVATE_GETAUTHTYPE"/>
+  <int value="692" label="SCREENLOCKPRIVATE_ACCEPTAUTHATTEMPT"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

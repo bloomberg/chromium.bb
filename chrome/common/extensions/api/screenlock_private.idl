@@ -5,7 +5,19 @@
 // Control and monitor the screen locker.
 [platforms=("chromeos"), implemented_in="chrome/browser/chromeos/extensions/screenlock_private_api.h", permissions=screenlockPrivate]
 namespace screenlockPrivate {
+  // Supported authentication types shown on the user pod.
+  // |offlinePassword|: The standard password field, which authenticates using
+  //                   the user's regular password. The $ref:onAuthAttempted()
+  //                   event will not be fired for this authentication type.
+  // |numericPin|: An input field for a 4 digit numeric pin code.
+  // |userClick|: Makes the user pod clickable when it is focused, and
+  //                 clicking on it attempts the authentication. If |value| is
+  //                 specified with $ref:setAuthType(), the text is displayed
+  //                 in the password field.
+  enum AuthType {offlinePassword, numericPin, userClick};
+
   callback BooleanCallback = void(boolean locked);
+  callback AuthTypeCallback = void(AuthType authType);
 
   interface Functions {
     // Returns true if the screen is currently locked, false otherwise.
@@ -18,16 +30,37 @@ namespace screenlockPrivate {
     // Show a message to the user on the unlock UI if the screen is locked.
     static void showMessage(DOMString message);
 
-    // Show a button icon on the unlock UI if the screen is locked.
+    // Show a Button, an icon beside the input field on the user pod.
+    // |icon|: An extension resource of the icon image.
     static void showButton(DOMString icon);
+
+    // Hides the button added by $ref:showButton().
+    static void hideButton();
+
+    // Returns the current auth type used for the user pod.
+    static void getAuthType(AuthTypeCallback callback);
+
+    // Set the type of the authentication for the user pod. The input field
+    // area of the user pod below the user's portrait will be changed.
+    // |authType|: The type of authentication to use.
+    // |initialValue|: The initial value to populate the input field.
+    static void setAuthType(AuthType authType, optional DOMString initialValue);
+
+    // Accepts or rejects the current auth attempt.
+    static void acceptAuthAttempt(boolean accept);
   };
 
   interface Events {
     // Fires whenever the screen is locked or unlocked.
     static void onChanged(boolean locked);
 
-    // Fires when the user presses the button on the unlock UI shown by
-    // $ref:showButton().
+    // Fires when the user clicks on the Button shown by $ref:showButton().
     static void onButtonClicked();
+
+    // Fires when the user attempts to authenticate with the user's input.
+    // There will be at most one auth attempt active at any time.
+    // Call $ref:acceptAuthAttempt() to accept or reject this attempt. 
+    // Note: Some authentication types will not have an input.
+    static void onAuthAttempted(AuthType type, DOMString input);
   };
 };

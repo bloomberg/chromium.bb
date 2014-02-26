@@ -262,11 +262,10 @@ void ScreenLocker::Authenticate(const UserContext& user_context) {
   delegate_->SetInputEnabled(false);
   delegate_->OnAuthenticate();
 
-  // Send authentication request to app using chrome.screenlockPrivate API
+  // Send authentication request to chrome.screenlockPrivate API event router
   // if the authentication type is not the system password.
   LoginDisplay::AuthType auth_type = GetAuthType(user_context.username);
   if (auth_type != LoginDisplay::OFFLINE_PASSWORD) {
-    // Find the user that is authenticating.
     const User* unlock_user = NULL;
     for (UserList::const_iterator it = users_.begin();
          it != users_.end();
@@ -278,8 +277,11 @@ void ScreenLocker::Authenticate(const UserContext& user_context) {
     }
     LOG_ASSERT(unlock_user);
 
-    // TODO(tengs): dispatch auth attempted event to the screenlockPrivate
-    // API's event router.
+    Profile* profile = UserManager::Get()->GetProfileByUser(unlock_user);
+         extensions::ScreenlockPrivateEventRouter* router =
+             extensions::ScreenlockPrivateEventRouter::GetFactoryInstance()
+                 ->GetForProfile(profile);
+    router->OnAuthAttempted(auth_type, user_context.password);
     return;
   }
 
