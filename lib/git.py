@@ -148,6 +148,24 @@ def IsGitRepo(cwd):
   return os.path.isdir(os.path.join(cwd, '.git'))
 
 
+def IsGitRepositoryCorrupted(cwd):
+  """Verify that the specified git repository is not corrupted.
+
+  Args:
+    cwd: The git repository to verify.
+
+  Returns:
+    True if the repository is corrupted.
+  """
+  cmd = ['fsck', '--no-progress', '--no-dangling']
+  try:
+    RunGit(cwd, cmd)
+    return False
+  except cros_build_lib.RunCommandError as ex:
+    logging.warn(str(ex))
+    return True
+
+
 _HEX_CHARS = frozenset(string.hexdigits)
 def IsSHA1(value, full=True):
   """Returns True if the given value looks like a sha1.
