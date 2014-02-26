@@ -27,9 +27,7 @@
 #include "HTMLNames.h"
 #include "core/dom/ClassCollection.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/dom/NodeList.h"
 #include "core/dom/NodeRareData.h"
-#include "core/dom/NodeTraversal.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/HTMLOptionElement.h"
@@ -279,64 +277,9 @@ template <> inline bool isMatchingElement(const HTMLTagCollection& collection, c
     return collection.elementMatches(element);
 }
 
-template <> inline bool isMatchingElement(const LiveNodeList& nodeList, const Element& element)
-{
-    return nodeList.nodeMatches(element);
-}
-
-Element* LiveNodeList::itemBefore(const Element* previous) const
-{
-    return LiveNodeListBase::itemBefore(*this, previous);
-}
-
 Element* HTMLCollection::itemBefore(const Element* previous) const
 {
     return LiveNodeListBase::itemBefore(*this, previous);
-}
-
-template <class NodeListType>
-inline Element* firstMatchingElement(const NodeListType& nodeList, const ContainerNode& root)
-{
-    Element* element = ElementTraversal::firstWithin(root);
-    while (element && !isMatchingElement(nodeList, *element))
-        element = ElementTraversal::next(*element, &root);
-    return element;
-}
-
-template <class NodeListType>
-inline Element* nextMatchingElement(const NodeListType& nodeList, Element& current, const ContainerNode& root)
-{
-    Element* next = &current;
-    do {
-        next = ElementTraversal::next(*next, &root);
-    } while (next && !isMatchingElement(nodeList, *next));
-    return next;
-}
-
-template <class NodeListType>
-inline Element* traverseMatchingElementsForwardToOffset(const NodeListType& nodeList, unsigned offset, Element& currentElement, unsigned& currentOffset, const ContainerNode& root)
-{
-    ASSERT(currentOffset < offset);
-    Element* next = &currentElement;
-    while ((next = nextMatchingElement(nodeList, *next, root))) {
-        if (++currentOffset == offset)
-            return next;
-    }
-    return 0;
-}
-
-// FIXME: This should be in LiveNodeList.cpp but it needs to stay here until firstMatchingElement()
-// and others are moved to a separate header.
-Element* LiveNodeList::traverseToFirstElement(const ContainerNode& root) const
-{
-    return firstMatchingElement(*this, root);
-}
-
-// FIXME: This should be in LiveNodeList.cpp but it needs to stay here until traverseMatchingElementsForwardToOffset()
-// and others are moved to a separate header.
-Element* LiveNodeList::traverseForwardToOffset(unsigned offset, Element& currentNode, unsigned& currentOffset, const ContainerNode& root) const
-{
-    return traverseMatchingElementsForwardToOffset(*this, offset, currentNode, currentOffset, root);
 }
 
 Element* HTMLCollection::virtualItemAfter(Element*) const

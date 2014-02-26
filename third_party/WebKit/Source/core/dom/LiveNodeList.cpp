@@ -25,6 +25,11 @@
 
 namespace WebCore {
 
+static inline bool isMatchingElement(const LiveNodeList& nodeList, const Element& element)
+{
+    return nodeList.nodeMatches(element);
+}
+
 Node* LiveNodeList::virtualOwnerNode() const
 {
     return &ownerNode();
@@ -33,6 +38,21 @@ Node* LiveNodeList::virtualOwnerNode() const
 void LiveNodeList::invalidateCache(Document*) const
 {
     m_collectionIndexCache.invalidate();
+}
+
+Element* LiveNodeList::itemBefore(const Element* previous) const
+{
+    return LiveNodeListBase::itemBefore(*this, previous);
+}
+
+Element* LiveNodeList::traverseToFirstElement(const ContainerNode& root) const
+{
+    return firstMatchingElement(*this, root);
+}
+
+Element* LiveNodeList::traverseForwardToOffset(unsigned offset, Element& currentNode, unsigned& currentOffset, const ContainerNode& root) const
+{
+    return traverseMatchingElementsForwardToOffset(*this, offset, currentNode, currentOffset, root);
 }
 
 } // namespace WebCore

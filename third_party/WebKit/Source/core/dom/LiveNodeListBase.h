@@ -28,6 +28,7 @@
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/html/CollectionType.h"
 
@@ -86,6 +87,12 @@ protected:
 
     template <typename Collection>
     static Element* itemBefore(const Collection&, const Element* previousItem);
+    template <class NodeListType>
+    static Element* firstMatchingElement(const NodeListType&, const ContainerNode&);
+    template <class NodeListType>
+    static Element* nextMatchingElement(const NodeListType&, Element& current, const ContainerNode& root);
+    template <class NodeListType>
+    static Element* traverseMatchingElementsForwardToOffset(const NodeListType&, unsigned offset, Element& currentElement, unsigned& currentOffset, const ContainerNode& root);
 
 private:
     void invalidateIdNameCacheMaps() const;
@@ -165,6 +172,37 @@ Element* LiveNodeListBase::itemBefore(const Collection& collection, const Elemen
         current = lastNode(collection.rootNode(), collection.shouldOnlyIncludeDirectChildren());
 
     return iterateForPreviousNode(collection, current);
+}
+
+template <class NodeListType>
+Element* LiveNodeListBase::firstMatchingElement(const NodeListType& nodeList, const ContainerNode& root)
+{
+    Element* element = ElementTraversal::firstWithin(root);
+    while (element && !isMatchingElement(nodeList, *element))
+        element = ElementTraversal::next(*element, &root);
+    return element;
+}
+
+template <class NodeListType>
+Element* LiveNodeListBase::nextMatchingElement(const NodeListType& nodeList, Element& current, const ContainerNode& root)
+{
+    Element* next = &current;
+    do {
+        next = ElementTraversal::next(*next, &root);
+    } while (next && !isMatchingElement(nodeList, *next));
+    return next;
+}
+
+template <class NodeListType>
+Element* LiveNodeListBase::traverseMatchingElementsForwardToOffset(const NodeListType& nodeList, unsigned offset, Element& currentElement, unsigned& currentOffset, const ContainerNode& root)
+{
+    ASSERT(currentOffset < offset);
+    Element* next = &currentElement;
+    while ((next = nextMatchingElement(nodeList, *next, root))) {
+        if (++currentOffset == offset)
+            return next;
+    }
+    return 0;
 }
 
 } // namespace WebCore
