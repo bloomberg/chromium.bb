@@ -54,6 +54,7 @@ class EVENTS_EXPORT EventDispatcherDelegate {
       Event* event) WARN_UNUSED_RESULT;
 
   // This is called right after the event dispatch is completed.
+  // |target| is NULL if the target was deleted during dispatch.
   virtual EventDispatchDetails PostDispatchEvent(
       EventTarget* target,
       const Event& event) WARN_UNUSED_RESULT;
@@ -80,7 +81,6 @@ class EVENTS_EXPORT EventDispatcher {
   Event* current_event() { return current_event_; }
 
   bool delegate_destroyed() const { return !delegate_; }
-  const EventDispatchDetails& details() const { return details_; }
 
   void OnHandlerDestroyed(EventHandler* handler);
   void OnDispatcherDelegateDestroyed();
@@ -98,8 +98,6 @@ class EVENTS_EXPORT EventDispatcher {
   Event* current_event_;
 
   EventHandlerList handler_list_;
-
-  EventDispatchDetails details_;
 
   DISALLOW_COPY_AND_ASSIGN(EventDispatcher);
 };

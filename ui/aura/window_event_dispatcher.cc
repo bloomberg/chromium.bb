@@ -578,7 +578,7 @@ ui::EventDispatchDetails WindowEventDispatcher::PostDispatchEvent(
     ui::EventTarget* target,
     const ui::Event& event) {
   DispatchDetails details;
-  if (target != event_dispatch_target_)
+  if (!target || target != event_dispatch_target_)
     details.target_destroyed = true;
   event_dispatch_target_ = old_dispatch_target_;
   old_dispatch_target_ = NULL;
