@@ -1219,6 +1219,8 @@ crbug.com/323130 w3c/web-platform-tests/shadow-dom/styles/test-004.html [ Skip ]
 
 crbug.com/246077 [ Linux ] virtual/android/fullscreen/parent-flow-inline-with-block-child.html [ Failure ]
 
+crbug.com/346132 fast/url/segments-from-data-url.html [ Failure NeedsRebaseline ]
+
 crbug.com/347086 [ Mac ] compositing/layer-creation/overlap-animation-container.html [ Pass Failure ]
 crbug.com/347086 [ Mac ] compositing/layer-creation/overlap-animation.html [ Pass Failure ]
 
