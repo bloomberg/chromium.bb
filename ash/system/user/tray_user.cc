@@ -820,6 +820,7 @@ void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
     // Let the user add another account to the session.
     MultiProfileUMA::RecordSigninUser(MultiProfileUMA::SIGNIN_USER_BY_TRAY);
     Shell::GetInstance()->system_tray_delegate()->ShowUserLogin();
+    owner_->system_tray()->CloseSystemBubble();
   } else {
     NOTREACHED();
   }
