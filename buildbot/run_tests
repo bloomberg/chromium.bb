@@ -77,10 +77,10 @@ run_test() {
   if [[ "${special}" == "skip" ]]; then
     echo "Skipping unittest ${test}"
     return
-  elif [[ "${special}" == "outside" && -f /etc/debian_chroot ]]; then
+  elif [[ "${special}" == "outside" && -f /etc/cros_chroot_version ]]; then
     echo "Skipping unittest ${test} because it must run outside the chroot"
     return
-  elif [[ "${special}" == "inside" && ! -f /etc/debian_chroot ]]; then
+  elif [[ "${special}" == "inside" && ! -f /etc/cros_chroot_version ]]; then
     if ${SKIP_CHROOT_TESTS}; then
       echo "Skipping unittest ${test} because it must run inside the chroot"
       return

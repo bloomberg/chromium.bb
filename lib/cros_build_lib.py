@@ -671,7 +671,7 @@ def ListFiles(base_dir):
 
 def IsInsideChroot():
   """Returns True if we are inside chroot."""
-  return os.path.exists('/etc/debian_chroot')
+  return os.path.exists('/etc/cros_chroot_version')
 
 def AssertInsideChroot():
   """Die if we are outside the chroot"""
