@@ -30,7 +30,6 @@
           'media_player_private.json',
           'music_manager_private.idl',
           'principals_private.idl',
-          'streams_private.idl',
           'top_sites.json',
         ],
         'conditions': [
@@ -105,6 +104,7 @@
               'sockets_tcp_server.idl',
               'sockets_udp.idl',
               'storage.json',
+              'streams_private.idl',
               'sync_file_system.idl',
               'system_cpu.idl',
               'system_display.idl',

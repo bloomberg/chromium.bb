@@ -6,11 +6,11 @@
 var hasFailed = false;
 
 chrome.streamsPrivate.onExecuteMimeTypeHandler.addListener(
-    function(mime_type, original_url, content_url, tab_id, expected_size) {
+    function(params) {
   // The tests are setup so resources with MIME type 'application/msword' are
   // meant to be handled by the extension. The extension getting an event with
   // the MIME type 'application/msword' means the test has succeeded.
-  if (mime_type == 'application/msword') {
+  if (params.mimeType == 'application/msword') {
     chrome.test.notifyPass();
     return;
   }
@@ -18,7 +18,7 @@ chrome.streamsPrivate.onExecuteMimeTypeHandler.addListener(
   // The tests are setup so resources with MIME type 'plain/text' are meant to
   // be handled by the browser (i.e. downloaded). The extension getting event
   // with MIME type 'plain/text' is thus a failure.
-  if (mime_type == 'plain/text') {
+  if (params.mimeType == 'plain/text') {
     chrome.test.notifyFail(
         'Unexpected request to handle "plain/text" MIME type.');
     // Set |hasFailed| so notifyPass doesn't get called later (when event with
@@ -31,6 +31,6 @@ chrome.streamsPrivate.onExecuteMimeTypeHandler.addListener(
   // should be raised to notify the extension it's job is done. If the extension
   // receives the 'test/done' and there were no previous failures, notify that
   // the test has succeeded.
-  if (!hasFailed && mime_type == 'test/done')
+  if (!hasFailed && params.mimeType == 'test/done')
     chrome.test.notifyPass();
 });

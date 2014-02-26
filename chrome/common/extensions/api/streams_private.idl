@@ -4,24 +4,30 @@
 
 // Streams Private API.
 namespace streamsPrivate {
+  dictionary StreamInfo {
+    // The MIME type of the intercepted URL request.
+    DOMString mimeType;
+
+    // The original URL that was intercepted.
+    DOMString originalUrl;
+
+    // The URL that the stream can be read from.
+    DOMString streamUrl;
+
+    // The ID of the tab that opened the stream. If the stream is not opened in
+    // a tab, it will be -1.
+    long tabId;
+
+    // The amount of data the Stream should contain, if known.  If there is no
+    // information on the size it will be -1.
+    long expectedContentSize;
+  };
+
   interface Events {
     // Fired when a resource is fetched which matches a mime type handled by
     // this extension. The resource request is cancelled, and the extension is
     // expected to handle the request. The event is restricted to a small number
     // of white-listed extensions.
-    static void onExecuteMimeTypeHandler(
-      // The MIME type of the intercepted URL request.
-      DOMString mimeType,
-      // The original URL that was intercepted.
-      DOMString originalUrl,
-      // The URL that the stream can be read from.
-      DOMString streamUrl,
-      // The ID of the tab that opened the stream. If the stream is not opened
-      // in a tab, it will be -1.
-      long tabId,
-      // The amount of data the Stream should contain, if known.  If there is
-      // no information on the size it will be -1.
-      long expectedContentSize
-    );
+    static void onExecuteMimeTypeHandler(StreamInfo streamInfo);
   };
 };

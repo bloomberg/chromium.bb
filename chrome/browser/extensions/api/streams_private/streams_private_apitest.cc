@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/extensions/api/streams_private.h"
 #include "chrome/common/extensions/mime_types_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/test_switches.h"
@@ -42,6 +43,8 @@ using net::test_server::HttpRequest;
 using net::test_server::HttpResponse;
 using net::test_server::EmbeddedTestServer;
 using testing::_;
+
+namespace streams_private = extensions::api::streams_private;
 
 namespace {
 
@@ -149,15 +152,16 @@ class StreamsPrivateApiTest : public ExtensionApiTest {
   // event with the "test/done" MIME type (unless the 'chrome.test.notifyFail'
   // has already been called).
   void SendDoneEvent() {
-    scoped_ptr<base::ListValue> event_args(new base::ListValue());
-    event_args->Append(new base::StringValue("test/done"));
-    event_args->Append(new base::StringValue("http://foo"));
-    event_args->Append(new base::StringValue("blob://bar"));
-    event_args->Append(new base::FundamentalValue(10));
-    event_args->Append(new base::FundamentalValue(20));
+    streams_private::StreamInfo info;
+    info.mime_type = "test/done";
+    info.original_url = "http://foo";
+    info.stream_url = "blob://bar";
+    info.tab_id = 10;
+    info.expected_content_size = 20;
 
-    scoped_ptr<Event> event(new Event(
-        "streamsPrivate.onExecuteMimeTypeHandler", event_args.Pass()));
+    scoped_ptr<Event> event(
+        new Event(streams_private::OnExecuteMimeTypeHandler::kEventName,
+                  streams_private::OnExecuteMimeTypeHandler::Create(info)));
 
     ExtensionSystem::Get(browser()->profile())->event_router()->
         DispatchEventToExtension(test_extension_id_, event.Pass());

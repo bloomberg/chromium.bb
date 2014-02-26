@@ -13,20 +13,16 @@
 #include "chrome/browser/extensions/extension_function_registry.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/api/streams_private.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/stream_handle.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
 
-namespace events {
-
-const char kOnExecuteMimeTypeHandler[] =
-    "streamsPrivate.onExecuteMimeTypeHandler";
-
-}  // namespace events
-
 namespace extensions {
+
+namespace streams_private = api::streams_private;
 
 // static
 StreamsPrivateAPI* StreamsPrivateAPI::Get(content::BrowserContext* context) {
@@ -49,20 +45,20 @@ void StreamsPrivateAPI::ExecuteMimeTypeHandler(
     scoped_ptr<content::StreamHandle> stream,
     int64 expected_content_size) {
   // Create the event's arguments value.
-  scoped_ptr<base::ListValue> event_args(new base::ListValue());
-  event_args->Append(new base::StringValue(stream->GetMimeType()));
-  event_args->Append(new base::StringValue(stream->GetOriginalURL().spec()));
-  event_args->Append(new base::StringValue(stream->GetURL().spec()));
-  event_args->Append(
-      new base::FundamentalValue(ExtensionTabUtil::GetTabId(web_contents)));
+  streams_private::StreamInfo info;
+  info.mime_type = stream->GetMimeType();
+  info.original_url = stream->GetOriginalURL().spec();
+  info.stream_url = stream->GetURL().spec();
+  info.tab_id = ExtensionTabUtil::GetTabId(web_contents);
 
   int size = -1;
   if (expected_content_size <= INT_MAX)
     size = expected_content_size;
-  event_args->Append(new base::FundamentalValue(size));
+  info.expected_content_size = size;
 
-  scoped_ptr<Event> event(new Event(events::kOnExecuteMimeTypeHandler,
-                                    event_args.Pass()));
+  scoped_ptr<Event> event(
+      new Event(streams_private::OnExecuteMimeTypeHandler::kEventName,
+                streams_private::OnExecuteMimeTypeHandler::Create(info)));
 
   ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
       extension_id, event.Pass());
