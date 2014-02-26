@@ -365,7 +365,12 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   // Report if the renderer process has been patched by chrome_elf.
   // TODO(csharp): Remove once the renderer is no longer getting
   // patched this way.
-  if (blacklist::IsBlacklistInitialized())
+  typedef bool(*IsBlacklistInitializedFunc)();
+  IsBlacklistInitializedFunc is_blacklist_initialized =
+      reinterpret_cast<IsBlacklistInitializedFunc>(
+          GetProcAddress(GetModuleHandle(L"chrome_elf.dll"),
+                         "IsBlacklistInitialized"));
+  if (is_blacklist_initialized && is_blacklist_initialized())
     UMA_HISTOGRAM_BOOLEAN("Blacklist.PatchedInRenderer", true);
 #endif
 }
