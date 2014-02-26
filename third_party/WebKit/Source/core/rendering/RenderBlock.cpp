@@ -1593,51 +1593,6 @@ bool RenderBlock::createsBlockFormattingContext() const
         || style()->specifiesColumns() || isTableCell() || isTableCaption() || isFieldset() || isWritingModeRoot() || isRoot() || style()->columnSpan();
 }
 
-void RenderBlock::determineLogicalLeftPositionForChild(RenderBox* child, ApplyLayoutDeltaMode applyDelta)
-{
-    LayoutUnit startPosition = borderStart() + paddingStart();
-    if (style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
-        startPosition -= verticalScrollbarWidth();
-    LayoutUnit totalAvailableLogicalWidth = borderAndPaddingLogicalWidth() + availableLogicalWidth();
-
-    // Add in our start margin.
-    LayoutUnit childMarginStart = marginStartForChild(child);
-    LayoutUnit newPosition = startPosition + childMarginStart;
-
-    // Some objects (e.g., tables, horizontal rules, overflow:auto blocks) avoid floats.  They need
-    // to shift over as necessary to dodge any floats that might get in the way.
-    if (child->avoidsFloats() && containsFloats() && !flowThreadContainingBlock())
-        newPosition += toRenderBlockFlow(this)->computeStartPositionDeltaForChildAvoidingFloats(child, marginStartForChild(child));
-
-    setLogicalLeftForChild(child, style()->isLeftToRightDirection() ? newPosition : totalAvailableLogicalWidth - newPosition - logicalWidthForChild(child), applyDelta);
-}
-
-void RenderBlock::setLogicalLeftForChild(RenderBox* child, LayoutUnit logicalLeft, ApplyLayoutDeltaMode applyDelta)
-{
-    if (isHorizontalWritingMode()) {
-        if (applyDelta == ApplyLayoutDelta && !RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-            view()->addLayoutDelta(LayoutSize(child->x() - logicalLeft, 0));
-        child->setX(logicalLeft);
-    } else {
-        if (applyDelta == ApplyLayoutDelta && !RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-            view()->addLayoutDelta(LayoutSize(0, child->y() - logicalLeft));
-        child->setY(logicalLeft);
-    }
-}
-
-void RenderBlock::setLogicalTopForChild(RenderBox* child, LayoutUnit logicalTop, ApplyLayoutDeltaMode applyDelta)
-{
-    if (isHorizontalWritingMode()) {
-        if (applyDelta == ApplyLayoutDelta && !RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-            view()->addLayoutDelta(LayoutSize(0, child->y() - logicalTop));
-        child->setY(logicalTop);
-    } else {
-        if (applyDelta == ApplyLayoutDelta && !RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-            view()->addLayoutDelta(LayoutSize(child->x() - logicalTop, 0));
-        child->setX(logicalTop);
-    }
-}
-
 void RenderBlock::updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, RenderBox* child)
 {
     // FIXME: Technically percentage height objects only need a relayout if their percentage isn't going to be turned into
