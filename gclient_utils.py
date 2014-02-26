@@ -10,7 +10,6 @@ import os
 import pipes
 import Queue
 import re
-import socket
 import stat
 import subprocess
 import sys
@@ -24,20 +23,6 @@ import subprocess2
 
 RETRY_MAX = 3
 RETRY_INITIAL_SLEEP = 0.5
-
-
-def enable_deletion_of_conflicting_checkouts():
-  """Determines whether to enable new checkout deletion behavior.
-
-  Initially, enables the experimental functionality on a small set of
-  bots.
-  """
-  # TODO(borenet): Remove this hack as soon as we've verified that it
-  # doesn't cause the bots to break.
-  if not os.environ.get('CHROME_HEADLESS'):
-    return False
-  return socket.gethostname() in ('vm859-m1', 'BUILD1-M1',
-                                  'vm630-m1.golo.chromium.org')
 
 
 class Error(Exception):

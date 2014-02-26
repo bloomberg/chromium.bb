@@ -166,15 +166,12 @@ class GIT(object):
     return GIT.ShortBranchName(GIT.GetBranchRef(cwd))
 
   @staticmethod
-  def IsGitSvn(checkout_root):
+  def IsGitSvn(cwd):
     """Returns true if this repo looks like it's using git-svn."""
-    # A git-svn checkout has a .git directory.
-    if not os.path.exists(os.path.join(checkout_root, '.git')):
-      return False
     # If you have any "svn-remote.*" config keys, we think you're using svn.
     try:
       GIT.Capture(['config', '--local', '--get-regexp', r'^svn-remote\.'],
-                  cwd=checkout_root)
+                  cwd=cwd)
       return True
     except subprocess2.CalledProcessError:
       return False
@@ -411,7 +408,7 @@ class GIT(object):
   @staticmethod
   def GetSha1ForSvnRev(cwd, rev):
     """Returns a corresponding git sha1 for a SVN revision."""
-    if not GIT.IsGitSvn(cwd):
+    if not GIT.IsGitSvn(cwd=cwd):
       return None
     try:
       output = GIT.Capture(['svn', 'find-rev', 'r' + str(rev)], cwd=cwd)

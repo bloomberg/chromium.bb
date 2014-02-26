@@ -29,9 +29,7 @@ class GclientUtilsUnittest(GclientUtilBase):
   def testMembersChanged(self):
     members = [
         'Annotated', 'AutoFlush', 'CheckCallAndFilter', 'CommandToStr',
-        'CheckCallAndFilterAndHeader',
-        'enable_deletion_of_conflicting_checkouts', # TODO(borenet): Remove!
-        'Error', 'ExecutionQueue', 'FileRead',
+        'CheckCallAndFilterAndHeader', 'Error', 'ExecutionQueue', 'FileRead',
         'FileWrite', 'FindFileUpwards', 'FindGclientRoot',
         'GetGClientRootAndEntries', 'GetEditor', 'GetExeSuffix',
         'GetMacWinOrLinux', 'GitFilter', 'IsDateRevision', 'MakeDateRevision',
@@ -41,9 +39,7 @@ class GclientUtilsUnittest(GclientUtilBase):
         'GCLIENT_CHILDREN_LOCK', 'GClientChildren', 'SplitUrlRevision',
         'SyntaxErrorToError', 'UpgradeToHttps', 'Wrapper', 'WorkItem',
         'codecs', 'lockedmethod', 'logging', 'os', 'pipes', 'Queue', 're',
-        'rmtree', 'safe_makedirs', 'safe_rename',
-        'socket', # TODO(borenet): Remove!
-        'stat', 'subprocess',
+        'rmtree', 'safe_makedirs', 'safe_rename', 'stat', 'subprocess',
         'subprocess2', 'sys', 'tempfile', 'threading', 'time', 'urlparse',
 
     ]
