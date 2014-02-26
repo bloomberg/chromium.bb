@@ -49,8 +49,9 @@ const char kUMAInitialFetchOAuth2Error[] =
 const char kUMAInitialFetchOAuth2NetworkError[] =
     "Enterprise.UserPolicyChromeOS.InitialFetch.OAuth2NetworkError";
 
-void OnWildcardCheckCompleted(const std::string& username, bool result) {
-  if (!result) {
+void OnWildcardCheckCompleted(const std::string& username,
+                              WildcardLoginChecker::Result result) {
+  if (result == WildcardLoginChecker::RESULT_BLOCKED) {
     LOG(ERROR) << "Online wildcard login check failed, terminating session.";
 
     // TODO(mnissler): This only removes the user pod from the login screen, but

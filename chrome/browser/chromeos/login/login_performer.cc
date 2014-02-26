@@ -23,7 +23,6 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
-#include "chrome/browser/chromeos/policy/wildcard_login_checker.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/common/pref_names.h"
@@ -358,8 +357,9 @@ void LoginPerformer::StartAuthentication() {
   user_context_.auth_code.clear();
 }
 
-void LoginPerformer::OnlineWildcardLoginCheckCompleted(bool result) {
-  if (result) {
+void LoginPerformer::OnlineWildcardLoginCheckCompleted(
+    policy::WildcardLoginChecker::Result result) {
+  if (result == policy::WildcardLoginChecker::RESULT_ALLOWED) {
     StartLoginCompletion();
   } else {
     if (delegate_)

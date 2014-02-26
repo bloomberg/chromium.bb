@@ -25,7 +25,14 @@ class PolicyOAuth2TokenFetcher;
 // reports the result via a callback.
 class WildcardLoginChecker : public UserInfoFetcher::Delegate {
  public:
-  typedef base::Callback<void(bool)> StatusCallback;
+  // Indicates result of the wildcard login check.
+  enum Result {
+    RESULT_ALLOWED,  // Wildcard check succeeded, login allowed.
+    RESULT_BLOCKED,  // Check completed, but user should be blocked.
+    RESULT_FAILED,   // Failure due to network errors etc.
+  };
+
+  typedef base::Callback<void(Result)> StatusCallback;
 
   WildcardLoginChecker();
   virtual ~WildcardLoginChecker();
@@ -53,7 +60,7 @@ class WildcardLoginChecker : public UserInfoFetcher::Delegate {
   void StartUserInfoFetcher(const std::string& access_token);
 
   // Handles the response of the check and calls ReportResult().
-  void OnCheckCompleted(bool result);
+  void OnCheckCompleted(Result result);
 
   StatusCallback callback_;
 

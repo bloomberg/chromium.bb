@@ -71,13 +71,14 @@ void WildcardLoginChecker::OnGetUserInfoSuccess(
                                now - start_timestamp_);
   }
 
-  OnCheckCompleted(response->HasKey(kHostedDomainKey));
+  OnCheckCompleted(response->HasKey(kHostedDomainKey) ? RESULT_ALLOWED
+                                                      : RESULT_BLOCKED);
 }
 
 void WildcardLoginChecker::OnGetUserInfoFailure(
     const GoogleServiceAuthError& error) {
   LOG(ERROR) << "Failed to fetch user info " << error.ToString();
-  OnCheckCompleted(false);
+  OnCheckCompleted(RESULT_FAILED);
 }
 
 void WildcardLoginChecker::OnPolicyTokenFetched(
@@ -85,7 +86,7 @@ void WildcardLoginChecker::OnPolicyTokenFetched(
     const GoogleServiceAuthError& error) {
   if (error.state() != GoogleServiceAuthError::NONE) {
     LOG(ERROR) << "Failed to fetch policy token " << error.ToString();
-    OnCheckCompleted(false);
+    OnCheckCompleted(RESULT_FAILED);
     return;
   }
 
@@ -106,7 +107,7 @@ void WildcardLoginChecker::StartUserInfoFetcher(
   user_info_fetcher_->Start(access_token);
 }
 
-void WildcardLoginChecker::OnCheckCompleted(bool result) {
+void WildcardLoginChecker::OnCheckCompleted(Result result) {
   if (!callback_.is_null())
     callback_.Run(result);
 }
