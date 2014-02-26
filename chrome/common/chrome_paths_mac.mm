@@ -219,6 +219,14 @@ bool GetLocalLibraryDirectory(base::FilePath* result) {
   return base::mac::GetLocalDirectory(NSLibraryDirectory, result);
 }
 
+bool GetUserLibraryDirectory(base::FilePath* result) {
+  return base::mac::GetUserDirectory(NSLibraryDirectory, result);
+}
+
+bool GetUserApplicationsDirectory(base::FilePath* result) {
+  return base::mac::GetUserDirectory(NSApplicationDirectory, result);
+}
+
 bool GetGlobalApplicationSupportDirectory(base::FilePath* result) {
   return base::mac::GetLocalDirectory(NSApplicationSupportDirectory, result);
 }

@@ -5,13 +5,12 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_FILE_SYSTEM_FILE_SYSTEM_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_FILE_SYSTEM_FILE_SYSTEM_API_H_
 
+#include <vector>
+
+#include "base/files/file_path.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/file_system.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
-
-namespace base {
-class FilePath;
-}
 
 namespace extensions {
 class ExtensionPrefs;
@@ -29,6 +28,8 @@ base::FilePath GetLastChooseEntryDirectory(const ExtensionPrefs* prefs,
 void SetLastChooseEntryDirectory(ExtensionPrefs* prefs,
                                  const std::string& extension_id,
                                  const base::FilePath& path);
+
+std::vector<base::FilePath> GetGrayListedDirectories();
 
 }  // namespace file_system_api
 

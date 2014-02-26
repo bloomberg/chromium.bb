@@ -212,14 +212,38 @@ void AddScanResultsForProfile(
 // may be to contain media directories. This function tries to find those
 // immediate container directories.
 MediaFolderFinder::MediaFolderFinderResults FindContainerScanResults(
-    const MediaFolderFinder::MediaFolderFinderResults& found_folders) {
+    const MediaFolderFinder::MediaFolderFinderResults& found_folders,
+    const std::vector<base::FilePath>& sensitive_locations) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  std::vector<base::FilePath> abs_sensitive_locations;
+  for (size_t i = 0; i < sensitive_locations.size(); ++i) {
+    base::FilePath path = base::MakeAbsoluteFilePath(sensitive_locations[i]);
+    if (!path.empty())
+      abs_sensitive_locations.push_back(path);
+  }
   // Count the number of scan results with the same parent directory.
   typedef std::map<base::FilePath, int /*count*/> ContainerCandidates;
   ContainerCandidates candidates;
   for (MediaFolderFinder::MediaFolderFinderResults::const_iterator it =
            found_folders.begin(); it != found_folders.end(); ++it) {
     base::FilePath parent_directory = it->first.DirName();
+
+    // Skip sensitive folders and their ancestors.
+    bool is_sensitive = false;
+    base::FilePath abs_parent_directory =
+        base::MakeAbsoluteFilePath(parent_directory);
+    if (abs_parent_directory.empty())
+      continue;
+    for (size_t i = 0; i < abs_sensitive_locations.size(); ++i) {
+      if (abs_parent_directory == abs_sensitive_locations[i] ||
+          abs_parent_directory.IsParent(abs_sensitive_locations[i])) {
+        is_sensitive = true;
+        continue;
+      }
+    }
+    if (is_sensitive)
+      continue;
+
     ContainerCandidates::iterator existing = candidates.find(parent_directory);
     if (existing == candidates.end()) {
       candidates[parent_directory] = 1;
@@ -250,11 +274,6 @@ MediaFolderFinder::MediaFolderFinderResults FindContainerScanResults(
       result[it->first] = MediaGalleryScanResult();
   }
   return result;
-}
-
-void RemoveSensitiveLocations(
-    MediaFolderFinder::MediaFolderFinderResults* found_folders) {
-  // TODO(vandebo) Use the greylist from filesystem api.
 }
 
 int CountScanResultsForExtension(MediaGalleriesPreferences* preferences,
@@ -444,9 +463,12 @@ void MediaScanManager::OnScanCompleted(
 
   content::BrowserThread::PostTaskAndReplyWithResult(
       content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(FindContainerScanResults, found_folders),
+      base::Bind(FindContainerScanResults,
+                 found_folders,
+                 folder_finder_->graylisted_folders()),
       base::Bind(&MediaScanManager::OnFoundContainerDirectories,
-                 weak_factory_.GetWeakPtr(), found_folders));
+                 weak_factory_.GetWeakPtr(),
+                 found_folders));
 }
 
 void MediaScanManager::OnFoundContainerDirectories(
@@ -455,8 +477,6 @@ void MediaScanManager::OnFoundContainerDirectories(
   MediaFolderFinder::MediaFolderFinderResults folders;
   folders.insert(found_folders.begin(), found_folders.end());
   folders.insert(container_folders.begin(), container_folders.end());
-
-  RemoveSensitiveLocations(&folders);
 
   for (ScanObserverMap::iterator scans_for_profile = observers_.begin();
        scans_for_profile != observers_.end();

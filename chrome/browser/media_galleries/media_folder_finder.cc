@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <set>
 
+#include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/path_service.h"
 #include "base/sequence_checker.h"
@@ -14,7 +15,9 @@
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
+#include "chrome/common/chrome_paths.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -35,6 +38,25 @@ namespace {
 const int64 kMinimumImageSize = 200 * 1024;    // 200 KB
 const int64 kMinimumAudioSize = 500 * 1024;    // 500 KB
 const int64 kMinimumVideoSize = 1024 * 1024;   // 1 MB
+
+const int kPrunedPaths[] = {
+#if defined(OS_WIN)
+  base::DIR_IE_INTERNET_CACHE,
+  base::DIR_PROGRAM_FILES,
+  base::DIR_PROGRAM_FILESX86,
+  base::DIR_WINDOWS,
+#endif
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  chrome::DIR_USER_APPLICATIONS,
+  chrome::DIR_USER_LIBRARY,
+#endif
+#if defined(OS_LINUX)
+  base::DIR_CACHE,
+#endif
+#if defined(OS_WIN) || defined(OS_LINUX)
+  base::DIR_TEMP,
+#endif
+};
 
 bool IsValidScanPath(const base::FilePath& path) {
   return !path.empty() && path.IsAbsolute();
@@ -150,13 +172,19 @@ MediaFolderFinder::WorkerReply::~WorkerReply() {}
 // SequencedTaskRunner.
 class MediaFolderFinder::Worker {
  public:
-  Worker();
+  explicit Worker(const std::vector<base::FilePath>& graylisted_folders);
   ~Worker();
 
   // Scans |path| and return the results.
   WorkerReply ScanFolder(const base::FilePath& path);
 
  private:
+  void MakeFolderPathsAbsolute();
+
+  bool folder_paths_are_absolute_;
+  std::vector<base::FilePath> graylisted_folders_;
+  std::vector<base::FilePath> pruned_folders_;
+
   scoped_ptr<MediaPathFilter> filter_;
 
   base::SequenceChecker sequence_checker_;
@@ -164,9 +192,19 @@ class MediaFolderFinder::Worker {
   DISALLOW_COPY_AND_ASSIGN(Worker);
 };
 
-MediaFolderFinder::Worker::Worker() {
+MediaFolderFinder::Worker::Worker(
+    const std::vector<base::FilePath>& graylisted_folders)
+    : folder_paths_are_absolute_(false),
+      graylisted_folders_(graylisted_folders),
+      filter_(new MediaPathFilter) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  filter_.reset(new MediaPathFilter);
+
+  for (size_t i = 0; i < arraysize(kPrunedPaths); ++i) {
+    base::FilePath path;
+    if (PathService::Get(kPrunedPaths[i], &path))
+      pruned_folders_.push_back(path);
+  }
+
   sequence_checker_.DetachFromSequence();
 }
 
@@ -179,8 +217,24 @@ MediaFolderFinder::WorkerReply MediaFolderFinder::Worker::ScanFolder(
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   CHECK(IsValidScanPath(path));
 
+  if (!folder_paths_are_absolute_)
+    MakeFolderPathsAbsolute();
+
   WorkerReply reply;
   bool folder_meets_size_requirement = false;
+  bool is_graylisted_folder = false;
+  base::FilePath abspath = base::MakeAbsoluteFilePath(path);
+  if (abspath.empty())
+    return reply;
+
+  for (size_t i = 0; i < graylisted_folders_.size(); ++i) {
+    if (abspath == graylisted_folders_[i] ||
+        abspath.IsParent(graylisted_folders_[i])) {
+      is_graylisted_folder = true;
+      break;
+    }
+  }
+
   base::FileEnumerator enumerator(
       path,
       false, /* recursive? */
@@ -188,17 +242,37 @@ MediaFolderFinder::WorkerReply MediaFolderFinder::Worker::ScanFolder(
 #if defined(OS_POSIX)
       | base::FileEnumerator::SHOW_SYM_LINKS  // show symlinks, not follow.
 #endif
-      );
+      );  // NOLINT
   while (!enumerator.Next().empty()) {
     base::FileEnumerator::FileInfo file_info = enumerator.GetInfo();
     base::FilePath full_path = path.Append(file_info.GetName());
     if (MediaPathFilter::ShouldSkip(full_path))
       continue;
 
+    // Enumerating a directory.
     if (file_info.IsDirectory()) {
-      reply.new_folders.push_back(full_path);
+      bool is_pruned_folder = false;
+      base::FilePath abs_full_path = base::MakeAbsoluteFilePath(full_path);
+      if (abs_full_path.empty())
+        continue;
+      for (size_t i = 0; i < pruned_folders_.size(); ++i) {
+        if (abs_full_path == pruned_folders_[i]) {
+          is_pruned_folder = true;
+          break;
+        }
+      }
+
+      if (!is_pruned_folder)
+        reply.new_folders.push_back(full_path);
       continue;
     }
+
+    // Enumerating a file.
+    //
+    // Do not include scan results for graylisted folders.
+    if (is_graylisted_folder)
+      continue;
+
     MediaGalleryScanFileType type = filter_->GetType(full_path);
     if (type == MEDIA_GALLERY_SCAN_FILE_TYPE_UNKNOWN)
       continue;
@@ -215,11 +289,34 @@ MediaFolderFinder::WorkerReply MediaFolderFinder::Worker::ScanFolder(
   return reply;
 }
 
+void MediaFolderFinder::Worker::MakeFolderPathsAbsolute() {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(!folder_paths_are_absolute_);
+  folder_paths_are_absolute_ = true;
+
+  std::vector<base::FilePath> abs_paths;
+  for (size_t i = 0; i < graylisted_folders_.size(); ++i) {
+    base::FilePath path = base::MakeAbsoluteFilePath(graylisted_folders_[i]);
+    if (!path.empty())
+      abs_paths.push_back(path);
+  }
+  graylisted_folders_ = abs_paths;
+  abs_paths.clear();
+  for (size_t i = 0; i < pruned_folders_.size(); ++i) {
+    base::FilePath path = base::MakeAbsoluteFilePath(pruned_folders_[i]);
+    if (!path.empty())
+      abs_paths.push_back(path);
+  }
+  pruned_folders_ = abs_paths;
+}
+
 MediaFolderFinder::MediaFolderFinder(
     const MediaFolderFinderResultsCallback& callback)
     : results_callback_(callback),
+      graylisted_folders_(
+          extensions::file_system_api::GetGrayListedDirectories()),
       scan_state_(SCAN_STATE_NOT_STARTED),
-      worker_(new Worker()),
+      worker_(new Worker(graylisted_folders_)),
       has_roots_for_testing_(false),
       weak_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -251,6 +348,11 @@ void MediaFolderFinder::StartScan() {
       base::Bind(&MediaFolderFinder::OnInitialized, weak_factory_.GetWeakPtr()),
       has_roots_for_testing_,
       roots_for_testing_);
+}
+
+const std::vector<base::FilePath>&
+MediaFolderFinder::graylisted_folders() const {
+  return graylisted_folders_;
 }
 
 void MediaFolderFinder::SetRootsForTesting(

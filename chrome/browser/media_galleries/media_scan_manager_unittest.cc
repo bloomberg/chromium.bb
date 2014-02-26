@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -9,6 +10,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_path_override.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/media_galleries/media_folder_finder.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
@@ -143,26 +145,23 @@ class MediaScanManagerTest : public MediaScanManagerObserver,
   }
 
   // Create a test folder in the test specific scoped temp dir and return the
-  // final path.
-  base::FilePath MakeTestFolder(const std::string& root_relative_path) {
-    DCHECK(test_results_dir_.IsValid());
-    base::FilePath path =
+  // final path in |full_path|.
+  void MakeTestFolder(const std::string& root_relative_path,
+                      base::FilePath* full_path) {
+    ASSERT_TRUE(test_results_dir_.IsValid());
+    *full_path =
         test_results_dir_.path().AppendASCII(root_relative_path);
-    if (!base::CreateDirectory(path)) {
-      return base::FilePath();
-    }
-    return path;
+    ASSERT_TRUE(base::CreateDirectory(*full_path));
   }
 
   // Create the specified path, and add it to preferences as a gallery.
-  MediaGalleryPrefId AddGallery(const std::string& path,
+  MediaGalleryPrefId AddGallery(const std::string& rel_path,
                                 MediaGalleryPrefInfo::Type type,
                                 int audio_count,
                                 int image_count,
                                 int video_count) {
-    base::FilePath full_path = MakeTestFolder(path);
-    if (full_path.empty())
-      return kInvalidMediaGalleryPrefId;
+    base::FilePath full_path;
+    MakeTestFolder(rel_path, &full_path);
     MediaGalleryPrefInfo gallery_info;
     gallery_prefs_->LookUpGalleryByPath(full_path, &gallery_info);
     return gallery_prefs_->AddGallery(gallery_info.device_id,
@@ -198,6 +197,14 @@ class MediaScanManagerTest : public MediaScanManagerObserver,
     return gallery_prefs_;
   }
 
+  const MediaGalleriesPrefInfoMap& known_galleries() const {
+    return gallery_prefs_->known_galleries();
+  }
+
+  size_t gallery_count() const {
+    return known_galleries().size();
+  }
+
   extensions::Extension* extension() {
     return extension_.get();
   }
@@ -212,12 +219,12 @@ class MediaScanManagerTest : public MediaScanManagerObserver,
 
   void CheckFileCounts(MediaGalleryPrefId pref_id, int audio_count,
                        int image_count, int video_count) {
-    if (!ContainsKey(gallery_prefs_->known_galleries(), pref_id)) {
+    if (!ContainsKey(known_galleries(), pref_id)) {
       EXPECT_TRUE(false);
       return;
     }
     MediaGalleriesPrefInfoMap::const_iterator pref_info =
-        gallery_prefs_->known_galleries().find(pref_id);
+        known_galleries().find(pref_id);
     EXPECT_EQ(audio_count, pref_info->second.audio_count);
     EXPECT_EQ(image_count, pref_info->second.image_count);
     EXPECT_EQ(video_count, pref_info->second.video_count);
@@ -279,12 +286,13 @@ class MediaScanManagerTest : public MediaScanManagerObserver,
 };
 
 TEST_F(MediaScanManagerTest, SingleResult) {
-  size_t galleries_before = gallery_prefs()->known_galleries().size();
+  size_t galleries_before = gallery_count();
   MediaGalleryScanResult file_counts;
   file_counts.audio_count = 1;
   file_counts.image_count = 2;
   file_counts.video_count = 3;
-  base::FilePath path = MakeTestFolder("found_media_folder");
+  base::FilePath path;
+  MakeTestFolder("found_media_folder", &path);
 
   MediaFolderFinder::MediaFolderFinderResults found_folders;
   found_folders[path] = file_counts;
@@ -295,7 +303,7 @@ TEST_F(MediaScanManagerTest, SingleResult) {
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, FindFolderDestroyCount());
-  EXPECT_EQ(galleries_before + 1, gallery_prefs()->known_galleries().size());
+  EXPECT_EQ(galleries_before + 1, gallery_count());
 }
 
 TEST_F(MediaScanManagerTest, Containers) {
@@ -305,45 +313,45 @@ TEST_F(MediaScanManagerTest, Containers) {
   std::set<base::FilePath> expected_galleries;
   std::set<base::FilePath> bad_galleries;
   MediaFolderFinder::MediaFolderFinderResults found_folders;
-  size_t galleries_before = gallery_prefs()->known_galleries().size();
+  size_t galleries_before = gallery_count();
 
   // Should manifest as a gallery in result1.
-  path = MakeTestFolder("dir1/result1");
+  MakeTestFolder("dir1/result1", &path);
   expected_galleries.insert(path);
   found_folders[path] = file_counts;
 
   // Should manifest as a gallery in dir2.
-  path = MakeTestFolder("dir2/result2");
+  MakeTestFolder("dir2/result2", &path);
   bad_galleries.insert(path);
   found_folders[path] = file_counts;
-  path = MakeTestFolder("dir2/result3");
+  MakeTestFolder("dir2/result3", &path);
   bad_galleries.insert(path);
   found_folders[path] = file_counts;
   expected_galleries.insert(path.DirName());
 
   // Should manifest as a two galleries: result4 and result5.
-  path = MakeTestFolder("dir3/other");
+  MakeTestFolder("dir3/other", &path);
   bad_galleries.insert(path);
-  path = MakeTestFolder("dir3/result4");
+  MakeTestFolder("dir3/result4", &path);
   expected_galleries.insert(path);
   found_folders[path] = file_counts;
-  path = MakeTestFolder("dir3/result5");
+  MakeTestFolder("dir3/result5", &path);
   expected_galleries.insert(path);
   found_folders[path] = file_counts;
 
   // Should manifest as a gallery in dir4.
-  path = MakeTestFolder("dir4/other");
+  MakeTestFolder("dir4/other", &path);
   bad_galleries.insert(path);
-  path = MakeTestFolder("dir4/result6");
-  bad_galleries.insert(path);
-  found_folders[path] = file_counts;
-  path = MakeTestFolder("dir4/result7");
+  MakeTestFolder("dir4/result6", &path);
   bad_galleries.insert(path);
   found_folders[path] = file_counts;
-  path = MakeTestFolder("dir4/result8");
+  MakeTestFolder("dir4/result7", &path);
   bad_galleries.insert(path);
   found_folders[path] = file_counts;
-  path = MakeTestFolder("dir4/result9");
+  MakeTestFolder("dir4/result8", &path);
+  bad_galleries.insert(path);
+  found_folders[path] = file_counts;
+  MakeTestFolder("dir4/result9", &path);
   bad_galleries.insert(path);
   found_folders[path] = file_counts;
   expected_galleries.insert(path.DirName());
@@ -356,12 +364,11 @@ TEST_F(MediaScanManagerTest, Containers) {
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, FindFolderDestroyCount());
-  EXPECT_EQ(galleries_before + 5, gallery_prefs()->known_galleries().size());
+  EXPECT_EQ(galleries_before + 5, gallery_count());
 
   std::set<base::FilePath> found_galleries;
-  for (MediaGalleriesPrefInfoMap::const_iterator it =
-           gallery_prefs()->known_galleries().begin();
-       it != gallery_prefs()->known_galleries().end();
+  for (MediaGalleriesPrefInfoMap::const_iterator it = known_galleries().begin();
+       it != known_galleries().end();
        ++it) {
     found_galleries.insert(it->second.AbsolutePath());
     DCHECK(!ContainsKey(bad_galleries, it->second.AbsolutePath()));
@@ -374,7 +381,7 @@ TEST_F(MediaScanManagerTest, Containers) {
 }
 
 TEST_F(MediaScanManagerTest, UpdateExistingScanResults) {
-  size_t galleries_before = gallery_prefs()->known_galleries().size();
+  size_t galleries_before = gallery_count();
 
   MediaGalleryPrefId ungranted_scan =
       AddGallery("uscan", MediaGalleryPrefInfo::kScanResult, 1, 0, 0);
@@ -382,7 +389,7 @@ TEST_F(MediaScanManagerTest, UpdateExistingScanResults) {
       AddGallery("gscan", MediaGalleryPrefInfo::kScanResult, 0, 2, 0);
   gallery_prefs()->SetGalleryPermissionForExtension(*extension(), granted_scan,
                                                     true);
-  EXPECT_EQ(galleries_before + 2, gallery_prefs()->known_galleries().size());
+  EXPECT_EQ(galleries_before + 2, gallery_count());
 
   // Run once with no scan results. "uscan" should go away and "gscan" should
   // have its scan counts updated.
@@ -395,7 +402,7 @@ TEST_F(MediaScanManagerTest, UpdateExistingScanResults) {
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, FindFolderDestroyCount());
-  EXPECT_EQ(galleries_before + 1, gallery_prefs()->known_galleries().size());
+  EXPECT_EQ(galleries_before + 1, gallery_count());
   CheckFileCounts(granted_scan, 0, 0, 0);
 
   MediaGalleryPrefId id =
@@ -407,11 +414,12 @@ TEST_F(MediaScanManagerTest, UpdateExistingScanResults) {
   file_counts.audio_count = 0;
   file_counts.image_count = 0;
   file_counts.video_count = 7;
-  base::FilePath path = MakeTestFolder("uscan");
+  base::FilePath path;
+  MakeTestFolder("uscan", &path);
   found_folders[path] = file_counts;
 
   file_counts.video_count = 11;
-  path = MakeTestFolder("gscan/dir1");
+  MakeTestFolder("gscan/dir1", &path);
   found_folders[path] = file_counts;
 
   SetFindFoldersResults(true, found_folders);
@@ -421,14 +429,14 @@ TEST_F(MediaScanManagerTest, UpdateExistingScanResults) {
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, FindFolderDestroyCount());
-  EXPECT_EQ(galleries_before + 2, gallery_prefs()->known_galleries().size());
+  EXPECT_EQ(galleries_before + 2, gallery_count());
   CheckFileCounts(granted_scan, 0, 0, 11);
   // The new scan result should be one more than it's previous id.
   CheckFileCounts(ungranted_scan + 1, 0, 0, 7);
 }
 
 TEST_F(MediaScanManagerTest, UpdateExistingCounts) {
-  size_t galleries_before = gallery_prefs()->known_galleries().size();
+  size_t galleries_before = gallery_count();
 
   MediaGalleryPrefId auto_id =
       AddGallery("auto", MediaGalleryPrefInfo::kAutoDetected, 1, 0, 0);
@@ -446,15 +454,16 @@ TEST_F(MediaScanManagerTest, UpdateExistingCounts) {
   MediaFolderFinder::MediaFolderFinderResults found_folders;
   MediaGalleryScanResult file_counts;
   file_counts.audio_count = 4;
-  base::FilePath path = MakeTestFolder("auto/dir1");
+  base::FilePath path;
+  MakeTestFolder("auto/dir1", &path);
   found_folders[path] = file_counts;
 
   file_counts.audio_count = 6;
-  path = MakeTestFolder("scan");
+  MakeTestFolder("scan", &path);
   found_folders[path] = file_counts;
 
   file_counts.audio_count = 5;
-  path = MakeTestFolder("user/dir2");
+  MakeTestFolder("user/dir2", &path);
   found_folders[path] = file_counts;
 
   SetFindFoldersResults(true, found_folders);
@@ -465,7 +474,7 @@ TEST_F(MediaScanManagerTest, UpdateExistingCounts) {
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, FindFolderDestroyCount());
-  EXPECT_EQ(galleries_before + 3, gallery_prefs()->known_galleries().size());
+  EXPECT_EQ(galleries_before + 3, gallery_count());
   CheckFileCounts(auto_id, 4, 0, 0);
   CheckFileCounts(user_id, 5, 0, 0);
   CheckFileCounts(scan_id, 6, 0, 0);
@@ -477,8 +486,39 @@ TEST_F(MediaScanManagerTest, UpdateExistingCounts) {
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, FindFolderDestroyCount());
-  EXPECT_EQ(galleries_before + 3, gallery_prefs()->known_galleries().size());
+  EXPECT_EQ(galleries_before + 3, gallery_count());
   CheckFileCounts(auto_id, 4, 0, 0);
   CheckFileCounts(user_id, 0, 0, 0);
   CheckFileCounts(scan_id, 6, 0, 0);
+}
+
+TEST_F(MediaScanManagerTest, Graylist) {
+  size_t galleries_before = gallery_count();
+  MediaGalleryScanResult file_counts;
+  file_counts.audio_count = 1;
+  file_counts.image_count = 2;
+  file_counts.video_count = 3;
+  base::FilePath path;
+  MakeTestFolder("found_media_folder", &path);
+  base::ScopedPathOverride scoped_fake_home_dir_override(base::DIR_HOME, path);
+
+  const size_t kGalleriesAdded = 3;
+  MediaFolderFinder::MediaFolderFinderResults found_folders;
+  MakeTestFolder("found_media_folder/dir1", &path);
+  found_folders[path] = file_counts;
+  MakeTestFolder("found_media_folder/dir2", &path);
+  found_folders[path] = file_counts;
+  MakeTestFolder("found_media_folder/dir3", &path);
+  found_folders[path] = file_counts;
+  SetFindFoldersResults(true, found_folders);
+
+  file_counts.audio_count *= kGalleriesAdded;
+  file_counts.image_count *= kGalleriesAdded;
+  file_counts.video_count *= kGalleriesAdded;
+  SetExpectedScanResults(kGalleriesAdded, file_counts);
+  StartScan();
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, FindFolderDestroyCount());
+  EXPECT_EQ(galleries_before + kGalleriesAdded, gallery_count());
 }

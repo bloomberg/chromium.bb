@@ -80,6 +80,12 @@ base::FilePath GetFrameworkBundlePath();
 // Get the local library directory.
 bool GetLocalLibraryDirectory(base::FilePath* result);
 
+// Get the user library directory.
+bool GetUserLibraryDirectory(base::FilePath* result);
+
+// Get the user applications directory.
+bool GetUserApplicationsDirectory(base::FilePath* result);
+
 // Get the global Application Support directory (under /Library/).
 bool GetGlobalApplicationSupportDirectory(base::FilePath* result);
 

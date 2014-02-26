@@ -7,13 +7,16 @@
 #include <set>
 #include <string>
 
+#include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_path_override.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/media_galleries/media_scan_types.h"
+#include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 
@@ -62,11 +65,14 @@ class MediaFolderFinderTest : public testing::Test {
     return received_results_;
   }
 
-  const base::FilePath& fake_dir() {
+  const base::FilePath& fake_dir() const {
     return fake_dir_.path();
   }
 
   void CreateTestDir(const base::FilePath& parent_dir) {
+    if (parent_dir == fake_dir())
+      return;
+
     ASSERT_TRUE(fake_dir().IsParent(parent_dir));
     ASSERT_TRUE(base::CreateDirectory(parent_dir));
   }
@@ -335,6 +341,69 @@ TEST_F(MediaFolderFinderTest, Overlap) {
 
   CreateTestFile(dir1, MEDIA_GALLERY_SCAN_FILE_TYPE_IMAGE, 1, true,
                  &expected_results);
+
+  CreateMediaFolderFinder(folders, true, expected_results);
+  StartScan();
+  RunLoopUntilReceivedCallback();
+  DeleteMediaFolderFinder();
+}
+
+TEST_F(MediaFolderFinderTest, Prune) {
+  MediaFolderFinder::MediaFolderFinderResults expected_results;
+  std::vector<base::FilePath> folders;
+  folders.push_back(fake_dir());
+
+#if defined(OS_WIN)
+  int pruned_dir_key = base::DIR_IE_INTERNET_CACHE;
+#elif defined(OS_MACOSX)
+  int pruned_dir_key = chrome::DIR_USER_LIBRARY;
+#else
+  int pruned_dir_key = base::DIR_CACHE;
+#endif
+
+  base::FilePath fake_pruned_dir = fake_dir().AppendASCII("dir1");
+  base::ScopedPathOverride scoped_fake_pruned_dir_override(pruned_dir_key,
+                                                           fake_pruned_dir);
+
+  CreateTestFile(fake_dir(), MEDIA_GALLERY_SCAN_FILE_TYPE_IMAGE, 1, true,
+                 &expected_results);
+  CreateTestFile(fake_pruned_dir, MEDIA_GALLERY_SCAN_FILE_TYPE_IMAGE, 1, true,
+                 &expected_results);
+
+  base::FilePath test_dir = fake_pruned_dir.AppendASCII("dir2");
+  CreateTestFile(test_dir, MEDIA_GALLERY_SCAN_FILE_TYPE_IMAGE, 1, true,
+                 &expected_results);
+
+  // |fake_pruned_dir| and |test_dir| are pruned.
+  expected_results.erase(fake_pruned_dir);
+  expected_results.erase(test_dir);
+
+  CreateMediaFolderFinder(folders, true, expected_results);
+  StartScan();
+  RunLoopUntilReceivedCallback();
+  DeleteMediaFolderFinder();
+}
+
+TEST_F(MediaFolderFinderTest, Graylist) {
+  MediaFolderFinder::MediaFolderFinderResults expected_results;
+  std::vector<base::FilePath> folders;
+  folders.push_back(fake_dir());
+
+  base::FilePath fake_home_dir = fake_dir().AppendASCII("dir1");
+  base::FilePath test_dir = fake_home_dir.AppendASCII("dir2");
+  base::ScopedPathOverride scoped_fake_home_dir_override(base::DIR_HOME,
+                                                         fake_home_dir);
+
+  CreateTestFile(fake_dir(), MEDIA_GALLERY_SCAN_FILE_TYPE_IMAGE, 1, true,
+                 &expected_results);
+  CreateTestFile(fake_home_dir, MEDIA_GALLERY_SCAN_FILE_TYPE_IMAGE, 1, true,
+                 &expected_results);
+  CreateTestFile(test_dir, MEDIA_GALLERY_SCAN_FILE_TYPE_IMAGE, 1, true,
+                 &expected_results);
+
+  // |fake_home_dir| and its ancestors do not show up in results.
+  expected_results.erase(fake_dir());
+  expected_results.erase(fake_home_dir);
 
   CreateMediaFolderFinder(folders, true, expected_results);
   StartScan();

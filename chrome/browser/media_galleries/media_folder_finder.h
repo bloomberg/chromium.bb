@@ -19,8 +19,13 @@
 // media files.
 class MediaFolderFinder {
  public:
+  // Key: path to a folder
+  // Value: scan results for that folder, non-recursive.
   typedef std::map<base::FilePath, MediaGalleryScanResult>
       MediaFolderFinderResults;
+
+  // |results| never contains entries for |graylisted_folders_| or parent
+  // directories of |graylisted_folders_|.
   typedef base::Callback<void(bool /*success*/,
                               const MediaFolderFinderResults& /*results*/)>
       MediaFolderFinderResultsCallback;
@@ -35,6 +40,8 @@ class MediaFolderFinder {
 
   // Start the scan.
   virtual void StartScan();
+
+  const std::vector<base::FilePath>& graylisted_folders() const;
 
  private:
   friend class MediaFolderFinderTest;
@@ -68,6 +75,7 @@ class MediaFolderFinder {
   const MediaFolderFinderResultsCallback results_callback_;
   MediaFolderFinderResults results_;
 
+  std::vector<base::FilePath> graylisted_folders_;
   std::vector<base::FilePath> folders_to_scan_;
   ScanState scan_state_;
 

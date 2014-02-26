@@ -246,6 +246,16 @@ void SetLastChooseEntryDirectory(ExtensionPrefs* prefs,
                              base::CreateFilePathValue(path));
 }
 
+std::vector<base::FilePath> GetGrayListedDirectories() {
+  std::vector<base::FilePath> graylisted_directories;
+  for (size_t i = 0; i < arraysize(kGraylistedPaths); ++i) {
+    base::FilePath graylisted_path;
+    if (PathService::Get(kGraylistedPaths[i], &graylisted_path))
+      graylisted_directories.push_back(graylisted_path);
+  }
+  return graylisted_directories;
+}
+
 }  // namespace file_system_api
 
 bool FileSystemGetDisplayPathFunction::RunImpl() {

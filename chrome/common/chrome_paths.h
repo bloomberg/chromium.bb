@@ -41,6 +41,8 @@ enum {
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   DIR_MANAGED_PREFS,            // Directory that stores the managed prefs plist
                                 // files for the current user.
+  DIR_USER_APPLICATIONS,        // ~/Applications
+  DIR_USER_LIBRARY,             // ~/Library
 #endif
 #if defined(OS_CHROMEOS) || (defined(OS_MACOSX) && !defined(OS_IOS))
   DIR_USER_EXTERNAL_EXTENSIONS,  // Directory for per-user external extensions
