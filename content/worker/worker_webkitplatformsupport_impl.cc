@@ -252,6 +252,14 @@ bool WorkerWebKitPlatformSupportImpl::supportsMediaSourceMIMEType(
   return false;
 }
 
+bool WorkerWebKitPlatformSupportImpl::supportsEncryptedMediaMIMEType(
+    const blink::WebString& key_system,
+    const blink::WebString& mime_type,
+    const blink::WebString& codecs) {
+  NOTREACHED();
+  return false;
+}
+
 WebMimeRegistry::SupportsType
 WorkerWebKitPlatformSupportImpl::supportsNonImageMIMEType(
     const WebString&) {

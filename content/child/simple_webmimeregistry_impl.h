@@ -36,6 +36,9 @@ class CONTENT_EXPORT SimpleWebMimeRegistryImpl :
       const blink::WebString&);
   virtual bool supportsMediaSourceMIMEType(const blink::WebString&,
                                            const blink::WebString&);
+  virtual bool supportsEncryptedMediaMIMEType(const blink::WebString&,
+                                              const blink::WebString&,
+                                              const blink::WebString&);
   virtual blink::WebMimeRegistry::SupportsType supportsNonImageMIMEType(
       const blink::WebString&);
   virtual blink::WebString mimeTypeForExtension(const blink::WebString&);

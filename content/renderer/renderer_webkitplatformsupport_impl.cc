@@ -145,6 +145,9 @@ class RendererWebKitPlatformSupportImpl::MimeRegistry
       const blink::WebString& key_system);
   virtual bool supportsMediaSourceMIMEType(const blink::WebString& mime_type,
                                            const blink::WebString& codecs);
+  virtual bool supportsEncryptedMediaMIMEType(const WebString& key_system,
+                                              const WebString& mime_type,
+                                              const WebString& codecs) OVERRIDE;
   virtual blink::WebString mimeTypeForExtension(
       const blink::WebString& file_extension);
   virtual blink::WebString mimeTypeFromFile(
@@ -447,6 +450,30 @@ RendererWebKitPlatformSupportImpl::MimeRegistry::supportsMediaSourceMIMEType(
     return false;
   return media::StreamParserFactory::IsTypeSupported(
       mime_type_ascii, parsed_codec_ids);
+}
+
+bool
+RendererWebKitPlatformSupportImpl::MimeRegistry::supportsEncryptedMediaMIMEType(
+    const WebString& key_system,
+    const WebString& mime_type,
+    const WebString& codecs) {
+  // Chromium only supports ASCII parameters.
+  if (!IsStringASCII(key_system) || !IsStringASCII(mime_type) ||
+      !IsStringASCII(codecs)) {
+    return false;
+  }
+
+  if (key_system.isEmpty())
+    return false;
+
+  const std::string mime_type_ascii = UTF16ToASCII(mime_type);
+
+  std::vector<std::string> codec_vector;
+  bool strip_suffix = !net::IsStrictMediaMimeType(mime_type_ascii);
+  net::ParseCodecString(UTF16ToASCII(codecs), &codec_vector, strip_suffix);
+
+  return IsSupportedKeySystemWithMediaMimeType(
+      mime_type_ascii, codec_vector, UTF16ToASCII(key_system));
 }
 
 WebString
