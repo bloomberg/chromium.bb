@@ -23,10 +23,9 @@ bool IsChromeFirstRunPending(BrowserDistribution* dist) {
   // first-run flow. Assume Chrome has been run if the path to the sentinel
   // cannot be determined.
   base::FilePath first_run_sentinel;
-  return InstallUtil::GetSentinelFilePath(chrome::kFirstRunSentinel,
-                                          dist,
-                                          &first_run_sentinel)
-      && !base::PathExists(first_run_sentinel);
+  return InstallUtil::GetSentinelFilePath(chrome::kFirstRunSentinel, dist,
+                                          &first_run_sentinel) &&
+      !base::PathExists(first_run_sentinel);
 }
 
 bool IsEULAAcceptanceFlagged(BrowserDistribution* dist) {
@@ -34,10 +33,9 @@ bool IsEULAAcceptanceFlagged(BrowserDistribution* dist) {
   // doing so is required by master_preferences. Assume the EULA has not been
   // accepted if the path to the sentinel cannot be determined.
   base::FilePath eula_sentinel;
-  return InstallUtil::GetSentinelFilePath(kEULASentinelFile,
-                                          dist,
-                                          &eula_sentinel)
-      && base::PathExists(eula_sentinel);
+  return InstallUtil::GetSentinelFilePath(kEULASentinelFile, dist,
+                                          &eula_sentinel) &&
+      base::PathExists(eula_sentinel);
 }
 
 scoped_ptr<MasterPreferences> GetMasterPrefs(const ProductState& prod_state) {

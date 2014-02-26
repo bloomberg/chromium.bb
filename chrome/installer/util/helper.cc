@@ -43,6 +43,7 @@ base::FilePath GetChromeInstallPath(bool system_install,
   return GetChromeInstallBasePath(system_install, dist, kInstallBinaryDir);
 }
 
+// TODO(gab): Cleanup this method (kMetroChromeUserDataSubDir is deprecated).
 void GetChromeUserDataPaths(BrowserDistribution* dist,
                             std::vector<base::FilePath>* paths) {
   const bool has_metro_data =

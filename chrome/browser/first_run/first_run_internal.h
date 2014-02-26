@@ -24,8 +24,6 @@ enum FirstRunState {
   FIRST_RUN_UNKNOWN,  // The state is not tested or set yet.
   FIRST_RUN_TRUE,
   FIRST_RUN_FALSE,
-  FIRST_RUN_CANCEL,  // This shouldn't be considered first run but the sentinel
-                     // should be created anyways.
 };
 
 // This variable should only be accessed through IsChromeFirstRun().
@@ -47,6 +45,11 @@ void DoPostImportPlatformSpecificTasks(Profile* profile);
 // This function has a common implementation on OS_POSIX and a windows specific
 // implementation.
 bool GetFirstRunSentinelFilePath(base::FilePath* path);
+
+// Populates |path| with the old path to first run sentinel for the current
+// configuration. Returns true if there is a legacy path for this configuration
+// and it could be obtained.
+bool GetLegacyFirstRunSentinelFilePath(base::FilePath* path);
 
 // This function has a common implementationin for all non-linux platforms, and
 // a linux specific implementation.

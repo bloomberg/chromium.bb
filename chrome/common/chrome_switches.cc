@@ -139,10 +139,6 @@ const char kAutomationClientChannelID[]     = "automation-channel";
 const char kAutomationReinitializeOnChannelError[] =
     "automation-reinitialize-on-channel-error";
 
-// Similar to kNoFirstRun, but also drops the First Run beacon so that first run
-// will not occur in subsequent runs either.
-const char kCancelFirstRun[]                = "cancel-first-run";
-
 // Certificate Transparency: Uses the provided log(s) for checking Signed
 // Certificate Timestamps provided with certificates.
 // The switch's value is:
@@ -874,8 +870,7 @@ const char kFileDescriptorLimit[]           = "file-descriptor-limit";
 const char kForceAppMode[]                  = "force-app-mode";
 
 // Displays the First Run experience when the browser is started, regardless of
-// whether or not it's actually the First Run (this overrides kNoFirstRun and
-// kCancelFirstRun).
+// whether or not it's actually the First Run (this overrides kNoFirstRun).
 const char kForceFirstRun[]                 = "force-first-run";
 
 // Forces additional Chrome Variation Ids that will be sent in
@@ -1054,7 +1049,7 @@ const char kNoExperiments[]                 = "no-experiments";
 // Skip First Run tasks, whether or not it's actually the First Run. Overridden
 // by kForceFirstRun. This does not drop the First Run sentinel and thus doesn't
 // prevent first run from occuring the next time chrome is launched without this
-// flag (see kCancelFirstRun for that).
+// flag.
 const char kNoFirstRun[]                    = "no-first-run";
 
 // Support a separate switch that enables the v8 playback extension.

@@ -55,6 +55,11 @@ bool GetFirstRunSentinelFilePath(base::FilePath* path) {
   return true;
 }
 
+bool GetLegacyFirstRunSentinelFilePath(base::FilePath* path) {
+  // There is no legacy first run sentinel path on Posix.
+  return false;
+}
+
 bool ShowPostInstallEULAIfNeeded(installer::MasterPreferences* install_prefs) {
   // The EULA is only handled on Windows.
   return true;

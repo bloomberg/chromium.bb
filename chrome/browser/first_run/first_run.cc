@@ -446,6 +446,30 @@ void ProcessDefaultBrowserPolicy(bool make_chrome_default_for_user) {
   }
 }
 
+bool IsFirstRunSentinelPresent() {
+  base::FilePath first_run_sentinel;
+  // Treat sentinel as being present if the path can't be obtained.
+  if (!first_run::internal::GetFirstRunSentinelFilePath(&first_run_sentinel) ||
+      base::PathExists(first_run_sentinel)) {
+    return true;
+  }
+  // Sentinel is truly absent if there's no legacy path or legacy doesn't exist.
+  base::FilePath legacy_first_run_sentinel;
+  if (!first_run::internal::GetLegacyFirstRunSentinelFilePath(
+          &legacy_first_run_sentinel) ||
+      !base::PathExists(legacy_first_run_sentinel)) {
+    return false;
+  }
+  // Migrate the legacy sentinel to the new location if it was found. This does
+  // a copy instead of a move to avoid breaking the developer build case where
+  // the First Run sentinel is dropped beside chrome.exe by a build action
+  // (i.e., at the legacy path).
+  bool migrated = base::CopyFile(legacy_first_run_sentinel, first_run_sentinel);
+  DPCHECK(migrated);
+  // Sentinel is present regardless of whether or not it was migrated.
+  return true;
+}
+
 }  // namespace
 
 namespace first_run {
@@ -580,11 +604,8 @@ bool IsChromeFirstRun() {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kForceFirstRun)) {
     internal::first_run_ = internal::FIRST_RUN_TRUE;
-  } else if (command_line->HasSwitch(switches::kCancelFirstRun)) {
-    internal::first_run_ = internal::FIRST_RUN_CANCEL;
   } else if (!command_line->HasSwitch(switches::kNoFirstRun) &&
-             internal::GetFirstRunSentinelFilePath(&first_run_sentinel) &&
-             !base::PathExists(first_run_sentinel)) {
+             !IsFirstRunSentinelPresent()) {
     internal::first_run_ = internal::FIRST_RUN_TRUE;
   }
 
@@ -592,15 +613,12 @@ bool IsChromeFirstRun() {
 }
 
 bool IsFirstRunSuppressed(const CommandLine& command_line) {
-  return command_line.HasSwitch(switches::kCancelFirstRun) ||
-      command_line.HasSwitch(switches::kNoFirstRun);
+  return command_line.HasSwitch(switches::kNoFirstRun);
 }
 
 void CreateSentinelIfNeeded() {
-  if (IsChromeFirstRun() ||
-      internal::first_run_ == internal::FIRST_RUN_CANCEL) {
+  if (IsChromeFirstRun())
     internal::CreateSentinel();
-  }
 }
 
 std::string GetPingDelayPrefName() {

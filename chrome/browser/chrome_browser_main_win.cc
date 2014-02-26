@@ -23,6 +23,7 @@
 #include "base/win/wrapped_window_proc.h"
 #include "chrome/browser/browser_util_win.h"
 #include "chrome/browser/chrome_elf_init_win.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/install_verification/win/install_verification.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
@@ -128,8 +129,6 @@ int DoUninstallTasks(bool chrome_still_running) {
     // TODO(gab): Look into removing this code which is now redundant with the
     // work done by setup.exe on uninstall.
     VLOG(1) << "Executing uninstall actions";
-    if (!first_run::RemoveSentinel())
-      VLOG(1) << "Failed to delete sentinel file.";
     base::FilePath chrome_exe;
     if (PathService::Get(base::FILE_EXE, &chrome_exe)) {
       ShellUtil::ShortcutLocation user_shortcut_locations[] = {
@@ -386,6 +385,16 @@ bool ChromeBrowserMainPartsWin::CheckMachineLevelInstall() {
         uninstall_cmd.AppendSwitch(installer::switches::kForceUninstall);
         uninstall_cmd.AppendSwitch(
             installer::switches::kDoNotRemoveSharedItems);
+
+        // Trigger Active Setup for the system-level Chrome to make sure
+        // per-user shortcuts to the system-level Chrome are created. Skip this
+        // if the system-level Chrome will undergo first run anyway, as Active
+        // Setup is triggered on system-level Chrome's first run.
+        // TODO(gab): Instead of having callers of Active Setup think about
+        // other callers, have Active Setup itself register when it ran and
+        // no-op otherwise (http://crbug.com/346843).
+        if (!first_run::IsChromeFirstRun())
+          uninstall_cmd.AppendSwitch(installer::switches::kTriggerActiveSetup);
 
         const base::FilePath setup_exe(uninstall_cmd.GetProgram());
         const base::string16 params(uninstall_cmd.GetArgumentsString());

@@ -106,9 +106,8 @@ class InstallUtil {
   // by either --chrome-sxs or the executable path).
   static bool IsChromeSxSProcess();
 
-  // Populates |path| with the path to |file| in the sentinel directory. This is
-  // the application directory for user-level installs, and the default user
-  // data dir for system-level installs. Returns false on error.
+  // Populates |path| with the path to |file| in the sentinel directory for
+  // |dist|. Returns false on error.
   static bool GetSentinelFilePath(const base::FilePath::CharType* file,
                                   BrowserDistribution* dist,
                                   base::FilePath* path);

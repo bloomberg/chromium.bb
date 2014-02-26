@@ -175,6 +175,7 @@ extern const char kRemoveChromeRegistration[];
 extern const char kRunAsAdmin[];
 extern const char kSelfDestruct[];
 extern const char kSystemLevel[];
+extern const char kTriggerActiveSetup[];
 extern const char kUninstall[];
 extern const char kUpdateSetupExe[];
 extern const char kUncompressedArchive[];

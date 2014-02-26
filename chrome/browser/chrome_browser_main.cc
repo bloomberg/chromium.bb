@@ -1208,17 +1208,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
         NOTREACHED();
     }
   }
-
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  if (sxs_linux::ShouldMigrateUserDataDir())
-    return sxs_linux::MigrateUserDataDir();
-#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
-
-  first_run::CreateSentinelIfNeeded();
 #endif  // !defined(OS_ANDROID)
 
-  // Desktop construction occurs here, (required before profile creation).
-  PreProfileInit();
+  // Handle special early return paths (which couldn't be processed even earlier
+  // as they require the process singleton to be held) first.
 
   std::string try_chrome =
       parsed_command_line().GetSwitchValueASCII(switches::kTryChromeAgain);
@@ -1251,22 +1244,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #endif  // defined(OS_WIN)
   }
 
-  // Profile creation ----------------------------------------------------------
-
-  MetricsService::SetExecutionPhase(MetricsService::CREATE_PROFILE);
-  profile_ = CreatePrimaryProfile(parameters(),
-                                  user_data_dir_,
-                                  parsed_command_line());
-  if (!profile_)
-    return content::RESULT_CODE_NORMAL_EXIT;
-
-#if defined(ENABLE_BACKGROUND)
-  // Autoload any profiles which are running background apps.
-  // TODO(rlp): Do this on a separate thread. See http://crbug.com/99075.
-  browser_process_->profile_manager()->AutoloadProfiles();
-#endif
-  // Post-profile init ---------------------------------------------------------
-
 #if defined(OS_WIN)
   // Do the tasks if chrome has been upgraded while it was last running.
   if (!already_running && upgrade_util::DoUpgradeTasks(parsed_command_line()))
@@ -1276,12 +1253,41 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // machine. If yes and the current Chrome process is user level, we do not
   // allow the user level Chrome to run. So we notify the user and uninstall
   // user level Chrome.
-  // Note this check should only happen here, after all the checks above
-  // (uninstall, resource bundle initialization, other chrome browser
-  // processes etc).
+  // Note this check needs to happen here (after the process singleton was
+  // obtained but before potentially creating the first run sentinel).
   if (ChromeBrowserMainPartsWin::CheckMachineLevelInstall())
     return chrome::RESULT_CODE_MACHINE_LEVEL_INSTALL_EXISTS;
+#endif  // defined(OS_WIN)
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  if (sxs_linux::ShouldMigrateUserDataDir())
+    return sxs_linux::MigrateUserDataDir();
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
+
+  // Desktop construction occurs here, (required before profile creation).
+  PreProfileInit();
+
+  // Profile creation ----------------------------------------------------------
+
+  MetricsService::SetExecutionPhase(MetricsService::CREATE_PROFILE);
+  profile_ = CreatePrimaryProfile(parameters(),
+                                  user_data_dir_,
+                                  parsed_command_line());
+  if (!profile_)
+    return content::RESULT_CODE_NORMAL_EXIT;
+
+#if !defined(OS_ANDROID)
+  // The first run sentinel must be created after the process singleton was
+  // grabbed and no early return paths were otherwise hit above.
+  first_run::CreateSentinelIfNeeded();
+#endif  // !defined(OS_ANDROID)
+
+#if defined(ENABLE_BACKGROUND)
+  // Autoload any profiles which are running background apps.
+  // TODO(rlp): Do this on a separate thread. See http://crbug.com/99075.
+  browser_process_->profile_manager()->AutoloadProfiles();
 #endif
+  // Post-profile init ---------------------------------------------------------
 
   TranslateService::Initialize();
 
