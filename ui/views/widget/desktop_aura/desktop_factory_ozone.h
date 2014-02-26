@@ -9,6 +9,7 @@
 
 namespace gfx {
 class Rect;
+class Screen;
 }
 
 namespace views {
@@ -35,6 +36,10 @@ class VIEWS_EXPORT DesktopFactoryOzone {
   virtual DesktopWindowTreeHost* CreateWindowTreeHost(
       internal::NativeWidgetDelegate* native_widget_delegate,
       DesktopNativeWidgetAura* desktop_native_widget_aura) = 0;
+
+  // Delegates implementation of DesktopScreen externally to
+  // Ozone implementation.
+  virtual gfx::Screen* CreateDesktopScreen() = 0;
 
  private:
   static DesktopFactoryOzone* impl_; // not owned

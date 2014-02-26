@@ -17,7 +17,6 @@ class SkBitmap;
 class SkCanvas;
 
 namespace gfx {
-class Screen;
 class VSyncProvider;
 
 // The Ozone interface allows external implementations to hook into Chromium to
@@ -69,10 +68,6 @@ class GFX_EXPORT SurfaceFactoryOzone {
 
   // Sets the implementation delegate. Ownership is retained by the caller.
   static void SetInstance(SurfaceFactoryOzone* impl);
-
-  // TODO(rjkroege): decide how to separate screen/display stuff from SFOz
-  // This method implements gfx::Screen, particularly useful in Desktop Aura.
-  virtual gfx::Screen* CreateDesktopScreen();
 
   // Configures the display hardware. Must be called from within the GPU
   // process before the sandbox has been activated.

@@ -4,14 +4,14 @@
 
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 
-#include "ui/gfx/ozone/surface_factory_ozone.h"
 #include "ui/ozone/ozone_platform.h"
+#include "ui/views/widget/desktop_aura/desktop_factory_ozone.h"
 
 namespace views {
 
 gfx::Screen* CreateDesktopScreen() {
   ui::OzonePlatform::Initialize();
-  return gfx::SurfaceFactoryOzone::GetInstance()->CreateDesktopScreen();
+  return DesktopFactoryOzone::GetInstance()->CreateDesktopScreen();
 }
 
 }  // namespace views

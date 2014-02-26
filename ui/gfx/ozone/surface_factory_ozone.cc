@@ -29,10 +29,6 @@ void SurfaceFactoryOzone::SetInstance(SurfaceFactoryOzone* impl) {
   impl_ = impl;
 }
 
-gfx::Screen* SurfaceFactoryOzone::CreateDesktopScreen() {
-  return NULL;
-}
-
 intptr_t SurfaceFactoryOzone::GetNativeDisplay() {
   return 0;
 }
