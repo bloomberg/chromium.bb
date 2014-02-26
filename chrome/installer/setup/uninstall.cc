@@ -10,6 +10,7 @@
 
 #include <vector>
 
+#include "base/base_paths.h"
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/path_service.h"
@@ -247,10 +248,8 @@ bool RemoveInstallerFiles(const base::FilePath& installer_directory,
 
   base::FilePath setup_exe_base_name(installer::kSetupExe);
 
-  while (true) {
-    base::FilePath to_delete(file_enumerator.Next());
-    if (to_delete.empty())
-      break;
+  for (base::FilePath to_delete = file_enumerator.Next(); !to_delete.empty();
+       to_delete = file_enumerator.Next()) {
     if (!remove_setup && to_delete.BaseName() == setup_exe_base_name)
       continue;
 
@@ -472,30 +471,58 @@ DeleteResult DeleteLocalState(
 // install directory, deletion will fail as a result of the open handle.
 bool MoveSetupOutOfInstallFolder(const InstallerState& installer_state,
                                  const base::FilePath& setup_exe) {
-  bool ret = false;
+  // The list of files which setup.exe depends on at runtime. Typically this is
+  // solely setup.exe itself, but in component builds this also includes the
+  // DLLs installed by setup.exe.
+  std::vector<base::FilePath> setup_files;
+  setup_files.push_back(setup_exe);
+#if defined(COMPONENT_BUILD)
+  base::FileEnumerator file_enumerator(
+      setup_exe.DirName(), false, base::FileEnumerator::FILES, L"*.dll");
+  for (base::FilePath setup_dll = file_enumerator.Next(); !setup_dll.empty();
+       setup_dll = file_enumerator.Next()) {
+    setup_files.push_back(setup_dll);
+  }
+#endif  // defined(COMPONENT_BUILD)
+
   base::FilePath tmp_dir;
   base::FilePath temp_file;
   if (!PathService::Get(base::DIR_TEMP, &tmp_dir)) {
     NOTREACHED();
-  } else if (!base::CreateTemporaryFileInDir(tmp_dir, &temp_file)) {
-    LOG(ERROR) << "Failed to create temporary file for setup.exe.";
-  } else {
-    VLOG(1) << "Changing current directory to: " << tmp_dir.value();
-    if (!file_util::SetCurrentDirectory(tmp_dir))
-      PLOG(ERROR) << "Failed to change the current directory.";
+    return false;
+  }
 
-    VLOG(1) << "Attempting to move setup to: " << temp_file.value();
-    ret = base::Move(setup_exe, temp_file);
-    PLOG_IF(ERROR, !ret) << "Failed to move setup to " << temp_file.value();
+  // Change the current directory to the TMP directory. See method comment above
+  // for details.
+  VLOG(1) << "Changing current directory to: " << tmp_dir.value();
+  if (!file_util::SetCurrentDirectory(tmp_dir))
+    PLOG(ERROR) << "Failed to change the current directory.";
+
+  for (std::vector<base::FilePath>::const_iterator it = setup_files.begin();
+       it != setup_files.end(); ++it) {
+    const base::FilePath& setup_file = *it;
+    if (!base::CreateTemporaryFileInDir(tmp_dir, &temp_file)) {
+      LOG(ERROR) << "Failed to create temporary file for "
+                 << setup_file.BaseName().value();
+      return false;
+    }
+
+    VLOG(1) << "Attempting to move " << setup_file.BaseName().value() << " to: "
+            << temp_file.value();
+    if (!base::Move(setup_file, temp_file)) {
+      PLOG(ERROR) << "Failed to move " << setup_file.BaseName().value()
+                  << " to " << temp_file.value();
+      return false;
+    }
 
     // We cannot delete the file right away, but try to delete it some other
     // way. Either with the help of a different process or the system.
-    if (ret && !base::DeleteFileAfterReboot(temp_file)) {
-      static const uint32 kDeleteAfterMs = 10 * 1000;
+    if (!base::DeleteFileAfterReboot(temp_file)) {
+      const uint32 kDeleteAfterMs = 10 * 1000;
       installer::DeleteFileFromTempProcess(temp_file, kDeleteAfterMs);
     }
   }
-  return ret;
+  return true;
 }
 
 DeleteResult DeleteChromeDirectoriesIfEmpty(
@@ -565,10 +592,8 @@ DeleteResult DeleteChromeFilesAndFolders(const InstallerState& installer_state,
   // installer directory).
   base::FileEnumerator file_enumerator(target_path, true,
       base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
-  while (true) {
-    base::FilePath to_delete(file_enumerator.Next());
-    if (to_delete.empty())
-      break;
+  for (base::FilePath to_delete = file_enumerator.Next(); !to_delete.empty();
+       to_delete = file_enumerator.Next()) {
     if (to_delete.BaseName().value() == installer::kChromeAppHostExe)
       continue;
     if (!installer_directory.empty() &&
