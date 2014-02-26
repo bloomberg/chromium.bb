@@ -166,7 +166,6 @@
 #include "third_party/WebKit/public/web/WebFormElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebGlyphCache.h"
-#include "third_party/WebKit/public/web/WebHelperPlugin.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -2178,11 +2177,6 @@ bool RenderViewImpl::enumerateChosenDirectory(
       routing_id_,
       id,
       base::FilePath::FromUTF16Unsafe(path)));
-}
-
-void RenderViewImpl::initializeHelperPluginWebFrame(
-    blink::WebHelperPlugin* plugin) {
-  plugin->initializeFrame(main_render_frame_.get());
 }
 
 void RenderViewImpl::didStartLoading(bool to_different_document) {

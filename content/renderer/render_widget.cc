@@ -54,7 +54,6 @@
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/web/WebHelperPlugin.h"
 #include "third_party/WebKit/public/web/WebPagePopup.h"
 #include "third_party/WebKit/public/web/WebPopupMenu.h"
 #include "third_party/WebKit/public/web/WebPopupMenuInfo.h"
@@ -437,8 +436,6 @@ WebWidget* RenderWidget::CreateWebWidget(RenderWidget* render_widget) {
       return WebPopupMenu::create(render_widget);
     case blink::WebPopupTypePage:
       return WebPagePopup::create(render_widget);
-    case blink::WebPopupTypeHelperPlugin:
-      return blink::WebHelperPlugin::create(render_widget);
     default:
       NOTREACHED();
   }
