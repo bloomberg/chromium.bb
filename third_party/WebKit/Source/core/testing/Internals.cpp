@@ -476,7 +476,7 @@ unsigned Internals::numberOfActiveAnimations() const
 {
     LocalFrame* contextFrame = frame();
     Document* document = contextFrame->document();
-    return document->timeline()->numberOfActiveAnimationsForTesting() + document->transitionTimeline()->numberOfActiveAnimationsForTesting();
+    return document->timeline().numberOfActiveAnimationsForTesting() + document->transitionTimeline().numberOfActiveAnimationsForTesting();
 }
 
 void Internals::pauseAnimations(double pauseTime, ExceptionState& exceptionState)
@@ -487,8 +487,8 @@ void Internals::pauseAnimations(double pauseTime, ExceptionState& exceptionState
     }
 
     frame()->view()->updateLayoutAndStyleForPainting();
-    frame()->document()->timeline()->pauseAnimationsForTesting(pauseTime);
-    frame()->document()->transitionTimeline()->pauseAnimationsForTesting(pauseTime);
+    frame()->document()->timeline().pauseAnimationsForTesting(pauseTime);
+    frame()->document()->transitionTimeline().pauseAnimationsForTesting(pauseTime);
 }
 
 bool Internals::hasShadowInsertionPoint(const Node* root, ExceptionState& exceptionState) const

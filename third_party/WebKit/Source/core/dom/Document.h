@@ -1000,8 +1000,8 @@ public:
     Locale& getCachedLocale(const AtomicString& locale = nullAtom);
 
     AnimationClock& animationClock() { return *m_animationClock; }
-    DocumentTimeline* timeline() const { return m_timeline.get(); }
-    DocumentTimeline* transitionTimeline() const { return m_transitionTimeline.get(); }
+    DocumentTimeline& timeline() const { return *m_timeline; }
+    DocumentTimeline& transitionTimeline() const { return *m_transitionTimeline; }
     CSSPendingAnimations& cssPendingAnimations() { return m_cssPendingAnimations; }
 
     void addToTopLayer(Element*, const Element* before = 0);

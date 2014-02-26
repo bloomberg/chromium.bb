@@ -275,7 +275,7 @@ TEST_F(AnimationDocumentTimelineTest, PlayAfterDocumentDeref)
     timing.iterationDuration = 2;
     timing.startDelay = 5;
 
-    timeline = document->timeline();
+    timeline = &document->timeline();
     element = nullptr;
     document = nullptr;
 

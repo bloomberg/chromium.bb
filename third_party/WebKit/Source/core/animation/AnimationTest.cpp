@@ -25,8 +25,8 @@ protected:
         , element(document->createElement("foo", ASSERT_NO_EXCEPTION))
     {
         document->animationClock().resetTimeForTesting();
-        document->timeline()->setZeroTime(0);
-        EXPECT_EQ(0, document->timeline()->currentTime());
+        document->timeline().setZeroTime(0);
+        EXPECT_EQ(0, document->timeline().currentTime());
     }
 
     RefPtr<Document> document;
@@ -286,7 +286,7 @@ TEST_F(AnimationAnimationTest, TimeToEffectChange)
     timing.endDelay = 100;
     timing.fillMode = Timing::FillModeNone;
     RefPtr<Animation> animation = Animation::create(nullptr, nullptr, timing);
-    RefPtr<Player> player = document->timeline()->play(animation.get());
+    RefPtr<Player> player = document->timeline().play(animation.get());
     double inf = std::numeric_limits<double>::infinity();
 
     EXPECT_EQ(100, animation->timeToForwardsEffectChange());
@@ -319,7 +319,7 @@ TEST_F(AnimationAnimationTest, TimeToEffectChangeWithPlaybackRate)
     timing.playbackRate = 2;
     timing.fillMode = Timing::FillModeNone;
     RefPtr<Animation> animation = Animation::create(nullptr, nullptr, timing);
-    RefPtr<Player> player = document->timeline()->play(animation.get());
+    RefPtr<Player> player = document->timeline().play(animation.get());
     double inf = std::numeric_limits<double>::infinity();
 
     EXPECT_EQ(100, animation->timeToForwardsEffectChange());
@@ -352,7 +352,7 @@ TEST_F(AnimationAnimationTest, TimeToEffectChangeWithNegativePlaybackRate)
     timing.playbackRate = -2;
     timing.fillMode = Timing::FillModeNone;
     RefPtr<Animation> animation = Animation::create(nullptr, nullptr, timing);
-    RefPtr<Player> player = document->timeline()->play(animation.get());
+    RefPtr<Player> player = document->timeline().play(animation.get());
     double inf = std::numeric_limits<double>::infinity();
 
     EXPECT_EQ(100, animation->timeToForwardsEffectChange());

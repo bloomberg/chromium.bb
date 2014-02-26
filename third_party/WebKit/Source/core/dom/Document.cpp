@@ -547,13 +547,8 @@ Document::~Document()
         m_import = 0;
     }
 
-    if (m_timeline) {
-        m_timeline->detachFromDocument();
-    }
-
-    if (m_transitionTimeline) {
-        m_transitionTimeline->detachFromDocument();
-    }
+    m_timeline->detachFromDocument();
+    m_transitionTimeline->detachFromDocument();
 
     m_styleEngine.clear(); // We need to destory CSSFontSelector before destroying m_fetcher.
 

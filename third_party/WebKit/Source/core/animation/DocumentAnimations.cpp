@@ -48,22 +48,22 @@ namespace {
 
 void updateAnimationTiming(Document& document)
 {
-    document.timeline()->serviceAnimations();
-    document.transitionTimeline()->serviceAnimations();
+    document.timeline().serviceAnimations();
+    document.transitionTimeline().serviceAnimations();
 }
 
 } // namespace
 
 void DocumentAnimations::dispatchAnimationEvents(Document& document)
 {
-    document.timeline()->dispatchEvents();
-    document.transitionTimeline()->dispatchEvents();
+    document.timeline().dispatchEvents();
+    document.transitionTimeline().dispatchEvents();
 }
 
 void DocumentAnimations::dispatchAnimationEventsAsync(Document& document)
 {
-    document.timeline()->dispatchEventsAsync();
-    document.transitionTimeline()->dispatchEventsAsync();
+    document.timeline().dispatchEventsAsync();
+    document.transitionTimeline().dispatchEventsAsync();
 }
 
 void DocumentAnimations::updateAnimationTimingForAnimationFrame(Document& document, double monotonicAnimationStartTime)
@@ -77,7 +77,7 @@ void DocumentAnimations::updateAnimationTimingForGetComputedStyle(Node& node, CS
     if (!node.isElementNode())
         return;
     const Element& element = toElement(node);
-    if (element.document().timeline()->hasOutdatedPlayer()) {
+    if (element.document().timeline().hasOutdatedPlayer()) {
         updateAnimationTiming(element.document());
         return;
     }

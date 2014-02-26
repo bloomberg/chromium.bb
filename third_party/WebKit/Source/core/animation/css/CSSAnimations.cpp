@@ -474,7 +474,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             // The event delegate is set on the the first animation only. We
             // rely on the behavior of OwnPtr::release() to achieve this.
             RefPtr<Animation> animation = Animation::create(element, inertAnimation->effect(), inertAnimation->specifiedTiming(), Animation::DefaultPriority, eventDelegate.release());
-            Player* player = element->document().timeline()->createPlayer(animation.get());
+            Player* player = element->document().timeline().createPlayer(animation.get());
             if (inertAnimation->paused())
                 player->pause();
             element->document().cssPendingAnimations().add(player);
@@ -517,7 +517,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             const std::pair<RefPtr<Animation>, double>& oldTransition = retargetedCompositorTransitions.get(id);
             RefPtr<Animation> oldAnimation = oldTransition.first;
             double oldStartTime = oldTransition.second;
-            double inheritedTime = isNull(oldStartTime) ? 0 : element->document().transitionTimeline()->currentTime() - oldStartTime;
+            double inheritedTime = isNull(oldStartTime) ? 0 : element->document().transitionTimeline().currentTime() - oldStartTime;
             oldAnimation->updateInheritedTime(inheritedTime);
             KeyframeEffectModel* oldEffect = toKeyframeEffectModel(inertAnimation->effect());
             const KeyframeEffectModel::KeyframeVector& frames = oldEffect->getFrames();
@@ -532,7 +532,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             effect = KeyframeEffectModel::create(newFrames);
         }
         RefPtr<Animation> transition = Animation::create(element, effect, inertAnimation->specifiedTiming(), Animation::TransitionPriority, eventDelegate.release());
-        RefPtr<Player> player = element->document().transitionTimeline()->createPlayer(transition.get());
+        RefPtr<Player> player = element->document().transitionTimeline().createPlayer(transition.get());
         player->update();
         element->document().cssPendingAnimations().add(player.get());
         runningTransition.transition = transition.get();
@@ -737,7 +737,7 @@ void CSSAnimations::calculateTransitionCompositableValues(CSSAnimationUpdate* up
 void CSSAnimations::AnimationEventDelegate::maybeDispatch(Document::ListenerType listenerType, const AtomicString& eventName, double elapsedTime)
 {
     if (m_target->document().hasListenerType(listenerType))
-        m_target->document().timeline()->addEventToDispatch(m_target, WebKitAnimationEvent::create(eventName, m_name, elapsedTime));
+        m_target->document().timeline().addEventToDispatch(m_target, WebKitAnimationEvent::create(eventName, m_name, elapsedTime));
 }
 
 void CSSAnimations::AnimationEventDelegate::onEventCondition(const TimedItem* timedItem, bool isFirstSample, TimedItem::Phase previousPhase, double previousIteration)
@@ -786,7 +786,7 @@ void CSSAnimations::TransitionEventDelegate::onEventCondition(const TimedItem* t
         double elapsedTime = timing.iterationDuration;
         const AtomicString& eventType = EventTypeNames::transitionend;
         String pseudoElement = PseudoElement::pseudoElementNameForEvents(m_target->pseudoId());
-        m_target->document().transitionTimeline()->addEventToDispatch(m_target, TransitionEvent::create(eventType, propertyName, elapsedTime, pseudoElement));
+        m_target->document().transitionTimeline().addEventToDispatch(m_target, TransitionEvent::create(eventType, propertyName, elapsedTime, pseudoElement));
     }
 }
 

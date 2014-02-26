@@ -42,9 +42,8 @@ Animation* ElementAnimation::animate(Element& element, Vector<Dictionary> keyfra
     ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
 
     RefPtr<Animation> animation = Animation::create(&element, keyframeDictionaryVector, timingInput);
-    DocumentTimeline* timeline = element.document().timeline();
-    ASSERT(timeline);
-    timeline->play(animation.get());
+    DocumentTimeline& timeline = element.document().timeline();
+    timeline.play(animation.get());
 
     return animation.get();
 }
@@ -54,9 +53,8 @@ Animation* ElementAnimation::animate(Element& element, Vector<Dictionary> keyfra
     ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
 
     RefPtr<Animation> animation = Animation::create(&element, keyframeDictionaryVector, timingInput);
-    DocumentTimeline* timeline = element.document().timeline();
-    ASSERT(timeline);
-    timeline->play(animation.get());
+    DocumentTimeline& timeline = element.document().timeline();
+    timeline.play(animation.get());
 
     return animation.get();
 }
@@ -66,9 +64,8 @@ Animation* ElementAnimation::animate(Element& element, Vector<Dictionary> keyfra
     ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
 
     RefPtr<Animation> animation = Animation::create(&element, keyframeDictionaryVector);
-    DocumentTimeline* timeline = element.document().timeline();
-    ASSERT(timeline);
-    timeline->play(animation.get());
+    DocumentTimeline& timeline = element.document().timeline();
+    timeline.play(animation.get());
 
     return animation.get();
 }
