@@ -32,6 +32,11 @@ class FrameCaptionButtonContainerView;
 // Helper class for painting the window header.
 class ASH_EXPORT HeaderPainter : public gfx::AnimationDelegate {
  public:
+  enum Mode {
+    MODE_ACTIVE,
+    MODE_INACTIVE
+  };
+
   // TODO(pkotwicz): Move code related to "browser" windows out of ash.
   enum Style {
     // Header style used for browser windows.
@@ -82,16 +87,17 @@ class ASH_EXPORT HeaderPainter : public gfx::AnimationDelegate {
 
   // Paints the header.
   // |theme_frame_overlay_id| is 0 if no overlay image should be used.
+  // |mode| indicates whether the window should be painted as active.
   void PaintHeader(gfx::Canvas* canvas,
+                   Mode mode,
                    int theme_frame_id,
                    int theme_frame_overlay_id);
 
-  // Paints the header/content separator line. Exists as a separate function
-  // because some windows with complex headers (e.g. browsers with tab strips)
-  // need to draw their own line.
-  void PaintHeaderContentSeparator(gfx::Canvas* canvas);
+  // Paints the header/content separator line for non-browser windows.
+  void PaintHeaderContentSeparator(gfx::Canvas* canvas, Mode mode);
 
-  // Returns size of the header/content separator line in pixels.
+  // Returns size of the header/content separator line for non-browser windows
+  // in pixels.
   int HeaderContentSeparatorSize() const;
 
   // Paint the title bar, primarily the title string.
@@ -122,6 +128,9 @@ class ASH_EXPORT HeaderPainter : public gfx::AnimationDelegate {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(HeaderPainterTest, TitleIconAlignment);
+
+  // Paints the border around the header.
+  void PaintBorder(gfx::Canvas* canvas, Mode mode);
 
   // Updates the images used for the minimize, restore and close buttons.
   void UpdateCaptionButtonImages();
@@ -155,13 +164,6 @@ class ASH_EXPORT HeaderPainter : public gfx::AnimationDelegate {
 
   // The height of the header.
   int header_height_;
-
-  // Window frame header/caption parts.
-  const gfx::ImageSkia* top_left_corner_;
-  const gfx::ImageSkia* top_edge_;
-  const gfx::ImageSkia* top_right_corner_;
-  const gfx::ImageSkia* header_left_edge_;
-  const gfx::ImageSkia* header_right_edge_;
 
   // Image ids and opacity last used for painting header.
   int previous_theme_frame_id_;

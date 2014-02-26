@@ -69,9 +69,10 @@ class FrameCaptionButtonContainerViewTest : public ash::test::AshTestBase {
     for (int icon = 0; icon < CAPTION_BUTTON_ICON_COUNT; ++icon) {
       container->SetButtonImages(
           static_cast<CaptionButtonIcon>(icon),
-          IDR_AURA_WINDOW_CLOSE,
-          IDR_AURA_WINDOW_CLOSE_H,
-          IDR_AURA_WINDOW_CLOSE_P);
+          IDR_AURA_WINDOW_CONTROL_ICON_CLOSE,
+          IDR_AURA_WINDOW_CONTROL_ICON_CLOSE_I,
+          IDR_AURA_WINDOW_CONTROL_BACKGROUND_H,
+          IDR_AURA_WINDOW_CONTROL_BACKGROUND_P);
     }
   }
 

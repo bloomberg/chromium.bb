@@ -248,7 +248,7 @@ function reload() {
       video.addEventListener('loadedmetadata', function() {
         // TODO: chrome.app.window soon will be able to resize the content area.
         // Until then use approximate title bar height.
-        var TITLE_HEIGHT = 28;
+        var TITLE_HEIGHT = 33;
 
         var aspect = video.videoWidth / video.videoHeight;
         var newWidth = video.videoWidth;
