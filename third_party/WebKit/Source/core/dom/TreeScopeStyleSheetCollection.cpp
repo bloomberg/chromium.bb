@@ -75,7 +75,7 @@ void TreeScopeStyleSheetCollection::removeStyleSheetCandidateNode(Node* node, Co
         m_scopingNodesForStyleScoped.remove(scopingNode);
 }
 
-TreeScopeStyleSheetCollection::StyleResolverUpdateType TreeScopeStyleSheetCollection::compareStyleSheets(const Vector<RefPtr<CSSStyleSheet> >& oldStyleSheets, const Vector<RefPtr<CSSStyleSheet> >& newStylesheets, Vector<StyleSheetContents*>& addedSheets)
+TreeScopeStyleSheetCollection::StyleResolverUpdateType TreeScopeStyleSheetCollection::compareStyleSheets(const Vector<RefPtr<CSSStyleSheet> >& oldStyleSheets, const Vector<RefPtr<CSSStyleSheet> >& newStylesheets, WillBeHeapVector<RawPtrWillBeMember<StyleSheetContents> >& addedSheets)
 {
     unsigned newStyleSheetCount = newStylesheets.size();
     unsigned oldStyleSheetCount = oldStyleSheets.size();
@@ -121,7 +121,7 @@ bool TreeScopeStyleSheetCollection::activeLoadingStyleSheetLoaded(const Vector<R
     return false;
 }
 
-static bool findFontFaceRulesFromStyleSheetContents(Vector<StyleSheetContents*> sheets, Vector<const StyleRuleFontFace*>& fontFaceRules)
+static bool findFontFaceRulesFromStyleSheetContents(const WillBeHeapVector<RawPtrWillBeMember<StyleSheetContents> >& sheets, WillBeHeapVector<RawPtrWillBeMember<const StyleRuleFontFace> >& fontFaceRules)
 {
     bool hasFontFaceRule = false;
 
@@ -145,7 +145,7 @@ void TreeScopeStyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateM
         return;
 
     // Find out which stylesheets are new.
-    Vector<StyleSheetContents*> addedSheets;
+    WillBeHeapVector<RawPtrWillBeMember<StyleSheetContents> > addedSheets;
     if (m_activeAuthorStyleSheets.size() <= newCollection.activeAuthorStyleSheets().size()) {
         change.styleResolverUpdateType = compareStyleSheets(m_activeAuthorStyleSheets, newCollection.activeAuthorStyleSheets(), addedSheets);
     } else {

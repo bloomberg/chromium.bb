@@ -539,7 +539,7 @@ void StyleEngine::updateGenericFontFamilySettings()
         m_resolver->invalidateMatchedPropertiesCache();
 }
 
-void StyleEngine::removeFontFaceRules(const Vector<const StyleRuleFontFace*>& fontFaceRules)
+void StyleEngine::removeFontFaceRules(const WillBeHeapVector<RawPtrWillBeMember<const StyleRuleFontFace> >& fontFaceRules)
 {
     if (!m_fontSelector)
         return;

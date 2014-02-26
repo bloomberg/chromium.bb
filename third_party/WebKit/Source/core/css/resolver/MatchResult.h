@@ -67,10 +67,12 @@ struct MatchedProperties {
     };
 };
 
-struct MatchResult {
+class MatchResult {
+    STACK_ALLOCATED();
+public:
     MatchResult() : isCacheable(true) { }
     Vector<MatchedProperties, 64> matchedProperties;
-    Vector<StyleRule*, 64> matchedRules;
+    WillBeHeapVector<RawPtrWillBeMember<StyleRule>, 64> matchedRules;
     MatchRanges ranges;
     bool isCacheable;
 

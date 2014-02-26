@@ -133,10 +133,10 @@ public:
     const Vector<RuleData>* cuePseudoRules() const { ASSERT(!m_pendingRules); return &m_cuePseudoRules; }
     const Vector<RuleData>* focusPseudoClassRules() const { ASSERT(!m_pendingRules); return &m_focusPseudoClassRules; }
     const Vector<RuleData>* universalRules() const { ASSERT(!m_pendingRules); return &m_universalRules; }
-    const Vector<StyleRulePage*>& pageRules() const { ASSERT(!m_pendingRules); return m_pageRules; }
-    const Vector<StyleRuleViewport*>& viewportRules() const { ASSERT(!m_pendingRules); return m_viewportRules; }
-    const Vector<StyleRuleFontFace*>& fontFaceRules() const { return m_fontFaceRules; }
-    const Vector<StyleRuleKeyframes*>& keyframesRules() const { return m_keyframesRules; }
+    const WillBeHeapVector<RawPtrWillBeMember<StyleRulePage> >& pageRules() const { ASSERT(!m_pendingRules); return m_pageRules; }
+    const WillBeHeapVector<RawPtrWillBeMember<StyleRuleViewport> >& viewportRules() const { ASSERT(!m_pendingRules); return m_viewportRules; }
+    const WillBeHeapVector<RawPtrWillBeMember<StyleRuleFontFace> >& fontFaceRules() const { return m_fontFaceRules; }
+    const WillBeHeapVector<RawPtrWillBeMember<StyleRuleKeyframes> >& keyframesRules() const { return m_keyframesRules; }
     const Vector<MinimalRuleData>& treeBoundaryCrossingRules() const { return m_treeBoundaryCrossingRules; }
     const Vector<MinimalRuleData>& shadowDistributedRules() const { return m_shadowDistributedRules; }
     const MediaQueryResultList& viewportDependentMediaQueryResults() const { return m_viewportDependentMediaQueryResults; }
@@ -206,10 +206,10 @@ private:
     Vector<RuleData> m_focusPseudoClassRules;
     Vector<RuleData> m_universalRules;
     RuleFeatureSet m_features;
-    Vector<StyleRulePage*> m_pageRules;
-    Vector<StyleRuleViewport*> m_viewportRules;
-    Vector<StyleRuleFontFace*> m_fontFaceRules;
-    Vector<StyleRuleKeyframes*> m_keyframesRules;
+    WillBePersistentHeapVector<RawPtrWillBeMember<StyleRulePage> > m_pageRules;
+    WillBePersistentHeapVector<RawPtrWillBeMember<StyleRuleViewport> > m_viewportRules;
+    WillBePersistentHeapVector<RawPtrWillBeMember<StyleRuleFontFace> > m_fontFaceRules;
+    WillBePersistentHeapVector<RawPtrWillBeMember<StyleRuleKeyframes> > m_keyframesRules;
     Vector<MinimalRuleData> m_treeBoundaryCrossingRules;
     Vector<MinimalRuleData> m_shadowDistributedRules;
 

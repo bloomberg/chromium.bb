@@ -71,7 +71,7 @@ StyleSheetContents::StyleSheetContents(StyleRuleImport* ownerRule, const String&
 }
 
 StyleSheetContents::StyleSheetContents(const StyleSheetContents& o)
-    : m_ownerRule(0)
+    : m_ownerRule(nullptr)
     , m_originalURL(o.m_originalURL)
     , m_encodingFromCharsetRule(o.m_encodingFromCharsetRule)
     , m_importRules(o.m_importRules.size())
@@ -582,11 +582,11 @@ void StyleSheetContents::notifyRemoveFontFaceRule(const StyleRuleFontFace* fontF
 
     for (unsigned i = 0; i < root->m_clients.size(); ++i) {
         if (Node* ownerNode = root->m_clients[0]->ownerNode())
-            ownerNode->document().styleEngine()->removeFontFaceRules(Vector<const StyleRuleFontFace*>(1, fontFaceRule));
+            ownerNode->document().styleEngine()->removeFontFaceRules(WillBeHeapVector<RawPtrWillBeMember<const StyleRuleFontFace> >(1, fontFaceRule));
     }
 }
 
-static void findFontFaceRulesFromRules(const WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> >& rules, Vector<const StyleRuleFontFace*>& fontFaceRules)
+static void findFontFaceRulesFromRules(const WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase> >& rules, WillBeHeapVector<RawPtrWillBeMember<const StyleRuleFontFace> >& fontFaceRules)
 {
     for (unsigned i = 0; i < rules.size(); ++i) {
         StyleRuleBase* rule = rules[i].get();
@@ -602,7 +602,7 @@ static void findFontFaceRulesFromRules(const WillBeHeapVector<RefPtrWillBeMember
     }
 }
 
-void StyleSheetContents::findFontFaceRules(Vector<const StyleRuleFontFace*>& fontFaceRules)
+void StyleSheetContents::findFontFaceRules(WillBeHeapVector<RawPtrWillBeMember<const StyleRuleFontFace> >& fontFaceRules)
 {
     for (unsigned i = 0; i < m_importRules.size(); ++i) {
         if (!m_importRules[i]->styleSheet())
@@ -615,6 +615,7 @@ void StyleSheetContents::findFontFaceRules(Vector<const StyleRuleFontFace*>& fon
 
 void StyleSheetContents::trace(Visitor* visitor)
 {
+    visitor->trace(m_ownerRule);
     visitor->trace(m_importRules);
     visitor->trace(m_childRules);
 }

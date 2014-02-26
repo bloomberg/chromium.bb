@@ -256,7 +256,7 @@ void StyleResolver::addTreeBoundaryCrossingRules(const Vector<MinimalRuleData>& 
 
 void StyleResolver::processScopedRules(const RuleSet& authorRules, const KURL& sheetBaseURL, ContainerNode* scope)
 {
-    const Vector<StyleRuleKeyframes*> keyframesRules = authorRules.keyframesRules();
+    const WillBeHeapVector<RawPtrWillBeMember<StyleRuleKeyframes> > keyframesRules = authorRules.keyframesRules();
     for (unsigned i = 0; i < keyframesRules.size(); ++i)
         ensureScopedStyleResolver(scope)->addKeyframeStyle(keyframesRules[i]);
 
@@ -264,7 +264,7 @@ void StyleResolver::processScopedRules(const RuleSet& authorRules, const KURL& s
 
     // FIXME(BUG 72461): We don't add @font-face rules of scoped style sheets for the moment.
     if (!scope || scope->isDocumentNode()) {
-        const Vector<StyleRuleFontFace*> fontFaceRules = authorRules.fontFaceRules();
+        const WillBeHeapVector<RawPtrWillBeMember<StyleRuleFontFace> > fontFaceRules = authorRules.fontFaceRules();
         for (unsigned i = 0; i < fontFaceRules.size(); ++i)
             addFontFaceRule(&m_document, document().styleEngine()->fontSelector(), fontFaceRules[i]);
         if (fontFaceRules.size())

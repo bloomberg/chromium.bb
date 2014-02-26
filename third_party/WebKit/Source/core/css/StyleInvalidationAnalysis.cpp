@@ -37,7 +37,7 @@
 
 namespace WebCore {
 
-StyleInvalidationAnalysis::StyleInvalidationAnalysis(const Vector<StyleSheetContents*>& sheets)
+StyleInvalidationAnalysis::StyleInvalidationAnalysis(const WillBeHeapVector<RawPtrWillBeMember<StyleSheetContents> >& sheets)
     : m_dirtiesAllStyle(false)
 {
     for (unsigned i = 0; i < sheets.size() && !m_dirtiesAllStyle; ++i)

@@ -57,7 +57,7 @@ void ViewportStyleResolver::collectViewportRules(RuleSet* rules, Origin origin)
 {
     rules->compactRulesIfNeeded();
 
-    const Vector<StyleRuleViewport*>& viewportRules = rules->viewportRules();
+    const WillBeHeapVector<RawPtrWillBeMember<StyleRuleViewport> >& viewportRules = rules->viewportRules();
     for (size_t i = 0; i < viewportRules.size(); ++i)
         addViewportRule(viewportRules[i], origin);
 }

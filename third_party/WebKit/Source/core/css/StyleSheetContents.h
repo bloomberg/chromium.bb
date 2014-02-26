@@ -95,7 +95,7 @@ public:
 
     void setHasFontFaceRule(bool b) { m_hasFontFaceRule = b; }
     bool hasFontFaceRule() const { return m_hasFontFaceRule; }
-    void findFontFaceRules(Vector<const StyleRuleFontFace*>& fontFaceRules);
+    void findFontFaceRules(WillBeHeapVector<RawPtrWillBeMember<const StyleRuleFontFace> >& fontFaceRules);
 
     void parserAddNamespace(const AtomicString& prefix, const AtomicString& uri);
     void parserAppendRule(PassRefPtrWillBeRawPtr<StyleRuleBase>);
@@ -114,7 +114,7 @@ public:
 
     StyleSheetContents* parentStyleSheet() const;
     StyleRuleImport* ownerRule() const { return m_ownerRule; }
-    void clearOwnerRule() { m_ownerRule = 0; }
+    void clearOwnerRule() { m_ownerRule = nullptr; }
 
     // Note that href is the URL that started the redirect chain that led to
     // this style sheet. This property probably isn't useful for much except
@@ -165,7 +165,7 @@ private:
 
     void clearCharsetRule();
 
-    StyleRuleImport* m_ownerRule;
+    RawPtrWillBeMember<StyleRuleImport> m_ownerRule;
 
     String m_originalURL;
 

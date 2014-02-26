@@ -1516,6 +1516,15 @@ public:
     ListHashSet<Member<IntWrapper> > m_listHashSet;
 };
 
+TEST(HeapTest, HeapVectorFilledWithValue)
+{
+    IntWrapper* val = IntWrapper::create(1);
+    HeapVector<Member<IntWrapper> > vector(10, val);
+    EXPECT_EQ(10u, vector.size());
+    for (size_t i = 0; i < vector.size(); i++)
+        EXPECT_EQ(val, vector[i]);
+}
+
 TEST(HeapTest, HeapVectorWithInlineCapacity)
 {
     IntWrapper* one = IntWrapper::create(1);

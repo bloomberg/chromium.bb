@@ -26,6 +26,7 @@
 #ifndef StyleInvalidationAnalysis_h
 #define StyleInvalidationAnalysis_h
 
+#include "heap/Handle.h"
 #include "wtf/HashSet.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringImpl.h"
@@ -38,7 +39,7 @@ class StyleSheetContents;
 
 class StyleInvalidationAnalysis {
 public:
-    StyleInvalidationAnalysis(const Vector<StyleSheetContents*>&);
+    StyleInvalidationAnalysis(const WillBeHeapVector<RawPtrWillBeMember<StyleSheetContents> >&);
 
     bool dirtiesAllStyle() const { return m_dirtiesAllStyle; }
     void invalidateStyle(Document&);

@@ -1322,6 +1322,10 @@ public:
     {
     }
 
+    HeapVector(size_t size, const T& val) : Vector<T, inlineCapacity, HeapAllocator>(size, val)
+    {
+    }
+
     template<size_t otherCapacity>
     HeapVector(const HeapVector<T, otherCapacity>& other)
         : Vector<T, inlineCapacity, HeapAllocator>(other)

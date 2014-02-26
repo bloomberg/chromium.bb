@@ -71,7 +71,7 @@ class StyleRuleKeyframes;
 class StyleRulePage;
 class ViewportStyleResolver;
 
-struct MatchResult;
+class MatchResult;
 
 enum StyleSharingBehavior {
     AllowStyleSharing,
@@ -269,7 +269,7 @@ private:
     template <StyleApplicationPass pass>
     void applyAnimatedProperties(StyleResolverState&, const AnimationEffect::CompositableValueMap&);
     void matchPageRules(MatchResult&, RuleSet*, bool isLeftPage, bool isFirstPage, const String& pageName);
-    void matchPageRulesForList(Vector<StyleRulePage*>& matchedRules, const Vector<StyleRulePage*>&, bool isLeftPage, bool isFirstPage, const String& pageName);
+    void matchPageRulesForList(WillBeHeapVector<RawPtrWillBeMember<StyleRulePage> >& matchedRules, const WillBeHeapVector<RawPtrWillBeMember<StyleRulePage> >&, bool isLeftPage, bool isFirstPage, const String& pageName);
     void collectViewportRules();
     Settings* documentSettings() { return m_document.settings(); }
 

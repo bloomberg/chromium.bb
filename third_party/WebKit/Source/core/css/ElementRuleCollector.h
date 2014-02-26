@@ -75,10 +75,11 @@ private:
     const CSSStyleSheet* m_parentStyleSheet;
 };
 
+// FIXME: oilpan: when transition types are gone this class can be replaced with HeapVector.
 class StyleRuleList : public RefCounted<StyleRuleList> {
 public:
     static PassRefPtr<StyleRuleList> create() { return adoptRef(new StyleRuleList()); }
-    Vector<StyleRule*> m_list;
+    WillBePersistentHeapVector<RawPtrWillBeMember<StyleRule> > m_list;
 };
 
 // ElementRuleCollector is designed to be used as a stack object.

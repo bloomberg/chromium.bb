@@ -76,10 +76,12 @@ protected:
         Additive
     };
 
-    struct StyleSheetChange {
+    class StyleSheetChange {
+        STACK_ALLOCATED();
+    public:
         StyleResolverUpdateType styleResolverUpdateType;
         bool requiresFullStyleRecalc;
-        Vector<const StyleRuleFontFace*> fontFaceRulesToRemove;
+        WillBeHeapVector<RawPtrWillBeMember<const StyleRuleFontFace> > fontFaceRulesToRemove;
 
         StyleSheetChange()
             : styleResolverUpdateType(Reconstruct)
@@ -91,7 +93,7 @@ protected:
     void updateUsesRemUnits();
 
 private:
-    static StyleResolverUpdateType compareStyleSheets(const Vector<RefPtr<CSSStyleSheet> >& oldStyleSheets, const Vector<RefPtr<CSSStyleSheet> >& newStylesheets, Vector<StyleSheetContents*>& addedSheets);
+    static StyleResolverUpdateType compareStyleSheets(const Vector<RefPtr<CSSStyleSheet> >& oldStyleSheets, const Vector<RefPtr<CSSStyleSheet> >& newStylesheets, WillBeHeapVector<RawPtrWillBeMember<StyleSheetContents> >& addedSheets);
     bool activeLoadingStyleSheetLoaded(const Vector<RefPtr<CSSStyleSheet> >& newStyleSheets);
 
 protected:

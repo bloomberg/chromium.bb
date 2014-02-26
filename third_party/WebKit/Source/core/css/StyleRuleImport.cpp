@@ -51,8 +51,10 @@ StyleRuleImport::StyleRuleImport(const String& href, PassRefPtr<MediaQuerySet> m
 
 StyleRuleImport::~StyleRuleImport()
 {
+#if !ENABLE(OILPAN)
     if (m_styleSheet)
         m_styleSheet->clearOwnerRule();
+#endif
     if (m_resource)
         m_resource->removeClient(&m_styleSheetClient);
 }
