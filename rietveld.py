@@ -409,7 +409,7 @@ class Rietveld(object):
         except ssl.SSLError, e:
           if retry >= (maxtries - 1):
             raise
-          if not 'timed out' in e.reason:
+          if not 'timed out' in str(e):
             raise
         # If reaching this line, loop again. Uses a small backoff.
         time.sleep(1+maxtries*2)

@@ -7,7 +7,9 @@
 
 import logging
 import os
+import ssl
 import sys
+import time
 import traceback
 import unittest
 
@@ -440,6 +442,14 @@ def MockSend(request_path, payload=None,
   """Mock upload.py's Send() to probe the timeout value"""
   raise ProbeException(timeout)
 
+def MockSendTimeout(request_path, payload=None,
+                    content_type="application/octet-stream",
+                    timeout=None,
+                    extra_headers=None,
+                    **kwargs):
+  """Mock upload.py's Send() to raise SSLError"""
+  raise ssl.SSLError('The read operation timed out')
+
 
 class DefaultTimeoutTest(auto_stub.TestCase):
   TESTED_CLASS = rietveld.Rietveld
@@ -448,6 +458,7 @@ class DefaultTimeoutTest(auto_stub.TestCase):
     super(DefaultTimeoutTest, self).setUp()
     self.rietveld = self.TESTED_CLASS('url', 'email', 'password')
     self.mock(self.rietveld.rpc_server, 'Send', MockSend)
+    self.sleep_time = 0
 
   def test_timeout_get(self):
     with self.assertRaises(ProbeException) as cm:
@@ -463,6 +474,16 @@ class DefaultTimeoutTest(auto_stub.TestCase):
     self.assertIsNotNone(cm.exception.value, 'Rietveld timeout was not set: %s'
                          % traceback.format_exc())
 
+  def MockSleep(self, t):
+    self.sleep_time = t
+
+  def test_ssl_timeout_post(self):
+    self.mock(self.rietveld.rpc_server, 'Send', MockSendTimeout)
+    self.mock(time, 'sleep', self.MockSleep)
+    self.sleep_time = 0
+    with self.assertRaises(ssl.SSLError):
+      self.rietveld.post('/api/1234', [('key', 'data')])
+    self.assertNotEqual(self.sleep_time, 0)
 
 if __name__ == '__main__':
   logging.basicConfig(level=[
