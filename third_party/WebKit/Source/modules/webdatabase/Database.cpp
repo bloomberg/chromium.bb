@@ -79,40 +79,8 @@ Database::Database(PassRefPtr<DatabaseContext> databaseContext,
     ASSERT(m_databaseContext->databaseThread());
 }
 
-class DerefContextTask FINAL : public ExecutionContextTask {
-public:
-    static PassOwnPtr<DerefContextTask> create(PassRefPtr<ExecutionContext> context)
-    {
-        return adoptPtr(new DerefContextTask(context));
-    }
-
-    virtual void performTask(ExecutionContext* context) OVERRIDE
-    {
-        ASSERT_UNUSED(context, context == m_context);
-        m_context.clear();
-    }
-
-    virtual bool isCleanupTask() const OVERRIDE { return true; }
-
-private:
-    DerefContextTask(PassRefPtr<ExecutionContext> context)
-        : m_context(context)
-    {
-    }
-
-    RefPtr<ExecutionContext> m_context;
-};
-
 Database::~Database()
 {
-    // The reference to the ExecutionContext needs to be cleared on the JavaScript thread. If we're on that thread already, we can just let the RefPtr's destruction do the dereffing.
-    if (!m_executionContext->isContextThread()) {
-        // Grab a pointer to the script execution here because we're releasing it when we pass it to
-        // DerefContextTask::create.
-        ExecutionContext* executionContext = m_executionContext.get();
-
-        executionContext->postTask(DerefContextTask::create(m_executionContext.release()));
-    }
 }
 
 Database* Database::from(DatabaseBackend* backend)
@@ -132,7 +100,7 @@ String Database::version() const
 
 void Database::closeImmediately()
 {
-    ASSERT(m_executionContext->isContextThread());
+    ASSERT(executionContext()->isContextThread());
     DatabaseThread* databaseThread = databaseContext()->databaseThread();
     if (databaseThread && !databaseThread->terminationRequested() && opened()) {
         logErrorMessage("forcibly closing database");
@@ -205,7 +173,7 @@ private:
 
 void Database::scheduleTransactionCallback(SQLTransaction* transaction)
 {
-    m_executionContext->postTask(DeliverPendingCallbackTask::create(transaction));
+    executionContext()->postTask(DeliverPendingCallbackTask::create(transaction));
 }
 
 Vector<String> Database::performGetTableNames()
@@ -255,7 +223,7 @@ Vector<String> Database::tableNames()
 
 SecurityOrigin* Database::securityOrigin() const
 {
-    if (m_executionContext->isContextThread())
+    if (executionContext()->isContextThread())
         return m_contextThreadSecurityOrigin.get();
     if (databaseContext()->databaseThread()->isDatabaseThread())
         return m_databaseThreadSecurityOrigin.get();

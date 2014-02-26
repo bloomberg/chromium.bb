@@ -31,6 +31,7 @@
 #include "modules/webdatabase/DatabaseBackendBase.h"
 
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContext.h"
 #include "platform/Logging.h"
 #include "modules/webdatabase/DatabaseAuthorizer.h"
 #include "modules/webdatabase/DatabaseBase.h"
@@ -578,7 +579,7 @@ void DatabaseBackendBase::incrementalVacuumIfNeeded()
         int result = m_sqliteDatabase.runIncrementalVacuumCommand();
         reportVacuumDatabaseResult(result);
         if (result != SQLResultOk)
-            m_frontend->logErrorMessage(formatErrorMessage("error vacuuming database", result, m_sqliteDatabase.lastErrorMsg()));
+            logErrorMessage(formatErrorMessage("error vacuuming database", result, m_sqliteDatabase.lastErrorMsg()));
     }
 }
 
@@ -654,5 +655,14 @@ void DatabaseBackendBase::reportVacuumDatabaseResult(int sqliteErrorCode)
     }
 }
 
+void DatabaseBackendBase::logErrorMessage(const String& message)
+{
+    executionContext()->addConsoleMessage(StorageMessageSource, ErrorMessageLevel, message);
+}
+
+ExecutionContext* DatabaseBackendBase::executionContext() const
+{
+    return databaseContext()->executionContext();
+}
 
 } // namespace WebCore

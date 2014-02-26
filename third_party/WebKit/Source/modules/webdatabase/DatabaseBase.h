@@ -26,21 +26,13 @@
 #ifndef DatabaseBase_h
 #define DatabaseBase_h
 
-#include "wtf/text/WTFString.h"
-
 namespace WebCore {
 
 class ExecutionContext;
 
 class DatabaseBase {
-public:
-    ExecutionContext* executionContext() const;
-    void logErrorMessage(const String& message);
-
 protected:
     DatabaseBase(ExecutionContext*);
-
-    RefPtr<ExecutionContext> m_executionContext;
 };
 
 } // namespace WebCore

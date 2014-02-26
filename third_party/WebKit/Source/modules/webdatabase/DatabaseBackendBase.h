@@ -47,6 +47,7 @@ namespace WebCore {
 class DatabaseAuthorizer;
 class DatabaseContext;
 class DatabaseBase;
+class ExecutionContext;
 class SecurityOrigin;
 
 class DatabaseBackendBase : public ThreadSafeRefCounted<DatabaseBackendBase> {
@@ -83,6 +84,7 @@ public:
     virtual void closeImmediately() = 0;
 
     DatabaseContext* databaseContext() const { return m_databaseContext.get(); }
+    ExecutionContext* executionContext() const;
     void setFrontend(DatabaseBase* frontend) { m_frontend = frontend; }
 
 protected:
@@ -114,7 +116,7 @@ protected:
     void reportCommitTransactionResult(int errorSite, int webSqlErrorCode, int sqliteErrorCode);
     void reportExecuteStatementResult(int errorSite, int webSqlErrorCode, int sqliteErrorCode);
     void reportVacuumDatabaseResult(int sqliteErrorCode);
-
+    void logErrorMessage(const String&);
     static const char* databaseInfoTableName();
 
     RefPtr<SecurityOrigin> m_contextThreadSecurityOrigin;

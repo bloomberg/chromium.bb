@@ -32,19 +32,8 @@
 namespace WebCore {
 
 DatabaseBase::DatabaseBase(ExecutionContext* executionContext)
-    : m_executionContext(executionContext)
 {
-    ASSERT(m_executionContext->isContextThread());
-}
-
-ExecutionContext* DatabaseBase::executionContext() const
-{
-    return m_executionContext.get();
-}
-
-void DatabaseBase::logErrorMessage(const String& message)
-{
-    m_executionContext->addConsoleMessage(StorageMessageSource, ErrorMessageLevel, message);
+    ASSERT_UNUSED(executionContext, executionContext->isContextThread());
 }
 
 } // namespace WebCore

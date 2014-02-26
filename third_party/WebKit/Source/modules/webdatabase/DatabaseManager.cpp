@@ -233,7 +233,7 @@ PassRefPtr<Database> DatabaseManager::openDatabase(ExecutionContext* context,
 
     if (backend->isNew() && creationCallback.get()) {
         WTF_LOG(StorageAPI, "Scheduling DatabaseCreationCallbackTask for database %p\n", database.get());
-        database->m_executionContext->postTask(DatabaseCreationCallbackTask::create(database, creationCallback));
+        database->executionContext()->postTask(DatabaseCreationCallbackTask::create(database, creationCallback));
     }
 
     ASSERT(database);

@@ -64,12 +64,12 @@ DatabaseSync::DatabaseSync(PassRefPtr<DatabaseContext> databaseContext,
 
 DatabaseSync::~DatabaseSync()
 {
-    ASSERT(m_executionContext->isContextThread());
+    ASSERT(executionContext()->isContextThread());
 }
 
 void DatabaseSync::changeVersion(const String& oldVersion, const String& newVersion, PassOwnPtr<SQLTransactionSyncCallback> changeVersionCallback, ExceptionState& exceptionState)
 {
-    ASSERT(m_executionContext->isContextThread());
+    ASSERT(executionContext()->isContextThread());
 
     if (sqliteDatabase().transactionInProgress()) {
         reportChangeVersionResult(1, SQLError::DATABASE_ERR, 0);
@@ -147,7 +147,7 @@ void DatabaseSync::rollbackTransaction(PassRefPtr<SQLTransactionSync> transactio
 
 void DatabaseSync::runTransaction(PassOwnPtr<SQLTransactionSyncCallback> callback, bool readOnly, ExceptionState& exceptionState)
 {
-    ASSERT(m_executionContext->isContextThread());
+    ASSERT(executionContext()->isContextThread());
 
     if (sqliteDatabase().transactionInProgress()) {
         setLastErrorMessage("unable to start a transaction from within a transaction");
@@ -179,7 +179,7 @@ void DatabaseSync::runTransaction(PassOwnPtr<SQLTransactionSyncCallback> callbac
 
 void DatabaseSync::closeImmediately()
 {
-    ASSERT(m_executionContext->isContextThread());
+    ASSERT(executionContext()->isContextThread());
 
     if (!opened())
         return;
