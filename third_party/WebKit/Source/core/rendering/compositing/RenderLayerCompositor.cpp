@@ -743,6 +743,15 @@ RenderLayerCompositor::CompositingStateTransitionType RenderLayerCompositor::com
 // See crbug.com/339892 for a list of tests that fail if this method is removed.
 void RenderLayerCompositor::applyUpdateLayerCompositingStateChickenEggHacks(RenderLayer* layer, CompositingStateTransitionType compositedLayerUpdate)
 {
+    // See if we need content or clipping layers. Methods called here should assume
+    // that the compositing state of descendant layers has not been updated yet.
+    if (layer->hasCompositedLayerMapping() && layer->compositedLayerMapping()->updateGraphicsLayerConfiguration()) {
+        setCompositingLayersNeedRebuild();
+    } else if (compositedLayerUpdate == NoCompositingStateChange) {
+        if (layer->compositingState() == PaintsIntoOwnBacking || layer->compositingState() == HasOwnBackingButPaintsIntoAncestor)
+            setCompositingLayersNeedRebuild();
+    }
+
     if (compositedLayerUpdate != NoCompositingStateChange)
         allocateOrClearCompositedLayerMapping(layer);
 }
@@ -755,15 +764,6 @@ void RenderLayerCompositor::updateLayerCompositingState(RenderLayer* layer, Upda
     if (compositedLayerUpdate != NoCompositingStateChange) {
         setCompositingLayersNeedRebuild();
         setNeedsToRecomputeCompositingRequirements();
-    }
-
-    // See if we need content or clipping layers. Methods called here should assume
-    // that the compositing state of descendant layers has not been updated yet.
-    if (layer->hasCompositedLayerMapping() && layer->compositedLayerMapping()->updateGraphicsLayerConfiguration()) {
-        setCompositingLayersNeedRebuild();
-    } else if (compositedLayerUpdate == NoCompositingStateChange) {
-        if (layer->compositingState() == PaintsIntoOwnBacking || layer->compositingState() == HasOwnBackingButPaintsIntoAncestor)
-            setCompositingLayersNeedRebuild();
     }
 
     if (options == UseChickenEggHacks)

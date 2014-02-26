@@ -101,7 +101,7 @@ public:
 
     enum UpdateLayerCompositingStateOptions {
         Normal,
-        UseChickenEggHacks // Use this to trigger temporary chicken-egg hacks. See crbug.com/339892.
+        UseChickenEggHacks, // Use this to trigger temporary chicken-egg hacks. See crbug.com/339892.
     };
 
     // Update the compositing dirty bits, based on the compositing-impacting properties of the layer.
