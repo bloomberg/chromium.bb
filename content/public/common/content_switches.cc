@@ -317,9 +317,6 @@ const char kDisableUniversalAcceleratedOverflowScroll[] =
 // Disables unprefixed Media Source API (i.e., the MediaSource object).
 const char kDisableUnprefixedMediaSource[]  = "disable-unprefixed-media-source";
 
-// Disable CSS Transitions / Animations on the Web Animations model.
-const char kDisableWebAnimationsCSS[]        = "disable-web-animations-css";
-
 // Disables prefixed Media Source API (i.e., the WebKitMediaSource object).
 const char kDisableWebKitMediaSource[]      = "disable-webkit-media-source";
 
@@ -599,9 +596,6 @@ const char kEnableVisualWordMovement[]      = "enable-visual-word-movement";
 
 // Enable the Vtune profiler support.
 const char kEnableVtune[]                   = "enable-vtune-support";
-
-// Enable CSS Transitions / Animations on the Web Animations model.
-const char kEnableWebAnimationsCSS[]        = "enable-web-animations-css";
 
 // Enable SVG Animations on the Web Animations model.
 const char kEnableWebAnimationsSVG[]        = "enable-web-animations-svg";

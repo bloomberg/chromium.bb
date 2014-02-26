@@ -102,7 +102,6 @@ CONTENT_EXPORT extern const char kDisableThreadedCompositing[];
 CONTENT_EXPORT extern const char kDisableThreadedHTMLParser[];
 CONTENT_EXPORT extern const char kDisableUniversalAcceleratedOverflowScroll[];
 CONTENT_EXPORT extern const char kDisableUnprefixedMediaSource[];
-extern const char kDisableWebAnimationsCSS[];
 CONTENT_EXPORT extern const char kDisableWebKitMediaSource[];
 CONTENT_EXPORT extern const char kDisableWebSecurity[];
 extern const char kDisableXSLT[];
@@ -175,8 +174,6 @@ CONTENT_EXPORT extern const char kEnableViewportMeta[];
 CONTENT_EXPORT extern const char kMainFrameResizesAreOrientationChanges[];
 extern const char kEnableVisualWordMovement[];
 CONTENT_EXPORT extern const char kEnableVtune[];
-// FIXME: Remove this once Web Animations CSS is enabled by default in Blink.
-extern const char kEnableWebAnimationsCSS[];
 extern const char kEnableWebAnimationsSVG[];
 CONTENT_EXPORT extern const char kEnableWebGLDraftExtensions[];
 CONTENT_EXPORT extern const char kEnableWebMIDI[];
