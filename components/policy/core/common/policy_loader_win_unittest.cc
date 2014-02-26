@@ -28,6 +28,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_byteorder.h"
 #include "base/win/registry.h"
+#include "base/win/win_util.h"
 #include "components/policy/core/common/async_policy_provider.h"
 #include "components/policy/core/common/configuration_policy_provider_test.h"
 #include "components/policy/core/common/external_data_fetcher.h"
@@ -346,6 +347,7 @@ void RegistryTestHarness::SetUp() {}
 ConfigurationPolicyProvider* RegistryTestHarness::CreateProvider(
     SchemaRegistry* registry,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  base::win::SetDomainStateForTesting(true);
   scoped_ptr<AsyncPolicyLoader> loader(
       new PolicyLoaderWin(task_runner, kTestPolicyKey, this));
   return new AsyncPolicyProvider(registry, loader.Pass());
@@ -463,6 +465,7 @@ PRegTestHarness::PRegTestHarness()
 PRegTestHarness::~PRegTestHarness() {}
 
 void PRegTestHarness::SetUp() {
+  base::win::SetDomainStateForTesting(false);
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   preg_file_path_ = temp_dir_.path().Append(PolicyLoaderWin::kPRegFileName);
   ASSERT_TRUE(file_util::WriteFile(preg_file_path_,
@@ -702,6 +705,7 @@ class PolicyLoaderWinTest : public PolicyTestBase,
   virtual ~PolicyLoaderWinTest() {}
 
   virtual void SetUp() OVERRIDE {
+    base::win::SetDomainStateForTesting(false);
     PolicyTestBase::SetUp();
 
     ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir_));
@@ -1022,6 +1026,19 @@ TEST_F(PolicyLoaderWinTest, AppliedPolicyEmpty) {
 
   PolicyBundle empty;
   EXPECT_TRUE(Matches(empty));
+}
+
+TEST_F(PolicyLoaderWinTest, AppliedPolicyInDomain) {
+  base::win::SetDomainStateForTesting(true);
+  InstallRegistrySentinel();
+  base::FilePath gpo_dir(test_data_dir_.AppendASCII("empty"));
+  GROUP_POLICY_OBJECT gpo;
+  InitGPO(&gpo, 0, gpo_dir, NULL, NULL);
+  gpo_list_ = &gpo;
+  gpo_list_status_ = ERROR_SUCCESS;
+
+  PolicyBundle empty;
+  EXPECT_TRUE(MatchesRegistrySentinel());
 }
 
 TEST_F(PolicyLoaderWinTest, AppliedPolicyNonExistingFile) {

@@ -395,6 +395,10 @@ scoped_ptr<PolicyBundle> PolicyLoaderWin::Load() {
     { POLICY_SCOPE_USER,    HKEY_CURRENT_USER  },
   };
 
+  bool is_enterprise = base::win::IsEnrolledToDomain();
+  VLOG(1) << "Reading policy from the registry is "
+          << (is_enterprise ? "enabled." : "disabled.");
+
   // Load policy data for the different scopes/levels and merge them.
   scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
   PolicyMap* chrome_policy =
@@ -421,9 +425,9 @@ scoped_ptr<PolicyBundle> PolicyLoaderWin::Load() {
     // timeout on it more aggressively. For now, there's no justification for
     // the additional effort this would introduce.
 
-    if (!ReadPolicyFromGPO(scope, &gpo_dict, &status)) {
-      VLOG(1) << "Failed to read GPO files for " << scope
-              << " falling back to registry.";
+    if (is_enterprise || !ReadPolicyFromGPO(scope, &gpo_dict, &status)) {
+      VLOG_IF(1, !is_enterprise) << "Failed to read GPO files for " << scope
+                                 << " falling back to registry.";
       gpo_dict.ReadRegistry(kScopes[i].hive, chrome_policy_key_);
     }
 
