@@ -205,7 +205,7 @@ fileOperationUtil.copyTo = function(
         case 'error':
           chrome.fileBrowserPrivate.onCopyProgress.removeListener(
               onCopyProgress);
-          errorCallback(util.createDOMError(status.error.name));
+          errorCallback(util.createDOMError(status.error));
           callback();
           break;
 

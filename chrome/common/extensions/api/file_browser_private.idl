@@ -309,8 +309,8 @@ dictionary CopyProgressStatus {
   // pre-compute the size of files being copied for the file (not directory).
   double? size;
 
-  // FileError's code of the error. Available only for ERROR event.
-  long? error;
+  // DOMError's name. Available only for ERROR event.
+  DOMString? error;
 };
 
 // Payload data for file transfer cancel response.

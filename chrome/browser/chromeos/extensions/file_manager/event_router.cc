@@ -276,6 +276,35 @@ CopyProgressTypeToCopyProgressStatusType(
   return file_browser_private::COPY_PROGRESS_STATUS_TYPE_NONE;
 }
 
+std::string FileErrorToErrorName(base::File::Error error_code) {
+  namespace js = extensions::api::file_browser_private;
+  switch (error_code) {
+    case base::File::FILE_ERROR_NOT_FOUND:
+      return "NotFoundError";
+    case base::File::FILE_ERROR_INVALID_OPERATION:
+    case base::File::FILE_ERROR_EXISTS:
+    case base::File::FILE_ERROR_NOT_EMPTY:
+      return "InvalidModificationError";
+    case base::File::FILE_ERROR_NOT_A_DIRECTORY:
+    case base::File::FILE_ERROR_NOT_A_FILE:
+      return "TypeMismatchError";
+    case base::File::FILE_ERROR_ACCESS_DENIED:
+      return "NoModificationAllowedError";
+    case base::File::FILE_ERROR_FAILED:
+      return "InvalidStateError";
+    case base::File::FILE_ERROR_ABORT:
+      return "AbortError";
+    case base::File::FILE_ERROR_SECURITY:
+      return "SecurityError";
+    case base::File::FILE_ERROR_NO_SPACE:
+      return "QuotaExceededError";
+    case base::File::FILE_ERROR_INVALID_URL:
+      return "EncodingError";
+    default:
+      return "InvalidModificationError";
+  }
+}
+
 void GrantAccessForAddedProfileToRunningInstance(Profile* added_profile,
                                                  Profile* running_profile) {
   extensions::ProcessManager* const process_manager =
@@ -482,8 +511,7 @@ void EventRouter::OnCopyCompleted(int copy_id,
   } else {
     // Send error event.
     status.type = file_browser_private::COPY_PROGRESS_STATUS_TYPE_ERROR;
-    status.error.reset(
-        new int(fileapi::FileErrorToWebFileError(error)));
+    status.error.reset(new std::string(FileErrorToErrorName(error)));
   }
 
   BroadcastEvent(
