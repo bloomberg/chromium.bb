@@ -27,6 +27,7 @@
 
 namespace WebCore {
 
+class Document;
 class Element;
 class KURL;
 class StyleFetchedImage;
@@ -35,13 +36,13 @@ class RenderObject;
 
 class CSSImageValue : public CSSValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSImageValue> create(const KURL& url)
+    static PassRefPtrWillBeRawPtr<CSSImageValue> create(const KURL& url, StyleImage* image = 0)
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSImageValue(url));
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSImageValue(url, url, image));
     }
-    static PassRefPtrWillBeRawPtr<CSSImageValue> create(const KURL& url, StyleImage* image)
+    static PassRefPtrWillBeRawPtr<CSSImageValue> create(const String& rawValue, const KURL& url, StyleImage* image = 0)
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSImageValue(url, image));
+        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSImageValue(rawValue, url, image));
     }
     ~CSSImageValue();
 
@@ -50,7 +51,9 @@ public:
     // Returns a StyleFetchedImage if the image is cached already, otherwise a StylePendingImage.
     StyleImage* cachedOrPendingImage();
 
-    const String& url() { return m_url; }
+    const String& url() { return m_absoluteURL; }
+
+    void reResolveURL(const Document&);
 
     String customCSSText() const;
 
@@ -67,10 +70,10 @@ public:
     void traceAfterDispatch(Visitor*);
 
 private:
-    explicit CSSImageValue(const KURL&);
-    CSSImageValue(const KURL&, StyleImage*);
+    CSSImageValue(const String& rawValue, const KURL&, StyleImage*);
 
-    String m_url;
+    String m_relativeURL;
+    String m_absoluteURL;
     RefPtr<StyleImage> m_image;
     bool m_accessedImage;
     AtomicString m_initiatorName;

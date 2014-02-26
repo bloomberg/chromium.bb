@@ -33,18 +33,12 @@
 
 namespace WebCore {
 
-CSSImageValue::CSSImageValue(const KURL& url)
+CSSImageValue::CSSImageValue(const String& rawValue, const KURL& url, StyleImage* image)
     : CSSValue(ImageClass)
-    , m_url(url.string())
-    , m_accessedImage(false)
-{
-}
-
-CSSImageValue::CSSImageValue(const KURL& url, StyleImage* image)
-    : CSSValue(ImageClass)
-    , m_url(url.string())
+    , m_relativeURL(rawValue)
+    , m_absoluteURL(url.string())
     , m_image(image)
-    , m_accessedImage(true)
+    , m_accessedImage(image)
 {
 }
 
@@ -67,7 +61,7 @@ StyleFetchedImage* CSSImageValue::cachedImage(ResourceFetcher* fetcher, const Re
     if (!m_accessedImage) {
         m_accessedImage = true;
 
-        FetchRequest request(ResourceRequest(m_url), m_initiatorName.isEmpty() ? FetchInitiatorTypeNames::css : m_initiatorName, options);
+        FetchRequest request(ResourceRequest(m_absoluteURL), m_initiatorName.isEmpty() ? FetchInitiatorTypeNames::css : m_initiatorName, options);
 
         if (options.corsEnabled == IsCORSEnabled)
             request.setCrossOriginAccessControl(fetcher->document()->securityOrigin(), options.allowCredentials);
@@ -90,18 +84,18 @@ bool CSSImageValue::hasFailedOrCanceledSubresources() const
 
 bool CSSImageValue::equals(const CSSImageValue& other) const
 {
-    return m_url == other.m_url;
+    return m_absoluteURL == other.m_absoluteURL;
 }
 
 String CSSImageValue::customCSSText() const
 {
-    return "url(" + quoteCSSURLIfNeeded(m_url) + ")";
+    return "url(" + quoteCSSURLIfNeeded(m_absoluteURL) + ")";
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSImageValue::cloneForCSSOM() const
 {
     // NOTE: We expose CSSImageValues as URI primitive values in CSSOM to maintain old behavior.
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> uriValue = CSSPrimitiveValue::create(m_url, CSSPrimitiveValue::CSS_URI);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> uriValue = CSSPrimitiveValue::create(m_absoluteURL, CSSPrimitiveValue::CSS_URI);
     uriValue->setCSSOMSafe();
     return uriValue.release();
 }
@@ -114,6 +108,16 @@ bool CSSImageValue::knownToBeOpaque(const RenderObject* renderer) const
 void CSSImageValue::traceAfterDispatch(Visitor* visitor)
 {
     CSSValue::traceAfterDispatch(visitor);
+}
+
+void CSSImageValue::reResolveURL(const Document& document)
+{
+    KURL url = document.completeURL(m_relativeURL);
+    if (url == m_absoluteURL)
+        return;
+    m_absoluteURL = url.string();
+    m_accessedImage = false;
+    m_image.clear();
 }
 
 } // namespace WebCore

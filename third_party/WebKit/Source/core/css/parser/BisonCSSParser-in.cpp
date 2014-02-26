@@ -1815,7 +1815,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
             if (value->unit == CSSPrimitiveValue::CSS_URI) {
                 String uri = value->string;
                 if (!uri.isNull())
-                    image = CSSImageValue::create(completeURL(uri));
+                    image = CSSImageValue::create(uri, completeURL(uri));
             } else if (value->unit == CSSParserValue::Function && equalIgnoringCase(value->function->name, "-webkit-image-set(")) {
                 image = parseImageSet(m_valueList.get());
                 if (!image)
@@ -1931,7 +1931,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
             parsedValue = cssValuePool().createIdentifierValue(CSSValueNone);
             m_valueList->next();
         } else if (value->unit == CSSPrimitiveValue::CSS_URI) {
-            parsedValue = CSSImageValue::create(completeURL(value->string));
+            parsedValue = CSSImageValue::create(value->string, completeURL(value->string));
             m_valueList->next();
         } else if (isGeneratedImageValue(value)) {
             if (parseGeneratedImage(m_valueList.get(), parsedValue))
@@ -3443,7 +3443,7 @@ bool CSSPropertyParser::parseContent(CSSPropertyID propId, bool important)
         RefPtrWillBeRawPtr<CSSValue> parsedValue;
         if (val->unit == CSSPrimitiveValue::CSS_URI) {
             // url
-            parsedValue = CSSImageValue::create(completeURL(val->string));
+            parsedValue = CSSImageValue::create(val->string, completeURL(val->string));
         } else if (val->unit == CSSParserValue::Function) {
             // attr(X) | counter(X [,Y]) | counters(X, Y, [,Z]) | -webkit-gradient(...)
             CSSParserValueList* args = val->function->args.get();
@@ -3547,7 +3547,7 @@ bool CSSPropertyParser::parseFillImage(CSSParserValueList* valueList, RefPtrWill
         return true;
     }
     if (valueList->current()->unit == CSSPrimitiveValue::CSS_URI) {
-        value = CSSImageValue::create(completeURL(valueList->current()->string));
+        value = CSSImageValue::create(valueList->current()->string, completeURL(valueList->current()->string));
         return true;
     }
 
@@ -7058,7 +7058,7 @@ bool BorderImageParseContext::buildFromParser(CSSPropertyParser& parser, CSSProp
 
         if (!context.canAdvance() && context.allowImage()) {
             if (val->unit == CSSPrimitiveValue::CSS_URI) {
-                context.commitImage(CSSImageValue::create(parser.m_context.completeURL(val->string)));
+                context.commitImage(CSSImageValue::create(val->string, parser.m_context.completeURL(val->string)));
             } else if (isGeneratedImageValue(val)) {
                 RefPtrWillBeRawPtr<CSSValue> value;
                 if (parser.parseGeneratedImage(parser.m_valueList.get(), value))
@@ -8340,7 +8340,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseImageSet(CSSParserValue
         if (arg->unit != CSSPrimitiveValue::CSS_URI)
             return nullptr;
 
-        RefPtrWillBeRawPtr<CSSImageValue> image = CSSImageValue::create(completeURL(arg->string));
+        RefPtrWillBeRawPtr<CSSImageValue> image = CSSImageValue::create(arg->string, completeURL(arg->string));
         imageSet->append(image);
 
         arg = functionArgs->next();

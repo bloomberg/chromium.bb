@@ -36,6 +36,7 @@
 #include "core/accessibility/AXObjectCache.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/css/CSSAnimations.h"
+#include "core/css/CSSImageValue.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/CSSValuePool.h"
 #include "core/css/PropertySetCSSStyleDeclaration.h"
@@ -3053,6 +3054,33 @@ void Element::didRemoveAttribute(const QualifiedName& name)
     dispatchSubtreeModifiedEvent();
 }
 
+static bool needsURLResolutionForInlineStyle(const Element& element, const Document& oldDocument, const Document& newDocument)
+{
+    if (oldDocument == newDocument)
+        return false;
+    if (oldDocument.baseURL() == newDocument.baseURL())
+        return false;
+    const StylePropertySet* style = element.inlineStyle();
+    if (!style)
+        return false;
+    for (unsigned i = 0; i < style->propertyCount(); ++i) {
+        // FIXME: Should handle all URL-based properties: CSSImageSetValue, CSSCursorImageValue, etc.
+        if (style->propertyAt(i).value()->isImageValue())
+            return true;
+    }
+    return false;
+}
+
+static void reResolveURLsInInlineStyle(const Document& document, MutableStylePropertySet& style)
+{
+    for (unsigned i = 0; i < style.propertyCount(); ++i) {
+        StylePropertySet::PropertyReference property = style.propertyAt(i);
+        // FIXME: Should handle all URL-based properties: CSSImageSetValue, CSSCursorImageValue, etc.
+        if (property.value()->isImageValue())
+            toCSSImageValue(property.value())->reResolveURL(document);
+    }
+}
+
 void Element::didMoveToNewDocument(Document& oldDocument)
 {
     Node::didMoveToNewDocument(oldDocument);
@@ -3066,6 +3094,9 @@ void Element::didMoveToNewDocument(Document& oldDocument)
         if (hasClass())
             setAttribute(HTMLNames::classAttr, getClassAttribute());
     }
+
+    if (needsURLResolutionForInlineStyle(*this, oldDocument, document()))
+        reResolveURLsInInlineStyle(document(), *ensureMutableInlineStyle());
 }
 
 void Element::updateNamedItemRegistration(const AtomicString& oldName, const AtomicString& newName)
@@ -3246,7 +3277,7 @@ void Element::cloneAttributesFromElement(const Element& other)
         && !other.m_elementData->presentationAttributeStyle())
         const_cast<Element&>(other).m_elementData = static_cast<const UniqueElementData*>(other.m_elementData.get())->makeShareableCopy();
 
-    if (!other.m_elementData->isUnique() && !ownerDocumentsHaveDifferentCaseSensitivity)
+    if (!other.m_elementData->isUnique() && !ownerDocumentsHaveDifferentCaseSensitivity && !needsURLResolutionForInlineStyle(other, other.document(), document()))
         m_elementData = other.m_elementData;
     else
         m_elementData = other.m_elementData->makeUniqueCopy();
