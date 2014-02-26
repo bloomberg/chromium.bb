@@ -789,6 +789,14 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   return -1;
 }
 
+- (NSArray*)selectedViews {
+  NSMutableArray* views = [NSMutableArray arrayWithCapacity:[tabArray_ count]];
+  for (TabController* tab in tabArray_.get()) {
+    if ([tab selected])
+      [views addObject:[tab tabView]];
+  }
+  return views;
+}
 
 // Returns the view at the given index, using the array of TabControllers to
 // get the associated view. Returns nil if out of range.
@@ -1716,8 +1724,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   [self layoutTabs];
 }
 
-- (void)setFrameOfActiveTab:(NSRect)frame {
-  NSView* view = [self activeTabView];
+- (void)setFrame:(NSRect)frame ofTabView:(NSView*)view {
   NSValue* identifier = [NSValue valueWithPointer:view];
   [targetFrames_ setObject:[NSValue valueWithRect:frame]
                     forKey:identifier];
@@ -1728,6 +1735,14 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   return tabStripModel_;
 }
 
+- (NSArray*)tabViews {
+  NSMutableArray* views = [NSMutableArray arrayWithCapacity:[tabArray_ count]];
+  for (TabController* tab in tabArray_.get()) {
+    [views addObject:[tab tabView]];
+  }
+  return views;
+}
+
 - (NSView*)activeTabView {
   int activeIndex = tabStripModel_->active_index();
   // Take closing tabs into account. They can't ever be selected.
@@ -1735,16 +1750,18 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   return [self viewAtIndex:activeIndex];
 }
 
-// Find the model index based on the x coordinate of the placeholder. If there
-// is no placeholder, this returns the end of the tab strip. Closing tabs are
-// not considered in computing the index.
 - (int)indexOfPlaceholder {
-  double placeholderX = placeholderFrame_.origin.x;
-  int index = 0;
-  int location = 0;
   // Use |tabArray_| here instead of the tab strip count in order to get the
   // correct index when there are closing tabs to the left of the placeholder.
   const int count = [tabArray_ count];
+
+  // No placeholder, return the end of the strip.
+  if (placeholderTab_ == nil)
+    return count;
+
+  double placeholderX = placeholderFrame_.origin.x;
+  int index = 0;
+  int location = 0;
   while (index < count) {
     // Ignore closing tabs for simplicity. The only drawback of this is that
     // if the placeholder is placed right before one or several contiguous
@@ -1790,10 +1807,10 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
 // new window. Mini-tabs are either app or pinned tabs; the app state is stored
 // by the |contents|, but the |pinned| state is the caller's responsibility.
 - (void)dropWebContents:(WebContents*)contents
+                atIndex:(int)modelIndex
               withFrame:(NSRect)frame
-            asPinnedTab:(BOOL)pinned {
-  int modelIndex = [self indexOfPlaceholder];
-
+            asPinnedTab:(BOOL)pinned
+               activate:(BOOL)activate {
   // Mark that the new tab being created should start at |frame|. It will be
   // reset as soon as the tab has been positioned.
   droppedTabFrame_ = frame;
@@ -1801,8 +1818,10 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   // Insert it into this tab strip. We want it in the foreground and to not
   // inherit the current tab's group.
   tabStripModel_->InsertWebContentsAt(
-      modelIndex, contents,
-      TabStripModel::ADD_ACTIVE | (pinned ? TabStripModel::ADD_PINNED : 0));
+      modelIndex,
+      contents,
+      (activate ? TabStripModel::ADD_ACTIVE : TabStripModel::ADD_NONE) |
+          (pinned ? TabStripModel::ADD_PINNED : TabStripModel::ADD_NONE));
 }
 
 // Called when the tab strip view changes size. As we only registered for

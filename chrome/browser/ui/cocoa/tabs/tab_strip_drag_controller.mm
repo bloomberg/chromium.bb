@@ -11,6 +11,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_controller_target.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_window_controller.h"
+#import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 
 const CGFloat kTearDistance = 36.0;
 const NSTimeInterval kTearDuration = 0.333;
@@ -232,8 +233,12 @@ const NSTimeInterval kTearDuration = 0.333;
     // go away (it's been autoreleased) so we need to ensure we don't reference
     // it any more. In that case the new controller becomes our source
     // controller.
+    NSArray* tabs = [draggedTab_ selected] ? [tabStrip_ selectedViews]
+                                           : @[ [draggedTab_ tabView] ];
     draggedController_ =
-        [sourceController_ detachTabToNewWindow:[draggedTab_ tabView]];
+        [sourceController_ detachTabsToNewWindow:tabs
+                                      draggedTab:[draggedTab_ tabView]];
+
     dragWindow_ = [draggedController_ window];
     [dragWindow_ setAlphaValue:0.0];
     if (![sourceController_ hasLiveTabs]) {
@@ -330,8 +335,11 @@ const NSTimeInterval kTearDuration = 0.333;
 
     // Compute where placeholder should go and insert it into the
     // destination tab strip.
-    TabView* draggedTabView = (TabView*)[draggedController_ activeTabView];
-    NSRect tabFrame = [draggedTabView frame];
+    // The placeholder frame is the rect that contains all dragged tabs.
+    NSRect tabFrame = NSZeroRect;
+    for (NSView* tabView in [draggedController_ tabViews]) {
+      tabFrame = NSUnionRect(tabFrame, [tabView frame]);
+    }
     tabFrame.origin = [dragWindow_ convertBaseToScreen:tabFrame.origin];
     tabFrame.origin = [[targetController_ window]
                         convertScreenToBase:tabFrame.origin];
@@ -379,15 +387,14 @@ const NSTimeInterval kTearDuration = 0.333;
       // Move tab to new location.
       DCHECK([sourceController_ numberOfTabs]);
       TabWindowController* dropController = sourceController_;
-      [dropController moveTabView:[dropController activeTabView]
-                   fromController:nil];
+      [dropController moveTabViews:@[ [dropController activeTabView] ]
+                    fromController:nil];
     }
   } else if (targetController_) {
     // Move between windows. If |targetController_| is nil, we're not dropping
     // into any existing window.
-    NSView* draggedTabView = [draggedController_ activeTabView];
-    [targetController_ moveTabView:draggedTabView
-                    fromController:draggedController_];
+    [targetController_ moveTabViews:[draggedController_ tabViews]
+                     fromController:draggedController_];
     // Force redraw to avoid flashes of old content before returning to event
     // loop.
     [[targetController_ window] display];

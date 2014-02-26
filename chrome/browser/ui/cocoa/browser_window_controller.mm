@@ -1283,57 +1283,70 @@ enum {
 // placed into this one. The implementation will call |-removePlaceholder| since
 // the drag is now complete.  This also calls |-layoutTabs| internally so
 // clients do not need to call it again.
-- (void)moveTabView:(NSView*)view
-     fromController:(TabWindowController*)dragController {
+- (void)moveTabViews:(NSArray*)views
+      fromController:(TabWindowController*)dragController {
   if (dragController) {
-    // Moving between windows. Figure out the WebContents to drop into our tab
-    // model from the source window's model.
+    // Moving between windows.
+    NSView* activeTabView = [dragController activeTabView];
     BrowserWindowController* dragBWC =
         base::mac::ObjCCastStrict<BrowserWindowController>(dragController);
-    int index = [dragBWC->tabStripController_ modelIndexForTabView:view];
-    WebContents* contents =
-        dragBWC->browser_->tab_strip_model()->GetWebContentsAt(index);
-    // The tab contents may have gone away if given a window.close() while it
-    // is being dragged. If so, bail, we've got nothing to drop.
-    if (!contents)
-      return;
 
-    // Convert |view|'s frame (which starts in the source tab strip's coordinate
-    // system) to the coordinate system of the destination tab strip. This needs
-    // to be done before being detached so the window transforms can be
-    // performed.
-    NSRect destinationFrame = [view frame];
-    NSPoint tabOrigin = destinationFrame.origin;
-    tabOrigin = [[dragController tabStripView] convertPoint:tabOrigin
-                                                     toView:nil];
-    tabOrigin = [[view window] convertBaseToScreen:tabOrigin];
-    tabOrigin = [[self window] convertScreenToBase:tabOrigin];
-    tabOrigin = [[self tabStripView] convertPoint:tabOrigin fromView:nil];
-    destinationFrame.origin = tabOrigin;
+    // We will drop the tabs starting at indexOfPlaceholder, and increment from
+    // there. We remove the placehoder before dropping the tabs, so that the
+    // new tab animation's destination frame is correct.
+    int tabIndex = [tabStripController_ indexOfPlaceholder];
+    [self removePlaceholder];
 
-    // Before the tab is detached from its originating tab strip, store the
-    // pinned state so that it can be maintained between the windows.
-    bool isPinned = dragBWC->browser_->tab_strip_model()->IsTabPinned(index);
+    for (NSView* view in views) {
+      // Figure out the WebContents to drop into our tab model from the source
+      // window's model.
+      int index = [dragBWC->tabStripController_ modelIndexForTabView:view];
+      WebContents* contents =
+          dragBWC->browser_->tab_strip_model()->GetWebContentsAt(index);
+      // The tab contents may have gone away if given a window.close() while it
+      // is being dragged. If so, bail, we've got nothing to drop.
+      if (!contents)
+        continue;
 
-    // Now that we have enough information about the tab, we can remove it from
-    // the dragging window. We need to do this *before* we add it to the new
-    // window as this will remove the WebContents' delegate.
-    [dragController detachTabView:view];
+      // Convert |view|'s frame (which starts in the source tab strip's
+      // coordinate system) to the coordinate system of the destination tab
+      // strip. This needs to be done before being detached so the window
+      // transforms can be performed.
+      NSRect destinationFrame = [view frame];
+      NSPoint tabOrigin = destinationFrame.origin;
+      tabOrigin = [[dragController tabStripView] convertPoint:tabOrigin
+                                                       toView:nil];
+      tabOrigin = [[dragController window] convertBaseToScreen:tabOrigin];
+      tabOrigin = [[self window] convertScreenToBase:tabOrigin];
+      tabOrigin = [[self tabStripView] convertPoint:tabOrigin fromView:nil];
+      destinationFrame.origin = tabOrigin;
 
-    // Deposit it into our model at the appropriate location (it already knows
-    // where it should go from tracking the drag). Doing this sets the tab's
-    // delegate to be the Browser.
-    [tabStripController_ dropWebContents:contents
-                               withFrame:destinationFrame
-                             asPinnedTab:isPinned];
+      // Before the tab is detached from its originating tab strip, store the
+      // pinned state so that it can be maintained between the windows.
+      bool isPinned = dragBWC->browser_->tab_strip_model()->IsTabPinned(index);
+
+      // Now that we have enough information about the tab, we can remove it
+      // from the dragging window. We need to do this *before* we add it to the
+      // new window as this will remove the WebContents' delegate.
+      [dragController detachTabView:view];
+
+      // Deposit it into our model at the appropriate location (it already knows
+      // where it should go from tracking the drag). Doing this sets the tab's
+      // delegate to be the Browser.
+      [tabStripController_ dropWebContents:contents
+                                   atIndex:tabIndex++
+                                 withFrame:destinationFrame
+                               asPinnedTab:isPinned
+                                  activate:view == activeTabView];
+    }
   } else {
     // Moving within a window.
-    int index = [tabStripController_ modelIndexForTabView:view];
-    [tabStripController_ moveTabFromIndex:index];
+    for (NSView* view in views) {
+      int index = [tabStripController_ modelIndexForTabView:view];
+      [tabStripController_ moveTabFromIndex:index];
+    }
+    [self removePlaceholder];
   }
-
-  // Remove the placeholder since the drag is now complete.
-  [self removePlaceholder];
 }
 
 // Tells the tab strip to forget about this tab in preparation for it being
@@ -1341,6 +1354,10 @@ enum {
 - (void)detachTabView:(NSView*)view {
   int index = [tabStripController_ modelIndexForTabView:view];
   browser_->tab_strip_model()->DetachWebContentsAt(index);
+}
+
+- (NSArray*)tabViews {
+  return [tabStripController_ tabViews];
 }
 
 - (NSView*)activeTabView {
@@ -1364,52 +1381,50 @@ enum {
   [tabStripController_ layoutTabs];
 }
 
-- (TabWindowController*)detachTabToNewWindow:(TabView*)tabView {
+- (TabWindowController*)detachTabsToNewWindow:(NSArray*)tabViews
+                                   draggedTab:(NSView*)draggedTab {
+  DCHECK_GT([tabViews count], 0U);
+
   // Disable screen updates so that this appears as a single visual change.
   gfx::ScopedNSDisableScreenUpdates disabler;
-
-  // Fetch the tab contents for the tab being dragged.
-  int index = [tabStripController_ modelIndexForTabView:tabView];
-  WebContents* contents = browser_->tab_strip_model()->GetWebContentsAt(index);
 
   // Set the window size. Need to do this before we detach the tab so it's
   // still in the window. We have to flip the coordinates as that's what
   // is expected by the Browser code.
-  NSWindow* sourceWindow = [tabView window];
+  NSWindow* sourceWindow = [draggedTab window];
   NSRect windowRect = [sourceWindow frame];
   NSScreen* screen = [sourceWindow screen];
   windowRect.origin.y = NSHeight([screen frame]) - NSMaxY(windowRect);
   gfx::Rect browserRect(windowRect.origin.x, windowRect.origin.y,
                         NSWidth(windowRect), NSHeight(windowRect));
 
-  NSRect sourceTabRect = [tabView frame];
-  NSView* tabStrip = [self tabStripView];
-
-  // Pushes tabView's frame back inside the tabstrip.
-  NSSize tabOverflow =
-      [self overflowFrom:[tabStrip convertRect:sourceTabRect toView:nil]
-                      to:[tabStrip frame]];
-  NSRect tabRect = NSOffsetRect(sourceTabRect,
-                                -tabOverflow.width, -tabOverflow.height);
-
-  // Before detaching the tab, store the pinned state.
-  bool isPinned = browser_->tab_strip_model()->IsTabPinned(index);
-
-  // Detach it from the source window, which just updates the model without
-  // deleting the tab contents. This needs to come before creating the new
-  // Browser because it clears the WebContents' delegate, which gets hooked
-  // up during creation of the new window.
-  browser_->tab_strip_model()->DetachWebContentsAt(index);
-
-  // Create the new window with a single tab in its model, the one being
-  // dragged.
-  TabStripModelDelegate::NewStripContents item;
-  item.web_contents = contents;
-  item.add_types = TabStripModel::ADD_ACTIVE |
-                   (isPinned ? TabStripModel::ADD_PINNED
-                             : TabStripModel::ADD_NONE);
   std::vector<TabStripModelDelegate::NewStripContents> contentses;
-  contentses.push_back(item);
+  TabStripModel* model = browser_->tab_strip_model();
+
+  for (TabView* tabView in tabViews) {
+    // Fetch the tab contents for the tab being dragged.
+    int index = [tabStripController_ modelIndexForTabView:tabView];
+    bool isPinned = model->IsTabPinned(index);
+    bool isActive = (index == model->active_index());
+
+    TabStripModelDelegate::NewStripContents item;
+    item.web_contents = model->GetWebContentsAt(index);
+    item.add_types =
+        (isActive ? TabStripModel::ADD_ACTIVE : TabStripModel::ADD_NONE) |
+        (isPinned ? TabStripModel::ADD_PINNED : TabStripModel::ADD_NONE);
+    contentses.push_back(item);
+  }
+
+  for (TabView* tabView in tabViews) {
+    int index = [tabStripController_ modelIndexForTabView:tabView];
+    // Detach it from the source window, which just updates the model without
+    // deleting the tab contents. This needs to come before creating the new
+    // Browser because it clears the WebContents' delegate, which gets hooked
+    // up during creation of the new window.
+    model->DetachWebContentsAt(index);
+  }
+
+  // Create a new window with the dragged tabs in its model.
   Browser* newBrowser = browser_->tab_strip_model()->delegate()->
       CreateNewStripWithContents(contentses, browserRect, false);
 
@@ -1419,11 +1434,27 @@ enum {
           [newBrowser->window()->GetNativeWindow() delegate]);
   DCHECK(controller && [controller isKindOfClass:[TabWindowController class]]);
 
-  // Force the added tab to the right size (remove stretching.)
-  tabRect.size.height = [TabStripController defaultTabHeight];
-
   // And make sure we use the correct frame in the new view.
-  [[controller tabStripController] setFrameOfActiveTab:tabRect];
+  TabStripController* tabStripController = [controller tabStripController];
+  NSView* tabStrip = [self tabStripView];
+  NSEnumerator* tabEnumerator = [tabViews objectEnumerator];
+  for (NSView* newView in [tabStripController tabViews]) {
+    NSView* oldView = [tabEnumerator nextObject];
+    if (oldView) {
+      // Pushes tabView's frame back inside the tabstrip.
+      NSRect sourceTabRect = [oldView frame];
+      NSSize tabOverflow =
+          [self overflowFrom:[tabStrip convertRect:sourceTabRect toView:nil]
+                          to:[tabStrip frame]];
+      NSRect tabRect =
+          NSOffsetRect(sourceTabRect, -tabOverflow.width, -tabOverflow.height);
+      // Force the added tab to the right size (remove stretching.)
+      tabRect.size.height = [TabStripController defaultTabHeight];
+
+      [tabStripController setFrame:tabRect ofTabView:newView];
+    }
+  }
+
   return controller;
 }
 

@@ -187,9 +187,14 @@
   return NO;
 }
 
-- (void)moveTabView:(NSView*)view
-     fromController:(TabWindowController*)dragController {
+- (void)moveTabViews:(NSArray*)views
+      fromController:(TabWindowController*)dragController {
   NOTIMPLEMENTED();
+}
+
+- (NSArray*)tabViews {
+  NOTIMPLEMENTED();
+  return nil;
 }
 
 - (NSView*)activeTabView {
@@ -202,7 +207,8 @@
   NOTIMPLEMENTED();
 }
 
-- (TabWindowController*)detachTabToNewWindow:(TabView*)tabView {
+- (TabWindowController*)detachTabsToNewWindow:(NSArray*)tabViews
+                                   draggedTab:(NSView*)draggedTab {
   // subclass must implement
   NOTIMPLEMENTED();
   return NULL;

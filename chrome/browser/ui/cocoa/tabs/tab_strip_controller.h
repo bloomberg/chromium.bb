@@ -159,18 +159,25 @@ class WebContents;
 // Returns the model behind this controller.
 - (TabStripModel*)tabStripModel;
 
+// Returns all tab views.
+- (NSArray*)tabViews;
+
 // Return the view for the currently active tab.
 - (NSView*)activeTabView;
 
-// Set the frame of the active tab, also updates the internal frame dict.
-- (void)setFrameOfActiveTab:(NSRect)frame;
+// Find the model index based on the x coordinate of the placeholder. If there
+// is no placeholder, this returns the end of the tab strip. Closing tabs are
+// not considered in computing the index.
+- (int)indexOfPlaceholder;
+
+// Set the frame of |tabView|, also updates the internal frame dict.
+- (void)setFrame:(NSRect)frame ofTabView:(NSView*)tabView;
 
 // Move the given tab at index |from| in this window to the location of the
 // current placeholder.
 - (void)moveTabFromIndex:(NSInteger)from;
 
-// Drop a given WebContents at the location of the current placeholder.
-// If there is no placeholder, it will go at the end. Used when dragging from
+// Drop a given WebContents at |modelIndex|. Used when dragging from
 // another window when we don't have access to the WebContents as part of our
 // strip. |frame| is in the coordinate system of the tab strip view and
 // represents where the user dropped the new tab so it can be animated into its
@@ -178,15 +185,21 @@ class WebContents;
 // its previous window, setting |pinned| to YES will propagate that state to the
 // new window. Mini-tabs are either app or pinned tabs; the app state is stored
 // by the |contents|, but the |pinned| state is the caller's responsibility.
+// Setting |activate| to YES will make the new tab active.
 - (void)dropWebContents:(content::WebContents*)contents
+                atIndex:(int)modelIndex
               withFrame:(NSRect)frame
-            asPinnedTab:(BOOL)pinned;
+            asPinnedTab:(BOOL)pinned
+               activate:(BOOL)activate;
 
 // Returns the index of the subview |view|. Returns -1 if not present. Takes
 // closing tabs into account such that this index will correctly match the tab
 // model. If |view| is in the process of closing, returns -1, as closing tabs
 // are no longer in the model.
 - (NSInteger)modelIndexForTabView:(NSView*)view;
+
+// Returns all selected tab views.
+- (NSArray*)selectedViews;
 
 // Return the view at a given index.
 - (NSView*)viewAtIndex:(NSUInteger)index;

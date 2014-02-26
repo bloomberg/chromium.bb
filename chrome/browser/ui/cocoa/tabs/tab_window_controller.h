@@ -59,10 +59,11 @@
 // Layout the tabs based on the current ordering of the model.
 - (void)layoutTabs;
 
-// Creates a new window by pulling the given tab out and placing it in
+// Creates a new window by pulling the given tabs out and placing it in
 // the new window. Returns the controller for the new window. The size of the
 // new window will be the same size as this window.
-- (TabWindowController*)detachTabToNewWindow:(TabView*)tabView;
+- (TabWindowController*)detachTabsToNewWindow:(NSArray*)tabViews
+                                   draggedTab:(NSView*)draggedTab;
 
 // Make room in the tab strip for |tab| at the given x coordinate. Will hide the
 // new tab button while there's a placeholder. Subclasses need to call the
@@ -99,15 +100,15 @@
 // source.  Return YES if so.  The default implementation returns NO.
 - (BOOL)canReceiveFrom:(TabWindowController*)source;
 
-// Move a given tab view to the location of the current placeholder. If there is
+// Move given tab views to the location of the current placeholder. If there is
 // no placeholder, it will go at the end. |controller| is the window controller
 // of a tab being dropped from a different window. It will be nil if the drag is
 // within the window, otherwise the tab is removed from that window before being
 // placed into this one. The implementation will call |-removePlaceholder| since
 // the drag is now complete.  This also calls |-layoutTabs| internally so
 // clients do not need to call it again.
-- (void)moveTabView:(NSView*)view
-     fromController:(TabWindowController*)controller;
+- (void)moveTabViews:(NSArray*)views
+      fromController:(TabWindowController*)controller;
 
 // Number of tabs in the tab strip. Useful, for example, to know if we're
 // dragging the only tab in the window. This includes pinned tabs (both live
@@ -118,6 +119,9 @@
 // the notion of tabs in the tab strip that are placeholders but currently have
 // no content.
 - (BOOL)hasLiveTabs;
+
+// Returns all tab views.
+- (NSArray*)tabViews;
 
 // Return the view of the active tab.
 - (NSView*)activeTabView;
