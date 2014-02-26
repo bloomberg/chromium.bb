@@ -366,7 +366,6 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_AUTOCLICK_DELAY_VERY_LONG },
     { "enableContentProtectionAttestation",
       IDS_OPTIONS_ENABLE_CONTENT_PROTECTION_ATTESTATION },
-    { "enableHotwordAppList", IDS_OPTIONS_ENABLE_HOTWORD_APP_LIST },
     { "factoryResetHeading", IDS_OPTIONS_FACTORY_RESET_HEADING },
     { "factoryResetTitle", IDS_OPTIONS_FACTORY_RESET },
     { "factoryResetRestart", IDS_OPTIONS_FACTORY_RESET_BUTTON },
@@ -533,12 +532,6 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   magnifier_list->Append(option_partial.release());
 
   values->Set("magnifierList", magnifier_list.release());
-
-  scoped_ptr<base::FundamentalValue> should_show_app_list_hotword(
-      new base::FundamentalValue(
-          HotwordService::DoesHotwordSupportLanguage(profile)));
-  values->Set(
-      "shouldShowAppListHotword", should_show_app_list_hotword.release());
 #endif
 
 #if defined(OS_MACOSX)

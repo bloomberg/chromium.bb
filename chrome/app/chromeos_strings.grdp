@@ -2457,9 +2457,6 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_ENABLE_CONTENT_PROTECTION_ATTESTATION" desc="description label for verified access about premium contents">
     Enable Verified Access
   </message>
-  <message name="IDS_OPTIONS_ENABLE_HOTWORD_APP_LIST" desc="description label for the checkbox to enable/disable hotword in the app list search">
-    Enable "Ok, Google" to start a voice search in the app launcher.
-  </message>
   <message name="IDS_NETWORK_RECONNECT_TITLE" desc="In network menu, title of the reconnect button that allows user to retry connection on error.">
     Reconnect
   </message>

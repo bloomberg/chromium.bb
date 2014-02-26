@@ -247,10 +247,6 @@ cr.define('options', function() {
             '#enable-screen-lock + span > .controlled-setting-indicator').
             setAttribute('textshared',
                          loadTimeData.getString('screenLockShared'));
-
-        $('hotword-app-list').hidden =
-            !loadTimeData.getBoolean('shouldShowAppListHotword');
-
       } else {
         $('import-data').onclick = function(event) {
           ImportDataOverlay.show();
