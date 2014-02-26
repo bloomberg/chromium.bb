@@ -178,7 +178,7 @@ class AudioManagerAndroid {
     private boolean[] mAudioDevices = new boolean[DEVICE_COUNT];
 
     private final ContentResolver mContentResolver;
-    private SettingsObserver mSettingsObserver = null;
+    private ContentObserver mSettingsObserver = null;
     private HandlerThread mSettingsObserverThread = null;
     private int mCurrentVolume;
 
@@ -233,21 +233,6 @@ class AudioManagerAndroid {
         // removing a wired headset (Intent.ACTION_HEADSET_PLUG).
         registerForWiredHeadsetIntentBroadcast();
 
-        // Start observer for volume changes.
-        // TODO(henrika): try-catch parts below are added as a test to see if
-        // it avoids the crash in init() reported in http://crbug.com/336600.
-        // Should be removed if possible when we understand the reason better.
-        try {
-            mSettingsObserverThread = new HandlerThread("SettingsObserver");
-            mSettingsObserverThread.start();
-            mSettingsObserver = new SettingsObserver(
-                new Handler(mSettingsObserverThread.getLooper()));
-        } catch (Exception e) {
-            // It is fine to rely on code below here to detect failure by
-            // observing mSettingsObserver==null.
-            Log.wtf(TAG, "SettingsObserver exception: ", e);
-        }
-
         mIsInitialized = true;
 
         if (DEBUG) reportUpdate();
@@ -264,20 +249,7 @@ class AudioManagerAndroid {
         if (!mIsInitialized)
             return;
 
-        if (mSettingsObserverThread != null) {
-            mSettingsObserverThread.quit();
-            try {
-                mSettingsObserverThread.join();
-            } catch (Exception e) {
-                Log.wtf(TAG, "HandlerThread.join() exception: ", e);
-            }
-            mSettingsObserverThread = null;
-        }
-        if (mContentResolver != null) {
-            mContentResolver.unregisterContentObserver(mSettingsObserver);
-            mSettingsObserver = null;
-        }
-
+        stopObservingVolumeChanges();
         unregisterForWiredHeadsetIntentBroadcast();
         unregisterBluetoothIntentsIfNeeded();
 
@@ -319,11 +291,21 @@ class AudioManagerAndroid {
                 Log.wtf(TAG, "setMode exception: ", e);
                 logDeviceInfo();
             }
+
+            // Start observing volume changes to detect when the
+            // voice/communication stream volume is at its lowest level.
+            // It is only possible to pull down the volume slider to about 20%
+            // of the absolute minimum (slider at far left) in communication
+            // mode but we want to be able to mute it completely.
+            startObservingVolumeChanges();
+
         } else {
             if (mSavedAudioMode == AudioManager.MODE_INVALID) {
                 Log.wtf(TAG, "Audio mode has not yet been set!");
                 return;
             }
+
+            stopObservingVolumeChanges();
 
             // Restore previously stored audio states.
             setMicrophoneMute(mSavedIsMicrophoneMute);
@@ -1024,20 +1006,59 @@ class AudioManagerAndroid {
         Log.e(TAG, msg);
     }
 
-    private class SettingsObserver extends ContentObserver {
-        SettingsObserver(Handler handler) {
-            super(handler);
-            mContentResolver.registerContentObserver(Settings.System.CONTENT_URI, true, this);
-        }
+    /** Start thread which observes volume changes on the voice stream. */
+    private void startObservingVolumeChanges() {
+        if (DEBUG) logd("startObservingVolumeChanges");
+        if (mSettingsObserverThread != null)
+            return;
+        mSettingsObserverThread = new HandlerThread("SettingsObserver");
+        mSettingsObserverThread.start();
 
-        @Override
-        public void onChange(boolean selfChange) {
-            if (DEBUG) logd("SettingsObserver.onChange: " + selfChange);
-            super.onChange(selfChange);
-            int volume = mAudioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL);
-            if (DEBUG) logd("nativeSetMute: " + (volume == 0));
-            nativeSetMute(mNativeAudioManagerAndroid, (volume == 0));
+        mSettingsObserver = new ContentObserver(
+            new Handler(mSettingsObserverThread.getLooper())) {
+
+                @Override
+                public void onChange(boolean selfChange) {
+                    if (DEBUG) logd("SettingsObserver.onChange: " + selfChange);
+                    super.onChange(selfChange);
+
+                    // Ensure that the observer is activated during communication mode.
+                    if (mAudioManager.getMode() != AudioManager.MODE_IN_COMMUNICATION) {
+                        Log.wtf(TAG, "Only enable SettingsObserver in COMM mode!");
+                        return;
+                    }
+
+                    // Get stream volume for the voice stream and deliver callback if
+                    // the volume index is zero. It is not possible to move the volume
+                    // slider all the way down in communication mode but the callback
+                    // implementation can ensure that the volume is completely muted.
+                    int volume = mAudioManager.getStreamVolume(
+                        AudioManager.STREAM_VOICE_CALL);
+                    if (DEBUG) logd("nativeSetMute: " + (volume == 0));
+                    nativeSetMute(mNativeAudioManagerAndroid, (volume == 0));
+                }
+        };
+
+        mContentResolver.registerContentObserver(
+            Settings.System.CONTENT_URI, true, mSettingsObserver);
+    }
+
+    /** Quit observer thread and stop listening for volume changes. */
+    private void stopObservingVolumeChanges() {
+        if (DEBUG) logd("stopObservingVolumeChanges");
+        if (mSettingsObserverThread == null)
+            return;
+
+        mContentResolver.unregisterContentObserver(mSettingsObserver);
+        mSettingsObserver = null;
+
+        mSettingsObserverThread.quit();
+        try {
+            mSettingsObserverThread.join();
+        } catch (InterruptedException e) {
+            Log.wtf(TAG, "Thread.join() exception: ", e);
         }
+        mSettingsObserverThread = null;
     }
 
     private native void nativeSetMute(long nativeAudioManagerAndroid, boolean muted);
