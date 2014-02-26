@@ -22,7 +22,8 @@ NaClHostMessageFilter::NaClHostMessageFilter(
     bool is_off_the_record,
     const base::FilePath& profile_directory,
     net::URLRequestContextGetter* request_context)
-    : render_process_id_(render_process_id),
+    : BrowserMessageFilter(NaClHostMsgStart),
+      render_process_id_(render_process_id),
       off_the_record_(is_off_the_record),
       profile_directory_(profile_directory),
       request_context_(request_context),

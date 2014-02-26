@@ -12,7 +12,8 @@
 namespace content {
 
 ProfilerMessageFilter::ProfilerMessageFilter(int process_type)
-    : process_type_(process_type) {
+    : BrowserMessageFilter(ChildProcessMsgStart),
+      process_type_(process_type) {
 }
 
 void ProfilerMessageFilter::OnChannelConnected(int32 peer_pid) {

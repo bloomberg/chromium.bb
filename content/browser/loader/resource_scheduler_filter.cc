@@ -11,9 +11,17 @@
 #include "content/public/common/page_transition_types.h"
 
 namespace content {
+namespace {
+const uint32 kFilteredMessageClasses[] = {
+  FrameMsgStart,
+  ViewMsgStart,
+};
+}  // namespace
 
 ResourceSchedulerFilter::ResourceSchedulerFilter(int child_id)
-    : child_id_(child_id) {
+    : BrowserMessageFilter(
+          kFilteredMessageClasses, arraysize(kFilteredMessageClasses)),
+      child_id_(child_id) {
 }
 
 ResourceSchedulerFilter::~ResourceSchedulerFilter() {

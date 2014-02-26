@@ -10,7 +10,8 @@
 namespace content {
 
 DeviceOrientationMessageFilter::DeviceOrientationMessageFilter()
-    : is_started_(false) {
+    : BrowserMessageFilter(DeviceOrientationMsgStart),
+      is_started_(false) {
 }
 
 DeviceOrientationMessageFilter::~DeviceOrientationMessageFilter() {

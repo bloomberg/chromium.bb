@@ -15,7 +15,8 @@ MediaStreamDispatcherHost::MediaStreamDispatcherHost(
     int render_process_id,
     ResourceContext* resource_context,
     MediaStreamManager* media_stream_manager)
-    : render_process_id_(render_process_id),
+    : BrowserMessageFilter(MediaStreamMsgStart),
+      render_process_id_(render_process_id),
       resource_context_(resource_context),
       media_stream_manager_(media_stream_manager) {
 }

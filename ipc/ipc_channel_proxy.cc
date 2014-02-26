@@ -14,9 +14,100 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_message_start.h"
 #include "ipc/ipc_message_utils.h"
 
 namespace IPC {
+
+//------------------------------------------------------------------------------
+
+class ChannelProxy::Context::MessageFilterRouter {
+ public:
+  typedef std::vector<MessageFilter*> MessageFilters;
+
+  MessageFilterRouter() {}
+  ~MessageFilterRouter() {}
+
+  void AddFilter(MessageFilter* filter) {
+    // Determine if the filter should be applied to all messages, or only
+    // messages of a certain class.
+    std::vector<uint32> supported_message_classes;
+    if (filter->GetSupportedMessageClasses(&supported_message_classes)) {
+      DCHECK(!supported_message_classes.empty());
+      for (size_t i = 0; i < supported_message_classes.size(); ++i) {
+        const int message_class = supported_message_classes[i];
+        DCHECK(ValidMessageClass(message_class));
+        // Safely ignore repeated subscriptions to a given message class for the
+        // current filter being added.
+        if (!message_class_filters_[message_class].empty() &&
+            message_class_filters_[message_class].back() == filter) {
+          continue;
+        }
+        message_class_filters_[message_class].push_back(filter);
+      }
+    } else {
+      global_filters_.push_back(filter);
+    }
+  }
+
+  void RemoveFilter(MessageFilter* filter) {
+    if (RemoveFilter(global_filters_, filter))
+      return;
+
+    for (size_t i = 0; i < arraysize(message_class_filters_); ++i)
+      RemoveFilter(message_class_filters_[i], filter);
+  }
+
+  bool TryFilters(const Message& message) {
+    if (TryFilters(global_filters_, message))
+      return true;
+
+    const int message_class = IPC_MESSAGE_CLASS(message);
+    if (!ValidMessageClass(message_class))
+      return false;
+
+    return TryFilters(message_class_filters_[message_class], message);
+  }
+
+  void Clear() {
+    global_filters_.clear();
+    for (size_t i = 0; i < arraysize(message_class_filters_); ++i)
+      message_class_filters_[i].clear();
+  }
+
+ private:
+  static bool TryFilters(MessageFilters& filters, const IPC::Message& message) {
+    for (size_t i = 0; i < filters.size(); ++i) {
+      if (filters[i]->OnMessageReceived(message)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  static bool RemoveFilter(MessageFilters& filters, MessageFilter* filter) {
+    MessageFilters::iterator it =
+        std::remove(filters.begin(), filters.end(), filter);
+    if (it == filters.end())
+      return false;
+
+    filters.erase(it, filters.end());
+    return true;
+  }
+
+  static bool ValidMessageClass(int message_class) {
+    return message_class >= 0 && message_class < LastIPCMsgStart;
+  }
+
+  // List of global and selective filters; a given filter will exist in either
+  // |message_global_filters_| OR |message_class_filters_|, but not both.
+  // Note that |message_global_filters_| will be given first offering of any
+  // given message.  It's the filter implementer and installer's
+  // responsibility to ensure that a filter is either global or selective to
+  // ensure proper message filtering order.
+  MessageFilters global_filters_;
+  MessageFilters message_class_filters_[LastIPCMsgStart];
+};
 
 //------------------------------------------------------------------------------
 
@@ -36,6 +127,11 @@ bool ChannelProxy::MessageFilter::OnMessageReceived(const Message& message) {
   return false;
 }
 
+bool ChannelProxy::MessageFilter::GetSupportedMessageClasses(
+    std::vector<uint32>* /*supported_message_classes*/) const {
+  return false;
+}
+
 ChannelProxy::MessageFilter::~MessageFilter() {}
 
 //------------------------------------------------------------------------------
@@ -46,6 +142,7 @@ ChannelProxy::Context::Context(Listener* listener,
       listener_(listener),
       ipc_task_runner_(ipc_task_runner),
       channel_connected_called_(false),
+      message_filter_router_(new MessageFilterRouter()),
       peer_pid_(base::kNullProcessId) {
   DCHECK(ipc_task_runner_.get());
 }
@@ -65,20 +162,19 @@ void ChannelProxy::Context::CreateChannel(const IPC::ChannelHandle& handle,
 }
 
 bool ChannelProxy::Context::TryFilters(const Message& message) {
+  DCHECK(message_filter_router_);
 #ifdef IPC_MESSAGE_LOG_ENABLED
   Logging* logger = Logging::GetInstance();
   if (logger->Enabled())
     logger->OnPreDispatchMessage(message);
 #endif
 
-  for (size_t i = 0; i < filters_.size(); ++i) {
-    if (filters_[i]->OnMessageReceived(message)) {
+  if (message_filter_router_->TryFilters(message)) {
 #ifdef IPC_MESSAGE_LOG_ENABLED
-      if (logger->Enabled())
-        logger->OnPostDispatchMessage(message, channel_id_);
+    if (logger->Enabled())
+      logger->OnPostDispatchMessage(message, channel_id_);
 #endif
-      return true;
-    }
+    return true;
   }
   return false;
 }
@@ -156,6 +252,7 @@ void ChannelProxy::Context::OnChannelClosed() {
   }
 
   // We don't need the filters anymore.
+  message_filter_router_->Clear();
   filters_.clear();
 
   channel_.reset();
@@ -190,6 +287,8 @@ void ChannelProxy::Context::OnAddFilter() {
   for (size_t i = 0; i < new_filters.size(); ++i) {
     filters_.push_back(new_filters[i]);
 
+    message_filter_router_->AddFilter(new_filters[i].get());
+
     // If the channel has already been created, then we need to send this
     // message so that the filter gets access to the Channel.
     if (channel_.get())
@@ -204,6 +303,8 @@ void ChannelProxy::Context::OnAddFilter() {
 void ChannelProxy::Context::OnRemoveFilter(MessageFilter* filter) {
   if (!channel_.get())
     return;  // The filters have already been deleted.
+
+  message_filter_router_->RemoveFilter(filter);
 
   for (size_t i = 0; i < filters_.size(); ++i) {
     if (filters_[i].get() == filter) {

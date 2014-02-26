@@ -33,7 +33,8 @@ namespace prerender {
 
 PrerenderMessageFilter::PrerenderMessageFilter(int render_process_id,
                                                Profile* profile)
-    : render_process_id_(render_process_id),
+    : BrowserMessageFilter(PrerenderMsgStart),
+      render_process_id_(render_process_id),
       profile_(profile) {
 }
 

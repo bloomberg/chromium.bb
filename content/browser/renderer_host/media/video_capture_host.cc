@@ -14,7 +14,8 @@
 namespace content {
 
 VideoCaptureHost::VideoCaptureHost(MediaStreamManager* media_stream_manager)
-    : media_stream_manager_(media_stream_manager) {
+    : BrowserMessageFilter(VideoCaptureMsgStart),
+      media_stream_manager_(media_stream_manager) {
 }
 
 VideoCaptureHost::~VideoCaptureHost() {}

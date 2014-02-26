@@ -23,7 +23,8 @@ namespace content {
 DOMStorageMessageFilter::DOMStorageMessageFilter(
     int render_process_id,
     DOMStorageContextWrapper* context)
-    : render_process_id_(render_process_id),
+    : BrowserMessageFilter(DOMStorageMsgStart),
+      render_process_id_(render_process_id),
       context_(context->context()),
       connection_dispatching_message_for_(0) {
 }

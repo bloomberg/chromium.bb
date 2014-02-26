@@ -195,7 +195,8 @@ class ChannelDestructionWatcher {
   class DestructionMessageFilter : public content::BrowserMessageFilter {
    public:
      explicit DestructionMessageFilter(ChannelDestructionWatcher* watcher)
-         : watcher_(watcher) {
+         : BrowserMessageFilter(0),
+           watcher_(watcher) {
     }
 
    private:

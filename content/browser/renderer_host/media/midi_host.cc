@@ -49,7 +49,8 @@ using media::kSysExByte;
 using media::kEndOfSysExByte;
 
 MidiHost::MidiHost(int renderer_process_id, media::MidiManager* midi_manager)
-    : renderer_process_id_(renderer_process_id),
+    : BrowserMessageFilter(MidiMsgStart),
+      renderer_process_id_(renderer_process_id),
       has_sys_ex_permission_(false),
       midi_manager_(midi_manager),
       sent_bytes_in_flight_(0),

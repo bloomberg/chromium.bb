@@ -101,6 +101,13 @@ const int kPluginsRefreshThresholdInSeconds = 3;
 // usage only once and send it as a response for both queries.
 static const int64 kCPUUsageSampleIntervalMs = 900;
 
+const uint32 kFilteredMessageClasses[] = {
+  ChildProcessMsgStart,
+  DesktopNotificationMsgStart,
+  FrameMsgStart,
+  ViewMsgStart,
+};
+
 #if defined(OS_WIN)
 // On Windows, |g_color_profile| can run on an arbitrary background thread.
 // We avoid races by using LazyInstance's constructor lock to initialize the
@@ -320,7 +327,9 @@ RenderMessageFilter::RenderMessageFilter(
     media::AudioManager* audio_manager,
     MediaInternals* media_internals,
     DOMStorageContextWrapper* dom_storage_context)
-    : resource_dispatcher_host_(ResourceDispatcherHostImpl::Get()),
+    : BrowserMessageFilter(
+          kFilteredMessageClasses, arraysize(kFilteredMessageClasses)),
+      resource_dispatcher_host_(ResourceDispatcherHostImpl::Get()),
       plugin_service_(plugin_service),
       profile_data_directory_(browser_context->GetPath()),
       request_context_(request_context),

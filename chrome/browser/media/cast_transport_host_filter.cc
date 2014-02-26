@@ -7,7 +7,8 @@
 
 namespace cast {
 
-CastTransportHostFilter::CastTransportHostFilter() {
+CastTransportHostFilter::CastTransportHostFilter()
+    : BrowserMessageFilter(CastMsgStart) {
 }
 
 CastTransportHostFilter::~CastTransportHostFilter() {

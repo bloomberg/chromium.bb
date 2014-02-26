@@ -10,7 +10,8 @@
 namespace content {
 
 DeviceMotionMessageFilter::DeviceMotionMessageFilter()
-    : is_started_(false) {
+    : BrowserMessageFilter(DeviceMotionMsgStart),
+      is_started_(false) {
 }
 
 DeviceMotionMessageFilter::~DeviceMotionMessageFilter() {

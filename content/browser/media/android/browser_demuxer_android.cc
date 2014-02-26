@@ -57,7 +57,8 @@ class BrowserDemuxerAndroid::Internal : public media::DemuxerAndroid {
   DISALLOW_COPY_AND_ASSIGN(Internal);
 };
 
-BrowserDemuxerAndroid::BrowserDemuxerAndroid() {}
+BrowserDemuxerAndroid::BrowserDemuxerAndroid()
+    : BrowserMessageFilter(MediaPlayerMsgStart) {}
 
 BrowserDemuxerAndroid::~BrowserDemuxerAndroid() {}
 

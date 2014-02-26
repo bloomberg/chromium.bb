@@ -16,7 +16,8 @@ namespace content {
 WebRTCIdentityServiceHost::WebRTCIdentityServiceHost(
     int renderer_process_id,
     scoped_refptr<WebRTCIdentityStore> identity_store)
-    : renderer_process_id_(renderer_process_id),
+    : BrowserMessageFilter(WebRTCIdentityMsgStart),
+      renderer_process_id_(renderer_process_id),
       identity_store_(identity_store),
       weak_factory_(this) {}
 

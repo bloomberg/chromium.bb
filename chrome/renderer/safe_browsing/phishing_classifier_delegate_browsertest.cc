@@ -82,7 +82,8 @@ class MockScorer : public Scorer {
 class InterceptingMessageFilter : public content::BrowserMessageFilter {
  public:
   InterceptingMessageFilter()
-      : waiting_message_loop_(NULL) {
+      : BrowserMessageFilter(SafeBrowsingMsgStart),
+        waiting_message_loop_(NULL) {
   }
 
   const ClientPhishingRequest* verdict() const { return verdict_.get(); }

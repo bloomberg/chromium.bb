@@ -295,7 +295,8 @@ GeolocationDispatcherHost* GeolocationDispatcherHost::New(
       geolocation_permission_context);
 }
 
-GeolocationDispatcherHost::GeolocationDispatcherHost() {
+GeolocationDispatcherHost::GeolocationDispatcherHost()
+    : BrowserMessageFilter(GeolocationMsgStart) {
 }
 
 GeolocationDispatcherHost::~GeolocationDispatcherHost() {

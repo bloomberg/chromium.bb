@@ -9,7 +9,8 @@
 namespace content {
 
 PeerConnectionTrackerHost::PeerConnectionTrackerHost(int render_process_id)
-    : render_process_id_(render_process_id) {}
+    : BrowserMessageFilter(PeerConnectionTrackerMsgStart),
+      render_process_id_(render_process_id) {}
 
 bool PeerConnectionTrackerHost::OnMessageReceived(const IPC::Message& message,
                                                   bool* message_was_ok) {
