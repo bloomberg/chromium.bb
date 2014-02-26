@@ -525,7 +525,7 @@ crbug.com/280342 [ Linux Win ] http/tests/media/progress-events-generated-correc
 crbug.com/280698 inspector/elements/styles/multiple-imports-edit-crash.html [ Failure Pass ]
 crbug.com/282081 [ Debug ] http/tests/security/contentSecurityPolicy/report-only-from-header.php [ Crash Pass ]
 crbug.com/282081 [ Win Release ] http/tests/security/contentSecurityPolicy/report-only-from-header.php [ Pass Timeout ]
-crbug.com/282082 inspector/sources/debugger/live-edit.html [ Failure Timeout ]
+crbug.com/282082 inspector/sources/debugger/live-edit.html [ Pass Failure Timeout ]
 crbug.com/282086 [ XP Release ] virtual/gpu/fast/canvas/webgl/gl-uniform-arrays.html [ Pass Timeout ]
 crbug.com/330049 media/track/track-cue-container-rendering-position.html [ Failure Pass ]
 crbug.com/282089 [ Win7 Debug ] plugins/override-node-method.html [ Crash Pass ]

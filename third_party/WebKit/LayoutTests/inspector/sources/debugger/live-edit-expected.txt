@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: line 3: Uncaught SyntaxError: Unexpected token ,
+CONSOLE ERROR: line 3: Uncaught SyntaxError: Unexpected token ,
 Tests live edit feature.
 
 Debugger was enabled.
