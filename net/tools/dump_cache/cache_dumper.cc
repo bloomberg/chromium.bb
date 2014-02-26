@@ -8,7 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "net/disk_cache/entry_impl.h"
+#include "net/disk_cache/blockfile/entry_impl.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
