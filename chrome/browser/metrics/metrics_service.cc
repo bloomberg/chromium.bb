@@ -356,10 +356,7 @@ bool SendSeparateInitialStabilityLog() {
 }  // namespace
 
 
-SyntheticTrialGroup::SyntheticTrialGroup(uint32 trial,
-                                         uint32 group,
-                                         base::TimeTicks start)
-    : start_time(start) {
+SyntheticTrialGroup::SyntheticTrialGroup(uint32 trial, uint32 group) {
   id.name = trial;
   id.group = group;
 }
@@ -1821,14 +1818,14 @@ void MetricsService::RegisterSyntheticFieldTrial(
     if (synthetic_trial_groups_[i].id.name == trial.id.name) {
       if (synthetic_trial_groups_[i].id.group != trial.id.group) {
         synthetic_trial_groups_[i].id.group = trial.id.group;
-        synthetic_trial_groups_[i].start_time = trial.start_time;
+        synthetic_trial_groups_[i].start_time = base::TimeTicks::Now();
       }
       return;
     }
   }
 
-  SyntheticTrialGroup trial_group(
-      trial.id.name, trial.id.group, base::TimeTicks::Now());
+  SyntheticTrialGroup trial_group = trial;
+  trial_group.start_time = base::TimeTicks::Now();
   synthetic_trial_groups_.push_back(trial_group);
 }
 

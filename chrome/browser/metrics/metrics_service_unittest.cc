@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/threading/platform_thread.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -92,6 +93,14 @@ class MetricsServiceTest : public testing::Test {
 
   PrefService* GetLocalState() {
     return testing_local_state_.Get();
+  }
+
+  // Waits until base::TimeTicks::Now() no longer equals |value|. This should
+  // take between 1-15ms per the documented resolution of base::TimeTicks.
+  void WaitUntilTimeChanges(const base::TimeTicks& value) {
+    while (base::TimeTicks::Now() == value) {
+      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1));
+    }
   }
 
   // Returns true if there is a synthetic trial in the given vector that matches
@@ -266,23 +275,26 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
   EXPECT_EQ(1, uma_log.system_profile().stability().crash_count());
 }
 
-// Crashes on at least Mac and Linux.  http://crbug.com/320433
-TEST_F(MetricsServiceTest, DISABLED_RegisterSyntheticTrial) {
+TEST_F(MetricsServiceTest, RegisterSyntheticTrial) {
   MetricsService service;
 
   // Add two synthetic trials and confirm that they show up in the list.
   SyntheticTrialGroup trial1(metrics::HashName("TestTrial1"),
-                             metrics::HashName("Group1"),
-                             base::TimeTicks::Now());
+                             metrics::HashName("Group1"));
   service.RegisterSyntheticFieldTrial(trial1);
 
   SyntheticTrialGroup trial2(metrics::HashName("TestTrial2"),
-                             metrics::HashName("Group2"),
-                             base::TimeTicks::Now());
+                             metrics::HashName("Group2"));
   service.RegisterSyntheticFieldTrial(trial2);
+  // Ensure that time has advanced by at least a tick before proceeding.
+  WaitUntilTimeChanges(base::TimeTicks::Now());
 
   service.log_manager_.BeginLoggingWithLog(new MetricsLog("clientID", 1),
                                            MetricsLog::INITIAL_LOG);
+  // Save the time when the log was started (it's okay for this to be greater
+  // than the time recorded by the above call since it's used to ensure the
+  // value changes).
+  const base::TimeTicks begin_log_time = base::TimeTicks::Now();
 
   std::vector<chrome_variations::ActiveGroupId> synthetic_trials;
   service.GetCurrentSyntheticFieldTrials(&synthetic_trials);
@@ -290,10 +302,13 @@ TEST_F(MetricsServiceTest, DISABLED_RegisterSyntheticTrial) {
   EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial1", "Group1"));
   EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial2", "Group2"));
 
+  // Ensure that time has advanced by at least a tick before proceeding.
+  WaitUntilTimeChanges(begin_log_time);
+
   // Change the group for the first trial after the log started.
+  // TODO(asvitkine): Assumption that this is > than BeginLoggingWithLog() time.
   SyntheticTrialGroup trial3(metrics::HashName("TestTrial1"),
-                             metrics::HashName("Group2"),
-                             base::TimeTicks::Now());
+                             metrics::HashName("Group2"));
   service.RegisterSyntheticFieldTrial(trial3);
   service.GetCurrentSyntheticFieldTrials(&synthetic_trials);
   EXPECT_EQ(1U, synthetic_trials.size());
@@ -301,14 +316,16 @@ TEST_F(MetricsServiceTest, DISABLED_RegisterSyntheticTrial) {
 
   // Add a new trial after the log started and confirm that it doesn't show up.
   SyntheticTrialGroup trial4(metrics::HashName("TestTrial3"),
-                             metrics::HashName("Group3"),
-                             base::TimeTicks::Now());
+                             metrics::HashName("Group3"));
   service.RegisterSyntheticFieldTrial(trial4);
   service.GetCurrentSyntheticFieldTrials(&synthetic_trials);
   EXPECT_EQ(1U, synthetic_trials.size());
   EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial2", "Group2"));
 
-  // Start a new log.
+  // Ensure that time has advanced by at least a tick before proceeding.
+  WaitUntilTimeChanges(base::TimeTicks::Now());
+
+  // Start a new log and ensure all three trials appear in it.
   service.log_manager_.FinishCurrentLog();
   service.log_manager_.BeginLoggingWithLog(new MetricsLog("clientID", 1),
                                            MetricsLog::ONGOING_LOG);

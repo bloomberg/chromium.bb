@@ -91,8 +91,7 @@ struct SyntheticTrialGroup {
   // This constructor is private specifically so as to control which code is
   // able to access it. New code that wishes to use it should be added as a
   // friend class.
-  SyntheticTrialGroup(uint32 trial, uint32 group, base::TimeTicks start);
-
+  SyntheticTrialGroup(uint32 trial, uint32 group);
 };
 
 class MetricsService
