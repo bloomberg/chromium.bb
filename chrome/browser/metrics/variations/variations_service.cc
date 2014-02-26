@@ -435,18 +435,14 @@ void VariationsService::OnURLFetchComplete(const net::URLFetcher* source) {
     DVLOG(1) << "Variations server request returned non-HTTP_OK response code: "
              << response_code;
     if (response_code == net::HTTP_NOT_MODIFIED) {
-      UMA_HISTOGRAM_MEDIUM_TIMES("Variations.FetchNotModifiedLatency", latency);
       RecordLastFetchTime();
       // Update the seed date value in local state (used for expiry check on
       // next start up), since 304 is a successful response.
       local_state_->SetInt64(prefs::kVariationsSeedDate,
                              response_date.ToInternalValue());
-    } else {
-      UMA_HISTOGRAM_MEDIUM_TIMES("Variations.FetchOtherLatency", latency);
     }
     return;
   }
-  UMA_HISTOGRAM_MEDIUM_TIMES("Variations.FetchSuccessLatency", latency);
 
   std::string seed_data;
   bool success = request->GetResponseAsString(&seed_data);

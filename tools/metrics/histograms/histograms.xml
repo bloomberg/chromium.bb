@@ -22270,6 +22270,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Variations.FetchNotModifiedLatency" units="milliseconds">
+  <obsolete>
+    Deprecated 2/2014. No longer tracked.
+  </obsolete>
   <summary>
     The latency of a VariationsService seed fetch that results in a not modified
     response.
@@ -22277,6 +22280,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Variations.FetchOtherLatency" units="milliseconds">
+  <obsolete>
+    Deprecated 2/2014. No longer tracked.
+  </obsolete>
   <summary>
     The latency of a VariationsService seed fetch that results in neither a
     success nor not modified response.
@@ -22284,6 +22290,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Variations.FetchSuccessLatency" units="milliseconds">
+  <obsolete>
+    Deprecated 2/2014. No longer tracked.
+  </obsolete>
   <summary>
     The latency of a VariationsService seed fetch that results in a success
     response.
