@@ -68,18 +68,18 @@ String MediaQuery::serialize() const
     return result.toString();
 }
 
-static bool expressionCompare(const OwnPtrWillBeMember<MediaQueryExp>& a, const OwnPtrWillBeMember<MediaQueryExp>& b)
+static bool expressionCompare(const OwnPtr<MediaQueryExp>& a, const OwnPtr<MediaQueryExp>& b)
 {
     return codePointCompare(a->serialize(), b->serialize()) < 0;
 }
 
-MediaQuery::MediaQuery(Restrictor r, const AtomicString& mediaType, PassOwnPtrWillBeRawPtr<ExpressionVector> expressions)
+MediaQuery::MediaQuery(Restrictor r, const AtomicString& mediaType, PassOwnPtr<ExpressionVector> expressions)
     : m_restrictor(r)
     , m_mediaType(mediaType.lower())
     , m_expressions(expressions)
 {
     if (!m_expressions) {
-        m_expressions = adoptPtrWillBeNoop(new ExpressionVector);
+        m_expressions = adoptPtr(new ExpressionVector);
         return;
     }
 
@@ -100,7 +100,7 @@ MediaQuery::MediaQuery(Restrictor r, const AtomicString& mediaType, PassOwnPtrWi
 MediaQuery::MediaQuery(const MediaQuery& o)
     : m_restrictor(o.m_restrictor)
     , m_mediaType(o.m_mediaType)
-    , m_expressions(adoptPtrWillBeNoop(new ExpressionVector(o.m_expressions->size())))
+    , m_expressions(adoptPtr(new ExpressionVector(o.m_expressions->size())))
     , m_serializationCache(o.m_serializationCache)
 {
     for (unsigned i = 0; i < m_expressions->size(); ++i)
@@ -124,15 +124,6 @@ String MediaQuery::cssText() const
         const_cast<MediaQuery*>(this)->m_serializationCache = serialize();
 
     return m_serializationCache;
-}
-
-void MediaQuery::trace(Visitor* visitor)
-{
-    // We don't support tracing of vectors of OwnPtrs (ie. OwnPtr<Vector<OwnPtr<MediaQuery> > >).
-    // Since this is a transitional object we are just ifdef'ing it out when oilpan is not enabled.
-#if ENABLE(OILPAN)
-    visitor->trace(m_expressions);
-#endif
 }
 
 }

@@ -87,7 +87,7 @@ public:
     void clearOwnerRule() { m_ownerRule = 0; }
     Document* ownerDocument() const;
     MediaQuerySet* mediaQueries() const { return m_mediaQueries.get(); }
-    void setMediaQueries(PassRefPtrWillBeRawPtr<MediaQuerySet>);
+    void setMediaQueries(PassRefPtr<MediaQuerySet>);
     void setTitle(const String& title) { m_title = title; }
 
     class RuleMutationScope {
@@ -131,7 +131,7 @@ private:
     bool m_isInlineStylesheet;
     bool m_isDisabled;
     String m_title;
-    RefPtrWillBePersistent<MediaQuerySet> m_mediaQueries;
+    RefPtr<MediaQuerySet> m_mediaQueries;
 
     Node* m_ownerNode;
     // FIXME: oilpan: This is a back pointer from CSSImportRule, corresponding
@@ -147,7 +147,7 @@ private:
     TextPosition m_startPosition;
     bool m_loadCompleted;
 
-    mutable RefPtrWillBePersistent<MediaList> m_mediaCSSOMWrapper;
+    mutable RefPtr<MediaList> m_mediaCSSOMWrapper;
     mutable WillBePersistentHeapVector<RefPtrWillBeMember<CSSRule> > m_childRuleCSSOMWrappers;
     mutable OwnPtr<CSSRuleList> m_ruleListCSSOMWrapper;
 };

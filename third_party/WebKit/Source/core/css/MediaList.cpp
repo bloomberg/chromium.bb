@@ -57,7 +57,8 @@ MediaQuerySet::MediaQuerySet()
 }
 
 MediaQuerySet::MediaQuerySet(const MediaQuerySet& o)
-    : m_queries(o.m_queries.size())
+    : RefCounted<MediaQuerySet>()
+    , m_queries(o.m_queries.size())
 {
     for (unsigned i = 0; i < m_queries.size(); ++i)
         m_queries[i] = o.m_queries[i]->copy();
@@ -67,7 +68,7 @@ MediaQuerySet::~MediaQuerySet()
 {
 }
 
-PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQuerySet::create(const String& mediaString)
+PassRefPtr<MediaQuerySet> MediaQuerySet::create(const String& mediaString)
 {
     if (mediaString.isEmpty())
         return MediaQuerySet::create();
@@ -78,7 +79,7 @@ PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQuerySet::create(const String& mediaS
 
 bool MediaQuerySet::set(const String& mediaString)
 {
-    RefPtrWillBeRawPtr<MediaQuerySet> result = create(mediaString);
+    RefPtr<MediaQuerySet> result = create(mediaString);
     m_queries.swap(result->m_queries);
     return true;
 }
@@ -88,13 +89,13 @@ bool MediaQuerySet::add(const String& queryString)
     // To "parse a media query" for a given string means to follow "the parse
     // a media query list" steps and return "null" if more than one media query
     // is returned, or else the returned media query.
-    RefPtrWillBeRawPtr<MediaQuerySet> result = create(queryString);
+    RefPtr<MediaQuerySet> result = create(queryString);
 
     // Only continue if exactly one media query is found, as described above.
     if (result->m_queries.size() != 1)
         return true;
 
-    OwnPtrWillBeRawPtr<MediaQuery> newQuery = result->m_queries[0].release();
+    OwnPtr<MediaQuery> newQuery = result->m_queries[0].release();
     ASSERT(newQuery);
 
     // If comparing with any of the media queries in the collection of media
@@ -114,13 +115,13 @@ bool MediaQuerySet::remove(const String& queryStringToRemove)
     // To "parse a media query" for a given string means to follow "the parse
     // a media query list" steps and return "null" if more than one media query
     // is returned, or else the returned media query.
-    RefPtrWillBeRawPtr<MediaQuerySet> result = create(queryStringToRemove);
+    RefPtr<MediaQuerySet> result = create(queryStringToRemove);
 
     // Only continue if exactly one media query is found, as described above.
     if (result->m_queries.size() != 1)
         return true;
 
-    OwnPtrWillBeRawPtr<MediaQuery> newQuery = result->m_queries[0].release();
+    OwnPtr<MediaQuery> newQuery = result->m_queries[0].release();
     ASSERT(newQuery);
 
     // Remove any media query from the collection of media queries for which
@@ -138,7 +139,7 @@ bool MediaQuerySet::remove(const String& queryStringToRemove)
     return found;
 }
 
-void MediaQuerySet::addMediaQuery(PassOwnPtrWillBeRawPtr<MediaQuery> mediaQuery)
+void MediaQuerySet::addMediaQuery(PassOwnPtr<MediaQuery> mediaQuery)
 {
     m_queries.append(mediaQuery);
 }
@@ -156,15 +157,6 @@ String MediaQuerySet::mediaText() const
         text.append(m_queries[i]->cssText());
     }
     return text.toString();
-}
-
-void MediaQuerySet::trace(Visitor* visitor)
-{
-    // We don't support tracing of vectors of OwnPtrs (ie. OwnPtr<Vector<OwnPtr<MediaQuery> > >).
-    // Since this is a transitional object we are just ifdef'ing it out when oilpan is not enabled.
-#if ENABLE(OILPAN)
-    visitor->trace(m_queries);
-#endif
 }
 
 MediaList::MediaList(MediaQuerySet* mediaQueries, CSSStyleSheet* parentSheet)
@@ -197,7 +189,7 @@ void MediaList::setMediaText(const String& value)
 
 String MediaList::item(unsigned index) const
 {
-    const WillBeHeapVector<OwnPtrWillBeMember<MediaQuery> >& queries = m_mediaQueries->queryVector();
+    const Vector<OwnPtr<MediaQuery> >& queries = m_mediaQueries->queryVector();
     if (index < queries.size())
         return queries[index]->cssText();
     return String();
@@ -236,11 +228,6 @@ void MediaList::reattach(MediaQuerySet* mediaQueries)
     m_mediaQueries = mediaQueries;
 }
 
-void MediaList::trace(Visitor* visitor)
-{
-    visitor->trace(m_mediaQueries);
-}
-
 static void addResolutionWarningMessageToConsole(Document* document, const String& serializedExpression, const CSSPrimitiveValue* value)
 {
     ASSERT(document);
@@ -277,7 +264,7 @@ void reportMediaQueryWarningIfNeeded(Document* document, const MediaQuerySet* me
     if (!mediaQuerySet || !document)
         return;
 
-    const WillBeHeapVector<OwnPtrWillBeMember<MediaQuery> >& mediaQueries = mediaQuerySet->queryVector();
+    const Vector<OwnPtr<MediaQuery> >& mediaQueries = mediaQuerySet->queryVector();
     const size_t queryCount = mediaQueries.size();
 
     if (!queryCount)

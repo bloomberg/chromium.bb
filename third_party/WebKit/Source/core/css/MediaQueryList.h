@@ -20,7 +20,6 @@
 #ifndef MediaQueryList_h
 #define MediaQueryList_h
 
-#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -39,7 +38,7 @@ class MediaQuerySet;
 
 class MediaQueryList : public RefCounted<MediaQueryList> {
 public:
-    static PassRefPtr<MediaQueryList> create(PassRefPtr<MediaQueryMatcher>, PassRefPtrWillBeRawPtr<MediaQuerySet>, bool);
+    static PassRefPtr<MediaQueryList> create(PassRefPtr<MediaQueryMatcher>, PassRefPtr<MediaQuerySet>, bool);
     ~MediaQueryList();
 
     String media() const;
@@ -51,11 +50,11 @@ public:
     void evaluate(MediaQueryEvaluator*, bool& notificationNeeded);
 
 private:
-    MediaQueryList(PassRefPtr<MediaQueryMatcher>, PassRefPtrWillBeRawPtr<MediaQuerySet>, bool matches);
+    MediaQueryList(PassRefPtr<MediaQueryMatcher>, PassRefPtr<MediaQuerySet>, bool matches);
     void setMatches(bool);
 
     RefPtr<MediaQueryMatcher> m_matcher;
-    RefPtrWillBePersistent<MediaQuerySet> m_media;
+    RefPtr<MediaQuerySet> m_media;
     unsigned m_evaluationRound; // Indicates if the query has been evaluated after the last style selector change.
     unsigned m_changeRound; // Used to know if the query has changed in the last style selector change.
     bool m_matches;

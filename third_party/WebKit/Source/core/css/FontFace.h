@@ -49,7 +49,7 @@ class FontFaceReadyPromiseResolver;
 class StylePropertySet;
 class StyleRuleFontFace;
 
-class FontFace : public RefCountedWillBeRefCountedGarbageCollected<FontFace> {
+class FontFace : public RefCounted<FontFace> {
 public:
     enum LoadStatus { Unloaded, Loading, Loaded, Error };
 
@@ -85,8 +85,6 @@ public:
     unsigned traitsMask() const;
     CSSFontFace* cssFontFace() { return m_cssFontFace.get(); }
 
-    void trace(Visitor*);
-
 private:
     FontFace(PassRefPtrWillBeRawPtr<CSSValue> source);
 
@@ -98,13 +96,13 @@ private:
     void resolveReadyPromises();
 
     AtomicString m_family;
-    RefPtrWillBeMember<CSSValue> m_src;
-    RefPtrWillBeMember<CSSValue> m_style;
-    RefPtrWillBeMember<CSSValue> m_weight;
-    RefPtrWillBeMember<CSSValue> m_stretch;
-    RefPtrWillBeMember<CSSValue> m_unicodeRange;
-    RefPtrWillBeMember<CSSValue> m_variant;
-    RefPtrWillBeMember<CSSValue> m_featureSettings;
+    RefPtr<CSSValue> m_src;
+    RefPtr<CSSValue> m_style;
+    RefPtr<CSSValue> m_weight;
+    RefPtr<CSSValue> m_stretch;
+    RefPtr<CSSValue> m_unicodeRange;
+    RefPtr<CSSValue> m_variant;
+    RefPtr<CSSValue> m_featureSettings;
     LoadStatus m_status;
 
     Vector<OwnPtr<FontFaceReadyPromiseResolver> > m_readyResolvers;

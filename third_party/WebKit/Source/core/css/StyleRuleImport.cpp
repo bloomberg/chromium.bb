@@ -31,12 +31,12 @@
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<StyleRuleImport> StyleRuleImport::create(const String& href, PassRefPtrWillBeRawPtr<MediaQuerySet> media)
+PassRefPtrWillBeRawPtr<StyleRuleImport> StyleRuleImport::create(const String& href, PassRefPtr<MediaQuerySet> media)
 {
     return adoptRefWillBeNoop(new StyleRuleImport(href, media));
 }
 
-StyleRuleImport::StyleRuleImport(const String& href, PassRefPtrWillBeRawPtr<MediaQuerySet> media)
+StyleRuleImport::StyleRuleImport(const String& href, PassRefPtr<MediaQuerySet> media)
     : StyleRuleBase(Import)
     , m_parentStyleSheet(nullptr)
     , m_styleSheetClient(this)
@@ -60,7 +60,6 @@ StyleRuleImport::~StyleRuleImport()
 void StyleRuleImport::traceAfterDispatch(Visitor* visitor)
 {
     visitor->trace(m_parentStyleSheet);
-    visitor->trace(m_mediaQueries);
     visitor->trace(m_styleSheet);
     StyleRuleBase::traceAfterDispatch(visitor);
 }
