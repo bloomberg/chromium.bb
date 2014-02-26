@@ -58,8 +58,6 @@ DEPENDENCY_IDL_FILES = set([
     'TestPartialInterfacePython2.idl',
 ])
 
-SKIP_PYTHON = 'TestSVG.idl'  # Not implementing SVG-specific hacks in Python
-
 all_input_directory = '.'  # Relative to Source/
 test_input_directory = os.path.join('bindings', 'tests', 'idls')
 reference_directory = os.path.join('bindings', 'tests', 'results')
@@ -260,6 +258,7 @@ class BindingsTests(object):
     def no_excess_files(self, check_directory):
         generated_files = set(os.listdir(check_directory))
         generated_files.add('.svn')  # Subversion working copy directory
+        generated_files.add('EventInterfaces.in')  # only in Perl, not Python
         excess_files = [output_file
                         for output_file in os.listdir(reference_directory)
                         if output_file not in generated_files]
@@ -289,10 +288,6 @@ class BindingsTests(object):
                 return False
             if self.reset_results and self.verbose:
                 print 'Reset results: %s' % input_filename
-            if input_filename == SKIP_PYTHON:
-                if self.verbose:
-                    print 'SKIP: %s' % input_filename
-                continue
             if self.generate_from_idl_py(idl_path):
                 return False
 

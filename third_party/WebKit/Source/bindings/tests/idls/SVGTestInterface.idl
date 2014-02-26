@@ -29,19 +29,11 @@
  */
 
 
-typedef SVGPoint SVGPOINT;
-
+// This test files starts with 'SVG' because /^SVG/ is used as a check
+// for SVG interfaces (to use SVGNames for [Reflect] attributes)
 [
     DependentLifetime,
-] interface TestSVG {
-    [Reflect] attribute SVGAnimatedString animatedReflectedAttribute;
-
-    attribute SVGPoint mutablePoint;
-    [Immutable] attribute SVGPoint immutablePoint;
-    SVGPoint mutablePointFunction();
-    [Immutable] SVGPoint immutablePointFunction();
-    [Immutable] SVGPOINT immutablePointFunctionTypedef();
-
-    SVGPoint svgPointMethod(SVGPoint item, unsigned long index);
-    [StrictTypeChecking, RaisesException]  SVGPoint strictSVGPointMethod(SVGPoint item, unsigned long index);
+] interface SVGTestInterface {
+    [Reflect] attribute DOMString type;  // Test SVGNames namespace
+    // [Immutable] attribute SVGPoint immutablePoint; // [Immutable] is a nop
 };
