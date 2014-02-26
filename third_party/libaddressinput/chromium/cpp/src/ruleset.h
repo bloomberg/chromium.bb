@@ -21,6 +21,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 namespace i18n {
 namespace addressinput {
@@ -50,6 +51,11 @@ class Ruleset {
 
   ~Ruleset();
 
+  // Returns the parent ruleset. This is NULL until this ruleset has been passed
+  // into a AddSubRegionRuleset() method. Consequently, this is always NULL for
+  // a country-level ruleset.
+  Ruleset* parent() const { return parent_; }
+
   // Returns the field type for this ruleset.
   AddressField field() const { return field_; }
 
@@ -57,8 +63,9 @@ class Ruleset {
   // the country.
   const Rule& rule() const { return *rule_; }
 
-  // Adds the |ruleset| for |sub_region|. A |sub_region| should be added at most
-  // once. The |ruleset| should not be NULL.
+  // Adds the |ruleset| for |sub_region| and sets this to be its parent. A
+  // |sub_region| should be added at most once. The |ruleset| should not be
+  // NULL.
   //
   // The field of the |ruleset| parameter must be exactly one smaller than the
   // field of this ruleset. For example, a COUNTRY ruleset can contain
@@ -80,7 +87,16 @@ class Ruleset {
   // rule. Otherwise returns the rule in the default language of the country.
   const Rule& GetLanguageCodeRule(const std::string& language_code) const;
 
+  // Returns a mapping of sub-region keys to rulesets. The caller does now own
+  // the result. The values are not NULL.
+  const std::map<std::string, Ruleset*>& GetSubRegionRulesets() const {
+    return sub_regions_;
+  }
+
  private:
+  // The parent ruleset of this object. The parent ruleset owns this object.
+  Ruleset* parent_;
+
   // The field of this ruleset.
   const AddressField field_;
 

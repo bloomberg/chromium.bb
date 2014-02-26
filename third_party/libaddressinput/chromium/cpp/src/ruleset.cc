@@ -29,7 +29,8 @@ namespace i18n {
 namespace addressinput {
 
 Ruleset::Ruleset(AddressField field, scoped_ptr<Rule> rule)
-    : field_(field),
+    : parent_(NULL),
+      field_(field),
       rule_(rule.Pass()),
       sub_regions_(),
       language_codes_() {
@@ -48,6 +49,8 @@ void Ruleset::AddSubRegionRuleset(const std::string& sub_region,
   assert(sub_regions_.find(sub_region) == sub_regions_.end());
   assert(ruleset != NULL);
   assert(ruleset->field() == static_cast<AddressField>(field() + 1));
+
+  ruleset->parent_ = this;
   sub_regions_[sub_region] = ruleset.release();
 }
 

@@ -54,7 +54,7 @@ scoped_ptr<std::string> Wrap(const std::string& data,
 }  // namespace
 
 // Tests for Retriever object.
-class RetrieverTest : public testing::Test {
+class RetrieverTest : public testing::TestWithParam<std::string> {
  protected:
   RetrieverTest()
       : storage_(NULL),
@@ -103,6 +103,20 @@ class RetrieverTest : public testing::Test {
     data_ = data;
   }
 };
+
+TEST_P(RetrieverTest, RegionHasData) {
+  std::string key = "data/" + GetParam();
+  retriever_->Retrieve(key, BuildCallback());
+
+  EXPECT_TRUE(success_);
+  EXPECT_EQ(key, key_);
+  EXPECT_FALSE(data_.empty());
+  EXPECT_NE(kEmptyData, data_);
+}
+
+INSTANTIATE_TEST_CASE_P(
+    AllRegions, RetrieverTest,
+    testing::ValuesIn(RegionDataConstants::GetRegionCodes()));
 
 TEST_F(RetrieverTest, RetrieveData) {
   retriever_->Retrieve(kKey, BuildCallback());

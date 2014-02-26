@@ -30,6 +30,13 @@ class MockAddressValidator : public ::i18n::addressinput::AddressValidator {
           const ::i18n::addressinput::AddressProblemFilter& filter,
           ::i18n::addressinput::AddressProblems* problems));
 
+  MOCK_CONST_METHOD4(GetSuggestions,
+      ::i18n::addressinput::AddressValidator::Status(
+          const ::i18n::addressinput::AddressData& user_input,
+          ::i18n::addressinput::AddressField focused_field,
+          size_t suggestions_limit,
+          std::vector< ::i18n::addressinput::AddressData>* suggestions));
+
   MOCK_CONST_METHOD1(CanonicalizeAdministrativeArea,
                      bool(::i18n::addressinput::AddressData* address_data));
 

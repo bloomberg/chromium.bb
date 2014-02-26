@@ -52,7 +52,11 @@ struct AddressData {
   // STREET_ADDRESS, which comprises multiple fields.
   const std::string& GetFieldValue(AddressField field) const;
 
-  // Guesses the BCP 47 languge code to be used for formatting the address for
+  // Sets the |field| to |value|. The parameter should not be STREET_ADDRESS,
+  // which comprises multiple fields.
+  void SetFieldValue(AddressField field, const std::string& value);
+
+  // Guesses the BCP 47 language code to be used for formatting the address for
   // display. For example, guesses "en" if the |country_code| is "US". Can
   // return an empty string.
   const std::string& GuessLanguageCode() const;

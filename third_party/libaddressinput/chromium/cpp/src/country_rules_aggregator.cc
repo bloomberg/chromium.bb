@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -72,14 +73,17 @@ void CountryRulesAggregator::OnDataReady(bool success,
     return;
   }
 
-  scoped_ptr<Ruleset> ruleset = Build(key_, COUNTRY);
+  std::map<std::string, std::string> language_keys;
+  scoped_ptr<Ruleset> ruleset = Build(key_, COUNTRY, language_keys);
   const bool parse_success = ruleset != NULL;
   (*rules_ready_)(parse_success, country_code_, ruleset.Pass());
   Reset();
 }
 
-scoped_ptr<Ruleset> CountryRulesAggregator::Build(const std::string& key,
-                                                  AddressField field) {
+scoped_ptr<Ruleset> CountryRulesAggregator::Build(
+    const std::string& key,
+    AddressField field,
+    const std::map<std::string, std::string>& language_specific_keys) {
   scoped_ptr<Rule> rule = ParseRule(key, field);
   if (rule == NULL) {
     return scoped_ptr<Ruleset>();
@@ -100,29 +104,63 @@ scoped_ptr<Ruleset> CountryRulesAggregator::Build(const std::string& key,
   }
 
   scoped_ptr<Ruleset> ruleset(new Ruleset(field, rule.Pass()));
+  std::map<std::string, std::map<std::string, std::string> >
+      language_specific_subkeys;
 
   // Parse the language-specific rules. For example, parse the rules for "fr"
   // and "it" languages in Switzerland.
   for (std::vector<std::string>::const_iterator
-           lang_it = non_default_languages_.begin();
-       lang_it != non_default_languages_.end(); ++lang_it) {
-    scoped_ptr<Rule> lang_rule = ParseRule(key + "--" + *lang_it, field);
-    if (lang_rule == NULL) {
+           non_default_language_it = non_default_languages_.begin();
+       non_default_language_it != non_default_languages_.end();
+       ++non_default_language_it) {
+    std::map<std::string, std::string>::const_iterator
+        language_specific_key_it =
+            language_specific_keys.find(*non_default_language_it);
+    std::string language_specific_key =
+        language_specific_key_it != language_specific_keys.end()
+            ? language_specific_key_it->second
+            : key;
+    scoped_ptr<Rule> language_specific_rule =
+        ParseRule(language_specific_key + "--" + *non_default_language_it,
+                  field);
+
+    if (language_specific_rule == NULL ||
+        language_specific_rule->GetSubKeys().size() !=
+            ruleset->rule().GetSubKeys().size()) {
       return scoped_ptr<Ruleset>();
     }
-    ruleset->AddLanguageCodeRule(*lang_it, lang_rule.Pass());
+
+    // Build the language specific subkeys for the next level of
+    // rules. Examples:
+    //    ["data/CA/AB"]["fr"] <- "data/CA/AB"
+    //    ["data/HK/香港島"]["en"] <- "data/HK/Kowloon"
+    for (size_t i = 0; i < ruleset->rule().GetSubKeys().size(); ++i) {
+      const std::string& subkey = key + "/" + ruleset->rule().GetSubKeys()[i];
+      const std::string& language_specific_subkey =
+          key + "/" + language_specific_rule->GetSubKeys()[i];
+      language_specific_subkeys[subkey][*non_default_language_it] =
+          language_specific_subkey;
+    }
+
+    ruleset->AddLanguageCodeRule(
+        *non_default_language_it, language_specific_rule.Pass());
   }
 
-  // Parse the sub-keys. For example, parse the rules for all of the states in
-  // US: "CA", "TX", "NY", etc.
+  // Parse the sub-keys recursively. For example, parse the rules for all of the
+  // states in US: "CA", "TX", "NY", etc.
   for (std::vector<std::string>::const_iterator
            subkey_it = ruleset->rule().GetSubKeys().begin();
        subkey_it != ruleset->rule().GetSubKeys().end(); ++subkey_it) {
+    std::string subkey = key + "/" + *subkey_it;
     scoped_ptr<Ruleset> sub_ruleset =
-        Build(key + "/" + *subkey_it, static_cast<AddressField>(field + 1));
+        Build(subkey,
+              static_cast<AddressField>(field + 1),
+              language_specific_subkeys[subkey]);
+
     if (sub_ruleset == NULL) {
       return scoped_ptr<Ruleset>();
     }
+
     ruleset->AddSubRegionRuleset(*subkey_it, sub_ruleset.Pass());
   }
 

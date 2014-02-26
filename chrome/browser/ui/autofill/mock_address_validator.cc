@@ -10,6 +10,7 @@ MockAddressValidator::MockAddressValidator() {
   using testing::_;
   using testing::Return;
   ON_CALL(*this, ValidateAddress(_, _, _)).WillByDefault(Return(SUCCESS));
+  ON_CALL(*this, GetSuggestions(_, _, _, _)).WillByDefault(Return(SUCCESS));
   ON_CALL(*this, CanonicalizeAdministrativeArea(_)).WillByDefault(Return(true));
 }
 

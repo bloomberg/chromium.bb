@@ -29,6 +29,7 @@
 
 #include "fake_downloader.h"
 #include "fake_storage.h"
+#include "region_data_constants.h"
 #include "retriever.h"
 #include "rule.h"
 #include "ruleset.h"
@@ -36,7 +37,7 @@
 namespace i18n {
 namespace addressinput {
 
-class CountryRulesAggregatorTest : public testing::Test {
+class CountryRulesAggregatorTest : public testing::TestWithParam<std::string> {
  public:
   CountryRulesAggregatorTest()
       : aggregator_(scoped_ptr<Retriever>(new Retriever(
@@ -72,14 +73,13 @@ class CountryRulesAggregatorTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(CountryRulesAggregatorTest);
 };
 
-TEST_F(CountryRulesAggregatorTest, ValidRuleset) {
-  aggregator_.AggregateRules("CH", BuildCallback());
+TEST_P(CountryRulesAggregatorTest, ValidRuleset) {
+  aggregator_.AggregateRules(GetParam(), BuildCallback());
   EXPECT_TRUE(success_);
-  EXPECT_EQ("CH", country_code_);
+  EXPECT_EQ(GetParam(), country_code_);
   ASSERT_TRUE(ruleset_ != NULL);
 
   const std::vector<std::string>& sub_keys = ruleset_->rule().GetSubKeys();
-  EXPECT_TRUE(sub_keys.size() > 0);
   for (std::vector<std::string>::const_iterator sub_key_it = sub_keys.begin();
        sub_key_it != sub_keys.end(); ++sub_key_it) {
     EXPECT_TRUE(ruleset_->GetSubRegionRuleset(*sub_key_it) != NULL);
@@ -95,7 +95,6 @@ TEST_F(CountryRulesAggregatorTest, ValidRuleset) {
     non_default_languages.erase(default_lang_it);
   }
 
-  EXPECT_TRUE(non_default_languages.size() > 0);
   for (std::vector<std::string>::const_iterator
            lang_it = non_default_languages.begin();
        lang_it != non_default_languages.end();
@@ -104,6 +103,10 @@ TEST_F(CountryRulesAggregatorTest, ValidRuleset) {
                 ruleset_->rule().GetLanguage());
   }
 }
+
+INSTANTIATE_TEST_CASE_P(
+    AllRegions, CountryRulesAggregatorTest,
+    testing::ValuesIn(RegionDataConstants::GetRegionCodes()));
 
 }  // namespace addressinput
 }  // namespace i18n

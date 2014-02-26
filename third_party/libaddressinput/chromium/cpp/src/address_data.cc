@@ -28,6 +28,35 @@
 namespace i18n {
 namespace addressinput {
 
+namespace {
+
+const std::string* GetMemberForField(const AddressData& address,
+                                     AddressField field) {
+  switch (field) {
+    case COUNTRY:
+      return &address.country_code;
+    case ADMIN_AREA:
+      return &address.administrative_area;
+    case LOCALITY:
+      return &address.locality;
+    case DEPENDENT_LOCALITY:
+      return &address.dependent_locality;
+    case SORTING_CODE:
+      return &address.sorting_code;
+    case POSTAL_CODE:
+      return &address.postal_code;
+    case ORGANIZATION:
+      return &address.organization;
+    case RECIPIENT:
+      return &address.recipient;
+    default:
+      assert(false);
+      return NULL;
+  }
+}
+
+}  // namespace
+
 void AddressData::FormatForDisplay(std::vector<std::string>* lines) const {
   assert(lines != NULL);
   lines->clear();
@@ -66,26 +95,15 @@ void AddressData::FormatForDisplay(std::vector<std::string>* lines) const {
 }
 
 const std::string& AddressData::GetFieldValue(AddressField field) const {
-  switch (field) {
-    case COUNTRY:
-      return country_code;
-    case ADMIN_AREA:
-      return administrative_area;
-    case LOCALITY:
-      return locality;
-    case DEPENDENT_LOCALITY:
-      return dependent_locality;
-    case SORTING_CODE:
-      return sorting_code;
-    case POSTAL_CODE:
-      return postal_code;
-    case ORGANIZATION:
-      return organization;
-    case RECIPIENT:
-      return recipient;
-    default:
-      assert(false);
-      return recipient;
+  const std::string* field_value = GetMemberForField(*this, field);
+  return field_value != NULL ? *field_value : country_code;
+}
+
+void AddressData::SetFieldValue(AddressField field, const std::string& value) {
+  std::string* field_value =
+      const_cast<std::string*>(GetMemberForField(*this, field));
+  if (field_value != NULL) {
+    *field_value = value;
   }
 }
 

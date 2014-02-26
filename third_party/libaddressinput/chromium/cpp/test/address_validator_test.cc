@@ -22,20 +22,32 @@
 #include <libaddressinput/storage.h>
 #include <libaddressinput/util/scoped_ptr.h>
 
+#include <cstddef>
+#include <set>
 #include <string>
+#include <vector>
 
 #include <gtest/gtest.h>
 
 #include "fake_downloader.h"
 #include "fake_storage.h"
+#include "region_data_constants.h"
 
 namespace i18n {
 namespace addressinput {
 
-class AddressValidatorTest : public testing::Test, public LoadRulesDelegate {
+scoped_ptr<AddressValidator> BuildAddressValidatorForTesting(
+    const std::string& validation_data_url,
+    scoped_ptr<Downloader> downloader,
+    scoped_ptr<Storage> storage,
+    LoadRulesDelegate* load_rules_delegate);
+
+class AddressValidatorTest : public testing::TestWithParam<std::string>,
+                             public LoadRulesDelegate {
  public:
   AddressValidatorTest()
-      : validator_(AddressValidator::Build(
+      : validator_(BuildAddressValidatorForTesting(
+            FakeDownloader::kFakeDataUrl,
             scoped_ptr<Downloader>(new FakeDownloader),
             scoped_ptr<Storage>(new FakeStorage),
             this)) {
@@ -58,6 +70,19 @@ class AddressValidatorTest : public testing::Test, public LoadRulesDelegate {
     EXPECT_EQ(success, status == AddressValidator::SUCCESS);
   }
 };
+
+TEST_P(AddressValidatorTest, RegionHasRules) {
+  validator_->LoadRules(GetParam());
+  AddressData address;
+  address.country_code = GetParam();
+  EXPECT_EQ(
+      AddressValidator::SUCCESS,
+      validator_->ValidateAddress(address, AddressProblemFilter(), NULL));
+}
+
+INSTANTIATE_TEST_CASE_P(
+    AllRegions, AddressValidatorTest,
+    testing::ValuesIn(RegionDataConstants::GetRegionCodes()));
 
 TEST_F(AddressValidatorTest, EmptyAddressNoFatalFailure) {
   AddressData address;
@@ -207,30 +232,275 @@ TEST_F(AddressValidatorTest, BasicValidationFailure) {
   EXPECT_EQ(ADMIN_AREA, problems[0].field);
 }
 
-TEST_F(AddressValidatorTest, ValidationFailureWithNoRulesPresent) {
-  // The fake downloader/fake storage will fail to get these rules.
-  validator_->LoadRules("CA");
+TEST_F(AddressValidatorTest, NoNullSuggestionsCrash) {
   AddressData address;
-  address.country_code = "CA";
-  address.language_code = "en";
-  address.administrative_area = "Never never land";
-  address.locality = "grassy knoll";
-  address.postal_code = "1234";
-  address.address_lines.push_back("123 Main St");
-  AddressProblems problems;
-  EXPECT_EQ(
-      AddressValidator::RULES_UNAVAILABLE,
-      validator_->ValidateAddress(address, AddressProblemFilter(), &problems));
-  EXPECT_TRUE(problems.empty());
+  address.country_code = "US";
+  EXPECT_EQ(AddressValidator::SUCCESS,
+            validator_->GetSuggestions(address, COUNTRY, 1, NULL));
+}
 
-  // Field requirements are still enforced even if the rules aren't downloaded.
-  address.administrative_area = "";
-  problems.clear();
-  EXPECT_EQ(
-      AddressValidator::RULES_UNAVAILABLE,
-      validator_->ValidateAddress(address, AddressProblemFilter(), &problems));
-  ASSERT_EQ(1U, problems.size());
-  EXPECT_EQ(AddressProblem::MISSING_REQUIRED_FIELD, problems[0].type);
+TEST_F(AddressValidatorTest, SuggestAdminAreaForPostalCode) {
+  AddressData address;
+  address.country_code = "US";
+  address.postal_code = "90291";
+
+  std::vector<AddressData> suggestions;
+  EXPECT_EQ(AddressValidator::SUCCESS,
+            validator_->GetSuggestions(address, POSTAL_CODE, 1, &suggestions));
+  ASSERT_EQ(1, suggestions.size());
+  EXPECT_EQ("CA", suggestions[0].administrative_area);
+  EXPECT_EQ("90291", suggestions[0].postal_code);
+}
+
+TEST_F(AddressValidatorTest, SuggestLocalityForPostalCodeWithAdminArea) {
+  validator_->LoadRules("TW");
+  AddressData address;
+  address.country_code = "TW";
+  address.postal_code = "515";
+  address.administrative_area = "Changhua";
+
+  std::vector<AddressData> suggestions;
+  EXPECT_EQ(AddressValidator::SUCCESS,
+            validator_->GetSuggestions(address, POSTAL_CODE, 1, &suggestions));
+  ASSERT_EQ(1, suggestions.size());
+  EXPECT_EQ("Dacun Township", suggestions[0].locality);
+  EXPECT_EQ("Changhua County", suggestions[0].administrative_area);
+  EXPECT_EQ("515", suggestions[0].postal_code);
+}
+
+TEST_F(AddressValidatorTest, SuggestAdminAreaForPostalCodeWithLocality) {
+  validator_->LoadRules("TW");
+  AddressData address;
+  address.country_code = "TW";
+  address.postal_code = "515";
+  address.locality = "Dacun";
+
+  std::vector<AddressData> suggestions;
+  EXPECT_EQ(AddressValidator::SUCCESS,
+            validator_->GetSuggestions(address, POSTAL_CODE, 1, &suggestions));
+  ASSERT_EQ(1, suggestions.size());
+  EXPECT_EQ("Dacun Township", suggestions[0].locality);
+  EXPECT_EQ("Changhua County", suggestions[0].administrative_area);
+  EXPECT_EQ("515", suggestions[0].postal_code);
+}
+
+TEST_F(AddressValidatorTest, NoSuggestForPostalCodeWithWrongAdminArea) {
+  AddressData address;
+  address.country_code = "US";
+  address.postal_code = "90066";
+  address.postal_code = "TX";
+
+  std::vector<AddressData> suggestions;
+  EXPECT_EQ(AddressValidator::SUCCESS,
+            validator_->GetSuggestions(address, POSTAL_CODE, 1, &suggestions));
+  EXPECT_TRUE(suggestions.empty());
+}
+
+TEST_F(AddressValidatorTest, SuggestForLocality) {
+  validator_->LoadRules("CN");
+  AddressData address;
+  address.country_code = "CN";
+  address.locality = "Anqin";
+
+  std::vector<AddressData> suggestions;
+  EXPECT_EQ(AddressValidator::SUCCESS,
+            validator_->GetSuggestions(address, LOCALITY, 10, &suggestions));
+  ASSERT_EQ(1, suggestions.size());
+  EXPECT_EQ("Anqing Shi", suggestions[0].locality);
+  EXPECT_EQ("ANHUI SHENG", suggestions[0].administrative_area);
+}
+
+TEST_F(AddressValidatorTest, SuggestForLocalityAndAdminArea) {
+  validator_->LoadRules("CN");
+  AddressData address;
+  address.country_code = "CN";
+  address.locality = "Anqing";
+  address.administrative_area = "Anhui";
+
+  std::vector<AddressData> suggestions;
+  EXPECT_EQ(AddressValidator::SUCCESS,
+            validator_->GetSuggestions(address, LOCALITY, 10, &suggestions));
+  ASSERT_EQ(1, suggestions.size());
+  EXPECT_TRUE(suggestions[0].dependent_locality.empty());
+  EXPECT_EQ("Anqing Shi", suggestions[0].locality);
+  EXPECT_EQ("ANHUI SHENG", suggestions[0].administrative_area);
+}
+
+TEST_F(AddressValidatorTest, SuggestForAdminAreaAndLocality) {
+  validator_->LoadRules("CN");
+  AddressData address;
+  address.country_code = "CN";
+  address.locality = "Anqing";
+  address.administrative_area = "Anhui";
+
+  std::vector<AddressData> suggestions;
+  EXPECT_EQ(AddressValidator::SUCCESS,
+            validator_->GetSuggestions(address, ADMIN_AREA, 10, &suggestions));
+  ASSERT_EQ(1, suggestions.size());
+  EXPECT_TRUE(suggestions[0].dependent_locality.empty());
+  EXPECT_TRUE(suggestions[0].locality.empty());
+  EXPECT_EQ("ANHUI SHENG", suggestions[0].administrative_area);
+}
+
+TEST_F(AddressValidatorTest, SuggestForDependentLocality) {
+  validator_->LoadRules("CN");
+  AddressData address;
+  address.country_code = "CN";
+  address.dependent_locality = "Zongyang";
+
+  std::vector<AddressData> suggestions;
+  EXPECT_EQ(AddressValidator::SUCCESS,
+            validator_->GetSuggestions(
+                address, DEPENDENT_LOCALITY, 10, &suggestions));
+  ASSERT_EQ(1, suggestions.size());
+  EXPECT_EQ("Zongyang Xian", suggestions[0].dependent_locality);
+  EXPECT_EQ("Anqing Shi", suggestions[0].locality);
+  EXPECT_EQ("ANHUI SHENG", suggestions[0].administrative_area);
+}
+
+TEST_F(AddressValidatorTest,
+       NoSuggestForDependentLocalityWithWrongAdminArea) {
+  validator_->LoadRules("CN");
+  AddressData address;
+  address.country_code = "CN";
+  address.dependent_locality = "Zongyang";
+  address.administrative_area = "Sichuan Sheng";
+
+  std::vector<AddressData> suggestions;
+  EXPECT_EQ(AddressValidator::SUCCESS,
+            validator_->GetSuggestions(
+                address, DEPENDENT_LOCALITY, 10, &suggestions));
+  EXPECT_TRUE(suggestions.empty());
+}
+
+TEST_F(AddressValidatorTest, EmptySuggestionsOverLimit) {
+  AddressData address;
+  address.country_code = "US";
+  address.administrative_area = "A";
+
+  std::vector<AddressData> suggestions;
+  EXPECT_EQ(AddressValidator::SUCCESS,
+            validator_->GetSuggestions(address, ADMIN_AREA, 1, &suggestions));
+  EXPECT_TRUE(suggestions.empty());
+}
+
+TEST_F(AddressValidatorTest, PreferShortSuggestions) {
+  AddressData address;
+  address.country_code = "US";
+  address.administrative_area = "CA";
+
+  std::vector<AddressData> suggestions;
+  EXPECT_EQ(AddressValidator::SUCCESS,
+            validator_->GetSuggestions(address, ADMIN_AREA, 10, &suggestions));
+  ASSERT_EQ(1, suggestions.size());
+  EXPECT_EQ("CA", suggestions[0].administrative_area);
+}
+
+TEST_F(AddressValidatorTest, SuggestTheSingleMatchForFullMatchName) {
+  AddressData address;
+  address.country_code = "US";
+  address.administrative_area = "Texas";
+
+  std::vector<AddressData> suggestions;
+  EXPECT_EQ(AddressValidator::SUCCESS,
+            validator_->GetSuggestions(address, ADMIN_AREA, 10, &suggestions));
+  ASSERT_EQ(1, suggestions.size());
+  EXPECT_EQ("Texas", suggestions[0].administrative_area);
+}
+
+TEST_F(AddressValidatorTest, SuggestAdminArea) {
+  AddressData address;
+  address.country_code = "US";
+  address.administrative_area = "Cali";
+
+  std::vector<AddressData> suggestions;
+  EXPECT_EQ(AddressValidator::SUCCESS,
+            validator_->GetSuggestions(address, ADMIN_AREA, 10, &suggestions));
+  ASSERT_EQ(1, suggestions.size());
+  EXPECT_EQ("California", suggestions[0].administrative_area);
+}
+
+TEST_F(AddressValidatorTest, MultipleSuggestions) {
+  AddressData address;
+  address.country_code = "US";
+  address.administrative_area = "MA";
+
+  std::vector<AddressData> suggestions;
+  EXPECT_EQ(AddressValidator::SUCCESS,
+            validator_->GetSuggestions(address, ADMIN_AREA, 10, &suggestions));
+  EXPECT_LT(1U, suggestions.size());
+
+  // Massachusetts should not be a suggestion, because it's already covered
+  // under MA.
+  std::set<std::string> expected_suggestions;
+  expected_suggestions.insert("MA");
+  expected_suggestions.insert("Maine");
+  expected_suggestions.insert("Marshall Islands");
+  expected_suggestions.insert("Maryland");
+  for (std::vector<AddressData>::const_iterator it = suggestions.begin();
+       it != suggestions.end(); ++it) {
+    expected_suggestions.erase(it->administrative_area);
+  }
+  EXPECT_TRUE(expected_suggestions.empty());
+}
+
+TEST_F(AddressValidatorTest, SuggestNonLatinKeyWhenLanguageMatches) {
+  validator_->LoadRules("KR");
+  AddressData address;
+  address.language_code = "ko";
+  address.country_code = "KR";
+  address.postal_code = "210-210";
+
+  std::vector<AddressData> suggestions;
+  EXPECT_EQ(AddressValidator::SUCCESS,
+            validator_->GetSuggestions(address, POSTAL_CODE, 1, &suggestions));
+  ASSERT_EQ(1, suggestions.size());
+  EXPECT_EQ("강원도", suggestions[0].administrative_area);
+  EXPECT_EQ("210-210", suggestions[0].postal_code);
+}
+
+TEST_F(AddressValidatorTest, SuggestNonLatinKeyWhenUserInputIsNotLatin) {
+  validator_->LoadRules("KR");
+  AddressData address;
+  address.language_code = "en";
+  address.country_code = "KR";
+  address.administrative_area = "강원";
+
+  std::vector<AddressData> suggestions;
+  EXPECT_EQ(AddressValidator::SUCCESS,
+            validator_->GetSuggestions(address, ADMIN_AREA, 1, &suggestions));
+  ASSERT_EQ(1, suggestions.size());
+  EXPECT_EQ("강원도", suggestions[0].administrative_area);
+}
+
+TEST_F(AddressValidatorTest,
+       SuggestLatinNameWhenLanguageDiffersAndLatinNameAvailable) {
+  validator_->LoadRules("KR");
+  AddressData address;
+  address.language_code = "en";
+  address.country_code = "KR";
+  address.postal_code = "210-210";
+
+  std::vector<AddressData> suggestions;
+  EXPECT_EQ(AddressValidator::SUCCESS,
+            validator_->GetSuggestions(address, POSTAL_CODE, 1, &suggestions));
+  ASSERT_EQ(1, suggestions.size());
+  EXPECT_EQ("Gangwon", suggestions[0].administrative_area);
+  EXPECT_EQ("210-210", suggestions[0].postal_code);
+}
+
+TEST_F(AddressValidatorTest, SuggestLatinNameWhenUserInputIsLatin) {
+  validator_->LoadRules("KR");
+  AddressData address;
+  address.language_code = "ko";
+  address.country_code = "KR";
+  address.administrative_area = "Gang";
+
+  std::vector<AddressData> suggestions;
+  EXPECT_EQ(AddressValidator::SUCCESS,
+            validator_->GetSuggestions(address, ADMIN_AREA, 1, &suggestions));
+  ASSERT_EQ(1, suggestions.size());
+  EXPECT_EQ("Gangwon", suggestions[0].administrative_area);
 }
 
 }  // namespace addressinput

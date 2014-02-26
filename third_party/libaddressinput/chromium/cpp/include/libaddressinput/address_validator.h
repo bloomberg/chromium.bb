@@ -120,6 +120,36 @@ class AddressValidator {
                                  const AddressProblemFilter& filter,
                                  AddressProblems* problems) const = 0;
 
+  // Fills in |suggestions| for the partially typed in |user_input|, assuming
+  // the user is typing in the |focused_field|. If the number of |suggestions|
+  // is over the |suggestion_limit|, then returns no |suggestions| at all.
+  //
+  // If the |solutions| parameter is NULL, the checks whether the validation
+  // rules are available, but does not fill in suggestions.
+  //
+  // Sample user input 1:
+  //   country code = "US"
+  //   postal code = "90066"
+  //   focused field = POSTAL_CODE
+  //   suggestions limit = 1
+  // Suggestion:
+  //   [{administrative_area: "CA"}]
+  //
+  // Sample user input 2:
+  //   country code = "CN"
+  //   dependent locality = "Zongyang"
+  //   focused field = DEPENDENT_LOCALITY
+  //   suggestions limit = 10
+  // Suggestion:
+  //   [{dependent_locality: "Zongyang Xian",
+  //     locality: "Anqing Shi",
+  //     administrative_area: "Anhui Sheng"}]
+  virtual Status GetSuggestions(
+      const AddressData& user_input,
+      AddressField focused_field,
+      size_t suggestion_limit,
+      std::vector<AddressData>* suggestions) const = 0;
+
   // Canonicalizes the administrative area in |address_data|. For example,
   // "texas" changes to "TX". Returns true on success, otherwise leaves
   // |address_data| alone and returns false.
