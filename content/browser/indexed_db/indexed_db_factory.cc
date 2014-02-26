@@ -230,7 +230,8 @@ void IndexedDBFactory::HandleBackingStoreFailure(const GURL& origin_url) {
   // NULL after ContextDestroyed() called, and in some unit tests.
   if (!context_)
     return;
-  context_->ForceClose(origin_url);
+  context_->ForceClose(origin_url,
+                       IndexedDBContextImpl::FORCE_CLOSE_BACKING_STORE_FAILURE);
 }
 
 bool IndexedDBFactory::IsDatabaseOpen(const GURL& origin_url,

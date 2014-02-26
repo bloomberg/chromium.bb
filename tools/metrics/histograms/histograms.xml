@@ -22622,6 +22622,11 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="WebCore.IndexedDB.Context.ForcedCloseReason"
+    enum="IDBContextForcedCloseReason">
+  <summary>The reason that a forced-close of a backing store occurred.</summary>
+</histogram>
+
 <histogram name="WebCore.IndexedDB.FrontEndAPICalls"
     enum="IndexedDatabaseMethods">
   <summary>
@@ -27542,6 +27547,18 @@ other types of suffix sets.
     connected unused socket (idle prior to use)
   </int>
   <int value="2" label="REUSED_IDLE">previously used (keep-alive?) socket</int>
+</enum>
+
+<enum name="IDBContextForcedCloseReason" type="int">
+  <int value="0" label="DeleteOrigin">
+    A request was made to delete the data for an origin.
+  </int>
+  <int value="1" label="BackingStoreFailure">
+    An unrecoverable error occurred accessing the backing store.
+  </int>
+  <int value="2" label="InternalsPage">
+    A forced close was requested from the indexeddb-internals page.
+  </int>
 </enum>
 
 <enum name="IDBLevelDBBackingStoreInternalErrorType" type="int">

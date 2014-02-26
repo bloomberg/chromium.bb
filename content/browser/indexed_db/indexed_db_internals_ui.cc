@@ -201,7 +201,8 @@ void IndexedDBInternalsUI::DownloadOriginDataOnIndexedDBThread(
   if (!context->IsInOriginSet(origin_url))
     return;
 
-  context->ForceClose(origin_url);
+  context->ForceClose(origin_url,
+                      IndexedDBContextImpl::FORCE_CLOSE_INTERNALS_PAGE);
   size_t connection_count = context->GetConnectionCount(origin_url);
 
   base::ScopedTempDir temp_dir;
@@ -242,7 +243,8 @@ void IndexedDBInternalsUI::ForceCloseOriginOnIndexedDBThread(
   if (!context->IsInOriginSet(origin_url))
     return;
 
-  context->ForceClose(origin_url);
+  context->ForceClose(origin_url,
+                      IndexedDBContextImpl::FORCE_CLOSE_INTERNALS_PAGE);
   size_t connection_count = context->GetConnectionCount(origin_url);
 
   BrowserThread::PostTask(BrowserThread::UI,
