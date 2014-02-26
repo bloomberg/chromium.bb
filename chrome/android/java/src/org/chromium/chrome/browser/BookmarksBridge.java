@@ -201,6 +201,16 @@ public class BookmarksBridge {
         nativeDeleteBookmark(mNativeBookmarksBridge, bookmarkId);
     }
 
+    /**
+     * Move the bookmark to the new index within same folder or to a different folder.
+     * @param bookmarkId The id of the bookmark that is being moved.
+     * @param newParentId The parent folder id.
+     * @param index The new index for the bookmark.
+     */
+    public void moveBookmark(BookmarkId bookmarkId, BookmarkId newParentId, int index) {
+        nativeMoveBookmark(mNativeBookmarksBridge, bookmarkId, newParentId, index);
+    }
+
     public static boolean isEditBookmarksEnabled() {
         return nativeIsEditBookmarksEnabled();
     }
@@ -302,6 +312,8 @@ public class BookmarksBridge {
             BookmarkId folderId, BookmarksCallback callback,
             List<BookmarkItem> bookmarksList);
     private native void nativeDeleteBookmark(long nativeBookmarksBridge, BookmarkId bookmarkId);
+    private native void nativeMoveBookmark(long nativeBookmarksBridge, BookmarkId bookmarkId,
+            BookmarkId newParentId, int index);
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeBookmarksBridge);
     private static native boolean nativeIsEditBookmarksEnabled();

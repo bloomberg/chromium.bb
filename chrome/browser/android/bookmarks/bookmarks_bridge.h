@@ -45,6 +45,12 @@ class BookmarksBridge : public BaseBookmarkModelObserver,
                       jobject obj,
                       jobject j_bookmark_id_obj);
 
+  void MoveBookmark(JNIEnv* env,
+                    jobject obj,
+                    jobject j_bookmark_id_obj,
+                    jobject j_parent_id_obj,
+                    jint index);
+
  private:
   virtual ~BookmarksBridge();
 

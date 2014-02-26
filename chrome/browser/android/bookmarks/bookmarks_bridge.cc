@@ -189,6 +189,27 @@ void BookmarksBridge::DeleteBookmark(JNIEnv* env,
   }
 }
 
+void BookmarksBridge::MoveBookmark(JNIEnv* env,
+                                   jobject obj,
+                                   jobject j_bookmark_id_obj,
+                                   jobject j_parent_id_obj,
+                                   jint index) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(IsLoaded());
+
+  long bookmark_id = Java_BookmarkId_getId(env, j_bookmark_id_obj);
+  int type = Java_BookmarkId_getType(env, j_bookmark_id_obj);
+  const BookmarkNode* node = GetNodeByID(bookmark_id, type);
+  if (!IsEditable(node)) {
+    NOTREACHED();
+    return;
+  }
+  bookmark_id = Java_BookmarkId_getId(env, j_parent_id_obj);
+  type = Java_BookmarkId_getType(env, j_parent_id_obj);
+  const BookmarkNode* new_parent_node = GetNodeByID(bookmark_id, type);
+  bookmark_model_->Move(node, new_parent_node, index);
+}
+
 ScopedJavaLocalRef<jobject> BookmarksBridge::CreateJavaBookmark(
     const BookmarkNode* node) {
   JNIEnv* env = AttachCurrentThread();
