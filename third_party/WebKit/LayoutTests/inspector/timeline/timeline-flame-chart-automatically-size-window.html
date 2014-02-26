@@ -14,12 +14,12 @@ function test()
     var timeline = WebInspector.panels.timeline;
     timeline._onModeChanged(WebInspector.TimelinePanel.Mode.FlameChart);
     timeline._currentViews[0]._automaticallySizeWindow = true;
-    function setWindowTimesHook(startTime, endTime)
+    function requestWindowTimesHook(startTime, endTime)
     {
         if (startTime)
             InspectorTest.addResult("time delta: " + (endTime - startTime));
     }
-    timeline.setWindowTimes = setWindowTimesHook;
+    timeline.requestWindowTimes = requestWindowTimesHook;
     var model = timeline._model;
 
     function createFileReader(file, delegate)

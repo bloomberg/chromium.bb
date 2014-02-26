@@ -22,6 +22,8 @@ function test()
     InspectorTest.override(model, "_createFileReader", createFileReader);
 
     model.loadFromFile({}, new WebInspector.Progress());
+    timeline._currentViews[0]._refresh();
+
     function dumpRecordsCountForRange(windowLeft, windowRight)
     {
         var view = timeline._currentViews[0];
