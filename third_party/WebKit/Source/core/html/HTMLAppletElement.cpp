@@ -117,11 +117,6 @@ void HTMLAppletElement::updateWidgetInternal()
     Frame* frame = document().frame();
     ASSERT(frame);
 
-    LayoutUnit contentWidth = renderer->style()->width().isFixed() ? LayoutUnit(renderer->style()->width().value()) :
-        renderer->width() - renderer->borderAndPaddingWidth();
-    LayoutUnit contentHeight = renderer->style()->height().isFixed() ? LayoutUnit(renderer->style()->height().value()) :
-        renderer->height() - renderer->borderAndPaddingHeight();
-
     Vector<String> paramNames;
     Vector<String> paramValues;
 
@@ -186,7 +181,7 @@ void HTMLAppletElement::updateWidgetInternal()
 
     RefPtr<Widget> widget;
     if (frame->loader().allowPlugins(AboutToInstantiatePlugin))
-        widget = frame->loader().client()->createJavaAppletWidget(roundedIntSize(LayoutSize(contentWidth, contentHeight)), this, baseURL, paramNames, paramValues);
+        widget = frame->loader().client()->createJavaAppletWidget(this, baseURL, paramNames, paramValues);
 
     if (!widget) {
         if (!renderer->showsUnavailablePluginIndicator())

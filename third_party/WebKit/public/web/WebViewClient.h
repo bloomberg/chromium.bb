@@ -150,6 +150,7 @@ public:
 
     // Creates the main WebFrame for the specified WebHelperPlugin.
     // Called by WebHelperPlugin to provide the WebFrameClient interface for the WebFrame.
+    // FIXME: Remove this once WebHelperPlugin is de-widgetized.
     virtual void initializeHelperPluginWebFrame(WebHelperPlugin*) { }
 
     // Navigational --------------------------------------------------------

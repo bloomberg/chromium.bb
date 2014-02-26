@@ -8,7 +8,7 @@
 #include "WebDocument.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
-#include "WebHelperPlugin.h"
+#include "WebHelperPluginImpl.h"
 #include "WebViewImpl.h"
 #include "core/frame/Frame.h"
 #include "core/html/HTMLMediaElement.h"
@@ -150,19 +150,11 @@ WebPlugin* WebMediaPlayerClientImpl::createHelperPlugin(const WebString& pluginT
 {
     ASSERT(!m_helperPlugin);
 
-    m_helperPlugin = adoptPtr(frame->view()->createHelperPlugin(pluginType, frame->document()));
+    m_helperPlugin = adoptPtr(WebHelperPlugin::create(pluginType, frame));
     if (!m_helperPlugin)
         return 0;
 
-    WebPlugin* plugin = m_helperPlugin->getPlugin();
-    if (!plugin) {
-        // There is no need to keep the helper plugin around and the caller
-        // should not be expected to call close after a failure (null pointer).
-        closeHelperPluginSoon(frame);
-        return 0;
-    }
-
-    return plugin;
+    return m_helperPlugin->getPlugin();
 }
 
 // FIXME: |frame| no longer needed.

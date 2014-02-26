@@ -308,6 +308,7 @@
       'tests/URLTestHelpers.h',
       'tests/ViewportTest.cpp',
       'tests/WebFrameTest.cpp',
+      'tests/WebHelperPluginTest.cpp',
       'tests/WebImageTest.cpp',
       'tests/WebInputEventConversionTest.cpp',
       'tests/WebInputEventFactoryTestMac.mm',
