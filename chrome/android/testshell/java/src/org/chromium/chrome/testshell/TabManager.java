@@ -118,5 +118,6 @@ public class TabManager extends LinearLayout {
         mContentViewHolder.addView(mCurrentTab.getContentView());
         mContentViewRenderView.setCurrentContentView(mCurrentTab.getContentView());
         mCurrentTab.getContentView().requestFocus();
+        mCurrentTab.getContentView().onShow();
     }
 }

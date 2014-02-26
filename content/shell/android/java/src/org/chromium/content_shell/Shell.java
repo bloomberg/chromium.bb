@@ -252,6 +252,7 @@ public class Shell extends LinearLayout {
     private void initFromNativeTabContents(long nativeTabContents) {
         mContentView = ContentView.newInstance(getContext(), nativeTabContents, mWindow);
         mContentView.setContentViewClient(mContentViewClient);
+        if (getParent() != null) mContentView.onShow();
         if (mContentView.getUrl() != null) mUrlTextView.setText(mContentView.getUrl());
         ((FrameLayout) findViewById(R.id.contentview_holder)).addView(mContentView,
                 new FrameLayout.LayoutParams(
