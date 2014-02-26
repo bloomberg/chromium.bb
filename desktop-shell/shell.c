@@ -2445,6 +2445,53 @@ unset_maximized(struct shell_surface *shsurf)
 }
 
 static void
+set_minimized(struct weston_surface *surface, uint32_t is_true)
+{
+	struct shell_surface *shsurf;
+	struct workspace *current_ws;
+	struct weston_seat *seat;
+	struct weston_surface *focus;
+	struct weston_view *view;
+
+	view = get_default_view(surface);
+	if (!view)
+		return;
+
+	assert(weston_surface_get_main_surface(view->surface) == view->surface);
+
+	shsurf = get_shell_surface(surface);
+	current_ws = get_current_workspace(shsurf->shell);
+
+	wl_list_remove(&view->layer_link);
+	 /* hide or show, depending on the state */
+	if (is_true) {
+		wl_list_insert(&shsurf->shell->minimized_layer.view_list, &view->layer_link);
+
+		drop_focus_state(shsurf->shell, current_ws, view->surface);
+		wl_list_for_each(seat, &shsurf->shell->compositor->seat_list, link) {
+			if (!seat->keyboard)
+				continue;
+			focus = weston_surface_get_main_surface(seat->keyboard->focus);
+			if (focus == view->surface)
+				weston_keyboard_set_focus(seat->keyboard, NULL);
+		}
+	}
+	else {
+		wl_list_insert(&current_ws->layer.view_list, &view->layer_link);
+
+		wl_list_for_each(seat, &shsurf->shell->compositor->seat_list, link) {
+			if (!seat->keyboard)
+				continue;
+			activate(shsurf->shell, view->surface, seat);
+		}
+	}
+
+	shell_surface_update_child_surface_layers(shsurf);
+
+	weston_view_damage_below(view);
+}
+
+static void
 shell_surface_set_maximized(struct wl_client *client,
                             struct wl_resource *resource,
                             struct wl_resource *output_resource)
@@ -3344,6 +3391,19 @@ xdg_surface_ack_change_state(struct wl_client *client,
 	}
 }
 
+static void
+xdg_surface_set_minimized(struct wl_client *client,
+			    struct wl_resource *resource)
+{
+	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
+
+	if (shsurf->type != SHELL_SURFACE_TOPLEVEL)
+		return;
+
+	 /* apply compositor's own minimization logic (hide) */
+	set_minimized(shsurf->surface, 1);
+}
+
 static const struct xdg_surface_interface xdg_surface_implementation = {
 	xdg_surface_destroy,
 	xdg_surface_set_transient_for,
@@ -3355,7 +3415,7 @@ static const struct xdg_surface_interface xdg_surface_implementation = {
 	xdg_surface_set_output,
 	xdg_surface_request_change_state,
 	xdg_surface_ack_change_state,
-	NULL /* set_minimized */
+	xdg_surface_set_minimized
 };
 
 static void
@@ -5901,6 +5961,8 @@ module_init(struct weston_compositor *ec,
 			return -1;
 	}
 	activate_workspace(shell, 0);
+
+	weston_layer_init(&shell->minimized_layer, NULL);
 
 	wl_list_init(&shell->workspaces.anim_sticky_list);
 	wl_list_init(&shell->workspaces.animation.link);
