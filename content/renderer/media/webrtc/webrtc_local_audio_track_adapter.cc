@@ -5,6 +5,7 @@
 #include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
 
 #include "base/logging.h"
+#include "content/renderer/media/webrtc/webrtc_audio_sink_adapter.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
 
 namespace content {
@@ -40,6 +41,38 @@ void WebRtcLocalAudioTrackAdapter::Initialize(WebRtcLocalAudioTrack* owner) {
 
 std::string WebRtcLocalAudioTrackAdapter::kind() const {
   return kAudioTrackKind;
+}
+
+void WebRtcLocalAudioTrackAdapter::AddSink(
+    webrtc::AudioTrackSinkInterface* sink) {
+  DCHECK(sink);
+#ifndef NDEBUG
+  // Verify that |sink| has not been added.
+  for (ScopedVector<WebRtcAudioSinkAdapter>::const_iterator it =
+           sink_adapters_.begin();
+       it != sink_adapters_.end(); ++it) {
+    DCHECK(!(*it)->IsEqual(sink));
+  }
+#endif
+
+  scoped_ptr<WebRtcAudioSinkAdapter> adapter(
+      new WebRtcAudioSinkAdapter(sink));
+  owner_->AddSink(adapter.get());
+  sink_adapters_.push_back(adapter.release());
+}
+
+void WebRtcLocalAudioTrackAdapter::RemoveSink(
+    webrtc::AudioTrackSinkInterface* sink) {
+  DCHECK(sink);
+  for (ScopedVector<WebRtcAudioSinkAdapter>::iterator it =
+           sink_adapters_.begin();
+       it != sink_adapters_.end(); ++it) {
+    if ((*it)->IsEqual(sink)) {
+      owner_->RemoveSink(*it);
+      sink_adapters_.erase(it);
+      return;
+    }
+  }
 }
 
 std::vector<int> WebRtcLocalAudioTrackAdapter::VoeChannels() const {
