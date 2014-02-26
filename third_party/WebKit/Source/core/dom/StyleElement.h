@@ -56,7 +56,7 @@ protected:
 private:
     void createSheet(Element*, const String& text = String());
     void process(Element*);
-    void clearSheet();
+    void clearSheet(Element* ownerElement = 0);
 
     bool m_createdByParser;
     bool m_loading;

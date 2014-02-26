@@ -74,7 +74,7 @@ void StyleElement::removedFromDocument(Document& document, Element* element, Con
     RefPtr<StyleSheet> removedSheet = m_sheet;
 
     if (m_sheet)
-        clearSheet();
+        clearSheet(element);
 
     document.removedStyleSheet(removedSheet.get(), RecalcStyleDeferred, AnalyzedStyleUpdate);
 }
@@ -111,9 +111,13 @@ void StyleElement::process(Element* element)
     createSheet(element, element->textFromChildren());
 }
 
-void StyleElement::clearSheet()
+void StyleElement::clearSheet(Element* ownerElement)
 {
     ASSERT(m_sheet);
+
+    if (ownerElement && m_sheet->isLoading())
+        ownerElement->document().styleEngine()->removePendingSheet(ownerElement);
+
     m_sheet.release()->clearOwnerNode();
 }
 
@@ -122,11 +126,8 @@ void StyleElement::createSheet(Element* e, const String& text)
     ASSERT(e);
     ASSERT(e->inDocument());
     Document& document = e->document();
-    if (m_sheet) {
-        if (m_sheet->isLoading())
-            document.styleEngine()->removePendingSheet(e);
-        clearSheet();
-    }
+    if (m_sheet)
+        clearSheet(e);
 
     // If type is empty or CSS, this is a CSS style sheet.
     const AtomicString& type = this->type();
