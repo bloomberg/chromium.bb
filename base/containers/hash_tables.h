@@ -140,7 +140,7 @@ inline std::size_t HashInts32(uint32 value1, uint32 value2) {
 
   hash64 = hash64 * odd_random + shift_random;
   std::size_t high_bits = static_cast<std::size_t>(
-      hash64 >> (sizeof(uint64) - sizeof(std::size_t)));
+      hash64 >> (8 * (sizeof(uint64) - sizeof(std::size_t))));
   return high_bits;
 }
 
@@ -175,7 +175,7 @@ inline std::size_t HashInts64(uint64 value1, uint64 value2) {
 
   hash64 = hash64 * odd_random + shift_random;
   std::size_t high_bits = static_cast<std::size_t>(
-      hash64 >> (sizeof(uint64) - sizeof(std::size_t)));
+      hash64 >> (8 * (sizeof(uint64) - sizeof(std::size_t))));
   return high_bits;
 }
 
