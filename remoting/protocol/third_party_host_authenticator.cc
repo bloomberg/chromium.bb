@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/rsa_key_pair.h"
+#include "remoting/protocol/token_validator.h"
 #include "remoting/protocol/v2_authenticator.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 

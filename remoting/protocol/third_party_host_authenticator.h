@@ -10,13 +10,14 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/third_party_authenticator_base.h"
-#include "url/gurl.h"
 
 namespace remoting {
 
 class RsaKeyPair;
 
 namespace protocol {
+
+class TokenValidator;
 
 // Implements the host side of the third party authentication mechanism.
 // The host authenticator sends the |token_url| and |scope| obtained from the
@@ -27,44 +28,6 @@ namespace protocol {
 // |V2Authenticator|, which is used to establish the encrypted connection.
 class ThirdPartyHostAuthenticator : public ThirdPartyAuthenticatorBase {
  public:
-  class TokenValidator {
-   public:
-    // Callback passed to |ValidateThirdPartyToken|, and called once the host
-    // authentication finishes. |shared_secret| should be used by the host to
-    // create a V2Authenticator. In case of failure, the callback is called with
-    // an empty |shared_secret|.
-    typedef base::Callback<void(
-                const std::string& shared_secret)> TokenValidatedCallback;
-
-    virtual ~TokenValidator() {}
-
-    // Validates |token| with the server and exchanges it for a |shared_secret|.
-    // |token_validated_callback| is called when the host authentication ends,
-    // in the same thread |ValidateThirdPartyToken| was originally called.
-    // The request is canceled if this object is destroyed.
-    virtual void ValidateThirdPartyToken(
-        const std::string& token,
-        const TokenValidatedCallback& token_validated_callback) = 0;
-
-    // URL sent to the client, to be used by its |TokenFetcher| to get a token.
-    virtual const GURL& token_url() const = 0;
-
-    // Space-separated list of connection attributes the host must send to the
-    // client, and require the token received in response to match.
-    virtual const std::string& token_scope() const = 0;
-  };
-
-  class TokenValidatorFactory {
-   public:
-    virtual ~TokenValidatorFactory() {}
-
-    // Creates a TokenValidator. |local_jid| and |remote_jid| are used to create
-    // a token scope that is restricted to the current connection's JIDs.
-    virtual scoped_ptr<TokenValidator> CreateTokenValidator(
-        const std::string& local_jid,
-        const std::string& remote_jid) = 0;
-  };
-
   // Creates a third-party host authenticator. |local_cert| and |key_pair| are
   // used by the underlying V2Authenticator to create the SSL channels.
   // |token_validator| contains the token parameters to be sent to the client

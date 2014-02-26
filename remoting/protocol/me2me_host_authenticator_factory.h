@@ -14,6 +14,7 @@
 #include "remoting/protocol/authentication_method.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/third_party_host_authenticator.h"
+#include "remoting/protocol/token_validator.h"
 
 namespace remoting {
 
@@ -40,8 +41,7 @@ class Me2MeHostAuthenticatorFactory : public AuthenticatorFactory {
       const std::string& host_owner,
       const std::string& local_cert,
       scoped_refptr<RsaKeyPair> key_pair,
-      scoped_ptr<ThirdPartyHostAuthenticator::TokenValidatorFactory>
-          token_validator_factory);
+      scoped_ptr<TokenValidatorFactory> token_validator_factory);
 
   // Create a factory that dispenses rejecting authenticators (used when the
   // host config/policy is inconsistent)
@@ -67,8 +67,7 @@ class Me2MeHostAuthenticatorFactory : public AuthenticatorFactory {
   SharedSecretHash shared_secret_hash_;
 
   // Used only for third party host authenticators.
-  scoped_ptr<ThirdPartyHostAuthenticator::TokenValidatorFactory>
-      token_validator_factory_;
+  scoped_ptr<TokenValidatorFactory> token_validator_factory_;
 
   // Used only for pairing host authenticators.
   scoped_refptr<PairingRegistry> pairing_registry_;

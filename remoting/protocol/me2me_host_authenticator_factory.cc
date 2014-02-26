@@ -9,6 +9,7 @@
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/negotiating_host_authenticator.h"
+#include "remoting/protocol/token_validator.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
 namespace remoting {
@@ -86,7 +87,7 @@ Me2MeHostAuthenticatorFactory::CreateWithThirdPartyAuth(
     const std::string& host_owner,
     const std::string& local_cert,
     scoped_refptr<RsaKeyPair> key_pair,
-    scoped_ptr<ThirdPartyHostAuthenticator::TokenValidatorFactory>
+    scoped_ptr<TokenValidatorFactory>
         token_validator_factory) {
   scoped_ptr<Me2MeHostAuthenticatorFactory> result(
       new Me2MeHostAuthenticatorFactory());

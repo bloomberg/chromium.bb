@@ -71,6 +71,7 @@
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
 #include "remoting/protocol/pairing_registry.h"
+#include "remoting/protocol/token_validator.h"
 
 #if defined(OS_POSIX)
 #include <signal.h>
@@ -550,8 +551,8 @@ void HostProcess::CreateAuthenticatorFactory() {
         host_secret_hash_, pairing_registry);
 
   } else if (third_party_auth_config_.is_valid()) {
-    scoped_ptr<protocol::ThirdPartyHostAuthenticator::TokenValidatorFactory>
-        token_validator_factory(new TokenValidatorFactoryImpl(
+    scoped_ptr<protocol::TokenValidatorFactory> token_validator_factory(
+        new TokenValidatorFactoryImpl(
             third_party_auth_config_,
             key_pair_, context_->url_request_context_getter()));
     factory = protocol::Me2MeHostAuthenticatorFactory::CreateWithThirdPartyAuth(

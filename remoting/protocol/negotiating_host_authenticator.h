@@ -43,7 +43,7 @@ class NegotiatingHostAuthenticator : public NegotiatingAuthenticatorBase {
   static scoped_ptr<Authenticator> CreateWithThirdPartyAuth(
       const std::string& local_cert,
       scoped_refptr<RsaKeyPair> key_pair,
-      scoped_ptr<ThirdPartyHostAuthenticator::TokenValidator> token_validator);
+      scoped_ptr<TokenValidator> token_validator);
 
   // Overriden from Authenticator.
   virtual void ProcessMessage(const buzz::XmlElement* message,
@@ -69,7 +69,7 @@ class NegotiatingHostAuthenticator : public NegotiatingAuthenticatorBase {
   std::string shared_secret_hash_;
 
   // Used only for third party host authenticators.
-  scoped_ptr<ThirdPartyHostAuthenticator::TokenValidator> token_validator_;
+  scoped_ptr<TokenValidator> token_validator_;
 
   // Used only for pairing authenticators.
   scoped_refptr<PairingRegistry> pairing_registry_;

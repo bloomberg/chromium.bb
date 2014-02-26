@@ -177,6 +177,7 @@
       'protocol/third_party_client_authenticator.h',
       'protocol/third_party_host_authenticator.cc',
       'protocol/third_party_host_authenticator.h',
+      'protocol/token_validator.h',
       'protocol/v2_authenticator.cc',
       'protocol/v2_authenticator.h',
       'protocol/video_reader.cc',

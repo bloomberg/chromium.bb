@@ -132,8 +132,7 @@ class TokenValidatorFactoryImplTest : public testing::Test {
   scoped_refptr<RsaKeyPair> key_pair_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   scoped_ptr<TokenValidatorFactoryImpl> token_validator_factory_;
-  scoped_ptr<protocol::ThirdPartyHostAuthenticator::TokenValidator>
-  token_validator_;
+  scoped_ptr<protocol::TokenValidator> token_validator_;
 };
 
 TEST_F(TokenValidatorFactoryImplTest, Success) {

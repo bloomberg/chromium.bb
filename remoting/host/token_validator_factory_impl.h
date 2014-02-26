@@ -10,29 +10,15 @@
 
 #include "base/basictypes.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "remoting/protocol/third_party_host_authenticator.h"
+#include "remoting/host/token_validator_base.h"
+#include "remoting/protocol/token_validator.h"
 
 namespace remoting {
-
-struct ThirdPartyAuthConfig {
-  inline bool is_empty() const {
-    return token_url.is_empty() && token_validation_url.is_empty();
-  }
-
-  inline bool is_valid() const {
-    return token_url.is_valid() && token_validation_url.is_valid();
-  }
-
-  GURL token_url;
-  GURL token_validation_url;
-  std::string token_validation_cert_issuer;
-};
 
 // This class dispenses |TokenValidator| implementations that use a UrlFetcher
 // to contact a |token_validation_url| and exchange the |token| for a
 // |shared_secret|.
-class TokenValidatorFactoryImpl
-    : public protocol::ThirdPartyHostAuthenticator::TokenValidatorFactory {
+class TokenValidatorFactoryImpl : public protocol::TokenValidatorFactory {
  public:
   // Creates a new factory. |token_url| and |token_validation_url| are the
   // third party authentication service URLs, obtained via policy. |key_pair_|
@@ -45,9 +31,9 @@ class TokenValidatorFactoryImpl
   virtual ~TokenValidatorFactoryImpl();
 
   // TokenValidatorFactory interface.
-  virtual scoped_ptr<protocol::ThirdPartyHostAuthenticator::TokenValidator>
-      CreateTokenValidator(const std::string& local_jid,
-                           const std::string& remote_jid) OVERRIDE;
+  virtual scoped_ptr<protocol::TokenValidator> CreateTokenValidator(
+      const std::string& local_jid,
+      const std::string& remote_jid) OVERRIDE;
 
  private:
   ThirdPartyAuthConfig third_party_auth_config_;

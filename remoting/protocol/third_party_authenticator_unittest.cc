@@ -12,6 +12,7 @@
 #include "remoting/protocol/third_party_authenticator_base.h"
 #include "remoting/protocol/third_party_client_authenticator.h"
 #include "remoting/protocol/third_party_host_authenticator.h"
+#include "remoting/protocol/token_validator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
@@ -61,8 +62,7 @@ class ThirdPartyAuthenticatorTest : public AuthenticatorTestBase {
     TokenFetchedCallback on_token_fetched_;
   };
 
-  class FakeTokenValidator
-      : public ThirdPartyHostAuthenticator::TokenValidator {
+  class FakeTokenValidator : public TokenValidator {
    public:
     FakeTokenValidator()
      : token_url_(kTokenUrl),
@@ -104,8 +104,7 @@ class ThirdPartyAuthenticatorTest : public AuthenticatorTestBase {
 
  protected:
   void InitAuthenticators() {
-    scoped_ptr<ThirdPartyHostAuthenticator::TokenValidator>
-        token_validator(new FakeTokenValidator());
+    scoped_ptr<TokenValidator> token_validator(new FakeTokenValidator());
     token_validator_ = static_cast<FakeTokenValidator*>(token_validator.get());
     host_.reset(new ThirdPartyHostAuthenticator(
         host_cert_, key_pair_, token_validator.Pass()));

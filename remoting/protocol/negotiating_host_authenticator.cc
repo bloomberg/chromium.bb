@@ -15,6 +15,7 @@
 #include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/pairing_host_authenticator.h"
 #include "remoting/protocol/pairing_registry.h"
+#include "remoting/protocol/token_validator.h"
 #include "remoting/protocol/v2_authenticator.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
@@ -52,7 +53,7 @@ scoped_ptr<Authenticator>
 NegotiatingHostAuthenticator::CreateWithThirdPartyAuth(
     const std::string& local_cert,
     scoped_refptr<RsaKeyPair> key_pair,
-    scoped_ptr<ThirdPartyHostAuthenticator::TokenValidator> token_validator) {
+    scoped_ptr<TokenValidator> token_validator) {
   scoped_ptr<NegotiatingHostAuthenticator> result(
       new NegotiatingHostAuthenticator(local_cert, key_pair));
   result->token_validator_ = token_validator.Pass();

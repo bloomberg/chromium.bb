@@ -224,6 +224,8 @@
             'host/shaped_screen_capturer.h',
             'host/signaling_connector.cc',
             'host/signaling_connector.h',
+            'host/token_validator_base.cc',
+            'host/token_validator_base.h',
             'host/token_validator_factory_impl.cc',
             'host/token_validator_factory_impl.h',
             'host/usage_stats_consent.h',
