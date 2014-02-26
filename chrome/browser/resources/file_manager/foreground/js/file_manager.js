@@ -2188,7 +2188,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (!this.currentVolumeInfo_)
       return;
 
-    this.document_.title = this.currentVolumeInfo_.getLabel();
+    this.document_.title = this.currentVolumeInfo_.label;
   };
 
   /**

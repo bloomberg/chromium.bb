@@ -18,6 +18,7 @@
  * @param {boolean} isReadOnly True if the volume is read only.
  * @param {!{displayName:string, isCurrentProfile:boolean}} profile Profile
  *     information.
+ * @param {string} label Label of the volume.
  * @constructor
  */
 function VolumeInfo(
@@ -27,11 +28,13 @@ function VolumeInfo(
     error,
     deviceType,
     isReadOnly,
-    profile) {
+    profile,
+    label) {
   this.volumeType_ = volumeType;
   // TODO(hidehiko): This should include FileSystem instance.
   this.volumeId_ = volumeId;
   this.root_ = root;
+  this.label_ = label;
   this.displayRoot_ = null;
   this.fakeEntries_ = {};
   this.displayRoot_ = null;
@@ -59,10 +62,10 @@ function VolumeInfo(
   // Note: This represents if the mounting of the volume is successfully done
   // or not. (If error is empty string, the mount is successfully done).
   // TODO(hidehiko): Rename to make this more understandable.
-  this.error = error;
-  this.deviceType = deviceType;
-  this.isReadOnly = isReadOnly;
-  this.profile = Object.freeze(profile);
+  this.error_ = error;
+  this.deviceType_ = deviceType;
+  this.isReadOnly_ = isReadOnly;
+  this.profile_ = Object.freeze(profile);
 
   Object.seal(this);
 }
@@ -98,6 +101,36 @@ VolumeInfo.prototype = {
    */
   get fakeEntries() {
     return this.fakeEntries_;
+  },
+  /**
+   * @return {string} Error identifier.
+   */
+  get error() {
+    return this.error_;
+  },
+  /**
+   * @return {string} Device type identifier.
+   */
+  get deviceType() {
+    return this.deviceType_;
+  },
+  /**
+   * @return {boolean} Whether read only or not.
+   */
+  get isReadOnly() {
+    return this.isReadOnly_;
+  },
+  /**
+   * @return {!{displayName:string, isCurrentProfile:boolean}} Profile data.
+   */
+  get profile() {
+    return this.profile_;
+  },
+  /**
+   * @return {string} Label for the volume.
+   */
+  get label() {
+    return this.label_;
   }
 };
 
@@ -131,21 +164,6 @@ VolumeInfo.prototype.resolveDisplayRoot = function(onSuccess, onFailure) {
     }.bind(this));
   }
   this.displayRootPromise_.then(onSuccess, onFailure);
-};
-
-/**
- * Obtains volume label.
- * @return {string} Label for the volume.
- */
-VolumeInfo.prototype.getLabel = function() {
-  if (this.volumeType === util.VolumeType.DOWNLOADS)
-    return str('DOWNLOADS_DIRECTORY_LABEL');
-  if (this.volumeType === util.VolumeType.DRIVE)
-    return str('DRIVE_DIRECTORY_LABEL');
-
-  // TODO(mtomasz): We are assuming that root is available. Root may not be
-  // available only for Drive, and we should fix it. crbug.com/335460
-  return this.root.name;
 };
 
 /**
@@ -202,6 +220,18 @@ volumeManagerUtil.getRootEntry_ = function(
  * @param {function(VolumeInfo)} callback Called on completion.
  */
 volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
+  var localizedLabel;
+  switch (volumeMetadata.volumeType) {
+    case util.VolumeType.DOWNLOADS:
+      localizedLabel = str('DOWNLOADS_DIRECTORY_LABEL');
+      break;
+    case util.VolumeType.DRIVE:
+      localizedLabel = str('DRIVE_DIRECTORY_LABEL');
+      break;
+    default:
+      localizedLabel = volumeMetadata.volumeId.split(':', 2)[1];
+      break;
+  }
   volumeManagerUtil.getRootEntry_(
       volumeMetadata.volumeId,
       function(entry) {
@@ -225,7 +255,8 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
             volumeMetadata.mountCondition,
             volumeMetadata.deviceType,
             volumeMetadata.isReadOnly,
-            volumeMetadata.profile));
+            volumeMetadata.profile,
+            localizedLabel));
       },
       function(fileError) {
         console.error('Root entry is not found: ' +
@@ -237,7 +268,8 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
             volumeMetadata.mountCondition,
             volumeMetadata.deviceType,
             volumeMetadata.isReadOnly,
-            volumeMetadata.profile));
+            volumeMetadata.profile,
+            localizedLabel));
       });
 };
 

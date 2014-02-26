@@ -42,10 +42,11 @@ MockVolumeManager.createMockVolumeInfo = function(type, volumeId) {
       type,
       volumeId,
       rootEntry,
-      '',  // error
-      '',  // deviceType
+      '',     // error
+      '',     // deviceType
       false,  // isReadonly
-      {isCurrentProfile: true, displayName: ''});  // profile
+      {isCurrentProfile: true, displayName: ''},  // profile
+      '');    // label
 
   return volumeInfo;
 };

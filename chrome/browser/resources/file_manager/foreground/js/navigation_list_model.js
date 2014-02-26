@@ -78,7 +78,7 @@ function NavigationListModel(volumeManager, shortcutListModel) {
 
   var volumeInfoToModelItem = function(volumeInfo) {
     return new NavigationModelVolumeItem(
-        volumeInfo.getLabel(),
+        volumeInfo.label,
         volumeInfo);
   }.bind(this);
 
