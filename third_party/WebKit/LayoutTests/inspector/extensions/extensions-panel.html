@@ -60,6 +60,8 @@ function initialize_extensionsPanelTest()
             InspectorTest.addResult("Showing resource " + url + " in panel " + panelName + " (" + WebInspector.inspectorView.currentPanel().name + "), line: " + lineNumber);
         }
         InspectorTest.recordNetwork();
+
+        WebInspector.settings.createSetting("drawerEditorShown", true).set(false);
         InspectorTest.addSniffer(WebInspector.panel("sources"), "showUILocation", showUILocationHook, true);
         InspectorTest.addSniffer(WebInspector.panel("resources"), "showResource", showResourceHook, true);
         InspectorTest.addSniffer(WebInspector.panel("network"), "revealAndHighlightRequest", showRequestHook, true);
@@ -296,7 +298,7 @@ function extension_testGlobalShortcuts(nextTest)
     {
         output("Panel hidden, test passed.");
         testPanel.onShown.removeListener(onPanelHidden);
-        nextTest();
+        evaluateOnFrontend("reply(WebInspector.inspectorView.closeDrawer())", nextTest);
     }
 }
 
