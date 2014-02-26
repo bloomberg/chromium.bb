@@ -77,7 +77,6 @@
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/midi_message_filter.h"
 #include "content/renderer/media/peer_connection_tracker.h"
-#include "content/renderer/media/renderer_gpu_video_accelerator_factories.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/video_capture_message_filter.h"
 #include "content/renderer/media/webrtc_identity_service.h"
@@ -889,13 +888,13 @@ void RenderThreadImpl::PostponeIdleNotification() {
   idle_notifications_to_skip_ = 2;
 }
 
-scoped_refptr<media::GpuVideoAcceleratorFactories>
+scoped_refptr<RendererGpuVideoAcceleratorFactories>
 RenderThreadImpl::GetGpuFactories() {
   DCHECK(IsMainThread());
 
   scoped_refptr<GpuChannelHost> gpu_channel_host = GetGpuChannel();
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories;
+  scoped_refptr<RendererGpuVideoAcceleratorFactories> gpu_factories;
   scoped_refptr<base::MessageLoopProxy> media_loop_proxy =
       GetMediaThreadMessageLoopProxy();
   if (!cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode)) {
@@ -914,6 +913,13 @@ RenderThreadImpl::GetGpuFactories() {
                   WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(),
                   NULL)),
           "GPU-VideoAccelerator-Offscreen");
+      if (gpu_va_context_provider_) {
+        media_loop_proxy->PostTask(
+            FROM_HERE,
+            base::Bind(
+                base::IgnoreResult(&cc::ContextProvider::BindToCurrentThread),
+                gpu_va_context_provider_));
+      }
     }
   }
   if (gpu_va_context_provider_) {

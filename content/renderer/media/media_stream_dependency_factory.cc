@@ -435,7 +435,7 @@ void MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
   scoped_ptr<cricket::WebRtcVideoEncoderFactory> encoder_factory;
 
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories =
+  scoped_refptr<RendererGpuVideoAcceleratorFactories> gpu_factories =
       RenderThreadImpl::current()->GetGpuFactories();
   if (!cmd_line->HasSwitch(switches::kDisableWebRtcHWDecoding)) {
     if (gpu_factories)
