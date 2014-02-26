@@ -9,7 +9,6 @@
 #include "content/renderer/media/mock_peer_connection_impl.h"
 #include "content/renderer/media/webaudio_capturer_source.h"
 #include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
-#include "content/renderer/media/webrtc/webrtc_video_capturer_adapter.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
@@ -120,44 +119,6 @@ void MockMediaStream::UnregisterObserver(ObserverInterface* observer) {
 
 MockMediaStream::~MockMediaStream() {}
 
-class MockRtcVideoCapturer : public WebRtcVideoCapturerAdapter {
- public:
-  explicit MockRtcVideoCapturer(bool is_screencast)
-      : WebRtcVideoCapturerAdapter(is_screencast),
-        number_of_capturered_frames_(0),
-        width_(0),
-        height_(0) {
-  }
-
-  virtual void SetRequestedFormat(
-      const media::VideoCaptureFormat& format) OVERRIDE {
-  }
-
-  virtual void OnFrameCaptured(
-      const scoped_refptr<media::VideoFrame>& frame) OVERRIDE {
-    ++number_of_capturered_frames_;
-    width_ = frame->coded_size().width();
-    height_ = frame->coded_size().height();
-  }
-
-  int GetLastFrameWidth() const {
-    return width_;
-  }
-
-  int GetLastFrameHeight() const {
-    return height_;
-  }
-
-  int GetFrameNum() const {
-    return number_of_capturered_frames_;
-  }
-
- private:
-  int number_of_capturered_frames_;
-  int width_;
-  int height_;
-};
-
 MockVideoRenderer::MockVideoRenderer()
     : width_(0),
       height_(0),
@@ -267,23 +228,6 @@ webrtc::MediaSourceInterface::SourceState MockVideoSource::state() const {
 const cricket::VideoOptions* MockVideoSource::options() const {
   NOTIMPLEMENTED();
   return NULL;
-}
-
-int MockVideoSource::GetLastFrameWidth() const {
-  DCHECK(capturer_);
-  return
-      static_cast<MockRtcVideoCapturer*>(capturer_.get())->GetLastFrameWidth();
-}
-
-int MockVideoSource::GetLastFrameHeight() const {
-  DCHECK(capturer_);
-  return
-      static_cast<MockRtcVideoCapturer*>(capturer_.get())->GetLastFrameHeight();
-}
-
-int MockVideoSource::GetFrameNum() const {
-  DCHECK(capturer_);
-  return static_cast<MockRtcVideoCapturer*>(capturer_.get())->GetFrameNum();
 }
 
 MockLocalVideoTrack::MockLocalVideoTrack(std::string id,
@@ -451,16 +395,15 @@ MockMediaStreamDependencyFactory::CreateLocalAudioSource(
   return last_audio_source_;
 }
 
-WebRtcVideoCapturerAdapter*
-MockMediaStreamDependencyFactory::CreateVideoCapturer(
-    bool is_screen_capture) {
-  return new MockRtcVideoCapturer(is_screen_capture);
+cricket::VideoCapturer* MockMediaStreamDependencyFactory::CreateVideoCapturer(
+    const StreamDeviceInfo& info) {
+  return NULL;
 }
 
 scoped_refptr<webrtc::VideoSourceInterface>
 MockMediaStreamDependencyFactory::CreateVideoSource(
     cricket::VideoCapturer* capturer,
-    const blink::WebMediaConstraints& constraints) {
+    const webrtc::MediaConstraintsInterface* constraints) {
   last_video_source_ = new talk_base::RefCountedObject<MockVideoSource>();
   last_video_source_->SetVideoCapturer(capturer);
   return last_video_source_;

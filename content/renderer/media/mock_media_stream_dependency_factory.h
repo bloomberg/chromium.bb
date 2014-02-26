@@ -55,9 +55,9 @@ class MockVideoSource : public webrtc::VideoSourceInterface {
   void SetVideoCapturer(cricket::VideoCapturer* capturer);
 
   // Test helpers.
-  int GetLastFrameWidth() const;
-  int GetLastFrameHeight() const;
-  int GetFrameNum() const;
+  int GetLastFrameWidth() const { return renderer_.width(); }
+  int GetLastFrameHeight() const { return renderer_.height(); }
+  int GetFrameNum() const { return renderer_.num(); }
 
  protected:
   virtual ~MockVideoSource();
@@ -175,12 +175,12 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
   virtual scoped_refptr<webrtc::AudioSourceInterface>
       CreateLocalAudioSource(
           const webrtc::MediaConstraintsInterface* constraints) OVERRIDE;
-  virtual WebRtcVideoCapturerAdapter* CreateVideoCapturer(
-      bool is_screen_capture) OVERRIDE;
+  virtual cricket::VideoCapturer* CreateVideoCapturer(
+      const StreamDeviceInfo& info) OVERRIDE;
   virtual scoped_refptr<webrtc::VideoSourceInterface>
       CreateVideoSource(
           cricket::VideoCapturer* capturer,
-          const blink::WebMediaConstraints& constraints) OVERRIDE;
+          const webrtc::MediaConstraintsInterface* constraints) OVERRIDE;
   virtual scoped_refptr<WebAudioCapturerSource> CreateWebAudioSource(
       blink::WebMediaStreamSource* source) OVERRIDE;
   virtual scoped_refptr<webrtc::MediaStreamInterface>

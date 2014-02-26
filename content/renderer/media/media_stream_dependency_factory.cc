@@ -19,11 +19,11 @@
 #include "content/renderer/media/peer_connection_identity_service.h"
 #include "content/renderer/media/rtc_media_constraints.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
+#include "content/renderer/media/rtc_video_capturer.h"
 #include "content/renderer/media/rtc_video_decoder_factory.h"
 #include "content/renderer/media/rtc_video_encoder_factory.h"
 #include "content/renderer/media/webaudio_capturer_source.h"
 #include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
-#include "content/renderer/media/webrtc/webrtc_video_capturer_adapter.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
@@ -232,15 +232,12 @@ bool MediaStreamDependencyFactory::InitializeMediaStreamAudioSource(
   return true;
 }
 
-WebRtcVideoCapturerAdapter* MediaStreamDependencyFactory::CreateVideoCapturer(
-    bool is_screeencast) {
-  // We need to make sure the libjingle thread wrappers have been created
-  // before we can use an instance of a WebRtcVideoCapturerAdapter. This is
-  // since the base class of WebRtcVideoCapturerAdapter is a
-  // cricket::VideoCapturer and it uses the libjingle thread wrappers.
-  if (!GetPcFactory())
-    return NULL;
-  return new WebRtcVideoCapturerAdapter(is_screeencast);
+cricket::VideoCapturer* MediaStreamDependencyFactory::CreateVideoCapturer(
+    const StreamDeviceInfo& info) {
+  bool is_screeencast =
+      info.device.type == MEDIA_TAB_VIDEO_CAPTURE ||
+      info.device.type == MEDIA_DESKTOP_VIDEO_CAPTURE;
+  return new RtcVideoCapturer(info.session_id, is_screeencast);
 }
 
 scoped_refptr<webrtc::MediaStreamInterface>
@@ -370,12 +367,11 @@ bool MediaStreamDependencyFactory::RemoveNativeMediaStreamTrack(
 }
 
 scoped_refptr<webrtc::VideoSourceInterface>
-MediaStreamDependencyFactory::CreateVideoSource(
-    cricket::VideoCapturer* capturer,
-    const blink::WebMediaConstraints& constraints) {
-  RTCMediaConstraints webrtc_constraints(constraints);
+    MediaStreamDependencyFactory::CreateVideoSource(
+        cricket::VideoCapturer* capturer,
+        const webrtc::MediaConstraintsInterface* constraints) {
   scoped_refptr<webrtc::VideoSourceInterface> source =
-      GetPcFactory()->CreateVideoSource(capturer, &webrtc_constraints).get();
+      GetPcFactory()->CreateVideoSource(capturer, constraints).get();
   return source;
 }
 
@@ -636,7 +632,7 @@ MediaStreamDependencyFactory::CreateLocalVideoTrack(
 
   // Create video source from the |capturer|.
   scoped_refptr<webrtc::VideoSourceInterface> source =
-      GetPcFactory()->CreateVideoSource(capturer, NULL).get();
+      CreateVideoSource(capturer, NULL);
 
   // Create native track from the source.
   return GetPcFactory()->CreateVideoTrack(id, source.get()).get();
@@ -772,10 +768,10 @@ void MediaStreamDependencyFactory::OnDisableAecDump() {
 
 void MediaStreamDependencyFactory::StartAecDump(
     const base::PlatformFile& aec_dump_file) {
-  // |pc_factory_| always takes ownership of |aec_dump_file|. If StartAecDump()
-  // fails, |aec_dump_file| will be closed.
-  if (!GetPcFactory()->StartAecDump(aec_dump_file))
-    VLOG(1) << "Could not start AEC dump.";
+ // |pc_factory_| always takes ownership of |aec_dump_file|. If StartAecDump()
+ // fails, |aec_dump_file| will be closed.
+ if (!GetPcFactory()->StartAecDump(aec_dump_file))
+   VLOG(1) << "Could not start AEC dump.";
 }
 
 void MediaStreamDependencyFactory::EnsureWebRtcAudioDeviceImpl() {

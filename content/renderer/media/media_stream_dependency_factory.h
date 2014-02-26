@@ -50,7 +50,6 @@ class WebRtcAudioDeviceImpl;
 class WebRtcLocalAudioTrack;
 class WebRtcLoggingHandlerImpl;
 class WebRtcLoggingMessageFilter;
-class WebRtcVideoCapturerAdapter;
 struct StreamDeviceInfo;
 
 // Object factory for RTC MediaStreams and RTC PeerConnections.
@@ -79,8 +78,8 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
 
   // Creates an implementation of a cricket::VideoCapturer object that can be
   // used when creating a libjingle webrtc::VideoSourceInterface object.
-  virtual WebRtcVideoCapturerAdapter* CreateVideoCapturer(
-      bool is_screen_capture);
+  virtual cricket::VideoCapturer* CreateVideoCapturer(
+      const StreamDeviceInfo& info);
 
   // Creates a libjingle representation of a MediaStream.
   scoped_refptr<webrtc::MediaStreamInterface> CreateNativeLocalMediaStream(
@@ -114,8 +113,9 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
   // Asks the PeerConnection factory to create a Video Source.
   // The video source takes ownership of |capturer|.
   virtual scoped_refptr<webrtc::VideoSourceInterface>
-      CreateVideoSource(cricket::VideoCapturer* capturer,
-                        const blink::WebMediaConstraints& constraints);
+      CreateVideoSource(
+          cricket::VideoCapturer* capturer,
+          const webrtc::MediaConstraintsInterface* constraints);
 
   // Asks the libjingle PeerConnection factory to create a libjingle
   // PeerConnection object.

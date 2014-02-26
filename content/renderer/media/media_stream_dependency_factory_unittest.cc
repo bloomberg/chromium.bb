@@ -9,7 +9,6 @@
 #include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/mock_media_stream_dependency_factory.h"
-#include "content/renderer/media/mock_media_stream_video_source.h"
 #include "content/renderer/media/mock_web_rtc_peer_connection_handler_client.h"
 #include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -80,9 +79,8 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
       video_sources[0].initialize("video",
                                   blink::WebMediaStreamSource::TypeVideo,
                                   "video");
-
       video_sources[0].setExtraData(
-          new MockMediaStreamVideoSource(dependency_factory_.get(), false));
+          new MediaStreamVideoSource(dependency_factory_.get()));
       video_sources_.assign(video_sources);
     }
     blink::WebMediaStream stream_desc;
