@@ -59,9 +59,17 @@ static const RenderObject* parentElementRenderer(const RenderObject* renderer)
 
 FastTextAutosizer::FastTextAutosizer(const Document* document)
     : m_document(document)
+    , m_frameWidth(0)
+    , m_layoutWidth(0)
+    , m_baseMultiplier(0)
+    , m_firstBlock(0)
 #ifndef NDEBUG
     , m_renderViewInfoPrepared(false)
+    , m_blocksThatHaveBegunLayout()
 #endif
+    , m_superclusters()
+    , m_clusterStack()
+    , m_fingerprintMapper()
 {
 }
 
@@ -88,12 +96,20 @@ void FastTextAutosizer::destroy(const RenderBlock* block)
     m_fingerprintMapper.remove(block);
 }
 
-bool FastTextAutosizer::isLayoutRoot(const RenderBlock* block) const
+void FastTextAutosizer::prepareClusterStack(const RenderObject* renderer)
 {
-    RenderObject* layoutRoot = m_document->view()->layoutRoot(true);
-    if (!layoutRoot)
-        layoutRoot = m_document->renderer();
-    return block == layoutRoot;
+    if (!renderer)
+        return;
+    prepareClusterStack(renderer->parent());
+
+    if (renderer->isRenderBlock()) {
+        const RenderBlock* block = toRenderBlock(renderer);
+#ifndef NDEBUG
+        m_blocksThatHaveBegunLayout.add(block);
+#endif
+        if (Cluster* cluster = maybeCreateCluster(block))
+            m_clusterStack.append(adoptPtr(cluster));
+    }
 }
 
 void FastTextAutosizer::beginLayout(RenderBlock* block)
@@ -102,10 +118,11 @@ void FastTextAutosizer::beginLayout(RenderBlock* block)
 #ifndef NDEBUG
     m_blocksThatHaveBegunLayout.add(block);
 #endif
-    ASSERT(m_clusterStack.isEmpty() == isLayoutRoot(block));
 
-    if (isLayoutRoot(block)) {
+    if (!m_firstBlock)  {
         prepareRenderViewInfo();
+        prepareClusterStack(block->parent());
+        m_firstBlock = block;
     } else if (block == currentCluster()->m_root) {
         // Ignore beginLayout on the same block twice.
         // This can happen with paginated overflow.
@@ -139,17 +156,18 @@ void FastTextAutosizer::inflateListItem(RenderListItem* listItem, RenderListMark
 void FastTextAutosizer::endLayout(RenderBlock* block)
 {
     ASSERT(enabled());
-    if (isLayoutRoot(block)) {
+
+    if (currentCluster()->m_root == block)
+        m_clusterStack.removeLast();
+
+    if (block == m_firstBlock) {
+        m_firstBlock = 0;
+        m_clusterStack.clear();
         m_superclusters.clear();
 #ifndef NDEBUG
         m_blocksThatHaveBegunLayout.clear();
 #endif
     }
-
-    if (currentCluster()->m_root == block)
-        m_clusterStack.removeLast();
-
-    ASSERT(m_clusterStack.isEmpty() == isLayoutRoot(block));
 }
 
 void FastTextAutosizer::inflate(RenderBlock* block)
@@ -252,7 +270,7 @@ float FastTextAutosizer::textLength(Cluster* cluster)
             if (TextAutosizer::isAutosizingContainer(block)) {
                 // Note: Ideally we would check isWiderOrNarrowerDescendant here but we only know that
                 //       after the block has entered layout, which may not be the case.
-                bool isAutosizingClusterRoot = isLayoutRoot(block) || TextAutosizer::isIndependentDescendant(block);
+                bool isAutosizingClusterRoot = TextAutosizer::isIndependentDescendant(block);
                 if (isAutosizingClusterRoot || !TextAutosizer::containerShouldBeAutosized(block)) {
                     descendant = descendant->nextInPreOrderAfterChildren(root);
                     continue;
@@ -320,12 +338,12 @@ FastTextAutosizer::Cluster* FastTextAutosizer::maybeCreateCluster(const RenderBl
         return 0;
 
     Cluster* parentCluster = m_clusterStack.isEmpty() ? 0 : currentCluster();
-    ASSERT(parentCluster || isLayoutRoot(block));
+    ASSERT(parentCluster || block->isRenderView());
 
     // Create clusters to suppress / unsuppress autosizing based on containerShouldBeAutosized.
     bool containerCanAutosize = TextAutosizer::containerShouldBeAutosized(block);
     bool parentClusterCanAutosize = parentCluster && parentCluster->m_autosize;
-    bool createClusterThatMightAutosize = isLayoutRoot(block)
+    bool createClusterThatMightAutosize = block->isRenderView()
         || mightBeWiderOrNarrowerDescendant(block)
         || TextAutosizer::isIndependentDescendant(block);
 
@@ -376,11 +394,7 @@ float FastTextAutosizer::clusterMultiplier(Cluster* cluster)
 {
     ASSERT(m_renderViewInfoPrepared);
     if (!cluster->m_multiplier) {
-
-        if (isLayoutRoot(cluster->m_root)
-            || TextAutosizer::isIndependentDescendant(cluster->m_root)
-            || isWiderOrNarrowerDescendant(cluster)) {
-
+        if (TextAutosizer::isIndependentDescendant(cluster->m_root) || isWiderOrNarrowerDescendant(cluster)) {
             if (cluster->m_supercluster) {
                 cluster->m_multiplier = superclusterMultiplier(cluster->m_supercluster);
             } else if (clusterHasEnoughTextToAutosize(cluster)) {

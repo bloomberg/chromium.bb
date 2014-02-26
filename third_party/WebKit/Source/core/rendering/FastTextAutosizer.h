@@ -192,6 +192,7 @@ private:
     void inflate(RenderBlock*);
     bool enabled();
     void prepareRenderViewInfo();
+    void prepareClusterStack(const RenderObject*);
     bool isFingerprintingCandidate(const RenderBlock*);
     bool clusterHasEnoughTextToAutosize(Cluster*, const RenderBlock* widthProvider = 0);
     bool clusterWouldHaveEnoughTextToAutosize(const RenderBlock* root, const RenderBlock* widthProvider = 0);
@@ -224,6 +225,7 @@ private:
     int m_frameWidth; // LocalFrame width in density-independent pixels (DIPs).
     int m_layoutWidth; // Layout width in CSS pixels.
     float m_baseMultiplier; // Includes accessibility font scale factor and device scale adjustment.
+    const RenderBlock* m_firstBlock; // First block to receive beginLayout.
 #ifndef NDEBUG
     bool m_renderViewInfoPrepared;
     BlockSet m_blocksThatHaveBegunLayout; // Used to ensure we don't compute properties of a block before beginLayout() is called on it.

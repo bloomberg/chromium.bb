@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<body>
+This test passes if it does not crash.<br/>
+<input type="text"></input>
+<script>
+
+if (window.internals) {
+    window.internals.settings.setTextAutosizingEnabled(true);
+    window.internals.settings.setTextAutosizingWindowSizeOverride(320, 480);
+} else {
+    console.warn("Please use DumpRenderTree to run this test.");
+}
+
+if (window.testRunner)
+    testRunner.waitUntilDone();
+
+setTimeout(function() {
+    document.getElementsByTagName('input')[0].value = 'test';
+
+    if (window.testRunner)
+        testRunner.notifyDone();
+}, 0);
+
+</script>
+</body>
+</html>
