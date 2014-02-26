@@ -19,66 +19,65 @@ const char kHeapAllocatorName[] = "HeapAllocator";
 
 class Config {
  public:
-
   static bool IsMember(const std::string& name) {
-    return name == "Member"
-        || (oilpan_enabled() && EndsWith(name, "WillBeMember"));
+    return name == "Member" ||
+           (oilpan_enabled() && EndsWith(name, "WillBeMember"));
   }
 
   static bool IsWeakMember(const std::string& name) {
-    return name == "WeakMember"
-        || (oilpan_enabled() && EndsWith(name, "WillBeWeakMember"));
+    return name == "WeakMember" ||
+           (oilpan_enabled() && EndsWith(name, "WillBeWeakMember"));
   }
 
   static bool IsMemberHandle(const std::string& name) {
-    return IsMember(name)
-        || IsWeakMember(name);
+    return IsMember(name) ||
+           IsWeakMember(name);
   }
 
   static bool IsPersistentHandle(const std::string& name) {
-    return name == "Persistent"
-        || (oilpan_enabled() && EndsWith(name, "WillBePersistent"));
+    return name == "Persistent" ||
+           (oilpan_enabled() && EndsWith(name, "WillBePersistent"));
   }
 
   static bool IsRefPtr(const std::string& name) {
-    return name == "RefPtr"
-        || (!oilpan_enabled() && StartsWith(name, "RefPtrWillBe"));
+    return name == "RefPtr" ||
+           (!oilpan_enabled() && StartsWith(name, "RefPtrWillBe"));
   }
 
   static bool IsOwnPtr(const std::string& name) {
-    return name == "OwnPtr"
-        || (!oilpan_enabled() && StartsWith(name, "OwnPtrWillBe"));
+    return name == "OwnPtr" ||
+           (!oilpan_enabled() && StartsWith(name, "OwnPtrWillBe"));
   }
 
   static bool IsWTFCollection(const std::string& name) {
-    return name == "Vector"
-        || name == "HashSet"
-        || name == "HashMap"
-        || name == "HashCountedSet"
-        || name == "ListHashSet"
-        || name == "Deque"
-        || (!oilpan_enabled() && StartsWith(name, "WillBeHeap"));
+    return name == "Vector" ||
+           name == "HashSet" ||
+           name == "HashMap" ||
+           name == "HashCountedSet" ||
+           name == "ListHashSet" ||
+           name == "Deque" ||
+           (!oilpan_enabled() && StartsWith(name, "WillBeHeap"));
   }
 
   static bool IsGCCollection(const std::string& name) {
-    return name == "HeapVector"
-        || name == "HeapHashMap"
-        || name == "HeapHashSet"
-        || (oilpan_enabled() && StartsWith(name, "WillBeHeap"));
+    return name == "HeapVector" ||
+           name == "HeapHashMap" ||
+           name == "HeapHashSet" ||
+           (oilpan_enabled() && StartsWith(name, "WillBeHeap"));
   }
 
   static bool IsGCFinalizedBase(const std::string& name) {
-    return name == "GarbageCollectedFinalized"
-        || name == "RefCountedGarbageCollected"
-        || (oilpan_enabled()
-            && (EndsWith(name, "WillBeGarbageCollectedFinalized") ||
-                EndsWith(name, "WillBeRefCountedGarbageCollected")));
+    return name == "GarbageCollectedFinalized" ||
+           name == "RefCountedGarbageCollected" ||
+           (oilpan_enabled() &&
+            (EndsWith(name, "WillBeGarbageCollectedFinalized") ||
+             EndsWith(name, "WillBeRefCountedGarbageCollected")));
   }
 
   static bool IsGCBase(const std::string& name) {
-    return name == "GarbageCollected"
-        || IsGCFinalizedBase(name)
-        || (oilpan_enabled() && EndsWith(name, "WillBeGarbageCollected"));
+    return name == "GarbageCollected" ||
+           IsGCFinalizedBase(name) ||
+           (oilpan_enabled() && EndsWith(name, "WillBeGarbageCollected"));
   }
 
   static bool IsTraceMethod(clang::CXXMethodDecl* method,
@@ -111,4 +110,4 @@ class Config {
   static bool oilpan_enabled_;
 };
 
-#endif // TOOLS_BLINK_GC_PLUGIN_CONFIG_H_
+#endif  // TOOLS_BLINK_GC_PLUGIN_CONFIG_H_

@@ -15,7 +15,7 @@ else
 fi
 
 LIBNAME=\
-  $(grep LIBRARYNAME "$THIS_ABS_DIR"/../blink_gc_plugin/Makefile \
+$(grep LIBRARYNAME "$THIS_ABS_DIR"/../blink_gc_plugin/Makefile \
     | cut -d ' ' -f 3)
 
 FLAGS=""

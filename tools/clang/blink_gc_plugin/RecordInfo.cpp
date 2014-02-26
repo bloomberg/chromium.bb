@@ -5,6 +5,8 @@
 #include "Config.h"
 #include "RecordInfo.h"
 
+#include "clang/AST/Attr.h"
+
 using namespace clang;
 using std::string;
 
@@ -17,8 +19,7 @@ RecordInfo::RecordInfo(CXXRecordDecl* record, RecordCache* cache)
       fields_(0),
       determined_trace_methods_(false),
       trace_method_(0),
-      trace_dispatch_method_(0) {
-}
+      trace_dispatch_method_(0) {}
 
 RecordInfo::~RecordInfo() {
   delete fields_;
@@ -70,7 +71,8 @@ bool RecordInfo::IsHeapAllocatedCollection(bool* is_weak) {
 }
 
 static bool IsGCBaseCallback(const CXXBaseSpecifier* specifier,
-                             CXXBasePath& path, void* data) {
+                             CXXBasePath& path,
+                             void* data) {
   if (CXXRecordDecl* record = specifier->getType()->getAsCXXRecordDecl())
     return Config::IsGCBase(record->getName());
   return false;
@@ -92,13 +94,17 @@ bool RecordInfo::IsGCDerived(CXXBasePaths* paths) {
   return record_->lookupInBases(IsGCBaseCallback, 0, *paths);
 }
 
-// TODO: we don't want to identify part objects as stack-allocated objects.
-bool RecordInfo::IsNonNewable() {
+static bool IsAnnotated(Decl* decl, const string& anno) {
+  AnnotateAttr* attr = decl->getAttr<AnnotateAttr>();
+  return attr && (attr->getAnnotation() == anno);
+}
+
+bool RecordInfo::IsStackAllocated() {
   for (CXXRecordDecl::method_iterator it = record_->method_begin();
        it != record_->method_end();
        ++it) {
     if (it->getNameAsString() == kNewOperatorName)
-      return it->isDeleted();
+      return it->isDeleted() && IsAnnotated(*it, "blink_stack_allocated");
   }
   return false;
 }
@@ -156,6 +162,9 @@ RecordInfo::Fields* RecordInfo::CollectFields() {
   for (RecordDecl::field_iterator it = record_->field_begin();
        it != record_->field_end();
        ++it) {
+    // Ignore fields annotated with the NO_TRACE_CHECKING macro.
+    if (IsAnnotated(*it, "blink_no_trace_checking"))
+      continue;
     // Only collect fields that might need to be traced.
     TracingStatus status = NeedsTracing(*it);
     if (!status.IsTracingUnneeded()) {
@@ -168,7 +177,8 @@ RecordInfo::Fields* RecordInfo::CollectFields() {
 }
 
 void RecordInfo::DetermineTracingMethods() {
-  if (determined_trace_methods_) return;
+  if (determined_trace_methods_)
+    return;
   determined_trace_methods_ = true;
   CXXMethodDecl* trace = 0;
   CXXMethodDecl* traceAfterDispatch = 0;
@@ -200,18 +210,16 @@ void RecordInfo::DetermineTracingMethods() {
 // that need tracing.
 // As a special-case, member handles always need tracing.
 TracingStatus RecordInfo::NeedsTracing(NeedsTracingOption option) {
-  if (Config::IsRefPtr(name_) ||
-      Config::IsPersistentHandle(name_)) {
+  if (Config::IsRefPtr(name_) || Config::IsPersistentHandle(name_)) {
     return TracingStatus::Unneeded();
   }
 
   bool is_weak = false;
-  if (Config::IsMemberHandle(name_) ||
-      IsGCDerived() ||
+  if (Config::IsMemberHandle(name_) || IsGCDerived() ||
       IsHeapAllocatedCollection(&is_weak)) {
     return (is_weak || Config::IsWeakMember(name_))
-        ? TracingStatus::RequiredWeak()
-        : TracingStatus::Required();
+               ? TracingStatus::RequiredWeak()
+               : TracingStatus::Required();
   }
 
   if (option == kNonRecursive) {
@@ -221,8 +229,8 @@ TracingStatus RecordInfo::NeedsTracing(NeedsTracingOption option) {
   if (Config::IsOwnPtr(name_)) {
     TemplateArgs args;
     return (IsTemplate(&args) && args.size() > 0)
-        ? args[0]->NeedsTracing(kNonRecursive)
-        : TracingStatus::Unknown();
+               ? args[0]->NeedsTracing(kNonRecursive)
+               : TracingStatus::Unknown();
   }
 
   if (Config::IsWTFCollection(name_)) {
@@ -241,9 +249,8 @@ TracingStatus RecordInfo::NeedsTracing(NeedsTracingOption option) {
     return TracingStatus::Required();
   }
 
-  return fields_->empty()
-      ? TracingStatus::Unneeded()
-      : TracingStatus::Unknown();
+  return fields_->empty() ? TracingStatus::Unneeded()
+                          : TracingStatus::Unknown();
 }
 
 TracingStatus RecordInfo::NeedsTracing(FieldDecl* field) {
@@ -254,8 +261,11 @@ TracingStatus RecordInfo::NeedsTracing(FieldDecl* field) {
     if (!info)
       return TracingStatus::Unneeded();
 
+    // TODO: Once transitioning is over, reintroduce checks for pointers to
+    // GC-managed objects.
+
     // Don't do a recursive check for pointer types.
-    return info->NeedsTracing(kNonRecursive);
+    return TracingStatus::Unknown();
   }
 
   RecordInfo* info = cache_->Lookup(type->getAsCXXRecordDecl());

@@ -24,9 +24,7 @@ class TracingStatus {
   static TracingStatus Unknown() { return kUnknown; }
   static TracingStatus Required() { return kRequired; }
   static TracingStatus Unneeded() { return kUnneeded; }
-  static TracingStatus RequiredWeak() {
-      return TracingStatus(kRequired, true);
-  }
+  static TracingStatus RequiredWeak() { return TracingStatus(kRequired, true); }
 
   bool IsTracingUnknown() const { return status_ == kUnknown; }
   bool IsTracingRequired() const { return status_ == kRequired; }
@@ -34,28 +32,27 @@ class TracingStatus {
 
   // Updating functions so the status can only become more defined.
   void MarkTracingRequired() {
-    if (status_ < kRequired) status_ = kRequired;
+    if (status_ < kRequired)
+      status_ = kRequired;
   }
   void MarkTracingUnneeded() {
-    if (status_ < kUnneeded) status_ = kUnneeded;
+    if (status_ < kUnneeded)
+      status_ = kUnneeded;
   }
 
   bool is_weak() { return is_weak_; }
 
  private:
   enum Status {
-    kUnknown,    // Point that might need to be traced.
-    kRequired,   // Point that must be traced.
-    kUnneeded    // Point that need not be traced.
+    kUnknown,   // Point that might need to be traced.
+    kRequired,  // Point that must be traced.
+    kUnneeded   // Point that need not be traced.
   };
 
-  TracingStatus(Status status)
-      : status_(status),
-        is_weak_(false) { }
+  TracingStatus(Status status) : status_(status), is_weak_(false) {}
 
   TracingStatus(Status status, bool is_weak)
-      : status_(status),
-        is_weak_(is_weak) { }
+      : status_(status), is_weak_(is_weak) {}
 
   Status status_;
   bool is_weak_;
@@ -63,15 +60,12 @@ class TracingStatus {
 
 // Wrapper class to lazily collect information about a C++ record.
 class RecordInfo {
-public:
+ public:
   typedef std::map<clang::CXXRecordDecl*, TracingStatus> Bases;
   typedef std::map<clang::FieldDecl*, TracingStatus> Fields;
   typedef std::vector<RecordInfo*> TemplateArgs;
 
-  enum NeedsTracingOption {
-    kRecursive,
-    kNonRecursive
-  };
+  enum NeedsTracingOption { kRecursive, kNonRecursive };
 
   ~RecordInfo();
 
@@ -87,11 +81,11 @@ public:
   bool IsHeapAllocatedCollection(bool* is_weak = 0);
   bool IsGCDerived(clang::CXXBasePaths* paths = 0);
 
-  bool IsNonNewable();
+  bool IsStackAllocated();
   bool RequiresTraceMethod();
   TracingStatus NeedsTracing(NeedsTracingOption option = kRecursive);
 
-private:
+ private:
   RecordInfo(clang::CXXRecordDecl* record, RecordCache* cache);
 
   Fields* CollectFields();
@@ -115,23 +109,24 @@ private:
 };
 
 class RecordCache {
-public:
+ public:
   RecordInfo* Lookup(clang::CXXRecordDecl* record) {
-    if (!record) return 0;
+    if (!record)
+      return 0;
     Cache::iterator it = cache_.find(record);
     if (it != cache_.end())
       return &it->second;
     return &cache_.insert(std::make_pair(record, RecordInfo(record, this)))
-            .first->second;
+                .first->second;
   }
 
   RecordInfo* Lookup(const clang::CXXRecordDecl* record) {
     return Lookup(const_cast<clang::CXXRecordDecl*>(record));
   }
 
-private:
+ private:
   typedef std::map<clang::CXXRecordDecl*, RecordInfo> Cache;
   Cache cache_;
 };
 
-#endif // TOOLS_BLINK_GC_PLUGIN_RECORD_INFO_H_
+#endif  // TOOLS_BLINK_GC_PLUGIN_RECORD_INFO_H_
