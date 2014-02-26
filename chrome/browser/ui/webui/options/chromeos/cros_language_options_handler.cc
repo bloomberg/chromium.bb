@@ -425,10 +425,6 @@ void CrosLanguageOptionsHandler::InputMethodEnableCallback(
 void CrosLanguageOptionsHandler::InputMethodOptionsOpenCallback(
     const base::ListValue* args) {
   const std::string input_method_id = UTF16ToASCII(ExtractStringValue(args));
-  const std::string action = base::StringPrintf(
-      "InputMethodOptions_Open_%s", input_method_id.c_str());
-  content::RecordComputedAction(action);
-
   const std::string extension_id =
       extension_ime_util::GetExtensionIDFromInputMethodID(input_method_id);
   if (extension_id.empty())
