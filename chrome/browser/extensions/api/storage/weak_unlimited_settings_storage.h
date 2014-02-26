@@ -36,6 +36,8 @@ class WeakUnlimitedSettingsStorage : public ValueStore {
   virtual WriteResult Remove(const std::string& key) OVERRIDE;
   virtual WriteResult Remove(const std::vector<std::string>& keys) OVERRIDE;
   virtual WriteResult Clear() OVERRIDE;
+  virtual bool Restore() OVERRIDE;
+  virtual bool RestoreKey(const std::string& key) OVERRIDE;
 
  private:
   // The delegate storage area, NOT OWNED.

@@ -176,6 +176,12 @@ class TestingValueStoreFactory : public SettingsStorageFactory {
     return new_storage;
   }
 
+  // Testing value stores don't actually create a real database. Don't delete
+  // any files.
+  virtual void DeleteDatabaseIfExists(
+      const base::FilePath& base_path,
+      const std::string& extension_id) OVERRIDE {}
+
  private:
   // SettingsStorageFactory is refcounted.
   virtual ~TestingValueStoreFactory() {}

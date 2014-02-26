@@ -269,6 +269,55 @@ ValueStore::WriteResult LeveldbValueStore::Clear() {
   return MakeWriteResult(changes.Pass());
 }
 
+bool LeveldbValueStore::Restore() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  ReadResult result = Get();
+  std::string previous_key;
+  while (result->IsCorrupted()) {
+    // If we don't have a specific corrupted key, or we've tried and failed to
+    // clear this specific key, or we fail to restore the key, then wipe the
+    // whole database.
+    if (!result->error().key.get() || *result->error().key == previous_key ||
+        !RestoreKey(*result->error().key)) {
+      DeleteDbFile();
+      result = Get();
+      break;
+    }
+
+    // Otherwise, re-Get() the database to check if there is still any
+    // corruption.
+    previous_key = *result->error().key;
+    result = Get();
+  }
+
+  // If we still have an error, it means we've tried deleting the database file,
+  // and failed. There's nothing more we can do.
+  return !result->IsCorrupted();
+}
+
+bool LeveldbValueStore::RestoreKey(const std::string& key) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  ReadResult result = Get(key);
+  if (result->IsCorrupted()) {
+    leveldb::WriteBatch batch;
+    batch.Delete(key);
+    scoped_ptr<ValueStore::Error> error = WriteToDb(&batch);
+    // If we can't delete the key, the restore failed.
+    if (error.get())
+      return false;
+    result = Get(key);
+  }
+
+  // The restore succeeded if there is no corruption error.
+  return !result->IsCorrupted();
+}
+
+bool LeveldbValueStore::WriteToDbForTest(leveldb::WriteBatch* batch) {
+  return !WriteToDb(batch).get();
+}
+
 scoped_ptr<ValueStore::Error> LeveldbValueStore::EnsureDbIsOpen() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 

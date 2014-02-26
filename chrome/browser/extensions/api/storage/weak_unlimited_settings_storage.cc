@@ -64,4 +64,10 @@ ValueStore::WriteResult WeakUnlimitedSettingsStorage::Clear() {
   return delegate_->Clear();
 }
 
+bool WeakUnlimitedSettingsStorage::Restore() { return delegate_->Restore(); }
+
+bool WeakUnlimitedSettingsStorage::RestoreKey(const std::string& key) {
+  return delegate_->RestoreKey(key);
+}
+
 }  // namespace extensions

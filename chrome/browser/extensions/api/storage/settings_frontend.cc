@@ -11,7 +11,6 @@
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "chrome/browser/extensions/api/storage/leveldb_settings_storage_factory.h"
-#include "chrome/browser/extensions/api/storage/settings_backend.h"
 #include "chrome/browser/extensions/api/storage/sync_or_local_value_store_cache.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -146,15 +145,8 @@ syncer::SyncableService* SettingsFrontend::GetBackendForSync(
   DCHECK(it != caches_.end());
   const SyncOrLocalValueStoreCache* sync_cache =
       static_cast<const SyncOrLocalValueStoreCache*>(it->second);
-  switch (type) {
-    case syncer::APP_SETTINGS:
-      return sync_cache->GetAppBackend();
-    case syncer::EXTENSION_SETTINGS:
-      return sync_cache->GetExtensionBackend();
-    default:
-      NOTREACHED();
-      return NULL;
-  }
+  DCHECK(type == syncer::APP_SETTINGS || type == syncer::EXTENSION_SETTINGS);
+  return sync_cache->GetSyncableService(type);
 }
 
 bool SettingsFrontend::IsStorageEnabled(

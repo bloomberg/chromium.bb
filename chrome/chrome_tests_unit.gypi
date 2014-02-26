@@ -899,6 +899,7 @@
         'browser/extensions/api/storage/settings_sync_unittest.cc',
         'browser/extensions/api/storage/settings_test_util.cc',
         'browser/extensions/api/storage/settings_test_util.h',
+        'browser/extensions/api/storage/storage_api_unittest.cc',
         'browser/extensions/api/streams_private/streams_private_manifest_unittest.cc',
         'browser/extensions/api/system_display/display_info_provider_chromeos_unittest.cc',
         'browser/extensions/api/web_navigation/frame_navigation_state_unittest.cc',
