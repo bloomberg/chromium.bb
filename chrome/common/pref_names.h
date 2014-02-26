@@ -132,8 +132,6 @@ extern const char kWebKitFontScaleFactor[];
 extern const char kWebKitForceEnableZoom[];
 extern const char kWebKitPasswordEchoEnabled[];
 #endif
-extern const char kPasswordManagerEnabled[];
-extern const char kPasswordManagerAllowShowPasswords[];
 extern const char kAutologinEnabled[];
 extern const char kReverseAutologinEnabled[];
 extern const char kReverseAutologinRejectedEmailList[];
@@ -372,11 +370,6 @@ extern const char kImportHistory[];
 extern const char kImportHomepage[];
 extern const char kImportSearchEngine[];
 extern const char kImportSavedPasswords[];
-
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
-extern const char kLocalProfileId[];
-extern const char kPasswordsUseLocalProfileId[];
-#endif
 
 extern const char kProfileAvatarIndex[];
 extern const char kProfileName[];
@@ -950,11 +943,6 @@ extern const char kNetworkTimeMapping[];
 
 #if defined(OS_ANDROID)
 extern const char kPartnerBookmarkMappings[];
-#endif
-
-#if defined(OS_WIN)
-extern const char kOsPasswordBlank[];
-extern const char kOsPasswordLastChanged[];
 #endif
 
 extern const char kQuickCheckEnabled[];

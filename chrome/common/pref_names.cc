@@ -306,15 +306,6 @@ const char kShowAppsShortcutInBookmarkBar[] = "bookmark_bar.show_apps_shortcut";
 // the bookmark editor.
 const char kBookmarkEditorExpandedNodes[] = "bookmark_editor.expanded_nodes";
 
-// Boolean that is true if the password manager is on (will record new
-// passwords and fill in known passwords).
-const char kPasswordManagerEnabled[] = "profile.password_manager_enabled";
-
-// Boolean controlling whether the password manager allows to retrieve passwords
-// in clear text.
-const char kPasswordManagerAllowShowPasswords[] =
-    "profile.password_manager_allow_show_passwords";
-
 // Booleans identifying whether normal and reverse auto-logins are enabled.
 const char kAutologinEnabled[] = "autologin.enabled";
 const char kReverseAutologinEnabled[] = "reverse_autologin.enabled";
@@ -1208,16 +1199,6 @@ const char kImportSearchEngine[] = "import_search_engine";
 // Boolean that specifies whether to import the saved passwords from the default
 // browser on first run.
 const char kImportSavedPasswords[] = "import_saved_passwords";
-
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
-// The local profile id for this profile.
-const char kLocalProfileId[] = "profile.local_profile_id";
-
-// Whether passwords in external services (e.g. GNOME Keyring) have been tagged
-// with the local profile id yet. (Used for migrating to tagged passwords.)
-const char kPasswordsUseLocalProfileId[] =
-    "profile.passwords_use_local_profile_id";
-#endif
 
 // Profile avatar and name
 const char kProfileAvatarIndex[] = "profile.avatar_index";
@@ -2686,16 +2667,6 @@ const char kNetworkTimeMapping[] = "profile.network_time_mapping";
 // given by the PartnerBookmarksProvider and either the user-visible renamed
 // title or an empty string if the bookmark node was removed.
 const char kPartnerBookmarkMappings[] = "partnerbookmarks.mappings";
-#endif
-
-#if defined(OS_WIN)
-// Whether the password was blank, only valid if OS password was last changed
-// on or before the value contained in kOsPasswordLastChanged.
-const char kOsPasswordBlank[] = "password_manager.os_password_blank";
-
-// The number of seconds since epoch that the OS password was last changed.
-const char kOsPasswordLastChanged[] =
-    "password_manager.os_password_last_changed";
 #endif
 
 // Whether DNS Quick Check is disabled in proxy resolution.

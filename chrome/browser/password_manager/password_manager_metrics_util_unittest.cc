@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/values.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"

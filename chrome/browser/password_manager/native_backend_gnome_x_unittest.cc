@@ -12,10 +12,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/password_manager/native_backend_gnome_x.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

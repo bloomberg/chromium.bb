@@ -13,9 +13,9 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/passwords/password_ui_view.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 

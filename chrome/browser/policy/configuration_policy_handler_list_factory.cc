@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/incognito_mode_policy_handler.h"
 #include "chrome/browser/search_engines/default_search_policy_handler.h"
 #include "chrome/common/pref_names.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/policy/core/browser/autofill_policy_handler.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"

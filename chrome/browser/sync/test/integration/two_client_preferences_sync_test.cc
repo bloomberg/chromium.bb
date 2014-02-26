@@ -8,6 +8,7 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/common/pref_names.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/translate_pref_names.h"
 

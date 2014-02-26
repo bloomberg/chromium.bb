@@ -12,12 +12,12 @@
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "components/encryptor/encryptor_switches.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_default.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 
