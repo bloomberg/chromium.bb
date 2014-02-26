@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
@@ -88,7 +89,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       HostResolver* host_resolver,
       ClientSocketFactory* client_socket_factory,
       base::WeakPtr<HttpServerProperties> http_server_properties,
-      QuicServerInfoFactory* quic_server_info_factory,
       QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory,
       QuicRandom* random_generator,
       QuicClock* clock,
@@ -156,6 +156,12 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   QuicConnectionHelper* helper() { return helper_.get(); }
 
   bool enable_port_selection() const { return enable_port_selection_; }
+
+  void set_quic_server_info_factory(
+      QuicServerInfoFactory* quic_server_info_factory) {
+    DCHECK(!quic_server_info_factory_);
+    quic_server_info_factory_ = quic_server_info_factory;
+  }
 
  private:
   class Job;

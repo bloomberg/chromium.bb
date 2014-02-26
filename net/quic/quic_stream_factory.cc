@@ -6,7 +6,6 @@
 
 #include <set>
 
-#include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
@@ -276,7 +275,6 @@ QuicStreamFactory::QuicStreamFactory(
     HostResolver* host_resolver,
     ClientSocketFactory* client_socket_factory,
     base::WeakPtr<HttpServerProperties> http_server_properties,
-    QuicServerInfoFactory* quic_server_info_factory,
     QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory,
     QuicRandom* random_generator,
     QuicClock* clock,
@@ -287,7 +285,7 @@ QuicStreamFactory::QuicStreamFactory(
       host_resolver_(host_resolver),
       client_socket_factory_(client_socket_factory),
       http_server_properties_(http_server_properties),
-      quic_server_info_factory_(quic_server_info_factory),
+      quic_server_info_factory_(NULL),
       quic_crypto_client_stream_factory_(quic_crypto_client_stream_factory),
       random_generator_(random_generator),
       clock_(clock),
