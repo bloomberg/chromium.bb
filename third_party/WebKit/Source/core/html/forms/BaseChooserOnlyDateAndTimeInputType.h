@@ -40,7 +40,6 @@ protected:
     virtual ~BaseChooserOnlyDateAndTimeInputType();
 
 private:
-    void updateAppearance();
     void closeDateTimeChooser();
 
     // InputType functions:
@@ -52,6 +51,7 @@ private:
     virtual void handleKeypressEvent(KeyboardEvent*) OVERRIDE;
     virtual void handleKeyupEvent(KeyboardEvent*) OVERRIDE;
     virtual void accessKeyAction(bool sendMouseEvents) OVERRIDE;
+    virtual void updateView() OVERRIDE;
 
     // DateTimeChooserClient functions:
     virtual void didChooseValue(const String&) OVERRIDE;

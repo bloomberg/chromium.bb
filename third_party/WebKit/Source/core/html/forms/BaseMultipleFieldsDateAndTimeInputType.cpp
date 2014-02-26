@@ -503,7 +503,11 @@ void BaseMultipleFieldsDateAndTimeInputType::updateView()
     DateTimeEditElement::LayoutParameters layoutParameters(element().locale(), createStepRange(AnyIsDefaultStep));
 
     DateComponents date;
-    const bool hasValue = parseToDateComponents(element().value(), &date);
+    bool hasValue = false;
+    if (!element().suggestedValue().isNull())
+        hasValue = parseToDateComponents(element().suggestedValue(), &date);
+    else
+        hasValue = parseToDateComponents(element().value(), &date);
     if (!hasValue)
         setMillisecondToDateComponents(layoutParameters.stepRange.minimum().toDouble(), &date);
 

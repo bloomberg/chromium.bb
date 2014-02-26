@@ -134,6 +134,11 @@ bool MonthInputType::isMonthField() const
     return true;
 }
 
+bool MonthInputType::canSetSuggestedValue()
+{
+    return true;
+}
+
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 String MonthInputType::formatDateTimeFieldsState(const DateTimeFieldsState& dateTimeFieldsState) const
 {

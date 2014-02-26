@@ -58,6 +58,7 @@ private:
     virtual bool parseToDateComponentsInternal(const String&, DateComponents*) const OVERRIDE;
     virtual bool setMillisecondToDateComponents(double, DateComponents*) const OVERRIDE;
     virtual bool isMonthField() const OVERRIDE;
+    virtual bool canSetSuggestedValue() OVERRIDE;
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     // BaseMultipleFieldsDateAndTimeInputType functions

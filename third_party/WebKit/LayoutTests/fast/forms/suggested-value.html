@@ -4,11 +4,12 @@
 <p id="description">This test setting suggested values on an input element 
 and a textarea element. The dump below should have the "suggested value"
 instead of "initial value".</p>
-<pre><input id="test" type="text" value="initial value"><textarea id="textarea"></textarea></pre>
+<pre><input id="test" type="text" value="initial value"><input id="month" type="month"><textarea id="textarea"></textarea></pre>
 <script src="../../resources/dump-as-markup.js"></script>
 <script>
 
 var input = document.getElementById('test');
+var month = document.getElementById('month');
 var textarea = document.getElementById('textarea');
 textarea.value = "initial value";
 var result = document.getElementById('result');
@@ -19,6 +20,7 @@ else {
     input.selectionStart = input.selectionEnd = 0;
 
     internals.setSuggestedValue(input, 'suggested value');
+    internals.setSuggestedValue(month, '2014-01');
     internals.setSuggestedValue(textarea, 'suggested value');
 
     Markup.description(document.getElementById('description').textContent)
@@ -28,6 +30,8 @@ else {
     addTextResult('internals.suggestedValue(input)');
     addTextResult('input.selectionStart');
     addTextResult('input.selectionEnd');
+    addTextResult('month.value');
+    addTextResult('internals.suggestedValue(month)');
     addTextResult('textarea.value');
     addTextResult('internals.suggestedValue(textarea)');
     

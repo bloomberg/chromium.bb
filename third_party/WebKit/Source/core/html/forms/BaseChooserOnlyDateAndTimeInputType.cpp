@@ -64,15 +64,19 @@ void BaseChooserOnlyDateAndTimeInputType::createShadowSubtree()
     RefPtr<HTMLDivElement> valueContainer = HTMLDivElement::create(element().document());
     valueContainer->setShadowPseudoId(valueContainerPseudo);
     element().userAgentShadowRoot()->appendChild(valueContainer.get());
-    updateAppearance();
+    updateView();
 }
 
-void BaseChooserOnlyDateAndTimeInputType::updateAppearance()
+void BaseChooserOnlyDateAndTimeInputType::updateView()
 {
     Node* node = element().userAgentShadowRoot()->firstChild();
     if (!node || !node->isHTMLElement())
         return;
-    String displayValue = visibleValue();
+    String displayValue;
+    if (!element().suggestedValue().isNull())
+        displayValue = element().suggestedValue();
+    else
+        displayValue = visibleValue();
     if (displayValue.isEmpty()) {
         // Need to put something to keep text baseline.
         displayValue = " ";
@@ -84,7 +88,7 @@ void BaseChooserOnlyDateAndTimeInputType::setValue(const String& value, bool val
 {
     BaseDateAndTimeInputType::setValue(value, valueChanged, eventBehavior);
     if (valueChanged)
-        updateAppearance();
+        updateView();
 }
 
 void BaseChooserOnlyDateAndTimeInputType::closePopupView()
