@@ -456,6 +456,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   AppListItemView* drag_view_;
 
+  // The index of the drag_view_ when the drag starts.
+  Index drag_view_init_index_;
+
   // The point where the drag started in AppListItemView coordinates.
   gfx::Point drag_view_offset_;
 

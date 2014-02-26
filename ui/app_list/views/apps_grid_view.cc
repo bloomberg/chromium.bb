@@ -82,10 +82,10 @@ const int kPrerenderPages = 1;
 const float kDragAndDropProxyScale = 1.5f;
 
 // Delays in milliseconds to show folder dropping preview circle.
-const int kFolderDroppingDelay = 250;
+const int kFolderDroppingDelay = 150;
 
 // Delays in milliseconds to show re-order preview.
-const int kReorderDelay = 50;
+const int kReorderDelay = 120;
 
 // Delays in milliseconds to show folder item reparent UI.
 const int kFolderItemReparentDealy = 50;
@@ -95,7 +95,7 @@ const int kFolderItemReparentDealy = 50;
 const int kFolderDroppingCircleRadius = 15;
 
 // Radius of the circle, in which if entered, show re-order preview.
-const int kReorderDroppingCircleRadius = 30;
+const int kReorderDroppingCircleRadius = 35;
 
 // Max items allowed in a folder.
 size_t kMaxFolderItems = 16;
@@ -425,6 +425,7 @@ void AppsGridView::InitiateDrag(AppListItemView* view,
     return;
 
   drag_view_ = view;
+  drag_view_init_index_ = GetIndexOfView(drag_view_);
   drag_view_offset_ = event.location();
   drag_start_page_ = pagination_model_->selected_page();
   ExtractDragLocation(event, &drag_start_grid_view_);
@@ -1977,13 +1978,21 @@ AppsGridView::Index AppsGridView::GetNearestTileForDragView() {
 }
 
 void AppsGridView::CalculateNearestTileForVertex(const gfx::Point& vertex,
-                                                Index* nearest_tile,
-                                                int* d_min) {
+                                                 Index* nearest_tile,
+                                                 int* d_min) {
   Index target_index;
   gfx::Rect target_bounds = GetTileBoundsForPoint(vertex, &target_index);
 
   if (target_bounds.IsEmpty() || target_index == *nearest_tile)
     return;
+
+  // Do not count the tile, where drag_view_ used to sit on and is still moving
+  // on top of it, in calculating nearest tile for drag_view_.
+  views::View* target_view = GetViewAtSlotOnCurrentPage(target_index.slot);
+  if (target_index == drag_view_init_index_ && !target_view &&
+      !IsDraggingForReparentInRootLevelGridView()) {
+    return;
+  }
 
   int d_center = GetDistanceBetweenRects(drag_view_->bounds(), target_bounds);
   if (*d_min < 0 || d_center < *d_min) {
@@ -2026,9 +2035,15 @@ gfx::Rect AppsGridView::GetTileBounds(int row, int col) const {
 }
 
 bool AppsGridView::IsFirstEmptySlot(const Index& index) const {
-  int last_possible_slot = (view_model_.view_size() - 1) % tiles_per_page();
+  // Don't count the hidden drag_view_ created from the item_dragged out of a
+  // folder during re-parenting into the total number of views that are visible
+  // on all grid view pages.
+  int total_views = IsDraggingForReparentInRootLevelGridView()
+                        ? view_model_.view_size() - 1
+                        : view_model_.view_size();
+  int last_possible_slot = (total_views - 1) % tiles_per_page();
   return (index.page == pagination_model_->total_pages() - 1 &&
-          index.slot == last_possible_slot +1);
+          index.slot == last_possible_slot + 1);
 }
 
 views::View* AppsGridView::GetViewAtSlotOnCurrentPage(int slot) {
