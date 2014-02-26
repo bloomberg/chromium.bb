@@ -4,42 +4,9 @@
 
 #include "content/browser/gamepad/gamepad_standard_mappings.h"
 
-#include "content/common/gamepad_hardware_buffer.h"
-
 namespace content {
 
 namespace {
-
-float AxisToButton(float input) {
-  return (input + 1.f) / 2.f;
-}
-
-float AxisNegativeAsButton(float input) {
-  return (input < -0.5f) ? 1.f : 0.f;
-}
-
-float AxisPositiveAsButton(float input) {
-  return (input > 0.5f) ? 1.f : 0.f;
-}
-
-void DpadFromAxis(blink::WebGamepad* mapped, float dir) {
-  // Dpad is mapped as a direction on one axis, where -1 is up and it
-  // increases clockwise to 1, which is up + left. It's set to a large (> 1.f)
-  // number when nothing is depressed, except on start up, sometimes it's 0.0
-  // for no data, rather than the large number.
-  if (dir == 0.0f) {
-    mapped->buttons[kButtonDpadUp] = 0.f;
-    mapped->buttons[kButtonDpadDown] = 0.f;
-    mapped->buttons[kButtonDpadLeft] = 0.f;
-    mapped->buttons[kButtonDpadRight] = 0.f;
-  } else {
-    mapped->buttons[kButtonDpadUp] = (dir >= -1.f && dir < -0.7f) ||
-                                     (dir >= .95f && dir <= 1.f);
-    mapped->buttons[kButtonDpadRight] = dir >= -.75f && dir < -.1f;
-    mapped->buttons[kButtonDpadDown] = dir >= -.2f && dir < .45f;
-    mapped->buttons[kButtonDpadLeft] = dir >= .4f && dir <= 1.f;
-  }
-}
 
 void MapperLogitechDualAction(
     const blink::WebGamepad& input,
@@ -68,12 +35,12 @@ void Mapper2Axes8Keys(
   mapped->buttons[kButtonDpadLeft] = AxisNegativeAsButton(input.axes[0]);
   mapped->buttons[kButtonDpadRight] = AxisPositiveAsButton(input.axes[0]);
 
-    // Missing buttons
-  mapped->buttons[kButtonLeftTrigger] = 0;
-  mapped->buttons[kButtonRightTrigger] = 0;
-  mapped->buttons[kButtonLeftThumbstick] = 0;
-  mapped->buttons[kButtonRightThumbstick] = 0;
-  mapped->buttons[kButtonMeta] = 0;
+  // Missing buttons
+  mapped->buttons[kButtonLeftTrigger] = blink::WebGamepadButton();
+  mapped->buttons[kButtonRightTrigger] = blink::WebGamepadButton();
+  mapped->buttons[kButtonLeftThumbstick] = blink::WebGamepadButton();
+  mapped->buttons[kButtonRightThumbstick] = blink::WebGamepadButton();
+  mapped->buttons[kButtonMeta] = blink::WebGamepadButton();
 
   mapped->buttonsLength = kNumButtons - 1;
   mapped->axesLength = 0;

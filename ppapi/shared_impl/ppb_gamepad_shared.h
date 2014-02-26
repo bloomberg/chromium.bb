@@ -17,10 +17,16 @@ namespace ppapi {
 
 #pragma pack(push, 1)
 
+struct WebKitGamepadButton {
+  bool pressed;
+  float value;
+};
+
 // This must match the definition of blink::Gamepad. The GamepadHost unit test
 // has some compile asserts to validate this.
 struct WebKitGamepad {
   static const size_t kIdLengthCap = 128;
+  static const size_t kMappingLengthCap = 16;
   static const size_t kAxesLengthCap = 16;
   static const size_t kButtonsLengthCap = 32;
 
@@ -44,7 +50,10 @@ struct WebKitGamepad {
   unsigned buttons_length;
 
   // Normalized values representing buttons, in the range [0..1].
-  float buttons[kButtonsLengthCap];
+  WebKitGamepadButton buttons[kButtonsLengthCap];
+
+  // Mapping type (for example "standard")
+  base::char16 mapping[kMappingLengthCap];
 };
 
 // This must match the definition of blink::Gamepads. The GamepadHost unit

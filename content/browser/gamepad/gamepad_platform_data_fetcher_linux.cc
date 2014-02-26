@@ -191,6 +191,17 @@ void GamepadPlatformDataFetcherLinux::RefreshDevice(udev_device* dev) {
     memset(pad.id, 0, sizeof(pad.id));
     tmp16.copy(pad.id, arraysize(pad.id) - 1);
 
+    if (mapper) {
+      std::string mapping = "standard";
+      base::TruncateUTF8ToByteSize(mapping, WebGamepad::mappingLengthCap - 1,
+          &mapping);
+      tmp16 = base::UTF8ToUTF16(mapping);
+      memset(pad.mapping, 0, sizeof(pad.mapping));
+      tmp16.copy(pad.mapping, arraysize(pad.mapping) - 1);
+    } else {
+      pad.mapping[0] = 0;
+    }
+
     pad.connected = true;
   }
 }
@@ -246,7 +257,8 @@ void GamepadPlatformDataFetcherLinux::ReadDeviceData(size_t index) {
     } else if (event.type & JS_EVENT_BUTTON) {
       if (item >= WebGamepad::buttonsLengthCap)
         continue;
-      pad.buttons[item] = event.value ? 1.0 : 0.0;
+      pad.buttons[item].pressed = event.value;
+      pad.buttons[item].value = event.value ? 1.0 : 0.0;
       if (item >= pad.buttonsLength)
         pad.buttonsLength = item + 1;
     }

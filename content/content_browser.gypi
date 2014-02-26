@@ -560,6 +560,7 @@
     'browser/gamepad/gamepad_provider.h',
     'browser/gamepad/gamepad_service.cc',
     'browser/gamepad/gamepad_service.h',
+    'browser/gamepad/gamepad_standard_mappings.cc',
     'browser/gamepad/gamepad_standard_mappings.h',
     'browser/gamepad/gamepad_standard_mappings_linux.cc',
     'browser/gamepad/gamepad_standard_mappings_mac.mm',

@@ -4,23 +4,9 @@
 
 #include "content/browser/gamepad/gamepad_standard_mappings.h"
 
-#include "content/common/gamepad_hardware_buffer.h"
-
 namespace content {
 
 namespace {
-
-float AxisToButton(float input) {
-  return (input + 1.f) / 2.f;
-}
-
-float AxisNegativeAsButton(float input) {
-  return (input < -0.5f) ? 1.f : 0.f;
-}
-
-float AxisPositiveAsButton(float input) {
-  return (input > 0.5f) ? 1.f : 0.f;
-}
 
 void MapperXInputStyleGamepad(
     const blink::WebGamepad& input,

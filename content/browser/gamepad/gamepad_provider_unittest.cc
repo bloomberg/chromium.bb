@@ -71,7 +71,8 @@ TEST_F(GamepadProviderTest, PollingAccess) {
   test_data.items[0].timestamp = 0;
   test_data.items[0].buttonsLength = 1;
   test_data.items[0].axesLength = 2;
-  test_data.items[0].buttons[0] = 1.f;
+  test_data.items[0].buttons[0].value = 1.f;
+  test_data.items[0].buttons[0].pressed = true;
   test_data.items[0].axes[0] = -1.f;
   test_data.items[0].axes[1] = .5f;
 
@@ -102,7 +103,8 @@ TEST_F(GamepadProviderTest, PollingAccess) {
 
   EXPECT_EQ(1u, output.length);
   EXPECT_EQ(1u, output.items[0].buttonsLength);
-  EXPECT_EQ(1.f, output.items[0].buttons[0]);
+  EXPECT_EQ(1.f, output.items[0].buttons[0].value);
+  EXPECT_EQ(true, output.items[0].buttons[0].pressed);
   EXPECT_EQ(2u, output.items[0].axesLength);
   EXPECT_EQ(-1.f, output.items[0].axes[0]);
   EXPECT_EQ(0.5f, output.items[0].axes[1]);
@@ -116,12 +118,14 @@ TEST_F(GamepadProviderTest, UserGesture) {
   no_button_data.items[0].timestamp = 0;
   no_button_data.items[0].buttonsLength = 1;
   no_button_data.items[0].axesLength = 2;
-  no_button_data.items[0].buttons[0] = 0.f;
+  no_button_data.items[0].buttons[0].value = 0.f;
+  no_button_data.items[0].buttons[0].pressed = false;
   no_button_data.items[0].axes[0] = -1.f;
   no_button_data.items[0].axes[1] = .5f;
 
   WebGamepads button_down_data = no_button_data;
-  button_down_data.items[0].buttons[0] = 1.f;
+  button_down_data.items[0].buttons[0].value = 1.f;
+  button_down_data.items[0].buttons[0].pressed = true;
 
   UserGestureListener listener;
   GamepadProvider* provider = CreateProvider(no_button_data);

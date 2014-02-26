@@ -164,7 +164,8 @@ TEST_F(PepperGamepadHostTest, WaitForReply) {
   // ensures that it was able to issue callbacks for the first read (if it
   // issued one) before we try to check for it.
   blink::WebGamepads button_down_data = default_data;
-  button_down_data.items[0].buttons[0] = 1.f;
+  button_down_data.items[0].buttons[0].value = 1.f;
+  button_down_data.items[0].buttons[0].pressed = true;
   fetcher->SetTestData(button_down_data);
   fetcher->WaitForDataRead();
   fetcher->WaitForDataRead();
@@ -190,8 +191,10 @@ TEST_F(PepperGamepadHostTest, WaitForReply) {
   EXPECT_EQ(button_down_data.items[0].buttonsLength,
             buffer->buffer.items[0].buttons_length);
   for (size_t i = 0; i < ppapi::WebKitGamepad::kButtonsLengthCap; i++) {
-    EXPECT_EQ(button_down_data.items[0].buttons[i],
-              buffer->buffer.items[0].buttons[i]);
+    EXPECT_EQ(button_down_data.items[0].buttons[i].value,
+              buffer->buffer.items[0].buttons[i].value);
+    EXPECT_EQ(button_down_data.items[0].buttons[i].pressed,
+              buffer->buffer.items[0].buttons[i].pressed);
   }
 
   // Duplicate requests should be denied.

@@ -1274,6 +1274,10 @@
     # Set to 1 to compile with the hole punching for the protected video.
     'video_hole%': 0,
 
+    # Enable a new Gamepad interface. This is temporary and should go
+    # away once the chrome and blink interfaces are in sync
+    'enable_new_gamepad_api%': 1,
+
     'conditions': [
       # The version of GCC in use, set later in platforms that use GCC and have
       # not explicitly chosen to build with clang. Currently, this means all
@@ -2243,6 +2247,9 @@
       }],
       ['enable_hidpi==1', {
         'defines': ['ENABLE_HIDPI=1'],
+      }],
+      ['enable_new_gamepad_api==1', {
+        'defines': ['ENABLE_NEW_GAMEPAD_API=1'],
       }],
       ['native_discardable_memory==1', {
         'defines': ['DISCARDABLE_MEMORY_ALWAYS_SUPPORTED_NATIVELY'],

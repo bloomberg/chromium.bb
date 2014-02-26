@@ -197,7 +197,8 @@ void GamepadController::SetButtonData(int index, int button, double data) {
     return;
   if (button < 0 || button >= static_cast<int>(WebGamepad::buttonsLengthCap))
     return;
-  gamepads_.items[index].buttons[button] = data;
+  gamepads_.items[index].buttons[button].value = data;
+  gamepads_.items[index].buttons[button].pressed = data > 0.1f;
   if (delegate_)
     delegate_->setGamepadData(gamepads_);
 }

@@ -22,7 +22,7 @@ bool GamepadsHaveUserGesture(const blink::WebGamepads& gamepads) {
                                            kPrimaryInteractionButtons);
       for (unsigned button_index = 0; button_index < buttons_to_check;
            button_index++) {
-        if (pad.buttons[button_index] > 0.5f)
+        if (pad.buttons[button_index].pressed)
           return true;
       }
     }

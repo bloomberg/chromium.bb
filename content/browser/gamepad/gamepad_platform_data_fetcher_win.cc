@@ -142,6 +142,12 @@ void GamepadPlatformDataFetcherWin::EnumerateDevices(
         L"%ls (%lsVendor: %04x Product: %04x)",
         gamepad->id, state.mapper ? L"STANDARD GAMEPAD " : L"",
         gamepad->vendor_id, gamepad->product_id);
+
+      if (state.mapper)
+        swprintf(pad.mapping, WebGamepad::mappingLengthCap, L"standard");
+      else
+        pad.mapping[0] = 0;
+
       pads->length++;
     }
   }
@@ -205,6 +211,7 @@ bool GamepadPlatformDataFetcherWin::GetXInputPadConnectivity(
              WebGamepad::idLengthCap,
              L"Xbox 360 Controller (XInput STANDARD %ls)",
              GamepadSubTypeName(caps.SubType));
+    swprintf(pad->mapping, WebGamepad::mappingLengthCap, L"standard");
     return true;
   }
 }
@@ -221,16 +228,24 @@ void GamepadPlatformDataFetcherWin::GetXInputPadData(
   if (dwResult == ERROR_SUCCESS) {
     pad->timestamp = state.dwPacketNumber;
     pad->buttonsLength = 0;
-#define ADD(b) pad->buttons[pad->buttonsLength++] = \
-  ((state.Gamepad.wButtons & (b)) ? 1.0 : 0.0);
+#define ADD(b) pad->buttons[pad->buttonsLength].pressed = \
+  (state.Gamepad.wButtons & (b)) != 0; \
+  pad->buttons[pad->buttonsLength++].value = \
+  ((state.Gamepad.wButtons & (b)) ? 1.f : 0.f);
     ADD(XINPUT_GAMEPAD_A);
     ADD(XINPUT_GAMEPAD_B);
     ADD(XINPUT_GAMEPAD_X);
     ADD(XINPUT_GAMEPAD_Y);
     ADD(XINPUT_GAMEPAD_LEFT_SHOULDER);
     ADD(XINPUT_GAMEPAD_RIGHT_SHOULDER);
-    pad->buttons[pad->buttonsLength++] = state.Gamepad.bLeftTrigger / 255.0;
-    pad->buttons[pad->buttonsLength++] = state.Gamepad.bRightTrigger / 255.0;
+    pad->buttons[pad->buttonsLength].pressed =
+        state.Gamepad.bLeftTrigger >= XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
+    pad->buttons[pad->buttonsLength++].value =
+        state.Gamepad.bLeftTrigger / 255.f;
+    pad->buttons[pad->buttonsLength].pressed =
+        state.Gamepad.bRightTrigger >= XINPUT_GAMEPAD_TRIGGER_THRESHOLD;
+    pad->buttons[pad->buttonsLength++].value =
+        state.Gamepad.bRightTrigger / 255.f;
     ADD(XINPUT_GAMEPAD_BACK);
     ADD(XINPUT_GAMEPAD_START);
     ADD(XINPUT_GAMEPAD_LEFT_THUMB);
@@ -267,8 +282,10 @@ void GamepadPlatformDataFetcherWin::GetRawInputPadData(
   raw_pad.buttonsLength = gamepad->buttons_length;
   raw_pad.axesLength =  gamepad->axes_length;
 
-  for (unsigned int i = 0; i < raw_pad.buttonsLength; i++)
-    raw_pad.buttons[i] = gamepad->buttons[i] ? 1.0 : 0.0;
+  for (unsigned int i = 0; i < raw_pad.buttonsLength; i++) {
+    raw_pad.buttons[i].pressed = gamepad->buttons[i];
+    raw_pad.buttons[i].value = gamepad->buttons[i] ? 1.0 : 0.0;
+  }
 
   for (unsigned int i = 0; i < raw_pad.axesLength; i++)
     raw_pad.axes[i] = gamepad->axes[i].value;

@@ -6,10 +6,7 @@
 #define CONTENT_BROWSER_GAMEPAD_GAMEPAD_STANDARD_MAPPINGS_H_
 
 #include "base/strings/string_piece.h"
-
-namespace blink {
-class WebGamepad;
-}
+#include "content/common/gamepad_hardware_buffer.h"
 
 namespace content {
 
@@ -55,6 +52,15 @@ enum CanonicalAxisIndex {
   kAxisRightStickY,
   kNumAxes
 };
+
+// Matches XInput's trigger deadzone
+const float kDefaultButtonPressedThreshold = 30.f/255.f;
+
+// Common mapping functions
+blink::WebGamepadButton AxisToButton(float input);
+blink::WebGamepadButton AxisNegativeAsButton(float input);
+blink::WebGamepadButton AxisPositiveAsButton(float input);
+void DpadFromAxis(blink::WebGamepad* mapped, float dir);
 
 }  // namespace content
 

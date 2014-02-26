@@ -21,6 +21,13 @@ namespace content {
 
 namespace {
 
+void CopyNSStringAsUTF16LittleEndian(
+    NSString* src, blink::WebUChar* dest, size_t dest_len) {
+  NSData* as16 = [src dataUsingEncoding:NSUTF16LittleEndianStringEncoding];
+  memset(dest, 0, dest_len);
+  [as16 getBytes:dest length:dest_len - sizeof(blink::WebUChar)];
+}
+
 NSDictionary* DeviceMatching(uint32_t usage_page, uint32_t usage) {
   return [NSDictionary dictionaryWithObjectsAndKeys:
       [NSNumber numberWithUnsignedInt:usage_page],
@@ -261,12 +268,19 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
       associated_[slot].hid.mapper ? "STANDARD GAMEPAD " : "",
       vendor_int,
       product_int];
-  NSData* as16 = [ident dataUsingEncoding:NSUTF16LittleEndianStringEncoding];
+  CopyNSStringAsUTF16LittleEndian(
+      ident,
+      data_.items[slot].id,
+      sizeof(data_.items[slot].id));
 
-  const size_t kOutputLengthBytes = sizeof(data_.items[slot].id);
-  memset(&data_.items[slot].id, 0, kOutputLengthBytes);
-  [as16 getBytes:data_.items[slot].id
-          length:kOutputLengthBytes - sizeof(blink::WebUChar)];
+  if (associated_[slot].hid.mapper) {
+    CopyNSStringAsUTF16LittleEndian(
+      @"standard",
+      data_.items[slot].mapping,
+      sizeof(data_.items[slot].mapping));
+  } else {
+    data_.items[slot].mapping[0] = 0;
+  }
 
   base::ScopedCFTypeRef<CFArrayRef> elements(
       IOHIDDeviceCopyMatchingElements(device, NULL, kIOHIDOptionsTypeNone));
@@ -320,7 +334,8 @@ void GamepadPlatformDataFetcherMac::ValueChanged(IOHIDValueRef value) {
   // Find and fill in the associated button event, if any.
   for (size_t i = 0; i < pad.buttonsLength; ++i) {
     if (associated.hid.button_elements[i] == element) {
-      pad.buttons[i] = IOHIDValueGetIntegerValue(value) ? 1.f : 0.f;
+      pad.buttons[i].pressed = IOHIDValueGetIntegerValue(value);
+      pad.buttons[i].value = pad.buttons[i].pressed ? 1.f : 0.f;
       pad.timestamp = std::max(pad.timestamp, IOHIDValueGetTimeStamp(value));
       return;
     }
@@ -358,11 +373,15 @@ void GamepadPlatformDataFetcherMac::XboxDeviceAdd(XboxController* device) {
                   ? @"Xbox 360 Controller"
                   : @"Xbox One Controller",
               device->GetProductId(), device->GetVendorId()];
-  NSData* as16 = [ident dataUsingEncoding:NSUTF16StringEncoding];
-  const size_t kOutputLengthBytes = sizeof(data_.items[slot].id);
-  memset(&data_.items[slot].id, 0, kOutputLengthBytes);
-  [as16 getBytes:data_.items[slot].id
-          length:kOutputLengthBytes - sizeof(blink::WebUChar)];
+  CopyNSStringAsUTF16LittleEndian(
+      ident,
+      data_.items[slot].id,
+      sizeof(data_.items[slot].id));
+
+  CopyNSStringAsUTF16LittleEndian(
+    @"standard",
+    data_.items[slot].mapping,
+    sizeof(data_.items[slot].mapping));
 
   associated_[slot].is_xbox = true;
   associated_[slot].xbox.device = device;
@@ -409,12 +428,16 @@ void GamepadPlatformDataFetcherMac::XboxValueChanged(
   WebGamepad& pad = data_.items[slot];
 
   for (size_t i = 0; i < 6; i++) {
-    pad.buttons[i] = data.buttons[i] ? 1.0f : 0.0f;
+    pad.buttons[i].pressed = data.buttons[i];
+    pad.buttons[i].value = data.buttons[i] ? 1.0f : 0.0f;
   }
-  pad.buttons[6] = data.triggers[0];
-  pad.buttons[7] = data.triggers[1];
+  pad.buttons[6].pressed = data.triggers[0] > kDefaultButtonPressedThreshold;
+  pad.buttons[6].value = data.triggers[0];
+  pad.buttons[7].pressed = data.triggers[1] > kDefaultButtonPressedThreshold;
+  pad.buttons[7].value = data.triggers[1];
   for (size_t i = 8; i < 17; i++) {
-    pad.buttons[i] = data.buttons[i - 2] ? 1.0f : 0.0f;
+    pad.buttons[i].pressed = data.buttons[i - 2];
+    pad.buttons[i].value = data.buttons[i - 2] ? 1.0f : 0.0f;
   }
   for (size_t i = 0; i < arraysize(data.axes); i++) {
     pad.axes[i] = data.axes[i];
