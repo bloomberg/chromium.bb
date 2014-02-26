@@ -473,11 +473,7 @@ DOMWindow* toDOMWindow(v8::Handle<v8::Value> value, v8::Isolate* isolate)
     if (value.IsEmpty() || !value->IsObject())
         return 0;
 
-    v8::Handle<v8::Object> global = v8::Handle<v8::Object>::Cast(value);
-    v8::Handle<v8::Object> windowWrapper = global->FindInstanceInPrototypeChain(V8Window::domTemplate(isolate, MainWorld));
-    if (!windowWrapper.IsEmpty())
-        return V8Window::toNative(windowWrapper);
-    windowWrapper = global->FindInstanceInPrototypeChain(V8Window::domTemplate(isolate, IsolatedWorld));
+    v8::Handle<v8::Object> windowWrapper = V8Window::findInstanceInPrototypeChain(v8::Handle<v8::Object>::Cast(value), isolate);
     if (!windowWrapper.IsEmpty())
         return V8Window::toNative(windowWrapper);
     return 0;
@@ -491,13 +487,10 @@ DOMWindow* toDOMWindow(v8::Handle<v8::Context> context)
 ExecutionContext* toExecutionContext(v8::Handle<v8::Context> context)
 {
     v8::Handle<v8::Object> global = context->Global();
-    v8::Handle<v8::Object> windowWrapper = global->FindInstanceInPrototypeChain(V8Window::domTemplate(context->GetIsolate(), MainWorld));
+    v8::Handle<v8::Object> windowWrapper = V8Window::findInstanceInPrototypeChain(global, context->GetIsolate());
     if (!windowWrapper.IsEmpty())
         return V8Window::toNative(windowWrapper)->executionContext();
-    windowWrapper = global->FindInstanceInPrototypeChain(V8Window::domTemplate(context->GetIsolate(), IsolatedWorld));
-    if (!windowWrapper.IsEmpty())
-        return V8Window::toNative(windowWrapper)->executionContext();
-    v8::Handle<v8::Object> workerWrapper = global->FindInstanceInPrototypeChain(V8WorkerGlobalScope::domTemplate(context->GetIsolate(), WorkerWorld));
+    v8::Handle<v8::Object> workerWrapper = V8WorkerGlobalScope::findInstanceInPrototypeChain(global, context->GetIsolate());
     if (!workerWrapper.IsEmpty())
         return V8WorkerGlobalScope::toNative(workerWrapper)->executionContext();
     // FIXME: Is this line of code reachable?

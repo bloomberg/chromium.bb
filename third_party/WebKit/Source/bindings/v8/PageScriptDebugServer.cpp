@@ -60,7 +60,7 @@ static LocalFrame* retrieveFrameWithGlobalObjectCheck(v8::Handle<v8::Context> co
     if (!V8WindowShell::contextHasCorrectPrototype(context))
         return 0;
 
-    v8::Handle<v8::Value> global = context->Global()->FindInstanceInPrototypeChain(V8Window::domTemplate(context->GetIsolate(), worldTypeInMainThread(context->GetIsolate())));
+    v8::Handle<v8::Value> global = V8Window::findInstanceInPrototypeChain(context->Global(), context->GetIsolate());
     if (global.IsEmpty())
         return 0;
 

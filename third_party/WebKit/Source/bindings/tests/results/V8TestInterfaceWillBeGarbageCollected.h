@@ -45,6 +45,7 @@ namespace WebCore {
 class V8TestInterfaceWillBeGarbageCollected {
 public:
     static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*);
+    static v8::Handle<v8::Object> findInstanceInPrototypeChain(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*, WrapperWorldType);
     static TestInterfaceWillBeGarbageCollected* toNative(v8::Handle<v8::Object> object)
     {

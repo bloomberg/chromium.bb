@@ -44,6 +44,7 @@ namespace WebCore {
 class V8TestInterfaceConstructor2 {
 public:
     static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*);
+    static v8::Handle<v8::Object> findInstanceInPrototypeChain(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*, WrapperWorldType);
     static TestInterfaceConstructor2* toNative(v8::Handle<v8::Object> object)
     {

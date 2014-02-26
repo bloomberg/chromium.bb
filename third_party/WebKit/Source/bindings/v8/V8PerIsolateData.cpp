@@ -94,13 +94,6 @@ void V8PerIsolateData::dispose(v8::Isolate* isolate)
     isolate->SetData(gin::kEmbedderBlink, 0);
 }
 
-v8::Handle<v8::FunctionTemplate> V8PerIsolateData::toStringTemplate()
-{
-    if (m_toStringTemplate.isEmpty())
-        m_toStringTemplate.set(m_isolate, v8::FunctionTemplate::New(m_isolate, constructorOfToString));
-    return m_toStringTemplate.newLocal(m_isolate);
-}
-
 v8::Handle<v8::FunctionTemplate> V8PerIsolateData::domTemplate(WrapperWorldType currentWorldType, void* domTemplateKey, v8::FunctionCallback callback, v8::Handle<v8::Value> data, v8::Handle<v8::Signature> signature, int length)
 {
     TemplateMap& templates = templateMap(currentWorldType);
@@ -128,21 +121,15 @@ void V8PerIsolateData::setDOMTemplate(WrapperWorldType currentWorldType, void* d
 
 v8::Local<v8::Context> V8PerIsolateData::ensureRegexContext()
 {
-    if (m_regexContext.isEmpty()) {
-        v8::HandleScope handleScope(m_isolate);
+    if (m_regexContext.isEmpty())
         m_regexContext.set(m_isolate, v8::Context::New(m_isolate));
-    }
     return m_regexContext.newLocal(m_isolate);
 }
 
-bool V8PerIsolateData::hasInstanceInMainWorld(const WrapperTypeInfo* info, v8::Handle<v8::Value> value)
+bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* info, v8::Handle<v8::Value> value)
 {
-    return hasInstance(info, value, m_templatesForMainWorld);
-}
-
-bool V8PerIsolateData::hasInstanceInNonMainWorld(const WrapperTypeInfo* info, v8::Handle<v8::Value> value)
-{
-    return hasInstance(info, value, m_templatesForNonMainWorld);
+    return hasInstance(info, value, m_templatesForMainWorld)
+        || hasInstance(info, value, m_templatesForNonMainWorld);
 }
 
 bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* info, v8::Handle<v8::Value> value, TemplateMap& templates)
@@ -150,11 +137,30 @@ bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* info, v8::Handle<v8::V
     TemplateMap::iterator result = templates.find(info);
     if (result == templates.end())
         return false;
-    v8::HandleScope handleScope(m_isolate);
-    return result->value.newLocal(m_isolate)->HasInstance(value);
+    v8::Handle<v8::FunctionTemplate> templ = result->value.newLocal(m_isolate);
+    return templ->HasInstance(value);
 }
 
-void V8PerIsolateData::constructorOfToString(const v8::FunctionCallbackInfo<v8::Value>& info)
+v8::Handle<v8::Object> V8PerIsolateData::findInstanceInPrototypeChain(const WrapperTypeInfo* info, v8::Handle<v8::Value> value)
+{
+    v8::Handle<v8::Object> wrapper = findInstanceInPrototypeChain(info, value, m_templatesForMainWorld);
+    if (!wrapper.IsEmpty())
+        return wrapper;
+    return findInstanceInPrototypeChain(info, value, m_templatesForNonMainWorld);
+}
+
+v8::Handle<v8::Object> V8PerIsolateData::findInstanceInPrototypeChain(const WrapperTypeInfo* info, v8::Handle<v8::Value> value, TemplateMap& templates)
+{
+    if (value.IsEmpty() || !value->IsObject())
+        return v8::Handle<v8::Object>();
+    TemplateMap::iterator result = templates.find(info);
+    if (result == templates.end())
+        return v8::Handle<v8::Object>();
+    v8::Handle<v8::FunctionTemplate> templ = result->value.newLocal(m_isolate);
+    return v8::Handle<v8::Object>::Cast(value)->FindInstanceInPrototypeChain(templ);
+}
+
+static void constructorOfToString(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     // The DOM constructors' toString functions grab the current toString
     // for Functions by taking the toString function of itself and then
@@ -170,6 +176,13 @@ void V8PerIsolateData::constructorOfToString(const v8::FunctionCallbackInfo<v8::
         return;
     }
     v8SetReturnValue(info, V8ScriptRunner::callInternalFunction(v8::Handle<v8::Function>::Cast(value), info.This(), 0, 0, v8::Isolate::GetCurrent()));
+}
+
+v8::Handle<v8::FunctionTemplate> V8PerIsolateData::toStringTemplate()
+{
+    if (m_toStringTemplate.isEmpty())
+        m_toStringTemplate.set(m_isolate, v8::FunctionTemplate::New(m_isolate, constructorOfToString));
+    return m_toStringTemplate.newLocal(m_isolate);
 }
 
 } // namespace WebCore

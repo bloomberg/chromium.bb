@@ -121,8 +121,8 @@ public:
     v8::Handle<v8::FunctionTemplate> existingDOMTemplate(WrapperWorldType, void* domTemplateKey);
     void setDOMTemplate(WrapperWorldType, void* domTemplateKey, v8::Handle<v8::FunctionTemplate>);
 
-    bool hasInstanceInMainWorld(const WrapperTypeInfo*, v8::Handle<v8::Value>);
-    bool hasInstanceInNonMainWorld(const WrapperTypeInfo*, v8::Handle<v8::Value>);
+    bool hasInstance(const WrapperTypeInfo*, v8::Handle<v8::Value>);
+    v8::Handle<v8::Object> findInstanceInPrototypeChain(const WrapperTypeInfo*, v8::Handle<v8::Value>);
 
     v8::Local<v8::Context> ensureRegexContext();
 
@@ -133,7 +133,7 @@ private:
     explicit V8PerIsolateData(v8::Isolate*);
     ~V8PerIsolateData();
     bool hasInstance(const WrapperTypeInfo*, v8::Handle<v8::Value>, TemplateMap&);
-    static void constructorOfToString(const v8::FunctionCallbackInfo<v8::Value>&);
+    v8::Handle<v8::Object> findInstanceInPrototypeChain(const WrapperTypeInfo*, v8::Handle<v8::Value>, TemplateMap&);
 
     v8::Isolate* m_isolate;
     bool m_isMainThread; // Caches the result of isMainThread() for performance.

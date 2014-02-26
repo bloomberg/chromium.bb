@@ -20,7 +20,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     v8::Handle<v8::Object> holder = info.Holder();
     {% else %}{# perform lookup first #}
     {# FIXME: can we remove this lookup? #}
-    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain({{v8_class}}::domTemplate(info.GetIsolate(), worldType(info.GetIsolate())));
+    v8::Handle<v8::Object> holder = {{v8_class}}::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
     if (holder.IsEmpty())
         return;
     {% endif %}{# Window #}
