@@ -28,7 +28,6 @@
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/profile_management_switches.h"
 #include "components/autofill/content/browser/autofill_driver_impl.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "content/public/browser/web_contents.h"
@@ -204,10 +203,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   // because the connected state may change while this tab is open.  Having a
   // one-click signin helper attached does not cause problems if the profile
   // happens to be already connected.
-  // TODO(vabr): The check IsEnableWebBasedSignin is a hack for the time when
-  // OneClickSignin is disabled. http://crbug.com/339804
-  if (switches::IsEnableWebBasedSignin() &&
-      OneClickSigninHelper::CanOffer(web_contents,
+  if (OneClickSigninHelper::CanOffer(web_contents,
                                      OneClickSigninHelper::CAN_OFFER_FOR_ALL,
                                      std::string(),
                                      NULL)) {
