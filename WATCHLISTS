@@ -610,6 +610,11 @@
     'views_corewm': {
       'filepath': 'ui/views/corewm/',
     },
+    'virtual_keyboard': {
+      'filepath': 'ui/keyboard/'\
+                  'chrome/test/data/chromeos/virtual_keyboard/'\
+                  'chrome/common/extensions/api/virtual_keyboard',
+    },
     'webkit': {
       'filepath': 'webkit/',
     },
@@ -861,6 +866,8 @@
     'views': ['tfarina@chromium.org'],
     'views_core': ['ben+views@chromium.org'],
     'views_corewm': ['ben+corewm@chromium.org'],
+    'virtual_keyboard': ['dfaden+virtualkb@google.com',
+                         'groby+virtualkb@chromium.org'],
     'webkit': ['darin-cc@chromium.org'],
     'webrtc_media': ['fischman+watch@chromium.org',
                      'wjia+watch@chromium.org',
