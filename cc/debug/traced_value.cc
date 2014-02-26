@@ -30,6 +30,17 @@ void TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
   MakeDictIntoImplicitSnapshot(dict, object_name, id);
 }
 
+void TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
+    const char* category,
+    base::DictionaryValue* dict,
+    const char* object_base_type_name,
+    const char* object_name,
+    const void* id) {
+  dict->SetString("cat", category);
+  dict->SetString("base_type", object_base_type_name);
+  MakeDictIntoImplicitSnapshot(dict, object_name, id);
+}
+
 scoped_refptr<base::debug::ConvertableToTraceFormat> TracedValue::FromValue(
     base::Value* value) {
   return scoped_refptr<base::debug::ConvertableToTraceFormat>(
