@@ -4,9 +4,9 @@
 
 #include "media/cast/transport/rtp_sender/rtp_packetizer/rtp_packetizer.h"
 
+#include "base/big_endian.h"
 #include "base/logging.h"
 #include "media/cast/transport/pacing/paced_sender.h"
-#include "net/base/big_endian.h"
 
 namespace media {
 namespace cast {
@@ -124,7 +124,8 @@ void RtpPacketizer::Cast(bool is_key,
     packet.push_back(frame_id);
     size_t start_size = packet.size();
     packet.resize(start_size + 4);
-    net::BigEndianWriter big_endian_writer(&(packet[start_size]), 4);
+    base::BigEndianWriter big_endian_writer(
+        reinterpret_cast<char*>(&(packet[start_size])), 4);
     big_endian_writer.WriteU16(packet_id_);
     big_endian_writer.WriteU16(static_cast<uint16>(num_packets - 1));
     packet.push_back(static_cast<uint8>(reference_frame_id));
@@ -159,7 +160,8 @@ void RtpPacketizer::BuildCommonRTPheader(Packet* packet,
                     (marker_bit ? kRtpMarkerBitMask : 0));
   size_t start_size = packet->size();
   packet->resize(start_size + 10);
-  net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 10);
+  base::BigEndianWriter big_endian_writer(
+      reinterpret_cast<char*>(&((*packet)[start_size])), 10);
   big_endian_writer.WriteU16(sequence_number_);
   big_endian_writer.WriteU32(time_stamp);
   big_endian_writer.WriteU32(config_.ssrc);

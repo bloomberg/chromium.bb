@@ -4,7 +4,7 @@
 
 #include "media/cast/logging/log_serializer.h"
 
-#include "net/base/big_endian.h"
+#include "base/big_endian.h"
 
 namespace media {
 namespace cast {
@@ -42,7 +42,7 @@ bool LogSerializer::SerializeEventsForStream(
   if (remaining_space <= 0)
     return false;
 
-  net::BigEndianWriter writer(&(*serialized_log_so_far_)[index_so_far_],
+  base::BigEndianWriter writer(&(*serialized_log_so_far_)[index_so_far_],
                               remaining_space);
 
   // Write stream ID.

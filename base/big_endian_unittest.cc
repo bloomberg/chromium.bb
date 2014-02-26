@@ -1,12 +1,13 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/big_endian.h"
+
 #include "base/strings/string_piece.h"
-#include "net/base/big_endian.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace base {
 
 TEST(BigEndianReaderTest, ReadsValues) {
   char data[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xA, 0xB, 0xC };
@@ -96,5 +97,4 @@ TEST(BigEndianWriterTest, RespectsLength) {
   EXPECT_EQ(0, writer.remaining());
 }
 
-}  // namespace net
-
+}  // namespace base

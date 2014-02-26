@@ -7,9 +7,9 @@
 #include <algorithm>
 
 #include "base/basictypes.h"
+#include "base/big_endian.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "net/base/big_endian.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 
@@ -131,10 +131,10 @@ int WriteWebSocketFrameHeader(const WebSocketFrameHeader& header,
   // Writes "extended payload length" field.
   if (extended_length_size == 2) {
     uint16 payload_length_16 = static_cast<uint16>(header.payload_length);
-    WriteBigEndian(buffer + buffer_index, payload_length_16);
+    base::WriteBigEndian(buffer + buffer_index, payload_length_16);
     buffer_index += sizeof(payload_length_16);
   } else if (extended_length_size == 8) {
-    WriteBigEndian(buffer + buffer_index, header.payload_length);
+    base::WriteBigEndian(buffer + buffer_index, header.payload_length);
     buffer_index += sizeof(header.payload_length);
   }
 

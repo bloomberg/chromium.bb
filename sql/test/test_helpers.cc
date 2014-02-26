@@ -42,7 +42,7 @@ bool GetRootPage(sql::Connection* db, const char* name, int* page_number) {
 }
 
 // Helper for reading a number from the SQLite header.
-// See net/base/big_endian.h.
+// See base/big_endian.h.
 unsigned ReadBigEndian(unsigned char* buf, size_t bytes) {
   unsigned r = buf[0];
   for (size_t i = 1; i < bytes; i++) {

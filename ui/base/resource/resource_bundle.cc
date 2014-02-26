@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/big_endian.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file.h"
@@ -19,7 +20,6 @@
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 #include "grit/app_locale_settings.h"
-#include "net/base/big_endian.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -764,7 +764,7 @@ bool ResourceBundle::ShouldHighlightMissingScaledResources() {
 
 // static
 bool ResourceBundle::PNGContainsFallbackMarker(const unsigned char* buf,
-                               size_t size) {
+                                               size_t size) {
   if (size < arraysize(kPngMagic) ||
       memcmp(buf, kPngMagic, arraysize(kPngMagic)) != 0) {
     // Data invalid or a JPEG.
@@ -778,7 +778,7 @@ bool ResourceBundle::PNGContainsFallbackMarker(const unsigned char* buf,
     if (size - pos < kPngChunkMetadataSize)
       break;
     uint32 length = 0;
-    net::ReadBigEndian(reinterpret_cast<const char*>(buf + pos), &length);
+    base::ReadBigEndian(reinterpret_cast<const char*>(buf + pos), &length);
     if (size - pos - kPngChunkMetadataSize < length)
       break;
     if (length == 0 && memcmp(buf + pos + sizeof(uint32), kPngScaleChunkType,

@@ -5,6 +5,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #include "base/base_paths.h"
+#include "base/big_endian.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
@@ -12,7 +13,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "net/base/big_endian.h"
+#include "grit/ui_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -20,8 +21,6 @@
 #include "ui/base/resource/data_pack.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_skia.h"
-
-#include "grit/ui_resources.h"
 
 using ::testing::_;
 using ::testing::Between;
@@ -106,8 +105,8 @@ void AddCustomChunk(const base::StringPiece& custom_chunk,
   for (size_t i = 0; i < sizeof(uint32); ++i)
     ihdr_length_data[i] = *(ihdr_start + i);
   uint32 ihdr_chunk_length = 0;
-  net::ReadBigEndian(reinterpret_cast<char*>(ihdr_length_data),
-                     &ihdr_chunk_length);
+  base::ReadBigEndian(reinterpret_cast<char*>(ihdr_length_data),
+                      &ihdr_chunk_length);
   EXPECT_TRUE(std::equal(
       ihdr_start + sizeof(uint32),
       ihdr_start + sizeof(uint32) + sizeof(kPngIHDRChunkType),

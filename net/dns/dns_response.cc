@@ -4,10 +4,10 @@
 
 #include "net/dns/dns_response.h"
 
+#include "base/big_endian.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
 #include "net/base/address_list.h"
-#include "net/base/big_endian.h"
 #include "net/base/dns_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -73,7 +73,7 @@ unsigned DnsRecordParser::ReadName(const void* const vpos,
         if (seen > length_)
           return 0;
         uint16 offset;
-        ReadBigEndian<uint16>(p, &offset);
+        base::ReadBigEndian<uint16>(p, &offset);
         offset &= dns_protocol::kOffsetMask;
         p = packet_ + offset;
         if (p >= end)
@@ -113,8 +113,8 @@ bool DnsRecordParser::ReadRecord(DnsResourceRecord* out) {
   size_t consumed = ReadName(cur_, &out->name);
   if (!consumed)
     return false;
-  BigEndianReader reader(cur_ + consumed,
-                         packet_ + length_ - (cur_ + consumed));
+  base::BigEndianReader reader(cur_ + consumed,
+                               packet_ + length_ - (cur_ + consumed));
   uint16 rdlen;
   if (reader.ReadU16(&out->type) &&
       reader.ReadU16(&out->klass) &&
@@ -251,7 +251,7 @@ uint16 DnsResponse::qtype() const {
   // QTYPE starts where QNAME ends.
   const size_t type_offset = parser_.GetOffset() - 2 * sizeof(uint16);
   uint16 type;
-  ReadBigEndian<uint16>(io_buffer_->data() + type_offset, &type);
+  base::ReadBigEndian<uint16>(io_buffer_->data() + type_offset, &type);
   return type;
 }
 

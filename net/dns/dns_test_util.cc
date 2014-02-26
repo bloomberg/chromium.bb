@@ -6,11 +6,11 @@
 
 #include <string>
 
+#include "base/big_endian.h"
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/sys_byteorder.h"
-#include "net/base/big_endian.h"
 #include "net/base/dns_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -119,7 +119,7 @@ class MockTransaction : public DnsTransaction,
 
           // Write answer with loopback IP address.
           header->ancount = base::HostToNet16(1);
-          BigEndianWriter writer(buffer + nbytes, answer_size);
+          base::BigEndianWriter writer(buffer + nbytes, answer_size);
           writer.WriteU16(kPointerToQueryName);
           writer.WriteU16(qtype_);
           writer.WriteU16(net::dns_protocol::kClassIN);

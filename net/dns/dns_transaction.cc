@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/big_endian.h"
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -21,7 +22,6 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
-#include "net/base/big_endian.h"
 #include "net/base/completion_callback.h"
 #include "net/base/dns_util.h"
 #include "net/base/io_buffer.h"
@@ -388,7 +388,8 @@ class DnsTCPAttempt : public DnsAttempt {
     if (rv < 0)
       return rv;
 
-    WriteBigEndian<uint16>(length_buffer_->data(), query_->io_buffer()->size());
+    base::WriteBigEndian<uint16>(length_buffer_->data(),
+                                 query_->io_buffer()->size());
     buffer_ =
         new DrainableIOBuffer(length_buffer_.get(), length_buffer_->size());
     next_state_ = STATE_SEND_LENGTH;
@@ -446,7 +447,7 @@ class DnsTCPAttempt : public DnsAttempt {
           buffer_->BytesRemaining(),
           base::Bind(&DnsTCPAttempt::OnIOComplete, base::Unretained(this)));
     }
-    ReadBigEndian<uint16>(length_buffer_->data(), &response_length_);
+    base::ReadBigEndian<uint16>(length_buffer_->data(), &response_length_);
     // Check if advertised response is too short. (Optimization only.)
     if (response_length_ < query_->io_buffer()->size())
       return ERR_DNS_MALFORMED_RESPONSE;

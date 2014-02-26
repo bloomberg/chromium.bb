@@ -1,15 +1,15 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_BIG_ENDIAN_H_
-#define NET_BASE_BIG_ENDIAN_H_
+#ifndef BASE_BIG_ENDIAN_H_
+#define BASE_BIG_ENDIAN_H_
 
+#include "base/base_export.h"
 #include "base/basictypes.h"
 #include "base/strings/string_piece.h"
-#include "net/base/net_export.h"
 
-namespace net {
+namespace base {
 
 // Read an integer (signed or unsigned) from |buf| in Big Endian order.
 // Note: this loop is unrolled with -O1 and above.
@@ -49,9 +49,9 @@ inline void WriteBigEndian<uint8>(char buf[], uint8 val) {
 
 // Allows reading integers in network order (big endian) while iterating over
 // an underlying buffer. All the reading functions advance the internal pointer.
-class NET_EXPORT BigEndianReader {
+class BASE_EXPORT BigEndianReader {
  public:
-  BigEndianReader(const void* buf, size_t len);
+  BigEndianReader(const char* buf, size_t len);
 
   const char* ptr() const { return ptr_; }
   int remaining() const { return end_ - ptr_; }
@@ -75,9 +75,9 @@ class NET_EXPORT BigEndianReader {
 
 // Allows writing integers in network order (big endian) while iterating over
 // an underlying buffer. All the writing functions advance the internal pointer.
-class NET_EXPORT BigEndianWriter {
+class BASE_EXPORT BigEndianWriter {
  public:
-  BigEndianWriter(void* buf, size_t len);
+  BigEndianWriter(char* buf, size_t len);
 
   char* ptr() const { return ptr_; }
   int remaining() const { return end_ - ptr_; }
@@ -97,7 +97,6 @@ class NET_EXPORT BigEndianWriter {
   char* end_;
 };
 
-}  // namespace net
+}  // namespace base
 
-#endif  // NET_BASE_BIG_ENDIAN_H_
-
+#endif  // BASE_BIG_ENDIAN_H_

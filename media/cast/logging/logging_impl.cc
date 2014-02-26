@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/big_endian.h"
 #include "base/debug/trace_event.h"
 #include "media/cast/logging/logging_impl.h"
-#include "net/base/big_endian.h"
 
 namespace media {
 namespace cast {
@@ -89,9 +89,11 @@ void LoggingImpl::InsertPacketListEvent(const base::TimeTicks& time_of_event,
     uint32 rtp_timestamp;
     uint16 packet_id, max_packet_id;
     const uint8* packet_data = &packet[0];
-    net::BigEndianReader big_endian_reader(packet_data + 4, 4);
+    base::BigEndianReader big_endian_reader(
+        reinterpret_cast<const char*>(packet_data + 4), 4);
     big_endian_reader.ReadU32(&rtp_timestamp);
-    net::BigEndianReader cast_big_endian_reader(packet_data + 12 + 2, 4);
+    base::BigEndianReader cast_big_endian_reader(
+        reinterpret_cast<const char*>(packet_data + 12 + 2), 4);
     cast_big_endian_reader.ReadU16(&packet_id);
     cast_big_endian_reader.ReadU16(&max_packet_id);
     // rtp_timestamp is enough - no need for frame_id as well.

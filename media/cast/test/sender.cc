@@ -25,7 +25,6 @@
 #include "media/cast/transport/cast_transport_defines.h"
 #include "media/cast/transport/cast_transport_sender.h"
 #include "media/cast/transport/transport/udp_transport.h"
-#include "net/base/big_endian.h"
 #include "ui/gfx/size.h"
 
 namespace media {

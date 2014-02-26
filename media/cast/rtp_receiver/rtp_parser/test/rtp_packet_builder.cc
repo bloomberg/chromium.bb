@@ -4,8 +4,8 @@
 
 #include "media/cast/rtp_receiver/rtp_parser/test/rtp_packet_builder.h"
 
+#include "base/big_endian.h"
 #include "base/logging.h"
-#include "net/base/big_endian.h"
 
 namespace media {
 namespace cast {
@@ -70,7 +70,7 @@ void RtpPacketBuilder::BuildCastHeader(uint8* data, uint32 data_length) {
   DCHECK_LE(kCastRtpHeaderLength, data_length);
   // Set the first 7 bytes to 0.
   memset(data, 0, kCastRtpHeaderLength);
-  net::BigEndianWriter big_endian_writer(data, 56);
+  base::BigEndianWriter big_endian_writer(reinterpret_cast<char*>(data), 56);
   big_endian_writer.WriteU8((is_key_ ? 0x80 : 0) |
                             (is_reference_set_ ? 0x40 : 0));
   big_endian_writer.WriteU8(frame_id_);
@@ -83,7 +83,7 @@ void RtpPacketBuilder::BuildCastHeader(uint8* data, uint32 data_length) {
 
 void RtpPacketBuilder::BuildCommonHeader(uint8* data, uint32 data_length) {
   DCHECK_LE(kGenericRtpHeaderLength, data_length);
-  net::BigEndianWriter big_endian_writer(data, 96);
+  base::BigEndianWriter big_endian_writer(reinterpret_cast<char*>(data), 96);
   big_endian_writer.WriteU8(0x80);
   big_endian_writer.WriteU8(payload_type_ | (marker_ ? kRtpMarkerBitMask : 0));
   big_endian_writer.WriteU16(sequence_number_);

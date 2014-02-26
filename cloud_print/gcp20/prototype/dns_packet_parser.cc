@@ -4,13 +4,13 @@
 
 #include "cloud_print/gcp20/prototype/dns_packet_parser.h"
 
-#include "net/base/big_endian.h"
+#include "base/big_endian.h"
 
 DnsPacketParser::DnsPacketParser(const char* packet, size_t length)
     : packet_(packet),
       length_(length),
       record_parser_(packet, length, sizeof(header_)) {
-  net::BigEndianReader reader(packet, length);
+  base::BigEndianReader reader(packet, length);
   is_header_read_ = reader.ReadU16(&header_.id) &&
                     reader.ReadU16(&header_.flags) &&
                     reader.ReadU16(&header_.qdcount) &&
@@ -25,8 +25,8 @@ bool DnsPacketParser::ReadRecord(DnsQueryRecord* out) {
   size_t consumed = ReadName(&result.qname);
   if (!consumed)
     return false;
-  net::BigEndianReader reader(packet_ + GetOffset() + consumed,
-                              length_ - (GetOffset() + consumed));
+  base::BigEndianReader reader(packet_ + GetOffset() + consumed,
+                               length_ - (GetOffset() + consumed));
   if (reader.ReadU16(&result.qtype) && reader.ReadU16(&result.qclass) &&
     record_parser_.SkipQuestion()) {  // instead of |cur_ = reader.ptr();|
       *out = result;

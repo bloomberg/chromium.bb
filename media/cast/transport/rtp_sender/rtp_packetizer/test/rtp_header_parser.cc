@@ -6,7 +6,7 @@
 
 #include <cstddef>
 
-#include "net/base/big_endian.h"
+#include "base/big_endian.h"
 
 namespace media {
 namespace cast {
@@ -61,7 +61,8 @@ bool RtpHeaderParser::ParseCommon(RtpCastTestHeader* parsed_packet) const {
 
   const uint8* ptr = &rtp_data_begin_[4];
 
-  net::BigEndianReader big_endian_reader(ptr, 8);
+  base::BigEndianReader big_endian_reader(reinterpret_cast<const char*>(ptr),
+                                          8);
   uint32 rtp_timestamp, ssrc;
   big_endian_reader.ReadU32(&rtp_timestamp);
   big_endian_reader.ReadU32(&ssrc);
@@ -87,7 +88,8 @@ bool RtpHeaderParser::ParseCast(RtpCastTestHeader* parsed_packet) const {
   parsed_packet->is_reference = (data[0] & kCastReferenceFrameIdBitMask);
   parsed_packet->frame_id = frame_id_wrap_helper_.MapTo32bitsFrameId(data[1]);
 
-  net::BigEndianReader big_endian_reader(data + 2, 8);
+  base::BigEndianReader big_endian_reader(
+      reinterpret_cast<const char*>(data + 2), 8);
   big_endian_reader.ReadU16(&parsed_packet->packet_id);
   big_endian_reader.ReadU16(&parsed_packet->max_packet_id);
 

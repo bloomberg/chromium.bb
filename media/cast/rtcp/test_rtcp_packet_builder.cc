@@ -9,7 +9,8 @@ namespace media {
 namespace cast {
 
 TestRtcpPacketBuilder::TestRtcpPacketBuilder()
-    : ptr_of_length_(NULL), big_endian_writer_(buffer_, kMaxIpPacketSize) {}
+    : ptr_of_length_(NULL),
+      big_endian_writer_(reinterpret_cast<char*>(buffer_), kMaxIpPacketSize) {}
 
 void TestRtcpPacketBuilder::AddSr(uint32 sender_ssrc,
                                   int number_of_report_blocks) {

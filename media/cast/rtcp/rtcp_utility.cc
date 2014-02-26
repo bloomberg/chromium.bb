@@ -4,9 +4,9 @@
 
 #include "media/cast/rtcp/rtcp_utility.h"
 
+#include "base/big_endian.h"
 #include "base/logging.h"
 #include "media/cast/transport/cast_transport_defines.h"
-#include "net/base/big_endian.h"
 
 namespace media {
 namespace cast {
@@ -309,7 +309,8 @@ bool RtcpParser::ParseRR() {
 
   field_type_ = kRtcpRrCode;
 
-  net::BigEndianReader big_endian_reader(rtcp_data_, length);
+  base::BigEndianReader big_endian_reader(
+      reinterpret_cast<const char*>(rtcp_data_), length);
   big_endian_reader.Skip(4);  // Skip header
   big_endian_reader.ReadU32(&field_.receiver_report.sender_ssrc);
   field_.receiver_report.number_of_report_blocks = number_of_blocks_;
@@ -328,7 +329,8 @@ bool RtcpParser::ParseSR() {
   }
   field_type_ = kRtcpSrCode;
 
-  net::BigEndianReader big_endian_reader(rtcp_data_, length);
+  base::BigEndianReader big_endian_reader(
+      reinterpret_cast<const char*>(rtcp_data_), length);
   big_endian_reader.Skip(4);  // Skip header
   big_endian_reader.ReadU32(&field_.sender_report.sender_ssrc);
   big_endian_reader.ReadU32(&field_.sender_report.ntp_most_significant);
@@ -358,7 +360,8 @@ bool RtcpParser::ParseReportBlockItem() {
     return false;
   }
 
-  net::BigEndianReader big_endian_reader(rtcp_data_, length);
+  base::BigEndianReader big_endian_reader(
+      reinterpret_cast<const char*>(rtcp_data_), length);
   big_endian_reader.ReadU32(&field_.report_block_item.ssrc);
   big_endian_reader.ReadU8(&field_.report_block_item.fraction_lost);
 
@@ -418,7 +421,8 @@ bool RtcpParser::ParseSdesItem() {
     }
 
     uint32 ssrc;
-    net::BigEndianReader big_endian_reader(rtcp_data_, data_length);
+    base::BigEndianReader big_endian_reader(
+        reinterpret_cast<const char*>(rtcp_data_), data_length);
     big_endian_reader.ReadU32(&ssrc);
     rtcp_data_ += 4;
 
@@ -437,7 +441,8 @@ bool RtcpParser::ParseSdesTypes() {
   // Only the c_name item is mandatory. RFC 3550 page 46.
   bool found_c_name = false;
   ptrdiff_t length = rtcp_block_end_ - rtcp_data_;
-  net::BigEndianReader big_endian_reader(rtcp_data_, length);
+  base::BigEndianReader big_endian_reader(
+      reinterpret_cast<const char*>(rtcp_data_), length);
 
   while (big_endian_reader.remaining() > 0) {
     uint8 tag;
@@ -503,7 +508,8 @@ bool RtcpParser::ParseByeItem() {
 
   field_type_ = kRtcpByeCode;
 
-  net::BigEndianReader big_endian_reader(rtcp_data_, length);
+  base::BigEndianReader big_endian_reader(
+      reinterpret_cast<const char*>(rtcp_data_), length);
   big_endian_reader.ReadU32(&field_.bye.sender_ssrc);
   rtcp_data_ += 4;
 
@@ -527,7 +533,8 @@ bool RtcpParser::ParseApplicationDefined(uint8 subtype) {
   uint32 sender_ssrc;
   uint32 name;
 
-  net::BigEndianReader big_endian_reader(rtcp_data_, length);
+  base::BigEndianReader big_endian_reader(
+      reinterpret_cast<const char*>(rtcp_data_), length);
   big_endian_reader.Skip(4);  // Skip header.
   big_endian_reader.ReadU32(&sender_ssrc);
   big_endian_reader.ReadU32(&name);
@@ -564,7 +571,8 @@ bool RtcpParser::ParseCastReceiverLogFrameItem() {
   }
   uint32 rtp_timestamp;
   uint32 data;
-  net::BigEndianReader big_endian_reader(rtcp_data_, length);
+  base::BigEndianReader big_endian_reader(
+      reinterpret_cast<const char*>(rtcp_data_), length);
   big_endian_reader.ReadU32(&rtp_timestamp);
   big_endian_reader.ReadU32(&data);
 
@@ -596,7 +604,8 @@ bool RtcpParser::ParseCastReceiverLogEventItem() {
 
   uint16 delay_delta_or_packet_id;
   uint16 event_type_and_timestamp_delta;
-  net::BigEndianReader big_endian_reader(rtcp_data_, length);
+  base::BigEndianReader big_endian_reader(
+      reinterpret_cast<const char*>(rtcp_data_), length);
   big_endian_reader.ReadU16(&delay_delta_or_packet_id);
   big_endian_reader.ReadU16(&event_type_and_timestamp_delta);
 
@@ -621,7 +630,8 @@ bool RtcpParser::ParseCastSenderLogItem() {
     return false;
   }
   uint32 data;
-  net::BigEndianReader big_endian_reader(rtcp_data_, length);
+  base::BigEndianReader big_endian_reader(
+      reinterpret_cast<const char*>(rtcp_data_), length);
   big_endian_reader.ReadU32(&data);
 
   rtcp_data_ += 4;
@@ -647,7 +657,8 @@ bool RtcpParser::ParseFeedBackCommon(const RtcpCommonHeader& header) {
 
   uint32 sender_ssrc;
   uint32 media_ssrc;
-  net::BigEndianReader big_endian_reader(rtcp_data_, length);
+  base::BigEndianReader big_endian_reader(
+      reinterpret_cast<const char*>(rtcp_data_), length);
   big_endian_reader.Skip(4);  // Skip header.
   big_endian_reader.ReadU32(&sender_ssrc);
   big_endian_reader.ReadU32(&media_ssrc);
@@ -756,7 +767,8 @@ bool RtcpParser::ParseRpsiItem() {
   field_type_ = kRtcpPayloadSpecificRpsiCode;
 
   uint8 padding_bits;
-  net::BigEndianReader big_endian_reader(rtcp_data_, length);
+  base::BigEndianReader big_endian_reader(
+      reinterpret_cast<const char*>(rtcp_data_), length);
   big_endian_reader.ReadU8(&padding_bits);
   big_endian_reader.ReadU8(&field_.rpsi.payload_type);
   big_endian_reader.ReadBytes(&field_.rpsi.native_bit_string, length - 2);
@@ -779,7 +791,8 @@ bool RtcpParser::ParseNackItem() {
 
   field_type_ = kRtcpGenericRtpFeedbackNackItemCode;
 
-  net::BigEndianReader big_endian_reader(rtcp_data_, length);
+  base::BigEndianReader big_endian_reader(
+      reinterpret_cast<const char*>(rtcp_data_), length);
   big_endian_reader.ReadU16(&field_.nack_item.packet_id);
   big_endian_reader.ReadU16(&field_.nack_item.bitmask);
   rtcp_data_ += 4;
@@ -795,7 +808,8 @@ bool RtcpParser::ParsePayloadSpecificAppItem() {
     return false;
   }
   uint32 name;
-  net::BigEndianReader big_endian_reader(rtcp_data_, length);
+  base::BigEndianReader big_endian_reader(
+      reinterpret_cast<const char*>(rtcp_data_), length);
   big_endian_reader.ReadU32(&name);
   rtcp_data_ += 4;
 
@@ -822,7 +836,8 @@ bool RtcpParser::ParsePayloadSpecificRembItem() {
     return false;
   }
 
-  net::BigEndianReader big_endian_reader(rtcp_data_, length);
+  base::BigEndianReader big_endian_reader(
+      reinterpret_cast<const char*>(rtcp_data_), length);
   big_endian_reader.ReadU8(&field_.remb_item.number_of_ssrcs);
 
   uint8 byte_1;
@@ -861,7 +876,8 @@ bool RtcpParser::ParsePayloadSpecificCastItem() {
   }
   field_type_ = kRtcpPayloadSpecificCastCode;
 
-  net::BigEndianReader big_endian_reader(rtcp_data_, length);
+  base::BigEndianReader big_endian_reader(
+      reinterpret_cast<const char*>(rtcp_data_), length);
   big_endian_reader.ReadU8(&field_.cast_item.last_frame_id);
   big_endian_reader.ReadU8(&field_.cast_item.number_of_lost_fields);
 
@@ -887,7 +903,8 @@ bool RtcpParser::ParsePayloadSpecificCastNackItem() {
   }
   field_type_ = kRtcpPayloadSpecificCastNackItemCode;
 
-  net::BigEndianReader big_endian_reader(rtcp_data_, length);
+  base::BigEndianReader big_endian_reader(
+      reinterpret_cast<const char*>(rtcp_data_), length);
   big_endian_reader.ReadU8(&field_.cast_nack_item.frame_id);
   big_endian_reader.ReadU16(&field_.cast_nack_item.packet_id);
   big_endian_reader.ReadU8(&field_.cast_nack_item.bitmask);
@@ -907,7 +924,8 @@ bool RtcpParser::ParseFirItem() {
   }
   field_type_ = kRtcpPayloadSpecificFirItemCode;
 
-  net::BigEndianReader big_endian_reader(rtcp_data_, length);
+  base::BigEndianReader big_endian_reader(
+      reinterpret_cast<const char*>(rtcp_data_), length);
   big_endian_reader.ReadU32(&field_.fir_item.ssrc);
   big_endian_reader.ReadU8(&field_.fir_item.command_sequence_number);
 
@@ -922,7 +940,8 @@ bool RtcpParser::ParseExtendedReport() {
 
   field_type_ = kRtcpXrCode;
 
-  net::BigEndianReader big_endian_reader(rtcp_data_, length);
+  base::BigEndianReader big_endian_reader(
+      reinterpret_cast<const char*>(rtcp_data_), length);
   big_endian_reader.Skip(4);  // Skip header.
   big_endian_reader.ReadU32(&field_.extended_report.sender_ssrc);
 
@@ -942,7 +961,8 @@ bool RtcpParser::ParseExtendedReportItem() {
 
   uint8 block_type;
   uint16 block_length;
-  net::BigEndianReader big_endian_reader(rtcp_data_, length);
+  base::BigEndianReader big_endian_reader(
+      reinterpret_cast<const char*>(rtcp_data_), length);
   big_endian_reader.ReadU8(&block_type);
   big_endian_reader.Skip(1);  // Ignore reserved.
   big_endian_reader.ReadU16(&block_length);
@@ -991,7 +1011,8 @@ bool RtcpParser::ParseExtendedReportReceiverReferenceTimeReport() {
     return false;
   }
 
-  net::BigEndianReader big_endian_reader(rtcp_data_, length);
+  base::BigEndianReader big_endian_reader(
+      reinterpret_cast<const char*>(rtcp_data_), length);
   big_endian_reader.ReadU32(&field_.rrtr.ntp_most_significant);
   big_endian_reader.ReadU32(&field_.rrtr.ntp_least_significant);
 
@@ -1014,7 +1035,8 @@ bool RtcpParser::ParseExtendedReportDelaySinceLastReceiverReport() {
     return false;
   }
 
-  net::BigEndianReader big_endian_reader(rtcp_data_, length);
+  base::BigEndianReader big_endian_reader(
+      reinterpret_cast<const char*>(rtcp_data_), length);
   big_endian_reader.ReadU32(&field_.dlrr.receivers_ssrc);
   big_endian_reader.ReadU32(&field_.dlrr.last_receiver_report);
   big_endian_reader.ReadU32(&field_.dlrr.delay_last_receiver_report);

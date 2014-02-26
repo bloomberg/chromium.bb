@@ -6,10 +6,10 @@
 
 #include <algorithm>
 
+#include "base/big_endian.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/utility/cloud_print/bitmap_image.h"
-#include "net/base/big_endian.h"
 
 namespace cloud_print {
 
@@ -66,19 +66,19 @@ void PwgEncoder::EncodePageHeader(const BitmapImage& image, const uint32 dpi,
                                   std::string* output) const {
   char header[kHeaderSize];
   memset(header, 0, kHeaderSize);
-  net::WriteBigEndian<uint32>(header + kHeaderHwResolutionHorizontal, dpi);
-  net::WriteBigEndian<uint32>(header + kHeaderHwResolutionVertical, dpi);
-  net::WriteBigEndian<uint32>(header + kHeaderCupsWidth, image.size().width());
-  net::WriteBigEndian<uint32>(header + kHeaderCupsHeight,
-                              image.size().height());
-  net::WriteBigEndian<uint32>(header + kHeaderCupsBitsPerColor, kBitsPerColor);
-  net::WriteBigEndian<uint32>(header + kHeaderCupsBitsPerPixel, kBitsPerPixel);
-  net::WriteBigEndian<uint32>(header + kHeaderCupsBytesPerLine,
-                              (kBitsPerPixel * image.size().width() + 7) / 8);
-  net::WriteBigEndian<uint32>(header + kHeaderCupsColorOrder, kColorOrder);
-  net::WriteBigEndian<uint32>(header + kHeaderCupsColorSpace, kColorSpace);
-  net::WriteBigEndian<uint32>(header + kHeaderCupsNumColors, kNumColors);
-  net::WriteBigEndian<uint32>(header + kHeaderPwgTotalPageCount, total_pages);
+  base::WriteBigEndian<uint32>(header + kHeaderHwResolutionHorizontal, dpi);
+  base::WriteBigEndian<uint32>(header + kHeaderHwResolutionVertical, dpi);
+  base::WriteBigEndian<uint32>(header + kHeaderCupsWidth, image.size().width());
+  base::WriteBigEndian<uint32>(header + kHeaderCupsHeight,
+                               image.size().height());
+  base::WriteBigEndian<uint32>(header + kHeaderCupsBitsPerColor, kBitsPerColor);
+  base::WriteBigEndian<uint32>(header + kHeaderCupsBitsPerPixel, kBitsPerPixel);
+  base::WriteBigEndian<uint32>(header + kHeaderCupsBytesPerLine,
+                               (kBitsPerPixel * image.size().width() + 7) / 8);
+  base::WriteBigEndian<uint32>(header + kHeaderCupsColorOrder, kColorOrder);
+  base::WriteBigEndian<uint32>(header + kHeaderCupsColorSpace, kColorSpace);
+  base::WriteBigEndian<uint32>(header + kHeaderCupsNumColors, kNumColors);
+  base::WriteBigEndian<uint32>(header + kHeaderPwgTotalPageCount, total_pages);
   output->append(header, kHeaderSize);
 }
 

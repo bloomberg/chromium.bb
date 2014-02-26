@@ -4,7 +4,7 @@
 
 #include "net/dns/record_rdata.h"
 
-#include "net/base/big_endian.h"
+#include "base/big_endian.h"
 #include "net/base/dns_util.h"
 #include "net/dns/dns_protocol.h"
 #include "net/dns/dns_response.h"
@@ -29,7 +29,7 @@ scoped_ptr<SrvRecordRdata> SrvRecordRdata::Create(
 
   scoped_ptr<SrvRecordRdata> rdata(new SrvRecordRdata);
 
-  BigEndianReader reader(data.data(), data.size());
+  base::BigEndianReader reader(data.data(), data.size());
   // 2 bytes for priority, 2 bytes for weight, 2 bytes for port.
   reader.ReadU16(&rdata->priority_);
   reader.ReadU16(&rdata->weight_);

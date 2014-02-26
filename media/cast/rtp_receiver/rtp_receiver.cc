@@ -4,11 +4,11 @@
 
 #include "media/cast/rtp_receiver/rtp_receiver.h"
 
+#include "base/big_endian.h"
 #include "base/logging.h"
 #include "media/cast/rtp_receiver/receiver_stats.h"
 #include "media/cast/rtp_receiver/rtp_parser/rtp_parser.h"
 #include "media/cast/rtp_receiver/rtp_receiver_defines.h"
-#include "net/base/big_endian.h"
 
 namespace media {
 namespace cast {
@@ -42,7 +42,8 @@ RtpReceiver::~RtpReceiver() {}
 uint32 RtpReceiver::GetSsrcOfSender(const uint8* rtcp_buffer, size_t length) {
   DCHECK_GE(length, kMinLengthOfRtp) << "Invalid RTP packet";
   uint32 ssrc_of_sender;
-  net::BigEndianReader big_endian_reader(rtcp_buffer, length);
+  base::BigEndianReader big_endian_reader(
+      reinterpret_cast<const char*>(rtcp_buffer), length);
   big_endian_reader.Skip(8);  // Skip header
   big_endian_reader.ReadU32(&ssrc_of_sender);
   return ssrc_of_sender;

@@ -13,8 +13,8 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/big_endian.h"
 #include "base/port.h"
-#include "net/base/big_endian.h"
 #include "net/base/capturing_net_log.h"
 #include "net/base/test_completion_callback.h"
 #include "net/socket/socket_test_util.h"
@@ -803,7 +803,7 @@ TEST_F(WebSocketBasicStreamSocketChunkedReadTest, OneMegFrame) {
       (kWireSize + kReadBufferSize - 1) / kReadBufferSize;
   scoped_ptr<char[]> big_frame(new char[kWireSize]);
   memcpy(big_frame.get(), "\x81\x7F", 2);
-  WriteBigEndian(big_frame.get() + 2, kPayloadSize);
+  base::WriteBigEndian(big_frame.get() + 2, kPayloadSize);
   memset(big_frame.get() + kLargeFrameHeaderSize, 'A', kPayloadSize);
 
   CreateChunkedRead(ASYNC,

@@ -8,7 +8,6 @@
 #include "base/rand_util.h"
 #include "media/cast/transport/cast_transport_defines.h"
 #include "media/cast/transport/pacing/paced_sender.h"
-#include "net/base/big_endian.h"
 
 namespace media {
 namespace cast {

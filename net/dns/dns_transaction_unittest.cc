@@ -10,7 +10,6 @@
 #include "base/rand_util.h"
 #include "base/sys_byteorder.h"
 #include "base/test/test_timeouts.h"
-#include "net/base/big_endian.h"
 #include "net/base/dns_util.h"
 #include "net/base/net_log.h"
 #include "net/dns/dns_protocol.h"

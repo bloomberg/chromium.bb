@@ -8,11 +8,11 @@
 #include <limits>
 
 #include "base/basictypes.h"
+#include "base/big_endian.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "net/base/big_endian.h"
 #include "net/base/io_buffer.h"
 #include "net/websockets/websocket_frame.h"
 
@@ -124,7 +124,7 @@ void WebSocketFrameParser::DecodeFrameHeader() {
     if (end - current < 2)
       return;
     uint16 payload_length_16;
-    ReadBigEndian(current, &payload_length_16);
+    base::ReadBigEndian(current, &payload_length_16);
     current += 2;
     payload_length = payload_length_16;
     if (payload_length <= kMaxPayloadLengthWithoutExtendedLengthField)
@@ -132,7 +132,7 @@ void WebSocketFrameParser::DecodeFrameHeader() {
   } else if (payload_length == kPayloadLengthWithEightByteExtendedLengthField) {
     if (end - current < 8)
       return;
-    ReadBigEndian(current, &payload_length);
+    base::ReadBigEndian(current, &payload_length);
     current += 8;
     if (payload_length <= kuint16max ||
         payload_length > static_cast<uint64>(kint64max)) {

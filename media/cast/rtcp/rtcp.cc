@@ -4,6 +4,7 @@
 
 #include "media/cast/rtcp/rtcp.h"
 
+#include "base/big_endian.h"
 #include "base/rand_util.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_defines.h"
@@ -13,7 +14,6 @@
 #include "media/cast/rtcp/rtcp_sender.h"
 #include "media/cast/rtcp/rtcp_utility.h"
 #include "media/cast/transport/cast_transport_defines.h"
-#include "net/base/big_endian.h"
 
 namespace media {
 namespace cast {
@@ -205,7 +205,8 @@ bool Rtcp::IsRtcpPacket(const uint8* packet, size_t length) {
 uint32 Rtcp::GetSsrcOfSender(const uint8* rtcp_buffer, size_t length) {
   DCHECK_GE(length, kMinLengthOfRtcp) << "Invalid RTCP packet";
   uint32 ssrc_of_sender;
-  net::BigEndianReader big_endian_reader(rtcp_buffer, length);
+  base::BigEndianReader big_endian_reader(
+      reinterpret_cast<const char*>(rtcp_buffer), length);
   big_endian_reader.Skip(4);  // Skip header
   big_endian_reader.ReadU32(&ssrc_of_sender);
   return ssrc_of_sender;

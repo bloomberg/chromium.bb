@@ -1,15 +1,15 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/big_endian.h"
+#include "base/big_endian.h"
 
 #include "base/strings/string_piece.h"
 
-namespace net {
+namespace base {
 
-BigEndianReader::BigEndianReader(const void* buf, size_t len)
-    : ptr_(reinterpret_cast<const char*>(buf)), end_(ptr_ + len) {}
+BigEndianReader::BigEndianReader(const char* buf, size_t len)
+    : ptr_(buf), end_(ptr_ + len) {}
 
 bool BigEndianReader::Skip(size_t len) {
   if (ptr_ + len > end_)
@@ -55,8 +55,8 @@ bool BigEndianReader::ReadU32(uint32* value) {
   return Read(value);
 }
 
-BigEndianWriter::BigEndianWriter(void* buf, size_t len)
-    : ptr_(reinterpret_cast<char*>(buf)), end_(ptr_ + len) {}
+BigEndianWriter::BigEndianWriter(char* buf, size_t len)
+    : ptr_(buf), end_(ptr_ + len) {}
 
 bool BigEndianWriter::Skip(size_t len) {
   if (ptr_ + len > end_)
@@ -94,5 +94,4 @@ bool BigEndianWriter::WriteU32(uint32 value) {
   return Write(value);
 }
 
-}  // namespace net
-
+}  // namespace base

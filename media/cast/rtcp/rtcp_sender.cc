@@ -7,13 +7,13 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/big_endian.h"
 #include "base/logging.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/rtcp/rtcp_defines.h"
 #include "media/cast/rtcp/rtcp_utility.h"
 #include "media/cast/transport/cast_transport_defines.h"
 #include "media/cast/transport/pacing/paced_sender.h"
-#include "net/base/big_endian.h"
 
 namespace media {
 namespace cast {
@@ -193,7 +193,8 @@ void RtcpSender::BuildRR(const transport::RtcpReportBlock* report_block,
   uint16 number_of_rows = (report_block) ? 7 : 1;
   packet->resize(start_size + 8);
 
-  net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 8);
+  base::BigEndianWriter big_endian_writer(
+      reinterpret_cast<char*>(&((*packet)[start_size])), 8);
   big_endian_writer.WriteU8(0x80 + (report_block ? 1 : 0));
   big_endian_writer.WriteU8(transport::kPacketTypeReceiverReport);
   big_endian_writer.WriteU16(number_of_rows);
@@ -212,7 +213,8 @@ void RtcpSender::AddReportBlocks(const transport::RtcpReportBlock& report_block,
 
   packet->resize(start_size + 24);
 
-  net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 24);
+  base::BigEndianWriter big_endian_writer(
+      reinterpret_cast<char*>(&((*packet)[start_size])), 24);
   big_endian_writer.WriteU32(report_block.media_ssrc);
   big_endian_writer.WriteU8(report_block.fraction_lost);
   big_endian_writer.WriteU8(report_block.cumulative_lost >> 16);
@@ -241,7 +243,8 @@ void RtcpSender::BuildSdec(Packet* packet) const {
   // SDES Source Description.
   packet->resize(start_size + 10);
 
-  net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 10);
+  base::BigEndianWriter big_endian_writer(
+      reinterpret_cast<char*>(&((*packet)[start_size])), 10);
   // We always need to add one SDES CNAME.
   big_endian_writer.WriteU8(0x80 + 1);
   big_endian_writer.WriteU8(transport::kPacketTypeSdes);
@@ -282,7 +285,8 @@ void RtcpSender::BuildPli(uint32 remote_ssrc, Packet* packet) const {
 
   packet->resize(start_size + 12);
 
-  net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 12);
+  base::BigEndianWriter big_endian_writer(
+      reinterpret_cast<char*>(&((*packet)[start_size])), 12);
   uint8 FMT = 1;  // Picture loss indicator.
   big_endian_writer.WriteU8(0x80 + FMT);
   big_endian_writer.WriteU8(transport::kPacketTypePayloadSpecific);
@@ -307,7 +311,8 @@ void RtcpSender::BuildRpsi(const RtcpRpsiMessage* rpsi, Packet* packet) const {
 
   packet->resize(start_size + 24);
 
-  net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 24);
+  base::BigEndianWriter big_endian_writer(
+      reinterpret_cast<char*>(&((*packet)[start_size])), 24);
   uint8 FMT = 3;  // Reference Picture Selection Indication.
   big_endian_writer.WriteU8(0x80 + FMT);
   big_endian_writer.WriteU8(transport::kPacketTypePayloadSpecific);
@@ -361,7 +366,8 @@ void RtcpSender::BuildRemb(const RtcpRembMessage* remb, Packet* packet) const {
 
   packet->resize(start_size + remb_size);
 
-  net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), remb_size);
+  base::BigEndianWriter big_endian_writer(
+      reinterpret_cast<char*>(&((*packet)[start_size])), remb_size);
 
   // Add application layer feedback.
   uint8 FMT = 15;
@@ -401,7 +407,8 @@ void RtcpSender::BuildNack(const RtcpNackMessage* nack, Packet* packet) const {
 
   packet->resize(start_size + 16);
 
-  net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 16);
+  base::BigEndianWriter big_endian_writer(
+      reinterpret_cast<char*>(&((*packet)[start_size])), 16);
 
   uint8 FMT = 1;
   big_endian_writer.WriteU8(0x80 + FMT);
@@ -439,7 +446,8 @@ void RtcpSender::BuildNack(const RtcpNackMessage* nack, Packet* packet) const {
     if (start_size + 4 > kMaxIpPacketSize) return;
 
     packet->resize(start_size + 4);
-    net::BigEndianWriter big_endian_nack_writer(&((*packet)[start_size]), 4);
+    base::BigEndianWriter big_endian_nack_writer(
+        reinterpret_cast<char*>(&((*packet)[start_size])), 4);
     big_endian_nack_writer.WriteU16(nack_sequence_number);
     big_endian_nack_writer.WriteU16(bitmask);
     number_of_nack_fields++;
@@ -455,7 +463,8 @@ void RtcpSender::BuildBye(Packet* packet) const {
 
   packet->resize(start_size + 8);
 
-  net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 8);
+  base::BigEndianWriter big_endian_writer(
+      reinterpret_cast<char*>(&((*packet)[start_size])), 8);
   big_endian_writer.WriteU8(0x80 + 1);
   big_endian_writer.WriteU8(transport::kPacketTypeBye);
   big_endian_writer.WriteU16(1);      // Length.
@@ -470,7 +479,8 @@ void RtcpSender::BuildRrtr(const RtcpReceiverReferenceTimeReport* rrtr,
 
   packet->resize(start_size + 20);
 
-  net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 20);
+  base::BigEndianWriter big_endian_writer(
+      reinterpret_cast<char*>(&((*packet)[start_size])), 20);
 
   big_endian_writer.WriteU8(0x80);
   big_endian_writer.WriteU8(transport::kPacketTypeXr);
@@ -492,7 +502,8 @@ void RtcpSender::BuildCast(const RtcpCastMessage* cast, Packet* packet) const {
 
   packet->resize(start_size + 20);
 
-  net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 20);
+  base::BigEndianWriter big_endian_writer(
+      reinterpret_cast<char*>(&((*packet)[start_size])), 20);
   uint8 FMT = 15;  // Application layer feedback.
   big_endian_writer.WriteU8(0x80 + FMT);
   big_endian_writer.WriteU8(transport::kPacketTypePayloadSpecific);
@@ -523,7 +534,8 @@ void RtcpSender::BuildCast(const RtcpCastMessage* cast, Packet* packet) const {
       // Special case all packets in a frame is missing.
       start_size = packet->size();
       packet->resize(start_size + 4);
-      net::BigEndianWriter big_endian_nack_writer(&((*packet)[start_size]), 4);
+      base::BigEndianWriter big_endian_nack_writer(
+          reinterpret_cast<char*>(&((*packet)[start_size])), 4);
       big_endian_nack_writer.WriteU8(static_cast<uint8>(frame_it->first));
       big_endian_nack_writer.WriteU16(kRtcpCastAllPacketsLost);
       big_endian_nack_writer.WriteU8(0);
@@ -535,8 +547,8 @@ void RtcpSender::BuildCast(const RtcpCastMessage* cast, Packet* packet) const {
 
         start_size = packet->size();
         packet->resize(start_size + 4);
-        net::BigEndianWriter big_endian_nack_writer(&((*packet)[start_size]),
-                                                    4);
+        base::BigEndianWriter big_endian_nack_writer(
+            reinterpret_cast<char*>(&((*packet)[start_size])), 4);
 
         // Write frame and packet id to buffer before calculating bitmask.
         big_endian_nack_writer.WriteU8(static_cast<uint8>(frame_it->first));
@@ -582,8 +594,8 @@ void RtcpSender::BuildReceiverLog(
   }
   packet->resize(packet_start_size + rtcp_log_size);
 
-  net::BigEndianWriter big_endian_writer(&((*packet)[packet_start_size]),
-                                         rtcp_log_size);
+  base::BigEndianWriter big_endian_writer(
+      reinterpret_cast<char*>(&((*packet)[packet_start_size])), rtcp_log_size);
   big_endian_writer.WriteU8(0x80 + kReceiverLogSubtype);
   big_endian_writer.WriteU8(transport::kPacketTypeApplicationDefined);
   big_endian_writer.WriteU16(static_cast<uint16>(

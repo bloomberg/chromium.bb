@@ -8,10 +8,10 @@
 #include <string>
 #include <vector>
 
+#include "base/big_endian.h"
 #include "base/logging.h"
 #include "media/cast/transport/cast_transport_defines.h"
 #include "media/cast/transport/pacing/paced_sender.h"
-#include "net/base/big_endian.h"
 
 static const size_t kRtcpCastLogHeaderSize = 12;
 static const size_t kRtcpSenderFrameLogSize = 4;
@@ -85,7 +85,8 @@ bool RtcpBuilder::BuildSR(const RtcpSenderInfo& sender_info,
   uint16 number_of_rows = 6;
   packet->resize(start_size + 28);
 
-  net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 28);
+  base::BigEndianWriter big_endian_writer(
+      reinterpret_cast<char*>(&((*packet)[start_size])), 28);
   big_endian_writer.WriteU8(0x80);
   big_endian_writer.WriteU8(kPacketTypeSenderReport);
   big_endian_writer.WriteU16(number_of_rows);
@@ -108,7 +109,8 @@ bool RtcpBuilder::BuildSdec(Packet* packet) const {
   // SDES Source Description.
   packet->resize(start_size + 10);
 
-  net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 10);
+  base::BigEndianWriter big_endian_writer(
+      reinterpret_cast<char*>(&((*packet)[start_size])), 10);
   // We always need to add one SDES CNAME.
   big_endian_writer.WriteU8(0x80 + 1);
   big_endian_writer.WriteU8(kPacketTypeSdes);
@@ -152,7 +154,8 @@ bool RtcpBuilder::BuildBye(Packet* packet) const {
 
   packet->resize(start_size + 8);
 
-  net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 8);
+  base::BigEndianWriter big_endian_writer(
+      reinterpret_cast<char*>(&((*packet)[start_size])), 8);
   big_endian_writer.WriteU8(0x80 + 1);
   big_endian_writer.WriteU8(kPacketTypeBye);
   big_endian_writer.WriteU16(1);  // Length.
@@ -187,7 +190,8 @@ bool RtcpBuilder::BuildDlrrRb(const RtcpDlrrReportBlock& dlrr,
 
   packet->resize(start_size + 24);
 
-  net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 24);
+  base::BigEndianWriter big_endian_writer(
+      reinterpret_cast<char*>(&((*packet)[start_size])), 24);
   big_endian_writer.WriteU8(0x80);
   big_endian_writer.WriteU8(kPacketTypeXr);
   big_endian_writer.WriteU16(5);  // Length.
@@ -220,7 +224,8 @@ bool RtcpBuilder::BuildSenderLog(const RtcpSenderLogMessage& sender_log_message,
       number_of_messages * kRtcpSenderFrameLogSize;
   packet->resize(start_size + log_size);
 
-  net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), log_size);
+  base::BigEndianWriter big_endian_writer(
+      reinterpret_cast<char*>(&((*packet)[start_size])), log_size);
   big_endian_writer.WriteU8(0x80 + kSenderLogSubtype);
   big_endian_writer.WriteU8(kPacketTypeApplicationDefined);
   big_endian_writer.WriteU16(static_cast<uint16>(2 + number_of_messages));

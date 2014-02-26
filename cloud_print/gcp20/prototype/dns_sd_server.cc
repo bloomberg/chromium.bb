@@ -13,7 +13,6 @@
 #include "base/strings/stringprintf.h"
 #include "cloud_print/gcp20/prototype/dns_packet_parser.h"
 #include "cloud_print/gcp20/prototype/dns_response_builder.h"
-#include "net/base/big_endian.h"
 #include "net/base/dns_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"

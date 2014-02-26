@@ -438,7 +438,6 @@
       'target_name': 'base_unittests',
       'type': '<(gtest_target_type)',
       'sources': [
-        # Tests.
         'android/application_status_listener_unittest.cc',
         'android/jni_android_unittest.cc',
         'android/jni_array_unittest.cc',
@@ -451,6 +450,7 @@
         'atomicops_unittest.cc',
         'barrier_closure_unittest.cc',
         'base64_unittest.cc',
+        'big_endian_unittest.cc',
         'bind_unittest.cc',
         'bind_unittest.nc',
         'bits_unittest.cc',

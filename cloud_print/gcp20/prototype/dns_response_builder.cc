@@ -4,8 +4,8 @@
 
 #include "cloud_print/gcp20/prototype/dns_response_builder.h"
 
+#include "base/big_endian.h"
 #include "base/logging.h"
-#include "net/base/big_endian.h"
 #include "net/base/dns_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -61,7 +61,8 @@ void DnsResponseBuilder::AppendSrv(const std::string& service_name,
 
   std::vector<uint8> rdata(2 + 2 + 2 + domain_name.size());
 
-  net::BigEndianWriter writer(rdata.data(), rdata.size());
+  base::BigEndianWriter writer(reinterpret_cast<char*>(rdata.data()),
+                               rdata.size());
   success = writer.WriteU16(priority) &&
             writer.WriteU16(weight) &&
             writer.WriteU16(http_port) &&
@@ -136,7 +137,7 @@ scoped_refptr<net::IOBufferWithSize> DnsResponseBuilder::Build() {
             responses_.size());
   scoped_refptr<net::IOBufferWithSize> message(
       new net::IOBufferWithSize(static_cast<int>(size)));
-  net::BigEndianWriter writer(message->data(), message->size());
+  base::BigEndianWriter writer(message->data(), message->size());
   bool success = writer.WriteU16(header_.id) &&
                  writer.WriteU16(header_.flags) &&
                  writer.WriteU16(header_.qdcount) &&

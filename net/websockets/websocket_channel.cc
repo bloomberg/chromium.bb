@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/basictypes.h"  // for size_t
+#include "base/big_endian.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
@@ -15,7 +16,6 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "net/base/big_endian.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_log.h"
 #include "net/http/http_request_headers.h"
@@ -878,7 +878,7 @@ ChannelState WebSocketChannel::SendClose(uint16 code,
     const size_t payload_length = kWebSocketCloseCodeLength + reason.length();
     body = new IOBuffer(payload_length);
     size = payload_length;
-    WriteBigEndian(body->data(), code);
+    base::WriteBigEndian(body->data(), code);
     COMPILE_ASSERT(sizeof(code) == kWebSocketCloseCodeLength,
                    they_should_both_be_two);
     std::copy(
@@ -921,7 +921,7 @@ bool WebSocketChannel::ParseClose(const scoped_refptr<IOBuffer>& buffer,
   }
   const char* data = buffer->data();
   uint16 unchecked_code = 0;
-  ReadBigEndian(data, &unchecked_code);
+  base::ReadBigEndian(data, &unchecked_code);
   COMPILE_ASSERT(sizeof(unchecked_code) == kWebSocketCloseCodeLength,
                  they_should_both_be_two_bytes);
   switch (unchecked_code) {
