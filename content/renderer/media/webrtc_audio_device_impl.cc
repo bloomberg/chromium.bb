@@ -260,7 +260,6 @@ int32_t WebRtcAudioDeviceImpl::StartPlayout() {
   }
 
   playing_ = true;
-  start_render_time_ = base::Time::Now();
   return 0;
 }
 
@@ -269,13 +268,6 @@ int32_t WebRtcAudioDeviceImpl::StopPlayout() {
   if (!playing_) {
     // webrtc::VoiceEngine assumes that it is OK to call Stop() just in case.
     return 0;
-  }
-
-  // Add histogram data to be uploaded as part of an UMA logging event.
-  // This histogram keeps track of total playout times.
-  if (!start_render_time_.is_null()) {
-    base::TimeDelta render_time = base::Time::Now() - start_render_time_;
-    UMA_HISTOGRAM_LONG_TIMES("WebRTC.AudioRenderTime", render_time);
   }
 
   playing_ = false;
@@ -302,8 +294,6 @@ int32_t WebRtcAudioDeviceImpl::StartRecording() {
     recording_ = true;
   }
 
-  start_capture_time_ = base::Time::Now();
-
   return 0;
 }
 
@@ -315,13 +305,6 @@ int32_t WebRtcAudioDeviceImpl::StopRecording() {
       return 0;
 
     recording_ = false;
-  }
-
-  // Add histogram data to be uploaded as part of an UMA logging event.
-  // This histogram keeps track of total recording times.
-  if (!start_capture_time_.is_null()) {
-    base::TimeDelta capture_time = base::Time::Now() - start_capture_time_;
-    UMA_HISTOGRAM_LONG_TIMES("WebRTC.AudioCaptureTime", capture_time);
   }
 
   return 0;

@@ -23066,6 +23066,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="WebRTC.AudioCaptureTime" units="milliseconds">
+  <obsolete>
+    Removed from code 2014/2/25.
+  </obsolete>
   <summary>Duration in milliseconds of WebRTC audio capture session.</summary>
 </histogram>
 
@@ -23126,6 +23129,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="WebRTC.AudioRenderTime" units="milliseconds">
+  <obsolete>
+    Removed from code 2014/2/25.
+  </obsolete>
   <summary>Duration in milliseconds of WebRTC audio render session.</summary>
 </histogram>
 

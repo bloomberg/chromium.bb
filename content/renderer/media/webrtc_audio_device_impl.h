@@ -423,10 +423,6 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   bool playing_;
   bool recording_;
 
-  // Used for histograms of total recording and playout times.
-  base::Time start_capture_time_;
-  base::Time start_render_time_;
-
   // Stores latest microphone volume received in a CaptureData() callback.
   // Range is [0, 255].
   uint32_t microphone_volume_;
