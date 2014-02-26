@@ -102,6 +102,8 @@ class PPAPI_PROXY_EXPORT HostDispatcher : public Dispatcher {
   // Returns the proxy interface for talking to the implementation.
   const PPB_Proxy_Private* ppb_proxy() const { return ppb_proxy_; }
 
+  void AddFilter(IPC::Listener* listener);
+
  protected:
   // Overridden from Dispatcher.
   virtual void OnInvalidMessageReceived();
@@ -130,6 +132,8 @@ class PPAPI_PROXY_EXPORT HostDispatcher : public Dispatcher {
   // plugin is in this state, it needs to accept reentrancy since scripting may
   // ultimately call back into the plugin.
   bool allow_plugin_reentrancy_;
+
+  std::vector<IPC::Listener*> filters_;
 
   DISALLOW_COPY_AND_ASSIGN(HostDispatcher);
 };

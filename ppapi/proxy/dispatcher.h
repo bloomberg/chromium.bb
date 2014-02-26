@@ -24,7 +24,6 @@
 #include "ppapi/shared_impl/api_id.h"
 
 namespace ppapi {
-
 namespace proxy {
 
 class VarSerializationRules;
@@ -51,8 +50,6 @@ class PPAPI_PROXY_EXPORT Dispatcher : public ProxyChannel {
   // browser side.
   virtual bool IsPlugin() const = 0;
 
-  void AddFilter(IPC::Listener* listener);
-
   VarSerializationRules* serialization_rules() const {
     return serialization_rules_.get();
   }
@@ -62,19 +59,8 @@ class PPAPI_PROXY_EXPORT Dispatcher : public ProxyChannel {
   // created so far.
   InterfaceProxy* GetInterfaceProxy(ApiID id);
 
-  // Returns the pointer to the IO thread for processing IPC messages.
-  // TODO(brettw) remove this. It's a hack to support the Flash
-  // ModuleLocalThreadAdapter. When the thread stuff is sorted out, this
-  // implementation detail should be hidden.
-  base::MessageLoopProxy* GetIPCMessageLoop();
-
   // Adds the given filter to the IO thread. Takes ownership of the pointer.
   void AddIOThreadMessageFilter(IPC::ChannelProxy::MessageFilter* filter);
-
-  // TODO(brettw): What is this comment referring to?
-  // Called if the remote side is declaring to us which interfaces it supports
-  // so we don't have to query for each one. We'll pre-create proxies for
-  // each of the given interfaces.
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
@@ -97,17 +83,11 @@ class PPAPI_PROXY_EXPORT Dispatcher : public ProxyChannel {
   // default implementation does nothing, derived classes can override.
   virtual void OnInvalidMessageReceived();
 
- protected:
-  std::vector<IPC::Listener*> filters_;
-
  private:
-  friend class HostDispatcherTest;
   friend class PluginDispatcherTest;
 
   // Lists all lazily-created interface proxies.
   scoped_ptr<InterfaceProxy> proxies_[API_ID_COUNT];
-
-  bool disallow_trusted_interfaces_;
 
   PP_GetInterface_Func local_get_interface_;
 

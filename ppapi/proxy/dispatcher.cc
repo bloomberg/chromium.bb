@@ -26,10 +26,6 @@ Dispatcher::Dispatcher(PP_GetInterface_Func local_get_interface,
 Dispatcher::~Dispatcher() {
 }
 
-void Dispatcher::AddFilter(IPC::Listener* listener) {
-  filters_.push_back(listener);
-}
-
 InterfaceProxy* Dispatcher::GetInterfaceProxy(ApiID id) {
   InterfaceProxy* proxy = proxies_[id].get();
   if (!proxy) {
@@ -45,10 +41,6 @@ InterfaceProxy* Dispatcher::GetInterfaceProxy(ApiID id) {
     proxies_[id].reset(proxy);
   }
   return proxy;
-}
-
-base::MessageLoopProxy* Dispatcher::GetIPCMessageLoop() {
-  return delegate()->GetIPCMessageLoop();
 }
 
 void Dispatcher::AddIOThreadMessageFilter(

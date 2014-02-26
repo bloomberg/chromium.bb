@@ -239,6 +239,10 @@ const void* HostDispatcher::GetProxiedInterface(const std::string& iface_name) {
   return NULL;
 }
 
+void HostDispatcher::AddFilter(IPC::Listener* listener) {
+  filters_.push_back(listener);
+}
+
 void HostDispatcher::OnInvalidMessageReceived() {
   // TODO(brettw) bug 95345 kill the plugin when an invalid message is
   // received.
