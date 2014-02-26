@@ -97,6 +97,8 @@ public:
     virtual bool isMouseEvent() const OVERRIDE;
     virtual bool isWheelEvent() const OVERRIDE;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     WheelEvent();
     WheelEvent(const AtomicString&, const WheelEventInit&);

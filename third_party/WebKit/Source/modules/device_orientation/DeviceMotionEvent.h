@@ -58,15 +58,16 @@ public:
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     DeviceMotionEvent();
     DeviceMotionEvent(const AtomicString& eventType, DeviceMotionData*);
 
-    RefPtrWillBePersistent<DeviceMotionData> m_deviceMotionData;
-
-    RefPtrWillBePersistent<DeviceAcceleration> m_acceleration;
-    RefPtrWillBePersistent<DeviceAcceleration> m_accelerationIncludingGravity;
-    RefPtrWillBePersistent<DeviceRotationRate> m_rotationRate;
+    RefPtrWillBeMember<DeviceMotionData> m_deviceMotionData;
+    RefPtrWillBeMember<DeviceAcceleration> m_acceleration;
+    RefPtrWillBeMember<DeviceAcceleration> m_accelerationIncludingGravity;
+    RefPtrWillBeMember<DeviceRotationRate> m_rotationRate;
 };
 
 DEFINE_TYPE_CASTS(DeviceMotionEvent, Event, event, event->interfaceName() == EventNames::DeviceMotionEvent, event.interfaceName() == EventNames::DeviceMotionEvent);

@@ -46,6 +46,8 @@ public:
 
     void waitUntil(const ScriptValue&);
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 protected:
     InstallPhaseEvent();
     InstallPhaseEvent(const AtomicString& type, const EventInit&, PassRefPtr<WaitUntilObserver>);

@@ -102,17 +102,21 @@ protected:
 
     MouseEvent();
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     unsigned short m_button;
     bool m_buttonDown;
     RefPtr<EventTarget> m_relatedTarget;
-    RefPtrWillBePersistent<Clipboard> m_clipboard;
+    RefPtrWillBeMember<Clipboard> m_clipboard;
 };
 
 class SimulatedMouseEvent FINAL : public MouseEvent {
 public:
     static PassRefPtr<SimulatedMouseEvent> create(const AtomicString& eventType, PassRefPtr<AbstractView>, PassRefPtr<Event> underlyingEvent);
     virtual ~SimulatedMouseEvent();
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     SimulatedMouseEvent(const AtomicString& eventType, PassRefPtr<AbstractView>, PassRefPtr<Event> underlyingEvent);

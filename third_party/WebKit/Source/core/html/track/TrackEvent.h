@@ -55,6 +55,8 @@ public:
 
     TrackBase* track() const { return m_track.get(); }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     TrackEvent();
     TrackEvent(const AtomicString& type, const TrackEventInit& initializer);

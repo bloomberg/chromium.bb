@@ -45,6 +45,8 @@ public:
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     OfflineAudioCompletionEvent();
     explicit OfflineAudioCompletionEvent(PassRefPtr<AudioBuffer> renderedBuffer);

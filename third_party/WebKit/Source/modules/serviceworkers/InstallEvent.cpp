@@ -83,4 +83,9 @@ InstallEvent::InstallEvent(const AtomicString& type, const EventInit& initialize
     ScriptWrappable::init(this);
 }
 
+void InstallEvent::trace(Visitor* visitor)
+{
+    InstallPhaseEvent::trace(visitor);
+}
+
 } // namespace WebCore

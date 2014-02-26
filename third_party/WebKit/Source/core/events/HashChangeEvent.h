@@ -68,6 +68,8 @@ public:
 
     virtual const AtomicString& interfaceName() const OVERRIDE { return EventNames::HashChangeEvent; }
 
+    virtual void trace(Visitor* visitor) OVERRIDE { Event::trace(visitor); }
+
 private:
     HashChangeEvent()
     {

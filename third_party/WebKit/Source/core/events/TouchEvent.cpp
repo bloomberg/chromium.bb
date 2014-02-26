@@ -88,6 +88,11 @@ bool TouchEvent::isTouchEvent() const
     return true;
 }
 
+void TouchEvent::trace(Visitor* visitor)
+{
+    MouseRelatedEvent::trace(visitor);
+}
+
 PassRefPtr<TouchEventDispatchMediator> TouchEventDispatchMediator::create(PassRefPtr<TouchEvent> touchEvent)
 {
     return adoptRef(new TouchEventDispatchMediator(touchEvent));

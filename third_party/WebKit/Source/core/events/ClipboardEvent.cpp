@@ -52,4 +52,10 @@ bool ClipboardEvent::isClipboardEvent() const
     return true;
 }
 
+void ClipboardEvent::trace(Visitor* visitor)
+{
+    visitor->trace(m_clipboard);
+    Event::trace(visitor);
+}
+
 } // namespace WebCore

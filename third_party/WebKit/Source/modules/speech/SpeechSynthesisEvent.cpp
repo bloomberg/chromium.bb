@@ -52,4 +52,9 @@ SpeechSynthesisEvent::SpeechSynthesisEvent(const AtomicString& type, unsigned lo
     ScriptWrappable::init(this);
 }
 
+void SpeechSynthesisEvent::trace(Visitor* visitor)
+{
+    Event::trace(visitor);
+}
+
 } // namespace WebCore

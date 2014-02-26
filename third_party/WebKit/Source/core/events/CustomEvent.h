@@ -60,6 +60,8 @@ public:
         m_serializedDetail = detail;
     }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     CustomEvent();
     CustomEvent(const AtomicString& type, const CustomEventInit& initializer);

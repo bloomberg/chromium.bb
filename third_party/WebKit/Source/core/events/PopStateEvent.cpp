@@ -80,4 +80,9 @@ const AtomicString& PopStateEvent::interfaceName() const
     return EventNames::PopStateEvent;
 }
 
+void PopStateEvent::trace(Visitor* visitor)
+{
+    Event::trace(visitor);
+}
+
 } // namespace WebCore

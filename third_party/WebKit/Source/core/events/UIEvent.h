@@ -75,6 +75,8 @@ public:
 
     virtual int which() const;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 protected:
     UIEvent();
     UIEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView>, int detail);

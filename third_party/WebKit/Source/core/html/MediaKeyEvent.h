@@ -68,6 +68,8 @@ public:
     MediaKeyError* errorCode(bool& isNull) const { isNull = !m_errorCode; return m_errorCode.get(); }
     unsigned short systemCode() const { return m_systemCode; }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     MediaKeyEvent();
     MediaKeyEvent(const AtomicString& type, const MediaKeyEventInit& initializer);

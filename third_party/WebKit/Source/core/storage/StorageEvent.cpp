@@ -100,4 +100,9 @@ const AtomicString& StorageEvent::interfaceName() const
     return EventNames::StorageEvent;
 }
 
+void StorageEvent::trace(Visitor* visitor)
+{
+    Event::trace(visitor);
+}
+
 } // namespace WebCore

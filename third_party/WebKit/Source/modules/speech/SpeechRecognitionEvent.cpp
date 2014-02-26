@@ -92,4 +92,10 @@ SpeechRecognitionEvent::~SpeechRecognitionEvent()
     ScriptWrappable::init(this);
 }
 
+void SpeechRecognitionEvent::trace(Visitor* visitor)
+{
+    visitor->trace(m_results);
+    Event::trace(visitor);
+}
+
 } // namespace WebCore

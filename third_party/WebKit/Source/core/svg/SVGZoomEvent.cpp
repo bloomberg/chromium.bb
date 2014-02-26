@@ -81,4 +81,9 @@ const AtomicString& SVGZoomEvent::interfaceName() const
     return EventNames::SVGZoomEvent;
 }
 
+void SVGZoomEvent::trace(Visitor* visitor)
+{
+    UIEvent::trace(visitor);
+}
+
 } // namespace WebCore

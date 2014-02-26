@@ -66,5 +66,9 @@ const AtomicString& RTCDataChannelEvent::interfaceName() const
     return EventNames::RTCDataChannelEvent;
 }
 
-} // namespace WebCore
+void RTCDataChannelEvent::trace(Visitor* visitor)
+{
+    Event::trace(visitor);
+}
 
+} // namespace WebCore

@@ -57,5 +57,10 @@ const AtomicString& TrackEvent::interfaceName() const
     return EventNames::TrackEvent;
 }
 
+void TrackEvent::trace(Visitor* visitor)
+{
+    Event::trace(visitor);
+}
+
 } // namespace WebCore
 

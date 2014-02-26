@@ -57,4 +57,9 @@ const AtomicString& MediaKeyMessageEvent::interfaceName() const
     return EventNames::MediaKeyMessageEvent;
 }
 
+void MediaKeyMessageEvent::trace(Visitor* visitor)
+{
+    Event::trace(visitor);
+}
+
 } // namespace WebCore

@@ -46,6 +46,8 @@ public:
 
     virtual const AtomicString& interfaceName() const OVERRIDE { return EventNames::BeforeUnloadEvent; }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     BeforeUnloadEvent();
 

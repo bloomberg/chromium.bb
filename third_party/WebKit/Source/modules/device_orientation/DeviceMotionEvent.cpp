@@ -110,4 +110,13 @@ const AtomicString& DeviceMotionEvent::interfaceName() const
     return EventNames::DeviceMotionEvent;
 }
 
+void DeviceMotionEvent::trace(Visitor* visitor)
+{
+    visitor->trace(m_deviceMotionData);
+    visitor->trace(m_acceleration);
+    visitor->trace(m_accelerationIncludingGravity);
+    visitor->trace(m_rotationRate);
+    Event::trace(visitor);
+}
+
 } // namespace WebCore

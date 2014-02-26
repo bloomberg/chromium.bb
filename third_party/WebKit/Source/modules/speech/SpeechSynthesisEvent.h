@@ -42,6 +42,8 @@ public:
 
     virtual const AtomicString& interfaceName() const OVERRIDE { return EventNames::SpeechSynthesisEvent; }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     SpeechSynthesisEvent();
     SpeechSynthesisEvent(const AtomicString& type, unsigned long charIndex, float elapsedTime, const String& name);

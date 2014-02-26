@@ -58,6 +58,8 @@ public:
     Uint8Array* message() const { return m_message.get(); }
     String destinationURL() const { return m_destinationURL; }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     MediaKeyMessageEvent();
     MediaKeyMessageEvent(const AtomicString& type, const MediaKeyMessageEventInit& initializer);

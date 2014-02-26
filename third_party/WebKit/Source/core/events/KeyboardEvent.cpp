@@ -217,6 +217,11 @@ int KeyboardEvent::which() const
     return keyCode();
 }
 
+void KeyboardEvent::trace(Visitor* visitor)
+{
+    UIEventWithKeyState::trace(visitor);
+}
+
 PassRefPtr<KeyboardEventDispatchMediator> KeyboardEventDispatchMediator::create(PassRefPtr<KeyboardEvent> event)
 {
     return adoptRef(new KeyboardEventDispatchMediator(event));

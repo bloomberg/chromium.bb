@@ -61,6 +61,8 @@ namespace WebCore {
         bool shouldMatchStyle() const { return m_shouldMatchStyle; }
         DocumentFragment* pastingFragment() const { return m_pastingFragment.get(); }
 
+        virtual void trace(Visitor*) OVERRIDE;
+
     private:
         TextEvent();
 

@@ -71,4 +71,9 @@ const AtomicString& MutationEvent::interfaceName() const
     return EventNames::MutationEvent;
 }
 
+void MutationEvent::trace(Visitor* visitor)
+{
+    Event::trace(visitor);
+}
+
 } // namespace WebCore

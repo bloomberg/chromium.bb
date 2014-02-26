@@ -62,6 +62,8 @@ public:
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     WebKitAnimationEvent();
     WebKitAnimationEvent(const AtomicString& type, const String& animationName, double elapsedTime);

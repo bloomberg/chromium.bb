@@ -65,13 +65,15 @@ public:
     // Event
     virtual const AtomicString& interfaceName() const OVERRIDE;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     SpeechRecognitionEvent();
     SpeechRecognitionEvent(const AtomicString&, const SpeechRecognitionEventInit&);
     SpeechRecognitionEvent(const AtomicString& eventName, unsigned long resultIndex, PassRefPtrWillBeRawPtr<SpeechRecognitionResultList> results);
 
     unsigned long m_resultIndex;
-    RefPtrWillBePersistent<SpeechRecognitionResultList> m_results;
+    RefPtrWillBeMember<SpeechRecognitionResultList> m_results;
 };
 
 } // namespace WebCore

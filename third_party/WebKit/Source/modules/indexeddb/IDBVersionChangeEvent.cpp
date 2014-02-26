@@ -76,4 +76,9 @@ const AtomicString& IDBVersionChangeEvent::interfaceName() const
     return EventNames::IDBVersionChangeEvent;
 }
 
+void IDBVersionChangeEvent::trace(Visitor* visitor)
+{
+    Event::trace(visitor);
+}
+
 } // namespace WebCore

@@ -57,6 +57,8 @@ public:
     String contentType() const { return m_contentType; }
     Uint8Array* initData() const { return m_initData.get(); }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     MediaKeyNeededEvent();
     MediaKeyNeededEvent(const AtomicString& type, const MediaKeyNeededEventInit& initializer);

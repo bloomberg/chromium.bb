@@ -41,6 +41,8 @@ namespace WebCore {
 
         Clipboard* clipboard() const { return m_clipboard.get(); }
 
+        virtual void trace(Visitor*) OVERRIDE;
+
     private:
         ClipboardEvent();
         ClipboardEvent(const AtomicString& type, bool canBubbleArg, bool cancelableArg, PassRefPtrWillBeRawPtr<Clipboard>);
@@ -48,7 +50,7 @@ namespace WebCore {
         virtual const AtomicString& interfaceName() const OVERRIDE;
         virtual bool isClipboardEvent() const OVERRIDE;
 
-        RefPtrWillBePersistent<Clipboard> m_clipboard;
+        RefPtrWillBeMember<Clipboard> m_clipboard;
     };
 
 } // namespace WebCore

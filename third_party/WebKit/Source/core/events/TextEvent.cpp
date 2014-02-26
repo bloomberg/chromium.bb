@@ -106,4 +106,9 @@ const AtomicString& TextEvent::interfaceName() const
     return EventNames::TextEvent;
 }
 
+void TextEvent::trace(Visitor* visitor)
+{
+    UIEvent::trace(visitor);
+}
+
 } // namespace WebCore

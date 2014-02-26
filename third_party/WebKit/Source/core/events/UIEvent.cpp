@@ -114,4 +114,9 @@ int UIEvent::which() const
     return 0;
 }
 
+void UIEvent::trace(Visitor* visitor)
+{
+    Event::trace(visitor);
+}
+
 } // namespace WebCore

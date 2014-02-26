@@ -212,4 +212,8 @@ PassRefPtr<NodeList> Event::path() const
     return StaticNodeList::createEmpty();
 }
 
+void Event::trace(Visitor*)
+{
+}
+
 } // namespace WebCore

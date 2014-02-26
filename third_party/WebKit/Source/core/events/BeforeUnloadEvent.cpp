@@ -42,4 +42,9 @@ bool BeforeUnloadEvent::isBeforeUnloadEvent() const
     return true;
 }
 
+void BeforeUnloadEvent::trace(Visitor* visitor)
+{
+    Event::trace(visitor);
+}
+
 } // namespace WebCore

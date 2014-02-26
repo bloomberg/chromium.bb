@@ -60,4 +60,9 @@ InstallPhaseEvent::InstallPhaseEvent(const AtomicString& type, const EventInit& 
 {
 }
 
+void InstallPhaseEvent::trace(Visitor* visitor)
+{
+    Event::trace(visitor);
+}
+
 } // namespace WebCore

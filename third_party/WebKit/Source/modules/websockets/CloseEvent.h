@@ -72,6 +72,8 @@ public:
     // Event function.
     virtual const AtomicString& interfaceName() const OVERRIDE { return EventNames::CloseEvent; }
 
+    virtual void trace(Visitor* visitor) OVERRIDE { Event::trace(visitor); }
+
 private:
     CloseEvent()
         : Event(EventTypeNames::close, false, false)

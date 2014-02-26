@@ -69,6 +69,12 @@ const AtomicString& SpeechInputEvent::interfaceName() const
     return EventNames::SpeechInputEvent;
 }
 
+void SpeechInputEvent::trace(Visitor* visitor)
+{
+    visitor->trace(m_results);
+    Event::trace(visitor);
+}
+
 } // namespace WebCore
 
 #endif // ENABLE(INPUT_SPEECH)

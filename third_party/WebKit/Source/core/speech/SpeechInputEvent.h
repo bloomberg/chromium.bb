@@ -45,11 +45,13 @@ public:
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     SpeechInputEvent();
     SpeechInputEvent(const AtomicString& eventType, const SpeechInputResultArray& results);
 
-    RefPtrWillBePersistent<SpeechInputResultList> m_results;
+    RefPtrWillBeMember<SpeechInputResultList> m_results;
 };
 
 } // namespace WebCore

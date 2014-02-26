@@ -61,4 +61,9 @@ const AtomicString& CustomEvent::interfaceName() const
     return EventNames::CustomEvent;
 }
 
+void CustomEvent::trace(Visitor* visitor)
+{
+    Event::trace(visitor);
+}
+
 } // namespace WebCore

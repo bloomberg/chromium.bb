@@ -68,6 +68,8 @@ public:
 
     virtual const AtomicString& interfaceName() const OVERRIDE { return EventNames::MIDIMessageEvent; }
 
+    virtual void trace(Visitor* visitor) OVERRIDE { Event::trace(visitor); }
+
 private:
     MIDIMessageEvent()
         : m_receivedTime(0)

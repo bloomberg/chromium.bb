@@ -61,4 +61,9 @@ const AtomicString& CSSFontFaceLoadEvent::interfaceName() const
     return EventNames::CSSFontFaceLoadEvent;
 }
 
+void CSSFontFaceLoadEvent::trace(Visitor* visitor)
+{
+    Event::trace(visitor);
+}
+
 } // namespace WebCore

@@ -67,5 +67,9 @@ const AtomicString& MediaStreamTrackEvent::interfaceName() const
     return EventNames::MediaStreamTrackEvent;
 }
 
-} // namespace WebCore
+void MediaStreamTrackEvent::trace(Visitor* visitor)
+{
+    Event::trace(visitor);
+}
 
+} // namespace WebCore

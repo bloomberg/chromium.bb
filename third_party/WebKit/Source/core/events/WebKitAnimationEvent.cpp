@@ -77,4 +77,9 @@ const AtomicString& WebKitAnimationEvent::interfaceName() const
     return EventNames::WebKitAnimationEvent;
 }
 
+void WebKitAnimationEvent::trace(Visitor* visitor)
+{
+    Event::trace(visitor);
+}
+
 } // namespace WebCore

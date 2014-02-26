@@ -76,4 +76,9 @@ const AtomicString& OverflowEvent::interfaceName() const
     return EventNames::OverflowEvent;
 }
 
+void OverflowEvent::trace(Visitor* visitor)
+{
+    Event::trace(visitor);
+}
+
 }

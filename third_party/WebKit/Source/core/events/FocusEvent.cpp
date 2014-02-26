@@ -66,6 +66,11 @@ FocusEvent::FocusEvent(const AtomicString& type, const FocusEventInit& initializ
     ScriptWrappable::init(this);
 }
 
+void FocusEvent::trace(Visitor* visitor)
+{
+    UIEvent::trace(visitor);
+}
+
 PassRefPtr<FocusEventDispatchMediator> FocusEventDispatchMediator::create(PassRefPtr<FocusEvent> focusEvent)
 {
     return adoptRef(new FocusEventDispatchMediator(focusEvent));

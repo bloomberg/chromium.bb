@@ -44,7 +44,7 @@ struct EventInit {
     bool cancelable;
 };
 
-class Event : public ScriptWrappable, public RefCounted<Event> {
+class Event : public RefCountedWillBeRefCountedGarbageCollected<Event>,  public ScriptWrappable {
 public:
     enum PhaseType {
         NONE                = 0,
@@ -178,6 +178,8 @@ public:
     PassRefPtr<NodeList> path() const;
 
     bool isBeingDispatched() const { return eventPhase(); }
+
+    virtual void trace(Visitor*);
 
 protected:
     Event();

@@ -64,4 +64,9 @@ const AtomicString& PageTransitionEvent::interfaceName() const
     return EventNames::PageTransitionEvent;
 }
 
+void PageTransitionEvent::trace(Visitor* visitor)
+{
+    Event::trace(visitor);
+}
+
 } // namespace WebCore

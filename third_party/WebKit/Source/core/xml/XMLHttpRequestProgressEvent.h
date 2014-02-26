@@ -49,6 +49,8 @@ public:
 
     virtual const AtomicString& interfaceName() const OVERRIDE { return EventNames::XMLHttpRequestProgressEvent; }
 
+    virtual void trace(Visitor* visitor) OVERRIDE { ProgressEvent::trace(visitor); }
+
 private:
     XMLHttpRequestProgressEvent()
     {

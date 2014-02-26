@@ -62,4 +62,9 @@ const AtomicString& WebGLContextEvent::interfaceName() const
     return EventNames::WebGLContextEvent;
 }
 
+void WebGLContextEvent::trace(Visitor* visitor)
+{
+    Event::trace(visitor);
+}
+
 } // namespace WebCore

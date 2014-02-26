@@ -100,6 +100,8 @@ public:
     virtual bool isKeyboardEvent() const OVERRIDE;
     virtual int which() const OVERRIDE;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     KeyboardEvent();
     KeyboardEvent(const PlatformKeyboardEvent&, AbstractView*);

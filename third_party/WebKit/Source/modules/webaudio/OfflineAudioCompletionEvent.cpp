@@ -63,6 +63,11 @@ const AtomicString& OfflineAudioCompletionEvent::interfaceName() const
     return EventNames::OfflineAudioCompletionEvent;
 }
 
+void OfflineAudioCompletionEvent::trace(Visitor* visitor)
+{
+    Event::trace(visitor);
+}
+
 } // namespace WebCore
 
 #endif // ENABLE(WEB_AUDIO)

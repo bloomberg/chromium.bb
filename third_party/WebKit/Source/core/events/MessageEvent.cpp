@@ -185,4 +185,9 @@ void MessageEvent::entangleMessagePorts(ExecutionContext* context)
     m_ports = MessagePort::entanglePorts(*context, m_channels.release());
 }
 
+void MessageEvent::trace(Visitor* visitor)
+{
+    Event::trace(visitor);
+}
+
 } // namespace WebCore

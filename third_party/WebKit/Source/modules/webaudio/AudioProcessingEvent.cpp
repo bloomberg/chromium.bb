@@ -64,6 +64,11 @@ const AtomicString& AudioProcessingEvent::interfaceName() const
     return EventNames::AudioProcessingEvent;
 }
 
+void AudioProcessingEvent::trace(Visitor* visitor)
+{
+    Event::trace(visitor);
+}
+
 } // namespace WebCore
 
 #endif // ENABLE(WEB_AUDIO)

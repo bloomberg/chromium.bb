@@ -51,4 +51,9 @@ const AtomicString& ResourceProgressEvent::interfaceName() const
     return EventNames::ResourceProgressEvent;
 }
 
+void ResourceProgressEvent::trace(Visitor* visitor)
+{
+    ProgressEvent::trace(visitor);
+}
+
 }

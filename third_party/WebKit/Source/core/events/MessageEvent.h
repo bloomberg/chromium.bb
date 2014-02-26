@@ -113,6 +113,8 @@ public:
 
     void entangleMessagePorts(ExecutionContext*);
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     MessageEvent();
     MessageEvent(const AtomicString&, const MessageEventInit&);

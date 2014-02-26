@@ -47,6 +47,8 @@ public:
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     RTCDTMFToneChangeEvent();
     explicit RTCDTMFToneChangeEvent(const String& tone);

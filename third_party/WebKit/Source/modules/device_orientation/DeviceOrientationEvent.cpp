@@ -98,4 +98,10 @@ const AtomicString& DeviceOrientationEvent::interfaceName() const
     return EventNames::DeviceOrientationEvent;
 }
 
+void DeviceOrientationEvent::trace(Visitor* visitor)
+{
+    visitor->trace(m_orientation);
+    Event::trace(visitor);
+}
+
 } // namespace WebCore

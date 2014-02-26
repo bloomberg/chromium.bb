@@ -45,6 +45,8 @@ public:
     float deltaX() const { return m_deltaX; }
     float deltaY() const { return m_deltaY; }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     GestureEvent();
     GestureEvent(const AtomicString& type, PassRefPtr<AbstractView>, int screenX, int screenY, int clientX, int clientY, bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, float deltaX, float deltaY);

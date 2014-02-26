@@ -79,5 +79,10 @@ const AtomicString& RTCDTMFToneChangeEvent::interfaceName() const
     return EventNames::RTCDTMFToneChangeEvent;
 }
 
+void RTCDTMFToneChangeEvent::trace(Visitor* visitor)
+{
+    Event::trace(visitor);
+}
+
 } // namespace WebCore
 
