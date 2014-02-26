@@ -332,12 +332,13 @@ bool CompositedLayerMapping::shouldClipCompositedBounds() const
 
     // Scrolled composited layers are clipped by their ancestor clipping layer,
     // so don't clip these, either.
-    bool hasAncestorClippingLayer = compositor()->clippedByAncestor(m_owningLayer);
-    bool clippingAncestorIsScrollParent = m_owningLayer->renderer()->containingBlock()->enclosingLayer() == m_owningLayer->ancestorScrollingLayer();
-    if (hasAncestorClippingLayer && clippingAncestorIsScrollParent)
-        return false;
+    if (!compositor()->clippedByAncestor(m_owningLayer))
+        return true;
 
-    return true;
+    if (m_owningLayer->renderer()->containingBlock()->enclosingLayer() != m_owningLayer->ancestorScrollingLayer())
+        return true;
+
+    return false;
 }
 
 void CompositedLayerMapping::updateCompositedBounds()
