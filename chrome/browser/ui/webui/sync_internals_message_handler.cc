@@ -24,16 +24,12 @@ using syncer::ModelTypeSet;
 using syncer::WeakHandle;
 
 SyncInternalsMessageHandler::SyncInternalsMessageHandler()
-    : weak_ptr_factory_(this) {}
+    : scoped_observer_(this),
+      weak_ptr_factory_(this) {}
 
 SyncInternalsMessageHandler::~SyncInternalsMessageHandler() {
   if (js_controller_)
     js_controller_->RemoveJsEventHandler(this);
-
-  ProfileSyncService* service = GetProfileSyncService();
-  if (service && service->HasObserver(this)) {
-    service->RemoveObserver(this);
-  }
 }
 
 void SyncInternalsMessageHandler::RegisterMessages() {
@@ -42,7 +38,7 @@ void SyncInternalsMessageHandler::RegisterMessages() {
   // Register for ProfileSyncService events.
   ProfileSyncService* service = GetProfileSyncService();
   if (service) {
-    service->AddObserver(this);
+    scoped_observer_.Add(service);
     js_controller_ = service->GetJsController();
     js_controller_->AddJsEventHandler(this);
   }

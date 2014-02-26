@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/values.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -62,6 +63,9 @@ class SyncInternalsMessageHandler
   void SendAboutInfo();
 
   ProfileSyncService* GetProfileSyncService();
+
+  ScopedObserver<ProfileSyncService, SyncInternalsMessageHandler>
+      scoped_observer_;
 
   base::WeakPtr<syncer::JsController> js_controller_;
   base::WeakPtrFactory<SyncInternalsMessageHandler> weak_ptr_factory_;
