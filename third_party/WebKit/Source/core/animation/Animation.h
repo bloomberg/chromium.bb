@@ -114,6 +114,7 @@ private:
 
     friend class CSSAnimations;
     friend class AnimationAnimationV8Test;
+    friend class AnimationAnimationTimingInputTest;
 };
 
 DEFINE_TYPE_CASTS(Animation, TimedItem, timedItem, timedItem->isAnimation(), timedItem.isAnimation());
