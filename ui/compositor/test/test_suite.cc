@@ -25,7 +25,7 @@ CompositorTestSuite::~CompositorTestSuite() {}
 
 void CompositorTestSuite::Initialize() {
   base::TestSuite::Initialize();
-  gfx::GLSurface::InitializeOneOffForTests();
+  gfx::GLSurface::InitializeOneOffForTests(true);
 
   gfx::RegisterPathProvider();
 
