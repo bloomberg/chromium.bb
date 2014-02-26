@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/memory/singleton.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
@@ -129,10 +130,9 @@ bool JavaNPObject::Enumerate(NPObject* np_object, NPIdentifier** values,
   JavaNPObject* obj = reinterpret_cast<JavaNPObject*>(np_object);
   if (!obj->bound_object->CanEnumerateMethods()) return false;
   std::vector<std::string> method_names = obj->bound_object->GetMethodNames();
-  *count = method_names.size();
-  *values = static_cast<NPIdentifier*>(
-      malloc(sizeof(NPIdentifier) * method_names.size()));
-  for (uint32_t i = 0; i < method_names.size(); ++i) {
+  *count = base::saturated_cast<uint32_t>(method_names.size());
+  *values = static_cast<NPIdentifier*>(calloc(*count, sizeof(NPIdentifier)));
+  for (uint32_t i = 0; i < *count; ++i) {
     (*values)[i] = WebBindings::getStringIdentifier(method_names[i].c_str());
   }
   return true;
