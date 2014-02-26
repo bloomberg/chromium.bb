@@ -89,10 +89,9 @@ cr.define('speech', function() {
   /**
    * Called when the hotword is recognized.
    *
-   * @param {number} confidence The confidence store of the recognition.
    * @private
    */
-  SpeechManager.prototype.onHotwordRecognized_ = function(confidence) {
+  SpeechManager.prototype.onHotwordRecognized_ = function() {
     if (this.state != SpeechState.HOTWORD_RECOGNIZING)
       return;
     this.pluginManager_.stopRecognizer();
@@ -174,8 +173,7 @@ cr.define('speech', function() {
           this.onHotwordRecognizerReady_.bind(this),
           this.onHotwordRecognized_.bind(this));
       pluginManager.scheduleInitialize(
-          this.audioManager_.getSampleRate(),
-          'chrome://app-list/okgoogle_hotword.config');
+          this.audioManager_.getSampleRate(), 'chrome://app-list/hotword.data');
     } else {
       if (!recognizer)
         return;

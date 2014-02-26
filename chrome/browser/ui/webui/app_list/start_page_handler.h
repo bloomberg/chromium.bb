@@ -9,6 +9,8 @@
 #include "base/compiler_specific.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/ui/app_list/recommended_apps_observer.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {
@@ -21,6 +23,7 @@ class RecommendedApps;
 
 // Handler for the app launcher start page.
 class StartPageHandler : public content::WebUIMessageHandler,
+                         public content::NotificationObserver,
                          public RecommendedAppsObserver {
  public:
   StartPageHandler();
@@ -29,6 +32,11 @@ class StartPageHandler : public content::WebUIMessageHandler,
  private:
   // content::WebUIMessageHandler overrides:
   virtual void RegisterMessages() OVERRIDE;
+
+  // Overridden from content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // RecommendedAppsObserver overrdies:
   virtual void OnRecommendedAppsChanged() OVERRIDE;
@@ -57,6 +65,7 @@ class StartPageHandler : public content::WebUIMessageHandler,
 
   RecommendedApps* recommended_apps_;  // Not owned.
   PrefChangeRegistrar pref_change_registrar_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(StartPageHandler);
 };

@@ -18,7 +18,23 @@
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 
+#if defined(ENABLE_APP_LIST)
+#include "ui/app_list/app_list_switches.h"
+#endif
+
 namespace extensions {
+
+namespace {
+
+bool IsAppListVoiceSearchEnabled() {
+#if defined(ENABLE_APP_LIST)
+  return app_list::switches::IsVoiceSearchEnabled();
+#else
+  return false;
+#endif
+}
+
+}  // namespace
 
 ExternalComponentLoader::ExternalComponentLoader(Profile* profile)
     : profile_(profile) {
@@ -32,7 +48,8 @@ void ExternalComponentLoader::StartLoading() {
   prefs_->SetString(appId + ".external_update_url",
                     extension_urls::GetWebstoreUpdateUrl().spec());
 
-  if (HotwordServiceFactory::IsHotwordAllowed(profile_)) {
+  if (HotwordServiceFactory::IsHotwordAllowed(profile_) ||
+      IsAppListVoiceSearchEnabled()) {
     std::string hotwordId = extension_misc::kHotwordExtensionId;
     prefs_->SetString(hotwordId + ".external_update_url",
                       extension_urls::GetWebstoreUpdateUrl().spec());

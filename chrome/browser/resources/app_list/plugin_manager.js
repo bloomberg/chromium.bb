@@ -35,7 +35,7 @@ cr.define('speech', function() {
   /**
    * The regexp pattern of the hotword recognition result.
    */
-  var recognitionPattern = /^HotwordFiredEvent: \[(.*)\] confidence: (.*)/;
+  var recognitionPattern = /^HotwordFiredEvent:/;
 
   /**
    * @constructor
@@ -51,7 +51,7 @@ cr.define('speech', function() {
       recognizer = document.createElement('EMBED');
       recognizer.id = 'recognizer';
       recognizer.type = 'application/x-nacl';
-      recognizer.src = 'chrome://app-list/hotword_nacl.nmf';
+      recognizer.src = 'chrome://app-list/greconacl.nmf';
       recognizer.width = '1';
       recognizer.height = '1';
       document.body.appendChild(recognizer);
@@ -79,10 +79,8 @@ cr.define('speech', function() {
       this.state = PluginState.RECOGNIZING;
     } else if (messageEvent.data == 'stopped') {
       this.state = PluginState.READY;
-    } else {
-      var matched = recognitionPattern.exec(messageEvent.data);
-      if (matched && matched[1] == 'hotword_ok_google')
-        this.onRecognized_(Number(matched[2]));
+    } else if (recognitionPattern.exec(messageEvent.data)) {
+      this.onRecognized_();
     }
   };
 

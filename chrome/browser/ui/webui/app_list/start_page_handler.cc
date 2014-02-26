@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
-#include "base/sys_info.h"
 #include "base/values.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/hotword_service.h"
@@ -22,6 +22,8 @@
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_system.h"
@@ -84,6 +86,34 @@ void StartPageHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
+void StartPageHandler::Observe(int type,
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
+#if defined(OS_CHROMEOS)
+  DCHECK_EQ(Profile::FromWebUI(web_ui()),
+            content::Source<Profile>(source).ptr());
+  switch (type) {
+    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+      extensions::Extension* extension =
+          content::Details<extensions::Extension>(details).ptr();
+      if (extension->id() == extension_misc::kHotwordExtensionId)
+        OnHotwordEnabledChanged();
+      break;
+    }
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+      extensions::UnloadedExtensionInfo* info =
+          content::Details<extensions::UnloadedExtensionInfo>(details).ptr();
+      if (info->extension->id() == extension_misc::kHotwordExtensionId)
+        OnHotwordEnabledChanged();
+      break;
+    }
+    default:
+      NOTREACHED();
+      break;
+  }
+#endif
+}
+
 void StartPageHandler::OnRecommendedAppsChanged() {
   SendRecommendedApps();
 }
@@ -103,8 +133,12 @@ void StartPageHandler::SendRecommendedApps() {
 #if defined(OS_CHROMEOS)
 bool StartPageHandler::HotwordEnabled() {
   Profile* profile = Profile::FromWebUI(web_ui());
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+
   return HotwordService::DoesHotwordSupportLanguage(profile) &&
-      profile->GetPrefs()->GetBoolean(prefs::kHotwordAppListEnabled);
+      profile->GetPrefs()->GetBoolean(prefs::kHotwordAppListEnabled) &&
+      service->GetExtensionById(extension_misc::kHotwordExtensionId, false);
 }
 
 void StartPageHandler::OnHotwordEnabledChanged() {
@@ -143,8 +177,7 @@ void StartPageHandler::HandleInitialize(const base::ListValue* args) {
 
 #if defined(OS_CHROMEOS)
   if (app_list::switches::IsVoiceSearchEnabled() &&
-      HotwordService::DoesHotwordSupportLanguage(profile) &&
-      base::SysInfo::IsRunningOnChromeOS()) {
+      HotwordService::DoesHotwordSupportLanguage(profile)) {
     SynchronizeHotwordEnabled();
     OnHotwordEnabledChanged();
     pref_change_registrar_.Init(profile->GetPrefs());
@@ -156,6 +189,10 @@ void StartPageHandler::HandleInitialize(const base::ListValue* args) {
         prefs::kHotwordAppListEnabled,
         base::Bind(&StartPageHandler::OnHotwordEnabledChanged,
                    base::Unretained(this)));
+    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+                   content::Source<Profile>(profile));
+    registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                   content::Source<Profile>(profile));
   }
 #endif
 }
