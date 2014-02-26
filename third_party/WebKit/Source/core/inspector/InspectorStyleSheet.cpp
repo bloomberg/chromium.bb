@@ -1739,8 +1739,8 @@ PassRefPtr<CSSRuleSourceData> InspectorStyleSheetForInlineStyle::getStyleAttribu
 
     RefPtr<MutableStylePropertySet> tempDeclaration = MutableStylePropertySet::create();
     RuleSourceDataList ruleSourceDataResult;
-    StyleSheetHandler handler(m_styleText, &m_element->document(), m_element->document().elementSheet()->contents(), &ruleSourceDataResult);
-    createCSSParser(&m_element->document())->parseDeclaration(tempDeclaration.get(), m_styleText, &handler, m_element->document().elementSheet()->contents());
+    StyleSheetHandler handler(m_styleText, &m_element->document(), m_element->document().elementSheet().contents(), &ruleSourceDataResult);
+    createCSSParser(&m_element->document())->parseDeclaration(tempDeclaration.get(), m_styleText, &handler, m_element->document().elementSheet().contents());
     return ruleSourceDataResult.first().release();
 }
 

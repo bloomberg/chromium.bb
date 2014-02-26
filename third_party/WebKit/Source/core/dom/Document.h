@@ -560,7 +560,7 @@ public:
     bool canNavigate(LocalFrame* targetFrame);
     LocalFrame* findUnsafeParentScrollPropagationBoundary();
 
-    CSSStyleSheet* elementSheet();
+    CSSStyleSheet& elementSheet();
 
     virtual PassRefPtr<DocumentParser> createParser();
     DocumentParser* parser() const { return m_parser.get(); }

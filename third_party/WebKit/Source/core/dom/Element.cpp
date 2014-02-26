@@ -3355,7 +3355,7 @@ inline void Element::setInlineStyleFromString(const AtomicString& newStyleString
         inlineStyle = BisonCSSParser::parseInlineStyleDeclaration(newStyleString, this);
     } else {
         ASSERT(inlineStyle->isMutable());
-        static_pointer_cast<MutableStylePropertySet>(inlineStyle)->parseDeclaration(newStyleString, document().elementSheet()->contents());
+        static_pointer_cast<MutableStylePropertySet>(inlineStyle)->parseDeclaration(newStyleString, document().elementSheet().contents());
     }
 }
 
@@ -3414,7 +3414,7 @@ bool Element::setInlineStyleProperty(CSSPropertyID propertyID, double value, CSS
 bool Element::setInlineStyleProperty(CSSPropertyID propertyID, const String& value, bool important)
 {
     ASSERT(isStyledElement());
-    bool changes = ensureMutableInlineStyle()->setProperty(propertyID, value, important, document().elementSheet()->contents());
+    bool changes = ensureMutableInlineStyle()->setProperty(propertyID, value, important, document().elementSheet().contents());
     if (changes)
         inlineStyleChanged();
     return changes;

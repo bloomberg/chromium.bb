@@ -1238,9 +1238,9 @@ void BisonCSSParser::parseSelector(const String& string, CSSSelectorList& select
 PassRefPtr<ImmutableStylePropertySet> BisonCSSParser::parseInlineStyleDeclaration(const String& string, Element* element)
 {
     Document& document = element->document();
-    CSSParserContext context = CSSParserContext(document.elementSheet()->contents()->parserContext(), UseCounter::getFrom(&document));
+    CSSParserContext context = CSSParserContext(document.elementSheet().contents()->parserContext(), UseCounter::getFrom(&document));
     context.setMode((element->isHTMLElement() && !document.inQuirksMode()) ? HTMLStandardMode : HTMLQuirksMode);
-    return BisonCSSParser(context).parseDeclaration(string, document.elementSheet()->contents());
+    return BisonCSSParser(context).parseDeclaration(string, document.elementSheet().contents());
 }
 
 PassRefPtr<ImmutableStylePropertySet> BisonCSSParser::parseDeclaration(const String& string, StyleSheetContents* contextStyleSheet)
