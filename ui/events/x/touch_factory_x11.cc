@@ -130,10 +130,9 @@ void TouchFactory::UpdateDeviceList(Display* display) {
         XIAnyClassInfo* xiclassinfo = devinfo->classes[k];
         if (xiclassinfo->type == XITouchClass) {
           XITouchClassInfo* tci =
-              reinterpret_cast<XITouchClassInfo *>(xiclassinfo);
+              reinterpret_cast<XITouchClassInfo*>(xiclassinfo);
           // Only care direct touch device (such as touch screen) right now
           if (tci->mode == XIDirectTouch) {
-            CacheTouchscreenIds(display, devinfo->deviceid);
             touch_device_lookup_[devinfo->deviceid] = true;
             touch_device_list_[devinfo->deviceid] = true;
             touch_device_available_ = true;
@@ -145,6 +144,21 @@ void TouchFactory::UpdateDeviceList(Display* display) {
 #endif
       pointer_device_lookup_[devinfo->deviceid] = true;
     }
+
+#if defined(USE_XI2_MT)
+    if (devinfo->use == XIFloatingSlave || devinfo->use == XISlavePointer) {
+      for (int k = 0; k < devinfo->num_classes; ++k) {
+        XIAnyClassInfo* xiclassinfo = devinfo->classes[k];
+        if (xiclassinfo->type == XITouchClass) {
+          XITouchClassInfo* tci =
+              reinterpret_cast<XITouchClassInfo*>(xiclassinfo);
+          // Only care direct touch device (such as touch screen) right now
+          if (tci->mode == XIDirectTouch)
+            CacheTouchscreenIds(display, devinfo->deviceid);
+        }
+      }
+    }
+#endif
   }
 }
 
