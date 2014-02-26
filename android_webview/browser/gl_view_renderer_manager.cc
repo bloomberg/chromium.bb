@@ -11,6 +11,16 @@ namespace android_webview {
 
 using base::AutoLock;
 
+namespace {
+base::LazyInstance<GLViewRendererManager>::Leaky g_view_renderer_manager =
+    LAZY_INSTANCE_INITIALIZER;
+}  // namespace
+
+// static
+GLViewRendererManager* GLViewRendererManager::GetInstance() {
+  return g_view_renderer_manager.Pointer();
+}
+
 GLViewRendererManager::GLViewRendererManager() {}
 
 GLViewRendererManager::~GLViewRendererManager() {}
@@ -29,7 +39,7 @@ void GLViewRendererManager::MarkRenderThread() {
 
 GLViewRendererManager::Key GLViewRendererManager::DidDrawGL(
     Key key,
-    BrowserViewRenderer* view) {
+    HardwareRenderer* view) {
   AutoLock auto_lock(lock_);
   MarkRenderThread();
 
@@ -51,7 +61,7 @@ void GLViewRendererManager::NoLongerExpectsDrawGL(Key key) {
   mru_list_.erase(key);
 }
 
-BrowserViewRenderer* GLViewRendererManager::GetMostRecentlyDrawn() const {
+HardwareRenderer* GLViewRendererManager::GetMostRecentlyDrawn() const {
   AutoLock auto_lock(lock_);
   if (mru_list_.begin() == mru_list_.end())
     return NULL;

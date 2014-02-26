@@ -49,7 +49,7 @@ class AwWebContentsDelegate;
 class AwContents : public FindHelper::Listener,
                    public IconHelper::Listener,
                    public AwRenderViewHostExtClient,
-                   public BrowserViewRenderer::Client {
+                   public BrowserViewRendererClient {
  public:
   // Returns the AwContents instance associated with |web_contents|, or NULL.
   static AwContents* FromWebContents(content::WebContents* web_contents);
@@ -172,6 +172,8 @@ class AwContents : public FindHelper::Listener,
   virtual void SetContentsSize(gfx::SizeF contents_size_dip) OVERRIDE;
   virtual void DidOverscroll(gfx::Vector2d overscroll_delta) OVERRIDE;
 
+  const BrowserViewRenderer* GetBrowserViewRenderer() const;
+
   void ClearCache(JNIEnv* env, jobject obj, jboolean include_disk_files);
   void SetPendingWebContentsForPopup(scoped_ptr<content::WebContents> pending);
   jint ReleasePopupAwContents(JNIEnv* env, jobject obj);
@@ -202,7 +204,7 @@ class AwContents : public FindHelper::Listener,
   scoped_ptr<FindHelper> find_helper_;
   scoped_ptr<IconHelper> icon_helper_;
   scoped_ptr<AwContents> pending_contents_;
-  scoped_ptr<BrowserViewRenderer> browser_view_renderer_;
+  BrowserViewRenderer browser_view_renderer_;
   scoped_ptr<AwPdfExporter> pdf_exporter_;
 
   // GURL is supplied by the content layer as requesting frame.

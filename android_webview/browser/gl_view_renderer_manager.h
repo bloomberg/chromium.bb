@@ -8,35 +8,41 @@
 #include <list>
 
 #include "base/basictypes.h"
+#include "base/lazy_instance.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 
 namespace android_webview {
 
-class BrowserViewRenderer;
+class HardwareRenderer;
 
 class GLViewRendererManager {
-  typedef std::list<BrowserViewRenderer*> ListType;
+  typedef std::list<HardwareRenderer*> ListType;
+
  public:
   typedef ListType::iterator Key;
 
-  GLViewRendererManager();
-  ~GLViewRendererManager();
+  static GLViewRendererManager* GetInstance();
 
   bool OnRenderThread() const;
 
   // If |key| is NullKey(), then |view| is inserted at the front and a new key
   // is returned. Otherwise |key| must point to |view| which is moved to the
   // front.
-  Key DidDrawGL(Key key, BrowserViewRenderer* view);
+  Key DidDrawGL(Key key, HardwareRenderer* view);
 
   void NoLongerExpectsDrawGL(Key key);
 
-  BrowserViewRenderer* GetMostRecentlyDrawn() const;
+  HardwareRenderer* GetMostRecentlyDrawn() const;
 
   Key NullKey();
 
  private:
+  friend struct base::DefaultLazyInstanceTraits<GLViewRendererManager>;
+
+  GLViewRendererManager();
+  ~GLViewRendererManager();
+
   void MarkRenderThread();
 
   mutable base::Lock lock_;

@@ -4,7 +4,6 @@
 
 #include "android_webview/native/aw_pdf_exporter.h"
 
-#include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/renderer_host/print_manager.h"
 #include "base/android/jni_android.h"
 #include "base/logging.h"
@@ -26,10 +25,8 @@ namespace android_webview {
 
 AwPdfExporter::AwPdfExporter(JNIEnv* env,
                              jobject obj,
-                             BrowserViewRenderer* view_renderer,
                              WebContents* web_contents)
     : java_ref_(env, obj),
-      view_renderer_(view_renderer),
       web_contents_(web_contents) {
   DCHECK(obj);
   Java_AwPdfExporter_setNativeAwPdfExporter(

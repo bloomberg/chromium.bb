@@ -14,7 +14,7 @@ namespace android_webview {
 // Native side of java-class of same name.
 // Provides utility methods for rendering involving with Java objects.
 // TODO(boliu): Rename this class to JavaRasterHelper.
-class JavaBrowserViewRendererHelper : public BrowserViewRenderer::JavaHelper {
+class JavaBrowserViewRendererHelper : public BrowserViewRendererJavaHelper {
  public:
   JavaBrowserViewRendererHelper();
   virtual ~JavaBrowserViewRendererHelper();
@@ -22,7 +22,7 @@ class JavaBrowserViewRendererHelper : public BrowserViewRenderer::JavaHelper {
   static void SetAwDrawSWFunctionTable(AwDrawSWFunctionTable* table);
   static JavaBrowserViewRendererHelper* GetInstance();
 
-  // BrowserViewRenderer::JavaHelper implementation.
+  // BrowserViewRendererJavaHelper implementation.
   virtual bool RenderViaAuxilaryBitmapIfNeeded(
       jobject java_canvas,
       const gfx::Vector2d& scroll_correction,

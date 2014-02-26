@@ -60,8 +60,7 @@ JavaBrowserViewRendererHelper* JavaBrowserViewRendererHelper::GetInstance() {
 }
 
 // static
-BrowserViewRenderer::JavaHelper*
-BrowserViewRenderer::JavaHelper::GetInstance() {
+BrowserViewRendererJavaHelper* BrowserViewRendererJavaHelper::GetInstance() {
   return JavaBrowserViewRendererHelper::GetInstance();
 }
 

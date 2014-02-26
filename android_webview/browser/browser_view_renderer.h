@@ -7,6 +7,8 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
+#include "base/cancelable_callback.h"
+#include "content/public/browser/android/synchronous_compositor_client.h"
 #include "skia/ext/refptr.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -19,128 +21,227 @@ struct AwDrawSWFunctionTable;
 
 namespace content {
 class ContentViewCore;
+class SynchronousCompositor;
+class WebContents;
 }
 
 namespace android_webview {
 
+class HardwareRenderer;
+
+class BrowserViewRendererClient {
+ public:
+  // Request DrawGL be called. Passing null |canvas| implies the request
+  // will be of AwDrawGLInfo::kModeProcess type. The callback
+  // may never be made, and the mode may be promoted to kModeDraw.
+  virtual bool RequestDrawGL(jobject canvas) = 0;
+
+  // Called when a new Picture is available. Needs to be enabled
+  // via the EnableOnNewPicture method.
+  virtual void OnNewPicture() = 0;
+
+  // Called to trigger view invalidations.
+  virtual void PostInvalidate() = 0;
+
+  // Synchronously call back to SetGlobalVisibleRect with current value.
+  virtual void UpdateGlobalVisibleRect() = 0;
+
+  // Called to get view's absolute location on the screen.
+  virtual gfx::Point GetLocationOnScreen() = 0;
+
+  // Try to set the view's scroll offset to |new_value|.
+  virtual void ScrollContainerViewTo(gfx::Vector2d new_value) = 0;
+
+  // Set the view's scroll offset cap to |new_value|.
+  virtual void SetMaxContainerViewScrollOffset(gfx::Vector2d new_value) = 0;
+
+  // Is a Android view system managed fling in progress?
+  virtual bool IsFlingActive() const = 0;
+
+  // Set the current page scale to |page_scale_factor| and page scale limits
+  // to |min_page_scale_factor|..|max_page_scale_factor|.
+  virtual void SetPageScaleFactorAndLimits(float page_scale_factor,
+                                           float min_page_scale_factor,
+                                           float max_page_scale_factor) = 0;
+
+  // Set the current contents_size to |contents_size_dip|.
+  virtual void SetContentsSize(gfx::SizeF contents_size_dip) = 0;
+
+  // Handle overscroll.
+  virtual void DidOverscroll(gfx::Vector2d overscroll_delta) = 0;
+
+ protected:
+  virtual ~BrowserViewRendererClient() {}
+};
+
+// Delegate to perform rendering actions involving Java objects.
+class BrowserViewRendererJavaHelper {
+ public:
+  static BrowserViewRendererJavaHelper* GetInstance();
+
+  typedef base::Callback<bool(SkCanvas*)> RenderMethod;
+
+  // Try obtaining the native SkCanvas from |java_canvas| and call
+  // |render_source| with it. If that fails, allocate an auxilary bitmap
+  // for |render_source| to render into, then copy the bitmap into
+  // |java_canvas|.
+  virtual bool RenderViaAuxilaryBitmapIfNeeded(
+      jobject java_canvas,
+      const gfx::Vector2d& scroll_correction,
+      const gfx::Rect& clip,
+      RenderMethod render_source) = 0;
+
+ protected:
+  virtual ~BrowserViewRendererJavaHelper() {}
+};
+
 // Interface for all the WebView-specific content rendering operations.
 // Provides software and hardware rendering and the Capture Picture API.
-class BrowserViewRenderer {
+class BrowserViewRenderer : public content::SynchronousCompositorClient {
  public:
-  class Client {
-   public:
-    // Request DrawGL be called. Passing null canvas implies the request
-    // will be of AwDrawGLInfo::kModeProcess type. The callback
-    // may never be made, and the mode may be promoted to kModeDraw.
-    virtual bool RequestDrawGL(jobject canvas) = 0;
+  BrowserViewRenderer(BrowserViewRendererClient* client,
+                      content::WebContents* web_contents);
 
-    // Called when a new Picture is available. Needs to be enabled
-    // via the EnableOnNewPicture method.
-    virtual void OnNewPicture() = 0;
-
-    // Called to trigger view invalidations.
-    virtual void PostInvalidate() = 0;
-
-    // Synchronously call back to SetGlobalVisibleRect with current value.
-    virtual void UpdateGlobalVisibleRect() = 0;
-
-    // Called to get view's absolute location on the screen.
-    virtual gfx::Point GetLocationOnScreen() = 0;
-
-    // Try to set the view's scroll offset to |new_value|.
-    virtual void ScrollContainerViewTo(gfx::Vector2d new_value) = 0;
-
-    // Set the view's scroll offset cap to |new_value|.
-    virtual void SetMaxContainerViewScrollOffset(gfx::Vector2d new_value) = 0;
-
-    // Is a WebView-managed fling in progress?
-    virtual bool IsFlingActive() const = 0;
-
-    // Set the current page scale to |page_scale_factor| and page scale limits
-    // to |min_page_scale_factor|..|max_page_scale_factor|.
-    virtual void SetPageScaleFactorAndLimits(float page_scale_factor,
-                                             float min_page_scale_factor,
-                                             float max_page_scale_factor) = 0;
-
-    // Set the current contents_size to |contents_size_dip|.
-    virtual void SetContentsSize(gfx::SizeF contents_size_dip) = 0;
-
-    // Handle overscroll.
-    virtual void DidOverscroll(gfx::Vector2d overscroll_delta) = 0;
-
-   protected:
-    virtual ~Client() {}
-  };
-
-  // Delegate to perform rendering actions involving Java objects.
-  class JavaHelper {
-   public:
-    static JavaHelper* GetInstance();
-
-    typedef base::Callback<bool(SkCanvas*)> RenderMethod;
-    virtual bool RenderViaAuxilaryBitmapIfNeeded(
-        jobject java_canvas,
-        const gfx::Vector2d& scroll_correction,
-        const gfx::Rect& clip,
-        RenderMethod render_source) = 0;
-
-   protected:
-    virtual ~JavaHelper() {}
-  };
-
-  // Global hookup methods.
-  static void SetAwDrawSWFunctionTable(AwDrawSWFunctionTable* table);
-
-  // Rendering methods.
+  virtual ~BrowserViewRenderer();
 
   // Main handler for view drawing: performs a SW draw immediately, or sets up
-  // a subsequent GL Draw (via Client::RequestDrawGL) and returns true. A false
-  // return value indicates nothing was or will be drawn.
+  // a subsequent GL Draw (via BrowserViewRendererClient::RequestDrawGL) and
+  // returns true. A false return value indicates nothing was or will be drawn.
   // |java_canvas| is the target of the draw. |is_hardware_canvas| indicates
   // a GL Draw maybe possible on this canvas. |scroll| if the view's current
   // scroll offset. |clip| is the canvas's clip bounds. |visible_rect| is the
   // intersection of the view size and the window in window coordinates.
-  virtual bool OnDraw(jobject java_canvas,
-                      bool is_hardware_canvas,
-                      const gfx::Vector2d& scroll,
-                      const gfx::Rect& clip) = 0;
+  bool OnDraw(jobject java_canvas,
+              bool is_hardware_canvas,
+              const gfx::Vector2d& scroll,
+              const gfx::Rect& clip);
 
-  // Called in response to a prior Client::RequestDrawGL() call. See
-  // AwDrawGLInfo documentation for more details of the contract.
-  virtual void DrawGL(AwDrawGLInfo* draw_info) = 0;
+  // Called in response to a prior BrowserViewRendererClient::RequestDrawGL()
+  // call. See AwDrawGLInfo documentation for more details of the contract.
+  void DrawGL(AwDrawGLInfo* draw_info);
 
   // The global visible rect changed and this is the new value.
-  virtual void SetGlobalVisibleRect(const gfx::Rect& visible_rect) = 0;
+  void SetGlobalVisibleRect(const gfx::Rect& visible_rect);
 
   // CapturePicture API methods.
-  virtual skia::RefPtr<SkPicture> CapturePicture(int width, int height) = 0;
-  virtual void EnableOnNewPicture(bool enabled) = 0;
+  skia::RefPtr<SkPicture> CapturePicture(int width, int height);
+  void EnableOnNewPicture(bool enabled);
 
-  virtual void ClearView() = 0;
+  void ClearView();
 
   // View update notifications.
-  virtual void SetIsPaused(bool paused) = 0;
-  virtual void SetViewVisibility(bool visible) = 0;
-  virtual void SetWindowVisibility(bool visible) = 0;
-  virtual void OnSizeChanged(int width, int height) = 0;
-  virtual void OnAttachedToWindow(int width, int height) = 0;
-  virtual void OnDetachedFromWindow() = 0;
+  void SetIsPaused(bool paused);
+  void SetViewVisibility(bool visible);
+  void SetWindowVisibility(bool visible);
+  void OnSizeChanged(int width, int height);
+  void OnAttachedToWindow(int width, int height);
+  void OnDetachedFromWindow();
 
   // Sets the scale for logical<->physical pixel conversions.
-  virtual void SetDipScale(float dip_scale) = 0;
+  void SetDipScale(float dip_scale);
 
   // Set the root layer scroll offset to |new_value|.
-  virtual void ScrollTo(gfx::Vector2d new_value) = 0;
+  void ScrollTo(gfx::Vector2d new_value);
 
   // Android views hierarchy gluing.
-  virtual bool IsAttachedToWindow() = 0;
-  virtual bool IsVisible() = 0;
-  virtual gfx::Rect GetScreenRect() = 0;
+  bool IsAttachedToWindow() const;
+  bool IsVisible() const;
+  gfx::Rect GetScreenRect() const;
 
   // ComponentCallbacks2.onTrimMemory callback.
-  virtual void TrimMemory(int level) = 0;
+  void TrimMemory(int level);
 
-  virtual ~BrowserViewRenderer() {}
+  // SynchronousCompositorClient overrides
+  virtual void DidInitializeCompositor(
+      content::SynchronousCompositor* compositor) OVERRIDE;
+  virtual void DidDestroyCompositor(content::SynchronousCompositor* compositor)
+      OVERRIDE;
+  virtual void SetContinuousInvalidate(bool invalidate) OVERRIDE;
+  virtual void SetMaxRootLayerScrollOffset(gfx::Vector2dF new_value) OVERRIDE;
+  virtual void SetTotalRootLayerScrollOffset(gfx::Vector2dF new_value_css)
+      OVERRIDE;
+  virtual void DidUpdateContent() OVERRIDE;
+  virtual gfx::Vector2dF GetTotalRootLayerScrollOffset() OVERRIDE;
+  virtual bool IsExternalFlingActive() const OVERRIDE;
+  virtual void SetRootLayerPageScaleFactorAndLimits(float page_scale_factor,
+                                                    float min_page_scale_factor,
+                                                    float max_page_scale_factor)
+      OVERRIDE;
+  virtual void SetRootLayerScrollableSize(gfx::SizeF scrollable_size) OVERRIDE;
+  virtual void DidOverscroll(gfx::Vector2dF accumulated_overscroll,
+                             gfx::Vector2dF latest_overscroll_delta,
+                             gfx::Vector2dF current_fling_velocity) OVERRIDE;
+
+ private:
+  // Checks the continuous invalidate and block invalidate state, and schedule
+  // invalidates appropriately. If |invalidate_ignore_compositor| is true,
+  // then send a view invalidate regardless of compositor expectation.
+  void EnsureContinuousInvalidation(AwDrawGLInfo* draw_info,
+                                    bool invalidate_ignore_compositor);
+  bool DrawSWInternal(jobject java_canvas, const gfx::Rect& clip_bounds);
+  bool CompositeSW(SkCanvas* canvas);
+
+  // If we call up view invalidate and OnDraw is not called before a deadline,
+  // then we keep ticking the SynchronousCompositor so it can make progress.
+  void FallbackTickFired();
+  void ForceFakeCompositeSW();
+
+  gfx::Vector2d max_scroll_offset() const;
+
+  // For debug tracing or logging. Return the string representation of this
+  // view renderer's state and the |draw_info| if provided.
+  std::string ToString(AwDrawGLInfo* draw_info) const;
+
+  BrowserViewRendererClient* client_;
+  content::WebContents* web_contents_;
+  content::SynchronousCompositor* compositor_;
+
+  scoped_ptr<HardwareRenderer> hardware_renderer_;
+
+  bool is_paused_;
+  bool view_visible_;
+  bool window_visible_;  // Only applicable if |attached_to_window_| is true.
+  bool attached_to_window_;
+  float dip_scale_;
+  float page_scale_factor_;
+  bool on_new_picture_enable_;
+  bool clear_view_;
+
+  // When true, we should continuously invalidate and keep drawing, for example
+  // to drive animation. This value is set by the compositor and should always
+  // reflect the expectation of the compositor and not be reused for other
+  // states.
+  bool compositor_needs_continuous_invalidate_;
+
+  // Used to block additional invalidates while one is already pending or before
+  // compositor draw which may switch continuous_invalidate on and off in the
+  // process.
+  bool block_invalidates_;
+
+  // Holds a callback to FallbackTickFired while it is pending.
+  base::CancelableClosure fallback_tick_;
+
+  int width_;
+  int height_;
+
+  // Should always call UpdateGlobalVisibleRect before using this.
+  gfx::Rect cached_global_visible_rect_;
+
+  // Last View scroll when View.onDraw() was called.
+  gfx::Vector2d scroll_at_start_of_frame_;
+
+  // Current scroll offset in CSS pixels.
+  gfx::Vector2dF scroll_offset_dip_;
+
+  // Max scroll offset in CSS pixels.
+  gfx::Vector2dF max_scroll_offset_dip_;
+
+  // Used to prevent rounding errors from accumulating enough to generate
+  // visible skew (especially noticeable when scrolling up and down in the same
+  // spot over a period of time).
+  gfx::Vector2dF overscroll_rounding_error_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserViewRenderer);
 };
 
 }  // namespace android_webview

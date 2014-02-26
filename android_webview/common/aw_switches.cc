@@ -8,12 +8,6 @@ namespace switches {
 
 const char kDisableSimpleCache[] = "disable-simple-cache";
 
-const char kDisableWebViewGLMode[] = "disable-webview-gl-mode";
-
-const char kTileMemoryMultiplier[] = "tile-memory-multiplier";
-
-const char kNumGrallocBuffersPerWebview[] = "num-gralloc-buffers-per-webview";
-
 const char kEnableAccelerated2dCanvas[] = "enable-accelerated-2d-canvas";
 
 }  // namespace switches

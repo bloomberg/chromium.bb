@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_ANDROID_SYNCHRONOUS_COMPOSITOR_CLIENT_H_
 
 #include "base/basictypes.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/vector2d_f.h"
 
 namespace content {

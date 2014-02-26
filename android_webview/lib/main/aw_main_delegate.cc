@@ -6,7 +6,7 @@
 
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/gpu_memory_buffer_factory_impl.h"
-#include "android_webview/browser/in_process_view_renderer.h"
+#include "android_webview/browser/hardware_renderer.h"
 #include "android_webview/browser/scoped_allow_wait_for_legacy_web_view_api.h"
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/lib/aw_browser_dependency_factory_impl.h"
@@ -53,7 +53,7 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   gpu::InProcessCommandBuffer::SetGpuMemoryBufferFactory(
       gpu_memory_buffer_factory_.get());
 
-  InProcessViewRenderer::CalculateTileMemoryPolicy();
+  HardwareRenderer::CalculateTileMemoryPolicy();
 
   CommandLine* cl = CommandLine::ForCurrentProcess();
   cl->AppendSwitch(switches::kEnableBeginFrameScheduling);

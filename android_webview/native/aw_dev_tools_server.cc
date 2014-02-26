@@ -4,7 +4,7 @@
 
 #include "android_webview/native/aw_dev_tools_server.h"
 
-#include "android_webview/browser/in_process_view_renderer.h"
+#include "android_webview/native/aw_contents.h"
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/strings/stringprintf.h"
@@ -137,8 +137,9 @@ std::string AwDevToolsServerDelegate::GetDiscoveryPageHTML() {
 }
 
 std::string GetViewDescription(WebContents* web_contents) {
-  android_webview::BrowserViewRenderer* bvr
-      = android_webview::InProcessViewRenderer::FromWebContents(web_contents);
+  const android_webview::BrowserViewRenderer* bvr =
+      android_webview::AwContents::FromWebContents(web_contents)
+          ->GetBrowserViewRenderer();
   if (!bvr) return "";
   base::DictionaryValue description;
   description.SetBoolean("attached", bvr->IsAttachedToWindow());
