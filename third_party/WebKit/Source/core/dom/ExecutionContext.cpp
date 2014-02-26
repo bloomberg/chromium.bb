@@ -96,6 +96,11 @@ void ExecutionContext::stopActiveDOMObjects()
     lifecycleNotifier().notifyStoppingActiveDOMObjects();
 }
 
+unsigned ExecutionContext::activeDOMObjectCount()
+{
+    return lifecycleNotifier().activeDOMObjects().size();
+}
+
 void ExecutionContext::suspendScheduledTasks()
 {
     suspendActiveDOMObjects();

@@ -95,6 +95,7 @@ public:
     void suspendActiveDOMObjects();
     void resumeActiveDOMObjects();
     void stopActiveDOMObjects();
+    unsigned activeDOMObjectCount();
 
     virtual void suspendScheduledTasks();
     virtual void resumeScheduledTasks();

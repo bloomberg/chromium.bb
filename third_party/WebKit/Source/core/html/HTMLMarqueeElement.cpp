@@ -57,6 +57,12 @@ int HTMLMarqueeElement::minimumDelay() const
     return 0;
 }
 
+void HTMLMarqueeElement::didMoveToNewDocument(Document& oldDocument)
+{
+    ActiveDOMObject::didMoveToNewExecutionContext(&document());
+    HTMLElement::didMoveToNewDocument(oldDocument);
+}
+
 bool HTMLMarqueeElement::isPresentationAttribute(const QualifiedName& name) const
 {
     if (name == widthAttr || name == heightAttr || name == bgcolorAttr || name == vspaceAttr || name == hspaceAttr || name == scrollamountAttr || name == scrolldelayAttr || name == loopAttr || name == behaviorAttr || name == directionAttr)

@@ -182,6 +182,7 @@ public:
     Vector<AtomicString> userPreferredLanguages() const;
     void setUserPreferredLanguages(const Vector<String>&);
 
+    unsigned activeDOMObjectCount(Document*, ExceptionState&);
     unsigned wheelEventHandlerCount(Document*, ExceptionState&);
     unsigned touchEventHandlerCount(Document*, ExceptionState&);
     PassRefPtrWillBeRawPtr<LayerRectList> touchEventTargetLayerRects(Document*, ExceptionState&);

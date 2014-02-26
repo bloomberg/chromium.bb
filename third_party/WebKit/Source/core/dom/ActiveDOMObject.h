@@ -57,6 +57,8 @@ public:
     virtual void resume();
     virtual void stop();
 
+    void didMoveToNewExecutionContext(ExecutionContext*);
+
 protected:
     virtual ~ActiveDOMObject();
 

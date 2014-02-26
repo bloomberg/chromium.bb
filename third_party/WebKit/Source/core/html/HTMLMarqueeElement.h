@@ -56,6 +56,8 @@ public:
 private:
     explicit HTMLMarqueeElement(Document&);
 
+    virtual void didMoveToNewDocument(Document& oldDocument) OVERRIDE;
+
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
 

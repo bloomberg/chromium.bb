@@ -1256,6 +1256,16 @@ void Internals::setUserPreferredLanguages(const Vector<String>& languages)
     WebCore::overrideUserPreferredLanguages(atomicLanguages);
 }
 
+unsigned Internals::activeDOMObjectCount(Document* document, ExceptionState& exceptionState)
+{
+    if (!document) {
+        exceptionState.throwDOMException(InvalidAccessError, "No context document is available.");
+        return 0;
+    }
+
+    return document->activeDOMObjectCount();
+}
+
 unsigned Internals::wheelEventHandlerCount(Document* document, ExceptionState& exceptionState)
 {
     if (!document) {

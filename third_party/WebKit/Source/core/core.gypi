@@ -3265,6 +3265,7 @@
             'css/HoverUpdateTest.cpp',
             'css/RuleSetTest.cpp',
             'css/analyzer/DescendantInvalidationSetTest.cpp',
+            'dom/ActiveDOMObjectTest.cpp',
             'dom/DOMImplementationTest.cpp',
             'dom/DocumentMarkerControllerTest.cpp',
             'dom/DocumentTest.cpp',

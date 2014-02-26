@@ -395,6 +395,7 @@ void HTMLMediaElement::didMoveToNewDocument(Document& oldDocument)
     // and there is no risk of dispatching a load event from within the destructor.
     oldDocument.decrementLoadEventDelayCount();
 
+    ActiveDOMObject::didMoveToNewExecutionContext(&document());
     HTMLElement::didMoveToNewDocument(oldDocument);
 }
 

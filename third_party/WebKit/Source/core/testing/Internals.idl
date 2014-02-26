@@ -140,6 +140,7 @@
     sequence<DOMString> userPreferredLanguages();
     void setUserPreferredLanguages(sequence<DOMString> languages);
 
+    [RaisesException] unsigned long activeDOMObjectCount(Document document);
     [RaisesException] unsigned long wheelEventHandlerCount(Document document);
     [RaisesException] unsigned long touchEventHandlerCount(Document document);
     [RaisesException] LayerRectList touchEventTargetLayerRects(Document document);
