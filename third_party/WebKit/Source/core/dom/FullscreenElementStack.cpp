@@ -138,6 +138,10 @@ bool FullscreenElementStack::fullScreenIsAllowedForElement(Element* element) con
 
 void FullscreenElementStack::requestFullScreenForElement(Element* element, unsigned short flags, FullScreenCheckType checkType)
 {
+    // Ignore this request if the document is not in a live frame.
+    if (!document()->isActive())
+        return;
+
     // The Mozilla Full Screen API <https://wiki.mozilla.org/Gecko:FullScreenAPI> has different requirements
     // for full screen mode, and do not have the concept of a full screen element stack.
     bool inLegacyMozillaMode = (flags & Element::LEGACY_MOZILLA_REQUEST);
