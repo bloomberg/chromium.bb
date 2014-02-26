@@ -266,60 +266,19 @@ GraphicsLayer* InspectorLayerTreeAgent::layerById(ErrorString* errorString, cons
     return result;
 }
 
-struct CompositingReasonToProtocolName {
-    uint64_t mask;
-    const char *protocolName;
-};
-
-
 void InspectorLayerTreeAgent::compositingReasons(ErrorString* errorString, const String& layerId, RefPtr<TypeBuilder::Array<String> >& reasonStrings)
 {
-    static CompositingReasonToProtocolName compositingReasonNames[] = {
-        { CompositingReason3DTransform, "transform3D" },
-        { CompositingReasonVideo, "video" },
-        { CompositingReasonCanvas, "canvas" },
-        { CompositingReasonPlugin, "plugin" },
-        { CompositingReasonIFrame, "iFrame" },
-        { CompositingReasonBackfaceVisibilityHidden, "backfaceVisibilityHidden" },
-        { CompositingReasonAnimation, "animation" },
-        { CompositingReasonFilters, "filters" },
-        { CompositingReasonPositionFixed, "positionFixed" },
-        { CompositingReasonPositionSticky, "positionSticky" },
-        { CompositingReasonOverflowScrollingTouch, "overflowScrollingTouch" },
-        { CompositingReasonAssumedOverlap, "assumedOverlap" },
-        { CompositingReasonOverlap, "overlap" },
-        { CompositingReasonNegativeZIndexChildren, "negativeZIndexChildren" },
-        { CompositingReasonTransformWithCompositedDescendants, "transformWithCompositedDescendants" },
-        { CompositingReasonOpacityWithCompositedDescendants, "opacityWithCompositedDescendants" },
-        { CompositingReasonMaskWithCompositedDescendants, "maskWithCompositedDescendants" },
-        { CompositingReasonReflectionWithCompositedDescendants, "reflectionWithCompositedDescendants" },
-        { CompositingReasonFilterWithCompositedDescendants, "filterWithCompositedDescendants" },
-        { CompositingReasonBlendingWithCompositedDescendants, "blendingWithCompositedDescendants" },
-        { CompositingReasonClipsCompositingDescendants, "clipsCompositingDescendants" },
-        { CompositingReasonPerspective, "perspective" },
-        { CompositingReasonPreserve3D, "preserve3D" },
-        { CompositingReasonRoot, "root" },
-        { CompositingReasonLayerForClip, "layerForClip" },
-        { CompositingReasonLayerForScrollbar, "layerForScrollbar" },
-        { CompositingReasonLayerForScrollingContainer, "layerForScrollingContainer" },
-        { CompositingReasonLayerForForeground, "layerForForeground" },
-        { CompositingReasonLayerForBackground, "layerForBackground" },
-        { CompositingReasonLayerForMask, "layerForMask" },
-        { CompositingReasonLayerForVideoOverlay, "layerForVideoOverlay" },
-        { CompositingReasonIsolateCompositedDescendants, "isolateCompositedDescendants" }
-    };
-
     const GraphicsLayer* graphicsLayer = layerById(errorString, layerId);
     if (!graphicsLayer)
         return;
     CompositingReasons reasonsBitmask = graphicsLayer->compositingReasons();
     reasonStrings = TypeBuilder::Array<String>::create();
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(compositingReasonNames); ++i) {
-        if (!(reasonsBitmask & compositingReasonNames[i].mask))
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(compositingReasonStringMap); ++i) {
+        if (!(reasonsBitmask & compositingReasonStringMap[i].reason))
             continue;
-        reasonStrings->addItem(compositingReasonNames[i].protocolName);
+        reasonStrings->addItem(compositingReasonStringMap[i].shortName);
 #ifndef _NDEBUG
-        reasonsBitmask &= ~compositingReasonNames[i].mask;
+        reasonsBitmask &= ~compositingReasonStringMap[i].reason;
 #endif
     }
     ASSERT(!reasonsBitmask);

@@ -81,10 +81,10 @@ CompositingReasons CompositingReasonFinder::directReasons(const RenderLayer* lay
         directReasons |= CompositingReasonBackfaceVisibilityHidden;
 
     if (requiresCompositingForAnimation(renderer))
-        directReasons |= CompositingReasonAnimation;
+        directReasons |= CompositingReasonActiveAnimation;
 
     if (requiresCompositingForTransition(renderer))
-        directReasons |= CompositingReasonAnimation;
+        directReasons |= CompositingReasonTransitionProperty;
 
     if (requiresCompositingForFilters(renderer))
         directReasons |= CompositingReasonFilters;

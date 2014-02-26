@@ -1018,7 +1018,7 @@ bool CompositedLayerMapping::updateClippingLayers(bool needsAncestorClip, bool n
 
     if (needsAncestorClip) {
         if (!m_ancestorClippingLayer) {
-            m_ancestorClippingLayer = createGraphicsLayer(CompositingReasonLayerForClip);
+            m_ancestorClippingLayer = createGraphicsLayer(CompositingReasonLayerForAncestorClip);
             m_ancestorClippingLayer->setMasksToBounds(true);
             layersChanged = true;
         }
@@ -1032,7 +1032,7 @@ bool CompositedLayerMapping::updateClippingLayers(bool needsAncestorClip, bool n
         // We don't need a child containment layer if we're the main frame render view
         // layer. It's redundant as the frame clip above us will handle this clipping.
         if (!m_childContainmentLayer && !m_isMainFrameRenderViewLayer) {
-            m_childContainmentLayer = createGraphicsLayer(CompositingReasonLayerForClip);
+            m_childContainmentLayer = createGraphicsLayer(CompositingReasonLayerForDescendantClip);
             m_childContainmentLayer->setMasksToBounds(true);
             layersChanged = true;
         }
@@ -1051,7 +1051,7 @@ bool CompositedLayerMapping::updateChildTransformLayer(bool needsChildTransformL
 
     if (needsChildTransformLayer) {
         if (!m_childTransformLayer) {
-            m_childTransformLayer = createGraphicsLayer(CompositingReasonPerspective);
+            m_childTransformLayer = createGraphicsLayer(CompositingReasonLayerForPerspective);
             m_childTransformLayer->setDrawsContent(false);
             m_childTransformLayer->setShouldFlattenTransform(false);
             layersChanged = true;
@@ -1071,19 +1071,19 @@ void CompositedLayerMapping::setBackgroundLayerPaintsFixedRootBackground(bool ba
 }
 
 // Only a member function so it can call createGraphicsLayer.
-bool CompositedLayerMapping::toggleScrollbarLayerIfNeeded(OwnPtr<GraphicsLayer>& layer, bool needsLayer)
+bool CompositedLayerMapping::toggleScrollbarLayerIfNeeded(OwnPtr<GraphicsLayer>& layer, bool needsLayer, CompositingReasons reason)
 {
     if (needsLayer == !!layer)
         return false;
-    layer = needsLayer ? createGraphicsLayer(CompositingReasonLayerForScrollbar) : nullptr;
+    layer = needsLayer ? createGraphicsLayer(reason) : nullptr;
     return true;
 }
 
 bool CompositedLayerMapping::updateOverflowControlsLayers(bool needsHorizontalScrollbarLayer, bool needsVerticalScrollbarLayer, bool needsScrollCornerLayer)
 {
-    bool horizontalScrollbarLayerChanged = toggleScrollbarLayerIfNeeded(m_layerForHorizontalScrollbar, needsHorizontalScrollbarLayer);
-    bool verticalScrollbarLayerChanged = toggleScrollbarLayerIfNeeded(m_layerForVerticalScrollbar, needsVerticalScrollbarLayer);
-    bool scrollCornerLayerChanged = toggleScrollbarLayerIfNeeded(m_layerForScrollCorner, needsScrollCornerLayer);
+    bool horizontalScrollbarLayerChanged = toggleScrollbarLayerIfNeeded(m_layerForHorizontalScrollbar, needsHorizontalScrollbarLayer, CompositingReasonLayerForHorizontalScrollbar);
+    bool verticalScrollbarLayerChanged = toggleScrollbarLayerIfNeeded(m_layerForVerticalScrollbar, needsVerticalScrollbarLayer, CompositingReasonLayerForVerticalScrollbar);
+    bool scrollCornerLayerChanged = toggleScrollbarLayerIfNeeded(m_layerForScrollCorner, needsScrollCornerLayer, CompositingReasonLayerForScrollCorner);
 
     if (ScrollingCoordinator* scrollingCoordinator = scrollingCoordinatorFromLayer(m_owningLayer)) {
         if (horizontalScrollbarLayerChanged)
@@ -1323,7 +1323,7 @@ bool CompositedLayerMapping::updateClippingMaskLayers(bool needsChildClippingMas
     bool layerChanged = false;
     if (needsChildClippingMaskLayer) {
         if (!m_childClippingMaskLayer) {
-            m_childClippingMaskLayer = createGraphicsLayer(CompositingReasonLayerForMask);
+            m_childClippingMaskLayer = createGraphicsLayer(CompositingReasonLayerForClippingMask);
             m_childClippingMaskLayer->setDrawsContent(true);
             m_childClippingMaskLayer->setPaintingPhase(GraphicsLayerPaintChildClippingMask);
             layerChanged = true;
@@ -1343,12 +1343,12 @@ bool CompositedLayerMapping::updateScrollingLayers(bool needsScrollingLayers)
     if (needsScrollingLayers) {
         if (!m_scrollingLayer) {
             // Outer layer which corresponds with the scroll view.
-            m_scrollingLayer = createGraphicsLayer(CompositingReasonLayerForClip);
+            m_scrollingLayer = createGraphicsLayer(CompositingReasonLayerForScrollingContainer);
             m_scrollingLayer->setDrawsContent(false);
             m_scrollingLayer->setMasksToBounds(true);
 
             // Inner layer which renders the content that scrolls.
-            m_scrollingContentsLayer = createGraphicsLayer(CompositingReasonLayerForScrollingContainer);
+            m_scrollingContentsLayer = createGraphicsLayer(CompositingReasonLayerForScrollingContents);
             m_scrollingContentsLayer->setDrawsContent(true);
             GraphicsLayerPaintingPhase paintPhase = GraphicsLayerPaintOverflowContents | GraphicsLayerPaintCompositedScroll;
             if (!m_foregroundLayer)
@@ -1417,11 +1417,11 @@ bool CompositedLayerMapping::updateSquashingLayers(bool needsSquashingLayers)
         if (!m_squashingLayer) {
             ASSERT(!m_squashingContainmentLayer);
 
-            m_squashingLayer = createGraphicsLayer(CompositingReasonOverlap);
+            m_squashingLayer = createGraphicsLayer(CompositingReasonLayerForSquashingContents);
             m_squashingLayer->setDrawsContent(true);
 
             // FIXME: containment layer needs a new CompositingReason, CompositingReasonOverlap is not appropriate.
-            m_squashingContainmentLayer = createGraphicsLayer(CompositingReasonOverlap);
+            m_squashingContainmentLayer = createGraphicsLayer(CompositingReasonLayerForSquashingContainer);
             layersChanged = true;
         }
 

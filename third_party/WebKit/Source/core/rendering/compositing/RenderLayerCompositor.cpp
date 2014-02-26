@@ -933,7 +933,7 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
     // into. These children (the controls) always need to be promoted into their
     // own layers to draw on top of the accelerated video.
     if (currentRecursionData.m_compositingAncestor && currentRecursionData.m_compositingAncestor->renderer()->isVideo())
-        directReasons |= CompositingReasonLayerForVideoOverlay;
+        directReasons |= CompositingReasonVideoOverlay;
 
     if (canBeComposited(layer))
         reasonsToComposite |= directReasons;
@@ -1827,10 +1827,10 @@ CompositingReasons RenderLayerCompositor::subtreeReasonsForCompositing(RenderObj
     // will be affected by the preserve-3d or perspective.
     if (has3DTransformedDescendants) {
         if (renderer->style()->transformStyle3D() == TransformStyle3DPreserve3D)
-            subtreeReasons |= CompositingReasonPreserve3D;
+            subtreeReasons |= CompositingReasonPreserve3DWith3DDescendants;
 
         if (renderer->style()->hasPerspective())
-            subtreeReasons |= CompositingReasonPerspective;
+            subtreeReasons |= CompositingReasonPerspectiveWith3DDescendants;
     }
 
     return subtreeReasons;

@@ -213,7 +213,7 @@ private:
     void destroyGraphicsLayers();
 
     PassOwnPtr<GraphicsLayer> createGraphicsLayer(CompositingReasons);
-    bool toggleScrollbarLayerIfNeeded(OwnPtr<GraphicsLayer>&, bool needsLayer);
+    bool toggleScrollbarLayerIfNeeded(OwnPtr<GraphicsLayer>&, bool needsLayer, CompositingReasons);
 
     RenderLayerModelObject* renderer() const { return m_owningLayer->renderer(); }
     RenderLayerCompositor* compositor() const { return m_owningLayer->compositor(); }

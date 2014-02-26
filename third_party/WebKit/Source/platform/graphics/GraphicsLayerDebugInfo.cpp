@@ -70,115 +70,12 @@ void GraphicsLayerDebugInfo::appendLayoutRects(JSONObject* jsonObject) const
 void GraphicsLayerDebugInfo::appendCompositingReasons(JSONObject* jsonObject) const
 {
     RefPtr<JSONArray> jsonArray = JSONArray::create();
-    if (m_compositingReasons == CompositingReasonNone) {
-        jsonArray->pushString("No reasons given");
-        jsonObject->setArray("compositing_reasons", jsonArray);
-        return;
+
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(compositingReasonStringMap); ++i) {
+        if (!(m_compositingReasons & compositingReasonStringMap[i].reason))
+            continue;
+        jsonArray->pushString(compositingReasonStringMap[i].description);
     }
-
-    if (m_compositingReasons & CompositingReason3DTransform)
-        jsonArray->pushString("Has a 3d Transform");
-
-    if (m_compositingReasons & CompositingReasonVideo)
-        jsonArray->pushString("Is accelerated video");
-
-    if (m_compositingReasons & CompositingReasonCanvas)
-        jsonArray->pushString("Is accelerated canvas");
-
-    if (m_compositingReasons & CompositingReasonPlugin)
-        jsonArray->pushString("Is accelerated plugin");
-
-    if (m_compositingReasons & CompositingReasonIFrame)
-        jsonArray->pushString("Is accelerated iframe");
-
-    if (m_compositingReasons & CompositingReasonBackfaceVisibilityHidden)
-        jsonArray->pushString("Has backface-visibility: hidden");
-
-    if (m_compositingReasons & CompositingReasonAnimation)
-        jsonArray->pushString("Has accelerated animation or transition");
-
-    if (m_compositingReasons & CompositingReasonFilters)
-        jsonArray->pushString("Has accelerated filters");
-
-    if (m_compositingReasons & CompositingReasonPositionFixed)
-        jsonArray->pushString("Is fixed position");
-
-    if (m_compositingReasons & CompositingReasonPositionSticky)
-        jsonArray->pushString("Is sticky position");
-
-    if (m_compositingReasons & CompositingReasonOverflowScrollingTouch)
-        jsonArray->pushString("Is a scrollable overflow element");
-
-    if (m_compositingReasons & CompositingReasonAssumedOverlap)
-        jsonArray->pushString("Might overlap a composited animation");
-
-    if (m_compositingReasons & CompositingReasonOverlap)
-        jsonArray->pushString("Overlaps other composited content");
-
-    if (m_compositingReasons & CompositingReasonNegativeZIndexChildren)
-        jsonArray->pushString("Might overlap negative z-index composited content");
-
-    if (m_compositingReasons & CompositingReasonTransformWithCompositedDescendants)
-        jsonArray->pushString("Has transform needed by a composited descendant");
-
-    if (m_compositingReasons & CompositingReasonOpacityWithCompositedDescendants)
-        jsonArray->pushString("Has opacity needed by a composited descendant");
-
-    if (m_compositingReasons & CompositingReasonMaskWithCompositedDescendants)
-        jsonArray->pushString("Has a mask needed by a composited descendant");
-
-    if (m_compositingReasons & CompositingReasonReflectionWithCompositedDescendants)
-        jsonArray->pushString("Has a reflection with a composited descendant");
-
-    if (m_compositingReasons & CompositingReasonFilterWithCompositedDescendants)
-        jsonArray->pushString("Has filter effect with a composited descendant");
-
-    if (m_compositingReasons & CompositingReasonBlendingWithCompositedDescendants)
-        jsonArray->pushString("Has a blend mode with a composited descendant");
-
-    if (m_compositingReasons & CompositingReasonClipsCompositingDescendants)
-        jsonArray->pushString("Clips a composited descendant");
-
-    if (m_compositingReasons & CompositingReasonPerspective)
-        jsonArray->pushString("Has a perspective transform needed by a composited 3d descendant");
-
-    if (m_compositingReasons & CompositingReasonPreserve3D)
-        jsonArray->pushString("Has preserves-3d style with composited 3d descendant");
-
-    if (m_compositingReasons & CompositingReasonReflectionOfCompositedParent)
-        jsonArray->pushString("Is the reflection of a composited layer");
-
-    if (m_compositingReasons & CompositingReasonRoot)
-        jsonArray->pushString("Is the root");
-
-    if (m_compositingReasons & CompositingReasonLayerForClip)
-        jsonArray->pushString("Convenience layer, to clip subtree");
-
-    if (m_compositingReasons & CompositingReasonLayerForScrollbar)
-        jsonArray->pushString("Convenience layer for rendering scrollbar");
-
-    if (m_compositingReasons & CompositingReasonLayerForScrollingContainer)
-        jsonArray->pushString("Convenience layer, the scrolling container");
-
-    if (m_compositingReasons & CompositingReasonLayerForForeground)
-        jsonArray->pushString("Convenience layer, foreground when main layer has negative z-index composited content");
-
-    if (m_compositingReasons & CompositingReasonLayerForBackground)
-        jsonArray->pushString("Convenience layer, background when main layer has a composited background");
-
-    if (m_compositingReasons & CompositingReasonLayerForMask)
-        jsonArray->pushString("Is a mask layer");
-
-    if (m_compositingReasons & CompositingReasonOverflowScrollingParent)
-        jsonArray->pushString("Scroll parent is not an ancestor");
-
-    if (m_compositingReasons & CompositingReasonOutOfFlowClipping)
-        jsonArray->pushString("Has clipping ancestor");
-
-    if (m_compositingReasons & CompositingReasonIsolateCompositedDescendants)
-        jsonArray->pushString("Should isolate composited descendants");
-
-    jsonObject->setArray("compositing_reasons", jsonArray);
 }
 
 void GraphicsLayerDebugInfo::appendDebugName(JSONObject* jsonObject) const
