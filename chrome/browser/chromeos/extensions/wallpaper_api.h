@@ -43,8 +43,7 @@ class WallpaperSetWallpaperFunction : public WallpaperFunctionBase {
   void ThumbnailGenerated(base::RefCountedBytes* data);
 
   // Called by OnURLFetchComplete().
-  void OnWallpaperFetched(net::URLRequestStatus::Status status,
-                          const std::string& response);
+  void OnWallpaperFetched(bool success, const std::string& response);
 
   scoped_ptr<extensions::api::wallpaper::SetWallpaper::Params> params_;
 

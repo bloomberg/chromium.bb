@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
@@ -23,8 +24,7 @@
 using base::BinaryValue;
 using content::BrowserThread;
 
-typedef base::Callback<void(net::URLRequestStatus::Status, const std::string&)>
-    FetchCallback;
+typedef base::Callback<void(bool success, const std::string&)> FetchCallback;
 
 namespace set_wallpaper = extensions::api::wallpaper::SetWallpaper;
 
@@ -51,15 +51,21 @@ class WallpaperFetcher : public net::URLFetcherDelegate {
  private:
   // URLFetcherDelegate overrides:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE {
-    net::URLRequestStatus::Status status = source->GetStatus().status();
+    DCHECK(url_fetcher_.get() == source);
+
+    bool success = source->GetStatus().is_success() &&
+                   source->GetResponseCode() == net::HTTP_OK;
     std::string response;
-    if (status == net::URLRequestStatus::SUCCESS) {
-      url_fetcher_->GetResponseAsString(&response);
+    if (success) {
+      source->GetResponseAsString(&response);
     } else {
-      response = source->GetStatus().error();
+      response = base::StringPrintf(
+          "Downloading wallpaper %s failed. The response code is %d.",
+          source->GetOriginalURL().ExtractFileName().c_str(),
+          source->GetResponseCode());
     }
     url_fetcher_.reset();
-    callback_.Run(status, response);
+    callback_.Run(success, response);
   }
 
   void CancelPreviousFetch() {
@@ -67,7 +73,7 @@ class WallpaperFetcher : public net::URLFetcherDelegate {
       std::string error = base::StringPrintf(
           "Downloading wallpaper %s is canceled.",
           url_fetcher_->GetOriginalURL().ExtractFileName().c_str());
-      callback_.Run(net::URLRequestStatus::CANCELED, error);
+      callback_.Run(false, error);
       url_fetcher_.reset();
     }
   }
@@ -101,10 +107,9 @@ bool WallpaperSetWallpaperFunction::RunImpl() {
   } else {
     GURL wallpaper_url(*params_->details.url);
     if (wallpaper_url.is_valid()) {
-    g_wallpaper_fetcher.Get().FetchWallpaper(
-        wallpaper_url,
-        base::Bind(&WallpaperSetWallpaperFunction::OnWallpaperFetched,
-                   this));
+      g_wallpaper_fetcher.Get().FetchWallpaper(
+          wallpaper_url,
+          base::Bind(&WallpaperSetWallpaperFunction::OnWallpaperFetched, this));
     } else {
       SetError("URL is invalid.");
       SendResponse(false);
@@ -190,8 +195,9 @@ void WallpaperSetWallpaperFunction::ThumbnailGenerated(
 }
 
 void WallpaperSetWallpaperFunction::OnWallpaperFetched(
-    net::URLRequestStatus::Status status, const std::string& response) {
-  if (status == net::URLRequestStatus::SUCCESS) {
+    bool success,
+    const std::string& response) {
+  if (success) {
     params_->details.wallpaper_data.reset(new std::string(response));
     StartDecode(*params_->details.wallpaper_data);
   } else {
