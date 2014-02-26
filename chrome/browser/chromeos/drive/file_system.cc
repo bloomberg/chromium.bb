@@ -391,12 +391,10 @@ void FileSystem::Copy(const base::FilePath& src_file_path,
 
 void FileSystem::Move(const base::FilePath& src_file_path,
                       const base::FilePath& dest_file_path,
-                      bool preserve_last_modified,
                       const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-  move_operation_->Move(
-      src_file_path, dest_file_path, preserve_last_modified, callback);
+  move_operation_->Move(src_file_path, dest_file_path, callback);
 }
 
 void FileSystem::Remove(const base::FilePath& file_path,

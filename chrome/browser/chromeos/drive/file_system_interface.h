@@ -233,9 +233,6 @@ class FileSystemInterface {
   // |dest_file_path| is expected to be of the same type of |src_file_path|
   // (i.e. if |src_file_path| is a file, |dest_file_path| will be created as
   // a file).
-  // If |preserve_last_modified| is set to true, the last modified time will be
-  // preserved. This feature is only supported on Drive API v2 protocol because
-  // GData WAPI doesn't support updating modification time.
   //
   // This method also has the following assumptions/limitations that may be
   // relaxed or addressed later:
@@ -249,7 +246,6 @@ class FileSystemInterface {
   // |callback| must not be null.
   virtual void Move(const base::FilePath& src_file_path,
                     const base::FilePath& dest_file_path,
-                    bool preserve_last_modified,
                     const FileOperationCallback& callback) = 0;
 
   // Removes |file_path| from the file system.  If |is_recursive| is set and

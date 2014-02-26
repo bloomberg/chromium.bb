@@ -238,7 +238,6 @@ class SyncClientTest : public testing::Test {
     move_operation.Move(
         metadata_->GetFilePath(GetLocalId("moved")),
         util::GetDriveMyDriveRootPath().AppendASCII("moved_new_title"),
-        false,  // preserve_last_modified
         google_apis::test_util::CreateCopyResultCallback(&error));
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(FILE_ERROR_OK, error);

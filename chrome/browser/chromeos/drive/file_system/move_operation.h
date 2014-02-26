@@ -46,13 +46,10 @@ class MoveOperation {
 
   // Performs the move operation on the file at drive path |src_file_path|
   // with a target of |dest_file_path|.
-  // If |preserve_last_modified| is set to true, this tries to preserve
-  // last modified time stamp.
   // Invokes |callback| when finished with the result of the operation.
   // |callback| must not be null.
   void Move(const base::FilePath& src_file_path,
             const base::FilePath& dest_file_path,
-            bool preserve_last_modified,
             const FileOperationCallback& callback);
 
  private:

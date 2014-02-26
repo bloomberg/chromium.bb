@@ -105,7 +105,6 @@ void Copy(const base::FilePath& src_file_path,
 // Called from FileSystemProxy::Move().
 void Move(const base::FilePath& src_file_path,
           const base::FilePath& dest_file_path,
-          bool preserve_last_modified,
           const StatusCallback& callback,
           FileSystemInterface* file_system);
 

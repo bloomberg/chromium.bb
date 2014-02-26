@@ -358,7 +358,6 @@ TEST_F(FileSystemTest, Move) {
   FileError error = FILE_ERROR_FAILED;
   file_system_->Move(src_file_path,
                      dest_file_path,
-                     false,  // preserve_last_modified,
                      google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);

@@ -30,7 +30,6 @@ class DummyFileSystem : public FileSystemInterface {
                     const FileOperationCallback& callback) OVERRIDE {}
   virtual void Move(const base::FilePath& src_file_path,
                     const base::FilePath& dest_file_path,
-                    bool preserve_last_modified,
                     const FileOperationCallback& callback) OVERRIDE {}
   virtual void Remove(const base::FilePath& file_path,
                       bool is_recursive,

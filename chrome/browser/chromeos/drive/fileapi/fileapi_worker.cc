@@ -244,11 +244,10 @@ void Copy(const base::FilePath& src_file_path,
 
 void Move(const base::FilePath& src_file_path,
           const base::FilePath& dest_file_path,
-          bool preserve_last_modified,
           const StatusCallback& callback,
           FileSystemInterface* file_system) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  file_system->Move(src_file_path, dest_file_path, preserve_last_modified,
+  file_system->Move(src_file_path, dest_file_path,
                     base::Bind(&RunStatusCallbackByFileError, callback));
 }
 

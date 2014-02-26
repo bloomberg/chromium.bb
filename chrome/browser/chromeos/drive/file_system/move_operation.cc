@@ -20,7 +20,6 @@ namespace {
 FileError UpdateLocalState(internal::ResourceMetadata* metadata,
                            const base::FilePath& src_path,
                            const base::FilePath& dest_path,
-                           bool preserve_last_modified,
                            std::set<base::FilePath>* changed_directories,
                            std::string* local_id) {
   ResourceEntry entry;
@@ -49,12 +48,6 @@ FileError UpdateLocalState(internal::ResourceMetadata* metadata,
       has_hosted_document_extension ?
       dest_path.BaseName().RemoveExtension().AsUTF8Unsafe() :
       dest_path.BaseName().AsUTF8Unsafe();
-
-  // Update last_modified.
-  if (!preserve_last_modified) {
-    entry.mutable_file_info()->set_last_modified(
-        base::Time::Now().ToInternalValue());
-  }
 
   entry.set_title(new_title);
   entry.set_parent_local_id(parent_entry.local_id());
@@ -86,7 +79,6 @@ MoveOperation::~MoveOperation() {
 
 void MoveOperation::Move(const base::FilePath& src_file_path,
                          const base::FilePath& dest_file_path,
-                         bool preserve_last_modified,
                          const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -100,7 +92,6 @@ void MoveOperation::Move(const base::FilePath& src_file_path,
                  metadata_,
                  src_file_path,
                  dest_file_path,
-                 preserve_last_modified,
                  changed_directories,
                  local_id),
       base::Bind(&MoveOperation::MoveAfterUpdateLocalState,

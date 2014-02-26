@@ -327,11 +327,9 @@ void AsyncFileUtil::MoveFileLocal(
   // change it in order to support cross-profile file sharing etc.
   PostFileSystemCallback(
       base::Bind(&fileapi_internal::GetFileSystemFromUrl, dest_url),
-      base::Bind(
-          &fileapi_internal::Move,
-          src_path, dest_path,
-          option == fileapi::FileSystemOperation::OPTION_PRESERVE_LAST_MODIFIED,
-          google_apis::CreateRelayCallback(callback)),
+      base::Bind(&fileapi_internal::Move,
+                 src_path, dest_path,
+                 google_apis::CreateRelayCallback(callback)),
       base::Bind(callback, base::File::FILE_ERROR_FAILED));
 }
 
