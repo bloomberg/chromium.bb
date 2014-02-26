@@ -28,7 +28,6 @@
 
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderMultiColumnBlock.h"
 #include "core/rendering/RenderMultiColumnFlowThread.h"
 
 using namespace std;
@@ -56,7 +55,7 @@ RenderMultiColumnSet* RenderMultiColumnSet::createAnonymous(RenderFlowThread* fl
 
 LayoutUnit RenderMultiColumnSet::heightAdjustedForSetOffset(LayoutUnit height) const
 {
-    RenderMultiColumnBlock* multicolBlock = toRenderMultiColumnBlock(parent());
+    RenderBlockFlow* multicolBlock = multiColumnBlockFlow();
     LayoutUnit contentLogicalTop = logicalTop() - multicolBlock->borderBefore() - multicolBlock->paddingBefore();
 
     height -= contentLogicalTop;
@@ -162,7 +161,7 @@ void RenderMultiColumnSet::clearForcedBreaks()
 
 void RenderMultiColumnSet::addForcedBreak(LayoutUnit offsetFromFirstPage)
 {
-    if (!toRenderMultiColumnBlock(parent())->requiresBalancing())
+    if (!multiColumnFlowThread()->requiresBalancing())
         return;
     if (!m_contentRuns.isEmpty() && offsetFromFirstPage <= m_contentRuns.last().breakOffset())
         return;
@@ -174,7 +173,7 @@ void RenderMultiColumnSet::addForcedBreak(LayoutUnit offsetFromFirstPage)
 
 bool RenderMultiColumnSet::recalculateBalancedHeight(bool initial)
 {
-    ASSERT(toRenderMultiColumnBlock(parent())->requiresBalancing());
+    ASSERT(multiColumnFlowThread()->requiresBalancing());
 
     LayoutUnit oldColumnHeight = m_computedColumnHeight;
     if (initial)
@@ -210,8 +209,8 @@ void RenderMultiColumnSet::recordSpaceShortage(LayoutUnit spaceShortage)
 
 void RenderMultiColumnSet::updateLogicalWidth()
 {
-    RenderMultiColumnBlock* parentBlock = toRenderMultiColumnBlock(parent());
-    setComputedColumnWidthAndCount(parentBlock->columnWidth(), parentBlock->columnCount()); // FIXME: This will eventually vary if we are contained inside regions.
+    RenderMultiColumnFlowThread* flowThread = multiColumnFlowThread();
+    setComputedColumnWidthAndCount(flowThread->columnWidth(), flowThread->columnCount());
 
     // FIXME: When we add regions support, we'll start it off at the width of the multi-column
     // block in that particular region.
@@ -232,7 +231,7 @@ void RenderMultiColumnSet::updateLogicalWidth()
 
 void RenderMultiColumnSet::prepareForLayout()
 {
-    RenderMultiColumnBlock* multicolBlock = toRenderMultiColumnBlock(parent());
+    RenderBlockFlow* multicolBlock = multiColumnBlockFlow();
     RenderStyle* multicolStyle = multicolBlock->style();
 
     // Set box logical top.
@@ -242,7 +241,7 @@ void RenderMultiColumnSet::prepareForLayout()
     // Set box width.
     updateLogicalWidth();
 
-    if (multicolBlock->requiresBalancing()) {
+    if (multicolBlock->multiColumnFlowThread()->requiresBalancing()) {
         // Set maximum column height. We will not stretch beyond this.
         m_maxColumnHeight = RenderFlowThread::maxLogicalHeight();
         if (!multicolStyle->logicalHeight().isAuto()) {
@@ -258,7 +257,7 @@ void RenderMultiColumnSet::prepareForLayout()
         m_maxColumnHeight = heightAdjustedForSetOffset(m_maxColumnHeight);
         m_computedColumnHeight = 0; // Restart balancing.
     } else {
-        setAndConstrainColumnHeight(heightAdjustedForSetOffset(multicolBlock->columnHeightAvailable()));
+        setAndConstrainColumnHeight(heightAdjustedForSetOffset(multicolBlock->multiColumnFlowThread()->columnHeightAvailable()));
     }
 
     clearForcedBreaks();
@@ -275,9 +274,7 @@ void RenderMultiColumnSet::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTo
 
 LayoutUnit RenderMultiColumnSet::columnGap() const
 {
-    // FIXME: Eventually we will cache the column gap when the widths of columns start varying, but for now we just
-    // go to the parent block to get the gap.
-    RenderMultiColumnBlock* parentBlock = toRenderMultiColumnBlock(parent());
+    RenderBlockFlow* parentBlock = multiColumnBlockFlow();
     if (parentBlock->style()->hasNormalColumnGap())
         return parentBlock->style()->fontDescription().computedPixelSize(); // "1em" is recommended as the normal gap setting. Matches <p> margins.
     return parentBlock->style()->columnGap();
@@ -292,6 +289,9 @@ unsigned RenderMultiColumnSet::columnCount() const
 
     // Our portion rect determines our column count. We have as many columns as needed to fit all the content.
     LayoutUnit logicalHeightInColumns = flowThread()->isHorizontalWritingMode() ? flowThreadPortionRect().height() : flowThreadPortionRect().width();
+    if (!logicalHeightInColumns)
+        return 1;
+
     unsigned count = ceil(static_cast<float>(logicalHeightInColumns) / computedColumnHeight());
     ASSERT(count >= 1);
     return count;
@@ -404,7 +404,7 @@ void RenderMultiColumnSet::paintColumnRules(PaintInfo& paintInfo, const LayoutPo
     if (paintInfo.context->paintingDisabled())
         return;
 
-    RenderStyle* blockStyle = toRenderMultiColumnBlock(parent())->style();
+    RenderStyle* blockStyle = multiColumnBlockFlow()->style();
     const Color& ruleColor = resolveColor(blockStyle, CSSPropertyWebkitColumnRuleColor);
     bool ruleTransparent = blockStyle->columnRuleIsTransparent();
     EBorderStyle ruleStyle = blockStyle->columnRuleStyle();

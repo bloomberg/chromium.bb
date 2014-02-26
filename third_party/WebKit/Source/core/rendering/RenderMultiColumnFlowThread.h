@@ -35,7 +35,18 @@ class RenderMultiColumnFlowThread FINAL : public RenderFlowThread {
 public:
     virtual ~RenderMultiColumnFlowThread();
 
-    static RenderMultiColumnFlowThread* createAnonymous(Document*);
+    static RenderMultiColumnFlowThread* createAnonymous(Document&, RenderStyle* parentStyle);
+
+    RenderBlockFlow* multiColumnBlockFlow() const { return toRenderBlockFlow(parent()); }
+    unsigned columnCount() const { return m_columnCount; }
+    LayoutUnit columnWidth() const { return m_columnWidth; }
+    LayoutUnit columnHeightAvailable() const { return m_columnHeightAvailable; }
+    void setColumnHeightAvailable(LayoutUnit available) { m_columnHeightAvailable = available; }
+    bool requiresBalancing() const { return !columnHeightAvailable() || multiColumnBlockFlow()->style()->columnFill() == ColumnFillBalance; }
+
+    void layoutColumns(bool relayoutChildren, SubtreeLayoutScope&);
+    bool computeColumnCountAndWidth();
+    bool recalculateColumnHeights();
 
 private:
     RenderMultiColumnFlowThread();
@@ -47,6 +58,12 @@ private:
     virtual void setPageBreak(LayoutUnit offset, LayoutUnit spaceShortage) OVERRIDE;
     virtual void updateMinimumPageHeight(LayoutUnit offset, LayoutUnit minHeight) OVERRIDE;
     virtual bool addForcedRegionBreak(LayoutUnit, RenderObject* breakChild, bool isBefore, LayoutUnit* offsetBreakAdjustment = 0) OVERRIDE;
+
+    unsigned m_columnCount; // The used value of column-count
+    LayoutUnit m_columnWidth; // The used value of column-width
+    LayoutUnit m_columnHeightAvailable; // Total height available to columns, or 0 if auto.
+    bool m_inBalancingPass; // Set when relayouting for column balancing.
+    bool m_needsRebalancing;
 };
 
 } // namespace WebCore

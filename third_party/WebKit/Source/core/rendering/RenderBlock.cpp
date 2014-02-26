@@ -3729,9 +3729,6 @@ void RenderBlock::computePreferredLogicalWidths()
 
 void RenderBlock::adjustIntrinsicLogicalWidthsForColumns(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
-    // FIXME: make this method virtual and move the code to RenderMultiColumnBlock once the old
-    // multicol code is gone.
-
     if (!style()->hasAutoColumnCount() || !style()->hasAutoColumnWidth()) {
         // The min/max intrinsic widths calculated really tell how much space elements need when
         // laid out inside the columns. In order to eventually end up with the desired column width,

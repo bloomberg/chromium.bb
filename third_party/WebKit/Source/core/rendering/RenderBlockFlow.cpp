@@ -39,7 +39,7 @@
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderMultiColumnBlock.h"
+#include "core/rendering/RenderMultiColumnFlowThread.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/line/LineWidth.h"
@@ -176,10 +176,37 @@ RenderBlockFlow* RenderBlockFlow::createAnonymousBlockFlow() const
     return toRenderBlockFlow(createAnonymousWithParentRendererAndDisplay(this, BLOCK));
 }
 
+RenderObject* RenderBlockFlow::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
+{
+    RenderMultiColumnFlowThread* flowThread = multiColumnFlowThread();
+    if (!flowThread)
+        return 0;
+    setLogicalTopForChild(flowThread, borderBefore() + paddingBefore());
+    flowThread->layoutColumns(relayoutChildren, layoutScope);
+    determineLogicalLeftPositionForChild(flowThread);
+    return flowThread;
+}
+
+bool RenderBlockFlow::updateLogicalWidthAndColumnWidth()
+{
+    bool relayoutChildren = RenderBlock::updateLogicalWidthAndColumnWidth();
+    if (RenderMultiColumnFlowThread* flowThread = multiColumnFlowThread()) {
+        if (flowThread->computeColumnCountAndWidth())
+            return true;
+    }
+    return relayoutChildren;
+}
+
 void RenderBlockFlow::checkForPaginationLogicalHeightChange(LayoutUnit& pageLogicalHeight, bool& pageLogicalHeightChanged, bool& hasSpecifiedPageLogicalHeight)
 {
-    ColumnInfo* colInfo = columnInfo();
-    if (hasColumns()) {
+    if (RenderMultiColumnFlowThread* flowThread = multiColumnFlowThread()) {
+        // We don't actually update any of the variables. We just subclassed to adjust our column height.
+        updateLogicalHeight();
+        flowThread->setColumnHeightAvailable(std::max<LayoutUnit>(contentLogicalHeight(), 0));
+        setLogicalHeight(0);
+    } else if (hasColumns()) {
+        ColumnInfo* colInfo = columnInfo();
+
         if (!pageLogicalHeight) {
             LayoutUnit oldLogicalHeight = logicalHeight();
             setLogicalHeight(0);
@@ -342,8 +369,8 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     if (lowestFloatLogicalBottom() > (logicalHeight() - afterEdge) && createsBlockFormattingContext())
         setLogicalHeight(lowestFloatLogicalBottom() + afterEdge);
 
-    if (isRenderMultiColumnBlock()) {
-        if (toRenderMultiColumnBlock(this)->shouldRelayoutMultiColumnBlock()) {
+    if (RenderMultiColumnFlowThread* flowThread = multiColumnFlowThread()) {
+        if (flowThread->recalculateColumnHeights()) {
             setChildNeedsLayout(MarkOnlyThis);
             statePusher.pop();
             return false;
@@ -1809,6 +1836,8 @@ void RenderBlockFlow::styleDidChange(StyleDifference diff, const RenderStyle* ol
         parentBlockFlow->markAllDescendantsWithFloatsForLayout();
         parentBlockFlow->markSiblingsWithFloatsForLayout();
     }
+
+    createMultiColumnFlowThreadIfNeeded();
 }
 
 void RenderBlockFlow::updateStaticInlinePositionForChild(RenderBox* child, LayoutUnit logicalTop)
@@ -1822,6 +1851,13 @@ void RenderBlockFlow::updateStaticInlinePositionForChild(RenderBox* child, Layou
 void RenderBlockFlow::setStaticInlinePositionForChild(RenderBox* child, LayoutUnit blockOffset, LayoutUnit inlinePosition)
 {
     child->layer()->setStaticInlinePosition(inlinePosition);
+}
+
+void RenderBlockFlow::addChild(RenderObject* newChild, RenderObject* beforeChild)
+{
+    if (RenderMultiColumnFlowThread* flowThread = multiColumnFlowThread())
+        return flowThread->addChild(newChild, beforeChild);
+    RenderBlock::addChild(newChild, beforeChild);
 }
 
 void RenderBlockFlow::moveAllChildrenIncludingFloatsTo(RenderBlock* toBlock, bool fullRemoveInsert)
@@ -2730,6 +2766,22 @@ TextRun RenderBlockFlow::constructTextRun(RenderObject* context, const Font& fon
 RootInlineBox* RenderBlockFlow::createRootInlineBox()
 {
     return new RootInlineBox(this);
+}
+
+void RenderBlockFlow::createMultiColumnFlowThreadIfNeeded()
+{
+    if ((style()->hasAutoColumnCount() && style()->hasAutoColumnWidth()) || !document().regionBasedColumnsEnabled())
+        return;
+
+    if (multiColumnFlowThread())
+        return;
+
+    setChildrenInline(false);
+    RenderMultiColumnFlowThread* flowThread = RenderMultiColumnFlowThread::createAnonymous(document(), style());
+    RenderBlock::addChild(flowThread);
+    RenderBlockFlowRareData& rareData = ensureRareData();
+    ASSERT(!rareData.m_multiColumnFlowThread);
+    rareData.m_multiColumnFlowThread = flowThread;
 }
 
 RenderBlockFlow::RenderBlockFlowRareData& RenderBlockFlow::ensureRareData()

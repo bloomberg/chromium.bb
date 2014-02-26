@@ -26,12 +26,16 @@
 #include "config.h"
 #include "core/rendering/RenderMultiColumnFlowThread.h"
 
-#include "core/rendering/RenderMultiColumnBlock.h"
 #include "core/rendering/RenderMultiColumnSet.h"
 
 namespace WebCore {
 
 RenderMultiColumnFlowThread::RenderMultiColumnFlowThread()
+    : m_columnCount(1)
+    , m_columnWidth(0)
+    , m_columnHeightAvailable(0)
+    , m_inBalancingPass(false)
+    , m_needsRebalancing(false)
 {
     setFlowThreadState(InsideInFlowThread);
 }
@@ -40,11 +44,110 @@ RenderMultiColumnFlowThread::~RenderMultiColumnFlowThread()
 {
 }
 
-RenderMultiColumnFlowThread* RenderMultiColumnFlowThread::createAnonymous(Document* document)
+RenderMultiColumnFlowThread* RenderMultiColumnFlowThread::createAnonymous(Document& document, RenderStyle* parentStyle)
 {
     RenderMultiColumnFlowThread* renderer = new RenderMultiColumnFlowThread();
-    renderer->setDocumentForAnonymous(document);
+    renderer->setDocumentForAnonymous(&document);
+    renderer->setStyle(RenderStyle::createAnonymousStyleWithDisplay(parentStyle, BLOCK));
     return renderer;
+}
+
+void RenderMultiColumnFlowThread::layoutColumns(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
+{
+    // Update the dimensions of our regions before we lay out the flow thread.
+    // FIXME: Eventually this is going to get way more complicated, and we will be destroying regions
+    // instead of trying to keep them around.
+    RenderBlockFlow* container = multiColumnBlockFlow();
+    bool shouldInvalidateRegions = false;
+    for (RenderBox* childBox = container->firstChildBox(); childBox; childBox = childBox->nextSiblingBox()) {
+        if (childBox == this)
+            continue;
+
+        if (relayoutChildren || childBox->needsLayout()) {
+            if (!m_inBalancingPass && childBox->isRenderMultiColumnSet())
+                toRenderMultiColumnSet(childBox)->prepareForLayout();
+            shouldInvalidateRegions = true;
+        }
+    }
+
+    if (shouldInvalidateRegions)
+        invalidateRegions();
+
+    if (relayoutChildren)
+        layoutScope.setChildNeedsLayout(this);
+
+    if (requiresBalancing()) {
+        // At the end of multicol layout, relayoutForPagination() is called unconditionally, but if
+        // no children are to be laid out (e.g. fixed width with layout already being up-to-date),
+        // we want to prevent it from doing any work, so that the column balancing machinery doesn't
+        // kick in and trigger additional unnecessary layout passes. Actually, it's not just a good
+        // idea in general to not waste time on balancing content that hasn't been re-laid out; we
+        // are actually required to guarantee this. The calculation of implicit breaks needs to be
+        // preceded by a proper layout pass, since it's layout that sets up content runs, and the
+        // runs get deleted right after every pass.
+        m_needsRebalancing = shouldInvalidateRegions || needsLayout();
+    }
+
+    layoutIfNeeded();
+}
+
+bool RenderMultiColumnFlowThread::computeColumnCountAndWidth()
+{
+    RenderBlock* columnBlock = multiColumnBlockFlow();
+    LayoutUnit oldColumnWidth = m_columnWidth;
+
+    // Calculate our column width and column count.
+    m_columnCount = 1;
+    m_columnWidth = columnBlock->contentLogicalWidth();
+
+    const RenderStyle* columnStyle = columnBlock->style();
+    ASSERT(!columnStyle->hasAutoColumnCount() || !columnStyle->hasAutoColumnWidth());
+
+    LayoutUnit availWidth = m_columnWidth;
+    LayoutUnit colGap = columnBlock->columnGap();
+    LayoutUnit colWidth = max<LayoutUnit>(1, LayoutUnit(columnStyle->columnWidth()));
+    int colCount = max<int>(1, columnStyle->columnCount());
+
+    if (columnStyle->hasAutoColumnWidth() && !columnStyle->hasAutoColumnCount()) {
+        m_columnCount = colCount;
+        m_columnWidth = std::max<LayoutUnit>(0, (availWidth - ((m_columnCount - 1) * colGap)) / m_columnCount);
+    } else if (!columnStyle->hasAutoColumnWidth() && columnStyle->hasAutoColumnCount()) {
+        m_columnCount = std::max<LayoutUnit>(1, (availWidth + colGap) / (colWidth + colGap));
+        m_columnWidth = ((availWidth + colGap) / m_columnCount) - colGap;
+    } else {
+        m_columnCount = std::max<LayoutUnit>(std::min<LayoutUnit>(colCount, (availWidth + colGap) / (colWidth + colGap)), 1);
+        m_columnWidth = ((availWidth + colGap) / m_columnCount) - colGap;
+    }
+
+    return m_columnWidth != oldColumnWidth;
+}
+
+bool RenderMultiColumnFlowThread::recalculateColumnHeights()
+{
+    if (!m_needsRebalancing)
+        return false;
+
+    // Column heights may change here because of balancing. We may have to do multiple layout
+    // passes, depending on how the contents is fitted to the changed column heights. In most
+    // cases, laying out again twice or even just once will suffice. Sometimes we need more
+    // passes than that, though, but the number of retries should not exceed the number of
+    // columns, unless we have a bug.
+    bool needsRelayout = false;
+    for (RenderBox* childBox = multiColumnBlockFlow()->firstChildBox(); childBox; childBox = childBox->nextSiblingBox()) {
+        if (childBox != this && childBox->isRenderMultiColumnSet()) {
+            RenderMultiColumnSet* multicolSet = toRenderMultiColumnSet(childBox);
+            if (multicolSet->recalculateBalancedHeight(!m_inBalancingPass)) {
+                multicolSet->setChildNeedsLayout(MarkOnlyThis);
+                needsRelayout = true;
+            }
+        }
+    }
+
+    if (needsRelayout)
+        setChildNeedsLayout(MarkOnlyThis);
+
+    m_inBalancingPass = needsRelayout;
+    return needsRelayout;
 }
 
 const char* RenderMultiColumnFlowThread::renderName() const
@@ -61,8 +164,7 @@ void RenderMultiColumnFlowThread::computeLogicalHeight(LayoutUnit logicalHeight,
 
 LayoutUnit RenderMultiColumnFlowThread::initialLogicalWidth() const
 {
-    RenderMultiColumnBlock* parentBlock = toRenderMultiColumnBlock(parent());
-    return parentBlock->columnWidth();
+    return columnWidth();
 }
 
 void RenderMultiColumnFlowThread::autoGenerateRegionsToBlockOffset(LayoutUnit /*offset*/)
@@ -91,7 +193,7 @@ void RenderMultiColumnFlowThread::autoGenerateRegionsToBlockOffset(LayoutUnit /*
 
     invalidateRegions();
 
-    RenderMultiColumnBlock* parentBlock = toRenderMultiColumnBlock(parent());
+    RenderBlockFlow* parentBlock = multiColumnBlockFlow();
     firstSet = RenderMultiColumnSet::createAnonymous(this);
     firstSet->setStyle(RenderStyle::createAnonymousStyleWithDisplay(parentBlock->style(), BLOCK));
     parentBlock->RenderBlock::addChild(firstSet);

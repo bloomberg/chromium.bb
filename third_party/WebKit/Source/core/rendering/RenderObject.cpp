@@ -63,7 +63,6 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderMarquee.h"
-#include "core/rendering/RenderMultiColumnBlock.h"
 #include "core/rendering/RenderScrollbarPart.h"
 #include "core/rendering/RenderTableCaption.h"
 #include "core/rendering/RenderTableCell.h"
@@ -163,8 +162,6 @@ RenderObject* RenderObject::createObject(Element* element, RenderStyle* style)
         return new RenderInline(element);
     case BLOCK:
     case INLINE_BLOCK:
-        if ((!style->hasAutoColumnCount() || !style->hasAutoColumnWidth()) && element->document().regionBasedColumnsEnabled())
-            return new RenderMultiColumnBlock(element);
         return new RenderBlockFlow(element);
     case LIST_ITEM:
         return new RenderListItem(element);

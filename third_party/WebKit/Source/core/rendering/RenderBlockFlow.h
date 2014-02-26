@@ -46,6 +46,7 @@ namespace WebCore {
 class MarginInfo;
 class LineBreaker;
 class LineWidth;
+class RenderMultiColumnFlowThread;
 
 class RenderBlockFlow : public RenderBlock {
 public:
@@ -111,6 +112,8 @@ public:
     bool containsFloat(RenderBox*) const;
 
     void removeFloatingObjects();
+
+    virtual void addChild(RenderObject* newChild, RenderObject* beforeChild = 0) OVERRIDE;
 
     void moveAllChildrenIncludingFloatsTo(RenderBlock* toBlock, bool fullRemoveInsert);
 
@@ -191,6 +194,8 @@ public:
     static TextRun constructTextRun(RenderObject* context, const Font&, const UChar* characters, int length, RenderStyle*, TextDirection,
         TextRun::ExpansionBehavior = TextRun::AllowTrailingExpansion | TextRun::ForbidLeadingExpansion);
 
+    RenderMultiColumnFlowThread* multiColumnFlowThread() const { return m_rareData ? m_rareData->m_multiColumnFlowThread : 0; }
+
     void addOverflowFromInlineChildren();
 
     GapRects inlineSelectionGaps(RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
@@ -214,6 +219,9 @@ protected:
     {
         return adjustLogicalLeftOffsetForLine(logicalLeftFloatOffsetForLine(logicalTop, fixedOffset, logicalHeight), applyTextIndent);
     }
+
+    virtual RenderObject* layoutSpecialExcludedChild(bool /*relayoutChildren*/, SubtreeLayoutScope&);
+    virtual bool updateLogicalWidthAndColumnWidth() OVERRIDE;
 
 private:
     bool layoutBlockFlow(bool relayoutChildren, LayoutUnit& pageLogicalHeight, SubtreeLayoutScope&);
@@ -282,8 +290,10 @@ private:
 
     virtual RootInlineBox* createRootInlineBox(); // Subclassed by SVG
 
+    void createMultiColumnFlowThreadIfNeeded();
+
     void updateLogicalWidthForAlignment(const ETextAlign&, const RootInlineBox*, BidiRun* trailingSpaceRun, float& logicalLeft, float& totalLogicalWidth, float& availableLogicalWidth, int expansionOpportunityCount);
-    virtual void checkForPaginationLogicalHeightChange(LayoutUnit& pageLogicalHeight, bool& pageLogicalHeightChanged, bool& hasSpecifiedPageLogicalHeight);
+    void checkForPaginationLogicalHeightChange(LayoutUnit& pageLogicalHeight, bool& pageLogicalHeightChanged, bool& hasSpecifiedPageLogicalHeight);
     bool shouldRelayoutForPagination(LayoutUnit& pageLogicalHeight, LayoutUnit layoutOverflowLogicalBottom) const;
     void setColumnCountAndHeight(unsigned count, LayoutUnit pageLogicalHeight);
 
@@ -334,6 +344,7 @@ public:
     public:
         RenderBlockFlowRareData(const RenderBlockFlow* block)
             : m_margins(positiveMarginBeforeDefault(block), negativeMarginBeforeDefault(block), positiveMarginAfterDefault(block), negativeMarginAfterDefault(block))
+            , m_multiColumnFlowThread(0)
             , m_discardMarginBefore(false)
             , m_discardMarginAfter(false)
         {
@@ -357,6 +368,8 @@ public:
         }
 
         MarginValues m_margins;
+
+        RenderMultiColumnFlowThread* m_multiColumnFlowThread;
 
         bool m_discardMarginBefore : 1;
         bool m_discardMarginAfter : 1;

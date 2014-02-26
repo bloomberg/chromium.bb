@@ -1478,8 +1478,6 @@
             'rendering/RenderMenuList.h',
             'rendering/RenderMeter.cpp',
             'rendering/RenderMeter.h',
-            'rendering/RenderMultiColumnBlock.cpp',
-            'rendering/RenderMultiColumnBlock.h',
             'rendering/RenderMultiColumnFlowThread.cpp',
             'rendering/RenderMultiColumnFlowThread.h',
             'rendering/RenderMultiColumnSet.cpp',

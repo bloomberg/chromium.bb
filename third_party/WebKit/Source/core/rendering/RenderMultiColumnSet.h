@@ -48,6 +48,8 @@ public:
 
     virtual bool isRenderMultiColumnSet() const OVERRIDE { return true; }
 
+    RenderBlockFlow* multiColumnBlockFlow() const { return toRenderBlockFlow(parent()); }
+    RenderMultiColumnFlowThread* multiColumnFlowThread() const { return multiColumnBlockFlow()->multiColumnFlowThread(); }
     unsigned computedColumnCount() const { return m_computedColumnCount; }
     LayoutUnit computedColumnWidth() const { return m_computedColumnWidth; }
     LayoutUnit computedColumnHeight() const { return m_computedColumnHeight; }
