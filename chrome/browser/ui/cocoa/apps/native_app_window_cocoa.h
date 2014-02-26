@@ -136,6 +136,7 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow,
   virtual void HideWithApp() OVERRIDE;
   // Calls setContent[Min|Max]Size with the current size constraints.
   virtual void UpdateWindowMinMaxSize() OVERRIDE;
+  virtual void UpdateShelfMenu() OVERRIDE;
 
   // WebContentsObserver implementation.
   virtual void RenderViewCreated(content::RenderViewHost* rvh) OVERRIDE;

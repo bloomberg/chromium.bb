@@ -219,6 +219,11 @@ void AppWindow::Init(const GURL& url,
   registrar_.Add(this,
                  chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
+  // Update the app menu if an ephemeral app becomes installed.
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_INSTALLED,
+                 content::Source<content::BrowserContext>(
+                     client->GetOriginalContext(browser_context_)));
 
   app_window_contents_->LoadContents(new_params.creator_process_id);
 
@@ -826,6 +831,15 @@ void AppWindow::Observe(int type,
               ->extension;
       if (extension_ == unloaded_extension)
         native_app_window_->Close();
+      break;
+    }
+    case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
+      const extensions::Extension* installed_extension =
+          content::Details<const extensions::InstalledExtensionInfo>(details)
+              ->extension;
+      DCHECK(installed_extension);
+      if (installed_extension->id() == extension_->id())
+        native_app_window_->UpdateShelfMenu();
       break;
     }
     case chrome::NOTIFICATION_APP_TERMINATING:

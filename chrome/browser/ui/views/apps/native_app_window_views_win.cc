@@ -14,15 +14,20 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/apps/per_app_settings_service.h"
 #include "chrome/browser/apps/per_app_settings_service_factory.h"
+#include "chrome/browser/jumplist_updater_win.h"
 #include "chrome/browser/metro_utils/metro_chrome_win.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_win.h"
+#include "chrome/common/chrome_icon_resources_win.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/extension.h"
+#include "grit/generated_resources.h"
 #include "ui/aura/remote_window_tree_host_win.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/win/shell.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/win/hwnd_util.h"
@@ -150,17 +155,18 @@ void NativeAppWindowViewsWin::InitializeDefaultWindow(
   HWND hwnd = GetNativeAppWindowHWND();
   Profile* profile =
       Profile::FromBrowserContext(app_window()->browser_context());
-  ui::win::SetAppIdForWindow(
-      ShellIntegration::GetAppModelIdForProfile(
-          app_name_wide,
-          profile->GetPath()),
-      hwnd);
+  app_model_id_ =
+      ShellIntegration::GetAppModelIdForProfile(app_name_wide,
+                                                profile->GetPath());
+  ui::win::SetAppIdForWindow(app_model_id_, hwnd);
 
   web_app::UpdateShortcutInfoAndIconForApp(
       *extension,
       profile,
       base::Bind(&NativeAppWindowViewsWin::OnShortcutInfoLoaded,
                  weak_ptr_factory_.GetWeakPtr()));
+
+  UpdateShelfMenu();
 }
 
 void NativeAppWindowViewsWin::Show() {
@@ -171,4 +177,45 @@ void NativeAppWindowViewsWin::Show() {
 void NativeAppWindowViewsWin::Activate() {
   ActivateParentDesktopIfNecessary();
   NativeAppWindowViews::Activate();
+}
+
+void NativeAppWindowViewsWin::UpdateShelfMenu() {
+  if (!JumpListUpdater::IsEnabled())
+    return;
+
+  // Currently the only option is related to ephemeral apps, so avoid updating
+  // the app's jump list when the feature is not enabled.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableEphemeralApps)) {
+    return;
+  }
+
+  // For the icon resources.
+  base::FilePath chrome_path;
+  if (!PathService::Get(base::FILE_EXE, &chrome_path))
+    return;
+
+  JumpListUpdater jumplist_updater(app_model_id_);
+  if (!jumplist_updater.BeginUpdate())
+    return;
+
+  // Add item to install ephemeral apps.
+  const extensions::Extension* extension = app_window()->extension();
+  DCHECK(extension);
+  if (extension->is_ephemeral()) {
+    scoped_refptr<ShellLinkItem> link(new ShellLinkItem());
+    link->set_title(l10n_util::GetStringUTF16(IDS_APP_INSTALL_TITLE));
+    link->set_icon(chrome_path.value(),
+                   icon_resources::kInstallPackagedAppIndex);
+    ShellIntegration::AppendProfileArgs(
+        app_window()->browser_context()->GetPath(), link->GetCommandLine());
+    link->GetCommandLine()->AppendSwitchASCII(switches::kInstallFromWebstore,
+                                              extension->id());
+
+    ShellLinkItemList items;
+    items.push_back(link);
+    jumplist_updater.AddTasks(items);
+  }
+
+  jumplist_updater.CommitUpdate();
 }

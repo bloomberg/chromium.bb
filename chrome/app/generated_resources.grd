@@ -5395,6 +5395,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_APP_LAUNCH_NOT_SIGNED_IN_LINK" desc="Launching app when not signed in link.">
         https://chrome.google.com/webstore/signin-helper/<ph name="EXTENSION_ID">$1<ex>nckgahadagoaajjgafhacjanaoiihapd</ex></ph>
       </message>
+      <message name="IDS_APP_INSTALL_TITLE" desc="Caption for installing an ephemeral app">
+        Install app
+      </message>
 
       <!-- Components -->
       <message name="IDS_COMPONENTS_TITLE" desc="Title for the chrome://components page.">

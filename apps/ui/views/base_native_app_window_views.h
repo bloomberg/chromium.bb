@@ -150,6 +150,7 @@ class BaseNativeAppWindowViews : public apps::NativeAppWindow,
   virtual void HideWithApp() OVERRIDE;
   virtual void ShowWithApp() OVERRIDE;
   virtual void UpdateWindowMinMaxSize() OVERRIDE;
+  virtual void UpdateShelfMenu() OVERRIDE;
 
   // web_modal::WebContentsModalDialogHost implementation.
   virtual gfx::NativeView GetHostView() const OVERRIDE;

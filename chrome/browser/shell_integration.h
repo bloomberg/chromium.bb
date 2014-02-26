@@ -163,6 +163,13 @@ class ShellIntegration {
       const std::string& extension_app_id,
       const base::FilePath& profile_path);
 
+  // Append command line arguments for launching a new chrome.exe process
+  // based on the current process.
+  // The new command line reuses the current process's user data directory and
+  // profile.
+  static void AppendProfileArgs(const base::FilePath& profile_path,
+                                CommandLine* command_line);
+
 #if defined(OS_WIN)
   // Generates an application user model ID (AppUserModelId) for a given app
   // name and profile path. The returned app id is in the format of

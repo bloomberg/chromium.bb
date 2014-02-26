@@ -731,3 +731,8 @@ void NativeAppWindowGtk::UpdateWindowMinMaxSize() {
         static_cast<GdkWindowHints>(hints_mask));
   }
 }
+
+void NativeAppWindowGtk::UpdateShelfMenu() {
+  // TODO(tmdiep): To be implemented for GTK.
+  NOTIMPLEMENTED();
+}

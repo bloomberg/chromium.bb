@@ -409,3 +409,5 @@ void BaseNativeAppWindowViews::HideWithApp() {}
 void BaseNativeAppWindowViews::ShowWithApp() {}
 
 void BaseNativeAppWindowViews::UpdateWindowMinMaxSize() {}
+
+void BaseNativeAppWindowViews::UpdateShelfMenu() {}

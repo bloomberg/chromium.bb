@@ -1045,3 +1045,8 @@ void NativeAppWindowCocoa::UpdateWindowMinMaxSize() {
       CGFLOAT_MAX : max_size.height();
   [window() setContentMaxSize:NSMakeSize(max_width, max_height)];
 }
+
+void NativeAppWindowCocoa::UpdateShelfMenu() {
+  // TODO(tmdiep): To be implemented for Mac.
+  NOTIMPLEMENTED();
+}

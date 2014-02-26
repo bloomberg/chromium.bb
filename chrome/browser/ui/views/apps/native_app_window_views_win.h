@@ -32,7 +32,13 @@ class NativeAppWindowViewsWin : public NativeAppWindowViews {
   virtual void Show() OVERRIDE;
   virtual void Activate() OVERRIDE;
 
+  // Overridden from apps::NativeAppWindow:
+  virtual void UpdateShelfMenu() OVERRIDE;
+
   base::WeakPtrFactory<NativeAppWindowViewsWin> weak_ptr_factory_;
+
+  // The Windows Application User Model ID identifying the app.
+  base::string16 app_model_id_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeAppWindowViewsWin);
 };

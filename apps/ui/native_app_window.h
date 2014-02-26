@@ -76,6 +76,10 @@ class NativeAppWindow : public ui::BaseWindow,
   // size constraints.
   virtual void UpdateWindowMinMaxSize() = 0;
 
+  // Updates custom entries for the context menu of the app's taskbar/dock/shelf
+  // icon.
+  virtual void UpdateShelfMenu() = 0;
+
   virtual ~NativeAppWindow() {}
 };
 
