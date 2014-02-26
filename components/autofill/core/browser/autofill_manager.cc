@@ -535,13 +535,24 @@ void AutofillManager::OnFillAutofillFormData(int query_id,
       }
       base::string16 value = data_model->GetInfoForVariant(
           cached_field->Type(), use_variant, app_locale_);
+
+      // Must match ForEachMatchingFormField() in form_autofill_util.cc.
+      // Only notify autofilling of empty fields and the field that initiated
+      // the filling (note that "select-one" controls may not be empty but will
+      // still be autofilled).
+      bool should_notify =
+          !is_credit_card &&
+          !value.empty() &&
+          (result.fields[i] == field ||
+           result.fields[i].form_control_type == "select-one" ||
+           result.fields[i].value.empty());
       AutofillField::FillFormField(*cached_field, value, app_locale_,
                                    &result.fields[i]);
       // Mark the cached field as autofilled, so that we can detect when a user
       // edits an autofilled field (for metrics).
       form_structure->field(i)->is_autofilled = true;
 
-      if (!is_credit_card && !value.empty())
+      if (should_notify)
         manager_delegate_->DidFillOrPreviewField(value, profile_full_name);
     }
   }
