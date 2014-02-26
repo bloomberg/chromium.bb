@@ -209,6 +209,10 @@ void ManagedUserSyncService::AddManagedUser(const std::string& id,
   base::DictionaryValue* value = new base::DictionaryValue;
   value->SetString(kName, name);
   value->SetString(kMasterKey, master_key);
+  value->SetString(kPasswordSignatureKey, signature_key);
+  value->SetString(kPasswordEncryptionKey, encryption_key);
+  // TODO(akuegel): Get rid of the avatar stuff here when Chrome OS switches to
+  // the avatar index that is stored as a shared setting.
   std::string chrome_avatar;
   std::string chromeos_avatar;
 #if defined(OS_CHROMEOS)
