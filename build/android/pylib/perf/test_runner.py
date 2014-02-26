@@ -247,7 +247,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     Returns:
       A tuple of (TestRunResults, retry).
     """
-    output, result_type = self._LaunchPerfTest(test_name)
+    _, result_type = self._LaunchPerfTest(test_name)
     results = base_test_result.TestRunResults()
     results.AddResult(base_test_result.BaseTestResult(test_name, result_type))
     retry = None

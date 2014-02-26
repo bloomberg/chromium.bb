@@ -3,10 +3,12 @@
 # found in the LICENSE file.
 
 """Unittests for SurfaceStatsCollector."""
+# pylint: disable=W0212
 
 import unittest
 
-from surface_stats_collector import SurfaceStatsCollector
+from pylib.perf.surface_stats_collector import SurfaceStatsCollector
+
 
 class TestSurfaceStatsCollector(unittest.TestCase):
   @staticmethod
