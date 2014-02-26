@@ -202,10 +202,8 @@ void HTMLFormElement::submitImplicitly(Event* event, bool fromImplicitSubmission
             if (fromImplicitSubmissionTrigger)
                 seenDefaultButton = true;
             if (control->isSuccessfulSubmitButton()) {
-                if (control->renderer()) {
-                    control->dispatchSimulatedClick(event);
-                    return;
-                }
+                control->dispatchSimulatedClick(event);
+                return;
             } else if (fromImplicitSubmissionTrigger) {
                 // Default (submit) button is not activated; no implicit submission.
                 return;

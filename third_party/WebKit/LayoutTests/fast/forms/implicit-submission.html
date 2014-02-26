@@ -33,7 +33,8 @@ var allTests = [
     [ "Text field and single select, text focused", "!text,select", "y" ],
     [ "Text field and single select, select focused", "text,!select", "n" ],
     [ "Multiple text inputs with a button", "!text,text,button", "y"],
-    [ "Multiple text inputs with a disabled button", "!text,text,-button", "n"]
+    [ "Multiple text inputs with a disabled button", "!text,text,-button", "n"],
+    [ "Multiple text inputs with a hidden submit", "!text,text,?submit", "y"]
 ];
 
 if (window.testRunner) {
@@ -95,6 +96,11 @@ function buildAndTestForm(arena, inputs, description)
             type = type.substr(1);
             focused = true;
         }
+        var hidden;
+        if (type[0] == '?') {
+            type = type.substr(1);
+            hidden = true;
+        }
         var disabled;
         if (type[0] == '-') {
             type = type.substr(1);
@@ -119,6 +125,8 @@ function buildAndTestForm(arena, inputs, description)
         }
         control.id = focused ? "focused" : ("input" + i);
         control.disabled = !!disabled;
+        if (hidden)
+            control.style.display = 'none';
         form.appendChild(control);
     });
     var input = document.getElementById("focused");
