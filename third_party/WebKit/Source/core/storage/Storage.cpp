@@ -33,12 +33,12 @@
 
 namespace WebCore {
 
-PassRefPtr<Storage> Storage::create(LocalFrame* frame, PassOwnPtr<StorageArea> storageArea)
+PassRefPtrWillBeRawPtr<Storage> Storage::create(LocalFrame* frame, PassOwnPtrWillBeRawPtr<StorageArea> storageArea)
 {
-    return adoptRef(new Storage(frame, storageArea));
+    return adoptRefWillBeNoop(new Storage(frame, storageArea));
 }
 
-Storage::Storage(LocalFrame* frame, PassOwnPtr<StorageArea> storageArea)
+Storage::Storage(LocalFrame* frame, PassOwnPtrWillBeRawPtr<StorageArea> storageArea)
     : DOMWindowProperty(frame)
     , m_storageArea(storageArea)
 {
@@ -123,6 +123,11 @@ bool Storage::namedPropertyQuery(const AtomicString& name, ExceptionState& excep
     if (exceptionState.hadException() || !found)
         return false;
     return true;
+}
+
+void Storage::trace(Visitor* visitor)
+{
+    visitor->trace(m_storageArea);
 }
 
 }

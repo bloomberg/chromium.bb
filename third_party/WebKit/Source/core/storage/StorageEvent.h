@@ -27,6 +27,7 @@
 #define StorageEvent_h
 
 #include "core/events/Event.h"
+#include "heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -34,13 +35,16 @@ namespace WebCore {
 class Storage;
 
 struct StorageEventInit : public EventInit {
+    // FIXME: oilpan: Replace this with STACK_ALLOCATED.
+    DISALLOW_ALLOCATION();
+public:
     StorageEventInit();
 
     String key;
     String oldValue;
     String newValue;
     String url;
-    RefPtr<Storage> storageArea;
+    RefPtrWillBeRawPtr<Storage> storageArea;
 };
 
 class StorageEvent FINAL : public Event {
@@ -73,7 +77,7 @@ private:
     String m_oldValue;
     String m_newValue;
     String m_url;
-    RefPtr<Storage> m_storageArea;
+    RefPtrWillBePersistent<Storage> m_storageArea;
 };
 
 } // namespace WebCore

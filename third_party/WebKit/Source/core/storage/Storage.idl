@@ -23,7 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface Storage {
+[
+    WillBeGarbageCollected
+] interface Storage {
     [NotEnumerable, RaisesException] getter DOMString (unsigned long index);
     [RaisesException] setter DOMString (unsigned long index, DOMString value);
     [RaisesException] deleter boolean (unsigned long index);

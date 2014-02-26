@@ -355,8 +355,8 @@ enum PageshowEventPersistence {
         String m_status;
         String m_defaultStatus;
 
-        mutable RefPtr<Storage> m_sessionStorage;
-        mutable RefPtr<Storage> m_localStorage;
+        mutable RefPtrWillBePersistent<Storage> m_sessionStorage;
+        mutable RefPtrWillBePersistent<Storage> m_localStorage;
         mutable RefPtr<ApplicationCache> m_applicationCache;
 
         mutable RefPtr<Performance> m_performance;

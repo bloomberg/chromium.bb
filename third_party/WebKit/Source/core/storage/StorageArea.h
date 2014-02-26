@@ -26,6 +26,7 @@
 #ifndef StorageArea_h
 #define StorageArea_h
 
+#include "heap/Handle.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
@@ -49,7 +50,7 @@ enum StorageType {
     SessionStorage
 };
 
-class StorageArea {
+class StorageArea : public NoBaseWillBeGarbageCollectedFinalized<StorageArea> {
 public:
     StorageArea(PassOwnPtr<blink::WebStorageArea>, StorageType);
     virtual ~StorageArea();
@@ -71,6 +72,8 @@ public:
     static void dispatchSessionStorageEvent(const String& key, const String& oldValue, const String& newValue,
         SecurityOrigin*, const KURL& pageURL, const blink::WebStorageNamespace&,
         blink::WebStorageArea* sourceAreaInstance, bool originatedInProcess);
+
+    void trace(Visitor*) { }
 
 private:
     static bool isEventSource(Storage*, blink::WebStorageArea* sourceAreaInstance);

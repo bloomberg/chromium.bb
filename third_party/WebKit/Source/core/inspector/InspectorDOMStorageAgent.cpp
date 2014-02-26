@@ -110,7 +110,7 @@ void InspectorDOMStorageAgent::disable(ErrorString*)
 void InspectorDOMStorageAgent::getDOMStorageItems(ErrorString* errorString, const RefPtr<JSONObject>& storageId, RefPtr<TypeBuilder::Array<TypeBuilder::Array<String> > >& items)
 {
     LocalFrame* frame;
-    OwnPtr<StorageArea> storageArea = findStorageArea(errorString, storageId, frame);
+    OwnPtrWillBeRawPtr<StorageArea> storageArea = findStorageArea(errorString, storageId, frame);
     if (!storageArea)
         return;
 
@@ -142,7 +142,7 @@ static String toErrorString(ExceptionState& exceptionState)
 void InspectorDOMStorageAgent::setDOMStorageItem(ErrorString* errorString, const RefPtr<JSONObject>& storageId, const String& key, const String& value)
 {
     LocalFrame* frame;
-    OwnPtr<StorageArea> storageArea = findStorageArea(0, storageId, frame);
+    OwnPtrWillBeRawPtr<StorageArea> storageArea = findStorageArea(0, storageId, frame);
     if (!storageArea) {
         *errorString = "Storage not found";
         return;
@@ -156,7 +156,7 @@ void InspectorDOMStorageAgent::setDOMStorageItem(ErrorString* errorString, const
 void InspectorDOMStorageAgent::removeDOMStorageItem(ErrorString* errorString, const RefPtr<JSONObject>& storageId, const String& key)
 {
     LocalFrame* frame;
-    OwnPtr<StorageArea> storageArea = findStorageArea(0, storageId, frame);
+    OwnPtrWillBeRawPtr<StorageArea> storageArea = findStorageArea(0, storageId, frame);
     if (!storageArea) {
         *errorString = "Storage not found";
         return;
@@ -191,7 +191,7 @@ void InspectorDOMStorageAgent::didDispatchDOMStorageEvent(const String& key, con
         m_frontend->domstorage()->domStorageItemUpdated(id, key, oldValue, newValue);
 }
 
-PassOwnPtr<StorageArea> InspectorDOMStorageAgent::findStorageArea(ErrorString* errorString, const RefPtr<JSONObject>& storageId, LocalFrame*& targetFrame)
+PassOwnPtrWillBeRawPtr<StorageArea> InspectorDOMStorageAgent::findStorageArea(ErrorString* errorString, const RefPtr<JSONObject>& storageId, LocalFrame*& targetFrame)
 {
     String securityOrigin;
     bool isLocalStorage = false;
