@@ -41,6 +41,9 @@ class BASE_EXPORT PathService {
   //
   // WARNING: Consumers of PathService::Get may expect paths to be constant
   // over the lifetime of the app, so this method should be used with caution.
+  //
+  // Unit tests generally should use ScopedPathOverride instead. Overrides from
+  // one test should not carry over to another.
   static bool Override(int key, const base::FilePath& path);
 
   // This function does the same as PathService::Override but it takes an extra

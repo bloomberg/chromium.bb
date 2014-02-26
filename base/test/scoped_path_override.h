@@ -18,7 +18,7 @@ class FilePath;
 // scope of the test is left.
 class ScopedPathOverride {
  public:
-  // Contructor that intializes the override to a scoped temp directory.
+  // Contructor that initializes the override to a scoped temp directory.
   explicit ScopedPathOverride(int key);
   // Constructor that would use a path provided by the user.
   ScopedPathOverride(int key, const FilePath& dir);
