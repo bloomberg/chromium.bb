@@ -593,9 +593,6 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(const IntPoint& delta)
     IntPoint squashLayerPosition = pixelSnappedIntRect(totalSquashBounds).location();
     squashLayerPosition.moveBy(delta);
 
-    // FIXME: this could be skipped for accelerated overflow scrolling, somehow.
-    m_squashingLayer->setNeedsDisplay();
-
     m_squashingLayer->setPosition(squashLayerPosition);
     m_squashingLayer->setSize(totalSquashBounds.size());
 

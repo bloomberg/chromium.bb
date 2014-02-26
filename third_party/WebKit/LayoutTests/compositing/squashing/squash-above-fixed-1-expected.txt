@@ -63,8 +63,6 @@ CASE 2, scrolling y to 80, new layers will be squashed, so things repaint:
               (position 0.00 300.00)
               (bounds 200.00 300.00)
               (drawsContent 1)
-              (repaint rects
-              )
             )
           )
         )
@@ -97,9 +95,6 @@ CASE 3, scrolling y to 120, no repaints expected:
               (position 0.00 300.00)
               (bounds 200.00 300.00)
               (drawsContent 1)
-              (repaint rects
-                (rect 0.00 0.00 200.00 300.00)
-              )
             )
           )
         )
@@ -136,8 +131,6 @@ CASE 4, scrolling y to 170 new layers will be squashed, so things repaint:
               (position 0.00 400.00)
               (bounds 200.00 300.00)
               (drawsContent 1)
-              (repaint rects
-              )
             )
           )
         )

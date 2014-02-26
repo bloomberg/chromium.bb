@@ -52,7 +52,6 @@ CASE 2, overlap3 gets added:
               (drawsContent 1)
               (repaint rects
                 (rect 0.00 0.00 100.00 100.00)
-                (rect 0.00 0.00 180.00 180.00)
               )
             )
           )
@@ -83,7 +82,6 @@ CASE 3, overlap2 gets removed. Since this does not resize the layer, there shoul
               (drawsContent 1)
               (repaint rects
                 (rect 80.00 80.00 100.00 100.00)
-                (rect 0.00 0.00 260.00 260.00)
               )
             )
           )
@@ -114,7 +112,6 @@ CASE 4, overlap1 gets removed:
               (drawsContent 1)
               (repaint rects
                 (rect 0.00 0.00 100.00 100.00)
-                (rect 0.00 0.00 260.00 260.00)
               )
             )
           )
@@ -147,7 +144,6 @@ CASE 5, overlap2 gets added back:
               (bounds 180.00 180.00)
               (drawsContent 1)
               (repaint rects
-                (rect 0.00 0.00 100.00 100.00)
                 (rect 0.00 0.00 100.00 100.00)
                 (rect 0.00 0.00 100.00 100.00)
               )
@@ -185,7 +181,6 @@ CASE 6, overlap1 gets added back, and overlap3 gets removed:
                 (rect 80.00 80.00 100.00 100.00)
                 (rect 0.00 0.00 100.00 100.00)
                 (rect 0.00 0.00 100.00 100.00)
-                (rect 0.00 0.00 180.00 180.00)
               )
             )
           )
