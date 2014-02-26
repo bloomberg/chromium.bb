@@ -186,17 +186,17 @@ public:
     TextTrackList* textTracks();
     CueList currentlyActiveCues() const { return m_currentlyActiveCues; }
 
-    void addTrack(TextTrack*);
-    void removeTrack(TextTrack*);
+    void addTextTrack(TextTrack*);
+    void removeTextTrack(TextTrack*);
     void removeAllInbandTracks();
     void closeCaptionTracksChanged();
     void notifyMediaPlayerOfTextTrackChanges();
 
-    void didAddTrack(HTMLTrackElement*);
-    void didRemoveTrack(HTMLTrackElement*);
+    void didAddTrackElement(HTMLTrackElement*);
+    void didRemoveTrackElement(HTMLTrackElement*);
 
-    virtual void mediaPlayerDidAddTrack(blink::WebInbandTextTrack*) OVERRIDE FINAL;
-    virtual void mediaPlayerDidRemoveTrack(blink::WebInbandTextTrack*) OVERRIDE FINAL;
+    virtual void mediaPlayerDidAddTextTrack(blink::WebInbandTextTrack*) OVERRIDE FINAL;
+    virtual void mediaPlayerDidRemoveTextTrack(blink::WebInbandTextTrack*) OVERRIDE FINAL;
     // FIXME: Remove this when WebMediaPlayerClientImpl::loadInternal does not depend on it.
     virtual KURL mediaPlayerPosterURL() OVERRIDE { return KURL(); }
 
