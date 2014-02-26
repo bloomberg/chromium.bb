@@ -28,6 +28,8 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       const content::MainFunctionParams& parameters) OVERRIDE;
   virtual void RenderProcessWillLaunch(
       content::RenderProcessHost* host) OVERRIDE;
+  virtual bool ShouldUseProcessPerSite(content::BrowserContext* browser_context,
+                                       const GURL& effective_url) OVERRIDE;
   virtual net::URLRequestContextGetter* CreateRequestContext(
       content::BrowserContext* browser_context,
       content::ProtocolHandlerMap* protocol_handlers) OVERRIDE;
