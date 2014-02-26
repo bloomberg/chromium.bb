@@ -2075,6 +2075,30 @@ TEST_F(WebSocketChannelEventInterfaceTest, ClosePayloadInvalidReason) {
   CreateChannelAndConnectSuccessfully();
 }
 
+// The reserved bits must all be clear on received frames. Extensions should
+// clear the bits when they are set correctly before passing on the frame.
+TEST_F(WebSocketChannelEventInterfaceTest, ReservedBitsMustNotBeSet) {
+  scoped_ptr<ReadableFakeWebSocketStream> stream(
+      new ReadableFakeWebSocketStream);
+  static const InitFrame frames[] = {
+      {FINAL_FRAME, WebSocketFrameHeader::kOpCodeText,
+       NOT_MASKED,  "sakana"}};
+  // It is not worth adding support for reserved bits to InitFrame just for this
+  // one test, so set the bit manually.
+  ScopedVector<WebSocketFrame> raw_frames = CreateFrameVector(frames);
+  raw_frames[0]->header.reserved1 = true;
+  stream->PrepareRawReadFrames(
+      ReadableFakeWebSocketStream::SYNC, OK, raw_frames.Pass());
+  set_stream(stream.Pass());
+  EXPECT_CALL(*event_interface_, OnAddChannelResponse(false, _, _));
+  EXPECT_CALL(*event_interface_, OnFlowControl(_));
+  EXPECT_CALL(
+      *event_interface_,
+      OnFailChannel("Received a frame with an invalid reserved bit set."));
+
+  CreateChannelAndConnectSuccessfully();
+}
+
 // The closing handshake times out and sends an OnDropChannel event if no
 // response to the client Close message is received.
 TEST_F(WebSocketChannelEventInterfaceTest,

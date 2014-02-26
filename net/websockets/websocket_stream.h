@@ -134,6 +134,10 @@ class NET_EXPORT_PRIVATE WebSocketStream {
   // calling callback.Run() (and any calling methods in the same object) must
   // return immediately without any further method calls or access to member
   // variables. Implementors should write test(s) for this case.
+  //
+  // Extensions which use reserved header bits should clear them when they are
+  // set correctly. If the reserved header bits are set incorrectly, it is okay
+  // to leave it to the caller to report the error.
   virtual int ReadFrames(ScopedVector<WebSocketFrame>* frames,
                          const CompletionCallback& callback) = 0;
 

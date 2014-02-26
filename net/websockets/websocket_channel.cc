@@ -656,6 +656,12 @@ ChannelState WebSocketChannel::HandleFrame(
         kWebSocketErrorProtocolError,
         "Control message with FIN bit unset received");
   }
+  if (frame->header.reserved1 || frame->header.reserved2 ||
+      frame->header.reserved3) {
+    return FailChannel("Received a frame with an invalid reserved bit set.",
+                       kWebSocketErrorProtocolError,
+                       "Invalid reserved bit");
+  }
 
   // Respond to the frame appropriately to its type.
   return HandleFrameByState(
