@@ -111,7 +111,6 @@ class ChangeListLoaderTest : public testing::Test {
                              base::MessageLoopProxy::current().get(),
                              metadata_.get(),
                              scheduler_.get(),
-                             drive_service_.get(),
                              about_resource_loader_.get(),
                              loader_controller_.get()));
   }
@@ -156,7 +155,7 @@ TEST_F(ChangeListLoaderTest, Load) {
   EXPECT_EQ(0, drive_service_->about_resource_load_count());
 
   FileError error = FILE_ERROR_FAILED;
-  change_list_loader_->LoadForTesting(
+  change_list_loader_->LoadIfNeeded(
       google_apis::test_util::CreateCopyResultCallback(&error));
   EXPECT_TRUE(change_list_loader_->IsRefreshing());
   base::RunLoop().RunUntilIdle();
@@ -175,27 +174,12 @@ TEST_F(ChangeListLoaderTest, Load) {
   ResourceEntry entry;
   EXPECT_EQ(FILE_ERROR_OK,
             metadata_->GetResourceEntryByPath(file_path, &entry));
-
-  // Reload. This should result in no-op.
-  int64 previous_changestamp = metadata_->GetLargestChangestamp();
-  int previous_resource_list_load_count =
-      drive_service_->resource_list_load_count();
-  change_list_loader_->LoadForTesting(
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-
-  EXPECT_FALSE(change_list_loader_->IsRefreshing());
-  // Cached value is used.
-  EXPECT_EQ(previous_changestamp, metadata_->GetLargestChangestamp());
-  EXPECT_EQ(previous_resource_list_load_count,
-            drive_service_->resource_list_load_count());
 }
 
 TEST_F(ChangeListLoaderTest, Load_LocalMetadataAvailable) {
   // Prepare metadata.
   FileError error = FILE_ERROR_FAILED;
-  change_list_loader_->LoadForTesting(
+  change_list_loader_->LoadIfNeeded(
       google_apis::test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -206,7 +190,6 @@ TEST_F(ChangeListLoaderTest, Load_LocalMetadataAvailable) {
                            base::MessageLoopProxy::current().get(),
                            metadata_.get(),
                            scheduler_.get(),
-                           drive_service_.get(),
                            about_resource_loader_.get(),
                            loader_controller_.get()));
 
@@ -220,7 +203,7 @@ TEST_F(ChangeListLoaderTest, Load_LocalMetadataAvailable) {
       drive_service_->resource_list_load_count();
   TestChangeListLoaderObserver observer(change_list_loader_.get());
 
-  change_list_loader_->LoadForTesting(
+  change_list_loader_->LoadIfNeeded(
       google_apis::test_util::CreateCopyResultCallback(&error));
   EXPECT_TRUE(change_list_loader_->IsRefreshing());
   base::RunLoop().RunUntilIdle();
@@ -244,138 +227,6 @@ TEST_F(ChangeListLoaderTest, Load_LocalMetadataAvailable) {
             metadata_->GetResourceEntryByPath(file_path, &entry));
 }
 
-TEST_F(ChangeListLoaderTest, LoadDirectoryIfNeeded_GrandRoot) {
-  TestChangeListLoaderObserver observer(change_list_loader_.get());
-
-  // Emulate the slowness of GetAllResourceList().
-  drive_service_->set_never_return_all_resource_list(true);
-
-  // Load grand root.
-  FileError error = FILE_ERROR_FAILED;
-  change_list_loader_->LoadDirectoryIfNeeded(
-      util::GetDriveGrandRootPath(),
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_EQ(0U, observer.changed_directories().size());
-  observer.clear_changed_directories();
-
-  // GetAllResourceList() was called.
-  EXPECT_EQ(1, drive_service_->blocked_resource_list_load_count());
-
-  // My Drive has resource ID.
-  ResourceEntry entry;
-  EXPECT_EQ(FILE_ERROR_OK,
-            metadata_->GetResourceEntryByPath(util::GetDriveMyDriveRootPath(),
-                                              &entry));
-  EXPECT_EQ(drive_service_->GetRootResourceId(), entry.resource_id());
-}
-
-TEST_F(ChangeListLoaderTest, LoadDirectoryIfNeeded_MyDrive) {
-  TestChangeListLoaderObserver observer(change_list_loader_.get());
-
-  // My Drive does not have resource ID yet.
-  ResourceEntry entry;
-  EXPECT_EQ(FILE_ERROR_OK,
-            metadata_->GetResourceEntryByPath(util::GetDriveMyDriveRootPath(),
-                                              &entry));
-  EXPECT_TRUE(entry.resource_id().empty());
-
-  // Emulate the slowness of GetAllResourceList().
-  drive_service_->set_never_return_all_resource_list(true);
-
-  // Load My Drive.
-  FileError error = FILE_ERROR_FAILED;
-  change_list_loader_->LoadDirectoryIfNeeded(
-      util::GetDriveMyDriveRootPath(),
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_EQ(1U, observer.changed_directories().count(
-      util::GetDriveMyDriveRootPath()));
-
-  // GetAllResourceList() was called.
-  EXPECT_EQ(1, drive_service_->blocked_resource_list_load_count());
-
-  // My Drive has resource ID.
-  EXPECT_EQ(FILE_ERROR_OK,
-            metadata_->GetResourceEntryByPath(util::GetDriveMyDriveRootPath(),
-                                              &entry));
-  EXPECT_EQ(drive_service_->GetRootResourceId(), entry.resource_id());
-
-  // My Drive's child is present.
-  base::FilePath file_path =
-      util::GetDriveMyDriveRootPath().AppendASCII("File 1.txt");
-  EXPECT_EQ(FILE_ERROR_OK,
-            metadata_->GetResourceEntryByPath(file_path, &entry));
-}
-
-TEST_F(ChangeListLoaderTest, LoadDirectoryIfNeeded_NewDirectories) {
-  // Make local metadata up to date.
-  FileError error = FILE_ERROR_FAILED;
-  change_list_loader_->LoadForTesting(
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-
-  // Add a new file.
-  scoped_ptr<google_apis::ResourceEntry> file = AddNewFile("New File");
-  ASSERT_TRUE(file);
-
-  // Emulate the slowness of GetAllResourceList().
-  drive_service_->set_never_return_all_resource_list(true);
-
-  // Enter refreshing state.
-  FileError check_for_updates_error = FILE_ERROR_FAILED;
-  change_list_loader_->CheckForUpdates(
-      google_apis::test_util::CreateCopyResultCallback(
-          &check_for_updates_error));
-  EXPECT_TRUE(change_list_loader_->IsRefreshing());
-
-  // Load My Drive.
-  TestChangeListLoaderObserver observer(change_list_loader_.get());
-  change_list_loader_->LoadDirectoryIfNeeded(
-      util::GetDriveMyDriveRootPath(),
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_EQ(1U, observer.changed_directories().count(
-      util::GetDriveMyDriveRootPath()));
-
-  // The new file is present in the local metadata.
-  base::FilePath file_path =
-      util::GetDriveMyDriveRootPath().AppendASCII(file->title());
-  ResourceEntry entry;
-  EXPECT_EQ(FILE_ERROR_OK,
-            metadata_->GetResourceEntryByPath(file_path, &entry));
-}
-
-TEST_F(ChangeListLoaderTest, LoadDirectoryIfNeeded_MultipleCalls) {
-  TestChangeListLoaderObserver observer(change_list_loader_.get());
-
-  // Load grand root.
-  FileError error = FILE_ERROR_FAILED;
-  change_list_loader_->LoadDirectoryIfNeeded(
-      util::GetDriveGrandRootPath(),
-      google_apis::test_util::CreateCopyResultCallback(&error));
-
-  // Load grand root again without waiting for the result.
-  FileError error2 = FILE_ERROR_FAILED;
-  change_list_loader_->LoadDirectoryIfNeeded(
-      util::GetDriveGrandRootPath(),
-      google_apis::test_util::CreateCopyResultCallback(&error2));
-  base::RunLoop().RunUntilIdle();
-
-  // Callback is called for each method call.
-  EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_EQ(FILE_ERROR_OK, error2);
-
-  // No duplicated resource list load and observer events.
-  EXPECT_EQ(1, drive_service_->resource_list_load_count());
-  EXPECT_EQ(1, observer.initial_load_complete_count());
-  EXPECT_EQ(1, observer.load_from_server_complete_count());
-}
-
 TEST_F(ChangeListLoaderTest, CheckForUpdates) {
   // CheckForUpdates() results in no-op before load.
   FileError check_for_updates_error = FILE_ERROR_FAILED;
@@ -392,7 +243,7 @@ TEST_F(ChangeListLoaderTest, CheckForUpdates) {
 
   // Start initial load.
   FileError load_error = FILE_ERROR_FAILED;
-  change_list_loader_->LoadForTesting(
+  change_list_loader_->LoadIfNeeded(
       google_apis::test_util::CreateCopyResultCallback(&load_error));
   EXPECT_TRUE(change_list_loader_->IsRefreshing());
 
@@ -445,7 +296,7 @@ TEST_F(ChangeListLoaderTest, CheckForUpdates) {
 
 TEST_F(ChangeListLoaderTest, Lock) {
   FileError error = FILE_ERROR_FAILED;
-  change_list_loader_->LoadForTesting(
+  change_list_loader_->LoadIfNeeded(
       google_apis::test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);

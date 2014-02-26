@@ -9,6 +9,7 @@
 #include "base/platform_file.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
+#include "chrome/browser/chromeos/drive/directory_loader.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system/copy_operation.h"
@@ -230,6 +231,7 @@ FileSystem::FileSystem(
 FileSystem::~FileSystem() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  directory_loader_->RemoveObserver(this);
   change_list_loader_->RemoveObserver(this);
 }
 
@@ -258,10 +260,18 @@ void FileSystem::ResetComponents() {
       blocking_task_runner_.get(),
       resource_metadata_,
       scheduler_,
-      drive_service_,
       about_resource_loader_.get(),
       loader_controller_.get()));
   change_list_loader_->AddObserver(this);
+  directory_loader_.reset(new internal::DirectoryLoader(
+      logger_,
+      blocking_task_runner_.get(),
+      resource_metadata_,
+      scheduler_,
+      drive_service_,
+      about_resource_loader_.get(),
+      loader_controller_.get()));
+  directory_loader_->AddObserver(this);
 
   sync_client_.reset(new internal::SyncClient(blocking_task_runner_.get(),
                                               observer,
@@ -403,7 +413,7 @@ void FileSystem::CreateDirectory(
   DCHECK(!callback.is_null());
 
   // Ensure its parent directory is loaded to the local metadata.
-  change_list_loader_->LoadDirectoryIfNeeded(
+  LoadDirectoryIfNeeded(
       directory_path.DirName(),
       base::Bind(&FileSystem::CreateDirectoryAfterLoad,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -560,12 +570,11 @@ void FileSystem::GetResourceEntry(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  change_list_loader_->LoadDirectoryIfNeeded(
-      file_path.DirName(),
-      base::Bind(&FileSystem::GetResourceEntryAfterLoad,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 file_path,
-                 callback));
+  LoadDirectoryIfNeeded(file_path.DirName(),
+                        base::Bind(&FileSystem::GetResourceEntryAfterLoad,
+                                   weak_ptr_factory_.GetWeakPtr(),
+                                   file_path,
+                                   callback));
 }
 
 void FileSystem::GetResourceEntryAfterLoad(
@@ -597,12 +606,11 @@ void FileSystem::ReadDirectory(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  change_list_loader_->LoadDirectoryIfNeeded(
-      directory_path,
-      base::Bind(&FileSystem::ReadDirectoryAfterLoad,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 directory_path,
-                 callback));
+  LoadDirectoryIfNeeded(directory_path,
+                        base::Bind(&FileSystem::ReadDirectoryAfterLoad,
+                                   weak_ptr_factory_.GetWeakPtr(),
+                                   directory_path,
+                                   callback));
 }
 
 void FileSystem::ReadDirectoryAfterLoad(
@@ -928,6 +936,18 @@ void FileSystem::OpenFile(const base::FilePath& file_path,
   DCHECK(!callback.is_null());
 
   open_file_operation_->OpenFile(file_path, open_mode, mime_type, callback);
+}
+
+void FileSystem::LoadDirectoryIfNeeded(const base::FilePath& directory_path,
+                                       const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  directory_loader_->LoadDirectoryIfNeeded(directory_path, callback);
+
+  // Also start loading all of the user's contents.
+  change_list_loader_->LoadIfNeeded(
+      base::Bind(&util::EmptyFileOperationCallback));
 }
 
 }  // namespace drive

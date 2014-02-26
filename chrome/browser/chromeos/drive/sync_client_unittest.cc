@@ -146,7 +146,6 @@ class SyncClientTest : public testing::Test {
         base::MessageLoopProxy::current().get(),
         metadata_.get(),
         scheduler_.get(),
-        drive_service_.get(),
         about_resource_loader_.get(),
         loader_controller_.get()));
     ASSERT_NO_FATAL_FAILURE(SetUpTestData());
@@ -199,7 +198,7 @@ class SyncClientTest : public testing::Test {
 
     // Load data from the service to the metadata.
     FileError error = FILE_ERROR_FAILED;
-    change_list_loader_->LoadForTesting(
+    change_list_loader_->LoadIfNeeded(
         google_apis::test_util::CreateCopyResultCallback(&error));
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(FILE_ERROR_OK, error);

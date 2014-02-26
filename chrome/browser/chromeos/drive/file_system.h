@@ -38,6 +38,7 @@ class JobScheduler;
 namespace internal {
 class AboutResourceLoader;
 class ChangeListLoader;
+class DirectoryLoader;
 class FileCache;
 class LoaderController;
 class ResourceMetadata;
@@ -182,6 +183,10 @@ class FileSystem : public FileSystemInterface,
   // need to be recreated during the reset of resource metadata and the cache.
   void ResetComponents();
 
+  // Loads the contents of the directory from the server if needed.
+  void LoadDirectoryIfNeeded(const base::FilePath& directory_path,
+                             const FileOperationCallback& callback);
+
   // Part of CreateDirectory(). Called after ChangeListLoader::LoadIfNeeded()
   // is called and made sure that the resource metadata is loaded.
   void CreateDirectoryAfterLoad(const base::FilePath& directory_path,
@@ -266,6 +271,8 @@ class FileSystem : public FileSystemInterface,
 
   // The loader is used to load the change lists.
   scoped_ptr<internal::ChangeListLoader> change_list_loader_;
+
+  scoped_ptr<internal::DirectoryLoader> directory_loader_;
 
   scoped_ptr<internal::SyncClient> sync_client_;
 

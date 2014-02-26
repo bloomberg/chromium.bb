@@ -126,10 +126,9 @@ void OperationTestBase::SetUp() {
       blocking_task_runner_.get(),
       metadata_.get(),
       scheduler_.get(),
-      fake_drive_service_.get(),
       about_resource_loader_.get(),
       loader_controller_.get()));
-  change_list_loader_->LoadForTesting(
+  change_list_loader_->LoadIfNeeded(
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   ASSERT_EQ(FILE_ERROR_OK, error);

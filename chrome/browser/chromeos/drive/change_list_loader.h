@@ -32,7 +32,6 @@ class ResourceList;
 
 namespace drive {
 
-class DriveServiceInterface;
 class EventLogger;
 class JobScheduler;
 class ResourceEntry;
@@ -132,7 +131,6 @@ class ChangeListLoader {
                    base::SequencedTaskRunner* blocking_task_runner,
                    ResourceMetadata* resource_metadata,
                    JobScheduler* scheduler,
-                   DriveServiceInterface* drive_service,
                    AboutResourceLoader* about_resource_loader,
                    LoaderController* apply_task_controller);
   ~ChangeListLoader();
@@ -158,16 +156,8 @@ class ChangeListLoader {
   // starts loading from the server, and runs |callback| to tell the result to
   // the caller when it is finished.
   //
-  // The specified directory will be fetched first from the server, so the UI
-  // can show the directory contents instantly before the entire change list
-  // loading is complete.
-  //
   // |callback| must not be null.
-  void LoadDirectoryIfNeeded(const base::FilePath& directory_path,
-                             const FileOperationCallback& callback);
-
-  // Calls Load(). Only for testing purposes.
-  void LoadForTesting(const FileOperationCallback& callback);
+  void LoadIfNeeded(const FileOperationCallback& callback);
 
  private:
   // Starts the resource metadata loading and calls |callback| when it's done.
@@ -211,10 +201,8 @@ class ChangeListLoader {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   ResourceMetadata* resource_metadata_;  // Not owned.
   JobScheduler* scheduler_;  // Not owned.
-  DriveServiceInterface* drive_service_;  // Not owned.
   AboutResourceLoader* about_resource_loader_;  // Not owned.
   LoaderController* loader_controller_;  // Not owned.
-  scoped_ptr<DirectoryLoader> directory_loader_;
   ObserverList<ChangeListLoaderObserver> observers_;
   std::vector<FileOperationCallback> pending_load_callback_;
   FileOperationCallback pending_update_check_callback_;

@@ -142,7 +142,7 @@ class FileSystemTest : public testing::Test {
   // Loads the full resource list via FakeDriveService.
   bool LoadFullResourceList() {
     FileError error = FILE_ERROR_FAILED;
-    file_system_->change_list_loader_for_testing()->LoadForTesting(
+    file_system_->change_list_loader_for_testing()->LoadIfNeeded(
         google_apis::test_util::CreateCopyResultCallback(&error));
     test_util::RunBlockingPoolTask();
     return error == FILE_ERROR_OK;
@@ -735,9 +735,8 @@ TEST_F(FileSystemTest, LoadFileSystemFromCacheWhileOffline) {
 }
 
 TEST_F(FileSystemTest, ReadDirectoryWhileRefreshing) {
-  // Enter the "refreshing" state so the fast fetch will be performed.
+  // Use old timestamp so the fast fetch will be performed.
   ASSERT_NO_FATAL_FAILURE(SetUpTestFileSystem(USE_OLD_TIMESTAMP));
-  file_system_->CheckForUpdates();
 
   // The list of resources in "drive/root/Dir1" should be fetched.
   EXPECT_TRUE(ReadDirectorySync(base::FilePath(
@@ -748,9 +747,8 @@ TEST_F(FileSystemTest, ReadDirectoryWhileRefreshing) {
 }
 
 TEST_F(FileSystemTest, GetResourceEntryNonExistentWhileRefreshing) {
-  // Enter the "refreshing" state so the fast fetch will be performed.
+  // Use old timestamp so the fast fetch will be performed.
   ASSERT_NO_FATAL_FAILURE(SetUpTestFileSystem(USE_OLD_TIMESTAMP));
-  file_system_->CheckForUpdates();
 
   // If an entry is not found, parent directory's resource list is fetched.
   EXPECT_FALSE(GetResourceEntrySync(base::FilePath(

@@ -13,11 +13,9 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/drive/change_list_loader_observer.h"
 #include "chrome/browser/chromeos/drive/change_list_processor.h"
-#include "chrome/browser/chromeos/drive/directory_loader.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
-#include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/drive/event_logger.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/drive_api_parser.h"
@@ -278,23 +276,14 @@ ChangeListLoader::ChangeListLoader(
     base::SequencedTaskRunner* blocking_task_runner,
     ResourceMetadata* resource_metadata,
     JobScheduler* scheduler,
-    DriveServiceInterface* drive_service,
     AboutResourceLoader* about_resource_loader,
     LoaderController* loader_controller)
     : logger_(logger),
       blocking_task_runner_(blocking_task_runner),
       resource_metadata_(resource_metadata),
       scheduler_(scheduler),
-      drive_service_(drive_service),
       about_resource_loader_(about_resource_loader),
       loader_controller_(loader_controller),
-      directory_loader_(new DirectoryLoader(logger,
-                                            blocking_task_runner,
-                                            resource_metadata,
-                                            scheduler,
-                                            drive_service,
-                                            about_resource_loader,
-                                            loader_controller)),
       loaded_(false),
       weak_ptr_factory_(this) {
 }
@@ -311,13 +300,11 @@ bool ChangeListLoader::IsRefreshing() const {
 void ChangeListLoader::AddObserver(ChangeListLoaderObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.AddObserver(observer);
-  directory_loader_->AddObserver(observer);
 }
 
 void ChangeListLoader::RemoveObserver(ChangeListLoaderObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.RemoveObserver(observer);
-  directory_loader_->RemoveObserver(observer);
 }
 
 void ChangeListLoader::CheckForUpdates(const FileOperationCallback& callback) {
@@ -340,24 +327,13 @@ void ChangeListLoader::CheckForUpdates(const FileOperationCallback& callback) {
   }
 }
 
-void ChangeListLoader::LoadDirectoryIfNeeded(
-    const base::FilePath& directory_path,
-    const FileOperationCallback& callback) {
+void ChangeListLoader::LoadIfNeeded(const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-
-  directory_loader_->LoadDirectoryIfNeeded(directory_path, callback);
 
   // If the metadata is not yet loaded, start loading.
   if (!loaded_)
-    Load(base::Bind(&util::EmptyFileOperationCallback));
-}
-
-void ChangeListLoader::LoadForTesting(const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  Load(callback);
+    Load(callback);
 }
 
 void ChangeListLoader::Load(const FileOperationCallback& callback) {
