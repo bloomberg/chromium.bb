@@ -6,21 +6,6 @@
 
 #include <map>
 
-#include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
-#include "chromeos/ime/component_extension_ime_manager.h"
-#include "chromeos/ime/composition_text.h"
-#include "chromeos/ime/extension_ime_util.h"
-#include "chromeos/ime/input_method_manager.h"
-#include "ui/base/ime/candidate_window.h"
-#include "ui/events/event.h"
-#include "ui/events/keycodes/dom4/keycode_converter.h"
-#include "ui/events/keycodes/keyboard_code_conversion_x.h"
-#include "ui/keyboard/keyboard_controller.h"
-
 namespace chromeos {
 
 MockInputMethodEngine::MockInputMethodEngine(
