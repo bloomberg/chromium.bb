@@ -17815,6 +17815,21 @@ other types of suffix sets.
   <summary>Time to store the PrefixSet file.</summary>
 </histogram>
 
+<histogram name="SB2.ReportingIsEnabled" enum="BooleanEnabled">
+  <summary>
+    Whether the user has Safe Browsing extended reporting enabled at the time a
+    Safe Browsing warning was dismissed.  This tracks the fraction of all SB
+    interstitials that had reporting enabled.
+  </summary>
+</histogram>
+
+<histogram name="SB2.SetReportingEnabled" enum="BooleanEnabled">
+  <summary>
+    Tracks changes to the Safe Browsing extended reporting opt-in which is shown
+    in the Safe Browsing interstitial.
+  </summary>
+</histogram>
+
 <histogram name="SB2.SideEffectFreeWhitelistDatabaseKilobytes" units="KB">
   <summary>
     The size of the Side Effect Free Whitelist SaafeBrowsing database file on

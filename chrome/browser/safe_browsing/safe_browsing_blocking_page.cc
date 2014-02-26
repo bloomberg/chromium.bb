@@ -450,6 +450,7 @@ void SafeBrowsingBlockingPage::SetReportingPreference(bool report) {
       web_contents_->GetBrowserContext());
   PrefService* pref = profile->GetPrefs();
   pref->SetBoolean(prefs::kSafeBrowsingReportingEnabled, report);
+  UMA_HISTOGRAM_BOOLEAN("SB2.SetReportingEnabled", report);
 }
 
 void SafeBrowsingBlockingPage::OnProceed() {
@@ -761,7 +762,9 @@ void SafeBrowsingBlockingPage::FinishMalwareDetails(int64 delay_ms) {
   if (malware_details_.get() == NULL)
     return;  // Not all interstitials have malware details (eg phishing).
 
-  if (IsPrefEnabled(prefs::kSafeBrowsingReportingEnabled)) {
+  const bool enabled = IsPrefEnabled(prefs::kSafeBrowsingReportingEnabled);
+  UMA_HISTOGRAM_BOOLEAN("SB2.ReportingIsEnabled", enabled);
+  if (enabled) {
     // Finish the malware details collection, send it over.
     BrowserThread::PostDelayedTask(
         BrowserThread::IO, FROM_HERE,
