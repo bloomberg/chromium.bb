@@ -215,7 +215,9 @@ void AbstractPropertySetCSSStyleDeclaration::setProperty(const String& propertyN
     if (!propertyID)
         return;
 
-    bool important = priority.find("important", 0, false) != kNotFound;
+    bool important = equalIgnoringCase(priority, "important");
+    if (!important && !priority.isEmpty())
+        return;
 
     willMutate();
 
