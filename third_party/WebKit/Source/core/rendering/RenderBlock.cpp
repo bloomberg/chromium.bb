@@ -4598,6 +4598,7 @@ static inline unsigned firstLetterLength(const String& text)
             length = scanLength + 1;
     }
 
+    // FIXME: If text.length() is 0, length may still be 1!
     return length;
 }
 
@@ -4698,7 +4699,9 @@ void RenderBlock::updateFirstLetter()
         return;
     }
 
-    if (!currChild->isText() || currChild->isBR())
+    // FIXME: This black-list of disallowed RenderText subclasses is fragile.
+    // Should counter be on this list? What about RenderTextFragment?
+    if (!currChild->isText() || currChild->isBR() || toRenderText(currChild)->isWordBreak())
         return;
 
     // Our layout state is not valid for the repaints we are going to trigger by
