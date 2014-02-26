@@ -114,8 +114,11 @@ const FontData* FontFallbackList::primaryFontData(const FontDescription& fontDes
         const FontData* fontData = fontDataAt(fontDescription, fontIndex);
         if (!fontData) {
             // All fonts are custom fonts and are loading. Return the first FontData.
-            // FIXME: Correct fallback to the default font.
-            return fontDataAt(fontDescription, 0);
+            fontData = fontDataAt(fontDescription, 0);
+            if (!fontData)
+                fontData = FontCache::fontCache()->getLastResortFallbackFont(fontDescription).get();
+            ASSERT(fontData);
+            return fontData;
         }
 
         if (fontData->isSegmented() && !toSegmentedFontData(fontData)->containsCharacter(' '))
