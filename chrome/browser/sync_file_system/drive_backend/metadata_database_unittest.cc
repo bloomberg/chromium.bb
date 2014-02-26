@@ -81,18 +81,41 @@ void ExpectEquivalent(int64 left, int64 right) {
 
 template <typename Container>
 void ExpectEquivalentMaps(const Container& left, const Container& right);
-template <typename Key, typename Value, typename Compare>
-void ExpectEquivalent(const std::map<Key, Value, Compare>& left,
-                      const std::map<Key, Value, Compare>& right) {
+
+template <typename Key, typename Value>
+void ExpectEquivalent(const std::map<Key, Value>& left,
+                      const std::map<Key, Value>& right) {
   ExpectEquivalentMaps(left, right);
+}
+
+template <typename Key, typename Value>
+void ExpectEquivalent(const base::hash_map<Key, Value>& left,
+                      const base::hash_map<Key, Value>& right) {
+  ExpectEquivalentMaps(std::map<Key, Value>(left.begin(), left.end()),
+                       std::map<Key, Value>(right.begin(), right.end()));
+}
+
+template <typename Key, typename Value>
+void ExpectEquivalent(const base::ScopedPtrHashMap<Key, Value>& left,
+                      const base::ScopedPtrHashMap<Key, Value>& right) {
+  ExpectEquivalentMaps(std::map<Key, Value*>(left.begin(), left.end()),
+                       std::map<Key, Value*>(right.begin(), right.end()));
 }
 
 template <typename Container>
 void ExpectEquivalentSets(const Container& left, const Container& right);
-template <typename Value, typename Compare>
-void ExpectEquivalent(const std::set<Value, Compare>& left,
-                      const std::set<Value, Compare>& right) {
+
+template <typename Value, typename Comparator>
+void ExpectEquivalent(const std::set<Value, Comparator>& left,
+                      const std::set<Value, Comparator>& right) {
   return ExpectEquivalentSets(left, right);
+}
+
+template <typename Value>
+void ExpectEquivalent(const base::hash_set<Value>& left,
+                      const base::hash_set<Value>& right) {
+  return ExpectEquivalentSets(std::set<Value>(left.begin(), left.end()),
+                              std::set<Value>(right.begin(), right.end()));
 }
 
 void ExpectEquivalent(const TrackerIDSet& left,
@@ -453,8 +476,8 @@ class MetadataDatabaseTest : public testing::Test {
 
     {
       SCOPED_TRACE("Expect equivalent file_by_id_ contents.");
-      ExpectEquivalent(metadata_database_->file_by_id_,
-                       metadata_database_2->file_by_id_);
+      ExpectEquivalent(metadata_database_->metadata_by_id_,
+                       metadata_database_2->metadata_by_id_);
     }
 
     {

@@ -202,12 +202,12 @@ class RegisterAppTaskTest : public testing::Test,
 
   size_t CountRegisteredAppRoot() {
     // TODO(tzik): Add function to MetadataDatabase to list trackers by parent.
-    typedef MetadataDatabase::TrackersByTitle TrackersByTitle;
-    const TrackersByTitle& trackers_by_title =
+    typedef MetadataDatabase::TrackerIDsByTitle TrackerIDsByTitle;
+    const TrackerIDsByTitle& trackers_by_title =
         metadata_database_->trackers_by_parent_and_title_[kSyncRootTrackerID];
 
     size_t count = 0;
-    for (TrackersByTitle::const_iterator itr = trackers_by_title.begin();
+    for (TrackerIDsByTitle::const_iterator itr = trackers_by_title.begin();
          itr != trackers_by_title.end(); ++itr) {
       if (itr->second.has_active())
         ++count;

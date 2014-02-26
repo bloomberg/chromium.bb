@@ -177,7 +177,7 @@ class SyncEngineInitializerTest : public testing::Test {
   }
 
   size_t NumberOfMetadata() {
-    return metadata_database_->file_by_id_.size();
+    return metadata_database_->metadata_by_id_.size();
   }
 
   size_t NumberOfTrackers() {

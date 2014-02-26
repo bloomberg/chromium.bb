@@ -11,6 +11,8 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/containers/hash_tables.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
@@ -110,12 +112,12 @@ struct DatabaseContents;
 //
 class MetadataDatabase {
  public:
-  typedef std::map<std::string, FileMetadata*> FileByID;
-  typedef std::map<int64, FileTracker*> TrackerByID;
-  typedef std::map<std::string, TrackerIDSet> TrackersByFileID;
-  typedef std::map<std::string, TrackerIDSet> TrackersByTitle;
-  typedef std::map<int64, TrackersByTitle> TrackersByParentAndTitle;
-  typedef std::map<std::string, FileTracker*> TrackerByAppID;
+  typedef base::ScopedPtrHashMap<std::string, FileMetadata> MetadataByID;
+  typedef base::ScopedPtrHashMap<int64, FileTracker> TrackerByID;
+  typedef base::hash_map<std::string, TrackerIDSet> TrackerIDsByFileID;
+  typedef base::hash_map<std::string, TrackerIDSet> TrackerIDsByTitle;
+  typedef std::map<int64, TrackerIDsByTitle> TrackerIDsByParentAndTitle;
+  typedef base::hash_map<std::string, int64> TrackerIDByAppID;
   typedef std::vector<std::string> FileIDList;
 
   typedef base::Callback<
@@ -478,17 +480,17 @@ class MetadataDatabase {
   scoped_ptr<ServiceMetadata> service_metadata_;
   int64 largest_known_change_id_;
 
-  FileByID file_by_id_;  // Owned.
+  MetadataByID metadata_by_id_;  // Owned.
   TrackerByID tracker_by_id_;  // Owned.
 
   // Maps FileID to trackers.  The active tracker must be unique per FileID.
   // This must be updated when updating |active| field of a tracker.
-  TrackersByFileID trackers_by_file_id_;  // Not owned.
+  TrackerIDsByFileID trackers_by_file_id_;  // Not owned.
 
   // Maps AppID to the app-root tracker.
   // This must be updated when a tracker is registered/unregistered as an
   // app-root.
-  TrackerByAppID app_root_by_app_id_;  // Not owned.
+  TrackerIDByAppID app_root_by_app_id_;  // Not owned.
 
   // Maps |tracker_id| to its children grouped by their |title|.
   // If the title is unknown for a tracker, treats its title as empty. Empty
@@ -496,7 +498,7 @@ class MetadataDatabase {
   // The active tracker must be unique per its parent_tracker and its title.
   // This must be updated when updating |title|, |active| or
   // |parent_tracker_id|.
-  TrackersByParentAndTitle trackers_by_parent_and_title_;
+  TrackerIDsByParentAndTitle trackers_by_parent_and_title_;
 
   // Holds all trackers which marked as dirty.
   // This must be updated when updating |dirty| field of a tracker.

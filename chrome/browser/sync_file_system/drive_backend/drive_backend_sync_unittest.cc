@@ -454,7 +454,7 @@ class DriveBackendSyncTest : public testing::Test,
   }
 
   size_t CountMetadata() {
-    return metadata_database()->file_by_id_.size();
+    return metadata_database()->metadata_by_id_.size();
   }
 
   size_t CountTracker() {
