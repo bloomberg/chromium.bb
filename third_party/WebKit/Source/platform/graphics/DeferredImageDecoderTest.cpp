@@ -176,6 +176,33 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPicture)
     EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), canvasBitmap.getColor(0, 0));
 }
 
+TEST_F(DeferredImageDecoderTest, drawIntoSkPictureProgressive)
+{
+    RefPtr<SharedBuffer> partialData = SharedBuffer::create(m_data->data(), m_data->size() - 10);
+
+    // Received only half the file.
+    m_lazyDecoder->setData(partialData.get(), false);
+    RefPtr<NativeImageSkia> image = m_lazyDecoder->frameBufferAtIndex(0)->asNewNativeImage();
+    SkCanvas* tempCanvas = m_picture.beginRecording(100, 100);
+    tempCanvas->drawBitmap(image->bitmap(), 0, 0);
+    m_picture.endRecording();
+    m_canvas->drawPicture(m_picture);
+
+    // Fully received the file and draw the SkPicture again.
+    m_lazyDecoder->setData(m_data.get(), true);
+    image = m_lazyDecoder->frameBufferAtIndex(0)->asNewNativeImage();
+    tempCanvas = m_picture.beginRecording(100, 100);
+    tempCanvas->drawBitmap(image->bitmap(), 0, 0);
+    m_picture.endRecording();
+    m_canvas->drawPicture(m_picture);
+
+    SkBitmap canvasBitmap;
+    canvasBitmap.setConfig(SkBitmap::kARGB_8888_Config, 100, 100);
+    ASSERT_TRUE(m_canvas->readPixels(&canvasBitmap, 0, 0));
+    SkAutoLockPixels autoLock(canvasBitmap);
+    EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), canvasBitmap.getColor(0, 0));
+}
+
 static void rasterizeMain(SkCanvas* canvas, SkPicture* picture)
 {
     canvas->drawPicture(*picture);

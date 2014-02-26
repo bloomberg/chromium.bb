@@ -164,11 +164,10 @@ bool ImageFrameGenerator::decodeAndScale(const SkImageInfo& info, size_t index, 
     ASSERT(cachedImage->bitmap().width() == scaledSize.width());
     ASSERT(cachedImage->bitmap().height() == scaledSize.height());
 
-    // If the image is fully decoded and is not multi-frame then we have
-    // written directly to the memory given by Skia. There is no need to
-    // copy.
     bool result = true;
-    if (!cachedImage->isComplete() || m_isMultiFrame)
+    // Check to see if decoder has written directly to the memory provided
+    // by Skia. If not make a copy.
+    if (cachedImage->bitmap().getPixels() != pixels)
         result = cachedImage->bitmap().copyPixelsTo(pixels, rowBytes * info.fHeight, rowBytes);
     ImageDecodingStore::instance()->unlockCache(this, cachedImage);
     return result;
@@ -254,13 +253,17 @@ PassOwnPtr<ScaledImageFragment> ImageFrameGenerator::decode(size_t index, ImageD
             return nullptr;
     }
 
+    // An external memory allocator is used if this variable is true.
+    bool useExternalAllocator = false;
+
     if (!m_isMultiFrame && newDecoder && allDataReceived) {
         // We are supporting two decoding paths in this code. Use the
         // external memory allocator in the Skia discardable path to
         // save one memory copy.
-        if (m_externalAllocator)
+        if (m_externalAllocator) {
             (*decoder)->setMemoryAllocator(m_externalAllocator.get());
-        else
+            useExternalAllocator = true;
+        } else
             (*decoder)->setMemoryAllocator(m_discardableAllocator.get());
     }
     (*decoder)->setData(data, allDataReceived);
@@ -297,19 +300,25 @@ PassOwnPtr<ScaledImageFragment> ImageFrameGenerator::decode(size_t index, ImageD
     }
     ASSERT(fullSizeBitmap.width() == m_fullSize.width() && fullSizeBitmap.height() == m_fullSize.height());
 
-    if (isCacheComplete)
+    // We early out and do not copy the memory if decoder writes directly to
+    // the memory provided by Skia and the decode was complete.
+    if (useExternalAllocator && isCacheComplete)
         return ScaledImageFragment::createComplete(m_fullSize, index, fullSizeBitmap);
 
-    // If the image is partial we need to return a copy. This is to avoid future
-    // decode operations writing to the same bitmap.
+    // If the image is progressively decoded we need to return a copy.
+    // This is to avoid future decode operations writing to the same bitmap.
     // FIXME: Note that discardable allocator is used. This is because the code
     // is still used in the Android discardable memory path. When this code is
     // used in the Skia discardable memory path |m_discardableAllocator| is empty.
     // This is confusing and should be cleaned up when we can deprecate the use
     // case for Android discardable memory.
     SkBitmap copyBitmap;
-    return fullSizeBitmap.copyTo(&copyBitmap, fullSizeBitmap.config(), m_discardableAllocator.get()) ?
-        ScaledImageFragment::createPartial(m_fullSize, index, nextGenerationId(), copyBitmap) : nullptr;
+    if (!fullSizeBitmap.copyTo(&copyBitmap, fullSizeBitmap.config(), m_discardableAllocator.get()))
+        return nullptr;
+
+    if (isCacheComplete)
+        return ScaledImageFragment::createComplete(m_fullSize, index, copyBitmap);
+    return ScaledImageFragment::createPartial(m_fullSize, index, nextGenerationId(), copyBitmap);
 }
 
 bool ImageFrameGenerator::hasAlpha(size_t index)
