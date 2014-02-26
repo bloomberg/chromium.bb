@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (c) 2014, Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,45 +28,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AnimationClock_h
-#define AnimationClock_h
-
-#include "wtf/CurrentTime.h"
-#include "wtf/PassOwnPtr.h"
+#include "config.h"
+#include "core/animation/AnimationClock.h"
 
 namespace WebCore {
 
-// FIXME: This value is used to suppress updates when time is required outside of a frame.
-// The purpose of allowing the clock to update during such periods is to allow animations
-// to have an appropriate start time and for getComputedStyle to attempt to catch-up to a
-// compositor animation. However a more accurate system might be to attempt to phase-lock
-// with the frame clock.
-const double minTimeBeforeUnsynchronizedAnimationClockTick = 0.005;
+void AnimationClock::updateTime(double time)
+{
+    if (time > m_time)
+        m_time = time;
+    m_frozen = true;
+}
 
-class AnimationClock {
-public:
-    static PassOwnPtr<AnimationClock> create(WTF::TimeFunction monotonicallyIncreasingTime = WTF::monotonicallyIncreasingTime)
-    {
-        return adoptPtr(new AnimationClock(monotonicallyIncreasingTime));
+double AnimationClock::currentTime()
+{
+    if (!m_frozen) {
+        double newTime = m_monotonicallyIncreasingTime();
+        if (newTime >= m_time + minTimeBeforeUnsynchronizedAnimationClockTick)
+            m_time = newTime;
     }
+    return m_time;
+}
 
-    void updateTime(double time);
-    double currentTime();
-    void unfreeze() { m_frozen = false; }
-    void resetTimeForTesting() { m_time = 0; m_frozen = true; }
-
-private:
-    AnimationClock(WTF::TimeFunction monotonicallyIncreasingTime)
-        : m_monotonicallyIncreasingTime(monotonicallyIncreasingTime)
-        , m_time(0)
-        , m_frozen(false)
-    {
-    }
-    WTF::TimeFunction m_monotonicallyIncreasingTime;
-    double m_time;
-    bool m_frozen;
-};
-
-} // namespace WebCore
-
-#endif // AnimationClock_h
+}

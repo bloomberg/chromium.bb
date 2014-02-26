@@ -48,7 +48,7 @@ public:
     void notifyCompositorAnimationStarted(double monotonicAnimationStartTime);
 
 private:
-    Vector<std::pair<RefPtr<Player>, double> > m_pending;
+    Vector<RefPtr<Player> > m_pending;
     Vector<RefPtr<Player> > m_waitingForCompositorAnimationStart;
 };
 
