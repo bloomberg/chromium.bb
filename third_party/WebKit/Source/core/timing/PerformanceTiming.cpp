@@ -324,7 +324,7 @@ const DocumentTiming* PerformanceTiming::documentTiming() const
     if (!document)
         return 0;
 
-    return document->timing();
+    return &document->timing();
 }
 
 DocumentLoadTiming* PerformanceTiming::documentLoadTiming() const

@@ -928,7 +928,7 @@ public:
     PassRefPtr<Touch> createTouch(DOMWindow*, EventTarget*, int identifier, int pageX, int pageY, int screenX, int screenY, int radiusX, int radiusY, float rotationAngle, float force) const;
     PassRefPtr<TouchList> createTouchList(Vector<RefPtr<Touch> >&) const;
 
-    const DocumentTiming* timing() const { return &m_documentTiming; }
+    const DocumentTiming& timing() const { return m_documentTiming; }
 
     int requestAnimationFrame(PassOwnPtr<RequestAnimationFrameCallback>);
     void cancelAnimationFrame(int id);
@@ -985,8 +985,8 @@ public:
     void incrementActiveParserCount() { ++m_activeParserCount; }
     void decrementActiveParserCount();
 
-    void setContextFeatures(PassRefPtr<ContextFeatures>);
-    ContextFeatures* contextFeatures() const { return m_contextFeatures.get(); }
+    void setContextFeatures(ContextFeatures&);
+    ContextFeatures& contextFeatures() const { return *m_contextFeatures; }
 
     ElementDataCache* elementDataCache() { return m_elementDataCache.get(); }
 

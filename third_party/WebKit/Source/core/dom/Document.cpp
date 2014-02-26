@@ -2710,7 +2710,7 @@ void Document::setURL(const KURL& url)
 
     m_url = newURL;
     updateBaseURL();
-    contextFeatures()->urlDidChange(this);
+    contextFeatures().urlDidChange(this);
 }
 
 void Document::updateBaseURL()
@@ -5126,9 +5126,9 @@ void Document::decrementActiveParserCount()
     frame()->loader().checkLoadComplete();
 }
 
-void Document::setContextFeatures(PassRefPtr<ContextFeatures> features)
+void Document::setContextFeatures(ContextFeatures& features)
 {
-    m_contextFeatures = features;
+    m_contextFeatures = PassRefPtr<ContextFeatures>(features);
 }
 
 static RenderObject* nearestCommonHoverAncestor(RenderObject* obj1, RenderObject* obj2)
