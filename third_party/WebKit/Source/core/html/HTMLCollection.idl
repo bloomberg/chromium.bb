@@ -22,7 +22,7 @@
 [
     Custom=Wrap,
     DependentLifetime,
-    SetWrapperReferenceFrom=ownerNode,
+    SetWrapperReferenceFromReference=ownerNode,
 ] interface HTMLCollection {
     readonly attribute unsigned long length;
     getter Element item([Default=Undefined] optional unsigned long index);

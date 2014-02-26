@@ -21,7 +21,7 @@
 
 [
     DependentLifetime,
-    SetWrapperReferenceFrom=ownerNode,
+    SetWrapperReferenceFromReference=ownerNode,
 ] interface HTMLOptionsCollection : HTMLCollection {
     attribute long selectedIndex;
     [Custom=Setter, RaisesException=Setter] attribute unsigned long length;

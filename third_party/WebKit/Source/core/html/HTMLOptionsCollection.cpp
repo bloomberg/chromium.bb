@@ -88,19 +88,19 @@ void HTMLOptionsCollection::add(PassRefPtr<HTMLOptionElement> element, int index
         return;
     }
 
-    HTMLSelectElement* select = toHTMLSelectElement(ownerNode());
+    HTMLSelectElement& select = toHTMLSelectElement(ownerNode());
 
     if (index == -1 || unsigned(index) >= length())
-        select->add(newOption, 0, exceptionState);
+        select.add(newOption, 0, exceptionState);
     else
-        select->add(newOption, toHTMLOptionElement(item(index)), exceptionState);
+        select.add(newOption, toHTMLOptionElement(item(index)), exceptionState);
 
     ASSERT(!exceptionState.hadException());
 }
 
 void HTMLOptionsCollection::remove(int index)
 {
-    toHTMLSelectElement(ownerNode())->remove(index);
+    toHTMLSelectElement(ownerNode()).remove(index);
 }
 
 void HTMLOptionsCollection::remove(HTMLOptionElement* option)
@@ -110,17 +110,17 @@ void HTMLOptionsCollection::remove(HTMLOptionElement* option)
 
 int HTMLOptionsCollection::selectedIndex() const
 {
-    return toHTMLSelectElement(ownerNode())->selectedIndex();
+    return toHTMLSelectElement(ownerNode()).selectedIndex();
 }
 
 void HTMLOptionsCollection::setSelectedIndex(int index)
 {
-    toHTMLSelectElement(ownerNode())->setSelectedIndex(index);
+    toHTMLSelectElement(ownerNode()).setSelectedIndex(index);
 }
 
 void HTMLOptionsCollection::setLength(unsigned length, ExceptionState& exceptionState)
 {
-    toHTMLSelectElement(ownerNode())->setLength(length, exceptionState);
+    toHTMLSelectElement(ownerNode()).setLength(length, exceptionState);
 }
 
 void HTMLOptionsCollection::namedGetter(const AtomicString& name, bool& returnValue0Enabled, RefPtr<NodeList>& returnValue0, bool& returnValue1Enabled, RefPtr<Element>& returnValue1)
@@ -144,12 +144,12 @@ void HTMLOptionsCollection::namedGetter(const AtomicString& name, bool& returnVa
 
 bool HTMLOptionsCollection::anonymousIndexedSetter(unsigned index, PassRefPtr<HTMLOptionElement> value, ExceptionState& exceptionState)
 {
-    HTMLSelectElement* base = toHTMLSelectElement(ownerNode());
+    HTMLSelectElement& base = toHTMLSelectElement(ownerNode());
     if (!value) { // undefined or null
-        base->remove(index);
+        base.remove(index);
         return true;
     }
-    base->setOption(index, value.get(), exceptionState);
+    base.setOption(index, value.get(), exceptionState);
     return true;
 }
 

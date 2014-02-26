@@ -39,7 +39,7 @@ NameNodeList::NameNodeList(PassRefPtr<ContainerNode> rootNode, const AtomicStrin
 
 NameNodeList::~NameNodeList()
 {
-    ownerNode()->nodeLists()->removeCache(this, NameNodeListType, m_name);
+    ownerNode().nodeLists()->removeCache(this, NameNodeListType, m_name);
 }
 
 bool NameNodeList::nodeMatches(const Element& testNode) const

@@ -37,7 +37,7 @@ ChildNodeList::ChildNodeList(PassRefPtr<ContainerNode> parent)
 
 Node* ChildNodeList::virtualOwnerNode() const
 {
-    return ownerNode();
+    return &ownerNode();
 }
 
 ChildNodeList::~ChildNodeList()

@@ -58,17 +58,15 @@ HTMLFormControlsCollection::~HTMLFormControlsCollection()
 
 const Vector<FormAssociatedElement*>& HTMLFormControlsCollection::formControlElements() const
 {
-    ASSERT(ownerNode());
-    ASSERT(ownerNode()->hasTagName(formTag) || ownerNode()->hasTagName(fieldsetTag));
-    if (ownerNode()->hasTagName(formTag))
-        return toHTMLFormElement(ownerNode())->associatedElements();
-    return toHTMLFieldSetElement(ownerNode())->associatedElements();
+    ASSERT(ownerNode().hasTagName(formTag) || ownerNode().hasTagName(fieldsetTag));
+    if (ownerNode().hasTagName(formTag))
+        return toHTMLFormElement(ownerNode()).associatedElements();
+    return toHTMLFieldSetElement(ownerNode()).associatedElements();
 }
 
 const Vector<HTMLImageElement*>& HTMLFormControlsCollection::formImageElements() const
 {
-    ASSERT(ownerNode());
-    return toHTMLFormElement(ownerNode())->imageElements();
+    return toHTMLFormElement(ownerNode()).imageElements();
 }
 
 static unsigned findFormAssociatedElement(const Vector<FormAssociatedElement*>& associatedElements, Element* element)
@@ -143,7 +141,7 @@ Element* HTMLFormControlsCollection::namedItem(const AtomicString& name) const
     // attribute. If a match is not found, the method then searches for an
     // object with a matching name attribute, but only on those elements
     // that are allowed a name attribute.
-    const Vector<HTMLImageElement*>* imagesElements = ownerNode()->hasTagName(fieldsetTag) ? 0 : &formImageElements();
+    const Vector<HTMLImageElement*>* imagesElements = ownerNode().hasTagName(fieldsetTag) ? 0 : &formImageElements();
     if (HTMLElement* item = firstNamedItem(formControlElements(), imagesElements, idAttr, name))
         return item;
 
@@ -176,7 +174,7 @@ void HTMLFormControlsCollection::updateIdNameCache() const
         }
     }
 
-    if (ownerNode()->hasTagName(formTag)) {
+    if (ownerNode().hasTagName(formTag)) {
         const Vector<HTMLImageElement*>& imageElementsArray = formImageElements();
         for (unsigned i = 0; i < imageElementsArray.size(); ++i) {
             HTMLImageElement* element = imageElementsArray[i];
@@ -207,7 +205,7 @@ void HTMLFormControlsCollection::namedGetter(const AtomicString& name, bool& rad
     }
 
     radioNodeListEnabled = true;
-    radioNodeList = ownerNode()->radioNodeList(name);
+    radioNodeList = ownerNode().radioNodeList(name);
 }
 
 void HTMLFormControlsCollection::supportedPropertyNames(Vector<String>& names)

@@ -46,10 +46,10 @@ public:
 
     // Non-DOM API.
     void invalidateCache() { m_collectionIndexCache.invalidate(); }
-    ContainerNode* ownerNode() const { return m_parent.get(); }
+    ContainerNode& ownerNode() const { return *m_parent; }
 
     // CollectionIndexCache API.
-    ContainerNode& rootNode() const { return *m_parent; }
+    ContainerNode& rootNode() const { return ownerNode(); }
     bool canTraverseBackward() const { return true; }
     Node* itemBefore(const Node* previousItem) const;
     Node* traverseToFirstElement(const ContainerNode& root) const { return root.firstChild(); }

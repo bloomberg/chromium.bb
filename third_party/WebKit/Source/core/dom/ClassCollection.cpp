@@ -44,7 +44,7 @@ ClassCollection::ClassCollection(ContainerNode* rootNode, const AtomicString& cl
 
 ClassCollection::~ClassCollection()
 {
-    ownerNode()->nodeLists()->removeCache(this, ClassCollectionType, m_originalClassNames);
+    ownerNode().nodeLists()->removeCache(this, ClassCollectionType, m_originalClassNames);
 }
 
 } // namespace WebCore

@@ -201,7 +201,7 @@ private:
         return std::pair<unsigned char, StringImpl*>(type, name.impl());
     }
 
-    bool deleteThisAndUpdateNodeRareDataIfAboutToRemoveLastList(Node*);
+    bool deleteThisAndUpdateNodeRareDataIfAboutToRemoveLastList(Node&);
 
     // Can be a ChildNodeList or an EmptyNodeList.
     NodeList* m_childNodeList;
@@ -268,13 +268,12 @@ private:
     OwnPtr<NodeMutationObserverData> m_mutationObserverData;
 };
 
-inline bool NodeListsNodeData::deleteThisAndUpdateNodeRareDataIfAboutToRemoveLastList(Node* ownerNode)
+inline bool NodeListsNodeData::deleteThisAndUpdateNodeRareDataIfAboutToRemoveLastList(Node& ownerNode)
 {
-    ASSERT(ownerNode);
-    ASSERT(ownerNode->nodeLists() == this);
+    ASSERT(ownerNode.nodeLists() == this);
     if ((m_childNodeList ? 1 : 0) + m_atomicNameCaches.size() + m_tagCollectionCacheNS.size() != 1)
         return false;
-    ownerNode->clearNodeLists();
+    ownerNode.clearNodeLists();
     return true;
 }
 

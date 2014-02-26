@@ -62,7 +62,7 @@ static inline HTMLTableRowElement* findTableRowElementInChildren(Element& curren
     return 0;
 }
 
-HTMLTableRowElement* HTMLTableRowsCollection::rowAfter(HTMLTableElement* table, HTMLTableRowElement* previous)
+HTMLTableRowElement* HTMLTableRowsCollection::rowAfter(HTMLTableElement& table, HTMLTableRowElement* previous)
 {
     Element* child = 0;
 
@@ -77,7 +77,7 @@ HTMLTableRowElement* HTMLTableRowsCollection::rowAfter(HTMLTableElement* table, 
 
     // If still looking at head sections, find the first row in the next head section.
     if (!previous)
-        child = ElementTraversal::firstWithin(*table);
+        child = ElementTraversal::firstWithin(table);
     else if (isInHead(previous))
         child = ElementTraversal::nextSibling(*previous->parentNode());
     for (; child; child = ElementTraversal::nextSibling(*child)) {
@@ -89,7 +89,7 @@ HTMLTableRowElement* HTMLTableRowsCollection::rowAfter(HTMLTableElement* table, 
 
     // If still looking at top level and bodies, find the next row in top level or the first in the next body section.
     if (!previous || isInHead(previous))
-        child = ElementTraversal::firstWithin(*table);
+        child = ElementTraversal::firstWithin(table);
     else if (previous->parentNode() == table)
         child = ElementTraversal::nextSibling(*previous);
     else if (isInBody(previous))
@@ -105,7 +105,7 @@ HTMLTableRowElement* HTMLTableRowsCollection::rowAfter(HTMLTableElement* table, 
 
     // Find the first row in the next foot section.
     if (!previous || !isInFoot(previous))
-        child = ElementTraversal::firstWithin(*table);
+        child = ElementTraversal::firstWithin(table);
     else
         child = ElementTraversal::nextSibling(*previous->parentNode());
     for (; child; child = ElementTraversal::nextSibling(*child)) {
@@ -118,9 +118,9 @@ HTMLTableRowElement* HTMLTableRowsCollection::rowAfter(HTMLTableElement* table, 
     return 0;
 }
 
-HTMLTableRowElement* HTMLTableRowsCollection::lastRow(HTMLTableElement* table)
+HTMLTableRowElement* HTMLTableRowsCollection::lastRow(HTMLTableElement& table)
 {
-    for (Node* child = table->lastChild(); child; child = child->previousSibling()) {
+    for (Node* child = table.lastChild(); child; child = child->previousSibling()) {
         if (child->hasTagName(tfootTag)) {
             for (Node* grandchild = child->lastChild(); grandchild; grandchild = grandchild->previousSibling()) {
                 if (isHTMLTableRowElement(grandchild))
@@ -129,7 +129,7 @@ HTMLTableRowElement* HTMLTableRowsCollection::lastRow(HTMLTableElement* table)
         }
     }
 
-    for (Node* child = table->lastChild(); child; child = child->previousSibling()) {
+    for (Node* child = table.lastChild(); child; child = child->previousSibling()) {
         if (isHTMLTableRowElement(child))
             return toHTMLTableRowElement(child);
         if (child->hasTagName(tbodyTag)) {
@@ -140,7 +140,7 @@ HTMLTableRowElement* HTMLTableRowsCollection::lastRow(HTMLTableElement* table)
         }
     }
 
-    for (Node* child = table->lastChild(); child; child = child->previousSibling()) {
+    for (Node* child = table.lastChild(); child; child = child->previousSibling()) {
         if (child->hasTagName(theadTag)) {
             for (Node* grandchild = child->lastChild(); grandchild; grandchild = grandchild->previousSibling()) {
                 if (isHTMLTableRowElement(grandchild))

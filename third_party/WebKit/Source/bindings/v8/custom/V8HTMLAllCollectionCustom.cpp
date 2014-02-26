@@ -87,10 +87,9 @@ void V8HTMLAllCollection::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Va
         return;
 
     HTMLAllCollection* imp = V8HTMLAllCollection::toNative(info.Holder());
-    Node* ownerNode = imp->ownerNode();
-    ASSERT(ownerNode);
+    Node& ownerNode = imp->ownerNode();
 
-    UseCounter::count(ownerNode->document(), UseCounter::DocumentAllLegacyCall);
+    UseCounter::count(ownerNode.document(), UseCounter::DocumentAllLegacyCall);
 
     if (info.Length() == 1) {
         v8SetReturnValue(info, getItem(imp, info[0], info));

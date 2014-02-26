@@ -40,11 +40,12 @@ class EmptyNodeList FINAL : public NodeList {
 public:
     static PassRefPtr<EmptyNodeList> create(Node* rootNode)
     {
+        ASSERT(rootNode);
         return adoptRef(new EmptyNodeList(rootNode));
     }
     virtual ~EmptyNodeList();
 
-    Node* ownerNode() const { return m_owner.get(); }
+    Node& ownerNode() const { return *m_owner; }
 
 private:
     explicit EmptyNodeList(Node* rootNode) : m_owner(rootNode) { }

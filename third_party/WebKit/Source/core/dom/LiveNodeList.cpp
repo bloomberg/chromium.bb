@@ -27,7 +27,7 @@ namespace WebCore {
 
 Node* LiveNodeList::virtualOwnerNode() const
 {
-    return ownerNode();
+    return &ownerNode();
 }
 
 void LiveNodeList::invalidateCache(Document*) const

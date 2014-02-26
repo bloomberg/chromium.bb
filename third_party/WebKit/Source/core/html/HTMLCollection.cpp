@@ -181,7 +181,7 @@ HTMLCollection::~HTMLCollection()
     // HTMLNameCollection, ClassCollection and TagCollection remove cache by themselves.
     if (type() != WindowNamedItems && type() != DocumentNamedItems && type() != ClassCollectionType
         && type() != HTMLTagCollectionType && type() != TagCollectionType) {
-        ownerNode()->nodeLists()->removeCache(this, type());
+        ownerNode().nodeLists()->removeCache(this, type());
     }
 }
 

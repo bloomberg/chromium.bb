@@ -42,11 +42,10 @@ HTMLNameCollection::HTMLNameCollection(ContainerNode* document, CollectionType t
 
 HTMLNameCollection::~HTMLNameCollection()
 {
-    ASSERT(ownerNode());
-    ASSERT(ownerNode()->isDocumentNode());
+    ASSERT(ownerNode().isDocumentNode());
     ASSERT(type() == WindowNamedItems || type() == DocumentNamedItems);
 
-    ownerNode()->nodeLists()->removeCache(this, type(), m_name);
+    ownerNode().nodeLists()->removeCache(this, type(), m_name);
 }
 
 Element* HTMLNameCollection::virtualItemAfter(Element* previous) const
@@ -55,11 +54,11 @@ Element* HTMLNameCollection::virtualItemAfter(Element* previous) const
 
     Element* current;
     if (!previous)
-        current = ElementTraversal::firstWithin(*ownerNode());
+        current = ElementTraversal::firstWithin(ownerNode());
     else
-        current = ElementTraversal::next(*previous, ownerNode());
+        current = ElementTraversal::next(*previous, &ownerNode());
 
-    for (; current; current = ElementTraversal::next(*current, ownerNode())) {
+    for (; current; current = ElementTraversal::next(*current, &ownerNode())) {
         switch (type()) {
         case WindowNamedItems:
             // find only images, forms, applets, embeds and objects by name,

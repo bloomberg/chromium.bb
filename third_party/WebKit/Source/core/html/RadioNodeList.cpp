@@ -47,7 +47,7 @@ RadioNodeList::RadioNodeList(ContainerNode* rootNode, const AtomicString& name, 
 
 RadioNodeList::~RadioNodeList()
 {
-    ownerNode()->nodeLists()->removeCache(this, m_onlyMatchImgElements ? RadioImgNodeListType : RadioNodeListType, m_name);
+    ownerNode().nodeLists()->removeCache(this, m_onlyMatchImgElements ? RadioImgNodeListType : RadioNodeListType, m_name);
 }
 
 static inline HTMLInputElement* toRadioButtonInputElement(Node* node)
@@ -93,7 +93,7 @@ bool RadioNodeList::checkElementMatchesRadioNodeListFilter(const Element& testEl
 {
     ASSERT(!m_onlyMatchImgElements);
     ASSERT(testElement.hasTagName(objectTag) || testElement.isFormControlElement());
-    if (ownerNode()->hasTagName(formTag)) {
+    if (ownerNode().hasTagName(formTag)) {
         HTMLFormElement* formElement = toHTMLElement(testElement).formOwner();
         if (!formElement || formElement != ownerNode())
             return false;

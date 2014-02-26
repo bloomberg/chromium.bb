@@ -44,7 +44,7 @@ EmptyNodeList::~EmptyNodeList()
 
 Node* EmptyNodeList::virtualOwnerNode() const
 {
-    return ownerNode();
+    return &ownerNode();
 }
 
 } // namespace WebCore
