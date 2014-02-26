@@ -1577,6 +1577,7 @@ template<bool isWeak, bool markWeakMembersStrongly, typename Key, typename Value
 struct CollectionBackingTraceTrait<true, isWeak, markWeakMembersStrongly, WTF::KeyValuePair<Key, Value>, Traits> : public BaseVisitKeyValuePairTrait<markWeakMembersStrongly, Key, Value, Traits> {
 };
 
+
 // TFX (member)
 template<bool markWeakMembersStrongly, typename T, typename Traits>
 struct CollectionBackingTraceTrait<true, false, markWeakMembersStrongly, Member<T>, Traits> {
@@ -1607,7 +1608,7 @@ template<bool isWeak, bool markWeakMembersStrongly, typename T, typename Traits>
 struct CollectionBackingTraceTrait<true, isWeak, markWeakMembersStrongly, T, Traits> {
     static void mark(WebCore::Visitor* visitor, T& t)
     {
-        TraceTrait<T>::trace(visitor, &t);
+        TraceTrait<T>::trace(visitor, reinterpret_cast<void*>(&t));
     }
 };
 
