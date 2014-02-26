@@ -28,6 +28,14 @@ def _GetFilesNotInCloud(input_api):
 
   It validates all the hashes and skips upload if not necessary.
   """
+  hash_paths = []
+  for affected_file in input_api.AffectedFiles(include_deletes=False):
+    hash_path = affected_file.AbsoluteLocalPath()
+    _, extension = os.path.splitext(hash_path)
+    if extension == '.sha1':
+      hash_paths.append(hash_path)
+  if not hash_paths:
+    return []
 
   cloud_storage = LoadSupport(input_api)
 
@@ -40,12 +48,7 @@ def _GetFilesNotInCloud(input_api):
     pass
 
   files = []
-  for affected_file in input_api.AffectedFiles(include_deletes=False):
-    hash_path = affected_file.AbsoluteLocalPath()
-    _, extension = os.path.splitext(hash_path)
-    if extension != '.sha1':
-      continue
-
+  for hash_path in hash_paths:
     with open(hash_path, 'rb') as f:
       file_hash = f.read(1024).rstrip()
     if file_hash not in hashes_in_cloud_storage:
