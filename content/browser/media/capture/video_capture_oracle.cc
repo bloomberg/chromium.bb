@@ -109,7 +109,8 @@ bool SmoothEventSampler::AddEventAndConsiderSampling(
     if (token_bucket_ < base::TimeDelta())
       token_bucket_ = base::TimeDelta();
     TRACE_COUNTER1("mirroring",
-                   "MirroringTokenBucketUsec", token_bucket_.InMicroseconds());
+                   "MirroringTokenBucketUsec",
+                   std::max<int64>(0, token_bucket_.InMicroseconds()));
   }
   current_event_ = event_time;
 
@@ -120,7 +121,8 @@ bool SmoothEventSampler::AddEventAndConsiderSampling(
 void SmoothEventSampler::RecordSample() {
   token_bucket_ -= capture_period_;
   TRACE_COUNTER1("mirroring",
-                 "MirroringTokenBucketUsec", token_bucket_.InMicroseconds());
+                 "MirroringTokenBucketUsec",
+                 std::max<int64>(0, token_bucket_.InMicroseconds()));
 
   bool was_paused = overdue_sample_count_ == redundant_capture_goal_;
   if (HasUnrecordedEvent()) {
