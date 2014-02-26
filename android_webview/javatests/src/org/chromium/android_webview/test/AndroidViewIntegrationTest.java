@@ -355,4 +355,50 @@ public class AndroidViewIntegrationTest extends AwTestBase {
         assertEquals(expectedWidthCss, mOnContentSizeChangedHelper.getWidth());
         assertEquals(expectedHeightCss, mOnContentSizeChangedHelper.getHeight());
     }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testReceivingSizeAfterLoadUpdatesLayout() throws Throwable {
+        final TestAwContentsClient contentsClient = new TestAwContentsClient();
+        final AwTestContainerView testContainerView = createDetachedTestContainerViewOnMainSync(
+                contentsClient);
+        final AwContents awContents = testContainerView.getAwContents();
+
+        final double deviceDIPScale =
+            DeviceDisplayInfo.create(testContainerView.getContext()).getDIPScale();
+        final int physicalWidth = 600;
+        final int expectedWidthCss =
+            (int) Math.ceil(physicalWidth / deviceDIPScale);
+
+        StringBuilder htmlBuilder = new StringBuilder(" <html><body><span>");
+        for (int i = 0; i < 10; ++i)
+            htmlBuilder.append("test test test");
+        htmlBuilder.append("</span></body></html>");
+
+        int contentSizeChangeCallCount = mOnContentSizeChangedHelper.getCallCount();
+        loadDataAsync(awContents, htmlBuilder.toString(), "text/html", false);
+        mOnContentSizeChangedHelper.waitForCallback(contentSizeChangeCallCount);
+
+        // Because we're loading the contents into a detached WebView its layout size is 0x0 and as
+        // a result of that the paragraph will be formated such that each word is on a separate
+        // line.
+        assertTrue(mOnContentSizeChangedHelper.getWidth() < expectedWidthCss);
+        final int narrowLayoutHeight = mOnContentSizeChangedHelper.getHeight();
+
+        contentSizeChangeCallCount = mOnContentSizeChangedHelper.getCallCount();
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                testContainerView.onSizeChanged(physicalWidth, 0, 0, 0);
+            }
+        });
+        mOnContentSizeChangedHelper.waitForCallback(contentSizeChangeCallCount);
+
+        // As a result of calling the onSizeChanged method the layout size should be updated to
+        // match the width of the webview and the text we previously loaded should reflow making the
+        // contents width match the WebView width.
+        assertEquals(mOnContentSizeChangedHelper.getWidth(), expectedWidthCss);
+        assertTrue(mOnContentSizeChangedHelper.getHeight() < narrowLayoutHeight);
+        assertTrue(mOnContentSizeChangedHelper.getHeight() > 0);
+    }
 }
