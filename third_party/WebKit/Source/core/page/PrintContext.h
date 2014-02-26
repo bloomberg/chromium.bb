@@ -29,7 +29,7 @@
 namespace WebCore {
 
 class Element;
-class Frame;
+class LocalFrame;
 class FloatRect;
 class FloatSize;
 class GraphicsContext;
@@ -38,10 +38,10 @@ class Node;
 
 class PrintContext {
 public:
-    explicit PrintContext(Frame*);
+    explicit PrintContext(LocalFrame*);
     ~PrintContext();
 
-    Frame* frame() const { return m_frame; }
+    LocalFrame* frame() const { return m_frame; }
 
     // Break up a page into rects without relayout.
     // FIXME: This means that CSS page breaks won't be on page boundary if the size is different than what was passed to begin(). That's probably not always desirable.
@@ -73,19 +73,19 @@ public:
 
     // Used by layout tests.
     static int pageNumberForElement(Element*, const FloatSize& pageSizeInPixels); // Returns -1 if page isn't found.
-    static String pageProperty(Frame* frame, const char* propertyName, int pageNumber);
-    static bool isPageBoxVisible(Frame* frame, int pageNumber);
-    static String pageSizeAndMarginsInPixels(Frame* frame, int pageNumber, int width, int height, int marginTop, int marginRight, int marginBottom, int marginLeft);
-    static int numberOfPages(Frame*, const FloatSize& pageSizeInPixels);
+    static String pageProperty(LocalFrame* frame, const char* propertyName, int pageNumber);
+    static bool isPageBoxVisible(LocalFrame* frame, int pageNumber);
+    static String pageSizeAndMarginsInPixels(LocalFrame* frame, int pageNumber, int width, int height, int marginTop, int marginRight, int marginBottom, int marginLeft);
+    static int numberOfPages(LocalFrame*, const FloatSize& pageSizeInPixels);
     // Draw all pages into a graphics context with lines which mean page boundaries.
     // The height of the graphics context should be
     // (pageSizeInPixels.height() + 1) * number-of-pages - 1
-    static void spoolAllPagesWithBoundaries(Frame*, GraphicsContext&, const FloatSize& pageSizeInPixels);
+    static void spoolAllPagesWithBoundaries(LocalFrame*, GraphicsContext&, const FloatSize& pageSizeInPixels);
 
 protected:
     void outputLinkedDestinations(GraphicsContext&, Node*, const IntRect& pageRect);
 
-    Frame* m_frame;
+    LocalFrame* m_frame;
     Vector<IntRect> m_pageRects;
 
 private:

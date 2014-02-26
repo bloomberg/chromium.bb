@@ -52,6 +52,7 @@
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/StyleSheetResourceClient.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLHeadElement.h"
 #include "core/inspector/InspectorHistory.h"
 #include "core/inspector/InspectorPageAgent.h"
@@ -59,7 +60,6 @@
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderObject.h"
@@ -505,7 +505,7 @@ void InspectorCSSAgent::disable(ErrorString*)
     m_state->setBoolean(CSSAgentState::cssAgentEnabled, false);
 }
 
-void InspectorCSSAgent::didCommitLoad(Frame* frame, DocumentLoader* loader)
+void InspectorCSSAgent::didCommitLoad(LocalFrame* frame, DocumentLoader* loader)
 {
     if (loader->frame() == frame->page()->mainFrame()) {
         reset();
@@ -564,7 +564,7 @@ void InspectorCSSAgent::activeStyleSheetsUpdated(Document* document)
 
 void InspectorCSSAgent::updateActiveStyleSheetsForDocument(Document* document, StyleSheetsUpdateType styleSheetsUpdateType)
 {
-    Frame* frame = document->frame();
+    LocalFrame* frame = document->frame();
     if (!frame)
         return;
     Vector<CSSStyleSheet*> newSheetsVector;
@@ -572,7 +572,7 @@ void InspectorCSSAgent::updateActiveStyleSheetsForDocument(Document* document, S
     updateActiveStyleSheets(frame, newSheetsVector, styleSheetsUpdateType);
 }
 
-void InspectorCSSAgent::updateActiveStyleSheets(Frame* frame, const Vector<CSSStyleSheet*>& allSheetsVector, StyleSheetsUpdateType styleSheetsUpdateType)
+void InspectorCSSAgent::updateActiveStyleSheets(LocalFrame* frame, const Vector<CSSStyleSheet*>& allSheetsVector, StyleSheetsUpdateType styleSheetsUpdateType)
 {
     bool isInitialFrontendLoad = styleSheetsUpdateType == InitialFrontendLoad;
 
@@ -627,7 +627,7 @@ void InspectorCSSAgent::updateActiveStyleSheets(Frame* frame, const Vector<CSSSt
         m_frameToCSSStyleSheets.remove(frame);
 }
 
-void InspectorCSSAgent::frameDetachedFromParent(Frame* frame)
+void InspectorCSSAgent::frameDetachedFromParent(LocalFrame* frame)
 {
     updateActiveStyleSheets(frame, Vector<CSSStyleSheet*>(), ExistingFrontendRefresh);
 }

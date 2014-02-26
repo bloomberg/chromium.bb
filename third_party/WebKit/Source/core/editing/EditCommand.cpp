@@ -30,7 +30,7 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/editing/CompositeEditCommand.h"
 #include "core/editing/FrameSelection.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 
 namespace WebCore {
 

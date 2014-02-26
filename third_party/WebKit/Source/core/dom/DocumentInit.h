@@ -39,18 +39,18 @@ namespace WebCore {
 
 class CustomElementRegistrationContext;
 class Document;
-class Frame;
+class LocalFrame;
 class HTMLImport;
 class Settings;
 
 class DocumentInit {
 public:
-    explicit DocumentInit(const KURL& = KURL(), Frame* = 0, WeakPtr<Document> = WeakPtr<Document>(), HTMLImport* = 0);
+    explicit DocumentInit(const KURL& = KURL(), LocalFrame* = 0, WeakPtr<Document> = WeakPtr<Document>(), HTMLImport* = 0);
     DocumentInit(const DocumentInit&);
     ~DocumentInit();
 
     const KURL& url() const { return m_url; }
-    Frame* frame() const { return m_frame; }
+    LocalFrame* frame() const { return m_frame; }
     HTMLImport* import() const { return m_import; }
 
     bool hasSecurityContext() const { return frameForSecurityContext(); }
@@ -62,7 +62,7 @@ public:
     Document* parent() const { return m_parent.get(); }
     Document* owner() const { return m_owner.get(); }
     KURL parentBaseURL() const;
-    Frame* ownerFrame() const;
+    LocalFrame* ownerFrame() const;
     Settings* settings() const;
 
     DocumentInit& withRegistrationContext(CustomElementRegistrationContext*);
@@ -73,10 +73,10 @@ public:
     static DocumentInit fromContext(WeakPtr<Document> contextDocument, const KURL& = KURL());
 
 private:
-    Frame* frameForSecurityContext() const;
+    LocalFrame* frameForSecurityContext() const;
 
     KURL m_url;
-    Frame* m_frame;
+    LocalFrame* m_frame;
     RefPtr<Document> m_parent;
     RefPtr<Document> m_owner;
     WeakPtr<Document> m_contextDocument;

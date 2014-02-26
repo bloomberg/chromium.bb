@@ -33,7 +33,7 @@
 
 namespace WebCore {
 
-class Frame;
+class LocalFrame;
 class GraphicsContext;
 class RenderObject;
 class RenderView;
@@ -78,7 +78,7 @@ public:
     static PassOwnPtr<DragCaretController> create();
 
     RenderObject* caretRenderer() const;
-    void paintDragCaret(Frame*, GraphicsContext*, const LayoutPoint&, const LayoutRect& clipRect) const;
+    void paintDragCaret(LocalFrame*, GraphicsContext*, const LayoutPoint&, const LayoutRect& clipRect) const;
 
     bool isContentEditable() const { return m_position.rootEditableElement(); }
     bool isContentRichlyEditable() const;

@@ -58,7 +58,7 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithScale)
     webView->layout();
 
     WebViewImpl* webViewImpl = toWebViewImpl(webView);
-    Frame* frame = webViewImpl->mainFrameImpl()->frame();
+    LocalFrame* frame = webViewImpl->mainFrameImpl()->frame();
     frame->loader().setLoadType(FrameLoadTypeBackForward);
 
     // Scale and scroll the page and save that state. Then scale and scroll again and restore.
@@ -86,7 +86,7 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithoutScale)
     webView->layout();
 
     WebViewImpl* webViewImpl = toWebViewImpl(webView);
-    Frame* frame = webViewImpl->mainFrameImpl()->frame();
+    LocalFrame* frame = webViewImpl->mainFrameImpl()->frame();
     frame->loader().setLoadType(FrameLoadTypeBackForward);
 
     // Scale and scroll the page and save that state, but then set scale to zero. Then scale and

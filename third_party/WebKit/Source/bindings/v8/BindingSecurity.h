@@ -38,7 +38,7 @@ namespace WebCore {
 
 class DOMWindow;
 class ExceptionState;
-class Frame;
+class LocalFrame;
 class Node;
 
 enum SecurityReportingOption {
@@ -49,8 +49,8 @@ enum SecurityReportingOption {
 class BindingSecurity {
 public:
     static bool shouldAllowAccessToNode(v8::Isolate*, Node*, ExceptionState&);
-    static bool shouldAllowAccessToFrame(v8::Isolate*, Frame*, SecurityReportingOption = ReportSecurityError);
-    static bool shouldAllowAccessToFrame(v8::Isolate*, Frame*, ExceptionState&);
+    static bool shouldAllowAccessToFrame(v8::Isolate*, LocalFrame*, SecurityReportingOption = ReportSecurityError);
+    static bool shouldAllowAccessToFrame(v8::Isolate*, LocalFrame*, ExceptionState&);
 };
 
 }

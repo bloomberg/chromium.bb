@@ -66,8 +66,8 @@
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
@@ -744,12 +744,12 @@ void Editor::reappliedEditing(PassRefPtr<EditCommandComposition> cmd)
     respondToChangedContents(newSelection);
 }
 
-PassOwnPtr<Editor> Editor::create(Frame& frame)
+PassOwnPtr<Editor> Editor::create(LocalFrame& frame)
 {
     return adoptPtr(new Editor(frame));
 }
 
-Editor::Editor(Frame& frame)
+Editor::Editor(LocalFrame& frame)
     : m_frame(frame)
     , m_preventRevealSelection(0)
     , m_shouldStartNewKillRingSequence(false)
@@ -805,7 +805,7 @@ bool Editor::insertTextWithoutSendingTextEvent(const String& text, bool selectIn
             TypingCommand::insertText(*document.get(), text, selection, options, triggeringEvent && triggeringEvent->isComposition() ? TypingCommand::TextCompositionConfirm : TypingCommand::TextCompositionNone);
 
             // Reveal the current selection
-            if (Frame* editedFrame = document->frame()) {
+            if (LocalFrame* editedFrame = document->frame()) {
                 if (Page* page = editedFrame->page())
                     page->focusController().focusedOrMainFrame()->selection().revealSelection(ScrollAlignment::alignCenterIfNeeded);
             }

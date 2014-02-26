@@ -29,18 +29,18 @@ namespace WebCore {
 
 class DOMWindow;
 class ExceptionState;
-class Frame;
+class LocalFrame;
 class RenderPart;
 
 class HTMLFrameOwnerElement : public HTMLElement {
 public:
     virtual ~HTMLFrameOwnerElement();
 
-    Frame* contentFrame() const { return m_contentFrame; }
+    LocalFrame* contentFrame() const { return m_contentFrame; }
     DOMWindow* contentWindow() const;
     Document* contentDocument() const;
 
-    void setContentFrame(Frame&);
+    void setContentFrame(LocalFrame&);
     void clearContentFrame();
 
     void disconnectContentFrame();
@@ -73,7 +73,7 @@ private:
     virtual bool isKeyboardFocusable() const OVERRIDE;
     virtual bool isFrameOwnerElement() const OVERRIDE FINAL { return true; }
 
-    Frame* m_contentFrame;
+    LocalFrame* m_contentFrame;
     SandboxFlags m_sandboxFlags;
 };
 

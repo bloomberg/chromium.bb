@@ -27,7 +27,7 @@
 #include "core/html/parser/XSSAuditorDelegate.h"
 
 #include "core/dom/Document.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -100,8 +100,8 @@ void XSSAuditorDelegate::didBlockScript(const XSSInfo& xssInfo)
 
     m_document->addConsoleMessage(JSMessageSource, ErrorMessageLevel, xssInfo.buildConsoleError());
 
-    // stopAllLoaders can detach the Frame, so protect it.
-    RefPtr<Frame> protect(m_document->frame());
+    // stopAllLoaders can detach the LocalFrame, so protect it.
+    RefPtr<LocalFrame> protect(m_document->frame());
     FrameLoader& frameLoader = m_document->frame()->loader();
     if (xssInfo.m_didBlockEntirePage)
         frameLoader.stopAllLoaders();

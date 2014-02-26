@@ -39,7 +39,7 @@
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/frame/DOMWindow.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"
 #include "core/storage/Storage.h"
@@ -109,7 +109,7 @@ void InspectorDOMStorageAgent::disable(ErrorString*)
 
 void InspectorDOMStorageAgent::getDOMStorageItems(ErrorString* errorString, const RefPtr<JSONObject>& storageId, RefPtr<TypeBuilder::Array<TypeBuilder::Array<String> > >& items)
 {
-    Frame* frame;
+    LocalFrame* frame;
     OwnPtr<StorageArea> storageArea = findStorageArea(errorString, storageId, frame);
     if (!storageArea)
         return;
@@ -141,7 +141,7 @@ static String toErrorString(ExceptionState& exceptionState)
 
 void InspectorDOMStorageAgent::setDOMStorageItem(ErrorString* errorString, const RefPtr<JSONObject>& storageId, const String& key, const String& value)
 {
-    Frame* frame;
+    LocalFrame* frame;
     OwnPtr<StorageArea> storageArea = findStorageArea(0, storageId, frame);
     if (!storageArea) {
         *errorString = "Storage not found";
@@ -155,7 +155,7 @@ void InspectorDOMStorageAgent::setDOMStorageItem(ErrorString* errorString, const
 
 void InspectorDOMStorageAgent::removeDOMStorageItem(ErrorString* errorString, const RefPtr<JSONObject>& storageId, const String& key)
 {
-    Frame* frame;
+    LocalFrame* frame;
     OwnPtr<StorageArea> storageArea = findStorageArea(0, storageId, frame);
     if (!storageArea) {
         *errorString = "Storage not found";
@@ -191,7 +191,7 @@ void InspectorDOMStorageAgent::didDispatchDOMStorageEvent(const String& key, con
         m_frontend->domstorage()->domStorageItemUpdated(id, key, oldValue, newValue);
 }
 
-PassOwnPtr<StorageArea> InspectorDOMStorageAgent::findStorageArea(ErrorString* errorString, const RefPtr<JSONObject>& storageId, Frame*& targetFrame)
+PassOwnPtr<StorageArea> InspectorDOMStorageAgent::findStorageArea(ErrorString* errorString, const RefPtr<JSONObject>& storageId, LocalFrame*& targetFrame)
 {
     String securityOrigin;
     bool isLocalStorage = false;
@@ -204,10 +204,10 @@ PassOwnPtr<StorageArea> InspectorDOMStorageAgent::findStorageArea(ErrorString* e
         return nullptr;
     }
 
-    Frame* frame = m_pageAgent->findFrameWithSecurityOrigin(securityOrigin);
+    LocalFrame* frame = m_pageAgent->findFrameWithSecurityOrigin(securityOrigin);
     if (!frame) {
         if (errorString)
-            *errorString = "Frame not found for the given security origin";
+            *errorString = "LocalFrame not found for the given security origin";
         return nullptr;
     }
     targetFrame = frame;

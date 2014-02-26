@@ -54,6 +54,7 @@
 #include "core/editing/markup.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileList.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLinkElement.h"
@@ -68,7 +69,6 @@
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/frame/Frame.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
 #include "core/rendering/HitTestResult.h"
@@ -147,7 +147,7 @@ static bool parseQuad(const RefPtr<JSONArray>& quadArray, FloatQuad* quad)
     return true;
 }
 
-static Node* hoveredNodeForPoint(Frame* frame, const IntPoint& point, bool ignorePointerEventsNone)
+static Node* hoveredNodeForPoint(LocalFrame* frame, const IntPoint& point, bool ignorePointerEventsNone)
 {
     HitTestRequest::HitTestRequestType hitType = HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::AllowChildFrameContent;
     if (ignorePointerEventsNone)
@@ -161,17 +161,17 @@ static Node* hoveredNodeForPoint(Frame* frame, const IntPoint& point, bool ignor
     return node;
 }
 
-static Node* hoveredNodeForEvent(Frame* frame, const PlatformGestureEvent& event, bool ignorePointerEventsNone)
+static Node* hoveredNodeForEvent(LocalFrame* frame, const PlatformGestureEvent& event, bool ignorePointerEventsNone)
 {
     return hoveredNodeForPoint(frame, event.position(), ignorePointerEventsNone);
 }
 
-static Node* hoveredNodeForEvent(Frame* frame, const PlatformMouseEvent& event, bool ignorePointerEventsNone)
+static Node* hoveredNodeForEvent(LocalFrame* frame, const PlatformMouseEvent& event, bool ignorePointerEventsNone)
 {
     return hoveredNodeForPoint(frame, event.position(), ignorePointerEventsNone);
 }
 
-static Node* hoveredNodeForEvent(Frame* frame, const PlatformTouchEvent& event, bool ignorePointerEventsNone)
+static Node* hoveredNodeForEvent(LocalFrame* frame, const PlatformTouchEvent& event, bool ignorePointerEventsNone)
 {
     const Vector<PlatformTouchPoint>& points = event.touchPoints();
     if (!points.size())
@@ -282,7 +282,7 @@ void InspectorDOMAgent::restore()
 Vector<Document*> InspectorDOMAgent::documents()
 {
     Vector<Document*> result;
-    for (Frame* frame = m_document->frame(); frame; frame = frame->tree().traverseNext()) {
+    for (LocalFrame* frame = m_document->frame(); frame; frame = frame->tree().traverseNext()) {
         Document* document = frame->document();
         if (!document)
             continue;
@@ -1084,7 +1084,7 @@ bool InspectorDOMAgent::handleMousePress()
     return false;
 }
 
-bool InspectorDOMAgent::handleGestureEvent(Frame* frame, const PlatformGestureEvent& event)
+bool InspectorDOMAgent::handleGestureEvent(LocalFrame* frame, const PlatformGestureEvent& event)
 {
     if (m_searchingForNode == NotSearching || event.type() != PlatformEvent::GestureTap)
         return false;
@@ -1097,7 +1097,7 @@ bool InspectorDOMAgent::handleGestureEvent(Frame* frame, const PlatformGestureEv
     return false;
 }
 
-bool InspectorDOMAgent::handleTouchEvent(Frame* frame, const PlatformTouchEvent& event)
+bool InspectorDOMAgent::handleTouchEvent(LocalFrame* frame, const PlatformTouchEvent& event)
 {
     if (m_searchingForNode == NotSearching)
         return false;
@@ -1124,7 +1124,7 @@ void InspectorDOMAgent::inspect(Node* inspectedNode)
         m_frontend->inspectNodeRequested(nodeId);
 }
 
-void InspectorDOMAgent::handleMouseMove(Frame* frame, const PlatformMouseEvent& event)
+void InspectorDOMAgent::handleMouseMove(LocalFrame* frame, const PlatformMouseEvent& event)
 {
     if (m_searchingForNode == NotSearching)
         return;
@@ -1243,7 +1243,7 @@ void InspectorDOMAgent::highlightFrame(
     const RefPtr<JSONObject>* color,
     const RefPtr<JSONObject>* outlineColor)
 {
-    Frame* frame = m_pageAgent->frameForId(frameId);
+    LocalFrame* frame = m_pageAgent->frameForId(frameId);
     if (frame && frame->ownerElement()) {
         OwnPtr<HighlightConfig> highlightConfig = adoptPtr(new HighlightConfig());
         highlightConfig->showInfo = true; // Always show tooltips for frames.
@@ -1368,7 +1368,7 @@ void InspectorDOMAgent::getBoxModel(ErrorString* errorString, int nodeId, RefPtr
     }
 
     RenderObject* renderer = node->renderer();
-    Frame* frame = node->document().frame();
+    LocalFrame* frame = node->document().frame();
     FrameView* view = frame->view();
 
     IntRect boundingBox = pixelSnappedIntRect(view->contentsToRootView(renderer->absoluteBoundingBoxRect()));
@@ -1497,7 +1497,7 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
 
         if (node->isFrameOwnerElement()) {
             HTMLFrameOwnerElement* frameOwner = toHTMLFrameOwnerElement(node);
-            if (Frame* frame = frameOwner->contentFrame())
+            if (LocalFrame* frame = frameOwner->contentFrame())
                 value->setFrameId(m_pageAgent->frameId(frame));
             if (Document* doc = frameOwner->contentDocument())
                 value->setContentDocument(buildObjectForNode(doc, 0, nodesMap));
@@ -1634,7 +1634,7 @@ PassRefPtr<TypeBuilder::DOM::EventListener> InspectorDOMAgent::buildObjectForEve
     if (objectGroupId) {
         ScriptValue functionValue = eventListenerHandler(&document, eventListener.get());
         if (!functionValue.hasNoValue()) {
-            Frame* frame = document.frame();
+            LocalFrame* frame = document.frame();
             if (frame) {
                 ScriptState* scriptState = eventListenerHandlerScriptState(frame, eventListener.get());
                 if (scriptState) {
@@ -1718,7 +1718,7 @@ bool InspectorDOMAgent::isWhitespace(Node* node)
     return node && node->nodeType() == Node::TEXT_NODE && node->nodeValue().stripWhiteSpace().length() == 0;
 }
 
-void InspectorDOMAgent::domContentLoadedEventFired(Frame* frame)
+void InspectorDOMAgent::domContentLoadedEventFired(LocalFrame* frame)
 {
     if (!frame->isMainFrame())
         return;
@@ -1729,7 +1729,7 @@ void InspectorDOMAgent::domContentLoadedEventFired(Frame* frame)
         m_frontend->documentUpdated();
 }
 
-void InspectorDOMAgent::invalidateFrameOwnerElement(Frame* frame)
+void InspectorDOMAgent::invalidateFrameOwnerElement(LocalFrame* frame)
 {
     Element* frameOwner = frame->document()->ownerElement();
     if (!frameOwner)
@@ -1750,12 +1750,12 @@ void InspectorDOMAgent::invalidateFrameOwnerElement(Frame* frame)
     m_frontend->childNodeInserted(parentId, prevId, value.release());
 }
 
-void InspectorDOMAgent::didCommitLoad(Frame* frame, DocumentLoader* loader)
+void InspectorDOMAgent::didCommitLoad(LocalFrame* frame, DocumentLoader* loader)
 {
     // FIXME: If "frame" is always guarenteed to be in the same Page as loader->frame()
     // then all we need to check here is loader->frame()->isMainFrame()
     // and we don't need "frame" at all.
-    Frame* mainFrame = frame->page()->mainFrame();
+    LocalFrame* mainFrame = frame->page()->mainFrame();
     if (loader->frame() != mainFrame) {
         invalidateFrameOwnerElement(loader->frame());
         return;
@@ -1915,7 +1915,7 @@ void InspectorDOMAgent::willPopShadowRoot(Element* host, ShadowRoot* root)
         m_frontend->shadowRootPopped(hostId, rootId);
 }
 
-void InspectorDOMAgent::frameDocumentUpdated(Frame* frame)
+void InspectorDOMAgent::frameDocumentUpdated(LocalFrame* frame)
 {
     Document* document = frame->document();
     if (!document)
@@ -2035,7 +2035,7 @@ void InspectorDOMAgent::getRelayoutBoundary(ErrorString* errorString, int nodeId
 PassRefPtr<TypeBuilder::Runtime::RemoteObject> InspectorDOMAgent::resolveNode(Node* node, const String& objectGroup)
 {
     Document* document = node->isDocumentNode() ? &node->document() : node->ownerDocument();
-    Frame* frame = document ? document->frame() : 0;
+    LocalFrame* frame = document ? document->frame() : 0;
     if (!frame)
         return nullptr;
 

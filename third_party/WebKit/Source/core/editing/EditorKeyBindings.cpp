@@ -28,7 +28,7 @@
 #include "core/editing/Editor.h"
 
 #include "core/events/KeyboardEvent.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/page/EditorClient.h"
 #include "platform/PlatformKeyboardEvent.h"
 

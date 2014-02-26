@@ -38,7 +38,7 @@ namespace WebCore {
 
 class Resource;
 class ResourceFetcher;
-class Frame;
+class LocalFrame;
 class ResourceLoader;
 class ResourceRequest;
 class ResourceResponse;

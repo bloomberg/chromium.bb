@@ -159,7 +159,7 @@ void Geolocation::GeoNotifier::timerFired(Timer<GeoNotifier>*)
     // could be deleted by a call to clearWatch in a callback.
     RefPtrWillBeRawPtr<GeoNotifier> protect(this);
 
-    // Test for fatal error first. This is required for the case where the Frame is
+    // Test for fatal error first. This is required for the case where the LocalFrame is
     // disconnected and requests are cancelled.
     if (m_fatalError) {
         runErrorCallback(m_fatalError.get());
@@ -282,7 +282,7 @@ Document* Geolocation::document() const
     return toDocument(executionContext());
 }
 
-Frame* Geolocation::frame() const
+LocalFrame* Geolocation::frame() const
 {
     return document() ? document()->frame() : 0;
 }

@@ -56,7 +56,7 @@ class DateTimeChooserClient;
 class Element;
 class FileChooser;
 class FloatRect;
-class Frame;
+class LocalFrame;
 class GraphicsLayer;
 class GraphicsLayerFactory;
 class HitTestResult;
@@ -93,13 +93,13 @@ public:
 
     virtual void focusedNodeChanged(Node*) = 0;
 
-    // The Frame pointer provides the ChromeClient with context about which
-    // Frame wants to create the new Page. Also, the newly created window
+    // The LocalFrame pointer provides the ChromeClient with context about which
+    // LocalFrame wants to create the new Page. Also, the newly created window
     // should not be shown to the user until the ChromeClient of the newly
     // created Page has its show method called.
     // The FrameLoadRequest parameter is only for ChromeClient to check if the
     // request could be fulfilled. The ChromeClient should not load the request.
-    virtual Page* createWindow(Frame*, const FrameLoadRequest&, const WindowFeatures&, NavigationPolicy, ShouldSendReferrer) = 0;
+    virtual Page* createWindow(LocalFrame*, const FrameLoadRequest&, const WindowFeatures&, NavigationPolicy, ShouldSendReferrer) = 0;
     virtual void show(NavigationPolicy) = 0;
 
     virtual void setToolbarsVisible(bool) = 0;
@@ -120,13 +120,13 @@ public:
     virtual void addMessageToConsole(MessageSource, MessageLevel, const String& message, unsigned lineNumber, const String& sourceID, const String& stackTrace) = 0;
 
     virtual bool canRunBeforeUnloadConfirmPanel() = 0;
-    virtual bool runBeforeUnloadConfirmPanel(const String& message, Frame*) = 0;
+    virtual bool runBeforeUnloadConfirmPanel(const String& message, LocalFrame*) = 0;
 
     virtual void closeWindowSoon() = 0;
 
-    virtual void runJavaScriptAlert(Frame*, const String&) = 0;
-    virtual bool runJavaScriptConfirm(Frame*, const String&) = 0;
-    virtual bool runJavaScriptPrompt(Frame*, const String& message, const String& defaultValue, String& result) = 0;
+    virtual void runJavaScriptAlert(LocalFrame*, const String&) = 0;
+    virtual bool runJavaScriptConfirm(LocalFrame*, const String&) = 0;
+    virtual bool runJavaScriptPrompt(LocalFrame*, const String& message, const String& defaultValue, String& result) = 0;
     virtual void setStatusbarText(const String&) = 0;
     virtual bool tabsToLinks() = 0;
 
@@ -148,15 +148,15 @@ public:
 
     virtual void dispatchViewportPropertiesDidChange(const ViewportDescription&) const { }
 
-    virtual void contentsSizeChanged(Frame*, const IntSize&) const = 0;
+    virtual void contentsSizeChanged(LocalFrame*, const IntSize&) const = 0;
     virtual void deviceOrPageScaleFactorChanged() const { }
-    virtual void layoutUpdated(Frame*) const { }
+    virtual void layoutUpdated(LocalFrame*) const { }
 
     virtual void mouseDidMoveOverElement(const HitTestResult&, unsigned modifierFlags) = 0;
 
     virtual void setToolTip(const String&, TextDirection) = 0;
 
-    virtual void print(Frame*) = 0;
+    virtual void print(LocalFrame*) = 0;
     virtual bool shouldRubberBandInDirection(ScrollDirection) const = 0;
 
     virtual void annotatedRegionsChanged() = 0;
@@ -175,7 +175,7 @@ public:
 
     virtual void openTextDataListChooser(HTMLInputElement&) = 0;
 
-    virtual void runOpenPanel(Frame*, PassRefPtr<FileChooser>) = 0;
+    virtual void runOpenPanel(LocalFrame*, PassRefPtr<FileChooser>) = 0;
 
     // Asychronous request to enumerate all files in a directory chosen by the user.
     virtual void enumerateChosenDirectory(FileChooser*) = 0;
@@ -214,7 +214,7 @@ public:
 
     // Checks if there is an opened popup, called by RenderMenuList::showPopup().
     virtual bool hasOpenedPopup() const = 0;
-    virtual PassRefPtr<PopupMenu> createPopupMenu(Frame&, PopupMenuClient*) const = 0;
+    virtual PassRefPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*) const = 0;
     // For testing.
     virtual void setPagePopupDriver(PagePopupDriver*) = 0;
     virtual void resetPagePopupDriver() = 0;

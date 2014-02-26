@@ -26,7 +26,7 @@
 
 namespace WebCore {
 
-class Frame;
+class LocalFrame;
 class Geolocation;
 class Navigator;
 
@@ -39,7 +39,7 @@ public:
     Geolocation* geolocation() const;
 
 private:
-    NavigatorGeolocation(Frame*);
+    NavigatorGeolocation(LocalFrame*);
     static const char* supplementName();
 
     mutable RefPtrWillBePersistent<Geolocation> m_geolocation;

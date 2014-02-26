@@ -30,15 +30,15 @@
 #include "core/loader/MixedContentChecker.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/frame/Frame.h"
-#include "core/frame/Settings.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 
-MixedContentChecker::MixedContentChecker(Frame* frame)
+MixedContentChecker::MixedContentChecker(LocalFrame* frame)
     : m_frame(frame)
 {
 }

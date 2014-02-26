@@ -58,7 +58,7 @@ void EditorClientImpl::respondToChangedContents()
         m_webView->client()->didChangeContents();
 }
 
-bool EditorClientImpl::canCopyCut(Frame* frame, bool defaultValue) const
+bool EditorClientImpl::canCopyCut(LocalFrame* frame, bool defaultValue) const
 {
     WebFrameImpl* webFrame = WebFrameImpl::fromFrame(frame);
     if (!webFrame->permissionClient())
@@ -66,7 +66,7 @@ bool EditorClientImpl::canCopyCut(Frame* frame, bool defaultValue) const
     return webFrame->permissionClient()->allowWriteToClipboard(webFrame, defaultValue);
 }
 
-bool EditorClientImpl::canPaste(Frame* frame, bool defaultValue) const
+bool EditorClientImpl::canPaste(LocalFrame* frame, bool defaultValue) const
 {
     WebFrameImpl* webFrame = WebFrameImpl::fromFrame(frame);
     if (!webFrame->permissionClient())

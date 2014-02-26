@@ -32,7 +32,7 @@
 #include "modules/speech/DOMWindowSpeechSynthesis.h"
 
 #include "core/frame/DOMWindow.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {

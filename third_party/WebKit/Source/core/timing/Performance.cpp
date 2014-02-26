@@ -33,6 +33,7 @@
 #include "core/timing/Performance.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/LocalFrame.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/timing/ResourceTimingInfo.h"
 #include "core/timing/PerformanceResourceTiming.h"
@@ -40,13 +41,11 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/CurrentTime.h"
 
-#include "core/frame/Frame.h"
-
 namespace WebCore {
 
 static const size_t defaultResourceTimingBufferSize = 150;
 
-Performance::Performance(Frame* frame)
+Performance::Performance(LocalFrame* frame)
     : DOMWindowProperty(frame)
     , m_resourceTimingBufferSize(defaultResourceTimingBufferSize)
     , m_referenceTime(frame->document()->loader()->timing()->referenceMonotonicTime())

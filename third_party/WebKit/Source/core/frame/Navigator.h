@@ -34,14 +34,14 @@ namespace WebCore {
 
 class DOMMimeTypeArray;
 class DOMPluginArray;
-class Frame;
+class LocalFrame;
 class PluginData;
 
 typedef int ExceptionCode;
 
 class Navigator FINAL : public NavigatorBase, public ScriptWrappable, public RefCounted<Navigator>, public DOMWindowProperty, public Supplementable<Navigator> {
 public:
-    static PassRefPtr<Navigator> create(Frame* frame) { return adoptRef(new Navigator(frame)); }
+    static PassRefPtr<Navigator> create(LocalFrame* frame) { return adoptRef(new Navigator(frame)); }
     virtual ~Navigator();
 
     AtomicString language() const;
@@ -60,7 +60,7 @@ public:
     void getStorageUpdates();
 
 private:
-    explicit Navigator(Frame*);
+    explicit Navigator(LocalFrame*);
 
     mutable RefPtrWillBePersistent<DOMPluginArray> m_plugins;
     mutable RefPtrWillBePersistent<DOMMimeTypeArray> m_mimeTypes;

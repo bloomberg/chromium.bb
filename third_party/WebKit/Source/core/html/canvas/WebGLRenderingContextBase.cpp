@@ -31,6 +31,8 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/fetch/ImageResource.h"
+#include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLVideoElement.h"
@@ -68,8 +70,6 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/frame/Frame.h"
-#include "core/frame/Settings.h"
 #include "core/rendering/RenderBox.h"
 #include "platform/CheckedInt.h"
 #include "platform/NotImplemented.h"
@@ -4111,7 +4111,7 @@ void WebGLRenderingContextBase::loseContextImpl(WebGLRenderingContextBase::LostC
     if (mode == RealLostContext) {
         // Inform the embedder that a lost context was received. In response, the embedder might
         // decide to take action such as asking the user for permission to use WebGL again.
-        if (Frame* frame = canvas()->document().frame())
+        if (LocalFrame* frame = canvas()->document().frame())
             frame->loader().client()->didLoseWebGLContext(m_context->getGraphicsResetStatusARB());
     }
 
@@ -5325,7 +5325,7 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
     if (!m_restoreAllowed)
         return;
 
-    Frame* frame = canvas()->document().frame();
+    LocalFrame* frame = canvas()->document().frame();
     if (!frame)
         return;
 

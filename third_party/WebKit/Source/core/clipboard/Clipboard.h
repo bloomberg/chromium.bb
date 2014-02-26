@@ -43,7 +43,7 @@ class DragImage;
 class Element;
 class ExceptionState;
 class FileList;
-class Frame;
+class LocalFrame;
 class ImageResource;
 class Node;
 class Range;
@@ -84,10 +84,10 @@ public:
     Node* dragImageElement() const { return m_dragImageElement.get(); }
     void setDragImageElement(Node*, const IntPoint&);
 
-    PassOwnPtr<DragImage> createDragImage(IntPoint& dragLocation, Frame*) const;
+    PassOwnPtr<DragImage> createDragImage(IntPoint& dragLocation, LocalFrame*) const;
     void declareAndWriteDragImage(Element*, const KURL&, const String& title);
     void writeURL(const KURL&, const String&);
-    void writeRange(Range*, Frame*);
+    void writeRange(Range*, LocalFrame*);
     void writePlainText(const String&);
 
     bool hasData();

@@ -39,7 +39,7 @@
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
 #include "core/events/EventListener.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectorController.h"
 #include "core/inspector/InspectorState.h"
 #include "core/page/Page.h"
@@ -536,9 +536,9 @@ public:
     unsigned m_pageSize;
 };
 
-Frame* findFrameWithSecurityOrigin(Page* page, const String& securityOrigin)
+LocalFrame* findFrameWithSecurityOrigin(Page* page, const String& securityOrigin)
 {
-    for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+    for (LocalFrame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
         RefPtr<SecurityOrigin> documentOrigin = frame->document()->securityOrigin();
         if (documentOrigin->toRawString() == securityOrigin)
             return frame;
@@ -587,7 +587,7 @@ void InspectorIndexedDBAgent::disable(ErrorString*)
     m_state->setBoolean(IndexedDBAgentState::indexedDBAgentEnabled, false);
 }
 
-static Document* assertDocument(ErrorString* errorString, Frame* frame)
+static Document* assertDocument(ErrorString* errorString, LocalFrame* frame)
 {
     Document* document = frame ? frame->document() : 0;
 
@@ -614,7 +614,7 @@ static IDBFactory* assertIDBFactory(ErrorString* errorString, Document* document
 
 void InspectorIndexedDBAgent::requestDatabaseNames(ErrorString* errorString, const String& securityOrigin, PassRefPtr<RequestDatabaseNamesCallback> requestCallback)
 {
-    Frame* frame = findFrameWithSecurityOrigin(m_page, securityOrigin);
+    LocalFrame* frame = findFrameWithSecurityOrigin(m_page, securityOrigin);
     Document* document = assertDocument(errorString, frame);
     if (!document)
         return;
@@ -640,7 +640,7 @@ void InspectorIndexedDBAgent::requestDatabaseNames(ErrorString* errorString, con
 
 void InspectorIndexedDBAgent::requestDatabase(ErrorString* errorString, const String& securityOrigin, const String& databaseName, PassRefPtr<RequestDatabaseCallback> requestCallback)
 {
-    Frame* frame = findFrameWithSecurityOrigin(m_page, securityOrigin);
+    LocalFrame* frame = findFrameWithSecurityOrigin(m_page, securityOrigin);
     Document* document = assertDocument(errorString, frame);
     if (!document)
         return;
@@ -661,7 +661,7 @@ void InspectorIndexedDBAgent::requestDatabase(ErrorString* errorString, const St
 
 void InspectorIndexedDBAgent::requestData(ErrorString* errorString, const String& securityOrigin, const String& databaseName, const String& objectStoreName, const String& indexName, int skipCount, int pageSize, const RefPtr<JSONObject>* keyRange, PassRefPtr<RequestDataCallback> requestCallback)
 {
-    Frame* frame = findFrameWithSecurityOrigin(m_page, securityOrigin);
+    LocalFrame* frame = findFrameWithSecurityOrigin(m_page, securityOrigin);
     Document* document = assertDocument(errorString, frame);
     if (!document)
         return;
@@ -772,7 +772,7 @@ private:
 
 void InspectorIndexedDBAgent::clearObjectStore(ErrorString* errorString, const String& securityOrigin, const String& databaseName, const String& objectStoreName, PassRefPtr<ClearObjectStoreCallback> requestCallback)
 {
-    Frame* frame = findFrameWithSecurityOrigin(m_page, securityOrigin);
+    LocalFrame* frame = findFrameWithSecurityOrigin(m_page, securityOrigin);
     Document* document = assertDocument(errorString, frame);
     if (!document)
         return;

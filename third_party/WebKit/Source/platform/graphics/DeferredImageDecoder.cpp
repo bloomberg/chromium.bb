@@ -143,7 +143,7 @@ IntSize DeferredImageDecoder::size() const
 
 IntSize DeferredImageDecoder::frameSizeAtIndex(size_t index) const
 {
-    // FIXME: Frame size is assumed to be uniform. This might not be true for
+    // FIXME: LocalFrame size is assumed to be uniform. This might not be true for
     // future supported codecs.
     return m_actualDecoder ? m_actualDecoder->frameSizeAtIndex(index) : m_size;
 }

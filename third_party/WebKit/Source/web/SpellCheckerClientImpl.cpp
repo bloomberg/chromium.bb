@@ -34,7 +34,7 @@
 #include "core/dom/DocumentMarkerController.h"
 #include "core/editing/Editor.h"
 #include "core/editing/SpellChecker.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/page/Page.h"
 #include "core/frame/Settings.h"
 
@@ -56,7 +56,7 @@ bool SpellCheckerClientImpl::shouldSpellcheckByDefault()
 {
     // Spellcheck should be enabled for all editable areas (such as textareas,
     // contentEditable regions, designMode docs and inputs).
-    const Frame* frame = m_webView->focusedWebCoreFrame();
+    const LocalFrame* frame = m_webView->focusedWebCoreFrame();
     if (!frame)
         return false;
     if (frame->spellChecker().isSpellCheckingEnabledInFocusedNode())
@@ -68,9 +68,9 @@ bool SpellCheckerClientImpl::shouldSpellcheckByDefault()
     // If |element| is null, we default to allowing spellchecking. This is done
     // in order to mitigate the issue when the user clicks outside the textbox,
     // as a result of which |element| becomes null, resulting in all the spell
-    // check markers being deleted. Also, the Frame will decide not to do
+    // check markers being deleted. Also, the LocalFrame will decide not to do
     // spellchecking if the user can't edit - so returning true here will not
-    // cause any problems to the Frame's behavior.
+    // cause any problems to the LocalFrame's behavior.
     if (!element)
         return true;
     const RenderObject* renderer = element->renderer();
@@ -94,13 +94,13 @@ void SpellCheckerClientImpl::toggleContinuousSpellChecking()
     if (isContinuousSpellCheckingEnabled()) {
         m_spellCheckThisFieldStatus = SpellCheckForcedOff;
         if (Page* page = m_webView->page()) {
-            for (Frame* frame = page->mainFrame(); frame && frame->document(); frame = frame->tree().traverseNext()) {
+            for (LocalFrame* frame = page->mainFrame(); frame && frame->document(); frame = frame->tree().traverseNext()) {
                 frame->document()->markers()->removeMarkers(DocumentMarker::MisspellingMarkers());
             }
         }
     } else {
         m_spellCheckThisFieldStatus = SpellCheckForcedOn;
-        if (Frame* frame = m_webView->focusedWebCoreFrame()) {
+        if (LocalFrame* frame = m_webView->focusedWebCoreFrame()) {
             VisibleSelection frameSelection = frame->selection().selection();
             // If a selection is in an editable element spell check its content.
             if (Element* rootEditableElement = frameSelection.rootEditableElement()) {
@@ -112,13 +112,13 @@ void SpellCheckerClientImpl::toggleContinuousSpellChecking()
 
 bool SpellCheckerClientImpl::isGrammarCheckingEnabled()
 {
-    const Frame* frame = m_webView->focusedWebCoreFrame();
+    const LocalFrame* frame = m_webView->focusedWebCoreFrame();
     return frame && frame->settings() && (frame->settings()->asynchronousSpellCheckingEnabled() || frame->settings()->unifiedTextCheckerEnabled());
 }
 
 bool SpellCheckerClientImpl::shouldEraseMarkersAfterChangeSelection(TextCheckingType type) const
 {
-    const Frame* frame = m_webView->focusedWebCoreFrame();
+    const LocalFrame* frame = m_webView->focusedWebCoreFrame();
     return !frame || !frame->settings() || (!frame->settings()->asynchronousSpellCheckingEnabled() && !frame->settings()->unifiedTextCheckerEnabled());
 }
 

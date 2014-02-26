@@ -56,8 +56,8 @@
 #include "core/frame/DOMTimer.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/DOMWindowTimers.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/storage/Storage.h"
 #include "platform/PlatformScreen.h"
@@ -155,7 +155,7 @@ void windowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool 
 
 void V8Window::eventAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    Frame* frame = V8Window::toNative(info.Holder())->frame();
+    LocalFrame* frame = V8Window::toNative(info.Holder())->frame();
     ExceptionState exceptionState(ExceptionState::GetterContext, "event", "Window", info.Holder(), info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), frame, exceptionState)) {
         exceptionState.throwIfNeeded();
@@ -175,7 +175,7 @@ void V8Window::eventAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Val
 
 void V8Window::eventAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
-    Frame* frame = V8Window::toNative(info.Holder())->frame();
+    LocalFrame* frame = V8Window::toNative(info.Holder())->frame();
     ExceptionState exceptionState(ExceptionState::SetterContext, "event", "Window", info.Holder(), info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), frame, exceptionState)) {
         exceptionState.throwIfNeeded();
@@ -335,14 +335,14 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::String> name, const v8::P
     if (!window)
         return;
 
-    Frame* frame = window->frame();
+    LocalFrame* frame = window->frame();
     // window is detached from a frame.
     if (!frame)
         return;
 
     // Search sub-frames.
     AtomicString propName = toCoreAtomicString(name);
-    Frame* child = frame->tree().scopedChild(propName);
+    LocalFrame* child = frame->tree().scopedChild(propName);
     if (child) {
         v8SetReturnValueFast(info, child->domWindow(), window);
         return;
@@ -397,7 +397,7 @@ bool V8Window::namedSecurityCheckCustom(v8::Local<v8::Object> host, v8::Local<v8
 
     ASSERT(targetWindow);
 
-    Frame* target = targetWindow->frame();
+    LocalFrame* target = targetWindow->frame();
     if (!target)
         return false;
 
@@ -409,7 +409,7 @@ bool V8Window::namedSecurityCheckCustom(v8::Local<v8::Object> host, v8::Local<v8
         DEFINE_STATIC_LOCAL(const AtomicString, nameOfProtoProperty, ("__proto__", AtomicString::ConstructFromLiteral));
 
         AtomicString name = toCoreAtomicString(key.As<v8::String>());
-        Frame* childFrame = target->tree().scopedChild(name);
+        LocalFrame* childFrame = target->tree().scopedChild(name);
         // Notice that we can't call HasRealNamedProperty for ACCESS_HAS
         // because that would generate infinite recursion.
         if (type == v8::ACCESS_HAS && childFrame)
@@ -440,7 +440,7 @@ bool V8Window::indexedSecurityCheckCustom(v8::Local<v8::Object> host, uint32_t i
 
     ASSERT(targetWindow);
 
-    Frame* target = targetWindow->frame();
+    LocalFrame* target = targetWindow->frame();
     if (!target)
         return false;
 
@@ -448,7 +448,7 @@ bool V8Window::indexedSecurityCheckCustom(v8::Local<v8::Object> host, uint32_t i
     if (target->loader().stateMachine()->isDisplayingInitialEmptyDocument())
         target->loader().didAccessInitialDocument();
 
-    Frame* childFrame =  target->tree().scopedChild(index);
+    LocalFrame* childFrame =  target->tree().scopedChild(index);
 
     // Notice that we can't call HasRealNamedProperty for ACCESS_HAS
     // because that would generate infinite recursion.
@@ -471,7 +471,7 @@ v8::Handle<v8::Value> toV8(DOMWindow* window, v8::Handle<v8::Object> creationCon
         return v8::Null(isolate);
     // Initializes environment of a frame, and return the global object
     // of the frame.
-    Frame* frame = window->frame();
+    LocalFrame* frame = window->frame();
     if (!frame)
         return v8Undefined();
 

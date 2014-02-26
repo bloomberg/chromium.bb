@@ -31,7 +31,7 @@
 
 namespace WebCore {
 
-class Frame;
+class LocalFrame;
 class Page;
 
 template<> void observerContext(Page*, LifecycleObserver<Page>*);
@@ -45,7 +45,7 @@ public:
     Page* page() const;
 
     virtual void pageVisibilityChanged() { }
-    virtual void didCommitLoad(Frame*) { }
+    virtual void didCommitLoad(LocalFrame*) { }
 };
 
 } // namespace WebCore

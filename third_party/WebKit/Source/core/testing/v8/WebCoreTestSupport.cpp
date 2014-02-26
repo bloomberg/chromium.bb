@@ -31,7 +31,7 @@
 #include "V8Internals.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 
 #include <v8.h>
 

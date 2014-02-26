@@ -38,14 +38,14 @@
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/EventPath.h"
+#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLMapElement.h"
 #include "core/page/DOMSelection.h"
 #include "core/page/FocusController.h"
-#include "core/frame/Frame.h"
-#include "core/frame/FrameView.h"
 #include "core/page/Page.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderView.h"
@@ -217,7 +217,7 @@ HTMLMapElement* TreeScope::getImageMap(const String& url) const
 
 HitTestResult hitTestInDocument(const Document* document, int x, int y)
 {
-    Frame* frame = document->frame();
+    LocalFrame* frame = document->frame();
 
     if (!frame)
         return HitTestResult();
@@ -338,7 +338,7 @@ void TreeScope::adoptIfNeeded(Node& node)
         adopter.execute();
 }
 
-static Element* focusedFrameOwnerElement(Frame* focusedFrame, Frame* currentFrame)
+static Element* focusedFrameOwnerElement(LocalFrame* focusedFrame, LocalFrame* currentFrame)
 {
     for (; focusedFrame; focusedFrame = focusedFrame->tree().parent()) {
         if (focusedFrame->tree().parent() == currentFrame)

@@ -39,7 +39,7 @@
 
 namespace WebCore {
 class FloatQuad;
-class Frame;
+class LocalFrame;
 class FrameView;
 class IntRect;
 class IntSize;
@@ -57,7 +57,7 @@ class WebMouseEvent;
 // to the WebCore popup menu.
 class ExternalPopupMenu FINAL : public WebCore::PopupMenu, public WebExternalPopupMenuClient {
 public:
-    ExternalPopupMenu(WebCore::Frame&, WebCore::PopupMenuClient*, WebViewImpl&);
+    ExternalPopupMenu(WebCore::LocalFrame&, WebCore::PopupMenuClient*, WebViewImpl&);
     virtual ~ExternalPopupMenu();
 
 private:

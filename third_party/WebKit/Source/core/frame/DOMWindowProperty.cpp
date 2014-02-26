@@ -29,11 +29,11 @@
 
 #include "core/dom/Document.h"
 #include "core/frame/DOMWindow.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 
 namespace WebCore {
 
-DOMWindowProperty::DOMWindowProperty(Frame* frame)
+DOMWindowProperty::DOMWindowProperty(LocalFrame* frame)
     : m_frame(frame)
     , m_associatedDOMWindow(0)
 {
@@ -57,7 +57,7 @@ DOMWindowProperty::~DOMWindowProperty()
 
 void DOMWindowProperty::willDestroyGlobalObjectInFrame()
 {
-    // If the property is getting this callback it must have been created with a Frame/DOMWindow and it should still have them.
+    // If the property is getting this callback it must have been created with a LocalFrame/DOMWindow and it should still have them.
     ASSERT(m_frame);
     ASSERT(m_associatedDOMWindow);
 
@@ -71,7 +71,7 @@ void DOMWindowProperty::willDestroyGlobalObjectInFrame()
 
 void DOMWindowProperty::willDetachGlobalObjectFromFrame()
 {
-    // If the property is getting this callback it must have been created with a Frame/DOMWindow and it should still have them.
+    // If the property is getting this callback it must have been created with a LocalFrame/DOMWindow and it should still have them.
     ASSERT(m_frame);
     ASSERT(m_associatedDOMWindow);
 }

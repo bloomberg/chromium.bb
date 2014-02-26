@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/page/PageGroup.h"
 
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/page/Page.h"
 #include "wtf/StdLibExtras.h"
 

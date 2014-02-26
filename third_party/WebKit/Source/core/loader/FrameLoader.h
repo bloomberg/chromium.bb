@@ -74,12 +74,12 @@ bool isBackForwardLoadType(FrameLoadType);
 class FrameLoader {
     WTF_MAKE_NONCOPYABLE(FrameLoader);
 public:
-    FrameLoader(Frame*, FrameLoaderClient*);
+    FrameLoader(LocalFrame*, FrameLoaderClient*);
     ~FrameLoader();
 
     void init();
 
-    Frame* frame() const { return m_frame; }
+    LocalFrame* frame() const { return m_frame; }
 
     MixedContentChecker* mixedContentChecker() const { return &m_mixedContentChecker; }
 
@@ -88,11 +88,11 @@ public:
     void reload(ReloadPolicy = NormalReload, const KURL& overrideURL = KURL(), const AtomicString& overrideEncoding = nullAtom);
     void loadHistoryItem(HistoryItem*, HistoryLoadType = HistoryDifferentDocumentLoad, ResourceRequestCachePolicy = UseProtocolCachePolicy); // The entry point for all back/forward loads
 
-    static void reportLocalLoadFailed(Frame*, const String& url);
+    static void reportLocalLoadFailed(LocalFrame*, const String& url);
 
     // FIXME: These are all functions which stop loads. We have too many.
-    // Warning: stopAllLoaders can and will detach the Frame out from under you. All callers need to either protect the Frame
-    // or guarantee they won't in any way access the Frame after stopAllLoaders returns.
+    // Warning: stopAllLoaders can and will detach the LocalFrame out from under you. All callers need to either protect the LocalFrame
+    // or guarantee they won't in any way access the LocalFrame after stopAllLoaders returns.
     void stopAllLoaders();
     void stopLoading();
     bool closeURL();
@@ -160,8 +160,8 @@ public:
     void forceSandboxFlags(SandboxFlags flags) { m_forcedSandboxFlags |= flags; }
     SandboxFlags effectiveSandboxFlags() const;
 
-    Frame* opener();
-    void setOpener(Frame*);
+    LocalFrame* opener();
+    void setOpener(LocalFrame*);
 
     void frameDetached();
 
@@ -173,7 +173,7 @@ public:
 
     FrameLoaderStateMachine* stateMachine() const { return &m_stateMachine; }
 
-    Frame* findFrameForNavigation(const AtomicString& name, Document* activeDocument);
+    LocalFrame* findFrameForNavigation(const AtomicString& name, Document* activeDocument);
 
     void applyUserAgent(ResourceRequest&);
 
@@ -225,7 +225,7 @@ private:
 
     void detachFromParent();
     void detachChildren();
-    void closeAndRemoveChild(Frame*);
+    void closeAndRemoveChild(LocalFrame*);
     void detachClient();
 
     void setHistoryItemStateForCommit(HistoryCommitType, bool isPushOrReplaceState = false, PassRefPtr<SerializedScriptValue> = nullptr);
@@ -235,7 +235,7 @@ private:
     void scheduleCheckCompleted();
     void startCheckCompleteTimer();
 
-    Frame* m_frame;
+    LocalFrame* m_frame;
     FrameLoaderClient* m_client;
 
     // FIXME: These should be OwnPtr<T> to reduce build times and simplify
@@ -270,8 +270,8 @@ private:
     Timer<FrameLoader> m_checkTimer;
     bool m_shouldCallCheckCompleted;
 
-    Frame* m_opener;
-    HashSet<Frame*> m_openedFrames;
+    LocalFrame* m_opener;
+    HashSet<LocalFrame*> m_openedFrames;
 
     bool m_didAccessInitialDocument;
     Timer<FrameLoader> m_didAccessInitialDocumentTimer;

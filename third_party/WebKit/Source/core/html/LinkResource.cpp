@@ -53,7 +53,7 @@ bool LinkResource::shouldLoadResource() const
     return m_owner->document().frame() || m_owner->document().import();
 }
 
-Frame* LinkResource::loadingFrame() const
+LocalFrame* LinkResource::loadingFrame() const
 {
     HTMLImport* import = m_owner->document().import();
     if (!import)

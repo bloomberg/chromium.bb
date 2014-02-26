@@ -1245,7 +1245,7 @@ v8::Handle<v8::Object> wrap({{cpp_class}}* impl, v8::Handle<v8::Object> creation
         return wrapper;
     DOMWrapperWorld* world = DOMWrapperWorld::current(isolate);
     if (world->isMainWorld()) {
-        if (Frame* frame = impl->frame())
+        if (LocalFrame* frame = impl->frame())
             frame->script().windowShell(world)->updateDocumentWrapper(wrapper);
     }
     {% endif %}
@@ -1271,7 +1271,7 @@ v8::Handle<v8::Object> {{v8_class}}::createWrapper({{pass_ref_ptr}}<{{cpp_class}
     }
 
     {% if is_document %}
-    if (Frame* frame = impl->frame()) {
+    if (LocalFrame* frame = impl->frame()) {
         if (frame->script().initializeMainWorld()) {
             // initializeMainWorld may have created a wrapper for the object, retry from the start.
             v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapper<{{v8_class}}>(impl.get(), isolate);

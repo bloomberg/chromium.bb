@@ -40,15 +40,15 @@ namespace WebCore {
 
     class Document;
     class EventListener;
-    class Frame;
+    class LocalFrame;
     class Node;
     class QualifiedName;
 
     PassRefPtr<V8LazyEventListener> createAttributeEventListener(Node*, const QualifiedName&, const AtomicString& value);
-    PassRefPtr<V8LazyEventListener> createAttributeEventListener(Frame*, const QualifiedName&, const AtomicString& value);
+    PassRefPtr<V8LazyEventListener> createAttributeEventListener(LocalFrame*, const QualifiedName&, const AtomicString& value);
     String eventListenerHandlerBody(Document*, EventListener*);
     ScriptValue eventListenerHandler(Document*, EventListener*);
-    ScriptState* eventListenerHandlerScriptState(Frame*, EventListener*);
+    ScriptState* eventListenerHandlerScriptState(LocalFrame*, EventListener*);
     bool eventListenerHandlerLocation(Document*, EventListener*, String& sourceName, String& scriptId, int& lineNumber);
 
 } // namespace WebCore

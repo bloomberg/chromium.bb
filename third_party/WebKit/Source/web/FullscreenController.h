@@ -37,7 +37,7 @@
 
 namespace WebCore {
 class Element;
-class Frame;
+class LocalFrame;
 }
 
 namespace blink {
@@ -68,7 +68,7 @@ private:
     RefPtr<WebCore::Element> m_provisionalFullScreenElement;
 
     // If set, the WebView is in fullscreen mode for an element in this frame.
-    RefPtr<WebCore::Frame> m_fullScreenFrame;
+    RefPtr<WebCore::LocalFrame> m_fullScreenFrame;
 
     bool m_isCancelingFullScreen;
 };

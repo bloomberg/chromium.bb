@@ -47,7 +47,7 @@ class WebPluginLoadObserver;
 
 class WebDataSourceImpl FINAL : public WebCore::DocumentLoader, public WebDataSource {
 public:
-    static PassRefPtr<WebDataSourceImpl> create(WebCore::Frame*, const WebCore::ResourceRequest&, const WebCore::SubstituteData&);
+    static PassRefPtr<WebDataSourceImpl> create(WebCore::LocalFrame*, const WebCore::ResourceRequest&, const WebCore::SubstituteData&);
 
     static WebDataSourceImpl* fromDocumentLoader(WebCore::DocumentLoader* loader)
     {
@@ -76,7 +76,7 @@ public:
     static void setNextPluginLoadObserver(PassOwnPtr<WebPluginLoadObserver>);
 
 private:
-    WebDataSourceImpl(WebCore::Frame*, const WebCore::ResourceRequest&, const WebCore::SubstituteData&);
+    WebDataSourceImpl(WebCore::LocalFrame*, const WebCore::ResourceRequest&, const WebCore::SubstituteData&);
     virtual ~WebDataSourceImpl();
 
     // Mutable because the const getters will magically sync these to the

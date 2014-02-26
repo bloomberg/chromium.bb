@@ -37,7 +37,7 @@ class DateTimeChooser;
 class DateTimeChooserClient;
 class FileChooser;
 class FloatRect;
-class Frame;
+class LocalFrame;
 class HTMLInputElement;
 class HitTestResult;
 class IntRect;
@@ -69,7 +69,7 @@ public:
 
     virtual void scheduleAnimation() OVERRIDE;
 
-    void contentsSizeChanged(Frame*, const IntSize&) const;
+    void contentsSizeChanged(LocalFrame*, const IntSize&) const;
 
     void setCursor(const Cursor&);
 
@@ -95,14 +95,14 @@ public:
     bool menubarVisible() const;
 
     bool canRunBeforeUnloadConfirmPanel();
-    bool runBeforeUnloadConfirmPanel(const String& message, Frame*);
+    bool runBeforeUnloadConfirmPanel(const String& message, LocalFrame*);
 
     void closeWindowSoon();
 
-    void runJavaScriptAlert(Frame*, const String&);
-    bool runJavaScriptConfirm(Frame*, const String&);
-    bool runJavaScriptPrompt(Frame*, const String& message, const String& defaultValue, String& result);
-    void setStatusbarText(Frame*, const String&);
+    void runJavaScriptAlert(LocalFrame*, const String&);
+    bool runJavaScriptConfirm(LocalFrame*, const String&);
+    bool runJavaScriptPrompt(LocalFrame*, const String& message, const String& defaultValue, String& result);
+    void setStatusbarText(LocalFrame*, const String&);
 
     IntRect windowResizerRect() const;
 
@@ -110,19 +110,19 @@ public:
 
     void setToolTip(const HitTestResult&);
 
-    void print(Frame*);
+    void print(LocalFrame*);
 
     PassOwnPtr<ColorChooser> createColorChooser(ColorChooserClient*, const Color& initialColor);
     PassRefPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&);
     void openTextDataListChooser(HTMLInputElement&);
 
-    void runOpenPanel(Frame*, PassRefPtr<FileChooser>);
+    void runOpenPanel(LocalFrame*, PassRefPtr<FileChooser>);
     void enumerateChosenDirectory(FileChooser*);
 
     void dispatchViewportPropertiesDidChange(const ViewportDescription&) const;
 
     bool hasOpenedPopup() const;
-    PassRefPtr<PopupMenu> createPopupMenu(Frame&, PopupMenuClient*) const;
+    PassRefPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*) const;
 
     void registerPopupOpeningObserver(PopupOpeningObserver*);
     void unregisterPopupOpeningObserver(PopupOpeningObserver*);

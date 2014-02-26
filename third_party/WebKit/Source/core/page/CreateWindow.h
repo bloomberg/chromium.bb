@@ -33,14 +33,14 @@
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
-class Frame;
+class LocalFrame;
 struct FrameLoadRequest;
 struct WindowFeatures;
 
-Frame* createWindow(const String& urlString, const AtomicString& frameName, const WindowFeatures&,
-    DOMWindow* callingWindow, Frame* firstFrame, Frame* openerFrame);
+LocalFrame* createWindow(const String& urlString, const AtomicString& frameName, const WindowFeatures&,
+    DOMWindow* callingWindow, LocalFrame* firstFrame, LocalFrame* openerFrame);
 
-void createWindowForRequest(const FrameLoadRequest&, Frame* openerFrame, NavigationPolicy, ShouldSendReferrer);
+void createWindowForRequest(const FrameLoadRequest&, LocalFrame* openerFrame, NavigationPolicy, ShouldSendReferrer);
 
 } // namespace WebCore
 

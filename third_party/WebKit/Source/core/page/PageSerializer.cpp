@@ -48,7 +48,7 @@
 #include "core/editing/MarkupAccumulator.h"
 #include "core/fetch/FontResource.h"
 #include "core/fetch/ImageResource.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
@@ -154,7 +154,7 @@ void SerializerMarkupAccumulator::appendCustomAttributes(StringBuilder& out, con
         return;
 
     const HTMLFrameOwnerElement& frameOwner = toHTMLFrameOwnerElement(element);
-    Frame* frame = frameOwner.contentFrame();
+    LocalFrame* frame = frameOwner.contentFrame();
     if (!frame)
         return;
 
@@ -184,7 +184,7 @@ void PageSerializer::serialize(Page* page)
     serializeFrame(page->mainFrame());
 }
 
-void PageSerializer::serializeFrame(Frame* frame)
+void PageSerializer::serializeFrame(LocalFrame* frame)
 {
     ASSERT(frame->document());
     Document& document = *frame->document();
@@ -251,7 +251,7 @@ void PageSerializer::serializeFrame(Frame* frame)
         }
     }
 
-    for (Frame* childFrame = frame->tree().firstChild(); childFrame; childFrame = childFrame->tree().nextSibling())
+    for (LocalFrame* childFrame = frame->tree().firstChild(); childFrame; childFrame = childFrame->tree().nextSibling())
         serializeFrame(childFrame);
 }
 
@@ -374,9 +374,9 @@ void PageSerializer::retrieveResourcesForCSSValue(CSSValue* cssValue, Document& 
     }
 }
 
-KURL PageSerializer::urlForBlankFrame(Frame* frame)
+KURL PageSerializer::urlForBlankFrame(LocalFrame* frame)
 {
-    HashMap<Frame*, KURL>::iterator iter = m_blankFrameURLs.find(frame);
+    HashMap<LocalFrame*, KURL>::iterator iter = m_blankFrameURLs.find(frame);
     if (iter != m_blankFrameURLs.end())
         return iter->value;
     String url = "wyciwyg://frame/" + String::number(m_blankFrameCounter++);

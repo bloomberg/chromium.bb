@@ -32,8 +32,8 @@
 #include "core/loader/CookieJar.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/LocalFrame.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/frame/Frame.h"
 #include "platform/Cookie.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCookie.h"

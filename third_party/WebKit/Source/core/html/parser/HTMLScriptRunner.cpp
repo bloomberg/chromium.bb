@@ -33,10 +33,10 @@
 #include "core/dom/Microtask.h"
 #include "core/dom/ScriptLoader.h"
 #include "core/fetch/ScriptResource.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/parser/HTMLInputStream.h"
 #include "core/html/parser/HTMLScriptRunnerHost.h"
 #include "core/html/parser/NestingLevelIncrementer.h"
-#include "core/frame/Frame.h"
 #include "platform/NotImplemented.h"
 
 namespace WebCore {

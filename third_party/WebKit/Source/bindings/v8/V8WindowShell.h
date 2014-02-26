@@ -48,15 +48,15 @@
 namespace WebCore {
 
 class DOMWindow;
-class Frame;
+class LocalFrame;
 class HTMLDocument;
 class SecurityOrigin;
 
-// V8WindowShell represents all the per-global object state for a Frame that
+// V8WindowShell represents all the per-global object state for a LocalFrame that
 // persist between navigations.
 class V8WindowShell {
 public:
-    static PassOwnPtr<V8WindowShell> create(Frame*, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);
+    static PassOwnPtr<V8WindowShell> create(LocalFrame*, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);
 
     v8::Local<v8::Context> context() const { return m_contextHolder ? m_contextHolder->context() : v8::Local<v8::Context>(); }
 
@@ -83,7 +83,7 @@ public:
     static bool contextHasCorrectPrototype(v8::Handle<v8::Context>);
 
 private:
-    V8WindowShell(Frame*, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);
+    V8WindowShell(LocalFrame*, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);
     bool initialize();
 
     enum GlobalDetachmentBehavior {
@@ -106,7 +106,7 @@ private:
 
     static V8WindowShell* enteredIsolatedWorldContext();
 
-    Frame* m_frame;
+    LocalFrame* m_frame;
     RefPtr<DOMWrapperWorld> m_world;
     v8::Isolate* m_isolate;
 

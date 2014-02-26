@@ -36,14 +36,14 @@
 
 namespace WebCore {
 
-class Frame;
+class LocalFrame;
 class KURL;
 class ExecutionContext;
 class ExceptionState;
 
 class History FINAL : public ScriptWrappable, public RefCounted<History>, public DOMWindowProperty {
 public:
-    static PassRefPtr<History> create(Frame* frame) { return adoptRef(new History(frame)); }
+    static PassRefPtr<History> create(LocalFrame* frame) { return adoptRef(new History(frame)); }
 
     unsigned length() const;
     SerializedScriptValue* state();
@@ -58,7 +58,7 @@ public:
     void stateObjectAdded(PassRefPtr<SerializedScriptValue>, const String& title, const String& url, UpdateBackForwardListPolicy, ExceptionState&);
 
 private:
-    explicit History(Frame*);
+    explicit History(LocalFrame*);
 
     KURL urlForState(const String& url);
 

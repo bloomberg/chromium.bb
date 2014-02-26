@@ -33,15 +33,15 @@
 #include "PopupMenuChromium.h"
 
 #include "PopupContainer.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 
 namespace blink {
 
 using namespace WebCore;
 
-PopupMenuChromium::PopupMenuChromium(Frame& frame, PopupMenuClient* client)
+PopupMenuChromium::PopupMenuChromium(LocalFrame& frame, PopupMenuClient* client)
     : m_popupClient(client)
     , m_frameView(frame.view())
 {

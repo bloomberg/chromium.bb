@@ -67,14 +67,14 @@ void UndoStack::registerRedoStep(PassRefPtr<UndoStep> step)
     m_redoStack.append(step);
 }
 
-void UndoStack::didUnloadFrame(const Frame& frame)
+void UndoStack::didUnloadFrame(const LocalFrame& frame)
 {
     NoEventDispatchAssertion assertNoEventDispatch;
     filterOutUndoSteps(m_undoStack, frame);
     filterOutUndoSteps(m_redoStack, frame);
 }
 
-void UndoStack::filterOutUndoSteps(UndoStepStack& stack, const Frame& frame)
+void UndoStack::filterOutUndoSteps(UndoStepStack& stack, const LocalFrame& frame)
 {
     UndoStepStack newStack;
     while (!stack.isEmpty()) {

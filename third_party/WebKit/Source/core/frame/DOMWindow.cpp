@@ -60,10 +60,10 @@
 #include "core/frame/Console.h"
 #include "core/frame/DOMPoint.h"
 #include "core/frame/DOMWindowLifecycleNotifier.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/History.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Location.h"
 #include "core/frame/Navigator.h"
 #include "core/frame/PageConsole.h"
@@ -235,7 +235,7 @@ static void removeAllBeforeUnloadEventListeners(DOMWindow* domWindow)
 static bool allowsBeforeUnloadListeners(DOMWindow* window)
 {
     ASSERT_ARG(window, window);
-    Frame* frame = window->frame();
+    LocalFrame* frame = window->frame();
     if (!frame)
         return false;
     return frame->isMainFrame();
@@ -252,7 +252,7 @@ unsigned DOMWindow::pendingUnloadEventListeners() const
 // 3) Constrains the window rect to within the top and left boundaries of the available screen rect.
 // 4) Constrains the window rect to within the bottom and right boundaries of the available screen rect.
 // 5) Translate the window rect coordinates to be within the coordinate space of the screen.
-FloatRect DOMWindow::adjustWindowRect(Frame* frame, const FloatRect& pendingChanges)
+FloatRect DOMWindow::adjustWindowRect(LocalFrame* frame, const FloatRect& pendingChanges)
 {
     ASSERT(frame);
     FrameHost* host = frame->host();
@@ -295,7 +295,7 @@ FloatRect DOMWindow::adjustWindowRect(Frame* frame, const FloatRect& pendingChan
     return window;
 }
 
-bool DOMWindow::allowPopUp(Frame* firstFrame)
+bool DOMWindow::allowPopUp(LocalFrame* firstFrame)
 {
     ASSERT(firstFrame);
 
@@ -311,7 +311,7 @@ bool DOMWindow::allowPopUp()
     return m_frame && allowPopUp(m_frame);
 }
 
-DOMWindow::DOMWindow(Frame* frame)
+DOMWindow::DOMWindow(LocalFrame* frame)
     : FrameDestructionObserver(frame)
     , m_shouldPrintWhenFinishedLoading(false)
 {
@@ -1055,7 +1055,7 @@ bool DOMWindow::find(const String& string, bool caseSensitive, bool backwards, b
 
     // |m_frame| can be destructed during |Editor::findString()| via
     // |Document::updateLayou()|, e.g. event handler removes a frame.
-    RefPtr<Frame> protectFrame(m_frame);
+    RefPtr<LocalFrame> protectFrame(m_frame);
 
     // FIXME (13016): Support wholeWord, searchInFrames and showDialog
     return m_frame->editor().findString(string, !backwards, caseSensitive, wrap, false);
@@ -1104,7 +1104,7 @@ int DOMWindow::innerHeight() const
         return 0;
 
     // FIXME: This is potentially too much work. We really only need to know the dimensions of the parent frame's renderer.
-    if (Frame* parent = m_frame->tree().parent())
+    if (LocalFrame* parent = m_frame->tree().parent())
         parent->document()->updateLayoutIgnorePendingStylesheets();
 
     return adjustForAbsoluteZoom(view->visibleContentRect(IncludeScrollbars).height(), m_frame->pageZoomFactor());
@@ -1120,7 +1120,7 @@ int DOMWindow::innerWidth() const
         return 0;
 
     // FIXME: This is potentially too much work. We really only need to know the dimensions of the parent frame's renderer.
-    if (Frame* parent = m_frame->tree().parent())
+    if (LocalFrame* parent = m_frame->tree().parent())
         parent->document()->updateLayoutIgnorePendingStylesheets();
 
     return adjustForAbsoluteZoom(view->visibleContentRect(IncludeScrollbars).width(), m_frame->pageZoomFactor());
@@ -1255,7 +1255,7 @@ DOMWindow* DOMWindow::opener() const
     if (!m_frame)
         return 0;
 
-    Frame* opener = m_frame->loader().opener();
+    LocalFrame* opener = m_frame->loader().opener();
     if (!opener)
         return 0;
 
@@ -1267,7 +1267,7 @@ DOMWindow* DOMWindow::parent() const
     if (!m_frame)
         return 0;
 
-    Frame* parent = m_frame->tree().parent();
+    LocalFrame* parent = m_frame->tree().parent();
     if (parent)
         return parent->domWindow();
 
@@ -1651,7 +1651,7 @@ void DOMWindow::setLocation(const String& urlString, DOMWindow* callingWindow, D
     if (!activeDocument->canNavigate(m_frame))
         return;
 
-    Frame* firstFrame = enteredWindow->frame();
+    LocalFrame* firstFrame = enteredWindow->frame();
     if (!firstFrame)
         return;
 
@@ -1750,10 +1750,10 @@ bool DOMWindow::isInsecureScriptAccess(DOMWindow* callingWindow, const String& u
     if (!protocolIsJavaScript(urlString))
         return false;
 
-    // If this DOMWindow isn't currently active in the Frame, then there's no
+    // If this DOMWindow isn't currently active in the LocalFrame, then there's no
     // way we should allow the access.
     // FIXME: Remove this check if we're able to disconnect DOMWindow from
-    // Frame on navigation: https://bugs.webkit.org/show_bug.cgi?id=62054
+    // LocalFrame on navigation: https://bugs.webkit.org/show_bug.cgi?id=62054
     if (isCurrentlyDisplayedInFrame()) {
         // FIXME: Is there some way to eliminate the need for a separate "callingWindow == this" check?
         if (callingWindow == this)
@@ -1777,7 +1777,7 @@ PassRefPtr<DOMWindow> DOMWindow::open(const String& urlString, const AtomicStrin
     Document* activeDocument = callingWindow->document();
     if (!activeDocument)
         return nullptr;
-    Frame* firstFrame = enteredWindow->frame();
+    LocalFrame* firstFrame = enteredWindow->frame();
     if (!firstFrame)
         return nullptr;
 
@@ -1790,11 +1790,11 @@ PassRefPtr<DOMWindow> DOMWindow::open(const String& urlString, const AtomicStrin
 
     // Get the target frame for the special cases of _top and _parent.
     // In those cases, we schedule a location change right now and return early.
-    Frame* targetFrame = 0;
+    LocalFrame* targetFrame = 0;
     if (frameName == "_top")
         targetFrame = m_frame->tree().top();
     else if (frameName == "_parent") {
-        if (Frame* parent = m_frame->tree().parent())
+        if (LocalFrame* parent = m_frame->tree().parent())
             targetFrame = parent;
         else
             targetFrame = m_frame;
@@ -1822,17 +1822,17 @@ PassRefPtr<DOMWindow> DOMWindow::open(const String& urlString, const AtomicStrin
     }
 
     WindowFeatures windowFeatures(windowFeaturesString);
-    Frame* result = createWindow(urlString, frameName, windowFeatures, callingWindow, firstFrame, m_frame);
+    LocalFrame* result = createWindow(urlString, frameName, windowFeatures, callingWindow, firstFrame, m_frame);
     return result ? result->domWindow() : 0;
 }
 
 DOMWindow* DOMWindow::anonymousIndexedGetter(uint32_t index)
 {
-    Frame* frame = this->frame();
+    LocalFrame* frame = this->frame();
     if (!frame)
         return 0;
 
-    Frame* child = frame->tree().scopedChild(index);
+    LocalFrame* child = frame->tree().scopedChild(index);
     if (child)
         return child->domWindow();
 

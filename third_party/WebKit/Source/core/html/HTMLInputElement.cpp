@@ -51,9 +51,9 @@
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/events/TouchEvent.h"
 #include "core/fileapi/FileList.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLDataListElement.h"
@@ -371,7 +371,7 @@ void HTMLInputElement::endEditing()
     if (!isTextField())
         return;
 
-    Frame* frame = document().frame();
+    LocalFrame* frame = document().frame();
     frame->spellChecker().didEndEditingOnTextField(this);
     frame->host()->chrome().client().didEndEditingOnTextField(*this);
 }

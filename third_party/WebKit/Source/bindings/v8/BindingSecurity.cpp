@@ -35,7 +35,7 @@
 #include "core/dom/Document.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/frame/DOMWindow.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
@@ -73,19 +73,19 @@ static bool canAccessDocument(v8::Isolate* isolate, Document* targetDocument, Se
         return true;
 
     if (reportingOption == ReportSecurityError && targetDocument->domWindow()) {
-        if (Frame* frame = targetDocument->frame())
+        if (LocalFrame* frame = targetDocument->frame())
             frame->domWindow()->printErrorMessage(targetDocument->domWindow()->crossDomainAccessErrorMessage(callingWindow));
     }
 
     return false;
 }
 
-bool BindingSecurity::shouldAllowAccessToFrame(v8::Isolate* isolate, Frame* target, SecurityReportingOption reportingOption)
+bool BindingSecurity::shouldAllowAccessToFrame(v8::Isolate* isolate, LocalFrame* target, SecurityReportingOption reportingOption)
 {
     return target && canAccessDocument(isolate, target->document(), reportingOption);
 }
 
-bool BindingSecurity::shouldAllowAccessToFrame(v8::Isolate* isolate, Frame* target, ExceptionState& exceptionState)
+bool BindingSecurity::shouldAllowAccessToFrame(v8::Isolate* isolate, LocalFrame* target, ExceptionState& exceptionState)
 {
     return target && canAccessDocument(isolate, target->document(), exceptionState);
 }

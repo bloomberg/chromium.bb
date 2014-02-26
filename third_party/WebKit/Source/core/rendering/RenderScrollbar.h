@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-class Frame;
+class LocalFrame;
 class Node;
 class RenderBox;
 class RenderScrollbarPart;
@@ -40,11 +40,11 @@ class RenderStyle;
 
 class RenderScrollbar FINAL : public Scrollbar {
 protected:
-    RenderScrollbar(ScrollableArea*, ScrollbarOrientation, Node*, Frame*);
+    RenderScrollbar(ScrollableArea*, ScrollbarOrientation, Node*, LocalFrame*);
 
 public:
     friend class Scrollbar;
-    static PassRefPtr<Scrollbar> createCustomScrollbar(ScrollableArea*, ScrollbarOrientation, Node*, Frame* owningFrame = 0);
+    static PassRefPtr<Scrollbar> createCustomScrollbar(ScrollableArea*, ScrollbarOrientation, Node*, LocalFrame* owningFrame = 0);
     virtual ~RenderScrollbar();
 
     RenderBox* owningRenderer() const;
@@ -83,7 +83,7 @@ private:
     // FrameView which this Node pointer can in no way keep alive. See webkit bug 80610.
     RefPtr<Node> m_owner;
 
-    Frame* m_owningFrame;
+    LocalFrame* m_owningFrame;
     HashMap<unsigned, RenderScrollbarPart*> m_parts;
 };
 

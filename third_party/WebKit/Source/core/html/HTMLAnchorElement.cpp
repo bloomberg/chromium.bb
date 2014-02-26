@@ -29,8 +29,8 @@
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/ThreadLocalEventNames.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameHost.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLImageElement.h"
@@ -404,7 +404,7 @@ void HTMLAnchorElement::handleClick(Event* event)
 {
     event->setDefaultHandled();
 
-    Frame* frame = document().frame();
+    LocalFrame* frame = document().frame();
     if (!frame)
         return;
 
@@ -664,7 +664,7 @@ bool HTMLAnchorElement::PrefetchEventHandler::shouldPrefetch(const KURL& url)
     if (url.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(document.url(), url))
         return false;
 
-    Frame* frame = document.frame();
+    LocalFrame* frame = document.frame();
     if (!frame)
         return false;
 

@@ -43,7 +43,7 @@ class Resource;
 class DOMWrapperWorld;
 class Document;
 class DocumentLoader;
-class Frame;
+class LocalFrame;
 class GraphicsContext;
 class GraphicsLayer;
 class InjectedScriptManager;
@@ -83,8 +83,8 @@ public:
     static bool cachedResourceContent(Resource*, String* result, bool* base64Encoded);
     static bool sharedBufferContent(PassRefPtr<SharedBuffer>, const String& textEncodingName, bool withBase64Encode, String* result);
 
-    static PassRefPtr<SharedBuffer> resourceData(Frame*, const KURL&, String* textEncodingName);
-    static Resource* cachedResource(Frame*, const KURL&);
+    static PassRefPtr<SharedBuffer> resourceData(LocalFrame*, const KURL&, String* textEncodingName);
+    static Resource* cachedResource(LocalFrame*, const KURL&);
     static TypeBuilder::Page::ResourceType::Enum resourceTypeJson(ResourceType);
     static ResourceType cachedResourceType(const Resource&);
     static TypeBuilder::Page::ResourceType::Enum cachedResourceTypeJson(const Resource&);
@@ -123,17 +123,17 @@ public:
     virtual void setShowViewportSizeOnResize(ErrorString*, bool show, const bool* showGrid) OVERRIDE;
 
     // InspectorInstrumentation API
-    void didClearWindowObjectInMainWorld(Frame*);
-    void domContentLoadedEventFired(Frame*);
-    void loadEventFired(Frame*);
-    void didCommitLoad(Frame*, DocumentLoader*);
-    void frameAttachedToParent(Frame*);
-    void frameDetachedFromParent(Frame*);
+    void didClearWindowObjectInMainWorld(LocalFrame*);
+    void domContentLoadedEventFired(LocalFrame*);
+    void loadEventFired(LocalFrame*);
+    void didCommitLoad(LocalFrame*, DocumentLoader*);
+    void frameAttachedToParent(LocalFrame*);
+    void frameDetachedFromParent(LocalFrame*);
     void loaderDetachedFromFrame(DocumentLoader*);
-    void frameStartedLoading(Frame*);
-    void frameStoppedLoading(Frame*);
-    void frameScheduledNavigation(Frame*, double delay);
-    void frameClearedScheduledNavigation(Frame*);
+    void frameStartedLoading(LocalFrame*);
+    void frameStoppedLoading(LocalFrame*);
+    void frameScheduledNavigation(LocalFrame*, double delay);
+    void frameClearedScheduledNavigation(LocalFrame*);
     void willRunJavaScriptDialog(const String& message);
     void didRunJavaScriptDialog();
     bool applyViewportStyleOverride(StyleResolver*);
@@ -154,21 +154,21 @@ public:
 
     // Cross-agents API
     Page* page() { return m_page; }
-    Frame* mainFrame();
+    LocalFrame* mainFrame();
     String createIdentifier();
-    Frame* frameForId(const String& frameId);
-    String frameId(Frame*);
-    bool hasIdForFrame(Frame*) const;
+    LocalFrame* frameForId(const String& frameId);
+    String frameId(LocalFrame*);
+    bool hasIdForFrame(LocalFrame*) const;
     String loaderId(DocumentLoader*);
-    Frame* findFrameWithSecurityOrigin(const String& originRawString);
-    Frame* assertFrame(ErrorString*, const String& frameId);
+    LocalFrame* findFrameWithSecurityOrigin(const String& originRawString);
+    LocalFrame* assertFrame(ErrorString*, const String& frameId);
     String scriptPreprocessorSource() { return m_scriptPreprocessorSource; }
     const AtomicString& resourceSourceMapURL(const String& url);
     bool deviceMetricsOverrideEnabled();
-    static DocumentLoader* assertDocumentLoader(ErrorString*, Frame*);
+    static DocumentLoader* assertDocumentLoader(ErrorString*, LocalFrame*);
 
 private:
-    static void resourceContent(ErrorString*, Frame*, const KURL&, String* result, bool* base64Encoded);
+    static void resourceContent(ErrorString*, LocalFrame*, const KURL&, String* result, bool* base64Encoded);
 
     InspectorPageAgent(Page*, InjectedScriptManager*, InspectorClient*, InspectorOverlay*);
     bool deviceMetricsChanged(int width, int height, double deviceScaleFactor, bool emulateViewport, bool fitWindow, double fontScaleFactor, bool textAutosizing);
@@ -178,8 +178,8 @@ private:
 
     static bool dataContent(const char* data, unsigned size, const String& textEncodingName, bool withBase64Encode, String* result);
 
-    PassRefPtr<TypeBuilder::Page::Frame> buildObjectForFrame(Frame*);
-    PassRefPtr<TypeBuilder::Page::FrameResourceTree> buildObjectForFrameTree(Frame*);
+    PassRefPtr<TypeBuilder::Page::Frame> buildObjectForFrame(LocalFrame*);
+    PassRefPtr<TypeBuilder::Page::FrameResourceTree> buildObjectForFrameTree(LocalFrame*);
     Page* m_page;
     InjectedScriptManager* m_injectedScriptManager;
     InspectorClient* m_client;
@@ -190,8 +190,8 @@ private:
     String m_scriptToEvaluateOnLoadOnce;
     String m_pendingScriptPreprocessor;
     String m_scriptPreprocessorSource;
-    HashMap<Frame*, String> m_frameToIdentifier;
-    HashMap<String, Frame*> m_identifierToFrame;
+    HashMap<LocalFrame*, String> m_frameToIdentifier;
+    HashMap<String, LocalFrame*> m_identifierToFrame;
     HashMap<DocumentLoader*, String> m_loaderToIdentifier;
     bool m_enabled;
     bool m_ignoreScriptsEnabledNotification;

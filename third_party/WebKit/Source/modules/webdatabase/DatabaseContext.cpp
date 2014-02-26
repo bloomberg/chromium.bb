@@ -131,7 +131,7 @@ void DatabaseContext::contextDestroyed()
     deref(); // paired with the ref() call on create().
 }
 
-// stop() is from stopActiveDOMObjects() which indicates that the owner Frame
+// stop() is from stopActiveDOMObjects() which indicates that the owner LocalFrame
 // or WorkerThread is shutting down. Initiate the orderly shutdown by stopping
 // the associated databases.
 void DatabaseContext::stop()

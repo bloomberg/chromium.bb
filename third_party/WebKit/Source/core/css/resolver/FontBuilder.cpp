@@ -27,7 +27,7 @@
 #include "core/css/CSSFontFeatureValue.h"
 #include "core/css/CSSToLengthConversionData.h"
 #include "core/css/FontSize.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
@@ -524,7 +524,7 @@ float FontBuilder::getComputedSizeFromSpecifiedSize(FontDescription& fontDescrip
     if (!m_useSVGZoomRules) {
         zoomFactor = effectiveZoom;
         // FIXME: Why is this here!!!!?!
-        if (Frame* frame = m_document->frame())
+        if (LocalFrame* frame = m_document->frame())
             zoomFactor *= frame->textZoomFactor();
     }
 

@@ -37,14 +37,14 @@ namespace InspectorInstrumentation {
 
 bool isDebuggerPausedImpl(InstrumentingAgents*);
 bool collectingHTMLParseErrorsImpl(InstrumentingAgents*);
-PassOwnPtr<ScriptSourceCode> preprocessImpl(InstrumentingAgents*, Frame*, const ScriptSourceCode&);
-String preprocessEventListenerImpl(InstrumentingAgents*, Frame*, const String& source, const String& url, const String& functionName);
+PassOwnPtr<ScriptSourceCode> preprocessImpl(InstrumentingAgents*, LocalFrame*, const ScriptSourceCode&);
+String preprocessEventListenerImpl(InstrumentingAgents*, LocalFrame*, const String& source, const String& url, const String& functionName);
 
 bool canvasAgentEnabled(ExecutionContext*);
 bool consoleAgentEnabled(ExecutionContext*);
 bool timelineAgentEnabled(ExecutionContext*);
 
-inline bool isDebuggerPaused(Frame* frame)
+inline bool isDebuggerPaused(LocalFrame* frame)
 {
     FAST_RETURN_IF_NO_FRONTENDS(false);
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(frame))
@@ -60,7 +60,7 @@ inline bool collectingHTMLParseErrors(Page* page)
     return false;
 }
 
-inline String preprocessEventListener(Frame* frame, const String& source, const String& url, const String& functionName)
+inline String preprocessEventListener(LocalFrame* frame, const String& source, const String& url, const String& functionName)
 {
     FAST_RETURN_IF_NO_FRONTENDS(source);
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(frame))
@@ -68,7 +68,7 @@ inline String preprocessEventListener(Frame* frame, const String& source, const 
     return source;
 }
 
-inline PassOwnPtr<ScriptSourceCode> preprocess(Frame* frame, const ScriptSourceCode& sourceCode)
+inline PassOwnPtr<ScriptSourceCode> preprocess(LocalFrame* frame, const ScriptSourceCode& sourceCode)
 {
     FAST_RETURN_IF_NO_FRONTENDS(PassOwnPtr<ScriptSourceCode>());
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(frame))

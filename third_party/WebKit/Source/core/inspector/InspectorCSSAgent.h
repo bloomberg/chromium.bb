@@ -111,7 +111,7 @@ public:
     virtual void enable(ErrorString*, PassRefPtr<EnableCallback>) OVERRIDE;
     virtual void disable(ErrorString*) OVERRIDE;
     void reset();
-    void didCommitLoad(Frame*, DocumentLoader*);
+    void didCommitLoad(LocalFrame*, DocumentLoader*);
     void mediaQueryResultChanged();
     void willMutateRules();
     void didMutateRules(CSSStyleSheet*);
@@ -120,7 +120,7 @@ public:
 
 public:
     void activeStyleSheetsUpdated(Document*);
-    void frameDetachedFromParent(Frame*);
+    void frameDetachedFromParent(LocalFrame*);
 
     virtual void getComputedStyleForNode(ErrorString*, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty> >&) OVERRIDE;
     virtual void getPlatformFontsForNode(ErrorString*, int nodeId, String* cssFamilyName, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::PlatformFontUsage> >&) OVERRIDE;
@@ -159,7 +159,7 @@ private:
     void collectStyleSheets(CSSStyleSheet*, Vector<CSSStyleSheet*>&);
 
     void updateActiveStyleSheetsForDocument(Document*, StyleSheetsUpdateType);
-    void updateActiveStyleSheets(Frame*, const Vector<CSSStyleSheet*>&, StyleSheetsUpdateType);
+    void updateActiveStyleSheets(LocalFrame*, const Vector<CSSStyleSheet*>&, StyleSheetsUpdateType);
 
     void collectPlatformFontsForRenderer(RenderText*, HashCountedSet<String>*);
 
@@ -193,7 +193,7 @@ private:
 
     IdToInspectorStyleSheet m_idToInspectorStyleSheet;
     HashMap<CSSStyleSheet*, RefPtr<InspectorStyleSheet> > m_cssStyleSheetToInspectorStyleSheet;
-    HashMap<Frame*, OwnPtr<HashSet<CSSStyleSheet*> > > m_frameToCSSStyleSheets;
+    HashMap<LocalFrame*, OwnPtr<HashSet<CSSStyleSheet*> > > m_frameToCSSStyleSheets;
 
     NodeToInspectorStyleSheet m_nodeToInspectorStyleSheet;
     HashMap<RefPtr<Document>, RefPtr<InspectorStyleSheet> > m_documentToViaInspectorStyleSheet; // "via inspector" stylesheets

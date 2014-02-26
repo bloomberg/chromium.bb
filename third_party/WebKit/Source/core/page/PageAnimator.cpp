@@ -7,8 +7,8 @@
 
 #include "core/animation/DocumentAnimations.h"
 #include "core/dom/Document.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
@@ -27,13 +27,13 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
     m_animationFramePending = false;
     TemporaryChange<bool> servicing(m_servicingAnimations, true);
 
-    for (RefPtr<Frame> frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+    for (RefPtr<LocalFrame> frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
         frame->view()->serviceScrollAnimations();
         DocumentAnimations::serviceOnAnimationFrame(*frame->document(), monotonicAnimationStartTime);
     }
 
     Vector<RefPtr<Document> > documents;
-    for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext())
+    for (LocalFrame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext())
         documents.append(frame->document());
 
     for (size_t i = 0; i < documents.size(); ++i)

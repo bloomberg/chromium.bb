@@ -63,7 +63,7 @@ namespace WebCore {
     class Element;
 class FetchRequest;
     class FormState;
-    class Frame;
+    class LocalFrame;
     class FrameLoader;
     class FrameNetworkingContext;
     class HistoryItem;
@@ -93,12 +93,12 @@ class FetchRequest;
 
         virtual bool hasWebView() const = 0; // mainly for assertions
 
-        virtual Frame* parent() const = 0;
-        virtual Frame* top() const = 0;
-        virtual Frame* previousSibling() const = 0;
-        virtual Frame* nextSibling() const = 0;
-        virtual Frame* firstChild() const = 0;
-        virtual Frame* lastChild() const = 0;
+        virtual LocalFrame* parent() const = 0;
+        virtual LocalFrame* top() const = 0;
+        virtual LocalFrame* previousSibling() const = 0;
+        virtual LocalFrame* nextSibling() const = 0;
+        virtual LocalFrame* firstChild() const = 0;
+        virtual LocalFrame* lastChild() const = 0;
         virtual void detachedFromParent() = 0;
 
         virtual void dispatchWillRequestAfterPreconnect(ResourceRequest&) { }
@@ -114,7 +114,7 @@ class FetchRequest;
         virtual void dispatchDidStartProvisionalLoad() = 0;
         virtual void dispatchDidReceiveTitle(const String&) = 0;
         virtual void dispatchDidChangeIcons(IconType) = 0;
-        virtual void dispatchDidCommitLoad(Frame*, HistoryItem*, HistoryCommitType) = 0;
+        virtual void dispatchDidCommitLoad(LocalFrame*, HistoryItem*, HistoryCommitType) = 0;
         virtual void dispatchDidFailProvisionalLoad(const ResourceError&) = 0;
         virtual void dispatchDidFailLoad(const ResourceError&) = 0;
         virtual void dispatchDidFinishDocumentLoad() = 0;
@@ -162,7 +162,7 @@ class FetchRequest;
         // that match any element on the frame.
         virtual void selectorMatchChanged(const Vector<String>& addedSelectors, const Vector<String>& removedSelectors) = 0;
 
-        virtual PassRefPtr<DocumentLoader> createDocumentLoader(Frame*, const ResourceRequest&, const SubstituteData&) = 0;
+        virtual PassRefPtr<DocumentLoader> createDocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&) = 0;
 
         virtual String userAgent(const KURL&) = 0;
 
@@ -170,7 +170,7 @@ class FetchRequest;
 
         virtual void transitionToCommittedForNewPage() = 0;
 
-        virtual PassRefPtr<Frame> createFrame(const KURL&, const AtomicString& name, const Referrer&, HTMLFrameOwnerElement*) = 0;
+        virtual PassRefPtr<LocalFrame> createFrame(const KURL&, const AtomicString& name, const Referrer&, HTMLFrameOwnerElement*) = 0;
         // Whether or not plugin creation should fail if the HTMLPlugInElement isn't in the DOM after plugin initialization.
         enum DetachedPluginPolicy {
             FailOnDetachedPlugin,

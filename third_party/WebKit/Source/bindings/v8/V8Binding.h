@@ -50,7 +50,7 @@ namespace WebCore {
     class Document;
     class EventListener;
     class ExceptionState;
-    class Frame;
+    class LocalFrame;
     class NodeFilter;
     class ExecutionContext;
     class ScriptWrappable;
@@ -604,7 +604,7 @@ namespace WebCore {
     }
 
     v8::Isolate* toIsolate(ExecutionContext*);
-    v8::Isolate* toIsolate(Frame*);
+    v8::Isolate* toIsolate(LocalFrame*);
 
     WrapperWorldType worldType(v8::Isolate*);
     WrapperWorldType worldTypeInMainThread(v8::Isolate*);
@@ -622,13 +622,13 @@ namespace WebCore {
     // Returns a V8 context associated with a ExecutionContext and a DOMWrapperWorld.
     // This method returns an empty context if there is no frame or the frame is already detached.
     v8::Local<v8::Context> toV8Context(ExecutionContext*, DOMWrapperWorld*);
-    // Returns a V8 context associated with a Frame and a DOMWrapperWorld.
+    // Returns a V8 context associated with a LocalFrame and a DOMWrapperWorld.
     // This method returns an empty context if the frame is already detached.
-    v8::Local<v8::Context> toV8Context(v8::Isolate*, Frame*, DOMWrapperWorld*);
+    v8::Local<v8::Context> toV8Context(v8::Isolate*, LocalFrame*, DOMWrapperWorld*);
 
     // Returns the frame object of the window object associated with
-    // a context, if the window is currently being displayed in the Frame.
-    Frame* toFrameIfNotDetached(v8::Handle<v8::Context>);
+    // a context, if the window is currently being displayed in the LocalFrame.
+    LocalFrame* toFrameIfNotDetached(v8::Handle<v8::Context>);
 
     // If the current context causes out of memory, JavaScript setting
     // is disabled and it returns true.

@@ -40,7 +40,7 @@
 
 namespace WebCore {
 
-class Frame;
+class LocalFrame;
 class HistoryEntry;
 class Page;
 
@@ -97,7 +97,7 @@ public:
     ~HistoryNode() { }
 
     HistoryNode* addChild(PassRefPtr<HistoryItem>);
-    PassOwnPtr<HistoryNode> cloneAndReplace(HistoryEntry*, HistoryItem* newItem, bool clipAtTarget, Frame* targetFrame, Frame* currentFrame);
+    PassOwnPtr<HistoryNode> cloneAndReplace(HistoryEntry*, HistoryItem* newItem, bool clipAtTarget, LocalFrame* targetFrame, LocalFrame* currentFrame);
     HistoryItem* value() { return m_value.get(); }
     void updateValue(PassRefPtr<HistoryItem> item) { m_value = item; }
     const Vector<OwnPtr<HistoryNode> >& children() const { return m_children; }
@@ -115,10 +115,10 @@ private:
 class HistoryEntry {
 public:
     static PassOwnPtr<HistoryEntry> create(HistoryItem* root);
-    PassOwnPtr<HistoryEntry> cloneAndReplace(HistoryItem* newItem, bool clipAtTarget, Frame* targetFrame, Page*);
+    PassOwnPtr<HistoryEntry> cloneAndReplace(HistoryItem* newItem, bool clipAtTarget, LocalFrame* targetFrame, Page*);
 
-    HistoryNode* historyNodeForFrame(Frame*);
-    HistoryItem* itemForFrame(Frame*);
+    HistoryNode* historyNodeForFrame(LocalFrame*);
+    HistoryItem* itemForFrame(LocalFrame*);
     HistoryItem* root() const { return m_root->value(); }
     HistoryNode* rootHistoryNode() const { return m_root.get(); }
 
@@ -143,23 +143,23 @@ public:
     // navigation, call FrameLoaderClient::navigateBackForward().
     void goToItem(HistoryItem*, ResourceRequestCachePolicy);
 
-    void updateBackForwardListForFragmentScroll(Frame*, HistoryItem*);
-    void updateForCommit(Frame*, HistoryItem*, HistoryCommitType);
+    void updateBackForwardListForFragmentScroll(LocalFrame*, HistoryItem*);
+    void updateForCommit(LocalFrame*, HistoryItem*, HistoryCommitType);
 
     PassRefPtr<HistoryItem> currentItemForExport();
     PassRefPtr<HistoryItem> previousItemForExport();
-    HistoryItem* itemForNewChildFrame(Frame*) const;
-    void removeChildrenForRedirect(Frame*);
+    HistoryItem* itemForNewChildFrame(LocalFrame*) const;
+    void removeChildrenForRedirect(LocalFrame*);
 
     void setDefersLoading(bool);
 
 private:
     void goToEntry(PassOwnPtr<HistoryEntry>, ResourceRequestCachePolicy);
-    typedef HashMap<RefPtr<Frame>, RefPtr<HistoryItem> > HistoryFrameLoadSet;
-    void recursiveGoToEntry(Frame*, HistoryFrameLoadSet& sameDocumentLoads, HistoryFrameLoadSet& differentDocumentLoads);
+    typedef HashMap<RefPtr<LocalFrame>, RefPtr<HistoryItem> > HistoryFrameLoadSet;
+    void recursiveGoToEntry(LocalFrame*, HistoryFrameLoadSet& sameDocumentLoads, HistoryFrameLoadSet& differentDocumentLoads);
 
-    void updateForInitialLoadInChildFrame(Frame*, HistoryItem*);
-    void createNewBackForwardItem(Frame*, HistoryItem*, bool doClip);
+    void updateForInitialLoadInChildFrame(LocalFrame*, HistoryItem*);
+    void createNewBackForwardItem(LocalFrame*, HistoryItem*, bool doClip);
 
     Page* m_page;
 

@@ -37,7 +37,7 @@
 #include "core/events/OverflowEvent.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoadPriorityOptimizer.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameElement.h"
 #include "core/html/HTMLPlugInElement.h"
@@ -129,7 +129,7 @@ private:
     bool m_disabled;
 };
 
-FrameView::FrameView(Frame* frame)
+FrameView::FrameView(LocalFrame* frame)
     : m_frame(frame)
     , m_canHaveScrollbars(true)
     , m_slowRepaintObjectCount(0)
@@ -168,14 +168,14 @@ FrameView::FrameView(Frame* frame)
     ScrollableArea::setHorizontalScrollElasticity(ScrollElasticityAllowed);
 }
 
-PassRefPtr<FrameView> FrameView::create(Frame* frame)
+PassRefPtr<FrameView> FrameView::create(LocalFrame* frame)
 {
     RefPtr<FrameView> view = adoptRef(new FrameView(frame));
     view->show();
     return view.release();
 }
 
-PassRefPtr<FrameView> FrameView::create(Frame* frame, const IntSize& initialSize)
+PassRefPtr<FrameView> FrameView::create(LocalFrame* frame, const IntSize& initialSize)
 {
     RefPtr<FrameView> view = adoptRef(new FrameView(frame));
     view->Widget::setFrameRect(IntRect(view->location(), initialSize));
@@ -377,7 +377,7 @@ void FrameView::setFrameRect(const IntRect& newRect)
             if (textAutosizingEnabled) {
                 TextAutosizer* textAutosizer = m_frame->document()->textAutosizer();
                 if (textAutosizer) {
-                    for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext())
+                    for (LocalFrame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext())
                         textAutosizer->recalculateMultipliers();
                 }
             }
@@ -421,7 +421,7 @@ void FrameView::setCanHaveScrollbars(bool canHaveScrollbars)
     ScrollView::setCanHaveScrollbars(canHaveScrollbars);
 }
 
-bool FrameView::shouldUseCustomScrollbars(Element*& customScrollbarElement, Frame*& customScrollbarFrame)
+bool FrameView::shouldUseCustomScrollbars(Element*& customScrollbarElement, LocalFrame*& customScrollbarFrame)
 {
     customScrollbarElement = 0;
     customScrollbarFrame = 0;
@@ -448,7 +448,7 @@ bool FrameView::shouldUseCustomScrollbars(Element*& customScrollbarElement, Fram
         return true;
     }
 
-    // If we have an owning ipage/Frame element, then it can set the custom scrollbar also.
+    // If we have an owning ipage/LocalFrame element, then it can set the custom scrollbar also.
     RenderPart* frameRenderer = m_frame->ownerRenderer();
     if (frameRenderer && frameRenderer->style()->hasPseudoStyle(SCROLLBAR)) {
         customScrollbarFrame = m_frame.get();
@@ -461,7 +461,7 @@ bool FrameView::shouldUseCustomScrollbars(Element*& customScrollbarElement, Fram
 PassRefPtr<Scrollbar> FrameView::createScrollbar(ScrollbarOrientation orientation)
 {
     Element* customScrollbarElement = 0;
-    Frame* customScrollbarFrame = 0;
+    LocalFrame* customScrollbarFrame = 0;
     if (shouldUseCustomScrollbars(customScrollbarElement, customScrollbarFrame))
         return RenderScrollbar::createCustomScrollbar(this, orientation, customScrollbarElement, customScrollbarFrame);
 
@@ -837,7 +837,7 @@ void FrameView::scheduleOrPerformPostLayoutTasks()
 
 void FrameView::layout(bool allowSubtree)
 {
-    // We should never layout a Document which is not in a Frame.
+    // We should never layout a Document which is not in a LocalFrame.
     ASSERT(m_frame);
     ASSERT(m_frame->view() == this);
     ASSERT(m_frame->page());
@@ -1028,7 +1028,7 @@ void FrameView::layout(bool allowSubtree)
 
     // FIXME: It should be not possible to remove the FrameView from the frame/page during layout
     // however m_inPerformLayout is not set for most of this function, so none of our RELEASE_ASSERTS
-    // in Frame/Page will fire. One of the post-layout tasks is disconnecting the Frame from
+    // in LocalFrame/Page will fire. One of the post-layout tasks is disconnecting the LocalFrame from
     // the page in fast/frames/crash-remove-iframe-during-object-beforeload-2.html
     // necessitating this check here.
     // ASSERT(frame()->page());
@@ -1735,7 +1735,7 @@ void FrameView::contentsResized()
 void FrameView::scrollbarExistenceDidChange()
 {
     // We check to make sure the view is attached to a frame() as this method can
-    // be triggered before the view is attached by Frame::createView(...) setting
+    // be triggered before the view is attached by LocalFrame::createView(...) setting
     // various values such as setScrollBarModes(...) for example.  An ASSERT is
     // triggered when a view is layout before being attached to a frame().
     if (!frame().view())
@@ -1909,7 +1909,7 @@ void FrameView::setBaseBackgroundColor(const Color& backgroundColor)
 
 void FrameView::updateBackgroundRecursively(const Color& backgroundColor, bool transparent)
 {
-    for (Frame* frame = m_frame.get(); frame; frame = frame->tree().traverseNext(m_frame.get())) {
+    for (LocalFrame* frame = m_frame.get(); frame; frame = frame->tree().traverseNext(m_frame.get())) {
         if (FrameView* view = frame->view()) {
             view->setTransparent(transparent);
             view->setBaseBackgroundColor(backgroundColor);
@@ -2471,7 +2471,7 @@ void FrameView::updateScrollCorner()
         }
 
         if (!cornerStyle) {
-            // If we have an owning ipage/Frame element, then it can set the custom scrollbar also.
+            // If we have an owning ipage/LocalFrame element, then it can set the custom scrollbar also.
             if (RenderPart* renderer = m_frame->ownerRenderer())
                 cornerStyle = renderer->getUncachedPseudoStyle(PseudoStyleRequest(SCROLLBAR_CORNER), renderer->style());
         }
@@ -2572,7 +2572,7 @@ FrameView* FrameView::parentFrameView() const
     if (!parent())
         return 0;
 
-    if (Frame* parentFrame = m_frame->tree().parent())
+    if (LocalFrame* parentFrame = m_frame->tree().parent())
         return parentFrame->view();
 
     return 0;
@@ -2772,7 +2772,7 @@ void FrameView::updateLayoutAndStyleIfNeededRecursive()
     // FIXME: Calling layout() shouldn't trigger scripe execution or have any
     // observable effects on the frame tree but we're not quite there yet.
     Vector<RefPtr<FrameView> > frameViews;
-    for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
+    for (LocalFrame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (FrameView* view = child->view())
             frameViews.append(view);
     }
@@ -3015,7 +3015,7 @@ void FrameView::setTracksRepaints(bool trackRepaints)
     if (trackRepaints == m_isTrackingRepaints)
         return;
 
-    for (Frame* frame = m_frame->tree().top(); frame; frame = frame->tree().traverseNext()) {
+    for (LocalFrame* frame = m_frame->tree().top(); frame; frame = frame->tree().traverseNext()) {
         if (RenderView* renderView = frame->contentRenderer())
             renderView->compositor()->setTracksRepaints(trackRepaints);
     }

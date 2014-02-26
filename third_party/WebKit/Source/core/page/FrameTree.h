@@ -24,46 +24,46 @@
 
 namespace WebCore {
 
-    class Frame;
+    class LocalFrame;
     class TreeScope;
 
     class FrameTree {
         WTF_MAKE_NONCOPYABLE(FrameTree);
     public:
-        explicit FrameTree(Frame* thisFrame);
+        explicit FrameTree(LocalFrame* thisFrame);
         ~FrameTree();
 
         const AtomicString& name() const { return m_name; }
         const AtomicString& uniqueName() const { return m_uniqueName; }
         void setName(const AtomicString&);
 
-        Frame* parent() const;
-        Frame* top() const;
-        Frame* previousSibling() const;
-        Frame* nextSibling() const;
-        Frame* firstChild() const;
-        Frame* lastChild() const;
+        LocalFrame* parent() const;
+        LocalFrame* top() const;
+        LocalFrame* previousSibling() const;
+        LocalFrame* nextSibling() const;
+        LocalFrame* firstChild() const;
+        LocalFrame* lastChild() const;
 
-        bool isDescendantOf(const Frame* ancestor) const;
-        Frame* traversePreviousWithWrap(bool) const;
-        Frame* traverseNext(const Frame* stayWithin = 0) const;
-        Frame* traverseNextWithWrap(bool) const;
+        bool isDescendantOf(const LocalFrame* ancestor) const;
+        LocalFrame* traversePreviousWithWrap(bool) const;
+        LocalFrame* traverseNext(const LocalFrame* stayWithin = 0) const;
+        LocalFrame* traverseNextWithWrap(bool) const;
 
-        Frame* child(const AtomicString& name) const;
-        Frame* find(const AtomicString& name) const;
+        LocalFrame* child(const AtomicString& name) const;
+        LocalFrame* find(const AtomicString& name) const;
         unsigned childCount() const;
 
-        Frame* scopedChild(unsigned index) const;
-        Frame* scopedChild(const AtomicString& name) const;
+        LocalFrame* scopedChild(unsigned index) const;
+        LocalFrame* scopedChild(const AtomicString& name) const;
         unsigned scopedChildCount() const;
         void invalidateScopedChildCount();
 
     private:
-        Frame* deepLastChild() const;
+        LocalFrame* deepLastChild() const;
         AtomicString uniqueChildName(const AtomicString& requestedName) const;
         unsigned scopedChildCount(TreeScope*) const;
 
-        Frame* m_thisFrame;
+        LocalFrame* m_thisFrame;
 
         AtomicString m_name; // The actual frame name (may be empty).
         AtomicString m_uniqueName;
@@ -75,7 +75,7 @@ namespace WebCore {
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.
-void showFrameTree(const WebCore::Frame*);
+void showFrameTree(const WebCore::LocalFrame*);
 #endif
 
 #endif // FrameTree_h

@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-Frame* HTMLImport::frame()
+LocalFrame* HTMLImport::frame()
 {
     return master()->frame();
 }

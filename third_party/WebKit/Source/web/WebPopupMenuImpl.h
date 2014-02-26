@@ -40,7 +40,7 @@
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
-class Frame;
+class LocalFrame;
 class FramelessScrollView;
 class KeyboardEvent;
 class Page;

@@ -31,11 +31,11 @@
 #include "config.h"
 #include "core/inspector/InspectorInputAgent.h"
 
+#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectorClient.h"
 #include "core/page/Chrome.h"
 #include "core/page/EventHandler.h"
-#include "core/frame/Frame.h"
-#include "core/frame/FrameView.h"
 #include "core/page/Page.h"
 #include "platform/JSONValues.h"
 #include "platform/PlatformKeyboardEvent.h"

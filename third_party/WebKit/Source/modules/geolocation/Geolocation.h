@@ -40,7 +40,7 @@
 namespace WebCore {
 
 class Document;
-class Frame;
+class LocalFrame;
 class GeolocationController;
 class GeolocationError;
 class GeolocationPosition;
@@ -56,7 +56,7 @@ public:
 
     virtual void stop() OVERRIDE;
     Document* document() const;
-    Frame* frame() const;
+    LocalFrame* frame() const;
 
     // Creates a oneshot and attempts to obtain a position that meets the
     // constraints of the options.

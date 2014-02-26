@@ -37,7 +37,7 @@ class Resource;
 class ScriptResource;
 class Document;
 class Element;
-class Frame;
+class LocalFrame;
 class HTMLScriptRunnerHost;
 class ScriptSourceCode;
 
@@ -66,7 +66,7 @@ public:
 private:
     HTMLScriptRunner(Document*, HTMLScriptRunnerHost*);
 
-    Frame* frame() const;
+    LocalFrame* frame() const;
 
     void executeParsingBlockingScript();
     void executePendingScriptAndDispatchEvent(PendingScript&);

@@ -53,10 +53,10 @@ public:
     static PassOwnPtr<PageDebuggerAgent> create(PageScriptDebugServer*, InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*);
     virtual ~PageDebuggerAgent();
 
-    void didClearWindowObjectInMainWorld(Frame*);
-    String preprocessEventListener(Frame*, const String& source, const String& url, const String& functionName);
-    PassOwnPtr<ScriptSourceCode> preprocess(Frame*, const ScriptSourceCode&);
-    void didCommitLoad(Frame*, DocumentLoader*);
+    void didClearWindowObjectInMainWorld(LocalFrame*);
+    String preprocessEventListener(LocalFrame*, const String& source, const String& url, const String& functionName);
+    PassOwnPtr<ScriptSourceCode> preprocess(LocalFrame*, const ScriptSourceCode&);
+    void didCommitLoad(LocalFrame*, DocumentLoader*);
 
 protected:
     virtual void enable() OVERRIDE;

@@ -158,8 +158,8 @@ public:
     void setDocument(Document*);
     void releaseDanglingNodes();
 
-    void domContentLoadedEventFired(Frame*);
-    void didCommitLoad(Frame*, DocumentLoader*);
+    void domContentLoadedEventFired(LocalFrame*);
+    void didCommitLoad(LocalFrame*, DocumentLoader*);
 
     void didInsertDOMNode(Node*);
     void willRemoveDOMNode(Node*);
@@ -171,7 +171,7 @@ public:
     void didInvalidateStyleAttr(Node*);
     void didPushShadowRoot(Element* host, ShadowRoot*);
     void willPopShadowRoot(Element* host, ShadowRoot*);
-    void frameDocumentUpdated(Frame*);
+    void frameDocumentUpdated(LocalFrame*);
     void pseudoElementCreated(PseudoElement*);
     void pseudoElementDestroyed(PseudoElement*);
 
@@ -185,9 +185,9 @@ public:
 
     PassRefPtr<TypeBuilder::Runtime::RemoteObject> resolveNode(Node*, const String& objectGroup);
     bool handleMousePress();
-    bool handleGestureEvent(Frame*, const PlatformGestureEvent&);
-    bool handleTouchEvent(Frame*, const PlatformTouchEvent&);
-    void handleMouseMove(Frame*, const PlatformMouseEvent&);
+    bool handleGestureEvent(LocalFrame*, const PlatformGestureEvent&);
+    bool handleTouchEvent(LocalFrame*, const PlatformTouchEvent&);
+    void handleMouseMove(LocalFrame*, const PlatformMouseEvent&);
 
     InspectorHistory* history() { return m_history.get(); }
 
@@ -225,7 +225,7 @@ private:
     int pushNodePathToFrontend(Node*);
     void pushChildNodesToFrontend(int nodeId, int depth = 1);
 
-    void invalidateFrameOwnerElement(Frame*);
+    void invalidateFrameOwnerElement(LocalFrame*);
 
     bool hasBreakpoint(Node*, int type);
     void updateSubtreeBreakpoints(Node* root, uint32_t rootMask, bool value);

@@ -42,7 +42,7 @@
 namespace WebCore {
     class ApplicationCache;
     class DocumentLoader;
-    class Frame;
+    class LocalFrame;
     class ResourceLoader;
     class ResourceError;
     class ResourceRequest;

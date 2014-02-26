@@ -33,7 +33,7 @@
 
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptSourceCode.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/page/Page.h"
 
 namespace WebCore {
@@ -43,7 +43,7 @@ bool InspectorClient::doDispatchMessageOnFrontendPage(Page* frontendPage, const 
     if (!frontendPage)
         return false;
 
-    Frame* frame = frontendPage->mainFrame();
+    LocalFrame* frame = frontendPage->mainFrame();
     if (!frame)
         return false;
 

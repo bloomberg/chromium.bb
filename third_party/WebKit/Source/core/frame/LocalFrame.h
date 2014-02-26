@@ -25,8 +25,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef Frame_h
-#define Frame_h
+#ifndef LocalFrame_h
+#define LocalFrame_h
 
 #include "core/loader/FrameLoader.h"
 #include "core/loader/NavigationScheduler.h"
@@ -75,7 +75,7 @@ namespace WebCore {
 
     class FrameInit : public RefCounted<FrameInit> {
     public:
-        // For creating a dummy Frame
+        // For creating a dummy LocalFrame
         static PassRefPtr<FrameInit> create(FrameHost* host, FrameLoaderClient* client)
         {
             return adoptRef(new FrameInit(host, client));
@@ -104,9 +104,9 @@ namespace WebCore {
         HTMLFrameOwnerElement* m_ownerElement;
     };
 
-    class Frame : public RefCounted<Frame> {
+    class LocalFrame : public RefCounted<LocalFrame> {
     public:
-        static PassRefPtr<Frame> create(PassRefPtr<FrameInit>);
+        static PassRefPtr<LocalFrame> create(PassRefPtr<FrameInit>);
 
         void init();
         void setView(PassRefPtr<FrameView>);
@@ -114,7 +114,7 @@ namespace WebCore {
             ScrollbarMode = ScrollbarAuto, bool horizontalLock = false,
             ScrollbarMode = ScrollbarAuto, bool verticalLock = false);
 
-        ~Frame();
+        ~LocalFrame();
 
         void addDestructionObserver(FrameDestructionObserver*);
         void removeDestructionObserver(FrameDestructionObserver*);
@@ -161,7 +161,7 @@ namespace WebCore {
         void setRemotePlatformLayer(blink::WebLayer* remotePlatformLayer) { m_remotePlatformLayer = remotePlatformLayer; }
         blink::WebLayer* remotePlatformLayer() const { return m_remotePlatformLayer; }
 
-    // ======== All public functions below this point are candidates to move out of Frame into another class. ========
+    // ======== All public functions below this point are candidates to move out of LocalFrame into another class. ========
 
         bool inScope(TreeScope*) const;
 
@@ -215,7 +215,7 @@ namespace WebCore {
     // ========
 
     private:
-        Frame(PassRefPtr<FrameInit>);
+        LocalFrame(PassRefPtr<FrameInit>);
 
         HashSet<FrameDestructionObserver*> m_destructionObservers;
 
@@ -248,77 +248,77 @@ namespace WebCore {
         blink::WebLayer* m_remotePlatformLayer;
     };
 
-    inline void Frame::init()
+    inline void LocalFrame::init()
     {
         m_loader.init();
     }
 
-    inline FrameLoader& Frame::loader() const
+    inline FrameLoader& LocalFrame::loader() const
     {
         return m_loader;
     }
 
-    inline NavigationScheduler& Frame::navigationScheduler() const
+    inline NavigationScheduler& LocalFrame::navigationScheduler() const
     {
         return m_navigationScheduler;
     }
 
-    inline FrameView* Frame::view() const
+    inline FrameView* LocalFrame::view() const
     {
         return m_view.get();
     }
 
-    inline ScriptController& Frame::script()
+    inline ScriptController& LocalFrame::script()
     {
         return *m_script;
     }
 
-    inline DOMWindow* Frame::domWindow() const
+    inline DOMWindow* LocalFrame::domWindow() const
     {
         return m_domWindow.get();
     }
 
-    inline FrameSelection& Frame::selection() const
+    inline FrameSelection& LocalFrame::selection() const
     {
         return *m_selection;
     }
 
-    inline Editor& Frame::editor() const
+    inline Editor& LocalFrame::editor() const
     {
         return *m_editor;
     }
 
-    inline SpellChecker& Frame::spellChecker() const
+    inline SpellChecker& LocalFrame::spellChecker() const
     {
         return *m_spellChecker;
     }
 
-    inline InputMethodController& Frame::inputMethodController() const
+    inline InputMethodController& LocalFrame::inputMethodController() const
     {
         return *m_inputMethodController;
     }
 
-    inline HTMLFrameOwnerElement* Frame::ownerElement() const
+    inline HTMLFrameOwnerElement* LocalFrame::ownerElement() const
     {
         return m_frameInit->ownerElement();
     }
 
-    inline bool Frame::inViewSourceMode() const
+    inline bool LocalFrame::inViewSourceMode() const
     {
         return m_inViewSourceMode;
     }
 
-    inline void Frame::setInViewSourceMode(bool mode)
+    inline void LocalFrame::setInViewSourceMode(bool mode)
     {
         m_inViewSourceMode = mode;
     }
 
-    inline FrameTree& Frame::tree() const
+    inline FrameTree& LocalFrame::tree() const
     {
         return m_treeNode;
     }
 
-    inline EventHandler& Frame::eventHandler() const
+    inline EventHandler& LocalFrame::eventHandler() const
     {
         ASSERT(m_eventHandler);
         return *m_eventHandler;
@@ -326,4 +326,4 @@ namespace WebCore {
 
 } // namespace WebCore
 
-#endif // Frame_h
+#endif // LocalFrame_h

@@ -33,7 +33,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/Event.h"
 #include "core/frame/ContentSecurityPolicy.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/PluginDocument.h"
 #include "core/html/shadow/HTMLContentElement.h"
@@ -157,7 +157,7 @@ void HTMLPlugInElement::detach(const AttachContext& context)
     resetInstance();
 
     if (m_isCapturingMouseEvents) {
-        if (Frame* frame = document().frame())
+        if (LocalFrame* frame = document().frame())
             frame->eventHandler().setCapturingMouseEventsNode(nullptr);
         m_isCapturingMouseEvents = false;
     }
@@ -212,7 +212,7 @@ void HTMLPlugInElement::resetInstance()
 
 SharedPersistent<v8::Object>* HTMLPlugInElement::pluginWrapper()
 {
-    Frame* frame = document().frame();
+    LocalFrame* frame = document().frame();
     if (!frame)
         return 0;
 
@@ -358,7 +358,7 @@ bool HTMLPlugInElement::isImageType()
     if (m_serviceType.isEmpty() && protocolIs(m_url, "data"))
         m_serviceType = mimeTypeFromDataURL(m_url);
 
-    if (Frame* frame = document().frame()) {
+    if (LocalFrame* frame = document().frame()) {
         KURL completedURL = document().completeURL(m_url);
         return frame->loader().client()->objectContentType(completedURL, m_serviceType, shouldPreferPlugInsForImages()) == ObjectContentImage;
     }
@@ -433,7 +433,7 @@ bool HTMLPlugInElement::requestObject(const String& url, const String& mimeType,
 
 bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues, bool useFallback)
 {
-    Frame* frame = document().frame();
+    LocalFrame* frame = document().frame();
 
     if (!frame->loader().allowPlugins(AboutToInstantiatePlugin))
         return false;
@@ -492,7 +492,7 @@ void HTMLPlugInElement::dispatchErrorEvent()
 
 bool HTMLPlugInElement::pluginIsLoadable(const KURL& url, const String& mimeType)
 {
-    Frame* frame = document().frame();
+    LocalFrame* frame = document().frame();
     Settings* settings = frame->settings();
     if (!settings)
         return false;

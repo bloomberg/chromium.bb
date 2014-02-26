@@ -99,7 +99,7 @@ class FloatQuad;
 class FloatRect;
 class FontFaceSet;
 class FormController;
-class Frame;
+class LocalFrame;
 class FrameHost;
 class FrameView;
 class HTMLAllCollection;
@@ -446,7 +446,7 @@ public:
     void setStateForNewFormElements(const Vector<String>&);
 
     FrameView* view() const; // can be null
-    Frame* frame() const { return m_frame; } // can be null
+    LocalFrame* frame() const { return m_frame; } // can be null
     FrameHost* frameHost() const; // can be null
     Page* page() const; // can be null
     Settings* settings() const; // can be null
@@ -557,8 +557,8 @@ public:
     virtual String userAgent(const KURL&) const OVERRIDE FINAL;
     virtual void disableEval(const String& errorMessage) OVERRIDE FINAL;
 
-    bool canNavigate(Frame* targetFrame);
-    Frame* findUnsafeParentScrollPropagationBoundary();
+    bool canNavigate(LocalFrame* targetFrame);
+    LocalFrame* findUnsafeParentScrollPropagationBoundary();
 
     CSSStyleSheet* elementSheet();
 
@@ -1021,7 +1021,7 @@ public:
 
     virtual DOMWindow* executingWindow() OVERRIDE FINAL;
     virtual void userEventWasHandled() OVERRIDE FINAL { resetLastHandledUserGestureTimestamp(); }
-    Frame* executingFrame();
+    LocalFrame* executingFrame();
 
     DocumentLifecycleNotifier& lifecycleNotifier();
     DocumentLifecycle& lifecycle() { return m_lifecycle; }
@@ -1121,7 +1121,7 @@ private:
     PassRefPtr<HTMLCollection> ensureCachedCollection(CollectionType);
 
     // Note that dispatching a window load event may cause the DOMWindow to be detached from
-    // the Frame, so callers should take a reference to the DOMWindow (which owns us) to
+    // the LocalFrame, so callers should take a reference to the DOMWindow (which owns us) to
     // prevent the Document from getting blown away from underneath them.
     void dispatchWindowLoadEvent();
 
@@ -1156,7 +1156,7 @@ private:
     // do eventually load.
     PendingSheetLayout m_pendingSheetLayout;
 
-    Frame* m_frame;
+    LocalFrame* m_frame;
     DOMWindow* m_domWindow;
     HTMLImport* m_import;
 

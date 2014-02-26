@@ -17,7 +17,7 @@ public:
     virtual ~StorageClient() { }
 
     virtual PassOwnPtr<StorageNamespace> createSessionStorageNamespace() = 0;
-    virtual bool canAccessStorage(Frame*, StorageType) const = 0;
+    virtual bool canAccessStorage(LocalFrame*, StorageType) const = 0;
 };
 
 } // namespace WebCore

@@ -35,7 +35,7 @@
 #include "V8WorkerGlobalScope.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/WorkerScriptController.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include <v8.h>
 #include "wtf/Assertions.h"
@@ -106,7 +106,7 @@ void ScriptState::setEvalEnabled(bool enabled)
     return context()->AllowCodeGenerationFromStrings(enabled);
 }
 
-ScriptState* mainWorldScriptState(Frame* frame)
+ScriptState* mainWorldScriptState(LocalFrame* frame)
 {
     v8::Isolate* isolate = toIsolate(frame);
     v8::HandleScope handleScope(isolate);

@@ -37,7 +37,7 @@
 
 namespace WebCore {
 
-class Frame;
+class LocalFrame;
 class Navigator;
 
 class NavigatorDoNotTrack FINAL : public Supplement<Navigator>, public DOMWindowProperty {
@@ -50,7 +50,7 @@ public:
     String doNotTrack();
 
 private:
-    explicit NavigatorDoNotTrack(Frame*);
+    explicit NavigatorDoNotTrack(LocalFrame*);
     static const char* supplementName();
 };
 

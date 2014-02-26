@@ -19,15 +19,15 @@
 #include "config.h"
 #include "core/plugins/DOMMimeType.h"
 
+#include "core/frame/LocalFrame.h"
 #include "core/loader/FrameLoader.h"
-#include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "core/plugins/DOMPlugin.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 
-DOMMimeType::DOMMimeType(PassRefPtr<PluginData> pluginData, Frame* frame, unsigned index)
+DOMMimeType::DOMMimeType(PassRefPtr<PluginData> pluginData, LocalFrame* frame, unsigned index)
     : FrameDestructionObserver(frame)
     , m_pluginData(pluginData)
     , m_index(index)

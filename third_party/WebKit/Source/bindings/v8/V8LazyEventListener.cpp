@@ -45,7 +45,7 @@
 #include "core/html/HTMLFormElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/frame/ContentSecurityPolicy.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 
 #include "wtf/StdLibExtras.h"
 
@@ -91,7 +91,7 @@ v8::Local<v8::Value> V8LazyEventListener::callListenerFunction(ExecutionContext*
     if (!context->isDocument())
         return v8::Local<v8::Value>();
 
-    Frame* frame = toDocument(context)->frame();
+    LocalFrame* frame = toDocument(context)->frame();
     if (!frame)
         return v8::Local<v8::Value>();
 

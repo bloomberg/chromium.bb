@@ -43,7 +43,7 @@
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLOptionElement.h"
@@ -1496,7 +1496,7 @@ FrameView* AXRenderObject::documentFrameView() const
     if (!m_renderer)
         return 0;
 
-    // this is the RenderObject's Document's Frame's FrameView
+    // this is the RenderObject's Document's LocalFrame's FrameView
     return m_renderer->document().view();
 }
 
@@ -1580,7 +1580,7 @@ void AXRenderObject::setSelectedTextRange(const PlainTextRange& range)
     }
 
     Document& document = m_renderer->document();
-    Frame* frame = document.frame();
+    LocalFrame* frame = document.frame();
     if (!frame)
         return;
     Node* node = m_renderer->node();

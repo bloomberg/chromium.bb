@@ -28,15 +28,15 @@
 
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"
-#include "core/loader/FrameLoader.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/loader/FrameLoader.h"
 
 namespace WebCore {
 
 HTMLParserOptions::HTMLParserOptions(Document* document)
 {
-    Frame* frame = document ? document->frame() : 0;
+    LocalFrame* frame = document ? document->frame() : 0;
     scriptEnabled = frame && frame->script().canExecuteScripts(NotAboutToExecuteScript);
     pluginsEnabled = frame && frame->loader().allowPlugins(NotAboutToInstantiatePlugin);
 

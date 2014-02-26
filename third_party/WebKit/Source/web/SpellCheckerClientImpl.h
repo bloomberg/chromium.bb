@@ -35,7 +35,7 @@
 #include "platform/text/TextCheckerClient.h"
 
 namespace WebCore {
-class Frame;
+class LocalFrame;
 class HTMLInputElement;
 }
 

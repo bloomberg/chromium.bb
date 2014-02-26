@@ -40,7 +40,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"
 #include "core/events/EventListener.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 
 namespace WebCore {
 
@@ -62,7 +62,7 @@ PassRefPtr<V8LazyEventListener> createAttributeEventListener(Node* node, const Q
     String sourceURL;
 
     v8::Isolate* isolate;
-    if (Frame* frame = node->document().frame()) {
+    if (LocalFrame* frame = node->document().frame()) {
         isolate = toIsolate(frame);
         ScriptController& scriptController = frame->script();
         if (!scriptController.canExecuteScripts(AboutToExecuteScript))
@@ -76,7 +76,7 @@ PassRefPtr<V8LazyEventListener> createAttributeEventListener(Node* node, const Q
     return V8LazyEventListener::create(name.localName(), eventParameterName(node->isSVGElement()), value, sourceURL, position, node, isolate);
 }
 
-PassRefPtr<V8LazyEventListener> createAttributeEventListener(Frame* frame, const QualifiedName& name, const AtomicString& value)
+PassRefPtr<V8LazyEventListener> createAttributeEventListener(LocalFrame* frame, const QualifiedName& name, const AtomicString& value)
 {
     if (!frame)
         return nullptr;
@@ -148,7 +148,7 @@ ScriptValue eventListenerHandler(Document* document, EventListener* listener)
     return ScriptValue(function, isolate);
 }
 
-ScriptState* eventListenerHandlerScriptState(Frame* frame, EventListener* listener)
+ScriptState* eventListenerHandlerScriptState(LocalFrame* frame, EventListener* listener)
 {
     if (listener->type() != EventListener::JSEventListenerType)
         return 0;

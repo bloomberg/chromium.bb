@@ -167,7 +167,7 @@ bool HTMLEmbedElement::rendererIsNeeded(const RenderStyle& style)
     if (isImageType())
         return HTMLPlugInElement::rendererIsNeeded(style);
 
-    Frame* frame = document().frame();
+    LocalFrame* frame = document().frame();
     if (!frame)
         return false;
 

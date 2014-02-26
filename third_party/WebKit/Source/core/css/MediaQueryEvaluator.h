@@ -31,7 +31,7 @@
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
-class Frame;
+class LocalFrame;
 class MediaQueryExp;
 class MediaQueryResult;
 class MediaQuerySet;
@@ -68,7 +68,7 @@ public:
     MediaQueryEvaluator(const char* acceptedMediaType, bool mediaFeatureResult = false);
 
     /** Creates evaluator which evaluates full media queries */
-    MediaQueryEvaluator(const AtomicString& acceptedMediaType, Frame*, RenderStyle*);
+    MediaQueryEvaluator(const AtomicString& acceptedMediaType, LocalFrame*, RenderStyle*);
 
     ~MediaQueryEvaluator();
 
@@ -83,7 +83,7 @@ public:
 
 private:
     AtomicString m_mediaType;
-    Frame* m_frame; // Not owned.
+    LocalFrame* m_frame; // Not owned.
     RefPtr<RenderStyle> m_style;
     bool m_expResult;
 };

@@ -34,7 +34,7 @@ namespace WebCore {
 
 class Editor;
 class EditorClient;
-class Frame;
+class LocalFrame;
 class Range;
 class Text;
 
@@ -46,7 +46,7 @@ public:
         KeepSelection,
     };
 
-    static PassOwnPtr<InputMethodController> create(Frame&);
+    static PassOwnPtr<InputMethodController> create(LocalFrame&);
     ~InputMethodController();
 
     // international text input composition
@@ -94,7 +94,7 @@ private:
     };
     friend class SelectionOffsetsScope;
 
-    Frame& m_frame;
+    LocalFrame& m_frame;
     RefPtr<Text> m_compositionNode;
     // We don't use PlainTextRange which is immutable, for composition range.
     unsigned m_compositionStart;
@@ -103,7 +103,7 @@ private:
     // m_compositionNode.
     Vector<CompositionUnderline> m_customCompositionUnderlines;
 
-    explicit InputMethodController(Frame&);
+    explicit InputMethodController(LocalFrame&);
     Editor& editor() const;
     bool insertTextForConfirmedComposition(const String& text);
     void selectComposition() const;

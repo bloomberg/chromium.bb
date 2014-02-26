@@ -31,13 +31,13 @@
 #include "config.h"
 #include "modules/donottrack/NavigatorDoNotTrack.h"
 
-#include "core/loader/FrameLoaderClient.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
+#include "core/loader/FrameLoaderClient.h"
 
 namespace WebCore {
 
-NavigatorDoNotTrack::NavigatorDoNotTrack(Frame* frame)
+NavigatorDoNotTrack::NavigatorDoNotTrack(LocalFrame* frame)
     : DOMWindowProperty(frame)
 {
 }

@@ -34,7 +34,7 @@
 namespace WebCore {
 
 class Element;
-class Frame;
+class LocalFrame;
 class Image;
 class KURL;
 class Node;

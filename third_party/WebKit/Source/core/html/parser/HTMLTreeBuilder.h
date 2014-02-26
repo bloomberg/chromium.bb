@@ -44,7 +44,7 @@ class AtomicHTMLToken;
 class Document;
 class DocumentFragment;
 class Element;
-class Frame;
+class LocalFrame;
 class HTMLToken;
 class HTMLDocument;
 class Node;

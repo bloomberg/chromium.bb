@@ -32,12 +32,12 @@
 
 namespace WebCore {
 
-class Frame;
+class LocalFrame;
 class PluginData;
 
 class DOMMimeTypeArray FINAL : public RefCountedWillBeGarbageCollectedFinalized<DOMMimeTypeArray>, public ScriptWrappable, public DOMWindowProperty {
 public:
-    static PassRefPtrWillBeRawPtr<DOMMimeTypeArray> create(Frame* frame)
+    static PassRefPtrWillBeRawPtr<DOMMimeTypeArray> create(LocalFrame* frame)
     {
         return adoptRefWillBeNoop(new DOMMimeTypeArray(frame));
     }
@@ -51,7 +51,7 @@ public:
     void trace(Visitor*) { }
 
 private:
-    explicit DOMMimeTypeArray(Frame*);
+    explicit DOMMimeTypeArray(LocalFrame*);
     PluginData* getPluginData() const;
 };
 

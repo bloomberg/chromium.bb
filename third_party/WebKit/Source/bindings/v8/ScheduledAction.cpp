@@ -38,7 +38,7 @@
 #include "bindings/v8/V8ScriptRunner.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/TraceEvent.h"
@@ -72,7 +72,7 @@ ScheduledAction::~ScheduledAction()
 void ScheduledAction::execute(ExecutionContext* context)
 {
     if (context->isDocument()) {
-        Frame* frame = toDocument(context)->frame();
+        LocalFrame* frame = toDocument(context)->frame();
         if (!frame)
             return;
         if (!frame->script().canExecuteScripts(AboutToExecuteScript))
@@ -83,7 +83,7 @@ void ScheduledAction::execute(ExecutionContext* context)
     }
 }
 
-void ScheduledAction::execute(Frame* frame)
+void ScheduledAction::execute(LocalFrame* frame)
 {
     v8::HandleScope handleScope(m_isolate);
 

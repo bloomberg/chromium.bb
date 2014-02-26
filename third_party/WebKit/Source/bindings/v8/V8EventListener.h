@@ -38,7 +38,7 @@
 namespace WebCore {
 
     class Event;
-    class Frame;
+    class LocalFrame;
 
     // V8EventListener is a wrapper of a JS object implements EventListener interface (has handleEvent(event) method), or a JS function
     // that can handle the event.

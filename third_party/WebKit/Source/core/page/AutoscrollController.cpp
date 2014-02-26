@@ -29,10 +29,10 @@
 #include "config.h"
 #include "core/page/AutoscrollController.h"
 
-#include "core/page/EventHandler.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/page/Chrome.h"
+#include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderBox.h"
@@ -172,7 +172,7 @@ void AutoscrollController::updateDragAndDrop(Node* dropTargetNode, const IntPoin
 }
 
 #if OS(WIN)
-void AutoscrollController::handleMouseReleaseForPanScrolling(Frame* frame, const PlatformMouseEvent& mouseEvent)
+void AutoscrollController::handleMouseReleaseForPanScrolling(LocalFrame* frame, const PlatformMouseEvent& mouseEvent)
 {
     if (!frame->isMainFrame())
         return;

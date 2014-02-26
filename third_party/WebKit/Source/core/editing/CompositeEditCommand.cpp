@@ -62,8 +62,8 @@
 #include "core/editing/htmlediting.h"
 #include "core/editing/markup.h"
 #include "core/events/ScopedEventQueue.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLElement.h"
-#include "core/frame/Frame.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderText.h"
@@ -90,7 +90,7 @@ EditCommandComposition::EditCommandComposition(Document* document, const Visible
 {
 }
 
-bool EditCommandComposition::belongsTo(const Frame& frame) const
+bool EditCommandComposition::belongsTo(const LocalFrame& frame) const
 {
     ASSERT(m_document);
     return m_document->frame() == &frame;
@@ -99,7 +99,7 @@ bool EditCommandComposition::belongsTo(const Frame& frame) const
 void EditCommandComposition::unapply()
 {
     ASSERT(m_document);
-    RefPtr<Frame> frame = m_document->frame();
+    RefPtr<LocalFrame> frame = m_document->frame();
     ASSERT(frame);
 
     // Changes to the document may have been made since the last editing operation that require a layout, as in <rdar://problem/5658603>.
@@ -119,7 +119,7 @@ void EditCommandComposition::unapply()
 void EditCommandComposition::reapply()
 {
     ASSERT(m_document);
-    RefPtr<Frame> frame = m_document->frame();
+    RefPtr<LocalFrame> frame = m_document->frame();
     ASSERT(frame);
 
     // Changes to the document may have been made since the last editing operation that require a layout, as in <rdar://problem/5658603>.
@@ -186,7 +186,7 @@ void CompositeEditCommand::apply()
     // if one is necessary (like for the creation of VisiblePositions).
     document().updateLayoutIgnorePendingStylesheets();
 
-    Frame* frame = document().frame();
+    LocalFrame* frame = document().frame();
     ASSERT(frame);
     {
         EventQueueScope eventQueueScope;

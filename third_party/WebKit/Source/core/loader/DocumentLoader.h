@@ -54,7 +54,7 @@ namespace WebCore {
     class ResourceFetcher;
     class ContentFilter;
     class FormState;
-    class Frame;
+    class LocalFrame;
     class FrameLoader;
     class MHTMLArchive;
     class Page;
@@ -64,13 +64,13 @@ namespace WebCore {
     class DocumentLoader : public RefCounted<DocumentLoader>, private RawResourceClient {
         WTF_MAKE_FAST_ALLOCATED;
     public:
-        static PassRefPtr<DocumentLoader> create(Frame* frame, const ResourceRequest& request, const SubstituteData& data)
+        static PassRefPtr<DocumentLoader> create(LocalFrame* frame, const ResourceRequest& request, const SubstituteData& data)
         {
             return adoptRef(new DocumentLoader(frame, request, data));
         }
         virtual ~DocumentLoader();
 
-        Frame* frame() const { return m_frame; }
+        LocalFrame* frame() const { return m_frame; }
 
         void detachFromFrame();
 
@@ -134,12 +134,12 @@ namespace WebCore {
         void appendRedirect(const KURL&);
 
     protected:
-        DocumentLoader(Frame*, const ResourceRequest&, const SubstituteData&);
+        DocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&);
 
         Vector<KURL> m_redirectChain;
 
     private:
-        static PassRefPtr<DocumentWriter> createWriterFor(Frame*, const Document* ownerDocument, const KURL&, const AtomicString& mimeType, const AtomicString& encoding, bool userChosen, bool dispatch);
+        static PassRefPtr<DocumentWriter> createWriterFor(LocalFrame*, const Document* ownerDocument, const KURL&, const AtomicString& mimeType, const AtomicString& encoding, bool userChosen, bool dispatch);
 
         void ensureWriter(const AtomicString& mimeType, const KURL& overridingURL = KURL());
         void endWriting(DocumentWriter*);
@@ -175,7 +175,7 @@ namespace WebCore {
 
         bool shouldContinueForResponse() const;
 
-        Frame* m_frame;
+        LocalFrame* m_frame;
         RefPtr<ResourceFetcher> m_fetcher;
 
         ResourcePtr<RawResource> m_mainResource;

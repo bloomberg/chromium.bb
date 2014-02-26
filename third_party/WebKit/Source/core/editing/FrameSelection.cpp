@@ -46,6 +46,7 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
 #include "core/frame/DOMWindow.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLInputElement.h"
@@ -53,7 +54,6 @@
 #include "core/page/EditorClient.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"
-#include "core/frame/Frame.h"
 #include "core/page/FrameTree.h"
 #include "core/frame/FrameView.h"
 #include "core/page/Page.h"
@@ -83,12 +83,12 @@ static inline LayoutUnit NoXPosForVerticalArrowNavigation()
     return LayoutUnit::min();
 }
 
-static inline bool shouldAlwaysUseDirectionalSelection(Frame* frame)
+static inline bool shouldAlwaysUseDirectionalSelection(LocalFrame* frame)
 {
     return !frame || frame->editor().behavior().shouldConsiderSelectionAsDirectional();
 }
 
-FrameSelection::FrameSelection(Frame* frame)
+FrameSelection::FrameSelection(LocalFrame* frame)
     : m_frame(frame)
     , m_xPosForVerticalArrowNavigation(NoXPosForVerticalArrowNavigation())
     , m_granularity(CharacterGranularity)
@@ -225,7 +225,7 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
     if (s.base().anchorNode()) {
         Document& document = *s.base().document();
         if (document.frame() && document.frame() != m_frame && document != m_frame->document()) {
-            RefPtr<Frame> guard = document.frame();
+            RefPtr<LocalFrame> guard = document.frame();
             document.frame()->selection().setSelection(s, options, align, granularity);
             // It's possible that during the above set selection, this FrameSelection has been modified by
             // selectFrameElementInParentIfFullySelected, but that the selection is no longer valid since
@@ -1136,7 +1136,7 @@ LayoutUnit FrameSelection::lineDirectionPointForBlockDirectionNavigation(EPositi
         break;
     }
 
-    Frame* frame = pos.document()->frame();
+    LocalFrame* frame = pos.document()->frame();
     if (!frame)
         return x;
 
@@ -1313,7 +1313,7 @@ bool FrameSelection::contains(const LayoutPoint& point)
 void FrameSelection::selectFrameElementInParentIfFullySelected()
 {
     // Find the parent frame; if there is none, then we have nothing to do.
-    Frame* parent = m_frame->tree().parent();
+    LocalFrame* parent = m_frame->tree().parent();
     if (!parent)
         return;
     Page* page = m_frame->page();
@@ -1494,7 +1494,7 @@ bool FrameSelection::isFocusedAndActive() const
     return m_focused && m_frame->page() && m_frame->page()->focusController().isActive();
 }
 
-inline static bool shouldStopBlinkingDueToTypingCommand(Frame* frame)
+inline static bool shouldStopBlinkingDueToTypingCommand(LocalFrame* frame)
 {
     return frame->editor().lastEditCommand() && frame->editor().lastEditCommand()->shouldStopCaretBlinking();
 }
@@ -1623,7 +1623,7 @@ void FrameSelection::notifyRendererOfSelectionChange(EUserTriggered userTriggere
 }
 
 // Helper function that tells whether a particular node is an element that has an entire
-// Frame and FrameView, a <frame>, <iframe>, or <object>.
+// LocalFrame and FrameView, a <frame>, <iframe>, or <object>.
 static bool isFrameElement(const Node* n)
 {
     if (!n)

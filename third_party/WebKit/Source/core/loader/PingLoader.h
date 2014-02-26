@@ -42,14 +42,14 @@
 namespace WebCore {
 
 class FormData;
-class Frame;
+class LocalFrame;
 class KURL;
 class ResourceError;
 class ResourceHandle;
 class ResourceRequest;
 class ResourceResponse;
 
-// This class triggers asynchronous loads independent of Frame staying alive (i.e., auditing pingbacks).
+// This class triggers asynchronous loads independent of LocalFrame staying alive (i.e., auditing pingbacks).
 // Since nothing depends on resources loaded through this class, we just want
 // to allow the load to live long enough to ensure the message was actually sent.
 // Therefore, as soon as a callback is received from the ResourceHandle, this class
@@ -62,16 +62,16 @@ public:
         XSSAuditorViolationReport
     };
 
-    static void loadImage(Frame*, const KURL& url);
-    static void sendPing(Frame*, const KURL& pingURL, const KURL& destinationURL);
-    static void sendViolationReport(Frame*, const KURL& reportURL, PassRefPtr<FormData> report, ViolationReportType);
+    static void loadImage(LocalFrame*, const KURL& url);
+    static void sendPing(LocalFrame*, const KURL& pingURL, const KURL& destinationURL);
+    static void sendViolationReport(LocalFrame*, const KURL& reportURL, PassRefPtr<FormData> report, ViolationReportType);
 
     virtual ~PingLoader();
 
 private:
-    PingLoader(Frame*, ResourceRequest&, const FetchInitiatorInfo&, StoredCredentials);
+    PingLoader(LocalFrame*, ResourceRequest&, const FetchInitiatorInfo&, StoredCredentials);
 
-    static void start(Frame*, ResourceRequest&, const FetchInitiatorInfo&, StoredCredentials = AllowStoredCredentials);
+    static void start(LocalFrame*, ResourceRequest&, const FetchInitiatorInfo&, StoredCredentials = AllowStoredCredentials);
 
     virtual void didReceiveResponse(blink::WebURLLoader*, const blink::WebURLResponse&) OVERRIDE;
     virtual void didReceiveData(blink::WebURLLoader*, const char*, int, int) OVERRIDE;

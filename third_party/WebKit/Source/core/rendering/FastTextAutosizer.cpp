@@ -32,8 +32,8 @@
 #include "core/rendering/FastTextAutosizer.h"
 
 #include "core/dom/Document.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/page/Page.h"
 #include "core/rendering/InlineIterator.h"
@@ -181,7 +181,7 @@ void FastTextAutosizer::prepareRenderViewInfo()
     RenderView* renderView = toRenderView(m_document->renderer());
     bool horizontalWritingMode = isHorizontalWritingMode(renderView->style()->writingMode());
 
-    Frame* mainFrame = m_document->page()->mainFrame();
+    LocalFrame* mainFrame = m_document->page()->mainFrame();
     IntSize frameSize = m_document->settings()->textAutosizingWindowSizeOverride();
     if (frameSize.isEmpty())
         frameSize = mainFrame->view()->unscaledVisibleContentSize(IncludeScrollbars);

@@ -42,7 +42,7 @@ namespace WebCore {
 class AXObject;
 class AXObjectCache;
 class Element;
-class Frame;
+class LocalFrame;
 class FrameView;
 class HTMLAnchorElement;
 class HTMLAreaElement;

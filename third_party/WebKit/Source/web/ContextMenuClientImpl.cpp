@@ -83,7 +83,7 @@ namespace blink {
 // Figure out the URL of a page or subframe. Returns |page_type| as the type,
 // which indicates page or subframe, or ContextNodeType::NONE if the URL could not
 // be determined for some reason.
-static WebURL urlFromFrame(Frame* frame)
+static WebURL urlFromFrame(LocalFrame* frame)
 {
     if (frame) {
         DocumentLoader* dl = frame->loader().documentLoader();
@@ -107,7 +107,7 @@ static bool isASingleWord(const String& text)
 // is to be invoked. This function also sets the word on which context menu
 // has been invoked to be the selected word, as required. This function changes
 // the selection only when there were no selected characters on OS X.
-static String selectMisspelledWord(Frame* selectedFrame)
+static String selectMisspelledWord(LocalFrame* selectedFrame)
 {
     // First select from selectedText to check for multiple word selection.
     String misspelledWord = selectedFrame->selectedText().stripWhiteSpace();
@@ -150,7 +150,7 @@ static bool IsWhiteSpaceOrPunctuation(UChar c)
     return isSpaceOrNewline(c) || WTF::Unicode::isPunct(c);
 }
 
-static String selectMisspellingAsync(Frame* selectedFrame, DocumentMarker& marker)
+static String selectMisspellingAsync(LocalFrame* selectedFrame, DocumentMarker& marker)
 {
     VisibleSelection selection = selectedFrame->selection().selection();
     if (!selection.isCaretOrRange())
@@ -185,7 +185,7 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
         return;
 
     HitTestResult r = m_webView->page()->contextMenuController().hitTestResult();
-    Frame* selectedFrame = r.innerNodeFrame();
+    LocalFrame* selectedFrame = r.innerNodeFrame();
 
     WebContextMenuData data;
     IntPoint mousePoint = selectedFrame->view()->contentsToWindow(r.roundedPointInInnerNodeFrame());

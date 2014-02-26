@@ -33,7 +33,7 @@
 
 namespace WebCore {
 
-class Frame;
+class LocalFrame;
 class IntRect;
 class MockPagePopup;
 class PagePopup;
@@ -41,19 +41,19 @@ class PagePopupController;
 
 class MockPagePopupDriver FINAL : public PagePopupDriver {
 public:
-    static PassOwnPtr<MockPagePopupDriver> create(Frame* mainFrame);
+    static PassOwnPtr<MockPagePopupDriver> create(LocalFrame* mainFrame);
     virtual ~MockPagePopupDriver();
     PagePopupController* pagePopupController() { return m_pagePopupController.get(); }
 
 private:
-    MockPagePopupDriver(Frame* mainFrame);
+    MockPagePopupDriver(LocalFrame* mainFrame);
 
     // PagePopupDriver functions:
     virtual PagePopup* openPagePopup(PagePopupClient*, const IntRect& originBoundsInRootView) OVERRIDE;
     virtual void closePagePopup(PagePopup*) OVERRIDE;
 
     RefPtr<MockPagePopup> m_mockPagePopup;
-    Frame* m_mainFrame;
+    LocalFrame* m_mainFrame;
     RefPtrWillBePersistent<PagePopupController> m_pagePopupController;
 };
 

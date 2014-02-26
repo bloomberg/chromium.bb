@@ -28,22 +28,22 @@
 
 namespace WebCore {
 
-class Frame;
+class LocalFrame;
 
 class FrameDestructionObserver {
 public:
-    explicit FrameDestructionObserver(Frame*);
+    explicit FrameDestructionObserver(LocalFrame*);
 
     virtual void frameDestroyed();
     virtual void willDetachFrameHost();
 
-    Frame* frame() const { return m_frame; }
+    LocalFrame* frame() const { return m_frame; }
 
 protected:
     virtual ~FrameDestructionObserver();
-    void observeFrame(Frame*);
+    void observeFrame(LocalFrame*);
 
-    Frame* m_frame;
+    LocalFrame* m_frame;
 };
 
 }

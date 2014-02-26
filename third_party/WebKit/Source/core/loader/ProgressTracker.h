@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-class Frame;
+class LocalFrame;
 class ResourceResponse;
 struct ProgressItem;
 
@@ -52,8 +52,8 @@ public:
 
     double estimatedProgress() const;
 
-    void progressStarted(Frame*);
-    void progressCompleted(Frame*);
+    void progressStarted(LocalFrame*);
+    void progressCompleted(LocalFrame*);
 
     void incrementProgress(unsigned long identifier, const ResourceResponse&);
     void incrementProgress(unsigned long identifier, const char*, int);
@@ -76,7 +76,7 @@ private:
     double m_progressNotificationTimeInterval;
     bool m_finalProgressChangedSent;
     double m_progressValue;
-    RefPtr<Frame> m_originatingProgressFrame;
+    RefPtr<LocalFrame> m_originatingProgressFrame;
 
     int m_numProgressTrackedFrames;
     HashMap<unsigned long, OwnPtr<ProgressItem> > m_progressItems;

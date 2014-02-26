@@ -34,7 +34,7 @@
 
 namespace WebCore {
 
-class Frame;
+class LocalFrame;
 class SpellCheckerClient;
 class SpellCheckRequest;
 class SpellCheckRequester;
@@ -45,7 +45,7 @@ struct TextCheckingResult;
 class SpellChecker {
     WTF_MAKE_NONCOPYABLE(SpellChecker);
 public:
-    static PassOwnPtr<SpellChecker> create(Frame&);
+    static PassOwnPtr<SpellChecker> create(LocalFrame&);
 
     ~SpellChecker();
 
@@ -84,10 +84,10 @@ public:
     SpellCheckRequester& spellCheckRequester() const { return *m_spellCheckRequester; }
 
 private:
-    Frame& m_frame;
+    LocalFrame& m_frame;
     const OwnPtr<SpellCheckRequester> m_spellCheckRequester;
 
-    explicit SpellChecker(Frame&);
+    explicit SpellChecker(LocalFrame&);
 
     void markMisspellingsOrBadGrammar(const VisibleSelection&, bool checkSpelling, RefPtr<Range>& firstMisspellingRange);
     TextCheckingTypeMask resolveTextCheckingTypeMask(TextCheckingTypeMask);

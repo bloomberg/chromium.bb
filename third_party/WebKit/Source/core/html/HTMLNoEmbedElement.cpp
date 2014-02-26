@@ -32,7 +32,7 @@
 #include "core/html/HTMLNoEmbedElement.h"
 
 #include "HTMLNames.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/loader/FrameLoader.h"
 
 namespace WebCore {

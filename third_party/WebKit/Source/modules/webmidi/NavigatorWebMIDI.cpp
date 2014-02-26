@@ -33,13 +33,13 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
 #include "modules/webmidi/MIDIAccessPromise.h"
 
 namespace WebCore {
 
-NavigatorWebMIDI::NavigatorWebMIDI(Frame* frame)
+NavigatorWebMIDI::NavigatorWebMIDI(LocalFrame* frame)
     : DOMWindowProperty(frame)
 {
 }

@@ -28,8 +28,8 @@
 
 #include "core/accessibility/AXObjectCache.h"
 #include "core/accessibility/AXScrollbar.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 
 namespace WebCore {

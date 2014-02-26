@@ -65,7 +65,7 @@ interface InspectorInstrumentation {
 #include "core/dom/PseudoElement.h"
 
     [Page, Inspector, PageDebugger, PageRuntime]
-    void didClearWindowObjectInMainWorld([Keep] Frame*);
+    void didClearWindowObjectInMainWorld([Keep] LocalFrame*);
 
     [DOMDebugger, Inline=FastReturn]
     void willInsertDOMNode([Keep] Node* parent);
@@ -107,7 +107,7 @@ interface InspectorInstrumentation {
     void activeStyleSheetsUpdated([Keep] Document*);
 
     [Console]
-    void frameWindowDiscarded(Frame*, DOMWindow* domWindow);
+    void frameWindowDiscarded(LocalFrame*, DOMWindow* domWindow);
 
     [CSS, Inline=FastReturn]
     void mediaQueryResultChanged(Document*);
@@ -173,7 +173,7 @@ interface InspectorInstrumentation {
     void didHandleEvent(const InspectorInstrumentationCookie&);
 
     [Timeline, Inline=FastReturn]
-    InspectorInstrumentationCookie willDispatchEventOnWindow(Frame*, const Event&, DOMWindow*);
+    InspectorInstrumentationCookie willDispatchEventOnWindow(LocalFrame*, const Event&, DOMWindow*);
 
     [Timeline, Inline=FastReturn]
     void didDispatchEventOnWindow(const InspectorInstrumentationCookie&);
@@ -200,13 +200,13 @@ interface InspectorInstrumentation {
     void didPerformPromiseTask(const InspectorInstrumentationCookie&);
 
     [Timeline, Inline=FastReturn]
-    InspectorInstrumentationCookie willEvaluateScript([Keep] Frame*, const String& url, int lineNumber);
+    InspectorInstrumentationCookie willEvaluateScript([Keep] LocalFrame*, const String& url, int lineNumber);
 
     [Timeline, Inline=FastReturn]
     void didEvaluateScript(const InspectorInstrumentationCookie&);
 
     [PageRuntime, Inline=FastReturn]
-    void didCreateIsolatedContext([Keep] Frame*, ScriptState*, SecurityOrigin*);
+    void didCreateIsolatedContext([Keep] LocalFrame*, ScriptState*, SecurityOrigin*);
 
     [DOMDebugger, Debugger, Timeline, Inline=FastReturn]
     InspectorInstrumentationCookie willFireTimer([Keep] ExecutionContext*, int timerId);
@@ -215,10 +215,10 @@ interface InspectorInstrumentation {
     void didFireTimer(const InspectorInstrumentationCookie&);
 
     [Timeline, Inline=FastReturn]
-    void didInvalidateLayout([Keep] Frame*);
+    void didInvalidateLayout([Keep] LocalFrame*);
 
     [Timeline, Inline=FastReturn]
-    InspectorInstrumentationCookie willLayout([Keep] Frame*);
+    InspectorInstrumentationCookie willLayout([Keep] LocalFrame*);
 
     [Timeline, Page, Inline=FastReturn]
     void didLayout(const InspectorInstrumentationCookie&, RenderObject* root);
@@ -272,49 +272,49 @@ interface InspectorInstrumentation {
     void didScheduleStyleRecalculation([Keep] Document*);
 
     [Resource, Inline=FastReturn]
-    void applyUserAgentOverride(Frame*, String* userAgent);
+    void applyUserAgentOverride(LocalFrame*, String* userAgent);
 
     [Page, Inline=FastReturn]
     bool applyViewportStyleOverride(Document*, StyleResolver*);
 
     [Page, Inline=FastReturn]
-    void applyEmulatedMedia(Frame*, String* media);
+    void applyEmulatedMedia(LocalFrame*, String* media);
 
     [Timeline, Resource]
-    void willSendRequest(Frame*, unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
+    void willSendRequest(LocalFrame*, unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
 
     [Resource]
     void markResourceAsCached(Page*, unsigned long identifier);
 
     [Timeline, Inline=FastReturn]
-    InspectorInstrumentationCookie willReceiveResourceData([Keep] Frame*, unsigned long identifier, int length);
+    InspectorInstrumentationCookie willReceiveResourceData([Keep] LocalFrame*, unsigned long identifier, int length);
 
     [Timeline, Inline=FastReturn]
     void didReceiveResourceData(const InspectorInstrumentationCookie&);
 
     [Timeline, Resource, Console] // Console should come AFTER Resource notification, front-end relies on this.
-    void didReceiveResourceResponse([Keep] Frame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
+    void didReceiveResourceResponse([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
 
     [Inline=Forward]
-    void continueAfterXFrameOptionsDenied(Frame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r);
+    void continueAfterXFrameOptionsDenied(LocalFrame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r);
 
     [Inline=Forward]
-    void continueWithPolicyDownload(Frame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r);
+    void continueWithPolicyDownload(LocalFrame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r);
 
     [Inline=Forward]
-    void continueWithPolicyIgnore(Frame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r);
+    void continueWithPolicyIgnore(LocalFrame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r);
 
     [Resource]
-    void didReceiveData(Frame*, unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
+    void didReceiveData(LocalFrame*, unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
 
     [Timeline, Resource]
-    void didFinishLoading(Frame* frame, unsigned long identifier, DocumentLoader*, double finishTime, int64_t encodedDataLength);
+    void didFinishLoading(LocalFrame* frame, unsigned long identifier, DocumentLoader*, double finishTime, int64_t encodedDataLength);
 
     [Resource]
-    void didReceiveCORSRedirectResponse([Keep] Frame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
+    void didReceiveCORSRedirectResponse([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
 
     [Timeline, Resource, Console] // Console should come AFTER Resource notification, front-end relies on this.
-    void didFailLoading(Frame* frame, unsigned long identifier, const ResourceError&);
+    void didFailLoading(LocalFrame* frame, unsigned long identifier, const ResourceError&);
 
     [Resource]
     void documentThreadableLoaderStartedLoadingForClient(ExecutionContext*, unsigned long identifier, ThreadableLoaderClient* client);
@@ -338,37 +338,37 @@ interface InspectorInstrumentation {
     void didReceiveScriptResponse(ExecutionContext*, unsigned long identifier);
 
     [Timeline, Inspector, DOM, Page]
-    void domContentLoadedEventFired([Keep] Frame*);
+    void domContentLoadedEventFired([Keep] LocalFrame*);
 
     [Timeline, Page]
-    void loadEventFired([Keep] Frame*);
+    void loadEventFired([Keep] LocalFrame*);
 
     [Page]
-    void frameAttachedToParent([Keep] Frame*);
+    void frameAttachedToParent([Keep] LocalFrame*);
 
     [Canvas, Page, CSS]
-    void frameDetachedFromParent([Keep] Frame*);
+    void frameDetachedFromParent([Keep] LocalFrame*);
 
     [Console, Resource, CSS, DOM, Inspector, Canvas, Page, PageDebugger]
-    void didCommitLoad([Keep] Frame*, DocumentLoader*);
+    void didCommitLoad([Keep] LocalFrame*, DocumentLoader*);
 
     [DOM, Inline=FastReturn]
-    void frameDocumentUpdated([Keep] Frame*);
+    void frameDocumentUpdated([Keep] LocalFrame*);
 
     [Page]
-    void loaderDetachedFromFrame(Frame*, DocumentLoader*);
+    void loaderDetachedFromFrame(LocalFrame*, DocumentLoader*);
 
     [Page]
-    void frameStartedLoading([Keep] Frame*);
+    void frameStartedLoading([Keep] LocalFrame*);
 
     [Page]
-    void frameStoppedLoading([Keep] Frame*);
+    void frameStoppedLoading([Keep] LocalFrame*);
 
     [Page, Resource]
-    void frameScheduledNavigation([Keep] Frame*, double delay);
+    void frameScheduledNavigation([Keep] LocalFrame*, double delay);
 
     [Page, Resource]
-    void frameClearedScheduledNavigation([Keep] Frame*);
+    void frameClearedScheduledNavigation([Keep] LocalFrame*);
 
     [Page, Inline=FastReturn]
     InspectorInstrumentationCookie willRunJavaScriptDialog(Page*, const String& message);
@@ -446,7 +446,7 @@ interface InspectorInstrumentation {
     void networkStateChanged(Page*, bool online);
 
     [ApplicationCache, Inline=FastReturn]
-    void updateApplicationCacheStatus([Keep] Frame*);
+    void updateApplicationCacheStatus([Keep] LocalFrame*);
 
     [LayerTree]
     void layerTreeDidChange(Page*);

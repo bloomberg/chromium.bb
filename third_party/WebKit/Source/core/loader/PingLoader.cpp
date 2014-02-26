@@ -35,7 +35,7 @@
 #include "FetchInitiatorTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/fetch/FetchContext.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -55,7 +55,7 @@
 
 namespace WebCore {
 
-void PingLoader::loadImage(Frame* frame, const KURL& url)
+void PingLoader::loadImage(LocalFrame* frame, const KURL& url)
 {
     if (!frame->document()->securityOrigin()->canDisplay(url)) {
         FrameLoader::reportLocalLoadFailed(frame, url.string());
@@ -73,7 +73,7 @@ void PingLoader::loadImage(Frame* frame, const KURL& url)
 }
 
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/links.html#hyperlink-auditing
-void PingLoader::sendPing(Frame* frame, const KURL& pingURL, const KURL& destinationURL)
+void PingLoader::sendPing(LocalFrame* frame, const KURL& pingURL, const KURL& destinationURL)
 {
     ResourceRequest request(pingURL);
     request.setTargetType(ResourceRequest::TargetIsPing);
@@ -101,7 +101,7 @@ void PingLoader::sendPing(Frame* frame, const KURL& pingURL, const KURL& destina
     PingLoader::start(frame, request, initiatorInfo);
 }
 
-void PingLoader::sendViolationReport(Frame* frame, const KURL& reportURL, PassRefPtr<FormData> report, ViolationReportType type)
+void PingLoader::sendViolationReport(LocalFrame* frame, const KURL& reportURL, PassRefPtr<FormData> report, ViolationReportType type)
 {
     ResourceRequest request(reportURL);
     request.setTargetType(ResourceRequest::TargetIsSubresource);
@@ -115,7 +115,7 @@ void PingLoader::sendViolationReport(Frame* frame, const KURL& reportURL, PassRe
     PingLoader::start(frame, request, initiatorInfo, SecurityOrigin::create(reportURL)->isSameSchemeHostPort(frame->document()->securityOrigin()) ? AllowStoredCredentials : DoNotAllowStoredCredentials);
 }
 
-void PingLoader::start(Frame* frame, ResourceRequest& request, const FetchInitiatorInfo& initiatorInfo, StoredCredentials credentialsAllowed)
+void PingLoader::start(LocalFrame* frame, ResourceRequest& request, const FetchInitiatorInfo& initiatorInfo, StoredCredentials credentialsAllowed)
 {
     OwnPtr<PingLoader> pingLoader = adoptPtr(new PingLoader(frame, request, initiatorInfo, credentialsAllowed));
 
@@ -123,7 +123,7 @@ void PingLoader::start(Frame* frame, ResourceRequest& request, const FetchInitia
     PingLoader* ALLOW_UNUSED leakedPingLoader = pingLoader.leakPtr();
 }
 
-PingLoader::PingLoader(Frame* frame, ResourceRequest& request, const FetchInitiatorInfo& initiatorInfo, StoredCredentials credentialsAllowed)
+PingLoader::PingLoader(LocalFrame* frame, ResourceRequest& request, const FetchInitiatorInfo& initiatorInfo, StoredCredentials credentialsAllowed)
     : PageLifecycleObserver(frame->page())
     , m_timeout(this, &PingLoader::timeout)
     , m_url(request.url())

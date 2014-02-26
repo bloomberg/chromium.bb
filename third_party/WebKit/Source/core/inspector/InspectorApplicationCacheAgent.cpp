@@ -26,12 +26,12 @@
 #include "config.h"
 #include "core/inspector/InspectorApplicationCacheAgent.h"
 
+#include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
-#include "core/frame/Frame.h"
 #include "core/page/NetworkStateNotifier.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -76,7 +76,7 @@ void InspectorApplicationCacheAgent::enable(ErrorString*)
     networkStateChanged(networkStateNotifier().onLine());
 }
 
-void InspectorApplicationCacheAgent::updateApplicationCacheStatus(Frame* frame)
+void InspectorApplicationCacheAgent::updateApplicationCacheStatus(LocalFrame* frame)
 {
     DocumentLoader* documentLoader = frame->loader().documentLoader();
     if (!documentLoader)
@@ -99,8 +99,8 @@ void InspectorApplicationCacheAgent::getFramesWithManifests(ErrorString*, RefPtr
 {
     result = TypeBuilder::Array<TypeBuilder::ApplicationCache::FrameWithManifest>::create();
 
-    Frame* mainFrame = m_pageAgent->mainFrame();
-    for (Frame* frame = mainFrame; frame; frame = frame->tree().traverseNext(mainFrame)) {
+    LocalFrame* mainFrame = m_pageAgent->mainFrame();
+    for (LocalFrame* frame = mainFrame; frame; frame = frame->tree().traverseNext(mainFrame)) {
         DocumentLoader* documentLoader = frame->loader().documentLoader();
         if (!documentLoader)
             continue;
@@ -120,7 +120,7 @@ void InspectorApplicationCacheAgent::getFramesWithManifests(ErrorString*, RefPtr
 
 DocumentLoader* InspectorApplicationCacheAgent::assertFrameWithDocumentLoader(ErrorString* errorString, String frameId)
 {
-    Frame* frame = m_pageAgent->assertFrame(errorString, frameId);
+    LocalFrame* frame = m_pageAgent->assertFrame(errorString, frameId);
     if (!frame)
         return 0;
 

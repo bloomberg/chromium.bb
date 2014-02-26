@@ -22,7 +22,7 @@
 #include "core/page/ScopedPageLoadDeferrer.h"
 
 #include "core/dom/Document.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"
@@ -50,7 +50,7 @@ ScopedPageLoadDeferrer::ScopedPageLoadDeferrer(Page* exclusion)
 
         // This code is not logically part of load deferring, but we do not want JS code executed
         // beneath modal windows or sheets, which is exactly when ScopedPageLoadDeferrer is used.
-        for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext())
+        for (LocalFrame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext())
             frame->document()->suspendScheduledTasks();
     }
 
@@ -67,7 +67,7 @@ ScopedPageLoadDeferrer::~ScopedPageLoadDeferrer()
         if (Page* page = m_deferredFrames[i]->page()) {
             page->setDefersLoading(false);
 
-            for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext())
+            for (LocalFrame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext())
                 frame->document()->resumeScheduledTasks();
         }
     }

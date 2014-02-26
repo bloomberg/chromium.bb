@@ -221,7 +221,7 @@ private:
     const RenderObject* findTextLeaf(const RenderObject*, size_t&, TextLeafSearch);
 
     const Document* m_document;
-    int m_frameWidth; // Frame width in density-independent pixels (DIPs).
+    int m_frameWidth; // LocalFrame width in density-independent pixels (DIPs).
     int m_layoutWidth; // Layout width in CSS pixels.
     float m_baseMultiplier; // Includes accessibility font scale factor and device scale adjustment.
 #ifndef NDEBUG

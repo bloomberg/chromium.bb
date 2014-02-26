@@ -42,12 +42,12 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/TextIterator.h"
 #include "core/editing/htmlediting.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-static Node* selectionShadowAncestor(Frame* frame)
+static Node* selectionShadowAncestor(LocalFrame* frame)
 {
     Node* node = frame->selection().selection().base().anchorNode();
     if (!node)

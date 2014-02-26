@@ -51,7 +51,7 @@
 #include "core/inspector/InspectorFrontendHost.h"
 #include "core/page/ContextMenuController.h"
 #include "core/frame/DOMWindow.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/page/Page.h"
 #include "core/frame/Settings.h"
 #include "platform/ContextMenuItem.h"

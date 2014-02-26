@@ -31,11 +31,11 @@
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/editing/htmlediting.h"
+#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameOwnerElement.h"
-#include "core/frame/Frame.h"
-#include "core/frame/FrameView.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
@@ -775,7 +775,7 @@ bool RenderBox::usesCompositedScrolling() const
 
 void RenderBox::autoscroll(const IntPoint& position)
 {
-    Frame* frame = this->frame();
+    LocalFrame* frame = this->frame();
     if (!frame)
         return;
 
@@ -866,7 +866,7 @@ static inline IntSize adjustedScrollDelta(const IntSize& delta)
 
 void RenderBox::panScroll(const IntPoint& sourcePoint)
 {
-    Frame* frame = this->frame();
+    LocalFrame* frame = this->frame();
     if (!frame)
         return;
 
@@ -908,7 +908,7 @@ void RenderBox::scrollByRecursively(const IntSize& delta, ScrollOffsetClamping c
             if (RenderBox* scrollableBox = enclosingScrollableBox())
                 scrollableBox->scrollByRecursively(remainingScrollOffset, clamp);
 
-            Frame* frame = this->frame();
+            LocalFrame* frame = this->frame();
             if (frame && frame->page())
                 frame->page()->autoscrollController().updateAutoscrollRenderer();
         }

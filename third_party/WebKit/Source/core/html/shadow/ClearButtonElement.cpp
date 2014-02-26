@@ -27,9 +27,9 @@
 #include "core/html/shadow/ClearButtonElement.h"
 
 #include "core/events/MouseEvent.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/page/EventHandler.h"
-#include "core/frame/Frame.h"
 #include "core/rendering/RenderView.h"
 
 namespace WebCore {
@@ -54,7 +54,7 @@ PassRefPtr<ClearButtonElement> ClearButtonElement::create(Document& document, Cl
 void ClearButtonElement::detach(const AttachContext& context)
 {
     if (m_capturing) {
-        if (Frame* frame = document().frame())
+        if (LocalFrame* frame = document().frame())
             frame->eventHandler().setCapturingMouseEventsNode(nullptr);
     }
     HTMLDivElement::detach(context);
@@ -65,7 +65,7 @@ void ClearButtonElement::releaseCapture()
     if (!m_capturing)
         return;
 
-    if (Frame* frame = document().frame()) {
+    if (LocalFrame* frame = document().frame()) {
         frame->eventHandler().setCapturingMouseEventsNode(nullptr);
         m_capturing = false;
     }
@@ -87,7 +87,7 @@ void ClearButtonElement::defaultEventHandler(Event* event)
 
     if (event->type() == EventTypeNames::mousedown && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
         if (renderer() && renderer()->visibleToHitTesting()) {
-            if (Frame* frame = document().frame()) {
+            if (LocalFrame* frame = document().frame()) {
                 frame->eventHandler().setCapturingMouseEventsNode(this);
                 m_capturing = true;
             }
@@ -97,7 +97,7 @@ void ClearButtonElement::defaultEventHandler(Event* event)
     }
     if (event->type() == EventTypeNames::mouseup && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
         if (m_capturing) {
-            if (Frame* frame = document().frame()) {
+            if (LocalFrame* frame = document().frame()) {
                 frame->eventHandler().setCapturingMouseEventsNode(nullptr);
                 m_capturing = false;
             }

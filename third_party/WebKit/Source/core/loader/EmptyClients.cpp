@@ -28,10 +28,10 @@
 #include "config.h"
 #include "core/loader/EmptyClients.h"
 
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FormState.h"
-#include "core/frame/Frame.h"
 #include "core/storage/StorageNamespace.h"
 #include "platform/ColorChooser.h"
 #include "platform/DateTimeChooser.h"
@@ -77,7 +77,7 @@ public:
     virtual void disconnectClient() OVERRIDE { }
 };
 
-PassRefPtr<PopupMenu> EmptyChromeClient::createPopupMenu(Frame&, PopupMenuClient*) const
+PassRefPtr<PopupMenu> EmptyChromeClient::createPopupMenu(LocalFrame&, PopupMenuClient*) const
 {
     return adoptRef(new EmptyPopupMenu());
 }
@@ -96,7 +96,7 @@ void EmptyChromeClient::openTextDataListChooser(HTMLInputElement&)
 {
 }
 
-void EmptyChromeClient::runOpenPanel(Frame*, PassRefPtr<FileChooser>)
+void EmptyChromeClient::runOpenPanel(LocalFrame*, PassRefPtr<FileChooser>)
 {
 }
 
@@ -118,12 +118,12 @@ void EmptyFrameLoaderClient::dispatchWillSubmitForm(PassRefPtr<FormState>)
 {
 }
 
-PassRefPtr<DocumentLoader> EmptyFrameLoaderClient::createDocumentLoader(Frame* frame, const ResourceRequest& request, const SubstituteData& substituteData)
+PassRefPtr<DocumentLoader> EmptyFrameLoaderClient::createDocumentLoader(LocalFrame* frame, const ResourceRequest& request, const SubstituteData& substituteData)
 {
     return DocumentLoader::create(frame, request, substituteData);
 }
 
-PassRefPtr<Frame> EmptyFrameLoaderClient::createFrame(const KURL&, const AtomicString&, const Referrer&, HTMLFrameOwnerElement*)
+PassRefPtr<LocalFrame> EmptyFrameLoaderClient::createFrame(const KURL&, const AtomicString&, const Referrer&, HTMLFrameOwnerElement*)
 {
     return nullptr;
 }

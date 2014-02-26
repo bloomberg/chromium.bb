@@ -42,7 +42,7 @@
 
 namespace WebCore {
 
-class Frame;
+class LocalFrame;
 class DocumentLoader;
 class InjectedScriptCanvasModule;
 class InjectedScriptManager;
@@ -64,8 +64,8 @@ public:
     virtual void clearFrontend() OVERRIDE;
     virtual void restore() OVERRIDE;
 
-    void didCommitLoad(Frame*, DocumentLoader*);
-    void frameDetachedFromParent(Frame*);
+    void didCommitLoad(LocalFrame*, DocumentLoader*);
+    void frameDetachedFromParent(LocalFrame*);
     void didBeginFrame();
 
     // Called from InspectorCanvasInstrumentation.
@@ -101,7 +101,7 @@ private:
     InspectorFrontend::Canvas* m_frontend;
     bool m_enabled;
     // Contains all frames with canvases, value is true only for frames that have an uninstrumented canvas.
-    typedef HashMap<Frame*, bool> FramesWithUninstrumentedCanvases;
+    typedef HashMap<LocalFrame*, bool> FramesWithUninstrumentedCanvases;
     FramesWithUninstrumentedCanvases m_framesWithUninstrumentedCanvases;
 };
 

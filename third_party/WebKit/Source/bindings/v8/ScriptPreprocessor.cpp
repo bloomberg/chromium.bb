@@ -36,14 +36,14 @@
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8ScriptRunner.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameHost.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/PageConsole.h"
 #include "wtf/TemporaryChange.h"
 
 namespace WebCore {
 
-ScriptPreprocessor::ScriptPreprocessor(const ScriptSourceCode& preprocessorSourceCode, Frame* frame)
+ScriptPreprocessor::ScriptPreprocessor(const ScriptSourceCode& preprocessorSourceCode, LocalFrame* frame)
     : m_isolate(V8PerIsolateData::mainThreadIsolate())
     , m_isPreprocessing(false)
 {

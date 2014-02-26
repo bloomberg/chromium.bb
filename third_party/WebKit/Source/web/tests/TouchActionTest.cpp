@@ -44,8 +44,8 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/page/EventHandler.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderTreeAsText.h"
@@ -235,7 +235,7 @@ void TouchActionTest::runTestOnTree(WebCore::ContainerNode* root, WebView* webVi
             contextStream << "=" << clientPoint.x() << "," << clientPoint.y() << ").";
             std::string failureContextPos = contextStream.str();
 
-            WebCore::Frame* frame = root->document().frame();
+            WebCore::LocalFrame* frame = root->document().frame();
             WebCore::FrameView* frameView = frame->view();
             WebCore::IntRect visibleRect = frameView->windowClipRect();
             ASSERT_TRUE(visibleRect.contains(clientPoint)) << failureContextPos

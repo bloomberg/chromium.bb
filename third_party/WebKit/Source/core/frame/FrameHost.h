@@ -50,7 +50,7 @@ class UseCounter;
 // however the concept of a Page is moving up out of Blink.
 // In an out-of-process iframe world, a single Page may have
 // multiple frames in different process, thus Page becomes a
-// browser-level concept and Blink core/ only knows about its Frame (and FrameHost).
+// browser-level concept and Blink core/ only knows about its LocalFrame (and FrameHost).
 // Separating Page from the rest of core/ through this indirection
 // allows us to slowly refactor Page without breaking the rest of core.
 class FrameHost {
@@ -69,7 +69,7 @@ public:
 
     // Corresponds to pixel density of the device where this Page is
     // being displayed. In multi-monitor setups this can vary between pages.
-    // This value does not account for Page zoom, use Frame::devicePixelRatio instead.
+    // This value does not account for Page zoom, use LocalFrame::devicePixelRatio instead.
     float deviceScaleFactor() const;
 
 private:

@@ -34,11 +34,11 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Utilities.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "core/frame/DOMWindow.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameHost.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/PageConsole.h"
+#include "core/inspector/ScriptCallStack.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -71,7 +71,7 @@ AtomicString V8CustomXPathNSResolver::lookupNamespaceURI(const String& prefix)
     }
 
     if (lookupNamespaceURIFunc.IsEmpty() && !m_resolver->IsFunction()) {
-        Frame* frame = callingDOMWindow(m_isolate)->frame();
+        LocalFrame* frame = callingDOMWindow(m_isolate)->frame();
         if (frame && frame->host())
             frame->host()->console().addMessage(JSMessageSource, ErrorMessageLevel, "XPathNSResolver does not have a lookupNamespaceURI method.");
         return nullAtom;

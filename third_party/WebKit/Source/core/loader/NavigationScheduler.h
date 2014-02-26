@@ -45,7 +45,7 @@ namespace WebCore {
 
 class Document;
 class FormSubmission;
-class Frame;
+class LocalFrame;
 class ScheduledNavigation;
 
 class NavigationDisablerForBeforeUnload {
@@ -71,7 +71,7 @@ class NavigationScheduler {
     WTF_MAKE_NONCOPYABLE(NavigationScheduler);
 
 public:
-    explicit NavigationScheduler(Frame*);
+    explicit NavigationScheduler(LocalFrame*);
     ~NavigationScheduler();
 
     bool locationChangePending();
@@ -94,9 +94,9 @@ private:
     void timerFired(Timer<NavigationScheduler>*);
     void schedule(PassOwnPtr<ScheduledNavigation>);
 
-    static bool mustLockBackForwardList(Frame* targetFrame);
+    static bool mustLockBackForwardList(LocalFrame* targetFrame);
 
-    Frame* m_frame;
+    LocalFrame* m_frame;
     Timer<NavigationScheduler> m_timer;
     OwnPtr<ScheduledNavigation> m_redirect;
 };

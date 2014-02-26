@@ -39,11 +39,11 @@
 
 namespace WebCore {
 
-class Frame;
+class LocalFrame;
 
 class PerformanceNavigation FINAL : public RefCountedWillBeGarbageCollectedFinalized<PerformanceNavigation>, public ScriptWrappable, public DOMWindowProperty {
 public:
-    static PassRefPtrWillBeRawPtr<PerformanceNavigation> create(Frame* frame)
+    static PassRefPtrWillBeRawPtr<PerformanceNavigation> create(LocalFrame* frame)
     {
         return adoptRefWillBeNoop(new PerformanceNavigation(frame));
     }
@@ -61,7 +61,7 @@ public:
     void trace(Visitor*) { }
 
 private:
-    explicit PerformanceNavigation(Frame*);
+    explicit PerformanceNavigation(LocalFrame*);
 };
 
 }

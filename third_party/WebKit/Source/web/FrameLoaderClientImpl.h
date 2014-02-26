@@ -69,12 +69,12 @@ public:
     virtual bool allowScriptExtension(const String& extensionName, int extensionGroup, int worldId) OVERRIDE;
 
     virtual bool hasWebView() const OVERRIDE;
-    virtual WebCore::Frame* parent() const OVERRIDE;
-    virtual WebCore::Frame* top() const OVERRIDE;
-    virtual WebCore::Frame* previousSibling() const OVERRIDE;
-    virtual WebCore::Frame* nextSibling() const OVERRIDE;
-    virtual WebCore::Frame* firstChild() const OVERRIDE;
-    virtual WebCore::Frame* lastChild() const OVERRIDE;
+    virtual WebCore::LocalFrame* parent() const OVERRIDE;
+    virtual WebCore::LocalFrame* top() const OVERRIDE;
+    virtual WebCore::LocalFrame* previousSibling() const OVERRIDE;
+    virtual WebCore::LocalFrame* nextSibling() const OVERRIDE;
+    virtual WebCore::LocalFrame* firstChild() const OVERRIDE;
+    virtual WebCore::LocalFrame* lastChild() const OVERRIDE;
     virtual void detachedFromParent() OVERRIDE;
     virtual void dispatchWillRequestAfterPreconnect(WebCore::ResourceRequest&) OVERRIDE;
     virtual void dispatchWillSendRequest(WebCore::DocumentLoader*, unsigned long identifier, WebCore::ResourceRequest&, const WebCore::ResourceResponse& redirectResponse) OVERRIDE;
@@ -89,7 +89,7 @@ public:
     virtual void dispatchDidStartProvisionalLoad() OVERRIDE;
     virtual void dispatchDidReceiveTitle(const String&) OVERRIDE;
     virtual void dispatchDidChangeIcons(WebCore::IconType) OVERRIDE;
-    virtual void dispatchDidCommitLoad(WebCore::Frame*, WebCore::HistoryItem*, WebCore::HistoryCommitType) OVERRIDE;
+    virtual void dispatchDidCommitLoad(WebCore::LocalFrame*, WebCore::HistoryItem*, WebCore::HistoryCommitType) OVERRIDE;
     virtual void dispatchDidFailProvisionalLoad(const WebCore::ResourceError&) OVERRIDE;
     virtual void dispatchDidFailLoad(const WebCore::ResourceError&) OVERRIDE;
     virtual void dispatchDidFinishDocumentLoad() OVERRIDE;
@@ -111,11 +111,11 @@ public:
     virtual void didDetectXSS(const WebCore::KURL&, bool didBlockEntirePage) OVERRIDE;
     virtual void didDispatchPingLoader(const WebCore::KURL&) OVERRIDE;
     virtual void selectorMatchChanged(const Vector<String>& addedSelectors, const Vector<String>& removedSelectors) OVERRIDE;
-    virtual PassRefPtr<WebCore::DocumentLoader> createDocumentLoader(WebCore::Frame*, const WebCore::ResourceRequest&, const WebCore::SubstituteData&) OVERRIDE;
+    virtual PassRefPtr<WebCore::DocumentLoader> createDocumentLoader(WebCore::LocalFrame*, const WebCore::ResourceRequest&, const WebCore::SubstituteData&) OVERRIDE;
     virtual WTF::String userAgent(const WebCore::KURL&) OVERRIDE;
     virtual WTF::String doNotTrackValue() OVERRIDE;
     virtual void transitionToCommittedForNewPage() OVERRIDE;
-    virtual PassRefPtr<WebCore::Frame> createFrame(const WebCore::KURL&, const WTF::AtomicString& name, const WebCore::Referrer&, WebCore::HTMLFrameOwnerElement*) OVERRIDE;
+    virtual PassRefPtr<WebCore::LocalFrame> createFrame(const WebCore::KURL&, const WTF::AtomicString& name, const WebCore::Referrer&, WebCore::HTMLFrameOwnerElement*) OVERRIDE;
     virtual PassRefPtr<WebCore::Widget> createPlugin(
         WebCore::HTMLPlugInElement*, const WebCore::KURL&,
         const Vector<WTF::String>&, const Vector<WTF::String>&,

@@ -46,7 +46,7 @@
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/DOMWindow.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
 #include "core/frame/Settings.h"
@@ -69,7 +69,7 @@ static bool isArchiveMIMEType(const String& mimeType)
     return mimeType == "multipart/related";
 }
 
-DocumentLoader::DocumentLoader(Frame* frame, const ResourceRequest& req, const SubstituteData& substituteData)
+DocumentLoader::DocumentLoader(LocalFrame* frame, const ResourceRequest& req, const SubstituteData& substituteData)
     : m_frame(frame)
     , m_fetcher(ResourceFetcher::create(this))
     , m_originalRequest(req)
@@ -170,7 +170,7 @@ void DocumentLoader::mainReceivedError(const ResourceError& error)
 // but not loads initiated by child frames' data sources -- that's the WebFrame's job.
 void DocumentLoader::stopLoading()
 {
-    RefPtr<Frame> protectFrame(m_frame);
+    RefPtr<LocalFrame> protectFrame(m_frame);
     RefPtr<DocumentLoader> protectLoader(this);
 
     // In some rare cases, calling FrameLoader::stopLoading could cause isLoading() to return false.
@@ -375,7 +375,7 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
 
     // If this is a sub-frame, check for mixed content blocking against the top frame.
     if (m_frame->tree().parent()) {
-        Frame* top = m_frame->tree().top();
+        LocalFrame* top = m_frame->tree().top();
         if (!top->loader().mixedContentChecker()->canRunInsecureContent(top->document()->securityOrigin(), newRequest.url())) {
             cancelMainResourceLoad(ResourceError::cancelledError(newRequest.url()));
             return;
@@ -451,7 +451,7 @@ void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse
         ASSERT(identifier);
         if (frameLoader()->shouldInterruptLoadForXFrameOptions(content, response.url(), identifier)) {
             InspectorInstrumentation::continueAfterXFrameOptionsDenied(m_frame, this, identifier, response);
-            String message = "Refused to display '" + response.url().elidedString() + "' in a frame because it set 'X-Frame-Options' to '" + content + "'.";
+            String message = "Refused to display '" + response.url().elidedString() + "' in a frame because it set 'X-LocalFrame-Options' to '" + content + "'.";
             frame()->document()->addConsoleMessageWithRequestIdentifier(SecurityMessageSource, ErrorMessageLevel, message, identifier);
             frame()->document()->enforceSandboxFlags(SandboxOrigin);
             if (HTMLFrameOwnerElement* ownerElement = frame()->ownerElement())
@@ -522,7 +522,7 @@ void DocumentLoader::dataReceived(Resource* resource, const char* data, int leng
 
     // Both unloading the old page and parsing the new page may execute JavaScript which destroys the datasource
     // by starting a new load, so retain temporarily.
-    RefPtr<Frame> protectFrame(m_frame);
+    RefPtr<LocalFrame> protectFrame(m_frame);
     RefPtr<DocumentLoader> protectLoader(this);
 
     m_applicationCacheHost->mainResourceDataReceived(data, length);
@@ -561,7 +561,7 @@ void DocumentLoader::appendRedirect(const KURL& url)
 void DocumentLoader::detachFromFrame()
 {
     ASSERT(m_frame);
-    RefPtr<Frame> protectFrame(m_frame);
+    RefPtr<LocalFrame> protectFrame(m_frame);
     RefPtr<DocumentLoader> protectLoader(this);
 
     // It never makes sense to have a document loader that is detached from its
@@ -741,7 +741,7 @@ void DocumentLoader::startLoadingMainResource()
     timing()->markFetchStart();
     willSendRequest(m_request, ResourceResponse());
 
-    // willSendRequest() may lead to our Frame being detached or cancelling the load via nulling the ResourceRequest.
+    // willSendRequest() may lead to our LocalFrame being detached or cancelling the load via nulling the ResourceRequest.
     if (!m_frame || m_request.isNull())
         return;
 
@@ -792,7 +792,7 @@ void DocumentLoader::endWriting(DocumentWriter* writer)
     m_writer.clear();
 }
 
-PassRefPtr<DocumentWriter> DocumentLoader::createWriterFor(Frame* frame, const Document* ownerDocument, const KURL& url, const AtomicString& mimeType, const AtomicString& encoding, bool userChosen, bool dispatch)
+PassRefPtr<DocumentWriter> DocumentLoader::createWriterFor(LocalFrame* frame, const Document* ownerDocument, const KURL& url, const AtomicString& mimeType, const AtomicString& encoding, bool userChosen, bool dispatch)
 {
     // Create a new document before clearing the frame, because it may need to
     // inherit an aliased security context.

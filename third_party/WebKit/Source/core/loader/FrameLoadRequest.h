@@ -34,7 +34,7 @@
 #include "platform/network/ResourceRequest.h"
 
 namespace WebCore {
-class Frame;
+class LocalFrame;
 
 struct FrameLoadRequest {
 public:

@@ -39,7 +39,7 @@ namespace WebCore {
 
 class DOMWrapperWorld;
 class DocumentLoader;
-class Frame;
+class LocalFrame;
 class InjectedScriptManager;
 class InspectorFrontend;
 class InstrumentingAgents;
@@ -67,10 +67,10 @@ public:
     virtual void setFrontend(InspectorFrontend*) OVERRIDE;
     virtual void clearFrontend() OVERRIDE;
 
-    void didClearWindowObjectInMainWorld(Frame*);
+    void didClearWindowObjectInMainWorld(LocalFrame*);
 
-    void didCommitLoad(Frame*, DocumentLoader*);
-    void domContentLoadedEventFired(Frame*);
+    void didCommitLoad(LocalFrame*, DocumentLoader*);
+    void domContentLoadedEventFired(LocalFrame*);
 
     bool hasFrontend() const { return m_frontend; }
 

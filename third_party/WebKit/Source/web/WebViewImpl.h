@@ -64,7 +64,7 @@
 namespace WebCore {
 class DataObject;
 class Color;
-class Frame;
+class LocalFrame;
 class GraphicsLayerFactory;
 class HistoryItem;
 class HitTestResult;
@@ -319,7 +319,7 @@ public:
         return m_lastMouseDownPoint;
     }
 
-    WebCore::Frame* focusedWebCoreFrame() const;
+    WebCore::LocalFrame* focusedWebCoreFrame() const;
 
     // Returns the currently focused Element or null if no element has focus.
     WebCore::Element* focusedElement() const;
@@ -424,7 +424,7 @@ public:
 
     // Start a system drag and drop operation.
     void startDragging(
-        WebCore::Frame*,
+        WebCore::LocalFrame*,
         const WebDragData& dragData,
         WebDragOperationsMask mask,
         const WebImage& dragImage,
@@ -595,16 +595,16 @@ private:
     void pointerLockMouseEvent(const WebInputEvent&);
 
     // PageWidgetEventHandler functions
-    virtual void handleMouseLeave(WebCore::Frame&, const WebMouseEvent&) OVERRIDE;
-    virtual void handleMouseDown(WebCore::Frame&, const WebMouseEvent&) OVERRIDE;
-    virtual void handleMouseUp(WebCore::Frame&, const WebMouseEvent&) OVERRIDE;
-    virtual bool handleMouseWheel(WebCore::Frame&, const WebMouseWheelEvent&) OVERRIDE;
+    virtual void handleMouseLeave(WebCore::LocalFrame&, const WebMouseEvent&) OVERRIDE;
+    virtual void handleMouseDown(WebCore::LocalFrame&, const WebMouseEvent&) OVERRIDE;
+    virtual void handleMouseUp(WebCore::LocalFrame&, const WebMouseEvent&) OVERRIDE;
+    virtual bool handleMouseWheel(WebCore::LocalFrame&, const WebMouseWheelEvent&) OVERRIDE;
     virtual bool handleGestureEvent(const WebGestureEvent&) OVERRIDE;
     virtual bool handleKeyEvent(const WebKeyboardEvent&) OVERRIDE;
     virtual bool handleCharEvent(const WebKeyboardEvent&) OVERRIDE;
 
     WebCore::InputMethodContext* inputMethodContext();
-    WebPlugin* focusedPluginIfInputMethodSupported(WebCore::Frame*);
+    WebPlugin* focusedPluginIfInputMethodSupported(WebCore::LocalFrame*);
 
     WebViewClient* m_client; // Can be 0 (e.g. unittests, shared workers, etc.)
     WebAutofillClient* m_autofillClient;

@@ -75,8 +75,8 @@
 #include "core/events/EventDispatcher.h"
 #include "core/events/FocusEvent.h"
 #include "core/frame/ContentSecurityPolicy.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/ClassList.h"
 #include "core/html/HTMLCollection.h"
@@ -728,7 +728,7 @@ void Element::setScrollLeft(int newLeft)
         if (document().inQuirksMode())
             return;
 
-        Frame* frame = document().frame();
+        LocalFrame* frame = document().frame();
         if (!frame)
             return;
         FrameView* view = frame->view();
@@ -774,7 +774,7 @@ void Element::setScrollTop(int newTop)
         if (document().inQuirksMode())
             return;
 
-        Frame* frame = document().frame();
+        LocalFrame* frame = document().frame();
         if (!frame)
             return;
         FrameView* view = frame->view();
@@ -2173,7 +2173,7 @@ void Element::focus(bool restorePreviousSelection, FocusType type)
 void Element::updateFocusAppearance(bool /*restorePreviousSelection*/)
 {
     if (isRootEditableElement()) {
-        Frame* frame = document().frame();
+        LocalFrame* frame = document().frame();
         if (!frame)
             return;
 

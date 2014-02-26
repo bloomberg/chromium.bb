@@ -65,7 +65,7 @@ public:
     static void insertLineBreak(Document&, Options);
     static void insertParagraphSeparator(Document&, Options);
     static void insertParagraphSeparatorInQuotedContent(Document&);
-    static void closeTyping(Frame*);
+    static void closeTyping(LocalFrame*);
 
     void insertText(const String &text, bool selectInsertedText);
     void insertTextRunWithoutNewlines(const String &text, bool selectInsertedText);
@@ -94,7 +94,7 @@ private:
     bool isOpenForMoreTyping() const { return m_openForMoreTyping; }
     void closeTyping() { m_openForMoreTyping = false; }
 
-    static PassRefPtr<TypingCommand> lastTypingCommandIfStillOpenForTyping(Frame*);
+    static PassRefPtr<TypingCommand> lastTypingCommandIfStillOpenForTyping(LocalFrame*);
 
     virtual void doApply() OVERRIDE;
     virtual EditAction editingAction() const OVERRIDE;
@@ -104,7 +104,7 @@ private:
     virtual bool shouldStopCaretBlinking() const OVERRIDE { return true; }
     void setShouldPreventSpellChecking(bool prevent) { m_shouldPreventSpellChecking = prevent; }
 
-    static void updateSelectionIfDifferentFromCurrentSelection(TypingCommand*, Frame*);
+    static void updateSelectionIfDifferentFromCurrentSelection(TypingCommand*, LocalFrame*);
 
     void updatePreservesTypingStyle(ETypingCommand);
     void markMisspellingsAfterTyping(ETypingCommand);

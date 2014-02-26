@@ -28,14 +28,14 @@
 #include "HTMLNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/RawDataDocumentParser.h"
+#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLEmbedElement.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/frame/Frame.h"
-#include "core/frame/FrameView.h"
 #include "core/plugins/PluginView.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 
@@ -76,7 +76,7 @@ void PluginDocumentParser::createDocumentStructure()
     ASSERT(document());
     RELEASE_ASSERT(document()->loader());
 
-    Frame* frame = document()->frame();
+    LocalFrame* frame = document()->frame();
     if (!frame)
         return;
 

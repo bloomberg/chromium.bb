@@ -41,7 +41,7 @@
 #include "bindings/v8/V8WindowShell.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "platform/TraceEvent.h"
 #include "wtf/GetPtr.h"
 #include "wtf/RefPtr.h"
@@ -132,7 +132,7 @@ v8::Handle<v8::Object> wrap(TestInterfaceDocument* impl, v8::Handle<v8::Object> 
         return wrapper;
     DOMWrapperWorld* world = DOMWrapperWorld::current(isolate);
     if (world->isMainWorld()) {
-        if (Frame* frame = impl->frame())
+        if (LocalFrame* frame = impl->frame())
             frame->script().windowShell(world)->updateDocumentWrapper(wrapper);
     }
     return wrapper;
@@ -149,7 +149,7 @@ v8::Handle<v8::Object> V8TestInterfaceDocument::createWrapper(PassRefPtr<TestInt
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == wrapperTypeInfo.derefObjectFunction);
     }
 
-    if (Frame* frame = impl->frame()) {
+    if (LocalFrame* frame = impl->frame()) {
         if (frame->script().initializeMainWorld()) {
             // initializeMainWorld may have created a wrapper for the object, retry from the start.
             v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapper<V8TestInterfaceDocument>(impl.get(), isolate);

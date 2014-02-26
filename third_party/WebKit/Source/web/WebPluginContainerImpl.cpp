@@ -60,8 +60,8 @@
 #include "core/loader/FormState.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/FocusController.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/plugins/PluginOcclusionSupport.h"
@@ -279,7 +279,7 @@ float WebPluginContainerImpl::pageScaleFactor()
 
 float WebPluginContainerImpl::pageZoomFactor()
 {
-    Frame* frame = m_element->document().frame();
+    LocalFrame* frame = m_element->document().frame();
     if (!frame)
         return 1.0;
     return frame->pageZoomFactor();
@@ -413,7 +413,7 @@ void WebPluginContainerImpl::allowScriptObjects()
 
 void WebPluginContainerImpl::clearScriptObjects()
 {
-    Frame* frame = m_element->document().frame();
+    LocalFrame* frame = m_element->document().frame();
     if (!frame)
         return;
     frame->script().cleanupScriptObjectsForPlugin(this);
@@ -426,7 +426,7 @@ NPObject* WebPluginContainerImpl::scriptableObjectForElement()
 
 WebString WebPluginContainerImpl::executeScriptURL(const WebURL& url, bool popupsAllowed)
 {
-    Frame* frame = m_element->document().frame();
+    LocalFrame* frame = m_element->document().frame();
     if (!frame)
         return WebString();
 
@@ -447,7 +447,7 @@ WebString WebPluginContainerImpl::executeScriptURL(const WebURL& url, bool popup
 
 void WebPluginContainerImpl::loadFrameRequest(const WebURLRequest& request, const WebString& target, bool notifyNeeded, void* notifyData)
 {
-    Frame* frame = m_element->document().frame();
+    LocalFrame* frame = m_element->document().frame();
     if (!frame || !frame->loader().documentLoader())
         return;  // FIXME: send a notification in this case?
 
@@ -474,7 +474,7 @@ void WebPluginContainerImpl::zoomLevelChanged(double zoomLevel)
 
 bool WebPluginContainerImpl::isRectTopmost(const WebRect& rect)
 {
-    Frame* frame = m_element->document().frame();
+    LocalFrame* frame = m_element->document().frame();
     if (!frame)
         return false;
 
@@ -853,7 +853,7 @@ void WebPluginContainerImpl::synthesizeMouseEventIfPossible(TouchEvent* event)
 
 void WebPluginContainerImpl::focusPlugin()
 {
-    Frame& containingFrame = toFrameView(parent())->frame();
+    LocalFrame& containingFrame = toFrameView(parent())->frame();
     if (Page* currentPage = containingFrame.page())
         currentPage->focusController().setFocusedElement(m_element, &containingFrame);
     else

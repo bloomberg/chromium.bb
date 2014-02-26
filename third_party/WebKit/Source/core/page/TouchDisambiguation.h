@@ -35,11 +35,11 @@
 
 namespace WebCore {
 
-class Frame;
+class LocalFrame;
 class IntRect;
 class Node;
 
-void findGoodTouchTargets(const IntRect& touchBox, Frame* mainFrame, Vector<IntRect>& goodTargets, Vector<Node*>& highlightNodes);
+void findGoodTouchTargets(const IntRect& touchBox, LocalFrame* mainFrame, Vector<IntRect>& goodTargets, Vector<Node*>& highlightNodes);
 
 } // namespace WebCore
 

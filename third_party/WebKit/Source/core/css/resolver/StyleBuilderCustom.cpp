@@ -67,7 +67,7 @@
 #include "core/css/resolver/FontBuilder.h"
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/TransformBuilder.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/rendering/style/CounterContent.h"
 #include "core/rendering/style/CursorList.h"
@@ -308,7 +308,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyLineHeight(StyleResolverState& 
         lineHeight = RenderStyle::initialLineHeight();
     } else if (primitiveValue->isLength()) {
         float multiplier = state.style()->effectiveZoom();
-        if (Frame* frame = state.document().frame())
+        if (LocalFrame* frame = state.document().frame())
             multiplier *= frame->textZoomFactor();
         lineHeight = primitiveValue->computeLength<Length>(state.cssToLengthConversionData().copyWithAdjustedZoom(multiplier));
     } else if (primitiveValue->isPercentage()) {
@@ -317,7 +317,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyLineHeight(StyleResolverState& 
         lineHeight = Length(primitiveValue->getDoubleValue() * 100.0, Percent);
     } else if (primitiveValue->isCalculated()) {
         double multiplier = state.style()->effectiveZoom();
-        if (Frame* frame = state.document().frame())
+        if (LocalFrame* frame = state.document().frame())
             multiplier *= frame->textZoomFactor();
         Length zoomedLength = Length(primitiveValue->cssCalcValue()->toCalcValue(state.cssToLengthConversionData().copyWithAdjustedZoom(multiplier)));
         lineHeight = Length(valueForLength(zoomedLength, state.style()->fontSize()), Fixed);

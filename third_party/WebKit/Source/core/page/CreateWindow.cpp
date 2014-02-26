@@ -28,8 +28,8 @@
 #include "core/page/CreateWindow.h"
 
 #include "core/dom/Document.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameHost.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/Chrome.h"
@@ -44,12 +44,12 @@
 
 namespace WebCore {
 
-static Frame* createWindow(Frame* openerFrame, Frame* lookupFrame, const FrameLoadRequest& request, const WindowFeatures& features, NavigationPolicy policy, ShouldSendReferrer shouldSendReferrer, bool& created)
+static LocalFrame* createWindow(LocalFrame* openerFrame, LocalFrame* lookupFrame, const FrameLoadRequest& request, const WindowFeatures& features, NavigationPolicy policy, ShouldSendReferrer shouldSendReferrer, bool& created)
 {
     ASSERT(!features.dialog || request.frameName().isEmpty());
 
     if (!request.frameName().isEmpty() && request.frameName() != "_blank" && policy == NavigationPolicyIgnore) {
-        if (Frame* frame = lookupFrame->loader().findFrameForNavigation(request.frameName(), openerFrame->document())) {
+        if (LocalFrame* frame = lookupFrame->loader().findFrameForNavigation(request.frameName(), openerFrame->document())) {
             if (request.frameName() != "_self")
                 frame->page()->focusController().setFocusedFrame(frame);
             created = false;
@@ -78,7 +78,7 @@ static Frame* createWindow(Frame* openerFrame, Frame* lookupFrame, const FrameLo
         return 0;
     FrameHost* host = &page->frameHost();
 
-    Frame* frame = page->mainFrame();
+    LocalFrame* frame = page->mainFrame();
 
     frame->loader().forceSandboxFlags(openerFrame->document()->sandboxFlags());
 
@@ -113,10 +113,10 @@ static Frame* createWindow(Frame* openerFrame, Frame* lookupFrame, const FrameLo
     return frame;
 }
 
-Frame* createWindow(const String& urlString, const AtomicString& frameName, const WindowFeatures& windowFeatures,
-    DOMWindow* callingWindow, Frame* firstFrame, Frame* openerFrame)
+LocalFrame* createWindow(const String& urlString, const AtomicString& frameName, const WindowFeatures& windowFeatures,
+    DOMWindow* callingWindow, LocalFrame* firstFrame, LocalFrame* openerFrame)
 {
-    Frame* activeFrame = callingWindow->frame();
+    LocalFrame* activeFrame = callingWindow->frame();
 
     KURL completedURL = urlString.isEmpty() ? KURL(ParsedURLString, emptyString()) : firstFrame->document()->completeURL(urlString);
     if (!completedURL.isEmpty() && !completedURL.isValid()) {
@@ -135,7 +135,7 @@ Frame* createWindow(const String& urlString, const AtomicString& frameName, cons
     // We pass the opener frame for the lookupFrame in case the active frame is different from
     // the opener frame, and the name references a frame relative to the opener frame.
     bool created;
-    Frame* newFrame = createWindow(activeFrame, openerFrame, frameRequest, windowFeatures, NavigationPolicyIgnore, MaybeSendReferrer, created);
+    LocalFrame* newFrame = createWindow(activeFrame, openerFrame, frameRequest, windowFeatures, NavigationPolicyIgnore, MaybeSendReferrer, created);
     if (!newFrame)
         return 0;
 
@@ -154,7 +154,7 @@ Frame* createWindow(const String& urlString, const AtomicString& frameName, cons
     return newFrame;
 }
 
-void createWindowForRequest(const FrameLoadRequest& request, Frame* openerFrame, NavigationPolicy policy, ShouldSendReferrer shouldSendReferrer)
+void createWindowForRequest(const FrameLoadRequest& request, LocalFrame* openerFrame, NavigationPolicy policy, ShouldSendReferrer shouldSendReferrer)
 {
     if (openerFrame->document()->pageDismissalEventBeingDispatched() != Document::NoDismissal)
         return;
@@ -170,7 +170,7 @@ void createWindowForRequest(const FrameLoadRequest& request, Frame* openerFrame,
 
     WindowFeatures features;
     bool created;
-    Frame* newFrame = createWindow(openerFrame, openerFrame, request, features, policy, shouldSendReferrer, created);
+    LocalFrame* newFrame = createWindow(openerFrame, openerFrame, request, features, policy, shouldSendReferrer, created);
     if (!newFrame)
         return;
     newFrame->page()->setOpenedByDOM();

@@ -30,12 +30,12 @@
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 
 namespace WebCore {
 
-StyleMedia::StyleMedia(Frame* frame)
+StyleMedia::StyleMedia(LocalFrame* frame)
     : DOMWindowProperty(frame)
 {
 }

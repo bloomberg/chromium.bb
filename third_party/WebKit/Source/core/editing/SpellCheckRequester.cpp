@@ -30,7 +30,7 @@
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/Node.h"
 #include "core/editing/SpellChecker.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "platform/text/TextCheckerClient.h"
 
@@ -115,7 +115,7 @@ void SpellCheckRequest::requesterDestroyed()
     m_requester = 0;
 }
 
-SpellCheckRequester::SpellCheckRequester(Frame& frame)
+SpellCheckRequester::SpellCheckRequester(LocalFrame& frame)
     : m_frame(frame)
     , m_lastRequestSequence(0)
     , m_lastProcessedSequence(0)

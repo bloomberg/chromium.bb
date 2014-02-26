@@ -40,7 +40,7 @@
 
 namespace WebCore {
 
-class Frame;
+class LocalFrame;
 class ExecutionContext;
 class WorkerGlobalScope;
 
@@ -54,7 +54,7 @@ public:
     void execute(ExecutionContext*);
 
 private:
-    void execute(Frame*);
+    void execute(LocalFrame*);
     void execute(WorkerGlobalScope*);
     void createLocalHandlesForArgs(Vector<v8::Handle<v8::Value> >* handles);
 

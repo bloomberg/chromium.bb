@@ -32,7 +32,7 @@
 namespace WebCore {
 
 class EventHandler;
-class Frame;
+class LocalFrame;
 class FrameView;
 class Node;
 class Page;
@@ -65,7 +65,7 @@ public:
     void updateAutoscrollRenderer();
     void updateDragAndDrop(Node* targetNode, const IntPoint& eventPosition, double eventTime);
 #if OS(WIN)
-    void handleMouseReleaseForPanScrolling(Frame*, const PlatformMouseEvent&);
+    void handleMouseReleaseForPanScrolling(LocalFrame*, const PlatformMouseEvent&);
     void startPanScrolling(RenderBox*, const IntPoint&);
 #endif
 

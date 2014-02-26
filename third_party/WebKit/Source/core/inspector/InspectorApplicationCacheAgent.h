@@ -33,7 +33,7 @@
 
 namespace WebCore {
 
-class Frame;
+class LocalFrame;
 class InspectorFrontend;
 class InspectorPageAgent;
 class InstrumentingAgents;
@@ -55,7 +55,7 @@ public:
     virtual void restore() OVERRIDE;
 
     // InspectorInstrumentation API
-    void updateApplicationCacheStatus(Frame*);
+    void updateApplicationCacheStatus(LocalFrame*);
     void networkStateChanged(bool online);
 
     // ApplicationCache API for InspectorFrontend

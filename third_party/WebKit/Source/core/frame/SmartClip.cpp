@@ -89,7 +89,7 @@ String SmartClipData::toString()
     return result.toString();
 }
 
-SmartClip::SmartClip(PassRefPtr<Frame> frame)
+SmartClip::SmartClip(PassRefPtr<LocalFrame> frame)
     : m_frame(frame)
 {
 }

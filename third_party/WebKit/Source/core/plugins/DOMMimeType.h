@@ -32,11 +32,11 @@
 namespace WebCore {
 
 class DOMPlugin;
-class Frame;
+class LocalFrame;
 
 class DOMMimeType FINAL : public RefCountedWillBeGarbageCollectedFinalized<DOMMimeType>, public ScriptWrappable, public FrameDestructionObserver {
 public:
-    static PassRefPtrWillBeRawPtr<DOMMimeType> create(PassRefPtr<PluginData> pluginData, Frame* frame, unsigned index)
+    static PassRefPtrWillBeRawPtr<DOMMimeType> create(PassRefPtr<PluginData> pluginData, LocalFrame* frame, unsigned index)
     {
         return adoptRefWillBeNoop(new DOMMimeType(pluginData, frame, index));
     }
@@ -52,7 +52,7 @@ public:
 private:
     const MimeClassInfo& mimeClassInfo() const { return m_pluginData->mimes()[m_index]; }
 
-    DOMMimeType(PassRefPtr<PluginData>, Frame*, unsigned index);
+    DOMMimeType(PassRefPtr<PluginData>, LocalFrame*, unsigned index);
     RefPtr<PluginData> m_pluginData;
     unsigned m_index;
 };

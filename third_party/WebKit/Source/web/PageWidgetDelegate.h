@@ -37,7 +37,7 @@
 #include "wtf/OwnPtr.h"
 
 namespace WebCore {
-class Frame;
+class LocalFrame;
 class Page;
 }
 
@@ -53,15 +53,15 @@ class WebTouchEvent;
 
 class PageWidgetEventHandler {
 public:
-    virtual void handleMouseMove(WebCore::Frame& mainFrame, const WebMouseEvent&);
-    virtual void handleMouseLeave(WebCore::Frame& mainFrame, const WebMouseEvent&);
-    virtual void handleMouseDown(WebCore::Frame& mainFrame, const WebMouseEvent&);
-    virtual void handleMouseUp(WebCore::Frame& mainFrame, const WebMouseEvent&);
-    virtual bool handleMouseWheel(WebCore::Frame& mainFrame, const WebMouseWheelEvent&);
+    virtual void handleMouseMove(WebCore::LocalFrame& mainFrame, const WebMouseEvent&);
+    virtual void handleMouseLeave(WebCore::LocalFrame& mainFrame, const WebMouseEvent&);
+    virtual void handleMouseDown(WebCore::LocalFrame& mainFrame, const WebMouseEvent&);
+    virtual void handleMouseUp(WebCore::LocalFrame& mainFrame, const WebMouseEvent&);
+    virtual bool handleMouseWheel(WebCore::LocalFrame& mainFrame, const WebMouseWheelEvent&);
     virtual bool handleKeyEvent(const WebKeyboardEvent&) = 0;
     virtual bool handleCharEvent(const WebKeyboardEvent&) = 0;
     virtual bool handleGestureEvent(const WebGestureEvent&) = 0;
-    virtual bool handleTouchEvent(WebCore::Frame& mainFrame, const WebTouchEvent&);
+    virtual bool handleTouchEvent(WebCore::LocalFrame& mainFrame, const WebTouchEvent&);
     virtual ~PageWidgetEventHandler() { }
 };
 

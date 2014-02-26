@@ -32,12 +32,12 @@
 #include "core/loader/FrameFetchContext.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/ProgressTracker.h"
-#include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "core/frame/Settings.h"
 #include "platform/weborigin/SecurityPolicy.h"
@@ -46,7 +46,7 @@ namespace WebCore {
 
 static const char defaultAcceptHeader[] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
 
-FrameFetchContext::FrameFetchContext(Frame* frame)
+FrameFetchContext::FrameFetchContext(LocalFrame* frame)
     : m_frame(frame)
 {
 }
@@ -115,7 +115,7 @@ CachePolicy FrameFetchContext::cachePolicy(Document* document) const
     if (loadType == FrameLoadTypeReloadFromOrigin)
         return CachePolicyReload;
 
-    if (Frame* parentFrame = m_frame->tree().parent()) {
+    if (LocalFrame* parentFrame = m_frame->tree().parent()) {
         CachePolicy parentCachePolicy = parentFrame->loader().fetchContext().cachePolicy(parentFrame->document());
         if (parentCachePolicy != CachePolicyVerify)
             return parentCachePolicy;

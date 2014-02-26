@@ -111,10 +111,10 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/DOMWindow.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/History.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/PageConsole.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLAllCollection.h"
@@ -305,7 +305,7 @@ static bool acceptsEditingFocus(const Element& element)
     return element.document().frame() && element.rootEditableElement();
 }
 
-static bool canAccessAncestor(const SecurityOrigin& activeSecurityOrigin, Frame* targetFrame)
+static bool canAccessAncestor(const SecurityOrigin& activeSecurityOrigin, LocalFrame* targetFrame)
 {
     // targetFrame can be 0 when we're trying to navigate a top-level frame
     // that has a 0 opener.
@@ -313,7 +313,7 @@ static bool canAccessAncestor(const SecurityOrigin& activeSecurityOrigin, Frame*
         return false;
 
     const bool isLocalActiveOrigin = activeSecurityOrigin.isLocal();
-    for (Frame* ancestorFrame = targetFrame; ancestorFrame; ancestorFrame = ancestorFrame->tree().parent()) {
+    for (LocalFrame* ancestorFrame = targetFrame; ancestorFrame; ancestorFrame = ancestorFrame->tree().parent()) {
         Document* ancestorDocument = ancestorFrame->document();
         // FIXME: Should be an ASSERT? Frames should alway have documents.
         if (!ancestorDocument)
@@ -333,7 +333,7 @@ static bool canAccessAncestor(const SecurityOrigin& activeSecurityOrigin, Frame*
     return false;
 }
 
-static void printNavigationErrorMessage(const Frame& frame, const KURL& activeURL, const char* reason)
+static void printNavigationErrorMessage(const LocalFrame& frame, const KURL& activeURL, const char* reason)
 {
     String message = "Unsafe JavaScript attempt to initiate navigation for frame with URL '" + frame.document()->url().string() + "' from frame with URL '" + activeURL.string() + "'. " + reason + "\n";
 
@@ -831,7 +831,7 @@ DOMWindow* Document::executingWindow()
     return 0;
 }
 
-Frame* Document::executingFrame()
+LocalFrame* Document::executingFrame()
 {
     DOMWindow* window = executingWindow();
     if (!window)
@@ -1727,8 +1727,8 @@ void Document::updateStyle(StyleRecalcChange change)
     RELEASE_ASSERT(!view()->isInPerformLayout());
     RELEASE_ASSERT(!view()->isPainting());
 
-    // Script can run below in PostAttachCallbacks or WidgetUpdates, so protect the Frame.
-    RefPtr<Frame> protect(m_frame);
+    // Script can run below in PostAttachCallbacks or WidgetUpdates, so protect the LocalFrame.
+    RefPtr<LocalFrame> protect(m_frame);
 
     TRACE_EVENT0("webkit", "Document::recalcStyle");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "RecalcStyle");
@@ -1745,8 +1745,8 @@ void Document::updateStyle(StyleRecalcChange change)
     }
 
     // FIXME: We should update style on our ancestor chain before proceeding
-    // however doing so currently causes several tests to crash, as Frame::setDocument calls Document::attach
-    // before setting the DOMWindow on the Frame, or the SecurityOrigin on the document. The attach, in turn
+    // however doing so currently causes several tests to crash, as LocalFrame::setDocument calls Document::attach
+    // before setting the DOMWindow on the LocalFrame, or the SecurityOrigin on the document. The attach, in turn
     // resolves style (here) and then when we resolve style on the parent chain, we may end up
     // re-attaching our containing iframe, which when asked HTMLFrameElementBase::isURLAllowed
     // hits a null-dereference due to security code always assuming the document has a SecurityOrigin.
@@ -2142,7 +2142,7 @@ void Document::detach(const AttachContext& context)
     if (Document* parentDoc = parentDocument())
         parentDoc->didClearTouchEventHandlers(this);
 
-    // This is required, as our Frame might delete itself as soon as it detaches
+    // This is required, as our LocalFrame might delete itself as soon as it detaches
     // us. However, this violates Node::detach() semantics, as it's never
     // possible to re-attach. Eventually Document::detach() should be renamed,
     // or this setting of the frame to 0 could be made explicit in each of the
@@ -2808,7 +2808,7 @@ void Document::disableEval(const String& errorMessage)
     frame()->script().disableEval(errorMessage);
 }
 
-bool Document::canNavigate(Frame* targetFrame)
+bool Document::canNavigate(LocalFrame* targetFrame)
 {
     if (!m_frame)
         return false;
@@ -2819,7 +2819,7 @@ bool Document::canNavigate(Frame* targetFrame)
     if (!targetFrame)
         return true;
 
-    // Frame-busting is generally allowed, but blocked for sandboxed frames lacking the 'allow-top-navigation' flag.
+    // LocalFrame-busting is generally allowed, but blocked for sandboxed frames lacking the 'allow-top-navigation' flag.
     if (!isSandboxed(SandboxTopNavigation) && targetFrame == m_frame->tree().top())
         return true;
 
@@ -2871,10 +2871,10 @@ bool Document::canNavigate(Frame* targetFrame)
     return false;
 }
 
-Frame* Document::findUnsafeParentScrollPropagationBoundary()
+LocalFrame* Document::findUnsafeParentScrollPropagationBoundary()
 {
-    Frame* currentFrame = m_frame;
-    Frame* ancestorFrame = currentFrame->tree().parent();
+    LocalFrame* currentFrame = m_frame;
+    LocalFrame* ancestorFrame = currentFrame->tree().parent();
 
     while (ancestorFrame) {
         if (!ancestorFrame->document()->securityOrigin()->canAccess(securityOrigin()))
@@ -3004,14 +3004,14 @@ void Document::processHttpEquivSetCookie(const AtomicString& content)
 
 void Document::processHttpEquivXFrameOptions(const AtomicString& content)
 {
-    Frame* frame = this->frame();
+    LocalFrame* frame = this->frame();
     if (!frame)
         return;
 
     FrameLoader& frameLoader = frame->loader();
     unsigned long requestIdentifier = loader()->mainResourceIdentifier();
     if (frameLoader.shouldInterruptLoadForXFrameOptions(content, url(), requestIdentifier)) {
-        String message = "Refused to display '" + url().elidedString() + "' in a frame because it set 'X-Frame-Options' to '" + content + "'.";
+        String message = "Refused to display '" + url().elidedString() + "' in a frame because it set 'X-LocalFrame-Options' to '" + content + "'.";
         frameLoader.stopAllLoaders();
         // Stopping the loader isn't enough, as we're already parsing the document; to honor the header's
         // intent, we must navigate away from the possibly partially-rendered document to a location that
@@ -3094,7 +3094,7 @@ String Document::outgoingReferrer()
     // See http://www.whatwg.org/specs/web-apps/current-work/#fetching-resources
     // for why we walk the parent chain for srcdoc documents.
     Document* referrerDocument = this;
-    if (Frame* frame = m_frame) {
+    if (LocalFrame* frame = m_frame) {
         while (frame->document()->isSrcdocDocument()) {
             frame = frame->tree().parent();
             // Srcdoc documents cannot be top-level documents, by definition,
@@ -3533,7 +3533,7 @@ bool Document::setFocusedElement(PassRefPtr<Element> prpNewFocusedElement, Focus
 
 SetFocusedElementDone:
     updateStyleIfNeeded();
-    if (Frame* frame = this->frame())
+    if (LocalFrame* frame = this->frame())
         frame->selection().didChangeFocus();
     return !focusChangeBlocked;
 }
@@ -3611,7 +3611,7 @@ void Document::nodeChildrenWillBeRemoved(ContainerNode& container)
             (*it)->nodeWillBeRemoved(*n);
     }
 
-    if (Frame* frame = this->frame()) {
+    if (LocalFrame* frame = this->frame()) {
         for (Node* n = container.firstChild(); n; n = n->nextSibling()) {
             frame->eventHandler().nodeWillBeRemoved(*n);
             frame->selection().nodeWillBeRemoved(*n);
@@ -3632,7 +3632,7 @@ void Document::nodeWillBeRemoved(Node& n)
             (*it)->nodeWillBeRemoved(n);
     }
 
-    if (Frame* frame = this->frame()) {
+    if (LocalFrame* frame = this->frame()) {
         frame->eventHandler().nodeWillBeRemoved(n);
         frame->selection().nodeWillBeRemoved(n);
         frame->page()->dragCaretController().nodeWillBeRemoved(n);
@@ -4162,7 +4162,7 @@ KURL Document::completeURLWithOverride(const String& url, const KURL& baseURLOve
 
 static Editor::Command command(Document* document, const String& commandName, bool userInterface = false)
 {
-    Frame* frame = document->frame();
+    LocalFrame* frame = document->frame();
     if (!frame || frame->document() != document)
         return Editor::Command();
 
@@ -4271,7 +4271,7 @@ void Document::applyXSLTransform(ProcessingInstruction* pi)
     if (!processor->transformToString(this, resultMIMEType, newSource, resultEncoding))
         return;
     // FIXME: If the transform failed we should probably report an error (like Mozilla does).
-    Frame* ownerFrame = frame();
+    LocalFrame* ownerFrame = frame();
     processor->createDocumentFromSource(newSource, resultEncoding, resultMIMEType, this, ownerFrame);
     InspectorInstrumentation::frameDocumentUpdated(ownerFrame);
 }
@@ -4284,7 +4284,7 @@ void Document::setTransformSource(PassOwnPtr<TransformSource> source)
 void Document::setDesignMode(InheritedBool value)
 {
     m_designMode = value;
-    for (Frame* frame = m_frame; frame && frame->document(); frame = frame->tree().traverseNext(m_frame))
+    for (LocalFrame* frame = m_frame; frame && frame->document(); frame = frame->tree().traverseNext(m_frame))
         frame->document()->setNeedsStyleRecalc(SubtreeStyleChange);
 }
 
@@ -4306,7 +4306,7 @@ Document* Document::parentDocument() const
 {
     if (!m_frame)
         return 0;
-    Frame* parent = m_frame->tree().parent();
+    LocalFrame* parent = m_frame->tree().parent();
     if (!parent)
         return 0;
     return parent->document();
@@ -4436,7 +4436,7 @@ void Document::finishedParsing()
     // Keep it alive until we are done.
     RefPtr<Document> protect(this);
 
-    if (RefPtr<Frame> f = frame()) {
+    if (RefPtr<LocalFrame> f = frame()) {
         // FrameLoader::finishedParsing() might end up calling Document::implicitClose() if all
         // resource loads are complete. HTMLObjectElements can start loading their resources from
         // post attach callbacks triggered by recalcStyle().  This means if we parse out an <object>
@@ -4632,7 +4632,7 @@ bool Document::allowInlineEventHandlers(Node* node, EventListener* listener, con
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/webappapis.html#event-handler-attributes
     // Also, if the listening node came from other document, which happens on context-less event dispatching,
     // we also need to ask the owner document of the node.
-    Frame* frame = executingFrame();
+    LocalFrame* frame = executingFrame();
     if (!frame)
         return false;
     if (!frame->script().canExecuteScripts(NotAboutToExecuteScript))
@@ -4648,7 +4648,7 @@ bool Document::allowExecutingScripts(Node* node)
     // FIXME: Eventually we'd like to evaluate scripts which are inserted into a
     // viewless document but this'll do for now.
     // See http://bugs.webkit.org/show_bug.cgi?id=5727
-    Frame* frame = executingFrame();
+    LocalFrame* frame = executingFrame();
     if (!frame)
         return false;
     if (!node->document().executingFrame())
@@ -4964,7 +4964,7 @@ PassRefPtr<Touch> Document::createTouch(DOMWindow* window, EventTarget* target, 
     // http://developer.apple.com/library/safari/#documentation/UserExperience/Reference/DocumentAdditionsReference/DocumentAdditions/DocumentAdditions.html
     // when this method should throw and nor is it by inspection of iOS behavior. It would be nice to verify any cases where it throws under iOS
     // and implement them here. See https://bugs.webkit.org/show_bug.cgi?id=47819
-    Frame* frame = window ? window->frame() : this->frame();
+    LocalFrame* frame = window ? window->frame() : this->frame();
     return Touch::create(frame, target, identifier, screenX, screenY, pageX, pageY, radiusX, radiusY, rotationAngle, force);
 }
 
@@ -5428,7 +5428,7 @@ bool Document::hasFocus() const
         return false;
     if (!page->focusController().isActive() || !page->focusController().isFocused())
         return false;
-    if (Frame* focusedFrame = page->focusController().focusedFrame()) {
+    if (LocalFrame* focusedFrame = page->focusController().focusedFrame()) {
         if (focusedFrame->tree().isDescendantOf(frame()))
             return true;
     }

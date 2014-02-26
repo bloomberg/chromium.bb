@@ -25,8 +25,8 @@
 
 #include "core/dom/Document.h"
 #include "core/frame/DOMWindow.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderObject.h"
 
@@ -42,7 +42,7 @@ static LayoutSize contentsScrollOffset(AbstractView* abstractView)
 {
     if (!abstractView)
         return LayoutSize();
-    Frame* frame = abstractView->frame();
+    LocalFrame* frame = abstractView->frame();
     if (!frame)
         return LayoutSize();
     FrameView* frameView = frame->view();
@@ -64,7 +64,7 @@ MouseRelatedEvent::MouseRelatedEvent(const AtomicString& eventType, bool canBubb
     LayoutPoint adjustedPageLocation;
     LayoutPoint scrollPosition;
 
-    Frame* frame = view() ? view()->frame() : 0;
+    LocalFrame* frame = view() ? view()->frame() : 0;
     if (frame && !isSimulated) {
         if (FrameView* frameView = frame->view()) {
             scrollPosition = frameView->scrollPosition();
@@ -113,7 +113,7 @@ static float pageZoomFactor(const UIEvent* event)
     DOMWindow* window = event->view();
     if (!window)
         return 1;
-    Frame* frame = window->frame();
+    LocalFrame* frame = window->frame();
     if (!frame)
         return 1;
     return frame->pageZoomFactor();

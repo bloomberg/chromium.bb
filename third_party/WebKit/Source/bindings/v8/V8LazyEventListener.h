@@ -40,7 +40,7 @@
 namespace WebCore {
 
     class Event;
-    class Frame;
+    class LocalFrame;
     class HTMLFormElement;
     class Node;
 

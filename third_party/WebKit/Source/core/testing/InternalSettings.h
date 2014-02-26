@@ -39,7 +39,7 @@ namespace WebCore {
 
 class Document;
 class ExceptionState;
-class Frame;
+class LocalFrame;
 class Page;
 class Settings;
 

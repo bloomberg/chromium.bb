@@ -39,7 +39,7 @@
 #include "bindings/v8/npruntime_impl.h"
 #include "bindings/v8/npruntime_priv.h"
 #include "core/frame/DOMWindow.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "platform/UserGestureIndicator.h"
 #include "wtf/OwnPtr.h"
 
@@ -250,7 +250,7 @@ bool _NPN_Invoke(NPP npp, NPObject* npObject, NPIdentifier methodName, const NPV
         return false;
     }
 
-    Frame* frame = v8NpObject->rootObject->frame();
+    LocalFrame* frame = v8NpObject->rootObject->frame();
     ASSERT(frame);
 
     // Call the function object.
@@ -302,7 +302,7 @@ bool _NPN_InvokeDefault(NPP npp, NPObject* npObject, const NPVariant* arguments,
     v8::Local<v8::Value> resultObject;
     v8::Handle<v8::Function> function = v8::Local<v8::Function>::Cast(functionObject);
     if (!function->IsNull()) {
-        Frame* frame = v8NpObject->rootObject->frame();
+        LocalFrame* frame = v8NpObject->rootObject->frame();
         ASSERT(frame);
 
         OwnPtr<v8::Handle<v8::Value>[]> argv = createValueListFromVariantArgs(arguments, argumentCount, npObject, isolate);
@@ -348,7 +348,7 @@ bool _NPN_EvaluateHelper(NPP npp, bool popupsAllowed, NPObject* npObject, NPStri
     if (!popupsAllowed)
         filename = "npscript";
 
-    Frame* frame = v8NpObject->rootObject->frame();
+    LocalFrame* frame = v8NpObject->rootObject->frame();
     ASSERT(frame);
 
     String script = String::fromUTF8(npScript->UTF8Characters, npScript->UTF8Length);
@@ -594,7 +594,7 @@ bool _NPN_Construct(NPP npp, NPObject* npObject, const NPVariant* arguments, uin
         v8::Local<v8::Value> resultObject;
         v8::Handle<v8::Function> ctor = v8::Handle<v8::Function>::Cast(ctorObj);
         if (!ctor->IsNull()) {
-            Frame* frame = object->rootObject->frame();
+            LocalFrame* frame = object->rootObject->frame();
             ASSERT(frame);
             OwnPtr<v8::Handle<v8::Value>[]> argv = createValueListFromVariantArgs(arguments, argumentCount, npObject, isolate);
             resultObject = V8ObjectConstructor::newInstanceInDocument(ctor, argumentCount, argv.get(), frame ? frame->document() : 0);

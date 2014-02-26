@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-class Frame;
+class LocalFrame;
 
 enum ListenerLookupType {
     ListenerFindOnly,

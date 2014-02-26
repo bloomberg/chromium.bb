@@ -10,7 +10,7 @@
 #include "WebFrameImpl.h"
 #include "WebHelperPluginImpl.h"
 #include "WebViewImpl.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/TimeRanges.h"
 #include "core/rendering/RenderView.h"
@@ -51,7 +51,7 @@ using namespace WebCore;
 
 namespace blink {
 
-static PassOwnPtr<WebMediaPlayer> createWebMediaPlayer(WebMediaPlayerClient* client, const WebURL& url, Frame* frame)
+static PassOwnPtr<WebMediaPlayer> createWebMediaPlayer(WebMediaPlayerClient* client, const WebURL& url, LocalFrame* frame)
 {
     WebFrameImpl* webFrame = WebFrameImpl::fromFrame(frame);
 
@@ -219,7 +219,7 @@ void WebMediaPlayerClientImpl::loadInternal()
 #endif
 
     // FIXME: Remove this cast
-    Frame* frame = static_cast<HTMLMediaElement*>(m_client)->document().frame();
+    LocalFrame* frame = static_cast<HTMLMediaElement*>(m_client)->document().frame();
 
     WebURL poster = m_client->mediaPlayerPosterURL();
 

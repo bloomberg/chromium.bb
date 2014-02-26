@@ -25,7 +25,7 @@
 
 #include "core/rendering/svg/RenderSVGRoot.h"
 
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/LayoutRepainter.h"
@@ -118,7 +118,7 @@ bool RenderSVGRoot::isEmbeddedThroughFrameContainingSVGDocument() const
     if (!node())
         return false;
 
-    Frame* frame = node()->document().frame();
+    LocalFrame* frame = node()->document().frame();
     if (!frame)
         return false;
 

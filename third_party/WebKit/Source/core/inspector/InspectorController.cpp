@@ -194,7 +194,7 @@ void InspectorController::setInspectorFrontendClient(PassOwnPtr<InspectorFronten
     m_inspectorFrontendClient = inspectorFrontendClient;
 }
 
-void InspectorController::didClearWindowObjectInMainWorld(Frame* frame)
+void InspectorController::didClearWindowObjectInMainWorld(LocalFrame* frame)
 {
     // If the page is supposed to serve as InspectorFrontend notify inspector frontend
     // client that it's cleared so that the client can expose inspector bindings.
@@ -306,7 +306,7 @@ void InspectorController::inspect(Node* node)
     Document* document = node->ownerDocument();
     if (!document)
         return;
-    Frame* frame = document->frame();
+    LocalFrame* frame = document->frame();
     if (!frame)
         return;
 
@@ -341,7 +341,7 @@ Node* InspectorController::highlightedNode() const
     return m_overlay->highlightedNode();
 }
 
-bool InspectorController::handleGestureEvent(Frame* frame, const PlatformGestureEvent& event)
+bool InspectorController::handleGestureEvent(LocalFrame* frame, const PlatformGestureEvent& event)
 {
     // Overlay should not consume events.
     m_overlay->handleGestureEvent(event);
@@ -350,7 +350,7 @@ bool InspectorController::handleGestureEvent(Frame* frame, const PlatformGesture
     return false;
 }
 
-bool InspectorController::handleMouseEvent(Frame* frame, const PlatformMouseEvent& event)
+bool InspectorController::handleMouseEvent(LocalFrame* frame, const PlatformMouseEvent& event)
 {
     // Overlay should not consume events.
     m_overlay->handleMouseEvent(event);
@@ -367,7 +367,7 @@ bool InspectorController::handleMouseEvent(Frame* frame, const PlatformMouseEven
     return false;
 }
 
-bool InspectorController::handleTouchEvent(Frame* frame, const PlatformTouchEvent& event)
+bool InspectorController::handleTouchEvent(LocalFrame* frame, const PlatformTouchEvent& event)
 {
     // Overlay should not consume events.
     m_overlay->handleTouchEvent(event);
@@ -376,7 +376,7 @@ bool InspectorController::handleTouchEvent(Frame* frame, const PlatformTouchEven
     return false;
 }
 
-bool InspectorController::handleKeyboardEvent(Frame* frame, const PlatformKeyboardEvent& event)
+bool InspectorController::handleKeyboardEvent(LocalFrame* frame, const PlatformKeyboardEvent& event)
 {
     // Overlay should not consume events.
     m_overlay->handleKeyboardEvent(event);

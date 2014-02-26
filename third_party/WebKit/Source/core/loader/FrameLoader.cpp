@@ -52,8 +52,8 @@
 #include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/ContentSecurityPolicyResponseHeaders.h"
 #include "core/frame/DOMWindow.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
@@ -104,7 +104,7 @@ bool isBackForwardLoadType(FrameLoadType type)
 
 class FrameLoader::FrameProgressTracker {
 public:
-    static PassOwnPtr<FrameProgressTracker> create(Frame* frame) { return adoptPtr(new FrameProgressTracker(frame)); }
+    static PassOwnPtr<FrameProgressTracker> create(LocalFrame* frame) { return adoptPtr(new FrameProgressTracker(frame)); }
     ~FrameProgressTracker()
     {
         ASSERT(!m_inProgress || m_frame->page());
@@ -129,17 +129,17 @@ public:
     }
 
 private:
-    FrameProgressTracker(Frame* frame)
+    FrameProgressTracker(LocalFrame* frame)
         : m_frame(frame)
         , m_inProgress(false)
     {
     }
 
-    Frame* m_frame;
+    LocalFrame* m_frame;
     bool m_inProgress;
 };
 
-FrameLoader::FrameLoader(Frame* frame, FrameLoaderClient* client)
+FrameLoader::FrameLoader(LocalFrame* frame, FrameLoaderClient* client)
     : m_frame(frame)
     , m_client(client)
     , m_mixedContentChecker(frame)
@@ -160,8 +160,8 @@ FrameLoader::FrameLoader(Frame* frame, FrameLoaderClient* client)
 
 FrameLoader::~FrameLoader()
 {
-    HashSet<Frame*>::iterator end = m_openedFrames.end();
-    for (HashSet<Frame*>::iterator it = m_openedFrames.begin(); it != end; ++it)
+    HashSet<LocalFrame*>::iterator end = m_openedFrames.end();
+    for (HashSet<LocalFrame*>::iterator it = m_openedFrames.begin(); it != end; ++it)
         (*it)->loader().m_opener = 0;
 }
 
@@ -347,8 +347,8 @@ void FrameLoader::receivedFirstData()
 
 static void didFailContentSecurityPolicyCheck(FrameLoader* loader)
 {
-    // load event and stopAllLoaders can detach the Frame, so protect it.
-    RefPtr<Frame> frame(loader->frame());
+    // load event and stopAllLoaders can detach the LocalFrame, so protect it.
+    RefPtr<LocalFrame> frame(loader->frame());
 
     // Move the page to a unique origin, and cancel the load.
     frame->document()->enforceSandboxFlags(SandboxOrigin);
@@ -409,10 +409,10 @@ void FrameLoader::finishedParsing()
     if (m_stateMachine.creatingInitialEmptyDocument())
         return;
 
-    // This can be called from the Frame's destructor, in which case we shouldn't protect ourselves
+    // This can be called from the LocalFrame's destructor, in which case we shouldn't protect ourselves
     // because doing so will cause us to re-enter the destructor when protector goes out of scope.
     // Null-checking the FrameView indicates whether or not we're in the destructor.
-    RefPtr<Frame> protector = m_frame->view() ? m_frame : 0;
+    RefPtr<LocalFrame> protector = m_frame->view() ? m_frame : 0;
 
     if (m_client)
         m_client->dispatchDidFinishDocumentLoad();
@@ -435,7 +435,7 @@ void FrameLoader::loadDone()
 
 bool FrameLoader::allChildrenAreComplete() const
 {
-    for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
+    for (LocalFrame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (!child->loader().m_isComplete)
             return false;
     }
@@ -444,7 +444,7 @@ bool FrameLoader::allChildrenAreComplete() const
 
 bool FrameLoader::allAncestorsAreComplete() const
 {
-    for (Frame* ancestor = m_frame; ancestor; ancestor = ancestor->tree().parent()) {
+    for (LocalFrame* ancestor = m_frame; ancestor; ancestor = ancestor->tree().parent()) {
         if (!ancestor->document()->loadEventFinished())
             return false;
     }
@@ -453,7 +453,7 @@ bool FrameLoader::allAncestorsAreComplete() const
 
 void FrameLoader::checkCompleted()
 {
-    RefPtr<Frame> protect(m_frame);
+    RefPtr<LocalFrame> protect(m_frame);
     m_shouldCallCheckCompleted = false;
 
     if (m_frame->view())
@@ -497,7 +497,7 @@ void FrameLoader::checkCompleted()
 
 void FrameLoader::checkTimerFired(Timer<FrameLoader>*)
 {
-    RefPtr<Frame> protect(m_frame);
+    RefPtr<LocalFrame> protect(m_frame);
 
     if (Page* page = m_frame->page()) {
         if (page->defersLoading())
@@ -522,12 +522,12 @@ void FrameLoader::scheduleCheckCompleted()
     startCheckCompleteTimer();
 }
 
-Frame* FrameLoader::opener()
+LocalFrame* FrameLoader::opener()
 {
     return m_opener;
 }
 
-void FrameLoader::setOpener(Frame* opener)
+void FrameLoader::setOpener(LocalFrame* opener)
 {
     if (m_opener && !opener)
         m_client->didDisownOpener();
@@ -612,12 +612,12 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
 
 void FrameLoader::completed()
 {
-    RefPtr<Frame> protect(m_frame);
+    RefPtr<LocalFrame> protect(m_frame);
 
-    for (Frame* descendant = m_frame->tree().traverseNext(m_frame); descendant; descendant = descendant->tree().traverseNext(m_frame))
+    for (LocalFrame* descendant = m_frame->tree().traverseNext(m_frame); descendant; descendant = descendant->tree().traverseNext(m_frame))
         descendant->navigationScheduler().startTimer();
 
-    if (Frame* parent = m_frame->tree().parent())
+    if (LocalFrame* parent = m_frame->tree().parent())
         parent->loader().checkCompleted();
 
     if (m_frame->view())
@@ -626,7 +626,7 @@ void FrameLoader::completed()
 
 void FrameLoader::started()
 {
-    for (Frame* frame = m_frame; frame; frame = frame->tree().parent())
+    for (LocalFrame* frame = m_frame; frame; frame = frame->tree().parent())
         frame->loader().m_isComplete = false;
 }
 
@@ -701,7 +701,7 @@ bool FrameLoader::prepareRequestForThisFrame(FrameLoadRequest& request)
     return true;
 }
 
-static bool shouldOpenInNewWindow(Frame* targetFrame, const FrameLoadRequest& request, const NavigationAction& action)
+static bool shouldOpenInNewWindow(LocalFrame* targetFrame, const FrameLoadRequest& request, const NavigationAction& action)
 {
     if (!targetFrame && !request.frameName().isEmpty())
         return true;
@@ -715,7 +715,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
     ASSERT(m_frame->document());
 
     // Protect frame from getting blown away inside dispatchBeforeLoadEvent in loadWithDocumentLoader.
-    RefPtr<Frame> protect(m_frame);
+    RefPtr<LocalFrame> protect(m_frame);
 
     if (m_inStopAllLoaders)
         return;
@@ -724,7 +724,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
     if (!prepareRequestForThisFrame(request))
         return;
 
-    RefPtr<Frame> targetFrame = request.formState() ? 0 : findFrameForNavigation(AtomicString(request.frameName()), request.formState() ? request.formState()->sourceDocument() : m_frame->document());
+    RefPtr<LocalFrame> targetFrame = request.formState() ? 0 : findFrameForNavigation(AtomicString(request.frameName()), request.formState() ? request.formState()->sourceDocument() : m_frame->document());
     if (targetFrame && targetFrame != m_frame) {
         request.setFrameName("_self");
         targetFrame->loader().load(request);
@@ -768,7 +768,7 @@ SubstituteData FrameLoader::defaultSubstituteDataForURL(const KURL& url)
     return SubstituteData(SharedBuffer::create(encodedSrcdoc.data(), encodedSrcdoc.length()), "text/html", "UTF-8", KURL());
 }
 
-void FrameLoader::reportLocalLoadFailed(Frame* frame, const String& url)
+void FrameLoader::reportLocalLoadFailed(LocalFrame* frame, const String& url)
 {
     ASSERT(!url.isEmpty());
     if (!frame)
@@ -818,11 +818,11 @@ void FrameLoader::stopAllLoaders()
 
     // Calling stopLoading() on the provisional document loader can blow away
     // the frame from underneath.
-    RefPtr<Frame> protect(m_frame);
+    RefPtr<LocalFrame> protect(m_frame);
 
     m_inStopAllLoaders = true;
 
-    for (RefPtr<Frame> child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling())
+    for (RefPtr<LocalFrame> child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling())
         child->loader().stopAllLoaders();
     if (m_provisionalDocumentLoader)
         m_provisionalDocumentLoader->stopLoading();
@@ -837,7 +837,7 @@ void FrameLoader::stopAllLoaders()
 
     m_inStopAllLoaders = false;
 
-    // detachFromParent() can be called multiple times on same Frame, which
+    // detachFromParent() can be called multiple times on same LocalFrame, which
     // means we may no longer have a FrameLoaderClient to talk to.
     if (m_client)
         m_client->didStopAllLoaders();
@@ -878,7 +878,7 @@ void FrameLoader::commitProvisionalLoad()
     ASSERT(m_client->hasWebView());
     ASSERT(m_state == FrameStateProvisional);
     RefPtr<DocumentLoader> pdl = m_provisionalDocumentLoader;
-    RefPtr<Frame> protect(m_frame);
+    RefPtr<LocalFrame> protect(m_frame);
 
     // Check if the destination page is allowed to access the previous page's timing information.
     if (m_frame->document()) {
@@ -928,7 +928,7 @@ bool FrameLoader::isLoadingMainFrame() const
 bool FrameLoader::subframeIsLoading() const
 {
     // It's most likely that the last added frame is the last to load so we walk backwards.
-    for (Frame* child = m_frame->tree().lastChild(); child; child = child->tree().previousSibling()) {
+    for (LocalFrame* child = m_frame->tree().lastChild(); child; child = child->tree().previousSibling()) {
         const FrameLoader& childLoader = child->loader();
         DocumentLoader* documentLoader = childLoader.documentLoader();
         if (documentLoader && documentLoader->isLoadingInAPISense())
@@ -1031,17 +1031,17 @@ void FrameLoader::didFirstLayout()
 
 void FrameLoader::detachChildren()
 {
-    typedef Vector<RefPtr<Frame> > FrameVector;
+    typedef Vector<RefPtr<LocalFrame> > FrameVector;
     FrameVector childrenToDetach;
     childrenToDetach.reserveCapacity(m_frame->tree().childCount());
-    for (Frame* child = m_frame->tree().lastChild(); child; child = child->tree().previousSibling())
+    for (LocalFrame* child = m_frame->tree().lastChild(); child; child = child->tree().previousSibling())
         childrenToDetach.append(child);
     FrameVector::iterator end = childrenToDetach.end();
     for (FrameVector::iterator it = childrenToDetach.begin(); it != end; ++it)
         (*it)->loader().detachFromParent();
 }
 
-void FrameLoader::closeAndRemoveChild(Frame* child)
+void FrameLoader::closeAndRemoveChild(LocalFrame* child)
 {
     child->setView(nullptr);
     if (child->ownerElement() && child->page())
@@ -1058,8 +1058,8 @@ void FrameLoader::checkLoadComplete()
     // FIXME: Always traversing the entire frame tree is a bit inefficient, but
     // is currently needed in order to null out the previous history item for all frames.
     if (Page* page = m_frame->page()) {
-        Vector<RefPtr<Frame>, 10> frames;
-        for (RefPtr<Frame> frame = page->mainFrame(); frame; frame = frame->tree().traverseNext())
+        Vector<RefPtr<LocalFrame>, 10> frames;
+        for (RefPtr<LocalFrame> frame = page->mainFrame(); frame; frame = frame->tree().traverseNext())
             frames.append(frame);
         // To process children before their parents, iterate the vector backwards.
         for (size_t i = frames.size(); i; --i)
@@ -1080,7 +1080,7 @@ int FrameLoader::numPendingOrLoadingRequests(bool recurse) const
         return m_frame->document()->fetcher()->requestCount();
 
     int count = 0;
-    for (Frame* frame = m_frame; frame; frame = frame->tree().traverseNext(m_frame))
+    for (LocalFrame* frame = m_frame; frame; frame = frame->tree().traverseNext(m_frame))
         count += frame->document()->fetcher()->requestCount();
     return count;
 }
@@ -1094,16 +1094,16 @@ String FrameLoader::userAgent(const KURL& url) const
 
 void FrameLoader::frameDetached()
 {
-    // stopAllLoaders can detach the Frame, so protect it.
-    RefPtr<Frame> protect(m_frame);
+    // stopAllLoaders can detach the LocalFrame, so protect it.
+    RefPtr<LocalFrame> protect(m_frame);
     stopAllLoaders();
     detachFromParent();
 }
 
 void FrameLoader::detachFromParent()
 {
-    // stopAllLoaders can detach the Frame, so protect it.
-    RefPtr<Frame> protect(m_frame);
+    // stopAllLoaders can detach the LocalFrame, so protect it.
+    RefPtr<LocalFrame> protect(m_frame);
 
     closeURL();
     detachChildren();
@@ -1122,7 +1122,7 @@ void FrameLoader::detachFromParent()
         return;
 
     // FIXME: All this code belongs up in Page.
-    if (Frame* parent = m_frame->tree().parent()) {
+    if (LocalFrame* parent = m_frame->tree().parent()) {
         parent->loader().closeAndRemoveChild(m_frame);
         parent->loader().scheduleCheckCompleted();
     } else {
@@ -1146,7 +1146,7 @@ void FrameLoader::detachClient()
     m_frame->script().clearForClose();
 
     // After this, we must no longer talk to the client since this clears
-    // its owning reference back to our owning Frame.
+    // its owning reference back to our owning LocalFrame.
     m_client->detachedFromParent();
     m_client = 0;
 }
@@ -1181,7 +1181,7 @@ void FrameLoader::addHTTPOriginIfNeeded(ResourceRequest& request, const AtomicSt
 void FrameLoader::receivedMainResourceError(const ResourceError& error)
 {
     // Retain because the stop may release the last reference to it.
-    RefPtr<Frame> protect(m_frame);
+    RefPtr<LocalFrame> protect(m_frame);
 
     if (m_frame->document()->parser())
         m_frame->document()->parser()->stopParsing();
@@ -1220,7 +1220,7 @@ void FrameLoader::scrollToFragmentWithParentBoundary(const KURL& url)
         return;
 
     // Leaking scroll position to a cross-origin ancestor would permit the so-called "framesniffing" attack.
-    RefPtr<Frame> boundaryFrame(url.hasFragmentIdentifier() ? m_frame->document()->findUnsafeParentScrollPropagationBoundary() : 0);
+    RefPtr<LocalFrame> boundaryFrame(url.hasFragmentIdentifier() ? m_frame->document()->findUnsafeParentScrollPropagationBoundary() : 0);
 
     if (boundaryFrame)
         boundaryFrame->view()->setSafeToPropagateScrollToParent(false);
@@ -1238,9 +1238,9 @@ bool FrameLoader::shouldClose()
         return true;
 
     // Store all references to each subframe in advance since beforeunload's event handler may modify frame
-    Vector<RefPtr<Frame> > targetFrames;
+    Vector<RefPtr<LocalFrame> > targetFrames;
     targetFrames.append(m_frame);
-    for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().traverseNext(m_frame))
+    for (LocalFrame* child = m_frame->tree().firstChild(); child; child = child->tree().traverseNext(m_frame))
         targetFrames.append(child);
 
     bool shouldClose = false;
@@ -1296,15 +1296,15 @@ void FrameLoader::loadWithNavigationAction(const NavigationAction& action, Frame
     m_policyDocumentLoader->setReplacesCurrentHistoryItem(replacesCurrentHistoryItem);
     m_policyDocumentLoader->setIsClientRedirect(clientRedirect == ClientRedirect);
 
-    if (Frame* parent = m_frame->tree().parent())
+    if (LocalFrame* parent = m_frame->tree().parent())
         m_policyDocumentLoader->setOverrideEncoding(parent->loader().documentLoader()->overrideEncoding());
     else if (!overrideEncoding.isEmpty())
         m_policyDocumentLoader->setOverrideEncoding(overrideEncoding);
     else if (m_documentLoader)
         m_policyDocumentLoader->setOverrideEncoding(m_documentLoader->overrideEncoding());
 
-    // stopAllLoaders can detach the Frame, so protect it.
-    RefPtr<Frame> protect(m_frame);
+    // stopAllLoaders can detach the LocalFrame, so protect it.
+    RefPtr<LocalFrame> protect(m_frame);
     if ((!m_policyDocumentLoader->shouldContinueForNavigationPolicy(request) || !shouldClose()) && m_policyDocumentLoader) {
         m_policyDocumentLoader->detachFromFrame();
         m_policyDocumentLoader = nullptr;
@@ -1350,7 +1350,7 @@ bool FrameLoader::shouldInterruptLoadForXFrameOptions(const String& content, con
 {
     UseCounter::count(m_frame->domWindow()->document(), UseCounter::XFrameOptions);
 
-    Frame* topFrame = m_frame->tree().top();
+    LocalFrame* topFrame = m_frame->tree().top();
     if (m_frame == topFrame)
         return false;
 
@@ -1362,7 +1362,7 @@ bool FrameLoader::shouldInterruptLoadForXFrameOptions(const String& content, con
         RefPtr<SecurityOrigin> origin = SecurityOrigin::create(url);
         if (!origin->isSameSchemeHostPort(topFrame->document()->securityOrigin()))
             return true;
-        for (Frame* frame = m_frame->tree().parent(); frame; frame = frame->tree().parent()) {
+        for (LocalFrame* frame = m_frame->tree().parent(); frame; frame = frame->tree().parent()) {
             if (!origin->isSameSchemeHostPort(frame->document()->securityOrigin())) {
                 UseCounter::count(m_frame->domWindow()->document(), UseCounter::XFrameOptionsSameOriginWithBadAncestorChain);
                 break;
@@ -1375,10 +1375,10 @@ bool FrameLoader::shouldInterruptLoadForXFrameOptions(const String& content, con
     case XFrameOptionsAllowAll:
         return false;
     case XFrameOptionsConflict:
-        m_frame->document()->addConsoleMessageWithRequestIdentifier(JSMessageSource, ErrorMessageLevel, "Multiple 'X-Frame-Options' headers with conflicting values ('" + content + "') encountered when loading '" + url.elidedString() + "'. Falling back to 'DENY'.", requestIdentifier);
+        m_frame->document()->addConsoleMessageWithRequestIdentifier(JSMessageSource, ErrorMessageLevel, "Multiple 'X-LocalFrame-Options' headers with conflicting values ('" + content + "') encountered when loading '" + url.elidedString() + "'. Falling back to 'DENY'.", requestIdentifier);
         return true;
     case XFrameOptionsInvalid:
-        m_frame->document()->addConsoleMessageWithRequestIdentifier(JSMessageSource, ErrorMessageLevel, "Invalid 'X-Frame-Options' header encountered when loading '" + url.elidedString() + "': '" + content + "' is not a recognized directive. The header will be ignored.", requestIdentifier);
+        m_frame->document()->addConsoleMessageWithRequestIdentifier(JSMessageSource, ErrorMessageLevel, "Invalid 'X-LocalFrame-Options' header encountered when loading '" + url.elidedString() + "': '" + content + "' is not a recognized directive. The header will be ignored.", requestIdentifier);
         return false;
     default:
         ASSERT_NOT_REACHED();
@@ -1405,10 +1405,10 @@ bool FrameLoader::shouldTreatURLAsSrcdocDocument(const KURL& url) const
     return ownerElement->fastHasAttribute(srcdocAttr);
 }
 
-Frame* FrameLoader::findFrameForNavigation(const AtomicString& name, Document* activeDocument)
+LocalFrame* FrameLoader::findFrameForNavigation(const AtomicString& name, Document* activeDocument)
 {
     ASSERT(activeDocument);
-    Frame* frame = m_frame->tree().find(name);
+    LocalFrame* frame = m_frame->tree().find(name);
     if (!activeDocument->canNavigate(frame))
         return 0;
     return frame;
@@ -1456,7 +1456,7 @@ void FrameLoader::dispatchDidClearWindowObjectInWorld(DOMWrapperWorld* world)
 SandboxFlags FrameLoader::effectiveSandboxFlags() const
 {
     SandboxFlags flags = m_forcedSandboxFlags;
-    if (Frame* parentFrame = m_frame->tree().parent())
+    if (LocalFrame* parentFrame = m_frame->tree().parent())
         flags |= parentFrame->document()->sandboxFlags();
     if (HTMLFrameOwnerElement* ownerElement = m_frame->ownerElement())
         flags |= ownerElement->sandboxFlags();

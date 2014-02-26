@@ -27,9 +27,9 @@
 #include "core/rendering/RenderIFrame.h"
 
 #include "HTMLNames.h"
-#include "core/html/HTMLIFrameElement.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
+#include "core/html/HTMLIFrameElement.h"
 #include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/RenderView.h"
 

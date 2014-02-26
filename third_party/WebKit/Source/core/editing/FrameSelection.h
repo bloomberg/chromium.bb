@@ -39,7 +39,7 @@
 namespace WebCore {
 
 class CharacterData;
-class Frame;
+class LocalFrame;
 class GraphicsContext;
 class HTMLFormElement;
 class MutableStylePropertySet;
@@ -77,7 +77,7 @@ public:
         return static_cast<EUserTriggered>(options & UserTriggered);
     }
 
-    explicit FrameSelection(Frame* = 0);
+    explicit FrameSelection(LocalFrame* = 0);
 
     Element* rootEditableElement() const { return m_selection.rootEditableElement(); }
     Element* rootEditableElementOrDocumentElement() const;
@@ -235,7 +235,7 @@ private:
 
     void updateSelectionIfNeeded(const Position& base, const Position& extent, const Position& start, const Position& end);
 
-    Frame* m_frame;
+    LocalFrame* m_frame;
 
     LayoutUnit m_xPosForVerticalArrowNavigation;
 

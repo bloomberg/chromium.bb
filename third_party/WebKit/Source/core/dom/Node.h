@@ -57,7 +57,7 @@ class EventDispatchMediator;
 class EventListener;
 class ExceptionState;
 class FloatPoint;
-class Frame;
+class LocalFrame;
 class HTMLInputElement;
 class IntRect;
 class KeyboardEvent;

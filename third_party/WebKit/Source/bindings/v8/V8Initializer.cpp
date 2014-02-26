@@ -45,7 +45,7 @@
 #include "core/frame/ConsoleTypes.h"
 #include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/DOMWindow.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "public/platform/Platform.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
@@ -53,7 +53,7 @@
 
 namespace WebCore {
 
-static Frame* findFrame(v8::Local<v8::Object> host, v8::Local<v8::Value> data, v8::Isolate* isolate)
+static LocalFrame* findFrame(v8::Local<v8::Object> host, v8::Local<v8::Value> data, v8::Isolate* isolate)
 {
     const WrapperTypeInfo* type = WrapperTypeInfo::unwrap(data);
 
@@ -122,7 +122,7 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
     // This method might be called while we're creating a new context. In this case, we
     // avoid storing the exception object, as we can't create a wrapper during context creation.
     // FIXME: Can we even get here during initialization now that we bail out when GetEntered returns an empty handle?
-    Frame* frame = enteredWindow->document()->frame();
+    LocalFrame* frame = enteredWindow->document()->frame();
     if (world && frame && frame->script().existingWindowShell(world))
         V8ErrorHandler::storeExceptionOnErrorEventWrapper(event.get(), data, v8::Isolate::GetCurrent());
     enteredWindow->document()->reportException(event.release(), callStack, corsStatus);
@@ -131,7 +131,7 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
 static void failedAccessCheckCallbackInMainThread(v8::Local<v8::Object> host, v8::AccessType type, v8::Local<v8::Value> data)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    Frame* target = findFrame(host, data, isolate);
+    LocalFrame* target = findFrame(host, data, isolate);
     if (!target)
         return;
     DOMWindow* targetWindow = target->domWindow();

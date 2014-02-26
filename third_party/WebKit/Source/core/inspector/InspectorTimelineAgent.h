@@ -59,7 +59,7 @@ class DocumentLoader;
 class Event;
 class ExecutionContext;
 class FloatQuad;
-class Frame;
+class LocalFrame;
 class FrameHost;
 class GraphicsContext;
 class GraphicsLayer;
@@ -157,8 +157,8 @@ public:
     void didBeginFrame(int frameId);
     void didCancelFrame();
 
-    void didInvalidateLayout(Frame*);
-    bool willLayout(Frame*);
+    void didInvalidateLayout(LocalFrame*);
+    bool willLayout(LocalFrame*);
     void didLayout(RenderObject*);
 
     void willAutosizeText(RenderObject*);
@@ -194,12 +194,12 @@ public:
     bool willDispatchXHRLoadEvent(ExecutionContext*, XMLHttpRequest*);
     void didDispatchXHRLoadEvent();
 
-    bool willEvaluateScript(Frame*, const String&, int);
+    bool willEvaluateScript(LocalFrame*, const String&, int);
     void didEvaluateScript();
 
     void consoleTimeStamp(ExecutionContext*, const String& title);
-    void domContentLoadedEventFired(Frame*);
-    void loadEventFired(Frame*);
+    void domContentLoadedEventFired(LocalFrame*);
+    void loadEventFired(LocalFrame*);
 
     void consoleTime(ExecutionContext*, const String&);
     void consoleTimeEnd(ExecutionContext*, const String&, ScriptState*);
@@ -208,10 +208,10 @@ public:
 
     void didScheduleResourceRequest(Document*, const String& url);
     void willSendRequest(unsigned long, DocumentLoader*, const ResourceRequest&, const ResourceResponse&, const FetchInitiatorInfo&);
-    void didReceiveResourceResponse(Frame*, unsigned long, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
+    void didReceiveResourceResponse(LocalFrame*, unsigned long, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
     void didFinishLoading(unsigned long, DocumentLoader*, double monotonicFinishTime, int64_t);
     void didFailLoading(unsigned long identifier, const ResourceError&);
-    bool willReceiveResourceData(Frame*, unsigned long identifier, int length);
+    bool willReceiveResourceData(LocalFrame*, unsigned long identifier, int length);
     void didReceiveResourceData();
 
     void didRequestAnimationFrame(Document*, int callbackId);
@@ -266,12 +266,12 @@ private:
     void didFinishLoadingResource(unsigned long, bool didFail, double finishTime);
 
     void sendEvent(PassRefPtr<TypeBuilder::Timeline::TimelineEvent>);
-    void appendRecord(PassRefPtr<JSONObject> data, const String& type, bool captureCallStack, Frame*);
-    void pushCurrentRecord(PassRefPtr<JSONObject> data, const String& type, bool captureCallStack, Frame*, bool hasLowLevelDetails = false);
+    void appendRecord(PassRefPtr<JSONObject> data, const String& type, bool captureCallStack, LocalFrame*);
+    void pushCurrentRecord(PassRefPtr<JSONObject> data, const String& type, bool captureCallStack, LocalFrame*, bool hasLowLevelDetails = false);
     TimelineThreadState& threadState(ThreadIdentifier);
 
     void setCounters(TypeBuilder::Timeline::TimelineEvent*);
-    void setFrameIdentifier(TypeBuilder::Timeline::TimelineEvent* record, Frame*);
+    void setFrameIdentifier(TypeBuilder::Timeline::TimelineEvent* record, LocalFrame*);
     void populateImageDetails(JSONObject* data, const RenderImage&);
 
     void pushGCEventRecords();

@@ -41,7 +41,7 @@ namespace WebCore {
     struct DragSession;
     class DragState;
     class Element;
-    class Frame;
+    class LocalFrame;
     class FrameSelection;
     class HTMLInputElement;
     class Image;
@@ -67,11 +67,11 @@ namespace WebCore {
             ImmediateSelectionDragResolution,
             DelayedSelectionDragResolution,
         };
-        Node* draggableNode(const Frame*, Node*, const IntPoint&, SelectionDragPolicy, DragSourceAction&) const;
+        Node* draggableNode(const LocalFrame*, Node*, const IntPoint&, SelectionDragPolicy, DragSourceAction&) const;
         void dragEnded();
 
-        bool populateDragClipboard(Frame* src, const DragState&, const IntPoint& dragOrigin);
-        bool startDrag(Frame* src, const DragState&, const PlatformMouseEvent& dragEvent, const IntPoint& dragOrigin);
+        bool populateDragClipboard(LocalFrame* src, const DragState&, const IntPoint& dragOrigin);
+        bool startDrag(LocalFrame* src, const DragState&, const PlatformMouseEvent& dragEvent, const IntPoint& dragOrigin);
 
         static const int DragIconRightInset;
         static const int DragIconBottomInset;
@@ -79,7 +79,7 @@ namespace WebCore {
     private:
         DragController(Page*, DragClient*);
 
-        bool dispatchTextInputEventFor(Frame*, DragData*);
+        bool dispatchTextInputEventFor(LocalFrame*, DragData*);
         bool canProcessDrag(DragData*);
         bool concludeEditDrag(DragData*);
         DragSession dragEnteredOrUpdated(DragData*);
@@ -93,7 +93,7 @@ namespace WebCore {
 
         void mouseMovedIntoDocument(Document*);
 
-        void doSystemDrag(DragImage*, const IntPoint& dragLocation, const IntPoint& dragOrigin, Clipboard*, Frame*, bool forLink);
+        void doSystemDrag(DragImage*, const IntPoint& dragLocation, const IntPoint& dragOrigin, Clipboard*, LocalFrame*, bool forLink);
         void cleanupAfterSystemDrag();
 
         Page* m_page;

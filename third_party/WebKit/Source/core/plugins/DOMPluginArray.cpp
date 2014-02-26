@@ -20,14 +20,14 @@
 #include "config.h"
 #include "core/plugins/DOMPluginArray.h"
 
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/page/Page.h"
 #include "platform/plugins/PluginData.h"
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 
-DOMPluginArray::DOMPluginArray(Frame* frame)
+DOMPluginArray::DOMPluginArray(LocalFrame* frame)
     : DOMWindowProperty(frame)
 {
     ScriptWrappable::init(this);

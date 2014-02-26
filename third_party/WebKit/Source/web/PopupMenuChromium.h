@@ -35,7 +35,7 @@
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
-class Frame;
+class LocalFrame;
 class FrameView;
 class PopupMenuClient;
 }
@@ -46,7 +46,7 @@ class PopupContainer;
 
 class PopupMenuChromium FINAL : public WebCore::PopupMenu {
 public:
-    PopupMenuChromium(WebCore::Frame&, WebCore::PopupMenuClient*);
+    PopupMenuChromium(WebCore::LocalFrame&, WebCore::PopupMenuClient*);
     virtual ~PopupMenuChromium();
 
     virtual void show(const WebCore::FloatQuad& controlPosition, const WebCore::IntSize& controlSize, int index) OVERRIDE;

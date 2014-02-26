@@ -32,8 +32,8 @@
 #include "core/dom/Node.h"
 #include "core/dom/WheelController.h"
 #include "core/html/HTMLElement.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/page/Page.h"
 #include "core/frame/Settings.h"
 #include "platform/TraceEvent.h"
@@ -176,7 +176,7 @@ void ScrollingCoordinator::updateAfterCompositingChange()
         scrollingWebLayer->setBounds(frameView->contentsSize());
 
     const FrameTree& tree = m_page->mainFrame()->tree();
-    for (const Frame* child = tree.firstChild(); child; child = child->tree().nextSibling()) {
+    for (const LocalFrame* child = tree.firstChild(); child; child = child->tree().nextSibling()) {
         if (WebLayer* scrollLayer = scrollingWebLayerForScrollableArea(child->view()))
             scrollLayer->setBounds(child->view()->contentsSize());
     }
@@ -386,16 +386,16 @@ bool ScrollingCoordinator::scrollableAreaScrollLayerDidChange(ScrollableArea* sc
 // RenderLayers have child frames inside of them. This computes a mapping for the
 // current frame which we can consult while walking the layers of that frame.
 // Whenever we descend into a new frame, a new map will be created.
-typedef HashMap<const RenderLayer*, Vector<const Frame*> > LayerFrameMap;
-static void makeLayerChildFrameMap(const Frame* currentFrame, LayerFrameMap* map)
+typedef HashMap<const RenderLayer*, Vector<const LocalFrame*> > LayerFrameMap;
+static void makeLayerChildFrameMap(const LocalFrame* currentFrame, LayerFrameMap* map)
 {
     map->clear();
     const FrameTree& tree = currentFrame->tree();
-    for (const Frame* child = tree.firstChild(); child; child = child->tree().nextSibling()) {
+    for (const LocalFrame* child = tree.firstChild(); child; child = child->tree().nextSibling()) {
         const RenderLayer* containingLayer = child->ownerRenderer()->enclosingLayer();
         LayerFrameMap::iterator iter = map->find(containingLayer);
         if (iter == map->end())
-            map->add(containingLayer, Vector<const Frame*>()).storedValue->value.append(child);
+            map->add(containingLayer, Vector<const LocalFrame*>()).storedValue->value.append(child);
         else
             iter->value.append(child);
     }
@@ -465,7 +465,7 @@ static void convertLayerRectsToEnclosingCompositedLayerRecursive(
     LayerFrameMap::iterator mapIter = layerChildFrameMap.find(curLayer);
     if (mapIter != layerChildFrameMap.end()) {
         for (size_t i = 0; i < mapIter->value.size(); i++) {
-            const Frame* childFrame = mapIter->value[i];
+            const LocalFrame* childFrame = mapIter->value[i];
             const RenderLayer* childLayer = childFrame->view()->renderView()->layer();
             if (layersWithRects.contains(childLayer)) {
                 LayerFrameMap newLayerChildFrameMap;
@@ -478,7 +478,7 @@ static void convertLayerRectsToEnclosingCompositedLayerRecursive(
     }
 }
 
-static void convertLayerRectsToEnclosingCompositedLayer(Frame* mainFrame, const LayerHitTestRects& layerRects, LayerHitTestRects& compositorRects)
+static void convertLayerRectsToEnclosingCompositedLayer(LocalFrame* mainFrame, const LayerHitTestRects& layerRects, LayerHitTestRects& compositorRects)
 {
     TRACE_EVENT0("input", "ScrollingCoordinator::convertLayerRectsToEnclosingCompositedLayer");
     bool touchHandlerInChildFrame = false;
@@ -666,7 +666,7 @@ bool ScrollingCoordinator::coordinatesScrollingForFrameView(FrameView* frameView
     return renderView->usesCompositing();
 }
 
-Region ScrollingCoordinator::computeShouldHandleScrollGestureOnMainThreadRegion(const Frame* frame, const IntPoint& frameLocation) const
+Region ScrollingCoordinator::computeShouldHandleScrollGestureOnMainThreadRegion(const LocalFrame* frame, const IntPoint& frameLocation) const
 {
     Region shouldHandleScrollGestureOnMainThreadRegion;
     FrameView* frameView = frame->view();
@@ -714,7 +714,7 @@ Region ScrollingCoordinator::computeShouldHandleScrollGestureOnMainThreadRegion(
     }
 
     const FrameTree& tree = frame->tree();
-    for (Frame* subFrame = tree.firstChild(); subFrame; subFrame = subFrame->tree().nextSibling())
+    for (LocalFrame* subFrame = tree.firstChild(); subFrame; subFrame = subFrame->tree().nextSibling())
         shouldHandleScrollGestureOnMainThreadRegion.unite(computeShouldHandleScrollGestureOnMainThreadRegion(subFrame, offset));
 
     return shouldHandleScrollGestureOnMainThreadRegion;
@@ -797,7 +797,7 @@ unsigned ScrollingCoordinator::computeCurrentWheelEventHandlerCount()
 {
     unsigned wheelEventHandlerCount = 0;
 
-    for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+    for (LocalFrame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
         if (frame->document())
             wheelEventHandlerCount += WheelController::from(*frame->document())->wheelEventHandlerCount();
     }

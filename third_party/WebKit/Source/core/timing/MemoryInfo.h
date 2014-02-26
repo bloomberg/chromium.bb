@@ -39,11 +39,11 @@
 
 namespace WebCore {
 
-class Frame;
+class LocalFrame;
 
 class MemoryInfo : public RefCountedWillBeGarbageCollectedFinalized<MemoryInfo>, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<MemoryInfo> create(Frame* frame)
+    static PassRefPtrWillBeRawPtr<MemoryInfo> create(LocalFrame* frame)
     {
         return adoptRefWillBeNoop(new MemoryInfo(frame));
     }
@@ -55,7 +55,7 @@ public:
     void trace(Visitor*) { }
 
 private:
-    explicit MemoryInfo(Frame*);
+    explicit MemoryInfo(LocalFrame*);
 
     HeapInfo m_info;
 };

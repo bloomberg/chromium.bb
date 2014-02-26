@@ -55,7 +55,7 @@ public:
         const WebCore::IntPoint& dragImageOrigin,
         const WebCore::IntPoint& eventPos,
         WebCore::Clipboard* clipboard,
-        WebCore::Frame* frame,
+        WebCore::LocalFrame* frame,
         bool isLinkDrag = false) OVERRIDE;
 
 private:

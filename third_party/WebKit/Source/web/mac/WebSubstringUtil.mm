@@ -44,7 +44,7 @@
 #include "core/editing/PlainTextRange.h"
 #include "core/editing/TextIterator.h"
 #include "core/html/HTMLElement.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/FrameView.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/style/RenderStyle.h"
@@ -58,7 +58,7 @@ namespace blink {
 
 NSAttributedString* WebSubstringUtil::attributedSubstringInRange(WebFrame* webFrame, size_t location, size_t length)
 {
-    Frame* frame = toWebFrameImpl(webFrame)->frame();
+    LocalFrame* frame = toWebFrameImpl(webFrame)->frame();
     if (frame->view()->needsLayout())
         frame->view()->layout();
 

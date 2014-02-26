@@ -33,7 +33,7 @@
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/events/ProgressEvent.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/inspector/InspectorApplicationCacheAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -81,13 +81,13 @@ void ApplicationCacheHost::willStartLoadingMainResource(ResourceRequest& request
         return;
 
     ASSERT(m_documentLoader->frame());
-    Frame& frame = *m_documentLoader->frame();
+    LocalFrame& frame = *m_documentLoader->frame();
     m_host = frame.loader().client()->createApplicationCacheHost(this);
     if (m_host) {
         WrappedResourceRequest wrapped(request);
 
         const WebApplicationCacheHost* spawningHost = 0;
-        Frame* spawningFrame = frame.tree().parent();
+        LocalFrame* spawningFrame = frame.tree().parent();
         if (!spawningFrame)
             spawningFrame = frame.loader().opener();
         if (!spawningFrame)
@@ -118,7 +118,7 @@ void ApplicationCacheHost::selectCacheWithManifest(const KURL& manifestURL)
         // same resource being loaded, because "foreign" entries are never picked
         // during navigation.
         // see WebCore::ApplicationCacheGroup::selectCache()
-        Frame* frame = m_documentLoader->frame();
+        LocalFrame* frame = m_documentLoader->frame();
         frame->navigationScheduler().scheduleLocationChange(frame->document(), frame->document()->url(), Referrer(frame->document()->referrer(), frame->document()->referrerPolicy()));
     }
 }

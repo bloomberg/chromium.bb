@@ -25,7 +25,7 @@
 
 namespace WebCore {
 
-class Frame;
+class LocalFrame;
 class Page;
 
 class ScopedPageLoadDeferrer {
@@ -35,7 +35,7 @@ public:
     ~ScopedPageLoadDeferrer();
 
 private:
-    Vector<RefPtr<Frame>, 16> m_deferredFrames;
+    Vector<RefPtr<LocalFrame>, 16> m_deferredFrames;
 };
 
 } // namespace WebCore

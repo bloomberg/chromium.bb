@@ -16,7 +16,7 @@ public:
     explicit StorageClientImpl(WebViewImpl*);
 
     virtual PassOwnPtr<WebCore::StorageNamespace> createSessionStorageNamespace() OVERRIDE;
-    virtual bool canAccessStorage(WebCore::Frame*, WebCore::StorageType) const OVERRIDE;
+    virtual bool canAccessStorage(WebCore::LocalFrame*, WebCore::StorageType) const OVERRIDE;
 
 private:
     WebViewImpl* m_webView;

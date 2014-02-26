@@ -34,7 +34,7 @@
 #include "WebViewImpl.h"
 #include "core/clipboard/Clipboard.h"
 #include "core/clipboard/DataObject.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "platform/DragImage.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
@@ -63,11 +63,11 @@ void DragClientImpl::startDrag(DragImage* dragImage,
                                const IntPoint& dragImageOrigin,
                                const IntPoint& eventPos,
                                Clipboard* clipboard,
-                               Frame* frame,
+                               LocalFrame* frame,
                                bool isLinkDrag)
 {
     // Add a ref to the frame just in case a load occurs mid-drag.
-    RefPtr<Frame> frameProtector = frame;
+    RefPtr<LocalFrame> frameProtector = frame;
 
     WebDragData dragData(clipboard->dataObject());
     WebDragOperationsMask dragOperationMask = static_cast<WebDragOperationsMask>(clipboard->sourceOperation());

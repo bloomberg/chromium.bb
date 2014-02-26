@@ -32,7 +32,7 @@
 #define SmartClip_h
 
 #include "core/dom/Node.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 
 namespace WebCore {
 
@@ -64,7 +64,7 @@ private:
 // selection followed by a copy operation.
 class SmartClip {
 public:
-    explicit SmartClip(PassRefPtr<Frame>);
+    explicit SmartClip(PassRefPtr<LocalFrame>);
 
     SmartClipData dataForRect(const IntRect&);
 
@@ -78,7 +78,7 @@ private:
     IntRect convertRectToWindow(const IntRect& nodeRect);
     String extractTextFromNode(Node*);
 
-    RefPtr<Frame> m_frame;
+    RefPtr<LocalFrame> m_frame;
 };
 
 } // namespace WebCore

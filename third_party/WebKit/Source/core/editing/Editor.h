@@ -46,7 +46,7 @@ class EditCommand;
 class EditCommandComposition;
 class EditorClient;
 class EditorInternalCommand;
-class Frame;
+class LocalFrame;
 class HTMLElement;
 class HitTestResult;
 class KillRing;
@@ -65,12 +65,12 @@ enum EditorParagraphSeparator { EditorParagraphSeparatorIsDiv, EditorParagraphSe
 class Editor {
     WTF_MAKE_NONCOPYABLE(Editor);
 public:
-    static PassOwnPtr<Editor> create(Frame&);
+    static PassOwnPtr<Editor> create(LocalFrame&);
     ~Editor();
 
     EditorClient& client() const;
 
-    Frame& frame() const { return m_frame; }
+    LocalFrame& frame() const { return m_frame; }
 
     CompositeEditCommand* lastEditCommand() { return m_lastEditCommand.get(); }
 
@@ -135,7 +135,7 @@ public:
     class Command {
     public:
         Command();
-        Command(const EditorInternalCommand*, EditorCommandSource, PassRefPtr<Frame>);
+        Command(const EditorInternalCommand*, EditorCommandSource, PassRefPtr<LocalFrame>);
 
         bool execute(const String& parameter = String(), Event* triggeringEvent = 0) const;
         bool execute(Event* triggeringEvent) const;
@@ -151,7 +151,7 @@ public:
     private:
         const EditorInternalCommand* m_command;
         EditorCommandSource m_source;
-        RefPtr<Frame> m_frame;
+        RefPtr<LocalFrame> m_frame;
     };
     Command command(const String& commandName); // Command source is CommandFromMenuOrKeyBinding.
     Command command(const String& commandName, EditorCommandSource);
@@ -232,7 +232,7 @@ public:
     friend class RevealSelectionScope;
 
 private:
-    Frame& m_frame;
+    LocalFrame& m_frame;
     RefPtr<CompositeEditCommand> m_lastEditCommand;
     int m_preventRevealSelection;
     bool m_shouldStartNewKillRingSequence;
@@ -243,7 +243,7 @@ private:
     EditorParagraphSeparator m_defaultParagraphSeparator;
     bool m_overwriteModeEnabled;
 
-    explicit Editor(Frame&);
+    explicit Editor(LocalFrame&);
 
     bool canDeleteRange(Range*) const;
 

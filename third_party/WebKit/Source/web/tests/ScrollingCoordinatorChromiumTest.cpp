@@ -108,7 +108,7 @@ public:
     }
 
     WebViewImpl* webViewImpl() const { return m_helper.webViewImpl(); }
-    Frame* frame() const { return m_helper.webViewImpl()->mainFrameImpl()->frame(); }
+    LocalFrame* frame() const { return m_helper.webViewImpl()->mainFrameImpl()->frame(); }
 
 protected:
     std::string m_baseURL;

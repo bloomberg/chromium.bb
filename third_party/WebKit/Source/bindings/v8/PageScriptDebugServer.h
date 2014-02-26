@@ -65,8 +65,8 @@ public:
     virtual void runScript(ScriptState*, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionMessage) OVERRIDE;
     virtual void setPreprocessorSource(const String&) OVERRIDE;
     virtual void preprocessBeforeCompile(const v8::Debug::EventDetails&) OVERRIDE;
-    virtual PassOwnPtr<ScriptSourceCode> preprocess(Frame*, const ScriptSourceCode&) OVERRIDE;
-    virtual String preprocessEventListener(Frame*, const String& source, const String& url, const String& functionName) OVERRIDE;
+    virtual PassOwnPtr<ScriptSourceCode> preprocess(LocalFrame*, const ScriptSourceCode&) OVERRIDE;
+    virtual String preprocessEventListener(LocalFrame*, const String& source, const String& url, const String& functionName) OVERRIDE;
 
 private:
     PageScriptDebugServer();
@@ -84,7 +84,7 @@ private:
 
     OwnPtr<ScriptSourceCode> m_preprocessorSourceCode;
     OwnPtr<ScriptPreprocessor> m_scriptPreprocessor;
-    bool canPreprocess(Frame*);
+    bool canPreprocess(LocalFrame*);
 };
 
 } // namespace WebCore

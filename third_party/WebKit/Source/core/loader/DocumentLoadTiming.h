@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-class Frame;
+class LocalFrame;
 class KURL;
 
 class DocumentLoadTiming {

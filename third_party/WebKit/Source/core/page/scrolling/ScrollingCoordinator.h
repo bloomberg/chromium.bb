@@ -42,7 +42,7 @@ namespace WebCore {
 typedef unsigned MainThreadScrollingReasons;
 
 class Document;
-class Frame;
+class LocalFrame;
 class FrameView;
 class GraphicsLayer;
 class Page;
@@ -111,7 +111,7 @@ public:
 
     static String mainThreadScrollingReasonsAsText(MainThreadScrollingReasons);
     String mainThreadScrollingReasonsAsText() const;
-    Region computeShouldHandleScrollGestureOnMainThreadRegion(const Frame*, const IntPoint& frameLocation) const;
+    Region computeShouldHandleScrollGestureOnMainThreadRegion(const LocalFrame*, const IntPoint& frameLocation) const;
 
     void updateTouchEventTargetRectsIfNeeded();
 

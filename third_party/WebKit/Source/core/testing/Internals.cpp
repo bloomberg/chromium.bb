@@ -79,8 +79,8 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/DOMPoint.h"
 #include "core/frame/DOMWindow.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLInputElement.h"
@@ -228,7 +228,7 @@ Document* Internals::contextDocument() const
     return toDocument(executionContext());
 }
 
-Frame* Internals::frame() const
+LocalFrame* Internals::frame() const
 {
     if (!contextDocument())
         return 0;
@@ -298,7 +298,7 @@ unsigned Internals::updateStyleAndReturnAffectedElementCount(ExceptionState& exc
 
 unsigned Internals::needsLayoutCount(ExceptionState& exceptionState) const
 {
-    Frame* contextFrame = frame();
+    LocalFrame* contextFrame = frame();
     if (!contextFrame) {
         exceptionState.throwDOMException(InvalidAccessError, "No context frame is available.");
         return 0;
@@ -474,7 +474,7 @@ unsigned short Internals::compareTreeScopePosition(const Node* node1, const Node
 
 unsigned Internals::numberOfActiveAnimations() const
 {
-    Frame* contextFrame = frame();
+    LocalFrame* contextFrame = frame();
     Document* document = contextFrame->document();
     return document->timeline()->numberOfActiveAnimationsForTesting() + document->transitionTimeline()->numberOfActiveAnimationsForTesting();
 }
@@ -1419,7 +1419,7 @@ PassRefPtr<NodeList> Internals::nodesFromRect(Document* document, int centerX, i
         return nullptr;
     }
 
-    Frame* frame = document->frame();
+    LocalFrame* frame = document->frame();
     FrameView* frameView = document->view();
     RenderView* renderView = document->renderView();
 
@@ -1604,11 +1604,11 @@ bool Internals::hasGrammarMarker(Document* document, int from, int length, Excep
 unsigned Internals::numberOfScrollableAreas(Document* document, ExceptionState&)
 {
     unsigned count = 0;
-    Frame* frame = document->frame();
+    LocalFrame* frame = document->frame();
     if (frame->view()->scrollableAreas())
         count += frame->view()->scrollableAreas()->size();
 
-    for (Frame* child = frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
+    for (LocalFrame* child = frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (child->view() && child->view()->scrollableAreas())
             count += child->view()->scrollableAreas()->size();
     }

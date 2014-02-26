@@ -49,7 +49,7 @@ public:
     PassRefPtrWillBeRawPtr<MIDIAccessPromise> requestMIDIAccess(const Dictionary&);
 
 private:
-    NavigatorWebMIDI(Frame*);
+    NavigatorWebMIDI(LocalFrame*);
     static const char* supplementName();
 };
 

@@ -5129,7 +5129,7 @@ END
         return wrapper;
     DOMWrapperWorld* world = DOMWrapperWorld::current(isolate);
     if (world->isMainWorld()) {
-        if (Frame* frame = impl->frame())
+        if (LocalFrame* frame = impl->frame())
             frame->script().windowShell(world)->updateDocumentWrapper(wrapper);
     }
 END
@@ -5178,9 +5178,9 @@ END
 
     if (InheritsInterface($interface, "Document")) {
         AddToImplIncludes("bindings/v8/ScriptController.h");
-        AddToImplIncludes("core/frame/Frame.h");
+        AddToImplIncludes("core/frame/LocalFrame.h");
         $code .= <<END;
-    if (Frame* frame = impl->frame()) {
+    if (LocalFrame* frame = impl->frame()) {
         if (frame->script().initializeMainWorld()) {
             // initializeMainWorld may have created a wrapper for the object, retry from the start.
             v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapper<${v8ClassName}>(impl.get(), isolate);

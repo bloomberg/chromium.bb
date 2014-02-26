@@ -38,7 +38,7 @@
 
 namespace WebCore {
 
-class Frame;
+class LocalFrame;
 class Node;
 class SpellCheckRequester;
 class TextCheckerClient;
@@ -77,7 +77,7 @@ class SpellCheckRequester {
 public:
     friend class SpellCheckRequest;
 
-    explicit SpellCheckRequester(Frame&);
+    explicit SpellCheckRequester(LocalFrame&);
     ~SpellCheckRequester();
 
     bool isAsynchronousEnabled() const;
@@ -108,7 +108,7 @@ private:
     void didCheckCancel(int sequence);
     void didCheck(int sequence, const Vector<TextCheckingResult>&);
 
-    Frame& m_frame;
+    LocalFrame& m_frame;
     int m_lastRequestSequence;
     int m_lastProcessedSequence;
 

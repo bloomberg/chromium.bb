@@ -37,7 +37,7 @@ namespace WebCore {
 
 class DataObject;
 class DocumentFragment;
-class Frame;
+class LocalFrame;
 class KURL;
 class Range;
 
@@ -67,7 +67,7 @@ public:
     String asURL(FilenameConversionPolicy filenamePolicy = ConvertFilenames, String* title = 0) const;
     String asPlainText() const;
     void asFilenames(Vector<String>&) const;
-    PassRefPtr<DocumentFragment> asFragment(Frame*, PassRefPtr<Range> context, bool allowPlainText, bool& chosePlainText) const;
+    PassRefPtr<DocumentFragment> asFragment(LocalFrame*, PassRefPtr<Range> context, bool allowPlainText, bool& chosePlainText) const;
     bool canSmartReplace() const;
     bool containsFiles() const;
     unsigned numberOfFiles() const;

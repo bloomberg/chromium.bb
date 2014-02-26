@@ -35,8 +35,8 @@
 #include "core/editing/Editor.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/frame/Frame.h"
 #include "core/rendering/RenderTableCell.h"
 
 namespace WebCore {
@@ -716,7 +716,7 @@ void DeleteSelectionCommand::calculateTypingStyleAfterDelete()
     // Compute the difference between the style before the delete and the style now
     // after the delete has been done. Set this style on the frame, so other editing
     // commands being composed with this one will work, and also cache it on the command,
-    // so the Frame::appliedEditing can set it after the whole composite command
+    // so the LocalFrame::appliedEditing can set it after the whole composite command
     // has completed.
 
     // If we deleted into a blockquote, but are now no longer in a blockquote, use the alternate typing style

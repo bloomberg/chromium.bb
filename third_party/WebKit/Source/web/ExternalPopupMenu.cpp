@@ -36,8 +36,8 @@
 #include "WebPopupMenuInfo.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "platform/PopupMenuClient.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/IntPoint.h"
@@ -48,7 +48,7 @@ using namespace WebCore;
 
 namespace blink {
 
-ExternalPopupMenu::ExternalPopupMenu(Frame& frame, PopupMenuClient* popupMenuClient, WebViewImpl& webView)
+ExternalPopupMenu::ExternalPopupMenu(LocalFrame& frame, PopupMenuClient* popupMenuClient, WebViewImpl& webView)
     : m_popupMenuClient(popupMenuClient)
     , m_frameView(frame.view())
     , m_webView(webView)

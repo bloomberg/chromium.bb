@@ -95,8 +95,8 @@ public:
     void addMessageToConsole(MessageSource, MessageType, MessageLevel, const String&, PassRefPtr<ScriptCallStack>, unsigned long);
     void addMessageToConsole(MessageSource, MessageType, MessageLevel, const String&, ScriptState*, PassRefPtr<ScriptArguments>, unsigned long);
 
-    String preprocessEventListener(Frame*, const String& source, const String& url, const String& functionName);
-    PassOwnPtr<ScriptSourceCode> preprocess(Frame*, const ScriptSourceCode&);
+    String preprocessEventListener(LocalFrame*, const String& source, const String& url, const String& functionName);
+    PassOwnPtr<ScriptSourceCode> preprocess(LocalFrame*, const ScriptSourceCode&);
 
     // Part of the protocol.
     virtual void enable(ErrorString*) OVERRIDE FINAL;

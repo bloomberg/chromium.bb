@@ -38,7 +38,7 @@ class DOMWindow;
 class Database;
 class DatabaseCallback;
 class ExceptionState;
-class Frame;
+class LocalFrame;
 
 class DOMWindowWebDatabase {
 public:

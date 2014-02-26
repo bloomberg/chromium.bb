@@ -101,8 +101,8 @@ public:
     virtual void runScript(ScriptState*, const String& scriptId, ScriptValue* result, bool* wasThrown, String* exceptionMessage);
     virtual void setPreprocessorSource(const String&) { }
     virtual void preprocessBeforeCompile(const v8::Debug::EventDetails&) { }
-    virtual PassOwnPtr<ScriptSourceCode> preprocess(Frame*, const ScriptSourceCode&);
-    virtual String preprocessEventListener(Frame*, const String& source, const String& url, const String& functionName);
+    virtual PassOwnPtr<ScriptSourceCode> preprocess(LocalFrame*, const ScriptSourceCode&);
+    virtual String preprocessEventListener(LocalFrame*, const String& source, const String& url, const String& functionName);
 
 protected:
     explicit ScriptDebugServer(v8::Isolate*);

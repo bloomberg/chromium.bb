@@ -94,7 +94,7 @@ void GeolocationClientMock::requestPermission(Geolocation* geolocation)
 
 void GeolocationClientMock::cancelPermissionRequest(Geolocation* geolocation)
 {
-    // Called from Geolocation::disconnectFrame() in response to Frame destruction.
+    // Called from Geolocation::disconnectFrame() in response to LocalFrame destruction.
     m_pendingPermissions.remove(geolocation);
     if (m_pendingPermissions.isEmpty() && m_permissionTimer.isActive())
         m_permissionTimer.stop();

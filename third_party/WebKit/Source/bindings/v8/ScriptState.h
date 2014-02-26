@@ -40,7 +40,7 @@ namespace WebCore {
 
 class DOMWindow;
 class DOMWrapperWorld;
-class Frame;
+class LocalFrame;
 class ExecutionContext;
 class WorkerGlobalScope;
 
@@ -82,7 +82,7 @@ protected:
     ~ScriptState();
 
 private:
-    friend ScriptState* mainWorldScriptState(Frame*);
+    friend ScriptState* mainWorldScriptState(LocalFrame*);
     explicit ScriptState(v8::Handle<v8::Context>);
 
     static void setWeakCallback(const v8::WeakCallbackData<v8::Context, ScriptState>&);
@@ -115,7 +115,7 @@ private:
     ScopedPersistent<v8::Context> m_context;
 };
 
-ScriptState* mainWorldScriptState(Frame*);
+ScriptState* mainWorldScriptState(LocalFrame*);
 
 ScriptState* scriptStateFromWorkerGlobalScope(WorkerGlobalScope*);
 

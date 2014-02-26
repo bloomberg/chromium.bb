@@ -38,10 +38,10 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8ScriptRunner.h"
 #include "bindings/v8/V8WindowShell.h"
+#include "core/frame/FrameHost.h"
+#include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptDebugListener.h"
-#include "core/frame/Frame.h"
-#include "core/frame/FrameHost.h"
 #include "core/page/Page.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -51,7 +51,7 @@
 
 namespace WebCore {
 
-static Frame* retrieveFrameWithGlobalObjectCheck(v8::Handle<v8::Context> context)
+static LocalFrame* retrieveFrameWithGlobalObjectCheck(v8::Handle<v8::Context> context)
 {
     if (context.IsEmpty())
         return 0;
@@ -144,7 +144,7 @@ void PageScriptDebugServer::setClientMessageLoop(PassOwnPtr<ClientMessageLoop> c
 void PageScriptDebugServer::compileScript(ScriptState* state, const String& expression, const String& sourceURL, String* scriptId, String* exceptionMessage)
 {
     ExecutionContext* executionContext = state->executionContext();
-    RefPtr<Frame> protect = toDocument(executionContext)->frame();
+    RefPtr<LocalFrame> protect = toDocument(executionContext)->frame();
     ScriptDebugServer::compileScript(state, expression, sourceURL, scriptId, exceptionMessage);
     if (!scriptId->isNull())
         m_compiledScriptURLs.set(*scriptId, sourceURL);
@@ -161,12 +161,12 @@ void PageScriptDebugServer::runScript(ScriptState* state, const String& scriptId
     String sourceURL = m_compiledScriptURLs.take(scriptId);
 
     ExecutionContext* executionContext = state->executionContext();
-    Frame* frame = toDocument(executionContext)->frame();
+    LocalFrame* frame = toDocument(executionContext)->frame();
     InspectorInstrumentationCookie cookie;
     if (frame)
         cookie = InspectorInstrumentation::willEvaluateScript(frame, sourceURL, TextPosition::minimumPosition().m_line.oneBasedInt());
 
-    RefPtr<Frame> protect = frame;
+    RefPtr<LocalFrame> protect = frame;
     ScriptDebugServer::runScript(state, scriptId, result, wasThrown, exceptionMessage);
 
     if (frame)
@@ -176,7 +176,7 @@ void PageScriptDebugServer::runScript(ScriptState* state, const String& scriptId
 ScriptDebugListener* PageScriptDebugServer::getDebugListenerForContext(v8::Handle<v8::Context> context)
 {
     v8::HandleScope scope(m_isolate);
-    Frame* frame = retrieveFrameWithGlobalObjectCheck(context);
+    LocalFrame* frame = retrieveFrameWithGlobalObjectCheck(context);
     if (!frame)
         return 0;
     return m_listenersMap.get(frame->page());
@@ -185,7 +185,7 @@ ScriptDebugListener* PageScriptDebugServer::getDebugListenerForContext(v8::Handl
 void PageScriptDebugServer::runMessageLoopOnPause(v8::Handle<v8::Context> context)
 {
     v8::HandleScope scope(m_isolate);
-    Frame* frame = retrieveFrameWithGlobalObjectCheck(context);
+    LocalFrame* frame = retrieveFrameWithGlobalObjectCheck(context);
     m_pausedPage = frame->page();
 
     // Wait for continue or step command.
@@ -206,7 +206,7 @@ void PageScriptDebugServer::quitMessageLoopOnPause()
 void PageScriptDebugServer::preprocessBeforeCompile(const v8::Debug::EventDetails& eventDetails)
 {
     v8::Handle<v8::Context> eventContext = eventDetails.GetEventContext();
-    Frame* frame = retrieveFrameWithGlobalObjectCheck(eventContext);
+    LocalFrame* frame = retrieveFrameWithGlobalObjectCheck(eventContext);
     if (!frame)
         return;
 
@@ -236,7 +236,7 @@ void PageScriptDebugServer::preprocessBeforeCompile(const v8::Debug::EventDetail
 
 static bool isCreatingPreprocessor = false;
 
-bool PageScriptDebugServer::canPreprocess(Frame* frame)
+bool PageScriptDebugServer::canPreprocess(LocalFrame* frame)
 {
     ASSERT(frame);
 
@@ -260,7 +260,7 @@ bool PageScriptDebugServer::canPreprocess(Frame* frame)
 }
 
 // Source to Source processing iff debugger enabled and it has loaded a preprocessor.
-PassOwnPtr<ScriptSourceCode> PageScriptDebugServer::preprocess(Frame* frame, const ScriptSourceCode& sourceCode)
+PassOwnPtr<ScriptSourceCode> PageScriptDebugServer::preprocess(LocalFrame* frame, const ScriptSourceCode& sourceCode)
 {
     if (!canPreprocess(frame))
         return PassOwnPtr<ScriptSourceCode>();
@@ -269,7 +269,7 @@ PassOwnPtr<ScriptSourceCode> PageScriptDebugServer::preprocess(Frame* frame, con
     return adoptPtr(new ScriptSourceCode(preprocessedSource, sourceCode.url()));
 }
 
-String PageScriptDebugServer::preprocessEventListener(Frame* frame, const String& source, const String& url, const String& functionName)
+String PageScriptDebugServer::preprocessEventListener(LocalFrame* frame, const String& source, const String& url, const String& functionName)
 {
     if (!canPreprocess(frame))
         return source;

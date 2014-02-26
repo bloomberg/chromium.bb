@@ -32,7 +32,7 @@
 #include "core/loader/PrerenderHandle.h"
 
 #include "core/dom/Document.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/PrerendererClient.h"
 #include "platform/Prerender.h"

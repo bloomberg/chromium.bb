@@ -33,7 +33,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/DocumentTiming.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
@@ -48,7 +48,7 @@ static unsigned long long toIntegerMilliseconds(double seconds)
     return static_cast<unsigned long long>(seconds * 1000.0);
 }
 
-PerformanceTiming::PerformanceTiming(Frame* frame)
+PerformanceTiming::PerformanceTiming(LocalFrame* frame)
     : DOMWindowProperty(frame)
 {
     ScriptWrappable::init(this);

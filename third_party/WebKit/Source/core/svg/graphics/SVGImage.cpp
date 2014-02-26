@@ -31,11 +31,11 @@
 
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/ComposedTreeWalker.h"
+#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/Chrome.h"
-#include "core/frame/Frame.h"
-#include "core/frame/FrameView.h"
-#include "core/frame/Settings.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/svg/SVGDocument.h"
@@ -85,7 +85,7 @@ bool SVGImage::currentFrameHasSingleSecurityOrigin() const
     if (!m_page)
         return true;
 
-    Frame* frame = m_page->mainFrame();
+    LocalFrame* frame = m_page->mainFrame();
 
     RELEASE_ASSERT(frame->document()->loadEventFinished());
 
@@ -119,7 +119,7 @@ void SVGImage::setContainerSize(const IntSize& size)
     if (!m_page || !usesContainerSize())
         return;
 
-    Frame* frame = m_page->mainFrame();
+    LocalFrame* frame = m_page->mainFrame();
     SVGSVGElement* rootElement = toSVGDocument(frame->document())->rootElement();
     if (!rootElement)
         return;
@@ -137,7 +137,7 @@ IntSize SVGImage::containerSize() const
 {
     if (!m_page)
         return IntSize();
-    Frame* frame = m_page->mainFrame();
+    LocalFrame* frame = m_page->mainFrame();
     SVGSVGElement* rootElement = toSVGDocument(frame->document())->rootElement();
     if (!rootElement)
         return IntSize();
@@ -283,7 +283,7 @@ RenderBox* SVGImage::embeddedContentBox() const
 {
     if (!m_page)
         return 0;
-    Frame* frame = m_page->mainFrame();
+    LocalFrame* frame = m_page->mainFrame();
     SVGSVGElement* rootElement = toSVGDocument(frame->document())->rootElement();
     if (!rootElement)
         return 0;
@@ -302,7 +302,7 @@ bool SVGImage::hasRelativeWidth() const
 {
     if (!m_page)
         return false;
-    Frame* frame = m_page->mainFrame();
+    LocalFrame* frame = m_page->mainFrame();
     SVGSVGElement* rootElement = toSVGDocument(frame->document())->rootElement();
     if (!rootElement)
         return false;
@@ -313,7 +313,7 @@ bool SVGImage::hasRelativeHeight() const
 {
     if (!m_page)
         return false;
-    Frame* frame = m_page->mainFrame();
+    LocalFrame* frame = m_page->mainFrame();
     SVGSVGElement* rootElement = toSVGDocument(frame->document())->rootElement();
     if (!rootElement)
         return false;
@@ -324,7 +324,7 @@ void SVGImage::computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrin
 {
     if (!m_page)
         return;
-    Frame* frame = m_page->mainFrame();
+    LocalFrame* frame = m_page->mainFrame();
     SVGSVGElement* rootElement = toSVGDocument(frame->document())->rootElement();
     if (!rootElement)
         return;
@@ -344,7 +344,7 @@ void SVGImage::startAnimation(bool /* catchUpIfNecessary */)
 {
     if (!m_page)
         return;
-    Frame* frame = m_page->mainFrame();
+    LocalFrame* frame = m_page->mainFrame();
     SVGSVGElement* rootElement = toSVGDocument(frame->document())->rootElement();
     if (!rootElement)
         return;
@@ -356,7 +356,7 @@ void SVGImage::stopAnimation()
 {
     if (!m_page)
         return;
-    Frame* frame = m_page->mainFrame();
+    LocalFrame* frame = m_page->mainFrame();
     SVGSVGElement* rootElement = toSVGDocument(frame->document())->rootElement();
     if (!rootElement)
         return;
@@ -395,7 +395,7 @@ bool SVGImage::dataChanged(bool allDataReceived)
         m_page->settings().setPluginsEnabled(false);
         m_page->settings().setAcceleratedCompositingEnabled(false);
 
-        RefPtr<Frame> frame = Frame::create(FrameInit::create(&m_page->frameHost(), dummyFrameLoaderClient));
+        RefPtr<LocalFrame> frame = LocalFrame::create(FrameInit::create(&m_page->frameHost(), dummyFrameLoaderClient));
         frame->setView(FrameView::create(frame.get()));
         frame->init();
         FrameLoader& loader = frame->loader();

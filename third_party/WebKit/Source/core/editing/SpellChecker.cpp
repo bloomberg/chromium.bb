@@ -37,7 +37,7 @@
 #include "core/editing/TextCheckingHelper.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/loader/EmptyClients.h"
 #include "core/page/Page.h"
@@ -60,7 +60,7 @@ bool isSelectionInTextField(const VisibleSelection& selection)
 
 } // namespace
 
-PassOwnPtr<SpellChecker> SpellChecker::create(Frame& frame)
+PassOwnPtr<SpellChecker> SpellChecker::create(LocalFrame& frame)
 {
     return adoptPtr(new SpellChecker(frame));
 }
@@ -83,7 +83,7 @@ TextCheckerClient& SpellChecker::textChecker() const
     return spellCheckerClient().textChecker();
 }
 
-SpellChecker::SpellChecker(Frame& frame)
+SpellChecker::SpellChecker(LocalFrame& frame)
     : m_frame(frame)
     , m_spellCheckRequester(adoptPtr(new SpellCheckRequester(frame)))
 {
@@ -103,7 +103,7 @@ void SpellChecker::toggleContinuousSpellChecking()
     spellCheckerClient().toggleContinuousSpellChecking();
     if (isContinuousSpellCheckingEnabled())
         return;
-    for (Frame* frame = m_frame.page()->mainFrame(); frame && frame->document(); frame = frame->tree().traverseNext()) {
+    for (LocalFrame* frame = m_frame.page()->mainFrame(); frame && frame->document(); frame = frame->tree().traverseNext()) {
         for (Node* node = &frame->document()->rootNode(); node; node = NodeTraversal::next(*node)) {
             node->setAlreadySpellChecked(false);
         }

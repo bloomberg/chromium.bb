@@ -32,7 +32,7 @@
 #include "WebFrameImpl.h"
 #include "WebView.h"
 #include "core/dom/Document.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 
 #include <gtest/gtest.h>
 

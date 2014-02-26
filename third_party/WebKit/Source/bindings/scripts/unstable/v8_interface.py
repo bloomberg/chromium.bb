@@ -81,7 +81,7 @@ def generate_interface(interface):
     if is_document:
         includes.update(['bindings/v8/ScriptController.h',
                          'bindings/v8/V8WindowShell.h',
-                         'core/frame/Frame.h'])
+                         'core/frame/LocalFrame.h'])
 
     # [CheckSecurity]
     is_check_security = 'CheckSecurity' in extended_attributes

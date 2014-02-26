@@ -23,7 +23,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/StyleEngine.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"
 #include "wtf/HashSet.h"
@@ -56,7 +56,7 @@ void InjectedStyleSheets::invalidateInjectedStyleSheetCacheInAllFrames()
 
     HashSet<Page*>::const_iterator end = pages.end();
     for (HashSet<Page*>::const_iterator it = pages.begin(); it != end; ++it) {
-        for (Frame* frame = (*it)->mainFrame(); frame; frame = frame->tree().traverseNext())
+        for (LocalFrame* frame = (*it)->mainFrame(); frame; frame = frame->tree().traverseNext())
             frame->document()->styleEngine()->invalidateInjectedStyleSheetCache();
     }
 }

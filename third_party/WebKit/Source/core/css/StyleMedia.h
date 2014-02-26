@@ -33,17 +33,17 @@
 
 namespace WebCore {
 
-class Frame;
+class LocalFrame;
 
 class StyleMedia : public RefCounted<StyleMedia>, public DOMWindowProperty {
 public:
-    static PassRefPtr<StyleMedia> create(Frame* frame) { return adoptRef(new StyleMedia(frame));}
+    static PassRefPtr<StyleMedia> create(LocalFrame* frame) { return adoptRef(new StyleMedia(frame));}
 
     AtomicString type() const;
     bool matchMedium(const String&) const;
 
 private:
-    explicit StyleMedia(Frame*);
+    explicit StyleMedia(LocalFrame*);
 };
 
 } // namespace

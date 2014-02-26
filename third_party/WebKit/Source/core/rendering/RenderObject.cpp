@@ -37,14 +37,14 @@
 #include "core/editing/htmlediting.h"
 #include "core/fetch/ResourceLoadPriorityOptimizer.h"
 #include "core/fetch/ResourceLoader.h"
+#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/EventHandler.h"
-#include "core/frame/Frame.h"
-#include "core/frame/FrameView.h"
 #include "core/page/Page.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
@@ -2081,7 +2081,7 @@ void RenderObject::styleDidChange(StyleDifference diff, const RenderStyle* oldSt
     // updated by subclasses before we know if we have to repaint (in setStyle()).
 
     if (oldStyle && !areCursorsEqual(oldStyle, style())) {
-        if (Frame* frame = this->frame())
+        if (LocalFrame* frame = this->frame())
             frame->eventHandler().scheduleCursorUpdate();
     }
 }
@@ -2538,7 +2538,7 @@ void RenderObject::willBeDestroyed()
         children->destroyLeftoverChildren();
 
     // If this renderer is being autoscrolled, stop the autoscrolling.
-    if (Frame* frame = this->frame()) {
+    if (LocalFrame* frame = this->frame()) {
         if (frame->page())
             frame->page()->autoscrollController().stopAutoscrollIfNeeded(this);
     }

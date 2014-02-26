@@ -32,7 +32,7 @@ template <class T> class Local;
 }
 
 namespace WebCore {
-class Frame;
+class LocalFrame;
 class PagePopupController;
 }
 

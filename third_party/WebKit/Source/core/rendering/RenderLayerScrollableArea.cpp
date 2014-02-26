@@ -47,12 +47,12 @@
 #include "core/css/PseudoStyleRequest.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
+#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"
-#include "core/frame/Frame.h"
-#include "core/frame/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/rendering/LayoutRectRecorder.h"
@@ -104,11 +104,11 @@ RenderLayerScrollableArea::RenderLayerScrollableArea(RenderBox* box)
 RenderLayerScrollableArea::~RenderLayerScrollableArea()
 {
     if (inResizeMode() && !m_box->documentBeingDestroyed()) {
-        if (Frame* frame = m_box->frame())
+        if (LocalFrame* frame = m_box->frame())
             frame->eventHandler().resizeScrollableAreaDestroyed();
     }
 
-    if (Frame* frame = m_box->frame()) {
+    if (LocalFrame* frame = m_box->frame()) {
         if (FrameView* frameView = frame->view()) {
             frameView->removeScrollableArea(this);
         }
@@ -125,7 +125,7 @@ RenderLayerScrollableArea::~RenderLayerScrollableArea()
             toElement(node)->setSavedLayerScrollOffset(m_scrollOffset);
     }
 
-    if (Frame* frame = m_box->frame()) {
+    if (LocalFrame* frame = m_box->frame()) {
         if (FrameView* frameView = frame->view())
             frameView->removeResizerArea(m_box);
     }
@@ -340,7 +340,7 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
 
     setScrollOffset(toIntSize(newScrollOffset));
 
-    Frame* frame = m_box->frame();
+    LocalFrame* frame = m_box->frame();
     ASSERT(frame);
 
     RefPtr<FrameView> frameView = m_box->frameView();
@@ -1194,7 +1194,7 @@ bool RenderLayerScrollableArea::hitTestResizerInFragments(const LayerFragments& 
 
 void RenderLayerScrollableArea::updateResizerAreaSet()
 {
-    Frame* frame = m_box->frame();
+    LocalFrame* frame = m_box->frame();
     if (!frame)
         return;
     FrameView* frameView = frame->view();
@@ -1361,7 +1361,7 @@ LayoutRect RenderLayerScrollableArea::exposeRect(const LayoutRect& rect, const S
 
 void RenderLayerScrollableArea::updateScrollableAreaSet(bool hasOverflow)
 {
-    Frame* frame = m_box->frame();
+    LocalFrame* frame = m_box->frame();
     if (!frame)
         return;
 

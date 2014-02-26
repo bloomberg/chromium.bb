@@ -44,8 +44,8 @@
 #include "core/dom/Touch.h"
 #include "core/events/TouchEvent.h"
 #include "core/dom/TouchList.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 
 using namespace blink;
 using namespace WebCore;

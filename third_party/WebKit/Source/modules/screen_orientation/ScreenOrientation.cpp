@@ -6,7 +6,7 @@
 #include "modules/screen_orientation/ScreenOrientation.h"
 
 #include "core/frame/DOMWindow.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Screen.h"
 #include "modules/screen_orientation/ScreenOrientationController.h"
 #include "public/platform/Platform.h"

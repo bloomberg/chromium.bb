@@ -618,12 +618,12 @@ void ScriptDebugServer::runScript(ScriptState* state, const String& scriptId, Sc
     }
 }
 
-PassOwnPtr<ScriptSourceCode> ScriptDebugServer::preprocess(Frame*, const ScriptSourceCode&)
+PassOwnPtr<ScriptSourceCode> ScriptDebugServer::preprocess(LocalFrame*, const ScriptSourceCode&)
 {
     return PassOwnPtr<ScriptSourceCode>();
 }
 
-String ScriptDebugServer::preprocessEventListener(Frame*, const String& source, const String& url, const String& functionName)
+String ScriptDebugServer::preprocessEventListener(LocalFrame*, const String& source, const String& url, const String& functionName)
 {
     return source;
 }

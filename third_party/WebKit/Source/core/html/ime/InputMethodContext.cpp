@@ -33,7 +33,7 @@
 
 #include "core/dom/Text.h"
 #include "core/editing/InputMethodController.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 
 namespace WebCore {
 
@@ -85,7 +85,7 @@ void InputMethodContext::confirmComposition()
 
 bool InputMethodContext::hasFocus() const
 {
-    Frame* frame = m_element->document().frame();
+    LocalFrame* frame = m_element->document().frame();
     if (!frame)
         return false;
 

@@ -39,7 +39,7 @@ namespace WebCore {
 class AXObjectCache;
 class Element;
 class FloatSize;
-class Frame;
+class LocalFrame;
 class KURL;
 class Node;
 class Page;
@@ -57,8 +57,8 @@ public:
     friend class RenderView;
     friend class Internals;
 
-    static PassRefPtr<FrameView> create(Frame*);
-    static PassRefPtr<FrameView> create(Frame*, const IntSize& initialSize);
+    static PassRefPtr<FrameView> create(LocalFrame*);
+    static PassRefPtr<FrameView> create(LocalFrame*, const IntSize& initialSize);
 
     virtual ~FrameView();
 
@@ -69,7 +69,7 @@ public:
 
     virtual bool scheduleAnimation() OVERRIDE;
 
-    Frame& frame() const { return *m_frame; }
+    LocalFrame& frame() const { return *m_frame; }
     Page* page() const;
 
     RenderView* renderView() const;
@@ -313,7 +313,7 @@ protected:
     virtual bool isFlippedDocument() const OVERRIDE;
 
 private:
-    explicit FrameView(Frame*);
+    explicit FrameView(LocalFrame*);
 
     void reset();
     void init();
@@ -381,7 +381,7 @@ private:
     void didScrollTimerFired(Timer<FrameView>*);
 
     bool hasCustomScrollbars() const;
-    bool shouldUseCustomScrollbars(Element*& customScrollbarElement, Frame*& customScrollbarFrame);
+    bool shouldUseCustomScrollbars(Element*& customScrollbarElement, LocalFrame*& customScrollbarFrame);
 
     virtual void updateScrollCorner() OVERRIDE;
 
@@ -413,7 +413,7 @@ private:
     // FIXME: These are just "children" of the FrameView and should be RefPtr<Widget> instead.
     HashSet<RefPtr<RenderWidget> > m_widgets;
 
-    RefPtr<Frame> m_frame;
+    RefPtr<LocalFrame> m_frame;
 
     bool m_doFullRepaint;
 

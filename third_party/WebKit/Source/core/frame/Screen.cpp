@@ -30,9 +30,9 @@
 #include "config.h"
 #include "core/frame/Screen.h"
 
-#include "core/frame/Frame.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "platform/PlatformScreen.h"
@@ -40,7 +40,7 @@
 
 namespace WebCore {
 
-Screen::Screen(Frame* frame)
+Screen::Screen(LocalFrame* frame)
     : DOMWindowProperty(frame)
 {
     ScriptWrappable::init(this);

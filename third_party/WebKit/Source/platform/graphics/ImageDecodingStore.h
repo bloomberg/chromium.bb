@@ -137,8 +137,8 @@ private:
     // Image cache entry is identified by:
     // 1. Pointer to ImageFrameGenerator.
     // 2. Size of the image.
-    // 3. Frame index.
-    // 4. Frame generation. Increments on each progressive decode.
+    // 3. LocalFrame index.
+    // 4. LocalFrame generation. Increments on each progressive decode.
     //
     // The use of generation ID is to allow multiple versions of an image frame
     // be stored in the cache. Each generation comes from a progressive decode.

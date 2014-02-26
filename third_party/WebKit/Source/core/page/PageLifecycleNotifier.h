@@ -34,14 +34,14 @@
 namespace WebCore {
 
 class Page;
-class Frame;
+class LocalFrame;
 
 class PageLifecycleNotifier FINAL : public LifecycleNotifier<Page> {
 public:
     static PassOwnPtr<PageLifecycleNotifier> create(Page*);
 
     void notifyPageVisibilityChanged();
-    void notifyDidCommitLoad(Frame*);
+    void notifyDidCommitLoad(LocalFrame*);
 
     virtual void addObserver(Observer*) OVERRIDE;
     virtual void removeObserver(Observer*) OVERRIDE;
@@ -65,7 +65,7 @@ inline void PageLifecycleNotifier::notifyPageVisibilityChanged()
         (*it)->pageVisibilityChanged();
 }
 
-inline void PageLifecycleNotifier::notifyDidCommitLoad(Frame* frame)
+inline void PageLifecycleNotifier::notifyDidCommitLoad(LocalFrame* frame)
 {
     TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverPageObservers);
     for (PageObserverSet::iterator it = m_pageObservers.begin(); it != m_pageObservers.end(); ++it)

@@ -34,7 +34,7 @@
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptSourceCode.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/PageConsole.h"
 #include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorPageAgent.h"
@@ -128,7 +128,7 @@ void PageDebuggerAgent::setOverlayMessage(ErrorString*, const String* message)
     m_overlay->setPausedInDebuggerMessage(message);
 }
 
-void PageDebuggerAgent::didClearWindowObjectInMainWorld(Frame* frame)
+void PageDebuggerAgent::didClearWindowObjectInMainWorld(LocalFrame* frame)
 {
     if (frame != m_pageAgent->mainFrame())
         return;
@@ -141,23 +141,23 @@ void PageDebuggerAgent::didClearWindowObjectInMainWorld(Frame* frame)
         scriptDebugServer().setPreprocessorSource(m_pageAgent->scriptPreprocessorSource());
 }
 
-String PageDebuggerAgent::preprocessEventListener(Frame* frame, const String& source, const String& url, const String& functionName)
+String PageDebuggerAgent::preprocessEventListener(LocalFrame* frame, const String& source, const String& url, const String& functionName)
 {
     ASSERT(frame);
     ASSERT(m_pageScriptDebugServer);
     return m_pageScriptDebugServer->preprocessEventListener(frame, source, url, functionName);
 }
 
-PassOwnPtr<ScriptSourceCode> PageDebuggerAgent::preprocess(Frame* frame, const ScriptSourceCode& sourceCode)
+PassOwnPtr<ScriptSourceCode> PageDebuggerAgent::preprocess(LocalFrame* frame, const ScriptSourceCode& sourceCode)
 {
     ASSERT(m_pageScriptDebugServer);
     ASSERT(frame);
     return m_pageScriptDebugServer->preprocess(frame, sourceCode);
 }
 
-void PageDebuggerAgent::didCommitLoad(Frame* frame, DocumentLoader* loader)
+void PageDebuggerAgent::didCommitLoad(LocalFrame* frame, DocumentLoader* loader)
 {
-    Frame* mainFrame = frame->page()->mainFrame();
+    LocalFrame* mainFrame = frame->page()->mainFrame();
     if (loader->frame() == mainFrame)
         pageDidCommitLoad();
 }

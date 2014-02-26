@@ -50,10 +50,10 @@
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLTextFormControlElement.h"
-#include "core/frame/Frame.h"
 #include "core/rendering/RenderObject.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/StdLibExtras.h"
@@ -884,7 +884,7 @@ String createFullMarkup(const Node* node)
     if (!node)
         return String();
 
-    Frame* frame = node->document().frame();
+    LocalFrame* frame = node->document().frame();
     if (!frame)
         return String();
 

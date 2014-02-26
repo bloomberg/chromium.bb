@@ -38,7 +38,7 @@
 
 namespace WebCore {
 
-class Frame;
+class LocalFrame;
 class InspectorController;
 class InspectorBackendMessageQueue;
 class InspectorFrontendHost;

@@ -41,7 +41,7 @@
 namespace WebCore {
 
 class ExceptionState;
-class Frame;
+class LocalFrame;
 class Node;
 class Position;
 class Range;

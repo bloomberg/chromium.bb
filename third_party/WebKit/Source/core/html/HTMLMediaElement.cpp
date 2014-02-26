@@ -41,7 +41,7 @@
 #include "core/events/Event.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/frame/ContentSecurityPolicy.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLMediaSource.h"
@@ -387,9 +387,9 @@ void HTMLMediaElement::didMoveToNewDocument(Document& oldDocument)
     addElementToDocumentMap(this, &document());
 
     // FIXME: This is a temporary fix to prevent this object from causing the
-    // MediaPlayer to dereference Frame and FrameLoader pointers from the
+    // MediaPlayer to dereference LocalFrame and FrameLoader pointers from the
     // previous document. A proper fix would provide a mechanism to allow this
-    // object to refresh the MediaPlayer's Frame and FrameLoader references on
+    // object to refresh the MediaPlayer's LocalFrame and FrameLoader references on
     // document changes so that playback can be resumed properly.
     userCancelledLoad();
 
@@ -819,7 +819,7 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
 
     WTF_LOG(Media, "HTMLMediaElement::loadResource(%s, %s, %s)", urlForLoggingMedia(url).utf8().data(), contentType.raw().utf8().data(), keySystem.utf8().data());
 
-    Frame* frame = document().frame();
+    LocalFrame* frame = document().frame();
     if (!frame) {
         mediaLoadingFailed(MediaPlayer::FormatError);
         return;
@@ -1297,7 +1297,7 @@ bool HTMLMediaElement::isSafeToLoadURL(const KURL& url, InvalidURLAction actionI
         return false;
     }
 
-    Frame* frame = document().frame();
+    LocalFrame* frame = document().frame();
     if (!frame || !document().securityOrigin()->canDisplay(url)) {
         if (actionIfInvalid == Complain)
             FrameLoader::reportLocalLoadFailed(frame, url.elidedString());
@@ -2298,7 +2298,7 @@ void HTMLMediaElement::setLoop(bool b)
 
 bool HTMLMediaElement::controls() const
 {
-    Frame* frame = document().frame();
+    LocalFrame* frame = document().frame();
 
     // always show controls when scripting is disabled
     if (frame && !frame->script().canExecuteScripts(NotAboutToExecuteScript))

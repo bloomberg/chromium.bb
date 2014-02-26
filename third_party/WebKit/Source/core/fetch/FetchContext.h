@@ -41,7 +41,7 @@ namespace WebCore {
 
 class Document;
 class DocumentLoader;
-class Frame;
+class LocalFrame;
 class KURL;
 class Page;
 class ResourceError;

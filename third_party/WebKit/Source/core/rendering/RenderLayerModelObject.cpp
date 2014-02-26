@@ -25,7 +25,7 @@
 #include "config.h"
 #include "core/rendering/RenderLayerModelObject.h"
 
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 
@@ -75,7 +75,7 @@ void RenderLayerModelObject::willBeDestroyed()
 {
     if (isPositioned()) {
         // Don't use this->view() because the document's renderView has been set to 0 during destruction.
-        if (Frame* frame = this->frame()) {
+        if (LocalFrame* frame = this->frame()) {
             if (FrameView* frameView = frame->view()) {
                 if (style()->hasViewportConstrainedPosition())
                     frameView->removeViewportConstrainedObject(this);

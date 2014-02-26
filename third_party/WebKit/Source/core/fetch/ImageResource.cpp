@@ -417,7 +417,7 @@ void ImageResource::didDraw(const WebCore::Image* image)
         return;
 
     double timeStamp = FrameView::currentFrameTimeStamp();
-    if (!timeStamp) // If didDraw is called outside of a Frame paint.
+    if (!timeStamp) // If didDraw is called outside of a LocalFrame paint.
         timeStamp = currentTime();
 
     Resource::didAccessDecodedData(timeStamp);

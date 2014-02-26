@@ -40,12 +40,12 @@ namespace WebCore {
 
 class DOMWindow;
 class ExceptionState;
-class Frame;
+class LocalFrame;
 class KURL;
 
 class Location FINAL : public ScriptWrappable, public RefCounted<Location>, public DOMWindowProperty {
 public:
-    static PassRefPtr<Location> create(Frame* frame) { return adoptRef(new Location(frame)); }
+    static PassRefPtr<Location> create(LocalFrame* frame) { return adoptRef(new Location(frame)); }
 
     void setHref(DOMWindow* callingWindow, DOMWindow* enteredWindow, const String&);
     String href() const;
@@ -73,7 +73,7 @@ public:
     PassRefPtr<DOMStringList> ancestorOrigins() const;
 
 private:
-    explicit Location(Frame*);
+    explicit Location(LocalFrame*);
 
     void setLocation(const String&, DOMWindow* callingWindow, DOMWindow* enteredWindow);
 

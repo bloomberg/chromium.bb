@@ -51,7 +51,7 @@ public:
     virtual ~LinkResource();
 
     bool shouldLoadResource() const;
-    Frame* loadingFrame() const;
+    LocalFrame* loadingFrame() const;
 
     virtual Type type() const = 0;
     virtual void process() = 0;

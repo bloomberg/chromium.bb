@@ -31,7 +31,7 @@
 namespace WebCore {
 
 class Element;
-class Frame;
+class LocalFrame;
 class HTMLAreaElement;
 class IntRect;
 class RenderObject;
@@ -46,7 +46,7 @@ inline int fudgeFactor()
     return 2;
 }
 
-bool isSpatialNavigationEnabled(const Frame*);
+bool isSpatialNavigationEnabled(const LocalFrame*);
 
 // Spatially speaking, two given elements in a web page can be:
 // 1) Fully aligned: There is a full intersection between the rects, either
@@ -134,16 +134,16 @@ struct FocusCandidate {
 };
 
 bool hasOffscreenRect(Node*, FocusType = FocusTypeNone);
-bool scrollInDirection(Frame*, FocusType);
+bool scrollInDirection(LocalFrame*, FocusType);
 bool scrollInDirection(Node* container, FocusType);
 bool canScrollInDirection(const Node* container, FocusType);
-bool canScrollInDirection(const Frame*, FocusType);
+bool canScrollInDirection(const LocalFrame*, FocusType);
 bool canBeScrolledIntoView(FocusType, const FocusCandidate&);
 bool areElementsOnSameLine(const FocusCandidate& firstCandidate, const FocusCandidate& secondCandidate);
 void distanceDataForNode(FocusType, const FocusCandidate& current, FocusCandidate&);
 Node* scrollableEnclosingBoxOrParentFrameForNodeInDirection(FocusType, Node*);
 LayoutRect nodeRectInAbsoluteCoordinates(Node*, bool ignoreBorder = false);
-LayoutRect frameRectInAbsoluteCoordinates(Frame*);
+LayoutRect frameRectInAbsoluteCoordinates(LocalFrame*);
 LayoutRect virtualRectForDirection(FocusType, const LayoutRect& startingRect, LayoutUnit width = 0);
 LayoutRect virtualRectForAreaElementAndDirection(HTMLAreaElement*, FocusType);
 HTMLFrameOwnerElement* frameOwnerElement(FocusCandidate&);

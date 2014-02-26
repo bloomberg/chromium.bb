@@ -56,7 +56,7 @@
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/DOMWindow.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/timing/Performance.h"
 #include "core/timing/ResourceTimingInfo.h"
 #include "core/frame/Settings.h"
@@ -249,7 +249,7 @@ Resource* ResourceFetcher::cachedResource(const KURL& resourceURL) const
     return m_documentResources.get(url).get();
 }
 
-Frame* ResourceFetcher::frame() const
+LocalFrame* ResourceFetcher::frame() const
 {
     if (m_documentLoader)
         return m_documentLoader->frame();
@@ -260,7 +260,7 @@ Frame* ResourceFetcher::frame() const
 
 FetchContext& ResourceFetcher::context() const
 {
-    if (Frame* frame = this->frame())
+    if (LocalFrame* frame = this->frame())
         return frame->fetchContext();
     return FetchContext::nullInstance();
 }
@@ -277,7 +277,7 @@ ResourcePtr<Resource> ResourceFetcher::fetchSynchronously(FetchRequest& request)
 
 ResourcePtr<ImageResource> ResourceFetcher::fetchImage(FetchRequest& request)
 {
-    if (Frame* f = frame()) {
+    if (LocalFrame* f = frame()) {
         if (f->document()->pageDismissalEventBeingDispatched() != Document::NoDismissal) {
             KURL requestURL = request.resourceRequest().url();
             if (requestURL.isValid() && canRequest(Resource::Image, requestURL, request.options(), request.forPreload(), request.originRestriction()))
@@ -427,16 +427,16 @@ bool ResourceFetcher::checkInsecureContent(Resource::Type type, const KURL& url,
         }
     }
     if (treatment == TreatAsActiveContent) {
-        if (Frame* f = frame()) {
+        if (LocalFrame* f = frame()) {
             if (!f->loader().mixedContentChecker()->canRunInsecureContent(m_document->securityOrigin(), url))
                 return false;
-            Frame* top = f->tree().top();
+            LocalFrame* top = f->tree().top();
             if (top != f && !top->loader().mixedContentChecker()->canRunInsecureContent(top->document()->securityOrigin(), url))
                 return false;
         }
     } else if (treatment == TreatAsPassiveContent) {
-        if (Frame* f = frame()) {
-            Frame* top = f->tree().top();
+        if (LocalFrame* f = frame()) {
+            LocalFrame* top = f->tree().top();
             if (!top->loader().mixedContentChecker()->canDisplayInsecureContent(top->document()->securityOrigin(), url))
                 return false;
         }
@@ -613,7 +613,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
     if (!canRequest(type, url, request.options(), request.forPreload(), request.originRestriction()))
         return 0;
 
-    if (Frame* f = frame())
+    if (LocalFrame* f = frame())
         f->loader().client()->dispatchWillRequestResource(&request);
 
     // See if we can use an existing resource from the cache.
@@ -739,7 +739,7 @@ ResourceRequestCachePolicy ResourceFetcher::resourceRequestCachePolicy(const Res
             return ReturnCacheDataElseLoad;
         if (isReload || frameLoadType == FrameLoadTypeSame || request.isConditional() || request.httpMethod() == "POST")
             return ReloadIgnoringCacheData;
-        if (Frame* parent = frame()->tree().parent())
+        if (LocalFrame* parent = frame()->tree().parent())
             return parent->document()->fetcher()->resourceRequestCachePolicy(request, type);
         return UseProtocolCachePolicy;
     }
@@ -1225,7 +1225,7 @@ void ResourceFetcher::subresourceLoaderFinishedLoadingOnePart(ResourceLoader* lo
         m_multipartLoaders->add(loader);
     if (m_loaders)
         m_loaders->remove(loader);
-    if (Frame* frame = this->frame())
+    if (LocalFrame* frame = this->frame())
         return frame->loader().checkLoadComplete(m_documentLoader);
 }
 
@@ -1244,7 +1244,7 @@ void ResourceFetcher::willTerminateResourceLoader(ResourceLoader* loader)
     if (!m_loaders || !m_loaders->contains(loader))
         return;
     m_loaders->remove(loader);
-    if (Frame* frame = this->frame())
+    if (LocalFrame* frame = this->frame())
         frame->loader().checkLoadComplete(m_documentLoader);
 }
 
@@ -1275,7 +1275,7 @@ void ResourceFetcher::setDefersLoading(bool defers)
 
 bool ResourceFetcher::defersLoading() const
 {
-    if (Frame* frame = this->frame())
+    if (LocalFrame* frame = this->frame())
         return frame->page()->defersLoading();
     return false;
 }

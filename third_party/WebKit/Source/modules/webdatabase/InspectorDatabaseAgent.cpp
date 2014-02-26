@@ -30,7 +30,7 @@
 #include "modules/webdatabase/InspectorDatabaseAgent.h"
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/VoidCallback.h"
 #include "core/inspector/InspectorState.h"
 #include "core/loader/DocumentLoader.h"
@@ -205,7 +205,7 @@ void InspectorDatabaseAgent::didOpenDatabase(PassRefPtr<Database> database, cons
         resource->bind(m_frontend);
 }
 
-void InspectorDatabaseAgent::didCommitLoad(Frame* frame, DocumentLoader* loader)
+void InspectorDatabaseAgent::didCommitLoad(LocalFrame* frame, DocumentLoader* loader)
 {
     // FIXME: If "frame" is always guarenteed to be in the same Page as loader->frame()
     // then all we need to check here is loader->frame()->isMainFrame()

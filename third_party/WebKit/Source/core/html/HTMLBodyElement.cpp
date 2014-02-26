@@ -32,10 +32,10 @@
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Attribute.h"
 #include "core/events/ThreadLocalEventNames.h"
+#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/frame/Frame.h"
-#include "core/frame/FrameView.h"
 #include "core/rendering/RenderBox.h"
 
 namespace WebCore {
@@ -188,7 +188,7 @@ bool HTMLBodyElement::supportsFocus() const
 
 static int adjustForZoom(int value, Document* document)
 {
-    Frame* frame = document->frame();
+    LocalFrame* frame = document->frame();
     float zoomFactor = frame->pageZoomFactor();
     if (zoomFactor == 1)
         return value;
@@ -246,7 +246,7 @@ void HTMLBodyElement::setScrollLeft(int scrollLeft)
             return;
     }
 
-    Frame* frame = document.frame();
+    LocalFrame* frame = document.frame();
     if (!frame)
         return;
     FrameView* view = frame->view();
@@ -292,7 +292,7 @@ void HTMLBodyElement::setScrollTop(int scrollTop)
             return;
     }
 
-    Frame* frame = document.frame();
+    LocalFrame* frame = document.frame();
     if (!frame)
         return;
     FrameView* view = frame->view();

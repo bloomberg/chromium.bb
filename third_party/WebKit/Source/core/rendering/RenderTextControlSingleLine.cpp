@@ -27,8 +27,8 @@
 #include "CSSValueKeywords.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/shadow/ShadowElementNames.h"
-#include "core/frame/Frame.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/RenderLayer.h"
@@ -271,7 +271,7 @@ void RenderTextControlSingleLine::capsLockStateMayHaveChanged()
     // 4) The caps lock is on
     bool shouldDrawCapsLockIndicator = false;
 
-    if (Frame* frame = document().frame())
+    if (LocalFrame* frame = document().frame())
         shouldDrawCapsLockIndicator = inputElement()->isPasswordField() && frame->selection().isFocusedAndActive() && document().focusedElement() == node() && PlatformKeyboardEvent::currentCapsLockState();
 
     if (shouldDrawCapsLockIndicator != m_shouldDrawCapsLockIndicator) {

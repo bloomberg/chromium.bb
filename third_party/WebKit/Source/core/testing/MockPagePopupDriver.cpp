@@ -29,10 +29,10 @@
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
-#include "core/frame/Frame.h"
 #include "core/page/PagePopup.h"
 #include "core/page/PagePopupController.h"
 #include "platform/Timer.h"
@@ -41,12 +41,12 @@ namespace WebCore {
 
 class MockPagePopup : public PagePopup, public RefCounted<MockPagePopup> {
 public:
-    static PassRefPtr<MockPagePopup> create(PagePopupClient*, const IntRect& originBoundsInRootView, Frame*);
+    static PassRefPtr<MockPagePopup> create(PagePopupClient*, const IntRect& originBoundsInRootView, LocalFrame*);
     virtual ~MockPagePopup();
     void closeLater();
 
 private:
-    MockPagePopup(PagePopupClient*, const IntRect& originBoundsInRootView, Frame*);
+    MockPagePopup(PagePopupClient*, const IntRect& originBoundsInRootView, LocalFrame*);
     void close(Timer<MockPagePopup>*);
 
     PagePopupClient* m_popupClient;
@@ -54,7 +54,7 @@ private:
     Timer<MockPagePopup> m_closeTimer;
 };
 
-inline MockPagePopup::MockPagePopup(PagePopupClient* client, const IntRect& originBoundsInRootView, Frame* mainFrame)
+inline MockPagePopup::MockPagePopup(PagePopupClient* client, const IntRect& originBoundsInRootView, LocalFrame* mainFrame)
     : m_popupClient(client)
     , m_closeTimer(this, &MockPagePopup::close)
 {
@@ -74,7 +74,7 @@ inline MockPagePopup::MockPagePopup(PagePopupClient* client, const IntRect& orig
     m_iframe->contentFrame()->loader().load(FrameLoadRequest(0, blankURL(), SubstituteData(data, "text/html", "UTF-8", KURL(), ForceSynchronousLoad)));
 }
 
-PassRefPtr<MockPagePopup> MockPagePopup::create(PagePopupClient* client, const IntRect& originBoundsInRootView, Frame* mainFrame)
+PassRefPtr<MockPagePopup> MockPagePopup::create(PagePopupClient* client, const IntRect& originBoundsInRootView, LocalFrame* mainFrame)
 {
     return adoptRef(new MockPagePopup(client, originBoundsInRootView, mainFrame));
 }
@@ -100,12 +100,12 @@ MockPagePopup::~MockPagePopup()
         m_iframe->parentNode()->removeChild(m_iframe.get());
 }
 
-inline MockPagePopupDriver::MockPagePopupDriver(Frame* mainFrame)
+inline MockPagePopupDriver::MockPagePopupDriver(LocalFrame* mainFrame)
     : m_mainFrame(mainFrame)
 {
 }
 
-PassOwnPtr<MockPagePopupDriver> MockPagePopupDriver::create(Frame* mainFrame)
+PassOwnPtr<MockPagePopupDriver> MockPagePopupDriver::create(LocalFrame* mainFrame)
 {
     return adoptPtr(new MockPagePopupDriver(mainFrame));
 }

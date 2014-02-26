@@ -36,8 +36,8 @@
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/frame/LocalFrame.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/frame/Frame.h"
 #include "core/rendering/style/StyleRareNonInheritedData.h"
 
 namespace WebCore {

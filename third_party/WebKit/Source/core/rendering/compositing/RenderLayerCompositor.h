@@ -267,7 +267,7 @@ private:
 
     // Forces an update for all frames of frame tree recursively. Used only when the mainFrame compositor is ready to
     // finish all deferred work.
-    static void finishCompositingUpdateForFrameTree(Frame*);
+    static void finishCompositingUpdateForFrameTree(LocalFrame*);
 
     // Returns true if any layer's compositing changed
     void computeCompositingRequirements(RenderLayer* ancestorLayer, RenderLayer*, OverlapMap*, struct CompositingRecursionData&, bool& descendantHas3DTransform, Vector<RenderLayer*>& unclippedDescendants);

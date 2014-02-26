@@ -29,7 +29,7 @@
 #include "core/dom/Document.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/events/WheelEvent.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 
@@ -81,7 +81,7 @@ void WheelController::didAddWheelEventHandler(Document& document)
 {
     ++m_wheelEventHandlerCount;
     Page* page = document.page();
-    Frame* mainFrame = page ? page->mainFrame() : 0;
+    LocalFrame* mainFrame = page ? page->mainFrame() : 0;
     if (mainFrame)
         mainFrame->notifyChromeClientWheelEventHandlerCountChanged();
 
@@ -93,7 +93,7 @@ void WheelController::didRemoveWheelEventHandler(Document& document)
     ASSERT(m_wheelEventHandlerCount > 0);
     --m_wheelEventHandlerCount;
     Page* page = document.page();
-    Frame* mainFrame = page ? page->mainFrame() : 0;
+    LocalFrame* mainFrame = page ? page->mainFrame() : 0;
     if (mainFrame)
         mainFrame->notifyChromeClientWheelEventHandlerCountChanged();
 

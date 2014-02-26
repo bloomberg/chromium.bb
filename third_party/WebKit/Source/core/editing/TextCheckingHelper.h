@@ -27,7 +27,7 @@
 namespace WebCore {
 
 class ExceptionState;
-class Frame;
+class LocalFrame;
 class Range;
 class Position;
 class SpellCheckerClient;
@@ -98,7 +98,7 @@ private:
 
 void checkTextOfParagraph(TextCheckerClient&, const String&, TextCheckingTypeMask, Vector<TextCheckingResult>&);
 
-bool unifiedTextCheckerEnabled(const Frame*);
+bool unifiedTextCheckerEnabled(const LocalFrame*);
 
 } // namespace WebCore
 

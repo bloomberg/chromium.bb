@@ -83,7 +83,7 @@ public:
     virtual void takeFocus(WebCore::FocusType) OVERRIDE;
     virtual void focusedNodeChanged(WebCore::Node*) OVERRIDE;
     virtual WebCore::Page* createWindow(
-        WebCore::Frame*, const WebCore::FrameLoadRequest&, const WebCore::WindowFeatures&, WebCore::NavigationPolicy, WebCore::ShouldSendReferrer) OVERRIDE;
+        WebCore::LocalFrame*, const WebCore::FrameLoadRequest&, const WebCore::WindowFeatures&, WebCore::NavigationPolicy, WebCore::ShouldSendReferrer) OVERRIDE;
     virtual void show(WebCore::NavigationPolicy) OVERRIDE;
     virtual void setToolbarsVisible(bool) OVERRIDE;
     virtual bool toolbarsVisible() OVERRIDE;
@@ -101,12 +101,12 @@ public:
         const WTF::String& sourceID, const WTF::String& stackTrace) OVERRIDE;
     virtual bool canRunBeforeUnloadConfirmPanel() OVERRIDE;
     virtual bool runBeforeUnloadConfirmPanel(
-        const WTF::String& message, WebCore::Frame*) OVERRIDE;
+        const WTF::String& message, WebCore::LocalFrame*) OVERRIDE;
     virtual void closeWindowSoon() OVERRIDE;
-    virtual void runJavaScriptAlert(WebCore::Frame*, const WTF::String&) OVERRIDE;
-    virtual bool runJavaScriptConfirm(WebCore::Frame*, const WTF::String&) OVERRIDE;
+    virtual void runJavaScriptAlert(WebCore::LocalFrame*, const WTF::String&) OVERRIDE;
+    virtual bool runJavaScriptConfirm(WebCore::LocalFrame*, const WTF::String&) OVERRIDE;
     virtual bool runJavaScriptPrompt(
-        WebCore::Frame*, const WTF::String& message,
+        WebCore::LocalFrame*, const WTF::String& message,
         const WTF::String& defaultValue, WTF::String& result) OVERRIDE;
     virtual void setStatusbarText(const WTF::String& message) OVERRIDE;
     virtual bool tabsToLinks() OVERRIDE;
@@ -120,20 +120,20 @@ public:
         const WebCore::IntRect& clipRect) OVERRIDE;
     virtual WebCore::IntRect rootViewToScreen(const WebCore::IntRect&) const OVERRIDE;
     virtual WebScreenInfo screenInfo() const OVERRIDE;
-    virtual void contentsSizeChanged(WebCore::Frame*, const WebCore::IntSize&) const OVERRIDE;
+    virtual void contentsSizeChanged(WebCore::LocalFrame*, const WebCore::IntSize&) const OVERRIDE;
     virtual void deviceOrPageScaleFactorChanged() const OVERRIDE;
-    virtual void layoutUpdated(WebCore::Frame*) const OVERRIDE;
+    virtual void layoutUpdated(WebCore::LocalFrame*) const OVERRIDE;
     virtual void mouseDidMoveOverElement(
         const WebCore::HitTestResult&, unsigned modifierFlags) OVERRIDE;
     virtual void setToolTip(const WTF::String& tooltipText, WebCore::TextDirection) OVERRIDE;
     virtual void dispatchViewportPropertiesDidChange(const WebCore::ViewportDescription&) const OVERRIDE;
-    virtual void print(WebCore::Frame*) OVERRIDE;
+    virtual void print(WebCore::LocalFrame*) OVERRIDE;
     virtual void annotatedRegionsChanged() OVERRIDE;
     virtual bool paintCustomOverhangArea(WebCore::GraphicsContext*, const WebCore::IntRect&, const WebCore::IntRect&, const WebCore::IntRect&) OVERRIDE;
     virtual PassOwnPtr<WebCore::ColorChooser> createColorChooser(WebCore::ColorChooserClient*, const WebCore::Color&) OVERRIDE;
     virtual PassRefPtr<WebCore::DateTimeChooser> openDateTimeChooser(WebCore::DateTimeChooserClient*, const WebCore::DateTimeChooserParameters&) OVERRIDE;
     virtual void openTextDataListChooser(WebCore::HTMLInputElement&) OVERRIDE;
-    virtual void runOpenPanel(WebCore::Frame*, PassRefPtr<WebCore::FileChooser>) OVERRIDE;
+    virtual void runOpenPanel(WebCore::LocalFrame*, PassRefPtr<WebCore::FileChooser>) OVERRIDE;
     virtual void enumerateChosenDirectory(WebCore::FileChooser*) OVERRIDE;
     virtual void setCursor(const WebCore::Cursor&) OVERRIDE;
     virtual void formStateDidChange(const WebCore::Node*) OVERRIDE;
@@ -159,7 +159,7 @@ public:
     void setNewWindowNavigationPolicy(WebNavigationPolicy);
 
     virtual bool hasOpenedPopup() const OVERRIDE;
-    virtual PassRefPtr<WebCore::PopupMenu> createPopupMenu(WebCore::Frame&, WebCore::PopupMenuClient*) const OVERRIDE;
+    virtual PassRefPtr<WebCore::PopupMenu> createPopupMenu(WebCore::LocalFrame&, WebCore::PopupMenuClient*) const OVERRIDE;
     WebCore::PagePopup* openPagePopup(WebCore::PagePopupClient*, const WebCore::IntRect&);
     void closePagePopup(WebCore::PagePopup*);
     virtual void setPagePopupDriver(WebCore::PagePopupDriver*) OVERRIDE;

@@ -34,7 +34,7 @@
 #include "core/events/SecurityPolicyViolationEvent.h"
 #include "core/frame/ContentSecurityPolicyResponseHeaders.h"
 #include "core/frame/DOMWindow.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/CSPSource.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -746,7 +746,7 @@ public:
     bool allowConnectToSource(const KURL&, ContentSecurityPolicy::ReportingStatus) const;
     bool allowFormAction(const KURL&, ContentSecurityPolicy::ReportingStatus) const;
     bool allowBaseURI(const KURL&, ContentSecurityPolicy::ReportingStatus) const;
-    bool allowAncestors(Frame*, ContentSecurityPolicy::ReportingStatus) const;
+    bool allowAncestors(LocalFrame*, ContentSecurityPolicy::ReportingStatus) const;
     bool allowChildContextFromSource(const KURL&, ContentSecurityPolicy::ReportingStatus) const;
     bool allowScriptNonce(const String&) const;
     bool allowStyleNonce(const String&) const;
@@ -786,7 +786,7 @@ private:
     bool checkHash(SourceListDirective*, const CSPHashValue&) const;
     bool checkSource(SourceListDirective*, const KURL&) const;
     bool checkMediaType(MediaListDirective*, const String& type, const String& typeAttribute) const;
-    bool checkAncestors(SourceListDirective*, Frame*) const;
+    bool checkAncestors(SourceListDirective*, LocalFrame*) const;
 
     void setEvalDisabledErrorMessage(const String& errorMessage) { m_evalDisabledErrorMessage = errorMessage; }
 
@@ -795,7 +795,7 @@ private:
 
     bool checkSourceAndReportViolation(SourceListDirective*, const KURL&, const String& effectiveDirective) const;
     bool checkMediaTypeAndReportViolation(MediaListDirective*, const String& type, const String& typeAttribute, const String& consoleMessage) const;
-    bool checkAncestorsAndReportViolation(SourceListDirective*, Frame*) const;
+    bool checkAncestorsAndReportViolation(SourceListDirective*, LocalFrame*) const;
 
     bool denyIfEnforcingPolicy() const { return m_reportOnly; }
 
@@ -907,12 +907,12 @@ bool CSPDirectiveList::checkSource(SourceListDirective* directive, const KURL& u
     return !directive || directive->allows(url);
 }
 
-bool CSPDirectiveList::checkAncestors(SourceListDirective* directive, Frame* frame) const
+bool CSPDirectiveList::checkAncestors(SourceListDirective* directive, LocalFrame* frame) const
 {
     if (!frame || !directive)
         return true;
 
-    for (Frame* current = frame->tree().parent(); current; current = current->tree().parent()) {
+    for (LocalFrame* current = frame->tree().parent(); current; current = current->tree().parent()) {
         if (!directive->allows(current->document()->url()))
             return false;
     }
@@ -1030,7 +1030,7 @@ bool CSPDirectiveList::checkSourceAndReportViolation(SourceListDirective* direct
     return denyIfEnforcingPolicy();
 }
 
-bool CSPDirectiveList::checkAncestorsAndReportViolation(SourceListDirective* directive, Frame* frame) const
+bool CSPDirectiveList::checkAncestorsAndReportViolation(SourceListDirective* directive, LocalFrame* frame) const
 {
     if (checkAncestors(directive, frame))
         return true;
@@ -1174,7 +1174,7 @@ bool CSPDirectiveList::allowBaseURI(const KURL& url, ContentSecurityPolicy::Repo
         checkSource(m_baseURI.get(), url);
 }
 
-bool CSPDirectiveList::allowAncestors(Frame* frame, ContentSecurityPolicy::ReportingStatus reportingStatus) const
+bool CSPDirectiveList::allowAncestors(LocalFrame* frame, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
     return reportingStatus == ContentSecurityPolicy::SendReport ?
         checkAncestorsAndReportViolation(m_frameAncestors.get(), frame) :
@@ -1654,8 +1654,8 @@ bool isAllowedByAllWithURL(const CSPDirectiveListVector& policies, const KURL& u
     return true;
 }
 
-template<bool (CSPDirectiveList::*allowed)(Frame*, ContentSecurityPolicy::ReportingStatus) const>
-bool isAllowedByAllWithFrame(const CSPDirectiveListVector& policies, Frame* frame, ContentSecurityPolicy::ReportingStatus reportingStatus)
+template<bool (CSPDirectiveList::*allowed)(LocalFrame*, ContentSecurityPolicy::ReportingStatus) const>
+bool isAllowedByAllWithFrame(const CSPDirectiveListVector& policies, LocalFrame* frame, ContentSecurityPolicy::ReportingStatus reportingStatus)
 {
     for (size_t i = 0; i < policies.size(); ++i) {
         if (!(policies[i].get()->*allowed)(frame, reportingStatus))
@@ -1812,7 +1812,7 @@ bool ContentSecurityPolicy::allowBaseURI(const KURL& url, ContentSecurityPolicy:
     return isAllowedByAllWithURL<&CSPDirectiveList::allowBaseURI>(m_policies, url, reportingStatus);
 }
 
-bool ContentSecurityPolicy::allowAncestors(Frame* frame, ContentSecurityPolicy::ReportingStatus reportingStatus) const
+bool ContentSecurityPolicy::allowAncestors(LocalFrame* frame, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
     return isAllowedByAllWithFrame<&CSPDirectiveList::allowAncestors>(m_policies, frame, reportingStatus);
 }
@@ -1943,7 +1943,7 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
         return;
 
     Document* document = this->document();
-    Frame* frame = document->frame();
+    LocalFrame* frame = document->frame();
     if (!frame)
         return;
 

@@ -51,7 +51,7 @@ class DragClient;
 class DragController;
 class EditorClient;
 class FocusController;
-class Frame;
+class LocalFrame;
 class FrameHost;
 class FrameSelection;
 class HaltablePlugin;
@@ -81,7 +81,7 @@ class ValidationMessageClient;
 
 typedef uint64_t LinkHash;
 
-float deviceScaleFactor(Frame*);
+float deviceScaleFactor(LocalFrame*);
 
 class Page FINAL : public Supplementable<Page>, public LifecycleContext<Page>, public SettingsDelegate {
     WTF_MAKE_NONCOPYABLE(Page);
@@ -128,8 +128,8 @@ public:
 
     HistoryController& historyController() const { return *m_historyController; }
 
-    void setMainFrame(PassRefPtr<Frame>);
-    Frame* mainFrame() const { return m_mainFrame.get(); }
+    void setMainFrame(PassRefPtr<LocalFrame>);
+    LocalFrame* mainFrame() const { return m_mainFrame.get(); }
 
     void documentDetached(Document*);
 
@@ -166,7 +166,7 @@ public:
     ScrollingCoordinator* scrollingCoordinator();
 
     String mainThreadScrollingReasonsAsText();
-    PassRefPtr<ClientRectList> nonFastScrollableRects(const Frame*);
+    PassRefPtr<ClientRectList> nonFastScrollableRects(const LocalFrame*);
 
     Settings& settings() const { return *m_settings; }
     ProgressTracker& progress() const { return *m_progress; }
@@ -224,7 +224,7 @@ public:
     void addMultisamplingChangedObserver(MultisamplingChangedObserver*);
     void removeMultisamplingChangedObserver(MultisamplingChangedObserver*);
 
-    void didCommitLoad(Frame*);
+    void didCommitLoad(LocalFrame*);
 
     static void networkStateChanged(bool online);
     PassOwnPtr<LifecycleNotifier<Page> > createLifecycleNotifier();
@@ -263,7 +263,7 @@ private:
     const OwnPtr<ProgressTracker> m_progress;
     const OwnPtr<UndoStack> m_undoStack;
 
-    RefPtr<Frame> m_mainFrame;
+    RefPtr<LocalFrame> m_mainFrame;
 
     mutable RefPtr<PluginData> m_pluginData;
 

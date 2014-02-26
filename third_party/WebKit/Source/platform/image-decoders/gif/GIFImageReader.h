@@ -177,7 +177,7 @@ private:
     Table m_table;
 };
 
-// Frame output state machine.
+// LocalFrame output state machine.
 struct GIFFrameContext {
     WTF_MAKE_FAST_ALLOCATED; WTF_MAKE_NONCOPYABLE(GIFFrameContext);
 public:

@@ -38,7 +38,7 @@
 namespace WebCore {
 
 class ErrorEvent;
-class Frame;
+class LocalFrame;
 
 class V8ErrorHandler FINAL : public V8EventListener {
 public:

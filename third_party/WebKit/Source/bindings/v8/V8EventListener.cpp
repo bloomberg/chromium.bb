@@ -34,7 +34,7 @@
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/dom/Document.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 
 namespace WebCore {
 
@@ -82,7 +82,7 @@ v8::Local<v8::Value> V8EventListener::callListenerFunction(ExecutionContext* con
     if (!context->isDocument())
         return v8::Local<v8::Value>();
 
-    Frame* frame = toDocument(context)->frame();
+    LocalFrame* frame = toDocument(context)->frame();
     if (!frame)
         return v8::Local<v8::Value>();
 

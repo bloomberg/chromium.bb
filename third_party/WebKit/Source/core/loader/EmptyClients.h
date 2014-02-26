@@ -52,7 +52,7 @@
 
 /*
  This file holds empty Client stubs for use by WebCore.
- Viewless element needs to create a dummy Page->Frame->FrameView tree for use in parsing or executing JavaScript.
+ Viewless element needs to create a dummy Page->LocalFrame->FrameView tree for use in parsing or executing JavaScript.
  This tree depends heavily on Clients (usually provided by WebKit classes).
 
  This file was first created for SVGImage as it had no way to access the current Page (nor should it,
@@ -83,7 +83,7 @@ public:
     virtual void takeFocus(FocusType) OVERRIDE { }
 
     virtual void focusedNodeChanged(Node*) OVERRIDE { }
-    virtual Page* createWindow(Frame*, const FrameLoadRequest&, const WindowFeatures&, NavigationPolicy, ShouldSendReferrer) OVERRIDE { return 0; }
+    virtual Page* createWindow(LocalFrame*, const FrameLoadRequest&, const WindowFeatures&, NavigationPolicy, ShouldSendReferrer) OVERRIDE { return 0; }
     virtual void show(NavigationPolicy) OVERRIDE { }
 
     virtual void setToolbarsVisible(bool) OVERRIDE { }
@@ -104,16 +104,16 @@ public:
     virtual void addMessageToConsole(MessageSource, MessageLevel, const String&, unsigned, const String&, const String&) OVERRIDE { }
 
     virtual bool canRunBeforeUnloadConfirmPanel() OVERRIDE { return false; }
-    virtual bool runBeforeUnloadConfirmPanel(const String&, Frame*) OVERRIDE { return true; }
+    virtual bool runBeforeUnloadConfirmPanel(const String&, LocalFrame*) OVERRIDE { return true; }
 
     virtual void closeWindowSoon() OVERRIDE { }
 
-    virtual void runJavaScriptAlert(Frame*, const String&) OVERRIDE { }
-    virtual bool runJavaScriptConfirm(Frame*, const String&) OVERRIDE { return false; }
-    virtual bool runJavaScriptPrompt(Frame*, const String&, const String&, String&) OVERRIDE { return false; }
+    virtual void runJavaScriptAlert(LocalFrame*, const String&) OVERRIDE { }
+    virtual bool runJavaScriptConfirm(LocalFrame*, const String&) OVERRIDE { return false; }
+    virtual bool runJavaScriptPrompt(LocalFrame*, const String&, const String&, String&) OVERRIDE { return false; }
 
     virtual bool hasOpenedPopup() const OVERRIDE { return false; }
-    virtual PassRefPtr<PopupMenu> createPopupMenu(Frame&, PopupMenuClient*) const OVERRIDE;
+    virtual PassRefPtr<PopupMenu> createPopupMenu(LocalFrame&, PopupMenuClient*) const OVERRIDE;
     virtual void setPagePopupDriver(PagePopupDriver*) OVERRIDE { }
     virtual void resetPagePopupDriver() OVERRIDE { }
 
@@ -132,13 +132,13 @@ public:
 
     virtual IntRect rootViewToScreen(const IntRect& r) const OVERRIDE { return r; }
     virtual blink::WebScreenInfo screenInfo() const OVERRIDE { return blink::WebScreenInfo(); }
-    virtual void contentsSizeChanged(Frame*, const IntSize&) const OVERRIDE { }
+    virtual void contentsSizeChanged(LocalFrame*, const IntSize&) const OVERRIDE { }
 
     virtual void mouseDidMoveOverElement(const HitTestResult&, unsigned) OVERRIDE { }
 
     virtual void setToolTip(const String&, TextDirection) OVERRIDE { }
 
-    virtual void print(Frame*) OVERRIDE { }
+    virtual void print(LocalFrame*) OVERRIDE { }
 
     virtual void enumerateChosenDirectory(FileChooser*) OVERRIDE { }
 
@@ -146,7 +146,7 @@ public:
     virtual PassRefPtr<DateTimeChooser> openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&) OVERRIDE;
     virtual void openTextDataListChooser(HTMLInputElement&) OVERRIDE;
 
-    virtual void runOpenPanel(Frame*, PassRefPtr<FileChooser>) OVERRIDE;
+    virtual void runOpenPanel(LocalFrame*, PassRefPtr<FileChooser>) OVERRIDE;
 
     virtual void formStateDidChange(const Node*) OVERRIDE { }
 
@@ -176,12 +176,12 @@ public:
 
     virtual bool hasWebView() const OVERRIDE { return true; } // mainly for assertions
 
-    virtual Frame* parent() const OVERRIDE { return 0; }
-    virtual Frame* top() const OVERRIDE { return 0; }
-    virtual Frame* previousSibling() const OVERRIDE { return 0; }
-    virtual Frame* nextSibling() const OVERRIDE { return 0; }
-    virtual Frame* firstChild() const OVERRIDE { return 0; }
-    virtual Frame* lastChild() const OVERRIDE { return 0; }
+    virtual LocalFrame* parent() const OVERRIDE { return 0; }
+    virtual LocalFrame* top() const OVERRIDE { return 0; }
+    virtual LocalFrame* previousSibling() const OVERRIDE { return 0; }
+    virtual LocalFrame* nextSibling() const OVERRIDE { return 0; }
+    virtual LocalFrame* firstChild() const OVERRIDE { return 0; }
+    virtual LocalFrame* lastChild() const OVERRIDE { return 0; }
     virtual void detachedFromParent() OVERRIDE { }
 
     virtual void dispatchWillSendRequest(DocumentLoader*, unsigned long, ResourceRequest&, const ResourceResponse&) OVERRIDE { }
@@ -195,7 +195,7 @@ public:
     virtual void dispatchDidStartProvisionalLoad() OVERRIDE { }
     virtual void dispatchDidReceiveTitle(const String&) OVERRIDE { }
     virtual void dispatchDidChangeIcons(IconType) OVERRIDE { }
-    virtual void dispatchDidCommitLoad(Frame*, HistoryItem*, HistoryCommitType) OVERRIDE { }
+    virtual void dispatchDidCommitLoad(LocalFrame*, HistoryItem*, HistoryCommitType) OVERRIDE { }
     virtual void dispatchDidFailProvisionalLoad(const ResourceError&) OVERRIDE { }
     virtual void dispatchDidFailLoad(const ResourceError&) OVERRIDE { }
     virtual void dispatchDidFinishDocumentLoad() OVERRIDE { }
@@ -213,7 +213,7 @@ public:
 
     virtual void loadURLExternally(const ResourceRequest&, NavigationPolicy, const String& = String()) OVERRIDE { }
 
-    virtual PassRefPtr<DocumentLoader> createDocumentLoader(Frame*, const ResourceRequest&, const SubstituteData&) OVERRIDE;
+    virtual PassRefPtr<DocumentLoader> createDocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&) OVERRIDE;
 
     virtual String userAgent(const KURL&) OVERRIDE { return ""; }
 
@@ -227,7 +227,7 @@ public:
     virtual void didDetectXSS(const KURL&, bool) OVERRIDE { }
     virtual void didDispatchPingLoader(const KURL&) OVERRIDE { }
     virtual void selectorMatchChanged(const Vector<String>&, const Vector<String>&) OVERRIDE { }
-    virtual PassRefPtr<Frame> createFrame(const KURL&, const AtomicString&, const Referrer&, HTMLFrameOwnerElement*) OVERRIDE;
+    virtual PassRefPtr<LocalFrame> createFrame(const KURL&, const AtomicString&, const Referrer&, HTMLFrameOwnerElement*) OVERRIDE;
     virtual PassRefPtr<Widget> createPlugin(HTMLPlugInElement*, const KURL&, const Vector<String>&, const Vector<String>&, const String&, bool, DetachedPluginPolicy) OVERRIDE;
     virtual PassRefPtr<Widget> createJavaAppletWidget(HTMLAppletElement*, const KURL&, const Vector<String>&, const Vector<String>&) OVERRIDE;
 
@@ -285,8 +285,8 @@ public:
     virtual void respondToChangedContents() OVERRIDE { }
     virtual void respondToChangedSelection(SelectionType) OVERRIDE { }
 
-    virtual bool canCopyCut(Frame*, bool defaultValue) const OVERRIDE { return defaultValue; }
-    virtual bool canPaste(Frame*, bool defaultValue) const OVERRIDE { return defaultValue; }
+    virtual bool canCopyCut(LocalFrame*, bool defaultValue) const OVERRIDE { return defaultValue; }
+    virtual bool canPaste(LocalFrame*, bool defaultValue) const OVERRIDE { return defaultValue; }
 
     virtual void didExecuteCommand(String) OVERRIDE { }
     virtual bool handleKeyboardEvent() OVERRIDE { return false; }
@@ -307,7 +307,7 @@ public:
     EmptyDragClient() { }
     virtual ~EmptyDragClient() {}
     virtual DragDestinationAction actionMaskForDrag(DragData*) OVERRIDE { return DragDestinationActionNone; }
-    virtual void startDrag(DragImage*, const IntPoint&, const IntPoint&, Clipboard*, Frame*, bool) OVERRIDE { }
+    virtual void startDrag(DragImage*, const IntPoint&, const IntPoint&, Clipboard*, LocalFrame*, bool) OVERRIDE { }
 };
 
 class EmptyInspectorClient FINAL : public InspectorClient {
@@ -330,7 +330,7 @@ public:
 class EmptyStorageClient FINAL : public StorageClient {
 public:
     virtual PassOwnPtr<StorageNamespace> createSessionStorageNamespace() OVERRIDE;
-    virtual bool canAccessStorage(Frame*, StorageType) const OVERRIDE { return false; }
+    virtual bool canAccessStorage(LocalFrame*, StorageType) const OVERRIDE { return false; }
 };
 
 void fillWithEmptyClients(Page::PageClients&);

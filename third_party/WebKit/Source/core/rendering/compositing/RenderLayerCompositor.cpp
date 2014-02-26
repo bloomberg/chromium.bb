@@ -35,8 +35,8 @@
 #include "core/dom/FullscreenElementStack.h"
 #include "core/dom/NodeList.h"
 #include "core/frame/DeprecatedScheduleStyleRecalcDuringCompositingUpdate.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLIFrameElement.h"
@@ -340,9 +340,9 @@ static RenderVideo* findFullscreenVideoRenderer(Document& document)
     return toRenderVideo(renderer);
 }
 
-void RenderLayerCompositor::finishCompositingUpdateForFrameTree(Frame* frame)
+void RenderLayerCompositor::finishCompositingUpdateForFrameTree(LocalFrame* frame)
 {
-    for (Frame* child = frame->tree().firstChild(); child; child = child->tree().nextSibling())
+    for (LocalFrame* child = frame->tree().firstChild(); child; child = child->tree().nextSibling())
         finishCompositingUpdateForFrameTree(child);
 
     // Update compositing for current frame after all descendant frames are updated.
@@ -1458,9 +1458,9 @@ void RenderLayerCompositor::rootFixedBackgroundsChanged()
     // stay put, we position it in the layer tree as follows:
     //
     // + Overflow controls host
-    //   + Frame clip
+    //   + LocalFrame clip
     //     + (Fixed root background) <-- Here.
-    //     + Frame scroll
+    //     + LocalFrame scroll
     //       + Root content layer
     //   + Scrollbars
     //
@@ -2167,7 +2167,7 @@ void RenderLayerCompositor::attachRootLayer(RootLayerAttachment attachment)
             ASSERT_NOT_REACHED();
             break;
         case RootLayerAttachedViaChromeClient: {
-            Frame& frame = m_renderView->frameView()->frame();
+            LocalFrame& frame = m_renderView->frameView()->frame();
             Page* page = frame.page();
             if (!page)
                 return;
@@ -2209,7 +2209,7 @@ void RenderLayerCompositor::detachRootLayer()
         break;
     }
     case RootLayerAttachedViaChromeClient: {
-        Frame& frame = m_renderView->frameView()->frame();
+        LocalFrame& frame = m_renderView->frameView()->frame();
         Page* page = frame.page();
         if (!page)
             return;
@@ -2230,7 +2230,7 @@ void RenderLayerCompositor::updateRootLayerAttachment()
 
 bool RenderLayerCompositor::isMainFrame() const
 {
-    // FIXME: Frame::isMainFrame() is probably better.
+    // FIXME: LocalFrame::isMainFrame() is probably better.
     return !m_renderView->document().ownerElement();
 }
 
@@ -2241,9 +2241,9 @@ void RenderLayerCompositor::notifyIFramesOfCompositingChange()
 {
     if (!m_renderView->frameView())
         return;
-    Frame& frame = m_renderView->frameView()->frame();
+    LocalFrame& frame = m_renderView->frameView()->frame();
 
-    for (Frame* child = frame.tree().firstChild(); child; child = child->tree().traverseNext(&frame)) {
+    for (LocalFrame* child = frame.tree().firstChild(); child; child = child->tree().traverseNext(&frame)) {
         if (!child->document())
             continue; // FIXME: Can this happen?
         if (HTMLFrameOwnerElement* ownerElement = child->document()->ownerElement()) {
@@ -2414,9 +2414,9 @@ String RenderLayerCompositor::debugName(const GraphicsLayer* graphicsLayer)
     } else if (graphicsLayer == m_layerForScrollCorner.get()) {
         name = "Scroll Corner Layer";
     } else if (graphicsLayer == m_containerLayer.get()) {
-        name = "Frame Clipping Layer";
+        name = "LocalFrame Clipping Layer";
     } else if (graphicsLayer == m_scrollLayer.get()) {
-        name = "Frame Scrolling Layer";
+        name = "LocalFrame Scrolling Layer";
     } else {
         ASSERT_NOT_REACHED();
     }

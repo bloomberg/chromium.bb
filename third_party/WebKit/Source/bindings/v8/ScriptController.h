@@ -49,7 +49,7 @@ namespace WebCore {
 class DOMWrapperWorld;
 class ExecutionContext;
 class Event;
-class Frame;
+class LocalFrame;
 class HTMLDocument;
 class HTMLPlugInElement;
 class KURL;
@@ -73,7 +73,7 @@ public:
         DoNotExecuteScriptWhenScriptsDisabled
     };
 
-    ScriptController(Frame*);
+    ScriptController(LocalFrame*);
     ~ScriptController();
 
     bool initializeMainWorld();
@@ -108,14 +108,14 @@ public:
     bool shouldBypassMainWorldContentSecurityPolicy();
 
     // Creates a property of the global object of a frame.
-    void bindToWindowObject(Frame*, const String& key, NPObject*);
+    void bindToWindowObject(LocalFrame*, const String& key, NPObject*);
 
     PassRefPtr<SharedPersistent<v8::Object> > createPluginWrapper(Widget*);
 
     void enableEval();
     void disableEval(const String& errorMessage);
 
-    static bool canAccessFromCurrentOrigin(Frame*);
+    static bool canAccessFromCurrentOrigin(LocalFrame*);
 
     static void setCaptureCallStackForUncaughtExceptions(bool);
     void collectIsolatedContexts(Vector<std::pair<ScriptState*, SecurityOrigin*> >&);
@@ -158,7 +158,7 @@ private:
     ScriptValue evaluateScriptInMainWorld(const ScriptSourceCode&, AccessControlStatus, ExecuteScriptPolicy);
     void clearForClose(bool destroyGlobal);
 
-    Frame* m_frame;
+    LocalFrame* m_frame;
     const String* m_sourceURL;
     v8::Isolate* m_isolate;
 

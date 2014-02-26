@@ -39,7 +39,7 @@ namespace WebCore {
 
 class Database;
 class DocumentLoader;
-class Frame;
+class LocalFrame;
 class InspectorDatabaseResource;
 class InspectorFrontend;
 class InstrumentingAgents;
@@ -58,7 +58,7 @@ public:
     virtual void clearFrontend() OVERRIDE;
     virtual void restore() OVERRIDE;
 
-    void didCommitLoad(Frame*, DocumentLoader*);
+    void didCommitLoad(LocalFrame*, DocumentLoader*);
 
     // Called from the front-end.
     virtual void enable(ErrorString*) OVERRIDE;

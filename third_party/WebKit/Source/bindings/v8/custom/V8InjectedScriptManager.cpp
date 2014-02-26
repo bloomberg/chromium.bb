@@ -116,7 +116,7 @@ bool InjectedScriptManager::canAccessInspectedWindow(ScriptState* scriptState)
         holder = global->FindInstanceInPrototypeChain(V8Window::domTemplate(context->GetIsolate(), IsolatedWorld));
     if (holder.IsEmpty())
         return false;
-    Frame* frame = V8Window::toNative(holder)->frame();
+    LocalFrame* frame = V8Window::toNative(holder)->frame();
 
     v8::Context::Scope contextScope(context);
     return BindingSecurity::shouldAllowAccessToFrame(scriptState->isolate(), frame, DoNotReportSecurityError);

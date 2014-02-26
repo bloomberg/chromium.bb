@@ -32,13 +32,13 @@
 #include "core/loader/TextResourceDecoderBuilder.h"
 
 #include "core/dom/Document.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 
-static inline bool canReferToParentFrameEncoding(const Frame* frame, const Frame* parentFrame)
+static inline bool canReferToParentFrameEncoding(const LocalFrame* frame, const LocalFrame* parentFrame)
 {
     return parentFrame && parentFrame->document()->securityOrigin()->canAccess(frame->document()->securityOrigin());
 }
@@ -58,7 +58,7 @@ TextResourceDecoderBuilder::~TextResourceDecoderBuilder()
 
 inline PassOwnPtr<TextResourceDecoder> TextResourceDecoderBuilder::createDecoderInstance(Document* document)
 {
-    if (Frame* frame = document->frame()) {
+    if (LocalFrame* frame = document->frame()) {
         if (Settings* settings = frame->settings())
             return TextResourceDecoder::create(m_mimeType, settings->defaultTextEncodingName(), settings->usesEncodingDetector());
     }
@@ -68,8 +68,8 @@ inline PassOwnPtr<TextResourceDecoder> TextResourceDecoderBuilder::createDecoder
 
 inline void TextResourceDecoderBuilder::setupEncoding(TextResourceDecoder* decoder, Document* document)
 {
-    Frame* frame = document->frame();
-    Frame* parentFrame = frame ? frame->tree().parent() : 0;
+    LocalFrame* frame = document->frame();
+    LocalFrame* parentFrame = frame ? frame->tree().parent() : 0;
 
     if (!m_encoding.isEmpty())
         decoder->setEncoding(m_encoding.string(), m_encodingWasChosenByUser ? TextResourceDecoder::UserChosenEncoding : TextResourceDecoder::EncodingFromHTTPHeader);

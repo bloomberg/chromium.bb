@@ -51,7 +51,7 @@ class Document;
 class DocumentMarker;
 class Element;
 class ExceptionState;
-class Frame;
+class LocalFrame;
 class GCObservation;
 class InspectorFrontendChannelDummy;
 class InternalProfilers;
@@ -316,7 +316,7 @@ public:
 private:
     explicit Internals(Document*);
     Document* contextDocument() const;
-    Frame* frame() const;
+    LocalFrame* frame() const;
     Vector<String> iconURLs(Document*, int iconTypesMask) const;
     PassRefPtr<ClientRectList> annotatedRegions(Document*, bool draggable, ExceptionState&);
 

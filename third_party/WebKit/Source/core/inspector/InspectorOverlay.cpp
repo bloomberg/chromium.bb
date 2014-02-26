@@ -36,14 +36,14 @@
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/dom/PseudoElement.h"
+#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorOverlayHost.h"
 #include "core/loader/EmptyClients.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/Chrome.h"
 #include "core/page/EventHandler.h"
-#include "core/frame/Frame.h"
-#include "core/frame/FrameView.h"
 #include "core/page/Page.h"
 #include "core/frame/Settings.h"
 #include "core/rendering/RenderBoxModelObject.h"
@@ -138,7 +138,7 @@ static void contentsQuadToPage(const FrameView* mainView, const FrameView* view,
 static bool buildNodeQuads(Node* node, Vector<FloatQuad>& quads)
 {
     RenderObject* renderer = node->renderer();
-    Frame* containingFrame = node->document().frame();
+    LocalFrame* containingFrame = node->document().frame();
 
     if (!renderer || !containingFrame)
         return false;
@@ -213,7 +213,7 @@ static bool buildNodeQuads(Node* node, Vector<FloatQuad>& quads)
 static void buildNodeHighlight(Node* node, const HighlightConfig& highlightConfig, Highlight* highlight)
 {
     RenderObject* renderer = node->renderer();
-    Frame* containingFrame = node->document().frame();
+    LocalFrame* containingFrame = node->document().frame();
 
     if (!renderer || !containingFrame)
         return;
@@ -541,7 +541,7 @@ void InspectorOverlay::drawNodeHighlight()
             elementInfo->setString("className", classNames.toString());
 
         RenderObject* renderer = node->renderer();
-        Frame* containingFrame = node->document().frame();
+        LocalFrame* containingFrame = node->document().frame();
         FrameView* containingView = containingFrame->view();
         IntRect boundingBox = pixelSnappedIntRect(containingView->contentsToRootView(renderer->absoluteBoundingBoxRect()));
         RenderBoxModelObject* modelObject = renderer->isBoxModelObject() ? toRenderBoxModelObject(renderer) : 0;
@@ -602,7 +602,7 @@ Page* InspectorOverlay::overlayPage()
     overlaySettings.setPluginsEnabled(false);
     overlaySettings.setLoadsImagesAutomatically(true);
 
-    RefPtr<Frame> frame = Frame::create(FrameInit::create(&m_overlayPage->frameHost(), dummyFrameLoaderClient));
+    RefPtr<LocalFrame> frame = LocalFrame::create(FrameInit::create(&m_overlayPage->frameHost(), dummyFrameLoaderClient));
     frame->setView(FrameView::create(frame.get()));
     frame->init();
     FrameLoader& loader = frame->loader();

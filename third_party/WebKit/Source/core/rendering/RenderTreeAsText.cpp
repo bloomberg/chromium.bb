@@ -30,9 +30,9 @@
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
 #include "core/editing/FrameSelection.h"
-#include "core/html/HTMLElement.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
+#include "core/html/HTMLElement.h"
 #include "core/page/PrintContext.h"
 #include "core/rendering/FlowThreadController.h"
 #include "core/rendering/InlineTextBox.h"
@@ -671,7 +671,7 @@ static void writeSelection(TextStream& ts, const RenderObject* o)
         return;
 
     Document* doc = toDocument(n);
-    Frame* frame = doc->frame();
+    LocalFrame* frame = doc->frame();
     if (!frame)
         return;
 
@@ -698,7 +698,7 @@ static String externalRepresentation(RenderBox* renderer, RenderAsTextBehavior b
     return ts.release();
 }
 
-String externalRepresentation(Frame* frame, RenderAsTextBehavior behavior)
+String externalRepresentation(LocalFrame* frame, RenderAsTextBehavior behavior)
 {
     if (!(behavior & RenderAsTextDontUpdateLayout))
         frame->document()->updateLayout();

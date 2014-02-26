@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-class Frame;
+class LocalFrame;
 class FrameLoaderClient;
 class KURL;
 class SecurityOrigin;
@@ -43,7 +43,7 @@ class SecurityOrigin;
 class MixedContentChecker {
     WTF_MAKE_NONCOPYABLE(MixedContentChecker);
 public:
-    MixedContentChecker(Frame*);
+    MixedContentChecker(LocalFrame*);
 
     bool canDisplayInsecureContent(SecurityOrigin*, const KURL&) const;
     bool canRunInsecureContent(SecurityOrigin*, const KURL&) const;
@@ -55,7 +55,7 @@ private:
 
     void logWarning(bool allowed, const String& action, const KURL&) const;
 
-    Frame* m_frame;
+    LocalFrame* m_frame;
 };
 
 } // namespace WebCore

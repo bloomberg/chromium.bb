@@ -213,7 +213,7 @@ void ChromeClientImpl::focusedNodeChanged(Node* node)
     m_webView->client()->setKeyboardFocusURL(focusURL);
 }
 
-Page* ChromeClientImpl::createWindow(Frame* frame, const FrameLoadRequest& r, const WindowFeatures& features,
+Page* ChromeClientImpl::createWindow(LocalFrame* frame, const FrameLoadRequest& r, const WindowFeatures& features,
     NavigationPolicy navigationPolicy, ShouldSendReferrer shouldSendReferrer)
 {
     if (!m_webView->client())
@@ -366,7 +366,7 @@ bool ChromeClientImpl::canRunBeforeUnloadConfirmPanel()
     return !!m_webView->client();
 }
 
-bool ChromeClientImpl::runBeforeUnloadConfirmPanel(const String& message, Frame* frame)
+bool ChromeClientImpl::runBeforeUnloadConfirmPanel(const String& message, LocalFrame* frame)
 {
     if (m_webView->client()) {
         return m_webView->client()->runModalBeforeUnloadDialog(
@@ -387,9 +387,9 @@ void ChromeClientImpl::closeWindowSoon()
         m_webView->client()->closeWidgetSoon();
 }
 
-// Although a Frame is passed in, we don't actually use it, since we
+// Although a LocalFrame is passed in, we don't actually use it, since we
 // already know our own m_webView.
-void ChromeClientImpl::runJavaScriptAlert(Frame* frame, const String& message)
+void ChromeClientImpl::runJavaScriptAlert(LocalFrame* frame, const String& message)
 {
     if (m_webView->client()) {
         if (WebUserGestureIndicator::isProcessingUserGesture())
@@ -400,7 +400,7 @@ void ChromeClientImpl::runJavaScriptAlert(Frame* frame, const String& message)
 }
 
 // See comments for runJavaScriptAlert().
-bool ChromeClientImpl::runJavaScriptConfirm(Frame* frame, const String& message)
+bool ChromeClientImpl::runJavaScriptConfirm(LocalFrame* frame, const String& message)
 {
     if (m_webView->client()) {
         if (WebUserGestureIndicator::isProcessingUserGesture())
@@ -412,7 +412,7 @@ bool ChromeClientImpl::runJavaScriptConfirm(Frame* frame, const String& message)
 }
 
 // See comments for runJavaScriptAlert().
-bool ChromeClientImpl::runJavaScriptPrompt(Frame* frame,
+bool ChromeClientImpl::runJavaScriptPrompt(LocalFrame* frame,
                                            const String& message,
                                            const String& defaultValue,
                                            String& result)
@@ -506,7 +506,7 @@ WebScreenInfo ChromeClientImpl::screenInfo() const
     return m_webView->client() ? m_webView->client()->screenInfo() : WebScreenInfo();
 }
 
-void ChromeClientImpl::contentsSizeChanged(Frame* frame, const IntSize& size) const
+void ChromeClientImpl::contentsSizeChanged(LocalFrame* frame, const IntSize& size) const
 {
     m_webView->didChangeContentsSize();
 
@@ -521,7 +521,7 @@ void ChromeClientImpl::deviceOrPageScaleFactorChanged() const
     m_webView->deviceOrPageScaleFactorChanged();
 }
 
-void ChromeClientImpl::layoutUpdated(Frame* frame) const
+void ChromeClientImpl::layoutUpdated(LocalFrame* frame) const
 {
     m_webView->layoutUpdated(WebFrameImpl::fromFrame(frame));
 }
@@ -568,7 +568,7 @@ void ChromeClientImpl::dispatchViewportPropertiesDidChange(const ViewportDescrip
     m_webView->updatePageDefinedViewportConstraints(description);
 }
 
-void ChromeClientImpl::print(Frame* frame)
+void ChromeClientImpl::print(LocalFrame* frame)
 {
     if (m_webView->client())
         m_webView->client()->printPage(WebFrameImpl::fromFrame(frame));
@@ -594,7 +594,7 @@ PassRefPtr<DateTimeChooser> ChromeClientImpl::openDateTimeChooser(DateTimeChoose
 #endif
 }
 
-void ChromeClientImpl::runOpenPanel(Frame* frame, PassRefPtr<FileChooser> fileChooser)
+void ChromeClientImpl::runOpenPanel(LocalFrame* frame, PassRefPtr<FileChooser> fileChooser)
 {
     WebViewClient* client = m_webView->client();
     if (!client)
@@ -683,7 +683,7 @@ String ChromeClientImpl::acceptLanguages()
 
 bool ChromeClientImpl::paintCustomOverhangArea(GraphicsContext* context, const IntRect& horizontalOverhangArea, const IntRect& verticalOverhangArea, const IntRect& dirtyRect)
 {
-    Frame* frame = m_webView->mainFrameImpl()->frame();
+    LocalFrame* frame = m_webView->mainFrameImpl()->frame();
     WebPluginContainerImpl* pluginContainer = WebFrameImpl::pluginContainerFromFrame(frame);
     if (pluginContainer)
         return pluginContainer->paintCustomOverhangArea(context, horizontalOverhangArea, verticalOverhangArea, dirtyRect);
@@ -740,7 +740,7 @@ bool ChromeClientImpl::hasOpenedPopup() const
     return m_webView->hasOpenedPopup();
 }
 
-PassRefPtr<PopupMenu> ChromeClientImpl::createPopupMenu(Frame& frame, PopupMenuClient* client) const
+PassRefPtr<PopupMenu> ChromeClientImpl::createPopupMenu(LocalFrame& frame, PopupMenuClient* client) const
 {
     if (WebViewImpl::useExternalPopupMenus())
         return adoptRef(new ExternalPopupMenu(frame, client, *m_webView));

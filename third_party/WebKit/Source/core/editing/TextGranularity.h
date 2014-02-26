@@ -29,7 +29,7 @@
 namespace WebCore {
 
 // FIXME: This really should be broken up into more than one concept.
-// Frame doesn't need the 3 boundaries in this enum.
+// LocalFrame doesn't need the 3 boundaries in this enum.
 enum TextGranularity {
     CharacterGranularity,
     WordGranularity,

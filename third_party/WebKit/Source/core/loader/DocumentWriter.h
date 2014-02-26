@@ -37,7 +37,7 @@ namespace WebCore {
 
 class Document;
 class DocumentParser;
-class Frame;
+class LocalFrame;
 class KURL;
 class SecurityOrigin;
 class TextResourceDecoder;

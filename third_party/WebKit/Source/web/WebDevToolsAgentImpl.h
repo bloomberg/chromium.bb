@@ -43,7 +43,7 @@
 
 namespace WebCore {
 class Document;
-class Frame;
+class LocalFrame;
 class FrameView;
 class GraphicsContext;
 class InspectorClient;
@@ -130,7 +130,7 @@ private:
     void disableViewportEmulation();
 
     WebCore::InspectorController* inspectorController();
-    WebCore::Frame* mainFrame();
+    WebCore::LocalFrame* mainFrame();
 
     int m_hostId;
     WebDevToolsAgentClient* m_client;

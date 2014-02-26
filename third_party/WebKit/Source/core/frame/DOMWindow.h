@@ -57,7 +57,7 @@ namespace WebCore {
     class EventQueue;
     class ExceptionState;
     class FloatRect;
-    class Frame;
+    class LocalFrame;
     class History;
     class IDBFactory;
     class Location;
@@ -94,7 +94,7 @@ enum PageshowEventPersistence {
         REFCOUNTED_EVENT_TARGET(DOMWindow);
     public:
         static PassRefPtr<Document> createDocument(const String& mimeType, const DocumentInit&, bool forceXHTML);
-        static PassRefPtr<DOMWindow> create(Frame* frame) { return adoptRef(new DOMWindow(frame)); }
+        static PassRefPtr<DOMWindow> create(LocalFrame* frame) { return adoptRef(new DOMWindow(frame)); }
         virtual ~DOMWindow();
 
         PassRefPtr<Document> installNewDocument(const String& mimeType, const DocumentInit&, bool forceXHTML = false);
@@ -113,10 +113,10 @@ enum PageshowEventPersistence {
 
         unsigned pendingUnloadEventListeners() const;
 
-        static FloatRect adjustWindowRect(Frame*, const FloatRect& pendingChanges);
+        static FloatRect adjustWindowRect(LocalFrame*, const FloatRect& pendingChanges);
 
         bool allowPopUp(); // Call on first window, not target window.
-        static bool allowPopUp(Frame* firstFrame);
+        static bool allowPopUp(LocalFrame* firstFrame);
 
         // DOM Level 0
 
@@ -322,7 +322,7 @@ enum PageshowEventPersistence {
         DOMWindowLifecycleNotifier& lifecycleNotifier();
 
     private:
-        explicit DOMWindow(Frame*);
+        explicit DOMWindow(LocalFrame*);
 
         Page* page();
 

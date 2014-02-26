@@ -49,7 +49,7 @@ struct FetchInitiatorInfo;
 class Document;
 class DocumentLoader;
 class FormData;
-class Frame;
+class LocalFrame;
 class HTTPHeaderMap;
 class InspectorClient;
 class InspectorFrontend;
@@ -88,12 +88,12 @@ public:
     // Called from instrumentation.
     void willSendRequest(unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
     void markResourceAsCached(unsigned long identifier);
-    void didReceiveResourceResponse(Frame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
+    void didReceiveResourceResponse(LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
     void didReceiveData(unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
     void didFinishLoading(unsigned long identifier, DocumentLoader*, double monotonicFinishTime, int64_t encodedDataLength);
-    void didReceiveCORSRedirectResponse(Frame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
+    void didReceiveCORSRedirectResponse(LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, ResourceLoader*);
     void didFailLoading(unsigned long identifier, const ResourceError&);
-    void didCommitLoad(Frame*, DocumentLoader*);
+    void didCommitLoad(LocalFrame*, DocumentLoader*);
     void scriptImported(unsigned long identifier, const String& sourceString);
     void didReceiveScriptResponse(unsigned long identifier);
 
@@ -111,8 +111,8 @@ public:
     void didRecalculateStyle();
     void didScheduleStyleRecalculation(Document*);
 
-    void frameScheduledNavigation(Frame*, double);
-    void frameClearedScheduledNavigation(Frame*);
+    void frameScheduledNavigation(LocalFrame*, double);
+    void frameClearedScheduledNavigation(LocalFrame*);
 
     PassRefPtr<TypeBuilder::Network::Initiator> buildInitiatorObject(Document*, const FetchInitiatorInfo&);
 
@@ -145,7 +145,7 @@ public:
     virtual void loadResourceForFrontend(ErrorString*, const String& frameId, const String& url, const RefPtr<JSONObject>* requestHeaders, PassRefPtr<LoadResourceForFrontendCallback>) OVERRIDE;
 
     // Called from other agents.
-    bool fetchResourceContent(Frame*, const KURL&, String* content, bool* base64Encoded);
+    bool fetchResourceContent(LocalFrame*, const KURL&, String* content, bool* base64Encoded);
 
 private:
     InspectorResourceAgent(InspectorPageAgent*, InspectorClient*);

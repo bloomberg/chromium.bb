@@ -48,7 +48,7 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/DOMWindow.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/rendering/RenderTextControl.h"
 #include "platform/UserGestureIndicator.h"
@@ -285,7 +285,7 @@ bool HTMLFormElement::validateInteractively(Event* event)
 bool HTMLFormElement::prepareForSubmission(Event* event)
 {
     RefPtr<HTMLFormElement> protector(this);
-    Frame* frame = document().frame();
+    LocalFrame* frame = document().frame();
     if (m_isSubmittingOrPreparingForSubmission || !frame)
         return m_isSubmittingOrPreparingForSubmission;
 
@@ -357,7 +357,7 @@ void HTMLFormElement::submitDialog(PassRefPtr<FormSubmission> formSubmission)
 void HTMLFormElement::submit(Event* event, bool activateSubmitButton, bool processingUserGesture, FormSubmissionTrigger formSubmissionTrigger)
 {
     FrameView* view = document().view();
-    Frame* frame = document().frame();
+    LocalFrame* frame = document().frame();
     if (!view || !frame || !frame->page())
         return;
 
@@ -423,7 +423,7 @@ void HTMLFormElement::scheduleFormSubmission(PassRefPtr<FormSubmission> submissi
         return;
     }
 
-    Frame* targetFrame = document().frame()->loader().findFrameForNavigation(submission->target(), submission->state()->sourceDocument());
+    LocalFrame* targetFrame = document().frame()->loader().findFrameForNavigation(submission->target(), submission->state()->sourceDocument());
     if (!targetFrame) {
         if (!DOMWindow::allowPopUp(document().frame()) && !UserGestureIndicator::processingUserGesture())
             return;
@@ -442,7 +442,7 @@ void HTMLFormElement::scheduleFormSubmission(PassRefPtr<FormSubmission> submissi
 
 void HTMLFormElement::reset()
 {
-    Frame* frame = document().frame();
+    LocalFrame* frame = document().frame();
     if (m_isInResetFunction || !frame)
         return;
 
@@ -464,7 +464,7 @@ void HTMLFormElement::reset()
 
 void HTMLFormElement::requestAutocomplete()
 {
-    Frame* frame = document().frame();
+    LocalFrame* frame = document().frame();
     if (!frame)
         return;
 

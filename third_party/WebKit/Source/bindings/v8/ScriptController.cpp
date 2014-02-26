@@ -62,7 +62,7 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/DOMWindow.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/plugins/PluginView.h"
 #include "platform/NotImplemented.h"
@@ -80,7 +80,7 @@
 
 namespace WebCore {
 
-bool ScriptController::canAccessFromCurrentOrigin(Frame *frame)
+bool ScriptController::canAccessFromCurrentOrigin(LocalFrame *frame)
 {
     if (!frame)
         return false;
@@ -88,7 +88,7 @@ bool ScriptController::canAccessFromCurrentOrigin(Frame *frame)
     return !isolate->InContext() || BindingSecurity::shouldAllowAccessToFrame(isolate, frame);
 }
 
-ScriptController::ScriptController(Frame* frame)
+ScriptController::ScriptController(LocalFrame* frame)
     : m_frame(frame)
     , m_sourceURL(0)
     , m_isolate(v8::Isolate::GetCurrent())
@@ -150,8 +150,8 @@ void ScriptController::updateSecurityOrigin(SecurityOrigin* origin)
 
 v8::Local<v8::Value> ScriptController::callFunction(v8::Handle<v8::Function> function, v8::Handle<v8::Value> receiver, int argc, v8::Handle<v8::Value> info[])
 {
-    // Keep Frame (and therefore ScriptController) alive.
-    RefPtr<Frame> protect(m_frame);
+    // Keep LocalFrame (and therefore ScriptController) alive.
+    RefPtr<LocalFrame> protect(m_frame);
     return ScriptController::callFunction(m_frame->document(), function, receiver, argc, info, m_isolate);
 }
 
@@ -208,8 +208,8 @@ v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(v8::Handle<v8
         // 1, whereas v8 starts at 0.
         v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(code, source.url(), source.startPosition(), scriptData.get(), m_isolate, corsStatus);
 
-        // Keep Frame (and therefore ScriptController) alive.
-        RefPtr<Frame> protect(m_frame);
+        // Keep LocalFrame (and therefore ScriptController) alive.
+        RefPtr<LocalFrame> protect(m_frame);
         result = V8ScriptRunner::runCompiledScript(script, m_frame->document(), m_isolate);
         ASSERT(!tryCatch.HasCaught() || result.IsEmpty());
     }
@@ -278,7 +278,7 @@ TextPosition ScriptController::eventHandlerPosition() const
 }
 
 // Create a V8 object with an interceptor of NPObjectPropertyGetter.
-void ScriptController::bindToWindowObject(Frame* frame, const String& key, NPObject* object)
+void ScriptController::bindToWindowObject(LocalFrame* frame, const String& key, NPObject* object)
 {
     v8::HandleScope handleScope(m_isolate);
 
@@ -324,7 +324,7 @@ PassRefPtr<SharedPersistent<v8::Object> > ScriptController::createPluginWrapper(
     if (!npObject)
         return nullptr;
 
-    // Frame Memory Management for NPObjects
+    // LocalFrame Memory Management for NPObjects
     // -------------------------------------
     // NPObjects are treated differently than other objects wrapped by JS.
     // NPObjects can be created either by the browser (e.g. the main
@@ -333,7 +333,7 @@ PassRefPtr<SharedPersistent<v8::Object> > ScriptController::createPluginWrapper(
     // is especially careful to ensure NPObjects terminate at frame teardown because
     // if a plugin leaks a reference, it could leak its objects (or the browser's objects).
     //
-    // The Frame maintains a list of plugin objects (m_pluginObjects)
+    // The LocalFrame maintains a list of plugin objects (m_pluginObjects)
     // which it can use to quickly find the wrapped embed object.
     //
     // Inside the NPRuntime, we've added a few methods for registering
@@ -389,7 +389,7 @@ static NPObject* createNoScriptObject()
     return 0;
 }
 
-static NPObject* createScriptObject(Frame* frame, v8::Isolate* isolate)
+static NPObject* createScriptObject(LocalFrame* frame, v8::Isolate* isolate)
 {
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Context> v8Context = toV8Context(isolate, frame, DOMWrapperWorld::mainWorld());
@@ -542,9 +542,9 @@ bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url)
         || !m_frame->document()->contentSecurityPolicy()->allowJavaScriptURLs(m_frame->document()->url(), eventHandlerPosition().m_line))
         return true;
 
-    // We need to hold onto the Frame here because executing script can
+    // We need to hold onto the LocalFrame here because executing script can
     // destroy the frame.
-    RefPtr<Frame> protector(m_frame);
+    RefPtr<LocalFrame> protector(m_frame);
     RefPtr<Document> ownerDocument(m_frame->document());
 
     const int javascriptSchemeLength = sizeof("javascript:") - 1;
@@ -607,7 +607,7 @@ ScriptValue ScriptController::evaluateScriptInMainWorld(const ScriptSourceCode& 
     if (v8Context.IsEmpty())
         return ScriptValue();
 
-    RefPtr<Frame> protect(m_frame);
+    RefPtr<LocalFrame> protect(m_frame);
     if (m_frame->loader().stateMachine()->isDisplayingInitialEmptyDocument())
         m_frame->loader().didAccessInitialDocument();
 

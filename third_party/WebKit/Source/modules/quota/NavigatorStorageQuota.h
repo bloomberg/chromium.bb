@@ -38,7 +38,7 @@
 
 namespace WebCore {
 
-class Frame;
+class LocalFrame;
 class Navigator;
 class StorageQuota;
 
@@ -56,7 +56,7 @@ public:
     DeprecatedStorageQuota* webkitPersistentStorage() const;
 
 private:
-    explicit NavigatorStorageQuota(Frame*);
+    explicit NavigatorStorageQuota(LocalFrame*);
     static const char* supplementName();
 
     mutable RefPtrWillBePersistent<StorageQuota> m_storageQuota;

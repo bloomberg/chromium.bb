@@ -38,18 +38,18 @@
 //    |           WebFrame
 //    |              O
 //    |              |
-//   Page O------- Frame (m_mainFrame) O-------O FrameView
+//   Page O------- LocalFrame (m_mainFrame) O-------O FrameView
 //                   ||
 //                   ||
 //               FrameLoader
 //
-// FrameLoader and Frame are formerly one object that was split apart because
+// FrameLoader and LocalFrame are formerly one object that was split apart because
 // it got too big. They basically have the same lifetime, hence the double line.
 //
 // From the perspective of the embedder, WebFrame is simply an object that it
 // allocates by calling WebFrame::create() and must be freed by calling close().
 // Internally, WebFrame is actually refcounted and it holds a reference to its
-// corresponding Frame in WebCore.
+// corresponding LocalFrame in WebCore.
 //
 // How frames are destroyed
 // ------------------------
@@ -62,7 +62,7 @@
 // traversal. Note that child node order may not match DOM node order!
 // detachFromParent() calls FrameLoaderClient::detachedFromParent(), which calls
 // WebFrame::frameDetached(). This triggers WebFrame to clear its reference to
-// Frame, and also notifies the embedder via WebFrameClient that the frame is
+// LocalFrame, and also notifies the embedder via WebFrameClient that the frame is
 // detached. Most embedders will invoke close() on the WebFrame at this point,
 // triggering its deletion unless something else is still retaining a reference.
 //
@@ -205,7 +205,7 @@ static int frameCount = 0;
 // Key for a StatsCounter tracking how many WebFrames are active.
 static const char webFrameActiveCount[] = "WebFrameActiveCount";
 
-static void frameContentAsPlainText(size_t maxChars, Frame* frame, StringBuilder& output)
+static void frameContentAsPlainText(size_t maxChars, LocalFrame* frame, StringBuilder& output)
 {
     Document* document = frame->document();
     if (!document)
@@ -241,7 +241,7 @@ static void frameContentAsPlainText(size_t maxChars, Frame* frame, StringBuilder
 
     // Recursively walk the children.
     const FrameTree& frameTree = frame->tree();
-    for (Frame* curChild = frameTree.firstChild(); curChild; curChild = curChild->tree().nextSibling()) {
+    for (LocalFrame* curChild = frameTree.firstChild(); curChild; curChild = curChild->tree().nextSibling()) {
         // Ignore the text of non-visible frames.
         RenderView* contentRenderer = curChild->contentRenderer();
         RenderPart* ownerRenderer = curChild->ownerRenderer();
@@ -266,7 +266,7 @@ static void frameContentAsPlainText(size_t maxChars, Frame* frame, StringBuilder
     }
 }
 
-WebPluginContainerImpl* WebFrameImpl::pluginContainerFromFrame(Frame* frame)
+WebPluginContainerImpl* WebFrameImpl::pluginContainerFromFrame(LocalFrame* frame)
 {
     if (!frame)
         return 0;
@@ -276,7 +276,7 @@ WebPluginContainerImpl* WebFrameImpl::pluginContainerFromFrame(Frame* frame)
     return toWebPluginContainerImpl(pluginDocument->pluginWidget());
 }
 
-WebPluginContainerImpl* WebFrameImpl::pluginContainerFromNode(WebCore::Frame* frame, const WebNode& node)
+WebPluginContainerImpl* WebFrameImpl::pluginContainerFromNode(WebCore::LocalFrame* frame, const WebNode& node)
 {
     WebPluginContainerImpl* pluginContainer = pluginContainerFromFrame(frame);
     if (pluginContainer)
@@ -289,7 +289,7 @@ WebPluginContainerImpl* WebFrameImpl::pluginContainerFromNode(WebCore::Frame* fr
 class ChromePrintContext : public PrintContext {
     WTF_MAKE_NONCOPYABLE(ChromePrintContext);
 public:
-    ChromePrintContext(Frame* frame)
+    ChromePrintContext(LocalFrame* frame)
         : PrintContext(frame)
         , m_printedPageWidth(0)
     {
@@ -403,7 +403,7 @@ private:
 // want to delegate all printing related calls to the plugin.
 class ChromePluginPrintContext : public ChromePrintContext {
 public:
-    ChromePluginPrintContext(Frame* frame, WebPluginContainerImpl* plugin, const WebPrintParams& printParams)
+    ChromePluginPrintContext(LocalFrame* frame, WebPluginContainerImpl* plugin, const WebPrintParams& printParams)
         : ChromePrintContext(frame), m_plugin(plugin), m_pageCount(0), m_printParams(printParams)
     {
     }
@@ -1329,7 +1329,7 @@ WebString WebFrameImpl::selectionAsMarkup() const
     return createMarkup(range.get(), 0, AnnotateForInterchange, false, ResolveNonLocalURLs);
 }
 
-void WebFrameImpl::selectWordAroundPosition(Frame* frame, VisiblePosition position)
+void WebFrameImpl::selectWordAroundPosition(LocalFrame* frame, VisiblePosition position)
 {
     VisibleSelection selection(position);
     selection.expandUsingGranularity(WordGranularity);
@@ -2134,7 +2134,7 @@ WebFrameImpl::~WebFrameImpl()
     cancelPendingScopingEffort();
 }
 
-void WebFrameImpl::setWebCoreFrame(PassRefPtr<WebCore::Frame> frame)
+void WebFrameImpl::setWebCoreFrame(PassRefPtr<WebCore::LocalFrame> frame)
 {
     m_frame = frame;
 }
@@ -2142,14 +2142,14 @@ void WebFrameImpl::setWebCoreFrame(PassRefPtr<WebCore::Frame> frame)
 void WebFrameImpl::initializeAsMainFrame(WebCore::Page* page)
 {
     m_frameInit->setFrameHost(&page->frameHost());
-    setWebCoreFrame(Frame::create(m_frameInit));
+    setWebCoreFrame(LocalFrame::create(m_frameInit));
 
     // We must call init() after m_frame is assigned because it is referenced
     // during init().
     m_frame->init();
 }
 
-PassRefPtr<Frame> WebFrameImpl::createChildFrame(const FrameLoadRequest& request, HTMLFrameOwnerElement* ownerElement)
+PassRefPtr<LocalFrame> WebFrameImpl::createChildFrame(const FrameLoadRequest& request, HTMLFrameOwnerElement* ownerElement)
 {
     ASSERT(m_client);
     WebFrameImpl* webframe = toWebFrameImpl(m_client->createChildFrame(this, request.frameName()));
@@ -2158,13 +2158,13 @@ PassRefPtr<Frame> WebFrameImpl::createChildFrame(const FrameLoadRequest& request
 
     webframe->m_frameInit->setFrameHost(frame()->host());
     webframe->m_frameInit->setOwnerElement(ownerElement);
-    RefPtr<Frame> childFrame = Frame::create(webframe->m_frameInit);
+    RefPtr<LocalFrame> childFrame = LocalFrame::create(webframe->m_frameInit);
     webframe->setWebCoreFrame(childFrame);
 
     childFrame->tree().setName(request.frameName());
 
     // FIXME: This comment is not quite accurate anymore.
-    // Frame::init() can trigger onload event in the parent frame,
+    // LocalFrame::init() can trigger onload event in the parent frame,
     // which may detach this frame and trigger a null-pointer access
     // in FrameTree::removeChild. Move init() after appendChild call
     // so that webframe->mFrame is in the tree before triggering
@@ -2229,7 +2229,7 @@ void WebFrameImpl::createFrameView()
         webView->suppressInvalidations(false);
 }
 
-WebFrameImpl* WebFrameImpl::fromFrame(Frame* frame)
+WebFrameImpl* WebFrameImpl::fromFrame(LocalFrame* frame)
 {
     if (!frame)
         return 0;

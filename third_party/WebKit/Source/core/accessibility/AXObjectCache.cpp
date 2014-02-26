@@ -56,7 +56,7 @@
 #include "core/accessibility/AXTableHeaderContainer.h"
 #include "core/accessibility/AXTableRow.h"
 #include "core/dom/Document.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"

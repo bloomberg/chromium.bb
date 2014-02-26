@@ -37,11 +37,11 @@
 namespace WebCore {
 
 class ExceptionState;
-class Frame;
+class LocalFrame;
 
 class Storage FINAL : public ScriptWrappable, public RefCounted<Storage>, public DOMWindowProperty {
 public:
-    static PassRefPtr<Storage> create(Frame*, PassOwnPtr<StorageArea>);
+    static PassRefPtr<Storage> create(LocalFrame*, PassOwnPtr<StorageArea>);
     virtual ~Storage();
 
     unsigned length(ExceptionState& ec) const { return m_storageArea->length(ec, m_frame); }
@@ -64,7 +64,7 @@ public:
     bool namedPropertyQuery(const AtomicString&, ExceptionState&);
 
 private:
-    Storage(Frame*, PassOwnPtr<StorageArea>);
+    Storage(LocalFrame*, PassOwnPtr<StorageArea>);
 
     OwnPtr<StorageArea> m_storageArea;
 };

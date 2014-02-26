@@ -33,8 +33,8 @@
 #include "core/editing/markup.h"
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameHost.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/PageConsole.h"
 #include "core/xml/XSLStyleSheet.h"
 #include "core/xml/XSLTExtensions.h"
@@ -109,7 +109,7 @@ static xmlDocPtr docLoaderFunc(const xmlChar* uri,
             return 0;
 
         PageConsole* console = 0;
-        Frame* frame = globalProcessor->xslStylesheet()->ownerDocument()->frame();
+        LocalFrame* frame = globalProcessor->xslStylesheet()->ownerDocument()->frame();
         if (frame && frame->host())
             console = &frame->host()->console();
         xmlSetStructuredErrorFunc(console, XSLTProcessor::parseErrorFunc);

@@ -34,11 +34,11 @@
 #include "core/dom/Text.h"
 #include "core/editing/Editor.h"
 #include "core/editing/TypingCommand.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/EventHandler.h"
-#include "core/frame/Frame.h"
 #include "core/rendering/RenderObject.h"
 
 namespace WebCore {
@@ -56,12 +56,12 @@ InputMethodController::SelectionOffsetsScope::~SelectionOffsetsScope()
 
 // ----------------------------
 
-PassOwnPtr<InputMethodController> InputMethodController::create(Frame& frame)
+PassOwnPtr<InputMethodController> InputMethodController::create(LocalFrame& frame)
 {
     return adoptPtr(new InputMethodController(frame));
 }
 
-InputMethodController::InputMethodController(Frame& frame)
+InputMethodController::InputMethodController(LocalFrame& frame)
     : m_frame(frame)
     , m_compositionStart(0)
     , m_compositionEnd(0)

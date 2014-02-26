@@ -35,11 +35,11 @@
 
 namespace WebCore {
 
-class Frame;
+class LocalFrame;
 
 class Touch : public RefCounted<Touch>, public ScriptWrappable {
 public:
-    static PassRefPtr<Touch> create(Frame* frame, EventTarget* target,
+    static PassRefPtr<Touch> create(LocalFrame* frame, EventTarget* target,
             unsigned identifier, int screenX, int screenY, int pageX, int pageY,
             int radiusX, int radiusY, float rotationAngle, float force)
     {
@@ -63,7 +63,7 @@ public:
     PassRefPtr<Touch> cloneWithNewTarget(EventTarget*) const;
 
 private:
-    Touch(Frame* frame, EventTarget* target, unsigned identifier,
+    Touch(LocalFrame* frame, EventTarget* target, unsigned identifier,
             int screenX, int screenY, int pageX, int pageY,
             int radiusX, int radiusY, float rotationAngle, float force);
 

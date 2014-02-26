@@ -24,10 +24,10 @@
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/frame/Frame.h"
-#include "core/frame/FrameView.h"
 #include "core/rendering/RenderPart.h"
 #include "core/svg/SVGDocument.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -51,7 +51,7 @@ RenderPart* HTMLFrameOwnerElement::renderPart() const
     return toRenderPart(renderer());
 }
 
-void HTMLFrameOwnerElement::setContentFrame(Frame& frame)
+void HTMLFrameOwnerElement::setContentFrame(LocalFrame& frame)
 {
     // Make sure we will not end up with two frames referencing the same owner element.
     ASSERT(!m_contentFrame || m_contentFrame->ownerElement() != this);
@@ -80,8 +80,8 @@ void HTMLFrameOwnerElement::disconnectContentFrame()
     // unload event in the subframe which could execute script that could then
     // reach up into this document and then attempt to look back down. We should
     // see if this behavior is really needed as Gecko does not allow this.
-    if (Frame* frame = contentFrame()) {
-        RefPtr<Frame> protect(frame);
+    if (LocalFrame* frame = contentFrame()) {
+        RefPtr<LocalFrame> protect(frame);
         frame->loader().frameDetached();
         frame->disconnectOwnerElement();
     }
@@ -123,7 +123,7 @@ SVGDocument* HTMLFrameOwnerElement::getSVGDocument(ExceptionState& exceptionStat
 
 bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const AtomicString& frameName, bool lockBackForwardList)
 {
-    RefPtr<Frame> parentFrame = document().frame();
+    RefPtr<LocalFrame> parentFrame = document().frame();
     if (contentFrame()) {
         contentFrame()->navigationScheduler().scheduleLocationChange(&document(), url.string(), Referrer(document().outgoingReferrer(), document().referrerPolicy()), lockBackForwardList);
         return true;
@@ -138,7 +138,7 @@ bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const Atomic
         return false;
 
     String referrer = SecurityPolicy::generateReferrerHeader(document().referrerPolicy(), url, document().outgoingReferrer());
-    RefPtr<Frame> childFrame = parentFrame->loader().client()->createFrame(url, frameName, Referrer(referrer, document().referrerPolicy()), this);
+    RefPtr<LocalFrame> childFrame = parentFrame->loader().client()->createFrame(url, frameName, Referrer(referrer, document().referrerPolicy()), this);
 
     if (!childFrame)  {
         parentFrame->loader().checkCompleted();
@@ -164,7 +164,7 @@ bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const Atomic
     // before we could connect the signals, so make sure to send the
     // completed() signal for the child by hand and mark the load as being
     // complete.
-    // FIXME: In this case the Frame will have finished loading before
+    // FIXME: In this case the LocalFrame will have finished loading before
     // it's being added to the child list. It would be a good idea to
     // create the child first, then invoke the loader separately.
     if (childFrame->loader().state() == FrameStateComplete && !childFrame->loader().policyDocumentLoader())

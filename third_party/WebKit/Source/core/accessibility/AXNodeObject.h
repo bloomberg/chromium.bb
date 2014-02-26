@@ -37,7 +37,7 @@ namespace WebCore {
 
 class AXObjectCache;
 class Element;
-class Frame;
+class LocalFrame;
 class FrameView;
 class HitTestResult;
 class HTMLAnchorElement;

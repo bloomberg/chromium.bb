@@ -31,13 +31,13 @@
 #include "config.h"
 #include "core/timing/PerformanceNavigation.h"
 
+#include "core/frame/LocalFrame.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoaderTypes.h"
-#include "core/frame/Frame.h"
 
 namespace WebCore {
 
-PerformanceNavigation::PerformanceNavigation(Frame* frame)
+PerformanceNavigation::PerformanceNavigation(LocalFrame* frame)
     : DOMWindowProperty(frame)
 {
     ScriptWrappable::init(this);

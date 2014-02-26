@@ -32,7 +32,7 @@
 #include "XLinkNames.h"
 #include "core/dom/Document.h"
 #include "core/frame/ContentSecurityPolicy.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLParamElement.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/html/parser/HTMLParserIdioms.h"
@@ -241,7 +241,7 @@ void XSSAuditor::init(Document* document, XSSAuditorDelegate* auditorDelegate)
 
     m_documentURL = document->url().copy();
 
-    // In theory, the Document could have detached from the Frame after the
+    // In theory, the Document could have detached from the LocalFrame after the
     // XSSAuditor was constructed.
     if (!document->frame()) {
         m_isEnabled = false;

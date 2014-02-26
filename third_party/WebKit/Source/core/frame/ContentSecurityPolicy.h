@@ -111,7 +111,7 @@ public:
     bool allowConnectToSource(const KURL&, ReportingStatus = SendReport) const;
     bool allowFormAction(const KURL&, ReportingStatus = SendReport) const;
     bool allowBaseURI(const KURL&, ReportingStatus = SendReport) const;
-    bool allowAncestors(Frame*, ReportingStatus = SendReport) const;
+    bool allowAncestors(LocalFrame*, ReportingStatus = SendReport) const;
     bool allowChildContextFromSource(const KURL&, ReportingStatus = SendReport) const;
     bool allowWorkerContextFromSource(const KURL&, ReportingStatus = SendReport) const;
 

@@ -8,8 +8,8 @@
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
 #include "core/animation/ActiveAnimations.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLIFrameElement.h"
@@ -55,7 +55,7 @@ bool CompositingReasonFinder::hasAnimationTrigger() const
 
 bool CompositingReasonFinder::isMainFrame() const
 {
-    // FIXME: Frame::isMainFrame() is probably better.
+    // FIXME: LocalFrame::isMainFrame() is probably better.
     return !m_renderView.document().ownerElement();
 }
 

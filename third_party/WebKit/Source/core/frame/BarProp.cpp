@@ -30,12 +30,12 @@
 #include "core/frame/BarProp.h"
 
 #include "core/page/Chrome.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameHost.h"
+#include "core/frame/LocalFrame.h"
 
 namespace WebCore {
 
-BarProp::BarProp(Frame* frame, Type type)
+BarProp::BarProp(LocalFrame* frame, Type type)
     : DOMWindowProperty(frame)
     , m_type(type)
 {

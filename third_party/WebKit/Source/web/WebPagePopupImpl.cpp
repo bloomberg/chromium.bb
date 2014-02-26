@@ -37,14 +37,14 @@
 #include "WebViewImpl.h"
 #include "WebWidgetClient.h"
 #include "core/dom/ContextFeatures.h"
+#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/loader/EmptyClients.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/Chrome.h"
 #include "core/page/DOMWindowPagePopup.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"
-#include "core/frame/Frame.h"
-#include "core/frame/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/PagePopupClient.h"
 #include "core/frame/Settings.h"
@@ -213,7 +213,7 @@ bool WebPagePopupImpl::initializePage()
     static ContextFeaturesClient* pagePopupFeaturesClient =  new PagePopupFeaturesClient();
     provideContextFeaturesTo(*m_page, pagePopupFeaturesClient);
     static FrameLoaderClient* emptyFrameLoaderClient =  new EmptyFrameLoaderClient();
-    RefPtr<Frame> frame = Frame::create(FrameInit::create(&m_page->frameHost(), emptyFrameLoaderClient));
+    RefPtr<LocalFrame> frame = LocalFrame::create(FrameInit::create(&m_page->frameHost(), emptyFrameLoaderClient));
     frame->setView(FrameView::create(frame.get()));
     frame->init();
     frame->view()->resize(m_popupClient->contentSize());
@@ -302,7 +302,7 @@ void WebPagePopupImpl::enterForceCompositingMode(bool enter)
     TRACE_EVENT1("webkit", "WebPagePopupImpl::enterForceCompositingMode", "enter", enter);
     m_page->settings().setForceCompositingMode(enter);
     if (enter) {
-        Frame* mainFrame = m_page->mainFrame();
+        LocalFrame* mainFrame = m_page->mainFrame();
         if (!mainFrame)
             return;
         mainFrame->view()->updateCompositingLayersAfterStyleChange();
@@ -362,7 +362,7 @@ bool WebPagePopupImpl::handleGestureEvent(const WebGestureEvent& event)
 {
     if (m_closing || !m_page || !m_page->mainFrame() || !m_page->mainFrame()->view())
         return false;
-    Frame& frame = *m_page->mainFrame();
+    LocalFrame& frame = *m_page->mainFrame();
     return frame.eventHandler().handleGestureEvent(PlatformGestureEventBuilder(frame.view(), event));
 }
 

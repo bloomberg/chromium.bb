@@ -35,7 +35,7 @@
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/page/SpellCheckerClient.h"
 #include "platform/text/TextBreakIterator.h"
@@ -563,7 +563,7 @@ void checkTextOfParagraph(TextCheckerClient& client, const String& text, TextChe
     }
 }
 
-bool unifiedTextCheckerEnabled(const Frame* frame)
+bool unifiedTextCheckerEnabled(const LocalFrame* frame)
 {
     if (!frame)
         return false;

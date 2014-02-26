@@ -31,10 +31,10 @@
 #include "core/events/MouseEvent.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/events/WheelEvent.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/page/Chrome.h"
 #include "core/page/EventHandler.h"
-#include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderBox.h"
 #include "platform/scroll/ScrollbarTheme.h"
@@ -116,7 +116,7 @@ void SpinButtonElement::defaultEventHandler(Event* event)
     } else if (event->type() == EventTypeNames::mousemove) {
         if (box->pixelSnappedBorderBoxRect().contains(local)) {
             if (!m_capturing) {
-                if (Frame* frame = document().frame()) {
+                if (LocalFrame* frame = document().frame()) {
                     frame->eventHandler().setCapturingMouseEventsNode(this);
                     m_capturing = true;
                     if (Page* page = document().page())
@@ -192,7 +192,7 @@ void SpinButtonElement::releaseCapture()
 {
     stopRepeatingTimer();
     if (m_capturing) {
-        if (Frame* frame = document().frame()) {
+        if (LocalFrame* frame = document().frame()) {
             frame->eventHandler().setCapturingMouseEventsNode(nullptr);
             m_capturing = false;
             if (Page* page = document().page())

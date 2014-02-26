@@ -43,7 +43,7 @@
 #include "core/frame/ConsoleTypes.h"
 #include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/DOMWindow.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "modules/websockets/CloseEvent.h"
 #include "platform/Logging.h"

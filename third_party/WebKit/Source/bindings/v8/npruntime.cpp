@@ -352,7 +352,7 @@ void _NPN_InitializeVariantWithStringCopy(NPVariant* variant, const NPString* va
 // The rootObjectMap is a hash table of root objects to a set of
 // objects that should be deactivated in sync with the root.  A
 // root is defined as a top-level owner object.  This is used on
-// Frame teardown to deactivate all objects associated
+// LocalFrame teardown to deactivate all objects associated
 // with a particular plugin.
 
 typedef WTF::HashSet<NPObject*> NPObjectSet;

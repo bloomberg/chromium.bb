@@ -26,8 +26,8 @@
 #include "config.h"
 #include "core/loader/ProgressTracker.h"
 
-#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -102,7 +102,7 @@ void ProgressTracker::reset()
     m_originatingProgressFrame = nullptr;
 }
 
-void ProgressTracker::progressStarted(Frame* frame)
+void ProgressTracker::progressStarted(LocalFrame* frame)
 {
     WTF_LOG(Progress, "Progress started (%p) - frame %p(\"%s\"), value %f, tracked frames %d, originating frame %p", this, frame, frame->tree().uniqueName().utf8().data(), m_progressValue, m_numProgressTrackedFrames, m_originatingProgressFrame.get());
 
@@ -117,7 +117,7 @@ void ProgressTracker::progressStarted(Frame* frame)
     InspectorInstrumentation::frameStartedLoading(frame);
 }
 
-void ProgressTracker::progressCompleted(Frame* frame)
+void ProgressTracker::progressCompleted(LocalFrame* frame)
 {
     WTF_LOG(Progress, "Progress completed (%p) - frame %p(\"%s\"), value %f, tracked frames %d, originating frame %p", this, frame, frame->tree().uniqueName().utf8().data(), m_progressValue, m_numProgressTrackedFrames, m_originatingProgressFrame.get());
 
@@ -132,7 +132,7 @@ void ProgressTracker::finalProgressComplete()
 {
     WTF_LOG(Progress, "Final progress complete (%p)", this);
 
-    RefPtr<Frame> frame = m_originatingProgressFrame.release();
+    RefPtr<LocalFrame> frame = m_originatingProgressFrame.release();
 
     // Before resetting progress value be sure to send client a least one notification
     // with final progress value.
@@ -174,7 +174,7 @@ void ProgressTracker::incrementProgress(unsigned long identifier, const char*, i
     if (!item)
         return;
 
-    RefPtr<Frame> frame = m_originatingProgressFrame;
+    RefPtr<LocalFrame> frame = m_originatingProgressFrame;
 
     unsigned bytesReceived = length;
     double increment, percentOfRemainingBytes;

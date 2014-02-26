@@ -38,6 +38,8 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/XMLDocument.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
+#include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLViewSourceDocument.h"
@@ -46,8 +48,6 @@
 #include "core/html/PluginDocument.h"
 #include "core/html/TextDocument.h"
 #include "core/loader/FrameLoader.h"
-#include "core/frame/Frame.h"
-#include "core/frame/UseCounter.h"
 #include "core/page/Page.h"
 #include "core/svg/SVGDocument.h"
 #include "platform/ContentType.h"
@@ -349,7 +349,7 @@ PassRefPtr<HTMLDocument> DOMImplementation::createHTMLDocument(const String& tit
     return d.release();
 }
 
-PassRefPtr<Document> DOMImplementation::createDocument(const String& type, Frame* frame, const KURL& url, bool inViewSourceMode)
+PassRefPtr<Document> DOMImplementation::createDocument(const String& type, LocalFrame* frame, const KURL& url, bool inViewSourceMode)
 {
     return createDocument(type, DocumentInit(url, frame), inViewSourceMode);
 }

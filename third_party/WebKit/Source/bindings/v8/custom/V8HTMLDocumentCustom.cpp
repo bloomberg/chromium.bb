@@ -38,11 +38,11 @@
 #include "V8Window.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLIFrameElement.h"
-#include "core/frame/Frame.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/StdLibExtras.h"
@@ -56,7 +56,7 @@ void V8HTMLDocument::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
     HTMLDocument* htmlDocument = V8HTMLDocument::toNative(info.Holder());
 
     if (info.Length() > 2) {
-        if (RefPtr<Frame> frame = htmlDocument->frame()) {
+        if (RefPtr<LocalFrame> frame = htmlDocument->frame()) {
             // Fetch the global object for the frame.
             v8::Local<v8::Context> context = toV8Context(info.GetIsolate(), frame.get(), DOMWrapperWorld::current(info.GetIsolate()));
             // Bail out if we cannot get the context.

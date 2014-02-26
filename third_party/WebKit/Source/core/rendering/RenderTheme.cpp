@@ -30,6 +30,7 @@
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/editing/FrameSelection.h"
 #include "core/fileapi/FileList.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLDataListElement.h"
 #include "core/html/HTMLFormControlElement.h"
@@ -42,7 +43,6 @@
 #include "core/html/shadow/SpinButtonElement.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "core/page/FocusController.h"
-#include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "core/frame/Settings.h"
 #include "core/rendering/PaintInfo.h"
@@ -739,7 +739,7 @@ bool RenderTheme::isFocused(const RenderObject* o) const
 
     node = node->focusDelegate();
     Document& document = node->document();
-    Frame* frame = document.frame();
+    LocalFrame* frame = document.frame();
     return node == document.focusedElement() && node->shouldHaveFocusAppearance() && frame && frame->selection().isFocusedAndActive();
 }
 

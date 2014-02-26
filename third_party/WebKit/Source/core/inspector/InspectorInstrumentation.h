@@ -39,7 +39,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/NodeEventContext.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/page/Page.h"
 #include "core/rendering/HitTestResult.h"
@@ -106,7 +106,7 @@ InspectorTimelineAgent* retrieveTimelineAgent(const InspectorInstrumentationCook
 
 // Called from generated instrumentation code.
 InstrumentingAgents* instrumentingAgentsFor(Page*);
-InstrumentingAgents* instrumentingAgentsFor(Frame*);
+InstrumentingAgents* instrumentingAgentsFor(LocalFrame*);
 InstrumentingAgents* instrumentingAgentsFor(EventTarget*);
 InstrumentingAgents* instrumentingAgentsFor(ExecutionContext*);
 InstrumentingAgents* instrumentingAgentsFor(Document&);
@@ -149,7 +149,7 @@ inline InstrumentingAgents* instrumentingAgentsFor(ExecutionContext* context)
     return context->isDocument() ? instrumentingAgentsFor(*toDocument(context)) : instrumentingAgentsForNonDocumentContext(context);
 }
 
-inline InstrumentingAgents* instrumentingAgentsFor(Frame* frame)
+inline InstrumentingAgents* instrumentingAgentsFor(LocalFrame* frame)
 {
     return frame ? instrumentingAgentsFor(frame->page()) : 0;
 }

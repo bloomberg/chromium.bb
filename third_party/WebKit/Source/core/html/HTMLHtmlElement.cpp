@@ -27,10 +27,10 @@
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"
+#include "core/frame/LocalFrame.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
-#include "core/frame/Frame.h"
 
 namespace WebCore {
 

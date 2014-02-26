@@ -48,14 +48,14 @@ TEST(ResourceFetcherTest, StartLoadAfterFrameDetach)
 {
     KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.jpg");
 
-    // Create a ResourceFetcher that has a real DocumentLoader and Document, but is not attached to a Frame.
-    // Technically, we're concerned about what happens after a Frame is detached (rather than before
+    // Create a ResourceFetcher that has a real DocumentLoader and Document, but is not attached to a LocalFrame.
+    // Technically, we're concerned about what happens after a LocalFrame is detached (rather than before
     // any attach occurs), but ResourceFetcher can't tell the difference.
     RefPtr<DocumentLoader> documentLoader = DocumentLoader::create(0, ResourceRequest(testURL), SubstituteData());
     RefPtr<HTMLDocument> document = HTMLDocument::create();
     RefPtr<ResourceFetcher> fetcher(documentLoader->fetcher());
     fetcher->setDocument(document.get());
-    EXPECT_EQ(fetcher->frame(), static_cast<Frame*>(0));
+    EXPECT_EQ(fetcher->frame(), static_cast<LocalFrame*>(0));
 
     // Try to request a url. The request should fail, no resource should be returned,
     // and no resource should be present in the cache.

@@ -34,7 +34,7 @@
 #include "core/editing/ApplyStyleCommand.h"
 #include "core/editing/EditingStyle.h"
 #include "core/editing/FrameSelection.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 
 namespace WebCore {
 
@@ -79,7 +79,7 @@ static bool isElementForRemoveFormatCommand(const Element* element)
 
 void RemoveFormatCommand::doApply()
 {
-    Frame* frame = document().frame();
+    LocalFrame* frame = document().frame();
 
     if (!frame->selection().selection().isNonOrphanedCaretOrRange())
         return;

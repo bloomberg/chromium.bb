@@ -32,6 +32,9 @@
 #include "core/events/MouseEvent.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/fetch/ImageResource.h"
+#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLHtmlElement.h"
@@ -40,9 +43,6 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/frame/Frame.h"
-#include "core/frame/FrameView.h"
-#include "core/frame/Settings.h"
 #include "wtf/text/StringBuilder.h"
 
 using std::min;
@@ -101,7 +101,7 @@ private:
 
 static float pageZoomFactor(const Document* document)
 {
-    Frame* frame = document->frame();
+    LocalFrame* frame = document->frame();
     return frame ? frame->pageZoomFactor() : 1;
 }
 
@@ -124,7 +124,7 @@ void ImageDocumentParser::appendBytes(const char* data, size_t length)
     if (!length)
         return;
 
-    Frame* frame = document()->frame();
+    LocalFrame* frame = document()->frame();
     Settings* settings = frame->settings();
     if (!frame->loader().client()->allowImage(!settings || settings->imagesEnabled(), document()->url()))
         return;

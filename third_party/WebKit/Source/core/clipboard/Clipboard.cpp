@@ -33,7 +33,7 @@
 #include "core/editing/markup.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fileapi/FileList.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderObject.h"
@@ -237,7 +237,7 @@ void Clipboard::setDragImageElement(Node* node, const IntPoint& loc)
     setDragImage(0, node, loc);
 }
 
-PassOwnPtr<DragImage> Clipboard::createDragImage(IntPoint& loc, Frame* frame) const
+PassOwnPtr<DragImage> Clipboard::createDragImage(IntPoint& loc, LocalFrame* frame) const
 {
     if (m_dragImageElement) {
         loc = m_dragLoc;
@@ -339,7 +339,7 @@ void Clipboard::writeURL(const KURL& url, const String& title)
     m_dataObject->setHTMLAndBaseURL(urlToMarkup(url, title), url);
 }
 
-void Clipboard::writeRange(Range* selectedRange, Frame* frame)
+void Clipboard::writeRange(Range* selectedRange, LocalFrame* frame)
 {
     ASSERT(selectedRange);
     if (!m_dataObject)

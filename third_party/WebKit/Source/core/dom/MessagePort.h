@@ -45,7 +45,7 @@ namespace WebCore {
 
 class Event;
 class ExceptionState;
-class Frame;
+class LocalFrame;
 class MessagePort;
 class ExecutionContext;
 class SerializedScriptValue;

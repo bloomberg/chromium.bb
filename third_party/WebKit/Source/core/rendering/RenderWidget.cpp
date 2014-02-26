@@ -25,7 +25,7 @@
 #include "core/rendering/RenderWidget.h"
 
 #include "core/accessibility/AXObjectCache.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/LayoutRectRecorder.h"

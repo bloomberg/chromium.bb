@@ -6,7 +6,7 @@
 #include "modules/filesystem/InspectorFrontendHostFileSystem.h"
 
 #include "core/dom/Document.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectorFrontendHost.h"
 #include "core/page/Page.h"
 #include "modules/filesystem/DOMFileSystem.h"

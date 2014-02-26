@@ -30,7 +30,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/frame/ContentSecurityPolicy.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/rendering/RenderApplet.h"
 #include "platform/Widget.h"
@@ -114,7 +114,7 @@ void HTMLAppletElement::updateWidgetInternal()
 
     RenderEmbeddedObject* renderer = renderEmbeddedObject();
 
-    Frame* frame = document().frame();
+    LocalFrame* frame = document().frame();
     ASSERT(frame);
 
     Vector<String> paramNames;

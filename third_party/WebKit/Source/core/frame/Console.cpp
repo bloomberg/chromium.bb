@@ -31,8 +31,8 @@
 
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "core/frame/ConsoleTypes.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameHost.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/PageConsole.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/ScriptArguments.h"
@@ -46,7 +46,7 @@
 
 namespace WebCore {
 
-Console::Console(Frame* frame)
+Console::Console(LocalFrame* frame)
     : DOMWindowProperty(frame)
 {
     ScriptWrappable::init(this);

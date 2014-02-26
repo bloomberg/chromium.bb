@@ -33,9 +33,9 @@
 
 #include "core/events/Event.h"
 #include "core/frame/DOMWindow.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/PageConsole.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorClient.h"
@@ -225,9 +225,9 @@ struct TimelineImageInfo {
     TimelineImageInfo(int backendNodeId, String url) : backendNodeId(backendNodeId), url(url) { }
 };
 
-static Frame* frameForExecutionContext(ExecutionContext* context)
+static LocalFrame* frameForExecutionContext(ExecutionContext* context)
 {
-    Frame* frame = 0;
+    LocalFrame* frame = 0;
     if (context->isDocument())
         frame = toDocument(context)->frame();
     return frame;
@@ -483,12 +483,12 @@ void InspectorTimelineAgent::didDispatchEventOnWindow()
     didDispatchEvent();
 }
 
-void InspectorTimelineAgent::didInvalidateLayout(Frame* frame)
+void InspectorTimelineAgent::didInvalidateLayout(LocalFrame* frame)
 {
     appendRecord(JSONObject::create(), TimelineRecordType::InvalidateLayout, true, frame);
 }
 
-bool InspectorTimelineAgent::willLayout(Frame* frame)
+bool InspectorTimelineAgent::willLayout(LocalFrame* frame)
 {
     bool isPartial;
     unsigned needsLayoutObjects;
@@ -559,7 +559,7 @@ void InspectorTimelineAgent::didRecalculateStyleForElement()
 
 void InspectorTimelineAgent::willPaint(RenderObject* renderer, const GraphicsLayer* graphicsLayer)
 {
-    Frame* frame = renderer->frame();
+    LocalFrame* frame = renderer->frame();
 
     TraceEventDispatcher::instance()->processBackgroundEvents();
     double paintSetupStart = m_paintSetupStart;
@@ -716,7 +716,7 @@ void InspectorTimelineAgent::didDispatchXHRLoadEvent()
     didCompleteCurrentRecord(TimelineRecordType::XHRLoad);
 }
 
-bool InspectorTimelineAgent::willEvaluateScript(Frame* frame, const String& url, int lineNumber)
+bool InspectorTimelineAgent::willEvaluateScript(LocalFrame* frame, const String& url, int lineNumber)
 {
     pushCurrentRecord(TimelineRecordFactory::createEvaluateScriptData(url, lineNumber), TimelineRecordType::EvaluateScript, true, frame);
     return true;
@@ -738,7 +738,7 @@ void InspectorTimelineAgent::willSendRequest(unsigned long identifier, DocumentL
     appendRecord(TimelineRecordFactory::createResourceSendRequestData(requestId, request), TimelineRecordType::ResourceSendRequest, true, loader->frame());
 }
 
-bool InspectorTimelineAgent::willReceiveResourceData(Frame* frame, unsigned long identifier, int length)
+bool InspectorTimelineAgent::willReceiveResourceData(LocalFrame* frame, unsigned long identifier, int length)
 {
     String requestId = IdentifiersFactory::requestId(identifier);
     pushCurrentRecord(TimelineRecordFactory::createReceiveResourceData(requestId, length), TimelineRecordType::ResourceReceivedData, false, frame);
@@ -750,7 +750,7 @@ void InspectorTimelineAgent::didReceiveResourceData()
     didCompleteCurrentRecord(TimelineRecordType::ResourceReceivedData);
 }
 
-void InspectorTimelineAgent::didReceiveResourceResponse(Frame* frame, unsigned long identifier, DocumentLoader* loader, const ResourceResponse& response, ResourceLoader* resourceLoader)
+void InspectorTimelineAgent::didReceiveResourceResponse(LocalFrame* frame, unsigned long identifier, DocumentLoader* loader, const ResourceResponse& response, ResourceLoader* resourceLoader)
 {
     String requestId = IdentifiersFactory::requestId(identifier);
     appendRecord(TimelineRecordFactory::createResourceReceiveResponseData(requestId, response), TimelineRecordType::ResourceReceiveResponse, false, 0);
@@ -829,7 +829,7 @@ void InspectorTimelineAgent::consoleTimelineEnd(ExecutionContext* context, const
     frameHost()->console().addMessage(ConsoleAPIMessageSource, DebugMessageLevel, message, String(), 0, 0, nullptr, state);
 }
 
-void InspectorTimelineAgent::domContentLoadedEventFired(Frame* frame)
+void InspectorTimelineAgent::domContentLoadedEventFired(LocalFrame* frame)
 {
     bool isMainFrame = frame && m_pageAgent && (frame == m_pageAgent->mainFrame());
     appendRecord(TimelineRecordFactory::createMarkData(isMainFrame), TimelineRecordType::MarkDOMContent, false, frame);
@@ -837,7 +837,7 @@ void InspectorTimelineAgent::domContentLoadedEventFired(Frame* frame)
         m_mayEmitFirstPaint = true;
 }
 
-void InspectorTimelineAgent::loadEventFired(Frame* frame)
+void InspectorTimelineAgent::loadEventFired(LocalFrame* frame)
 {
     bool isMainFrame = frame && m_pageAgent && (frame == m_pageAgent->mainFrame());
     appendRecord(TimelineRecordFactory::createMarkData(isMainFrame), TimelineRecordType::MarkLoad, false, frame);
@@ -1110,7 +1110,7 @@ void InspectorTimelineAgent::setCounters(TimelineEvent* record)
     record->setCounters(counters.release());
 }
 
-void InspectorTimelineAgent::setFrameIdentifier(TimelineEvent* record, Frame* frame)
+void InspectorTimelineAgent::setFrameIdentifier(TimelineEvent* record, LocalFrame* frame)
 {
     if (!frame || !m_pageAgent)
         return;
@@ -1176,7 +1176,7 @@ InspectorTimelineAgent::InspectorTimelineAgent(InspectorPageAgent* pageAgent, In
 {
 }
 
-void InspectorTimelineAgent::appendRecord(PassRefPtr<JSONObject> data, const String& type, bool captureCallStack, Frame* frame)
+void InspectorTimelineAgent::appendRecord(PassRefPtr<JSONObject> data, const String& type, bool captureCallStack, LocalFrame* frame)
 {
     pushGCEventRecords();
     RefPtr<TimelineEvent> record = TimelineRecordFactory::createGenericRecord(timestamp(), captureCallStack ? m_maxCallStackDepth : 0, type, data);
@@ -1192,7 +1192,7 @@ void InspectorTimelineAgent::sendEvent(PassRefPtr<TimelineEvent> record)
         m_frontend->eventRecorded(record);
 }
 
-void InspectorTimelineAgent::pushCurrentRecord(PassRefPtr<JSONObject> data, const String& type, bool captureCallStack, Frame* frame, bool hasLowLevelDetails)
+void InspectorTimelineAgent::pushCurrentRecord(PassRefPtr<JSONObject> data, const String& type, bool captureCallStack, LocalFrame* frame, bool hasLowLevelDetails)
 {
     pushGCEventRecords();
     commitFrameRecord();
@@ -1233,7 +1233,7 @@ void InspectorTimelineAgent::clearRecordStack()
 
 void InspectorTimelineAgent::localToPageQuad(const RenderObject& renderer, const LayoutRect& rect, FloatQuad* quad)
 {
-    Frame* frame = renderer.frame();
+    LocalFrame* frame = renderer.frame();
     FrameView* view = frame->view();
     FloatQuad absolute = renderer.localToAbsoluteQuad(FloatQuad(rect));
     quad->setP1(view->contentsToRootView(roundedIntPoint(absolute.p1())));

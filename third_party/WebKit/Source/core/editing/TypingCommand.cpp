@@ -40,7 +40,7 @@
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/rendering/RenderObject.h"
 
 namespace WebCore {
@@ -93,7 +93,7 @@ TypingCommand::TypingCommand(Document& document, ETypingCommand commandType, con
 
 void TypingCommand::deleteSelection(Document& document, Options options)
 {
-    Frame* frame = document.frame();
+    LocalFrame* frame = document.frame();
     ASSERT(frame);
 
     if (!frame->selection().isRange())
@@ -111,7 +111,7 @@ void TypingCommand::deleteSelection(Document& document, Options options)
 void TypingCommand::deleteKeyPressed(Document& document, Options options, TextGranularity granularity)
 {
     if (granularity == CharacterGranularity) {
-        Frame* frame = document.frame();
+        LocalFrame* frame = document.frame();
         if (RefPtr<TypingCommand> lastTypingCommand = lastTypingCommandIfStillOpenForTyping(frame)) {
             // If the last typing command is not Delete, open a new typing command.
             // We need to group continuous delete commands alone in a single typing command.
@@ -131,7 +131,7 @@ void TypingCommand::forwardDeleteKeyPressed(Document& document, Options options,
 {
     // FIXME: Forward delete in TextEdit appears to open and close a new typing command.
     if (granularity == CharacterGranularity) {
-        Frame* frame = document.frame();
+        LocalFrame* frame = document.frame();
         if (RefPtr<TypingCommand> lastTypingCommand = lastTypingCommandIfStillOpenForTyping(frame)) {
             updateSelectionIfDifferentFromCurrentSelection(lastTypingCommand.get(), frame);
             lastTypingCommand->setShouldPreventSpellChecking(options & PreventSpellChecking);
@@ -143,7 +143,7 @@ void TypingCommand::forwardDeleteKeyPressed(Document& document, Options options,
     TypingCommand::create(document, ForwardDeleteKey, "", options, granularity)->apply();
 }
 
-void TypingCommand::updateSelectionIfDifferentFromCurrentSelection(TypingCommand* typingCommand, Frame* frame)
+void TypingCommand::updateSelectionIfDifferentFromCurrentSelection(TypingCommand* typingCommand, LocalFrame* frame)
 {
     ASSERT(frame);
     VisibleSelection currentSelection = frame->selection().selection();
@@ -156,7 +156,7 @@ void TypingCommand::updateSelectionIfDifferentFromCurrentSelection(TypingCommand
 
 void TypingCommand::insertText(Document& document, const String& text, Options options, TextCompositionType composition)
 {
-    Frame* frame = document.frame();
+    LocalFrame* frame = document.frame();
     ASSERT(frame);
 
     if (!text.isEmpty())
@@ -168,7 +168,7 @@ void TypingCommand::insertText(Document& document, const String& text, Options o
 // FIXME: We shouldn't need to take selectionForInsertion. It should be identical to FrameSelection's current selection.
 void TypingCommand::insertText(Document& document, const String& text, const VisibleSelection& selectionForInsertion, Options options, TextCompositionType compositionType)
 {
-    RefPtr<Frame> frame = document.frame();
+    RefPtr<LocalFrame> frame = document.frame();
     ASSERT(frame);
 
     VisibleSelection currentSelection = frame->selection().selection();
@@ -227,7 +227,7 @@ void TypingCommand::insertParagraphSeparator(Document& document, Options options
     TypingCommand::create(document, InsertParagraphSeparator, "", options)->apply();
 }
 
-PassRefPtr<TypingCommand> TypingCommand::lastTypingCommandIfStillOpenForTyping(Frame* frame)
+PassRefPtr<TypingCommand> TypingCommand::lastTypingCommandIfStillOpenForTyping(LocalFrame* frame)
 {
     ASSERT(frame);
 
@@ -238,7 +238,7 @@ PassRefPtr<TypingCommand> TypingCommand::lastTypingCommandIfStillOpenForTyping(F
     return static_cast<TypingCommand*>(lastEditCommand.get());
 }
 
-void TypingCommand::closeTyping(Frame* frame)
+void TypingCommand::closeTyping(LocalFrame* frame)
 {
     if (RefPtr<TypingCommand> lastTypingCommand = lastTypingCommandIfStillOpenForTyping(frame))
         lastTypingCommand->closeTyping();
@@ -287,7 +287,7 @@ EditAction TypingCommand::editingAction() const
 
 void TypingCommand::markMisspellingsAfterTyping(ETypingCommand commandType)
 {
-    Frame* frame = document().frame();
+    LocalFrame* frame = document().frame();
     if (!frame)
         return;
 
@@ -312,7 +312,7 @@ void TypingCommand::markMisspellingsAfterTyping(ETypingCommand commandType)
 
 void TypingCommand::typingAddedToOpenCommand(ETypingCommand commandTypeForAddedTyping)
 {
-    Frame* frame = document().frame();
+    LocalFrame* frame = document().frame();
     if (!frame)
         return;
 
@@ -402,7 +402,7 @@ bool TypingCommand::makeEditableRootEmpty()
 
 void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing)
 {
-    Frame* frame = document().frame();
+    LocalFrame* frame = document().frame();
     if (!frame)
         return;
 
@@ -506,7 +506,7 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing)
 
 void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool killRing)
 {
-    Frame* frame = document().frame();
+    LocalFrame* frame = document().frame();
     if (!frame)
         return;
 

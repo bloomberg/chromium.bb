@@ -50,7 +50,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/frame/ContentSecurityPolicy.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "platform/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
@@ -78,12 +78,12 @@ static void setInjectedScriptContextDebugId(v8::Handle<v8::Context> targetContex
     V8PerContextDebugData::setContextDebugData(targetContext, "injected", debugId);
 }
 
-PassOwnPtr<V8WindowShell> V8WindowShell::create(Frame* frame, PassRefPtr<DOMWrapperWorld> world, v8::Isolate* isolate)
+PassOwnPtr<V8WindowShell> V8WindowShell::create(LocalFrame* frame, PassRefPtr<DOMWrapperWorld> world, v8::Isolate* isolate)
 {
     return adoptPtr(new V8WindowShell(frame, world, isolate));
 }
 
-V8WindowShell::V8WindowShell(Frame* frame, PassRefPtr<DOMWrapperWorld> world, v8::Isolate* isolate)
+V8WindowShell::V8WindowShell(LocalFrame* frame, PassRefPtr<DOMWrapperWorld> world, v8::Isolate* isolate)
     : m_frame(frame)
     , m_world(world)
     , m_isolate(isolate)
@@ -170,7 +170,7 @@ void V8WindowShell::clearForNavigation()
 // global object of the context. A variable declared in the global
 // scope is a property of the inner window.
 //
-// The outer window sticks to a Frame, it is exposed to JavaScript
+// The outer window sticks to a LocalFrame, it is exposed to JavaScript
 // via window.window, window.self, window.parent, etc. The outer window
 // has a security token which is the domain. The outer window cannot
 // have its own properties. window.foo = 'x' is delegated to the
@@ -442,7 +442,7 @@ static v8::Handle<v8::Value> getNamedProperty(HTMLDocument* htmlDocument, const 
 
     if (items->hasExactlyOneItem()) {
         Element* element = items->item(0);
-        Frame* frame = 0;
+        LocalFrame* frame = 0;
         if (element->hasTagName(HTMLNames::iframeTag) && (frame = toHTMLIFrameElement(element)->contentFrame()))
             return toV8(frame->domWindow(), creationContext, isolate);
         return toV8(element, creationContext, isolate);

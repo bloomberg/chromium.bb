@@ -28,7 +28,7 @@
 
 #include "core/dom/Document.h"
 #include "core/editing/htmlediting.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderView.h"
@@ -198,7 +198,7 @@ bool CaretBase::shouldRepaintCaret(const RenderView* view, bool isContentEditabl
     ASSERT(view);
     bool caretBrowsing = false;
     if (FrameView* frameView = view->frameView()) {
-        Frame& frame = frameView->frame(); // The frame where the selection started
+        LocalFrame& frame = frameView->frame(); // The frame where the selection started
         caretBrowsing = frame.settings() && frame.settings()->caretBrowsingEnabled();
     }
     return (caretBrowsing || isContentEditable);
@@ -256,7 +256,7 @@ void CaretBase::paintCaret(Node* node, GraphicsContext* context, const LayoutPoi
     context->fillRect(caret, caretColor);
 }
 
-void DragCaretController::paintDragCaret(Frame* frame, GraphicsContext* p, const LayoutPoint& paintOffset, const LayoutRect& clipRect) const
+void DragCaretController::paintDragCaret(LocalFrame* frame, GraphicsContext* p, const LayoutPoint& paintOffset, const LayoutRect& clipRect) const
 {
     if (m_position.deepEquivalent().deprecatedNode()->document().frame() == frame)
         paintCaret(m_position.deepEquivalent().deprecatedNode(), p, paintOffset, clipRect);

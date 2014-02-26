@@ -24,13 +24,13 @@
 #include "modules/geolocation/NavigatorGeolocation.h"
 
 #include "core/dom/Document.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
 #include "modules/geolocation/Geolocation.h"
 
 namespace WebCore {
 
-NavigatorGeolocation::NavigatorGeolocation(Frame* frame)
+NavigatorGeolocation::NavigatorGeolocation(LocalFrame* frame)
     : DOMWindowProperty(frame)
 {
 }

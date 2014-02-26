@@ -45,7 +45,7 @@ PassOwnPtr<WebCore::StorageNamespace> StorageClientImpl::createSessionStorageNam
     return adoptPtr(new WebCore::StorageNamespace(adoptPtr(m_webView->client()->createSessionStorageNamespace())));
 }
 
-bool StorageClientImpl::canAccessStorage(WebCore::Frame* frame, WebCore::StorageType type) const
+bool StorageClientImpl::canAccessStorage(WebCore::LocalFrame* frame, WebCore::StorageType type) const
 {
     WebFrameImpl* webFrame = WebFrameImpl::fromFrame(frame);
     return !webFrame->permissionClient() || webFrame->permissionClient()->allowStorage(webFrame, type == WebCore::LocalStorage);

@@ -20,8 +20,8 @@
 #include "config.h"
 #include "modules/vibration/NavigatorVibration.h"
 
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
-#include "core/frame/Frame.h"
 #include "core/page/PageVisibilityState.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebVibration.h"
@@ -129,7 +129,7 @@ void NavigatorVibration::pageVisibilityChanged()
         cancelVibration();
 }
 
-void NavigatorVibration::didCommitLoad(Frame* frame)
+void NavigatorVibration::didCommitLoad(LocalFrame* frame)
 {
     // A new load has been committed, which means the current page will be
     // unloaded. Cancel all running vibrations.

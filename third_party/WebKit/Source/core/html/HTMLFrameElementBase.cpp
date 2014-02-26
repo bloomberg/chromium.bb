@@ -30,11 +30,11 @@
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/events/ThreadLocalEventNames.h"
+#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/FocusController.h"
-#include "core/frame/Frame.h"
-#include "core/frame/FrameView.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderPart.h"
 
@@ -63,7 +63,7 @@ bool HTMLFrameElementBase::isURLAllowed() const
             return false;
     }
 
-    Frame* parentFrame = document().frame();
+    LocalFrame* parentFrame = document().frame();
     if (parentFrame)
         return parentFrame->isURLAllowed(completeURL);
 
@@ -78,7 +78,7 @@ void HTMLFrameElementBase::openURL(bool lockBackForwardList)
     if (m_URL.isEmpty())
         m_URL = AtomicString(blankURL().string());
 
-    Frame* parentFrame = document().frame();
+    LocalFrame* parentFrame = document().frame();
     if (!parentFrame)
         return;
 
@@ -164,7 +164,7 @@ void HTMLFrameElementBase::attach(const AttachContext& context)
     HTMLFrameOwnerElement::attach(context);
 
     if (RenderPart* part = renderPart()) {
-        if (Frame* frame = contentFrame())
+        if (LocalFrame* frame = contentFrame())
             part->setWidget(frame->view());
     }
 }

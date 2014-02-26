@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/html/canvas/WebGLRenderingContext.h"
 
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/canvas/ANGLEInstancedArrays.h"
 #include "core/html/canvas/EXTFragDepth.h"
 #include "core/html/canvas/EXTTextureFilterAnisotropic.h"
@@ -61,7 +61,7 @@ namespace WebCore {
 PassOwnPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTMLCanvasElement* canvas, WebGLContextAttributes* attrs)
 {
     Document& document = canvas->document();
-    Frame* frame = document.frame();
+    LocalFrame* frame = document.frame();
     if (!frame)
         return nullptr;
     Settings* settings = frame->settings();

@@ -36,7 +36,7 @@
 namespace WebCore {
 
 class Element;
-class Frame;
+class LocalFrame;
 class HTMLMediaElement;
 class Image;
 class KURL;
@@ -75,7 +75,7 @@ public:
     // The hit-tested point in the coordinates of the innerNode frame, the frame containing innerNode.
     const LayoutPoint& pointInInnerNodeFrame() const { return m_pointInInnerNodeFrame; }
     IntPoint roundedPointInInnerNodeFrame() const { return roundedIntPoint(pointInInnerNodeFrame()); }
-    Frame* innerNodeFrame() const;
+    LocalFrame* innerNodeFrame() const;
 
     // The hit-tested point in the coordinates of the inner node.
     const LayoutPoint& localPoint() const { return m_localPoint; }

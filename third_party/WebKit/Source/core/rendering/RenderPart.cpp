@@ -25,8 +25,8 @@
 #include "config.h"
 #include "core/rendering/RenderPart.h"
 
-#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/plugins/PluginView.h"
 #include "core/rendering/HitTestResult.h"

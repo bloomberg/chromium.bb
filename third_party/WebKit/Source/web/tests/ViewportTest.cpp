@@ -38,8 +38,8 @@
 #include "WebSettings.h"
 #include "WebViewClient.h"
 #include "core/dom/ViewportDescription.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/page/Page.h"
 #include "core/page/PageScaleConstraints.h"
 #include "core/frame/Settings.h"
@@ -55,7 +55,7 @@
 #include <vector>
 
 using namespace blink;
-using WebCore::Frame;
+using WebCore::LocalFrame;
 using WebCore::FrameView;
 using WebCore::IntPoint;
 using WebCore::IntRect;

@@ -56,8 +56,8 @@ public:
     virtual void enable(ErrorString*) OVERRIDE;
     virtual void disable(ErrorString*) OVERRIDE;
 
-    void didClearWindowObjectInMainWorld(Frame*);
-    void didCreateIsolatedContext(Frame*, ScriptState*, SecurityOrigin*);
+    void didClearWindowObjectInMainWorld(LocalFrame*);
+    void didCreateIsolatedContext(LocalFrame*, ScriptState*, SecurityOrigin*);
 
 private:
     PageRuntimeAgent(InjectedScriptManager*, ScriptDebugServer*, Page*, InspectorPageAgent*);

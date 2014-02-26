@@ -35,7 +35,7 @@
 #include "wtf/Forward.h"
 
 namespace WebCore {
-class Frame;
+class LocalFrame;
 class HTMLInputElement;
 }
 
@@ -50,8 +50,8 @@ public:
 
     virtual void respondToChangedContents() OVERRIDE;
     virtual void respondToChangedSelection(WebCore::SelectionType) OVERRIDE;
-    virtual bool canCopyCut(WebCore::Frame*, bool defaultValue) const OVERRIDE;
-    virtual bool canPaste(WebCore::Frame*, bool defaultValue) const OVERRIDE;
+    virtual bool canCopyCut(WebCore::LocalFrame*, bool defaultValue) const OVERRIDE;
+    virtual bool canPaste(WebCore::LocalFrame*, bool defaultValue) const OVERRIDE;
     virtual void didExecuteCommand(String commandName) OVERRIDE;
     virtual bool handleKeyboardEvent() OVERRIDE;
 

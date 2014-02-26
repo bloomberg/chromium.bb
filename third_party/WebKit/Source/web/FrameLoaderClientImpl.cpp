@@ -238,37 +238,37 @@ bool FrameLoaderClientImpl::hasWebView() const
     return m_webFrame->viewImpl();
 }
 
-Frame* FrameLoaderClientImpl::parent() const
+LocalFrame* FrameLoaderClientImpl::parent() const
 {
     WebFrameImpl* frame = toWebFrameImpl(m_webFrame->parent());
     return frame ? frame->frame() : 0;
 }
 
-Frame* FrameLoaderClientImpl::top() const
+LocalFrame* FrameLoaderClientImpl::top() const
 {
     WebFrameImpl* frame = toWebFrameImpl(m_webFrame->top());
     return frame ? frame->frame() : 0;
 }
 
-Frame* FrameLoaderClientImpl::previousSibling() const
+LocalFrame* FrameLoaderClientImpl::previousSibling() const
 {
     WebFrameImpl* frame = toWebFrameImpl(m_webFrame->previousSibling());
     return frame ? frame->frame() : 0;
 }
 
-Frame* FrameLoaderClientImpl::nextSibling() const
+LocalFrame* FrameLoaderClientImpl::nextSibling() const
 {
     WebFrameImpl* frame = toWebFrameImpl(m_webFrame->nextSibling());
     return frame ? frame->frame() : 0;
 }
 
-Frame* FrameLoaderClientImpl::firstChild() const
+LocalFrame* FrameLoaderClientImpl::firstChild() const
 {
     WebFrameImpl* frame = toWebFrameImpl(m_webFrame->firstChild());
     return frame ? frame->frame() : 0;
 }
 
-Frame* FrameLoaderClientImpl::lastChild() const
+LocalFrame* FrameLoaderClientImpl::lastChild() const
 {
     WebFrameImpl* frame = toWebFrameImpl(m_webFrame->lastChild());
     return frame ? frame->frame() : 0;
@@ -291,7 +291,7 @@ void FrameLoaderClientImpl::detachedFromParent()
     m_webFrame->setClient(0);
 
     client->frameDetached(m_webFrame);
-    // Clear our reference to WebCore::Frame at the very end, in case the client
+    // Clear our reference to WebCore::LocalFrame at the very end, in case the client
     // refers to it.
     m_webFrame->setWebCoreFrame(nullptr);
 }
@@ -400,7 +400,7 @@ void FrameLoaderClientImpl::dispatchDidChangeIcons(WebCore::IconType type)
         m_webFrame->client()->didChangeIcon(m_webFrame, static_cast<WebIconURL::Type>(type));
 }
 
-void FrameLoaderClientImpl::dispatchDidCommitLoad(Frame* frame, HistoryItem* item, HistoryCommitType commitType)
+void FrameLoaderClientImpl::dispatchDidCommitLoad(LocalFrame* frame, HistoryItem* item, HistoryCommitType commitType)
 {
     m_webFrame->frame()->page()->historyController().updateForCommit(frame, item, commitType);
     m_webFrame->viewImpl()->didCommitLoad(commitType == StandardCommit, false);
@@ -572,7 +572,7 @@ void FrameLoaderClientImpl::selectorMatchChanged(const Vector<String>& addedSele
         client->didMatchCSS(m_webFrame, WebVector<WebString>(addedSelectors), WebVector<WebString>(removedSelectors));
 }
 
-PassRefPtr<DocumentLoader> FrameLoaderClientImpl::createDocumentLoader(Frame* frame, const ResourceRequest& request, const SubstituteData& data)
+PassRefPtr<DocumentLoader> FrameLoaderClientImpl::createDocumentLoader(LocalFrame* frame, const ResourceRequest& request, const SubstituteData& data)
 {
     RefPtr<WebDataSourceImpl> ds = WebDataSourceImpl::create(frame, request, data);
     if (m_webFrame->client())
@@ -604,7 +604,7 @@ void FrameLoaderClientImpl::transitionToCommittedForNewPage()
     m_webFrame->createFrameView();
 }
 
-PassRefPtr<Frame> FrameLoaderClientImpl::createFrame(
+PassRefPtr<LocalFrame> FrameLoaderClientImpl::createFrame(
     const KURL& url,
     const AtomicString& name,
     const Referrer& referrer,

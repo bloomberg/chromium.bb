@@ -49,8 +49,8 @@
 #include "bindings/v8/V8Utilities.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/fetch/MemoryCache.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InspectorController.h"
 #include "core/page/Page.h"
@@ -278,7 +278,7 @@ void WebDevToolsAgentImpl::didCreateScriptContext(WebFrameImpl* webframe, int wo
     // Skip non main world contexts.
     if (worldId)
         return;
-    if (WebCore::Frame* frame = webframe->frame())
+    if (WebCore::LocalFrame* frame = webframe->frame())
         frame->script().setContextDebugId(m_hostId);
 }
 
@@ -528,7 +528,7 @@ InspectorController* WebDevToolsAgentImpl::inspectorController()
     return 0;
 }
 
-Frame* WebDevToolsAgentImpl::mainFrame()
+LocalFrame* WebDevToolsAgentImpl::mainFrame()
 {
     if (Page* page = m_webViewImpl->page())
         return page->mainFrame();

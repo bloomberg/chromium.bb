@@ -42,12 +42,12 @@ namespace WebCore {
 class DocumentLoadTiming;
 class DocumentLoader;
 struct DocumentTiming;
-class Frame;
+class LocalFrame;
 class ResourceLoadTiming;
 
 class PerformanceTiming FINAL : public RefCountedWillBeGarbageCollectedFinalized<PerformanceTiming>, public ScriptWrappable, public DOMWindowProperty {
 public:
-    static PassRefPtrWillBeRawPtr<PerformanceTiming> create(Frame* frame)
+    static PassRefPtrWillBeRawPtr<PerformanceTiming> create(LocalFrame* frame)
     {
         return adoptRefWillBeNoop(new PerformanceTiming(frame));
     }
@@ -77,7 +77,7 @@ public:
     void trace(Visitor*) { }
 
 private:
-    explicit PerformanceTiming(Frame*);
+    explicit PerformanceTiming(LocalFrame*);
 
     const DocumentTiming* documentTiming() const;
     DocumentLoader* documentLoader() const;

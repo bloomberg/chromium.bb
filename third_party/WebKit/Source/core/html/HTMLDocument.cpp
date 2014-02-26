@@ -56,8 +56,8 @@
 #include "HTMLNames.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/frame/DOMWindow.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/page/FocusController.h"
 #include "core/page/FrameTree.h"
@@ -200,7 +200,7 @@ void HTMLDocument::addItemToMap(HashCountedSet<AtomicString>& map, const AtomicS
     if (name.isEmpty())
         return;
     map.add(name);
-    if (Frame* f = frame())
+    if (LocalFrame* f = frame())
         f->script().namedItemAdded(this, name);
 }
 
@@ -209,7 +209,7 @@ void HTMLDocument::removeItemFromMap(HashCountedSet<AtomicString>& map, const At
     if (name.isEmpty())
         return;
     map.remove(name);
-    if (Frame* f = frame())
+    if (LocalFrame* f = frame())
         f->script().namedItemRemoved(this, name);
 }
 

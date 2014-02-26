@@ -34,7 +34,7 @@
 #include "WebFrame.h"
 
 #include "FrameLoaderClientImpl.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "platform/geometry/FloatRect.h"
 #include "public/platform/WebFileSystemType.h"
 #include "wtf/Compiler.h"
@@ -245,24 +245,24 @@ public:
     // Called by the WebViewImpl to initialize the main frame for the page.
     void initializeAsMainFrame(WebCore::Page*);
 
-    PassRefPtr<WebCore::Frame> createChildFrame(
+    PassRefPtr<WebCore::LocalFrame> createChildFrame(
         const WebCore::FrameLoadRequest&, WebCore::HTMLFrameOwnerElement*);
 
     void didChangeContentsSize(const WebCore::IntSize&);
 
     void createFrameView();
 
-    static WebFrameImpl* fromFrame(WebCore::Frame* frame);
+    static WebFrameImpl* fromFrame(WebCore::LocalFrame* frame);
     static WebFrameImpl* fromFrameOwnerElement(WebCore::Element* element);
 
     // If the frame hosts a PluginDocument, this method returns the WebPluginContainerImpl
     // that hosts the plugin.
-    static WebPluginContainerImpl* pluginContainerFromFrame(WebCore::Frame*);
+    static WebPluginContainerImpl* pluginContainerFromFrame(WebCore::LocalFrame*);
 
     // If the frame hosts a PluginDocument, this method returns the WebPluginContainerImpl
     // that hosts the plugin. If the provided node is a plugin, then it runs its
     // WebPluginContainerImpl.
-    static WebPluginContainerImpl* pluginContainerFromNode(WebCore::Frame*, const WebNode&);
+    static WebPluginContainerImpl* pluginContainerFromNode(WebCore::LocalFrame*, const WebNode&);
 
     WebViewImpl* viewImpl() const;
 
@@ -297,7 +297,7 @@ public:
     // Otherwise, disallow scrolling.
     virtual void setCanHaveScrollbars(bool) OVERRIDE;
 
-    WebCore::Frame* frame() const { return m_frame.get(); }
+    WebCore::LocalFrame* frame() const { return m_frame.get(); }
     WebFrameClient* client() const { return m_client; }
     void setClient(WebFrameClient* client) { m_client = client; }
 
@@ -306,7 +306,7 @@ public:
 
     void setInputEventsTransformForEmulation(const WebCore::IntSize&, float);
 
-    static void selectWordAroundPosition(WebCore::Frame*, WebCore::VisiblePosition);
+    static void selectWordAroundPosition(WebCore::LocalFrame*, WebCore::VisiblePosition);
 
 private:
     class DeferredScopeStringMatches;
@@ -337,7 +337,7 @@ private:
     explicit WebFrameImpl(WebFrameClient*);
 
     // Sets the local WebCore frame and registers destruction observers.
-    void setWebCoreFrame(PassRefPtr<WebCore::Frame>);
+    void setWebCoreFrame(PassRefPtr<WebCore::LocalFrame>);
 
     // Notifies the delegate about a new selection rect.
     void reportFindInPageSelection(
@@ -434,16 +434,16 @@ private:
     };
     RefPtr<WebFrameInit> m_frameInit;
 
-    // The embedder retains a reference to the WebCore Frame while it is active in the DOM. This
+    // The embedder retains a reference to the WebCore LocalFrame while it is active in the DOM. This
     // reference is released when the frame is removed from the DOM or the entire page is closed.
-    RefPtr<WebCore::Frame> m_frame;
+    RefPtr<WebCore::LocalFrame> m_frame;
     WebFrameImpl* m_parent;
     WebFrameImpl* m_previousSibling;
     WebFrameImpl* m_nextSibling;
     WebFrameImpl* m_firstChild;
     WebFrameImpl* m_lastChild;
 
-    // Indicate whether the current Frame is local or remote. Remote frames are
+    // Indicate whether the current LocalFrame is local or remote. Remote frames are
     // rendered in a different process from their parent frames.
     bool m_isRemote;
 

@@ -33,7 +33,7 @@
 
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/PageConsole.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"
@@ -113,7 +113,7 @@ void PageRuntimeAgent::disable(ErrorString* errorString)
     m_state->setBoolean(PageRuntimeAgentState::runtimeEnabled, false);
 }
 
-void PageRuntimeAgent::didClearWindowObjectInMainWorld(Frame* frame)
+void PageRuntimeAgent::didClearWindowObjectInMainWorld(LocalFrame* frame)
 {
     m_mainWorldContextCreated = true;
 
@@ -125,7 +125,7 @@ void PageRuntimeAgent::didClearWindowObjectInMainWorld(Frame* frame)
     notifyContextCreated(frameId, scriptState, 0, true);
 }
 
-void PageRuntimeAgent::didCreateIsolatedContext(Frame* frame, ScriptState* scriptState, SecurityOrigin* origin)
+void PageRuntimeAgent::didCreateIsolatedContext(LocalFrame* frame, ScriptState* scriptState, SecurityOrigin* origin)
 {
     if (!m_enabled)
         return;
@@ -162,7 +162,7 @@ void PageRuntimeAgent::unmuteConsole()
 void PageRuntimeAgent::reportExecutionContextCreation()
 {
     Vector<std::pair<ScriptState*, SecurityOrigin*> > isolatedContexts;
-    for (Frame* frame = m_inspectedPage->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+    for (LocalFrame* frame = m_inspectedPage->mainFrame(); frame; frame = frame->tree().traverseNext()) {
         if (!frame->script().canExecuteScripts(NotAboutToExecuteScript))
             continue;
         String frameId = m_pageAgent->frameId(frame);

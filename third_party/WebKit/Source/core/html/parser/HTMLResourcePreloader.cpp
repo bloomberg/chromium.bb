@@ -73,7 +73,7 @@ void HTMLResourcePreloader::takeAndPreload(PreloadRequestStream& r)
         preload(it->release());
 }
 
-static bool mediaAttributeMatches(Frame* frame, RenderStyle* renderStyle, const String& attributeValue)
+static bool mediaAttributeMatches(LocalFrame* frame, RenderStyle* renderStyle, const String& attributeValue)
 {
     RefPtrWillBeRawPtr<MediaQuerySet> mediaQueries = MediaQuerySet::create(attributeValue);
     MediaQueryEvaluator mediaQueryEvaluator("screen", frame, renderStyle);

@@ -29,9 +29,9 @@
 
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
-#include "core/html/HTMLVideoElement.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
+#include "core/html/HTMLVideoElement.h"
 #include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderFullScreen.h"

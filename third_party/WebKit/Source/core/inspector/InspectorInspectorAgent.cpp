@@ -35,7 +35,7 @@
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorController.h"
@@ -66,7 +66,7 @@ InspectorInspectorAgent::~InspectorInspectorAgent()
     m_instrumentingAgents->setInspectorInspectorAgent(0);
 }
 
-void InspectorInspectorAgent::didClearWindowObjectInMainWorld(Frame* frame)
+void InspectorInspectorAgent::didClearWindowObjectInMainWorld(LocalFrame* frame)
 {
     if (m_injectedScriptForOrigin.isEmpty())
         return;
@@ -103,7 +103,7 @@ void InspectorInspectorAgent::clearFrontend()
     disable(&error);
 }
 
-void InspectorInspectorAgent::didCommitLoad(Frame* frame, DocumentLoader* loader)
+void InspectorInspectorAgent::didCommitLoad(LocalFrame* frame, DocumentLoader* loader)
 {
     if (loader->frame() != frame->page()->mainFrame())
         return;
@@ -133,7 +133,7 @@ void InspectorInspectorAgent::reset(ErrorString*)
     m_inspectedPage->inspectorController().reconnectFrontend();
 }
 
-void InspectorInspectorAgent::domContentLoadedEventFired(Frame* frame)
+void InspectorInspectorAgent::domContentLoadedEventFired(LocalFrame* frame)
 {
     if (frame->page()->mainFrame() != frame)
         return;

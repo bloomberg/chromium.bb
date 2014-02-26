@@ -121,7 +121,7 @@ private:
         m_testingMemoryCache = adoptPtr(new MemoryCache());
         setMemoryCacheForTesting(m_testingMemoryCache.leakPtr());
 
-        // Create a ResourceFetcher that has a real DocumentLoader and Document, but is not attached to a Frame.
+        // Create a ResourceFetcher that has a real DocumentLoader and Document, but is not attached to a LocalFrame.
         const KURL kDocumentURL(ParsedURLString, "http://document.com/");
         m_documentLoader = DocumentLoader::create(0, ResourceRequest(kDocumentURL), SubstituteData());
         m_document = HTMLDocument::create();

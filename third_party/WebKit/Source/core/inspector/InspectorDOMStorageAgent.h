@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-class Frame;
+class LocalFrame;
 class InspectorFrontend;
 class InspectorPageAgent;
 class InstrumentingAgents;
@@ -72,7 +72,7 @@ private:
     InspectorDOMStorageAgent(InspectorPageAgent*);
 
     bool isEnabled() const;
-    PassOwnPtr<StorageArea> findStorageArea(ErrorString*, const RefPtr<JSONObject>&, Frame*&);
+    PassOwnPtr<StorageArea> findStorageArea(ErrorString*, const RefPtr<JSONObject>&, LocalFrame*&);
     PassRefPtr<TypeBuilder::DOMStorage::StorageId> storageId(SecurityOrigin*, bool isLocalStorage);
 
     InspectorPageAgent* m_pageAgent;

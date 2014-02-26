@@ -66,8 +66,8 @@
 #include "core/editing/SpellChecker.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/events/MouseEvent.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/loader/FrameLoadRequest.h"
@@ -636,7 +636,7 @@ TEST_F(WebFrameTest, PostMessageThenDetach)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad("about:blank");
 
-    RefPtr<WebCore::Frame> frame = webViewHelper.webViewImpl()->page()->mainFrame();
+    RefPtr<WebCore::LocalFrame> frame = webViewHelper.webViewImpl()->page()->mainFrame();
     WebCore::NonThrowableExceptionState exceptionState;
     frame->domWindow()->postMessage(WebCore::SerializedScriptValue::create("message"), 0, "*", frame->domWindow(), exceptionState);
     webViewHelper.reset();
@@ -3263,7 +3263,7 @@ TEST_F(WebFrameTest, FindOnDetachedFrame)
     WebString searchText = WebString::fromUTF8(kFindString);
     WebFrameImpl* mainFrame = toWebFrameImpl(webViewHelper.webView()->mainFrame());
     RefPtr<WebFrameImpl> secondFrame = toWebFrameImpl(mainFrame->traverseNext(false));
-    RefPtr<WebCore::Frame> holdSecondFrame = secondFrame->frame();
+    RefPtr<WebCore::LocalFrame> holdSecondFrame = secondFrame->frame();
 
     // Detach the frame before finding.
     EXPECT_TRUE(mainFrame->document().getElementById("frame").remove());
@@ -3304,7 +3304,7 @@ TEST_F(WebFrameTest, FindDetachFrameBeforeScopeStrings)
     WebString searchText = WebString::fromUTF8(kFindString);
     WebFrameImpl* mainFrame = toWebFrameImpl(webViewHelper.webView()->mainFrame());
     WebFrameImpl* secondFrame = toWebFrameImpl(mainFrame->traverseNext(false));
-    RefPtr<WebCore::Frame> holdSecondFrame = secondFrame->frame();
+    RefPtr<WebCore::LocalFrame> holdSecondFrame = secondFrame->frame();
 
     for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
         EXPECT_TRUE(frame->find(kFindIdentifier, searchText, options, false, 0));
@@ -3345,7 +3345,7 @@ TEST_F(WebFrameTest, FindDetachFrameWhileScopingStrings)
     WebString searchText = WebString::fromUTF8(kFindString);
     WebFrameImpl* mainFrame = toWebFrameImpl(webViewHelper.webView()->mainFrame());
     WebFrameImpl* secondFrame = toWebFrameImpl(mainFrame->traverseNext(false));
-    RefPtr<WebCore::Frame> holdSecondFrame = secondFrame->frame();
+    RefPtr<WebCore::LocalFrame> holdSecondFrame = secondFrame->frame();
 
     for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
         EXPECT_TRUE(frame->find(kFindIdentifier, searchText, options, false, 0));
@@ -4501,7 +4501,7 @@ public:
         EXPECT_FALSE(m_didScrollMainFrame);
         WebCore::FrameView* view = toWebFrameImpl(frame)->frameView();
         // FrameView can be scrolled in FrameView::setFixedVisibleContentRect
-        // which is called from Frame::createView (before the frame is associated
+        // which is called from LocalFrame::createView (before the frame is associated
         // with the the view).
         if (view) {
             m_didScrollMainFrame = true;

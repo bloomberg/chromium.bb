@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-class Frame;
+class LocalFrame;
 class UndoStep;
 
 class UndoStack {
@@ -47,7 +47,7 @@ public:
 
     void registerUndoStep(PassRefPtr<UndoStep>);
     void registerRedoStep(PassRefPtr<UndoStep>);
-    void didUnloadFrame(const Frame&);
+    void didUnloadFrame(const LocalFrame&);
     bool canUndo() const;
     bool canRedo() const;
     void undo();
@@ -59,7 +59,7 @@ private:
     bool m_inRedo;
 
     typedef Deque<RefPtr<UndoStep> > UndoStepStack;
-    void filterOutUndoSteps(UndoStepStack&, const Frame&);
+    void filterOutUndoSteps(UndoStepStack&, const LocalFrame&);
     UndoStepStack m_undoStack;
     UndoStepStack m_redoStack;
 };

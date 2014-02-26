@@ -31,13 +31,13 @@
 #include "RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
-#include "core/frame/Frame.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/imports/HTMLImportsController.h"
 
 namespace WebCore {
 
-static Document* parentDocument(Frame* frame)
+static Document* parentDocument(LocalFrame* frame)
 {
     if (!frame)
         return 0;
@@ -48,12 +48,12 @@ static Document* parentDocument(Frame* frame)
 }
 
 
-static Document* ownerDocument(Frame* frame)
+static Document* ownerDocument(LocalFrame* frame)
 {
     if (!frame)
         return 0;
 
-    Frame* ownerFrame = frame->tree().parent();
+    LocalFrame* ownerFrame = frame->tree().parent();
     if (!ownerFrame)
         ownerFrame = frame->loader().opener();
     if (!ownerFrame)
@@ -61,7 +61,7 @@ static Document* ownerDocument(Frame* frame)
     return ownerFrame->document();
 }
 
-DocumentInit::DocumentInit(const KURL& url, Frame* frame, WeakPtr<Document> contextDocument, HTMLImport* import)
+DocumentInit::DocumentInit(const KURL& url, LocalFrame* frame, WeakPtr<Document> contextDocument, HTMLImport* import)
     : m_url(url)
     , m_frame(frame)
     , m_parent(parentDocument(frame))
@@ -90,7 +90,7 @@ DocumentInit::~DocumentInit()
 
 bool DocumentInit::shouldSetURL() const
 {
-    Frame* frame = frameForSecurityContext();
+    LocalFrame* frame = frameForSecurityContext();
     return (frame && frame->ownerElement()) || !m_url.isEmpty();
 }
 
@@ -99,7 +99,7 @@ bool DocumentInit::shouldTreatURLAsSrcdocDocument() const
     return m_parent && m_frame->loader().shouldTreatURLAsSrcdocDocument(m_url);
 }
 
-Frame* DocumentInit::frameForSecurityContext() const
+LocalFrame* DocumentInit::frameForSecurityContext() const
 {
     if (m_frame)
         return m_frame;

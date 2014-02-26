@@ -38,13 +38,13 @@
 namespace WebCore {
 
 class ExceptionState;
-class Frame;
+class LocalFrame;
 class KURL;
 
 class ApplicationCache FINAL : public ScriptWrappable, public RefCounted<ApplicationCache>, public EventTargetWithInlineData, public DOMWindowProperty {
     REFCOUNTED_EVENT_TARGET(ApplicationCache);
 public:
-    static PassRefPtr<ApplicationCache> create(Frame* frame) { return adoptRef(new ApplicationCache(frame)); }
+    static PassRefPtr<ApplicationCache> create(LocalFrame* frame) { return adoptRef(new ApplicationCache(frame)); }
     virtual ~ApplicationCache() { ASSERT(!m_frame); }
 
     virtual void willDestroyGlobalObjectInFrame() OVERRIDE;
@@ -71,7 +71,7 @@ public:
     static const AtomicString& toEventType(ApplicationCacheHost::EventID);
 
 private:
-    explicit ApplicationCache(Frame*);
+    explicit ApplicationCache(LocalFrame*);
 
     ApplicationCacheHost* applicationCacheHost() const;
 };

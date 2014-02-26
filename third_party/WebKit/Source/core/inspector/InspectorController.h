@@ -41,7 +41,7 @@
 namespace WebCore {
 
 class DOMWrapperWorld;
-class Frame;
+class LocalFrame;
 class GraphicsContext;
 class GraphicsLayer;
 class InjectedScriptManager;
@@ -85,7 +85,7 @@ public:
     void registerModuleAgent(PassOwnPtr<InspectorAgent>);
 
     void setInspectorFrontendClient(PassOwnPtr<InspectorFrontendClient>);
-    void didClearWindowObjectInMainWorld(Frame*);
+    void didClearWindowObjectInMainWorld(LocalFrame*);
     void setInjectedScriptForOrigin(const String& origin, const String& source);
 
     void dispatchMessageFromFrontend(const String& message);
@@ -104,10 +104,10 @@ public:
     void hideHighlight();
     Node* highlightedNode() const;
 
-    bool handleGestureEvent(Frame*, const PlatformGestureEvent&);
-    bool handleMouseEvent(Frame*, const PlatformMouseEvent&);
-    bool handleTouchEvent(Frame*, const PlatformTouchEvent&);
-    bool handleKeyboardEvent(Frame*, const PlatformKeyboardEvent&);
+    bool handleGestureEvent(LocalFrame*, const PlatformGestureEvent&);
+    bool handleMouseEvent(LocalFrame*, const PlatformMouseEvent&);
+    bool handleTouchEvent(LocalFrame*, const PlatformTouchEvent&);
+    bool handleKeyboardEvent(LocalFrame*, const PlatformKeyboardEvent&);
 
     void requestPageScaleFactor(float scale, const IntPoint& origin);
     bool deviceEmulationEnabled();

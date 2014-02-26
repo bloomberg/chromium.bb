@@ -39,7 +39,7 @@ namespace WebCore {
 
 class CustomElementMicrotaskImportStep;
 class Document;
-class Frame;
+class LocalFrame;
 class HTMLImportChild;
 class HTMLImportRoot;
 class HTMLImportsController;
@@ -105,7 +105,7 @@ public:
 
     virtual ~HTMLImport() { }
 
-    Frame* frame();
+    LocalFrame* frame();
     Document* master();
     HTMLImportsController* controller();
     bool isRoot() const { return !isChild(); }
