@@ -79,3 +79,11 @@ class SmoothnessGpuRasterizationKeySilkCases(test.Test):
     options.AppendExtraBrowserArgs('--force-compositing-mode')
     options.AppendExtraBrowserArgs('--enable-impl-side-painting')
     options.AppendExtraBrowserArgs('--enable-gpu-rasterization')
+
+
+class SmoothnessToughPinchZoomCases(test.Test):
+  """Measures rendering statistics for pinch-zooming into the tough pinch zoom
+  cases
+  """
+  test = smoothness.Smoothness
+  page_set = 'page_sets/tough_pinch_zoom_cases.json'
