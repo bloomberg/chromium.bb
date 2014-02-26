@@ -661,6 +661,11 @@ public:
         return static_cast<Array<T>*>(static_cast<JSONArrayBase*>(array.get()));
     }
 
+    void concat(PassRefPtr<Array<T> > array)
+    {
+        return ArrayItemHelper<T>::Traits::concat(this->openAccessors(), array->openAccessors());
+    }
+
 #if $validatorIfdefName
     static void assertCorrectValue(JSONValue* value)
     {
@@ -678,6 +683,12 @@ struct StructItemTraits {
     static void pushRefPtr(JSONArray* array, PassRefPtr<JSONValue> value)
     {
         array->pushValue(value);
+    }
+
+    static void concat(JSONArray* array, JSONArray* anotherArray)
+    {
+        for (JSONArray::iterator it = anotherArray->begin(); it != anotherArray->end(); ++it)
+            array->pushValue(*it);
     }
 
 #if $validatorIfdefName

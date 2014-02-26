@@ -128,7 +128,7 @@ InspectorTest.printTimelineRecords = function(typeName, formatter)
 
 InspectorTest.printTimestampRecords = function(typeName, formatter)
 {
-    InspectorTest.innerPrintTimelineRecords(InspectorTest.timelinePresentationModel().eventDividerRecords().select("_record"), typeName, formatter);
+    InspectorTest.innerPrintTimelineRecords(InspectorTest.timelinePresentationModel().eventDividerRecords(), typeName, formatter);
 };
 
 InspectorTest.innerPrintTimelineRecords = function(records, typeName, formatter)
@@ -142,7 +142,7 @@ InspectorTest.innerPrintTimelineRecords = function(records, typeName, formatter)
 };
 
 // Dump just the record name, indenting output on separate lines for subrecords
-InspectorTest.dumpTimelineRecord = function(record, detailsCallback, level)
+InspectorTest.dumpTimelineRecord = function(record, detailsCallback, level, filterTypes)
 {
     if (typeof level !== "number")
         level = 0;
@@ -155,8 +155,7 @@ InspectorTest.dumpTimelineRecord = function(record, detailsCallback, level)
     if (record.coalesced) {
         suffix = " x " + record.children.length;
     } else if (record.type === WebInspector.TimelineModel.RecordType.TimeStamp
-        || record.type === WebInspector.TimelineModel.RecordType.Time
-        || record.type === WebInspector.TimelineModel.RecordType.TimeEnd) {
+        || record.type === WebInspector.TimelineModel.RecordType.ConsoleTime) {
         suffix = " : " + record.data.message;
     }
     if (detailsCallback)
@@ -164,8 +163,11 @@ InspectorTest.dumpTimelineRecord = function(record, detailsCallback, level)
     InspectorTest.addResult(prefix + InspectorTest._timelineAgentTypeToString(record.type) + suffix);
 
     var numChildren = record.children ? record.children.length : 0;
-    for (var i = 0; i < numChildren; ++i)
-        InspectorTest.dumpTimelineRecord(record.children[i], detailsCallback, level + 1);
+    for (var i = 0; i < numChildren; ++i) {
+        if (filterTypes && filterTypes.indexOf(record.children[i].type) == -1)
+            continue;
+        InspectorTest.dumpTimelineRecord(record.children[i], detailsCallback, level + 1, filterTypes);
+    }
 }
 
 InspectorTest.dumpTimelineRecords = function(timelineRecords)

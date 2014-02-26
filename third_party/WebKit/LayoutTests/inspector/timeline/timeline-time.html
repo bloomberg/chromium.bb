@@ -4,86 +4,93 @@
 <script src="../../http/tests/inspector/timeline-test.js"></script>
 <script>
 
+function simpleConsoleTime()
+{
+    console.time("a");
+    console.timeEnd("a");
+}
+
+function nestedConsoleTime()
+{
+    console.time("a");
+    {
+        console.time("b");
+        console.timeEnd("b");
+        {
+            console.time("c");
+            {
+                console.time("d");
+                console.timeEnd("d");
+            }
+            console.timeEnd("c");
+        }
+    }
+    console.timeEnd("a");
+}
+
+
+function unbalancedConsoleTime()
+{
+    console.time("a");
+    console.time("b");
+    console.timeEnd("a");
+    console.timeEnd("b");
+}
+
+function consoleTimeWithoutConsoleTimeEnd()
+{
+    console.timeStamp("Foo");
+    console.time("a");
+    console.timeStamp("Bar");
+    console.time("b");
+    console.time("c");
+    console.time("d");
+    console.timeStamp("Baz");
+    console.timeEnd("d");
+}
+
 function test()
 {
-    var records = [
-        // Test simple synchronous time/timeEnd
-        {"startTime": 1000.000,"data":{},"endTime":1099.999,"type":"Program","children":[
-            {"startTime":1000.001,"type":"Time","frameId":"2","data":{ "message": "a" },
-            "stackTrace": [
-                {"functionName":"func","url":"http://example.com","lineNumber":42,"columnNumber":1}
-            ]},
-            {"startTime":1000.001,"endTime":1099.0,"type":"Layout","frameId":"2","data":{}},
-            {"startTime":1099.001,"type":"TimeEnd","frameId":"2","data":{ "message": "a" }}
-        ]},
-        // Test nested records with the same name
-        {"startTime": 2000.000,"data":{},"endTime":2999.999,"type":"Program","children":[
-            {"startTime":2000.001,"type":"Time","frameId":"2","data":{ "message": "a" }},
-            {"startTime":2010.001,"type":"Time","frameId":"2","data":{ "message": "a" }},
-            {"startTime":2020.001,"type":"Time","frameId":"2","data":{ "message": "a" }},
-            {"startTime":2021.001,"type":"TimeEnd","frameId":"2","data":{ "message": "a" }},
-            {"startTime":2030.001,"type":"Time","frameId":"2","data":{ "message": "b" }},
-            {"startTime":2031.001,"type":"Time","frameId":"2","data":{ "message": "a" }},
-            {"startTime":2032.001,"type":"TimeEnd","frameId":"2","data":{ "message": "a" }},
-            {"startTime":2039.001,"type":"TimeEnd","frameId":"2","data":{ "message": "b" }},
-            {"startTime":2040.001,"type":"TimeEnd","frameId":"2","data":{ "message": "a" }},
-            {"startTime":2099.001,"type":"TimeEnd","frameId":"2","data":{ "message": "a" }}
-        ]},
-        // Test complex nesting with coalescing
-        {"startTime": 3000.000,"data":{},"endTime":3999.999,"type":"Program","children":[
-            {"startTime":3000.001,"type":"Time","frameId":"2","data":{ "message": "a" }},
-            {"startTime":3010.001,"type":"Time","frameId":"2","data":{ "message": "b" }},
-            {"startTime":3010.001,"type":"Time","frameId":"2","data":{ "message": "c1" }},
-            {"startTime":3010.002,"type":"TimeEnd","frameId":"2","data":{ "message": "c1" }},
-            {"startTime":3010.003,"type":"Time","frameId":"2","data":{ "message": "c1" }},
-            {"startTime":3010.004,"type":"TimeEnd","frameId":"2","data":{ "message": "c1" }},
-            {"startTime":3010.005,"type":"Time","frameId":"2","data":{ "message": "c2" }},
-            {"startTime":3010.006,"type":"TimeEnd","frameId":"2","data":{ "message": "c2" }},
-            {"startTime":3030.001,"type":"TimeEnd","frameId":"2","data":{ "message": "b" }},
-            {"startTime":3040.001,"type":"TimeEnd","frameId":"2","data":{ "message": "a" }}
-        ]},
-        // Test overlapping messages
-        {"startTime": 4000.000,"data":{},"endTime":4999.999,"type":"Program","children":[
-            {"startTime":4000.001,"type":"Time","frameId":"2","data":{ "message": "x" }},
-            {"startTime":4010.001,"type":"Time","frameId":"2","data":{ "message": "y" }},
-            {"startTime":4020.001,"type":"TimeEnd","frameId":"2","data":{ "message": "x" }},
-            {"startTime":4030.001,"type":"TimeEnd","frameId":"2","data":{ "message": "y" }},
-        ]},
-        // Test unbalanced messages
-        {"startTime": 5000.000,"data":{},"endTime":5999.999,"type":"Program","children":[
-            {"startTime":5010.001,"type":"TimeEnd","frameId":"2","data":{ "message": "bar" }},
-            {"startTime":5020.001,"type":"Time","frameId":"2","data":{ "message": "foo" }},
-        ]},
-        // Test time record spanning multiple top-level records
-        {"startTime": 6000.000,"data":{},"endTime":6099.999,"type":"Program","children":[
-            {"startTime":6010.001,"type":"Time","frameId":"2","data":{ "message": "s" }},
-        ]},
-        {"startTime": 6100.000,"data":{},"endTime":6999.999,"type":"Program","children":[
-            {"startTime":6110.001,"type":"TimeEnd","frameId":"2","data":{ "message": "s" }},
-        ]},
-        // Test begin and end on different levels
-        {"startTime": 7100.000,"data":{},"endTime":7999.999,"type":"Program","children":[
-            {"startTime":7010.001,"type":"Time","frameId":"2","data":{ "message": "l1" }},
-            {"startTime":7010.001,"endTime":7099.999,"type":"FunctionCall","frameId":"2","data":{ "scriptName":"foo.js", "scriptLine":42}, children: [
-                {"startTime":7020.001,"type":"TimeEnd","frameId":"2","data":{ "message": "l1" }},
-                {"startTime":7030.001,"type":"Time","frameId":"2","data":{ "message": "l2" }},
-            ]},
-            {"startTime":7040.001,"type":"TimeEnd","frameId":"2","data":{ "message": "l2" }},
-        ]},
-    ];
+    InspectorTest.runTestSuite([
+        function testSimpleConsoleTime(next)
+        {
+            performActions("simpleConsoleTime()", next);
+        },
 
-    InspectorTest.loadTimelineRecords(records);
+        function testNestedConsoleTime(next)
+        {
+            performActions("nestedConsoleTime()", next);
+        },
 
-    var rootRecord = InspectorTest.timelinePresentationModel().rootRecord();
-    InspectorTest.dumpTimelineRecord(rootRecord);
-    InspectorTest.completeTest();
+        function testUnbalancedConsoleTime(next)
+        {
+            performActions("unbalancedConsoleTime()", next);
+        },
+
+        function testConsoleTimeWithoutConsoleTimeEnd(next)
+        {
+            performActions("consoleTimeWithoutConsoleTimeEnd()", next);
+        }
+    ]);
+
+    function performActions(actions, next)
+    {
+        function callback()
+        {
+            var rootRecord = InspectorTest.timelinePresentationModel().rootRecord();
+            InspectorTest.dumpTimelineRecord(rootRecord, undefined, undefined, ["FunctionCall", "ConsoleTime", "TimeStamp"]);
+            InspectorTest.timelinePresentationModel().reset();
+            next();
+        }
+        InspectorTest.evaluateWithTimeline(actions, callback)
+    }
 }
 
 </script>
 </head>
 
 <body onload="runTest()">
-<p>Test nesting of time/timeEnd records on Timeline<</p>
+<p>Test nesting of time/timeEnd records on Timeline</p>
 
 </body>
 </html>

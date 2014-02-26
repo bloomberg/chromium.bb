@@ -1,29 +1,30 @@
-Test nesting of time/timeEnd records on Timeline<
+Test nesting of time/timeEnd records on Timeline
 
+
+Running: testSimpleConsoleTime
 Root
-----> Time : a
---------> Layout
-----> Time : a
---------> Time : a
-------------> Time : a
-------------> Time : b
-----------------> Time : a
-----> Time : a
---------> Time : b
-------------> Time x 2
-----------------> Time : c1
-----------------> Time : c1
-------------> Time : c2
-----> Time : x
---------> Time : y
-----> TimeEnd : y
-----> TimeEnd : bar
-----> Time : foo
-----> Time : s
-----> TimeEnd : s
-----> Time : l1
 ----> FunctionCall
---------> TimeEnd : l1
---------> Time : l2
-----> TimeEnd : l2
+----> FunctionCall
+--------> ConsoleTime : a
+
+Running: testNestedConsoleTime
+Root
+----> FunctionCall
+--------> ConsoleTime : a
+------------> ConsoleTime : b
+------------> ConsoleTime : c
+----------------> ConsoleTime : d
+
+Running: testUnbalancedConsoleTime
+Root
+----> FunctionCall
+--------> ConsoleTime : b
+
+Running: testConsoleTimeWithoutConsoleTimeEnd
+Root
+----> FunctionCall
+--------> TimeStamp : Foo
+--------> TimeStamp : Bar
+--------> ConsoleTime : d
+------------> TimeStamp : Baz
 

@@ -21,7 +21,6 @@ function test()
     WebInspector.TimelineModel._doNotAssignEndTime = true;
     var model = WebInspector.panels.timeline._model;
     var presentationModel = InspectorTest.timelinePresentationModel();
-    presentationModel.setGlueRecords(true);
 
     InspectorTest.startTimeline(step1);
 

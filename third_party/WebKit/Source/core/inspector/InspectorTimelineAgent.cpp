@@ -100,8 +100,7 @@ static const char MarkDOMContent[] = "MarkDOMContent";
 static const char MarkFirstPaint[] = "MarkFirstPaint";
 
 static const char TimeStamp[] = "TimeStamp";
-static const char Time[] = "Time";
-static const char TimeEnd[] = "TimeEnd";
+static const char ConsoleTime[] = "ConsoleTime";
 
 static const char ScheduleResourceRequest[] = "ScheduleResourceRequest";
 static const char ResourceSendRequest[] = "ResourceSendRequest";
@@ -144,7 +143,12 @@ using TypeBuilder::Timeline::TimelineEvent;
 
 struct TimelineRecordEntry {
     TimelineRecordEntry(PassRefPtr<TimelineEvent> record, PassRefPtr<JSONObject> data, PassRefPtr<TypeBuilder::Array<TimelineEvent> > children, const String& type, size_t usedHeapSizeAtStart)
-        : record(record), data(data), children(children), type(type), usedHeapSizeAtStart(usedHeapSizeAtStart)
+        : record(record)
+        , data(data)
+        , children(children)
+        , type(type)
+        , usedHeapSizeAtStart(usedHeapSizeAtStart)
+        , skipWhenUnbalanced(false)
     {
     }
     RefPtr<TimelineEvent> record;
@@ -152,6 +156,7 @@ struct TimelineRecordEntry {
     RefPtr<TypeBuilder::Array<TimelineEvent> > children;
     String type;
     size_t usedHeapSizeAtStart;
+    bool skipWhenUnbalanced;
 };
 
 class TimelineRecordStack {
@@ -783,12 +788,19 @@ void InspectorTimelineAgent::consoleTimeStamp(ExecutionContext* context, const S
 
 void InspectorTimelineAgent::consoleTime(ExecutionContext* context, const String& message)
 {
-    appendRecord(TimelineRecordFactory::createTimeStampData(message), TimelineRecordType::Time, true, frameForExecutionContext(context));
+    pushCurrentRecord(TimelineRecordFactory::createConsoleTimeData(message), TimelineRecordType::ConsoleTime, false, frameForExecutionContext(context));
+    m_recordStack.last().skipWhenUnbalanced = true;
 }
 
 void InspectorTimelineAgent::consoleTimeEnd(ExecutionContext* context, const String& message, ScriptState*)
 {
-    appendRecord(TimelineRecordFactory::createTimeStampData(message), TimelineRecordType::TimeEnd, true, frameForExecutionContext(context));
+    if (m_recordStack.last().type != TimelineRecordType::ConsoleTime)
+        return;
+    String originalMessage;
+    if (m_recordStack.last().data->getString("message", &originalMessage) && message != originalMessage)
+        return;
+    // Only complete console.time that is balanced.
+    didCompleteCurrentRecord(TimelineRecordType::ConsoleTime);
 }
 
 void InspectorTimelineAgent::consoleTimeline(ExecutionContext* context, const String& title, ScriptState* state)
@@ -1139,6 +1151,13 @@ void InspectorTimelineAgent::didCompleteCurrentRecord(const String& type)
         pushGCEventRecords();
         TimelineRecordEntry entry = m_recordStack.last();
         m_recordStack.removeLast();
+        while (entry.type != type && entry.skipWhenUnbalanced && !m_recordStack.isEmpty()) {
+            // Discard pending skippable entry, paste its children inplace.
+            if (entry.children)
+                m_recordStack.last().children->concat(entry.children);
+            entry = m_recordStack.last();
+            m_recordStack.removeLast();
+        }
         ASSERT(entry.type == type);
         entry.record->setChildren(entry.children);
         entry.record->setEndTime(timestamp());

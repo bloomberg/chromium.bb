@@ -59,6 +59,7 @@ public:
     static PassRefPtr<JSONObject> createXHRReadyStateChangeData(const String& url, int readyState);
     static PassRefPtr<JSONObject> createXHRLoadData(const String& url);
     static PassRefPtr<JSONObject> createEvaluateScriptData(const String&, double lineNumber);
+    static PassRefPtr<JSONObject> createConsoleTimeData(const String&);
     static PassRefPtr<JSONObject> createTimeStampData(const String&);
     static PassRefPtr<JSONObject> createResourceSendRequestData(const String& requestId, const ResourceRequest&);
     static PassRefPtr<JSONObject> createScheduleResourceRequestData(const String&);

@@ -21,8 +21,6 @@ function test()
 {
     WebInspector.showPanel("timeline");
     WebInspector.panels.timeline._model._collectionEnabled = true;
-    InspectorTest.timelinePresentationModel().setGlueRecords(true);
-    WebInspector.panels.timeline._model._collectionEnabled = true;
 
     TimelineAgent.start(step1);
 

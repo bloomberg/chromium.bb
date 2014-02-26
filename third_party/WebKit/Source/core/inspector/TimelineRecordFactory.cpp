@@ -131,6 +131,13 @@ PassRefPtr<JSONObject> TimelineRecordFactory::createEvaluateScriptData(const Str
     return data.release();
 }
 
+PassRefPtr<JSONObject> TimelineRecordFactory::createConsoleTimeData(const String& message)
+{
+    RefPtr<JSONObject> data = JSONObject::create();
+    data->setString("message", message);
+    return data.release();
+}
+
 PassRefPtr<JSONObject> TimelineRecordFactory::createTimeStampData(const String& message)
 {
     RefPtr<JSONObject> data = JSONObject::create();
