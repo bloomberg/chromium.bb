@@ -488,7 +488,7 @@ TEST_F(NfcClientTest, AdaptersAddedAndRemoved) {
   EXPECT_CALL(*mock_adapter0_proxy_, CallMethodWithErrorCallback(_, _, _, _))
       .Times(0);
   EXPECT_CALL(*mock_adapter1_proxy_, CallMethodWithErrorCallback(_, _, _, _))
-      .Times(0);;
+      .Times(0);
   adapter_client_->StartPollLoop(
       dbus::ObjectPath(kTestAdapterPath0),
       nfc_adapter::kModeInitiator,

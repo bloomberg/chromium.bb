@@ -94,7 +94,7 @@ bool FileSystemUsageCache::DecrementDirty(
   DCHECK(CalledOnValidThread());
   bool is_valid = true;
   uint32 dirty = 0;
-  int64 usage = 0;;
+  int64 usage = 0;
   if (!Read(usage_file_path, &is_valid, &dirty, &usage) || dirty <= 0)
     return false;
 

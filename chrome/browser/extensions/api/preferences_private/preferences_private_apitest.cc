@@ -167,7 +167,7 @@ PreferencesPrivateApiTest::TestGetSyncCategoriesWithoutPassphraseFunction() {
                "Encrypted categories should not be present";
   EXPECT_EQ(categories->end(),
            categories->Find(base::StringValue("Typed URLs"))) <<
-               "Unsynced categories should not be present";;
+               "Unsynced categories should not be present";
 }
 
 IN_PROC_BROWSER_TEST_F(PreferencesPrivateApiTest,

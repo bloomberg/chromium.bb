@@ -160,7 +160,7 @@ scoped_refptr<device::BluetoothSocket> BluetoothSocketChromeOS::Create(
   DCHECK(fd->is_valid());
 
   BluetoothSocketChromeOS* bluetooth_socket =
-      new BluetoothSocketChromeOS(fd->TakeValue());;
+      new BluetoothSocketChromeOS(fd->TakeValue());
   return scoped_refptr<BluetoothSocketChromeOS>(bluetooth_socket);
 }
 

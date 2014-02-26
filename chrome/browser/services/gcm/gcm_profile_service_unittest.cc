@@ -450,7 +450,7 @@ class GCMProfileServiceTestConsumer : public GCMProfileService::TestingDelegate{
   }
   void clear_send_result() {
     send_message_id_.clear();
-    send_result_ = GCMClient::UNKNOWN_ERROR;;
+    send_result_ = GCMClient::UNKNOWN_ERROR;
   }
 
  private:

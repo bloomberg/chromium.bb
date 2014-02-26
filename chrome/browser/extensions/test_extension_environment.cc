@@ -47,7 +47,7 @@ TestingProfile* TestExtensionEnvironment::profile() const {
 }
 
 TestExtensionSystem* TestExtensionEnvironment::GetExtensionSystem() {
-  return static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile()));;
+  return static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile()));
 }
 
 ExtensionService* TestExtensionEnvironment::GetExtensionService() {

@@ -71,7 +71,7 @@ void DesktopShapeTrackerWin::RefreshDesktopShape() {
     CHECK(bytes_size != 0);
 
     // Fetch the Windows RECTs that comprise the region.
-    std::vector<char> buffer(bytes_size);;
+    std::vector<char> buffer(bytes_size);
     LPRGNDATA region_data = reinterpret_cast<LPRGNDATA>(buffer.data());
     DWORD result = GetRegionData(old_desktop_region_, bytes_size, region_data);
     CHECK(result == bytes_size);

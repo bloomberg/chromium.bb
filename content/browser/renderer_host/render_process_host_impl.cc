@@ -591,7 +591,7 @@ bool RenderProcessHostImpl::Init() {
 void RenderProcessHostImpl::CreateMessageFilters() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   AddFilter(new ResourceSchedulerFilter(GetID()));
-  MediaInternals* media_internals = MediaInternals::GetInstance();;
+  MediaInternals* media_internals = MediaInternals::GetInstance();
   media::AudioManager* audio_manager =
       BrowserMainLoop::GetInstance()->audio_manager();
   // Add BrowserPluginMessageFilter to ensure it gets the first stab at messages

@@ -1633,7 +1633,7 @@ VaapiH264Decoder::DecResult VaapiH264Decoder::Decode() {
       }
 
       default:
-        DVLOG(4) << "Skipping NALU type: " << nalu.nal_unit_type;;
+        DVLOG(4) << "Skipping NALU type: " << nalu.nal_unit_type;
         break;
     }
   }

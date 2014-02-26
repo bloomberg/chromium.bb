@@ -158,7 +158,7 @@ ExtensionBluetoothEventRouter::GetSocket(int id) {
   SocketMap::iterator socket_entry = socket_map_.find(id);
   if (socket_entry == socket_map_.end())
     return NULL;
-  return socket_entry->second.socket;;
+  return socket_entry->second.socket;
 }
 
 void ExtensionBluetoothEventRouter::SetResponsibleForDiscovery(

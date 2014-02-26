@@ -145,7 +145,7 @@ void BluetoothProfileChromeOS::NewConnection(
     const BluetoothProfileServiceProvider::Delegate::Options& options,
     const ConfirmationCallback& callback) {
   VLOG(1) << object_path_.value() << ": New connection from device: "
-          << device_path.value();;
+          << device_path.value();
   if (connection_callback_.is_null()) {
     callback.Run(REJECTED);
     return;

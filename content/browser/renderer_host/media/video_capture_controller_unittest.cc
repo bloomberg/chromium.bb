@@ -138,7 +138,7 @@ TEST_F(VideoCaptureControllerTest, AddAndRemoveClients) {
                          session_100);
   // Clients in controller: [A/1]
   ASSERT_EQ(1, controller_->GetClientCount())
-      << "Adding client A/1 should bump client count.";;
+      << "Adding client A/1 should bump client count.";
   controller_->AddClient(client_a_route_2,
                          client_a_.get(),
                          base::kNullProcessHandle,

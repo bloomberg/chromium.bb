@@ -88,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(ActivityLogPrerenderTest, TestScriptInjected) {
       base::TimeDelta::FromMinutes(10);
 
   content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();;
+      browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
 
   content::WindowedNotificationObserver page_observer(

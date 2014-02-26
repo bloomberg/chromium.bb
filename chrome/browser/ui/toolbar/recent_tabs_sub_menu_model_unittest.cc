@@ -147,7 +147,7 @@ class RecentTabsSubMenuModelTest
       content::BrowserContext* browser_context) {
     // Ownership is tranfered to the profile.
     return new PersistentTabRestoreService(
-        Profile::FromBrowserContext(browser_context), NULL);;
+        Profile::FromBrowserContext(browser_context), NULL);
   }
 
 

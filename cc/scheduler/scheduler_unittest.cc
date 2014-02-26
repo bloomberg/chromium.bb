@@ -959,7 +959,7 @@ TEST(SchedulerTest, ManageTiles) {
   EXPECT_SINGLE_ACTION("PostBeginImplFrameDeadlineTask", client);
   client.Reset();
   scheduler->OnBeginImplFrameDeadline();
-  EXPECT_SINGLE_ACTION("SetNeedsBeginImplFrame", client);;
+  EXPECT_SINGLE_ACTION("SetNeedsBeginImplFrame", client);
   EXPECT_EQ(0, client.num_draws());
 
   // Now trigger a ManageTiles outside of a draw. We will then need

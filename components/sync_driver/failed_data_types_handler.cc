@@ -92,7 +92,7 @@ syncer::ModelTypeSet FailedDataTypesHandler::GetFailedTypes() const {
 }
 
 syncer::ModelTypeSet FailedDataTypesHandler::GetFatalErrorTypes() const {
-  return GetTypesFromErrorMap(fatal_errors_);;
+  return GetTypesFromErrorMap(fatal_errors_);
 }
 
 syncer::ModelTypeSet FailedDataTypesHandler::GetCryptoErrorTypes() const {

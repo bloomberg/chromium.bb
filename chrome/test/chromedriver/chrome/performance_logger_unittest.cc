@@ -179,7 +179,7 @@ TEST(PerformanceLogger, TwoWebViews) {
   // OnConnected sends the enable command only to that client, not others.
   client1.ConnectIfNecessary();
   ExpectEnableDomains(client1);
-  EXPECT_TRUE(client2.PopSentCommand().empty());;
+  EXPECT_TRUE(client2.PopSentCommand().empty());
 
   ASSERT_EQ(kOk, client1.TriggerEvent("Page.gaga1").code());
   ASSERT_EQ(kOk, client2.TriggerEvent("Timeline.gaga2").code());

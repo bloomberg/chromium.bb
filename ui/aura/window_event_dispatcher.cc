@@ -608,7 +608,7 @@ ui::EventDispatchDetails WindowEventDispatcher::PostDispatchEvent(
 
 bool WindowEventDispatcher::CanDispatchToConsumer(
     ui::GestureConsumer* consumer) {
-  Window* consumer_window = ConsumerToWindow(consumer);;
+  Window* consumer_window = ConsumerToWindow(consumer);
   return (consumer_window && consumer_window->GetRootWindow() == window());
 }
 
