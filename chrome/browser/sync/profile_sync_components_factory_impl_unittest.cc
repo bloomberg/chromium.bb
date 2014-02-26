@@ -100,7 +100,7 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
             profile_.get(),
             NULL,
             ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get()),
-            ProfileSyncService::MANUAL_START));
+            browser_sync::MANUAL_START));
     pss->factory()->RegisterDataTypes(pss.get());
     DataTypeController::StateMap controller_states;
     pss->GetDataTypeControllerStates(&controller_states);
@@ -120,7 +120,7 @@ TEST_F(ProfileSyncComponentsFactoryImplTest, CreatePSSDefault) {
       profile_.get(),
       NULL,
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get()),
-      ProfileSyncService::MANUAL_START));
+      browser_sync::MANUAL_START));
   pss->factory()->RegisterDataTypes(pss.get());
   DataTypeController::StateMap controller_states;
   pss->GetDataTypeControllerStates(&controller_states);

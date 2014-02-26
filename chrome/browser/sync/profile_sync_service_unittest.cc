@@ -117,7 +117,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
         ->UpdateCredentials("test", "oauth2_login_token");
   }
 
-  void CreateService(ProfileSyncService::StartBehavior behavior) {
+  void CreateService(ProfileSyncServiceStartBehavior behavior) {
     SigninManagerBase* signin =
         SigninManagerFactory::GetForProfile(profile_.get());
     signin->SetAuthenticatedUsername("test");
@@ -181,7 +181,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
 
 // Verify that the server URLs are sane.
 TEST_F(ProfileSyncServiceTest, InitialState) {
-  CreateService(ProfileSyncService::AUTO_START);
+  CreateService(browser_sync::AUTO_START);
   Initialize();
   const std::string& url = service()->sync_service_url().spec();
   EXPECT_TRUE(url == ProfileSyncService::kSyncServerUrl ||
@@ -194,7 +194,7 @@ TEST_F(ProfileSyncServiceTest, SuccessfulInitialization) {
       prefs::kSyncManaged,
       base::Value::CreateBooleanValue(false));
   IssueTestTokens();
-  CreateService(ProfileSyncService::AUTO_START);
+  CreateService(browser_sync::AUTO_START);
   ExpectDataTypeManagerCreation();
   ExpectSyncBackendHostCreation();
   Initialize();
@@ -206,7 +206,7 @@ TEST_F(ProfileSyncServiceTest, SuccessfulInitialization) {
 // Verify that the SetSetupInProgress function call updates state
 // and notifies observers.
 TEST_F(ProfileSyncServiceTest, SetupInProgress) {
-  CreateService(ProfileSyncService::MANUAL_START);
+  CreateService(browser_sync::AUTO_START);
   Initialize();
 
   TestProfileSyncServiceObserver observer(service());
@@ -226,7 +226,7 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicyBeforeInit) {
       prefs::kSyncManaged,
       base::Value::CreateBooleanValue(true));
   IssueTestTokens();
-  CreateService(ProfileSyncService::AUTO_START);
+  CreateService(browser_sync::AUTO_START);
   Initialize();
   EXPECT_TRUE(service()->IsManaged());
   EXPECT_FALSE(service()->sync_initialized());
@@ -236,7 +236,7 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicyBeforeInit) {
 // been initialized.
 TEST_F(ProfileSyncServiceTest, DisabledByPolicyAfterInit) {
   IssueTestTokens();
-  CreateService(ProfileSyncService::AUTO_START);
+  CreateService(browser_sync::AUTO_START);
   ExpectDataTypeManagerCreation();
   ExpectSyncBackendHostCreation();
   Initialize();
@@ -255,7 +255,7 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicyAfterInit) {
 // Exercies the ProfileSyncService's code paths related to getting shut down
 // before the backend initialize call returns.
 TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
-  CreateService(ProfileSyncService::AUTO_START);
+  CreateService(browser_sync::AUTO_START);
   PrepareDelayedInitSyncBackendHost();
 
   IssueTestTokens();
@@ -267,7 +267,7 @@ TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
 
 // Test StopAndSuppress() before we've initialized the backend.
 TEST_F(ProfileSyncServiceTest, EarlyStopAndSuppress) {
-  CreateService(ProfileSyncService::AUTO_START);
+  CreateService(browser_sync::AUTO_START);
   IssueTestTokens();
 
   service()->StopAndSuppress();
@@ -288,7 +288,7 @@ TEST_F(ProfileSyncServiceTest, EarlyStopAndSuppress) {
 
 // Test StopAndSuppress() after we've initialized the backend.
 TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
-  CreateService(ProfileSyncService::AUTO_START);
+  CreateService(browser_sync::AUTO_START);
   IssueTestTokens();
   ExpectDataTypeManagerCreation();
   ExpectSyncBackendHostCreation();
@@ -317,7 +317,7 @@ TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
 #if !defined (OS_CHROMEOS)
 
 TEST_F(ProfileSyncServiceTest, EnableSyncAndSignOut) {
-  CreateService(ProfileSyncService::AUTO_START);
+  CreateService(browser_sync::AUTO_START);
   ExpectDataTypeManagerCreation();
   ExpectSyncBackendHostCreation();
   IssueTestTokens();
@@ -333,7 +333,7 @@ TEST_F(ProfileSyncServiceTest, EnableSyncAndSignOut) {
 #endif  // !defined(OS_CHROMEOS)
 
 TEST_F(ProfileSyncServiceTest, GetSyncTokenStatus) {
-  CreateService(ProfileSyncService::AUTO_START);
+  CreateService(browser_sync::AUTO_START);
   IssueTestTokens();
   ExpectDataTypeManagerCreation();
   ExpectSyncBackendHostCreation();

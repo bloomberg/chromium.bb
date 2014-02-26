@@ -2320,6 +2320,8 @@
         'browser/sync/sessions2/synced_window_delegates_getter.h',
         'browser/sync/sessions2/tab_node_pool2.cc',
         'browser/sync/sessions2/tab_node_pool2.h',
+        'browser/sync/startup_controller.cc',
+        'browser/sync/startup_controller.h',
         'browser/sync/sync_global_error.cc',
         'browser/sync/sync_global_error.h',
         'browser/sync/sync_policy_handler.cc',

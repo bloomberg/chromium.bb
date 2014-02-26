@@ -283,7 +283,9 @@ class SyncSetupHandlerTest : public testing::Test {
     mock_signin_ = static_cast<SigninManagerBase*>(
         SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(), FakeSigninManagerBase::Build));
-
+    profile_->GetPrefs()->SetString(
+        prefs::kGoogleServicesUsername, GetTestUser());
+    mock_signin_->Initialize(profile_.get(), NULL);
     mock_pss_ = static_cast<ProfileSyncServiceMock*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(),
@@ -323,12 +325,6 @@ class SyncSetupHandlerTest : public testing::Test {
           prefs::kGoogleServicesUsername, kTestUser);
       mock_signin_->Initialize(profile_.get(), NULL);
     }
-    EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
-        .WillRepeatedly(Return(true));
-    EXPECT_CALL(*mock_pss_, IsOAuthRefreshTokenAvailable())
-        .WillRepeatedly(Return(true));
-    EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
-        .WillRepeatedly(Return(true));
     EXPECT_CALL(*mock_pss_, sync_initialized()).WillRepeatedly(Return(true));
   }
 
@@ -374,6 +370,10 @@ class SyncSetupHandlerTest : public testing::Test {
       handler_->sync_startup_tracker_->OnStateChanged();
   }
 
+  virtual std::string GetTestUser() {
+    return std::string(kTestUser);
+  }
+
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<Profile> profile_;
   ProfileSyncServiceMock* mock_pss_;
@@ -383,11 +383,15 @@ class SyncSetupHandlerTest : public testing::Test {
   scoped_ptr<TestingSyncSetupHandler> handler_;
 };
 
+class SyncSetupHandlerFirstSigninTest : public SyncSetupHandlerTest {
+  virtual std::string GetTestUser() OVERRIDE { return std::string(); }
+};
+
 TEST_F(SyncSetupHandlerTest, Basic) {
 }
 
 #if !defined(OS_CHROMEOS)
-TEST_F(SyncSetupHandlerTest, DisplayBasicLogin) {
+TEST_F(SyncSetupHandlerFirstSigninTest, DisplayBasicLogin) {
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsOAuthRefreshTokenAvailable())
@@ -428,15 +432,13 @@ TEST_F(SyncSetupHandlerTest, ShowSyncSetupWhenNotSignedIn) {
             LoginUIServiceFactory::GetForProfile(
                 profile_.get())->current_login_ui());
 }
-#endif
+#endif  // !defined(OS_CHROMEOS)
 
 // Verifies that the handler correctly handles a cancellation when
 // it is displaying the spinner to the user.
 TEST_F(SyncSetupHandlerTest, DisplayConfigureWithBackendDisabledAndCancel) {
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(true));
-  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, kTestUser);
-  mock_signin_->Initialize(profile_.get(), NULL);
   EXPECT_CALL(*mock_pss_, IsOAuthRefreshTokenAvailable())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
@@ -464,8 +466,6 @@ TEST_F(SyncSetupHandlerTest,
        DisplayConfigureWithBackendDisabledAndSyncStartupCompleted) {
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(true));
-  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, kTestUser);
-  mock_signin_->Initialize(profile_.get(), NULL);
   EXPECT_CALL(*mock_pss_, IsOAuthRefreshTokenAvailable())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
@@ -520,8 +520,6 @@ TEST_F(SyncSetupHandlerTest,
        DisplayConfigureWithBackendDisabledAndCancelAfterSigninSuccess) {
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(true));
-  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, kTestUser);
-  mock_signin_->Initialize(profile_.get(), NULL);
   EXPECT_CALL(*mock_pss_, IsOAuthRefreshTokenAvailable())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
@@ -549,8 +547,6 @@ TEST_F(SyncSetupHandlerTest,
        DisplayConfigureWithBackendDisabledAndSigninFailed) {
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(true));
-  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, kTestUser);
-  mock_signin_->Initialize(profile_.get(), NULL);
   EXPECT_CALL(*mock_pss_, IsOAuthRefreshTokenAvailable())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())

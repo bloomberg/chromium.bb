@@ -102,7 +102,7 @@ class PasswordTestProfileSyncService : public TestProfileSyncService {
                                profile,
                                signin,
                                oauth2_token_service,
-                               ProfileSyncService::AUTO_START) {}
+                               browser_sync::AUTO_START) {}
 
   virtual ~PasswordTestProfileSyncService() {}
 

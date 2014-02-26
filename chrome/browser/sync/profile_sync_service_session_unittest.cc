@@ -87,7 +87,7 @@ class FakeProfileSyncService : public TestProfileSyncService {
       Profile* profile,
       SigninManagerBase* signin,
       ProfileOAuth2TokenService* oauth2_token_service,
-      ProfileSyncService::StartBehavior behavior)
+      ProfileSyncServiceStartBehavior behavior)
       : TestProfileSyncService(factory,
                                profile,
                                signin,
@@ -205,7 +205,7 @@ class ProfileSyncServiceSessionTest
         profile(),
         signin,
         oauth2_token_service,
-        ProfileSyncService::AUTO_START));
+        browser_sync::AUTO_START));
     EXPECT_CALL(*factory, CreateSyncBackendHost(_,_,_)).
         WillOnce(ReturnSyncBackendHost(callback));
 

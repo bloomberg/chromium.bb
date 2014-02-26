@@ -101,7 +101,7 @@ TestProfileSyncService::TestProfileSyncService(
     Profile* profile,
     SigninManagerBase* signin,
     ProfileOAuth2TokenService* oauth2_token_service,
-    ProfileSyncService::StartBehavior behavior)
+    browser_sync::ProfileSyncServiceStartBehavior behavior)
         : ProfileSyncService(factory,
                              profile,
                              new ManagedUserSigninManagerWrapper(signin),
@@ -127,7 +127,7 @@ BrowserContextKeyedService* TestProfileSyncService::TestFactoryFunction(
                                     profile,
                                     signin,
                                     oauth2_token_service,
-                                    ProfileSyncService::AUTO_START);
+                                    browser_sync::AUTO_START);
 }
 
 // static

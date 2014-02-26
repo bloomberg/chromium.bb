@@ -75,7 +75,7 @@ class TestProfileSyncService : public ProfileSyncService {
       Profile* profile,
       SigninManagerBase* signin,
       ProfileOAuth2TokenService* oauth2_token_service,
-      ProfileSyncService::StartBehavior behavior);
+      browser_sync::ProfileSyncServiceStartBehavior behavior);
 
   virtual ~TestProfileSyncService();
 

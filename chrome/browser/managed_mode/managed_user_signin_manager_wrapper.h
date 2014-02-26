@@ -19,10 +19,10 @@ class SigninManagerBase;
 class ManagedUserSigninManagerWrapper {
  public:
   explicit ManagedUserSigninManagerWrapper(SigninManagerBase* original);
-  ~ManagedUserSigninManagerWrapper();
+  virtual ~ManagedUserSigninManagerWrapper();
 
-  std::string GetEffectiveUsername() const;
-  std::string GetAccountIdToUse() const;
+  virtual std::string GetEffectiveUsername() const;
+  virtual std::string GetAccountIdToUse() const;
 
   SigninManagerBase* GetOriginal();
 

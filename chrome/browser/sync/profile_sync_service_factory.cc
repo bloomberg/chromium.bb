@@ -26,6 +26,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_components_factory_impl.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/startup_controller.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
@@ -89,10 +90,6 @@ BrowserContextKeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
 
-  ProfileSyncService::StartBehavior behavior =
-      browser_defaults::kSyncAutoStarts ? ProfileSyncService::AUTO_START
-                                        : ProfileSyncService::MANUAL_START;
-
   SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
 
   // Automatically load the GCMProfileService if the enabled state has been
@@ -116,6 +113,9 @@ BrowserContextKeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
   // intervention). We can get rid of the browser_default eventually, but
   // need to take care that ProfileSyncService doesn't get tripped up between
   // those two cases. Bug 88109.
+  browser_sync::ProfileSyncServiceStartBehavior behavior =
+      browser_defaults::kSyncAutoStarts ? browser_sync::AUTO_START
+                                        : browser_sync::MANUAL_START;
   ProfileSyncService* pss = new ProfileSyncService(
       new ProfileSyncComponentsFactoryImpl(profile,
                                            CommandLine::ForCurrentProcess()),

@@ -180,7 +180,7 @@ class OneClickTestProfileSyncService : public TestProfileSyncService {
          profile,
          SigninManagerFactory::GetForProfile(profile),
          ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-         ProfileSyncService::MANUAL_START),
+         browser_sync::MANUAL_START),
          first_setup_in_progress_(false) {}
 
    bool first_setup_in_progress_;

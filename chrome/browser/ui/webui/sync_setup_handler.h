@@ -59,7 +59,6 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
 
  protected:
   friend class SyncSetupHandlerTest;
-  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, DisplayBasicLogin);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest,
                            DisplayConfigureWithBackendDisabledAndCancel);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, SelectCustomEncryption);
@@ -80,6 +79,7 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerNonCrosTest, HandleGaiaAuthFailure);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerNonCrosTest,
                            SubmitAuthWithInvalidUsername);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerFirstSigninTest, DisplayBasicLogin);
 
   bool is_configuring_sync() const { return configuring_sync_; }
 

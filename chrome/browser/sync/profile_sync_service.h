@@ -26,6 +26,7 @@
 #include "chrome/browser/sync/profile_sync_service_base.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync/sessions2/sessions_sync_manager.h"
+#include "chrome/browser/sync/startup_controller.h"
 #include "chrome/browser/sync/sync_prefs.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "components/sync_driver/data_type_controller.h"
@@ -226,18 +227,6 @@ class ProfileSyncService
     MAX_SYNC_EVENT_CODE
   };
 
-  // Defines the type of behavior the sync engine should use. If configured for
-  // AUTO_START, the sync engine will automatically call SetSyncSetupCompleted()
-  // and start downloading data types as soon as sync credentials are available
-  // (a signed-in username and a "chromiumsync" token).
-  // If configured for MANUAL_START, sync will not start until the user
-  // completes sync setup, at which point the UI makes an explicit call to
-  // SetSyncSetupCompleted().
-  enum StartBehavior {
-    AUTO_START,
-    MANUAL_START,
-  };
-
   // Used to specify the kind of passphrase with which sync data is encrypted.
   enum PassphraseType {
     IMPLICIT,  // The user did not provide a custom passphrase for encryption.
@@ -261,11 +250,12 @@ class ProfileSyncService
   static const char* kDevServerUrl;
 
   // Takes ownership of |factory| and |signin_wrapper|.
-  ProfileSyncService(ProfileSyncComponentsFactory* factory,
-                     Profile* profile,
-                     ManagedUserSigninManagerWrapper* signin_wrapper,
-                     ProfileOAuth2TokenService* oauth2_token_service,
-                     StartBehavior start_behavior);
+  ProfileSyncService(
+      ProfileSyncComponentsFactory* factory,
+      Profile* profile,
+      ManagedUserSigninManagerWrapper* signin_wrapper,
+      ProfileOAuth2TokenService* oauth2_token_service,
+      browser_sync::ProfileSyncServiceStartBehavior start_behavior);
   virtual ~ProfileSyncService();
 
   // Initializes the object. This must be called at most once, and
@@ -292,6 +282,9 @@ class ProfileSyncService
   // be missing because they have not loaded yet, or because they were deleted
   // due to http://crbug.com/121755).
   // Virtual to enable mocking in tests.
+  // TODO(tim): Remove this? Nothing in ProfileSyncService uses it, and outside
+  // callers use a seemingly arbitrary / redundant / bug prone combination of
+  // this method, IsSyncAccessible, and others.
   virtual bool IsSyncEnabledAndLoggedIn();
 
   // Return whether OAuth2 refresh token is loaded and available for the backend
@@ -641,9 +634,11 @@ class ProfileSyncService
   virtual bool encryption_pending() const;
 
   const GURL& sync_service_url() const { return sync_service_url_; }
-  bool auto_start_enabled() const { return auto_start_enabled_; }
   SigninManagerBase* signin() const;
-  bool setup_in_progress() const { return setup_in_progress_; }
+
+  // Used by tests.
+  bool auto_start_enabled() const;
+  bool setup_in_progress() const;
 
   // Stops the sync backend and sets the flag for suppressing sync startup.
   void StopAndSuppress();
@@ -786,10 +781,6 @@ class ProfileSyncService
   // not correctly set.
   void TrySyncDatatypePrefRecovery();
 
-  // Starts up sync if it is not suppressed and preconditions are met.
-  // Called from Initialize() and UnsuppressAndStart().
-  void TryStart();
-
   // Puts the backend's sync scheduler into NORMAL mode.
   // Called when configuration is complete.
   void StartSyncingWithServer();
@@ -827,12 +818,6 @@ class ProfileSyncService
   void ClearStaleErrors();
 
   void ClearUnrecoverableError();
-
-  enum StartUpDeferredOption {
-    STARTUP_BACKEND_DEFERRED,
-    STARTUP_IMMEDIATE
-  };
-  void StartUp(StartUpDeferredOption deferred_option);
 
   // Starts up the backend sync components.
   void StartUpSlowBackendComponents();
@@ -872,13 +857,6 @@ class ProfileSyncService
                                     bool delete_sync_database,
                                     UnrecoverableErrorReason reason);
 
-  // Returns the username (in form of an email address) that should be used in
-  // the credentials.
-  std::string GetEffectiveUsername();
-
-  // Returns the account ID to use to get tokens.
-  std::string GetAccountIdToUse();
-
  // Factory used to create various dependent objects.
   scoped_ptr<ProfileSyncComponentsFactory> factory_;
 
@@ -896,17 +874,6 @@ class ProfileSyncService
   // The last time we detected a successful transition from SYNCING state.
   // Our backend notifies us whenever we should take a new snapshot.
   base::Time last_synced_time_;
-
-  // The time that StartUp() is called.  This member is zero if StartUp() has
-  // never been called, and is reset to zero once OnBackendInitialized() is
-  // called.
-  base::Time start_up_time_;
-
-  // Whether we have received a signal from a SyncableService requesting that
-  // sync starts as soon as possible.
-  // TODO(tim): Move this and other TryStart related logic + state to separate
-  // class. Bug 80149.
-  bool data_type_requested_sync_startup_;
 
   // The time that OnConfigureStart is called. This member is zero if
   // OnConfigureStart has not yet been called, and is reset to zero once
@@ -973,12 +940,6 @@ class ProfileSyncService
   // if they e.g. don't remember their explicit passphrase.
   bool encryption_pending_;
 
-  // If true, we want to automatically start sync signin whenever we have
-  // credentials (user doesn't need to go through the startup flow). This is
-  // typically enabled on platforms (like ChromeOS) that have their own
-  // distinct signin flow.
-  const bool auto_start_enabled_;
-
   scoped_ptr<browser_sync::BackendMigrator> migrator_;
 
   // This is the last |SyncProtocolError| we received from the server that had
@@ -993,10 +954,6 @@ class ProfileSyncService
   browser_sync::FailedDataTypesHandler failed_data_types_handler_;
 
   browser_sync::DataTypeManager::ConfigureStatus configure_status_;
-
-  // If |true|, there is setup UI visible so we should not start downloading
-  // data types.
-  bool setup_in_progress_;
 
   // The set of currently enabled sync experiments.
   syncer::Experiments current_experiments_;
@@ -1030,6 +987,14 @@ class ProfileSyncService
 
   base::WeakPtrFactory<ProfileSyncService> weak_factory_;
 
+  // We don't use |weak_factory_| for the StartupController because the weak
+  // ptrs should be bound to the lifetime of ProfileSyncService and not to the
+  // [Initialize -> sync disabled/shutdown] lifetime.  We don't pass
+  // StartupController an Unretained reference to future-proof against
+  // the controller impl changing to post tasks. Therefore, we have a separate
+  // factory.
+  base::WeakPtrFactory<ProfileSyncService> startup_controller_weak_factory_;
+
   // States related to sync token and connection.
   base::Time connection_status_update_time_;
   syncer::ConnectionStatus connection_status_;
@@ -1041,6 +1006,8 @@ class ProfileSyncService
   scoped_ptr<SessionsSyncManager> sessions_sync_manager_;
 
   scoped_ptr<syncer::NetworkResources> network_resources_;
+
+  browser_sync::StartupController startup_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };

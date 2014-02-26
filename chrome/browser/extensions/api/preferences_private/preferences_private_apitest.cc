@@ -39,7 +39,7 @@ class FakeProfileSyncService : public ProfileSyncService {
             profile,
             NULL,
             ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-            ProfileSyncService::MANUAL_START),
+            browser_sync::MANUAL_START),
         sync_initialized_(true),
         initialized_state_violation_(false) {}
 
