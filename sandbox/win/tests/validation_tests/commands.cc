@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <Aclapi.h>
 #include <windows.h>
 #include <string>
 
@@ -241,62 +240,11 @@ SBOX_TESTS_COMMAND int SwitchToSboxDesktop(int, wchar_t **) {
 }
 
 int TestSwitchDesktop() {
-  HDESK desktop = ::GetThreadDesktop(::GetCurrentThreadId());
-  if (NULL == desktop) {
+  HDESK sbox_desk = ::GetThreadDesktop(::GetCurrentThreadId());
+  if (NULL == sbox_desk) {
     return SBOX_TEST_FAILED;
   }
-  if (::SwitchDesktop(desktop)) {
-    return SBOX_TEST_SUCCEEDED;
-  }
-  return SBOX_TEST_DENIED;
-}
-
-SBOX_TESTS_COMMAND int OpenAlternateDesktop(int, wchar_t **argv) {
-  return TestOpenAlternateDesktop(argv[0]);
-}
-
-int TestOpenAlternateDesktop(wchar_t *desktop_name) {
-  // Test for WRITE_DAC permission on the handle.
-  HDESK desktop = ::GetThreadDesktop(::GetCurrentThreadId());
-  if (desktop) {
-    HANDLE test_handle;
-    if (::DuplicateHandle(::GetCurrentProcess(), desktop,
-                          ::GetCurrentProcess(), &test_handle,
-                          WRITE_DAC, FALSE, 0)) {
-      DWORD result = ::SetSecurityInfo(test_handle, SE_WINDOW_OBJECT,
-                                       DACL_SECURITY_INFORMATION, NULL, NULL,
-                                       NULL, NULL);
-      ::CloseHandle(test_handle);
-      if (result != ERROR_ACCESS_DENIED) {
-        return SBOX_TEST_SUCCEEDED;
-      }
-    } else if (::GetLastError() != ERROR_ACCESS_DENIED) {
-      return SBOX_TEST_SUCCEEDED;
-    }
-  }
-
-  // Open by name with WRITE_DAC.
-  if ((desktop = ::OpenDesktop(desktop_name, 0, FALSE, WRITE_DAC)) ||
-      ::GetLastError() != ERROR_ACCESS_DENIED) {
-    ::CloseDesktop(desktop);
-    return SBOX_TEST_SUCCEEDED;
-  }
-
-  return SBOX_TEST_DENIED;
-}
-
-BOOL CALLBACK DesktopTestEnumProc(LPTSTR desktop_name, LPARAM result) {
-  return TRUE;
-}
-
-SBOX_TESTS_COMMAND int EnumAlternateWinsta(int, wchar_t **) {
-  return TestEnumAlternateWinsta();
-}
-
-int TestEnumAlternateWinsta() {
-  int result = SBOX_TEST_DENIED;
-  // Try to enumerate the destops on the alternate windowstation.
-  if (::EnumDesktopsW(NULL, DesktopTestEnumProc, 0)) {
+  if (::SwitchDesktop(sbox_desk)) {
     return SBOX_TEST_SUCCEEDED;
   }
   return SBOX_TEST_DENIED;

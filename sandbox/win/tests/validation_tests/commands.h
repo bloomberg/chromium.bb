@@ -36,13 +36,6 @@ int TestOpenInputDesktop();
 // Tries to switch the interactive desktop. Returns a SboxTestResult.
 int TestSwitchDesktop();
 
-// Tries to open the alternate desktop. Returns a SboxTestResult.
-int TestOpenAlternateDesktop(wchar_t *desktop_name);
-
-// Tries to enumerate desktops on the alternate windowstation.
-// Returns a SboxTestResult.
-int TestEnumAlternateWinsta();
-
 }  // namespace sandbox
 
 #endif  // SANDBOX_TESTS_VALIDATION_TESTS_COMMANDS_H__
