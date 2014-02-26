@@ -973,6 +973,9 @@ CommandLine PrepareCommandLineForGTest(const CommandLine& command_line,
   // Strip out gtest_repeat flag - this is handled by the launcher process.
   switches.erase(kGTestRepeatFlag);
 
+  // Don't try to write the final XML report in child processes.
+  switches.erase(kGTestOutputFlag);
+
   for (CommandLine::SwitchMap::const_iterator iter = switches.begin();
        iter != switches.end(); ++iter) {
     new_command_line.AppendSwitchNative((*iter).first, (*iter).second);
