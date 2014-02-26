@@ -30,7 +30,6 @@
 
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioUtilities.h"
-#include "platform/audio/FFTFrame.h"
 #include "platform/audio/VectorMath.h"
 
 #include <algorithm>

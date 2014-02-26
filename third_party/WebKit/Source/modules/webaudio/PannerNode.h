@@ -28,6 +28,7 @@
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/Cone.h"
 #include "platform/audio/Distance.h"
+#include "platform/audio/HRTFDatabaseLoader.h"
 #include "platform/audio/Panner.h"
 #include "modules/webaudio/AudioListener.h"
 #include "modules/webaudio/AudioNode.h"
@@ -144,6 +145,9 @@ private:
     DistanceEffect m_distanceEffect;
     ConeEffect m_coneEffect;
     float m_lastGain;
+
+    // HRTF Database loader
+    RefPtr<HRTFDatabaseLoader> m_hrtfDatabaseLoader;
 
     unsigned m_connectionCount;
 
