@@ -124,8 +124,8 @@ class AddressSorterWin : public AddressSorter {
 
     const CallbackType callback_;
     const size_t buffer_size_;
-    scoped_ptr_malloc<SOCKET_ADDRESS_LIST> input_buffer_;
-    scoped_ptr_malloc<SOCKET_ADDRESS_LIST> output_buffer_;
+    scoped_ptr<SOCKET_ADDRESS_LIST, base::FreeDeleter> input_buffer_;
+    scoped_ptr<SOCKET_ADDRESS_LIST, base::FreeDeleter> output_buffer_;
     bool success_;
 
     DISALLOW_COPY_AND_ASSIGN(Job);

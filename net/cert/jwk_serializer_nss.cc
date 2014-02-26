@@ -69,7 +69,7 @@ bool ConvertEcPublicKeyInfoToJwk(
   return false;
 }
 
-typedef scoped_ptr_malloc<
+typedef scoped_ptr<
     CERTSubjectPublicKeyInfo,
     crypto::NSSDestroyer<CERTSubjectPublicKeyInfo,
                          SECKEY_DestroySubjectPublicKeyInfo> >

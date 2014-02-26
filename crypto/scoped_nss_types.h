@@ -31,35 +31,30 @@ struct NSSDestroyer1 {
 };
 
 // Define some convenient scopers around NSS pointers.
-typedef scoped_ptr_malloc<
-    PK11Context, NSSDestroyer1<PK11Context,
-                               PK11_DestroyContext,
-                               PR_TRUE> > ScopedPK11Context;
-typedef scoped_ptr_malloc<
-    PK11SlotInfo, NSSDestroyer<PK11SlotInfo, PK11_FreeSlot> > ScopedPK11Slot;
-typedef scoped_ptr_malloc<
-    PK11SlotList, NSSDestroyer<PK11SlotList,
-                               PK11_FreeSlotList> > ScopedPK11SlotList;
-typedef scoped_ptr_malloc<
-    PK11SymKey, NSSDestroyer<PK11SymKey, PK11_FreeSymKey> > ScopedPK11SymKey;
-typedef scoped_ptr_malloc<
-    SECKEYPublicKey, NSSDestroyer<SECKEYPublicKey, SECKEY_DestroyPublicKey> >
+typedef scoped_ptr<PK11Context,
+                   NSSDestroyer1<PK11Context, PK11_DestroyContext, PR_TRUE> >
+    ScopedPK11Context;
+typedef scoped_ptr<PK11SlotInfo, NSSDestroyer<PK11SlotInfo, PK11_FreeSlot> >
+    ScopedPK11Slot;
+typedef scoped_ptr<PK11SlotList, NSSDestroyer<PK11SlotList, PK11_FreeSlotList> >
+    ScopedPK11SlotList;
+typedef scoped_ptr<PK11SymKey, NSSDestroyer<PK11SymKey, PK11_FreeSymKey> >
+    ScopedPK11SymKey;
+typedef scoped_ptr<SECKEYPublicKey,
+                   NSSDestroyer<SECKEYPublicKey, SECKEY_DestroyPublicKey> >
     ScopedSECKEYPublicKey;
-typedef scoped_ptr_malloc<
-    SECKEYPrivateKey, NSSDestroyer<SECKEYPrivateKey, SECKEY_DestroyPrivateKey> >
+typedef scoped_ptr<SECKEYPrivateKey,
+                   NSSDestroyer<SECKEYPrivateKey, SECKEY_DestroyPrivateKey> >
     ScopedSECKEYPrivateKey;
-typedef scoped_ptr_malloc<
-    SECAlgorithmID, NSSDestroyer1<SECAlgorithmID,
-                                  SECOID_DestroyAlgorithmID,
-                                  PR_TRUE> > ScopedSECAlgorithmID;
-typedef scoped_ptr_malloc<
-    SECItem, NSSDestroyer1<SECItem,
-                           SECITEM_FreeItem,
-                           PR_TRUE> > ScopedSECItem;
-typedef scoped_ptr_malloc<
-    PLArenaPool, NSSDestroyer1<PLArenaPool,
-                               PORT_FreeArena,
-                               PR_FALSE> > ScopedPLArenaPool;
+typedef scoped_ptr<SECAlgorithmID,
+                   NSSDestroyer1<SECAlgorithmID, SECOID_DestroyAlgorithmID,
+                                 PR_TRUE> >
+    ScopedSECAlgorithmID;
+typedef scoped_ptr<SECItem, NSSDestroyer1<SECItem, SECITEM_FreeItem, PR_TRUE> >
+    ScopedSECItem;
+typedef scoped_ptr<PLArenaPool,
+                   NSSDestroyer1<PLArenaPool, PORT_FreeArena, PR_FALSE> >
+    ScopedPLArenaPool;
 
 }  // namespace crypto
 

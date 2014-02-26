@@ -37,13 +37,13 @@ namespace net {
 
 namespace {
 
-typedef scoped_ptr_malloc<
+typedef scoped_ptr<
     CERTCertificatePolicies,
     crypto::NSSDestroyer<CERTCertificatePolicies,
                          CERT_DestroyCertificatePoliciesExtension> >
     ScopedCERTCertificatePolicies;
 
-typedef scoped_ptr_malloc<
+typedef scoped_ptr<
     CERTCertList,
     crypto::NSSDestroyer<CERTCertList, CERT_DestroyCertList> >
     ScopedCERTCertList;

@@ -105,7 +105,7 @@ bool CertPrincipal::ParseDistinguishedName(const void* ber_name_data,
                            &name_info, &name_info_size);
   if (!rv)
     return false;
-  scoped_ptr_malloc<CERT_NAME_INFO> scoped_name_info(name_info);
+  scoped_ptr<CERT_NAME_INFO, base::FreeDeleter> scoped_name_info(name_info);
 
   std::vector<std::string> common_names, locality_names, state_names,
       country_names;

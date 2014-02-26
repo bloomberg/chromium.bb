@@ -81,13 +81,12 @@ struct NSSCMSMessageDeleter {
 };
 typedef scoped_ptr<NSSCMSMessage, NSSCMSMessageDeleter> ScopedNSSCMSMessage;
 
-class FreeNSSCMSSignedData {
- public:
+struct FreeNSSCMSSignedData {
   inline void operator()(NSSCMSSignedData* x) const {
     NSS_CMSSignedData_Destroy(x);
   }
 };
-typedef scoped_ptr_malloc<NSSCMSSignedData, FreeNSSCMSSignedData>
+typedef scoped_ptr<NSSCMSSignedData, FreeNSSCMSSignedData>
     ScopedNSSCMSSignedData;
 
 }  // namespace

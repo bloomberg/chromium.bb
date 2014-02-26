@@ -153,7 +153,8 @@ bool Wow64::RunWowHelper(void* buffer) {
                L"wow_helper.exe\" " << child_->ProcessId() << " " <<
                bit_cast<ULONG>(buffer);
 
-  scoped_ptr_malloc<wchar_t> writable_command(_wcsdup(command.str().c_str()));
+  scoped_ptr<wchar_t, base::FreeDeleter>
+      writable_command(_wcsdup(command.str().c_str()));
 
   STARTUPINFO startup_info = {0};
   startup_info.cb = sizeof(startup_info);

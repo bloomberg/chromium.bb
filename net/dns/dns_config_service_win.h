@@ -65,7 +65,7 @@ struct NET_EXPORT_PRIVATE DnsSystemSettings {
 
   // Filled in by GetAdapterAddresses. Note that the alternative
   // GetNetworkParams does not include IPv6 addresses.
-  scoped_ptr_malloc<IP_ADAPTER_ADDRESSES> addresses;
+  scoped_ptr<IP_ADAPTER_ADDRESSES, base::FreeDeleter> addresses;
 
   // SOFTWARE\Policies\Microsoft\Windows NT\DNSClient\SearchList
   RegString policy_search_list;

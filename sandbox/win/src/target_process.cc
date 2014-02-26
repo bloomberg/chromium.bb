@@ -116,7 +116,7 @@ DWORD TargetProcess::Create(const wchar_t* exe_path,
   exe_name_.reset(_wcsdup(exe_path));
 
   // the command line needs to be writable by CreateProcess().
-  scoped_ptr_malloc<wchar_t> cmd_line(_wcsdup(command_line));
+  scoped_ptr<wchar_t, base::FreeDeleter> cmd_line(_wcsdup(command_line));
 
   // Start the target process suspended.
   DWORD flags =

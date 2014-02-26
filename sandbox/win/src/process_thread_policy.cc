@@ -227,7 +227,8 @@ DWORD ProcessPolicy::CreateProcessWAction(EvalResult eval_result,
 
   STARTUPINFO startup_info = {0};
   startup_info.cb = sizeof(startup_info);
-  scoped_ptr_malloc<wchar_t> cmd_line(_wcsdup(command_line.c_str()));
+  scoped_ptr<wchar_t, base::FreeDeleter>
+      cmd_line(_wcsdup(command_line.c_str()));
 
   BOOL should_give_full_access = (GIVE_ALLACCESS == eval_result);
   if (!CreateProcessExWHelper(client_info.process, should_give_full_access,

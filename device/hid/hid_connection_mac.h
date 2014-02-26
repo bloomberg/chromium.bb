@@ -60,7 +60,7 @@ class HidConnectionMac : public HidConnection {
   HidServiceMac* service_;
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   base::ScopedCFTypeRef<IOHIDDeviceRef> device_;
-  scoped_ptr_malloc<uint8_t> inbound_buffer_;
+  scoped_ptr<uint8_t, base::FreeDeleter> inbound_buffer_;
   bool disconnected_;
 
   typedef std::pair<scoped_refptr<net::IOBuffer>, size_t> PendingReport;

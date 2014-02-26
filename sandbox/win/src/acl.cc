@@ -11,8 +11,9 @@
 
 namespace sandbox {
 
-bool GetDefaultDacl(HANDLE token,
-                    scoped_ptr_malloc<TOKEN_DEFAULT_DACL>* default_dacl) {
+bool GetDefaultDacl(
+    HANDLE token,
+    scoped_ptr<TOKEN_DEFAULT_DACL, base::FreeDeleter>* default_dacl) {
   if (token == NULL)
     return false;
 
@@ -59,7 +60,7 @@ bool AddSidToDefaultDacl(HANDLE token, const Sid& sid, ACCESS_MASK access) {
   if (token == NULL)
     return false;
 
-  scoped_ptr_malloc<TOKEN_DEFAULT_DACL> default_dacl;
+  scoped_ptr<TOKEN_DEFAULT_DACL, base::FreeDeleter> default_dacl;
   if (!GetDefaultDacl(token, &default_dacl))
     return false;
 
@@ -81,7 +82,7 @@ bool AddUserSidToDefaultDacl(HANDLE token, ACCESS_MASK access) {
   DWORD size = sizeof(TOKEN_USER) + SECURITY_MAX_SID_SIZE;
   TOKEN_USER* token_user = reinterpret_cast<TOKEN_USER*>(malloc(size));
 
-  scoped_ptr_malloc<TOKEN_USER> token_user_ptr(token_user);
+  scoped_ptr<TOKEN_USER, base::FreeDeleter> token_user_ptr(token_user);
 
   if (!::GetTokenInformation(token, TokenUser, token_user, size, &size))
     return false;

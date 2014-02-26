@@ -56,8 +56,7 @@ NPObject* NewTrackedNPObject() {
   return object;
 }
 
-class ReleaseNPObject {
- public:
+struct ReleaseNPObject {
   void operator()(NPObject* o) const {
     blink::WebBindings::releaseObject(o);
   }
@@ -65,7 +64,7 @@ class ReleaseNPObject {
 
 // Handles automatically releasing a reference to the NPObject on destruction.
 // It's assumed the input has a ref already taken.
-typedef scoped_ptr_malloc<NPObject, ReleaseNPObject> NPObjectReleaser;
+typedef scoped_ptr<NPObject, ReleaseNPObject> NPObjectReleaser;
 
 }  // namespace
 

@@ -214,7 +214,7 @@ SECStatus PR_CALLBACK CollectCertsCallback(void* arg,
   return SECSuccess;
 }
 
-typedef scoped_ptr_malloc<
+typedef scoped_ptr<
     CERTName,
     crypto::NSSDestroyer<CERTName, CERT_DestroyName> > ScopedCERTName;
 

@@ -76,8 +76,8 @@ static void GetAudioDeviceInfo(bool is_input,
 
   // Get the array of device ids for all the devices, which includes both
   // input devices and output devices.
-  scoped_ptr_malloc<AudioDeviceID>
-      devices(reinterpret_cast<AudioDeviceID*>(malloc(size)));
+  scoped_ptr<AudioDeviceID, base::FreeDeleter>
+      devices(static_cast<AudioDeviceID*>(malloc(size)));
   AudioDeviceID* device_ids = devices.get();
   result = AudioObjectGetPropertyData(kAudioObjectSystemObject,
                                       &property_address,
@@ -488,8 +488,8 @@ std::string AudioManagerMac::GetAssociatedOutputDeviceID(
     return std::string();
 
   int device_count = size / sizeof(AudioDeviceID);
-  scoped_ptr_malloc<AudioDeviceID>
-      devices(reinterpret_cast<AudioDeviceID*>(malloc(size)));
+  scoped_ptr<AudioDeviceID, base::FreeDeleter>
+      devices(static_cast<AudioDeviceID*>(malloc(size)));
   result = AudioObjectGetPropertyData(
       device, &pa, 0, NULL, &size, devices.get());
   if (result)

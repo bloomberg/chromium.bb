@@ -320,14 +320,13 @@ bool DhcpProxyScriptFetcherWin::GetCandidateAdapterNames(
   // The GetAdaptersAddresses MSDN page recommends using a size of 15000 to
   // avoid reallocation.
   ULONG adapters_size = 15000;
-  scoped_ptr_malloc<IP_ADAPTER_ADDRESSES> adapters;
+  scoped_ptr<IP_ADAPTER_ADDRESSES, base::FreeDeleter> adapters;
   ULONG error = ERROR_SUCCESS;
   int num_tries = 0;
 
   base::ElapsedTimer time_api_access;
   do {
-    adapters.reset(
-        reinterpret_cast<IP_ADAPTER_ADDRESSES*>(malloc(adapters_size)));
+    adapters.reset(static_cast<IP_ADAPTER_ADDRESSES*>(malloc(adapters_size)));
     // Return only unicast addresses, and skip information we do not need.
     error = GetAdaptersAddresses(AF_UNSPEC,
                                  GAA_FLAG_SKIP_ANYCAST |

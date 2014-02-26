@@ -203,7 +203,7 @@ class NET_EXPORT GrowableIOBuffer : public IOBuffer {
  private:
   virtual ~GrowableIOBuffer();
 
-  scoped_ptr_malloc<char> real_data_;
+  scoped_ptr<char, base::FreeDeleter> real_data_;
   int capacity_;
   int offset_;
 };

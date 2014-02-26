@@ -14,8 +14,9 @@
 namespace sandbox {
 
 // Returns the default dacl from the token passed in.
-bool GetDefaultDacl(HANDLE token,
-                    scoped_ptr_malloc<TOKEN_DEFAULT_DACL>* default_dacl);
+bool GetDefaultDacl(
+    HANDLE token,
+    scoped_ptr<TOKEN_DEFAULT_DACL, base::FreeDeleter>* default_dacl);
 
 // Appends an ACE represented by |sid|, |access_mode|, and |access| to
 // |old_dacl|. If the function succeeds, new_dacl contains the new dacl and

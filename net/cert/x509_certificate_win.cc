@@ -45,8 +45,9 @@ void ExplodedTimeToSystemTime(const base::Time::Exploded& exploded,
 
 // Decodes the cert's subjectAltName extension into a CERT_ALT_NAME_INFO
 // structure and stores it in *output.
-void GetCertSubjectAltName(PCCERT_CONTEXT cert,
-                           scoped_ptr_malloc<CERT_ALT_NAME_INFO>* output) {
+void GetCertSubjectAltName(
+    PCCERT_CONTEXT cert,
+    scoped_ptr<CERT_ALT_NAME_INFO, base::FreeDeleter>* output) {
   PCERT_EXTENSION extension = CertFindExtension(szOID_SUBJECT_ALT_NAME2,
                                                 cert->pCertInfo->cExtension,
                                                 cert->pCertInfo->rgExtension);
@@ -175,7 +176,7 @@ void X509Certificate::GetSubjectAltName(
   if (!cert_handle_)
     return;
 
-  scoped_ptr_malloc<CERT_ALT_NAME_INFO> alt_name_info;
+  scoped_ptr<CERT_ALT_NAME_INFO, base::FreeDeleter> alt_name_info;
   GetCertSubjectAltName(cert_handle_, &alt_name_info);
   CERT_ALT_NAME_INFO* alt_name = alt_name_info.get();
   if (alt_name) {

@@ -89,9 +89,9 @@ bool HidServiceWin::Enumerate() {
                                      &required_size,
                                      NULL);
 
-    scoped_ptr_malloc<SP_DEVICE_INTERFACE_DETAIL_DATA_A>
+    scoped_ptr<SP_DEVICE_INTERFACE_DETAIL_DATA_A, base::FreeDeleter>
         device_interface_detail_data(
-            reinterpret_cast<SP_DEVICE_INTERFACE_DETAIL_DATA_A*>(
+            static_cast<SP_DEVICE_INTERFACE_DETAIL_DATA_A*>(
                 malloc(required_size)));
     device_interface_detail_data->cbSize =
         sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA_A);

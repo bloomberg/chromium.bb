@@ -535,13 +535,13 @@ std::string AlsaPcmOutputStream::FindDeviceForChannels(uint32 channels) {
     for (void** hint_iter = hints; *hint_iter != NULL; hint_iter++) {
       // Only examine devices that are output capable..  Valid values are
       // "Input", "Output", and NULL which means both input and output.
-      scoped_ptr_malloc<char> io(
+      scoped_ptr<char, base::FreeDeleter> io(
           wrapper_->DeviceNameGetHint(*hint_iter, kIoHintName));
       if (io != NULL && strcmp(io.get(), "Input") == 0)
         continue;
 
       // Attempt to select the closest device for number of channels.
-      scoped_ptr_malloc<char> name(
+      scoped_ptr<char, base::FreeDeleter> name(
           wrapper_->DeviceNameGetHint(*hint_iter, kNameHintName));
       if (strncmp(wanted_device, name.get(), strlen(wanted_device)) == 0) {
         guessed_device = name.get();

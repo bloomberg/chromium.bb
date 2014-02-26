@@ -152,8 +152,8 @@ void AudioManagerAlsa::GetAlsaDevicesInfo(
   for (void** hint_iter = hints; *hint_iter != NULL; hint_iter++) {
     // Only examine devices of the right type.  Valid values are
     // "Input", "Output", and NULL which means both input and output.
-    scoped_ptr_malloc<char> io(wrapper_->DeviceNameGetHint(*hint_iter,
-                                                           kIoHintName));
+    scoped_ptr<char, base::FreeDeleter> io(wrapper_->DeviceNameGetHint(
+        *hint_iter, kIoHintName));
     if (io != NULL && strcmp(unwanted_device_type, io.get()) == 0)
       continue;
 
@@ -169,13 +169,13 @@ void AudioManagerAlsa::GetAlsaDevicesInfo(
     }
 
     // Get the unique device name for the device.
-    scoped_ptr_malloc<char> unique_device_name(
+    scoped_ptr<char, base::FreeDeleter> unique_device_name(
         wrapper_->DeviceNameGetHint(*hint_iter, kNameHintName));
 
     // Find out if the device is available.
     if (IsAlsaDeviceAvailable(type, unique_device_name.get())) {
       // Get the description for the device.
-      scoped_ptr_malloc<char> desc(wrapper_->DeviceNameGetHint(
+      scoped_ptr<char, base::FreeDeleter> desc(wrapper_->DeviceNameGetHint(
           *hint_iter, kDescriptionHintName));
 
       media::AudioDeviceName name;
@@ -252,8 +252,8 @@ bool AudioManagerAlsa::HasAnyAlsaAudioDevice(
       for (void** hint_iter = hints; *hint_iter != NULL; hint_iter++) {
         // Only examine devices that are |stream| capable.  Valid values are
         // "Input", "Output", and NULL which means both input and output.
-        scoped_ptr_malloc<char> io(wrapper_->DeviceNameGetHint(*hint_iter,
-                                                               kIoHintName));
+        scoped_ptr<char, base::FreeDeleter> io(wrapper_->DeviceNameGetHint(
+            *hint_iter, kIoHintName));
         const char* unwanted_type = UnwantedDeviceTypeWhenEnumerating(stream);
         if (io != NULL && strcmp(unwanted_type, io.get()) == 0)
           continue;  // Wrong type, skip the device.

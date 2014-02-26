@@ -12,10 +12,9 @@
 #include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"
 
-typedef scoped_ptr_malloc<
-    CERTSubjectPublicKeyInfo,
-    crypto::NSSDestroyer<CERTSubjectPublicKeyInfo,
-                         SECKEY_DestroySubjectPublicKeyInfo> >
+typedef scoped_ptr<CERTSubjectPublicKeyInfo,
+                   crypto::NSSDestroyer<CERTSubjectPublicKeyInfo,
+                                        SECKEY_DestroySubjectPublicKeyInfo> >
     ScopedCERTSubjectPublicKeyInfo;
 
 ClientUpdateProtocol::~ClientUpdateProtocol() {

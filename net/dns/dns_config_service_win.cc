@@ -113,16 +113,16 @@ class RegistryReader : public base::NonThreadSafe {
 };
 
 // Wrapper for GetAdaptersAddresses. Returns NULL if failed.
-scoped_ptr_malloc<IP_ADAPTER_ADDRESSES> ReadIpHelper(ULONG flags) {
+scoped_ptr<IP_ADAPTER_ADDRESSES, base::FreeDeleter> ReadIpHelper(ULONG flags) {
   base::ThreadRestrictions::AssertIOAllowed();
 
-  scoped_ptr_malloc<IP_ADAPTER_ADDRESSES> out;
+  scoped_ptr<IP_ADAPTER_ADDRESSES, base::FreeDeleter> out;
   ULONG len = 15000;  // As recommended by MSDN for GetAdaptersAddresses.
   UINT rv = ERROR_BUFFER_OVERFLOW;
   // Try up to three times.
   for (unsigned tries = 0; (tries < 3) && (rv == ERROR_BUFFER_OVERFLOW);
        tries++) {
-    out.reset(reinterpret_cast<PIP_ADAPTER_ADDRESSES>(malloc(len)));
+    out.reset(static_cast<PIP_ADAPTER_ADDRESSES>(malloc(len)));
     rv = GetAdaptersAddresses(AF_UNSPEC, flags, NULL, out.get(), &len);
   }
   if (rv != NO_ERROR)
@@ -250,7 +250,7 @@ HostsParseWinResult AddLocalhostEntries(DnsHosts* hosts) {
   if (have_ipv4 && have_ipv6)
     return HOSTS_PARSE_WIN_OK;
 
-  scoped_ptr_malloc<IP_ADAPTER_ADDRESSES> addresses =
+  scoped_ptr<IP_ADAPTER_ADDRESSES, base::FreeDeleter> addresses =
       ReadIpHelper(GAA_FLAG_SKIP_ANYCAST |
                    GAA_FLAG_SKIP_DNS_SERVER |
                    GAA_FLAG_SKIP_MULTICAST |

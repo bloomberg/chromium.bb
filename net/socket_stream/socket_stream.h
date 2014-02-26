@@ -223,7 +223,7 @@ class NET_EXPORT SocketStream
    private:
      virtual ~ResponseHeaders();
 
-    scoped_ptr_malloc<char> headers_;
+    scoped_ptr<char, base::FreeDeleter> headers_;
   };
 
   enum State {
