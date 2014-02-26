@@ -79,7 +79,7 @@ if (window == backgroundPage) {
             }
             // TODO(koz): fs.root.getFile() makes a trip to the browser process,
             // but it might be possible avoid that by calling
-            // WebFrame::createFileEntry().
+            // WebDOMFileSystem::createV8Entry().
             if (entry.isDirectory) {
               fs.root.getDirectory(baseName, {}, getEntryCallback,
                                    getEntryError);

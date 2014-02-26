@@ -7,6 +7,7 @@
 #include <string>
 
 #include "chrome/common/extensions/extension_constants.h"
+#include "third_party/WebKit/public/web/WebDOMFileSystem.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "v8/include/v8.h"
@@ -28,13 +29,15 @@ void GetMediaFileSystemObject(const v8::FunctionCallbackInfo<v8::Value>& args) {
   blink::WebFrame* webframe = blink::WebFrame::frameForCurrentContext();
   const GURL origin = GURL(webframe->document().securityOrigin().toString());
   const std::string fs_name = fileapi::GetIsolatedFileSystemName(origin, fsid);
-  const std::string root_url =
+  const GURL root_url(
       fileapi::GetIsolatedFileSystemRootURIString(
-          origin, fsid, extension_misc::kMediaFileSystemPathPart);
+          origin, fsid, extension_misc::kMediaFileSystemPathPart));
   args.GetReturnValue().Set(
-      webframe->createFileSystem(blink::WebFileSystemTypeIsolated,
-                                 blink::WebString::fromUTF8(fs_name),
-                                 blink::WebString::fromUTF8(root_url)));
+      blink::WebDOMFileSystem::create(
+          webframe,
+          blink::WebFileSystemTypeIsolated,
+          blink::WebString::fromUTF8(fs_name),
+          root_url).toV8Value());
 }
 
 }  // namespace

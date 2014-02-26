@@ -13,10 +13,9 @@
 #include "chrome/renderer/extensions/user_script_slave.h"
 #include "extensions/common/constants.h"
 #include "grit/renderer_resources.h"
-#include "third_party/WebKit/public/platform/WebFileSystem.h"
-#include "third_party/WebKit/public/platform/WebFileSystemType.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDOMError.h"
+#include "third_party/WebKit/public/web/WebDOMFileSystem.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"
@@ -62,15 +61,17 @@ void FileSystemNatives::GetIsolatedFileSystem(
     optional_root_name = *v8::String::Utf8Value(args[1]);
   }
 
-  std::string root(fileapi::GetIsolatedFileSystemRootURIString(
+  GURL root_url(fileapi::GetIsolatedFileSystemRootURIString(
       context_url.GetOrigin(),
       file_system_id,
       optional_root_name));
 
-  args.GetReturnValue().Set(webframe->createFileSystem(
-      blink::WebFileSystemTypeIsolated,
-      blink::WebString::fromUTF8(name),
-      blink::WebString::fromUTF8(root)));
+  args.GetReturnValue().Set(
+      blink::WebDOMFileSystem::create(
+          webframe,
+          blink::WebFileSystemTypeIsolated,
+          blink::WebString::fromUTF8(name),
+          root_url).toV8Value());
 }
 
 void FileSystemNatives::GetFileEntry(
@@ -89,23 +90,26 @@ void FileSystemNatives::GetFileEntry(
   DCHECK(args[2]->IsString());
   DCHECK(args[3]->IsString());
   std::string file_system_name(*v8::String::Utf8Value(args[1]->ToString()));
-  std::string file_system_root_url(*v8::String::Utf8Value(args[2]->ToString()));
+  GURL file_system_root_url(*v8::String::Utf8Value(args[2]->ToString()));
   std::string file_path_string(*v8::String::Utf8Value(args[3]->ToString()));
   base::FilePath file_path = base::FilePath::FromUTF8Unsafe(file_path_string);
   DCHECK(fileapi::VirtualPath::IsAbsolute(file_path.value()));
 
   DCHECK(args[4]->IsBoolean());
-  bool is_directory = args[4]->BooleanValue();
+  blink::WebDOMFileSystem::EntryType entry_type = args[4]->BooleanValue()
+      ? blink::WebDOMFileSystem::EntryTypeDirectory
+      : blink::WebDOMFileSystem::EntryTypeFile;
 
   blink::WebFrame* webframe =
       blink::WebFrame::frameForContext(context()->v8_context());
   DCHECK(webframe);
-  args.GetReturnValue().Set(webframe->createFileEntry(
-      type,
-      blink::WebString::fromUTF8(file_system_name),
-      blink::WebString::fromUTF8(file_system_root_url),
-      blink::WebString::fromUTF8(file_path_string),
-      is_directory));
+  args.GetReturnValue().Set(
+      blink::WebDOMFileSystem::create(
+          webframe, type,
+          blink::WebString::fromUTF8(file_system_name),
+          file_system_root_url).createV8Entry(
+              blink::WebString::fromUTF8(file_path_string),
+              entry_type));
 }
 
 void FileSystemNatives::CrackIsolatedFileSystemName(
