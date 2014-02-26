@@ -426,7 +426,11 @@ def GetDeviceSetupStepCmds():
 
 
 def RunUnitTests(options):
-  RunTestSuites(options, gtest_config.STABLE_TEST_SUITES)
+  suites = gtest_config.STABLE_TEST_SUITES
+  if options.asan:
+    suites = [s for s in suites
+              if s not in gtest_config.ASAN_EXCLUDED_TEST_SUITES]
+  RunTestSuites(options, suites)
 
 
 def RunInstrumentationTests(options):

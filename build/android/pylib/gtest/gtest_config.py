@@ -34,6 +34,13 @@ STABLE_TEST_SUITES = [
     'webkit_unit_tests',
 ]
 
+# Tests fail in component=shared_library build, which is required for ASan.
+# http://crbug.com/344868
+ASAN_EXCLUDED_TEST_SUITES = [
+    'breakpad_unittests',
+    'sandbox_linux_unittests'
+]
+
 WEBRTC_CHROMIUM_TEST_SUITES = [
     'content_browsertests',
 ]
