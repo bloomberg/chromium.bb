@@ -103,7 +103,7 @@ public:
         m_boundingBox.unite(otherContainer.m_boundingBox);
     }
 private:
-    Vector<IntRect> m_layerRects;
+    Vector<IntRect, 64> m_layerRects;
     IntRect m_boundingBox;
 };
 
