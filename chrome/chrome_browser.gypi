@@ -701,7 +701,7 @@
         'browser/first_run/upgrade_util_win.h',
         'browser/flags_storage.h',
         'browser/fullscreen.h',
-        'browser/fullscreen_aura.cc',
+        'browser/fullscreen_aurax11.cc',
         'browser/fullscreen_chromeos.cc',
         'browser/fullscreen_gtk.cc',
         'browser/fullscreen_mac.mm',
@@ -3034,6 +3034,11 @@
         }, {
           'dependencies': [
             '../build/linux/system.gyp:gnome_keyring',
+          ],
+        }],
+        ['use_ash==1', {
+          'sources!': [
+            'browser/fullscreen_aurax11.cc',
           ],
         }],
         ['use_aura==1', {
