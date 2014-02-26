@@ -9,7 +9,6 @@
 
 #include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/browser/extensions/api/hid/hid_device_resource.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/hid.h"
 #include "chrome/common/extensions/permissions/usb_device_permission.h"
 #include "device/hid/hid_connection.h"

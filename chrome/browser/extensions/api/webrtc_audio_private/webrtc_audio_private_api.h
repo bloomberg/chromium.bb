@@ -14,10 +14,6 @@
 #include "media/audio/audio_device_name.h"
 #include "url/gurl.h"
 
-namespace content {
-class ResourceContext;
-}
-
 namespace extensions {
 
 // Listens for device changes and forwards as an extension event.

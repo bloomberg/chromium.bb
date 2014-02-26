@@ -8,8 +8,6 @@
 #include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/common/extensions/api/serial.h"
 
-class Profile;
-
 namespace extensions {
 
 struct Event;

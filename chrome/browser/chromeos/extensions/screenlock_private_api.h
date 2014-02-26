@@ -10,10 +10,6 @@
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chromeos/dbus/session_manager_client.h"
 
-namespace gfx {
-class Image;
-}
-
 namespace extensions {
 
 class ScreenlockPrivateGetLockedFunction : public ChromeAsyncExtensionFunction {
@@ -120,7 +116,7 @@ class ScreenlockPrivateEventRouter
     : public extensions::ProfileKeyedAPI,
       public chromeos::SessionManagerClient::Observer {
  public:
-  explicit ScreenlockPrivateEventRouter(content::BrowserContext* context);
+  explicit ScreenlockPrivateEventRouter(Profile* profile);
   virtual ~ScreenlockPrivateEventRouter();
 
   void OnButtonClicked();
@@ -149,7 +145,7 @@ class ScreenlockPrivateEventRouter
 
   void DispatchEvent(const std::string& event_name, base::Value* arg);
 
-  content::BrowserContext* browser_context_;
+  Profile* profile_;
   DISALLOW_COPY_AND_ASSIGN(ScreenlockPrivateEventRouter);
 };
 

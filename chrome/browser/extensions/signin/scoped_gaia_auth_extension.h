@@ -7,20 +7,18 @@
 
 #include "base/basictypes.h"
 
-namespace content {
-class BrowserContext;
-}
+class Profile;
 
 // ScopedGaiaAuthExtension loads gaia auth extension on construction if the
 // extension is not registered yet, and unloads it on destruction if it is no
 // longer used.
 class ScopedGaiaAuthExtension {
  public:
-  explicit ScopedGaiaAuthExtension(content::BrowserContext* context);
+  explicit ScopedGaiaAuthExtension(Profile* profile);
   ~ScopedGaiaAuthExtension();
 
  private:
-  content::BrowserContext* browser_context_;
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedGaiaAuthExtension);
 };

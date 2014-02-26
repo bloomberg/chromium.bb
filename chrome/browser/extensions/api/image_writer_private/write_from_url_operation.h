@@ -11,7 +11,6 @@
 
 namespace net {
 class URLFetcher;
-class URLRequestContextGetter;
 }  // namespace net
 
 namespace extensions {

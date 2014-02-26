@@ -9,7 +9,6 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/serial/serial_connection.h"
 #include "chrome/browser/extensions/api/serial/serial_event_dispatcher.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/serial.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/serial/serial_device_enumerator.h"

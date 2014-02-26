@@ -12,7 +12,6 @@
 
 class Browser;
 class ExtensionService;
-class Profile;
 
 namespace extensions {
 

@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/api/socket/tcp_socket.h"
 #include "chrome/browser/extensions/api/socket/udp_socket.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"

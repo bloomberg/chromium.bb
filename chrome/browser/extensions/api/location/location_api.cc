@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/api/location/location_api.h"
 
 #include "chrome/browser/extensions/api/location/location_manager.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/location.h"
 #include "extensions/common/error_utils.h"
 

@@ -560,9 +560,9 @@ void CookiesGetAllCookieStoresFunction::Run() {
   SendResponse(RunImpl());
 }
 
-CookiesAPI::CookiesAPI(content::BrowserContext* context)
-    : browser_context_(context) {
-  ExtensionSystem::Get(browser_context_)->event_router()->RegisterObserver(
+CookiesAPI::CookiesAPI(Profile* profile)
+    : profile_(profile) {
+  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
       this, cookies::OnChanged::kEventName);
 }
 
@@ -570,8 +570,7 @@ CookiesAPI::~CookiesAPI() {
 }
 
 void CookiesAPI::Shutdown() {
-  ExtensionSystem::Get(browser_context_)->event_router()->UnregisterObserver(
-      this);
+  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
 }
 
 static base::LazyInstance<ProfileKeyedAPIFactory<CookiesAPI> >
@@ -584,9 +583,8 @@ ProfileKeyedAPIFactory<CookiesAPI>* CookiesAPI::GetFactoryInstance() {
 
 void CookiesAPI::OnListenerAdded(
     const extensions::EventListenerInfo& details) {
-  cookies_event_router_.reset(new CookiesEventRouter(browser_context_));
-  ExtensionSystem::Get(browser_context_)->event_router()->UnregisterObserver(
-      this);
+  cookies_event_router_.reset(new CookiesEventRouter(profile_));
+  ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
 }
 
 }  // namespace extensions

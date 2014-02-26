@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/api/commands/commands.h"
 
 #include "chrome/browser/extensions/api/commands/command_service.h"
-#include "chrome/browser/profiles/profile.h"
 
 namespace {
 
