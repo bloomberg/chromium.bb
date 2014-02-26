@@ -111,9 +111,29 @@ TEST(ValidationSuite, TestRegistry) {
 // to get to the interactive desktop or to make the sbox desktop interactive.
 TEST(ValidationSuite, TestDesktop) {
   TestRunner runner;
-  runner.GetPolicy()->SetAlternateDesktop(false);
+  runner.GetPolicy()->SetAlternateDesktop(true);
   EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(L"OpenInteractiveDesktop NULL"));
   EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(L"SwitchToSboxDesktop NULL"));
+}
+
+// Tests that the permissions on the Windowstation does not allow the sandbox
+// to get to the interactive desktop or to make the sbox desktop interactive.
+TEST(ValidationSuite, TestAlternateDesktop) {
+  base::win::Version version = base::win::GetVersion();
+  if (version < base::win::VERSION_WIN7)
+    return;
+
+  TestRunner runner;
+  EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(L"EnumAlternateWinsta NULL"));
+
+  wchar_t command[1024] = {0};
+  runner.SetTimeout(3600000);
+  runner.GetPolicy()->SetAlternateDesktop(true);
+  runner.GetPolicy()->SetDelayedIntegrityLevel(INTEGRITY_LEVEL_UNTRUSTED);
+  base::string16 desktop_name = runner.GetPolicy()->GetAlternateDesktop();
+  desktop_name = desktop_name.substr(desktop_name.find('\\') + 1);
+  wsprintf(command, L"OpenAlternateDesktop %lS", desktop_name.c_str());
+  EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(command));
 }
 
 // Tests if the windows are correctly protected by the sandbox.
