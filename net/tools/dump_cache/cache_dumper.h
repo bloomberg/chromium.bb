@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/files/file_path.h"
-#include "net/disk_cache/blockfile/backend_impl.h"
+#include "net/disk_cache/backend_impl.h"
 
 #ifdef WIN32
 // Dumping the cache often creates very large filenames, which are tricky

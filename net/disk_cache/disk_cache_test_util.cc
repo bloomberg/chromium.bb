@@ -9,9 +9,9 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "net/base/net_errors.h"
-#include "net/disk_cache/blockfile/backend_impl.h"
-#include "net/disk_cache/blockfile/file.h"
+#include "net/disk_cache/backend_impl.h"
 #include "net/disk_cache/cache_util.h"
+#include "net/disk_cache/file.h"
 
 using base::Time;
 using base::TimeDelta;
