@@ -27,6 +27,8 @@
 
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
+#include "core/dom/Element.h"
+#include "core/dom/NodeTraversal.h"
 #include "core/html/CollectionType.h"
 
 namespace WebCore {
@@ -83,12 +85,15 @@ protected:
     ALWAYS_INLINE NodeListRootType rootType() const { return static_cast<NodeListRootType>(m_rootType); }
 
     template <typename Collection>
-    static Element* iterateForPreviousNode(const Collection&, Node* current);
-    template <typename Collection>
     static Element* itemBefore(const Collection&, const Element* previousItem);
 
 private:
     void invalidateIdNameCacheMaps() const;
+    template <typename Collection>
+    static Element* iterateForPreviousNode(const Collection&, Node* current);
+    static Node* previousNode(const ContainerNode&, const Node& previous, bool onlyIncludeDirectChildren);
+    static Node* lastDescendant(const ContainerNode&);
+    static Node* lastNode(const ContainerNode&, bool onlyIncludeDirectChildren);
 
     RefPtr<ContainerNode> m_ownerNode; // Cannot be null.
     const unsigned m_rootType : 1;
@@ -118,6 +123,48 @@ ALWAYS_INLINE bool LiveNodeListBase::shouldInvalidateTypeOnAttributeChange(NodeL
         return true;
     }
     return false;
+}
+
+inline Node* LiveNodeListBase::previousNode(const ContainerNode& base, const Node& previous, bool onlyIncludeDirectChildren)
+{
+    return onlyIncludeDirectChildren ? previous.previousSibling() : NodeTraversal::previous(previous, &base);
+}
+
+inline Node* LiveNodeListBase::lastDescendant(const ContainerNode& node)
+{
+    Node* descendant = node.lastChild();
+    for (Node* current = descendant; current; current = current->lastChild())
+        descendant = current;
+    return descendant;
+}
+
+inline Node* LiveNodeListBase::lastNode(const ContainerNode& rootNode, bool onlyIncludeDirectChildren)
+{
+    return onlyIncludeDirectChildren ? rootNode.lastChild() : lastDescendant(rootNode);
+}
+
+template <typename Collection>
+Element* LiveNodeListBase::iterateForPreviousNode(const Collection& collection, Node* current)
+{
+    bool onlyIncludeDirectChildren = collection.shouldOnlyIncludeDirectChildren();
+    ContainerNode& rootNode = collection.rootNode();
+    for (; current; current = previousNode(rootNode, *current, onlyIncludeDirectChildren)) {
+        if (current->isElementNode() && isMatchingElement(collection, toElement(*current)))
+            return toElement(current);
+    }
+    return 0;
+}
+
+template <typename Collection>
+Element* LiveNodeListBase::itemBefore(const Collection& collection, const Element* previous)
+{
+    Node* current;
+    if (LIKELY(!!previous)) // Without this LIKELY, length() and item() can be 10% slower.
+        current = previousNode(collection.rootNode(), *previous, collection.shouldOnlyIncludeDirectChildren());
+    else
+        current = lastNode(collection.rootNode(), collection.shouldOnlyIncludeDirectChildren());
+
+    return iterateForPreviousNode(collection, current);
 }
 
 } // namespace WebCore

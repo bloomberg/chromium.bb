@@ -284,48 +284,6 @@ template <> inline bool isMatchingElement(const LiveNodeList& nodeList, const El
     return nodeList.nodeMatches(element);
 }
 
-static Node* previousNode(const ContainerNode& base, const Node& previous, bool onlyIncludeDirectChildren)
-{
-    return onlyIncludeDirectChildren ? previous.previousSibling() : NodeTraversal::previous(previous, &base);
-}
-
-static inline Node* lastDescendant(const ContainerNode& node)
-{
-    Node* descendant = node.lastChild();
-    for (Node* current = descendant; current; current = current->lastChild())
-        descendant = current;
-    return descendant;
-}
-
-static Node* lastNode(const ContainerNode& rootNode, bool onlyIncludeDirectChildren)
-{
-    return onlyIncludeDirectChildren ? rootNode.lastChild() : lastDescendant(rootNode);
-}
-
-template <typename Collection>
-ALWAYS_INLINE Element* LiveNodeListBase::iterateForPreviousNode(const Collection& collection, Node* current)
-{
-    bool onlyIncludeDirectChildren = collection.shouldOnlyIncludeDirectChildren();
-    ContainerNode& rootNode = collection.rootNode();
-    for (; current; current = previousNode(rootNode, *current, onlyIncludeDirectChildren)) {
-        if (current->isElementNode() && isMatchingElement(collection, toElement(*current)))
-            return toElement(current);
-    }
-    return 0;
-}
-
-template <typename Collection>
-Element* LiveNodeListBase::itemBefore(const Collection& collection, const Element* previous)
-{
-    Node* current;
-    if (LIKELY(!!previous)) // Without this LIKELY, length() and item() can be 10% slower.
-        current = previousNode(collection.rootNode(), *previous, collection.shouldOnlyIncludeDirectChildren());
-    else
-        current = lastNode(collection.rootNode(), collection.shouldOnlyIncludeDirectChildren());
-
-    return iterateForPreviousNode(collection, current);
-}
-
 Element* LiveNodeList::itemBefore(const Element* previous) const
 {
     return LiveNodeListBase::itemBefore(*this, previous);
