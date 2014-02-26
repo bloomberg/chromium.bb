@@ -603,6 +603,11 @@ class scoped_ptr_malloc {
 
   // operator=.  Move operator= for C++03 move emulation of this type.
   scoped_ptr_malloc& operator=(RValue rhs) {
+    // This detects an invalid assignment (which is properly detected by
+    // |scoped_ptr|) of the form |foo = bar.Pass();|, where |foo.get() ==
+    // bar.get()|.
+    if (this != rhs.object && ptr_ == rhs.object->ptr_)
+      abort();
     reset(rhs.object->release());
     return *this;
   }
