@@ -41,6 +41,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/keyword_hint_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_icon_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/mic_search_decoration.h"
+#import "chrome/browser/ui/cocoa/location_bar/origin_chip_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/page_action_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/search_button_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/selected_keyword_decoration.h"
@@ -153,6 +154,9 @@ LocationBarViewMac::LocationBarViewMac(
 
   [[field_ cell] setIsPopupMode:
       !browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP)];
+
+  if (chrome::ShouldDisplayOriginChipV2())
+    origin_chip_decoration_.reset(new OriginChipDecoration(this));
 }
 
 LocationBarViewMac::~LocationBarViewMac() {
@@ -390,9 +394,12 @@ void LocationBarViewMac::Layout() {
   // the constructor.  I am still wrestling with how best to deal with
   // right-hand decorations, which are not a static set.
   [cell clearDecorations];
+  if (origin_chip_decoration_.get())
+    [cell addLeftDecoration:origin_chip_decoration_.get()];
   [cell addLeftDecoration:location_icon_decoration_.get()];
   [cell addLeftDecoration:selected_keyword_decoration_.get()];
-  [cell addLeftDecoration:ev_bubble_decoration_.get()];
+  if (!origin_chip_decoration_.get())
+    [cell addLeftDecoration:ev_bubble_decoration_.get()];
   [cell addRightDecoration:search_button_decoration_.get()];
   [cell addRightDecoration:star_decoration_.get()];
   [cell addRightDecoration:zoom_decoration_.get()];
@@ -530,6 +537,9 @@ void LocationBarViewMac::OnChanged() {
   NSImage* image = OmniboxViewMac::ImageForResource(resource_id);
   location_icon_decoration_->SetImage(image);
   ev_bubble_decoration_->SetImage(image);
+
+  if (origin_chip_decoration_.get())
+    origin_chip_decoration_->Update();
 
   ToolbarModel* toolbar_model = GetToolbarModel();
   const chrome::DisplaySearchButtonConditions conditions =

@@ -2,22 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/toolbar/origin_chip.h"
+#include "chrome/browser/ui/toolbar/origin_chip_info.h"
 
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/extensions/extension_icon_image.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
 #include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
+#include "chrome/browser/ui/toolbar/toolbar_model.h"
+#include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
+#include "grit/chromium_strings.h"
 #include "grit/component_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -73,12 +79,78 @@ int StringForChromeHost(const GURL& url) {
 
 }  // namespace
 
+OriginChipInfo::OriginChipInfo(
+    extensions::IconImage::Observer* owner,
+    Profile* profile)
+    : owner_(owner),
+      profile_(profile) {}
+
+OriginChipInfo::~OriginChipInfo() {}
+
+bool OriginChipInfo::Update(const content::WebContents* web_contents,
+                            const ToolbarModel* toolbar_model) {
+  GURL displayed_url = toolbar_model->GetURL();
+  ToolbarModel::SecurityLevel security_level =
+      toolbar_model->GetSecurityLevel(true);
+  bool is_url_malware = OriginChip::IsMalware(displayed_url, web_contents);
+
+  if ((displayed_url_ == displayed_url) &&
+      (security_level_ == security_level) &&
+      (is_url_malware_ == is_url_malware))
+    return false;
+
+  displayed_url_ = displayed_url;
+  security_level_ = security_level;
+  is_url_malware_ = is_url_malware;
+
+  label_ = OriginChip::LabelFromURLForProfile(displayed_url, profile_);
+  if (security_level_ == ToolbarModel::EV_SECURE) {
+    label_ = l10n_util::GetStringFUTF16(IDS_SITE_CHIP_EV_SSL_LABEL,
+                                        toolbar_model->GetEVCertName(),
+                                        label_);
+  }
+
+  if (displayed_url_.SchemeIs(extensions::kExtensionScheme)) {
+    icon_ = IDR_EXTENSIONS_FAVICON;
+
+    const extensions::Extension* extension =
+        extensions::ExtensionSystem::Get(profile_)->extension_service()->
+            extensions()->GetExtensionOrAppByURL(displayed_url_);
+    extension_icon_image_.reset(
+        new extensions::IconImage(profile_,
+                                  extension,
+                                  extensions::IconsInfo::GetIcons(extension),
+                                  extension_misc::EXTENSION_ICON_BITTY,
+                                  extensions::IconsInfo::GetDefaultAppIcon(),
+                                  owner_));
+
+    // Forces load of the image.
+    extension_icon_image_->image_skia().GetRepresentation(1.0f);
+    if (!extension_icon_image_->image_skia().image_reps().empty())
+      owner_->OnExtensionIconImageChanged(extension_icon_image_.get());
+  } else {
+    if (extension_icon_image_) {
+      extension_icon_image_.reset();
+      owner_->OnExtensionIconImageChanged(NULL);
+    }
+
+    icon_ = (displayed_url_.is_empty() ||
+             displayed_url_.SchemeIs(content::kChromeUIScheme)) ?
+        IDR_PRODUCT_LOGO_16 :
+        toolbar_model->GetIconForSecurityLevel(security_level_);
+  }
+
+  return true;
+}
+
 // static
-bool OriginChip::IsMalware(const GURL& url, content::WebContents* tab) {
+bool OriginChip::IsMalware(const GURL& url, const content::WebContents* tab) {
+  DCHECK(tab);
+
   if (tab->GetURL() != url)
     return false;
 
-  safe_browsing::SafeBrowsingTabObserver* sb_observer =
+  const safe_browsing::SafeBrowsingTabObserver* sb_observer =
       safe_browsing::SafeBrowsingTabObserver::FromWebContents(tab);
   return sb_observer && sb_observer->detection_host() &&
       sb_observer->detection_host()->DidPageReceiveSafeBrowsingMatch();
@@ -101,9 +173,8 @@ base::string16 OriginChip::LabelFromURLForProfile(const GURL& provided_url,
   // Chrome built-in pages.
   if (url.is_empty() || url.SchemeIs(content::kChromeUIScheme)) {
     int string_ref = StringForChromeHost(url);
-    return (string_ref == -1) ?
-        base::UTF8ToUTF16("Chrome") :
-        l10n_util::GetStringUTF16(string_ref);
+    return l10n_util::GetStringUTF16(
+        (string_ref == -1) ? IDS_SHORT_PRODUCT_NAME : string_ref);
   }
 
   // For chrome-extension URLs, return the extension name.

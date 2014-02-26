@@ -29,6 +29,7 @@ class KeywordHintDecoration;
 class LocationBarDecoration;
 class LocationIconDecoration;
 class MicSearchDecoration;
+class OriginChipDecoration;
 class PageActionDecoration;
 class Profile;
 class SearchButtonDecoration;
@@ -237,6 +238,9 @@ class LocationBarViewMac : public LocationBar,
 
   // The right-hand-side search button that is shown on search result pages.
   scoped_ptr<SearchButtonDecoration> search_button_decoration_;
+
+  // The left-hand-side origin chip.
+  scoped_ptr<OriginChipDecoration> origin_chip_decoration_;
 
   Browser* browser_;
 

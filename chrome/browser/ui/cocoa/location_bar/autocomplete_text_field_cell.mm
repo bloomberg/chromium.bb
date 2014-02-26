@@ -140,7 +140,7 @@ size_t CalculatePositionsInFrame(
 
   // Layout |left_decorations| against the LHS.
   CalculatePositionsHelper(frame, left_decorations, NSMinXEdge,
-                           kLeftDecorationXOffset, kLeftDecorationXOffset,
+                           kLeftDecorationXOffset, edge_width,
                            decorations, decoration_frames, &frame);
   DCHECK_EQ(decorations->size(), decoration_frames->size());
 
@@ -324,9 +324,6 @@ size_t CalculatePositionsInFrame(
                                      yRadius:kCornerRadius] fill];
   }
 
-  // Interior contents.
-  [self drawInteriorWithFrame:frame inView:controlView];
-
   // Border.
   ui::DrawNinePartImage(frame,
                         isPopupMode_ ? kPopupBorderImageIds
@@ -334,6 +331,10 @@ size_t CalculatePositionsInFrame(
                         NSCompositeSourceOver,
                         1.0,
                         true);
+
+  // Interior contents. Drawn after the border as some of the interior controls
+  // draw over the border.
+  [self drawInteriorWithFrame:frame inView:controlView];
 
   // Focus ring.
   if ([self showsFirstResponder]) {
