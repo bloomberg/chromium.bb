@@ -91,8 +91,12 @@ TEST_F(OcclusionTrackerPerfTest, UnoccludedContentRect_FullyOccluded) {
   ASSERT_EQ(1u, rsll.size());
   EXPECT_EQ(1u, rsll[0]->render_surface()->layer_list().size());
 
-  LayerIterator<LayerImpl> begin = LayerIterator<LayerImpl>::Begin(&rsll);
-  LayerIterator<LayerImpl> end = LayerIterator<LayerImpl>::End(&rsll);
+  typedef LayerIterator<LayerImpl,
+                        LayerImpl::LayerListType,
+                        LayerImpl::RenderSurfaceType,
+                        LayerIteratorActions::FrontToBack> IteratorType;
+  IteratorType begin = IteratorType::Begin(&rsll);
+  IteratorType end = IteratorType::End(&rsll);
 
   LayerIteratorPosition<LayerImpl> pos = begin;
 

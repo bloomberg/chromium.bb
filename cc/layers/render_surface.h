@@ -19,8 +19,6 @@
 namespace cc {
 
 class Layer;
-template <typename LayerType>
-class LayerIterator;
 
 class CC_EXPORT RenderSurface {
  public:
@@ -114,7 +112,7 @@ class CC_EXPORT RenderSurface {
   }
 
  private:
-  friend class LayerIterator<Layer>;
+  friend struct LayerIteratorActions;
 
   Layer* owning_layer_;
 

@@ -5,6 +5,7 @@
 #ifndef CC_LAYERS_LAYER_ITERATOR_H_
 #define CC_LAYERS_LAYER_ITERATOR_H_
 
+#include "base/memory/ref_counted.h"
 #include "cc/base/cc_export.h"
 #include "cc/trees/layer_tree_host_common.h"
 
@@ -18,7 +19,11 @@ namespace cc {
 //
 // void DoStuffOnLayers(
 //     const RenderSurfaceLayerList& render_surface_layer_list) {
-//   typedef LayerIterator<Layer> LayerIteratorType;
+//   typedef LayerIterator<Layer,
+//                         RenderSurfaceLayerList,
+//                         RenderSurface,
+//                         LayerIteratorActions::FrontToBack>
+//       LayerIteratorType;
 //
 //   LayerIteratorType end =
 //       LayerIteratorType::End(&render_surface_layer_list);
@@ -100,11 +105,15 @@ template <typename LayerType> struct LayerIteratorPosition {
 
 // An iterator class for walking over layers in the
 // RenderSurface-Layer tree.
-template <typename LayerType>
+template <typename LayerType,
+          typename LayerList,
+          typename RenderSurfaceType,
+          typename IteratorActionType>
 class LayerIterator {
-  typedef LayerIterator<LayerType> LayerIteratorType;
-  typedef typename LayerType::RenderSurfaceListType LayerList;
-  typedef typename LayerType::RenderSurfaceType RenderSurfaceType;
+  typedef LayerIterator<LayerType,
+                        LayerList,
+                        RenderSurfaceType,
+                        IteratorActionType> LayerIteratorType;
 
  public:
   LayerIterator() : render_surface_layer_list_(NULL) {}
@@ -117,7 +126,7 @@ class LayerIterator {
   }
 
   LayerIteratorType& operator++() {
-    MoveToNext();
+    actions_.Next(this);
     return *this;
   }
   bool operator==(const LayerIterator& other) const {
@@ -167,81 +176,15 @@ class LayerIterator {
     for (size_t i = 0; i < render_surface_layer_list->size(); ++i) {
       if (!render_surface_layer_list->at(i)->render_surface()) {
         NOTREACHED();
-        MoveToEnd();
+        actions_.End(this);
         return;
       }
     }
 
     if (start && !render_surface_layer_list->empty())
-      MoveToBegin();
+      actions_.Begin(this);
     else
-      MoveToEnd();
-  }
-
-  void MoveToBegin() {
-    target_render_surface_layer_index_ = 0;
-    current_layer_index_ = target_render_surface_children().size() - 1;
-    MoveToHighestInSubtree();
-  }
-
-  void MoveToEnd() {
-    target_render_surface_layer_index_ =
-        LayerIteratorValue::kInvalidTargetRenderSurfaceLayerIndex;
-    current_layer_index_ = 0;
-  }
-
-  void MoveToNext() {
-    // Moves to the previous layer in the current RS layer list.
-    // Then we check if the new current layer has its own RS,
-    // in which case there are things in that RS layer list that are higher,
-    // so we find the highest layer in that subtree.
-    // If we move back past the front of the list,
-    // we jump up to the previous RS layer list, picking up again where we
-    // had previously recursed into the current RS layer list.
-
-    if (!current_layer_represents_target_render_surface()) {
-      // Subtracting one here will eventually cause the current layer
-      // to become that layer representing the target render surface.
-      --current_layer_index_;
-      MoveToHighestInSubtree();
-    } else {
-      while (current_layer_represents_target_render_surface()) {
-        if (!target_render_surface_layer_index_) {
-          // End of the list.
-          target_render_surface_layer_index_ =
-              LayerIteratorValue::kInvalidTargetRenderSurfaceLayerIndex;
-          current_layer_index_ = 0;
-          return;
-        }
-        target_render_surface_layer_index_ =
-            target_render_surface()->target_render_surface_layer_index_history_;
-        current_layer_index_ =
-            target_render_surface()->current_layer_index_history_;
-      }
-    }
-  }
-
-  void MoveToHighestInSubtree() {
-    if (current_layer_represents_target_render_surface())
-      return;
-    while (current_layer_represents_contributing_render_surface()) {
-      // Save where we were in the current target surface, move to the next one,
-      // and save the target surface that we came from there
-      // so we can go back to it.
-      target_render_surface()->current_layer_index_history_ =
-          current_layer_index_;
-      int previous_target_render_surface_layer =
-          target_render_surface_layer_index_;
-
-      for (LayerType* layer = current_layer();
-           target_render_surface_layer() != layer;
-           ++target_render_surface_layer_index_) {
-      }
-      current_layer_index_ = target_render_surface_children().size() - 1;
-
-      target_render_surface()->target_render_surface_layer_index_history_ =
-          previous_target_render_surface_layer;
-    }
+      actions_.End(this);
   }
 
   inline LayerType* current_layer() const {
@@ -266,6 +209,7 @@ class LayerIterator {
     return target_render_surface()->layer_list();
   }
 
+  IteratorActionType actions_;
   const LayerList* render_surface_layer_list_;
 
   // The iterator's current position.
@@ -284,6 +228,44 @@ class LayerIterator {
   // the target surface, this is done by setting the current_layerIndex
   // to a value of LayerIteratorValue::LayerRepresentingTargetRenderSurface.
   int current_layer_index_;
+
+  friend struct LayerIteratorActions;
+};
+
+// Orderings for iterating over the RenderSurface-Layer tree.
+struct CC_EXPORT LayerIteratorActions {
+  // Walks layers sorted by z-order from front to back
+  class CC_EXPORT FrontToBack {
+   public:
+    template <typename LayerType,
+              typename LayerList,
+              typename RenderSurfaceType,
+              typename ActionType>
+    void Begin(
+        LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>* it);
+
+    template <typename LayerType,
+              typename LayerList,
+              typename RenderSurfaceType,
+              typename ActionType>
+    void End(
+        LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>* it);
+
+    template <typename LayerType,
+              typename LayerList,
+              typename RenderSurfaceType,
+              typename ActionType>
+    void Next(
+        LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>* it);
+
+   private:
+    template <typename LayerType,
+              typename LayerList,
+              typename RenderSurfaceType,
+              typename ActionType>
+    void GoToHighestInSubtree(
+        LayerIterator<LayerType, LayerList, RenderSurfaceType, ActionType>* it);
+  };
 };
 
 }  // namespace cc

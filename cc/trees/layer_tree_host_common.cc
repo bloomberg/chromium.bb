@@ -2324,8 +2324,12 @@ LayerImpl* LayerTreeHostCommon::FindLayerThatIsHitByPoint(
     const LayerImplList& render_surface_layer_list) {
   LayerImpl* found_layer = NULL;
 
-  typedef LayerIterator<LayerImpl> LayerIteratorType;
+  typedef LayerIterator<LayerImpl,
+                        LayerImplList,
+                        RenderSurfaceImpl,
+                        LayerIteratorActions::FrontToBack> LayerIteratorType;
   LayerIteratorType end = LayerIteratorType::End(&render_surface_layer_list);
+
   for (LayerIteratorType
            it = LayerIteratorType::Begin(&render_surface_layer_list);
        it != end;

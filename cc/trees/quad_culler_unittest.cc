@@ -39,7 +39,10 @@ class TestOcclusionTrackerImpl
   DISALLOW_COPY_AND_ASSIGN(TestOcclusionTrackerImpl);
 };
 
-typedef LayerIterator<LayerImpl> LayerIteratorType;
+typedef LayerIterator<LayerImpl,
+                      LayerImplList,
+                      RenderSurfaceImpl,
+                      LayerIteratorActions::FrontToBack> LayerIteratorType;
 
 class QuadCullerTest : public testing::Test {
  public:

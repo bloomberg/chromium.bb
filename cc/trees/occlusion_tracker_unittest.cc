@@ -122,7 +122,10 @@ struct OcclusionTrackerTestMainThreadTypes {
   typedef TestContentLayer ContentLayerType;
   typedef scoped_refptr<Layer> LayerPtrType;
   typedef scoped_refptr<ContentLayerType> ContentLayerPtrType;
-  typedef LayerIterator<Layer> TestLayerIterator;
+  typedef LayerIterator<Layer,
+                        RenderSurfaceLayerList,
+                        RenderSurface,
+                        LayerIteratorActions::FrontToBack> TestLayerIterator;
   typedef OcclusionTracker OcclusionTrackerType;
 
   static LayerPtrType CreateLayer(HostType*  host) { return Layer::Create(); }
@@ -152,7 +155,10 @@ struct OcclusionTrackerTestImplThreadTypes {
   typedef TestContentLayerImpl ContentLayerType;
   typedef scoped_ptr<LayerImpl> LayerPtrType;
   typedef scoped_ptr<ContentLayerType> ContentLayerPtrType;
-  typedef LayerIterator<LayerImpl> TestLayerIterator;
+  typedef LayerIterator<LayerImpl,
+                        LayerImplList,
+                        RenderSurfaceImpl,
+                        LayerIteratorActions::FrontToBack> TestLayerIterator;
   typedef OcclusionTrackerImpl OcclusionTrackerType;
 
   static LayerPtrType CreateLayer(HostType* host) {
