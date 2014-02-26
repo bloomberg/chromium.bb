@@ -212,31 +212,114 @@ TEST(Convolver, AddFilter) {
   ASSERT_EQ(0, filter_length);
 }
 
-#if defined(THREAD_SANITIZER)
-// Times out under ThreadSanitizer, http://crbug.com/134400.
-#define MAYBE_SIMDVerification DISABLED_SIMDVerification
-#else
-#define MAYBE_SIMDVerification SIMDVerification
-#endif
-TEST(Convolver, MAYBE_SIMDVerification) {
-  int source_sizes[][2] = {
-    {1,1}, {1,2}, {1,3}, {1,4}, {1,5},
-    {2,1}, {2,2}, {2,3}, {2,4}, {2,5},
-    {3,1}, {3,2}, {3,3}, {3,4}, {3,5},
-    {4,1}, {4,2}, {4,3}, {4,4}, {4,5},
-#ifdef NDEBUG
-    {1920, 1080},
-    {720, 480},
-    {1377, 523},
-#endif
-    {325, 241}
-};
-#ifdef NDEBUG
-  int dest_sizes[][2] = { {1280, 1024}, {480, 270}, {177, 123} };
-#else
-  int dest_sizes[][2] = { {128, 102}, {48, 27}, {17, 13} };
-#endif
+void VerifySIMD(unsigned int source_width,
+                unsigned int source_height,
+                unsigned int dest_width,
+                unsigned int dest_height) {
   float filter[] = { 0.05f, -0.15f, 0.6f, 0.6f, -0.15f, 0.05f };
+  // Preparing convolve coefficients.
+  ConvolutionFilter1D x_filter, y_filter;
+  for (unsigned int p = 0; p < dest_width; ++p) {
+    unsigned int offset = source_width * p / dest_width;
+    EXPECT_LT(offset, source_width);
+    x_filter.AddFilter(offset, filter,
+                       std::min<int>(arraysize(filter),
+                                     source_width - offset));
+  }
+  x_filter.PaddingForSIMD();
+  for (unsigned int p = 0; p < dest_height; ++p) {
+    unsigned int offset = source_height * p / dest_height;
+    y_filter.AddFilter(offset, filter,
+                       std::min<int>(arraysize(filter),
+                                     source_height - offset));
+  }
+  y_filter.PaddingForSIMD();
+
+  // Allocate input and output skia bitmap.
+  SkBitmap source, result_c, result_sse;
+  source.setConfig(SkBitmap::kARGB_8888_Config,
+                   source_width, source_height);
+  source.allocPixels();
+  result_c.setConfig(SkBitmap::kARGB_8888_Config,
+                     dest_width, dest_height);
+  result_c.allocPixels();
+  result_sse.setConfig(SkBitmap::kARGB_8888_Config,
+                       dest_width, dest_height);
+  result_sse.allocPixels();
+
+  // Randomize source bitmap for testing.
+  unsigned char* src_ptr = static_cast<unsigned char*>(source.getPixels());
+  for (int y = 0; y < source.height(); y++) {
+    for (unsigned int x = 0; x < source.rowBytes(); x++)
+      src_ptr[x] = rand() % 255;
+    src_ptr += source.rowBytes();
+  }
+
+  // Test both cases with different has_alpha.
+  for (int alpha = 0; alpha < 2; alpha++) {
+    // Convolve using C code.
+    base::TimeTicks resize_start;
+    base::TimeDelta delta_c, delta_sse;
+    unsigned char* r1 = static_cast<unsigned char*>(result_c.getPixels());
+    unsigned char* r2 = static_cast<unsigned char*>(result_sse.getPixels());
+
+    resize_start = base::TimeTicks::Now();
+    BGRAConvolve2D(static_cast<const uint8*>(source.getPixels()),
+                   static_cast<int>(source.rowBytes()),
+                   (alpha != 0), x_filter, y_filter,
+                   static_cast<int>(result_c.rowBytes()), r1, false);
+    delta_c = base::TimeTicks::Now() - resize_start;
+
+    resize_start = base::TimeTicks::Now();
+    // Convolve using SSE2 code
+    BGRAConvolve2D(static_cast<const uint8*>(source.getPixels()),
+                   static_cast<int>(source.rowBytes()),
+                   (alpha != 0), x_filter, y_filter,
+                   static_cast<int>(result_sse.rowBytes()), r2, true);
+    delta_sse = base::TimeTicks::Now() - resize_start;
+
+    // Unfortunately I could not enable the performance check now.
+    // Most bots use debug version, and there are great difference between
+    // the code generation for intrinsic, etc. In release version speed
+    // difference was 150%-200% depend on alpha channel presence;
+    // while in debug version speed difference was 96%-120%.
+    // TODO(jiesun): optimize further until we could enable this for
+    // debug version too.
+    // EXPECT_LE(delta_sse, delta_c);
+
+    int64 c_us = delta_c.InMicroseconds();
+    int64 sse_us = delta_sse.InMicroseconds();
+    VLOG(1) << "from:" << source_width << "x" << source_height
+            << " to:" << dest_width << "x" << dest_height
+            << (alpha ? " with alpha" : " w/o alpha");
+    VLOG(1) << "c:" << c_us << " sse:" << sse_us;
+    VLOG(1) << "ratio:" << static_cast<float>(c_us) / sse_us;
+
+    // Comparing result.
+    for (unsigned int i = 0; i < dest_height; i++) {
+      EXPECT_FALSE(memcmp(r1, r2, dest_width * 4)); // RGBA always
+      r1 += result_c.rowBytes();
+      r2 += result_sse.rowBytes();
+    }
+  }
+}
+
+TEST(Convolver, VerifySIMDEdgeCases) {
+  srand(static_cast<unsigned int>(time(0)));
+  // Loop over all possible (small) image sizes
+  for (unsigned int width = 1; width < 20; width++) {
+    for (unsigned int height = 1; height < 20; height++) {
+      VerifySIMD(width, height, 8, 8);
+      VerifySIMD(8, 8, width, height);
+    }
+  }
+}
+
+// Verify that lage upscales/downscales produce the same result
+// with and without SIMD.
+TEST(Convolver, VerifySIMDPrecision) {
+  int source_sizes[][2] = { {1920, 1080}, {1377, 523}, {325, 241} };
+  int dest_sizes[][2] = { {1280, 1024}, {177, 123} };
 
   srand(static_cast<unsigned int>(time(0)));
 
@@ -247,94 +330,7 @@ TEST(Convolver, MAYBE_SIMDVerification) {
     for (unsigned int j = 0; j < arraysize(dest_sizes); ++j) {
       unsigned int dest_width = dest_sizes[j][0];
       unsigned int dest_height = dest_sizes[j][1];
-
-      // Preparing convolve coefficients.
-      ConvolutionFilter1D x_filter, y_filter;
-      for (unsigned int p = 0; p < dest_width; ++p) {
-        unsigned int offset = source_width * p / dest_width;
-        EXPECT_LT(offset, source_width);
-        x_filter.AddFilter(offset, filter,
-                           std::min<int>(arraysize(filter),
-                                         source_width - offset));
-      }
-      x_filter.PaddingForSIMD();
-      for (unsigned int p = 0; p < dest_height; ++p) {
-        unsigned int offset = source_height * p / dest_height;
-        y_filter.AddFilter(offset, filter,
-                           std::min<int>(arraysize(filter),
-                                         source_height - offset));
-      }
-      y_filter.PaddingForSIMD();
-
-      // Allocate input and output skia bitmap.
-      SkBitmap source, result_c, result_sse;
-      source.setConfig(SkBitmap::kARGB_8888_Config,
-                       source_width, source_height);
-      source.allocPixels();
-      result_c.setConfig(SkBitmap::kARGB_8888_Config,
-                         dest_width, dest_height);
-      result_c.allocPixels();
-      result_sse.setConfig(SkBitmap::kARGB_8888_Config,
-                           dest_width, dest_height);
-      result_sse.allocPixels();
-
-      // Randomize source bitmap for testing.
-      unsigned char* src_ptr = static_cast<unsigned char*>(source.getPixels());
-      for (int y = 0; y < source.height(); y++) {
-        for (unsigned int x = 0; x < source.rowBytes(); x++)
-          src_ptr[x] = rand() % 255;
-        src_ptr += source.rowBytes();
-      }
-
-      // Test both cases with different has_alpha.
-      for (int alpha = 0; alpha < 2; alpha++) {
-        // Convolve using C code.
-        base::TimeTicks resize_start;
-        base::TimeDelta delta_c, delta_sse;
-        unsigned char* r1 = static_cast<unsigned char*>(result_c.getPixels());
-        unsigned char* r2 = static_cast<unsigned char*>(result_sse.getPixels());
-
-        resize_start = base::TimeTicks::Now();
-        BGRAConvolve2D(static_cast<const uint8*>(source.getPixels()),
-                       static_cast<int>(source.rowBytes()),
-                       (alpha != 0), x_filter, y_filter,
-                       static_cast<int>(result_c.rowBytes()), r1, false);
-        delta_c = base::TimeTicks::Now() - resize_start;
-
-        resize_start = base::TimeTicks::Now();
-        // Convolve using SSE2 code
-        BGRAConvolve2D(static_cast<const uint8*>(source.getPixels()),
-                       static_cast<int>(source.rowBytes()),
-                       (alpha != 0), x_filter, y_filter,
-                       static_cast<int>(result_sse.rowBytes()), r2, true);
-        delta_sse = base::TimeTicks::Now() - resize_start;
-
-        // Unfortunately I could not enable the performance check now.
-        // Most bots use debug version, and there are great difference between
-        // the code generation for intrinsic, etc. In release version speed
-        // difference was 150%-200% depend on alpha channel presence;
-        // while in debug version speed difference was 96%-120%.
-        // TODO(jiesun): optimize further until we could enable this for
-        // debug version too.
-        // EXPECT_LE(delta_sse, delta_c);
-
-        int64 c_us = delta_c.InMicroseconds();
-        int64 sse_us = delta_sse.InMicroseconds();
-        VLOG(1) << "from:" << source_width << "x" << source_height
-                << " to:" << dest_width << "x" << dest_height
-                << (alpha ? " with alpha" : " w/o alpha");
-        VLOG(1) << "c:" << c_us << " sse:" << sse_us;
-        VLOG(1) << "ratio:" << static_cast<float>(c_us) / sse_us;
-
-        // Comparing result.
-        for (unsigned int i = 0; i < dest_height; i++) {
-          for (unsigned int x = 0; x < dest_width * 4; x++) {  // RGBA always.
-            EXPECT_EQ(r1[x], r2[x]);
-          }
-          r1 += result_c.rowBytes();
-          r2 += result_sse.rowBytes();
-        }
-      }
+      VerifySIMD(source_width, source_height, dest_width, dest_height);
     }
   }
 }
