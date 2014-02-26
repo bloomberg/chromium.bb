@@ -468,15 +468,6 @@ def DoComponentBuildTasks(staging_dir, build_dir, target_arch, current_version):
     shutil.copy(component_dll, installer_dir)
     component_dll_filenames.append(os.path.basename(component_dll))
 
-  # Copy chrome.exe.manifest as-is. It is required, among other things, to
-  # declare a dependency on the version dir assembly.
-  shutil.copy(os.path.join(build_dir, 'chrome.exe.manifest'), chrome_dir)
-
-  # Also copy setup.exe.manifest as-is. It is required, among other things, to
-  # let setup.exe UAC when it wants to, by specifying that it handles elevation
-  # "asInvoker", rather than have Windows auto-elevate it when launched.
-  shutil.copy(os.path.join(build_dir, 'setup.exe.manifest'), installer_dir)
-
   # Augment {version}.manifest to include all component DLLs as part of the
   # assembly it constitutes, which will allow dependents of this assembly to
   # find these DLLs.

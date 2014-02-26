@@ -500,19 +500,6 @@ void AddChromeWorkItems(const InstallationState& original_state,
         temp_path);
   }
 
-  // For the component build to work with the installer, we need to also drop
-  // chrome.exe.manifest (other manifests are already contained in the version
-  // directory in the archive so no explicit work is required for them).
-#if defined(COMPONENT_BUILD)
-  static const base::FilePath::CharType kChromeExeManifest[] =
-      FILE_PATH_LITERAL("chrome.exe.manifest");
-  install_list->AddMoveTreeWorkItem(
-      src_path.Append(kChromeExeManifest).value(),
-      target_path.Append(kChromeExeManifest).value(),
-      temp_path.value(),
-      WorkItem::ALWAYS_MOVE);
-#endif  // defined(COMPONENT_BUILD)
-
   // In the past, we copied rather than moved for system level installs so that
   // the permissions of %ProgramFiles% would be picked up.  Now that |temp_path|
   // is in %ProgramFiles% for system level installs (and in %LOCALAPPDATA%

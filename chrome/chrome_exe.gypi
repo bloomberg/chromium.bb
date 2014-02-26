@@ -80,11 +80,6 @@
         'INFOPLIST_FILE': 'app/app-Info.plist',
       },
       'conditions': [
-        ['component == "shared_library"', {
-          'variables': {
-            'win_use_external_manifest': 1,
-          },
-        }],
         ['order_profiling!=0 and (chromeos==1 or OS=="linux")', {
           'dependencies' : [
             '../tools/cygprofile/cygprofile.gyp:cygprofile',

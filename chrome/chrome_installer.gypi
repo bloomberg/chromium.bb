@@ -359,11 +359,6 @@
             },
           ],
           'conditions': [
-            ['component == "shared_library"', {
-              'variables': {
-                'win_use_external_manifest': 1,
-              },
-            }],
             # TODO(mark):  <(branding_dir) should be defined by the
             # global condition block at the bottom of the file, but
             # this doesn't work due to the following issue:
