@@ -6330,6 +6330,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DND_APPLIST_TO_LAUNCHER_DESCRIPTION" desc="Description for the flag to disable drag and drop opertions from the app list menu to the launcher.">
         Disallow drag and drop from the App Launcher menu to the shelf.
       </message>
+      <message name="IDS_FLAGS_ASH_ENABLE_TOUCH_VIEW_TESTING_NAME" desc="Title for the flag which can be used to test the TouchView maximizing mode.">
+        Enable TouchView maximizing UI for testing
+      </message>
+      <message name="IDS_FLAGS_ASH_ENABLE_TOUCH_VIEW_TESTING_DESCRIPTION" desc="Description for the flag to enable the TouchView testing mode.">
+        Enable Ctrl+Alt+Shift+D to toggle the TouchView maximizing mode.
+      </message>
       <message name="IDS_FLAGS_ENABLE_MEMORY_MONITOR_NAME" desc="Title for the flag to enable advanced gestures.">
         Enable memory monitor
       </message>

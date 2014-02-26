@@ -85,6 +85,10 @@ const AcceleratorData kAcceleratorData[] = {
     SWITCH_TO_PREVIOUS_USER },
   { true, ui::VKEY_OEM_PERIOD, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     SWITCH_TO_NEXT_USER },
+  // Turning the TouchView maximizing mode on via hotkey for the time being.
+  // TODO(skuhne): Remove once the test isn't needed anymore.
+  { true, ui::VKEY_D, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN,
+    TOGGLE_TOUCH_VIEW_TESTING },
 #endif  // defined(OS_CHROMEOS)
   { true, ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, OPEN_FEEDBACK_PAGE },
 #if !defined(OS_WIN)

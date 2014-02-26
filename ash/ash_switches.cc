@@ -122,6 +122,9 @@ const char kAshEnableMultiUserTray[] = "ash-enable-multi-user-tray";
 // Enables software based mirroring.
 const char kAshEnableSoftwareMirroring[] = "ash-enable-software-mirroring";
 
+// Enables touch view testing.
+const char kAshEnableTouchViewTesting[] = "ash-enable-touch-view-testing";
+
 // When this flag is set, system sounds will be played whether the
 // ChromeVox is enabled or not.
 const char kAshEnableSystemSounds[] = "ash-enable-system-sounds";

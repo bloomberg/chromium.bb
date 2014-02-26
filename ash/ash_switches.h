@@ -52,6 +52,7 @@ ASH_EXPORT extern const char kAshEnableMultiUserTray[];
 #endif
 ASH_EXPORT extern const char kAshEnableSoftwareMirroring[];
 ASH_EXPORT extern const char kAshEnableSystemSounds[];
+ASH_EXPORT extern const char kAshEnableTouchViewTesting[];
 ASH_EXPORT extern const char kAshEnableTrayDragging[];
 ASH_EXPORT extern const char kAshForceMirrorMode[];
 ASH_EXPORT extern const char kAshGuestWallpaperLarge[];

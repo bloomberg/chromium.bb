@@ -1188,6 +1188,12 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(ash::switches::kAshDisableDragAndDropAppListToLauncher),
   },
+  { "ash-enable-touch-view-testing",
+    IDS_FLAGS_ASH_ENABLE_TOUCH_VIEW_TESTING_NAME,
+    IDS_FLAGS_ASH_ENABLE_TOUCH_VIEW_TESTING_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(ash::switches::kAshEnableTouchViewTesting),
+  },
 #if defined(OS_LINUX)
   { "ash-enable-memory-monitor",
       IDS_FLAGS_ENABLE_MEMORY_MONITOR_NAME,

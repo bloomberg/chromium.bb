@@ -437,6 +437,10 @@ void Shell::EnableMaximizeModeWindowManager(bool enable) {
   }
 }
 
+bool Shell::IsMaximizeModeWindowManagerEnabled() {
+  return maximize_mode_window_manager_.get() != NULL;
+}
+
 void Shell::UpdateShelfVisibility() {
   RootWindowControllerList controllers = GetAllRootWindowControllers();
   for (RootWindowControllerList::iterator iter = controllers.begin();

@@ -58,13 +58,11 @@ void MaximizeModeWindowManager::OnDisplayBoundsChanged(
 }
 
 void MaximizeModeWindowManager::OnDisplayAdded(const gfx::Display& display) {
-  RemoveWindowCreationObservers();
-  AddWindowCreationObservers();
-
+  DisplayConfigurationChanged();
 }
+
 void MaximizeModeWindowManager::OnDisplayRemoved(const gfx::Display& display) {
-  RemoveWindowCreationObservers();
-  AddWindowCreationObservers();
+  DisplayConfigurationChanged();
 }
 
 MaximizeModeWindowManager::MaximizeModeWindowManager() {
@@ -133,14 +131,15 @@ void MaximizeModeWindowManager::RestoreAndForgetWindow(
     if (!CanMaximize(window)) {
       // TODO(skuhne): Remove the background cover layer.
       ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
-      DCHECK(window_state->HasRestoreBounds());
-      gfx::Rect initial_bounds =
-          window->parent() ? window_state->GetRestoreBoundsInParent() :
-                             window_state->GetRestoreBoundsInScreen();
-      window_state->ClearRestoreBounds();
-      // TODO(skuhne): The screen might have changed and we should make it
-      // visible area again.
-      window->SetBounds(initial_bounds);
+      if (window_state->HasRestoreBounds()) {
+        gfx::Rect initial_bounds =
+            window->parent() ? window_state->GetRestoreBoundsInParent() :
+                               window_state->GetRestoreBoundsInScreen();
+        window_state->ClearRestoreBounds();
+        // TODO(skuhne): The screen might have changed and we should make sure
+        // that the bounds are in a visible area.
+        window->SetBounds(initial_bounds);
+      }
     } else {
       // If the window neither was minimized or maximized and it is currently
       // not minimized, we restore it.
@@ -211,6 +210,11 @@ void MaximizeModeWindowManager::RemoveWindowCreationObservers() {
     (*iter)->RemoveObserver(this);
   }
   observed_container_windows_.clear();
+}
+
+void MaximizeModeWindowManager::DisplayConfigurationChanged() {
+  RemoveWindowCreationObservers();
+  AddWindowCreationObservers();
 }
 
 bool MaximizeModeWindowManager::IsContainerWindow(aura::Window* window) {

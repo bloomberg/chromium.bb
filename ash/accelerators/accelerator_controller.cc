@@ -655,6 +655,18 @@ bool HandleToggleSpokenFeedback() {
   return true;
 }
 
+bool HandleToggleTouchViewTesting() {
+  // TODO(skuhne): This is only temporary! Remove this!
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshEnableTouchViewTesting)) {
+    Shell* shell = Shell::GetInstance();
+    shell->EnableMaximizeModeWindowManager(
+        !shell->IsMaximizeModeWindowManagerEnabled());
+    return true;
+  }
+  return false;
+}
+
 bool HandleTouchHudClear() {
   internal::RootWindowController* controller =
       internal::RootWindowController::ForTargetRootWindow();
@@ -948,6 +960,8 @@ bool AcceleratorController::PerformAction(int action,
       return HandleCycleUser(SessionStateDelegate::CYCLE_TO_PREVIOUS_USER);
     case TOGGLE_SPOKEN_FEEDBACK:
       return HandleToggleSpokenFeedback();
+    case TOGGLE_TOUCH_VIEW_TESTING:
+      return HandleToggleTouchViewTesting();
     case TOGGLE_WIFI:
       Shell::GetInstance()->system_tray_notifier()->NotifyRequestToggleWifi();
       return true;

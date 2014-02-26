@@ -311,6 +311,9 @@ class ASH_EXPORT Shell
   // Turn the always maximize mode window manager on or off.
   void EnableMaximizeModeWindowManager(bool enable);
 
+  // Test if the MaximizeModeWindowManager is enabled or not.
+  bool IsMaximizeModeWindowManagerEnabled();
+
   keyboard::KeyboardController* keyboard_controller() {
     return keyboard_controller_.get();
   }

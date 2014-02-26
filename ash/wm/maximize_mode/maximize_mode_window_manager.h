@@ -91,6 +91,10 @@ class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
   // Remove Window creation observers.
   void RemoveWindowCreationObservers();
 
+  // Change the internal state (e.g. observers) when the display configuration
+  // changes.
+  void DisplayConfigurationChanged();
+
   // Returns true when the |window| is a container window.
   bool IsContainerWindow(aura::Window* window);
 
