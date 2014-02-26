@@ -2942,6 +2942,24 @@
         'inherit_from': ['Common_Base', 'x86_Base', 'Release_Base'],
       },
       'conditions': [
+        [ 'OS=="ios"', {
+          'Profile': {
+            'inherit_from': ['Common_Base', 'x86_Base', 'Release_Base'],
+            'target_conditions': [
+              [ '_type=="executable"', {
+                # To get a real .dSYM bundle produced by dsymutil, set the
+                # debug information format to dwarf-with-dsym.  Since
+                # strip_from_xcode will not be used, set Xcode to do the
+                # stripping as well.
+                'xcode_settings': {
+                  'DEBUG_INFORMATION_FORMAT': 'dwarf-with-dsym',
+                  'DEPLOYMENT_POSTPROCESSING': 'YES',
+                  'STRIP_INSTALLED_PRODUCT': 'YES',
+                },
+              }],
+            ],
+          },
+        }],
         [ 'OS=="win"', {
           # TODO(bradnelson): add a gyp mechanism to make this more graceful.
           'Debug_x64': {
