@@ -69,6 +69,7 @@ struct OperationParamsMapping {
 const AlgorithmNameMapping algorithmNameMappings[] = {
     {"AES-CBC", blink::WebCryptoAlgorithmIdAesCbc},
     {"AES-CTR", blink::WebCryptoAlgorithmIdAesCtr},
+    {"AES-GCM", blink::WebCryptoAlgorithmIdAesGcm},
     {"HMAC", blink::WebCryptoAlgorithmIdHmac},
     {"RSASSA-PKCS1-v1_5", blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5},
     {"RSAES-PKCS1-v1_5", blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5},
@@ -130,6 +131,14 @@ const OperationParamsMapping operationParamsMappings[] = {
     {blink::WebCryptoAlgorithmIdAesKw, ImportKey, blink::WebCryptoAlgorithmParamsTypeNone},
     {blink::WebCryptoAlgorithmIdAesKw, UnwrapKey, blink::WebCryptoAlgorithmParamsTypeNone},
     {blink::WebCryptoAlgorithmIdAesKw, WrapKey, blink::WebCryptoAlgorithmParamsTypeNone},
+
+    // AES-GCM
+    {blink::WebCryptoAlgorithmIdAesGcm, GenerateKey, blink::WebCryptoAlgorithmParamsTypeAesKeyGenParams},
+    {blink::WebCryptoAlgorithmIdAesGcm, ImportKey, blink::WebCryptoAlgorithmParamsTypeNone},
+    {blink::WebCryptoAlgorithmIdAesGcm, Encrypt, blink::WebCryptoAlgorithmParamsTypeAesGcmParams},
+    {blink::WebCryptoAlgorithmIdAesGcm, Decrypt, blink::WebCryptoAlgorithmParamsTypeAesGcmParams},
+    {blink::WebCryptoAlgorithmIdAesGcm, UnwrapKey, blink::WebCryptoAlgorithmParamsTypeAesGcmParams},
+    {blink::WebCryptoAlgorithmIdAesGcm, WrapKey, blink::WebCryptoAlgorithmParamsTypeAesGcmParams},
 };
 
 // This structure describes an algorithm and its supported operations.
@@ -257,17 +266,66 @@ private:
     Vector<const char*, 10> m_messages;
 };
 
-bool getArrayBufferView(const Dictionary& raw, const char* propertyName, RefPtr<ArrayBufferView>& buffer, const ErrorContext& context, String& errorDetails)
+// Defined by the WebCrypto spec as:
+//
+//     typedef (ArrayBuffer or ArrayBufferView) CryptoOperationData;
+//
+// FIXME: Currently only supports ArrayBufferView.
+bool getOptionalCryptoOperationData(const Dictionary& raw, const char* propertyName, bool& hasProperty, RefPtr<ArrayBufferView>& buffer, const ErrorContext& context, String& errorDetails)
 {
-    if (!raw.get(propertyName, buffer) || !buffer) {
-        errorDetails = context.toString(propertyName, "Missing or not a ArrayBufferView");
+    if (!raw.get(propertyName, buffer)) {
+        hasProperty = false;
+        return true;
+    }
+
+    hasProperty = true;
+
+    if (!buffer) {
+        errorDetails = context.toString(propertyName, "Not an ArrayBufferView");
+        return false;
+    }
+
+    return true;
+}
+
+// Defined by the WebCrypto spec as:
+//
+//     typedef (ArrayBuffer or ArrayBufferView) CryptoOperationData;
+//
+// FIXME: Currently only supports ArrayBufferView.
+bool getCryptoOperationData(const Dictionary& raw, const char* propertyName, RefPtr<ArrayBufferView>& buffer, const ErrorContext& context, String& errorDetails)
+{
+    bool hasProperty;
+    bool ok = getOptionalCryptoOperationData(raw, propertyName, hasProperty, buffer, context, errorDetails);
+    if (!hasProperty) {
+        errorDetails = context.toString(propertyName, "Missing required property");
+        return false;
+    }
+    return ok;
+}
+
+bool getUint8Array(const Dictionary& raw, const char* propertyName, RefPtr<Uint8Array>& array, const ErrorContext& context, String& errorDetails)
+{
+    if (!raw.get(propertyName, array) || !array) {
+        errorDetails = context.toString(propertyName, "Missing or not a Uint8Array");
         return false;
     }
     return true;
 }
 
-bool getUint8Array(const Dictionary& raw, const char* propertyName, RefPtr<Uint8Array>& array, const ErrorContext& context, String& errorDetails)
+// Defined by the WebCrypto spec as:
+//
+//     typedef Uint8Array BigInteger;
+bool getBigInteger(const Dictionary& raw, const char* propertyName, RefPtr<Uint8Array>& array, const ErrorContext& context, String& errorDetails)
 {
+    if (!getUint8Array(raw, propertyName, array, context, errorDetails))
+        return false;
+
+    if (!array->byteLength()) {
+        errorDetails = context.toString(propertyName, "BigInteger should not be empty");
+        return false;
+    }
+
     if (!raw.get(propertyName, array) || !array) {
         errorDetails = context.toString(propertyName, "Missing or not a Uint8Array");
         return false;
@@ -351,10 +409,15 @@ bool getOptionalUint32(const Dictionary& raw, const char* propertyName, bool& ha
     return true;
 }
 
+// Defined by the WebCrypto spec as:
+//
+//    dictionary AesCbcParams : Algorithm {
+//      CryptoOperationData iv;
+//    };
 bool parseAesCbcParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, String& errorDetails)
 {
     RefPtr<ArrayBufferView> iv;
-    if (!getArrayBufferView(raw, "iv", iv, context, errorDetails))
+    if (!getCryptoOperationData(raw, "iv", iv, context, errorDetails))
         return false;
 
     if (iv->byteLength() != 16) {
@@ -366,6 +429,11 @@ bool parseAesCbcParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmPa
     return true;
 }
 
+// Defined by the WebCrypto spec as:
+//
+//    dictionary AesKeyGenParams : Algorithm {
+//      [EnforceRange] unsigned short length;
+//    };
 bool parseAesKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, String& errorDetails)
 {
     uint16_t length;
@@ -390,6 +458,11 @@ bool parseHash(const Dictionary& raw, blink::WebCryptoAlgorithm& hash, ErrorCont
     return parseAlgorithm(rawHash, Digest, hash, context, errorDetails);
 }
 
+// Defined by the WebCrypto spec as:
+//
+//    dictionary HmacImportParams : Algorithm {
+//      AlgorithmIdentifier hash;
+//    };
 bool parseHmacParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, String& errorDetails)
 {
     blink::WebCryptoAlgorithm hash;
@@ -400,6 +473,15 @@ bool parseHmacParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmPara
     return true;
 }
 
+// Defined by the WebCrypto spec as:
+//
+//    dictionary HmacKeyGenParams : Algorithm {
+//      AlgorithmIdentifier hash;
+//      // The length (in bytes) of the key to generate. If unspecified, the
+//      // recommended length will be used, which is the size of the associated hash function's block
+//      // size.
+//      unsigned long length;
+//    };
 bool parseHmacKeyParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, String& errorDetails)
 {
     blink::WebCryptoAlgorithm hash;
@@ -425,6 +507,12 @@ bool parseRsaSsaParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmPa
     return true;
 }
 
+// Defined by the WebCrypto spec as:
+//
+//    dictionary RsaKeyGenParams : Algorithm {
+//      unsigned long modulusLength;
+//      BigInteger publicExponent;
+//    };
 bool parseRsaKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, String& errorDetails)
 {
     uint32_t modulusLength;
@@ -432,24 +520,63 @@ bool parseRsaKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorith
         return false;
 
     RefPtr<Uint8Array> publicExponent;
-    if (!getUint8Array(raw, "publicExponent", publicExponent, context, errorDetails))
+    if (!getBigInteger(raw, "publicExponent", publicExponent, context, errorDetails))
         return false;
 
     params = adoptPtr(new blink::WebCryptoRsaKeyGenParams(modulusLength, static_cast<const unsigned char*>(publicExponent->baseAddress()), publicExponent->byteLength()));
     return true;
 }
 
-bool parseAesCtrParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, String& es)
+// Defined by the WebCrypto spec as:
+//
+//    dictionary AesCtrParams : Algorithm {
+//      CryptoOperationData counter;
+//      [EnforceRange] octet length;
+//    };
+bool parseAesCtrParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, String& errorDetails)
 {
-    RefPtr<Uint8Array> counter;
-    if (!getUint8Array(raw, "counter", counter, context, es))
+    RefPtr<ArrayBufferView> counter;
+    if (!getCryptoOperationData(raw, "counter", counter, context, errorDetails))
         return false;
 
     uint8_t length;
-    if (!getUint8(raw, "length", length, context, es))
+    if (!getUint8(raw, "length", length, context, errorDetails))
         return false;
 
     params = adoptPtr(new blink::WebCryptoAesCtrParams(length, static_cast<const unsigned char*>(counter->baseAddress()), counter->byteLength()));
+    return true;
+}
+
+// Defined by the WebCrypto spec as:
+//
+//     dictionary AesGcmParams : Algorithm {
+//       CryptoOperationData iv;
+//       CryptoOperationData? additionalData;
+//       [EnforceRange] octet? tagLength;  // May be 0-128
+//     }
+bool parseAesGcmParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, String& errorDetails)
+{
+    RefPtr<ArrayBufferView> iv;
+    if (!getCryptoOperationData(raw, "iv", iv, context, errorDetails))
+        return false;
+
+    bool hasAdditionalData;
+    RefPtr<ArrayBufferView> additionalData;
+    if (!getOptionalCryptoOperationData(raw, "additionalData", hasAdditionalData, additionalData, context, errorDetails))
+        return false;
+
+    double tagLength;
+    bool hasTagLength;
+    if (!getOptionalInteger(raw, "tagLength", hasTagLength, tagLength, 0, 128, context, errorDetails))
+        return false;
+
+    const unsigned char* ivStart = static_cast<const unsigned char*>(iv->baseAddress());
+    unsigned ivLength = iv->byteLength();
+
+    const unsigned char* additionalDataStart = hasAdditionalData ? static_cast<const unsigned char*>(additionalData->baseAddress()) : 0;
+    unsigned additionalDataLength = hasAdditionalData ? additionalData->byteLength() : 0;
+
+    params = adoptPtr(new blink::WebCryptoAesGcmParams(ivStart, ivLength, hasAdditionalData, additionalDataStart, additionalDataLength, hasTagLength, tagLength));
     return true;
 }
 
@@ -480,6 +607,8 @@ bool parseAlgorithmParams(const Dictionary& raw, blink::WebCryptoAlgorithmParams
         context.add("AesCtrParams");
         return parseAesCtrParams(raw, params, context, errorDetails);
     case blink::WebCryptoAlgorithmParamsTypeAesGcmParams:
+        context.add("AesGcmParams");
+        return parseAesGcmParams(raw, params, context, errorDetails);
     case blink::WebCryptoAlgorithmParamsTypeRsaOaepParams:
         // TODO
         notImplemented();

@@ -26,7 +26,7 @@ var allTests = [];
 // The NIST tests do not have a padding block. To match the WebCrypto
 // expectations, a PKCS#5 padding block has been added.
 
-var kSuccessTestVectors = [
+var kAesCbcSuccessVectors = [
   // 128-bit key with plaintext that is an exact multiple of block size.
   // Derived from [1] F.2.1 (CBC-AES128.Encrypt), by adding padding block.
   {
@@ -70,7 +70,70 @@ var kSuccessTestVectors = [
   },
 ];
 
-function runSuccessTestCase(testCase)
+// These tests come from the NIST GCM test vectors:
+// http://csrc.nist.gov/groups/STM/cavp/documents/mac/gcmtestvectors.zip
+//
+// Both encryption and decryption are expected to work.
+var kAesGcmSuccessVectors =
+[
+  // [Keylen = 128]
+  // [IVlen = 96]
+  // [PTlen = 0]
+  // [AADlen = 0]
+  // [Taglen = 128]
+  {
+    "key": "cf063a34d4a9a76c2c86787d3f96db71",
+    "iv": "113b9785971864c83b01c787",
+    "plainText": "",
+    "cipherText": "",
+    "additionalData": "",
+    "authenticationTag": "72ac8493e3a5228b5d130a69d2510e42"
+  },
+
+  // [Keylen = 128]
+  // [IVlen = 96]
+  // [PTlen = 0]
+  // [AADlen = 128]
+  // [Taglen = 120]
+  {
+    "key": "6dfa1a07c14f978020ace450ad663d18",
+    "iv": "34edfa462a14c6969a680ec1",
+    "plainText": "",
+    "cipherText": "",
+    "additionalData": "2a35c7f5f8578e919a581c60500c04f6",
+    "authenticationTag": "751f3098d59cf4ea1d2fb0853bde1c"
+  },
+
+  // [Keylen = 128]
+  // [IVlen = 96]
+  // [PTlen = 128]
+  // [AADlen = 128]
+  // [Taglen = 112]
+  {
+    "key": "ed6cd876ceba555706674445c229c12d",
+    "iv": "92ecbf74b765bc486383ca2e",
+    "plainText": "bfaaaea3880d72d4378561e2597a9b35",
+    "cipherText": "bdd2ed6c66fa087dce617d7fd1ff6d93",
+    "additionalData": "95bd10d77dbe0e87fb34217f1a2e5efe",
+    "authenticationTag": "ba82e49c55a22ed02ca67da4ec6f"
+  },
+
+  // [Keylen = 192]
+  // [IVlen = 96]
+  // [PTlen = 128]
+  // [AADlen = 384]
+  // [Taglen = 112]
+  {
+    "key": "ae7972c025d7f2ca3dd37dcc3d41c506671765087c6b61b8",
+    "iv": "984c1379e6ba961c828d792d",
+    "plainText": "d30b02c343487105219d6fa080acc743",
+    "cipherText": "c4489fa64a6edf80e7e6a3b8855bc37c",
+    "additionalData": "edd8f630f9bbc31b0acf122998f15589d6e6e3e1a3ec89e0c6a6ece751610ebbf57fdfb9d82028ff1d9faebe37a268c1",
+    "authenticationTag": "772ee7de0f91a981c36c93a35c88"
+  }
+];
+
+function runAesCbcSuccessTestCase(testCase)
 {
     var algorithm = {name: 'aes-cbc', iv: hexStringToUint8Array(testCase.iv)};
 
@@ -102,9 +165,51 @@ function runSuccessTestCase(testCase)
     });
 }
 
+function runAesGcmSuccessTestCase(testCase)
+{
+    var key = null;
+    var keyData = hexStringToUint8Array(testCase.key);
+    var iv = hexStringToUint8Array(testCase.iv);
+    var additionalData = hexStringToUint8Array(testCase.additionalData);
+    var tag = hexStringToUint8Array(testCase.authenticationTag);
+    var usages = ['encrypt', 'decrypt'];
+    var extractable = false;
+
+    var tagLengthBits = tag.byteLength * 8;
+
+    var algorithm = {name: 'aes-gcm', iv: iv, additionalData: additionalData, tagLength: tagLengthBits};
+
+    // (1) Import the key
+    return crypto.subtle.importKey('raw', keyData, algorithm, extractable, usages).then(function(result) {
+        key = result;
+        
+        // shouldBe() can only resolve variables in global context.
+        tmpKey = key;
+        shouldBe("tmpKey.type", "'secret'");
+        shouldBe("tmpKey.extractable", "false");
+        shouldBe("tmpKey.algorithm.name", "'AES-GCM'");
+        shouldBe("tmpKey.usages.join(',')", "'decrypt,encrypt'");
+
+        // (2) Encrypt.
+        return crypto.subtle.encrypt(algorithm, key, hexStringToUint8Array(testCase.plainText));
+    }).then(function(result) {
+        bytesShouldMatchHexString("Encryption", testCase.cipherText + testCase.authenticationTag, result);
+
+        // (3) Decrypt
+        return crypto.subtle.decrypt(algorithm, key, hexStringToUint8Array(testCase.cipherText + testCase.authenticationTag));
+    }).then(function(result) {
+        bytesShouldMatchHexString("Decryption", testCase.plainText, result);
+    });
+}
+  
 // Add all of the tests defined above.
-for (var i = 0; i < kSuccessTestVectors.length; ++i) {
-    addTask(runSuccessTestCase(kSuccessTestVectors[i]));
+for (var i = 0; i < kAesCbcSuccessVectors.length; ++i) {
+    addTask(runAesCbcSuccessTestCase(kAesCbcSuccessVectors[i]));
+}
+
+// Add all of the tests defined above.
+for (var i = 0; i < kAesGcmSuccessVectors.length; ++i) {
+    addTask(runAesGcmSuccessTestCase(kAesGcmSuccessVectors[i]));
 }
 
 // -------------------------------------------------
@@ -140,7 +245,7 @@ for (var i = 0; i < kUnsupportedKeyLengths.length; ++i) {
 // Invalid cipher texts
 // -------------------------------------------------
 
-function testInvalidDecryptions()
+function testInvalidAesCbcDecryptions()
 {
     // 128-bit key with plaintext that is an exact multiple of block size.
     // Derived from [1] F.2.1 (CBC-AES128.Encrypt), by adding padding block.
@@ -189,7 +294,7 @@ function testInvalidDecryptions()
     });
 }
 
-addTask(testInvalidDecryptions());
+addTask(testInvalidAesCbcDecryptions());
 
 function testNormalizationFailures(importedKeys)
 {
@@ -218,6 +323,18 @@ function testNormalizationFailures(importedKeys)
     shouldRejectPromiseWithNull("crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array(16), length: 256}, keys.aesCtr, data)");
     shouldRejectPromiseWithNull("crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array(16), length: -3}, keys.aesCtr, data)");
     shouldRejectPromiseWithNull("crypto.subtle.encrypt({name: 'AES-CTR', counter: new Uint8Array(16), length: Infinity}, keys.aesCtr, data)");
+
+    // ---------------------------------------------------
+    // AES-CBC normalization failures (AesGcmParams)
+    // ---------------------------------------------------
+
+    shouldRejectPromiseWithNull("crypto.subtle.encrypt({name: 'AES-gcm'}, keys.aesGcm, data)");
+    shouldRejectPromiseWithNull("crypto.subtle.encrypt({name: 'AES-gcm', iv: 3}, keys.aesGcm, data)");
+    shouldRejectPromiseWithNull("crypto.subtle.encrypt({name: 'AES-gcm', iv: 'foo'}, keys.aesGcm, data)");
+    shouldRejectPromiseWithNull("crypto.subtle.encrypt({name: 'AES-gcm', iv: new Uint8Array(16), additionalData: '5'}, keys.aesGcm, data)");
+    shouldRejectPromiseWithNull("crypto.subtle.encrypt({name: 'AES-gcm', iv: new Uint8Array(16), additionalData: new Uint8Array(1), tagLength: 'foo'}, keys.aesGcm, data)");
+    shouldRejectPromiseWithNull("crypto.subtle.encrypt({name: 'AES-gcm', iv: new Uint8Array(16), additionalData: new Uint8Array(1), tagLength: -1}, keys.aesGcm, data)");
+    shouldRejectPromiseWithNull("crypto.subtle.encrypt({name: 'AES-gcm', iv: new Uint8Array(16), additionalData: new Uint8Array(1), tagLength: 8000}, keys.aesGcm, data)");
 
     // Try calling with the wrong key type.
     aesCbc = {name: 'AES-CBC', iv: new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])};
