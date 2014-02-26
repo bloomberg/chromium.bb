@@ -4,11 +4,15 @@
 
 #include "ui/app_list/views/app_list_background.h"
 
+#include "base/command_line.h"
+#include "grit/ui_resources.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/search_box_view.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
@@ -73,6 +77,19 @@ void AppListBackground::Paint(gfx::Canvas* canvas,
 
   paint.setColor(kContentsBackgroundColor);
   canvas->DrawRect(contents_rect, paint);
+
+  // Draw a banner in the corner of the app list if it is the experimental app
+  // list.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          app_list::switches::kEnableExperimentalAppList)) {
+    const gfx::ImageSkia& experimental_icon =
+        *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+             IDR_APP_LIST_EXPERIMENTAL_ICON);
+    canvas->DrawImageInt(experimental_icon,
+                         contents_rect.right() - experimental_icon.width(),
+                         contents_rect.bottom() - experimental_icon.height());
+  }
+
   canvas->Restore();
 }
 
