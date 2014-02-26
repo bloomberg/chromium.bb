@@ -5,10 +5,8 @@
 #include "ui/gl/android/surface_texture_listener.h"
 
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "jni/SurfaceTextureListener_jni.h"
-#include "ui/gl/android/surface_texture.h"
 
 namespace gfx {
 
