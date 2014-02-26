@@ -4,6 +4,7 @@
 
 #include "chrome/test/base/chrome_test_launcher.h"
 
+#include "chrome/test/base/chrome_test_suite.h"
 #include "ui/base/test/ui_controls.h"
 
 #if defined(USE_AURA)
@@ -18,24 +19,45 @@
 #include "ash/test/ui_controls_factory_ash.h"
 #endif
 
-int main(int argc, char** argv) {
-  // Only allow ui_controls to be used in interactive_ui_tests, since they
-  // depend on focus and can't be sharded.
-  ui_controls::EnableUIControls();
+class InteractiveUITestSuite : public ChromeTestSuite {
+ public:
+  InteractiveUITestSuite(int argc, char** argv) : ChromeTestSuite(argc, argv) {}
+  virtual ~InteractiveUITestSuite() {}
+
+ protected:
+  // ChromeTestSuite overrides:
+  virtual void Initialize() OVERRIDE {
+    ChromeTestSuite::Initialize();
+
+    // Only allow ui_controls to be used in interactive_ui_tests, since they
+    // depend on focus and can't be sharded.
+    ui_controls::EnableUIControls();
 
 #if defined(OS_CHROMEOS)
-  ui_controls::InstallUIControlsAura(ash::test::CreateAshUIControls());
+    ui_controls::InstallUIControlsAura(ash::test::CreateAshUIControls());
 #elif defined(USE_AURA)
 
 #if defined(OS_LINUX)
-  ui_controls::InstallUIControlsAura(
-      views::test::CreateUIControlsDesktopAura());
+    ui_controls::InstallUIControlsAura(
+        views::test::CreateUIControlsDesktopAura());
 #else
-  // TODO(win_ash): when running interactive_ui_tests for Win Ash, use above.
-  ui_controls::InstallUIControlsAura(aura::test::CreateUIControlsAura(NULL));
+    // TODO(win_ash): when running interactive_ui_tests for Win Ash, use above.
+    ui_controls::InstallUIControlsAura(aura::test::CreateUIControlsAura(NULL));
 #endif
 #endif
+  }
+};
 
+class InteractiveUITestSuiteRunner : public ChromeTestSuiteRunner {
+ public:
+  virtual int RunTestSuite(int argc, char** argv) OVERRIDE {
+    return InteractiveUITestSuite(argc, argv).Run();
+  }
+};
+
+int main(int argc, char** argv) {
   // Run interactive_ui_tests serially, they do not support running in parallel.
-  return LaunchChromeTests(1, argc, argv);
+  int default_jobs = 1;
+  InteractiveUITestSuiteRunner runner;
+  return LaunchChromeTests(default_jobs, &runner, argc, argv);
 }

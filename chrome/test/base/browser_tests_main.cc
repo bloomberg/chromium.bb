@@ -9,5 +9,6 @@
 
 int main(int argc, char** argv) {
   int default_jobs = std::max(1, base::SysInfo::NumberOfProcessors() / 2);
-  return LaunchChromeTests(default_jobs, argc, argv);
+  ChromeTestSuiteRunner runner;
+  return LaunchChromeTests(default_jobs, &runner, argc, argv);
 }

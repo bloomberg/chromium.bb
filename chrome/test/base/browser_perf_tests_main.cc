@@ -7,5 +7,6 @@
 int main(int argc, char** argv) {
   // Always run browser perf tests serially - parallel running would be less
   // deterministic and distort perf measurements.
-  return LaunchChromeTests(1, argc, argv);
+  ChromeTestSuiteRunner runner;
+  return LaunchChromeTests(1, &runner, argc, argv);
 }

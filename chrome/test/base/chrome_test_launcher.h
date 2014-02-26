@@ -5,8 +5,22 @@
 #ifndef CHROME_TEST_BASE_CHROME_TEST_LAUNCHER_H_
 #define CHROME_TEST_BASE_CHROME_TEST_LAUNCHER_H_
 
+#include "base/memory/scoped_ptr.h"
+
+class ChromeTestSuite;
+
+// Allows a test suite to override the TestSuite class used. By default it is an
+// instance of ChromeTestSuite.
+class ChromeTestSuiteRunner {
+ public:
+  virtual int RunTestSuite(int argc, char** argv);
+};
+
 // Launches Chrome browser tests. |default_jobs| is number of test jobs to be
 // run in parallel, unless overridden from the command line. Returns exit code.
-int LaunchChromeTests(int default_jobs, int argc, char** argv);
+int LaunchChromeTests(int default_jobs,
+                      ChromeTestSuiteRunner* runner,
+                      int argc,
+                      char** argv);
 
 #endif  // CHROME_TEST_BASE_CHROME_TEST_LAUNCHER_H_
