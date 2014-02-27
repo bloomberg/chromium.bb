@@ -190,8 +190,11 @@ cr.define('options', function() {
 
       // Users section.
       if (loadTimeData.valueExists('profilesInfo')) {
-        $('sync-users-section').hidden = false;
         $('profiles-section').hidden = false;
+        $('sync-users-section').hidden =
+            $('profiles-section').hidden &&
+            $('sync-section').hidden &&
+            $('profiles-supervised-dashboard-tip').hidden;
 
         var profilesList = $('profiles-list');
         options.browser_options.ProfileList.decorate(profilesList);
@@ -745,10 +748,15 @@ cr.define('options', function() {
       if (!syncData.signinAllowed &&
           (!syncData.supervisedUser || !cr.isChromeOS)) {
         $('sync-section').hidden = true;
+        $('sync-users-section').hidden =
+            $('profiles-section').hidden &&
+            $('sync-section').hidden &&
+            $('profiles-supervised-dashboard-tip').hidden;
         return;
       }
 
       $('sync-section').hidden = false;
+      $('sync-users-section').hidden = false;
 
       var subSection = $('sync-section').firstChild;
       while (subSection) {
@@ -865,11 +873,14 @@ cr.define('options', function() {
      */
     updateManagesSupervisedUsers_: function(value) {
       if (value) {
-        $('sync-users-section').hidden = false;
         $('profiles-supervised-dashboard-tip').hidden = false;
       } else {
         $('profiles-supervised-dashboard-tip').hidden = true;
       }
+      $('sync-users-section').hidden =
+          $('profiles-section').hidden &&
+          $('sync-section').hidden &&
+          $('profiles-supervised-dashboard-tip').hidden;
     },
 
     /**
