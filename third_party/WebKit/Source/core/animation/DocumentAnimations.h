@@ -41,8 +41,6 @@ class Node;
 
 class DocumentAnimations  {
 public:
-    static void dispatchAnimationEvents(Document&);
-    static void dispatchAnimationEventsAsync(Document&);
     static void updateAnimationTimingForAnimationFrame(Document&, double monotonicAnimationStartTime);
     static void updateAnimationTimingForGetComputedStyle(Node&, CSSPropertyID);
     static void startPendingAnimations(Document&);

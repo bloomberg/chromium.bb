@@ -466,7 +466,7 @@ crbug.com/248938 [ Win Debug ] virtual/threaded/animations/missing-values-first-
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/missing-from-to-transforms.html [ Pass Timeout ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/missing-keyframe-properties.html [ Pass Timeout ]
 crbug.com/248938 [ Debug ] virtual/threaded/animations/opacity-transform-animation.html [ Pass Timeout ]
-crbug.com/248938 virtual/threaded/animations/transition-and-animation-3.html [ Pass Failure ]
+crbug.com/248938 virtual/threaded/animations/transition-and-animation-3.html [ Pass Failure Timeout ]
 crbug.com/248938 virtual/threaded/transitions/cancel-and-start-new.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/cancel-transition.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/change-duration-during-transition.html [ Pass Failure ]
@@ -491,6 +491,7 @@ crbug.com/248938 [ Linux Win ] virtual/threaded/transitions/transition-end-event
 crbug.com/248938 [ Linux Win ] virtual/threaded/transitions/transition-end-event-unprefixed-03.html [ Pass Failure ]
 crbug.com/248938 [ Linux Win ] virtual/threaded/transitions/transition-end-event-unprefixed-04.html [ Pass Failure ]
 crbug.com/248938 [ Linux Win ] virtual/threaded/transitions/transition-end-event-window.html [ Pass Failure ]
+crbug.com/248938 virtual/threaded/animations/timing-properties-do-not-update-running-animation.html [ Pass Failure ]
 
 crbug.com/344367 [ Debug ] virtual/threaded/animations/timing-model.html [ Pass Failure ]
 

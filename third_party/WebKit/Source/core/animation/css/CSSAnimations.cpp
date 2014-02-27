@@ -736,16 +736,15 @@ void CSSAnimations::calculateTransitionCompositableValues(CSSAnimationUpdate* up
 
 void CSSAnimations::AnimationEventDelegate::maybeDispatch(Document::ListenerType listenerType, const AtomicString& eventName, double elapsedTime)
 {
-    if (m_target->document().hasListenerType(listenerType))
-        m_target->document().timeline().addEventToDispatch(m_target, WebKitAnimationEvent::create(eventName, m_name, elapsedTime));
+    if (m_target->document().hasListenerType(listenerType)) {
+        RefPtr<WebKitAnimationEvent> event = WebKitAnimationEvent::create(eventName, m_name, elapsedTime);
+        event->setTarget(m_target);
+        m_target->document().enqueueAnimationFrameEvent(event);
+    }
 }
 
 void CSSAnimations::AnimationEventDelegate::onEventCondition(const TimedItem* timedItem, bool isFirstSample, TimedItem::Phase previousPhase, double previousIteration)
 {
-    // Events for a single document are queued and dispatched as a group at
-    // the end of DocumentTimeline::serviceAnimations.
-    // FIXME: Events which are queued outside of serviceAnimations should
-    // trigger a timer to dispatch when control is released.
     const TimedItem::Phase currentPhase = timedItem->phase();
     const double currentIteration = timedItem->currentIteration();
 
@@ -775,10 +774,6 @@ void CSSAnimations::AnimationEventDelegate::onEventCondition(const TimedItem* ti
 
 void CSSAnimations::TransitionEventDelegate::onEventCondition(const TimedItem* timedItem, bool isFirstSample, TimedItem::Phase previousPhase, double previousIteration)
 {
-    // Events for a single document are queued and dispatched as a group at
-    // the end of DocumentTimeline::serviceAnimations.
-    // FIXME: Events which are queued outside of serviceAnimations should
-    // trigger a timer to dispatch when control is released.
     const TimedItem::Phase currentPhase = timedItem->phase();
     if (currentPhase == TimedItem::PhaseAfter && (isFirstSample || previousPhase != currentPhase) && m_target->document().hasListenerType(Document::TRANSITIONEND_LISTENER)) {
         String propertyName = getPropertyNameString(m_property);
@@ -786,7 +781,9 @@ void CSSAnimations::TransitionEventDelegate::onEventCondition(const TimedItem* t
         double elapsedTime = timing.iterationDuration;
         const AtomicString& eventType = EventTypeNames::transitionend;
         String pseudoElement = PseudoElement::pseudoElementNameForEvents(m_target->pseudoId());
-        m_target->document().transitionTimeline().addEventToDispatch(m_target, TransitionEvent::create(eventType, propertyName, elapsedTime, pseudoElement));
+        RefPtr<TransitionEvent> event = TransitionEvent::create(eventType, propertyName, elapsedTime, pseudoElement);
+        event->setTarget(m_target);
+        m_target->document().enqueueAnimationFrameEvent(event);
     }
 }
 

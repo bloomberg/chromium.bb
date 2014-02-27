@@ -86,14 +86,6 @@ public:
     void setOutdatedPlayer(Player*);
     bool hasOutdatedPlayer() const { return m_hasOutdatedPlayer; }
 
-    void addEventToDispatch(EventTarget* target, PassRefPtr<Event> event)
-    {
-        m_events.append(EventToDispatch(target, event));
-    }
-
-    void dispatchEvents();
-    void dispatchEventsAsync();
-
     void detachFromDocument();
 
 protected:
@@ -102,26 +94,13 @@ protected:
 private:
     double m_zeroTime;
     Document* m_document;
-    Timer<DocumentTimeline> m_eventDistpachTimer;
     // Players which will be updated on the next frame
     // i.e. current, in effect, or had timing changed
     HashSet<RefPtr<Player> > m_playersNeedingUpdate;
     HashSet<Player*> m_players;
     bool m_hasOutdatedPlayer;
 
-    void eventDispatchTimerFired(Timer<DocumentTimeline>*);
     void wake();
-
-    struct EventToDispatch {
-        EventToDispatch(EventTarget* target, PassRefPtr<Event> event)
-            : target(target)
-            , event(event)
-        {
-        }
-        RefPtr<EventTarget> target;
-        RefPtr<Event> event;
-    };
-    Vector<EventToDispatch> m_events;
 
     static const double s_minimumDelay;
 

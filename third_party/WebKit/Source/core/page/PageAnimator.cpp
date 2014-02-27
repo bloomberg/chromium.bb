@@ -30,8 +30,6 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
     for (RefPtr<LocalFrame> frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
         frame->view()->serviceScrollAnimations();
         DocumentAnimations::updateAnimationTimingForAnimationFrame(*frame->document(), monotonicAnimationStartTime);
-        // FIXME: animation event dispatch should move to the ScriptedAnimationController
-        DocumentAnimations::dispatchAnimationEvents(*frame->document());
     }
 
     Vector<RefPtr<Document> > documents;

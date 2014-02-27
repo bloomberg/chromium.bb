@@ -408,7 +408,6 @@ void RenderLayerCompositor::updateCompositingLayers()
     lifecycle().advanceTo(DocumentLifecycle::CompositingClean);
 
     DocumentAnimations::startPendingAnimations(m_renderView->document());
-    DocumentAnimations::dispatchAnimationEventsAsync(m_renderView->document());
     ASSERT(m_renderView->document().lifecycle().state() == DocumentLifecycle::CompositingClean);
 }
 

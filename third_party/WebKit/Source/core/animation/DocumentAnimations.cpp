@@ -54,18 +54,6 @@ void updateAnimationTiming(Document& document)
 
 } // namespace
 
-void DocumentAnimations::dispatchAnimationEvents(Document& document)
-{
-    document.timeline().dispatchEvents();
-    document.transitionTimeline().dispatchEvents();
-}
-
-void DocumentAnimations::dispatchAnimationEventsAsync(Document& document)
-{
-    document.timeline().dispatchEventsAsync();
-    document.transitionTimeline().dispatchEventsAsync();
-}
-
 void DocumentAnimations::updateAnimationTimingForAnimationFrame(Document& document, double monotonicAnimationStartTime)
 {
     document.animationClock().updateTime(monotonicAnimationStartTime);
