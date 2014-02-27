@@ -24,4 +24,8 @@ IN_PROC_BROWSER_TEST_F(CastStreamingApiTest, Basics) {
   ASSERT_TRUE(RunExtensionSubtest("cast_streaming", "basics.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(CastStreamingApiTest, BadLogging) {
+  ASSERT_TRUE(RunExtensionSubtest("cast_streaming", "bad_logging.html"));
+}
+
 }  // namespace extensions

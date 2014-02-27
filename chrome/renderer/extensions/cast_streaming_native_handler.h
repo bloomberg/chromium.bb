@@ -48,6 +48,10 @@ class CastStreamingNativeHandler : public ObjectBackedNativeHandler {
   void StopCastUdpTransport(
       const v8::FunctionCallbackInfo<v8::Value>& args);
 
+  void ToggleLogging(const v8::FunctionCallbackInfo<v8::Value>& args);
+  void GetRawEvents(const v8::FunctionCallbackInfo<v8::Value>& args);
+  void GetStats(const v8::FunctionCallbackInfo<v8::Value>& args);
+
   // Helper method to call the v8 callback function after a session is
   // created.
   void CallCreateCallback(scoped_ptr<CastRtpStream> stream1,
@@ -57,6 +61,9 @@ class CastStreamingNativeHandler : public ObjectBackedNativeHandler {
   void CallStartCallback(int stream_id);
   void CallStopCallback(int stream_id);
   void CallErrorCallback(int stream_id, const std::string& message);
+
+  void CallGetRawEventsCallback(int transport_id,
+                                scoped_ptr<std::string> raw_events);
 
   // Gets the RTP stream or UDP transport indexed by an ID.
   // If not found, returns NULL and throws a V8 exception.
@@ -74,6 +81,11 @@ class CastStreamingNativeHandler : public ObjectBackedNativeHandler {
   base::WeakPtrFactory<CastStreamingNativeHandler> weak_factory_;
 
   extensions::ScopedPersistent<v8::Function> create_callback_;
+
+  typedef std::map<int,
+                   linked_ptr<extensions::ScopedPersistent<v8::Function> > >
+      RtpStreamCallbackMap;
+  RtpStreamCallbackMap get_raw_events_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(CastStreamingNativeHandler);
 };

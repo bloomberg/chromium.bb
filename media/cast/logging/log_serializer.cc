@@ -17,7 +17,7 @@ LogSerializer::LogSerializer(const int max_serialized_bytes)
 LogSerializer::~LogSerializer() {}
 
 // The format is as follows:
-//   32-bit integer describing |stream_id|.
+//   8-bit integer describing |is_audio|.
 //   32-bit integer describing |first_rtp_timestamp|.
 //   32-bit integer describing number of frame events.
 //   (The following repeated for number of frame events):
@@ -30,7 +30,7 @@ LogSerializer::~LogSerializer() {}
 //         size in bytes.
 //     The AggregatedPacketEvent proto.
 bool LogSerializer::SerializeEventsForStream(
-    const int stream_id,
+    bool is_audio,
     const FrameEventMap& frame_events,
     const PacketEventMap& packet_events,
     const RtpTimestamp first_rtp_timestamp) {
@@ -46,7 +46,7 @@ bool LogSerializer::SerializeEventsForStream(
                               remaining_space);
 
   // Write stream ID.
-  if (!writer.WriteU32(stream_id))
+  if (!writer.WriteU8(is_audio ? 1 : 0))
     return false;
 
   // Write first RTP timestamp.

@@ -278,7 +278,9 @@ CastRtpParams::~CastRtpParams() {
 
 CastRtpStream::CastRtpStream(const blink::WebMediaStreamTrack& track,
                              const scoped_refptr<CastSession>& session)
-    : track_(track), cast_session_(session), weak_factory_(this) {}
+    : track_(track),
+      cast_session_(session),
+      weak_factory_(this) {}
 
 CastRtpStream::~CastRtpStream() {
 }
@@ -341,6 +343,15 @@ void CastRtpStream::Stop() {
   audio_sink_.reset();
   video_sink_.reset();
   stop_callback_.Run();
+}
+
+void CastRtpStream::ToggleLogging(bool enable) {
+  cast_session_->ToggleLogging(IsAudio(), enable);
+}
+
+void CastRtpStream::GetRawEvents(
+    const base::Callback<void(scoped_ptr<std::string>)>& callback) {
+  cast_session_->GetEventLogsAndReset(IsAudio(), callback);
 }
 
 bool CastRtpStream::IsAudio() const {

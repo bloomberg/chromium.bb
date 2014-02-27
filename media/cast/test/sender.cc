@@ -347,8 +347,7 @@ void WriteLogsToFileAndStopSubscribing(
   VLOG(0) << "Video frame map size: " << frame_events.size();
   VLOG(0) << "Video packet map size: " << packet_events.size();
 
-  // "Assign" stream id 0 for the video events.
-  if (!serializer.SerializeEventsForStream(0, frame_events, packet_events,
+  if (!serializer.SerializeEventsForStream(false, frame_events, packet_events,
                                            first_rtp_timestamp)) {
     VLOG(1) << "Failed to serialize video events.";
     return;
@@ -366,8 +365,7 @@ void WriteLogsToFileAndStopSubscribing(
   VLOG(0) << "Audio frame map size: " << frame_events.size();
   VLOG(0) << "Audio packet map size: " << packet_events.size();
 
-  // "Assign" stream id 1 for the audio events.
-  if (!serializer.SerializeEventsForStream(1, frame_events, packet_events,
+  if (!serializer.SerializeEventsForStream(true, frame_events, packet_events,
                                            first_rtp_timestamp)) {
     VLOG(1) << "Failed to serialize audio events.";
     return;

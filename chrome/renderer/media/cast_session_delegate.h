@@ -5,9 +5,11 @@
 #ifndef CHROME_RENDERER_MEDIA_CAST_SESSION_DELEGATE_H_
 #define CHROME_RENDERER_MEDIA_CAST_SESSION_DELEGATE_H_
 
+#include <map>
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
@@ -58,8 +60,8 @@ class CastSessionDelegate {
   void StartUDP(const net::IPEndPoint& local_endpoint,
                 const net::IPEndPoint& remote_endpoint);
 
-  // Returns raw event logs in serialized format since last call.
-  void GetEventLogsAndReset(const EventLogsCallback& callback);
+  void ToggleLogging(bool is_audio, bool enable);
+  void GetEventLogsAndReset(bool is_audio, const EventLogsCallback& callback);
 
  protected:
   // Callback with the result of the initialization.
@@ -90,12 +92,12 @@ class CastSessionDelegate {
   FrameInputAvailableCallback audio_frame_input_available_callback_;
   FrameInputAvailableCallback video_frame_input_available_callback_;
 
-  scoped_ptr<media::cast::EncodingEventSubscriber> audio_event_subscriber_;
-  scoped_ptr<media::cast::EncodingEventSubscriber> video_event_subscriber_;
-
   net::IPEndPoint local_endpoint_;
   net::IPEndPoint remote_endpoint_;
   bool transport_configured_;
+
+  scoped_ptr<media::cast::EncodingEventSubscriber> audio_event_subscriber_;
+  scoped_ptr<media::cast::EncodingEventSubscriber> video_event_subscriber_;
 
   // Proxy to the IO message loop.
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;

@@ -60,6 +60,19 @@ namespace cast.streaming.rtpStream {
   // |id| : The ID for the RTP stream.
   callback CreateCallback = void (long streamId);
 
+  // Callback from the <code>getRawEvents</code> method.
+  // |rawEvents|: serialized raw bytes containing raw events recorded for
+  //              a stream.
+  // The serialization format can be found at 
+  // media/cast/logging/log_serializer.cc.
+  callback GetRawEventsCallback = void (DOMString rawEvents);
+  
+  // Callback from the <code>getStats</code> method.
+  // |rawEvents|: serialized raw bytes containing stats recorded for a stream.
+  // The serialization format can be found at 
+  // media/cast/logging/log_serializer.cc.
+  callback GetStatsCallback = void (DOMString stats);
+
   interface Functions {
     // Destroys a Cast RTP stream.
     // |streamId| : The RTP stream ID.
@@ -79,6 +92,22 @@ namespace cast.streaming.rtpStream {
     // Stops activity on the specified stream.
     // |streamId| : The RTP stream ID.
     [nocompile] static void stop(long streamId);
+
+    // Enables / disables logging for a stream.
+    // |enable|: If true, enables logging. Otherwise disables logging.
+    [nocompile] static void toggleLogging(long streamId, boolean enable);
+    
+    // Get raw events for a stream in the current session.
+    // |streamId|: Stream to get events for.
+    // |callback|: Called with the raw events Blob.
+    [nocompile] static void getRawEvents(
+        long streamId, GetRawEventsCallback callback);
+    
+    // Get stats for a stream in the current session.
+    // |streamId|: Stream to get stats for.
+    // |callback|: Called with the stats Blob.
+    [nocompile] static void getStats(
+        long streamId, GetStatsCallback callback);
   };
 
   interface Events {

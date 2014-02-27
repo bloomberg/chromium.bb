@@ -26,6 +26,18 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
       function(transportId) {
         natives.StopCastRtpStream(transportId);
   });
+  apiFunctions.setHandleRequest('toggleLogging',
+      function(transportId, enable) {
+        natives.ToggleLogging(transportId, enable);
+  });
+  apiFunctions.setHandleRequest('getRawEvents',
+      function(transportId, callback) {
+        natives.GetRawEvents(transportId, callback);
+  });
+  apiFunctions.setHandleRequest('getStats',
+      function(transportId, callback) {
+        natives.GetStats(transportId, callback);
+  });
 });
 
 exports.binding = binding.generate();

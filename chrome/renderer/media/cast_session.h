@@ -39,7 +39,7 @@ class CastSession : public base::RefCounted<CastSession> {
  public:
   typedef
   base::Callback<void(const scoped_refptr<media::cast::FrameInput>&)>
-  FrameInputAvailableCallback;
+      FrameInputAvailableCallback;
   typedef base::Callback<void(const std::vector<char>&)> SendPacketCallback;
   typedef base::Callback<void(scoped_ptr<std::string>)> EventLogsCallback;
 
@@ -57,8 +57,15 @@ class CastSession : public base::RefCounted<CastSession> {
   void StartUDP(const net::IPEndPoint& local_endpoint,
                 const net::IPEndPoint& remote_endpoint);
 
-  // Get raw event logs and provide the results in |callback| on main thread.
-  void GetEventLogsAndReset(const EventLogsCallback& callback);
+  // Creates or destroys event subscriber for the audio or video stream.
+  // |is_audio|: true if the event subscriber is for audio. Video otherwise.
+  // |enable|: If true, creates an event subscriber. Otherwise destroys
+  // existing subscriber and discards logs.
+  void ToggleLogging(bool is_audio, bool enable);
+
+  // Returns raw event logs in serialized format for either the audio or video
+  // stream since last call and returns result in |callback|.
+  void GetEventLogsAndReset(bool is_audio, const EventLogsCallback& callback);
 
  private:
   friend class base::RefCounted<CastSession>;

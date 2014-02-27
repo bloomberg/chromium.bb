@@ -11,6 +11,7 @@
 #include "media/base/video_frame.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_sender.h"
+#include "media/cast/logging/logging_defines.h"
 
 CastSession::CastSession()
     : delegate_(new CastSessionDelegate()),
@@ -63,10 +64,21 @@ void CastSession::StartUDP(const net::IPEndPoint& local_endpoint,
           remote_endpoint));
 }
 
-void CastSession::GetEventLogsAndReset(const EventLogsCallback& callback) {
+void CastSession::ToggleLogging(bool is_audio, bool enable) {
+  io_message_loop_proxy_->PostTask(
+      FROM_HERE,
+      base::Bind(&CastSessionDelegate::ToggleLogging,
+                 base::Unretained(delegate_.get()),
+                 is_audio,
+                 enable));
+}
+
+void CastSession::GetEventLogsAndReset(
+    bool is_audio, const EventLogsCallback& callback) {
   io_message_loop_proxy_->PostTask(
       FROM_HERE,
       base::Bind(&CastSessionDelegate::GetEventLogsAndReset,
                  base::Unretained(delegate_.get()),
-                 callback));
+                 is_audio,
+                 media::BindToCurrentLoop(callback)));
 }

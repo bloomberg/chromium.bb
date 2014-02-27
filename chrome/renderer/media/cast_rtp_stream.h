@@ -117,6 +117,14 @@ class CastRtpStream {
   // Stop encoding.
   void Stop();
 
+  // Enables or disables logging for this stream.
+  void ToggleLogging(bool enable);
+
+  // Get serialized raw events for this stream and invokes |callback|
+  // with the result.
+  void GetRawEvents(
+      const base::Callback<void(scoped_ptr<std::string>)>& callback);
+
  private:
   // Return true if this track is an audio track. Return false if this
   // track is a video track.

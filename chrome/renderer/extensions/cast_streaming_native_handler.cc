@@ -168,6 +168,15 @@ CastStreamingNativeHandler::CastStreamingNativeHandler(ChromeV8Context* context)
   RouteFunction("SetDestinationCastUdpTransport",
       base::Bind(&CastStreamingNativeHandler::SetDestinationCastUdpTransport,
                  base::Unretained(this)));
+  RouteFunction("ToggleLogging",
+                base::Bind(&CastStreamingNativeHandler::ToggleLogging,
+                           base::Unretained(this)));
+  RouteFunction("GetRawEvents",
+                base::Bind(&CastStreamingNativeHandler::GetRawEvents,
+                           base::Unretained(this)));
+  RouteFunction("GetStats",
+                base::Bind(&CastStreamingNativeHandler::GetStats,
+                           base::Unretained(this)));
 }
 
 CastStreamingNativeHandler::~CastStreamingNativeHandler() {
@@ -407,6 +416,71 @@ void CastStreamingNativeHandler::SetDestinationCastUdpTransport(
     return;
   }
   transport->SetDestination(net::IPEndPoint(ip, destination->port));
+}
+
+void CastStreamingNativeHandler::ToggleLogging(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  CHECK_EQ(2, args.Length());
+  CHECK(args[0]->IsInt32());
+  CHECK(args[1]->IsBoolean());
+
+  const int stream_id = args[0]->ToInt32()->Value();
+  CastRtpStream* stream = GetRtpStreamOrThrow(stream_id);
+  if (!stream)
+    return;
+
+  const bool enable = args[1]->ToBoolean()->Value();
+  stream->ToggleLogging(enable);
+}
+
+void CastStreamingNativeHandler::GetRawEvents(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  CHECK_EQ(2, args.Length());
+  CHECK(args[0]->IsInt32());
+  CHECK(args[1]->IsFunction());
+  const int transport_id = args[0]->ToInt32()->Value();
+  CastRtpStream* transport = GetRtpStreamOrThrow(transport_id);
+  if (!transport)
+    return;
+
+  linked_ptr<extensions::ScopedPersistent<v8::Function> > callback(
+      new extensions::ScopedPersistent<v8::Function>);
+  callback->reset(args[1].As<v8::Function>());
+  get_raw_events_callbacks_.insert(std::make_pair(transport_id, callback));
+
+  transport->GetRawEvents(
+      base::Bind(&CastStreamingNativeHandler::CallGetRawEventsCallback,
+                 weak_factory_.GetWeakPtr(),
+                 transport_id));
+}
+
+void CastStreamingNativeHandler::GetStats(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  CHECK_EQ(2, args.Length());
+  CHECK(args[0]->IsInt32());
+  CHECK(args[1]->IsFunction());
+
+  // TODO(imcheng): Implement this.
+}
+
+void CastStreamingNativeHandler::CallGetRawEventsCallback(
+    int transport_id,
+    scoped_ptr<std::string> raw_events) {
+  v8::Isolate* isolate = context()->isolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Context::Scope context_scope(context()->v8_context());
+
+  RtpStreamCallbackMap::iterator it =
+      get_raw_events_callbacks_.find(transport_id);
+  if (it != get_raw_events_callbacks_.end()) {
+    v8::Handle<v8::Value> callback_args[1];
+    callback_args[0] = v8::String::NewFromUtf8(isolate,
+                                               raw_events->data(),
+                                               v8::String::kNormalString,
+                                               raw_events->size());
+    context()->CallFunction(it->second->NewHandle(isolate), 1, callback_args);
+    get_raw_events_callbacks_.erase(it);
+  }
 }
 
 CastRtpStream* CastStreamingNativeHandler::GetRtpStreamOrThrow(
