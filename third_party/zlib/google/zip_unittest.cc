@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
@@ -280,17 +281,17 @@ TEST_F(ZipTest, ZipFiles) {
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath zip_file = temp_dir.path().AppendASCII("out.zip");
+  base::FilePath zip_name = temp_dir.path().AppendASCII("out.zip");
 
-  const int flags = base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE;
-  const base::PlatformFile zip_fd =
-      base::CreatePlatformFile(zip_file, flags, NULL, NULL);
-  ASSERT_LE(0, zip_fd);
-  EXPECT_TRUE(zip::ZipFiles(src_dir, zip_file_list_, zip_fd));
-  base::ClosePlatformFile(zip_fd);
+  base::File zip_file(zip_name,
+                      base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+  ASSERT_TRUE(zip_file.IsValid());
+  EXPECT_TRUE(zip::ZipFiles(src_dir, zip_file_list_,
+                            zip_file.GetPlatformFile()));
+  zip_file.Close();
 
   zip::ZipReader reader;
-  EXPECT_TRUE(reader.Open(zip_file));
+  EXPECT_TRUE(reader.Open(zip_name));
   EXPECT_EQ(zip_file_list_.size(), static_cast<size_t>(reader.num_entries()));
   for (size_t i = 0; i < zip_file_list_.size(); ++i) {
     EXPECT_TRUE(reader.LocateAndOpenEntry(zip_file_list_[i]));
@@ -302,4 +303,3 @@ TEST_F(ZipTest, ZipFiles) {
 #endif  // defined(OS_POSIX)
 
 }  // namespace
-

@@ -9,10 +9,10 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
 #include "base/time/time.h"
 
 #if defined(USE_SYSTEM_MINIZIP)
@@ -199,7 +199,7 @@ class ZipReader {
 
   // Extracts a chunk of the file to the target.  Will post a task for the next
   // chunk and success/failure/progress callbacks as necessary.
-  void ExtractChunk(base::PlatformFile target_file,
+  void ExtractChunk(base::File target_file,
                     const SuccessCallback& success_callback,
                     const FailureCallback& failure_callback,
                     const ProgressCallback& progress_callback,

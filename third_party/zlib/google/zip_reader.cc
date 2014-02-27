@@ -275,16 +275,10 @@ void ZipReader::ExtractCurrentEntryToFilePathAsync(
     return;
   }
 
-  const int flags = (base::PLATFORM_FILE_CREATE_ALWAYS |
-                     base::PLATFORM_FILE_WRITE);
-  bool created = false;
-  base::PlatformFileError platform_file_error;
-  base::PlatformFile output_file = CreatePlatformFile(output_file_path,
-                                                      flags,
-                                                      &created,
-                                                      &platform_file_error);
+  const int flags = base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE;
+  base::File output_file(output_file_path, flags);
 
-  if (platform_file_error != base::PLATFORM_FILE_OK) {
+  if (!output_file.IsValid()) {
     DVLOG(1) << "Unzip failed: unable to create platform file at "
              << output_file_path.value();
     base::MessageLoopProxy::current()->PostTask(FROM_HERE, failure_callback);
@@ -295,7 +289,7 @@ void ZipReader::ExtractCurrentEntryToFilePathAsync(
       FROM_HERE,
       base::Bind(&ZipReader::ExtractChunk,
                  weak_ptr_factory_.GetWeakPtr(),
-                 output_file,
+                 Passed(output_file.Pass()),
                  success_callback,
                  failure_callback,
                  progress_callback,
@@ -374,7 +368,7 @@ void ZipReader::Reset() {
   current_entry_info_.reset();
 }
 
-void ZipReader::ExtractChunk(base::PlatformFile output_file,
+void ZipReader::ExtractChunk(base::File output_file,
                              const SuccessCallback& success_callback,
                              const FailureCallback& failure_callback,
                              const ProgressCallback& progress_callback,
@@ -387,20 +381,14 @@ void ZipReader::ExtractChunk(base::PlatformFile output_file,
 
   if (num_bytes_read == 0) {
     unzCloseCurrentFile(zip_file_);
-    base::ClosePlatformFile(output_file);
     success_callback.Run();
   } else if (num_bytes_read < 0) {
     DVLOG(1) << "Unzip failed: error while reading zipfile "
              << "(" << num_bytes_read << ")";
-    base::ClosePlatformFile(output_file);
     failure_callback.Run();
   } else {
-    if (num_bytes_read != base::WritePlatformFile(output_file,
-                                                  offset,
-                                                  buffer,
-                                                  num_bytes_read)) {
+    if (num_bytes_read != output_file.Write(offset, buffer, num_bytes_read)) {
       DVLOG(1) << "Unzip failed: unable to write all bytes to target.";
-      base::ClosePlatformFile(output_file);
       failure_callback.Run();
       return;
     }
@@ -413,7 +401,7 @@ void ZipReader::ExtractChunk(base::PlatformFile output_file,
         FROM_HERE,
         base::Bind(&ZipReader::ExtractChunk,
                    weak_ptr_factory_.GetWeakPtr(),
-                   output_file,
+                   Passed(output_file.Pass()),
                    success_callback,
                    failure_callback,
                    progress_callback,
