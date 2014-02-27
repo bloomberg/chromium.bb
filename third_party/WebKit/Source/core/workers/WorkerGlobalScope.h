@@ -156,8 +156,6 @@ namespace WebCore {
         OwnPtr<WorkerInspectorController> m_workerInspectorController;
         bool m_closing;
 
-        HashSet<Observer*> m_workerObservers;
-
         OwnPtr<WorkerEventQueue> m_eventQueue;
 
         OwnPtr<WorkerClients> m_workerClients;
