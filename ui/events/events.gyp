@@ -283,6 +283,13 @@
             '<(DEPTH)/base/allocator/allocator.gyp:allocator',
           ],
         }],
+        # Exclude tests that rely on event_utils.h for platforms that do not
+        # provide native cracking, i.e., platforms that use events_stub.cc.
+        ['OS!="win" and use_x11!=1 and use_ozone!=1', {
+          'sources!': [
+            'event_unittest.cc',
+          ],
+        }],
         ['OS == "android" and gtest_target_type == "shared_library"', {
           'dependencies': [
             '../../testing/android/native_test.gyp:native_test_native_code',
