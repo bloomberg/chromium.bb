@@ -298,6 +298,12 @@ void ThreadState::cleanup()
     // After this GC we expect heap to be empty because
     // preCleanup tasks should have cleared all persistent
     // handles that were externally owned.
+    // FIXME: oilpan: we should perform a single GC and everything
+    // should die. Unfortunately it is not the case for all objects
+    // because the hierarchy was not completely moved to the heap and
+    // some heap allocated objects own objects that contain persistents
+    // pointing to other heap allocated objects.
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
 
     // Verify that all heaps are empty now.
