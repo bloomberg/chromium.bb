@@ -5,6 +5,7 @@
 #include "content/renderer/p2p/host_address_request.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "content/common/p2p_messages.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
@@ -28,39 +29,18 @@ P2PAsyncAddressResolver::~P2PAsyncAddressResolver() {
   DCHECK(!registered_);
 }
 
-void P2PAsyncAddressResolver::Start(const talk_base::SocketAddress& host_name) {
+void P2PAsyncAddressResolver::Start(const talk_base::SocketAddress& host_name,
+                                    const DoneCallback& done_callback) {
   DCHECK(delegate_message_loop_->BelongsToCurrentThread());
   DCHECK_EQ(STATE_CREATED, state_);
 
   state_ = STATE_SENT;
   addr_ = host_name;
   ipc_message_loop_->PostTask(FROM_HERE, base::Bind(
-      &P2PAsyncAddressResolver::DoSendRequest, this, host_name));
+      &P2PAsyncAddressResolver::DoSendRequest, this, host_name, done_callback));
 }
 
-bool P2PAsyncAddressResolver::GetResolvedAddress(
-  int family, talk_base::SocketAddress* addr) const {
-  DCHECK(delegate_message_loop_->BelongsToCurrentThread());
-  DCHECK_EQ(STATE_FINISHED, state_);
-
-  if (addresses_.empty())
-    return false;
-
-  *addr = addr_;
-  for (size_t i = 0; i < addresses_.size(); ++i) {
-    if (family == addresses_[i].family()) {
-      addr->SetIP(addresses_[i]);
-      return true;
-    }
-  }
-  return false;
-}
-
-int P2PAsyncAddressResolver::GetError() const {
-  return addresses_.empty() ? -1 : 0;
-}
-
-void P2PAsyncAddressResolver::Destroy(bool wait) {
+void P2PAsyncAddressResolver::Cancel() {
   DCHECK(delegate_message_loop_->BelongsToCurrentThread());
 
   if (state_ != STATE_FINISHED) {
@@ -68,13 +48,15 @@ void P2PAsyncAddressResolver::Destroy(bool wait) {
     ipc_message_loop_->PostTask(FROM_HERE, base::Bind(
         &P2PAsyncAddressResolver::DoUnregister, this));
   }
-  Release();
+  done_callback_.Reset();
 }
 
 void P2PAsyncAddressResolver::DoSendRequest(
-    const talk_base::SocketAddress& host_name) {
+    const talk_base::SocketAddress& host_name,
+    const DoneCallback& done_callback) {
   DCHECK(ipc_message_loop_->BelongsToCurrentThread());
 
+  done_callback_ = done_callback;
   request_id_ = dispatcher_->RegisterHostAddressRequest(this);
   registered_ = true;
   dispatcher_->SendP2PMessage(
@@ -104,16 +86,8 @@ void P2PAsyncAddressResolver::DeliverResponse(
     const net::IPAddressList& addresses) {
   DCHECK(delegate_message_loop_->BelongsToCurrentThread());
   if (state_ == STATE_SENT) {
-    for (size_t i = 0; i < addresses.size(); ++i) {
-      talk_base::SocketAddress socket_address;
-      if (!jingle_glue::IPEndPointToSocketAddress(
-              net::IPEndPoint(addresses[i], 0), &socket_address)) {
-        NOTREACHED();
-      }
-      addresses_.push_back(socket_address.ipaddr());
-    }
     state_ = STATE_FINISHED;
-    SignalDone(this);
+    base::ResetAndReturn(&done_callback_).Run(addresses);
   }
 }
 

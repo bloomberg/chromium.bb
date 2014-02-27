@@ -14,6 +14,7 @@
 #include "third_party/libjingle/source/talk/base/asyncresolverinterface.h"
 
 namespace base {
+class MessageLoop;
 class MessageLoopProxy;
 }  // namespace base
 
@@ -24,20 +25,16 @@ class P2PSocketDispatcher;
 // P2PAsyncAddressResolver performs DNS hostname resolution. It's used
 // to resolve addresses of STUN and relay servers.
 class P2PAsyncAddressResolver
-    : public base::RefCountedThreadSafe<P2PAsyncAddressResolver>,
-      public talk_base::AsyncResolverInterface {
+    : public base::RefCountedThreadSafe<P2PAsyncAddressResolver> {
  public:
-  P2PAsyncAddressResolver(P2PSocketDispatcher* dispatcher);
+  typedef base::Callback<void(const net::IPAddressList&)> DoneCallback;
 
+  P2PAsyncAddressResolver(P2PSocketDispatcher* dispatcher);
   // Start address resolve process.
-  virtual void Start(const talk_base::SocketAddress& addr) OVERRIDE;
-  // Returns top most resolved address of |family|
-  virtual bool GetResolvedAddress(
-      int family, talk_base::SocketAddress* addr) const OVERRIDE;
-  // Returns error from resolver.
-  virtual int GetError() const OVERRIDE;
-  // Delete the resolver.
-  virtual void Destroy(bool wait) OVERRIDE;
+  void Start(const talk_base::SocketAddress& addr,
+             const DoneCallback& done_callback);
+  // Clients must unregister before exiting for cleanup.
+  void Cancel();
 
  private:
   enum State {
@@ -52,7 +49,8 @@ class P2PAsyncAddressResolver
 
   virtual ~P2PAsyncAddressResolver();
 
-  void DoSendRequest(const talk_base::SocketAddress& host_name);
+  void DoSendRequest(const talk_base::SocketAddress& host_name,
+                     const DoneCallback& done_callback);
   void DoUnregister();
   void OnResponse(const net::IPAddressList& address);
   void DeliverResponse(const net::IPAddressList& address);
@@ -69,6 +67,7 @@ class P2PAsyncAddressResolver
   bool registered_;
   talk_base::SocketAddress addr_;
   std::vector<talk_base::IPAddress> addresses_;
+  DoneCallback done_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PAsyncAddressResolver);
 };
