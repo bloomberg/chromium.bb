@@ -4,6 +4,7 @@
 
 package org.chromium.ui.base;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.ContentResolver;
@@ -38,11 +39,16 @@ public class WindowAndroid {
 
     protected Context mApplicationContext;
     protected SparseArray<IntentCallback> mOutstandingIntents;
+
+    // Ideally, this would be a SparseArray<String>, but there's no easy way to store a
+    // SparseArray<String> in a bundle during saveInstanceState(). So we use a HashMap and suppress
+    // the Android lint warning "UseSparseArrays".
     protected HashMap<Integer, String> mIntentErrors;
 
     /**
      * @param context The application context.
      */
+    @SuppressLint("UseSparseArrays")
     public WindowAndroid(Context context) {
         assert context == context.getApplicationContext();
         mApplicationContext = context;

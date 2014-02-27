@@ -8,10 +8,9 @@ import android.content.Context;
 import android.graphics.PointF;
 import android.os.Handler;
 import android.os.Message;
+import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
-
-import java.util.HashMap;
 
 /**
  * This class detects multi-finger tap and long-press events. This is provided since the stock
@@ -49,7 +48,7 @@ public class TapGestureDetector {
      * Stores the location of each down MotionEvent (by pointer ID), for detecting motion of any
      * pointer beyond the TouchSlop region.
      */
-    private HashMap<Integer, PointF> mInitialPositions = new HashMap<Integer, PointF>();
+    private SparseArray<PointF> mInitialPositions = new SparseArray<PointF>();
 
     /**
      * Threshold squared-distance, in pixels, to use for motion-detection. If a finger moves less

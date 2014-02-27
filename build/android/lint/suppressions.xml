@@ -113,11 +113,6 @@ Still reading?
     <ignore path="content/public/android/java/src/org/chromium/content/browser/MediaResourceGetter.java"/>
   </issue>
   <issue id="SetJavaScriptEnabled" severity="ignore"/>
-  <issue id="UseSparseArrays">
-    <ignore path="android_webview/java/src/org/chromium/android_webview/AwResource.java"/>
-    <ignore path="remoting/android/java/src/org/chromium/chromoting/TapGestureDetector.java"/>
-    <ignore path="ui/android/java/src/org/chromium/ui/base/WindowAndroid.java"/>
-  </issue>
   <issue id="ViewConstructor" severity="ignore"/>
   <issue id="WrongCall" severity="ignore"/>
 </lint>

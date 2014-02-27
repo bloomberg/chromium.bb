@@ -5,6 +5,7 @@
 package org.chromium.android_webview;
 
 import android.content.res.Resources;
+import android.util.SparseArray;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
@@ -12,8 +13,6 @@ import org.chromium.base.JNINamespace;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.ref.SoftReference;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
@@ -41,14 +40,14 @@ public class AwResource {
     private static Resources sResources;
 
     // Loading some resources is expensive, so cache the results.
-    private static Map<Integer, SoftReference<String> > sResourceCache;
+    private static SparseArray<SoftReference<String>> sResourceCache;
 
     private static final int TYPE_STRING = 0;
     private static final int TYPE_RAW = 1;
 
     public static void setResources(Resources resources) {
         sResources = resources;
-        sResourceCache = new HashMap<Integer, SoftReference<String> >();
+        sResourceCache = new SparseArray<SoftReference<String>>();
     }
 
     public static void setErrorPageResources(int loaderror, int nodomain) {
@@ -80,8 +79,8 @@ public class AwResource {
         assert sResources != null;
         assert sResourceCache != null;
 
-        String result = sResourceCache.get(resid) == null ?
-                null : sResourceCache.get(resid).get();
+        SoftReference<String> stringRef = sResourceCache.get(resid);
+        String result = stringRef == null ? null : stringRef.get();
         if (result == null) {
             switch (type) {
                 case TYPE_STRING:
