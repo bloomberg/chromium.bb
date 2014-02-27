@@ -10,11 +10,10 @@
  * them as Chrome notifications.
  * The service performs periodic updating of Google Now cards.
  * Each updating of the cards includes 4 steps:
- * 1. Obtaining the location of the machine;
- * 2. Processing requests for cards dismissals that are not yet sent to the
- *    server;
- * 3. Making a server request based on that location;
- * 4. Showing the received cards as notifications.
+ * 1. Processing requests for cards dismissals that are not yet sent to the
+ *    server.
+ * 2. Making a server request.
+ * 3. Showing the received cards as notifications.
  */
 
 // TODO(vadimt): Decide what to do in incognito mode.
@@ -98,8 +97,6 @@ var STATE_CHANGED_TASK_NAME = 'state-changed';
 var SHOW_ON_START_TASK_NAME = 'show-cards-on-start';
 var ON_PUSH_MESSAGE_START_TASK_NAME = 'on-push-message';
 
-var LOCATION_WATCH_NAME = 'location-watch';
-
 /**
  * Group as received from the server.
  *
@@ -180,7 +177,6 @@ function areTasksConflicting(newTaskName, scheduledTaskName) {
 var tasks = buildTaskManager(areTasksConflicting);
 
 // Add error processing to API calls.
-wrapper.instrumentChromeApiFunction('location.onLocationUpdate.addListener', 0);
 wrapper.instrumentChromeApiFunction('metricsPrivate.getVariationParams', 1);
 wrapper.instrumentChromeApiFunction('notifications.clear', 1);
 wrapper.instrumentChromeApiFunction('notifications.create', 2);
@@ -195,12 +191,6 @@ wrapper.instrumentChromeApiFunction(
     'notifications.onPermissionLevelChanged.addListener', 0);
 wrapper.instrumentChromeApiFunction(
     'notifications.onShowSettings.addListener', 0);
-wrapper.instrumentChromeApiFunction(
-    'preferencesPrivate.googleGeolocationAccessEnabled.get',
-    1);
-wrapper.instrumentChromeApiFunction(
-    'preferencesPrivate.googleGeolocationAccessEnabled.onChange.addListener',
-    0);
 wrapper.instrumentChromeApiFunction('permissions.contains', 1);
 wrapper.instrumentChromeApiFunction('pushMessaging.onMessage.addListener', 0);
 wrapper.instrumentChromeApiFunction('runtime.onInstalled.addListener', 0);
@@ -210,7 +200,7 @@ wrapper.instrumentChromeApiFunction('storage.local.get', 1);
 
 var updateCardsAttempts = buildAttemptManager(
     'cards-update',
-    requestLocation,
+    requestCards,
     INITIAL_POLLING_PERIOD_SECONDS,
     MAXIMUM_POLLING_PERIOD_SECONDS);
 var dismissalAttempts = buildAttemptManager(
@@ -233,7 +223,7 @@ var GoogleNowEvent = {
   DISMISS_REQUEST_TOTAL: 3,
   DISMISS_REQUEST_SUCCESS: 4,
   LOCATION_REQUEST: 5,
-  LOCATION_UPDATE: 6,
+  DELETED_LOCATION_UPDATE: 6,
   EXTENSION_START: 7,
   DELETED_SHOW_WELCOME_TOAST: 8,
   STOPPED: 9,
@@ -330,8 +320,6 @@ function showNotificationCards(
 
 /**
  * Removes all cards and card state on Google Now close down.
- * For example, this occurs when the geolocation preference is unchecked in the
- * content settings.
  */
 function removeAllCards() {
   console.log('removeAllCards');
@@ -634,10 +622,9 @@ function requestOptedIn(optedInCallback) {
 
 /**
  * Requests notification cards from the server.
- * @param {Location=} position Location of this computer.
  */
-function requestNotificationCards(position) {
-  console.log('requestNotificationCards ' + JSON.stringify(position));
+function requestNotificationCards() {
+  console.log('requestNotificationCards');
 
   instrumented.storage.local.get(
       ['notificationGroups', 'googleNowEnabled'], function(items) {
@@ -668,58 +655,23 @@ function requestNotificationCards(position) {
 }
 
 /**
- * Starts getting location for a cards update.
+ * Requests and shows notification cards.
  */
-function requestLocation() {
-  console.log('requestLocation');
+function requestCards() {
+  console.log('requestCards @' + new Date());
+  // LOCATION_REQUEST is a legacy histogram value when we requested location.
+  // This corresponds to the extension attempting to request for cards.
+  // We're keeping the name the same to keep our histograms in order.
   recordEvent(GoogleNowEvent.LOCATION_REQUEST);
-  // TODO(vadimt): Figure out location request options.
-  instrumented.metricsPrivate.getVariationParams('GoogleNow', function(params) {
-    var minDistanceInMeters =
-        parseInt(params && params.minDistanceInMeters, 10) ||
-        100;
-    var minTimeInMilliseconds =
-        parseInt(params && params.minTimeInMilliseconds, 10) ||
-        180000;  // 3 minutes.
-
-    // TODO(vadimt): Uncomment/remove watchLocation and remove invoking
-    // updateNotificationsCards once state machine design is finalized.
-//    chrome.location.watchLocation(LOCATION_WATCH_NAME, {
-//      minDistanceInMeters: minDistanceInMeters,
-//      minTimeInMilliseconds: minTimeInMilliseconds
-//    });
-    // We need setTimeout to avoid recursive task creation. This is a temporary
-    // code, and it will be removed once we finally decide to send or not send
-    // client location to the server.
-    setTimeout(wrapper.wrapCallback(updateNotificationsCards, true), 0);
-  });
-}
-
-/**
- * Stops getting the location.
- */
-function stopRequestLocation() {
-  console.log('stopRequestLocation');
-  chrome.location.clearWatch(LOCATION_WATCH_NAME);
-}
-
-/**
- * Obtains new location; requests and shows notification cards based on this
- * location.
- * @param {Location=} position Location of this computer.
- */
-function updateNotificationsCards(position) {
-  console.log('updateNotificationsCards ' + JSON.stringify(position) +
-      ' @' + new Date());
   tasks.add(UPDATE_CARDS_TASK_NAME, function() {
-    console.log('updateNotificationsCards-task-begin');
+    console.log('requestCards-task-begin');
     updateCardsAttempts.isRunning(function(running) {
       if (running) {
         updateCardsAttempts.planForNext(function() {
           processPendingDismissals(function(success) {
             if (success) {
               // The cards are requested only if there are no unsent dismissals.
-              requestNotificationCards(position);
+              requestNotificationCards();
             }
           });
         });
@@ -958,22 +910,22 @@ function onNotificationClosed(chromeNotificationId, byUser) {
 }
 
 /**
- * Initializes the polling system to start monitoring location and fetching
- * cards.
+ * Initializes the polling system to start fetching cards.
  */
 function startPollingCards() {
-  // Create an update timer for a case when for some reason location request
-  // gets stuck.
+  console.log('startPollingCards');
+  // Create an update timer for a case when for some reason requesting
+  // cards gets stuck.
   updateCardsAttempts.start(MAXIMUM_POLLING_PERIOD_SECONDS);
 
-  requestLocation();
+  requestCards();
 }
 
 /**
  * Stops all machinery in the polling system.
  */
 function stopPollingCards() {
-  stopRequestLocation();
+  console.log('stopPollingCards');
   updateCardsAttempts.stop();
   removeAllCards();
   // Mark the Google Now as disabled to start with checking the opt-in state
@@ -1033,8 +985,6 @@ function setBackgroundEnable(backgroundEnable) {
  * Does the actual work of deciding what Google Now should do
  * based off of the current state of Chrome.
  * @param {boolean} signedIn true if the user is signed in.
- * @param {boolean} geolocationEnabled true if
- *     the geolocation option is enabled.
  * @param {boolean} canEnableBackground true if
  *     the background permission can be requested.
  * @param {boolean} notificationEnabled true if
@@ -1044,30 +994,23 @@ function setBackgroundEnable(backgroundEnable) {
  */
 function updateRunningState(
     signedIn,
-    geolocationEnabled,
     canEnableBackground,
     notificationEnabled,
     googleNowEnabled) {
   console.log(
       'State Update signedIn=' + signedIn + ' ' +
-      'geolocationEnabled=' + geolocationEnabled + ' ' +
       'canEnableBackground=' + canEnableBackground + ' ' +
       'notificationEnabled=' + notificationEnabled + ' ' +
       'googleNowEnabled=' + googleNowEnabled);
-
-  // TODO(vadimt): Remove this line once state machine design is finalized.
-  geolocationEnabled = true;
 
   var shouldPollCards = false;
   var shouldSetBackground = false;
 
   if (signedIn && notificationEnabled) {
-    if (geolocationEnabled) {
-      if (canEnableBackground && googleNowEnabled)
-        shouldSetBackground = true;
+    if (canEnableBackground && googleNowEnabled)
+      shouldSetBackground = true;
 
-      shouldPollCards = true;
-    }
+    shouldPollCards = true;
   } else {
     recordEvent(GoogleNowEvent.STOPPED);
   }
@@ -1088,26 +1031,11 @@ function onStateChange() {
   tasks.add(STATE_CHANGED_TASK_NAME, function() {
     Promise.all([
         authenticationManager.isSignedIn(),
-        isGeolocationEnabled(),
         canEnableBackground(),
         isNotificationsEnabled(),
         isGoogleNowEnabled()])
         .then(function(results) {
           updateRunningState.apply(null, results);
-        });
-  });
-}
-
-/**
- * Gets the geolocation enabled preference.
- * @return {Promise} A promise to get the geolocation enabled preference.
- */
-function isGeolocationEnabled() {
-  return new Promise(function(resolve) {
-    instrumented.preferencesPrivate.googleGeolocationAccessEnabled.get(
-        {},
-        function(prefValue) {
-          resolve(!!prefValue.value);
         });
   });
 }
@@ -1181,16 +1109,6 @@ instrumented.runtime.onStartup.addListener(function() {
   initialize();
 });
 
-instrumented.
-    preferencesPrivate.
-    googleGeolocationAccessEnabled.
-    onChange.
-    addListener(function(prefValue) {
-      console.log('googleGeolocationAccessEnabled Pref onChange ' +
-          prefValue.value);
-      onStateChange();
-});
-
 authenticationManager.addListener(function() {
   console.log('signIn State Change');
   onStateChange();
@@ -1227,11 +1145,6 @@ instrumented.notifications.onShowSettings.addListener(function() {
   openUrl(SETTINGS_URL);
 });
 
-instrumented.location.onLocationUpdate.addListener(function(position) {
-  recordEvent(GoogleNowEvent.LOCATION_UPDATE);
-  updateNotificationsCards(position);
-});
-
 instrumented.pushMessaging.onMessage.addListener(function(message) {
   // message.payload will be '' when the extension first starts.
   // Each time after signing in, we'll get latest payload for all channels.
@@ -1266,7 +1179,7 @@ instrumented.pushMessaging.onMessage.addListener(function(message) {
             notificationGroups: items.notificationGroups
           });
 
-          updateNotificationsCards();
+          requestCards();
         }
       });
     });

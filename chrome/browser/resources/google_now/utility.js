@@ -15,7 +15,7 @@
  *     otherwise, we generate an error. Chrome may unload event pages waiting
  *     for an event. When the event fires, Chrome will reload the event page. We
  *     don't require event listeners to fire because they are generally not
- *     predictable (like a location change event).
+ *     predictable (like a button clicked event).
  * (2) Task Manager (built with buildTaskManager() call) provides controlling
  *     mutually excluding chains of callbacks called tasks. Task Manager uses
  *     WrapperPlugins to add instrumentation code to 'wrapper' to determine

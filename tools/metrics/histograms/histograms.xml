@@ -27327,7 +27327,7 @@ other types of suffix sets.
   <int value="3" label="DISMISS_REQUEST_TOTAL"/>
   <int value="4" label="DISMISS_REQUEST_SUCCESS"/>
   <int value="5" label="LOCATION_REQUEST"/>
-  <int value="6" label="LOCATION_UPDATE"/>
+  <int value="6" label="DELETED_LOCATION_UPDATE"/>
   <int value="7" label="EXTENSION_START"/>
   <int value="8" label="DELETED_SHOW_WELCOME_TOAST"/>
   <int value="9" label="STOPPED"/>

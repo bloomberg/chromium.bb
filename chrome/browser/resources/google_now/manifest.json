@@ -12,10 +12,8 @@
   "permissions": [
     "alarms",
     "identity",
-    "location",
     "metricsPrivate",
     "notifications",
-    "preferencesPrivate",
     "pushMessaging",
     "storage",
     "tabs",

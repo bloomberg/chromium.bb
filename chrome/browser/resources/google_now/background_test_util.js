@@ -18,14 +18,11 @@ var buildAttemptManager = emptyMock;
 var buildCardSet = emptyMock;
 
 var instrumented = {};
-mockChromeEvent(instrumented, 'location.onLocationUpdate');
 mockChromeEvent(instrumented, 'notifications.onButtonClicked');
 mockChromeEvent(instrumented, 'notifications.onClicked');
 mockChromeEvent(instrumented, 'notifications.onClosed');
 mockChromeEvent(instrumented, 'notifications.onPermissionLevelChanged');
 mockChromeEvent(instrumented, 'notifications.onShowSettings');
-mockChromeEvent(
-    instrumented, 'preferencesPrivate.googleGeolocationAccessEnabled.onChange');
 mockChromeEvent(instrumented, 'pushMessaging.onMessage');
 mockChromeEvent(instrumented, 'runtime.onInstalled');
 mockChromeEvent(instrumented, 'runtime.onStartup');
