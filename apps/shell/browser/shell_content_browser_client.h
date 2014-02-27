@@ -42,6 +42,8 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       OVERRIDE;
   virtual void AppendExtraCommandLineSwitches(CommandLine* command_line,
                                               int child_process_id) OVERRIDE;
+  virtual void GetAdditionalAllowedSchemesForFileSystem(
+      std::vector<std::string>* additional_schemes) OVERRIDE;
 
  private:
   // Returns the extension or app associated with |site_instance| or NULL.
