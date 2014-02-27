@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gin/runner.h"
+#include "gin/shell_runner.h"
 
 #include "base/compiler_specific.h"
 #include "gin/converter.h"
@@ -21,9 +21,9 @@ TEST(RunnerTest, Run) {
 
   gin::IsolateHolder instance;
 
-  RunnerDelegate delegate;
+  ShellRunnerDelegate delegate;
   Isolate* isolate = instance.isolate();
-  Runner runner(&delegate, isolate);
+  ShellRunner runner(&delegate, isolate);
   Runner::Scope scope(&runner);
   runner.Run(source, "test_data.js");
 

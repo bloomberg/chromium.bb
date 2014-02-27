@@ -48,7 +48,7 @@ void WaitingCallback::OnHandleReady(MojoResult result) {
     return;
 
   gin::Runner::Scope scope(runner_.get());
-  v8::Isolate* isolate = runner_->isolate();
+  v8::Isolate* isolate = runner_->GetContextHolder()->isolate();
 
   v8::Handle<v8::Value> hidden_value =
       GetWrapper(isolate)->GetHiddenValue(GetHiddenPropertyName(isolate));

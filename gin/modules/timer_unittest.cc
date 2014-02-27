@@ -9,7 +9,7 @@
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/public/isolate_holder.h"
-#include "gin/runner.h"
+#include "gin/shell_runner.h"
 #include "gin/test/v8_test.h"
 #include "gin/try_catch.h"
 #include "gin/wrappable.h"
@@ -54,7 +54,7 @@ WrapperInfo Result::kWrapperInfo = { gin::kEmbedderNativeGin };
 
 struct TestHelper {
   TestHelper(v8::Isolate* isolate)
-      : runner(new Runner(&delegate, isolate)),
+      : runner(new ShellRunner(&delegate, isolate)),
         scope(runner.get()),
         timer_module(TimerModule::Create(isolate)),
         result(Result::Create(isolate)) {
@@ -70,8 +70,8 @@ struct TestHelper {
                          base::TimeDelta::FromMilliseconds(0));
   }
 
-  RunnerDelegate delegate;
-  scoped_ptr<Runner> runner;
+  ShellRunnerDelegate delegate;
+  scoped_ptr<ShellRunner> runner;
   Runner::Scope scope;
   Handle<TimerModule> timer_module;
   Handle<Result> result;

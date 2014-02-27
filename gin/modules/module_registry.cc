@@ -101,11 +101,13 @@ ModuleRegistry::~ModuleRegistry() {
   modules_.Reset();
 }
 
+// static
 void ModuleRegistry::RegisterGlobals(Isolate* isolate,
                                      v8::Handle<ObjectTemplate> templ) {
   templ->Set(StringToSymbol(isolate, "define"), GetDefineTemplate(isolate));
 }
 
+// static
 ModuleRegistry* ModuleRegistry::From(v8::Handle<Context> context) {
   Isolate* isolate = context->GetIsolate();
   v8::Handle<String> key = GetHiddenValueKey(isolate);

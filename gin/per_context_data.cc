@@ -40,6 +40,7 @@ void PerContextData::Detach(v8::Handle<v8::Context> context) {
   }
 }
 
+// static
 PerContextData* PerContextData::From(v8::Handle<v8::Context> context) {
   return static_cast<PerContextData*>(
       context->GetAlignedPointerFromEmbedderData(kEncodedValueIndex));

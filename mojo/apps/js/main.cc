@@ -27,7 +27,7 @@ void Start(MojoHandle pipe, const std::string& module) {
 
   gin::IsolateHolder instance;
   MojoRunnerDelegate delegate;
-  gin::Runner runner(&delegate, instance.isolate());
+  gin::ShellRunner runner(&delegate, instance.isolate());
   delegate.Start(&runner, pipe, module);
 
   base::MessageLoop::current()->Run();

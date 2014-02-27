@@ -21,7 +21,7 @@ namespace {
 class TestRunnerDelegate : public gin::FileRunnerDelegate {
  public:
   TestRunnerDelegate() {
-  AddBuiltinModule(gin::Console::kModuleName, gin::Console::GetModule);
+    AddBuiltinModule(gin::Console::kModuleName, gin::Console::GetModule);
     AddBuiltinModule(Core::kModuleName, Core::GetModule);
     AddBuiltinModule(gin::TimerModule::kName, gin::TimerModule::GetModule);
     AddBuiltinModule(apps::MonotonicClock::kModuleName,

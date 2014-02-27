@@ -176,8 +176,7 @@ struct Converter<std::vector<T> > {
 
 // Convenience functions that deduce T.
 template<typename T>
-v8::Handle<v8::Value> ConvertToV8(v8::Isolate* isolate,
-                                  T input) {
+v8::Handle<v8::Value> ConvertToV8(v8::Isolate* isolate, T input) {
   return Converter<T>::ToV8(isolate, input);
 }
 

@@ -45,8 +45,8 @@ Timer::Timer(v8::Isolate* isolate, bool repeating, int delay_ms,
       timer_(false, repeating),
       runner_(PerContextData::From(
           isolate->GetCurrentContext())->runner()->GetWeakPtr()) {
-  GetWrapper(runner_->isolate())->SetHiddenValue(GetHiddenPropertyName(isolate),
-                                                 function);
+  GetWrapper(runner_->GetContextHolder()->isolate())->SetHiddenValue(
+      GetHiddenPropertyName(isolate), function);
   timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(delay_ms),
                base::Bind(&Timer::OnTimerFired, weak_factory_.GetWeakPtr()));
 }
@@ -63,10 +63,10 @@ void Timer::OnTimerFired() {
   }
 
   Runner::Scope scope(runner_.get());
+  v8::Isolate* isolate = runner_->GetContextHolder()->isolate();
   v8::Handle<v8::Function> function = v8::Handle<v8::Function>::Cast(
-      GetWrapper(runner_->isolate())->GetHiddenValue(
-          GetHiddenPropertyName(runner_->isolate())));
-  runner_->Call(function, v8::Undefined(runner_->isolate()), 0, NULL);
+      GetWrapper(isolate)->GetHiddenValue(GetHiddenPropertyName(isolate)));
+  runner_->Call(function, v8::Undefined(isolate), 0, NULL);
 }
 
 

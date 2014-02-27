@@ -43,7 +43,7 @@ class ShellRunnerDelegate : public ModuleRunnerDelegate {
     AddBuiltinModule(Console::kModuleName, Console::GetModule);
   }
 
-  virtual void UnhandledException(Runner* runner,
+  virtual void UnhandledException(ShellRunner* runner,
                                   TryCatch& try_catch) OVERRIDE {
     ModuleRunnerDelegate::UnhandledException(runner, try_catch);
     LOG(ERROR) << try_catch.GetStackTrace();
@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
   base::MessageLoop message_loop;
 
   gin::ShellRunnerDelegate delegate;
-  gin::Runner runner(&delegate, instance.isolate());
+  gin::ShellRunner runner(&delegate, instance.isolate());
 
   {
     gin::Runner::Scope scope(&runner);

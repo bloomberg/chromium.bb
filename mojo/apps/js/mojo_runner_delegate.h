@@ -21,7 +21,7 @@ class MojoRunnerDelegate : public gin::ModuleRunnerDelegate {
 
  private:
   // From ModuleRunnerDelegate:
-  virtual void UnhandledException(gin::Runner* runner,
+  virtual void UnhandledException(gin::ShellRunner* runner,
                                   gin::TryCatch& try_catch) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(MojoRunnerDelegate);

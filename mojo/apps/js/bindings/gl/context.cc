@@ -170,7 +170,7 @@ void Context::ContextLost() {
   if (!runner_)
     return;
   gin::Runner::Scope scope(runner_.get());
-  v8::Isolate* isolate = runner_->isolate();
+  v8::Isolate* isolate = runner_->GetContextHolder()->isolate();
 
   v8::Handle<v8::Function> callback = v8::Local<v8::Function>::New(
       isolate, context_lost_callback_);

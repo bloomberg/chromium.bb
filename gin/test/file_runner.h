@@ -24,7 +24,8 @@ class FileRunnerDelegate : public ModuleRunnerDelegate {
 
  private:
   // From ModuleRunnerDelegate:
-  virtual void UnhandledException(Runner* runner, TryCatch& try_catch) OVERRIDE;
+  virtual void UnhandledException(ShellRunner* runner,
+                                  TryCatch& try_catch) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(FileRunnerDelegate);
 };
