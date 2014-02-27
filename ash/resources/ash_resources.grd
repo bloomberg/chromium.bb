@@ -238,8 +238,6 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_ENABLED" file="cros/network/status_wifi_enabled.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_ENABLED_HOVER" file="cros/network/status_wifi_enabled_hover.png" />
 
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_BUTTON_SEPARATOR" file="common/window_button_separator.png" />
-
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_BACKGROUND_H" file="common/window_control_background_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_BACKGROUND_P" file="common/window_control_background_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CONTROL_ICON_CLOSE" file="common/window_control_icon_close.png" />
@@ -258,31 +256,6 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_RIGHT" file="common/window_header_shade_right_inactive.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_TOP" file="common/window_header_shade_top_inactive.png" />
 
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CLOSE" file="common/window_close_tall_normal.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CLOSE_H" file="common/window_close_tall_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CLOSE_P" file="common/window_close_tall_pressed.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE" file="common/window_close_short_normal.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE_H" file="common/window_close_short_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE_P" file="common/window_close_short_pressed.png" />
-          <!-- These are temporary, when workspace2 is the default they'll replace IDR_AURA_WINDOW_MAXIMIZED_CLOSE -->
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE2" file="common/window_close_short_black_normal.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE2_H" file="common/window_close_short_black_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE2_P" file="common/window_close_short_black_pressed.png" />
-
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZE" file="common/window_size_tall_normal.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZE_H" file="common/window_size_tall_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZE_P" file="common/window_size_tall_pressed.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE" file="common/window_size_short_normal.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE_H" file="common/window_size_short_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE_P" file="common/window_size_short_pressed.png" />
-          <!-- These are temporary, when workspace2 is the default they'll replace IDR_AURA_WINDOW_MAXIMIZED_RESTORE -->
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE2" file="common/window_size_short_black_normal.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_H" file="common/window_size_short_black_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE2_P" file="common/window_size_short_black_pressed.png" />
-
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MINIMIZE_SHORT" file="common/window_minimize_short_normal.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MINIMIZE_SHORT_H" file="common/window_minimize_short_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MINIMIZE_SHORT_P" file="common/window_minimize_short_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_LEFT" file="common/window_position_left_normal.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_LEFT_H" file="common/window_position_left_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_LEFT_P" file="common/window_position_left_pressed.png" />
