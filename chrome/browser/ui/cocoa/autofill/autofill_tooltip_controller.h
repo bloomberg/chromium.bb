@@ -13,20 +13,21 @@
 @class AutofillBubbleController;
 @class AutofillTooltip;
 
-@protocol AutofillTooltipDelegate
-- (void)didBeginHover;
-- (void)didEndHover;
-@end
-
 // Controller for the Tooltip view, which handles displaying/hiding the
 // tooltip bubble on hover.
-@interface AutofillTooltipController
-    : NSViewController<AutofillTooltipDelegate> {
+@interface AutofillTooltipController : NSViewController {
  @private
   base::scoped_nsobject<AutofillTooltip> view_;
   AutofillBubbleController* bubbleController_;
   NSString* message_;
   info_bubble::BubbleArrowLocation arrowLocation_;
+
+  // Indicates whether a tooltip bubble should show. YES when hovering on icon
+  // or tooltip bubble.
+  BOOL shouldDisplayTooltip_;
+
+  // Tracks whether mouse pointer currently hovers above bubble.
+  BOOL isHoveringOnBubble_;
 }
 
 // |message| to display in the tooltip.
