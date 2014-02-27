@@ -49,12 +49,12 @@ public:
     MediaList* media() const;
     CSSStyleSheet* styleSheet() const;
 
-    virtual void trace(Visitor*) OVERRIDE;
+    virtual void trace(Visitor* visitor) OVERRIDE { CSSRule::trace(visitor); }
 
 private:
     CSSImportRule(StyleRuleImport*, CSSStyleSheet*);
 
-    RefPtrWillBeMember<StyleRuleImport> m_importRule;
+    RefPtrWillBePersistent<StyleRuleImport> m_importRule;
     mutable RefPtr<MediaList> m_mediaCSSOMWrapper;
     mutable RefPtr<CSSStyleSheet> m_styleSheetCSSOMWrapper;
 };

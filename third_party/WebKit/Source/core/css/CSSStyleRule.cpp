@@ -129,10 +129,4 @@ void CSSStyleRule::reattach(StyleRuleBase* rule)
         m_propertiesCSSOMWrapper->reattach(m_styleRule->mutableProperties());
 }
 
-void CSSStyleRule::trace(Visitor* visitor)
-{
-    visitor->trace(m_styleRule);
-    CSSRule::trace(visitor);
-}
-
 } // namespace WebCore

@@ -185,9 +185,7 @@ private:
 
     CSSParserContext m_parserContext;
 
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<CSSStyleSheet> > m_clients;
-    typedef WillBeHeapHashSet<RawPtrWillBeWeakMember<CSSStyleSheet> >::iterator ClientsIterator;
-
+    Vector<CSSStyleSheet*> m_clients;
     OwnPtr<RuleSet> m_ruleSet;
 };
 

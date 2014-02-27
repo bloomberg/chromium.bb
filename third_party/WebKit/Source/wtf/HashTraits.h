@@ -83,6 +83,7 @@ namespace WTF {
         typedef const T* IteratorConstGetType;
         typedef T& IteratorReferenceType;
         typedef const T& IteratorConstReferenceType;
+        static IteratorConstGetType getToConstGetConversion(const T* x) { return x; }
         static IteratorReferenceType getToReferenceConversion(IteratorGetType x) { return *x; }
         static IteratorConstReferenceType getToReferenceConstConversion(IteratorConstGetType x) { return *x; }
         // Type for functions that take ownership, such as add.
@@ -185,26 +186,6 @@ namespace WTF {
         typedef P* PeekOutType;
         static PeekOutType peek(const RefPtr<P>& value) { return value.get(); }
         static PeekOutType peek(std::nullptr_t) { return 0; }
-    };
-
-    template<typename T> struct HashTraits<RawPtr<T> > : SimpleClassHashTraits<RawPtr<T> > {
-        static const bool needsDestruction = false;
-        typedef T* PeekInType;
-        typedef T* PassInType;
-        typedef RawPtr<T>* IteratorGetType;
-        typedef const RawPtr<T>* IteratorConstGetType;
-        typedef RawPtr<T>& IteratorReferenceType;
-        typedef T* const IteratorConstReferenceType;
-        static IteratorReferenceType getToReferenceConversion(IteratorGetType x) { return *x; }
-        static IteratorConstReferenceType getToReferenceConstConversion(IteratorConstGetType x) { return x->get(); }
-        typedef T* PeekOutType;
-        typedef T* PassOutType;
-
-        template<typename U>
-        static void store(const U& value, RawPtr<T>& storage) { storage = value; }
-
-        static PeekOutType peek(const RawPtr<T>& value) { return value; }
-        static PassOutType passOut(const RawPtr<T>& value) { return value; }
     };
 
     template<> struct HashTraits<String> : SimpleClassHashTraits<String> {

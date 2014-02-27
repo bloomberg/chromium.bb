@@ -91,10 +91,4 @@ void CSSImportRule::reattach(StyleRuleBase*)
     ASSERT_NOT_REACHED();
 }
 
-void CSSImportRule::trace(Visitor* visitor)
-{
-    visitor->trace(m_importRule);
-    CSSRule::trace(visitor);
-}
-
 } // namespace WebCore

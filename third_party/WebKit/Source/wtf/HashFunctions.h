@@ -143,14 +143,6 @@ namespace WTF {
         static bool equal(P* a, const RefPtr<P>& b) { return a == b; }
         static bool equal(const RefPtr<P>& a, P* b) { return a == b; }
     };
-    template<typename P> struct PtrHash<RawPtr<P> > : PtrHash<P*> {
-        using PtrHash<P*>::hash;
-        static unsigned hash(const RawPtr<P>& key) { return hash(key.get()); }
-        using PtrHash<P*>::equal;
-        static bool equal(const RawPtr<P>& a, const RawPtr<P>& b) { return a == b; }
-        static bool equal(P* a, const RawPtr<P>& b) { return a == b; }
-        static bool equal(const RawPtr<P>& a, P* b) { return a == b; }
-    };
 
     // default hash function for each type
 
@@ -197,7 +189,6 @@ namespace WTF {
 
     template<typename P> struct DefaultHash<P*> { typedef PtrHash<P*> Hash; };
     template<typename P> struct DefaultHash<RefPtr<P> > { typedef PtrHash<RefPtr<P> > Hash; };
-    template<typename P> struct DefaultHash<RawPtr<P> > { typedef PtrHash<RawPtr<P> > Hash; };
 
     // make IntPairHash the default hash function for pairs of (at most) 32-bit integers.
 

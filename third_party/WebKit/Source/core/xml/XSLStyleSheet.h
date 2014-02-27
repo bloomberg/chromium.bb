@@ -38,28 +38,28 @@ class XSLImportRule;
 
 class XSLStyleSheet FINAL : public StyleSheet {
 public:
-    static PassRefPtrWillBeRawPtr<XSLStyleSheet> create(XSLImportRule* parentImport, const String& originalURL, const KURL& finalURL)
+    static PassRefPtr<XSLStyleSheet> create(XSLImportRule* parentImport, const String& originalURL, const KURL& finalURL)
     {
         ASSERT(RuntimeEnabledFeatures::xsltEnabled());
-        return adoptRefWillBeRefCountedGarbageCollected(new XSLStyleSheet(parentImport, originalURL, finalURL));
+        return adoptRef(new XSLStyleSheet(parentImport, originalURL, finalURL));
     }
-    static PassRefPtrWillBeRawPtr<XSLStyleSheet> create(ProcessingInstruction* parentNode, const String& originalURL, const KURL& finalURL)
+    static PassRefPtr<XSLStyleSheet> create(ProcessingInstruction* parentNode, const String& originalURL, const KURL& finalURL)
     {
         ASSERT(RuntimeEnabledFeatures::xsltEnabled());
-        return adoptRefWillBeRefCountedGarbageCollected(new XSLStyleSheet(parentNode, originalURL, finalURL, false));
+        return adoptRef(new XSLStyleSheet(parentNode, originalURL, finalURL, false));
     }
-    static PassRefPtrWillBeRawPtr<XSLStyleSheet> createEmbedded(ProcessingInstruction* parentNode, const KURL& finalURL)
+    static PassRefPtr<XSLStyleSheet> createEmbedded(ProcessingInstruction* parentNode, const KURL& finalURL)
     {
         ASSERT(RuntimeEnabledFeatures::xsltEnabled());
-        return adoptRefWillBeRefCountedGarbageCollected(new XSLStyleSheet(parentNode, finalURL.string(), finalURL, true));
+        return adoptRef(new XSLStyleSheet(parentNode, finalURL.string(), finalURL, true));
     }
 
     // Taking an arbitrary node is unsafe, because owner node pointer can become stale.
     // XSLTProcessor ensures that the stylesheet doesn't outlive its parent, in part by not exposing it to JavaScript.
-    static PassRefPtrWillBeRawPtr<XSLStyleSheet> createForXSLTProcessor(Node* parentNode, const String& originalURL, const KURL& finalURL)
+    static PassRefPtr<XSLStyleSheet> createForXSLTProcessor(Node* parentNode, const String& originalURL, const KURL& finalURL)
     {
         ASSERT(RuntimeEnabledFeatures::xsltEnabled());
-        return adoptRefWillBeRefCountedGarbageCollected(new XSLStyleSheet(parentNode, originalURL, finalURL, false));
+        return adoptRef(new XSLStyleSheet(parentNode, originalURL, finalURL, false));
     }
 
     virtual ~XSLStyleSheet();
@@ -98,8 +98,6 @@ public:
     virtual void clearOwnerNode() OVERRIDE { m_ownerNode = 0; }
     virtual KURL baseURL() const OVERRIDE { return m_finalURL; }
     virtual bool isLoading() const OVERRIDE;
-
-    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     XSLStyleSheet(Node* parentNode, const String& originalURL, const KURL& finalURL, bool embedded);

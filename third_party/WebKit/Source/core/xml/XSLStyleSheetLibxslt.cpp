@@ -303,8 +303,4 @@ void XSLStyleSheet::markAsProcessed()
     m_stylesheetDocTaken = true;
 }
 
-void XSLStyleSheet::trace(Visitor*)
-{
-}
-
 } // namespace WebCore

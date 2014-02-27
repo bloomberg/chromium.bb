@@ -49,10 +49,10 @@ enum StyleSheetUpdateType {
 
 class CSSStyleSheet FINAL : public StyleSheet {
 public:
-    static PassRefPtrWillBeRawPtr<CSSStyleSheet> create(PassRefPtrWillBeRawPtr<StyleSheetContents>, CSSImportRule* ownerRule = 0);
-    static PassRefPtrWillBeRawPtr<CSSStyleSheet> create(PassRefPtrWillBeRawPtr<StyleSheetContents>, Node* ownerNode);
-    static PassRefPtrWillBeRawPtr<CSSStyleSheet> createInline(Node*, const KURL&, const TextPosition& startPosition = TextPosition::minimumPosition(), const String& encoding = String());
-    static PassRefPtrWillBeRawPtr<CSSStyleSheet> createInline(PassRefPtrWillBeRawPtr<StyleSheetContents>, Node* ownerNode, const TextPosition& startPosition = TextPosition::minimumPosition());
+    static PassRefPtr<CSSStyleSheet> create(PassRefPtrWillBeRawPtr<StyleSheetContents>, CSSImportRule* ownerRule = 0);
+    static PassRefPtr<CSSStyleSheet> create(PassRefPtrWillBeRawPtr<StyleSheetContents>, Node* ownerNode);
+    static PassRefPtr<CSSStyleSheet> createInline(Node*, const KURL&, const TextPosition& startPosition = TextPosition::minimumPosition(), const String& encoding = String());
+    static PassRefPtr<CSSStyleSheet> createInline(PassRefPtrWillBeRawPtr<StyleSheetContents>, Node* ownerNode, const TextPosition& startPosition = TextPosition::minimumPosition());
 
     virtual ~CSSStyleSheet();
 
@@ -84,7 +84,7 @@ public:
     virtual KURL baseURL() const OVERRIDE;
     virtual bool isLoading() const OVERRIDE;
 
-    void clearOwnerRule() { m_ownerRule = nullptr; }
+    void clearOwnerRule() { m_ownerRule = 0; }
     Document* ownerDocument() const;
     MediaQuerySet* mediaQueries() const { return m_mediaQueries.get(); }
     void setMediaQueries(PassRefPtr<MediaQuerySet>);
@@ -116,8 +116,6 @@ public:
     bool loadCompleted() const { return m_loadCompleted; }
     void startLoadingDynamicSheet();
 
-    virtual void trace(Visitor*) OVERRIDE;
-
 private:
     CSSStyleSheet(PassRefPtrWillBeRawPtr<StyleSheetContents>, CSSImportRule* ownerRule);
     CSSStyleSheet(PassRefPtrWillBeRawPtr<StyleSheetContents>, Node* ownerNode, bool isInlineStylesheet, const TextPosition& startPosition);
@@ -129,20 +127,28 @@ private:
 
     bool canAccessRules() const;
 
-    RefPtrWillBeMember<StyleSheetContents> m_contents;
+    RefPtrWillBePersistent<StyleSheetContents> m_contents;
     bool m_isInlineStylesheet;
     bool m_isDisabled;
     String m_title;
     RefPtr<MediaQuerySet> m_mediaQueries;
 
     Node* m_ownerNode;
-    RawPtrWillBeMember<CSSRule> m_ownerRule;
+    // FIXME: oilpan: This is a back pointer from CSSImportRule, corresponding
+    // to the forward pointer on that, called m_styleSheetCSSOMWrapper. (It is
+    // not related to the m_parentStyleSheet pointer which is also typed as
+    // CSSStyleSheet, and which is inherited by CSSImportRule from CSSRule).
+    // Since m_styleSheetCSSOMWrapper is a RefPtr we know that this object
+    // cannot die before the CSSImportRule is destructed, which makes it OK to
+    // clear this from ~CSSImportRule. When this is on the GC heap we can make
+    // this a regular Member.
+    CSSRule* m_ownerRule;
 
     TextPosition m_startPosition;
     bool m_loadCompleted;
 
     mutable RefPtr<MediaList> m_mediaCSSOMWrapper;
-    mutable WillBeHeapVector<RefPtrWillBeMember<CSSRule> > m_childRuleCSSOMWrappers;
+    mutable WillBePersistentHeapVector<RefPtrWillBeMember<CSSRule> > m_childRuleCSSOMWrappers;
     mutable OwnPtr<CSSRuleList> m_ruleListCSSOMWrapper;
 };
 

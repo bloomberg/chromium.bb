@@ -101,10 +101,4 @@ void CSSPageRule::reattach(StyleRuleBase* rule)
         m_propertiesCSSOMWrapper->reattach(m_pageRule->mutableProperties());
 }
 
-void CSSPageRule::trace(Visitor* visitor)
-{
-    visitor->trace(m_pageRule);
-    CSSRule::trace(visitor);
-}
-
 } // namespace WebCore

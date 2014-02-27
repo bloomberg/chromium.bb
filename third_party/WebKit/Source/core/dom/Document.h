@@ -1206,7 +1206,7 @@ private:
 
     MutationObserverOptions m_mutationObserverTypes;
 
-    OwnPtrWillBePersistent<StyleEngine> m_styleEngine;
+    OwnPtr<StyleEngine> m_styleEngine;
     RefPtrWillBePersistent<StyleSheetList> m_styleSheetList;
 
     OwnPtr<FormController> m_formController;

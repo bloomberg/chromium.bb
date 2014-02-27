@@ -81,10 +81,4 @@ void CSSViewportRule::reattach(StyleRuleBase* rule)
         m_propertiesCSSOMWrapper->reattach(m_viewportRule->mutableProperties());
 }
 
-void CSSViewportRule::trace(Visitor* visitor)
-{
-    visitor->trace(m_viewportRule);
-    CSSRule::trace(visitor);
-}
-
 } // namespace WebCore

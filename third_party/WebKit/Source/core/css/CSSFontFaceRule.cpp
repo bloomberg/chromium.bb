@@ -68,10 +68,4 @@ void CSSFontFaceRule::reattach(StyleRuleBase* rule)
         m_propertiesCSSOMWrapper->reattach(m_fontFaceRule->mutableProperties());
 }
 
-void CSSFontFaceRule::trace(Visitor* visitor)
-{
-    visitor->trace(m_fontFaceRule);
-    CSSRule::trace(visitor);
-}
-
 } // namespace WebCore

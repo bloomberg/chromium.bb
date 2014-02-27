@@ -32,7 +32,6 @@
 #define WTF_RawPtr_h
 
 #include <algorithm>
-#include "wtf/HashTableDeletedValueType.h"
 
 // Ptr is a simple wrapper for a raw pointer that provides the
 // interface (get, clear) of other pointer types such as RefPtr,
@@ -61,10 +60,6 @@ public:
         : m_ptr(other.get())
     {
     }
-
-    // Hash table deleted values, which are only constructed and never copied or destroyed.
-    RawPtr(HashTableDeletedValueType) : m_ptr(hashTableDeletedValue()) { }
-    bool isHashTableDeletedValue() const { return m_ptr == hashTableDeletedValue(); }
 
     T* get() const { return m_ptr; }
     void clear() { m_ptr = 0; }
@@ -112,7 +107,6 @@ public:
         std::swap(m_ptr, o.m_ptr);
     }
 
-    static T* hashTableDeletedValue() { return reinterpret_cast<T*>(-1); }
 
 private:
     T* m_ptr;

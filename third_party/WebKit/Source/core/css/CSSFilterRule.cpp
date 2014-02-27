@@ -82,11 +82,5 @@ void CSSFilterRule::reattach(StyleRuleBase* rule)
         m_propertiesCSSOMWrapper->reattach(m_filterRule->mutableProperties());
 }
 
-void CSSFilterRule::trace(Visitor* visitor)
-{
-    visitor->trace(m_filterRule);
-    CSSRule::trace(visitor);
-}
-
 } // namespace WebCore
 
