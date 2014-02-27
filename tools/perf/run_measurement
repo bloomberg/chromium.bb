@@ -3,86 +3,31 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import imp
 import os
 import sys
-import urllib2
 
 
-BASE_URL = 'http://src.chromium.org/chrome/trunk/'
-DEPS_FILE = 'bootstrap_deps'
+sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'telemetry'))
 
-SCRIPT_PATH = os.path.dirname(os.path.abspath(__file__))
-# Directory containing src/ in a Chromium checkout.
-CHECKOUT_BASE_PATH = os.path.join(SCRIPT_PATH, os.pardir, os.pardir, os.pardir)
-# Directory in which to save bootstrap files.
-BOOTSTRAP_BASE_PATH = os.path.join(SCRIPT_PATH, 'support', 'bootstrap_files')
-
-CROS_DIR = os.path.join('src', 'tools', 'cros')
-PERF_DIR = os.path.join('src', 'tools', 'perf')
-TELEMETRY_DIR = os.path.join('src', 'tools', 'telemetry')
-TELEMETRY_TOOLS_DIR = os.path.join('src', 'tools', 'telemetry_tools')
+from telemetry.core import environment
+from telemetry.core import util
+from telemetry.page import page_measurement_runner
+from telemetry.util import bootstrap
 
 
-def _GetBasePath():
-  """Find the location of our Chromium or bootstrap checkout.
-
-  It tries to import Telemetry.  If the import succeeds,
-  we assume that's the correct location.
-
-  Returns:
-    The path containing the src/ directory, or None if no checkout is found.
-  """
-  module_name = 'telemetry'
-  module_path = TELEMETRY_DIR
-
-  try:
-    paths = [os.path.join(CHECKOUT_BASE_PATH, module_path)]
-    imp.find_module(module_name, paths)
-    return CHECKOUT_BASE_PATH
-  except ImportError:
-    raise Exception('Unnable to compute base path')
-
-def ListBootstrapDeps(base_path, subdir):
-  """List the deps required for telemetry."""
-  sys.path.append(os.path.join(base_path, TELEMETRY_TOOLS_DIR))
-  import telemetry_bootstrap
-
-  deps_file = os.path.join(base_path, subdir, DEPS_FILE)
-  return telemetry_bootstrap.ListAllDepsPaths(deps_file)
+BASE_DIR = os.path.dirname(os.path.realpath(__file__))
+CROS_BOOSTRAP_DEPS_PATH = os.path.join(
+    util.GetChromiumSrcDir(), 'tools', 'cros', 'bootstrap_deps')
 
 
-def Main():
-  new_base_path = _GetBasePath()
-  new_perf_path = os.path.join(new_base_path, PERF_DIR)
-  new_telemetry_path = os.path.join(new_base_path, TELEMETRY_DIR)
-
+def main():
   if '--print-bootstrap-deps-cros' in sys.argv:
-    print ListBootstrapDeps(new_base_path, CROS_DIR)
+    print bootstrap.ListAllDepsPaths(CROS_BOOSTRAP_DEPS_PATH)
     return 0
 
   old_benchmark_names = {
-    "image_decoding_benchmark": "image_decoding",
-    "image_decoding_measurement": "image_decoding",
-    "loading_benchmark": "loading",
-    "loading_measurement": "loading",
-    "media_measurement": "media",
-    "memory_benchmark": "memory",
-    "memory_measurement": "memory",
-    "rasterize_and_record_benchmark": "rasterize_and_record",
-    "rasterize_and_record_measurement": "rasterize_and_record",
-    "robohornetpro": "robohornet_pro",
-    "scrolling_benchmark": "smoothness",
-    "smoothness_benchmark": "smoothness",
-    "smoothness_measurement": "smoothness",
-    "startup_benchmark": "startup_warm_blank_page",
-    "startup_measurement": "startup",
-    "tab_switching_measurement": "tab_switching",
   }
 
-  sys.path.append(new_telemetry_path)
-  from telemetry.page import page_measurement_runner
-  from telemetry.core import environment
   # There are bots that are hard-coded to run some specific named tests.
   # Convert these to the current naming conventions by overriding them
   # in the runner.
@@ -91,15 +36,15 @@ def Main():
       if arg not in old_benchmark_names:
         return arg
       sys.stderr.write(
-        'An old name %s was given. Please use %s in the future.\n' % (
+          'An old name %s was given. Please use %s in the future.\n' % (
           arg,
           old_benchmark_names.get(arg)))
       return old_benchmark_names[arg]
 
   runner = MeasurementRunner()
-  env = environment.Environment([new_perf_path])
+  env = environment.Environment([BASE_DIR])
   return runner.Run(env)
 
 
 if __name__ == '__main__':
-  sys.exit(Main())
+  sys.exit(main())

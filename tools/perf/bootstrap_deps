@@ -8,20 +8,20 @@
 # Chrome checkout.
 
 deps = {
-  "src/tools/perf/benchmarks":
-    "https://src.chromium.org/chrome/trunk/src/tools/perf/benchmarks",
-  "src/tools/perf/measurements":
-    "https://src.chromium.org/chrome/trunk/src/tools/perf/measurements",
-  "src/tools/perf/page_sets":
-    "https://src.chromium.org/chrome/trunk/src/tools/perf/page_sets",
-  "src/tools/perf/metrics":
-    "https://src.chromium.org/chrome/trunk/src/tools/perf/metrics",
-  "src/tools/perf/profile_creators":
-    "https://src.chromium.org/chrome/trunk/src/tools/perf/profile_creators",
-  }
+    "src/tools/perf/benchmarks":
+        "https://src.chromium.org/chrome/trunk/src/tools/perf/benchmarks",
+    "src/tools/perf/measurements":
+        "https://src.chromium.org/chrome/trunk/src/tools/perf/measurements",
+    "src/tools/perf/page_sets":
+        "https://src.chromium.org/chrome/trunk/src/tools/perf/page_sets",
+    "src/tools/perf/metrics":
+        "https://src.chromium.org/chrome/trunk/src/tools/perf/metrics",
+    "src/tools/perf/profile_creators":
+        "https://src.chromium.org/chrome/trunk/src/tools/perf/profile_creators",
+}
 
 # tools/perf depends on Telemetry, so pull in the Telemetry deps, too.
 deps_includes = {
-  "src/tools/telemetry_tools/bootstrap_deps":
-      "https://src.chromium.org/chrome/trunk/src/tools/telemetry_tools/bootstrap_deps",
-  }
+    "src/tools/telemetry/bootstrap_deps":
+        "https://src.chromium.org/chrome/trunk/src/tools/telemetry/bootstrap_deps",
+}
