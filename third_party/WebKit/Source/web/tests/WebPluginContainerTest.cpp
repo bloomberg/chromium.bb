@@ -84,7 +84,7 @@ public:
     virtual WebString selectionAsMarkup() const { return WebString("y"); }
 };
 
-class TestPluginWebFrameClient : public WebFrameClient {
+class TestPluginWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
     virtual WebPlugin* createPlugin(WebFrame* frame, const WebPluginParams& params) OVERRIDE
     {
         if (params.mimeType == WebString::fromUTF8("application/x-webkit-test-webplugin"))

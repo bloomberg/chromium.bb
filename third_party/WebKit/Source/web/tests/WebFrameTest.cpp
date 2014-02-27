@@ -333,7 +333,7 @@ TEST_F(WebFrameTest, LocationSetEmptyPort)
     EXPECT_EQ("http://www.test.com:0/" + fileName, content);
 }
 
-class CSSCallbackWebFrameClient : public WebFrameClient {
+class CSSCallbackWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     CSSCallbackWebFrameClient() : m_updateCount(0) { }
     virtual void didMatchCSS(WebFrame*, const WebVector<WebString>& newlyMatchingSelectors, const WebVector<WebString>& stoppedMatchingSelectors) OVERRIDE;
@@ -2590,7 +2590,7 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTest)
     EXPECT_FALSE(needAnimation);
 }
 
-class TestReloadDoesntRedirectWebFrameClient : public WebFrameClient {
+class TestReloadDoesntRedirectWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     virtual WebNavigationPolicy decidePolicyForNavigation(
         WebFrame*, WebDataSource::ExtraData*, const WebURLRequest&, WebNavigationType,
@@ -3046,7 +3046,7 @@ TEST_F(WebFrameTest, GetFullHtmlOfPage)
     EXPECT_TRUE(selectionHtml.isEmpty());
 }
 
-class TestExecuteScriptDuringDidCreateScriptContext : public WebFrameClient {
+class TestExecuteScriptDuringDidCreateScriptContext : public FrameTestHelpers::TestWebFrameClient {
 public:
     virtual void didCreateScriptContext(WebFrame* frame, v8::Handle<v8::Context> context, int extensionGroup, int worldId) OVERRIDE
     {
@@ -3934,7 +3934,7 @@ TEST_F(WebFrameTest, DisambiguationPopupPageScale)
     EXPECT_FALSE(client.triggered());
 }
 
-class TestSubstituteDataWebFrameClient : public WebFrameClient {
+class TestSubstituteDataWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     TestSubstituteDataWebFrameClient()
         : m_commitCalled(false)
@@ -3994,7 +3994,7 @@ TEST_F(WebFrameTest, ReplaceNavigationAfterHistoryNavigation)
     EXPECT_TRUE(webFrameClient.commitCalled());
 }
 
-class TestWillInsertBodyWebFrameClient : public WebFrameClient {
+class TestWillInsertBodyWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     TestWillInsertBodyWebFrameClient() : m_numBodies(0), m_didLoad(false)
     {
@@ -4330,7 +4330,7 @@ TEST_F(WebFrameTest, SpellcheckResultsSavedInDocument)
     EXPECT_EQ(DocumentMarker::InvisibleSpellcheck, document->markers().markers()[0]->type());
 }
 
-class TestAccessInitialDocumentWebFrameClient : public WebFrameClient {
+class TestAccessInitialDocumentWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     TestAccessInitialDocumentWebFrameClient() : m_didAccessInitialDocument(false)
     {
@@ -4482,7 +4482,7 @@ TEST_F(WebFrameTest, DidWriteToInitialDocumentBeforeModalDialog)
     EXPECT_TRUE(webFrameClient.m_didAccessInitialDocument);
 }
 
-class TestMainFrameUserOrProgrammaticScrollFrameClient : public WebFrameClient {
+class TestMainFrameUserOrProgrammaticScrollFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     TestMainFrameUserOrProgrammaticScrollFrameClient() { reset(); }
     void reset()
@@ -4614,7 +4614,7 @@ TEST_F(WebFrameTest, FirstPartyForCookiesForRedirect)
     EXPECT_TRUE(webViewHelper.webView()->mainFrame()->document().firstPartyForCookies() == redirectURL);
 }
 
-class TestNavigationPolicyWebFrameClient : public WebFrameClient {
+class TestNavigationPolicyWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
 
     virtual void didNavigateWithinPage(WebFrame*, bool)
@@ -4651,7 +4651,7 @@ public:
     }
 };
 
-class TestNewWindowWebFrameClient : public WebFrameClient {
+class TestNewWindowWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     TestNewWindowWebFrameClient()
         : m_decidePolicyCallCount(0)
@@ -4876,7 +4876,7 @@ TEST_F(WebFrameTest, ExportHistoryItemFromChildFrame)
     EXPECT_EQ(item.urlString().utf8(), m_baseURL + "iframe_reload.html");
 }
 
-class TestSameDocumentWebFrameClient : public WebFrameClient {
+class TestSameDocumentWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     TestSameDocumentWebFrameClient()
         : m_frameLoadTypeSameSeen(false)
@@ -5150,10 +5150,15 @@ class FailCreateChildFrame : public WebFrameClient {
 public:
     FailCreateChildFrame() : m_callCount(0) { }
 
-    WebFrame* createChildFrame(WebFrame* parent, const WebString& frameName)
+    virtual WebFrame* createChildFrame(WebFrame* parent, const WebString& frameName) OVERRIDE
     {
         ++m_callCount;
         return 0;
+    }
+
+    virtual void frameDetached(WebFrame* frame) OVERRIDE
+    {
+        frame->close();
     }
 
     int callCount() const { return m_callCount; }
