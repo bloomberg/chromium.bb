@@ -479,8 +479,7 @@ class BlinkGCPluginAction : public PluginASTAction {
 
     for (size_t i = 0; i < args.size() && parsed; ++i) {
       if (args[i] == "enable-oilpan") {
-        // TODO: Remove this once all transition types are eliminated.
-        Config::set_oilpan_enabled(true);
+        // TODO: Remove this flag.
       } else {
         parsed = false;
         llvm::errs() << "Unknown blink-gc-plugin argument: " << args[i] << "\n";
@@ -495,8 +494,6 @@ class BlinkGCPluginAction : public PluginASTAction {
 };
 
 }  // namespace
-
-bool Config::oilpan_enabled_ = false;
 
 static FrontendPluginRegistry::Add<BlinkGCPluginAction> X(
     "blink-gc-plugin",

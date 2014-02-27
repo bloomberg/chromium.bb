@@ -33,7 +33,7 @@ bool RecordInfo::IsTemplate(TemplateArgs* output_args) {
     return false;
   if (!output_args)
     return true;
-  const TemplateArgumentList& args = tmpl->getTemplateInstantiationArgs();
+  const TemplateArgumentList& args = tmpl->getTemplateArgs();
   for (unsigned i = 0; i < args.size(); ++i) {
     TemplateArgument arg = args[i];
     if (arg.getKind() == TemplateArgument::Type) {
