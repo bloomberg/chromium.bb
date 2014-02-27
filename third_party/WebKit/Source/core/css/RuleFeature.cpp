@@ -436,9 +436,11 @@ bool RuleFeatureSet::invalidateStyleForClassChange(Element* element, Vector<Atom
         for (InvalidationList::const_iterator it = invalidationList->begin(); it != invalidationList->end(); ++it) {
             if ((*it)->wholeSubtreeInvalid()) {
                 element->setNeedsStyleRecalc(SubtreeStyleChange);
-                invalidationClasses.remove(oldSize, invalidationClasses.size() - oldSize);
-                element->clearChildNeedsStyleInvalidation();
-                return true;
+                // Even though we have set needsStyleRecalc on the whole subtree, we need to keep walking over the subtree
+                // in order to clear the invalidation dirty bits on all elements.
+                // FIXME: we can optimize this by having a dedicated function that just traverses the tree and removes the dirty bits,
+                // without checking classes etc.
+                break;
             }
             (*it)->getClasses(invalidationClasses);
         }
