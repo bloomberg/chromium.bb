@@ -138,6 +138,7 @@
         'system/message_pipe_endpoint.h',
         'system/proxy_message_pipe_endpoint.cc',
         'system/proxy_message_pipe_endpoint.h',
+        'system/raw_channel.cc',
         'system/raw_channel.h',
         'system/raw_channel_posix.cc',
         'system/raw_channel_win.cc',
