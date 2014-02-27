@@ -30,7 +30,9 @@
     RaisesException=Constructor,
     WillBeGarbageCollected
 ] interface MediaKeys {
+    readonly attribute DOMString keySystem;
+
     [CallWith=ExecutionContext, RaisesException] MediaKeySession createSession(DOMString type, Uint8Array initData);
 
-    readonly attribute DOMString keySystem;
+    static boolean isTypeSupported(DOMString keySystem, [Default=NullString] optional DOMString contentType);
 };

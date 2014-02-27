@@ -32,7 +32,9 @@
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/html/HTMLMediaElement.h"
 #include "modules/encryptedmedia/MediaKeyMessageEvent.h"
+#include "platform/ContentType.h"
 #include "platform/Logging.h"
+#include "platform/MIMETypeRegistry.h"
 #include "platform/UUID.h"
 #include "platform/drm/ContentDecryptionModule.h"
 #include "wtf/HashSet.h"
@@ -127,6 +129,31 @@ PassRefPtrWillBeRawPtr<MediaKeySession> MediaKeys::createSession(ExecutionContex
 
     // 5. Return the new object to the caller.
     return session;
+}
+
+bool MediaKeys::isTypeSupported(const String& keySystem, const String& contentType)
+{
+    WTF_LOG(Media, "MediaKeys::isTypeSupported(%s, %s)", keySystem.ascii().data(), contentType.ascii().data());
+
+    // 1. If keySystem is null or an empty string, return false and abort these steps.
+    if (keySystem.isEmpty())
+        return false;
+
+    // 2. If keySystem contains an unrecognized or unsupported Key System, return false and abort
+    // these steps. Key system string comparison is case-sensitive.
+    if (!MIMETypeRegistry::isSupportedEncryptedMediaMIMEType(keySystem, "", ""))
+        return false;
+
+    // 3. If contentType is null or an empty string, return true and abort these steps.
+    if (contentType.isEmpty())
+        return true;
+
+    // 4. If the Key System specified by keySystem does not support decrypting the container and/or
+    // codec specified by contentType, return false and abort these steps.
+    ContentType type(contentType);
+    String codecs = type.parameter("codecs");
+
+    return MIMETypeRegistry::isSupportedEncryptedMediaMIMEType(keySystem, type.type(), codecs);
 }
 
 void MediaKeys::setMediaElement(HTMLMediaElement* element)

@@ -105,6 +105,12 @@ bool MIMETypeRegistry::isSupportedMediaSourceMIMEType(const String& mimeType, co
         && blink::Platform::current()->mimeRegistry()->supportsMediaSourceMIMEType(mimeType.lower(), codecs);
 }
 
+bool MIMETypeRegistry::isSupportedEncryptedMediaMIMEType(const String& keySystem, const String& mimeType, const String& codecs)
+{
+    // Key system names are case-sensitive!
+    return blink::Platform::current()->mimeRegistry()->supportsEncryptedMediaMIMEType(keySystem, mimeType.lower(), codecs);
+}
+
 bool MIMETypeRegistry::isJavaAppletMIMEType(const String& mimeType)
 {
     // Since this set is very limited and is likely to remain so we won't bother with the overhead

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Test MediaKeys::isTypeSupported()</title>
+        <script src="../../resources/testharness.js"></script>
+        <script src="../../resources/testharnessreport.js"></script>
+    </head>
+    <body>
+        <div id="log"></div>
+        <script>
+            // Generate a distinct test for each type in |types|.
+            function test_type_support(types, expectation, description)
+            {
+                for (var i = 0; i < types.length; ++i) {
+                    test(function()
+                    {
+                        var type = types[i];
+                        assert_true(type.length == 1 || type.length == 2);
+                        if (type.length == 1) {
+                            assert_equals(MediaKeys.isTypeSupported(
+                                type[0]), expectation, 'isTypeSupported');
+                        } else if (type.length == 2) {
+                            assert_equals(MediaKeys.isTypeSupported(type[0],
+                                type[1]), expectation, 'isTypeSupported');
+                        } else {
+                            assert_true(false, 'invalid type to test');
+                        }
+                    },  description + ": '" + types[i].join("', '") + "'");
+                }
+            };
+
+            test_type_support([
+                // Empty key system.
+                [''],
+                ['', 'video/webm'],
+                // Unsupported key system.
+                ['com.example.foo'],
+                ['com.example.foo', 'video/webm'],
+            ], false, 'Test unsupported key system');
+
+            test_type_support([
+                ['org.w3.clearkey'],
+                ['org.w3.clearkey', 'audio/webm'],
+                ['org.w3.clearkey', 'audio/webm; codecs="vorbis"'],
+                ['org.w3.clearkey', 'video/webm'],
+                ['org.w3.clearkey', 'video/webm; codecs="vp8"'],
+                ['org.w3.clearkey', 'video/webm; codecs="vorbis"'],
+                ['org.w3.clearkey', 'video/webm; codecs="vp8,vorbis"'],
+            ], true, 'Test Clear Key');
+
+            test_type_support([
+                // Extra space is allowed in contentType.
+                ['org.w3.clearkey', ' video/webm; codecs="vp8"'],
+                ['org.w3.clearkey', 'video/webm ; codecs="vp8"'],
+                ['org.w3.clearkey', 'video/webm;  codecs="vp8"'],
+                ['org.w3.clearkey', 'video/webm; codecs="vp8" '],
+                ['org.w3.clearkey', 'video/webm; codecs=" vp8"'],
+                ['org.w3.clearkey', 'video/webm; codecs="vp8 "'],
+                ['org.w3.clearkey', 'video/webm; codecs=" vorbis,vp8"'],
+                ['org.w3.clearkey', 'video/webm; codecs="vorbis, vp8"'],
+                ['org.w3.clearkey', 'video/webm; codecs="vorbis,vp8 "'],
+                // Extra comma is allowed in codecs.
+                ['org.w3.clearkey', 'video/webm; codecs=",vp8"'],
+                ['org.w3.clearkey', 'video/webm; codecs="vp8,"'],
+                ['org.w3.clearkey', 'video/webm; codecs=",vp8,"'],
+                ['org.w3.clearkey', 'video/webm; codecs=",vorbis,vp8,"'],
+                ['org.w3.clearkey', 'video/webm; codecs="vorbis,vp8,"'],
+                ['org.w3.clearkey', 'video/webm; codecs=",vorbis,vp8,"'],
+                ['org.w3.clearkey', 'video/webm; codecs=",vorbis,vp8,,"'],
+                // contentType is not case sensitive (except the codec names).
+                ['org.w3.clearkey', 'Video/webm; codecs="vp8"'],
+                ['org.w3.clearkey', 'video/Webm; codecs="vp8"'],
+                ['org.w3.clearkey', 'video/webm; Codecs="vp8"'],
+                ['org.w3.clearkey', 'VIDEO/WEBM; CODECS="vp8"'],
+                // Unrecgonized attributes are ignored.
+                ['org.w3.clearkey', 'VIDEO/WEBM; foo="bar"'],
+                ['org.w3.clearkey', 'VIDEO/WEBM; foo="bar" codecs="vp8"'],
+            ], true, 'Test valid Clear Key variants');
+
+            test_type_support([
+                // Parent of Clear Key not supported.
+                ['org'],
+                ['org.'],
+                ['org.w3'],
+                ['org.w3.'],
+                // Child of Clear Key not supported.
+                ['org.w3.clearkey.foo'],
+                // Incomplete names.
+                ['org.w3.learkey'],
+                ['org.w3.clearke'],
+                ['or.w3.clearkey'],
+                // Spaces in key system name not supported.
+                [' org.w3.clearkey'],
+                ['org.w3.clearkey '],
+                ['org.w3. clearkey'],
+                // Extra dots in key systems names not supported.
+                ['.org.w3.clearkey'],
+                ['org.w3.clearkey.'],
+                ['org.w3..clearkey'],
+                ['org.w3.clear.key'],
+                // Key system name is case sensitive.
+                ['org.w3.Clearkey'],
+                ['Org.w3.clearkey'],
+                // Non-ASCII key system names not supported.
+                ['org.w3\u263A.clearkey']
+            ], false, 'Test invalid Clear Key variants');
+
+            test_type_support([
+                ['webkit-org.w3.clearkey'],
+            ], false, 'Test prefixed Clear Key');
+
+            test_type_support([
+                // Invalid contentTypes.
+                ['org.w3.clearkey', 'foo'],
+                ['org.w3.clearkey', 'audio/foo'],
+                ['org.w3.clearkey', 'video/foo'],
+                ['org.w3.clearkey', 'video/webm; codecs="foo"'],
+                // Audio MIME type does not support video codecs.
+                ['org.w3.clearkey', 'audio/webm; codecs="vp8,vorbis"'],
+                ['org.w3.clearkey', 'audio/webm; codecs="vorbis, vp8"'],
+                ['org.w3.clearkey', 'audio/webm; codecs="vp8"'],
+                // WebM does not support AVC1/AAC.
+                ['org.w3.clearkey', 'audio/webm; codecs="aac"'],
+                ['org.w3.clearkey', 'video/webm; codecs="avc1"'],
+                ['org.w3.clearkey', 'video/webm; codecs="avc1,vorbis"'],
+                ['org.w3.clearkey', 'video/webm; codecs="vp8,aac"'],
+                // The actually codec names are case sensitive.
+                ['org.w3.clearkey', 'video/webm; codecs="Vp8"'],
+                ['org.w3.clearkey', 'video/webm; codecs="VP8"'],
+                // Non-ASCII contentTypes.
+                ['org.w3.clearkey', 'video/webm\u263A'],
+                ['org.w3.clearkey', 'video/webm; codecs="vp8\u263A"'],
+            ], false, 'Test Clear Key with invalid contentTypes');
+        </script>
+    </body>
+</html>

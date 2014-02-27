@@ -63,6 +63,9 @@ public:
     // Check to see if the mime type and codecs are supported by the MediaSource implementation.
     static bool isSupportedMediaSourceMIMEType(const String& mimeType, const String& codecs);
 
+    // Check to see if the key system, mime type and codecs are supported by the Encrypted Media Extensions implementation.
+    static bool isSupportedEncryptedMediaMIMEType(const String& keySystem, const String& mimeType, const String& codecs);
+
     // Check to see if a mime type is a valid Java applet mime type
     static bool isJavaAppletMIMEType(const String& mimeType);
 };

@@ -46,6 +46,7 @@ public:
     virtual SupportsType supportsMediaMIMEType(const blink::WebString& mimeType, const blink::WebString& codecs, const blink::WebString& keySystem) = 0;
 
     virtual bool supportsMediaSourceMIMEType(const blink::WebString& mimeType, const blink::WebString& codecs) = 0;
+    virtual bool supportsEncryptedMediaMIMEType(const blink::WebString& keySystem, const blink::WebString& mimeType, const blink::WebString& codecs) = 0;
 
     virtual SupportsType supportsNonImageMIMEType(const blink::WebString& mimeType) = 0;
 

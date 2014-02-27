@@ -58,9 +58,11 @@ public:
     static PassRefPtrWillBeRawPtr<MediaKeys> create(ExecutionContext*, const String& keySystem, ExceptionState&);
     ~MediaKeys();
 
+    const String& keySystem() const { return m_keySystem; }
+
     PassRefPtrWillBeRawPtr<MediaKeySession> createSession(ExecutionContext*, const String& contentType, Uint8Array* initData, ExceptionState&);
 
-    const String& keySystem() const { return m_keySystem; }
+    static bool isTypeSupported(const String& keySystem, const String& contentType);
 
     void setMediaElement(HTMLMediaElement*);
 
