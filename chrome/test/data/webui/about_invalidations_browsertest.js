@@ -98,5 +98,16 @@ TEST_F('InvalidationsWebUITest', 'testRegisteringNewIds', function() {
       expectTrue(foundPattern1, 'The entries were not ordererd');
   }
   expectTrue(foundPattern1 && foundPattern2, "couldn't find both objects ids");
+});
 
+// Test that registering new handlers appear on the website.
+TEST_F('InvalidationsWebUITest', 'testUpdatingRegisteredHandlers', function() {
+  function text() { return $('registered-handlers').textContent; }
+  chrome.invalidations.updateHandlers(['FakeApi', 'FakeClient']);
+  expectNotEquals(text().indexOf('FakeApi'), -1);
+  expectNotEquals(text().indexOf('FakeClient'), -1);
+
+  chrome.invalidations.updateHandlers(['FakeClient']);
+  expectEquals(text().indexOf('FakeApi'), -1);
+  expectNotEquals(text().indexOf('FakeClient'), -1);
 });

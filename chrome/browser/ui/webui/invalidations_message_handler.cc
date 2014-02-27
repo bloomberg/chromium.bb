@@ -55,11 +55,17 @@ void InvalidationsMessageHandler::UpdateContent(const base::ListValue* args) {
     logger_->EmitContent();
 }
 
-void InvalidationsMessageHandler::OnUnregistration(
-    const base::DictionaryValue& details) {}
-
-void InvalidationsMessageHandler::OnRegistration(
-    const base::DictionaryValue& details) {}
+void InvalidationsMessageHandler::OnRegistrationChange(
+    const std::multiset<std::string>& registered_handlers) {
+  base::ListValue list_of_handlers;
+  for (std::multiset<std::string>::const_iterator it =
+       registered_handlers.begin();
+       it != registered_handlers.end(); ++it) {
+    list_of_handlers.Append(new base::StringValue(*it));
+  }
+  web_ui()->CallJavascriptFunction("chrome.invalidations.updateHandlers",
+                                   list_of_handlers);
+}
 
 void InvalidationsMessageHandler::OnStateChange(
     const syncer::InvalidatorState& new_state) {
@@ -71,10 +77,17 @@ void InvalidationsMessageHandler::OnStateChange(
 void InvalidationsMessageHandler::OnUpdateIds(
     const std::string& handler_name,
     const syncer::ObjectIdSet& ids_set) {
-  scoped_ptr<base::ListValue> list_of_objects = ObjectIdSetToList(ids_set);
+  base::ListValue list_of_objects;
+  for (syncer::ObjectIdSet::const_iterator it = ids_set.begin();
+       it != ids_set.end(); ++it) {
+    scoped_ptr<base::DictionaryValue> dic(new base::DictionaryValue());
+    dic->SetString("name", it->name());
+    dic->SetInteger("source", it->source());
+    list_of_objects.Append(dic.release());
+  }
   web_ui()->CallJavascriptFunction("chrome.invalidations.updateIds",
                                    base::StringValue(handler_name),
-                                   *list_of_objects);
+                                   list_of_objects);
 }
 void InvalidationsMessageHandler::OnDebugMessage(
     const base::DictionaryValue& details) {}
@@ -86,16 +99,3 @@ void InvalidationsMessageHandler::OnInvalidation(
                                    *invalidations_list);
 }
 
-scoped_ptr<base::ListValue> InvalidationsMessageHandler::ObjectIdSetToList(
-    const syncer::ObjectIdSet& ids_set) {
-  scoped_ptr<base::ListValue> list(new base::ListValue());
-
-  for (syncer::ObjectIdSet::const_iterator it = ids_set.begin();
-       it != ids_set.end(); ++it) {
-    scoped_ptr<base::DictionaryValue> dic(new base::DictionaryValue);
-    dic->SetString("name", it->name());
-    dic->SetInteger("source", it->source());
-    list->Append(dic.release());
-  }
-  return list.Pass();
-}

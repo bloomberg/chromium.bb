@@ -20,7 +20,6 @@ cr.define('chrome.invalidations', function() {
 
   /**
    * Appends a string to a textarea log.
-   *
    * @param {string} logMessage The string to be appended.
    */
   function appendToLog(logMessage) {
@@ -44,7 +43,6 @@ cr.define('chrome.invalidations', function() {
 
   /**
    * Shows the current state of the InvalidatorService
-   *
    * @param {string} newState The string to be displayed and logged.
    */
   function updateState(newState) {
@@ -58,8 +56,7 @@ cr.define('chrome.invalidations', function() {
 
   /**
    * Adds to the log the latest invalidations received
-   *
-   * @param {Array of Object} allInvalidations The array of ObjectId
+   * @param {!Array.<!Object>} allInvalidations The array of ObjectId
    *     that contains the invalidations received by the InvalidatorService.
    */
   function logInvalidations(allInvalidations) {
@@ -85,9 +82,8 @@ cr.define('chrome.invalidations', function() {
   /**
    * Marks a change in the table whether a new invalidation has arrived
    * or a new ObjectId is currently being added or updated.
-   *
-   * @param {object} oId The ObjectId being added or updated.
-   * @param {bool} isInvaldation A flag that says that an invalidation
+   * @param {!Object} oId The ObjectId being added or updated.
+   * @param {!boolean} isInvaldation A flag that says that an invalidation
    *     for this ObjectId has arrived or we just need to add it to the table
    *     as it was just updated its state.
    */
@@ -126,8 +122,22 @@ cr.define('chrome.invalidations', function() {
   }
 
   /**
+   * Shows the handlers that are currently registered for invalidations
+   * (but might not have objects ids registered yet).
+   * @param {!Array.<string>} allHandlers An array of Strings that are
+   *     the names of all the handlers currently registered in the
+   *     InvalidatorService.
+   */
+  function updateHandlers(allHandlers) {
+    var allHandlersFormatted = allHandlers.join(', ');
+    $('registered-handlers').textContent = allHandlersFormatted;
+    var logMessage = nowTimeString() +
+        'InvalidatorHandlers currently registered: ' + allHandlersFormatted;
+    appendToLog(logMessage);
+  }
+
+  /**
    * Updates the table with the objects ids registered for invalidations
-   *
    * @param {string} registrar The name of the owner of the InvalidationHandler
    *     that is registered for invalidations
    * @param {Array of Object} allIds An array of ObjectsIds that are currently
@@ -160,10 +170,11 @@ cr.define('chrome.invalidations', function() {
   }
 
   return {
-    updateState: updateState,
-    updateIds: updateIds,
     logInvalidations: logInvalidations,
-    onLoadWork: onLoadWork
+    onLoadWork: onLoadWork,
+    updateHandlers: updateHandlers,
+    updateIds: updateIds,
+    updateState: updateState,
   };
 });
 

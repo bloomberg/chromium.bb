@@ -26,8 +26,8 @@ namespace invalidation {
 // (i.e. A new registration, a new invalidation, a TICL/GCM state change)
 class InvalidationLoggerObserver {
  public:
-  virtual void OnRegistration(const base::DictionaryValue& details) = 0;
-  virtual void OnUnregistration(const base::DictionaryValue& details) = 0;
+  virtual void OnRegistrationChange(
+      const std::multiset<std::string>& registered_handlers) = 0;
   virtual void OnStateChange(const syncer::InvalidatorState& new_state) = 0;
   virtual void OnUpdateIds(const std::string& handler_name,
                            const syncer::ObjectIdSet& details) = 0;

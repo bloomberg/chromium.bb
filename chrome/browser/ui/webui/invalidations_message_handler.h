@@ -31,8 +31,8 @@ class InvalidationsMessageHandler
   virtual ~InvalidationsMessageHandler();
 
   // Implementation of InvalidationLoggerObserver.
-  virtual void OnRegistration(const base::DictionaryValue& details) OVERRIDE;
-  virtual void OnUnregistration(const base::DictionaryValue& details) OVERRIDE;
+  virtual void OnRegistrationChange(
+      const std::multiset<std::string>& registered_handlers) OVERRIDE;
   virtual void OnStateChange(const syncer::InvalidatorState& new_state)
       OVERRIDE;
   virtual void OnUpdateIds(const std::string& handler_name,
@@ -51,11 +51,6 @@ class InvalidationsMessageHandler
   void UIReady(const base::ListValue* args);
 
  private:
-  // Transforms a set to a ListValue in order to be automatically
-  // transformed to a JavaScript array of objects.
-  scoped_ptr<base::ListValue> ObjectIdSetToList(
-      const syncer::ObjectIdSet& ids_set);
-
   // The pointer to the internal InvalidatorService InvalidationLogger.
   // Used to get the information necessary to display to the JS and to
   // register ourselves as Observers for any notifications.

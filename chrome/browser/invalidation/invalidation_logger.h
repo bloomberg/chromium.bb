@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_INVALIDATION_INVALIDATION_LOGGER_H_
 
 #include <map>
+#include <set>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "sync/notifier/invalidation_util.h"
@@ -44,8 +46,8 @@ class InvalidationLogger {
 
   // Pass through to any registered InvalidationLoggerObservers.
   // We will do local logging here too.
-  void OnRegistration(const base::DictionaryValue& details);
-  void OnUnregistration(const base::DictionaryValue& details);
+  void OnRegistration(const std::string& details);
+  void OnUnregistration(const std::string& details);
   void OnStateChange(const syncer::InvalidatorState& new_state);
   void OnUpdateIds(std::map<std::string, syncer::ObjectIdSet> updated_ids);
   void OnDebugMessage(const base::DictionaryValue& details);
@@ -68,6 +70,10 @@ class InvalidationLogger {
   // and every objectId it currently has registered.
   void EmitUpdatedIds();
 
+  // Send to every Observer a vector with the all the current registered
+  // handlers
+  void EmitRegisteredHandlers();
+
   // The list of every observer currently listening for notifications.
   ObserverList<InvalidationLoggerObserver> observer_list_;
 
@@ -77,6 +83,11 @@ class InvalidationLogger {
   // The map that contains every object id that is currently registered
   // and its owner.
   std::map<std::string, syncer::ObjectIdSet> latest_ids_;
+
+  // The name of all invalidatorHandler registered (note that this is not
+  // necessarily the same as the keys of latest_ids_, because they might
+  // have not registered any object id)
+  std::multiset<std::string> registered_handlers_;
 
   DISALLOW_COPY_AND_ASSIGN(InvalidationLogger);
 };

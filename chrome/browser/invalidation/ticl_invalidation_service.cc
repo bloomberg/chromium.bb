@@ -112,6 +112,7 @@ void TiclInvalidationService::RegisterInvalidationHandler(
   DCHECK(CalledOnValidThread());
   DVLOG(2) << "Registering an invalidation handler";
   invalidator_registrar_->RegisterHandler(handler);
+  logger_.OnRegistration(handler->GetOwnerName());
 }
 
 void TiclInvalidationService::UpdateRegisteredInvalidationIds(
@@ -125,8 +126,6 @@ void TiclInvalidationService::UpdateRegisteredInvalidationIds(
         this,
         invalidator_registrar_->GetAllRegisteredIds());
   }
-
-  // Log this update ids call
   logger_.OnUpdateIds(invalidator_registrar_->GetSanitizedHandlersIdsMap());
 }
 
@@ -140,6 +139,7 @@ void TiclInvalidationService::UnregisterInvalidationHandler(
         this,
         invalidator_registrar_->GetAllRegisteredIds());
   }
+  logger_.OnUnregistration(handler->GetOwnerName());
 }
 
 syncer::InvalidatorState TiclInvalidationService::GetInvalidatorState() const {

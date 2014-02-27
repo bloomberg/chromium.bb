@@ -17,15 +17,24 @@ InvalidationLogger::InvalidationLogger()
 
 InvalidationLogger::~InvalidationLogger() {}
 
-void InvalidationLogger::OnRegistration(const base::DictionaryValue& details) {
-  FOR_EACH_OBSERVER(
-      InvalidationLoggerObserver, observer_list_, OnRegistration(details));
+void InvalidationLogger::OnRegistration(const std::string& registrar_name) {
+  registered_handlers_.insert(registrar_name);
+  EmitRegisteredHandlers();
 }
 
-void InvalidationLogger::OnUnregistration(
-    const base::DictionaryValue& details) {
-  FOR_EACH_OBSERVER(
-      InvalidationLoggerObserver, observer_list_, OnUnregistration(details));
+void InvalidationLogger::OnUnregistration(const std::string& registrar_name) {
+  DCHECK(registered_handlers_.find(registrar_name) !=
+         registered_handlers_.end());
+  std::multiset<std::string>::iterator it =
+      registered_handlers_.find(registrar_name);
+  // Only delete one instance of registrar_name;
+  registered_handlers_.erase(it);
+  EmitRegisteredHandlers();
+}
+
+void InvalidationLogger::EmitRegisteredHandlers() {
+  FOR_EACH_OBSERVER(InvalidationLoggerObserver, observer_list_,
+                    OnRegistrationChange(registered_handlers_));
 }
 
 void InvalidationLogger::OnStateChange(
@@ -72,6 +81,7 @@ void InvalidationLogger::OnInvalidation(
 void InvalidationLogger::EmitContent() {
   EmitState();
   EmitUpdatedIds();
+  EmitRegisteredHandlers();
 }
 
 void InvalidationLogger::RegisterObserver(

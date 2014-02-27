@@ -13,11 +13,15 @@
   <h1>Invalidations Debug Information</h1>
   <div id="invalidations-info">
     <div id="states" class="section">
-      <span class='lead'>Invalidation service state:</span>
+      <span class="lead">Invalidation service state:</span>
       <span id="invalidations-state"></span>
     </div>
+    <div>
+      <span class="lead">Registered InvalidationHandlers:</span>
+      <span id="registered-handlers"></span>
+    </div>
     <div id="objectsid-table-div" class="section">
-      <span class='lead'>Registered objectsIds for invalidations:</span>
+      <span class="lead">Registered objectsIds for invalidations:</span>
       <table id="objectsid-table-container">
       <!-- 'objectsidtable' can't have dashes in the name
             as jstemplate can't deal with them-->
@@ -46,7 +50,7 @@
      </table>
     </div>
     <div class="section">
-      <span class='lead'>Invalidations Log:</span>
+      <span class="lead">Invalidations Log:</span>
       <textarea
         id="invalidations-log" rows="10" cols="120"readonly></textarea>
     </div>
