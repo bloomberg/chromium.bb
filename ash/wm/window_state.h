@@ -47,7 +47,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
  public:
 
   // A subclass of State class represents one of the window's states
-  // that corresponds WindowStateType to in Ash environment, e.g.
+  // that corresponds to WindowStateType in Ash environment, e.g.
   // maximized, minimized or side snapped, as subclass.
   // Each subclass defines its own behavior and transition for each WMEvent.
   class State {
@@ -76,9 +76,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   bool HasDelegate() const;
   void SetDelegate(scoped_ptr<WindowStateDelegate> delegate);
-
-  // Returns the window's current show state.
-  ui::WindowShowState GetShowState() const;
 
   // Returns the window's current ash state type.
   // Refer to WindowStateType definition in wm_types.h as for why Ash
@@ -288,6 +285,9 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   FRIEND_TEST_ALL_PREFIXES(WindowAnimationsTest, CrossFadeToBounds);
 
   WindowStateDelegate* delegate() { return delegate_.get(); }
+
+  // Returns the window's current show state.
+  ui::WindowShowState GetShowState() const;
 
   // Adjusts the |bounds| so that they are flush with the edge of the
   // workspace if the window represented by |window_state| is side snapped.

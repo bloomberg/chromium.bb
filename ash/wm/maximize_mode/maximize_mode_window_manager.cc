@@ -20,7 +20,7 @@ MaximizeModeWindowManager::~MaximizeModeWindowManager() {
 }
 
 int MaximizeModeWindowManager::GetNumberOfManagedWindows() {
-  return initial_show_state_.size();
+  return initial_state_type_.size();
 }
 
 void MaximizeModeWindowManager::OnWindowDestroying(aura::Window* window) {
@@ -33,7 +33,7 @@ void MaximizeModeWindowManager::OnWindowAdded(
     aura::Window* window) {
   // A window can get removed and then re-added by a drag and drop operation.
   if (IsContainerWindow(window->parent()) &&
-      initial_show_state_.find(window) == initial_show_state_.end())
+      initial_state_type_.find(window) == initial_state_type_.end())
     MaximizeAndTrackWindow(window);
 }
 
@@ -44,8 +44,8 @@ void MaximizeModeWindowManager::OnWindowBoundsChanged(
   if (!IsContainerWindow(window))
     return;
   // Reposition all non maximizeable windows.
-  for (WindowToShowState::iterator it = initial_show_state_.begin();
-       it != initial_show_state_.end();
+  for (WindowToStateType::iterator it = initial_state_type_.begin();
+       it != initial_state_type_.end();
        ++it) {
     if (!CanMaximize(it->first))
       CenterWindow(it->first);
@@ -82,11 +82,11 @@ void MaximizeModeWindowManager::MaximizeAllWindows() {
 }
 
 void MaximizeModeWindowManager::RestoreAllWindows() {
-  WindowToShowState::iterator it = initial_show_state_.begin();
-  while (it != initial_show_state_.end()) {
+  WindowToStateType::iterator it = initial_state_type_.begin();
+  while (it != initial_state_type_.end()) {
     RestoreAndForgetWindow(it->first);
-    // |RestoreAndForgetWindow| will change the |initial_show_state_| list.
-    it = initial_show_state_.begin();
+    // |RestoreAndForgetWindow| will change the |initial_state_type_| list.
+    it = initial_state_type_.begin();
   }
 }
 
@@ -95,14 +95,14 @@ void MaximizeModeWindowManager::MaximizeAndTrackWindow(
   if (!ShouldHandleWindow(window))
     return;
 
-  DCHECK(initial_show_state_.find(window) == initial_show_state_.end());
+  DCHECK(initial_state_type_.find(window) == initial_state_type_.end());
   window->AddObserver(this);
   // Remember the state at the creation.
-  ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
-  ui::WindowShowState state = window_state->GetShowState();
-  initial_show_state_[window] = state;
+  wm::WindowState* window_state = wm::GetWindowState(window);
+  wm::WindowStateType state = window_state->GetStateType();
+  initial_state_type_[window] = state;
   // If it is not maximized yet we may need to maximize it now.
-  if (state != ui::SHOW_STATE_MAXIMIZED) {
+  if (state != wm::WINDOW_STATE_TYPE_MAXIMIZED) {
     if (!CanMaximize(window)) {
       // This window type should not be able to have a restore state set (since
       // it cannot maximize).
@@ -117,20 +117,20 @@ void MaximizeModeWindowManager::MaximizeAndTrackWindow(
       // TODO(skuhne): Add a background cover layer.
     } else {
       // Minimized windows can remain as they are.
-      if (state != ui::SHOW_STATE_MINIMIZED)
-        ash::wm::GetWindowState(window)->Maximize();
+      if (state != wm::WINDOW_STATE_TYPE_MINIMIZED)
+        wm::GetWindowState(window)->Maximize();
     }
   }
 }
 
 void MaximizeModeWindowManager::RestoreAndForgetWindow(
     aura::Window* window) {
-  ui::WindowShowState state = ForgetWindow(window);
+  wm::WindowStateType state = ForgetWindow(window);
   // Restore window if it can be restored.
-  if (state != ui::SHOW_STATE_MAXIMIZED) {
+  if (state != wm::WINDOW_STATE_TYPE_MAXIMIZED) {
     if (!CanMaximize(window)) {
       // TODO(skuhne): Remove the background cover layer.
-      ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
+      wm::WindowState* window_state = wm::GetWindowState(window);
       if (window_state->HasRestoreBounds()) {
         gfx::Rect initial_bounds =
             window->parent() ? window_state->GetRestoreBoundsInParent() :
@@ -143,21 +143,21 @@ void MaximizeModeWindowManager::RestoreAndForgetWindow(
     } else {
       // If the window neither was minimized or maximized and it is currently
       // not minimized, we restore it.
-      if (state != ui::SHOW_STATE_MINIMIZED &&
-          !ash::wm::GetWindowState(window)->IsMinimized()) {
-        ash::wm::GetWindowState(window)->Restore();
+      if (state != wm::WINDOW_STATE_TYPE_MINIMIZED &&
+          !wm::GetWindowState(window)->IsMinimized()) {
+        wm::GetWindowState(window)->Restore();
       }
     }
   }
 }
 
-ui::WindowShowState MaximizeModeWindowManager::ForgetWindow(
+wm::WindowStateType MaximizeModeWindowManager::ForgetWindow(
     aura::Window* window) {
-  WindowToShowState::iterator it = initial_show_state_.find(window);
-  DCHECK(it != initial_show_state_.end());
+  WindowToStateType::iterator it = initial_state_type_.find(window);
+  DCHECK(it != initial_state_type_.end());
   window->RemoveObserver(this);
-  ui::WindowShowState state = it->second;
-  initial_show_state_.erase(it);
+  wm::WindowStateType state = it->second;
+  initial_state_type_.erase(it);
   return state;
 }
 
@@ -168,7 +168,7 @@ bool MaximizeModeWindowManager::ShouldHandleWindow(aura::Window* window) {
 
 bool MaximizeModeWindowManager::CanMaximize(aura::Window* window) {
   DCHECK(window);
-  return ash::wm::GetWindowState(window)->CanMaximize();
+  return wm::GetWindowState(window)->CanMaximize();
 }
 
 void MaximizeModeWindowManager::CenterWindow(aura::Window* window) {

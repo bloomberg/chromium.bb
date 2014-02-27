@@ -116,30 +116,25 @@ void WindowState::SetDelegate(scoped_ptr<WindowStateDelegate> delegate) {
   delegate_ = delegate.Pass();
 }
 
-ui::WindowShowState WindowState::GetShowState() const {
-  return window_->GetProperty(aura::client::kShowStateKey);
-}
-
 WindowStateType WindowState::GetStateType() const {
   return current_state_->GetType();
 }
 
 bool WindowState::IsMinimized() const {
-  return GetShowState() == ui::SHOW_STATE_MINIMIZED;
+  return GetStateType() == WINDOW_STATE_TYPE_MINIMIZED;
 }
 
 bool WindowState::IsMaximized() const {
-  return GetShowState() == ui::SHOW_STATE_MAXIMIZED;
+  return GetStateType() == WINDOW_STATE_TYPE_MAXIMIZED;
 }
 
 bool WindowState::IsFullscreen() const {
-  return GetShowState() == ui::SHOW_STATE_FULLSCREEN;
+  return GetStateType() == WINDOW_STATE_TYPE_FULLSCREEN;
 }
 
 bool WindowState::IsMaximizedOrFullscreen() const {
-  ui::WindowShowState show_state(GetShowState());
-  return show_state == ui::SHOW_STATE_FULLSCREEN ||
-      show_state == ui::SHOW_STATE_MAXIMIZED;
+  return GetStateType() == WINDOW_STATE_TYPE_FULLSCREEN ||
+      GetStateType() == WINDOW_STATE_TYPE_MAXIMIZED;
 }
 
 bool WindowState::IsSnapped() const {
@@ -325,6 +320,10 @@ void WindowState::OnWindowPropertyChanged(aura::Window* window,
   DCHECK_EQ(window, window_);
   if (key == aura::client::kShowStateKey && !ignore_property_change_)
     OnWMEvent(WMEventFromShowState(GetShowState()));
+}
+
+ui::WindowShowState WindowState::GetShowState() const {
+  return window_->GetProperty(aura::client::kShowStateKey);
 }
 
 void WindowState::AdjustSnappedBounds(gfx::Rect* bounds) {

@@ -55,7 +55,7 @@ class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
   MaximizeModeWindowManager();
 
  private:
-  typedef std::map<aura::Window*, ui::WindowShowState> WindowToShowState;
+  typedef std::map<aura::Window*, wm::WindowStateType> WindowToStateType;
 
   // Maximize all windows and restore their current state.
   void MaximizeAllWindows();
@@ -74,7 +74,7 @@ class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
   void RestoreAndForgetWindow(aura::Window* window);
 
   // Remove a window from our tracking list.
-  ui::WindowShowState ForgetWindow(aura::Window* window);
+  wm::WindowStateType ForgetWindow(aura::Window* window);
 
   // Returns true when the given window should be modified in any way by us.
   bool ShouldHandleWindow(aura::Window* window);
@@ -99,7 +99,7 @@ class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
   bool IsContainerWindow(aura::Window* window);
 
   // Every window which got touched by our window manager gets added here.
-  WindowToShowState initial_show_state_;
+  WindowToStateType initial_state_type_;
 
   // All container windows which have to be tracked.
   std::set<aura::Window*> observed_container_windows_;
