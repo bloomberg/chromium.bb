@@ -11,10 +11,4 @@ enum MediaPlayerHostMsg_Initialize_Type {
   MEDIA_PLAYER_TYPE_MEDIA_SOURCE,
 };
 
-// Dictates the session type when an EME session is created.
-enum CdmHostMsg_CreateSession_Type {
-  CREATE_SESSION_TYPE_WEBM,
-  CREATE_SESSION_TYPE_MP4,
-};
-
 #endif  // CONTENT_COMMON_MEDIA_MEDIA_PLAYER_MESSAGES_ENUMS_ANDROID_H_

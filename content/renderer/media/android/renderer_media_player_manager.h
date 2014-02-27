@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/time/time.h"
+#include "content/common/media/cdm_messages_enums.h"
 #include "content/common/media/media_player_messages_enums_android.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "media/base/android/media_player_android.h"

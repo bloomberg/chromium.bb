@@ -16,6 +16,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "content/browser/android/content_video_view.h"
+#include "content/common/media/cdm_messages_enums.h"
 #include "content/common/media/media_player_messages_enums_android.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "media/base/android/media_player_android.h"

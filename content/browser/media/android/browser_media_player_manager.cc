@@ -10,6 +10,7 @@
 #include "content/browser/media/android/media_resource_getter_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
+#include "content/common/media/cdm_messages.h"
 #include "content/common/media/media_player_messages_android.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/android/external_video_surface_container.h"
