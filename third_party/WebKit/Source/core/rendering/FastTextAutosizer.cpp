@@ -40,6 +40,7 @@
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderListMarker.h"
+#include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/TextAutosizer.h"
 
@@ -132,7 +133,9 @@ void FastTextAutosizer::beginLayout(RenderBlock* block)
     if (Cluster* cluster = maybeCreateCluster(block))
         m_clusterStack.append(adoptPtr(cluster));
 
-    if (block->childrenInline())
+    if (block->isTable())
+        inflateTable(toRenderTable(block));
+    else if (block->childrenInline())
         inflate(block);
 }
 
@@ -151,6 +154,43 @@ void FastTextAutosizer::inflateListItem(RenderListItem* listItem, RenderListMark
 
     applyMultiplier(listItem, multiplier);
     applyMultiplier(listItemMarker, multiplier);
+}
+
+void FastTextAutosizer::inflateTable(RenderTable* table)
+{
+    ASSERT(table);
+    ASSERT(table->containingBlock());
+
+    Cluster* cluster = currentCluster();
+    ASSERT(cluster->m_root->isTable());
+
+    // Pre-inflate cells that have enough text so that their inflated preferred widths will be used
+    // for column sizing.
+    // The multiplier used for cell descendants represents the maximum we can ever inflate
+    // descendants without overflowing the cell width computed by the table layout. Therefore,
+    // descendants of cells cannot use a multiplier higher than the table's multiplier.
+    float multiplier = clusterMultiplier(cluster);
+    for (RenderObject* section = table->firstChild(); section; section = section->nextSibling()) {
+        if (!section->isTableSection())
+            continue;
+        for (RenderObject* row = section->firstChild(); row; row = row->nextSibling()) {
+            if (!row->isTableRow())
+                continue;
+            for (RenderObject* cell = row->firstChild(); cell; cell = cell->nextSibling()) {
+                if (!cell->isTableCell())
+                    continue;
+                RenderTableCell* renderTableCell = toRenderTableCell(cell);
+                if (clusterWouldHaveEnoughTextToAutosize(renderTableCell, table)) {
+                    for (RenderObject* child = cell; child; child = child->nextInPreOrder(cell)) {
+                        if (child->isText()) {
+                            applyMultiplier(child, multiplier);
+                            applyMultiplier(child->parent(), multiplier); // Parent handles line spacing.
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 void FastTextAutosizer::endLayout(RenderBlock* block)
@@ -240,7 +280,7 @@ bool FastTextAutosizer::clusterHasEnoughTextToAutosize(Cluster* cluster, const R
 {
     const RenderBlock* root = cluster->m_root;
     if (!widthProvider)
-        widthProvider = root;
+        widthProvider = clusterWidthProvider(root);
 
     // TextAreas and user-modifiable areas get a free pass to autosize regardless of text content.
     if (root->isTextArea() || (root->style() && root->style()->userModify() != READ_ONLY))
@@ -249,7 +289,7 @@ bool FastTextAutosizer::clusterHasEnoughTextToAutosize(Cluster* cluster, const R
     static const float minLinesOfText = 4;
     // FIXME: This can be optimized because we only care if the text length is above a certain
     //        value, so we can stop computing the text length if we reach our target.
-    if (textLength(cluster) >= widthProvider->contentLogicalWidth() * minLinesOfText)
+    if (textLength(cluster) >= widthFromBlock(widthProvider) * minLinesOfText)
         return true;
 
     return false;
@@ -345,7 +385,8 @@ FastTextAutosizer::Cluster* FastTextAutosizer::maybeCreateCluster(const RenderBl
     bool parentClusterCanAutosize = parentCluster && parentCluster->m_autosize;
     bool createClusterThatMightAutosize = block->isRenderView()
         || mightBeWiderOrNarrowerDescendant(block)
-        || TextAutosizer::isIndependentDescendant(block);
+        || TextAutosizer::isIndependentDescendant(block)
+        || block->isTable();
 
     // If the container would not alter the m_autosize bit, it doesn't need to be a cluster.
     if (!createClusterThatMightAutosize && containerCanAutosize == parentClusterCanAutosize)
@@ -394,11 +435,19 @@ float FastTextAutosizer::clusterMultiplier(Cluster* cluster)
 {
     ASSERT(m_renderViewInfoPrepared);
     if (!cluster->m_multiplier) {
-        if (TextAutosizer::isIndependentDescendant(cluster->m_root) || isWiderOrNarrowerDescendant(cluster)) {
-            if (cluster->m_supercluster) {
+        if (cluster->m_root->isTable()
+            || TextAutosizer::isIndependentDescendant(cluster->m_root)
+            || isWiderOrNarrowerDescendant(cluster)) {
+
+            // FIXME: The table cell ancestor check disables superclusters in tables until we
+            //        work out exactly how tables and superclusters should interact.
+            if (cluster->m_supercluster && !cluster->m_hasTableAncestor) {
                 cluster->m_multiplier = superclusterMultiplier(cluster->m_supercluster);
             } else if (clusterHasEnoughTextToAutosize(cluster)) {
-                cluster->m_multiplier = multiplierFromBlock(deepestBlockContainingAllText(cluster));
+                cluster->m_multiplier = multiplierFromBlock(clusterWidthProvider(cluster->m_root));
+                // Do not inflate table descendants above the table's multiplier. See inflateTable(...) for details.
+                if (cluster->m_hasTableAncestor)
+                    cluster->m_multiplier = min(cluster->m_multiplier, clusterMultiplier(cluster->m_parent));
             } else {
                 cluster->m_multiplier = 1.0f;
             }
@@ -414,11 +463,10 @@ float FastTextAutosizer::superclusterMultiplier(Supercluster* supercluster)
 {
     if (!supercluster->m_multiplier) {
         const BlockSet* roots = supercluster->m_roots;
-        // Set of the deepest block containing all text (DBCAT) of every cluster.
-        BlockSet dbcats;
+        BlockSet widthProviders;
         for (BlockSet::iterator it = roots->begin(); it != roots->end(); ++it)
-            dbcats.add(deepestBlockContainingAllText(*it));
-        const RenderBlock* widthProvider = deepestCommonAncestor(dbcats);
+            widthProviders.add(clusterWidthProvider(*it));
+        const RenderBlock* widthProvider = deepestCommonAncestor(widthProviders);
 
         for (BlockSet::iterator it = roots->begin(); it != roots->end(); ++it)
             supercluster->m_anyClusterHasEnoughText |= clusterWouldHaveEnoughTextToAutosize(*it, widthProvider);
@@ -430,6 +478,28 @@ float FastTextAutosizer::superclusterMultiplier(Supercluster* supercluster)
     return supercluster->m_multiplier;
 }
 
+const RenderBlock* FastTextAutosizer::clusterWidthProvider(const RenderBlock* root)
+{
+    if (root->isTableCell())
+        return toRenderTableCell(root)->table();
+    if (root->isTable())
+        return toRenderTable(root);
+
+    return deepestBlockContainingAllText(root);
+}
+
+float FastTextAutosizer::widthFromBlock(const RenderBlock* block)
+{
+    if (block->isTable()) {
+        RenderBlock* containingBlock = block->containingBlock();
+        ASSERT(block->containingBlock());
+        if (block->style()->logicalWidth().isSpecified())
+            return floatValueForLength(block->style()->logicalWidth(), containingBlock->contentLogicalWidth());
+        return containingBlock->contentLogicalWidth();
+    }
+    return block->contentLogicalWidth();
+}
+
 float FastTextAutosizer::multiplierFromBlock(const RenderBlock* block)
 {
     // If block->needsLayout() is false, it does not need to be in m_blocksThatHaveBegunLayout.
@@ -438,8 +508,8 @@ float FastTextAutosizer::multiplierFromBlock(const RenderBlock* block)
     ASSERT(m_blocksThatHaveBegunLayout.contains(block) || !block->needsLayout());
 
     // Block width, in CSS pixels.
-    float textBlockWidth = block->contentLogicalWidth();
-    float multiplier = min(textBlockWidth, static_cast<float>(m_layoutWidth)) / m_frameWidth;
+    float blockWidth = widthFromBlock(block);
+    float multiplier = min(blockWidth, static_cast<float>(m_layoutWidth)) / m_frameWidth;
 
     return max(m_baseMultiplier * multiplier, 1.0f);
 }

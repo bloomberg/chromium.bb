@@ -32,6 +32,7 @@
 #define FastTextAutosizer_h
 
 #include "core/rendering/RenderObject.h"
+#include "core/rendering/RenderTable.h"
 #include "core/rendering/TextAutosizer.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
@@ -119,6 +120,7 @@ private:
             , m_multiplier(0)
             , m_textLength(-1)
             , m_supercluster(supercluster)
+            , m_hasTableAncestor(root->isTableCell() || (m_parent && m_parent->m_hasTableAncestor))
         {
         }
 
@@ -138,6 +140,7 @@ private:
         int m_textLength;
         // A set of blocks that are similar to this block.
         Supercluster* m_supercluster;
+        bool m_hasTableAncestor;
     };
 
     enum TextLeafSearch {
@@ -189,6 +192,7 @@ private:
 
     void beginLayout(RenderBlock*);
     void endLayout(RenderBlock*);
+    void inflateTable(RenderTable*);
     void inflate(RenderBlock*);
     bool enabled();
     void prepareRenderViewInfo();
@@ -204,6 +208,13 @@ private:
     const RenderBlock* deepestCommonAncestor(BlockSet&);
     float clusterMultiplier(Cluster*);
     float superclusterMultiplier(Supercluster*);
+    // A cluster's width provider is typically the deepest block containing all text.
+    // There are exceptions, such as tables and table cells which use the table itself for width.
+    const RenderBlock* clusterWidthProvider(const RenderBlock*);
+    // Typically this returns a block's computed width. In the case of tables layout, this
+    // width is not yet known so the fixed width is used if it's available, or the containing
+    // block's width otherwise.
+    float widthFromBlock(const RenderBlock*);
     float multiplierFromBlock(const RenderBlock*);
     void applyMultiplier(RenderObject*, float);
     bool mightBeWiderOrNarrowerDescendant(const RenderBlock*);
