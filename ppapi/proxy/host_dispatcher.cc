@@ -91,9 +91,10 @@ bool HostDispatcher::InitHostWithChannel(
     const IPC::ChannelHandle& channel_handle,
     bool is_client,
     const ppapi::Preferences& preferences) {
-  InitWithChannel(delegate, peer_pid);
+  if (!Dispatcher::InitWithChannel(delegate, peer_pid, channel_handle,
+                                   is_client))
+    return false;
   AddIOThreadMessageFilter(sync_status_.get());
-  ConnectChannel(channel_handle, is_client);
 
   Send(new PpapiMsg_SetPreferences(preferences));
   return true;

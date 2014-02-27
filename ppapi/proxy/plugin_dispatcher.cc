@@ -161,7 +161,9 @@ bool PluginDispatcher::InitPluginWithChannel(
     base::ProcessId peer_pid,
     const IPC::ChannelHandle& channel_handle,
     bool is_client) {
-  InitWithChannel(delegate, peer_pid);
+  if (!Dispatcher::InitWithChannel(delegate, peer_pid, channel_handle,
+                                   is_client))
+    return false;
   plugin_delegate_ = delegate;
   plugin_dispatcher_id_ = plugin_delegate_->Register(this);
 
@@ -174,7 +176,6 @@ bool PluginDispatcher::InitPluginWithChannel(
       new PluginMessageFilter(
           delegate->GetGloballySeenInstanceIDSet(),
           PluginGlobals::Get()->resource_reply_thread_registrar()));
-  ConnectChannel(channel_handle, is_client);
   return true;
 }
 

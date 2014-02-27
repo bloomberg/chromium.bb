@@ -53,10 +53,10 @@ class PPAPI_PROXY_EXPORT ProxyChannel
 
   virtual ~ProxyChannel();
 
-  // Alternative to InitWithChannel()/ConnectChannel() for unit tests that want
-  // to send all messages sent via this channel to the given test sink. The
-  // test sink must outlive this class. In this case, the peer PID will be the
-  // current process ID.
+  // Alternative to InitWithChannel() for unit tests that want to send all
+  // messages sent via this channel to the given test sink. The test sink
+  // must outlive this class. In this case, the peer PID will be the current
+  // process ID.
   void InitWithTestSink(IPC::TestSink* test_sink);
 
   // Shares a file handle (HANDLE / file descriptor) with the remote side. It
@@ -87,14 +87,13 @@ class PPAPI_PROXY_EXPORT ProxyChannel
  protected:
   explicit ProxyChannel();
 
-  // You must call this function before anything else.
+  // You must call this function before anything else. Returns true on success.
   // The delegate pointer must outlive this class, ownership is not
   // transferred.
-  void InitWithChannel(Delegate* delegate, base::ProcessId peer_pid);
-
-  // You must call this function after InitWithChannel(), and after adding any
-  // desired filters to the underlying channel, but before anything else.
-  void ConnectChannel(const IPC::ChannelHandle& channel_handle, bool is_client);
+  virtual bool InitWithChannel(Delegate* delegate,
+                               base::ProcessId peer_pid,
+                               const IPC::ChannelHandle& channel_handle,
+                               bool is_client);
 
   ProxyChannel::Delegate* delegate() const {
     return delegate_;
