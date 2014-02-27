@@ -1041,14 +1041,6 @@ void ExistingUserController::InitializeStartUrls() const {
     }
   }
 
-  ServicesCustomizationDocument* customization =
-      ServicesCustomizationDocument::GetInstance();
-  if (!ServicesCustomizationDocument::WasApplied() &&
-      customization->IsReady()) {
-    // Since we don't use OEM start URL anymore, just mark as applied.
-    customization->ApplyCustomization();
-  }
-
   // Only show getting started guide for a new user.
   const bool should_show_getstarted_guide =
       UserManager::Get()->IsCurrentUserNew();

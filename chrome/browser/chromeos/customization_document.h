@@ -73,10 +73,7 @@ class StartupCustomizationDocument : public CustomizationDocument {
  public:
   static StartupCustomizationDocument* GetInstance();
 
-  std::string GetHelpPage(const std::string& locale) const;
   std::string GetEULAPage(const std::string& locale) const;
-
-  const std::string& registration_url() const { return registration_url_; }
 
   // These methods can be called even if !IsReady(), in this case VPD values
   // will be returned.
@@ -120,16 +117,15 @@ class StartupCustomizationDocument : public CustomizationDocument {
   std::vector<std::string> configured_locales_;
   std::string initial_timezone_;
   std::string keyboard_layout_;
-  std::string registration_url_;
 
   DISALLOW_COPY_AND_ASSIGN(StartupCustomizationDocument);
 };
 
 // OEM services customization document class.
-// ServicesCustomizationDocument is fetched from network or local file but on
-// FILE thread therefore it may not be ready just after creation. Fetching of
-// the manifest should be initiated outside this class by calling
-// StartFetching() method. User of the file should check IsReady before use it.
+// ServicesCustomizationDocument is fetched from network therefore it is not
+// ready just after creation. Fetching of the manifest should be initiated
+// outside this class by calling StartFetching() method.
+// User of the file should check IsReady before use it.
 class ServicesCustomizationDocument : public CustomizationDocument,
                                       private net::URLFetcherDelegate {
  public:
@@ -147,15 +143,15 @@ class ServicesCustomizationDocument : public CustomizationDocument,
 
   // Apply customization and save in machine options that customization was
   // applied successfully. Return true if customization was applied.
-  bool ApplyCustomization();
+  bool ApplyMachineCustomization();
 
-  std::string GetInitialStartPage(const std::string& locale) const;
-  std::string GetSupportPage(const std::string& locale) const;
+  // Returns default wallpaper URL.
+  GURL GetDefaultWallpaperUrl() const;
+
+  // Returns list of default apps.
+  bool GetDefaultApps(std::vector<std::string>* ids) const;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ServicesCustomizationDocumentTest, Basic);
-  FRIEND_TEST_ALL_PREFIXES(ServicesCustomizationDocumentTest, BadManifest);
-  FRIEND_TEST_ALL_PREFIXES(ServicesCustomizationDocumentTest, MultiLanguage);
   friend struct DefaultSingletonTraits<ServicesCustomizationDocument>;
 
   // C-tor for singleton construction.
@@ -168,6 +164,9 @@ class ServicesCustomizationDocument : public CustomizationDocument,
 
   // Save applied state in machine settings.
   static void SetApplied(bool val);
+
+  // Overriden from CustomizationDocument:
+  virtual bool LoadManifestFromString(const std::string& manifest) OVERRIDE;
 
   // Overriden from net::URLFetcherDelegate:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;

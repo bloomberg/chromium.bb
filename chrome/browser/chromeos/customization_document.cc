@@ -14,6 +14,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
@@ -22,6 +23,8 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/system/statistics_provider.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/load_flags.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
 
 using content::BrowserThread;
@@ -35,15 +38,12 @@ const char kDefaultAttr[] = "default";
 const char kInitialLocaleAttr[] = "initial_locale";
 const char kInitialTimezoneAttr[] = "initial_timezone";
 const char kKeyboardLayoutAttr[] = "keyboard_layout";
-const char kRegistrationUrlAttr[] = "registration_url";
 const char kHwidMapAttr[] = "hwid_map";
 const char kHwidMaskAttr[] = "hwid_mask";
 const char kSetupContentAttr[] = "setup_content";
-const char kHelpPageAttr[] = "help_page";
 const char kEulaPageAttr[] = "eula_page";
-const char kAppContentAttr[] = "app_content";
-const char kInitialStartPageAttr[] = "initial_start_page";
-const char kSupportPageAttr[] = "support_page";
+const char kDefaultWallpaperAttr[] = "default_wallpaper";
+const char kDefaultAppsAttr[] = "default_apps";
 
 const char kAcceptedManifestVersion[] = "1.0";
 
@@ -51,9 +51,10 @@ const char kAcceptedManifestVersion[] = "1.0";
 const char kStartupCustomizationManifestPath[] =
     "/opt/oem/etc/startup_manifest.json";
 
-// URL where to fetch OEM services customization manifest from.
+// Template URL where to fetch OEM services customization manifest from.
+// TODO(dpolukhin): replace with real URL, see crbug.com/343589
 const char kServicesCustomizationManifestUrl[] =
-    "file:///opt/oem/etc/services_manifest.json";
+    "http://localhost:1080/%s.json";
 
 // Name of local state option that tracks if services customization has been
 // applied.
@@ -146,11 +147,11 @@ StartupCustomizationDocument::StartupCustomizationDocument()
     base::ThreadRestrictions::ScopedAllowIO allow_io;
     LoadManifestFromFile(base::FilePath(kStartupCustomizationManifestPath));
   }
-  Init(chromeos::system::StatisticsProvider::GetInstance());
+  Init(system::StatisticsProvider::GetInstance());
 }
 
 StartupCustomizationDocument::StartupCustomizationDocument(
-    chromeos::system::StatisticsProvider* statistics_provider,
+    system::StatisticsProvider* statistics_provider,
     const std::string& manifest)
     : CustomizationDocument(kAcceptedManifestVersion) {
   LoadManifestFromString(manifest);
@@ -165,16 +166,15 @@ StartupCustomizationDocument* StartupCustomizationDocument::GetInstance() {
 }
 
 void StartupCustomizationDocument::Init(
-    chromeos::system::StatisticsProvider* statistics_provider) {
+    system::StatisticsProvider* statistics_provider) {
   if (IsReady()) {
     root_->GetString(kInitialLocaleAttr, &initial_locale_);
     root_->GetString(kInitialTimezoneAttr, &initial_timezone_);
     root_->GetString(kKeyboardLayoutAttr, &keyboard_layout_);
-    root_->GetString(kRegistrationUrlAttr, &registration_url_);
 
     std::string hwid;
     if (statistics_provider->GetMachineStatistic(
-            chromeos::system::kHardwareClassKey, &hwid)) {
+            system::kHardwareClassKey, &hwid)) {
       base::ListValue* hwid_list = NULL;
       if (root_->GetList(kHwidMapAttr, &hwid_list)) {
         for (size_t i = 0; i < hwid_list->GetSize(); ++i) {
@@ -231,11 +231,6 @@ const std::string& StartupCustomizationDocument::initial_locale_default()
   return configured_locales_.front();
 }
 
-std::string StartupCustomizationDocument::GetHelpPage(
-    const std::string& locale) const {
-  return GetLocaleSpecificString(locale, kSetupContentAttr, kHelpPageAttr);
-}
-
 std::string StartupCustomizationDocument::GetEULAPage(
     const std::string& locale) const {
   return GetLocaleSpecificString(locale, kSetupContentAttr, kEulaPageAttr);
@@ -244,8 +239,16 @@ std::string StartupCustomizationDocument::GetEULAPage(
 // ServicesCustomizationDocument implementation. -------------------------------
 
 ServicesCustomizationDocument::ServicesCustomizationDocument()
-    : CustomizationDocument(kAcceptedManifestVersion),
-      url_(kServicesCustomizationManifestUrl) {
+    : CustomizationDocument(kAcceptedManifestVersion) {
+  std::string customization_id;
+  chromeos::system::StatisticsProvider* provider =
+      chromeos::system::StatisticsProvider::GetInstance();
+  if (provider->GetMachineStatistic(system::kCustomizationIdKey,
+                                    &customization_id) &&
+      !customization_id.empty()) {
+      url_ = GURL(base::StringPrintf(kServicesCustomizationManifestUrl,
+                                     customization_id.c_str()));
+  }
 }
 
 ServicesCustomizationDocument::ServicesCustomizationDocument(
@@ -281,13 +284,15 @@ void ServicesCustomizationDocument::SetApplied(bool val) {
 }
 
 void ServicesCustomizationDocument::StartFetching() {
-  if (url_.SchemeIsFile()) {
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-        base::Bind(&ServicesCustomizationDocument::ReadFileInBackground,
-                   base::Unretained(this),  // this class is a singleton.
-                   base::FilePath(url_.path())));
-  } else {
-    StartFileFetch();
+  if (url_.is_valid() && !IsReady()) {
+    if (url_.SchemeIsFile()) {
+      BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+          base::Bind(&ServicesCustomizationDocument::ReadFileInBackground,
+                    base::Unretained(this),  // this class is a singleton.
+                    base::FilePath(url_.path())));
+    } else {
+      StartFileFetch();
+    }
   }
 }
 
@@ -299,29 +304,48 @@ void ServicesCustomizationDocument::ReadFileInBackground(
   if (base::ReadFileToString(file, &manifest)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(
-           base::IgnoreResult(
-               &ServicesCustomizationDocument::LoadManifestFromString),
-           base::Unretained(this),  // this class is a singleton.
-           manifest));
+            base::IgnoreResult(
+                &ServicesCustomizationDocument::LoadManifestFromString),
+            base::Unretained(this),  // this class is a singleton.
+            manifest));
   } else {
-    VLOG(1) << "Failed to load services customization manifest from: "
-            << file.value();
+    LOG(ERROR) << "Failed to load services customization manifest from: "
+               << file.value();
   }
 }
 
 void ServicesCustomizationDocument::StartFileFetch() {
-  DCHECK(url_.is_valid());
   url_fetcher_.reset(net::URLFetcher::Create(
       url_, net::URLFetcher::GET, this));
   url_fetcher_->SetRequestContext(g_browser_process->system_request_context());
+  url_fetcher_->AddExtraRequestHeader("Accept: application/json");
+  url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
+                             net::LOAD_DO_NOT_SAVE_COOKIES |
+                             net::LOAD_DISABLE_CACHE |
+                             net::LOAD_DO_NOT_SEND_AUTH_DATA);
   url_fetcher_->Start();
+}
+
+bool ServicesCustomizationDocument::LoadManifestFromString(
+    const std::string& manifest) {
+  if (CustomizationDocument::LoadManifestFromString(manifest)) {
+    if (!ServicesCustomizationDocument::WasApplied())
+      return ApplyMachineCustomization();
+    else
+      return true;
+  }
+  return false;
 }
 
 void ServicesCustomizationDocument::OnURLFetchComplete(
     const net::URLFetcher* source) {
-  if (source->GetResponseCode() == 200) {
-    std::string data;
-    source->GetResponseAsString(&data);
+  std::string mime_type;
+  std::string data;
+  if (source->GetStatus().is_success() &&
+      source->GetResponseCode() == 200 &&
+      source->GetResponseHeaders()->GetMimeType(&mime_type) &&
+      mime_type == "application/json" &&
+      source->GetResponseAsString(&data)) {
     LoadManifestFromString(data);
   } else {
     const NetworkState* default_network =
@@ -340,22 +364,42 @@ void ServicesCustomizationDocument::OnURLFetchComplete(
   }
 }
 
-bool ServicesCustomizationDocument::ApplyCustomization() {
-  // TODO(dpolukhin): apply customized apps, exts and support page.
+bool ServicesCustomizationDocument::ApplyMachineCustomization() {
+  // TODO(dpolukhin): apply default wallpaper.
   SetApplied(true);
   return true;
 }
 
-std::string ServicesCustomizationDocument::GetInitialStartPage(
-    const std::string& locale) const {
-  return GetLocaleSpecificString(
-      locale, kAppContentAttr, kInitialStartPageAttr);
+GURL ServicesCustomizationDocument::GetDefaultWallpaperUrl() const {
+  if (!IsReady())
+    return GURL();
+
+  std::string url;
+  root_->GetString(kDefaultWallpaperAttr, &url);
+  return GURL(url);
 }
 
-std::string ServicesCustomizationDocument::GetSupportPage(
-    const std::string& locale) const {
-  return GetLocaleSpecificString(
-      locale, kAppContentAttr, kSupportPageAttr);
+bool ServicesCustomizationDocument::GetDefaultApps(
+    std::vector<std::string>* ids) const {
+  ids->clear();
+  if (!IsReady())
+    return false;
+
+  base::ListValue* apps_list = NULL;
+  if (!root_->GetList(kDefaultAppsAttr, &apps_list))
+    return false;
+
+  for (size_t i = 0; i < apps_list->GetSize(); ++i) {
+    std::string app_id;
+    if (apps_list->GetString(i, &app_id)) {
+      ids->push_back(app_id);
+    } else {
+      LOG(ERROR) << "Wrong format of default application list";
+      return false;
+    }
+  }
+
+  return true;
 }
 
 }  // namespace chromeos

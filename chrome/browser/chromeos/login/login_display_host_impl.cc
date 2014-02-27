@@ -28,7 +28,6 @@
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/charger_replace/charger_replacement_dialog.h"
-#include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/first_run/drive_first_run_controller.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
@@ -609,9 +608,6 @@ void LoginDisplayHostImpl::StartSignInScreen(
   // so check for auto-enrollment again. This might catch a cached decision from
   // a previous oobe flow, or might start a new check with the server.
   CheckForAutoEnrollment();
-
-  // Initiate services customization manifest fetching.
-  ServicesCustomizationDocument::GetInstance()->StartFetching();
 
   // Initiate mobile config load.
   MobileConfig::GetInstance();
