@@ -23179,14 +23179,6 @@ other types of suffix sets.
   <summary>Counts number of calls to WebRTC APIs from JavaScript.</summary>
 </histogram>
 
-<histogram name="WebRTC.webkitApiCountUniqueByOrigin" enum="JavaScriptAPIName">
-  <summary>
-    Counts calls to WebRTC APIs from JavaScript, once per security origin per
-    browsing session. Contrast with WebRTC.webkitApiCount, which is a raw count
-    of all calls made to these APIs.
-  </summary>
-</histogram>
-
 <histogram name="Webstore.ExtensionInstallResult" enum="BooleanSuccess">
   <summary>
     The success or failure of all extension installs from the webstore. This

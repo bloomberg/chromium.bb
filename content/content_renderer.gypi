@@ -691,8 +691,6 @@
         'renderer/media/webrtc_local_audio_track.h',
         'renderer/media/webrtc_logging.cc',
         'renderer/media/webrtc_logging.h',
-        'renderer/media/webrtc_uma_histograms.cc',
-        'renderer/media/webrtc_uma_histograms.h',
         'renderer/media/webrtc/webrtc_video_capturer_adapter.cc',
         'renderer/media/webrtc/webrtc_video_capturer_adapter.h',
         'renderer/p2p/host_address_request.cc',
