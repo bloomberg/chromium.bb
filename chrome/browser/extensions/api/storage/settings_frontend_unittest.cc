@@ -73,7 +73,7 @@ class ExtensionSettingsFrontendTest : public testing::Test {
   void ResetFrontend() {
     storage_factory_->Reset(new LeveldbSettingsStorageFactory());
     frontend_.reset(
-        SettingsFrontend::Create(storage_factory_.get(), profile_.get()));
+        SettingsFrontend::CreateForTesting(storage_factory_, profile_.get()));
   }
 
   base::ScopedTempDir temp_dir_;

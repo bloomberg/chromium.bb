@@ -11,8 +11,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/storage/settings_frontend.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/storage.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/quota_service.h"
@@ -49,8 +47,7 @@ bool SettingsFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(
       settings_namespace_ != settings_namespace::INVALID);
 
-  SettingsFrontend* frontend =
-      GetProfile()->GetExtensionService()->settings_frontend();
+  SettingsFrontend* frontend = SettingsFrontend::Get(context());
   if (!frontend->IsStorageEnabled(settings_namespace_)) {
     error_ = base::StringPrintf(
         "\"%s\" is not available in this instance of Chrome",

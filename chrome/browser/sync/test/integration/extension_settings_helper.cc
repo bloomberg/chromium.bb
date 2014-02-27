@@ -48,7 +48,7 @@ scoped_ptr<base::DictionaryValue> GetAllSettings(
     Profile* profile, const std::string& id) {
   base::WaitableEvent signal(false, false);
   scoped_ptr<base::DictionaryValue> settings(new base::DictionaryValue());
-  profile->GetExtensionService()->settings_frontend()->RunWithStorage(
+  extensions::SettingsFrontend::Get(profile)->RunWithStorage(
       id,
       extensions::settings_namespace::SYNC,
       base::Bind(&GetAllSettingsOnFileThread, settings.get(), &signal));
@@ -98,7 +98,7 @@ void SetExtensionSettings(
     const std::string& id,
     const base::DictionaryValue& settings) {
   base::WaitableEvent signal(false, false);
-  profile->GetExtensionService()->settings_frontend()->RunWithStorage(
+  extensions::SettingsFrontend::Get(profile)->RunWithStorage(
       id,
       extensions::settings_namespace::SYNC,
       base::Bind(&SetSettingsOnFileThread, &settings, &signal));

@@ -11,7 +11,6 @@
 #include "chrome/browser/extensions/api/storage/settings_namespace.h"
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile.h"
@@ -117,18 +116,16 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
 
   void InitSync(syncer::SyncChangeProcessor* sync_processor) {
     base::MessageLoop::current()->RunUntilIdle();
-    InitSyncWithSyncableService(
-        sync_processor,
-        browser()->profile()->GetExtensionService()->settings_frontend()->
-              GetBackendForSync(kModelType));
+    SettingsFrontend* frontend = SettingsFrontend::Get(browser()->profile());
+    InitSyncWithSyncableService(sync_processor,
+                                frontend->GetBackendForSync(kModelType));
   }
 
   void SendChanges(const syncer::SyncChangeList& change_list) {
     base::MessageLoop::current()->RunUntilIdle();
-    SendChangesToSyncableService(
-        change_list,
-        browser()->profile()->GetExtensionService()->settings_frontend()->
-              GetBackendForSync(kModelType));
+    SettingsFrontend* frontend = SettingsFrontend::Get(browser()->profile());
+    SendChangesToSyncableService(change_list,
+                                 frontend->GetBackendForSync(kModelType));
   }
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
@@ -404,8 +401,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, IsStorageEnabled) {
-  SettingsFrontend* frontend =
-      browser()->profile()->GetExtensionService()->settings_frontend();
+  SettingsFrontend* frontend = SettingsFrontend::Get(browser()->profile());
   EXPECT_TRUE(frontend->IsStorageEnabled(LOCAL));
   EXPECT_TRUE(frontend->IsStorageEnabled(SYNC));
 
@@ -573,8 +569,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorageDisabled) {
   // Disable the 'managed' namespace. This is redundant when
   // ENABLE_CONFIGURATION_POLICY is not defined.
-  SettingsFrontend* frontend =
-      browser()->profile()->GetExtensionService()->settings_frontend();
+  SettingsFrontend* frontend = SettingsFrontend::Get(browser()->profile());
   frontend->DisableStorageForTesting(MANAGED);
   EXPECT_FALSE(frontend->IsStorageEnabled(MANAGED));
   // Now run the extension.

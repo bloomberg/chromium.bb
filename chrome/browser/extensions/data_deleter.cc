@@ -102,8 +102,10 @@ void DataDeleter::StartDeleting(Profile* profile, const Extension* extension) {
   }
 
   // Begin removal of the settings for the current extension.
-  profile->GetExtensionService()->settings_frontend()->
-      DeleteStorageSoon(extension->id());
+  // SettingsFrontend may not exist in unit tests.
+  SettingsFrontend* frontend = SettingsFrontend::Get(profile);
+  if (frontend)
+    frontend->DeleteStorageSoon(extension->id());
 }
 
 }  // namespace extensions

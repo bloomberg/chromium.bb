@@ -10,20 +10,22 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
+#include "base/lazy_instance.h"
 #include "chrome/browser/extensions/api/storage/leveldb_settings_storage_factory.h"
 #include "chrome/browser/extensions/api/storage/sync_or_local_value_store_cache.h"
-#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/storage.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/extensions/api/storage/managed_value_store_cache.h"
 #endif
 
+using content::BrowserContext;
 using content::BrowserThread;
 
 namespace extensions {
@@ -32,11 +34,15 @@ namespace storage = api::storage;
 
 namespace {
 
+base::LazyInstance<ProfileKeyedAPIFactory<SettingsFrontend> > g_factory =
+    LAZY_INSTANCE_INITIALIZER;
+
 // Settings change Observer which forwards changes on to the extension
-// processes for |profile| and its incognito partner if it exists.
+// processes for |context| and its incognito partner if it exists.
 class DefaultObserver : public SettingsObserver {
  public:
-  explicit DefaultObserver(Profile* profile) : profile_(profile) {}
+  explicit DefaultObserver(BrowserContext* context)
+      : browser_context_(context) {}
 
   // SettingsObserver implementation.
   virtual void OnSettingsChanged(
@@ -51,12 +57,12 @@ class DefaultObserver : public SettingsObserver {
         settings_namespace)));
     scoped_ptr<Event> event(new Event(
         storage::OnChanged::kEventName, args.Pass()));
-    ExtensionSystem::Get(profile_)->event_router()->
+    ExtensionSystem::Get(browser_context_)->event_router()->
         DispatchEventToExtension(extension_id, event.Pass());
   }
 
  private:
-  Profile* const profile_;
+  BrowserContext* const browser_context_;
 };
 
 SettingsStorageQuotaEnforcer::Limits GetLocalLimits() {
@@ -80,49 +86,62 @@ SettingsStorageQuotaEnforcer::Limits GetSyncLimits() {
 }  // namespace
 
 // static
-SettingsFrontend* SettingsFrontend::Create(Profile* profile) {
-  return new SettingsFrontend(new LeveldbSettingsStorageFactory(), profile);
+SettingsFrontend* SettingsFrontend::Get(BrowserContext* context) {
+  return ProfileKeyedAPIFactory<SettingsFrontend>::GetForProfile(context);
 }
 
 // static
-SettingsFrontend* SettingsFrontend::Create(
+SettingsFrontend* SettingsFrontend::CreateForTesting(
     const scoped_refptr<SettingsStorageFactory>& storage_factory,
-    Profile* profile) {
-  return new SettingsFrontend(storage_factory, profile);
+    BrowserContext* context) {
+  return new SettingsFrontend(storage_factory, context);
+}
+
+SettingsFrontend::SettingsFrontend(BrowserContext* context)
+    : local_quota_limit_(GetLocalLimits()),
+      sync_quota_limit_(GetSyncLimits()),
+      browser_context_(context) {
+  Init(new LeveldbSettingsStorageFactory());
 }
 
 SettingsFrontend::SettingsFrontend(
-    const scoped_refptr<SettingsStorageFactory>& factory, Profile* profile)
+    const scoped_refptr<SettingsStorageFactory>& factory,
+    BrowserContext* context)
     : local_quota_limit_(GetLocalLimits()),
       sync_quota_limit_(GetSyncLimits()),
-      profile_(profile),
-      observers_(new SettingsObserverList()),
-      profile_observer_(new DefaultObserver(profile)) {
+      browser_context_(context) {
+  Init(factory);
+}
+
+void SettingsFrontend::Init(
+    const scoped_refptr<SettingsStorageFactory>& factory) {
+  observers_ = new SettingsObserverList();
+  browser_context_observer_.reset(new DefaultObserver(browser_context_));
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!profile->IsOffTheRecord());
+  DCHECK(!browser_context_->IsOffTheRecord());
 
-  observers_->AddObserver(profile_observer_.get());
+  observers_->AddObserver(browser_context_observer_.get());
 
-  const base::FilePath& profile_path = profile->GetPath();
+  const base::FilePath& browser_context_path = browser_context_->GetPath();
   caches_[settings_namespace::LOCAL] =
       new SyncOrLocalValueStoreCache(
           settings_namespace::LOCAL,
           factory,
           local_quota_limit_,
           observers_,
-          profile_path);
+          browser_context_path);
   caches_[settings_namespace::SYNC] =
       new SyncOrLocalValueStoreCache(
           settings_namespace::SYNC,
           factory,
           sync_quota_limit_,
           observers_,
-          profile_path);
+          browser_context_path);
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   caches_[settings_namespace::MANAGED] =
       new ManagedValueStoreCache(
-          profile,
+          browser_context_,
           factory,
           observers_);
 #endif
@@ -130,7 +149,7 @@ SettingsFrontend::SettingsFrontend(
 
 SettingsFrontend::~SettingsFrontend() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  observers_->RemoveObserver(profile_observer_.get());
+  observers_->RemoveObserver(browser_context_observer_.get());
   for (CacheMap::iterator it = caches_.begin(); it != caches_.end(); ++it) {
     ValueStoreCache* cache = it->second;
     cache->ShutdownOnUI();
@@ -168,7 +187,7 @@ void SettingsFrontend::RunWithStorage(
   // TODO(kalman): change RunWithStorage() to take a
   // scoped_refptr<const Extension> instead.
   scoped_refptr<const Extension> extension =
-      extensions::ExtensionSystem::Get(profile_)->extension_service()->
+      extensions::ExtensionSystem::Get(browser_context_)->extension_service()->
           GetExtensionById(extension_id, true);
   CHECK(extension.get());
 
@@ -205,6 +224,19 @@ void SettingsFrontend::DisableStorageForTesting(
     BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE, cache);
     caches_.erase(it);
   }
+}
+
+// ProfileKeyedAPI implementation.
+
+// static
+ProfileKeyedAPIFactory<SettingsFrontend>*
+SettingsFrontend::GetFactoryInstance() {
+  return g_factory.Pointer();
+}
+
+// static
+const char* SettingsFrontend::service_name() {
+  return "SettingsFrontend";
 }
 
 }  // namespace extensions

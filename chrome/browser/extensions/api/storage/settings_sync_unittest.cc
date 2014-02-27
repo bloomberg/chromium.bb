@@ -208,7 +208,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
     profile_.reset(new util::MockProfile(temp_dir_.path()));
     storage_factory_->Reset(new LeveldbSettingsStorageFactory());
     frontend_.reset(
-        SettingsFrontend::Create(storage_factory_.get(), profile_.get()));
+        SettingsFrontend::CreateForTesting(storage_factory_, profile_.get()));
   }
 
   virtual void TearDown() OVERRIDE {

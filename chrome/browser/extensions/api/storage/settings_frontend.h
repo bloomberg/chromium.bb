@@ -10,6 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/api/storage/settings_namespace.h"
 #include "chrome/browser/extensions/api/storage/settings_observer.h"
 #include "chrome/browser/extensions/api/storage/settings_storage_factory.h"
@@ -17,7 +18,9 @@
 #include "chrome/browser/extensions/api/storage/value_store_cache.h"
 #include "sync/api/syncable_service.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace extensions {
 
@@ -25,16 +28,17 @@ namespace extensions {
 // to SettingsBackend which lives on the FILE thread.
 // All public methods, must be called on the UI thread, with the exception of
 // GetBackendForSync(), which must be called on the FILE thread.
-class SettingsFrontend {
+class SettingsFrontend : public ProfileKeyedAPI {
  public:
-  // Creates with the default factory.
-  static SettingsFrontend* Create(Profile* profile);
+  // Returns the current instance for |context|.
+  static SettingsFrontend* Get(content::BrowserContext* context);
 
-  // Creates with a specific factory |storage_factory| (presumably for tests).
-  static SettingsFrontend* Create(
+  // Creates with a specific |storage_factory|. Caller owns the object.
+  static SettingsFrontend* CreateForTesting(
       const scoped_refptr<SettingsStorageFactory>& storage_factory,
-      Profile* profile);
+      content::BrowserContext* context);
 
+  // Public so tests can create and delete their own instances.
   virtual ~SettingsFrontend();
 
   // Must only be called from the FILE thread. |type| should be either
@@ -60,26 +64,39 @@ class SettingsFrontend {
   void DisableStorageForTesting(
       settings_namespace::Namespace settings_namespace);
 
+  // ProfileKeyedAPI implementation.
+  static ProfileKeyedAPIFactory<SettingsFrontend>* GetFactoryInstance();
+  static const char* service_name();
+  static const bool kServiceRedirectedInIncognito = true;
+  static const bool kServiceIsNULLWhileTesting = true;
+
  private:
+  friend class ProfileKeyedAPIFactory<SettingsFrontend>;
+
   typedef std::map<settings_namespace::Namespace, ValueStoreCache*> CacheMap;
 
-  SettingsFrontend(
-      const scoped_refptr<SettingsStorageFactory>& storage_factory,
-      Profile* profile);
+  // Constructor for normal ProfileKeyedAPI usage.
+  explicit SettingsFrontend(content::BrowserContext* context);
+
+  // Constructor for tests.
+  SettingsFrontend(const scoped_refptr<SettingsStorageFactory>& storage_factory,
+                   content::BrowserContext* context);
+
+  void Init(const scoped_refptr<SettingsStorageFactory>& storage_factory);
 
   // The quota limit configurations for the local and sync areas, taken out of
   // the schema in chrome/common/extensions/api/storage.json.
   const SettingsStorageQuotaEnforcer::Limits local_quota_limit_;
   const SettingsStorageQuotaEnforcer::Limits sync_quota_limit_;
 
-  // The (non-incognito) Profile this Frontend belongs to.
-  Profile* const profile_;
+  // The (non-incognito) browser context this Frontend belongs to.
+  content::BrowserContext* const browser_context_;
 
   // List of observers to settings changes.
   scoped_refptr<SettingsObserverList> observers_;
 
-  // Observer for |profile_|.
-  scoped_ptr<SettingsObserver> profile_observer_;
+  // Observer for |browser_context_|.
+  scoped_ptr<SettingsObserver> browser_context_observer_;
 
   // Maps a known namespace to its corresponding ValueStoreCache. The caches
   // are owned by this object.

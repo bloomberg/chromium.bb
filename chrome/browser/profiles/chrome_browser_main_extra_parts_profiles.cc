@@ -93,6 +93,7 @@
 #include "chrome/browser/extensions/api/sockets_tcp/tcp_socket_event_dispatcher.h"
 #include "chrome/browser/extensions/api/sockets_tcp_server/tcp_server_socket_event_dispatcher.h"
 #include "chrome/browser/extensions/api/sockets_udp/udp_socket_event_dispatcher.h"
+#include "chrome/browser/extensions/api/storage/settings_frontend.h"
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
 #include "chrome/browser/extensions/api/system_info/system_info_api.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
@@ -309,6 +310,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::PushMessagingAPI::GetFactoryInstance();
   extensions::RendererStartupHelperFactory::GetInstance();
   extensions::RuntimeAPI::GetFactoryInstance();
+  extensions::SettingsFrontend::GetFactoryInstance();
   extensions::SettingsOverridesAPI::GetFactoryInstance();
   extensions::SignedInDevicesManager::GetFactoryInstance();
 #if defined(ENABLE_SPELLCHECK)

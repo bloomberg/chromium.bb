@@ -20,6 +20,10 @@
 
 class Profile;
 
+namespace content {
+class BrowserContext;
+}
+
 namespace policy {
 class PolicyMap;
 }
@@ -39,7 +43,7 @@ class ManagedValueStoreCache : public ValueStoreCache,
   // |factory| is used to create databases for the PolicyValueStores.
   // |observers| is the list of SettingsObservers to notify when a ValueStore
   // changes.
-  ManagedValueStoreCache(Profile* profile,
+  ManagedValueStoreCache(content::BrowserContext* context,
                          const scoped_refptr<SettingsStorageFactory>& factory,
                          const scoped_refptr<SettingsObserverList>& observers);
   virtual ~ManagedValueStoreCache();

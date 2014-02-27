@@ -479,8 +479,9 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
       return TemplateURLServiceFactory::GetForProfile(profile_)->AsWeakPtr();
     case syncer::APP_SETTINGS:
     case syncer::EXTENSION_SETTINGS:
-      return extension_system_->extension_service()->settings_frontend()->
-          GetBackendForSync(type)->AsWeakPtr();
+      return extensions::SettingsFrontend::Get(profile_)
+          ->GetBackendForSync(type)
+          ->AsWeakPtr();
 #if defined(ENABLE_APP_LIST)
     case syncer::APP_LIST:
       return app_list::AppListSyncableServiceFactory::GetForProfile(profile_)->

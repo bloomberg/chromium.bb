@@ -58,7 +58,6 @@ class ExtensionSystem;
 class ExtensionUpdater;
 class PendingExtensionManager;
 class RendererStartupHelper;
-class SettingsFrontend;
 class UpdateObserver;
 }  // namespace extensions
 
@@ -418,8 +417,6 @@ class ExtensionService
   // Returns profile_ as a BrowserContext.
   content::BrowserContext* GetBrowserContext() const;
 
-  extensions::SettingsFrontend* settings_frontend();
-
   void set_extension_sync_service(
       ExtensionSyncService* extension_sync_service) {
     extension_sync_service_ = extension_sync_service;
@@ -704,9 +701,6 @@ class ExtensionService
 
   // Blacklist for the owning profile.
   extensions::Blacklist* blacklist_;
-
-  // Settings for the owning profile.
-  scoped_ptr<extensions::SettingsFrontend> settings_frontend_;
 
   // The ExtensionSyncService that is used by this ExtensionService.
   ExtensionSyncService* extension_sync_service_;

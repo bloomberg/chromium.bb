@@ -6,6 +6,8 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/extensions/api/storage/leveldb_settings_storage_factory.h"
+#include "chrome/browser/extensions/api/storage/settings_frontend.h"
 #include "chrome/browser/extensions/api/storage/settings_storage_quota_enforcer.h"
 #include "chrome/browser/extensions/api/storage/settings_test_util.h"
 #include "chrome/browser/extensions/api/storage/storage_api.h"
@@ -24,6 +26,17 @@
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
 namespace extensions {
+
+namespace {
+
+// Caller owns the returned object.
+BrowserContextKeyedService* CreateSettingsFrontendForTesting(
+    content::BrowserContext* context) {
+  return SettingsFrontend::CreateForTesting(new LeveldbSettingsStorageFactory(),
+                                            context);
+}
+
+}  // namespace
 
 class StorageApiUnittest : public ExtensionApiUnittest {
  public:
@@ -77,6 +90,11 @@ class StorageApiUnittest : public ExtensionApiUnittest {
 };
 
 TEST_F(StorageApiUnittest, RestoreCorruptedStorage) {
+  // Ensure a SettingsFrontend can be created on demand. The SettingsFrontend
+  // will be owned by the BrowserContextKeyedService system.
+  SettingsFrontend::GetFactoryInstance()->SetTestingFactory(
+      profile(), &CreateSettingsFrontendForTesting);
+
   const char kKey[] = "key";
   const char kValue[] = "value";
   std::string result;
@@ -92,9 +110,7 @@ TEST_F(StorageApiUnittest, RestoreCorruptedStorage) {
   ValueStore* store =
       settings_test_util::GetStorage(extension()->id(),
                                      settings_namespace::LOCAL,
-                                     ExtensionSystem::Get(profile())
-                                         ->extension_service()
-                                         ->settings_frontend());
+                                     SettingsFrontend::Get(profile()));
   ASSERT_TRUE(store);
   SettingsStorageQuotaEnforcer* quota_store =
       static_cast<SettingsStorageQuotaEnforcer*>(store);
