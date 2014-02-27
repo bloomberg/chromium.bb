@@ -469,16 +469,16 @@ scoped_ptr<DEVMODE[]> CreateDevModeWithColor(HANDLE printer,
 
 PRINTING_EXPORT scoped_ptr<DEVMODE[]> CreateDevMode(HANDLE printer,
                                                     DEVMODE* in) {
-  DWORD flags = in ? (DM_IN_BUFFER) : 0;
-  LONG buffer_size = DocumentProperties(NULL, printer, L"", NULL, in, flags);
+  LONG buffer_size = DocumentProperties(NULL, printer, L"", NULL, NULL, 0);
   if (buffer_size <= 0)
     return scoped_ptr<DEVMODE[]>();
+  CHECK_GE(buffer_size, static_cast<int>(sizeof(DEVMODE)));
   scoped_ptr<DEVMODE[]> out(
       reinterpret_cast<DEVMODE*>(new uint8[buffer_size]));
-  flags |= DM_OUT_BUFFER;
+  DWORD flags = (in ? (DM_IN_BUFFER) : 0) | DM_OUT_BUFFER;
   if (DocumentProperties(NULL, printer, L"", out.get(), in, flags) != IDOK)
     return scoped_ptr<DEVMODE[]>();
-  DCHECK_EQ(buffer_size, out.get()->dmSize + out.get()->dmDriverExtra);
+  CHECK_GE(buffer_size, out.get()->dmSize + out.get()->dmDriverExtra);
   return out.Pass();
 }
 
