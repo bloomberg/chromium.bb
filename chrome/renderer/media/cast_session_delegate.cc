@@ -69,7 +69,7 @@ void CastSessionDelegate::Initialize() {
   // CastSender uses the renderer's IO thread as the main thread. This reduces
   // thread hopping for incoming video frames and outgoing network packets.
   // There's no need to decode so no thread assigned for decoding.
-  // Get default logging: All disabled.
+  // Logging: enable raw events and stats collection.
   cast_environment_ = new CastEnvironment(
       scoped_ptr<base::TickClock>(new base::DefaultTickClock()).Pass(),
       base::MessageLoopProxy::current(),
@@ -78,7 +78,7 @@ void CastSessionDelegate::Initialize() {
       g_cast_threads.Get().GetVideoEncodeMessageLoopProxy(),
       NULL,
       base::MessageLoopProxy::current(),
-      media::cast::GetDefaultCastSenderLoggingConfig());
+      media::cast::GetLoggingConfigWithRawEventsAndStatsEnabled());
 }
 
 void CastSessionDelegate::StartAudio(

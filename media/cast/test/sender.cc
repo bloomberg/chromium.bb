@@ -427,20 +427,18 @@ int main(int argc, char** argv) {
           base::Bind(&UpdateCastTransportStatus),
           io_message_loop.message_loop_proxy()));
 
-  // Enable main and send side threads only. Enable raw event logging.
+  // Enable main and send side threads only. Enable raw event and stats logging.
   // Running transport on the main thread.
-  media::cast::CastLoggingConfig logging_config;
-  logging_config.enable_raw_data_collection = true;
-
   scoped_refptr<media::cast::CastEnvironment> cast_environment(
-      new media::cast::CastEnvironment(clock.Pass(),
-                                       io_message_loop.message_loop_proxy(),
-                                       audio_thread.message_loop_proxy(),
-                                       NULL,
-                                       video_thread.message_loop_proxy(),
-                                       NULL,
-                                       io_message_loop.message_loop_proxy(),
-                                       logging_config));
+      new media::cast::CastEnvironment(
+          clock.Pass(),
+          io_message_loop.message_loop_proxy(),
+          audio_thread.message_loop_proxy(),
+          NULL,
+          video_thread.message_loop_proxy(),
+          NULL,
+          io_message_loop.message_loop_proxy(),
+          media::cast::GetLoggingConfigWithRawEventsAndStatsEnabled()));
 
   scoped_ptr<media::cast::CastSender> cast_sender(
       media::cast::CastSender::CreateCastSender(
