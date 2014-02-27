@@ -100,6 +100,4 @@ OptInClient.prototype.initialize = function() {
 };
 
 
-window.addEventListener('message', function(e) {
-    window.console.log('inj: ', e.data.type); });
 new OptInClient().initialize();
