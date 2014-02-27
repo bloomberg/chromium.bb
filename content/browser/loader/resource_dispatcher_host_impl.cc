@@ -988,7 +988,6 @@ void ResourceDispatcherHostImpl::BeginRequest(
 
   // If the request that's coming in is being transferred from another process,
   // we want to reuse and resume the old loader rather than start a new one.
-  linked_ptr<ResourceLoader> deferred_loader;
   {
     LoaderMap::iterator it = pending_loaders_.find(
         GlobalRequestID(request_data.transferred_request_child_id,
@@ -997,7 +996,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
       // If the request is transferring to a new process, we can update our
       // state and let it resume with its existing ResourceHandlers.
       if (it->second->is_transferring()) {
-        deferred_loader = it->second;
+        linked_ptr<ResourceLoader> deferred_loader = it->second;
         UpdateRequestForTransfer(child_id, route_id, request_id,
                                  request_data, deferred_loader);
 
@@ -1022,8 +1021,6 @@ void ResourceDispatcherHostImpl::BeginRequest(
     AbortRequestBeforeItStarts(filter_, sync_result, request_id);
     return;
   }
-
-  const Referrer referrer(request_data.referrer, request_data.referrer_policy);
 
   // Allow the observer to block/handle the request.
   if (delegate_ && !delegate_->ShouldBeginRequest(child_id,
@@ -1057,27 +1054,28 @@ void ResourceDispatcherHostImpl::BeginRequest(
 
   // Construct the request.
   scoped_ptr<net::URLRequest> new_request;
-  net::URLRequest* request;
   new_request = request_context->CreateRequest(
       request_data.url, request_data.priority, NULL);
-  request = new_request.get();
 
-  request->set_method(request_data.method);
-  request->set_first_party_for_cookies(request_data.first_party_for_cookies);
-  SetReferrerForRequest(request, referrer);
+  new_request->set_method(request_data.method);
+  new_request->set_first_party_for_cookies(
+      request_data.first_party_for_cookies);
+
+  const Referrer referrer(request_data.referrer, request_data.referrer_policy);
+  SetReferrerForRequest(new_request.get(), referrer);
 
   net::HttpRequestHeaders headers;
   headers.AddHeadersFromString(request_data.headers);
-  request->SetExtraRequestHeaders(headers);
+  new_request->SetExtraRequestHeaders(headers);
 
-  request->SetLoadFlags(load_flags);
+  new_request->SetLoadFlags(load_flags);
 
   // Resolve elements from request_body and prepare upload data.
   if (request_data.request_body.get()) {
     webkit_blob::BlobStorageContext* blob_context = NULL;
     if (filter_->blob_storage_context())
       blob_context = filter_->blob_storage_context()->context();
-    request->set_upload(UploadDataStreamBuilder::Build(
+    new_request->set_upload(UploadDataStreamBuilder::Build(
         request_data.request_body.get(),
         blob_context,
         filter_->file_system_context(),
@@ -1113,25 +1111,26 @@ void ResourceDispatcherHostImpl::BeginRequest(
           resource_context,
           filter_->GetWeakPtr(),
           !is_sync_load);
-  extra_info->AssociateWithRequest(request);  // Request takes ownership.
+  // Request takes ownership.
+  extra_info->AssociateWithRequest(new_request.get());
 
-  if (request->url().SchemeIs(chrome::kBlobScheme)) {
+  if (new_request->url().SchemeIs(chrome::kBlobScheme)) {
     // Hang on to a reference to ensure the blob is not released prior
     // to the job being started.
     webkit_blob::BlobProtocolHandler::SetRequestedBlobDataHandle(
-        request,
+        new_request.get(),
         filter_->blob_storage_context()->context()->
-            GetBlobDataFromPublicURL(request->url()));
+            GetBlobDataFromPublicURL(new_request->url()));
   }
 
   // Have the appcache associate its extra info with the request.
   appcache::AppCacheInterceptor::SetExtraRequestInfo(
-      request, filter_->appcache_service(), child_id,
+      new_request.get(), filter_->appcache_service(), child_id,
       request_data.appcache_host_id, request_data.resource_type);
 
   scoped_ptr<ResourceHandler> handler(
        CreateResourceHandler(
-           request,
+           new_request.get(),
            request_data, sync_result, route_id, process_type, child_id,
            resource_context));
 
