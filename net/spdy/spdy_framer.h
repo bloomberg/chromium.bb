@@ -184,6 +184,12 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   // validated.
   virtual void OnSetting(SpdySettingsIds id, uint8 flags, uint32 value) = 0;
 
+  // Called when a SETTINGS frame is received with the ACK flag set.
+  virtual void OnSettingsAck() {}
+
+  // Called before and after parsing SETTINGS id and value tuples.
+  virtual void OnSettingsEnd() = 0;
+
   // Called when a PING frame has been parsed.
   virtual void OnPing(SpdyPingId unique_id, bool is_ack) = 0;
 

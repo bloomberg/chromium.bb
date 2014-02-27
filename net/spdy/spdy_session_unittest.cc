@@ -1109,6 +1109,11 @@ TEST_P(SpdySessionTest, OnSettings) {
 // also clears the persisted data. Verify that persisted data is
 // correct.
 TEST_P(SpdySessionTest, ClearSettings) {
+  if (spdy_util_.spdy_version() >= SPDY4) {
+    // SPDY4 doesn't include settings persistence, or a CLEAR_SETTINGS flag.
+    // Flag 0x1, CLEAR_SETTINGS in SPDY3, is instead settings ACK in SPDY4.
+    return;
+  }
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   SettingsMap new_settings;

@@ -48,10 +48,10 @@ TEST_P(SpdyFrameBuilderTest, RewriteLength) {
   SpdyFrameBuilder builder(expected->size() + 1);
   if (spdy_version_ < 4) {
     builder.WriteControlFrameHeader(framer, SETTINGS, 0);
+    builder.WriteUInt32(0);  // Write the number of settings.
   } else {
     builder.WriteFramePrefix(framer, SETTINGS, 0, 0);
   }
-  builder.WriteUInt32(0); // Write the number of settings.
   EXPECT_TRUE(builder.GetWritableBuffer(1) != NULL);
   builder.RewriteLength(framer);
   scoped_ptr<SpdyFrame> built(builder.take());

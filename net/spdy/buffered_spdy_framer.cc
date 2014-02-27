@@ -186,6 +186,14 @@ void BufferedSpdyFramer::OnSetting(SpdySettingsIds id,
   visitor_->OnSetting(id, flags, value);
 }
 
+void BufferedSpdyFramer::OnSettingsAck() {
+  visitor_->OnSettingsAck();
+}
+
+void BufferedSpdyFramer::OnSettingsEnd() {
+  visitor_->OnSettingsEnd();
+}
+
 void BufferedSpdyFramer::OnPing(SpdyPingId unique_id, bool is_ack) {
   visitor_->OnPing(unique_id, is_ack);
 }

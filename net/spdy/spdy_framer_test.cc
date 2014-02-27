@@ -154,6 +154,7 @@ class SpdyFramerTestUtil {
     virtual void OnPing(SpdyPingId unique_id, bool is_ack) OVERRIDE {
       LOG(FATAL);
     }
+    virtual void OnSettingsEnd() OVERRIDE { LOG(FATAL); }
     virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
                           SpdyGoAwayStatus status) OVERRIDE {
       LOG(FATAL);
@@ -227,6 +228,8 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
       headers_frame_count_(0),
       goaway_count_(0),
       setting_count_(0),
+      settings_ack_sent_(0),
+      settings_ack_received_(0),
       last_window_update_stream_(0),
       last_window_update_delta_(0),
       last_push_promise_stream_(0),
@@ -343,6 +346,16 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     setting_count_++;
   }
 
+  virtual void OnSettingsAck() OVERRIDE {
+    DCHECK_GE(4, framer_.protocol_version());
+    settings_ack_received_++;
+  }
+
+  virtual void OnSettingsEnd() OVERRIDE {
+    if (framer_.protocol_version() < 4) { return; }
+    settings_ack_sent_++;
+  }
+
   virtual void OnPing(SpdyPingId unique_id, bool is_ack) OVERRIDE {
     DLOG(FATAL);
   }
@@ -439,6 +452,8 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   int headers_frame_count_;
   int goaway_count_;
   int setting_count_;
+  int settings_ack_sent_;
+  int settings_ack_received_;
   SpdyStreamId last_window_update_stream_;
   uint32 last_window_update_delta_;
   SpdyStreamId last_push_promise_stream_;
@@ -2238,9 +2253,8 @@ TEST_P(SpdyFramerTest, CreateSettings) {
       0x0a, 0x0b, 0x0c, 0x0d,
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x14, 0x04, 0x00,
+      0x00, 0x10, 0x04, 0x00,
       0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x01,
       0x01, 0x02, 0x03, 0x04,
       0x0a, 0x0b, 0x0c, 0x0d,
     };
@@ -2287,9 +2301,8 @@ TEST_P(SpdyFramerTest, CreateSettings) {
       0xff, 0x00, 0x00, 0x04,
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x2c, 0x04, 0x00,
+      0x00, 0x28, 0x04, 0x00,
       0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x04,
       0x00, 0x00, 0x00, 0x00,  // 1st Setting
       0x00, 0x00, 0x00, 0x01,
       0x01, 0x00, 0x00, 0x01,  // 2nd Setting
@@ -2325,8 +2338,7 @@ TEST_P(SpdyFramerTest, CreateSettings) {
       0x00, 0x00, 0x00, 0x00,
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x0c, 0x04, 0x00,
-      0x00, 0x00, 0x00, 0x00,
+      0x00, 0x08, 0x04, 0x00,
       0x00, 0x00, 0x00, 0x00,
     };
     SpdySettingsIR settings_ir;
@@ -3195,6 +3207,9 @@ TEST_P(SpdyFramerTest, ReadLargeSettingsFrame) {
       control_frame->size());
   EXPECT_EQ(0, visitor.error_count_);
   EXPECT_EQ(settings.size(), static_cast<unsigned>(visitor.setting_count_));
+  if (spdy_version_ >= 4) {
+    EXPECT_EQ(1, visitor.settings_ack_sent_);
+  }
 
   // Read data in small chunks.
   size_t framed_data = 0;
@@ -3210,6 +3225,9 @@ TEST_P(SpdyFramerTest, ReadLargeSettingsFrame) {
   }
   EXPECT_EQ(0, visitor.error_count_);
   EXPECT_EQ(settings.size() * 2, static_cast<unsigned>(visitor.setting_count_));
+  if (spdy_version_ >= 4) {
+    EXPECT_EQ(2, visitor.settings_ack_sent_);
+  }
 }
 
 // Tests handling of SETTINGS frame with duplicate entries.
@@ -3239,9 +3257,8 @@ TEST_P(SpdyFramerTest, ReadDuplicateSettings) {
     0x00, 0x00, 0x00, 0x03,
   };
   const unsigned char kV4FrameData[] = {
-    0x00, 0x24, 0x04, 0x00,
+    0x00, 0x20, 0x04, 0x00,
     0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x03,
     0x00, 0x00, 0x00, 0x01,  // 1st Setting
     0x00, 0x00, 0x00, 0x02,
     0x00, 0x00, 0x00, 0x01,  // 2nd (duplicate) Setting
@@ -3259,8 +3276,9 @@ TEST_P(SpdyFramerTest, ReadDuplicateSettings) {
   } else {
     visitor.SimulateInFramer(kV4FrameData, sizeof(kV4FrameData));
   }
-  EXPECT_EQ(1, visitor.error_count_);
+
   EXPECT_EQ(1, visitor.setting_count_);
+  EXPECT_EQ(1, visitor.error_count_);
 }
 
 // Tests handling of SETTINGS frame with entries out of order.
@@ -3290,9 +3308,8 @@ TEST_P(SpdyFramerTest, ReadOutOfOrderSettings) {
     0x00, 0x00, 0x00, 0x03,
   };
   const unsigned char kV4FrameData[] = {
-    0x00, 0x24, 0x04, 0x00,
+    0x00, 0x20, 0x04, 0x00,
     0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x03,
     0x00, 0x00, 0x00, 0x02,  // 1st Setting
     0x00, 0x00, 0x00, 0x02,
     0x00, 0x00, 0x00, 0x01,  // 2nd (out of order) Setting
@@ -3312,6 +3329,26 @@ TEST_P(SpdyFramerTest, ReadOutOfOrderSettings) {
   }
   EXPECT_EQ(1, visitor.error_count_);
   EXPECT_EQ(1, visitor.setting_count_);
+}
+
+TEST_P(SpdyFramerTest, ProcessSettingsAckFrame) {
+  if (spdy_version_ < 4) {
+    return;
+  }
+  SpdyFramer framer(spdy_version_);
+
+  const unsigned char kFrameData[] = {
+    0x00, 0x08, 0x04, 0x01,
+    0x00, 0x00, 0x00, 0x00,
+  };
+
+  TestSpdyVisitor visitor(spdy_version_);
+  visitor.use_compression_ = false;
+  visitor.SimulateInFramer(kFrameData, sizeof(kFrameData));
+
+  EXPECT_EQ(0, visitor.error_count_);
+  EXPECT_EQ(0, visitor.setting_count_);
+  EXPECT_EQ(1, visitor.settings_ack_received_);
 }
 
 TEST_P(SpdyFramerTest, ReadWindowUpdate) {
@@ -3447,7 +3484,7 @@ TEST_P(SpdyFramerTest, SizesTest) {
   if (IsSpdy4()) {
     EXPECT_EQ(8u, framer.GetSynReplyMinimumSize());
     EXPECT_EQ(12u, framer.GetRstStreamMinimumSize());
-    EXPECT_EQ(12u, framer.GetSettingsMinimumSize());
+    EXPECT_EQ(8u, framer.GetSettingsMinimumSize());
     EXPECT_EQ(16u, framer.GetPingSize());
     EXPECT_EQ(16u, framer.GetGoAwayMinimumSize());
     EXPECT_EQ(8u, framer.GetHeadersMinimumSize());
@@ -3809,19 +3846,32 @@ TEST_P(SpdyFramerTest, SettingsFrameFlags) {
     scoped_ptr<SpdyFrame> frame(framer.SerializeSettings(settings_ir));
     SetFrameFlags(frame.get(), flags, spdy_version_);
 
-    if (flags & ~SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS) {
+    if ((!IsSpdy4() &&
+         flags & ~SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS) ||
+        (IsSpdy4() && flags & ~SETTINGS_FLAG_ACK)) {
+      EXPECT_CALL(visitor, OnError(_));
+    } else if (IsSpdy4() && flags & SETTINGS_FLAG_ACK) {
       EXPECT_CALL(visitor, OnError(_));
     } else {
       EXPECT_CALL(visitor, OnSettings(
           flags & SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS));
       EXPECT_CALL(visitor, OnSetting(SETTINGS_UPLOAD_BANDWIDTH,
                                      SETTINGS_FLAG_NONE, 54321));
+      EXPECT_CALL(visitor, OnSettingsEnd());
     }
 
     framer.ProcessInput(frame->data(), frame->size());
-    if (flags & ~SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS) {
+    if ((!IsSpdy4() &&
+         flags & ~SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS) ||
+        (IsSpdy4() && flags & ~SETTINGS_FLAG_ACK)) {
       EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
       EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS,
+                framer.error_code())
+          << SpdyFramer::ErrorCodeToString(framer.error_code());
+    } else if (IsSpdy4() && flags & SETTINGS_FLAG_ACK) {
+      // The frame is invalid because ACK frames should have no payload.
+      EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
+      EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME,
                 framer.error_code())
           << SpdyFramer::ErrorCodeToString(framer.error_code());
     } else {

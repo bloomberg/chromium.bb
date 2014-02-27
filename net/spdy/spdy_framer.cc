@@ -228,7 +228,11 @@ size_t SpdyFramer::GetSettingsMinimumSize() const {
   // Size, in bytes, of a SETTINGS frame not including the IDs and values
   // from the variable-length value block. Calculated as:
   // control frame header + 4 (number of ID/value pairs)
-  return GetControlFrameHeaderSize() + 4;
+  if (spdy_version_ < 4) {
+    return GetControlFrameHeaderSize() + 4;
+  } else {
+    return GetControlFrameHeaderSize();
+  }
 }
 
 size_t SpdyFramer::GetPingSize() const {
@@ -740,18 +744,30 @@ void SpdyFramer::ProcessControlFrameHeader(uint16 control_frame_type_field) {
       }
       break;
     case SETTINGS:
+    {
       // Make sure that we have an integral number of 8-byte key/value pairs,
-      // plus a 4-byte length field.
+      // plus a 4-byte length field in SPDY3 and below.
+      size_t values_prefix_size = (protocol_version() < 4 ? 4 : 0);
       if (current_frame_length_ < GetSettingsMinimumSize() ||
-          (current_frame_length_ - GetControlFrameHeaderSize()) % 8 != 4) {
+          (current_frame_length_ - GetControlFrameHeaderSize()) % 8 !=
+           values_prefix_size) {
         DLOG(WARNING) << "Invalid length for SETTINGS frame: "
                       << current_frame_length_;
         set_error(SPDY_INVALID_CONTROL_FRAME);
-      } else if (current_frame_flags_ &
+      } else if (protocol_version() < 4 &&
+                 current_frame_flags_ &
                  ~SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS) {
         set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
+      } else if (protocol_version() >= 4 &&
+                 current_frame_flags_ & ~SETTINGS_FLAG_ACK) {
+        set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
+      } else if (protocol_version() >= 4 &&
+                 current_frame_flags_ & SETTINGS_FLAG_ACK &&
+                 current_frame_length_ > GetSettingsMinimumSize()) {
+        set_error(SPDY_INVALID_CONTROL_FRAME);
       }
       break;
+    }
     case PING:
       if (current_frame_length_ != GetPingSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
@@ -1191,9 +1207,14 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
         CHANGE_STATE(SPDY_CONTROL_FRAME_HEADER_BLOCK);
         break;
       case SETTINGS:
-        visitor_->OnSettings(current_frame_flags_ &
-                             SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS);
-        CHANGE_STATE(SPDY_SETTINGS_FRAME_PAYLOAD);
+        if (spdy_version_ >= 4 && current_frame_flags_ & SETTINGS_FLAG_ACK) {
+          visitor_->OnSettingsAck();
+          CHANGE_STATE(SPDY_AUTO_RESET);
+        } else {
+          visitor_->OnSettings(current_frame_flags_ &
+              SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS);
+          CHANGE_STATE(SPDY_SETTINGS_FRAME_PAYLOAD);
+        }
         break;
       case SYN_REPLY:
       case HEADERS:
@@ -1386,6 +1407,7 @@ size_t SpdyFramer::ProcessSettingsFramePayload(const char* data,
   // Check if we're done handling this SETTINGS frame.
   remaining_data_length_ -= processed_bytes;
   if (remaining_data_length_ == 0) {
+    visitor_->OnSettingsEnd();
     CHANGE_STATE(SPDY_AUTO_RESET);
   }
 
@@ -1418,7 +1440,7 @@ bool SpdyFramer::ProcessSetting(const char* data) {
   }
   SpdySettingsIds id = static_cast<SpdySettingsIds>(id_and_flags.id());
 
-  // Detect duplciates.
+  // Detect duplicates.
   if (static_cast<uint32>(id) <= settings_scratch_.last_setting_id) {
     DLOG(WARNING) << "Duplicate entry or invalid ordering for id " << id
                   << " in " << display_protocol_ << " SETTINGS frame "
@@ -1909,8 +1931,11 @@ SpdySerializedFrame* SpdyFramer::SerializeRstStream(
 SpdySerializedFrame* SpdyFramer::SerializeSettings(
     const SpdySettingsIR& settings) const {
   uint8 flags = 0;
-  if (settings.clear_settings()) {
+  if (spdy_version_ < 4 && settings.clear_settings()) {
     flags |= SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS;
+  }
+  if (spdy_version_ >= 4 && settings.is_ack()) {
+    flags |= SETTINGS_FLAG_ACK;
   }
   const SpdySettingsIR::ValueMap* values = &(settings.values());
 
@@ -1923,7 +1948,15 @@ SpdySerializedFrame* SpdyFramer::SerializeSettings(
   } else {
     builder.WriteFramePrefix(*this, SETTINGS, flags, 0);
   }
-  builder.WriteUInt32(values->size());
+
+  // If this is an ACK, payload should be empty.
+  if (spdy_version_ >= 4 && settings.is_ack()) {
+    return builder.take();
+  }
+
+  if (spdy_version_ < 4) {
+    builder.WriteUInt32(values->size());
+  }
   DCHECK_EQ(GetSettingsMinimumSize(), builder.length());
   for (SpdySettingsIR::ValueMap::const_iterator it = values->begin();
        it != values->end();

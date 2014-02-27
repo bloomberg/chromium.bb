@@ -101,6 +101,14 @@ class QuicHeadersStream::SpdyFramerVisitor
     CloseConnection("SPDY SETTINGS frame recevied.");
   }
 
+  virtual void OnSettingsAck() OVERRIDE {
+    CloseConnection("SPDY SETTINGS frame recevied.");
+  }
+
+  virtual void OnSettingsEnd() OVERRIDE {
+    CloseConnection("SPDY SETTINGS frame recevied.");
+  }
+
   virtual void OnPing(SpdyPingId unique_id, bool is_ack) OVERRIDE {
     CloseConnection("SPDY PING frame recevied.");
   }

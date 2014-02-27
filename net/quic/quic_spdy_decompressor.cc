@@ -44,6 +44,8 @@ class SpdyFramerVisitor : public SpdyFramerVisitorInterface {
   virtual void OnSetting(SpdySettingsIds id,
                          uint8 flags,
                          uint32 value) OVERRIDE {}
+  virtual void OnSettingsAck() OVERRIDE {}
+  virtual void OnSettingsEnd() OVERRIDE {}
   virtual void OnPing(SpdyPingId unique_id, bool is_ack) OVERRIDE {}
   virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
                         SpdyGoAwayStatus status) OVERRIDE {}

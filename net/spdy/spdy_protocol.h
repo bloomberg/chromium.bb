@@ -314,6 +314,10 @@ enum SpdySettingsControlFlags {
   SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS = 0x1
 };
 
+enum Http2SettingsControlFlags {
+  SETTINGS_FLAG_ACK = 0x1,
+};
+
 // Flags for settings within a SETTINGS frame.
 enum SpdySettingsFlags {
   SETTINGS_FLAG_NONE = 0x0,
@@ -597,9 +601,14 @@ class NET_EXPORT_PRIVATE SpdySettingsIR : public SpdyFrameIR {
     values_[id].persisted = persisted;
     values_[id].value = value;
   }
+
   bool clear_settings() const { return clear_settings_; }
   void set_clear_settings(bool clear_settings) {
     clear_settings_ = clear_settings;
+  }
+  bool is_ack() const { return is_ack_; }
+  void set_is_ack(bool is_ack) {
+    is_ack_ = is_ack;
   }
 
   virtual void Visit(SpdyFrameVisitor* visitor) const OVERRIDE;
@@ -607,6 +616,7 @@ class NET_EXPORT_PRIVATE SpdySettingsIR : public SpdyFrameIR {
  private:
   ValueMap values_;
   bool clear_settings_;
+  bool is_ack_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdySettingsIR);
 };

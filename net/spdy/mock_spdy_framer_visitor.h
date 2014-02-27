@@ -38,6 +38,7 @@ class MockSpdyFramerVisitor : public SpdyFramerVisitorInterface {
   MOCK_METHOD1(OnSettings, void(bool clear_persisted));
   MOCK_METHOD3(OnSetting, void(SpdySettingsIds id, uint8 flags, uint32 value));
   MOCK_METHOD2(OnPing, void(SpdyPingId unique_id, bool is_ack));
+  MOCK_METHOD0(OnSettingsEnd, void());
   MOCK_METHOD2(OnGoAway, void(SpdyStreamId last_accepted_stream_id,
                               SpdyGoAwayStatus status));
   MOCK_METHOD2(OnHeaders, void(SpdyStreamId stream_id, bool fin));
