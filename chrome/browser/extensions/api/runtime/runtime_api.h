@@ -7,9 +7,9 @@
 
 #include <string>
 
+#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/runtime.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/update_observer.h"
@@ -31,10 +31,12 @@ class ExtensionHost;
 // Runtime API dispatches onStartup, onInstalled, and similar events to
 // extensions. There is one instance shared between a browser context and
 // its related incognito instance.
-class RuntimeAPI : public BrowserContextKeyedService,
+class RuntimeAPI : public ProfileKeyedAPI,
                    public content::NotificationObserver,
                    public extensions::UpdateObserver {
  public:
+  static ProfileKeyedAPIFactory<RuntimeAPI>* GetFactoryInstance();
+
   explicit RuntimeAPI(content::BrowserContext* context);
   virtual ~RuntimeAPI();
 
@@ -44,10 +46,17 @@ class RuntimeAPI : public BrowserContextKeyedService,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
+  friend class ProfileKeyedAPIFactory<RuntimeAPI>;
+
   void OnExtensionsReady();
   void OnExtensionLoaded(const Extension* extension);
   void OnExtensionInstalled(const Extension* extension);
   void OnExtensionUninstalled(const Extension* extension);
+
+  // ProfileKeyedAPI implementation:
+  static const char* service_name() { return "RuntimeAPI"; }
+  static const bool kServiceRedirectedInIncognito = true;
+  static const bool kServiceIsNULLWhileTesting = true;
 
   // extensions::UpdateObserver overrides:
   virtual void OnAppUpdateAvailable(const Extension* extension) OVERRIDE;

@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/api_function.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_extension_function.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_profile.h"
 #include "extensions/browser/event_router.h"
@@ -30,13 +30,14 @@ namespace extensions {
 class ExtensionBluetoothEventRouter;
 
 // The profile-keyed service that manages the bluetooth extension API.
-class BluetoothAPI : public BrowserContextKeyedService,
-                     public EventRouter::Observer {
+class BluetoothAPI : public ProfileKeyedAPI, public EventRouter::Observer {
  public:
   // Convenience method to get the BluetoothAPI for a profile.
-  static BluetoothAPI* Get(Profile* profile);
+  static BluetoothAPI* Get(content::BrowserContext* context);
 
-  explicit BluetoothAPI(Profile* profile);
+  static ProfileKeyedAPIFactory<BluetoothAPI>* GetFactoryInstance();
+
+  explicit BluetoothAPI(content::BrowserContext* context);
   virtual ~BluetoothAPI();
 
   ExtensionBluetoothEventRouter* bluetooth_event_router();
@@ -49,6 +50,13 @@ class BluetoothAPI : public BrowserContextKeyedService,
   virtual void OnListenerRemoved(const EventListenerInfo& details) OVERRIDE;
 
  private:
+  friend class ProfileKeyedAPIFactory<BluetoothAPI>;
+
+  // ProfileKeyedAPI implementation.
+  static const char* service_name() { return "BluetoothAPI"; }
+  static const bool kServiceRedirectedInIncognito = true;
+  static const bool kServiceIsNULLWhileTesting = true;
+
   Profile* profile_;
 
   // Created lazily on first access.

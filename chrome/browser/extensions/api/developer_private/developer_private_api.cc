@@ -15,12 +15,12 @@
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/i18n/file_util_icu.h"
+#include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
-#include "chrome/browser/extensions/api/developer_private/developer_private_api_factory.h"
 #include "chrome/browser/extensions/api/developer_private/entry_picker.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
@@ -150,11 +150,23 @@ namespace Inspect = api::developer_private::Inspect;
 namespace PackDirectory = api::developer_private::PackDirectory;
 namespace Reload = api::developer_private::Reload;
 
-DeveloperPrivateAPI* DeveloperPrivateAPI::Get(Profile* profile) {
-  return DeveloperPrivateAPIFactory::GetForProfile(profile);
+static base::LazyInstance<ProfileKeyedAPIFactory<DeveloperPrivateAPI> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+ProfileKeyedAPIFactory<DeveloperPrivateAPI>*
+DeveloperPrivateAPI::GetFactoryInstance() {
+  return g_factory.Pointer();
 }
 
-DeveloperPrivateAPI::DeveloperPrivateAPI(Profile* profile) : profile_(profile) {
+// static
+DeveloperPrivateAPI* DeveloperPrivateAPI::Get(
+    content::BrowserContext* context) {
+  return GetFactoryInstance()->GetForProfile(context);
+}
+
+DeveloperPrivateAPI::DeveloperPrivateAPI(content::BrowserContext* context)
+    : profile_(Profile::FromBrowserContext(context)) {
   RegisterNotifications();
 }
 

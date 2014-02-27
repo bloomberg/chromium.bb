@@ -226,7 +226,7 @@ ProfileKeyedAPIFactory<HistoryAPI>* HistoryAPI::GetFactoryInstance() {
 
 template<>
 void ProfileKeyedAPIFactory<HistoryAPI>::DeclareFactoryDependencies() {
-  DependsOn(ActivityLogFactory::GetInstance());
+  DependsOn(ActivityLog::GetFactoryInstance());
 }
 
 void HistoryAPI::OnListenerAdded(const EventListenerInfo& details) {

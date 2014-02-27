@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -29,7 +30,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_system.h"
@@ -336,48 +336,27 @@ void ExtractUrls(scoped_refptr<Action> action, Profile* profile) {
 
 namespace extensions {
 
-// ActivityLogFactory
+// SET THINGS UP. --------------------------------------------------------------
 
-ActivityLogFactory* ActivityLogFactory::GetInstance() {
-  return Singleton<ActivityLogFactory>::get();
-}
+static base::LazyInstance<ProfileKeyedAPIFactory<ActivityLog> > g_factory =
+    LAZY_INSTANCE_INITIALIZER;
 
-BrowserContextKeyedService* ActivityLogFactory::BuildServiceInstanceFor(
-    content::BrowserContext* profile) const {
-  return new ActivityLog(static_cast<Profile*>(profile));
-}
-
-content::BrowserContext* ActivityLogFactory::GetBrowserContextToUse(
-    content::BrowserContext* context) const {
-  return ExtensionsBrowserClient::Get()->GetOriginalContext(context);
-}
-
-ActivityLogFactory::ActivityLogFactory()
-    : BrowserContextKeyedServiceFactory(
-        "ActivityLog",
-        BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
-  DependsOn(InstallTrackerFactory::GetInstance());
+ProfileKeyedAPIFactory<ActivityLog>* ActivityLog::GetFactoryInstance() {
+  return g_factory.Pointer();
 }
 
 // static
 ActivityLog* ActivityLog::GetInstance(content::BrowserContext* context) {
-  return ActivityLogFactory::GetForBrowserContext(context);
+  return ActivityLog::GetFactoryInstance()->GetForProfile(
+      Profile::FromBrowserContext(context));
 }
-
-ActivityLogFactory::~ActivityLogFactory() {
-}
-
-// ActivityLog
-
-// SET THINGS UP. --------------------------------------------------------------
 
 // Use GetInstance instead of directly creating an ActivityLog.
-ActivityLog::ActivityLog(Profile* profile)
+ActivityLog::ActivityLog(content::BrowserContext* context)
     : database_policy_(NULL),
       database_policy_type_(ActivityLogPolicy::POLICY_INVALID),
       uma_policy_(NULL),
-      profile_(profile),
+      profile_(Profile::FromBrowserContext(context)),
       db_enabled_(false),
       testing_mode_(false),
       has_threads_(true),
@@ -419,7 +398,7 @@ ActivityLog::ActivityLog(Profile* profile)
 // checks. However, UmaPolicy can't even compile on Android because it uses
 // BrowserList and related classes that aren't compiled for Android.
 #if !defined(OS_ANDROID)
-  if (!profile->IsOffTheRecord())
+  if (!profile_->IsOffTheRecord())
     uma_policy_ = new UmaPolicy(profile_);
 #endif
 
@@ -714,6 +693,12 @@ void ActivityLog::DeleteDatabase() {
   if (!database_policy_)
     return;
   database_policy_->DeleteDatabase();
+}
+
+template <>
+void ProfileKeyedAPIFactory<ActivityLog>::DeclareFactoryDependencies() {
+  DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
+  DependsOn(InstallTrackerFactory::GetInstance());
 }
 
 }  // namespace extensions

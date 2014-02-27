@@ -39,7 +39,7 @@ ProfileKeyedAPIFactory<ActivityLogAPI>* ActivityLogAPI::GetFactoryInstance() {
 template<>
 void ProfileKeyedAPIFactory<ActivityLogAPI>::DeclareFactoryDependencies() {
   DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
-  DependsOn(ActivityLogFactory::GetInstance());
+  DependsOn(ActivityLog::GetFactoryInstance());
 }
 
 ActivityLogAPI::ActivityLogAPI(content::BrowserContext* context)

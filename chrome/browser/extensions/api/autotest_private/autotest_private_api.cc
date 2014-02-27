@@ -4,8 +4,8 @@
 
 #include "chrome/browser/extensions/api/autotest_private/autotest_private_api.h"
 
+#include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/extensions/api/autotest_private/autotest_private_api_factory.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -60,18 +60,24 @@ base::ListValue* GetAPIPermissions(const Extension* ext) {
   return permissions;
 }
 
+bool IsTestMode(Profile* profile) {
+  return AutotestPrivateAPI::GetFactoryInstance()
+      ->GetForProfile(profile)
+      ->test_mode();
+}
+
 }  // namespace
 
 bool AutotestPrivateLogoutFunction::RunImpl() {
   DVLOG(1) << "AutotestPrivateLogoutFunction";
-  if (!AutotestPrivateAPIFactory::GetForProfile(GetProfile())->test_mode())
+  if (!IsTestMode(GetProfile()))
     chrome::AttemptUserExit();
   return true;
 }
 
 bool AutotestPrivateRestartFunction::RunImpl() {
   DVLOG(1) << "AutotestPrivateRestartFunction";
-  if (!AutotestPrivateAPIFactory::GetForProfile(GetProfile())->test_mode())
+  if (!IsTestMode(GetProfile()))
     chrome::AttemptRestart();
   return true;
 }
@@ -83,7 +89,7 @@ bool AutotestPrivateShutdownFunction::RunImpl() {
 
   DVLOG(1) << "AutotestPrivateShutdownFunction " << params->force;
 
-  if (!AutotestPrivateAPIFactory::GetForProfile(GetProfile())->test_mode())
+  if (!IsTestMode(GetProfile()))
     chrome::AttemptExit();
   return true;
 }
@@ -210,7 +216,7 @@ static int AccessArray(const volatile int arr[], const volatile int *index) {
 
 bool AutotestPrivateSimulateAsanMemoryBugFunction::RunImpl() {
   DVLOG(1) << "AutotestPrivateSimulateAsanMemoryBugFunction";
-  if (!AutotestPrivateAPIFactory::GetForProfile(GetProfile())->test_mode()) {
+  if (!IsTestMode(GetProfile())) {
     // This array is volatile not to let compiler optimize us out.
     volatile int testarray[3] = {0, 0, 0};
 
@@ -221,6 +227,21 @@ bool AutotestPrivateSimulateAsanMemoryBugFunction::RunImpl() {
   return true;
 }
 
+static base::LazyInstance<ProfileKeyedAPIFactory<AutotestPrivateAPI> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+ProfileKeyedAPIFactory<AutotestPrivateAPI>*
+AutotestPrivateAPI::GetFactoryInstance() {
+  return g_factory.Pointer();
+}
+
+template <>
+BrowserContextKeyedService*
+ProfileKeyedAPIFactory<AutotestPrivateAPI>::BuildServiceInstanceFor(
+    content::BrowserContext* context) const {
+  return new AutotestPrivateAPI();
+}
 
 AutotestPrivateAPI::AutotestPrivateAPI() : test_mode_(false) {
 }

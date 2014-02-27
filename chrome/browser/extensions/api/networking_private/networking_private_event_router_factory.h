@@ -8,8 +8,6 @@
 #include "base/memory/singleton.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 
-class Profile;
-
 namespace extensions {
 
 class NetworkingPrivateEventRouter;
@@ -22,7 +20,8 @@ class NetworkingPrivateEventRouterFactory
  public:
   // Returns the NetworkingPrivateEventRouter for |profile|, creating it if
   // it is not yet created.
-  static NetworkingPrivateEventRouter* GetForProfile(Profile* profile);
+  static NetworkingPrivateEventRouter* GetForProfile(
+      content::BrowserContext* context);
 
   // Returns the NetworkingPrivateEventRouterFactory instance.
   static NetworkingPrivateEventRouterFactory* GetInstance();
@@ -50,4 +49,3 @@ class NetworkingPrivateEventRouterFactory
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_EVENT_ROUTER_FACTORY_H_
-

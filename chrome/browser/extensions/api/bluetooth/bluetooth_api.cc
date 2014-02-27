@@ -6,8 +6,8 @@
 
 #include <string>
 
+#include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/extensions/api/bluetooth/bluetooth_api_factory.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api_utils.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_event_router.h"
 #include "chrome/browser/extensions/event_names.h"
@@ -27,6 +27,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "net/base/io_buffer.h"
 
+using content::BrowserContext;
 using device::BluetoothAdapter;
 using device::BluetoothDevice;
 using device::BluetoothProfile;
@@ -35,8 +36,9 @@ using device::BluetoothSocket;
 
 namespace {
 
-extensions::ExtensionBluetoothEventRouter* GetEventRouter(Profile* profile) {
-  return extensions::BluetoothAPI::Get(profile)->bluetooth_event_router();
+extensions::ExtensionBluetoothEventRouter* GetEventRouter(
+    BrowserContext* context) {
+  return extensions::BluetoothAPI::Get(context)->bluetooth_event_router();
 }
 
 }  // namespace
@@ -77,12 +79,21 @@ namespace Write = extensions::api::bluetooth::Write;
 
 namespace extensions {
 
+static base::LazyInstance<ProfileKeyedAPIFactory<BluetoothAPI> > g_factory =
+    LAZY_INSTANCE_INITIALIZER;
+
 // static
-BluetoothAPI* BluetoothAPI::Get(Profile* profile) {
-  return BluetoothAPIFactory::GetForProfile(profile);
+ProfileKeyedAPIFactory<BluetoothAPI>* BluetoothAPI::GetFactoryInstance() {
+  return g_factory.Pointer();
 }
 
-BluetoothAPI::BluetoothAPI(Profile* profile) : profile_(profile) {
+// static
+BluetoothAPI* BluetoothAPI::Get(BrowserContext* context) {
+  return GetFactoryInstance()->GetForProfile(context);
+}
+
+BluetoothAPI::BluetoothAPI(BrowserContext* context)
+    : profile_(Profile::FromBrowserContext(context)) {
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
       this, bluetooth::OnAdapterStateChanged::kEventName);
 }

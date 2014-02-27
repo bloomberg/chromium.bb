@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/sync_file_system/extension_sync_event_observer.h"
-#include "chrome/browser/extensions/api/sync_file_system/extension_sync_event_observer_factory.h"
 #include "chrome/browser/extensions/api/sync_file_system/sync_file_system_api_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/drive_file_sync_service.h"
@@ -51,7 +50,7 @@ sync_file_system::SyncFileSystemService* GetSyncFileSystemService(
       SyncFileSystemServiceFactory::GetForProfile(profile);
   DCHECK(service);
   ExtensionSyncEventObserver* observer =
-      ExtensionSyncEventObserverFactory::GetForProfile(profile);
+      ExtensionSyncEventObserver::GetFactoryInstance()->GetForProfile(profile);
   DCHECK(observer);
   observer->InitializeForService(service);
   return service;

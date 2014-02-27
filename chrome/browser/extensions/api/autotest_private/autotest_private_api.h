@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 
 namespace extensions {
 
@@ -87,19 +87,32 @@ class AutotestPrivateSimulateAsanMemoryBugFunction
 void SetAutotestPrivateTest();
 
 // The profile-keyed service that manages the autotestPrivate extension API.
-class AutotestPrivateAPI : public BrowserContextKeyedService {
+class AutotestPrivateAPI : public ProfileKeyedAPI {
  public:
-  AutotestPrivateAPI();
+  static ProfileKeyedAPIFactory<AutotestPrivateAPI>* GetFactoryInstance();
 
   // TODO(achuith): Replace these with a mock object for system calls.
   bool test_mode() const { return test_mode_; }
   void set_test_mode(bool test_mode) { test_mode_ = test_mode; }
 
  private:
+  friend class ProfileKeyedAPIFactory<AutotestPrivateAPI>;
+
+  AutotestPrivateAPI();
   virtual ~AutotestPrivateAPI();
+
+  // ProfileKeyedAPI implementation.
+  static const char* service_name() { return "AutotestPrivateAPI"; }
+  static const bool kServiceIsNULLWhileTesting = true;
+  static const bool kServiceRedirectedInIncognito = true;
 
   bool test_mode_;  // true for ExtensionApiTest.AutotestPrivate browser test.
 };
+
+template <>
+BrowserContextKeyedService*
+    ProfileKeyedAPIFactory<AutotestPrivateAPI>::BuildServiceInstanceFor(
+        content::BrowserContext* context) const;
 
 }  // namespace extensions
 

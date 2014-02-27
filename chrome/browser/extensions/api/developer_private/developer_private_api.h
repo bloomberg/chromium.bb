@@ -10,13 +10,13 @@
 #include "base/files/file.h"
 #include "chrome/browser/extensions/api/developer_private/entry_picker.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
+#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/browser/extensions/requirements_checker.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_view_host.h"
@@ -26,6 +26,7 @@
 #include "webkit/browser/fileapi/file_system_operation.h"
 
 class ExtensionService;
+class Profile;
 
 namespace extensions {
 
@@ -90,13 +91,15 @@ class DeveloperPrivateEventRouter : public content::NotificationObserver,
 };
 
 // The profile-keyed service that manages the DeveloperPrivate API.
-class DeveloperPrivateAPI : public BrowserContextKeyedService,
+class DeveloperPrivateAPI : public ProfileKeyedAPI,
                             public EventRouter::Observer {
  public:
-  // Convenience method to get the DeveloperPrivateAPI for a profile.
-  static DeveloperPrivateAPI* Get(Profile* profile);
+  static ProfileKeyedAPIFactory<DeveloperPrivateAPI>* GetFactoryInstance();
 
-  explicit DeveloperPrivateAPI(Profile* profile);
+  // Convenience method to get the DeveloperPrivateAPI for a profile.
+  static DeveloperPrivateAPI* Get(content::BrowserContext* context);
+
+  explicit DeveloperPrivateAPI(content::BrowserContext* context);
   virtual ~DeveloperPrivateAPI();
 
   void SetLastUnpackedDirectory(const base::FilePath& path);
@@ -113,6 +116,13 @@ class DeveloperPrivateAPI : public BrowserContextKeyedService,
   virtual void OnListenerRemoved(const EventListenerInfo& details) OVERRIDE;
 
  private:
+  friend class ProfileKeyedAPIFactory<DeveloperPrivateAPI>;
+
+  // ProfileKeyedAPI implementation.
+  static const char* service_name() { return "DeveloperPrivateAPI"; }
+  static const bool kServiceRedirectedInIncognito = true;
+  static const bool kServiceIsNULLWhileTesting = true;
+
   void RegisterNotifications();
 
   Profile* profile_;
