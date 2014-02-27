@@ -120,7 +120,6 @@ private:
 
 FontFaceSet::FontFaceSet(Document& document)
     : ActiveDOMObject(&document)
-    , m_loadingCount(0)
     , m_shouldFireLoadingEvent(false)
     , m_asyncRunner(this, &FontFaceSet::handlePendingEventsAndPromises)
 {
@@ -162,7 +161,7 @@ AtomicString FontFaceSet::status() const
 {
     DEFINE_STATIC_LOCAL(AtomicString, loading, ("loading", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, loaded, ("loaded", AtomicString::ConstructFromLiteral));
-    return (m_loadingCount > 0 || hasLoadedFonts()) ? loading : loaded;
+    return (!m_loadingFonts.isEmpty() || hasLoadedFonts()) ? loading : loaded;
 }
 
 void FontFaceSet::handlePendingEventsAndPromisesSoon()
@@ -178,7 +177,7 @@ void FontFaceSet::didLayout()
         m_histogram.record();
     if (!RuntimeEnabledFeatures::fontLoadEventsEnabled())
         return;
-    if (m_loadingCount || (!hasLoadedFonts() && m_readyResolvers.isEmpty()))
+    if (!m_loadingFonts.isEmpty() || (!hasLoadedFonts() && m_readyResolvers.isEmpty()))
         return;
     handlePendingEventsAndPromisesSoon();
 }
@@ -215,41 +214,36 @@ void FontFaceSet::stop()
 void FontFaceSet::beginFontLoading(FontFace* fontFace)
 {
     m_histogram.incrementCount();
-    if (!RuntimeEnabledFeatures::fontLoadEventsEnabled())
-        return;
-    incrementLoadingCount();
+    addToLoadingFonts(fontFace);
 }
 
 void FontFaceSet::fontLoaded(FontFace* fontFace)
 {
-    if (!RuntimeEnabledFeatures::fontLoadEventsEnabled())
-        return;
-    m_loadedFonts.append(fontFace);
-    decrementLoadingCount();
+    if (RuntimeEnabledFeatures::fontLoadEventsEnabled())
+        m_loadedFonts.append(fontFace);
+    removeFromLoadingFonts(fontFace);
 }
 
 void FontFaceSet::loadError(FontFace* fontFace)
 {
-    if (!RuntimeEnabledFeatures::fontLoadEventsEnabled())
-        return;
-    m_failedFonts.append(fontFace);
-    decrementLoadingCount();
+    if (RuntimeEnabledFeatures::fontLoadEventsEnabled())
+        m_failedFonts.append(fontFace);
+    removeFromLoadingFonts(fontFace);
 }
 
-void FontFaceSet::incrementLoadingCount()
+void FontFaceSet::addToLoadingFonts(PassRefPtr<FontFace> fontFace)
 {
-    if (!m_loadingCount && !hasLoadedFonts()) {
+    if (RuntimeEnabledFeatures::fontLoadEventsEnabled() && m_loadingFonts.isEmpty() && !hasLoadedFonts()) {
         m_shouldFireLoadingEvent = true;
         handlePendingEventsAndPromisesSoon();
     }
-    ++m_loadingCount;
+    m_loadingFonts.add(fontFace);
 }
 
-void FontFaceSet::decrementLoadingCount()
+void FontFaceSet::removeFromLoadingFonts(PassRefPtr<FontFace> fontFace)
 {
-    ASSERT(m_loadingCount > 0);
-    --m_loadingCount;
-    if (!m_loadingCount)
+    m_loadingFonts.remove(fontFace);
+    if (RuntimeEnabledFeatures::fontLoadEventsEnabled() && m_loadingFonts.isEmpty())
         handlePendingEventsAndPromisesSoon();
 }
 
@@ -282,7 +276,7 @@ void FontFaceSet::add(FontFace* fontFace, ExceptionState& exceptionState)
     m_nonCSSConnectedFaces.add(fontFace);
     fontSelector->fontFaceCache()->addFontFace(fontSelector, fontFace, false);
     if (fontFace->loadStatus() == FontFace::Loading)
-        incrementLoadingCount();
+        addToLoadingFonts(fontFace);
 }
 
 void FontFaceSet::clear()
@@ -293,7 +287,7 @@ void FontFaceSet::clear()
     for (ListHashSet<RefPtr<FontFace> >::iterator it = m_nonCSSConnectedFaces.begin(); it != m_nonCSSConnectedFaces.end(); ++it) {
         fontFaceCache->removeFontFace(it->get(), false);
         if ((*it)->loadStatus() == FontFace::Loading)
-            decrementLoadingCount();
+            removeFromLoadingFonts(*it);
     }
     m_nonCSSConnectedFaces.clear();
 }
@@ -311,7 +305,7 @@ bool FontFaceSet::remove(FontFace* fontFace, ExceptionState& exceptionState)
         m_nonCSSConnectedFaces.remove(it);
         document()->styleEngine()->fontSelector()->fontFaceCache()->removeFontFace(fontFace, false);
         if (fontFace->loadStatus() == FontFace::Loading)
-            decrementLoadingCount();
+            removeFromLoadingFonts(fontFace);
         return true;
     }
     if (isCSSConnectedFontFace(fontFace))
@@ -384,7 +378,7 @@ void FontFaceSet::fireDoneEventIfPossible()
 {
     if (m_shouldFireLoadingEvent)
         return;
-    if (m_loadingCount || (!hasLoadedFonts() && m_readyResolvers.isEmpty()))
+    if (!m_loadingFonts.isEmpty() || (!hasLoadedFonts() && m_readyResolvers.isEmpty()))
         return;
 
     // If the layout was invalidated in between when we thought layout

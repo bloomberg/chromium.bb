@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<body>
+<style id="target">
+@font-face {
+    font-family: TestFont;
+    src: local(nonexistent), url(slow-ahem-loading.cgi);
+}
+</style>
+<span style="font-family: TestFont;">A</span>
+<script>
+if (window.testRunner)
+    testRunner.waitUntilDone();
+
+var style = document.getElementById('target');
+style.parentNode.removeChild(style);
+document.body.offsetLeft;
+document.body.appendChild(style);
+
+if (window.testRunner)
+    document.fonts.ready().then(function() { testRunner.notifyDone(); });
+</script>
+</body>
+</html>

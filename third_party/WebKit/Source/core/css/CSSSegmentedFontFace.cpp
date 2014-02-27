@@ -71,8 +71,6 @@ bool CSSSegmentedFontFace::isValid() const
 
 void CSSSegmentedFontFace::fontLoaded(CSSFontFace*)
 {
-    m_fontSelector->fontLoaded();
-
     pruneTable();
 
     if (RuntimeEnabledFeatures::fontLoadEventsEnabled() && !isLoading()) {

@@ -64,6 +64,9 @@ void CSSFontFace::beginLoadIfNeeded(CSSFontFaceSource* source, CSSFontSelector* 
 
 void CSSFontFace::fontLoaded(CSSFontFaceSource* source)
 {
+    if (m_segmentedFontFace)
+        m_segmentedFontFace->fontSelector()->fontLoaded();
+
     if (!isValid() || source != m_sources.first())
         return;
 

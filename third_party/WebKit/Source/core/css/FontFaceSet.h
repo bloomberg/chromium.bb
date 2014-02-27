@@ -126,8 +126,8 @@ private:
 
     bool inActiveDocumentContext() const;
     void forEachInternal(PassOwnPtr<FontFaceSetForEachCallback>, ScriptValue* thisArg) const;
-    void incrementLoadingCount();
-    void decrementLoadingCount();
+    void addToLoadingFonts(PassRefPtr<FontFace>);
+    void removeFromLoadingFonts(PassRefPtr<FontFace>);
     void fireLoadingEvent();
     void fireDoneEventIfPossible();
     bool resolveFontStyle(const String&, Font&);
@@ -136,7 +136,7 @@ private:
     const ListHashSet<RefPtr<FontFace> >& cssConnectedFontFaceList() const;
     bool isCSSConnectedFontFace(FontFace*) const;
 
-    unsigned m_loadingCount;
+    HashSet<RefPtr<FontFace> > m_loadingFonts;
     bool m_shouldFireLoadingEvent;
     Vector<OwnPtr<FontsReadyPromiseResolver> > m_readyResolvers;
     FontFaceArray m_loadedFonts;
