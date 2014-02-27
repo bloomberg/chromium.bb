@@ -1715,6 +1715,7 @@ void RenderBoxModelObject::paintBorder(const PaintInfo& info, const LayoutRect& 
     bool haveAllDoubleEdges = true;
     int numEdgesVisible = 4;
     bool allEdgesShareColor = true;
+    bool allEdgesShareWidth = true;
     int firstVisibleEdge = -1;
     BorderEdgeFlags edgesToDraw = 0;
 
@@ -1727,18 +1728,23 @@ void RenderBoxModelObject::paintBorder(const PaintInfo& info, const LayoutRect& 
         if (currEdge.presentButInvisible()) {
             --numEdgesVisible;
             allEdgesShareColor = false;
+            allEdgesShareWidth = false;
             continue;
         }
 
-        if (!currEdge.width) {
+        if (!currEdge.shouldRender()) {
             --numEdgesVisible;
             continue;
         }
 
-        if (firstVisibleEdge == -1)
+        if (firstVisibleEdge == -1) {
             firstVisibleEdge = i;
-        else if (currEdge.color != edges[firstVisibleEdge].color)
-            allEdgesShareColor = false;
+        } else {
+            if (currEdge.color != edges[firstVisibleEdge].color)
+                allEdgesShareColor = false;
+            if (currEdge.width != edges[firstVisibleEdge].width)
+                allEdgesShareWidth = false;
+        }
 
         if (currEdge.color.hasAlpha())
             haveAlphaColor = true;
@@ -1758,10 +1764,18 @@ void RenderBoxModelObject::paintBorder(const PaintInfo& info, const LayoutRect& 
     // isRenderable() check avoids issue described in https://bugs.webkit.org/show_bug.cgi?id=38787
     if ((haveAllSolidEdges || haveAllDoubleEdges) && allEdgesShareColor && innerBorder.isRenderable()) {
         // Fast path for drawing all solid edges and all unrounded double edges
+
         if (numEdgesVisible == 4 && (outerBorder.isRounded() || haveAlphaColor)
             && (haveAllSolidEdges || (!outerBorder.isRounded() && !innerBorder.isRounded()))) {
             Path path;
 
+            if (outerBorder.isRounded() && allEdgesShareWidth) {
+
+                // Very fast path for single stroked round rect with circular corners
+
+                graphicsContext->fillBetweenRoundedRects(outerBorder, innerBorder, edges[firstVisibleEdge].color);
+                return;
+            }
             if (outerBorder.isRounded() && bleedAvoidance != BackgroundBleedClipBackground)
                 path.addRoundedRect(outerBorder);
             else

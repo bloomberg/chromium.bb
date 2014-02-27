@@ -242,6 +242,10 @@ public:
 
     void strokeRect(const FloatRect&, float lineWidth);
 
+    void fillBetweenRoundedRects(const IntRect&, const IntSize& outerTopLeft, const IntSize& outerTopRight, const IntSize& outerBottomLeft, const IntSize& outerBottomRight,
+        const IntRect&, const IntSize& innerTopLeft, const IntSize& innerTopRight, const IntSize& innerBottomLeft, const IntSize& innerBottomRight, const Color&);
+    void fillBetweenRoundedRects(const RoundedRect&, const RoundedRect&, const Color&);
+
     void drawDisplayList(DisplayList*);
 
     void drawImage(Image*, const IntPoint&, CompositeOperator = CompositeSourceOver, RespectImageOrientationEnum = DoNotRespectImageOrientation);

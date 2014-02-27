@@ -1397,6 +1397,37 @@ void GraphicsContext::fillRect(const FloatRect& rect, const Color& color)
     drawRect(r, paint);
 }
 
+void GraphicsContext::fillBetweenRoundedRects(const IntRect& outer, const IntSize& outerTopLeft, const IntSize& outerTopRight, const IntSize& outerBottomLeft, const IntSize& outerBottomRight,
+    const IntRect& inner, const IntSize& innerTopLeft, const IntSize& innerTopRight, const IntSize& innerBottomLeft, const IntSize& innerBottomRight, const Color& color) {
+    if (paintingDisabled())
+        return;
+
+    SkVector outerRadii[4];
+    SkVector innerRadii[4];
+    setRadii(outerRadii, outerTopLeft, outerTopRight, outerBottomRight, outerBottomLeft);
+    setRadii(innerRadii, innerTopLeft, innerTopRight, innerBottomRight, innerBottomLeft);
+
+    SkRRect rrOuter;
+    SkRRect rrInner;
+    rrOuter.setRectRadii(outer, outerRadii);
+    rrInner.setRectRadii(inner, innerRadii);
+
+    SkPaint paint;
+    setupPaintForFilling(&paint);
+    paint.setColor(color.rgb());
+
+    m_canvas->drawDRRect(rrOuter, rrInner, paint);
+
+    if (m_trackOpaqueRegion)
+        m_opaqueRegion.didDrawBounded(this, rrOuter.getBounds(), paint);
+}
+
+void GraphicsContext::fillBetweenRoundedRects(const RoundedRect& outer, const RoundedRect& inner, const Color& color)
+{
+    fillBetweenRoundedRects(outer.rect(), outer.radii().topLeft(), outer.radii().topRight(), outer.radii().bottomLeft(), outer.radii().bottomRight(),
+        inner.rect(), inner.radii().topLeft(), inner.radii().topRight(), inner.radii().bottomLeft(), inner.radii().bottomRight(), color);
+}
+
 void GraphicsContext::fillRoundedRect(const IntRect& rect, const IntSize& topLeft, const IntSize& topRight,
     const IntSize& bottomLeft, const IntSize& bottomRight, const Color& color)
 {
