@@ -11,9 +11,11 @@
 #include "ash/wm/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/wm/window_state.h"
 #include "base/command_line.h"
+#include "base/i18n/rtl.h"
 #include "grit/ash_resources.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/gestures/gesture_configuration.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
@@ -402,6 +404,74 @@ TEST_F(AlternateFrameSizeButtonTest, SizeButtonPressedWhenSnapButtonHovered) {
   EXPECT_EQ(views::Button::STATE_NORMAL, minimize_button()->state());
   EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
   EXPECT_EQ(views::Button::STATE_HOVERED, close_button()->state());
+}
+
+class AlternateFrameSizeButtonTestRTL : public AlternateFrameSizeButtonTest {
+ public:
+  AlternateFrameSizeButtonTestRTL() {}
+  virtual ~AlternateFrameSizeButtonTestRTL() {}
+
+  virtual void SetUp() OVERRIDE {
+    original_locale_ = l10n_util::GetApplicationLocale(std::string());
+    base::i18n::SetICUDefaultLocale("he");
+
+    AlternateFrameSizeButtonTest::SetUp();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    AlternateFrameSizeButtonTest::TearDown();
+    base::i18n::SetICUDefaultLocale(original_locale_);
+  }
+
+ private:
+  std::string original_locale_;
+
+  DISALLOW_COPY_AND_ASSIGN(AlternateFrameSizeButtonTestRTL);
+};
+
+// Test that clicking + dragging to a button adjacent to the size button presses
+// the correct button and snaps the window to the correct side.
+TEST_F(AlternateFrameSizeButtonTestRTL, ButtonDrag) {
+  // In RTL the close button should be left of the size button and the minimize
+  // button should be right of the size button.
+  ASSERT_LT(close_button()->GetBoundsInScreen().x(),
+            size_button()->GetBoundsInScreen().x());
+  ASSERT_LT(size_button()->GetBoundsInScreen().x(),
+            minimize_button()->GetBoundsInScreen().x());
+
+  // Test initial state.
+  EXPECT_TRUE(window_state()->IsNormalStateType());
+  EXPECT_TRUE(AllButtonsInNormalState());
+  EXPECT_EQ(CAPTION_BUTTON_ICON_MINIMIZE, minimize_button()->icon());
+  EXPECT_EQ(CAPTION_BUTTON_ICON_CLOSE, close_button()->icon());
+
+  // Pressing the size button should swap the icons of the minimize and close
+  // buttons to icons for snapping right and for snapping left respectively.
+  aura::test::EventGenerator& generator = GetEventGenerator();
+  generator.MoveMouseTo(CenterPointInScreen(size_button()));
+  generator.PressLeftButton();
+  EXPECT_EQ(views::Button::STATE_NORMAL, minimize_button()->state());
+  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
+  EXPECT_EQ(views::Button::STATE_NORMAL, close_button()->state());
+  EXPECT_EQ(CAPTION_BUTTON_ICON_RIGHT_SNAPPED, minimize_button()->icon());
+  EXPECT_EQ(CAPTION_BUTTON_ICON_LEFT_SNAPPED, close_button()->icon());
+
+  // Dragging over to the minimize button should press it.
+  generator.MoveMouseTo(CenterPointInScreen(minimize_button()));
+  EXPECT_EQ(views::Button::STATE_HOVERED, minimize_button()->state());
+  EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
+  EXPECT_EQ(views::Button::STATE_NORMAL, close_button()->state());
+
+  // Releasing should snap the window right.
+  generator.ReleaseLeftButton();
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(HasStateType(wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED));
+
+  // None of the buttons should stay pressed and the buttons should have their
+  // regular icons.
+  EXPECT_TRUE(AllButtonsInNormalState());
+  EXPECT_EQ(CAPTION_BUTTON_ICON_MINIMIZE, minimize_button()->icon());
+  EXPECT_EQ(CAPTION_BUTTON_ICON_CLOSE, close_button()->icon());
 }
 
 }  // namespace test

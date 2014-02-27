@@ -35,8 +35,8 @@ class ASH_EXPORT AlternateFrameSizeButtonDelegate {
 
   // Sets the minimize and close button icons. The buttons will crossfade to
   // their new icons if |animate| is ANIMATE_YES.
-  virtual void SetButtonIcons(CaptionButtonIcon left_button_action,
-                              CaptionButtonIcon right_button_action,
+  virtual void SetButtonIcons(CaptionButtonIcon minimize_button_icon,
+                              CaptionButtonIcon close_button_icon,
                               Animate animate) = 0;
 
   // Returns the button closest to |position_in_screen|.

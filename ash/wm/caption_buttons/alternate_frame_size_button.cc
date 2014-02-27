@@ -11,6 +11,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
+#include "base/i18n/rtl.h"
 #include "ui/gfx/vector2d.h"
 #include "ui/views/widget/widget.h"
 
@@ -151,9 +152,18 @@ void AlternateFrameSizeButton::SetButtonsToSnapMode() {
   if (in_snap_mode_)
     return;
   in_snap_mode_ = true;
-  delegate_->SetButtonIcons(CAPTION_BUTTON_ICON_LEFT_SNAPPED,
-                            CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
-                            AlternateFrameSizeButtonDelegate::ANIMATE_YES);
+
+  // When using a right-to-left layout the close button is left of the size
+  // button and the minimize button is right of the size button.
+  if (base::i18n::IsRTL()) {
+    delegate_->SetButtonIcons(CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
+                              CAPTION_BUTTON_ICON_LEFT_SNAPPED,
+                              AlternateFrameSizeButtonDelegate::ANIMATE_YES);
+  } else {
+    delegate_->SetButtonIcons(CAPTION_BUTTON_ICON_LEFT_SNAPPED,
+                              CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
+                              AlternateFrameSizeButtonDelegate::ANIMATE_YES);
+  }
 }
 
 void AlternateFrameSizeButton::UpdateSnapType(const ui::LocatedEvent& event) {

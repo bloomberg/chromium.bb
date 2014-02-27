@@ -36,7 +36,10 @@ FrameCaptionButton::FrameCaptionButton(views::ButtonListener* listener,
       pressed_background_image_id_(-1),
       swap_images_animation_(new gfx::SlideAnimation(this)) {
   swap_images_animation_->Reset(1);
-  EnableCanvasFlippingForRTLUI(true);
+
+  // Do not flip the gfx::Canvas passed to the OnPaint() method. The snap left
+  // and snap right button icons should not be flipped. The other icons are
+  // horizontally symmetrical.
 }
 
 FrameCaptionButton::~FrameCaptionButton() {

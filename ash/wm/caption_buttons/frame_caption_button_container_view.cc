@@ -263,7 +263,8 @@ const FrameCaptionButton* FrameCaptionButtonContainerView::GetButtonClosestTo(
     if (!button->visible())
       continue;
 
-    gfx::Point center_point = button->bounds().CenterPoint();
+    gfx::Point center_point = button->GetLocalBounds().CenterPoint();
+    views::View::ConvertPointToTarget(button, this, &center_point);
     int squared_distance = static_cast<int>(
         pow(static_cast<double>(position.x() - center_point.x()), 2) +
         pow(static_cast<double>(position.y() - center_point.y()), 2));
