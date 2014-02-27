@@ -197,6 +197,9 @@ def CMDpopulate(parser, args):
     RunGit(['config', '--replace-all', 'remote.origin.fetch',
             '+refs/heads/*:refs/heads/*'],
            cwd=directory)
+    RunGit(['config', '--add', 'remote.origin.fetch',
+            '+refs/tags/*:refs/tags/*'],
+           cwd=directory)
     for ref in options.ref or []:
       ref = ref.rstrip('/')
       refspec = '+refs/%s/*:refs/%s/*' % (ref, ref)
@@ -211,14 +214,14 @@ def CMDpopulate(parser, args):
                                  dir=options.cache_dir)
       RunGit(['init', '--bare'], cwd=tempdir)
       _config(tempdir)
-      fetch_cmd = ['fetch'] + v + d + ['--tags', 'origin']
+      fetch_cmd = ['fetch'] + v + d + ['origin']
       RunGit(fetch_cmd, filter_fn=filter_fn, cwd=tempdir, retry=True)
       os.rename(tempdir, repo_dir)
     else:
       _config(repo_dir)
       if options.depth and os.path.exists(os.path.join(repo_dir, 'shallow')):
         logging.warn('Shallow fetch requested, but repo cache already exists.')
-      fetch_cmd = ['fetch'] + v + ['--tags', 'origin']
+      fetch_cmd = ['fetch'] + v + ['origin']
       RunGit(fetch_cmd, filter_fn=filter_fn, cwd=repo_dir, retry=True)
 
 
