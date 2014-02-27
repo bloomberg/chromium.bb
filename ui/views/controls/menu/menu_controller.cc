@@ -1062,26 +1062,25 @@ uint32_t MenuController::Dispatch(const base::NativeEvent& event) {
   if (exit_type_ == EXIT_ALL || exit_type_ == EXIT_DESTROYED)
     return (POST_DISPATCH_QUIT_LOOP | POST_DISPATCH_PERFORM_DEFAULT);
 
-  // Activates mnemonics only when it it pressed without modifiers except for
-  // caps and shift.
-  int flags = ui::EventFlagsFromNative(event) &
-      ~ui::EF_CAPS_LOCK_DOWN & ~ui::EF_SHIFT_DOWN;
-  if (flags == ui::EF_NONE) {
-    switch (ui::EventTypeFromNative(event)) {
-      case ui::ET_KEY_PRESSED: {
-        if (!OnKeyDown(ui::KeyboardCodeFromNative(event)))
-          return POST_DISPATCH_QUIT_LOOP;
+  switch (ui::EventTypeFromNative(event)) {
+    case ui::ET_KEY_PRESSED: {
+      if (!OnKeyDown(ui::KeyboardCodeFromNative(event)))
+        return POST_DISPATCH_QUIT_LOOP;
 
+      // Do not check mnemonics if the Alt or Ctrl modifiers are pressed.
+      int flags = ui::EventFlagsFromNative(event);
+      if ((flags & (ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)) == 0) {
         char c = ui::GetCharacterFromKeyCode(
             ui::KeyboardCodeFromNative(event), flags);
-        bool should_exit = SelectByChar(c);
-        return should_exit ? POST_DISPATCH_QUIT_LOOP : POST_DISPATCH_NONE;
+        if (SelectByChar(c))
+          return POST_DISPATCH_QUIT_LOOP;
       }
-      case ui::ET_KEY_RELEASED:
-        return POST_DISPATCH_NONE;
-      default:
-        break;
+      return POST_DISPATCH_NONE;
     }
+    case ui::ET_KEY_RELEASED:
+      return POST_DISPATCH_NONE;
+    default:
+      break;
   }
 
   return POST_DISPATCH_PERFORM_DEFAULT |
