@@ -27195,6 +27195,7 @@ other types of suffix sets.
   <int value="6" label="URL fetching failed"/>
   <int value="7" label="HTTP not OK"/>
   <int value="8" label="Response parsing failed"/>
+  <int value="9" label="Reached maximum number of retries"/>
 </enum>
 
 <enum name="GCMUnregistrationRequestStatus" type="int">

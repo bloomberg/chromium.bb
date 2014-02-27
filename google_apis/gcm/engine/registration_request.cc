@@ -102,12 +102,15 @@ RegistrationRequest::RegistrationRequest(
     const RequestInfo& request_info,
     const net::BackoffEntry::Policy& backoff_policy,
     const RegistrationCallback& callback,
+    int max_retry_count,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter)
     : callback_(callback),
       request_info_(request_info),
       backoff_entry_(&backoff_policy),
       request_context_getter_(request_context_getter),
+      retries_left_(max_retry_count),
       weak_ptr_factory_(this) {
+  DCHECK_GE(max_retry_count, 0);
 }
 
 RegistrationRequest::~RegistrationRequest() {}
@@ -157,6 +160,8 @@ void RegistrationRequest::Start() {
 
 void RegistrationRequest::RetryWithBackoff(bool update_backoff) {
   if (update_backoff) {
+    DCHECK_GT(retries_left_, 0);
+    --retries_left_;
     url_fetcher_.reset();
     backoff_entry_.InformOfRequest(false);
   }
@@ -212,11 +217,19 @@ RegistrationRequest::Status RegistrationRequest::ParseResponse(
 void RegistrationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
   std::string token;
   Status status = ParseResponse(source, &token);
-  RecordRegistrationStatusToUMA(status );
-  if (ShouldRetryWithStatus(status))
-    RetryWithBackoff(true);
-  else
-    callback_.Run(status, token);
+  RecordRegistrationStatusToUMA(status);
+
+  if (ShouldRetryWithStatus(status)) {
+    if (retries_left_ > 0) {
+      RetryWithBackoff(true);
+      return;
+    }
+
+    status = REACHED_MAX_RETRIES;
+    RecordRegistrationStatusToUMA(status);
+  }
+
+  callback_.Run(status, token);
 }
 
 }  // namespace gcm

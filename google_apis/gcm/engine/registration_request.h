@@ -43,6 +43,7 @@ class GCM_EXPORT RegistrationRequest : public net::URLFetcherDelegate {
     URL_FETCHING_FAILED,        // URL fetching failed.
     HTTP_NOT_OK,                // HTTP status was not OK.
     RESPONSE_PARSING_FAILED,    // Registration response parsing failed.
+    REACHED_MAX_RETRIES,        // Reached maximum number of retries.
     // NOTE: always keep this entry at the end. Add new status types only
     // immediately above this line. Make sure to update the corresponding
     // histogram enum accordingly.
@@ -81,6 +82,7 @@ class GCM_EXPORT RegistrationRequest : public net::URLFetcherDelegate {
       const RequestInfo& request_info,
       const net::BackoffEntry::Policy& backoff_policy,
       const RegistrationCallback& callback,
+      int max_retry_count,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter);
   virtual ~RegistrationRequest();
 
@@ -104,6 +106,7 @@ class GCM_EXPORT RegistrationRequest : public net::URLFetcherDelegate {
   net::BackoffEntry backoff_entry_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   scoped_ptr<net::URLFetcher> url_fetcher_;
+  int retries_left_;
 
   base::WeakPtrFactory<RegistrationRequest> weak_ptr_factory_;
 

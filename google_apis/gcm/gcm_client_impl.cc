@@ -69,6 +69,7 @@ enum MessageType {
 };
 
 const char kMCSEndpoint[] = "https://mtalk.google.com:5228";
+const int kMaxRegistrationRetries = 5;
 const char kMessageTypeDataMessage[] = "gcm";
 const char kMessageTypeDeletedMessagesKey[] = "deleted_messages";
 const char kMessageTypeKey[] = "message_type";
@@ -304,6 +305,7 @@ void GCMClientImpl::Register(const std::string& app_id,
                               base::Bind(&GCMClientImpl::OnRegisterCompleted,
                                          weak_ptr_factory_.GetWeakPtr(),
                                          app_id),
+                              kMaxRegistrationRetries,
                               url_request_context_getter_);
   pending_registrations_[app_id] = registration_request;
   registration_request->Start();
