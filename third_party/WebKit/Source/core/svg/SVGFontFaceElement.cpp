@@ -28,12 +28,14 @@
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "core/css/CSSFontFaceSrcValue.h"
+#include "core/css/CSSFontSelector.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
+#include "core/dom/StyleEngine.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGFontElement.h"
 #include "core/svg/SVGFontFaceSrcElement.h"
@@ -333,6 +335,7 @@ void SVGFontFaceElement::removedFrom(ContainerNode* rootParent)
     if (rootParent->inDocument()) {
         m_fontElement = 0;
         document().accessSVGExtensions().unregisterSVGFontFaceElement(this);
+        document().styleEngine()->fontSelector()->fontFaceCache()->remove(m_fontFaceRule.get());
         m_fontFaceRule->mutableProperties()->clear();
 
         document().styleResolverChanged(RecalcStyleDeferred);

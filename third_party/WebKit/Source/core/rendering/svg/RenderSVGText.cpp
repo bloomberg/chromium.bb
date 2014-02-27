@@ -266,9 +266,8 @@ void RenderSVGText::subtreeChildWasRemoved(const Vector<SVGTextLayoutAttributes*
         m_layoutAttributesBuilder.buildLayoutAttributesForTextRenderer(affectedAttributes[i]->context());
 }
 
-void RenderSVGText::subtreeStyleDidChange(RenderSVGInlineText* text)
+void RenderSVGText::subtreeStyleDidChange()
 {
-    ASSERT(text);
     if (!shouldHandleSubtreeMutations() || documentBeingDestroyed())
         return;
 
@@ -277,7 +276,7 @@ void RenderSVGText::subtreeStyleDidChange(RenderSVGInlineText* text)
     // Only update the metrics cache, but not the text positioning element cache
     // nor the layout attributes cached in the leaf #text renderers.
     FontCachePurgePreventer fontCachePurgePreventer;
-    for (RenderObject* descendant = text; descendant; descendant = descendant->nextInPreOrder(text)) {
+    for (RenderObject* descendant = firstChild(); descendant; descendant = descendant->nextInPreOrder(this)) {
         if (descendant->isSVGInlineText())
             m_layoutAttributesBuilder.rebuildMetricsForTextRenderer(toRenderSVGInlineText(descendant));
     }
@@ -322,6 +321,9 @@ static inline void updateFontInAllDescendants(RenderObject* start, SVGTextLayout
 void RenderSVGText::layout()
 {
     ASSERT(needsLayout());
+
+    subtreeStyleDidChange();
+
     LayoutRectRecorder recorder(*this);
     LayoutRepainter repainter(*this, SVGRenderSupport::checkForSVGRepaintDuringLayout(this));
 
