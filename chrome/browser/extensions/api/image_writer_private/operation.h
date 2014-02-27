@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/extensions/api/image_writer_private/image_writer_utility_client.h"
 #include "chrome/common/extensions/api/image_writer_private.h"
 #include "third_party/zlib/google/zip_reader.h"
 
@@ -70,6 +71,12 @@ class Operation : public base::RefCountedThreadSafe<Operation> {
   int GetProgress();
   image_writer_api::Stage GetStage();
 
+#if !defined(OS_CHROMEOS)
+  // Set an ImageWriterClient to use.  Should be called only when testing.
+  void SetUtilityClientForTesting(
+      scoped_refptr<ImageWriterUtilityClient> client);
+#endif
+
  protected:
   virtual ~Operation();
 
@@ -110,6 +117,10 @@ class Operation : public base::RefCountedThreadSafe<Operation> {
   // functions will be run on the FILE thread.
   void AddCleanUpFunction(const base::Closure& callback);
 
+  // Completes the current operation (progress set to 100) and runs the
+  // continuation.
+  void CompleteAndContinue(const base::Closure& continuation);
+
   // If |file_size| is non-zero, only |file_size| bytes will be read from file,
   // otherwise the entire file will be read.
   // |progress_scale| is a percentage to which the progress will be scale, e.g.
@@ -135,20 +146,20 @@ class Operation : public base::RefCountedThreadSafe<Operation> {
  private:
   friend class base::RefCountedThreadSafe<Operation>;
 
-  // TODO(haven): Clean up these switches. http://crbug.com/292956
-#if defined(OS_LINUX) && !defined(CHROMEOS)
-  void WriteChunk(const int64& bytes_written,
-                  const int64& total_size,
-                  const base::Closure& continuation);
-  void WriteComplete(const base::Closure& continuation);
+#if !defined(OS_CHROMEOS)
+  // Ensures the client is started.  This may be called many times but will only
+  // instantiate one client which should exist for the lifetime of the
+  // Operation.
+  void StartUtilityClient();
 
-  void VerifyWriteChunk(const int64& bytes_written,
-                        const int64& total_size,
-                        const base::Closure& continuation);
-  void VerifyWriteComplete(const base::Closure& continuation);
+  // Stops the client.  This must be called to ensure the utility process can
+  // shutdown.
+  void StopUtilityClient();
 
-  base::PlatformFile image_file_;
-  base::PlatformFile device_file_;
+  // Reports progress from the client, transforming from bytes to percentage.
+  virtual void WriteImageProgress(int64 total_bytes, int64 curr_bytes);
+
+  scoped_refptr<ImageWriterUtilityClient> image_writer_client_;
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -173,7 +184,6 @@ class Operation : public base::RefCountedThreadSafe<Operation> {
                 const base::Callback<void(const std::string&)>& callback);
 
   // Callbacks for zip::ZipReader.
-  void OnUnzipSuccess(const base::Closure& continuation);
   void OnUnzipFailure();
   void OnUnzipProgress(int64 total_bytes, int64 progress_bytes);
 

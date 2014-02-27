@@ -24,6 +24,7 @@
 #include "chrome/utility/cloud_print/bitmap_image.h"
 #include "chrome/utility/cloud_print/pwg_encoder.h"
 #include "chrome/utility/extensions/unpacker.h"
+#include "chrome/utility/image_writer/image_writer_handler.h"
 #include "chrome/utility/profile_import_handler.h"
 #include "chrome/utility/web_resource_unpacker.h"
 #include "content/public/child/image_decoder_utils.h"
@@ -318,6 +319,8 @@ ChromeContentUtilityClient::ChromeContentUtilityClient()
     handlers_.push_back(new local_discovery::ServiceDiscoveryMessageHandler());
   }
 #endif  // ENABLE_MDNS
+
+  handlers_.push_back(new image_writer::ImageWriterHandler());
 }
 
 ChromeContentUtilityClient::~ChromeContentUtilityClient() {
