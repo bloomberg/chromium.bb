@@ -381,7 +381,7 @@ void MarkupAccumulator::appendElement(StringBuilder& result, Element& element, N
     if (element.hasAttributes()) {
         unsigned length = element.attributeCount();
         for (unsigned int i = 0; i < length; i++)
-            appendAttribute(result, element, *element.attributeItem(i), namespaces);
+            appendAttribute(result, element, element.attributeItem(i), namespaces);
     }
 
     // Give an opportunity to subclasses to add their own attributes.

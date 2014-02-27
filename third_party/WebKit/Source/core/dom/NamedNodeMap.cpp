@@ -100,7 +100,7 @@ PassRefPtr<Node> NamedNodeMap::item(unsigned index) const
 {
     if (index >= length())
         return nullptr;
-    return m_element->ensureAttr(m_element->attributeItem(index)->name());
+    return m_element->ensureAttr(m_element->attributeItem(index).name());
 }
 
 size_t NamedNodeMap::length() const

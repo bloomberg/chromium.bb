@@ -171,8 +171,8 @@ inline bool SelectorChecker::checkExactAttribute(const Element& element, const Q
         return false;
     unsigned size = element.attributeCount();
     for (unsigned i = 0; i < size; ++i) {
-        const Attribute* attribute = element.attributeItem(i);
-        if (attribute->matches(selectorAttributeName) && (!value || attribute->value().impl() == value))
+        const Attribute& attribute = element.attributeItem(i);
+        if (attribute.matches(selectorAttributeName) && (!value || attribute.value().impl() == value))
             return true;
     }
     return false;

@@ -1343,10 +1343,10 @@ bool Node::isDefaultNamespace(const AtomicString& namespaceURIMaybeEmpty) const
             if (elem->hasAttributes()) {
                 unsigned attributeCount = elem->attributeCount();
                 for (unsigned i = 0; i < attributeCount; ++i) {
-                    const Attribute* attr = elem->attributeItem(i);
+                    const Attribute& attr = elem->attributeItem(i);
 
-                    if (attr->localName() == xmlnsAtom)
-                        return attr->value() == namespaceURI;
+                    if (attr.localName() == xmlnsAtom)
+                        return attr.value() == namespaceURI;
                 }
             }
 
@@ -1429,16 +1429,17 @@ const AtomicString& Node::lookupNamespaceURI(const String& prefix) const
             if (elem->hasAttributes()) {
                 unsigned attributeCount = elem->attributeCount();
                 for (unsigned i = 0; i < attributeCount; ++i) {
-                    const Attribute* attr = elem->attributeItem(i);
+                    const Attribute& attr = elem->attributeItem(i);
 
-                    if (attr->prefix() == xmlnsAtom && attr->localName() == prefix) {
-                        if (!attr->value().isEmpty())
-                            return attr->value();
+                    if (attr.prefix() == xmlnsAtom && attr.localName() == prefix) {
+                        if (!attr.value().isEmpty())
+                            return attr.value();
 
                         return nullAtom;
-                    } else if (attr->localName() == xmlnsAtom && prefix.isNull()) {
-                        if (!attr->value().isEmpty())
-                            return attr->value();
+                    }
+                    if (attr.localName() == xmlnsAtom && prefix.isNull()) {
+                        if (!attr.value().isEmpty())
+                            return attr.value();
 
                         return nullAtom;
                     }
@@ -1592,10 +1593,10 @@ unsigned short Node::compareDocumentPositionInternal(const Node* otherNode, Shad
             // the same nodeType are inserted into or removed from the direct container. This would be the case, for example,
             // when comparing two attributes of the same element, and inserting or removing additional attributes might change
             // the order between existing attributes.
-            const Attribute* attribute = owner1->attributeItem(i);
-            if (attr1->qualifiedName() == attribute->name())
+            const Attribute& attribute = owner1->attributeItem(i);
+            if (attr1->qualifiedName() == attribute.name())
                 return DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | DOCUMENT_POSITION_FOLLOWING;
-            if (attr2->qualifiedName() == attribute->name())
+            if (attr2->qualifiedName() == attribute.name())
                 return DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | DOCUMENT_POSITION_PRECEDING;
         }
 

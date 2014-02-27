@@ -125,15 +125,15 @@ static void makePresentationAttributeCacheKey(Element& element, PresentationAttr
         return;
     unsigned size = element.attributeCount();
     for (unsigned i = 0; i < size; ++i) {
-        const Attribute* attribute = element.attributeItem(i);
-        if (!element.isPresentationAttribute(attribute->name()))
+        const Attribute& attribute = element.attributeItem(i);
+        if (!element.isPresentationAttribute(attribute.name()))
             continue;
-        if (!attribute->namespaceURI().isNull())
+        if (!attribute.namespaceURI().isNull())
             return;
         // FIXME: Background URL may depend on the base URL and can't be shared. Disallow caching.
-        if (attribute->name() == backgroundAttr)
+        if (attribute.name() == backgroundAttr)
             return;
-        result.attributesAndValues.append(std::make_pair(attribute->localName().impl(), attribute->value()));
+        result.attributesAndValues.append(std::make_pair(attribute.localName().impl(), attribute.value()));
     }
     if (result.attributesAndValues.isEmpty())
         return;
@@ -180,8 +180,8 @@ PassRefPtr<StylePropertySet> computePresentationAttributeStyle(Element& element)
         style = MutableStylePropertySet::create(element.isSVGElement() ? SVGAttributeMode : HTMLAttributeMode);
         unsigned size = element.attributeCount();
         for (unsigned i = 0; i < size; ++i) {
-            const Attribute* attribute = element.attributeItem(i);
-            element.collectStyleForPresentationAttribute(attribute->name(), attribute->value(), toMutableStylePropertySet(style));
+            const Attribute& attribute = element.attributeItem(i);
+            element.collectStyleForPresentationAttribute(attribute.name(), attribute.value(), toMutableStylePropertySet(style));
         }
     }
 

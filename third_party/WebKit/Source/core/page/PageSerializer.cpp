@@ -80,9 +80,9 @@ static bool isCharsetSpecifyingNode(const Node& node)
     if (element.hasAttributes()) {
         unsigned attributeCount = element.attributeCount();
         for (unsigned i = 0; i < attributeCount; ++i) {
-            const Attribute* attribute = element.attributeItem(i);
+            const Attribute& attribute = element.attributeItem(i);
             // FIXME: We should deal appropriately with the attribute if they have a namespace.
-            attributes.append(std::make_pair(attribute->name().localName(), attribute->value().string()));
+            attributes.append(std::make_pair(attribute.name().localName(), attribute.value().string()));
         }
     }
     WTF::TextEncoding textEncoding = encodingFromMetaAttributes(attributes);

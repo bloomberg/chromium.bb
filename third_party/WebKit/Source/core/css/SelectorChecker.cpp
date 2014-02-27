@@ -363,9 +363,9 @@ static inline bool containsHTMLSpace(const AtomicString& string)
     return false;
 }
 
-static bool attributeValueMatches(const Attribute* attributeItem, CSSSelector::Match match, const AtomicString& selectorValue, bool caseSensitive)
+static bool attributeValueMatches(const Attribute& attributeItem, CSSSelector::Match match, const AtomicString& selectorValue, bool caseSensitive)
 {
-    const AtomicString& value = attributeItem->value();
+    const AtomicString& value = attributeItem.value();
     if (value.isNull())
         return false;
 
@@ -442,9 +442,9 @@ static bool anyAttributeMatches(Element& element, CSSSelector::Match match, cons
 
     unsigned attributeCount = element.attributeCount();
     for (size_t i = 0; i < attributeCount; ++i) {
-        const Attribute* attributeItem = element.attributeItem(i);
+        const Attribute& attributeItem = element.attributeItem(i);
 
-        if (!attributeItem->matches(selectorAttr))
+        if (!attributeItem.matches(selectorAttr))
             continue;
 
         if (attributeValueMatches(attributeItem, match, selectorValue, true))

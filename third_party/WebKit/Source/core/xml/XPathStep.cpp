@@ -352,7 +352,7 @@ void Step::nodesInAxis(Node* context, NodeSet& nodes) const
 
             unsigned attributeCount = contextElement->attributeCount();
             for (unsigned i = 0; i < attributeCount; ++i) {
-                RefPtr<Attr> attr = contextElement->ensureAttr(contextElement->attributeItem(i)->name());
+                RefPtr<Attr> attr = contextElement->ensureAttr(contextElement->attributeItem(i).name());
                 if (nodeMatches(attr.get(), AttributeAxis, m_nodeTest))
                     nodes.append(attr.release());
             }

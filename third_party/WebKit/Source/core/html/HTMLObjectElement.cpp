@@ -185,11 +185,11 @@ void HTMLObjectElement::parametersForPlugin(Vector<String>& paramNames, Vector<S
     if (hasAttributes()) {
         unsigned attributeCount = this->attributeCount();
         for (unsigned i = 0; i < attributeCount; ++i) {
-            const Attribute* attribute = attributeItem(i);
-            const AtomicString& name = attribute->name().localName();
+            const Attribute& attribute = attributeItem(i);
+            const AtomicString& name = attribute.name().localName();
             if (!uniqueParamNames.contains(name.impl())) {
                 paramNames.append(name.string());
-                paramValues.append(attribute->value().string());
+                paramValues.append(attribute.value().string());
             }
         }
     }

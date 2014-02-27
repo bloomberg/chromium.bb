@@ -157,9 +157,9 @@ void DatasetDOMStringMap::getNames(Vector<String>& names)
 
     unsigned length = m_element->attributeCount();
     for (unsigned i = 0; i < length; i++) {
-        const Attribute* attribute = m_element->attributeItem(i);
-        if (isValidAttributeName(attribute->localName()))
-            names.append(convertAttributeNameToPropertyName(attribute->localName()));
+        const Attribute& attribute = m_element->attributeItem(i);
+        if (isValidAttributeName(attribute.localName()))
+            names.append(convertAttributeNameToPropertyName(attribute.localName()));
     }
 }
 
@@ -170,9 +170,9 @@ String DatasetDOMStringMap::item(const String& name)
 
     unsigned length = m_element->attributeCount();
     for (unsigned i = 0; i < length; i++) {
-        const Attribute* attribute = m_element->attributeItem(i);
-        if (propertyNameMatchesAttributeName(name, attribute->localName()))
-            return attribute->value();
+        const Attribute& attribute = m_element->attributeItem(i);
+        if (propertyNameMatchesAttributeName(name, attribute.localName()))
+            return attribute.value();
     }
 
     return String();
@@ -185,8 +185,8 @@ bool DatasetDOMStringMap::contains(const String& name)
 
     unsigned length = m_element->attributeCount();
     for (unsigned i = 0; i < length; i++) {
-        const Attribute* attribute = m_element->attributeItem(i);
-        if (propertyNameMatchesAttributeName(name, attribute->localName()))
+        const Attribute& attribute = m_element->attributeItem(i);
+        if (propertyNameMatchesAttributeName(name, attribute.localName()))
             return true;
     }
 

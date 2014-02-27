@@ -125,14 +125,14 @@ WebString WebElement::attributeLocalName(unsigned index) const
 {
     if (index >= attributeCount())
         return WebString();
-    return constUnwrap<Element>()->attributeItem(index)->localName();
+    return constUnwrap<Element>()->attributeItem(index).localName();
 }
 
 WebString WebElement::attributeValue(unsigned index) const
 {
     if (index >= attributeCount())
         return WebString();
-    return constUnwrap<Element>()->attributeItem(index)->value();
+    return constUnwrap<Element>()->attributeItem(index).value();
 }
 
 WebString WebElement::innerText()

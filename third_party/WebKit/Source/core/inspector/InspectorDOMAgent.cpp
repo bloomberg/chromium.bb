@@ -724,12 +724,12 @@ void InspectorDOMAgent::setAttributesAsText(ErrorString* errorString, int elemen
     unsigned numAttrs = parsedElement->attributeCount();
     for (unsigned i = 0; i < numAttrs; ++i) {
         // Add attribute pair
-        const Attribute* attribute = parsedElement->attributeItem(i);
-        String attributeName = attribute->name().toString();
+        const Attribute& attribute = parsedElement->attributeItem(i);
+        String attributeName = attribute.name().toString();
         if (shouldIgnoreCase)
             attributeName = attributeName.lower();
         foundOriginalAttribute |= name && attributeName == caseAdjustedName;
-        if (!m_domEditor->setAttribute(element, attributeName, attribute->value(), errorString))
+        if (!m_domEditor->setAttribute(element, attributeName, attribute.value(), errorString))
             return;
     }
 
@@ -984,14 +984,14 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
                 unsigned numAttrs = element->attributeCount();
                 for (unsigned i = 0; i < numAttrs; ++i) {
                     // Add attribute pair
-                    const Attribute* attribute = element->attributeItem(i);
-                    if (attribute->localName().find(whitespaceTrimmedQuery, 0, false) != kNotFound) {
+                    const Attribute& attribute = element->attributeItem(i);
+                    if (attribute.localName().find(whitespaceTrimmedQuery, 0, false) != kNotFound) {
                         resultCollector.add(node);
                         break;
                     }
-                    size_t foundPosition = attribute->value().find(attributeQuery, 0, false);
+                    size_t foundPosition = attribute.value().find(attributeQuery, 0, false);
                     if (foundPosition != kNotFound) {
-                        if (!exactAttributeMatch || (!foundPosition && attribute->value().length() == attributeQuery.length())) {
+                        if (!exactAttributeMatch || (!foundPosition && attribute.value().length() == attributeQuery.length())) {
                             resultCollector.add(node);
                             break;
                         }
@@ -1580,9 +1580,9 @@ PassRefPtr<TypeBuilder::Array<String> > InspectorDOMAgent::buildArrayForElementA
     unsigned numAttrs = element->attributeCount();
     for (unsigned i = 0; i < numAttrs; ++i) {
         // Add attribute pair
-        const Attribute* attribute = element->attributeItem(i);
-        attributesValue->addItem(attribute->name().toString());
-        attributesValue->addItem(attribute->value());
+        const Attribute& attribute = element->attributeItem(i);
+        attributesValue->addItem(attribute.name().toString());
+        attributesValue->addItem(attribute.value());
     }
     return attributesValue.release();
 }

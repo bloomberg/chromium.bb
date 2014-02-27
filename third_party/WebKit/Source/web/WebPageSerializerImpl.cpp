@@ -309,15 +309,15 @@ void WebPageSerializerImpl::openTagToString(Element* element,
         for (unsigned i = 0; i < numAttrs; i++) {
             result.append(' ');
             // Add attribute pair
-            const Attribute *attribute = element->attributeItem(i);
-            result.append(attribute->name().toString());
+            const Attribute& attribute = element->attributeItem(i);
+            result.append(attribute.name().toString());
             result.appendLiteral("=\"");
-            if (!attribute->value().isEmpty()) {
-                const String& attrValue = attribute->value();
+            if (!attribute.value().isEmpty()) {
+                const String& attrValue = attribute.value();
 
                 // Check whether we need to replace some resource links
                 // with local resource paths.
-                const QualifiedName& attrName = attribute->name();
+                const QualifiedName& attrName = attribute.name();
                 if (elementHasLegalLinkAttribute(element, attrName)) {
                     // For links start with "javascript:", we do not change it.
                     if (attrValue.startsWith("javascript:", false))

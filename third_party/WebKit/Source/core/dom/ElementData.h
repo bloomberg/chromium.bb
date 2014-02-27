@@ -66,7 +66,7 @@ public:
     size_t length() const;
     bool isEmpty() const { return !length(); }
 
-    const Attribute* attributeItem(unsigned index) const;
+    const Attribute& attributeItem(unsigned index) const;
     const Attribute* getAttributeItem(const QualifiedName&) const;
     size_t getAttributeItemIndex(const QualifiedName&, bool shouldIgnoreCase = false) const;
     size_t getAttributeItemIndex(const AtomicString& name, bool shouldIgnoreAttributeCase) const;
@@ -149,7 +149,7 @@ public:
     void addAttribute(const QualifiedName&, const AtomicString&);
     void removeAttribute(size_t index);
 
-    Attribute* attributeItem(unsigned index);
+    Attribute& attributeItem(unsigned index);
     Attribute* getAttributeItem(const QualifiedName&);
 
     UniqueElementData();
@@ -189,7 +189,7 @@ inline const Attribute* ElementData::getAttributeItem(const AtomicString& name, 
 {
     size_t index = getAttributeItemIndex(name, shouldIgnoreAttributeCase);
     if (index != kNotFound)
-        return attributeItem(index);
+        return &attributeItem(index);
     return 0;
 }
 
@@ -252,10 +252,11 @@ inline const Attribute* ElementData::getAttributeItem(const QualifiedName& name)
     return 0;
 }
 
-inline const Attribute* ElementData::attributeItem(unsigned index) const
+inline const Attribute& ElementData::attributeItem(unsigned index) const
 {
     RELEASE_ASSERT(index < length());
-    return attributeBase() + index;
+    ASSERT(attributeBase() + index);
+    return *(attributeBase() + index);
 }
 
 inline void UniqueElementData::addAttribute(const QualifiedName& attributeName, const AtomicString& value)
@@ -268,9 +269,9 @@ inline void UniqueElementData::removeAttribute(size_t index)
     m_attributeVector.remove(index);
 }
 
-inline Attribute* UniqueElementData::attributeItem(unsigned index)
+inline Attribute& UniqueElementData::attributeItem(unsigned index)
 {
-    return &m_attributeVector.at(index);
+    return m_attributeVector.at(index);
 }
 
 } // namespace WebCore

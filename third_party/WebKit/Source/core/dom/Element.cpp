@@ -309,12 +309,12 @@ PassRefPtr<Element> Element::cloneElementWithoutAttributesAndChildren()
 PassRefPtr<Attr> Element::detachAttribute(size_t index)
 {
     ASSERT(elementData());
-    const Attribute* attribute = elementData()->attributeItem(index);
-    RefPtr<Attr> attrNode = attrIfExists(attribute->name());
+    const Attribute& attribute = elementData()->attributeItem(index);
+    RefPtr<Attr> attrNode = attrIfExists(attribute.name());
     if (attrNode)
         detachAttrNodeAtIndex(attrNode.get(), index);
     else {
-        attrNode = Attr::create(document(), attribute->name(), attribute->value());
+        attrNode = Attr::create(document(), attribute.name(), attribute.value());
         removeAttributeInternal(index, NotInSynchronizationOfLazyAttribute);
     }
     return attrNode.release();
@@ -325,10 +325,9 @@ void Element::detachAttrNodeAtIndex(Attr* attr, size_t index)
     ASSERT(attr);
     ASSERT(elementData());
 
-    const Attribute* attribute = elementData()->attributeItem(index);
-    ASSERT(attribute);
-    ASSERT(attribute->name() == attr->qualifiedName());
-    detachAttrNodeFromElementWithValue(attr, attribute->value());
+    const Attribute& attribute = elementData()->attributeItem(index);
+    ASSERT(attribute.name() == attr->qualifiedName());
+    detachAttrNodeFromElementWithValue(attr, attribute.value());
     removeAttributeInternal(index, NotInSynchronizationOfLazyAttribute);
 }
 
@@ -935,7 +934,7 @@ void Element::setAttribute(const AtomicString& localName, const AtomicString& va
     const AtomicString& caseAdjustedLocalName = shouldIgnoreAttributeCase() ? localName.lower() : localName;
 
     size_t index = elementData() ? elementData()->getAttributeItemIndex(caseAdjustedLocalName, false) : kNotFound;
-    const QualifiedName& qName = index != kNotFound ? attributeItem(index)->name() : QualifiedName(nullAtom, caseAdjustedLocalName, nullAtom);
+    const QualifiedName& qName = index != kNotFound ? attributeItem(index).name() : QualifiedName(nullAtom, caseAdjustedLocalName, nullAtom);
     setAttributeInternal(index, qName, value, NotInSynchronizationOfLazyAttribute);
 }
 
@@ -965,20 +964,20 @@ ALWAYS_INLINE void Element::setAttributeInternal(size_t index, const QualifiedNa
         return;
     }
 
-    const Attribute* existingAttribute = attributeItem(index);
-    QualifiedName existingAttributeName = existingAttribute->name();
+    const Attribute& existingAttribute = attributeItem(index);
+    QualifiedName existingAttributeName = existingAttribute.name();
 
     if (!inSynchronizationOfLazyAttribute)
-        willModifyAttribute(existingAttributeName, existingAttribute->value(), newValue);
+        willModifyAttribute(existingAttributeName, existingAttribute.value(), newValue);
 
-    if (newValue != existingAttribute->value()) {
+    if (newValue != existingAttribute.value()) {
         // If there is an Attr node hooked to this attribute, the Attr::setValue() call below
         // will write into the ElementData.
         // FIXME: Refactor this so it makes some sense.
         if (RefPtr<Attr> attrNode = inSynchronizationOfLazyAttribute ? nullptr : attrIfExists(existingAttributeName))
             attrNode->setValue(newValue);
         else
-            ensureUniqueElementData().attributeItem(index)->setValue(newValue);
+            ensureUniqueElementData().attributeItem(index).setValue(newValue);
     }
 
     if (!inSynchronizationOfLazyAttribute)
@@ -1252,10 +1251,10 @@ const AtomicString& Element::locateNamespacePrefix(const AtomicString& namespace
     if (hasAttributes()) {
         unsigned attributeCount = this->attributeCount();
         for (unsigned i = 0; i < attributeCount; ++i) {
-            const Attribute* attr = attributeItem(i);
+            const Attribute& attr = attributeItem(i);
 
-            if (attr->prefix() == xmlnsAtom && attr->value() == namespaceToLocate)
-                return attr->localName();
+            if (attr.prefix() == xmlnsAtom && attr.value() == namespaceToLocate)
+                return attr.localName();
         }
     }
 
@@ -1969,9 +1968,9 @@ PassRefPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionState& excep
     size_t index = elementData.getAttributeItemIndex(attrNode->qualifiedName(), shouldIgnoreAttributeCase());
     if (index != kNotFound) {
         if (oldAttrNode)
-            detachAttrNodeFromElementWithValue(oldAttrNode.get(), elementData.attributeItem(index)->value());
+            detachAttrNodeFromElementWithValue(oldAttrNode.get(), elementData.attributeItem(index).value());
         else
-            oldAttrNode = Attr::create(document(), attrNode->qualifiedName(), elementData.attributeItem(index)->value());
+            oldAttrNode = Attr::create(document(), attrNode->qualifiedName(), elementData.attributeItem(index).value());
     }
 
     setAttributeInternal(index, attrNode->qualifiedName(), attrNode->value(), NotInSynchronizationOfLazyAttribute);
@@ -2041,8 +2040,8 @@ void Element::removeAttributeInternal(size_t index, SynchronizationOfLazyAttribu
 
     UniqueElementData& elementData = ensureUniqueElementData();
 
-    QualifiedName name = elementData.attributeItem(index)->name();
-    AtomicString valueBeingRemoved = elementData.attributeItem(index)->value();
+    QualifiedName name = elementData.attributeItem(index).name();
+    AtomicString valueBeingRemoved = elementData.attributeItem(index).value();
 
     if (!inSynchronizationOfLazyAttribute) {
         if (!valueBeingRemoved.isNull())
@@ -2050,7 +2049,7 @@ void Element::removeAttributeInternal(size_t index, SynchronizationOfLazyAttribu
     }
 
     if (RefPtr<Attr> attrNode = attrIfExists(name))
-        detachAttrNodeFromElementWithValue(attrNode.get(), elementData.attributeItem(index)->value());
+        detachAttrNodeFromElementWithValue(attrNode.get(), elementData.attributeItem(index).value());
 
     elementData.removeAttribute(index);
 
@@ -2697,7 +2696,7 @@ void Element::normalizeAttributes()
     // attributeCount() cannot be cached before the loop because the attributes
     // list is altered while iterating.
     for (unsigned i = 0; i < attributeCount(); ++i) {
-        if (RefPtr<Attr> attr = attrIfExists(attributeItem(i)->name()))
+        if (RefPtr<Attr> attr = attrIfExists(attributeItem(i).name()))
             attr->normalize();
     }
 }
@@ -3216,9 +3215,9 @@ void Element::detachAllAttrNodesFromElement()
 
     unsigned attributeCount = this->attributeCount();
     for (unsigned i = 0; i < attributeCount; ++i) {
-        const Attribute* attribute = attributeItem(i);
-        if (RefPtr<Attr> attrNode = findAttrNodeInList(*attrNodeList, attribute->name()))
-            attrNode->detachFromElementWithValue(attribute->value());
+        const Attribute& attribute = attributeItem(i);
+        if (RefPtr<Attr> attrNode = findAttrNodeInList(*attrNodeList, attribute.name()))
+            attrNode->detachFromElementWithValue(attribute.value());
     }
 
     removeAttrNodeListForElement(this);
@@ -3284,8 +3283,8 @@ void Element::cloneAttributesFromElement(const Element& other)
 
     unsigned length = m_elementData->length();
     for (unsigned i = 0; i < length; ++i) {
-        const Attribute* attribute = const_cast<const ElementData*>(m_elementData.get())->attributeItem(i);
-        attributeChangedFromParserOrByCloning(attribute->name(), attribute->value(), ModifiedByCloning);
+        const Attribute& attribute = m_elementData->attributeItem(i);
+        attributeChangedFromParserOrByCloning(attribute.name(), attribute.value(), ModifiedByCloning);
     }
 }
 

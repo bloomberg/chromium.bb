@@ -157,7 +157,7 @@ public:
     // before calling them. This is not a trivial getter and its return value should be cached for
     // performance.
     size_t attributeCount() const;
-    const Attribute* attributeItem(unsigned index) const;
+    const Attribute& attributeItem(unsigned index) const;
     const Attribute* getAttributeItem(const QualifiedName&) const;
     size_t getAttributeItemIndex(const QualifiedName& name) const { return elementData()->getAttributeItemIndex(name); }
     size_t getAttributeItemIndex(const AtomicString& name, bool shouldIgnoreAttributeCase) const { return elementData()->getAttributeItemIndex(name, shouldIgnoreAttributeCase); }
@@ -767,7 +767,7 @@ inline size_t Element::attributeCount() const
     return elementData()->length();
 }
 
-inline const Attribute* Element::attributeItem(unsigned index) const
+inline const Attribute& Element::attributeItem(unsigned index) const
 {
     ASSERT(elementData());
     return elementData()->attributeItem(index);
