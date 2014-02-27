@@ -67,8 +67,8 @@ void ShellRunner::Run(const std::string& source,
                       const std::string& resource_name) {
   TryCatch try_catch;
   v8::Isolate* isolate = GetContextHolder()->isolate();
-  v8::Handle<Script> script = Script::New(StringToV8(isolate, source),
-                                          StringToV8(isolate, resource_name));
+  v8::Handle<Script> script = Script::Compile(
+      StringToV8(isolate, source), StringToV8(isolate, resource_name));
   if (try_catch.HasCaught()) {
     delegate_->UnhandledException(this, try_catch);
     return;

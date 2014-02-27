@@ -294,7 +294,7 @@ TEST_F(V8ValueConverterImplTest, ObjectExceptions) {
       "    function() { throw new Error('muah!'); });";
 
   v8::Handle<v8::Script> script(
-      v8::Script::New(v8::String::NewFromUtf8(isolate_, source)));
+      v8::Script::Compile(v8::String::NewFromUtf8(isolate_, source)));
   script->Run();
 
   v8::Handle<v8::Object> object(v8::Object::New(isolate_));
@@ -339,7 +339,7 @@ TEST_F(V8ValueConverterImplTest, ArrayExceptions) {
       "})();";
 
   v8::Handle<v8::Script> script(
-      v8::Script::New(v8::String::NewFromUtf8(isolate_, source)));
+      v8::Script::Compile(v8::String::NewFromUtf8(isolate_, source)));
   v8::Handle<v8::Array> array = script->Run().As<v8::Array>();
   ASSERT_FALSE(array.IsEmpty());
 
@@ -410,7 +410,7 @@ TEST_F(V8ValueConverterImplTest, Prototype) {
       "})();";
 
   v8::Handle<v8::Script> script(
-      v8::Script::New(v8::String::NewFromUtf8(isolate_, source)));
+      v8::Script::Compile(v8::String::NewFromUtf8(isolate_, source)));
   v8::Handle<v8::Object> object = script->Run().As<v8::Object>();
   ASSERT_FALSE(object.IsEmpty());
 
@@ -433,7 +433,7 @@ TEST_F(V8ValueConverterImplTest, StripNullFromObjects) {
       "})();";
 
   v8::Handle<v8::Script> script(
-      v8::Script::New(v8::String::NewFromUtf8(isolate_, source)));
+      v8::Script::Compile(v8::String::NewFromUtf8(isolate_, source)));
   v8::Handle<v8::Object> object = script->Run().As<v8::Object>();
   ASSERT_FALSE(object.IsEmpty());
 
@@ -498,7 +498,7 @@ TEST_F(V8ValueConverterImplTest, WeirdProperties) {
       "})();";
 
   v8::Handle<v8::Script> script(
-      v8::Script::New(v8::String::NewFromUtf8(isolate_, source)));
+      v8::Script::Compile(v8::String::NewFromUtf8(isolate_, source)));
   v8::Handle<v8::Object> object = script->Run().As<v8::Object>();
   ASSERT_FALSE(object.IsEmpty());
 
@@ -531,7 +531,7 @@ TEST_F(V8ValueConverterImplTest, ArrayGetters) {
       "})();";
 
   v8::Handle<v8::Script> script(
-      v8::Script::New(v8::String::NewFromUtf8(isolate_, source)));
+      v8::Script::Compile(v8::String::NewFromUtf8(isolate_, source)));
   v8::Handle<v8::Array> array = script->Run().As<v8::Array>();
   ASSERT_FALSE(array.IsEmpty());
 
@@ -554,7 +554,7 @@ TEST_F(V8ValueConverterImplTest, UndefinedValueBehavior) {
         "return { foo: undefined, bar: null, baz: function(){} };"
         "})();";
     v8::Handle<v8::Script> script(
-        v8::Script::New(v8::String::NewFromUtf8(isolate_, source)));
+        v8::Script::Compile(v8::String::NewFromUtf8(isolate_, source)));
     object = script->Run().As<v8::Object>();
     ASSERT_FALSE(object.IsEmpty());
   }
@@ -565,7 +565,7 @@ TEST_F(V8ValueConverterImplTest, UndefinedValueBehavior) {
         "return [ undefined, null, function(){} ];"
         "})();";
     v8::Handle<v8::Script> script(
-        v8::Script::New(v8::String::NewFromUtf8(isolate_, source)));
+        v8::Script::Compile(v8::String::NewFromUtf8(isolate_, source)));
     array = script->Run().As<v8::Array>();
     ASSERT_FALSE(array.IsEmpty());
   }

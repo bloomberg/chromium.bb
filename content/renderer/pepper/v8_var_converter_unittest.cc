@@ -419,7 +419,7 @@ TEST_F(V8VarConverterTest, StrangeDictionaryKeyTest) {
         "})();";
 
     v8::Handle<v8::Script> script(
-        v8::Script::New(v8::String::NewFromUtf8(isolate_, source)));
+        v8::Script::Compile(v8::String::NewFromUtf8(isolate_, source)));
     v8::Handle<v8::Object> object = script->Run().As<v8::Object>();
     ASSERT_FALSE(object.IsEmpty());
 

@@ -125,7 +125,7 @@ TEST_F(ActivityLogConverterStrategyTest, ConversionTest) {
       "})();";
 
   v8::Handle<v8::Script> script(
-      v8::Script::New(v8::String::NewFromUtf8(isolate_, source)));
+      v8::Script::Compile(v8::String::NewFromUtf8(isolate_, source)));
   v8::Handle<v8::Object> v8_object = script->Run().As<v8::Object>();
 
   EXPECT_TRUE(VerifyString(v8_object, "[Object]"));

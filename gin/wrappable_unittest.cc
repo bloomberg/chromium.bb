@@ -153,7 +153,7 @@ TEST_F(WrappableTest, GetAndSetProperty) {
   EXPECT_FALSE(source.IsEmpty());
 
   gin::TryCatch try_catch;
-  v8::Handle<v8::Script> script = v8::Script::New(source);
+  v8::Handle<v8::Script> script = v8::Script::Compile(source);
   EXPECT_FALSE(script.IsEmpty());
   v8::Handle<v8::Value> val = script->Run();
   EXPECT_FALSE(val.IsEmpty());
@@ -179,7 +179,7 @@ TEST_F(WrappableTest, WrappableSubclass) {
                                              "obj.sayHello('Lily');"
                                              "})");
   gin::TryCatch try_catch;
-  v8::Handle<v8::Script> script = v8::Script::New(source);
+  v8::Handle<v8::Script> script = v8::Script::Compile(source);
   v8::Handle<v8::Value> val = script->Run();
   v8::Handle<v8::Function> func;
   EXPECT_TRUE(ConvertFromV8(isolate, val, &func));
