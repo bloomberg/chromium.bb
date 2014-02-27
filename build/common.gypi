@@ -4969,8 +4969,7 @@
     # TODO(yyanagisawa): supports GENERATOR==make
     #  make generator doesn't support CC_wrapper without CC
     #  in make_global_settings yet.
-    ['use_goma==1 and ((OS!="mac" and OS!="ios") or clang_xcode==0) and '
-        '("<(GENERATOR)"=="ninja" or clang==1)', {
+    ['use_goma==1 and ("<(GENERATOR)"=="ninja" or clang==1)', {
       'make_global_settings': [
        ['CC_wrapper', '<(gomadir)/gomacc'],
        ['CXX_wrapper', '<(gomadir)/gomacc'],
