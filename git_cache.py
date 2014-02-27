@@ -218,7 +218,7 @@ def CMDpopulate(parser, args):
       _config(repo_dir)
       if options.depth and os.path.exists(os.path.join(repo_dir, 'shallow')):
         logging.warn('Shallow fetch requested, but repo cache already exists.')
-      fetch_cmd = ['fetch'] + v + ['--update-shallow', '--tags', 'origin']
+      fetch_cmd = ['fetch'] + v + ['--tags', 'origin']
       RunGit(fetch_cmd, filter_fn=filter_fn, cwd=repo_dir, retry=True)
 
 
