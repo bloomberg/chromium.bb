@@ -119,6 +119,8 @@ void NotificationServiceSessionsRouter::Observe(
       if (extension_tab_helper->extension_app()) {
         SyncedTabDelegate* tab = SyncedTabDelegate::ImplFromWebContents(
             extension_tab_helper->web_contents());
+        if (!tab || tab->profile() != profile_)
+          return;
         if (handler_)
           handler_->OnLocalTabModified(tab);
         break;
