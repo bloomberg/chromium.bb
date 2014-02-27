@@ -82,7 +82,6 @@ public:
     static PassRefPtr<SerializedScriptValue> createAndSwallowExceptions(v8::Handle<v8::Value>, v8::Isolate*);
 
     static PassRefPtr<SerializedScriptValue> nullValue();
-    static PassRefPtr<SerializedScriptValue> nullValue(v8::Isolate*);
 
     String toWireString() const { return m_data; }
     void toWireBytes(Vector<char>&) const;

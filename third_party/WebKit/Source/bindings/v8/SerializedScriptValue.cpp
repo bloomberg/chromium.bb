@@ -279,9 +279,8 @@ private:
 class Writer {
     WTF_MAKE_NONCOPYABLE(Writer);
 public:
-    explicit Writer(v8::Isolate* isolate)
+    Writer()
         : m_position(0)
-        , m_isolate(isolate)
     {
     }
 
@@ -551,8 +550,6 @@ public:
         doWriteUint32(length);
     }
 
-    v8::Isolate* getIsolate() { return m_isolate; }
-
 private:
     void doWriteFile(const File& file)
     {
@@ -682,7 +679,6 @@ private:
 
     Vector<BufferValueType> m_buffer;
     unsigned m_position;
-    v8::Isolate* m_isolate;
 };
 
 static v8::Handle<v8::Object> toV8Object(MessagePort* impl, v8::Isolate* isolate)
@@ -725,11 +721,11 @@ public:
         ASSERT(!tryCatch.HasCaught());
         if (messagePorts) {
             for (size_t i = 0; i < messagePorts->size(); i++)
-                m_transferredMessagePorts.set(toV8Object(messagePorts->at(i).get(), m_writer.getIsolate()), i);
+                m_transferredMessagePorts.set(toV8Object(messagePorts->at(i).get(), isolate), i);
         }
         if (arrayBuffers) {
             for (size_t i = 0; i < arrayBuffers->size(); i++)  {
-                v8::Handle<v8::Object> v8ArrayBuffer = toV8Object(arrayBuffers->at(i).get(), m_writer.getIsolate());
+                v8::Handle<v8::Object> v8ArrayBuffer = toV8Object(arrayBuffers->at(i).get(), isolate);
                 // Coalesce multiple occurences of the same buffer to the first index.
                 if (!m_transferredArrayBuffers.contains(v8ArrayBuffer))
                     m_transferredArrayBuffers.set(v8ArrayBuffer, i);
@@ -1118,7 +1114,7 @@ private:
             return 0;
         if (!arrayBufferView->buffer())
             return handleError(DataCloneError, "An ArrayBuffer could not be cloned.", next);
-        v8::Handle<v8::Value> underlyingBuffer = toV8(arrayBufferView->buffer(), v8::Handle<v8::Object>(), m_writer.getIsolate());
+        v8::Handle<v8::Value> underlyingBuffer = toV8(arrayBufferView->buffer(), v8::Handle<v8::Object>(), m_isolate);
         if (underlyingBuffer.IsEmpty())
             return handleError(DataCloneError, "An ArrayBuffer could not be cloned.", next);
         StateBase* stateOut = doSerializeArrayBuffer(underlyingBuffer, next);
@@ -2283,7 +2279,7 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValue::create(const String& da
 
 PassRefPtr<SerializedScriptValue> SerializedScriptValue::create(const String& data, v8::Isolate* isolate)
 {
-    Writer writer(isolate);
+    Writer writer;
     writer.writeWebCoreString(data);
     String wireData = writer.takeWireString();
     return adoptRef(new SerializedScriptValue(wireData));
@@ -2296,12 +2292,7 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValue::create()
 
 PassRefPtr<SerializedScriptValue> SerializedScriptValue::nullValue()
 {
-    return nullValue(v8::Isolate::GetCurrent());
-}
-
-PassRefPtr<SerializedScriptValue> SerializedScriptValue::nullValue(v8::Isolate* isolate)
-{
-    Writer writer(isolate);
+    Writer writer;
     writer.writeNull();
     String wireData = writer.takeWireString();
     return adoptRef(new SerializedScriptValue(wireData));
@@ -2377,7 +2368,7 @@ PassOwnPtr<SerializedScriptValue::ArrayBufferContentsArray> SerializedScriptValu
 SerializedScriptValue::SerializedScriptValue(v8::Handle<v8::Value> value, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, ExceptionState& exceptionState, v8::Isolate* isolate)
     : m_externallyAllocatedMemory(0)
 {
-    Writer writer(isolate);
+    Writer writer;
     Serializer::Status status;
     String errorMessage;
     {
