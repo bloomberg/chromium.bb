@@ -1163,6 +1163,7 @@ void EventSender::initMouseWheelEvent(const CppArgumentList& arguments, CppVaria
     int vertical = arguments[1].toInt32();
     int paged = false;
     int hasPreciseScrollingDeltas = false;
+    int modifiers = 0;
 
     if (arguments.size() > 2 && arguments[2].isBool())
         paged = arguments[2].toBoolean();
@@ -1170,7 +1171,10 @@ void EventSender::initMouseWheelEvent(const CppArgumentList& arguments, CppVaria
     if (arguments.size() > 3 && arguments[3].isBool())
         hasPreciseScrollingDeltas = arguments[3].toBoolean();
 
-    initMouseEvent(WebInputEvent::MouseWheel, pressedButton, lastMousePos, event, getCurrentEventTimeSec(m_delegate), 0);
+    if (arguments.size() > 4 && (arguments[4].isObject() || arguments[4].isString()))
+        modifiers = getKeyModifiers(&(arguments[4]));
+
+    initMouseEvent(WebInputEvent::MouseWheel, pressedButton, lastMousePos, event, getCurrentEventTimeSec(m_delegate), modifiers);
     event->wheelTicksX = static_cast<float>(horizontal);
     event->wheelTicksY = static_cast<float>(vertical);
     event->deltaX = event->wheelTicksX;
