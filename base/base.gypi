@@ -498,6 +498,8 @@
           'run_loop.h',
           'numerics/safe_conversions.h',
           'numerics/safe_conversions_impl.h',
+          'numerics/safe_math.h',
+          'numerics/safe_math_impl.h',
           'safe_strerror_posix.cc',
           'safe_strerror_posix.h',
           'scoped_native_library.cc',

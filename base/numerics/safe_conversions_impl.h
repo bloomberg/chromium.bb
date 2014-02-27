@@ -8,172 +8,206 @@
 #include <limits>
 
 #include "base/macros.h"
+#include "base/template_util.h"
 
 namespace base {
 namespace internal {
 
-enum DstSign {
-  DST_UNSIGNED,
-  DST_SIGNED
+// The std library doesn't provide a binary max_exponent for integers, however
+// we can compute one by adding one to the number of non-sign bits. This allows
+// for accurate range comparisons between floating point and integer types.
+template <typename NumericType>
+struct MaxExponent {
+  static const int value = std::numeric_limits<NumericType>::is_iec559
+                               ? std::numeric_limits<NumericType>::max_exponent
+                               : (sizeof(NumericType) * 8 + 1 -
+                                  std::numeric_limits<NumericType>::is_signed);
 };
 
-enum SrcSign {
-  SRC_UNSIGNED,
-  SRC_SIGNED
+enum IntegerRepresentation {
+  INTEGER_REPRESENTATION_UNSIGNED,
+  INTEGER_REPRESENTATION_SIGNED
 };
 
-enum DstRange {
-  OVERLAPS_RANGE,
-  CONTAINS_RANGE
+// A range for a given nunmeric Src type is contained for a given numeric Dst
+// type if both numeric_limits<Src>::max() <= numeric_limits<Dst>::max() and
+// numeric_limits<Src>::min() >= numeric_limits<Dst>::min() are true.
+// We implement this as template specializations rather than simple static
+// comparisons to ensure type correctness in our comparisons.
+enum NumericRangeRepresentation {
+  NUMERIC_RANGE_NOT_CONTAINED,
+  NUMERIC_RANGE_CONTAINED
 };
 
 // Helper templates to statically determine if our destination type can contain
-// all values represented by the source type.
+// maximum and minimum values represented by the source type.
 
-template <typename Dst, typename Src,
-          DstSign IsDstSigned = std::numeric_limits<Dst>::is_signed ?
-                                DST_SIGNED : DST_UNSIGNED,
-          SrcSign IsSrcSigned = std::numeric_limits<Src>::is_signed ?
-                                SRC_SIGNED : SRC_UNSIGNED>
-struct StaticRangeCheck {};
+template <
+    typename Dst,
+    typename Src,
+    IntegerRepresentation DstSign = std::numeric_limits<Dst>::is_signed
+                                            ? INTEGER_REPRESENTATION_SIGNED
+                                            : INTEGER_REPRESENTATION_UNSIGNED,
+    IntegerRepresentation SrcSign =
+        std::numeric_limits<Src>::is_signed
+            ? INTEGER_REPRESENTATION_SIGNED
+            : INTEGER_REPRESENTATION_UNSIGNED >
+struct StaticDstRangeRelationToSrcRange;
 
+// Same sign: Dst is guaranteed to contain Src only if its range is equal or
+// larger.
+template <typename Dst, typename Src, IntegerRepresentation Sign>
+struct StaticDstRangeRelationToSrcRange<Dst, Src, Sign, Sign> {
+  static const NumericRangeRepresentation value =
+      MaxExponent<Dst>::value >= MaxExponent<Src>::value
+          ? NUMERIC_RANGE_CONTAINED
+          : NUMERIC_RANGE_NOT_CONTAINED;
+};
+
+// Unsigned to signed: Dst is guaranteed to contain source only if its range is
+// larger.
 template <typename Dst, typename Src>
-struct StaticRangeCheck<Dst, Src, DST_SIGNED, SRC_SIGNED> {
-  typedef std::numeric_limits<Dst> DstLimits;
-  typedef std::numeric_limits<Src> SrcLimits;
-  // Compare based on max_exponent, which we must compute for integrals.
-  static const size_t kDstMaxExponent = DstLimits::is_iec559 ?
-                                        DstLimits::max_exponent :
-                                        (sizeof(Dst) * 8 - 1);
-  static const size_t kSrcMaxExponent = SrcLimits::is_iec559 ?
-                                        SrcLimits::max_exponent :
-                                        (sizeof(Src) * 8 - 1);
-  static const DstRange value = kDstMaxExponent >= kSrcMaxExponent ?
-                                CONTAINS_RANGE : OVERLAPS_RANGE;
+struct StaticDstRangeRelationToSrcRange<Dst,
+                                        Src,
+                                        INTEGER_REPRESENTATION_SIGNED,
+                                        INTEGER_REPRESENTATION_UNSIGNED> {
+  static const NumericRangeRepresentation value =
+      MaxExponent<Dst>::value > MaxExponent<Src>::value
+          ? NUMERIC_RANGE_CONTAINED
+          : NUMERIC_RANGE_NOT_CONTAINED;
 };
 
+// Signed to unsigned: Dst cannot be statically determined to contain Src.
 template <typename Dst, typename Src>
-struct StaticRangeCheck<Dst, Src, DST_UNSIGNED, SRC_UNSIGNED> {
-  static const DstRange value = sizeof(Dst) >= sizeof(Src) ?
-                                CONTAINS_RANGE : OVERLAPS_RANGE;
+struct StaticDstRangeRelationToSrcRange<Dst,
+                                        Src,
+                                        INTEGER_REPRESENTATION_UNSIGNED,
+                                        INTEGER_REPRESENTATION_SIGNED> {
+  static const NumericRangeRepresentation value = NUMERIC_RANGE_NOT_CONTAINED;
 };
 
-template <typename Dst, typename Src>
-struct StaticRangeCheck<Dst, Src, DST_SIGNED, SRC_UNSIGNED> {
-  typedef std::numeric_limits<Dst> DstLimits;
-  typedef std::numeric_limits<Src> SrcLimits;
-  // Compare based on max_exponent, which we must compute for integrals.
-  static const size_t kDstMaxExponent = DstLimits::is_iec559 ?
-                                        DstLimits::max_exponent :
-                                        (sizeof(Dst) * 8 - 1);
-  static const size_t kSrcMaxExponent = sizeof(Src) * 8;
-  static const DstRange value = kDstMaxExponent >= kSrcMaxExponent ?
-                                CONTAINS_RANGE : OVERLAPS_RANGE;
+enum RangeConstraint {
+  RANGE_VALID = 0x0,  // Value can be represented by the destination type.
+  RANGE_UNDERFLOW = 0x1,  // Value would overflow.
+  RANGE_OVERFLOW = 0x2,  // Value would underflow.
+  RANGE_INVALID = RANGE_UNDERFLOW | RANGE_OVERFLOW  // Invalid (i.e. NaN).
 };
 
-template <typename Dst, typename Src>
-struct StaticRangeCheck<Dst, Src, DST_UNSIGNED, SRC_SIGNED> {
-  static const DstRange value = OVERLAPS_RANGE;
-};
+// Helper function for coercing an int back to a RangeContraint.
+inline RangeConstraint GetRangeConstraint(int integer_range_constraint) {
+  DCHECK(integer_range_constraint >= RANGE_VALID &&
+         integer_range_constraint <= RANGE_INVALID);
+  return static_cast<RangeConstraint>(integer_range_constraint);
+}
 
-
-enum RangeCheckResult {
-  TYPE_VALID = 0,      // Value can be represented by the destination type.
-  TYPE_UNDERFLOW = 1,  // Value would overflow.
-  TYPE_OVERFLOW = 2,   // Value would underflow.
-  TYPE_INVALID = 3     // Source value is invalid (i.e. NaN).
-};
-
-// This macro creates a RangeCheckResult from an upper and lower bound
+// This function creates a RangeConstraint from an upper and lower bound
 // check by taking advantage of the fact that only NaN can be out of range in
 // both directions at once.
-#define BASE_NUMERIC_RANGE_CHECK_RESULT(is_in_upper_bound, is_in_lower_bound) \
-    RangeCheckResult(((is_in_upper_bound) ? 0 : TYPE_OVERFLOW) | \
-                            ((is_in_lower_bound) ? 0 : TYPE_UNDERFLOW))
+inline RangeConstraint GetRangeConstraint(bool is_in_upper_bound,
+                                   bool is_in_lower_bound) {
+  return GetRangeConstraint((is_in_upper_bound ? 0 : RANGE_OVERFLOW) |
+                            (is_in_lower_bound ? 0 : RANGE_UNDERFLOW));
+}
 
-template <typename Dst,
-          typename Src,
-          DstSign IsDstSigned = std::numeric_limits<Dst>::is_signed ?
-                                DST_SIGNED : DST_UNSIGNED,
-          SrcSign IsSrcSigned = std::numeric_limits<Src>::is_signed ?
-                                SRC_SIGNED : SRC_UNSIGNED,
-          DstRange IsSrcRangeContained = StaticRangeCheck<Dst, Src>::value>
-struct RangeCheckImpl {};
+template <
+    typename Dst,
+    typename Src,
+    IntegerRepresentation DstSign = std::numeric_limits<Dst>::is_signed
+                                            ? INTEGER_REPRESENTATION_SIGNED
+                                            : INTEGER_REPRESENTATION_UNSIGNED,
+    IntegerRepresentation SrcSign = std::numeric_limits<Src>::is_signed
+                                            ? INTEGER_REPRESENTATION_SIGNED
+                                            : INTEGER_REPRESENTATION_UNSIGNED,
+    NumericRangeRepresentation DstRange =
+        StaticDstRangeRelationToSrcRange<Dst, Src>::value >
+struct DstRangeRelationToSrcRangeImpl;
 
 // The following templates are for ranges that must be verified at runtime. We
 // split it into checks based on signedness to avoid confusing casts and
 // compiler warnings on signed an unsigned comparisons.
 
-// Dst range always contains the result: nothing to check.
-template <typename Dst, typename Src, DstSign IsDstSigned, SrcSign IsSrcSigned>
-struct RangeCheckImpl<Dst, Src, IsDstSigned, IsSrcSigned, CONTAINS_RANGE> {
-  static RangeCheckResult Check(Src value) {
-    return TYPE_VALID;
+// Dst range is statically determined to contain Src: Nothing to check.
+template <typename Dst,
+          typename Src,
+          IntegerRepresentation DstSign,
+          IntegerRepresentation SrcSign>
+struct DstRangeRelationToSrcRangeImpl<Dst,
+                                      Src,
+                                      DstSign,
+                                      SrcSign,
+                                      NUMERIC_RANGE_CONTAINED> {
+  static RangeConstraint Check(Src value) { return RANGE_VALID; }
+};
+
+// Signed to signed narrowing: Both the upper and lower boundaries may be
+// exceeded.
+template <typename Dst, typename Src>
+struct DstRangeRelationToSrcRangeImpl<Dst,
+                                      Src,
+                                      INTEGER_REPRESENTATION_SIGNED,
+                                      INTEGER_REPRESENTATION_SIGNED,
+                                      NUMERIC_RANGE_NOT_CONTAINED> {
+  static RangeConstraint Check(Src value) {
+    return std::numeric_limits<Dst>::is_iec559
+               ? GetRangeConstraint(value <= std::numeric_limits<Dst>::max(),
+                                    value >= -std::numeric_limits<Dst>::max())
+               : GetRangeConstraint(value <= std::numeric_limits<Dst>::max(),
+                                    value >= std::numeric_limits<Dst>::min());
   }
 };
 
-// Signed to signed narrowing.
+// Unsigned to unsigned narrowing: Only the upper boundary can be exceeded.
 template <typename Dst, typename Src>
-struct RangeCheckImpl<Dst, Src, DST_SIGNED, SRC_SIGNED, OVERLAPS_RANGE> {
-  static RangeCheckResult Check(Src value) {
-    typedef std::numeric_limits<Dst> DstLimits;
-    return DstLimits::is_iec559 ?
-           BASE_NUMERIC_RANGE_CHECK_RESULT(
-               value <= static_cast<Src>(DstLimits::max()),
-               value >= static_cast<Src>(DstLimits::max() * -1)) :
-           BASE_NUMERIC_RANGE_CHECK_RESULT(
-               value <= static_cast<Src>(DstLimits::max()),
-               value >= static_cast<Src>(DstLimits::min()));
+struct DstRangeRelationToSrcRangeImpl<Dst,
+                                      Src,
+                                      INTEGER_REPRESENTATION_UNSIGNED,
+                                      INTEGER_REPRESENTATION_UNSIGNED,
+                                      NUMERIC_RANGE_NOT_CONTAINED> {
+  static RangeConstraint Check(Src value) {
+    return GetRangeConstraint(value <= std::numeric_limits<Dst>::max(), true);
   }
 };
 
-// Unsigned to unsigned narrowing.
+// Unsigned to signed: The upper boundary may be exceeded.
 template <typename Dst, typename Src>
-struct RangeCheckImpl<Dst, Src, DST_UNSIGNED, SRC_UNSIGNED, OVERLAPS_RANGE> {
-  static RangeCheckResult Check(Src value) {
-    typedef std::numeric_limits<Dst> DstLimits;
-    return BASE_NUMERIC_RANGE_CHECK_RESULT(
-               value <= static_cast<Src>(DstLimits::max()), true);
+struct DstRangeRelationToSrcRangeImpl<Dst,
+                                      Src,
+                                      INTEGER_REPRESENTATION_SIGNED,
+                                      INTEGER_REPRESENTATION_UNSIGNED,
+                                      NUMERIC_RANGE_NOT_CONTAINED> {
+  static RangeConstraint Check(Src value) {
+    return sizeof(Dst) > sizeof(Src)
+               ? RANGE_VALID
+               : GetRangeConstraint(
+                     value <= static_cast<Src>(std::numeric_limits<Dst>::max()),
+                     true);
   }
 };
 
-// Unsigned to signed.
+// Signed to unsigned: The upper boundary may be exceeded for a narrower Dst,
+// and any negative value exceeds the lower boundary.
 template <typename Dst, typename Src>
-struct RangeCheckImpl<Dst, Src, DST_SIGNED, SRC_UNSIGNED, OVERLAPS_RANGE> {
-  static RangeCheckResult Check(Src value) {
-    typedef std::numeric_limits<Dst> DstLimits;
-    return sizeof(Dst) > sizeof(Src) ? TYPE_VALID :
-           BASE_NUMERIC_RANGE_CHECK_RESULT(
-               value <= static_cast<Src>(DstLimits::max()), true);
-  }
-};
-
-// Signed to unsigned.
-template <typename Dst, typename Src>
-struct RangeCheckImpl<Dst, Src, DST_UNSIGNED, SRC_SIGNED, OVERLAPS_RANGE> {
-  static RangeCheckResult Check(Src value) {
-    typedef std::numeric_limits<Dst> DstLimits;
-    typedef std::numeric_limits<Src> SrcLimits;
-    // Compare based on max_exponent, which we must compute for integrals.
-    static const size_t kDstMaxExponent = sizeof(Dst) * 8;
-    static const size_t kSrcMaxExponent = SrcLimits::is_iec559 ?
-                                          SrcLimits::max_exponent :
-                                          (sizeof(Src) * 8 - 1);
-    return (kDstMaxExponent >= kSrcMaxExponent) ?
-           BASE_NUMERIC_RANGE_CHECK_RESULT(true, value >= static_cast<Src>(0)) :
-           BASE_NUMERIC_RANGE_CHECK_RESULT(
-               value <= static_cast<Src>(DstLimits::max()),
-               value >= static_cast<Src>(0));
+struct DstRangeRelationToSrcRangeImpl<Dst,
+                                      Src,
+                                      INTEGER_REPRESENTATION_UNSIGNED,
+                                      INTEGER_REPRESENTATION_SIGNED,
+                                      NUMERIC_RANGE_NOT_CONTAINED> {
+  static RangeConstraint Check(Src value) {
+    return (MaxExponent<Dst>::value >= MaxExponent<Src>::value)
+               ? GetRangeConstraint(true, value >= static_cast<Src>(0))
+               : GetRangeConstraint(
+                     value <= static_cast<Src>(std::numeric_limits<Dst>::max()),
+                     value >= static_cast<Src>(0));
   }
 };
 
 template <typename Dst, typename Src>
-inline RangeCheckResult RangeCheck(Src value) {
+inline RangeConstraint DstRangeRelationToSrcRange(Src value) {
   COMPILE_ASSERT(std::numeric_limits<Src>::is_specialized,
                  argument_must_be_numeric);
   COMPILE_ASSERT(std::numeric_limits<Dst>::is_specialized,
                  result_must_be_numeric);
-  return RangeCheckImpl<Dst, Src>::Check(value);
+  return DstRangeRelationToSrcRangeImpl<Dst, Src>::Check(value);
 }
 
 }  // namespace internal

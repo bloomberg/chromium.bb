@@ -16,7 +16,8 @@ namespace base {
 // for the destination type.
 template <typename Dst, typename Src>
 inline bool IsValueInRangeForNumericType(Src value) {
-  return internal::RangeCheck<Dst>(value) == internal::TYPE_VALID;
+  return internal::DstRangeRelationToSrcRange<Dst>(value) ==
+         internal::RANGE_VALID;
 }
 
 // checked_cast<> is analogous to static_cast<> for numeric types,
@@ -37,18 +38,18 @@ inline Dst saturated_cast(Src value) {
   if (std::numeric_limits<Dst>::is_iec559)
     return static_cast<Dst>(value);
 
-  switch (internal::RangeCheck<Dst>(value)) {
-    case internal::TYPE_VALID:
+  switch (internal::DstRangeRelationToSrcRange<Dst>(value)) {
+    case internal::RANGE_VALID:
       return static_cast<Dst>(value);
 
-    case internal::TYPE_UNDERFLOW:
+    case internal::RANGE_UNDERFLOW:
       return std::numeric_limits<Dst>::min();
 
-    case internal::TYPE_OVERFLOW:
+    case internal::RANGE_OVERFLOW:
       return std::numeric_limits<Dst>::max();
 
     // Should fail only on attempting to assign NaN to a saturated integer.
-    case internal::TYPE_INVALID:
+    case internal::RANGE_INVALID:
       CHECK(false);
       return std::numeric_limits<Dst>::max();
   }
