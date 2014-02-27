@@ -94,6 +94,8 @@ bool InitializeICU() {
 #if defined(OS_WIN)
     // The data file will be in the same directory as the current module.
     bool path_ok = PathService::Get(base::DIR_MODULE, &data_path);
+#elif defined(OS_ANDROID)
+    bool path_ok = PathService::Get(base::DIR_ANDROID_APP_DATA, &data_path);
 #else
     // For now, expect the data file to be alongside the executable.
     // This is sufficient while we work on unit tests, but will eventually
