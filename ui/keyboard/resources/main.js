@@ -163,6 +163,30 @@
   };
 
   /**
+   * A simple binary search.
+   * @param {Array} array The array to search.
+   * @param {number} start The start index.
+   * @param {number} end The end index.
+   * @param {Function<Object>:number} The test function used for searching.
+   * @private
+   * @return {number} The index of the search, or -1 if it was not found.
+   */
+  function binarySearch_(array, start, end, testFn) {
+      if (start > end) {
+        // No match found.
+        return -1;
+      }
+      var mid = Math.floor((start+end)/2);
+      var result = testFn(mid);
+      if (result == 0)
+        return mid;
+      if (result < 0)
+        return binarySearch_(array, start, mid - 1, testFn);
+      else
+        return binarySearch_(array, mid + 1, end, testFn);
+  }
+
+  /**
    * Calculate width and height of the window.
    * @private
    * @return {Array.<String, number>} The bounds of the keyboard container.
@@ -252,24 +276,9 @@
    * @param {number} pitch The pitch of the row.
    * @param {boolean} alignLeft whether to search with respect to the left or
    *   or right edge.
+   * @return {?kb-key}
    */
   function findClosestKey(allKeys, x, pitch, alignLeft) {
-    var n = allKeys.length;
-    // Simple binary search.
-    var binarySearch = function (start, end, testFn) {
-      if (start >= end) {
-        console.error("Unable to find key.");
-        return;
-      }
-      var mid = Math.floor((start+end)/2);
-      var result = testFn(mid);
-      if (result == 0)
-        return allKeys[mid];
-      if (result < 0)
-        return binarySearch(start, mid, testFn);
-      else
-        return binarySearch(mid + 1, end, testFn);
-    }
     // Test function.
     var testFn = function(i) {
       var ERROR_THRESH = 1;
@@ -287,8 +296,8 @@
         return 0;
       return x >= high? 1 : -1;
     }
-
-    return binarySearch(0, allKeys.length -1, testFn);
+    var index = exports.binarySearch(allKeys, 0, allKeys.length -1, testFn);
+    return index > 0 ? allKeys[index] : null;
   }
 
   /**
@@ -527,6 +536,7 @@
         layoutParams[layout] = new AlignmentOptions(keyset);
       realignKeyset(keyset, layoutParams[layout]);
     }
+    exports.recordKeysets();
   }
 
   /**
@@ -542,6 +552,7 @@
       realignKeyset(keysets[i], params);
     }
     keyboard.stale = false;
+    exports.recordKeysets();
   }
 
   /*
@@ -573,6 +584,7 @@
   addEventListener('load', onResize);
 
   exports.getKeyboardBounds = getKeyboardBounds_;
+  exports.binarySearch = binarySearch_;
 })(this);
 
 /**

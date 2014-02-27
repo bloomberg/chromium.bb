@@ -279,6 +279,7 @@ const GritResourceMap* GetKeyboardExtensionResources(size_t* size) {
     {"keyboard/main.css", IDR_KEYBOARD_MAIN_CSS},
     {"keyboard/polymer_loader.js", IDR_KEYBOARD_POLYMER_LOADER},
     {"keyboard/roboto_bold.ttf", IDR_KEYBOARD_ROBOTO_BOLD_TTF},
+    {"keyboard/touch_fuzzing.js", IDR_KEYBOARD_TOUCH_FUZZING_JS},
     {"keyboard/voice_input.js", IDR_KEYBOARD_VOICE_INPUT_JS},
   };
   static const size_t kKeyboardResourcesSize = arraysize(kKeyboardResources);
