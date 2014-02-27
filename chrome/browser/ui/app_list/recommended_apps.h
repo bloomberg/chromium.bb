@@ -37,11 +37,6 @@ class RecommendedApps : public extensions::InstallObserver {
   void Update();
 
   // extensions::InstallObserver overrides:
-  virtual void OnBeginExtensionInstall(
-      const ExtensionInstallParams& params) OVERRIDE;
-  virtual void OnDownloadProgress(const std::string& extension_id,
-                                  int percent_downloaded) OVERRIDE;
-  virtual void OnInstallFailure(const std::string& extension_id) OVERRIDE;
   virtual void OnExtensionInstalled(
       const extensions::Extension* extension) OVERRIDE;
   virtual void OnExtensionLoaded(
@@ -50,10 +45,6 @@ class RecommendedApps : public extensions::InstallObserver {
       const extensions::Extension* extension) OVERRIDE;
   virtual void OnExtensionUninstalled(
       const extensions::Extension* extension) OVERRIDE;
-  virtual void OnAppsReordered() OVERRIDE;
-  virtual void OnAppInstalledToAppList(
-      const std::string& extension_id) OVERRIDE;
-  virtual void OnShutdown() OVERRIDE;
 
   Profile* profile_;
   PrefChangeRegistrar pref_change_registrar_;

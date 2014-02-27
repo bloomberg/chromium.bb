@@ -224,9 +224,6 @@ void WebstoreResult::StopObservingInstall() {
   install_tracker_ = NULL;
 }
 
-void WebstoreResult::OnBeginExtensionInstall(
-    const ExtensionInstallParams& params) {}
-
 void WebstoreResult::OnDownloadProgress(const std::string& extension_id,
                                         int percent_downloaded) {
   if (extension_id != app_id_ || percent_downloaded < 0)
@@ -234,8 +231,6 @@ void WebstoreResult::OnDownloadProgress(const std::string& extension_id,
 
   SetPercentDownloaded(percent_downloaded);
 }
-
-void WebstoreResult::OnInstallFailure(const std::string& extension_id) {}
 
 void WebstoreResult::OnExtensionInstalled(
     const extensions::Extension* extension) {
@@ -246,19 +241,6 @@ void WebstoreResult::OnExtensionInstalled(
   UpdateActions();
   NotifyItemInstalled();
 }
-
-void WebstoreResult::OnExtensionLoaded(
-    const extensions::Extension* extension) {}
-
-void WebstoreResult::OnExtensionUnloaded(
-    const extensions::Extension* extension) {}
-
-void WebstoreResult::OnExtensionUninstalled(
-    const extensions::Extension* extension) {}
-
-void WebstoreResult::OnAppsReordered() {}
-
-void WebstoreResult::OnAppInstalledToAppList(const std::string& extension_id) {}
 
 void WebstoreResult::OnShutdown() {
   StopObservingInstall();

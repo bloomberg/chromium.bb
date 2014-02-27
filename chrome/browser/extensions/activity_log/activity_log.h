@@ -82,20 +82,9 @@ class ActivityLog : public BrowserContextKeyedService,
   // Extension::InstallObserver
   // We keep track of whether the whitelisted extension is installed; if it is,
   // we want to recompute whether to have logging enabled.
-  virtual void OnExtensionInstalled(const Extension* extension) OVERRIDE {}
   virtual void OnExtensionLoaded(const Extension* extension) OVERRIDE;
   virtual void OnExtensionUnloaded(const Extension* extension) OVERRIDE;
   virtual void OnExtensionUninstalled(const Extension* extension) OVERRIDE;
-  // We also have to list the following from InstallObserver.
-  virtual void OnBeginExtensionInstall(
-      const ExtensionInstallParams& params) OVERRIDE {}
-  virtual void OnDownloadProgress(const std::string& extension_id,
-                                  int percent_downloaded) OVERRIDE {}
-  virtual void OnInstallFailure(const std::string& extension_id) OVERRIDE {}
-  virtual void OnAppsReordered() OVERRIDE {}
-  virtual void OnAppInstalledToAppList(
-      const std::string& extension_id) OVERRIDE {}
-  virtual void OnShutdown() OVERRIDE {}
 
   // ApiActivityMonitor
   virtual void OnApiEventDispatched(

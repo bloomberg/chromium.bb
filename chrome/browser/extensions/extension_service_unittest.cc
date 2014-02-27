@@ -1700,39 +1700,12 @@ struct MockInstallObserver : public extensions::InstallObserver {
   virtual ~MockInstallObserver() {
   }
 
-  virtual void OnBeginExtensionInstall(
-      const ExtensionInstallParams& params) OVERRIDE {
-  }
-
-  virtual void OnDownloadProgress(const std::string& extension_id,
-                                  int percent_downloaded) OVERRIDE {
-  }
-
   virtual void OnExtensionInstalled(const Extension* extension) OVERRIDE {
     last_extension_installed = extension->id();
   }
 
-  virtual void OnInstallFailure(const std::string& extension_id) OVERRIDE {
-  }
-
-  virtual void OnExtensionLoaded(const Extension* extension) OVERRIDE {
-  }
-
-  virtual void OnExtensionUnloaded(const Extension* extension) OVERRIDE {
-  }
-
   virtual void OnExtensionUninstalled(const Extension* extension) OVERRIDE {
     last_extension_uninstalled = extension->id();
-  }
-
-  virtual void OnAppsReordered() OVERRIDE {
-  }
-
-  virtual void OnAppInstalledToAppList(
-      const std::string& extension_id) OVERRIDE {
-  }
-
-  virtual void OnShutdown() OVERRIDE {
   }
 
   std::string last_extension_installed;

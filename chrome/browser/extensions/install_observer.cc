@@ -19,4 +19,18 @@ InstallObserver::ExtensionInstallParams::ExtensionInstallParams(
           is_platform_app(is_platform_app),
           is_ephemeral(false) {}
 
+void InstallObserver::OnBeginExtensionInstall(
+    const ExtensionInstallParams& params) {}
+void InstallObserver::OnDownloadProgress(const std::string& extension_id,
+                                         int percent_downloaded) {}
+void InstallObserver::OnInstallFailure(const std::string& extension_id) {}
+void InstallObserver::OnExtensionInstalled(const Extension* extension) {}
+void InstallObserver::OnExtensionLoaded(const Extension* extension) {}
+void InstallObserver::OnExtensionUnloaded(const Extension* extension) {}
+void InstallObserver::OnExtensionUninstalled(const Extension* extension) {}
+void InstallObserver::OnAppInstalledToAppList(const std::string& extension_id) {
+}
+void InstallObserver::OnAppsReordered() {}
+void InstallObserver::OnShutdown() {}
+
 }  // namespace extensions

@@ -98,14 +98,6 @@ void RecommendedApps::Update() {
   }
 }
 
-void RecommendedApps::OnBeginExtensionInstall(
-    const ExtensionInstallParams& params) {}
-
-void RecommendedApps::OnDownloadProgress(const std::string& extension_id,
-                                int percent_downloaded) {}
-
-void RecommendedApps::OnInstallFailure(const std::string& extension_id) {}
-
 void RecommendedApps::OnExtensionInstalled(
     const extensions::Extension* extension) {
   Update();
@@ -125,12 +117,5 @@ void RecommendedApps::OnExtensionUninstalled(
     const extensions::Extension* extension) {
   Update();
 }
-
-void RecommendedApps::OnAppsReordered() {}
-
-void RecommendedApps::OnAppInstalledToAppList(
-    const std::string& extension_id) {}
-
-void RecommendedApps::OnShutdown() {}
 
 }  // namespace app_list

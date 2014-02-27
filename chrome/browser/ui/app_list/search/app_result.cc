@@ -182,21 +182,9 @@ void AppResult::ExtensionEnableFlowAborted(bool user_initiated) {
   controller_->OnCloseExtensionPrompt();
 }
 
-void AppResult::OnBeginExtensionInstall(
-    const ExtensionInstallParams& params) {}
-
-void AppResult::OnDownloadProgress(const std::string& extension_id,
-                                   int percent_downloaded) {}
-
-void AppResult::OnInstallFailure(const std::string& extension_id) {}
-
-void AppResult::OnExtensionInstalled(const extensions::Extension* extension) {}
-
 void AppResult::OnExtensionLoaded(const extensions::Extension* extension) {
   UpdateIcon();
 }
-
-void AppResult::OnExtensionUnloaded(const extensions::Extension* extension) {}
 
 void AppResult::OnExtensionUninstalled(const extensions::Extension* extension) {
   if (extension->id() != app_id_)
@@ -204,10 +192,6 @@ void AppResult::OnExtensionUninstalled(const extensions::Extension* extension) {
 
   NotifyItemUninstalled();
 }
-
-void AppResult::OnAppsReordered() {}
-
-void AppResult::OnAppInstalledToAppList(const std::string& extension_id) {}
 
 void AppResult::OnShutdown() { StopObservingInstall(); }
 

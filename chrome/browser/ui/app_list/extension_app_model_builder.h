@@ -59,15 +59,12 @@ class ExtensionAppModelBuilder : public extensions::InstallObserver,
   virtual void OnDownloadProgress(const std::string& extension_id,
                                   int percent_downloaded) OVERRIDE;
   virtual void OnInstallFailure(const std::string& extension_id) OVERRIDE;
-  virtual void OnExtensionInstalled(
-      const extensions::Extension* extension) OVERRIDE {}
   virtual void OnExtensionLoaded(
       const extensions::Extension* extension) OVERRIDE;
   virtual void OnExtensionUnloaded(
       const extensions::Extension* extension) OVERRIDE;
   virtual void OnExtensionUninstalled(
       const extensions::Extension* extension) OVERRIDE;
-  virtual void OnAppsReordered() OVERRIDE;
   virtual void OnAppInstalledToAppList(
       const std::string& extension_id) OVERRIDE;
   virtual void OnShutdown() OVERRIDE;

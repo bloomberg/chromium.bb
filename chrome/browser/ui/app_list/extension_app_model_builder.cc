@@ -184,10 +184,6 @@ void ExtensionAppModelBuilder::OnExtensionUninstalled(
   model_->DeleteItem(extension->id());
 }
 
-void ExtensionAppModelBuilder::OnAppsReordered() {
-  // Do nothing; App List order does not track extensions order.
-}
-
 void ExtensionAppModelBuilder::OnAppInstalledToAppList(
     const std::string& extension_id) {
   SetHighlightedApp(extension_id);

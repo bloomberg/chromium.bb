@@ -31,23 +31,36 @@ class InstallObserver {
     bool is_ephemeral;
   };
 
-  virtual void OnBeginExtensionInstall(
-      const ExtensionInstallParams& params) = 0;
+  // Called at the beginning of the complete installation process, i.e., this
+  // is called before the extension download begins.
+  virtual void OnBeginExtensionInstall(const ExtensionInstallParams& params);
 
+  // Called whenever the extension download is updated.
+  // Note: Some extensions have multiple modules, so the percent included here
+  // is a simple calculation of:
+  // (finished_files * 100 + current_file_progress) / (total files * 100).
   virtual void OnDownloadProgress(const std::string& extension_id,
-                                  int percent_downloaded) = 0;
+                                  int percent_downloaded);
 
-  virtual void OnInstallFailure(const std::string& extension_id) = 0;
+  // Called if the extension fails to install.
+  virtual void OnInstallFailure(const std::string& extension_id);
 
-  virtual void OnExtensionInstalled(const Extension* extension) = 0;
-  virtual void OnExtensionLoaded(const Extension* extension) = 0;
-  virtual void OnExtensionUnloaded(const Extension* extension) = 0;
-  virtual void OnExtensionUninstalled(const Extension* extension) = 0;
-  virtual void OnAppsReordered() = 0;
-  virtual void OnAppInstalledToAppList(const std::string& extension_id) = 0;
+  // Called if the installation succeeds.
+  virtual void OnExtensionInstalled(const Extension* extension);
+
+  // Called when an extension is [Loaded, Unloaded, Uninstalled] or an app is
+  // installed to the app list. These are simply forwarded from the
+  // chrome::NOTIFICATIONs.
+  virtual void OnExtensionLoaded(const Extension* extension);
+  virtual void OnExtensionUnloaded(const Extension* extension);
+  virtual void OnExtensionUninstalled(const Extension* extension);
+  virtual void OnAppInstalledToAppList(const std::string& extension_id);
+
+  // Called when the app list is reordered.
+  virtual void OnAppsReordered();
 
   // Notifies observers that the observed object is going away.
-  virtual void OnShutdown() = 0;
+  virtual void OnShutdown();
 
  protected:
   virtual ~InstallObserver() {}
