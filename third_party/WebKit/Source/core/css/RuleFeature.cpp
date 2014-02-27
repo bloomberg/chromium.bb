@@ -380,7 +380,7 @@ bool RuleFeatureSet::computeInvalidationSetsForClassChange(const SpaceSplitStrin
 
 void RuleFeatureSet::addClassToInvalidationSet(const AtomicString& className, Element* element)
 {
-    if (DescendantInvalidationSet* invalidationSet = m_classInvalidationSets.get(className)) {
+    if (RefPtr<DescendantInvalidationSet> invalidationSet = m_classInvalidationSets.get(className)) {
         ensurePendingInvalidationList(element).append(invalidationSet);
         element->setNeedsStyleInvalidation();
     }
@@ -388,9 +388,9 @@ void RuleFeatureSet::addClassToInvalidationSet(const AtomicString& className, El
 
 RuleFeatureSet::InvalidationList& RuleFeatureSet::ensurePendingInvalidationList(Element* element)
 {
-    PendingInvalidationMap::AddResult addResult = m_pendingInvalidationMap.add(element, 0);
+    PendingInvalidationMap::AddResult addResult = m_pendingInvalidationMap.add(element, nullptr);
     if (addResult.isNewEntry)
-        addResult.storedValue->value = new InvalidationList;
+        addResult.storedValue->value = adoptPtr(new InvalidationList);
     return *addResult.storedValue->value;
 }
 

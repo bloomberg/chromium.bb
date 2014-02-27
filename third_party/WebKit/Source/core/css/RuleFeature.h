@@ -102,8 +102,8 @@ public:
 
 private:
     typedef HashMap<AtomicString, RefPtr<DescendantInvalidationSet> > InvalidationSetMap;
-    typedef Vector<DescendantInvalidationSet*> InvalidationList;
-    typedef HashMap<Element*, InvalidationList*> PendingInvalidationMap;
+    typedef Vector<RefPtr<DescendantInvalidationSet> > InvalidationList;
+    typedef HashMap<Element*, OwnPtr<InvalidationList> > PendingInvalidationMap;
     struct FeatureMetadata {
         FeatureMetadata()
             : usesFirstLineRules(false)
