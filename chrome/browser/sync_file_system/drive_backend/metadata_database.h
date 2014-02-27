@@ -50,7 +50,15 @@ class FileDetails;
 class FileMetadata;
 class FileTracker;
 class ServiceMetadata;
-struct DatabaseContents;
+
+struct DatabaseContents {
+  scoped_ptr<ServiceMetadata> service_metadata;
+  ScopedVector<FileMetadata> file_metadata;
+  ScopedVector<FileTracker> file_trackers;
+
+  DatabaseContents();
+  ~DatabaseContents();
+};
 
 // MetadataDatabase holds and maintains a LevelDB instance and its indexes,
 // which holds 1)ServiceMetadata, 2)FileMetadata and 3)FileTracker.

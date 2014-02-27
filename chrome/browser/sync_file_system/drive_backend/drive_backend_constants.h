@@ -25,6 +25,8 @@ extern const char kFileTrackerKeyPrefix[];
 extern const int kMaxRetry;
 extern const int64 kListChangesRetryDelaySeconds;
 
+extern const int64 kInvalidTrackerID;
+
 }  // namespace drive_backend
 }  // namespace sync_file_system
 

@@ -23,5 +23,7 @@ const char kFileTrackerKeyPrefix[] = "TRACKER: ";
 const int kMaxRetry = 5;
 const int64 kListChangesRetryDelaySeconds = 60 * 60;
 
+const int64 kInvalidTrackerID = 0;
+
 }  // namespace drive_backend
 }  // namespace sync_file_system

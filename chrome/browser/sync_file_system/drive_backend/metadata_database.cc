@@ -38,12 +38,6 @@
 namespace sync_file_system {
 namespace drive_backend {
 
-struct DatabaseContents {
-  scoped_ptr<ServiceMetadata> service_metadata;
-  ScopedVector<FileMetadata> file_metadata;
-  ScopedVector<FileTracker> file_trackers;
-};
-
 namespace {
 
 typedef MetadataDatabase::MetadataByID MetadataByID;
@@ -455,6 +449,9 @@ bool HasInvalidTitle(const std::string& title) {
 }
 
 }  // namespace
+
+DatabaseContents::DatabaseContents() {}
+DatabaseContents::~DatabaseContents() {}
 
 bool MetadataDatabase::DirtyTrackerComparator::operator()(
     const FileTracker* left,
