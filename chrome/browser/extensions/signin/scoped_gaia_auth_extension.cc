@@ -5,18 +5,20 @@
 #include "chrome/browser/extensions/signin/scoped_gaia_auth_extension.h"
 
 #include "chrome/browser/extensions/signin/gaia_auth_extension_loader.h"
+#include "content/public/browser/browser_context.h"
 
-ScopedGaiaAuthExtension::ScopedGaiaAuthExtension(Profile* profile)
-    : profile_(profile) {
+ScopedGaiaAuthExtension::ScopedGaiaAuthExtension(
+    content::BrowserContext* context)
+    : browser_context_(context) {
   extensions::GaiaAuthExtensionLoader* loader =
-      extensions::GaiaAuthExtensionLoader::Get(profile_);
+      extensions::GaiaAuthExtensionLoader::Get(browser_context_);
   if (loader)
     loader->LoadIfNeeded();
 }
 
 ScopedGaiaAuthExtension::~ScopedGaiaAuthExtension() {
   extensions::GaiaAuthExtensionLoader* loader =
-      extensions::GaiaAuthExtensionLoader::Get(profile_);
+      extensions::GaiaAuthExtensionLoader::Get(browser_context_);
   if (loader)
     loader->UnloadIfNeeded();
 }
