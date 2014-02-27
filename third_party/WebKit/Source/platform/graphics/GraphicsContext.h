@@ -157,7 +157,6 @@ public:
     TextDrawingModeFlags textDrawingMode() const { return m_paintState->m_textDrawingMode; }
 
     void setAlpha(float alpha) { mutableState()->m_alpha = alpha;}
-    float alpha() const { return m_paintState->m_alpha; }
 
     void setImageInterpolationQuality(InterpolationQuality quality) { mutableState()->m_interpolationQuality = quality; }
     InterpolationQuality imageInterpolationQuality() const { return m_paintState->m_interpolationQuality; }

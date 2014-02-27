@@ -247,9 +247,10 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
     context->clip(enclosingIntRect(dstRect));
 
     bool compositingRequiresTransparencyLayer = compositeOp != CompositeSourceOver || blendMode != blink::WebBlendModeNormal;
-    bool requiresTransparencyLayer = compositingRequiresTransparencyLayer || context->alpha() < 1;
+    float opacity = context->getNormalizedAlpha() / 255.f;
+    bool requiresTransparencyLayer = compositingRequiresTransparencyLayer || opacity < 1;
     if (requiresTransparencyLayer) {
-        context->beginTransparencyLayer(context->alpha());
+        context->beginTransparencyLayer(opacity);
         if (compositingRequiresTransparencyLayer)
             context->setCompositeOperation(CompositeSourceOver, blink::WebBlendModeNormal);
     }
