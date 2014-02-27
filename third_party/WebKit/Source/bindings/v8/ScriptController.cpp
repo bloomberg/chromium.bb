@@ -133,7 +133,6 @@ void ScriptController::clearForClose(bool destroyGlobal)
     m_windowShell->clearForClose(destroyGlobal);
     for (IsolatedWorldMap::iterator iter = m_isolatedWorlds.begin(); iter != m_isolatedWorlds.end(); ++iter)
         iter->value->clearForClose(destroyGlobal);
-    V8GCController::hintForCollectGarbage();
 }
 
 void ScriptController::clearForClose()
@@ -452,7 +451,6 @@ void ScriptController::clearWindowShell()
     for (IsolatedWorldMap::iterator iter = m_isolatedWorlds.begin(); iter != m_isolatedWorlds.end(); ++iter)
         iter->value->clearForNavigation();
     clearScriptObjects();
-    V8GCController::hintForCollectGarbage();
     blink::Platform::current()->histogramCustomCounts("WebCore.ScriptController.clearWindowShell", (currentTime() - start) * 1000, 0, 10000, 50);
 }
 

@@ -109,14 +109,6 @@ public:
 
     GCEventData* gcEventData() { return m_gcEventData.get(); }
 
-    // Gives the system a hint that we should request garbage collection
-    // upon the next close or navigation event, because some expensive
-    // objects have been allocated that we want to take every opportunity
-    // to collect.
-    void setShouldCollectGarbageSoon() { m_shouldCollectGarbageSoon = true; }
-    void clearShouldCollectGarbageSoon() { m_shouldCollectGarbageSoon = false; }
-    bool shouldCollectGarbageSoon() const { return m_shouldCollectGarbageSoon; }
-
     v8::Handle<v8::FunctionTemplate> domTemplate(WrapperWorldType, void* domTemplateKey, v8::FunctionCallback = 0, v8::Handle<v8::Value> data = v8::Handle<v8::Value>(), v8::Handle<v8::Signature> = v8::Handle<v8::Signature>(), int length = 0);
     v8::Handle<v8::FunctionTemplate> existingDOMTemplate(WrapperWorldType, void* domTemplateKey);
     void setDOMTemplate(WrapperWorldType, void* domTemplateKey, v8::Handle<v8::FunctionTemplate>);
@@ -158,7 +150,6 @@ private:
     int m_internalScriptRecursionLevel;
 #endif
     OwnPtr<GCEventData> m_gcEventData;
-    bool m_shouldCollectGarbageSoon;
     bool m_performingMicrotaskCheckpoint;
 };
 

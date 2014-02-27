@@ -390,17 +390,6 @@ void V8GCController::majorGCEpilogue(v8::Isolate* isolate)
         TRACE_EVENT_SET_NONCONST_SAMPLING_STATE(V8PerIsolateData::from(isolate)->previousSamplingState());
 }
 
-void V8GCController::hintForCollectGarbage()
-{
-    V8PerIsolateData* data = V8PerIsolateData::current();
-    if (!data->shouldCollectGarbageSoon())
-        return;
-    const int longIdlePauseInMS = 1000;
-    data->clearShouldCollectGarbageSoon();
-    v8::V8::ContextDisposedNotification();
-    v8::V8::IdleNotification(longIdlePauseInMS);
-}
-
 void V8GCController::collectGarbage(v8::Isolate* isolate)
 {
     v8::HandleScope handleScope(isolate);

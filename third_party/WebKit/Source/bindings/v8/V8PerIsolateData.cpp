@@ -49,7 +49,6 @@ V8PerIsolateData::V8PerIsolateData(v8::Isolate* isolate)
     , m_internalScriptRecursionLevel(0)
 #endif
     , m_gcEventData(adoptPtr(new GCEventData()))
-    , m_shouldCollectGarbageSoon(false)
     , m_performingMicrotaskCheckpoint(false)
 {
     if (m_isMainThread)
