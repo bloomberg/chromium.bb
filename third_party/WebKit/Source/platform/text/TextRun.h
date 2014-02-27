@@ -25,6 +25,7 @@
 #define TextRun_h
 
 #include "platform/PlatformExport.h"
+#include "platform/fonts/Glyph.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/TextPath.h"
@@ -220,7 +221,7 @@ public:
 
         virtual GlyphData glyphDataForCharacter(const Font&, const TextRun&, WidthIterator&, UChar32 character, bool mirror, int currentCharacter, unsigned& advanceLength) = 0;
         virtual void drawSVGGlyphs(GraphicsContext*, const TextRun&, const SimpleFontData*, const GlyphBuffer&, int from, int to, const FloatPoint&) const = 0;
-        virtual float floatWidthUsingSVGFont(const Font&, const TextRun&, int& charsConsumed, String& glyphName) const = 0;
+        virtual float floatWidthUsingSVGFont(const Font&, const TextRun&, int& charsConsumed, Glyph& glyphId) const = 0;
     };
 
     RenderingContext* renderingContext() const { return m_renderingContext.get(); }

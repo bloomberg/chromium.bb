@@ -47,7 +47,9 @@ struct SVGKerningPair {
     }
 };
 
+typedef unsigned KerningPairKey;
 typedef Vector<SVGKerningPair> KerningPairVector;
+typedef HashMap<KerningPairKey, float> KerningTable;
 
 class SVGMissingGlyphElement;
 
@@ -57,10 +59,10 @@ public:
 
     void invalidateGlyphCache();
     void collectGlyphsForString(const String&, Vector<SVGGlyph>&);
-    void collectGlyphsForGlyphName(const String&, Vector<SVGGlyph>&);
+    void collectGlyphsForAltGlyphReference(const String&, Vector<SVGGlyph>&);
 
-    float horizontalKerningForPairOfStringsAndGlyphs(const String& u1, const String& g1, const String& u2, const String& g2) const;
-    float verticalKerningForPairOfStringsAndGlyphs(const String& u1, const String& g1, const String& u2, const String& g2) const;
+    float horizontalKerningForPairOfGlyphs(Glyph, Glyph) const;
+    float verticalKerningForPairOfGlyphs(Glyph, Glyph) const;
 
     // Used by SimpleFontData/WidthIterator.
     SVGGlyph svgGlyphForGlyph(Glyph);
@@ -75,12 +77,15 @@ private:
 
     void ensureGlyphCache();
     void registerLigaturesInGlyphCache(Vector<String>&);
+    Vector<SVGGlyph> buildGlyphList(const UnicodeRanges&, const HashSet<String>& unicodeNames, const HashSet<String>& glyphNames) const;
+    void addPairsToKerningTable(const SVGKerningPair&, KerningTable&);
+    void buildKerningTable(const KerningPairVector&, KerningTable&);
 
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGFontElement)
     END_DECLARE_ANIMATED_PROPERTIES
 
-    KerningPairVector m_horizontalKerningPairs;
-    KerningPairVector m_verticalKerningPairs;
+    KerningTable m_horizontalKerningTable;
+    KerningTable m_verticalKerningTable;
     SVGGlyphMap m_glyphMap;
     Glyph m_missingGlyph;
     bool m_isGlyphCacheValid;

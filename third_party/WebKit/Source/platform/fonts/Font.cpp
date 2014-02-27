@@ -166,15 +166,15 @@ float Font::width(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFo
     return result;
 }
 
-float Font::width(const TextRun& run, int& charsConsumed, String& glyphName) const
+float Font::width(const TextRun& run, int& charsConsumed, Glyph& glyphId) const
 {
 #if ENABLE(SVG_FONTS)
     if (TextRun::RenderingContext* renderingContext = run.renderingContext())
-        return renderingContext->floatWidthUsingSVGFont(*this, run, charsConsumed, glyphName);
+        return renderingContext->floatWidthUsingSVGFont(*this, run, charsConsumed, glyphId);
 #endif
 
     charsConsumed = run.length();
-    glyphName = "";
+    glyphId = 0;
     return width(run);
 }
 

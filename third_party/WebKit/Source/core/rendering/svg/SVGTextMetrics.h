@@ -20,6 +20,7 @@
 #ifndef SVGTextMetrics_h
 #define SVGTextMetrics_h
 
+#include "platform/fonts/Glyph.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -36,12 +37,12 @@ public:
 
     SVGTextMetrics();
     SVGTextMetrics(MetricsType);
-    SVGTextMetrics(RenderSVGInlineText*, unsigned position, unsigned length, float width, const String& glyphName);
+    SVGTextMetrics(RenderSVGInlineText*, unsigned position, unsigned length, float width, Glyph glyphNameGlyphId);
 
     static SVGTextMetrics measureCharacterRange(RenderSVGInlineText*, unsigned position, unsigned length);
     static TextRun constructTextRun(RenderSVGInlineText*, unsigned position, unsigned length);
 
-    bool isEmpty() const { return !m_width && !m_height && !m_glyph.isValid && m_length == 1; }
+    bool isEmpty() const { return !m_width && !m_height && m_length <= 1; }
 
     float width() const { return m_width; }
     void setWidth(float width) { m_width = width; }
@@ -49,19 +50,8 @@ public:
     float height() const { return m_height; }
     unsigned length() const { return m_length; }
 
-    struct Glyph {
-        Glyph()
-            : isValid(false)
-        {
-        }
-
-        bool isValid;
-        String name;
-        String unicodeString;
-    };
-
     // Only useful when measuring individual characters, to lookup ligatures.
-    const Glyph& glyph() const { return m_glyph; }
+    Glyph glyph() const { return m_glyph; }
 
 private:
     SVGTextMetrics(RenderSVGInlineText*, const TextRun&);

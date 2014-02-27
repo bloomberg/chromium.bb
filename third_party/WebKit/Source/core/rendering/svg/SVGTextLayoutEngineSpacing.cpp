@@ -37,15 +37,18 @@ namespace WebCore {
 SVGTextLayoutEngineSpacing::SVGTextLayoutEngineSpacing(const Font& font)
     : m_font(font)
     , m_lastCharacter(0)
+#if ENABLE(SVG_FONTS)
+    , m_lastGlyph(0)
+#endif
 {
 }
 
-float SVGTextLayoutEngineSpacing::calculateSVGKerning(bool isVerticalText, const SVGTextMetrics::Glyph& currentGlyph)
+float SVGTextLayoutEngineSpacing::calculateSVGKerning(bool isVerticalText, Glyph currentGlyph)
 {
 #if ENABLE(SVG_FONTS)
     const SimpleFontData* fontData = m_font.primaryFont();
     if (!fontData->isSVGFont()) {
-        m_lastGlyph.isValid = false;
+        m_lastGlyph = 0;
         return 0;
     }
 
@@ -59,24 +62,24 @@ float SVGTextLayoutEngineSpacing::calculateSVGKerning(bool isVerticalText, const
 
     SVGFontElement* svgFont = svgFontFace->associatedFontElement();
     if (!svgFont) {
-        m_lastGlyph.isValid = false;
+        m_lastGlyph = 0;
         return 0;
     }
 
     float kerning = 0;
-    if (m_lastGlyph.isValid) {
+    if (m_lastGlyph) {
         if (isVerticalText)
-            kerning = svgFont->verticalKerningForPairOfStringsAndGlyphs(m_lastGlyph.unicodeString, m_lastGlyph.name, currentGlyph.unicodeString, currentGlyph.name);
+            kerning = svgFont->verticalKerningForPairOfGlyphs(m_lastGlyph, currentGlyph);
         else
-            kerning = svgFont->horizontalKerningForPairOfStringsAndGlyphs(m_lastGlyph.unicodeString, m_lastGlyph.name, currentGlyph.unicodeString, currentGlyph.name);
+            kerning = svgFont->horizontalKerningForPairOfGlyphs(m_lastGlyph, currentGlyph);
+
+        kerning *= m_font.fontDescription().computedSize() / m_font.fontMetrics().unitsPerEm();
     }
 
     m_lastGlyph = currentGlyph;
-    m_lastGlyph.isValid = true;
-    kerning *= m_font.fontDescription().computedSize() / m_font.fontMetrics().unitsPerEm();
     return kerning;
 #else
-    return false;
+    return 0;
 #endif
 }
 
