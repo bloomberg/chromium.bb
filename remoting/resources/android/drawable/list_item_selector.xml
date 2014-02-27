@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Copyright 2014 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+-->
+
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/list_item_disabled_pressed"
+            android:state_enabled="false"
+            android:state_pressed="true"/>
+    <item android:drawable="@color/list_item_pressed"
+            android:state_enabled="true"
+            android:state_pressed="true"/>
+
+    <!-- Default used for all other states. -->
+    <item android:drawable="@android:color/transparent"/>
+</selector>

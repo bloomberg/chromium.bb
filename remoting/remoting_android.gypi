@@ -52,6 +52,12 @@
               ],
             },
             {
+              'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/drawable',
+              'files': [
+                'resources/android/drawable/list_item_selector.xml',
+              ],
+            },
+            {
               'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/drawable-hdpi',
               'files': [
                 'resources/android/drawable-hdpi/ic_action_keyboard.png',
@@ -97,6 +103,7 @@
             {
               'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/values',
               'files': [
+                'resources/android/values/colors.xml',
                 'resources/android/values/dimens.xml',
                 'resources/android/values/strings.xml',
                 'resources/android/values/styles.xml',

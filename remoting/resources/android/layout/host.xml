@@ -7,6 +7,7 @@
 
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/host_label"
+        android:background="@drawable/list_item_selector"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
         android:drawableLeft="@drawable/icon_host"
