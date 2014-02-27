@@ -12,6 +12,7 @@
   },
   "permissions": [
     "alarms",
+    "experimental",
     "storage",
     "unlimitedStorage",
     {"fileSystem": ["write"]},
