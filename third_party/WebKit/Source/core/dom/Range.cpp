@@ -901,7 +901,10 @@ PassRefPtr<Node> Range::processAncestorsAndTheirSiblings(ActionType action, Node
             Node* child = it->get();
             switch (action) {
             case DELETE_CONTENTS:
-                ancestor->removeChild(child, exceptionState);
+                // Prior call of ancestor->removeChild() may cause a tree change due to DOMSubtreeModified event.
+                // Therefore, we need to make sure |ancestor| is still |child|'s parent.
+                if (ancestor == child->parentNode())
+                    ancestor->removeChild(child, exceptionState);
                 break;
             case EXTRACT_CONTENTS: // will remove child from ancestor
                 if (direction == ProcessContentsForward)

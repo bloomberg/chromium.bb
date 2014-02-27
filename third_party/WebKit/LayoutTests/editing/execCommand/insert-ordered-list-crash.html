@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Crash issue 344280</title>
+    <script src="../../resources/js-test.js"></script>
+</head>
+
+<body>
+    <script>
+        description('Should not crash if we load a test case from crbug.com/344280.');
+        window.jsTestIsAsync = true;
+
+        document.addEventListener("DOMContentLoaded", function () {
+            document.execCommand("SelectAll", false);
+            window.getSelection().deleteFromDocument();
+        }, true);
+
+        var count = 0;
+        document.addEventListener("DOMSubtreeModified", function () {
+            count++;
+            if (count < 3) {
+                var src = event.srcElement;
+                src.contentEditable = "true";
+                src.innerHTML = '<div></div>';
+                document.execCommand('InsertOrderedList', false, false);
+            } else if (count == 3) {
+                window.finishJSTest();
+            }
+        }, false);
+    </script>
+    <h5>
+        aa
+        <textarea></textarea>
+    </h5>
+    <dl>
+        aa
+    </dl>
+</body>
+</html>
