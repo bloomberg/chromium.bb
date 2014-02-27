@@ -626,6 +626,83 @@ TEST_F(LoginDatabaseTest, VectorSerialization) {
   EXPECT_THAT(output, Eq(vec));
 }
 
+TEST_F(LoginDatabaseTest, UpdateIncompleteCredentials) {
+  std::vector<autofill::PasswordForm*> result;
+  // Verify the database is empty.
+  EXPECT_TRUE(db_.GetAutofillableLogins(&result));
+  ASSERT_EQ(0U, result.size());
+
+  // Save an incomplete form. Note that it only has a few fields set, ex. it's
+  // missing 'action', 'username_element' and 'password_element'. Such forms
+  // are sometimes inserted during import from other browsers (which may not
+  // store this info).
+  PasswordForm incomplete_form;
+  incomplete_form.origin = GURL("http://accounts.google.com/LoginAuth");
+  incomplete_form.signon_realm = "http://accounts.google.com/";
+  incomplete_form.username_value = ASCIIToUTF16("my_username");
+  incomplete_form.password_value = ASCIIToUTF16("my_password");
+  incomplete_form.ssl_valid = false;
+  incomplete_form.preferred = true;
+  incomplete_form.blacklisted_by_user = false;
+  incomplete_form.scheme = PasswordForm::SCHEME_HTML;
+  EXPECT_TRUE(db_.AddLogin(incomplete_form));
+
+  // A form on some website. It should trigger a match with the stored one.
+  PasswordForm encountered_form;
+  encountered_form.origin = GURL("http://accounts.google.com/LoginAuth");
+  encountered_form.signon_realm = "http://accounts.google.com/";
+  encountered_form.action = GURL("http://accounts.google.com/Login");
+  encountered_form.username_element = ASCIIToUTF16("Email");
+  encountered_form.password_element = ASCIIToUTF16("Passwd");
+  encountered_form.submit_element = ASCIIToUTF16("signIn");
+
+  // Get matches for encountered_form.
+  EXPECT_TRUE(db_.GetLogins(encountered_form, &result));
+  ASSERT_EQ(1U, result.size());
+  EXPECT_EQ(incomplete_form.origin, result[0]->origin);
+  EXPECT_EQ(incomplete_form.signon_realm, result[0]->signon_realm);
+  EXPECT_EQ(incomplete_form.username_value, result[0]->username_value);
+#if defined(OS_MACOSX)
+  // On Mac, passwords are not stored in login database, instead they're in
+  // the keychain.
+  EXPECT_TRUE(result[0]->password_value.empty());
+#else
+  EXPECT_EQ(incomplete_form.password_value, result[0]->password_value);
+#endif  // !OS_MACOSX
+  EXPECT_TRUE(result[0]->preferred);
+  EXPECT_FALSE(result[0]->ssl_valid);
+
+  // We should return empty 'action', 'username_element', 'password_element'
+  // and 'submit_element' as we can't be sure if the credentials were entered
+  // in this particular form on the page.
+  EXPECT_EQ(GURL(), result[0]->action);
+  EXPECT_TRUE(result[0]->username_element.empty());
+  EXPECT_TRUE(result[0]->password_element.empty());
+  EXPECT_TRUE(result[0]->submit_element.empty());
+  ClearResults(&result);
+
+  // Let's say this login form worked. Now update the stored credentials with
+  // 'action', 'username_element', 'password_element' and 'submit_element' from
+  // the encountered form.
+  PasswordForm completed_form(incomplete_form);
+  completed_form.action = encountered_form.action;
+  completed_form.username_element = encountered_form.username_element;
+  completed_form.password_element = encountered_form.password_element;
+  completed_form.submit_element = encountered_form.submit_element;
+  EXPECT_TRUE(db_.UpdateLogin(completed_form, NULL));
+
+  // Get matches for encountered_form again.
+  EXPECT_TRUE(db_.GetLogins(encountered_form, &result));
+  ASSERT_EQ(1U, result.size());
+
+  // This time we should have all the info available.
+  PasswordForm expected_form(completed_form);
+#if defined(OS_MACOSX)
+  expected_form.password_value.clear();
+#endif  // OS_MACOSX
+  EXPECT_EQ(expected_form, *result[0]);
+}
+
 #if defined(OS_POSIX)
 // Only the current user has permission to read the database.
 //

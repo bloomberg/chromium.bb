@@ -115,7 +115,7 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   virtual void AddLogin(const autofill::PasswordForm& form);
 
   // Updates the matching PasswordForm in the secure password store (async).
-  void UpdateLogin(const autofill::PasswordForm& form);
+  virtual void UpdateLogin(const autofill::PasswordForm& form);
 
   // Removes the matching PasswordForm from the secure password store (async).
   void RemoveLogin(const autofill::PasswordForm& form);

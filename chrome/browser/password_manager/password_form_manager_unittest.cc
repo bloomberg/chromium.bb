@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "content/public/test/test_utils.h"
@@ -25,6 +26,7 @@ using base::ASCIIToUTF16;
 using ::testing::_;
 using ::testing::Eq;
 using ::testing::Mock;
+using ::testing::Return;
 
 namespace autofill {
 class AutofillManager;
@@ -123,6 +125,19 @@ class PasswordFormManagerTest : public testing::Test {
 
   virtual void TearDown() {
     delete profile_;
+    if (mock_store_)
+      mock_store_->Shutdown();
+  }
+
+  void InitializeMockStore() {
+    if (!mock_store_) {
+      mock_store_ = new MockPasswordStore();
+      ASSERT_TRUE(mock_store_);
+    }
+  }
+
+  MockPasswordStore* mock_store() const {
+    return mock_store_.get();
   }
 
   PasswordForm* GetPendingCredentials(PasswordFormManager* p) {
@@ -178,6 +193,7 @@ class PasswordFormManagerTest : public testing::Test {
   PasswordForm observed_form_;
   PasswordForm saved_match_;
   Profile* profile_;
+  scoped_refptr<MockPasswordStore> mock_store_;
 };
 
 TEST_F(PasswordFormManagerTest, TestNewLogin) {
@@ -659,4 +675,70 @@ TEST_F(PasswordFormManagerTest, TestSanitizePossibleUsernames) {
   expected.push_back(ASCIIToUTF16("duplicate"));
   expected.push_back(ASCIIToUTF16("random"));
   EXPECT_THAT(credentials.other_possible_usernames, Eq(expected));
+}
+
+TEST_F(PasswordFormManagerTest, TestUpdateIncompleteCredentials) {
+  InitializeMockStore();
+
+  // We've found this form on a website:
+  PasswordForm encountered_form;
+  encountered_form.origin = GURL("http://accounts.google.com/LoginAuth");
+  encountered_form.signon_realm = "http://accounts.google.com/";
+  encountered_form.action = GURL("http://accounts.google.com/Login");
+  encountered_form.username_element = ASCIIToUTF16("Email");
+  encountered_form.password_element = ASCIIToUTF16("Passwd");
+  encountered_form.submit_element = ASCIIToUTF16("signIn");
+
+  TestPasswordManagerClient client(profile(), mock_store());
+  MockPasswordManagerDriver driver;
+  EXPECT_CALL(driver, IsOffTheRecord()).WillRepeatedly(Return(false));
+  EXPECT_CALL(driver, AllowPasswordGenerationForForm(_));
+
+  TestPasswordManager manager(&client);
+  PasswordFormManager form_manager(&manager,
+                                   &client,
+                                   &driver,
+                                   encountered_form,
+                                   false);
+
+  const PasswordStore::AuthorizationPromptPolicy auth_policy =
+      PasswordStore::DISALLOW_PROMPT;
+  EXPECT_CALL(*mock_store(), GetLogins(encountered_form,
+                                       auth_policy,
+                                       &form_manager));
+  form_manager.FetchMatchingLoginsFromPasswordStore(auth_policy);
+
+  // Password store only has these incomplete credentials.
+  PasswordForm* incomplete_form = new PasswordForm();
+  incomplete_form->origin = GURL("http://accounts.google.com/LoginAuth");
+  incomplete_form->signon_realm = "http://accounts.google.com/";
+  incomplete_form->password_value = ASCIIToUTF16("my_password");
+  incomplete_form->username_value = ASCIIToUTF16("my_username");
+  incomplete_form->preferred = true;
+  incomplete_form->ssl_valid = false;
+  incomplete_form->scheme = PasswordForm::SCHEME_HTML;
+
+  // We expect to see this form eventually sent to the Password store. It
+  // has password/username values from the store and 'username_element',
+  // 'password_element', 'submit_element' and 'action' fields copied from
+  // the encountered form.
+  PasswordForm complete_form(*incomplete_form);
+  complete_form.action = encountered_form.action;
+  complete_form.password_element = encountered_form.password_element;
+  complete_form.username_element = encountered_form.username_element;
+  complete_form.submit_element = encountered_form.submit_element;
+
+  // Feed the incomplete credentials to the manager.
+  std::vector<PasswordForm*> results;
+  results.push_back(incomplete_form);  // Takes ownership.
+  form_manager.OnRequestDone(results);
+
+  form_manager.ProvisionallySave(
+        complete_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  // By now that form has been used once.
+  complete_form.times_used = 1;
+
+  // Check that PasswordStore receives an update request with the complete form.
+  EXPECT_CALL(*mock_store(), UpdateLogin(complete_form));
+  form_manager.Save();
 }

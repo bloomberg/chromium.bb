@@ -238,6 +238,13 @@ void PasswordFormManager::ProvisionallySave(
   // bless it with the action URL from the observed form. See bug 1107719.
   if (pending_credentials_.action.is_empty())
     pending_credentials_.action = observed_form_.action;
+  // Similarly, bless incomplete credentials with *_element info.
+  if (pending_credentials_.password_element.empty())
+    pending_credentials_.password_element = observed_form_.password_element;
+  if (pending_credentials_.username_element.empty())
+    pending_credentials_.username_element = observed_form_.username_element;
+  if (pending_credentials_.submit_element.empty())
+    pending_credentials_.submit_element = observed_form_.submit_element;
 
   pending_credentials_.password_value = credentials.password_value;
   pending_credentials_.preferred = credentials.preferred;
