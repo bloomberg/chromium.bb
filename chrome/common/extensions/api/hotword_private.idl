@@ -13,6 +13,9 @@
 [nodoc] namespace hotwordPrivate {
 
   dictionary StatusDetails {
+    // Whether the hotword preference has been set.
+    boolean enabledSet;
+
     // If the hotword extension is enabled. Will always be false if |available|
     // is false.
     boolean enabled;

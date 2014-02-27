@@ -100,7 +100,7 @@ OptInManager.prototype.injectTab_ = function(tab, hotwordStatus) {
   if (hotwordStatus.available) {
     if (hotwordStatus.enabled)
       chrome.tabs.executeScript(tab.id, {'file': 'audio_client.js'});
-    else
+    else if (!hotwordStatus.enabledSet)
       chrome.tabs.executeScript(tab.id, {'file': 'optin_client.js'});
   }
 };

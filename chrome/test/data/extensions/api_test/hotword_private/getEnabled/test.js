@@ -4,16 +4,29 @@
 
 chrome.test.runTests([
   function getEnabled() {
+    chrome.hotwordPrivate.getStatus(
+        chrome.test.callbackPass(function(result) {
+          chrome.test.assertFalse(result.enabledSet);
+        }));
+
     chrome.hotwordPrivate.setEnabled(true, function() {});
     chrome.hotwordPrivate.getStatus(
         chrome.test.callbackPass(function(result) {
           chrome.test.assertTrue(result.enabled);
+        }));
+    chrome.hotwordPrivate.getStatus(
+        chrome.test.callbackPass(function(result) {
+          chrome.test.assertTrue(result.enabledSet);
         }));
 
     chrome.hotwordPrivate.setEnabled(false, function() {});
     chrome.hotwordPrivate.getStatus(
         chrome.test.callbackPass(function(result) {
           chrome.test.assertFalse(result.enabled);
+        }));
+    chrome.hotwordPrivate.getStatus(
+        chrome.test.callbackPass(function(result) {
+          chrome.test.assertTrue(result.enabledSet);
         }));
   }
 ]);
