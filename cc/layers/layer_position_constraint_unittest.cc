@@ -143,6 +143,21 @@ class LayerPositionConstraintTest : public testing::Test {
   LayerPositionConstraint fixed_to_bottom_right_;
 };
 
+namespace {
+
+void SetFixedContainerSizeDelta(LayerImpl* scroll_layer,
+                                const gfx::Vector2d& delta) {
+  DCHECK(scroll_layer);
+  DCHECK(scroll_layer->scrollable());
+
+  LayerImpl* container_layer = scroll_layer->scroll_clip_layer();
+  gfx::Size container_size(container_layer->bounds());
+  gfx::Size new_container_size(container_size.width() + delta.x(),
+                               container_size.height() + delta.y());
+  container_layer->SetTemporaryImplBounds(new_container_size);
+}
+}  // namespace
+
 TEST_F(LayerPositionConstraintTest,
      ScrollCompensationForFixedPositionLayerWithDirectContainer) {
   // This test checks for correct scroll compensation when the fixed-position
@@ -180,7 +195,7 @@ TEST_F(LayerPositionConstraintTest,
                                   grand_child->draw_transform());
 
   // Case 3: fixed-container size delta of 20, 20
-  child->SetFixedContainerSizeDelta(gfx::Vector2d(20, 20));
+  SetFixedContainerSizeDelta(child, gfx::Vector2d(20, 20));
   ExecuteCalculateDrawProperties(root_.get());
 
   // Top-left fixed-position layer should not be affected by container size.
@@ -257,7 +272,7 @@ TEST_F(LayerPositionConstraintTest,
                                   grand_child->draw_transform());
 
   // Case 3: fixed-container size delta of 20, 20
-  child->SetFixedContainerSizeDelta(gfx::Vector2d(20, 20));
+  SetFixedContainerSizeDelta(child, gfx::Vector2d(20, 20));
   ExecuteCalculateDrawProperties(root_.get());
 
   // Top-left fixed-position layer should not be affected by container size.
@@ -331,7 +346,7 @@ TEST_F(LayerPositionConstraintTest,
                                   great_grand_child->draw_transform());
 
   // Case 3: fixed-container size delta of 20, 20
-  child->SetFixedContainerSizeDelta(gfx::Vector2d(20, 20));
+  SetFixedContainerSizeDelta(child, gfx::Vector2d(20, 20));
   ExecuteCalculateDrawProperties(root_.get());
 
   // Top-left fixed-position layer should not be affected by container size.
@@ -435,7 +450,7 @@ TEST_F(LayerPositionConstraintTest,
                                   great_grand_child->draw_transform());
 
   // Case 3: fixed-container size delta of 20, 20
-  child->SetFixedContainerSizeDelta(gfx::Vector2d(20, 20));
+  SetFixedContainerSizeDelta(child, gfx::Vector2d(20, 20));
   ExecuteCalculateDrawProperties(root_.get());
 
   // Top-left fixed-position layer should not be affected by container size.
@@ -550,7 +565,7 @@ TEST_F(LayerPositionConstraintTest,
                                   great_grand_child->draw_transform());
 
   // Case 3: fixed-container size delta of 20, 20
-  child->SetFixedContainerSizeDelta(gfx::Vector2d(20, 20));
+  SetFixedContainerSizeDelta(child, gfx::Vector2d(20, 20));
   ExecuteCalculateDrawProperties(root_.get());
 
   // Top-left fixed-position layer should not be affected by container size.
@@ -669,7 +684,7 @@ TEST_F(LayerPositionConstraintTest,
                                   great_grand_child->draw_transform());
 
   // Case 3: fixed-container size delta of 20, 20
-  child->SetFixedContainerSizeDelta(gfx::Vector2d(20, 20));
+  SetFixedContainerSizeDelta(child, gfx::Vector2d(20, 20));
   ExecuteCalculateDrawProperties(root_.get());
 
   // Top-left fixed-position layer should not be affected by container size.
@@ -855,7 +870,7 @@ TEST_F(LayerPositionConstraintTest,
 
 
   // Case 3: fixed-container size delta of 20, 20
-  child->SetFixedContainerSizeDelta(gfx::Vector2d(20, 20));
+  SetFixedContainerSizeDelta(child, gfx::Vector2d(20, 20));
   ExecuteCalculateDrawProperties(root_.get());
 
   // Top-left fixed-position layer should not be affected by container size.
@@ -946,7 +961,7 @@ TEST_F(LayerPositionConstraintTest,
                                   grand_child->draw_transform());
 
   // Case 3: fixed-container size delta of 20, 20
-  child->SetFixedContainerSizeDelta(gfx::Vector2d(20, 20));
+  SetFixedContainerSizeDelta(child, gfx::Vector2d(20, 20));
   ExecuteCalculateDrawProperties(root_.get());
 
   // Top-left fixed-position layer should not be affected by container size.
@@ -1014,7 +1029,7 @@ TEST_F(LayerPositionConstraintTest,
                                   grand_child->draw_transform());
 
   // Case 3: fixed-container size delta of 20, 20
-  child->SetFixedContainerSizeDelta(gfx::Vector2d(20, 20));
+  SetFixedContainerSizeDelta(child, gfx::Vector2d(20, 20));
   ExecuteCalculateDrawProperties(root_.get());
 
   // Top-left fixed-position layer should not be affected by container size.
@@ -1079,7 +1094,7 @@ TEST_F(LayerPositionConstraintTest,
 
   // Case 2: sizeDelta
   child->SetScrollDelta(gfx::Vector2d(0, 0));
-  child->SetFixedContainerSizeDelta(gfx::Vector2d(20, 20));
+  SetFixedContainerSizeDelta(child, gfx::Vector2d(20, 20));
   ExecuteCalculateDrawProperties(root_.get());
 
   expected_child_transform.MakeIdentity();

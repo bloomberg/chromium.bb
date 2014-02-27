@@ -131,7 +131,7 @@ class CalcDrawPropsImplTest : public LayerTreeHostCommonPerfTest {
           host_impl->DrawTransform(),
           active_tree->device_scale_factor(),
           active_tree->total_page_scale_factor(),
-          active_tree->RootContainerLayer(),
+          active_tree->InnerViewportContainerLayer(),
           max_texture_size,
           host_impl->settings().can_use_lcd_text,
           can_render_to_separate_surface,

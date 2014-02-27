@@ -755,7 +755,7 @@ void ApplyPositionAdjustment(
       layer->position_constraint().is_fixed_to_right_edge();
   bool fixed_to_bottom_edge =
       layer->position_constraint().is_fixed_to_bottom_edge();
-  gfx::Vector2dF position_offset = container->fixed_container_size_delta();
+  gfx::Vector2dF position_offset = container->FixedContainerSizeDelta();
   position_offset.set_x(fixed_to_right_edge ? position_offset.x() : 0);
   position_offset.set_y(fixed_to_bottom_edge ? position_offset.y() : 0);
   if (position_offset.IsZero())

@@ -237,9 +237,10 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
     target_tree->set_hud_layer(NULL);
 }
 
-LayerImpl* LayerTreeImpl::RootContainerLayer() const {
-  return inner_viewport_scroll_layer_ ? inner_viewport_scroll_layer_->parent()
-                                      : NULL;
+LayerImpl* LayerTreeImpl::InnerViewportContainerLayer() const {
+  return inner_viewport_scroll_layer_
+             ? inner_viewport_scroll_layer_->scroll_clip_layer()
+             : NULL;
 }
 
 LayerImpl* LayerTreeImpl::CurrentlyScrollingLayer() const {
@@ -267,11 +268,10 @@ void LayerTreeImpl::ClearCurrentlyScrollingLayer() {
 
 float LayerTreeImpl::VerticalAdjust(const LayerImpl* layer) const {
   DCHECK(layer);
-  if (layer->parent() != RootContainerLayer())
+  if (layer->parent() != InnerViewportContainerLayer())
     return 0.f;
 
-  return layer_tree_host_impl_->UnscaledScrollableViewportSize().height() -
-         RootContainerLayer()->bounds().height();
+  return layer_tree_host_impl_->VerticalAdjust();
 }
 
 namespace {
@@ -433,9 +433,6 @@ void LayerTreeImpl::ClearViewportLayers() {
 }
 
 void LayerTreeImpl::UpdateDrawProperties() {
-  if (IsActiveTree() && RootContainerLayer())
-    UpdateRootScrollLayerSizeDelta();
-
   needs_update_draw_properties_ = false;
   render_surface_layer_list_.clear();
 
@@ -454,7 +451,7 @@ void LayerTreeImpl::UpdateDrawProperties() {
                  "SourceFrameNumber",
                  source_frame_number_);
     LayerImpl* page_scale_layer =
-        page_scale_layer_ ? page_scale_layer_ : RootContainerLayer();
+        page_scale_layer_ ? page_scale_layer_ : InnerViewportContainerLayer();
     bool can_render_to_separate_surface =
         !output_surface()->ForcedDrawToSoftwareDevice();
     LayerTreeHostCommon::CalcDrawPropsImplInputs inputs(
@@ -858,29 +855,6 @@ gfx::Vector2dF LayerTreeImpl::GetDelegatedScrollOffset(LayerImpl* layer) {
   inner_viewport_offset = delegate_offset - outer_viewport_offset;
 
   return inner_viewport_offset;
-}
-
-// TODO(wjmaclean) Rename this function, as we no longer have a
-// "RootScrollLayer".
-void LayerTreeImpl::UpdateRootScrollLayerSizeDelta() {
-  // TODO(wjmaclean) verify this is really the right thing to do in cases where
-  // the pinch virtual viewport is active.
-  LayerImpl* root_scroll = InnerViewportScrollLayer();
-  LayerImpl* root_container = RootContainerLayer();
-  DCHECK(root_scroll);
-  DCHECK(root_container);
-  DCHECK(IsActiveTree());
-
-  gfx::Vector2dF scrollable_viewport_size =
-      gfx::RectF(ScrollableViewportSize()).bottom_right() - gfx::PointF();
-
-  gfx::Vector2dF original_viewport_size =
-      gfx::RectF(root_container->bounds()).bottom_right() -
-      gfx::PointF();
-  original_viewport_size.Scale(1 / page_scale_factor());
-
-  root_scroll->SetFixedContainerSizeDelta(
-      scrollable_viewport_size - original_viewport_size);
 }
 
 void LayerTreeImpl::QueueSwapPromise(scoped_ptr<SwapPromise> swap_promise) {

@@ -837,25 +837,38 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoom) {
   DrawFrame();
 
   EXPECT_EQ(scroll_layer, host_impl_->InnerViewportScrollLayer());
+  LayerImpl* container_layer = scroll_layer->scroll_clip_layer();
+  EXPECT_EQ(gfx::Size(50, 50), container_layer->bounds());
 
   float min_page_scale = 1.f, max_page_scale = 4.f;
+  float page_scale_factor = 1.f;
 
   // The impl-based pinch zoom should adjust the max scroll position.
   {
-    host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f,
-                                                           min_page_scale,
-                                                           max_page_scale);
+    host_impl_->active_tree()->SetPageScaleFactorAndLimits(
+        page_scale_factor, min_page_scale, max_page_scale);
     host_impl_->active_tree()->SetPageScaleDelta(1.f);
     scroll_layer->SetScrollDelta(gfx::Vector2d());
 
     float page_scale_delta = 2.f;
+    gfx::Vector2dF expected_container_size_delta(
+        container_layer->bounds().width(), container_layer->bounds().height());
+    expected_container_size_delta.Scale((1.f - page_scale_delta) /
+                                        (page_scale_factor * page_scale_delta));
+
     host_impl_->ScrollBegin(gfx::Point(50, 50), InputHandler::Gesture);
     host_impl_->PinchGestureBegin();
     host_impl_->PinchGestureUpdate(page_scale_delta, gfx::Point(50, 50));
+    // While the gesture is still active, the scroll layer should have a
+    // container size delta = container->bounds() * ((1.f -
+    // page_scale_delta)/())
+    EXPECT_EQ(expected_container_size_delta,
+              scroll_layer->FixedContainerSizeDelta());
     host_impl_->PinchGestureEnd();
     host_impl_->ScrollEnd();
     EXPECT_TRUE(did_request_redraw_);
     EXPECT_TRUE(did_request_commit_);
+    EXPECT_EQ(gfx::Size(50, 50), container_layer->bounds());
 
     scoped_ptr<ScrollAndScaleSet> scroll_info =
         host_impl_->ProcessScrollDeltas();
@@ -868,9 +881,8 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoom) {
   // Scrolling after a pinch gesture should always be in local space.  The
   // scroll deltas do not have the page scale factor applied.
   {
-    host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f,
-                                                           min_page_scale,
-                                                           max_page_scale);
+    host_impl_->active_tree()->SetPageScaleFactorAndLimits(
+        page_scale_factor, min_page_scale, max_page_scale);
     host_impl_->active_tree()->SetPageScaleDelta(1.f);
     scroll_layer->SetScrollDelta(gfx::Vector2d());
 
@@ -1906,30 +1918,114 @@ TEST_F(LayerTreeHostImplTest, ScrollRootIgnored) {
   EXPECT_FALSE(did_request_commit_);
 }
 
-TEST_F(LayerTreeHostImplTest, ScrollNonScrollableRootWithTopControls) {
-  LayerTreeSettings settings;
-  settings.calculate_top_controls_position = true;
-  settings.top_controls_height = 50;
+class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
+ public:
+  LayerTreeHostImplTopControlsTest()
+      // Make the clip size the same as the layer (content) size so the layer is
+      // non-scrollable.
+      : layer_size_(10, 10),
+        clip_size_(layer_size_) {
+    settings_.calculate_top_controls_position = true;
+    settings_.top_controls_height = 50;
 
-  CreateHostImpl(settings, CreateOutputSurface());
+    viewport_size_ =
+        gfx::Size(clip_size_.width(),
+                  clip_size_.height() + settings_.top_controls_height);
+  }
 
-  gfx::Size layer_size(10, 10);
-  gfx::Size clip_size(5, 5);
-  scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl_->active_tree(), 1);
-  scoped_ptr<LayerImpl> root_clip =
-      LayerImpl::Create(host_impl_->active_tree(), 2);
-  root_clip->SetBounds(clip_size);
-  root->SetScrollClipLayer(root_clip->id());
-  root->SetBounds(layer_size);
-  root->SetContentBounds(layer_size);
-  root->SetPosition(gfx::PointF());
-  root->SetAnchorPoint(gfx::PointF());
-  root->SetDrawsContent(false);
-  int root_id = root->id();
-  root_clip->AddChild(root.Pass());
-  host_impl_->active_tree()->SetRootLayer(root_clip.Pass());
-  host_impl_->active_tree()->SetViewportLayersFromIds(
-      root_id, root_id, Layer::INVALID_ID);
+  void SetupTopControlsAndScrollLayer() {
+    CreateHostImpl(settings_, CreateOutputSurface());
+
+    scoped_ptr<LayerImpl> root =
+        LayerImpl::Create(host_impl_->active_tree(), 1);
+    scoped_ptr<LayerImpl> root_clip =
+        LayerImpl::Create(host_impl_->active_tree(), 2);
+    root_clip->SetBounds(clip_size_);
+    root->SetScrollClipLayer(root_clip->id());
+    root->SetBounds(layer_size_);
+    root->SetContentBounds(layer_size_);
+    root->SetPosition(gfx::PointF());
+    root->SetAnchorPoint(gfx::PointF());
+    root->SetDrawsContent(false);
+    root->SetIsContainerForFixedPositionLayers(true);
+    int inner_viewport_scroll_layer_id = root->id();
+    int page_scale_layer_id = root_clip->id();
+    root_clip->AddChild(root.Pass());
+    host_impl_->active_tree()->SetRootLayer(root_clip.Pass());
+    host_impl_->active_tree()->SetViewportLayersFromIds(
+        page_scale_layer_id, inner_viewport_scroll_layer_id, Layer::INVALID_ID);
+    // Set a viewport size that is large enough to contain both the top controls
+    // and some content.
+    host_impl_->SetViewportSize(viewport_size_);
+    LayerImpl* root_clip_ptr = host_impl_->active_tree()->root_layer();
+    EXPECT_EQ(clip_size_, root_clip_ptr->bounds());
+  }
+
+ protected:
+  gfx::Size layer_size_;
+  gfx::Size clip_size_;
+  gfx::Size viewport_size_;
+
+  LayerTreeSettings settings_;
+};  // class LayerTreeHostImplTopControlsTest
+
+TEST_F(LayerTreeHostImplTopControlsTest, ScrollTopControlsByFractionalAmount) {
+  SetupTopControlsAndScrollLayer();
+  DrawFrame();
+
+  EXPECT_EQ(InputHandler::ScrollStarted,
+            host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
+
+  // Make the test scroll delta a fractional amount, to verify that the
+  // fixed container size delta is (1) non-zero, and (2) fractional, and
+  // (3) matches the movement of the top controls.
+  gfx::Vector2dF top_controls_scroll_delta(0.f, 5.25f);
+  host_impl_->top_controls_manager()->ScrollBegin();
+  host_impl_->top_controls_manager()->ScrollBy(top_controls_scroll_delta);
+  host_impl_->top_controls_manager()->ScrollEnd();
+
+  LayerImpl* inner_viewport_scroll_layer =
+      host_impl_->active_tree()->InnerViewportScrollLayer();
+  DCHECK(inner_viewport_scroll_layer);
+  host_impl_->ScrollEnd();
+  EXPECT_EQ(top_controls_scroll_delta,
+            inner_viewport_scroll_layer->FixedContainerSizeDelta());
+}
+
+TEST_F(LayerTreeHostImplTopControlsTest, ScrollTopControlsWithPageScale) {
+  SetupTopControlsAndScrollLayer();
+  DrawFrame();
+
+  EXPECT_EQ(InputHandler::ScrollStarted,
+            host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
+
+  float page_scale = 1.5f;
+  host_impl_->active_tree()->SetPageScaleFactorAndLimits(page_scale, 1.f, 2.f);
+
+  gfx::Vector2dF top_controls_scroll_delta(0.f, 5.f);
+  gfx::Vector2dF expected_container_size_delta =
+      ScaleVector2d(top_controls_scroll_delta, 1.f / page_scale);
+  host_impl_->top_controls_manager()->ScrollBegin();
+  host_impl_->top_controls_manager()->ScrollBy(top_controls_scroll_delta);
+  host_impl_->top_controls_manager()->ScrollEnd();
+
+  LayerImpl* inner_viewport_scroll_layer =
+      host_impl_->active_tree()->InnerViewportScrollLayer();
+  DCHECK(inner_viewport_scroll_layer);
+  host_impl_->ScrollEnd();
+
+  // Use a tolerance that requires the container size delta to be within 0.01
+  // pixels.
+  double tolerance = 0.0001;
+  EXPECT_LT(
+      (expected_container_size_delta -
+       inner_viewport_scroll_layer->FixedContainerSizeDelta()).LengthSquared(),
+      tolerance);
+}
+
+TEST_F(LayerTreeHostImplTopControlsTest,
+       ScrollNonScrollableRootWithTopControls) {
+  SetupTopControlsAndScrollLayer();
   DrawFrame();
 
   EXPECT_EQ(InputHandler::ScrollStarted,
@@ -1938,13 +2034,44 @@ TEST_F(LayerTreeHostImplTest, ScrollNonScrollableRootWithTopControls) {
   host_impl_->top_controls_manager()->ScrollBegin();
   host_impl_->top_controls_manager()->ScrollBy(gfx::Vector2dF(0.f, 50.f));
   host_impl_->top_controls_manager()->ScrollEnd();
-  EXPECT_EQ(host_impl_->top_controls_manager()->content_top_offset(), 0.f);
+  EXPECT_EQ(0.f, host_impl_->top_controls_manager()->content_top_offset());
+  // Now that top controls have moved, expect the clip to resize.
+  LayerImpl* root_clip_ptr = host_impl_->active_tree()->root_layer();
+  EXPECT_EQ(viewport_size_, root_clip_ptr->bounds());
 
   host_impl_->ScrollEnd();
 
   EXPECT_EQ(InputHandler::ScrollStarted,
-            host_impl_->ScrollBegin(gfx::Point(),
-                                    InputHandler::Gesture));
+            host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
+
+  float scroll_increment_y = -25.f;
+  host_impl_->top_controls_manager()->ScrollBegin();
+  host_impl_->top_controls_manager()->ScrollBy(
+      gfx::Vector2dF(0.f, scroll_increment_y));
+  EXPECT_EQ(-scroll_increment_y,
+            host_impl_->top_controls_manager()->content_top_offset());
+  // Now that top controls have moved, expect the clip to resize.
+  EXPECT_EQ(gfx::Size(viewport_size_.width(),
+                      viewport_size_.height() + scroll_increment_y),
+            root_clip_ptr->bounds());
+
+  host_impl_->top_controls_manager()->ScrollBy(
+      gfx::Vector2dF(0.f, scroll_increment_y));
+  host_impl_->top_controls_manager()->ScrollEnd();
+  EXPECT_EQ(-2 * scroll_increment_y,
+            host_impl_->top_controls_manager()->content_top_offset());
+  // Now that top controls have moved, expect the clip to resize.
+  EXPECT_EQ(clip_size_, root_clip_ptr->bounds());
+
+  host_impl_->ScrollEnd();
+
+  // Verify the layer is once-again non-scrollable.
+  EXPECT_EQ(
+      gfx::Vector2d(),
+      host_impl_->active_tree()->InnerViewportScrollLayer()->MaxScrollOffset());
+
+  EXPECT_EQ(InputHandler::ScrollStarted,
+            host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollNonCompositedRoot) {
@@ -2080,12 +2207,14 @@ TEST_F(LayerTreeHostImplTest, ScrollBlockedByContentLayer) {
 
 TEST_F(LayerTreeHostImplTest, ScrollRootAndChangePageScaleOnMainThread) {
   gfx::Size surface_size(20, 20);
+  gfx::Size viewport_size(10, 10);
   float page_scale = 2.f;
   scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl_->active_tree(), 1);
   scoped_ptr<LayerImpl> root_clip =
       LayerImpl::Create(host_impl_->active_tree(), 2);
   scoped_ptr<LayerImpl> root_scrolling =
       CreateScrollableLayer(3, surface_size, root_clip.get());
+  EXPECT_EQ(viewport_size, root_clip->bounds());
   root_scrolling->SetIsContainerForFixedPositionLayers(true);
   root_clip->AddChild(root_scrolling.Pass());
   root->AddChild(root_clip.Pass());
@@ -2094,11 +2223,12 @@ TEST_F(LayerTreeHostImplTest, ScrollRootAndChangePageScaleOnMainThread) {
   // above the clip layer.
   host_impl_->active_tree()->SetViewportLayersFromIds(1, 3, Layer::INVALID_ID);
   host_impl_->active_tree()->DidBecomeActive();
-  host_impl_->SetViewportSize(surface_size);
+  host_impl_->SetViewportSize(viewport_size);
   DrawFrame();
 
   LayerImpl* root_scroll =
       host_impl_->active_tree()->InnerViewportScrollLayer();
+  EXPECT_EQ(viewport_size, root_scroll->scroll_clip_layer()->bounds());
 
   gfx::Vector2d scroll_delta(0, 10);
   gfx::Vector2d expected_scroll_delta = scroll_delta;
@@ -2127,12 +2257,14 @@ TEST_F(LayerTreeHostImplTest, ScrollRootAndChangePageScaleOnMainThread) {
 
 TEST_F(LayerTreeHostImplTest, ScrollRootAndChangePageScaleOnImplThread) {
   gfx::Size surface_size(20, 20);
+  gfx::Size viewport_size(10, 10);
   float page_scale = 2.f;
   scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl_->active_tree(), 1);
   scoped_ptr<LayerImpl> root_clip =
       LayerImpl::Create(host_impl_->active_tree(), 2);
   scoped_ptr<LayerImpl> root_scrolling =
       CreateScrollableLayer(3, surface_size, root_clip.get());
+  EXPECT_EQ(viewport_size, root_clip->bounds());
   root_scrolling->SetIsContainerForFixedPositionLayers(true);
   root_clip->AddChild(root_scrolling.Pass());
   root->AddChild(root_clip.Pass());
@@ -2141,12 +2273,13 @@ TEST_F(LayerTreeHostImplTest, ScrollRootAndChangePageScaleOnImplThread) {
   // above the clip layer.
   host_impl_->active_tree()->SetViewportLayersFromIds(1, 3, Layer::INVALID_ID);
   host_impl_->active_tree()->DidBecomeActive();
-  host_impl_->SetViewportSize(surface_size);
+  host_impl_->SetViewportSize(viewport_size);
   host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f, 1.f, page_scale);
   DrawFrame();
 
   LayerImpl* root_scroll =
       host_impl_->active_tree()->InnerViewportScrollLayer();
+  EXPECT_EQ(viewport_size, root_scroll->scroll_clip_layer()->bounds());
 
   gfx::Vector2d scroll_delta(0, 10);
   gfx::Vector2d expected_scroll_delta = scroll_delta;
@@ -2338,6 +2471,7 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
   // Scroll a child layer beyond its maximum scroll range and make sure the
   // the scroll doesn't bubble up to the parent layer.
   gfx::Size surface_size(20, 20);
+  gfx::Size viewport_size(10, 10);
   scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl_->active_tree(), 1);
   scoped_ptr<LayerImpl> root_scrolling =
       CreateScrollableLayer(2, surface_size, root.get());
@@ -2354,10 +2488,11 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutBubbling) {
   LayerImpl* child_layer = child.get();
   root_scrolling->AddChild(child.Pass());
   root->AddChild(root_scrolling.Pass());
+  EXPECT_EQ(viewport_size, root->bounds());
   host_impl_->active_tree()->SetRootLayer(root.Pass());
   host_impl_->active_tree()->SetViewportLayersFromIds(1, 2, Layer::INVALID_ID);
   host_impl_->active_tree()->DidBecomeActive();
-  host_impl_->SetViewportSize(surface_size);
+  host_impl_->SetViewportSize(viewport_size);
 
   grand_child_layer->SetScrollOffset(gfx::Vector2d(0, 2));
   child_layer->SetScrollOffset(gfx::Vector2d(0, 3));

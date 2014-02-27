@@ -213,6 +213,7 @@ class CC_EXPORT LayerTreeHostImpl
   // excludes the URL bar and non-overlay scrollbars and is in DIP (and
   // invariant relative to page scale).
   gfx::SizeF UnscaledScrollableViewportSize() const;
+  float VerticalAdjust() const;
 
   // RendererClient implementation.
   virtual void SetFullRootLayerDamage() OVERRIDE;
@@ -442,6 +443,9 @@ class CC_EXPORT LayerTreeHostImpl
       RenderingStatsInstrumentation* rendering_stats_instrumentation,
       SharedBitmapManager* manager,
       int id);
+
+  gfx::SizeF ComputeInnerViewportContainerSize() const;
+  void UpdateInnerViewportContainerSize();
 
   // Virtual for testing.
   virtual void AnimateLayers(base::TimeTicks monotonic_time,

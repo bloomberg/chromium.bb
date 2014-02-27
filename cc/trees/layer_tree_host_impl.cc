@@ -1485,23 +1485,43 @@ void LayerTreeHostImpl::SetNeedsBeginImplFrame(bool enable) {
     output_surface_->SetNeedsBeginImplFrame(enable);
 }
 
+gfx::SizeF LayerTreeHostImpl::ComputeInnerViewportContainerSize() const {
+  gfx::SizeF dip_size =
+      gfx::ScaleSize(device_viewport_size_, 1.f / device_scale_factor());
+
+  float top_offset =
+      top_controls_manager_ ? top_controls_manager_->content_top_offset() : 0.f;
+
+  return gfx::SizeF(dip_size.width(),
+                    dip_size.height() - top_offset - overdraw_bottom_height_);
+}
+
+void LayerTreeHostImpl::UpdateInnerViewportContainerSize() {
+  LayerImpl* container_layer = active_tree_->InnerViewportContainerLayer();
+  if (!container_layer)
+    return;
+
+  container_layer->SetTemporaryImplBounds(ComputeInnerViewportContainerSize());
+}
+
 gfx::SizeF LayerTreeHostImpl::UnscaledScrollableViewportSize() const {
   // Use the root container layer bounds if it clips to them, otherwise, the
   // true viewport size should be used.
-  LayerImpl* container_layer = active_tree_->RootContainerLayer();
+  LayerImpl* container_layer = active_tree_->InnerViewportContainerLayer();
   if (container_layer && container_layer->masks_to_bounds()) {
     DCHECK(!top_controls_manager_);
     DCHECK_EQ(0, overdraw_bottom_height_);
     return container_layer->bounds();
   }
 
-  gfx::SizeF dip_size =
-      gfx::ScaleSize(device_viewport_size_, 1.f / device_scale_factor());
+  return ComputeInnerViewportContainerSize();
+}
 
-  float top_offset =
-      top_controls_manager_ ? top_controls_manager_->content_top_offset() : 0.f;
-  return gfx::SizeF(dip_size.width(),
-                    dip_size.height() - top_offset - overdraw_bottom_height_);
+float LayerTreeHostImpl::VerticalAdjust() const {
+  if (!active_tree_->InnerViewportContainerLayer())
+    return 0;
+
+  return active_tree_->InnerViewportContainerLayer()->BoundsDelta().y();
 }
 
 void LayerTreeHostImpl::DidLoseOutputSurface() {
@@ -1631,6 +1651,7 @@ void LayerTreeHostImpl::ActivatePendingTree() {
                                        stats.impl_stats.rasterize_time);
   }
 
+  UpdateInnerViewportContainerSize();
   client_->DidActivatePendingTree();
   if (!tree_activation_callback_.is_null())
     tree_activation_callback_.Run();
@@ -1937,6 +1958,7 @@ void LayerTreeHostImpl::SetViewportSize(const gfx::Size& device_viewport_size) {
 
   device_viewport_size_ = device_viewport_size;
 
+  UpdateInnerViewportContainerSize();
   client_->OnCanDrawStateChanged(CanDraw());
   SetFullRootLayerDamage();
 }
@@ -1946,6 +1968,7 @@ void LayerTreeHostImpl::SetOverdrawBottomHeight(float overdraw_bottom_height) {
     return;
   overdraw_bottom_height_ = overdraw_bottom_height;
 
+  UpdateInnerViewportContainerSize();
   SetFullRootLayerDamage();
 }
 
@@ -1961,6 +1984,7 @@ void LayerTreeHostImpl::SetDeviceScaleFactor(float device_scale_factor) {
     return;
   device_scale_factor_ = device_scale_factor;
 
+  UpdateInnerViewportContainerSize();
   SetFullRootLayerDamage();
 }
 
@@ -1987,6 +2011,7 @@ const gfx::Transform& LayerTreeHostImpl::DrawTransform() const {
 }
 
 void LayerTreeHostImpl::DidChangeTopControlsPosition() {
+  UpdateInnerViewportContainerSize();
   SetNeedsRedraw();
   active_tree_->set_needs_update_draw_properties();
   SetFullRootLayerDamage();

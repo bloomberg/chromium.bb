@@ -31,6 +31,7 @@
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/quad_f.h"
 #include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/size_conversions.h"
 
 namespace cc {
 LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
@@ -552,7 +553,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetPosition(position_);
   layer->SetIsContainerForFixedPositionLayers(
       is_container_for_fixed_position_layers_);
-  layer->SetFixedContainerSizeDelta(fixed_container_size_delta_);
   layer->SetPositionConstraint(position_constraint_);
   layer->SetShouldFlattenTransform(should_flatten_transform_);
   layer->SetIs3dSorted(is_3d_sorted_);
@@ -612,6 +612,30 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   update_rect_ = gfx::RectF();
   needs_push_properties_ = false;
   num_dependents_need_push_properties_ = 0;
+}
+
+gfx::Vector2dF LayerImpl::FixedContainerSizeDelta() const {
+  if (!scroll_clip_layer_)
+    return gfx::Vector2dF();
+
+  float scale_delta = layer_tree_impl()->page_scale_delta();
+  float scale = layer_tree_impl()->page_scale_factor();
+
+  gfx::Vector2dF delta_from_scroll = scroll_clip_layer_->BoundsDelta();
+  delta_from_scroll.Scale(1.f / scale);
+
+  // The delta-from-pinch component requires some explanation: A viewport of
+  // size (w,h) will appear to be size (w/s,h/s) under scale s in the content
+  // space. If s -> s' on the impl thread, where s' = s * ds, then the apparent
+  // viewport size change in the content space due to ds is:
+  //
+  // (w/s',h/s') - (w/s,h/s) = (w,h)(1/s' - 1/s) = (w,h)(1 - ds)/(s ds)
+  //
+  gfx::Vector2dF delta_from_pinch =
+      gfx::Rect(scroll_clip_layer_->bounds()).bottom_right() - gfx::PointF();
+  delta_from_pinch.Scale((1.f - scale_delta) / (scale * scale_delta));
+
+  return delta_from_scroll + delta_from_pinch;
 }
 
 base::DictionaryValue* LayerImpl::LayerTreeAsJson() const {
@@ -757,11 +781,30 @@ bool LayerImpl::IsActive() const {
   return layer_tree_impl_->IsActiveTree();
 }
 
+// TODO(wjmaclean) Convert so that bounds returns SizeF.
+gfx::Size LayerImpl::bounds() const {
+  return ToFlooredSize(temporary_impl_bounds_);
+}
+
 void LayerImpl::SetBounds(const gfx::Size& bounds) {
   if (bounds_ == bounds)
     return;
 
   bounds_ = bounds;
+  temporary_impl_bounds_ = bounds;
+
+  ScrollbarParametersDidChange();
+  if (masks_to_bounds())
+    NoteLayerPropertyChangedForSubtree();
+  else
+    NoteLayerPropertyChanged();
+}
+
+void LayerImpl::SetTemporaryImplBounds(const gfx::SizeF& bounds) {
+  if (temporary_impl_bounds_ == bounds)
+    return;
+
+  temporary_impl_bounds_ = bounds;
 
   ScrollbarParametersDidChange();
   if (masks_to_bounds())
@@ -1178,10 +1221,6 @@ gfx::Vector2d LayerImpl::MaxScrollOffset() const {
   scaled_scroll_bounds.SetSize(scale_factor * scaled_scroll_bounds.width(),
                                scale_factor * scaled_scroll_bounds.height());
 
-  gfx::RectF clip_rect(gfx::PointF(), scroll_clip_layer_->bounds());
-  if (this == layer_tree_impl()->InnerViewportScrollLayer())
-    clip_rect =
-        gfx::RectF(gfx::PointF(), layer_tree_impl()->ScrollableViewportSize());
   gfx::Vector2dF max_offset(
       scaled_scroll_bounds.width() - scroll_clip_layer_->bounds().width(),
       scaled_scroll_bounds.height() - scroll_clip_layer_->bounds().height());

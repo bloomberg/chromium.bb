@@ -944,7 +944,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetPosition(position_);
   layer->SetIsContainerForFixedPositionLayers(
       IsContainerForFixedPositionLayers());
-  layer->SetFixedContainerSizeDelta(gfx::Vector2dF());
   layer->SetPositionConstraint(position_constraint_);
   layer->SetShouldFlattenTransform(should_flatten_transform_);
   layer->SetIs3dSorted(is_3d_sorted_);

@@ -123,7 +123,7 @@ class CC_EXPORT LayerTreeImpl {
   gfx::Vector2dF TotalMaxScrollOffset() const;
   gfx::Vector2dF TotalScrollDelta() const;
 
-  LayerImpl* RootContainerLayer() const;
+  LayerImpl* InnerViewportContainerLayer() const;
   LayerImpl* CurrentlyScrollingLayer() const;
   void SetCurrentlyScrollingLayer(LayerImpl* layer);
   void ClearCurrentlyScrollingLayer();
@@ -245,8 +245,6 @@ class CC_EXPORT LayerTreeImpl {
 
  protected:
   explicit LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl);
-
-  void UpdateRootScrollLayerSizeDelta();
 
   LayerTreeHostImpl* layer_tree_host_impl_;
   int source_frame_number_;
