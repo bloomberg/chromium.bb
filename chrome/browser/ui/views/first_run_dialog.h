@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FIRST_RUN_DIALOG_H_
 #define CHROME_BROWSER_UI_VIEWS_FIRST_RUN_DIALOG_H_
 
+#include "base/message_loop/message_pump_dispatcher.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -16,7 +17,8 @@ class Link;
 }
 
 class FirstRunDialog : public views::DialogDelegateView,
-                       public views::LinkListener {
+                       public views::LinkListener,
+                       public base::MessagePumpDispatcher {
  public:
   // Displays the first run UI for reporting opt-in, import data etc.
   // Returns true if the dialog was shown.
@@ -25,9 +27,6 @@ class FirstRunDialog : public views::DialogDelegateView,
  private:
   explicit FirstRunDialog(Profile* profile);
   virtual ~FirstRunDialog();
-
-  // This terminates the nested message-loop.
-  void Done();
 
   // views::DialogDelegate:
   virtual views::View* CreateExtraView() OVERRIDE;
@@ -38,11 +37,16 @@ class FirstRunDialog : public views::DialogDelegateView,
   // views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
+  // Overridden from MessagePumpDispatcher:
+  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
+
   Profile* profile_;
   views::Checkbox* make_default_;
   views::Checkbox* report_crashes_;
 
-  DISALLOW_COPY_AND_ASSIGN(FirstRunDialog);
+  // Set to false as soon as the user clicks a dialog button; this tells the
+  // dispatcher we're done.
+  bool should_show_dialog_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FIRST_RUN_DIALOG_H_

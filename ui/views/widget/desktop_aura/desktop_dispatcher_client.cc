@@ -4,7 +4,6 @@
 
 #include "ui/views/widget/desktop_aura/desktop_dispatcher_client.h"
 
-#include "base/auto_reset.h"
 #include "base/run_loop.h"
 
 namespace views {
@@ -24,14 +23,7 @@ void DesktopDispatcherClient::RunWithDispatcher(
   base::MessageLoopForUI::ScopedNestableTaskAllower allow_nested(loop);
 
   base::RunLoop run_loop(nested_dispatcher);
-  base::AutoReset<base::Closure> reset_closure(&quit_closure_,
-                                               run_loop.QuitClosure());
   run_loop.Run();
-}
-
-void DesktopDispatcherClient::QuitNestedMessageLoop() {
-  CHECK(!quit_closure_.is_null());
-  quit_closure_.Run();
 }
 
 }  // namespace views
