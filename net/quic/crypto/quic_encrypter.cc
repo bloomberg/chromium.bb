@@ -5,6 +5,7 @@
 #include "net/quic/crypto/quic_encrypter.h"
 
 #include "net/quic/crypto/aes_128_gcm_12_encrypter.h"
+#include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/null_encrypter.h"
 
 namespace net {

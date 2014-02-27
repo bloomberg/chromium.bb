@@ -6,7 +6,6 @@
 #define NET_QUIC_CRYPTO_QUIC_DECRYPTER_H_
 
 #include "net/base/net_export.h"
-#include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/quic_protocol.h"
 
 namespace net {
