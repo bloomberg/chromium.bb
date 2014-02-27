@@ -1527,6 +1527,7 @@ internal_paladin.add_config('squawks-paladin',
 internal_paladin.add_config('peppy-paladin',
   boards=['peppy'],
   paladin_builder_name='peppy paladin',
+  vm_tests=[constants.DEV_MODE_TEST_TYPE],
 )
 
 internal_paladin.add_config('slippy-paladin',
