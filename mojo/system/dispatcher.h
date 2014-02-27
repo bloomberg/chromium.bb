@@ -19,12 +19,10 @@
 namespace mojo {
 namespace system {
 
-class Channel;
 class CoreImpl;
 class Dispatcher;
 class DispatcherTransport;
 class LocalMessagePipeEndpoint;
-class MessageInTransit;
 class ProxyMessagePipeEndpoint;
 class Waiter;
 
@@ -141,24 +139,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
     static DispatcherTransport TryStartTransport(Dispatcher* dispatcher);
   };
 
-  // A |MessageInTransit| may serialize dispatchers that are attached to it to a
-  // given |Channel|. These may only be called on such dispatchers. See the
-  // |Dispatcher| methods of the same names for more details.
-  // TODO(vtl): Consider making another wrapper similar to |DispatcherTransport|
-  // (but with an owning, unique reference), and having
-  // |CreateEquivalentDispatcherAndCloseImplNoLock()| return that wrapper (and
-  // |MessageInTransit| only holding on to such wrappers).
-  class MessageInTransitAccess {
-   private:
-    friend class MessageInTransit;
-
-    static size_t GetMaximumSerializedSize(const Dispatcher* dispatcher,
-                                           const Channel* channel);
-    static size_t SerializeAndClose(Dispatcher* dispatcher,
-                                    void* destination,
-                                    Channel* channel);
-  };
-
  protected:
   Dispatcher();
 
@@ -214,17 +194,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
                                          MojoResult wake_result);
   virtual void RemoveWaiterImplNoLock(Waiter* waiter);
 
-  // These implement the API used to serialize dispatchers to a |Channel|
-  // (described below). They will only be called on a dispatcher that's attached
-  // to and "owned" by a |MessageInTransit|. See the non-"impl" versions for
-  // more information.
-  // TODO(vtl): Consider making these pure virtual once most things support
-  // being passed over a message pipe.
-  virtual size_t GetMaximumSerializedSizeImplNoLock(
-      const Channel* channel) const;
-  virtual size_t SerializeAndCloseImplNoLock(void* destination,
-                                             Channel* channel);
-
   // Available to subclasses. (Note: Returns a non-const reference, just like
   // |base::AutoLock|'s constructor takes a non-const reference.)
   base::Lock& lock() const { return lock_; }
@@ -249,22 +218,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   // represents will be assigned to the new dispatcher. This must be called
   // under the dispatcher's lock.
   scoped_refptr<Dispatcher> CreateEquivalentDispatcherAndCloseNoLock();
-
-  // API to serialize dispatchers to a |Channel|, exposed to only
-  // |MessageInTransit| (via |MessageInTransitAccess|). They may only be called
-  // on a dispatcher attached to a |MessageInTransit| (and in particular not in
-  // |CoreImpl|'s handle table).
-  // Gets the maximum amount of space that'll be needed to serialize this
-  // dispatcher to the given |Channel|. Returns zero to indicate that this
-  // dispatcher cannot be serialized (to the given |Channel|).
-  size_t GetMaximumSerializedSize(const Channel* channel) const;
-  // Serializes this dispatcher to the given |Channel| by writing to
-  // |destination| and then closes this dispatcher. It may write no more than
-  // was indicated by |GetMaximumSerializedSize()|. (WARNING: Beware of races,
-  // e.g., if something can be mutated between the two calls!) This may return
-  // zero to indicate failure to serialize (but this dispatcher will still be
-  // closed).
-  size_t SerializeAndClose(void* destination, Channel* channel);
 
   // This protects the following members as well as any state added by
   // subclasses.

@@ -20,25 +20,6 @@ namespace system {
 class Channel;
 
 // This class is used to represent data in transit. It is thread-unsafe.
-//
-// |MessageInTransit| buffers:
-//
-// A |MessageInTransit| can be serialized by writing the main buffer and then,
-// if it has one, the secondary buffer. Both buffers are
-// |kMessageAlignment|-byte aligned and a multiple of |kMessageAlignment| bytes
-// in size.
-//
-// The main buffer consists of the header (of type |Header|, which is an
-// internal detail of this class) followed immediately by the message data
-// (accessed by |bytes()| and of size |num_bytes()|, and also
-// |kMessageAlignment|-byte aligned), and then any padding needed to make the
-// main buffer a multiple of |kMessageAlignment| bytes in size.
-//
-// The secondary buffer consists first of a table of |HandleTableEntry|s (each
-// of which is already a multiple of |kMessageAlignment| in size), followed by
-// data needed for the |HandleTableEntry|s: A |HandleTableEntry| consists of an
-// offset (in bytes, relative to the start of the secondary buffer; we guarantee
-// that it's a multiple of |kMessageAlignment|), and a size (in bytes).
 class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
  public:
   typedef uint16_t Type;
@@ -119,6 +100,24 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   // stays alive through the call.
   void SerializeAndCloseDispatchers(Channel* channel);
 
+  // |MessageInTransit| buffers: A |MessageInTransit| can be serialized by
+  // writing the main buffer and then, if it has one, the secondary buffer. Both
+  // buffers are |kMessageAlignment|-byte aligned and a multiple of
+  // |kMessageAlignment| bytes in size.
+  //
+  // The main buffer consists of the header (of type |Header|, which is an
+  // internal detail of this class) followed immediately by the message data
+  // (accessed by |bytes()| and of size |num_bytes()|, and also
+  // |kMessageAlignment|-byte aligned), and then any padding needed to make the
+  // main buffer a multiple of |kMessageAlignment| bytes in size.
+  //
+  // The secondary buffer consists first of a table of |uint32_t|s with
+  // |num_handles()| entries; each entry in the table is the (unpadded) size of
+  // the data for a handle (a size of 0 indicates in invalid handle/null
+  // dispatcher). The table is followed by padding, then the first entry and
+  // padding, the second entry and padding, etc. (padding as required to
+  // maintain |kMessageAlignment|-byte alignment).
+
   // Gets the main buffer and its size (in number of bytes), respectively.
   const void* main_buffer() const { return main_buffer_; }
   size_t main_buffer_size() const { return main_buffer_size_; }
@@ -187,11 +186,6 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
     // To be used soon.
     uint32_t reserved0;
     uint32_t reserved1;
-  };
-
-  struct HandleTableEntry {
-    uint32_t offset;
-    uint32_t size;  // (Not including any padding.) A size of 0 means "invalid".
   };
 
   const Header* header() const {

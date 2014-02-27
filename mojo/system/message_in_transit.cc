@@ -20,16 +20,12 @@ struct MessageInTransit::PrivateStructForCompileAsserts {
   // The size of |Header| must be appropriate to maintain alignment of the
   // following data.
   COMPILE_ASSERT(sizeof(Header) % kMessageAlignment == 0,
-                 sizeof_MessageInTransit_Header_invalid);
+                 sizeof_MessageInTransit_Header_not_a_multiple_of_alignment);
   // Avoid dangerous situations, but making sure that the size of the "header" +
   // the size of the data fits into a 31-bit number.
   COMPILE_ASSERT(static_cast<uint64_t>(sizeof(Header)) + kMaxMessageNumBytes <=
                      0x7fffffffULL,
                  kMaxMessageNumBytes_too_big);
-
-  // The size of |HandleTableEntry| must be appropriate to maintain alignment.
-  COMPILE_ASSERT(sizeof(HandleTableEntry) % kMessageAlignment == 0,
-                 sizeof_MessageInTransit_HandleTableEntry_invalid);
 };
 
 STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
@@ -196,48 +192,36 @@ void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {
   if (!num_handles())
     return;
 
-  size_t handle_table_size = num_handles() * sizeof(HandleTableEntry);
-  // The size of the secondary buffer. We'll start with the size of the handle
-  // table, and add to it as we go along.
-  size_t size = handle_table_size;
+  // The size of the secondary buffer. We'll start with the size of the entry
+  // size table (which will contain the size of the data for each handle), and
+  // add to it as we go along.
+  size_t size = RoundUpMessageAlignment(num_handles() * sizeof(uint32_t));
+  // The maximum size that we'll need for the secondary buffer. We'll allocate
+  // this much.
+  size_t max_size = size;
+  // TODO(vtl): Iterate through dispatchers and query their maximum size (and
+  // add each, rounded up, to |max_size|).
+
+  secondary_buffer_ = base::AlignedAlloc(max_size, kMessageAlignment);
+  // TODO(vtl): I wonder if it's faster to clear everything once, or to only
+  // clear padding as needed.
+  memset(secondary_buffer_, 0, max_size);
+
+  uint32_t* entry_size_table = static_cast<uint32_t*>(secondary_buffer_);
   for (size_t i = 0; i < dispatchers_->size(); i++) {
+    // The entry size table entry is already zero by default.
     if (!(*dispatchers_)[i])
       continue;
 
-    size += RoundUpMessageAlignment(
-        Dispatcher::MessageInTransitAccess::GetMaximumSerializedSize(
-            (*dispatchers_)[i].get(), channel));
-    // TODO(vtl): Check for overflow?
+    // TODO(vtl): Serialize this dispatcher (getting its actual size, and adding
+    // that (rounded up) to |size|.
+    entry_size_table[i] = 0;
+
+    DCHECK((*dispatchers_)[i]->HasOneRef());
+    (*dispatchers_)[i]->Close();
   }
 
-  secondary_buffer_ = base::AlignedAlloc(size, kMessageAlignment);
-  // TODO(vtl): Check for overflow?
   secondary_buffer_size_ = static_cast<uint32_t>(size);
-  // Entirely clear out the secondary buffer, since then we won't have to worry
-  // about clearing padding or unused space (e.g., if a dispatcher fails to
-  // serialize).
-  memset(secondary_buffer_, 0, size);
-
-  HandleTableEntry* handle_table =
-      static_cast<HandleTableEntry*>(secondary_buffer_);
-  size_t current_offset = handle_table_size;
-  for (size_t i = 0; i < dispatchers_->size(); i++) {
-    if (!(*dispatchers_)[i]) {
-      // The |handle_table[i].size| is already zero, designating this entry as
-      // invalid.
-      continue;
-    }
-
-    handle_table[i].offset = static_cast<uint32_t>(current_offset);
-    handle_table[i].size =
-        Dispatcher::MessageInTransitAccess::SerializeAndClose(
-            (*dispatchers_)[i].get(),
-            static_cast<char*>(secondary_buffer_) + current_offset,
-            channel);
-    current_offset += RoundUpMessageAlignment(handle_table[i].size);
-    DCHECK_LE(current_offset, size);
-  }
-
   UpdateTotalSize();
 }
 

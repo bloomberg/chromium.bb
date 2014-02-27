@@ -28,23 +28,6 @@ DispatcherTransport Dispatcher::CoreImplAccess::TryStartTransport(
   return DispatcherTransport(dispatcher);
 }
 
-// static
-size_t Dispatcher::MessageInTransitAccess::GetMaximumSerializedSize(
-    const Dispatcher* dispatcher,
-    const Channel* channel) {
-  DCHECK(dispatcher);
-  return dispatcher->GetMaximumSerializedSize(channel);
-}
-
-// static
-size_t Dispatcher::MessageInTransitAccess::SerializeAndClose(
-    Dispatcher* dispatcher,
-    void* destination,
-    Channel* channel) {
-  DCHECK(dispatcher);
-  return dispatcher->SerializeAndClose(destination, channel);
-}
-
 MojoResult Dispatcher::Close() {
   base::AutoLock locker(lock_);
   if (is_closed_)
@@ -314,23 +297,6 @@ void Dispatcher::RemoveWaiterImplNoLock(Waiter* /*waiter*/) {
   // will do something nontrivial.
 }
 
-size_t Dispatcher::GetMaximumSerializedSizeImplNoLock(
-      const Channel* /*channel*/) const {
-  lock_.AssertAcquired();
-  DCHECK(!is_closed_);
-  // By default, serializing isn't supported.
-  return 0;
-}
-
-size_t Dispatcher::SerializeAndCloseImplNoLock(void* /*destination*/,
-                                               Channel* /*channel*/) {
-  lock_.AssertAcquired();
-  DCHECK(is_closed_);
-  // By default, serializing isn't supported, so just close.
-  CloseImplNoLock();
-  return 0;
-}
-
 bool Dispatcher::IsBusyNoLock() const {
   lock_.AssertAcquired();
   DCHECK(!is_closed_);
@@ -356,39 +322,6 @@ Dispatcher::CreateEquivalentDispatcherAndCloseNoLock() {
   is_closed_ = true;
   CancelAllWaitersNoLock();
   return CreateEquivalentDispatcherAndCloseImplNoLock();
-}
-
-size_t Dispatcher::GetMaximumSerializedSize(const Channel* channel) const {
-  DCHECK(channel);
-  DCHECK(HasOneRef());
-
-  base::AutoLock locker(lock_);
-  DCHECK(!is_closed_);
-  return GetMaximumSerializedSizeImplNoLock(channel);
-}
-
-size_t Dispatcher::SerializeAndClose(void* destination, Channel* channel) {
-  DCHECK(destination);
-  DCHECK(channel);
-  DCHECK(HasOneRef());
-
-  base::AutoLock locker(lock_);
-  DCHECK(!is_closed_);
-
-  // We have to call |GetMaximumSerializedSizeImplNoLock()| first, because we
-  // leave it to |SerializeAndCloseImplNoLock()| to close the thing.
-  size_t max_size = DCHECK_IS_ON() ?
-      GetMaximumSerializedSizeImplNoLock(channel) : static_cast<size_t>(-1);
-
-  // Like other |...Close()| methods, we mark ourselves as closed before calling
-  // the impl.
-  is_closed_ = true;
-  // No need to cancel waiters: we shouldn't have any (and shouldn't be in
-  // |Core|'s handle table.
-
-  size_t size = SerializeAndCloseImplNoLock(destination, channel);
-  DCHECK_LE(size, max_size);
-  return size;
 }
 
 // DispatcherTransport ---------------------------------------------------------
