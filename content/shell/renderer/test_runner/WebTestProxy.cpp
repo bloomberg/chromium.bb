@@ -6,7 +6,6 @@
 
 #include <cctype>
 
-#include "content/shell/renderer/test_runner/AccessibilityController.h"
 #include "content/shell/renderer/test_runner/EventSender.h"
 #include "content/shell/renderer/test_runner/MockColorChooser.h"
 #include "content/shell/renderer/test_runner/MockWebSpeechInputController.h"
@@ -20,6 +19,7 @@
 #include "content/shell/renderer/test_runner/WebTestInterfaces.h"
 #include "content/shell/renderer/test_runner/WebTestRunner.h"
 #include "content/shell/renderer/test_runner/WebUserMediaClientMock.h"
+#include "content/shell/renderer/test_runner/accessibility_controller.h"
 // FIXME: Including platform_canvas.h here is a layering violation.
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
@@ -759,7 +759,7 @@ void WebTestProxyBase::didAutoResize(const WebSize&)
 void WebTestProxyBase::postAccessibilityEvent(const blink::WebAXObject& obj, blink::WebAXEvent event)
 {
     if (event == blink::WebAXEventFocus)
-        m_testInterfaces->accessibilityController()->setFocusedElement(obj);
+        m_testInterfaces->accessibilityController()->SetFocusedElement(obj);
 
     const char* eventName = 0;
     switch (event) {
@@ -849,9 +849,9 @@ void WebTestProxyBase::postAccessibilityEvent(const blink::WebAXObject& obj, bli
         break;
     }
 
-    m_testInterfaces->accessibilityController()->notificationReceived(obj, eventName);
+    m_testInterfaces->accessibilityController()->NotificationReceived(obj, eventName);
 
-    if (m_testInterfaces->accessibilityController()->shouldLogAccessibilityEvents()) {
+    if (m_testInterfaces->accessibilityController()->ShouldLogAccessibilityEvents()) {
         string message("AccessibilityNotification - ");
         message += eventName;
 
