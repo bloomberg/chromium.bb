@@ -15,6 +15,7 @@
 #include "base/win/registry.h"
 #include "chrome_elf/blacklist/blacklist.h"
 #include "chrome_elf/blacklist/test/blacklist_test_main_dll.h"
+#include "chrome_elf/chrome_elf_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "version.h"  // NOLINT
 

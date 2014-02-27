@@ -3,7 +3,7 @@ include_rules = [
   "+ash",
   "+chrome/app",
   "+chrome/installer",
-  "+chrome_elf/blacklist",
+  "+chrome_elf/chrome_elf_constants.h",
   "+chrome_elf/create_file",
   "+chromeos",
   "+components/autofill/content/browser",

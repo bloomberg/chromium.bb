@@ -23,6 +23,7 @@
         '../base/base.gyp:base_static',
         '../chrome/chrome.gyp:chrome_version_header',
         '../chrome_elf/chrome_elf.gyp:chrome_elf_breakpad',
+        '../chrome_elf/chrome_elf.gyp:chrome_elf_constants',
         '../sandbox/sandbox.gyp:sandbox',
       ],
     },

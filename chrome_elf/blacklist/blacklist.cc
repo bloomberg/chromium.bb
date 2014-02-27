@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "chrome_elf/blacklist/blacklist_interceptions.h"
+#include "chrome_elf/chrome_elf_constants.h"
 #include "sandbox/win/src/interception_internal.h"
 #include "sandbox/win/src/internal_types.h"
 #include "sandbox/win/src/sandbox_utils.h"
@@ -27,10 +28,6 @@ const wchar_t* g_troublesome_dlls[kTroublesomeDllsMaxCount] = {
   // Keep this null pointer here to mark the end of the list.
   NULL,
 };
-
-const wchar_t kRegistryBeaconPath[] = L"SOFTWARE\\Google\\Chrome\\BLBeacon";
-const wchar_t kBeaconVersion[] = L"version";
-const wchar_t kBeaconState[] = L"state";
 
 }  // namespace blacklist
 

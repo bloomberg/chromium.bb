@@ -7,7 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome/browser/chrome_elf_init_win.h"
-#include "chrome_elf/blacklist/blacklist.h"
+#include "chrome_elf/chrome_elf_constants.h"
 #include "version.h"  // NOLINT
 
 namespace {
@@ -63,6 +63,10 @@ void BrowserBlacklistBeaconSetup() {
   base::win::RegKey blacklist_registry_key(HKEY_CURRENT_USER,
                                            blacklist::kRegistryBeaconPath,
                                            KEY_QUERY_VALUE | KEY_SET_VALUE);
+
+  // No point in trying to continue if the registry key isn't valid.
+  if (!blacklist_registry_key.Valid())
+    return;
 
   // Find the last recorded blacklist version.
   base::string16 blacklist_version;

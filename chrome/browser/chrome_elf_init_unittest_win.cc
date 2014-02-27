@@ -9,7 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_reg_util_win.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome_elf/blacklist/blacklist.h"
+#include "chrome_elf/chrome_elf_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class ChromeBlacklistTrialTest : public testing::Test {

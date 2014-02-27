@@ -14,3 +14,10 @@ const wchar_t kLocalStateFilename[] = L"Local State";
 const wchar_t kPreferencesFilename[] = L"Preferences";
 const wchar_t kUserDataDirName[] = L"User Data";
 
+namespace blacklist {
+
+const wchar_t kRegistryBeaconPath[] = L"SOFTWARE\\Google\\Chrome\\BLBeacon";
+const wchar_t kBeaconVersion[] = L"version";
+const wchar_t kBeaconState[] = L"state";
+
+}  // namespace blacklist
