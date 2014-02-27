@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "7.0",
+  "version": "7.1",
   "entries": [
     {
       "id": 1,
@@ -1020,7 +1020,20 @@ LONG_STRING_CONST(
       "features": [
         "accelerated_video_decode"
       ]
+    },
+    {
+      "id": 92,
+      "description": "Accelerated video decode does not work with the discrete GPU on AMD switchables",
+      "cr_bugs": [298968],
+      "os": {
+        "type": "win"
+      },
+      "multi_gpu_style": "amd_switchable",
+      "features": [
+        "accelerated_video_decode"
+      ]
     }
+
   ]
 }
 
