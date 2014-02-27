@@ -7,7 +7,7 @@
 
 #include <string>
 #include "base/basictypes.h"
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
 #include "crypto/crypto_export.h"
@@ -118,8 +118,14 @@ CRYPTO_EXPORT bool IsTPMTokenEnabledForNSS();
 CRYPTO_EXPORT bool IsTPMTokenReady(const base::Closure& callback)
     WARN_UNUSED_RESULT;
 
-// Initialize the TPM token.  Does nothing if it is already initialized.
-CRYPTO_EXPORT bool InitializeTPMToken(int token_slot_id);
+// Initialize the TPM token. The |callback| will run on the same thread with
+// true if the token and slot were successfully loaded or were already
+// initialized. |callback| will be passed false if loading failed.
+// Once called, InitializeTPMToken must not be called again until the |callback|
+// has been run.
+CRYPTO_EXPORT void InitializeTPMToken(
+    int token_slot_id,
+    const base::Callback<void(bool)>& callback);
 
 // Exposed for unittests only.
 class CRYPTO_EXPORT_PRIVATE ScopedTestNSSChromeOSUser {

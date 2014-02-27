@@ -48,6 +48,12 @@ void CallOpenPersistentNSSDB() {
   crypto::EnableTPMTokenForNSS();
 }
 
+void PostResultToTaskRunner(scoped_refptr<base::SequencedTaskRunner> runner,
+                            const base::Callback<void(bool)>& callback,
+                            bool success) {
+  runner->PostTask(FROM_HERE, base::Bind(callback, success));
+}
+
 }  // namespace
 
 static TPMTokenLoader* g_tpm_token_loader = NULL;
@@ -197,12 +203,15 @@ void TPMTokenLoader::ContinueTokenInitialization() {
       return;
     }
     case TPM_TOKEN_INFO_RECEIVED: {
-      base::PostTaskAndReplyWithResult(
-          crypto_task_runner_.get(),
+      crypto_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&crypto::InitializeTPMToken, tpm_token_slot_id_),
-          base::Bind(&TPMTokenLoader::OnTPMTokenInitialized,
-                     weak_factory_.GetWeakPtr()));
+          base::Bind(
+              &crypto::InitializeTPMToken,
+              tpm_token_slot_id_,
+              base::Bind(&PostResultToTaskRunner,
+                         base::MessageLoopProxy::current(),
+                         base::Bind(&TPMTokenLoader::OnTPMTokenInitialized,
+                                    weak_factory_.GetWeakPtr()))));
       return;
     }
     case TPM_TOKEN_INITIALIZED: {
