@@ -31,7 +31,7 @@
 #include "config.h"
 #include "platform/fonts/win/FontFallbackWin.h"
 
-#include "platform/win/HWndDC.h"
+#include "SkTypeface.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
@@ -43,22 +43,25 @@ namespace WebCore {
 
 namespace {
 
-bool isFontPresent(const UChar* fontName)
+static inline bool isFontPresent(const UChar* fontName)
 {
-    HFONT hfont = CreateFont(12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, fontName);
-    if (!hfont)
+    String family = fontName;
+    RefPtr<SkTypeface> tf = adoptRef(SkTypeface::CreateFromName(family.utf8().data(), SkTypeface::kNormal));
+    if (!tf)
         return false;
-    HWndDC dc(0);
-    HGDIOBJ oldFont = static_cast<HFONT>(SelectObject(dc, hfont));
-    WCHAR actualFontName[LF_FACESIZE];
-    GetTextFace(dc, LF_FACESIZE, actualFontName);
-    actualFontName[LF_FACESIZE - 1] = 0;
-    SelectObject(dc, oldFont);
-    DeleteObject(hfont);
-    // We don't have to worry about East Asian fonts with locale-dependent
-    // names here for now.
-    // FIXME: Why not?
-    return !wcscmp(fontName, actualFontName);
+
+    SkTypeface::LocalizedStrings* actualFamilies = tf->createFamilyNameIterator();
+    bool matchesRequestedFamily = false;
+    SkTypeface::LocalizedString actualFamily;
+    while (actualFamilies->next(&actualFamily)) {
+        if (equalIgnoringCase(family, AtomicString::fromUTF8(actualFamily.fString.c_str()))) {
+            matchesRequestedFamily = true;
+            break;
+        }
+    }
+    actualFamilies->unref();
+
+    return matchesRequestedFamily;
 }
 
 // A simple mapping from UScriptCode to family name. This is a sparse array,
