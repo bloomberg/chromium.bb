@@ -329,7 +329,7 @@ Animation::Animation(PassRefPtr<Element> target, PassRefPtrWillBeRawPtr<Animatio
 void Animation::didAttach()
 {
     if (m_target)
-        m_target->ensureActiveAnimations()->players().add(player());
+        m_target->ensureActiveAnimations().players().add(player());
 }
 
 void Animation::willDetach()
@@ -342,7 +342,7 @@ void Animation::willDetach()
 
 static AnimationStack& ensureAnimationStack(Element* element)
 {
-    return element->ensureActiveAnimations()->defaultStack();
+    return element->ensureActiveAnimations().defaultStack();
 }
 
 void Animation::applyEffects(bool previouslyInEffect)

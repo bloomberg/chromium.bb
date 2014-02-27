@@ -93,7 +93,7 @@ void setAnimationUpdateIfNeeded(StyleResolverState& state, Element& element)
     // If any changes to CSS Animations were detected, stash the update away for application after the
     // render object is updated if we're in the appropriate scope.
     if (state.animationUpdate())
-        element.ensureActiveAnimations()->cssAnimations().setPendingUpdate(state.takeAnimationUpdate());
+        element.ensureActiveAnimations().cssAnimations().setPendingUpdate(state.takeAnimationUpdate());
 }
 
 } // namespace

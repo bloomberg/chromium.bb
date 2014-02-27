@@ -504,7 +504,7 @@ public:
     void setSavedLayerScrollOffset(const IntSize&);
 
     ActiveAnimations* activeAnimations() const;
-    ActiveAnimations* ensureActiveAnimations();
+    ActiveAnimations& ensureActiveAnimations();
     bool hasActiveAnimations() const;
 
     InputMethodContext* inputMethodContext();

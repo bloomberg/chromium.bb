@@ -369,12 +369,12 @@ ActiveAnimations* Element::activeAnimations() const
     return 0;
 }
 
-ActiveAnimations* Element::ensureActiveAnimations()
+ActiveAnimations& Element::ensureActiveAnimations()
 {
     ElementRareData& rareData = ensureElementRareData();
     if (!rareData.activeAnimations())
         rareData.setActiveAnimations(adoptPtr(new ActiveAnimations()));
-    return rareData.activeAnimations();
+    return *rareData.activeAnimations();
 }
 
 bool Element::hasActiveAnimations() const
