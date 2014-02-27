@@ -1294,7 +1294,7 @@ bool ImmediateInterpreter::KeyboardRecentlyUsed(stime_t now) const {
     return false;
   // Sanity check. If keyboard_touched_ is more than 10 seconds away from now,
   // ignore it.
-  if (fabsf(now - keyboard_touched_) > 10)
+  if (fabs(now - keyboard_touched_) > 10)
     return false;
 
   return keyboard_touched_ + keyboard_palm_prevent_timeout_.val_ > now;
