@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "content/common/gpu/media/vaapi_wrapper.h"
 
 #define LOG_VA_ERROR_AND_REPORT(va_error, err_msg)         \
@@ -101,6 +102,7 @@ typedef VAStatus (*VaapiInitialize)(VADisplay dpy,
 typedef VAStatus (*VaapiMapBuffer)(VADisplay dpy,
                                    VABufferID buf_id,
                                    void** pbuf);
+typedef int (*VaapiMaxNumProfiles)(VADisplay dpy);
 typedef VAStatus (*VaapiPutSurface)(VADisplay dpy,
                                     VASurfaceID surface,
                                     Drawable draw,
@@ -115,6 +117,9 @@ typedef VAStatus (*VaapiPutSurface)(VADisplay dpy,
                                     VARectangle *cliprects,
                                     unsigned int number_cliprects,
                                     unsigned int flags);
+typedef VAStatus (*VaapiQueryConfigProfiles)(VADisplay dpy,
+                                             VAProfile *profile_list,
+                                             int *num_profiles);
 typedef VAStatus (*VaapiRenderPicture)(VADisplay dpy,
                                        VAContextID context,
                                        VABufferID *buffers,
@@ -146,7 +151,9 @@ VAAPI_SYM(GetConfigAttributes, vaapi_handle);
 VAAPI_SYM(GetDisplay, vaapi_x11_handle);
 VAAPI_SYM(Initialize, vaapi_handle);
 VAAPI_SYM(MapBuffer, vaapi_handle);
+VAAPI_SYM(MaxNumProfiles, vaapi_handle);
 VAAPI_SYM(PutSurface, vaapi_x11_handle);
+VAAPI_SYM(QueryConfigProfiles, vaapi_handle);
 VAAPI_SYM(RenderPicture, vaapi_handle);
 VAAPI_SYM(SetDisplayAttributes, vaapi_handle);
 VAAPI_SYM(SyncSurface, vaapi_x11_handle);
@@ -156,24 +163,48 @@ VAAPI_SYM(UnmapBuffer, vaapi_handle);
 #undef VAAPI_SYM
 
 // Maps Profile enum values to VaProfile values.
-static bool ProfileToVAProfile(media::VideoCodecProfile profile,
-                               VAProfile* va_profile) {
+static VAProfile ProfileToVAProfile(
+    media::VideoCodecProfile profile,
+    const std::vector<VAProfile>& supported_profiles) {
+
+  VAProfile va_profile = VAProfileNone;
+
   switch (profile) {
     case media::H264PROFILE_BASELINE:
-      *va_profile = VAProfileH264Baseline;
+      va_profile = VAProfileH264Baseline;
       break;
     case media::H264PROFILE_MAIN:
-      *va_profile = VAProfileH264Main;
+      va_profile = VAProfileH264Main;
       break;
     // TODO(posciak): See if we can/want support other variants
     // of media::H264PROFILE_HIGH*.
     case media::H264PROFILE_HIGH:
-      *va_profile = VAProfileH264High;
+      va_profile = VAProfileH264High;
       break;
     default:
-      return false;
+      break;
   }
-  return true;
+
+  bool supported = std::find(supported_profiles.begin(),
+                             supported_profiles.end(),
+                             va_profile) != supported_profiles.end();
+
+  if (!supported && va_profile == VAProfileH264Baseline) {
+    // crbug.com/345569: media::ProfileIDToVideoCodecProfile() currently strips
+    // the information whether the profile is constrained or not, so we have no
+    // way to know here. Try for baseline first, but if it is not supported,
+    // try constrained baseline and hope this is what it actually is
+    // (which in practice is true for a great majority of cases).
+    if (std::find(supported_profiles.begin(),
+                  supported_profiles.end(),
+                  VAProfileH264ConstrainedBaseline) !=
+        supported_profiles.end()) {
+      va_profile = VAProfileH264ConstrainedBaseline;
+      DVLOG(1) << "Falling back to constrained baseline profile.";
+    }
+  }
+
+  return va_profile;
 }
 
 VASurface::VASurface(VASurfaceID va_surface_id, const ReleaseCB& release_cb)
@@ -235,25 +266,40 @@ bool VaapiWrapper::Initialize(media::VideoCodecProfile profile,
 
   base::AutoLock auto_lock(va_lock_);
 
-  VAProfile va_profile;
-  if (!ProfileToVAProfile(profile, &va_profile)) {
-    DVLOG(1) << "Unsupported profile";
-    return false;
-  }
-
   va_display_ = VAAPI_GetDisplay(x_display);
   if (!VAAPI_DisplayIsValid(va_display_)) {
     DVLOG(1) << "Could not get a valid VA display";
     return false;
   }
 
-  VAStatus va_res;
-  va_res = VAAPI_Initialize(va_display_, &major_version_, &minor_version_);
+  VAStatus va_res =
+      VAAPI_Initialize(va_display_, &major_version_, &minor_version_);
   VA_SUCCESS_OR_RETURN(va_res, "vaInitialize failed", false);
   DVLOG(1) << "VAAPI version: " << major_version_ << "." << minor_version_;
 
-  VAConfigAttrib attrib = {VAConfigAttribRTFormat, 0};
+  // Query the driver for supported profiles.
+  int max_profiles = VAAPI_MaxNumProfiles(va_display_);
+  std::vector<VAProfile> supported_profiles(
+      base::checked_cast<size_t>(max_profiles));
 
+  int num_supported_profiles;
+  va_res = VAAPI_QueryConfigProfiles(
+      va_display_, &supported_profiles[0], &num_supported_profiles);
+  VA_SUCCESS_OR_RETURN(va_res, "vaQueryConfigProfiles failed", false);
+  if (num_supported_profiles < 0 || num_supported_profiles > max_profiles) {
+    DVLOG(1) << "vaQueryConfigProfiles returned: " << num_supported_profiles;
+    return false;
+  }
+
+  supported_profiles.resize(base::checked_cast<size_t>(num_supported_profiles));
+
+  VAProfile va_profile = ProfileToVAProfile(profile, supported_profiles);
+  if (va_profile == VAProfileNone) {
+    DVLOG(1) << "Unsupported profile";
+    return false;
+  }
+
+  VAConfigAttrib attrib = {VAConfigAttribRTFormat, 0};
   const VAEntrypoint kEntrypoint = VAEntrypointVLD;
   va_res = VAAPI_GetConfigAttributes(va_display_, va_profile, kEntrypoint,
                                      &attrib, 1);
@@ -528,7 +574,9 @@ bool VaapiWrapper::PostSandboxInitialization() {
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(GetDisplay, vaapi_x11_handle);
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(Initialize, vaapi_handle);
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(MapBuffer, vaapi_handle);
+  VAAPI_DLSYM_OR_RETURN_ON_ERROR(MaxNumProfiles, vaapi_handle);
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(PutSurface, vaapi_x11_handle);
+  VAAPI_DLSYM_OR_RETURN_ON_ERROR(QueryConfigProfiles, vaapi_handle);
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(RenderPicture, vaapi_handle);
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(SetDisplayAttributes, vaapi_handle);
   VAAPI_DLSYM_OR_RETURN_ON_ERROR(SyncSurface, vaapi_handle);
