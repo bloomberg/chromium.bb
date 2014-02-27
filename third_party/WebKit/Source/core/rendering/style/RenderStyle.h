@@ -111,7 +111,7 @@ typedef Vector<RefPtr<RenderStyle>, 4> PseudoStyleCache;
 class RenderStyle: public RefCounted<RenderStyle> {
     friend class AnimatedStyleBuilder; // Used by Web Animations CSS. Sets the color styles
     friend class CSSAnimatableValueFactory; // Used by Web Animations CSS. Gets visited and unvisited colors separately.
-    friend class CSSPropertyAnimation; // Used by CSS animations. We can't allow them to animate based off visited colors.
+    friend class CSSPropertyEquality; // Used by CSS animations. We can't allow them to animate based off visited colors.
     friend class ApplyStyleCommand; // Editing has to only reveal unvisited info.
     friend class EditingStyle; // Editing has to only reveal unvisited info.
     friend class CSSComputedStyleDeclaration; // Ignores visited styles, so needs to be able to see unvisited info.

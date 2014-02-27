@@ -38,7 +38,7 @@
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/css/CSSAnimatableValueFactory.h"
 #include "core/animation/css/CSSAnimationDataList.h"
-#include "core/animation/css/CSSPropertyAnimation.h"
+#include "core/animation/css/CSSPropertyEquality.h"
 #include "core/css/CSSKeyframeRule.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Element.h"
@@ -560,7 +560,7 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, const
     if (anim->duration() + anim->delay() <= 0)
         return;
 
-    if (CSSPropertyAnimation::propertiesEqual(id, &oldStyle, &style))
+    if (CSSPropertyEquality::propertiesEqual(id, oldStyle, style))
         return;
     if (!to)
         to = CSSAnimatableValueFactory::create(id, style);
