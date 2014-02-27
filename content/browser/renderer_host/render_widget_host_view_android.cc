@@ -254,6 +254,7 @@ void RenderWidgetHostViewAndroid::SetBounds(const gfx::Rect& rect) {
 void RenderWidgetHostViewAndroid::GetScaledContentBitmap(
     float scale,
     SkBitmap::Config bitmap_config,
+    gfx::Rect src_subrect,
     const base::Callback<void(bool, const SkBitmap&)>& result_callback) {
   if (!IsSurfaceAvailableForCopy()) {
     result_callback.Run(false, SkBitmap());
@@ -261,7 +262,10 @@ void RenderWidgetHostViewAndroid::GetScaledContentBitmap(
   }
 
   gfx::Size bounds = layer_->bounds();
-  gfx::Rect src_subrect(bounds);
+  if (src_subrect.IsEmpty())
+    src_subrect = gfx::Rect(bounds);
+  DCHECK_LE(src_subrect.width() + src_subrect.x(), bounds.width());
+  DCHECK_LE(src_subrect.height() + src_subrect.y(), bounds.height());
   const gfx::Display& display =
       gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
   float device_scale_factor = display.device_scale_factor();
@@ -270,40 +274,6 @@ void RenderWidgetHostViewAndroid::GetScaledContentBitmap(
       gfx::ToCeiledSize(gfx::ScaleSize(bounds, scale / device_scale_factor)));
   CopyFromCompositingSurface(
       src_subrect, dst_size, result_callback, bitmap_config);
-}
-
-bool RenderWidgetHostViewAndroid::PopulateBitmapWithContents(jobject jbitmap) {
-  if (!CompositorImpl::IsInitialized() ||
-      texture_id_in_layer_ == 0 ||
-      texture_size_in_layer_.IsEmpty())
-    return false;
-
-  gfx::JavaBitmap bitmap(jbitmap);
-
-  // TODO(dtrainor): Eventually add support for multiple formats here.
-  DCHECK(bitmap.format() == ANDROID_BITMAP_FORMAT_RGBA_8888);
-
-  GLHelper* helper = ImageTransportFactoryAndroid::GetInstance()->GetGLHelper();
-
-  GLuint texture = helper->CopyAndScaleTexture(
-      texture_id_in_layer_,
-      texture_size_in_layer_,
-      bitmap.size(),
-      true,
-      GLHelper::SCALER_QUALITY_FAST);
-  if (texture == 0u)
-    return false;
-
-  helper->ReadbackTextureSync(texture,
-                              gfx::Rect(bitmap.size()),
-                              static_cast<unsigned char*> (bitmap.pixels()),
-                              SkBitmap::kARGB_8888_Config);
-
-  gpu::gles2::GLES2Interface* gl =
-      ImageTransportFactoryAndroid::GetInstance()->GetContextGL();
-  gl->DeleteTextures(1, &texture);
-
-  return true;
 }
 
 bool RenderWidgetHostViewAndroid::HasValidFrame() const {

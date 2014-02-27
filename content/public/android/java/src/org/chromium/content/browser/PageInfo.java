@@ -4,7 +4,6 @@
 
 package org.chromium.content.browser;
 
-import android.graphics.Bitmap;
 import android.view.View;
 
 /**
@@ -17,21 +16,6 @@ public interface PageInfo {
      * @return The title of the page.
      */
     String getTitle();
-
-    /**
-     * @return True, if the view is in a suitable state for a snapshot.
-     */
-    boolean isReadyForSnapshot();
-
-    /**
-     * @return An unscaled screenshot of the page.
-     */
-    Bitmap getBitmap();
-
-    /**
-     * @return A screenshot of the page scaled to the specified size.
-     */
-    Bitmap getBitmap(int width, int height);
 
     /**
      * @return The background color of the page.

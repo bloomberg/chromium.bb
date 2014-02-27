@@ -60,6 +60,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   virtual void GetScaledContentBitmap(
       float scale,
       jobject bitmap_config,
+      gfx::Rect src_subrect,
       const base::Callback<void(bool, const SkBitmap&)>& result_callback)
       OVERRIDE;
   virtual float GetDpiScale() const OVERRIDE;
@@ -198,9 +199,6 @@ class ContentViewCoreImpl : public ContentViewCore,
                              jlong interval_micros);
   void OnVSync(JNIEnv* env, jobject /* obj */, jlong frame_time_micros);
   jboolean OnAnimate(JNIEnv* env, jobject /* obj */, jlong frame_time_micros);
-  jboolean PopulateBitmapFromCompositor(JNIEnv* env,
-                                        jobject obj,
-                                        jobject jbitmap);
   void WasResized(JNIEnv* env, jobject obj);
   jboolean IsRenderWidgetHostViewReady(JNIEnv* env, jobject obj);
   void ExitFullscreen(JNIEnv* env, jobject obj);
