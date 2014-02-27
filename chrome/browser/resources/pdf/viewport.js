@@ -163,8 +163,16 @@ Viewport.prototype = {
     var max = this.pageDimensions_.length - 1;
     while (max >= min) {
       var page = Math.floor(min + ((max - min) / 2));
-      var top = this.pageDimensions_[page].y;
-      var bottom = top + this.pageDimensions_[page].height;
+      // There might be a gap between the pages, in which case use the bottom
+      // of the previous page as the top for finding the page.
+      var top = 0;
+      if (page > 0) {
+        top = this.pageDimensions_[page - 1].y +
+            this.pageDimensions_[page - 1].height;
+      }
+      var bottom = this.pageDimensions_[page].y +
+          this.pageDimensions_[page].height;
+
       if (top <= y && bottom > y)
         return page;
       else if (top > y)
