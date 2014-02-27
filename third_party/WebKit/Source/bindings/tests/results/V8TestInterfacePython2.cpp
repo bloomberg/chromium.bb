@@ -80,7 +80,8 @@ template <typename T> void V8_USE(T) { }
 void V8TestInterfacePython2::visitDOMWrapper(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
 {
     TestInterfacePython2* impl = fromInternalPointer(object);
-    if (Node* owner = impl->ownerNode()) {
+    // The ownerNode() method may return a reference or a pointer.
+    if (Node* owner = WTF::getPtr(impl->ownerNode())) {
         Node* root = V8GCController::opaqueRootForGC(owner, isolate);
         isolate->SetReferenceFromGroup(v8::UniqueId(reinterpret_cast<intptr_t>(root)), wrapper);
         return;

@@ -85,7 +85,6 @@ Replaceable
 # Source/core/page/RuntimeEnabledFeatures.in
 RuntimeEnabled=*
 SetWrapperReferenceFrom=*
-SetWrapperReferenceFromReference=*
 SetWrapperReferenceTo=*
 SetterCallWith=ExecutionContext|ScriptState|ScriptArguments|ActiveWindow|FirstWindow
 SpecialWrapFor=*

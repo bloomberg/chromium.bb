@@ -28,6 +28,11 @@ namespace WTF {
         return p;
     }
 
+    template <typename T> inline T* getPtr(T& p)
+    {
+        return &p;
+    }
+
 } // namespace WTF
 
 #endif // WTF_GetPtr_h
