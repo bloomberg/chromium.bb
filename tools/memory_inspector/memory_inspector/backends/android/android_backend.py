@@ -52,8 +52,7 @@ class AndroidBackend(backends.Backend):
       os.environ['PATH'] = os.pathsep.join([self.settings['adb_path'],
                                            os.environ['PATH']])
     for device in android_commands.GetAttachedDevices():
-      yield AndroidDevice(
-          self, android_commands.AndroidCommands(device, api_strict_mode=True))
+      yield AndroidDevice(self, android_commands.AndroidCommands(device))
 
   @property
   def name(self):

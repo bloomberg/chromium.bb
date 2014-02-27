@@ -231,14 +231,12 @@ def GetLogTimestamp(log_line, year):
 class AndroidCommands(object):
   """Helper class for communicating with Android device via adb."""
 
-  def __init__(self, device=None, api_strict_mode=False):
+  def __init__(self, device=None):
     """Constructor.
 
     Args:
       device: If given, adb commands are only send to the device of this ID.
           Otherwise commands are sent to all attached devices.
-      api_strict_mode: A boolean indicating whether fatal errors should be
-          raised if this API is used improperly.
     """
     adb_dir = os.path.dirname(constants.GetAdbPath())
     if adb_dir and adb_dir not in os.environ['PATH'].split(os.pathsep):
@@ -257,15 +255,8 @@ class AndroidCommands(object):
     self._actual_push_size = 0
     self._external_storage = ''
     self._util_wrapper = ''
-    self._api_strict_mode = api_strict_mode
     self._system_properties = system_properties.SystemProperties(self.Adb())
     self._push_if_needed_cache = {}
-
-    if not self._api_strict_mode:
-      logging.warning(
-          'API STRICT MODE IS DISABLED.\n'
-          'It should be enabled as soon as possible as it will eventually '
-          'become the default.')
 
   @property
   def system_properties(self):
@@ -281,7 +272,8 @@ class AndroidCommands(object):
 
   def Adb(self):
     """Returns our AdbInterface to avoid us wrapping all its methods."""
-    # TODO(tonyg): Disable this method when in _api_strict_mode.
+    # TODO(tonyg): Goal should be to git rid of this method by making this API
+    # complete and alleviating the need.
     return self._adb
 
   def GetDevice(self):
@@ -611,12 +603,9 @@ class AndroidCommands(object):
         (base_command not in whitelisted_callers or
          whitelisted_callers[base_command] not in [
           f[3] for f in inspect.stack()])):
-      error_msg = ('%s cannot be run directly. Instead use: %s' %
+      error_msg = ('%s should not be run directly. Instead use: %s' %
                    (base_command, preferred_apis[base_command]))
-      if self._api_strict_mode:
-        raise ValueError(error_msg)
-      else:
-        logging.warning(error_msg)
+      raise ValueError(error_msg)
 
   # It is tempting to turn this function into a generator, however this is not
   # possible without using a private (local) adb_shell instance (to ensure no

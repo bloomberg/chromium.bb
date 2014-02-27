@@ -77,7 +77,7 @@ def main():
   if len(args) > 1:
     parser.error('Too many positional arguments.')
   host_file = args[0] if args else options.file
-  adb = android_commands.AndroidCommands(options.device, api_strict_mode=True)
+  adb = android_commands.AndroidCommands(options.device)
 
   if options.video:
     _CaptureVideo(adb, host_file, options)
