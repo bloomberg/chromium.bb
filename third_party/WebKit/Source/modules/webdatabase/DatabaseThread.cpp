@@ -105,7 +105,7 @@ void DatabaseThread::cleanupDatabaseThread()
     }
 
     if (m_cleanupSync) // Someone wanted to know when we were done cleaning up.
-        m_cleanupSync->taskCompleted();
+        m_thread->postTask(new Task(WTF::bind(&DatabaseTaskSynchronizer::taskCompleted, m_cleanupSync)));
 }
 
 void DatabaseThread::recordDatabaseOpen(DatabaseBackend* database)
