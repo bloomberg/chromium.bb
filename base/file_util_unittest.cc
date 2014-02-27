@@ -1990,9 +1990,11 @@ TEST_F(FileUtilTest, ReadFileToString) {
 
   EXPECT_TRUE(base::DeleteFile(file_path, false));
 
+  data = "temp";
   EXPECT_FALSE(ReadFileToString(file_path, &data));
   EXPECT_EQ(data.length(), 0u);
 
+  data = "temp";
   EXPECT_FALSE(ReadFileToString(file_path, &data, 6));
   EXPECT_EQ(data.length(), 0u);
 }

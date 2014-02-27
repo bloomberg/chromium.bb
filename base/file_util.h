@@ -136,23 +136,22 @@ BASE_EXPORT bool ContentsEqual(const FilePath& filename1,
 BASE_EXPORT bool TextContentsEqual(const FilePath& filename1,
                                    const FilePath& filename2);
 
-// Read the file at |path| into |contents|, returning true on success.
-// This function fails if the |path| contains path traversal components ('..').
+// Reads the file at |path| into |contents| and returns true on success.
 // |contents| may be NULL, in which case this function is useful for its
-// side effect of priming the disk cache, which is useful for unit tests.
-// The function replaces rather than append to |contents|, further |contents|
-// could be cleared on error.
+// side effect of priming the disk cache (could be used for unit tests).
+// The function returns false and the string pointed to by |contents| is
+// cleared when |path| does not exist or if it contains path traversal
+// components ('..').
 BASE_EXPORT bool ReadFileToString(const FilePath& path, std::string* contents);
 
-// Read the file at |path| into |contents|, returning true on success.
-// This function has an additional check on the maximum size of the file.
-// When the file size is greater than |max_size|, the function reads |max_size|
-// bytes into |contents| and returns false.
-// This function fails if the |path| contains path traversal components ('..').
+// Reads the file at |path| into |contents| and returns true on success.
 // |contents| may be NULL, in which case this function is useful for its
-// side effect of priming the disk cache, which is useful for unit tests.
-// The function replaces rather than append to |contents|, further |contents|
-// could be cleared on error.
+// side effect of priming the disk cache (could be used for unit tests).
+// The function returns false and the string pointed to by |contents| is
+// cleared when |path| does not exist or if it contains path traversal
+// components ('..').
+// When the file size exceeds |max_size|, the function returns false
+// with |contents| holding the file truncated to |max_size|.
 BASE_EXPORT bool ReadFileToString(const FilePath& path,
                                   std::string* contents,
                                   size_t max_size);
