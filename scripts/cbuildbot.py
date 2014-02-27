@@ -165,7 +165,7 @@ class Builder(object):
     return stage(builder_run, *args, **kwargs)
 
   def _SetReleaseTag(self):
-    """Sets the release tag from the manifest manager.
+    """Sets run.attrs.release_tag from the manifest manager used in sync.
 
     Must be run after sync stage as syncing enables us to have a release tag,
     and must be run before any usage of attrs.release_tag.
@@ -511,6 +511,9 @@ class SimpleBuilder(Builder):
     """Runs through the stages of the paladin (commit queue) master build."""
     self._RunStage(stages.InitSDKStage)
     self._RunStage(stages.UprevStage)
+    # The CQ (paladin) master will not actually run the SyncChrome stage, but
+    # we want the logic that gets triggered when SyncChrome stage is skipped.
+    self._RunStage(stages.SyncChromeStage)
     self._RunStage(stages.MasterUploadPrebuiltsStage)
 
   def _RunDefaultTypeBuild(self):

@@ -34,12 +34,16 @@ class BuilderRunMock(partial_mock.PartialMock):
   """Partial mock for BuilderRun class."""
 
   TARGET = 'chromite.buildbot.cbuildbot_run._BuilderRunBase'
-  ATTRS = ('GetVersionInfo', )
+  ATTRS = ('GetVersionInfo', 'DetermineChromeVersion')
   VERSION = '3333.1.0'
+  CHROME_VERSION = '35.0.1234.5'
 
   def GetVersionInfo(self, _build_root):
     return manifest_version.VersionInfo(
         version_string=self.VERSION, chrome_branch=DEFAULT_CHROME_BRANCH)
+
+  def DetermineChromeVersion(self, _inst):
+    return self.CHROME_VERSION
 
 
 # pylint: disable=W0212,R0904

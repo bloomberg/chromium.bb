@@ -2310,6 +2310,13 @@ class SyncChromeStage(bs.BuilderStage):
     # TODO(mtennant): Replace with a run param.
     self.chrome_version = None
 
+  def HandleSkip(self):
+    """Set run.attrs.chrome_version to chrome version in buildroot now."""
+    self._run.attrs.chrome_version = self._run.DetermineChromeVersion()
+    cros_build_lib.Debug('Existing chrome version is %s.',
+                         self._run.attrs.chrome_version)
+    super(SyncChromeStage, self).HandleSkip()
+
   def PerformStage(self):
     # Perform chrome uprev.
     chrome_atom_to_build = None
@@ -2322,13 +2329,10 @@ class SyncChromeStage(bs.BuilderStage):
     kwargs = {}
     if self._chrome_rev == constants.CHROME_REV_SPEC:
       kwargs['revision'] = self._run.options.chrome_version
-      cpv = None
       cros_build_lib.PrintBuildbotStepText('revision %s' % kwargs['revision'])
       self.chrome_version = self._run.options.chrome_version
     else:
-      cpv = portage_utilities.BestVisible(constants.CHROME_CP,
-                                          buildroot=self._build_root)
-      kwargs['tag'] = cpv.version_no_rev.partition('_')[0]
+      kwargs['tag'] = self._run.DetermineChromeVersion()
       cros_build_lib.PrintBuildbotStepText('tag %s' % kwargs['tag'])
       self.chrome_version = kwargs['tag']
 

@@ -33,7 +33,9 @@ except ImportError:
 import types
 
 from chromite.buildbot import cbuildbot_archive
+from chromite.buildbot import constants
 from chromite.buildbot import manifest_version
+from chromite.buildbot import portage_utilities
 from chromite.buildbot import validation_pool
 
 
@@ -553,7 +555,7 @@ class _BuilderRunBase(object):
       # self.bot_id      # Effective name of builder for this run.
 
       # TODO(mtennant): Other candidates here include:
-      # trybot, buildbot, remote_trybot, chrome_root, chrome_version,
+      # trybot, buildbot, remote_trybot, chrome_root,
       # test = (config build_tests AND option tests)
   )
 
@@ -688,6 +690,19 @@ class _BuilderRunBase(object):
                                      self.buildnumber)
 
     return calc_version
+
+  def DetermineChromeVersion(self):
+    """Determine the current Chrome version in buildroot now and return it.
+
+    This uses the typical portage logic to determine which version of Chrome
+    is active right now in the buildroot.
+
+    Returns:
+      The new value of attrs.chrome_version (e.g. "35.0.1863.0").
+    """
+    cpv = portage_utilities.BestVisible(constants.CHROME_CP,
+                                        buildroot=self.buildroot)
+    return cpv.version_no_rev.partition('_')[0]
 
 
 class _RealBuilderRun(object):
