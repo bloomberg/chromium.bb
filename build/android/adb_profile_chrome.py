@@ -408,13 +408,18 @@ When in doubt, just try out --trace-frame-viewer.
     _PrintMessage('No trace categories enabled.')
     return 1
 
+  if options.output:
+    options.output = os.path.expanduser(options.output)
   result = _CaptureAndPullTrace(controllers,
                                 options.time if not options.continuous else 0,
                                 options.output,
                                 options.compress,
                                 options.json)
   if options.view:
-    webbrowser.open(result)
+    if sys.platform == 'darwin':
+      os.system('/usr/bin/open %s' % os.path.abspath(result))
+    else:
+      webbrowser.open(result)
 
 
 if __name__ == '__main__':
