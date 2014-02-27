@@ -114,7 +114,7 @@ class BindingsTests(object):
 
     def generate_from_idl(self, idl_file):
         cmd = ['python',
-               'bindings/scripts/unstable/idl_compiler.py',
+               'bindings/scripts/idl_compiler.py',
                '--output-dir', self.output_directory,
                '--idl-attributes-file', 'bindings/IDLExtendedAttributes.txt',
                '--interfaces-info-file', self.interfaces_info_filename,

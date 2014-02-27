@@ -62,9 +62,9 @@ import sys
 # since some compile processes will try to read the partially written cache.
 module_path = os.path.dirname(os.path.realpath(__file__))
 third_party_dir = os.path.normpath(os.path.join(
-    module_path, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir))
+    module_path, os.pardir, os.pardir, os.pardir, os.pardir))
 templates_dir = os.path.normpath(os.path.join(
-    module_path, os.pardir, os.pardir, 'templates'))
+    module_path, os.pardir, 'templates'))
 
 # jinja2 is in chromium's third_party directory.
 # Insert at 1 so at front to override system libraries, and

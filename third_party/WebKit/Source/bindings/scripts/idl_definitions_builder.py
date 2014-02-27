@@ -38,6 +38,7 @@ STANDARD_TYPEDEFS = {
     'DOMTimeStamp': 'unsigned long long',
 }
 
+
 def build_idl_definitions_from_ast(node):
     if node is None:
         return None

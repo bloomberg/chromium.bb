@@ -45,6 +45,7 @@ from code_generator_v8 import CodeGeneratorV8
 from idl_reader import IdlReader
 # from utilities import write_file  # FIXME: import once in same directory
 
+
 def parse_options():
     parser = OptionParser()
     parser.add_option('--idl-attributes-file')

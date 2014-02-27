@@ -247,6 +247,7 @@ CPP_SPECIAL_CONVERSION_RULES = {
     'boolean': 'bool',
 }
 
+
 def cpp_type(idl_type, extended_attributes=None, used_as_argument=False):
     """Returns C++ type corresponding to IDL type."""
     def string_mode():
@@ -365,6 +366,7 @@ INCLUDES_FOR_TYPE = {
     'SerializedScriptValue': set(['bindings/v8/SerializedScriptValue.h']),
     'ScriptValue': set(['bindings/v8/ScriptValue.h']),
 }
+
 
 def includes_for_type(idl_type):
     idl_type = preprocess_idl_type(idl_type)

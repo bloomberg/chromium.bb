@@ -113,7 +113,7 @@
       '<(DEPTH)/third_party/markupsafe/__init__.py',  # jinja2 dep
     ],
     'idl_compiler_files': [
-      'scripts/unstable/idl_compiler.py',
+      'scripts/idl_compiler.py',
       # PLY (Python Lex-Yacc)
       '<(DEPTH)/third_party/ply/lex.py',
       '<(DEPTH)/third_party/ply/yacc.py',
@@ -122,22 +122,22 @@
       '<(DEPTH)/tools/idl_parser/idl_node.py',
       '<(DEPTH)/tools/idl_parser/idl_parser.py',
       # Blink IDL lexer/parser/constructor
-      'scripts/unstable/blink_idl_lexer.py',
-      'scripts/unstable/blink_idl_parser.py',
-      'scripts/unstable/idl_definitions.py',
-      'scripts/unstable/idl_definitions_builder.py',
-      'scripts/unstable/idl_reader.py',
-      'scripts/unstable/idl_validator.py',
-      'scripts/unstable/interface_dependency_resolver.py',
+      'scripts/blink_idl_lexer.py',
+      'scripts/blink_idl_parser.py',
+      'scripts/idl_definitions.py',
+      'scripts/idl_definitions_builder.py',
+      'scripts/idl_reader.py',
+      'scripts/idl_validator.py',
+      'scripts/interface_dependency_resolver.py',
       # V8 code generator
-      'scripts/unstable/code_generator_v8.py',
-      'scripts/unstable/v8_attributes.py',
-      'scripts/unstable/v8_callback_interface.py',
-      'scripts/unstable/v8_globals.py',
-      'scripts/unstable/v8_interface.py',
-      'scripts/unstable/v8_methods.py',
-      'scripts/unstable/v8_types.py',
-      'scripts/unstable/v8_utilities.py',
+      'scripts/code_generator_v8.py',
+      'scripts/v8_attributes.py',
+      'scripts/v8_callback_interface.py',
+      'scripts/v8_globals.py',
+      'scripts/v8_interface.py',
+      'scripts/v8_methods.py',
+      'scripts/v8_types.py',
+      'scripts/v8_utilities.py',
     ],
 
     # Jinja templates
@@ -233,7 +233,7 @@
         'action_name': 'cache_jinja_templates',
         'inputs': [
           '<@(jinja_module_files)',
-          'scripts/unstable/code_generator_v8.py',
+          'scripts/code_generator_v8.py',
           '<@(code_generator_template_files)',
         ],
         'outputs': [
@@ -241,7 +241,7 @@
         ],
         'action': [
           'python',
-          'scripts/unstable/code_generator_v8.py',
+          'scripts/code_generator_v8.py',
           '<(bindings_output_dir)',
           '<(bindings_output_dir)/cached_jinja_templates.stamp',
         ],
@@ -292,7 +292,7 @@
         # Update that regex if command line changes (other than changing flags)
         'action': [
           'python',
-          'scripts/unstable/idl_compiler.py',
+          'scripts/idl_compiler.py',
           '--output-dir',
           '<(bindings_output_dir)',
           '--idl-attributes-file',
