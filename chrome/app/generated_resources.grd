@@ -6019,24 +6019,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_OVERVIEW_MODE_DESCRIPTION" desc="Description for the flag to disable window overview mode.">
         Disable overview mode, activated by pushing the switch window button.
       </message>
-      <message name="IDS_FLAGS_OVERVIEW_DELAY_NAME" desc="Title for the delay before engaging overview on alt+tab.">
-        Delay before engaging overview when cycling.
-      </message>
-      <message name="IDS_FLAGS_OVERVIEW_DELAY_DESCRIPTION" desc="Description for what the delay before engaging overview means.">
-        The time from the last alt+tab press before engaging overview mode when cycling through windows.
-      </message>
-      <message name="IDS_FLAGS_OVERVIEW_DELAY_INSTANT" desc="The choice to have overview engage immediately on alt+tab.">
-        Instant
-      </message>
-      <message name="IDS_FLAGS_OVERVIEW_DELAY_SHORT" desc="The choice to have overview engage almost immediately on alt+tab.">
-        Very short
-      </message>
-      <message name="IDS_FLAGS_OVERVIEW_DELAY_LONG" desc="The choice to have overview engage after a fairly long delay.">
-        Long
-      </message>
-      <message name="IDS_FLAGS_OVERVIEW_DELAY_NEVER" desc="The choice to have overview not engage on alt+tab.">
-        Never
-      </message>
       <message name="IDS_FLAGS_SCROLL_END_EFFECT_NAME" desc="Title for the flag for scroll end effect from vertical overscroll.">
         Scroll end effect
       </message>

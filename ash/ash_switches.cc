@@ -148,10 +148,6 @@ const char kAshHideNotificationsForFactory[] =
 // "1024x768*2" sets the scale factor to 2 for a high DPI display.
 const char kAshHostWindowBounds[] = "ash-host-window-bounds";
 
-// Specifies the delay in milliseconds before beginning overview mode after
-// getting an alt tab keypress.
-const char kAshOverviewDelayOnAltTab[] = "ash-overview-delay-on-alt-tab";
-
 // Specifies the layout mode and offsets for the secondary display for
 // testing. The format is "<t|r|b|l>,<offset>" where t=TOP, r=RIGHT,
 // b=BOTTOM and L=LEFT. For example, 'r,-100' means the secondary display

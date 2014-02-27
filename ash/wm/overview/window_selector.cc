@@ -19,7 +19,6 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/timer/timer.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
@@ -32,35 +31,6 @@
 namespace ash {
 
 namespace {
-
-// The time from when the user pressed alt+tab while still holding alt before
-// overview is engaged.
-const int kOverviewDelayOnCycleMilliseconds = 10000;
-
-// If the delay before overview is less than or equal to this threshold the
-// initial monitor is used for multi-display overview, otherwise the monitor
-// of the currently selected window is used.
-const int kOverviewDelayInitialMonitorThreshold = 100;
-
-// The maximum amount of time allowed for the delay before overview on cycling.
-// If the specified time exceeds this the timer will not be started.
-const int kMaxOverviewDelayOnCycleMilliseconds = 10000;
-
-int GetOverviewDelayOnCycleMilliseconds() {
-  static int value = -1;
-  if (value == -1) {
-    value = kOverviewDelayOnCycleMilliseconds;
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshOverviewDelayOnAltTab)) {
-      if (!base::StringToInt(CommandLine::ForCurrentProcess()->
-            GetSwitchValueASCII(switches::kAshOverviewDelayOnAltTab), &value)) {
-        LOG(ERROR) << "Expected int value for "
-                   << switches::kAshOverviewDelayOnAltTab;
-      }
-    }
-  }
-  return value;
-}
 
 // A comparator for locating a given selectable window.
 struct WindowSelectorItemComparator
@@ -253,12 +223,6 @@ WindowSelector::WindowSelector(const WindowList& windows,
                                WindowSelector::Mode mode,
                                WindowSelectorDelegate* delegate)
     : mode_(mode),
-      timer_enabled_(GetOverviewDelayOnCycleMilliseconds() <
-                         kMaxOverviewDelayOnCycleMilliseconds),
-      start_overview_timer_(FROM_HERE,
-          base::TimeDelta::FromMilliseconds(
-              GetOverviewDelayOnCycleMilliseconds()),
-          this, &WindowSelector::StartOverview),
       delegate_(delegate),
       selected_window_(0),
       restore_focus_window_(aura::client::GetFocusClient(
@@ -319,8 +283,6 @@ WindowSelector::WindowSelector(const WindowList& windows,
   if (mode == WindowSelector::CYCLE) {
     cycle_start_time_ = base::Time::Now();
     event_handler_.reset(new WindowSelectorEventFilter(this));
-    if (timer_enabled_)
-      start_overview_timer_.Reset();
   } else {
     StartOverview();
   }
@@ -366,8 +328,6 @@ void WindowSelector::Step(WindowSelector::Direction direction) {
     base::AutoReset<bool> restoring_focus(&ignore_activations_, true);
     showing_window_.reset(new ScopedShowWindow);
     showing_window_->Show(windows_[selected_window_]->SelectionWindow());
-    if (timer_enabled_)
-      start_overview_timer_.Reset();
   }
 }
 
@@ -491,12 +451,8 @@ void WindowSelector::StartOverview() {
       Shell::GetPrimaryRootWindow())->FocusWindow(NULL);
 
   aura::Window* overview_root = NULL;
-  if (mode_ == CYCLE) {
-    overview_root = GetOverviewDelayOnCycleMilliseconds() <=
-                        kOverviewDelayInitialMonitorThreshold ?
-                    windows_.front()->GetRootWindow() :
-                    windows_[selected_window_]->GetRootWindow();
-  }
+  if (mode_ == CYCLE)
+    overview_root = windows_[selected_window_]->GetRootWindow();
   window_overview_.reset(new WindowOverview(this, &windows_, overview_root));
   if (mode_ == CYCLE)
     window_overview_->SetSelection(selected_window_);

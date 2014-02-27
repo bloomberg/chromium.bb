@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/timer/timer.h"
+#include "base/time/time.h"
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/window_observer.h"
 
@@ -114,8 +114,6 @@ class ASH_EXPORT WindowSelector
   // of the stacking order and made visible).
   scoped_ptr<ScopedShowWindow> showing_window_;
 
-  bool timer_enabled_;
-  base::DelayTimer<WindowSelector> start_overview_timer_;
   scoped_ptr<WindowOverview> window_overview_;
 
   // The time when window cycling was started.
