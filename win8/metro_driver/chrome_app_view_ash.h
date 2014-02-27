@@ -45,6 +45,11 @@ class FilePickerSessionBase;
 
 struct MetroViewerHostMsg_SaveAsDialogParams;
 
+enum MetroTerminateMethod {
+  TERMINATE_USING_KEY_SEQUENCE = 1,
+  TERMINATE_USING_PROCESS_EXIT = 2,
+};
+
 class ChromeAppViewAsh
     : public mswr::RuntimeClass<winapp::Core::IFrameworkView>,
       public metro_driver::ImePopupObserver,
@@ -103,6 +108,8 @@ class ChromeAppViewAsh
   void OnImeUpdateTextInputClient(
       const std::vector<int32>& input_scopes,
       const std::vector<metro_viewer::CharacterBounds>& character_bounds);
+
+  void OnMetroExit(MetroTerminateMethod method);
 
   HWND core_window_hwnd() const { return  core_window_hwnd_; }
 

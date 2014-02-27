@@ -85,7 +85,7 @@ enum KeyModifier {
 // Helper function to send keystrokes via the SendInput function.
 // mnemonic_char: The keystroke to be sent.
 // modifiers: Combination with Alt, Ctrl, Shift, etc.
-void SendMnemonic(
+void SendKeySequence(
     WORD mnemonic_char, KeyModifier modifiers) {
   INPUT keys[4] = {0};  // Keyboard events
   int key_count = 0;  // Number of generated events
@@ -134,19 +134,6 @@ void SendMnemonic(
   }
 }
 
-// Helper function to Exit metro chrome cleanly. If we are in the foreground
-// then we try and exit by sending an Alt+F4 key combination to the core
-// window which ensures that the chrome application tile does not show up in
-// the running metro apps list on the top left corner.
-void MetroExit(HWND core_window) {
-  if ((core_window != NULL) && (core_window == ::GetForegroundWindow())) {
-    DVLOG(1) << "We are in the foreground. Exiting via Alt F4";
-    SendMnemonic(VK_F4, ALT);
-  } else {
-    globals.app_exit->Exit();
-  }
-}
-
 class ChromeChannelListener : public IPC::Listener {
  public:
   ChromeChannelListener(base::MessageLoop* ui_loop, ChromeAppViewAsh* app_view)
@@ -179,11 +166,15 @@ class ChromeChannelListener : public IPC::Listener {
 
   virtual void OnChannelError() OVERRIDE {
     DVLOG(1) << "Channel error. Exiting.";
-    MetroExit(app_view_->core_window_hwnd());
+    ui_proxy_->PostTask(FROM_HERE,
+        base::Bind(&ChromeAppViewAsh::OnMetroExit, base::Unretained(app_view_),
+                   TERMINATE_USING_KEY_SEQUENCE));
+
     // In early Windows 8 versions the code above sometimes fails so we call
     // it a second time with a NULL window which just calls Exit().
     ui_proxy_->PostDelayedTask(FROM_HERE,
-        base::Bind(&MetroExit, HWND(NULL)),
+        base::Bind(&ChromeAppViewAsh::OnMetroExit, base::Unretained(app_view_),
+                   TERMINATE_USING_PROCESS_EXIT),
         base::TimeDelta::FromMilliseconds(100));
   }
 
@@ -196,7 +187,9 @@ class ChromeChannelListener : public IPC::Listener {
   }
 
   void OnMetroExit() {
-    MetroExit(app_view_->core_window_hwnd());
+    ui_proxy_->PostTask(FROM_HERE,
+        base::Bind(&ChromeAppViewAsh::OnMetroExit,
+        base::Unretained(app_view_), TERMINATE_USING_KEY_SEQUENCE));
   }
 
   void OnOpenURLOnDesktop(const base::FilePath& shortcut,
@@ -746,7 +739,7 @@ void ChromeAppViewAsh::OnActivateDesktop(const base::FilePath& file_path,
   if (ash_exit) {
     // As we are the top level window, the exiting is done async so we manage
     // to execute  the entire function including the final Send().
-    MetroExit(core_window_hwnd());
+    OnMetroExit(TERMINATE_USING_KEY_SEQUENCE);
   }
 
   // We are just executing delegate_execute here without parameters. Assumption
@@ -768,9 +761,6 @@ void ChromeAppViewAsh::OnActivateDesktop(const base::FilePath& file_path,
     ::TerminateProcess(sei.hProcess, 0);
     ::CloseHandle(sei.hProcess);
   }
-
-  if (ash_exit)
-    ui_channel_->Close();
 }
 
 void ChromeAppViewAsh::OnOpenURLOnDesktop(const base::FilePath& shortcut,
@@ -917,6 +907,23 @@ void ChromeAppViewAsh::OnImePopupChanged(ImePopupObserver::EventType event) {
     default:
       NOTREACHED() << "unknown event type: " << event;
       return;
+  }
+}
+
+// Function to Exit metro chrome cleanly. If we are in the foreground
+// then we try and exit by sending an Alt+F4 key combination to the core
+// window which ensures that the chrome application tile does not show up in
+// the running metro apps list on the top left corner.
+void ChromeAppViewAsh::OnMetroExit(MetroTerminateMethod method) {
+  HWND core_window = core_window_hwnd();
+  if (method == TERMINATE_USING_KEY_SEQUENCE && core_window != NULL &&
+      core_window == ::GetForegroundWindow()) {
+    DVLOG(1) << "We are in the foreground. Exiting via Alt F4";
+    SendKeySequence(VK_F4, ALT);
+    if (ui_channel_)
+      ui_channel_->Close();
+  } else {
+    globals.app_exit->Exit();
   }
 }
 
