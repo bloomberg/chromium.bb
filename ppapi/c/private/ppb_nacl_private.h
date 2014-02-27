@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Tue Feb 25 09:18:09 2014. */
+/* From private/ppb_nacl_private.idl modified Thu Feb 27 08:19:06 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -35,8 +35,7 @@
 /** NaCl-specific errors that should be reported to the user.
  *  These error codes are reported via UMA so, if you edit them:
  *   1) make sure you understand UMA first.
- *   2) update src/tools/histograms/histograms.xml in
- *   svn://svn.chromium.org/chrome-internal/trunk/src-internal
+ *   2) update src/tools/metrics/histograms/histograms.xml
  *  Values are explicitly specified to make sure they don't shift around when
  *  edited, and also to make reading about:histograms easier.
  */
