@@ -121,6 +121,7 @@ void ProtectedMediaIdentifierPermissionContext::DecidePermission(
           id,
           requesting_frame,
           embedder,
+          std::string(),
           base::Bind(&ProtectedMediaIdentifierPermissionContext::
                           NotifyPermissionSet,
                      base::Unretained(this),

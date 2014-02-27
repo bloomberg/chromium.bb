@@ -189,7 +189,7 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
   }
 
   DecidePermission(web_contents, id, requesting_frame_origin,
-                   embedder, callback);
+                   embedder, "", callback);
 }
 
 void ChromeGeolocationPermissionContext::CancelGeolocationPermissionRequest(
@@ -206,6 +206,7 @@ void ChromeGeolocationPermissionContext::DecidePermission(
     const PermissionRequestID& id,
     const GURL& requesting_frame,
     const GURL& embedder,
+    const std::string& accept_button_label,
     base::Callback<void(bool)> callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
@@ -230,11 +231,24 @@ void ChromeGeolocationPermissionContext::DecidePermission(
       } else {
         // setting == ask. Prompt the user.
         QueueController()->CreateInfoBarRequest(
-            id, requesting_frame, embedder, base::Bind(
-                &ChromeGeolocationPermissionContext::NotifyPermissionSet,
+            id, requesting_frame, embedder, accept_button_label,
+                base::Bind(
+                    &ChromeGeolocationPermissionContext::NotifyPermissionSet,
                 base::Unretained(this), id, requesting_frame, callback));
       }
   }
+}
+
+void ChromeGeolocationPermissionContext::CreateInfoBarRequest(
+    const PermissionRequestID& id,
+    const GURL& requesting_frame,
+    const GURL& embedder,
+    const std::string accept_button_label,
+    base::Callback<void(bool)> callback) {
+    QueueController()->CreateInfoBarRequest(
+        id, requesting_frame, embedder, accept_button_label, base::Bind(
+            &ChromeGeolocationPermissionContext::NotifyPermissionSet,
+            base::Unretained(this), id, requesting_frame, callback));
 }
 
 void ChromeGeolocationPermissionContext::ShutdownOnUIThread() {

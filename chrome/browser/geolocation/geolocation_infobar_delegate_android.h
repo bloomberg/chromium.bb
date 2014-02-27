@@ -17,7 +17,8 @@ class GeolocationInfoBarDelegateAndroid : public GeolocationInfoBarDelegate {
       const PermissionRequestID& id,
       const GURL& requesting_frame_url,
       int contents_unique_id,
-      const std::string& display_languages);
+      const std::string& display_languages,
+      const std::string& accept_button_label);
 
  private:
   virtual ~GeolocationInfoBarDelegateAndroid();
@@ -27,6 +28,8 @@ class GeolocationInfoBarDelegateAndroid : public GeolocationInfoBarDelegate {
   virtual bool Accept() OVERRIDE;
 
   scoped_ptr<GoogleLocationSettingsHelper> google_location_settings_helper_;
+
+  std::string accept_button_label_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationInfoBarDelegateAndroid);
 };

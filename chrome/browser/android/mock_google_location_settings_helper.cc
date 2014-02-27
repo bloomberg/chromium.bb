@@ -27,8 +27,8 @@ void MockGoogleLocationSettingsHelper::SetLocationStatus(
   google_apps_location_enabled = google_apps;
 }
 
-std::string MockGoogleLocationSettingsHelper::GetAcceptButtonLabel() {
-  return google_apps_location_enabled ? "Allow" : "Settings";
+std::string MockGoogleLocationSettingsHelper::GetAcceptButtonLabel(bool allow) {
+  return IsAllowLabel() ? "Allow" : "Settings";
 }
 
 void MockGoogleLocationSettingsHelper::ShowGoogleLocationSettings() {
@@ -45,4 +45,8 @@ bool MockGoogleLocationSettingsHelper::IsMasterLocationSettingEnabled() {
 
 bool MockGoogleLocationSettingsHelper::WasGoogleLocationSettingsCalled() {
   return was_google_location_settings_called;
+}
+
+bool MockGoogleLocationSettingsHelper::IsAllowLabel() {
+  return google_apps_location_enabled;
 }

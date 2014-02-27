@@ -69,6 +69,7 @@ class ChromeGeolocationPermissionContext
                                 const PermissionRequestID& id,
                                 const GURL& requesting_frame,
                                 const GURL& embedder,
+                                const std::string& accept_button_label,
                                 base::Callback<void(bool)> callback);
 
   // Called when permission is granted without interactively asking
@@ -88,6 +89,13 @@ class ChromeGeolocationPermissionContext
  private:
   // Removes any pending InfoBar request.
   void CancelPendingInfobarRequest(const PermissionRequestID& id);
+
+  // Creates and show an info bar.
+  void CreateInfoBarRequest(const PermissionRequestID& id,
+                            const GURL& requesting_frame,
+                            const GURL& embedder,
+                            const std::string accept_button_label,
+                            base::Callback<void(bool)> callback);
 
   // These must only be accessed from the UI thread.
   Profile* const profile_;

@@ -196,7 +196,7 @@ void ChromeMidiPermissionContext::DecidePermission(
       // TODO(gbillock): Delete this and the infobar delegate when
       // we're using only bubbles. crbug.com/337458
       GetQueueController()->CreateInfoBarRequest(
-          id, requesting_frame, embedder, base::Bind(
+          id, requesting_frame, embedder, std::string(), base::Bind(
               &ChromeMidiPermissionContext::NotifyPermissionSet,
               base::Unretained(this), id, requesting_frame, callback));
   }

@@ -30,6 +30,7 @@ class ChromeGeolocationPermissionContextAndroid
                                 const PermissionRequestID& id,
                                 const GURL& requesting_frame,
                                 const GURL& embedder,
+                                const std::string& accept_button_label,
                                 base::Callback<void(bool)> callback) OVERRIDE;
 
   virtual void PermissionDecided(const PermissionRequestID& id,
@@ -38,7 +39,21 @@ class ChromeGeolocationPermissionContextAndroid
                                  base::Callback<void(bool)> callback,
                                  bool allowed) OVERRIDE;
 
+  void ProceedDecidePermission(content::WebContents* web_contents,
+                               const PermissionRequestID& id,
+                               const GURL& requesting_frame,
+                               const GURL& embedder,
+                               const std::string& accept_button_label,
+                               base::Callback<void(bool)> callback);
+
   scoped_ptr<GoogleLocationSettingsHelper> google_location_settings_helper_;
+
+ private:
+  void CheckMasterLocation(content::WebContents* web_contents,
+                           const PermissionRequestID& id,
+                           const GURL& requesting_frame,
+                           const GURL& embedder,
+                           base::Callback<void(bool)> callback);
 
   DISALLOW_COPY_AND_ASSIGN(ChromeGeolocationPermissionContextAndroid);
 };

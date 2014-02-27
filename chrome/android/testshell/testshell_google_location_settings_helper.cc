@@ -17,7 +17,8 @@ TestShellGoogleLocationSettingsHelper::
     ~TestShellGoogleLocationSettingsHelper() {
 }
 
-std::string TestShellGoogleLocationSettingsHelper::GetAcceptButtonLabel() {
+std::string TestShellGoogleLocationSettingsHelper::GetAcceptButtonLabel(
+    bool allow) {
   return "Allow";
 }
 
@@ -30,5 +31,9 @@ bool TestShellGoogleLocationSettingsHelper::
 }
 
 bool TestShellGoogleLocationSettingsHelper::IsMasterLocationSettingEnabled() {
+  return true;
+}
+
+bool TestShellGoogleLocationSettingsHelper::IsAllowLabel() {
   return true;
 }

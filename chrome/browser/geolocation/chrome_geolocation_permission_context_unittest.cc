@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_vector.h"
+#include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -161,6 +163,8 @@ void GeolocationPermissionContextTests::RequestGeolocationPermission(
       requesting_frame,
       base::Bind(&GeolocationPermissionContextTests::PermissionResponse,
                  base::Unretained(this), id));
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  base::RunLoop().RunUntilIdle();
 }
 
 void GeolocationPermissionContextTests::CancelGeolocationPermissionRequest(

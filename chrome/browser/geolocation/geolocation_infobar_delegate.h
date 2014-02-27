@@ -25,14 +25,16 @@ class GeolocationInfoBarDelegate : public ConfirmInfoBarDelegate {
                          PermissionQueueController* controller,
                          const PermissionRequestID& id,
                          const GURL& requesting_frame,
-                         const std::string& display_languages);
+                         const std::string& display_languages,
+                         const std::string& accept_button_label);
 
  protected:
   GeolocationInfoBarDelegate(PermissionQueueController* controller,
                              const PermissionRequestID& id,
                              const GURL& requesting_frame,
                              int contents_unique_id,
-                             const std::string& display_languages);
+                             const std::string& display_languages,
+                             const std::string& accept_button_label);
   virtual ~GeolocationInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
