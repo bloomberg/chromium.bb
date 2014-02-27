@@ -226,7 +226,7 @@ test("crypto_unittests") {
     sources -= [
       "nss_util_unittest.cc",
       "openpgp_symmetric_encryption_unittest.cc",
-      "rsa_private_key_nss_unittest,cc",
+      "rsa_private_key_nss_unittest.cc",
     ]
   }
 
