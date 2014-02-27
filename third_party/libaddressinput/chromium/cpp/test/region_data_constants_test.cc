@@ -23,19 +23,6 @@ namespace {
 
 using i18n::addressinput::RegionDataConstants;
 
-// Tests for region codes, for example "ZA".
-class RegionCodeTest : public testing::TestWithParam<std::string> {};
-
-// Verifies that a region code consists of two characters, for example "ZA".
-TEST_P(RegionCodeTest, RegionCodeHasTwoCharacters) {
-  EXPECT_EQ(2U, GetParam().length());
-}
-
-// Test all region codes.
-INSTANTIATE_TEST_CASE_P(
-    AllRegionCodes, RegionCodeTest,
-    testing::ValuesIn(RegionDataConstants::GetRegionCodes()));
-
 // Returns AssertionSuccess if |data| begins with '{' and ends with '}'.
 testing::AssertionResult HasCurlyBraces(const std::string& data) {
   if (data.empty()) {
@@ -55,29 +42,24 @@ TEST(DefaultRegionDataTest, DefaultRegionHasCurlyBraces) {
   EXPECT_TRUE(HasCurlyBraces(RegionDataConstants::GetDefaultRegionData()));
 }
 
-// Tests for region data, for example "{\"fmt\":\"%C%S\"}".
-class RegionDataTest : public testing::TestWithParam<std::string> {
- protected:
-  const std::string& GetData() const {
-    return RegionDataConstants::GetRegionData(GetParam());
+TEST(RegionDataTest, RegionDataHasCertainProperties) {
+  const std::vector<std::string>& region_data_codes =
+      RegionDataConstants::GetRegionCodes();
+  for (size_t i = 0; i < region_data_codes.size(); ++i) {
+    SCOPED_TRACE("For region: " + region_data_codes[i]);
+    EXPECT_EQ(2U, region_data_codes[i].length());
+
+    const std::string& region_data = RegionDataConstants::GetRegionData(
+        region_data_codes[i]);
+
+    // Verifies that a region data value begins with '{' and end with '}', for
+    // example "{\"fmt\":\"%C%S\"}".
+    EXPECT_TRUE(HasCurlyBraces(region_data));
+
+    // Verifies that a region data value contains a "name" key, for example
+    // "{\"name\":\"SOUTH AFRICA\"}".
+    EXPECT_NE(std::string::npos, region_data.find("\"name\":"));
   }
-};
-
-// Verifies that a region data value begins with '{' and end with '}', for
-// example "{\"fmt\":\"%C%S\"}".
-TEST_P(RegionDataTest, RegionDataHasCurlyBraces) {
-  EXPECT_TRUE(HasCurlyBraces(GetData()));
 }
-
-// Verifies that a region data value contains a "name" key, for example
-// "{\"name\":\"SOUTH AFRICA\"}".
-TEST_P(RegionDataTest, RegionDataHasName) {
-  EXPECT_NE(std::string::npos, GetData().find("\"name\":"));
-}
-
-// Test all region data.
-INSTANTIATE_TEST_CASE_P(
-    AllRegionData, RegionDataTest,
-    testing::ValuesIn(RegionDataConstants::GetRegionCodes()));
 
 }  // namespace
