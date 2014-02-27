@@ -927,6 +927,8 @@
     'browser/renderer_host/input/web_input_event_util.h',
     'browser/renderer_host/input/web_input_event_util_posix.cc',
     'browser/renderer_host/input/web_input_event_util_posix.h',
+    'browser/renderer_host/input/web_touch_event_traits.cc',
+    'browser/renderer_host/input/web_touch_event_traits.h',
     'browser/renderer_host/java/java_bound_object.cc',
     'browser/renderer_host/java/java_bound_object.h',
     'browser/renderer_host/java/java_bridge_channel_host.cc',

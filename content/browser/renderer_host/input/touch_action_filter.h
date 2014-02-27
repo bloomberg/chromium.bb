@@ -31,6 +31,12 @@ public:
   // for a touch start event that is currently in flight.
   void OnSetTouchAction(content::TouchAction touch_action);
 
+  // Must be called before the first touch of the touch sequence is sent to the
+  // renderer. This will be before any gestures produced by the touch sequence
+  // are sent to the renderer, because to dispatch a gesture we must know the
+  // disposition of the touch events which contributed to it.
+  void ResetTouchAction();
+
   // Return the intersection of two TouchAction values.
   static TouchAction Intersect(TouchAction ta1, TouchAction ta2);
 

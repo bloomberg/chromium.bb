@@ -13,11 +13,11 @@
 #include "content/browser/renderer_host/input/input_router_client.h"
 #include "content/browser/renderer_host/input/touch_event_queue.h"
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
+#include "content/browser/renderer_host/input/web_touch_event_traits.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/edit_command.h"
 #include "content/common/input/touch_action.h"
-#include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/port/common/input_event_ack_state.h"
@@ -287,6 +287,9 @@ void InputRouterImpl::SendMouseEventImmediately(
 
 void InputRouterImpl::SendTouchEventImmediately(
     const TouchEventWithLatencyInfo& touch_event) {
+  if (WebTouchEventTraits::IsTouchSequenceStart(touch_event.event))
+    touch_action_filter_.ResetTouchAction();
+
   FilterAndSendWebInputEvent(touch_event.event, touch_event.latency, false);
 }
 
@@ -336,6 +339,12 @@ bool InputRouterImpl::OnMessageReceived(const IPC::Message& message) {
 
 void InputRouterImpl::OnTouchEventAck(const TouchEventWithLatencyInfo& event,
                                       InputEventAckState ack_result) {
+  // Touchstart events sent to the renderer indicate a new touch sequence, but
+  // in some cases we may filter out sending the touchstart - catch those here.
+  if (WebTouchEventTraits::IsTouchSequenceStart(event.event) &&
+      ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS) {
+    touch_action_filter_.ResetTouchAction();
+  }
   ack_handler_->OnTouchEventAck(event, ack_result);
 }
 

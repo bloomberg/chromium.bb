@@ -118,7 +118,6 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
 }
 
 bool TouchActionFilter::FilterScrollEndingGesture() {
-  allowed_touch_action_ = TOUCH_ACTION_AUTO;
   DCHECK(!drop_pinch_gesture_events_);
   if (drop_scroll_gesture_events_) {
     drop_scroll_gesture_events_ = false;
@@ -140,6 +139,12 @@ void TouchActionFilter::OnSetTouchAction(TouchAction touch_action) {
   // 2. Only subtractive - eg. can't trigger scrolling on a element that
   //    otherwise has scrolling disabling by the addition of a finger.
   allowed_touch_action_ = Intersect(allowed_touch_action_, touch_action);
+}
+
+void TouchActionFilter::ResetTouchAction() {
+  DCHECK(!drop_scroll_gesture_events_);
+  DCHECK(!drop_pinch_gesture_events_);
+  allowed_touch_action_ = TOUCH_ACTION_AUTO;
 }
 
 bool TouchActionFilter::ShouldSuppressScroll(

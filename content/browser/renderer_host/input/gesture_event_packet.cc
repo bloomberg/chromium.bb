@@ -21,9 +21,9 @@ GestureEventPacket::GestureSource ToGestureSource(const WebTouchEvent& event) {
     case WebInputEvent::TouchStart:
       for (size_t i = 0; i < event.touchesLength; i++) {
         if (event.touches[i].state != WebTouchPoint::StatePressed)
-          return GestureEventPacket::TOUCH_BEGIN;
+          return GestureEventPacket::TOUCH_START;
       }
-      return GestureEventPacket::TOUCH_SEQUENCE_BEGIN;
+      return GestureEventPacket::TOUCH_SEQUENCE_START;
     case WebInputEvent::TouchMove:
       return GestureEventPacket::TOUCH_MOVE;
     case WebInputEvent::TouchEnd:

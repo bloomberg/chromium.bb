@@ -14,6 +14,7 @@
 #include "content/common/content_constants_internal.h"
 #include "content/common/edit_command.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
+#include "content/common/input/touch_action.h"
 #include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
@@ -274,6 +275,11 @@ class InputRouterImplTest : public testing::Test {
   void OnHasTouchEventHandlers(bool has_handlers) {
     input_router_->OnMessageReceived(
         ViewHostMsg_HasTouchEventHandlers(0, has_handlers));
+  }
+
+  void OnSetTouchAction(content::TouchAction touch_action) {
+    input_router_->OnMessageReceived(
+        InputHostMsg_SetTouchAction(0, touch_action));
   }
 
   size_t GetSentMessageCountAndResetSink() {
@@ -1010,6 +1016,102 @@ TEST_F(InputRouterImplTest, TouchAckTimeoutConfigured) {
 
   input_router()->OnViewUpdated(InputRouter::VIEW_FLAGS_NONE);
   EXPECT_TRUE(TouchEventTimeoutEnabled());
+}
+
+// Test that TouchActionFilter::OnStartNewTouchSequence is called before the
+// first touch event for a touch sequence reaches the renderer.
+TEST_F(InputRouterImplTest, OnStartNewTouchSequenceBeforeEventReachesRenderer) {
+  OnHasTouchEventHandlers(true);
+
+  // Sequence 1.
+  PressTouchPoint(1, 1);
+  SendTouchEvent();
+  OnSetTouchAction(TOUCH_ACTION_NONE);
+  MoveTouchPoint(0, 5, 5);
+  SendTouchEvent();
+  ReleaseTouchPoint(0);
+  SendTouchEvent();
+
+  // Sequence 2.
+  PressTouchPoint(1, 1);
+  SendTouchEvent();
+  MoveTouchPoint(0, 5, 5);
+  SendTouchEvent();
+  ReleaseTouchPoint(0);
+  SendTouchEvent();
+
+  SendInputEventACK(WebInputEvent::TouchStart, INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendInputEventACK(WebInputEvent::TouchMove, INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // Ensure touch action is still none, as the next touch start hasn't been
+  // acked yet. ScrollBegin and ScrollEnd don't require acks.
+  EXPECT_EQ(3U, GetSentMessageCountAndResetSink());
+  SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
+                       WebGestureEvent::Touchpad);
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  SimulateGestureEvent(WebInputEvent::GestureScrollEnd,
+                       WebGestureEvent::Touchpad);
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+
+  // This allows the next touch sequence to start.
+  SendInputEventACK(WebInputEvent::TouchEnd, INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // Ensure touch action has been set to auto, as a new touch sequence has
+  // started.
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
+                       WebGestureEvent::Touchpad);
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  SimulateGestureEvent(WebInputEvent::GestureScrollEnd,
+                       WebGestureEvent::Touchpad);
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+
+  SendInputEventACK(WebInputEvent::TouchStart, INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendInputEventACK(WebInputEvent::TouchMove, INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendInputEventACK(WebInputEvent::TouchEnd, INPUT_EVENT_ACK_STATE_CONSUMED);
+}
+
+// Test that TouchActionFilter::OnStartNewTouchSequence is called when a touch
+// handler is removed.
+TEST_F(InputRouterImplTest, OnStartNewTouchSequenceWhenTouchHandlerRemoved) {
+  OnHasTouchEventHandlers(true);
+
+  // Sequence 1.
+  PressTouchPoint(1, 1);
+  SendTouchEvent();
+  OnSetTouchAction(TOUCH_ACTION_NONE);
+  SendInputEventACK(WebInputEvent::TouchStart, INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  ReleaseTouchPoint(0);
+  SendTouchEvent();
+
+  // Sequence 2
+  PressTouchPoint(1, 1);
+  SendTouchEvent();
+
+  // Ensure we have touch-action:none. ScrollBegin and ScrollEnd don't require
+  // acks.
+  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
+  SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
+                       WebGestureEvent::Touchpad);
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  SimulateGestureEvent(WebInputEvent::GestureScrollEnd,
+                       WebGestureEvent::Touchpad);
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+
+  SendInputEventACK(WebInputEvent::TouchEnd, INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendInputEventACK(WebInputEvent::TouchStart,
+                    INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+
+  // Ensure touch action has been set to auto, the touch handler has been
+  // removed.
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
+                       WebGestureEvent::Touchpad);
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  SimulateGestureEvent(WebInputEvent::GestureScrollEnd,
+                       WebGestureEvent::Touchpad);
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 }
 
 }  // namespace content

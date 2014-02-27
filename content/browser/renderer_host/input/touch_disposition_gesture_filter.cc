@@ -118,7 +118,7 @@ TouchDispositionGestureFilter::OnGestureEventPacket(
       packet.gesture_source() == GestureEventPacket::INVALID)
     return INVALID_PACKET_TYPE;
 
-  if (packet.gesture_source() == GestureEventPacket::TOUCH_SEQUENCE_BEGIN)
+  if (packet.gesture_source() == GestureEventPacket::TOUCH_SEQUENCE_START)
     sequences_.push(GestureSequence());
 
   if (IsEmpty())
@@ -295,8 +295,8 @@ void TouchDispositionGestureFilter::GestureSequence::UpdateState(
       ack_state == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS) {
     state_.no_consumer = true;
   } else if (ack_state == INPUT_EVENT_ACK_STATE_CONSUMED) {
-    if (gesture_source == GestureEventPacket::TOUCH_SEQUENCE_BEGIN ||
-        gesture_source == GestureEventPacket::TOUCH_BEGIN) {
+    if (gesture_source == GestureEventPacket::TOUCH_SEQUENCE_START ||
+        gesture_source == GestureEventPacket::TOUCH_START) {
       state_.start_consumed = true;
     }
   }
