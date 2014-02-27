@@ -94,6 +94,12 @@ public:
 private:
     typedef HashSet<const RenderBlock*> BlockSet;
 
+    enum HasEnoughTextToAutosize {
+        Unknown,
+        Yes,
+        No
+    };
+
     // A supercluster represents autosizing information about a set of two or
     // more blocks that all have the same fingerprint. Clusters whose roots
     // belong to a supercluster will share a common multiplier and
@@ -102,13 +108,11 @@ private:
         explicit Supercluster(const BlockSet* roots)
             : m_roots(roots)
             , m_multiplier(0)
-            , m_anyClusterHasEnoughText(false)
         {
         }
 
         const BlockSet* const m_roots;
         float m_multiplier;
-        bool m_anyClusterHasEnoughText;
     };
 
     struct Cluster {
@@ -118,7 +122,7 @@ private:
             , m_parent(parent)
             , m_autosize(autosize)
             , m_multiplier(0)
-            , m_textLength(-1)
+            , m_hasEnoughTextToAutosize(Unknown)
             , m_supercluster(supercluster)
             , m_hasTableAncestor(root->isTableCell() || (m_parent && m_parent->m_hasTableAncestor))
         {
@@ -135,9 +139,7 @@ private:
         // m_blocksThatHaveBegunLayout assertions cover this). Note: the multiplier is still
         // calculated when m_autosize is false because child clusters may depend on this multiplier.
         float m_multiplier;
-        // Text length is computed lazily (see: textLength). This is an approximation and characters
-        // are assumed to be 1em wide. Negative values indicate the length has not been computed.
-        int m_textLength;
+        HasEnoughTextToAutosize m_hasEnoughTextToAutosize;
         // A set of blocks that are similar to this block.
         Supercluster* m_supercluster;
         bool m_hasTableAncestor;
@@ -200,7 +202,6 @@ private:
     bool isFingerprintingCandidate(const RenderBlock*);
     bool clusterHasEnoughTextToAutosize(Cluster*, const RenderBlock* widthProvider = 0);
     bool clusterWouldHaveEnoughTextToAutosize(const RenderBlock* root, const RenderBlock* widthProvider = 0);
-    float textLength(Cluster*);
     Fingerprint getFingerprint(const RenderObject*);
     Fingerprint computeFingerprint(const RenderObject*);
     Cluster* maybeCreateCluster(const RenderBlock*);

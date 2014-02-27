@@ -278,31 +278,28 @@ bool FastTextAutosizer::clusterWouldHaveEnoughTextToAutosize(const RenderBlock* 
 
 bool FastTextAutosizer::clusterHasEnoughTextToAutosize(Cluster* cluster, const RenderBlock* widthProvider)
 {
+    if (cluster->m_hasEnoughTextToAutosize != Unknown)
+        return cluster->m_hasEnoughTextToAutosize == Yes;
+
     const RenderBlock* root = cluster->m_root;
     if (!widthProvider)
         widthProvider = clusterWidthProvider(root);
 
     // TextAreas and user-modifiable areas get a free pass to autosize regardless of text content.
-    if (root->isTextArea() || (root->style() && root->style()->userModify() != READ_ONLY))
+    if (root->isTextArea() || (root->style() && root->style()->userModify() != READ_ONLY)) {
+        cluster->m_hasEnoughTextToAutosize = Yes;
         return true;
+    }
 
-    static const float minLinesOfText = 4;
-    // FIXME: This can be optimized because we only care if the text length is above a certain
-    //        value, so we can stop computing the text length if we reach our target.
-    if (textLength(cluster) >= widthFromBlock(widthProvider) * minLinesOfText)
-        return true;
+    if (!TextAutosizer::containerShouldBeAutosized(root)) {
+        cluster->m_hasEnoughTextToAutosize = No;
+        return false;
+    }
 
-    return false;
-}
-
-float FastTextAutosizer::textLength(Cluster* cluster)
-{
-    if (cluster->m_textLength >= 0)
-        return cluster->m_textLength;
+    // 4 lines of text is considered enough to autosize.
+    float minimumTextLengthToAutosize = widthFromBlock(widthProvider) * 4;
 
     float length = 0;
-    const RenderBlock* root = cluster->m_root;
-    bool measureLocalText = TextAutosizer::containerShouldBeAutosized(root);
     RenderObject* descendant = root->nextInPreOrder(root);
     while (descendant) {
         if (descendant->isRenderBlock()) {
@@ -316,15 +313,22 @@ float FastTextAutosizer::textLength(Cluster* cluster)
                     continue;
                 }
             }
-        } else if (measureLocalText && descendant->isText()) {
+        } else if (descendant->isText()) {
             // Note: Using text().stripWhiteSpace().length() instead of renderedTextLength() because
             // the lineboxes will not be built until layout. These values can be different.
+            // Note: This is an approximation assuming each character is 1em wide.
             length += toRenderText(descendant)->text().stripWhiteSpace().length() * descendant->style()->specifiedFontSize();
+
+            if (length >= minimumTextLengthToAutosize) {
+                cluster->m_hasEnoughTextToAutosize = Yes;
+                return true;
+            }
         }
         descendant = descendant->nextInPreOrder(root);
     }
 
-    return cluster->m_textLength = length;
+    cluster->m_hasEnoughTextToAutosize = No;
+    return false;
 }
 
 FastTextAutosizer::Fingerprint FastTextAutosizer::getFingerprint(const RenderObject* renderer)
@@ -468,11 +472,15 @@ float FastTextAutosizer::superclusterMultiplier(Supercluster* supercluster)
             widthProviders.add(clusterWidthProvider(*it));
         const RenderBlock* widthProvider = deepestCommonAncestor(widthProviders);
 
-        for (BlockSet::iterator it = roots->begin(); it != roots->end(); ++it)
-            supercluster->m_anyClusterHasEnoughText |= clusterWouldHaveEnoughTextToAutosize(*it, widthProvider);
+        bool anyClusterHasEnoughTextToAutosize = false;
+        for (BlockSet::iterator it = roots->begin(); it != roots->end(); ++it) {
+            if (clusterWouldHaveEnoughTextToAutosize(*it, widthProvider)) {
+                anyClusterHasEnoughTextToAutosize = true;
+                break;
+            }
+        }
 
-        supercluster->m_multiplier = supercluster->m_anyClusterHasEnoughText
-            ? multiplierFromBlock(widthProvider) : 1.0f;
+        supercluster->m_multiplier = anyClusterHasEnoughTextToAutosize ? multiplierFromBlock(widthProvider) : 1.0f;
     }
     ASSERT(supercluster->m_multiplier);
     return supercluster->m_multiplier;
