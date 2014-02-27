@@ -13,7 +13,7 @@
 namespace {
 const char kUserDMTokenKey[] = "user_dmtoken";
 const char kUserPolicyTokenKey[] = "user_policy_token";
-const char kVerificationKeyHashKey[] = "verification_key_hash";
+const char kVerificationKeyHashKey[] = "verification_key_id";
 }
 
 namespace policy {
