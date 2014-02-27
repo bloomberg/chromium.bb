@@ -200,15 +200,22 @@ bool GetPagesForMemoryMap(int pagemap_fd,
                           const MemoryMap& memory_map,
                           std::vector<PageInfo>* committed_pages,
                           BitSet* committed_pages_bits) {
+  const off64_t offset = memory_map.start_address / kPageSize;
+  if (lseek64(pagemap_fd, offset * sizeof(PageMapEntry), SEEK_SET) < 0) {
+    PLOG(ERROR) << "lseek";
+    return false;
+  }
   for (uint addr = memory_map.start_address, page_index = 0;
        addr < memory_map.end_address;
        addr += kPageSize, ++page_index) {
     DCHECK_EQ(0, addr % kPageSize);
     PageMapEntry page_map_entry = {};
     COMPILE_ASSERT(sizeof(PageMapEntry) == sizeof(uint64), unexpected_size);
-    const off64_t offset = addr / kPageSize;
-    if (!ReadFromFileAtOffset(pagemap_fd, offset, &page_map_entry))
+    ssize_t bytes = read(pagemap_fd, &page_map_entry, sizeof(page_map_entry));
+    if (bytes != sizeof(PageMapEntry) && bytes != 0) {
+      PLOG(ERROR) << "read";
       return false;
+    }
     if (page_map_entry.present) {  // Ignore non-committed pages.
       if (page_map_entry.page_frame_number == 0)
         continue;
