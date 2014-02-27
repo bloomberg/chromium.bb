@@ -78,7 +78,7 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
             interface_counts[tag['interface']] += 1
 
         for tag in tags:
-            tag['multipleTagNames'] = interface_counts[tag['interface']] > 1
+            tag['multipleTagNames'] = (interface_counts[tag['interface']] > 1 or tag['interface'] == fallback_interface)
 
         self._template_context.update({
             'fallback_interface': fallback_interface,

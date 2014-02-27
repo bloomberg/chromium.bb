@@ -42,6 +42,7 @@ class MakeElementTypeHelpersWriter(in_generator.Writer):
         super(MakeElementTypeHelpersWriter, self).__init__(in_file_path)
 
         self.namespace = self.in_file.parameters['namespace'].strip('"')
+        self.fallbackInterface = self.in_file.parameters['fallbackInterfaceName'].strip('"')
 
         assert self.namespace, 'A namespace is required.'
 
@@ -61,7 +62,7 @@ class MakeElementTypeHelpersWriter(in_generator.Writer):
             interface_counts[tag['interface']] += 1
 
         for tag in tags:
-            tag['multipleTagNames'] = interface_counts[tag['interface']] > 1
+            tag['multipleTagNames'] = (interface_counts[tag['interface']] > 1 or tag['interface'] == self.fallbackInterface)
 
     @template_expander.use_jinja("ElementTypeHelpers.h.tmpl", filters=filters)
     def generate_helper_header(self):
