@@ -368,6 +368,7 @@
     'common/sandbox_win.h',
     'common/savable_url_schemes.cc',
     'common/savable_url_schemes.h',
+    'common/screen_orientation_messages.h',
     'common/service_worker/embedded_worker_messages.h',
     'common/service_worker/service_worker_messages.h',
     'common/service_worker/service_worker_status_code.cc',

@@ -96,6 +96,7 @@ enum IPCMessageStart {
   EmbeddedWorkerContextMsgStart,
   CastMsgStart,
   CdmMsgStart,
+  ScreenOrientationMsgStart,
   LastIPCMsgStart  // Must come last.
 };
 

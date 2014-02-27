@@ -30,6 +30,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
+#include "content/browser/screen_orientation/screen_orientation_dispatcher_host.h"
 #include "content/browser/ssl/ssl_host_state.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
 #include "content/common/input/web_input_event_traits.h"
@@ -1776,6 +1777,38 @@ void ContentViewCoreImpl::SendOrientationChangeEventInternal() {
   RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(
       web_contents_->GetRenderViewHost());
   rvhi->SendOrientationChangeEvent(device_orientation_);
+
+  // TODO(mlamouri): temporary plumbing for Screen Orientation, this will change
+  // in the future. It might leave ContentViewCoreImpl or simply replace the
+  // SendOrientationChangeEvent call above.
+  blink::WebScreenOrientation orientation =
+      blink::WebScreenOrientationPortraitPrimary;
+
+  switch (device_orientation_) {
+    case 0:
+      orientation = blink::WebScreenOrientationPortraitPrimary;
+      break;
+    case 90:
+      orientation = blink::WebScreenOrientationLandscapePrimary;
+      break;
+    case -90:
+      orientation = blink::WebScreenOrientationLandscapeSecondary;
+      break;
+    case 180:
+      orientation = blink::WebScreenOrientationPortraitSecondary;
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  ScreenOrientationDispatcherHost* sodh =
+      static_cast<RenderProcessHostImpl*>(web_contents_->
+          GetRenderProcessHost())->screen_orientation_dispatcher_host();
+
+  // sodh can be null if the RenderProcessHost is in the process of being
+  // destroyed or not yet initialized.
+  if (sodh)
+    sodh->OnOrientationChange(orientation);
 }
 
 void ContentViewCoreImpl::ExtractSmartClipData(JNIEnv* env,
