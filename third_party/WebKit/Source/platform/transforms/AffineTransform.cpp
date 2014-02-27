@@ -278,6 +278,9 @@ IntRect AffineTransform::mapRect(const IntRect &rect) const
 FloatRect AffineTransform::mapRect(const FloatRect& rect) const
 {
     if (isIdentityOrTranslation()) {
+        if (!m_transform[4] && !m_transform[5])
+            return rect;
+
         FloatRect mappedRect(rect);
         mappedRect.move(narrowPrecisionToFloat(m_transform[4]), narrowPrecisionToFloat(m_transform[5]));
         return mappedRect;

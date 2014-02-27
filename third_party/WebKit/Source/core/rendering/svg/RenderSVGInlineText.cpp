@@ -186,8 +186,7 @@ PositionWithAffinity RenderSVGInlineText::positionForPoint(const LayoutPoint& po
             const SVGTextFragment& fragment = fragments.at(i);
             FloatRect fragmentRect(fragment.x, fragment.y - baseline, fragment.width, fragment.height);
             fragment.buildFragmentTransform(fragmentTransform);
-            if (!fragmentTransform.isIdentity())
-                fragmentRect = fragmentTransform.mapRect(fragmentRect);
+            fragmentRect = fragmentTransform.mapRect(fragmentRect);
 
             float distance = powf(fragmentRect.x() - absolutePoint.x(), 2) +
                              powf(fragmentRect.y() + fragmentRect.height() / 2 - absolutePoint.y(), 2);

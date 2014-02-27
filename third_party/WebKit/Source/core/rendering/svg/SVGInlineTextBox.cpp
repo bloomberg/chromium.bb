@@ -175,8 +175,7 @@ LayoutRect SVGInlineTextBox::localSelectionRect(int startPosition, int endPositi
 
         FloatRect fragmentRect = selectionRectForTextFragment(fragment, fragmentStartPosition, fragmentEndPosition, style);
         fragment.buildFragmentTransform(fragmentTransform);
-        if (!fragmentTransform.isIdentity())
-            fragmentRect = fragmentTransform.mapRect(fragmentRect);
+        fragmentRect = fragmentTransform.mapRect(fragmentRect);
 
         selectionRect.unite(fragmentRect);
     }
@@ -743,7 +742,6 @@ void SVGInlineTextBox::paintTextMatchMarker(GraphicsContext* context, const Floa
 
             FloatRect fragmentRect = textBox->selectionRectForTextFragment(fragment, fragmentStartPosition, fragmentEndPosition, style);
             fragment.buildFragmentTransform(fragmentTransform);
-            bool fragmentTransformIsIdentity = fragmentTransform.isIdentity();
 
             // Draw the marker highlight.
             if (renderer()->frame()->editor().markedTextMatchesAreHighlighted()) {
@@ -751,14 +749,13 @@ void SVGInlineTextBox::paintTextMatchMarker(GraphicsContext* context, const Floa
                     RenderTheme::theme().platformActiveTextSearchHighlightColor() :
                     RenderTheme::theme().platformInactiveTextSearchHighlightColor();
                 GraphicsContextStateSaver stateSaver(*context);
-                if (!fragmentTransformIsIdentity)
+                if (!fragmentTransform.isIdentity())
                     context->concatCTM(fragmentTransform);
                 context->setFillColor(color);
                 context->fillRect(fragmentRect, color);
             }
 
-            if (!fragmentTransformIsIdentity)
-                fragmentRect = fragmentTransform.mapRect(fragmentRect);
+            fragmentRect = fragmentTransform.mapRect(fragmentRect);
             markerRect.unite(fragmentRect);
         }
     }
@@ -784,8 +781,7 @@ FloatRect SVGInlineTextBox::calculateBoundaries() const
         const SVGTextFragment& fragment = m_textFragments.at(i);
         FloatRect fragmentRect(fragment.x, fragment.y - baseline, fragment.width, fragment.height);
         fragment.buildFragmentTransform(fragmentTransform);
-        if (!fragmentTransform.isIdentity())
-            fragmentRect = fragmentTransform.mapRect(fragmentRect);
+        fragmentRect = fragmentTransform.mapRect(fragmentRect);
 
         textRect.unite(fragmentRect);
     }

@@ -476,8 +476,6 @@ static inline void calculateGlyphBoundaries(SVGTextQuery::Data* queryData, const
 
     AffineTransform fragmentTransform;
     fragment.buildFragmentTransform(fragmentTransform, SVGTextFragment::TransformIgnoringTextLength);
-    if (fragmentTransform.isIdentity())
-        return;
 
     extent = fragmentTransform.mapRect(extent);
 }

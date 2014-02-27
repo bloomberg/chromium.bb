@@ -140,13 +140,9 @@ void SVGRenderSupport::computeContainerBoundingBoxes(const RenderObject* contain
             continue;
 
         const AffineTransform& transform = current->localToParentTransform();
-        if (transform.isIdentity()) {
-            updateObjectBoundingBox(objectBoundingBox, objectBoundingBoxValid, current, current->objectBoundingBox());
-            strokeBoundingBox.unite(current->repaintRectInLocalCoordinates());
-        } else {
-            updateObjectBoundingBox(objectBoundingBox, objectBoundingBoxValid, current, transform.mapRect(current->objectBoundingBox()));
-            strokeBoundingBox.unite(transform.mapRect(current->repaintRectInLocalCoordinates()));
-        }
+        updateObjectBoundingBox(objectBoundingBox, objectBoundingBoxValid, current,
+            transform.mapRect(current->objectBoundingBox()));
+        strokeBoundingBox.unite(transform.mapRect(current->repaintRectInLocalCoordinates()));
     }
 
     repaintBoundingBox = strokeBoundingBox;
@@ -154,9 +150,6 @@ void SVGRenderSupport::computeContainerBoundingBoxes(const RenderObject* contain
 
 bool SVGRenderSupport::paintInfoIntersectsRepaintRect(const FloatRect& localRepaintRect, const AffineTransform& localTransform, const PaintInfo& paintInfo)
 {
-    if (localTransform.isIdentity())
-        return localRepaintRect.intersects(paintInfo.rect);
-
     return localTransform.mapRect(localRepaintRect).intersects(paintInfo.rect);
 }
 
