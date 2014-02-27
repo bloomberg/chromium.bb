@@ -13,11 +13,11 @@ namespace content {
 
 MediaStreamDispatcherHost::MediaStreamDispatcherHost(
     int render_process_id,
-    ResourceContext* resource_context,
+    const ResourceContext::SaltCallback& salt_callback,
     MediaStreamManager* media_stream_manager)
     : BrowserMessageFilter(MediaStreamMsgStart),
       render_process_id_(render_process_id),
-      resource_context_(resource_context),
+      salt_callback_(salt_callback),
       media_stream_manager_(media_stream_manager) {
 }
 
@@ -131,10 +131,8 @@ void MediaStreamDispatcherHost::OnGenerateStream(
            << security_origin.spec() << ")";
 
   media_stream_manager_->GenerateStream(
-      this, render_process_id_, render_view_id,
-      resource_context_->GetMediaDeviceIDSalt(),
-      page_request_id,
-      components, security_origin);
+      this, render_process_id_, render_view_id, salt_callback_,
+      page_request_id, components, security_origin);
 }
 
 void MediaStreamDispatcherHost::OnCancelGenerateStream(int render_view_id,
@@ -168,8 +166,7 @@ void MediaStreamDispatcherHost::OnEnumerateDevices(
            << security_origin.spec() << ")";
 
   media_stream_manager_->EnumerateDevices(
-      this, render_process_id_, render_view_id,
-      resource_context_->GetMediaDeviceIDSalt(),
+      this, render_process_id_, render_view_id, salt_callback_,
       page_request_id, type, security_origin);
 }
 
@@ -197,8 +194,7 @@ void MediaStreamDispatcherHost::OnOpenDevice(
            << security_origin.spec() << ")";
 
   media_stream_manager_->OpenDevice(
-      this, render_process_id_, render_view_id,
-      resource_context_->GetMediaDeviceIDSalt(),
+      this, render_process_id_, render_view_id, salt_callback_,
       page_request_id, device_id, type, security_origin);
 
 }

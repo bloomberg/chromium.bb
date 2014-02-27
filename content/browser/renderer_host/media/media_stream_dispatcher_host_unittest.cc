@@ -44,10 +44,10 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
                                       public TestContentBrowserClient {
  public:
   MockMediaStreamDispatcherHost(
-      ResourceContext* resource_context,
+      const ResourceContext::SaltCallback salt_callback,
       const scoped_refptr<base::MessageLoopProxy>& message_loop,
       MediaStreamManager* manager)
-      : MediaStreamDispatcherHost(kProcessId, resource_context, manager),
+      : MediaStreamDispatcherHost(kProcessId, salt_callback, manager),
         message_loop_(message_loop) {}
 
   // A list of mock methods.
@@ -214,7 +214,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     media_stream_manager_->UseFakeDevice();
 
     host_ = new MockMediaStreamDispatcherHost(
-        browser_context_.GetResourceContext(),
+        browser_context_.GetResourceContext()->GetMediaDeviceIDSalt(),
         base::MessageLoopProxy::current(),
         media_stream_manager_.get());
 

@@ -696,7 +696,9 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   peer_connection_tracker_host_ = new PeerConnectionTrackerHost(GetID());
   AddFilter(peer_connection_tracker_host_.get());
   AddFilter(new MediaStreamDispatcherHost(
-      GetID(), browser_context->GetResourceContext(), media_stream_manager));
+      GetID(),
+      browser_context->GetResourceContext()->GetMediaDeviceIDSalt(),
+      media_stream_manager));
   AddFilter(
       new DeviceRequestMessageFilter(resource_context, media_stream_manager));
 #endif

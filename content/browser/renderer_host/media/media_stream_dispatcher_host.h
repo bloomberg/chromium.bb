@@ -26,9 +26,10 @@ class MediaStreamManager;
 class CONTENT_EXPORT MediaStreamDispatcherHost : public BrowserMessageFilter,
                                                  public MediaStreamRequester {
  public:
-  MediaStreamDispatcherHost(int render_process_id,
-                            ResourceContext* resource_context,
-                            MediaStreamManager* media_stream_manager);
+  MediaStreamDispatcherHost(
+      int render_process_id,
+      const ResourceContext::SaltCallback& salt_callback,
+      MediaStreamManager* media_stream_manager);
 
   // MediaStreamRequester implementation.
   virtual void StreamGenerated(
@@ -93,7 +94,7 @@ class CONTENT_EXPORT MediaStreamDispatcherHost : public BrowserMessageFilter,
                     const std::string& label);;
 
   int render_process_id_;
-  ResourceContext* resource_context_;
+  ResourceContext::SaltCallback salt_callback_;
   MediaStreamManager* media_stream_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDispatcherHost);
