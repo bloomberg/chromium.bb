@@ -12,5 +12,4 @@
 s/^[0-9]+>//
 
 # Shorten bindings generation lines
-s/^.*"(perl|[^"]+perl\.exe)".*deprecated_generate_bindings\.pl".*("[^"]+\.idl").*$/  deprecated_generate_bindings \2/
 s/^.*"python".*idl_compiler\.py".*("[^"]+\.idl").*$/  idl_compiler \1/
