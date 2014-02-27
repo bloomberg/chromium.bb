@@ -484,9 +484,13 @@ class JNIFromJavaP(object):
   def __init__(self, contents, options):
     self.contents = contents
     self.namespace = options.namespace
-    self.fully_qualified_class = re.match(
-        '.*?(class|interface) (?P<class_name>.*?)( |{)',
-        contents[1]).group('class_name')
+    for line in contents:
+      class_name = re.match(
+          '.*?(public).*?(class|interface) (?P<class_name>\S+?)( |\Z)',
+          line)
+      if class_name:
+        self.fully_qualified_class = class_name.group('class_name')
+        break
     self.fully_qualified_class = self.fully_qualified_class.replace('.', '/')
     # Java 7's javap includes type parameters in output, like HashSet<T>. Strip
     # away the <...> and use the raw class name that Java 6 would've given us.
@@ -531,14 +535,16 @@ class JNIFromJavaP(object):
     self.called_by_natives = MangleCalledByNatives(self.called_by_natives)
 
     self.constant_fields = []
-    re_constant_field = re.compile('public static final int (?P<name>.*?);')
+    re_constant_field = re.compile('.*?public static final int (?P<name>.*?);')
     re_constant_field_value = re.compile(
-        '.*?Constant value: int (?P<value>(-*[0-9]+)?)')
+        '.*?Constant(Value| value): int (?P<value>(-*[0-9]+)?)')
     for lineno, content in enumerate(contents[2:], 2):
       match = re.match(re_constant_field, content)
       if not match:
         continue
       value = re.match(re_constant_field_value, contents[lineno + 2])
+      if not value:
+        value = re.match(re_constant_field_value, contents[lineno + 3])
       if value:
         self.constant_fields.append(
             ConstantField(name=match.group('name'),

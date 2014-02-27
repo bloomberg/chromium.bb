@@ -754,12 +754,13 @@ public boolean add(E);
     self.assertGoldenTextEquals(jni_from_javap.GetContent())
 
   def testConstantsFromJavaP(self):
-    contents = self._ReadGoldenFile(os.path.join(os.path.dirname(sys.argv[0]),
-        'testMotionEvent.javap'))
-    jni_from_javap = jni_generator.JNIFromJavaP(contents.split('\n'),
-                                                TestOptions())
-    self.assertEquals(86, len(jni_from_javap.called_by_natives))
-    self.assertGoldenTextEquals(jni_from_javap.GetContent())
+    for f in ['testMotionEvent.javap', 'testMotionEvent.javap7']:
+      contents = self._ReadGoldenFile(os.path.join(os.path.dirname(sys.argv[0]),
+          f))
+      jni_from_javap = jni_generator.JNIFromJavaP(contents.split('\n'),
+                                                  TestOptions())
+      self.assertEquals(86, len(jni_from_javap.called_by_natives))
+      self.assertGoldenTextEquals(jni_from_javap.GetContent())
 
   def testREForNatives(self):
     # We should not match "native SyncSetupFlow" inside the comment.
