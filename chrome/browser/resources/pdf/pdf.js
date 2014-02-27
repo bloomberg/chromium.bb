@@ -158,7 +158,7 @@ function load() {
   plugin.addEventListener('message', handleMessage, false);
   // The pdf location is passed in stream details in the background page.
   var streamDetails = chrome.extension.getBackgroundPage().popStreamDetails();
-  plugin.setAttribute('src', streamDetails.streamURL);
+  plugin.setAttribute('src', streamDetails.streamUrl);
   document.body.appendChild(plugin);
 
   // Setup the button event listeners.
@@ -170,7 +170,7 @@ function load() {
       viewport.zoomIn.bind(viewport));
   $('zoom-out-button').addEventListener('click',
       viewport.zoomOut.bind(viewport));
-  $('save-button-link').href = streamDetails.originalURL;
+  $('save-button-link').href = streamDetails.originalUrl;
   $('print-button').addEventListener('click', print);
 
 
