@@ -34,9 +34,6 @@
 
 namespace WTF {
 
-enum RoundingSignificantFiguresType { RoundingSignificantFigures };
-enum RoundingDecimalPlacesType { RoundingDecimalPlaces };
-
 class WTF_EXPORT DecimalNumber {
 public:
     DecimalNumber(double d)
@@ -51,35 +48,6 @@ public:
         ASSERT(m_significand[0] != '0' || m_precision == 1);
         // No values other than zero should have trailing zeros.
         ASSERT(m_significand[0] == '0' || m_significand[m_precision - 1] != '0');
-    }
-
-    DecimalNumber(double d, RoundingSignificantFiguresType, unsigned significantFigures)
-    {
-        ASSERT(std::isfinite(d));
-        dtoaRoundSF(m_significand, d, significantFigures, m_sign, m_exponent, m_precision);
-
-        ASSERT_WITH_SECURITY_IMPLICATION(significantFigures && significantFigures <= sizeof(DtoaBuffer));
-        while (m_precision < significantFigures)
-            m_significand[m_precision++] = '0';
-
-        ASSERT(m_precision);
-        // Zero should always have exponent 0.
-        ASSERT(m_significand[0] != '0' || !m_exponent);
-    }
-
-    DecimalNumber(double d, RoundingDecimalPlacesType, unsigned decimalPlaces)
-    {
-        ASSERT(std::isfinite(d));
-        dtoaRoundDP(m_significand, d, decimalPlaces, m_sign, m_exponent, m_precision);
-
-        unsigned significantFigures = 1 + m_exponent + decimalPlaces;
-        ASSERT_WITH_SECURITY_IMPLICATION(significantFigures && significantFigures <= sizeof(DtoaBuffer));
-        while (m_precision < significantFigures)
-            m_significand[m_precision++] = '0';
-
-        ASSERT(m_precision);
-        // Zero should always have exponent 0.
-        ASSERT(m_significand[0] != '0' || !m_exponent);
     }
 
     unsigned bufferLengthForStringDecimal() const;
@@ -103,7 +71,5 @@ private:
 } // namespace WTF
 
 using WTF::DecimalNumber;
-using WTF::RoundingSignificantFigures;
-using WTF::RoundingDecimalPlaces;
 
 #endif // DecimalNumber_h
