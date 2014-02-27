@@ -175,7 +175,7 @@ class ReceiveProcess : public base::RefCountedThreadSafe<ReceiveProcess> {
     // Print out the delta between frames.
     if (!last_render_time_.is_null()) {
       base::TimeDelta time_diff = render_time - last_render_time_;
-      VLOG(0) << " RenderDelay[mS] =  " << time_diff.InMilliseconds();
+      VLOG(1) << " RenderDelay[mS] =  " << time_diff.InMilliseconds();
     }
     last_render_time_ = render_time;
     GetVideoFrame();
@@ -189,10 +189,9 @@ class ReceiveProcess : public base::RefCountedThreadSafe<ReceiveProcess> {
         base::TimeDelta::FromMilliseconds(kFrameTimerMs);
     if (!last_playout_time_.is_null()) {
       time_diff = playout_time - last_playout_time_;
-      VLOG(0) << " ***PlayoutDelay[mS] =  " << time_diff.InMilliseconds();
+      VLOG(1) << " ***PlayoutDelay[mS] =  " << time_diff.InMilliseconds();
     }
     last_playout_time_ = playout_time;
-    GetAudioFrame(time_diff);
   }
 
   void GetAudioFrame(base::TimeDelta playout_diff) {
@@ -201,6 +200,10 @@ class ReceiveProcess : public base::RefCountedThreadSafe<ReceiveProcess> {
         num_10ms_blocks,
         kAudioSamplingFrequency,
         base::Bind(&ReceiveProcess::ReceiveAudioFrame, this));
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&ReceiveProcess::GetAudioFrame, this, playout_diff),
+        playout_diff);
   }
 
   void GetVideoFrame() {
