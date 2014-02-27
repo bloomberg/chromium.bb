@@ -35,12 +35,12 @@
 // }
 // array[add_prefix_count] {
 //   int32 chunk_id;
-//   int32 prefix;
+//   uint32 prefix;
 // }
 // array[sub_prefix_count] {
 //   int32 chunk_id;
 //   int32 add_chunk_id;
-//   int32 add_prefix;
+//   uint32 add_prefix;
 // }
 // array[add_hash_count] {
 //   int32 chunk_id;
@@ -66,12 +66,12 @@
 //   uint32 sub_hash_count;
 //   array[add_prefix_count] {
 //     int32 chunk_id;
-//     int32 prefix;
+//     uint32 prefix;
 //   }
 //   array[sub_prefix_count] {
 //     int32 chunk_id;
 //     int32 add_chunk_id;
-//     int32 add_prefix;
+//     uint32 add_prefix;
 //   }
 //   array[add_hash_count] {
 //     int32 chunk_id;

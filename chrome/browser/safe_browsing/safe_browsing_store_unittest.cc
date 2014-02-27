@@ -21,7 +21,7 @@ TEST(SafeBrowsingStoreTest, SBAddPrefixLess) {
 }
 
 TEST(SafeBrowsingStoreTest, SBAddPrefixHashLess) {
-  // The first four bytes of SBFullHash can be read as an int32, which
+  // The first four bytes of SBFullHash can be read as a SBPrefix, which
   // means that byte-ordering issues can come up.  To test this, |one|
   // and |two| differ in the prefix, while |one| and |onetwo| have the
   // same prefix, but differ in the byte after the prefix.
@@ -30,9 +30,9 @@ TEST(SafeBrowsingStoreTest, SBAddPrefixHashLess) {
   memset(&onetwo, 0, sizeof(onetwo));
   memset(&two, 0, sizeof(two));
   one.prefix = 1;
-  one.full_hash[sizeof(int32)] = 1;
+  one.full_hash[sizeof(SBPrefix)] = 1;
   onetwo.prefix = 1;
-  onetwo.full_hash[sizeof(int32)] = 2;
+  onetwo.full_hash[sizeof(SBPrefix)] = 2;
   two.prefix = 2;
 
   const base::Time now = base::Time::Now();
@@ -81,9 +81,9 @@ TEST(SafeBrowsingStoreTest, SBSubFullHashLess) {
   memset(&onetwo, 0, sizeof(onetwo));
   memset(&two, 0, sizeof(two));
   one.prefix = 1;
-  one.full_hash[sizeof(int32)] = 1;
+  one.full_hash[sizeof(SBPrefix)] = 1;
   onetwo.prefix = 1;
-  onetwo.full_hash[sizeof(int32)] = 2;
+  onetwo.full_hash[sizeof(SBPrefix)] = 2;
   two.prefix = 2;
 
   // add_id dominates.
@@ -184,16 +184,16 @@ TEST(SafeBrowsingStoreTest, SBProcessSubsKnockout) {
   ASSERT_LE(2U, add_prefixes.size());
   EXPECT_EQ(2U, add_prefixes.size());
   EXPECT_EQ(kAddChunk1, add_prefixes[0].chunk_id);
-  EXPECT_EQ(kHash2.prefix, add_prefixes[0].prefix);
+  EXPECT_EQ(kHash4.prefix, add_prefixes[0].prefix);
   EXPECT_EQ(kAddChunk1, add_prefixes[1].chunk_id);
-  EXPECT_EQ(kHash4.prefix, add_prefixes[1].prefix);
+  EXPECT_EQ(kHash2.prefix, add_prefixes[1].prefix);
 
   ASSERT_LE(2U, add_hashes.size());
   EXPECT_EQ(2U, add_hashes.size());
   EXPECT_EQ(kAddChunk1, add_hashes[0].chunk_id);
-  EXPECT_TRUE(SBFullHashEq(kHash2, add_hashes[0].full_hash));
+  EXPECT_TRUE(SBFullHashEq(kHash4, add_hashes[0].full_hash));
   EXPECT_EQ(kAddChunk1, add_hashes[1].chunk_id);
-  EXPECT_TRUE(SBFullHashEq(kHash4, add_hashes[1].full_hash));
+  EXPECT_TRUE(SBFullHashEq(kHash2, add_hashes[1].full_hash));
 
   ASSERT_LE(1U, sub_prefixes.size());
   EXPECT_EQ(1U, sub_prefixes.size());

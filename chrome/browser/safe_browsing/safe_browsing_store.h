@@ -59,7 +59,7 @@ struct SBSubPrefix {
   int32 add_chunk_id;
   SBPrefix add_prefix;
 
-  SBSubPrefix(int32 id, int32 add_id, int prefix)
+  SBSubPrefix(int32 id, int32 add_id, SBPrefix prefix)
       : chunk_id(id), add_chunk_id(add_id), add_prefix(prefix) {}
   SBSubPrefix() : chunk_id(), add_chunk_id(), add_prefix() {}
 

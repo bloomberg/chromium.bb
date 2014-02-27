@@ -21,7 +21,7 @@ class GURL;
 class SBEntry;
 
 // A truncated hash's type.
-typedef int32 SBPrefix;
+typedef uint32 SBPrefix;
 
 // Container for holding a chunk URL and the list it belongs to.
 struct ChunkUrl {

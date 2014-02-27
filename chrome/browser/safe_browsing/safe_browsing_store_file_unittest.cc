@@ -93,8 +93,8 @@ TEST_F(SafeBrowsingStoreFileTest, DetectsCorruption) {
   file_util::ScopedFILE file(base::OpenFile(filename_, "rb+"));
   const long kOffset = 60;
   EXPECT_EQ(fseek(file.get(), kOffset, SEEK_SET), 0);
-  const int32 kZero = 0;
-  int32 previous = kZero;
+  const uint32 kZero = 0;
+  uint32 previous = kZero;
   EXPECT_EQ(fread(&previous, sizeof(previous), 1, file.get()), 1U);
   EXPECT_NE(previous, kZero);
   EXPECT_EQ(fseek(file.get(), kOffset, SEEK_SET), 0);

@@ -19,8 +19,15 @@ namespace {
 // md5 -qs chrome/browser/safe_browsing/prefix_set.cc | colrm 9
 static uint32 kMagic = 0x864088dd;
 
-// Current version the code writes out.
-static uint32 kVersion = 0x1;
+// TODO(shess): Update v2 history info once landed.
+
+// Version history:
+// Version 1: b6cb7cfe/r74487 by shess@chromium.org on 2011-02-10
+// version 2: ????????/r????? by shess@chromium.org on 2014-02-24
+
+// Version 2 layout is identical to version 1.  The sort order of |index_|
+// changed from |int32| to |uint32| to match the change of |SBPrefix|.
+static uint32 kVersion = 0x2;
 
 typedef struct {
   uint32 magic;
@@ -167,8 +174,13 @@ PrefixSet* PrefixSet::LoadFile(const base::FilePath& filter_name) {
   if (read != 1)
     return NULL;
 
-  if (header.magic != kMagic || header.version != kVersion)
+  // TODO(shess): Version 1 and 2 use the same file structure, with version 1
+  // data using a signed sort.  For M-35, the data is re-sorted before return.
+  // After M-35, just drop v1 support. <http://crbug.com/346405>
+  if (header.magic != kMagic ||
+      (header.version != kVersion && header.version != 1)) {
     return NULL;
+  }
 
   IndexVector index;
   const size_t index_bytes = sizeof(index[0]) * header.index_size;
@@ -222,6 +234,14 @@ PrefixSet* PrefixSet::LoadFile(const base::FilePath& filter_name) {
 
   if (0 != memcmp(&file_digest, &calculated_digest, sizeof(file_digest)))
     return NULL;
+
+  // For version 1, fetch the prefixes and re-sort.
+  if (header.version == 1) {
+    std::vector<SBPrefix> prefixes;
+    PrefixSet(&index, &deltas).GetPrefixes(&prefixes);
+    std::sort(prefixes.begin(), prefixes.end());
+    return new PrefixSet(prefixes);
+  }
 
   // Steals contents of |index| and |deltas| via swap().
   return new PrefixSet(&index, &deltas);
