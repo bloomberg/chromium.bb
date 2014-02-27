@@ -14,6 +14,59 @@ var renderViewObserverNatives = requireNative('renderViewObserverNatives');
 var appWindowData = null;
 var currentAppWindow = null;
 
+// Bounds class definition.
+var Bounds = function(boundsKey) {
+  privates(this).boundsKey_ = boundsKey;
+};
+Object.defineProperty(Bounds.prototype, 'left', {
+  get: function() {
+    return appWindowData[privates(this).boundsKey_].left;
+  },
+  enumerable: true
+});
+Object.defineProperty(Bounds.prototype, 'top', {
+  get: function() {
+    return appWindowData[privates(this).boundsKey_].top;
+  },
+  enumerable: true
+});
+Object.defineProperty(Bounds.prototype, 'width', {
+  get: function() {
+    return appWindowData[privates(this).boundsKey_].width;
+  },
+  enumerable: true
+});
+Object.defineProperty(Bounds.prototype, 'height', {
+  get: function() {
+    return appWindowData[privates(this).boundsKey_].height;
+  },
+  enumerable: true
+});
+Object.defineProperty(Bounds.prototype, 'minWidth', {
+  get: function() {
+    return appWindowData[privates(this).boundsKey_].minWidth;
+  },
+  enumerable: true
+});
+Object.defineProperty(Bounds.prototype, 'maxWidth', {
+  get: function() {
+    return appWindowData[privates(this).boundsKey_].maxWidth;
+  },
+  enumerable: true
+});
+Object.defineProperty(Bounds.prototype, 'minHeight', {
+  get: function() {
+    return appWindowData[privates(this).boundsKey_].minHeight;
+  },
+  enumerable: true
+});
+Object.defineProperty(Bounds.prototype, 'maxHeight', {
+  get: function() {
+    return appWindowData[privates(this).boundsKey_].maxHeight;
+  },
+  enumerable: true
+});
+
 var appWindow = Binding.create('app.window');
 appWindow.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
@@ -101,7 +154,10 @@ appWindow.registerCustomHook(function(bindingsAPI) {
   apiFunctions.setHandleRequest('initializeAppWindow', function(params) {
     var currentWindowInternal =
         Binding.create('app.currentWindowInternal').generate();
-    var AppWindow = function() {};
+    var AppWindow = function() {
+      this.innerBounds = new Bounds('innerBounds');
+      this.outerBounds = new Bounds('outerBounds');
+    };
     forEach(currentWindowInternal, function(key, value) {
       AppWindow.prototype[key] = value;
     });
@@ -113,21 +169,21 @@ appWindow.registerCustomHook(function(bindingsAPI) {
       this.contentWindow.close();
     };
     AppWindow.prototype.getBounds = function() {
-      var bounds = appWindowData.bounds;
+      var bounds = appWindowData.innerBounds;
       return { left: bounds.left, top: bounds.top,
                width: bounds.width, height: bounds.height };
     };
     AppWindow.prototype.getMinWidth = function() {
-      return appWindowData.minWidth;
+      return appWindowData.innerBounds.minWidth;
     };
     AppWindow.prototype.getMinHeight = function() {
-      return appWindowData.minHeight;
+      return appWindowData.innerBounds.minHeight;
     };
     AppWindow.prototype.getMaxWidth = function() {
-      return appWindowData.maxWidth;
+      return appWindowData.innerBounds.maxWidth;
     };
     AppWindow.prototype.getMaxHeight = function() {
-      return appWindowData.maxHeight;
+      return appWindowData.innerBounds.maxHeight;
     };
     AppWindow.prototype.isFullscreen = function() {
       return appWindowData.fullscreen;
@@ -158,12 +214,28 @@ appWindow.registerCustomHook(function(bindingsAPI) {
 
     appWindowData = {
       id: params.id || '',
-      bounds: { left: params.bounds.left, top: params.bounds.top,
-                width: params.bounds.width, height: params.bounds.height },
-      minWidth: params.minWidth,
-      minHeight: params.minHeight,
-      maxWidth: params.maxWidth,
-      maxHeight: params.maxHeight,
+      innerBounds: {
+        left: params.innerBounds.left,
+        top: params.innerBounds.top,
+        width: params.innerBounds.width,
+        height: params.innerBounds.height,
+
+        minWidth: params.innerBounds.minWidth,
+        minHeight: params.innerBounds.minHeight,
+        maxWidth: params.innerBounds.maxWidth,
+        maxHeight: params.innerBounds.maxHeight
+      },
+      outerBounds: {
+        left: params.outerBounds.left,
+        top: params.outerBounds.top,
+        width: params.outerBounds.width,
+        height: params.outerBounds.height,
+
+        minWidth: params.outerBounds.minWidth,
+        minHeight: params.outerBounds.minHeight,
+        maxWidth: params.outerBounds.maxWidth,
+        maxHeight: params.outerBounds.maxHeight
+      },
       fullscreen: params.fullscreen,
       minimized: params.minimized,
       maximized: params.maximized,
@@ -202,7 +274,7 @@ function updateAppWindowProperties(update) {
 
   var currentWindow = currentAppWindow;
 
-  if (!boundsEqual(oldData.bounds, update.bounds))
+  if (!boundsEqual(oldData.innerBounds, update.innerBounds))
     dispatchEventIfExists(currentWindow, "onBoundsChanged");
 
   if (!oldData.fullscreen && update.fullscreen)

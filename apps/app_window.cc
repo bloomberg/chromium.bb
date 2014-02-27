@@ -51,6 +51,8 @@ using extensions::APIPermission;
 using web_modal::WebContentsModalDialogHost;
 using web_modal::WebContentsModalDialogManager;
 
+namespace apps {
+
 namespace {
 
 const int kDefaultWidth = 512;
@@ -60,9 +62,40 @@ bool IsFullscreen(int fullscreen_types) {
   return fullscreen_types != apps::AppWindow::FULLSCREEN_TYPE_NONE;
 }
 
-}  // namespace
+void SetConstraintProperty(const std::string& name,
+                           int value,
+                           base::DictionaryValue* bounds_properties) {
+  if (value != AppWindow::SizeConstraints::kUnboundedSize)
+    bounds_properties->SetInteger(name, value);
+  else
+    bounds_properties->Set(name, base::Value::CreateNullValue());
+}
 
-namespace apps {
+void SetBoundsProperties(const gfx::Rect& bounds,
+                         const AppWindow::SizeConstraints& constraints,
+                         const std::string& bounds_name,
+                         base::DictionaryValue* window_properties) {
+  scoped_ptr<base::DictionaryValue> bounds_properties(
+      new base::DictionaryValue());
+
+  bounds_properties->SetInteger("left", bounds.x());
+  bounds_properties->SetInteger("top", bounds.y());
+  bounds_properties->SetInteger("width", bounds.width());
+  bounds_properties->SetInteger("height", bounds.height());
+
+  gfx::Size min_size = constraints.GetMinimumSize();
+  gfx::Size max_size = constraints.GetMaximumSize();
+  SetConstraintProperty("minWidth", min_size.width(), bounds_properties.get());
+  SetConstraintProperty(
+      "minHeight", min_size.height(), bounds_properties.get());
+  SetConstraintProperty("maxWidth", max_size.width(), bounds_properties.get());
+  SetConstraintProperty(
+      "maxHeight", max_size.height(), bounds_properties.get());
+
+  window_properties->Set(bounds_name, bounds_properties.release());
+}
+
+}  // namespace
 
 AppWindow::SizeConstraints::SizeConstraints()
     : maximum_size_(kUnboundedSize, kUnboundedSize) {}
@@ -609,27 +642,18 @@ void AppWindow::GetSerializedState(base::DictionaryValue* properties) const {
   properties->SetBoolean("minimized", native_app_window_->IsMinimized());
   properties->SetBoolean("maximized", native_app_window_->IsMaximized());
   properties->SetBoolean("alwaysOnTop", IsAlwaysOnTop());
-  scoped_ptr<base::DictionaryValue> boundsValue(new base::DictionaryValue());
-  gfx::Rect bounds = GetClientBounds();
-  boundsValue->SetInteger("left", bounds.x());
-  boundsValue->SetInteger("top", bounds.y());
-  boundsValue->SetInteger("width", bounds.width());
-  boundsValue->SetInteger("height", bounds.height());
-  properties->Set("bounds", boundsValue.release());
   properties->SetBoolean("hasFrameColor", native_app_window_->HasFrameColor());
   properties->SetInteger("frameColor", native_app_window_->FrameColor());
 
-  const SizeConstraints& constraints = size_constraints();
-  gfx::Size min_size = constraints.GetMinimumSize();
-  gfx::Size max_size = constraints.GetMaximumSize();
-  if (min_size.width() != SizeConstraints::kUnboundedSize)
-    properties->SetInteger("minWidth", min_size.width());
-  if (min_size.height() != SizeConstraints::kUnboundedSize)
-    properties->SetInteger("minHeight", min_size.height());
-  if (max_size.width() != SizeConstraints::kUnboundedSize)
-    properties->SetInteger("maxWidth", max_size.width());
-  if (max_size.height() != SizeConstraints::kUnboundedSize)
-    properties->SetInteger("maxHeight", max_size.height());
+  gfx::Rect content_bounds = GetClientBounds();
+  SetBoundsProperties(
+      content_bounds, size_constraints(), "innerBounds", properties);
+
+  // TODO(tmdiep): Frame constraints will be implemented in a future patch.
+  gfx::Rect frame_bounds = native_app_window_->GetBounds();
+  SizeConstraints frame_constraints;
+  SetBoundsProperties(
+      frame_bounds, frame_constraints, "outerBounds", properties);
 }
 
 //------------------------------------------------------------------------------

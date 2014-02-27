@@ -194,7 +194,7 @@ bool AppWindowCreateFunction::RunImpl() {
       create_params.bounds.set_y(*options->top.get());
 
     if (options->bounds.get()) {
-      app_window::Bounds* bounds = options->bounds.get();
+      app_window::ContentBounds* bounds = options->bounds.get();
       if (bounds->width.get())
         create_params.bounds.set_width(*bounds->width.get());
       if (bounds->height.get())
