@@ -1375,3 +1375,7 @@ crbug.com/339778 [ Debug ] fast/dom/timer-throttling-hidden-page.html [ Failure 
 # Temporary until the oilpan test bots understand the special oilpan test expectations
 crbug.com/345630 fast/dom/StyleSheet/gc-parent-rule.html [ Failure Pass ]
 crbug.com/345655 fast/dom/StyleSheet/detached-parent-rule-without-wrapper.html [ Failure Pass ]
+
+# Heap buffer overflow failures on Linux ASAN
+crbug.com/347365 [ Linux ] dom/xhtml/level3/core/canonicalform08.xhtml [ Failure Pass ]
+crbug.com/347365 [ Linux ] dom/xhtml/level3/core/canonicalform09.xhtml [ Failure Pass ]
