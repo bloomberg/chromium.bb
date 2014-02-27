@@ -513,6 +513,11 @@ class AutofillDialogControllerImpl
   bool IsCreditCardExpirationValid(const base::string16& year,
                                    const base::string16& month) const;
 
+  // Returns true if |profile| has an address we can be sure is invalid.
+  // Profiles with invalid addresses are not suggested in the dropdown menu for
+  // billing and shipping addresses.
+  bool HasInvalidAddress(const AutofillProfile& profile);
+
   // Returns true if |key| refers to a suggestion, as opposed to some control
   // menu item.
   bool IsASuggestionItemKey(const std::string& key) const;

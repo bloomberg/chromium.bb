@@ -317,16 +317,6 @@ void UserDidOptIntoLocationServices() {
   content::GeolocationProvider::GetInstance()->UserDidOptIntoLocationServices();
 }
 
-// Returns true if |profile| has an invalid address, i.e. an invalid state, zip
-// code, phone number, or email address. Otherwise returns false. Profiles with
-// invalid addresses are not suggested in the dropdown menu for billing and
-// shipping addresses.
-bool HasInvalidAddress(const AutofillProfile& profile) {
-  return profile.IsPresentButInvalid(ADDRESS_HOME_STATE) ||
-         profile.IsPresentButInvalid(ADDRESS_HOME_ZIP) ||
-         profile.IsPresentButInvalid(PHONE_HOME_WHOLE_NUMBER);
-}
-
 // Loops through |addresses_| comparing to |address| ignoring ID. If a match
 // is not found, NULL is returned.
 const wallet::Address* FindDuplicateAddress(
@@ -1501,6 +1491,14 @@ bool AutofillDialogControllerImpl::SuggestionTextForSection(
 
   if (!IsASuggestionItemKey(item_key))
     return false;
+
+  if (!IsPayingWithWallet() &&
+      (section == SECTION_BILLING || section == SECTION_SHIPPING)) {
+    // Also check if the address is invalid (rules may have loaded since
+    // the dialog was shown).
+    if (HasInvalidAddress(*GetManager()->GetProfileByGUID(item_key)))
+      return false;
+  }
 
   scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(section);
   return wrapper->GetDisplayText(vertically_compact, horizontally_compact);
@@ -3093,9 +3091,7 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
                       GetValueFromSection(SECTION_BILLING, NAME_BILLING_FULL));
 
       if (ShouldSaveDetailsLocally()) {
-        // Only save new profiles as verified if validation rules are loaded.
-        card.set_origin(RulesAreLoaded(section) ?
-            kAutofillDialogOrigin : source_url_.GetOrigin().spec());
+        card.set_origin(kAutofillDialogOrigin);
 
         std::string guid = GetManager()->SaveImportedCreditCard(card);
         newly_saved_data_model_guids_[section] = guid;
@@ -3374,6 +3370,25 @@ bool AutofillDialogControllerImpl::IsCreditCardExpirationValid(
   return true;
 }
 
+bool AutofillDialogControllerImpl::HasInvalidAddress(
+    const AutofillProfile& profile) {
+  if (!i18ninput::Enabled()) {
+    return profile.IsPresentButInvalid(ADDRESS_HOME_STATE) ||
+           profile.IsPresentButInvalid(ADDRESS_HOME_ZIP) ||
+           profile.IsPresentButInvalid(PHONE_HOME_WHOLE_NUMBER);
+  }
+
+  AddressData address_data;
+  i18ninput::CreateAddressData(base::Bind(&GetInfoFromProfile, profile),
+                               &address_data);
+
+  AddressProblems problems;
+  GetValidator()->ValidateAddress(address_data,
+                                  AddressProblemFilter(),
+                                  &problems);
+  return !problems.empty();
+}
+
 bool AutofillDialogControllerImpl::ShouldUseBillingForShipping() {
   return SectionIsActive(SECTION_SHIPPING) &&
       suggested_shipping_.GetItemKeyForCheckedItem() == kSameAsBillingKey;
@@ -3577,16 +3592,28 @@ void AutofillDialogControllerImpl::AnimationEnded(
 void AutofillDialogControllerImpl::OnAddressValidationRulesLoaded(
     const std::string& country_code,
     bool success) {
+  // Rules may load instantly (during initialization, before the view is
+  // even ready). We'll validate when the view is created.
+  if (!view_)
+    return;
+
+  ScopedViewUpdates updates(view_.get());
+
   // TODO(dbeam): should we retry on failure?
   for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
     DialogSection section = static_cast<DialogSection>(i);
-    if (!SectionIsActive(section) || !IsManuallyEditingSection(section))
+    if (!SectionIsActive(section) ||
+        CountryCodeForSection(section) != country_code) {
       continue;
+    }
 
-    if (needs_validation_.count(section) &&
-        CountryCodeForSection(section) == country_code) {
+    if (IsManuallyEditingSection(section) &&
+        needs_validation_.count(section)) {
       view_->ValidateSection(section);
       needs_validation_.erase(section);
+    } else if (success) {
+      ShowEditUiIfBadSuggestion(section);
+      UpdateSection(section);
     }
   }
 }

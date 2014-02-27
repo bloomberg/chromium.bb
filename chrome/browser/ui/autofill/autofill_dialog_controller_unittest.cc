@@ -50,6 +50,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "grit/generated_resources.h"
 #include "grit/webkit_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -70,10 +71,13 @@ namespace {
 
 using ::i18n::addressinput::AddressData;
 using ::i18n::addressinput::AddressProblemFilter;
+using ::i18n::addressinput::AddressProblem;
 using ::i18n::addressinput::AddressProblems;
 using ::i18n::addressinput::AddressValidator;
 using testing::AtLeast;
+using testing::DoAll;
 using testing::Return;
+using testing::SetArgPointee;
 using testing::_;
 
 const char kSourceUrl[] = "http://localbike.shop";
@@ -931,6 +935,74 @@ TEST_F(AutofillDialogControllerTest, AutofillProfiles) {
   shipping_model = controller()->MenuModelForSection(SECTION_SHIPPING);
   ASSERT_TRUE(shipping_model);
   EXPECT_EQ(4, shipping_model->GetItemCount());
+}
+
+// Checks that a valid profile is selected by default, but if invalid is
+// popped into edit mode.
+TEST_F(AutofillDialogControllerTest, AutofillProfilesPopInvalidIntoEdit) {
+  SwitchToAutofill();
+  SuggestionsMenuModel* shipping_model =
+      GetMenuModelForSection(SECTION_SHIPPING);
+  EXPECT_EQ(3, shipping_model->GetItemCount());
+  // "Same as billing" is selected.
+  EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_SHIPPING));
+  EXPECT_TRUE(controller()->IsManuallyEditingSection(SECTION_BILLING));
+
+  AutofillProfile verified_profile(test::GetVerifiedProfile());
+  controller()->GetTestingManager()->AddTestingProfile(&verified_profile);
+  EXPECT_EQ(4, shipping_model->GetItemCount());
+  EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_SHIPPING));
+  EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_BILLING));
+
+  // Now make up a problem and make sure the profile isn't in the list.
+  Reset();
+  SwitchToAutofill();
+  AddressProblems problems;
+  problems.push_back(
+      AddressProblem(::i18n::addressinput::POSTAL_CODE,
+                     AddressProblem::MISMATCHING_VALUE,
+                     IDS_LEARN_MORE));
+  EXPECT_CALL(*controller()->GetMockValidator(),
+              ValidateAddress(CountryCodeMatcher("US"), _, _)).
+      WillRepeatedly(DoAll(SetArgPointee<2>(problems),
+                           Return(AddressValidator::SUCCESS)));
+
+  controller()->GetTestingManager()->AddTestingProfile(&verified_profile);
+  shipping_model = GetMenuModelForSection(SECTION_SHIPPING);
+  EXPECT_EQ(4, shipping_model->GetItemCount());
+  EXPECT_TRUE(controller()->IsManuallyEditingSection(SECTION_SHIPPING));
+  EXPECT_TRUE(controller()->IsManuallyEditingSection(SECTION_BILLING));
+}
+
+// Makes sure suggestion profiles are re-validated when validation rules load.
+TEST_F(AutofillDialogControllerTest, AutofillProfilesRevalidateAfterRulesLoad) {
+  SwitchToAutofill();
+  SuggestionsMenuModel* shipping_model =
+      GetMenuModelForSection(SECTION_SHIPPING);
+  EXPECT_EQ(3, shipping_model->GetItemCount());
+  // "Same as billing" is selected.
+  EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_SHIPPING));
+  EXPECT_TRUE(controller()->IsManuallyEditingSection(SECTION_BILLING));
+  AutofillProfile verified_profile(test::GetVerifiedProfile());
+  controller()->GetTestingManager()->AddTestingProfile(&verified_profile);
+  EXPECT_EQ(4, shipping_model->GetItemCount());
+  EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_SHIPPING));
+  EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_BILLING));
+
+  AddressProblems problems;
+  problems.push_back(
+      AddressProblem(::i18n::addressinput::POSTAL_CODE,
+                     AddressProblem::MISMATCHING_VALUE,
+                     IDS_LEARN_MORE));
+  EXPECT_CALL(*controller()->GetMockValidator(),
+              ValidateAddress(CountryCodeMatcher("US"), _, _)).
+      WillRepeatedly(DoAll(SetArgPointee<2>(problems),
+                           Return(AddressValidator::SUCCESS)));
+
+  controller()->OnAddressValidationRulesLoaded("US", true);
+  EXPECT_EQ(4, shipping_model->GetItemCount());
+  EXPECT_TRUE(controller()->IsManuallyEditingSection(SECTION_SHIPPING));
+  EXPECT_TRUE(controller()->IsManuallyEditingSection(SECTION_BILLING));
 }
 
 // Makes sure that the choice of which Autofill profile to use for each section
