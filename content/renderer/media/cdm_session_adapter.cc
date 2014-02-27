@@ -23,16 +23,17 @@ CdmSessionAdapter::CdmSessionAdapter() : weak_ptr_factory_(this) {}
 
 CdmSessionAdapter::~CdmSessionAdapter() {}
 
-bool CdmSessionAdapter::Initialize(const std::string& key_system) {
+bool CdmSessionAdapter::Initialize(
+#if defined(ENABLE_PEPPER_CDMS)
+    const CreatePepperCdmCB& create_pepper_cdm_cb,
+#endif
+    const std::string& key_system) {
   base::WeakPtr<CdmSessionAdapter> weak_this = weak_ptr_factory_.GetWeakPtr();
   media_keys_ =
       ContentDecryptionModuleFactory::Create(
           key_system,
 #if defined(ENABLE_PEPPER_CDMS)
-          // TODO(ddorwin): Support Pepper-based CDMs: http://crbug.com/250049
-          NULL,
-          NULL,
-          base::Closure(),
+          create_pepper_cdm_cb,
 #elif defined(OS_ANDROID)
           // TODO(xhwang): Support Android.
           NULL,

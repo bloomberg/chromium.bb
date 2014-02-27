@@ -69,6 +69,10 @@
 #include "v8/include/v8.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
+#if defined(ENABLE_PEPPER_CDMS)
+#include "content/renderer/media/crypto/pepper_cdm_wrapper_impl.h"
+#endif
+
 using blink::WebCanvas;
 using blink::WebMediaPlayer;
 using blink::WebRect;
@@ -764,8 +768,9 @@ WebMediaPlayerImpl::GenerateKeyRequestInternal(const std::string& key_system,
     if (!proxy_decryptor_) {
       proxy_decryptor_.reset(new ProxyDecryptor(
 #if defined(ENABLE_PEPPER_CDMS)
-          client_,
-          frame_,
+          // Create() must be called synchronously as |frame_| may not be
+          // valid afterwards.
+          base::Bind(&PepperCdmWrapperImpl::Create, frame_),
 #endif
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnKeyAdded),
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnKeyError),

@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "content/renderer/media/crypto/pepper_cdm_wrapper.h"
 #include "media/base/decryptor.h"
 #include "media/base/media_keys.h"
 #include "media/base/video_decoder_config.h"
@@ -29,15 +30,13 @@ class PepperPluginInstanceImpl;
 class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
  public:
   static scoped_ptr<PpapiDecryptor> Create(
-      // TODO(ddorwin): Remove after updating the delegate.
       const std::string& key_system,
-      const scoped_refptr<PepperPluginInstanceImpl>& plugin_instance,
+      const CreatePepperCdmCB& create_pepper_cdm_cb,
       const media::SessionCreatedCB& session_created_cb,
       const media::SessionMessageCB& session_message_cb,
       const media::SessionReadyCB& session_ready_cb,
       const media::SessionClosedCB& session_closed_cb,
-      const media::SessionErrorCB& session_error_cb,
-      const base::Closure& destroy_plugin_cb);
+      const media::SessionErrorCB& session_error_cb);
 
   virtual ~PpapiDecryptor();
 
@@ -76,14 +75,12 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
 
  private:
   PpapiDecryptor(const std::string& key_system,
-                 const scoped_refptr<PepperPluginInstanceImpl>& plugin_instance,
-                 ContentDecryptorDelegate* plugin_cdm_delegate,
+                 scoped_ptr<PepperCdmWrapper> pepper_cdm_wrapper,
                  const media::SessionCreatedCB& session_created_cb,
                  const media::SessionMessageCB& session_message_cb,
                  const media::SessionReadyCB& session_ready_cb,
                  const media::SessionClosedCB& session_closed_cb,
-                 const media::SessionErrorCB& session_error_cb,
-                 const base::Closure& destroy_plugin_cb);
+                 const media::SessionErrorCB& session_error_cb);
 
   void ReportFailureToCallPlugin(uint32 session_id);
 
@@ -105,14 +102,13 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
   // this call.
   void OnFatalPluginError();
 
+  ContentDecryptorDelegate* CdmDelegate();
+
   base::WeakPtr<PpapiDecryptor> weak_this_;
 
-  // Hold a reference of the plugin instance to make sure the plugin outlives
-  // the |plugin_cdm_delegate_|. This is needed because |plugin_cdm_delegate_|
-  // is owned by the |plugin_instance_|.
-  scoped_refptr<PepperPluginInstanceImpl> plugin_instance_;
-
-  ContentDecryptorDelegate* plugin_cdm_delegate_;
+  // Hold a reference of the Pepper CDM wrapper to make sure the plugin lives
+  // as long as needed.
+  scoped_ptr<PepperCdmWrapper> pepper_cdm_wrapper_;
 
   // Callbacks for firing session events.
   media::SessionCreatedCB session_created_cb_;
@@ -120,9 +116,6 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
   media::SessionReadyCB session_ready_cb_;
   media::SessionClosedCB session_closed_cb_;
   media::SessionErrorCB session_error_cb_;
-
-  // Called to destroy the helper plugin when this class no longer needs it.
-  base::Closure destroy_plugin_cb_;
 
   scoped_refptr<base::MessageLoopProxy> render_loop_proxy_;
 

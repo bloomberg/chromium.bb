@@ -13,6 +13,10 @@
 #include "media/base/media_keys.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleSession.h"
 
+#if defined(ENABLE_PEPPER_CDMS)
+#include "content/renderer/media/crypto/pepper_cdm_wrapper.h"
+#endif
+
 namespace content {
 
 class WebContentDecryptionModuleSessionImpl;
@@ -26,7 +30,11 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   CdmSessionAdapter();
 
   // Returns true on success.
-  bool Initialize(const std::string& key_system);
+  bool Initialize(
+#if defined(ENABLE_PEPPER_CDMS)
+      const CreatePepperCdmCB& create_pepper_cdm_cb,
+#endif
+      const std::string& key_system);
 
   // Creates a new session and adds it to the internal map. The caller owns the
   // created session. RemoveSession() must be called when destroying it.

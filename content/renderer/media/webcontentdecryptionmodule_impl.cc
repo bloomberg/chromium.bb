@@ -8,11 +8,16 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "content/renderer/media/cdm_session_adapter.h"
 #include "content/renderer/media/webcontentdecryptionmodulesession_impl.h"
 #include "media/base/media_keys.h"
+
+#if defined(ENABLE_PEPPER_CDMS)
+#include "content/renderer/media/crypto/pepper_cdm_wrapper_impl.h"
+#endif
 
 namespace content {
 
@@ -26,8 +31,17 @@ WebContentDecryptionModuleImpl* WebContentDecryptionModuleImpl::Create(
   }
 
   scoped_refptr<CdmSessionAdapter> adapter(new CdmSessionAdapter());
-  if (!adapter->Initialize(UTF16ToASCII(key_system)))
+  if (!adapter->Initialize(
+#if defined(ENABLE_PEPPER_CDMS)
+          // TODO(jrummell): Figure out how to get a WebFrame from Blink (or
+          // something equivalent) so the plugin can actually get created.
+          // http://crbug.com/250049
+          base::Bind(&PepperCdmWrapperImpl::Create,
+                     static_cast<blink::WebFrame*>(NULL)),
+#endif
+          UTF16ToASCII(key_system))) {
     return NULL;
+  }
 
   return new WebContentDecryptionModuleImpl(adapter);
 }

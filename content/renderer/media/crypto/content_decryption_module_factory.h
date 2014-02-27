@@ -10,14 +10,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/base/media_keys.h"
 
-class GURL;
-
 #if defined(ENABLE_PEPPER_CDMS)
-namespace blink {
-class WebFrame;
-class WebMediaPlayerClient;
-}
-#endif  // defined(ENABLE_PEPPER_CDMS)
+#include "content/renderer/media/crypto/pepper_cdm_wrapper.h"
+#endif
+
+class GURL;
 
 namespace content {
 
@@ -25,13 +22,12 @@ class RendererMediaPlayerManager;
 
 class ContentDecryptionModuleFactory {
  public:
+  // |create_pepper_cdm_cb| will be called synchronously if necessary. The other
+  // callbacks can be called asynchronously.
   static scoped_ptr<media::MediaKeys> Create(
       const std::string& key_system,
 #if defined(ENABLE_PEPPER_CDMS)
-      // TODO(ddorwin): We need different pointers for the WD API.
-      blink::WebMediaPlayerClient* web_media_player_client,
-      blink::WebFrame* web_frame,
-      const base::Closure& destroy_plugin_cb,
+      const CreatePepperCdmCB& create_pepper_cdm_cb,
 #elif defined(OS_ANDROID)
       RendererMediaPlayerManager* manager,
       int media_keys_id,
@@ -42,12 +38,6 @@ class ContentDecryptionModuleFactory {
       const media::SessionReadyCB& session_ready_cb,
       const media::SessionClosedCB& session_closed_cb,
       const media::SessionErrorCB& session_error_cb);
-
-#if defined(ENABLE_PEPPER_CDMS)
-  static void DestroyHelperPlugin(
-      blink::WebMediaPlayerClient* web_media_player_client,
-      blink::WebFrame* web_frame);
-#endif  // defined(ENABLE_PEPPER_CDMS)
 };
 
 }  // namespace content

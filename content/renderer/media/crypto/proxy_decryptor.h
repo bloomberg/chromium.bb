@@ -17,14 +17,11 @@
 #include "media/base/decryptor.h"
 #include "media/base/media_keys.h"
 
-class GURL;
-
-namespace blink {
 #if defined(ENABLE_PEPPER_CDMS)
-class WebFrame;
-class WebMediaPlayerClient;
-#endif  // defined(ENABLE_PEPPER_CDMS)
-}
+#include "content/renderer/media/crypto/pepper_cdm_wrapper.h"
+#endif
+
+class GURL;
 
 namespace content {
 
@@ -59,8 +56,7 @@ class ProxyDecryptor {
 
   ProxyDecryptor(
 #if defined(ENABLE_PEPPER_CDMS)
-      blink::WebMediaPlayerClient* web_media_player_client,
-      blink::WebFrame* web_frame,
+      const CreatePepperCdmCB& create_pepper_cdm_cb,
 #elif defined(OS_ANDROID)
       RendererMediaPlayerManager* manager,
       int media_keys_id,
@@ -116,12 +112,8 @@ class ProxyDecryptor {
   base::WeakPtrFactory<ProxyDecryptor> weak_ptr_factory_;
 
 #if defined(ENABLE_PEPPER_CDMS)
-  // Callback for cleaning up a Pepper-based CDM.
-  void DestroyHelperPlugin();
-
-  // Needed to create the PpapiDecryptor.
-  blink::WebMediaPlayerClient* web_media_player_client_;
-  blink::WebFrame* web_frame_;
+  // Callback to create the Pepper plugin.
+  CreatePepperCdmCB create_pepper_cdm_cb_;
 #elif defined(OS_ANDROID)
   RendererMediaPlayerManager* manager_;
   int media_keys_id_;
