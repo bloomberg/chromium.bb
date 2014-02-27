@@ -9,7 +9,7 @@ InspectorTest.collectAuditResults = function()
         if (liElements[j].treeElement)
             liElements[j].treeElement.expand();
     }
-    InspectorTest.collectTextContent(WebInspector.panels.audits.visibleView.element, 0);
+    InspectorTest.collectTextContent(WebInspector.panels.audits.visibleView.element, "");
 }
 
 InspectorTest.launchAllAudits = function(shouldReload, callback)
@@ -21,27 +21,28 @@ InspectorTest.launchAllAudits = function(shouldReload, callback)
     launcherView._launchButtonClicked();
 }
 
-InspectorTest.collectTextContent = function(element, level)
+InspectorTest.collectTextContent = function(element, indent)
 {
     var nodeOutput = "";
     var child = element.firstChild;
 
     while (child) {
         if (child.nodeType === Node.TEXT_NODE) {
-            for (var i = 0; i < level; ++i)
-                nodeOutput += " ";
             nodeOutput += child.nodeValue.replace("\u200B", "");
         } else if (child.nodeType === Node.ELEMENT_NODE) {
             if (nodeOutput !== "") {
-                InspectorTest.addResult(nodeOutput);
+                InspectorTest.addResult(indent + nodeOutput);
                 nodeOutput = "";
             }
-            InspectorTest.collectTextContent(child, level + 1);
+            if (!child.firstChild && child.className.indexOf("severity") == 0)
+                nodeOutput = "[" + child.className + "] ";
+            else
+                InspectorTest.collectTextContent(child, indent + " ");
         }
         child = child.nextSibling;
     }
     if (nodeOutput !== "")
-        InspectorTest.addResult(nodeOutput);
+        InspectorTest.addResult(indent + nodeOutput);
 }
 
 }

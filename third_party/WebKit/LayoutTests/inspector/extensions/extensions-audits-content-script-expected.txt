@@ -4,7 +4,7 @@ Tests audit formatters performing evals on content scripts in WebInspector Exten
 Running tests...
 RUNNING TEST: extension_testAudits
  Extension audits
-    Rule with details subtree (1)
+    [severity-warning] Rule with details subtree (1)
       Test Formatters
            main world object
             whereAmI
@@ -21,7 +21,6 @@ RUNNING TEST: extension_testAudits
               test-element
              "
             >
-           
            content script object
             whereAmI
             : 
@@ -37,7 +36,6 @@ RUNNING TEST: extension_testAudits
               test-element
              "
             >
-           
 category.onAuditStarted fired
 All tests done.
 

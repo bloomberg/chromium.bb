@@ -6,9 +6,9 @@ RUNNING TEST: extension_testAudits
 Progress: 50%
 Progress: 75%
  Extension audits
-    Failed rule (42)
+    [severity-severe] Failed rule (42)
      this rule always fails
-    Rule with details subtree (1)
+    [severity-warning] Rule with details subtree (1)
      This rule has a lot of details
       Subtree
        Some url: 
@@ -39,9 +39,8 @@ Progress: 75%
                test-element
               "
              >
-            
          extensions-audits.html:20
-    Passed rule
+    [severity-info] Passed rule
      this rule always passes ok
  Extension audits that fail
 category.onAuditStarted fired
