@@ -127,11 +127,10 @@ void InputTagSpeechDispatcher::OnSpeechRecognitionToggleSpeechInput() {
   if (document.isNull())
     return;
 
-  WebNode focused_node = document.focusedNode();
-  if (focused_node.isNull() || !focused_node.isElementNode())
+  blink::WebElement element = document.focusedElement();
+  if (element.isNull())
     return;
 
-  blink::WebElement element = focused_node.to<blink::WebElement>();
   blink::WebInputElement* input_element = blink::toWebInputElement(&element);
   if (!input_element)
     return;

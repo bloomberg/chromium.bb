@@ -13,6 +13,7 @@
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/public/web/WebTextCheckingResult.h"
@@ -109,9 +110,9 @@ bool SpellCheckProvider::OnMessageReceived(const IPC::Message& message) {
 void SpellCheckProvider::FocusedNodeChanged(const blink::WebNode& unused) {
 #if defined(OS_MACOSX)
   bool enabled = false;
-  blink::WebNode node = render_view()->GetFocusedNode();
-  if (!node.isNull())
-    enabled = render_view()->IsEditableNode(node);
+  blink::WebElement element = render_view()->GetFocusedElement();
+  if (!element.isNull())
+    enabled = render_view()->IsEditableNode(element);
 
   bool checked = false;
   if (enabled && render_view()->GetWebView()) {

@@ -46,6 +46,7 @@
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
+#include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebIconURL.h"
@@ -631,7 +632,7 @@ class CONTENT_EXPORT RenderViewImpl
   virtual WebPreferences& GetWebkitPreferences() OVERRIDE;
   virtual void SetWebkitPreferences(const WebPreferences& preferences) OVERRIDE;
   virtual blink::WebView* GetWebView() OVERRIDE;
-  virtual blink::WebNode GetFocusedNode() const OVERRIDE;
+  virtual blink::WebElement GetFocusedElement() const OVERRIDE;
   virtual blink::WebNode GetContextMenuNode() const OVERRIDE;
   virtual bool IsEditableNode(const blink::WebNode& node) const OVERRIDE;
   virtual void EvaluateScript(const base::string16& frame_xpath,

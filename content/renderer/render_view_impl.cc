@@ -1559,7 +1559,7 @@ void RenderViewImpl::OnCopy() {
 
   base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
   WebNode current_node = context_menu_node_.isNull() ?
-      GetFocusedNode() : context_menu_node_;
+      GetFocusedElement() : context_menu_node_;
   webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Copy"),
                                             current_node);
 }
@@ -1570,7 +1570,7 @@ void RenderViewImpl::OnCut() {
 
   base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
   webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Cut"),
-                                            GetFocusedNode());
+                                            GetFocusedElement());
 }
 
 void RenderViewImpl::OnDelete() {
@@ -1578,7 +1578,7 @@ void RenderViewImpl::OnDelete() {
     return;
 
   webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Delete"),
-                                            GetFocusedNode());
+                                            GetFocusedElement());
 }
 
 void RenderViewImpl::OnExecuteEditCommand(const std::string& name,
@@ -1605,7 +1605,7 @@ void RenderViewImpl::OnPaste() {
 
   base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
   webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Paste"),
-                                            GetFocusedNode());
+                                            GetFocusedElement());
 }
 
 void RenderViewImpl::OnPasteAndMatchStyle() {
@@ -1614,7 +1614,7 @@ void RenderViewImpl::OnPasteAndMatchStyle() {
 
   base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
   webview()->focusedFrame()->executeCommand(
-      WebString::fromUTF8("PasteAndMatchStyle"), GetFocusedNode());
+      WebString::fromUTF8("PasteAndMatchStyle"), GetFocusedElement());
 }
 
 void RenderViewImpl::OnRedo() {
@@ -1622,7 +1622,7 @@ void RenderViewImpl::OnRedo() {
     return;
 
   webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Redo"),
-                                            GetFocusedNode());
+                                            GetFocusedElement());
 }
 
 void RenderViewImpl::OnReplace(const base::string16& text) {
@@ -1649,9 +1649,9 @@ void RenderViewImpl::OnReplaceMisspelling(const base::string16& text) {
 
 void RenderViewImpl::OnScrollFocusedEditableNodeIntoRect(
     const gfx::Rect& rect) {
-  blink::WebNode node = GetFocusedNode();
-  if (!node.isNull()) {
-    if (IsEditableNode(node)) {
+  blink::WebElement element = GetFocusedElement();
+  if (!element.isNull()) {
+    if (IsEditableNode(element)) {
       webview()->saveScrollAndScaleState();
       webview()->scrollFocusedNodeIntoRect(rect);
     }
@@ -1664,7 +1664,7 @@ void RenderViewImpl::OnSelectAll() {
 
   base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
   webview()->focusedFrame()->executeCommand(
-      WebString::fromUTF8("SelectAll"), GetFocusedNode());
+      WebString::fromUTF8("SelectAll"), GetFocusedElement());
 }
 
 void RenderViewImpl::OnSelectRange(const gfx::Point& start,
@@ -1688,7 +1688,7 @@ void RenderViewImpl::OnUndo() {
     return;
 
   webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Undo"),
-                                            GetFocusedNode());
+                                            GetFocusedElement());
 }
 
 void RenderViewImpl::OnUnselect() {
@@ -1697,7 +1697,7 @@ void RenderViewImpl::OnUnselect() {
 
   base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
   webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Unselect"),
-                                            GetFocusedNode());
+                                            GetFocusedElement());
 }
 
 #if defined(OS_MACOSX)
@@ -1787,8 +1787,8 @@ void RenderViewImpl::OnSetInLiveResize(bool in_live_resize) {
 
 #if defined(OS_ANDROID)
 void RenderViewImpl::OnUndoScrollFocusedEditableNodeIntoRect() {
-  const WebNode node = GetFocusedNode();
-  if (!node.isNull() && IsEditableNode(node))
+  const WebElement element = GetFocusedElement();
+  if (!element.isNull() && IsEditableNode(element))
     webview()->restoreScrollAndScaleState();
 }
 
@@ -2277,7 +2277,7 @@ bool RenderViewImpl::handleCurrentKeyboardEvent() {
     // seems safest to not execute the rest.
     if (!frame->executeCommand(WebString::fromUTF8(it->name),
                                WebString::fromUTF8(it->value),
-                               GetFocusedNode()))
+                               GetFocusedElement()))
       break;
     did_execute_command = true;
   }
@@ -3723,17 +3723,17 @@ blink::WebView* RenderViewImpl::GetWebView() {
   return webview();
 }
 
-blink::WebNode RenderViewImpl::GetFocusedNode() const {
+blink::WebElement RenderViewImpl::GetFocusedElement() const {
   if (!webview())
-    return WebNode();
+    return WebElement();
   WebFrame* focused_frame = webview()->focusedFrame();
   if (focused_frame) {
     WebDocument doc = focused_frame->document();
     if (!doc.isNull())
-      return doc.focusedNode();
+      return doc.focusedElement();
   }
 
-  return WebNode();
+  return WebElement();
 }
 
 blink::WebNode RenderViewImpl::GetContextMenuNode() const {
@@ -3967,7 +3967,7 @@ void RenderViewImpl::OnFind(int request_id,
     if (!result) {
       // don't leave text selected as you move to the next frame.
       search_frame->executeCommand(WebString::fromUTF8("Unselect"),
-                                   GetFocusedNode());
+                                   GetFocusedElement());
 
       // Find the next frame, but skip the invisible ones.
       do {
@@ -3981,7 +3981,7 @@ void RenderViewImpl::OnFind(int request_id,
 
       // Make sure selection doesn't affect the search operation in new frame.
       search_frame->executeCommand(WebString::fromUTF8("Unselect"),
-                                   GetFocusedNode());
+                                   GetFocusedElement());
 
       // If we have multiple frames and we have wrapped back around to the
       // focused frame, we need to search it once more allowing wrap within
@@ -4056,7 +4056,7 @@ void RenderViewImpl::OnStopFinding(StopFindAction action) {
   bool clear_selection = action == STOP_FIND_ACTION_CLEAR_SELECTION;
   if (clear_selection) {
     view->focusedFrame()->executeCommand(WebString::fromUTF8("Unselect"),
-                                         GetFocusedNode());
+                                         GetFocusedElement());
   }
 
   WebFrame* frame = view->mainFrame();
@@ -4070,9 +4070,9 @@ void RenderViewImpl::OnStopFinding(StopFindAction action) {
     if (focused_frame) {
       WebDocument doc = focused_frame->document();
       if (!doc.isNull()) {
-        WebNode node = doc.focusedNode();
-        if (!node.isNull())
-          node.simulateClick();
+        WebElement element = doc.focusedElement();
+        if (!element.isNull())
+          element.simulateClick();
       }
     }
   }

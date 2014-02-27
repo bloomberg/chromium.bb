@@ -18,6 +18,7 @@
 struct WebPreferences;
 
 namespace blink {
+class WebElement;
 class WebFrame;
 class WebNode;
 class WebString;
@@ -75,8 +76,9 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // Returns the associated WebView. May return NULL when the view is closing.
   virtual blink::WebView* GetWebView() = 0;
 
-  // Gets the focused node. If no such node exists then the node will be isNull.
-  virtual blink::WebNode GetFocusedNode() const = 0;
+  // Gets the focused element. If no such element exists then
+  // the element will be Null.
+  virtual blink::WebElement GetFocusedElement() const = 0;
 
   // Gets the node that the context menu was pressed over.
   virtual blink::WebNode GetContextMenuNode() const = 0;

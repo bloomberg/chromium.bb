@@ -127,9 +127,9 @@ TEST_F(PageClickTrackerTest, PageClickTrackerInputClicked) {
 
 TEST_F(PageClickTrackerTest, PageClickTrackerInputFocusLost) {
   // Gain focus on the text field by using tab.
-  EXPECT_NE(text_, text_.document().focusedNode());
+  EXPECT_NE(text_, text_.document().focusedElement());
   SendKeyPress(ui::VKEY_TAB);
-  EXPECT_EQ(text_, text_.document().focusedNode());
+  EXPECT_EQ(text_, text_.document().focusedElement());
   EXPECT_FALSE(test_listener_.input_element_lost_focus_called_);
 
   // Click a button and ensure that the lost focus notification was sent,
