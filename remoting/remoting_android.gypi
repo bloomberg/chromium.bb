@@ -91,6 +91,7 @@
               'files': [
                 'resources/android/menu/chromoting_actionbar.xml',
                 'resources/android/menu/desktop_actionbar.xml',
+                'resources/android/menu/help_actionbar.xml',
               ],
             },
             {

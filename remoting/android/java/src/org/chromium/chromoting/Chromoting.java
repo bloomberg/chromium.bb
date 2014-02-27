@@ -17,6 +17,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -44,6 +45,10 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
     /** Scopes at which the authentication token we request will be valid. */
     private static final String TOKEN_SCOPE = "oauth2:https://www.googleapis.com/auth/chromoting " +
             "https://www.googleapis.com/auth/googletalk";
+
+    /** Web page to be displayed in the Help screen when launched from this activity. */
+    private static final String HELP_URL =
+            "http://support.google.com/chrome/?p=mobile_crd_hostslist";
 
     /** User's account details. */
     private Account mAccount;
@@ -171,8 +176,22 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
     /** Called whenever an action bar button is pressed. */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        refreshHostList();
-        return true;
+        switch (item.getItemId()) {
+            case R.id.actionbar_directoryrefresh:
+                refreshHostList();
+                return true;
+
+            case R.id.actionbar_help:
+                {
+                    Intent intent = new Intent(this, HelpActivity.class);
+                    intent.setData(Uri.parse(HELP_URL));
+                    startActivity(intent);
+                }
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     /** Called when the user taps on a host entry. */

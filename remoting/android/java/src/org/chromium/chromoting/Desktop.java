@@ -5,7 +5,9 @@
 package org.chromium.chromoting;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.res.Configuration;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -20,6 +22,10 @@ import org.chromium.chromoting.jni.JniInterface;
  * A simple screen that does nothing except display a DesktopView and notify it of rotations.
  */
 public class Desktop extends Activity {
+    /** Web page to be displayed in the Help screen when launched from this activity. */
+    private static final String HELP_URL =
+            "http://support.google.com/chrome/?p=mobile_crd_connecthost";
+
     /** The surface that displays the remote host's desktop feed. */
     private DesktopView mRemoteHostDesktop;
 
@@ -104,6 +110,14 @@ public class Desktop extends Activity {
                     for (int key : keys) {
                         JniInterface.keyboardAction(key, false);
                     }
+                }
+                return true;
+
+            case R.id.actionbar_help:
+                {
+                    Intent intent = new Intent(this, HelpActivity.class);
+                    intent.setData(Uri.parse(HELP_URL));
+                    startActivity(intent);
                 }
                 return true;
 
