@@ -1071,7 +1071,11 @@ RenderLayer* RenderLayer::enclosingTransformedAncestor() const
 
 const RenderLayer* RenderLayer::compositingContainer() const
 {
-    return stackingNode()->isNormalFlowOnly() ? parent() : (stackingNode()->ancestorStackingContainerNode() ? stackingNode()->ancestorStackingContainerNode()->layer() : 0);
+    if (stackingNode()->isNormalFlowOnly())
+        return parent();
+    if (RenderLayerStackingNode* ancestorStackingNode = stackingNode()->ancestorStackingContainerNode())
+        return ancestorStackingNode->layer();
+    return 0;
 }
 
 // FIXME: having two different functions named enclosingCompositingLayer and enclosingCompositingLayerForRepaint
@@ -3747,11 +3751,14 @@ inline bool RenderLayer::needsCompositingLayersRebuiltForClip(const RenderStyle*
 inline bool RenderLayer::needsCompositingLayersRebuiltForOverflow(const RenderStyle* oldStyle, const RenderStyle* newStyle) const
 {
     ASSERT(newStyle);
-    return !hasCompositedLayerMapping()
-        && oldStyle
-        && (oldStyle->overflowX() != newStyle->overflowX())
-        && m_stackingNode->ancestorStackingContainerNode()
-        && m_stackingNode->ancestorStackingContainerNode()->layer()->hasCompositingDescendant();
+    if (hasCompositedLayerMapping())
+        return false;
+    if (!oldStyle)
+        return false;
+    if (oldStyle->overflowX() == newStyle->overflowX())
+        return false;
+    RenderLayerStackingNode* stackingNode = m_stackingNode->ancestorStackingContainerNode();
+    return stackingNode && stackingNode->layer()->hasCompositingDescendant();
 }
 
 inline bool RenderLayer::needsCompositingLayersRebuiltForFilters(const RenderStyle* oldStyle, const RenderStyle* newStyle, bool didPaintWithFilters) const

@@ -65,7 +65,7 @@ public:
     int zIndex() const { return renderer()->style()->zIndex(); }
 
     // A stacking context is a layer that has a non-auto z-index.
-    bool isStackingContext() const { return isStackingContext(renderer()->style()); }
+    bool isStackingContext() const { return !renderer()->style()->hasAutoZIndex(); }
 
     // A stacking container can have z-order lists. All stacking contexts are
     // stacking containers, but the converse is not true. Layers that use
@@ -146,8 +146,6 @@ private:
         OverflowScrollCanBeStackingContainers,
         OnlyStackingContextsCanBeStackingContainers
     };
-
-    bool isStackingContext(const RenderStyle*) const;
 
     void rebuildZOrderLists();
 

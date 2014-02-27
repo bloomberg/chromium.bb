@@ -86,11 +86,6 @@ RenderLayerStackingNode::~RenderLayerStackingNode()
 #endif
 }
 
-bool RenderLayerStackingNode::isStackingContext(const RenderStyle* style) const
-{
-    return !style->hasAutoZIndex() || layer()->isRootLayer();
-}
-
 // Helper for the sorting of layers by z-index.
 static inline bool compareZIndex(RenderLayerStackingNode* first, RenderLayerStackingNode* second)
 {
@@ -386,7 +381,7 @@ void RenderLayerStackingNode::updateLayerListsIfNeeded()
 
 void RenderLayerStackingNode::updateStackingNodesAfterStyleChange(const RenderStyle* oldStyle)
 {
-    bool wasStackingContext = oldStyle ? isStackingContext(oldStyle) : false;
+    bool wasStackingContext = oldStyle ? !oldStyle->hasAutoZIndex() : false;
     EVisibility oldVisibility = oldStyle ? oldStyle->visibility() : VISIBLE;
     int oldZIndex = oldStyle ? oldStyle->zIndex() : 0;
 

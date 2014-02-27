@@ -598,6 +598,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForDocument(Document& document, CSSF
     documentStyle->setRTLOrdering(document.visuallyOrdered() ? VisualOrder : LogicalOrder);
     documentStyle->setZoom(frame && !document.printing() ? frame->pageZoomFactor() : 1);
     documentStyle->setLocale(document.contentLanguage());
+    documentStyle->setZIndex(0);
 
     // This overrides any -webkit-user-modify inherited from the parent iframe.
     documentStyle->setUserModify(document.inDesignMode() ? READ_WRITE : READ_ONLY);
