@@ -75,6 +75,11 @@ class BluetoothAdapterMac : public BluetoothAdapter {
                              IOReturn error,
                              bool aborted);
 
+ protected:
+  // BluetoothAdapter override
+  virtual void RemovePairingDelegateInternal(
+      device::BluetoothDevice::PairingDelegate* pairing_delegate) OVERRIDE;
+
  private:
   friend class BluetoothAdapterFactory;
   friend class BluetoothAdapterMacTest;

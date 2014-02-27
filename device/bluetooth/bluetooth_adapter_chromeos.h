@@ -27,6 +27,7 @@ namespace chromeos {
 
 class BluetoothChromeOSTest;
 class BluetoothDeviceChromeOS;
+class BluetoothPairingChromeOS;
 
 // The BluetoothAdapterChromeOS class implements BluetoothAdapter for the
 // Chrome OS platform.
@@ -64,6 +65,11 @@ class BluetoothAdapterChromeOS
       const device::BluetoothAdapter::BluetoothOutOfBandPairingDataCallback&
           callback,
       const ErrorCallback& error_callback) OVERRIDE;
+
+ protected:
+  // BluetoothAdapter override
+  virtual void RemovePairingDelegateInternal(
+      device::BluetoothDevice::PairingDelegate* pairing_delegate) OVERRIDE;
 
  private:
   friend class device::BluetoothAdapterFactory;
@@ -123,96 +129,29 @@ class BluetoothAdapterChromeOS
   // PairingContext is an API between BluetoothAdapterChromeOS and
   // BluetoothDeviceChromeOS for a single pairing attempt, wrapping the
   // callbacks of the underlying BluetoothAgentServiceProvider object.
-  class PairingContext {
-   public:
-    ~PairingContext();
-
-    // Indicates whether the device is currently pairing and expecting a
-    // PIN Code to be returned.
-    bool ExpectingPinCode() const;
-
-    // Indicates whether the device is currently pairing and expecting a
-    // Passkey to be returned.
-    bool ExpectingPasskey() const;
-
-    // Indicates whether the device is currently pairing and expecting
-    // confirmation of a displayed passkey.
-    bool ExpectingConfirmation() const;
-
-    // Sends the PIN code |pincode| to the remote device during pairing.
-    //
-    // PIN Codes are generally required for Bluetooth 2.0 and earlier devices
-    // for which there is no automatic pairing or special handling.
-    void SetPinCode(const std::string& pincode);
-
-    // Sends the Passkey |passkey| to the remote device during pairing.
-    //
-    // Passkeys are generally required for Bluetooth 2.1 and later devices
-    // which cannot provide input or display on their own, and don't accept
-    // passkey-less pairing, and are a numeric in the range 0-999999.
-    void SetPasskey(uint32 passkey);
-
-    // Confirms to the remote device during pairing that a passkey provided by
-    // the ConfirmPasskey() delegate call is displayed on both devices.
-    void ConfirmPairing();
-
-    // Rejects a pairing or connection request from a remote device, returns
-    // false if there was no way to reject the pairing.
-    bool RejectPairing();
-
-    // Cancels a pairing or connection attempt to a remote device, returns
-    // false if there was no way to cancel the pairing.
-    bool CancelPairing();
-
-   private:
-    friend class BluetoothAdapterChromeOS;
-    friend class BluetoothDeviceChromeOS;
-
-    explicit PairingContext(
-        device::BluetoothDevice::PairingDelegate* pairing_delegate_);
-
-    // Internal method to response to the relevant callback for a RejectPairing
-    // or CancelPairing call.
-    bool RunPairingCallbacks(
-        BluetoothAgentServiceProvider::Delegate::Status status);
-
-    // UI Pairing Delegate to make method calls on, this must live as long as
-    // the object capturing the PairingContext.
-    device::BluetoothDevice::PairingDelegate* pairing_delegate_;
-
-    // Flag to indicate whether any pairing delegate method has been called
-    // during pairing. Used to determine whether we need to log the
-    // "no pairing interaction" metric.
-    bool pairing_delegate_used_;
-
-    // During pairing these callbacks are set to those provided by method calls
-    // made on the BluetoothAdapterChromeOS instance by its respective
-    // BluetoothAgentServiceProvider instance, and are called by our own
-    // method calls such as SetPinCode() and SetPasskey().
-    PinCodeCallback pincode_callback_;
-    PasskeyCallback passkey_callback_;
-    ConfirmationCallback confirmation_callback_;
-  };
-
   // Called by dbus:: on completion of the D-Bus method call to register the
   // pairing agent.
   void OnRegisterAgent();
   void OnRegisterAgentError(const std::string& error_name,
                             const std::string& error_message);
 
+  // Called by dbus:: on completion of the D-Bus method call to request that
+  // the pairing agent be made the default.
+  void OnRequestDefaultAgent();
+  void OnRequestDefaultAgentError(const std::string& error_name,
+                                  const std::string& error_message);
+
   // Internal method used to locate the device object by object path
   // (the devices map and BluetoothDevice methods are by address)
   BluetoothDeviceChromeOS* GetDeviceWithPath(
       const dbus::ObjectPath& object_path);
 
-  // Internal method to obtain the ChromeOS BluetoothDevice object, returned in
-  // |device_chromeos| and associated PairingContext, returned in
-  // |pairing_context| for the device with path |object_path|.
-  // Returns true on success, false if device doesn't exist or there is no
-  // pairing context for it.
-  bool GetDeviceAndPairingContext(const dbus::ObjectPath& object_path,
-                                  BluetoothDeviceChromeOS** device_chromeos,
-                                  PairingContext** pairing_context);
+  // Internal method to obtain a BluetoothPairingChromeOS object for the device
+  // with path |object_path|. Returns the existing pairing object if the device
+  // already has one (usually an outgoing connection in progress) or a new
+  // pairing object with the default pairing delegate if not. If no default
+  // pairing object exists, NULL will be returned.
+  BluetoothPairingChromeOS* GetPairing(const dbus::ObjectPath& object_path);
 
   // Set the tracked adapter to the one in |object_path|, this object will
   // subsequently operate on that adapter until it is removed.

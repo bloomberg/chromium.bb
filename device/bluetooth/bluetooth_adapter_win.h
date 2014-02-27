@@ -72,6 +72,11 @@ class BluetoothAdapterWin : public BluetoothAdapter,
       const ScopedVector<BluetoothTaskManagerWin::DeviceState>& devices)
           OVERRIDE;
 
+ protected:
+  // BluetoothAdapter override
+  virtual void RemovePairingDelegateInternal(
+      device::BluetoothDevice::PairingDelegate* pairing_delegate) OVERRIDE;
+
  private:
   friend class BluetoothAdapterFactory;
   friend class BluetoothAdapterWinTest;

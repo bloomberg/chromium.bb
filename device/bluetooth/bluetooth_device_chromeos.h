@@ -11,10 +11,12 @@
 #include "base/memory/weak_ptr.h"
 #include "chromeos/dbus/bluetooth_device_client.h"
 #include "dbus/object_path.h"
-#include "device/bluetooth/bluetooth_adapter_chromeos.h"
 #include "device/bluetooth/bluetooth_device.h"
 
 namespace chromeos {
+
+class BluetoothAdapterChromeOS;
+class BluetoothPairingChromeOS;
 
 // The BluetoothDeviceChromeOS class implements BluetoothDevice for the
 // Chrome OS platform.
@@ -68,6 +70,19 @@ class BluetoothDeviceChromeOS
   virtual void ClearOutOfBandPairingData(
       const base::Closure& callback,
       const ErrorCallback& error_callback) OVERRIDE;
+
+  // Creates a pairing object with the given delegate |pairing_delegate| and
+  // establishes it as the pairing context for this device. All pairing-related
+  // method calls will be forwarded to this object until it is released.
+  BluetoothPairingChromeOS* BeginPairing(
+      BluetoothDevice::PairingDelegate* pairing_delegate);
+
+  // Releases the current pairing object, any pairing-related method calls will
+  // be ignored.
+  void EndPairing();
+
+  // Returns the current pairing object or NULL if no pairing is in progress.
+  BluetoothPairingChromeOS* GetPairing() const;
 
  protected:
    // BluetoothDevice override
@@ -135,7 +150,7 @@ class BluetoothDeviceChromeOS
                              const std::string& error_name,
                              const std::string& error_message);
 
-  // Return the object path of the device; used by BluetoothAdapterChromeOS
+  // Returns the object path of the device; used by BluetoothAdapterChromeOS
   const dbus::ObjectPath& object_path() const { return object_path_; }
 
   // The adapter that owns this device instance.
@@ -150,9 +165,7 @@ class BluetoothDeviceChromeOS
   // During pairing this is set to an object that we don't own, but on which
   // we can make method calls to request, display or confirm PIN Codes and
   // Passkeys. Generally it is the object that owns this one.
-  PairingDelegate* pairing_delegate_;
-
-  scoped_ptr<BluetoothAdapterChromeOS::PairingContext> pairing_context_;
+  scoped_ptr<BluetoothPairingChromeOS> pairing_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

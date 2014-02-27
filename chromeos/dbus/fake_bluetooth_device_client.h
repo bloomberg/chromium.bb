@@ -72,13 +72,26 @@ class CHROMEOS_EXPORT FakeBluetoothDeviceClient
 
   void SetSimulationIntervalMs(int interval_ms);
 
-  // Simulate discovery of devices for the given adapter.
+  // Simulates discovery of devices for the given adapter.
   void BeginDiscoverySimulation(const dbus::ObjectPath& adapter_path);
   void EndDiscoverySimulation(const dbus::ObjectPath& adapter_path);
 
-  // Remove a device from the set we return for the given adapter.
+  // Creates a device from the set we return for the given adapter.
+  void CreateDevice(const dbus::ObjectPath& adapter_path,
+                    const dbus::ObjectPath& device_path);
+
+  // Removes a device from the set we return for the given adapter.
   void RemoveDevice(const dbus::ObjectPath& adapter_path,
                     const dbus::ObjectPath& device_path);
+
+  // Simulates a pairing for the device with the given D-Bus object path,
+  // |object_path|. Set |incoming_request| to true if simulating an incoming
+  // pairing request, false for an outgoing one. On successful completion
+  // |callback| will be called, on failure, |error_callback| is called.
+  void SimulatePairing(const dbus::ObjectPath& object_path,
+                       bool incoming_request,
+                       const base::Closure& callback,
+                       const ErrorCallback& error_callback);
 
   // Object paths, names, addresses and bluetooth classes of the devices
   // we can emulate.

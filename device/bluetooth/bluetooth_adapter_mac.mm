@@ -198,6 +198,10 @@ void BluetoothAdapterMac::RemoveDiscoverySession(
   MaybeStopDeviceInquiry();
 }
 
+void BluetoothAdapterMac::RemovePairingDelegateInternal(
+    BluetoothDevice::PairingDelegate* pairing_delegate) {
+}
+
 void BluetoothAdapterMac::Init() {
   ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   PollAdapter();

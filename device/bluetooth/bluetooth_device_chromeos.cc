@@ -14,6 +14,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "dbus/bus.h"
 #include "device/bluetooth/bluetooth_adapter_chromeos.h"
+#include "device/bluetooth/bluetooth_pairing_chromeos.h"
 #include "device/bluetooth/bluetooth_profile_chromeos.h"
 #include "device/bluetooth/bluetooth_socket.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -226,15 +227,15 @@ void BluetoothDeviceChromeOS::ProvidesServiceWithName(
 }
 
 bool BluetoothDeviceChromeOS::ExpectingPinCode() const {
-  return pairing_context_.get() && pairing_context_->ExpectingPinCode();
+  return pairing_.get() && pairing_->ExpectingPinCode();
 }
 
 bool BluetoothDeviceChromeOS::ExpectingPasskey() const {
-  return pairing_context_.get() && pairing_context_->ExpectingPasskey();
+  return pairing_.get() && pairing_->ExpectingPasskey();
 }
 
 bool BluetoothDeviceChromeOS::ExpectingConfirmation() const {
-  return pairing_context_.get() && pairing_context_->ExpectingConfirmation();
+  return pairing_.get() && pairing_->ExpectingConfirmation();
 }
 
 void BluetoothDeviceChromeOS::Connect(
@@ -252,9 +253,7 @@ void BluetoothDeviceChromeOS::Connect(
     ConnectInternal(false, callback, error_callback);
   } else {
     // Initiate high-security connection with pairing.
-    DCHECK(!pairing_context_);
-    pairing_context_.reset(
-        new BluetoothAdapterChromeOS::PairingContext(pairing_delegate));
+    BeginPairing(pairing_delegate);
 
     DBusThreadManager::Get()->GetBluetoothDeviceClient()->
         Pair(object_path_,
@@ -268,31 +267,31 @@ void BluetoothDeviceChromeOS::Connect(
 }
 
 void BluetoothDeviceChromeOS::SetPinCode(const std::string& pincode) {
-  if (!pairing_context_.get())
+  if (!pairing_.get())
     return;
 
-  pairing_context_->SetPinCode(pincode);
+  pairing_->SetPinCode(pincode);
 }
 
 void BluetoothDeviceChromeOS::SetPasskey(uint32 passkey) {
-  if (!pairing_context_.get())
+  if (!pairing_.get())
     return;
 
-  pairing_context_->SetPasskey(passkey);
+  pairing_->SetPasskey(passkey);
 }
 
 void BluetoothDeviceChromeOS::ConfirmPairing() {
-  if (!pairing_context_.get())
+  if (!pairing_.get())
     return;
 
-  pairing_context_->ConfirmPairing();
+  pairing_->ConfirmPairing();
 }
 
 void BluetoothDeviceChromeOS::RejectPairing() {
-  if (!pairing_context_.get())
+  if (!pairing_.get())
     return;
 
-  pairing_context_->RejectPairing();
+  pairing_->RejectPairing();
 }
 
 void BluetoothDeviceChromeOS::CancelPairing() {
@@ -300,7 +299,7 @@ void BluetoothDeviceChromeOS::CancelPairing() {
 
   // If there is a callback in progress that we can reply to then use that
   // to cancel the current pairing request.
-  if (pairing_context_.get() && pairing_context_->CancelPairing())
+  if (pairing_.get() && pairing_->CancelPairing())
     canceled = true;
 
   // If not we have to send an explicit CancelPairing() to the device instead.
@@ -313,14 +312,13 @@ void BluetoothDeviceChromeOS::CancelPairing() {
             base::Bind(&base::DoNothing),
             base::Bind(&BluetoothDeviceChromeOS::OnCancelPairingError,
                        weak_ptr_factory_.GetWeakPtr()));
-    canceled = true;
   }
 
   // Since there is no callback to this method it's possible that the pairing
   // delegate is going to be freed before things complete (indeed it's
   // documented that this is the method you should call while freeing the
   // pairing delegate), so clear our the context holding on to it.
-  pairing_context_.reset();
+  EndPairing();
 }
 
 void BluetoothDeviceChromeOS::Disconnect(const base::Closure& callback,
@@ -395,6 +393,21 @@ void BluetoothDeviceChromeOS::ClearOutOfBandPairingData(
   error_callback.Run();
 }
 
+BluetoothPairingChromeOS* BluetoothDeviceChromeOS::BeginPairing(
+    BluetoothDevice::PairingDelegate* pairing_delegate) {
+  DCHECK(!pairing_);
+  pairing_.reset(new BluetoothPairingChromeOS(this, pairing_delegate));
+  return pairing_.get();
+}
+
+void BluetoothDeviceChromeOS::EndPairing() {
+  pairing_.reset();
+}
+
+BluetoothPairingChromeOS* BluetoothDeviceChromeOS::GetPairing() const {
+  return pairing_.get();
+}
+
 void BluetoothDeviceChromeOS::ConnectInternal(
     bool after_pairing,
     const base::Closure& callback,
@@ -466,7 +479,7 @@ void BluetoothDeviceChromeOS::OnPair(
     const ConnectErrorCallback& error_callback) {
   VLOG(1) << object_path_.value() << ": Paired";
 
-  pairing_context_.reset();
+  EndPairing();
 
   SetTrusted();
   ConnectInternal(true, callback, error_callback);
@@ -485,7 +498,7 @@ void BluetoothDeviceChromeOS::OnPairError(
   VLOG(1) << object_path_.value() << ": " << num_connecting_calls_
           << " still in progress";
 
-  pairing_context_.reset();
+  EndPairing();
 
   // Determine the error code from error_name.
   ConnectErrorCode error_code = ERROR_UNKNOWN;

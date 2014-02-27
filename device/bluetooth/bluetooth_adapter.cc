@@ -62,4 +62,38 @@ const BluetoothDevice* BluetoothAdapter::GetDevice(
   return NULL;
 }
 
+void BluetoothAdapter::AddPairingDelegate(
+    BluetoothDevice::PairingDelegate* pairing_delegate,
+    PairingDelegatePriority priority) {
+  // Remove the delegate, if it already exists, before inserting to allow a
+  // change of priority.
+  RemovePairingDelegate(pairing_delegate);
+
+  // Find the first point with a lower priority, or the end of the list.
+  std::list<PairingDelegatePair>::iterator iter = pairing_delegates_.begin();
+  while (iter != pairing_delegates_.end() && iter->second >= priority)
+    ++iter;
+
+  pairing_delegates_.insert(iter, std::make_pair(pairing_delegate, priority));
+}
+
+void BluetoothAdapter::RemovePairingDelegate(
+    BluetoothDevice::PairingDelegate* pairing_delegate) {
+  for (std::list<PairingDelegatePair>::iterator iter =
+       pairing_delegates_.begin(); iter != pairing_delegates_.end(); ++iter) {
+    if (iter->first == pairing_delegate) {
+      RemovePairingDelegateInternal(pairing_delegate);
+      pairing_delegates_.erase(iter);
+      return;
+    }
+  }
+}
+
+BluetoothDevice::PairingDelegate* BluetoothAdapter::DefaultPairingDelegate() {
+  if (pairing_delegates_.empty())
+    return NULL;
+
+  return pairing_delegates_.front().first;
+}
+
 }  // namespace device

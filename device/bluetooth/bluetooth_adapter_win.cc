@@ -150,6 +150,10 @@ void BluetoothAdapterWin::ReadLocalOutOfBandPairingData(
   NOTIMPLEMENTED();
 }
 
+void BluetoothAdapterWin::RemovePairingDelegateInternal(
+    BluetoothDevice::PairingDelegate* pairing_delegate) {
+}
+
 void BluetoothAdapterWin::AdapterStateChanged(
     const BluetoothTaskManagerWin::AdapterState& state) {
   DCHECK(thread_checker_.CalledOnValidThread());

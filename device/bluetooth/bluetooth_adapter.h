@@ -5,16 +5,16 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_H_
 
+#include <list>
 #include <map>
 #include <string>
-#include <vector>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "device/bluetooth/bluetooth_device.h"
 
 namespace device {
-
-class BluetoothDevice;
 
 struct BluetoothOutOfBandPairingData;
 
@@ -175,6 +175,33 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
       const BluetoothOutOfBandPairingDataCallback& callback,
       const ErrorCallback& error_callback) = 0;
 
+  // Possible priorities for AddPairingDelegate(), low is intended for
+  // permanent UI and high is intended for interactive UI or applications.
+  enum PairingDelegatePriority {
+    PAIRING_DELEGATE_PRIORITY_LOW,
+    PAIRING_DELEGATE_PRIORITY_HIGH
+  };
+
+  // Adds a default pairing delegate with priority |priority|, method calls
+  // will be made on |pairing_delegate| for incoming pairing requests if the
+  // priority is higher than any other registered, or for those of the same
+  // priority, the first registered.
+  //
+  // |pairing_delegate| must not be freed without first calling
+  // RemovePairingDelegate().
+  virtual void AddPairingDelegate(
+      BluetoothDevice::PairingDelegate* pairing_delegate,
+      PairingDelegatePriority priority);
+
+  // Removes a previously added pairing delegate.
+  virtual void RemovePairingDelegate(
+      BluetoothDevice::PairingDelegate* pairing_delegate);
+
+  // Returns the first registered pairing delegate with the highest priority,
+  // or NULL if no delegate is registered. Used to select the delegate for
+  // incoming pairing requests.
+  virtual BluetoothDevice::PairingDelegate* DefaultPairingDelegate();
+
  protected:
   friend class base::RefCounted<BluetoothAdapter>;
   BluetoothAdapter();
@@ -215,12 +242,23 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
   virtual void RemoveDiscoverySession(const base::Closure& callback,
                                       const ErrorCallback& error_callback) = 0;
 
+  // Called by RemovePairingDelegate() in order to perform any class-specific
+  // internal functionality necessary to remove the pairing delegate, such as
+  // cleaning up ongoing pairings using it.
+  virtual void RemovePairingDelegateInternal(
+      BluetoothDevice::PairingDelegate* pairing_delegate) = 0;
+
   // Devices paired with, connected to, discovered by, or visible to the
   // adapter. The key is the Bluetooth address of the device and the value
   // is the BluetoothDevice object whose lifetime is managed by the
   // adapter instance.
   typedef std::map<const std::string, BluetoothDevice*> DevicesMap;
   DevicesMap devices_;
+
+  // Default pairing delegates registered with the adapter.
+  typedef std::pair<BluetoothDevice::PairingDelegate*,
+                    PairingDelegatePriority> PairingDelegatePair;
+  std::list<PairingDelegatePair> pairing_delegates_;
 };
 
 }  // namespace device

@@ -400,6 +400,238 @@ void FakeBluetoothDeviceClient::Pair(
     return;
   }
 
+  SimulatePairing(object_path, false, callback, error_callback);
+}
+
+void FakeBluetoothDeviceClient::CancelPairing(
+    const dbus::ObjectPath& object_path,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  VLOG(1) << "CancelPairing: " << object_path.value();
+  pairing_cancelled_ = true;
+  callback.Run();
+}
+
+
+void FakeBluetoothDeviceClient::BeginDiscoverySimulation(
+    const dbus::ObjectPath& adapter_path) {
+  VLOG(1) << "starting discovery simulation";
+
+  discovery_simulation_step_ = 1;
+
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&FakeBluetoothDeviceClient::DiscoverySimulationTimer,
+                 base::Unretained(this)),
+      base::TimeDelta::FromMilliseconds(simulation_interval_ms_));
+}
+
+void FakeBluetoothDeviceClient::EndDiscoverySimulation(
+    const dbus::ObjectPath& adapter_path) {
+  VLOG(1) << "stopping discovery simulation";
+  discovery_simulation_step_ = 0;
+}
+
+void FakeBluetoothDeviceClient::SetSimulationIntervalMs(int interval_ms) {
+  simulation_interval_ms_ = interval_ms;
+}
+
+void FakeBluetoothDeviceClient::CreateDevice(
+    const dbus::ObjectPath& adapter_path,
+    const dbus::ObjectPath& device_path) {
+  if (std::find(device_list_.begin(),
+                device_list_.end(), device_path) != device_list_.end())
+    return;
+
+  Properties* properties = new Properties(base::Bind(
+      &FakeBluetoothDeviceClient::OnPropertyChanged,
+      base::Unretained(this),
+      device_path));
+  properties->adapter.ReplaceValue(adapter_path);
+
+  if (device_path == dbus::ObjectPath(kAppleMousePath)) {
+    properties->address.ReplaceValue(kAppleMouseAddress);
+    properties->bluetooth_class.ReplaceValue(kAppleMouseClass);
+    properties->name.ReplaceValue("Fake Apple Magic Mouse");
+    properties->alias.ReplaceValue(kAppleMouseName);
+
+    std::vector<std::string> uuids;
+    uuids.push_back("00001124-0000-1000-8000-00805f9b34fb");
+    properties->uuids.ReplaceValue(uuids);
+
+  } else if (device_path == dbus::ObjectPath(kAppleKeyboardPath)) {
+    properties->address.ReplaceValue(kAppleKeyboardAddress);
+    properties->bluetooth_class.ReplaceValue(kAppleKeyboardClass);
+    properties->name.ReplaceValue("Fake Apple Wireless Keyboard");
+    properties->alias.ReplaceValue(kAppleKeyboardName);
+
+    std::vector<std::string> uuids;
+    uuids.push_back("00001124-0000-1000-8000-00805f9b34fb");
+    properties->uuids.ReplaceValue(uuids);
+
+  } else if (device_path == dbus::ObjectPath(kVanishingDevicePath)) {
+    properties->address.ReplaceValue(kVanishingDeviceAddress);
+    properties->bluetooth_class.ReplaceValue(kVanishingDeviceClass);
+    properties->name.ReplaceValue("Fake Vanishing Device");
+    properties->alias.ReplaceValue(kVanishingDeviceName);
+
+  } else if (device_path == dbus::ObjectPath(kMicrosoftMousePath)) {
+    properties->address.ReplaceValue(kMicrosoftMouseAddress);
+    properties->bluetooth_class.ReplaceValue(kMicrosoftMouseClass);
+    properties->name.ReplaceValue("Fake Microsoft Mouse");
+    properties->alias.ReplaceValue(kMicrosoftMouseName);
+
+    std::vector<std::string> uuids;
+    uuids.push_back("00001124-0000-1000-8000-00805f9b34fb");
+    properties->uuids.ReplaceValue(uuids);
+
+  } else if (device_path == dbus::ObjectPath(kMotorolaKeyboardPath)) {
+    properties->address.ReplaceValue(kMotorolaKeyboardAddress);
+    properties->bluetooth_class.ReplaceValue(kMotorolaKeyboardClass);
+    properties->name.ReplaceValue("Fake Motorola Keyboard");
+    properties->alias.ReplaceValue(kMotorolaKeyboardName);
+
+    std::vector<std::string> uuids;
+    uuids.push_back("00001124-0000-1000-8000-00805f9b34fb");
+    properties->uuids.ReplaceValue(uuids);
+
+  } else if (device_path == dbus::ObjectPath(kSonyHeadphonesPath)) {
+    properties->address.ReplaceValue(kSonyHeadphonesAddress);
+    properties->bluetooth_class.ReplaceValue(kSonyHeadphonesClass);
+    properties->name.ReplaceValue("Fake Sony Headphones");
+    properties->alias.ReplaceValue(kSonyHeadphonesName);
+
+  } else if (device_path == dbus::ObjectPath(kPhonePath)) {
+    properties->address.ReplaceValue(kPhoneAddress);
+    properties->bluetooth_class.ReplaceValue(kPhoneClass);
+    properties->name.ReplaceValue("Fake Phone");
+    properties->alias.ReplaceValue(kPhoneName);
+
+  } else if (device_path == dbus::ObjectPath(kWeirdDevicePath)) {
+    properties->address.ReplaceValue(kWeirdDeviceAddress);
+    properties->bluetooth_class.ReplaceValue(kWeirdDeviceClass);
+    properties->name.ReplaceValue("Fake Weird Device");
+    properties->alias.ReplaceValue(kWeirdDeviceName);
+
+  } else if (device_path == dbus::ObjectPath(kUnconnectableDevicePath)) {
+    properties->address.ReplaceValue(kUnconnectableDeviceAddress);
+    properties->bluetooth_class.ReplaceValue(kUnconnectableDeviceClass);
+    properties->name.ReplaceValue("Fake Unconnectable Device");
+    properties->alias.ReplaceValue(kUnconnectableDeviceName);
+
+  } else if (device_path == dbus::ObjectPath(kUnpairableDevicePath)) {
+    properties->address.ReplaceValue(kUnpairableDeviceAddress);
+    properties->bluetooth_class.ReplaceValue(kUnpairableDeviceClass);
+    properties->name.ReplaceValue("Fake Unpairable Device");
+    properties->alias.ReplaceValue(kUnpairableDeviceName);
+
+  } else {
+    NOTREACHED();
+
+  }
+
+  properties_map_[device_path] = properties;
+  device_list_.push_back(device_path);
+  FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
+                    DeviceAdded(device_path));
+}
+
+void FakeBluetoothDeviceClient::RemoveDevice(
+    const dbus::ObjectPath& adapter_path,
+    const dbus::ObjectPath& device_path) {
+  std::vector<dbus::ObjectPath>::iterator listiter =
+      std::find(device_list_.begin(), device_list_.end(), device_path);
+  if (listiter == device_list_.end())
+    return;
+
+  PropertiesMap::iterator iter = properties_map_.find(device_path);
+  Properties* properties = iter->second;
+
+  VLOG(1) << "removing device: " << properties->alias.value();
+  device_list_.erase(listiter);
+
+  // Remove the Input interface if it exists. This should be called before the
+  // BluetoothDeviceClient::Observer::DeviceRemoved because it deletes the
+  // BluetoothDeviceChromeOS object, including the device_path referenced here.
+  FakeBluetoothInputClient* fake_bluetooth_input_client =
+      static_cast<FakeBluetoothInputClient*>(
+          DBusThreadManager::Get()->GetBluetoothInputClient());
+  fake_bluetooth_input_client->RemoveInputDevice(device_path);
+
+  FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
+                    DeviceRemoved(device_path));
+
+  delete properties;
+  properties_map_.erase(iter);
+}
+
+void FakeBluetoothDeviceClient::OnPropertyChanged(
+    const dbus::ObjectPath& object_path,
+    const std::string& property_name) {
+  FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
+                    DevicePropertyChanged(object_path, property_name));
+}
+
+void FakeBluetoothDeviceClient::DiscoverySimulationTimer() {
+  if (!discovery_simulation_step_)
+    return;
+
+  // Timer fires every .75s, the numbers below are arbitrary to give a feel
+  // for a discovery process.
+  VLOG(1) << "discovery simulation, step " << discovery_simulation_step_;
+  if (discovery_simulation_step_ == 2) {
+    CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+                 dbus::ObjectPath(kAppleMousePath));
+
+  } else if (discovery_simulation_step_ == 4) {
+    CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+                 dbus::ObjectPath(kAppleKeyboardPath));
+    CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+                 dbus::ObjectPath(kVanishingDevicePath));
+
+  } else if (discovery_simulation_step_ == 7) {
+    CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+                 dbus::ObjectPath(kMicrosoftMousePath));
+
+  } else if (discovery_simulation_step_ == 8) {
+    CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+                 dbus::ObjectPath(kMotorolaKeyboardPath));
+    CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+                 dbus::ObjectPath(kSonyHeadphonesPath));
+
+  } else if (discovery_simulation_step_ == 10) {
+    CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+                 dbus::ObjectPath(kPhonePath));
+    CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+                 dbus::ObjectPath(kWeirdDevicePath));
+    CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+                 dbus::ObjectPath(kUnconnectableDevicePath));
+    CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+                 dbus::ObjectPath(kUnpairableDevicePath));
+
+  } else if (discovery_simulation_step_ == 13) {
+    RemoveDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+                 dbus::ObjectPath(kVanishingDevicePath));
+
+  } else if (discovery_simulation_step_ == 14) {
+    return;
+
+  }
+
+  ++discovery_simulation_step_;
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&FakeBluetoothDeviceClient::DiscoverySimulationTimer,
+                 base::Unretained(this)),
+      base::TimeDelta::FromMilliseconds(simulation_interval_ms_));
+}
+
+
+void FakeBluetoothDeviceClient::SimulatePairing(
+    const dbus::ObjectPath& object_path,
+    bool incoming_request,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
   pairing_cancelled_ = false;
 
   FakeBluetoothAgentManagerClient* fake_bluetooth_agent_manager_client =
@@ -407,10 +639,7 @@ void FakeBluetoothDeviceClient::Pair(
           DBusThreadManager::Get()->GetBluetoothAgentManagerClient());
   FakeBluetoothAgentServiceProvider* agent_service_provider =
       fake_bluetooth_agent_manager_client->GetAgentServiceProvider();
-  if (agent_service_provider == NULL) {
-    error_callback.Run(kNoResponseError, "Missing agent");
-    return;
-  }
+  CHECK(agent_service_provider != NULL);
 
   if (object_path == dbus::ObjectPath(kAppleMousePath) ||
       object_path == dbus::ObjectPath(kMicrosoftMousePath) ||
@@ -501,318 +730,6 @@ void FakeBluetoothDeviceClient::Pair(
   }
 }
 
-void FakeBluetoothDeviceClient::CancelPairing(
-    const dbus::ObjectPath& object_path,
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
-  VLOG(1) << "CancelPairing: " << object_path.value();
-  pairing_cancelled_ = true;
-  callback.Run();
-}
-
-
-void FakeBluetoothDeviceClient::BeginDiscoverySimulation(
-    const dbus::ObjectPath& adapter_path) {
-  VLOG(1) << "starting discovery simulation";
-
-  discovery_simulation_step_ = 1;
-
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&FakeBluetoothDeviceClient::DiscoverySimulationTimer,
-                 base::Unretained(this)),
-      base::TimeDelta::FromMilliseconds(simulation_interval_ms_));
-}
-
-void FakeBluetoothDeviceClient::EndDiscoverySimulation(
-    const dbus::ObjectPath& adapter_path) {
-  VLOG(1) << "stopping discovery simulation";
-  discovery_simulation_step_ = 0;
-}
-
-void FakeBluetoothDeviceClient::SetSimulationIntervalMs(int interval_ms) {
-  simulation_interval_ms_ = interval_ms;
-}
-
-void FakeBluetoothDeviceClient::RemoveDevice(
-    const dbus::ObjectPath& adapter_path,
-    const dbus::ObjectPath& device_path) {
-  std::vector<dbus::ObjectPath>::iterator listiter =
-      std::find(device_list_.begin(), device_list_.end(), device_path);
-  if (listiter == device_list_.end())
-    return;
-
-  PropertiesMap::iterator iter = properties_map_.find(device_path);
-  Properties* properties = iter->second;
-
-  VLOG(1) << "removing device: " << properties->alias.value();
-  device_list_.erase(listiter);
-
-  // Remove the Input interface if it exists. This should be called before the
-  // BluetoothDeviceClient::Observer::DeviceRemoved because it deletes the
-  // BluetoothDeviceChromeOS object, including the device_path referenced here.
-  FakeBluetoothInputClient* fake_bluetooth_input_client =
-      static_cast<FakeBluetoothInputClient*>(
-          DBusThreadManager::Get()->GetBluetoothInputClient());
-  fake_bluetooth_input_client->RemoveInputDevice(device_path);
-
-  FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
-                    DeviceRemoved(device_path));
-
-  delete properties;
-  properties_map_.erase(iter);
-}
-
-void FakeBluetoothDeviceClient::OnPropertyChanged(
-    const dbus::ObjectPath& object_path,
-    const std::string& property_name) {
-  FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
-                    DevicePropertyChanged(object_path, property_name));
-}
-
-void FakeBluetoothDeviceClient::DiscoverySimulationTimer() {
-  if (!discovery_simulation_step_)
-    return;
-
-  // Timer fires every .75s, the numbers below are arbitrary to give a feel
-  // for a discovery process.
-  VLOG(1) << "discovery simulation, step " << discovery_simulation_step_;
-  if (discovery_simulation_step_ == 2) {
-    if (std::find(device_list_.begin(), device_list_.end(),
-                  dbus::ObjectPath(kAppleMousePath)) == device_list_.end()) {
-      Properties* properties = new Properties(base::Bind(
-          &FakeBluetoothDeviceClient::OnPropertyChanged,
-          base::Unretained(this),
-          dbus::ObjectPath(kAppleMousePath)));
-      properties->address.ReplaceValue(kAppleMouseAddress);
-      properties->bluetooth_class.ReplaceValue(kAppleMouseClass);
-      properties->name.ReplaceValue("Fake Apple Magic Mouse");
-      properties->alias.ReplaceValue(kAppleMouseName);
-      properties->adapter.ReplaceValue(
-          dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath));
-
-      std::vector<std::string> uuids;
-      uuids.push_back("00001124-0000-1000-8000-00805f9b34fb");
-      properties->uuids.ReplaceValue(uuids);
-
-      properties_map_[dbus::ObjectPath(kAppleMousePath)] = properties;
-      device_list_.push_back(dbus::ObjectPath(kAppleMousePath));
-      FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
-                        DeviceAdded(dbus::ObjectPath(kAppleMousePath)));
-    }
-
-  } else if (discovery_simulation_step_ == 4) {
-    if (std::find(device_list_.begin(), device_list_.end(),
-                  dbus::ObjectPath(kAppleKeyboardPath)) == device_list_.end()) {
-      Properties *properties = new Properties(base::Bind(
-          &FakeBluetoothDeviceClient::OnPropertyChanged,
-          base::Unretained(this),
-          dbus::ObjectPath(kAppleKeyboardPath)));
-      properties->address.ReplaceValue(kAppleKeyboardAddress);
-      properties->bluetooth_class.ReplaceValue(kAppleKeyboardClass);
-      properties->name.ReplaceValue("Fake Apple Wireless Keyboard");
-      properties->alias.ReplaceValue(kAppleKeyboardName);
-      properties->adapter.ReplaceValue(
-          dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath));
-
-      std::vector<std::string> uuids;
-      uuids.push_back("00001124-0000-1000-8000-00805f9b34fb");
-      properties->uuids.ReplaceValue(uuids);
-
-      properties_map_[dbus::ObjectPath(kAppleKeyboardPath)] = properties;
-      device_list_.push_back(dbus::ObjectPath(kAppleKeyboardPath));
-      FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
-                        DeviceAdded(dbus::ObjectPath(kAppleKeyboardPath)));
-    }
-
-    if (std::find(device_list_.begin(), device_list_.end(),
-                  dbus::ObjectPath(kVanishingDevicePath)) ==
-        device_list_.end()) {
-      Properties* properties = new Properties(base::Bind(
-          &FakeBluetoothDeviceClient::OnPropertyChanged,
-          base::Unretained(this),
-          dbus::ObjectPath(kVanishingDevicePath)));
-      properties->address.ReplaceValue(kVanishingDeviceAddress);
-      properties->bluetooth_class.ReplaceValue(kVanishingDeviceClass);
-      properties->name.ReplaceValue("Fake Vanishing Device");
-      properties->alias.ReplaceValue(kVanishingDeviceName);
-      properties->adapter.ReplaceValue(
-          dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath));
-
-      properties_map_[dbus::ObjectPath(kVanishingDevicePath)] = properties;
-      device_list_.push_back(dbus::ObjectPath(kVanishingDevicePath));
-      FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
-                        DeviceAdded(dbus::ObjectPath(kVanishingDevicePath)));
-    }
-
-  } else if (discovery_simulation_step_ == 7) {
-    if (std::find(device_list_.begin(), device_list_.end(),
-                  dbus::ObjectPath(kMicrosoftMousePath)) ==
-        device_list_.end()) {
-      Properties* properties = new Properties(base::Bind(
-          &FakeBluetoothDeviceClient::OnPropertyChanged,
-          base::Unretained(this),
-          dbus::ObjectPath(kMicrosoftMousePath)));
-      properties->address.ReplaceValue(kMicrosoftMouseAddress);
-      properties->bluetooth_class.ReplaceValue(kMicrosoftMouseClass);
-      properties->name.ReplaceValue("Fake Microsoft Mouse");
-      properties->alias.ReplaceValue(kMicrosoftMouseName);
-      properties->adapter.ReplaceValue(
-          dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath));
-
-      std::vector<std::string> uuids;
-      uuids.push_back("00001124-0000-1000-8000-00805f9b34fb");
-      properties->uuids.ReplaceValue(uuids);
-
-      properties_map_[dbus::ObjectPath(kMicrosoftMousePath)] = properties;
-      device_list_.push_back(dbus::ObjectPath(kMicrosoftMousePath));
-      FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
-                        DeviceAdded(dbus::ObjectPath(kMicrosoftMousePath)));
-    }
-
-  } else if (discovery_simulation_step_ == 8) {
-    if (std::find(device_list_.begin(), device_list_.end(),
-                  dbus::ObjectPath(kMotorolaKeyboardPath)) ==
-        device_list_.end()) {
-      Properties* properties = new Properties(base::Bind(
-          &FakeBluetoothDeviceClient::OnPropertyChanged,
-          base::Unretained(this),
-          dbus::ObjectPath(kMotorolaKeyboardPath)));
-      properties->address.ReplaceValue(kMotorolaKeyboardAddress);
-      properties->bluetooth_class.ReplaceValue(kMotorolaKeyboardClass);
-      properties->name.ReplaceValue("Fake Motorola Keyboard");
-      properties->alias.ReplaceValue(kMotorolaKeyboardName);
-      properties->adapter.ReplaceValue(
-          dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath));
-
-      std::vector<std::string> uuids;
-      uuids.push_back("00001124-0000-1000-8000-00805f9b34fb");
-      properties->uuids.ReplaceValue(uuids);
-
-      properties_map_[dbus::ObjectPath(kMotorolaKeyboardPath)] = properties;
-      device_list_.push_back(dbus::ObjectPath(kMotorolaKeyboardPath));
-      FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
-                        DeviceAdded(dbus::ObjectPath(kMotorolaKeyboardPath)));
-    }
-
-    if (std::find(device_list_.begin(), device_list_.end(),
-                  dbus::ObjectPath(kSonyHeadphonesPath)) ==
-        device_list_.end()) {
-      Properties* properties = new Properties(base::Bind(
-          &FakeBluetoothDeviceClient::OnPropertyChanged,
-          base::Unretained(this),
-          dbus::ObjectPath(kSonyHeadphonesPath)));
-      properties->address.ReplaceValue(kSonyHeadphonesAddress);
-      properties->bluetooth_class.ReplaceValue(kSonyHeadphonesClass);
-      properties->name.ReplaceValue("Fake Sony Headphones");
-      properties->alias.ReplaceValue(kSonyHeadphonesName);
-      properties->adapter.ReplaceValue(
-          dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath));
-
-      properties_map_[dbus::ObjectPath(kSonyHeadphonesPath)] = properties;
-      device_list_.push_back(dbus::ObjectPath(kSonyHeadphonesPath));
-      FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
-                        DeviceAdded(dbus::ObjectPath(kSonyHeadphonesPath)));
-    }
-
-  } else if (discovery_simulation_step_ == 10) {
-    if (std::find(device_list_.begin(), device_list_.end(),
-                  dbus::ObjectPath(kPhonePath)) == device_list_.end()) {
-      Properties* properties = new Properties(base::Bind(
-          &FakeBluetoothDeviceClient::OnPropertyChanged,
-          base::Unretained(this),
-          dbus::ObjectPath(kPhonePath)));
-      properties->address.ReplaceValue(kPhoneAddress);
-      properties->bluetooth_class.ReplaceValue(kPhoneClass);
-      properties->name.ReplaceValue("Fake Phone");
-      properties->alias.ReplaceValue(kPhoneName);
-      properties->adapter.ReplaceValue(
-          dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath));
-
-      properties_map_[dbus::ObjectPath(kPhonePath)] = properties;
-      device_list_.push_back(dbus::ObjectPath(kPhonePath));
-      FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
-                        DeviceAdded(dbus::ObjectPath(kPhonePath)));
-    }
-
-    if (std::find(device_list_.begin(), device_list_.end(),
-                  dbus::ObjectPath(kWeirdDevicePath)) == device_list_.end()) {
-      Properties* properties = new Properties(base::Bind(
-          &FakeBluetoothDeviceClient::OnPropertyChanged,
-          base::Unretained(this),
-          dbus::ObjectPath(kWeirdDevicePath)));
-      properties->address.ReplaceValue(kWeirdDeviceAddress);
-      properties->bluetooth_class.ReplaceValue(kWeirdDeviceClass);
-      properties->name.ReplaceValue("Fake Weird Device");
-      properties->alias.ReplaceValue(kWeirdDeviceName);
-      properties->adapter.ReplaceValue(
-          dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath));
-
-      properties_map_[dbus::ObjectPath(kWeirdDevicePath)] = properties;
-      device_list_.push_back(dbus::ObjectPath(kWeirdDevicePath));
-      FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
-                        DeviceAdded(dbus::ObjectPath(kWeirdDevicePath)));
-    }
-
-    if (std::find(device_list_.begin(), device_list_.end(),
-                  dbus::ObjectPath(kUnconnectableDevicePath)) ==
-        device_list_.end()) {
-      Properties* properties = new Properties(base::Bind(
-          &FakeBluetoothDeviceClient::OnPropertyChanged,
-          base::Unretained(this),
-          dbus::ObjectPath(kUnconnectableDevicePath)));
-      properties->address.ReplaceValue(kUnconnectableDeviceAddress);
-      properties->bluetooth_class.ReplaceValue(kUnconnectableDeviceClass);
-      properties->name.ReplaceValue("Fake Unconnectable Device");
-      properties->alias.ReplaceValue(kUnconnectableDeviceName);
-      properties->adapter.ReplaceValue(
-          dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath));
-
-      properties_map_[dbus::ObjectPath(kUnconnectableDevicePath)] = properties;
-      device_list_.push_back(dbus::ObjectPath(kUnconnectableDevicePath));
-      FOR_EACH_OBSERVER(
-          BluetoothDeviceClient::Observer, observers_,
-          DeviceAdded(dbus::ObjectPath(kUnconnectableDevicePath)));
-    }
-
-    if (std::find(device_list_.begin(), device_list_.end(),
-                  dbus::ObjectPath(kUnpairableDevicePath)) ==
-        device_list_.end()) {
-      Properties* properties = new Properties(base::Bind(
-          &FakeBluetoothDeviceClient::OnPropertyChanged,
-          base::Unretained(this),
-          dbus::ObjectPath(kUnpairableDevicePath)));
-      properties->address.ReplaceValue(kUnpairableDeviceAddress);
-      properties->bluetooth_class.ReplaceValue(kUnpairableDeviceClass);
-      properties->name.ReplaceValue("Fake Unpairable Device");
-      properties->alias.ReplaceValue(kUnpairableDeviceName);
-      properties->adapter.ReplaceValue(
-          dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath));
-
-      properties_map_[dbus::ObjectPath(kUnpairableDevicePath)] = properties;
-      device_list_.push_back(dbus::ObjectPath(kUnpairableDevicePath));
-      FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
-                        DeviceAdded(dbus::ObjectPath(kUnpairableDevicePath)));
-    }
-
-  } else if (discovery_simulation_step_ == 13) {
-    RemoveDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-                 dbus::ObjectPath(kVanishingDevicePath));
-
-  } else if (discovery_simulation_step_ == 14) {
-    return;
-
-  }
-
-  ++discovery_simulation_step_;
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&FakeBluetoothDeviceClient::DiscoverySimulationTimer,
-                 base::Unretained(this)),
-      base::TimeDelta::FromMilliseconds(simulation_interval_ms_));
-}
-
-
 void FakeBluetoothDeviceClient::CompleteSimulatedPairing(
     const dbus::ObjectPath& object_path,
     const base::Closure& callback,
@@ -822,7 +739,7 @@ void FakeBluetoothDeviceClient::CompleteSimulatedPairing(
     pairing_cancelled_ = false;
 
     error_callback.Run(bluetooth_device::kErrorAuthenticationCanceled,
-                       "Cancaled");
+                       "Cancelled");
   } else {
     Properties* properties = GetProperties(object_path);
 

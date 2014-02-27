@@ -15,7 +15,9 @@
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_device_chromeos.h"
+#include "device/bluetooth/bluetooth_pairing_chromeos.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 using device::BluetoothAdapter;
 using device::BluetoothAdapterFactory;
@@ -230,6 +232,7 @@ class BluetoothChromeOSTest : public testing::Test {
     callback_count_ = 0;
     error_callback_count_ = 0;
     last_connect_error_ = BluetoothDevice::ERROR_UNKNOWN;
+    last_client_error_ = "";
   }
 
   virtual void TearDown() {
@@ -251,10 +254,11 @@ class BluetoothChromeOSTest : public testing::Test {
   void DBusErrorCallback(const std::string& error_name,
                          const std::string& error_message) {
     ++error_callback_count_;
+    last_client_error_ = error_name;
     QuitMessageLoop();
   }
 
-  void ConnectErrorCallback(enum BluetoothDevice::ConnectErrorCode error) {
+  void ConnectErrorCallback(BluetoothDevice::ConnectErrorCode error) {
     ++error_callback_count_;
     last_connect_error_ = error;
   }
@@ -338,15 +342,16 @@ class BluetoothChromeOSTest : public testing::Test {
   int callback_count_;
   int error_callback_count_;
   enum BluetoothDevice::ConnectErrorCode last_connect_error_;
+  std::string last_client_error_;
 
  private:
-   // Some tests use a message loop since background processing is simulated;
-   // break out of those loops.
-   void QuitMessageLoop() {
-     if (base::MessageLoop::current() &&
-         base::MessageLoop::current()->is_running())
-       base::MessageLoop::current()->Quit();
-   }
+  // Some tests use a message loop since background processing is simulated;
+  // break out of those loops.
+  void QuitMessageLoop() {
+    if (base::MessageLoop::current() &&
+        base::MessageLoop::current()->is_running())
+      base::MessageLoop::current()->Quit();
+  }
 };
 
 TEST_F(BluetoothChromeOSTest, AlreadyPresent) {
@@ -2495,6 +2500,353 @@ TEST_F(BluetoothChromeOSTest, PairingCancelledInFlight) {
   EXPECT_EQ(2, observer.device_changed_count_);
   EXPECT_FALSE(device->IsConnected());
   EXPECT_FALSE(device->IsConnecting());
+  EXPECT_FALSE(device->IsPaired());
+}
+
+TEST_F(BluetoothChromeOSTest, IncomingPairSonyHeadphones) {
+  base::MessageLoop message_loop;
+  fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
+
+  GetAdapter();
+
+  TestPairingDelegate pairing_delegate;
+  adapter_->AddPairingDelegate(
+      &pairing_delegate,
+      BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_HIGH);
+
+  // The sony headphones requests that we provide a PIN code.
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kSonyHeadphonesPath));
+  BluetoothDevice* device = adapter_->GetDevice(
+      FakeBluetoothDeviceClient::kSonyHeadphonesAddress);
+  ASSERT_TRUE(device != NULL);
+  ASSERT_FALSE(device->IsPaired());
+
+  TestObserver observer(adapter_);
+  adapter_->AddObserver(&observer);
+
+  fake_bluetooth_device_client_->SimulatePairing(
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kSonyHeadphonesPath),
+      true,
+      base::Bind(&BluetoothChromeOSTest::Callback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
+                 base::Unretained(this)));
+
+  EXPECT_EQ(1, pairing_delegate.call_count_);
+  EXPECT_EQ(1, pairing_delegate.request_pincode_count_);
+
+  // Set the PIN.
+  device->SetPinCode("1234");
+  message_loop.Run();
+
+  EXPECT_EQ(1, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+
+  // One for paired.
+  EXPECT_EQ(1, observer.device_changed_count_);
+  EXPECT_EQ(device, observer.last_device_);
+
+  EXPECT_TRUE(device->IsPaired());
+
+  // No pairing context should remain on the device.
+  BluetoothDeviceChromeOS* device_chromeos =
+      static_cast<BluetoothDeviceChromeOS*>(device);
+  EXPECT_TRUE(device_chromeos->GetPairing() == NULL);
+}
+
+TEST_F(BluetoothChromeOSTest, IncomingPairPhone) {
+  base::MessageLoop message_loop;
+  fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
+
+  GetAdapter();
+
+  TestPairingDelegate pairing_delegate;
+  adapter_->AddPairingDelegate(
+      &pairing_delegate,
+      BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_HIGH);
+
+  // The fake phone requests that we confirm a displayed passkey.
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kPhonePath));
+  BluetoothDevice* device = adapter_->GetDevice(
+      FakeBluetoothDeviceClient::kPhoneAddress);
+  ASSERT_TRUE(device != NULL);
+  ASSERT_FALSE(device->IsPaired());
+
+  TestObserver observer(adapter_);
+  adapter_->AddObserver(&observer);
+
+  fake_bluetooth_device_client_->SimulatePairing(
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kPhonePath),
+      true,
+      base::Bind(&BluetoothChromeOSTest::Callback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
+                 base::Unretained(this)));
+
+  EXPECT_EQ(1, pairing_delegate.call_count_);
+  EXPECT_EQ(1, pairing_delegate.confirm_passkey_count_);
+  EXPECT_EQ(123456U, pairing_delegate.last_passkey_);
+
+  // Confirm the passkey.
+  device->ConfirmPairing();
+  message_loop.Run();
+
+  EXPECT_EQ(1, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+
+  // One for paired.
+  EXPECT_EQ(1, observer.device_changed_count_);
+  EXPECT_EQ(device, observer.last_device_);
+
+  EXPECT_TRUE(device->IsPaired());
+
+  // No pairing context should remain on the device.
+  BluetoothDeviceChromeOS* device_chromeos =
+      static_cast<BluetoothDeviceChromeOS*>(device);
+  EXPECT_TRUE(device_chromeos->GetPairing() == NULL);
+}
+
+TEST_F(BluetoothChromeOSTest, IncomingPairWeirdDevice) {
+  base::MessageLoop message_loop;
+  fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
+
+  GetAdapter();
+
+  TestPairingDelegate pairing_delegate;
+  adapter_->AddPairingDelegate(
+      &pairing_delegate,
+      BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_HIGH);
+
+  // The weird device requests that we provide a Passkey.
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kWeirdDevicePath));
+  BluetoothDevice* device = adapter_->GetDevice(
+      FakeBluetoothDeviceClient::kWeirdDeviceAddress);
+  ASSERT_TRUE(device != NULL);
+  ASSERT_FALSE(device->IsPaired());
+
+  TestObserver observer(adapter_);
+  adapter_->AddObserver(&observer);
+
+  fake_bluetooth_device_client_->SimulatePairing(
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kWeirdDevicePath),
+      true,
+      base::Bind(&BluetoothChromeOSTest::Callback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
+                 base::Unretained(this)));
+
+  EXPECT_EQ(1, pairing_delegate.call_count_);
+  EXPECT_EQ(1, pairing_delegate.request_passkey_count_);
+
+  // Set the Passkey.
+  device->SetPasskey(1234);
+  message_loop.Run();
+
+  EXPECT_EQ(1, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+
+  // One for paired.
+  EXPECT_EQ(1, observer.device_changed_count_);
+  EXPECT_EQ(device, observer.last_device_);
+
+  EXPECT_TRUE(device->IsPaired());
+
+  // No pairing context should remain on the device.
+  BluetoothDeviceChromeOS* device_chromeos =
+      static_cast<BluetoothDeviceChromeOS*>(device);
+  EXPECT_TRUE(device_chromeos->GetPairing() == NULL);
+}
+
+TEST_F(BluetoothChromeOSTest, IncomingPairSonyHeadphonesWithoutDelegate) {
+  base::MessageLoop message_loop;
+  fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
+
+  GetAdapter();
+
+  // The Sony Headphones requests that we provide a PIN Code, without a
+  // pairing delegate, that will be rejected.
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kSonyHeadphonesPath));
+  BluetoothDevice* device = adapter_->GetDevice(
+      FakeBluetoothDeviceClient::kSonyHeadphonesAddress);
+  ASSERT_TRUE(device != NULL);
+  ASSERT_FALSE(device->IsPaired());
+
+  TestObserver observer(adapter_);
+  adapter_->AddObserver(&observer);
+
+  fake_bluetooth_device_client_->SimulatePairing(
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kSonyHeadphonesPath),
+      true,
+      base::Bind(&BluetoothChromeOSTest::Callback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
+                 base::Unretained(this)));
+
+  message_loop.Run();
+
+  EXPECT_EQ(0, callback_count_);
+  EXPECT_EQ(1, error_callback_count_);
+  EXPECT_EQ(bluetooth_device::kErrorAuthenticationRejected, last_client_error_);
+
+  // No changes should be observer.
+  EXPECT_EQ(0, observer.device_changed_count_);
+
+  EXPECT_FALSE(device->IsPaired());
+
+  // No pairing context should remain on the device.
+  BluetoothDeviceChromeOS* device_chromeos =
+      static_cast<BluetoothDeviceChromeOS*>(device);
+  EXPECT_TRUE(device_chromeos->GetPairing() == NULL);
+}
+
+TEST_F(BluetoothChromeOSTest, IncomingPairPhoneWithoutDelegate) {
+  base::MessageLoop message_loop;
+  fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
+
+  GetAdapter();
+
+  // The fake phone requests that we confirm a displayed passkey, without a
+  // pairing delegate, that will be rejected.
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kPhonePath));
+  BluetoothDevice* device = adapter_->GetDevice(
+      FakeBluetoothDeviceClient::kPhoneAddress);
+  ASSERT_TRUE(device != NULL);
+  ASSERT_FALSE(device->IsPaired());
+
+  TestObserver observer(adapter_);
+  adapter_->AddObserver(&observer);
+
+  fake_bluetooth_device_client_->SimulatePairing(
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kPhonePath),
+      true,
+      base::Bind(&BluetoothChromeOSTest::Callback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
+                 base::Unretained(this)));
+
+  message_loop.Run();
+
+  EXPECT_EQ(0, callback_count_);
+  EXPECT_EQ(1, error_callback_count_);
+  EXPECT_EQ(bluetooth_device::kErrorAuthenticationRejected, last_client_error_);
+
+  // No changes should be observer.
+  EXPECT_EQ(0, observer.device_changed_count_);
+
+  EXPECT_FALSE(device->IsPaired());
+
+  // No pairing context should remain on the device.
+  BluetoothDeviceChromeOS* device_chromeos =
+      static_cast<BluetoothDeviceChromeOS*>(device);
+  EXPECT_TRUE(device_chromeos->GetPairing() == NULL);
+}
+
+TEST_F(BluetoothChromeOSTest, IncomingPairWeirdDeviceWithoutDelegate) {
+  base::MessageLoop message_loop;
+  fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
+
+  GetAdapter();
+
+  // The weird device requests that we provide a displayed passkey, without a
+  // pairing delegate, that will be rejected.
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kWeirdDevicePath));
+  BluetoothDevice* device = adapter_->GetDevice(
+      FakeBluetoothDeviceClient::kWeirdDeviceAddress);
+  ASSERT_TRUE(device != NULL);
+  ASSERT_FALSE(device->IsPaired());
+
+  TestObserver observer(adapter_);
+  adapter_->AddObserver(&observer);
+
+  fake_bluetooth_device_client_->SimulatePairing(
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kWeirdDevicePath),
+      true,
+      base::Bind(&BluetoothChromeOSTest::Callback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
+                 base::Unretained(this)));
+
+  message_loop.Run();
+
+  EXPECT_EQ(0, callback_count_);
+  EXPECT_EQ(1, error_callback_count_);
+  EXPECT_EQ(bluetooth_device::kErrorAuthenticationRejected, last_client_error_);
+
+  // No changes should be observer.
+  EXPECT_EQ(0, observer.device_changed_count_);
+
+  EXPECT_FALSE(device->IsPaired());
+
+  // No pairing context should remain on the device.
+  BluetoothDeviceChromeOS* device_chromeos =
+      static_cast<BluetoothDeviceChromeOS*>(device);
+  EXPECT_TRUE(device_chromeos->GetPairing() == NULL);
+}
+
+TEST_F(BluetoothChromeOSTest, RemovePairingDelegateDuringPairing) {
+  base::MessageLoop message_loop;
+  fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
+
+  GetAdapter();
+
+  TestPairingDelegate pairing_delegate;
+  adapter_->AddPairingDelegate(
+      &pairing_delegate,
+      BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_HIGH);
+
+  // The weird device requests that we provide a Passkey.
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kWeirdDevicePath));
+  BluetoothDevice* device = adapter_->GetDevice(
+      FakeBluetoothDeviceClient::kWeirdDeviceAddress);
+  ASSERT_TRUE(device != NULL);
+  ASSERT_FALSE(device->IsPaired());
+
+  TestObserver observer(adapter_);
+  adapter_->AddObserver(&observer);
+
+  fake_bluetooth_device_client_->SimulatePairing(
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kWeirdDevicePath),
+      true,
+      base::Bind(&BluetoothChromeOSTest::Callback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
+                 base::Unretained(this)));
+
+  EXPECT_EQ(1, pairing_delegate.call_count_);
+  EXPECT_EQ(1, pairing_delegate.request_passkey_count_);
+
+  // A pairing context should now be set on the device.
+  BluetoothDeviceChromeOS* device_chromeos =
+      static_cast<BluetoothDeviceChromeOS*>(device);
+  ASSERT_TRUE(device_chromeos->GetPairing() != NULL);
+
+  // Removing the pairing delegate should remove that pairing context.
+  adapter_->RemovePairingDelegate(&pairing_delegate);
+
+  EXPECT_TRUE(device_chromeos->GetPairing() == NULL);
+
+  // Set the Passkey, this should now have no effect since the pairing has
+  // been, in-effect, cancelled
+  device->SetPasskey(1234);
+
+  EXPECT_EQ(0, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_EQ(0, observer.device_changed_count_);
+
   EXPECT_FALSE(device->IsPaired());
 }
 

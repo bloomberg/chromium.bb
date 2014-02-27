@@ -66,6 +66,13 @@ class MockBluetoothAdapter : public BluetoothAdapter {
       ReadLocalOutOfBandPairingData,
       void(const BluetoothOutOfBandPairingDataCallback& callback,
            const ErrorCallback& error_callback));
+  MOCK_METHOD2(AddPairingDelegate,
+               void(BluetoothDevice::PairingDelegate* pairing_delegate,
+                    enum PairingDelegatePriority priority));
+  MOCK_METHOD1(RemovePairingDelegate,
+               void(BluetoothDevice::PairingDelegate* pairing_delegate));
+  MOCK_METHOD0(DefaultPairingDelegate, BluetoothDevice::PairingDelegate*());
+
  protected:
   MOCK_METHOD2(AddDiscoverySession,
                void(const base::Closure& callback,
@@ -74,6 +81,9 @@ class MockBluetoothAdapter : public BluetoothAdapter {
                void(const base::Closure& callback,
                     const ErrorCallback& error_callback));
   virtual ~MockBluetoothAdapter();
+
+  MOCK_METHOD1(RemovePairingDelegateInternal,
+               void(BluetoothDevice::PairingDelegate* pairing_delegate));
 };
 
 }  // namespace device

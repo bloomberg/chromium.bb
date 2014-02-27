@@ -23,6 +23,7 @@
       ],
       'sources': [
         'bluetooth/bluetooth_adapter_mac_unittest.mm',
+        'bluetooth/bluetooth_adapter_unittest.cc',
         'bluetooth/bluetooth_adapter_win_unittest.cc',
         'bluetooth/bluetooth_device_win_unittest.cc',
         'bluetooth/bluetooth_chromeos_unittest.cc',

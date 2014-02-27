@@ -18,6 +18,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_device_chromeos.h"
+#include "device/bluetooth/bluetooth_pairing_chromeos.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using device::BluetoothAdapter;
@@ -28,19 +29,6 @@ namespace {
 // The agent path is relatively meaningless since BlueZ only permits one to
 // exist per D-Bus connection, it just has to be unique within Chromium.
 const char kAgentPath[] = "/org/chromium/bluetooth_agent";
-
-// Histogram enumerations for pairing methods.
-enum UMAPairingMethod {
-  UMA_PAIRING_METHOD_NONE,
-  UMA_PAIRING_METHOD_REQUEST_PINCODE,
-  UMA_PAIRING_METHOD_REQUEST_PASSKEY,
-  UMA_PAIRING_METHOD_DISPLAY_PINCODE,
-  UMA_PAIRING_METHOD_DISPLAY_PASSKEY,
-  UMA_PAIRING_METHOD_CONFIRM_PASSKEY,
-  // NOTE: Add new pairing methods immediately above this line. Make sure to
-  // update the enum list in tools/histogram/histograms.xml accordingly.
-  UMA_PAIRING_METHOD_COUNT
-};
 
 void OnUnregisterAgentError(const std::string& error_name,
                             const std::string& error_message) {
@@ -219,6 +207,22 @@ void BluetoothAdapterChromeOS::ReadLocalOutOfBandPairingData(
   error_callback.Run();
 }
 
+void BluetoothAdapterChromeOS::RemovePairingDelegateInternal(
+    BluetoothDevice::PairingDelegate* pairing_delegate) {
+  // Before removing a pairing delegate make sure that there aren't any devices
+  // currently using it; if there are, clear the pairing context which will
+  // make any responses no-ops.
+  for (DevicesMap::iterator iter = devices_.begin();
+       iter != devices_.end(); ++iter) {
+    BluetoothDeviceChromeOS* device_chromeos =
+        static_cast<BluetoothDeviceChromeOS*>(iter->second);
+
+    BluetoothPairingChromeOS* pairing = device_chromeos->GetPairing();
+    if (pairing && pairing->GetPairingDelegate() == pairing_delegate)
+      device_chromeos->EndPairing();
+  }
+}
+
 void BluetoothAdapterChromeOS::AdapterAdded(
     const dbus::ObjectPath& object_path) {
   // Set the adapter to the newly added adapter only if no adapter is present.
@@ -352,22 +356,13 @@ void BluetoothAdapterChromeOS::RequestPinCode(
   DCHECK(agent_.get());
   VLOG(1) << device_path.value() << ": RequestPinCode";
 
-  BluetoothDeviceChromeOS* device_chromeos;
-  PairingContext* pairing_context;
-  if (!GetDeviceAndPairingContext(device_path,
-                                  &device_chromeos, &pairing_context)) {
+  BluetoothPairingChromeOS* pairing = GetPairing(device_path);
+  if (!pairing) {
     callback.Run(REJECTED, "");
     return;
   }
 
-  UMA_HISTOGRAM_ENUMERATION("Bluetooth.PairingMethod",
-                            UMA_PAIRING_METHOD_REQUEST_PINCODE,
-                            UMA_PAIRING_METHOD_COUNT);
-
-  DCHECK(pairing_context->pincode_callback_.is_null());
-  pairing_context->pincode_callback_ = callback;
-  pairing_context->pairing_delegate_->RequestPinCode(device_chromeos);
-  pairing_context->pairing_delegate_used_ = true;
+  pairing->RequestPinCode(callback);
 }
 
 void BluetoothAdapterChromeOS::DisplayPinCode(
@@ -376,18 +371,11 @@ void BluetoothAdapterChromeOS::DisplayPinCode(
   DCHECK(agent_.get());
   VLOG(1) << device_path.value() << ": DisplayPinCode: " << pincode;
 
-  BluetoothDeviceChromeOS* device_chromeos;
-  PairingContext* pairing_context;
-  if (!GetDeviceAndPairingContext(device_path,
-                                  &device_chromeos, &pairing_context))
+  BluetoothPairingChromeOS* pairing = GetPairing(device_path);
+  if (!pairing)
     return;
 
-  UMA_HISTOGRAM_ENUMERATION("Bluetooth.PairingMethod",
-                            UMA_PAIRING_METHOD_DISPLAY_PINCODE,
-                            UMA_PAIRING_METHOD_COUNT);
-
-  pairing_context->pairing_delegate_->DisplayPinCode(device_chromeos, pincode);
-  pairing_context->pairing_delegate_used_ = true;
+  pairing->DisplayPinCode(pincode);
 }
 
 void BluetoothAdapterChromeOS::RequestPasskey(
@@ -396,22 +384,13 @@ void BluetoothAdapterChromeOS::RequestPasskey(
   DCHECK(agent_.get());
   VLOG(1) << device_path.value() << ": RequestPasskey";
 
-  BluetoothDeviceChromeOS* device_chromeos;
-  PairingContext* pairing_context;
-  if (!GetDeviceAndPairingContext(device_path,
-                                  &device_chromeos, &pairing_context)) {
+  BluetoothPairingChromeOS* pairing = GetPairing(device_path);
+  if (!pairing) {
     callback.Run(REJECTED, 0);
     return;
   }
 
-  UMA_HISTOGRAM_ENUMERATION("Bluetooth.PairingMethod",
-                            UMA_PAIRING_METHOD_REQUEST_PASSKEY,
-                            UMA_PAIRING_METHOD_COUNT);
-
-  DCHECK(pairing_context->passkey_callback_.is_null());
-  pairing_context->passkey_callback_ = callback;
-  pairing_context->pairing_delegate_->RequestPasskey(device_chromeos);
-  pairing_context->pairing_delegate_used_ = true;
+  pairing->RequestPasskey(callback);
 }
 
 void BluetoothAdapterChromeOS::DisplayPasskey(
@@ -422,23 +401,14 @@ void BluetoothAdapterChromeOS::DisplayPasskey(
   VLOG(1) << device_path.value() << ": DisplayPasskey: " << passkey
           << " (" << entered << " entered)";
 
-  BluetoothDeviceChromeOS* device_chromeos;
-  PairingContext* pairing_context;
-  if (!GetDeviceAndPairingContext(device_path,
-                                  &device_chromeos, &pairing_context))
+  BluetoothPairingChromeOS* pairing = GetPairing(device_path);
+  if (!pairing)
     return;
 
   if (entered == 0)
-    UMA_HISTOGRAM_ENUMERATION("Bluetooth.PairingMethod",
-                              UMA_PAIRING_METHOD_DISPLAY_PASSKEY,
-                              UMA_PAIRING_METHOD_COUNT);
+    pairing->DisplayPasskey(passkey);
 
-  if (entered == 0)
-    pairing_context->pairing_delegate_->DisplayPasskey(device_chromeos,
-                                                        passkey);
-
-  pairing_context->pairing_delegate_->KeysEntered(device_chromeos, entered);
-  pairing_context->pairing_delegate_used_ = true;
+  pairing->KeysEntered(entered);
 }
 
 void BluetoothAdapterChromeOS::RequestConfirmation(
@@ -448,22 +418,13 @@ void BluetoothAdapterChromeOS::RequestConfirmation(
   DCHECK(agent_.get());
   VLOG(1) << device_path.value() << ": RequestConfirmation: " << passkey;
 
-  BluetoothDeviceChromeOS* device_chromeos;
-  PairingContext* pairing_context;
-  if (!GetDeviceAndPairingContext(device_path,
-                                  &device_chromeos, &pairing_context)) {
+  BluetoothPairingChromeOS* pairing = GetPairing(device_path);
+  if (!pairing) {
     callback.Run(REJECTED);
     return;
   }
 
-  UMA_HISTOGRAM_ENUMERATION("Bluetooth.PairingMethod",
-                            UMA_PAIRING_METHOD_CONFIRM_PASSKEY,
-                            UMA_PAIRING_METHOD_COUNT);
-
-  DCHECK(pairing_context->confirmation_callback_.is_null());
-  pairing_context->confirmation_callback_ = callback;
-  pairing_context->pairing_delegate_->ConfirmPasskey(device_chromeos, passkey);
-  pairing_context->pairing_delegate_used_ = true;
+  pairing->RequestConfirmation(passkey, callback);
 }
 
 void BluetoothAdapterChromeOS::RequestAuthorization(
@@ -492,101 +453,17 @@ void BluetoothAdapterChromeOS::Cancel() {
   VLOG(1) << "Cancel";
 }
 
-bool BluetoothAdapterChromeOS::PairingContext::ExpectingPinCode() const {
-  return !pincode_callback_.is_null();
-}
-
-bool BluetoothAdapterChromeOS::PairingContext::ExpectingPasskey() const {
-  return !passkey_callback_.is_null();
-}
-
-bool BluetoothAdapterChromeOS::PairingContext::ExpectingConfirmation() const {
-  return !confirmation_callback_.is_null();
-}
-
-void BluetoothAdapterChromeOS::PairingContext::SetPinCode(
-    const std::string& pincode) {
-  if (pincode_callback_.is_null())
-    return;
-
-  pincode_callback_.Run(SUCCESS, pincode);
-  pincode_callback_.Reset();
-}
-
-void BluetoothAdapterChromeOS::PairingContext::SetPasskey(uint32 passkey) {
-  if (passkey_callback_.is_null())
-    return;
-
-  passkey_callback_.Run(SUCCESS, passkey);
-  passkey_callback_.Reset();
-}
-
-void BluetoothAdapterChromeOS::PairingContext::ConfirmPairing() {
-  if (confirmation_callback_.is_null())
-    return;
-
-  confirmation_callback_.Run(SUCCESS);
-  confirmation_callback_.Reset();
-}
-
-bool BluetoothAdapterChromeOS::PairingContext::RejectPairing() {
-  return RunPairingCallbacks(REJECTED);
-}
-
-bool BluetoothAdapterChromeOS::PairingContext::CancelPairing() {
-  return RunPairingCallbacks(CANCELLED);
-}
-
-BluetoothAdapterChromeOS::PairingContext::PairingContext(
-    BluetoothDevice::PairingDelegate* pairing_delegate)
-    : pairing_delegate_(pairing_delegate),
-      pairing_delegate_used_(false) {
-  VLOG(1) << "Created PairingContext";
-}
-
-BluetoothAdapterChromeOS::PairingContext::~PairingContext() {
-  VLOG(1) << "Destroying PairingContext";
-
-  if (!pairing_delegate_used_)
-    UMA_HISTOGRAM_ENUMERATION("Bluetooth.PairingMethod",
-                              UMA_PAIRING_METHOD_NONE,
-                              UMA_PAIRING_METHOD_COUNT);
-
-  DCHECK(pincode_callback_.is_null());
-  DCHECK(passkey_callback_.is_null());
-  DCHECK(confirmation_callback_.is_null());
-
-  pairing_delegate_ = NULL;
-}
-
-bool BluetoothAdapterChromeOS::PairingContext::RunPairingCallbacks(
-    BluetoothAgentServiceProvider::Delegate::Status status) {
-  pairing_delegate_used_ = true;
-
-  bool callback_run = false;
-  if (!pincode_callback_.is_null()) {
-    pincode_callback_.Run(status, "");
-    pincode_callback_.Reset();
-    callback_run = true;
-  }
-
-  if (!passkey_callback_.is_null()) {
-    passkey_callback_.Run(status, 0);
-    passkey_callback_.Reset();
-    callback_run = true;
-  }
-
-  if (!confirmation_callback_.is_null()) {
-    confirmation_callback_.Run(status);
-    confirmation_callback_.Reset();
-    callback_run = true;
-  }
-
-  return callback_run;
-}
-
 void BluetoothAdapterChromeOS::OnRegisterAgent() {
-  VLOG(1) << "Pairing agent registered";
+  VLOG(1) << "Pairing agent registered, requesting to be made default";
+
+  DBusThreadManager::Get()->GetBluetoothAgentManagerClient()->
+      RequestDefaultAgent(
+          dbus::ObjectPath(kAgentPath),
+          base::Bind(&BluetoothAdapterChromeOS::OnRequestDefaultAgent,
+                     weak_ptr_factory_.GetWeakPtr()),
+          base::Bind(&BluetoothAdapterChromeOS::OnRequestDefaultAgentError,
+                     weak_ptr_factory_.GetWeakPtr()));
+
 }
 
 void BluetoothAdapterChromeOS::OnRegisterAgentError(
@@ -596,6 +473,17 @@ void BluetoothAdapterChromeOS::OnRegisterAgentError(
                << error_name << ": " << error_message;
 
   agent_.reset();
+}
+
+void BluetoothAdapterChromeOS::OnRequestDefaultAgent() {
+  VLOG(1) << "Pairing agent now default";
+}
+
+void BluetoothAdapterChromeOS::OnRequestDefaultAgentError(
+    const std::string& error_name,
+    const std::string& error_message) {
+  LOG(WARNING) << ": Failed to make pairing agent default: "
+               << error_name << ": " << error_message;
 }
 
 BluetoothDeviceChromeOS*
@@ -612,26 +500,27 @@ BluetoothAdapterChromeOS::GetDeviceWithPath(
   return NULL;
 }
 
-bool BluetoothAdapterChromeOS::GetDeviceAndPairingContext(
-    const dbus::ObjectPath& object_path,
-    BluetoothDeviceChromeOS** device_chromeos,
-    PairingContext** pairing_context)
+BluetoothPairingChromeOS* BluetoothAdapterChromeOS::GetPairing(
+    const dbus::ObjectPath& object_path)
 {
-  *device_chromeos = GetDeviceWithPath(object_path);
+  BluetoothDeviceChromeOS* device_chromeos = GetDeviceWithPath(object_path);
   if (!device_chromeos) {
     LOG(WARNING) << "Pairing Agent request for unknown device: "
                  << object_path.value();
-    return false;
+    return NULL;
   }
 
-  *pairing_context = (*device_chromeos)->pairing_context_.get();
-  if (*pairing_context)
-    return true;
+  BluetoothPairingChromeOS* pairing = device_chromeos->GetPairing();
+  if (pairing)
+    return pairing;
 
-  // TODO(keybuk): this is the point we need a default pairing delegate, create
-  // a PairingContext with that passed in, set it as the context on the device
-  // and return true.
-  return false;
+  // The device doesn't have its own pairing context, so this is an incoming
+  // pairing request that should use our best default delegate (if we have one).
+  BluetoothDevice::PairingDelegate* pairing_delegate = DefaultPairingDelegate();
+  if (!pairing_delegate)
+    return NULL;
+
+  return device_chromeos->BeginPairing(pairing_delegate);
 }
 
 void BluetoothAdapterChromeOS::SetAdapter(const dbus::ObjectPath& object_path) {
