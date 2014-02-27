@@ -270,8 +270,8 @@ void GpuVideoDecodeAccelerator::Initialize(
     return;
   }
   DVLOG(0) << "Initializing DXVA HW decoder for windows.";
-  video_decode_accelerator_.reset(new DXVAVideoDecodeAccelerator(
-      this, make_context_current_));
+  video_decode_accelerator_.reset(
+      new DXVAVideoDecodeAccelerator(make_context_current_));
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL) && defined(USE_X11)
   scoped_ptr<V4L2Device> device = V4L2Device::Create();
   if (!device.get()) {
@@ -280,7 +280,6 @@ void GpuVideoDecodeAccelerator::Initialize(
   }
   video_decode_accelerator_.reset(
       new V4L2VideoDecodeAccelerator(gfx::GLSurfaceEGL::GetHardwareDisplay(),
-                                     this,
                                      weak_factory_for_io_.GetWeakPtr(),
                                      make_context_current_,
                                      device.Pass(),
@@ -295,10 +294,9 @@ void GpuVideoDecodeAccelerator::Initialize(
   gfx::GLContextGLX* glx_context =
       static_cast<gfx::GLContextGLX*>(stub_->decoder()->GetGLContext());
   video_decode_accelerator_.reset(new VaapiVideoDecodeAccelerator(
-      glx_context->display(), this, make_context_current_));
+      glx_context->display(), make_context_current_));
 #elif defined(OS_ANDROID)
   video_decode_accelerator_.reset(new AndroidVideoDecodeAccelerator(
-      this,
       stub_->decoder()->AsWeakPtr(),
       make_context_current_));
 #else
@@ -312,7 +310,7 @@ void GpuVideoDecodeAccelerator::Initialize(
     stub_->channel()->AddFilter(filter_.get());
   }
 
-  if (!video_decode_accelerator_->Initialize(profile))
+  if (!video_decode_accelerator_->Initialize(profile, this))
     NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
 }
 

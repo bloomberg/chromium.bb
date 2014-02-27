@@ -28,7 +28,6 @@ class GpuVideoDecodeAcceleratorHost
   // |channel| is used to send IPC messages to GPU process.
   GpuVideoDecodeAcceleratorHost(GpuChannelHost* channel,
                                 int32 decoder_route_id,
-                                media::VideoDecodeAccelerator::Client* client,
                                 CommandBufferProxyImpl* impl);
 
   // IPC::Listener implementation.
@@ -36,7 +35,8 @@ class GpuVideoDecodeAcceleratorHost
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // media::VideoDecodeAccelerator implementation.
-  virtual bool Initialize(media::VideoCodecProfile profile) OVERRIDE;
+  virtual bool Initialize(media::VideoCodecProfile profile,
+                          Client* client) OVERRIDE;
   virtual void Decode(const media::BitstreamBuffer& bitstream_buffer) OVERRIDE;
   virtual void AssignPictureBuffers(
       const std::vector<media::PictureBuffer>& buffers) OVERRIDE;
@@ -70,8 +70,8 @@ class GpuVideoDecodeAcceleratorHost
   // Route ID for the associated decoder in the GPU process.
   int32 decoder_route_id_;
 
-  // Reference to the client that will receive callbacks from the decoder.
-  media::VideoDecodeAccelerator::Client* client_;
+  // The client that will receive callbacks from the decoder.
+  Client* client_;
 
   // Unowned reference to the CommandBufferProxyImpl that created us.
   CommandBufferProxyImpl* impl_;

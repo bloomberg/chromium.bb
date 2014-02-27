@@ -17,12 +17,13 @@ namespace content {
 class PlatformVideoDecoder : public media::VideoDecodeAccelerator,
                              public media::VideoDecodeAccelerator::Client {
  public:
-  PlatformVideoDecoder(media::VideoDecodeAccelerator::Client* client,
-                       int32 command_buffer_route_id);
+  explicit PlatformVideoDecoder(int32 command_buffer_route_id);
   virtual ~PlatformVideoDecoder();
 
   // PlatformVideoDecoder (a.k.a. VideoDecodeAccelerator) implementation.
-  virtual bool Initialize(media::VideoCodecProfile profile) OVERRIDE;
+  virtual bool Initialize(media::VideoCodecProfile profile,
+                          media::VideoDecodeAccelerator::Client* client)
+      OVERRIDE;
   virtual void Decode(
       const media::BitstreamBuffer& bitstream_buffer) OVERRIDE;
   virtual void AssignPictureBuffers(

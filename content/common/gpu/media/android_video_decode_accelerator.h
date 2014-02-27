@@ -34,12 +34,12 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
  public:
   // Does not take ownership of |client| which must outlive |*this|.
   AndroidVideoDecodeAccelerator(
-      media::VideoDecodeAccelerator::Client* client,
       const base::WeakPtr<gpu::gles2::GLES2Decoder> decoder,
       const base::Callback<bool(void)>& make_context_current);
 
   // media::VideoDecodeAccelerator implementation.
-  virtual bool Initialize(media::VideoCodecProfile profile) OVERRIDE;
+  virtual bool Initialize(media::VideoCodecProfile profile,
+                          Client* client) OVERRIDE;
   virtual void Decode(const media::BitstreamBuffer& bitstream_buffer) OVERRIDE;
   virtual void AssignPictureBuffers(
       const std::vector<media::PictureBuffer>& buffers) OVERRIDE;

@@ -154,7 +154,6 @@ V4L2VideoDecodeAccelerator::PictureRecord::~PictureRecord() {}
 
 V4L2VideoDecodeAccelerator::V4L2VideoDecodeAccelerator(
     EGLDisplay egl_display,
-    Client* client,
     const base::WeakPtr<Client>& io_client,
     const base::Callback<bool(void)>& make_context_current,
     scoped_ptr<V4L2Device> device,
@@ -162,8 +161,6 @@ V4L2VideoDecodeAccelerator::V4L2VideoDecodeAccelerator(
     : child_message_loop_proxy_(base::MessageLoopProxy::current()),
       io_message_loop_proxy_(io_message_loop_proxy),
       weak_this_(base::AsWeakPtr(this)),
-      client_ptr_factory_(client),
-      client_(client_ptr_factory_.GetWeakPtr()),
       io_client_(io_client),
       decoder_thread_("V4L2DecoderThread"),
       decoder_state_(kUninitialized),
@@ -202,11 +199,14 @@ V4L2VideoDecodeAccelerator::~V4L2VideoDecodeAccelerator() {
   DCHECK(output_buffer_map_.empty());
 }
 
-bool V4L2VideoDecodeAccelerator::Initialize(
-    media::VideoCodecProfile profile) {
+bool V4L2VideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
+                                            Client* client) {
   DVLOG(3) << "Initialize()";
   DCHECK(child_message_loop_proxy_->BelongsToCurrentThread());
   DCHECK_EQ(decoder_state_, kUninitialized);
+
+  client_ptr_factory_.reset(new base::WeakPtrFactory<Client>(client));
+  client_ = client_ptr_factory_->GetWeakPtr();
 
   switch (profile) {
     case media::H264PROFILE_BASELINE:
@@ -427,7 +427,7 @@ void V4L2VideoDecodeAccelerator::Destroy() {
   DCHECK(child_message_loop_proxy_->BelongsToCurrentThread());
 
   // We're destroying; cancel all callbacks.
-  client_ptr_factory_.InvalidateWeakPtrs();
+  client_ptr_factory_.reset();
 
   // If the decoder thread is running, destroy using posted task.
   if (decoder_thread_.IsRunning()) {
@@ -1587,7 +1587,7 @@ void V4L2VideoDecodeAccelerator::NotifyError(Error error) {
 
   if (client_) {
     client_->NotifyError(error);
-    client_ptr_factory_.InvalidateWeakPtrs();
+    client_ptr_factory_.reset();
   }
 }
 

@@ -57,7 +57,7 @@ void VaapiVideoDecodeAccelerator::NotifyError(Error error) {
   DVLOG(1) << "Notifying of error " << error;
   if (client_) {
     client_->NotifyError(error);
-    client_ptr_factory_.InvalidateWeakPtrs();
+    client_ptr_factory_.reset();
   }
 }
 
@@ -237,7 +237,6 @@ VaapiVideoDecodeAccelerator::TFPPicture*
 
 VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
     Display* x_display,
-    Client* client,
     const base::Callback<bool(void)>& make_context_current)
     : x_display_(x_display),
       make_context_current_(make_context_current),
@@ -248,15 +247,12 @@ VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
       weak_this_(base::AsWeakPtr(this)),
       va_surface_release_cb_(media::BindToCurrentLoop(base::Bind(
           &VaapiVideoDecodeAccelerator::RecycleVASurfaceID, weak_this_))),
-      client_ptr_factory_(client),
-      client_(client_ptr_factory_.GetWeakPtr()),
       decoder_thread_("VaapiDecoderThread"),
       num_frames_at_client_(0),
       num_stream_bufs_at_decoder_(0),
       finish_flush_pending_(false),
       awaiting_va_surfaces_recycle_(false),
       requested_num_pics_(0) {
-  DCHECK(client);
 }
 
 VaapiVideoDecodeAccelerator::~VaapiVideoDecodeAccelerator() {
@@ -292,9 +288,12 @@ bool VaapiVideoDecodeAccelerator::InitializeFBConfig() {
   return true;
 }
 
-bool VaapiVideoDecodeAccelerator::Initialize(
-    media::VideoCodecProfile profile) {
+bool VaapiVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
+                                             Client* client) {
   DCHECK_EQ(message_loop_, base::MessageLoop::current());
+
+  client_ptr_factory_.reset(new base::WeakPtrFactory<Client>(client));
+  client_ = client_ptr_factory_->GetWeakPtr();
 
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, kUninitialized);
@@ -904,7 +903,7 @@ void VaapiVideoDecodeAccelerator::Cleanup() {
   base::AutoLock auto_lock(lock_);
   state_ = kDestroying;
 
-  client_ptr_factory_.InvalidateWeakPtrs();
+  client_ptr_factory_.reset();
 
   {
     base::AutoUnlock auto_unlock(lock_);

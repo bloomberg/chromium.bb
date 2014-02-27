@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "media/cast/test/fake_video_encode_accelerator.h"
+#include "media/video/video_decode_accelerator.h"
 
 namespace media {
 namespace cast {
@@ -18,10 +19,8 @@ FakeGpuVideoAcceleratorFactories::FakeGpuVideoAcceleratorFactories(
 FakeGpuVideoAcceleratorFactories::~FakeGpuVideoAcceleratorFactories() {}
 
 scoped_ptr<VideoEncodeAccelerator>
-FakeGpuVideoAcceleratorFactories::CreateVideoEncodeAccelerator(
-    VideoEncodeAccelerator::Client* client) {
-  return scoped_ptr<VideoEncodeAccelerator>(
-      new FakeVideoEncodeAccelerator(client));
+FakeGpuVideoAcceleratorFactories::CreateVideoEncodeAccelerator() {
+  return scoped_ptr<VideoEncodeAccelerator>(new FakeVideoEncodeAccelerator());
 }
 
 base::SharedMemory* FakeGpuVideoAcceleratorFactories::CreateSharedMemory(
@@ -49,8 +48,7 @@ uint32 FakeGpuVideoAcceleratorFactories::CreateTextures(
 
 scoped_ptr<VideoDecodeAccelerator>
 FakeGpuVideoAcceleratorFactories::CreateVideoDecodeAccelerator(
-    VideoCodecProfile profile,
-    VideoDecodeAccelerator::Client* client) {
+    VideoCodecProfile profile) {
   return scoped_ptr<VideoDecodeAccelerator>(
       static_cast<media::VideoDecodeAccelerator*>(NULL));
 }

@@ -181,14 +181,17 @@ void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
     return;
   }
 
-  video_encoder_ = gpu_factories_->CreateVideoEncodeAccelerator(this).Pass();
+  video_encoder_ = gpu_factories_->CreateVideoEncodeAccelerator().Pass();
   if (!video_encoder_) {
     NOTIFY_ERROR(media::VideoEncodeAccelerator::kPlatformFailureError);
     return;
   }
   input_visible_size_ = input_visible_size;
-  video_encoder_->Initialize(
-      media::VideoFrame::I420, input_visible_size_, profile, bitrate * 1000);
+  video_encoder_->Initialize(media::VideoFrame::I420,
+                             input_visible_size_,
+                             profile,
+                             bitrate * 1000,
+                             this);
 }
 
 void RTCVideoEncoder::Impl::Enqueue(const webrtc::I420VideoFrame* input_frame,

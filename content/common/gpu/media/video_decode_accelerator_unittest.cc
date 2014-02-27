@@ -555,7 +555,7 @@ void GLRenderingVDAClient::CreateAndStartDecoder() {
   }
 #if defined(OS_WIN)
   decoder_.reset(
-      new DXVAVideoDecodeAccelerator(client, base::Bind(&DoNothingReturnTrue)));
+      new DXVAVideoDecodeAccelerator(base::Bind(&DoNothingReturnTrue)));
 #elif defined(OS_CHROMEOS)
 #if defined(ARCH_CPU_ARMEL)
 
@@ -566,7 +566,6 @@ void GLRenderingVDAClient::CreateAndStartDecoder() {
   }
   decoder_.reset(new V4L2VideoDecodeAccelerator(
       static_cast<EGLDisplay>(rendering_helper_->GetGLDisplay()),
-      client,
       weak_client,
       base::Bind(&DoNothingReturnTrue),
       device.Pass(),
@@ -576,7 +575,6 @@ void GLRenderingVDAClient::CreateAndStartDecoder() {
       << "Hardware video decode does not work with OSMesa";
   decoder_.reset(new VaapiVideoDecodeAccelerator(
       static_cast<Display*>(rendering_helper_->GetGLDisplay()),
-      client,
       base::Bind(&DoNothingReturnTrue)));
 #endif  // ARCH_CPU_ARMEL
 #endif  // OS_WIN
@@ -585,7 +583,7 @@ void GLRenderingVDAClient::CreateAndStartDecoder() {
   if (decoder_deleted())
     return;
 
-  CHECK(decoder_->Initialize(profile_));
+  CHECK(decoder_->Initialize(profile_, client));
 }
 
 void GLRenderingVDAClient::ProvidePictureBuffers(

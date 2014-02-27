@@ -413,9 +413,8 @@ bool DXVAVideoDecodeAccelerator::CreateD3DDevManager() {
 }
 
 DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
-    media::VideoDecodeAccelerator::Client* client,
     const base::Callback<bool(void)>& make_context_current)
-    : client_(client),
+    : client_(NULL),
       dev_manager_reset_token_(0),
       egl_config_(NULL),
       state_(kUninitialized),
@@ -430,8 +429,11 @@ DXVAVideoDecodeAccelerator::~DXVAVideoDecodeAccelerator() {
   client_ = NULL;
 }
 
-bool DXVAVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile) {
+bool DXVAVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
+                                            Client* client) {
   DCHECK(CalledOnValidThread());
+
+  client_ = client;
 
   // Not all versions of Windows 7 and later include Media Foundation DLLs.
   // Instead of crashing while delay loading the DLL when calling MFStartup()

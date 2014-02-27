@@ -66,8 +66,7 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
     scoped_ptr<MockVideoDecodeAcceleratorClient> client(
         new MockVideoDecodeAcceleratorClient());
     accelerator_.reset(new AndroidVideoDecodeAccelerator(
-        client.get(), decoder->AsWeakPtr(),
-        base::Bind(&MockMakeContextCurrent)));
+        decoder->AsWeakPtr(), base::Bind(&MockMakeContextCurrent)));
   }
 
   bool Configure(media::VideoCodec codec) {

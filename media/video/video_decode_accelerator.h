@@ -86,9 +86,11 @@ class MEDIA_EXPORT VideoDecodeAccelerator
   // Initializes the video decoder with specific configuration.
   // Parameters:
   //  |profile| is the video stream's format profile.
+  //  |client| is the client of this video decoder.  The provided pointer must
+  //  be valid until Destroy() is called.
   //
   // Returns true when command successfully accepted. Otherwise false.
-  virtual bool Initialize(VideoCodecProfile profile) = 0;
+  virtual bool Initialize(VideoCodecProfile profile, Client* client) = 0;
 
   // Decodes given bitstream buffer that contains at most one frame. Once
   // decoder is done with processing |bitstream_buffer| it will call

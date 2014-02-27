@@ -65,26 +65,26 @@ static inline const base::TimeDelta NoWaitTimeOut() {
 }
 
 AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
-    media::VideoDecodeAccelerator::Client* client,
     const base::WeakPtr<gpu::gles2::GLES2Decoder> decoder,
     const base::Callback<bool(void)>& make_context_current)
-    : client_(client),
+    : client_(NULL),
       make_context_current_(make_context_current),
       codec_(media::kCodecH264),
       state_(NO_ERROR),
       surface_texture_id_(0),
       picturebuffers_requested_(false),
-      gl_decoder_(decoder) {
-}
+      gl_decoder_(decoder) {}
 
 AndroidVideoDecodeAccelerator::~AndroidVideoDecodeAccelerator() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-bool AndroidVideoDecodeAccelerator::Initialize(
-    media::VideoCodecProfile profile) {
+bool AndroidVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
+                                               Client* client) {
   DCHECK(!media_codec_);
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  client_ = client;
 
   if (!media::MediaCodecBridge::IsAvailable())
     return false;

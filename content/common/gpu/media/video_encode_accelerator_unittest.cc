@@ -391,7 +391,7 @@ void VEAClient::CreateEncoder() {
   DCHECK(thread_checker_.CalledOnValidThread());
   CHECK(!has_encoder());
 
-  encoder_.reset(new ExynosVideoEncodeAccelerator(this));
+  encoder_.reset(new ExynosVideoEncodeAccelerator());
 
   SetState(CS_ENCODER_SET);
   DVLOG(1) << "Profile: " << test_stream_.requested_profile
@@ -399,7 +399,8 @@ void VEAClient::CreateEncoder() {
   encoder_->Initialize(kInputFormat,
                        test_stream_.size,
                        test_stream_.requested_profile,
-                       test_stream_.requested_bitrate);
+                       test_stream_.requested_bitrate,
+                       this);
 }
 
 void VEAClient::DestroyEncoder() {

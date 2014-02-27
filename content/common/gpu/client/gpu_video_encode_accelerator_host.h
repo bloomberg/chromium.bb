@@ -36,10 +36,9 @@ class GpuVideoEncodeAcceleratorHost
       public media::VideoEncodeAccelerator,
       public base::SupportsWeakPtr<GpuVideoEncodeAcceleratorHost> {
  public:
-  // |client| is assumed to outlive this object.  Since the GpuChannelHost does
-  // _not_ own this object, a reference to |gpu_channel_host| is taken.
+  // Since the GpuChannelHost does _not_ own this object, a reference to
+  // |gpu_channel_host| is taken.
   GpuVideoEncodeAcceleratorHost(
-      media::VideoEncodeAccelerator::Client* client,
       const scoped_refptr<GpuChannelHost>& gpu_channel_host,
       int32 route_id);
   virtual ~GpuVideoEncodeAcceleratorHost();
@@ -56,7 +55,8 @@ class GpuVideoEncodeAcceleratorHost
   virtual void Initialize(media::VideoFrame::Format format,
                           const gfx::Size& input_visible_size,
                           media::VideoCodecProfile output_profile,
-                          uint32 initial_bitrate) OVERRIDE;
+                          uint32 initial_bitrate,
+                          Client* client) OVERRIDE;
   virtual void Encode(const scoped_refptr<media::VideoFrame>& frame,
                       bool force_keyframe) OVERRIDE;
   virtual void UseOutputBitstreamBuffer(
@@ -84,12 +84,12 @@ class GpuVideoEncodeAcceleratorHost
 
   void Send(IPC::Message* message);
 
-  // Weak pointer for client callbacks on the
-  // media::VideoEncodeAccelerator::Client interface.
-  media::VideoEncodeAccelerator::Client* client_;
+  // Pointer for client callbacks on the media::VideoEncodeAccelerator::Client
+  // interface.
+  Client* client_;
   // |client_ptr_factory_| is used for callbacks that need to be done through
   // a PostTask() to avoid re-entrancy on the client.
-  base::WeakPtrFactory<VideoEncodeAccelerator::Client> client_ptr_factory_;
+  scoped_ptr<base::WeakPtrFactory<Client> > client_ptr_factory_;
 
   // IPC channel and route ID.
   scoped_refptr<GpuChannelHost> channel_;

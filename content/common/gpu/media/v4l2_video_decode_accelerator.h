@@ -77,7 +77,6 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
  public:
   V4L2VideoDecodeAccelerator(
       EGLDisplay egl_display,
-      Client* client,
       const base::WeakPtr<Client>& io_client_,
       const base::Callback<bool(void)>& make_context_current,
       scoped_ptr<V4L2Device> device,
@@ -86,7 +85,8 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
 
   // media::VideoDecodeAccelerator implementation.
   // Note: Initialize() and Destroy() are synchronous.
-  virtual bool Initialize(media::VideoCodecProfile profile) OVERRIDE;
+  virtual bool Initialize(media::VideoCodecProfile profile,
+                          Client* client) OVERRIDE;
   virtual void Decode(const media::BitstreamBuffer& bitstream_buffer) OVERRIDE;
   virtual void AssignPictureBuffers(
       const std::vector<media::PictureBuffer>& buffers) OVERRIDE;
@@ -311,7 +311,7 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   // To expose client callbacks from VideoDecodeAccelerator.
   // NOTE: all calls to these objects *MUST* be executed on
   // child_message_loop_proxy_.
-  base::WeakPtrFactory<Client> client_ptr_factory_;
+  scoped_ptr<base::WeakPtrFactory<Client> > client_ptr_factory_;
   base::WeakPtr<Client> client_;
   // Callbacks to |io_client_| must be executed on |io_message_loop_proxy_|.
   base::WeakPtr<Client> io_client_;

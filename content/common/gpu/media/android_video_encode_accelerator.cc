@@ -33,16 +33,16 @@ enum {
 
 // Helper macros for dealing with failure.  If |result| evaluates false, emit
 // |log| to DLOG(ERROR), register |error| with the client, and return.
-#define RETURN_ON_FAILURE(result, log, error)                 \
-  do {                                                        \
-    if (!(result)) {                                          \
-      DLOG(ERROR) << log;                                     \
-      if (client_ptr_factory_.GetWeakPtr()) {                 \
-        client_ptr_factory_.GetWeakPtr()->NotifyError(error); \
-        client_ptr_factory_.InvalidateWeakPtrs();             \
-      }                                                       \
-      return;                                                 \
-    }                                                         \
+#define RETURN_ON_FAILURE(result, log, error)                  \
+  do {                                                         \
+    if (!(result)) {                                           \
+      DLOG(ERROR) << log;                                      \
+      if (client_ptr_factory_->GetWeakPtr()) {                 \
+        client_ptr_factory_->GetWeakPtr()->NotifyError(error); \
+        client_ptr_factory_.reset();                           \
+      }                                                        \
+      return;                                                  \
+    }                                                          \
   } while (0)
 
 // Because MediaCodec is thread-hostile (must be poked on a single thread) and
@@ -67,10 +67,8 @@ static inline const base::TimeDelta NoWaitTimeOut() {
   return base::TimeDelta::FromMicroseconds(0);
 }
 
-AndroidVideoEncodeAccelerator::AndroidVideoEncodeAccelerator(
-    media::VideoEncodeAccelerator::Client* client)
-    : client_ptr_factory_(client),
-      num_buffers_at_codec_(0),
+AndroidVideoEncodeAccelerator::AndroidVideoEncodeAccelerator()
+    : num_buffers_at_codec_(0),
       num_output_buffers_(-1),
       output_buffers_capacity_(0),
       last_set_bitrate_(0) {}
@@ -118,13 +116,16 @@ void AndroidVideoEncodeAccelerator::Initialize(
     VideoFrame::Format format,
     const gfx::Size& input_visible_size,
     media::VideoCodecProfile output_profile,
-    uint32 initial_bitrate) {
+    uint32 initial_bitrate,
+    Client* client) {
   DVLOG(3) << __PRETTY_FUNCTION__ << " format: " << format
            << ", input_visible_size: " << input_visible_size.ToString()
            << ", output_profile: " << output_profile
            << ", initial_bitrate: " << initial_bitrate;
   DCHECK(!media_codec_);
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  client_ptr_factory_.reset(new base::WeakPtrFactory<Client>(client));
 
   RETURN_ON_FAILURE(media::MediaCodecBridge::IsAvailable() &&
                         media::MediaCodecBridge::SupportsSetParameters() &&
@@ -161,14 +162,14 @@ void AndroidVideoEncodeAccelerator::Initialize(
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&VideoEncodeAccelerator::Client::NotifyInitializeDone,
-                 client_ptr_factory_.GetWeakPtr()));
+                 client_ptr_factory_->GetWeakPtr()));
 
   num_output_buffers_ = media_codec_->GetOutputBuffersCount();
   output_buffers_capacity_ = media_codec_->GetOutputBuffersCapacity();
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&VideoEncodeAccelerator::Client::RequireBitstreamBuffers,
-                 client_ptr_factory_.GetWeakPtr(),
+                 client_ptr_factory_->GetWeakPtr(),
                  num_output_buffers_,
                  input_visible_size,
                  output_buffers_capacity_));
@@ -246,7 +247,7 @@ void AndroidVideoEncodeAccelerator::RequestEncodingParametersChange(
 void AndroidVideoEncodeAccelerator::Destroy() {
   DVLOG(3) << __PRETTY_FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
-  client_ptr_factory_.InvalidateWeakPtrs();
+  client_ptr_factory_.reset();
   if (media_codec_) {
     if (io_timer_.IsRunning())
       io_timer_.Stop();
@@ -263,7 +264,7 @@ void AndroidVideoEncodeAccelerator::DoIOTask() {
 }
 
 void AndroidVideoEncodeAccelerator::QueueInput() {
-  if (!client_ptr_factory_.GetWeakPtr() || pending_frames_.empty())
+  if (!client_ptr_factory_->GetWeakPtr() || pending_frames_.empty())
     return;
 
   int input_buf_index = 0;
@@ -347,7 +348,7 @@ bool AndroidVideoEncodeAccelerator::DoOutputBuffersSuffice() {
 }
 
 void AndroidVideoEncodeAccelerator::DequeueOutput() {
-  if (!client_ptr_factory_.GetWeakPtr() ||
+  if (!client_ptr_factory_->GetWeakPtr() ||
       available_bitstream_buffers_.empty() || num_buffers_at_codec_ == 0) {
     return;
   }
@@ -405,7 +406,7 @@ void AndroidVideoEncodeAccelerator::DequeueOutput() {
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&VideoEncodeAccelerator::Client::BitstreamBufferReady,
-                 client_ptr_factory_.GetWeakPtr(),
+                 client_ptr_factory_->GetWeakPtr(),
                  bitstream_buffer.id(),
                  size,
                  key_frame));

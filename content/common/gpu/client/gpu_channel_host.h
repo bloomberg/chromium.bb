@@ -125,12 +125,10 @@ class GpuChannelHost : public IPC::Sender,
   // Creates a video decoder in the GPU process.
   scoped_ptr<media::VideoDecodeAccelerator> CreateVideoDecoder(
       int command_buffer_route_id,
-      media::VideoCodecProfile profile,
-      media::VideoDecodeAccelerator::Client* client);
+      media::VideoCodecProfile profile);
 
   // Creates a video encoder in the GPU process.
-  scoped_ptr<media::VideoEncodeAccelerator> CreateVideoEncoder(
-      media::VideoEncodeAccelerator::Client* client);
+  scoped_ptr<media::VideoEncodeAccelerator> CreateVideoEncoder();
 
   // Destroy a command buffer created by this channel.
   void DestroyCommandBuffer(CommandBufferProxyImpl* command_buffer);

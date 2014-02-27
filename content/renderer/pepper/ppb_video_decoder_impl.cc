@@ -140,13 +140,13 @@ bool PPB_VideoDecoder_Impl::Init(
   if (command_buffer_route_id == 0)
     return false;
 
-  platform_video_decoder_.reset(new PlatformVideoDecoder(
-      this, command_buffer_route_id));
+  platform_video_decoder_.reset(
+      new PlatformVideoDecoder(command_buffer_route_id));
   if (!platform_video_decoder_)
     return false;
 
   FlushCommandBuffer();
-  return platform_video_decoder_->Initialize(PPToMediaProfile(profile));
+  return platform_video_decoder_->Initialize(PPToMediaProfile(profile), this);
 }
 
 int32_t PPB_VideoDecoder_Impl::Decode(

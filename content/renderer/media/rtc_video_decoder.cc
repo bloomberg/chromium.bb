@@ -672,7 +672,9 @@ void RTCVideoDecoder::ReusePictureBuffer(
 void RTCVideoDecoder::CreateVDA(media::VideoCodecProfile profile,
                                 base::WaitableEvent* waiter) {
   DCHECK(vda_task_runner_->BelongsToCurrentThread());
-  vda_ = factories_->CreateVideoDecodeAccelerator(profile, this);
+  vda_ = factories_->CreateVideoDecodeAccelerator(profile);
+  if (vda_ && !vda_->Initialize(profile, this))
+    vda_.release()->Destroy();
   waiter->Signal();
 }
 

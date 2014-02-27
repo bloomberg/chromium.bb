@@ -8,14 +8,13 @@
 
 namespace content {
 
-scoped_ptr<media::VideoEncodeAccelerator>
-CreateVideoEncodeAccelerator(media::VideoEncodeAccelerator::Client* client) {
+scoped_ptr<media::VideoEncodeAccelerator> CreateVideoEncodeAccelerator() {
   scoped_ptr<media::VideoEncodeAccelerator> vea;
 
   scoped_refptr<RendererGpuVideoAcceleratorFactories> gpu_factories =
         RenderThreadImpl::current()->GetGpuFactories();
   if (gpu_factories.get())
-    vea = gpu_factories->CreateVideoEncodeAccelerator(client).Pass();
+    vea = gpu_factories->CreateVideoEncodeAccelerator().Pass();
 
   return vea.Pass();
 }

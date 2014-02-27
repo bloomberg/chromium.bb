@@ -14,17 +14,16 @@ using media::BitstreamBuffer;
 
 namespace content {
 
-PlatformVideoDecoder::PlatformVideoDecoder(
-    VideoDecodeAccelerator::Client* client,
-    int32 command_buffer_route_id)
-    : client_(client),
-      command_buffer_route_id_(command_buffer_route_id) {
-  DCHECK(client);
-}
+PlatformVideoDecoder::PlatformVideoDecoder(int32 command_buffer_route_id)
+    : command_buffer_route_id_(command_buffer_route_id) {}
 
 PlatformVideoDecoder::~PlatformVideoDecoder() {}
 
-bool PlatformVideoDecoder::Initialize(media::VideoCodecProfile profile) {
+bool PlatformVideoDecoder::Initialize(
+    media::VideoCodecProfile profile,
+    media::VideoDecodeAccelerator::Client* client) {
+  client_ = client;
+
   // TODO(vrk): Support multiple decoders.
   if (decoder_)
     return true;
@@ -41,9 +40,8 @@ bool PlatformVideoDecoder::Initialize(media::VideoCodecProfile profile) {
     return false;
 
   // Send IPC message to initialize decoder in GPU process.
-  decoder_ =
-      channel->CreateVideoDecoder(command_buffer_route_id_, profile, this);
-  return decoder_.get() != NULL;
+  decoder_ = channel->CreateVideoDecoder(command_buffer_route_id_, profile);
+  return (decoder_ && decoder_->Initialize(profile, this));
 }
 
 void PlatformVideoDecoder::Decode(const BitstreamBuffer& bitstream_buffer) {

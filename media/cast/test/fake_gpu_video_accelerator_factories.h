@@ -19,8 +19,8 @@ class FakeGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
   explicit FakeGpuVideoAcceleratorFactories(
       const scoped_refptr<base::SingleThreadTaskRunner>& fake_task_runner);
 
-  virtual scoped_ptr<VideoEncodeAccelerator> CreateVideoEncodeAccelerator(
-      VideoEncodeAccelerator::Client* client) OVERRIDE;
+  virtual scoped_ptr<VideoEncodeAccelerator> CreateVideoEncodeAccelerator()
+      OVERRIDE;
 
   virtual base::SharedMemory* CreateSharedMemory(size_t size) OVERRIDE;
 
@@ -44,8 +44,7 @@ class FakeGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
                           const SkBitmap& pixels) OVERRIDE {};
 
   virtual scoped_ptr<VideoDecodeAccelerator> CreateVideoDecodeAccelerator(
-      VideoCodecProfile profile,
-      VideoDecodeAccelerator::Client* client) OVERRIDE;
+      VideoCodecProfile profile) OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<FakeGpuVideoAcceleratorFactories>;

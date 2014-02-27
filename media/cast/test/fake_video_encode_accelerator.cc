@@ -13,11 +13,8 @@ namespace test {
 static const unsigned int kMinimumInputCount = 1;
 static const size_t kMinimumOutputBufferSize = 123456;
 
-FakeVideoEncodeAccelerator::FakeVideoEncodeAccelerator(
-    VideoEncodeAccelerator::Client* client)
-    : client_(client), first_(true) {
-  DCHECK(client);
-}
+FakeVideoEncodeAccelerator::FakeVideoEncodeAccelerator()
+    : client_(NULL), first_(true) {}
 
 FakeVideoEncodeAccelerator::~FakeVideoEncodeAccelerator() {}
 
@@ -25,9 +22,9 @@ void FakeVideoEncodeAccelerator::Initialize(
     media::VideoFrame::Format input_format,
     const gfx::Size& input_visible_size,
     VideoCodecProfile output_profile,
-    uint32 initial_bitrate) {
-  DCHECK(client_);
-
+    uint32 initial_bitrate,
+    Client* client) {
+  client_ = client;
   if (output_profile != media::VP8PROFILE_MAIN &&
       output_profile != media::H264PROFILE_MAIN) {
     client_->NotifyError(kInvalidArgumentError);

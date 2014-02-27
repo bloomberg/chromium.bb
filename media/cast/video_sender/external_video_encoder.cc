@@ -72,7 +72,7 @@ class LocalVideoEncodeAcceleratorClient
     DCHECK(encoder_task_runner_->RunsTasksOnCurrentThread());
 
     video_encode_accelerator_ =
-        gpu_factories_->CreateVideoEncodeAccelerator(this).Pass();
+        gpu_factories_->CreateVideoEncodeAccelerator().Pass();
     if (!video_encode_accelerator_)
       return;
 
@@ -94,7 +94,8 @@ class LocalVideoEncodeAcceleratorClient
         media::VideoFrame::I420,
         gfx::Size(video_config.width, video_config.height),
         output_profile,
-        video_config.start_bitrate);
+        video_config.start_bitrate,
+        this);
   }
 
   // Free the HW.

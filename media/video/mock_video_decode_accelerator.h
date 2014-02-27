@@ -24,7 +24,7 @@ class MockVideoDecodeAccelerator : public VideoDecodeAccelerator {
   MockVideoDecodeAccelerator();
   virtual ~MockVideoDecodeAccelerator();
 
-  MOCK_METHOD1(Initialize, bool(VideoCodecProfile profile));
+  MOCK_METHOD2(Initialize, bool(VideoCodecProfile profile, Client* client));
   MOCK_METHOD1(Decode, void(const BitstreamBuffer& bitstream_buffer));
   MOCK_METHOD1(AssignPictureBuffers,
                void(const std::vector<PictureBuffer>& buffers));

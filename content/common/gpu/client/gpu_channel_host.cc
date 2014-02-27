@@ -180,17 +180,15 @@ CommandBufferProxyImpl* GpuChannelHost::CreateOffscreenCommandBuffer(
 
 scoped_ptr<media::VideoDecodeAccelerator> GpuChannelHost::CreateVideoDecoder(
     int command_buffer_route_id,
-    media::VideoCodecProfile profile,
-    media::VideoDecodeAccelerator::Client* client) {
+    media::VideoCodecProfile profile) {
   AutoLock lock(context_lock_);
   ProxyMap::iterator it = proxies_.find(command_buffer_route_id);
   DCHECK(it != proxies_.end());
   CommandBufferProxyImpl* proxy = it->second;
-  return proxy->CreateVideoDecoder(profile, client).Pass();
+  return proxy->CreateVideoDecoder(profile).Pass();
 }
 
-scoped_ptr<media::VideoEncodeAccelerator> GpuChannelHost::CreateVideoEncoder(
-    media::VideoEncodeAccelerator::Client* client) {
+scoped_ptr<media::VideoEncodeAccelerator> GpuChannelHost::CreateVideoEncoder() {
   TRACE_EVENT0("gpu", "GpuChannelHost::CreateVideoEncoder");
 
   scoped_ptr<media::VideoEncodeAccelerator> vea;
@@ -200,7 +198,7 @@ scoped_ptr<media::VideoEncodeAccelerator> GpuChannelHost::CreateVideoEncoder(
   if (route_id == MSG_ROUTING_NONE)
     return vea.Pass();
 
-  vea.reset(new GpuVideoEncodeAcceleratorHost(client, this, route_id));
+  vea.reset(new GpuVideoEncodeAcceleratorHost(this, route_id));
   return vea.Pass();
 }
 

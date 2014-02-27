@@ -67,11 +67,10 @@ class CommandBufferProxyImpl
   // returns it as an owned pointer to a media::VideoDecodeAccelerator.  Returns
   // NULL on failure to create the GpuVideoDecodeAcceleratorHost.
   // Note that the GpuVideoDecodeAccelerator may still fail to be created in
-  // the GPU process, even if this returns non-NULL. In this case the client is
-  // notified of an error later.
+  // the GPU process, even if this returns non-NULL. In this case the VDA client
+  // is notified of an error later, after Initialize().
   scoped_ptr<media::VideoDecodeAccelerator> CreateVideoDecoder(
-      media::VideoCodecProfile profile,
-      media::VideoDecodeAccelerator::Client* client);
+      media::VideoCodecProfile profile);
 
   // IPC::Listener implementation:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

@@ -105,11 +105,14 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
   //  |output_profile| is the codec profile of the encoded output stream.
   //  |initial_bitrate| is the initial bitrate of the encoded output stream,
   //  in bits per second.
+  //  |client| is the client of this video encoder.  The provided pointer must
+  //  be valid until Destroy() is called.
   // TODO(sheu): handle resolution changes.  http://crbug.com/249944
-  virtual void Initialize(media::VideoFrame::Format input_format,
+  virtual void Initialize(VideoFrame::Format input_format,
                           const gfx::Size& input_visible_size,
                           VideoCodecProfile output_profile,
-                          uint32 initial_bitrate) = 0;
+                          uint32 initial_bitrate,
+                          Client* client) = 0;
 
   // Encodes the given frame.
   // Parameters:

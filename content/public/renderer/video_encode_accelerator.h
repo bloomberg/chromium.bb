@@ -13,7 +13,7 @@ namespace content {
 
 // Generate an instance of media::VideoEncodeAccelerator.
 CONTENT_EXPORT scoped_ptr<media::VideoEncodeAccelerator>
-CreateVideoEncodeAccelerator(media::VideoEncodeAccelerator::Client* client);
+    CreateVideoEncodeAccelerator();
 
 }  // namespace content
 

@@ -5,10 +5,12 @@
 #ifndef MEDIA_FILTERS_GPU_VIDEO_ACCELERATOR_FACTORIES_H_
 #define MEDIA_FILTERS_GPU_VIDEO_ACCELERATOR_FACTORIES_H_
 
+#include <vector>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "media/video/video_decode_accelerator.h"
-#include "media/video/video_encode_accelerator.h"
+#include "gpu/command_buffer/common/mailbox.h"
+#include "media/base/video_decoder_config.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -18,6 +20,9 @@ class SharedMemory;
 class SkBitmap;
 
 namespace media {
+
+class VideoDecodeAccelerator;
+class VideoEncodeAccelerator;
 
 // Helper interface for specifying factories needed to instantiate a hardware
 // video accelerator.
@@ -30,14 +35,16 @@ namespace media {
 class MEDIA_EXPORT GpuVideoAcceleratorFactories
     : public base::RefCountedThreadSafe<GpuVideoAcceleratorFactories> {
  public:
-  // Caller owns returned pointer.
+  // Caller owns returned pointer, but should call Destroy() on it (instead of
+  // directly deleting) for proper destruction, as per the
+  // VideoDecodeAccelerator interface.
   virtual scoped_ptr<VideoDecodeAccelerator> CreateVideoDecodeAccelerator(
-      VideoCodecProfile profile,
-      VideoDecodeAccelerator::Client* client) = 0;
+      VideoCodecProfile profile) = 0;
 
-  // Caller owns returned pointer.
-  virtual scoped_ptr<VideoEncodeAccelerator> CreateVideoEncodeAccelerator(
-      VideoEncodeAccelerator::Client* client) = 0;
+  // Caller owns returned pointer, but should call Destroy() on it (instead of
+  // directly deleting) for proper destruction, as per the
+  // VideoEncodeAccelerator interface.
+  virtual scoped_ptr<VideoEncodeAccelerator> CreateVideoEncodeAccelerator() = 0;
 
   // Allocate & delete native textures.
   virtual uint32 CreateTextures(int32 count,

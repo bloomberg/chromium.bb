@@ -14,11 +14,9 @@
 namespace content {
 
 GpuVideoEncodeAcceleratorHost::GpuVideoEncodeAcceleratorHost(
-    media::VideoEncodeAccelerator::Client* client,
     const scoped_refptr<GpuChannelHost>& gpu_channel_host,
     int32 route_id)
-    : client_(client),
-      client_ptr_factory_(client_),
+    : client_(NULL),
       channel_(gpu_channel_host),
       route_id_(route_id),
       next_frame_id_(0) {
@@ -73,7 +71,10 @@ void GpuVideoEncodeAcceleratorHost::Initialize(
     media::VideoFrame::Format input_format,
     const gfx::Size& input_visible_size,
     media::VideoCodecProfile output_profile,
-    uint32 initial_bitrate) {
+    uint32 initial_bitrate,
+    Client* client) {
+  client_ = client;
+  client_ptr_factory_.reset(new base::WeakPtrFactory<Client>(client_));
   Send(new AcceleratedVideoEncoderMsg_Initialize(route_id_,
                                                  input_format,
                                                  input_visible_size,
@@ -152,7 +153,7 @@ void GpuVideoEncodeAcceleratorHost::NotifyError(Error error) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(&media::VideoEncodeAccelerator::Client::NotifyError,
-                 client_ptr_factory_.GetWeakPtr(),
+                 client_ptr_factory_->GetWeakPtr(),
                  error));
 }
 
@@ -210,7 +211,7 @@ void GpuVideoEncodeAcceleratorHost::OnNotifyError(Error error) {
   DVLOG(2) << "OnNotifyError(): error=" << error;
   if (!client_)
     return;
-  client_ptr_factory_.InvalidateWeakPtrs();
+  client_ptr_factory_.reset();
 
   // Client::NotifyError() may Destroy() |this|, so calling it needs to be the
   // last thing done on this stack!

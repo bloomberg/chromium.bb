@@ -46,12 +46,12 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator
  public:
   VaapiVideoDecodeAccelerator(
       Display* x_display,
-      Client* client,
       const base::Callback<bool(void)>& make_context_current);
   virtual ~VaapiVideoDecodeAccelerator();
 
   // media::VideoDecodeAccelerator implementation.
-  virtual bool Initialize(media::VideoCodecProfile profile) OVERRIDE;
+  virtual bool Initialize(media::VideoCodecProfile profile,
+                          Client* client) OVERRIDE;
   virtual void Decode(const media::BitstreamBuffer& bitstream_buffer) OVERRIDE;
   virtual void AssignPictureBuffers(
       const std::vector<media::PictureBuffer>& buffers) OVERRIDE;
@@ -239,7 +239,7 @@ private:
 
   // To expose client callbacks from VideoDecodeAccelerator.
   // NOTE: all calls to these objects *MUST* be executed on message_loop_.
-  base::WeakPtrFactory<Client> client_ptr_factory_;
+  scoped_ptr<base::WeakPtrFactory<Client> > client_ptr_factory_;
   base::WeakPtr<Client> client_;
 
   scoped_ptr<VaapiWrapper> vaapi_wrapper_;

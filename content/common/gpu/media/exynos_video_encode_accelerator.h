@@ -36,15 +36,15 @@ namespace content {
 class CONTENT_EXPORT ExynosVideoEncodeAccelerator
     : public media::VideoEncodeAccelerator {
  public:
-  explicit ExynosVideoEncodeAccelerator(
-      media::VideoEncodeAccelerator::Client* client);
+  ExynosVideoEncodeAccelerator();
   virtual ~ExynosVideoEncodeAccelerator();
 
   // media::VideoEncodeAccelerator implementation.
   virtual void Initialize(media::VideoFrame::Format format,
                           const gfx::Size& input_visible_size,
                           media::VideoCodecProfile output_profile,
-                          uint32 initial_bitrate) OVERRIDE;
+                          uint32 initial_bitrate,
+                          Client* client) OVERRIDE;
   virtual void Encode(const scoped_refptr<media::VideoFrame>& frame,
                       bool force_keyframe) OVERRIDE;
   virtual void UseOutputBitstreamBuffer(
@@ -203,7 +203,7 @@ class CONTENT_EXPORT ExynosVideoEncodeAccelerator
   // To expose client callbacks from VideoEncodeAccelerator.
   // NOTE: all calls to these objects *MUST* be executed on
   // child_message_loop_proxy_.
-  base::WeakPtrFactory<Client> client_ptr_factory_;
+  scoped_ptr<base::WeakPtrFactory<Client> > client_ptr_factory_;
   base::WeakPtr<Client> client_;
 
   //

@@ -101,9 +101,9 @@ GpuVideoEncodeAccelerator::GetSupportedProfiles() {
 void GpuVideoEncodeAccelerator::CreateEncoder() {
   DCHECK(!encoder_);
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL) && defined(USE_X11)
-  encoder_.reset(new ExynosVideoEncodeAccelerator(this));
+  encoder_.reset(new ExynosVideoEncodeAccelerator());
 #elif defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
-  encoder_.reset(new AndroidVideoEncodeAccelerator(this));
+  encoder_.reset(new AndroidVideoEncodeAccelerator());
 #endif
 }
 
@@ -137,7 +137,7 @@ void GpuVideoEncodeAccelerator::OnInitialize(
     return;
   }
   encoder_->Initialize(
-      input_format, input_visible_size, output_profile, initial_bitrate);
+      input_format, input_visible_size, output_profile, initial_bitrate, this);
   input_format_ = input_format;
   input_visible_size_ = input_visible_size;
 }

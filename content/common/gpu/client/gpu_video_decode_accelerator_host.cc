@@ -23,14 +23,12 @@ namespace content {
 GpuVideoDecodeAcceleratorHost::GpuVideoDecodeAcceleratorHost(
     GpuChannelHost* channel,
     int32 decoder_route_id,
-    VideoDecodeAccelerator::Client* client,
     CommandBufferProxyImpl* impl)
     : channel_(channel),
       decoder_route_id_(decoder_route_id),
-      client_(client),
+      client_(NULL),
       impl_(impl) {
   DCHECK(channel_);
-  DCHECK(client_);
   channel_->AddRoute(decoder_route_id, base::AsWeakPtr(this));
   impl_->AddDeletionObserver(this);
 }
@@ -72,9 +70,9 @@ bool GpuVideoDecodeAcceleratorHost::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-bool GpuVideoDecodeAcceleratorHost::Initialize(
-    media::VideoCodecProfile profile) {
-  NOTREACHED();
+bool GpuVideoDecodeAcceleratorHost::Initialize(media::VideoCodecProfile profile,
+                                               Client* client) {
+  client_ = client;
   return true;
 }
 
@@ -149,7 +147,6 @@ void GpuVideoDecodeAcceleratorHost::OnWillDeleteImpl() {
 
 GpuVideoDecodeAcceleratorHost::~GpuVideoDecodeAcceleratorHost() {
   DCHECK(CalledOnValidThread());
-  DCHECK(!client_) << "destructor called without Destroy being called!";
 
   if (channel_)
     channel_->RemoveRoute(decoder_route_id_);

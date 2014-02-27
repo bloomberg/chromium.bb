@@ -82,13 +82,10 @@ ExynosVideoEncodeAccelerator::MfcInputRecord::MfcInputRecord()
 ExynosVideoEncodeAccelerator::MfcOutputRecord::MfcOutputRecord()
     : at_device(false), address(NULL), length(0) {}
 
-ExynosVideoEncodeAccelerator::ExynosVideoEncodeAccelerator(
-    media::VideoEncodeAccelerator::Client* client)
+ExynosVideoEncodeAccelerator::ExynosVideoEncodeAccelerator()
     : child_message_loop_proxy_(base::MessageLoopProxy::current()),
       weak_this_ptr_factory_(this),
       weak_this_(weak_this_ptr_factory_.GetWeakPtr()),
-      client_ptr_factory_(client),
-      client_(client_ptr_factory_.GetWeakPtr()),
       encoder_thread_("ExynosEncoderThread"),
       encoder_state_(kUninitialized),
       output_buffer_byte_size_(0),
@@ -106,9 +103,7 @@ ExynosVideoEncodeAccelerator::ExynosVideoEncodeAccelerator(
       mfc_output_streamon_(false),
       mfc_output_buffer_queued_count_(0),
       device_poll_thread_("ExynosEncoderDevicePollThread"),
-      device_poll_interrupt_fd_(-1) {
-  DCHECK(client_);
-}
+      device_poll_interrupt_fd_(-1) {}
 
 ExynosVideoEncodeAccelerator::~ExynosVideoEncodeAccelerator() {
   DCHECK(!encoder_thread_.IsRunning());
@@ -136,11 +131,15 @@ void ExynosVideoEncodeAccelerator::Initialize(
     media::VideoFrame::Format input_format,
     const gfx::Size& input_visible_size,
     media::VideoCodecProfile output_profile,
-    uint32 initial_bitrate) {
+    uint32 initial_bitrate,
+    Client* client) {
   DVLOG(3) << "Initialize(): input_format=" << input_format
            << ", input_visible_size=" << input_visible_size.ToString()
            << ", output_profile=" << output_profile
            << ", initial_bitrate=" << initial_bitrate;
+
+  client_ptr_factory_.reset(new base::WeakPtrFactory<Client>(client));
+  client_ = client_ptr_factory_->GetWeakPtr();
 
   DCHECK(child_message_loop_proxy_->BelongsToCurrentThread());
   DCHECK_EQ(encoder_state_, kUninitialized);
@@ -345,7 +344,7 @@ void ExynosVideoEncodeAccelerator::Destroy() {
   DCHECK(child_message_loop_proxy_->BelongsToCurrentThread());
 
   // We're destroying; cancel all callbacks.
-  client_ptr_factory_.InvalidateWeakPtrs();
+  client_ptr_factory_.reset();
 
   // If the encoder thread is running, destroy using posted task.
   if (encoder_thread_.IsRunning()) {
@@ -1108,7 +1107,7 @@ void ExynosVideoEncodeAccelerator::NotifyError(Error error) {
 
   if (client_) {
     client_->NotifyError(error);
-    client_ptr_factory_.InvalidateWeakPtrs();
+    client_ptr_factory_.reset();
   }
 }
 

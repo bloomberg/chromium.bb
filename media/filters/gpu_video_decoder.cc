@@ -190,9 +190,8 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
-  vda_ =
-      factories_->CreateVideoDecodeAccelerator(config.profile(), this).Pass();
-  if (!vda_) {
+  vda_ = factories_->CreateVideoDecodeAccelerator(config.profile()).Pass();
+  if (!vda_ || !vda_->Initialize(config.profile(), this)) {
     status_cb.Run(DECODER_ERROR_NOT_SUPPORTED);
     return;
   }
