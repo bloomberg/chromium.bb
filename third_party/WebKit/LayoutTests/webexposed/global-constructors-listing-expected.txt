@@ -14,6 +14,7 @@ Attr
 Audio
 AudioBuffer
 AudioBufferSourceNode
+AudioContext
 AudioDestinationNode
 AudioListener
 AudioNode
@@ -227,6 +228,7 @@ Notification
 Number
 Object
 OfflineAudioCompletionEvent
+OfflineAudioContext
 Option
 OscillatorNode
 OverflowEvent

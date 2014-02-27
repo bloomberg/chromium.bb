@@ -13,7 +13,7 @@ PASS connect() exception thrown for illegal input index.
 PASS audioNode.connect(context.destination) succeeded.
 PASS exception thrown when connecting to other context's node.
 PASS exception thrown when creating audio context with not enough arguments.
-PASS context3 = new webkitAudioContext(1, 44100, 44100) did not throw exception.
+PASS context3 = new AudioContext(1, 44100, 44100) did not throw exception.
 PASS AudioNode is an EventTarget
 PASS successfullyParsed is true
 

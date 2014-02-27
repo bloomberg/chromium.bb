@@ -25,7 +25,7 @@ function runTest() {
     
     window.jsTestIsAsync = true;
 
-    context = new webkitAudioContext();
+    context = new AudioContext();
     window.audioNode = context.createBufferSource();
 
     // Check input and output numbers of AudioSourceNode.
@@ -83,7 +83,7 @@ function runTest() {
     
     // Create a new context and try to connect the other context's node to this one.
     try {
-        context2 = new webkitAudioContext();
+        context2 = new AudioContext();
         window.audioNode.connect(context2.destination);
         testFailed("exception should be thrown when connecting to other context's node.");
     } catch(e) {
@@ -92,14 +92,14 @@ function runTest() {
 
     // Create a new context with not enough arguments
     try {
-        context2 = new webkitAudioContext(0, 0);
+        context2 = new AudioContext(0, 0);
         testFailed("exception should be thrown when creating audio context with not enough arguments.");
     } catch(e) {
         testPassed("exception thrown when creating audio context with not enough arguments.");
     }
 
     // Create a new offline audio context using the deprecated AudioContext constructor.
-    shouldNotThrow("context3 = new webkitAudioContext(1, 44100, 44100)");
+    shouldNotThrow("context3 = new AudioContext(1, 44100, 44100)");
 
     // Ensure it is an EventTarget
     try {
