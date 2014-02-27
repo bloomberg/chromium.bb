@@ -23,6 +23,8 @@
 namespace cc {
 namespace {
 
+const size_t kScheduledRasterTasksLimit = 32u;
+
 // Memory limit policy works by mapping some bin states to the NEVER bin.
 const ManagedTileBin kBinPolicyMap[NUM_TILE_MEMORY_LIMIT_POLICIES][NUM_BINS] = {
     // [ALLOW_NOTHING]
@@ -732,7 +734,11 @@ void TileManager::AssignGpuMemoryToTiles(
     // 1. Tile size should not impact raster priority.
     // 2. Tiles with existing raster task could otherwise incorrectly
     //    be added as they are not affected by |bytes_allocatable|.
-    if (oomed_soft || raster_bytes_if_rastered > max_raster_bytes) {
+    bool can_schedule_tile =
+        !oomed_soft && raster_bytes_if_rastered <= max_raster_bytes &&
+        tiles_that_need_to_be_rasterized->size() < kScheduledRasterTasksLimit;
+
+    if (!can_schedule_tile) {
       all_tiles_that_need_to_be_rasterized_have_memory_ = false;
       if (tile->required_for_activation())
         all_tiles_required_for_activation_have_memory_ = false;
