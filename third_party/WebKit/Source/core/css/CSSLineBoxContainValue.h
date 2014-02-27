@@ -42,7 +42,7 @@ class CSSLineBoxContainValue : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSLineBoxContainValue> create(LineBoxContain value)
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSLineBoxContainValue(value));
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSLineBoxContainValue(value));
     }
 
     String customCSSText() const;

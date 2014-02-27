@@ -76,7 +76,7 @@ class CSSKeyframesRule FINAL : public CSSRule {
 public:
     static PassRefPtrWillBeRawPtr<CSSKeyframesRule> create(StyleRuleKeyframes* rule, CSSStyleSheet* sheet)
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSKeyframesRule(rule, sheet));
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSKeyframesRule(rule, sheet));
     }
 
     virtual ~CSSKeyframesRule();

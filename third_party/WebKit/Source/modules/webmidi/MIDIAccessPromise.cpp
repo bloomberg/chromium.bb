@@ -40,7 +40,7 @@ namespace WebCore {
 
 PassRefPtrWillBeRawPtr<MIDIAccessPromise> MIDIAccessPromise::create(ExecutionContext* context, const Dictionary& options)
 {
-    RefPtrWillBeRawPtr<MIDIAccessPromise> midiAccessPromise(adoptRefCountedWillBeRefCountedGarbageCollected(new MIDIAccessPromise(context, options)));
+    RefPtrWillBeRawPtr<MIDIAccessPromise> midiAccessPromise(adoptRefWillBeRefCountedGarbageCollected(new MIDIAccessPromise(context, options)));
     midiAccessPromise->suspendIfNeeded();
     return midiAccessPromise.release();
 }

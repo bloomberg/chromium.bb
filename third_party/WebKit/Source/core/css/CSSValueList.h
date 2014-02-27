@@ -33,19 +33,19 @@ class CSSValueList : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSValueList> createCommaSeparated()
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSValueList(CommaSeparator));
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSValueList(CommaSeparator));
     }
     static PassRefPtrWillBeRawPtr<CSSValueList> createSpaceSeparated()
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSValueList(SpaceSeparator));
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSValueList(SpaceSeparator));
     }
     static PassRefPtrWillBeRawPtr<CSSValueList> createSlashSeparated()
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSValueList(SlashSeparator));
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSValueList(SlashSeparator));
     }
     static PassRefPtrWillBeRawPtr<CSSValueList> createFromParserValueList(CSSParserValueList* list)
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSValueList(list));
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSValueList(list));
     }
 
     size_t length() const { return m_values.size(); }

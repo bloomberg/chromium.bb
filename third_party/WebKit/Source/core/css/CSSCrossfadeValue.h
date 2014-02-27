@@ -45,7 +45,7 @@ class CSSCrossfadeValue : public CSSImageGeneratorValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSCrossfadeValue> create(PassRefPtrWillBeRawPtr<CSSValue> fromValue, PassRefPtrWillBeRawPtr<CSSValue> toValue)
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSCrossfadeValue(fromValue, toValue));
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSCrossfadeValue(fromValue, toValue));
     }
 
     ~CSSCrossfadeValue();

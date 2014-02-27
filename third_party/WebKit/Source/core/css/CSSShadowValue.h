@@ -39,7 +39,7 @@ public:
         PassRefPtrWillBeRawPtr<CSSPrimitiveValue> style,
         PassRefPtrWillBeRawPtr<CSSPrimitiveValue> color)
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSShadowValue(x, y, blur, spread, style, color));
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSShadowValue(x, y, blur, spread, style, color));
     }
 
     String customCSSText() const;

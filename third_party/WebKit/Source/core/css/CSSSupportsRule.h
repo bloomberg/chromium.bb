@@ -40,7 +40,7 @@ class CSSSupportsRule FINAL : public CSSGroupingRule {
 public:
     static PassRefPtrWillBeRawPtr<CSSSupportsRule> create(StyleRuleSupports* rule, CSSStyleSheet* sheet)
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSSupportsRule(rule, sheet));
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSSupportsRule(rule, sheet));
     }
 
     virtual ~CSSSupportsRule() { }

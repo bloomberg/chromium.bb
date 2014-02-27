@@ -35,7 +35,7 @@ class CSSCubicBezierTimingFunctionValue : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSCubicBezierTimingFunctionValue> create(double x1, double y1, double x2, double y2)
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSCubicBezierTimingFunctionValue(x1, y1, x2, y2));
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSCubicBezierTimingFunctionValue(x1, y1, x2, y2));
     }
 
     String customCSSText() const;
@@ -71,7 +71,7 @@ class CSSStepsTimingFunctionValue : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSStepsTimingFunctionValue> create(int steps, bool stepAtStart)
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSStepsTimingFunctionValue(steps, stepAtStart));
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSStepsTimingFunctionValue(steps, stepAtStart));
     }
 
     int numberOfSteps() const { return m_steps; }

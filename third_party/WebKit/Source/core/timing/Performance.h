@@ -61,7 +61,7 @@ class Performance FINAL : public RefCountedWillBeRefCountedGarbageCollected<Perf
 public:
     static PassRefPtrWillBeRawPtr<Performance> create(LocalFrame* frame)
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new Performance(frame));
+        return adoptRefWillBeRefCountedGarbageCollected(new Performance(frame));
     }
     virtual ~Performance();
 

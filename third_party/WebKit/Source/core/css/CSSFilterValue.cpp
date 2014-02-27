@@ -90,7 +90,7 @@ CSSFilterValue::CSSFilterValue(const CSSFilterValue& cloneFrom)
 
 PassRefPtrWillBeRawPtr<CSSFilterValue> CSSFilterValue::cloneForCSSOM() const
 {
-    return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSFilterValue(*this));
+    return adoptRefWillBeRefCountedGarbageCollected(new CSSFilterValue(*this));
 }
 
 bool CSSFilterValue::equals(const CSSFilterValue& other) const

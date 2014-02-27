@@ -43,7 +43,7 @@ public:
 
     static PassRefPtrWillBeRawPtr<SVGColor> createFromString(const String& rgbColor)
     {
-        RefPtrWillBeRawPtr<SVGColor> color = adoptRefCountedWillBeRefCountedGarbageCollected(new SVGColor(SVG_COLORTYPE_RGBCOLOR));
+        RefPtrWillBeRawPtr<SVGColor> color = adoptRefWillBeRefCountedGarbageCollected(new SVGColor(SVG_COLORTYPE_RGBCOLOR));
         StyleColor styleColor = colorFromRGBColorString(rgbColor);
         ASSERT(!styleColor.isCurrentColor());
         color->setColor(styleColor.color());
@@ -52,14 +52,14 @@ public:
 
     static PassRefPtrWillBeRawPtr<SVGColor> createFromColor(const Color& rgbColor)
     {
-        RefPtrWillBeRawPtr<SVGColor> color = adoptRefCountedWillBeRefCountedGarbageCollected(new SVGColor(SVG_COLORTYPE_RGBCOLOR));
+        RefPtrWillBeRawPtr<SVGColor> color = adoptRefWillBeRefCountedGarbageCollected(new SVGColor(SVG_COLORTYPE_RGBCOLOR));
         color->setColor(rgbColor);
         return color.release();
     }
 
     static PassRefPtrWillBeRawPtr<SVGColor> createCurrentColor()
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new SVGColor(SVG_COLORTYPE_CURRENTCOLOR));
+        return adoptRefWillBeRefCountedGarbageCollected(new SVGColor(SVG_COLORTYPE_CURRENTCOLOR));
     }
 
     const Color& color() const { return m_color; }

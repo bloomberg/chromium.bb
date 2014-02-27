@@ -890,7 +890,7 @@ class TransitionRefCounted : public RefCountedWillBeRefCountedGarbageCollected<T
 public:
     static PassRefPtrWillBeRawPtr<TransitionRefCounted> create()
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new TransitionRefCounted());
+        return adoptRefWillBeRefCountedGarbageCollected(new TransitionRefCounted());
     }
 
     ~TransitionRefCounted()

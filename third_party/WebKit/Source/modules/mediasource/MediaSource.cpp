@@ -50,7 +50,7 @@ namespace WebCore {
 
 PassRefPtrWillBeRawPtr<MediaSource> MediaSource::create(ExecutionContext* context)
 {
-    RefPtrWillBeRawPtr<MediaSource> mediaSource(adoptRefCountedWillBeRefCountedGarbageCollected(new MediaSource(context)));
+    RefPtrWillBeRawPtr<MediaSource> mediaSource(adoptRefWillBeRefCountedGarbageCollected(new MediaSource(context)));
     mediaSource->suspendIfNeeded();
     return mediaSource.release();
 }

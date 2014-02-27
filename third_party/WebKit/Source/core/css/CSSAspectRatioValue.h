@@ -37,7 +37,7 @@ class CSSAspectRatioValue : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSAspectRatioValue> create(float numeratorValue, float denominatorValue)
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSAspectRatioValue(numeratorValue, denominatorValue));
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSAspectRatioValue(numeratorValue, denominatorValue));
     }
 
     String customCSSText() const;

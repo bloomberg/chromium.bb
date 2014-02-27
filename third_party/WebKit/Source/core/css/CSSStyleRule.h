@@ -35,7 +35,7 @@ class CSSStyleRule FINAL : public CSSRule {
 public:
     static PassRefPtrWillBeRawPtr<CSSStyleRule> create(StyleRule* rule, CSSStyleSheet* sheet)
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSStyleRule(rule, sheet));
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSStyleRule(rule, sheet));
     }
 
     virtual ~CSSStyleRule();

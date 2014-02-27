@@ -40,7 +40,7 @@ public:
 
     static PassRefPtrWillBeRawPtr<CSSImageSetValue> create()
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSImageSetValue());
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSImageSetValue());
     }
     ~CSSImageSetValue();
 

@@ -149,7 +149,7 @@ public:
 
     static PassRefPtrWillBeRawPtr<CSSLinearGradientValue> create(CSSGradientRepeat repeat, CSSGradientType gradientType = CSSLinearGradient)
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSLinearGradientValue(repeat, gradientType));
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSLinearGradientValue(repeat, gradientType));
     }
 
     void setAngle(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> val) { m_angle = val; }
@@ -161,7 +161,7 @@ public:
 
     PassRefPtrWillBeRawPtr<CSSLinearGradientValue> clone() const
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSLinearGradientValue(*this));
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSLinearGradientValue(*this));
     }
 
     bool equals(const CSSLinearGradientValue&) const;
@@ -189,12 +189,12 @@ class CSSRadialGradientValue : public CSSGradientValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSRadialGradientValue> create(CSSGradientRepeat repeat, CSSGradientType gradientType = CSSRadialGradient)
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSRadialGradientValue(repeat, gradientType));
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSRadialGradientValue(repeat, gradientType));
     }
 
     PassRefPtrWillBeRawPtr<CSSRadialGradientValue> clone() const
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSRadialGradientValue(*this));
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSRadialGradientValue(*this));
     }
 
     String customCSSText() const;

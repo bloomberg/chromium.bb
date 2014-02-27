@@ -32,7 +32,7 @@ class CSSCharsetRule FINAL : public CSSRule {
 public:
     static PassRefPtrWillBeRawPtr<CSSCharsetRule> create(CSSStyleSheet* parent, const String& encoding)
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSCharsetRule(parent, encoding));
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSCharsetRule(parent, encoding));
     }
 
     virtual ~CSSCharsetRule() { }

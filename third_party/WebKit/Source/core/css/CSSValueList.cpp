@@ -159,7 +159,7 @@ CSSValueList::CSSValueList(const CSSValueList& cloneFrom)
 
 PassRefPtrWillBeRawPtr<CSSValueList> CSSValueList::cloneForCSSOM() const
 {
-    return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSValueList(*this));
+    return adoptRefWillBeRefCountedGarbageCollected(new CSSValueList(*this));
 }
 
 void CSSValueList::traceAfterDispatch(Visitor* visitor)

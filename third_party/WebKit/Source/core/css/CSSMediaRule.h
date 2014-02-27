@@ -34,7 +34,7 @@ class CSSMediaRule FINAL : public CSSGroupingRule {
 public:
     static PassRefPtrWillBeRawPtr<CSSMediaRule> create(StyleRuleMedia* rule, CSSStyleSheet* sheet)
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSMediaRule(rule, sheet));
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSMediaRule(rule, sheet));
     }
 
     virtual ~CSSMediaRule();

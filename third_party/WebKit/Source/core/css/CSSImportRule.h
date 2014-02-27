@@ -36,7 +36,7 @@ class CSSImportRule FINAL : public CSSRule {
 public:
     static PassRefPtrWillBeRawPtr<CSSImportRule> create(StyleRuleImport* rule, CSSStyleSheet* sheet)
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSImportRule(rule, sheet));
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSImportRule(rule, sheet));
     }
 
     virtual ~CSSImportRule();

@@ -185,7 +185,7 @@ CSSKeyframeRule* CSSKeyframesRule::item(unsigned index) const
     ASSERT(m_childRuleCSSOMWrappers.size() == m_keyframesRule->keyframes().size());
     RefPtrWillBeMember<CSSKeyframeRule>& rule = m_childRuleCSSOMWrappers[index];
     if (!rule)
-        rule = adoptRefCountedWillBeRefCountedGarbageCollected(new CSSKeyframeRule(m_keyframesRule->keyframes()[index].get(), const_cast<CSSKeyframesRule*>(this)));
+        rule = adoptRefWillBeRefCountedGarbageCollected(new CSSKeyframeRule(m_keyframesRule->keyframes()[index].get(), const_cast<CSSKeyframesRule*>(this)));
 
     return rule.get();
 }

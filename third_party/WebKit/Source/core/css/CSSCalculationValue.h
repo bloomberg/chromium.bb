@@ -93,7 +93,7 @@ class CSSCalcValue : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSCalcValue> create(CSSParserString name, CSSParserValueList*, ValueRange);
     static PassRefPtrWillBeRawPtr<CSSCalcValue> create(PassRefPtrWillBeRawPtr<CSSCalcExpressionNode>, ValueRange = ValueRangeAll);
-    static PassRefPtrWillBeRawPtr<CSSCalcValue> create(const CalculationValue* value, float zoom) { return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSCalcValue(value, zoom)); }
+    static PassRefPtrWillBeRawPtr<CSSCalcValue> create(const CalculationValue* value, float zoom) { return adoptRefWillBeRefCountedGarbageCollected(new CSSCalcValue(value, zoom)); }
 
     static PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> createExpressionNode(PassRefPtrWillBeRawPtr<CSSPrimitiveValue>, bool isInteger = false);
     static PassRefPtrWillBeRawPtr<CSSCalcExpressionNode> createExpressionNode(PassRefPtrWillBeRawPtr<CSSCalcExpressionNode>, PassRefPtrWillBeRawPtr<CSSCalcExpressionNode>, CalcOperator);

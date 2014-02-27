@@ -60,7 +60,7 @@ MediaKeySession::PendingAction::~PendingAction()
 
 PassRefPtrWillBeRawPtr<MediaKeySession> MediaKeySession::create(ExecutionContext* context, ContentDecryptionModule* cdm, WeakPtr<MediaKeys> keys)
 {
-    RefPtrWillBeRawPtr<MediaKeySession> session(adoptRefCountedWillBeRefCountedGarbageCollected(new MediaKeySession(context, cdm, keys)));
+    RefPtrWillBeRawPtr<MediaKeySession> session(adoptRefWillBeRefCountedGarbageCollected(new MediaKeySession(context, cdm, keys)));
     session->suspendIfNeeded();
     return session.release();
 }

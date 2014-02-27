@@ -47,7 +47,7 @@ class SourceBufferList FINAL : public RefCountedWillBeRefCountedGarbageCollected
 public:
     static PassRefPtrWillBeRawPtr<SourceBufferList> create(ExecutionContext* context, GenericEventQueue* asyncEventQueue)
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new SourceBufferList(context, asyncEventQueue));
+        return adoptRefWillBeRefCountedGarbageCollected(new SourceBufferList(context, asyncEventQueue));
     }
     virtual ~SourceBufferList();
 

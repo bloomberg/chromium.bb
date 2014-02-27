@@ -38,7 +38,7 @@ class CSSBorderImageSliceValue : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSBorderImageSliceValue> create(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> slices, bool fill)
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSBorderImageSliceValue(slices, fill));
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSBorderImageSliceValue(slices, fill));
     }
 
     String customCSSText() const;

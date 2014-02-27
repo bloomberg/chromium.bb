@@ -70,7 +70,7 @@ class TextCloneCSSValue : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<TextCloneCSSValue> create(ClassType classType, const String& text)
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new TextCloneCSSValue(classType, text));
+        return adoptRefWillBeRefCountedGarbageCollected(new TextCloneCSSValue(classType, text));
     }
 
     String cssText() const { return m_cssText; }

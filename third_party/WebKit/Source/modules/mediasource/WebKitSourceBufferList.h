@@ -47,7 +47,7 @@ class WebKitSourceBufferList FINAL : public RefCountedWillBeRefCountedGarbageCol
 public:
     static PassRefPtrWillBeRawPtr<WebKitSourceBufferList> create(ExecutionContext* context, GenericEventQueue* asyncEventQueue)
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new WebKitSourceBufferList(context, asyncEventQueue));
+        return adoptRefWillBeRefCountedGarbageCollected(new WebKitSourceBufferList(context, asyncEventQueue));
     }
     virtual ~WebKitSourceBufferList() { }
 

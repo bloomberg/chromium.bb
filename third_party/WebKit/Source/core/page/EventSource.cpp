@@ -97,7 +97,7 @@ PassRefPtrWillBeRawPtr<EventSource> EventSource::create(ExecutionContext* contex
         return nullptr;
     }
 
-    RefPtrWillBeRawPtr<EventSource> source = adoptRefCountedWillBeRefCountedGarbageCollected(new EventSource(context, fullURL, eventSourceInit));
+    RefPtrWillBeRawPtr<EventSource> source = adoptRefWillBeRefCountedGarbageCollected(new EventSource(context, fullURL, eventSourceInit));
 
     source->setPendingActivity(source.get());
     source->scheduleInitialConnect();

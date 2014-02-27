@@ -40,7 +40,7 @@ namespace WebCore {
 PassRefPtrWillBeRawPtr<MIDIInput> MIDIInput::create(MIDIAccess* access, const String& id, const String& manufacturer, const String& name, const String& version)
 {
     ASSERT(access);
-    RefPtrWillBeRawPtr<MIDIInput> input = adoptRefCountedWillBeRefCountedGarbageCollected(new MIDIInput(access, id, manufacturer, name, version));
+    RefPtrWillBeRawPtr<MIDIInput> input = adoptRefWillBeRefCountedGarbageCollected(new MIDIInput(access, id, manufacturer, name, version));
     return input.release();
 }
 

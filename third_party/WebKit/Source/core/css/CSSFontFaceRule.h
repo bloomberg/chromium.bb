@@ -35,7 +35,7 @@ class CSSFontFaceRule FINAL : public CSSRule {
 public:
     static PassRefPtrWillBeRawPtr<CSSFontFaceRule> create(StyleRuleFontFace* rule, CSSStyleSheet* sheet)
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSFontFaceRule(rule, sheet));
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSFontFaceRule(rule, sheet));
     }
 
     virtual ~CSSFontFaceRule();

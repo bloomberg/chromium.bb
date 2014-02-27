@@ -61,7 +61,7 @@ public:
 
     static PassRefPtrWillBeRawPtr<CSSTransformValue> create(TransformOperationType type)
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSTransformValue(type));
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSTransformValue(type));
     }
 
     String customCSSText() const;

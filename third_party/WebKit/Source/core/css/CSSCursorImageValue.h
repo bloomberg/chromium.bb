@@ -34,7 +34,7 @@ class CSSCursorImageValue : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSCursorImageValue> create(PassRefPtrWillBeRawPtr<CSSValue> imageValue, bool hasHotSpot, const IntPoint& hotSpot)
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSCursorImageValue(imageValue, hasHotSpot, hotSpot));
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSCursorImageValue(imageValue, hasHotSpot, hotSpot));
     }
 
     ~CSSCursorImageValue();

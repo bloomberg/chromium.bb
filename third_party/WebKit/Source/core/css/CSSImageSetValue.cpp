@@ -187,7 +187,7 @@ CSSImageSetValue::CSSImageSetValue(const CSSImageSetValue& cloneFrom)
 
 PassRefPtrWillBeRawPtr<CSSImageSetValue> CSSImageSetValue::cloneForCSSOM() const
 {
-    return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSImageSetValue(*this));
+    return adoptRefWillBeRefCountedGarbageCollected(new CSSImageSetValue(*this));
 }
 
 } // namespace WebCore

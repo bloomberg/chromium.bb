@@ -155,7 +155,7 @@ static void logConsoleError(ExecutionContext* context, const String& message)
 
 PassRefPtrWillBeRawPtr<XMLHttpRequest> XMLHttpRequest::create(ExecutionContext* context, PassRefPtr<SecurityOrigin> securityOrigin)
 {
-    RefPtrWillBeRawPtr<XMLHttpRequest> xmlHttpRequest = adoptRefCountedWillBeRefCountedGarbageCollected(new XMLHttpRequest(context, securityOrigin));
+    RefPtrWillBeRawPtr<XMLHttpRequest> xmlHttpRequest = adoptRefWillBeRefCountedGarbageCollected(new XMLHttpRequest(context, securityOrigin));
     xmlHttpRequest->suspendIfNeeded();
 
     return xmlHttpRequest.release();

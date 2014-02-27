@@ -39,7 +39,7 @@ class CSSArrayFunctionValue : public CSSValueList {
 public:
     static PassRefPtrWillBeRawPtr<CSSArrayFunctionValue> create()
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSArrayFunctionValue());
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSArrayFunctionValue());
     }
 
     String customCSSText() const;

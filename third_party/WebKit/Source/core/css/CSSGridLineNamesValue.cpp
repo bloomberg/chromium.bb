@@ -45,7 +45,7 @@ CSSGridLineNamesValue::CSSGridLineNamesValue()
 
 PassRefPtrWillBeRawPtr<CSSGridLineNamesValue> CSSGridLineNamesValue::cloneForCSSOM() const
 {
-    return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSGridLineNamesValue(*this));
+    return adoptRefWillBeRefCountedGarbageCollected(new CSSGridLineNamesValue(*this));
 }
 
 }

@@ -53,7 +53,7 @@ public:
 
     static PassRefPtrWillBeRawPtr<CSSFilterValue> create(FilterOperationType type)
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSFilterValue(type));
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSFilterValue(type));
     }
 
     String customCSSText() const;

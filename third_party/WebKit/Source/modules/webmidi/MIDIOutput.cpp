@@ -176,7 +176,7 @@ private:
 PassRefPtrWillBeRawPtr<MIDIOutput> MIDIOutput::create(MIDIAccess* access, unsigned portIndex, const String& id, const String& manufacturer, const String& name, const String& version)
 {
     ASSERT(access);
-    return adoptRefCountedWillBeRefCountedGarbageCollected(new MIDIOutput(access, portIndex, id, manufacturer, name, version));
+    return adoptRefWillBeRefCountedGarbageCollected(new MIDIOutput(access, portIndex, id, manufacturer, name, version));
 }
 
 MIDIOutput::MIDIOutput(MIDIAccess* access, unsigned portIndex, const String& id, const String& manufacturer, const String& name, const String& version)

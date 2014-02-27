@@ -616,7 +616,7 @@ template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr)
     return PassRefPtrWillBeRawPtr<T>(ptr);
 }
 
-template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefCountedWillBeRefCountedGarbageCollected(T* ptr)
+template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeRefCountedGarbageCollected(T* ptr)
 {
     static const bool isRefCountedGarbageCollected = WTF::IsSubclassOfTemplate<T, RefCountedGarbageCollected>::value;
     COMPILE_ASSERT(isRefCountedGarbageCollected, useAdoptRefWillBeNoop);
@@ -666,7 +666,7 @@ public:
 #define WillBePersistentHeapVector WTF::Vector
 
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr) { return adoptRef(ptr); }
-template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefCountedWillBeRefCountedGarbageCollected(T* ptr) { return adoptRef(ptr); }
+template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeRefCountedGarbageCollected(T* ptr) { return adoptRef(ptr); }
 template<typename T> PassOwnPtrWillBeRawPtr<T> adoptPtrWillBeNoop(T* ptr) { return adoptPtr(ptr); }
 
 #define WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED WTF_MAKE_FAST_ALLOCATED

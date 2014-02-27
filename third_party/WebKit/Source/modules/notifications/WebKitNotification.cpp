@@ -43,7 +43,7 @@ namespace WebCore {
 
 PassRefPtrWillBeRawPtr<WebKitNotification> WebKitNotification::create(const String& title, const String& body, const String& iconUrl, ExecutionContext* context, ExceptionState& es, PassRefPtrWillBeRawPtr<NotificationCenter> provider)
 {
-    RefPtrWillBeRawPtr<WebKitNotification> notification = adoptRefCountedWillBeRefCountedGarbageCollected(new WebKitNotification(title, body, iconUrl, context, es, provider));
+    RefPtrWillBeRawPtr<WebKitNotification> notification = adoptRefWillBeRefCountedGarbageCollected(new WebKitNotification(title, body, iconUrl, context, es, provider));
     notification->suspendIfNeeded();
 
     return notification.release();

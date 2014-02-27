@@ -30,7 +30,7 @@ class CSSInheritedValue : public CSSValue {
 public:
     static PassRefPtrWillBeRawPtr<CSSInheritedValue> create()
     {
-        return adoptRefCountedWillBeRefCountedGarbageCollected(new CSSInheritedValue);
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSInheritedValue);
     }
 
     String customCSSText() const;

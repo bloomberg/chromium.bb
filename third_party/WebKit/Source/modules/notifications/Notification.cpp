@@ -43,7 +43,7 @@ namespace WebCore {
 PassRefPtrWillBeRawPtr<Notification> Notification::create(ExecutionContext* context, const String& title, const Dictionary& options)
 {
     NotificationClient* client = NotificationController::clientFrom(toDocument(context)->page());
-    RefPtrWillBeRawPtr<Notification> notification = adoptRefCountedWillBeRefCountedGarbageCollected(new Notification(context, title, client));
+    RefPtrWillBeRawPtr<Notification> notification = adoptRefWillBeRefCountedGarbageCollected(new Notification(context, title, client));
 
     String argument;
     if (options.get("body", argument))
