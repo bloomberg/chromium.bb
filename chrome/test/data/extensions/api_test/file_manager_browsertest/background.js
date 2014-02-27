@@ -244,7 +244,12 @@ var ENTRIES = {
   directoryC: new TestEntryInfo(
       EntryType.DIRECTORY, null, 'A/B/C',
       null, SharedOption.NONE, 'Jan 1, 2000 1:00 AM',
-      'C', '--', 'Folder')
+      'C', '--', 'Folder'),
+
+  zipArchive: new TestEntryInfo(
+      EntryType.FILE, 'archive.zip', 'archive.zip',
+      'application/x-zip', SharedOption.NONE, 'Jan 1, 2014 1:00 AM',
+      'archive.zip', '533 bytes', 'Zip archive')
 };
 
 /**

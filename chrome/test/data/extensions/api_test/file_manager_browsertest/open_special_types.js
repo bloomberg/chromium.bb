@@ -160,6 +160,93 @@ function videoOpen(path) {
   ]);
 }
 
+/**
+ * Tests if we can open and unmount a zip file.
+ * @param {string} path Directory path to be tested.
+ */
+function zipOpen(path) {
+  var appId;
+
+  StepsRunner.run([
+    // Add a ZIP file.
+    function() {
+      addEntries(['local', 'drive'], [ENTRIES.zipArchive], this.next);
+    },
+
+    // Open a window.
+    function(result) {
+      chrome.test.assertTrue(result);
+      openNewWindow(null, path, this.next);
+    },
+
+    // Wait for going back.
+    function(inAppId) {
+      appId = inAppId;
+      callRemoteTestUtil('waitForFiles',
+                         appId,
+                         [[ENTRIES.zipArchive.getExpectedRow()]],
+                         this.next);
+    },
+
+    // Open a file.
+    function(result) {
+      chrome.test.assertTrue(result);
+      callRemoteTestUtil('openFile',
+                         appId,
+                         [ENTRIES.zipArchive.nameText],
+                         this.next);
+    },
+
+    // Wait for ZIP contents.
+    function(result) {
+      chrome.test.assertTrue(result);
+      callRemoteTestUtil('waitForFiles',
+                         appId,
+                         [
+                           // We are providing fake contents for desktop build.
+                           [[
+                             'SUCCESSFULLY_PERFORMED_FAKE_MOUNT.txt',
+                             '21 bytes',
+                             'Plain text',
+                             ''
+                           ]],
+                           {ignoreLastModifiedTime: true}
+                         ],
+                         this.next);
+    },
+
+    // Unmount the zip.
+    function(result) {
+      chrome.test.assertTrue(result);
+      callRemoteTestUtil('waitForElement',
+                         appId,
+                         ['.root-eject', null],
+                         this.next);
+    },
+
+    // Unmount the zip.
+    function(element) {
+      callRemoteTestUtil('fakeMouseClick',
+                         appId,
+                         ['.root-eject'],
+                         this.next);
+    },
+
+    // Wait for going back.
+    function(result) {
+      chrome.test.assertTrue(result);
+      callRemoteTestUtil('waitForFiles',
+                         appId,
+                         [[ENTRIES.zipArchive.getExpectedRow()]],
+                         this.next);
+    },
+
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    }
+  ]);
+}
+
 testcase.galleryOpenDownloads = function() {
   galleryOpen(RootPath.DOWNLOADS);
 };
@@ -182,4 +269,12 @@ testcase.audioOpenDrive = function() {
 
 testcase.videoOpenDrive = function() {
   videoOpen(RootPath.DRIVE);
+};
+
+testcase.zipOpenDownloads = function() {
+  zipOpen(RootPath.DOWNLOADS);
+};
+
+testcase.zipOpenDrive = function() {
+  zipOpen(RootPath.DRIVE);
 };

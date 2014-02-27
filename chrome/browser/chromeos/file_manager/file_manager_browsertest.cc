@@ -212,9 +212,7 @@ class LocalTestVolume {
   // success.
   bool Mount(Profile* profile) {
     if (local_path_.empty()) {
-      if (!tmp_dir_.CreateUniqueTempDir())
-        return false;
-      local_path_ = tmp_dir_.path().Append("Downloads");
+      local_path_ = profile->GetPath().Append("Downloads");
     }
 
     return VolumeManager::Get(profile)->RegisterDownloadsDirectoryForTesting(
@@ -266,7 +264,6 @@ class LocalTestVolume {
   }
 
   base::FilePath local_path_;
-  base::ScopedTempDir tmp_dir_;
   std::map<base::FilePath, const TestEntryInfo> entries_;
 };
 
@@ -282,8 +279,6 @@ class DriveTestVolume {
   // This method must be called at SetUp method of FileManagerBrowserTestBase.
   // Returns true on success.
   bool SetUp() {
-    if (!test_cache_root_.CreateUniqueTempDir())
-      return false;
     create_drive_integration_service_ =
         base::Bind(&DriveTestVolume::CreateDriveIntegrationService,
                    base::Unretained(this));
@@ -422,7 +417,7 @@ class DriveTestVolume {
   drive::DriveIntegrationService* CreateDriveIntegrationService(
       Profile* profile) {
     base::FilePath subdir;
-    if (!base::CreateTemporaryDirInDir(test_cache_root_.path(),
+    if (!base::CreateTemporaryDirInDir(profile->GetPath(),
                                        base::FilePath::StringType(),
                                        &subdir)) {
       return NULL;
@@ -443,7 +438,6 @@ class DriveTestVolume {
   }
 
  private:
-  base::ScopedTempDir test_cache_root_;
   std::map<Profile*, drive::FakeDriveService*> fake_drive_service_;
   drive::DriveIntegrationService* integration_service_;
   DriveIntegrationServiceFactory::FactoryCallback
@@ -691,9 +685,11 @@ INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE, "audioOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "audioOpenDrive"),
                       TestParameter(IN_GUEST_MODE, "galleryOpenDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE,
-                                    "galleryOpenDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE, "galleryOpenDrive")));
+                      TestParameter(NOT_IN_GUEST_MODE, "galleryOpenDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE, "galleryOpenDrive"),
+                      TestParameter(IN_GUEST_MODE, "zipOpenDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE, "zipOpenDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE, "zipOpenDrive")));
 
 INSTANTIATE_TEST_CASE_P(
     KeyboardOperations,
