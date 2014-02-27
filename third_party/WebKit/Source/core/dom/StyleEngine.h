@@ -71,8 +71,8 @@ private:
     bool m_needsStyleRecalc;
 };
 
-class StyleEngine {
-    WTF_MAKE_FAST_ALLOCATED;
+class StyleEngine : public NoBaseWillBeGarbageCollectedFinalized<StyleEngine> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
 
     class IgnoringPendingStylesheet : public TemporaryChange<bool> {
@@ -85,7 +85,7 @@ public:
 
     friend class IgnoringPendingStylesheet;
 
-    static PassOwnPtr<StyleEngine> create(Document& document) { return adoptPtr(new StyleEngine(document)); }
+    static PassOwnPtrWillBeRawPtr<StyleEngine> create(Document& document) { return adoptPtrWillBeNoop(new StyleEngine(document)); }
 
     ~StyleEngine();
 
@@ -183,6 +183,8 @@ public:
 
     static PassRefPtr<CSSStyleSheet> createSheet(Element*, const String& text, TextPosition startPosition, bool createdByParser);
     static void removeSheet(StyleSheetContents*);
+
+    void trace(Visitor*) { }
 
 private:
     StyleEngine(Document&);

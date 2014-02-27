@@ -50,12 +50,12 @@ public:
     String selectorText() const;
     void setSelectorText(const String&);
 
-    virtual void trace(Visitor* visitor) OVERRIDE { CSSRule::trace(visitor); }
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     CSSPageRule(StyleRulePage*, CSSStyleSheet*);
 
-    RefPtrWillBePersistent<StyleRulePage> m_pageRule;
+    RefPtrWillBeMember<StyleRulePage> m_pageRule;
     mutable RefPtr<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
 };
 

@@ -71,27 +71,27 @@ static bool isAcceptableCSSStyleSheetParent(Node* parentNode)
 }
 #endif
 
-PassRefPtr<CSSStyleSheet> CSSStyleSheet::create(PassRefPtrWillBeRawPtr<StyleSheetContents> sheet, CSSImportRule* ownerRule)
+PassRefPtrWillBeRawPtr<CSSStyleSheet> CSSStyleSheet::create(PassRefPtrWillBeRawPtr<StyleSheetContents> sheet, CSSImportRule* ownerRule)
 {
-    return adoptRef(new CSSStyleSheet(sheet, ownerRule));
+    return adoptRefWillBeRefCountedGarbageCollected(new CSSStyleSheet(sheet, ownerRule));
 }
 
-PassRefPtr<CSSStyleSheet> CSSStyleSheet::create(PassRefPtrWillBeRawPtr<StyleSheetContents> sheet, Node* ownerNode)
+PassRefPtrWillBeRawPtr<CSSStyleSheet> CSSStyleSheet::create(PassRefPtrWillBeRawPtr<StyleSheetContents> sheet, Node* ownerNode)
 {
-    return adoptRef(new CSSStyleSheet(sheet, ownerNode, false, TextPosition::minimumPosition()));
+    return adoptRefWillBeRefCountedGarbageCollected(new CSSStyleSheet(sheet, ownerNode, false, TextPosition::minimumPosition()));
 }
 
-PassRefPtr<CSSStyleSheet> CSSStyleSheet::createInline(PassRefPtrWillBeRawPtr<StyleSheetContents> sheet, Node* ownerNode, const TextPosition& startPosition)
+PassRefPtrWillBeRawPtr<CSSStyleSheet> CSSStyleSheet::createInline(PassRefPtrWillBeRawPtr<StyleSheetContents> sheet, Node* ownerNode, const TextPosition& startPosition)
 {
     ASSERT(sheet);
-    return adoptRef(new CSSStyleSheet(sheet, ownerNode, true, startPosition));
+    return adoptRefWillBeRefCountedGarbageCollected(new CSSStyleSheet(sheet, ownerNode, true, startPosition));
 }
 
-PassRefPtr<CSSStyleSheet> CSSStyleSheet::createInline(Node* ownerNode, const KURL& baseURL, const TextPosition& startPosition, const String& encoding)
+PassRefPtrWillBeRawPtr<CSSStyleSheet> CSSStyleSheet::createInline(Node* ownerNode, const KURL& baseURL, const TextPosition& startPosition, const String& encoding)
 {
     CSSParserContext parserContext(ownerNode->document(), 0, baseURL, encoding);
     RefPtrWillBeRawPtr<StyleSheetContents> sheet = StyleSheetContents::create(baseURL.string(), parserContext);
-    return adoptRef(new CSSStyleSheet(sheet.release(), ownerNode, true, startPosition));
+    return adoptRefWillBeRefCountedGarbageCollected(new CSSStyleSheet(sheet.release(), ownerNode, true, startPosition));
 }
 
 CSSStyleSheet::CSSStyleSheet(PassRefPtrWillBeRawPtr<StyleSheetContents> contents, CSSImportRule* ownerRule)
@@ -111,7 +111,7 @@ CSSStyleSheet::CSSStyleSheet(PassRefPtrWillBeRawPtr<StyleSheetContents> contents
     , m_isInlineStylesheet(isInlineStylesheet)
     , m_isDisabled(false)
     , m_ownerNode(ownerNode)
-    , m_ownerRule(0)
+    , m_ownerRule(nullptr)
     , m_startPosition(startPosition)
     , m_loadCompleted(false)
 {
@@ -121,6 +121,14 @@ CSSStyleSheet::CSSStyleSheet(PassRefPtrWillBeRawPtr<StyleSheetContents> contents
 
 CSSStyleSheet::~CSSStyleSheet()
 {
+    if (m_mediaCSSOMWrapper)
+        m_mediaCSSOMWrapper->clearParentStyleSheet();
+
+    // With oilpan the parent style sheet pointer is strong and the sheet and
+    // its RuleCSSOMWrappers die together and we don't need to clear them here.
+    // Also with oilpan the StyleSheetContents client pointers are weak and
+    // therefore do not need to be cleared here.
+#if !ENABLE(OILPAN)
     // For style rules outside the document, .parentStyleSheet can become null even if the style rule
     // is still observable from JavaScript. This matches the behavior of .parentNode for nodes, but
     // it's not ideal because it makes the CSSOM's behavior depend on the timing of garbage collection.
@@ -129,10 +137,8 @@ CSSStyleSheet::~CSSStyleSheet()
             m_childRuleCSSOMWrappers[i]->setParentStyleSheet(0);
     }
 
-    if (m_mediaCSSOMWrapper)
-        m_mediaCSSOMWrapper->clearParentStyleSheet();
-
     m_contents->unregisterClient(this);
+#endif
 }
 
 void CSSStyleSheet::willMutateRules()
@@ -404,6 +410,13 @@ void CSSStyleSheet::startLoadingDynamicSheet()
 {
     m_loadCompleted = false;
     m_ownerNode->startLoadingDynamicSheet();
+}
+
+void CSSStyleSheet::trace(Visitor* visitor)
+{
+    visitor->trace(m_contents);
+    visitor->trace(m_ownerRule);
+    visitor->trace(m_childRuleCSSOMWrappers);
 }
 
 }

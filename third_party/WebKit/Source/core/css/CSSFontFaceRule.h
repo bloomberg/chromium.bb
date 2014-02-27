@@ -48,12 +48,12 @@ public:
 
     StyleRuleFontFace* styleRule() const { return m_fontFaceRule.get(); }
 
-    virtual void trace(Visitor* visitor) OVERRIDE { CSSRule::trace(visitor); }
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     CSSFontFaceRule(StyleRuleFontFace*, CSSStyleSheet* parent);
 
-    RefPtrWillBePersistent<StyleRuleFontFace> m_fontFaceRule;
+    RefPtrWillBeMember<StyleRuleFontFace> m_fontFaceRule;
     mutable RefPtr<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;
 };
 

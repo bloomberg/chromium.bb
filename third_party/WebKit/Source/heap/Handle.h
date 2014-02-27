@@ -700,10 +700,9 @@ template<typename T> struct HashTraits<WebCore::Member<T> > : SimpleClassHashTra
     typedef RawPtr<T> PassInType;
     typedef WebCore::Member<T>* IteratorGetType;
     typedef const WebCore::Member<T>* IteratorConstGetType;
-    typedef T* IteratorReferenceType;
-    typedef T* IteratorConstReferenceType;
-    static IteratorConstGetType getToConstGetConversion(const WebCore::Member<T>* x) { return x->get(); }
-    static IteratorReferenceType getToReferenceConversion(IteratorGetType x) { return x->get(); }
+    typedef WebCore::Member<T>& IteratorReferenceType;
+    typedef T* const IteratorConstReferenceType;
+    static IteratorReferenceType getToReferenceConversion(IteratorGetType x) { return *x; }
     static IteratorConstReferenceType getToReferenceConstConversion(IteratorConstGetType x) { return x->get(); }
     // FIXME: Similarly, there is no need for a distinction between PeekOutType
     // and PassOutType without reference counting.
@@ -728,10 +727,9 @@ template<typename T> struct HashTraits<WebCore::WeakMember<T> > : SimpleClassHas
     typedef RawPtr<T> PassInType;
     typedef WebCore::WeakMember<T>* IteratorGetType;
     typedef const WebCore::WeakMember<T>* IteratorConstGetType;
-    typedef T* IteratorReferenceType;
-    typedef T* IteratorConstReferenceType;
-    static IteratorConstGetType getToConstGetConversion(const WebCore::WeakMember<T>* x) { return x->get(); }
-    static IteratorReferenceType getToReferenceConversion(IteratorGetType x) { return x->get(); }
+    typedef WebCore::WeakMember<T>& IteratorReferenceType;
+    typedef T* const IteratorConstReferenceType;
+    static IteratorReferenceType getToReferenceConversion(IteratorGetType x) { return *x; }
     static IteratorConstReferenceType getToReferenceConstConversion(IteratorConstGetType x) { return x->get(); }
     // FIXME: Similarly, there is no need for a distinction between PeekOutType
     // and PassOutType without reference counting.

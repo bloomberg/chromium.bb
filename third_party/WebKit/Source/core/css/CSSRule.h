@@ -108,8 +108,9 @@ private:
     mutable unsigned char m_hasCachedSelectorText : 1;
     unsigned char m_parentIsRule : 1;
 
+    // These should be Members, but no Members in unions.
     union {
-        CSSRule* m_parentRule; // Should be Member, but no Members in unions.
+        CSSRule* m_parentRule;
         CSSStyleSheet* m_parentStyleSheet;
     };
 };
