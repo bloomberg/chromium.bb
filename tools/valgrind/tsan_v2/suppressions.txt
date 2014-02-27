@@ -65,6 +65,11 @@ race:media::TestInputCallback::OnData
 # http://crbug.com/244368
 race:skia::BeginPlatformPaint
 
+# http://crbug.com/244383
+race:IPC::SyncChannel::SyncChannel
+race:ppapi::proxy::ProxyChannel::InitWithChannel
+race:ppapi::proxy::*Dispatcher::Init*WithChannel
+
 # http://crbug.com/244385
 race:unixTempFileDir
 
@@ -150,10 +155,6 @@ race:CallbackWasCalled
 race:PrepareTextureMailbox
 race:cc::LayerTreeHost::PaintLayerContents
 
-# http://crbug.com/328804
-race:v8::internal::Heap::SetStackLimits
-race:ScavengePointer
-
 # http://crbug.com/328826
 race:gLCDOrder
 race:gLCDOrientation
@@ -213,7 +214,25 @@ race:cc::s_next_layer_id
 # http://crbug.com/345618
 race:WebCore::AudioDestinationNode::render
 
-# http://crbug.com/244383
-race:IPC::SyncChannel::SyncChannel
-race:ppapi::proxy::ProxyChannel::InitWithChannel
-race:ppapi::proxy::*Dispatcher::Init*WithChannel
+# http://crbug.com/345624
+race:media::DataSource::set_host
+
+# http://crbug.com/347534
+race:v8::internal::V8::TearDown
+
+# http://crbug.com/347538
+race:sctp_timer_start
+
+# http://crbug.com/347548
+race:cricket::WebRtcVideoMediaChannel::MaybeResetVieSendCodec
+race:cricket::WebRtcVideoMediaChannel::SetSendCodec
+
+# http://crbug.com/347553
+race:blink::WebString::reset
+
+# http://crbug.com/347559
+race:WebCore::ThreadState::stopThreads
+race:WebCore::ThreadState::visitRoots
+
+# https://code.google.com/p/v8/issues/detail?id=3143
+race:v8::internal::FLAG_track_double_fields
