@@ -90,6 +90,34 @@ const char kLoginScreenPowerManagementPolicy[] =
     "  \"UserActivityScreenDimDelayScale\": 300"
     "}";
 
+const char kPowerManagementIdleSettingsPolicy[] =
+    "{"
+    "  \"AC\": {"
+    "    \"Delays\": {"
+    "      \"ScreenDim\": 5000,"
+    "      \"ScreenOff\": 7000,"
+    "      \"IdleWarning\": 8000,"
+    "      \"Idle\": 9000"
+    "    },"
+    "    \"IdleAction\": \"Logout\""
+    "  },"
+    "  \"Battery\": {"
+    "    \"Delays\": {"
+    "      \"ScreenDim\": 1000,"
+    "      \"ScreenOff\": 3000,"
+    "      \"IdleWarning\": 4000,"
+    "      \"Idle\": 5000"
+    "    },"
+    "    \"IdleAction\": \"Logout\""
+    "  }"
+    "}";
+
+const char kScreenLockDelayPolicy[] =
+    "{"
+    "  \"AC\": 6000,"
+    "  \"Battery\": 2000"
+    "}";
+
 }  // namespace
 
 class PowerPolicyBrowserTestBase : public DevicePolicyCrosBrowserTest {
@@ -326,8 +354,8 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, SetDevicePolicy) {
             GetDebugString(power_manager_client_->policy()));
 }
 
-// Verifies that user policy is applied during a session.
-IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, SetUserPolicy) {
+// Verifies that legacy user policy is applied during a session.
+IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, SetLegacyUserPolicy) {
   pm::PowerManagementPolicy power_management_policy =
       power_manager_client_->policy();
   power_management_policy.mutable_ac_delays()->set_screen_dim_ms(5000);
@@ -377,6 +405,71 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, SetUserPolicy) {
   user_policy_.payload().mutable_useractivityscreendimdelayscale()->set_value(
       300);
   user_policy_.payload().mutable_waitforinitialuseractivity()->set_value(true);
+  StoreAndReloadUserPolicy();
+  EXPECT_EQ(GetDebugString(power_management_policy),
+            GetDebugString(power_manager_client_->policy()));
+}
+
+// Verifies that user policy is applied during a session.
+IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, SetUserPolicy) {
+  pm::PowerManagementPolicy power_management_policy =
+      power_manager_client_->policy();
+  power_management_policy.mutable_ac_delays()->set_screen_dim_ms(5000);
+  power_management_policy.mutable_ac_delays()->set_screen_lock_ms(6000);
+  power_management_policy.mutable_ac_delays()->set_screen_off_ms(7000);
+  power_management_policy.mutable_ac_delays()->set_idle_warning_ms(8000);
+  power_management_policy.mutable_ac_delays()->set_idle_ms(9000);
+  power_management_policy.mutable_battery_delays()->set_screen_dim_ms(1000);
+  power_management_policy.mutable_battery_delays()->set_screen_lock_ms(2000);
+  power_management_policy.mutable_battery_delays()->set_screen_off_ms(3000);
+  power_management_policy.mutable_battery_delays()->set_idle_warning_ms(4000);
+  power_management_policy.mutable_battery_delays()->set_idle_ms(5000);
+  power_management_policy.set_use_audio_activity(false);
+  power_management_policy.set_use_video_activity(false);
+  power_management_policy.set_ac_idle_action(
+      pm::PowerManagementPolicy::STOP_SESSION);
+  power_management_policy.set_battery_idle_action(
+      pm::PowerManagementPolicy::STOP_SESSION);
+  power_management_policy.set_lid_closed_action(
+      pm::PowerManagementPolicy::STOP_SESSION);
+  power_management_policy.set_presentation_screen_dim_delay_factor(3.0);
+  power_management_policy.set_user_activity_screen_dim_delay_factor(3.0);
+  power_management_policy.set_wait_for_initial_user_activity(true);
+
+  // Set legacy policies which are expected to be ignored.
+  user_policy_.payload().mutable_screendimdelayac()->set_value(5555);
+  user_policy_.payload().mutable_screenlockdelayac()->set_value(6666);
+  user_policy_.payload().mutable_screenoffdelayac()->set_value(7777);
+  user_policy_.payload().mutable_idlewarningdelayac()->set_value(8888);
+  user_policy_.payload().mutable_idledelayac()->set_value(9999);
+  user_policy_.payload().mutable_screendimdelaybattery()->set_value(1111);
+  user_policy_.payload().mutable_screenlockdelaybattery()->set_value(2222);
+  user_policy_.payload().mutable_screenoffdelaybattery()->set_value(3333);
+  user_policy_.payload().mutable_idlewarningdelaybattery()->set_value(4444);
+  user_policy_.payload().mutable_idledelaybattery()->set_value(5555);
+  user_policy_.payload().mutable_idleactionac()->set_value(
+      chromeos::PowerPolicyController::ACTION_SHUT_DOWN);
+  user_policy_.payload().mutable_idleactionbattery()->set_value(
+      chromeos::PowerPolicyController::ACTION_DO_NOTHING);
+
+  // Set current policies which are expected to be honored.
+  user_policy_.payload().mutable_powermanagementusesaudioactivity()->set_value(
+      false);
+  user_policy_.payload().mutable_powermanagementusesvideoactivity()->set_value(
+      false);
+  user_policy_.payload().mutable_lidcloseaction()->set_value(
+      chromeos::PowerPolicyController::ACTION_STOP_SESSION);
+  user_policy_.payload().mutable_presentationscreendimdelayscale()->set_value(
+      300);
+  user_policy_.payload().mutable_useractivityscreendimdelayscale()->set_value(
+      300);
+  user_policy_.payload().mutable_waitforinitialuseractivity()->set_value(true);
+
+  user_policy_.payload().mutable_powermanagementidlesettings()->set_value(
+      kPowerManagementIdleSettingsPolicy);
+  user_policy_.payload().mutable_screenlockdelays()->set_value(
+      kScreenLockDelayPolicy);
+
   StoreAndReloadUserPolicy();
   EXPECT_EQ(GetDebugString(power_management_policy),
             GetDebugString(power_manager_client_->policy()));

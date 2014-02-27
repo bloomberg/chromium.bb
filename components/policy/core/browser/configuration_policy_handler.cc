@@ -356,4 +356,58 @@ bool SchemaValidatingPolicyHandler::CheckAndGetValue(
   return result;
 }
 
+// LegacyPoliciesDeprecatingPolicyHandler implementation -----------------------
+
+// TODO(binjin): Add a new common base class for SchemaValidatingPolicyHandler
+// and TypeCheckingPolicyHandler representing policy handlers for a single
+// policy, and use it as the type of |new_policy_handler|.
+// http://crbug.com/345299
+LegacyPoliciesDeprecatingPolicyHandler::LegacyPoliciesDeprecatingPolicyHandler(
+    ScopedVector<ConfigurationPolicyHandler> legacy_policy_handlers,
+    scoped_ptr<SchemaValidatingPolicyHandler> new_policy_handler)
+    : legacy_policy_handlers_(legacy_policy_handlers.Pass()),
+      new_policy_handler_(new_policy_handler.Pass()) {
+}
+
+LegacyPoliciesDeprecatingPolicyHandler::
+    ~LegacyPoliciesDeprecatingPolicyHandler() {
+}
+
+bool LegacyPoliciesDeprecatingPolicyHandler::CheckPolicySettings(
+    const PolicyMap& policies,
+    PolicyErrorMap* errors) {
+  if (policies.Get(new_policy_handler_->policy_name())) {
+    return new_policy_handler_->CheckPolicySettings(policies, errors);
+  } else {
+    // The new policy is not set, fall back to legacy ones.
+    ScopedVector<ConfigurationPolicyHandler>::iterator handler;
+    bool valid_policy_found = false;
+    for (handler = legacy_policy_handlers_.begin();
+         handler != legacy_policy_handlers_.end();
+         ++handler) {
+      if ((*handler)->CheckPolicySettings(policies, errors))
+        valid_policy_found = true;
+    }
+    return valid_policy_found;
+  }
+}
+
+void LegacyPoliciesDeprecatingPolicyHandler::ApplyPolicySettings(
+    const PolicyMap& policies,
+    PrefValueMap* prefs) {
+  if (policies.Get(new_policy_handler_->policy_name())) {
+    new_policy_handler_->ApplyPolicySettings(policies, prefs);
+  } else {
+    // The new policy is not set, fall back to legacy ones.
+    PolicyErrorMap scoped_errors;
+    ScopedVector<ConfigurationPolicyHandler>::iterator handler;
+    for (handler = legacy_policy_handlers_.begin();
+         handler != legacy_policy_handlers_.end();
+         ++handler) {
+      if ((*handler)->CheckPolicySettings(policies, &scoped_errors))
+        (*handler)->ApplyPolicySettings(policies, prefs);
+    }
+  }
+}
+
 }  // namespace policy

@@ -28,6 +28,7 @@
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/schema.h"
 #include "crypto/sha2.h"
 #include "grit/component_strings.h"
 #include "policy/policy_constants.h"
@@ -61,6 +62,59 @@ bool GetSubkeyString(const base::DictionaryValue& dict,
   }
   *value = string_value;
   return true;
+}
+
+const char kScreenDimDelayAC[] = "AC.Delays.ScreenDim";
+const char kScreenOffDelayAC[] = "AC.Delays.ScreenOff";
+const char kIdleWarningDelayAC[] = "AC.Delays.IdleWarning";
+const char kIdleDelayAC[] = "AC.Delays.Idle";
+const char kIdleActionAC[] = "AC.IdleAction";
+
+const char kScreenDimDelayBattery[] = "Battery.Delays.ScreenDim";
+const char kScreenOffDelayBattery[] = "Battery.Delays.ScreenOff";
+const char kIdleWarningDelayBattery[] = "Battery.Delays.IdleWarning";
+const char kIdleDelayBattery[] = "Battery.Delays.Idle";
+const char kIdleActionBattery[] = "Battery.IdleAction";
+
+const char kScreenLockDelayAC[] = "AC";
+const char kScreenLockDelayBattery[] = "Battery";
+
+const char kActionSuspend[] = "Suspend";
+const char kActionLogout[] = "Logout";
+const char kActionShutdown[]  = "Shutdown";
+const char kActionDoNothing[] = "DoNothing";
+
+scoped_ptr<base::Value> GetValue(const base::DictionaryValue* dict,
+                                 const char* key) {
+  const base::Value* value = NULL;
+  if (!dict->Get(key, &value))
+    return scoped_ptr<base::Value>();
+  return scoped_ptr<base::Value>(value->DeepCopy());
+}
+
+scoped_ptr<base::Value> GetAction(const base::DictionaryValue* dict,
+                                  const char* key) {
+  scoped_ptr<base::Value> value = GetValue(dict, key);
+  std::string action;
+  if (!value || !value->GetAsString(&action))
+    return scoped_ptr<base::Value>();
+  if (action == kActionSuspend) {
+    return scoped_ptr<base::Value>(new base::FundamentalValue(
+        chromeos::PowerPolicyController::ACTION_SUSPEND));
+  }
+  if (action == kActionLogout) {
+    return scoped_ptr<base::Value>(new base::FundamentalValue(
+        chromeos::PowerPolicyController::ACTION_STOP_SESSION));
+  }
+  if (action == kActionShutdown) {
+    return scoped_ptr<base::Value>(new base::FundamentalValue(
+        chromeos::PowerPolicyController::ACTION_SHUT_DOWN));
+  }
+  if (action == kActionDoNothing) {
+    return scoped_ptr<base::Value>(new base::FundamentalValue(
+        chromeos::PowerPolicyController::ACTION_DO_NOTHING));
+  }
+  return scoped_ptr<base::Value>();
 }
 
 }  // namespace
@@ -348,6 +402,96 @@ void DeprecatedIdleActionHandler::ApplyPolicySettings(const PolicyMap& policies,
     if (!prefs->GetValue(prefs::kPowerBatteryIdleAction, NULL))
       prefs->SetValue(prefs::kPowerBatteryIdleAction, value->DeepCopy());
   }
+}
+
+PowerManagementIdleSettingsPolicyHandler::
+    PowerManagementIdleSettingsPolicyHandler(const Schema& chrome_schema)
+    : SchemaValidatingPolicyHandler(
+          key::kPowerManagementIdleSettings,
+          chrome_schema.GetKnownProperty(key::kPowerManagementIdleSettings),
+          SCHEMA_ALLOW_UNKNOWN) {
+}
+
+PowerManagementIdleSettingsPolicyHandler::
+    ~PowerManagementIdleSettingsPolicyHandler() {
+}
+
+void PowerManagementIdleSettingsPolicyHandler::ApplyPolicySettings(
+    const PolicyMap& policies,
+    PrefValueMap* prefs) {
+  scoped_ptr<base::Value> policy_value;
+  if (!CheckAndGetValue(policies, NULL, &policy_value))
+    return;
+  const base::DictionaryValue* dict = NULL;
+  if (!policy_value->GetAsDictionary(&dict)) {
+    NOTREACHED();
+    return;
+  }
+  scoped_ptr<base::Value> value;
+
+  value = GetValue(dict, kScreenDimDelayAC);
+  if (value)
+    prefs->SetValue(prefs::kPowerAcScreenDimDelayMs, value.release());
+  value = GetValue(dict, kScreenOffDelayAC);
+  if (value)
+    prefs->SetValue(prefs::kPowerAcScreenOffDelayMs, value.release());
+  value = GetValue(dict, kIdleWarningDelayAC);
+  if (value)
+    prefs->SetValue(prefs::kPowerAcIdleWarningDelayMs, value.release());
+  value = GetValue(dict, kIdleDelayAC);
+  if (value)
+    prefs->SetValue(prefs::kPowerAcIdleDelayMs, value.release());
+  value = GetAction(dict, kIdleActionAC);
+  if (value)
+    prefs->SetValue(prefs::kPowerAcIdleAction, value.release());
+
+  value = GetValue(dict, kScreenDimDelayBattery);
+  if (value)
+    prefs->SetValue(prefs::kPowerBatteryScreenDimDelayMs, value.release());
+  value = GetValue(dict, kScreenOffDelayBattery);
+  if (value)
+    prefs->SetValue(prefs::kPowerBatteryScreenOffDelayMs, value.release());
+  value = GetValue(dict, kIdleWarningDelayBattery);
+  if (value)
+    prefs->SetValue(prefs::kPowerBatteryIdleWarningDelayMs, value.release());
+  value = GetValue(dict, kIdleDelayBattery);
+  if (value)
+    prefs->SetValue(prefs::kPowerBatteryIdleDelayMs, value.release());
+  value = GetAction(dict, kIdleActionBattery);
+  if (value)
+    prefs->SetValue(prefs::kPowerBatteryIdleAction, value.release());
+}
+
+ScreenLockDelayPolicyHandler::ScreenLockDelayPolicyHandler(
+    const Schema& chrome_schema)
+    : SchemaValidatingPolicyHandler(
+          key::kScreenLockDelays,
+          chrome_schema.GetKnownProperty(key::kScreenLockDelays),
+          SCHEMA_ALLOW_UNKNOWN) {
+}
+
+ScreenLockDelayPolicyHandler::~ScreenLockDelayPolicyHandler() {
+}
+
+void ScreenLockDelayPolicyHandler::ApplyPolicySettings(
+    const PolicyMap& policies,
+    PrefValueMap* prefs) {
+  scoped_ptr<base::Value> policy_value;
+  if (!CheckAndGetValue(policies, NULL, &policy_value))
+    return;
+  const base::DictionaryValue* dict = NULL;
+  if (!policy_value->GetAsDictionary(&dict)) {
+    NOTREACHED();
+    return;
+  }
+  scoped_ptr<base::Value> value;
+
+  value = GetValue(dict, kScreenLockDelayAC);
+  if (value)
+    prefs->SetValue(prefs::kPowerAcScreenLockDelayMs, value.release());
+  value = GetValue(dict, kScreenLockDelayBattery);
+  if (value)
+    prefs->SetValue(prefs::kPowerBatteryScreenLockDelayMs, value.release());
 }
 
 }  // namespace policy

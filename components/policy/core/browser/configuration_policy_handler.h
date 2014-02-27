@@ -9,7 +9,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "components/policy/core/common/schema.h"
 #include "components/policy/policy_export.h"
@@ -259,6 +261,30 @@ class POLICY_EXPORT SchemaValidatingPolicyHandler
   SchemaOnErrorStrategy strategy_;
 
   DISALLOW_COPY_AND_ASSIGN(SchemaValidatingPolicyHandler);
+};
+
+// A policy handler to deprecate multiple legacy policies with a new one.
+// This handler will completely ignore any of legacy policy values if the new
+// one is set.
+class POLICY_EXPORT LegacyPoliciesDeprecatingPolicyHandler
+    : public ConfigurationPolicyHandler {
+ public:
+  LegacyPoliciesDeprecatingPolicyHandler(
+      ScopedVector<ConfigurationPolicyHandler> legacy_policy_handlers,
+      scoped_ptr<SchemaValidatingPolicyHandler> new_policy_handler);
+  virtual ~LegacyPoliciesDeprecatingPolicyHandler();
+
+  // ConfigurationPolicyHandler:
+  virtual bool CheckPolicySettings(const PolicyMap& policies,
+                                   PolicyErrorMap* errors) OVERRIDE;
+  virtual void ApplyPolicySettings(const PolicyMap& policies,
+                                   PrefValueMap* prefs) OVERRIDE;
+
+ private:
+  ScopedVector<ConfigurationPolicyHandler> legacy_policy_handlers_;
+  scoped_ptr<SchemaValidatingPolicyHandler> new_policy_handler_;
+
+  DISALLOW_COPY_AND_ASSIGN(LegacyPoliciesDeprecatingPolicyHandler);
 };
 
 }  // namespace policy

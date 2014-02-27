@@ -118,7 +118,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 257
+#   For your editing convenience: highest ID currently used: 259
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -4701,6 +4701,7 @@
             'dynamic_refresh': True,
             'per_profile': False,
           },
+          'deprecated': True,
           'example_value': 420000,
           'id': 172,
           'caption': '''Screen dim delay when running on AC power''',
@@ -4726,6 +4727,7 @@
             'dynamic_refresh': True,
             'per_profile': False,
           },
+          'deprecated': True,
           'example_value': 480000,
           'id': 173,
           'caption': '''Screen off delay when running on AC power''',
@@ -4751,6 +4753,7 @@
             'dynamic_refresh': True,
             'per_profile': False,
           },
+          'deprecated': True,
           'example_value': 600000,
           'id': 174,
           'caption': '''Screen lock delay when running on AC power''',
@@ -4778,6 +4781,7 @@
             'dynamic_refresh': True,
             'per_profile': False,
           },
+          'deprecated': True,
           'example_value': 545000,
           'id': 197,
           'caption': '''Idle warning delay when running on AC power''',
@@ -4801,6 +4805,7 @@
             'dynamic_refresh': True,
             'per_profile': False,
           },
+          'deprecated': True,
           'example_value': 1800000,
           'id': 175,
           'caption': '''Idle delay when running on AC power''',
@@ -4824,6 +4829,7 @@
             'dynamic_refresh': True,
             'per_profile': False,
           },
+          'deprecated': True,
           'example_value': 300000,
           'id': 176,
           'caption': '''Screen dim delay when running on battery power''',
@@ -4849,6 +4855,7 @@
             'dynamic_refresh': True,
             'per_profile': False,
           },
+          'deprecated': True,
           'example_value': 360000,
           'id': 177,
           'caption': '''Screen off delay when running on battery power''',
@@ -4874,6 +4881,7 @@
             'dynamic_refresh': True,
             'per_profile': False,
           },
+          'deprecated': True,
           'example_value': 600000,
           'id': 178,
           'caption': '''Screen lock delay when running on battery power''',
@@ -4901,6 +4909,7 @@
             'dynamic_refresh': True,
             'per_profile': False,
           },
+          'deprecated': True,
           'example_value': 545000,
           'id': 198,
           'caption': '''Idle warning delay when running on battery power''',
@@ -4924,6 +4933,7 @@
             'dynamic_refresh': True,
             'per_profile': False,
           },
+          'deprecated': True,
           'example_value': 600000,
           'id': 179,
           'caption': '''Idle delay when running on battery power''',
@@ -5015,6 +5025,7 @@
             'dynamic_refresh': True,
             'per_profile': False,
           },
+          'deprecated': True,
           'example_value': 0,
           'id': 226,
           'caption': '''Action to take when the idle delay is reached while running on AC power''',
@@ -5060,6 +5071,7 @@
             'dynamic_refresh': True,
             'per_profile': False,
           },
+          'deprecated': True,
           'example_value': 0,
           'id': 222,
           'caption': '''Action to take when the idle delay is reached while running on battery power''',
@@ -5242,6 +5254,171 @@
           If this policy is set to True, power management delays and the session length limit do not start running until after the first user activity has been observed in a session.
 
           If this policy is set to False or left unset, power management delays and the session length limit start running immediately on session start.''',
+        },
+        {
+          'name': 'PowerManagementIdleSettings',
+          'type': 'dict',
+          'schema': {
+            'type': 'object',
+            'properties': {
+              'AC': {
+                'description': 'Delays and actions to take when the device is idle and running on AC power',
+                'type': 'object',
+                'properties': {
+                  'Delays': {
+                    'type': 'object',
+                    'properties': {
+                      'ScreenDim': {
+                        'description': 'The length of time without user input after which the screen is dimmed, in milliseconds',
+                        'type': 'integer',
+                        'minimum': 0
+                      },
+                      'ScreenOff': {
+                        'description': 'The length of time without user input after which the screen is turned off, in milliseconds',
+                        'type': 'integer',
+                        'minimum': 0
+                      },
+                      'IdleWarning': {
+                        'description': 'The length of time without user input after which a warning dialog is shown, in milliseconds',
+                        'type': 'integer',
+                        'minimum': 0
+                      },
+                      'Idle': {
+                        'description': 'The length of time without user input after which the idle action is taken, in milliseconds',
+                        'type': 'integer',
+                        'minimum': 0
+                      }
+                    }
+                  },
+                  'IdleAction': {
+                    'description': 'Action to take when the idle delay is reached',
+                    'type': 'string',
+                    'enum': [ 'Suspend', 'Logout', 'Shutdown', 'DoNothing' ]
+                  }
+                }
+              },
+              'Battery': {
+                'description': 'Delays and actions to take when the device is idle and running on battery',
+                'type': 'object',
+                # TODO(binjin): Use $ref placeholder here once generated policy
+                # constants get full support of it. http://crbug.com/347082
+                'properties': {
+                  'Delays': {
+                    'type': 'object',
+                    'properties': {
+                      'ScreenDim': {
+                        'description': 'The length of time without user input after which the screen is dimmed, in milliseconds',
+                        'type': 'integer',
+                        'minimum': 0
+                      },
+                      'ScreenOff': {
+                        'description': 'The length of time without user input after which the screen is turned off, in milliseconds',
+                        'type': 'integer',
+                        'minimum': 0
+                      },
+                      'IdleWarning': {
+                        'description': 'The length of time without user input after which a warning dialog is shown, in milliseconds',
+                        'type': 'integer',
+                        'minimum': 0
+                      },
+                      'Idle': {
+                        'description': 'The length of time without user input after which the idle action is taken, in milliseconds',
+                        'type': 'integer',
+                        'minimum': 0
+                      }
+                    }
+                  },
+                  'IdleAction': {
+                    'description': 'Action to take when the idle delay is reached',
+                    'type': 'string',
+                    'enum': [ 'Suspend', 'Logout', 'Shutdown', 'DoNothing' ]
+                  }
+                }
+              },
+            }
+          },
+          'supported_on': ['chrome_os:35-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': {
+            'AC': {
+              'IdleAction': 'DoNothing'
+            },
+            'Battery': {
+              'IdleAction': 'DoNothing'
+            }
+          },
+          'id': 258,
+          'caption': '''Power management settings when the user becomes idle''',
+          'desc': '''Configure power management settings when the user becomes idle.
+
+          This policy controls multiple settings for the power management strategy when the user becomes idle.
+
+          There are four types of action:
+          * The screen will be dimmed if the user remains idle for the time specified by |ScreenDim|.
+          * The screen will be turned off if the user remains idle for the time specified by |ScreenOff|.
+          * A warning dialog will be shown if the user remains idle for the time specified by |IdleWarning|, telling the user that the idle action is about to be taken.
+          * The action specified by |IdleAction| will be taken if the user remains idle for the time specified by |Idle|.
+
+          For each of above actions, the delay should be specified in milliseconds, and needs to be set to a value greater than zero to trigger the corresponding action. In case the delay is set to zero, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will not take the corresponding action.
+
+          For each of the above delays, when the length of time is unset, a default value will be used.
+
+          Note that |ScreenDim| values will be clamped to be less than or equal to |ScreenOff|, |ScreenOff| and |IdleWarning| will be clamped to be less than or equal to |Idle|.
+
+          |IdleAction| can be one of four possible actions:
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          When the |IdleAction| is unset, the default action is taken, which is suspend.
+
+          There are also separate settings for AC power and battery.
+          '''
+        },
+        {
+          'name': 'ScreenLockDelays',
+          'type': 'dict',
+          'schema': {
+            'type': 'object',
+            'properties': {
+              'AC': {
+                'description': 'The length of time without user input after which the screen is locked when running on AC power, in milliseconds',
+                'type': 'integer',
+                'minimum': 0
+              },
+              'Battery': {
+                'description': 'The length of time without user input after which the screen is locked when running on battery, in milliseconds',
+                'type': 'integer',
+                'minimum': 0
+              }
+            }
+          },
+          'supported_on': ['chrome_os:35-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': {
+            'AC': 600000,
+            'Battery': 300000
+          },
+          'id': 259,
+          'caption': '''Screen lock delays''',
+          'desc': '''Specifies the length of time without user input after which the screen is locked when running on AC power or battery.
+
+          When the length of time is set to a value greater than zero, it represents the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> locks the screen.
+
+          When the length of time is set to zero, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> does not lock the screen when the user becomes idle.
+
+          When the length of time is unset, a default length of time is used.
+
+          The recommended way to lock the screen on idle is to enable screen locking on suspend and have <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> suspend after the idle delay. This policy should only be used when screen locking should occur a significant amount of time sooner than suspend or when suspend on idle is not desired at all.
+
+          The policy value should be specified in milliseconds. Values are clamped to be less than the idle delay.''',
         },
       ],
     },

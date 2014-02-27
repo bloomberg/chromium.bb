@@ -25284,6 +25284,9 @@ other types of suffix sets.
   <int value="256"
       label="Set default state of the on-screen keyboard on the login screen"/>
   <int value="257" label="Allow gnubby authentication"/>
+  <int value="258"
+      label="Power management settings when the user becomes idle"/>
+  <int value="259" label="Screen lock delays"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

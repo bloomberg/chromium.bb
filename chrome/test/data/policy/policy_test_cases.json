@@ -1861,6 +1861,30 @@
     ]
   },
 
+  "PowerManagementIdleSettings": {
+    "os": ["chromeos"],
+    "test_policy": { "PowerManagementIdleSettings" : { "AC": { "Delays": { "ScreenDim": 5000, "ScreenOff": 7000, "IdleWarning": 8000, "Idle": 9000 }, "IdleAction": "Logout" }, "Battery": { "Delays": { "ScreenDim": 1000, "ScreenOff": 3000, "IdleWarning": 4000, "Idle": 5000 }, "IdleAction": "Logout"} } },
+    "pref_mappings": [
+      { "pref": "power.ac_screen_dim_delay_ms" },
+      { "pref": "power.ac_screen_off_delay_ms" },
+      { "pref": "power.ac_idle_warning_delay_ms" },
+      { "pref": "power.ac_idle_delay_ms" },
+      { "pref": "power.battery_screen_dim_delay_ms" },
+      { "pref": "power.battery_screen_off_delay_ms" },
+      { "pref": "power.battery_idle_warning_delay_ms" },
+      { "pref": "power.battery_idle_delay_ms" }
+    ]
+  },
+
+  "ScreenLockDelays": {
+    "os": ["chromeos"],
+    "test_policy": { "ScreenLockDelays": { "AC": 6000, "Battery": 2000 } },
+    "pref_mappings": [
+      { "pref": "power.ac_screen_lock_delay_ms" },
+      { "pref": "power.battery_screen_lock_delay_ms" }
+    ]
+  },
+
   "TermsOfServiceURL": {
     "os": ["chromeos"],
     "test_policy": { "TermsOfServiceURL": "http://www.example.com/terms_of_service.txt" },
