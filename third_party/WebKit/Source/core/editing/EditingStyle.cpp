@@ -1118,7 +1118,7 @@ static PassRefPtr<MutableStylePropertySet> styleFromMatchedRulesForElement(Eleme
     RefPtr<StyleRuleList> matchedRules = element->document().ensureStyleResolver().styleRulesForElement(element, rulesToInclude);
     if (matchedRules) {
         for (unsigned i = 0; i < matchedRules->m_list.size(); ++i)
-            style->mergeAndOverrideOnConflict(matchedRules->m_list[i]->properties());
+            style->mergeAndOverrideOnConflict(&matchedRules->m_list[i]->properties());
     }
     return style.release();
 }

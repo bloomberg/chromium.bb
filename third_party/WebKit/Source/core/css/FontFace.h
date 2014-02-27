@@ -90,7 +90,7 @@ private:
 
     void initCSSFontFace(Document*);
     void setPropertyFromString(const Document*, const String&, CSSPropertyID, ExceptionState&);
-    bool setPropertyFromStyle(const StylePropertySet*, CSSPropertyID);
+    bool setPropertyFromStyle(const StylePropertySet&, CSSPropertyID);
     bool setPropertyValue(PassRefPtrWillBeRawPtr<CSSValue>, CSSPropertyID);
     bool setFamilyValue(CSSValueList*);
     void resolveReadyPromises();

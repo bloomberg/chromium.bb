@@ -150,13 +150,13 @@ PassRefPtr<FontFace> FontFace::create(ExecutionContext* context, const AtomicStr
 
 PassRefPtr<FontFace> FontFace::create(Document* document, const StyleRuleFontFace* fontFaceRule)
 {
-    const StylePropertySet* properties = fontFaceRule->properties();
+    const StylePropertySet& properties = fontFaceRule->properties();
 
     // Obtain the font-family property and the src property. Both must be defined.
-    RefPtrWillBeRawPtr<CSSValue> family = properties->getPropertyCSSValue(CSSPropertyFontFamily);
+    RefPtrWillBeRawPtr<CSSValue> family = properties.getPropertyCSSValue(CSSPropertyFontFamily);
     if (!family || !family->isValueList())
         return nullptr;
-    RefPtrWillBeRawPtr<CSSValue> src = properties->getPropertyCSSValue(CSSPropertySrc);
+    RefPtrWillBeRawPtr<CSSValue> src = properties.getPropertyCSSValue(CSSPropertySrc);
     if (!src || !src->isValueList())
         return nullptr;
 
@@ -254,9 +254,9 @@ void FontFace::setPropertyFromString(const Document* document, const String& s, 
         exceptionState.throwDOMException(SyntaxError, "Failed to set '" + s + "' as a property value.");
 }
 
-bool FontFace::setPropertyFromStyle(const StylePropertySet* properties, CSSPropertyID propertyID)
+bool FontFace::setPropertyFromStyle(const StylePropertySet& properties, CSSPropertyID propertyID)
 {
-    return setPropertyValue(properties->getPropertyCSSValue(propertyID), propertyID);
+    return setPropertyValue(properties.getPropertyCSSValue(propertyID), propertyID);
 }
 
 bool FontFace::setPropertyValue(PassRefPtrWillBeRawPtr<CSSValue> value, CSSPropertyID propertyID)

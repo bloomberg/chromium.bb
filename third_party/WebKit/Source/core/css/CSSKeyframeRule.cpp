@@ -92,15 +92,16 @@ void StyleKeyframe::setKeys(PassOwnPtr<Vector<double> > keys)
     ASSERT(m_keyText.isNull());
 }
 
-MutableStylePropertySet* StyleKeyframe::mutableProperties()
+MutableStylePropertySet& StyleKeyframe::mutableProperties()
 {
     if (!m_properties->isMutable())
         m_properties = m_properties->mutableCopy();
-    return toMutableStylePropertySet(m_properties);
+    return *toMutableStylePropertySet(m_properties);
 }
 
 void StyleKeyframe::setProperties(PassRefPtr<StylePropertySet> properties)
 {
+    ASSERT(properties);
     m_properties = properties;
 }
 

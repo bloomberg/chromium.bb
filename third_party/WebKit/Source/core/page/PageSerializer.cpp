@@ -276,9 +276,9 @@ void PageSerializer::serializeCSSStyleSheet(CSSStyleSheet* styleSheet, const KUR
                 continue;
             serializeCSSStyleSheet(importRule->styleSheet(), importURL);
         } else if (rule->type() == CSSRule::FONT_FACE_RULE) {
-            retrieveResourcesForProperties(toCSSFontFaceRule(rule)->styleRule()->properties(), document);
+            retrieveResourcesForProperties(&toCSSFontFaceRule(rule)->styleRule()->properties(), document);
         } else if (rule->type() == CSSRule::STYLE_RULE) {
-            retrieveResourcesForProperties(toCSSStyleRule(rule)->styleRule()->properties(), document);
+            retrieveResourcesForProperties(&toCSSStyleRule(rule)->styleRule()->properties(), document);
         }
     }
 

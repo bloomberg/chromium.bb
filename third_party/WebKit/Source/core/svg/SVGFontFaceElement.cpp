@@ -113,7 +113,7 @@ void SVGFontFaceElement::parseAttribute(const QualifiedName& name, const AtomicS
 {
     CSSPropertyID propId = cssPropertyIdForFontFaceAttributeName(name);
     if (propId > 0) {
-        m_fontFaceRule->mutableProperties()->setProperty(propId, value, false);
+        m_fontFaceRule->mutableProperties().setProperty(propId, value, false);
         rebuildFontFace();
         return;
     }
@@ -258,7 +258,7 @@ int SVGFontFaceElement::descent() const
 
 String SVGFontFaceElement::fontFamily() const
 {
-    return m_fontFaceRule->properties()->getPropertyValue(CSSPropertyFontFamily);
+    return m_fontFaceRule->properties().getPropertyValue(CSSPropertyFontFamily);
 }
 
 SVGFontElement* SVGFontFaceElement::associatedFontElement() const
@@ -298,11 +298,11 @@ void SVGFontFaceElement::rebuildFontFace()
         return;
 
     // Parse in-memory CSS rules
-    m_fontFaceRule->mutableProperties()->addParsedProperty(CSSProperty(CSSPropertySrc, list));
+    m_fontFaceRule->mutableProperties().addParsedProperty(CSSProperty(CSSPropertySrc, list));
 
     if (describesParentFont) {
         // Traverse parsed CSS values and associate CSSFontFaceSrcValue elements with ourselves.
-        RefPtrWillBeRawPtr<CSSValue> src = m_fontFaceRule->properties()->getPropertyCSSValue(CSSPropertySrc);
+        RefPtrWillBeRawPtr<CSSValue> src = m_fontFaceRule->properties().getPropertyCSSValue(CSSPropertySrc);
         CSSValueList* srcList = toCSSValueList(src.get());
 
         unsigned srcLength = srcList ? srcList->length() : 0;
@@ -336,7 +336,7 @@ void SVGFontFaceElement::removedFrom(ContainerNode* rootParent)
         m_fontElement = 0;
         document().accessSVGExtensions().unregisterSVGFontFaceElement(this);
         document().styleEngine()->fontSelector()->fontFaceCache()->remove(m_fontFaceRule.get());
-        m_fontFaceRule->mutableProperties()->clear();
+        m_fontFaceRule->mutableProperties().clear();
 
         document().styleResolverChanged(RecalcStyleDeferred);
     } else

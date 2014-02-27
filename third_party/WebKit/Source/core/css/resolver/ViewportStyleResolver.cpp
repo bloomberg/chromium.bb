@@ -64,9 +64,9 @@ void ViewportStyleResolver::collectViewportRules(RuleSet* rules, Origin origin)
 
 void ViewportStyleResolver::addViewportRule(StyleRuleViewport* viewportRule, Origin origin)
 {
-    StylePropertySet* propertySet = viewportRule->mutableProperties();
+    StylePropertySet& propertySet = viewportRule->mutableProperties();
 
-    unsigned propertyCount = propertySet->propertyCount();
+    unsigned propertyCount = propertySet.propertyCount();
     if (!propertyCount)
         return;
 
@@ -74,14 +74,14 @@ void ViewportStyleResolver::addViewportRule(StyleRuleViewport* viewportRule, Ori
         m_hasAuthorStyle = true;
 
     if (!m_propertySet) {
-        m_propertySet = propertySet->mutableCopy();
+        m_propertySet = propertySet.mutableCopy();
         return;
     }
 
     // We cannot use mergeAndOverrideOnConflict() here because it doesn't
     // respect the !important declaration (but addParsedProperty() does).
     for (unsigned i = 0; i < propertyCount; ++i)
-        m_propertySet->addParsedProperty(propertySet->propertyAt(i).toCSSProperty());
+        m_propertySet->addParsedProperty(propertySet.propertyAt(i).toCSSProperty());
 }
 
 void ViewportStyleResolver::clearDocument()

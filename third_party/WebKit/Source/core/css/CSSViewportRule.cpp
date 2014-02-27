@@ -63,7 +63,7 @@ String CSSViewportRule::cssText() const
     StringBuilder result;
     result.appendLiteral("@viewport { ");
 
-    String decls = m_viewportRule->properties()->asText();
+    String decls = m_viewportRule->properties().asText();
     result.append(decls);
     if (!decls.isEmpty())
         result.append(' ');

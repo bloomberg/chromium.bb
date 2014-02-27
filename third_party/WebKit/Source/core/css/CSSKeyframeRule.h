@@ -55,8 +55,8 @@ public:
     // Used by BisonCSSParser when constructing a new StyleKeyframe.
     void setKeys(PassOwnPtr<Vector<double> >);
 
-    const StylePropertySet* properties() const { return m_properties.get(); }
-    MutableStylePropertySet* mutableProperties();
+    const StylePropertySet& properties() const { return *m_properties; }
+    MutableStylePropertySet& mutableProperties();
     void setProperties(PassRefPtr<StylePropertySet>);
 
     String cssText() const;

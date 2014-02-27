@@ -476,11 +476,11 @@ static bool childRulesHaveFailedOrCanceledSubresources(const WillBeHeapVector<Re
         const StyleRuleBase* rule = rules[i].get();
         switch (rule->type()) {
         case StyleRuleBase::Style:
-            if (toStyleRule(rule)->properties()->hasFailedOrCanceledSubresources())
+            if (toStyleRule(rule)->properties().hasFailedOrCanceledSubresources())
                 return true;
             break;
         case StyleRuleBase::FontFace:
-            if (toStyleRuleFontFace(rule)->properties()->hasFailedOrCanceledSubresources())
+            if (toStyleRuleFontFace(rule)->properties().hasFailedOrCanceledSubresources())
                 return true;
             break;
         case StyleRuleBase::Media:

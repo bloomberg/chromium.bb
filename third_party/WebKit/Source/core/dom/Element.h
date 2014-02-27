@@ -514,7 +514,7 @@ public:
 
     void synchronizeAttribute(const AtomicString& localName) const;
 
-    MutableStylePropertySet* ensureMutableInlineStyle();
+    MutableStylePropertySet& ensureMutableInlineStyle();
     void clearMutableInlineStyleIfEmpty();
 
 protected:

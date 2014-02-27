@@ -119,9 +119,9 @@ static void resolveKeyframes(StyleResolver* resolver, Element* element, const El
         ASSERT(!offsets.isEmpty());
         keyframe->setOffset(offsets[0]);
         TimingFunction* timingFunction = defaultTimingFunction;
-        const StylePropertySet* properties = styleKeyframe->properties();
-        for (unsigned j = 0; j < properties->propertyCount(); j++) {
-            CSSPropertyID property = properties->propertyAt(j).id();
+        const StylePropertySet& properties = styleKeyframe->properties();
+        for (unsigned j = 0; j < properties.propertyCount(); j++) {
+            CSSPropertyID property = properties.propertyAt(j).id();
             specifiedProperties.add(property);
             if (property == CSSPropertyWebkitAnimationTimingFunction || property == CSSPropertyAnimationTimingFunction)
                 timingFunction = KeyframeValue::timingFunction(*keyframeStyle);

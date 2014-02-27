@@ -1521,7 +1521,7 @@ void InspectorStyleSheet::revalidateStyle(CSSStyleDeclaration* pageStyle)
     for (unsigned i = 0, size = m_flatRules.size(); i < size; ++i) {
         CSSStyleRule* parsedRule = InspectorCSSAgent::asCSSStyleRule(m_flatRules.at(i).get());
         if (parsedRule && parsedRule->style() == pageStyle) {
-            if (parsedRule->styleRule()->properties()->asText() != pageStyle->cssText())
+            if (parsedRule->styleRule()->properties().asText() != pageStyle->cssText())
                 setStyleText(pageStyle, pageStyle->cssText());
             break;
         }

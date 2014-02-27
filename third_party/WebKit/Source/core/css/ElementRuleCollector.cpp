@@ -253,7 +253,7 @@ void ElementRuleCollector::sortAndTransferMatchedRules()
         const RuleData* ruleData = matchedRules[i].ruleData();
         if (m_style && ruleData->containsUncommonAttributeSelector())
             m_style->setUnique();
-        m_result.addMatchedProperties(ruleData->rule()->properties(), ruleData->rule(), ruleData->linkMatchType(), ruleData->propertyWhitelistType(m_matchingUARules));
+        m_result.addMatchedProperties(&ruleData->rule()->properties(), ruleData->rule(), ruleData->linkMatchType(), ruleData->propertyWhitelistType(m_matchingUARules));
     }
 }
 
@@ -307,8 +307,8 @@ void ElementRuleCollector::collectRuleIfMatches(const RuleData& ruleData, Select
     SelectorChecker::MatchResult result;
     if (ruleMatches(ruleData, matchRequest.scope, behaviorAtBoundary, &result)) {
         // If the rule has no properties to apply, then ignore it in the non-debug mode.
-        const StylePropertySet* properties = rule->properties();
-        if (!properties || (properties->isEmpty() && !matchRequest.includeEmptyRules))
+        const StylePropertySet& properties = rule->properties();
+        if (properties.isEmpty() && !matchRequest.includeEmptyRules)
             return;
         // FIXME: Exposing the non-standard getMatchedCSSRules API to web is the only reason this is needed.
         if (m_sameOriginOnly && !ruleData.hasDocumentSecurityOrigin())

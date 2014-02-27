@@ -81,7 +81,7 @@ void PageRuleCollector::matchPageRules(RuleSet* rules)
     std::stable_sort(matchedPageRules.begin(), matchedPageRules.end(), comparePageRules);
 
     for (unsigned i = 0; i < matchedPageRules.size(); i++)
-        m_result.addMatchedProperties(matchedPageRules[i]->properties());
+        m_result.addMatchedProperties(&matchedPageRules[i]->properties());
 }
 
 static bool checkPageSelectorComponents(const CSSSelector* selector, bool isLeftPage, bool isFirstPage, const String& pageName)
@@ -113,8 +113,8 @@ void PageRuleCollector::matchPageRulesForList(WillBeHeapVector<RawPtrWillBeMembe
             continue;
 
         // If the rule has no properties to apply, then ignore it.
-        const StylePropertySet* properties = rule->properties();
-        if (!properties || properties->isEmpty())
+        const StylePropertySet& properties = rule->properties();
+        if (properties.isEmpty())
             continue;
 
         // Add this rule to our list of matched rules.

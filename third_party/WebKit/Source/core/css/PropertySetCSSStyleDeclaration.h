@@ -72,28 +72,28 @@ protected:
     enum MutationType { NoChanges, PropertyChanged };
     virtual void willMutate() { }
     virtual void didMutate(MutationType) { }
-    virtual MutableStylePropertySet* propertySet() const = 0;
+    virtual MutableStylePropertySet& propertySet() const = 0;
 
     OwnPtrWillBePersistent<WillBeHeapHashMap<CSSValue*, RefPtrWillBeMember<CSSValue> > > m_cssomCSSValueClones;
 };
 
 class PropertySetCSSStyleDeclaration : public AbstractPropertySetCSSStyleDeclaration {
 public:
-    PropertySetCSSStyleDeclaration(MutableStylePropertySet* propertySet) : m_propertySet(propertySet) { }
+    PropertySetCSSStyleDeclaration(MutableStylePropertySet& propertySet) : m_propertySet(&propertySet) { }
 
     virtual void ref() OVERRIDE;
     virtual void deref() OVERRIDE;
 
 protected:
-    virtual MutableStylePropertySet* propertySet() const OVERRIDE FINAL { return m_propertySet; }
+    virtual MutableStylePropertySet& propertySet() const OVERRIDE FINAL { ASSERT(m_propertySet); return *m_propertySet; }
 
-    MutableStylePropertySet* m_propertySet;
+    MutableStylePropertySet* m_propertySet; // Cannot be null
 };
 
 class StyleRuleCSSStyleDeclaration FINAL : public PropertySetCSSStyleDeclaration
 {
 public:
-    static PassRefPtr<StyleRuleCSSStyleDeclaration> create(MutableStylePropertySet* propertySet, CSSRule* parentRule)
+    static PassRefPtr<StyleRuleCSSStyleDeclaration> create(MutableStylePropertySet& propertySet, CSSRule* parentRule)
     {
         return adoptRef(new StyleRuleCSSStyleDeclaration(propertySet, parentRule));
     }
@@ -103,10 +103,10 @@ public:
     virtual void ref() OVERRIDE;
     virtual void deref() OVERRIDE;
 
-    void reattach(MutableStylePropertySet*);
+    void reattach(MutableStylePropertySet&);
 
 private:
-    StyleRuleCSSStyleDeclaration(MutableStylePropertySet*, CSSRule*);
+    StyleRuleCSSStyleDeclaration(MutableStylePropertySet&, CSSRule*);
     virtual ~StyleRuleCSSStyleDeclaration();
 
     virtual CSSStyleSheet* parentStyleSheet() const OVERRIDE;
@@ -129,7 +129,7 @@ public:
     }
 
 private:
-    virtual MutableStylePropertySet* propertySet() const OVERRIDE;
+    virtual MutableStylePropertySet& propertySet() const OVERRIDE;
     virtual void ref() OVERRIDE;
     virtual void deref() OVERRIDE;
     virtual CSSStyleSheet* parentStyleSheet() const OVERRIDE;

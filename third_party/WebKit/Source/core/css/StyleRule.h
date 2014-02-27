@@ -106,8 +106,8 @@ public:
     ~StyleRule();
 
     const CSSSelectorList& selectorList() const { return m_selectorList; }
-    const StylePropertySet* properties() const { return m_properties.get(); }
-    MutableStylePropertySet* mutableProperties();
+    const StylePropertySet& properties() const { return *m_properties; }
+    MutableStylePropertySet& mutableProperties();
 
     void parserAdoptSelectorVector(Vector<OwnPtr<CSSParserSelector> >& selectors) { m_selectorList.adoptSelectorVector(selectors); }
     void wrapperAdoptSelectorList(CSSSelectorList& selectors) { m_selectorList.adopt(selectors); }
@@ -123,7 +123,7 @@ private:
     StyleRule();
     StyleRule(const StyleRule&);
 
-    RefPtr<StylePropertySet> m_properties;
+    RefPtr<StylePropertySet> m_properties; // Cannot be null.
     CSSSelectorList m_selectorList;
 };
 
@@ -133,8 +133,8 @@ public:
 
     ~StyleRuleFontFace();
 
-    const StylePropertySet* properties() const { return m_properties.get(); }
-    MutableStylePropertySet* mutableProperties();
+    const StylePropertySet& properties() const { return *m_properties; }
+    MutableStylePropertySet& mutableProperties();
 
     void setProperties(PassRefPtr<StylePropertySet>);
 
@@ -146,7 +146,7 @@ private:
     StyleRuleFontFace();
     StyleRuleFontFace(const StyleRuleFontFace&);
 
-    RefPtr<StylePropertySet> m_properties;
+    RefPtr<StylePropertySet> m_properties; // Cannot be null.
 };
 
 class StyleRulePage : public StyleRuleBase {
@@ -156,8 +156,8 @@ public:
     ~StyleRulePage();
 
     const CSSSelector* selector() const { return m_selectorList.first(); }
-    const StylePropertySet* properties() const { return m_properties.get(); }
-    MutableStylePropertySet* mutableProperties();
+    const StylePropertySet& properties() const { return *m_properties; }
+    MutableStylePropertySet& mutableProperties();
 
     void parserAdoptSelectorVector(Vector<OwnPtr<CSSParserSelector> >& selectors) { m_selectorList.adoptSelectorVector(selectors); }
     void wrapperAdoptSelectorList(CSSSelectorList& selectors) { m_selectorList.adopt(selectors); }
@@ -171,7 +171,7 @@ private:
     StyleRulePage();
     StyleRulePage(const StyleRulePage&);
 
-    RefPtr<StylePropertySet> m_properties;
+    RefPtr<StylePropertySet> m_properties; // Cannot be null.
     CSSSelectorList m_selectorList;
 };
 
@@ -239,8 +239,8 @@ public:
 
     ~StyleRuleViewport();
 
-    const StylePropertySet* properties() const { return m_properties.get(); }
-    MutableStylePropertySet* mutableProperties();
+    const StylePropertySet& properties() const { return *m_properties; }
+    MutableStylePropertySet& mutableProperties();
 
     void setProperties(PassRefPtr<StylePropertySet>);
 
@@ -252,7 +252,7 @@ private:
     StyleRuleViewport();
     StyleRuleViewport(const StyleRuleViewport&);
 
-    RefPtr<StylePropertySet> m_properties;
+    RefPtr<StylePropertySet> m_properties; // Cannot be null
 };
 
 class StyleRuleFilter : public StyleRuleBase {
@@ -263,8 +263,8 @@ public:
 
     const String& filterName() const { return m_filterName; }
 
-    const StylePropertySet* properties() const { return m_properties.get(); }
-    MutableStylePropertySet* mutableProperties();
+    const StylePropertySet& properties() const { return *m_properties; }
+    MutableStylePropertySet& mutableProperties();
 
     void setProperties(PassRefPtr<StylePropertySet>);
 
