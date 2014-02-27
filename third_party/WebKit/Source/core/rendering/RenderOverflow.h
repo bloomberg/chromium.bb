@@ -50,16 +50,6 @@ public:
     const LayoutRect visualOverflowRect() const { return m_visualOverflow; }
     LayoutRect contentsVisualOverflowRect() const { return m_contentsVisualOverflow; }
 
-    void setMinYLayoutOverflow(LayoutUnit overflow) { m_layoutOverflow.setY(overflow); }
-    void setMaxYLayoutOverflow(LayoutUnit overflow) { m_layoutOverflow.setHeight(overflow - m_layoutOverflow.y()); }
-    void setMinXLayoutOverflow(LayoutUnit overflow) { m_layoutOverflow.setX(overflow); }
-    void setMaxXLayoutOverflow(LayoutUnit overflow) { m_layoutOverflow.setWidth(overflow - m_layoutOverflow.x()); }
-
-    void setMinYVisualOverflow(LayoutUnit overflow) { m_visualOverflow.setY(overflow); }
-    void setMaxYVisualOverflow(LayoutUnit overflow) { m_visualOverflow.setHeight(overflow - m_layoutOverflow.y()); }
-    void setMinXVisualOverflow(LayoutUnit overflow) { m_visualOverflow.setX(overflow); }
-    void setMaxXVisualOverflow(LayoutUnit overflow) { m_visualOverflow.setWidth(overflow - m_layoutOverflow.x()); }
-
     void move(LayoutUnit dx, LayoutUnit dy);
 
     void addLayoutOverflow(const LayoutRect&);
