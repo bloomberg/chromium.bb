@@ -859,6 +859,10 @@ bool ResourceDispatcherHostImpl::OnMessageReceived(
         handled = delegate->OnMessageReceived(message, message_was_ok);
       }
     }
+
+    // As the unhandled resource message effectively has no consumer, mark it as
+    // handled to prevent needless propagation through the filter pipeline.
+    handled = true;
   }
 
   filter_ = NULL;
