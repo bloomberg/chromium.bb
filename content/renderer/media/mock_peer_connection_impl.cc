@@ -263,10 +263,12 @@ MockPeerConnectionImpl::CreateDataChannel(const std::string& label,
 
 bool MockPeerConnectionImpl::GetStats(
     webrtc::StatsObserver* observer,
-    webrtc::MediaStreamTrackInterface* track) {
+    webrtc::MediaStreamTrackInterface* track,
+    StatsOutputLevel level) {
   if (!getstats_result_)
     return false;
 
+  DCHECK_EQ(kStatsOutputLevelStandard, level);
   std::vector<webrtc::StatsReport> reports;
   webrtc::StatsReport report;
   report.id = "1234";

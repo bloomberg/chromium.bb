@@ -39,12 +39,13 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
                         const webrtc::DataChannelInit* config) OVERRIDE;
 
   virtual bool GetStats(webrtc::StatsObserver* observer,
-                        webrtc::MediaStreamTrackInterface* track) OVERRIDE;
+                        webrtc::MediaStreamTrackInterface* track) {
+    return false;
+  }
   virtual bool GetStats(webrtc::StatsObserver* observer,
                         webrtc::MediaStreamTrackInterface* track,
-                        StatsOutputLevel level) OVERRIDE {
-    return GetStats(observer, track);
-  }
+                        StatsOutputLevel level) OVERRIDE;
+
   // Set Call this function to make sure next call to GetStats fail.
   void SetGetStatsResult(bool result) { getstats_result_ = result; }
 
