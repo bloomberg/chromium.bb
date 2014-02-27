@@ -119,7 +119,7 @@ public:
     static SimpleObject* create() { return new SimpleObject(); }
     void trace(Visitor*) { }
     char getPayload(int i) { return payload[i]; }
-protected:
+private:
     SimpleObject() { }
     char payload[64];
 };
@@ -2425,56 +2425,6 @@ TEST(HeapTest, CollectionNesting)
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     EXPECT_EQ(1u, map->get(key).size());
     EXPECT_EQ(0, IntWrapper::s_destructorCalls);
-}
-
-class Mixin : public GarbageCollectedMixin {
-public:
-    virtual void trace(Visitor* visitor) { }
-
-protected:
-    int m_padding[8];
-};
-
-class UseMixin : public SimpleObject, public Mixin {
-    USING_GARBAGE_COLLECTED_MIXIN(UseMixin)
-public:
-    static UseMixin* create()
-    {
-        return new UseMixin();
-    }
-
-    static int s_traceCount;
-    virtual void trace(Visitor* visitor)
-    {
-        SimpleObject::trace(visitor);
-        Mixin::trace(visitor);
-        ++s_traceCount;
-    }
-
-private:
-    UseMixin()
-    {
-        s_traceCount = 0;
-    }
-
-    int m_padding2[8];
-};
-int UseMixin::s_traceCount = 0;
-
-TEST(heap, GarbageCollectedMixin)
-{
-    HeapStats initialHeapStats;
-    clearOutOldGarbage(&initialHeapStats);
-
-    Persistent<UseMixin> usemixin = UseMixin::create();
-    ASSERT_EQ(0, UseMixin::s_traceCount);
-    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
-    ASSERT_EQ(1, UseMixin::s_traceCount);
-
-    Persistent<Mixin> mixin = usemixin;
-    usemixin = nullptr;
-    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
-    ASSERT_EQ(2, UseMixin::s_traceCount);
 }
 
 } // namespace
