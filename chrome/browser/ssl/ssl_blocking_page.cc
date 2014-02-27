@@ -312,7 +312,7 @@ std::string SSLBlockingPage::GetHTMLContents() {
     base::string16 issuer(
         ASCIIToUTF16(ssl_info_.cert->issuer().GetDisplayName()));
     std::string hashes;
-    for (std::vector<net::HashValue>::iterator it =
+    for (std::vector<net::HashValue>::const_iterator it =
             ssl_info_.public_key_hashes.begin();
          it != ssl_info_.public_key_hashes.end();
          ++it) {
@@ -346,6 +346,7 @@ std::string SSLBlockingPage::GetHTMLContents() {
 void SSLBlockingPage::OverrideEntry(NavigationEntry* entry) {
   int cert_id = content::CertStore::GetInstance()->StoreCert(
       ssl_info_.cert.get(), web_contents_->GetRenderProcessHost()->GetID());
+  DCHECK(cert_id);
 
   entry->GetSSL().security_style =
       content::SECURITY_STYLE_AUTHENTICATION_BROKEN;

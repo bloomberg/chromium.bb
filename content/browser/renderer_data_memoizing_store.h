@@ -90,6 +90,7 @@ class RendererDataMemoizingStore : public RenderProcessHostObserver {
       }
     }
 
+    DCHECK(item_id);
     return item_id;
   }
 

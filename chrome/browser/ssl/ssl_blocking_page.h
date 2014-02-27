@@ -71,7 +71,7 @@ class SSLBlockingPage : public content::InterstitialPageDelegate {
 
   content::WebContents* web_contents_;
   int cert_error_;
-  net::SSLInfo ssl_info_;
+  const net::SSLInfo ssl_info_;
   GURL request_url_;
   // Could the user successfully override the error?
   bool overridable_;
