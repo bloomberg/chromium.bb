@@ -349,6 +349,39 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
                 executeJavaScriptAndWaitForResult(mAwContents, mContentsClient, syncGetJs));
     }
 
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testHttpResponseClientHeader() throws Throwable {
+        final String clientResponseHeaderName = "Client-Via";
+        // JSON stringification applied by executeJavaScriptAndWaitForResult adds quotes
+        // around returned strings.
+        final String clientResponseHeaderValue = "\"shouldInterceptRequest\"";
+        final String syncGetUrl = mWebServer.getResponseUrl("/intercept_me");
+        final String syncGetJs =
+            "(function() {" +
+            "  var xhr = new XMLHttpRequest();" +
+            "  xhr.open('GET', '" + syncGetUrl + "', false);" +
+            "  xhr.send(null);" +
+            "  console.info(xhr.getAllResponseHeaders());" +
+            "  return xhr.getResponseHeader('" + clientResponseHeaderName + "');" +
+            "})();";
+        enableJavaScriptOnUiThread(mAwContents);
+
+        final String aboutPageUrl = addAboutPageToTestServer(mWebServer);
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), aboutPageUrl);
+
+        // The response header is set regardless of whether the embedder has provided a
+        // valid resource stream.
+        mShouldInterceptRequestHelper.setReturnValue(
+                new InterceptedRequestData("text/html", "UTF-8", null));
+        assertEquals(clientResponseHeaderValue,
+                executeJavaScriptAndWaitForResult(mAwContents, mContentsClient, syncGetJs));
+        mShouldInterceptRequestHelper.setReturnValue(
+                new InterceptedRequestData("text/html", "UTF-8", new EmptyInputStream()));
+        assertEquals(clientResponseHeaderValue,
+                executeJavaScriptAndWaitForResult(mAwContents, mContentsClient, syncGetJs));
+    }
+
 
     private String makePageWithTitle(String title) {
         return CommonResources.makeHtmlPageFrom("<title>" + title + "</title>",
