@@ -14,17 +14,20 @@
 #include "base/path_service.h"
 #include "base/process/memory.h"
 #include "base/process/process_handle.h"
+#include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/profiling.h"
+#include "chrome/common/switch_utils.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/plugin/chrome_content_plugin_client.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
@@ -94,6 +97,14 @@
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "components/breakpad/app/breakpad_linux.h"
+#endif
+
+#if defined(OS_LINUX)
+#include "base/environment.h"
+#endif
+
+#if defined(OS_MACOSX) || defined(OS_WIN)
+#include "chrome/browser/policy/policy_path_parser.h"
 #endif
 
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
@@ -309,6 +320,50 @@ struct MainFunction {
   const char* name;
   int (*function)(const content::MainFunctionParams&);
 };
+
+// Initializes the user data dir. Must be called before InitializeLocalState().
+void InitializeUserDataDir() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::FilePath user_data_dir =
+      command_line->GetSwitchValuePath(switches::kUserDataDir);
+  std::string process_type =
+      command_line->GetSwitchValueASCII(switches::kProcessType);
+
+#if defined(OS_LINUX)
+  // On Linux, Chrome does not support running multiple copies under different
+  // DISPLAYs, so the profile directory can be specified in the environment to
+  // support the virtual desktop use-case.
+  if (user_data_dir.empty()) {
+    std::string user_data_dir_string;
+    scoped_ptr<base::Environment> environment(base::Environment::Create());
+    if (environment->GetVar("CHROME_USER_DATA_DIR", &user_data_dir_string) &&
+        IsStringUTF8(user_data_dir_string)) {
+      user_data_dir = base::FilePath::FromUTF8Unsafe(user_data_dir_string);
+    }
+  }
+#endif
+#if defined(OS_MACOSX) || defined(OS_WIN)
+  policy::path_parser::CheckUserDataDirPolicy(&user_data_dir);
+#endif
+
+  const bool specified_directory_was_invalid = !user_data_dir.empty() &&
+      !PathService::OverrideAndCreateIfNeeded(chrome::DIR_USER_DATA,
+          user_data_dir, chrome::ProcessNeedsProfileDir(process_type));
+  // Save inaccessible or invalid paths so the user may be prompted later.
+  if (specified_directory_was_invalid)
+    chrome::SetInvalidSpecifiedUserDataDir(user_data_dir);
+
+  // Getting the user data directory can fail if the directory isn't creatable.
+  // ProcessSingleton needs a real user data directory on Mac/Linux, so it's
+  // better to fail here than fail mysteriously elsewhere.
+  CHECK(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
+      << "Must be able to get user data directory!";
+
+  // Append the fallback user data directory to the commandline. Otherwise,
+  // child or service processes will attempt to use the invalid directory.
+  if (specified_directory_was_invalid)
+    command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
+}
 
 }  // namespace
 
@@ -577,6 +632,9 @@ void ChromeMainDelegate::PreSandboxStartup() {
 #if defined(OS_WIN)
   child_process_logging::Init();
 #endif
+
+  // Initialize the user data dir for service processes, logging, etc.
+  InitializeUserDataDir();
 
   stats_counter_timer_.reset(new base::StatsCounterTimer("Chrome.Init"));
   startup_timer_.reset(new base::StatsScope<base::StatsCounterTimer>

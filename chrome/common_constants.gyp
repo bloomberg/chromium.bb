@@ -72,6 +72,7 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../components/nacl.gyp:nacl_switches',
         '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
       ],
@@ -102,6 +103,7 @@
           ],
           'dependencies': [
             '../base/base.gyp:base_win64',
+            '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations_win64',
             '../components/nacl.gyp:nacl_switches_win64',
             '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
           ],

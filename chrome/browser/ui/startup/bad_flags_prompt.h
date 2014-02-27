@@ -13,6 +13,9 @@ namespace chrome {
 // command line flags.
 void ShowBadFlagsPrompt(Browser* browser);
 
+// Shows a warning dialog if the originally specified user data dir was invalid.
+void MaybeShowInvalidUserDataDirWarningDialog();
+
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_STARTUP_BAD_FLAGS_PROMPT_H_

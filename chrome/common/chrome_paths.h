@@ -7,6 +7,10 @@
 
 #include "build/build_config.h"
 
+namespace base {
+class FilePath;
+}
+
 // This file declares path keys for the chrome module.  These can be used with
 // the PathService to access various special directories and files.
 
@@ -124,6 +128,10 @@ enum {
 
 // Call once to register the provider for the path keys defined above.
 void RegisterPathProvider();
+
+// Get or set the invalid user data dir that was originally specified.
+void SetInvalidSpecifiedUserDataDir(const base::FilePath& user_data_dir);
+const base::FilePath& GetInvalidSpecifiedUserDataDir();
 
 }  // namespace chrome
 

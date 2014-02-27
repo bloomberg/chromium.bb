@@ -95,11 +95,11 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/startup/bad_flags_prompt.h"
 #include "chrome/browser/ui/startup/default_browser_prompt.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/uma_browsing_activity_observer.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
-#include "chrome/browser/user_data_dir_extractor.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
@@ -785,11 +785,10 @@ int ChromeBrowserMainParts::PreCreateThreads() {
 int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreCreateThreadsImpl")
   run_message_loop_ = false;
-  {
-    TRACE_EVENT0("startup",
-      "ChromeBrowserMainParts::PreCreateThreadsImpl:GetUserDataDir");
-    user_data_dir_ = chrome::GetUserDataDir(parameters());
-  }
+  CHECK(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir_));
+#if !defined(OS_ANDROID)
+  chrome::MaybeShowInvalidUserDataDirWarningDialog();
+#endif
 
   // Force MediaCaptureDevicesDispatcher to be created on UI thread.
   MediaCaptureDevicesDispatcher::GetInstance();

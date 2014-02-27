@@ -2558,8 +2558,6 @@
         'browser/usb/usb_context.h',
         'browser/usb/usb_service.cc',
         'browser/usb/usb_service.h',
-        'browser/user_data_dir_extractor.cc',
-        'browser/user_data_dir_extractor.h',
         'browser/value_store/leveldb_value_store.cc',
         'browser/value_store/leveldb_value_store.h',
         'browser/value_store/testing_value_store.cc',
