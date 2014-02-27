@@ -78,9 +78,11 @@ void CloudPolicyValidatorBase::ValidateTimestamp(
 }
 
 void CloudPolicyValidatorBase::ValidateUsername(
-    const std::string& expected_user) {
+    const std::string& expected_user,
+    bool canonicalize) {
   validation_flags_ |= VALIDATE_USERNAME;
-  user_ = gaia::CanonicalizeEmail(expected_user);
+  user_ = expected_user;
+  canonicalize_user_ = canonicalize;
 }
 
 void CloudPolicyValidatorBase::ValidateDomain(
@@ -172,6 +174,7 @@ CloudPolicyValidatorBase::CloudPolicyValidatorBase(
       timestamp_not_after_(0),
       timestamp_option_(TIMESTAMP_REQUIRED),
       dm_token_option_(DM_TOKEN_REQUIRED),
+      canonicalize_user_(false),
       allow_key_rotation_(false),
       background_task_runner_(background_task_runner) {}
 
@@ -471,10 +474,14 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckUsername() {
     return VALIDATION_BAD_USERNAME;
   }
 
-  std::string policy_username =
-      gaia::CanonicalizeEmail(gaia::SanitizeEmail(policy_data_->username()));
+  std::string expected = user_;
+  std::string actual = policy_data_->username();
+  if (canonicalize_user_) {
+    expected = gaia::CanonicalizeEmail(gaia::SanitizeEmail(expected));
+    actual = gaia::CanonicalizeEmail(gaia::SanitizeEmail(actual));
+  }
 
-  if (user_ != policy_username) {
+  if (expected != actual) {
     LOG(ERROR) << "Invalid user name " << policy_data_->username();
     return VALIDATION_BAD_USERNAME;
   }

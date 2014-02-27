@@ -92,7 +92,7 @@ class CloudPolicyValidatorTest : public testing::Test {
         policy_response.Pass(), base::MessageLoopProxy::current());
     validator->ValidateTimestamp(timestamp_, timestamp_,
                                  timestamp_option_);
-    validator->ValidateUsername(PolicyBuilder::kFakeUsername);
+    validator->ValidateUsername(PolicyBuilder::kFakeUsername, true);
     if (!owning_domain_.empty())
       validator->ValidateDomain(owning_domain_);
     validator->ValidateDMToken(existing_dm_token_, ignore_missing_dm_token_);

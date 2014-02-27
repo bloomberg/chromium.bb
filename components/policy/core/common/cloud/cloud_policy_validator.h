@@ -125,8 +125,10 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
                          base::Time not_after,
                          ValidateTimestampOption timestamp_option);
 
-  // Validates the username in the policy blob matches |expected_user|.
-  void ValidateUsername(const std::string& expected_user);
+  // Validates that the username in the policy blob matches |expected_user|. If
+  // canonicalize is set to true, both values will be canonicalized before
+  // comparison.
+  void ValidateUsername(const std::string& expected_user, bool canonicalize);
 
   // Validates the policy blob is addressed to |expected_domain|. This uses the
   // domain part of the username field in the policy for the check.
@@ -284,6 +286,7 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
   ValidateTimestampOption timestamp_option_;
   ValidateDMTokenOption dm_token_option_;
   std::string user_;
+  bool canonicalize_user_;
   std::string domain_;
   std::string token_;
   std::string policy_type_;

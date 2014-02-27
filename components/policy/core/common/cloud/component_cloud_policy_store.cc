@@ -279,7 +279,7 @@ bool ComponentCloudPolicyStore::ValidateProto(
   scoped_ptr<ComponentCloudPolicyValidator> validator(
       ComponentCloudPolicyValidator::Create(
           proto.Pass(), scoped_refptr<base::SequencedTaskRunner>()));
-  validator->ValidateUsername(username_);
+  validator->ValidateUsername(username_, true);
   validator->ValidateDMToken(dm_token_,
                              ComponentCloudPolicyValidator::DM_TOKEN_REQUIRED);
   if (!policy_type.empty())

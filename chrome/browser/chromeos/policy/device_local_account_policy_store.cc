@@ -169,9 +169,11 @@ void DeviceLocalAccountPolicyStore::Validate(
     chromeos::DeviceSettingsService::OwnershipStatus ownership_status) {
   DCHECK_NE(chromeos::DeviceSettingsService::OWNERSHIP_UNKNOWN,
             ownership_status);
+  const em::PolicyData* device_policy_data =
+      device_settings_service_->policy_data();
   scoped_refptr<chromeos::OwnerKey> key =
       device_settings_service_->GetOwnerKey();
-  if (!key.get() || !key->public_key()) {
+  if (!key.get() || !key->public_key() || !device_policy_data) {
     status_ = CloudPolicyStore::STATUS_BAD_STATE;
     NotifyStoreLoaded();
     return;
@@ -180,7 +182,7 @@ void DeviceLocalAccountPolicyStore::Validate(
   scoped_ptr<UserCloudPolicyValidator> validator(
       UserCloudPolicyValidator::Create(policy_response.Pass(),
                                        background_task_runner()));
-  validator->ValidateUsername(account_id_);
+  validator->ValidateUsername(account_id_, false);
   validator->ValidatePolicyType(dm_protocol::kChromePublicAccountPolicyType);
   // The timestamp is verified when storing a new policy downloaded from the
   // server but not when loading a cached policy from disk.
@@ -190,7 +192,12 @@ void DeviceLocalAccountPolicyStore::Validate(
       valid_timestamp_required
           ? CloudPolicyValidatorBase::TIMESTAMP_REQUIRED
           : CloudPolicyValidatorBase::TIMESTAMP_NOT_REQUIRED,
-      CloudPolicyValidatorBase::DM_TOKEN_REQUIRED);
+      CloudPolicyValidatorBase::DM_TOKEN_NOT_REQUIRED);
+
+  // Validate the DMToken to match what device policy has.
+  validator->ValidateDMToken(device_policy_data->request_token(),
+                             CloudPolicyValidatorBase::DM_TOKEN_REQUIRED);
+
   validator->ValidatePayload();
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();

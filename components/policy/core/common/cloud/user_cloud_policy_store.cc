@@ -342,7 +342,7 @@ void UserCloudPolicyStore::Validate(
   // Prefs subsystem is initialized.
   if (!signin_username_.empty()) {
     DVLOG(1) << "Validating username: " << signin_username_;
-    validator->ValidateUsername(signin_username_);
+    validator->ValidateUsername(signin_username_, true);
     owning_domain = gaia::ExtractDomainName(
         gaia::CanonicalizeEmail(gaia::SanitizeEmail(signin_username_)));
   }
