@@ -25,7 +25,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/Page.h"
-#include "core/page/PageGroup.h"
 #include "wtf/HashSet.h"
 
 namespace WebCore {
@@ -34,7 +33,7 @@ using namespace std;
 
 ScopedPageLoadDeferrer::ScopedPageLoadDeferrer(Page* exclusion)
 {
-    const HashSet<Page*>& pages = PageGroup::sharedGroup()->pages();
+    const HashSet<Page*>& pages = Page::ordinaryPages();
 
     HashSet<Page*>::const_iterator end = pages.end();
     for (HashSet<Page*>::const_iterator it = pages.begin(); it != end; ++it) {

@@ -26,7 +26,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Page.h"
-#include "core/page/PageGroup.h"
 #include "wtf/Vector.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
@@ -259,7 +258,7 @@ LocalFrame* FrameTree::find(const AtomicString& name) const
 
     // Search the entire tree of each of the other pages in this namespace.
     // FIXME: Is random order OK?
-    const HashSet<Page*>& pages = page->group().pages();
+    const HashSet<Page*>& pages = Page::ordinaryPages();
     HashSet<Page*>::const_iterator end = pages.end();
     for (HashSet<Page*>::const_iterator it = pages.begin(); it != end; ++it) {
         Page* otherPage = *it;

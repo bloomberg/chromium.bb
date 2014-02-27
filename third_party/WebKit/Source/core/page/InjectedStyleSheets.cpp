@@ -25,7 +25,6 @@
 #include "core/dom/StyleEngine.h"
 #include "core/frame/LocalFrame.h"
 #include "core/page/Page.h"
-#include "core/page/PageGroup.h"
 #include "wtf/HashSet.h"
 
 namespace WebCore {
@@ -52,7 +51,7 @@ void InjectedStyleSheets::removeAll()
 void InjectedStyleSheets::invalidateInjectedStyleSheetCacheInAllFrames()
 {
     // Clear our cached sheets and have them just reparse.
-    const HashSet<Page*>& pages = PageGroup::sharedGroup()->pages();
+    const HashSet<Page*>& pages = Page::ordinaryPages();
 
     HashSet<Page*>::const_iterator end = pages.end();
     for (HashSet<Page*>::const_iterator it = pages.begin(); it != end; ++it) {

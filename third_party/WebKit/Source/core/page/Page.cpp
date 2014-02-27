@@ -47,7 +47,6 @@
 #include "core/page/DragController.h"
 #include "core/page/FocusController.h"
 #include "core/page/FrameTree.h"
-#include "core/page/PageGroup.h"
 #include "core/page/PageLifecycleNotifier.h"
 #include "core/page/PointerLockController.h"
 #include "core/page/StorageClient.h"
@@ -72,6 +71,14 @@ HashSet<Page*>& Page::allPages()
     DEFINE_STATIC_LOCAL(HashSet<Page*>, allPages, ());
     return allPages;
 }
+
+// static
+HashSet<Page*>& Page::ordinaryPages()
+{
+    DEFINE_STATIC_LOCAL(HashSet<Page*>, ordinaryPages, ());
+    return ordinaryPages;
+}
+
 
 void Page::networkStateChanged(bool online)
 {
@@ -125,7 +132,6 @@ Page::Page(PageClients& pageClients)
     , m_defersLoading(false)
     , m_pageScaleFactor(1)
     , m_deviceScaleFactor(1)
-    , m_group(nullptr)
     , m_timerAlignmentInterval(DOMTimer::visiblePageAlignmentInterval())
     , m_visibilityState(PageVisibilityStateVisible)
     , m_isCursorVisible(true)
@@ -147,8 +153,9 @@ Page::Page(PageClients& pageClients)
 Page::~Page()
 {
     m_mainFrame->setView(nullptr);
-    clearPageGroup();
     allPages().remove(this);
+    if (ordinaryPages().contains(this))
+        ordinaryPages().remove(this);
 
     for (LocalFrame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
         frame->willDetachFrameHost();
@@ -163,6 +170,12 @@ Page::~Page()
 #ifndef NDEBUG
     pageCounter.decrement();
 #endif
+}
+
+void Page::makeOrdinary()
+{
+    ASSERT(!ordinaryPages().contains(this));
+    ordinaryPages().add(this);
 }
 
 ViewportDescription Page::viewportDescription() const
@@ -223,30 +236,6 @@ bool Page::openedByDOM() const
 void Page::setOpenedByDOM()
 {
     m_openedByDOM = true;
-}
-
-void Page::clearPageGroup()
-{
-    if (!m_group)
-        return;
-    m_group->removePage(this);
-    m_group = nullptr;
-}
-
-void Page::setGroupType(PageGroupType type)
-{
-    clearPageGroup();
-
-    switch (type) {
-    case PrivatePageGroup:
-        m_group = PageGroup::create();
-        break;
-    case SharedPageGroup:
-        m_group = PageGroup::sharedGroup();
-        break;
-    }
-
-    m_group->addPage(this);
 }
 
 void Page::scheduleForcedStyleRecalcForAllPages()
@@ -379,11 +368,9 @@ void Page::setDeviceScaleFactor(float scaleFactor)
 
 void Page::allVisitedStateChanged()
 {
-    HashSet<Page*>::iterator pagesEnd = allPages().end();
-    for (HashSet<Page*>::iterator it = allPages().begin(); it != pagesEnd; ++it) {
+    HashSet<Page*>::iterator pagesEnd = ordinaryPages().end();
+    for (HashSet<Page*>::iterator it = ordinaryPages().begin(); it != pagesEnd; ++it) {
         Page* page = *it;
-        if (page->m_group != PageGroup::sharedGroup())
-            continue;
         for (LocalFrame* frame = page->m_mainFrame.get(); frame; frame = frame->tree().traverseNext())
             frame->document()->visitedLinkState().invalidateStyleForAllLinks();
     }
@@ -391,11 +378,9 @@ void Page::allVisitedStateChanged()
 
 void Page::visitedStateChanged(LinkHash linkHash)
 {
-    HashSet<Page*>::iterator pagesEnd = allPages().end();
-    for (HashSet<Page*>::iterator it = allPages().begin(); it != pagesEnd; ++it) {
+    HashSet<Page*>::iterator pagesEnd = ordinaryPages().end();
+    for (HashSet<Page*>::iterator it = ordinaryPages().begin(); it != pagesEnd; ++it) {
         Page* page = *it;
-        if (page->m_group != PageGroup::sharedGroup())
-            continue;
         for (LocalFrame* frame = page->m_mainFrame.get(); frame; frame = frame->tree().traverseNext())
             frame->document()->visitedLinkState().invalidateStyleForLink(linkHash);
     }

@@ -41,7 +41,6 @@
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/page/PageGroup.h"
 #include "core/workers/DedicatedWorkerGlobalScope.h"
 #include "core/workers/DedicatedWorkerThread.h"
 #include "core/workers/Worker.h"

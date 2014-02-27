@@ -50,7 +50,6 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/Page.h"
-#include "core/page/PageGroup.h"
 #include "core/workers/SharedWorkerGlobalScope.h"
 #include "core/workers/SharedWorkerThread.h"
 #include "core/workers/WorkerClients.h"

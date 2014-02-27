@@ -54,7 +54,6 @@
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InspectorController.h"
 #include "core/page/Page.h"
-#include "core/page/PageGroup.h"
 #include "core/rendering/RenderView.h"
 #include "platform/JSONValues.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -122,8 +121,9 @@ private:
         Vector<WebViewImpl*> views;
 
         // 1. Disable input events.
-        HashSet<Page*>::const_iterator end =  page->group().pages().end();
-        for (HashSet<Page*>::const_iterator it =  page->group().pages().begin(); it != end; ++it) {
+        const HashSet<Page*>& pages = Page::ordinaryPages();
+        HashSet<Page*>::const_iterator end = pages.end();
+        for (HashSet<Page*>::const_iterator it =  pages.begin(); it != end; ++it) {
             WebViewImpl* view = WebViewImpl::fromPage(*it);
             if (!view)
                 continue;

@@ -41,7 +41,6 @@
 #include "core/frame/DOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/page/Page.h"
-#include "core/page/PageGroup.h"
 #include "core/storage/Storage.h"
 #include "core/storage/StorageNamespace.h"
 #include "platform/JSONValues.h"

@@ -59,7 +59,6 @@ class HistoryItem;
 class InspectorClient;
 class InspectorController;
 class Node;
-class PageGroup;
 class PageLifecycleNotifier;
 class PlatformMouseEvent;
 class PluginData;
@@ -109,9 +108,13 @@ public:
     explicit Page(PageClients&);
     virtual ~Page();
 
+    void makeOrdinary();
+
     // This method returns all pages, incl. private ones associated with
     // inspector overlay, popups, SVGImage, etc.
     static HashSet<Page*>& allPages();
+    // This method returns all ordinary pages.
+    static HashSet<Page*>& ordinaryPages();
 
     FrameHost& frameHost() { return *m_frameHost; }
 
@@ -135,17 +138,6 @@ public:
 
     bool openedByDOM() const;
     void setOpenedByDOM();
-
-    // FIXME: PageGroup should probably just be removed, see comment in PageGroup.h
-    enum PageGroupType { PrivatePageGroup, SharedPageGroup };
-    void setGroupType(PageGroupType);
-    void clearPageGroup();
-    PageGroup& group()
-    {
-        if (!m_group)
-            setGroupType(PrivatePageGroup);
-        return *m_group;
-    }
 
     void incrementSubframeCount() { ++m_subframeCount; }
     void decrementSubframeCount() { ASSERT(m_subframeCount); --m_subframeCount; }
@@ -283,8 +275,6 @@ private:
 
     float m_pageScaleFactor;
     float m_deviceScaleFactor;
-
-    RefPtr<PageGroup> m_group;
 
     OwnPtr<StorageNamespace> m_sessionStorage;
 

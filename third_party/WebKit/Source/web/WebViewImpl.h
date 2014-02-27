@@ -70,7 +70,6 @@ class HistoryItem;
 class HitTestResult;
 class KeyboardEvent;
 class Page;
-class PageGroup;
 class PagePopup;
 class PagePopupClient;
 class PlatformKeyboardEvent;

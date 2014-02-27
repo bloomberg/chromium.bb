@@ -108,7 +108,6 @@
 #include "core/page/FrameTree.h"
 #include "core/page/InjectedStyleSheets.h"
 #include "core/page/Page.h"
-#include "core/page/PageGroup.h"
 #include "core/page/PagePopupClient.h"
 #include "core/page/PointerLockController.h"
 #include "core/page/ScopedPageLoadDeferrer.h"
@@ -410,7 +409,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     m_page->setValidationMessageClient(m_validationMessage.get());
     provideWorkerGlobalScopeProxyProviderTo(*m_page, WorkerGlobalScopeProxyProviderImpl::create());
 
-    m_page->setGroupType(Page::SharedPageGroup);
+    m_page->makeOrdinary();
 
     if (m_client) {
         setDeviceScaleFactor(m_client->screenInfo().deviceScaleFactor);

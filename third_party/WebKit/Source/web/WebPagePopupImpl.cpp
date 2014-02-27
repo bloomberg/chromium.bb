@@ -400,7 +400,6 @@ void WebPagePopupImpl::close()
 void WebPagePopupImpl::closePopup()
 {
     if (m_page) {
-        m_page->clearPageGroup();
         m_page->mainFrame()->loader().stopAllLoaders();
         ASSERT(m_page->mainFrame()->domWindow());
         DOMWindowPagePopup::uninstall(*m_page->mainFrame()->domWindow());

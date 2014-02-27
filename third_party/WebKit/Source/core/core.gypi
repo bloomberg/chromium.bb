@@ -1318,7 +1318,6 @@
             'page/Page.h',
             'page/PageAnimator.cpp',
             'page/PageAnimator.h',
-            'page/PageGroup.cpp',
             'page/PageLifecycleNotifier.cpp',
             'page/PageLifecycleNotifier.h',
             'page/PageLifecycleObserver.cpp',

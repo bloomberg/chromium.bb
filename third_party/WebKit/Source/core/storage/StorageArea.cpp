@@ -35,7 +35,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Page.h"
-#include "core/page/PageGroup.h"
 #include "core/page/StorageClient.h"
 #include "core/storage/Storage.h"
 #include "core/storage/StorageEvent.h"
@@ -145,7 +144,7 @@ size_t StorageArea::memoryBytesUsedByCache()
 void StorageArea::dispatchLocalStorageEvent(const String& key, const String& oldValue, const String& newValue, SecurityOrigin* securityOrigin, const KURL& pageURL, blink::WebStorageArea* sourceAreaInstance, bool originatedInProcess)
 {
     // FIXME: This looks suspicious. Why doesn't this use allPages instead?
-    const HashSet<Page*>& pages = PageGroup::sharedGroup()->pages();
+    const HashSet<Page*>& pages = Page::ordinaryPages();
     for (HashSet<Page*>::const_iterator it = pages.begin(); it != pages.end(); ++it) {
         for (LocalFrame* frame = (*it)->mainFrame(); frame; frame = frame->tree().traverseNext()) {
             Storage* storage = frame->domWindow()->optionalLocalStorage();
@@ -159,7 +158,7 @@ void StorageArea::dispatchLocalStorageEvent(const String& key, const String& old
 static Page* findPageWithSessionStorageNamespace(const blink::WebStorageNamespace& sessionNamespace)
 {
     // FIXME: This looks suspicious. Why doesn't this use allPages instead?
-    const HashSet<Page*>& pages = PageGroup::sharedGroup()->pages();
+    const HashSet<Page*>& pages = Page::ordinaryPages();
     for (HashSet<Page*>::const_iterator it = pages.begin(); it != pages.end(); ++it) {
         const bool dontCreateIfMissing = false;
         StorageNamespace* storageNamespace = (*it)->sessionStorage(dontCreateIfMissing);
