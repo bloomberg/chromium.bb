@@ -111,10 +111,11 @@ using std::max;
 
 namespace WebCore {
 
-class PostMessageTimer FINAL : public TimerBase {
+class PostMessageTimer FINAL : public SuspendableTimer {
 public:
     PostMessageTimer(DOMWindow* window, PassRefPtr<SerializedScriptValue> message, const String& sourceOrigin, PassRefPtr<DOMWindow> source, PassOwnPtr<MessagePortChannelArray> channels, SecurityOrigin* targetOrigin, PassRefPtr<ScriptCallStack> stackTrace)
-        : m_window(window)
+        : SuspendableTimer(window->document())
+        , m_window(window)
         , m_message(message)
         , m_origin(sourceOrigin)
         , m_source(source)
@@ -860,6 +861,7 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const Mes
     // Schedule the message.
     PostMessageTimer* timer = new PostMessageTimer(this, message, sourceOrigin, source, channels.release(), target.get(), stackTrace.release());
     timer->startOneShot(0);
+    timer->suspendIfNeeded();
 }
 
 void DOMWindow::postMessageTimerFired(PassOwnPtr<PostMessageTimer> t)
