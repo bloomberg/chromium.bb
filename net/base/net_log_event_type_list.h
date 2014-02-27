@@ -1419,6 +1419,39 @@ EVENT_TYPE(QUIC_SESSION_ACK_FRAME_RECEIVED)
 //   }
 EVENT_TYPE(QUIC_SESSION_ACK_FRAME_SENT)
 
+// Session sent a WINDOW_UPDATE frame.
+//   {
+//     "stream_id": <The id of the stream which this data is for>,
+//     "byte_offset": <Byte offset in the stream>,
+//   }
+EVENT_TYPE(QUIC_SESSION_WINDOW_UPDATE_FRAME_SENT)
+
+// Session sent a BLOCKED frame.
+//   {
+//     "stream_id": <The id of the stream which this data is for>,
+//   }
+EVENT_TYPE(QUIC_SESSION_BLOCKED_FRAME_SENT)
+
+// Session received a STOP_WAITING frame.
+//   {
+//     "sent_info": <Details of packet sent by the peer>
+//       {
+//         "least_unacked": <Lowest sequence number of a packet sent by the peer
+//                           for which it has not received an ACK>,
+//       }
+//   }
+EVENT_TYPE(QUIC_SESSION_STOP_WAITING_FRAME_RECEIVED)
+
+// Session sent an STOP_WAITING frame.
+//   {
+//     "sent_info": <Details of packet sent by the peer>
+//       {
+//         "least_unacked": <Lowest sequence number of a packet sent by the peer
+//                           for which it has not received an ACK>,
+//       }
+//   }
+EVENT_TYPE(QUIC_SESSION_STOP_WAITING_FRAME_SENT)
+
 // Session recevied a RST_STREAM frame.
 //   {
 //     "offset": <Offset in the byte stream which triggered the reset>,

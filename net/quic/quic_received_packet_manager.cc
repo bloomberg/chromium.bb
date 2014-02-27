@@ -207,19 +207,20 @@ bool QuicReceivedPacketManager::DontWaitForPacketsBefore(
 }
 
 void QuicReceivedPacketManager::UpdatePacketInformationSentByPeer(
-    const SentPacketInfo& sent_info) {
+    const QuicStopWaitingFrame& stop_waiting) {
   // ValidateAck() should fail if peer_least_packet_awaiting_ack_ shrinks.
-  DCHECK_LE(peer_least_packet_awaiting_ack_, sent_info.least_unacked);
-  if (sent_info.least_unacked > peer_least_packet_awaiting_ack_) {
-    bool missed_packets = DontWaitForPacketsBefore(sent_info.least_unacked);
-    if (missed_packets || sent_info.least_unacked >
+  DCHECK_LE(peer_least_packet_awaiting_ack_, stop_waiting.least_unacked);
+  if (stop_waiting.least_unacked > peer_least_packet_awaiting_ack_) {
+    bool missed_packets = DontWaitForPacketsBefore(stop_waiting.least_unacked);
+    if (missed_packets || stop_waiting.least_unacked >
             received_info_.largest_observed + 1) {
       DVLOG(1) << "Updating entropy hashed since we missed packets";
       // There were some missing packets that we won't ever get now. Recalculate
       // the received entropy hash.
-      RecalculateEntropyHash(sent_info.least_unacked, sent_info.entropy_hash);
+      RecalculateEntropyHash(stop_waiting.least_unacked,
+                             stop_waiting.entropy_hash);
     }
-    peer_least_packet_awaiting_ack_ = sent_info.least_unacked;
+    peer_least_packet_awaiting_ack_ = stop_waiting.least_unacked;
   }
   DCHECK(received_info_.missing_packets.empty() ||
          *received_info_.missing_packets.begin() >=

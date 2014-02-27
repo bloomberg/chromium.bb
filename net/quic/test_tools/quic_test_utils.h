@@ -108,6 +108,7 @@ class MockFramerVisitor : public QuicFramerVisitorInterface {
   MOCK_METHOD1(OnAckFrame, bool(const QuicAckFrame& frame));
   MOCK_METHOD1(OnCongestionFeedbackFrame,
                bool(const QuicCongestionFeedbackFrame& frame));
+  MOCK_METHOD1(OnStopWaitingFrame, bool(const QuicStopWaitingFrame& frame));
   MOCK_METHOD1(OnFecData, void(const QuicFecData& fec));
   MOCK_METHOD1(OnRstStreamFrame, bool(const QuicRstStreamFrame& frame));
   MOCK_METHOD1(OnConnectionCloseFrame,
@@ -142,6 +143,8 @@ class NoOpFramerVisitor : public QuicFramerVisitorInterface {
   virtual bool OnAckFrame(const QuicAckFrame& frame) OVERRIDE;
   virtual bool OnCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& frame) OVERRIDE;
+  virtual bool OnStopWaitingFrame(
+      const QuicStopWaitingFrame& frame) OVERRIDE;
   virtual void OnFecData(const QuicFecData& fec) OVERRIDE {}
   virtual bool OnRstStreamFrame(const QuicRstStreamFrame& frame) OVERRIDE;
   virtual bool OnConnectionCloseFrame(
@@ -187,6 +190,8 @@ class FramerVisitorCapturingFrames : public NoOpFramerVisitor {
   virtual bool OnAckFrame(const QuicAckFrame& frame) OVERRIDE;
   virtual bool OnCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& frame) OVERRIDE;
+  virtual bool OnStopWaitingFrame(
+      const QuicStopWaitingFrame& frame) OVERRIDE;
   virtual bool OnRstStreamFrame(const QuicRstStreamFrame& frame) OVERRIDE;
   virtual bool OnConnectionCloseFrame(
       const QuicConnectionCloseFrame& frame) OVERRIDE;
@@ -202,6 +207,7 @@ class FramerVisitorCapturingFrames : public NoOpFramerVisitor {
   }
   QuicAckFrame* ack() { return ack_.get(); }
   QuicCongestionFeedbackFrame* feedback() { return feedback_.get(); }
+  QuicStopWaitingFrame* stop_waiting() { return stop_waiting_.get(); }
   QuicRstStreamFrame* rst() { return rst_.get(); }
   QuicConnectionCloseFrame* close() { return close_.get(); }
   QuicGoAwayFrame* goaway() { return goaway_.get(); }
@@ -216,6 +222,7 @@ class FramerVisitorCapturingFrames : public NoOpFramerVisitor {
   std::vector<std::string*> stream_data_;
   scoped_ptr<QuicAckFrame> ack_;
   scoped_ptr<QuicCongestionFeedbackFrame> feedback_;
+  scoped_ptr<QuicStopWaitingFrame> stop_waiting_;
   scoped_ptr<QuicRstStreamFrame> rst_;
   scoped_ptr<QuicConnectionCloseFrame> close_;
   scoped_ptr<QuicGoAwayFrame> goaway_;
@@ -342,10 +349,9 @@ class MockSession : public QuicSession {
   MOCK_METHOD1(CreateIncomingDataStream, QuicDataStream*(QuicStreamId id));
   MOCK_METHOD0(GetCryptoStream, QuicCryptoStream*());
   MOCK_METHOD0(CreateOutgoingDataStream, QuicDataStream*());
-  MOCK_METHOD6(WritevData,
+  MOCK_METHOD5(WritevData,
                QuicConsumedData(QuicStreamId id,
-                                const struct iovec* iov,
-                                int count,
+                                const IOVector& data,
                                 QuicStreamOffset offset,
                                 bool fin,
                                 QuicAckNotifier::DelegateInterface*));

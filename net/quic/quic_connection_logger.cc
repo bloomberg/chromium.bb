@@ -163,6 +163,34 @@ base::Value* NetLogQuicConnectionCloseFrameCallback(
   return dict;
 }
 
+base::Value* NetLogQuicWindowUpdateFrameCallback(
+    const QuicWindowUpdateFrame* frame,
+    NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  dict->SetInteger("stream_id", frame->stream_id);
+  dict->SetString("byte_offset", base::Uint64ToString(frame->byte_offset));
+  return dict;
+}
+
+base::Value* NetLogQuicBlockedFrameCallback(
+    const QuicBlockedFrame* frame,
+    NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  dict->SetInteger("stream_id", frame->stream_id);
+  return dict;
+}
+
+base::Value* NetLogQuicStopWaitingFrameCallback(
+    const QuicStopWaitingFrame* frame,
+    NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  base::DictionaryValue* sent_info = new base::DictionaryValue();
+  dict->Set("sent_info", sent_info);
+  sent_info->SetString("least_unacked",
+                       base::Uint64ToString(frame->least_unacked));
+  return dict;
+}
+
 base::Value* NetLogQuicVersionNegotiationPacketCallback(
     const QuicVersionNegotiationPacket* packet,
     NetLog::LogLevel /* log_level */) {
@@ -270,6 +298,24 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const QuicFrame& frame) {
                      frame.connection_close_frame));
       break;
     case GOAWAY_FRAME:
+      break;
+    case WINDOW_UPDATE_FRAME:
+      net_log_.AddEvent(
+          NetLog::TYPE_QUIC_SESSION_WINDOW_UPDATE_FRAME_SENT,
+          base::Bind(&NetLogQuicWindowUpdateFrameCallback,
+                     frame.window_update_frame));
+      break;
+    case BLOCKED_FRAME:
+      net_log_.AddEvent(
+          NetLog::TYPE_QUIC_SESSION_BLOCKED_FRAME_SENT,
+          base::Bind(&NetLogQuicBlockedFrameCallback,
+                     frame.blocked_frame));
+      break;
+    case STOP_WAITING_FRAME:
+      net_log_.AddEvent(
+          NetLog::TYPE_QUIC_SESSION_STOP_WAITING_FRAME_SENT,
+          base::Bind(&NetLogQuicStopWaitingFrameCallback,
+                     frame.stop_waiting_frame));
       break;
     default:
       DCHECK(false) << "Illegal frame type: " << frame.type;
@@ -390,6 +436,13 @@ void QuicConnectionLogger::OnCongestionFeedbackFrame(
   net_log_.AddEvent(
       NetLog::TYPE_QUIC_SESSION_CONGESTION_FEEDBACK_FRAME_RECEIVED,
       base::Bind(&NetLogQuicCongestionFeedbackFrameCallback, &frame));
+}
+
+void QuicConnectionLogger::OnStopWaitingFrame(
+    const QuicStopWaitingFrame& frame) {
+  net_log_.AddEvent(
+      NetLog::TYPE_QUIC_SESSION_STOP_WAITING_FRAME_RECEIVED,
+      base::Bind(&NetLogQuicStopWaitingFrameCallback, &frame));
 }
 
 void QuicConnectionLogger::OnRstStreamFrame(const QuicRstStreamFrame& frame) {

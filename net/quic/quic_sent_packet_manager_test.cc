@@ -35,6 +35,12 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
     STLDeleteElements(&packets_);
   }
 
+  virtual void SetUp() {
+    // Ack handling requests a smoothed rtt for loss detection.
+    EXPECT_CALL(*send_algorithm_, SmoothedRtt())
+        .WillRepeatedly(Return(QuicTime::Delta::FromMilliseconds(1)));
+  }
+
   void VerifyUnackedPackets(QuicPacketSequenceNumber* packets,
                             size_t num_packets) {
     if (num_packets == 0) {
@@ -614,140 +620,6 @@ TEST_F(QuicSentPacketManagerTest, GetSentTime) {
   EXPECT_EQ(sent_time, QuicSentPacketManagerPeer::GetSentTime(&manager_, 2));
 }
 
-TEST_F(QuicSentPacketManagerTest, NackRetransmit1Packet) {
-  const size_t kNumSentPackets = 4;
-  // Transmit 4 packets.
-  for (size_t i = 1; i <= kNumSentPackets; ++i) {
-    SendDataPacket(i);
-  }
-  EXPECT_FALSE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
-
-  // Nack the first packet 3 times with increasing largest observed.
-  ReceivedPacketInfo received_info;
-  received_info.delta_time_largest_observed =
-      QuicTime::Delta::FromMilliseconds(5);
-  received_info.missing_packets.insert(1);
-  for (QuicPacketSequenceNumber i = 1; i <= 3; ++i) {
-    received_info.largest_observed = i + 1;
-    EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
-    EXPECT_CALL(*send_algorithm_, OnPacketAcked(i + 1, _)).Times(1);
-    if (i == 3) {
-      EXPECT_CALL(*send_algorithm_, OnPacketLost(1, _)).Times(1);
-      EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(1, _)).Times(1);
-    }
-    manager_.OnIncomingAck(received_info, clock_.Now());
-    EXPECT_EQ(
-        i == 3 ? 1u : 0u,
-        QuicSentPacketManagerPeer::GetPendingRetransmissionCount(&manager_));
-    EXPECT_EQ(i, QuicSentPacketManagerPeer::GetNackCount(&manager_, 1));
-  }
-  EXPECT_EQ(1u, stats_.packets_lost);
-}
-
-// A stretch ack is an ack that covers more than 1 packet of previously
-// unacknowledged data.
-TEST_F(QuicSentPacketManagerTest, NackRetransmit1PacketWith1StretchAck) {
-  const size_t kNumSentPackets = 4;
-  // Transmit 4 packets.
-  for (size_t i = 1; i <= kNumSentPackets; ++i) {
-    SendDataPacket(i);
-  }
-
-  // Nack the first packet 3 times in a single StretchAck.
-  ReceivedPacketInfo received_info;
-  received_info.delta_time_largest_observed =
-        QuicTime::Delta::FromMilliseconds(5);
-  received_info.missing_packets.insert(1);
-  received_info.largest_observed = kNumSentPackets;
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
-  EXPECT_CALL(*send_algorithm_, OnPacketAcked(_, _)).Times(3);
-  EXPECT_CALL(*send_algorithm_, OnPacketLost(1, _)).Times(1);
-  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(1, _)).Times(1);
-  manager_.OnIncomingAck(received_info, clock_.Now());
-  EXPECT_EQ(
-      1u, QuicSentPacketManagerPeer::GetPendingRetransmissionCount(&manager_));
-  EXPECT_EQ(3u, QuicSentPacketManagerPeer::GetNackCount(&manager_, 1));
-  EXPECT_EQ(1u, stats_.packets_lost);
-}
-
-// Ack a packet 3 packets ahead, causing a retransmit.
-TEST_F(QuicSentPacketManagerTest, NackRetransmit1PacketSingleAck) {
-  const size_t kNumSentPackets = 5;
-  // Transmit 5 packets.
-  for (size_t i = 1; i <= kNumSentPackets; ++i) {
-    SendDataPacket(i);
-  }
-
-  // Nack the first packet 3 times in an AckFrame with three missing packets.
-  ReceivedPacketInfo received_info;
-  received_info.delta_time_largest_observed =
-        QuicTime::Delta::FromMilliseconds(5);
-  received_info.missing_packets.insert(1);
-  received_info.missing_packets.insert(2);
-  received_info.missing_packets.insert(3);
-  received_info.largest_observed = 4;
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
-  EXPECT_CALL(*send_algorithm_, OnPacketAcked(4, _)).Times(1);
-  EXPECT_CALL(*send_algorithm_, OnPacketLost(1, _)).Times(1);
-  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(1, _)).Times(1);
-  manager_.OnIncomingAck(received_info, clock_.Now());
-  EXPECT_EQ(
-      1u, QuicSentPacketManagerPeer::GetPendingRetransmissionCount(&manager_));
-  EXPECT_EQ(3u, QuicSentPacketManagerPeer::GetNackCount(&manager_, 1));
-  EXPECT_EQ(1u, stats_.packets_lost);
-}
-
-TEST_F(QuicSentPacketManagerTest, EarlyRetransmit1Packet) {
-  const size_t kNumSentPackets = 2;
-  // Transmit 2 packets.
-  for (size_t i = 1; i <= kNumSentPackets; ++i) {
-    SendDataPacket(i);
-  }
-
-  // Early retransmit when the final packet gets acked and the first is nacked.
-  ReceivedPacketInfo received_info;
-  received_info.delta_time_largest_observed =
-      QuicTime::Delta::FromMilliseconds(5);
-  received_info.missing_packets.insert(1);
-  received_info.largest_observed = kNumSentPackets;
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
-  EXPECT_CALL(*send_algorithm_, OnPacketAcked(kNumSentPackets, _)).Times(1);
-  EXPECT_CALL(*send_algorithm_, OnPacketLost(1, _)).Times(1);
-  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(1, _)).Times(1);
-  manager_.OnIncomingAck(received_info, clock_.Now());
-  EXPECT_EQ(
-      1u, QuicSentPacketManagerPeer::GetPendingRetransmissionCount(&manager_));
-  EXPECT_EQ(1u, QuicSentPacketManagerPeer::GetNackCount(&manager_, 1));
-  EXPECT_EQ(1u, stats_.packets_lost);
-}
-
-TEST_F(QuicSentPacketManagerTest, EarlyRetransmitAllPackets) {
-  const size_t kNumSentPackets = 5;
-  for (size_t i = 1; i <= kNumSentPackets; ++i) {
-    SendDataPacket(i);
-  }
-
-  // Early retransmit all packets when the final packet arrives, since we do
-  // not expect to receive any more acks.
-  ReceivedPacketInfo received_info;
-  received_info.delta_time_largest_observed =
-      QuicTime::Delta::FromMilliseconds(5);
-  received_info.missing_packets.insert(1);
-  received_info.missing_packets.insert(2);
-  received_info.missing_packets.insert(3);
-  received_info.missing_packets.insert(4);
-  received_info.largest_observed = kNumSentPackets;
-  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
-  EXPECT_CALL(*send_algorithm_, OnPacketAcked(5, _)).Times(1);
-  EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(4);
-  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(4);
-  manager_.OnIncomingAck(received_info, clock_.Now());
-  EXPECT_EQ(
-      4u, QuicSentPacketManagerPeer::GetPendingRetransmissionCount(&manager_));
-  EXPECT_EQ(4u, QuicSentPacketManagerPeer::GetNackCount(&manager_, 1));
-  EXPECT_EQ(4u, stats_.packets_lost);
-}
-
 TEST_F(QuicSentPacketManagerTest, NackRetransmit2Packets) {
   const size_t kNumSentPackets = 25;
   // Transmit 25 packets.
@@ -818,34 +690,6 @@ TEST_F(QuicSentPacketManagerTest, NackRetransmit2PacketsAlternateAcks) {
   for (size_t i = 0; i < 13; ++i) {
     EXPECT_EQ(1 + 2 * i, manager_.NextPendingRetransmission().sequence_number);
     manager_.OnRetransmittedPacket(1 + 2 * i, kNumSentPackets + 1 + i);
-  }
-}
-
-TEST_F(QuicSentPacketManagerTest, NackTwiceThenAck) {
-  // Transmit 4 packets.
-  for (QuicPacketSequenceNumber i = 1; i <= 4; ++i) {
-    SendDataPacket(i);
-  }
-
-  // Nack the first packet 2 times, then ack it.
-  ReceivedPacketInfo received_info;
-  received_info.missing_packets.insert(1);
-  for (size_t i = 1; i <= 3; ++i) {
-    if (i == 3) {
-      received_info.missing_packets.clear();
-    }
-    received_info.largest_observed = i + 1;
-    received_info.delta_time_largest_observed =
-        QuicTime::Delta::FromMilliseconds(5);
-    EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
-    EXPECT_CALL(*send_algorithm_,
-                OnPacketAcked(_, _)).Times(i == 3 ? 2 : 1);
-    manager_.OnIncomingAck(received_info, clock_.Now());
-    EXPECT_FALSE(manager_.HasPendingRetransmissions());
-    // The nack count is not available once the packet has been acked.
-    if (i != 3) {
-      EXPECT_EQ(i, QuicSentPacketManagerPeer::GetNackCount(&manager_, 1));
-    }
   }
 }
 

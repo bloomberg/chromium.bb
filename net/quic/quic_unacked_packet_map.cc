@@ -156,7 +156,6 @@ void QuicUnackedPacketMap::NackPacket(QuicPacketSequenceNumber sequence_number,
 
 void QuicUnackedPacketMap::RemovePacket(
     QuicPacketSequenceNumber sequence_number) {
-  DVLOG(1) << __FUNCTION__ << " " << sequence_number;
   UnackedPacketMap::iterator it = unacked_packets_.find(sequence_number);
   if (it == unacked_packets_.end()) {
     LOG(DFATAL) << "packet is not unacked: " << sequence_number;
@@ -175,8 +174,6 @@ void QuicUnackedPacketMap::RemovePacket(
 
 void QuicUnackedPacketMap::NeuterPacket(
     QuicPacketSequenceNumber sequence_number) {
-  DVLOG(1) << __FUNCTION__ << " " << sequence_number << " pending? "
-           << unacked_packets_[sequence_number].pending;
   UnackedPacketMap::iterator it = unacked_packets_.find(sequence_number);
   if (it == unacked_packets_.end()) {
     LOG(DFATAL) << "packet is not unacked: " << sequence_number;

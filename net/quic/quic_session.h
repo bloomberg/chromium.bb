@@ -101,8 +101,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // this class.
   virtual QuicConsumedData WritevData(
       QuicStreamId id,
-      const struct iovec* iov,
-      int iov_count,
+      const IOVector& data,
       QuicStreamOffset offset,
       bool fin,
       QuicAckNotifier::DelegateInterface* ack_notifier_delegate);

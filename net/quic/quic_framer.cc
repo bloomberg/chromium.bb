@@ -198,6 +198,13 @@ size_t QuicFramer::GetMinAckFrameSize(
 }
 
 // static
+size_t QuicFramer::GetStopWaitingFrameSize(
+    QuicSequenceNumberLength sequence_number_length) {
+  return kQuicFrameTypeSize + kQuicEntropyHashSize +
+      sequence_number_length;
+}
+
+// static
 size_t QuicFramer::GetMinRstStreamFrameSize(QuicVersion quic_version) {
   if (quic_version > QUIC_VERSION_13) {
     return kQuicFrameTypeSize + kQuicMaxStreamIdSize +
@@ -374,9 +381,21 @@ SerializedPacket QuicFramer::BuildDataPacket(
         }
         break;
       case CONGESTION_FEEDBACK_FRAME:
-        if (!AppendQuicCongestionFeedbackFrame(
+        if (!AppendCongestionFeedbackFrame(
                 *frame.congestion_feedback_frame, &writer)) {
-          LOG(DFATAL) << "AppendQuicCongestionFeedbackFrame failed";
+          LOG(DFATAL) << "AppendCongestionFeedbackFrame failed";
+          return kNoPacket;
+        }
+        break;
+      case STOP_WAITING_FRAME:
+        if (quic_version_ <= QUIC_VERSION_15) {
+          LOG(DFATAL) << "Attempt to add a StopWaitingFrame in "
+                      << QuicVersionToString(quic_version_);
+          return kNoPacket;
+        }
+        if (!AppendStopWaitingFrame(
+                header, *frame.stop_waiting_frame, &writer)) {
+          LOG(DFATAL) << "AppendStopWaitingFrame failed";
           return kNoPacket;
         }
         break;
@@ -1228,6 +1247,24 @@ bool QuicFramer::ProcessFrameData(const QuicPacketHeader& header) {
         continue;
       }
 
+      case STOP_WAITING_FRAME: {
+        if (quic_version_ <= QUIC_VERSION_15) {
+          LOG(DFATAL) << "Trying to read a StopWaiting in "
+                      << QuicVersionToString(quic_version_);
+          return RaiseError(QUIC_INTERNAL_ERROR);
+        }
+        QuicStopWaitingFrame stop_waiting_frame;
+        if (!ProcessStopWaitingFrame(header, &stop_waiting_frame)) {
+          return RaiseError(QUIC_INVALID_STOP_WAITING_DATA);
+        }
+        if (!visitor_->OnStopWaitingFrame(stop_waiting_frame)) {
+          DVLOG(1) << "Visitor asked to stop further processing.";
+          // Returning true since there was no parsing error.
+          return true;
+        }
+        continue;
+      }
+
       default:
         set_detailed_error("Illegal frame type.");
         DLOG(WARNING) << "Illegal frame type: "
@@ -1298,8 +1335,10 @@ bool QuicFramer::ProcessStreamFrame(uint8 frame_type,
 bool QuicFramer::ProcessAckFrame(const QuicPacketHeader& header,
                                  uint8 frame_type,
                                  QuicAckFrame* frame) {
-  if (!ProcessSentInfo(header, &frame->sent_info)) {
-    return false;
+  if (quic_version_ <= QUIC_VERSION_15) {
+    if (!ProcessStopWaitingFrame(header, &frame->sent_info)) {
+      return false;
+    }
   }
   if (!ProcessReceivedInfo(frame_type, &frame->received_info)) {
     return false;
@@ -1401,9 +1440,9 @@ bool QuicFramer::ProcessReceivedInfo(uint8 frame_type,
   return true;
 }
 
-bool QuicFramer::ProcessSentInfo(const QuicPacketHeader& header,
-                                 SentPacketInfo* sent_info) {
-  if (!reader_->ReadBytes(&sent_info->entropy_hash, 1)) {
+bool QuicFramer::ProcessStopWaitingFrame(const QuicPacketHeader& header,
+                                         QuicStopWaitingFrame* stop_waiting) {
+  if (!reader_->ReadBytes(&stop_waiting->entropy_hash, 1)) {
     set_detailed_error("Unable to read entropy hash for sent packets.");
     return false;
   }
@@ -1415,7 +1454,7 @@ bool QuicFramer::ProcessSentInfo(const QuicPacketHeader& header,
     return false;
   }
   DCHECK_GE(header.packet_sequence_number, least_unacked_delta);
-  sent_info->least_unacked =
+  stop_waiting->least_unacked =
       header.packet_sequence_number - least_unacked_delta;
 
   return true;
@@ -1861,6 +1900,8 @@ size_t QuicFramer::ComputeFrameLength(
       }
       return len;
     }
+    case STOP_WAITING_FRAME:
+      return GetStopWaitingFrameSize(sequence_number_length);
     case RST_STREAM_FRAME:
       return GetMinRstStreamFrameSize(quic_version_) +
           frame.rst_stream_frame->error_details.size();
@@ -1987,7 +2028,7 @@ bool QuicFramer::AppendStreamFrame(
 
 // static
 void QuicFramer::set_version(const QuicVersion version) {
-  DCHECK(IsSupportedVersion(version));
+  DCHECK(IsSupportedVersion(version)) << QuicVersionToString(version);
   quic_version_ = version;
 }
 
@@ -2040,27 +2081,10 @@ bool QuicFramer::AppendAckFrameAndTypeByte(
     return false;
   }
 
-  // TODO(satyamshekhar): Decide how often we really should send this
-  // entropy_hash update.
-  if (!writer->WriteUInt8(frame.sent_info.entropy_hash)) {
-    return false;
-  }
-
-  DCHECK_GE(header.packet_sequence_number, frame.sent_info.least_unacked);
-  const QuicPacketSequenceNumber least_unacked_delta =
-      header.packet_sequence_number - frame.sent_info.least_unacked;
-  const QuicPacketSequenceNumber length_shift =
-      header.public_header.sequence_number_length * 8;
-  if (least_unacked_delta >> length_shift > 0) {
-    LOG(DFATAL) << "sequence_number_length "
-                << header.public_header.sequence_number_length
-                << " is too small for least_unacked_delta: "
-                << least_unacked_delta;
-    return false;
-  }
-  if (!AppendPacketSequenceNumber(header.public_header.sequence_number_length,
-                                  least_unacked_delta, writer)) {
-    return false;
+  if (quic_version_ <= QUIC_VERSION_15) {
+    if (!AppendStopWaitingFrame(header, frame.sent_info, writer)) {
+      return false;
+    }
   }
 
   const ReceivedPacketInfo& received_info = frame.received_info;
@@ -2160,7 +2184,7 @@ bool QuicFramer::AppendAckFrameAndTypeByte(
   return true;
 }
 
-bool QuicFramer::AppendQuicCongestionFeedbackFrame(
+bool QuicFramer::AppendCongestionFeedbackFrame(
     const QuicCongestionFeedbackFrame& frame,
     QuicDataWriter* writer) {
   if (!writer->WriteBytes(&frame.type, 1)) {
@@ -2250,6 +2274,37 @@ bool QuicFramer::AppendQuicCongestionFeedbackFrame(
     }
     default:
       return false;
+  }
+
+  return true;
+}
+
+bool QuicFramer::AppendStopWaitingFrame(
+    const QuicPacketHeader& header,
+    const QuicStopWaitingFrame& frame,
+    QuicDataWriter* writer) {
+  DCHECK_GE(header.packet_sequence_number, frame.least_unacked);
+  const QuicPacketSequenceNumber least_unacked_delta =
+      header.packet_sequence_number - frame.least_unacked;
+  const QuicPacketSequenceNumber length_shift =
+      header.public_header.sequence_number_length * 8;
+  if (!writer->WriteUInt8(frame.entropy_hash)) {
+    LOG(DFATAL) << " hash failed";
+    return false;
+  }
+
+  if (least_unacked_delta >> length_shift > 0) {
+    LOG(DFATAL) << "sequence_number_length "
+                << header.public_header.sequence_number_length
+                << " is too small for least_unacked_delta: "
+                << least_unacked_delta;
+    return false;
+  }
+  if (!AppendPacketSequenceNumber(header.public_header.sequence_number_length,
+                                  least_unacked_delta, writer)) {
+    LOG(DFATAL) << " seq failed: "
+                << header.public_header.sequence_number_length;
+    return false;
   }
 
   return true;

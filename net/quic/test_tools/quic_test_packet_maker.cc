@@ -71,6 +71,12 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckAndRstPacket(
     frames.push_back(QuicFrame(&feedback));
   }
 
+  if (version_ > QUIC_VERSION_15) {
+    QuicStopWaitingFrame stop_waiting;
+    stop_waiting.least_unacked = least_unacked;
+    frames.push_back(QuicFrame(&stop_waiting));
+  }
+
   QuicRstStreamFrame rst(stream_id, error_code, 0);
   frames.push_back(QuicFrame(&rst));
 
@@ -126,6 +132,13 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckPacket(
   if (send_feedback) {
     frames.push_back(QuicFrame(&feedback));
   }
+
+  if (version_ > QUIC_VERSION_15) {
+    QuicStopWaitingFrame stop_waiting;
+    stop_waiting.least_unacked = least_unacked;
+    frames.push_back(QuicFrame(&stop_waiting));
+  }
+
   scoped_ptr<QuicPacket> packet(
       framer.BuildUnsizedDataPacket(header, frames).packet);
   return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(

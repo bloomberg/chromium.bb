@@ -82,7 +82,9 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<bool> {
     EXPECT_TRUE(headers_stream_ != NULL);
   }
 
-  QuicConsumedData SaveIov(const struct iovec* iov, int count) {
+  QuicConsumedData SaveIov(const IOVector& data) {
+    const iovec* iov = data.iovec();
+    int count = data.Capacity();
     for (int i = 0 ; i < count; ++i) {
       saved_data_.append(static_cast<char*>(iov[i].iov_base), iov[i].iov_len);
     }
@@ -114,9 +116,8 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<bool> {
                                 QuicPriority priority,
                                 SpdyFrameType type) {
     // Write the headers and capture the outgoing data
-    EXPECT_CALL(session_, WritevData(kHeadersStreamId, _, _, _, false, NULL))
-        .WillOnce(WithArgs<1, 2>(
-            Invoke(this, &QuicHeadersStreamTest::SaveIov)));
+    EXPECT_CALL(session_, WritevData(kHeadersStreamId, _, _, false, NULL))
+        .WillOnce(WithArgs<1>(Invoke(this, &QuicHeadersStreamTest::SaveIov)));
     headers_stream_->WriteHeaders(stream_id, headers_, fin);
 
     // Parse the outgoing data and check that it matches was was written.

@@ -39,6 +39,7 @@ class MockDelegate : public QuicPacketGenerator::DelegateInterface {
                     IsHandshake handshake));
   MOCK_METHOD0(CreateAckFrame, QuicAckFrame*());
   MOCK_METHOD0(CreateFeedbackFrame, QuicCongestionFeedbackFrame*());
+  MOCK_METHOD0(CreateStopWaitingFrame, QuicStopWaitingFrame*());
   MOCK_METHOD1(OnSerializedPacket, bool(const SerializedPacket& packet));
   MOCK_METHOD2(CloseConnection, void(QuicErrorCode, bool));
 
@@ -81,6 +82,7 @@ struct PacketContents {
         num_feedback_frames(0),
         num_goaway_frames(0),
         num_rst_stream_frames(0),
+        num_stop_waiting_frames(0),
         num_stream_frames(0),
         fec_group(0) {
   }
@@ -90,6 +92,7 @@ struct PacketContents {
   size_t num_feedback_frames;
   size_t num_goaway_frames;
   size_t num_rst_stream_frames;
+  size_t num_stop_waiting_frames;
   size_t num_stream_frames;
 
   QuicFecGroupNumber fec_group;
@@ -135,6 +138,13 @@ class QuicPacketGeneratorTest : public ::testing::Test {
     return frame;
   }
 
+  QuicStopWaitingFrame* CreateStopWaitingFrame() {
+    QuicStopWaitingFrame* frame = new QuicStopWaitingFrame();
+    frame->entropy_hash = 0;
+    frame->least_unacked = 0;
+    return frame;
+  }
+
   QuicRstStreamFrame* CreateRstStreamFrame() {
     return new QuicRstStreamFrame(1, QUIC_STREAM_NO_ERROR, 0);
   }
@@ -149,7 +159,7 @@ class QuicPacketGeneratorTest : public ::testing::Test {
         contents.num_goaway_frames + contents.num_rst_stream_frames +
         contents.num_stream_frames;
     size_t num_frames = contents.num_feedback_frames + contents.num_ack_frames +
-        num_retransmittable_frames;
+        contents.num_stop_waiting_frames + num_retransmittable_frames;
 
     if (num_retransmittable_frames == 0) {
       ASSERT_TRUE(packet.retransmittable_frames == NULL);
@@ -173,6 +183,8 @@ class QuicPacketGeneratorTest : public ::testing::Test {
               simple_framer_.rst_stream_frames().size());
     EXPECT_EQ(contents.num_stream_frames,
               simple_framer_.stream_frames().size());
+    EXPECT_EQ(contents.num_stop_waiting_frames,
+              simple_framer_.stop_waiting_frames().size());
     EXPECT_EQ(contents.fec_group, simple_framer_.header().fec_group);
   }
 
@@ -227,7 +239,7 @@ class MockDebugDelegate : public QuicPacketGenerator::DebugDelegateInterface {
 TEST_F(QuicPacketGeneratorTest, ShouldSendAck_NotWritable) {
   delegate_.SetCanNotWrite();
 
-  generator_.SetShouldSendAck(false);
+  generator_.SetShouldSendAck(false, false);
   EXPECT_TRUE(generator_.HasQueuedFrames());
 }
 
@@ -241,7 +253,7 @@ TEST_F(QuicPacketGeneratorTest, ShouldSendAck_WritableAndShouldNotFlush) {
   EXPECT_CALL(delegate_, CreateAckFrame()).WillOnce(Return(CreateAckFrame()));
   EXPECT_CALL(debug_delegate, OnFrameAddedToPacket(_)).Times(1);
 
-  generator_.SetShouldSendAck(false);
+  generator_.SetShouldSendAck(false, false);
   EXPECT_TRUE(generator_.HasQueuedFrames());
 }
 
@@ -252,7 +264,7 @@ TEST_F(QuicPacketGeneratorTest, ShouldSendAck_WritableAndShouldFlush) {
   EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
       DoAll(SaveArg<0>(&packet_), Return(true)));
 
-  generator_.SetShouldSendAck(false);
+  generator_.SetShouldSendAck(false, false);
   EXPECT_FALSE(generator_.HasQueuedFrames());
 
   PacketContents contents;
@@ -269,7 +281,7 @@ TEST_F(QuicPacketGeneratorTest,
   EXPECT_CALL(delegate_, CreateFeedbackFrame()).WillOnce(
       Return(CreateFeedbackFrame()));
 
-  generator_.SetShouldSendAck(true);
+  generator_.SetShouldSendAck(true, false);
   EXPECT_TRUE(generator_.HasQueuedFrames());
 }
 
@@ -280,16 +292,19 @@ TEST_F(QuicPacketGeneratorTest,
   EXPECT_CALL(delegate_, CreateAckFrame()).WillOnce(Return(CreateAckFrame()));
   EXPECT_CALL(delegate_, CreateFeedbackFrame()).WillOnce(
       Return(CreateFeedbackFrame()));
+  EXPECT_CALL(delegate_, CreateStopWaitingFrame()).WillOnce(
+      Return(CreateStopWaitingFrame()));
 
   EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
       DoAll(SaveArg<0>(&packet_), Return(true)));
 
-  generator_.SetShouldSendAck(true);
+  generator_.SetShouldSendAck(true, true);
   EXPECT_FALSE(generator_.HasQueuedFrames());
 
   PacketContents contents;
   contents.num_ack_frames = 1;
   contents.num_feedback_frames = 1;
+  contents.num_stop_waiting_frames = 1;
   CheckPacketContains(contents, packet_);
 }
 
@@ -532,7 +547,7 @@ TEST_F(QuicPacketGeneratorTest, ConsumeData_FramesPreviouslyQueued) {
 TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations) {
   delegate_.SetCanNotWrite();
 
-  generator_.SetShouldSendAck(true);
+  generator_.SetShouldSendAck(true, false);
   generator_.AddControlFrame(QuicFrame(CreateRstStreamFrame()));
   EXPECT_TRUE(generator_.HasQueuedFrames());
 
@@ -568,7 +583,7 @@ TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations) {
 TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations2) {
   delegate_.SetCanNotWrite();
 
-  generator_.SetShouldSendAck(true);
+  generator_.SetShouldSendAck(true, false);
   generator_.AddControlFrame(QuicFrame(CreateRstStreamFrame()));
   EXPECT_TRUE(generator_.HasQueuedFrames());
 

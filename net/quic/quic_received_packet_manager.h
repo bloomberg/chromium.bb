@@ -64,8 +64,9 @@ class NET_EXPORT_PRIVATE QuicReceivedPacketManager :
   // Updates internal state based on |received_info|.
   void UpdatePacketInformationReceivedByPeer(
       const ReceivedPacketInfo& received_nfo);
-  // Updates internal state based on |sent_info|.
-  void UpdatePacketInformationSentByPeer(const SentPacketInfo& sent_info);
+  // Updates internal state based on |stop_waiting|.
+  void UpdatePacketInformationSentByPeer(
+      const QuicStopWaitingFrame& stop_waiting);
 
   // Returns whether the peer is missing packets.
   bool HasMissingPackets();

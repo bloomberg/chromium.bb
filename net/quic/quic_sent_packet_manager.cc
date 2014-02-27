@@ -41,9 +41,6 @@ static const int kMinRetransmissionTimeMs = 200;
 static const int kMaxRetransmissionTimeMs = 60000;
 static const size_t kMaxRetransmissions = 10;
 
-// TCP retransmits after 3 nacks.
-static const size_t kNumberOfNacksBeforeRetransmission = 3;
-
 // Only exponentially back off the handshake timer 5 times due to a timeout.
 static const size_t kMaxHandshakeRetransmissionBackoffs = 5;
 static const size_t kMinHandshakeTimeoutMs = 10;
@@ -75,7 +72,9 @@ QuicSentPacketManager::QuicSentPacketManager(bool is_server,
       clock_(clock),
       stats_(stats),
       send_algorithm_(SendAlgorithmInterface::Create(clock, type)),
+      loss_algorithm_(LossDetectionInterface::Create()),
       rtt_sample_(QuicTime::Delta::Infinite()),
+      largest_observed_(0),
       pending_crypto_packet_count_(0),
       consecutive_rto_count_(0),
       consecutive_tlp_count_(0),
@@ -141,6 +140,7 @@ bool QuicSentPacketManager::OnIncomingAck(
   // we only update rtt when the largest observed gets acked.
   bool largest_observed_acked =
       unacked_packets_.IsUnacked(received_info.largest_observed);
+  largest_observed_ = received_info.largest_observed;
   MaybeUpdateRTT(received_info, ack_receive_time);
   HandleAckForSentPackets(received_info);
   MaybeRetransmitOnAckFrame(received_info, ack_receive_time);
@@ -304,7 +304,6 @@ QuicSentPacketManager::MarkPacketHandled(
     }
     unacked_packets_.SetNotPending(sequence_number);
   }
-
 
   SequenceNumberSet all_transmissions = *transmission_info.all_transmissions;
   SequenceNumberSet::reverse_iterator all_transmissions_it =
@@ -528,8 +527,7 @@ void QuicSentPacketManager::OnIncomingQuicCongestionFeedbackFrame(
 void QuicSentPacketManager::MaybeRetransmitOnAckFrame(
     const ReceivedPacketInfo& received_info,
     const QuicTime& ack_receive_time) {
-  // Go through all pending packets up to the largest observed and see if any
-  // need to be retransmitted or lost.
+  // Go through all pending packets up to the largest observed and count nacks.
   for (QuicUnackedPacketMap::const_iterator it = unacked_packets_.begin();
        it != unacked_packets_.end() &&
            it->first <= received_info.largest_observed; ++it) {
@@ -544,16 +542,19 @@ void QuicSentPacketManager::MaybeRetransmitOnAckFrame(
     // Consider it multiple nacks when there is a gap between the missing packet
     // and the largest observed, since the purpose of a nack threshold is to
     // tolerate re-ordering.  This handles both StretchAcks and Forward Acks.
-    // TODO(ianswett): This relies heavily on sequential reception of packets,
-    // and makes an assumption that the congestion control uses TCP style nacks.
     size_t min_nacks = received_info.largest_observed - sequence_number;
     unacked_packets_.NackPacket(sequence_number, min_nacks);
   }
 
+  InvokeLossDetection(ack_receive_time);
+}
+
+void QuicSentPacketManager::InvokeLossDetection(QuicTime time) {
   SequenceNumberSet lost_packets =
-      DetectLostPackets(unacked_packets_,
-                       ack_receive_time,
-                       received_info.largest_observed);
+      loss_algorithm_->DetectLostPackets(unacked_packets_,
+                                         time,
+                                         largest_observed_,
+                                         send_algorithm_->SmoothedRtt());
   for (SequenceNumberSet::const_iterator it = lost_packets.begin();
        it != lost_packets.end(); ++it) {
     QuicPacketSequenceNumber sequence_number = *it;
@@ -561,7 +562,7 @@ void QuicSentPacketManager::MaybeRetransmitOnAckFrame(
     // should be recorded as a loss to the send algorithm, but not retransmitted
     // until it's known whether the FEC packet arrived.
     ++stats_->packets_lost;
-    send_algorithm_->OnPacketLost(sequence_number, ack_receive_time);
+    send_algorithm_->OnPacketLost(sequence_number, time);
     OnPacketAbandoned(sequence_number);
 
     if (unacked_packets_.HasRetransmittableFrames(sequence_number)) {
@@ -574,40 +575,6 @@ void QuicSentPacketManager::MaybeRetransmitOnAckFrame(
       unacked_packets_.RemovePacket(sequence_number);
     }
   }
-}
-
-// static
-SequenceNumberSet QuicSentPacketManager::DetectLostPackets(
-    const QuicUnackedPacketMap& unacked_packets,
-    const QuicTime& time,
-    QuicPacketSequenceNumber largest_observed) {
-  SequenceNumberSet lost_packets;
-
-  for (QuicUnackedPacketMap::const_iterator it = unacked_packets.begin();
-       it != unacked_packets.end() && it->first <= largest_observed; ++it) {
-    if (!it->second.pending) {
-      continue;
-    }
-    size_t num_nacks_needed = kNumberOfNacksBeforeRetransmission;
-    // Check for early retransmit(RFC5827) when the last packet gets acked and
-    // the there are fewer than 4 pending packets.
-    // TODO(ianswett): Set a retransmission timer instead of losing the packet
-    // and retransmitting immediately.  Also consider only invoking OnPacketLost
-    // and OnPacketAbandoned when they're actually retransmitted in case they
-    // arrive while queued for retransmission.
-    if (it->second.retransmittable_frames &&
-        unacked_packets.largest_sent_packet() == largest_observed) {
-      num_nacks_needed = largest_observed - it->first;
-    }
-
-    if (it->second.nack_count < num_nacks_needed) {
-      continue;
-    }
-
-    lost_packets.insert(it->first);
-  }
-
-  return lost_packets;
 }
 
 void QuicSentPacketManager::MaybeUpdateRTT(

@@ -57,9 +57,9 @@ class CloseOnDataStream : public QuicDataStream {
   }
 };
 
-class TestQuicQuicServerSession : public QuicServerSession {
+class TestQuicServerSession : public QuicServerSession {
  public:
-  TestQuicQuicServerSession(const QuicConfig& config,
+  TestQuicServerSession(const QuicConfig& config,
                             QuicConnection* connection,
                             QuicServerSessionVisitor* owner)
       : QuicServerSession(config, connection, owner),
@@ -97,7 +97,7 @@ class QuicServerSessionTest : public ::testing::TestWithParam<QuicVersion> {
 
     connection_ =
         new StrictMock<MockConnection>(true, SupportedVersions(GetParam()));
-    session_.reset(new TestQuicQuicServerSession(
+    session_.reset(new TestQuicServerSession(
         config_, connection_, &owner_));
     session_->InitializeSession(crypto_config_);
     visitor_ = QuicConnectionPeer::GetVisitor(connection_);
@@ -116,7 +116,7 @@ class QuicServerSessionTest : public ::testing::TestWithParam<QuicVersion> {
   StrictMock<MockConnection>* connection_;
   QuicConfig config_;
   QuicCryptoServerConfig crypto_config_;
-  scoped_ptr<TestQuicQuicServerSession> session_;
+  scoped_ptr<TestQuicServerSession> session_;
   QuicConnectionVisitorInterface* visitor_;
 };
 

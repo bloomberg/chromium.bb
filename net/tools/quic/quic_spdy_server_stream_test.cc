@@ -94,7 +94,8 @@ class QuicSpdyServerStreamTest : public ::testing::TestWithParam<QuicVersion> {
     stream_.reset(new QuicSpdyServerStreamPeer(3, &session_));
   }
 
-  QuicConsumedData ValidateHeaders(const struct iovec* iov) {
+  QuicConsumedData ValidateHeaders(const IOVector& data) {
+    const iovec* iov = data.iovec();
     StringPiece headers =
         StringPiece(static_cast<const char*>(iov[0].iov_base), iov[0].iov_len);
     headers_string_ = SpdyUtils::SerializeResponseHeaders(
@@ -168,23 +169,18 @@ class QuicSpdyServerStreamTest : public ::testing::TestWithParam<QuicVersion> {
 
 QuicConsumedData ConsumeAllData(
     QuicStreamId id,
-    const struct iovec* iov,
-    int iov_count,
+    const IOVector& data,
     QuicStreamOffset offset,
     bool fin,
     QuicAckNotifier::DelegateInterface* /*ack_notifier_delegate*/) {
-  ssize_t consumed_length = 0;
-  for (int i = 0; i < iov_count; ++i) {
-    consumed_length += iov[i].iov_len;
-  }
-  return QuicConsumedData(consumed_length, fin);
+  return QuicConsumedData(data.TotalBufferSize(), fin);
 }
 
 INSTANTIATE_TEST_CASE_P(Tests, QuicSpdyServerStreamTest,
                         ::testing::ValuesIn(QuicSupportedVersions()));
 
 TEST_P(QuicSpdyServerStreamTest, TestFraming) {
-  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _)).Times(AnyNumber()).
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _)).Times(AnyNumber()).
       WillRepeatedly(Invoke(ConsumeAllData));
 
   EXPECT_EQ(headers_string_.size(), stream_->ProcessData(
@@ -197,7 +193,7 @@ TEST_P(QuicSpdyServerStreamTest, TestFraming) {
 }
 
 TEST_P(QuicSpdyServerStreamTest, TestFramingOnePacket) {
-  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _)).Times(AnyNumber()).
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _)).Times(AnyNumber()).
       WillRepeatedly(Invoke(ConsumeAllData));
 
   string message = headers_string_ + body_;
@@ -214,7 +210,7 @@ TEST_P(QuicSpdyServerStreamTest, TestFramingExtraData) {
   string large_body = "hello world!!!!!!";
 
   // We'll automatically write out an error (headers + body)
-  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _)).Times(AnyNumber()).
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _)).Times(AnyNumber()).
       WillRepeatedly(Invoke(ConsumeAllData));
 
   EXPECT_EQ(headers_string_.size(), stream_->ProcessData(
@@ -241,14 +237,14 @@ TEST_P(QuicSpdyServerStreamTest, TestSendResponse) {
   InSequence s;
   if (GetParam() > QUIC_VERSION_12) {
     EXPECT_CALL(session_,
-                WritevData(kHeadersStreamId, _, _, 0, false, NULL));
+                WritevData(kHeadersStreamId, _, 0, false, NULL));
   } else {
-    EXPECT_CALL(session_, WritevData(_, _, 1, _, _, _)).Times(1)
+    EXPECT_CALL(session_, WritevData(_, _, _, _, _)).Times(1)
         .WillOnce(WithArgs<1>(Invoke(
             this, &QuicSpdyServerStreamTest::ValidateHeaders)));
   }
 
-  EXPECT_CALL(session_, WritevData(_, _, 1, _, _, _)).Times(1).
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _)).Times(1).
       WillOnce(Return(QuicConsumedData(3, true)));
 
   QuicSpdyServerStreamPeer::SendResponse(stream_.get());
@@ -263,14 +259,15 @@ TEST_P(QuicSpdyServerStreamTest, TestSendErrorResponse) {
 
   InSequence s;
   if (GetParam() > QUIC_VERSION_12) {
-    EXPECT_CALL(session_, WritevData(kHeadersStreamId, _, _, 0, false, NULL));
+    EXPECT_CALL(session_,
+                WritevData(kHeadersStreamId, _, 0, false, NULL));
   } else {
-    EXPECT_CALL(session_, WritevData(_, _, 1, _, _, _)).Times(1)
+    EXPECT_CALL(session_, WritevData(_, _, _, _, _)).Times(1)
         .WillOnce(WithArgs<1>(Invoke(
             this, &QuicSpdyServerStreamTest::ValidateHeaders)));
   }
 
-  EXPECT_CALL(session_, WritevData(_, _, 1, _, _, _)).Times(1).
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _)).Times(1).
       WillOnce(Return(QuicConsumedData(3, true)));
 
   QuicSpdyServerStreamPeer::SendErrorResponse(stream_.get());

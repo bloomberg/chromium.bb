@@ -16,6 +16,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/linked_hash_map.h"
+#include "net/quic/congestion_control/loss_detection_interface.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
 #include "net/quic/quic_ack_notifier_manager.h"
 #include "net/quic/quic_protocol.h"
@@ -220,6 +221,10 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   void MaybeRetransmitOnAckFrame(const ReceivedPacketInfo& received_info,
                                  const QuicTime& ack_receive_time);
 
+  // Invokes the loss detection algorithm and loses and retransmits packets if
+  // necessary.
+  void InvokeLossDetection(QuicTime time);
+
   // Marks |sequence_number| as being fully handled, either due to receipt
   // by the peer, or having been discarded as indecipherable.  Returns an
   // iterator to the next remaining unacked packet.
@@ -232,11 +237,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // a pending retransmission.
   void MarkForRetransmission(QuicPacketSequenceNumber sequence_number,
                              TransmissionType transmission_type);
-
-  static SequenceNumberSet DetectLostPackets(
-      const QuicUnackedPacketMap& unacked_packets,
-      const QuicTime& time,
-      QuicPacketSequenceNumber largest_observed);
 
   // Newly serialized retransmittable and fec packets are added to this map,
   // which contains owning pointers to any contained frames.  If a packet is
@@ -262,7 +262,9 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   const QuicClock* clock_;
   QuicConnectionStats* stats_;
   scoped_ptr<SendAlgorithmInterface> send_algorithm_;
+  scoped_ptr<LossDetectionInterface> loss_algorithm_;
   QuicTime::Delta rtt_sample_;  // RTT estimate from the most recent ACK.
+  QuicPacketSequenceNumber largest_observed_;  // From the most recent ACK.
   // Number of outstanding crypto handshake packets.
   size_t pending_crypto_packet_count_;
   // Number of times the RTO timer has fired in a row without receiving an ack.

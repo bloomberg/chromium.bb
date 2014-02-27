@@ -65,6 +65,9 @@ MockFramerVisitor::MockFramerVisitor() {
   ON_CALL(*this, OnCongestionFeedbackFrame(_))
       .WillByDefault(testing::Return(true));
 
+  ON_CALL(*this, OnStopWaitingFrame(_))
+      .WillByDefault(testing::Return(true));
+
   ON_CALL(*this, OnRstStreamFrame(_))
       .WillByDefault(testing::Return(true));
 
@@ -106,6 +109,11 @@ bool NoOpFramerVisitor::OnAckFrame(const QuicAckFrame& frame) {
 
 bool NoOpFramerVisitor::OnCongestionFeedbackFrame(
     const QuicCongestionFeedbackFrame& frame) {
+  return true;
+}
+
+bool NoOpFramerVisitor::OnStopWaitingFrame(
+    const QuicStopWaitingFrame& frame) {
   return true;
 }
 
@@ -180,6 +188,13 @@ bool FramerVisitorCapturingFrames::OnAckFrame(const QuicAckFrame& frame) {
 bool FramerVisitorCapturingFrames::OnCongestionFeedbackFrame(
     const QuicCongestionFeedbackFrame& frame) {
   feedback_.reset(new QuicCongestionFeedbackFrame(frame));
+  ++frame_count_;
+  return true;
+}
+
+bool FramerVisitorCapturingFrames::OnStopWaitingFrame(
+    const QuicStopWaitingFrame& frame) {
+  stop_waiting_.reset(new QuicStopWaitingFrame(frame));
   ++frame_count_;
   return true;
 }
@@ -325,7 +340,7 @@ bool PacketSavingConnection::SendOrQueuePacket(
 
 MockSession::MockSession(QuicConnection* connection)
     : QuicSession(connection, DefaultQuicConfig()) {
-  ON_CALL(*this, WritevData(_, _, _, _, _, _))
+  ON_CALL(*this, WritevData(_, _, _, _, _))
       .WillByDefault(testing::Return(QuicConsumedData(0, false)));
 }
 

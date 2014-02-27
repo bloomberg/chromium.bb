@@ -148,6 +148,9 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitorInterface
   virtual void OnCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& frame) = 0;
 
+  // Called when a StopWaitingFrame has been parsed.
+  virtual void OnStopWaitingFrame(const QuicStopWaitingFrame& frame) = 0;
+
   // Called when a RstStreamFrame has been parsed.
   virtual void OnRstStreamFrame(const QuicRstStreamFrame& frame) = 0;
 
@@ -302,6 +305,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   virtual bool OnAckFrame(const QuicAckFrame& frame) OVERRIDE;
   virtual bool OnCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& frame) OVERRIDE;
+  virtual bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) OVERRIDE;
   virtual bool OnRstStreamFrame(const QuicRstStreamFrame& frame) OVERRIDE;
   virtual bool OnConnectionCloseFrame(
       const QuicConnectionCloseFrame& frame) OVERRIDE;
@@ -317,6 +321,7 @@ class NET_EXPORT_PRIVATE QuicConnection
                                     IsHandshake handshake) OVERRIDE;
   virtual QuicAckFrame* CreateAckFrame() OVERRIDE;
   virtual QuicCongestionFeedbackFrame* CreateFeedbackFrame() OVERRIDE;
+  virtual QuicStopWaitingFrame* CreateStopWaitingFrame() OVERRIDE;
   virtual bool OnSerializedPacket(const SerializedPacket& packet) OVERRIDE;
 
   // Accessors
@@ -424,6 +429,9 @@ class NET_EXPORT_PRIVATE QuicConnection
   const QuicSentPacketManager& sent_packet_manager() const {
     return sent_packet_manager_;
   }
+
+  // Make sure a stop waiting we got from our peer is sane.
+  bool ValidateStopWaitingFrame(const QuicStopWaitingFrame& stop_waiting);
 
   bool CanWrite(TransmissionType transmission_type,
                 HasRetransmittableData retransmittable,
@@ -549,8 +557,10 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   void ProcessAckFrame(const QuicAckFrame& incoming_ack);
 
-  // Update the |sent_info| for an outgoing ack.
-  void UpdateSentPacketInfo(SentPacketInfo* sent_info);
+  void ProcessStopWaitingFrame(const QuicStopWaitingFrame& stop_waiting);
+
+  // Update |stop_waiting| for an outgoing ack.
+  void UpdateStopWaiting(QuicStopWaitingFrame* stop_waiting);
 
   // Queues an ack or sets the ack alarm when an incoming packet arrives that
   // should be acked.
@@ -597,6 +607,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   std::vector<QuicStreamFrame> last_stream_frames_;
   std::vector<QuicAckFrame> last_ack_frames_;
   std::vector<QuicCongestionFeedbackFrame> last_congestion_frames_;
+  std::vector<QuicStopWaitingFrame> last_stop_waiting_frames_;
   std::vector<QuicRstStreamFrame> last_rst_frames_;
   std::vector<QuicGoAwayFrame> last_goaway_frames_;
   std::vector<QuicWindowUpdateFrame> last_window_update_frames_;
@@ -608,6 +619,9 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Track some peer state so we can do less bookkeeping
   // Largest sequence sent by the peer which had an ack frame (latest ack info).
   QuicPacketSequenceNumber largest_seen_packet_with_ack_;
+
+  // Largest sequence number sent by the peer which had a stop waiting frame.
+  QuicPacketSequenceNumber largest_seen_packet_with_stop_waiting_;
 
   // Collection of packets which were received before encryption was
   // established, but which could not be decrypted.  We buffer these on

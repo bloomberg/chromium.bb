@@ -352,13 +352,10 @@ bool QuicSession::HasPendingHandshake() const {
 
 QuicConsumedData QuicSession::WritevData(
     QuicStreamId id,
-    const struct iovec* iov,
-    int iov_count,
+    const IOVector& data,
     QuicStreamOffset offset,
     bool fin,
     QuicAckNotifier::DelegateInterface* ack_notifier_delegate) {
-  IOVector data;
-  data.AppendIovec(iov, iov_count);
   return connection_->SendStreamData(id, data, offset, fin,
                                      ack_notifier_delegate);
 }

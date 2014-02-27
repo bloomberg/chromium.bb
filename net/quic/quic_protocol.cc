@@ -159,6 +159,8 @@ QuicTag QuicVersionToQuicTag(const QuicVersion version) {
       return MakeQuicTag('Q', '0', '1', '4');
     case QUIC_VERSION_15:
       return MakeQuicTag('Q', '0', '1', '5');
+    case QUIC_VERSION_16:
+      return MakeQuicTag('Q', '0', '1', '6');
     default:
       // This shold be an ERROR because we should never attempt to convert an
       // invalid QuicVersion to be written to the wire.
@@ -189,6 +191,7 @@ string QuicVersionToString(const QuicVersion version) {
     RETURN_STRING_LITERAL(QUIC_VERSION_13);
     RETURN_STRING_LITERAL(QUIC_VERSION_14);
     RETURN_STRING_LITERAL(QUIC_VERSION_15);
+    RETURN_STRING_LITERAL(QUIC_VERSION_16);
     default:
       return "QUIC_VERSION_UNSUPPORTED";
   }
@@ -249,12 +252,12 @@ void InsertMissingPacketsBetween(ReceivedPacketInfo* received_info,
   }
 }
 
-SentPacketInfo::SentPacketInfo()
+QuicStopWaitingFrame::QuicStopWaitingFrame()
     : entropy_hash(0),
       least_unacked(0) {
 }
 
-SentPacketInfo::~SentPacketInfo() {}
+QuicStopWaitingFrame::~QuicStopWaitingFrame() {}
 
 QuicAckFrame::QuicAckFrame() {}
 
@@ -321,6 +324,11 @@ QuicFrame::QuicFrame(QuicCongestionFeedbackFrame* frame)
       congestion_feedback_frame(frame) {
 }
 
+QuicFrame::QuicFrame(QuicStopWaitingFrame* frame)
+    : type(STOP_WAITING_FRAME),
+      stop_waiting_frame(frame) {
+}
+
 QuicFrame::QuicFrame(QuicRstStreamFrame* frame)
     : type(RST_STREAM_FRAME),
       rst_stream_frame(frame) {
@@ -348,7 +356,7 @@ QuicFrame::QuicFrame(QuicBlockedFrame* frame)
 
 QuicFecData::QuicFecData() : fec_group(0) {}
 
-ostream& operator<<(ostream& os, const SentPacketInfo& sent_info) {
+ostream& operator<<(ostream& os, const QuicStopWaitingFrame& sent_info) {
   os << "entropy_hash: " << static_cast<int>(sent_info.entropy_hash)
      << " least_unacked: " << sent_info.least_unacked;
   return os;
@@ -412,6 +420,10 @@ ostream& operator<<(ostream& os, const QuicFrame& frame) {
     case CONGESTION_FEEDBACK_FRAME: {
       os << "type { CONGESTION_FEEDBACK_FRAME } "
          << *(frame.congestion_feedback_frame);
+      break;
+    }
+    case STOP_WAITING_FRAME: {
+      os << "type { STOP_WAITING_FRAME } " << *(frame.stop_waiting_frame);
       break;
     }
     default: {
@@ -620,6 +632,9 @@ RetransmittableFrames::~RetransmittableFrames() {
         break;
       case CONGESTION_FEEDBACK_FRAME:
         delete it->congestion_feedback_frame;
+        break;
+      case STOP_WAITING_FRAME:
+        delete it->stop_waiting_frame;
         break;
       case RST_STREAM_FRAME:
         delete it->rst_stream_frame;

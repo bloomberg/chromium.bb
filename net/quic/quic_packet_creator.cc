@@ -406,8 +406,15 @@ void QuicPacketCreator::FillPacketHeader(QuicFecGroupNumber fec_group,
 }
 
 bool QuicPacketCreator::ShouldRetransmit(const QuicFrame& frame) {
-  return frame.type != ACK_FRAME && frame.type != CONGESTION_FEEDBACK_FRAME &&
-      frame.type != PADDING_FRAME;
+  switch (frame.type) {
+    case ACK_FRAME:
+    case CONGESTION_FEEDBACK_FRAME:
+    case PADDING_FRAME:
+    case STOP_WAITING_FRAME:
+      return false;
+    default:
+      return true;
+  }
 }
 
 bool QuicPacketCreator::AddFrame(const QuicFrame& frame,

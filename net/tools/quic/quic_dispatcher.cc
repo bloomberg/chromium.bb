@@ -101,6 +101,11 @@ class QuicDispatcher::QuicFramerVisitor : public QuicFramerVisitorInterface {
     DCHECK(false);
     return false;
   }
+  virtual bool OnStopWaitingFrame(
+      const QuicStopWaitingFrame& /*frame*/) OVERRIDE {
+    DCHECK(false);
+    return false;
+  }
   virtual bool OnRstStreamFrame(const QuicRstStreamFrame& /*frame*/) OVERRIDE {
     DCHECK(false);
     return false;

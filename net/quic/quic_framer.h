@@ -113,6 +113,9 @@ class NET_EXPORT_PRIVATE QuicFramerVisitorInterface {
   virtual bool OnCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& frame) = 0;
 
+  // Called when a StopWaitingFrame has been parsed.
+  virtual bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) = 0;
+
   // Called when a RstStreamFrame has been parsed.
   virtual bool OnRstStreamFrame(const QuicRstStreamFrame& frame) = 0;
 
@@ -248,6 +251,9 @@ class NET_EXPORT_PRIVATE QuicFramer {
       QuicVersion version,
       QuicSequenceNumberLength sequence_number_length,
       QuicSequenceNumberLength largest_observed_length);
+  // Size in bytes of a stop waiting frame.
+  static size_t GetStopWaitingFrameSize(
+      QuicSequenceNumberLength sequence_number_length);
   // Size in bytes of all reset stream frame without the error details.
   static size_t GetMinRstStreamFrameSize(QuicVersion quic_version);
   // Size in bytes of all connection close frame fields without the error
@@ -401,8 +407,8 @@ class NET_EXPORT_PRIVATE QuicFramer {
                        uint8 frame_type,
                        QuicAckFrame* frame);
   bool ProcessReceivedInfo(uint8 frame_type, ReceivedPacketInfo* received_info);
-  bool ProcessSentInfo(const QuicPacketHeader& public_header,
-                       SentPacketInfo* sent_info);
+  bool ProcessStopWaitingFrame(const QuicPacketHeader& public_header,
+                               QuicStopWaitingFrame* stop_waiting);
   bool ProcessQuicCongestionFeedbackFrame(
       QuicCongestionFeedbackFrame* congestion_feedback);
   bool ProcessRstStreamFrame(QuicRstStreamFrame* frame);
@@ -452,9 +458,11 @@ class NET_EXPORT_PRIVATE QuicFramer {
   bool AppendAckFrameAndTypeByte(const QuicPacketHeader& header,
                                  const QuicAckFrame& frame,
                                  QuicDataWriter* builder);
-  bool AppendQuicCongestionFeedbackFrame(
-      const QuicCongestionFeedbackFrame& frame,
-      QuicDataWriter* builder);
+  bool AppendCongestionFeedbackFrame(const QuicCongestionFeedbackFrame& frame,
+                                     QuicDataWriter* builder);
+  bool AppendStopWaitingFrame(const QuicPacketHeader& header,
+                              const QuicStopWaitingFrame& frame,
+                              QuicDataWriter* builder);
   bool AppendRstStreamFrame(const QuicRstStreamFrame& frame,
                             QuicDataWriter* builder);
   bool AppendConnectionCloseFrame(const QuicConnectionCloseFrame& frame,

@@ -179,6 +179,7 @@ QuicConnection::QuicConnection(QuicGuid guid,
       guid_(guid),
       peer_address_(address),
       largest_seen_packet_with_ack_(0),
+      largest_seen_packet_with_stop_waiting_(0),
       pending_version_negotiation_packet_(false),
       received_packet_manager_(kTCP),
       ack_queued_(false),
@@ -260,9 +261,11 @@ void QuicConnection::OnPacket() {
   DCHECK(last_stream_frames_.empty() &&
          last_goaway_frames_.empty() &&
          last_window_update_frames_.empty() &&
+         last_blocked_frames_.empty() &&
          last_rst_frames_.empty() &&
          last_ack_frames_.empty() &&
-         last_congestion_frames_.empty());
+         last_congestion_frames_.empty() &&
+         last_stop_waiting_frames_.empty());
 }
 
 void QuicConnection::OnPublicResetPacket(
@@ -493,13 +496,11 @@ bool QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
 
 void QuicConnection::ProcessAckFrame(const QuicAckFrame& incoming_ack) {
   largest_seen_packet_with_ack_ = last_header_.packet_sequence_number;
-
   received_packet_manager_.UpdatePacketInformationReceivedByPeer(
       incoming_ack.received_info);
-  received_packet_manager_.UpdatePacketInformationSentByPeer(
-      incoming_ack.sent_info);
-  // Possibly close any FecGroups which are now irrelevant.
-  CloseFecGroupsBefore(incoming_ack.sent_info.least_unacked + 1);
+  if (version() <= QUIC_VERSION_15) {
+    ProcessStopWaitingFrame(incoming_ack.sent_info);
+  }
 
   sent_entropy_manager_.ClearEntropyBefore(
       received_packet_manager_.least_packet_awaited_by_peer() - 1);
@@ -521,6 +522,14 @@ void QuicConnection::ProcessAckFrame(const QuicAckFrame& incoming_ack) {
   }
 }
 
+void QuicConnection::ProcessStopWaitingFrame(
+    const QuicStopWaitingFrame& stop_waiting) {
+  largest_seen_packet_with_stop_waiting_ = last_header_.packet_sequence_number;
+  received_packet_manager_.UpdatePacketInformationSentByPeer(stop_waiting);
+  // Possibly close any FecGroups which are now irrelevant.
+  CloseFecGroupsBefore(stop_waiting.least_unacked + 1);
+}
+
 bool QuicConnection::OnCongestionFeedbackFrame(
     const QuicCongestionFeedbackFrame& feedback) {
   DCHECK(connected_);
@@ -528,6 +537,28 @@ bool QuicConnection::OnCongestionFeedbackFrame(
     debug_visitor_->OnCongestionFeedbackFrame(feedback);
   }
   last_congestion_frames_.push_back(feedback);
+  return connected_;
+}
+
+bool QuicConnection::OnStopWaitingFrame(const QuicStopWaitingFrame& frame) {
+  DCHECK(connected_);
+
+  if (last_header_.packet_sequence_number <=
+      largest_seen_packet_with_stop_waiting_) {
+    DVLOG(1) << ENDPOINT << "Received an old stop waiting frame: ignoring";
+    return true;
+  }
+
+  if (!ValidateStopWaitingFrame(frame)) {
+    SendConnectionClose(QUIC_INVALID_STOP_WAITING_DATA);
+    return false;
+  }
+
+  if (debug_visitor_) {
+    debug_visitor_->OnStopWaitingFrame(frame);
+  }
+
+  last_stop_waiting_frames_.push_back(frame);
   return connected_;
 }
 
@@ -551,22 +582,10 @@ bool QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
     return false;
   }
 
-  if (incoming_ack.sent_info.least_unacked <
-      received_packet_manager_.peer_least_packet_awaiting_ack()) {
-    DLOG(ERROR) << ENDPOINT << "Peer's sent low least_unacked: "
-                << incoming_ack.sent_info.least_unacked << " vs "
-                << received_packet_manager_.peer_least_packet_awaiting_ack();
-    // We never process old ack frames, so this number should only increase.
-    return false;
-  }
-
-  if (incoming_ack.sent_info.least_unacked >
-      last_header_.packet_sequence_number) {
-    DLOG(ERROR) << ENDPOINT << "Peer sent least_unacked:"
-                << incoming_ack.sent_info.least_unacked
-                << " greater than the enclosing packet sequence number:"
-                << last_header_.packet_sequence_number;
-    return false;
+  if (version() <= QUIC_VERSION_15) {
+    if (!ValidateStopWaitingFrame(incoming_ack.sent_info)) {
+      return false;
+    }
   }
 
   if (!incoming_ack.received_info.missing_packets.empty() &&
@@ -606,6 +625,29 @@ bool QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
       return false;
     }
   }
+  return true;
+}
+
+bool QuicConnection::ValidateStopWaitingFrame(
+    const QuicStopWaitingFrame& stop_waiting) {
+  if (stop_waiting.least_unacked <
+      received_packet_manager_.peer_least_packet_awaiting_ack()) {
+    DLOG(ERROR) << ENDPOINT << "Peer's sent low least_unacked: "
+                << stop_waiting.least_unacked << " vs "
+                << received_packet_manager_.peer_least_packet_awaiting_ack();
+    // We never process old ack frames, so this number should only increase.
+    return false;
+  }
+
+  if (stop_waiting.least_unacked >
+      last_header_.packet_sequence_number) {
+    DLOG(ERROR) << ENDPOINT << "Peer sent least_unacked:"
+                << stop_waiting.least_unacked
+                << " greater than the enclosing packet sequence number:"
+                << last_header_.packet_sequence_number;
+    return false;
+  }
+
   return true;
 }
 
@@ -678,8 +720,10 @@ void QuicConnection::OnPacketComplete() {
            << " packet " << last_header_.packet_sequence_number
            << " with " << last_ack_frames_.size() << " acks, "
            << last_congestion_frames_.size() << " congestions, "
+           << last_stop_waiting_frames_.size() << " stop_waiting, "
            << last_goaway_frames_.size() << " goaways, "
            << last_window_update_frames_.size() << " window updates, "
+           << last_blocked_frames_.size() << " blocked, "
            << last_rst_frames_.size() << " rsts, "
            << last_close_frames_.size() << " closes, "
            << last_stream_frames_.size()
@@ -726,6 +770,9 @@ void QuicConnection::OnPacketComplete() {
     sent_packet_manager_.OnIncomingQuicCongestionFeedbackFrame(
         last_congestion_frames_[i], time_of_last_received_packet_);
   }
+  for (size_t i = 0; i < last_stop_waiting_frames_.size(); ++i) {
+    ProcessStopWaitingFrame(last_stop_waiting_frames_[i]);
+  }
   if (!last_close_frames_.empty()) {
     CloseConnection(last_close_frames_[0].error_code, true);
     DCHECK(!connected_);
@@ -766,8 +813,10 @@ void QuicConnection::ClearLastFrames() {
   last_stream_frames_.clear();
   last_goaway_frames_.clear();
   last_window_update_frames_.clear();
+  last_blocked_frames_.clear();
   last_rst_frames_.clear();
   last_ack_frames_.clear();
+  last_stop_waiting_frames_.clear();
   last_congestion_frames_.clear();
 }
 
@@ -775,7 +824,7 @@ QuicAckFrame* QuicConnection::CreateAckFrame() {
   QuicAckFrame* outgoing_ack = new QuicAckFrame();
   received_packet_manager_.UpdateReceivedPacketInfo(
       &(outgoing_ack->received_info), clock_->ApproximateNow());
-  UpdateSentPacketInfo(&(outgoing_ack->sent_info));
+  UpdateStopWaiting(&(outgoing_ack->sent_info));
   DVLOG(1) << ENDPOINT << "Creating ack frame: " << *outgoing_ack;
   return outgoing_ack;
 }
@@ -784,10 +833,18 @@ QuicCongestionFeedbackFrame* QuicConnection::CreateFeedbackFrame() {
   return new QuicCongestionFeedbackFrame(outgoing_congestion_feedback_);
 }
 
+QuicStopWaitingFrame* QuicConnection::CreateStopWaitingFrame() {
+  QuicStopWaitingFrame stop_waiting;
+  UpdateStopWaiting(&stop_waiting);
+  return new QuicStopWaitingFrame(stop_waiting);
+}
+
 bool QuicConnection::ShouldLastPacketInstigateAck() const {
   if (!last_stream_frames_.empty() ||
       !last_goaway_frames_.empty() ||
-      !last_rst_frames_.empty()) {
+      !last_rst_frames_.empty() ||
+      !last_window_update_frames_.empty() ||
+      !last_blocked_frames_.empty()) {
     return true;
   }
 
@@ -795,7 +852,6 @@ bool QuicConnection::ShouldLastPacketInstigateAck() const {
       last_ack_frames_.back().received_info.is_truncated) {
     return true;
   }
-
   return false;
 }
 
@@ -1197,7 +1253,7 @@ bool QuicConnection::WritePacket(QueuedPacket packet) {
       << "Writing an encrypted packet larger than max_packet_length:"
       << options()->max_packet_length << " encrypted length: "
       << encrypted->length();
-  DVLOG(1) << ENDPOINT << "Sending packet number " << sequence_number
+  DVLOG(1) << ENDPOINT << "Sending packet " << sequence_number
            << " : " << (packet.packet->is_fec_packet() ? "FEC " :
                (packet.retransmittable == HAS_RETRANSMITTABLE_DATA
                     ? "data bearing " : " ack only "))
@@ -1381,10 +1437,10 @@ bool QuicConnection::SendOrQueuePacket(EncryptionLevel level,
   return false;
 }
 
-void QuicConnection::UpdateSentPacketInfo(SentPacketInfo* sent_info) {
-  sent_info->least_unacked = GetLeastUnacked();
-  sent_info->entropy_hash = sent_entropy_manager_.EntropyHash(
-      sent_info->least_unacked - 1);
+void QuicConnection::UpdateStopWaiting(QuicStopWaitingFrame* stop_waiting) {
+  stop_waiting->least_unacked = GetLeastUnacked();
+  stop_waiting->entropy_hash = sent_entropy_manager_.EntropyHash(
+      stop_waiting->least_unacked - 1);
 }
 
 void QuicConnection::SendAck() {
@@ -1401,7 +1457,8 @@ void QuicConnection::SendAck() {
     send_feedback = true;
   }
 
-  packet_generator_.SetShouldSendAck(send_feedback);
+  packet_generator_.SetShouldSendAck(send_feedback,
+                                     version() > QUIC_VERSION_15);
 }
 
 void QuicConnection::OnRetransmissionTimeout() {
@@ -1560,6 +1617,9 @@ void QuicConnection::SendConnectionClosePacket(QuicErrorCode error,
 
 void QuicConnection::CloseConnection(QuicErrorCode error, bool from_peer) {
   DCHECK(connected_);
+  if (!connected_) {
+    return;
+  }
   connected_ = false;
   visitor_->OnConnectionClosed(error, from_peer);
   // Cancel the alarms so they don't trigger any action now that the

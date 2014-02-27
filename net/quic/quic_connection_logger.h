@@ -42,6 +42,7 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   virtual void OnAckFrame(const QuicAckFrame& frame) OVERRIDE;
   virtual void OnCongestionFeedbackFrame(
       const QuicCongestionFeedbackFrame& frame) OVERRIDE;
+  virtual void OnStopWaitingFrame(const QuicStopWaitingFrame& frame) OVERRIDE;
   virtual void OnRstStreamFrame(const QuicRstStreamFrame& frame) OVERRIDE;
   virtual void OnConnectionCloseFrame(
       const QuicConnectionCloseFrame& frame) OVERRIDE;

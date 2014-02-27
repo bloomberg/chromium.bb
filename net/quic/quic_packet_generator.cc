@@ -23,7 +23,8 @@ QuicPacketGenerator::QuicPacketGenerator(DelegateInterface* delegate,
       packet_creator_(creator),
       batch_mode_(false),
       should_send_ack_(false),
-      should_send_feedback_(false) {
+      should_send_feedback_(false),
+      should_send_stop_waiting_(false) {
 }
 
 QuicPacketGenerator::~QuicPacketGenerator() {
@@ -57,15 +58,25 @@ QuicPacketGenerator::~QuicPacketGenerator() {
       case BLOCKED_FRAME:
         delete it->blocked_frame;
         break;
+      case STOP_WAITING_FRAME:
+        delete it->stop_waiting_frame;
+        break;
       case NUM_FRAME_TYPES:
         DCHECK(false) << "Cannot delete type: " << it->type;
     }
   }
 }
 
-void QuicPacketGenerator::SetShouldSendAck(bool also_send_feedback) {
+void QuicPacketGenerator::SetShouldSendAck(bool also_send_feedback,
+                                           bool also_send_stop_waiting) {
   should_send_ack_ = true;
   should_send_feedback_ = also_send_feedback;
+  should_send_stop_waiting_ = also_send_stop_waiting;
+  SendQueuedFrames(false);
+}
+
+void QuicPacketGenerator::SetShouldSendStopWaiting() {
+  should_send_stop_waiting_ = true;
   SendQueuedFrames(false);
 }
 
@@ -147,8 +158,8 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
 bool QuicPacketGenerator::CanSendWithNextPendingFrameAddition() const {
   DCHECK(HasPendingFrames());
   HasRetransmittableData retransmittable =
-      (should_send_ack_ || should_send_feedback_) ? NO_RETRANSMITTABLE_DATA
-                                                  : HAS_RETRANSMITTABLE_DATA;
+      (should_send_ack_ || should_send_feedback_ || should_send_stop_waiting_)
+      ? NO_RETRANSMITTABLE_DATA : HAS_RETRANSMITTABLE_DATA;
   if (retransmittable == HAS_RETRANSMITTABLE_DATA) {
       DCHECK(!queued_control_frames_.empty());  // These are retransmittable.
   }
@@ -204,7 +215,7 @@ bool QuicPacketGenerator::HasQueuedFrames() const {
 
 bool QuicPacketGenerator::HasPendingFrames() const {
   return should_send_ack_ || should_send_feedback_ ||
-      !queued_control_frames_.empty();
+      should_send_stop_waiting_ || !queued_control_frames_.empty();
 }
 
 bool QuicPacketGenerator::AddNextPendingFrame() {
@@ -226,9 +237,18 @@ bool QuicPacketGenerator::AddNextPendingFrame() {
     return !should_send_feedback_;
   }
 
-  if (queued_control_frames_.empty()) {
-    LOG(DFATAL) << "AddNextPendingFrame called with no queued control frames.";
+  if (should_send_stop_waiting_) {
+    pending_stop_waiting_frame_.reset(delegate_->CreateStopWaitingFrame());
+    // If we can't this add the frame now, then we still need to do so later.
+    should_send_stop_waiting_ =
+        !AddFrame(QuicFrame(pending_stop_waiting_frame_.get()));
+    // Return success if we have cleared out this flag (i.e., added the frame).
+    // If we still need to send, then the frame is full, and we have failed.
+    return !should_send_stop_waiting_;
   }
+
+  LOG_IF(DFATAL, queued_control_frames_.empty())
+      << "AddNextPendingFrame called with no queued control frames.";
   if (!AddFrame(queued_control_frames_.back())) {
     // Packet was full.
     return false;
