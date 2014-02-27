@@ -137,7 +137,7 @@ void MutableProfileOAuth2TokenService::Shutdown() {
 }
 
 std::string MutableProfileOAuth2TokenService::GetRefreshToken(
-    const std::string& account_id) {
+    const std::string& account_id) const {
   AccountInfoMap::const_iterator iter = refresh_tokens_.find(account_id);
   if (iter != refresh_tokens_.end())
     return iter->second->refresh_token();

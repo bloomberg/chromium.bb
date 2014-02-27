@@ -172,7 +172,7 @@ class OAuth2TokenService : public base::NonThreadSafe {
 
   // Returns true if a refresh token exists for |account_id|. If false, calls to
   // |StartRequest| will result in a Consumer::OnGetTokenFailure callback.
-  virtual bool RefreshTokenIsAvailable(const std::string& account_id);
+  virtual bool RefreshTokenIsAvailable(const std::string& account_id) const;
 
   // Mark an OAuth2 |access_token| issued for |account_id| and |scopes| as
   // invalid. This should be done if the token was received from this class,
@@ -230,7 +230,7 @@ class OAuth2TokenService : public base::NonThreadSafe {
 
   // Subclasses should return the maintained refresh token for |account_id|.
   // If no token is available, return an empty string.
-  virtual std::string GetRefreshToken(const std::string& account_id) = 0;
+  virtual std::string GetRefreshToken(const std::string& account_id) const = 0;
 
   // Subclasses can override if they want to report errors to the user.
   virtual void UpdateAuthError(

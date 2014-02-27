@@ -34,7 +34,8 @@ class FakeOAuth2TokenService : public OAuth2TokenService {
                                      const ScopeSet& scopes,
                                      const std::string& access_token) OVERRIDE;
 
-  virtual std::string GetRefreshToken(const std::string& account_id) OVERRIDE;
+  virtual std::string GetRefreshToken(const std::string& account_id)
+      const OVERRIDE;
 
  private:
   // OAuth2TokenService overrides.

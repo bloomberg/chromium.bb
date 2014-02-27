@@ -11,7 +11,7 @@ FakeOAuth2TokenService::~FakeOAuth2TokenService() {
 }
 
 std::string FakeOAuth2TokenService::GetRefreshToken(
-    const std::string& account_id) {
+    const std::string& account_id) const {
   return std::string();
 }
 

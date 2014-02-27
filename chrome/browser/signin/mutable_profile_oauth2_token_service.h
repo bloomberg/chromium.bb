@@ -67,7 +67,8 @@ class MutableProfileOAuth2TokenService : public ProfileOAuth2TokenService,
   virtual ~MutableProfileOAuth2TokenService();
 
   // OAuth2TokenService implementation.
-  virtual std::string GetRefreshToken(const std::string& account_id) OVERRIDE;
+  virtual std::string GetRefreshToken(const std::string& account_id)
+      const OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
 
   AccountInfoMap& refresh_tokens() { return refresh_tokens_; }

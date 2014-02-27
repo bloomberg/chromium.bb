@@ -406,7 +406,7 @@ void OAuth2TokenService::RemoveDiagnosticsObserver(
 }
 
 bool OAuth2TokenService::RefreshTokenIsAvailable(
-    const std::string& account_id) {
+    const std::string& account_id) const {
   DCHECK(CalledOnValidThread());
   return !GetRefreshToken(account_id).empty();
 }

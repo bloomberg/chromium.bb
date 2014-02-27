@@ -86,7 +86,7 @@ void DeviceOAuth2TokenService::SetAndSaveRefreshToken(
 }
 
 bool DeviceOAuth2TokenService::RefreshTokenIsAvailable(
-    const std::string& account_id) {
+    const std::string& account_id) const {
   switch (state_) {
     case STATE_NO_TOKEN:
     case STATE_TOKEN_INVALID:
@@ -102,7 +102,7 @@ bool DeviceOAuth2TokenService::RefreshTokenIsAvailable(
   return false;
 }
 
-std::string DeviceOAuth2TokenService::GetRobotAccountId() {
+std::string DeviceOAuth2TokenService::GetRobotAccountId() const {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   if (connector)
@@ -158,7 +158,7 @@ void DeviceOAuth2TokenService::OnNetworkError(int response_code) {
 }
 
 std::string DeviceOAuth2TokenService::GetRefreshToken(
-    const std::string& account_id) {
+    const std::string& account_id) const {
   switch (state_) {
     case STATE_LOADING:
     case STATE_NO_TOKEN:

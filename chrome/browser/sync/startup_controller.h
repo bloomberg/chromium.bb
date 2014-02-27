@@ -34,7 +34,7 @@ enum ProfileSyncServiceStartBehavior {
 class StartupController {
  public:
   StartupController(ProfileSyncServiceStartBehavior start_behavior,
-                    ProfileOAuth2TokenService* token_service,
+                    const ProfileOAuth2TokenService* token_service,
                     const browser_sync::SyncPrefs* sync_prefs,
                     const ManagedUserSigninManagerWrapper* signin,
                     base::Closure start_backend);
@@ -93,7 +93,7 @@ class StartupController {
 
   const browser_sync::SyncPrefs* sync_prefs_;
 
-  ProfileOAuth2TokenService* token_service_;
+  const ProfileOAuth2TokenService* token_service_;
 
   const ManagedUserSigninManagerWrapper* signin_;
 

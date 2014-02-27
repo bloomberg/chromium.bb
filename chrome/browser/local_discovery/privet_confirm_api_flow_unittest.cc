@@ -42,7 +42,8 @@ class TestOAuth2TokenService : public OAuth2TokenService {
       : request_context_(request_context) {
   }
  protected:
-  virtual std::string GetRefreshToken(const std::string& account_id) OVERRIDE {
+  virtual std::string GetRefreshToken(const std::string& account_id)
+      const OVERRIDE {
     return "SampleToken";
   }
 

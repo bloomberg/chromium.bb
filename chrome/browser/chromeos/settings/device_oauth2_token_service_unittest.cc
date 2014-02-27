@@ -40,7 +40,7 @@ class TestDeviceOAuth2TokenService : public DeviceOAuth2TokenService {
   }
 
   // Skip calling into the policy subsystem and return our test value.
-  virtual std::string GetRobotAccountId() OVERRIDE {
+  virtual std::string GetRobotAccountId() const OVERRIDE {
     return robot_account_id_;
   }
 

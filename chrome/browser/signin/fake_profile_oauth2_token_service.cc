@@ -23,7 +23,7 @@ FakeProfileOAuth2TokenService::~FakeProfileOAuth2TokenService() {
 }
 
 bool FakeProfileOAuth2TokenService::RefreshTokenIsAvailable(
-    const std::string& account_id) {
+    const std::string& account_id) const {
   return !GetRefreshToken(account_id).empty();
 }
 
@@ -136,9 +136,12 @@ void FakeProfileOAuth2TokenService::CompleteRequests(
 }
 
 std::string FakeProfileOAuth2TokenService::GetRefreshToken(
-    const std::string& account_id) {
-  return refresh_tokens_.count(account_id) > 0 ? refresh_tokens_[account_id] :
-      std::string();
+    const std::string& account_id) const {
+  std::map<std::string, std::string>::const_iterator it =
+      refresh_tokens_.find(account_id);
+  if (it != refresh_tokens_.end())
+    return it->second;
+  return std::string();
 }
 
 net::URLRequestContextGetter*

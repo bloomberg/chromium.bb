@@ -47,7 +47,7 @@ void ProfileOAuth2TokenService::Shutdown() {
 }
 
 std::string ProfileOAuth2TokenService::GetRefreshToken(
-    const std::string& account_id) {
+    const std::string& account_id) const {
   NOTREACHED() << "GetRefreshToken should not be called on the base PO2TS";
   return "";
 }

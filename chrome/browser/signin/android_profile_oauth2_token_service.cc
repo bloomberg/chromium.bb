@@ -76,7 +76,7 @@ static jobject GetForProfile(JNIEnv* env,
 }
 
 bool AndroidProfileOAuth2TokenService::RefreshTokenIsAvailable(
-    const std::string& account_id) {
+    const std::string& account_id) const {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_account_id =
       ConvertUTF8ToJavaString(env, account_id);

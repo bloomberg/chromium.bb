@@ -37,7 +37,7 @@ class AndroidProfileOAuth2TokenService : public ProfileOAuth2TokenService {
       JNIEnv* env, jclass clazz, jobject j_profile_android);
 
   virtual bool RefreshTokenIsAvailable(
-      const std::string& account_id) OVERRIDE;
+      const std::string& account_id) const OVERRIDE;
 
   // Lists account IDs of all accounts with a refresh token.
   virtual std::vector<std::string> GetAccounts() OVERRIDE;

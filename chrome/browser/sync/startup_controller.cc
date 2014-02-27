@@ -35,7 +35,7 @@ enum DeferredInitTrigger {
 
 StartupController::StartupController(
     ProfileSyncServiceStartBehavior start_behavior,
-    ProfileOAuth2TokenService* token_service,
+    const ProfileOAuth2TokenService* token_service,
     const browser_sync::SyncPrefs* sync_prefs,
     const ManagedUserSigninManagerWrapper* signin,
     base::Closure start_backend)

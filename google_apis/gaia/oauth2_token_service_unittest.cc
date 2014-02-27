@@ -60,9 +60,13 @@ class TestOAuth2TokenService : public OAuth2TokenService {
   }
 
  protected:
-  virtual std::string GetRefreshToken(const std::string& account_id) OVERRIDE {
-    // account_id explicitly ignored.
-    return refresh_tokens_[account_id];
+  virtual std::string GetRefreshToken(const std::string& account_id)
+      const OVERRIDE {
+    std::map<std::string, std::string>::const_iterator it =
+        refresh_tokens_.find(account_id);
+    if (it != refresh_tokens_.end())
+      return it->second;
+    return std::string();
   }
 
  private:

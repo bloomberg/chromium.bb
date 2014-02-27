@@ -56,10 +56,11 @@ class DeviceOAuth2TokenService : public OAuth2TokenService,
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Implementation of OAuth2TokenService.
-  virtual bool RefreshTokenIsAvailable(const std::string& account_id) OVERRIDE;
+  virtual bool RefreshTokenIsAvailable(const std::string& account_id)
+      const OVERRIDE;
 
   // Pull the robot account ID from device policy.
-  virtual std::string GetRobotAccountId();
+  virtual std::string GetRobotAccountId() const;
 
   // gaia::GaiaOAuthClient::Delegate implementation.
   virtual void OnRefreshTokenResponse(const std::string& access_token,
@@ -71,7 +72,8 @@ class DeviceOAuth2TokenService : public OAuth2TokenService,
 
  protected:
   // Implementation of OAuth2TokenService.
-  virtual std::string GetRefreshToken(const std::string& account_id) OVERRIDE;
+  virtual std::string GetRefreshToken(const std::string& account_id)
+      const OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
   virtual void FetchOAuth2Token(RequestImpl* request,
                                 const std::string& account_id,

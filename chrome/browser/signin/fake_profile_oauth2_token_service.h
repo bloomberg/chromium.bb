@@ -60,7 +60,7 @@ class FakeProfileOAuth2TokenService
 
   // Overriden to make sure it works on Android.
   virtual bool RefreshTokenIsAvailable(
-      const std::string& account_id) OVERRIDE;
+      const std::string& account_id) const OVERRIDE;
 
   // Overriden to make sure it works on iOS.
   virtual void LoadCredentials(const std::string& primary_account_id) OVERRIDE;
@@ -121,7 +121,8 @@ class FakeProfileOAuth2TokenService
                                      const ScopeSet& scopes,
                                      const std::string& access_token) OVERRIDE;
 
-  virtual std::string GetRefreshToken(const std::string& account_id) OVERRIDE;
+  virtual std::string GetRefreshToken(const std::string& account_id)
+      const OVERRIDE;
 
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
 
