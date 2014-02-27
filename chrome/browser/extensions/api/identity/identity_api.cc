@@ -292,7 +292,6 @@ void IdentityGetAuthTokenFunction::OnMintTokenFailure(
 
   switch (error.state()) {
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
-    case GoogleServiceAuthError::SERVICE_ERROR:
     case GoogleServiceAuthError::ACCOUNT_DELETED:
     case GoogleServiceAuthError::ACCOUNT_DISABLED:
       extensions::IdentityAPI::GetFactoryInstance()
@@ -718,6 +717,10 @@ const IdentityAPI::CachedTokens& IdentityAPI::GetAllCachedTokens() {
 void IdentityAPI::ReportAuthError(const GoogleServiceAuthError& error) {
   account_tracker_.ReportAuthError(GetPrimaryAccountId(browser_context_),
                                    error);
+}
+
+GoogleServiceAuthError IdentityAPI::GetAuthStatusForTest() const {
+  return account_tracker_.GetAuthStatus();
 }
 
 void IdentityAPI::Shutdown() {

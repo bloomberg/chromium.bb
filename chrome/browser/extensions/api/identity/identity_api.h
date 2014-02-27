@@ -267,6 +267,7 @@ class IdentityAPI : public ProfileKeyedAPI,
   const CachedTokens& GetAllCachedTokens();
 
   void ReportAuthError(const GoogleServiceAuthError& error);
+  GoogleServiceAuthError GetAuthStatusForTest() const;
 
   // ProfileKeyedAPI implementation.
   virtual void Shutdown() OVERRIDE;
