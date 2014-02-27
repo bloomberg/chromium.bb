@@ -873,7 +873,7 @@ public:
     virtual void removeAllEventListeners() OVERRIDE FINAL;
 
     const SVGDocumentExtensions* svgExtensions();
-    SVGDocumentExtensions* accessSVGExtensions();
+    SVGDocumentExtensions& accessSVGExtensions();
 
     void initSecurityContext();
     void initSecurityContext(const DocumentInit&);

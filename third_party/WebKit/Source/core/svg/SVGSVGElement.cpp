@@ -106,9 +106,9 @@ SVGSVGElement::~SVGSVGElement()
 
     // There are cases where removedFromDocument() is not called.
     // see ContainerNode::removeAllChildren, called by its destructor.
-    document().accessSVGExtensions()->removeTimeContainer(this);
+    document().accessSVGExtensions().removeTimeContainer(this);
 
-    ASSERT(inDocument() || !accessDocumentSVGExtensions()->isSVGRootWithRelativeLengthDescendents(this));
+    ASSERT(inDocument() || !accessDocumentSVGExtensions().isSVGRootWithRelativeLengthDescendents(this));
 }
 
 const AtomicString& SVGSVGElement::contentScriptType() const
@@ -491,7 +491,7 @@ Node::InsertionNotificationRequest SVGSVGElement::insertedInto(ContainerNode* ro
     if (rootParent->inDocument()) {
         UseCounter::count(document(), UseCounter::SVGSVGElementInDocument);
 
-        document().accessSVGExtensions()->addTimeContainer(this);
+        document().accessSVGExtensions().addTimeContainer(this);
 
         // Animations are started at the end of document parsing and after firing the load event,
         // but if we miss that train (deferred programmatic element insertion for example) we need
@@ -505,9 +505,9 @@ Node::InsertionNotificationRequest SVGSVGElement::insertedInto(ContainerNode* ro
 void SVGSVGElement::removedFrom(ContainerNode* rootParent)
 {
     if (rootParent->inDocument()) {
-        SVGDocumentExtensions* svgExtensions = document().accessSVGExtensions();
-        svgExtensions->removeTimeContainer(this);
-        svgExtensions->removeSVGRootWithRelativeLengthDescendents(this);
+        SVGDocumentExtensions& svgExtensions = document().accessSVGExtensions();
+        svgExtensions.removeTimeContainer(this);
+        svgExtensions.removeSVGRootWithRelativeLengthDescendents(this);
     }
 
     SVGGraphicsElement::removedFrom(rootParent);

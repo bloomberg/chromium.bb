@@ -617,7 +617,7 @@ void Document::dispose()
     m_scriptedAnimationController.clear();
 
     if (svgExtensions())
-        accessSVGExtensions()->pauseAnimations();
+        accessSVGExtensions().pauseAnimations();
 
     m_lifecycle.advanceTo(DocumentLifecycle::Disposed);
     lifecycleNotifier().notifyDocumentWasDisposed();
@@ -2098,7 +2098,7 @@ void Document::detach(const AttachContext& context)
     m_scriptedAnimationController.clear();
 
     if (svgExtensions())
-        accessSVGExtensions()->pauseAnimations();
+        accessSVGExtensions().pauseAnimations();
 
     // FIXME: This shouldn't be needed once DOMWindow becomes ExecutionContext.
     if (m_domWindow)
@@ -2455,7 +2455,7 @@ void Document::implicitClose()
     // To align the HTML load event and the SVGLoad event for the outermost <svg> element, fire it from
     // here, instead of doing it from SVGElement::finishedParsingChildren.
     if (svgExtensions())
-        accessSVGExtensions()->dispatchSVGLoadEventToOutermostSVGElements();
+        accessSVGExtensions().dispatchSVGLoadEventToOutermostSVGElements();
 
     if (protectedWindow)
         protectedWindow->documentWasClosed();
@@ -2512,7 +2512,7 @@ void Document::implicitClose()
     }
 
     if (svgExtensions())
-        accessSVGExtensions()->startAnimations();
+        accessSVGExtensions().startAnimations();
 }
 
 bool Document::dispatchBeforeUnloadEvent(Chrome& chrome, bool& didAllowNavigation)
@@ -4341,11 +4341,11 @@ const SVGDocumentExtensions* Document::svgExtensions()
     return m_svgExtensions.get();
 }
 
-SVGDocumentExtensions* Document::accessSVGExtensions()
+SVGDocumentExtensions& Document::accessSVGExtensions()
 {
     if (!m_svgExtensions)
         m_svgExtensions = adoptPtr(new SVGDocumentExtensions(this));
-    return m_svgExtensions.get();
+    return *m_svgExtensions;
 }
 
 bool Document::hasSVGRootNode() const

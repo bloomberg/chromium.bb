@@ -186,10 +186,10 @@ static inline RenderSVGResourceContainer* paintingResourceFromSVGPaint(Document&
     return container;
 }
 
-static inline void registerPendingResource(SVGDocumentExtensions* extensions, const AtomicString& id, SVGElement* element)
+static inline void registerPendingResource(SVGDocumentExtensions& extensions, const AtomicString& id, SVGElement* element)
 {
     ASSERT(element);
-    extensions->addPendingResource(id, element);
+    extensions.addPendingResource(id, element);
 }
 
 bool SVGResources::hasResourceData() const
@@ -223,8 +223,7 @@ PassOwnPtr<SVGResources> SVGResources::buildResources(const RenderObject* object
 
     Document& document = object->document();
 
-    SVGDocumentExtensions* extensions = document.accessSVGExtensions();
-    ASSERT(extensions);
+    SVGDocumentExtensions& extensions = document.accessSVGExtensions();
 
     const AtomicString& tagName = element->localName();
     if (tagName.isNull())

@@ -131,7 +131,7 @@ void SVGFEConvolveMatrixElement::parseAttribute(const QualifiedName& name, const
     else if (name == SVGNames::orderAttr) {
         m_order->setBaseValueAsString(value, parseError);
         if (parseError == NoError && (orderX()->baseValue()->value() < 1 || orderY()->baseValue()->value() < 1)) {
-            document().accessSVGExtensions()->reportWarning(
+            document().accessSVGExtensions().reportWarning(
                 "feConvolveMatrix: problem parsing order=\"" + value
                 + "\". Filtered element will not be displayed.");
         }

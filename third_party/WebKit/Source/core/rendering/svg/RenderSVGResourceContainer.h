@@ -91,7 +91,7 @@ inline RenderSVGResourceContainer* getRenderSVGResourceContainerById(Document& d
     if (id.isEmpty())
         return 0;
 
-    if (RenderSVGResourceContainer* renderResource = document.accessSVGExtensions()->resourceById(id))
+    if (RenderSVGResourceContainer* renderResource = document.accessSVGExtensions().resourceById(id))
         return renderResource;
 
     return 0;

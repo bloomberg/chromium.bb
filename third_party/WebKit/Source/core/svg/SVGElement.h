@@ -81,7 +81,7 @@ public:
     SVGSVGElement* ownerSVGElement() const;
     SVGElement* viewportElement() const;
 
-    SVGDocumentExtensions* accessDocumentSVGExtensions();
+    SVGDocumentExtensions& accessDocumentSVGExtensions();
 
     virtual bool isSVGGraphicsElement() const { return false; }
     virtual bool isSVGSVGElement() const { return false; }

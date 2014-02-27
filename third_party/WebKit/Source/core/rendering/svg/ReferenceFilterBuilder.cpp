@@ -130,7 +130,7 @@ PassRefPtr<FilterEffect> ReferenceFilterBuilder::build(Filter* parentFilter, Ren
     if (!filter) {
         // Although we did not find the referenced filter, it might exist later
         // in the document
-        document->accessSVGExtensions()->addPendingResource(filterOperation->fragment(), toElement(renderer->node()));
+        document->accessSVGExtensions().addPendingResource(filterOperation->fragment(), toElement(renderer->node()));
         return nullptr;
     }
 

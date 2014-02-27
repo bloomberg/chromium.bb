@@ -197,7 +197,7 @@ SVGSMILElement::~SVGSMILElement()
 
 void SVGSMILElement::clearResourceAndEventBaseReferences()
 {
-    document().accessSVGExtensions()->removeAllTargetReferencesForElement(this);
+    document().accessSVGExtensions().removeAllTargetReferencesForElement(this);
 }
 
 void SVGSMILElement::clearConditions()
@@ -234,17 +234,17 @@ void SVGSMILElement::buildPendingResource()
 
     if (!svgTarget) {
         // Do not register as pending if we are already pending this resource.
-        if (document().accessSVGExtensions()->isElementPendingResource(this, id))
+        if (document().accessSVGExtensions().isElementPendingResource(this, id))
             return;
 
         if (!id.isEmpty()) {
-            document().accessSVGExtensions()->addPendingResource(id, this);
+            document().accessSVGExtensions().addPendingResource(id, this);
             ASSERT(hasPendingResources());
         }
     } else {
         // Register us with the target in the dependencies map. Any change of hrefElement
         // that leads to relayout/repainting now informs us, so we can react to it.
-        document().accessSVGExtensions()->addElementReferencingTarget(this, svgTarget);
+        document().accessSVGExtensions().addElementReferencingTarget(this, svgTarget);
     }
     connectEventBaseConditions();
 }
@@ -620,14 +620,14 @@ void SVGSMILElement::connectEventBaseConditions()
             ASSERT(!condition.m_syncbase);
             SVGElement* eventBase = eventBaseFor(condition);
             if (!eventBase) {
-                if (!condition.m_baseID.isEmpty() && !document().accessSVGExtensions()->isElementPendingResource(this, AtomicString(condition.m_baseID)))
-                    document().accessSVGExtensions()->addPendingResource(AtomicString(condition.m_baseID), this);
+                if (!condition.m_baseID.isEmpty() && !document().accessSVGExtensions().isElementPendingResource(this, AtomicString(condition.m_baseID)))
+                    document().accessSVGExtensions().addPendingResource(AtomicString(condition.m_baseID), this);
                 continue;
             }
             ASSERT(!condition.m_eventListener);
             condition.m_eventListener = ConditionEventListener::create(this, &condition);
             eventBase->addEventListener(AtomicString(condition.m_name), condition.m_eventListener, false);
-            document().accessSVGExtensions()->addElementReferencingTarget(this, eventBase);
+            document().accessSVGExtensions().addElementReferencingTarget(this, eventBase);
         }
     }
 }

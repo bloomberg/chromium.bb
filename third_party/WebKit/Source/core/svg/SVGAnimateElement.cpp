@@ -206,7 +206,7 @@ void SVGAnimateElement::resetAnimatedType()
         m_animatedProperties = animator->findAnimatedPropertiesForAttributeName(targetElement, attributeName);
         SVGElementAnimatedPropertyList::const_iterator end = m_animatedProperties.end();
         for (SVGElementAnimatedPropertyList::const_iterator it = m_animatedProperties.begin(); it != end; ++it)
-            document().accessSVGExtensions()->addElementReferencingTarget(this, it->element);
+            document().accessSVGExtensions().addElementReferencingTarget(this, it->element);
 
         ASSERT(!m_animatedProperties.isEmpty());
 

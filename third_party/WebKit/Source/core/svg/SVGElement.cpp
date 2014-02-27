@@ -123,8 +123,8 @@ SVGElement::cleanupAnimatedProperties()
         // removeAllElementReferencesForTarget() below.
         clearHasSVGRareData();
     }
-    document().accessSVGExtensions()->rebuildAllElementReferencesForTarget(this);
-    document().accessSVGExtensions()->removeAllElementReferencesForTarget(this);
+    document().accessSVGExtensions().rebuildAllElementReferencesForTarget(this);
+    document().accessSVGExtensions().removeAllElementReferencesForTarget(this);
     SVGAnimatedProperty::detachAnimatedPropertiesForElement(this);
 }
 
@@ -148,20 +148,20 @@ void SVGElement::buildPendingResourcesIfNeeded()
     if (!needsPendingResourceHandling() || !inDocument() || isInShadowTree())
         return;
 
-    SVGDocumentExtensions* extensions = document.accessSVGExtensions();
+    SVGDocumentExtensions& extensions = document.accessSVGExtensions();
     AtomicString resourceId = getIdAttribute();
-    if (!extensions->hasPendingResource(resourceId))
+    if (!extensions.hasPendingResource(resourceId))
         return;
 
     // Mark pending resources as pending for removal.
-    extensions->markPendingResourcesForRemoval(resourceId);
+    extensions.markPendingResourcesForRemoval(resourceId);
 
     // Rebuild pending resources for each client of a pending resource that is being removed.
-    while (Element* clientElement = extensions->removeElementFromPendingResourcesForRemoval(resourceId)) {
+    while (Element* clientElement = extensions.removeElementFromPendingResourcesForRemoval(resourceId)) {
         ASSERT(clientElement->hasPendingResources());
         if (clientElement->hasPendingResources()) {
             clientElement->buildPendingResource();
-            extensions->clearHasPendingResourcesIfPossible(clientElement);
+            extensions.clearHasPendingResourcesIfPossible(clientElement);
         }
     }
 }
@@ -226,15 +226,15 @@ void SVGElement::reportAttributeParsingError(SVGParsingError error, const Qualif
         return;
 
     String errorString = "<" + tagName() + "> attribute " + name.toString() + "=\"" + value + "\"";
-    SVGDocumentExtensions* extensions = document().accessSVGExtensions();
+    SVGDocumentExtensions& extensions = document().accessSVGExtensions();
 
     if (error == NegativeValueForbiddenError) {
-        extensions->reportError("Invalid negative value for " + errorString);
+        extensions.reportError("Invalid negative value for " + errorString);
         return;
     }
 
     if (error == ParsingAttributeFailedError) {
-        extensions->reportError("Invalid value for " + errorString);
+        extensions.reportError("Invalid value for " + errorString);
         return;
     }
 
@@ -375,8 +375,8 @@ void SVGElement::removedFrom(ContainerNode* rootParent)
     Element::removedFrom(rootParent);
 
     if (wasInDocument) {
-        document().accessSVGExtensions()->rebuildAllElementReferencesForTarget(this);
-        document().accessSVGExtensions()->removeAllElementReferencesForTarget(this);
+        document().accessSVGExtensions().rebuildAllElementReferencesForTarget(this);
+        document().accessSVGExtensions().removeAllElementReferencesForTarget(this);
     }
 
     SVGElementInstance::invalidateAllInstancesOfElement(this);
@@ -499,11 +499,11 @@ void SVGElement::updateRelativeLengthsInformation(bool clientHasRelativeLengths,
 
     // Register root SVG elements for top level viewport change notifications.
     if (clientElement->isSVGSVGElement()) {
-        SVGDocumentExtensions* svgExtensions = accessDocumentSVGExtensions();
+        SVGDocumentExtensions& svgExtensions = accessDocumentSVGExtensions();
         if (clientElement->hasRelativeLengths())
-            svgExtensions->addSVGRootWithRelativeLengthDescendents(toSVGSVGElement(clientElement));
+            svgExtensions.addSVGRootWithRelativeLengthDescendents(toSVGSVGElement(clientElement));
         else
-            svgExtensions->removeSVGRootWithRelativeLengthDescendents(toSVGSVGElement(clientElement));
+            svgExtensions.removeSVGRootWithRelativeLengthDescendents(toSVGSVGElement(clientElement));
     }
 }
 
@@ -560,7 +560,7 @@ SVGElement* SVGElement::viewportElement() const
     return 0;
 }
 
-SVGDocumentExtensions* SVGElement::accessDocumentSVGExtensions()
+SVGDocumentExtensions& SVGElement::accessDocumentSVGExtensions()
 {
     // This function is provided for use by SVGAnimatedProperty to avoid
     // global inclusion of core/dom/Document.h in SVG code.
@@ -957,7 +957,7 @@ void SVGElement::attributeChanged(const QualifiedName& name, const AtomicString&
     Element::attributeChanged(name, newValue);
 
     if (isIdAttributeName(name))
-        document().accessSVGExtensions()->rebuildAllElementReferencesForTarget(this);
+        document().accessSVGExtensions().rebuildAllElementReferencesForTarget(this);
 
     // Changes to the style attribute are processed lazily (see Element::getAttribute() and related methods),
     // so we don't want changes to the style attribute to result in extra work here.

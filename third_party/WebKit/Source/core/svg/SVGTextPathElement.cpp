@@ -84,7 +84,7 @@ SVGTextPathElement::~SVGTextPathElement()
 
 void SVGTextPathElement::clearResourceReferences()
 {
-    document().accessSVGExtensions()->removeAllTargetReferencesForElement(this);
+    document().accessSVGExtensions().removeAllTargetReferencesForElement(this);
 }
 
 bool SVGTextPathElement::isSupportedAttribute(const QualifiedName& attrName)
@@ -164,17 +164,17 @@ void SVGTextPathElement::buildPendingResource()
     Element* target = SVGURIReference::targetElementFromIRIString(hrefString(), document(), &id);
     if (!target) {
         // Do not register as pending if we are already pending this resource.
-        if (document().accessSVGExtensions()->isElementPendingResource(this, id))
+        if (document().accessSVGExtensions().isElementPendingResource(this, id))
             return;
 
         if (!id.isEmpty()) {
-            document().accessSVGExtensions()->addPendingResource(id, this);
+            document().accessSVGExtensions().addPendingResource(id, this);
             ASSERT(hasPendingResources());
         }
     } else if (target->hasTagName(SVGNames::pathTag)) {
         // Register us with the target in the dependencies map. Any change of hrefElement
         // that leads to relayout/repainting now informs us, so we can react to it.
-        document().accessSVGExtensions()->addElementReferencingTarget(this, toSVGElement(target));
+        document().accessSVGExtensions().addElementReferencingTarget(this, toSVGElement(target));
     }
 }
 
