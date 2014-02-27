@@ -11,6 +11,8 @@
 #include "content/common/view_messages.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animation_observer.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_png_rep.h"
 #include "ui/gfx/image/image_skia.h"
@@ -59,6 +61,55 @@ class ImageLayerDelegate : public ui::LayerDelegate {
   gfx::Size image_size_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageLayerDelegate);
+};
+
+// Responsible for fading out and deleting the layer of the overlay window.
+class OverlayDismissAnimator
+    : public ui::LayerAnimationObserver {
+ public:
+  // Takes ownership of the layer.
+  explicit OverlayDismissAnimator(scoped_ptr<ui::Layer> layer)
+      : layer_(layer.Pass()) {
+    CHECK(layer_.get());
+  }
+
+  // Starts the fadeout animation on the layer. When the animation finishes,
+  // the object deletes itself along with the layer.
+  void Animate() {
+    DCHECK(layer_.get());
+    // Hold on to LayerAnimator to ensure it is not deleted before animation
+    // settings. Without this LayerAnimator would be deleted from SetOpacity if
+    // the animation duration is 0.
+    scoped_refptr<ui::LayerAnimator> animator(layer_->GetAnimator());
+    {
+      // This makes SetOpacity() animate with default duration (which could be
+      // zero, e.g. when running tests).
+      ui::ScopedLayerAnimationSettings settings(animator);
+      animator->AddObserver(this);
+      layer_->SetOpacity(0);
+    }
+  }
+
+  // Overridden from ui::LayerAnimationObserver
+  virtual void OnLayerAnimationEnded(
+      ui::LayerAnimationSequence* sequence) OVERRIDE {
+    delete this;
+  }
+
+  virtual void OnLayerAnimationAborted(
+      ui::LayerAnimationSequence* sequence) OVERRIDE {
+    delete this;
+  }
+
+  virtual void OnLayerAnimationScheduled(
+      ui::LayerAnimationSequence* sequence) OVERRIDE {}
+
+ private:
+  virtual ~OverlayDismissAnimator() {}
+
+  scoped_ptr<ui::Layer> layer_;
+
+  DISALLOW_COPY_AND_ASSIGN(OverlayDismissAnimator);
 };
 
 OverscrollNavigationOverlay::OverscrollNavigationOverlay(
@@ -121,10 +172,19 @@ void OverscrollNavigationOverlay::StopObservingIfDone() {
   if (window_slider_.get() && window_slider_->IsSlideInProgress())
     return;
 
+  scoped_ptr<ui::Layer> layer;
+  if (window_.get()) {
+    layer.reset(window_->AcquireLayer());
+  }
   Observe(NULL);
   window_slider_.reset();
   window_.reset();
   image_delegate_ = NULL;
+  if (layer.get()) {
+    // OverlayDismissAnimator deletes the layer and itself when the animation
+    // completes.
+    (new OverlayDismissAnimator(layer.Pass()))->Animate();
+  }
 }
 
 ui::Layer* OverscrollNavigationOverlay::CreateSlideLayer(int offset) {
@@ -207,9 +267,17 @@ void OverscrollNavigationOverlay::OnWindowSlideAborted() {
 }
 
 void OverscrollNavigationOverlay::OnWindowSliderDestroyed() {
-  // The slider has just been destroyed. Release the ownership.
-  WindowSlider* slider ALLOW_UNUSED = window_slider_.release();
-  StopObservingIfDone();
+  // We only want to take an action here if WindowSlider is being destroyed
+  // outside of OverscrollNavigationOverlay. If window_slider_.get() is NULL,
+  // then OverscrollNavigationOverlay is the one destroying WindowSlider, and
+  // we don't need to do anything.
+  // This check prevents StopObservingIfDone() being called multiple times
+  // (including recursively) for a single event.
+  if (window_slider_.get()) {
+    // The slider has just been destroyed. Release the ownership.
+    WindowSlider* slider ALLOW_UNUSED = window_slider_.release();
+    StopObservingIfDone();
+  }
 }
 
 void OverscrollNavigationOverlay::DidFirstVisuallyNonEmptyPaint(int32 page_id) {

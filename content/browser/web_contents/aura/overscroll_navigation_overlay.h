@@ -64,8 +64,9 @@ class CONTENT_EXPORT OverscrollNavigationOverlay
     SLIDE_FRONT
   };
 
-  // Stop observing the page if the page-load has completed and the page has
-  // been painted, and a window-slide isn't in progress.
+  // Stop observing the page and start the final overlay fade-out animation
+  // if the page-load has completed and the page has been painted, and a
+  // window-slide isn't in progress.
   void StopObservingIfDone();
 
   // Creates a layer to be used for window-slide. |offset| is the offset of the
