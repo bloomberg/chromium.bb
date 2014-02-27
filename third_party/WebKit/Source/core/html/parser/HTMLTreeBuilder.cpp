@@ -473,49 +473,6 @@ void HTMLTreeBuilder::processFakePEndTagIfPInButtonScope()
     processEndTag(&endP);
 }
 
-Vector<Attribute> HTMLTreeBuilder::attributesForIsindexInput(AtomicHTMLToken* token)
-{
-    Vector<Attribute> attributes = token->attributes();
-    for (int i = attributes.size() - 1; i >= 0; --i) {
-        const QualifiedName& name = attributes.at(i).name();
-        if (name.matches(nameAttr) || name.matches(actionAttr) || name.matches(promptAttr))
-            attributes.remove(i);
-    }
-
-    attributes.append(Attribute(nameAttr, isindexTag.localName()));
-    return attributes;
-}
-
-void HTMLTreeBuilder::processIsindexStartTagForInBody(AtomicHTMLToken* token)
-{
-    ASSERT(token->type() == HTMLToken::StartTag);
-    ASSERT(token->name() == isindexTag);
-
-    if (m_parser->useCounter())
-        m_parser->useCounter()->count(UseCounter::IsIndexElement);
-
-    parseError(token);
-    if (m_tree.form())
-        return;
-    notImplemented(); // Acknowledge self-closing flag
-    processFakeStartTag(formTag);
-    Attribute* actionAttribute = token->getAttributeItem(actionAttr);
-    if (actionAttribute)
-        m_tree.form()->setAttribute(actionAttr, actionAttribute->value());
-    processFakeStartTag(hrTag);
-    processFakeStartTag(labelTag);
-    Attribute* promptAttribute = token->getAttributeItem(promptAttr);
-    if (promptAttribute)
-        processFakeCharacters(promptAttribute->value());
-    else
-        processFakeCharacters(Locale::defaultLocale().queryString(blink::WebLocalizedString::SearchableIndexIntroduction));
-    processFakeStartTag(inputTag, attributesForIsindexInput(token));
-    notImplemented(); // This second set of characters may be needed by non-english locales.
-    processFakeEndTag(labelTag);
-    processFakeStartTag(hrTag);
-    processFakeEndTag(formTag);
-}
-
 namespace {
 
 bool isLi(const HTMLStackItem* item)
@@ -854,10 +811,6 @@ void HTMLTreeBuilder::processStartTagForInBody(AtomicHTMLToken* token)
         processFakePEndTagIfPInButtonScope();
         m_tree.insertSelfClosingHTMLElement(token);
         m_framesetOk = false;
-        return;
-    }
-    if (token->name() == isindexTag) {
-        processIsindexStartTagForInBody(token);
         return;
     }
     if (token->name() == textareaTag) {

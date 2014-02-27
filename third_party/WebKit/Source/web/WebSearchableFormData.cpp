@@ -214,14 +214,10 @@ bool buildSearchString(const HTMLFormElement* form, Vector<char>* encodedString,
         const Vector<FormDataList::Item>& items = dataList.items();
 
         for (Vector<FormDataList::Item>::const_iterator j(items.begin()); j != items.end(); ++j) {
-            // Handle ISINDEX / <input name=isindex> specially, but only if it's
-            // the first entry.
-            if (!encodedString->isEmpty() || j->data() != "isindex") {
-                if (!encodedString->isEmpty())
-                    encodedString->append('&');
-                FormDataBuilder::encodeStringAsFormData(*encodedString, j->data());
-                encodedString->append('=');
-            }
+            if (!encodedString->isEmpty())
+                encodedString->append('&');
+            FormDataBuilder::encodeStringAsFormData(*encodedString, j->data());
+            encodedString->append('=');
             ++j;
             if (control == textElement) {
                 encodedString->append("{searchTerms}", 13);

@@ -99,7 +99,6 @@ bool HTMLElement::ieForbidsInsertHTML() const
         || hasLocalName(imageTag)
         || hasLocalName(imgTag)
         || hasLocalName(inputTag)
-        || hasLocalName(isindexTag)
         || hasLocalName(linkTag)
         || hasLocalName(metaTag)
         || hasLocalName(paramTag)

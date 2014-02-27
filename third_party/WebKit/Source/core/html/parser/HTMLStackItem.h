@@ -172,7 +172,6 @@ public:
             || tagName == HTMLNames::iframeTag
             || tagName == HTMLNames::imgTag
             || tagName == HTMLNames::inputTag
-            || tagName == HTMLNames::isindexTag
             || tagName == HTMLNames::liTag
             || tagName == HTMLNames::linkTag
             || tagName == HTMLNames::listingTag

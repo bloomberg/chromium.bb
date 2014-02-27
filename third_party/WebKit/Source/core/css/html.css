@@ -390,11 +390,11 @@ button {
 }
 
 /* Form controls don't go vertical. */
-input, textarea, keygen, select, button, isindex, meter, progress {
+input, textarea, keygen, select, button, meter, progress {
     -webkit-writing-mode: horizontal-tb !important;
 }
 
-input, textarea, keygen, select, button, isindex {
+input, textarea, keygen, select, button {
     margin: 0__qem;
     font: -webkit-small-control;
     color: initial;
@@ -412,7 +412,7 @@ input[type="hidden"] {
     display: none
 }
 
-input, input[type="password"], input[type="search"], isindex {
+input, input[type="password"], input[type="search"] {
     -webkit-appearance: textfield;
     padding: 1px;
     background-color: white;
@@ -662,7 +662,7 @@ textarea {
     pointer-events: none !important;
 }
 
-input::-webkit-input-placeholder, isindex::-webkit-input-placeholder {
+input::-webkit-input-placeholder {
     white-space: pre;
     word-wrap: normal;
     overflow: hidden;
@@ -1063,7 +1063,7 @@ applet:focus, embed:focus, iframe:focus, object:focus {
     outline: none
 }
   
-input:focus, textarea:focus, isindex:focus, keygen:focus, select:focus {
+input:focus, textarea:focus, keygen:focus, select:focus {
     outline-offset: -2px
 }
 

@@ -30,7 +30,7 @@
 
 /* These styles override other user-agent styles for Chromium. */
 
-input:disabled, isindex:disabled, textarea:disabled {
+input:disabled, textarea:disabled {
     color: #545454; /* Color::light() for #000000. See RenderTextControl.cpp:disabledTextColor */
 }
 

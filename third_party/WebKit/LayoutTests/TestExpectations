@@ -36,6 +36,8 @@ crbug.com/344238 virtual/deferred/inspector/timeline/timeline-auto-record.html [
 crbug.com/346119 virtual/deferred/inspector/timeline/timeline-start-time.html [ Pass Failure ]
 crbug.com/346119 inspector/timeline/timeline-start-time.html [ Pass Failure ]
 
+Bug(mkwst) fast/forms/text-style-color.html [ NeedsRebaseline ]
+
 # -----------------------------------------------------------------
 # Plugin tests
 # -----------------------------------------------------------------
