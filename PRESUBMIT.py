@@ -1352,10 +1352,6 @@ def CheckChangeOnCommit(input_api, output_api):
       input_api,
       output_api,
       json_url='http://chromium-status.appspot.com/current?format=json'))
-  results.extend(input_api.canned_checks.CheckRietveldTryJobExecution(input_api,
-      output_api, 'http://codereview.chromium.org',
-      ('win_rel', 'linux_rel', 'mac_rel, win:compile'),
-      'tryserver@chromium.org'))
 
   results.extend(input_api.canned_checks.CheckChangeHasBugField(
       input_api, output_api))
@@ -1372,7 +1368,11 @@ def GetPreferredTrySlaves(project, change):
     return []
 
   if all(re.search('\.(m|mm)$|(^|[/_])mac[/_.]', f) for f in files):
-    return GetDefaultTryConfigs(['mac', 'mac_rel'])
+    return GetDefaultTryConfigs([
+        'mac_chromium_compile_dbg',
+        'mac_chromium_rel',
+        'mac_rel'
+    ])
   if all(re.search('(^|[/_])win[/_.]', f) for f in files):
     return GetDefaultTryConfigs(['win', 'win_rel'])
   if all(re.search('(^|[/_])android[/_.]', f) for f in files):
@@ -1391,12 +1391,14 @@ def GetPreferredTrySlaves(project, change):
       'ios_rel_device',
       'linux_gtk',
       'linux_asan',
-      'linux_chromeos',
-      'linux_clang',
+      'linux_chromium_chromeos_rel',
+      'linux_chromium_clang_dbg',
       'linux_nacl_sdk_build',
+      'linux_chromium_rel',
       'linux_rel',
-      'mac',
+      'mac_chromium_compile_dbg',
       'mac_nacl_sdk_build',
+      'mac_chromium_rel',
       'mac_rel',
       'win',
       'win_nacl_sdk_build',
@@ -1408,7 +1410,7 @@ def GetPreferredTrySlaves(project, change):
   # Same for chromeos.
   if any(re.search('[/_](aura|chromeos)', f) for f in files):
     trybots.extend(GetDefaultTryConfigs([
-        'linux_chromeos_asan', 'linux_chromeos_clang']))
+        'linux_chromeos_asan', 'linux_chromium_chromeos_clang_dbg']))
 
   # If there are gyp changes to base, build, or chromeos, run a full cros build
   # in addition to the shorter linux_chromeos build. Changes to high level gyp
