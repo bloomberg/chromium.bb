@@ -183,27 +183,22 @@ void SVGTextMetricsBuilder::measureTextRenderer(RenderSVGInlineText* text, Measu
 
 void SVGTextMetricsBuilder::walkTree(RenderObject* start, RenderSVGInlineText* stopAtLeaf, MeasureTextData* data)
 {
-    for (RenderObject* child = start->firstChild(); child; child = child->nextSibling()) {
+    RenderObject* child = start->firstChild();
+    while (child) {
         if (child->isSVGInlineText()) {
             RenderSVGInlineText* text = toRenderSVGInlineText(child);
-            if (stopAtLeaf && stopAtLeaf != text) {
-                data->processRenderer = false;
-                measureTextRenderer(text, data);
+            data->processRenderer = !stopAtLeaf || stopAtLeaf == text;
+            measureTextRenderer(text, data);
+            if (stopAtLeaf && stopAtLeaf == text)
+                return;
+        } else if (child->isSVGInline()) {
+            // Visit children of text content elements.
+            if (RenderObject* inlineChild = child->firstChild()) {
+                child = inlineChild;
                 continue;
             }
-
-            data->processRenderer = true;
-            measureTextRenderer(text, data);
-            if (stopAtLeaf)
-                return;
-
-            continue;
         }
-
-        if (!child->isSVGInline())
-            continue;
-
-        walkTree(child, stopAtLeaf, data);
+        child = child->nextInPreOrderAfterChildren(start);
     }
 }
 
