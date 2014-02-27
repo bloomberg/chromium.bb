@@ -11,10 +11,9 @@ var mediaGalleriesNatives = requireNative('mediaGalleries');
 var mediaGalleriesMetadata = {};
 
 function createFileSystemObjectsAndUpdateMetadata(response) {
-  var result = null;
+  var result = [];
   mediaGalleriesMetadata = {};  // Clear any previous metadata.
   if (response) {
-    result = [];
     for (var i = 0; i < response.length; i++) {
       var filesystem = mediaGalleriesNatives.GetMediaFileSystemObject(
           response[i].fsid);
