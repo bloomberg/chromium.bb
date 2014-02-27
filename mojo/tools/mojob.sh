@@ -53,7 +53,7 @@ do_unittests() {
   "out/$1/mojo_public_environment_unittests" || exit 1
   "out/$1/mojo_public_system_unittests" || exit 1
   "out/$1/mojo_public_utility_unittests" || exit 1
-  "out/$1/mojo_shell_unittests" || exit 1
+  "out/$1/mojo_service_manager_unittests" || exit 1
   "out/$1/mojo_system_unittests" || exit 1
 }
 

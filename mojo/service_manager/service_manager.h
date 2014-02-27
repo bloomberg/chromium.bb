@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SHELL_service_manager_H_
-#define MOJO_SHELL_service_manager_H_
+#ifndef MOJO_SERVICE_MANAGER_SERVICE_MANAGER_H_
+#define MOJO_SERVICE_MANAGER_SERVICE_MANAGER_H_
 
 #include <map>
 
@@ -23,8 +23,7 @@ class ServiceManager {
   class Loader {
    public:
     virtual ~Loader();
-    virtual void Load(const GURL& url,
-                      ScopedShellHandle service_handle) = 0;
+    virtual void Load(const GURL& url, ScopedShellHandle service_handle) = 0;
    protected:
     Loader();
   };
@@ -71,4 +70,4 @@ class ServiceManager {
 }  // namespace shell
 }  // namespace mojo
 
-#endif  // MOJO_SHELL_service_manager_H_
+#endif  // MOJO_SERVICE_MANAGER_SERVICE_MANAGER_H_

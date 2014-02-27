@@ -7,9 +7,9 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "mojo/service_manager/service_manager.h"
 #include "mojo/shell/context.h"
 #include "mojo/shell/keep_alive.h"
-#include "mojo/shell/service_manager.h"
 #include "mojo/shell/switches.h"
 #include "url/gurl.h"
 

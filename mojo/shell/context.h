@@ -5,9 +5,9 @@
 #ifndef MOJO_SHELL_CONTEXT_H_
 #define MOJO_SHELL_CONTEXT_H_
 
+#include "mojo/service_manager/service_manager.h"
 #include "mojo/shell/keep_alive.h"
 #include "mojo/shell/loader.h"
-#include "mojo/shell/service_manager.h"
 #include "mojo/shell/storage.h"
 #include "mojo/shell/task_runners.h"
 

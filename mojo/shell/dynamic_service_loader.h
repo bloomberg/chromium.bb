@@ -10,8 +10,8 @@
 #include "base/basictypes.h"
 #include "mojo/public/shell/shell.mojom.h"
 #include "mojo/public/system/core_cpp.h"
+#include "mojo/service_manager/service_manager.h"
 #include "mojo/shell/keep_alive.h"
-#include "mojo/shell/service_manager.h"
 #include "url/gurl.h"
 
 namespace mojo {

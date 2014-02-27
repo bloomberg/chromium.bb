@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/shell/service_manager.h"
+#include "mojo/service_manager/service_manager.h"
 
 #include "base/logging.h"
 #include "mojo/public/bindings/allocation_scope.h"
@@ -81,7 +81,7 @@ ServiceManager::Loader* ServiceManager::GetLoaderForURL(const GURL& gurl) {
 }
 
 void ServiceManager::Connect(const GURL& url,
-                               ScopedMessagePipeHandle client_handle) {
+                             ScopedMessagePipeHandle client_handle) {
   ServiceFactoryMap::const_iterator service_it =
       url_to_service_factory_.find(url);
   ServiceFactory* service_factory;

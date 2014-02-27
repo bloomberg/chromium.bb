@@ -13,11 +13,11 @@
 #include "base/message_loop/message_loop.h"
 #include "jni/MojoMain_jni.h"
 #include "mojo/public/shell/application.h"
+#include "mojo/service_manager/service_manager.h"
 #include "mojo/services/native_viewport/native_viewport_service.h"
 #include "mojo/shell/context.h"
 #include "mojo/shell/init.h"
 #include "mojo/shell/run.h"
-#include "mojo/shell/service_manager.h"
 #include "ui/gl/gl_surface_egl.h"
 
 using base::LazyInstance;

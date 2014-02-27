@@ -8,8 +8,8 @@
 #include "mojo/public/shell/application.h"
 #include "mojo/public/shell/shell.mojom.h"
 #include "mojo/public/utility/run_loop.h"
-#include "mojo/shell/service_manager.h"
-#include "mojo/shell/test.mojom.h"
+#include "mojo/service_manager/service_manager.h"
+#include "mojo/service_manager/test.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
