@@ -80,16 +80,21 @@ def CopyDriverForTargetLib(host):
 
 
 def BiasedBitcodeTargetFlag(arch):
-  flagmap = {'x86-64': 'x86_64-nacl',
-             'x86-32': 'i686-nacl',
-             'arm': 'armv7-nacl'}
-  return '--target=%s' % flagmap[arch]
+  flagmap = {
+      # Arch     Target                           Extra flags.
+      'x86-64': ('x86_64-unknown-nacl',           []),
+      'x86-32': ('i686-unknown-nacl',             []),
+      'arm':    ('armv7-unknown-nacl-gnueabihf',  ['-mfloat-abi=hard']),
+      # MIPS doesn't use biased bitcode:
+      'mips32': ('le32-unknown-nacl',             []),
+  }
+  return ['--target=%s' % flagmap[arch][0]] + flagmap[arch][1]
 
 
 def TargetBCLibCflags(bias_arch):
   flags = '-g -O2 -mllvm -inline-threshold=5'
   if bias_arch != 'portable':
-    flags += ' ' + BiasedBitcodeTargetFlag(bias_arch)
+    flags += ' ' + ' '.join(BiasedBitcodeTargetFlag(bias_arch))
   return flags
 
 def NewlibIsystemCflags(bias_arch):
@@ -113,7 +118,7 @@ def LibStdcxxCflags(bias_arch):
 def BuildTargetBitcodeCmd(source, output, bias_arch):
   flags = ['-Wall', '-Werror', '-O2', '-c']
   if bias_arch != 'portable':
-    flags.append(BiasedBitcodeTargetFlag(bias_arch))
+    [flags.append(flag) for flag in BiasedBitcodeTargetFlag(bias_arch)]
   sysinclude = Mangle('newlib', bias_arch)
   return command.Command(
     [PnaclTool('clang', msys=False)] + flags + [
@@ -379,7 +384,7 @@ def BitcodeLibs(host, bias_arch):
                   'CPPFLAGS=' + NewlibIsystemCflags(bias_arch),
                   'CFLAGS_FOR_TARGET=' + LibStdcxxCflags(bias_arch),
                   'CXXFLAGS_FOR_TARGET=' + LibStdcxxCflags(bias_arch),
-                  '--host=arm-none-linux-gnueabi',
+                  '--host=armv7-none-linux-gnueabi',
                   '--prefix=',
                   '--enable-cxx-flags=-D__SIZE_MAX__=4294967295',
                   '--disable-multilib',

@@ -91,7 +91,7 @@ EXTRA_ENV = {
                  '-l:libgcc.a -l:libcrt_platform.a ',
 
   'TRIPLE'      : '${TRIPLE_%ARCH%}',
-  'TRIPLE_ARM'  : 'armv7a-none-nacl-gnueabi',
+  'TRIPLE_ARM'  : 'armv7a-none-nacl-gnueabihf',
   'TRIPLE_X8632': 'i686-none-nacl-gnu',
   'TRIPLE_X8664': 'x86_64-none-nacl-gnu',
   'TRIPLE_MIPS32': 'mipsel-none-nacl-gnu',

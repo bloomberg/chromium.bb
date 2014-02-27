@@ -87,8 +87,10 @@ define i32 @main() {
         expected_triple_cpu = ['-mtriple=i686.*', '-mcpu=pentium.*']
       elif self.platform == 'x86-64':
         expected_triple_cpu = ['-mtriple=x86_64.*', '-mcpu=core.*']
+      elif self.platform == 'mips':
+        expected_triple_cpu = ['-mtriple=mips.*', '-mcpu=mips32.*']
       else:
-        raise Exception('Unknown platform')
+        raise Exception('Unknown platform: "%s"' % self.platform)
       # Test that certain defaults are set, when no flags are given.
       self.checkLLCTranslateFlags(
           pexe,
@@ -168,8 +170,10 @@ define i32 @main() {
         mcpu_pattern = '-mcpu=atom'
       elif self.platform == 'x86-64':
         mcpu_pattern = '-mcpu=corei7'
+      elif self.platform == 'mips':
+        mcpu_pattern = '-mcpu=mips32'
       else:
-        raise Exception('Unknown platform')
+        raise Exception('Unknown platform: "%s"' % self.platform)
       # Test that you get the -mcpu that you ask for.
       self.checkLLCTranslateFlags(
           pexe,
@@ -189,8 +193,10 @@ define i32 @main() {
         mattr_flags, mattr_pat = '-mattr=+hwdiv', r'-mattr=\+hwdiv'
       elif self.platform == 'x86-32' or self.platform == 'x86-64':
         mattr_flags, mattr_pat = '-mattr=+avx2,+sse41', r'-mattr=\+avx2,\+sse41'
+      elif self.platform == 'mips':
+        mattr_flags, mattr_pat = '-mattr=+fp64', r'-mattr=\+fp64'
       else:
-        raise Exception('Unknown platform')
+        raise Exception('Unknown platform: "%s"' % self.platform)
       # Test that you get the -mattr=.* that you ask for.
       self.checkLLCTranslateFlags(
           pexe,

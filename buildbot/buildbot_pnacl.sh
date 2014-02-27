@@ -38,7 +38,7 @@ readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
 readonly PNACL_BUILD="pnacl/build.sh"
 readonly LLVM_TEST="pnacl/scripts/llvm-test.py"
 readonly DRIVER_TESTS="pnacl/driver/tests/driver_tests.py"
-readonly ACCEPTABLE_TOOLCHAIN_SIZE_MB=56
+readonly ACCEPTABLE_TOOLCHAIN_SIZE_MB=80
 
 setup-goma() {
   echo "@@@BUILD_STEP goma_setup@@@"

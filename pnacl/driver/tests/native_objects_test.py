@@ -45,21 +45,18 @@ class TestNativeDriverOptions(driver_test_utils.DriverTesterCommon):
       self.assertEqual(self.getBitcodeArch(obj.name), 'le32')
 
       # Test that the --target flag produces biased bitcode objects
-      driver_tools.RunDriver('clang',
-          [s.name, '--target=x86_64-unknown-nacl', '-c', '-o', obj.name])
-      self.assertTrue(filetype.IsLLVMBitcode(obj.name))
-      self.assertEqual(self.getBitcodeArch(obj.name), 'X8664')
-
-      driver_tools.RunDriver('clang',
-          [s.name, '--target=i686-unknown-nacl', '-c', '-o', obj.name])
-      self.assertTrue(filetype.IsLLVMBitcode(obj.name))
-      self.assertEqual(self.getBitcodeArch(obj.name), 'X8632')
-
-      driver_tools.RunDriver('clang',
-          [s.name, '--target=armv7a-unknown-nacl-gnueabi', '-mfloat-abi=hard',
-           '-c', '-o', obj.name])
-      self.assertTrue(filetype.IsLLVMBitcode(obj.name))
-      self.assertEqual(self.getBitcodeArch(obj.name), 'ARM')
+      test_args = [
+          ('armv7',  'ARM',    '-gnueabihf', ['-mfloat-abi=hard']),
+          ('i686',   'X8632',  '',           []),
+          ('x86_64', 'X8664',  '',           []),
+          ('mips',   'MIPS32', '',           []),
+      ]
+      for (target, arch, target_extra, cmd_extra) in test_args:
+        target_arg = '--target=%s-unknown-nacl%s' % (target, target_extra)
+        driver_tools.RunDriver('clang',
+          [s.name, target_arg, '-c', '-o', obj.name] + cmd_extra)
+        self.assertTrue(filetype.IsLLVMBitcode(obj.name))
+        self.assertEqual(self.getBitcodeArch(obj.name), arch)
 
   def test_compile_native_objects(self):
     s = self.getFakeSourceFile()
@@ -80,7 +77,8 @@ class TestNativeDriverOptions(driver_test_utils.DriverTesterCommon):
       self.assertEqual(elftools.GetELFHeader(obj.name).arch, 'X8632')
 
       driver_tools.RunDriver('clang',
-          [s.name, '-c', '-o', obj.name, '--target=armv7-unknown-nacl-gnueabi',
+          [s.name, '-c', '-o', obj.name,
+           '--target=armv7-unknown-nacl-gnueabihf', '-mfloat-abi=hard',
            '-arch', 'arm', '--pnacl-allow-translate'])
       self.assertTrue(filetype.IsNativeObject(obj.name))
       self.assertEqual(elftools.GetELFHeader(obj.name).arch, 'ARM')

@@ -82,7 +82,9 @@ MINGW_PATH = os.path.join(NACL_DIR, 'mingw32')
 MINGW_VERSION = 'i686-w64-mingw32-4.8.1'
 
 ALL_ARCHES = ('x86-32', 'x86-64', 'arm', 'mips32')
-BITCODE_BIASES = ('portable', 'x86-64')
+BITCODE_BIASES = tuple(bias for bias in ('portable', ) + ALL_ARCHES
+                       # MIPS32 doesn't use biased bitcode.
+                       if bias != 'mips32')
 
 MAKE_DESTDIR_CMD = ['make', 'DESTDIR=%(abs_output)s']
 

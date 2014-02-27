@@ -105,7 +105,7 @@ def GetPlatformToTest():
   for arg in sys.argv:
     if arg.startswith('--platform='):
       return arg.split('=')[1]
-  raise Exception('Unknown platform')
+  raise Exception('Unknown platform: "%s"' % arg)
 
 # We would like to be able to use a temp file whether it is open or closed.
 # However File's __enter__ method requires it to be open. So we override it

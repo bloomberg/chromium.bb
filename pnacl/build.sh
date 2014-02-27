@@ -228,29 +228,45 @@ fi
 
 # Set up some environment variables to build flavored bitcode libs
 setup-biased-bitcode-env() {
- local arch=$1
+  local arch=$1
+  # Do this to avoid .S files in newlib that clang doesn't like
+  NEWLIB_TARGET="${REAL_CROSS_TARGET}"
+  TC_BUILD_NEWLIB="${TC_BUILD}/newlib-${arch}"
+  LIB_CPP_BUILD="${TC_BUILD}/c++-stdlib-newlib-${arch}"
   case ${arch} in
     portable)
       BIASED_BC_CFLAGS=""
       NEWLIB_INSTALL_DIR="${INSTALL_ROOT}/usr"
-      NEWLIB_TARGET=${REAL_CROSS_TARGET}
-      TC_BUILD_NEWLIB="${TC_BUILD}/newlib-portable"
       INSTALL_LIB="${INSTALL_ROOT}/lib"
-      LIB_CPP_BUILD="${TC_BUILD}/c++-stdlib-newlib-portable"
       LIB_CPP_INSTALL_DIR="${INSTALL_ROOT}/usr"
+      ;;
+    arm)
+      BIASED_BC_CFLAGS="--target=armv7-unknown-nacl-gnueabihf -mfloat-abi=hard"
+      NEWLIB_INSTALL_DIR="${INSTALL_ROOT}/usr-bc-${arch}"
+      INSTALL_LIB="${INSTALL_ROOT}/lib-bc-${arch}"
+      LIB_CPP_INSTALL_DIR="${INSTALL_ROOT}/usr-bc-${arch}"
+      ;;
+    x86-32)
+      BIASED_BC_CFLAGS="--target=i686-nacl"
+      NEWLIB_INSTALL_DIR="${INSTALL_ROOT}/usr-bc-${arch}"
+      INSTALL_LIB="${INSTALL_ROOT}/lib-bc-${arch}"
+      LIB_CPP_INSTALL_DIR="${INSTALL_ROOT}/usr-bc-${arch}"
       ;;
     x86-64)
       BIASED_BC_CFLAGS="--target=x86_64-nacl"
       NEWLIB_INSTALL_DIR="${INSTALL_ROOT}/usr-bc-${arch}"
-      # Do this to avoid .S files in newlib that clang doesn't like
-      NEWLIB_TARGET="${REAL_CROSS_TARGET}"
-      TC_BUILD_NEWLIB="${TC_BUILD}/newlib-${arch}"
       INSTALL_LIB="${INSTALL_ROOT}/lib-bc-${arch}"
-      LIB_CPP_BUILD="${TC_BUILD}/c++-stdlib-newlib-${arch}"
+      LIB_CPP_INSTALL_DIR="${INSTALL_ROOT}/usr-bc-${arch}"
+      ;;
+    mips32)
+      # MIPS doesn't use biased bitcode.
+      BIASED_BC_CFLAGS=""
+      NEWLIB_INSTALL_DIR="${INSTALL_ROOT}/usr-bc-${arch}"
+      INSTALL_LIB="${INSTALL_ROOT}/lib-bc-${arch}"
       LIB_CPP_INSTALL_DIR="${INSTALL_ROOT}/usr-bc-${arch}"
       ;;
     *)
-      echo "Newlib architectures other than portable and x86-64 not implemented yet"
+      echo "Newlib architecture not implemented yet"
       exit 1
   esac
 }
@@ -431,18 +447,21 @@ download-toolchains() {
 #@ libs                  - install native libs and build bitcode libs
 libs() {
   libs-clean
-  newlib portable
-  newlib x86-64
+  # MIPS32 doesn't use biased bitcode.
+  for arch in portable arm x86-32 x86-64; do
+    newlib ${arch}
+  done
   libs-support
   for arch in arm x86-32 x86-64 mips32; do
     dummy-irt-shim ${arch}
   done
   compiler-rt-all
   libgcc_eh-all
-  lib-cpp ${LIB_CXX_NAME} portable
-  lib-cpp ${LIB_CXX_NAME} x86-64
-  lib-cpp ${LIB_STDCPP_NAME} portable
-  lib-cpp ${LIB_STDCPP_NAME} x86-64
+  # MIPS32 doesn't use biased bitcode.
+  for arch in portable arm x86-32 x86-64; do
+    lib-cpp ${LIB_CXX_NAME} ${arch}
+    lib-cpp ${LIB_STDCPP_NAME} ${arch}
+  done
 }
 
 #@ everything            - Build and install untrusted SDK. no translator
