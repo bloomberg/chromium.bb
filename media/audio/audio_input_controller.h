@@ -207,11 +207,9 @@ class MEDIA_EXPORT AudioInputController
 
   // Internal state of the source.
   enum State {
-    kEmpty,
-    kCreated,
-    kRecording,
-    kClosed,
-    kError
+    CREATED,
+    RECORDING,
+    CLOSED
   };
 
   AudioInputController(EventHandler* handler,
