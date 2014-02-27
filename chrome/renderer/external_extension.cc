@@ -96,7 +96,7 @@ RenderView* ExternalExtensionWrapper::GetRenderView() {
 // static
 void ExternalExtensionWrapper::AddSearchProvider(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  if (!args.Length()) return;
+  if (!args.Length() || !args[0]->IsString()) return;
 
   std::string name(*v8::String::Utf8Value(args[0]));
   if (name.empty()) return;
@@ -115,7 +115,7 @@ void ExternalExtensionWrapper::AddSearchProvider(
 // static
 void ExternalExtensionWrapper::IsSearchProviderInstalled(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  if (!args.Length()) return;
+  if (!args.Length() || !args[0]->IsString()) return;
   v8::String::Utf8Value utf8name(args[0]);
   if (!utf8name.length()) return;
 
