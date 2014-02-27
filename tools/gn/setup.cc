@@ -294,9 +294,11 @@ bool Setup::FillSourceDir(const CommandLine& cmdline) {
 }
 
 bool Setup::FillBuildDir(const std::string& build_dir) {
+  std::string normalized_build_dir = PathToSystem(build_dir);
+
   SourceDir resolved =
       SourceDirForCurrentDirectory(build_settings_.root_path()).
-          ResolveRelativeDir(build_dir);
+          ResolveRelativeDir(normalized_build_dir);
   if (resolved.is_null()) {
     Err(Location(), "Couldn't resolve build directory.",
         "The build directory supplied (\"" + build_dir + "\") was not valid.").

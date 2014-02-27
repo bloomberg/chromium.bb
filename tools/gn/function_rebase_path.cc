@@ -17,49 +17,30 @@ namespace functions {
 namespace {
 
 enum SeparatorConversion {
-  SEP_NO_CHANGE,  // Don't change.
+  SEP_TO_SLASH,  // All slashes to forward.
   SEP_TO_SYSTEM,  // Slashes to system ones.
-  SEP_FROM_SYSTEM  // System ones to slashes.
 };
 
 // Does the specified path separator conversion in-place.
 void ConvertSlashes(std::string* str, SeparatorConversion mode) {
 #if defined(OS_WIN)
-  switch (mode) {
-    case SEP_NO_CHANGE:
-      break;
-    case SEP_TO_SYSTEM:
-      for (size_t i = 0; i < str->size(); i++) {
-        if ((*str)[i] == '/')
-          (*str)[i] = '\\';
-      }
-      break;
-    case SEP_FROM_SYSTEM:
-      for (size_t i = 0; i < str->size(); i++) {
-        if ((*str)[i] == '\\')
-          (*str)[i] = '/';
-      }
-      break;
-  }
-#else
-  DCHECK(str->find('\\') == std::string::npos)
-      << "Filename contains a backslash on a non-Windows platform.";
+  if (mode == SEP_TO_SYSTEM)
+    std::replace(str->begin(), str->end(), '/', '\\');
+  else
 #endif
-}
-
-bool EndsInSlash(const std::string& s) {
-  return !s.empty() && (s[s.size() - 1] == '/' || s[s.size() - 1] == '\\');
+  if (mode == SEP_TO_SLASH)
+    std::replace(str->begin(), str->end(), '\\', '/');
 }
 
 // We want the output to match the input in terms of ending in a slash or not.
 // Through all the transformations, these can get added or removed in various
 // cases.
 void MakeSlashEndingMatchInput(const std::string& input, std::string* output) {
-  if (EndsInSlash(input)) {
-    if (!EndsInSlash(*output))  // Preserve same slash type as input.
+  if (EndsWithSlash(input)) {
+    if (!EndsWithSlash(*output))  // Preserve same slash type as input.
       output->push_back(input[input.size() - 1]);
   } else {
-    if (EndsInSlash(*output))
+    if (EndsWithSlash(*output))
       output->resize(output->size() - 1);
   }
 }
@@ -79,8 +60,7 @@ bool ValueLooksLikeDir(const std::string& value) {
   if (num_dots == value.size())
     return true;  // String is all dots.
 
-  if (value[value_size - num_dots - 1] == '/' ||
-      value[value_size - num_dots - 1] == '\\')
+  if (IsSlash(value[value_size - num_dots - 1]))
     return true;  // String is a [back]slash followed by 0 or more dots.
 
   // Anything else.
@@ -152,7 +132,7 @@ const char kRebasePath_Help[] =
     "  converted = rebase_path(input,\n"
     "                          new_base = \"\",\n"
     "                          current_base = \".\",\n"
-    "                          path_separators = \"none\")\n"
+    "                          path_separators = \"to_slash\")\n"
     "\n"
     "  Takes a string argument representing a file name, or a list of such\n"
     "  strings and converts it/them to be relative to a different base\n"
@@ -197,12 +177,10 @@ const char kRebasePath_Help[] =
     "      On Windows systems, indicates whether and how path separators\n"
     "      should be converted as part of the transformation. It can be one\n"
     "      of the following strings:\n"
-    "       - \"none\" Perform no changes on path separators. This is the\n"
-    "         default if this argument is unspecified.\n"
+    "       - \"to_slash\" Normalize all types of slashes to forward slashes.\n"
+    "         This is the default if this argument is unspecified.\n"
     "       - \"to_system\" Convert to the system path separators\n"
     "         (backslashes on Windows).\n"
-    "       - \"from_system\" Convert system path separators to forward\n"
-    "         slashes.\n"
     "\n"
     "      On Posix systems there are no path separator transformations\n"
     "      applied. If the new_base is empty (specifying absolute output)\n"
@@ -295,7 +273,7 @@ Value RunRebasePath(Scope* scope,
   }
 
   // Path conversion.
-  SeparatorConversion sep_conversion = SEP_NO_CHANGE;
+  SeparatorConversion sep_conversion = SEP_TO_SLASH;
   if (args.size() > kArgIndexPathConversion) {
     if (convert_to_system_absolute) {
       *err = Err(function, "Can't specify slash conversion.",
@@ -309,14 +287,14 @@ Value RunRebasePath(Scope* scope,
       return result;
     const std::string& sep_string =
         args[kArgIndexPathConversion].string_value();
-    if (sep_string == "to_system") {
+    if (sep_string == "to_slash") {
+      sep_conversion = SEP_TO_SLASH;
+    } else if (sep_string == "to_system") {
       sep_conversion = SEP_TO_SYSTEM;
-    } else if (sep_string == "from_system") {
-      sep_conversion = SEP_FROM_SYSTEM;
-    } else if (sep_string != "none") {
+    } else {
       *err = Err(args[kArgIndexPathConversion],
           "Invalid path separator conversion mode.",
-          "I was expecting \"none\",  \"to_system\", or \"from_system\" and\n"
+          "I was expecting \"to_slash\" or \"to_system\" and\n"
           "you gave me \"" + args[kArgIndexPathConversion].string_value() +
           "\".");
       return result;

@@ -130,6 +130,7 @@ TEST(FilesystemUtils, InvertDir) {
   EXPECT_TRUE(InvertDir(SourceDir("//")) == "");
 
   EXPECT_TRUE(InvertDir(SourceDir("//foo/bar")) == "../../");
+  EXPECT_TRUE(InvertDir(SourceDir("//foo\\bar")) == "../../");
   EXPECT_TRUE(InvertDir(SourceDir("/foo/bar/")) == "../../");
 }
 
@@ -171,7 +172,7 @@ TEST(FilesystemUtils, NormalizePath) {
   NormalizePath(&input);
   EXPECT_EQ("/foo", input);
 
-  input = "//../foo";  // Don't go aboe the root dir.
+  input = "//../foo";  // Don't go above the root dir.
   NormalizePath(&input);
   EXPECT_EQ("//foo", input);
 
@@ -194,6 +195,11 @@ TEST(FilesystemUtils, NormalizePath) {
   input = "../";
   NormalizePath(&input);
   EXPECT_EQ("../", input);
+
+  // Backslash normalization.
+  input = "foo\\..\\..\\bar";
+  NormalizePath(&input);
+  EXPECT_EQ("../bar", input);
 }
 
 TEST(FilesystemUtils, RebaseSourceAbsolutePath) {

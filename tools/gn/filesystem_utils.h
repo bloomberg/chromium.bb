@@ -76,6 +76,13 @@ base::StringPiece FindFilenameNoExtension(const std::string* path);
 // preserved.
 void RemoveFilename(std::string* path);
 
+// Returns if the given character is a slash. This allows both slashes and
+// backslashes for consistency between Posix and Windows (as opposed to
+// FilePath::IsSeparator which is based on the current platform).
+inline bool IsSlash(const char ch) {
+  return ch == '/' || ch == '\\';
+}
+
 // Returns true if the given path ends with a slash.
 bool EndsWithSlash(const std::string& s);
 

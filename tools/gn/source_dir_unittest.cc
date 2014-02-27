@@ -31,7 +31,7 @@ TEST(SourceDir, ResolveRelativeFile) {
   // This could potentially be changed in the future which would mean we should
   // just change the expected result.
   EXPECT_TRUE(base.ResolveRelativeFile("C:\\foo\\bar.txt") ==
-              SourceFile("/C:\\foo\\bar.txt"));
+              SourceFile("/C:/foo/bar.txt"));
 #endif
 }
 
@@ -55,6 +55,6 @@ TEST(SourceDir, ResolveRelativeDir) {
   // Note that we don't canonicalize the existing backslashes to forward
   // slashes. This could potentially be changed in the future which would mean
   // we should just change the expected result.
-  EXPECT_TRUE(base.ResolveRelativeDir("C:\\foo") == SourceDir("/C:\\foo/"));
+  EXPECT_TRUE(base.ResolveRelativeDir("C:\\foo") == SourceDir("/C:/foo/"));
 #endif
 }

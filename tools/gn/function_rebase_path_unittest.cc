@@ -60,18 +60,11 @@ TEST(RebasePath, Strings) {
   EXPECT_EQ("../foo", RebaseOne(scope, "//foo", "//foo", "//"));
 
   // Test slash conversion.
+  EXPECT_EQ("foo/bar", RebaseOne(scope, "foo/bar", ".", ".", "to_slash"));
+  EXPECT_EQ("foo/bar", RebaseOne(scope, "foo\\bar", ".", ".", "to_slash"));
 #if defined(OS_WIN)
-  EXPECT_EQ("foo/bar", RebaseOne(scope, "foo/bar", ".", ".", "none"));
   EXPECT_EQ("foo\\bar", RebaseOne(scope, "foo/bar", ".", ".", "to_system"));
-  EXPECT_EQ("foo/bar", RebaseOne(scope, "foo/bar", ".", ".", "from_system"));
-
-  EXPECT_EQ("foo\\bar", RebaseOne(scope, "foo\\bar", ".", ".", "none"));
   EXPECT_EQ("foo\\bar", RebaseOne(scope, "foo\\bar", ".", ".", "to_system"));
-  EXPECT_EQ("foo/bar", RebaseOne(scope, "foo\\bar", ".", ".", "from_system"));
-#else  // No transformations on Posix.
-  EXPECT_EQ("foo/bar", RebaseOne(scope, "foo/bar", ".", ".", "none"));
-  EXPECT_EQ("foo/bar", RebaseOne(scope, "foo/bar", ".", ".", "to_system"));
-  EXPECT_EQ("foo/bar", RebaseOne(scope, "foo/bar", ".", ".", "from_system"));
 #endif
 
   // Test system path output.
