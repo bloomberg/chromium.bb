@@ -18,7 +18,7 @@ using testing::Return;
 namespace {
 
 // Test gnubby request data.
-const char request_data[] = {
+const unsigned char request_data[] = {
     0x00, 0x00, 0x00, 0x9a, 0x65, 0x1e, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00,
     0x00, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x60, 0x90,
     0x24, 0x71, 0xf8, 0xf2, 0xe5, 0xdf, 0x7f, 0x81, 0xc7, 0x49, 0xc4, 0xa3,
@@ -109,7 +109,8 @@ TEST_F(GnubbyAuthHandlerPosixTest, DidRead) {
   net::StreamListenSocket* socket = new MockStreamListenSocket(delegate_);
 
   delegate_->DidAccept(NULL, make_scoped_ptr(socket));
-  delegate_->DidRead(socket, request_data, sizeof(request_data));
+  delegate_->DidRead(socket, reinterpret_cast<const char*>(request_data),
+                     sizeof(request_data));
 }
 
 TEST_F(GnubbyAuthHandlerPosixTest, DidReadByteByByte) {
@@ -119,7 +120,8 @@ TEST_F(GnubbyAuthHandlerPosixTest, DidReadByteByByte) {
 
   delegate_->DidAccept(NULL, make_scoped_ptr(socket));
   for (unsigned int i = 0; i < sizeof(request_data); ++i) {
-    delegate_->DidRead(socket, request_data + i, 1);
+    delegate_->DidRead(socket,
+                       reinterpret_cast<const char *>(request_data + i), 1);
   }
 }
 

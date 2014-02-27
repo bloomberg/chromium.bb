@@ -314,7 +314,8 @@ uint8 MakeState(const StringSet& set,
   DCHECK_LT(0, range.from());
   DCHECK_LT(range.to(), 0xFF);
   const StateRange new_state_initializer[] = {
-      {0, 1}, {range.from(), target_state}, {range.to() + 1, 1}};
+      {0, 1}, {range.from(), target_state},
+      {static_cast<uint8>(range.to() + 1), 1}};
   states->push_back(
       State(new_state_initializer,
             new_state_initializer + arraysize(new_state_initializer)));
@@ -342,12 +343,12 @@ std::vector<State> GenerateStates(const PairVector& pairs) {
       DCHECK_EQ(1, states[0].back().target_state);
       states[0].back().target_state = target_state;
       DCHECK_LT(range.to(), 0xFF);
-      const StateRange new_range = {range.to() + 1, 1};
+      const StateRange new_range = {static_cast<uint8>(range.to() + 1), 1};
       states[0].push_back(new_range);
     } else {
       DCHECK_LT(range.to(), 0xFF);
       const StateRange new_range_initializer[] = {{range.from(), target_state},
-                                                  {range.to() + 1, 1}};
+           {static_cast<uint8>(range.to() + 1), 1}};
       states[0]
           .insert(states[0].end(),
                   new_range_initializer,
