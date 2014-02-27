@@ -9,8 +9,8 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "mojo/public/shell/shell.mojom.h"
 #include "mojo/public/system/core_cpp.h"
-#include "mojom/shell.h"
 #include "url/gurl.h"
 
 namespace mojo {

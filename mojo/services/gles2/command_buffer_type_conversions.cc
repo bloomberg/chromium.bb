@@ -6,7 +6,7 @@
 
 #include <string.h>
 
-#include "mojom/command_buffer.h"
+#include "mojo/services/gles2/command_buffer.mojom.h"
 
 namespace mojo {
 

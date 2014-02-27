@@ -294,10 +294,10 @@
       'type': 'static_library',
       'sources': [
         'public/shell/lib/application.cc',
-        'public/shell/lib/shell.mojom',
         'public/shell/lib/service.cc',
         'public/shell/application.h',
         'public/shell/service.h',
+        'public/shell/shell.mojom',
       ],
       'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [

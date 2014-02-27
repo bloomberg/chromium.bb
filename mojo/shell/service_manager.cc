@@ -8,7 +8,6 @@
 #include "mojo/public/bindings/allocation_scope.h"
 #include "mojo/public/bindings/error_handler.h"
 #include "mojo/public/bindings/remote_ptr.h"
-#include "mojom/shell.h"
 
 namespace mojo {
 namespace shell {

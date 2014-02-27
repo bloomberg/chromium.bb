@@ -44,6 +44,7 @@ def LoadGenerators(generators_string):
     generators.append(generator_module)
   return generators
 
+
 def ProcessFile(args, generator_modules, filename, processed_files):
   # Ensure we only visit each file once.
   if filename in processed_files:
@@ -53,7 +54,6 @@ def ProcessFile(args, generator_modules, filename, processed_files):
   processed_files[filename] = None
 
   dirname, name = os.path.split(filename)
-  name = os.path.splitext(name)[0]
   # TODO(darin): There's clearly too many layers of translation here!  We can
   # at least avoid generating the serialized Mojom IR.
   tree = mojo_parser.Parse(filename)
@@ -69,21 +69,29 @@ def ProcessFile(args, generator_modules, filename, processed_files):
         args, generator_modules, import_filename, processed_files)
 
   module = mojom_data.OrderedModuleFromData(mojom)
+
+  # Set the path as relative to the source root.
+  module.path = os.path.relpath(os.path.abspath(filename),
+                                os.path.abspath(args.depth))
+
+  # Normalize to unix-style path here to keep the generators simpler.
+  module.path = module.path.replace('\\', '/')
+
   for generator_module in generator_modules:
-    generator = generator_module.Generator(module, args.include_dir,
-                                           args.output_dir)
+    generator = generator_module.Generator(module, args.output_dir)
     generator.GenerateFiles()
 
   processed_files[filename] = module
   return module
+
 
 def Main():
   parser = argparse.ArgumentParser(
       description="Generate bindings from mojom files.")
   parser.add_argument("filename", nargs="+",
                       help="mojom input file")
-  parser.add_argument("-i", "--include_dir", dest="include_dir", default=".",
-                      help="include path for #includes")
+  parser.add_argument("-d", "--depth", dest="depth", default=".",
+                      help="depth from source root")
   parser.add_argument("-o", "--output_dir", dest="output_dir", default=".",
                       help="output directory for generated files")
   parser.add_argument("-g", "--generators", dest="generators_string",

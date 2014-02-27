@@ -6,10 +6,10 @@
 #include "mojo/public/bindings/remote_ptr.h"
 #include "mojo/public/environment/environment.h"
 #include "mojo/public/shell/application.h"
+#include "mojo/public/shell/shell.mojom.h"
 #include "mojo/public/utility/run_loop.h"
 #include "mojo/shell/service_manager.h"
-#include "mojom/shell.h"
-#include "mojom/test.h"
+#include "mojo/shell/test.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {

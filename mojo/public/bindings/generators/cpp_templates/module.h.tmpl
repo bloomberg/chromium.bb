@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-{%- set header_guard = "MOJO_GENERATED_BINDINGS_%s_%s_H_"|
-        format(module_name|upper, module_name|upper) %}
+{%- set header_guard = "%s_H_"|
+        format(module_path|upper|replace("/","_")|replace(".","_")) %}
 
 #ifndef {{header_guard}}
 #define {{header_guard}}
 
 #include "mojo/public/bindings/array.h"
 #include "mojo/public/bindings/interface.h"
-#include "{{include_prefix}}{{module_name|camel_to_underscores}}_internal.h"
+#include "{{include_prefix}}{{module_name|camel_to_underscores}}-internal.h"
 {%- for import in imports %}
 #include "{{include_prefix}}{{import.module_name|camel_to_underscores}}.h"
 {%- endfor %}

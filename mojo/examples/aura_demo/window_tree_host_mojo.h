@@ -7,7 +7,7 @@
 
 #include "base/bind.h"
 #include "mojo/public/bindings/remote_ptr.h"
-#include "mojom/native_viewport.h"
+#include "mojo/services/native_viewport/native_viewport.mojom.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_source.h"
 #include "ui/gfx/rect.h"

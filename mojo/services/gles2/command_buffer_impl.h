@@ -9,7 +9,7 @@
 #include "base/timer/timer.h"
 #include "mojo/public/bindings/remote_ptr.h"
 #include "mojo/public/system/core_cpp.h"
-#include "mojom/command_buffer.h"
+#include "mojo/services/gles2/command_buffer.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
 

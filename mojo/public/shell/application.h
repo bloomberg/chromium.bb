@@ -9,8 +9,8 @@
 
 #include "mojo/public/bindings/remote_ptr.h"
 #include "mojo/public/shell/service.h"
+#include "mojo/public/shell/shell.mojom.h"
 #include "mojo/public/system/core_cpp.h"
-#include "mojom/shell.h"
 
 namespace mojo {
 

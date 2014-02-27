@@ -5,7 +5,7 @@
 #ifndef MOJO_SERVICES_NATIVE_VIEWPORT_GEOMETRY_CONVERSIONS_H_
 #define MOJO_SERVICES_NATIVE_VIEWPORT_GEOMETRY_CONVERSIONS_H_
 
-#include "mojom/native_viewport.h"
+#include "mojo/services/native_viewport/native_viewport.mojom.h"
 #include "ui/gfx/rect.h"
 
 namespace mojo {

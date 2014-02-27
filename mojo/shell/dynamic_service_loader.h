@@ -8,10 +8,10 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "mojo/public/shell/shell.mojom.h"
 #include "mojo/public/system/core_cpp.h"
 #include "mojo/shell/keep_alive.h"
 #include "mojo/shell/service_manager.h"
-#include "mojom/shell.h"
 #include "url/gurl.h"
 
 namespace mojo {

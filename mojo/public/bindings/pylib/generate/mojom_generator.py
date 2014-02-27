@@ -64,9 +64,9 @@ def ExpressionMapper(expression, mapper):
 class Generator(object):
   # Pass |output_dir| to emit files to disk. Omit |output_dir| to echo all
   # files to stdout.
-  def __init__(self, module, header_dir, output_dir=None):
+  def __init__(self, module, output_dir=None):
     self.module = module
-    self.header_dir = header_dir
+    self.header_dir = os.path.dirname(module.path);
     self.output_dir = output_dir
 
   def GetStructsFromMethods(self):

@@ -141,6 +141,7 @@ class Generator(mojom_generator.Generator):
     return {
       "module": self.module,
       "module_name": self.module.name,
+      "module_path": self.module.path,
       "namespace": self.module.namespace,
       "imports": self.module.imports,
       "kinds": self.module.kinds,
@@ -154,7 +155,7 @@ class Generator(mojom_generator.Generator):
   def GenerateModuleHeader(self):
     return self.GetJinjaExports()
 
-  @UseJinja("cpp_templates/module_internal.h.tmpl", filters=cpp_filters)
+  @UseJinja("cpp_templates/module-internal.h.tmpl", filters=cpp_filters)
   def GenerateModuleInternalHeader(self):
     return self.GetJinjaExports()
 
@@ -165,7 +166,7 @@ class Generator(mojom_generator.Generator):
   def GenerateFiles(self):
     self.Write(self.GenerateModuleHeader(), "%s.h" % self.module.name)
     self.Write(self.GenerateModuleInternalHeader(),
-        "%s_internal.h" % self.module.name)
+        "%s-internal.h" % self.module.name)
     self.Write(self.GenerateModuleSource(), "%s.cc" % self.module.name)
 
   def GetIncludePrefix(self):

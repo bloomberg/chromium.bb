@@ -166,6 +166,7 @@ class Enum(object):
 class Module(object):
   def __init__(self, name = None, namespace = None):
     self.name = name
+    self.path = name
     self.namespace = namespace
     self.structs = []
     self.interfaces = []

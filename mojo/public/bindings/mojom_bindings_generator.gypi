@@ -3,14 +3,13 @@
 # found in the LICENSE file.
 
 {
-  'variables': {
-    'output_dir': '<(SHARED_INTERMEDIATE_DIR)/mojom',
-  },
   'rules': [
     {
       'rule_name': 'Generate C++ source files from mojom files',
       'extension': 'mojom',
       'variables': {
+        'mojom_base_output_dir':
+            '<!(python <(DEPTH)/build/inverse_depth.py <(DEPTH))',
         'mojom_bindings_generator':
             '<(DEPTH)/mojo/public/bindings/mojom_bindings_generator.py',
       },
@@ -23,7 +22,7 @@
         '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/interface_stub_declaration.tmpl',
         '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/module.cc.tmpl',
         '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/module.h.tmpl',
-        '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/module_internal.h.tmpl',
+        '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/module-internal.h.tmpl',
         '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/params_definition.tmpl',
         '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/struct_builder_definition.tmpl',
         '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/struct_declaration.tmpl',
@@ -49,18 +48,18 @@
         '<(DEPTH)/mojo/public/bindings/pylib/generate/template_expander.py',
       ],
       'outputs': [
-        '<(output_dir)/<(RULE_INPUT_ROOT).cc',
-        '<(output_dir)/<(RULE_INPUT_ROOT).h',
-        '<(output_dir)/<(RULE_INPUT_ROOT).js',
-        '<(output_dir)/<(RULE_INPUT_ROOT)_internal.h',
+        '<(SHARED_INTERMEDIATE_DIR)/<(mojom_base_output_dir)/<(RULE_INPUT_PATH).cc',
+        '<(SHARED_INTERMEDIATE_DIR)/<(mojom_base_output_dir)/<(RULE_INPUT_PATH).h',
+        '<(SHARED_INTERMEDIATE_DIR)/<(mojom_base_output_dir)/<(RULE_INPUT_PATH).js',
+        '<(SHARED_INTERMEDIATE_DIR)/<(mojom_base_output_dir)/<(RULE_INPUT_PATH)-internal.h',
       ],
       'action': [
         'python', '<@(mojom_bindings_generator)',
         '<(RULE_INPUT_PATH)',
-        '-i', 'mojom',
-        '-o', '<(output_dir)',
+        '-d', '<(DEPTH)',
+        '-o', '<(SHARED_INTERMEDIATE_DIR)/<(mojom_base_output_dir)/<(RULE_INPUT_DIRNAME)',
       ],
-      'message': 'Generating C++ from mojom <(RULE_INPUT_PATH)',
+      'message': 'Generating C++ from <(RULE_INPUT_PATH)',
       'process_outputs_as_sources': 1,
     }
   ],

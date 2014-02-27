@@ -7,11 +7,11 @@
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "mojo/public/bindings/allocation_scope.h"
+#include "mojo/public/shell/shell.mojom.h"
 #include "mojo/services/gles2/command_buffer_impl.h"
 #include "mojo/services/native_viewport/geometry_conversions.h"
 #include "mojo/services/native_viewport/native_viewport.h"
-#include "mojom/native_viewport.h"
-#include "mojom/shell.h"
+#include "mojo/services/native_viewport/native_viewport.mojom.h"
 #include "ui/events/event.h"
 
 namespace mojo {

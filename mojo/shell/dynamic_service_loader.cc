@@ -12,7 +12,6 @@
 #include "mojo/shell/context.h"
 #include "mojo/shell/keep_alive.h"
 #include "mojo/shell/switches.h"
-#include "mojom/shell.h"
 
 typedef MojoResult (*MojoMainFunction)(MojoHandle pipe);
 
