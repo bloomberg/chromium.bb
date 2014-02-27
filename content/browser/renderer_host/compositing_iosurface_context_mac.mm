@@ -148,8 +148,9 @@ CompositingIOSurfaceContext::Get(int window_number) {
   if (!is_vsync_disabled) {
     display_link = DisplayLinkMac::Create();
     if (!display_link) {
+      // On some headless systems, the display link will fail to be created,
+      // so this should not be a fatal error.
       LOG(ERROR) << "Failed to create display link for GL context.";
-      return NULL;
     }
   }
 
