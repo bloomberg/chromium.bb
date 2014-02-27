@@ -493,6 +493,7 @@ crbug.com/248938 [ Linux Win ] virtual/threaded/transitions/transition-end-event
 crbug.com/344367 [ Debug ] virtual/threaded/animations/timing-model.html [ Pass Failure ]
 
 crbug.com/320477 [ Debug ] inspector/sources/debugger/debugger-pause-in-internal.html [ Pass Crash ]
+crbug.com/347484 [ Debug ] inspector/profiler/canvas2d/canvas-replay-log-grid.html [ Timeout ]
 
 # Not yet supported on Win/Mac. See bug for details.
 crbug.com/290411 [ Win Mac ] fast/text/sub-pixel/text-scaling-ltr.html [ Skip ]
