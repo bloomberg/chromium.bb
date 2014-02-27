@@ -10,6 +10,7 @@ import android.util.Pair;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.InterceptedRequestData;
 import org.chromium.android_webview.test.util.CommonResources;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -435,8 +436,12 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
         assertEquals(0, mWebServer.getRequestCount("/" + CommonResources.ABOUT_FILENAME));
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView"})
+    /*
+     @SmallTest
+     @Feature({"AndroidWebView"})
+     http://crbug.com/347599
+    */
+    @DisabledTest
     public void testCalledForImage() throws Throwable {
         final String imagePath = "/" + CommonResources.FAVICON_FILENAME;
         mWebServer.setResponseBase64(imagePath,
