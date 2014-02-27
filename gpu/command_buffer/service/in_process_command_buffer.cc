@@ -131,7 +131,7 @@ private:
   base::ConditionVariable cond_var_;
 };
 
-SyncPointManager::SyncPointManager() : next_sync_point_(0), cond_var_(&lock_) {}
+SyncPointManager::SyncPointManager() : next_sync_point_(1), cond_var_(&lock_) {}
 
 SyncPointManager::~SyncPointManager() {
   DCHECK_EQ(pending_sync_points_.size(), 0U);

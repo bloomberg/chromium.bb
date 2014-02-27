@@ -14,6 +14,7 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/output/gl_frame_data.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/compositor/owned_mailbox.h"
 #include "content/browser/compositor/resize_lock.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -835,13 +836,15 @@ TEST_F(RenderWidgetHostViewAuraTest, UpdateCursorIfOverSelf) {
 
 scoped_ptr<cc::CompositorFrame> MakeGLFrame(float scale_factor,
                                             gfx::Size size,
-                                            gfx::Rect damage) {
+                                            gfx::Rect damage,
+                                            OwnedMailbox* owned_mailbox) {
   scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
   frame->metadata.device_scale_factor = scale_factor;
   frame->gl_frame_data.reset(new cc::GLFrameData);
-  frame->gl_frame_data->sync_point = 1;
-  memset(frame->gl_frame_data->mailbox.name,
-         '1',
+  DCHECK(owned_mailbox->sync_point());
+  frame->gl_frame_data->sync_point = owned_mailbox->sync_point();
+  memcpy(frame->gl_frame_data->mailbox.name,
+         owned_mailbox->mailbox().name,
          sizeof(frame->gl_frame_data->mailbox.name));
   frame->gl_frame_data->size = size;
   frame->gl_frame_data->sub_buffer_rect = damage;
@@ -889,6 +892,11 @@ TEST_F(RenderWidgetHostViewAuraTest, FullscreenResize) {
   widget_host_->ResetSizeAndRepaintPendingFlags();
   sink_->ClearMessages();
 
+  GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
+  scoped_refptr<OwnedMailbox> owned_mailbox = new OwnedMailbox(gl_helper);
+  gl_helper->ResizeTexture(owned_mailbox->texture_id(), gfx::Size(1, 1));
+  owned_mailbox->UpdateSyncPoint(gl_helper->InsertSyncPoint());
+
   // Call WasResized to flush the old screen info.
   view_->GetRenderWidgetHost()->WasResized();
   {
@@ -902,8 +910,11 @@ TEST_F(RenderWidgetHostViewAuraTest, FullscreenResize) {
     EXPECT_EQ("800x600", params.a.new_size.ToString());
     // Resizes are blocked until we swapped a frame of the correct size, and
     // we've committed it.
-    view_->OnSwapCompositorFrame(
-        0, MakeGLFrame(1.f, params.a.new_size, gfx::Rect(params.a.new_size)));
+    view_->OnSwapCompositorFrame(0,
+                                 MakeGLFrame(1.f,
+                                             params.a.new_size,
+                                             gfx::Rect(params.a.new_size),
+                                             owned_mailbox.get()));
     ui::DrawWaiterForTest::WaitForCommit(
         root_window->GetDispatcher()->host()->compositor());
   }
@@ -923,19 +934,25 @@ TEST_F(RenderWidgetHostViewAuraTest, FullscreenResize) {
     EXPECT_EQ("0,0 1600x1200",
               gfx::Rect(params.a.screen_info.availableRect).ToString());
     EXPECT_EQ("1600x1200", params.a.new_size.ToString());
-    view_->OnSwapCompositorFrame(
-        0, MakeGLFrame(1.f, params.a.new_size, gfx::Rect(params.a.new_size)));
+    view_->OnSwapCompositorFrame(0,
+                                 MakeGLFrame(1.f,
+                                             params.a.new_size,
+                                             gfx::Rect(params.a.new_size),
+                                             owned_mailbox.get()));
     ui::DrawWaiterForTest::WaitForCommit(
         root_window->GetDispatcher()->host()->compositor());
   }
 }
 
 // Swapping a frame should notify the window.
-// http://crbug.com/347311 - Disabled due to memory leaks on Linux, as a
-// result of triggering some error condition.
-TEST_F(RenderWidgetHostViewAuraTest, DISABLED_SwapNotifiesWindow) {
+TEST_F(RenderWidgetHostViewAuraTest, SwapNotifiesWindow) {
   gfx::Size view_size(100, 100);
   gfx::Rect view_rect(view_size);
+
+  GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
+  scoped_refptr<OwnedMailbox> owned_mailbox = new OwnedMailbox(gl_helper);
+  gl_helper->ResizeTexture(owned_mailbox->texture_id(), gfx::Size(400, 400));
+  owned_mailbox->UpdateSyncPoint(gl_helper->InsertSyncPoint());
 
   view_->InitAsChild(NULL);
   aura::client::ParentWindowWithContext(
@@ -952,7 +969,9 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_SwapNotifiesWindow) {
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
   params.surface_id = widget_host_->surface_id();
   params.route_id = widget_host_->GetRoutingID();
-  memset(params.mailbox.name, '1', sizeof(params.mailbox.name));
+  memcpy(params.mailbox.name,
+         owned_mailbox->mailbox().name,
+         sizeof(params.mailbox.name));
   params.size = view_size;
   params.scale_factor = 1.f;
 
@@ -971,7 +990,9 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_SwapNotifiesWindow) {
   GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params post_params;
   post_params.surface_id = widget_host_->surface_id();
   post_params.route_id = widget_host_->GetRoutingID();
-  memset(post_params.mailbox.name, '1', sizeof(post_params.mailbox.name));
+  memcpy(post_params.mailbox.name,
+         owned_mailbox->mailbox().name,
+         sizeof(params.mailbox.name));
   post_params.surface_size = gfx::Size(200, 200);
   post_params.surface_scale_factor = 2.f;
   post_params.x = 40;
@@ -986,14 +1007,16 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_SwapNotifiesWindow) {
 
   // Composite-to-mailbox path
   EXPECT_CALL(observer, OnWindowPaintScheduled(view_->window_, view_rect));
-  view_->OnSwapCompositorFrame(0, MakeGLFrame(1.f, view_size, view_rect));
+  view_->OnSwapCompositorFrame(
+      0, MakeGLFrame(1.f, view_size, view_rect, owned_mailbox.get()));
   testing::Mock::VerifyAndClearExpectations(&observer);
 
   // rect from GL frame is upside down, and is inflated in RWHVA, just because.
   EXPECT_CALL(observer, OnWindowPaintScheduled(view_->window_,
                                                gfx::Rect(4, 89, 7, 7)));
   view_->OnSwapCompositorFrame(
-      0, MakeGLFrame(1.f, view_size, gfx::Rect(5, 5, 5, 5)));
+      0,
+      MakeGLFrame(1.f, view_size, gfx::Rect(5, 5, 5, 5), owned_mailbox.get()));
   testing::Mock::VerifyAndClearExpectations(&observer);
 
   // Software path

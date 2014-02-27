@@ -27,7 +27,15 @@ class FakeTexture : public ui::Texture {
 
   virtual void Consume(const gpu::Mailbox& mailbox,
                        const gfx::Size& new_size) OVERRIDE {
+    if (mailbox.IsZero())
+      return;
+
+    DCHECK(context_provider_ && texture_);
+    gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
+    gl->BindTexture(GL_TEXTURE_2D, texture_);
+    gl->ConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
     size_ = new_size;
+    gl->ShallowFlushCHROMIUM();
   }
 
  private:
