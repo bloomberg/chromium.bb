@@ -33,7 +33,7 @@
 #include "platform/fonts/Font.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/DashArray.h"
-#include "platform/graphics/DrawLooper.h"
+#include "platform/graphics/DrawLooperBuilder.h"
 #include "platform/graphics/ImageBufferSurface.h"
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/graphics/GraphicsContextAnnotation.h"
@@ -314,13 +314,14 @@ public:
 
     bool hasShadow() const;
     void setShadow(const FloatSize& offset, float blur, const Color&,
-        DrawLooper::ShadowTransformMode = DrawLooper::ShadowRespectsTransforms,
-        DrawLooper::ShadowAlphaMode = DrawLooper::ShadowRespectsAlpha);
+        DrawLooperBuilder::ShadowTransformMode = DrawLooperBuilder::ShadowRespectsTransforms,
+        DrawLooperBuilder::ShadowAlphaMode = DrawLooperBuilder::ShadowRespectsAlpha);
     void clearShadow() { clearDrawLooper(); }
 
     // It is assumed that this draw looper is used only for shadows
     // (i.e. a draw looper is set if and only if there is a shadow).
-    void setDrawLooper(const DrawLooper&);
+    // The builder passed into this method will be destroyed.
+    void setDrawLooper(PassOwnPtr<DrawLooperBuilder>);
     void clearDrawLooper();
 
     void drawFocusRing(const Vector<IntRect>&, int width, int offset, const Color&);

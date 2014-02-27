@@ -27,7 +27,7 @@
 #include "core/rendering/RootInlineBox.h"
 #include "core/rendering/style/ShadowList.h"
 #include "platform/fonts/Font.h"
-#include "platform/graphics/DrawLooper.h"
+#include "platform/graphics/DrawLooperBuilder.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/text/TextRun.h"
 
@@ -67,17 +67,17 @@ void EllipsisBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, La
     const ShadowList* shadowList = context->printing() ? 0 : style->textShadow();
     bool hasShadow = shadowList;
     if (hasShadow) {
-        DrawLooper drawLooper;
+        OwnPtr<DrawLooperBuilder> drawLooperBuilder = DrawLooperBuilder::create();
         for (size_t i = shadowList->shadows().size(); i--; ) {
             const ShadowData& shadow = shadowList->shadows()[i];
             float shadowX = isHorizontal() ? shadow.x() : shadow.y();
             float shadowY = isHorizontal() ? shadow.y() : -shadow.x();
             FloatSize offset(shadowX, shadowY);
-            drawLooper.addShadow(offset, shadow.blur(), shadow.color(),
-                DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowIgnoresAlpha);
+            drawLooperBuilder->addShadow(offset, shadow.blur(), shadow.color(),
+                DrawLooperBuilder::ShadowRespectsTransforms, DrawLooperBuilder::ShadowIgnoresAlpha);
         }
-        drawLooper.addUnmodifiedContent();
-        context->setDrawLooper(drawLooper);
+        drawLooperBuilder->addUnmodifiedContent();
+        context->setDrawLooper(drawLooperBuilder.release());
     }
 
     TextRun textRun = RenderBlockFlow::constructTextRun(renderer(), font, m_str, style, TextRun::AllowTrailingExpansion);

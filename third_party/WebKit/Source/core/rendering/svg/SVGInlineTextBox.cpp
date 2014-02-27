@@ -39,7 +39,7 @@
 #include "core/rendering/svg/SVGTextRunRenderingContext.h"
 #include "platform/FloatConversion.h"
 #include "platform/fonts/FontCache.h"
-#include "platform/graphics/DrawLooper.h"
+#include "platform/graphics/DrawLooperBuilder.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 
 using namespace std;
@@ -638,15 +638,15 @@ void SVGInlineTextBox::paintTextWithShadows(GraphicsContext* context, RenderStyl
     }
 
     if (hasShadow) {
-        DrawLooper drawLooper;
+        OwnPtr<DrawLooperBuilder> drawLooperBuilder = DrawLooperBuilder::create();
         for (size_t i = shadowList->shadows().size(); i--; ) {
             const ShadowData& shadow = shadowList->shadows()[i];
             FloatSize offset(shadow.x(), shadow.y());
-            drawLooper.addShadow(offset, shadow.blur(), shadow.color(),
-                DrawLooper::ShadowRespectsTransforms, DrawLooper::ShadowRespectsAlpha);
+            drawLooperBuilder->addShadow(offset, shadow.blur(), shadow.color(),
+                DrawLooperBuilder::ShadowRespectsTransforms, DrawLooperBuilder::ShadowRespectsAlpha);
         }
-        drawLooper.addUnmodifiedContent();
-        context->setDrawLooper(drawLooper);
+        drawLooperBuilder->addUnmodifiedContent();
+        context->setDrawLooper(drawLooperBuilder.release());
     }
 
     if (prepareGraphicsContextForTextPainting(context, scalingFactor, textRun, style)) {
