@@ -2592,8 +2592,7 @@ void FrameView::updateControlTints()
     if (m_frame->document()->url().isEmpty())
         return;
 
-    // FIXME: Why do we need this for hasCustomScrollbars?
-    // FIXME: supportsControlTints is currently true for a bunch of platforms.
+    // FIXME: We shouldn't rely on the paint code to implement :window-inactive on custom scrollbars.
     if (!RenderTheme::theme().supportsControlTints() && !hasCustomScrollbars())
         return;
 

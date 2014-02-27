@@ -41,8 +41,6 @@ public:
 
     virtual ScrollbarButtonsPlacement buttonsPlacement() const OVERRIDE { return ScrollbarTheme::theme()->buttonsPlacement(); }
 
-    virtual bool supportsControlTints() const OVERRIDE { return true; }
-
     virtual void paintScrollCorner(GraphicsContext*, const IntRect& cornerRect) OVERRIDE;
 
     virtual bool shouldCenterOnThumb(ScrollbarThemeClient* scrollbar, const PlatformMouseEvent& event) OVERRIDE { return ScrollbarTheme::theme()->shouldCenterOnThumb(scrollbar, event); }

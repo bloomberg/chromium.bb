@@ -93,9 +93,6 @@ protected:
     virtual bool shouldUseFallbackTheme(RenderStyle*) const OVERRIDE;
 
 private:
-    // A general method asking if any control tinting is supported at all.
-    virtual bool supportsControlTints() const OVERRIDE;
-
     static double m_caretBlinkInterval;
 
     static unsigned m_activeSelectionBackgroundColor;

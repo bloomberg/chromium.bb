@@ -220,11 +220,6 @@ void RenderThemeChromiumDefault::adjustSliderThumbSize(RenderStyle* style, Eleme
         RenderThemeChromiumSkia::adjustSliderThumbSize(style, element);
 }
 
-bool RenderThemeChromiumDefault::supportsControlTints() const
-{
-    return true;
-}
-
 void RenderThemeChromiumDefault::setCaretBlinkInterval(double interval)
 {
     m_caretBlinkInterval = interval;
