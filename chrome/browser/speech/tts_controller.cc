@@ -9,6 +9,7 @@
 
 #include "base/float_util.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api.h"
@@ -155,15 +156,34 @@ void TtsController::SpeakNow(Utterance* utterance) {
   GetVoices(utterance->profile(), &voices);
   int index = GetMatchingVoice(utterance, voices);
 
-  // Select the matching voice, but if none was found, initialize an
-  // empty VoiceData with native = true, which will give the native
-  // speech synthesizer a chance to try to synthesize the utterance
-  // anyway.
   VoiceData voice;
-  if (index >= 0 && index < static_cast<int>(voices.size()))
+  if (index != -1) {
+    // Select the matching voice.
     voice = voices[index];
-  else
-    voice.native = true;
+  } else {
+    // However, if no match was found on a platform without native tts voices,
+    // attempt to get a voice based only on the current locale without respect
+    // to any supplied voice names.
+    std::vector<VoiceData> native_voices;
+
+    if (GetPlatformImpl()->PlatformImplAvailable())
+      GetPlatformImpl()->GetVoices(&native_voices);
+
+    if (native_voices.empty() && !voices.empty()) {
+      // TODO(dtseng): Notify extension caller of an error.
+      utterance->set_voice_name("");
+      utterance->set_lang(g_browser_process->GetApplicationLocale());
+      index = GetMatchingVoice(utterance, voices);
+
+      // If even that fails, just take the first available voice.
+      if (index == -1)
+        index = 0;
+      voice = voices[index];
+    } else {
+      // Otherwise, simply give native voices a chance to handle this utterance.
+      voice.native = true;
+    }
+  }
 
   GetPlatformImpl()->WillSpeakUtteranceWithVoice(utterance, voice);
 

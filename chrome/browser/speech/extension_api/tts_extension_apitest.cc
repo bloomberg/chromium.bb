@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
@@ -25,10 +27,12 @@
 using ::testing::AnyNumber;
 using ::testing::CreateFunctor;
 using ::testing::DoAll;
+using ::testing::Invoke;
 using ::testing::InSequence;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 using ::testing::SaveArg;
+using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::_;
 
@@ -41,7 +45,8 @@ namespace extensions {
 class MockTtsPlatformImpl : public TtsPlatformImpl {
  public:
   MockTtsPlatformImpl()
-      : ptr_factory_(this) {}
+      : ptr_factory_(this),
+        should_fake_get_voices_(false) {}
 
   virtual bool PlatformImplAvailable() {
     return true;
@@ -62,7 +67,21 @@ class MockTtsPlatformImpl : public TtsPlatformImpl {
 
   MOCK_METHOD0(IsSpeaking, bool(void));
 
-  MOCK_METHOD1(GetVoices, void(std::vector<VoiceData>*));
+  // Fake this method to add a native voice.
+  void GetVoices(std::vector<VoiceData>* voices) {
+    if (!should_fake_get_voices_)
+      return;
+
+    VoiceData voice;
+    voice.name = "TestNativeVoice";
+    voice.native = true;
+    voice.lang = "en-GB";
+    voice.events.insert(TTS_EVENT_START);
+    voice.events.insert(TTS_EVENT_END);
+    voices->push_back(voice);
+  }
+
+  void set_should_fake_get_voices(bool val) { should_fake_get_voices_ = val; }
 
   void SetErrorToEpicFail() {
     set_error("epic fail");
@@ -144,6 +163,7 @@ class MockTtsPlatformImpl : public TtsPlatformImpl {
 
  private:
   base::WeakPtrFactory<MockTtsPlatformImpl> ptr_factory_;
+  bool should_fake_get_voices_;
 };
 
 class FakeNetworkOnlineStateForTest : public net::NetworkChangeNotifier {
@@ -167,8 +187,6 @@ class TtsApiTest : public ExtensionApiTest {
   virtual void SetUpInProcessBrowserTestFixture() {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
     TtsController::GetInstance()->SetPlatformImpl(&mock_platform_impl_);
-    EXPECT_CALL(mock_platform_impl_, GetVoices(_))
-        .Times(AnyNumber());
   }
 
  protected:
@@ -346,6 +364,8 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformPauseResume) {
 //
 
 IN_PROC_BROWSER_TEST_F(TtsApiTest, RegisterEngine) {
+  mock_platform_impl_.set_should_fake_get_voices(true);
+
   EXPECT_CALL(mock_platform_impl_, IsSpeaking())
       .Times(AnyNumber());
   EXPECT_CALL(mock_platform_impl_, StopSpeaking())
