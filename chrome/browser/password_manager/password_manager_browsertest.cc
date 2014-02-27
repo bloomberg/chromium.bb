@@ -593,7 +593,9 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, DeleteFrameBeforeSubmit) {
 }
 
 // Disabled on Windows due to flakiness: http://crbug.com/163072
-#if defined(OS_WIN)
+// TODO(vabr): Also disabled on Android, because the tested feature is currently
+// disabled there. http://crbug.com/345510#c13
+#if defined(OS_WIN) || defined(OS_ANDROID)
 #define MAYBE_PasswordValueAccessible DISABLED_PasswordValueAccessible
 #else
 #define MAYBE_PasswordValueAccessible PasswordValueAccessible
