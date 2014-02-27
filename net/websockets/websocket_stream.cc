@@ -159,7 +159,6 @@ scoped_ptr<WebSocketStreamRequest> CreateAndConnectStreamWithCreateHelper(
   headers.SetHeader(websockets::kUpgrade, websockets::kWebSocketLowercase);
   headers.SetHeader(HttpRequestHeaders::kConnection, websockets::kUpgrade);
   headers.SetHeader(HttpRequestHeaders::kOrigin, origin.spec());
-  // TODO(ricea): Move the version number to websocket_handshake_constants.h
   headers.SetHeader(websockets::kSecWebSocketVersion,
                     websockets::kSupportedVersion);
   request->url_request()->SetExtraRequestHeaders(headers);
