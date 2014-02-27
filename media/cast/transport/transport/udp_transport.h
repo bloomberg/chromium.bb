@@ -63,6 +63,7 @@ class UdpTransport : public PacketSender {
   net::IPEndPoint remote_addr_;
   const scoped_ptr<net::UDPSocket> udp_socket_;
   bool send_pending_;
+  bool client_connected_;
   scoped_ptr<Packet> next_packet_;
   scoped_refptr<net::WrappedIOBuffer> recv_buf_;
   net::IPEndPoint recv_addr_;

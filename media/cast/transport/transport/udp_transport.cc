@@ -52,6 +52,7 @@ UdpTransport::UdpTransport(
                                      net_log,
                                      net::NetLog::Source())),
       send_pending_(false),
+      client_connected_(false),
       status_callback_(status_callback),
       weak_factory_(this) {
   DCHECK(!IsEmpty(local_end_point) || !IsEmpty(remote_end_point));
@@ -78,6 +79,7 @@ void UdpTransport::StartReceiving(
       LOG(ERROR) << "Failed to connect to remote address.";
       return;
     }
+    client_connected_ = true;
   } else {
     NOTREACHED() << "Either local or remote address has to be defined.";
   }
@@ -149,11 +151,25 @@ bool UdpTransport::SendPacket(const Packet& packet) {
   scoped_refptr<net::IOBuffer> buf =
       new net::IOBuffer(static_cast<int>(packet.size()));
   memcpy(buf->data(), &packet[0], packet.size());
-  int ret = udp_socket_->SendTo(
+
+  int ret;
+  if (client_connected_) {
+    // If we called Connect() before we must call Write() instead of
+    // SendTo(). Otherwise on some platforms we might get
+    // ERR_SOCKET_IS_CONNECTED.
+    ret = udp_socket_->Write(
+      buf,
+      static_cast<int>(packet.size()),
+      base::Bind(&UdpTransport::OnSent, weak_factory_.GetWeakPtr(), buf));
+  } else if (!IsEmpty(remote_addr_)) {
+    ret = udp_socket_->SendTo(
       buf,
       static_cast<int>(packet.size()),
       remote_addr_,
       base::Bind(&UdpTransport::OnSent, weak_factory_.GetWeakPtr(), buf));
+  } else {
+    return false;
+  }
   if (ret == net::ERR_IO_PENDING)
     send_pending_ = true;
   // When ok, will return a positive value equal the number of bytes sent.
