@@ -124,10 +124,6 @@ public:
 
     virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE FINAL;
 
-    static void synchronizeRequiredFeatures(SVGElement* contextElement);
-    static void synchronizeRequiredExtensions(SVGElement* contextElement);
-    static void synchronizeSystemLanguage(SVGElement* contextElement);
-
     virtual void synchronizeRequiredFeatures() { }
     virtual void synchronizeRequiredExtensions() { }
     virtual void synchronizeSystemLanguage() { }

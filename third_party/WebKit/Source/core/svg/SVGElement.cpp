@@ -1017,24 +1017,6 @@ void SVGElement::synchronizeAnimatedSVGAttribute(const QualifiedName& name) cons
     }
 }
 
-void SVGElement::synchronizeRequiredFeatures(SVGElement* contextElement)
-{
-    ASSERT(contextElement);
-    contextElement->synchronizeRequiredFeatures();
-}
-
-void SVGElement::synchronizeRequiredExtensions(SVGElement* contextElement)
-{
-    ASSERT(contextElement);
-    contextElement->synchronizeRequiredExtensions();
-}
-
-void SVGElement::synchronizeSystemLanguage(SVGElement* contextElement)
-{
-    ASSERT(contextElement);
-    contextElement->synchronizeSystemLanguage();
-}
-
 PassRefPtr<RenderStyle> SVGElement::customStyleForRenderer()
 {
     if (!correspondingElement())
