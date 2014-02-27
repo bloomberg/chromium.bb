@@ -180,10 +180,14 @@ void CSSToStyleMap::mapFillRepeatY(CSSPropertyID, FillLayer* layer, CSSValue* va
 
 void CSSToStyleMap::mapFillSize(CSSPropertyID, FillLayer* layer, CSSValue* value) const
 {
-    if (!value->isPrimitiveValue()) {
-        layer->setSizeType(SizeNone);
+    if (value->isInitialValue()) {
+        layer->setSizeType(FillLayer::initialFillSizeType(layer->type()));
+        layer->setSizeLength(FillLayer::initialFillSizeLength(layer->type()));
         return;
     }
+
+    if (!value->isPrimitiveValue())
+        return;
 
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     if (primitiveValue->getValueID() == CSSValueContain)
@@ -195,7 +199,7 @@ void CSSToStyleMap::mapFillSize(CSSPropertyID, FillLayer* layer, CSSValue* value
 
     LengthSize b = FillLayer::initialFillSizeLength(layer->type());
 
-    if (value->isInitialValue() || primitiveValue->getValueID() == CSSValueContain || primitiveValue->getValueID() == CSSValueCover) {
+    if (primitiveValue->getValueID() == CSSValueContain || primitiveValue->getValueID() == CSSValueCover) {
         layer->setSizeLength(b);
         return;
     }
