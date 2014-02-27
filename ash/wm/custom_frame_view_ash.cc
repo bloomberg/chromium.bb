@@ -287,6 +287,7 @@ void CustomFrameViewAsh::HeaderView::OnPaint(gfx::Canvas* canvas) {
 void CustomFrameViewAsh::HeaderView::OnImmersiveRevealStarted() {
   fullscreen_visible_fraction_ = 0;
   SetPaintToLayer(true);
+  SetFillsBoundsOpaquely(false);
   parent()->Layout();
 }
 
