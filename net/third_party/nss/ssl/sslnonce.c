@@ -21,8 +21,8 @@
 PRUint32 ssl_sid_timeout = 100;
 PRUint32 ssl3_sid_timeout = 86400L; /* 24 hours */
 
-sslSessionID *cache = NULL;
-PZLock *      cacheLock = NULL;
+static sslSessionID *cache = NULL;
+static PZLock *      cacheLock = NULL;
 
 /* sids can be in one of 4 states:
  *
