@@ -15,13 +15,16 @@
                   '|chrome/browser/ui/views/accelerator_table\.cc',
     },
     'accessibility': {
-      'filepath': 'chrome/browser/accessibility/' \
+      'filepath': 'braille' \
+                  '|chrome/browser/accessibility/' \
+                  '|chromevox' \
                   '|content/browser/accessibility/' \
                   '|content/browser/resources/accessibility/' \
                   '|content/renderer/accessibility/' \
                   '|content/test/data/accessibility/' \
                   '|content/public/android/.*accessib' \
                   '|chrome/.*accessib' \
+                  '|liblouis' \
                   '|ui/base/accessibility/' \
                   '|ui/views/accessibility/'
     },
