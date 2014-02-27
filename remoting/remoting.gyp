@@ -79,7 +79,7 @@
       'ro', 'ru', 'sk', 'sl', 'sr', 'sv', 'th', 'tr', 'uk', 'vi',
       'zh-CN', 'zh-TW',
     ],
-    'remoting_host_locale_files': [
+    'remoting_locale_files': [
       # Build the list of .pak files generated from remoting_strings.grd.
       '<!@pymod_do_main(remoting_copy_locales -o -p <(OS) -x '
           '<(PRODUCT_DIR) <(remoting_locales))',
@@ -170,6 +170,212 @@
         }],
       ],
     },  # end of target 'remoting_breakpad'
+
+    # TODO(garykac): This target should be moved into remoting_client.gypi.
+    # It can't currently because of an issue with GYP where initialized
+    # path variables in gypi includes cause a GYP failure.
+    # See crrev.com/15968005 and crrev.com/15972007 for context.
+    {
+      'target_name': 'remoting_webapp',
+      'type': 'none',
+      'variables': {
+        'remoting_webapp_patch_files': [
+          'webapp/appsv2.patch',
+        ],
+        'remoting_webapp_apps_v2_js_files': [
+          'webapp/background.js',
+        ],
+        'output_dir': '<(PRODUCT_DIR)/remoting/remoting.webapp',
+        'zip_path': '<(PRODUCT_DIR)/remoting-webapp.zip',
+        'generated_html_files': [
+          '<(SHARED_INTERMEDIATE_DIR)/main.html',
+          '<(SHARED_INTERMEDIATE_DIR)/wcs_sandbox.html',
+        ],
+      },
+      'dependencies': [
+        'remoting_resources',
+        'remoting_host_plugin',
+        'remoting_webapp_html',
+      ],
+      'locale_files': [
+        '<@(remoting_webapp_locale_files)',
+      ],
+      'conditions': [
+        ['enable_remoting_host==1', {
+          'locale_files': [
+            '<@(remoting_locale_files)',
+          ],
+          'variables': {
+              'plugin_path': '<(PRODUCT_DIR)/<(host_plugin_prefix)remoting_host_plugin.<(host_plugin_extension)',
+          },
+        }, {
+          'variables': {
+              'plugin_path': '',
+          },
+          'dependencies!': [
+            'remoting_host_plugin',
+          ],
+        }],
+        ['run_jscompile != 0', {
+          'variables': {
+            'success_stamp': '<(PRODUCT_DIR)/remoting_webapp_jscompile.stamp',
+          },
+          'actions': [
+            {
+              'action_name': 'Verify remoting webapp',
+              'inputs': [
+                '<@(remoting_webapp_all_js_files)',
+                '<@(remoting_webapp_js_proto_files)',
+              ],
+              'outputs': [
+                '<(success_stamp)',
+              ],
+              'action': [
+                'python', 'tools/jscompile.py',
+                '<@(remoting_webapp_all_js_files)',
+                '<@(remoting_webapp_js_proto_files)',
+                '--success-stamp',
+                '<(success_stamp)'
+              ],
+            },
+          ],  # actions
+        }],
+      ],
+      'actions': [
+        {
+          'action_name': 'Build Remoting WebApp',
+          'inputs': [
+            'webapp/build-webapp.py',
+            '<(chrome_version_path)',
+            '<(remoting_version_path)',
+            '<@(generated_html_files)',
+            '<@(remoting_webapp_files)',
+            '<@(_locale_files)',
+          ],
+          'conditions': [
+            ['enable_remoting_host==1', {
+              'inputs': [
+                '<(plugin_path)',
+              ],
+            }],
+          ],
+          'outputs': [
+            '<(output_dir)',
+            '<(zip_path)',
+          ],
+          'action': [
+            'python', 'webapp/build-webapp.py',
+            '<(buildtype)',
+            '<(version_full)',
+            '<(host_plugin_mime_type)',
+            '<(output_dir)',
+            '<(zip_path)',
+            '<(plugin_path)',
+            '<@(generated_html_files)',
+            '<@(remoting_webapp_files)',
+            '--locales',
+            '<@(_locale_files)',
+          ],
+        },
+      ],
+      'target_conditions': [
+        # We cannot currently build the appsv2 version of WebApp on Windows as
+        # there isn't a version of the "patch" tool available on windows. We
+        # should remove this condition when we remove the reliance on patch.
+
+        # We define this in a 'target_conditions' section because 'plugin_path'
+        # is defined in a 'conditions' section so its value is not available
+        # when gyp processes the 'actions' in a 'conditions" section.
+        ['OS != "win"', {
+          'actions': [
+            {
+              'action_name': 'Build Remoting WebApp V2',
+              'output_dir': '<(PRODUCT_DIR)/remoting/remoting.webapp.v2',
+              'zip_path': '<(PRODUCT_DIR)/remoting-webapp.v2.zip',
+              'inputs': [
+                'webapp/build-webapp.py',
+                '<(chrome_version_path)',
+                '<(remoting_version_path)',
+                '<@(remoting_webapp_apps_v2_js_files)',
+                '<@(remoting_webapp_files)',
+                '<@(remoting_webapp_locale_files)',
+                '<@(remoting_webapp_patch_files)',
+              ],
+              'conditions': [
+                ['enable_remoting_host==1', {
+                  'inputs': [
+                    '<(plugin_path)',
+                  ],
+                }],
+              ],
+              'outputs': [
+                '<(_output_dir)',
+                '<(_zip_path)',
+              ],
+              'action': [
+                'python', 'webapp/build-webapp.py',
+                '<(buildtype)',
+                '<(version_full)',
+                '<(host_plugin_mime_type)',
+                '<(_output_dir)',
+                '<(_zip_path)',
+                '<(plugin_path)',
+                '<@(remoting_webapp_apps_v2_js_files)',
+                '<@(remoting_webapp_files)',
+                '--locales',
+                '<@(remoting_webapp_locale_files)',
+                '--patches',
+                '<@(remoting_webapp_patch_files)',
+              ],
+            },
+          ],
+        }],
+      ],
+    }, # end of target 'remoting_webapp'
+
+    {
+      'target_name': 'remoting_webapp_html',
+      'type': 'none',
+      'actions': [
+        {
+          'action_name': 'Build Remoting Webapp main.html',
+          'inputs': [
+            'webapp/build-html.py',
+            '<(remoting_webapp_template_main)',
+            '<@(remoting_webapp_template_files)',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/main.html',
+          ],
+          'action': [
+            'python', 'webapp/build-html.py',
+            '<(SHARED_INTERMEDIATE_DIR)/main.html',
+            '<(remoting_webapp_template_main)',
+            '--template',
+            '<@(remoting_webapp_template_files)',
+            '--js',
+            '<@(remoting_webapp_main_html_js_files)',
+          ],
+        },
+        {
+          'action_name': 'Build Remoting Webapp wcs_sandbox.html',
+          'inputs': [
+            'webapp/build-html.py',
+            '<(remoting_webapp_template_wcs_sandbox)',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/wcs_sandbox.html',
+          ],
+          'action': [
+            'python', 'webapp/build-html.py',
+            '<(SHARED_INTERMEDIATE_DIR)/wcs_sandbox.html',
+            '<(remoting_webapp_template_wcs_sandbox)',
+            '--js',
+            '<@(remoting_webapp_wcs_sandbox_html_js_files)',
+          ],
+        },
+      ],
+    }, # end of target 'remoting_webapp_html'
 
     {
       'target_name': 'remoting_resources',

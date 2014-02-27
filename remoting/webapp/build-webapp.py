@@ -306,10 +306,10 @@ def buildWebApp(buildtype, version, mimetype, destination, zip_path, plugin,
 
 
 def main():
-  if len(sys.argv) < 6:
+  if len(sys.argv) < 7:
     print ('Usage: build-webapp.py '
-           '<build-type> <version> <mime-type> <dst> <zip-path> '
-           '<other files...> [--plugin <plugin>] [--patches <patches...>] '
+           '<build-type> <version> <mime-type> <dst> <zip-path> <plugin> '
+           '<other files...> [--patches <patches...>] '
            '[--locales <locales...>]')
     return 1
 
@@ -317,22 +317,18 @@ def main():
   files = []
   locales = []
   patches = []
-  plugin = ""
   for arg in sys.argv[7:]:
-    if arg in ['--locales', '--patches', '--plugin']:
+    if arg == '--locales' or arg == '--patches':
       arg_type = arg
     elif arg_type == '--locales':
       locales.append(arg)
     elif arg_type == '--patches':
       patches.append(arg)
-    elif arg_type == '--plugin':
-      plugin = arg
-      arg_type = ''
     else:
       files.append(arg)
 
   return buildWebApp(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4],
-                     sys.argv[5], plugin, files, locales, patches)
+                     sys.argv[5], sys.argv[6], files, locales, patches)
 
 
 if __name__ == '__main__':
