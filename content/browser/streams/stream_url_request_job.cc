@@ -226,7 +226,7 @@ void StreamURLRequestJob::HeadersCompleted(net::HttpStatusCode status_code) {
   if (status_code == net::HTTP_OK) {
     std::string content_type_header(net::HttpRequestHeaders::kContentType);
     content_type_header.append(": ");
-    content_type_header.append("plain/text");
+    content_type_header.append("text/plain");
     headers->AddHeader(content_type_header);
   }
 

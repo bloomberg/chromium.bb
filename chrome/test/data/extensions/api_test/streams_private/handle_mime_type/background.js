@@ -15,12 +15,12 @@ chrome.streamsPrivate.onExecuteMimeTypeHandler.addListener(
     return;
   }
 
-  // The tests are setup so resources with MIME type 'plain/text' are meant to
+  // The tests are setup so resources with MIME type 'text/plain' are meant to
   // be handled by the browser (i.e. downloaded). The extension getting event
-  // with MIME type 'plain/text' is thus a failure.
-  if (params.mimeType == 'plain/text') {
+  // with MIME type 'text/plain' is thus a failure.
+  if (params.mimeType == 'text/plain') {
     chrome.test.notifyFail(
-        'Unexpected request to handle "plain/text" MIME type.');
+        'Unexpected request to handle "text/plain" MIME type.');
     // Set |hasFailed| so notifyPass doesn't get called later (when event with
     // MIME type 'test/done' is received).
     hasFailed = true;

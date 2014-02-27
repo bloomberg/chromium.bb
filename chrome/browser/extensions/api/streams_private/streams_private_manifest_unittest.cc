@@ -28,34 +28,34 @@ class StreamsPrivateManifestTest : public ExtensionManifestTest {
 TEST_F(StreamsPrivateManifestTest, ValidMimeTypesHandlerMIMETypes) {
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-      .SetID(extension_misc::kQuickOfficeExtensionId)
-      .SetManifest(DictionaryBuilder()
+          .SetID(extension_misc::kQuickOfficeExtensionId)
+          .SetManifest(
+               DictionaryBuilder()
                    .Set("name", "MIME type handler test")
                    .Set("version", "1.0.0")
                    .Set("manifest_version", 2)
-                   .Set("mime_types", ListBuilder()
-                       .Append("plain/text")))
-      .Build();
+                   .Set("mime_types", ListBuilder().Append("text/plain")))
+          .Build();
 
   ASSERT_TRUE(extension.get());
   MimeTypesHandler* handler = MimeTypesHandler::GetHandler(extension.get());
   ASSERT_TRUE(handler != NULL);
 
-  EXPECT_FALSE(handler->CanHandleMIMEType("plain/html"));
-  EXPECT_TRUE(handler->CanHandleMIMEType("plain/text"));
+  EXPECT_FALSE(handler->CanHandleMIMEType("text/html"));
+  EXPECT_TRUE(handler->CanHandleMIMEType("text/plain"));
 }
 
 TEST_F(StreamsPrivateManifestTest,
        MimeTypesHandlerMIMETypesNotWhitelisted) {
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
-      .SetManifest(DictionaryBuilder()
+          .SetManifest(
+               DictionaryBuilder()
                    .Set("name", "MIME types test")
                    .Set("version", "1.0.0")
                    .Set("manifest_version", 2)
-                   .Set("mime_types", ListBuilder()
-                        .Append("plain/text")))
-      .Build();
+                   .Set("mime_types", ListBuilder().Append("text/plain")))
+          .Build();
 
   ASSERT_TRUE(extension.get());
 

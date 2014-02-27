@@ -62,23 +62,23 @@ scoped_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
   }
 
   // For relative path "/text_path_attch.txt", return success response with
-  // MIME type "plain/text" and content "txt content". Also, set content
+  // MIME type "text/plain" and content "txt content". Also, set content
   // disposition to be attachment.
   if (request.relative_url == "/text_path_attch.txt") {
     response->set_code(net::HTTP_OK);
     response->set_content("txt content");
-    response->set_content_type("plain/text");
+    response->set_content_type("text/plain");
     response->AddCustomHeader("Content-Disposition",
                               "attachment; filename=test_path.txt");
     return response.PassAs<HttpResponse>();
   }
 
   // For relative path "/test_path_attch.txt", return success response with
-  // MIME type "plain/text" and content "txt content".
+  // MIME type "text/plain" and content "txt content".
   if (request.relative_url == "/text_path.txt") {
     response->set_code(net::HTTP_OK);
     response->set_content("txt content");
-    response->set_content_type("plain/text");
+    response->set_content_type("text/plain");
     return response.PassAs<HttpResponse>();
   }
 
@@ -106,7 +106,7 @@ scoped_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
 // StreamsResourceThrottle.
 // The test extension expects the resources that should be handed to the
 // extension to have MIME type 'application/msword' and the resources that
-// should be downloaded by the browser to have MIME type 'plain/text'.
+// should be downloaded by the browser to have MIME type 'text/plain'.
 class StreamsPrivateApiTest : public ExtensionApiTest {
  public:
   StreamsPrivateApiTest() {}
@@ -168,10 +168,10 @@ class StreamsPrivateApiTest : public ExtensionApiTest {
   }
 
   // Loads the test extension and set's up its file_browser_handler to handle
-  // 'application/msword' and 'plain/text' MIME types.
+  // 'application/msword' and 'text/plain' MIME types.
   // The extension will notify success when it detects an event with the MIME
   // type 'application/msword' and notify fail when it detects an event with the
-  // MIME type 'plain/text'.
+  // MIME type 'text/plain'.
   const extensions::Extension* LoadTestExtension() {
     // The test extension id is set by the key value in the manifest.
     test_extension_id_ = "oickdpebdnfbgkcaoklfcdhjniefkcji";
@@ -321,7 +321,7 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, NavigateToAnAttachment) {
 
   // The test extension should not receive any events by now. Send it an event
   // with MIME type "test/done", so it stops waiting for the events. (If there
-  // was an event with MIME type 'plain/text', |catcher.GetNextResult()| will
+  // was an event with MIME type 'text/plain', |catcher.GetNextResult()| will
   // fail regardless of the sent event; chrome.test.notifySuccess will not be
   // called by the extension).
   SendDoneEvent();
@@ -373,7 +373,7 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, DirectDownload) {
 
   // The test extension should not receive any events by now. Send it an event
   // with MIME type "test/done", so it stops waiting for the events. (If there
-  // was an event with MIME type 'plain/text', |catcher.GetNextResult()| will
+  // was an event with MIME type 'text/plain', |catcher.GetNextResult()| will
   // fail regardless of the sent event; chrome.test.notifySuccess will not be
   // called by the extension).
   SendDoneEvent();

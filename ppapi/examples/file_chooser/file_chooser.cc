@@ -46,7 +46,7 @@ class MyInstance : public pp::InstancePrivate {
     PP_FileChooserMode_Dev mode =
         (multi_select ? PP_FILECHOOSERMODE_OPENMULTIPLE
                       : PP_FILECHOOSERMODE_OPEN);
-    std::string accept_types = (multi_select ? "" : "plain/text");
+    std::string accept_types = (multi_select ? "" : "text/plain");
 
     chooser_ = pp::FileChooser_Dev(this, mode, accept_types);
     chooser_.Show(callback_factory_.NewCallbackWithOutput(
