@@ -23,8 +23,8 @@ def Data(tag, data):
   Returns:
     encoded TLV value.
   """
-  if len(data) == 0:
-    return struct.pack(">BB", tag, 0);
+  if len(data) < 128:
+    return struct.pack(">BB", tag, len(data)) + data;
   assert len(data) <= 0xffff;
   return struct.pack(">BBH", tag, 0x82, len(data)) + data;
 
@@ -37,7 +37,16 @@ def Integer(value):
     encoded TLV value.
   """
   data = '%x' % value
-  return Data(INTEGER, binascii.unhexlify('00' + '0' * (len(data) % 2) + data))
+  if (len(data) % 2 == 1):
+    # Odd number of non-zero bytes - pad out our data to a full number of bytes.
+    data = '0' + data
+
+  # If the high bit is set, need to prepend a null byte to denote a positive
+  # number.
+  if (int(data[0], 16) >= 8):
+    data = '00' + data
+
+  return Data(INTEGER, binascii.unhexlify(data))
 
 def Bitstring(value):
   """Encodes a bit string.

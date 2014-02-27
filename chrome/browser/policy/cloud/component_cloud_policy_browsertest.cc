@@ -120,6 +120,7 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
     CommandLine* command_line = CommandLine::ForCurrentProcess();
     command_line->AppendSwitchASCII(switches::kDeviceManagementUrl, url);
     command_line->AppendSwitch(switches::kEnableComponentCloudPolicy);
+    command_line->AppendSwitch(switches::kEnablePolicyKeyVerification);
 
     ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
   }

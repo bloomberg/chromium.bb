@@ -31,6 +31,10 @@ const base::FilePath::CharType kPolicyFileName[] = FILE_PATH_LITERAL("policy");
 const base::FilePath::CharType kSigningKeyFileName[] =
     FILE_PATH_LITERAL("signing_key");
 
+// Private signing key signature file within the temporary directory.
+const base::FilePath::CharType kSigningKeySignatureFileName[] =
+    FILE_PATH_LITERAL("signing_key.sig");
+
 // The file containing client definitions to be passed to the server.
 const base::FilePath::CharType kClientStateFileName[] =
     FILE_PATH_LITERAL("clients");
@@ -83,7 +87,8 @@ LocalPolicyTestServer::LocalPolicyTestServer(const std::string& test_name)
 
 LocalPolicyTestServer::~LocalPolicyTestServer() {}
 
-bool LocalPolicyTestServer::SetSigningKey(const crypto::RSAPrivateKey* key) {
+bool LocalPolicyTestServer::SetSigningKeyAndSignature(
+    const crypto::RSAPrivateKey* key, const std::string& signature) {
   CHECK(server_data_dir_.IsValid());
 
   std::vector<uint8> signing_key_bits;
@@ -95,7 +100,19 @@ bool LocalPolicyTestServer::SetSigningKey(const crypto::RSAPrivateKey* key) {
       policy_key_,
       reinterpret_cast<const char*>(vector_as_array(&signing_key_bits)),
       signing_key_bits.size());
-  return bytes_written == static_cast<int>(signing_key_bits.size());
+
+  if (bytes_written != static_cast<int>(signing_key_bits.size()))
+    return false;
+
+  // Write the signature data.
+  base::FilePath signature_file = server_data_dir_.path().Append(
+      kSigningKeySignatureFileName);
+  bytes_written = file_util::WriteFile(
+      signature_file,
+      signature.c_str(),
+      signature.size());
+
+  return bytes_written == static_cast<int>(signature.size());
 }
 
 void LocalPolicyTestServer::RegisterClient(const std::string& dm_token,

@@ -54,6 +54,7 @@ Example:
 
 """
 
+import base64
 import BaseHTTPServer
 import cgi
 import google.protobuf.text_format
@@ -106,6 +107,85 @@ BAD_MACHINE_IDS = [ '123490EN400015' ]
 # for the register request.
 KIOSK_MACHINE_IDS = [ 'KIOSK' ]
 
+# Dictionary containing base64-encoded policy signing keys plus per-domain
+# signatures. Format is:
+# {
+#   'key': <base64-encoded PKCS8-format private key>,
+#   'signatures': {
+#     <domain1>: <base64-encdoded SHA256 signature for key + domain1>
+#     <domain2>: <base64-encdoded SHA256 signature for key + domain2>
+#     ...
+#   }
+# }
+SIGNING_KEYS = [
+    # Key1
+    {'key':
+       'MIIBVQIBADANBgkqhkiG9w0BAQEFAASCAT8wggE7AgEAAkEA2c3KzcPqvnJ5HCk3OZkf1'
+       'LMO8Ht4dw4FO2U0EmKvpo0zznj4RwUdmKobH1AFWzwZP4CDY2M67MsukE/1Jnbx1QIDAQ'
+       'ABAkBkKcLZa/75hHVz4PR3tZaw34PATlfxEG6RiRIwXlf/FFlfGIZOSxdW/I1A3XRl0/9'
+       'nZMuctBSKBrcTRZQWfT/hAiEA9g8xbQbMO6BEH/XCRSsQbPlvj4c9wDtVEzeAzZ/ht9kC'
+       'IQDiml+/lXS1emqml711jJcYJNYJzdy1lL/ieKogR59oXQIhAK+Pl4xa1U2VxAWpq7r+R'
+       'vH55wdZT03hB4p2h4gvEzXBAiAkw9kvE0eZPiBZoRrrHIFTOH7FnnHlwBmV2+/2RsiVPQ'
+       'IhAKqx/4qisivvmoM/xbzUagfoxwsu1A/4mGjhBKiS0BCq',
+     'signatures':
+       {'example.com':
+          'l+sT5mziei/GbmiP7VtRCCfwpZcg7uKbW2OlnK5B/TTELutjEIAMdHduNBwbO44qOn'
+          '/5c7YrtkXbBehaaDYFPGI6bGTbDmG9KRxhS+DaB7opgfCQWLi79Gn/jytKLZhRN/VS'
+          'y+PEbezqMi3d1/xDxlThwWZDNwnhv9ER/Nu/32ZTjzgtqonSn2CQtwXCIILm4FdV/1'
+          '/BdmZG+Ge4i4FTqYtInir5YFe611KXU/AveGhQGBIAXo4qYg1IqbVrvKBSU9dlI6Sl'
+          '9TJJLbJ3LGaXuljgFhyMAl3gcy7ftC9MohEmwa+sc7y2mOAgYQ5SSmyAtQwQgAkX9J'
+          '3+tfxjmoA/dg==',
+        'chromepolicytest.com':
+          'TzBiigZKwBdr6lyP6tUDsw+Q9wYO1Yepyxm0O4JZ4RID32L27sWzC1/hwC51fRcCvP'
+          'luEVIW6mH+BFODXMrteUFWfbbG7jgV+Wg+QdzMqgJjxhNKFXPTsZ7/286LAd1vBY/A'
+          'nGd8Wog6AhzfrgMbLNsH794GD0xIUwRvXUWFNP8pClj5VPgQnJrIA9aZwW8FNGbteA'
+          'HacFB0T/oqP5s7XT4Qvkj14RLmCgTwEM8Vcpqy5teJaF8yN17wniveddoOQGH6s0HC'
+          'ocprEccrH5fP/WVAPxCfx4vVYQY5q4CZ4K3f6dTC2FV4IDelM6dugEkvSS02YCzDaO'
+          'N+Z7IwElzTKg==',
+        'managedchrome.com':
+          'T0wXC5w3GXyovA09pyOLX7ui/NI603UfbZXYyTbHI7xtzCIaHVPH35Nx4zdqVrdsej'
+          'ErQ12yVLDDIJokY4Yl+/fj/zrkAPxThI+TNQ+jo0i+al05PuopfpzvCzIXiZBbkbyW'
+          '3XfedxXP3IPN2XU2/3vX+ZXUNG6pxeETem64kGezkjkUraqnHw3JVzwJYHhpMcwdLP'
+          'PYK6V23BbEHEVBtQZd/ledXacz7gOzm1zGni4e+vxA2roAdJWyhbjU0dTKNNUsZmMv'
+          'ryQH9Af1Jw+dqs0RAbhcJXm2i8EUWIgNv6aMn1Z2DzZwKKjXsKgcYSRo8pdYa8RZAo'
+          'UExd9roA9a5w==',
+        }
+     },
+    # Key2
+    {'key':
+       'MIIBVAIBADANBgkqhkiG9w0BAQEFAASCAT4wggE6AgEAAkEAmZhreV04M3knCi6wibr49'
+       'oDesHny1G33PKOX9ko8pcxAiu9ZqsKCj7wNW2PGqnLi81fddACwQtYn5xdhCtzB9wIDAQ'
+       'ABAkA0z8m0cy8N08xundspoFZWO71WJLgv/peSDBYGI0RzJR1l9Np355EukQUQwRs5XrL'
+       '3vRQZy2vDqeiR96epkAhRAiEAzJ4DVI8k3pAl7CGv5icqFkJ02viExIwehhIEXBcB6p0C'
+       'IQDAKmzpoRpBEZRQ9xrTvPOi+Ea8Jnd478BU7CI/LFfgowIgMfLIoVWoDGRnvXKju60Hy'
+       'xNB70oHLut9cADp64j6QMkCIDrgxN4QbmrhaAAmtiGKE1wrlgCwCIsVamiasSOKAqLhAi'
+       'EAo/ItVcFtQPod97qG71CY/O4JzOciuU6AMhprs181vfM=',
+     'signatures':
+       # Key2 signatures
+       {'example.com':
+          'cO0nQjRptkeefKDw5QpJSQDavHABxUvbR9Wvoa235OG9Whw1RFqq2ye6pKnI3ezW6/'
+          '7b4ANcpi5a7HV5uF8K7gWyYdxY8NHLeyrbwXxg5j6HAmHmkP1UZcf/dAnWqo7cW8g4'
+          'DIQOhC43KkveMYJ2HnelwdXt/7zqkbe8/3Yj4nhjAUeARx86Sb8Nzydwkrvqs5Jw/x'
+          '5LG+BODExrXXcGu/ubDlW4ivJFqfNUPQysqBXSMY2XCHPJDx3eECLGVVN/fFAWWgjM'
+          'HFObAriAt0b18cc9Nr0mAt4Qq1oDzWcAHCPHE+5dr8Uf46BUrMLJRNRKCY7rrsoIin'
+          '9Be9gs3W+Aww==',
+        'chromepolicytest.com':
+          'mr+9CCYvR0cTvPwlzkxqlpGYy55gY7cPiIkPAPoql51yHK1tkMTOSFru8Dy/nMt+0o'
+          '4z7WO60F1wnIBGkQxnTj/DsO6QpCYi7oHqtLmZ2jsLQFlMyvPGUtpJEFvRwjr/TNbh'
+          '6RqUtz1LQFuJQ848kBrx7nkte1L8SuPDExgx+Q3LtbNj4SuTdvMUBMvEERXiLuwfFL'
+          'BefGjtsqfWETQVlJTCW7xcqOLedIX8UYgEDBpDOZ23A3GzCShuBsIut5m87R5mODht'
+          'EUmKNDK1+OMc6SyDpf+r48Wph4Db1bVaKy8fcpSNJOwEgsrmH7/+owKPGcN7I5jYAF'
+          'Z2PGxHTQ9JNA==',
+        'managedchrome.com':
+          'o5MVSo4bRwIJ/aooGyXpRXsEsWPG8fNA2UTG8hgwnLYhNeJCCnLs/vW2vdp0URE8jn'
+          'qiG4N8KjbuiGw0rJtO1EygdLfpnMEtqYlFjrOie38sy92l/AwohXj6luYzMWL+FqDu'
+          'WQeXasjgyY4s9BOLQVDEnEj3pvqhrk/mXvMwUeXGpbxTNbWAd0C8BTZrGOwU/kIXxo'
+          'vAMGg8L+rQaDwBTEnMsMZcvlrIyqSg5v4BxCWuL3Yd2xvUqZEUWRp1aKetsHRnz5hw'
+          'H7WK7DzvKepDn06XjPG9lchi448U3HB3PRKtCzfO3nD9YXMKTuqRpKPF8PeK11CWh1'
+          'DBvBYwi20vbQ==',
+       },
+    },
+]
 
 class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
   """Decodes and handles device management requests from clients.
@@ -628,6 +708,19 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
           signing_key['private_key'].hashAndSign(signed_data).tostring())
       if msg.public_key_version != current_key_index + 1:
         response.new_public_key = signing_key['public_key']
+
+        # Set the verification signature appropriate for the policy domain.
+        # TODO(atwilson): Use the enrollment domain for public accounts when
+        # we add key validation for ChromeOS (http://crbug.com/328038).
+        if 'signatures' in signing_key:
+          verification_sig = self.GetSignatureForDomain(
+              signing_key['signatures'], policy_data.username)
+
+          if verification_sig:
+            assert len(verification_sig) == 256, \
+                'bad signature size: %d' % len(verification_sig)
+            response.new_public_key_verification_signature = verification_sig
+
         if req_key:
           response.new_public_key_signature = (
               req_key.hashAndSign(response.new_public_key).tostring())
@@ -635,6 +728,24 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     self.DumpMessage('Response', response)
 
     return (200, response.SerializeToString())
+
+  def GetSignatureForDomain(self, signatures, username):
+    parsed_username = username.split("@", 1)
+    if len(parsed_username) != 2:
+      logging.error('Could not extract domain from username: %s' % username)
+      return None
+    domain = parsed_username[1]
+
+    # Lookup the domain's signature in the passed dictionary. If none is found,
+    # fallback to a wildcard signature.
+    if domain in signatures:
+      return signatures[domain]
+    if '*' in signatures:
+      return signatures['*']
+
+    # No key matching this domain.
+    logging.error('No verification signature matching domain: %s' % domain)
+    return None
 
   def CheckToken(self):
     """Helper for checking whether the client supplied a valid DM token.
@@ -705,7 +816,6 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
         except IOError:
           print 'Failed to load private key from %s' % key_path
           continue
-
         try:
           key = tlslite.api.parsePEMKey(key_str, private=True)
         except SyntaxError:
@@ -713,13 +823,31 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
               tlslite.utils.cryptomath.stringToBytes(key_str))
 
         assert key is not None
-        self.keys.append({ 'private_key' : key })
+        key_info = { 'private_key' : key }
+
+        # Now try to read in a signature, if one exists.
+        try:
+          key_sig = open(key_path + '.sig').read()
+          # Create a dictionary with the wildcard domain + signature
+          key_info['signatures'] = {'*': key_sig}
+        except IOError:
+          print 'Failed to read validation signature from %s.sig' % key_path
+        self.keys.append(key_info)
     else:
-      # Generate 2 private keys if none were passed from the command line.
-      for i in range(2):
-        key = tlslite.api.generateRSAKey(512)
+      # Use the canned private keys if none were passed from the command line.
+      for signing_key in SIGNING_KEYS:
+        decoded_key = base64.b64decode(signing_key['key']);
+        key = tlslite.utils.Python_RSAKey.Python_RSAKey._parsePKCS8(
+            tlslite.utils.cryptomath.stringToBytes(decoded_key))
         assert key is not None
-        self.keys.append({ 'private_key' : key })
+        # Grab the signature dictionary for this key and decode all of the
+        # signatures.
+        signature_dict = signing_key['signatures']
+        decoded_signatures = {}
+        for domain in signature_dict:
+          decoded_signatures[domain] = base64.b64decode(signature_dict[domain])
+        self.keys.append({'private_key': key,
+                          'signatures': decoded_signatures})
 
     # Derive the public keys from the private keys.
     for entry in self.keys:
@@ -957,12 +1085,18 @@ class PolicyServerRunner(testserver_base.TestServerRunner):
                                   help='Specify a path to a PEM-encoded '
                                   'private key to use for policy signing. May '
                                   'be specified multiple times in order to '
-                                  'load multipe keys into the server. If the '
+                                  'load multiple keys into the server. If the '
                                   'server has multiple keys, it will rotate '
                                   'through them in at each request in a '
                                   'round-robin fashion. The server will '
-                                  'generate a random key if none is specified '
-                                  'on the command line.')
+                                  'use a canned key if none is specified '
+                                  'on the command line. The test server will '
+                                  'also look for a verification signature file '
+                                  'in the same location: <filename>.sig and if '
+                                  'present will add the signature to the '
+                                  'policy blob as appropriate via the '
+                                  'new_public_key_verification_signature '
+                                  'field.')
     self.option_parser.add_option('--log-level', dest='log_level',
                                   default='WARN',
                                   help='Log level threshold to use.')

@@ -286,7 +286,8 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     // Configure and start the test server.
     scoped_ptr<crypto::RSAPrivateKey> signing_key(
         PolicyBuilder::CreateTestSigningKey());
-    ASSERT_TRUE(test_server_.SetSigningKey(signing_key.get()));
+    ASSERT_TRUE(test_server_.SetSigningKeyAndSignature(
+        signing_key.get(), PolicyBuilder::GetTestSigningKeySignature()));
     signing_key.reset();
     test_server_.RegisterClient(PolicyBuilder::kFakeToken,
                                 PolicyBuilder::kFakeDeviceId);
@@ -310,6 +311,7 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
     command_line->AppendSwitchASCII(policy::switches::kDeviceManagementUrl,
                                     test_server_.GetServiceURL().spec());
+    command_line->AppendSwitch(policy::switches::kEnablePolicyKeyVerification);
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {

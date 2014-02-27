@@ -277,10 +277,7 @@ bool CloudPolicyValidatorBase::CheckNewPublicKeyVerificationSignature() {
     UMA_HISTOGRAM_ENUMERATION(kMetricPolicyKeyVerification,
                               METRIC_POLICY_KEY_VERIFICATION_SIGNATURE_MISSING,
                               METRIC_POLICY_KEY_VERIFICATION_SIZE);
-    // TODO(atwilson): Return an error on failed signature verification once
-    // our test servers and unittests are returning policy with a verification
-    // signature (http://crbug.com/275291).
-    return true;
+    return false;
   }
 
   if (!CheckVerificationKeySignature(

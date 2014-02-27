@@ -38,10 +38,11 @@ class LocalPolicyTestServer : public net::LocalTestServer {
 
   virtual ~LocalPolicyTestServer();
 
-  // Sets the policy signing key used by the server. This must be called before
-  // starting the server, and only works when the server serves from a temporary
-  // directory.
-  bool SetSigningKey(const crypto::RSAPrivateKey* key);
+  // Sets the policy signing key and verification signature used by the server.
+  // This must be called before starting the server, and only works when the
+  // server serves from a temporary directory.
+  bool SetSigningKeyAndSignature(const crypto::RSAPrivateKey* key,
+                                 const std::string& signature);
 
   // Pre-configures a registered client so the server returns policy without the
   // client having to make a registration call. This must be called before
@@ -97,6 +98,6 @@ class LocalPolicyTestServer : public net::LocalTestServer {
   DISALLOW_COPY_AND_ASSIGN(LocalPolicyTestServer);
 };
 
-}  // namespace
+}  // namespace policy
 
 #endif  // CHROME_BROWSER_POLICY_TEST_LOCAL_POLICY_TEST_SERVER_H_
