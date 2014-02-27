@@ -410,6 +410,8 @@ class ThreadWatcherList {
   FRIEND_TEST_ALL_PREFIXES(ThreadWatcherTest, ThreadNamesOnlyArgs);
   FRIEND_TEST_ALL_PREFIXES(ThreadWatcherTest, ThreadNamesAndLiveThresholdArgs);
   FRIEND_TEST_ALL_PREFIXES(ThreadWatcherTest, CrashOnHangThreadsAllArgs);
+  FRIEND_TEST_ALL_PREFIXES(ThreadWatcherAndroidTest,
+                           ApplicationStatusNotification);
 
   // This singleton holds the global list of registered ThreadWatchers.
   ThreadWatcherList();
@@ -478,6 +480,10 @@ class ThreadWatcherList {
 
   // Default values for |live_threads_threshold|.
   static const int kLiveThreadsThreshold;
+
+  // Default value for the delay until |InitializeAndStartWatching| is called.
+  // Non-const for tests.
+  static int g_initialize_delay_seconds;
 
   // Map of all registered watched threads, from thread_id to ThreadWatcher.
   RegistrationList registered_;

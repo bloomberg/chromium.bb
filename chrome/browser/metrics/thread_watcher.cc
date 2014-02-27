@@ -416,6 +416,8 @@ const int ThreadWatcherList::kUnresponsiveSeconds = 2;
 const int ThreadWatcherList::kUnresponsiveCount = 9;
 // static
 const int ThreadWatcherList::kLiveThreadsThreshold = 2;
+// static, non-const for tests.
+int ThreadWatcherList::g_initialize_delay_seconds = 120;
 
 ThreadWatcherList::CrashDataThresholds::CrashDataThresholds(
     uint32 live_threads_threshold,
@@ -446,7 +448,7 @@ void ThreadWatcherList::StartWatchingAll(const CommandLine& command_line) {
       base::Bind(&ThreadWatcherList::InitializeAndStartWatching,
                  unresponsive_threshold,
                  crash_on_hang_threads),
-      base::TimeDelta::FromSeconds(120));
+      base::TimeDelta::FromSeconds(g_initialize_delay_seconds));
 }
 
 // static
