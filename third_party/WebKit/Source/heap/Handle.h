@@ -42,6 +42,19 @@
 
 namespace WebCore {
 
+#define COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, ErrorMessage) \
+    typedef WTF::IsSubclassOfTemplate<T, GarbageCollected> GarbageCollectedSubclass; \
+    typedef WTF::IsSubclass<T, GarbageCollectedMixin> GarbageCollectedMixinSubclass; \
+    typedef WTF::IsSubclassOfTemplate3<T, HeapHashSet> HeapHashSetSubclass; \
+    typedef WTF::IsSubclassOfTemplate5<T, HeapHashMap> HeapHashMapSubclass; \
+    typedef WTF::IsSubclassOfTemplateTypenameSize<T, HeapVector> HeapVectorSubclass; \
+    COMPILE_ASSERT(GarbageCollectedSubclass::value || \
+        GarbageCollectedMixinSubclass::value || \
+        HeapHashSetSubclass::value || \
+        HeapHashMapSubclass::value || \
+        HeapVectorSubclass::value, \
+        ErrorMessage);
+
 template<typename T> class Member;
 
 class PersistentNode {
@@ -213,7 +226,11 @@ class Persistent : public PersistentBase<RootsAccessor, Persistent<T, RootsAcces
     WTF_DISALLOW_CONSTRUCTION_FROM_ZERO(Persistent);
     WTF_DISALLOW_ZERO_ASSIGNMENT(Persistent);
 public:
-    Persistent() : m_raw(0) { }
+    Persistent() : m_raw(0)
+    {
+        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInPersistent);
+    }
+
     Persistent(std::nullptr_t) : m_raw(0) { }
 
     Persistent(T* raw) : m_raw(raw) { }
@@ -358,7 +375,11 @@ class Member {
     WTF_DISALLOW_CONSTRUCTION_FROM_ZERO(Member);
     WTF_DISALLOW_ZERO_ASSIGNMENT(Member);
 public:
-    Member() : m_raw(0) { }
+    Member() : m_raw(0)
+    {
+        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInMember);
+    }
+
     Member(std::nullptr_t) : m_raw(0) { }
 
     Member(T* raw) : m_raw(raw) { }
@@ -504,7 +525,11 @@ class WeakMember : public Member<T> {
     WTF_DISALLOW_CONSTRUCTION_FROM_ZERO(WeakMember);
     WTF_DISALLOW_ZERO_ASSIGNMENT(WeakMember);
 public:
-    WeakMember() : Member<T>() { }
+    WeakMember() : Member<T>()
+    {
+        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInWeakMember);
+    }
+
     WeakMember(std::nullptr_t) : Member<T>(nullptr) { }
 
     WeakMember(T* raw) : Member<T>(raw) { }
@@ -606,6 +631,7 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 #define WillBePersistentHeapHashSet WebCore::PersistentHeapHashSet
 #define WillBeHeapVector WebCore::HeapVector
 #define WillBePersistentHeapVector WebCore::PersistentHeapVector
+#define WillBeGarbageCollectedMixin WebCore::GarbageCollectedMixin
 
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr)
 {
@@ -664,6 +690,7 @@ public:
 #define WillBePersistentHeapHashSet WTF::HashSet
 #define WillBeHeapVector WTF::Vector
 #define WillBePersistentHeapVector WTF::Vector
+#define WillBeGarbageCollectedMixin WebCore::DummyBase<void>
 
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr) { return adoptRef(ptr); }
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeRefCountedGarbageCollected(T* ptr) { return adoptRef(ptr); }

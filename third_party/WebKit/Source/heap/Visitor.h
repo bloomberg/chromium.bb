@@ -610,6 +610,8 @@ public:
 public: \
     virtual void adjustAndMark(Visitor* visitor) const OVERRIDE \
     { \
+        typedef WTF::IsSubclassOfTemplate<TYPE, WebCore::GarbageCollected> IsSubclassOfGarbageCollected; \
+        COMPILE_ASSERT(IsSubclassOfGarbageCollected::value, OnlyGarbageCollectedObjectsCanHaveGarbageCollectedMixins); \
         visitor->mark(this, &TraceTrait<TYPE>::trace);\
     } \
     virtual bool isAlive(Visitor* visitor) const OVERRIDE \
@@ -617,6 +619,11 @@ public: \
         return visitor->isAlive(this); \
     }
 
+#if ENABLE(OILPAN)
+#define WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TYPE) USING_GARBAGE_COLLECTED_MIXIN(TYPE)
+#else
+#define WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TYPE)
+#endif
 
 template<typename T>
 struct GCInfoAtBase {

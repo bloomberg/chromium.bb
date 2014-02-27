@@ -165,6 +165,45 @@ namespace WTF {
         static const bool value = sizeof(subclassCheck(t)) == sizeof(YesType);
     };
 
+    template <typename T, template<class V, size_t W> class U> class IsSubclassOfTemplateTypenameSize {
+        typedef char YesType;
+        struct NoType {
+            char padding[8];
+        };
+
+        template<typename X, size_t Y> static YesType subclassCheck(U<X, Y>*);
+        static NoType subclassCheck(...);
+        static T* t;
+    public:
+        static const bool value = sizeof(subclassCheck(t)) == sizeof(YesType);
+    };
+
+    template <typename T, template<class A, class B, class C> class U> class IsSubclassOfTemplate3 {
+        typedef char YesType;
+        struct NoType {
+            char padding[8];
+        };
+
+        template<typename D, typename E, typename F> static YesType subclassCheck(U<D, E, F>*);
+        static NoType subclassCheck(...);
+        static T* t;
+    public:
+        static const bool value = sizeof(subclassCheck(t)) == sizeof(YesType);
+    };
+
+    template <typename T, template<class A, class B, class C, class D, class E> class U> class IsSubclassOfTemplate5 {
+        typedef char YesType;
+        struct NoType {
+            char padding[8];
+        };
+
+        template<typename F, typename G, typename H, typename I, typename J> static YesType subclassCheck(U<F, G, H, I, J>*);
+        static NoType subclassCheck(...);
+        static T* t;
+    public:
+        static const bool value = sizeof(subclassCheck(t)) == sizeof(YesType);
+    };
+
     template <typename T, template <class V> class OuterTemplate> struct RemoveTemplate {
         typedef T Type;
     };
