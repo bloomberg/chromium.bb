@@ -46,6 +46,7 @@ class FolderHeaderView : public views::View,
 
   // views::View overrides:
   virtual void Layout() OVERRIDE;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   // views::TextfieldController overrides:

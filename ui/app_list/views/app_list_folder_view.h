@@ -110,8 +110,10 @@ class AppListFolderView : public views::View,
   // Overridden from FolderHeaderViewDelegate:
   virtual void NavigateBack(AppListFolderItem* item,
                             const ui::Event& event_flags) OVERRIDE;
+  virtual void GiveBackFocusToSearchBox() OVERRIDE;
 
   AppsContainerView* container_view_;  // Not owned.
+  AppListMainView* app_list_main_view_;   // Not Owned.
   FolderHeaderView* folder_header_view_;  // Owned by views hierarchy.
   AppsGridView* items_grid_view_;  // Owned by the views hierarchy.
 

@@ -138,6 +138,13 @@ void FolderHeaderView::Layout() {
   folder_name_view_->SetBoundsRect(text_bounds);
 }
 
+bool FolderHeaderView::OnKeyPressed(const ui::KeyEvent& event) {
+  if (event.key_code() == ui::VKEY_RETURN)
+    delegate_->GiveBackFocusToSearchBox();
+
+  return false;
+}
+
 void FolderHeaderView::OnPaint(gfx::Canvas* canvas) {
   views::View::OnPaint(canvas);
 
@@ -167,6 +174,7 @@ void FolderHeaderView::ContentsChanged(views::Textfield* sender,
 
 void FolderHeaderView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
+  delegate_->GiveBackFocusToSearchBox();
   delegate_->NavigateBack(folder_item_, event);
 }
 
