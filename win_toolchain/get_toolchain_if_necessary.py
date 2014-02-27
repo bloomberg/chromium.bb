@@ -126,7 +126,7 @@ def HaveSrcInternalAccess():
         shell=True, stdin=nul, stdout=nul, stderr=nul) == 0:
       return True
     return subprocess.call(
-        ['git', 'remote', 'show',
+        ['git', '-c', 'core.askpass=true', 'remote', 'show',
          'https://chrome-internal.googlesource.com/chrome/src-internal/'],
         shell=True, stdin=nul, stdout=nul, stderr=nul) == 0
 
