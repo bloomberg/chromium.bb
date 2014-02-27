@@ -2237,7 +2237,7 @@ TEST_F(RenderViewImplTest, FocusElementCallsFocusedNodeChanged) {
   EXPECT_TRUE(params.a);
   render_thread_->sink().ClearMessages();
 
-  view()->webview()->clearFocusedNode();
+  view()->webview()->clearFocusedElement();
   const IPC::Message* msg3 = render_thread_->sink().GetFirstMessageMatching(
         ViewHostMsg_FocusedNodeChanged::ID);
   EXPECT_TRUE(msg3);

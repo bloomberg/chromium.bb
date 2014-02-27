@@ -703,7 +703,7 @@ bool FindBarGtk::MaybeForwardKeyEventToRenderer(GdkEventKey* event) {
 
   // Make sure we don't have a text field element interfering with keyboard
   // input. Otherwise Up and Down arrow key strokes get eaten. "Nom Nom Nom".
-  render_view_host->ClearFocusedNode();
+  render_view_host->ClearFocusedElement();
 
   NativeWebKeyboardEvent wke(reinterpret_cast<GdkEvent*>(event));
   render_view_host->ForwardKeyboardEvent(wke);

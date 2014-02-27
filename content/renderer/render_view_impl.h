@@ -873,7 +873,7 @@ class CONTENT_EXPORT RenderViewImpl
   void OnAllowBindings(int enabled_bindings_flags);
   void OnAllowScriptToClose(bool script_can_close);
   void OnCancelDownload(int32 download_id);
-  void OnClearFocusedNode();
+  void OnClearFocusedElement();
   void OnClosePage();
   void OnShowContextMenu(const gfx::Point& location);
   void OnCopyImageAt(int x, int y);

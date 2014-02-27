@@ -616,7 +616,7 @@ void RendererAccessibilityComplete::OnSetFocus(int acc_obj_id) {
   // By convention, calling SetFocus on the root of the tree should clear the
   // current focus. Otherwise set the focus to the new node.
   if (acc_obj_id == root.axID())
-    render_view()->GetWebView()->clearFocusedNode();
+    render_view()->GetWebView()->clearFocusedElement();
   else
     obj.setFocused(true);
 }

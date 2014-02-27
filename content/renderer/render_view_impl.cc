@@ -1243,7 +1243,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_ClosePage, OnClosePage)
     IPC_MESSAGE_HANDLER(ViewMsg_ThemeChanged, OnThemeChanged)
     IPC_MESSAGE_HANDLER(ViewMsg_MoveOrResizeStarted, OnMoveOrResizeStarted)
-    IPC_MESSAGE_HANDLER(ViewMsg_ClearFocusedNode, OnClearFocusedNode)
+    IPC_MESSAGE_HANDLER(ViewMsg_ClearFocusedElement, OnClearFocusedElement)
     IPC_MESSAGE_HANDLER(ViewMsg_SetBackground, OnSetBackground)
     IPC_MESSAGE_HANDLER(ViewMsg_EnablePreferredSizeChangedMode,
                         OnEnablePreferredSizeChangedMode)
@@ -4793,9 +4793,9 @@ gfx::Vector2d RenderViewImpl::GetScrollOffset() {
   return gfx::Vector2d(scroll_offset.width, scroll_offset.height);
 }
 
-void RenderViewImpl::OnClearFocusedNode() {
+void RenderViewImpl::OnClearFocusedElement() {
   if (webview())
-    webview()->clearFocusedNode();
+    webview()->clearFocusedElement();
 }
 
 void RenderViewImpl::OnSetBackground(const SkBitmap& background) {

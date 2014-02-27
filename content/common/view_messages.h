@@ -1043,8 +1043,8 @@ IPC_MESSAGE_ROUTED1(ViewMsg_DisableAutoResize,
 IPC_MESSAGE_ROUTED1(ViewMsg_SetTextDirection,
                     blink::WebTextDirection /* direction */)
 
-// Tells the renderer to clear the focused node (if any).
-IPC_MESSAGE_ROUTED0(ViewMsg_ClearFocusedNode)
+// Tells the renderer to clear the focused element (if any).
+IPC_MESSAGE_ROUTED0(ViewMsg_ClearFocusedElement)
 
 // Make the RenderView transparent and render it onto a custom background. The
 // background will be tiled in both directions if it is not large enough.

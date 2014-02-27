@@ -75,7 +75,7 @@ bool FindBarHost::MaybeForwardKeyEventToWebpage(
 
   // Make sure we don't have a text field element interfering with keyboard
   // input. Otherwise Up and Down arrow key strokes get eaten. "Nom Nom Nom".
-  render_view_host->ClearFocusedNode();
+  render_view_host->ClearFocusedElement();
   NativeWebKeyboardEvent event = GetKeyboardEvent(contents, key_event);
   render_view_host->ForwardKeyboardEvent(event);
   return true;

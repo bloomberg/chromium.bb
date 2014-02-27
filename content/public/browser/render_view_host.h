@@ -78,8 +78,8 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   // should be a combination of values from BindingsPolicy.
   virtual void AllowBindings(int binding_flags) = 0;
 
-  // Tells the renderer to clear the focused node (if any).
-  virtual void ClearFocusedNode() = 0;
+  // Tells the renderer to clear the focused element (if any).
+  virtual void ClearFocusedElement() = 0;
 
   // Causes the renderer to close the current page, including running its
   // onunload event handler.  A ClosePage_ACK message will be sent to the

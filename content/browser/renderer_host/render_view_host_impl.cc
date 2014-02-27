@@ -1844,8 +1844,8 @@ void RenderViewHostImpl::GetAudioOutputControllers(
   audio_host->GetOutputControllers(GetRoutingID(), callback);
 }
 
-void RenderViewHostImpl::ClearFocusedNode() {
-  Send(new ViewMsg_ClearFocusedNode(GetRoutingID()));
+void RenderViewHostImpl::ClearFocusedElement() {
+  Send(new ViewMsg_ClearFocusedElement(GetRoutingID()));
 }
 
 void RenderViewHostImpl::Zoom(PageZoom zoom) {
