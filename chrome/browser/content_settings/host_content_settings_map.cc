@@ -546,6 +546,11 @@ bool HostContentSettingsMap::ShouldAllowAllContent(
       content_type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
     return false;
   }
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+  if (content_type == CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER) {
+    return false;
+  }
+#endif
   if (secondary_url.SchemeIs(content::kChromeUIScheme) &&
       content_type == CONTENT_SETTINGS_TYPE_COOKIES &&
       primary_url.SchemeIsSecure()) {

@@ -48,6 +48,7 @@ const char kTestCertificate[] = "test_certificate";
 const char kTestEmail[] = "test_email@chromium.org";
 const char kTestURL[] = "http://mytestdomain/test";
 const char kTestURLSecure[] = "https://mytestdomain/test";
+const char kTestURLExtension[] = "chrome-extension://mytestextension";
 
 class FakeDelegate : public PlatformVerificationFlow::Delegate {
  public:
@@ -436,6 +437,15 @@ TEST_F(PlatformVerificationFlowTest, ConsentPerScheme) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(PlatformVerificationFlow::USER_REJECTED, result_);
   EXPECT_EQ(2, fake_delegate_.num_consent_calls());
+}
+
+TEST_F(PlatformVerificationFlowTest, ConsentForExtension) {
+  fake_delegate_.set_response(PlatformVerificationFlow::CONSENT_RESPONSE_DENY);
+  fake_delegate_.set_url(GURL(kTestURLExtension));
+  verifier_->ChallengePlatformKey(NULL, kTestID, kTestChallenge, callback_);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(PlatformVerificationFlow::USER_REJECTED, result_);
+  EXPECT_EQ(1, fake_delegate_.num_consent_calls());
 }
 
 TEST_F(PlatformVerificationFlowTest, Timeout) {
