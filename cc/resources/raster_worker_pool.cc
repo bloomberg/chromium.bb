@@ -78,6 +78,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
       int layer_id,
       const void* tile_id,
       int source_frame_number,
+      bool analyze_picture,
       RenderingStatsInstrumentation* rendering_stats,
       const base::Callback<void(const PicturePileImpl::Analysis&, bool)>& reply,
       internal::WorkerPoolTask::Vector* dependencies)
@@ -90,6 +91,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
         layer_id_(layer_id),
         tile_id_(tile_id),
         source_frame_number_(source_frame_number),
+        analyze_picture_(analyze_picture),
         rendering_stats_(rendering_stats),
         reply_(reply),
         canvas_(NULL) {}
@@ -141,9 +143,11 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
     DCHECK(picture_pile);
     DCHECK(canvas_);
 
-    Analyze(picture_pile);
-    if (analysis_.is_solid_color)
-      return;
+    if (analyze_picture_) {
+      Analyze(picture_pile);
+      if (analysis_.is_solid_color)
+        return;
+    }
 
     Raster(picture_pile);
   }
@@ -229,6 +233,7 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   int layer_id_;
   const void* tile_id_;
   int source_frame_number_;
+  bool analyze_picture_;
   RenderingStatsInstrumentation* rendering_stats_;
   const base::Callback<void(const PicturePileImpl::Analysis&, bool)> reply_;
   SkCanvas* canvas_;
@@ -515,6 +520,7 @@ RasterWorkerPool::CreateRasterTask(
     int layer_id,
     const void* tile_id,
     int source_frame_number,
+    bool analyze_picture,
     RenderingStatsInstrumentation* rendering_stats,
     const base::Callback<void(const PicturePileImpl::Analysis&, bool)>& reply,
     internal::WorkerPoolTask::Vector* dependencies) {
@@ -527,6 +533,7 @@ RasterWorkerPool::CreateRasterTask(
                                                          layer_id,
                                                          tile_id,
                                                          source_frame_number,
+                                                         analyze_picture,
                                                          rendering_stats,
                                                          reply,
                                                          dependencies));

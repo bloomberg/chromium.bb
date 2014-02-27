@@ -895,6 +895,13 @@ scoped_refptr<internal::RasterWorkerPoolTask> TileManager::CreateRasterTask(
     existing_pixel_refs[id] = decode_task;
   }
 
+  // We analyze picture before rasterization to detect solid-color tiles.
+  // If the tile is detected as such there is no need to raster or upload.
+  // It is drawn directly as a solid-color quad saving raster and upload cost.
+  // The analysis step is however expensive and is not justified when doing
+  // gpu rasterization where there is no upload.
+  bool analyze_picture = !tile->use_gpu_rasterization();
+
   return RasterWorkerPool::CreateRasterTask(
       const_resource,
       tile->picture_pile(),
@@ -905,6 +912,7 @@ scoped_refptr<internal::RasterWorkerPoolTask> TileManager::CreateRasterTask(
       tile->layer_id(),
       static_cast<const void*>(tile),
       tile->source_frame_number(),
+      analyze_picture,
       rendering_stats_instrumentation_,
       base::Bind(&TileManager::OnRasterTaskCompleted,
                  base::Unretained(this),

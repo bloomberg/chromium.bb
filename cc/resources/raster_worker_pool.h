@@ -153,6 +153,7 @@ class CC_EXPORT RasterWorkerPool : public internal::WorkerPoolTaskClient {
       int layer_id,
       const void* tile_id,
       int source_frame_number,
+      bool analyze_picture,
       RenderingStatsInstrumentation* rendering_stats,
       const base::Callback<void(const PicturePileImpl::Analysis&, bool)>& reply,
       internal::WorkerPoolTask::Vector* dependencies);
