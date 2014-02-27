@@ -978,7 +978,7 @@ ALWAYS_INLINE void Element::setAttributeInternal(size_t index, const QualifiedNa
         if (RefPtr<Attr> attrNode = inSynchronizationOfLazyAttribute ? nullptr : attrIfExists(existingAttributeName))
             attrNode->setValue(newValue);
         else
-            ensureUniqueElementData()->attributeItem(index)->setValue(newValue);
+            ensureUniqueElementData().attributeItem(index)->setValue(newValue);
     }
 
     if (!inSynchronizationOfLazyAttribute)
@@ -1964,14 +1964,14 @@ PassRefPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionState& excep
     }
 
     synchronizeAllAttributes();
-    UniqueElementData* elementData = ensureUniqueElementData();
+    UniqueElementData& elementData = ensureUniqueElementData();
 
-    size_t index = elementData->getAttributeItemIndex(attrNode->qualifiedName(), shouldIgnoreAttributeCase());
+    size_t index = elementData.getAttributeItemIndex(attrNode->qualifiedName(), shouldIgnoreAttributeCase());
     if (index != kNotFound) {
         if (oldAttrNode)
-            detachAttrNodeFromElementWithValue(oldAttrNode.get(), elementData->attributeItem(index)->value());
+            detachAttrNodeFromElementWithValue(oldAttrNode.get(), elementData.attributeItem(index)->value());
         else
-            oldAttrNode = Attr::create(document(), attrNode->qualifiedName(), elementData->attributeItem(index)->value());
+            oldAttrNode = Attr::create(document(), attrNode->qualifiedName(), elementData.attributeItem(index)->value());
     }
 
     setAttributeInternal(index, attrNode->qualifiedName(), attrNode->value(), NotInSynchronizationOfLazyAttribute);
@@ -2039,10 +2039,10 @@ void Element::removeAttributeInternal(size_t index, SynchronizationOfLazyAttribu
 {
     ASSERT_WITH_SECURITY_IMPLICATION(index < attributeCount());
 
-    UniqueElementData* elementData = ensureUniqueElementData();
+    UniqueElementData& elementData = ensureUniqueElementData();
 
-    QualifiedName name = elementData->attributeItem(index)->name();
-    AtomicString valueBeingRemoved = elementData->attributeItem(index)->value();
+    QualifiedName name = elementData.attributeItem(index)->name();
+    AtomicString valueBeingRemoved = elementData.attributeItem(index)->value();
 
     if (!inSynchronizationOfLazyAttribute) {
         if (!valueBeingRemoved.isNull())
@@ -2050,9 +2050,9 @@ void Element::removeAttributeInternal(size_t index, SynchronizationOfLazyAttribu
     }
 
     if (RefPtr<Attr> attrNode = attrIfExists(name))
-        detachAttrNodeFromElementWithValue(attrNode.get(), elementData->attributeItem(index)->value());
+        detachAttrNodeFromElementWithValue(attrNode.get(), elementData.attributeItem(index)->value());
 
-    elementData->removeAttribute(index);
+    elementData.removeAttribute(index);
 
     if (!inSynchronizationOfLazyAttribute)
         didRemoveAttribute(name);
@@ -2062,7 +2062,7 @@ void Element::addAttributeInternal(const QualifiedName& name, const AtomicString
 {
     if (!inSynchronizationOfLazyAttribute)
         willModifyAttribute(name, nullAtom, value);
-    ensureUniqueElementData()->addAttribute(name, value);
+    ensureUniqueElementData().addAttribute(name, value);
     if (!inSynchronizationOfLazyAttribute)
         didAddAttribute(name, value);
 }
@@ -3351,7 +3351,7 @@ CSSStyleDeclaration* Element::style()
 MutableStylePropertySet* Element::ensureMutableInlineStyle()
 {
     ASSERT(isStyledElement());
-    RefPtr<StylePropertySet>& inlineStyle = ensureUniqueElementData()->m_inlineStyle;
+    RefPtr<StylePropertySet>& inlineStyle = ensureUniqueElementData().m_inlineStyle;
     if (!inlineStyle) {
         CSSParserMode mode = (!isHTMLElement() || document().inQuirksMode()) ? HTMLQuirksMode : HTMLStandardMode;
         inlineStyle = MutableStylePropertySet::create(mode);
@@ -3364,7 +3364,7 @@ MutableStylePropertySet* Element::ensureMutableInlineStyle()
 void Element::clearMutableInlineStyleIfEmpty()
 {
     if (ensureMutableInlineStyle()->isEmpty()) {
-        ensureUniqueElementData()->m_inlineStyle.clear();
+        ensureUniqueElementData().m_inlineStyle.clear();
     }
 }
 
@@ -3398,7 +3398,7 @@ void Element::styleAttributeChanged(const AtomicString& newStyleString, Attribut
         startLineNumber = document().scriptableDocumentParser()->lineNumber();
 
     if (newStyleString.isNull()) {
-        ensureUniqueElementData()->m_inlineStyle.clear();
+        ensureUniqueElementData().m_inlineStyle.clear();
     } else if (modificationReason == ModifiedByCloning || document().contentSecurityPolicy()->allowInlineStyle(document().url(), startLineNumber)) {
         setInlineStyleFromString(newStyleString);
     }
@@ -3474,9 +3474,9 @@ void Element::removeAllInlineStyleProperties()
 void Element::updatePresentationAttributeStyle()
 {
     // ShareableElementData doesn't store presentation attribute style, so make sure we have a UniqueElementData.
-    UniqueElementData* elementData = ensureUniqueElementData();
-    elementData->m_presentationAttributeStyleIsDirty = false;
-    elementData->m_presentationAttributeStyle = computePresentationAttributeStyle(*this);
+    UniqueElementData& elementData = ensureUniqueElementData();
+    elementData.m_presentationAttributeStyleIsDirty = false;
+    elementData.m_presentationAttributeStyle = computePresentationAttributeStyle(*this);
 }
 
 void Element::addPropertyToPresentationAttributeStyle(MutableStylePropertySet* style, CSSPropertyID propertyID, CSSValueID identifier)
