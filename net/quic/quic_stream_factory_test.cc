@@ -77,6 +77,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
         clock_(new MockClock()),
         factory_(&host_resolver_, &socket_factory_,
                  base::WeakPtr<HttpServerProperties>(),
+                 NULL,  // quic_server_info_factory
                  &crypto_client_stream_factory_,
                  &random_generator_, clock_, kDefaultMaxPacketSize,
                  SupportedVersions(GetParam()), true, true),
