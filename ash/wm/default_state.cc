@@ -64,7 +64,8 @@ void MoveToDisplayForRestore(WindowState* window_state) {
 
 }  // namespace;
 
-DefaultState::DefaultState() {}
+DefaultState::DefaultState(WindowStateType initial_state_type)
+    : state_type_(initial_state_type) {}
 DefaultState::~DefaultState() {}
 
 void DefaultState::OnWMEvent(WindowState* window_state,
@@ -75,28 +76,28 @@ void DefaultState::OnWMEvent(WindowState* window_state,
   if (ProcessCompoundEvents(window_state, event))
     return;
 
-  WindowShowType next_show_type = SHOW_TYPE_NORMAL;
+  WindowStateType next_state_type = WINDOW_STATE_TYPE_NORMAL;
   switch (event) {
     case NORMAL:
-      next_show_type = SHOW_TYPE_NORMAL;
+      next_state_type = WINDOW_STATE_TYPE_NORMAL;
       break;
     case MAXIMIZE:
-      next_show_type = SHOW_TYPE_MAXIMIZED;
+      next_state_type = WINDOW_STATE_TYPE_MAXIMIZED;
       break;
     case MINIMIZE:
-      next_show_type = SHOW_TYPE_MINIMIZED;
+      next_state_type = WINDOW_STATE_TYPE_MINIMIZED;
       break;
     case FULLSCREEN:
-      next_show_type = SHOW_TYPE_FULLSCREEN;
+      next_state_type = WINDOW_STATE_TYPE_FULLSCREEN;
       break;
     case SNAP_LEFT:
-      next_show_type = SHOW_TYPE_LEFT_SNAPPED;
+      next_state_type = WINDOW_STATE_TYPE_LEFT_SNAPPED;
       break;
     case SNAP_RIGHT:
-      next_show_type = SHOW_TYPE_RIGHT_SNAPPED;
+      next_state_type = WINDOW_STATE_TYPE_RIGHT_SNAPPED;
       break;
     case SHOW_INACTIVE:
-      next_show_type = SHOW_TYPE_INACTIVE;
+      next_state_type = WINDOW_STATE_TYPE_INACTIVE;
       break;
     case TOGGLE_MAXIMIZE_CAPTION:
     case TOGGLE_MAXIMIZE:
@@ -112,16 +113,17 @@ void DefaultState::OnWMEvent(WindowState* window_state,
       return;
   }
 
-  WindowShowType current = window_state->window_show_type();
-  if (current != next_show_type) {
-    window_state->UpdateWindowShowType(next_show_type);
-    window_state->NotifyPreShowTypeChange(current);
+  WindowStateType current = window_state->GetStateType();
+  if (current != next_state_type) {
+    state_type_ = next_state_type;
+    window_state->UpdateWindowShowStateFromStateType();
+    window_state->NotifyPreStateTypeChange(current);
     // TODO(oshima): Make docked window a state.
     if (!window_state->IsDocked() && !IsPanel(window_state->window()))
-      UpdateBoundsFromShowType(window_state, current);
-    window_state->NotifyPostShowTypeChange(current);
+      UpdateBoundsFromStateType(window_state, current);
+    window_state->NotifyPostStateTypeChange(current);
   }
-};
+}
 
 void DefaultState::RequestBounds(WindowState* window_state,
                                  const gfx::Rect& requested_bounds) {
@@ -137,6 +139,10 @@ void DefaultState::RequestBounds(WindowState* window_state,
   } else if (!SetMaximizedOrFullscreenBounds(window_state)) {
     window_state->SetBoundsConstrained(requested_bounds);
   }
+}
+
+WindowStateType DefaultState::GetType() const {
+  return state_type_;
 }
 
 // static
@@ -169,11 +175,11 @@ bool DefaultState::ProcessCompoundEvents(WindowState* window_state,
 
       // Maximize vertically if:
       // - The window does not have a max height defined.
-      // - The window has the normal show type. Snapped windows are excluded
+      // - The window has the normal state type. Snapped windows are excluded
       //   because they are already maximized vertically and reverting to the
       //   restored bounds looks weird.
       if (window->delegate()->GetMaximumSize().height() != 0 ||
-          !window_state->IsNormalShowType()) {
+          !window_state->IsNormalStateType()) {
         return true;
       }
       if (window_state->HasRestoreBounds() &&
@@ -192,14 +198,14 @@ bool DefaultState::ProcessCompoundEvents(WindowState* window_state,
     case TOGGLE_HORIZONTAL_MAXIMIZE: {
       // Maximize horizontally if:
       // - The window does not have a max width defined.
-      // - The window is snapped or has the normal show type.
+      // - The window is snapped or has the normal state type.
       if (window->delegate()->GetMaximumSize().width() != 0)
         return true;
       if (!window_state->IsNormalOrSnapped())
         return true;
       gfx::Rect work_area =
           ScreenUtil::GetDisplayWorkAreaBoundsInParent(window);
-      if (window_state->IsNormalShowType() &&
+      if (window_state->IsNormalStateType() &&
           window_state->HasRestoreBounds() &&
           (window->bounds().width() == work_area.width() &&
            window->bounds().x() == work_area.x())) {
@@ -345,17 +351,17 @@ bool DefaultState::ProcessWorkspaceEvents(WindowState* window_state,
 }
 
 // static
-void DefaultState::UpdateBoundsFromShowType(WindowState* window_state,
-                                            WindowShowType old_show_type) {
+void DefaultState::UpdateBoundsFromStateType(WindowState* window_state,
+                                             WindowStateType old_state_type) {
   aura::Window* window = window_state->window();
   // Do nothing If this is not yet added to the container.
   if (!window->parent())
     return;
 
-  if (old_show_type != SHOW_TYPE_MINIMIZED &&
+  if (old_state_type != WINDOW_STATE_TYPE_MINIMIZED &&
       !window_state->HasRestoreBounds() &&
       window_state->IsMaximizedOrFullscreen() &&
-      !IsMaximizedOrFullscreenWindowShowType(old_show_type)) {
+      !IsMaximizedOrFullscreenWindowStateType(old_state_type)) {
     window_state->SaveCurrentBoundsForRestore();
   }
 
@@ -364,7 +370,7 @@ void DefaultState::UpdateBoundsFromShowType(WindowState* window_state,
   // bounds are set if a user maximized the window in one axis by double
   // clicking the window border for example).
   gfx::Rect restore;
-  if (old_show_type == SHOW_TYPE_MINIMIZED &&
+  if (old_state_type == WINDOW_STATE_TYPE_MINIMIZED &&
       window_state->IsNormalOrSnapped() &&
       window_state->HasRestoreBounds() &&
       !window_state->unminimize_to_restore_bounds()) {
@@ -375,13 +381,13 @@ void DefaultState::UpdateBoundsFromShowType(WindowState* window_state,
   if (window_state->IsMaximizedOrFullscreen())
     MoveToDisplayForRestore(window_state);
 
-  WindowShowType show_type = window_state->window_show_type();
+  WindowStateType state_type = window_state->GetStateType();
   gfx::Rect bounds_in_parent;
-  switch (show_type) {
-    case SHOW_TYPE_DEFAULT:
-    case SHOW_TYPE_NORMAL:
-    case SHOW_TYPE_LEFT_SNAPPED:
-    case SHOW_TYPE_RIGHT_SNAPPED: {
+  switch (state_type) {
+    case WINDOW_STATE_TYPE_DEFAULT:
+    case WINDOW_STATE_TYPE_NORMAL:
+    case WINDOW_STATE_TYPE_LEFT_SNAPPED:
+    case WINDOW_STATE_TYPE_RIGHT_SNAPPED: {
       gfx::Rect work_area_in_parent =
           ScreenUtil::GetDisplayWorkAreaBoundsInParent(window_state->window());
 
@@ -397,30 +403,30 @@ void DefaultState::UpdateBoundsFromShowType(WindowState* window_state,
         window_state->AdjustSnappedBounds(&bounds_in_parent);
       break;
     }
-    case SHOW_TYPE_MAXIMIZED:
+    case WINDOW_STATE_TYPE_MAXIMIZED:
       bounds_in_parent = ScreenUtil::GetMaximizedWindowBoundsInParent(window);
       break;
 
-    case SHOW_TYPE_FULLSCREEN:
+    case WINDOW_STATE_TYPE_FULLSCREEN:
       bounds_in_parent = ScreenUtil::GetDisplayBoundsInParent(window);
       break;
 
-    case SHOW_TYPE_MINIMIZED:
+    case WINDOW_STATE_TYPE_MINIMIZED:
       break;
-    case SHOW_TYPE_INACTIVE:
-    case SHOW_TYPE_DETACHED:
-    case SHOW_TYPE_END:
-    case SHOW_TYPE_AUTO_POSITIONED:
+    case WINDOW_STATE_TYPE_INACTIVE:
+    case WINDOW_STATE_TYPE_DETACHED:
+    case WINDOW_STATE_TYPE_END:
+    case WINDOW_STATE_TYPE_AUTO_POSITIONED:
       return;
   }
 
-  if (show_type != SHOW_TYPE_MINIMIZED) {
-    if (old_show_type == SHOW_TYPE_MINIMIZED ||
+  if (state_type != WINDOW_STATE_TYPE_MINIMIZED) {
+    if (old_state_type == WINDOW_STATE_TYPE_MINIMIZED ||
         (window_state->IsFullscreen() &&
          !window_state->animate_to_fullscreen())) {
       window_state->SetBoundsDirect(bounds_in_parent);
     } else if (window_state->IsMaximizedOrFullscreen() ||
-               IsMaximizedOrFullscreenWindowShowType(old_show_type)) {
+               IsMaximizedOrFullscreenWindowStateType(old_state_type)) {
       window_state->SetBoundsDirectCrossFade(bounds_in_parent);
     } else {
       window_state->SetBoundsDirectAnimated(bounds_in_parent);
@@ -430,7 +436,7 @@ void DefaultState::UpdateBoundsFromShowType(WindowState* window_state,
   if (window_state->IsMinimized()) {
     // Save the previous show state so that we can correctly restore it.
     window_state->window()->SetProperty(aura::client::kRestoreShowStateKey,
-                                        ToWindowShowState(old_show_type));
+                                        ToWindowShowState(old_state_type));
     views::corewm::SetWindowVisibilityAnimationType(
         window_state->window(), WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
 
@@ -440,12 +446,12 @@ void DefaultState::UpdateBoundsFromShowType(WindowState* window_state,
     if (window_state->IsActive())
       window_state->Deactivate();
   } else if ((window_state->window()->TargetVisibility() ||
-              old_show_type == SHOW_TYPE_MINIMIZED) &&
+              old_state_type == WINDOW_STATE_TYPE_MINIMIZED) &&
              !window_state->window()->layer()->visible()) {
     // The layer may be hidden if the window was previously minimized. Make
     // sure it's visible.
     window_state->window()->Show();
-    if (old_show_type == SHOW_TYPE_MINIMIZED &&
+    if (old_state_type == WINDOW_STATE_TYPE_MINIMIZED &&
         !window_state->IsMaximizedOrFullscreen()) {
       window_state->set_unminimize_to_restore_bounds(false);
     }

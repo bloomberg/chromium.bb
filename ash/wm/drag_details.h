@@ -29,8 +29,7 @@ struct ASH_EXPORT DragDetails {
               aura::client::WindowMoveSource source);
   ~DragDetails();
 
-  // Initial show type.
-  ash::wm::WindowShowType initial_show_type;
+  ash::wm::WindowStateType initial_state_type;
 
   // Initial bounds of the window in parent coordinates.
   const gfx::Rect initial_bounds_in_parent;

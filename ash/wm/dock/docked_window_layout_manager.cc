@@ -795,9 +795,9 @@ void DockedWindowLayoutManager::OnBackgroundUpdated(
 /////////////////////////////////////////////////////////////////////////////
 // DockedWindowLayoutManager, WindowStateObserver implementation:
 
-void DockedWindowLayoutManager::OnPreWindowShowTypeChange(
+void DockedWindowLayoutManager::OnPreWindowStateTypeChange(
     wm::WindowState* window_state,
-    wm::WindowShowType old_type) {
+    wm::WindowStateType old_type) {
   aura::Window* window = window_state->window();
   if (IsPopupOrTransient(window))
     return;
@@ -813,7 +813,7 @@ void DockedWindowLayoutManager::OnPreWindowShowTypeChange(
       UndockWindow(window);
       RecordUmaAction(DOCKED_ACTION_MAXIMIZE, DOCKED_ACTION_SOURCE_UNKNOWN);
     }
-  } else if (old_type == wm::SHOW_TYPE_MINIMIZED) {
+  } else if (old_type == wm::WINDOW_STATE_TYPE_MINIMIZED) {
     RestoreDockedWindow(window_state);
   }
 }

@@ -416,10 +416,10 @@ void WorkspaceWindowResizer::CompleteDrag() {
   window_state()->set_bounds_changed_by_user(true);
   snap_phantom_window_controller_.reset();
 
-  // If the window's show type changed over the course of the drag do not snap
+  // If the window's state type changed over the course of the drag do not snap
   // the window. This happens when the user minimizes or maximizes the window
   // using a keyboard shortcut while dragging it.
-  if (window_state()->window_show_type() != details().initial_show_type)
+  if (window_state()->GetStateType() != details().initial_state_type)
     return;
 
   bool snapped = false;
@@ -451,13 +451,15 @@ void WorkspaceWindowResizer::CompleteDrag() {
     // if the user dragged the window via the caption area because doing this is
     // slightly less confusing.
     if (details().window_component == HTCAPTION ||
-        !AreBoundsValidSnappedBounds(window_state()->window_show_type(),
+        !AreBoundsValidSnappedBounds(window_state()->GetStateType(),
                                      GetTarget()->bounds())) {
-      // Set the window to SHOW_TYPE_NORMAL but keep the window at the bounds
-      // that the user has moved/resized the window to. ClearRestoreBounds()
-      // is used instead of SaveCurrentBoundsForRestore() because most of the
-      // restore logic is skipped because we are still in the middle of a drag.
-      // TODO(pkotwicz): Fix this and use SaveCurrentBoundsForRestore().
+      // Set the window to WINDOW_STATE_TYPE_NORMAL but keep the
+      // window at the bounds that the user has moved/resized the
+      // window to. ClearRestoreBounds() is used instead of
+      // SaveCurrentBoundsForRestore() because most of the restore
+      // logic is skipped because we are still in the middle of a
+      // drag.  TODO(pkotwicz): Fix this and use
+      // SaveCurrentBoundsForRestore().
       window_state()->ClearRestoreBounds();
       window_state()->Restore();
     }
@@ -1028,13 +1030,13 @@ void WorkspaceWindowResizer::SetDraggedWindowDocked(bool should_dock) {
 }
 
 bool WorkspaceWindowResizer::AreBoundsValidSnappedBounds(
-    wm::WindowShowType snapped_type,
+    wm::WindowStateType snapped_type,
     const gfx::Rect& bounds_in_parent) const {
-  DCHECK(snapped_type == wm::SHOW_TYPE_LEFT_SNAPPED ||
-         snapped_type == wm::SHOW_TYPE_RIGHT_SNAPPED);
+  DCHECK(snapped_type == wm::WINDOW_STATE_TYPE_LEFT_SNAPPED ||
+         snapped_type == wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED);
   gfx::Rect snapped_bounds = ScreenUtil::GetDisplayWorkAreaBoundsInParent(
       GetTarget());
-  if (snapped_type == wm::SHOW_TYPE_RIGHT_SNAPPED)
+  if (snapped_type == wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED)
     snapped_bounds.set_x(snapped_bounds.right() - bounds_in_parent.width());
   snapped_bounds.set_width(bounds_in_parent.width());
   return bounds_in_parent == snapped_bounds;

@@ -13,7 +13,7 @@ namespace wm {
 // DefaultState implements Ash behavior without state machine.
 class DefaultState : public WindowState::State {
  public:
-  DefaultState();
+  explicit DefaultState(WindowStateType initial_state_type);
   virtual ~DefaultState();
 
   // WindowState::State overrides:
@@ -23,6 +23,8 @@ class DefaultState : public WindowState::State {
   virtual void RequestBounds(WindowState* window_state,
                              const gfx::Rect& requested_bounds) OVERRIDE;
 
+  virtual WindowStateType GetType() const OVERRIDE;
+
  private:
   // Process stete dependent events, such as TOGGLE_MAXIMIZED,
   // TOGGLE_FULLSCREEN.
@@ -31,12 +33,14 @@ class DefaultState : public WindowState::State {
   // Process workspace related events, such as DISPLAY_BOUNDS_CHANGED.
   static bool ProcessWorkspaceEvents(WindowState* window_state, WMEvent event);
 
-  // Animates to new window bounds based on the current and previous show type.
-  static void UpdateBoundsFromShowType(wm::WindowState* window_state,
-                                       wm::WindowShowType old_show_type);
+  // Animates to new window bounds based on the current and previous state type.
+  static void UpdateBoundsFromStateType(wm::WindowState* window_state,
+                                        wm::WindowStateType old_state_type);
 
   // Set the fullscreen/maximized bounds without animation.
   static bool SetMaximizedOrFullscreenBounds(wm::WindowState* window_state);
+
+  WindowStateType state_type_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultState);
 };

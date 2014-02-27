@@ -679,7 +679,7 @@ TEST_F(WorkspaceWindowResizerTest, DragSnapped) {
   window_->Show();
 
   window_state->SnapLeftWithDefaultWidth();
-  EXPECT_EQ(wm::SHOW_TYPE_LEFT_SNAPPED, window_state->window_show_type());
+  EXPECT_EQ(wm::WINDOW_STATE_TYPE_LEFT_SNAPPED, window_state->GetStateType());
   gfx::Rect snapped_bounds = window_->bounds();
   EXPECT_NE(snapped_bounds.ToString(), kInitialBounds.ToString());
   EXPECT_EQ(window_state->GetRestoreBoundsInParent().ToString(),
@@ -690,7 +690,7 @@ TEST_F(WorkspaceWindowResizerTest, DragSnapped) {
       window_.get(), gfx::Point(), HTCAPTION));
   resizer->Drag(CalculateDragPoint(*resizer, 10, 0), 0);
   resizer->CompleteDrag();
-  EXPECT_EQ(wm::SHOW_TYPE_NORMAL, window_state->window_show_type());
+  EXPECT_EQ(wm::WINDOW_STATE_TYPE_NORMAL, window_state->GetStateType());
   EXPECT_EQ("10,0 100x100", window_->bounds().ToString());
   EXPECT_FALSE(window_state->HasRestoreBounds());
 }
@@ -704,7 +704,7 @@ TEST_F(WorkspaceWindowResizerTest, ResizeSnapped) {
   window_->Show();
 
   window_state->SnapLeftWithDefaultWidth();
-  EXPECT_EQ(wm::SHOW_TYPE_LEFT_SNAPPED, window_state->window_show_type());
+  EXPECT_EQ(wm::WINDOW_STATE_TYPE_LEFT_SNAPPED, window_state->GetStateType());
   gfx::Rect snapped_bounds = window_->bounds();
   EXPECT_NE(snapped_bounds.ToString(), kInitialBounds.ToString());
   EXPECT_EQ(window_state->GetRestoreBoundsInParent().ToString(),
@@ -717,7 +717,7 @@ TEST_F(WorkspaceWindowResizerTest, ResizeSnapped) {
         window_.get(), gfx::Point(), HTRIGHT));
     resizer->Drag(CalculateDragPoint(*resizer, 10, 0), 0);
     resizer->CompleteDrag();
-    EXPECT_EQ(wm::SHOW_TYPE_LEFT_SNAPPED, window_state->window_show_type());
+    EXPECT_EQ(wm::WINDOW_STATE_TYPE_LEFT_SNAPPED, window_state->GetStateType());
     snapped_bounds.Inset(0, 0, -10, 0);
     EXPECT_EQ(snapped_bounds.ToString(), window_->bounds().ToString());
     EXPECT_EQ(window_state->GetRestoreBoundsInParent().ToString(),
@@ -732,7 +732,7 @@ TEST_F(WorkspaceWindowResizerTest, ResizeSnapped) {
     resizer->Drag(CalculateDragPoint(*resizer, 0, -30), 0);
     resizer->Drag(CalculateDragPoint(*resizer, 0, 0), 0);
     resizer->CompleteDrag();
-    EXPECT_EQ(wm::SHOW_TYPE_LEFT_SNAPPED, window_state->window_show_type());
+    EXPECT_EQ(wm::WINDOW_STATE_TYPE_LEFT_SNAPPED, window_state->GetStateType());
     EXPECT_EQ(snapped_bounds.ToString(), window_->bounds().ToString());
     EXPECT_EQ(window_state->GetRestoreBoundsInParent().ToString(),
               kInitialBounds.ToString());
@@ -745,7 +745,7 @@ TEST_F(WorkspaceWindowResizerTest, ResizeSnapped) {
         window_.get(), gfx::Point(), HTBOTTOM));
     resizer->Drag(CalculateDragPoint(*resizer, 0, -10), 0);
     resizer->CompleteDrag();
-    EXPECT_EQ(wm::SHOW_TYPE_NORMAL, window_state->window_show_type());
+    EXPECT_EQ(wm::WINDOW_STATE_TYPE_NORMAL, window_state->GetStateType());
     gfx::Rect expected_bounds(snapped_bounds);
     expected_bounds.Inset(0, 0, 0, 10);
     EXPECT_EQ(expected_bounds.ToString(), window_->bounds().ToString());

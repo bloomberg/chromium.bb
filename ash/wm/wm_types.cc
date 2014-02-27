@@ -12,41 +12,43 @@ namespace wm {
 
 // This is to catch the change to WindowShowState.
 COMPILE_ASSERT(
-    ui::SHOW_STATE_END == static_cast<ui::WindowShowState>(SHOW_TYPE_END),
+    ui::SHOW_STATE_END ==
+    static_cast<ui::WindowShowState>(WINDOW_STATE_TYPE_END),
     show_enum_mismatch);
 
-WindowShowType ToWindowShowType(ui::WindowShowState state) {
-  return static_cast<WindowShowType>(state);
+WindowStateType ToWindowStateType(ui::WindowShowState state) {
+  return static_cast<WindowStateType>(state);
 }
 
-ui::WindowShowState ToWindowShowState(WindowShowType type) {
+ui::WindowShowState ToWindowShowState(WindowStateType type) {
   switch (type) {
-    case SHOW_TYPE_DEFAULT:
+    case WINDOW_STATE_TYPE_DEFAULT:
       return ui::SHOW_STATE_DEFAULT;
-    case SHOW_TYPE_NORMAL:
-    case SHOW_TYPE_RIGHT_SNAPPED:
-    case SHOW_TYPE_LEFT_SNAPPED:
-    case SHOW_TYPE_AUTO_POSITIONED:
+    case WINDOW_STATE_TYPE_NORMAL:
+    case WINDOW_STATE_TYPE_RIGHT_SNAPPED:
+    case WINDOW_STATE_TYPE_LEFT_SNAPPED:
+    case WINDOW_STATE_TYPE_AUTO_POSITIONED:
       return ui::SHOW_STATE_NORMAL;
-    case SHOW_TYPE_MINIMIZED:
+    case WINDOW_STATE_TYPE_MINIMIZED:
       return ui::SHOW_STATE_MINIMIZED;
-    case SHOW_TYPE_MAXIMIZED:
+    case WINDOW_STATE_TYPE_MAXIMIZED:
       return ui::SHOW_STATE_MAXIMIZED;
-    case SHOW_TYPE_INACTIVE:
+    case WINDOW_STATE_TYPE_INACTIVE:
       return ui::SHOW_STATE_INACTIVE;
-    case SHOW_TYPE_FULLSCREEN:
+    case WINDOW_STATE_TYPE_FULLSCREEN:
       return ui::SHOW_STATE_FULLSCREEN;
-    case SHOW_TYPE_DETACHED:
+    case WINDOW_STATE_TYPE_DETACHED:
       return ui::SHOW_STATE_DETACHED;
-    case SHOW_TYPE_END:
+    case WINDOW_STATE_TYPE_END:
       NOTREACHED();
   }
   NOTREACHED();
   return ui::SHOW_STATE_DEFAULT;
 }
 
-bool IsMaximizedOrFullscreenWindowShowType(WindowShowType type) {
-  return type == SHOW_TYPE_MAXIMIZED || type == SHOW_TYPE_FULLSCREEN;
+bool IsMaximizedOrFullscreenWindowStateType(WindowStateType type) {
+  return type == WINDOW_STATE_TYPE_MAXIMIZED ||
+      type == WINDOW_STATE_TYPE_FULLSCREEN;
 }
 
 }  // namespace wm

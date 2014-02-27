@@ -418,7 +418,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
 
   // Verify that the window has moved after the gesture.
   EXPECT_NE(old_bounds.ToString(), target->bounds().ToString());
-  EXPECT_EQ(wm::SHOW_TYPE_RIGHT_SNAPPED, window_state->window_show_type());
+  EXPECT_EQ(wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED, window_state->GetStateType());
 
   old_bounds = target->bounds();
 
@@ -431,7 +431,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
   RunAllPendingInMessageLoop();
 
   EXPECT_NE(old_bounds.ToString(), target->bounds().ToString());
-  EXPECT_EQ(wm::SHOW_TYPE_LEFT_SNAPPED, window_state->window_show_type());
+  EXPECT_EQ(wm::WINDOW_STATE_TYPE_LEFT_SNAPPED, window_state->GetStateType());
 
   gfx::Rect bounds_before_maximization = target->bounds();
   bounds_before_maximization.Offset(0, 100);
@@ -549,7 +549,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragForUnresizableWindow) {
   EXPECT_EQ(expected_bounds.ToString(), target->bounds().ToString());
 
   // Verify that the window did not snap left.
-  EXPECT_TRUE(window_state->IsNormalShowType());
+  EXPECT_TRUE(window_state->IsNormalStateType());
 
   old_bounds = target->bounds();
 
@@ -567,7 +567,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragForUnresizableWindow) {
   EXPECT_EQ(expected_bounds.ToString(), target->bounds().ToString());
 
   // Verify that the window did not snap left.
-  EXPECT_TRUE(window_state->IsNormalShowType());
+  EXPECT_TRUE(window_state->IsNormalStateType());
 }
 
 // Tests that dragging multiple windows at the same time is not allowed.

@@ -97,8 +97,9 @@ class ASH_EXPORT PanelLayoutManager
   virtual void OnShelfAlignmentChanged(aura::Window* root_window) OVERRIDE;
 
   // Overridden from ash::wm::WindowStateObserver
-  virtual void OnPostWindowShowTypeChange(wm::WindowState* window_state,
-                                          wm::WindowShowType old_type) OVERRIDE;
+  virtual void OnPostWindowStateTypeChange(
+      wm::WindowState* window_state,
+      wm::WindowStateType old_type) OVERRIDE;
 
   // Overridden from aura::WindowObserver
   virtual void OnWindowVisibilityChanged(aura::Window* window,

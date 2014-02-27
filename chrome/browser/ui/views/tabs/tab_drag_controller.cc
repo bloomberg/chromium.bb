@@ -95,9 +95,7 @@ bool IsDockedOrSnapped(const TabStrip* tab_strip) {
   DCHECK(tab_strip);
   ash::wm::WindowState* window_state =
       ash::wm::GetWindowState(tab_strip->GetWidget()->GetNativeWindow());
-  return window_state->IsDocked() ||
-      window_state->window_show_type() == ash::wm::SHOW_TYPE_LEFT_SNAPPED ||
-      window_state->window_show_type() == ash::wm::SHOW_TYPE_RIGHT_SNAPPED;
+  return window_state->IsDocked() || window_state->IsSnapped();
 #endif
   return false;
 }

@@ -104,7 +104,7 @@ TEST_F(WindowStateTest, SnapWindowSetBounds) {
       CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
   wm::WindowState* window_state = wm::GetWindowState(window.get());
   window_state->SnapLeftWithDefaultWidth();
-  EXPECT_EQ(SHOW_TYPE_LEFT_SNAPPED, window_state->window_show_type());
+  EXPECT_EQ(WINDOW_STATE_TYPE_LEFT_SNAPPED, window_state->GetStateType());
   gfx::Rect expected = gfx::Rect(kWorkAreaBounds.x(),
                                  kWorkAreaBounds.y(),
                                  kWorkAreaBounds.width() / 2,
@@ -115,7 +115,7 @@ TEST_F(WindowStateTest, SnapWindowSetBounds) {
   expected.set_width(500);
   window->SetBounds(gfx::Rect(10, 10, 500, 300));
   EXPECT_EQ(expected.ToString(), window->GetBoundsInScreen().ToString());
-  EXPECT_EQ(SHOW_TYPE_LEFT_SNAPPED, window_state->window_show_type());
+  EXPECT_EQ(WINDOW_STATE_TYPE_LEFT_SNAPPED, window_state->GetStateType());
 }
 
 // Test that snapping left/right preserves the restore bounds.
@@ -124,7 +124,7 @@ TEST_F(WindowStateTest, RestoreBounds) {
       CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
   wm::WindowState* window_state = wm::GetWindowState(window.get());
 
-  EXPECT_TRUE(window_state->IsNormalShowType());
+  EXPECT_TRUE(window_state->IsNormalStateType());
 
   // 1) Start with restored window with restore bounds set.
   gfx::Rect restore_bounds = window->GetBoundsInScreen();

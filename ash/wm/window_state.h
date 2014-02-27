@@ -47,7 +47,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
  public:
 
   // A subclass of State class represents one of the window's states
-  // that corresponds WnidowShowType to in Ash environment, e.g.
+  // that corresponds WindowStateType to in Ash environment, e.g.
   // maximized, minimized or side snapped, as subclass.
   // Each subclass defines its own behavior and transition for each WMEvent.
   class State {
@@ -61,6 +61,8 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
     // See WindowState::RequestBounds.
     virtual void RequestBounds(WindowState* state,
                                const gfx::Rect& requested_bounds)  = 0;
+
+    virtual WindowStateType GetType() const = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(State);
@@ -78,10 +80,10 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // Returns the window's current show state.
   ui::WindowShowState GetShowState() const;
 
-  // Returns the window's current ash show type.
-  // Refer to WindowShowType definition in wm_types.h as for why Ash
-  // has its own show type.
-  WindowShowType window_show_type() const { return window_show_type_; }
+  // Returns the window's current ash state type.
+  // Refer to WindowStateType definition in wm_types.h as for why Ash
+  // has its own state type.
+  WindowStateType GetStateType() const;
 
   // Predicates to check window state.
   bool IsMinimized() const;
@@ -90,8 +92,9 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool IsMaximizedOrFullscreen() const;
   bool IsSnapped() const;
 
-  // True if the window's show type is SHOW_TYPE_NORMAL or SHOW_TYPE_DEFAULT.
-  bool IsNormalShowType() const;
+  // True if the window's state type is WINDOW_STATE_TYPE_NORMAL or
+  // WINDOW_STATE_TYPE_DEFAULT.
+  bool IsNormalStateType() const;
 
   bool IsNormalOrSnapped() const;
 
@@ -291,14 +294,14 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   void AdjustSnappedBounds(gfx::Rect* bounds);
 
   // Snaps the window left or right with the default width.
-  void SnapWindowWithDefaultWidth(WindowShowType left_or_right);
+  void SnapWindowWithDefaultWidth(WindowStateType left_or_right);
 
-  // Sets the window show type and updates the show state if necessary.
+  // Updates the window show state according to the current window state type.
   // Note that this does not update the window bounds.
-  void UpdateWindowShowType(WindowShowType new_window_show_type);
+  void UpdateWindowShowStateFromStateType();
 
-  void NotifyPreShowTypeChange(WindowShowType old_window_show_type);
-  void NotifyPostShowTypeChange(WindowShowType old_window_show_type);
+  void NotifyPreStateTypeChange(WindowStateType old_window_state_type);
+  void NotifyPostStateTypeChange(WindowStateType old_window_state_type);
 
   // Sets |bounds| as is.
   void SetBoundsDirect(const gfx::Rect& bounds);
@@ -340,10 +343,8 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   ObserverList<WindowStateObserver> observer_list_;
 
   // True to ignore a property change event to avoid reentrance in
-  // UpdateWindowShowType()
+  // UpdateWindowStateType()
   bool ignore_property_change_;
-
-  WindowShowType window_show_type_;
 
   scoped_ptr<State> current_state_;
 

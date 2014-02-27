@@ -95,9 +95,9 @@ class AlternateFrameSizeButtonTest : public AshTestBase {
     return view->GetBoundsInScreen().CenterPoint();
   }
 
-  // Returns true if the window has |show_type|.
-  bool HasShowType(wm::WindowShowType show_type) const {
-    return window_state()->window_show_type() == show_type;
+  // Returns true if the window has |state_type|.
+  bool HasStateType(wm::WindowStateType state_type) const {
+    return window_state()->GetStateType() == state_type;
   }
 
   // Returns true if all three buttons are in the normal state.
@@ -207,7 +207,7 @@ TEST_F(AlternateFrameSizeButtonTest, ClickSizeButtonTogglesMaximize) {
 // Test that clicking + dragging to a button adjacent to the size button snaps
 // the window left or right.
 TEST_F(AlternateFrameSizeButtonTest, ButtonDrag) {
-  EXPECT_TRUE(window_state()->IsNormalShowType());
+  EXPECT_TRUE(window_state()->IsNormalStateType());
 
   // 1) Test by dragging the mouse.
   // Snap right.
@@ -217,7 +217,7 @@ TEST_F(AlternateFrameSizeButtonTest, ButtonDrag) {
   generator.MoveMouseTo(CenterPointInScreen(close_button()));
   generator.ReleaseLeftButton();
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(HasShowType(wm::SHOW_TYPE_RIGHT_SNAPPED));
+  EXPECT_TRUE(HasStateType(wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED));
 
   // Snap left.
   generator.MoveMouseTo(CenterPointInScreen(size_button()));
@@ -225,7 +225,7 @@ TEST_F(AlternateFrameSizeButtonTest, ButtonDrag) {
   generator.MoveMouseTo(CenterPointInScreen(minimize_button()));
   generator.ReleaseLeftButton();
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(HasShowType(wm::SHOW_TYPE_LEFT_SNAPPED));
+  EXPECT_TRUE(HasStateType(wm::WINDOW_STATE_TYPE_LEFT_SNAPPED));
 
   // 2) Test with scroll gestures.
   // Snap right.
@@ -235,7 +235,7 @@ TEST_F(AlternateFrameSizeButtonTest, ButtonDrag) {
       base::TimeDelta::FromMilliseconds(100),
       3);
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(HasShowType(wm::SHOW_TYPE_RIGHT_SNAPPED));
+  EXPECT_TRUE(HasStateType(wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED));
 
   // Snap left.
   generator.GestureScrollSequence(
@@ -244,7 +244,7 @@ TEST_F(AlternateFrameSizeButtonTest, ButtonDrag) {
       base::TimeDelta::FromMilliseconds(100),
       3);
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(HasShowType(wm::SHOW_TYPE_LEFT_SNAPPED));
+  EXPECT_TRUE(HasStateType(wm::WINDOW_STATE_TYPE_LEFT_SNAPPED));
 
   // 3) Test with tap gestures.
   const int touch_default_radius =
@@ -254,19 +254,19 @@ TEST_F(AlternateFrameSizeButtonTest, ButtonDrag) {
   generator.MoveMouseTo(CenterPointInScreen(size_button()));
   generator.PressMoveAndReleaseTouchTo(CenterPointInScreen(close_button()));
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(HasShowType(wm::SHOW_TYPE_RIGHT_SNAPPED));
+  EXPECT_TRUE(HasStateType(wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED));
   // Snap left.
   generator.MoveMouseTo(CenterPointInScreen(size_button()));
   generator.PressMoveAndReleaseTouchTo(CenterPointInScreen(minimize_button()));
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(HasShowType(wm::SHOW_TYPE_LEFT_SNAPPED));
+  EXPECT_TRUE(HasStateType(wm::WINDOW_STATE_TYPE_LEFT_SNAPPED));
   ui::GestureConfiguration::set_default_radius(touch_default_radius);
 }
 
 // Test that clicking, dragging, and overshooting the minimize button a bit
 // horizontally still snaps the window left.
 TEST_F(AlternateFrameSizeButtonTest, SnapLeftOvershootMinimize) {
-  EXPECT_TRUE(window_state()->IsNormalShowType());
+  EXPECT_TRUE(window_state()->IsNormalStateType());
 
   aura::test::EventGenerator& generator = GetEventGenerator();
   generator.MoveMouseTo(CenterPointInScreen(size_button()));
@@ -278,19 +278,19 @@ TEST_F(AlternateFrameSizeButtonTest, SnapLeftOvershootMinimize) {
   generator.MoveMouseBy(-minimize_button()->width(), 0);
   generator.ReleaseLeftButton();
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(HasShowType(wm::SHOW_TYPE_LEFT_SNAPPED));
+  EXPECT_TRUE(HasStateType(wm::WINDOW_STATE_TYPE_LEFT_SNAPPED));
 }
 
 // Test that right clicking the size button has no effect.
 TEST_F(AlternateFrameSizeButtonTest, RightMouseButton) {
-  EXPECT_TRUE(window_state()->IsNormalShowType());
+  EXPECT_TRUE(window_state()->IsNormalStateType());
 
   aura::test::EventGenerator& generator = GetEventGenerator();
   generator.MoveMouseTo(CenterPointInScreen(size_button()));
   generator.PressRightButton();
   generator.ReleaseRightButton();
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(window_state()->IsNormalShowType());
+  EXPECT_TRUE(window_state()->IsNormalStateType());
 }
 
 // Test that upon releasing the mouse button after having pressed the size
@@ -325,7 +325,7 @@ TEST_F(AlternateFrameSizeButtonTest, ResetButtonsAfterClick) {
   // Release the mouse, snapping the window left.
   generator.ReleaseLeftButton();
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(HasShowType(wm::SHOW_TYPE_LEFT_SNAPPED));
+  EXPECT_TRUE(HasStateType(wm::WINDOW_STATE_TYPE_LEFT_SNAPPED));
 
   // None of the buttons should stay pressed and the buttons should have their
   // regular icons.
@@ -357,7 +357,7 @@ TEST_F(AlternateFrameSizeButtonTest, ResetButtonsAfterClick) {
   // Release the mouse. The window should stay snapped left.
   generator.ReleaseLeftButton();
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(HasShowType(wm::SHOW_TYPE_LEFT_SNAPPED));
+  EXPECT_TRUE(HasStateType(wm::WINDOW_STATE_TYPE_LEFT_SNAPPED));
 
   // The buttons should stay unpressed and the buttons should now have their
   // regular icons.

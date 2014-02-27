@@ -19,19 +19,19 @@ class ASH_EXPORT WindowStateObserver {
   // gets left/right maximized, and auto positioned. |old_type| is the value
   // before the change.
 
-  // Called after the window's show type is set to new type, but before
+  // Called after the window's state type is set to new type, but before
   // the window's bounds has been updated for the new type.
   // This is used to update the shell state such as work area so
   // that the window can use the correct environment to update its bounds.
   // TODO(oshima): Remove this once docked windows has its own state.
-  virtual void OnPreWindowShowTypeChange(WindowState* window_state,
-                                         WindowShowType old_type) {}
+  virtual void OnPreWindowStateTypeChange(WindowState* window_state,
+                                          WindowStateType old_type) {}
 
-  // Called after the window's state has been changed for the new show type.
-  // This is used to update the shell state that depends on the update
+  // Called after the window's state has been updated.
+  // This is used to update the shell state that depends on the updated
   // window bounds, such as shelf visibility.
-  virtual void OnPostWindowShowTypeChange(WindowState* window_state,
-                                          WindowShowType old_type) {}
+  virtual void OnPostWindowStateTypeChange(WindowState* window_state,
+                                           WindowStateType old_type) {}
 };
 
 }  // namespace wm

@@ -76,7 +76,7 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
   class HeaderView;
   HeaderView* header_view_;
 
-  // Updates the hittest bounds overrides based on the window show type.
+  // Updates the hittest bounds overrides based on the window state type.
   scoped_ptr<FrameBorderHitTestController> frame_border_hit_test_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomFrameViewAsh);

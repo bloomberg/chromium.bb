@@ -316,7 +316,7 @@ TEST_F(WorkspaceControllerTest, MinimizeSingleWindow) {
 
   // Show the window.
   w1->Show();
-  EXPECT_TRUE(wm::GetWindowState(w1.get())->IsNormalShowType());
+  EXPECT_TRUE(wm::GetWindowState(w1.get())->IsNormalStateType());
   EXPECT_TRUE(w1->layer()->IsDrawn());
 }
 
@@ -997,7 +997,7 @@ TEST_F(WorkspaceControllerTest, ToMinimizeRepositionsRemaining) {
 
   // |window2| should be centered now.
   EXPECT_TRUE(window2->IsVisible());
-  EXPECT_TRUE(window2_state->IsNormalShowType());
+  EXPECT_TRUE(window2_state->IsNormalStateType());
   EXPECT_EQ(base::IntToString(
                 (desktop_area.width() - window2->bounds().width()) / 2) +
             ",48 256x512", window2->bounds().ToString());
@@ -1027,7 +1027,7 @@ TEST_F(WorkspaceControllerTest, MaxToMinRepositionsRemaining) {
 
   // |window2| should be centered now.
   EXPECT_TRUE(window2->IsVisible());
-  EXPECT_TRUE(window2_state->IsNormalShowType());
+  EXPECT_TRUE(window2_state->IsNormalStateType());
   EXPECT_EQ(base::IntToString(
                 (desktop_area.width() - window2->bounds().width()) / 2) +
             ",48 256x512", window2->bounds().ToString());
@@ -1061,7 +1061,7 @@ TEST_F(WorkspaceControllerTest, NormToMaxToMinRepositionsRemaining) {
 
   // |window2| should be centered now.
   EXPECT_TRUE(window2->IsVisible());
-  EXPECT_TRUE(window2_state->IsNormalShowType());
+  EXPECT_TRUE(window2_state->IsNormalStateType());
   EXPECT_EQ(base::IntToString(
                 (desktop_area.width() - window2->bounds().width()) / 2) +
             ",40 256x512", window2->bounds().ToString());

@@ -105,9 +105,9 @@ class CustomFrameViewAshWindowStateDelegate
     window_state_ = NULL;
   }
   // Overridden from ash::wm::WindowStateObserver:
-  virtual void OnPostWindowShowTypeChange(
+  virtual void OnPostWindowStateTypeChange(
       ash::wm::WindowState* window_state,
-      ash::wm::WindowShowType old_type) OVERRIDE {
+      ash::wm::WindowStateType old_type) OVERRIDE {
     if (!window_state->IsFullscreen() &&
         !window_state->IsMinimized() &&
         immersive_fullscreen_controller_.get() &&

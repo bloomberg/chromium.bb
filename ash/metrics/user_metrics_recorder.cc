@@ -399,44 +399,44 @@ void UserMetricsRecorder::RecordPeriodicMetrics() {
         internal::SHELF_ALIGNMENT_UMA_ENUM_VALUE_COUNT);
   }
 
-  enum ActiveWindowShowType {
-    ACTIVE_WINDOW_SHOW_TYPE_NO_ACTIVE_WINDOW,
-    ACTIVE_WINDOW_SHOW_TYPE_OTHER,
-    ACTIVE_WINDOW_SHOW_TYPE_MAXIMIZED,
-    ACTIVE_WINDOW_SHOW_TYPE_FULLSCREEN,
-    ACTIVE_WINDOW_SHOW_TYPE_SNAPPED,
-    ACTIVE_WINDOW_SHOW_TYPE_COUNT
+  enum ActiveWindowStateType {
+    ACTIVE_WINDOW_STATE_TYPE_NO_ACTIVE_WINDOW,
+    ACTIVE_WINDOW_STATE_TYPE_OTHER,
+    ACTIVE_WINDOW_STATE_TYPE_MAXIMIZED,
+    ACTIVE_WINDOW_STATE_TYPE_FULLSCREEN,
+    ACTIVE_WINDOW_STATE_TYPE_SNAPPED,
+    ACTIVE_WINDOW_STATE_TYPE_COUNT
   };
 
-  ActiveWindowShowType active_window_show_type =
-      ACTIVE_WINDOW_SHOW_TYPE_NO_ACTIVE_WINDOW;
+  ActiveWindowStateType active_window_state_type =
+      ACTIVE_WINDOW_STATE_TYPE_NO_ACTIVE_WINDOW;
   wm::WindowState* active_window_state = ash::wm::GetActiveWindowState();
   if (active_window_state) {
-    switch(active_window_state->window_show_type()) {
-      case wm::SHOW_TYPE_MAXIMIZED:
-        active_window_show_type = ACTIVE_WINDOW_SHOW_TYPE_MAXIMIZED;
+    switch(active_window_state->GetStateType()) {
+      case wm::WINDOW_STATE_TYPE_MAXIMIZED:
+        active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_MAXIMIZED;
         break;
-      case wm::SHOW_TYPE_FULLSCREEN:
-        active_window_show_type = ACTIVE_WINDOW_SHOW_TYPE_FULLSCREEN;
+      case wm::WINDOW_STATE_TYPE_FULLSCREEN:
+        active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_FULLSCREEN;
         break;
-      case wm::SHOW_TYPE_LEFT_SNAPPED:
-      case wm::SHOW_TYPE_RIGHT_SNAPPED:
-        active_window_show_type = ACTIVE_WINDOW_SHOW_TYPE_SNAPPED;
+      case wm::WINDOW_STATE_TYPE_LEFT_SNAPPED:
+      case wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED:
+        active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_SNAPPED;
         break;
-      case wm::SHOW_TYPE_DEFAULT:
-      case wm::SHOW_TYPE_NORMAL:
-      case wm::SHOW_TYPE_MINIMIZED:
-      case wm::SHOW_TYPE_INACTIVE:
-      case wm::SHOW_TYPE_DETACHED:
-      case wm::SHOW_TYPE_END:
-      case wm::SHOW_TYPE_AUTO_POSITIONED:
-        active_window_show_type = ACTIVE_WINDOW_SHOW_TYPE_OTHER;
+      case wm::WINDOW_STATE_TYPE_DEFAULT:
+      case wm::WINDOW_STATE_TYPE_NORMAL:
+      case wm::WINDOW_STATE_TYPE_MINIMIZED:
+      case wm::WINDOW_STATE_TYPE_INACTIVE:
+      case wm::WINDOW_STATE_TYPE_DETACHED:
+      case wm::WINDOW_STATE_TYPE_END:
+      case wm::WINDOW_STATE_TYPE_AUTO_POSITIONED:
+        active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_OTHER;
         break;
     }
   }
   UMA_HISTOGRAM_ENUMERATION("Ash.ActiveWindowShowTypeOverTime",
-                            active_window_show_type,
-                            ACTIVE_WINDOW_SHOW_TYPE_COUNT);
+                            active_window_state_type,
+                            ACTIVE_WINDOW_STATE_TYPE_COUNT);
 }
 
 }  // namespace ash

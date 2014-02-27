@@ -45,7 +45,7 @@ DragDetails::DragDetails(aura::Window* window,
                          const gfx::Point& location,
                          int window_component,
                          aura::client::WindowMoveSource source)
-    : initial_show_type(wm::GetWindowState(window)->window_show_type()),
+    : initial_state_type(wm::GetWindowState(window)->GetStateType()),
       initial_bounds_in_parent(window->bounds()),
       initial_location_in_parent(location),
       initial_opacity(window->layer()->opacity()),

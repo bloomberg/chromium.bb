@@ -226,7 +226,7 @@ TEST_F(FrameMaximizeButtonTest, MAYBE_ResizeButtonDrag) {
   aura::test::EventGenerator generator(window->GetRootWindow(), center);
 
   wm::WindowState* window_state = wm::GetWindowState(window);
-  EXPECT_TRUE(window_state->IsNormalShowType());
+  EXPECT_TRUE(window_state->IsNormalStateType());
 
   // Snap right.
   {
@@ -334,7 +334,7 @@ TEST_F(FrameMaximizeButtonTest, MaximizeButtonExternalShutDown) {
 
   aura::test::EventGenerator generator(window->GetRootWindow(), off_pos);
   EXPECT_FALSE(maximize_button->maximizer());
-  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalShowType());
+  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalStateType());
 
   // Move the mouse cursor over the button to bring up the maximizer bubble.
   generator.MoveMouseTo(button_pos);
@@ -357,7 +357,7 @@ TEST_F(FrameMaximizeButtonTest, MaximizeOnHoverThenClick) {
 
   aura::test::EventGenerator generator(window->GetRootWindow(), off_pos);
   EXPECT_FALSE(maximize_button->maximizer());
-  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalShowType());
+  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalStateType());
 
   // Move the mouse cursor over the button to bring up the maximizer bubble.
   generator.MoveMouseTo(button_pos);
@@ -380,7 +380,7 @@ TEST_F(FrameMaximizeButtonTest, MaximizeLeftButtonDragOut) {
 
   aura::test::EventGenerator generator(window->GetRootWindow(), off_pos);
   EXPECT_FALSE(maximize_button->maximizer());
-  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalShowType());
+  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalStateType());
   EXPECT_FALSE(maximize_button->phantom_window_open());
 
   // Move the mouse cursor over the button to bring up the maximizer bubble.
@@ -426,7 +426,7 @@ TEST_F(FrameMaximizeButtonTest, MaximizeLeftByButton) {
 
   aura::test::EventGenerator generator(window->GetRootWindow(), off_pos);
   EXPECT_FALSE(maximize_button->maximizer());
-  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalShowType());
+  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalStateType());
   EXPECT_FALSE(maximize_button->phantom_window_open());
 
   // Move the mouse cursor over the button to bring up the maximizer bubble.
@@ -461,7 +461,7 @@ TEST_F(FrameMaximizeButtonTest, MaximizeKeepFocus) {
 
   aura::test::EventGenerator generator(window->GetRootWindow(), off_pos);
   EXPECT_FALSE(maximize_button->maximizer());
-  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalShowType());
+  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalStateType());
 
   aura::Window* active =
       aura::client::GetFocusClient(window)->GetFocusedWindow();
@@ -518,7 +518,7 @@ TEST_F(FrameMaximizeButtonTest, OnlyLeftButtonMaximizes) {
   aura::test::EventGenerator generator(window->GetRootWindow(), off_pos);
   EXPECT_FALSE(maximize_button->maximizer());
   wm::WindowState* window_state = wm::GetWindowState(window);
-  EXPECT_TRUE(window_state->IsNormalShowType());
+  EXPECT_TRUE(window_state->IsNormalStateType());
   EXPECT_FALSE(window_state->IsMaximized());
 
   // Move the mouse cursor over the button.
@@ -776,7 +776,7 @@ TEST_F(FrameMaximizeButtonTest, LossOfActivationWhileMaximizeBubbleOpenAborts) {
   maximize_button->set_bubble_appearance_delay_ms(0);
 
   gfx::Rect initial_bounds = window->GetBoundsInScreen();
-  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalShowType());
+  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalStateType());
   EXPECT_TRUE(widget()->IsActive());
 
   // Move the mouse over the maximize button in order to bring up the maximizer
@@ -805,7 +805,7 @@ TEST_F(FrameMaximizeButtonTest, LossOfActivationWhileMaximizeBubbleOpenAborts) {
   // Test that we have properly reset the state of the now inactive window.
   EXPECT_FALSE(maximize_button->maximizer());
   EXPECT_FALSE(maximize_button->phantom_window_open());
-  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalShowType());
+  EXPECT_TRUE(wm::GetWindowState(window)->IsNormalStateType());
   EXPECT_EQ(initial_bounds.ToString(), window->GetBoundsInScreen().ToString());
 }
 

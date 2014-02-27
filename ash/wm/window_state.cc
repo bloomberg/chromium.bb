@@ -71,7 +71,7 @@ WMEvent WMEventFromShowState(ui::WindowShowState requested_show_state) {
       return SHOW_INACTIVE;
     case ui::SHOW_STATE_DETACHED:
     case ui::SHOW_STATE_END:
-      NOTREACHED() << "No WMEvent defined for the show type:"
+      NOTREACHED() << "No WMEvent defined for the show state:"
                    << requested_show_state;
   }
   return NORMAL;
@@ -92,8 +92,7 @@ WindowState::WindowState(aura::Window* window)
       animate_to_fullscreen_(true),
       minimum_visibility_(false),
       ignore_property_change_(false),
-      window_show_type_(ToWindowShowType(GetShowState())),
-      current_state_(new DefaultState) {
+      current_state_(new DefaultState(ToWindowStateType(GetShowState()))) {
   window_->AddObserver(this);
 #if defined(OS_CHROMEOS)
   // NOTE(pkotwicz): Animating to immersive fullscreen does not look good. When
@@ -121,6 +120,10 @@ ui::WindowShowState WindowState::GetShowState() const {
   return window_->GetProperty(aura::client::kShowStateKey);
 }
 
+WindowStateType WindowState::GetStateType() const {
+  return current_state_->GetType();
+}
+
 bool WindowState::IsMinimized() const {
   return GetShowState() == ui::SHOW_STATE_MINIMIZED;
 }
@@ -140,17 +143,17 @@ bool WindowState::IsMaximizedOrFullscreen() const {
 }
 
 bool WindowState::IsSnapped() const {
-  return window_show_type_ == SHOW_TYPE_LEFT_SNAPPED ||
-      window_show_type_ == SHOW_TYPE_RIGHT_SNAPPED;
+  return GetStateType() == WINDOW_STATE_TYPE_LEFT_SNAPPED ||
+      GetStateType() == WINDOW_STATE_TYPE_RIGHT_SNAPPED;
 }
 
-bool WindowState::IsNormalShowType() const {
-  return window_show_type_ == SHOW_TYPE_NORMAL ||
-      window_show_type_ == SHOW_TYPE_DEFAULT;
+bool WindowState::IsNormalStateType() const {
+  return GetStateType() == WINDOW_STATE_TYPE_NORMAL ||
+      GetStateType() == WINDOW_STATE_TYPE_DEFAULT;
 }
 
 bool WindowState::IsNormalOrSnapped() const {
-  return IsNormalShowType() || IsSnapped();
+  return IsNormalStateType() || IsSnapped();
 }
 
 bool WindowState::IsActive() const {
@@ -205,11 +208,11 @@ void WindowState::Maximize() {
 }
 
 void WindowState::SnapLeftWithDefaultWidth() {
-  SnapWindowWithDefaultWidth(SHOW_TYPE_LEFT_SNAPPED);
+  SnapWindowWithDefaultWidth(WINDOW_STATE_TYPE_LEFT_SNAPPED);
 }
 
 void WindowState::SnapRightWithDefaultWidth() {
-  SnapWindowWithDefaultWidth(SHOW_TYPE_RIGHT_SNAPPED);
+  SnapWindowWithDefaultWidth(WINDOW_STATE_TYPE_RIGHT_SNAPPED);
 }
 
 void WindowState::RequestBounds(const gfx::Rect& requested_bounds) {
@@ -236,7 +239,7 @@ void WindowState::Deactivate() {
 }
 
 void WindowState::Restore() {
-  if (!IsNormalShowType())
+  if (!IsNormalStateType())
     OnWMEvent(NORMAL);
 }
 
@@ -329,22 +332,22 @@ void WindowState::AdjustSnappedBounds(gfx::Rect* bounds) {
     return;
   gfx::Rect maximized_bounds = ScreenUtil::GetMaximizedWindowBoundsInParent(
       window_);
-  if (window_show_type() == SHOW_TYPE_LEFT_SNAPPED)
+  if (GetStateType() == WINDOW_STATE_TYPE_LEFT_SNAPPED)
     bounds->set_x(maximized_bounds.x());
-  else if (window_show_type() == SHOW_TYPE_RIGHT_SNAPPED)
+  else if (GetStateType() == WINDOW_STATE_TYPE_RIGHT_SNAPPED)
     bounds->set_x(maximized_bounds.right() - bounds->width());
   bounds->set_y(maximized_bounds.y());
   bounds->set_height(maximized_bounds.height());
 }
 
-void WindowState::SnapWindowWithDefaultWidth(WindowShowType left_or_right) {
-  DCHECK(left_or_right == SHOW_TYPE_LEFT_SNAPPED ||
-         left_or_right == SHOW_TYPE_RIGHT_SNAPPED);
-  gfx::Rect bounds_in_parent(left_or_right == SHOW_TYPE_LEFT_SNAPPED ?
+void WindowState::SnapWindowWithDefaultWidth(WindowStateType left_or_right) {
+  DCHECK(left_or_right == WINDOW_STATE_TYPE_LEFT_SNAPPED ||
+         left_or_right == WINDOW_STATE_TYPE_RIGHT_SNAPPED);
+  gfx::Rect bounds_in_parent(left_or_right == WINDOW_STATE_TYPE_LEFT_SNAPPED ?
       GetDefaultLeftSnappedWindowBoundsInParent(window()) :
       GetDefaultRightSnappedWindowBoundsInParent(window()));
 
-  if (window_show_type_ == left_or_right) {
+  if (GetStateType() == left_or_right) {
     window_->SetBounds(bounds_in_parent);
     return;
   }
@@ -358,40 +361,40 @@ void WindowState::SnapWindowWithDefaultWidth(WindowShowType left_or_right) {
   // which width to use when the snapped window is moved to the edge.
   SetRestoreBoundsInParent(bounds_in_parent);
 
-  OnWMEvent(left_or_right == SHOW_TYPE_LEFT_SNAPPED ?
+  OnWMEvent(left_or_right == WINDOW_STATE_TYPE_LEFT_SNAPPED ?
             SNAP_LEFT : SNAP_RIGHT);
 
   // TODO(varkha): Ideally the bounds should be changed in a LayoutManager upon
-  // observing the WindowShowType change.
+  // observing the WindowStateType change.
   // If the window is a child of kShellWindowId_DockedContainer such as during
   // a drag, the window's bounds are not set in
-  // WorkspaceLayoutManager::OnWindowShowTypeChanged(). Set them here. Skip
+  // WorkspaceLayoutManager::OnWindowStateTypeChanged(). Set them here. Skip
   // setting the bounds otherwise to avoid stopping the slide animation which
-  // was started as a result of OnWindowShowTypeChanged().
+  // was started as a result of OnWindowStateTypeChanged().
   if (IsDocked())
     window_->SetBounds(bounds_in_parent);
   SetRestoreBoundsInScreen(restore_bounds_in_screen);
 }
 
-void WindowState::UpdateWindowShowType(WindowShowType new_window_show_type) {
+void WindowState::UpdateWindowShowStateFromStateType() {
   ui::WindowShowState new_window_state =
-      ToWindowShowState(new_window_show_type);
+      ToWindowShowState(current_state_->GetType());
   if (new_window_state != GetShowState()) {
     base::AutoReset<bool> resetter(&ignore_property_change_, true);
     window_->SetProperty(aura::client::kShowStateKey, new_window_state);
   }
-  window_show_type_ = new_window_show_type;
 }
 
-void WindowState::NotifyPreShowTypeChange(WindowShowType old_window_show_type) {
+void WindowState::NotifyPreStateTypeChange(
+    WindowStateType old_window_state_type) {
   FOR_EACH_OBSERVER(WindowStateObserver, observer_list_,
-                    OnPreWindowShowTypeChange(this, old_window_show_type));
+                    OnPreWindowStateTypeChange(this, old_window_state_type));
 }
 
-void WindowState::NotifyPostShowTypeChange(
-    WindowShowType old_window_show_type) {
+void WindowState::NotifyPostStateTypeChange(
+    WindowStateType old_window_state_type) {
   FOR_EACH_OBSERVER(WindowStateObserver, observer_list_,
-                    OnPostWindowShowTypeChange(this, old_window_show_type));
+                    OnPostWindowStateTypeChange(this, old_window_state_type));
 }
 
 void WindowState::SetBoundsDirect(const gfx::Rect& bounds) {

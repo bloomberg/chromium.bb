@@ -192,13 +192,15 @@ void WorkspaceLayoutManager::OnWindowActivated(aura::Window* gained_active,
 //////////////////////////////////////////////////////////////////////////////
 // WorkspaceLayoutManager, wm::WindowStateObserver implementation:
 
-void WorkspaceLayoutManager::OnPostWindowShowTypeChange(
+void WorkspaceLayoutManager::OnPostWindowStateTypeChange(
     wm::WindowState* window_state,
-    wm::WindowShowType old_type) {
+    wm::WindowStateType old_type) {
 
   // Notify observers that fullscreen state may be changing.
-  if (window_state->IsFullscreen() || old_type == wm::SHOW_TYPE_FULLSCREEN)
+  if (window_state->IsFullscreen() ||
+      old_type == wm::WINDOW_STATE_TYPE_FULLSCREEN) {
     UpdateFullscreenState();
+  }
 
   UpdateShelfVisibility();
 }

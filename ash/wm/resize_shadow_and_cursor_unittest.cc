@@ -117,7 +117,7 @@ class ResizeShadowAndCursorTest : public AshTestBase {
 // mouse's position.
 TEST_F(ResizeShadowAndCursorTest, MouseHover) {
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
-  ASSERT_TRUE(ash::wm::GetWindowState(window())->IsNormalShowType());
+  ASSERT_TRUE(ash::wm::GetWindowState(window())->IsNormalStateType());
 
   generator.MoveMouseTo(50, 50);
   EXPECT_FALSE(HasResizeShadow());
@@ -160,7 +160,7 @@ TEST_F(ResizeShadowAndCursorTest, MouseHover) {
 // as long as a user is resizing a window.
 TEST_F(ResizeShadowAndCursorTest, MouseDrag) {
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
-  ASSERT_TRUE(ash::wm::GetWindowState(window())->IsNormalShowType());
+  ASSERT_TRUE(ash::wm::GetWindowState(window())->IsNormalStateType());
   gfx::Size initial_size(window()->bounds().size());
 
   generator.MoveMouseTo(100, 50);
@@ -182,7 +182,7 @@ TEST_F(ResizeShadowAndCursorTest, MouseDrag) {
 
 // Test that the resize shadows stay visible while resizing a window via touch.
 TEST_F(ResizeShadowAndCursorTest, Touch) {
-  ASSERT_TRUE(ash::wm::GetWindowState(window())->IsNormalShowType());
+  ASSERT_TRUE(ash::wm::GetWindowState(window())->IsNormalStateType());
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
 
   int start = 100 + ash::kResizeOutsideBoundsSize - 1;
@@ -199,7 +199,7 @@ TEST_F(ResizeShadowAndCursorTest, Touch) {
 // used when the window is maximized.
 TEST_F(ResizeShadowAndCursorTest, MaximizeRestore) {
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
-  ASSERT_TRUE(ash::wm::GetWindowState(window())->IsNormalShowType());
+  ASSERT_TRUE(ash::wm::GetWindowState(window())->IsNormalStateType());
 
   generator.MoveMouseTo(100, 50);
   EXPECT_EQ(HTRIGHT, ResizeShadowHitTest());

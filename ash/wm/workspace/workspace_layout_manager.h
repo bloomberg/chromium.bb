@@ -79,8 +79,9 @@ class ASH_EXPORT WorkspaceLayoutManager
                                  aura::Window* lost_active) OVERRIDE;
 
   // WindowStateObserver overrides:
-  virtual void OnPostWindowShowTypeChange(wm::WindowState* window_state,
-                                          wm::WindowShowType old_type) OVERRIDE;
+  virtual void OnPostWindowStateTypeChange(
+      wm::WindowState* window_state,
+      wm::WindowStateType old_type) OVERRIDE;
 
  private:
   typedef std::set<aura::Window*> WindowSet;
@@ -101,10 +102,10 @@ class ASH_EXPORT WorkspaceLayoutManager
   // has changed.
   void UpdateFullscreenState();
 
-  // Updates the bounds of the window for a show type change from
+  // Updates the bounds of the window for a stte type change from
   // |old_show_type|.
-  void UpdateBoundsFromShowType(wm::WindowState* window_state,
-                                wm::WindowShowType old_show_type);
+  void UpdateBoundsFromStateType(wm::WindowState* window_state,
+                                 wm::WindowStateType old_state_type);
 
   // If |window_state| is maximized or fullscreen the bounds of the
   // window are set and true is returned. Does nothing otherwise.

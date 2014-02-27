@@ -160,14 +160,14 @@ class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate,
   }
 
   // Overridden from ash::wm::WindowStateObserver:
-  virtual void OnPostWindowShowTypeChange(
+  virtual void OnPostWindowStateTypeChange(
       ash::wm::WindowState* window_state,
-      ash::wm::WindowShowType old_type) OVERRIDE {
+      ash::wm::WindowStateType old_type) OVERRIDE {
     if (!window_state->IsFullscreen() && !window_state->IsMinimized() &&
         app_window_->GetBaseWindow()->IsFullscreenOrPending()) {
       app_window_->Restore();
       // Usually OnNativeWindowChanged() is called when the window bounds are
-      // changed as a result of a show type change. Because the change in show
+      // changed as a result of a state type change. Because the change in state
       // type has already occurred, we need to call OnNativeWindowChanged()
       // explicitly.
       app_window_->OnNativeWindowChanged();

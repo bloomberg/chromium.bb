@@ -44,7 +44,7 @@ bool CanStartTwoFingerMove(aura::Window* window,
   // We allow moving a window via two fingers when the hittest components are
   // HTCLIENT. This is done so that a window can be dragged via two fingers when
   // the tab strip is full and hitting the caption area is difficult. We check
-  // the window type and the show type so that we do not steal touches from the
+  // the window type and the state type so that we do not steal touches from the
   // web contents.
   if (!wm::GetWindowState(window)->IsNormalOrSnapped() ||
       window->type() != ui::wm::WINDOW_TYPE_NORMAL) {
@@ -101,8 +101,8 @@ class ToplevelWindowEventHandler::ScopedWindowResizer
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
 
   // WindowStateObserver overrides:
-  virtual void OnPreWindowShowTypeChange(wm::WindowState* window_state,
-                                         wm::WindowShowType type) OVERRIDE;
+  virtual void OnPreWindowStateTypeChange(wm::WindowState* window_state,
+                                          wm::WindowStateType type) OVERRIDE;
 
  private:
   ToplevelWindowEventHandler* handler_;
@@ -131,9 +131,9 @@ bool ToplevelWindowEventHandler::ScopedWindowResizer::IsMove() const {
 }
 
 void
-ToplevelWindowEventHandler::ScopedWindowResizer::OnPreWindowShowTypeChange(
+ToplevelWindowEventHandler::ScopedWindowResizer::OnPreWindowStateTypeChange(
     wm::WindowState* window_state,
-    wm::WindowShowType old) {
+    wm::WindowStateType old) {
   handler_->CompleteDrag(DRAG_COMPLETE);
 }
 
@@ -327,16 +327,18 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
       }
 
       if (event->details().velocity_y() > kMinVertVelocityForWindowMinimize) {
-        SetWindowShowTypeFromGesture(target, wm::SHOW_TYPE_MINIMIZED);
+        SetWindowStateTypeFromGesture(target, wm::WINDOW_STATE_TYPE_MINIMIZED);
       } else if (event->details().velocity_y() <
                  -kMinVertVelocityForWindowMinimize) {
-        SetWindowShowTypeFromGesture(target, wm::SHOW_TYPE_MAXIMIZED);
+        SetWindowStateTypeFromGesture(target, wm::WINDOW_STATE_TYPE_MAXIMIZED);
       } else if (event->details().velocity_x() >
                  kMinHorizVelocityForWindowSwipe) {
-        SetWindowShowTypeFromGesture(target, wm::SHOW_TYPE_RIGHT_SNAPPED);
+        SetWindowStateTypeFromGesture(target,
+                                      wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED);
       } else if (event->details().velocity_x() <
                  -kMinHorizVelocityForWindowSwipe) {
-        SetWindowShowTypeFromGesture(target, wm::SHOW_TYPE_LEFT_SNAPPED);
+        SetWindowStateTypeFromGesture(target,
+                                      wm::WINDOW_STATE_TYPE_LEFT_SNAPPED);
       }
       event->StopPropagation();
       return;
@@ -346,14 +348,17 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
 
       CompleteDrag(DRAG_COMPLETE);
 
-      if (event->details().swipe_down())
-        SetWindowShowTypeFromGesture(target, wm::SHOW_TYPE_MINIMIZED);
-      else if (event->details().swipe_up())
-        SetWindowShowTypeFromGesture(target, wm::SHOW_TYPE_MAXIMIZED);
-      else if (event->details().swipe_right())
-        SetWindowShowTypeFromGesture(target, wm::SHOW_TYPE_RIGHT_SNAPPED);
-      else
-        SetWindowShowTypeFromGesture(target, wm::SHOW_TYPE_LEFT_SNAPPED);
+      if (event->details().swipe_down()) {
+        SetWindowStateTypeFromGesture(target, wm::WINDOW_STATE_TYPE_MINIMIZED);
+      } else if (event->details().swipe_up()) {
+        SetWindowStateTypeFromGesture(target, wm::WINDOW_STATE_TYPE_MAXIMIZED);
+      } else if (event->details().swipe_right()) {
+        SetWindowStateTypeFromGesture(target,
+                                      wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED);
+      } else {
+        SetWindowStateTypeFromGesture(target,
+                                      wm::WINDOW_STATE_TYPE_LEFT_SNAPPED);
+      }
       event->StopPropagation();
       return;
     default:
@@ -552,31 +557,31 @@ void ToplevelWindowEventHandler::HandleMouseExited(
     controller->HideShadow(target);
 }
 
-void ToplevelWindowEventHandler::SetWindowShowTypeFromGesture(
+void ToplevelWindowEventHandler::SetWindowStateTypeFromGesture(
     aura::Window* window,
-    wm::WindowShowType new_show_type) {
+    wm::WindowStateType new_state_type) {
   wm::WindowState* window_state = ash::wm::GetWindowState(window);
-  switch (new_show_type) {
-    case wm::SHOW_TYPE_MINIMIZED:
+  switch (new_state_type) {
+    case wm::WINDOW_STATE_TYPE_MINIMIZED:
       if (window_state->CanMinimize()) {
         window_state->Minimize();
         window_state->set_unminimize_to_restore_bounds(true);
         window_state->SetRestoreBoundsInParent(pre_drag_window_bounds_);
       }
       break;
-    case wm::SHOW_TYPE_MAXIMIZED:
+    case wm::WINDOW_STATE_TYPE_MAXIMIZED:
       if (window_state->CanMaximize()) {
         window_state->SetRestoreBoundsInParent(pre_drag_window_bounds_);
         window_state->Maximize();
       }
       break;
-    case wm::SHOW_TYPE_LEFT_SNAPPED:
+    case wm::WINDOW_STATE_TYPE_LEFT_SNAPPED:
       if (window_state->CanSnap()) {
         window_state->SetRestoreBoundsInParent(pre_drag_window_bounds_);
         window_state->SnapLeftWithDefaultWidth();
       }
       break;
-    case wm::SHOW_TYPE_RIGHT_SNAPPED:
+    case wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED:
       if (window_state->CanSnap()) {
         window_state->SetRestoreBoundsInParent(pre_drag_window_bounds_);
         window_state->SnapRightWithDefaultWidth();

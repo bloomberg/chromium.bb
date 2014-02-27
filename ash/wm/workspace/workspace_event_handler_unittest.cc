@@ -214,7 +214,7 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisWhenSideSnapped) {
                                        window.get());
   wd.set_window_component(HTTOP);
   generator.DoubleClickLeftButton();
-  EXPECT_EQ(wm::SHOW_TYPE_LEFT_SNAPPED, window_state->window_show_type());
+  EXPECT_EQ(wm::WINDOW_STATE_TYPE_LEFT_SNAPPED, window_state->GetStateType());
   EXPECT_EQ(snapped_bounds_in_screen.ToString(),
             window->GetBoundsInScreen().ToString());
 
@@ -222,7 +222,7 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisWhenSideSnapped) {
   // make the window take up the entire work area.
   wd.set_window_component(HTRIGHT);
   generator.DoubleClickLeftButton();
-  EXPECT_TRUE(window_state->IsNormalShowType());
+  EXPECT_TRUE(window_state->IsNormalStateType());
   EXPECT_EQ(work_area_in_screen.ToString(),
             window->GetBoundsInScreen().ToString());
 }
@@ -327,13 +327,13 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickCaptionTogglesMaximize) {
   EXPECT_TRUE(window_state->IsMaximized());
 
   generator.DoubleClickLeftButton();
-  EXPECT_TRUE(window_state->IsNormalShowType());
+  EXPECT_TRUE(window_state->IsNormalStateType());
   EXPECT_EQ(restore_bounds.ToString(), window->bounds().ToString());
 
   // 2) Double clicking a horizontally maximized window should maximize.
   wd.set_window_component(HTLEFT);
   generator.DoubleClickLeftButton();
-  EXPECT_TRUE(window_state->IsNormalShowType());
+  EXPECT_TRUE(window_state->IsNormalStateType());
   EXPECT_EQ(work_area_in_parent.x(), window->bounds().x());
   EXPECT_EQ(restore_bounds.y(), window->bounds().y());
   EXPECT_EQ(work_area_in_parent.width(), window->bounds().width());
@@ -344,7 +344,7 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickCaptionTogglesMaximize) {
   EXPECT_TRUE(window_state->IsMaximized());
 
   generator.DoubleClickLeftButton();
-  EXPECT_TRUE(window_state->IsNormalShowType());
+  EXPECT_TRUE(window_state->IsNormalStateType());
   EXPECT_EQ(restore_bounds.ToString(), window->bounds().ToString());
 
   // 3) Double clicking a snapped window should maximize.
@@ -355,7 +355,7 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickCaptionTogglesMaximize) {
   EXPECT_TRUE(window_state->IsMaximized());
 
   generator.DoubleClickLeftButton();
-  EXPECT_TRUE(window_state->IsNormalShowType());
+  EXPECT_TRUE(window_state->IsNormalStateType());
   EXPECT_EQ(restore_bounds.ToString(), window->bounds().ToString());
 }
 

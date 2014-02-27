@@ -515,7 +515,7 @@ TEST_P(DockedWindowResizerTest, AttachMinimizeRestore) {
   window_state->Restore();
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(window->IsVisible());
-  EXPECT_TRUE(window_state->IsNormalShowType());
+  EXPECT_TRUE(window_state->IsNormalStateType());
 }
 
 // Maximize a docked window and check that it is maximized and no longer docked.
@@ -1595,7 +1595,7 @@ TEST_P(DockedWindowResizerTest, MaximizedDuringDrag) {
   EXPECT_TRUE(window_state->IsDocked());
 
   // Maximize the window while in a real drag. In particular,
-  // ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowShowTypeChanged()
+  // ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowStateTypeChanged()
   // must be called in order for the maximized window's size to be correct.
   delegate()->set_window_component(HTCAPTION);
   aura::test::EventGenerator& generator = GetEventGenerator();
