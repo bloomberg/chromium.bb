@@ -782,7 +782,7 @@ public:
     // have been calculated on the fly (without associating it with the actual element) somewhere.
     Element* viewportDefiningElement(RenderStyle* rootStyle = 0) const;
 
-    DocumentMarkerController* markers() const { return m_markers.get(); }
+    DocumentMarkerController& markers() const { return *m_markers; }
 
     bool directionSetOnDocumentElement() const { return m_directionSetOnDocumentElement; }
     bool writingModeSetOnDocumentElement() const { return m_writingModeSetOnDocumentElement; }

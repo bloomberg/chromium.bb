@@ -4098,7 +4098,7 @@ TEST_F(WebFrameTest, ReplaceMisspelledRange)
     RefPtr<Range> selectionRange = frame->frame()->selection().toNormalizedRange();
 
     EXPECT_EQ(1, spellcheck.numberOfTimesChecked());
-    EXPECT_EQ(1U, document->markers()->markersInRange(selectionRange.get(), DocumentMarker::Spelling).size());
+    EXPECT_EQ(1U, document->markers().markersInRange(selectionRange.get(), DocumentMarker::Spelling).size());
 
     frame->replaceMisspelledRange("welcome");
     EXPECT_EQ("_welcome_.", frame->contentAsText(std::numeric_limits<size_t>::max()).utf8());
@@ -4130,7 +4130,7 @@ TEST_F(WebFrameTest, RemoveSpellingMarkers)
     frame->selectRange(WebRange::fromDocumentRange(frame, allTextBeginOffset, allTextLength));
     RefPtr<Range> selectionRange = frame->frame()->selection().toNormalizedRange();
 
-    EXPECT_EQ(0U, document->markers()->markersInRange(selectionRange.get(), DocumentMarker::Spelling).size());
+    EXPECT_EQ(0U, document->markers().markersInRange(selectionRange.get(), DocumentMarker::Spelling).size());
 }
 
 TEST_F(WebFrameTest, MarkerHashIdentifiers) {
@@ -4280,13 +4280,13 @@ TEST_F(WebFrameTest, SpellcheckResultErasesMarkers)
 
     element->focus();
     document->execCommand("InsertText", false, "welcome ");
-    document->markers()->addMarker(rangeOfContents(element->toNode()).get(), DocumentMarker::Spelling);
-    document->markers()->addMarker(rangeOfContents(element->toNode()).get(), DocumentMarker::Grammar);
-    document->markers()->addMarker(rangeOfContents(element->toNode()).get(), DocumentMarker::InvisibleSpellcheck);
-    EXPECT_EQ(3U, document->markers()->markers().size());
+    document->markers().addMarker(rangeOfContents(element->toNode()).get(), DocumentMarker::Spelling);
+    document->markers().addMarker(rangeOfContents(element->toNode()).get(), DocumentMarker::Grammar);
+    document->markers().addMarker(rangeOfContents(element->toNode()).get(), DocumentMarker::InvisibleSpellcheck);
+    EXPECT_EQ(3U, document->markers().markers().size());
 
     spellcheck.kickNoResults();
-    EXPECT_EQ(0U, document->markers()->markers().size());
+    EXPECT_EQ(0U, document->markers().markers().size());
 }
 
 TEST_F(WebFrameTest, SpellcheckResultsSavedInDocument)
@@ -4311,23 +4311,23 @@ TEST_F(WebFrameTest, SpellcheckResultsSavedInDocument)
     document->execCommand("InsertText", false, "wellcome ");
 
     spellcheck.kick();
-    ASSERT_EQ(1U, document->markers()->markers().size());
-    ASSERT_NE(static_cast<DocumentMarker*>(0), document->markers()->markers()[0]);
-    EXPECT_EQ(DocumentMarker::Spelling, document->markers()->markers()[0]->type());
+    ASSERT_EQ(1U, document->markers().markers().size());
+    ASSERT_NE(static_cast<DocumentMarker*>(0), document->markers().markers()[0]);
+    EXPECT_EQ(DocumentMarker::Spelling, document->markers().markers()[0]->type());
 
     document->execCommand("InsertText", false, "wellcome ");
 
     spellcheck.kickGrammar();
-    ASSERT_EQ(1U, document->markers()->markers().size());
-    ASSERT_NE(static_cast<DocumentMarker*>(0), document->markers()->markers()[0]);
-    EXPECT_EQ(DocumentMarker::Grammar, document->markers()->markers()[0]->type());
+    ASSERT_EQ(1U, document->markers().markers().size());
+    ASSERT_NE(static_cast<DocumentMarker*>(0), document->markers().markers()[0]);
+    EXPECT_EQ(DocumentMarker::Grammar, document->markers().markers()[0]->type());
 
     document->execCommand("InsertText", false, "wellcome ");
 
     spellcheck.kickInvisibleSpellcheck();
-    ASSERT_EQ(1U, document->markers()->markers().size());
-    ASSERT_NE(static_cast<DocumentMarker*>(0), document->markers()->markers()[0]);
-    EXPECT_EQ(DocumentMarker::InvisibleSpellcheck, document->markers()->markers()[0]->type());
+    ASSERT_EQ(1U, document->markers().markers().size());
+    ASSERT_NE(static_cast<DocumentMarker*>(0), document->markers().markers()[0]);
+    EXPECT_EQ(DocumentMarker::InvisibleSpellcheck, document->markers().markers()[0]->type());
 }
 
 class TestAccessInitialDocumentWebFrameClient : public WebFrameClient {

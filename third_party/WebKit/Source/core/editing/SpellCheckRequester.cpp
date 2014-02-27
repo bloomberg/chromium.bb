@@ -68,7 +68,7 @@ PassRefPtr<SpellCheckRequest> SpellCheckRequest::create(TextCheckingTypeMask tex
     if (!text.length())
         return PassRefPtr<SpellCheckRequest>();
 
-    const Vector<DocumentMarker*>& markers = checkingRange->ownerDocument().markers()->markersInRange(checkingRange.get(), DocumentMarker::SpellCheckClientMarkers());
+    const Vector<DocumentMarker*>& markers = checkingRange->ownerDocument().markers().markersInRange(checkingRange.get(), DocumentMarker::SpellCheckClientMarkers());
     Vector<uint32_t> hashes(markers.size());
     Vector<unsigned> offsets(markers.size());
     for (size_t i = 0; i < markers.size(); i++) {
@@ -252,7 +252,7 @@ void SpellCheckRequester::didCheckSucceed(int sequence, const Vector<TextCheckin
             markers.remove(DocumentMarker::Spelling);
         if (!requestData.maskContains(TextCheckingTypeGrammar))
             markers.remove(DocumentMarker::Grammar);
-        m_frame.document()->markers()->removeMarkers(m_processingRequest->checkingRange().get(), markers);
+        m_frame.document()->markers().removeMarkers(m_processingRequest->checkingRange().get(), markers);
     }
     didCheck(sequence, results);
 }

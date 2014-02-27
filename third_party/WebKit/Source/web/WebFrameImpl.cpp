@@ -1278,7 +1278,7 @@ void WebFrameImpl::replaceMisspelledRange(const WebString& text)
     RefPtr<Range> caretRange = frame()->selection().toNormalizedRange();
     if (!caretRange)
         return;
-    Vector<DocumentMarker*> markers = frame()->document()->markers()->markersInRange(caretRange.get(), DocumentMarker::MisspellingMarkers());
+    Vector<DocumentMarker*> markers = frame()->document()->markers().markersInRange(caretRange.get(), DocumentMarker::MisspellingMarkers());
     if (markers.size() < 1 || markers[0]->startOffset() >= markers[0]->endOffset())
         return;
     RefPtr<Range> markerRange = Range::create(caretRange->ownerDocument(), caretRange->startContainer(), markers[0]->startOffset(), caretRange->endContainer(), markers[0]->endOffset());
@@ -1290,7 +1290,7 @@ void WebFrameImpl::replaceMisspelledRange(const WebString& text)
 
 void WebFrameImpl::removeSpellingMarkers()
 {
-    frame()->document()->markers()->removeMarkers(DocumentMarker::MisspellingMarkers());
+    frame()->document()->markers().removeMarkers(DocumentMarker::MisspellingMarkers());
 }
 
 bool WebFrameImpl::hasSelection() const
@@ -1585,7 +1585,7 @@ void WebFrameImpl::stopFinding(bool clearSelection)
     cancelPendingScopingEffort();
 
     // Remove all markers for matches found and turn off the highlighting.
-    frame()->document()->markers()->removeMarkers(DocumentMarker::TextMatch);
+    frame()->document()->markers().removeMarkers(DocumentMarker::TextMatch);
     frame()->editor().setMarkedTextMatchesAreHighlighted(false);
     clearFindMatchesCache();
 
@@ -2391,14 +2391,14 @@ void WebFrameImpl::invalidateArea(AreaToInvalidate area)
 
 void WebFrameImpl::addMarker(Range* range, bool activeMatch)
 {
-    frame()->document()->markers()->addTextMatchMarker(range, activeMatch);
+    frame()->document()->markers().addTextMatchMarker(range, activeMatch);
 }
 
 void WebFrameImpl::setMarkerActive(Range* range, bool active)
 {
     if (!range || range->collapsed(IGNORE_EXCEPTION))
         return;
-    frame()->document()->markers()->setMarkersActive(range, active);
+    frame()->document()->markers().setMarkersActive(range, active);
 }
 
 int WebFrameImpl::ordinalOfFirstMatchForFrame(WebFrameImpl* frame) const

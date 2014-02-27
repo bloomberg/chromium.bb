@@ -51,7 +51,7 @@ protected:
     virtual void SetUp() OVERRIDE;
 
     Document& document() const { return *m_document; }
-    DocumentMarkerController& markerController() const { return *m_document->markers(); }
+    DocumentMarkerController& markerController() const { return m_document->markers(); }
 
     PassRefPtr<Text> createTextNode(const char*);
     void markNodeContents(PassRefPtr<Node>);

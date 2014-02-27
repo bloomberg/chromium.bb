@@ -295,7 +295,7 @@ void Node::willBeDeletedFromDocument()
     if (AXObjectCache* cache = document.existingAXObjectCache())
         cache->remove(this);
 
-    document.markers()->removeMarkers(this);
+    document.markers().removeMarkers(this);
 }
 
 NodeRareData* Node::rareData() const

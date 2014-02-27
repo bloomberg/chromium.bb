@@ -206,7 +206,7 @@ String HitTestResult::spellingToolTip(TextDirection& dir) const
     if (!m_innerNonSharedNode)
         return String();
 
-    DocumentMarker* marker = m_innerNonSharedNode->document().markers()->markerContainingPoint(m_hitTestLocation.point(), DocumentMarker::Grammar);
+    DocumentMarker* marker = m_innerNonSharedNode->document().markers().markerContainingPoint(m_hitTestLocation.point(), DocumentMarker::Grammar);
     if (!marker)
         return String();
 
@@ -352,7 +352,7 @@ bool HitTestResult::isMisspelled() const
     VisiblePosition pos(targetNode()->renderer()->positionForPoint(localPoint()));
     if (pos.isNull())
         return false;
-    return m_innerNonSharedNode->document().markers()->markersInRange(
+    return m_innerNonSharedNode->document().markers().markersInRange(
         makeRange(pos, pos).get(), DocumentMarker::MisspellingMarkers()).size() > 0;
 }
 
