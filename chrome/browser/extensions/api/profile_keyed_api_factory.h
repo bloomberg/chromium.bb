@@ -23,11 +23,24 @@ class ProfileKeyedAPIFactory;
 class ProfileKeyedAPI : public BrowserContextKeyedService {
  protected:
   // Defaults for flags that control ProfileKeyedAPIFactory behavior.
+  // These can be overridden by subclasses to change that behavior.
   // See BrowserContextKeyedBaseFactory for usage.
+
+  // These flags affect what instance is returned when GetForProfile is called
+  // on an incognito profile. By default, it returns NULL. If
+  // kServiceRedirectedInIncognito is true, it returns the instance for the
+  // corresponding regular profile. If kServiceHasOwnInstanceInIncognito
+  // is true, it returns a separate instance.
   static const bool kServiceRedirectedInIncognito = false;
-  static const bool kServiceIsNULLWhileTesting = false;
   static const bool kServiceHasOwnInstanceInIncognito = false;
+
+  // If set to false, don't start the service at BrowserContext creation time.
+  // (The default differs from the BrowserContextKeyedBaseFactory default,
+  // because historically, ProfileKeyedAPIs often do tasks at startup.)
   static const bool kServiceIsCreatedWithBrowserContext = true;
+
+  // If set to true, GetForProfile returns NULL for TestingBrowserContexts.
+  static const bool kServiceIsNULLWhileTesting = false;
 
   // Users of this factory template must define a GetFactoryInstance()
   // and manage their own instances (typically using LazyInstance or
