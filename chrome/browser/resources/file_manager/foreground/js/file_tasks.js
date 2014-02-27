@@ -702,7 +702,7 @@ FileTasks.prototype.openGalleryInternal_ = function(entries) {
     var currentDir = fm.getCurrentDirectoryEntry();
     var downloadsVolume =
         fm.volumeManager.getCurrentProfileVolumeInfo(RootType.DOWNLOADS);
-    var downloadsDir = downloadsVolume && downloadsVolume.root;
+    var downloadsDir = downloadsVolume && downloadsVolume.fileSystem.root;
     var readonlyDirName = null;
     if (readonly && currentDir) {
       // TODO(mtomasz): Pass Entry instead of localized name. Conversion to a

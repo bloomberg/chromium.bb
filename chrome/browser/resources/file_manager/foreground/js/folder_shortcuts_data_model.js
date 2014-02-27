@@ -75,7 +75,7 @@ FolderShortcutsDataModel.prototype = {
     var volumeInfo = this.volumeManager_.getCurrentProfileVolumeInfo(
         util.VolumeType.DRIVE);
     if (volumeInfo)
-      this.lastDriveRootURL_ = volumeInfo.root.toURL();
+      this.lastDriveRootURL_ = volumeInfo.fileSystem.root.toURL();
   },
 
   /**

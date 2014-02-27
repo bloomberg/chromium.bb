@@ -10,7 +10,7 @@
  *
  * @param {util.VolumeType} volumeType The type of the volume.
  * @param {string} volumeId ID of the volume.
- * @param {DirectoryEntry} root The root directory entry of this volume.
+ * @param {DOMFileSystem} fileSystem The file system object for this volume.
  * @param {string} error The error if an error is found.
  * @param {string} deviceType The type of device ('usb'|'sd'|'optical'|'mobile'
  *     |'unknown') (as defined in chromeos/disks/disk_mount_manager.cc).
@@ -24,16 +24,15 @@
 function VolumeInfo(
     volumeType,
     volumeId,
-    root,
+    fileSystem,
     error,
     deviceType,
     isReadOnly,
     profile,
     label) {
   this.volumeType_ = volumeType;
-  // TODO(hidehiko): This should include FileSystem instance.
   this.volumeId_ = volumeId;
-  this.root_ = root;
+  this.fileSystem_ = fileSystem;
   this.label_ = label;
   this.displayRoot_ = null;
   this.fakeEntries_ = {};
@@ -78,16 +77,16 @@ VolumeInfo.prototype = {
     return this.volumeType_;
   },
   /**
-   * @return {string} Volume id.
+   * @return {string} Volume ID.
    */
   get volumeId() {
     return this.volumeId_;
   },
   /**
-   * @return {DirectoryEntry} Root path.
+   * @return {DOMFileSystem} File system object.
    */
-  get root() {
-    return this.root_;
+  get fileSystem() {
+    return this.fileSystem_;
   },
   /**
    * @return {DirectoryEntry} Display root path. It is null before finishing to
@@ -147,13 +146,13 @@ VolumeInfo.prototype.resolveDisplayRoot = function(onSuccess, onFailure) {
     // TODO(mtomasz): Do not add VolumeInfo which failed to resolve root, and
     // remove this if logic. Call onSuccess() always, instead.
     if (this.volumeType !== util.VolumeType.DRIVE) {
-      if (this.root)
-        this.displayRootPromise_ = Promise.resolve(this.root);
+      if (this.fileSystem_)
+        this.displayRootPromise_ = Promise.resolve(this.fileSystem_.root);
       else
         this.displayRootPromise_ = Promise.reject(this.error);
     } else {
       // For Drive, we need to resolve.
-      var displayRootURL = this.root.toURL() + '/root';
+      var displayRootURL = this.fileSystem_.root.toURL() + '/root';
       this.displayRootPromise_ = new Promise(
           webkitResolveLocalFileSystemURL.bind(null, displayRootURL));
     }
@@ -185,36 +184,6 @@ volumeManagerUtil.validateError = function(error) {
 };
 
 /**
- * Returns the root entry of a volume mounted at mountPath.
- * TODO(mtomasz): Remove this method.
- *
- * @param {string} volumeId ID of the volume to be mounted.
- * @param {function(DirectoryEntry)} successCallback Called when the root entry
- *     is found.
- * @param {function(FileError)} errorCallback Called when an error is found.
- * @private
- */
-volumeManagerUtil.getRootEntry_ = function(
-    volumeId, successCallback, errorCallback) {
-  // We always request FileSystem here, because requestFileSystem() grants
-  // permissions if necessary, especially for Drive File System at first mount
-  // time.
-  // Note that we actually need to request FileSystem after multi file system
-  // support, so this will be more natural code then.
-  chrome.fileBrowserPrivate.requestFileSystem(
-      volumeId,
-      function(fileSystem) {
-        // TODO(hidehiko): chrome.runtime.lastError should have error reason.
-        if (!fileSystem) {
-          errorCallback(util.createDOMError(util.FileError.NOT_FOUND_ERR));
-          return;
-        }
-
-        successCallback(fileSystem.root);
-      });
-};
-
-/**
  * Builds the VolumeInfo data from VolumeMetadata.
  * @param {VolumeMetadata} volumeMetadata Metadata instance for the volume.
  * @param {function(VolumeInfo)} callback Called on completion.
@@ -232,16 +201,31 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
       localizedLabel = volumeMetadata.volumeId.split(':', 2)[1];
       break;
   }
-  volumeManagerUtil.getRootEntry_(
+
+  chrome.fileBrowserPrivate.requestFileSystem(
       volumeMetadata.volumeId,
-      function(entry) {
+      function(fileSystem) {
+        // TODO(mtomasz): chrome.runtime.lastError should have error reason.
+        if (!fileSystem) {
+          console.error('File system not found: ' + volumeMetadata.volumeId);
+          callback(new VolumeInfo(
+              volumeMetadata.volumeType,
+              volumeMetadata.volumeId,
+              null,  // File system is not found.
+              volumeMetadata.mountCondition,
+              volumeMetadata.deviceType,
+              volumeMetadata.isReadOnly,
+              volumeMetadata.profile,
+              localizedLabel));
+          return;
+        }
         if (volumeMetadata.volumeType === util.VolumeType.DRIVE) {
           // After file system is mounted, we "read" drive grand root
           // entry at first. This triggers full feed fetch on background.
           // Note: we don't need to handle errors here, because even if
           // it fails, accessing to some path later will just become
           // a fast-fetch and it re-triggers full-feed fetch.
-          entry.createReader().readEntries(
+          fileSystem.root.createReader().readEntries(
               function() { /* do nothing */ },
               function(error) {
                 console.error(
@@ -251,20 +235,7 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
         callback(new VolumeInfo(
             volumeMetadata.volumeType,
             volumeMetadata.volumeId,
-            entry,
-            volumeMetadata.mountCondition,
-            volumeMetadata.deviceType,
-            volumeMetadata.isReadOnly,
-            volumeMetadata.profile,
-            localizedLabel));
-      },
-      function(fileError) {
-        console.error('Root entry is not found: ' +
-            volumeMetadata.mountPath + ', ' + fileError.name);
-        callback(new VolumeInfo(
-            volumeMetadata.volumeType,
-            volumeMetadata.volumeId,
-            null,  // Root entry is not found.
+            fileSystem,
             volumeMetadata.mountCondition,
             volumeMetadata.deviceType,
             volumeMetadata.isReadOnly,
@@ -394,14 +365,10 @@ VolumeInfoList.prototype.findIndex = function(volumeId) {
  * @return {VolumeInfo} The volume's information, or null if not found.
  */
 VolumeInfoList.prototype.findByEntry = function(entry) {
-  // TODO(mtomasz): Switch to comparing file systems once possible.
   for (var i = 0; i < this.length; i++) {
     var volumeInfo = this.item(i);
-    if (!volumeInfo.root)
-      continue;
-    // URL of the root always contains the trailing slash.
-    if (util.isSameEntry(entry, volumeInfo.root) ||
-        entry.toURL().indexOf(volumeInfo.root.toURL()) === 0) {
+    if (volumeInfo.fileSystem &&
+        util.isSameFileSystem(volumeInfo.fileSystem, entry.filesystem)) {
       return volumeInfo;
     }
     // Additionally, check fake entries.
@@ -706,18 +673,17 @@ VolumeManager.prototype.getCurrentProfileVolumeInfo = function(volumeType) {
  * @return {EntryLocation} Location information.
  */
 VolumeManager.prototype.getLocationInfo = function(entry) {
+  var volumeInfo = this.volumeInfoList.findByEntry(entry);
+  if (!volumeInfo)
+    return null;
+
   if (util.isFakeEntry(entry)) {
     return new EntryLocation(
-        // TODO(hirono): Specify currect volume.
-        this.getCurrentProfileVolumeInfo(RootType.DRIVE),
+        volumeInfo,
         entry.rootType,
         true /* the entry points a root directory. */,
         true /* fake entries are read only. */);
   }
-
-  var volumeInfo = this.volumeInfoList.findByEntry(entry);
-  if (!volumeInfo)
-    return null;
 
   var rootType;
   var isReadOnly;
@@ -725,17 +691,15 @@ VolumeManager.prototype.getLocationInfo = function(entry) {
   if (volumeInfo.volumeType === util.VolumeType.DRIVE) {
     // For Drive, the roots are /root and /other, instead of /. Root URLs
     // contain trailing slashes.
-    // TODO(mtomasz): Simplify once switching to filesystem per volume.
-    if (entry.toURL() === volumeInfo.root.toURL() + 'root' ||
-        entry.toURL().indexOf(volumeInfo.root.toURL() + 'root/') === 0) {
+    if (entry.fullPath == '/root' || entry.fullPath.indexOf('/root/') === 0) {
       rootType = RootType.DRIVE;
       isReadOnly = volumeInfo.isReadOnly;
-      isRootEntry = entry.toURL() === volumeInfo.root.toURL() + 'root';
-    } else if (entry.toURL() === volumeInfo.root.toURL() + 'other' ||
-        entry.toURL().indexOf(volumeInfo.root.toURL() + 'other/') === 0) {
+      isRootEntry = entry.fullPath === '/root';
+    } else if (entry.fullPath == '/other' ||
+               entry.fullPath.indexOf('/other/') === 0) {
       rootType = RootType.DRIVE_OTHER;
       isReadOnly = true;
-      isRootEntry = entry.toURL() === volumeInfo.root.toURL() + 'other';
+      isRootEntry = entry.fullPath === '/other';
     } else {
       // Accessing Drive files outside of /drive/root and /drive/other is not
       // allowed, but can happen. Therefore returning null.
@@ -761,7 +725,7 @@ VolumeManager.prototype.getLocationInfo = function(entry) {
         throw new Error('Invalid volume type: ' + volumeInfo.volumeType);
     }
     isReadOnly = volumeInfo.isReadOnly;
-    isRootEntry = util.isSameEntry(entry, volumeInfo.root);
+    isRootEntry = util.isSameEntry(entry, volumeInfo.fileSystem.root);
   }
 
   return new EntryLocation(volumeInfo, rootType, isRootEntry, isReadOnly);

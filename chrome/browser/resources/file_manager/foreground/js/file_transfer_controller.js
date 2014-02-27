@@ -159,7 +159,8 @@ FileTransferController.prototype = {
         this.currentDirectoryContentEntry);
     // Tag to check it's filemanager data.
     dataTransfer.setData('fs/tag', 'filemanager-data');
-    dataTransfer.setData('fs/sourceRootURL', volumeInfo.root.toURL());
+    dataTransfer.setData('fs/sourceRootURL',
+                         volumeInfo.fileSystem.root.toURL());
     var sourceURLs = util.entriesToURLs(this.selectedEntries_);
     dataTransfer.setData('fs/sources', sourceURLs.join('\n'));
     dataTransfer.effectAllowed = effectAllowed;
@@ -743,7 +744,7 @@ FileTransferController.prototype = {
 
     // Copying between different sources requires all files to be available.
     if (this.getSourceRootURL_(dataTransfer) !==
-        destinationLocationInfo.volumeInfo.root.toURL() &&
+        destinationLocationInfo.volumeInfo.fileSystem.root.toURL() &&
         this.isMissingFileContents_(dataTransfer))
       return false;
 
@@ -930,7 +931,7 @@ FileTransferController.prototype = {
     // volumeId gets unique.
     if (event.dataTransfer.effectAllowed === 'copyMove' &&
         this.getSourceRootURL_(event.dataTransfer) ===
-            destinationLocationInfo.volumeInfo.root.toURL() &&
+            destinationLocationInfo.volumeInfo.fileSystem.root.toURL() &&
         !event.ctrlKey) {
       return 'move';
     }

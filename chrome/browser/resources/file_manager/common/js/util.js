@@ -1079,10 +1079,26 @@ util.UserDOMError.prototype = {
  *     directory. Returns true if both entries are null.
  */
 util.isSameEntry = function(entry1, entry2) {
-  // Currently, we can assume there is only one root.
-  // When we support multi-file system, we need to look at filesystem, too.
-  return (entry1 && entry2 && entry1.toURL() === entry2.toURL()) ||
-      (!entry1 && !entry2);
+  if (!entry1 && !entry2)
+    return true;
+  if (!entry1 || !entry2)
+    return false;
+  return entry1.toURL() === entry2.toURL();
+};
+
+/**
+ * Compares two file systems.
+ * @param {DOMFileSystem} fileSystem1 The file system to be compared.
+ * @param {DOMFileSystem} fileSystem2 The file system to be compared.
+ * @return {boolean} True if the both file systems are equal. Also, returns true
+ *     if both file systems are null.
+ */
+util.isSameFileSystem = function(fileSystem1, fileSystem2) {
+  if (!fileSystem1 && !fileSystem2)
+    return true;
+  if (!fileSystem1 || !fileSystem2)
+    return false;
+  return util.isSameEntry(fileSystem1.root, fileSystem2.root);
 };
 
 /**

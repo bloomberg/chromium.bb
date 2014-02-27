@@ -36,12 +36,12 @@ MockVolumeManager.prototype.getVolumeInfo = function(entry) {
  * @return {VolumeInfo} Created mock VolumeInfo.
  */
 MockVolumeManager.createMockVolumeInfo = function(type, volumeId) {
-  var rootEntry = new MockFileEntry(volumeId, '/');
+  var fileSystem = new MockFileSystem(volumeId);
 
   var volumeInfo = new VolumeInfo(
       type,
       volumeId,
-      rootEntry,
+      fileSystem,
       '',     // error
       '',     // deviceType
       false,  // isReadonly

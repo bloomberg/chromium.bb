@@ -517,11 +517,11 @@ FileListBannerController.prototype.maybeShowLowSpaceWarning_ = function(
   }
 
   // If not mounted correctly, then do not continue.
-  if (!volume.root)
+  if (!volume.fileSystem)
     return;
 
   chrome.fileBrowserPrivate.getSizeStats(
-      volume.root.toURL(),
+      volume.fileSystem.root.toURL(),
       function(sizeStats) {
         var currentVolume = this.volumeManager_.getVolumeInfo(
             this.directoryModel_.getCurrentDirEntry());
