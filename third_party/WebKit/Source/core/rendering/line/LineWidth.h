@@ -62,7 +62,7 @@ public:
     void addUncommittedWidth(float delta) { m_uncommittedWidth += delta; }
     void commit();
     void applyOverhang(RenderRubyRun*, RenderObject* startRenderer, RenderObject* endRenderer);
-    void fitBelowFloats();
+    void fitBelowFloats(bool isFirstLine = false);
 
     void updateCurrentShapeSegment();
 
@@ -70,6 +70,8 @@ public:
 
 private:
     void computeAvailableWidthFromLeftAndRight();
+    void updateLineDimension(LayoutUnit newLineTop, LayoutUnit newLineWidth, const float& newLineLeft, const float& newLineRight);
+    void wrapNextToShapeOutside(bool isFirstLine);
 
     RenderBlockFlow& m_block;
     float m_uncommittedWidth;

@@ -141,7 +141,65 @@ void LineWidth::applyOverhang(RenderRubyRun* rubyRun, RenderObject* startRendere
     m_overhangWidth += startOverhang + endOverhang;
 }
 
-void LineWidth::fitBelowFloats()
+inline static float availableWidthAtOffset(const RenderBlockFlow& block, const LayoutUnit& offset, bool shouldIndentText, float& newLineLeft, float& newLineRight)
+{
+    newLineLeft = block.logicalLeftOffsetForLine(offset, shouldIndentText);
+    newLineRight = block.logicalRightOffsetForLine(offset, shouldIndentText);
+    return std::max(0.0f, newLineRight - newLineLeft);
+}
+
+inline static float availableWidthAtOffset(const RenderBlockFlow& block, const LayoutUnit& offset, bool shouldIndentText)
+{
+    float newLineLeft = block.logicalLeftOffsetForLine(offset, shouldIndentText);
+    float newLineRight = block.logicalRightOffsetForLine(offset, shouldIndentText);
+    return std::max(0.0f, newLineRight - newLineLeft);
+}
+
+void LineWidth::updateLineDimension(LayoutUnit newLineTop, LayoutUnit newLineWidth, const float& newLineLeft, const float& newLineRight)
+{
+    if (newLineWidth <= m_availableWidth)
+        return;
+
+    m_block.setLogicalHeight(newLineTop);
+    m_availableWidth = newLineWidth + m_overhangWidth;
+    m_left = newLineLeft;
+    m_right = newLineRight;
+}
+
+inline static bool isWholeLineFit(const RenderBlockFlow& block, const LayoutUnit& lineTop, LayoutUnit lineHeight, float uncommittedWidth, bool shouldIndentText)
+{
+    for (LayoutUnit lineBottom = lineTop; lineBottom <= lineTop + lineHeight; lineBottom++) {
+        LayoutUnit availableWidthAtBottom = availableWidthAtOffset(block, lineBottom, shouldIndentText);
+        if (availableWidthAtBottom < uncommittedWidth)
+            return false;
+    }
+    return true;
+}
+
+void LineWidth::wrapNextToShapeOutside(bool isFirstLine)
+{
+    LayoutUnit lineHeight = m_block.lineHeight(isFirstLine, m_block.isHorizontalWritingMode() ? HorizontalLine : VerticalLine, PositionOfInteriorLineBoxes);
+    LayoutUnit lineLogicalTop = m_block.logicalHeight();
+    LayoutUnit newLineTop = lineLogicalTop;
+    LayoutUnit floatLogicalBottom = m_block.nextFloatLogicalBottomBelow(lineLogicalTop);
+
+    float newLineWidth;
+    float newLineLeft = m_left;
+    float newLineRight = m_right;
+    while (true) {
+        newLineWidth = availableWidthAtOffset(m_block, newLineTop, shouldIndentText(), newLineLeft, newLineRight);
+        if (newLineWidth >= m_uncommittedWidth && isWholeLineFit(m_block, newLineTop, lineHeight, m_uncommittedWidth, shouldIndentText()))
+            break;
+
+        if (newLineTop >= floatLogicalBottom)
+            break;
+
+        newLineTop++;
+    }
+    updateLineDimension(newLineTop, newLineWidth, newLineLeft, newLineRight);
+}
+
+void LineWidth::fitBelowFloats(bool isFirstLine)
 {
     ASSERT(!m_committedWidth);
     ASSERT(!fitsOnLine());
@@ -151,17 +209,19 @@ void LineWidth::fitBelowFloats()
     float newLineWidth = m_availableWidth;
     float newLineLeft = m_left;
     float newLineRight = m_right;
+
+    FloatingObject* lastFloatFromPreviousLine = (m_block.containsFloats() ? m_block.m_floatingObjects->set().last() : 0);
+        if (lastFloatFromPreviousLine && lastFloatFromPreviousLine->renderer()->shapeOutsideInfo())
+            return wrapNextToShapeOutside(isFirstLine);
+
     while (true) {
         floatLogicalBottom = m_block.nextFloatLogicalBottomBelow(lastFloatLogicalBottom, ShapeOutsideFloatShapeOffset);
         if (floatLogicalBottom <= lastFloatLogicalBottom)
             break;
 
-        newLineLeft = m_block.logicalLeftOffsetForLine(floatLogicalBottom, shouldIndentText());
-        newLineRight = m_block.logicalRightOffsetForLine(floatLogicalBottom, shouldIndentText());
-        newLineWidth = max(0.0f, newLineRight - newLineLeft);
+        newLineWidth = availableWidthAtOffset(m_block, floatLogicalBottom, shouldIndentText(), newLineLeft, newLineRight);
         lastFloatLogicalBottom = floatLogicalBottom;
 
-        // FIXME: This code should be refactored to incorporate with the code above.
         ShapeInsideInfo* shapeInsideInfo = m_block.layoutShapeInsideInfo();
         if (shapeInsideInfo) {
             LayoutUnit logicalOffsetFromShapeContainer = m_block.logicalOffsetFromShapeAncestorContainer(shapeInsideInfo->owner()).height();
@@ -174,13 +234,7 @@ void LineWidth::fitBelowFloats()
         if (newLineWidth >= m_uncommittedWidth)
             break;
     }
-
-    if (newLineWidth > m_availableWidth) {
-        m_block.setLogicalHeight(lastFloatLogicalBottom);
-        m_availableWidth = newLineWidth + m_overhangWidth;
-        m_left = newLineLeft;
-        m_right = newLineRight;
-    }
+    updateLineDimension(lastFloatLogicalBottom, newLineWidth, newLineLeft, newLineRight);
 }
 
 void LineWidth::updateCurrentShapeSegment()
