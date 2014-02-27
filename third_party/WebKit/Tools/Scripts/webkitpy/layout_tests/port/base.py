@@ -1563,7 +1563,7 @@ class Port(object):
                              ['--stable-release-mode']),
             VirtualTestSuite('android',
                              'fullscreen',
-                             ['--force-compositing-mode', '--allow-webui-compositing', '--enable-threaded-compositing',
+                             ['--force-compositing-mode', '--enable-threaded-compositing',
                               '--enable-fixed-position-compositing', '--enable-accelerated-overflow-scroll', '--enable-accelerated-scrollable-frames',
                               '--enable-composited-scrolling-for-frames', '--enable-gesture-tap-highlight', '--enable-pinch',
                               '--enable-overlay-fullscreen-video', '--enable-overlay-scrollbars', '--enable-overscroll-notifications',
