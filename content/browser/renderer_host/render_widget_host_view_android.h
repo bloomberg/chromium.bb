@@ -227,8 +227,8 @@ class RenderWidgetHostViewAndroid
   void GetScaledContentBitmap(
       float scale,
       SkBitmap::Config bitmap_config,
+      gfx::Rect src_subrect,
       const base::Callback<void(bool, const SkBitmap&)>& result_callback);
-  bool PopulateBitmapWithContents(jobject jbitmap);
 
   bool HasValidFrame() const;
 
