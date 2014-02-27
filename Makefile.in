@@ -204,14 +204,14 @@ check_PROGRAMS = $(am__EXEEXT_4) $(am__EXEEXT_5) $(am__EXEEXT_6) \
 
 noinst_PROGRAMS =
 subdir = .
-DIST_COMMON = INSTALL NEWS README AUTHORS ChangeLog \
-	$(srcdir)/Makefile.in $(srcdir)/Makefile.am \
+DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
 	$(top_srcdir)/src/config.h.in $(top_srcdir)/autotools/depcomp \
-	$(dist_doc_DATA) $(top_srcdir)/autotools/test-driver COPYING \
-	autotools/compile autotools/config.guess autotools/config.sub \
-	autotools/depcomp autotools/install-sh autotools/missing \
-	autotools/ltmain.sh $(top_srcdir)/autotools/compile \
+	$(dist_doc_DATA) $(top_srcdir)/autotools/test-driver AUTHORS \
+	ChangeLog INSTALL NEWS README autotools/compile \
+	autotools/config.guess autotools/config.sub autotools/depcomp \
+	autotools/install-sh autotools/missing autotools/ltmain.sh \
+	$(top_srcdir)/autotools/compile \
 	$(top_srcdir)/autotools/config.guess \
 	$(top_srcdir)/autotools/config.sub \
 	$(top_srcdir)/autotools/install-sh \
@@ -1748,11 +1748,14 @@ AM_CXXFLAGS = $(am__append_1) $(am__append_2) $(am__append_4)
 
 # Specify include paths for ac macros
 ACLOCAL_AMFLAGS = -I m4
+
+# License file is called LICENSE not COPYING
+AUTOMAKE_OPTIONS = foreign
 dist_doc_DATA = \
 	AUTHORS \
-	COPYING \
 	ChangeLog \
 	INSTALL \
+	LICENSE \
 	NEWS \
 	README
 
@@ -2809,15 +2812,15 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__confi
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
-	      echo ' cd $(srcdir) && $(AUTOMAKE) --gnu'; \
-	      $(am__cd) $(srcdir) && $(AUTOMAKE) --gnu \
+	      echo ' cd $(srcdir) && $(AUTOMAKE) --foreign'; \
+	      $(am__cd) $(srcdir) && $(AUTOMAKE) --foreign \
 		&& exit 0; \
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu Makefile
+	  $(AUTOMAKE) --foreign Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \

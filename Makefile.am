@@ -64,14 +64,17 @@ endif
 # Specify include paths for ac macros
 ACLOCAL_AMFLAGS = -I m4
 
+# License file is called LICENSE not COPYING
+AUTOMAKE_OPTIONS = foreign
+
 ## Documentation
 docdir = $(prefix)/share/doc/$(PACKAGE)-$(VERSION)
 
 dist_doc_DATA = \
 	AUTHORS \
-	COPYING \
 	ChangeLog \
 	INSTALL \
+	LICENSE \
 	NEWS \
 	README
 
