@@ -132,6 +132,24 @@ const char* getTypeMarker()
     return GCInfoTrait<T>::get()->m_typeMarker;
 }
 
+template<typename T> class GarbageCollected;
+class GarbageCollectedMixin;
+template<typename T, bool = WTF::IsSubclassOfTemplate<T, GarbageCollected>::value> class NeedAdjustAndMark;
+
+template<typename T>
+class NeedAdjustAndMark<T, true> {
+public:
+    static const bool value = false;
+};
+
+template<typename T>
+class NeedAdjustAndMark<T, false> {
+public:
+    static const bool value = WTF::IsSubclass<T, GarbageCollectedMixin>::value;
+};
+
+template<typename T, bool = NeedAdjustAndMark<T>::value> class DefaultTraceTrait;
+
 // The TraceTrait is used to specify how to mark an object pointer and
 // how to trace all of the pointers in the object.
 //
@@ -153,10 +171,16 @@ public:
         static_cast<T*>(self)->trace(visitor);
     }
 
-    static void mark(Visitor*, const T*);
+    static void mark(Visitor* visitor, const T* t)
+    {
+        DefaultTraceTrait<T>::mark(visitor, t);
+    }
 
 #ifndef NDEBUG
-    static void checkTypeMarker(Visitor*, const T*);
+    static void checkTypeMarker(Visitor* visitor, const T* t)
+    {
+        DefaultTraceTrait<T>::checkTypeMarker(visitor, t);
+    }
 #endif
 };
 
@@ -486,30 +510,92 @@ ITERATE_DO_NOTHING_TYPES(DECLARE_DO_NOTHING_TRAIT)
 
 #undef DECLARE_DO_NOTHING_TRAIT
 
-#ifndef NDEBUG
-template<typename T> void TraceTrait<T>::checkTypeMarker(Visitor* visitor, const T* t)
-{
-    visitor->checkTypeMarker(const_cast<T*>(t), getTypeMarker<T>());
-}
-#endif
+template<typename T>
+class DefaultTraceTrait<T, false> {
+public:
+    // Default implementation of TraceTrait<T>::trace just statically
+    // dispatches to the trace method of the class T.
+    static void trace(Visitor* visitor, void* self)
+    {
+        static_cast<T*>(self)->trace(visitor);
+    }
 
-template<typename T> void TraceTrait<T>::mark(Visitor* visitor, const T* t)
-{
-    // Default mark method of the trait just calls the two-argument mark
-    // method on the visitor. The second argument is the static trace method
-    // of the trait, which by default calls the instance method
-    // trace(Visitor*) on the object.
-    visitor->mark(const_cast<T*>(t), &trace);
-}
+    static void mark(Visitor* visitor, const T* t)
+    {
+        // Default mark method of the trait just calls the two-argument mark
+        // method on the visitor. The second argument is the static trace method
+        // of the trait, which by default calls the instance method
+        // trace(Visitor*) on the object.
+        visitor->mark(const_cast<T*>(t), &TraceTrait<T>::trace);
+    }
+
+#ifndef NDEBUG
+    static void checkTypeMarker(Visitor* visitor, const T* t)
+    {
+        visitor->checkTypeMarker(const_cast<T*>(t), getTypeMarker<T>());
+    }
+#endif
+};
+
+template<typename T>
+class DefaultTraceTrait<T, true> {
+public:
+    static void mark(Visitor* visitor, const T* self)
+    {
+        self->adjustAndMark(visitor);
+    }
+
+#ifndef NDEBUG
+    static void checkTypeMarker(Visitor*, const T*) { }
+#endif
+};
+
+template<typename T, bool = NeedAdjustAndMark<T>::value> class DefaultObjectAliveTrait;
+
+template<typename T>
+class DefaultObjectAliveTrait<T, false> {
+public:
+    static bool isAlive(Visitor* visitor, T obj)
+    {
+        return visitor->isMarked(obj);
+    }
+};
+
+template<typename T>
+class DefaultObjectAliveTrait<T, true> {
+public:
+    static bool isAlive(Visitor* visitor, T obj)
+    {
+        return obj->isAlive(visitor);
+    }
+};
 
 template<typename T> bool ObjectAliveTrait<T>::isAlive(Visitor* visitor, T obj)
 {
-    return visitor->isMarked(obj);
+    return DefaultObjectAliveTrait<T>::isAlive(visitor, obj);
 }
 template<typename T> bool ObjectAliveTrait<Member<T> >::isAlive(Visitor* visitor, const Member<T>& obj)
 {
     return visitor->isMarked(obj.get());
 }
+
+class GarbageCollectedMixin {
+public:
+    virtual void adjustAndMark(Visitor*) const = 0;
+    virtual bool isAlive(Visitor*) const = 0;
+};
+
+#define USING_GARBAGE_COLLECTED_MIXIN(TYPE) \
+public: \
+    virtual void adjustAndMark(Visitor* visitor) const OVERRIDE \
+    { \
+        visitor->mark(this, &TraceTrait<TYPE>::trace);\
+    } \
+    virtual bool isAlive(Visitor* visitor) const OVERRIDE \
+    { \
+        return visitor->isAlive(this); \
+    }
+
 
 template<typename T>
 struct GCInfoAtBase {
