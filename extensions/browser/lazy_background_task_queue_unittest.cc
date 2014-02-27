@@ -28,11 +28,11 @@ class TestProcessManager : public ProcessManager {
   int create_count() { return create_count_; }
 
   // ProcessManager overrides:
-  virtual ExtensionHost* CreateBackgroundHost(const Extension* extension,
-                                              const GURL& url) OVERRIDE {
+  virtual bool CreateBackgroundHost(const Extension* extension,
+                                    const GURL& url) OVERRIDE {
     // Don't actually try to create a web contents.
     create_count_++;
-    return NULL;
+    return false;
   }
 
  private:

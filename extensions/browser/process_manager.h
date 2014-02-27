@@ -52,9 +52,11 @@ class ProcessManager : public content::NotificationObserver {
   const ViewSet GetAllViews() const;
 
   // Creates a new UI-less extension instance.  Like CreateViewHost, but not
-  // displayed anywhere.
-  virtual ExtensionHost* CreateBackgroundHost(const Extension* extension,
-                                              const GURL& url);
+  // displayed anywhere.  Returns false if no background host can be created,
+  // for example for hosted apps and extensions that aren't enabled in
+  // Incognito.
+  virtual bool CreateBackgroundHost(const Extension* extension,
+                                    const GURL& url);
 
   // Gets the ExtensionHost for the background page for an extension, or NULL if
   // the extension isn't running or doesn't have a background page.
