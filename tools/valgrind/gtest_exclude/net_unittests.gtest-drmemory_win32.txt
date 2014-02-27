@@ -22,3 +22,6 @@ ClientSocketPoolBaseTest.DisableCleanupTimer
 
 # Flaky, see http://crbug.com/108422
 SSLClientSocketTest.*
+
+# These fail under Dr.Memory, presumably due to a DrM bug, see http://crbug.com/347512
+Version/QuicHttpStreamTest.*
