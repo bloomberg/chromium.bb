@@ -4,179 +4,185 @@
 
 #include "net/spdy/spdy_headers_block_parser.h"
 
-#include <memory>
-
 #include "base/sys_byteorder.h"
 
 namespace net {
 
-SpdyHeadersBlockParserReader::SpdyHeadersBlockParserReader(
-    base::StringPiece prefix,
-    base::StringPiece suffix)
-      : prefix_(prefix),
-        suffix_(suffix),
-        in_suffix_(false),
-        offset_(0) {}
-
-size_t SpdyHeadersBlockParserReader::Available() {
-  if (in_suffix_) {
-    return suffix_.length() - offset_;
-  } else {
-    return prefix_.length() + suffix_.length() - offset_;
-  }
-}
-
-bool SpdyHeadersBlockParserReader::ReadN(size_t count, char* out) {
-  if (Available() < count)
-    return false;
-
-  if (!in_suffix_ && count > (prefix_.length() - offset_)) {
-    count -= prefix_.length() - offset_;
-    out = std::copy(prefix_.begin() + offset_, prefix_.end(), out);
-    in_suffix_ = true;
-    offset_ = 0;
-    // Fallthrough to suffix read.
-  } else if (!in_suffix_) {
-    // Read is satisfied by the prefix.
-    DCHECK_GE(prefix_.length() - offset_, count);
-    std::copy(prefix_.begin() + offset_,
-              prefix_.begin() + offset_ + count,
-              out);
-    offset_ += count;
-    return true;
-  }
-  // Read is satisfied by the suffix.
-  DCHECK(in_suffix_);
-  DCHECK_GE(suffix_.length() - offset_, count);
-  std::copy(suffix_.begin() + offset_,
-            suffix_.begin() + offset_ + count,
-            out);
-  offset_ += count;
-  return true;
-}
-
-std::vector<char> SpdyHeadersBlockParserReader::Remainder() {
-  std::vector<char> remainder(Available(), '\0');
-  if (remainder.size()) {
-    ReadN(remainder.size(), &remainder[0]);
-  }
-  DCHECK_EQ(0u, Available());
-  return remainder;
-}
+const size_t SpdyHeadersBlockParser::kMaximumFieldLength = 16 * 1024;
 
 SpdyHeadersBlockParser::SpdyHeadersBlockParser(
-    SpdyHeadersHandlerInterface* handler) : state_(READING_HEADER_BLOCK_LEN),
-    remaining_key_value_pairs_for_frame_(0), next_field_len_(0),
-    handler_(handler) {
+    SpdyMajorVersion spdy_version,
+    SpdyHeadersHandlerInterface* handler) :
+    state_(READING_HEADER_BLOCK_LEN),
+    length_field_size_(LengthFieldSizeForVersion(spdy_version)),
+    max_headers_in_block_(MaxNumberOfHeadersForVersion(spdy_version)),
+    remaining_key_value_pairs_for_frame_(0),
+    handler_(handler),
+    error_(OK) {
+  // The handler that we set must not be NULL.
+  DCHECK(handler_ != NULL);
 }
 
 SpdyHeadersBlockParser::~SpdyHeadersBlockParser() {}
 
-bool SpdyHeadersBlockParser::ParseUInt32(Reader* reader,
-                                         uint32_t* parsed_value) {
-  // Are there enough bytes available?
-  if (reader->Available() < sizeof(uint32_t)) {
-    return false;
+bool SpdyHeadersBlockParser::HandleControlFrameHeadersData(
+    SpdyStreamId stream_id,
+    const char* headers_data,
+    size_t headers_data_length) {
+  if (error_ == NEED_MORE_DATA) {
+    error_ = OK;
   }
+  CHECK_EQ(error_, OK);
 
-  // Read the required bytes, convert from network to host
-  // order and return the parsed out integer.
-  char buf[sizeof(uint32_t)];
-  reader->ReadN(sizeof(uint32_t), buf);
-  *parsed_value = base::NetToHost32(*reinterpret_cast<const uint32_t *>(buf));
-  return true;
+  // If this is the first call with the current header block,
+  // save its stream id.
+  if (state_ == READING_HEADER_BLOCK_LEN) {
+    stream_id_ = stream_id;
+  }
+  CHECK_EQ(stream_id_, stream_id);
+
+  SpdyPinnableBufferPiece prefix, key, value;
+  // Simultaneously tie lifetimes to the stack, and clear member variables.
+  prefix.Swap(&headers_block_prefix_);
+  key.Swap(&key_);
+
+  // Apply the parsing state machine to the remaining prefix
+  // from last invocation, plus newly-available headers data.
+  Reader reader(prefix.buffer(), prefix.length(),
+                headers_data, headers_data_length);
+  while (error_ == OK) {
+    ParserState next_state(FINISHED_HEADER);
+
+    switch (state_) {
+      case READING_HEADER_BLOCK_LEN:
+        next_state = READING_KEY_LEN;
+        ParseBlockLength(&reader);
+        break;
+      case READING_KEY_LEN:
+        next_state = READING_KEY;
+        ParseFieldLength(&reader);
+        break;
+      case READING_KEY:
+        next_state = READING_VALUE_LEN;
+        if (!reader.ReadN(next_field_length_, &key)) {
+          error_ = NEED_MORE_DATA;
+        }
+        break;
+      case READING_VALUE_LEN:
+        next_state = READING_VALUE;
+        ParseFieldLength(&reader);
+        break;
+      case READING_VALUE:
+        next_state = FINISHED_HEADER;
+        if (!reader.ReadN(next_field_length_, &value)) {
+          error_ = NEED_MORE_DATA;
+        } else {
+          handler_->OnHeader(stream_id, key, value);
+        }
+        break;
+      case FINISHED_HEADER:
+        // Prepare for next header or block.
+        if (--remaining_key_value_pairs_for_frame_ > 0) {
+          next_state = READING_KEY_LEN;
+        } else {
+          next_state = READING_HEADER_BLOCK_LEN;
+          handler_->OnHeaderBlockEnd(stream_id);
+          // Expect to have consumed all buffer.
+          if (reader.Available() != 0) {
+            error_ = TOO_MUCH_DATA;
+          }
+        }
+        break;
+      default:
+        CHECK(false) << "Not reached.";
+    }
+
+    if (error_ == OK) {
+      state_ = next_state;
+
+      if (next_state == READING_HEADER_BLOCK_LEN) {
+        // We completed reading a full header block. Return to caller.
+        break;
+      }
+    } else if (error_ == NEED_MORE_DATA) {
+      // We can't continue parsing until more data is available. Make copies of
+      // the key and buffer remainder, in preperation for the next invocation.
+      if (state_ > READING_KEY) {
+        key_.Swap(&key);
+        key_.Pin();
+      }
+      reader.ReadN(reader.Available(), &headers_block_prefix_);
+      headers_block_prefix_.Pin();
+    }
+  }
+  return error_ == OK;
+}
+
+void SpdyHeadersBlockParser::ParseBlockLength(Reader* reader) {
+  ParseLength(reader, &remaining_key_value_pairs_for_frame_);
+  if (error_ == OK &&
+    remaining_key_value_pairs_for_frame_ > max_headers_in_block_) {
+    error_ = HEADER_BLOCK_TOO_LARGE;
+  }
+  if (error_ == OK) {
+    handler_->OnHeaderBlock(stream_id_, remaining_key_value_pairs_for_frame_);
+  }
+}
+
+void SpdyHeadersBlockParser::ParseFieldLength(Reader* reader) {
+  ParseLength(reader, &next_field_length_);
+  if (error_ == OK &&
+      next_field_length_ > kMaximumFieldLength) {
+    error_ = HEADER_FIELD_TOO_LARGE;
+  }
+}
+
+void SpdyHeadersBlockParser::ParseLength(Reader* reader,
+                                         uint32_t* parsed_length) {
+  char buffer[] = {0, 0, 0, 0};
+  if (!reader->ReadN(length_field_size_, buffer)) {
+    error_ = NEED_MORE_DATA;
+    return;
+  }
+  // Convert from network to host order and return the parsed out integer.
+  if (length_field_size_ == sizeof(uint32_t)) {
+    *parsed_length = ntohl(*reinterpret_cast<const uint32_t *>(buffer));
+  } else {
+    *parsed_length = ntohs(*reinterpret_cast<const uint16_t *>(buffer));
+  }
 }
 
 void SpdyHeadersBlockParser::Reset() {
-  // Clear any saved state about the last headers block.
-  headers_block_prefix_.clear();
+  {
+    SpdyPinnableBufferPiece empty;
+    headers_block_prefix_.Swap(&empty);
+  }
+  {
+    SpdyPinnableBufferPiece empty;
+    key_.Swap(&empty);
+  }
+  error_ = OK;
   state_ = READING_HEADER_BLOCK_LEN;
+  stream_id_ = 0;
 }
 
-void SpdyHeadersBlockParser::HandleControlFrameHeadersData(
-    const char* headers_data, size_t len) {
-  // Only do something if we received anything new.
-  if (len == 0) {
-    return;
+size_t SpdyHeadersBlockParser::LengthFieldSizeForVersion(
+    SpdyMajorVersion spdy_version) {
+  if (spdy_version < SPDY3) {
+    return sizeof(uint16_t);
   }
+  return sizeof(uint32_t);
+}
 
-  // Reader avoids copying data.
-  base::StringPiece prefix;
-  if (headers_block_prefix_.size()) {
-    prefix.set(&headers_block_prefix_[0], headers_block_prefix_.size());
-  }
-  Reader reader(prefix, base::StringPiece(headers_data, len));
+size_t SpdyHeadersBlockParser::MaxNumberOfHeadersForVersion(
+    SpdyMajorVersion spdy_version) {
+  // Account for the length of the header block field.
+  size_t max_bytes_for_headers =
+      kMaximumFieldLength - LengthFieldSizeForVersion(spdy_version);
 
-  // If we didn't parse out yet the number of key-value pairs in this
-  // headers block, try to do it now (succeeds if we received enough bytes).
-  if (state_ == READING_HEADER_BLOCK_LEN) {
-    if (ParseUInt32(&reader, &remaining_key_value_pairs_for_frame_)) {
-      handler_->OnHeaderBlock(remaining_key_value_pairs_for_frame_);
-      state_ = READING_KEY_LEN;
-    } else {
-      headers_block_prefix_ = reader.Remainder();
-      return;
-    }
-  }
-
-  // Parse out and handle the key-value pairs.
-  while (remaining_key_value_pairs_for_frame_ > 0) {
-    // Parse the key-value length, in case we don't already have it.
-    if ((state_ == READING_KEY_LEN) || (state_ == READING_VALUE_LEN)) {
-      if (ParseUInt32(&reader, &next_field_len_)) {
-        state_ == READING_KEY_LEN ? state_ = READING_KEY :
-                                    state_ = READING_VALUE;
-      } else {
-        // Did not receive enough bytes.
-        break;
-      }
-    }
-
-    // Parse the next field if we received enough bytes.
-    if (reader.Available() >= next_field_len_) {
-      // Copy the field from the cord.
-      char* key_value_buf(new char[next_field_len_]);
-      reader.ReadN(next_field_len_, key_value_buf);
-
-      // Is this field a key?
-      if (state_ == READING_KEY) {
-        current_key.reset(key_value_buf);
-        key_len_ = next_field_len_;
-        state_ = READING_VALUE_LEN;
-
-      } else if (state_ == READING_VALUE) {
-        // We already had the key, now we got its value.
-        current_value.reset(key_value_buf);
-
-        // Call the handler for the key-value pair that we received.
-        handler_->OnKeyValuePair(
-            base::StringPiece(current_key.get(), key_len_),
-            base::StringPiece(current_value.get(), next_field_len_));
-
-        // Free allocated key and value strings.
-        current_key.reset();
-        current_value.reset();
-
-        // Finished handling a key-value pair.
-        remaining_key_value_pairs_for_frame_--;
-
-        // Finished handling a header, prepare for the next one.
-        state_ = READING_KEY_LEN;
-      }
-    } else {
-      // Did not receive enough bytes.
-      break;
-    }
-  }
-
-  // Unread suffix becomes the prefix upon next invocation.
-  headers_block_prefix_ = reader.Remainder();
-
-  // Did we finish handling the current block?
-  if (remaining_key_value_pairs_for_frame_ == 0) {
-    handler_->OnHeaderBlockEnd();
-    Reset();
-  }
+  // A minimal size header is twice the length field size (and has a
+  // zero-lengthed key and a zero-lengthed value).
+  return max_bytes_for_headers / (2 * LengthFieldSizeForVersion(spdy_version));
 }
 
 }  // namespace net

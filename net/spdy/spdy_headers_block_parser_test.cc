@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -23,32 +24,34 @@ using testing::ElementsAreArray;
 // and call the callback methods when we should.
 class MockSpdyHeadersHandler : public SpdyHeadersHandlerInterface {
  public:
-  MOCK_METHOD1(OnHeaderBlock, void(uint32_t num_of_headers));
-  MOCK_METHOD0(OnHeaderBlockEnd, void());
-  MOCK_METHOD2(OnKeyValuePair, void(const StringPiece&, const StringPiece&));
+  MOCK_METHOD2(OnHeaderBlock, void(SpdyStreamId stream_id,
+                                   uint32_t num_of_headers));
+  MOCK_METHOD1(OnHeaderBlockEnd, void(SpdyStreamId stream_id));
+  MOCK_METHOD3(OnHeader, void(SpdyStreamId stream_id,
+                              StringPiece,
+                              StringPiece));
 };
 
-class SpdyHeadersBlockParserTest : public testing::Test {
+class SpdyHeadersBlockParserTest :
+    public ::testing::TestWithParam<SpdyMajorVersion> {
  public:
   virtual ~SpdyHeadersBlockParserTest() {}
 
  protected:
   virtual void SetUp() {
     // Create a parser using the mock handler.
-    parser_.reset(new SpdyHeadersBlockParser(&handler_));
+    spdy_version_ = GetParam();
+    parser_.reset(new SpdyHeadersBlockParser(spdy_version_, &handler_));
+    length_field_size_ =
+        SpdyHeadersBlockParser::LengthFieldSizeForVersion(spdy_version_);
   }
 
-  MockSpdyHeadersHandler handler_;
-  scoped_ptr<SpdyHeadersBlockParser> parser_;
-
   // Create a header block with a specified number of headers.
-  static string CreateHeaders(uint32_t num_headers, bool insert_nulls) {
+  string CreateHeaders(uint32_t num_headers, bool insert_nulls) {
     string headers;
-    char length_field[sizeof(uint32_t)];
 
     // First, write the number of headers in the header block.
-    StoreInt(num_headers, length_field);
-    headers += string(length_field, sizeof(length_field));
+    headers += EncodeLength(num_headers);
 
     // Second, write the key-value pairs.
     for (uint32_t i = 0; i < num_headers; i++) {
@@ -60,8 +63,7 @@ class SpdyHeadersBlockParserTest : public testing::Test {
         key = string(base_key) + IntToString(i);
       }
       // Encode the key as SPDY header.
-      StoreInt(key.length(), length_field);
-      headers += string(length_field, sizeof(length_field));
+      headers += EncodeLength(key.length());
       headers += key;
 
       // Build the value.
@@ -72,13 +74,31 @@ class SpdyHeadersBlockParserTest : public testing::Test {
         value = string(base_value) + IntToString(i);
       }
       // Encode the value as SPDY header.
-      StoreInt(value.length(), length_field);
-      headers += string(length_field, sizeof(length_field));
+      headers += EncodeLength(value.length());
       headers += value;
     }
-
     return headers;
   }
+
+  string EncodeLength(uint32_t len) {
+    char buffer[4];
+    if (length_field_size_ == sizeof(uint32_t)) {
+      uint32_t net_order_len = htonl(len);
+      memcpy(buffer, &net_order_len, length_field_size_);
+    } else if (length_field_size_ == sizeof(uint16_t)) {
+      uint16_t net_order_len = htons(len);
+      memcpy(buffer, &net_order_len, length_field_size_);
+    } else {
+      CHECK(false) << "Invalid length field size";
+    }
+    return string(buffer, length_field_size_);
+  }
+
+  size_t length_field_size_;
+  SpdyMajorVersion spdy_version_;
+
+  MockSpdyHeadersHandler handler_;
+  scoped_ptr<SpdyHeadersBlockParser> parser_;
 
   static const char* base_key;
   static const char* base_value;
@@ -86,49 +106,52 @@ class SpdyHeadersBlockParserTest : public testing::Test {
   // Number of headers and header blocks used in the tests.
   static const int kNumHeadersInBlock = 10;
   static const int kNumHeaderBlocks = 10;
-
- private:
-  static void StoreInt(uint32_t num, char* buf) {
-    uint32_t net_order_len = base::HostToNet32(num);
-    memcpy(buf, &net_order_len, sizeof(num));
-  }
 };
 
 const char* SpdyHeadersBlockParserTest::base_key = "test_key";
 const char* SpdyHeadersBlockParserTest::base_value = "test_value";
 
-TEST_F(SpdyHeadersBlockParserTest, Basic) {
+// All tests are run with 3 different SPDY versions: SPDY/2, SPDY/3, SPDY/4.
+INSTANTIATE_TEST_CASE_P(SpdyHeadersBlockParserTests,
+                        SpdyHeadersBlockParserTest,
+                        ::testing::Values(SPDY2, SPDY3, SPDY4));
+
+TEST_P(SpdyHeadersBlockParserTest, BasicTest) {
   // Sanity test, verify that we parse out correctly a block with
   // a single key-value pair and that we notify when we start and finish
   // handling a headers block.
-  EXPECT_CALL(handler_, OnHeaderBlock(1)).Times(1);
+  EXPECT_CALL(handler_, OnHeaderBlock(1, 1)).Times(1);
 
   std::string expect_key = base_key + IntToString(0);
   std::string expect_value = base_value + IntToString(0);
-  EXPECT_CALL(handler_, OnKeyValuePair(StringPiece(expect_key),
-                                       StringPiece(expect_value))).Times(1);
-  EXPECT_CALL(handler_, OnHeaderBlockEnd()).Times(1);
+  EXPECT_CALL(handler_, OnHeader(1, StringPiece(expect_key),
+                                 StringPiece(expect_value))).Times(1);
+  EXPECT_CALL(handler_, OnHeaderBlockEnd(1)).Times(1);
 
   string headers(CreateHeaders(1, false));
-  parser_->HandleControlFrameHeadersData(headers.c_str(), headers.length());
+  EXPECT_TRUE(parser_->
+      HandleControlFrameHeadersData(1, headers.c_str(), headers.length()));
+  EXPECT_EQ(SpdyHeadersBlockParser::OK, parser_->get_error());
 }
 
-TEST_F(SpdyHeadersBlockParserTest, NullsSupported) {
+TEST_P(SpdyHeadersBlockParserTest, NullsSupportedTest) {
   // Sanity test, verify that we parse out correctly a block with
   // a single key-value pair when the key and value contain null charecters.
-  EXPECT_CALL(handler_, OnHeaderBlock(1)).Times(1);
+  EXPECT_CALL(handler_, OnHeaderBlock(1, 1)).Times(1);
 
   std::string expect_key = base_key + string("\0", 1) + IntToString(0);
   std::string expect_value = base_value + string("\0", 1) + IntToString(0);
-  EXPECT_CALL(handler_, OnKeyValuePair(StringPiece(expect_key),
-                                       StringPiece(expect_value))).Times(1);
-  EXPECT_CALL(handler_, OnHeaderBlockEnd()).Times(1);
+  EXPECT_CALL(handler_, OnHeader(1, StringPiece(expect_key),
+                                 StringPiece(expect_value))).Times(1);
+  EXPECT_CALL(handler_, OnHeaderBlockEnd(1)).Times(1);
 
   string headers(CreateHeaders(1, true));
-  parser_->HandleControlFrameHeadersData(headers.c_str(), headers.length());
+  EXPECT_TRUE(parser_->
+      HandleControlFrameHeadersData(1, headers.c_str(), headers.length()));
+  EXPECT_EQ(SpdyHeadersBlockParser::OK, parser_->get_error());
 }
 
-TEST_F(SpdyHeadersBlockParserTest, MultipleBlocksMultipleHeadersPerBlock) {
+TEST_P(SpdyHeadersBlockParserTest, MultipleBlocksAndHeadersWithPartialData) {
   testing::InSequence s;
 
   // The mock doesn't retain storage of arguments, so keep them in scope.
@@ -139,108 +162,92 @@ TEST_F(SpdyHeadersBlockParserTest, MultipleBlocksMultipleHeadersPerBlock) {
   }
   // For each block we expect to parse out the headers in order.
   for (int i = 0; i < kNumHeaderBlocks; i++) {
-    EXPECT_CALL(handler_, OnHeaderBlock(kNumHeadersInBlock)).Times(1);
+    EXPECT_CALL(handler_, OnHeaderBlock(i, kNumHeadersInBlock)).Times(1);
     for (int j = 0; j < kNumHeadersInBlock; j++) {
-      EXPECT_CALL(handler_, OnKeyValuePair(
+      EXPECT_CALL(handler_, OnHeader(
+          i,
           StringPiece(retained_arguments[2 * j]),
           StringPiece(retained_arguments[2 * j + 1]))).Times(1);
     }
-    EXPECT_CALL(handler_, OnHeaderBlockEnd()).Times(1);
+    EXPECT_CALL(handler_, OnHeaderBlockEnd(i)).Times(1);
   }
-  // Parse the blocks, breaking them into multiple reads at various points.
+  // Parse the header blocks, feeding the parser one byte at a time.
   for (int i = 0; i < kNumHeaderBlocks; i++) {
-    unsigned break_index = 4 * i;
     string headers(CreateHeaders(kNumHeadersInBlock, false));
-    parser_->HandleControlFrameHeadersData(
-        headers.c_str(), headers.length() - break_index);
-    parser_->HandleControlFrameHeadersData(
-        headers.c_str() + headers.length() - break_index, break_index);
+    for (string::iterator it = headers.begin(); it != headers.end(); ++it) {
+      if ((it + 1) == headers.end()) {
+        // Last byte completes the block.
+        EXPECT_TRUE(parser_->HandleControlFrameHeadersData(i, &(*it), 1));
+        EXPECT_EQ(SpdyHeadersBlockParser::OK, parser_->get_error());
+      } else {
+        EXPECT_FALSE(parser_->HandleControlFrameHeadersData(i, &(*it), 1));
+        EXPECT_EQ(SpdyHeadersBlockParser::NEED_MORE_DATA, parser_->get_error());
+      }
+    }
   }
 }
 
-TEST(SpdyHeadersBlockParserReader, EmptyPrefix) {
-  std::string prefix = "";
-  std::string suffix = "foobar";
-  char buffer[] = "12345";
+TEST_P(SpdyHeadersBlockParserTest, HandlesEmptyCallsTest) {
+  EXPECT_CALL(handler_, OnHeaderBlock(1, 1)).Times(1);
 
-  SpdyHeadersBlockParserReader reader(prefix, suffix);
-  EXPECT_EQ(6u, reader.Available());
-  EXPECT_FALSE(reader.ReadN(10, buffer));  // Not enough buffer.
-  EXPECT_TRUE(reader.ReadN(5, buffer));
-  EXPECT_THAT(buffer, ElementsAreArray("fooba"));
-  EXPECT_EQ(1u, reader.Available());
-  EXPECT_THAT(reader.Remainder(), ElementsAre('r'));
+  string expect_key = base_key + IntToString(0);
+  string expect_value = base_value + IntToString(0);
+  EXPECT_CALL(handler_, OnHeader(1, StringPiece(expect_key),
+                                 StringPiece(expect_value))).Times(1);
+  EXPECT_CALL(handler_, OnHeaderBlockEnd(1)).Times(1);
+
+  // Send a header in pieces with intermediate empty calls.
+  string headers(CreateHeaders(1, false));
+  for (string::iterator it = headers.begin(); it != headers.end(); ++it) {
+    if ((it + 1) == headers.end()) {
+      // Last byte completes the block.
+      EXPECT_TRUE(parser_->HandleControlFrameHeadersData(1, &(*it), 1));
+      EXPECT_EQ(SpdyHeadersBlockParser::OK, parser_->get_error());
+    } else {
+      EXPECT_FALSE(parser_->HandleControlFrameHeadersData(1, &(*it), 1));
+      EXPECT_EQ(SpdyHeadersBlockParser::NEED_MORE_DATA, parser_->get_error());
+      EXPECT_FALSE(parser_->HandleControlFrameHeadersData(1, NULL, 0));
+    }
+  }
 }
 
-TEST(SpdyHeadersBlockParserReader, EmptySuffix) {
-  std::string prefix = "foobar";
-  std::string suffix = "";
-  char buffer[] = "12345";
+TEST_P(SpdyHeadersBlockParserTest, LargeBlocksDiscardedTest) {
+  // Header block with too many headers.
+  {
+    string headers = EncodeLength(
+        parser_->MaxNumberOfHeadersForVersion(spdy_version_) + 1);
+    EXPECT_FALSE(parser_->
+        HandleControlFrameHeadersData(1, headers.c_str(), headers.length()));
+    EXPECT_EQ(SpdyHeadersBlockParser::HEADER_BLOCK_TOO_LARGE,
+              parser_->get_error());
+  }
+  parser_->Reset();
+  // Header block with one header, which has a too-long key.
+  {
+    EXPECT_CALL(handler_, OnHeaderBlock(1, 1)).Times(1);
 
-  SpdyHeadersBlockParserReader reader(prefix, suffix);
-  EXPECT_EQ(6u, reader.Available());
-  EXPECT_FALSE(reader.ReadN(10, buffer));  // Not enough buffer.
-  EXPECT_TRUE(reader.ReadN(5, buffer));
-  EXPECT_THAT(buffer, ElementsAreArray("fooba"));
-  EXPECT_EQ(1u, reader.Available());
-  EXPECT_THAT(reader.Remainder(), ElementsAre('r'));
+    string headers = EncodeLength(1) + EncodeLength(
+        SpdyHeadersBlockParser::kMaximumFieldLength + 1);
+    EXPECT_FALSE(parser_->
+        HandleControlFrameHeadersData(1, headers.c_str(), headers.length()));
+    EXPECT_EQ(SpdyHeadersBlockParser::HEADER_FIELD_TOO_LARGE,
+              parser_->get_error());
+  }
 }
 
-TEST(SpdyHeadersBlockParserReader, ReadInPrefix) {
-  std::string prefix = "abcdef";
-  std::string suffix = "ghijk";
-  char buffer[] = "1234";
+TEST_P(SpdyHeadersBlockParserTest, ExtraDataTest) {
+  EXPECT_CALL(handler_, OnHeaderBlock(1, 1)).Times(1);
+  EXPECT_CALL(handler_, OnHeaderBlockEnd(1)).Times(1);
 
-  SpdyHeadersBlockParserReader reader(prefix, suffix);
-  EXPECT_EQ(11u, reader.Available());
-  EXPECT_TRUE(reader.ReadN(4, buffer));
-  EXPECT_THAT(buffer, ElementsAreArray("abcd"));
-  EXPECT_EQ(7u, reader.Available());
-  EXPECT_THAT(reader.Remainder(),
-            ElementsAre('e', 'f', 'g', 'h', 'i', 'j', 'k'));
-}
+  string expect_key = base_key + IntToString(0);
+  string expect_value = base_value + IntToString(0);
+  EXPECT_CALL(handler_, OnHeader(1, StringPiece(expect_key),
+                                 StringPiece(expect_value))).Times(1);
 
-TEST(SpdyHeadersBlockParserReader, ReadPastPrefix) {
-  std::string prefix = "abcdef";
-  std::string suffix = "ghijk";
-  char buffer[] = "12345";
-
-  SpdyHeadersBlockParserReader reader(prefix, suffix);
-  EXPECT_EQ(11u, reader.Available());
-  EXPECT_TRUE(reader.ReadN(5, buffer));
-  EXPECT_THAT(buffer, ElementsAreArray("abcde"));
-
-  // One byte of prefix left: read it.
-  EXPECT_EQ(6u, reader.Available());
-  EXPECT_TRUE(reader.ReadN(1, buffer));
-  EXPECT_THAT(buffer, ElementsAreArray("fbcde"));
-
-  // Read one byte of suffix.
-  EXPECT_EQ(5u, reader.Available());
-  EXPECT_TRUE(reader.ReadN(1, buffer));
-  EXPECT_THAT(buffer, ElementsAreArray("gbcde"));
-
-  EXPECT_THAT(reader.Remainder(),
-            ElementsAre('h', 'i', 'j', 'k'));
-}
-
-TEST(SpdyHeadersBlockParserReader, ReadAcrossSuffix) {
-  std::string prefix = "abcdef";
-  std::string suffix = "ghijk";
-  char buffer[] = "12345678";
-
-  SpdyHeadersBlockParserReader reader(prefix, suffix);
-  EXPECT_EQ(11u, reader.Available());
-  EXPECT_TRUE(reader.ReadN(8, buffer));
-  EXPECT_THAT(buffer, ElementsAreArray("abcdefgh"));
-
-  EXPECT_EQ(3u, reader.Available());
-  EXPECT_FALSE(reader.ReadN(4, buffer));
-  EXPECT_TRUE(reader.ReadN(3, buffer));
-  EXPECT_THAT(buffer, ElementsAreArray("ijkdefgh"));
-
-  EXPECT_EQ(0u, reader.Available());
-  EXPECT_THAT(reader.Remainder(), ElementsAre());
+  string headers = CreateHeaders(1, false) + "foobar";
+  EXPECT_FALSE(parser_->
+      HandleControlFrameHeadersData(1, headers.c_str(), headers.length()));
+  EXPECT_EQ(SpdyHeadersBlockParser::TOO_MUCH_DATA, parser_->get_error());
 }
 
 }  // namespace net
