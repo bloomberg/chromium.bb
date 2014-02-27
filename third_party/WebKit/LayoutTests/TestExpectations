@@ -1304,8 +1304,7 @@ crbug.com/339597 http/tests/navigation/back-to-redirect-with-frame.php [ Pass Ti
 crbug.com/157539 fast/css/text-align-positioned-inside-table-cell.html [ NeedsRebaseline ]
 crbug.com/335212 fast/forms/suggested-value.html [ NeedsRebaseline ]
 
-# Will be switched to request rebaseline after https://codereview.chromium.org/163433013/ lands.
-crbug.com/342077 [ Linux Android ] fast/text/chromium-linux-fontconfig-renderstyle.html [ Pass Failure ]
+crbug.com/342077 [ Linux Android ] fast/text/chromium-linux-fontconfig-renderstyle.html [ NeedsRebaseline ]
 
 # Disable failing tests for the new WebSocket implementation
 crbug.com/339373 http/tests/security/contentSecurityPolicy/connect-src-websocket-allowed.html [ Skip ]
