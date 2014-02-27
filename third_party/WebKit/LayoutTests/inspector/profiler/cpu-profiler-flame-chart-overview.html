@@ -811,11 +811,11 @@ function test()
     var dataProvider = new WebInspector.CPUFlameChartDataProvider(cpuProfileView);
     var colorGenerator = new WebInspector.FlameChart.ColorGenerator();
     var timelineData = dataProvider.timelineData(colorGenerator);
-    console.log(Object.values(WebInspector.FlameChart.OverviewPane.calculateDrawData(timelineData, 16)));
-    console.log(Object.values(WebInspector.FlameChart.OverviewPane.calculateDrawData(timelineData, 8)));
-    console.log(Object.values(WebInspector.FlameChart.OverviewPane.calculateDrawData(timelineData, 4)));
-    console.log(Object.values(WebInspector.FlameChart.OverviewPane.calculateDrawData(timelineData, 2)));
-    console.log(Object.values(WebInspector.FlameChart.OverviewPane.calculateDrawData(timelineData, 1)));
+    console.log(Object.values(WebInspector.FlameChart.OverviewPane.calculateDrawData(dataProvider, timelineData, 16)));
+    console.log(Object.values(WebInspector.FlameChart.OverviewPane.calculateDrawData(dataProvider, timelineData, 8)));
+    console.log(Object.values(WebInspector.FlameChart.OverviewPane.calculateDrawData(dataProvider, timelineData, 4)));
+    console.log(Object.values(WebInspector.FlameChart.OverviewPane.calculateDrawData(dataProvider, timelineData, 2)));
+    console.log(Object.values(WebInspector.FlameChart.OverviewPane.calculateDrawData(dataProvider, timelineData, 1)));
     InspectorTest.completeTest();
 }
 
