@@ -135,6 +135,9 @@ remoting.ClientSession = function(accessCode, fetchPin, fetchThirdPartyToken,
   /** @type {HTMLElement} @private */
   this.fullScreenButton_ = document.getElementById('toggle-full-screen');
 
+  /** @type {remoting.GnubbyAuthHandler} @private */
+  this.gnubbyAuthHandler_ = null;
+
   if (this.mode_ == remoting.ClientSession.Mode.IT2ME) {
     // Resize-to-client is not supported for IT2Me hosts.
     this.resizeToClientButton_.hidden = true;
@@ -509,6 +512,8 @@ remoting.ClientSession.prototype.onPluginInitialized_ = function(initialized) {
       this.onDesktopSizeChanged_.bind(this);
   this.plugin_.onSetCapabilitiesHandler =
       this.onSetCapabilities_.bind(this);
+  this.plugin_.onGnubbyAuthHandler =
+      this.processGnubbyAuthMessage_.bind(this);
   this.initiateConnection_();
 };
 
@@ -1002,6 +1007,9 @@ remoting.ClientSession.prototype.setState_ = function(newState) {
     state = remoting.ClientSession.State.CONNECTION_DROPPED;
   }
   this.logToServer.logClientSessionStateChange(state, this.error_, this.mode_);
+  if (this.state_ == remoting.ClientSession.State.CONNECTED) {
+    this.createGnubbyAuthHandler_();
+  }
   if (this.onStateChange_) {
     this.onStateChange_(oldState, newState);
   }
@@ -1382,4 +1390,45 @@ remoting.ClientSession.prototype.sendClipboardItem = function(mimeType, item) {
   if (!this.plugin_)
     return;
   this.plugin_.sendClipboardItem(mimeType, item);
+};
+
+/**
+ * Send a gnubby-auth extension message to the host.
+ * @param {Object} data The gnubby-auth message data.
+ */
+remoting.ClientSession.prototype.sendGnubbyAuthMessage = function(data) {
+  if (!this.plugin_)
+    return;
+  this.plugin_.sendClientMessage('gnubby-auth', JSON.stringify(data));
+};
+
+/**
+ * Process a remote gnubby auth request.
+ * @param {string} data Remote gnubby request data.
+ * @private
+ */
+remoting.ClientSession.prototype.processGnubbyAuthMessage_ = function(data) {
+  if (this.gnubbyAuthHandler_) {
+    try {
+      this.gnubbyAuthHandler_.onMessage(data);
+    } catch (err) {
+      console.error('Failed to process gnubby message: ',
+          /** @type {*} */ (err));
+    }
+  } else {
+    console.error('Received unexpected gnubby message');
+  }
+};
+
+/**
+ * Create a gnubby auth handler and inform the host that gnubby auth is
+ * supported.
+ * @private
+ */
+remoting.ClientSession.prototype.createGnubbyAuthHandler_ = function() {
+  if (this.mode_ == remoting.ClientSession.Mode.ME2ME) {
+    this.gnubbyAuthHandler_ = new remoting.GnubbyAuthHandler(this);
+    // TODO(psj): Move to more generic capabilities mechanism.
+    this.sendGnubbyAuthMessage({'type': 'control', 'option': 'auth-v1'});
+  }
 };

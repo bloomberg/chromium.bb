@@ -111,13 +111,17 @@
       'webapp/wcs_sandbox_content.js',
       'webapp/xhr_proxy.js',
     ],
-
+    # gnubby authentication JavaScript files.
+    'remoting_webapp_js_gnubby_auth_files': [
+      'webapp/gnubby_auth_handler.js',
+    ],
     # The JavaScript files required by main.html.
     'remoting_webapp_main_html_js_files': [
       '<@(remoting_webapp_js_auth_client2host_files)',
       '<@(remoting_webapp_js_auth_google_files)',
       '<@(remoting_webapp_js_client_files)',
       '<@(remoting_webapp_js_core_files)',
+      '<@(remoting_webapp_js_gnubby_auth_files)',
       '<@(remoting_webapp_js_host_files)',
       '<@(remoting_webapp_js_logging_files)',
       '<@(remoting_webapp_js_ui_files)',

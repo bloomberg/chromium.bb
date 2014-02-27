@@ -51,6 +51,14 @@ chrome.runtime = {
  */
 chrome.runtime.connectNative = function(name) {};
 
+/**
+ * @param {string} extensionId
+ * @param {*} message
+ * @param {Object=} opt_options
+ * @param {function(*)=} opt_callback
+ */
+chrome.runtime.sendMessage = function(
+    extensionId, message, opt_options, opt_callback) {};
 
 /** @type {Object} */
 chrome.extension = {};

@@ -126,3 +126,20 @@ function getStringAttr(dict, key, opt_default) {
   }
   return value;
 }
+
+/**
+ * Return a JSON object parsed from a string.
+ *
+ * If the string cannot be parsed, or does not result in an object, then an
+ * exception will be thrown.
+ *
+ * @param {string} jsonString The JSON string to parse.
+ * @return {Object} The JSON object created from the |jsonString|.
+ */
+function getJsonObjectFromString(jsonString) {
+  var value = /** @type {Object} */ JSON.parse(jsonString);
+  if (typeof value != 'object') {
+    throw 'Invalid data type (expected: Object, actual: ' + typeof value + ')';
+  }
+  return value;
+}
