@@ -1250,6 +1250,12 @@ bool TabStripModel::InternalCloseTabs(const std::vector<int>& indices,
 void TabStripModel::InternalCloseTab(WebContents* contents,
                                      int index,
                                      bool create_historical_tabs) {
+  // Reset the blocked state of the tab, and fire a notification if necessary.
+  // <http://crbug.com/336386#c4> . TODO(avi): Remove all the "blocked" code and
+  // the WebContentsModalDialogManager from TabStripModel, and move all that
+  // tracking code to the modal dialog code, where it belongs.
+  SetTabBlocked(index, false);
+
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
                     TabClosingAt(this, contents, index));
 
