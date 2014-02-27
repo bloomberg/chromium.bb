@@ -19,8 +19,9 @@ namespace autofill {
 namespace {
 
 const SkColor kExplanatoryTextBackground = SkColorSetRGB(0xF5, 0xF5, 0xF5);
-const SkColor kExplanatoryTextColor = SkColorSetRGB(0x7F, 0x7F, 0x7F);
+const SkColor kExplanatoryTextColor = SkColorSetRGB(0x66, 0x66, 0x66);
 const SkColor kDividerColor = SkColorSetRGB(0xE9, 0xE9, 0xE9);
+const SkColor kLinkColor = SkColorSetRGB(0x55, 0x59, 0xFE);
 
 // The amount of whitespace that is present when there is no padding. Used
 // to get the proper spacing in the help section.
@@ -81,9 +82,11 @@ PasswordGenerationPopupViewViews::PasswordGenerationPopupViewViews(
   views::StyledLabel::RangeStyleInfo default_style;
   default_style.color = kExplanatoryTextColor;
   help_label_->SetDefaultStyle(default_style);
-  help_label_->AddStyleRange(
-      controller_->HelpTextLinkRange(),
-      views::StyledLabel::RangeStyleInfo::CreateForLink());
+
+  views::StyledLabel::RangeStyleInfo link_style =
+      views::StyledLabel::RangeStyleInfo::CreateForLink();
+  link_style.color = kLinkColor;
+  help_label_->AddStyleRange(controller_->HelpTextLinkRange(), link_style);
 
   help_label_->SetBoundsRect(controller_->help_bounds());
   help_label_->set_background(
