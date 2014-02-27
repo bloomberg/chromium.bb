@@ -170,9 +170,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   // states.
   bool compositor_needs_continuous_invalidate_;
 
-  // Used to block additional invalidates while one is already pending or before
-  // compositor draw which may switch continuous_invalidate on and off in the
-  // process.
+  // Used to block additional invalidates while one is already pending.
   bool block_invalidates_;
 
   // Holds a callback to FallbackTickFired while it is pending.

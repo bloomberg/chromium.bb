@@ -109,10 +109,7 @@ void BrowserViewRenderer::DrawGL(AwDrawGLInfo* draw_info) {
     hardware_renderer_.reset(new HardwareRenderer(shared_renderer_state_));
   }
 
-  {
-    base::AutoReset<bool> auto_reset(&block_invalidates_, true);
-    hardware_renderer_->DrawGL(draw_info);
-  }
+  hardware_renderer_->DrawGL(draw_info);
   const DrawGLResult result = shared_renderer_state_->GetDrawGLResult();
 
   if (result.frame_id == draw_gl_input_.frame_id) {
@@ -173,7 +170,6 @@ skia::RefPtr<SkPicture> BrowserViewRenderer::CapturePicture(int width,
 
 void BrowserViewRenderer::EnableOnNewPicture(bool enabled) {
   on_new_picture_enable_ = enabled;
-  EnsureContinuousInvalidation(false);
 }
 
 void BrowserViewRenderer::ClearView() {
@@ -338,7 +334,6 @@ void BrowserViewRenderer::DidUpdateContent() {
                        "BrowserViewRenderer::DidUpdateContent",
                        TRACE_EVENT_SCOPE_THREAD);
   clear_view_ = false;
-  EnsureContinuousInvalidation(false);
   if (on_new_picture_enable_)
     client_->OnNewPicture();
 }
@@ -490,9 +485,8 @@ void BrowserViewRenderer::ForceFakeCompositeSW() {
 bool BrowserViewRenderer::CompositeSW(SkCanvas* canvas) {
   DCHECK(has_compositor_);
 
-  fallback_tick_.Cancel();
-  block_invalidates_ = true;
   bool result = shared_renderer_state_->CompositorDemandDrawSw(canvas);
+  fallback_tick_.Cancel();
   block_invalidates_ = false;
   EnsureContinuousInvalidation(false);
   return result;

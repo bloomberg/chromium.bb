@@ -133,7 +133,7 @@ void SynchronousCompositorOutputSurface::SetNeedsBeginImplFrame(
   cc::OutputSurface::SetNeedsBeginImplFrame(enable);
   needs_begin_impl_frame_ = enable;
   SynchronousCompositorOutputSurfaceDelegate* delegate = GetDelegate();
-  if (delegate)
+  if (delegate && !invoking_composite_)
     delegate->SetContinuousInvalidate(needs_begin_impl_frame_);
 }
 
@@ -246,6 +246,10 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
 
   if (did_swap_buffer_)
     OnSwapBuffersComplete();
+
+  SynchronousCompositorOutputSurfaceDelegate* delegate = GetDelegate();
+  if (delegate)
+    delegate->SetContinuousInvalidate(needs_begin_impl_frame_);
 }
 
 void
