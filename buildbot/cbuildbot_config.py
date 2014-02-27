@@ -1820,6 +1820,11 @@ _release.add_config('falco-release',
   boards=['falco'],
 )
 
+_release.add_config('falco_li-release',
+  boards=['falco_li'],
+  hw_tests=[],
+)
+
 _release.add_config('fox_wtm2-release',
   boards=['fox_wtm2'],
   # Until these are configured and ready, disable them.
