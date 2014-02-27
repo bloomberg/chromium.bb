@@ -64,11 +64,9 @@ void CursorLoaderOzone::SetPlatformCursor(gfx::NativeCursor* cursor) {
     // TODO(dnicoara) Add support for custom cursors: crbug.com/343155
     cursor->SetPlatformCursor(cursor->platform());
   } else {
-    const gfx::ImageSkiaRep& image_rep =
-        cursors_[kCursorPointer]->GetRepresentation(
-            display().device_scale_factor());
-
-    cursor->SetPlatformCursor(&image_rep.sk_bitmap());
+    // We load different set of cursors with Ash and DesktopAura. Since we do
+    // not have the resource for this cursor, set platform cursor to NULL.
+    cursor->SetPlatformCursor(NULL);
   }
 }
 
