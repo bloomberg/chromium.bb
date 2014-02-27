@@ -192,6 +192,23 @@ bool IsElementAutocompletable(const blink::WebInputElement& element) {
           element.autoComplete());
 }
 
+// Returns true if the password specified in |form| is a default value.
+bool PasswordValueIsDefault(const PasswordForm& form,
+                            blink::WebFormElement form_element) {
+  blink::WebVector<blink::WebNode> temp_elements;
+  form_element.getNamedElements(form.password_element, temp_elements);
+
+  // We are loose in our definition here and will return true if any of the
+  // appropriately named elements match the element to be saved. Currently
+  // we ignore filling passwords where naming is ambigious anyway.
+  for (size_t i = 0; i < temp_elements.size(); ++i) {
+    if (temp_elements[i].to<blink::WebElement>().getAttribute("value") ==
+        form.password_value)
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -554,11 +571,13 @@ void PasswordAutofillAgent::DidStartProvisionalLoad(blink::WebFrame* frame) {
         frame->document().forms(forms);
 
         for (size_t i = 0; i < forms.size(); ++i) {
-          blink::WebFormElement fe = forms[i];
-          scoped_ptr<PasswordForm> password_form(CreatePasswordForm(fe));
+          blink::WebFormElement form_element= forms[i];
+          scoped_ptr<PasswordForm> password_form(
+              CreatePasswordForm(form_element));
           if (password_form.get() &&
               !password_form->username_value.empty() &&
-              !password_form->password_value.empty()) {
+              !password_form->password_value.empty() &&
+              !PasswordValueIsDefault(*password_form, form_element)) {
             Send(new AutofillHostMsg_PasswordFormSubmitted(
                 routing_id(), *password_form));
           }
