@@ -6,6 +6,7 @@ package org.chromium.content.browser;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.os.Build;
@@ -119,6 +120,21 @@ public class ContentView extends FrameLayout
     @Override
     public String getTitle() {
         return mContentViewCore.getTitle();
+    }
+
+    @Override
+    public boolean isReadyForSnapshot() {
+        return mContentViewCore.isReady();
+    }
+
+    @Override
+    public Bitmap getBitmap() {
+        return getBitmap(getWidth(), getHeight());
+    }
+
+    @Override
+    public Bitmap getBitmap(int width, int height) {
+        return mContentViewCore.getBitmap(width, height);
     }
 
     @Override

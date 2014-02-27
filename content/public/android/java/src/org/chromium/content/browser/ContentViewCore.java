@@ -27,6 +27,7 @@ import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.Pair;
 import android.view.ActionMode;
 import android.view.HapticFeedbackConstants;
 import android.view.InputDevice;
@@ -1032,6 +1033,58 @@ public class ContentViewCore
      */
     public float getContentWidthCss() {
         return mRenderCoordinates.getContentWidthCss();
+    }
+
+    public Bitmap getBitmap() {
+        return getBitmap(getViewportWidthPix(), getViewportHeightPix());
+    }
+
+    public Bitmap getBitmap(int width, int height) {
+        if (width == 0 || height == 0
+                || getViewportWidthPix() == 0 || getViewportHeightPix() == 0) {
+            return null;
+        }
+
+        Bitmap b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+
+        if (mNativeContentViewCore != 0 &&
+                nativePopulateBitmapFromCompositor(mNativeContentViewCore, b)) {
+            // If we successfully grabbed a bitmap, check if we have to draw the Android overlay
+            // components as well.
+            if (mContainerView.getChildCount() > 0) {
+                Canvas c = new Canvas(b);
+                c.scale(width / (float) getViewportWidthPix(),
+                        height / (float) getViewportHeightPix());
+                mContainerView.draw(c);
+            }
+            return b;
+        }
+
+        return null;
+    }
+
+    /**
+     * Generates a bitmap of the content that is performance optimized based on capture time.
+     *
+     * <p>
+     * To have a consistent capture time across devices, we will scale down the captured bitmap
+     * where necessary to reduce the time to generate the bitmap.
+     *
+     * @param width The width of the content to be captured.
+     * @param height The height of the content to be captured.
+     * @return A pair of the generated bitmap, and the scale that needs to be applied to return the
+     *         bitmap to it's original size (i.e. if the bitmap is scaled down 50%, this
+     *         will be 2).
+     */
+    public Pair<Bitmap, Float> getScaledPerformanceOptimizedBitmap(int width, int height) {
+        float scale = 1f;
+        // On tablets, always scale down to MDPI for performance reasons.
+        if (DeviceUtils.isTablet(getContext())) {
+            scale = getContext().getResources().getDisplayMetrics().density;
+        }
+        return Pair.create(
+                getBitmap((int) (width / scale), (int) (height / scale)),
+                scale);
     }
 
     // TODO(teddchoc): Remove all these navigation controller methods from here and have the
@@ -3390,6 +3443,9 @@ public class ContentViewCore
     private native void nativeOnVSync(long nativeContentViewCoreImpl, long frameTimeMicros);
 
     private native boolean nativeOnAnimate(long nativeContentViewCoreImpl, long frameTimeMicros);
+
+    private native boolean nativePopulateBitmapFromCompositor(long nativeContentViewCoreImpl,
+            Bitmap bitmap);
 
     private native void nativeWasResized(long nativeContentViewCoreImpl);
 
