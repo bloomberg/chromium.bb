@@ -437,15 +437,186 @@ wrapper.instrumentChromeApiFunction('identity.removeCachedAuthToken', 1);
 wrapper.instrumentChromeApiFunction('webstorePrivate.getBrowserLogin', 0);
 
 /**
- * Add task tracking support to Promises.
- * @override
+ * Promise adapter for all JS promises to the task manager.
  */
-Promise.prototype.then = function() {
+function registerPromiseAdapter() {
   var originalThen = Promise.prototype.then;
-  return function(callback) {
-    originalThen.call(this, wrapper.wrapCallback(callback, false));
+  var originalCatch = Promise.prototype.catch;
+
+  /**
+   * Takes a promise and adds the callback tracker to it.
+   * @param {object} promise Promise that receives the callback tracker.
+   */
+  function instrumentPromise(promise) {
+    if (promise.__tracker === undefined) {
+      promise.__tracker = createPromiseCallbackTracker(promise);
+    }
   }
-}();
+
+  Promise.prototype.then = function(onResolved, onRejected) {
+    instrumentPromise(this);
+    return this.__tracker.handleThen(onResolved, onRejected);
+  }
+
+  Promise.prototype.catch = function(onRejected) {
+    instrumentPromise(this);
+    return this.__tracker.handleCatch(onRejected);
+  }
+
+  /**
+   * Promise Callback Tracker.
+   * Handles coordination of 'then' and 'catch' callbacks in a task
+   * manager compatible way. For an individual promise, either the 'then'
+   * arguments or the 'catch' arguments will be processed, never both.
+   *
+   * Example:
+   *     var p = new Promise([Function]);
+   *     p.then([ThenA]);
+   *     p.then([ThenB]);
+   *     p.catch([CatchA]);
+   *     On resolution, [ThenA] and [ThenB] will be used. [CatchA] is discarded.
+   *     On rejection, vice versa.
+   *
+   * Clarification:
+   *     Chained promises create a new promise that is tracked separately from
+   *     the originaing promise, as the example below demonstrates:
+   *
+   *     var p = new Promise([Function]));
+   *     p.then([ThenA]).then([ThenB]).catch([CatchA]);
+   *         ^             ^             ^
+   *         |             |             + Returns a new promise.
+   *         |             + Returns a new promise.
+   *         + Returns a new promise.
+   *
+   *     Four promises exist in the above statement, each with its own
+   *     resolution and rejection state. However, by default, this state is
+   *     chained to the previous promise's resolution or rejection
+   *     state.
+   *
+   *     If p resolves, then the 'then' calls will execute until all the 'then'
+   *     clauses are executed. If the result of either [ThenA] or [ThenB] is a
+   *     promise, then that execution state will guide the remaining chain.
+   *     Similarly, if [CatchA] returns a promise, it can also guide the
+   *     remaining chain. In this specific case, the chain ends, so there
+   *     is nothing left to do.
+   * @param {object} promise Promise being tracked.
+   * @return {object} A promise callback tracker.
+   */
+  function createPromiseCallbackTracker(promise) {
+    /**
+     * Callback Tracker. Holds an array of callbacks created for this promise.
+     * The indirection allows quick checks against the array and clearing the
+     * array without ugly splicing and copying.
+     * @typedef {{
+     *   callback: array.<Function>=
+     * }}
+     */
+    var CallbackTracker;
+
+    /** @type {CallbackTracker} */
+    var thenTracker = {callbacks: []};
+    /** @type {CallbackTracker} */
+    var catchTracker = {callbacks: []};
+
+    /**
+     * Returns true if the specified value is callable.
+     * @param {*} value Value to check.
+     * @return {boolean} True if the value is a callable.
+     */
+    function isCallable(value) {
+      return typeof value === 'function';
+    }
+
+    /**
+     * Takes a tracker and clears its callbacks in a manner consistent with
+     * the task manager. For the task manager, it also calls all callbacks
+     * by no-oping them first and then calling them.
+     * @param {CallbackTracker} tracker Tracker to clear.
+     */
+    function clearTracker(tracker) {
+      if (tracker.callbacks) {
+        var callbacksToClear = tracker.callbacks;
+        // No-ops all callbacks of this type.
+        tracker.callbacks = undefined;
+        // Do not wrap the promise then argument!
+        // It will call wrapped callbacks.
+        originalThen.call(Promise.resolve(), function() {
+          for (var i = 0; i < callbacksToClear.length; i++) {
+            callbacksToClear[i]();
+          }
+        });
+      }
+    }
+
+    /**
+     * Takes the argument to a 'then' or 'catch' function and applies
+     * a wrapping to callables consistent to ECMA promises.
+     * @param {*} maybeCallback Argument to 'then' or 'catch'.
+     * @param {CallbackTracker} sameTracker Tracker for the call type.
+     *     Example: If the argument is from a 'then' call, use thenTracker.
+     * @param {CallbackTracker} otherTracker Tracker for the opposing call type.
+     *     Example: If the argument is from a 'then' call, use catchTracker.
+     * @return {*} Consumable argument with necessary wrapping applied.
+     */
+    function registerAndWrapMaybeCallback(
+          maybeCallback, sameTracker, otherTracker) {
+      // If sameTracker.callbacks is undefined, we've reached an ending state
+      // that means this callback will never be called back.
+      // We will still forward this call on to let the promise system
+      // handle further processing, but since this promise is in an ending state
+      // we can be confident it will never be called back.
+      if (isCallable(maybeCallback) && sameTracker.callbacks) {
+        var handler = wrapper.wrapCallback(function() {
+          if (sameTracker.callbacks) {
+            clearTracker(otherTracker);
+            maybeCallback.apply(null, arguments);
+          }
+        }, false);
+        sameTracker.callbacks.push(handler);
+        return handler;
+      } else {
+        return maybeCallback;
+      }
+    }
+
+    /**
+     * Tracks then calls equivalent to Promise.prototype.then.
+     * @param {*} onResolved Argument to use if the promise is resolved.
+     * @param {*} onRejected Argument to use if the promise is rejected.
+     * @return {object} Promise resulting from the 'then' call.
+     */
+    function handleThen(onResolved, onRejected) {
+      var resolutionHandler =
+          registerAndWrapMaybeCallback(onResolved, thenTracker, catchTracker);
+      var rejectionHandler =
+          registerAndWrapMaybeCallback(onRejected, catchTracker, thenTracker);
+      return originalThen.call(promise, resolutionHandler, rejectionHandler);
+    }
+
+    /**
+     * Tracks then calls equivalent to Promise.prototype.catch.
+     * @param {*} onRejected Argument to use if the promise is rejected.
+     * @return {object} Promise resulting from the 'catch' call.
+     */
+    function handleCatch(onRejected) {
+      var rejectionHandler =
+          registerAndWrapMaybeCallback(onRejected, catchTracker, thenTracker);
+      return originalCatch.call(promise, rejectionHandler);
+    }
+
+    // Seeds this promise with at least one 'then' and 'catch' so we always
+    // receive a callback to update the task manager on the state of callbacks.
+    handleThen(function() {});
+    handleCatch(function() {});
+
+    return {
+      handleThen: handleThen,
+      handleCatch: handleCatch
+    };
+  }
+}
+
+registerPromiseAdapter();
 
 /**
  * Builds the object to manage tasks (mutually exclusive chains of events).
@@ -726,36 +897,46 @@ function buildAuthenticationManager() {
 
   /**
    * Gets an OAuth2 access token.
-   * @param {function(string=)} callback Called on completion.
-   *     The string contains the token. It's undefined if there was an error.
+   * @return {Promise} A promise to get the authentication token. If there is
+   *     no token, the request is rejected.
    */
-  function getAuthToken(callback) {
-    instrumented.identity.getAuthToken({interactive: false}, function(token) {
-      token = chrome.runtime.lastError ? undefined : token;
-      callback(token);
+  function getAuthToken() {
+    return new Promise(function(resolve, reject) {
+      instrumented.identity.getAuthToken({interactive: false}, function(token) {
+        if (chrome.runtime.lastError || !token) {
+          reject();
+        } else {
+          resolve(token);
+        }
+      });
     });
   }
 
   /**
    * Determines whether there is an account attached to the profile.
-   * @param {function(boolean)} callback Called on completion.
+   * @return {Promise} A promise to determine if there is an account attached
+   *     to the profile.
    */
-  function isSignedIn(callback) {
-    instrumented.webstorePrivate.getBrowserLogin(function(accountInfo) {
-      callback(!!accountInfo.login);
+  function isSignedIn() {
+    return new Promise(function(resolve) {
+      instrumented.webstorePrivate.getBrowserLogin(function(accountInfo) {
+        resolve(!!accountInfo.login);
+      });
     });
   }
 
   /**
    * Removes the specified cached token.
    * @param {string} token Authentication Token to remove from the cache.
-   * @param {function()} callback Called on completion.
+   * @return {Promise} A promise that resolves on completion.
    */
-  function removeToken(token, callback) {
-    instrumented.identity.removeCachedAuthToken({token: token}, function() {
-      // Let Chrome now about a possible problem with the token.
-      getAuthToken(function() {});
-      callback();
+  function removeToken(token) {
+    return new Promise(function(resolve) {
+      instrumented.identity.removeCachedAuthToken({token: token}, function() {
+        // Let Chrome know about a possible problem with the token.
+        getAuthToken();
+        resolve();
+      });
     });
   }
 
@@ -775,7 +956,7 @@ function buildAuthenticationManager() {
    * If it doesn't, it notifies the listeners of the change.
    */
   function checkAndNotifyListeners() {
-    isSignedIn(function(signedIn) {
+    isSignedIn().then(function(signedIn) {
       instrumented.storage.local.get('lastSignedInState', function(items) {
         items = items || {};
         if (items.lastSignedInState != signedIn) {
