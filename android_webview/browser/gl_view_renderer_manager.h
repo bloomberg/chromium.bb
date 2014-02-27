@@ -14,10 +14,14 @@
 
 namespace android_webview {
 
-class HardwareRenderer;
+class SharedRendererState;
 
 class GLViewRendererManager {
-  typedef std::list<HardwareRenderer*> ListType;
+ public:
+  typedef SharedRendererState* RendererType;
+
+ private:
+  typedef std::list<RendererType> ListType;
 
  public:
   typedef ListType::iterator Key;
@@ -29,11 +33,11 @@ class GLViewRendererManager {
   // If |key| is NullKey(), then |view| is inserted at the front and a new key
   // is returned. Otherwise |key| must point to |view| which is moved to the
   // front.
-  Key DidDrawGL(Key key, HardwareRenderer* view);
+  Key DidDrawGL(Key key, RendererType view);
 
   void NoLongerExpectsDrawGL(Key key);
 
-  HardwareRenderer* GetMostRecentlyDrawn() const;
+  RendererType GetMostRecentlyDrawn() const;
 
   Key NullKey();
 

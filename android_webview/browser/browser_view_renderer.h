@@ -5,12 +5,12 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_BROWSER_VIEW_RENDERER_H_
 #define ANDROID_WEBVIEW_BROWSER_BROWSER_VIEW_RENDERER_H_
 
+#include "android_webview/browser/shared_renderer_state.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
 #include "skia/ext/refptr.h"
-#include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/vector2d_f.h"
 
@@ -27,52 +27,8 @@ class WebContents;
 
 namespace android_webview {
 
+class BrowserViewRendererClient;
 class HardwareRenderer;
-
-class BrowserViewRendererClient {
- public:
-  // Request DrawGL be called. Passing null |canvas| implies the request
-  // will be of AwDrawGLInfo::kModeProcess type. The callback
-  // may never be made, and the mode may be promoted to kModeDraw.
-  virtual bool RequestDrawGL(jobject canvas) = 0;
-
-  // Called when a new Picture is available. Needs to be enabled
-  // via the EnableOnNewPicture method.
-  virtual void OnNewPicture() = 0;
-
-  // Called to trigger view invalidations.
-  virtual void PostInvalidate() = 0;
-
-  // Synchronously call back to SetGlobalVisibleRect with current value.
-  virtual void UpdateGlobalVisibleRect() = 0;
-
-  // Called to get view's absolute location on the screen.
-  virtual gfx::Point GetLocationOnScreen() = 0;
-
-  // Try to set the view's scroll offset to |new_value|.
-  virtual void ScrollContainerViewTo(gfx::Vector2d new_value) = 0;
-
-  // Set the view's scroll offset cap to |new_value|.
-  virtual void SetMaxContainerViewScrollOffset(gfx::Vector2d new_value) = 0;
-
-  // Is a Android view system managed fling in progress?
-  virtual bool IsFlingActive() const = 0;
-
-  // Set the current page scale to |page_scale_factor| and page scale limits
-  // to |min_page_scale_factor|..|max_page_scale_factor|.
-  virtual void SetPageScaleFactorAndLimits(float page_scale_factor,
-                                           float min_page_scale_factor,
-                                           float max_page_scale_factor) = 0;
-
-  // Set the current contents_size to |contents_size_dip|.
-  virtual void SetContentsSize(gfx::SizeF contents_size_dip) = 0;
-
-  // Handle overscroll.
-  virtual void DidOverscroll(gfx::Vector2d overscroll_delta) = 0;
-
- protected:
-  virtual ~BrowserViewRendererClient() {}
-};
 
 // Delegate to perform rendering actions involving Java objects.
 class BrowserViewRendererJavaHelper {
@@ -100,6 +56,7 @@ class BrowserViewRendererJavaHelper {
 class BrowserViewRenderer : public content::SynchronousCompositorClient {
  public:
   BrowserViewRenderer(BrowserViewRendererClient* client,
+                      SharedRendererState* shared_renderer_state,
                       content::WebContents* web_contents);
 
   virtual ~BrowserViewRenderer();
@@ -176,8 +133,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   // Checks the continuous invalidate and block invalidate state, and schedule
   // invalidates appropriately. If |invalidate_ignore_compositor| is true,
   // then send a view invalidate regardless of compositor expectation.
-  void EnsureContinuousInvalidation(AwDrawGLInfo* draw_info,
-                                    bool invalidate_ignore_compositor);
+  void EnsureContinuousInvalidation(bool invalidate_ignore_compositor);
   bool DrawSWInternal(jobject java_canvas, const gfx::Rect& clip_bounds);
   bool CompositeSW(SkCanvas* canvas);
 
@@ -193,8 +149,9 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   std::string ToString(AwDrawGLInfo* draw_info) const;
 
   BrowserViewRendererClient* client_;
+  SharedRendererState* shared_renderer_state_;
   content::WebContents* web_contents_;
-  content::SynchronousCompositor* compositor_;
+  bool has_compositor_;
 
   scoped_ptr<HardwareRenderer> hardware_renderer_;
 
@@ -224,11 +181,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   int width_;
   int height_;
 
-  // Should always call UpdateGlobalVisibleRect before using this.
-  gfx::Rect cached_global_visible_rect_;
-
-  // Last View scroll when View.onDraw() was called.
-  gfx::Vector2d scroll_at_start_of_frame_;
+  DrawGLInput draw_gl_input_;
 
   // Current scroll offset in CSS pixels.
   gfx::Vector2dF scroll_offset_dip_;

@@ -5,7 +5,7 @@
 #include "android_webview/browser/hardware_renderer.h"
 
 #include "android_webview/browser/aw_gl_surface.h"
-#include "android_webview/browser/browser_view_renderer.h"
+#include "android_webview/browser/browser_view_renderer_client.h"
 #include "android_webview/browser/gl_view_renderer_manager.h"
 #include "android_webview/browser/scoped_app_gl_state_restore.h"
 #include "android_webview/common/aw_switches.h"
@@ -34,16 +34,10 @@ base::LazyInstance<scoped_refptr<internal::DeferredGpuCommandService> >
 
 }  // namespace
 
-DrawGLResult::DrawGLResult()
-    : did_draw(false), clip_contains_visible_rect(false) {}
-
-HardwareRenderer::HardwareRenderer(content::SynchronousCompositor* compositor,
-                                   BrowserViewRendererClient* client)
-    : compositor_(compositor),
-      client_(client),
+HardwareRenderer::HardwareRenderer(SharedRendererState* shared_renderer_state)
+    : shared_renderer_state_(shared_renderer_state),
       last_egl_context_(eglGetCurrentContext()),
       manager_key_(GLViewRendererManager::GetInstance()->NullKey()) {
-  DCHECK(compositor_);
   DCHECK(last_egl_context_);
 }
 
@@ -59,7 +53,7 @@ HardwareRenderer::~HardwareRenderer() {
         ScopedAppGLStateRestore::MODE_RESOURCE_MANAGEMENT);
     internal::ScopedAllowGL allow_gl;
 
-    compositor_->ReleaseHwDraw();
+    shared_renderer_state_->CompositorReleaseHwDraw();
     gl_surface_ = NULL;
   }
   DCHECK(manager_key_ == GLViewRendererManager::GetInstance()->NullKey());
@@ -75,7 +69,7 @@ bool HardwareRenderer::InitializeHardwareDraw() {
   bool success = true;
   if (!gl_surface_) {
     scoped_refptr<AwGLSurface> gl_surface = new AwGLSurface;
-    success = compositor_->InitializeHwDraw(gl_surface);
+    success = shared_renderer_state_->CompositorInitializeHwDraw(gl_surface);
     if (success)
       gl_surface_ = gl_surface;
   }
@@ -83,19 +77,18 @@ bool HardwareRenderer::InitializeHardwareDraw() {
   return success;
 }
 
-DrawGLResult HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info,
-                                      const DrawGLInput& input) {
+void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   TRACE_EVENT0("android_webview", "HardwareRenderer::DrawGL");
-  manager_key_ =
-      GLViewRendererManager::GetInstance()->DidDrawGL(manager_key_, this);
-  DrawGLResult result;
+  manager_key_ = GLViewRendererManager::GetInstance()->DidDrawGL(
+      manager_key_, shared_renderer_state_);
+  const DrawGLInput input = shared_renderer_state_->GetDrawGLInput();
 
   // We need to watch if the current Android context has changed and enforce
   // a clean-up in the compositor.
   EGLContext current_context = eglGetCurrentContext();
   if (!current_context) {
     DLOG(ERROR) << "DrawGL called without EGLContext";
-    return result;
+    return;
   }
 
   // TODO(boliu): Handle context loss.
@@ -106,11 +99,11 @@ DrawGLResult HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info,
   internal::ScopedAllowGL allow_gl;
 
   if (draw_info->mode == AwDrawGLInfo::kModeProcess)
-    return result;
+    return;
 
   if (!InitializeHardwareDraw()) {
     DLOG(ERROR) << "WebView hardware initialization failed";
-    return result;
+    return;
   }
 
   // Update memory budget. This will no-op in compositor if the policy has not
@@ -130,7 +123,7 @@ DrawGLResult HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info,
 
   gfx::Transform transform;
   transform.matrix().setColMajorf(draw_info->transform);
-  transform.Translate(input.scroll.x(), input.scroll.y());
+  transform.Translate(input.scroll_offset.x(), input.scroll_offset.y());
   gfx::Rect clip_rect(draw_info->clip_left,
                       draw_info->clip_top,
                       draw_info->clip_right - draw_info->clip_left,
@@ -143,17 +136,21 @@ DrawGLResult HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info,
     viewport_rect = input.global_visible_rect;
     clip_rect.Intersect(viewport_rect);
   }
-  result.clip_contains_visible_rect = clip_rect.Contains(viewport_rect);
 
-  result.did_draw =
-      compositor_->DemandDrawHw(gfx::Size(draw_info->width, draw_info->height),
-                                transform,
-                                viewport_rect,
-                                clip_rect,
-                                state_restore.stencil_enabled());
+  bool did_draw = shared_renderer_state_->CompositorDemandDrawHw(
+      gfx::Size(draw_info->width, draw_info->height),
+      transform,
+      viewport_rect,
+      clip_rect,
+      state_restore.stencil_enabled());
   gl_surface_->ResetBackingFrameBufferObject();
 
-  return result;
+  if (did_draw) {
+    DrawGLResult result;
+    result.frame_id = input.frame_id;
+    result.clip_contains_visible_rect = clip_rect.Contains(viewport_rect);
+    shared_renderer_state_->SetDrawGLResult(result);
+  }
 }
 
 bool HardwareRenderer::TrimMemory(int level, bool visible) {
@@ -189,7 +186,7 @@ bool HardwareRenderer::TrimMemory(int level, bool visible) {
   if (memory_policy_ == policy)
     return false;
 
-  TRACE_EVENT0("android_webview", "BrowserViewRenderer::TrimMemory");
+  TRACE_EVENT0("android_webview", "HardwareRenderer::TrimMemory");
   ScopedAppGLStateRestore state_restore(
       ScopedAppGLStateRestore::MODE_RESOURCE_MANAGEMENT);
   internal::ScopedAllowGL allow_gl;
@@ -204,11 +201,7 @@ void HardwareRenderer::SetMemoryPolicy(
     return;
 
   memory_policy_ = new_policy;
-  compositor_->SetMemoryPolicy(memory_policy_);
-}
-
-bool HardwareRenderer::RequestDrawGL() {
-  return client_->RequestDrawGL(NULL);
+  shared_renderer_state_->CompositorSetMemoryPolicy(memory_policy_);
 }
 
 // static
@@ -250,25 +243,15 @@ DeferredGpuCommandService::~DeferredGpuCommandService() {
   DCHECK(tasks_.empty());
 }
 
-namespace {
-void RequestProcessGL() {
-  HardwareRenderer* renderer =
-      GLViewRendererManager::GetInstance()->GetMostRecentlyDrawn();
-  if (!renderer || !renderer->RequestDrawGL()) {
-    LOG(ERROR) << "Failed to request GL process. Deadlock likely: "
-               << !!renderer;
-  }
-}
-}  // namespace
-
 // static
 void DeferredGpuCommandService::RequestProcessGLOnUIThread() {
-  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    RequestProcessGL();
-  } else {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE, base::Bind(&RequestProcessGL));
+  SharedRendererState* renderer_state =
+      GLViewRendererManager::GetInstance()->GetMostRecentlyDrawn();
+  if (!renderer_state) {
+    LOG(ERROR) << "No hardware renderer. Deadlock likely";
+    return;
   }
+  renderer_state->ClientRequestDrawGL();
 }
 
 // Called from different threads!

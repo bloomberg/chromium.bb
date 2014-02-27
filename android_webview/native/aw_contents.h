@@ -11,9 +11,11 @@
 #include <utility>
 
 #include "android_webview/browser/browser_view_renderer.h"
+#include "android_webview/browser/browser_view_renderer_client.h"
 #include "android_webview/browser/find_helper.h"
 #include "android_webview/browser/icon_helper.h"
 #include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
+#include "android_webview/browser/shared_renderer_state.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/android/jni_helper.h"
 #include "base/callback_forward.h"
@@ -204,6 +206,7 @@ class AwContents : public FindHelper::Listener,
   scoped_ptr<FindHelper> find_helper_;
   scoped_ptr<IconHelper> icon_helper_;
   scoped_ptr<AwContents> pending_contents_;
+  SharedRendererState shared_renderer_state_;
   BrowserViewRenderer browser_view_renderer_;
   scoped_ptr<AwPdfExporter> pdf_exporter_;
 

@@ -185,7 +185,12 @@ AwContents* AwContents::FromID(int render_process_id, int render_view_id) {
 
 AwContents::AwContents(scoped_ptr<WebContents> web_contents)
     : web_contents_(web_contents.Pass()),
-      browser_view_renderer_(this, web_contents_.get()) {
+      shared_renderer_state_(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+          this),
+      browser_view_renderer_(this,
+                             &shared_renderer_state_,
+                             web_contents_.get()) {
   base::subtle::NoBarrier_AtomicIncrement(&g_instance_count, 1);
   icon_helper_.reset(new IconHelper(web_contents_.get()));
   icon_helper_->SetListener(this);

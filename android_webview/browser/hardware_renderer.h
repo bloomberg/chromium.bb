@@ -8,6 +8,7 @@
 #include <queue>
 
 #include "android_webview/browser/gl_view_renderer_manager.h"
+#include "android_webview/browser/shared_renderer_state.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 
@@ -22,39 +23,23 @@ namespace internal {
 class DeferredGpuCommandService;
 }  // namespace internal
 
-struct DrawGLInput {
-  gfx::Rect global_visible_rect;
-  gfx::Vector2d scroll;
-};
-
-struct DrawGLResult {
-  bool did_draw;
-  bool clip_contains_visible_rect;
-
-  DrawGLResult();
-};
-
 class HardwareRenderer {
  public:
-  HardwareRenderer(content::SynchronousCompositor* compositor,
-                   BrowserViewRendererClient* client);
+  explicit HardwareRenderer(SharedRendererState* shared_renderer_state);
   ~HardwareRenderer();
 
   static void CalculateTileMemoryPolicy();
 
-  DrawGLResult DrawGL(AwDrawGLInfo* draw_info, const DrawGLInput& input);
+  void DrawGL(AwDrawGLInfo* draw_info);
   bool TrimMemory(int level, bool visible);
-  void SetMemoryPolicy(content::SynchronousCompositorMemoryPolicy& new_policy);
-
-  bool RequestDrawGL();
 
  private:
   friend class internal::DeferredGpuCommandService;
 
   bool InitializeHardwareDraw();
+  void SetMemoryPolicy(content::SynchronousCompositorMemoryPolicy& new_policy);
 
-  content::SynchronousCompositor* compositor_;
-  BrowserViewRendererClient* client_;
+  SharedRendererState* shared_renderer_state_;
 
   typedef void* EGLContext;
   EGLContext last_egl_context_;

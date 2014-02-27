@@ -37,9 +37,8 @@ void GLViewRendererManager::MarkRenderThread() {
   DCHECK(render_thread_.is_equal(base::PlatformThread::CurrentHandle()));
 }
 
-GLViewRendererManager::Key GLViewRendererManager::DidDrawGL(
-    Key key,
-    HardwareRenderer* view) {
+GLViewRendererManager::Key GLViewRendererManager::DidDrawGL(Key key,
+                                                            RendererType view) {
   AutoLock auto_lock(lock_);
   MarkRenderThread();
 
@@ -61,7 +60,8 @@ void GLViewRendererManager::NoLongerExpectsDrawGL(Key key) {
   mru_list_.erase(key);
 }
 
-HardwareRenderer* GLViewRendererManager::GetMostRecentlyDrawn() const {
+GLViewRendererManager::RendererType
+GLViewRendererManager::GetMostRecentlyDrawn() const {
   AutoLock auto_lock(lock_);
   if (mru_list_.begin() == mru_list_.end())
     return NULL;
