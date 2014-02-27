@@ -473,7 +473,7 @@ void GypBinaryTargetWriter::WriteMacFlags(const Target* target,
     // When writing an iOS "target" (not host) target, we set VALID_ARCHS
     // instead of ARCHS and always use this hardcoded value. This matches the
     // GYP build.
-    Indent(indent + kExtraIndent) << "'VALID_ARCHS': 'armv7 i386',\n";
+    Indent(indent + kExtraIndent) << "'VALID_ARCHS': ['armv7', 'i386'],\n";
 
     // Tell XCode to target both iPhone and iPad. GN has no such concept.
     Indent(indent + kExtraIndent) << "'TARGETED_DEVICE_FAMILY': '1,2',\n";

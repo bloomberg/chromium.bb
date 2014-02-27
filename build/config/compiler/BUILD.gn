@@ -80,13 +80,7 @@ config("compiler") {
     cflags_c += [ "-std=c99" ]
     cflags_cc += [ "-std=gnu++11" ]
 
-    ldflags += common_mac_flags + [
-      "-L.",
-
-      # TODO(brettW) I don't understand these options.
-      "-Wl,-rpath,@loader_path/.",
-      "-Wl,-rpath,@loader_path/../../..",
-    ]
+    ldflags += common_mac_flags
   } else if (is_posix) {
     # Non-Mac Posix compiler flags setup.
     # -----------------------------------
