@@ -237,6 +237,9 @@ class UserManagerImpl
   // Indicates that a kiosk app robot just logged in.
   void KioskAppLoggedIn(const std::string& app_id);
 
+  // Indicates that the demo account has just logged in.
+  void DemoAccountLoggedIn();
+
   // Indicates that a user just logged into a retail mode session.
   void RetailModeUserLoggedIn();
 

@@ -31,6 +31,7 @@
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/login/auth_sync_observer.h"
 #include "chrome/browser/chromeos/login/auth_sync_observer_factory.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/multi_profile_first_run_notification.h"
@@ -437,6 +438,8 @@ void UserManagerImpl::UserLoggedIn(const std::string& user_id,
              device_local_account_type ==
                  policy::DeviceLocalAccount::TYPE_KIOSK_APP) {
     KioskAppLoggedIn(user_id);
+  } else if (DemoAppLauncher::IsDemoAppSession(user_id)) {
+    DemoAccountLoggedIn();
   } else {
     EnsureUsersLoaded();
 
@@ -1479,6 +1482,18 @@ void UserManagerImpl::KioskAppLoggedIn(const std::string& app_id) {
   // Disable window animation since kiosk app runs in a single full screen
   // window and window animation causes start-up janks.
   command_line->AppendSwitch(
+      views::corewm::switches::kWindowAnimationsDisabled);
+}
+
+void UserManagerImpl::DemoAccountLoggedIn() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  active_user_ = User::CreateKioskAppUser(DemoAppLauncher::kDemoUserName);
+  active_user_->SetStubImage(User::kInvalidImageIndex, false);
+  WallpaperManager::Get()->SetUserWallpaperNow(DemoAppLauncher::kDemoUserName);
+
+  // Disable window animation since the demo app runs in a single full screen
+  // window and window animation causes start-up janks.
+  CommandLine::ForCurrentProcess()->AppendSwitch(
       views::corewm::switches::kWindowAnimationsDisabled);
 }
 

@@ -66,7 +66,8 @@ void DemoAppLauncher::OnProfileLoaded(Profile* profile) {
 }
 
 void DemoAppLauncher::OnProfileLoadFailed(KioskAppLaunchError::Error error) {
-  LOG(ERROR) << "Loading the Kiosk Profile failed.";
+  LOG(ERROR) << "Loading the Kiosk Profile failed: " <<
+      KioskAppLaunchError::GetErrorMessage(error);
 }
 
 }  // namespace chromeos
