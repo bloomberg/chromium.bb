@@ -298,7 +298,7 @@
           },
         },  # end of target 'remoting_desktop'
         {
-          'target_name': 'remoting_host_exe',
+          'target_name': 'remoting_me2me_host',
           'product_name': 'remoting_host',
           'type': 'executable',
           'variables': { 'enable_wexit_time_destructors': 1, },
@@ -326,7 +326,7 @@
               'SubSystem': '2', # /SUBSYSTEM:WINDOWS
             },
           },
-        },  # end of target 'remoting_host_exe'
+        },  # end of target 'remoting_me2me_host'
         {
           'target_name': 'remoting_me2me_native_messaging_host',
           'type': 'executable',
@@ -525,8 +525,8 @@
             '<(icu_gyp_path):icudata',
             'remoting_core',
             'remoting_desktop',
-            'remoting_host_exe',
             'remoting_it2me_native_messaging_host',
+            'remoting_me2me_host',
             'remoting_me2me_native_messaging_host',
             'remoting_native_messaging_manifests',
           ],
