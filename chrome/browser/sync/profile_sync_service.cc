@@ -993,6 +993,8 @@ void ProfileSyncService::OnExperimentsChanged(
                                       experiments.gcm_channel_state ==
                                           syncer::Experiments::ENABLED);
     gcm::GCMProfileServiceFactory::GetForProfile(profile());
+  } else {
+    profile()->GetPrefs()->ClearPref(prefs::kGCMChannelEnabled);
   }
 
   if (experiments.enhanced_bookmarks_enabled) {

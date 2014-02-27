@@ -20,8 +20,6 @@ class FakeGCMProfileService : public GCMProfileService {
   // BrowserContextKeyedService::SetTestingFactory().
   static BrowserContextKeyedService* Build(content::BrowserContext* context);
 
-  static void EnableGCMForTesting();
-
   explicit FakeGCMProfileService(Profile* profile);
   virtual ~FakeGCMProfileService();
 

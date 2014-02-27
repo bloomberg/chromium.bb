@@ -5624,6 +5624,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="GCM.StoreDestroySucceeded" enum="BooleanSuccess">
+  <summary>
+    Success indicates successfully destroying the GCM persistent store. Failure
+    indicates a failure destroying the persistence store. GCM store will be
+    destroyed when the profile has been signed out.
+  </summary>
+</histogram>
+
 <histogram name="GCM.StoreLoadSucceeded" enum="BooleanSuccess">
   <summary>
     Success indicates successfully loading an initialized persistent GCM store

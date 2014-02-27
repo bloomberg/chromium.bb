@@ -284,10 +284,15 @@ void GCMClientImplTest::InitializeGCMClient() {
                           message_loop_.message_loop_proxy(),
                           url_request_context_getter_,
                           this);
+
 #if defined(OS_MACOSX)
   // On OSX, prevent the Keychain permissions popup during unit tests.
   Encryptor::UseMockKeychain(true);  // Must be after Initialize.
 #endif
+
+  // Starting loading and check-in.
+  gcm_client_->Load();
+
   // Ensuring that mcs_client is using the same gcm_store as gcm_client.
   mcs_client()->set_gcm_store(gcm_client_->gcm_store_.get());
   PumpLoopUntilIdle();

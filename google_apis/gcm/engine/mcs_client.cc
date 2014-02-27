@@ -337,11 +337,6 @@ void MCSClient::SendMessage(const MCSMessage& message) {
   MaybeSendMessage();
 }
 
-void MCSClient::Destroy() {
-  gcm_store_->Destroy(base::Bind(&MCSClient::OnGCMUpdateFinished,
-                                 weak_ptr_factory_.GetWeakPtr()));
-}
-
 void MCSClient::ResetStateAndBuildLoginRequest(
     mcs_proto::LoginRequest* request) {
   DCHECK(android_id_);

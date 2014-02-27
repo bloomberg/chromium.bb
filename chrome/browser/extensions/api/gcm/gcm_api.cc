@@ -97,8 +97,14 @@ bool GcmApiFunction::RunImpl() {
 }
 
 bool GcmApiFunction::IsGcmApiEnabled() const {
-  return gcm::GCMProfileService::IsGCMEnabled(
-             Profile::FromBrowserContext(context()));
+  Profile* profile = Profile::FromBrowserContext(context());
+
+  // GCM is not supported in incognito mode.
+  if (profile->IsOffTheRecord())
+    return false;
+
+  return gcm::GCMProfileService::GetGCMEnabledState(profile) !=
+      gcm::GCMProfileService::ALWAYS_DISABLED;
 }
 
 gcm::GCMProfileService* GcmApiFunction::GCMProfileService() const {

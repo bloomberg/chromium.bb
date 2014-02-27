@@ -122,13 +122,6 @@ class GCM_EXPORT MCSClient {
   // |message_sent_callback_| is invoked with a TTL expiration error.
   virtual void SendMessage(const MCSMessage& message);
 
-  // Disconnects the client and permanently destroys the persistent GCM store.
-  // WARNING: This is permanent, and the client must be recreated with new
-  // credentials afterwards.
-  // TODO(jianli): destroying the persistent GCM store should be moved to
-  // GCMClient.
-  void Destroy();
-
   // Returns the current state of the client.
   State state() const { return state_; }
 

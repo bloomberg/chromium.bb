@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/default_clock.h"
 #include "google_apis/gcm/base/mcs_message.h"
@@ -141,30 +142,18 @@ void GCMClientImpl::Initialize(
   account_ids_ = account_ids;
 
   gcm_store_.reset(new GCMStoreImpl(false, path, blocking_task_runner));
-  gcm_store_->Load(base::Bind(&GCMClientImpl::OnLoadCompleted,
-                              weak_ptr_factory_.GetWeakPtr()));
 
   delegate_ = delegate;
 
-  // |mcs_client_| might already be set for testing at this point. No need to
-  // create a |connection_factory_|.
-  if (!mcs_client_.get()) {
-    const net::HttpNetworkSession::Params* network_session_params =
-        url_request_context_getter->GetURLRequestContext()->
-            GetNetworkSessionParams();
-    DCHECK(network_session_params);
-    network_session_ = new net::HttpNetworkSession(*network_session_params);
-    connection_factory_.reset(new ConnectionFactoryImpl(
-        GURL(kMCSEndpoint),
-        kDefaultBackoffPolicy,
-        network_session_,
-        net_log_.net_log()));
-    mcs_client_.reset(new MCSClient(chrome_build_proto.chrome_version(),
-                                    clock_.get(),
-                                    connection_factory_.get(),
-                                    gcm_store_.get()));
-  }
+  state_ = INITIALIZED;
+}
 
+void GCMClientImpl::Load() {
+  DCHECK_EQ(INITIALIZED, state_);
+
+  // Once the loading is completed, the check-in will be initiated.
+  gcm_store_->Load(base::Bind(&GCMClientImpl::OnLoadCompleted,
+                              weak_ptr_factory_.GetWeakPtr()));
   state_ = LOADING;
 }
 
@@ -191,6 +180,25 @@ void GCMClientImpl::OnLoadCompleted(scoped_ptr<GCMStore::LoadResult> result) {
 
 void GCMClientImpl::InitializeMCSClient(
     scoped_ptr<GCMStore::LoadResult> result) {
+  // |mcs_client_| might already be set for testing at this point. No need to
+  // create a |connection_factory_|.
+  if (!mcs_client_.get()) {
+    const net::HttpNetworkSession::Params* network_session_params =
+        url_request_context_getter_->GetURLRequestContext()->
+            GetNetworkSessionParams();
+    DCHECK(network_session_params);
+    network_session_ = new net::HttpNetworkSession(*network_session_params);
+    connection_factory_.reset(new ConnectionFactoryImpl(
+        GURL(kMCSEndpoint),
+        kDefaultBackoffPolicy,
+        network_session_,
+        net_log_.net_log()));
+    mcs_client_.reset(new MCSClient(chrome_build_proto_.chrome_version(),
+                                    clock_.get(),
+                                    connection_factory_.get(),
+                                    gcm_store_.get()));
+  }
+
   mcs_client_->Initialize(
       base::Bind(&GCMClientImpl::OnMCSError, weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&GCMClientImpl::OnMessageReceivedFromMCS,
@@ -279,12 +287,13 @@ void GCMClientImpl::SetDeviceCredentialsCallback(bool success) {
 }
 
 void GCMClientImpl::CheckOut() {
-  delegate_ = NULL;
   device_checkin_info_.Reset();
-  mcs_client_->Destroy();  // This will also destroy GCM store.
   mcs_client_.reset();
+  gcm_store_->Destroy(base::Bind(&GCMClientImpl::OnGCMStoreDestroyed,
+                                 weak_ptr_factory_.GetWeakPtr()));
   checkin_request_.reset();
   pending_registrations_.clear();
+  state_ = INITIALIZED;
 }
 
 void GCMClientImpl::Register(const std::string& app_id,
@@ -372,6 +381,11 @@ void GCMClientImpl::OnUnregisterCompleted(const std::string& app_id,
   pending_unregistrations_.erase(iter);
 }
 
+void GCMClientImpl::OnGCMStoreDestroyed(bool success) {
+  DLOG_IF(ERROR, !success) << "GCM store failed to be destroyed!";
+  UMA_HISTOGRAM_BOOLEAN("GCM.StoreDestroySucceeded", success);
+}
+
 void GCMClientImpl::Send(const std::string& app_id,
                          const std::string& receiver_id,
                          const OutgoingMessage& message) {
@@ -397,10 +411,6 @@ void GCMClientImpl::Send(const std::string& app_id,
   MCSMessage mcs_message(stanza);
   DVLOG(1) << "MCS message size: " << mcs_message.size();
   mcs_client_->SendMessage(mcs_message);
-}
-
-bool GCMClientImpl::IsReady() const {
-  return state_ == READY;
 }
 
 void GCMClientImpl::OnMessageReceivedFromMCS(const gcm::MCSMessage& message) {

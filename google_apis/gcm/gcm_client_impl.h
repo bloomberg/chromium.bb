@@ -55,6 +55,7 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
       const scoped_refptr<net::URLRequestContextGetter>&
           url_request_context_getter,
       Delegate* delegate) OVERRIDE;
+  virtual void Load() OVERRIDE;
   virtual void CheckOut() OVERRIDE;
   virtual void Register(const std::string& app_id,
                         const std::string& cert,
@@ -63,13 +64,14 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
   virtual void Send(const std::string& app_id,
                     const std::string& receiver_id,
                     const OutgoingMessage& message) OVERRIDE;
-  virtual bool IsReady() const OVERRIDE;
 
  private:
   // State representation of the GCMClient.
   enum State {
     // Uninitialized.
     UNINITIALIZED,
+    // Initialized,
+    INITIALIZED,
     // GCM store loading is in progress.
     LOADING,
     // Initial device checkin is in progress.
@@ -149,6 +151,9 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
 
   // Completes the unregistration request.
   void OnUnregisterCompleted(const std::string& app_id, bool status);
+
+  // Completes the GCM store destroy request.
+  void OnGCMStoreDestroyed(bool success);
 
   // Handles incoming data message and dispatches it the a relevant user
   // delegate.

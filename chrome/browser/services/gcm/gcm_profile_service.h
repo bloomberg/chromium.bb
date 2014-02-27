@@ -47,14 +47,24 @@ class GCMProfileService : public BrowserContextKeyedService,
   typedef base::Callback<void(const std::string& message_id,
                               GCMClient::Result result)> SendCallback;
 
+  enum GCMEnabledState {
+    // GCM is always enabled. GCMClient will always load and connect with GCM.
+    ALWAYS_ENABLED,
+    // GCM is only enabled for apps. GCMClient will start to load and connect
+    // with GCM only when GCM API is used.
+    ENABLED_FOR_APPS,
+    // GCM is always disabled. GCMClient will never load and connect with GCM.
+    ALWAYS_DISABLED
+  };
+
   // For testing purpose.
   class TestingDelegate {
    public:
     virtual GCMEventRouter* GetEventRouter() const = 0;
   };
 
-  // Returns true if the GCM support is enabled.
-  static bool IsGCMEnabled(Profile* profile);
+  // Returns the GCM enabled state.
+  static GCMEnabledState GetGCMEnabledState(Profile* profile);
 
   // Register profile-specific prefs for GCM.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -88,14 +98,11 @@ class GCMProfileService : public BrowserContextKeyedService,
                     SendCallback callback);
 
   // For testing purpose.
+  GCMClient* GetGCMClientForTesting() const;
+
   void set_testing_delegate(TestingDelegate* testing_delegate) {
     testing_delegate_ = testing_delegate;
   }
-
- protected:
-  // Flag that could be set by the testing code to enable GCM. Otherwise,
-  // tests from official build will fail.
-  static bool enable_gcm_for_testing_;
 
  private:
   friend class GCMProfileServiceTestConsumer;
@@ -117,9 +124,9 @@ class GCMProfileService : public BrowserContextKeyedService,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Checks in with GCM by creating and initializing GCMClient when the profile
-  // has been signed in.
-  void CheckIn(const std::string& username);
+  // Ensures that the GCMClient is loaded and the GCM check-in is done when
+  // the profile was signed in.
+  void EnsureLoaded();
 
   // Checks out of GCM when the profile has been signed out. This will erase
   // all the cached and persisted data.
@@ -155,7 +162,6 @@ class GCMProfileService : public BrowserContextKeyedService,
   void MessageSendError(const std::string& app_id,
                         const std::string& message_id,
                         GCMClient::Result result);
-  void FinishInitializationOnUI(bool ready);
   void GCMClientReady();
 
   // Returns the event router to fire the event for the given app.
@@ -180,9 +186,6 @@ class GCMProfileService : public BrowserContextKeyedService,
 
   // The profile which owns this object.
   Profile* profile_;
-
-  // Used to creat the GCMClient instance.
-  scoped_ptr<GCMClientFactory> gcm_client_factory_;
 
   // Flag to indicate if GCMClient is ready.
   bool gcm_client_ready_;
