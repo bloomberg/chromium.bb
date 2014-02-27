@@ -27,7 +27,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/NodeFilter.h"
-#include "core/dom/NodeIteratorBase.h"
+#include "core/dom/Traversal.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
@@ -35,7 +35,7 @@ namespace WebCore {
 
 class ExceptionState;
 
-class TreeWalker : public ScriptWrappable, public RefCounted<TreeWalker>, public NodeIteratorBase {
+class TreeWalker : public ScriptWrappable, public RefCounted<TreeWalker>, public Traversal {
 public:
     static PassRefPtr<TreeWalker> create(PassRefPtr<Node> rootNode, unsigned whatToShow, PassRefPtr<NodeFilter> filter)
     {

@@ -22,37 +22,37 @@
  *
  */
 
-#ifndef NodeIteratorBase_h
-#define NodeIteratorBase_h
+#ifndef Traversal_h
+#define Traversal_h
 
 #include "bindings/v8/ScriptState.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-class Node;
-class NodeFilter;
+    class Node;
+    class NodeFilter;
 
-class NodeIteratorBase {
-public:
-    Node* root() const { return m_root.get(); }
-    unsigned whatToShow() const { return m_whatToShow; }
-    NodeFilter* filter() const { return m_filter.get(); }
-    // |expandEntityReferences| first appeared in "DOM Level 2 Traversal and Range". However, this argument was
-    // never implemented, and, in DOM4, the function argument |expandEntityReferences| is removed from
-    // Document.createNodeIterator() and Document.createTreeWalker().
-    bool expandEntityReferences() const { return false; }
+    class Traversal {
+    public:
+        Node* root() const { return m_root.get(); }
+        unsigned whatToShow() const { return m_whatToShow; }
+        NodeFilter* filter() const { return m_filter.get(); }
+        // |expandEntityReferences| first appeared in "DOM Level 2 Traversal and Range". However, this argument was
+        // never implemented, and, in DOM4, the function argument |expandEntityReferences| is removed from
+        // Document.createNodeIterator() and Document.createTreeWalker().
+        bool expandEntityReferences() const { return false; }
 
-protected:
-    NodeIteratorBase(PassRefPtr<Node>, unsigned whatToShow, PassRefPtr<NodeFilter>);
-    short acceptNode(ScriptState*, Node*) const;
+    protected:
+        Traversal(PassRefPtr<Node>, unsigned whatToShow, PassRefPtr<NodeFilter>);
+        short acceptNode(ScriptState*, Node*) const;
 
-private:
-    RefPtr<Node> m_root;
-    unsigned m_whatToShow;
-    RefPtr<NodeFilter> m_filter;
-};
+    private:
+        RefPtr<Node> m_root;
+        unsigned m_whatToShow;
+        RefPtr<NodeFilter> m_filter;
+    };
 
 } // namespace WebCore
 
-#endif // NodeIteratorBase_h
+#endif // Traversal_h

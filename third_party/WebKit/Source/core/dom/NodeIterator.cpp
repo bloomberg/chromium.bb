@@ -73,7 +73,7 @@ bool NodeIterator::NodePointer::moveToPrevious(Node* root)
 }
 
 NodeIterator::NodeIterator(PassRefPtr<Node> rootNode, unsigned whatToShow, PassRefPtr<NodeFilter> filter)
-    : NodeIteratorBase(rootNode, whatToShow, filter)
+    : Traversal(rootNode, whatToShow, filter)
     , m_referenceNode(root(), true)
     , m_detached(false)
 {

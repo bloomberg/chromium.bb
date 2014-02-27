@@ -55,7 +55,11 @@ static bool isInFoot(Element* row)
 
 static inline HTMLTableRowElement* findTableRowElementInChildren(Element& current)
 {
-    return Traversal<HTMLTableRowElement>::firstWithin(current);
+    for (Element* child = ElementTraversal::firstWithin(current); child; child = ElementTraversal::nextSibling(*child)) {
+        if (isHTMLTableRowElement(child))
+            return toHTMLTableRowElement(child);
+    }
+    return 0;
 }
 
 HTMLTableRowElement* HTMLTableRowsCollection::rowAfter(HTMLTableElement& table, HTMLTableRowElement* previous)
@@ -65,8 +69,10 @@ HTMLTableRowElement* HTMLTableRowsCollection::rowAfter(HTMLTableElement& table, 
     // Start by looking for the next row in this section.
     // Continue only if there is none.
     if (previous && previous->parentNode() != table) {
-        if (HTMLTableRowElement* row = Traversal<HTMLTableRowElement>::nextSibling(*previous))
-            return row;
+        for (child = ElementTraversal::nextSibling(*previous); child; child = ElementTraversal::nextSibling(*child)) {
+            if (isHTMLTableRowElement(child))
+                return toHTMLTableRowElement(child);
+        }
     }
 
     // If still looking at head sections, find the first row in the next head section.
