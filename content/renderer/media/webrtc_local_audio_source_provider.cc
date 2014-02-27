@@ -89,9 +89,9 @@ void WebRtcLocalAudioSourceProvider::OnData(
   if (fifo_->frames() + number_of_frames <= fifo_->max_frames()) {
     fifo_->Push(input_bus_.get());
   } else {
-    // This can happen if the data in FIFO is too slowed to be consumed or
+    // This can happen if the data in FIFO is too slowly consumed or
     // WebAudio stops consuming data.
-    DLOG(WARNING) << "Local source provicer FIFO is full" << fifo_->frames();
+    DVLOG(3) << "Local source provicer FIFO is full" << fifo_->frames();
   }
 }
 
