@@ -71,7 +71,9 @@ base::string16 FormatRemainingSessionTimeNotification(
     const base::TimeDelta& remaining_session_time) {
   return l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_REMAINING_SESSION_TIME_NOTIFICATION,
-      ui::TimeFormat::TimeDurationLong(remaining_session_time));
+      ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,
+                             ui::TimeFormat::LENGTH_LONG,
+                             remaining_session_time));
 }
 
 // Creates, or updates the notification for session length timeout with

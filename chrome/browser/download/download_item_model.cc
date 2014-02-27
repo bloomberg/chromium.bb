@@ -334,10 +334,13 @@ base::string16 DownloadItemModel::GetTabProgressStatusText() const {
 
   base::TimeDelta remaining;
   base::string16 time_remaining;
-  if (download_->IsPaused())
+  if (download_->IsPaused()) {
     time_remaining = l10n_util::GetStringUTF16(IDS_DOWNLOAD_PROGRESS_PAUSED);
-  else if (download_->TimeRemaining(&remaining))
-    time_remaining = ui::TimeFormat::TimeRemaining(remaining);
+  } else if (download_->TimeRemaining(&remaining)) {
+    time_remaining = ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_REMAINING,
+                                            ui::TimeFormat::LENGTH_SHORT,
+                                            remaining);
+  }
 
   if (time_remaining.empty()) {
     base::i18n::AdjustStringForLocaleDirection(&amount);
@@ -627,14 +630,16 @@ base::string16 DownloadItemModel::GetInProgressStatusString() const {
 
     return l10n_util::GetStringFUTF16(
         IDS_DOWNLOAD_STATUS_OPEN_IN,
-        ui::TimeFormat::TimeDurationShort(time_remaining));
+        ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,
+                               ui::TimeFormat::LENGTH_SHORT, time_remaining));
   }
 
   // In progress download with known time left: "100/120 MB, 10 secs left"
   if (time_remaining_known) {
     return l10n_util::GetStringFUTF16(
         IDS_DOWNLOAD_STATUS_IN_PROGRESS, size_ratio,
-        ui::TimeFormat::TimeRemaining(time_remaining));
+        ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_REMAINING,
+                               ui::TimeFormat::LENGTH_SHORT, time_remaining));
   }
 
   // In progress download with no known time left and non-zero completed bytes:

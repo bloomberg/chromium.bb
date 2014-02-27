@@ -221,8 +221,9 @@ base::string16 ForeignSessionHandler::FormatSessionTime(
     const base::Time& time) {
   // Return a time like "1 hour ago", "2 days ago", etc.
   base::Time now = base::Time::Now();
-  // TimeElapsed does not support negative TimeDelta values, so then we use 0.
-  return ui::TimeFormat::TimeElapsed(
+  // TimeFormat does not support negative TimeDelta values, so then we use 0.
+  return ui::TimeFormat::Simple(
+      ui::TimeFormat::FORMAT_ELAPSED, ui::TimeFormat::LENGTH_SHORT,
       now < time ? base::TimeDelta() : now - time);
 }
 
@@ -408,7 +409,8 @@ bool ForeignSessionHandler::SessionWindowToValue(
   dictionary->SetString("userVisibleTimestamp",
       last_synced < base::TimeDelta::FromMinutes(1) ?
           l10n_util::GetStringUTF16(IDS_SYNC_TIME_JUST_NOW) :
-          ui::TimeFormat::TimeElapsed(last_synced));
+          ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_ELAPSED,
+                                 ui::TimeFormat::LENGTH_SHORT, last_synced));
   dictionary->SetInteger("sessionId", window.window_id.id());
   dictionary->Set("tabs", tab_values.release());
   return true;

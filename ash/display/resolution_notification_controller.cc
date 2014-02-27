@@ -212,7 +212,8 @@ void ResolutionNotificationController::CreateOrUpdateNotification(
         l10n_util::GetStringUTF16(IDS_ASH_DISPLAY_RESOLUTION_CHANGE_ACCEPT)));
     timeout_message = l10n_util::GetStringFUTF16(
         IDS_ASH_DISPLAY_RESOLUTION_TIMEOUT,
-        ui::TimeFormat::TimeDurationLong(
+        ui::TimeFormat::Simple(
+            ui::TimeFormat::FORMAT_DURATION, ui::TimeFormat::LENGTH_LONG,
             base::TimeDelta::FromSeconds(change_info_->timeout_count)));
   }
   data.buttons.push_back(message_center::ButtonInfo(

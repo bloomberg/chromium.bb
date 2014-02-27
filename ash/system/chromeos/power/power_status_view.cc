@@ -186,7 +186,8 @@ void PowerStatusView::UpdateTextForNotificationView() {
               base::IntToString16(min)));
     } else {
       // This is a low battery warning prompting the user in minutes.
-      time_label_->SetText(ui::TimeFormat::TimeRemainingLong(
+      time_label_->SetText(ui::TimeFormat::Simple(
+          ui::TimeFormat::FORMAT_REMAINING, ui::TimeFormat::LENGTH_LONG,
           base::TimeDelta::FromMinutes(hour * 60 + min)));
     }
   } else {

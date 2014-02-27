@@ -1502,7 +1502,8 @@ base::string16 ProfileSyncService::GetLastSyncedTimeString() const {
   if (last_synced < base::TimeDelta::FromMinutes(1))
     return l10n_util::GetStringUTF16(IDS_SYNC_TIME_JUST_NOW);
 
-  return ui::TimeFormat::TimeElapsed(last_synced);
+  return ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_ELAPSED,
+                                ui::TimeFormat::LENGTH_SHORT, last_synced);
 }
 
 void ProfileSyncService::UpdateSelectedTypesHistogram(

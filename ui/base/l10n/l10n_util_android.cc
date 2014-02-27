@@ -103,7 +103,8 @@ jstring GetDurationString(JNIEnv* env, jclass clazz, jlong timeInMillis) {
   ScopedJavaLocalRef<jstring> jtime_remaining =
       base::android::ConvertUTF16ToJavaString(
           env,
-          ui::TimeFormat::TimeRemaining(
+          ui::TimeFormat::Simple(
+              ui::TimeFormat::FORMAT_REMAINING, ui::TimeFormat::LENGTH_SHORT,
               base::TimeDelta::FromMilliseconds(timeInMillis)));
   return jtime_remaining.Release();
 }

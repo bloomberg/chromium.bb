@@ -48,15 +48,23 @@ void SanitizeProto(power_manager::PowerSupplyProperties* proto) {
 base::string16 GetBatteryTimeAccessibilityString(int hour, int min) {
   DCHECK(hour || min);
   if (hour && !min) {
-    return ui::TimeFormat::TimeDurationLong(base::TimeDelta::FromHours(hour));
+    return ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,
+                                  ui::TimeFormat::LENGTH_LONG,
+                                  base::TimeDelta::FromHours(hour));
   }
   if (min && !hour) {
-    return ui::TimeFormat::TimeDurationLong(base::TimeDelta::FromMinutes(min));
+    return ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,
+                                  ui::TimeFormat::LENGTH_LONG,
+                                  base::TimeDelta::FromMinutes(min));
   }
   return l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_BATTERY_TIME_ACCESSIBLE,
-      ui::TimeFormat::TimeDurationLong(base::TimeDelta::FromHours(hour)),
-      ui::TimeFormat::TimeDurationLong(base::TimeDelta::FromMinutes(min)));
+      ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,
+                             ui::TimeFormat::LENGTH_LONG,
+                             base::TimeDelta::FromHours(hour)),
+      ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,
+                             ui::TimeFormat::LENGTH_LONG,
+                             base::TimeDelta::FromMinutes(min)));
 }
 
 static PowerStatus* g_power_status = NULL;

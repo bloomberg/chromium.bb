@@ -168,7 +168,8 @@ class WebUIHandler
       const base::TimeDelta& time_remaining) OVERRIDE {
     const base::string16 time_remaining_text = l10n_util::GetStringFUTF16(
         IDS_IMAGEBURN_DOWNLOAD_TIME_REMAINING,
-        ui::TimeFormat::TimeRemaining(time_remaining));
+        ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_REMAINING,
+                               ui::TimeFormat::LENGTH_SHORT, time_remaining));
     SendProgressSignal(progress_type, amount_finished, amount_total,
                        time_remaining_text);
   }

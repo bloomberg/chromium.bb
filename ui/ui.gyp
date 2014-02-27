@@ -188,6 +188,8 @@
         'base/gtk/scoped_region.cc',
         'base/gtk/scoped_region.h',
         'base/hit_test.h',
+        'base/l10n/formatter.cc',
+        'base/l10n/formatter.h',
         'base/l10n/l10n_font_util.cc',
         'base/l10n/l10n_font_util.h',
         'base/l10n/l10n_util.cc',

@@ -19,23 +19,59 @@ namespace ui {
 // Methods to format time values as strings.
 class UI_BASE_EXPORT TimeFormat {
  public:
-  // TimeElapsed, TimeRemaining* and TimeDuration*:
-  // These functions return a localized string of approximate time duration.
+  enum Format {
+    FORMAT_DURATION,   // Plain duration, e.g. in English: "2 minutes".
+    FORMAT_REMAINING,  // Remaining time, e.g. in English: "2 minutes left".
+    FORMAT_ELAPSED,    // Elapsed time, e.g. in English: "2 minutes ago".
+    FORMAT_COUNT       // Enum size counter, not a format.  Must be last.
+  };
 
-  // Returns times in elapsed-format: "3 mins ago", "2 days ago".
-  static base::string16 TimeElapsed(const base::TimeDelta& delta);
+  enum Length {
+    LENGTH_SHORT,  // Short format, e.g. in English: sec/min/hour/day.
+    LENGTH_LONG,   // Long format, e.g. in English: second/minute/hour/day.
+    LENGTH_COUNT   // Enum size counter, not a length.  Must be last.
+  };
 
-  // Returns times in remaining-format: "3 mins left", "2 days left".
-  static base::string16 TimeRemaining(const base::TimeDelta& delta);
+  // Return a localized string of approximate time duration, formatted as a
+  // single number, e.g. in English "2 hours ago".  Currently, all combinations
+  // of format and length except (FORMAT_ELAPSED, LENGTH_LONG) are implemented
+  // but it's easy to add this, if required.
+  static base::string16 Simple(Format format,
+                               Length length,
+                               const base::TimeDelta& delta);
 
-  // Returns times in remaining-long-format: "3 minutes left", "2 days left".
-  static base::string16 TimeRemainingLong(const base::TimeDelta& delta);
-
-  // Returns times in short-format: "3 mins", "2 days".
-  static base::string16 TimeDurationShort(const base::TimeDelta& delta);
-
-  // Return times in long-format: "2 hours", "25 minutes".
-  static base::string16 TimeDurationLong(const base::TimeDelta& delta);
+  // Return a localized string of more precise time duration, either formatted
+  // as a single value or as two values: for a time delta of e.g. 2h19m either
+  // "2 hours" or "2 hours and 19 minutes" could be returned in English.
+  // Two-value output can be forced by setting |cutoff| to -1.  Single-value
+  // output can be forced by using Simple() or setting |cutoff| to 0.
+  // Otherwise, choice of format happens automatically and the value of |cutoff|
+  // determines the largest numeric value that may appear in a single-value
+  // format -- for lower numeric values, a second unit is added to increase
+  // precision.  (Applied to the examples above, a |cutoff| of 2 or smaller
+  // would yield the first string and a |cutoff| of 3 or larger would return the
+  // second string.)
+  //
+  // The aim of this logic is to reduce rounding errors (that in single-value
+  // representation can amount up to 33% of the true time duration) while at the
+  // same time avoiding over-precise time outputs such as e.g. "56 minutes 29
+  // seconds".  The relative rounding error is guaranteed to be less than 0.5 /
+  // |cutoff| (e.g. 5% for a |cutoff| of 10) and a second unit is only used when
+  // necessary to achieve the precision guarantee.
+  //
+  // Currently, the only combination of format and length that is implemented is
+  // (FORMAT_DURATION, LENGTH_LONG), but it's easy to add others if required.
+  //
+  // Note: To allow pre-, post- and infixes which can be inflected depending on
+  // either the first or the second value, two separate translation strings
+  // (IDS_TIME_*_1ST and IDS_TIME_*_2ND) are used per [plurality] times [pair of
+  // units] and are concatenated after having been formatted individually.  The
+  // separator between first unit and second unit (a blank in English) is
+  // included in IDS_TIME_*_1ST.
+  static base::string16 Detailed(Format format,
+                                 Length length,
+                                 int cutoff,
+                                 const base::TimeDelta& delta);
 
   // For displaying a relative time in the past.  This method returns either
   // "Today", "Yesterday", or an empty string if it's older than that.  Returns

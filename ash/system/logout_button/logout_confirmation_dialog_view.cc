@@ -123,8 +123,9 @@ void LogoutConfirmationDialogView::UpdateCountdown() {
   if (seconds_remaining > 0) {
     text_label_->SetText(l10n_util::GetStringFUTF16(
         IDS_ASH_LOGOUT_CONFIRMATION_WARNING,
-        ui::TimeFormat::TimeDurationLong(base::TimeDelta::FromSeconds(
-            seconds_remaining))));
+        ui::TimeFormat::Simple(
+            ui::TimeFormat::FORMAT_DURATION, ui::TimeFormat::LENGTH_LONG,
+            base::TimeDelta::FromSeconds(seconds_remaining))));
   } else {
     text_label_->SetText(l10n_util::GetStringUTF16(
         IDS_ASH_LOGOUT_CONFIRMATION_WARNING_NOW));
