@@ -26,7 +26,7 @@ class BuildDevice(object):
     self.id = configuration['id']
     self.description = configuration['description']
     self.install_metadata = configuration['install_metadata']
-    self.adb = android_commands.AndroidCommands(self.id)
+    self.adb = android_commands.AndroidCommands(self.id, api_strict_mode=True)
 
   def RunShellCommand(self, *args, **kwargs):
     return self.adb.RunShellCommand(*args, **kwargs)
@@ -53,7 +53,7 @@ class BuildDevice(object):
 
 
 def GetConfigurationForDevice(id):
-  adb = android_commands.AndroidCommands(id)
+  adb = android_commands.AndroidCommands(id, api_strict_mode=True)
   configuration = None
   has_root = False
   is_online = adb.IsOnline()
