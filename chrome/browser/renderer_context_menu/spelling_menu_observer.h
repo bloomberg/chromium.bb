@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_SPELLING_MENU_OBSERVER_H_
-#define CHROME_BROWSER_TAB_CONTENTS_SPELLING_MENU_OBSERVER_H_
+#ifndef CHROME_BROWSER_RENDERER_CONTEXT_MENU_SPELLING_MENU_OBSERVER_H_
+#define CHROME_BROWSER_RENDERER_CONTEXT_MENU_SPELLING_MENU_OBSERVER_H_
 
 #include <vector>
 
@@ -12,8 +12,8 @@
 #include "base/prefs/pref_member.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/renderer_context_menu/render_view_context_menu_observer.h"
 #include "chrome/browser/spellchecker/spelling_service_client.h"
-#include "chrome/browser/tab_contents/render_view_context_menu_observer.h"
 
 class RenderViewContextMenuProxy;
 struct SpellCheckResult;
@@ -117,4 +117,4 @@ class SpellingMenuObserver : public RenderViewContextMenuObserver {
   DISALLOW_COPY_AND_ASSIGN(SpellingMenuObserver);
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_SPELLING_MENU_OBSERVER_H_
+#endif  // CHROME_BROWSER_RENDERER_CONTEXT_MENU_SPELLING_MENU_OBSERVER_H_

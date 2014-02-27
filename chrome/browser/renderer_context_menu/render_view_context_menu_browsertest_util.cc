@@ -1,13 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/render_view_context_menu_browsertest_util.h"
+#include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/tab_contents/render_view_context_menu.h"
+#include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "content/public/browser/notification_service.h"
 
 ContextMenuNotificationObserver::ContextMenuNotificationObserver(

@@ -9,7 +9,7 @@
 #include "base/lazy_instance.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
-#include "chrome/browser/ui/gtk/tab_contents/render_view_context_menu_gtk.h"
+#include "chrome/browser/ui/gtk/renderer_context_menu/render_view_context_menu_gtk.h"
 #include "chrome/browser/ui/gtk/tab_contents/web_drag_bookmark_handler_gtk.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
 #include "content/public/browser/render_process_host.h"

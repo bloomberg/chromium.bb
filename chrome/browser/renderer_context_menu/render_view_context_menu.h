@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_H_
-#define CHROME_BROWSER_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_H_
+#ifndef CHROME_BROWSER_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_H_
+#define CHROME_BROWSER_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_H_
 
 #include <map>
 #include <string>
@@ -14,7 +14,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/menu_manager.h"
-#include "chrome/browser/tab_contents/render_view_context_menu_observer.h"
+#include "chrome/browser/renderer_context_menu/render_view_context_menu_observer.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/page_transition_types.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -149,7 +149,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   virtual void MenuWillShow(ui::SimpleMenuModel* source) OVERRIDE;
   virtual void MenuClosed(ui::SimpleMenuModel* source) OVERRIDE;
 
-  // RenderViewContextMenuDelegate implementation.
+  // RenderViewContextMenuProxy implementation.
   virtual void AddMenuItem(int command_id,
                            const base::string16& title) OVERRIDE;
   virtual void AddCheckItem(int command_id,
@@ -297,4 +297,4 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenu);
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_H_
+#endif  // CHROME_BROWSER_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_H_

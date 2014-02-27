@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/spellchecker_submenu_observer.h"
+#include "chrome/browser/renderer_context_menu/spellchecker_submenu_observer.h"
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -10,8 +10,8 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
-#include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_messages.h"

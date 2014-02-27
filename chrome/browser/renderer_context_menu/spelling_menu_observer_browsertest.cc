@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/spelling_menu_observer.h"
+#include "chrome/browser/renderer_context_menu/spelling_menu_observer.h"
 
 #include <vector>
 
@@ -10,9 +10,9 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
+#include "chrome/browser/renderer_context_menu/render_view_context_menu_observer.h"
 #include "chrome/browser/spellchecker/spelling_service_client.h"
-#include "chrome/browser/tab_contents/render_view_context_menu.h"
-#include "chrome/browser/tab_contents/render_view_context_menu_observer.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"

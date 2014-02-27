@@ -1,16 +1,16 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_SPELLCHECKER_SUBMENU_OBSERVER_H_
-#define CHROME_BROWSER_TAB_CONTENTS_SPELLCHECKER_SUBMENU_OBSERVER_H_
+#ifndef CHROME_BROWSER_RENDERER_CONTEXT_MENU_SPELLCHECKER_SUBMENU_OBSERVER_H_
+#define CHROME_BROWSER_RENDERER_CONTEXT_MENU_SPELLCHECKER_SUBMENU_OBSERVER_H_
 
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/tab_contents/render_view_context_menu_observer.h"
+#include "chrome/browser/renderer_context_menu/render_view_context_menu_observer.h"
 #include "ui/base/models/simple_menu_model.h"
 
 class RenderViewContextMenuProxy;
@@ -50,4 +50,4 @@ class SpellCheckerSubMenuObserver : public RenderViewContextMenuObserver {
   DISALLOW_COPY_AND_ASSIGN(SpellCheckerSubMenuObserver);
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_SPELLCHECKER_SUBMENU_OBSERVER_H_
+#endif  // CHROME_BROWSER_RENDERER_CONTEXT_MENU_SPELLCHECKER_SUBMENU_OBSERVER_H_

@@ -1,13 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_GTK_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_GTK_H_
-#define CHROME_BROWSER_UI_GTK_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_GTK_H_
+#ifndef CHROME_BROWSER_UI_GTK_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_GTK_H_
+#define CHROME_BROWSER_UI_GTK_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_GTK_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/tab_contents/render_view_context_menu.h"
+#include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "ui/gfx/point.h"
 
@@ -63,4 +63,4 @@ class RenderViewContextMenuGtk : public RenderViewContextMenu,
   uint32_t triggering_event_time_;
 };
 
-#endif  // CHROME_BROWSER_UI_GTK_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_GTK_H_
+#endif  // CHROME_BROWSER_UI_GTK_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_GTK_H_

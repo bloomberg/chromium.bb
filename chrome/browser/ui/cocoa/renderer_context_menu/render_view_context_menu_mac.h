@@ -1,14 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_MAC_H_
-#define CHROME_BROWSER_UI_COCOA_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_MAC_H_
+#ifndef CHROME_BROWSER_UI_COCOA_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_MAC_H_
+#define CHROME_BROWSER_UI_COCOA_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_MAC_H_
 
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
-#include "chrome/browser/tab_contents/render_view_context_menu.h"
+#include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 
 @class MenuController;
 
@@ -73,4 +73,4 @@ class RenderViewContextMenuMac : public RenderViewContextMenu {
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenuMac);
 };
 
-#endif  // CHROME_BROWSER_UI_COCOA_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_MAC_H_
+#endif  // CHROME_BROWSER_UI_COCOA_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_MAC_H_
