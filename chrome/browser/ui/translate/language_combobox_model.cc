@@ -26,10 +26,6 @@ base::string16 LanguageComboboxModel::GetItemAt(int index) {
   return model_->GetLanguageNameAt(index);
 }
 
-bool LanguageComboboxModel::IsItemSeparatorAt(int index) {
-  return false;
-}
-
 int LanguageComboboxModel::GetDefaultIndex() const {
   return default_index_;
 }

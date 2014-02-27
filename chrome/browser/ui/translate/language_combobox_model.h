@@ -24,7 +24,6 @@ class LanguageComboboxModel : public ui::ComboboxModel {
   // Overridden from ui::ComboboxModel:
   virtual int GetItemCount() const OVERRIDE;
   virtual base::string16 GetItemAt(int index) OVERRIDE;
-  virtual bool IsItemSeparatorAt(int index) OVERRIDE;
   virtual int GetDefaultIndex() const OVERRIDE;
 
  private:
