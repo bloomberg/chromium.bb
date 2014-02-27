@@ -31,6 +31,7 @@ class ElementResolveContext;
 class StyleRulePage;
 
 class PageRuleCollector {
+    STACK_ALLOCATED();
 public:
     PageRuleCollector(const RenderStyle* rootElementStyle, int pageIndex);
 

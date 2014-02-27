@@ -87,6 +87,7 @@ public:
 // and then let it go out of scope.
 // FIXME: Currently it modifies the RenderStyle but should not!
 class ElementRuleCollector {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(ElementRuleCollector);
 public:
     ElementRuleCollector(const ElementResolveContext&, const SelectorFilter&, RenderStyle* = 0);
