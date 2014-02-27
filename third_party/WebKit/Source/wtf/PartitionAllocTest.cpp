@@ -664,6 +664,34 @@ TEST(WTF_PartitionAlloc, Realloc)
     EXPECT_EQ(0, ptr2);
     EXPECT_EQ(WTF::partitionCookieFreePointerAdjust(ptr), page->freelistHead);
 
+    // Test that growing an allocation with realloc() copies everything from the
+    // old allocation.
+    size_t size = WTF::kSystemPageSize - kExtraAllocSize;
+    EXPECT_EQ(size, partitionAllocActualSize(genericAllocator.root(), size));
+    ptr = partitionAllocGeneric(genericAllocator.root(), size);
+    memset(ptr, 'A', size);
+    ptr2 = partitionReallocGeneric(genericAllocator.root(), ptr, size + 1);
+    EXPECT_NE(ptr, ptr2);
+    char* charPtr2 = static_cast<char*>(ptr2);
+    EXPECT_EQ('A', charPtr2[0]);
+    EXPECT_EQ('A', charPtr2[size - 1]);
+#ifndef NDEBUG
+    EXPECT_EQ(WTF::kUninitializedByte, static_cast<unsigned char>(charPtr2[size]));
+#endif
+
+    // Test that shrinking an allocation with realloc() also copies everything
+    // from the old allocation.
+    ptr = partitionReallocGeneric(genericAllocator.root(), ptr2, size - 1);
+    EXPECT_NE(ptr2, ptr);
+    char* charPtr = static_cast<char*>(ptr);
+    EXPECT_EQ('A', charPtr[0]);
+    EXPECT_EQ('A', charPtr[size - 2]);
+#ifndef NDEBUG
+    EXPECT_EQ(WTF::kUninitializedByte, static_cast<unsigned char>(charPtr[size - 1]));
+#endif
+
+    partitionFreeGeneric(genericAllocator.root(), ptr);
+
     TestShutdown();
 }
 

@@ -775,26 +775,26 @@ void* partitionReallocGeneric(PartitionRootGeneric* root, void* ptr, size_t newS
         return 0;
     }
 
+    ASSERT(partitionPointerIsValid(partitionCookieFreePointerAdjust(ptr)));
+
+    size_t actualNewSize = partitionAllocActualSize(root, newSize);
+    size_t actualOldSize = partitionAllocGetSize(ptr);
+
     // TODO: note that tcmalloc will "ignore" a downsizing realloc() unless the
     // new size is a significant percentage smaller. We could do the same if we
     // determine it is a win.
-    void* realPtr = partitionCookieFreePointerAdjust(ptr);
-    ASSERT(partitionPointerIsValid(realPtr));
-    PartitionPage* oldPage = partitionPointerToPage(realPtr);
-    PartitionBucket* oldBucket = oldPage->bucket;
-
-    size_t allocSize = partitionCookieSizeAdjustAdd(newSize);
-    PartitionBucket* newBucket = partitionGenericSizeToBucket(root, allocSize);
-
-    // TODO: for a downsize on a direct mapped allocation, we really should
-    // just de-commit the correct number of pages off the end.
-    if (oldBucket == newBucket)
+    if (actualNewSize == actualOldSize) {
+        // Trying to allocate a block of size newSize would give us a block of
+        // the same size as the one we've already got, so no point in doing
+        // anything here.
+        // TODO: for an upsize or downsize on a direct mapped allocation, we
+        // should really try and resize it in-place.
         return ptr;
+    }
 
     // This realloc cannot be resized in-place. Sadness.
     void* ret = partitionAllocGeneric(root, newSize);
-    size_t copySize = oldPage->bucket->slotSize;
-    copySize = partitionCookieSizeAdjustSubtract(copySize);
+    size_t copySize = actualOldSize;
     if (newSize < copySize)
         copySize = newSize;
 
