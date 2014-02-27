@@ -212,7 +212,7 @@ html[dir=rtl] #flip-photo {
 
 .camera:not(.live) #discard-photo {
   background: url('chrome://theme/IDR_USER_IMAGE_RECYCLE')
-      no-repeat center 0;
+      no-repeat center center;
   display: block;
 }
 

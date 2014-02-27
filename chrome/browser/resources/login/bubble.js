@@ -16,6 +16,17 @@ cr.define('cr.ui', function() {
   var Bubble = cr.ui.define('div');
 
   /**
+   * Bubble key codes.
+   * @enum {number}
+   */
+  var KeyCodes = {
+    TAB: 9,
+    ENTER: 13,
+    ESC: 27,
+    SPACE: 32
+  };
+
+  /**
    * Bubble attachment side.
    * @enum {string}
    */
@@ -35,6 +46,11 @@ cr.define('cr.ui', function() {
     // If defined, sets focus to this element once bubble is closed. Focus is
     // set to this element only if there's no any other focused element.
     elementToFocusOnHide_: undefined,
+
+    // With help of these elements we create closed artificial tab-cycle through
+    // bubble elements.
+    firstBubbleElement_: undefined,
+    lastBubbleElement_: undefined,
 
     // Whether to hide bubble when key is pressed.
     hideOnKeyPress_: true,
@@ -60,6 +76,26 @@ cr.define('cr.ui', function() {
      */
     set elementToFocusOnHide(value) {
       this.elementToFocusOnHide_ = value;
+    },
+
+    /**
+     * Element that should be focused on shift-tab of first bubble element
+     * to create artificial closed tab-cycle through bubble.
+     * Usually close-button.
+     * @type {HTMLElement}
+     */
+    set lastBubbleElement(value) {
+      this.lastBubbleElement_ = value;
+    },
+
+    /**
+     * Element that should be focused on tab of last bubble element
+     * to create artificial closed tab-cycle through bubble.
+     * Same element as first focused on bubble opening.
+     * @type {HTMLElement}
+     */
+    set firstBubbleElement(value) {
+      this.firstBubbleElement_ = value;
     },
 
     /**
@@ -90,7 +126,6 @@ cr.define('cr.ui', function() {
       // Allow clicking on [x] button.
       if (e.target && e.target.classList.contains('close-button'))
         return;
-
       e.stopPropagation();
     },
 
@@ -260,12 +295,8 @@ cr.define('cr.ui', function() {
     handleTransitionEnd_: function(e) {
       if (this.classList.contains('faded')) {
         this.hidden = true;
-        if (this.elementToFocusOnHide_ &&
-            document.activeElement == document.body) {
-          // Restore focus to default element only if there's no other
-          // element that is focused.
+        if (this.elementToFocusOnHide_)
           this.elementToFocusOnHide_.focus();
-        }
       }
     },
 
@@ -287,16 +318,29 @@ cr.define('cr.ui', function() {
      * @private
      */
     handleDocKeyDown_: function(e) {
-      if (this.hideOnKeyPress_ && !this.hidden) {
+      if (this.hidden)
+        return;
+
+      if (this.hideOnKeyPress_) {
         this.hide();
         return;
       }
-
-      if (e.keyCode == 27 && !this.hidden) {
-        if (this.elementToFocusOnHide_)
-          this.elementToFocusOnHide_.focus();
-        this.hide();
+      // Artificial tab-cycle.
+      if (e.keyCode == KeyCodes.TAB && e.shiftKey == true &&
+          e.target == this.firstBubbleElement_) {
+        this.lastBubbleElement_.focus();
+        e.preventDefault();
       }
+      if (e.keyCode == KeyCodes.TAB && e.shiftKey == false &&
+          e.target == this.lastBubbleElement_) {
+        this.firstBubbleElement_.focus();
+        e.preventDefault();
+      }
+      // Close bubble on ESC or on hitting spacebar or Enter at close-button.
+      if (e.keyCode == KeyCodes.ESC ||
+          ((e.keyCode == KeyCodes.ENTER || e.keyCode == KeyCodes.SPACE) &&
+             e.target && e.target.classList.contains('close-button')))
+        this.hide();
     },
 
     /**

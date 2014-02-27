@@ -95,11 +95,22 @@ cr.define('cr.ui.Oobe', function() {
     initializeA11yMenu: function() {
       cr.ui.Bubble.decorate($('accessibility-menu'));
       $('connect-accessibility-link').addEventListener(
-        'click', Oobe.handleAccessbilityLinkClick);
+        'click', Oobe.handleAccessibilityLinkClick);
       $('eula-accessibility-link').addEventListener(
-        'click', Oobe.handleAccessbilityLinkClick);
+        'click', Oobe.handleAccessibilityLinkClick);
       $('update-accessibility-link').addEventListener(
-        'click', Oobe.handleAccessbilityLinkClick);
+        'click', Oobe.handleAccessibilityLinkClick);
+      // Same behaviour on hitting spacebar. See crbug.com/342991.
+      function reactOnSpace(event) {
+        if (event.keyCode == 32)
+          Oobe.handleAccessibilityLinkClick(event);
+      }
+      $('connect-accessibility-link').addEventListener(
+        'keyup', reactOnSpace);
+      $('eula-accessibility-link').addEventListener(
+        'keyup', reactOnSpace);
+      $('update-accessibility-link').addEventListener(
+        'keyup', reactOnSpace);
 
       $('high-contrast').addEventListener('click',
                                           Oobe.handleHighContrastClick);
@@ -121,12 +132,14 @@ cr.define('cr.ui.Oobe', function() {
     /**
      * Accessibility link handler.
      */
-    handleAccessbilityLinkClick: function(e) {
+    handleAccessibilityLinkClick: function(e) {
       /** @const */ var BUBBLE_OFFSET = 5;
       /** @const */ var BUBBLE_PADDING = 10;
       $('accessibility-menu').showForElement(e.target,
                                              cr.ui.Bubble.Attachment.BOTTOM,
                                              BUBBLE_OFFSET, BUBBLE_PADDING);
+      $('accessibility-menu').firstBubbleElement = $('spoken-feedback');
+      $('accessibility-menu').lastBubbleElement = $('close-accessibility-menu');
       if (Oobe.getInstance().currentScreen &&
           Oobe.getInstance().currentScreen.defaultControl) {
         $('accessibility-menu').elementToFocusOnHide =
