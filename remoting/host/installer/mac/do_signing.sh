@@ -37,6 +37,8 @@ setup() {
 
   # Binaries to sign.
   ME2ME_HOST='PrivilegedHelperTools/org.chromium.chromoting.me2me_host.app'
+  ME2ME_NM_HOST="${ME2ME_HOST}/Contents/MacOS/native_messaging_host"
+  IT2ME_NM_HOST="${ME2ME_HOST}/Contents/MacOS/remote_assistance_host"
   UNINSTALLER="Applications/${HOST_UNINSTALLER_NAME}.app"
   PREFPANE='PreferencePanes/org.chromium.chromoting.prefPane'
 
@@ -116,7 +118,7 @@ sign() {
   fi
 
   echo Signing "${name}"
-  codesign -vv -s "${id}" --deep --keychain "${keychain}" "${name}"
+  codesign -vv -s "${id}" --keychain "${keychain}" "${name}"
   codesign -v "${name}"
 }
 
@@ -125,6 +127,8 @@ sign_binaries() {
   local keychain="${2}"
   local id="${3}"
 
+  sign "${input_dir}/${ME2ME_NM_HOST}" "${keychain}" "${id}"
+  sign "${input_dir}/${IT2ME_NM_HOST}" "${keychain}" "${id}"
   sign "${input_dir}/${ME2ME_HOST}" "${keychain}" "${id}"
   sign "${input_dir}/${UNINSTALLER}" "${keychain}" "${id}"
   sign "${input_dir}/${PREFPANE}" "${keychain}" "${id}"
