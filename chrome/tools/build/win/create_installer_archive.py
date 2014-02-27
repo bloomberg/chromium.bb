@@ -370,7 +370,7 @@ def CopyIfChanged(src, target_dir):
 # Copy the relevant CRT DLLs to |build_dir|. We copy DLLs from all versions
 # of VS installed to make sure we have the correct CRT version, unused DLLs
 # should not conflict with the others anyways.
-def CopyVisualStudioRuntimeDLLs(build_dir, target_arch):
+def CopyVisualStudioRuntimeDLLs(target_arch, build_dir):
   is_debug = os.path.basename(build_dir).startswith('Debug')
   if not is_debug and not os.path.basename(build_dir).startswith('Release'):
     print ("Warning: could not determine build configuration from "
@@ -435,10 +435,22 @@ def DoComponentBuildTasks(staging_dir, build_dir, target_arch, current_version):
   if not os.path.exists(installer_dir):
     os.mkdir(installer_dir)
 
-  # Copy the VS CRT DLLs to |build_dir|. This must be done before the general
-  # copy step below to ensure the CRT DLLs are added to the archive and marked
-  # as a dependency in the exe manifests generated below.
-  CopyVisualStudioRuntimeDLLs(build_dir, target_arch)
+  # Copy the VS CRT DLLs to |build_dir| and |installer_dir|. This must be done
+  # before the general copy step below to ensure the CRT DLLs are added to the
+  # archive and marked as a dependency in the exe manifests generated below.
+  CopyVisualStudioRuntimeDLLs(target_arch, build_dir)
+  CopyVisualStudioRuntimeDLLs(target_arch, installer_dir)
+
+  # The set of component DLLs required by setup.exe (to be dropped in the
+  # archive in the |installer_dir|).
+  # TODO(caitkp): Remove chrome_redirects.dll from setup's dependencies.
+  setup_component_dll_names = { 'base.dll',
+                                'chrome_redirects.dll',
+                                'crcrypto.dll',
+                                'crnspr.dll',
+                                'crnss.dll',
+                                'icui18n.dll',
+                                'icuuc.dll', }
 
   # Stage all the component DLLs found in |build_dir|. These are all the DLLs
   # which have not already been added to the staged |version_dir| by virtue of
@@ -449,24 +461,22 @@ def DoComponentBuildTasks(staging_dir, build_dir, target_arch, current_version):
   component_dll_filenames = []
   for component_dll in [dll for dll in build_dlls if \
                         os.path.basename(dll) not in staged_dll_basenames]:
+    component_dll_name = os.path.basename(component_dll)
     # remoting_*.dll's don't belong in the archive (it doesn't depend on them
     # in gyp). Trying to copy them causes a build race when creating the
     # installer archive in component mode. See: crbug.com/180996
-    if os.path.basename(component_dll).startswith('remoting_'):
+    if component_dll_name.startswith('remoting_'):
       continue
-    # Copy them to the version_dir (for the version assembly to be able to refer
-    # to them below and make sure chrome.exe can find them at runtime).
+    component_dll_filenames.append(component_dll_name)
+    # Copy each |component_dll| to the version_dir (for the version assembly to
+    # be able to refer to them below and make sure chrome.exe can find them at
+    # runtime).
     shutil.copy(component_dll, version_dir)
-    # Also copy them directly to the Installer directory for the installed
-    # setup.exe to be able to run (as it doesn't statically link in component
-    # DLLs).
-    # This makes the archive ~1.5X bigger (Release ~185MB => ~278MB;
-    # Debug ~520MB => ~875MB) this is however simpler than any other installer
-    # change and doesn't make archive generation itself slower so it only
-    # matters when copying the archive to other test machines. This approach
-    # can be revised if this is a problem.
-    shutil.copy(component_dll, installer_dir)
-    component_dll_filenames.append(os.path.basename(component_dll))
+    # Also copy the ones listed in |setup_component_dll_names| directly to the
+    # Installer directory for the installed setup.exe to be able to run (as it
+    # doesn't statically link in component DLLs).
+    if component_dll_name in setup_component_dll_names:
+      shutil.copy(component_dll, installer_dir)
 
   # Augment {version}.manifest to include all component DLLs as part of the
   # assembly it constitutes, which will allow dependents of this assembly to
