@@ -20,7 +20,6 @@
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "ui/gfx/rect_conversions.h"
 
 namespace cc {
@@ -28,7 +27,7 @@ namespace {
 
 class MockCanvas : public SkCanvas {
  public:
-  explicit MockCanvas(SkBaseDevice* device) : SkCanvas(device) {}
+  explicit MockCanvas(int w, int h) : SkCanvas(w, h) {}
 
   virtual void drawRect(const SkRect& rect, const SkPaint& paint) OVERRIDE {
     // Capture calls before SkCanvas quickReject() kicks in.
@@ -220,13 +219,9 @@ class PictureLayerImplTest : public testing::Test {
     active_pile->RemoveRecordingAt(0, 0);
     active_pile->AddRecordingAt(0, 0);
 
-    SkBitmap store;
-    store.setConfig(SkBitmap::kNo_Config, 1000, 1000);
-    SkBitmapDevice device(store);
-
     std::vector<SkRect>::const_iterator rect_iter = rects.begin();
     for (tile_iter = tiles.begin(); tile_iter < tiles.end(); tile_iter++) {
-      MockCanvas mock_canvas(&device);
+      MockCanvas mock_canvas(1000, 1000);
       active_pile->RasterDirect(
           &mock_canvas, (*tile_iter)->content_rect(), 1.0f, NULL);
 

@@ -177,8 +177,8 @@ void SoftwareRenderer::EnsureScissorTestDisabled() {
   // clipRect on the current SkCanvas. This is done by setting clipRect to
   // the viewport's dimensions.
   is_scissor_enabled_ = false;
-  SkBaseDevice* device = current_canvas_->getDevice();
-  SetClipRect(gfx::Rect(device->width(), device->height()));
+  SkISize size = current_canvas_->getDeviceSize();
+  SetClipRect(gfx::Rect(size.width(), size.height()));
 }
 
 void SoftwareRenderer::Finish() {}
@@ -525,21 +525,17 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
     // TODO(ajuma): Apply the filter in the same pass as the content where
     // possible (e.g. when there's no origin offset). See crbug.com/308201.
     if (filter) {
-      bool is_opaque = false;
-      skia::RefPtr<SkBaseDevice> device =
-          skia::AdoptRef(new SkBitmapDevice(SkBitmap::kARGB_8888_Config,
-                                            content_texture->size().width(),
-                                            content_texture->size().height(),
-                                            is_opaque));
-      SkCanvas canvas(device.get());
-      SkPaint paint;
-      paint.setImageFilter(filter.get());
-      canvas.clear(SK_ColorTRANSPARENT);
-      canvas.translate(SkIntToScalar(-quad->rect.origin().x()),
-                       SkIntToScalar(-quad->rect.origin().y()));
-      canvas.drawSprite(*content, 0, 0, &paint);
-      bool will_change_pixels = false;
-      filter_bitmap = device->accessBitmap(will_change_pixels);
+      SkImageInfo info = SkImageInfo::MakeN32Premul(
+          content_texture->size().width(), content_texture->size().height());
+      if (filter_bitmap.allocPixels(info)) {
+        SkCanvas canvas(filter_bitmap);
+        SkPaint paint;
+        paint.setImageFilter(filter.get());
+        canvas.clear(SK_ColorTRANSPARENT);
+        canvas.translate(SkIntToScalar(-quad->rect.origin().x()),
+                         SkIntToScalar(-quad->rect.origin().y()));
+        canvas.drawSprite(*content, 0, 0, &paint);
+      }
     }
   }
 

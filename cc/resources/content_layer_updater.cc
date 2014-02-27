@@ -9,7 +9,6 @@
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/resources/layer_painter.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkScalar.h"
@@ -44,8 +43,8 @@ void ContentLayerUpdater::PaintContents(SkCanvas* canvas,
   canvas->translate(SkFloatToScalar(-origin.x()),
                     SkFloatToScalar(-origin.y()));
 
-  SkBaseDevice* device = canvas->getDevice();
-  gfx::Rect content_rect(origin, gfx::Size(device->width(), device->height()));
+  SkISize size = canvas->getDeviceSize();
+  gfx::Rect content_rect(origin, gfx::Size(size.width(), size.height()));
 
   gfx::Rect layer_rect = content_rect;
 

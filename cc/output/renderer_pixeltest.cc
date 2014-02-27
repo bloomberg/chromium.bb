@@ -1065,20 +1065,18 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
   // Make a mask.
   gfx::Rect mask_rect = viewport_rect;
   SkBitmap bitmap;
-  bitmap.setConfig(
-      SkBitmap::kARGB_8888_Config, mask_rect.width(), mask_rect.height());
-  bitmap.allocPixels();
-  SkBitmapDevice bitmap_device(bitmap);
-  skia::RefPtr<SkCanvas> canvas = skia::AdoptRef(new SkCanvas(&bitmap_device));
+  bitmap.allocPixels(
+      SkImageInfo::MakeN32Premul(mask_rect.width(), mask_rect.height()));
+  SkCanvas canvas(bitmap);
   SkPaint paint;
   paint.setStyle(SkPaint::kStroke_Style);
   paint.setStrokeWidth(SkIntToScalar(4));
   paint.setColor(SK_ColorWHITE);
-  canvas->clear(SK_ColorTRANSPARENT);
+  canvas.clear(SK_ColorTRANSPARENT);
   gfx::Rect rect = mask_rect;
   while (!rect.IsEmpty()) {
     rect.Inset(6, 6, 4, 4);
-    canvas->drawRect(
+    canvas.drawRect(
         SkRect::MakeXYWH(rect.x(), rect.y(), rect.width(), rect.height()),
         paint);
     rect.Inset(6, 6, 4, 4);

@@ -8,7 +8,6 @@
 #include "base/values.h"
 #include "cc/debug/traced_value.h"
 #include "cc/resources/resource.h"
-#include "third_party/skia/include/core/SkBitmapDevice.h"
 
 namespace cc {
 
