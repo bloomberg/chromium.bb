@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/apps/native_app_window_views.h"
+#include "chrome/browser/ui/views/apps/chrome_native_app_window_views.h"
 
 #include "apps/ui/views/app_window_frame_view.h"
 #include "base/command_line.h"
@@ -191,18 +191,18 @@ class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate,
 
 }  // namespace
 
-NativeAppWindowViews::NativeAppWindowViews()
+ChromeNativeAppWindowViews::ChromeNativeAppWindowViews()
     : is_fullscreen_(false),
       has_frame_color_(false),
       frame_color_(SK_ColorBLACK) {}
 
-NativeAppWindowViews::~NativeAppWindowViews() {}
+ChromeNativeAppWindowViews::~ChromeNativeAppWindowViews() {}
 
-void NativeAppWindowViews::OnBeforeWidgetInit(
+void ChromeNativeAppWindowViews::OnBeforeWidgetInit(
     views::Widget::InitParams* init_params,
     views::Widget* widget) {}
 
-void NativeAppWindowViews::InitializeDefaultWindow(
+void ChromeNativeAppWindowViews::InitializeDefaultWindow(
     const AppWindow::CreateParams& create_params) {
   std::string app_name =
       web_app::GenerateApplicationNameFromExtensionId(
@@ -278,7 +278,7 @@ void NativeAppWindowViews::InitializeDefaultWindow(
   }
 }
 
-void NativeAppWindowViews::InitializePanelWindow(
+void ChromeNativeAppWindowViews::InitializePanelWindow(
     const AppWindow::CreateParams& create_params) {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_PANEL);
   params.delegate = this;
@@ -331,11 +331,11 @@ void NativeAppWindowViews::InitializePanelWindow(
 #endif
 }
 
-bool NativeAppWindowViews::ShouldUseNativeFrame() const {
+bool ChromeNativeAppWindowViews::ShouldUseNativeFrame() const {
   return !IsFrameless() & !has_frame_color_;
 }
 
-void NativeAppWindowViews::InstallEasyResizeTargeterOnContainer() const {
+void ChromeNativeAppWindowViews::InstallEasyResizeTargeterOnContainer() const {
   aura::Window* root_window = window()->GetNativeWindow()->GetRootWindow();
   gfx::Insets inset(kResizeInsideBoundsSize, kResizeInsideBoundsSize,
                     kResizeInsideBoundsSize, kResizeInsideBoundsSize);
@@ -344,7 +344,7 @@ void NativeAppWindowViews::InstallEasyResizeTargeterOnContainer() const {
 }
 
 apps::AppWindowFrameView*
-NativeAppWindowViews::CreateAppWindowFrameView() {
+ChromeNativeAppWindowViews::CreateAppWindowFrameView() {
   // By default the user can resize the window from slightly inside the bounds.
   int resize_inside_bounds_size = kResizeInsideBoundsSize;
   int resize_outside_bounds_size = 0;
@@ -372,7 +372,7 @@ NativeAppWindowViews::CreateAppWindowFrameView() {
 
 // ui::BaseWindow implementation.
 
-ui::WindowShowState NativeAppWindowViews::GetRestoredState() const {
+ui::WindowShowState ChromeNativeAppWindowViews::GetRestoredState() const {
   if (IsMaximized())
     return ui::SHOW_STATE_MAXIMIZED;
   if (IsFullscreen()) {
@@ -411,7 +411,7 @@ ui::WindowShowState NativeAppWindowViews::GetRestoredState() const {
   return ui::SHOW_STATE_NORMAL;
 }
 
-bool NativeAppWindowViews::IsAlwaysOnTop() const {
+bool ChromeNativeAppWindowViews::IsAlwaysOnTop() const {
   if (app_window()->window_type_is_panel()) {
 #if defined(USE_ASH)
     return ash::wm::GetWindowState(window()->GetNativeWindow())->
@@ -426,7 +426,7 @@ bool NativeAppWindowViews::IsAlwaysOnTop() const {
 
 // views::ContextMenuController implementation.
 
-void NativeAppWindowViews::ShowContextMenuForView(
+void ChromeNativeAppWindowViews::ShowContextMenuForView(
     views::View* source,
     const gfx::Point& p,
     ui::MenuSourceType source_type) {
@@ -456,7 +456,7 @@ void NativeAppWindowViews::ShowContextMenuForView(
 
 // views::WidgetDelegate implementation.
 
-gfx::ImageSkia NativeAppWindowViews::GetWindowAppIcon() {
+gfx::ImageSkia ChromeNativeAppWindowViews::GetWindowAppIcon() {
   gfx::Image app_icon = app_window()->app_icon();
   if (app_icon.IsEmpty())
     return GetWindowIcon();
@@ -464,7 +464,7 @@ gfx::ImageSkia NativeAppWindowViews::GetWindowAppIcon() {
     return *app_icon.ToImageSkia();
 }
 
-gfx::ImageSkia NativeAppWindowViews::GetWindowIcon() {
+gfx::ImageSkia ChromeNativeAppWindowViews::GetWindowIcon() {
   content::WebContents* web_contents = app_window()->web_contents();
   if (web_contents) {
     FaviconTabHelper* favicon_tab_helper =
@@ -476,7 +476,7 @@ gfx::ImageSkia NativeAppWindowViews::GetWindowIcon() {
   return gfx::ImageSkia();
 }
 
-views::NonClientFrameView* NativeAppWindowViews::CreateNonClientFrameView(
+views::NonClientFrameView* ChromeNativeAppWindowViews::CreateNonClientFrameView(
     views::Widget* widget) {
 #if defined(USE_ASH)
   if (chrome::IsNativeViewInAsh(widget->GetNativeView())) {
@@ -519,23 +519,23 @@ views::NonClientFrameView* NativeAppWindowViews::CreateNonClientFrameView(
   return views::WidgetDelegateView::CreateNonClientFrameView(widget);
 }
 
-bool NativeAppWindowViews::WidgetHasHitTestMask() const {
+bool ChromeNativeAppWindowViews::WidgetHasHitTestMask() const {
   return shape_ != NULL;
 }
 
-void NativeAppWindowViews::GetWidgetHitTestMask(gfx::Path* mask) const {
+void ChromeNativeAppWindowViews::GetWidgetHitTestMask(gfx::Path* mask) const {
   shape_->getBoundaryPath(mask);
 }
 
 // views::View implementation.
 
-gfx::Size NativeAppWindowViews::GetPreferredSize() {
+gfx::Size ChromeNativeAppWindowViews::GetPreferredSize() {
   if (!preferred_size_.IsEmpty())
     return preferred_size_;
-  return BaseNativeAppWindowViews::GetPreferredSize();
+  return NativeAppWindowViews::GetPreferredSize();
 }
 
-bool NativeAppWindowViews::AcceleratorPressed(
+bool ChromeNativeAppWindowViews::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
   const std::map<ui::Accelerator, int>& accelerator_table =
       GetAcceleratorTable();
@@ -562,12 +562,12 @@ bool NativeAppWindowViews::AcceleratorPressed(
     default:
       NOTREACHED() << "Unknown accelerator sent to app window.";
   }
-  return BaseNativeAppWindowViews::AcceleratorPressed(accelerator);
+  return NativeAppWindowViews::AcceleratorPressed(accelerator);
 }
 
 // NativeAppWindow implementation.
 
-void NativeAppWindowViews::SetFullscreen(int fullscreen_types) {
+void ChromeNativeAppWindowViews::SetFullscreen(int fullscreen_types) {
   // Fullscreen not supported by panels.
   if (app_window()->window_type_is_panel())
     return;
@@ -597,11 +597,11 @@ void NativeAppWindowViews::SetFullscreen(int fullscreen_types) {
   // wasn't the app calling webkitCancelFullScreen().
 }
 
-bool NativeAppWindowViews::IsFullscreenOrPending() const {
+bool ChromeNativeAppWindowViews::IsFullscreenOrPending() const {
   return is_fullscreen_;
 }
 
-bool NativeAppWindowViews::IsDetached() const {
+bool ChromeNativeAppWindowViews::IsDetached() const {
   if (!app_window()->window_type_is_panel())
     return false;
 #if defined(USE_ASH)
@@ -612,7 +612,7 @@ bool NativeAppWindowViews::IsDetached() const {
 #endif
 }
 
-void NativeAppWindowViews::UpdateBadgeIcon() {
+void ChromeNativeAppWindowViews::UpdateBadgeIcon() {
   const gfx::Image* icon = NULL;
   if (!app_window()->badge_icon().IsEmpty()) {
     icon = &app_window()->badge_icon();
@@ -628,7 +628,7 @@ void NativeAppWindowViews::UpdateBadgeIcon() {
   chrome::DrawTaskbarDecoration(GetNativeWindow(), icon);
 }
 
-void NativeAppWindowViews::UpdateShape(scoped_ptr<SkRegion> region) {
+void ChromeNativeAppWindowViews::UpdateShape(scoped_ptr<SkRegion> region) {
   bool had_shape = shape_;
   shape_ = region.Pass();
 
@@ -646,15 +646,15 @@ void NativeAppWindowViews::UpdateShape(scoped_ptr<SkRegion> region) {
   }
 }
 
-bool NativeAppWindowViews::HasFrameColor() const {
+bool ChromeNativeAppWindowViews::HasFrameColor() const {
   return has_frame_color_;
 }
 
-SkColor NativeAppWindowViews::FrameColor() const { return frame_color_; }
+SkColor ChromeNativeAppWindowViews::FrameColor() const { return frame_color_; }
 
-// BaseNativeAppWindowViews implementation.
+// NativeAppWindowViews implementation.
 
-void NativeAppWindowViews::InitializeWindow(
+void ChromeNativeAppWindowViews::InitializeWindow(
     AppWindow* app_window,
     const AppWindow::CreateParams& create_params) {
   DCHECK(window());

@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/apps/native_app_window_views_win.h"
+#include "chrome/browser/ui/views/apps/chrome_native_app_window_views_win.h"
 
 #include "apps/app_window.h"
 #include "apps/app_window_registry.h"
@@ -68,11 +68,10 @@ void CreateIconAndSetRelaunchDetails(
 
 }  // namespace
 
-NativeAppWindowViewsWin::NativeAppWindowViewsWin()
-    : weak_ptr_factory_(this) {
-}
+ChromeNativeAppWindowViewsWin::ChromeNativeAppWindowViewsWin()
+    : weak_ptr_factory_(this) {}
 
-void NativeAppWindowViewsWin::ActivateParentDesktopIfNecessary() {
+void ChromeNativeAppWindowViewsWin::ActivateParentDesktopIfNecessary() {
   if (!ash::Shell::HasInstance())
     return;
 
@@ -89,7 +88,7 @@ void NativeAppWindowViewsWin::ActivateParentDesktopIfNecessary() {
   }
 }
 
-void NativeAppWindowViewsWin::OnShortcutInfoLoaded(
+void ChromeNativeAppWindowViewsWin::OnShortcutInfoLoaded(
     const ShellIntegration::ShortcutInfo& shortcut_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
@@ -110,12 +109,13 @@ void NativeAppWindowViewsWin::OnShortcutInfoLoaded(
                  web_app_path, icon_file, shortcut_info, hwnd));
 }
 
-HWND NativeAppWindowViewsWin::GetNativeAppWindowHWND() const {
+HWND ChromeNativeAppWindowViewsWin::GetNativeAppWindowHWND() const {
   return views::HWNDForWidget(window()->GetTopLevelWidget());
 }
 
-void NativeAppWindowViewsWin::OnBeforeWidgetInit(
-    views::Widget::InitParams* init_params, views::Widget* widget) {
+void ChromeNativeAppWindowViewsWin::OnBeforeWidgetInit(
+    views::Widget::InitParams* init_params,
+    views::Widget* widget) {
   content::BrowserContext* browser_context = app_window()->browser_context();
   const extensions::Extension* extension = app_window()->extension();
   // If an app has any existing windows, ensure new ones are created on the
@@ -144,9 +144,9 @@ void NativeAppWindowViewsWin::OnBeforeWidgetInit(
     init_params->native_widget = new views::DesktopNativeWidgetAura(widget);
 }
 
-void NativeAppWindowViewsWin::InitializeDefaultWindow(
+void ChromeNativeAppWindowViewsWin::InitializeDefaultWindow(
     const apps::AppWindow::CreateParams& create_params) {
-  NativeAppWindowViews::InitializeDefaultWindow(create_params);
+  ChromeNativeAppWindowViews::InitializeDefaultWindow(create_params);
 
   const extensions::Extension* extension = app_window()->extension();
   std::string app_name =
@@ -163,23 +163,23 @@ void NativeAppWindowViewsWin::InitializeDefaultWindow(
   web_app::UpdateShortcutInfoAndIconForApp(
       *extension,
       profile,
-      base::Bind(&NativeAppWindowViewsWin::OnShortcutInfoLoaded,
+      base::Bind(&ChromeNativeAppWindowViewsWin::OnShortcutInfoLoaded,
                  weak_ptr_factory_.GetWeakPtr()));
 
   UpdateShelfMenu();
 }
 
-void NativeAppWindowViewsWin::Show() {
+void ChromeNativeAppWindowViewsWin::Show() {
   ActivateParentDesktopIfNecessary();
-  NativeAppWindowViews::Show();
+  ChromeNativeAppWindowViews::Show();
 }
 
-void NativeAppWindowViewsWin::Activate() {
+void ChromeNativeAppWindowViewsWin::Activate() {
   ActivateParentDesktopIfNecessary();
-  NativeAppWindowViews::Activate();
+  ChromeNativeAppWindowViews::Activate();
 }
 
-void NativeAppWindowViewsWin::UpdateShelfMenu() {
+void ChromeNativeAppWindowViewsWin::UpdateShelfMenu() {
   if (!JumpListUpdater::IsEnabled())
     return;
 

@@ -122,7 +122,7 @@ void BrowserFrame::InitBrowserFrame() {
   params.wm_class_name = params.wm_class_class;
   if (browser.is_app() && !browser.is_devtools()) {
     // This window is a hosted app or v1 packaged app.
-    // NOTE: v2 packaged app windows are created by NativeAppWindowViews.
+    // NOTE: v2 packaged app windows are created by ChromeNativeAppWindowViews.
     params.wm_class_name = web_app::GetWMClassFromAppName(browser.app_name());
   } else if (command_line.HasSwitch(switches::kUserDataDir)) {
     // Set the class name to e.g. "Chrome (/tmp/my-user-data)".  The

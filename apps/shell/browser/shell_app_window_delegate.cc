@@ -4,7 +4,7 @@
 
 #include "apps/shell/browser/shell_app_window_delegate.h"
 
-#include "apps/ui/views/base_native_app_window_views.h"
+#include "apps/ui/views/native_app_window_views.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "ui/aura/window.h"
@@ -21,7 +21,7 @@ void ShellAppWindowDelegate::InitWebContents(
 NativeAppWindow* ShellAppWindowDelegate::CreateNativeAppWindow(
     AppWindow* window,
     const AppWindow::CreateParams& params) {
-  BaseNativeAppWindowViews* native_app_window = new BaseNativeAppWindowViews;
+  NativeAppWindowViews* native_app_window = new NativeAppWindowViews;
   native_app_window->Init(window, params);
   return native_app_window;
 }

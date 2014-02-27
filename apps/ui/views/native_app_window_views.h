@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APPS_UI_VIEWS_BASE_NATIVE_APP_WINDOW_VIEWS_H_
-#define APPS_UI_VIEWS_BASE_NATIVE_APP_WINDOW_VIEWS_H_
+#ifndef APPS_UI_VIEWS_NATIVE_APP_WINDOW_VIEWS_H_
+#define APPS_UI_VIEWS_NATIVE_APP_WINDOW_VIEWS_H_
 
 #include "apps/ui/native_app_window.h"
 #include "base/observer_list.h"
@@ -15,10 +15,6 @@
 #include "ui/views/widget/widget_observer.h"
 
 class SkRegion;
-
-namespace apps {
-class AppWindowFrameView;
-}
 
 namespace content {
 class BrowserContext;
@@ -39,24 +35,28 @@ class MenuRunner;
 class WebView;
 }
 
+namespace apps {
+
+class AppWindowFrameView;
+
 // A NativeAppWindow backed by a views::Widget. This class may be used alone
-// as a stub or subclassed (for example, NativeAppWindowViews in Chrome).
-class BaseNativeAppWindowViews : public apps::NativeAppWindow,
-                                 public content::WebContentsObserver,
-                                 public views::WidgetDelegateView,
-                                 public views::WidgetObserver {
+// as a stub or subclassed (for example, ChromeNativeAppWindowViews).
+class NativeAppWindowViews : public NativeAppWindow,
+                             public content::WebContentsObserver,
+                             public views::WidgetDelegateView,
+                             public views::WidgetObserver {
  public:
-  BaseNativeAppWindowViews();
-  virtual ~BaseNativeAppWindowViews();
-  void Init(apps::AppWindow* app_window,
-            const apps::AppWindow::CreateParams& create_params);
+  NativeAppWindowViews();
+  virtual ~NativeAppWindowViews();
+  void Init(AppWindow* app_window,
+            const AppWindow::CreateParams& create_params);
 
   void set_window_for_testing(views::Widget* window) { window_ = window; }
   void set_web_view_for_testing(views::WebView* view) { web_view_ = view; }
 
  protected:
-  apps::AppWindow* app_window() { return app_window_; }
-  const apps::AppWindow* app_window() const { return app_window_; }
+  AppWindow* app_window() { return app_window_; }
+  const AppWindow* app_window() const { return app_window_; }
 
   views::Widget* window() { return window_; }
   const views::Widget* window() const { return window_; }
@@ -64,9 +64,8 @@ class BaseNativeAppWindowViews : public apps::NativeAppWindow,
   views::WebView* web_view() { return web_view_; }
 
   // Initializes |window_| for |app_window|.
-  virtual void InitializeWindow(
-      apps::AppWindow* app_window,
-      const apps::AppWindow::CreateParams& create_params);
+  virtual void InitializeWindow(AppWindow* app_window,
+                                const AppWindow::CreateParams& create_params);
 
   // ui::BaseWindow implementation.
   virtual bool IsActive() const OVERRIDE;
@@ -165,7 +164,7 @@ class BaseNativeAppWindowViews : public apps::NativeAppWindow,
   // Informs modal dialogs that they need to update their positions.
   void OnViewWasResized();
 
-  apps::AppWindow* app_window_;  // Not owned.
+  AppWindow* app_window_;  // Not owned.
   views::WebView* web_view_;
   views::Widget* window_;
 
@@ -179,7 +178,9 @@ class BaseNativeAppWindowViews : public apps::NativeAppWindow,
 
   ObserverList<web_modal::ModalDialogHostObserver> observer_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(BaseNativeAppWindowViews);
+  DISALLOW_COPY_AND_ASSIGN(NativeAppWindowViews);
 };
 
-#endif  // APPS_UI_VIEWS_BASE_NATIVE_APP_WINDOW_VIEWS_H_
+}  // namespace apps
+
+#endif  // APPS_UI_VIEWS_NATIVE_APP_WINDOW_VIEWS_H_

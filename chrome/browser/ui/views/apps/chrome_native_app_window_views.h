@@ -1,11 +1,11 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_APPS_NATIVE_APP_WINDOW_VIEWS_H_
-#define CHROME_BROWSER_UI_VIEWS_APPS_NATIVE_APP_WINDOW_VIEWS_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_APPS_CHROME_NATIVE_APP_WINDOW_VIEWS_H_
+#define CHROME_BROWSER_UI_VIEWS_APPS_CHROME_NATIVE_APP_WINDOW_VIEWS_H_
 
-#include "apps/ui/views/base_native_app_window_views.h"
+#include "apps/ui/views/native_app_window_views.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/views/context_menu_controller.h"
 
@@ -21,11 +21,11 @@ namespace views {
 class MenuRunner;
 }
 
-class NativeAppWindowViews : public BaseNativeAppWindowViews,
-                             public views::ContextMenuController {
+class ChromeNativeAppWindowViews : public apps::NativeAppWindowViews,
+                                   public views::ContextMenuController {
  public:
-  NativeAppWindowViews();
-  virtual ~NativeAppWindowViews();
+  ChromeNativeAppWindowViews();
+  virtual ~ChromeNativeAppWindowViews();
 
   SkRegion* shape() { return shape_.get(); }
 
@@ -84,7 +84,7 @@ class NativeAppWindowViews : public BaseNativeAppWindowViews,
   virtual bool HasFrameColor() const OVERRIDE;
   virtual SkColor FrameColor() const OVERRIDE;
 
-  // BaseNativeAppWindowViews implementation.
+  // NativeAppWindowViews implementation.
   virtual void InitializeWindow(
       apps::AppWindow* app_window,
       const apps::AppWindow::CreateParams& create_params) OVERRIDE;
@@ -115,7 +115,7 @@ class NativeAppWindowViews : public BaseNativeAppWindowViews,
   // Used to show the system menu.
   scoped_ptr<views::MenuRunner> menu_runner_;
 
-  DISALLOW_COPY_AND_ASSIGN(NativeAppWindowViews);
+  DISALLOW_COPY_AND_ASSIGN(ChromeNativeAppWindowViews);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_APPS_NATIVE_APP_WINDOW_VIEWS_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_APPS_CHROME_NATIVE_APP_WINDOW_VIEWS_H_

@@ -4,15 +4,13 @@
 
 #include "chrome/browser/ui/views/apps/shaped_app_window_targeter.h"
 
-#include "chrome/browser/ui/views/apps/native_app_window_views.h"
+#include "chrome/browser/ui/views/apps/chrome_native_app_window_views.h"
 #include "ui/gfx/path.h"
 
 ShapedAppWindowTargeter::ShapedAppWindowTargeter(
     aura::Window* window,
-    NativeAppWindowViews* app_window)
-    : wm::MaskedWindowTargeter(window),
-      app_window_(app_window) {
-}
+    ChromeNativeAppWindowViews* app_window)
+    : wm::MaskedWindowTargeter(window), app_window_(app_window) {}
 
 ShapedAppWindowTargeter::~ShapedAppWindowTargeter() {
 }

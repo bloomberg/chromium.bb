@@ -61,8 +61,8 @@
         'ui/native_app_window.h',
         'ui/views/app_window_frame_view.cc',
         'ui/views/app_window_frame_view.h',
-        'ui/views/base_native_app_window_views.cc',
-        'ui/views/base_native_app_window_views.h',
+        'ui/views/native_app_window_views.cc',
+        'ui/views/native_app_window_views.h',
       ],
       'conditions': [
         ['chromeos==1',

@@ -4,13 +4,13 @@
 
 #include "chrome/browser/ui/apps/chrome_app_window_delegate.h"
 
-#include "chrome/browser/ui/views/apps/native_app_window_views_win.h"
+#include "chrome/browser/ui/views/apps/chrome_native_app_window_views_win.h"
 
 // static
 apps::NativeAppWindow* ChromeAppWindowDelegate::CreateNativeAppWindowImpl(
     apps::AppWindow* app_window,
     const apps::AppWindow::CreateParams& params) {
-  NativeAppWindowViewsWin* window = new NativeAppWindowViewsWin;
+  ChromeNativeAppWindowViewsWin* window = new ChromeNativeAppWindowViewsWin;
   window->Init(app_window, params);
   return window;
 }
