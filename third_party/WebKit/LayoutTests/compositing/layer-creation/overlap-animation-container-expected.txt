@@ -10,7 +10,7 @@ Before:
         (GraphicsLayer
           (position 17.00 119.00)
           (bounds 102.00 102.00)
-          (transform [1.00 0.00 0.00 0.00] [0.00 1.00 0.00 0.00] [0.00 0.00 1.00 0.00] [0.00 -110.00 0.00 1.00])
+          (transform ...)
         )
         (GraphicsLayer
           (position 47.00 229.00)
@@ -21,7 +21,7 @@ Before:
             (GraphicsLayer
               (position 21.00 11.00)
               (bounds 102.00 102.00)
-              (transform [1.00 0.00 0.00 0.00] [0.00 1.00 0.00 0.00] [0.00 0.00 1.00 0.00] [0.00 0.00 -1.00 1.00])
+              (transform ...)
             )
           )
         )
@@ -46,7 +46,7 @@ After:
         (GraphicsLayer
           (position 17.00 119.00)
           (bounds 102.00 102.00)
-          (transform [1.00 0.00 0.00 0.00] [0.00 1.00 0.00 0.00] [0.00 0.00 1.00 0.00] [0.00 -110.00 0.00 1.00])
+          (transform ...)
         )
         (GraphicsLayer
           (position 57.00 229.00)
@@ -57,21 +57,21 @@ After:
             (GraphicsLayer
               (position 11.00 11.00)
               (bounds 102.00 102.00)
-              (transform [1.00 0.00 0.00 0.00] [0.00 1.00 0.00 0.00] [0.00 0.00 1.00 0.00] [0.00 0.00 -1.00 1.00])
+              (transform ...)
             )
             (GraphicsLayer
               (position 11.00 121.00)
               (bounds 102.00 102.00)
               (drawsContent 1)
               (backgroundColor #008000)
-              (transform [0.71 0.71 0.00 0.00] [-0.71 0.71 0.00 0.00] [0.00 0.00 1.00 0.00] [0.00 0.00 0.00 1.00])
+              (transform ...)
             )
             (GraphicsLayer
               (position 11.00 231.00)
               (bounds 102.00 102.00)
               (drawsContent 1)
               (backgroundColor #008000)
-              (transform [0.71 0.71 0.00 0.00] [-0.71 0.71 0.00 0.00] [0.00 0.00 1.00 0.00] [0.00 0.00 0.00 1.00])
+              (transform ...)
             )
             (GraphicsLayer
               (position 11.00 341.00)

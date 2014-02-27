@@ -25,7 +25,7 @@
     }
     
     @-webkit-keyframes spin {
-      from { -webkit-transform: rotate(0); }
+      from { -webkit-transform: rotate(90deg); }
       to   { -webkit-transform: rotate(360deg); }
     }
   </style>
@@ -45,7 +45,11 @@
     function animationStarted()
     {
       if (window.testRunner) {
-        document.getElementById('layers').innerText = window.internals.layerTreeAsText(document);
+        var layerText = window.internals.layerTreeAsText(document);
+        // The animation can progress before the start event is handled, so remove the
+        // effects as they can vary.
+        layerText = layerText.replace(/\[[^)]+/g, '...');
+        document.getElementById('layers').innerText = layerText;
         testRunner.notifyDone();
       }
     }

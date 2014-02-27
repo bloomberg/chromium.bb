@@ -1272,9 +1272,6 @@ crbug.com/246077 [ Linux ] virtual/android/fullscreen/parent-flow-inline-with-bl
 
 crbug.com/346132 fast/url/segments-from-data-url.html [ Failure NeedsRebaseline ]
 
-crbug.com/347086 [ Mac ] compositing/layer-creation/overlap-animation-container.html [ Pass Failure ]
-crbug.com/347086 [ Mac ] compositing/layer-creation/overlap-animation.html [ Pass Failure ]
-
 crbug.com/338475 crbug.com/307777 [ Android ] css1/cascade/important.html [ Failure Timeout ]
 crbug.com/338475 crbug.com/307777 [ Android ] css1/classification/list_style.html [ Failure Timeout ]
 crbug.com/338475 [ Android ] css1/classification/list_style_position.html [ Failure ]

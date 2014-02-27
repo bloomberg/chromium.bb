@@ -76,7 +76,11 @@
         // Make sure we don't include the #layers element in the tree. The text size
         // might differ between platforms.
         layersElement.style.display = "none";
-        layerTrees = "Before:\n" + window.internals.layerTreeAsText(document);
+        var layerText = window.internals.layerTreeAsText(document);
+        // The animation can progress before the start event is handled, so remove the
+        // effects as they can vary.
+        layerText = layerText.replace(/\[[^)]+/g, '...');
+        layerTrees = "Before:\n" + layerText;
       }
 
       // Rotate the first green box, so that it overlaps the first gray box in the container.
@@ -84,7 +88,11 @@
       document.getElementById("first-green-box").classList.add("rotate-45deg");
 
       if (window.testRunner) {
-        layerTrees += "\nAfter:\n" + window.internals.layerTreeAsText(document);
+        var layerText = window.internals.layerTreeAsText(document);
+        // The animation can progress before the start event is handled, so remove the
+        // effects as they can vary.
+        layerText = layerText.replace(/\[[^)]+/g, '...');
+        layerTrees += "\nAfter:\n" + layerText;
         layersElement.style.display = "block";
         layersElement.innerText = layerTrees;
         testRunner.notifyDone();
