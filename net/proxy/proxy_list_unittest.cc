@@ -91,42 +91,6 @@ TEST(ProxyListTest, RemoveProxiesWithoutScheme) {
   }
 }
 
-TEST(ProxyListTest, HasUntriedProxies) {
-  // As in DeprioritizeBadProxies, we use a lengthy timeout to avoid depending
-  // on the current time.
-  ProxyRetryInfo proxy_retry_info;
-  proxy_retry_info.bad_until =
-      base::TimeTicks::Now() + base::TimeDelta::FromDays(1);
-
-  // An empty list has nothing to try.
-  {
-    ProxyList list;
-    ProxyRetryInfoMap proxy_retry_info;
-    EXPECT_FALSE(list.HasUntriedProxies(proxy_retry_info));
-  }
-
-  // A list with one bad proxy has something to try. With two bad proxies,
-  // there's nothing to try.
-  {
-    ProxyList list;
-    list.SetFromPacString("PROXY bad1:80; PROXY bad2:80");
-    ProxyRetryInfoMap retry_info_map;
-    retry_info_map["bad1:80"] = proxy_retry_info;
-    EXPECT_TRUE(list.HasUntriedProxies(retry_info_map));
-    retry_info_map["bad2:80"] = proxy_retry_info;
-    EXPECT_FALSE(list.HasUntriedProxies(retry_info_map));
-  }
-
-  // A list with one bad proxy and a DIRECT entry has something to try.
-  {
-    ProxyList list;
-    list.SetFromPacString("PROXY bad1:80; DIRECT");
-    ProxyRetryInfoMap retry_info_map;
-    retry_info_map["bad1:80"] = proxy_retry_info;
-    EXPECT_TRUE(list.HasUntriedProxies(retry_info_map));
-  }
-}
-
 TEST(ProxyListTest, DeprioritizeBadProxies) {
   // Retry info that marks a proxy as being bad for a *very* long time (to avoid
   // the test depending on the current time.)
@@ -178,6 +142,27 @@ TEST(ProxyListTest, DeprioritizeBadProxies) {
     EXPECT_EQ("PROXY foopy1:80;PROXY foopy2:80;PROXY foopy3:80",
               list.ToPacString());
   }
+
+  // Call DeprioritizeBadProxies with 2 of the three proxies marked as bad. Of
+  // the 2 bad proxies, one is to be reconsidered and should be retried last.
+  // The other is not to be reconsidered and should be removed from the list.
+  {
+    ProxyList list;
+    list.SetFromPacString("PROXY foopy1:80;PROXY foopy2:80;PROXY foopy3:80");
+
+    ProxyRetryInfoMap retry_info_map;
+    // |proxy_retry_info.reconsider defaults to true.
+    retry_info_map["foopy1:80"] = proxy_retry_info;
+    proxy_retry_info.try_while_bad = false;
+    retry_info_map["foopy3:80"] = proxy_retry_info;
+    proxy_retry_info.try_while_bad = true;
+    retry_info_map["socks5://localhost:1080"] = proxy_retry_info;
+
+    list.DeprioritizeBadProxies(retry_info_map);
+
+    EXPECT_EQ("PROXY foopy2:80;PROXY foopy1:80",
+              list.ToPacString());
+  }
 }
 
 TEST(ProxyListTest, UpdateRetryInfoOnFallback) {
@@ -190,6 +175,7 @@ TEST(ProxyListTest, UpdateRetryInfoOnFallback) {
     list.SetFromPacString("PROXY foopy1:80;PROXY foopy2:80;PROXY foopy3:80");
     list.UpdateRetryInfoOnFallback(&retry_info_map,
                                    base::TimeDelta::FromSeconds(60),
+                                   true,
                                    ProxyServer(),
                                    net_log);
     EXPECT_TRUE(retry_info_map.end() != retry_info_map.find("foopy1:80"));
@@ -207,6 +193,7 @@ TEST(ProxyListTest, UpdateRetryInfoOnFallback) {
     list.SetFromPacString("PROXY foopy1:80;PROXY foopy2:80;PROXY foopy3:80");
     list.UpdateRetryInfoOnFallback(&retry_info_map,
                                    base::TimeDelta::FromSeconds(60),
+                                   true,
                                    proxy_server,
                                    net_log);
     EXPECT_TRUE(retry_info_map.end() != retry_info_map.find("foopy1:80"));
@@ -224,6 +211,7 @@ TEST(ProxyListTest, UpdateRetryInfoOnFallback) {
     list.SetFromPacString("DIRECT;PROXY foopy2:80;PROXY foopy3:80");
     list.UpdateRetryInfoOnFallback(&retry_info_map,
                                    base::TimeDelta::FromSeconds(60),
+                                   true,
                                    proxy_server,
                                    net_log);
     EXPECT_TRUE(retry_info_map.end() == retry_info_map.find("foopy2:80"));

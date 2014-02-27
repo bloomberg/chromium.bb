@@ -51,7 +51,7 @@ void ProxyList::DeprioritizeBadProxies(
   //   (1) the known bad proxies
   //   (2) everything else
   std::vector<ProxyServer> good_proxies;
-  std::vector<ProxyServer> bad_proxies;
+  std::vector<ProxyServer> bad_proxies_to_try;
 
   std::vector<ProxyServer>::const_iterator iter = proxies_.begin();
   for (; iter != proxies_.end(); ++iter) {
@@ -61,7 +61,8 @@ void ProxyList::DeprioritizeBadProxies(
       // This proxy is bad. Check if it's time to retry.
       if (bad_proxy->second.bad_until >= TimeTicks::Now()) {
         // still invalid.
-        bad_proxies.push_back(*iter);
+        if (bad_proxy->second.try_while_bad)
+          bad_proxies_to_try.push_back(*iter);
         continue;
       }
     }
@@ -70,27 +71,8 @@ void ProxyList::DeprioritizeBadProxies(
 
   // "proxies_ = good_proxies + bad_proxies"
   proxies_.swap(good_proxies);
-  proxies_.insert(proxies_.end(), bad_proxies.begin(), bad_proxies.end());
-}
-
-bool ProxyList::HasUntriedProxies(
-    const ProxyRetryInfoMap& proxy_retry_info) const {
-  std::vector<ProxyServer>::const_iterator iter = proxies_.begin();
-  for (; iter != proxies_.end(); ++iter) {
-    ProxyRetryInfoMap::const_iterator bad_proxy =
-        proxy_retry_info.find(iter->ToURI());
-    if (bad_proxy != proxy_retry_info.end()) {
-      // This proxy is bad. Check if it's time to retry.
-      if (bad_proxy->second.bad_until >= TimeTicks::Now()) {
-        continue;
-      }
-    }
-    // Either we've found the entry in the retry map and it's expired or we
-    // didn't find a corresponding entry in the retry map. In either case, we
-    // have a proxy to try.
-    return true;
-  }
-  return false;
+  proxies_.insert(proxies_.end(), bad_proxies_to_try.begin(),
+                  bad_proxies_to_try.end());
 }
 
 void ProxyList::RemoveProxiesWithoutScheme(int scheme_bit_field) {
@@ -185,8 +167,8 @@ bool ProxyList::Fallback(ProxyRetryInfoMap* proxy_retry_info,
     NOTREACHED();
     return false;
   }
-  UpdateRetryInfoOnFallback(proxy_retry_info, base::TimeDelta(), ProxyServer(),
-                            net_log);
+  UpdateRetryInfoOnFallback(proxy_retry_info, base::TimeDelta(), true,
+                            ProxyServer(), net_log);
 
   // Remove this proxy from our list.
   proxies_.erase(proxies_.begin());
@@ -195,6 +177,7 @@ bool ProxyList::Fallback(ProxyRetryInfoMap* proxy_retry_info,
 
 void ProxyList::AddProxyToRetryList(ProxyRetryInfoMap* proxy_retry_info,
                                     base::TimeDelta retry_delay,
+                                    bool try_while_bad,
                                     const ProxyServer& proxy_to_retry,
                                     const BoundNetLog& net_log) const {
   // Mark this proxy as bad.
@@ -208,6 +191,7 @@ void ProxyList::AddProxyToRetryList(ProxyRetryInfoMap* proxy_retry_info,
     ProxyRetryInfo retry_info;
     retry_info.current_delay = retry_delay;
     retry_info.bad_until = TimeTicks().Now() + retry_info.current_delay;
+    retry_info.try_while_bad = try_while_bad;
     (*proxy_retry_info)[proxy_key] = retry_info;
   }
   net_log.AddEvent(NetLog::TYPE_PROXY_LIST_FALLBACK,
@@ -217,6 +201,7 @@ void ProxyList::AddProxyToRetryList(ProxyRetryInfoMap* proxy_retry_info,
 void ProxyList::UpdateRetryInfoOnFallback(
     ProxyRetryInfoMap* proxy_retry_info,
     base::TimeDelta retry_delay,
+    bool reconsider,
     const ProxyServer& another_proxy_to_bypass,
     const BoundNetLog& net_log) const {
   // Time to wait before retrying a bad proxy server.
@@ -237,12 +222,13 @@ void ProxyList::UpdateRetryInfoOnFallback(
   }
 
   if (!proxies_[0].is_direct()) {
-    AddProxyToRetryList(proxy_retry_info, retry_delay, proxies_[0], net_log);
+    AddProxyToRetryList(proxy_retry_info, retry_delay, reconsider, proxies_[0],
+                        net_log);
 
     // If an additional proxy to bypass is specified, add it to the retry map
     // as well.
     if (another_proxy_to_bypass.is_valid()) {
-      AddProxyToRetryList(proxy_retry_info, retry_delay,
+      AddProxyToRetryList(proxy_retry_info, retry_delay, reconsider,
                           another_proxy_to_bypass, net_log);
     }
   }

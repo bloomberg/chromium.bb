@@ -1061,10 +1061,11 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
             }
         }
 #endif
-        if (proxy_service->MarkProxiesAsBad(proxy_info_,
-                                            chrome_proxy_info.bypass_duration,
-                                            proxy_server,
-                                            net_log_)) {
+        if (proxy_service->MarkProxiesAsBadUntil(
+                proxy_info_,
+                chrome_proxy_info.bypass_duration,
+                proxy_server,
+                net_log_)) {
           // Only retry idempotent methods. We don't want to resubmit a POST
           // if the proxy took some action.
           if (request_->method == "GET" ||
