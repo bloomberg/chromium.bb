@@ -247,9 +247,11 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
     context->clip(enclosingIntRect(dstRect));
 
     bool compositingRequiresTransparencyLayer = compositeOp != CompositeSourceOver || blendMode != blink::WebBlendModeNormal;
-    if (compositingRequiresTransparencyLayer) {
-        context->beginTransparencyLayer(1);
-        context->setCompositeOperation(CompositeSourceOver, blink::WebBlendModeNormal);
+    bool requiresTransparencyLayer = compositingRequiresTransparencyLayer || context->alpha() < 1;
+    if (requiresTransparencyLayer) {
+        context->beginTransparencyLayer(context->alpha());
+        if (compositingRequiresTransparencyLayer)
+            context->setCompositeOperation(CompositeSourceOver, blink::WebBlendModeNormal);
     }
 
     FloatSize scale(dstRect.width() / srcRect.width(), dstRect.height() / srcRect.height());
@@ -270,7 +272,7 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
 
     view->paint(context, enclosingIntRect(srcRect));
 
-    if (compositingRequiresTransparencyLayer)
+    if (requiresTransparencyLayer)
         context->endLayer();
 
     stateSaver.restore();
