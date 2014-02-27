@@ -123,8 +123,11 @@ class MEDIA_EXPORT WASAPIAudioInputStream
 
   // Retrieves the stream format that the audio engine uses for its internal
   // processing/mixing of shared-mode streams.
+  // |effects| is a an AudioParameters::effects() flag that will have the
+  // DUCKING flag raised for only the default communication device.
   static HRESULT GetMixFormat(const std::string& device_id,
-                              WAVEFORMATEX** device_format);
+                              WAVEFORMATEX** device_format,
+                              int* effects);
 
   // Our creator, the audio manager needs to be notified when we close.
   AudioManagerWin* manager_;

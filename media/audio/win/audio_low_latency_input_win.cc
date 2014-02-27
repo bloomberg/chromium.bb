@@ -14,6 +14,24 @@ using base::win::ScopedComPtr;
 using base::win::ScopedCOMInitializer;
 
 namespace media {
+namespace {
+
+// Returns true if |device| represents the default communication capture device.
+bool IsDefaultCommunicationDevice(IMMDeviceEnumerator* enumerator,
+                                  IMMDevice* device) {
+  ScopedComPtr<IMMDevice> communications;
+  if (FAILED(enumerator->GetDefaultAudioEndpoint(eCapture, eCommunications,
+                                                 communications.Receive()))) {
+    return false;
+  }
+
+  base::win::ScopedCoMem<WCHAR> communications_id, device_id;
+  device->GetId(&device_id);
+  communications->GetId(&communications_id);
+  return lstrcmpW(communications_id, device_id) == 0;
+}
+
+}  // namespace
 
 WASAPIAudioInputStream::WASAPIAudioInputStream(
     AudioManagerWin* manager,
@@ -250,16 +268,12 @@ AudioParameters WASAPIAudioInputStream::GetInputStreamParameters(
   ChannelLayout channel_layout = CHANNEL_LAYOUT_STEREO;
 
   base::win::ScopedCoMem<WAVEFORMATEX> audio_engine_mix_format;
-  if (SUCCEEDED(GetMixFormat(device_id, &audio_engine_mix_format))) {
+  int effects = AudioParameters::NO_EFFECTS;
+  if (SUCCEEDED(GetMixFormat(device_id, &audio_engine_mix_format, &effects))) {
     sample_rate = static_cast<int>(audio_engine_mix_format->nSamplesPerSec);
     channel_layout = audio_engine_mix_format->nChannels == 1 ?
         CHANNEL_LAYOUT_MONO : CHANNEL_LAYOUT_STEREO;
   }
-
-  int effects = AudioParameters::NO_EFFECTS;
-  // For non-loopback devices, advertise that ducking is supported.
-  if (device_id != AudioManagerBase::kLoopbackInputDeviceId)
-    effects |= AudioParameters::DUCKING;
 
   // Use 10ms frame size as default.
   int frames_per_buffer = sample_rate / 100;
@@ -270,7 +284,10 @@ AudioParameters WASAPIAudioInputStream::GetInputStreamParameters(
 
 // static
 HRESULT WASAPIAudioInputStream::GetMixFormat(const std::string& device_id,
-                                             WAVEFORMATEX** device_format) {
+                                             WAVEFORMATEX** device_format,
+                                             int* effects) {
+  DCHECK(effects);
+
   // It is assumed that this static method is called from a COM thread, i.e.,
   // CoInitializeEx() is not called here to avoid STA/MTA conflicts.
   ScopedComPtr<IMMDeviceEnumerator> enumerator;
@@ -294,8 +311,12 @@ HRESULT WASAPIAudioInputStream::GetMixFormat(const std::string& device_id,
     hr = enumerator->GetDevice(base::UTF8ToUTF16(device_id).c_str(),
                                endpoint_device.Receive());
   }
+
   if (FAILED(hr))
     return hr;
+
+  *effects = IsDefaultCommunicationDevice(enumerator, endpoint_device) ?
+      AudioParameters::DUCKING : AudioParameters::NO_EFFECTS;
 
   ScopedComPtr<IAudioClient> audio_client;
   hr = endpoint_device->Activate(__uuidof(IAudioClient),
@@ -465,6 +486,8 @@ void WASAPIAudioInputStream::HandleError(HRESULT err) {
 }
 
 HRESULT WASAPIAudioInputStream::SetCaptureDevice() {
+  DCHECK(!endpoint_device_);
+
   ScopedComPtr<IMMDeviceEnumerator> enumerator;
   HRESULT hr = enumerator.CreateInstance(__uuidof(MMDeviceEnumerator),
                                          NULL, CLSCTX_INPROC_SERVER);
@@ -473,34 +496,42 @@ HRESULT WASAPIAudioInputStream::SetCaptureDevice() {
 
   // Retrieve the IMMDevice by using the specified role or the specified
   // unique endpoint device-identification string.
-  // TODO(henrika): possibly add support for the eCommunications as well.
-  if (device_id_ == AudioManagerBase::kDefaultDeviceId) {
-    // Retrieve the default capture audio endpoint for the specified role.
-    // Note that, in Windows Vista, the MMDevice API supports device roles
-    // but the system-supplied user interface programs do not.
 
-    // If the caller has requested to turn on ducking, we select the default
-    // communications device instead of the default capture device.
-    // This implicitly turns on ducking and allows the user to control the
-    // attenuation level.
-    ERole role = (effects_ & AudioParameters::DUCKING) ?
-        eCommunications : eConsole;
+  if (effects_ & AudioParameters::DUCKING) {
+    // Ducking has been requested and it is only supported for the default
+    // communication device.  So, let's open up the communication device and
+    // see if the ID of that device matches the requested ID.
+    // We consider a kDefaultDeviceId as well as an explicit device id match,
+    // to be valid matches.
+    hr = enumerator->GetDefaultAudioEndpoint(eCapture, eCommunications,
+                                             endpoint_device_.Receive());
+    if (endpoint_device_ && device_id_ != AudioManagerBase::kDefaultDeviceId) {
+      base::win::ScopedCoMem<WCHAR> communications_id;
+      endpoint_device_->GetId(&communications_id);
+      if (device_id_ !=
+          base::WideToUTF8(static_cast<WCHAR*>(communications_id))) {
+        DLOG(WARNING) << "Ducking has been requested for a non-default device."
+                         "Not supported.";
+        endpoint_device_.Release();  // Fall back on code below.
+      }
+    }
+  }
 
-    hr = enumerator->GetDefaultAudioEndpoint(eCapture, role,
-                                             endpoint_device_.Receive());
-  } else if (device_id_ == AudioManagerBase::kLoopbackInputDeviceId) {
-    // Capture the default playback stream.
-    hr = enumerator->GetDefaultAudioEndpoint(eRender, eConsole,
-                                             endpoint_device_.Receive());
-  } else {
-    // Retrieve a capture endpoint device that is specified by an endpoint
-    // device-identification string.
-    // TODO(tommi): Opt into ducking for non-default audio devices.
-    DLOG_IF(WARNING, effects_ & AudioParameters::DUCKING)
-        << "Ducking has been requested for a non-default device."
-           "Not implemented.";
-    hr = enumerator->GetDevice(base::UTF8ToUTF16(device_id_).c_str(),
-                               endpoint_device_.Receive());
+  if (!endpoint_device_) {
+    if (device_id_ == AudioManagerBase::kDefaultDeviceId) {
+      // Retrieve the default capture audio endpoint for the specified role.
+      // Note that, in Windows Vista, the MMDevice API supports device roles
+      // but the system-supplied user interface programs do not.
+      hr = enumerator->GetDefaultAudioEndpoint(eCapture, eConsole,
+                                               endpoint_device_.Receive());
+    } else if (device_id_ == AudioManagerBase::kLoopbackInputDeviceId) {
+      // Capture the default playback stream.
+      hr = enumerator->GetDefaultAudioEndpoint(eRender, eConsole,
+                                               endpoint_device_.Receive());
+    } else {
+      hr = enumerator->GetDevice(base::UTF8ToUTF16(device_id_).c_str(),
+                                 endpoint_device_.Receive());
+    }
   }
 
   if (FAILED(hr))
