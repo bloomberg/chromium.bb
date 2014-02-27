@@ -1804,18 +1804,31 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
     return;
   }
 
+  // Add latency info to report when the frame finishes drawing.
+  AddPendingLatencyInfo(frame->metadata.latency_info);
+  GotSoftwareFrame();
+
+  // Draw the contents of the frame immediately. It is critical that this
+  // happen before the frame be acked, otherwise the new frame will likely be
+  // ready before the drawing is complete, thrashing the browser main thread.
+  if (use_core_animation_) {
+    [software_layer_ setNeedsDisplay];
+    if (!about_to_validate_and_paint_)
+      [software_layer_ displayIfNeeded];
+  } else {
+    [cocoa_view_ setNeedsDisplay:YES];
+    if (!about_to_validate_and_paint_)
+      [cocoa_view_ displayIfNeeded];
+  }
+
   cc::CompositorFrameAck ack;
   RenderWidgetHostImpl::SendSwapCompositorFrameAck(
       render_widget_host_->GetRoutingID(),
       software_frame_manager_->GetCurrentFrameOutputSurfaceId(),
       render_widget_host_->GetProcess()->GetID(),
       ack);
-  AddPendingLatencyInfo(frame->metadata.latency_info);
   software_frame_manager_->SwapToNewFrameComplete(
       !render_widget_host_->is_hidden());
-
-  GotSoftwareFrame();
-  [cocoa_view_ setNeedsDisplay:YES];
 }
 
 void RenderWidgetHostViewMac::OnAcceleratedCompositingStateChange() {
