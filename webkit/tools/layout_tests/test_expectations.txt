@@ -32,5 +32,3 @@
 # EVERYTHING BELOW THIS LINE WILL BE DELETED AT EVERY WEBKIT DEPS ROLL
 
 Bug(dcarney) http/tests/security/naked-global-object.html [ NeedsManualRebaseline ]
-
-crbug.com/342077 [ Linux Android ] fast/text/chromium-linux-fontconfig-renderstyle.html [ NeedsRebaseline ]
