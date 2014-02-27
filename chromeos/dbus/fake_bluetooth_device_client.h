@@ -150,6 +150,11 @@ class CHROMEOS_EXPORT FakeBluetoothDeviceClient
   static const char kUnpairableDeviceAddress[];
   static const uint32 kUnpairableDeviceClass;
 
+  static const char kBoseSpeakersPath[];
+  static const char kBoseSpeakersName[];
+  static const char kBoseSpeakersAddress[];
+  static const uint32 kBoseSpeakersClass;
+
  private:
   // Property callback passed when we create Properties* structures.
   void OnPropertyChanged(const dbus::ObjectPath& object_path,

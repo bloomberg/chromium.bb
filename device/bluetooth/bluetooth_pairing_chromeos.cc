@@ -180,6 +180,19 @@ void BluetoothPairingChromeOS::RequestConfirmation(
   pairing_delegate_used_ = true;
 }
 
+void BluetoothPairingChromeOS::RequestAuthorization(
+    const BluetoothAgentServiceProvider::Delegate::ConfirmationCallback&
+        callback) {
+  UMA_HISTOGRAM_ENUMERATION("Bluetooth.PairingMethod",
+                            UMA_PAIRING_METHOD_NONE,
+                            UMA_PAIRING_METHOD_COUNT);
+
+  DCHECK(confirmation_callback_.is_null());
+  confirmation_callback_ = callback;
+  pairing_delegate_->AuthorizePairing(device_);
+  pairing_delegate_used_ = true;
+}
+
 bool BluetoothPairingChromeOS::ExpectingConfirmation() const {
   return !confirmation_callback_.is_null();
 }

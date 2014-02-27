@@ -84,6 +84,14 @@ class BluetoothPairingChromeOS {
       const BluetoothAgentServiceProvider::Delegate::ConfirmationCallback&
           callback);
 
+  // Requests authorization that the current device be allowed to pair with
+  // this device from the current pairing delegate. The ConfirmPairing(),
+  // RejectPairing() and CancelPairing() method calls on this object are
+  // translated into the appropriate response to |callback|.
+  void RequestAuthorization(
+      const BluetoothAgentServiceProvider::Delegate::ConfirmationCallback&
+          callback);
+
   // Confirms to the remote device during pairing that a passkey provided by
   // the ConfirmPasskey() delegate call is displayed on both devices.
   void ConfirmPairing();

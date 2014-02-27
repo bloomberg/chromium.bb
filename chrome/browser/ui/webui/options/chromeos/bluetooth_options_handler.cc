@@ -514,6 +514,14 @@ void BluetoothOptionsHandler::ConfirmPasskey(device::BluetoothDevice* device,
   SendDeviceNotification(device, &params);
 }
 
+void BluetoothOptionsHandler::AuthorizePairing(
+    device::BluetoothDevice* device) {
+  // There is never any circumstance where this will be called, since the
+  // options handler will only be used for outgoing pairing requests, but
+  // play it safe.
+  device->ConfirmPairing();
+}
+
 void BluetoothOptionsHandler::ReportError(
     const std::string& error,
     const std::string& address) {

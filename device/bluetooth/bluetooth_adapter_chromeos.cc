@@ -433,8 +433,13 @@ void BluetoothAdapterChromeOS::RequestAuthorization(
   DCHECK(agent_.get());
   VLOG(1) << device_path.value() << ": RequestAuthorization";
 
-  // TODO(keybuk): implement
-  callback.Run(CANCELLED);
+  BluetoothPairingChromeOS* pairing = GetPairing(device_path);
+  if (!pairing) {
+    callback.Run(REJECTED);
+    return;
+  }
+
+  pairing->RequestAuthorization(callback);
 }
 
 void BluetoothAdapterChromeOS::AuthorizeService(

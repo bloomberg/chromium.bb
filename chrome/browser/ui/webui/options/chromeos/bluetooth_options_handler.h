@@ -125,6 +125,9 @@ class BluetoothOptionsHandler
   virtual void ConfirmPasskey(
       device::BluetoothDevice* device, uint32 passkey) OVERRIDE;
 
+  // device::BluetoothDevice::PairingDelegate override.
+  virtual void AuthorizePairing(device::BluetoothDevice* device) OVERRIDE;
+
   // Displays a Bluetooth error.
   // |error| maps to a localized resource for the error message.
   // |address| is the address of the Bluetooth device.  May be an empty

@@ -154,6 +154,14 @@ const char FakeBluetoothDeviceClient::kUnpairableDeviceName[] =
     "Unpairable Device";
 const uint32 FakeBluetoothDeviceClient::kUnpairableDeviceClass = 0x002540;
 
+const char FakeBluetoothDeviceClient::kBoseSpeakersPath[] =
+    "/fake/hci0/devB";
+const char FakeBluetoothDeviceClient::kBoseSpeakersAddress[] =
+    "00:0C:8A:00:00:00";
+const char FakeBluetoothDeviceClient::kBoseSpeakersName[] =
+    "Bose SoundLink Mobile speaker II";
+const uint32 FakeBluetoothDeviceClient::kBoseSpeakersClass = 0x240428;
+
 FakeBluetoothDeviceClient::Properties::Properties(
     const PropertyChangedCallback& callback)
     : BluetoothDeviceClient::Properties(
@@ -525,6 +533,12 @@ void FakeBluetoothDeviceClient::CreateDevice(
     properties->name.ReplaceValue("Fake Unpairable Device");
     properties->alias.ReplaceValue(kUnpairableDeviceName);
 
+  } else if (device_path == dbus::ObjectPath(kBoseSpeakersPath)) {
+    properties->address.ReplaceValue(kBoseSpeakersAddress);
+    properties->bluetooth_class.ReplaceValue(kBoseSpeakersClass);
+    properties->name.ReplaceValue("Fake Bose Speakers");
+    properties->alias.ReplaceValue(kBoseSpeakersName);
+
   } else {
     NOTREACHED();
 
@@ -608,6 +622,8 @@ void FakeBluetoothDeviceClient::DiscoverySimulationTimer() {
                  dbus::ObjectPath(kUnconnectableDevicePath));
     CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
                  dbus::ObjectPath(kUnpairableDevicePath));
+    CreateDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+                 dbus::ObjectPath(kBoseSpeakersPath));
 
   } else if (discovery_simulation_step_ == 13) {
     RemoveDevice(dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
@@ -724,6 +740,28 @@ void FakeBluetoothDeviceClient::SimulatePairing(
                    base::Unretained(this),
                    object_path, error_callback),
         base::TimeDelta::FromMilliseconds(simulation_interval_ms_));
+
+  } else if (object_path == dbus::ObjectPath(kBoseSpeakersPath)) {
+    if (incoming_request) {
+      agent_service_provider->RequestAuthorization(
+          object_path,
+          base::Bind(&FakeBluetoothDeviceClient::ConfirmationCallback,
+                     base::Unretained(this),
+                     object_path,
+                     callback,
+                     error_callback));
+
+    } else {
+      // No need to call anything on the pairing delegate, just wait 3 times
+      // the interval before acting as if the other end accepted it.
+      base::MessageLoop::current()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&FakeBluetoothDeviceClient::CompleteSimulatedPairing,
+                     base::Unretained(this),
+                     object_path, callback, error_callback),
+          base::TimeDelta::FromMilliseconds(3 * simulation_interval_ms_));
+
+    }
 
   } else {
     error_callback.Run(kNoResponseError, "No pairing fake");

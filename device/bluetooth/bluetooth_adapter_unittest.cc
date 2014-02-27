@@ -114,6 +114,7 @@ class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
                             uint32 entered) OVERRIDE {}
    virtual void ConfirmPasskey(BluetoothDevice* device,
                                uint32 passkey) OVERRIDE {}
+   virtual void AuthorizePairing(BluetoothDevice* device) OVERRIDE {}
 };
 
 

@@ -150,6 +150,15 @@ class BluetoothDevice {
     // digits.
     virtual void ConfirmPasskey(BluetoothDevice* device,
                                 uint32 passkey) = 0;
+
+    // This method will be called when the Bluetooth daemon requires that a
+    // pairing request, usually only incoming, using the just-works model is
+    // authorized. The delegate should decide whether the user should confirm
+    // or not, then call ConfirmPairing() on the device to confirm the pairing
+    // (whether by user action or by default), RejectPairing() on the device to
+    // reject or CancelPairing() on the device to cancel authorization for
+    // any other reason.
+    virtual void AuthorizePairing(BluetoothDevice* device) = 0;
   };
 
   // Returns true if uuid is in a a valid canonical format

@@ -142,6 +142,7 @@ class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
         display_passkey_count_(0),
         keys_entered_count_(0),
         confirm_passkey_count_(0),
+        authorize_pairing_count_(0),
         last_passkey_(9999999U),
         last_entered_(999U) {}
   virtual ~TestPairingDelegate() {}
@@ -189,6 +190,12 @@ class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
     QuitMessageLoop();
   }
 
+  virtual void AuthorizePairing(BluetoothDevice* device) OVERRIDE {
+    ++call_count_;
+    ++authorize_pairing_count_;
+    QuitMessageLoop();
+  }
+
   int call_count_;
   int request_pincode_count_;
   int request_passkey_count_;
@@ -196,6 +203,7 @@ class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
   int display_passkey_count_;
   int keys_entered_count_;
   int confirm_passkey_count_;
+  int authorize_pairing_count_;
   uint32 last_passkey_;
   uint32 last_entered_;
   std::string last_pincode_;
@@ -2071,6 +2079,58 @@ TEST_F(BluetoothChromeOSTest, PairWeirdDevice) {
   EXPECT_TRUE(properties->trusted.value());
 }
 
+TEST_F(BluetoothChromeOSTest, PairBoseSpeakers) {
+  base::MessageLoop message_loop;
+  fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
+
+  GetAdapter();
+  DiscoverDevices();
+
+  // Use the "bose speakers" fake that uses just-works pairing, since this is
+  // an outgoing pairing, no delegate interaction is required.
+  BluetoothDevice* device = adapter_->GetDevice(
+      FakeBluetoothDeviceClient::kBoseSpeakersAddress);
+  ASSERT_TRUE(device != NULL);
+  ASSERT_FALSE(device->IsPaired());
+
+  TestObserver observer(adapter_);
+  adapter_->AddObserver(&observer);
+
+  TestPairingDelegate pairing_delegate;
+  device->Connect(
+      &pairing_delegate,
+      base::Bind(&BluetoothChromeOSTest::Callback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothChromeOSTest::ConnectErrorCallback,
+                 base::Unretained(this)));
+
+  EXPECT_EQ(0, pairing_delegate.call_count_);
+
+  message_loop.Run();
+
+  EXPECT_EQ(1, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+
+  // Two changes for connecting, one change for connected, one for paired and
+  // two for trusted (after pairing and connection).
+  EXPECT_EQ(6, observer.device_changed_count_);
+  EXPECT_EQ(device, observer.last_device_);
+
+  EXPECT_TRUE(device->IsConnected());
+  EXPECT_FALSE(device->IsConnecting());
+
+  EXPECT_TRUE(device->IsPaired());
+
+  // Non HID devices are always connectable.
+  EXPECT_TRUE(device->IsConnectable());
+
+  // Make sure the trusted property has been set to true.
+  FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(
+          dbus::ObjectPath(FakeBluetoothDeviceClient::kBoseSpeakersPath));
+  EXPECT_TRUE(properties->trusted.value());
+}
+
 TEST_F(BluetoothChromeOSTest, PairUnpairableDeviceFails) {
   base::MessageLoop message_loop;
   fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
@@ -2663,6 +2723,60 @@ TEST_F(BluetoothChromeOSTest, IncomingPairWeirdDevice) {
   EXPECT_TRUE(device_chromeos->GetPairing() == NULL);
 }
 
+TEST_F(BluetoothChromeOSTest, IncomingPairBoseSpeakers) {
+  base::MessageLoop message_loop;
+  fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
+
+  GetAdapter();
+
+  TestPairingDelegate pairing_delegate;
+  adapter_->AddPairingDelegate(
+      &pairing_delegate,
+      BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_HIGH);
+
+  // The Bose Speakers use just-works pairing so require authorization when
+  // the request is incoming.
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kBoseSpeakersPath));
+  BluetoothDevice* device = adapter_->GetDevice(
+      FakeBluetoothDeviceClient::kBoseSpeakersAddress);
+  ASSERT_TRUE(device != NULL);
+  ASSERT_FALSE(device->IsPaired());
+
+  TestObserver observer(adapter_);
+  adapter_->AddObserver(&observer);
+
+  fake_bluetooth_device_client_->SimulatePairing(
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kBoseSpeakersPath),
+      true,
+      base::Bind(&BluetoothChromeOSTest::Callback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
+                 base::Unretained(this)));
+
+  EXPECT_EQ(1, pairing_delegate.call_count_);
+  EXPECT_EQ(1, pairing_delegate.authorize_pairing_count_);
+
+  // Confirm the pairing.
+  device->ConfirmPairing();
+  message_loop.Run();
+
+  EXPECT_EQ(1, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+
+  // One for paired.
+  EXPECT_EQ(1, observer.device_changed_count_);
+  EXPECT_EQ(device, observer.last_device_);
+
+  EXPECT_TRUE(device->IsPaired());
+
+  // No pairing context should remain on the device.
+  BluetoothDeviceChromeOS* device_chromeos =
+      static_cast<BluetoothDeviceChromeOS*>(device);
+  EXPECT_TRUE(device_chromeos->GetPairing() == NULL);
+}
+
 TEST_F(BluetoothChromeOSTest, IncomingPairSonyHeadphonesWithoutDelegate) {
   base::MessageLoop message_loop;
   fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
@@ -2772,6 +2886,50 @@ TEST_F(BluetoothChromeOSTest, IncomingPairWeirdDeviceWithoutDelegate) {
 
   fake_bluetooth_device_client_->SimulatePairing(
       dbus::ObjectPath(FakeBluetoothDeviceClient::kWeirdDevicePath),
+      true,
+      base::Bind(&BluetoothChromeOSTest::Callback,
+                 base::Unretained(this)),
+      base::Bind(&BluetoothChromeOSTest::DBusErrorCallback,
+                 base::Unretained(this)));
+
+  message_loop.Run();
+
+  EXPECT_EQ(0, callback_count_);
+  EXPECT_EQ(1, error_callback_count_);
+  EXPECT_EQ(bluetooth_device::kErrorAuthenticationRejected, last_client_error_);
+
+  // No changes should be observer.
+  EXPECT_EQ(0, observer.device_changed_count_);
+
+  EXPECT_FALSE(device->IsPaired());
+
+  // No pairing context should remain on the device.
+  BluetoothDeviceChromeOS* device_chromeos =
+      static_cast<BluetoothDeviceChromeOS*>(device);
+  EXPECT_TRUE(device_chromeos->GetPairing() == NULL);
+}
+
+TEST_F(BluetoothChromeOSTest, IncomingPairBoseSpeakersWithoutDelegate) {
+  base::MessageLoop message_loop;
+  fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
+
+  GetAdapter();
+
+  // The Bose Speakers uses just-works pairing and thus requires authorization,
+  // without a pairing delegate, that will be rejected.
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kBoseSpeakersPath));
+  BluetoothDevice* device = adapter_->GetDevice(
+      FakeBluetoothDeviceClient::kBoseSpeakersAddress);
+  ASSERT_TRUE(device != NULL);
+  ASSERT_FALSE(device->IsPaired());
+
+  TestObserver observer(adapter_);
+  adapter_->AddObserver(&observer);
+
+  fake_bluetooth_device_client_->SimulatePairing(
+      dbus::ObjectPath(FakeBluetoothDeviceClient::kBoseSpeakersPath),
       true,
       base::Bind(&BluetoothChromeOSTest::Callback,
                  base::Unretained(this)),
