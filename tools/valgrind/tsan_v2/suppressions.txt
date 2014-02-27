@@ -216,4 +216,4 @@ race:WebCore::AudioDestinationNode::render
 # http://crbug.com/244383
 race:IPC::SyncChannel::SyncChannel
 race:ppapi::proxy::ProxyChannel::InitWithChannel
-race:ppapi::proxy::PluginDispatcher::InitPluginWithChannel
+race:ppapi::proxy::*Dispatcher::Init*WithChannel
