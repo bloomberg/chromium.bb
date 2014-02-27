@@ -132,9 +132,6 @@ const char kAshEnableSystemSounds[] = "ash-enable-system-sounds";
 // Enables showing the tray bubble by dragging on the shelf.
 const char kAshEnableTrayDragging[] = "ash-enable-tray-dragging";
 
-// Forces chrome to use mirror mode when an external display is connected.
-const char kAshForceMirrorMode[] = "ash-force-mirror-mode";
-
 // Wallpaper to use in guest mode (as paths to trusted, non-user-writable JPEG
 // files).
 const char kAshGuestWallpaperLarge[] = "ash-guest-wallpaper-large";

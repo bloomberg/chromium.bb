@@ -95,11 +95,6 @@ DisplayChangeObserver::~DisplayChangeObserver() {
 
 ui::OutputState DisplayChangeObserver::GetStateForDisplayIds(
     const std::vector<int64>& display_ids) const {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshForceMirrorMode)) {
-    return ui::OUTPUT_STATE_DUAL_MIRROR;
-  }
-
   CHECK_EQ(2U, display_ids.size());
   DisplayIdPair pair = std::make_pair(display_ids[0], display_ids[1]);
   DisplayLayout layout = Shell::GetInstance()->display_manager()->
