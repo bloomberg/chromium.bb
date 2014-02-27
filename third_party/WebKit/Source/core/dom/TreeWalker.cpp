@@ -35,7 +35,7 @@
 namespace WebCore {
 
 TreeWalker::TreeWalker(PassRefPtr<Node> rootNode, unsigned whatToShow, PassRefPtr<NodeFilter> filter)
-    : Traversal(rootNode, whatToShow, filter)
+    : NodeIteratorBase(rootNode, whatToShow, filter)
     , m_current(root())
 {
     ScriptWrappable::init(this);

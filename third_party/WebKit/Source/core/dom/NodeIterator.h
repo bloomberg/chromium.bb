@@ -27,7 +27,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/NodeFilter.h"
-#include "core/dom/Traversal.h"
+#include "core/dom/NodeIteratorBase.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
@@ -35,7 +35,7 @@ namespace WebCore {
 
 class ExceptionState;
 
-class NodeIterator : public ScriptWrappable, public RefCounted<NodeIterator>, public Traversal {
+class NodeIterator : public ScriptWrappable, public RefCounted<NodeIterator>, public NodeIteratorBase {
 public:
     static PassRefPtr<NodeIterator> create(PassRefPtr<Node> rootNode, unsigned whatToShow, PassRefPtr<NodeFilter> filter)
     {

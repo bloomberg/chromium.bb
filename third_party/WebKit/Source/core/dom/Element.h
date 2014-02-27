@@ -673,6 +673,29 @@ template <typename T> bool isElementOfType(const Element&);
 template <typename T> inline bool isElementOfType(const Node& node) { return node.isElementNode() && isElementOfType<const T>(toElement(node)); }
 template <> inline bool isElementOfType<const Element>(const Element&) { return true; }
 
+// Type casting.
+template<typename T> inline T& toElement(Node& node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(isElementOfType<const T>(node));
+    return static_cast<T&>(node);
+}
+template<typename T> inline T* toElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || isElementOfType<const T>(*node));
+    return static_cast<T*>(node);
+}
+template<typename T> inline const T& toElement(const Node& node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(isElementOfType<const T>(node));
+    return static_cast<const T&>(node);
+}
+template<typename T> inline const T* toElement(const Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || isElementOfType<const T>(*node));
+    return static_cast<const T*>(node);
+}
+template<typename T, typename U> inline T* toElement(const RefPtr<U>& node) { return toElement<T>(node.get()); }
+
 inline bool isDisabledFormControl(const Node* node)
 {
     return node->isElementNode() && toElement(node)->isDisabledFormControl();
