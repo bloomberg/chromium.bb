@@ -5,6 +5,11 @@
 # This gypi file handles the removal of platform-specific files from the
 # Skia build.
 {
+  'includes': [
+    # skia_for_chromium_defines.gypi defines skia_for_chromium_defines
+    '../third_party/skia/gyp/skia_for_chromium_defines.gypi',
+  ],
+
   'include_dirs': [
     '..',
     'config',
@@ -147,12 +152,12 @@
       'SK_ENABLE_LEGACY_API_ALIASING=1',
       'SK_ATTR_DEPRECATED=SK_NOTHING_ARG1',
       'GR_GL_IGNORE_ES3_MSAA=0',
-      'SK_SUPPORT_LEGACY_COMPATIBLEDEVICE_CONFIG=1',
-      'SK_SUPPORT_LEGACY_PUBLICEFFECTCONSTRUCTORS=1',
       'SK_SUPPORT_LEGACY_LAYERRASTERIZER_API=1',
       'SK_WILL_NEVER_DRAW_PERSPECTIVE_TEXT',
-      'SK_SUPPORT_LEGACY_COPYTO_CONFIG',
-      'SK_SUPPORT_DEEPCOPYTO_CONFIG',
+
+      # This variable contains additional defines, specified in skia's
+      # skia_for_chromium_defines.gypi file.
+      '<@(skia_for_chromium_defines)',
     ],
 
     'default_font_cache_limit%': '(20*1024*1024)',
