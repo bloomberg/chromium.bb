@@ -19,7 +19,7 @@
 #include "media/base/video_decoder.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_renderer.h"
-#include "media/filters/video_frame_stream.h"
+#include "media/filters/decoder_stream.h"
 
 namespace base {
 class SingleThreadTaskRunner;

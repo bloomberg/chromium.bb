@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_FILTERS_VIDEO_FRAME_STREAM_H_
-#define MEDIA_FILTERS_VIDEO_FRAME_STREAM_H_
+#ifndef MEDIA_FILTERS_DECODER_STREAM_H_
+#define MEDIA_FILTERS_DECODER_STREAM_H_
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -15,7 +15,6 @@
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
-#include "media/base/video_decoder.h"
 #include "media/filters/decoder_selector.h"
 
 namespace base {
@@ -26,12 +25,15 @@ namespace media {
 
 class DecryptingDemuxerStream;
 
-// Wraps a DemuxerStream and a list of VideoDecoders and provides decoded
-// VideoFrames to its client (e.g. VideoRendererImpl).
-class MEDIA_EXPORT VideoFrameStream {
+// Wraps a DemuxerStream and a list of Decoders and provides decoded
+// output to its client (e.g. Audio/VideoRendererImpl).
+template<DemuxerStream::Type StreamType>
+class MEDIA_EXPORT DecoderStream {
  public:
-  // Indicates completion of VideoFrameStream initialization.
-  typedef base::Callback<void(bool success, bool has_alpha)> InitCB;
+  typedef DecoderStreamTraits<StreamType> StreamTraits;
+  typedef typename StreamTraits::DecoderType Decoder;
+  typedef typename StreamTraits::OutputType Output;
+  typedef typename StreamTraits::StreamInitCB InitCB;
 
   enum Status {
     OK,  // Everything went as planned.
@@ -41,28 +43,28 @@ class MEDIA_EXPORT VideoFrameStream {
     DECRYPT_ERROR  // Decoder returned decrypt error.
   };
 
-  // Indicates completion of a VideoFrameStream read.
-  typedef base::Callback<void(Status, const scoped_refptr<VideoFrame>&)> ReadCB;
+  // Indicates completion of a DecoderStream read.
+  typedef base::Callback<void(Status, const scoped_refptr<Output>&)> ReadCB;
 
-  VideoFrameStream(
+  DecoderStream(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      ScopedVector<VideoDecoder> decoders,
+      ScopedVector<Decoder> decoders,
       const SetDecryptorReadyCB& set_decryptor_ready_cb);
-  virtual ~VideoFrameStream();
+  virtual ~DecoderStream();
 
-  // Initializes the VideoFrameStream and returns the initialization result
+  // Initializes the DecoderStream and returns the initialization result
   // through |init_cb|. Note that |init_cb| is always called asynchronously.
   void Initialize(DemuxerStream* stream,
                   const StatisticsCB& statistics_cb,
                   const InitCB& init_cb);
 
-  // Reads a decoded VideoFrame and returns it via the |read_cb|. Note that
+  // Reads a decoded Output and returns it via the |read_cb|. Note that
   // |read_cb| is always called asynchronously. This method should only be
   // called after initialization has succeeded and must not be called during
   // any pending Reset() and/or Stop().
   void Read(const ReadCB& read_cb);
 
-  // Resets the decoder, flushes all decoded frames and/or internal buffers,
+  // Resets the decoder, flushes all decoded outputs and/or internal buffers,
   // fires any existing pending read callback and calls |closure| on completion.
   // Note that |closure| is always called asynchronously. This method should
   // only be called after initialization has succeeded and must not be called
@@ -71,13 +73,13 @@ class MEDIA_EXPORT VideoFrameStream {
 
   // Stops the decoder, fires any existing pending read callback or reset
   // callback and calls |closure| on completion. Note that |closure| is always
-  // called asynchronously. The VideoFrameStream cannot be used anymore after
+  // called asynchronously. The DecoderStream cannot be used anymore after
   // it is stopped. This method can be called at any time but not during another
   // pending Stop().
   void Stop(const base::Closure& closure);
 
   // Returns true if the decoder currently has the ability to decode and return
-  // a VideoFrame.
+  // an Output.
   bool CanReadWithoutStalling() const;
 
  private:
@@ -96,26 +98,26 @@ class MEDIA_EXPORT VideoFrameStream {
   // |decrypting_demuxer_stream| was also populated if a DecryptingDemuxerStream
   // is created to help decrypt the encrypted stream.
   void OnDecoderSelected(
-      scoped_ptr<VideoDecoder> selected_decoder,
+      scoped_ptr<Decoder> selected_decoder,
       scoped_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream);
 
-  // Satisfy pending |read_cb_| with |status| and |frame|.
-  void SatisfyRead(Status status, const scoped_refptr<VideoFrame>& frame);
+  // Satisfy pending |read_cb_| with |status| and |output|.
+  void SatisfyRead(Status status, const scoped_refptr<Output>& output);
 
   // Abort pending |read_cb_|.
   void AbortRead();
 
-  // Decodes |buffer| and returns the result via OnFrameReady().
+  // Decodes |buffer| and returns the result via OnDecodeOutputReady().
   void Decode(const scoped_refptr<DecoderBuffer>& buffer);
 
   // Flushes the decoder with an EOS buffer to retrieve internally buffered
-  // video frames.
+  // decoder output.
   void FlushDecoder();
 
-  // Callback for VideoDecoder::Decode().
-  void OnFrameReady(int buffer_size,
-                    const VideoDecoder::Status status,
-                    const scoped_refptr<VideoFrame>& frame);
+  // Callback for Decoder::Decode().
+  void OnDecodeOutputReady(int buffer_size,
+                           typename Decoder::Status status,
+                           const scoped_refptr<Output>& output);
 
   // Reads a buffer from |stream_| and returns the result via OnBufferReady().
   void ReadFromDemuxerStream();
@@ -126,7 +128,7 @@ class MEDIA_EXPORT VideoFrameStream {
 
   void ReinitializeDecoder();
 
-  // Callback for VideoDecoder reinitialization.
+  // Callback for Decoder reinitialization.
   void OnDecoderReinitialized(PipelineStatus status);
 
   void ResetDecoder();
@@ -136,7 +138,7 @@ class MEDIA_EXPORT VideoFrameStream {
   void OnDecoderStopped();
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::WeakPtrFactory<VideoFrameStream> weak_factory_;
+  base::WeakPtrFactory<DecoderStream<StreamType> > weak_factory_;
 
   State state_;
 
@@ -149,15 +151,19 @@ class MEDIA_EXPORT VideoFrameStream {
 
   DemuxerStream* stream_;
 
-  scoped_ptr<VideoDecoderSelector> decoder_selector_;
+  scoped_ptr<DecoderSelector<StreamType> > decoder_selector_;
 
-  // These two will be set by VideoDecoderSelector::SelectVideoDecoder().
-  scoped_ptr<VideoDecoder> decoder_;
+  // These two will be set by DecoderSelector::SelectDecoder().
+  scoped_ptr<Decoder> decoder_;
   scoped_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream_;
 
-  DISALLOW_COPY_AND_ASSIGN(VideoFrameStream);
+  // This is required so the VideoFrameStream can access private members in
+  // FinishInitialization() and ReportStatistics().
+  DISALLOW_IMPLICIT_CONSTRUCTORS(DecoderStream);
 };
+
+typedef DecoderStream<DemuxerStream::VIDEO> VideoFrameStream;
 
 }  // namespace media
 
-#endif  // MEDIA_FILTERS_VIDEO_FRAME_STREAM_H_
+#endif  // MEDIA_FILTERS_DECODER_STREAM_H_
