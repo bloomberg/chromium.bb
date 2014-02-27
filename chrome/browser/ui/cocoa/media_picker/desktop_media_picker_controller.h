@@ -26,7 +26,7 @@
   base::scoped_nsobject<IKImageBrowserView> sourceBrowser_;
 
   // The button used to confirm the selection.
-  NSButton* okButton_;  // weak; owned by contentView
+  NSButton* shareButton_;  // weak; owned by contentView
 
   // The button used to cancel and close the dialog.
   NSButton* cancelButton_;  // weak; owned by contentView

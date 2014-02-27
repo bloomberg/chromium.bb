@@ -14757,6 +14757,9 @@ Do you accept?
     <message name="IDS_A11Y_ALERT_WINDOW_NEEDED" desc="Alert sent to the accessibility api when the user attempts a keyboard command that requires a window to work.">
       Command unavailable. Press control-N to open a new window.
     </message>
+    <message name="IDS_DESKTOP_MEDIA_PICKER_SHARE" desc="Used for Share on buttons">
+      Share
+    </message>
 
     <!-- Zero suggest experiment flags -->
     <message name="IDS_FLAGS_ZERO_SUGGEST_EXPERIMENT_NAME" desc="An about:flags experiment for zero suggest">

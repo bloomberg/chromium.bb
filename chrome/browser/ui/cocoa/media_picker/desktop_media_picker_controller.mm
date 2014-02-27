@@ -47,7 +47,7 @@ const int kExcessButtonPadding = 6;
 - (void)reportResult:(content::DesktopMediaID)sourceID;
 
 // Action handlers.
-- (void)okPressed:(id)sender;
+- (void)sharePressed:(id)sender;
 - (void)cancelPressed:(id)sender;
 
 @end
@@ -128,29 +128,30 @@ const int kExcessButtonPadding = 6;
   [content addSubview:imageBrowserScroll];
   origin.y += NSHeight(imageBrowserScrollFrame) + kControlSpacing;
 
+  // Create the share button.
+  shareButton_ = [self createButtonWithTitle:l10n_util::GetNSString(
+      IDS_DESKTOP_MEDIA_PICKER_SHARE)];
+  origin.x = kInitialContentWidth - kFramePadding -
+      (NSWidth([shareButton_ frame]) - kExcessButtonPadding);
+  [shareButton_ setEnabled:NO];
+  [shareButton_ setFrameOrigin:origin];
+  [shareButton_ setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
+  [shareButton_ setTarget:self];
+  [shareButton_ setAction:@selector(sharePressed:)];
+  [content addSubview:shareButton_];
+
   // Create the cancel button.
   cancelButton_ =
       [self createButtonWithTitle:l10n_util::GetNSString(IDS_CANCEL)];
-  origin.x = kInitialContentWidth - kFramePadding -
-      (NSWidth([cancelButton_ frame]) - kExcessButtonPadding);
+  origin.x -= kControlSpacing +
+      (NSWidth([cancelButton_ frame]) - (kExcessButtonPadding * 2));
   [cancelButton_ setFrameOrigin:origin];
   [cancelButton_ setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
   [cancelButton_ setTarget:self];
   [cancelButton_ setAction:@selector(cancelPressed:)];
   [content addSubview:cancelButton_];
-
-  // Create the OK button.
-  okButton_ = [self createButtonWithTitle:l10n_util::GetNSString(IDS_OK)];
-  origin.x -= kControlSpacing +
-      (NSWidth([okButton_ frame]) - (kExcessButtonPadding * 2));
-  [okButton_ setEnabled:NO];
-  [okButton_ setFrameOrigin:origin];
-  [okButton_ setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
-  [okButton_ setTarget:self];
-  [okButton_ setAction:@selector(okPressed:)];
-  [content addSubview:okButton_];
   origin.y += kFramePadding +
-      (NSHeight([okButton_ frame]) - kExcessButtonPadding);
+      (NSHeight([cancelButton_ frame]) - kExcessButtonPadding);
 
   // Resize window to fit.
   [[[self window] contentView] setAutoresizesSubviews:NO];
@@ -183,7 +184,7 @@ const int kExcessButtonPadding = 6;
   doneCallback_.Reset();
 }
 
-- (void)okPressed:(id)sender {
+- (void)sharePressed:(id)sender {
   NSIndexSet* indexes = [sourceBrowser_ selectionIndexes];
   NSUInteger selectedIndex = [indexes firstIndex];
   DesktopMediaPickerItem* item =
@@ -257,7 +258,7 @@ const int kExcessButtonPadding = 6;
 
 - (void)imageBrowserSelectionDidChange:(IKImageBrowserView*) aBrowser {
   // Enable or disable the OK button based on whether we have a selection.
-  [okButton_ setEnabled:([[sourceBrowser_ selectionIndexes] count] > 0)];
+  [shareButton_ setEnabled:([[sourceBrowser_ selectionIndexes] count] > 0)];
 }
 
 #pragma mark DesktopMediaPickerObserver

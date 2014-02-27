@@ -171,6 +171,8 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView {
   // views::DialogDelegateView overrides.
   virtual base::string16 GetWindowTitle() const OVERRIDE;
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
+  virtual base::string16 GetDialogButtonLabel(
+      ui::DialogButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
 
@@ -567,6 +569,12 @@ bool DesktopMediaPickerDialogView::IsDialogButtonEnabled(
   if (button == ui::DIALOG_BUTTON_OK)
     return list_view_->GetSelection() != NULL;
   return true;
+}
+
+base::string16 DesktopMediaPickerDialogView::GetDialogButtonLabel(
+    ui::DialogButton button) const {
+  return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK ?
+      IDS_DESKTOP_MEDIA_PICKER_SHARE : IDS_CANCEL);
 }
 
 bool DesktopMediaPickerDialogView::Accept() {

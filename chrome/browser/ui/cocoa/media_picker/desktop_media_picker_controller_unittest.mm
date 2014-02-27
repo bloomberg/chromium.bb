@@ -15,7 +15,7 @@
 
 @interface DesktopMediaPickerController (ExposedForTesting)
 - (IKImageBrowserView*)sourceBrowser;
-- (NSButton*)okButton;
+- (NSButton*)shareButton;
 - (NSArray*)items;
 @end
 
@@ -24,8 +24,8 @@
   return sourceBrowser_;
 }
 
-- (NSButton*)okButton {
-  return okButton_;
+- (NSButton*)shareButton {
+  return shareButton_;
 }
 
 - (NSButton*)cancelButton {
@@ -101,7 +101,7 @@ TEST_F(DesktopMediaPickerControllerTest, ShowAndDismiss) {
   EXPECT_TRUE([[items objectAtIndex:1] imageRepresentation] != nil);
 }
 
-TEST_F(DesktopMediaPickerControllerTest, ClickOK) {
+TEST_F(DesktopMediaPickerControllerTest, ClickShare) {
   [controller_ showWindow:nil];
 
   media_list_->AddSource(0);
@@ -110,14 +110,14 @@ TEST_F(DesktopMediaPickerControllerTest, ClickOK) {
   media_list_->SetSourceThumbnail(1);
 
   EXPECT_EQ(2U, [[controller_ items] count]);
-  EXPECT_FALSE([[controller_ okButton] isEnabled]);
+  EXPECT_FALSE([[controller_ shareButton] isEnabled]);
 
   NSIndexSet* indexSet = [NSIndexSet indexSetWithIndex:1];
   [[controller_ sourceBrowser] setSelectionIndexes:indexSet
                               byExtendingSelection:NO];
-  EXPECT_TRUE([[controller_ okButton] isEnabled]);
+  EXPECT_TRUE([[controller_ shareButton] isEnabled]);
 
-  [[controller_ okButton] performClick:nil];
+  [[controller_ shareButton] performClick:nil];
   EXPECT_TRUE(WaitForCallback());
   EXPECT_EQ(media_list_->GetSource(1).id, source_reported_);
 }
