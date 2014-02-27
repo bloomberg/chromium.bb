@@ -8,7 +8,7 @@ element.style  { ()
 font-size: 12px;
 
 [expanded] 
-foo, [$#inspected$], bar  { (inspector-stylesheet:1 -> inspector-stylesheet:1:6)
+foo, [$div#inspected$], bar  { (inspector-stylesheet:1 -> inspector-stylesheet:1:6)
 color: maroon;
 
 [expanded] 
@@ -22,7 +22,7 @@ element.style  { ()
 color: red;
 
 [expanded] 
-#other  { (inspector-stylesheet:4 -> inspector-stylesheet:4:1)
+div#other  { (inspector-stylesheet:4 -> inspector-stylesheet:4:1)
 
 [expanded] 
 div  { (user agent stylesheet)
