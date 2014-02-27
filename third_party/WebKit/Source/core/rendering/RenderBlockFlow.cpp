@@ -2177,7 +2177,7 @@ LayoutPoint RenderBlockFlow::computeLogicalLocationForFloat(const FloatingObject
 
         SegmentList segments = shapeInsideInfo->computeSegmentsForLine(logicalTopOffset, floatLogicalSize.height());
         // FIXME: Add support for shapes with multiple segments.
-        if (segments.size() == 1) {
+        if (segments.size() >= 1) {
             // The segment offsets are relative to the content box.
             logicalRightOffset = logicalLeftOffset + segments[0].logicalRight;
             logicalLeftOffset += segments[0].logicalLeft;

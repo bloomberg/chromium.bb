@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<!--
+This is a regression test for https://code.google.com/p/chromium/issues/detail?id=344359
+
+The test is similar to shape-inside-multiple-segment-polygon-floating-iframe-inline-content-crash.html,
+exept this test doesn't test updating the segments for the shape-inside in LineWidth::fitBelowFloats() after
+the the float, but tests BreakingContextInlineHeaders.h:updateSegmentsForShapes.
+-->
+<head>
+<style>
+iframe {
+    float: right;
+    shape-outside: content-box;
+}
+body {
+    shape-inside: polygon(99999999px 0px, 999px 0px, 88px 0px, 0px 99999px, 99px 0px, 76px 0px, 0px 99999px);
+}
+</style>
+<body>
+    <iframe></iframe>X
+
+<div>This test should not crash.</div>
+<script>
+  if (window.testRunner)
+      testRunner.dumpAsText();
+</script>
+</body>
+</html>

@@ -529,6 +529,10 @@ inline void updateSegmentsForShapes(RenderBlockFlow* block, const FloatingObject
     if (!lineOverlapsWithFloat)
         return;
 
+    // FIXME: We need to remove this once we support multiple-segment polygons
+    if (shapeInsideInfo->segments().size() > 1)
+        return;
+
     float minSegmentWidth = firstPositiveWidth(wordMeasurements);
 
     LayoutUnit floatLogicalWidth = block->logicalWidthForFloat(lastFloatFromPreviousLine);
