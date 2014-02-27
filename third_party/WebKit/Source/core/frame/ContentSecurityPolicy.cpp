@@ -51,20 +51,39 @@
 #include "platform/weborigin/KnownPorts.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/SHA1.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebArrayBuffer.h"
+#include "public/platform/WebCrypto.h"
+#include "public/platform/WebCryptoAlgorithm.h"
+#include "wtf/HashMap.h"
 #include "wtf/StringHasher.h"
 #include "wtf/text/Base64.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WTF {
 
-struct VectorIntHash {
-    static unsigned hash(const Vector<uint8_t>& v) { return StringHasher::computeHash(v.data(), v.size()); }
-    static bool equal(const Vector<uint8_t>& a, const Vector<uint8_t>& b) { return a == b; };
+struct DigestValueHash {
+    static unsigned hash(const WebCore::DigestValue& v)
+    {
+        return StringHasher::computeHash(v.data(), v.size());
+    }
+    static bool equal(const WebCore::DigestValue& a, const WebCore::DigestValue& b)
+    {
+        return a == b;
+    };
     static const bool safeToCompareToEmptyOrDeleted = true;
 };
-template<> struct DefaultHash<Vector<uint8_t> > {
-    typedef VectorIntHash Hash;
+template <>
+struct DefaultHash<WebCore::DigestValue> {
+    typedef DigestValueHash Hash;
+};
+
+template <>
+struct DefaultHash<WebCore::ContentSecurityPolicy::HashAlgorithms> {
+    typedef IntHash<WebCore::ContentSecurityPolicy::HashAlgorithms> Hash;
+};
+template <>
+struct HashTraits<WebCore::ContentSecurityPolicy::HashAlgorithms> : UnsignedWithZeroKeyHashTraits<WebCore::ContentSecurityPolicy::HashAlgorithms> {
 };
 
 } // namespace WTF
@@ -173,14 +192,14 @@ private:
     bool parsePort(const UChar* begin, const UChar* end, int& port, bool& portHasWildcard);
     bool parsePath(const UChar* begin, const UChar* end, String& path);
     bool parseNonce(const UChar* begin, const UChar* end, String& nonce);
-    bool parseHash(const UChar* begin, const UChar* end, Vector<uint8_t>& hash, ContentSecurityPolicy::HashAlgorithms&);
+    bool parseHash(const UChar* begin, const UChar* end, DigestValue& hash, ContentSecurityPolicy::HashAlgorithms&);
 
     void addSourceSelf();
     void addSourceStar();
     void addSourceUnsafeInline();
     void addSourceUnsafeEval();
     void addSourceNonce(const String& nonce);
-    void addSourceHash(const ContentSecurityPolicy::HashAlgorithms&, const Vector<uint8_t>& hash);
+    void addSourceHash(const ContentSecurityPolicy::HashAlgorithms&, const DigestValue& hash);
 
     ContentSecurityPolicy* m_policy;
     Vector<CSPSource> m_list;
@@ -299,7 +318,7 @@ bool CSPSourceList::parseSource(const UChar* begin, const UChar* end, String& sc
             return true;
         }
 
-        Vector<uint8_t> hash;
+        DigestValue hash;
         ContentSecurityPolicy::HashAlgorithms algorithm = ContentSecurityPolicy::HashAlgorithmsNone;
         if (!parseHash(begin, end, hash, algorithm))
             return false;
@@ -400,7 +419,7 @@ bool CSPSourceList::parseNonce(const UChar* begin, const UChar* end, String& non
     skipWhile<UChar, isNonceCharacter>(position, end);
     ASSERT(nonceBegin <= position);
 
-    if ((position + 1) != end  || *position != '\'' || !(position - nonceBegin))
+    if ((position + 1) != end || *position != '\'' || !(position - nonceBegin))
         return false;
 
     nonce = String(nonceBegin, position - nonceBegin);
@@ -408,23 +427,42 @@ bool CSPSourceList::parseNonce(const UChar* begin, const UChar* end, String& non
 }
 
 // hash-source       = "'" hash-algorithm "-" hash-value "'"
-// hash-algorithm    = "sha1" / "sha256"
+// hash-algorithm    = "sha1" / "sha256" / "sha384" / "sha512"
 // hash-value        = 1*( ALPHA / DIGIT / "+" / "/" / "=" )
 //
-bool CSPSourceList::parseHash(const UChar* begin, const UChar* end, Vector<uint8_t>& hash, ContentSecurityPolicy::HashAlgorithms& hashAlgorithm)
+bool CSPSourceList::parseHash(const UChar* begin, const UChar* end, DigestValue& hash, ContentSecurityPolicy::HashAlgorithms& hashAlgorithm)
 {
-    DEFINE_STATIC_LOCAL(const String, sha1Prefix, ("'sha1-"));
-    DEFINE_STATIC_LOCAL(const String, sha256Prefix, ("'sha256-"));
+    // Any additions or subtractions from this struct should also modify the
+    // respective entries in the kAlgorithmMap array in checkDigest().
+    static const struct {
+        const char* prefix;
+        ContentSecurityPolicy::HashAlgorithms algorithm;
+    } kSupportedPrefixes[] = {
+        { "'sha1-", ContentSecurityPolicy::HashAlgorithmsSha1 },
+        { "'sha256-", ContentSecurityPolicy::HashAlgorithmsSha256 },
+        { "'sha384-", ContentSecurityPolicy::HashAlgorithmsSha384 },
+        { "'sha512-", ContentSecurityPolicy::HashAlgorithmsSha512 }
+    };
 
     String prefix;
-    if (equalIgnoringCase(sha1Prefix.characters8(), begin, sha1Prefix.length())) {
-        prefix = sha1Prefix;
-        hashAlgorithm = ContentSecurityPolicy::HashAlgorithmsSha1;
-    } else if (equalIgnoringCase(sha256Prefix.characters8(), begin, sha256Prefix.length())) {
-        notImplemented();
-    } else {
-        return true;
+    hashAlgorithm = ContentSecurityPolicy::HashAlgorithmsNone;
+
+    // Instead of this sizeof() calculation to get the length of this array,
+    // it would be preferable to use WTF_ARRAY_LENGTH for simplicity and to
+    // guarantee a compile time calculation. Unfortunately, on some
+    // compliers, the call to WTF_ARRAY_LENGTH fails on arrays of anonymous
+    // stucts, so, for now, it is necessary to resort to this sizeof
+    // calculation.
+    for (size_t i = 0; i < (sizeof(kSupportedPrefixes) / sizeof(kSupportedPrefixes[0])); i++) {
+        if (equalIgnoringCase(kSupportedPrefixes[i].prefix, begin, strlen(kSupportedPrefixes[i].prefix))) {
+            prefix = kSupportedPrefixes[i].prefix;
+            hashAlgorithm = kSupportedPrefixes[i].algorithm;
+            break;
+        }
     }
+
+    if (hashAlgorithm == ContentSecurityPolicy::HashAlgorithmsNone)
+        return true;
 
     const UChar* position = begin + prefix.length();
     const UChar* hashBegin = position;
@@ -436,11 +474,13 @@ bool CSPSourceList::parseHash(const UChar* begin, const UChar* end, Vector<uint8
     skipExactly<UChar>(position, position + 1, '=');
     skipExactly<UChar>(position, position + 1, '=');
 
-    if ((position + 1) != end  || *position != '\'' || !(position - hashBegin))
+    if ((position + 1) != end || *position != '\'' || !(position - hashBegin))
         return false;
 
     Vector<char> hashVector;
     base64Decode(hashBegin, position - hashBegin, hashVector);
+    if (hashVector.size() > kMaxDigestSize)
+        return false;
     hash.append(reinterpret_cast<uint8_t*>(hashVector.data()), hashVector.size());
     return true;
 }
@@ -587,7 +627,7 @@ void CSPSourceList::addSourceNonce(const String& nonce)
     m_nonces.add(nonce);
 }
 
-void CSPSourceList::addSourceHash(const ContentSecurityPolicy::HashAlgorithms& algorithm, const Vector<uint8_t>& hash)
+void CSPSourceList::addSourceHash(const ContentSecurityPolicy::HashAlgorithms& algorithm, const DigestValue& hash)
 {
     m_hashes.add(CSPHashValue(algorithm, hash));
     m_hashAlgorithmsUsed |= algorithm;
@@ -1664,6 +1704,51 @@ bool isAllowedByAllWithFrame(const CSPDirectiveListVector& policies, LocalFrame*
     return true;
 }
 
+void computeDigest(const CString& source, blink::WebCryptoAlgorithmId algorithmId, DigestValue& digest)
+{
+    blink::WebCrypto* crypto = blink::Platform::current()->crypto();
+    blink::WebArrayBuffer result;
+
+    ASSERT(crypto);
+
+    crypto->digestSynchronous(algorithmId, reinterpret_cast<const unsigned char*>(source.data()), source.length(), result);
+
+    ASSERT(!result.isNull());
+
+    digest.append(reinterpret_cast<uint8_t*>(result.data()), result.byteLength());
+}
+
+template<bool (CSPDirectiveList::*allowed)(const CSPHashValue&) const>
+bool checkDigest(const String& source, uint8_t hashAlgorithmsUsed, const CSPDirectiveListVector& policies)
+{
+    // Any additions or subtractions from this struct should also modify the
+    // respective entries in the kSupportedPrefixes array in parseHash().
+    static const struct {
+        ContentSecurityPolicy::HashAlgorithms cspHashAlgorithm;
+        blink::WebCryptoAlgorithmId webCryptoAlgorithmId;
+    } kAlgorithmMap[] = {
+        { ContentSecurityPolicy::HashAlgorithmsSha1, blink::WebCryptoAlgorithmIdSha1 },
+        { ContentSecurityPolicy::HashAlgorithmsSha256, blink::WebCryptoAlgorithmIdSha256 },
+        { ContentSecurityPolicy::HashAlgorithmsSha384, blink::WebCryptoAlgorithmIdSha384 },
+        { ContentSecurityPolicy::HashAlgorithmsSha512, blink::WebCryptoAlgorithmIdSha512 }
+    };
+
+    CString normalizedSource = UTF8Encoding().normalizeAndEncode(source, WTF::EntitiesForUnencodables);
+
+    // See comment in parseHash about why we are using this sizeof calculation
+    // instead of WTF_ARRAY_LENGTH.
+    for (size_t i = 0; i < (sizeof(kAlgorithmMap) / sizeof(kAlgorithmMap[0])); i++) {
+        DigestValue digest;
+        if (kAlgorithmMap[i].cspHashAlgorithm & hashAlgorithmsUsed) {
+            computeDigest(normalizedSource, kAlgorithmMap[i].webCryptoAlgorithmId, digest);
+            if (isAllowedByAllWithHash<allowed>(policies, CSPHashValue(kAlgorithmMap[i].cspHashAlgorithm, digest)))
+                return true;
+        }
+    }
+
+    return false;
+}
+
 bool ContentSecurityPolicy::allowJavaScriptURLs(const String& contextURL, const WTF::OrdinalNumber& contextLine, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
     return isAllowedByAllWithContext<&CSPDirectiveList::allowJavaScriptURLs>(m_policies, contextURL, contextLine, reportingStatus);
@@ -1724,37 +1809,14 @@ bool ContentSecurityPolicy::allowStyleNonce(const String& nonce) const
     return isAllowedByAllWithNonce<&CSPDirectiveList::allowStyleNonce>(m_policies, nonce);
 }
 
-// TODO(jww) We don't currently have a WTF SHA256 implementation. Once we
-// have that, we should implement a proper check for sha256 hash values in
-// both allowScriptHash and allowStyleHash.
 bool ContentSecurityPolicy::allowScriptHash(const String& source) const
 {
-    if (HashAlgorithmsSha1 & m_scriptHashAlgorithmsUsed) {
-        Vector<uint8_t, 20> digest;
-        SHA1 sourceSha1;
-        sourceSha1.addBytes(UTF8Encoding().normalizeAndEncode(source, WTF::EntitiesForUnencodables));
-        sourceSha1.computeHash(digest);
-
-        if (isAllowedByAllWithHash<&CSPDirectiveList::allowScriptHash>(m_policies, CSPHashValue(HashAlgorithmsSha1, Vector<uint8_t>(digest))))
-            return true;
-    }
-
-    return false;
+    return checkDigest<&CSPDirectiveList::allowScriptHash>(source, m_scriptHashAlgorithmsUsed, m_policies);
 }
 
 bool ContentSecurityPolicy::allowStyleHash(const String& source) const
 {
-    if (HashAlgorithmsSha1 & m_styleHashAlgorithmsUsed) {
-        Vector<uint8_t, 20> digest;
-        SHA1 sourceSha1;
-        sourceSha1.addBytes(UTF8Encoding().normalizeAndEncode(source, WTF::EntitiesForUnencodables));
-        sourceSha1.computeHash(digest);
-
-        if (isAllowedByAllWithHash<&CSPDirectiveList::allowStyleHash>(m_policies, CSPHashValue(HashAlgorithmsSha1, Vector<uint8_t>(digest))))
-            return true;
-    }
-
-    return false;
+    return checkDigest<&CSPDirectiveList::allowStyleHash>(source, m_styleHashAlgorithmsUsed, m_policies);
 }
 
 void ContentSecurityPolicy::usesScriptHashAlgorithms(uint8_t algorithms)

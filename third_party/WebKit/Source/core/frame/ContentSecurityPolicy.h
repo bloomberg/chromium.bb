@@ -81,9 +81,11 @@ public:
     };
 
     enum HashAlgorithms {
-        HashAlgorithmsNone   = 0,
-        HashAlgorithmsSha1   = 1 << 1,
-        HashAlgorithmsSha256 = 1 << 2
+        HashAlgorithmsNone = 0,
+        HashAlgorithmsSha1 = 1 << 1,
+        HashAlgorithmsSha256 = 1 << 2,
+        HashAlgorithmsSha384 = 1 << 3,
+        HashAlgorithmsSha512 = 1 << 4
     };
 
     void didReceiveHeaders(const ContentSecurityPolicyResponseHeaders&);

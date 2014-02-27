@@ -11,7 +11,9 @@
 
 namespace WebCore {
 
-typedef std::pair<unsigned, Vector<uint8_t> > CSPHashValue;
+static const size_t kMaxDigestSize = 64;
+typedef Vector<uint8_t, kMaxDigestSize> DigestValue;
+typedef std::pair<unsigned, DigestValue> CSPHashValue;
 
 PLATFORM_EXPORT bool isCSPDirectiveNameCharacter(UChar);
 PLATFORM_EXPORT bool isCSPDirectiveValueCharacter(UChar);
