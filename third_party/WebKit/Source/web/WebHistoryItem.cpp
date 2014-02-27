@@ -98,13 +98,11 @@ void WebHistoryItem::setURLString(const WebString& url)
 
 WebString WebHistoryItem::originalURLString() const
 {
-    return m_private->originalURLString();
+    return WebString();
 }
 
-void WebHistoryItem::setOriginalURLString(const WebString& originalURLString)
+void WebHistoryItem::setOriginalURLString(const WebString&)
 {
-    ensureMutable();
-    m_private->setOriginalURLString(originalURLString);
 }
 
 WebString WebHistoryItem::referrer() const

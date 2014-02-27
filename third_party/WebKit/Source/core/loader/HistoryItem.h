@@ -56,10 +56,8 @@ public:
     // url but a new item wasn't created.
     void generateNewSequenceNumbers();
 
-    const String& originalURLString() const;
     const String& urlString() const;
     KURL url() const;
-    KURL originalURL() const;
 
     const Referrer& referrer() const;
     const String& target() const;
@@ -80,7 +78,6 @@ public:
 
     void setURL(const KURL&);
     void setURLString(const String&);
-    void setOriginalURLString(const String&);
     void setReferrer(const Referrer&);
     void setTarget(const String&);
 
@@ -111,7 +108,6 @@ private:
     explicit HistoryItem(const HistoryItem&);
 
     String m_urlString;
-    String m_originalURLString;
     Referrer m_referrer;
     String m_target;
 

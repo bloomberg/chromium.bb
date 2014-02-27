@@ -295,13 +295,9 @@ void FrameLoader::setHistoryItemStateForCommit(HistoryCommitType historyCommitTy
         m_currentItem = HistoryItem::create();
     else if (!isPushOrReplaceState && m_documentLoader->url() != m_currentItem->url())
         m_currentItem->generateNewSequenceNumbers();
-    const KURL& unreachableURL = m_documentLoader->unreachableURL();
-    const KURL& url = unreachableURL.isEmpty() ? m_documentLoader->url() : unreachableURL;
-    const KURL& originalURL = unreachableURL.isEmpty() ? m_documentLoader->originalURL() : unreachableURL;
-    m_currentItem->setURL(url);
+    m_currentItem->setURL(m_documentLoader->urlForHistory());
     m_currentItem->setTarget(m_frame->tree().uniqueName());
     m_currentItem->setTargetFrameID(m_frame->frameID());
-    m_currentItem->setOriginalURLString(originalURL.string());
     if (isPushOrReplaceState)
         m_currentItem->setStateObject(stateObject);
     m_currentItem->setReferrer(Referrer(m_documentLoader->request().httpReferrer(), m_documentLoader->request().referrerPolicy()));
@@ -328,7 +324,8 @@ void FrameLoader::receivedFirstData()
     if (m_stateMachine.creatingInitialEmptyDocument())
         return;
 
-    HistoryCommitType historyCommitType = loadTypeToCommitType(m_loadType, m_documentLoader->isURLValidForNewHistoryEntry());
+    bool isValidHistoryURL = !m_documentLoader->urlForHistory().isEmpty() && (!opener() || m_currentItem || !m_documentLoader->originalRequest().url().isEmpty());
+    HistoryCommitType historyCommitType = loadTypeToCommitType(m_loadType, isValidHistoryURL);
     setHistoryItemStateForCommit(historyCommitType);
 
     if (!m_stateMachine.committedMultipleRealLoads() && m_loadType == FrameLoadTypeStandard)
@@ -660,9 +657,9 @@ FrameLoadType FrameLoader::determineFrameLoadType(const FrameLoadRequest& reques
         return FrameLoadTypeBackForward;
     if (request.lockBackForwardList() || isScriptTriggeredFormSubmissionInChildFrame(request))
         return FrameLoadTypeRedirectWithLockedBackForwardList;
-    if (!request.originDocument() && shouldTreatURLAsSameAsCurrent(request.resourceRequest().url()))
+    if (!request.originDocument() && request.resourceRequest().url() == m_documentLoader->urlForHistory())
         return FrameLoadTypeSame;
-    if (shouldTreatURLAsSameAsCurrent(request.substituteData().failingURL()) && m_loadType == FrameLoadTypeReload)
+    if (request.substituteData().failingURL() == m_documentLoader->urlForHistory() && m_loadType == FrameLoadTypeReload)
         return FrameLoadTypeReload;
     return FrameLoadTypeStandard;
 }
@@ -737,7 +734,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
         loadInSameDocument(url, nullptr, newLoadType == FrameLoadTypeStandard ? UpdateBackForwardList : DoNotUpdateBackForwardList, request.clientRedirect());
         return;
     }
-    bool sameURL = shouldTreatURLAsSameAsCurrent(url);
+    bool sameURL = url == m_documentLoader->urlForHistory();
     loadWithNavigationAction(action, newLoadType, request.formState(), request.substituteData(), request.clientRedirect());
     // Example of this case are sites that reload the same URL with a different cookie
     // driving the generated content, or a master frame with links that drive a target
@@ -1372,13 +1369,6 @@ bool FrameLoader::shouldInterruptLoadForXFrameOptions(const String& content, con
         ASSERT_NOT_REACHED();
         return false;
     }
-}
-
-bool FrameLoader::shouldTreatURLAsSameAsCurrent(const KURL& url) const
-{
-    if (!m_currentItem)
-        return false;
-    return url == m_currentItem->url() || url == m_currentItem->originalURL();
 }
 
 bool FrameLoader::shouldTreatURLAsSrcdocDocument(const KURL& url) const

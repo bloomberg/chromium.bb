@@ -141,9 +141,9 @@ void DocumentLoader::updateForSameDocumentNavigation(const KURL& newURL)
     appendRedirect(newURL);
 }
 
-bool DocumentLoader::isURLValidForNewHistoryEntry() const
+const KURL& DocumentLoader::urlForHistory() const
 {
-    return !originalRequest().url().isEmpty() || !unreachableURL().isEmpty();
+    return unreachableURL().isEmpty() ? url() : unreachableURL();
 }
 
 void DocumentLoader::setMainDocumentError(const ResourceError& error)
@@ -683,11 +683,6 @@ bool DocumentLoader::scheduleArchiveLoad(Resource* cachedResource, const Resourc
         cachedResource->appendData(data->data(), data->size());
     cachedResource->finish();
     return true;
-}
-
-const KURL& DocumentLoader::originalURL() const
-{
-    return m_originalRequest.url();
 }
 
 const AtomicString& DocumentLoader::responseMIMEType() const

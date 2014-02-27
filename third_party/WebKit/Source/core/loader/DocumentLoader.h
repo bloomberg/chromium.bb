@@ -92,9 +92,8 @@ namespace WebCore {
 
         const KURL& url() const;
         const KURL& unreachableURL() const;
-        bool isURLValidForNewHistoryEntry() const;
+        const KURL& urlForHistory() const;
 
-        const KURL& originalURL() const;
         const AtomicString& responseMIMEType() const;
 
         void updateForSameDocumentNavigation(const KURL&);
