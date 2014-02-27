@@ -12,6 +12,12 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/window_tree_client.h"
+#include "ui/aura/test/event_generator.h"
+#include "ui/aura/test/test_window_delegate.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/native_widget_types.h"
@@ -21,23 +27,15 @@
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/views_delegate.h"
+#include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/native_widget_delegate.h"
 #include "ui/views/widget/root_view.h"
+#include "ui/views/widget/widget_deletion_observer.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "ui/views/window/native_frame_view.h"
 
-#if defined(USE_AURA)
-#include "ui/aura/client/aura_constants.h"
-#include "ui/aura/client/window_tree_client.h"
-#include "ui/aura/test/test_window_delegate.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
-#include "ui/views/widget/native_widget_aura.h"
 #if !defined(OS_CHROMEOS)
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
-#endif
-#elif defined(OS_WIN)
-#include "ui/views/widget/native_widget_win.h"
 #endif
 
 #if defined(OS_WIN)
@@ -160,6 +158,33 @@ class EventCountHandler : public ui::EventHandler {
   std::map<ui::EventType, int> event_count_;
 
   DISALLOW_COPY_AND_ASSIGN(EventCountHandler);
+};
+
+// Class that closes the widget (which ends up deleting it immediately) when the
+// appropriate event is received.
+class CloseWidgetView : public View {
+ public:
+  explicit CloseWidgetView(ui::EventType event_type)
+      : event_type_(event_type) {
+  }
+
+  // ui::EventHandler override:
+  virtual void OnEvent(ui::Event* event) OVERRIDE {
+    if (event->type() == event_type_) {
+      // Go through NativeWidgetPrivate to simulate what happens if the OS
+      // deletes the NativeWindow out from under us.
+      GetWidget()->native_widget_private()->CloseNow();
+    } else {
+      View::OnEvent(event);
+      if (!event->IsTouchEvent())
+        event->SetHandled();
+    }
+  }
+
+ private:
+  const ui::EventType event_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(CloseWidgetView);
 };
 
 ui::WindowShowState GetWidgetShowState(const Widget* widget) {
@@ -605,12 +630,6 @@ class WidgetWithDestroyedNativeViewTest : public ViewsTestBase {
     widget->ReleaseCapture();
     widget->HasCapture();
     widget->GetWorkAreaBoundsInScreen();
-    // These three crash with NativeWidgetWin, so I'm assuming we don't need
-    // them to work for the other NativeWidget impls.
-    // widget->CenterWindow(gfx::Size(50, 60));
-    // widget->GetRestoredBounds();
-    // widget->ShowInactive();
-    // widget->Show();
   }
 
  private:
@@ -1269,54 +1288,6 @@ TEST_F(WidgetTest, TestWindowVisibilityAfterHide) {
 // nested message loops from such events, nor has the code ever really dealt
 // with this situation.
 
-// Class that closes the widget (which ends up deleting it immediately) when the
-// appropriate event is received.
-class CloseWidgetView : public View {
- public:
-  explicit CloseWidgetView(ui::EventType event_type)
-      : event_type_(event_type) {
-  }
-
-  // View overrides:
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
-    if (!CloseWidget(event))
-      View::OnMousePressed(event);
-    return true;
-  }
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE {
-    if (!CloseWidget(event))
-      View::OnMouseDragged(event);
-    return true;
-  }
-  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE {
-    if (!CloseWidget(event))
-      View::OnMouseReleased(event);
-  }
-  virtual void OnMouseMoved(const ui::MouseEvent& event) OVERRIDE {
-    if (!CloseWidget(event))
-      View::OnMouseMoved(event);
-  }
-  virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE {
-    if (!CloseWidget(event))
-      View::OnMouseEntered(event);
-  }
-
- private:
-  bool CloseWidget(const ui::LocatedEvent& event) {
-    if (event.type() == event_type_) {
-      // Go through NativeWidgetPrivate to simulate what happens if the OS
-      // deletes the NativeWindow out from under us.
-      GetWidget()->native_widget_private()->CloseNow();
-      return true;
-    }
-    return false;
-  }
-
-  const ui::EventType event_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(CloseWidgetView);
-};
-
 // Generates two moves (first generates enter, second real move), a press, drag
 // and release stopping at |last_event_type|.
 void GenerateMouseEvents(Widget* widget, ui::EventType last_event_type) {
@@ -1715,37 +1686,42 @@ TEST_F(WidgetTest, SetTopLevelCorrectly) {
   EXPECT_TRUE(delegate->is_top_level());
 }
 
-// A scumbag View that deletes its owning widget OnMousePressed.
-class WidgetDeleterView : public View {
- public:
-  WidgetDeleterView() : View() {}
-
-  // Overridden from View.
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
-    delete GetWidget();
-    return true;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WidgetDeleterView);
-};
-
-TEST_F(WidgetTest, TestWidgetDeletedInOnMousePressed) {
+TEST_F(WidgetTest, WidgetDeleted_InOnMousePressed) {
   Widget* widget = new Widget;
   Widget::InitParams params =
       CreateParams(views::Widget::InitParams::TYPE_POPUP);
-  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget->Init(params);
 
-  widget->SetContentsView(new WidgetDeleterView);
+  widget->SetContentsView(new CloseWidgetView(ui::ET_MOUSE_PRESSED));
 
   widget->SetSize(gfx::Size(100, 100));
   widget->Show();
 
-  gfx::Point click_location(45, 15);
-  ui::MouseEvent press(ui::ET_MOUSE_PRESSED, click_location, click_location,
-                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-  widget->OnMouseEvent(&press);
+  aura::test::EventGenerator generator(GetContext(), widget->GetNativeWindow());
+
+  WidgetDeletionObserver deletion_observer(widget);
+  generator.ClickLeftButton();
+  EXPECT_FALSE(deletion_observer.IsWidgetAlive());
+
+  // Yay we did not crash!
+}
+
+TEST_F(WidgetTest, WidgetDeleted_InDispatchGestureEvent) {
+  Widget* widget = new Widget;
+  Widget::InitParams params =
+      CreateParams(views::Widget::InitParams::TYPE_POPUP);
+  widget->Init(params);
+
+  widget->SetContentsView(new CloseWidgetView(ui::ET_GESTURE_TAP_DOWN));
+
+  widget->SetSize(gfx::Size(100, 100));
+  widget->Show();
+
+  aura::test::EventGenerator generator(GetContext());
+
+  WidgetDeletionObserver deletion_observer(widget);
+  generator.GestureTapAt(widget->GetWindowBoundsInScreen().CenterPoint());
+  EXPECT_FALSE(deletion_observer.IsWidgetAlive());
 
   // Yay we did not crash!
 }
