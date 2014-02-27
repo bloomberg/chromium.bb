@@ -1047,6 +1047,8 @@ public:
     // process. See http://crbug.com/339659.
     virtual void defaultEventHandler(Event*) OVERRIDE;
 
+    void updateStyleInvalidationIfNeeded();
+
 protected:
     Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);
 
@@ -1071,7 +1073,6 @@ private:
     void inheritHtmlAndBodyElementStyles(StyleRecalcChange);
 
     void updateDistributionIfNeeded();
-    void updateStyleInvalidationIfNeeded();
     void updateUseShadowTreesIfNeeded();
 
     void updateStyle(StyleRecalcChange);

@@ -1581,6 +1581,8 @@ void Document::updateDistributionIfNeeded()
 
 void Document::updateStyleInvalidationIfNeeded()
 {
+    if (!isActive())
+        return;
     if (!childNeedsStyleInvalidation())
         return;
     TRACE_EVENT0("webkit", "Document::computeNeedsStyleRecalcState");

@@ -467,8 +467,10 @@ void StyleEngine::clearResolver()
     ASSERT(!m_document.inStyleRecalc());
     ASSERT(isMaster() || !m_resolver);
     ASSERT(m_fontSelector || !m_resolver);
-    if (m_resolver)
+    if (m_resolver) {
+        m_document.updateStyleInvalidationIfNeeded();
         m_fontSelector->unregisterForInvalidationCallbacks(m_resolver.get());
+    }
     m_resolver.clear();
 }
 
