@@ -96,6 +96,8 @@ bool GLSurface::InitializeOneOffImplementation(GLImplementation impl,
 
 // static
 void GLSurface::InitializeOneOffForTests(bool disable_drawing) {
+  DCHECK_EQ(kGLImplementationNone, GetGLImplementation());
+
 #if defined(USE_X11)
   XInitThreads();
 #endif
