@@ -52,13 +52,14 @@ StartupController::StartupController(
 
 StartupController::~StartupController() {}
 
-void StartupController::Reset() {
+void StartupController::Reset(const syncer::ModelTypeSet registered_types) {
   received_start_request_ = false;
   setup_in_progress_ = false;
   start_up_time_ = base::Time();
   start_backend_time_ = base::Time();
   // Don't let previous timers affect us post-reset.
   weak_factory_.InvalidateWeakPtrs();
+  registered_types_ = registered_types;
 }
 
 void StartupController::set_setup_in_progress(bool in_progress) {
@@ -71,8 +72,10 @@ bool StartupController::StartUp(StartUpDeferredOption deferred_option) {
     start_up_time_ = base::Time::Now();
 
   if (deferred_option == STARTUP_BACKEND_DEFERRED &&
-      CommandLine::ForCurrentProcess()->
-          HasSwitch(switches::kSyncEnableDeferredStartup)) {
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSyncEnableDeferredStartup) &&
+      sync_prefs_->GetPreferredDataTypes(registered_types_)
+          .Has(syncer::SESSIONS)) {
     if (first_start) {
       base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE,

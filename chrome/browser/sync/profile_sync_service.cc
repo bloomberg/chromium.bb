@@ -189,10 +189,12 @@ ProfileSyncService::ProfileSyncService(
       last_get_token_error_(GoogleServiceAuthError::AuthErrorNone()),
       network_resources_(new syncer::HttpBridgeNetworkResources),
       startup_controller_(
-          start_behavior, oauth2_token_service, &sync_prefs_, signin_wrapper,
-          base::Bind(
-              &ProfileSyncService::StartUpSlowBackendComponents,
-              startup_controller_weak_factory_.GetWeakPtr())) {
+          start_behavior,
+          oauth2_token_service,
+          &sync_prefs_,
+          signin_wrapper,
+          base::Bind(&ProfileSyncService::StartUpSlowBackendComponents,
+                     startup_controller_weak_factory_.GetWeakPtr())) {
   DCHECK(profile);
   // By default, dev, canary, and unbranded Chromium users will go to the
   // development servers. Development servers have more features than standard
@@ -285,6 +287,7 @@ void ProfileSyncService::Initialize() {
    }
 #endif
 
+  startup_controller_.Reset(GetRegisteredDataTypes());
   startup_controller_.TryStart();
 }
 
@@ -564,7 +567,7 @@ void ProfileSyncService::OnDataTypeRequestsSyncStartup(
     return;
   }
 
-  if (!GetActiveDataTypes().Has(type)) {
+  if (!GetPreferredDataTypes().Has(type)) {
     // We can get here as datatype SyncableServices are typically wired up
     // to the native datatype even if sync isn't enabled.
     DVLOG(1) << "Dropping sync startup request because type "
@@ -748,7 +751,7 @@ void ProfileSyncService::ShutdownImpl(
 
   weak_factory_.InvalidateWeakPtrs();
 
-  startup_controller_.Reset();
+  startup_controller_.Reset(GetRegisteredDataTypes());
 
   // Clear various flags.
   expect_sync_configuration_aborted_ = false;

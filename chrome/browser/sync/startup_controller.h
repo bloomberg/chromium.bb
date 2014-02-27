@@ -54,7 +54,7 @@ class StartupController {
 
   // Prepares this object for a new attempt to start sync, forgetting
   // whether or not preconditions were previously met.
-  void Reset();
+  void Reset(const syncer::ModelTypeSet registered_types);
 
   void set_setup_in_progress(bool in_progress);
   bool setup_in_progress() const { return setup_in_progress_; }
@@ -105,6 +105,9 @@ class StartupController {
   base::Time start_backend_time_;
 
   base::TimeDelta fallback_timeout_;
+
+  // Used to compute preferred_types from SyncPrefs as-needed.
+  syncer::ModelTypeSet registered_types_;
 
   base::WeakPtrFactory<StartupController> weak_factory_;
 };

@@ -45,7 +45,8 @@ class SyncStartupTrackerTest : public testing::Test {
     EXPECT_CALL(*mock_pss_, RemoveObserver(_)).Times(AnyNumber());
     EXPECT_CALL(*mock_pss_, GetAuthError()).
         WillRepeatedly(ReturnRef(no_error_));
-
+    ON_CALL(*mock_pss_, GetRegisteredDataTypes())
+        .WillByDefault(Return(syncer::ModelTypeSet()));
     mock_pss_->Initialize();
   }
 

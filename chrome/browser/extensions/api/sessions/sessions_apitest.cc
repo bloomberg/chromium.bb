@@ -131,6 +131,8 @@ void ExtensionSessionsTest::CreateTestProfileSyncService() {
   GoogleServiceAuthError no_error(GoogleServiceAuthError::NONE);
   ON_CALL(*service, IsSessionsDataTypeControllerRunning())
       .WillByDefault(testing::Return(true));
+  ON_CALL(*service, GetRegisteredDataTypes())
+      .WillByDefault(testing::Return(syncer::UserTypes()));
   ON_CALL(*service, GetPreferredDataTypes()).WillByDefault(
       testing::Return(preferred_types));
   EXPECT_CALL(*service, GetAuthError()).WillRepeatedly(

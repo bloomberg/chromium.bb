@@ -303,6 +303,8 @@ OneClickSigninHelperTest::CreateProfileSyncServiceMock() {
   EXPECT_CALL(*sync_service, GetAuthError()).
       WillRepeatedly(::testing::ReturnRef(no_error_));
   EXPECT_CALL(*sync_service, sync_initialized()).WillRepeatedly(Return(false));
+  ON_CALL(*sync_service, GetRegisteredDataTypes())
+      .WillByDefault(Return(syncer::ModelTypeSet()));
   sync_service->Initialize();
   return sync_service;
 }

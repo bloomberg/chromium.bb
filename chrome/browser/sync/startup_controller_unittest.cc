@@ -69,6 +69,7 @@ class StartupControllerTest : public testing::Test {
     controller_.reset(new StartupController(behavior, token_service(),
                                             sync_prefs_.get(), signin_.get(),
                                             fake_start_backend));
+    controller_->Reset(syncer::UserTypes());
     controller_->OverrideFallbackTimeoutForTest(
         base::TimeDelta::FromSeconds(0));
   }
@@ -90,6 +91,7 @@ class StartupControllerTest : public testing::Test {
         HasSwitch(switches::kSyncEnableDeferredStartup)) {
       CommandLine::ForCurrentProcess()->
           AppendSwitch(switches::kSyncEnableDeferredStartup);
+      controller_->Reset(syncer::UserTypes());
     }
   }
 
@@ -194,6 +196,26 @@ TEST_F(StartupControllerTest, FallbackTimer) {
   EXPECT_TRUE(started());
 }
 
+// Test that we start immediately if sessions is disabled.
+TEST_F(StartupControllerTest, NoDeferralWithoutSessionsSync) {
+  syncer::ModelTypeSet types(syncer::UserTypes());
+  // Disabling sessions means disabling 4 types due to groupings.
+  types.Remove(syncer::SESSIONS);
+  types.Remove(syncer::PROXY_TABS);
+  types.Remove(syncer::TYPED_URLS);
+  types.Remove(syncer::MANAGED_USER_SETTINGS);
+  sync_prefs()->SetKeepEverythingSynced(false);
+  sync_prefs()->SetPreferredDataTypes(syncer::UserTypes(), types);
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kSyncEnableDeferredStartup);
+  controller()->Reset(syncer::UserTypes());
+  sync_prefs()->SetSyncSetupCompleted();
+  signin()->set_account(kTestUser);
+  token_service()->IssueRefreshTokenForUser(kTestUser, kTestToken);
+  controller()->TryStart();
+  EXPECT_TRUE(started());
+}
+
 // Sanity check that the fallback timer doesn't fire before startup
 // conditions are met.
 TEST_F(StartupControllerTest, FallbackTimerWaits) {
@@ -229,7 +251,7 @@ TEST_F(StartupControllerTest, Reset) {
   controller()->OnDataTypeRequestsSyncStartup(syncer::SESSIONS);
   EXPECT_TRUE(started());
   clear_started();
-  controller()->Reset();
+  controller()->Reset(syncer::UserTypes());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(started());
   const bool deferred_start = CommandLine::ForCurrentProcess()->
@@ -246,7 +268,7 @@ TEST_F(StartupControllerTest, ResetDuringSetup) {
   signin()->set_account(kTestUser);
   token_service()->IssueRefreshTokenForUser(kTestUser, kTestToken);
   controller()->set_setup_in_progress(true);
-  controller()->Reset();
+  controller()->Reset(syncer::UserTypes());
   controller()->TryStart();
 
   if (!browser_defaults::kSyncAutoStarts) {

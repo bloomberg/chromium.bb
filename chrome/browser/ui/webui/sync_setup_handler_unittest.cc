@@ -297,6 +297,8 @@ class SyncSetupHandlerTest : public testing::Test {
         Return(base::Time()));
     ON_CALL(*mock_pss_, GetExplicitPassphraseTime()).WillByDefault(
         Return(base::Time()));
+    ON_CALL(*mock_pss_, GetRegisteredDataTypes())
+        .WillByDefault(Return(syncer::ModelTypeSet()));
 
     mock_pss_->Initialize();
 
