@@ -54,6 +54,9 @@ def main(server_constructor, input_fn=None, argv=None, **kwargs):
     if not options.output_dir:
         options.output_dir = port_obj.default_results_directory()
 
+    # Create the output directory if it doesn't already exist.
+    port_obj.host.filesystem.maybe_make_directory(options.output_dir)
+
     server = server_constructor(port_obj, options.output_dir, **kwargs)
     server.start()
     try:
