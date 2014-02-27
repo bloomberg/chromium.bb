@@ -60,6 +60,9 @@ class PageActionDecoration : public ImageDecoration,
   virtual NSString* GetToolTip() OVERRIDE;
   virtual NSMenu* GetMenu() OVERRIDE;
 
+  // Activate the page action in its default frame.
+  void ActivatePageAction();
+
  private:
   // Activate the page action in the given |frame|.
   bool ActivatePageAction(NSRect frame);

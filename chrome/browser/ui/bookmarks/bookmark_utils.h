@@ -115,9 +115,10 @@ bool ShouldShowAppsShortcutInBookmarkBar(
 
 // Indicates how the bookmark shortcut has been changed by |extension|, if at
 // all.
-BookmarkShortcutDisposition GetBookmarkShortcutDisposition(
-    const extensions::CommandService* command_service,
-    const extensions::Extension* extension);
+BookmarkShortcutDisposition GetBookmarkShortcutDisposition(Profile* profile);
+
+// Whether the menu item to bookmark a page should be shown.
+bool ShouldShowBookmarkPageMenuItem(Profile* profile);
 
 }  // namespace chrome
 

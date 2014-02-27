@@ -24,6 +24,8 @@
 #include "chrome/common/url_constants.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension_set.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
@@ -295,15 +297,40 @@ bool ShouldShowAppsShortcutInBookmarkBar(
       profile->GetPrefs()->GetBoolean(prefs::kShowAppsShortcutInBookmarkBar);
 }
 
-BookmarkShortcutDisposition GetBookmarkShortcutDisposition(
-    const extensions::CommandService* command_service,
-    const extensions::Extension* extension) {
-  if (command_service->OverridesBookmarkShortcut(extension))
-    return BOOKMARK_SHORTCUT_DISPOSITION_OVERRIDDEN;
+BookmarkShortcutDisposition GetBookmarkShortcutDisposition(Profile* profile) {
+  extensions::CommandService* command_service =
+      extensions::CommandService::Get(profile);
 
-  return extensions::CommandService::RemovesBookmarkShortcut(extension) ?
-      BOOKMARK_SHORTCUT_DISPOSITION_REMOVED :
-      BOOKMARK_SHORTCUT_DISPOSITION_UNCHANGED;
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile);
+  if (!registry)
+    return BOOKMARK_SHORTCUT_DISPOSITION_UNCHANGED;
+
+  const extensions::ExtensionSet& extension_set =
+      registry->enabled_extensions();
+
+  // This flag tracks whether any extension wants the disposition to be
+  // removed.
+  bool removed = false;
+  for (extensions::ExtensionSet::const_iterator i = extension_set.begin();
+       i != extension_set.end();
+       ++i) {
+    // Use the overridden disposition if any extension wants it.
+    if (command_service->OverridesBookmarkShortcut(*i))
+      return BOOKMARK_SHORTCUT_DISPOSITION_OVERRIDDEN;
+
+    if (!removed && extensions::CommandService::RemovesBookmarkShortcut(*i))
+      removed = true;
+  }
+
+  if (removed)
+    return BOOKMARK_SHORTCUT_DISPOSITION_REMOVED;
+  return BOOKMARK_SHORTCUT_DISPOSITION_UNCHANGED;
+}
+
+bool ShouldShowBookmarkPageMenuItem(Profile* profile) {
+  return GetBookmarkShortcutDisposition(profile) !=
+         BOOKMARK_SHORTCUT_DISPOSITION_REMOVED;
 }
 
 }  // namespace chrome

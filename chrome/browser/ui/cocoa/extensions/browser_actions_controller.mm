@@ -212,17 +212,7 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
         gfx::NativeWindow window = payload->second;
         if (window != browser_->window()->GetNativeWindow())
           break;
-        ExtensionService* service = browser_->profile()->GetExtensionService();
-        if (!service)
-          break;
-        const Extension* extension = service->GetExtensionById(extension_id,
-                                                               false);
-        if (!extension)
-          break;
-        BrowserActionButton* button = [owner_ buttonForExtension:extension];
-        // |button| can be nil when the browser action has its button hidden.
-        if (button)
-          [owner_ browserActionClicked:button];
+        [owner_ activateBrowserAction:extension_id];
         break;
       }
       default:
@@ -450,6 +440,21 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
 
   NOTREACHED();
   return YES;
+}
+
+- (void)activateBrowserAction:(const std::string&)extension_id {
+  ExtensionService* service = browser_->profile()->GetExtensionService();
+  if (!service)
+    return;
+
+  const Extension* extension = service->GetExtensionById(extension_id, false);
+  if (!extension)
+    return;
+
+  BrowserActionButton* button = [self buttonForExtension:extension];
+  // |button| can be nil when the browser action has its button hidden.
+  if (button)
+    [self browserActionClicked:button];
 }
 
 #pragma mark -

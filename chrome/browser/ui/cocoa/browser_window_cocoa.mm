@@ -764,10 +764,10 @@ BrowserWindowCocoa::GetRenderViewHeightInsetWithDetachedBookmarkBar() {
 
 void BrowserWindowCocoa::ShowPageActionPopup(
     const extensions::Extension* extension) {
-  NOTIMPLEMENTED();
+  [cocoa_controller() activatePageAction:extension->id()];
 }
 
 void BrowserWindowCocoa::ShowBrowserActionPopup(
     const extensions::Extension* extension) {
-  NOTIMPLEMENTED();
+  [cocoa_controller() activateBrowserAction:extension->id()];
 }

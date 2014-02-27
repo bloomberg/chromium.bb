@@ -104,6 +104,9 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
 // process of fading in.
 - (BOOL)chevronIsHidden;
 
+// Activates the browser action for the extension that has the given id.
+- (void)activateBrowserAction:(const std::string&)extension_id;
+
 @end  // @interface BrowserActionsController
 
 @interface BrowserActionsController(TestingAPI)

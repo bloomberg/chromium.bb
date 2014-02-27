@@ -28,6 +28,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
+#include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -1122,6 +1123,17 @@ enum {
                                      currentProfile:original_profile];
           break;
         }
+        case IDC_BOOKMARK_PAGE: {
+          // Extensions have the ability to hide the bookmark page menu item.
+          // This only affects the bookmark page menu item under the main menu.
+          // The bookmark page menu item under the wrench menu has its
+          // visibility controlled by WrenchMenuModel.
+          bool shouldHide =
+              !chrome::ShouldShowBookmarkPageMenuItem(browser_->profile());
+          NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item);
+          [menuItem setHidden:shouldHide];
+          break;
+        }
         default:
           // Special handling for the contents of the Text Encoding submenu. On
           // Mac OS, instead of enabling/disabling the top-level menu item, we
@@ -1985,6 +1997,14 @@ willAnimateFromState:(BookmarkBar::State)oldState
 - (void)onOverlappedViewHidden {
   --overlappedViewCount_;
   [self updateAllowOverlappingViews:[self inPresentationMode]];
+}
+
+- (void)activatePageAction:(const std::string&)extension_id {
+  [toolbarController_ activatePageAction:extension_id];
+}
+
+- (void)activateBrowserAction:(const std::string&)extension_id {
+  [toolbarController_ activateBrowserAction:extension_id];
 }
 
 @end  // @implementation BrowserWindowController

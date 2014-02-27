@@ -163,6 +163,9 @@ class LocationBarViewMac : public LocationBar,
 
   Browser* browser() const { return browser_; }
 
+  // Activates the page action for the extension that has the given id.
+  void ActivatePageAction(const std::string& extension_id);
+
  private:
   friend ZoomDecorationTest;
 

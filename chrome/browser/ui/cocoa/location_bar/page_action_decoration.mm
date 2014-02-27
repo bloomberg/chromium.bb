@@ -88,6 +88,10 @@ bool PageActionDecoration::OnMousePressed(NSRect frame) {
   return ActivatePageAction(frame);
 }
 
+void PageActionDecoration::ActivatePageAction() {
+  ActivatePageAction(owner_->GetPageActionFrame(page_action_));
+}
+
 bool PageActionDecoration::ActivatePageAction(NSRect frame) {
   WebContents* web_contents = owner_->GetWebContents();
   if (!web_contents) {
@@ -249,7 +253,7 @@ void PageActionDecoration::Observe(
       if (extension_id != page_action_->extension_id())
         break;
       if (IsVisible())
-        ActivatePageAction(owner_->GetPageActionFrame(page_action_));
+        ActivatePageAction();
       break;
     }
 

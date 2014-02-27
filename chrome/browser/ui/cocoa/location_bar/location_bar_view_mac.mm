@@ -640,6 +640,16 @@ void LocationBarViewMac::ModelChanged(const SearchModel::State& old_state,
     Layout();
 }
 
+void LocationBarViewMac::ActivatePageAction(const std::string& extension_id) {
+  for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
+    if (page_action_decorations_[i]->page_action()->extension_id() ==
+        extension_id) {
+      page_action_decorations_[i]->ActivatePageAction();
+      return;
+    }
+  }
+}
+
 void LocationBarViewMac::PostNotification(NSString* notification) {
   [[NSNotificationCenter defaultCenter] postNotificationName:notification
                                         object:[NSValue valueWithPointer:this]];

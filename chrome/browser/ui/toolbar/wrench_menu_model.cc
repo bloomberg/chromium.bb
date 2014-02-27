@@ -22,6 +22,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/task_manager/task_manager.h"
+#include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -402,27 +403,34 @@ bool WrenchMenuModel::IsCommandIdEnabled(int command_id) const {
 }
 
 bool WrenchMenuModel::IsCommandIdVisible(int command_id) const {
+  switch (command_id) {
 #if defined(OS_WIN)
-  if (command_id == IDC_VIEW_INCOMPATIBILITIES) {
-    EnumerateModulesModel* loaded_modules =
-        EnumerateModulesModel::GetInstance();
-    if (loaded_modules->confirmed_bad_modules_detected() <= 0)
-      return false;
-    // We'll leave the wrench adornment on until the user clicks the link.
-    if (loaded_modules->modules_to_notify_about() <= 0)
-      loaded_modules->AcknowledgeConflictNotification();
-    return true;
-  } else if (command_id == IDC_PIN_TO_START_SCREEN) {
-    return base::win::IsMetroProcess();
+    case IDC_VIEW_INCOMPATIBILITIES: {
+      EnumerateModulesModel* loaded_modules =
+          EnumerateModulesModel::GetInstance();
+      if (loaded_modules->confirmed_bad_modules_detected() <= 0)
+        return false;
+      // We'll leave the wrench adornment on until the user clicks the link.
+      if (loaded_modules->modules_to_notify_about() <= 0)
+        loaded_modules->AcknowledgeConflictNotification();
+      return true;
+    }
+    case IDC_PIN_TO_START_SCREEN:
+      return base::win::IsMetroProcess();
 #else
-  if (command_id == IDC_VIEW_INCOMPATIBILITIES ||
-      command_id == IDC_PIN_TO_START_SCREEN) {
-    return false;
+    case IDC_VIEW_INCOMPATIBILITIES:
+    case IDC_PIN_TO_START_SCREEN:
+      return false;
 #endif
-  } else if (command_id == IDC_UPGRADE_DIALOG) {
-    return UpgradeDetector::GetInstance()->notify_upgrade();
+    case IDC_UPGRADE_DIALOG:
+      return UpgradeDetector::GetInstance()->notify_upgrade();
+#if defined(OS_MACOSX)
+    case IDC_BOOKMARK_PAGE:
+      return chrome::ShouldShowBookmarkPageMenuItem(browser_->profile());
+#endif
+    default:
+      return true;
   }
-  return true;
 }
 
 bool WrenchMenuModel::GetAcceleratorForCommandId(
