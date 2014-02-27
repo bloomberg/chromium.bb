@@ -289,8 +289,7 @@ inline MojoResult CreateDataPipe(
   assert(data_pipe_consumer);
   DataPipeProducerHandle producer_handle;
   DataPipeConsumerHandle consumer_handle;
-  MojoResult rv = MojoCreateDataPipe(options,
-                                     producer_handle.mutable_value(),
+  MojoResult rv = MojoCreateDataPipe(options, producer_handle.mutable_value(),
                                      consumer_handle.mutable_value());
   // Reset even on failure (reduces the chances that a "stale"/incorrect handle
   // will be used).
@@ -366,6 +365,104 @@ inline DataPipe::DataPipe(const MojoCreateDataPipeOptions& options) {
 }
 
 inline DataPipe::~DataPipe() {
+}
+
+// SharedBufferHandle ----------------------------------------------------------
+
+class SharedBufferHandle : public Handle {
+ public:
+  SharedBufferHandle() {}
+  explicit SharedBufferHandle(MojoHandle value) : Handle(value) {}
+
+  // Copying and assignment allowed.
+};
+
+MOJO_COMPILE_ASSERT(sizeof(SharedBufferHandle) == sizeof(Handle),
+                    bad_size_for_cpp_SharedBufferHandle);
+
+typedef ScopedHandleBase<SharedBufferHandle> ScopedSharedBufferHandle;
+MOJO_COMPILE_ASSERT(sizeof(ScopedSharedBufferHandle) ==
+                        sizeof(SharedBufferHandle),
+                    bad_size_for_cpp_ScopedSharedBufferHandle);
+
+inline MojoResult CreateSharedBuffer(
+    const MojoCreateSharedBufferOptions* options,
+    uint64_t* num_bytes,
+    ScopedSharedBufferHandle* shared_buffer) {
+  assert(num_bytes);
+  assert(shared_buffer);
+  SharedBufferHandle handle;
+  MojoResult rv = MojoCreateSharedBuffer(options, num_bytes,
+                                         handle.mutable_value());
+  // Reset even on failure (reduces the chances that a "stale"/incorrect handle
+  // will be used).
+  shared_buffer->reset(handle);
+  return rv;
+}
+
+// TODO(vtl): This (and also the functions below) are templatized to allow for
+// future/other buffer types. A bit "safer" would be to overload this function
+// manually. (The template enforces that the in and out handles to be of the
+// same type.)
+template <class BufferHandleType>
+inline MojoResult DuplicatedBuffer(
+    BufferHandleType buffer,
+    const MojoDuplicateBufferHandleOptions* options,
+    ScopedHandleBase<BufferHandleType>* new_buffer) {
+  assert(new_buffer);
+  BufferHandleType handle;
+  MojoResult rv = MojoDuplicateSharedBuffer(buffer.value(), options,
+                                            handle.mutable_value());
+  // Reset even on failure (reduces the chances that a "stale"/incorrect handle
+  // will be used).
+  new_buffer->reset(handle);
+  return rv;
+}
+
+template <class BufferHandleType>
+inline MojoResult MapBuffer(BufferHandleType buffer,
+                            uint64_t offset,
+                            uint64_t num_bytes,
+                            void** pointer,
+                            MojoMapBufferFlags flags) {
+  assert(buffer);
+  return MojoMapBuffer(buffer.value(), offset, num_bytes, pointer, flags);
+}
+
+inline MojoResult UnmapBuffer(void* pointer) {
+  assert(pointer);
+  return MojoUnmapBuffer(pointer);
+}
+
+// A wrapper class that automatically creates a shared buffer and owns the
+// handle.
+class SharedBuffer {
+ public:
+  explicit SharedBuffer(uint64_t minimum_num_bytes);
+  SharedBuffer(uint64_t minimum_num_bytes,
+               const MojoCreateSharedBufferOptions& options);
+  ~SharedBuffer();
+
+  uint64_t num_bytes;
+  ScopedSharedBufferHandle handle;
+};
+
+inline SharedBuffer::SharedBuffer(uint64_t minimum_num_bytes)
+    : num_bytes(minimum_num_bytes) {
+  MojoResult result MOJO_ALLOW_UNUSED =
+      CreateSharedBuffer(NULL, &num_bytes, &handle);
+  assert(result == MOJO_RESULT_OK);
+}
+
+inline SharedBuffer::SharedBuffer(uint64_t minimum_num_bytes,
+                                  const MojoCreateSharedBufferOptions& options)
+    : num_bytes(minimum_num_bytes) {
+  MojoResult result MOJO_ALLOW_UNUSED =
+      CreateSharedBuffer(&options, &num_bytes, &handle);
+  assert(result == MOJO_RESULT_OK);
+}
+
+inline SharedBuffer::~SharedBuffer() {
 }
 
 }  // namespace mojo
