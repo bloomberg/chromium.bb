@@ -392,11 +392,13 @@ class BuilderStageTest(AbstractStageTest):
     class TestError(Exception):
       """Unique test exception"""
 
-    def PerformStage():
-      raise TestError('fail!')
+    class BadStage(bs.BuilderStage):
+      """Stage that throws an exception when PerformStage is called."""
 
-    stage = self.ConstructStage()
-    stage.PerformStage = PerformStage
+      def PerformStage(self):
+        raise TestError('fail!')
+
+    stage = BadStage(self.run)
     results_lib.Results.Clear()
     self.assertRaises(results_lib.StepFailure, self._RunCapture, stage)
 
