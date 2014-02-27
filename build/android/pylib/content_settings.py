@@ -12,6 +12,7 @@ class ContentSettings(dict):
 
   def __init__(self, table, adb):
     super(ContentSettings, self).__init__()
+    assert adb.GetBuildId()[0] >= 'J', 'ContentSettings supported on >= J'
     self._table = table
     self._adb = adb
 
