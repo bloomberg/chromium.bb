@@ -1091,15 +1091,6 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
         Make Chromium the default browser
       </message>
 
-      <!-- chrome://ntp -->
-      <if expr="not is_android">
-        <message name="IDS_NEW_TAB_OTR_EXTENSIONS_MESSAGE"
-                 desc="Explanation in a new OTR window that extensions have been disabled while in OTR.">
-          Because Chromium does not control how extensions handle your personal data, all extensions have been disabled for incognito windows. You can reenable them individually in the
-          <ph name="BEGIN_LINK">&lt;a href="$2"&gt;</ph>extensions manager<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
-        </message>
-      </if>
-
     </messages>
   </release>
 </grit>
