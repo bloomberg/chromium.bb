@@ -20,6 +20,7 @@ MODULES = [
     'force_file_type_test',
     'help_message_test',
     'native_objects_test',
+    'pnacl_compress_test',
     'strip_test',
     'translate_options_test',
 ]
