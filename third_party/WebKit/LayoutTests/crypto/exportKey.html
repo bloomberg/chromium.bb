@@ -28,7 +28,13 @@ addTask(importTestKeys().then(function(result) {
     shouldBe("keys.aesCbcJustDecrypt.extractable", "false")
     shouldRejectPromiseWithNull("crypto.subtle.exportKey('raw', keys.aesCbcJustDecrypt)");
 
-    // TODO(eroman): exportKey() is not implemented.
+    return crypto.subtle.exportKey('raw', keys.aesCbc);
+}).then(function(result) {
+    bytesShouldMatchHexString("Key bytes", "3136206279746573206f66206b657921", result);
+
+    return crypto.subtle.exportKey('spki', keys.rsaSsaSha1Public);
+}).then(function(result) {
+    bytesShouldMatchHexString("Key bytes", kPublicKeySpkiDerHex, result);
 }));
 
 completeTestWhenAllTasksDone();

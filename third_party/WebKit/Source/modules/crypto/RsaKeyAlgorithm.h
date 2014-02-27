@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,36 +28,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef KeyPair_h
-#define KeyPair_h
+#ifndef RsaKeyAlgorithm_h
+#define RsaKeyAlgorithm_h
 
-#include "bindings/v8/ScriptWrappable.h"
-#include "heap/Handle.h"
-#include "wtf/Forward.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
-
-namespace blink { class WebCryptoKey; }
+#include "modules/crypto/KeyAlgorithm.h"
 
 namespace WebCore {
 
-class Key;
-
-class KeyPair : public RefCountedWillBeGarbageCollectedFinalized<KeyPair>, public ScriptWrappable {
+class RsaKeyAlgorithm : public KeyAlgorithm {
 public:
-    static PassRefPtrWillBeRawPtr<KeyPair> create(const blink::WebCryptoKey& publicKey, const blink::WebCryptoKey& privateKey);
+    ~RsaKeyAlgorithm();
 
-    Key* publicKey() { return m_publicKey.get(); }
-    Key* privateKey() { return m_privateKey.get(); }
+    static PassRefPtrWillBeRawPtr<RsaKeyAlgorithm> create(const blink::WebCryptoKeyAlgorithm&);
 
-    void trace(Visitor*);
+    unsigned modulusLength();
+    Uint8Array* publicExponent();
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 protected:
-    KeyPair(const PassRefPtrWillBeRawPtr<Key>& publicKey, const PassRefPtrWillBeRawPtr<Key>& privateKey);
+    explicit RsaKeyAlgorithm(const blink::WebCryptoKeyAlgorithm&);
 
-    RefPtrWillBeMember<Key> m_publicKey;
-    RefPtrWillBeMember<Key> m_privateKey;
+private:
+    RefPtr<Uint8Array> m_publicExponent;
 };
+
+DEFINE_KEY_ALGORITHM_TYPE_CASTS(RsaKeyAlgorithm);
 
 } // namespace WebCore
 

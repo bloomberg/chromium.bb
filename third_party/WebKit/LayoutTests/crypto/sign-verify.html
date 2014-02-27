@@ -76,7 +76,8 @@ var kHmacTestVectors = [
 
 function runSuccessTestCase(testCase)
 {
-    var algorithm = {name: 'HMAC', hash: {name: testCase.algorithm}};
+    var importAlgorithm = {name: 'HMAC', hash: {name: testCase.algorithm}};
+    var algorithm = {name: 'HMAC'};
 
     var key = null;
     var keyData = hexStringToUint8Array(testCase.key);
@@ -84,7 +85,7 @@ function runSuccessTestCase(testCase)
     var extractable = false;
 
     // (1) Import the key
-    return crypto.subtle.importKey('raw', keyData, algorithm, extractable, usages).then(function(result) {
+    return crypto.subtle.importKey('raw', keyData, importAlgorithm, extractable, usages).then(function(result) {
         key = result;
         
         // shouldBe() can only resolve variables in global context.
@@ -92,6 +93,7 @@ function runSuccessTestCase(testCase)
         shouldBe("tmpKey.type", "'secret'")
         shouldBe("tmpKey.extractable", "false")
         shouldBe("tmpKey.algorithm.name", "'HMAC'")
+        shouldBe("tmpKey.algorithm.hash.name", "'" + testCase.algorithm + "'")
         shouldBe("tmpKey.usages.join(',')", "'sign,verify'")
 
         // (2) Sign.
@@ -119,16 +121,16 @@ for (var i = 0; i < kHmacTestVectors.length; ++i) {
     allTests.push(runSuccessTestCase(kHmacTestVectors[i]));
 }
 
-hmacSha1 = {name: 'hmac', hash: {name: 'sha-1'}};
+hmac = {name: 'hmac'};
 data = asciiToUint8Array("hello");
 
 allTests.push(importTestKeys().then(function(importedKeys) {
     keys = importedKeys;
 
     // Pass invalid signature parameters to verify()
-    shouldThrow("crypto.subtle.verify(hmacSha1, keys.hmacSha1, null, data)");
-    shouldThrow("crypto.subtle.verify(hmacSha1, keys.hmacSha1, 'a', data)");
-    shouldThrow("crypto.subtle.verify(hmacSha1, keys.hmacSha1, [], data)");
+    shouldThrow("crypto.subtle.verify(hmac, keys.hmacSha1, null, data)");
+    shouldThrow("crypto.subtle.verify(hmac, keys.hmacSha1, 'a', data)");
+    shouldThrow("crypto.subtle.verify(hmac, keys.hmacSha1, [], data)");
 
     // Operation does not support signing.
     shouldRejectPromiseWithNull("crypto.subtle.sign({name: 'sha-1'}, keys.hmacSha1, data)");
@@ -136,19 +138,6 @@ allTests.push(importTestKeys().then(function(importedKeys) {
     // Operation doesn't support signing (also given an invalid key, but the
     // first failure takes priority)
     shouldRejectPromiseWithNull("crypto.subtle.sign({name: 'RSAES-PKCS1-v1_5'}, keys.hmacSha1, data)");
-
-    // Key's algorithm must match.
-    shouldRejectPromiseWithNull("crypto.subtle.sign({name: 'hmac', hash: {name: 'sha-256'}}, keys.hmacSha1, data)");
-
-    // ---------------------------------------------------
-    // HMAC normalization failures (HmacParams)
-    // ---------------------------------------------------
-    shouldRejectPromiseWithNull("crypto.subtle.sign({name: 'hmac'}, keys.hmacSha1, data)");
-    shouldRejectPromiseWithNull("crypto.subtle.sign({name: 'hmac', hash: 3}, keys.hmacSha1, data)");
-    shouldRejectPromiseWithNull("crypto.subtle.sign({name: 'hmac', hash: null}, keys.hmacSha1, data)");
-    shouldRejectPromiseWithNull("crypto.subtle.sign({name: 'hmac', hash: {}}, keys.hmacSha1, data)");
-    shouldRejectPromiseWithNull("crypto.subtle.sign({name: 'hmac', hash: {name: 'foo'}}, keys.hmacSha1, data)");
-    shouldRejectPromiseWithNull("crypto.subtle.sign({name: 'hmac', hash: {name: 'AES-CBC'}}, keys.hmacSha1, data)");
 }));
 
 // -------------------------------------------------

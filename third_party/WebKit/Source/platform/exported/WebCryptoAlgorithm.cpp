@@ -107,27 +107,19 @@ const WebCryptoAesKeyGenParams* WebCryptoAlgorithm::aesKeyGenParams() const
     return 0;
 }
 
-const WebCryptoHmacParams* WebCryptoAlgorithm::hmacParams() const
+const WebCryptoHmacImportParams* WebCryptoAlgorithm::hmacImportParams() const
 {
     ASSERT(!isNull());
-    if (paramsType() == WebCryptoAlgorithmParamsTypeHmacParams)
-        return static_cast<WebCryptoHmacParams*>(m_private->params.get());
+    if (paramsType() == WebCryptoAlgorithmParamsTypeHmacImportParams)
+        return static_cast<WebCryptoHmacImportParams*>(m_private->params.get());
     return 0;
 }
 
-const WebCryptoHmacKeyParams* WebCryptoAlgorithm::hmacKeyParams() const
+const WebCryptoHmacKeyGenParams* WebCryptoAlgorithm::hmacKeyGenParams() const
 {
     ASSERT(!isNull());
-    if (paramsType() == WebCryptoAlgorithmParamsTypeHmacKeyParams)
-        return static_cast<WebCryptoHmacKeyParams*>(m_private->params.get());
-    return 0;
-}
-
-const WebCryptoRsaSsaParams* WebCryptoAlgorithm::rsaSsaParams() const
-{
-    ASSERT(!isNull());
-    if (paramsType() == WebCryptoAlgorithmParamsTypeRsaSsaParams)
-        return static_cast<WebCryptoRsaSsaParams*>(m_private->params.get());
+    if (paramsType() == WebCryptoAlgorithmParamsTypeHmacKeyGenParams)
+        return static_cast<WebCryptoHmacKeyGenParams*>(m_private->params.get());
     return 0;
 }
 
@@ -152,6 +144,22 @@ const WebCryptoRsaOaepParams* WebCryptoAlgorithm::rsaOaepParams() const
     ASSERT(!isNull());
     if (paramsType() == WebCryptoAlgorithmParamsTypeRsaOaepParams)
         return static_cast<WebCryptoRsaOaepParams*>(m_private->params.get());
+    return 0;
+}
+
+const WebCryptoRsaHashedImportParams* WebCryptoAlgorithm::rsaHashedImportParams() const
+{
+    ASSERT(!isNull());
+    if (paramsType() == WebCryptoAlgorithmParamsTypeRsaHashedImportParams)
+        return static_cast<WebCryptoRsaHashedImportParams*>(m_private->params.get());
+    return 0;
+}
+
+const WebCryptoRsaHashedKeyGenParams* WebCryptoAlgorithm::rsaHashedKeyGenParams() const
+{
+    ASSERT(!isNull());
+    if (paramsType() == WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams)
+        return static_cast<WebCryptoRsaHashedKeyGenParams*>(m_private->params.get());
     return 0;
 }
 

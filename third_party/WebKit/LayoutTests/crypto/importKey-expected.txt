@@ -2,7 +2,7 @@ CONSOLE ERROR: The key's algorithm must be specified when importing raw-formatte
 CONSOLE ERROR: Invalid keyFormat argument
 CONSOLE ERROR: Invalid keyUsages argument
 CONSOLE ERROR: Invalid keyFormat argument
-CONSOLE ERROR: Algorithm: HMAC: HmacParams: hash: Missing or not a dictionary
+CONSOLE ERROR: Algorithm: HMAC: HmacImporParams: hash: Missing or not a dictionary
 CONSOLE ERROR: Algorithm: SHA-1: Unsupported operation
 Tests cypto.subtle.importKey.
 
@@ -12,16 +12,32 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS key.type is 'secret'
 PASS key.extractable is true
 PASS key.algorithm.name is 'HMAC'
+PASS key.algorithm.hash.name is 'SHA-256'
 PASS key.usages.join(',') is 'encrypt,sign'
 PASS key.type is 'secret'
 PASS key.extractable is true
 PASS key.algorithm.name is 'AES-CBC'
+PASS key.algorithm.length is 128
 PASS key.usages.join(',') is ''
 PASS key.type is 'secret'
 PASS key.extractable is false
 PASS key.algorithm.name is 'AES-CBC'
+PASS key.algorithm.length is 128
 PASS key.usages.join(',') is ''
 rejected with null
+PASS key.type is 'public'
+PASS key.algorithm.name is 'RSASSA-PKCS1-v1_5'
+PASS key.algorithm.hash.name is "SHA-1"
+PASS key.algorithm.modulusLength is 1024
+PASS: key.algorithm.publicExponent should be [010001] and was
+PASS key.usages.join(',') is ''
+PASS key.type is 'private'
+PASS key.extractable is false
+PASS key.algorithm.name is 'RSASSA-PKCS1-v1_5'
+PASS key.algorithm.hash.name is "SHA-1"
+PASS key.algorithm.modulusLength is 1024
+PASS: key.algorithm.publicExponent should be [010001] and was
+PASS key.usages.join(',') is ''
 rejected with null
 PASS crypto.subtle.importKey(keyFormat, [], algorithm, extractable, keyUsages) threw exception TypeError: Failed to execute 'importKey' on 'SubtleCrypto': Invalid keyData argument.
 PASS crypto.subtle.importKey(keyFormat, null, algorithm, extractable, keyUsages) threw exception TypeError: Failed to execute 'importKey' on 'SubtleCrypto': Invalid keyData argument.

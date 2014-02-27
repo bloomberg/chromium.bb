@@ -51,26 +51,19 @@ namespace blink {
 
 class WebCryptoAlgorithmParams {
 public:
-    explicit WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsType type)
-        : m_type(type)
-    {
-    }
-
+    WebCryptoAlgorithmParams() { }
     virtual ~WebCryptoAlgorithmParams() { }
-
-    WebCryptoAlgorithmParamsType type() const { return m_type; }
-
-private:
-    const WebCryptoAlgorithmParamsType m_type;
+    virtual WebCryptoAlgorithmParamsType type() const = 0;
 };
 
 class WebCryptoAesCbcParams : public WebCryptoAlgorithmParams {
 public:
     WebCryptoAesCbcParams(const unsigned char* iv, unsigned ivSize)
-        : WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsTypeAesCbcParams)
-        , m_iv(iv, ivSize)
+        : m_iv(iv, ivSize)
     {
     }
+
+    virtual WebCryptoAlgorithmParamsType type() const { return WebCryptoAlgorithmParamsTypeAesCbcParams; }
 
     const WebVector<unsigned char>& iv() const { return m_iv; }
 
@@ -78,14 +71,30 @@ private:
     const WebVector<unsigned char> m_iv;
 };
 
+class WebCryptoAlgorithmParamsWithHash : public WebCryptoAlgorithmParams {
+public:
+    explicit WebCryptoAlgorithmParamsWithHash(const WebCryptoAlgorithm& hash)
+        : m_hash(hash)
+    {
+        BLINK_ASSERT(!hash.isNull());
+    }
+
+    const WebCryptoAlgorithm& hash() const { return m_hash; }
+
+private:
+    const WebCryptoAlgorithm m_hash;
+};
+
 class WebCryptoAesCtrParams : public WebCryptoAlgorithmParams {
 public:
     WebCryptoAesCtrParams(unsigned char lengthBits, const unsigned char* counter, unsigned counterSize)
-        : WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsTypeAesCtrParams)
+        : WebCryptoAlgorithmParams()
         , m_counter(counter, counterSize)
         , m_lengthBits(lengthBits)
     {
     }
+
+    virtual WebCryptoAlgorithmParamsType type() const { return WebCryptoAlgorithmParamsTypeAesCtrParams; }
 
     const WebVector<unsigned char>& counter() const { return m_counter; }
     unsigned char lengthBits() const { return m_lengthBits; }
@@ -98,10 +107,11 @@ private:
 class WebCryptoAesKeyGenParams : public WebCryptoAlgorithmParams {
 public:
     explicit WebCryptoAesKeyGenParams(unsigned short lengthBits)
-        : WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsTypeAesKeyGenParams)
-        , m_lengthBits(lengthBits)
+        : m_lengthBits(lengthBits)
     {
     }
+
+    virtual WebCryptoAlgorithmParamsType type() const { return WebCryptoAlgorithmParamsTypeAesKeyGenParams; }
 
     unsigned short lengthBits() const { return m_lengthBits; }
 
@@ -109,68 +119,46 @@ private:
     const unsigned short m_lengthBits;
 };
 
-class WebCryptoHmacParams : public WebCryptoAlgorithmParams {
+class WebCryptoHmacImportParams : public WebCryptoAlgorithmParamsWithHash {
 public:
-    explicit WebCryptoHmacParams(const WebCryptoAlgorithm& hash)
-        : WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsTypeHmacParams)
-        , m_hash(hash)
+    explicit WebCryptoHmacImportParams(const WebCryptoAlgorithm& hash)
+        : WebCryptoAlgorithmParamsWithHash(hash)
     {
-        BLINK_ASSERT(!hash.isNull());
     }
 
-    const WebCryptoAlgorithm& hash() const { return m_hash; }
-
-private:
-    const WebCryptoAlgorithm m_hash;
+    virtual WebCryptoAlgorithmParamsType type() const { return WebCryptoAlgorithmParamsTypeHmacImportParams; }
 };
 
-class WebCryptoHmacKeyParams : public WebCryptoAlgorithmParams {
+class WebCryptoHmacKeyGenParams : public WebCryptoAlgorithmParamsWithHash {
 public:
-    WebCryptoHmacKeyParams(const WebCryptoAlgorithm& hash, bool hasLengthBytes, unsigned lengthBytes)
-        : WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsTypeHmacKeyParams)
-        , m_hash(hash)
+    WebCryptoHmacKeyGenParams(const WebCryptoAlgorithm& hash, bool hasLengthBytes, unsigned lengthBytes)
+        : WebCryptoAlgorithmParamsWithHash(hash)
         , m_hasLengthBytes(hasLengthBytes)
         , m_optionalLengthBytes(lengthBytes)
     {
-        BLINK_ASSERT(!hash.isNull());
         BLINK_ASSERT(hasLengthBytes || !lengthBytes);
     }
 
-    const WebCryptoAlgorithm& hash() const { return m_hash; }
+    virtual WebCryptoAlgorithmParamsType type() const { return WebCryptoAlgorithmParamsTypeHmacKeyGenParams; }
 
     bool hasLengthBytes() const { return m_hasLengthBytes; }
 
     unsigned optionalLengthBytes() const { return m_optionalLengthBytes; }
 
 private:
-    const WebCryptoAlgorithm m_hash;
     const bool m_hasLengthBytes;
     const unsigned m_optionalLengthBytes;
-};
-
-class WebCryptoRsaSsaParams : public WebCryptoAlgorithmParams {
-public:
-    explicit WebCryptoRsaSsaParams(const WebCryptoAlgorithm& hash)
-        : WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsTypeRsaSsaParams)
-        , m_hash(hash)
-    {
-        BLINK_ASSERT(!hash.isNull());
-    }
-
-    const WebCryptoAlgorithm& hash() const { return m_hash; }
-
-private:
-    const WebCryptoAlgorithm m_hash;
 };
 
 class WebCryptoRsaKeyGenParams : public WebCryptoAlgorithmParams {
 public:
     WebCryptoRsaKeyGenParams(unsigned modulusLengthBits, const unsigned char* publicExponent, unsigned publicExponentSize)
-        : WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsTypeRsaKeyGenParams)
-        , m_modulusLengthBits(modulusLengthBits)
+        : m_modulusLengthBits(modulusLengthBits)
         , m_publicExponent(publicExponent, publicExponentSize)
     {
     }
+
+    virtual WebCryptoAlgorithmParamsType type() const { return WebCryptoAlgorithmParamsTypeRsaKeyGenParams; }
 
     unsigned modulusLengthBits() const { return m_modulusLengthBits; }
     const WebVector<unsigned char>& publicExponent() const { return m_publicExponent; }
@@ -183,8 +171,7 @@ private:
 class WebCryptoAesGcmParams : public WebCryptoAlgorithmParams {
 public:
     WebCryptoAesGcmParams(const unsigned char* iv, unsigned ivSize, bool hasAdditionalData, const unsigned char* additionalData, unsigned additionalDataSize, bool hasTagLengthBits, unsigned char tagLengthBits)
-        : WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsTypeAesGcmParams)
-        , m_iv(iv, ivSize)
+        : m_iv(iv, ivSize)
         , m_hasAdditionalData(hasAdditionalData)
         , m_optionalAdditionalData(additionalData, additionalDataSize)
         , m_hasTagLengthBits(hasTagLengthBits)
@@ -193,6 +180,8 @@ public:
         BLINK_ASSERT(hasAdditionalData || !additionalDataSize);
         BLINK_ASSERT(hasTagLengthBits || !tagLengthBits);
     }
+
+    virtual WebCryptoAlgorithmParamsType type() const { return WebCryptoAlgorithmParamsTypeAesGcmParams; }
 
     const WebVector<unsigned char>& iv() const { return m_iv; }
 
@@ -210,25 +199,48 @@ private:
     const unsigned char m_optionalTagLengthBits;
 };
 
-class WebCryptoRsaOaepParams : public WebCryptoAlgorithmParams {
+class WebCryptoRsaHashedImportParams : public WebCryptoAlgorithmParamsWithHash {
 public:
-    WebCryptoRsaOaepParams(const WebCryptoAlgorithm& hash, bool hasLabel, const unsigned char* label, unsigned labelSize)
-        : WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsTypeRsaOaepParams)
+    explicit WebCryptoRsaHashedImportParams(const WebCryptoAlgorithm& hash)
+        : WebCryptoAlgorithmParamsWithHash(hash)
+    {
+    }
+
+    virtual WebCryptoAlgorithmParamsType type() const { return WebCryptoAlgorithmParamsTypeRsaHashedImportParams; }
+};
+
+class WebCryptoRsaHashedKeyGenParams : public WebCryptoRsaKeyGenParams {
+public:
+    explicit WebCryptoRsaHashedKeyGenParams(const WebCryptoAlgorithm& hash, unsigned modulusLengthBits, const unsigned char* publicExponent, unsigned publicExponentSize)
+        : WebCryptoRsaKeyGenParams(modulusLengthBits, publicExponent, publicExponentSize)
         , m_hash(hash)
-        , m_hasLabel(hasLabel)
-        , m_optionalLabel(label, labelSize)
     {
         BLINK_ASSERT(!hash.isNull());
+    }
+
+    virtual WebCryptoAlgorithmParamsType type() const { return WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams; }
+
+    const WebCryptoAlgorithm& hash() const { return m_hash; }
+
+private:
+    const WebCryptoAlgorithm m_hash;
+};
+
+class WebCryptoRsaOaepParams : public WebCryptoAlgorithmParams {
+public:
+    WebCryptoRsaOaepParams(bool hasLabel, const unsigned char* label, unsigned labelSize)
+        : m_hasLabel(hasLabel)
+        , m_optionalLabel(label, labelSize)
+    {
         BLINK_ASSERT(hasLabel || !labelSize);
     }
 
-    const WebCryptoAlgorithm& hash() const { return m_hash; }
+    virtual WebCryptoAlgorithmParamsType type() const { return WebCryptoAlgorithmParamsTypeRsaOaepParams; }
 
     bool hasLabel() const { return m_hasLabel; }
     const WebVector<unsigned char>& optionalLabel() const { return m_optionalLabel; }
 
 private:
-    const WebCryptoAlgorithm m_hash;
     const bool m_hasLabel;
     const WebVector<unsigned char> m_optionalLabel;
 };

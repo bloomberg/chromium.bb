@@ -14,6 +14,8 @@ PASS: 'crypto.subtle.exportKey(3, keys.aesCbcJustDecrypt)' rejected with null
 PASS: 'crypto.subtle.exportKey(null, keys.aesCbcJustDecrypt)' rejected with null
 PASS: 'crypto.subtle.exportKey('invalid', keys.aesCbcJustDecrypt)' rejected with null
 PASS: 'crypto.subtle.exportKey('raw', keys.aesCbcJustDecrypt)' rejected with null
+PASS: Key bytes should be [3136206279746573206f66206b657921] and was
+PASS: Key bytes should be [30819f300d06092a864886f70d010101050003818d0030818902818100a56e4a0e701017589a5187dc7ea841d156f2ec0e36ad52a44dfeb1e61f7ad991d8c51056ffedb162b4c0f283a12a88a394dff526ab7291cbb307ceabfce0b1dfd5cd9508096d5b2b8b6df5d671ef6377c0921cb23c270a70e2598e6ff89d19f105acc2d3f0cb35f29280e1386b6f64c4ef22e1e1f20d0ce8cffb2249bd9a21370203010001] and was
 PASS successfullyParsed is true
 
 TEST COMPLETE

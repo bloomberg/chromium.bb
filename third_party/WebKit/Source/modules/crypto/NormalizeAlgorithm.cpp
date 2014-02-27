@@ -100,16 +100,16 @@ const OperationParamsMapping operationParamsMappings[] = {
     {blink::WebCryptoAlgorithmIdAesCtr, WrapKey, blink::WebCryptoAlgorithmParamsTypeAesCtrParams},
 
     // HMAC
-    {blink::WebCryptoAlgorithmIdHmac, Sign, blink::WebCryptoAlgorithmParamsTypeHmacParams},
-    {blink::WebCryptoAlgorithmIdHmac, Verify, blink::WebCryptoAlgorithmParamsTypeHmacParams},
-    {blink::WebCryptoAlgorithmIdHmac, GenerateKey, blink::WebCryptoAlgorithmParamsTypeHmacKeyParams},
-    {blink::WebCryptoAlgorithmIdHmac, ImportKey, blink::WebCryptoAlgorithmParamsTypeHmacParams},
+    {blink::WebCryptoAlgorithmIdHmac, Sign, blink::WebCryptoAlgorithmParamsTypeNone},
+    {blink::WebCryptoAlgorithmIdHmac, Verify, blink::WebCryptoAlgorithmParamsTypeNone},
+    {blink::WebCryptoAlgorithmIdHmac, GenerateKey, blink::WebCryptoAlgorithmParamsTypeHmacKeyGenParams},
+    {blink::WebCryptoAlgorithmIdHmac, ImportKey, blink::WebCryptoAlgorithmParamsTypeHmacImportParams},
 
     // RSASSA-PKCS1-v1_5
-    {blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, Sign, blink::WebCryptoAlgorithmParamsTypeRsaSsaParams},
-    {blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, Verify, blink::WebCryptoAlgorithmParamsTypeRsaSsaParams},
-    {blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, GenerateKey, blink::WebCryptoAlgorithmParamsTypeRsaKeyGenParams},
-    {blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, ImportKey, blink::WebCryptoAlgorithmParamsTypeNone},
+    {blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, Sign, blink::WebCryptoAlgorithmParamsTypeNone},
+    {blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, Verify, blink::WebCryptoAlgorithmParamsTypeNone},
+    {blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, GenerateKey, blink::WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams},
+    {blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, ImportKey, blink::WebCryptoAlgorithmParamsTypeRsaHashedImportParams},
 
     // RSAES-PKCS1-v1_5
     {blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5, Encrypt, blink::WebCryptoAlgorithmParamsTypeNone},
@@ -463,13 +463,13 @@ bool parseHash(const Dictionary& raw, blink::WebCryptoAlgorithm& hash, ErrorCont
 //    dictionary HmacImportParams : Algorithm {
 //      AlgorithmIdentifier hash;
 //    };
-bool parseHmacParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, String& errorDetails)
+bool parseHmacImportParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, String& errorDetails)
 {
     blink::WebCryptoAlgorithm hash;
     if (!parseHash(raw, hash, context, errorDetails))
         return false;
 
-    params = adoptPtr(new blink::WebCryptoHmacParams(hash));
+    params = adoptPtr(new blink::WebCryptoHmacImportParams(hash));
     return true;
 }
 
@@ -482,7 +482,7 @@ bool parseHmacParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmPara
 //      // size.
 //      unsigned long length;
 //    };
-bool parseHmacKeyParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, String& errorDetails)
+bool parseHmacKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, String& errorDetails)
 {
     blink::WebCryptoAlgorithm hash;
     if (!parseHash(raw, hash, context, errorDetails))
@@ -493,17 +493,22 @@ bool parseHmacKeyParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmP
     if (!getOptionalUint32(raw, "length", hasLength, length, context, errorDetails))
         return false;
 
-    params = adoptPtr(new blink::WebCryptoHmacKeyParams(hash, hasLength, length));
+    params = adoptPtr(new blink::WebCryptoHmacKeyGenParams(hash, hasLength, length));
     return true;
 }
 
-bool parseRsaSsaParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, String& errorDetails)
+// Defined by the WebCrypto spec as:
+//
+//    dictionary RsaHashedImportParams {
+//      AlgorithmIdentifier hash;
+//    };
+bool parseRsaHashedImportParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, String& errorDetails)
 {
     blink::WebCryptoAlgorithm hash;
     if (!parseHash(raw, hash, context, errorDetails))
         return false;
 
-    params = adoptPtr(new blink::WebCryptoRsaSsaParams(hash));
+    params = adoptPtr(new blink::WebCryptoRsaHashedImportParams(hash));
     return true;
 }
 
@@ -513,17 +518,45 @@ bool parseRsaSsaParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmPa
 //      unsigned long modulusLength;
 //      BigInteger publicExponent;
 //    };
-bool parseRsaKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, String& errorDetails)
+bool parseRsaKeyGenParams(const Dictionary& raw, uint32_t& modulusLength, RefPtr<Uint8Array>& publicExponent, const ErrorContext& context, String& errorDetails)
 {
-    uint32_t modulusLength;
     if (!getUint32(raw, "modulusLength", modulusLength, context, errorDetails))
         return false;
 
-    RefPtr<Uint8Array> publicExponent;
     if (!getBigInteger(raw, "publicExponent", publicExponent, context, errorDetails))
         return false;
 
+    return true;
+}
+
+bool parseRsaKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, String& errorDetails)
+{
+    uint32_t modulusLength;
+    RefPtr<Uint8Array> publicExponent;
+    if (!parseRsaKeyGenParams(raw, modulusLength, publicExponent, context, errorDetails))
+        return false;
+
     params = adoptPtr(new blink::WebCryptoRsaKeyGenParams(modulusLength, static_cast<const unsigned char*>(publicExponent->baseAddress()), publicExponent->byteLength()));
+    return true;
+}
+
+// Defined by the WebCrypto spec as:
+//
+//    dictionary RsaHashedKeyGenParams : RsaKeyGenParams {
+//      AlgorithmIdentifier hash;
+//    };
+bool parseRsaHashedKeyGenParams(const Dictionary& raw, OwnPtr<blink::WebCryptoAlgorithmParams>& params, const ErrorContext& context, String& errorDetails)
+{
+    uint32_t modulusLength;
+    RefPtr<Uint8Array> publicExponent;
+    if (!parseRsaKeyGenParams(raw, modulusLength, publicExponent, context, errorDetails))
+        return false;
+
+    blink::WebCryptoAlgorithm hash;
+    if (!parseHash(raw, hash, context, errorDetails))
+        return false;
+
+    params = adoptPtr(new blink::WebCryptoRsaHashedKeyGenParams(hash, modulusLength, static_cast<const unsigned char*>(publicExponent->baseAddress()), publicExponent->byteLength()));
     return true;
 }
 
@@ -591,15 +624,18 @@ bool parseAlgorithmParams(const Dictionary& raw, blink::WebCryptoAlgorithmParams
     case blink::WebCryptoAlgorithmParamsTypeAesKeyGenParams:
         context.add("AesKeyGenParams");
         return parseAesKeyGenParams(raw, params, context, errorDetails);
-    case blink::WebCryptoAlgorithmParamsTypeHmacParams:
-        context.add("HmacParams");
-        return parseHmacParams(raw, params, context, errorDetails);
-    case blink::WebCryptoAlgorithmParamsTypeHmacKeyParams:
-        context.add("HmacKeyParams");
-        return parseHmacKeyParams(raw, params, context, errorDetails);
-    case blink::WebCryptoAlgorithmParamsTypeRsaSsaParams:
-        context.add("RsaSSaParams");
-        return parseRsaSsaParams(raw, params, context, errorDetails);
+    case blink::WebCryptoAlgorithmParamsTypeHmacImportParams:
+        context.add("HmacImporParams");
+        return parseHmacImportParams(raw, params, context, errorDetails);
+    case blink::WebCryptoAlgorithmParamsTypeHmacKeyGenParams:
+        context.add("HmacKeyGenParams");
+        return parseHmacKeyGenParams(raw, params, context, errorDetails);
+    case blink::WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams:
+        context.add("RsaHashedKeyGenParams");
+        return parseRsaHashedKeyGenParams(raw, params, context, errorDetails);
+    case blink::WebCryptoAlgorithmParamsTypeRsaHashedImportParams:
+        context.add("RsaHashedImportParams");
+        return parseRsaHashedImportParams(raw, params, context, errorDetails);
     case blink::WebCryptoAlgorithmParamsTypeRsaKeyGenParams:
         context.add("RsaKeyGenParams");
         return parseRsaKeyGenParams(raw, params, context, errorDetails);

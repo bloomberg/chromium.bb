@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,27 +29,48 @@
  */
 
 #include "config.h"
-#include "modules/crypto/Algorithm.h"
+#include "modules/crypto/RsaKeyAlgorithm.h"
 
 #include "modules/crypto/NormalizeAlgorithm.h"
+#include "public/platform/WebVector.h"
+#include "wtf/Uint8Array.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<Algorithm> Algorithm::create(const blink::WebCryptoAlgorithm& algorithm)
+RsaKeyAlgorithm::~RsaKeyAlgorithm()
 {
-    return adoptRefWillBeNoop(new Algorithm(algorithm));
 }
 
-Algorithm::Algorithm(const blink::WebCryptoAlgorithm& algorithm)
-    : m_algorithm(algorithm)
+PassRefPtrWillBeRawPtr<RsaKeyAlgorithm> RsaKeyAlgorithm::create(const blink::WebCryptoKeyAlgorithm& algorithm)
 {
+    return adoptRefWillBeNoop(new RsaKeyAlgorithm(algorithm));
+}
+
+unsigned RsaKeyAlgorithm::modulusLength()
+{
+    return m_algorithm.rsaParams()->modulusLengthBits();
+}
+
+Uint8Array* RsaKeyAlgorithm::publicExponent()
+{
+    if (!m_publicExponent.get()) {
+        const blink::WebVector<unsigned char>& exponent = m_algorithm.rsaParams()->publicExponent();
+        m_publicExponent = Uint8Array::create(exponent.data(), exponent.size());
+    }
+    return m_publicExponent.get();
+}
+
+void RsaKeyAlgorithm::trace(Visitor* visitor)
+{
+    KeyAlgorithm::trace(visitor);
+}
+
+RsaKeyAlgorithm::RsaKeyAlgorithm(const blink::WebCryptoKeyAlgorithm& algorithm)
+    : KeyAlgorithm(algorithm)
+{
+    ASSERT(algorithm.rsaParams());
     ScriptWrappable::init(this);
-}
-
-String Algorithm::name()
-{
-    return algorithmIdToName(m_algorithm.id());
 }
 
 } // namespace WebCore

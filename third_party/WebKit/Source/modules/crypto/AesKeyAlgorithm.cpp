@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,37 +28,34 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef KeyPair_h
-#define KeyPair_h
+#include "config.h"
+#include "modules/crypto/AesKeyAlgorithm.h"
 
-#include "bindings/v8/ScriptWrappable.h"
-#include "heap/Handle.h"
-#include "wtf/Forward.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
-
-namespace blink { class WebCryptoKey; }
+#include "modules/crypto/NormalizeAlgorithm.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class Key;
+PassRefPtrWillBeRawPtr<AesKeyAlgorithm> AesKeyAlgorithm::create(const blink::WebCryptoKeyAlgorithm& algorithm)
+{
+    return adoptRefWillBeNoop(new AesKeyAlgorithm(algorithm));
+}
 
-class KeyPair : public RefCountedWillBeGarbageCollectedFinalized<KeyPair>, public ScriptWrappable {
-public:
-    static PassRefPtrWillBeRawPtr<KeyPair> create(const blink::WebCryptoKey& publicKey, const blink::WebCryptoKey& privateKey);
+unsigned short AesKeyAlgorithm::length()
+{
+    return m_algorithm.aesParams()->lengthBits();
+}
 
-    Key* publicKey() { return m_publicKey.get(); }
-    Key* privateKey() { return m_privateKey.get(); }
+void AesKeyAlgorithm::trace(Visitor* visitor)
+{
+    KeyAlgorithm::trace(visitor);
+}
 
-    void trace(Visitor*);
-
-protected:
-    KeyPair(const PassRefPtrWillBeRawPtr<Key>& publicKey, const PassRefPtrWillBeRawPtr<Key>& privateKey);
-
-    RefPtrWillBeMember<Key> m_publicKey;
-    RefPtrWillBeMember<Key> m_privateKey;
-};
+AesKeyAlgorithm::AesKeyAlgorithm(const blink::WebCryptoKeyAlgorithm& algorithm)
+    : KeyAlgorithm(algorithm)
+{
+    ASSERT(m_algorithm.aesParams());
+    ScriptWrappable::init(this);
+}
 
 } // namespace WebCore
-
-#endif

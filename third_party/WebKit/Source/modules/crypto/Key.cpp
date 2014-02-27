@@ -33,7 +33,7 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "modules/crypto/Algorithm.h"
+#include "modules/crypto/KeyAlgorithm.h"
 #include "platform/CryptoResult.h"
 #include "public/platform/WebCryptoAlgorithmParams.h"
 #include "public/platform/WebString.h"
@@ -120,19 +120,6 @@ blink::WebCryptoKeyUsageMask toKeyUsage(AlgorithmOperation operation)
     return 0;
 }
 
-bool getHmacHashId(const blink::WebCryptoAlgorithm& algorithm, blink::WebCryptoAlgorithmId& hashId)
-{
-    if (algorithm.hmacParams()) {
-        hashId = algorithm.hmacParams()->hash().id();
-        return true;
-    }
-    if (algorithm.hmacKeyParams()) {
-        hashId = algorithm.hmacKeyParams()->hash().id();
-        return true;
-    }
-    return false;
-}
-
 } // namespace
 
 Key::~Key()
@@ -155,10 +142,10 @@ bool Key::extractable() const
     return m_key.extractable();
 }
 
-Algorithm* Key::algorithm()
+KeyAlgorithm* Key::algorithm()
 {
     if (!m_algorithm)
-        m_algorithm = Algorithm::create(m_key.algorithm());
+        m_algorithm = KeyAlgorithm::create(m_key.algorithm());
     return m_algorithm.get();
 }
 
@@ -187,20 +174,6 @@ bool Key::canBeUsedForAlgorithm(const blink::WebCryptoAlgorithm& algorithm, Algo
     if (m_key.algorithm().id() != algorithm.id()) {
         result->completeWithError("key.algorithm does not match that of operation");
         return false;
-    }
-
-    // Verify that the algorithm-specific parameters for the key conform to the
-    // algorithm.
-    // FIXME: This is incomplete and not future proof. Operational parameters
-    //        should be enumerated when defining new parameters.
-
-    if (m_key.algorithm().id() == blink::WebCryptoAlgorithmIdHmac) {
-        blink::WebCryptoAlgorithmId keyHash;
-        blink::WebCryptoAlgorithmId algorithmHash;
-        if (!getHmacHashId(m_key.algorithm(), keyHash) || !getHmacHashId(algorithm, algorithmHash) || keyHash != algorithmHash) {
-            result->completeWithError("key.algorithm does not match that of operation (HMAC's hash differs)");
-            return false;
-        }
     }
 
     return true;

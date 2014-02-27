@@ -26,10 +26,11 @@ Promise.resolve(null).then(function() {
     return crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages);
 }).then(function(result) {
     key = result;
-    shouldBe("key.type", "'secret'")
-    shouldBe("key.extractable", "true")
-    shouldBe("key.algorithm.name", "'HMAC'")
-    shouldBe("key.usages.join(',')", "'encrypt,sign'")
+    shouldBe("key.type", "'secret'");
+    shouldBe("key.extractable", "true");
+    shouldBe("key.algorithm.name", "'HMAC'");
+    shouldBe("key.algorithm.hash.name", "'SHA-256'");
+    shouldBe("key.usages.join(',')", "'encrypt,sign'");
 
     // Same test as above, but with an keyUsages, and AES-CBC.
     keyFormat = "raw";
@@ -41,10 +42,11 @@ Promise.resolve(null).then(function() {
     return crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages);
 }).then(function(result) {
     key = result;
-    shouldBe("key.type", "'secret'")
-    shouldBe("key.extractable", "true")
-    shouldBe("key.algorithm.name", "'AES-CBC'")
-    shouldBe("key.usages.join(',')", "''")
+    shouldBe("key.type", "'secret'");
+    shouldBe("key.extractable", "true");
+    shouldBe("key.algorithm.name", "'AES-CBC'");
+    shouldBe("key.algorithm.length", "128");
+    shouldBe("key.usages.join(',')", "''");
 
     // Same test as above, but with extractable = false.
     keyFormat = "raw";
@@ -56,10 +58,11 @@ Promise.resolve(null).then(function() {
     return crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages);
 }).then(function(result) {
     key = result;
-    shouldBe("key.type", "'secret'")
-    shouldBe("key.extractable", "false")
-    shouldBe("key.algorithm.name", "'AES-CBC'")
-    shouldBe("key.usages.join(',')", "''")
+    shouldBe("key.type", "'secret'");
+    shouldBe("key.extractable", "false");
+    shouldBe("key.algorithm.name", "'AES-CBC'");
+    shouldBe("key.algorithm.length", "128");
+    shouldBe("key.usages.join(',')", "''");
 
     // Same test as above, but with keyFormat = spki
     keyFormat = "spki";
@@ -70,8 +73,44 @@ Promise.resolve(null).then(function() {
 
     return crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages);
 }).then(undefined, function(result) {
-    // TODO(eroman): Only "raw" key format is supported at the moment.
     debug("rejected with " + result);
+
+    // Import an spki formatted public key
+    keyFormat = "spki";
+    data = hexStringToUint8Array(kPublicKeySpkiDerHex);
+    algorithm = {name: 'RsasSA-pKCS1-v1_5', hash: {name: 'sha-1'}};
+    extractable = false;
+    keyUsages = [];
+
+    return crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages);
+}).then(function(result) {
+    key = result;
+    shouldBe("key.type", "'public'");
+    // FIXME: Enable this once updated.
+    //shouldBe("key.extractable", "true");
+    shouldBe("key.algorithm.name", "'RSASSA-PKCS1-v1_5'");
+    shouldBe("key.algorithm.hash.name", '"SHA-1"');
+    shouldBe("key.algorithm.modulusLength", '1024');
+    bytesShouldMatchHexString("key.algorithm.publicExponent", "010001", key.algorithm.publicExponent);
+    shouldBe("key.usages.join(',')", "''");
+
+    // Import a pkcs8 formatted private key
+    keyFormat = "pkcs8";
+    data = hexStringToUint8Array(kPrivateKeyPkcs8DerHex);
+    algorithm = {name: 'RsasSA-pKCS1-v1_5', hash: {name: 'sha-1'}};
+    extractable = false;
+    keyUsages = [];
+
+    return crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages);
+}).then(function(result) {
+    key = result;
+    shouldBe("key.type", "'private'");
+    shouldBe("key.extractable", "false");
+    shouldBe("key.algorithm.name", "'RSASSA-PKCS1-v1_5'");
+    shouldBe("key.algorithm.hash.name", '"SHA-1"');
+    shouldBe("key.algorithm.modulusLength", '1024');
+    bytesShouldMatchHexString("key.algorithm.publicExponent", "010001", key.algorithm.publicExponent);
+    shouldBe("key.usages.join(',')", "''")
 
     // Import a "raw" key without specifying the algorithm.
     keyFormat = "raw";

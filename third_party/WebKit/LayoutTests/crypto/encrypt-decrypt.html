@@ -151,6 +151,7 @@ function runAesCbcSuccessTestCase(testCase)
         shouldBe("tmpKey.type", "'secret'");
         shouldBe("tmpKey.extractable", "false");
         shouldBe("tmpKey.algorithm.name", "'AES-CBC'");
+        shouldBe("tmpKey.algorithm.length", (keyData.byteLength * 8).toString());
         shouldBe("tmpKey.usages.join(',')", "'decrypt,encrypt'");
 
         // (2) Encrypt.

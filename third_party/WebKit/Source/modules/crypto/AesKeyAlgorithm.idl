@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,34 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Algorithm_h
-#define Algorithm_h
-
-#include "bindings/v8/ScriptWrappable.h"
-#include "heap/Handle.h"
-#include "public/platform/WebCryptoAlgorithm.h"
-#include "wtf/Forward.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-
-namespace WebCore {
-
-class Algorithm : public RefCountedWillBeGarbageCollectedFinalized<Algorithm>, public ScriptWrappable {
-public:
-    static PassRefPtrWillBeRawPtr<Algorithm> create(const blink::WebCryptoAlgorithm&);
-
-    String name();
-
-    blink::WebCryptoAlgorithmParamsType type() const { return m_algorithm.paramsType(); }
-
-    void trace(Visitor*) { }
-
-protected:
-    explicit Algorithm(const blink::WebCryptoAlgorithm&);
-
-    const blink::WebCryptoAlgorithm m_algorithm;
+[
+    NoInterfaceObject
+] interface AesKeyAlgorithm : KeyAlgorithm {
+  readonly attribute unsigned short length;
 };
-
-} // namespace WebCore
-
-#endif

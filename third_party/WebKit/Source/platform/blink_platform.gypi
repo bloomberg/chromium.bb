@@ -262,6 +262,7 @@
       'exported/WebContentDecryptionModule.cpp',
       'exported/WebContentDecryptionModuleSession.cpp',
       'exported/WebCryptoAlgorithm.cpp',
+      'exported/WebCryptoKeyAlgorithm.cpp',
       'exported/WebCryptoKey.cpp',
       'exported/WebCryptoResult.cpp',
       'exported/WebCursorInfo.cpp',

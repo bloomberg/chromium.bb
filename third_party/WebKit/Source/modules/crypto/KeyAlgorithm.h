@@ -28,36 +28,43 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef KeyPair_h
-#define KeyPair_h
+#ifndef KeyAlgorithm_h
+#define KeyAlgorithm_h
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "heap/Handle.h"
+#include "public/platform/WebCryptoKeyAlgorithm.h"
 #include "wtf/Forward.h"
+#include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
-
-namespace blink { class WebCryptoKey; }
 
 namespace WebCore {
 
-class Key;
-
-class KeyPair : public RefCountedWillBeGarbageCollectedFinalized<KeyPair>, public ScriptWrappable {
+class KeyAlgorithm : public RefCountedWillBeGarbageCollectedFinalized<KeyAlgorithm>, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<KeyPair> create(const blink::WebCryptoKey& publicKey, const blink::WebCryptoKey& privateKey);
+    virtual ~KeyAlgorithm();
 
-    Key* publicKey() { return m_publicKey.get(); }
-    Key* privateKey() { return m_privateKey.get(); }
+    static PassRefPtrWillBeRawPtr<KeyAlgorithm> create(const blink::WebCryptoKeyAlgorithm&);
+    static PassRefPtrWillBeRawPtr<KeyAlgorithm> createHash(const blink::WebCryptoAlgorithm&);
 
-    void trace(Visitor*);
+    String name();
+
+    // Needed by SpecialWrapFor and for casting.
+    bool isAesKeyAlgorithm() const;
+    bool isHmacKeyAlgorithm() const;
+    bool isRsaHashedKeyAlgorithm() const;
+    bool isRsaKeyAlgorithm() const;
+
+    virtual void trace(Visitor*);
 
 protected:
-    KeyPair(const PassRefPtrWillBeRawPtr<Key>& publicKey, const PassRefPtrWillBeRawPtr<Key>& privateKey);
+    explicit KeyAlgorithm(const blink::WebCryptoKeyAlgorithm&);
 
-    RefPtrWillBeMember<Key> m_publicKey;
-    RefPtrWillBeMember<Key> m_privateKey;
+    blink::WebCryptoKeyAlgorithm m_algorithm;
 };
+
+#define DEFINE_KEY_ALGORITHM_TYPE_CASTS(thisType) \
+    DEFINE_TYPE_CASTS(thisType, KeyAlgorithm, value, value->is##thisType(), value.is##thisType())
 
 } // namespace WebCore
 

@@ -11,21 +11,21 @@ CONSOLE ERROR: Algorithm: AES-KW: AesKeyGenParams: length: Missing required prop
 CONSOLE ERROR: Algorithm: AES-KW: AesKeyGenParams: length: Outside of numeric range
 CONSOLE ERROR: Algorithm: AES-KW: AesKeyGenParams: length: Outside of numeric range
 CONSOLE ERROR: Algorithm: AES-KW: AesKeyGenParams: length: Outside of numeric range
-CONSOLE ERROR: Algorithm: HMAC: HmacKeyParams: length: Outside of numeric range
-CONSOLE ERROR: Algorithm: HMAC: HmacKeyParams: hash: Algorithm: Unrecognized algorithm name
-CONSOLE ERROR: Algorithm: HMAC: HmacKeyParams: length: Outside of numeric range
-CONSOLE ERROR: Algorithm: HMAC: HmacKeyParams: length: Is not a number
-CONSOLE ERROR: Algorithm: HMAC: HmacKeyParams: length: Outside of numeric range
-CONSOLE ERROR: Algorithm: HMAC: HmacKeyParams: length: Outside of numeric range
-CONSOLE ERROR: Algorithm: HMAC: HmacKeyParams: length: Is not a number
-CONSOLE ERROR: Algorithm: HMAC: HmacKeyParams: length: Is not a number
+CONSOLE ERROR: Algorithm: HMAC: HmacKeyGenParams: length: Outside of numeric range
+CONSOLE ERROR: Algorithm: HMAC: HmacKeyGenParams: hash: Algorithm: Unrecognized algorithm name
+CONSOLE ERROR: Algorithm: HMAC: HmacKeyGenParams: length: Outside of numeric range
+CONSOLE ERROR: Algorithm: HMAC: HmacKeyGenParams: length: Is not a number
+CONSOLE ERROR: Algorithm: HMAC: HmacKeyGenParams: length: Outside of numeric range
+CONSOLE ERROR: Algorithm: HMAC: HmacKeyGenParams: length: Outside of numeric range
+CONSOLE ERROR: Algorithm: HMAC: HmacKeyGenParams: length: Is not a number
+CONSOLE ERROR: Algorithm: HMAC: HmacKeyGenParams: length: Is not a number
 CONSOLE ERROR: Invalid key length: it is either zero or not a multiple of 8 bits
-CONSOLE ERROR: Algorithm: RSASSA-PKCS1-v1_5: RsaKeyGenParams: modulusLength: Outside of numeric range
-CONSOLE ERROR: Algorithm: RSASSA-PKCS1-v1_5: RsaKeyGenParams: modulusLength: Is not a number
-CONSOLE ERROR: Algorithm: RSASSA-PKCS1-v1_5: RsaKeyGenParams: modulusLength: Missing required property
-CONSOLE ERROR: Algorithm: RSASSA-PKCS1-v1_5: RsaKeyGenParams: publicExponent: Missing or not a Uint8Array
-CONSOLE ERROR: Algorithm: RSASSA-PKCS1-v1_5: RsaKeyGenParams: publicExponent: Missing or not a Uint8Array
-CONSOLE ERROR: Algorithm: RSASSA-PKCS1-v1_5: RsaKeyGenParams: publicExponent: Missing or not a Uint8Array
+CONSOLE ERROR: Algorithm: RSASSA-PKCS1-v1_5: RsaHashedKeyGenParams: modulusLength: Outside of numeric range
+CONSOLE ERROR: Algorithm: RSASSA-PKCS1-v1_5: RsaHashedKeyGenParams: modulusLength: Is not a number
+CONSOLE ERROR: Algorithm: RSASSA-PKCS1-v1_5: RsaHashedKeyGenParams: modulusLength: Missing required property
+CONSOLE ERROR: Algorithm: RSASSA-PKCS1-v1_5: RsaHashedKeyGenParams: publicExponent: Missing or not a Uint8Array
+CONSOLE ERROR: Algorithm: RSASSA-PKCS1-v1_5: RsaHashedKeyGenParams: publicExponent: Missing or not a Uint8Array
+CONSOLE ERROR: Algorithm: RSASSA-PKCS1-v1_5: RsaHashedKeyGenParams: publicExponent: Missing or not a Uint8Array
 CONSOLE ERROR: Algorithm: RSAES-PKCS1-v1_5: RsaKeyGenParams: modulusLength: Outside of numeric range
 CONSOLE ERROR: Algorithm: RSAES-PKCS1-v1_5: RsaKeyGenParams: modulusLength: Is not a number
 CONSOLE ERROR: Algorithm: RSAES-PKCS1-v1_5: RsaKeyGenParams: modulusLength: Missing required property

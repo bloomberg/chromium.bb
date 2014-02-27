@@ -32,6 +32,8 @@
 #include "public/platform/WebCryptoKey.h"
 
 #include "public/platform/WebCryptoAlgorithm.h"
+#include "public/platform/WebCryptoAlgorithmParams.h"
+#include "public/platform/WebCryptoKeyAlgorithm.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
 
@@ -39,7 +41,7 @@ namespace blink {
 
 class WebCryptoKeyPrivate : public ThreadSafeRefCounted<WebCryptoKeyPrivate> {
 public:
-    WebCryptoKeyPrivate(PassOwnPtr<WebCryptoKeyHandle> handle, WebCryptoKeyType type, bool extractable, const WebCryptoAlgorithm& algorithm, WebCryptoKeyUsageMask usages)
+    WebCryptoKeyPrivate(PassOwnPtr<WebCryptoKeyHandle> handle, WebCryptoKeyType type, bool extractable, const WebCryptoKeyAlgorithm& algorithm, WebCryptoKeyUsageMask usages)
         : handle(handle)
         , type(type)
         , extractable(extractable)
@@ -52,11 +54,11 @@ public:
     const OwnPtr<WebCryptoKeyHandle> handle;
     const WebCryptoKeyType type;
     const bool extractable;
-    const WebCryptoAlgorithm algorithm;
+    const WebCryptoKeyAlgorithm algorithm;
     const WebCryptoKeyUsageMask usages;
 };
 
-WebCryptoKey WebCryptoKey::create(WebCryptoKeyHandle* handle, WebCryptoKeyType type, bool extractable, const WebCryptoAlgorithm& algorithm, WebCryptoKeyUsageMask usages)
+WebCryptoKey WebCryptoKey::create(WebCryptoKeyHandle* handle, WebCryptoKeyType type, bool extractable, const WebCryptoKeyAlgorithm& algorithm, WebCryptoKeyUsageMask usages)
 {
     WebCryptoKey key;
     key.m_private = adoptRef(new WebCryptoKeyPrivate(adoptPtr(handle), type, extractable, algorithm, usages));
@@ -86,7 +88,7 @@ bool WebCryptoKey::extractable() const
     return m_private->extractable;
 }
 
-const WebCryptoAlgorithm& WebCryptoKey::algorithm() const
+const WebCryptoKeyAlgorithm& WebCryptoKey::algorithm() const
 {
     ASSERT(!isNull());
     return m_private->algorithm;

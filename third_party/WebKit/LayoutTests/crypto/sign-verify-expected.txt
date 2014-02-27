@@ -1,12 +1,5 @@
 CONSOLE ERROR: Algorithm: SHA-1: Unsupported operation
 CONSOLE ERROR: Algorithm: RSAES-PKCS1-v1_5: Unsupported operation
-CONSOLE ERROR: key.algorithm does not match that of operation (HMAC's hash differs)
-CONSOLE ERROR: Algorithm: HMAC: HmacParams: hash: Missing or not a dictionary
-CONSOLE ERROR: Algorithm: HMAC: HmacParams: hash: Algorithm: Not an object
-CONSOLE ERROR: Algorithm: HMAC: HmacParams: hash: Algorithm: Not an object
-CONSOLE ERROR: Algorithm: HMAC: HmacParams: hash: Algorithm: name: Missing or not a string
-CONSOLE ERROR: Algorithm: HMAC: HmacParams: hash: Algorithm: Unrecognized algorithm name
-CONSOLE ERROR: Algorithm: HMAC: HmacParams: hash: Algorithm: AES-CBC: Unsupported operation
 Tests cypto.subtle.sign and crypto.subtle.verify
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -15,26 +8,32 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS tmpKey.type is 'secret'
 PASS tmpKey.extractable is false
 PASS tmpKey.algorithm.name is 'HMAC'
+PASS tmpKey.algorithm.hash.name is 'SHA-1'
 PASS tmpKey.usages.join(',') is 'sign,verify'
 PASS tmpKey.type is 'secret'
 PASS tmpKey.extractable is false
 PASS tmpKey.algorithm.name is 'HMAC'
+PASS tmpKey.algorithm.hash.name is 'SHA-256'
 PASS tmpKey.usages.join(',') is 'sign,verify'
 PASS tmpKey.type is 'secret'
 PASS tmpKey.extractable is false
 PASS tmpKey.algorithm.name is 'HMAC'
+PASS tmpKey.algorithm.hash.name is 'SHA-1'
 PASS tmpKey.usages.join(',') is 'sign,verify'
 PASS tmpKey.type is 'secret'
 PASS tmpKey.extractable is false
 PASS tmpKey.algorithm.name is 'HMAC'
+PASS tmpKey.algorithm.hash.name is 'SHA-1'
 PASS tmpKey.usages.join(',') is 'sign,verify'
 PASS tmpKey.type is 'secret'
 PASS tmpKey.extractable is false
 PASS tmpKey.algorithm.name is 'HMAC'
+PASS tmpKey.algorithm.hash.name is 'SHA-256'
 PASS tmpKey.usages.join(',') is 'sign,verify'
 PASS tmpKey.type is 'secret'
 PASS tmpKey.extractable is false
 PASS tmpKey.algorithm.name is 'HMAC'
+PASS tmpKey.algorithm.hash.name is 'SHA-256'
 PASS tmpKey.usages.join(',') is 'sign,verify'
 PASS: Mac should be [fbdb1d1b18aa6c08324b7d64b71fb76370690e1d] and was
 PASS: Mac should be [b613679a0814d9ec772f95d778c35fc5ff1697c493715653c6c712144292c5ad] and was
@@ -54,18 +53,11 @@ PASS verifyResult is false
 PASS verifyResult is false
 PASS verifyResult is false
 PASS verifyResult is false
-PASS crypto.subtle.verify(hmacSha1, keys.hmacSha1, null, data) threw exception TypeError: Failed to execute 'verify' on 'SubtleCrypto': Invalid signature argument.
-PASS crypto.subtle.verify(hmacSha1, keys.hmacSha1, 'a', data) threw exception TypeError: Failed to execute 'verify' on 'SubtleCrypto': Invalid signature argument.
-PASS crypto.subtle.verify(hmacSha1, keys.hmacSha1, [], data) threw exception TypeError: Failed to execute 'verify' on 'SubtleCrypto': Invalid signature argument.
+PASS crypto.subtle.verify(hmac, keys.hmacSha1, null, data) threw exception TypeError: Failed to execute 'verify' on 'SubtleCrypto': Invalid signature argument.
+PASS crypto.subtle.verify(hmac, keys.hmacSha1, 'a', data) threw exception TypeError: Failed to execute 'verify' on 'SubtleCrypto': Invalid signature argument.
+PASS crypto.subtle.verify(hmac, keys.hmacSha1, [], data) threw exception TypeError: Failed to execute 'verify' on 'SubtleCrypto': Invalid signature argument.
 PASS: 'crypto.subtle.sign({name: 'sha-1'}, keys.hmacSha1, data)' rejected with null
 PASS: 'crypto.subtle.sign({name: 'RSAES-PKCS1-v1_5'}, keys.hmacSha1, data)' rejected with null
-PASS: 'crypto.subtle.sign({name: 'hmac', hash: {name: 'sha-256'}}, keys.hmacSha1, data)' rejected with null
-PASS: 'crypto.subtle.sign({name: 'hmac'}, keys.hmacSha1, data)' rejected with null
-PASS: 'crypto.subtle.sign({name: 'hmac', hash: 3}, keys.hmacSha1, data)' rejected with null
-PASS: 'crypto.subtle.sign({name: 'hmac', hash: null}, keys.hmacSha1, data)' rejected with null
-PASS: 'crypto.subtle.sign({name: 'hmac', hash: {}}, keys.hmacSha1, data)' rejected with null
-PASS: 'crypto.subtle.sign({name: 'hmac', hash: {name: 'foo'}}, keys.hmacSha1, data)' rejected with null
-PASS: 'crypto.subtle.sign({name: 'hmac', hash: {name: 'AES-CBC'}}, keys.hmacSha1, data)' rejected with null
 PASS successfullyParsed is true
 
 TEST COMPLETE
