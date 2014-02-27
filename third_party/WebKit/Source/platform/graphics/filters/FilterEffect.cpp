@@ -70,12 +70,6 @@ bool FilterEffect::isFilterSizeValid(const FloatRect& rect)
     return true;
 }
 
-
-bool FilterEffect::isFilterSizeValid(const IntRect& rect)
-{
-    return isFilterSizeValid(FloatRect(rect));
-}
-
 FloatRect FilterEffect::determineAbsolutePaintRect(const FloatRect& originalRequestedRect)
 {
     FloatRect requestedRect = originalRequestedRect;
