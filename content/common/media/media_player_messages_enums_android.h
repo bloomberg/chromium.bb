@@ -12,7 +12,7 @@ enum MediaPlayerHostMsg_Initialize_Type {
 };
 
 // Dictates the session type when an EME session is created.
-enum MediaKeysHostMsg_CreateSession_Type {
+enum CdmHostMsg_CreateSession_Type {
   CREATE_SESSION_TYPE_WEBM,
   CREATE_SESSION_TYPE_MP4,
 };

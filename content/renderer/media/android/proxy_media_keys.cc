@@ -52,7 +52,7 @@ bool ProxyMediaKeys::CreateSession(uint32 session_id,
                                    int init_data_length) {
   // TODO(xhwang): Move these checks up to blink and DCHECK here.
   // See http://crbug.com/342510
-  MediaKeysHostMsg_CreateSession_Type session_type;
+  CdmHostMsg_CreateSession_Type session_type;
   if (content_type == "audio/mp4" || content_type == "video/mp4") {
     session_type = CREATE_SESSION_TYPE_MP4;
   } else if (content_type == "audio/webm" || content_type == "video/webm") {
