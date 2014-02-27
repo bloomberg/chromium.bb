@@ -108,7 +108,8 @@ void RasterizeAndRecordBenchmark::RunOnLayer(PictureLayer* layer) {
     return;
 
 
-  base::TimeDelta min_time = base::TimeDelta::Max();
+  base::TimeDelta min_time =
+      base::TimeDelta::FromInternalValue(std::numeric_limits<int64>::max());
   for (int i = 0; i < record_repeat_count_; ++i) {
     base::TimeTicks start = Now();
     scoped_refptr<Picture> picture = Picture::Create(

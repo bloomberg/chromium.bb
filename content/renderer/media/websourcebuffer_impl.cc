@@ -15,8 +15,6 @@ static base::TimeDelta DoubleToTimeDelta(double time) {
   if (time == std::numeric_limits<double>::infinity())
     return media::kInfiniteDuration();
 
-  // Don't use base::TimeDelta::Max() here, as we want the largest finite time
-  // delta.
   base::TimeDelta max_time = base::TimeDelta::FromInternalValue(kint64max - 1);
   double max_time_in_seconds = max_time.InSecondsF();
 

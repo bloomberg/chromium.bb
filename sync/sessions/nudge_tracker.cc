@@ -192,9 +192,11 @@ bool NudgeTracker::IsTypeThrottled(ModelType type) const {
 base::TimeDelta NudgeTracker::GetTimeUntilNextUnthrottle(
     base::TimeTicks now) const {
   DCHECK(IsAnyTypeThrottled()) << "This function requires a pending unthrottle";
+  const base::TimeDelta kMaxTimeDelta =
+      base::TimeDelta::FromInternalValue(kint64max);
 
   // Return min of GetTimeUntilUnthrottle() values for all IsThrottled() types.
-  base::TimeDelta time_until_next_unthrottle = base::TimeDelta::Max();
+  base::TimeDelta time_until_next_unthrottle = kMaxTimeDelta;
   for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
        it != type_trackers_.end(); ++it) {
     if (it->second.IsThrottled()) {
@@ -203,7 +205,7 @@ base::TimeDelta NudgeTracker::GetTimeUntilNextUnthrottle(
                    it->second.GetTimeUntilUnthrottle(now));
     }
   }
-  DCHECK(!time_until_next_unthrottle.is_max());
+  DCHECK(kMaxTimeDelta != time_until_next_unthrottle);
 
   return time_until_next_unthrottle;
 }

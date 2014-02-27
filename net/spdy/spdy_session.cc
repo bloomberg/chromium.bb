@@ -2723,7 +2723,9 @@ void SpdySession::CheckPingStatus(base::TimeTicks last_check_time) {
 
   if (delay.InMilliseconds() < 0 || last_activity_time_ < last_check_time) {
     // Track all failed PING messages in a separate bucket.
-    RecordPingRTTHistogram(base::TimeDelta::Max());
+    const base::TimeDelta kFailedPing =
+        base::TimeDelta::FromInternalValue(INT_MAX);
+    RecordPingRTTHistogram(kFailedPing);
     CloseSessionResult result =
         DoCloseSession(ERR_SPDY_PING_FAILED, "Failed ping.");
     DCHECK_EQ(result, SESSION_CLOSED_AND_REMOVED);
