@@ -218,6 +218,7 @@ const wchar_t kChromeFrameHelperDll[] = L"chrome_frame_helper.dll";
 const wchar_t kChromeFrameHelperExe[] = L"chrome_frame_helper.exe";
 const wchar_t kChromeFrameHelperWndClass[] = L"ChromeFrameHelperWindowClass";
 const wchar_t kChromeLauncherExe[] = L"chrome_launcher.exe";
+const wchar_t kChromeMetroDll[] = L"metro_driver.dll";
 const wchar_t kChromeNewExe[] = L"new_chrome.exe";
 const wchar_t kChromeOldExe[] = L"old_chrome.exe";
 const wchar_t kCmdInstallApp[] = L"install-application";
