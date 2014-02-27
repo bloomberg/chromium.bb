@@ -11235,7 +11235,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
           <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You've gone incognito.<ph name="END_BOLD">&lt;/strong&gt;</ph>
           Pages you view in incognito tabs won't stick around in your browser's history, cookie store, or search history after you've closed <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>all<ph name="END_BOLD">&lt;/strong&gt;</ph> of your incognito tabs. Any files you download or bookmarks you create will be kept.
           <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
-          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>However, you aren't invisible.<ph name="END_BOLD">&lt;/strong&gt;</ph> Going incognito doesn't hide your browsing from your employer, your internet service provider, or the websites you visit.
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>However, you aren't invisible.<ph name="END_BOLD">&lt;/strong&gt;</ph> Going incognito doesn't hide your browsing from your employer, your internet service provider, governments and other sophisticated attackers, or the websites you visit.
           <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> about incognito browsing.
         </message>
         <message name="IDS_RECEIVED_DOCUMENTS" desc="New tab page section header for received documents">
@@ -11279,7 +11279,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
           &lt;/p&gt;
         </message>
       </if>
-      
+
       <!-- Strings used for non-Android builds -->
       <if expr="not is_android">
         <message name="IDS_NEW_TAB_TITLE"
@@ -11314,7 +11314,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
           <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You've gone incognito.<ph name="END_BOLD">&lt;/strong&gt;</ph>
           Pages you view in incognito tabs won't stick around in your browser's history, cookie store, or search history after you've closed <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>all<ph name="END_BOLD">&lt;/strong&gt;</ph> of your incognito tabs. Any files you download or bookmarks you create will be kept.
           <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
-          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>However, you aren't invisible.<ph name="END_BOLD">&lt;/strong&gt;</ph> Going incognito doesn't hide your browsing from your employer, your internet service provider, or the websites you visit.
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>However, you aren't invisible.<ph name="END_BOLD">&lt;/strong&gt;</ph> Going incognito doesn't hide your browsing from your employer, your internet service provider, governments and other sophisticated attackers, or the websites you visit.
           <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
           <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> about incognito browsing.
         </message>
