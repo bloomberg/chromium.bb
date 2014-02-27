@@ -34,6 +34,11 @@ void PutFileMetadataToBatch(const FileMetadata& file,
 void PutFileTrackerToBatch(const FileTracker& tracker,
                            leveldb::WriteBatch* batch);
 
+void PutFileMetadataDeletionToBatch(const std::string& file_id,
+                                    leveldb::WriteBatch* batch);
+void PutFileTrackerDeletionToBatch(int64 tracker_id,
+                                   leveldb::WriteBatch* batch);
+
 void PopulateFileDetailsByFileResource(
     const google_apis::FileResource& file_resource,
     FileDetails* details);
