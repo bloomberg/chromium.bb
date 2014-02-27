@@ -6,17 +6,11 @@
   font-size: 10px;
 }
 </style>
+<script src="resources/autosizingTest.js"></script>
 <script>
-  if (window.internals) {
-    window.internals.settings.setTextAutosizingEnabled(true);
-    window.internals.settings.setTextAutosizingWindowSizeOverride(320, 480);
-  } else if (window.console && console.warn) {
-    console.warn("This test depends on the Text Autosizing setting being true, so run it in DumpRenderTree, or manually enable Text Autosizing");
-  }
-
   function test() {
     var fontSizeOriginal = getAutosizedFontSize();
-    window.internals.settings.setTextAutosizingWindowSizeOverride(520, 480);
+    setWindowSizeOverride(520, 480);
     var fontSizeUpdated = getAutosizedFontSize();
 
     if (fontSizeOriginal != fontSizeUpdated)

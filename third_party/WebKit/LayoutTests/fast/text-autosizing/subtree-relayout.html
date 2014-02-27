@@ -10,18 +10,12 @@
 }
 
 </style>
+<script src="resources/autosizingTest.js"></script>
 </head>
 <body>
 <div id="subtree"></div>
+
 <script>
-
-if (window.internals) {
-    window.internals.settings.setTextAutosizingEnabled(true);
-    window.internals.settings.setTextAutosizingWindowSizeOverride(320, 480);
-} else {
-    console.warn("Please use DumpRenderTree to run this test.");
-}
-
 if (window.testRunner)
     testRunner.waitUntilDone();
 

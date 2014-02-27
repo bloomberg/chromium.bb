@@ -8,14 +8,9 @@ html { font-size: 16px; }
 body { width: 800px; margin: 0; overflow-y: hidden; }
 </style>
 
+<script src="resources/autosizingTest.js"></script>
 <script>
-if (window.internals) {
-    window.internals.settings.setTextAutosizingEnabled(true);
-    window.internals.settings.setTextAutosizingWindowSizeOverride(320, 480);
-    window.internals.settings.setAccessibilityFontScaleFactor(2);
-} else {
-    console.warn("Please use DumpRenderTree to run this test.");
-}
+setFontScaleFactor(2);
 </script>
 
 </head>
