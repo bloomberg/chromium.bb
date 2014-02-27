@@ -29,7 +29,7 @@ bool FLAGS_track_retransmission_history = false;
 // If true, QUIC connections will support the use of a pacing algorithm when
 // sending packets, in an attempt to reduce packet loss.  The client must also
 // request pacing for the server to enable it.
-bool FLAGS_enable_quic_pacing = false;
+bool FLAGS_enable_quic_pacing = true;
 
 namespace net {
 namespace {

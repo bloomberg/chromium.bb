@@ -418,6 +418,10 @@ const char kDisableQuic[]                   = "disable-quic";
 // testing flag.  This only has an effect if QUIC protocol is enabled.
 const char kDisableQuicHttps[]              = "disable-quic-https";
 
+// Disable use of pacing of QUIC packets.
+// This only has an effect if QUIC protocol is enabled.
+const char kDisableQuicPacing[]             = "disable-quic-pacing";
+
 // Disable use of Chromium's port selection for the ephemeral port via bind().
 // This only has an effect if QUIC protocol is enabled.
 const char kDisableQuicPortSelection[]      = "disable-quic-port_selection";
@@ -723,6 +727,10 @@ const char kEnableQuic[]                    = "enable-quic";
 // Enables support for the HTTPS over QUIC protocol.  This is a temporary
 // testing flag.  This only has an effect if QUIC protocol is enabled.
 const char kEnableQuicHttps[]               = "enable-quic-https";
+
+// Disable use of pacing of QUIC packets.
+// This only has an effect if QUIC protocol is enabled.
+const char kEnableQuicPacing[]              = "enable-quic-pacing";
 
 // Enable use of Chromium's port selection for the ephemeral port via bind().
 // This only has an effect if QUIC protocol is enabled.

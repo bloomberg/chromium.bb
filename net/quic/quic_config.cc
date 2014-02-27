@@ -339,6 +339,15 @@ void QuicConfig::SetDefaults() {
                                         kDefaultInitialWindow);
 }
 
+void QuicConfig::EnablePacing(bool enable_pacing) {
+  QuicTagVector congestion_control;
+  if (enable_pacing) {
+    congestion_control.push_back(kPACE);
+  }
+  congestion_control.push_back(kQBIC);
+  congestion_control_.set(congestion_control, kQBIC);
+}
+
 void QuicConfig::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
   congestion_control_.ToHandshakeMessage(out);
   idle_connection_state_lifetime_seconds_.ToHandshakeMessage(out);

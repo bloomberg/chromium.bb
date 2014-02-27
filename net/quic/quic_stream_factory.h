@@ -94,7 +94,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       QuicClock* clock,
       size_t max_packet_length,
       const QuicVersionVector& supported_versions,
-      bool enable_port_selection);
+      bool enable_port_selection,
+      bool enable_pacing);
   virtual ~QuicStreamFactory();
 
   // Creates a new QuicHttpStream to |host_port_proxy_pair| which will be
@@ -162,6 +163,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
     DCHECK(!quic_server_info_factory_);
     quic_server_info_factory_ = quic_server_info_factory;
   }
+
+  bool enable_pacing() const { return enable_pacing_; }
 
  private:
   class Job;
@@ -255,6 +258,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // then we will just let the OS select a random client port for each new
   // connection.
   bool enable_port_selection_;
+
+  // True if packet pacing should be advertised during the crypto handshake.
+  bool enable_pacing_;
 
   // Each profile will (probably) have a unique port_seed_ value.  This value is
   // used to help seed a pseudo-random number generator (PortSuggester) so that

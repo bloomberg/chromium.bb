@@ -126,6 +126,7 @@ const char kQuicFieldTrialName[] = "QUIC";
 const char kQuicFieldTrialEnabledGroupName[] = "Enabled";
 const char kQuicFieldTrialHttpsEnabledGroupName[] = "HttpsEnabled";
 const char kQuicFieldTrialPacketLengthSuffix[] = "BytePackets";
+const char kQuicFieldTrialPacingSuffix[] = "WithPacing";
 
 const char kSpdyFieldTrialName[] = "SPDY";
 const char kSpdyFieldTrialDisabledGroupName[] = "SpdyDisabled";
@@ -1013,6 +1014,8 @@ void IOThread::InitializeNetworkSessionParams(
       &params->trusted_spdy_proxy);
   globals_->enable_quic.CopyToIfSet(&params->enable_quic);
   globals_->enable_quic_https.CopyToIfSet(&params->enable_quic_https);
+  globals_->enable_quic_pacing.CopyToIfSet(
+      &params->enable_quic_pacing);
   globals_->enable_quic_port_selection.CopyToIfSet(
       &params->enable_quic_port_selection);
   globals_->quic_max_packet_length.CopyToIfSet(&params->quic_max_packet_length);
@@ -1102,6 +1105,8 @@ void IOThread::ConfigureQuic(const CommandLine& command_line) {
   if (enable_quic) {
     globals_->enable_quic_https.set(
         ShouldEnableQuicHttps(command_line, quic_trial_group));
+    globals_->enable_quic_pacing.set(
+        ShouldEnableQuicPacing(command_line, quic_trial_group));
     globals_->enable_quic_port_selection.set(
         ShouldEnableQuicPortSelection(command_line));
   }
@@ -1178,6 +1183,17 @@ bool IOThread::ShouldEnableQuicPortSelection(
 #else
   return true;
 #endif
+}
+
+bool IOThread::ShouldEnableQuicPacing(const CommandLine& command_line,
+                                      base::StringPiece quic_trial_group) {
+  if (command_line.HasSwitch(switches::kEnableQuicPacing))
+    return true;
+
+  if (command_line.HasSwitch(switches::kDisableQuicPacing))
+    return false;
+
+  return quic_trial_group.ends_with(kQuicFieldTrialPacingSuffix);
 }
 
 size_t IOThread::GetQuicMaxPacketLength(const CommandLine& command_line,

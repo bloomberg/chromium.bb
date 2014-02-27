@@ -280,7 +280,8 @@ QuicStreamFactory::QuicStreamFactory(
     QuicClock* clock,
     size_t max_packet_length,
     const QuicVersionVector& supported_versions,
-    bool enable_port_selection)
+    bool enable_port_selection,
+    bool enable_pacing)
     : require_confirmation_(true),
       host_resolver_(host_resolver),
       client_socket_factory_(client_socket_factory),
@@ -292,9 +293,11 @@ QuicStreamFactory::QuicStreamFactory(
       max_packet_length_(max_packet_length),
       supported_versions_(supported_versions),
       enable_port_selection_(enable_port_selection),
+      enable_pacing_(enable_pacing),
       port_seed_(random_generator_->RandUint64()),
       weak_factory_(this) {
   config_.SetDefaults();
+  config_.EnablePacing(enable_pacing_);
   config_.set_idle_connection_state_lifetime(
       QuicTime::Delta::FromSeconds(30),
       QuicTime::Delta::FromSeconds(30));
