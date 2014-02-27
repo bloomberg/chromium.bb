@@ -36,10 +36,13 @@
 
   Polymer('control-panel', {
     /**
-     * Initialize an element. This method is called automatically when the
+     * Initializes an element. This method is called automatically when the
      * element is ready.
      */
     ready: function() {
+      var onFocusoutBound = this.onVolumeControllerFocusout_.bind(this);
+      this.$.volumeSlider.addEventListener('focusout', onFocusoutBound);
+      this.$.volumeButton.addEventListener('focusout', onFocusoutBound);
     },
 
     /**
@@ -136,13 +139,39 @@
      * @type {Event} event The event.
      */
     volumeButtonClick: function(event) {
+      this.showVolumeController_(this.volumeSliderShown);
+      event.stopPropagation();
+    },
+
+    /**
+     * Invoked when the focus goes out of the volume elements.
+     * @param {FocusEvent} event The focusout event.
+     * @private
+     */
+    onVolumeControllerFocusout_: function(event) {
       if (this.volumeSliderShown) {
+        // If the focus goes out of the volume, hide the volume control.
+        if (!event.relatedTarget ||
+            (event.relatedTarget !== this.$.volumeButton &&
+             event.relatedTarget !== this.$.volumeSlider)) {
+          this.showVolumeController_(false);
+          this.volumeSliderShown = false;
+        }
+      }
+    },
+
+    /**
+     * Shows/hides the volume controller.
+     * @param {boolean} show True to show the controller, false to hide.
+     * @private
+     */
+    showVolumeController_: function(show) {
+      if (show) {
         matchBottomLine(this.$.volumeContainer, this.$.volumeButton);
         this.$.volumeContainer.style.visibility = 'visible';
       } else {
         this.$.volumeContainer.style.visibility = 'hidden';
       }
-      event.stopPropagation();
     },
   });
 })();  // Anonymous closure

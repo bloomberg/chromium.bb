@@ -766,7 +766,7 @@ audioPlayerInitializationQueue.run(function(callback) {
       hidden: true,
       minHeight: newAudioPlayerEnabled ? 116 : (35 + 58),
       minWidth: newAudioPlayerEnabled ? 292 : 280,
-      height: newAudioPlayerEnabled ? 356 : (35 + 58),
+      height: newAudioPlayerEnabled ? 116 : (35 + 58),  // default collapsed
       width: newAudioPlayerEnabled ? 292 : 280,
   });
 

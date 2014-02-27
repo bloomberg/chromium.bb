@@ -14,6 +14,8 @@
       this.tracksObserver_ = new ArrayObserver(
           this.tracks,
           this.tracksValueChanged_.bind(this));
+
+      window.addEventListener('resize', this.onWindowResize_.bind(this));
     },
 
     /**
@@ -68,7 +70,7 @@
       if (oldValue === newValue)
         return;
 
-      if (!isNaN(oldValue) && oldValue !== -1)
+      if (!isNaN(oldValue) && 0 <= oldValue && oldValue < this.tracks.length)
         this.tracks[oldValue].active = false;
 
       if (0 <= newValue && newValue < this.tracks.length) {
@@ -77,14 +79,7 @@
           // Success
           this.tracks[newValue].active = true;
 
-          var trackSelector = '.track[index="' + newValue + '"]';
-          var trackElement = this.impl.querySelector(trackSelector);
-          if (trackElement) {
-            this.scrollTop = Math.max(
-                0,
-                (trackElement.offsetTop + trackElement.offsetHeight -
-                 this.clientHeight));
-          }
+          this.ensureTrackInViewport_(newValue /* trackIndex */);
           return;
         }
       }
@@ -136,8 +131,34 @@
      * @param {Event} event Click event.
      */
     trackClicked: function(event) {
-      var track = event.target.templateInstance.model;
-      this.selectTrack(track);
+      var index = ~~event.currentTarget.getAttribute('index');
+      var track = this.tracks[index];
+      if (track)
+        this.selectTrack(track);
+    },
+
+    /**
+     * Invoked when the window is resized.
+     * @private
+     */
+    onWindowResize_: function() {
+      this.ensureTrackInViewport_(this.currentTrackIndex);
+    },
+
+    /**
+     * Scrolls the track list to ensure the given track in the viewport.
+     * @param {number} trackIndex The index of the track to be in the viewport.
+     * @private
+     */
+    ensureTrackInViewport_: function(trackIndex) {
+      var trackSelector = '.track[index="' + trackIndex + '"]';
+      var trackElement = this.impl.querySelector(trackSelector);
+      if (trackElement) {
+        this.scrollTop = Math.max(
+            0,
+            (trackElement.offsetTop + trackElement.offsetHeight -
+             this.clientHeight));
+      }
     },
 
     /**
