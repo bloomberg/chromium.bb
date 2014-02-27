@@ -94,13 +94,11 @@ void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(Window* child,
   if (visible && window_state->IsMinimized())
     window_state->Unminimize();
 
-  if (child->TargetVisibility()) {
+  if (child->TargetVisibility())
     WindowPositioner::RearrangeVisibleWindowOnShow(child);
-  } else {
-    if (wm::GetWindowState(child)->IsFullscreen())
-      UpdateFullscreenState();
+  else
     WindowPositioner::RearrangeVisibleWindowOnHideOrRemove(child);
-  }
+  UpdateFullscreenState();
   UpdateShelfVisibility();
 }
 
@@ -125,6 +123,26 @@ void WorkspaceLayoutManager::OnDisplayWorkAreaInsetsChanged() {
 
 //////////////////////////////////////////////////////////////////////////////
 // WorkspaceLayoutManager, aura::WindowObserver implementation:
+
+void WorkspaceLayoutManager::OnWindowHierarchyChanged(
+    const WindowObserver::HierarchyChangeParams& params) {
+  if (!wm::GetWindowState(params.target)->IsActive())
+    return;
+  // If the window is already tracked by the workspace this update would be
+  // redundant as the fullscreen and shelf state would have been handled in
+  // OnWindowAddedToLayout.
+  if (windows_.find(params.target) != windows_.end())
+    return;
+
+  // If the active window has moved to this root window then update the
+  // fullscreen state.
+  // TODO(flackr): Track the active window leaving this root window and update
+  // the fullscreen state accordingly.
+  if (params.new_parent && params.new_parent->GetRootWindow() == root_window_) {
+    UpdateFullscreenState();
+    UpdateShelfVisibility();
+  }
+}
 
 void WorkspaceLayoutManager::OnWindowPropertyChanged(Window* window,
                                                      const void* key,
@@ -167,6 +185,8 @@ void WorkspaceLayoutManager::OnWindowActivated(aura::Window* gained_active,
     window_state->Unminimize();
     DCHECK(!window_state->IsMinimized());
   }
+  UpdateFullscreenState();
+  UpdateShelfVisibility();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -220,6 +240,13 @@ void WorkspaceLayoutManager::UpdateShelfVisibility() {
 }
 
 void WorkspaceLayoutManager::UpdateFullscreenState() {
+  // TODO(flackr): The fullscreen state is currently tracked per workspace
+  // but the shell notification implies a per root window state. Currently
+  // only windows in the default workspace container will go fullscreen but
+  // this should really be tracked by the RootWindowController since
+  // technically any container could get a fullscreen window.
+  if (!shelf_)
+    return;
   bool is_fullscreen = GetRootWindowController(
       window_->GetRootWindow())->GetWindowForFullscreenMode() != NULL;
   if (is_fullscreen != is_fullscreen_) {

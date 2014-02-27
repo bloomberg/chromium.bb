@@ -5,6 +5,7 @@
 #include "ash/switchable_windows.h"
 
 #include "ash/shell_window_ids.h"
+#include "ui/aura/window.h"
 
 namespace ash {
 
@@ -16,5 +17,15 @@ const int kSwitchableWindowContainerIds[] = {
 
 const size_t kSwitchableWindowContainerIdsLength =
     arraysize(kSwitchableWindowContainerIds);
+
+bool IsSwitchableContainer(const aura::Window* window) {
+  if (!window)
+    return false;
+  for (size_t i = 0; i < kSwitchableWindowContainerIdsLength; ++i) {
+    if (window->id() == kSwitchableWindowContainerIds[i])
+      return true;
+  }
+  return false;
+}
 
 }  // namespace ash

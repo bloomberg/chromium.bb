@@ -608,8 +608,10 @@ void PanelLayoutManager::Relayout() {
     }
 
     // If the shelf is currently hidden (full-screen mode), minimize panel until
-    // full-screen mode is exited.
-    if (restore_windows_on_shelf_visible_) {
+    // full-screen mode is exited. When a panel is dragged from another display
+    // the shelf state does not update before the panel is added so we exclude
+    // the dragged panel.
+    if (panel != dragged_panel_ && restore_windows_on_shelf_visible_) {
       wm::GetWindowState(panel)->Minimize();
       restore_windows_on_shelf_visible_->Add(panel);
       continue;

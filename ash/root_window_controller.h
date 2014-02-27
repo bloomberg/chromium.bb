@@ -112,7 +112,12 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   virtual ~RootWindowController();
 
   aura::Window* root_window() { return dispatcher()->window(); }
+  const aura::Window* root_window() const { return dispatcher()->window(); }
+
   aura::WindowEventDispatcher* dispatcher() { return dispatcher_.get(); }
+  const aura::WindowEventDispatcher* dispatcher() const {
+    return dispatcher_.get();
+  }
 
   RootWindowLayoutManager* root_window_layout() { return root_window_layout_; }
 

@@ -315,6 +315,16 @@ TEST_F(WindowSelectorTest, FullscreenWindow) {
   ToggleOverview();
   ClickWindow(window2.get());
   EXPECT_TRUE(wm::GetWindowState(window1.get())->IsFullscreen());
+
+  // Verify that selecting the panel will make it visible.
+  // TODO(flackr): Click on panel rather than cycle to it when
+  // clicking on panels is fixed, see http://crbug.com/339834.
+  Cycle(WindowSelector::FORWARD);
+  Cycle(WindowSelector::FORWARD);
+  StopCycling();
+  EXPECT_TRUE(wm::GetWindowState(panel1.get())->IsActive());
+  EXPECT_TRUE(wm::GetWindowState(window1.get())->IsFullscreen());
+  EXPECT_TRUE(panel1->IsVisible());
 }
 
 // Tests that the shelf dimming state is removed while in overview and restored

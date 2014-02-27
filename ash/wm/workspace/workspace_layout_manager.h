@@ -63,6 +63,8 @@ class ASH_EXPORT WorkspaceLayoutManager
   virtual void OnDisplayWorkAreaInsetsChanged() OVERRIDE;
 
   // Overriden from WindowObserver:
+  virtual void OnWindowHierarchyChanged(
+      const WindowObserver::HierarchyChangeParams& params) OVERRIDE;
   virtual void OnWindowPropertyChanged(aura::Window* window,
                                        const void* key,
                                        intptr_t old) OVERRIDE;

@@ -400,6 +400,41 @@ TEST_F(PanelWindowResizerTest, AttachToSecondDisplay) {
   EXPECT_EQ(internal::kShellWindowId_PanelContainer, window->parent()->id());
 }
 
+TEST_F(PanelWindowResizerTest, AttachToSecondFullscreenDisplay) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("600x400,600x600");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  scoped_ptr<aura::Window> window(
+      CreatePanelWindow(gfx::Point(0, 0)));
+  scoped_ptr<aura::Window> fullscreen(
+      CreateTestWindowInShellWithBounds(gfx::Rect(600, 0, 101, 101)));
+  wm::GetWindowState(fullscreen.get())->Activate();
+  wm::GetWindowState(fullscreen.get())->ToggleFullscreen();
+  EXPECT_TRUE(wm::GetWindowState(fullscreen.get())->IsFullscreen());
+
+  gfx::Rect initial_bounds = window->GetBoundsInScreen();
+  EXPECT_EQ(root_windows[0], window->GetRootWindow());
+
+  // Activate and drag the window to the other display's launcher.
+  wm::GetWindowState(window.get())->Activate();
+  DragStart(window.get());
+  DragMove(500, 250);
+  EXPECT_EQ(initial_bounds.x() + 500, window->GetBoundsInScreen().x());
+  EXPECT_GT(window->GetBoundsInScreen().y(),
+            initial_bounds.y() + 200);
+  DragEnd();
+
+  // When dropped should move to second display's panel container.
+  EXPECT_EQ(root_windows[1], window->GetRootWindow());
+  EXPECT_TRUE(wm::GetWindowState(window.get())->panel_attached());
+  EXPECT_EQ(internal::kShellWindowId_PanelContainer, window->parent()->id());
+  EXPECT_TRUE(window->IsVisible());
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsActive());
+  EXPECT_EQ(initial_bounds.y() + 200, window->GetBoundsInScreen().y());
+}
+
 TEST_F(PanelWindowResizerTest, RevertDragRestoresAttachment) {
   scoped_ptr<aura::Window> window(
       CreatePanelWindow(gfx::Point(0, 0)));

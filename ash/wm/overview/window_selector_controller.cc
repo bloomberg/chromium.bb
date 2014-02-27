@@ -71,8 +71,8 @@ bool WindowSelectorController::IsSelecting() {
 }
 
 void WindowSelectorController::OnWindowSelected(aura::Window* window) {
-  window_selector_.reset();
   wm::ActivateWindow(window);
+  window_selector_.reset();
   last_selection_time_ = base::Time::Now();
   Shell::GetInstance()->mru_window_tracker()->SetIgnoreActivations(false);
 }

@@ -46,17 +46,6 @@ void AddDraggedWindows(aura::Window* root,
   }
 }
 
-// Returns true if |window| is a container whose windows can be cycled to.
-bool IsSwitchableContainer(aura::Window* window) {
-  if (!window)
-    return false;
-  for (size_t i = 0; i < kSwitchableWindowContainerIdsLength; ++i) {
-    if (window->id() == kSwitchableWindowContainerIds[i])
-      return true;
-  }
-  return false;
-}
-
 // Returns whether |w1| should be considered less recently used than |w2|. This
 // is used for a stable sort to move minimized windows to the LRU end of the
 // list.

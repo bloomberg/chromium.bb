@@ -24,6 +24,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_factory.h"
 #include "ash/shell_window_ids.h"
+#include "ash/switchable_windows.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/touch/touch_hud_debug.h"
@@ -570,16 +571,29 @@ void RootWindowController::UpdateShelfVisibility() {
 }
 
 const aura::Window* RootWindowController::GetWindowForFullscreenMode() const {
-  const aura::Window::Windows& windows =
-      GetContainer(kShellWindowId_DefaultContainer)->children();
   const aura::Window* topmost_window = NULL;
-  for (aura::Window::Windows::const_reverse_iterator iter = windows.rbegin();
-       iter != windows.rend(); ++iter) {
-    if (((*iter)->type() == ui::wm::WINDOW_TYPE_NORMAL ||
-         (*iter)->type() == ui::wm::WINDOW_TYPE_PANEL) &&
-        (*iter)->layer()->GetTargetVisibility()) {
-      topmost_window = *iter;
-      break;
+  const aura::Window* active_window = wm::GetActiveWindow();
+  if (active_window && active_window->GetRootWindow() == root_window() &&
+      IsSwitchableContainer(active_window->parent())) {
+    // Use the active window when it is on the current root window to determine
+    // the fullscreen state to allow temporarily using a panel or docked window
+    // (which are always above the default container) while a fullscreen
+    // window is open. We only use the active window when in a switchable
+    // container as the launcher should not exit fullscreen mode.
+    topmost_window = active_window;
+  } else {
+    // Otherwise, use the topmost window on the root window's default container
+    // when there is no active window on this root window.
+    const aura::Window::Windows& windows =
+        GetContainer(kShellWindowId_DefaultContainer)->children();
+    for (aura::Window::Windows::const_reverse_iterator iter = windows.rbegin();
+         iter != windows.rend(); ++iter) {
+      if (((*iter)->type() == ui::wm::WINDOW_TYPE_NORMAL ||
+           (*iter)->type() == ui::wm::WINDOW_TYPE_PANEL) &&
+          (*iter)->layer()->GetTargetVisibility()) {
+        topmost_window = *iter;
+        break;
+      }
     }
   }
   while (topmost_window) {
