@@ -49,7 +49,6 @@ public:
     String transformString() const;
     String viewTargetString() const { return m_viewTargetString; }
 
-    SVGElement* contextElement() const { return m_contextElement; }
     void detachContextElement();
 
     SVGTransformList* transform() { return m_transform ? m_transform->baseValue() : 0; }
