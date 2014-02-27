@@ -197,7 +197,10 @@ def main(argv):
 
     # Cache templates
     jinja_env = initialize_jinja_env(cache_dir)
-    for template_filename in os.listdir(templates_dir):
+    template_filenames = [filename for filename in os.listdir(templates_dir)
+                          # Skip .svn, directories, etc.
+                          if filename.endswith(('.cpp', '.h'))]
+    for template_filename in template_filenames:
         jinja_env.get_template(template_filename)
 
     # Create a dummy file as output for the build system,
