@@ -9,6 +9,7 @@
 #include "media/cast/audio_receiver/audio_receiver.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
+#include "media/cast/logging/simple_event_subscriber.h"
 #include "media/cast/rtcp/test_rtcp_packet_builder.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/transport/pacing/mock_paced_packet_sender.h"
@@ -125,6 +126,9 @@ class AudioReceiverTest : public ::testing::Test {
 };
 
 TEST_F(AudioReceiverTest, GetOnePacketEncodedframe) {
+  SimpleEventSubscriber event_subscriber;
+  cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber);
+
   Configure(true);
   EXPECT_CALL(mock_transport_, SendRtcpPacket(testing::_)).Times(1);
 
@@ -142,6 +146,17 @@ TEST_F(AudioReceiverTest, GetOnePacketEncodedframe) {
   receiver_->GetEncodedAudioFrame(frame_encoded_callback);
   task_runner_->RunTasks();
   EXPECT_EQ(1, test_audio_encoder_callback_->number_times_called());
+
+  std::vector<FrameEvent> frame_events;
+  event_subscriber.GetFrameEventsAndReset(&frame_events);
+
+  ASSERT_TRUE(!frame_events.empty());
+  EXPECT_EQ(kAudioAckSent, frame_events.begin()->type);
+  EXPECT_EQ(rtp_header_.frame_id, frame_events.begin()->frame_id);
+  EXPECT_EQ(rtp_header_.webrtc.header.timestamp,
+            frame_events.begin()->rtp_timestamp);
+
+  cast_environment_->Logging()->RemoveRawEventSubscriber(&event_subscriber);
 }
 
 TEST_F(AudioReceiverTest, MultiplePendingGetCalls) {

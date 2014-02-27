@@ -136,6 +136,10 @@ class AudioReceiver : public base::NonThreadSafe,
   std::list<AudioFrameEncodedCallback> queued_encoded_callbacks_;
   std::list<DecodedAudioCallbackData> queued_decoded_callbacks_;
 
+  // This mapping allows us to log kAudioAckSent as a frame event. In addition
+  // it allows the event to be transmitted via RTCP.
+  RtpTimestamp frame_id_to_rtp_timestamp_[256];
+
   DISALLOW_COPY_AND_ASSIGN(AudioReceiver);
 };
 

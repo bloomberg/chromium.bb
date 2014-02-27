@@ -1137,6 +1137,9 @@ TEST_F(End2EndTest, VideoLogging) {
     expected_event_count_for_frame +=
         map_it->second.counter[kVideoFrameDecoded];
 
+    EXPECT_GT(map_it->second.counter[kVideoAckSent], 0);
+    expected_event_count_for_frame += map_it->second.counter[kVideoAckSent];
+
     EXPECT_GT(map_it->second.counter[kVideoAckReceived], 0);
     expected_event_count_for_frame += map_it->second.counter[kVideoAckReceived];
 
@@ -1279,6 +1282,9 @@ TEST_F(End2EndTest, MAYBE_AudioLogging) {
   expected_event_count_for_frame += map_it->second.counter[kAudioPlayoutDelay];
   EXPECT_GT(map_it->second.counter[kAudioFrameDecoded], 0);
   expected_event_count_for_frame += map_it->second.counter[kAudioFrameDecoded];
+
+  EXPECT_GT(map_it->second.counter[kAudioAckSent], 0);
+  expected_event_count_for_frame += map_it->second.counter[kAudioAckSent];
 
   // Verify that there were no other events logged with respect to this frame.
   // (i.e. Total event count = expected event count)

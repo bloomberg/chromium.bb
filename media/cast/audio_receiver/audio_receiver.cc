@@ -120,6 +120,7 @@ AudioReceiver::AudioReceiver(scoped_refptr<CastEnvironment> cast_environment,
                        audio_config.feedback_ssrc, audio_config.incoming_ssrc,
                        audio_config.rtcp_c_name));
   cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber_);
+  memset(frame_id_to_rtp_timestamp_, 0, sizeof(frame_id_to_rtp_timestamp_));
 }
 
 AudioReceiver::~AudioReceiver() {
@@ -138,6 +139,8 @@ void AudioReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
 
+  frame_id_to_rtp_timestamp_[rtp_header.frame_id & 0xff] =
+      rtp_header.webrtc.header.timestamp;
   cast_environment_->Logging()->InsertPacketEvent(
       now, kAudioPacketReceived, rtp_header.webrtc.header.timestamp,
       rtp_header.frame_id, rtp_header.packet_id, rtp_header.max_packet_id,
@@ -366,8 +369,10 @@ void AudioReceiver::IncomingPacket(scoped_ptr<Packet> packet) {
 
 void AudioReceiver::CastFeedback(const RtcpCastMessage& cast_message) {
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
-  cast_environment_->Logging()->InsertGenericEvent(now, kAudioAckSent,
-                                                   cast_message.ack_frame_id_);
+  RtpTimestamp rtp_timestamp =
+      frame_id_to_rtp_timestamp_[cast_message.ack_frame_id_ & 0xff];
+  cast_environment_->Logging()->InsertFrameEvent(
+      now, kAudioAckSent, rtp_timestamp, cast_message.ack_frame_id_);
 
   rtcp_->SendRtcpFromRtpReceiver(&cast_message, &event_subscriber_);
 }

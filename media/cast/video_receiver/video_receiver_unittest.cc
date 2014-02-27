@@ -8,6 +8,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
+#include "media/cast/logging/simple_event_subscriber.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/transport/pacing/mock_paced_packet_sender.h"
 #include "media/cast/video_receiver/video_receiver.h"
@@ -80,7 +81,7 @@ class VideoReceiverTest : public ::testing::Test {
                             task_runner_,
                             task_runner_,
                             task_runner_,
-                            GetDefaultCastReceiverLoggingConfig());
+                            GetLoggingConfigWithRawEventsAndStatsEnabled());
     receiver_.reset(
         new PeerVideoReceiver(cast_environment_, config_, &mock_transport_));
     testing_clock_->Advance(
@@ -91,11 +92,12 @@ class VideoReceiverTest : public ::testing::Test {
 
     // Always start with a key frame.
     rtp_header_.is_key_frame = true;
-    rtp_header_.frame_id = 0;
+    rtp_header_.frame_id = 1234;
     rtp_header_.packet_id = 0;
     rtp_header_.max_packet_id = 0;
     rtp_header_.is_reference = false;
     rtp_header_.reference_frame_id = 0;
+    rtp_header_.webrtc.header.timestamp = 9000;
   }
 
   virtual ~VideoReceiverTest() {}
@@ -129,6 +131,9 @@ TEST_F(VideoReceiverTest, GetOnePacketEncodedframe) {
 }
 
 TEST_F(VideoReceiverTest, MultiplePackets) {
+  SimpleEventSubscriber event_subscriber;
+  cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber);
+
   EXPECT_CALL(mock_transport_, SendRtcpPacket(_))
       .WillRepeatedly(testing::Return(true));
   rtp_header_.max_packet_id = 2;
@@ -149,6 +154,16 @@ TEST_F(VideoReceiverTest, MultiplePackets) {
 
   task_runner_->RunTasks();
   EXPECT_EQ(video_receiver_callback_->number_times_called(), 1);
+
+  std::vector<FrameEvent> frame_events;
+  event_subscriber.GetFrameEventsAndReset(&frame_events);
+
+  ASSERT_TRUE(!frame_events.empty());
+  EXPECT_EQ(kVideoAckSent, frame_events.begin()->type);
+  EXPECT_EQ(rtp_header_.frame_id, frame_events.begin()->frame_id);
+  EXPECT_EQ(rtp_header_.webrtc.header.timestamp,
+            frame_events.begin()->rtp_timestamp);
+  cast_environment_->Logging()->RemoveRawEventSubscriber(&event_subscriber);
 }
 
 TEST_F(VideoReceiverTest, GetOnePacketRawframe) {

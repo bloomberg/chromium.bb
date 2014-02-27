@@ -122,6 +122,10 @@ class VideoReceiver : public base::NonThreadSafe,
   uint32 incoming_rtp_timestamp_;
   base::TimeTicks last_render_time_;
 
+  // This mapping allows us to log kVideoAckSent as a frame event. In addition
+  // it allows the event to be transmitted via RTCP.
+  RtpTimestamp frame_id_to_rtp_timestamp_[256];
+
   base::WeakPtrFactory<VideoReceiver> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoReceiver);

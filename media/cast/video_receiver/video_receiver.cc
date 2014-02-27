@@ -139,6 +139,7 @@ VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
                video_config.incoming_ssrc,
                video_config.rtcp_c_name));
   cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber_);
+  memset(frame_id_to_rtp_timestamp_, 0, sizeof(frame_id_to_rtp_timestamp_));
 }
 
 VideoReceiver::~VideoReceiver() {
@@ -416,6 +417,8 @@ void VideoReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
     time_incoming_packet_updated_ = true;
   }
 
+  frame_id_to_rtp_timestamp_[rtp_header.frame_id & 0xff] =
+      rtp_header.webrtc.header.timestamp;
   cast_environment_->Logging()->InsertPacketEvent(
       now,
       kVideoPacketReceived,
@@ -461,8 +464,10 @@ void VideoReceiver::CastFeedback(const RtcpCastMessage& cast_message) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
-  cast_environment_->Logging()->InsertGenericEvent(
-      now, kVideoAckSent, cast_message.ack_frame_id_);
+  RtpTimestamp rtp_timestamp =
+      frame_id_to_rtp_timestamp_[cast_message.ack_frame_id_ & 0xff];
+  cast_environment_->Logging()->InsertFrameEvent(
+      now, kVideoAckSent, rtp_timestamp, cast_message.ack_frame_id_);
 
   rtcp_->SendRtcpFromRtpReceiver(&cast_message, &event_subscriber_);
 }
