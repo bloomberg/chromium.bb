@@ -20,7 +20,7 @@ namespace test {
 
 class QuicTestPacketMaker {
  public:
-  QuicTestPacketMaker(QuicVersion version, QuicGuid guid);
+  QuicTestPacketMaker(QuicVersion version, QuicConnectionId connection_id);
   ~QuicTestPacketMaker();
 
   scoped_ptr<QuicEncryptedPacket> MakeRstPacket(
@@ -84,7 +84,7 @@ class QuicTestPacketMaker {
   std::string SerializeHeaderBlock(const SpdyHeaderBlock& headers);
 
   QuicVersion version_;
-  QuicGuid guid_;
+  QuicConnectionId connection_id_;
   SpdyFramer spdy_request_framer_;
   SpdyFramer spdy_response_framer_;
   MockRandom random_generator_;

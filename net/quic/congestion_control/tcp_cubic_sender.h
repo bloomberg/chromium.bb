@@ -15,6 +15,7 @@
 #include "net/quic/congestion_control/hybrid_slow_start.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
 #include "net/quic/quic_bandwidth.h"
+#include "net/quic/quic_connection_stats.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_time.h"
 
@@ -32,7 +33,8 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   // Reno option and max_tcp_congestion_window are provided for testing.
   TcpCubicSender(const QuicClock* clock,
                  bool reno,
-                 QuicTcpCongestionWindow max_tcp_congestion_window);
+                 QuicTcpCongestionWindow max_tcp_congestion_window,
+                 QuicConnectionStats* stats);
   virtual ~TcpCubicSender();
 
   // Start implementation of SendAlgorithmInterface.

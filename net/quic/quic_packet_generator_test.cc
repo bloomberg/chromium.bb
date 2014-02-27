@@ -505,7 +505,7 @@ TEST_F(QuicPacketGeneratorTest, ConsumeData_FramesPreviouslyQueued) {
   // but not enough for a stream frame of 0 offset and one with non-zero offset.
   creator_.options()->max_packet_length =
       NullEncrypter().GetCiphertextSize(0) +
-      GetPacketHeaderSize(creator_.options()->send_guid_length,
+      GetPacketHeaderSize(creator_.options()->send_connection_id_length,
                           true,
                           creator_.options()->send_sequence_number_length,
                           NOT_IN_FEC_GROUP) +

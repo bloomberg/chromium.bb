@@ -289,7 +289,7 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // stringpiece.
   static base::StringPiece GetAssociatedDataFromEncryptedPacket(
       const QuicEncryptedPacket& encrypted,
-      QuicGuidLength guid_length,
+      QuicConnectionIdLength connection_id_length,
       bool includes_version,
       QuicSequenceNumberLength sequence_number_length);
 
@@ -492,7 +492,7 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // Updated by ProcessPacketHeader when it succeeds.
   QuicPacketSequenceNumber last_sequence_number_;
   // Updated by WritePacketHeader.
-  QuicGuid last_serialized_guid_;
+  QuicConnectionId last_serialized_connection_id_;
   // Buffer containing decrypted payload data during parsing.
   scoped_ptr<QuicData> decrypted_;
   // Version of the protocol being used.

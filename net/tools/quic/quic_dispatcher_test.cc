@@ -47,7 +47,7 @@ class TestDispatcher : public QuicDispatcher {
   }
 
   MOCK_METHOD3(CreateQuicSession, QuicSession*(
-      QuicGuid guid,
+      QuicConnectionId connection_id,
       const IPEndPoint& server_address,
       const IPEndPoint& client_address));
   using QuicDispatcher::write_blocked_list;
@@ -59,24 +59,25 @@ class TestDispatcher : public QuicDispatcher {
 // involve a lot more mocking.
 class MockServerConnection : public MockConnection {
  public:
-  MockServerConnection(QuicGuid guid,
+  MockServerConnection(QuicConnectionId connection_id,
                        QuicDispatcher* dispatcher)
-      : MockConnection(guid, true),
+      : MockConnection(connection_id, true),
         dispatcher_(dispatcher) {}
 
   void UnregisterOnConnectionClosed() {
-    LOG(ERROR) << "Unregistering " << guid();
-    dispatcher_->OnConnectionClosed(guid(), QUIC_NO_ERROR);
+    LOG(ERROR) << "Unregistering " << connection_id();
+    dispatcher_->OnConnectionClosed(connection_id(), QUIC_NO_ERROR);
   }
  private:
   QuicDispatcher* dispatcher_;
 };
 
 QuicSession* CreateSession(QuicDispatcher* dispatcher,
-                           QuicGuid guid,
+                           QuicConnectionId connection_id,
                            const IPEndPoint& addr,
                            MockSession** session) {
-  MockServerConnection* connection = new MockServerConnection(guid, dispatcher);
+  MockServerConnection* connection =
+      new MockServerConnection(connection_id, dispatcher);
   *session = new MockSession(connection);
   ON_CALL(*connection, SendConnectionClose(_)).WillByDefault(
       WithoutArgs(Invoke(
@@ -109,14 +110,14 @@ class QuicDispatcherTest : public ::testing::Test {
   }
 
   QuicEncryptedPacket* ConstructEncryptedPacket(
-      QuicGuid guid,
+      QuicConnectionId connection_id,
       bool version_flag,
       bool reset_flag,
       QuicPacketSequenceNumber sequence_number,
       const string& data) {
     QuicPacketHeader header;
-    header.public_header.guid = guid;
-    header.public_header.guid_length = PACKET_8BYTE_GUID;
+    header.public_header.connection_id = connection_id;
+    header.public_header.connection_id_length = PACKET_8BYTE_CONNECTION_ID;
     header.public_header.version_flag = version_flag;
     header.public_header.reset_flag = reset_flag;
     header.public_header.sequence_number_length = PACKET_6BYTE_SEQUENCE_NUMBER;
@@ -143,11 +144,11 @@ class QuicDispatcherTest : public ::testing::Test {
   }
 
   void ProcessPacket(IPEndPoint addr,
-                     QuicGuid guid,
+                     QuicConnectionId connection_id,
                      bool has_version_flag,
                      const string& data) {
-    scoped_ptr<QuicEncryptedPacket> packet(
-        ConstructEncryptedPacket(guid, has_version_flag, false, 1, data));
+    scoped_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
+        connection_id, has_version_flag, false, 1, data));
     dispatcher_.ProcessPacket(IPEndPoint(), addr, *packet.get());
   }
 
@@ -210,7 +211,7 @@ class MockTimeWaitListManager : public QuicTimeWaitListManager {
 
   MOCK_METHOD4(ProcessPacket, void(const IPEndPoint& server_address,
                                    const IPEndPoint& client_address,
-                                   QuicGuid guid,
+                                   QuicConnectionId connection_id,
                                    QuicPacketSequenceNumber sequence_number));
 };
 
@@ -223,15 +224,15 @@ TEST_F(QuicDispatcherTest, TimeWaitListManager) {
                                              time_wait_list_manager);
   // Create a new session.
   IPEndPoint addr(net::test::Loopback4(), 1);
-  QuicGuid guid = 1;
-  EXPECT_CALL(dispatcher_, CreateQuicSession(guid, _, addr))
+  QuicConnectionId connection_id = 1;
+  EXPECT_CALL(dispatcher_, CreateQuicSession(connection_id, _, addr))
       .WillOnce(testing::Return(CreateSession(
-                    &dispatcher_, guid, addr, &session1_)));
-  ProcessPacket(addr, guid, true, "foo");
+                    &dispatcher_, connection_id, addr, &session1_)));
+  ProcessPacket(addr, connection_id, true, "foo");
 
   // Close the connection by sending public reset packet.
   QuicPublicResetPacket packet;
-  packet.public_header.guid = guid;
+  packet.public_header.connection_id = connection_id;
   packet.public_header.reset_flag = true;
   packet.public_header.version_flag = false;
   packet.rejected_sequence_number = 19191;
@@ -248,12 +249,13 @@ TEST_F(QuicDispatcherTest, TimeWaitListManager) {
           reinterpret_cast<MockConnection*>(session1_->connection()),
           &MockConnection::ReallyProcessUdpPacket));
   dispatcher_.ProcessPacket(IPEndPoint(), addr, *encrypted);
-  EXPECT_TRUE(time_wait_list_manager->IsGuidInTimeWait(guid));
+  EXPECT_TRUE(time_wait_list_manager->IsConnectionIdInTimeWait(connection_id));
 
-  // Dispatcher forwards subsequent packets for this guid to the time wait list
-  // manager.
-  EXPECT_CALL(*time_wait_list_manager, ProcessPacket(_, _, guid, _)).Times(1);
-  ProcessPacket(addr, guid, true, "foo");
+  // Dispatcher forwards subsequent packets for this connection_id to the time
+  // wait list manager.
+  EXPECT_CALL(*time_wait_list_manager,
+              ProcessPacket(_, _, connection_id, _)).Times(1);
+  ProcessPacket(addr, connection_id, true, "foo");
 }
 
 TEST_F(QuicDispatcherTest, StrayPacketToTimeWaitListManager) {
@@ -265,13 +267,14 @@ TEST_F(QuicDispatcherTest, StrayPacketToTimeWaitListManager) {
                                              time_wait_list_manager);
 
   IPEndPoint addr(net::test::Loopback4(), 1);
-  QuicGuid guid = 1;
-  // Dispatcher forwards all packets for this guid to the time wait list
-  // manager.
+  QuicConnectionId connection_id = 1;
+  // Dispatcher forwards all packets for this connection_id to the time wait
+  // list manager.
   EXPECT_CALL(dispatcher_, CreateQuicSession(_, _, _)).Times(0);
-  EXPECT_CALL(*time_wait_list_manager, ProcessPacket(_, _, guid, _)).Times(1);
+  EXPECT_CALL(*time_wait_list_manager,
+              ProcessPacket(_, _, connection_id, _)).Times(1);
   string data = "foo";
-  ProcessPacket(addr, guid, false, "foo");
+  ProcessPacket(addr, connection_id, false, "foo");
 }
 
 class BlockingWriter : public QuicPacketWriterWrapper {

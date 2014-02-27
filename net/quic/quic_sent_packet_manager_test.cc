@@ -121,7 +121,7 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
   SerializedPacket CreatePacket(QuicPacketSequenceNumber sequence_number,
                                 bool retransmittable) {
     packets_.push_back(QuicPacket::NewDataPacket(
-        NULL, 1000, false, PACKET_8BYTE_GUID, false,
+        NULL, 1000, false, PACKET_8BYTE_CONNECTION_ID, false,
         PACKET_6BYTE_SEQUENCE_NUMBER));
     return SerializedPacket(
         sequence_number, PACKET_6BYTE_SEQUENCE_NUMBER,
@@ -131,7 +131,7 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
 
   SerializedPacket CreateFecPacket(QuicPacketSequenceNumber sequence_number) {
     packets_.push_back(QuicPacket::NewFecPacket(
-        NULL, 1000, false, PACKET_8BYTE_GUID, false,
+        NULL, 1000, false, PACKET_8BYTE_CONNECTION_ID, false,
         PACKET_6BYTE_SEQUENCE_NUMBER));
     return SerializedPacket(sequence_number, PACKET_6BYTE_SEQUENCE_NUMBER,
                             packets_.back(), 0u, NULL);
@@ -1118,6 +1118,38 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionDelay) {
     manager_.OnRetransmissionTimeout();
     RetransmitNextPacket(i + 2);
   }
+}
+
+TEST_F(QuicSentPacketManagerTest, GetLossDelay) {
+  MockLossAlgorithm* loss_algorithm = new MockLossAlgorithm();
+  QuicSentPacketManagerPeer::SetLossAlgorithm(&manager_, loss_algorithm);
+
+  EXPECT_CALL(*loss_algorithm, GetLossTimeout())
+      .WillRepeatedly(Return(QuicTime::Zero()));
+  SendDataPacket(1);
+  SendDataPacket(2);
+
+  // Handle an ack which causes the loss algorithm to be evaluated and
+  // set the loss timeout.
+  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnPacketAcked(2, _));
+  EXPECT_CALL(*loss_algorithm, DetectLostPackets(_, _, _, _, _))
+      .WillOnce(Return(SequenceNumberSet()));
+  ReceivedPacketInfo received_info;
+  received_info.largest_observed = 2;
+  received_info.missing_packets.insert(1);
+  manager_.OnIncomingAck(received_info, clock_.Now());
+
+  QuicTime timeout(clock_.Now().Add(QuicTime::Delta::FromMilliseconds(10)));
+  EXPECT_CALL(*loss_algorithm, GetLossTimeout())
+      .WillRepeatedly(Return(timeout));
+  EXPECT_EQ(timeout, manager_.GetRetransmissionTime());
+
+  // Fire the retransmission timeout and ensure the loss detection algorithm
+  // is invoked.
+  EXPECT_CALL(*loss_algorithm, DetectLostPackets(_, _, _, _, _))
+      .WillOnce(Return(SequenceNumberSet()));
+  manager_.OnRetransmissionTimeout();
 }
 
 }  // namespace

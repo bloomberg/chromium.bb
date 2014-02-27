@@ -68,6 +68,12 @@ class QuicServer : public EpollCallbackInterface {
     crypto_config_.set_strike_register_no_startup_period();
   }
 
+  // SetProofSource sets the ProofSource that will be used to verify the
+  // server's certificate, and takes ownership of |source|.
+  void SetProofSource(ProofSource* source) {
+    crypto_config_.SetProofSource(source);
+  }
+
   bool overflow_supported() { return overflow_supported_; }
 
   uint32 packets_dropped() { return packets_dropped_; }

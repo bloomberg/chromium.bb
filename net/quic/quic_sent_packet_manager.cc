@@ -71,7 +71,7 @@ QuicSentPacketManager::QuicSentPacketManager(bool is_server,
       is_server_(is_server),
       clock_(clock),
       stats_(stats),
-      send_algorithm_(SendAlgorithmInterface::Create(clock, type)),
+      send_algorithm_(SendAlgorithmInterface::Create(clock, type, stats)),
       loss_algorithm_(LossDetectionInterface::Create()),
       rtt_sample_(QuicTime::Delta::Infinite()),
       largest_observed_(0),
@@ -399,14 +399,19 @@ bool QuicSentPacketManager::OnPacketSent(
 
 void QuicSentPacketManager::OnRetransmissionTimeout() {
   DCHECK(unacked_packets_.HasPendingPackets());
-  // Handshake retransmission, TLP, and RTO are implemented with a single alarm.
-  // The handshake alarm is set when the handshake has not completed, and the
-  // TLP and RTO alarms are set after that.
+  // Handshake retransmission, timer based loss detection, TLP, and RTO are
+  // implemented with a single alarm. The handshake alarm is set when the
+  // handshake has not completed, the loss alarm is set when the loss detection
+  // algorithm says to, and the TLP and  RTO alarms are set after that.
   // The TLP alarm is always set to run for under an RTO.
   switch (GetRetransmissionMode()) {
     case HANDSHAKE_MODE:
       ++stats_->crypto_retransmit_count;
       RetransmitCryptoPackets();
+      return;
+    case LOSS_MODE:
+      ++stats_->loss_timeout_count;
+      InvokeLossDetection(clock_->Now());
       return;
     case TLP_MODE:
       // If no tail loss probe can be sent, because there are no retransmittable
@@ -497,6 +502,9 @@ QuicSentPacketManager::RetransmissionTimeoutMode
   if (pending_crypto_packet_count_ > 0) {
     return HANDSHAKE_MODE;
   }
+  if (loss_algorithm_->GetLossTimeout() != QuicTime::Zero()) {
+    return LOSS_MODE;
+  }
   if (consecutive_tlp_count_ < max_tail_loss_probes_) {
     if (unacked_packets_.HasUnackedRetransmittableFrames()) {
       return TLP_MODE;
@@ -507,12 +515,12 @@ QuicSentPacketManager::RetransmissionTimeoutMode
 
 void QuicSentPacketManager::OnPacketAbandoned(
     QuicPacketSequenceNumber sequence_number) {
-  if (unacked_packets_.IsPending(sequence_number)) {
-    LOG_IF(DFATAL, unacked_packets_.GetTransmissionInfo(
-        sequence_number).bytes_sent == 0);
-    send_algorithm_->OnPacketAbandoned(
-        sequence_number,
-        unacked_packets_.GetTransmissionInfo(sequence_number).bytes_sent);
+  const QuicUnackedPacketMap::TransmissionInfo& transmission_info =
+      unacked_packets_.GetTransmissionInfo(sequence_number);
+  if (transmission_info.pending) {
+    LOG_IF(DFATAL, transmission_info.bytes_sent == 0);
+    send_algorithm_->OnPacketAbandoned(sequence_number,
+                                       transmission_info.bytes_sent);
     unacked_packets_.SetNotPending(sequence_number);
   }
 }
@@ -554,7 +562,8 @@ void QuicSentPacketManager::InvokeLossDetection(QuicTime time) {
       loss_algorithm_->DetectLostPackets(unacked_packets_,
                                          time,
                                          largest_observed_,
-                                         send_algorithm_->SmoothedRtt());
+                                         send_algorithm_->SmoothedRtt(),
+                                         rtt_sample_);
   for (SequenceNumberSet::const_iterator it = lost_packets.begin();
        it != lost_packets.end(); ++it) {
     QuicPacketSequenceNumber sequence_number = *it;
@@ -639,6 +648,8 @@ const QuicTime QuicSentPacketManager::GetRetransmissionTime() const {
   switch (GetRetransmissionMode()) {
     case HANDSHAKE_MODE:
       return clock_->ApproximateNow().Add(GetCryptoRetransmissionDelay());
+    case LOSS_MODE:
+      return loss_algorithm_->GetLossTimeout();
     case TLP_MODE: {
       // TODO(ianswett): When CWND is available, it would be preferable to
       // set the timer based on the earliest retransmittable packet.

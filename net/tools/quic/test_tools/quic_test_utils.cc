@@ -18,7 +18,7 @@ namespace tools {
 namespace test {
 
 MockConnection::MockConnection(bool is_server)
-    : QuicConnection(kTestGuid,
+    : QuicConnection(kTestConnectionId,
                      IPEndPoint(net::test::Loopback4(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
@@ -29,7 +29,7 @@ MockConnection::MockConnection(bool is_server)
 
 MockConnection::MockConnection(IPEndPoint address,
                                bool is_server)
-    : QuicConnection(kTestGuid, address,
+    : QuicConnection(kTestConnectionId, address,
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
                      is_server, QuicSupportedVersions()),
@@ -37,9 +37,9 @@ MockConnection::MockConnection(IPEndPoint address,
       helper_(helper()) {
 }
 
-MockConnection::MockConnection(QuicGuid guid,
+MockConnection::MockConnection(QuicConnectionId connection_id,
                                bool is_server)
-    : QuicConnection(guid,
+    : QuicConnection(connection_id,
                      IPEndPoint(net::test::Loopback4(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
@@ -50,7 +50,7 @@ MockConnection::MockConnection(QuicGuid guid,
 
 MockConnection::MockConnection(bool is_server,
                                const QuicVersionVector& supported_versions)
-    : QuicConnection(kTestGuid,
+    : QuicConnection(kTestConnectionId,
                      IPEndPoint(net::test::Loopback4(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),

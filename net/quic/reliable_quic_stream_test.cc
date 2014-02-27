@@ -33,7 +33,7 @@ namespace {
 const char kData1[] = "FooAndBar";
 const char kData2[] = "EepAndBaz";
 const size_t kDataLen = 9;
-const QuicGuid kStreamId = 3;
+const QuicConnectionId kStreamId = 3;
 const bool kIsServer = true;
 const bool kShouldProcessData = true;
 
@@ -132,7 +132,7 @@ TEST_F(ReliableQuicStreamTest, WriteAllData) {
 
   connection_->options()->max_packet_length =
       1 + QuicPacketCreator::StreamFramePacketOverhead(
-          connection_->version(), PACKET_8BYTE_GUID, !kIncludeVersion,
+          connection_->version(), PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
           PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP);
   EXPECT_CALL(*session_, WritevData(kStreamId, _, _, _, _)).WillOnce(
       Return(QuicConsumedData(kDataLen, true)));
@@ -191,7 +191,7 @@ TEST_F(ReliableQuicStreamTest, WriteOrBufferData) {
   EXPECT_FALSE(write_blocked_list_->HasWriteBlockedStreams());
   connection_->options()->max_packet_length =
       1 + QuicPacketCreator::StreamFramePacketOverhead(
-          connection_->version(), PACKET_8BYTE_GUID, !kIncludeVersion,
+          connection_->version(), PACKET_8BYTE_CONNECTION_ID, !kIncludeVersion,
           PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP);
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _)).WillOnce(
       Return(QuicConsumedData(kDataLen - 1, false)));

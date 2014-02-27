@@ -27,7 +27,12 @@ class NET_EXPORT_PRIVATE LossDetectionInterface {
       const QuicUnackedPacketMap& unacked_packets,
       const QuicTime& time,
       QuicPacketSequenceNumber largest_observed,
-      QuicTime::Delta srtt) = 0;
+      QuicTime::Delta srtt,
+      QuicTime::Delta latest_rtt) = 0;
+
+  // Get the time the LossDetectionAlgorithm wants to re-evaluate losses.
+  // Returns QuicTime::Zero if no alarm needs to be set.
+  virtual QuicTime GetLossTimeout() const = 0;
 };
 
 }  // namespace net

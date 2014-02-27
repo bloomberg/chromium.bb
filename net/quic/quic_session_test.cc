@@ -446,7 +446,7 @@ TEST_P(QuicSessionTest, OutOfOrderHeaders) {
   QuicSpdyCompressor compressor;
   vector<QuicStreamFrame> frames;
   QuicPacketHeader header;
-  header.public_header.guid = session_.guid();
+  header.public_header.connection_id = session_.connection_id();
 
   TestStream* stream2 = session_.CreateOutgoingDataStream();
   TestStream* stream4 = session_.CreateOutgoingDataStream();
@@ -520,7 +520,7 @@ TEST_P(QuicSessionTest, ZombieStream) {
 
   vector<QuicStreamFrame> frames;
   QuicPacketHeader header;
-  header.public_header.guid = session_.guid();
+  header.public_header.connection_id = session_.connection_id();
 
   // Create frame with headers for stream2.
   QuicSpdyCompressor compressor;

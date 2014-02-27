@@ -20,8 +20,9 @@ QuicPacketSequenceNumber QuicFramerPeer::CalculatePacketSequenceNumberFromWire(
 }
 
 // static
-void QuicFramerPeer::SetLastSerializedGuid(QuicFramer* framer, QuicGuid guid) {
-  framer->last_serialized_guid_ = guid;
+void QuicFramerPeer::SetLastSerializedConnectionId(
+    QuicFramer* framer, QuicConnectionId connection_id) {
+  framer->last_serialized_connection_id_ = connection_id;
 }
 
 void QuicFramerPeer::SetLastSequenceNumber(

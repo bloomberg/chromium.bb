@@ -43,10 +43,10 @@ struct NET_EXPORT_PRIVATE QuicCryptoNegotiatedParameters {
   std::string sni;
   std::string client_nonce;
   std::string server_nonce;
-  // hkdf_input_suffix contains the HKDF input following the label: the GUID,
-  // client hello and server config. This is only populated in the client
-  // because only the client needs to derive the forward secure keys at a later
-  // time from the initial keys.
+  // hkdf_input_suffix contains the HKDF input following the label: the
+  // ConnectionId, client hello and server config. This is only populated in the
+  // client because only the client needs to derive the forward secure keys at a
+  // later time from the initial keys.
   std::string hkdf_input_suffix;
   // cached_certs contains the cached certificates that a client used when
   // sending a client hello.

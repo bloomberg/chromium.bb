@@ -164,7 +164,7 @@ bool QuicClient::StartConnect() {
   session_.reset(new QuicClientSession(
       server_hostname_,
       config_,
-      new QuicConnection(GenerateGuid(), server_address_, helper_.get(),
+      new QuicConnection(GenerateConnectionId(), server_address_, helper_.get(),
                          writer_.get(), false, supported_versions_),
       &crypto_config_));
   return session_->CryptoConnect();
@@ -282,7 +282,7 @@ bool QuicClient::connected() const {
       session_->connection()->connected();
 }
 
-QuicGuid QuicClient::GenerateGuid() {
+QuicConnectionId QuicClient::GenerateConnectionId() {
   return QuicRandom::GetInstance()->RandUint64();
 }
 

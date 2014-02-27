@@ -32,12 +32,19 @@ class QuicServer;
 // `wget -p --save_headers <url>`
 class QuicInMemoryCache {
  public:
+  enum SpecialResponseType {
+    REGULAR_RESPONSE,  // Send the headers and body like a server should.
+    CLOSE_CONNECTION,  // Close the connection (sending the close packet).
+    IGNORE_REQUEST,  // Do nothing, expect the client to time out.
+  };
+
   // Container for response header/body pairs.
   class Response {
    public:
-    Response() {}
+    Response() : response_type_(REGULAR_RESPONSE) {}
     ~Response() {}
 
+    const SpecialResponseType response_type() const { return response_type_; }
     const BalsaHeaders& headers() const { return headers_; }
     const base::StringPiece body() const { return base::StringPiece(body_); }
 
@@ -51,6 +58,7 @@ class QuicInMemoryCache {
       body.CopyToString(&body_);
     }
 
+    SpecialResponseType response_type_;
     BalsaHeaders headers_;
     std::string body_;
 
@@ -78,6 +86,12 @@ class QuicInMemoryCache {
   void AddResponse(const BalsaHeaders& request_headers,
                    const BalsaHeaders& response_headers,
                    base::StringPiece response_body);
+
+  // Simulate a special behavior at a particular path.
+  void AddSpecialResponse(base::StringPiece method,
+                          base::StringPiece path,
+                          base::StringPiece version,
+                          SpecialResponseType response_type);
 
  private:
   typedef base::hash_map<std::string, Response*> ResponseMap;

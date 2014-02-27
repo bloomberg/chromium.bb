@@ -28,7 +28,7 @@ namespace net {
 namespace test {
 namespace {
 
-const QuicGuid kStreamId = 3;
+const QuicConnectionId kStreamId = 3;
 const bool kIsServer = true;
 const bool kShouldProcessData = true;
 

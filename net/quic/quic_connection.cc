@@ -13,6 +13,7 @@
 #include <set>
 #include <utility>
 
+#include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "net/base/net_errors.h"
@@ -162,7 +163,7 @@ QuicConnection::QueuedPacket::QueuedPacket(SerializedPacket packet,
 
 #define ENDPOINT (is_server_ ? "Server: " : " Client: ")
 
-QuicConnection::QuicConnection(QuicGuid guid,
+QuicConnection::QuicConnection(QuicConnectionId connection_id,
                                IPEndPoint address,
                                QuicConnectionHelperInterface* helper,
                                QuicPacketWriter* writer,
@@ -176,7 +177,7 @@ QuicConnection::QuicConnection(QuicGuid guid,
       encryption_level_(ENCRYPTION_NONE),
       clock_(helper->GetClock()),
       random_generator_(helper->GetRandomGenerator()),
-      guid_(guid),
+      connection_id_(connection_id),
       peer_address_(address),
       largest_seen_packet_with_ack_(0),
       largest_seen_packet_with_stop_waiting_(0),
@@ -190,7 +191,7 @@ QuicConnection::QuicConnection(QuicGuid guid,
       resume_writes_alarm_(helper->CreateAlarm(new SendAlarm(this))),
       timeout_alarm_(helper->CreateAlarm(new TimeoutAlarm(this))),
       debug_visitor_(NULL),
-      packet_creator_(guid_, &framer_, random_generator_, is_server),
+      packet_creator_(connection_id_, &framer_, random_generator_, is_server),
       packet_generator_(this, NULL, &packet_creator_),
       idle_network_timeout_(
           QuicTime::Delta::FromSeconds(kDefaultInitialTimeoutSecs)),
@@ -208,7 +209,8 @@ QuicConnection::QuicConnection(QuicGuid guid,
     // Pacing will be enabled if the client negotiates it.
     sent_packet_manager_.MaybeEnablePacing();
   }
-  DVLOG(1) << ENDPOINT << "Created connection with guid: " << guid;
+  DVLOG(1) << ENDPOINT << "Created connection with connection_id: "
+           << connection_id;
   timeout_alarm_->Set(clock_->ApproximateNow().Add(idle_network_timeout_));
   framer_.set_visitor(this);
   framer_.set_received_entropy_calculator(&received_packet_manager_);
@@ -399,9 +401,10 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
   // Will be decrement below if we fall through to return true;
   ++stats_.packets_dropped;
 
-  if (header.public_header.guid != guid_) {
-    DVLOG(1) << ENDPOINT << "Ignoring packet from unexpected GUID: "
-             << header.public_header.guid << " instead of " << guid_;
+  if (header.public_header.connection_id != connection_id_) {
+    DVLOG(1) << ENDPOINT << "Ignoring packet from unexpected ConnectionId: "
+             << header.public_header.connection_id << " instead of "
+             << connection_id_;
     return false;
   }
 
@@ -677,7 +680,8 @@ bool QuicConnection::OnConnectionCloseFrame(
   if (debug_visitor_) {
     debug_visitor_->OnConnectionCloseFrame(frame);
   }
-  DVLOG(1) << ENDPOINT << "Connection " << guid() << " closed with error "
+  DVLOG(1) << ENDPOINT << "Connection " << connection_id()
+           << " closed with error "
            << QuicUtils::ErrorToString(frame.error_code)
            << " " << frame.error_details;
   last_close_frames_.push_back(frame);
@@ -727,7 +731,8 @@ void QuicConnection::OnPacketComplete() {
            << last_rst_frames_.size() << " rsts, "
            << last_close_frames_.size() << " closes, "
            << last_stream_frames_.size()
-           << " stream frames for " << last_header_.public_header.guid;
+           << " stream frames for "
+           << last_header_.public_header.connection_id;
 
   MaybeQueueAck();
 
@@ -967,6 +972,20 @@ void QuicConnection::SendRstStream(QuicStreamId id,
   ScopedPacketBundler ack_bundler(this, BUNDLE_PENDING_ACK);
   packet_generator_.AddControlFrame(
       QuicFrame(new QuicRstStreamFrame(id, error, bytes_written)));
+}
+
+void QuicConnection::SendWindowUpdate(QuicStreamId id,
+                                      QuicStreamOffset byte_offset) {
+  // Opportunistically bundle an ack with this outgoing packet.
+  ScopedPacketBundler ack_bundler(this, BUNDLE_PENDING_ACK);
+  packet_generator_.AddControlFrame(
+      QuicFrame(new QuicWindowUpdateFrame(id, byte_offset)));
+}
+
+void QuicConnection::SendBlocked(QuicStreamId id) {
+  // Opportunistically bundle an ack with this outgoing packet.
+  ScopedPacketBundler ack_bundler(this, BUNDLE_PENDING_ACK);
+  packet_generator_.AddControlFrame(QuicFrame(new QuicBlockedFrame(id)));
 }
 
 const QuicConnectionStats& QuicConnection::GetStats() {
@@ -1549,7 +1568,7 @@ void QuicConnection::MaybeProcessRevivedPacket() {
   QuicPacketHeader revived_header;
   char revived_payload[kMaxPacketSize];
   size_t len = group->Revive(&revived_header, revived_payload, kMaxPacketSize);
-  revived_header.public_header.guid = guid_;
+  revived_header.public_header.connection_id = connection_id_;
   revived_header.public_header.version_flag = false;
   revived_header.public_header.reset_flag = false;
   revived_header.fec_flag = false;
@@ -1604,9 +1623,9 @@ void QuicConnection::SendConnectionCloseWithDetails(QuicErrorCode error,
 
 void QuicConnection::SendConnectionClosePacket(QuicErrorCode error,
                                                const string& details) {
-  DVLOG(1) << ENDPOINT << "Force closing " << guid() << " with error "
-           << QuicUtils::ErrorToString(error) << " (" << error << ") "
-           << details;
+  DVLOG(1) << ENDPOINT << "Force closing " << connection_id()
+           << " with error " << QuicUtils::ErrorToString(error)
+           << " (" << error << ") " << details;
   ScopedPacketBundler ack_bundler(this, SEND_ACK);
   QuicConnectionCloseFrame* frame = new QuicConnectionCloseFrame();
   frame->error_code = error;
@@ -1616,8 +1635,9 @@ void QuicConnection::SendConnectionClosePacket(QuicErrorCode error,
 }
 
 void QuicConnection::CloseConnection(QuicErrorCode error, bool from_peer) {
-  DCHECK(connected_);
   if (!connected_) {
+    DLOG(DFATAL) << "Error: attempt to close an already closed connection"
+                 << base::debug::StackTrace().ToString();
     return;
   }
   connected_ = false;

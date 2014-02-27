@@ -110,6 +110,18 @@ void QuicInMemoryCache::AddResponse(const BalsaHeaders& request_headers,
   responses_[GetKey(request_headers)] = new_response;
 }
 
+void QuicInMemoryCache::AddSpecialResponse(StringPiece method,
+                                           StringPiece path,
+                                           StringPiece version,
+                                           SpecialResponseType response_type) {
+  BalsaHeaders request_headers, response_headers;
+  request_headers.SetRequestFirstlineFromStringPieces(method,
+                                                      path,
+                                                      version);
+  AddResponse(request_headers, response_headers, "");
+  responses_[GetKey(request_headers)]->response_type_ = response_type;
+}
+
 QuicInMemoryCache::QuicInMemoryCache() {
   Initialize();
 }

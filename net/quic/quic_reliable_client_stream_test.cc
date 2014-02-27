@@ -21,7 +21,7 @@ namespace net {
 namespace test {
 namespace {
 
-const QuicGuid kStreamId = 3;
+const QuicConnectionId kStreamId = 3;
 
 class MockDelegate : public QuicReliableClientStream::Delegate {
  public:

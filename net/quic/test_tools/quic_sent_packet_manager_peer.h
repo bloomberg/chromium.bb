@@ -22,6 +22,9 @@ class QuicSentPacketManagerPeer {
   static void SetSendAlgorithm(QuicSentPacketManager* sent_packet_manager,
                                SendAlgorithmInterface* send_algorithm);
 
+  static void SetLossAlgorithm(QuicSentPacketManager* sent_packet_manager,
+                               LossDetectionInterface* loss_detector);
+
   static size_t GetNackCount(
       const QuicSentPacketManager* sent_packet_manager,
       QuicPacketSequenceNumber sequence_number);

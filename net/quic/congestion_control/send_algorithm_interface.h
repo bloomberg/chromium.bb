@@ -15,6 +15,7 @@
 #include "net/quic/quic_bandwidth.h"
 #include "net/quic/quic_clock.h"
 #include "net/quic/quic_config.h"
+#include "net/quic/quic_connection_stats.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_time.h"
 
@@ -23,7 +24,8 @@ namespace net {
 class NET_EXPORT_PRIVATE SendAlgorithmInterface {
  public:
   static SendAlgorithmInterface* Create(const QuicClock* clock,
-                                        CongestionFeedbackType type);
+                                        CongestionFeedbackType type,
+                                        QuicConnectionStats* stats);
 
   virtual ~SendAlgorithmInterface() {}
 

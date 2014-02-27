@@ -178,7 +178,7 @@ class CryptoServerTest : public ::testing::Test {
                                const char* error_substr) {
     string error_details;
     QuicErrorCode error = config_.ProcessClientHello(
-        result, 1 /* GUID */, client_address_,
+        result, 1 /* ConnectionId */, client_address_,
         supported_versions_.front(), supported_versions_, &clock_, rand_,
         &params_, &out_, &error_details);
 

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/strings/string_piece.h"
+#include "net/quic/congestion_control/loss_detection_interface.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
 #include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_connection.h"
@@ -26,7 +27,7 @@ namespace net {
 
 namespace test {
 
-static const QuicGuid kTestGuid = 42;
+static const QuicConnectionId kTestConnectionId = 42;
 static const int kTestPort = 123;
 
 // Returns the test peer IP address.
@@ -272,16 +273,16 @@ class MockHelper : public QuicConnectionHelperInterface {
 
 class MockConnection : public QuicConnection {
  public:
-  // Uses a MockHelper, GUID of 42, and 127.0.0.1:123.
+  // Uses a MockHelper, ConnectionId of 42, and 127.0.0.1:123.
   explicit MockConnection(bool is_server);
 
-  // Uses a MockHelper, GUID of 42.
+  // Uses a MockHelper, ConnectionId of 42.
   MockConnection(IPEndPoint address, bool is_server);
 
   // Uses a MockHelper, and 127.0.0.1:123
-  MockConnection(QuicGuid guid, bool is_server);
+  MockConnection(QuicConnectionId connection_id, bool is_server);
 
-  // Uses a Mock helper, GUID of 42, and 127.0.0.1:123.
+  // Uses a Mock helper, ConnectionId of 42, and 127.0.0.1:123.
   MockConnection(bool is_server, const QuicVersionVector& supported_versions);
 
   virtual ~MockConnection();
@@ -302,6 +303,9 @@ class MockConnection : public QuicConnection {
   MOCK_METHOD3(SendGoAway, void(QuicErrorCode error,
                                 QuicStreamId last_good_stream_id,
                                 const string& reason));
+  MOCK_METHOD1(SendBlocked, void(QuicStreamId id));
+  MOCK_METHOD2(SendWindowUpdate, void(QuicStreamId id,
+                                      QuicStreamOffset byte_offset));
   MOCK_METHOD0(OnCanWrite, void());
 
   void ProcessUdpPacketInternal(const IPEndPoint& self_address,
@@ -435,6 +439,20 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSendAlgorithm);
+};
+
+class MockLossAlgorithm : public LossDetectionInterface {
+ public:
+  MockLossAlgorithm();
+  virtual ~MockLossAlgorithm();
+
+  MOCK_METHOD5(DetectLostPackets,
+               SequenceNumberSet(const QuicUnackedPacketMap& unacked_packets,
+                                 const QuicTime& time,
+                                 QuicPacketSequenceNumber largest_observed,
+                                 QuicTime::Delta srtt,
+                                 QuicTime::Delta latest_rtt));
+  MOCK_CONST_METHOD0(GetLossTimeout, QuicTime());
 };
 
 class TestEntropyCalculator :

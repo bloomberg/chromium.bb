@@ -16,10 +16,12 @@ const bool kUseReno = false;
 // Factory for send side congestion control algorithm.
 SendAlgorithmInterface* SendAlgorithmInterface::Create(
     const QuicClock* clock,
-    CongestionFeedbackType type) {
+    CongestionFeedbackType type,
+    QuicConnectionStats* stats) {
   switch (type) {
     case kTCP:
-      return new TcpCubicSender(clock, kUseReno, kMaxTcpCongestionWindow);
+      return new TcpCubicSender(clock, kUseReno, kMaxTcpCongestionWindow,
+                                stats);
     case kInterArrival:
       return new InterArrivalSender(clock);
     case kFixRate:

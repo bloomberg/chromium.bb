@@ -26,12 +26,14 @@ class TcpCubicSenderPeer : public TcpCubicSender {
   TcpCubicSenderPeer(const QuicClock* clock,
                      bool reno,
                      QuicTcpCongestionWindow max_tcp_congestion_window)
-      : TcpCubicSender(clock, reno, max_tcp_congestion_window) {
+      : TcpCubicSender(clock, reno, max_tcp_congestion_window, &stats_) {
   }
 
   QuicTcpCongestionWindow congestion_window() {
     return congestion_window_;
   }
+
+  QuicConnectionStats stats_;
 
   using TcpCubicSender::AvailableSendWindow;
   using TcpCubicSender::SendWindow;

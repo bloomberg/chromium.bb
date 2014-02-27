@@ -33,9 +33,9 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<bool> {
       : server_framer_(QuicSupportedVersions(), QuicTime::Zero(), true),
         client_framer_(QuicSupportedVersions(), QuicTime::Zero(), false),
         sequence_number_(0),
-        guid_(2),
+        connection_id_(2),
         data_("foo"),
-        creator_(guid_, &client_framer_, &mock_random_, false) {
+        creator_(connection_id_, &client_framer_, &mock_random_, false) {
     client_framer_.set_visitor(&framer_visitor_);
     server_framer_.set_visitor(&framer_visitor_);
   }
@@ -66,7 +66,7 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<bool> {
   // Returns the number of bytes consumed by the header of packet, including
   // the version, that is not in an FEC group.
   size_t GetPacketHeaderOverhead() {
-    return GetPacketHeaderSize(creator_.options()->send_guid_length,
+    return GetPacketHeaderSize(creator_.options()->send_connection_id_length,
                                kIncludeVersion,
                                creator_.options()->send_sequence_number_length,
                                NOT_IN_FEC_GROUP);
@@ -95,7 +95,7 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<bool> {
   QuicFramer client_framer_;
   testing::StrictMock<MockFramerVisitor> framer_visitor_;
   QuicPacketSequenceNumber sequence_number_;
-  QuicGuid guid_;
+  QuicConnectionId connection_id_;
   string data_;
   MockRandom mock_random_;
   QuicPacketCreator creator_;
@@ -581,7 +581,7 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndSerialize) {
   EXPECT_FALSE(creator_.HasPendingFrames());
   EXPECT_EQ(max_plaintext_size -
             GetPacketHeaderSize(
-                creator_.options()->send_guid_length,
+                creator_.options()->send_connection_id_length,
                 QuicPacketCreatorPeer::SendVersionInPacket(&creator_),
                 PACKET_1BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP),
             creator_.BytesFree());
@@ -625,7 +625,7 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndSerialize) {
   EXPECT_FALSE(creator_.HasPendingFrames());
   EXPECT_EQ(max_plaintext_size -
             GetPacketHeaderSize(
-                creator_.options()->send_guid_length,
+                creator_.options()->send_connection_id_length,
                 QuicPacketCreatorPeer::SendVersionInPacket(&creator_),
                 PACKET_1BYTE_SEQUENCE_NUMBER,
                 NOT_IN_FEC_GROUP),

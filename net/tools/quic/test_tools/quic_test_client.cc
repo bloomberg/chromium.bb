@@ -15,7 +15,7 @@
 #include "net/tools/quic/quic_epoll_connection_helper.h"
 #include "net/tools/quic/quic_packet_writer_wrapper.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
-#include "net/tools/quic/test_tools/http_message_test_utils.h"
+#include "net/tools/quic/test_tools/http_message.h"
 #include "net/tools/quic/test_tools/quic_client_peer.h"
 #include "url/gurl.h"
 
@@ -102,7 +102,7 @@ class MockableQuicClient : public QuicClient {
                      const string& server_hostname,
                      const QuicVersionVector& supported_versions)
       : QuicClient(server_address, server_hostname, supported_versions, false),
-        override_guid_(0),
+        override_connection_id_(0),
         test_writer_(NULL) {}
 
   MockableQuicClient(IPEndPoint server_address,
@@ -110,7 +110,7 @@ class MockableQuicClient : public QuicClient {
                      const QuicConfig& config,
                      const QuicVersionVector& supported_versions)
       : QuicClient(server_address, server_hostname, config, supported_versions),
-        override_guid_(0),
+        override_connection_id_(0),
         test_writer_(NULL) {}
 
   virtual ~MockableQuicClient() {
@@ -128,17 +128,20 @@ class MockableQuicClient : public QuicClient {
     return test_writer_;
   }
 
-  virtual QuicGuid GenerateGuid() OVERRIDE {
-    return override_guid_ ? override_guid_ : QuicClient::GenerateGuid();
+  virtual QuicConnectionId GenerateConnectionId() OVERRIDE {
+    return override_connection_id_ ? override_connection_id_
+                                   : QuicClient::GenerateConnectionId();
   }
 
   // Takes ownership of writer.
   void UseWriter(QuicPacketWriterWrapper* writer) { test_writer_ = writer; }
 
-  void UseGuid(QuicGuid guid) { override_guid_ = guid; }
+  void UseConnectionId(QuicConnectionId connection_id) {
+    override_connection_id_ = connection_id;
+  }
 
  private:
-  QuicGuid override_guid_;  // GUID to use, if nonzero
+  QuicConnectionId override_connection_id_;  // ConnectionId to use, if nonzero
   QuicPacketWriterWrapper* test_writer_;
 };
 
@@ -445,9 +448,9 @@ void QuicTestClient::UseWriter(QuicPacketWriterWrapper* writer) {
   client_->UseWriter(writer);
 }
 
-void QuicTestClient::UseGuid(QuicGuid guid) {
+void QuicTestClient::UseConnectionId(QuicConnectionId connection_id) {
   DCHECK(!connected());
-  client_->UseGuid(guid);
+  client_->UseConnectionId(connection_id);
 }
 
 void QuicTestClient::WaitForWriteToFlush() {

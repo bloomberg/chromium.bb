@@ -168,7 +168,7 @@ class QuicClient : public EpollCallbackInterface,
   }
 
  protected:
-  virtual QuicGuid GenerateGuid();
+  virtual QuicConnectionId GenerateConnectionId();
   virtual QuicEpollConnectionHelper* CreateQuicConnectionHelper();
   virtual QuicPacketWriter* CreateQuicPacketWriter();
 

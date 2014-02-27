@@ -205,11 +205,16 @@ bool QuicUnackedPacketMap::IsPending(
 
 void QuicUnackedPacketMap::SetNotPending(
     QuicPacketSequenceNumber sequence_number) {
-  if (unacked_packets_[sequence_number].pending) {
-    LOG_IF(DFATAL,
-           bytes_in_flight_ < unacked_packets_[sequence_number].bytes_sent);
-    bytes_in_flight_ -= unacked_packets_[sequence_number].bytes_sent;
-    unacked_packets_[sequence_number].pending = false;
+  UnackedPacketMap::iterator it = unacked_packets_.find(sequence_number);
+  if (it == unacked_packets_.end()) {
+    LOG(DFATAL) << "SetNotPending called for packet that is not unacked: "
+                << sequence_number;
+    return;
+  }
+  if (it->second.pending) {
+    LOG_IF(DFATAL, bytes_in_flight_ < it->second.bytes_sent);
+    bytes_in_flight_ -= it->second.bytes_sent;
+    it->second.pending = false;
   }
 }
 

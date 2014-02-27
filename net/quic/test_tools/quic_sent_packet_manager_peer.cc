@@ -5,6 +5,7 @@
 #include "net/quic/test_tools/quic_sent_packet_manager_peer.h"
 
 #include "base/stl_util.h"
+#include "net/quic/congestion_control/loss_detection_interface.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_sent_packet_manager.h"
@@ -23,6 +24,13 @@ void QuicSentPacketManagerPeer::SetSendAlgorithm(
     QuicSentPacketManager* sent_packet_manager,
     SendAlgorithmInterface* send_algorithm) {
   sent_packet_manager->send_algorithm_.reset(send_algorithm);
+}
+
+// static
+void QuicSentPacketManagerPeer::SetLossAlgorithm(
+    QuicSentPacketManager* sent_packet_manager,
+    LossDetectionInterface* loss_detector) {
+  sent_packet_manager->loss_algorithm_.reset(loss_detector);
 }
 
 // static

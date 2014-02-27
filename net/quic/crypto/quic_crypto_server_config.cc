@@ -468,7 +468,7 @@ void QuicCryptoServerConfig::ValidateClientHello(
 
 QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     const ValidateClientHelloResultCallback::Result& validate_chlo_result,
-    QuicGuid guid,
+    QuicConnectionId connection_id,
     IPEndPoint client_address,
     QuicVersion version,
     const QuicVersionVector& supported_versions,
@@ -601,9 +601,10 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
 
   string hkdf_suffix;
   const QuicData& client_hello_serialized = client_hello.GetSerialized();
-  hkdf_suffix.reserve(sizeof(guid) + client_hello_serialized.length() +
+  hkdf_suffix.reserve(sizeof(connection_id) + client_hello_serialized.length() +
                       requested_config->serialized.size());
-  hkdf_suffix.append(reinterpret_cast<char*>(&guid), sizeof(guid));
+  hkdf_suffix.append(reinterpret_cast<char*>(&connection_id),
+                     sizeof(connection_id));
   hkdf_suffix.append(client_hello_serialized.data(),
                      client_hello_serialized.length());
   hkdf_suffix.append(requested_config->serialized);
@@ -619,7 +620,8 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     string hkdf_input;
     hkdf_input.append(QuicCryptoConfig::kCETVLabel,
                       strlen(QuicCryptoConfig::kCETVLabel) + 1);
-    hkdf_input.append(reinterpret_cast<char*>(&guid), sizeof(guid));
+    hkdf_input.append(reinterpret_cast<char*>(&connection_id),
+                      sizeof(connection_id));
     hkdf_input.append(client_hello_serialized.data(),
                       client_hello_serialized.length());
     hkdf_input.append(requested_config->serialized);

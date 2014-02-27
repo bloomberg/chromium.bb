@@ -501,7 +501,7 @@ base::Value* QuicClientSession::GetInfoAsValue(
   dict->SetInteger("open_streams", GetNumOpenStreams());
   dict->SetInteger("total_streams", num_total_streams_);
   dict->SetString("peer_address", peer_address().ToString());
-  dict->SetString("guid", base::Uint64ToString(guid()));
+  dict->SetString("connection_id", base::Uint64ToString(connection_id()));
   dict->SetBoolean("connected", connection()->connected());
 
   base::ListValue* alias_list = new base::ListValue();

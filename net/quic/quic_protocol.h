@@ -33,7 +33,7 @@ class QuicAckNotifier;
 class QuicPacket;
 struct QuicPacketHeader;
 
-typedef uint64 QuicGuid;
+typedef uint64 QuicConnectionId;
 typedef uint32 QuicStreamId;
 typedef uint64 QuicStreamOffset;
 typedef uint64 QuicPacketSequenceNumber;
@@ -165,11 +165,11 @@ enum QuicFrameType {
   NUM_FRAME_TYPES
 };
 
-enum QuicGuidLength {
-  PACKET_0BYTE_GUID = 0,
-  PACKET_1BYTE_GUID = 1,
-  PACKET_4BYTE_GUID = 4,
-  PACKET_8BYTE_GUID = 8
+enum QuicConnectionIdLength {
+  PACKET_0BYTE_CONNECTION_ID = 0,
+  PACKET_1BYTE_CONNECTION_ID = 1,
+  PACKET_4BYTE_CONNECTION_ID = 4,
+  PACKET_8BYTE_CONNECTION_ID = 8
 };
 
 enum InFecGroup {
@@ -202,15 +202,15 @@ enum QuicPacketPublicFlags {
   // Bit 1: Is this packet a public reset packet?
   PACKET_PUBLIC_FLAGS_RST = 1 << 1,
 
-  // Bits 2 and 3 specify the length of the GUID as follows:
+  // Bits 2 and 3 specify the length of the ConnectionId as follows:
   // ----00--: 0 bytes
   // ----01--: 1 byte
   // ----10--: 4 bytes
   // ----11--: 8 bytes
-  PACKET_PUBLIC_FLAGS_0BYTE_GUID = 0,
-  PACKET_PUBLIC_FLAGS_1BYTE_GUID = 1 << 2,
-  PACKET_PUBLIC_FLAGS_4BYTE_GUID = 1 << 3,
-  PACKET_PUBLIC_FLAGS_8BYTE_GUID = 1 << 3 | 1 << 2,
+  PACKET_PUBLIC_FLAGS_0BYTE_CONNECTION_ID = 0,
+  PACKET_PUBLIC_FLAGS_1BYTE_CONNECTION_ID = 1 << 2,
+  PACKET_PUBLIC_FLAGS_4BYTE_CONNECTION_ID = 1 << 3,
+  PACKET_PUBLIC_FLAGS_8BYTE_CONNECTION_ID = 1 << 3 | 1 << 2,
 
   // Bits 4 and 5 describe the packet sequence number length as follows:
   // --00----: 1 byte
@@ -312,19 +312,19 @@ NET_EXPORT_PRIVATE QuicTag MakeQuicTag(char a, char b, char c, char d);
 NET_EXPORT_PRIVATE size_t GetPacketHeaderSize(const QuicPacketHeader& header);
 
 NET_EXPORT_PRIVATE size_t GetPacketHeaderSize(
-    QuicGuidLength guid_length,
+    QuicConnectionIdLength connection_id_length,
     bool include_version,
     QuicSequenceNumberLength sequence_number_length,
     InFecGroup is_in_fec_group);
 
 // Index of the first byte in a QUIC packet of FEC protected data.
 NET_EXPORT_PRIVATE size_t GetStartOfFecProtectedData(
-    QuicGuidLength guid_length,
+    QuicConnectionIdLength connection_id_length,
     bool include_version,
     QuicSequenceNumberLength sequence_number_length);
 // Index of the first byte in a QUIC packet of encrypted data.
 NET_EXPORT_PRIVATE size_t GetStartOfEncryptedData(
-    QuicGuidLength guid_length,
+    QuicConnectionIdLength connection_id_length,
     bool include_version,
     QuicSequenceNumberLength sequence_number_length);
 
@@ -494,9 +494,10 @@ struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {
   explicit QuicPacketPublicHeader(const QuicPacketPublicHeader& other);
   ~QuicPacketPublicHeader();
 
-  // Universal header. All QuicPacket headers will have a guid and public flags.
-  QuicGuid guid;
-  QuicGuidLength guid_length;
+  // Universal header. All QuicPacket headers will have a connection_id and
+  // public flags.
+  QuicConnectionId connection_id;
+  QuicConnectionIdLength connection_id_length;
   bool reset_flag;
   bool version_flag;
   QuicSequenceNumberLength sequence_number_length;
@@ -868,10 +869,10 @@ class NET_EXPORT_PRIVATE QuicPacket : public QuicData {
       char* buffer,
       size_t length,
       bool owns_buffer,
-      QuicGuidLength guid_length,
+      QuicConnectionIdLength connection_id_length,
       bool includes_version,
       QuicSequenceNumberLength sequence_number_length) {
-    return new QuicPacket(buffer, length, owns_buffer, guid_length,
+    return new QuicPacket(buffer, length, owns_buffer, connection_id_length,
                           includes_version, sequence_number_length, false);
   }
 
@@ -879,10 +880,10 @@ class NET_EXPORT_PRIVATE QuicPacket : public QuicData {
       char* buffer,
       size_t length,
       bool owns_buffer,
-      QuicGuidLength guid_length,
+      QuicConnectionIdLength connection_id_length,
       bool includes_version,
       QuicSequenceNumberLength sequence_number_length) {
-    return new QuicPacket(buffer, length, owns_buffer, guid_length,
+    return new QuicPacket(buffer, length, owns_buffer, connection_id_length,
                           includes_version, sequence_number_length, true);
   }
 
@@ -899,14 +900,14 @@ class NET_EXPORT_PRIVATE QuicPacket : public QuicData {
   QuicPacket(char* buffer,
              size_t length,
              bool owns_buffer,
-             QuicGuidLength guid_length,
+             QuicConnectionIdLength connection_id_length,
              bool includes_version,
              QuicSequenceNumberLength sequence_number_length,
              bool is_fec_packet);
 
   char* buffer_;
   const bool is_fec_packet_;
-  const QuicGuidLength guid_length_;
+  const QuicConnectionIdLength connection_id_length_;
   const bool includes_version_;
   const QuicSequenceNumberLength sequence_number_length_;
 

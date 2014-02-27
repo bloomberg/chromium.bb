@@ -180,7 +180,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // client chose to use initially. This allows the server to detect downgrade
   // attacks.
   QuicErrorCode FillClientHello(const std::string& server_hostname,
-                                QuicGuid guid,
+                                QuicConnectionId connection_id,
                                 const QuicVersion preferred_version,
                                 const CachedState* cached,
                                 QuicWallTime now,
@@ -210,7 +210,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // server. The contents of this list will be compared against the list of
   // versions provided in the VER tag of the server hello.
   QuicErrorCode ProcessServerHello(const CryptoHandshakeMessage& server_hello,
-                                   QuicGuid guid,
+                                   QuicConnectionId connection_id,
                                    const QuicVersionVector& negotiated_versions,
                                    CachedState* cached,
                                    QuicCryptoNegotiatedParameters* out_params,

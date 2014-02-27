@@ -167,7 +167,9 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   const IPEndPoint& peer_address() const {
     return connection_->peer_address();
   }
-  QuicGuid guid() const { return connection_->guid(); }
+  QuicConnectionId connection_id() const {
+    return connection_->connection_id();
+  }
 
   QuicPacketCreator::Options* options() { return connection()->options(); }
 

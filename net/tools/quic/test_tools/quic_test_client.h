@@ -89,9 +89,9 @@ class QuicTestClient :  public QuicDataStream::Visitor {
   // Configures client_ to take ownership of and use the writer.
   // Must be called before initial connect.
   void UseWriter(QuicPacketWriterWrapper* writer);
-  // If the given GUID is nonzero, configures client_ to use a specific GUID
-  // instead of a random one.
-  void UseGuid(QuicGuid guid);
+  // If the given ConnectionId is nonzero, configures client_ to use a specific
+  // ConnectionId instead of a random one.
+  void UseConnectionId(QuicConnectionId connection_id);
 
   // Returns NULL if the maximum number of streams have already been created.
   QuicSpdyClientStream* GetOrCreateStream();

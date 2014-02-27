@@ -52,11 +52,12 @@ const char kUploadData[] = "hello world!";
 class TestQuicConnection : public QuicConnection {
  public:
   TestQuicConnection(const QuicVersionVector& versions,
-                     QuicGuid guid,
+                     QuicConnectionId connection_id,
                      IPEndPoint address,
                      QuicConnectionHelper* helper,
                      QuicPacketWriter* writer)
-      : QuicConnection(guid, address, helper, writer, false, versions) {
+      : QuicConnection(connection_id, address, helper, writer, false,
+                       versions) {
   }
 
   void SetSendAlgorithm(SendAlgorithmInterface* send_algorithm) {
@@ -124,9 +125,9 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
       : net_log_(BoundNetLog()),
         use_closing_stream_(false),
         read_buffer_(new IOBufferWithSize(4096)),
-        guid_(2),
+        connection_id_(2),
         stream_id_(GetParam() > QUIC_VERSION_12 ? 5 : 3),
-        maker_(GetParam(), guid_),
+        maker_(GetParam(), connection_id_),
         random_generator_(0) {
     IPAddressNumber ip;
     CHECK(ParseIPLiteralToNumber("192.0.2.33", &ip));
@@ -193,9 +194,9 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     helper_.reset(new QuicConnectionHelper(runner_.get(), &clock_,
                                            &random_generator_));
     writer_.reset(new QuicDefaultPacketWriter(socket));
-    connection_ = new TestQuicConnection(SupportedVersions(GetParam()), guid_,
-                                         peer_addr_, helper_.get(),
-                                         writer_.get());
+    connection_ = new TestQuicConnection(SupportedVersions(GetParam()),
+                                         connection_id_, peer_addr_,
+                                         helper_.get(), writer_.get());
     connection_->set_visitor(&visitor_);
     connection_->SetSendAlgorithm(send_algorithm_);
     connection_->SetReceiveAlgorithm(receive_algorithm_);
@@ -314,7 +315,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     return compressor.CompressHeaders(headers);
   }
 
-  const QuicGuid guid_;
+  const QuicConnectionId connection_id_;
   const QuicStreamId stream_id_;
   QuicTestPacketMaker maker_;
   IPEndPoint self_addr_;

@@ -28,7 +28,14 @@ class NET_EXPORT_PRIVATE TCPLossAlgorithm : public LossDetectionInterface {
       const QuicUnackedPacketMap& unacked_packets,
       const QuicTime& time,
       QuicPacketSequenceNumber largest_observed,
-      QuicTime::Delta srtt) OVERRIDE;
+      QuicTime::Delta srtt,
+      QuicTime::Delta latest_rtt) OVERRIDE;
+
+  // Returns a non-zero value when the early retransmit timer is active.
+  virtual QuicTime GetLossTimeout() const OVERRIDE;
+
+ private:
+  QuicTime loss_detection_timeout_;
 };
 
 }  // namespace net

@@ -179,7 +179,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // validate_chlo_result: Output from the asynchronous call to
   //     ValidateClientHello.  Contains the client hello message and
   //     information about it.
-  // guid: the GUID for the connection, which is used in key derivation.
+  // connection_id: the ConnectionId for the connection, which is used in key
+  //     derivation.
   // client_address: the IP address and port of the client. The IP address is
   //     used to generate and validate source-address tokens.
   // version: version of the QUIC protocol in use for this connection
@@ -194,7 +195,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // error_details: used to store a string describing any error.
   QuicErrorCode ProcessClientHello(
       const ValidateClientHelloResultCallback::Result& validate_chlo_result,
-      QuicGuid guid,
+      QuicConnectionId connection_id,
       IPEndPoint client_address,
       QuicVersion version,
       const QuicVersionVector& supported_versions,

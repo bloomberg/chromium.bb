@@ -204,9 +204,9 @@ class NET_EXPORT_PRIVATE QuicConnection
     BUNDLE_PENDING_ACK = 2,
   };
 
-  // Constructs a new QuicConnection for the specified |guid| and |address|.
+  // Constructs a new QuicConnection for |connection_id| and |address|.
   // |helper| and |writer| must outlive this connection.
-  QuicConnection(QuicGuid guid,
+  QuicConnection(QuicConnectionId connection_id,
                  IPEndPoint address,
                  QuicConnectionHelperInterface* helper,
                  QuicPacketWriter* writer,
@@ -231,10 +231,17 @@ class NET_EXPORT_PRIVATE QuicConnection
                                   bool fin,
                                   QuicAckNotifier::DelegateInterface* delegate);
 
-  // Send a stream reset frame to the peer.
+  // Send a RST_STREAM frame to the peer.
   virtual void SendRstStream(QuicStreamId id,
                              QuicRstStreamErrorCode error,
                              QuicStreamOffset bytes_written);
+
+  // Send a BLOCKED frame to the peer.
+  virtual void SendBlocked(QuicStreamId id);
+
+  // Send a WINDOW_UPDATE frame to the peer.
+  virtual void SendWindowUpdate(QuicStreamId id,
+                                QuicStreamOffset byte_offset);
 
   // Sends the connection close packet without affecting the state of the
   // connection.  This should only be called if the session is actively being
@@ -334,7 +341,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   }
   const IPEndPoint& self_address() const { return self_address_; }
   const IPEndPoint& peer_address() const { return peer_address_; }
-  QuicGuid guid() const { return guid_; }
+  QuicConnectionId connection_id() const { return connection_id_; }
   const QuicClock* clock() const { return clock_; }
   QuicRandom* random_generator() const { return random_generator_; }
 
@@ -595,7 +602,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   const QuicClock* clock_;
   QuicRandom* random_generator_;
 
-  const QuicGuid guid_;
+  const QuicConnectionId connection_id_;
   // Address on the last successfully processed packet received from the
   // client.
   IPEndPoint self_address_;

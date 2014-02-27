@@ -66,8 +66,8 @@ base::Value* NetLogQuicPacketRetransmittedCallback(
 base::Value* NetLogQuicPacketHeaderCallback(const QuicPacketHeader* header,
                                             NetLog::LogLevel /* log_level */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
-  dict->SetString("guid",
-                  base::Uint64ToString(header->public_header.guid));
+  dict->SetString("connection_id",
+                  base::Uint64ToString(header->public_header.connection_id));
   dict->SetInteger("reset_flag", header->public_header.reset_flag);
   dict->SetInteger("version_flag", header->public_header.version_flag);
   dict->SetString("packet_sequence_number",

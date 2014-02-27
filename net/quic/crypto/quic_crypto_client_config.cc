@@ -381,7 +381,7 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
 
 QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     const string& server_hostname,
-    QuicGuid guid,
+    QuicConnectionId connection_id,
     const QuicVersion preferred_version,
     const CachedState* cached,
     QuicWallTime now,
@@ -504,7 +504,8 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     const QuicData& client_hello_serialized = out->GetSerialized();
     hkdf_input.append(QuicCryptoConfig::kCETVLabel,
                       strlen(QuicCryptoConfig::kCETVLabel) + 1);
-    hkdf_input.append(reinterpret_cast<char*>(&guid), sizeof(guid));
+    hkdf_input.append(reinterpret_cast<char*>(&connection_id),
+                      sizeof(connection_id));
     hkdf_input.append(client_hello_serialized.data(),
                       client_hello_serialized.length());
     hkdf_input.append(cached->server_config());
@@ -545,8 +546,8 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
   }
 
   out_params->hkdf_input_suffix.clear();
-  out_params->hkdf_input_suffix.append(reinterpret_cast<char*>(&guid),
-                                       sizeof(guid));
+  out_params->hkdf_input_suffix.append(reinterpret_cast<char*>(&connection_id),
+                                       sizeof(connection_id));
   const QuicData& client_hello_serialized = out->GetSerialized();
   out_params->hkdf_input_suffix.append(client_hello_serialized.data(),
                                        client_hello_serialized.length());
@@ -633,7 +634,7 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
 
 QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
     const CryptoHandshakeMessage& server_hello,
-    QuicGuid guid,
+    QuicConnectionId connection_id,
     const QuicVersionVector& negotiated_versions,
     CachedState* cached,
     QuicCryptoNegotiatedParameters* out_params,

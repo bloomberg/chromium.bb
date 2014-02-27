@@ -97,6 +97,17 @@ void QuicSpdyServerStream::SendResponse() {
     return;
   }
 
+  if (response->response_type() == QuicInMemoryCache::CLOSE_CONNECTION) {
+    DVLOG(1) << "Special response: closing connection.";
+    CloseConnection(QUIC_NO_ERROR);
+    return;
+  }
+
+  if (response->response_type() == QuicInMemoryCache::IGNORE_REQUEST) {
+    DVLOG(1) << "Special response: ignoring request.";
+    return;
+  }
+
   DVLOG(1) << "Sending response for stream " << id();
   SendHeadersAndBody(response->headers(), response->body());
 }

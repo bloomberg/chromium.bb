@@ -47,11 +47,20 @@ struct NET_EXPORT_PRIVATE QuicConnectionStats {
   uint32 packets_revived;
   uint32 packets_dropped;  // duplicate or less than least unacked.
   uint32 crypto_retransmit_count;
+  uint32 loss_timeout_count;  // Count of times the loss detection alarm fired.
   uint32 tlp_count;
   uint32 rto_count;
 
   uint32 rtt;  // In microseconds
   uint64 estimated_bandwidth;
+
+  // The following stats are used only in TcpCubicSender.
+  // Total amount of cwnd increase by TCPCubic in cubic mode.
+  uint32 cwnd_increase_cubic_mode;
+  // Total amount of cwnd increase by TCPCubic in reno mode. This includes
+  // cwnd increases that actually happened in cubic mode, but where reno mode
+  // would have yielded the same increase.
+  uint32 cwnd_increase_reno_mode;
   // TODO(satyamshekhar): Add window_size, mss and mtu.
 };
 

@@ -38,7 +38,8 @@ class QuicServerSessionVisitor {
  public:
   virtual ~QuicServerSessionVisitor() {}
 
-  virtual void OnConnectionClosed(QuicGuid guid, QuicErrorCode error) = 0;
+  virtual void OnConnectionClosed(QuicConnectionId connection_id,
+                                  QuicErrorCode error) = 0;
   virtual void OnWriteBlocked(QuicBlockedWriterInterface* writer) = 0;
 };
 

@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "net/quic/quic_unacked_packet_map.h"
+#include "net/quic/test_tools/mock_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -19,13 +20,13 @@ class TcpLossAlgorithmTest : public ::testing::Test {
  protected:
   TcpLossAlgorithmTest()
       : unacked_packets_(true),
-        srtt_(QuicTime::Delta::FromMilliseconds(10)) { }
+        srtt_(QuicTime::Delta::FromMilliseconds(100)) { }
 
   void SendDataPacket(QuicPacketSequenceNumber sequence_number) {
     SerializedPacket packet(sequence_number, PACKET_1BYTE_SEQUENCE_NUMBER,
                             NULL, 0, new RetransmittableFrames());
     unacked_packets_.AddPacket(packet);
-    unacked_packets_.SetPending(sequence_number, QuicTime::Zero(), 1000);
+    unacked_packets_.SetPending(sequence_number, clock_.Now(), 1000);
   }
 
   void VerifyLosses(QuicPacketSequenceNumber largest_observed,
@@ -33,7 +34,7 @@ class TcpLossAlgorithmTest : public ::testing::Test {
                     size_t num_losses) {
     SequenceNumberSet lost_packets =
         loss_algorithm_.DetectLostPackets(
-            unacked_packets_, QuicTime::Zero(), largest_observed, srtt_);
+            unacked_packets_, clock_.Now(), largest_observed, srtt_, srtt_);
     EXPECT_EQ(num_losses, lost_packets.size());
     for (size_t i = 0; i < num_losses; ++i) {
       EXPECT_TRUE(ContainsKey(lost_packets, losses_expected[i]));
@@ -43,6 +44,7 @@ class TcpLossAlgorithmTest : public ::testing::Test {
   QuicUnackedPacketMap unacked_packets_;
   TCPLossAlgorithm loss_algorithm_;
   QuicTime::Delta srtt_;
+  MockClock clock_;
 };
 
 TEST_F(TcpLossAlgorithmTest, NackRetransmit1Packet) {
@@ -64,6 +66,7 @@ TEST_F(TcpLossAlgorithmTest, NackRetransmit1Packet) {
   unacked_packets_.NackPacket(1, 3);
   QuicPacketSequenceNumber lost[] = { 1 };
   VerifyLosses(4, lost, arraysize(lost));
+  EXPECT_EQ(QuicTime::Zero(), loss_algorithm_.GetLossTimeout());
 }
 
 // A stretch ack is an ack that covers more than 1 packet of previously
@@ -82,6 +85,7 @@ TEST_F(TcpLossAlgorithmTest, NackRetransmit1PacketWith1StretchAck) {
   unacked_packets_.SetNotPending(4);
   QuicPacketSequenceNumber lost[] = { 1 };
   VerifyLosses(4, lost, arraysize(lost));
+  EXPECT_EQ(QuicTime::Zero(), loss_algorithm_.GetLossTimeout());
 }
 
 // Ack a packet 3 packets ahead, causing a retransmit.
@@ -99,6 +103,7 @@ TEST_F(TcpLossAlgorithmTest, NackRetransmit1PacketSingleAck) {
   unacked_packets_.SetNotPending(4);
   QuicPacketSequenceNumber lost[] = { 1 };
   VerifyLosses(4, lost, arraysize(lost));
+  EXPECT_EQ(QuicTime::Zero(), loss_algorithm_.GetLossTimeout());
 }
 
 TEST_F(TcpLossAlgorithmTest, EarlyRetransmit1Packet) {
@@ -110,8 +115,14 @@ TEST_F(TcpLossAlgorithmTest, EarlyRetransmit1Packet) {
   // Early retransmit when the final packet gets acked and the first is nacked.
   unacked_packets_.SetNotPending(2);
   unacked_packets_.NackPacket(1, 1);
+  VerifyLosses(2, NULL, 0);
+  EXPECT_EQ(clock_.Now().Add(srtt_.Multiply(1.25)),
+            loss_algorithm_.GetLossTimeout());
+
+  clock_.AdvanceTime(srtt_.Multiply(1.25));
   QuicPacketSequenceNumber lost[] = { 1 };
   VerifyLosses(2, lost, arraysize(lost));
+  EXPECT_EQ(QuicTime::Zero(), loss_algorithm_.GetLossTimeout());
 }
 
 TEST_F(TcpLossAlgorithmTest, EarlyRetransmitAllPackets) {
@@ -125,8 +136,15 @@ TEST_F(TcpLossAlgorithmTest, EarlyRetransmitAllPackets) {
   for (size_t i = 1; i < kNumSentPackets; ++i) {
     unacked_packets_.NackPacket(i, kNumSentPackets - i);
   }
-  QuicPacketSequenceNumber lost[] = { 1, 2, 3, 4 };
+  QuicPacketSequenceNumber lost[] = { 1, 2 };
   VerifyLosses(kNumSentPackets, lost, arraysize(lost));
+  EXPECT_EQ(clock_.Now().Add(srtt_.Multiply(1.25)),
+            loss_algorithm_.GetLossTimeout());
+
+  clock_.AdvanceTime(srtt_.Multiply(1.25));
+  QuicPacketSequenceNumber lost2[] = { 1, 2, 3, 4 };
+  VerifyLosses(kNumSentPackets, lost2, arraysize(lost2));
+  EXPECT_EQ(QuicTime::Zero(), loss_algorithm_.GetLossTimeout());
 }
 
 TEST_F(TcpLossAlgorithmTest, DontEarlyRetransmitNeuteredPacket) {
@@ -140,6 +158,7 @@ TEST_F(TcpLossAlgorithmTest, DontEarlyRetransmitNeuteredPacket) {
   unacked_packets_.NackPacket(1, 1);
   unacked_packets_.NeuterPacket(1);
   VerifyLosses(2, NULL, 0);
+  EXPECT_EQ(QuicTime::Zero(), loss_algorithm_.GetLossTimeout());
 }
 
 }  // namespace

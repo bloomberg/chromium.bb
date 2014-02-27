@@ -16,42 +16,45 @@ using std::string;
 namespace net {
 
 size_t GetPacketHeaderSize(const QuicPacketHeader& header) {
-  return GetPacketHeaderSize(header.public_header.guid_length,
+  return GetPacketHeaderSize(header.public_header.connection_id_length,
                              header.public_header.version_flag,
                              header.public_header.sequence_number_length,
                              header.is_in_fec_group);
 }
 
-size_t GetPacketHeaderSize(QuicGuidLength guid_length,
+size_t GetPacketHeaderSize(QuicConnectionIdLength connection_id_length,
                            bool include_version,
                            QuicSequenceNumberLength sequence_number_length,
                            InFecGroup is_in_fec_group) {
-  return kPublicFlagsSize + guid_length +
+  return kPublicFlagsSize + connection_id_length +
       (include_version ? kQuicVersionSize : 0) + sequence_number_length +
       kPrivateFlagsSize + (is_in_fec_group == IN_FEC_GROUP ? kFecGroupSize : 0);
 }
 
 size_t GetStartOfFecProtectedData(
-    QuicGuidLength guid_length,
+    QuicConnectionIdLength connection_id_length,
     bool include_version,
     QuicSequenceNumberLength sequence_number_length) {
-  return GetPacketHeaderSize(
-      guid_length, include_version, sequence_number_length, IN_FEC_GROUP);
+  return GetPacketHeaderSize(connection_id_length,
+                             include_version,
+                             sequence_number_length,
+                             IN_FEC_GROUP);
 }
 
 size_t GetStartOfEncryptedData(
-    QuicGuidLength guid_length,
+    QuicConnectionIdLength connection_id_length,
     bool include_version,
     QuicSequenceNumberLength sequence_number_length) {
   // Don't include the fec size, since encryption starts before private flags.
-  return GetPacketHeaderSize(
-      guid_length, include_version, sequence_number_length, NOT_IN_FEC_GROUP) -
-      kPrivateFlagsSize;
+  return GetPacketHeaderSize(connection_id_length,
+                             include_version,
+                             sequence_number_length,
+                             NOT_IN_FEC_GROUP) - kPrivateFlagsSize;
 }
 
 QuicPacketPublicHeader::QuicPacketPublicHeader()
-    : guid(0),
-      guid_length(PACKET_8BYTE_GUID),
+    : connection_id(0),
+      connection_id_length(PACKET_8BYTE_CONNECTION_ID),
       reset_flag(false),
       version_flag(false),
       sequence_number_length(PACKET_6BYTE_SEQUENCE_NUMBER) {
@@ -59,8 +62,8 @@ QuicPacketPublicHeader::QuicPacketPublicHeader()
 
 QuicPacketPublicHeader::QuicPacketPublicHeader(
     const QuicPacketPublicHeader& other)
-    : guid(other.guid),
-      guid_length(other.guid_length),
+    : connection_id(other.connection_id),
+      connection_id_length(other.connection_id_length),
       reset_flag(other.reset_flag),
       version_flag(other.version_flag),
       sequence_number_length(other.sequence_number_length),
@@ -209,8 +212,8 @@ string QuicVersionVectorToString(const QuicVersionVector& versions) {
 }
 
 ostream& operator<<(ostream& os, const QuicPacketHeader& header) {
-  os << "{ guid: " << header.public_header.guid
-     << ", guid_length:" << header.public_header.guid_length
+  os << "{ connection_id: " << header.public_header.connection_id
+     << ", connection_id_length:" << header.public_header.connection_id_length
      << ", sequence_number_length:"
      << header.public_header.sequence_number_length
      << ", reset_flag: " << header.public_header.reset_flag
@@ -563,14 +566,14 @@ QuicBlockedFrame::QuicBlockedFrame(QuicStreamId stream_id)
 QuicPacket::QuicPacket(char* buffer,
                        size_t length,
                        bool owns_buffer,
-                       QuicGuidLength guid_length,
+                       QuicConnectionIdLength connection_id_length,
                        bool includes_version,
                        QuicSequenceNumberLength sequence_number_length,
                        bool is_fec_packet)
     : QuicData(buffer, length, owns_buffer),
       buffer_(buffer),
       is_fec_packet_(is_fec_packet),
-      guid_length_(guid_length),
+      connection_id_length_(connection_id_length),
       includes_version_(includes_version),
       sequence_number_length_(sequence_number_length) {
 }
@@ -588,7 +591,7 @@ QuicEncryptedPacket::QuicEncryptedPacket(char* buffer,
 
 StringPiece QuicPacket::FecProtectedData() const {
   const size_t start_of_fec = GetStartOfFecProtectedData(
-      guid_length_, includes_version_, sequence_number_length_);
+      connection_id_length_, includes_version_, sequence_number_length_);
   return StringPiece(data() + start_of_fec, length() - start_of_fec);
 }
 
@@ -596,12 +599,12 @@ StringPiece QuicPacket::AssociatedData() const {
   return StringPiece(
       data() + kStartOfHashData,
       GetStartOfEncryptedData(
-          guid_length_, includes_version_, sequence_number_length_) -
+          connection_id_length_, includes_version_, sequence_number_length_) -
       kStartOfHashData);
 }
 
 StringPiece QuicPacket::BeforePlaintext() const {
-  return StringPiece(data(), GetStartOfEncryptedData(guid_length_,
+  return StringPiece(data(), GetStartOfEncryptedData(connection_id_length_,
                                                      includes_version_,
                                                      sequence_number_length_));
 }
@@ -609,7 +612,7 @@ StringPiece QuicPacket::BeforePlaintext() const {
 StringPiece QuicPacket::Plaintext() const {
   const size_t start_of_encrypted_data =
       GetStartOfEncryptedData(
-          guid_length_, includes_version_, sequence_number_length_);
+          connection_id_length_, includes_version_, sequence_number_length_);
   return StringPiece(data() + start_of_encrypted_data,
                      length() - start_of_encrypted_data);
 }

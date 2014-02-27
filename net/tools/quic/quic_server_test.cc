@@ -39,9 +39,9 @@ class QuicServerDispatchPacketTest : public ::testing::Test {
 
 TEST_F(QuicServerDispatchPacketTest, DispatchPacket) {
   unsigned char valid_packet[] = {
-    // public flags (8 byte guid)
+    // public flags (8 byte connection_id)
     0x3C,
-    // guid
+    // connection_id
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
     // packet sequence number

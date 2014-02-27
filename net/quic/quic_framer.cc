@@ -38,8 +38,8 @@ const QuicPacketSequenceNumber k2ByteSequenceNumberMask =
 const QuicPacketSequenceNumber k1ByteSequenceNumberMask =
     GG_UINT64_C(0x00000000000000FF);
 
-const QuicGuid k1ByteGuidMask = GG_UINT64_C(0x00000000000000FF);
-const QuicGuid k4ByteGuidMask = GG_UINT64_C(0x00000000FFFFFFFF);
+const QuicConnectionId k1ByteConnectionIdMask = GG_UINT64_C(0x00000000000000FF);
+const QuicConnectionId k4ByteConnectionIdMask = GG_UINT64_C(0x00000000FFFFFFFF);
 
 // Number of bits the sequence number length bits are shifted from the right
 // edge of the public header.
@@ -163,7 +163,7 @@ QuicFramer::QuicFramer(const QuicVersionVector& supported_versions,
       entropy_calculator_(NULL),
       error_(QUIC_NO_ERROR),
       last_sequence_number_(0),
-      last_serialized_guid_(0),
+      last_serialized_connection_id_(0),
       supported_versions_(supported_versions),
       alternative_decrypter_latch_(false),
       is_server_(is_server),
@@ -270,7 +270,7 @@ size_t QuicFramer::GetStreamOffsetSize(QuicStreamOffset offset) {
 
 // static
 size_t QuicFramer::GetVersionNegotiationPacketSize(size_t number_versions) {
-  return kPublicFlagsSize + PACKET_8BYTE_GUID +
+  return kPublicFlagsSize + PACKET_8BYTE_CONNECTION_ID +
       number_versions * kQuicVersionSize;
 }
 
@@ -455,7 +455,7 @@ SerializedPacket QuicFramer::BuildDataPacket(
   // length, even though they're typically slightly shorter.
   DCHECK_LE(len, packet_size);
   QuicPacket* packet = QuicPacket::NewDataPacket(
-      writer.take(), len, true, header.public_header.guid_length,
+      writer.take(), len, true, header.public_header.connection_id_length,
       header.public_header.version_flag,
       header.public_header.sequence_number_length);
 
@@ -493,7 +493,7 @@ SerializedPacket QuicFramer::BuildFecPacket(const QuicPacketHeader& header,
       header.packet_sequence_number,
       header.public_header.sequence_number_length,
       QuicPacket::NewFecPacket(writer.take(), len, true,
-                               header.public_header.guid_length,
+                               header.public_header.connection_id_length,
                                header.public_header.version_flag,
                                header.public_header.sequence_number_length),
       GetPacketEntropyHash(header), NULL);
@@ -519,16 +519,17 @@ QuicEncryptedPacket* QuicFramer::BuildPublicResetPacket(
   }
   const QuicData& reset_serialized = reset.GetSerialized();
 
-  size_t len = kPublicFlagsSize + PACKET_8BYTE_GUID + reset_serialized.length();
+  size_t len =
+      kPublicFlagsSize + PACKET_8BYTE_CONNECTION_ID + reset_serialized.length();
   QuicDataWriter writer(len);
 
   uint8 flags = static_cast<uint8>(PACKET_PUBLIC_FLAGS_RST |
-                                   PACKET_PUBLIC_FLAGS_8BYTE_GUID);
+                                   PACKET_PUBLIC_FLAGS_8BYTE_CONNECTION_ID);
   if (!writer.WriteUInt8(flags)) {
     return NULL;
   }
 
-  if (!writer.WriteUInt64(packet.public_header.guid)) {
+  if (!writer.WriteUInt64(packet.public_header.connection_id)) {
     return NULL;
   }
 
@@ -547,12 +548,12 @@ QuicEncryptedPacket* QuicFramer::BuildVersionNegotiationPacket(
   QuicDataWriter writer(len);
 
   uint8 flags = static_cast<uint8>(PACKET_PUBLIC_FLAGS_VERSION |
-                                   PACKET_PUBLIC_FLAGS_8BYTE_GUID);
+                                   PACKET_PUBLIC_FLAGS_8BYTE_CONNECTION_ID);
   if (!writer.WriteUInt8(flags)) {
     return NULL;
   }
 
-  if (!writer.WriteUInt64(header.guid)) {
+  if (!writer.WriteUInt64(header.connection_id)) {
     return NULL;
   }
 
@@ -767,38 +768,44 @@ bool QuicFramer::AppendPacketHeader(const QuicPacketHeader& header,
       GetSequenceNumberFlags(header.public_header.sequence_number_length)
           << kPublicHeaderSequenceNumberShift;
 
-  switch (header.public_header.guid_length) {
-    case PACKET_0BYTE_GUID:
-      if (!writer->WriteUInt8(public_flags | PACKET_PUBLIC_FLAGS_0BYTE_GUID)) {
+  switch (header.public_header.connection_id_length) {
+    case PACKET_0BYTE_CONNECTION_ID:
+      if (!writer->WriteUInt8(
+              public_flags | PACKET_PUBLIC_FLAGS_0BYTE_CONNECTION_ID)) {
         return false;
       }
       break;
-    case PACKET_1BYTE_GUID:
-      if (!writer->WriteUInt8(public_flags | PACKET_PUBLIC_FLAGS_1BYTE_GUID)) {
+    case PACKET_1BYTE_CONNECTION_ID:
+      if (!writer->WriteUInt8(
+              public_flags | PACKET_PUBLIC_FLAGS_1BYTE_CONNECTION_ID)) {
          return false;
       }
-      if (!writer->WriteUInt8(header.public_header.guid & k1ByteGuidMask)) {
+      if (!writer->WriteUInt8(
+              header.public_header.connection_id & k1ByteConnectionIdMask)) {
         return false;
       }
       break;
-    case PACKET_4BYTE_GUID:
-      if (!writer->WriteUInt8(public_flags | PACKET_PUBLIC_FLAGS_4BYTE_GUID)) {
+    case PACKET_4BYTE_CONNECTION_ID:
+      if (!writer->WriteUInt8(
+              public_flags | PACKET_PUBLIC_FLAGS_4BYTE_CONNECTION_ID)) {
          return false;
       }
-      if (!writer->WriteUInt32(header.public_header.guid & k4ByteGuidMask)) {
+      if (!writer->WriteUInt32(
+              header.public_header.connection_id & k4ByteConnectionIdMask)) {
         return false;
       }
       break;
-    case PACKET_8BYTE_GUID:
-      if (!writer->WriteUInt8(public_flags | PACKET_PUBLIC_FLAGS_8BYTE_GUID)) {
+    case PACKET_8BYTE_CONNECTION_ID:
+      if (!writer->WriteUInt8(
+              public_flags | PACKET_PUBLIC_FLAGS_8BYTE_CONNECTION_ID)) {
         return false;
       }
-      if (!writer->WriteUInt64(header.public_header.guid)) {
+      if (!writer->WriteUInt64(header.public_header.connection_id)) {
         return false;
       }
       break;
   }
-  last_serialized_guid_ = header.public_header.guid;
+  last_serialized_connection_id_ = header.public_header.connection_id;
 
   if (header.public_header.version_flag) {
     DCHECK(!is_server_);
@@ -888,46 +895,49 @@ bool QuicFramer::ProcessPublicHeader(
     return false;
   }
 
-  switch (public_flags & PACKET_PUBLIC_FLAGS_8BYTE_GUID) {
-    case PACKET_PUBLIC_FLAGS_8BYTE_GUID:
-      if (!reader_->ReadUInt64(&public_header->guid)) {
-        set_detailed_error("Unable to read GUID.");
+  switch (public_flags & PACKET_PUBLIC_FLAGS_8BYTE_CONNECTION_ID) {
+    case PACKET_PUBLIC_FLAGS_8BYTE_CONNECTION_ID:
+      if (!reader_->ReadUInt64(&public_header->connection_id)) {
+        set_detailed_error("Unable to read ConnectionId.");
         return false;
       }
-      public_header->guid_length = PACKET_8BYTE_GUID;
+      public_header->connection_id_length = PACKET_8BYTE_CONNECTION_ID;
       break;
-    case PACKET_PUBLIC_FLAGS_4BYTE_GUID:
-      // If the guid is truncated, expect to read the last serialized guid.
-      if (!reader_->ReadBytes(&public_header->guid, PACKET_4BYTE_GUID)) {
-        set_detailed_error("Unable to read GUID.");
+    case PACKET_PUBLIC_FLAGS_4BYTE_CONNECTION_ID:
+      // If the connection_id is truncated, expect to read the last serialized
+      // connection_id.
+      if (!reader_->ReadBytes(&public_header->connection_id,
+                              PACKET_4BYTE_CONNECTION_ID)) {
+        set_detailed_error("Unable to read ConnectionId.");
         return false;
       }
-      if ((public_header->guid & k4ByteGuidMask) !=
-          (last_serialized_guid_ & k4ByteGuidMask)) {
-        set_detailed_error(
-            "Truncated 4 byte GUID does not match previous guid.");
+      if ((public_header->connection_id & k4ByteConnectionIdMask) !=
+          (last_serialized_connection_id_ & k4ByteConnectionIdMask)) {
+        set_detailed_error("Truncated 4 byte ConnectionId does not match "
+                           "previous connection_id.");
         return false;
       }
-      public_header->guid_length = PACKET_4BYTE_GUID;
-      public_header->guid = last_serialized_guid_;
+      public_header->connection_id_length = PACKET_4BYTE_CONNECTION_ID;
+      public_header->connection_id = last_serialized_connection_id_;
       break;
-    case PACKET_PUBLIC_FLAGS_1BYTE_GUID:
-      if (!reader_->ReadBytes(&public_header->guid, PACKET_1BYTE_GUID)) {
-        set_detailed_error("Unable to read GUID.");
+    case PACKET_PUBLIC_FLAGS_1BYTE_CONNECTION_ID:
+      if (!reader_->ReadBytes(&public_header->connection_id,
+                              PACKET_1BYTE_CONNECTION_ID)) {
+        set_detailed_error("Unable to read ConnectionId.");
         return false;
       }
-      if ((public_header->guid & k1ByteGuidMask) !=
-          (last_serialized_guid_ & k1ByteGuidMask)) {
-        set_detailed_error(
-            "Truncated 1 byte GUID does not match previous guid.");
+      if ((public_header->connection_id & k1ByteConnectionIdMask) !=
+          (last_serialized_connection_id_ & k1ByteConnectionIdMask)) {
+        set_detailed_error("Truncated 1 byte ConnectionId does not match "
+                           "previous connection_id.");
         return false;
       }
-      public_header->guid_length = PACKET_1BYTE_GUID;
-      public_header->guid = last_serialized_guid_;
+      public_header->connection_id_length = PACKET_1BYTE_CONNECTION_ID;
+      public_header->connection_id = last_serialized_connection_id_;
       break;
-    case PACKET_PUBLIC_FLAGS_0BYTE_GUID:
-      public_header->guid_length = PACKET_0BYTE_GUID;
-      public_header->guid = last_serialized_guid_;
+    case PACKET_PUBLIC_FLAGS_0BYTE_CONNECTION_ID:
+      public_header->connection_id_length = PACKET_0BYTE_CONNECTION_ID;
+      public_header->connection_id = last_serialized_connection_id_;
       break;
   }
 
@@ -1688,13 +1698,13 @@ bool QuicFramer::ProcessBlockedFrame(QuicBlockedFrame* frame) {
 // static
 StringPiece QuicFramer::GetAssociatedDataFromEncryptedPacket(
     const QuicEncryptedPacket& encrypted,
-    QuicGuidLength guid_length,
+    QuicConnectionIdLength connection_id_length,
     bool includes_version,
     QuicSequenceNumberLength sequence_number_length) {
-  return StringPiece(encrypted.data() + kStartOfHashData,
-                     GetStartOfEncryptedData(
-                         guid_length, includes_version, sequence_number_length)
-                     - kStartOfHashData);
+  return StringPiece(
+      encrypted.data() + kStartOfHashData, GetStartOfEncryptedData(
+          connection_id_length, includes_version, sequence_number_length)
+      - kStartOfHashData);
 }
 
 void QuicFramer::SetDecrypter(QuicDecrypter* decrypter) {
@@ -1791,7 +1801,7 @@ bool QuicFramer::DecryptPayload(const QuicPacketHeader& header,
       header.packet_sequence_number,
       GetAssociatedDataFromEncryptedPacket(
           packet,
-          header.public_header.guid_length,
+          header.public_header.connection_id_length,
           header.public_header.version_flag,
           header.public_header.sequence_number_length),
       encrypted));
@@ -1800,7 +1810,7 @@ bool QuicFramer::DecryptPayload(const QuicPacketHeader& header,
         header.packet_sequence_number,
         GetAssociatedDataFromEncryptedPacket(
             packet,
-            header.public_header.guid_length,
+            header.public_header.connection_id_length,
             header.public_header.version_flag,
             header.public_header.sequence_number_length),
         encrypted));

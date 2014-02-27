@@ -175,10 +175,18 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
     NOT_RECEIVED_BY_PEER,
   };
 
+  // The retransmission timer is a single timer which switches modes depending
+  // upon connection state.
   enum RetransmissionTimeoutMode {
+    // A conventional TCP style RTO.
     RTO_MODE,
+    // A tail loss probe.  By default, QUIC sends up to two before RTOing.
     TLP_MODE,
+    // Retransmission of handshake packets prior to handshake completion.
     HANDSHAKE_MODE,
+    // Re-invoke the loss detection when a packet is not acked before the
+    // loss detection algorithm expects.
+    LOSS_MODE,
   };
 
   typedef linked_hash_map<QuicPacketSequenceNumber,

@@ -17,6 +17,7 @@ using std::max;
 namespace net {
 
 namespace {
+
 // Constants based on TCP defaults.
 // The following constants are in 2^10 fractions of a second instead of ms to
 // allow a 10 shift right to divide.
@@ -46,12 +47,14 @@ const float kNConnectionAlpha = 3 * kNumConnections * kNumConnections *
       (1 - kNConnectionBeta) / (1 + kNConnectionBeta);
 // TODO(jri): Compute kNConnectionBeta and kNConnectionAlpha from
 // number of active streams.
+
 }  // namespace
 
-Cubic::Cubic(const QuicClock* clock)
+Cubic::Cubic(const QuicClock* clock, QuicConnectionStats* stats)
     : clock_(clock),
       epoch_(QuicTime::Zero()),
-      last_update_time_(QuicTime::Zero()) {
+      last_update_time_(QuicTime::Zero()),
+      stats_(stats) {
   Reset();
 }
 
@@ -65,6 +68,26 @@ void Cubic::Reset() {
   origin_point_congestion_window_ = 0;
   time_to_origin_point_ = 0;
   last_target_congestion_window_ = 0;
+}
+
+void Cubic::UpdateCongestionControlStats(
+    QuicTcpCongestionWindow new_cubic_mode_cwnd,
+    QuicTcpCongestionWindow new_reno_mode_cwnd) {
+  if (last_congestion_window_ < new_cubic_mode_cwnd) {
+    // Congestion window will increase in cubic mode.
+    stats_->cwnd_increase_cubic_mode += new_cubic_mode_cwnd -
+        last_congestion_window_;
+    if (new_cubic_mode_cwnd <= new_reno_mode_cwnd) {
+      // Congestion window increase in reno mode is higher or equal to cubic
+      // mode's increase.
+      stats_->cwnd_increase_reno_mode += new_reno_mode_cwnd -
+          last_congestion_window_;
+    }
+  } else if (last_congestion_window_ < new_reno_mode_cwnd) {
+    // No cwnd increase in cubic mode, but cwnd will increase in reno mode.
+    stats_->cwnd_increase_reno_mode += new_reno_mode_cwnd -
+        last_congestion_window_;
+  }
 }
 
 QuicTcpCongestionWindow Cubic::CongestionWindowAfterPacketLoss(
@@ -127,9 +150,6 @@ QuicTcpCongestionWindow Cubic::CongestionWindowAfterAck(
   QuicTcpCongestionWindow target_congestion_window =
       origin_point_congestion_window_ - delta_congestion_window;
 
-  // We have a new cubic congestion window.
-  last_target_congestion_window_ = target_congestion_window;
-
   DCHECK_LT(0u, estimated_tcp_congestion_window_);
   // With dynamic beta/alpha based on number of active streams, it is possible
   // for the required_ack_count to become much lower than acked_packets_count_
@@ -145,12 +165,20 @@ QuicTcpCongestionWindow Cubic::CongestionWindowAfterAck(
     estimated_tcp_congestion_window_++;
   }
 
+  // Update cubic mode and reno mode stats in QuicConnectionStats.
+  UpdateCongestionControlStats(target_congestion_window,
+                               estimated_tcp_congestion_window_);
+
+  // We have a new cubic congestion window.
+  last_target_congestion_window_ = target_congestion_window;
+
   // Compute target congestion_window based on cubic target and estimated TCP
   // congestion_window, use highest (fastest).
   if (target_congestion_window < estimated_tcp_congestion_window_) {
     target_congestion_window = estimated_tcp_congestion_window_;
   }
-  DVLOG(1) << "Target congestion_window:" << target_congestion_window;
+
+  DVLOG(1) << "Target congestion_window: " << target_congestion_window;
   return target_congestion_window;
 }
 

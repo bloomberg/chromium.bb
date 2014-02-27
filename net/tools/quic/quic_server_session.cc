@@ -44,7 +44,7 @@ void QuicServerSession::OnConnectionClosed(QuicErrorCode error,
       crypto_stream_.get() != NULL) {
     crypto_stream_->CancelOutstandingCallbacks();
   }
-  visitor_->OnConnectionClosed(connection()->guid(), error);
+  visitor_->OnConnectionClosed(connection()->connection_id(), error);
 }
 
 void QuicServerSession::OnWriteBlocked() {

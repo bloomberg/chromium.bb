@@ -34,9 +34,10 @@ const float kOneMinusBeta = (1 - kBeta);
 TcpCubicSender::TcpCubicSender(
     const QuicClock* clock,
     bool reno,
-    QuicTcpCongestionWindow max_tcp_congestion_window)
+    QuicTcpCongestionWindow max_tcp_congestion_window,
+    QuicConnectionStats* stats)
     : hybrid_slow_start_(clock),
-      cubic_(clock),
+      cubic_(clock, stats),
       reno_(reno),
       congestion_window_count_(0),
       receive_window_(kDefaultReceiveWindow),

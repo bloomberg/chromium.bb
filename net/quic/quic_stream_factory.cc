@@ -537,7 +537,7 @@ int QuicStreamFactory::CreateSession(
     const AddressList& address_list,
     const BoundNetLog& net_log,
     QuicClientSession** session) {
-  QuicGuid guid = random_generator_->RandUint64();
+  QuicConnectionId connection_id = random_generator_->RandUint64();
   IPEndPoint addr = *address_list.begin();
   scoped_refptr<PortSuggester> port_suggester =
       new PortSuggester(host_port_proxy_pair.first, port_seed_);
@@ -580,7 +580,8 @@ int QuicStreamFactory::CreateSession(
         clock_.get(), random_generator_));
   }
 
-  QuicConnection* connection = new QuicConnection(guid, addr, helper_.get(),
+  QuicConnection* connection = new QuicConnection(connection_id, addr,
+                                                  helper_.get(),
                                                   writer.get(), false,
                                                   supported_versions_);
   writer->SetConnection(connection);

@@ -265,7 +265,7 @@ void MockHelper::AdvanceTime(QuicTime::Delta delta) {
 }
 
 MockConnection::MockConnection(bool is_server)
-    : QuicConnection(kTestGuid,
+    : QuicConnection(kTestConnectionId,
                      IPEndPoint(TestPeerIPAddress(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
@@ -276,7 +276,7 @@ MockConnection::MockConnection(bool is_server)
 
 MockConnection::MockConnection(IPEndPoint address,
                                bool is_server)
-    : QuicConnection(kTestGuid, address,
+    : QuicConnection(kTestConnectionId, address,
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
                      is_server, QuicSupportedVersions()),
@@ -284,9 +284,10 @@ MockConnection::MockConnection(IPEndPoint address,
       helper_(helper()) {
 }
 
-MockConnection::MockConnection(QuicGuid guid,
+MockConnection::MockConnection(QuicConnectionId connection_id,
                                bool is_server)
-    : QuicConnection(guid, IPEndPoint(TestPeerIPAddress(), kTestPort),
+    : QuicConnection(connection_id,
+                     IPEndPoint(TestPeerIPAddress(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
                      is_server, QuicSupportedVersions()),
@@ -296,7 +297,7 @@ MockConnection::MockConnection(QuicGuid guid,
 
 MockConnection::MockConnection(bool is_server,
                                const QuicVersionVector& supported_versions)
-    : QuicConnection(kTestGuid,
+    : QuicConnection(kTestConnectionId,
                      IPEndPoint(TestPeerIPAddress(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
@@ -373,6 +374,12 @@ MockSendAlgorithm::MockSendAlgorithm() {
 }
 
 MockSendAlgorithm::~MockSendAlgorithm() {
+}
+
+MockLossAlgorithm::MockLossAlgorithm() {
+}
+
+MockLossAlgorithm::~MockLossAlgorithm() {
 }
 
 MockAckNotifierDelegate::MockAckNotifierDelegate() {
@@ -479,7 +486,7 @@ bool DecodeHexString(const base::StringPiece& hex, std::string* bytes) {
 }
 
 static QuicPacket* ConstructPacketFromHandshakeMessage(
-    QuicGuid guid,
+    QuicConnectionId connection_id,
     const CryptoHandshakeMessage& message,
     bool should_include_version) {
   CryptoFramer crypto_framer;
@@ -487,7 +494,7 @@ static QuicPacket* ConstructPacketFromHandshakeMessage(
   QuicFramer quic_framer(QuicSupportedVersions(), QuicTime::Zero(), false);
 
   QuicPacketHeader header;
-  header.public_header.guid = guid;
+  header.public_header.connection_id = connection_id;
   header.public_header.reset_flag = false;
   header.public_header.version_flag = should_include_version;
   header.packet_sequence_number = 1;
@@ -505,10 +512,11 @@ static QuicPacket* ConstructPacketFromHandshakeMessage(
   return quic_framer.BuildUnsizedDataPacket(header, frames).packet;
 }
 
-QuicPacket* ConstructHandshakePacket(QuicGuid guid, QuicTag tag) {
+QuicPacket* ConstructHandshakePacket(QuicConnectionId connection_id,
+                                     QuicTag tag) {
   CryptoHandshakeMessage message;
   message.set_tag(tag);
-  return ConstructPacketFromHandshakeMessage(guid, message, false);
+  return ConstructPacketFromHandshakeMessage(connection_id, message, false);
 }
 
 size_t GetPacketLengthForOneStream(
@@ -521,12 +529,12 @@ size_t GetPacketLengthForOneStream(
   const size_t stream_length =
       NullEncrypter().GetCiphertextSize(*payload_length) +
       QuicPacketCreator::StreamFramePacketOverhead(
-          version, PACKET_8BYTE_GUID, include_version,
+          version, PACKET_8BYTE_CONNECTION_ID, include_version,
           sequence_number_length, is_in_fec_group);
   const size_t ack_length = NullEncrypter().GetCiphertextSize(
       QuicFramer::GetMinAckFrameSize(
           version, sequence_number_length, PACKET_1BYTE_SEQUENCE_NUMBER)) +
-      GetPacketHeaderSize(PACKET_8BYTE_GUID, include_version,
+      GetPacketHeaderSize(PACKET_8BYTE_CONNECTION_ID, include_version,
                           sequence_number_length, is_in_fec_group);
   if (stream_length < ack_length) {
     *payload_length = 1 + ack_length - stream_length;
@@ -534,7 +542,7 @@ size_t GetPacketLengthForOneStream(
 
   return NullEncrypter().GetCiphertextSize(*payload_length) +
       QuicPacketCreator::StreamFramePacketOverhead(
-          version, PACKET_8BYTE_GUID, include_version,
+          version, PACKET_8BYTE_CONNECTION_ID, include_version,
           sequence_number_length, is_in_fec_group);
 }
 

@@ -12,9 +12,10 @@
 namespace net {
 namespace test {
 
-QuicTestPacketMaker::QuicTestPacketMaker(QuicVersion version, QuicGuid guid)
+QuicTestPacketMaker::QuicTestPacketMaker(QuicVersion version,
+                                         QuicConnectionId connection_id)
     : version_(version),
-      guid_(guid),
+      connection_id_(connection_id),
       spdy_request_framer_(SPDY3),
       spdy_response_framer_(SPDY3) {
 }
@@ -28,7 +29,7 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeRstPacket(
     QuicStreamId stream_id,
     QuicRstStreamErrorCode error_code) {
   QuicPacketHeader header;
-  header.public_header.guid = guid_;
+  header.public_header.connection_id = connection_id_;
   header.public_header.reset_flag = false;
   header.public_header.version_flag = include_version;
   header.public_header.sequence_number_length = PACKET_1BYTE_SEQUENCE_NUMBER;
@@ -51,7 +52,7 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckAndRstPacket(
     bool send_feedback) {
 
   QuicPacketHeader header;
-  header.public_header.guid = guid_;
+  header.public_header.connection_id = connection_id_;
   header.public_header.reset_flag = false;
   header.public_header.version_flag = include_version;
   header.public_header.sequence_number_length = PACKET_1BYTE_SEQUENCE_NUMBER;
@@ -90,7 +91,7 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckAndRstPacket(
 scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeConnectionClosePacket(
     QuicPacketSequenceNumber num) {
   QuicPacketHeader header;
-  header.public_header.guid = guid_;
+  header.public_header.connection_id = connection_id_;
   header.public_header.reset_flag = false;
   header.public_header.version_flag = false;
   header.public_header.sequence_number_length = PACKET_1BYTE_SEQUENCE_NUMBER;
@@ -111,7 +112,7 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckPacket(
     QuicPacketSequenceNumber least_unacked,
     bool send_feedback) {
   QuicPacketHeader header;
-  header.public_header.guid = guid_;
+  header.public_header.connection_id = connection_id_;
   header.public_header.reset_flag = false;
   header.public_header.version_flag = false;
   header.public_header.sequence_number_length = PACKET_1BYTE_SEQUENCE_NUMBER;
@@ -248,7 +249,7 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakePacket(
 void QuicTestPacketMaker::InitializeHeader(
     QuicPacketSequenceNumber sequence_number,
     bool should_include_version) {
-  header_.public_header.guid = guid_;
+  header_.public_header.connection_id = connection_id_;
   header_.public_header.reset_flag = false;
   header_.public_header.version_flag = should_include_version;
   header_.public_header.sequence_number_length = PACKET_1BYTE_SEQUENCE_NUMBER;

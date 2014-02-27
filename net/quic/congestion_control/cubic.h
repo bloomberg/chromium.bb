@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "net/base/net_export.h"
 #include "net/quic/quic_clock.h"
+#include "net/quic/quic_connection_stats.h"
 #include "net/quic/quic_time.h"
 
 namespace net {
@@ -20,7 +21,7 @@ typedef uint32 QuicTcpCongestionWindow;
 
 class NET_EXPORT_PRIVATE Cubic {
  public:
-  explicit Cubic(const QuicClock* clock);
+  Cubic(const QuicClock* clock, QuicConnectionStats* stats);
 
   // Call after a timeout to reset the cubic state.
   void Reset();
@@ -44,6 +45,9 @@ class NET_EXPORT_PRIVATE Cubic {
     return QuicTime::Delta::FromMilliseconds(30);
   }
 
+  // Update congestion control variables in QuicConnectionStats.
+  void UpdateCongestionControlStats(QuicTcpCongestionWindow new_cubic_mode_cwnd,
+                                    QuicTcpCongestionWindow new_reno_mode_cwnd);
   const QuicClock* clock_;
 
   // Time when this cycle started, after last loss event.
@@ -74,6 +78,9 @@ class NET_EXPORT_PRIVATE Cubic {
 
   // Last congestion window in packets computed by cubic function.
   QuicTcpCongestionWindow last_target_congestion_window_;
+
+  // QuicConnectionStats includes congestion control related stats.
+  QuicConnectionStats* stats_;
 
   DISALLOW_COPY_AND_ASSIGN(Cubic);
 };

@@ -55,11 +55,11 @@ class QuicRandomBoolSource {
   DISALLOW_COPY_AND_ASSIGN(QuicRandomBoolSource);
 };
 
-QuicPacketCreator::QuicPacketCreator(QuicGuid guid,
+QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
                                      QuicFramer* framer,
                                      QuicRandom* random_generator,
                                      bool is_server)
-    : guid_(guid),
+    : connection_id_(connection_id),
       framer_(framer),
       random_bool_source_(new QuicRandomBoolSource(random_generator)),
       sequence_number_(0),
@@ -137,11 +137,11 @@ bool QuicPacketCreator::HasRoomForStreamFrame(QuicStreamId id,
 // static
 size_t QuicPacketCreator::StreamFramePacketOverhead(
     QuicVersion version,
-    QuicGuidLength guid_length,
+    QuicConnectionIdLength connection_id_length,
     bool include_version,
     QuicSequenceNumberLength sequence_number_length,
     InFecGroup is_in_fec_group) {
-  return GetPacketHeaderSize(guid_length, include_version,
+  return GetPacketHeaderSize(connection_id_length, include_version,
                              sequence_number_length, is_in_fec_group) +
       // Assumes this is a stream with a single lone packet.
       QuicFramer::GetMinStreamFrameSize(version, 1u, 0u, true);
@@ -154,7 +154,7 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
                                             QuicFrame* frame) {
   DCHECK_GT(options_.max_packet_length,
             StreamFramePacketOverhead(
-                framer_->version(), PACKET_8BYTE_GUID, kIncludeVersion,
+                framer_->version(), PACKET_8BYTE_CONNECTION_ID, kIncludeVersion,
                 PACKET_6BYTE_SEQUENCE_NUMBER, IN_FEC_GROUP));
   if (!HasRoomForStreamFrame(id, offset)) {
     LOG(DFATAL) << "No room for Stream frame, BytesFree: " << BytesFree()
@@ -299,7 +299,7 @@ size_t QuicPacketCreator::PacketSize() const {
         fec_group_->NumReceivedPackets() == 0) {
       sequence_number_length_ = options_.send_sequence_number_length;
     }
-    packet_size_ = GetPacketHeaderSize(options_.send_guid_length,
+    packet_size_ = GetPacketHeaderSize(options_.send_connection_id_length,
                                        send_version_in_packet_,
                                        sequence_number_length_,
                                        options_.max_packets_per_fec_group == 0 ?
@@ -380,7 +380,7 @@ QuicEncryptedPacket* QuicPacketCreator::SerializeVersionNegotiationPacket(
     const QuicVersionVector& supported_versions) {
   DCHECK(is_server_);
   QuicPacketPublicHeader header;
-  header.guid = guid_;
+  header.connection_id = connection_id_;
   header.reset_flag = false;
   header.version_flag = true;
   header.versions = supported_versions;
@@ -394,7 +394,7 @@ QuicEncryptedPacket* QuicPacketCreator::SerializeVersionNegotiationPacket(
 void QuicPacketCreator::FillPacketHeader(QuicFecGroupNumber fec_group,
                                          bool fec_flag,
                                          QuicPacketHeader* header) {
-  header->public_header.guid = guid_;
+  header->public_header.connection_id = connection_id_;
   header->public_header.reset_flag = false;
   header->public_header.version_flag = send_version_in_packet_;
   header->fec_flag = fec_flag;

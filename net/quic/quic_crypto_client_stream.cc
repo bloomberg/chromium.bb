@@ -209,7 +209,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         session()->config()->ToHandshakeMessage(&out);
         error = crypto_config_->FillClientHello(
             server_hostname_,
-            session()->connection()->guid(),
+            session()->connection()->connection_id(),
             session()->connection()->supported_versions().front(),
             cached,
             session()->connection()->clock()->WallNow(),
@@ -364,7 +364,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
           return;
         }
         error = crypto_config_->ProcessServerHello(
-            *in, session()->connection()->guid(),
+            *in, session()->connection()->connection_id(),
             session()->connection()->server_supported_versions(),
             cached, &crypto_negotiated_params_, &error_details);
 

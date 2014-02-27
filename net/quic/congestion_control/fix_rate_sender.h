@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "net/base/net_export.h"
 #include "net/quic/quic_clock.h"
+#include "net/quic/quic_connection_stats.h"
 #include "net/quic/quic_time.h"
 #include "net/quic/congestion_control/leaky_bucket.h"
 #include "net/quic/congestion_control/paced_sender.h"
