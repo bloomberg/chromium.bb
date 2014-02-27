@@ -9,8 +9,8 @@
 #include "base/strings/string_util.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 #include "url/gurl.h"
-#include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/common/fileapi/file_system_types.h"
+#include "webkit/common/fileapi/file_system_util.h"
 
 namespace sync_file_system {
 namespace drive_backend {
@@ -36,7 +36,7 @@ bool ParseV0FormatFileSystemURL(const GURL& url,
   fileapi::FileSystemType mount_type;
   base::FilePath virtual_path;
 
-  if (!fileapi::FileSystemURL::ParseFileSystemSchemeURL(
+  if (!fileapi::ParseFileSystemSchemeURL(
           url, origin, &mount_type, &virtual_path) ||
       mount_type != fileapi::kFileSystemTypeExternal) {
     NOTREACHED() << "Failed to parse filesystem scheme URL " << url.spec();

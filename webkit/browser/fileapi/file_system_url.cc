@@ -7,8 +7,6 @@
 #include <sstream>
 
 #include "base/logging.h"
-#include "base/strings/string_util.h"
-#include "net/base/escape.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
@@ -34,67 +32,6 @@ FileSystemURL FileSystemURL::CreateForTest(const GURL& origin,
                                            FileSystemType mount_type,
                                            const base::FilePath& virtual_path) {
   return FileSystemURL(origin, mount_type, virtual_path);
-}
-
-// static
-bool FileSystemURL::ParseFileSystemSchemeURL(
-    const GURL& url,
-    GURL* origin_url,
-    FileSystemType* mount_type,
-    base::FilePath* virtual_path) {
-  GURL origin;
-  FileSystemType file_system_type = kFileSystemTypeUnknown;
-
-  if (!url.is_valid() || !url.SchemeIsFileSystem())
-    return false;
-
-  const struct {
-    FileSystemType type;
-    const char* dir;
-  } kValidTypes[] = {
-    { kFileSystemTypePersistent, kPersistentDir },
-    { kFileSystemTypeTemporary, kTemporaryDir },
-    { kFileSystemTypeIsolated, kIsolatedDir },
-    { kFileSystemTypeExternal, kExternalDir },
-    { kFileSystemTypeTest, kTestDir },
-  };
-
-  // A path of the inner_url contains only mount type part (e.g. "/temporary").
-  DCHECK(url.inner_url());
-  std::string inner_path = url.inner_url()->path();
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kValidTypes); ++i) {
-    if (inner_path == kValidTypes[i].dir) {
-      file_system_type = kValidTypes[i].type;
-      break;
-    }
-  }
-
-  if (file_system_type == kFileSystemTypeUnknown)
-    return false;
-
-  std::string path = net::UnescapeURLComponent(url.path(),
-      net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS |
-      net::UnescapeRule::CONTROL_CHARS);
-
-  // Ensure the path is relative.
-  while (!path.empty() && path[0] == '/')
-    path.erase(0, 1);
-
-  base::FilePath converted_path = base::FilePath::FromUTF8Unsafe(path);
-
-  // All parent references should have been resolved in the renderer.
-  if (converted_path.ReferencesParent())
-    return false;
-
-  if (origin_url)
-    *origin_url = url.GetOrigin();
-  if (mount_type)
-    *mount_type = file_system_type;
-  if (virtual_path)
-    *virtual_path = converted_path.NormalizePathSeparators().
-        StripTrailingSeparators();
-
-  return true;
 }
 
 FileSystemURL::FileSystemURL(const GURL& url)

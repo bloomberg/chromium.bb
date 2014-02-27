@@ -13,6 +13,22 @@ namespace {
 
 class FileSystemUtilTest : public testing::Test {};
 
+TEST_F(FileSystemUtilTest, ParseFileSystemSchemeURL) {
+  GURL uri("filesystem:http://chromium.org/temporary/foo/bar");
+  GURL origin_url;
+  FileSystemType type;
+  base::FilePath virtual_path;
+  ParseFileSystemSchemeURL(uri, &origin_url, &type, &virtual_path);
+  EXPECT_EQ(GURL("http://chromium.org"), origin_url);
+  EXPECT_EQ(fileapi::kFileSystemTypeTemporary, type);
+#if defined(FILE_PATH_USES_WIN_SEPARATORS)
+  base::FilePath expected_path(FILE_PATH_LITERAL("foo\\bar"));
+#else
+  base::FilePath expected_path(FILE_PATH_LITERAL("foo/bar"));
+#endif
+  EXPECT_EQ(expected_path, virtual_path);
+}
+
 TEST_F(FileSystemUtilTest, GetTempFileSystemRootURI) {
   GURL origin_url("http://chromium.org");
   fileapi::FileSystemType type = fileapi::kFileSystemTypeTemporary;
