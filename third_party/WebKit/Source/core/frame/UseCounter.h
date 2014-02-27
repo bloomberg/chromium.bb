@@ -212,7 +212,6 @@ public:
         InputTypeEmailMultiple = 184,
         InputTypeEmailMaxLength = 185,
         InputTypeEmailMultipleMaxLength = 186,
-        TextTrackCueConstructor = 187,
         CSSStyleDeclarationPropertyName = 188, // Removed in CSSOM.
         CSSStyleDeclarationFloatPropertyName = 189, // Pending removal in CSSOM.
         InputTypeText = 190,
