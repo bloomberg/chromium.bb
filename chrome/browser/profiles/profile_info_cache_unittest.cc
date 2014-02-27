@@ -314,9 +314,15 @@ TEST_F(ProfileInfoCacheTest, ProfileActiveTime) {
       GetProfilePath("path_1"), ASCIIToUTF16("name_1"),
       base::string16(), 0, std::string());
   EXPECT_EQ(base::Time(), GetCache()->GetProfileActiveTimeAtIndex(0));
+  // Before & After times are artificially shifted because just relying upon
+  // the system time can yield problems due to inaccuracies in the
+  // underlying storage system (which uses a double with only 52 bits of
+  // precision to store the 64-bit "time" number).  http://crbug.com/346827
   base::Time before = base::Time::Now();
+  before -= base::TimeDelta::FromSeconds(1);
   GetCache()->SetProfileActiveTimeAtIndex(0);
   base::Time after = base::Time::Now();
+  after += base::TimeDelta::FromSeconds(1);
   EXPECT_LE(before, GetCache()->GetProfileActiveTimeAtIndex(0));
   EXPECT_GE(after, GetCache()->GetProfileActiveTimeAtIndex(0));
 }
