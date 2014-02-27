@@ -139,7 +139,7 @@ static const char* kTimeZones[] = {
     "Asia/Karachi",
     "Asia/Ashgabat",
     "Asia/Oral",
-    "Asia/Kolkata",
+    "Asia/Calcutta",
     "Asia/Colombo",
     "Asia/Katmandu",
     "Asia/Yekaterinburg",
