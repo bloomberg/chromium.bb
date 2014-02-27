@@ -241,6 +241,9 @@ PrerenderContents* PrerenderContents::CreateMatchCompleteReplacement() {
   DCHECK_EQ(alias_urls_.front(), new_contents->alias_urls_.front());
   DCHECK_EQ(1u, new_contents->alias_urls_.size());
   new_contents->alias_urls_ = alias_urls_;
+  // Erase all but the first alias URL; the replacement has adopted the
+  // remainder without increasing the renderer-side reference count.
+  alias_urls_.resize(1);
   new_contents->set_match_complete_status(
       PrerenderContents::MATCH_COMPLETE_REPLACEMENT);
   NotifyPrerenderCreatedMatchCompleteReplacement(new_contents);
