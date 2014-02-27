@@ -35,14 +35,14 @@ namespace options {
 namespace {
 
 // List of settings that should be changeable by all users.
-const char* kNonOwnerSettings[] = {
+const char* kNonPrivilegedSettings[] = {
     kSystemTimezone
 };
 
-// Returns true if |pref| should be only available to the owner.
-bool IsSettingOwnerOnly(const std::string& pref) {
-  const char** end = kNonOwnerSettings + arraysize(kNonOwnerSettings);
-  return std::find(kNonOwnerSettings, end, pref) == end;
+// Returns true if |pref| can be controlled (e.g. by policy or owner).
+bool IsSettingPrivileged(const std::string& pref) {
+  const char** end = kNonPrivilegedSettings + arraysize(kNonPrivilegedSettings);
+  return std::find(kNonPrivilegedSettings, end, pref) == end;
 }
 
 // Creates a user info dictionary to be stored in the |ListValue| that is
@@ -149,18 +149,19 @@ base::Value* CoreChromeOSOptionsHandler::FetchPref(
     dict->Set("value", CreateUsersWhitelist(pref_value));
   else
     dict->Set("value", pref_value->DeepCopy());
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  if (connector->IsEnterpriseManaged()) {
-    dict->SetBoolean("disabled", true);
-    dict->SetString("controlledBy", "policy");
-  } else {
-    bool controlled_by_owner = IsSettingOwnerOnly(pref_name) &&
-        !ProfileHelper::IsOwnerProfile(Profile::FromWebUI(web_ui()));
-    dict->SetBoolean("disabled", controlled_by_owner);
-    if (controlled_by_owner)
-      dict->SetString("controlledBy", "owner");
+
+  std::string controlled_by;
+  if (IsSettingPrivileged(pref_name)) {
+    policy::BrowserPolicyConnectorChromeOS* connector =
+        g_browser_process->platform_part()->browser_policy_connector_chromeos();
+    if (connector->IsEnterpriseManaged())
+      controlled_by = "policy";
+    else if (!ProfileHelper::IsOwnerProfile(Profile::FromWebUI(web_ui())))
+      controlled_by = "owner";
   }
+  dict->SetBoolean("disabled", !controlled_by.empty());
+  if (!controlled_by.empty())
+    dict->SetString("controlledBy", controlled_by);
   return dict;
 }
 
