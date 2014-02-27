@@ -130,12 +130,13 @@ void FastTextAutosizer::beginLayout(RenderBlock* block)
         return;
     }
 
-    if (Cluster* cluster = maybeCreateCluster(block))
+    if (Cluster* cluster = maybeCreateCluster(block)) {
         m_clusterStack.append(adoptPtr(cluster));
+        if (block->isTable())
+            inflateTable(toRenderTable(block));
+    }
 
-    if (block->isTable())
-        inflateTable(toRenderTable(block));
-    else if (block->childrenInline())
+    if (block->childrenInline())
         inflate(block);
 }
 
