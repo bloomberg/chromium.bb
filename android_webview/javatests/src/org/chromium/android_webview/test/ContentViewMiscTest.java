@@ -46,7 +46,8 @@ public class ContentViewMiscTest extends AwTestBase {
         assertNull(ContentViewStatics.findAddress("This is some random text"));
 
         String googleAddr = "1600 Amphitheatre Pkwy, Mountain View, CA 94043";
-        assertEquals(googleAddr, ContentViewStatics.findAddress(googleAddr));
+        String testString = "Address: " + googleAddr + "  in a string";
+        assertEquals(googleAddr, ContentViewStatics.findAddress(testString));
     }
 
     @SmallTest
