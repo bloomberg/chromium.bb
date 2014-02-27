@@ -111,6 +111,7 @@ CGFloat kTooltipInset = 10;
                      message:[self message]
                        inset:NSMakeSize(kTooltipInset, kTooltipInset)
                arrowLocation:arrowLocation_];
+  [bubbleController_ setShouldCloseOnResignKey:NO];
 
   // Handle bubble self-deleting.
   NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
