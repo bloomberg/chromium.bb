@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "content/browser/media/webrtc_internals_ui_observer.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/child_process_data.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
@@ -38,7 +37,6 @@ WebRTCInternals::WebRTCInternals()
     : aec_dump_enabled_(false) {
   registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  NotificationService::AllBrowserContextsAndSources());
-  BrowserChildProcessObserver::Add(this);
 // TODO(grunell): Shouldn't all the webrtc_internals* files be excluded from the
 // build if WebRTC is disabled?
 #if defined(ENABLE_WEBRTC)
@@ -62,7 +60,6 @@ WebRTCInternals::WebRTCInternals()
 }
 
 WebRTCInternals::~WebRTCInternals() {
-  BrowserChildProcessObserver::Remove(this);
 }
 
 WebRTCInternals* WebRTCInternals::GetInstance() {
@@ -273,12 +270,6 @@ void WebRTCInternals::SendUpdate(const string& command, base::Value* value) {
   FOR_EACH_OBSERVER(WebRTCInternalsUIObserver,
                     observers_,
                     OnUpdate(command, value));
-}
-
-void WebRTCInternals::BrowserChildProcessCrashed(
-    const ChildProcessData& data) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  OnRendererExit(data.id);
 }
 
 void WebRTCInternals::Observe(int type,

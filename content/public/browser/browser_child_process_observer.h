@@ -11,8 +11,9 @@ namespace content {
 
 struct ChildProcessData;
 
-// An observer API implemented by classes which are interested
-// in browser child process events.
+// An observer API implemented by classes which are interested in browser child
+// process events. Note that render processes cannot be observed through this
+// interface; use RenderProcessHostObserver instead.
 class CONTENT_EXPORT BrowserChildProcessObserver {
  public:
   // Called when a child process host has connected to a child process.
