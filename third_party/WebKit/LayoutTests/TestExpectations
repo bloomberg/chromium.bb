@@ -823,8 +823,6 @@ crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/narrow-iframe.h
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/clusters-insufficient-text.html [ ImageOnlyFailure ]
 crbug.com/343201 virtual/fasttextautosizing/fast/text-autosizing/hackernews-comments.html [ Pass Failure ]
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/forum-comments-autosizing.html [ ImageOnlyFailure ]
-crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/cluster-inline-block-or-table.html [ ImageOnlyFailure ]
-crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/clusters-sufficient-text-except-in-root.html [ ImageOnlyFailure ]
 
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/tables/css-table-lots-of-text-many-cells.html [ NeedsRebaseline ]
 crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/tables/css-table-single-cell-lots-of-text.html [ NeedsRebaseline ]
