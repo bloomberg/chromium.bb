@@ -6414,3 +6414,10 @@
    fun:_ZN7content21ContentMainRunnerImpl3RunEv
    fun:_ZN7content11ContentMainEiPPKcPNS_19ContentMainDelegateE
 }
+{
+   bug_347683
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZNK13LoginDatabase9GetLoginsERKN8autofill12PasswordFormEPSt6vectorIPS1_SaIS5_EE
+   fun:_ZN50LoginDatabaseTest_UpdateIncompleteCredentials_Test8TestBodyEv
+}
