@@ -37,7 +37,7 @@
     },
     'dependencies': [
        '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_lib',
-       '<(DEPTH)/ppapi/ppapi_untrusted.gyp:ppapi_cpp_lib',
+       '<(DEPTH)/ppapi/ppapi_nacl.gyp:ppapi_cpp_lib',
        '<(DEPTH)/ppapi/native_client/native_client.gyp:ppapi_lib',
     ],
     'target_conditions': [

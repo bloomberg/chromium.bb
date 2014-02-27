@@ -116,7 +116,7 @@
             '../../native_client/tools.gyp:prep_toolchain',
             '../../native_client_sdk/native_client_sdk_untrusted.gyp:nacl_io_untrusted',
             '../../ppapi/native_client/native_client.gyp:ppapi_lib',
-            '../../ppapi/ppapi_untrusted.gyp:ppapi_cpp_lib',
+            '../../ppapi/ppapi_nacl.gyp:ppapi_cpp_lib',
             '../jsoncpp/jsoncpp_nacl.gyp:jsoncpp_nacl',
             'liblouis_nacl',
           ],
