@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GIN_DEFAULT_RUNNER_H_
-#define GIN_DEFAULT_RUNNER_H_
+#ifndef GIN_SHELL_RUNNER_H_
+#define GIN_SHELL_RUNNER_H_
 
 #include "gin/runner.h"
 
@@ -65,4 +65,4 @@ class GIN_EXPORT ShellRunner : public Runner {
 
 }  // namespace gin
 
-#endif  // GIN_DEFAULT_RUNNER_H_
+#endif  // GIN_SHELL_RUNNER_H_
