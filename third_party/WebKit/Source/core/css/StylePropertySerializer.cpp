@@ -45,14 +45,23 @@ StylePropertySerializer::StylePropertySerializer(const StylePropertySet& propert
 {
 }
 
+String StylePropertySerializer::getPropertyText(CSSPropertyID propertyID, const String& value, bool isImportant, bool isNotFirstDecl) const
+{
+    StringBuilder result;
+    if (isNotFirstDecl)
+        result.append(' ');
+    result.append(getPropertyName(propertyID));
+    result.appendLiteral(": ");
+    result.append(value);
+    if (isImportant)
+        result.appendLiteral(" !important");
+    result.append(';');
+    return result.toString();
+}
+
 String StylePropertySerializer::asText() const
 {
     StringBuilder result;
-
-    int positionXPropertyIndex = -1;
-    int positionYPropertyIndex = -1;
-    int repeatXPropertyIndex = -1;
-    int repeatYPropertyIndex = -1;
 
     BitArray<numCSSProperties> shorthandPropertyUsed;
     BitArray<numCSSProperties> shorthandPropertyAppeared;
@@ -69,17 +78,17 @@ String StylePropertySerializer::asText() const
         String value;
 
         switch (propertyID) {
+        case CSSPropertyBackgroundAttachment:
+        case CSSPropertyBackgroundClip:
+        case CSSPropertyBackgroundColor:
+        case CSSPropertyBackgroundImage:
+        case CSSPropertyBackgroundOrigin:
         case CSSPropertyBackgroundPositionX:
-            positionXPropertyIndex = n;
-            continue;
         case CSSPropertyBackgroundPositionY:
-            positionYPropertyIndex = n;
-            continue;
+        case CSSPropertyBackgroundSize:
         case CSSPropertyBackgroundRepeatX:
-            repeatXPropertyIndex = n;
-            continue;
         case CSSPropertyBackgroundRepeatY:
-            repeatYPropertyIndex = n;
+            shorthandPropertyAppeared.set(CSSPropertyBackground - firstCSSProperty);
             continue;
         case CSSPropertyContent:
             if (property.value()->isValueList())
@@ -224,80 +233,11 @@ String StylePropertySerializer::asText() const
         if (value == "initial" && !CSSProperty::isInheritedProperty(propertyID))
             continue;
 
-        if (numDecls++)
-            result.append(' ');
-        result.append(getPropertyName(propertyID));
-        result.appendLiteral(": ");
-        result.append(value);
-        if (property.isImportant())
-            result.appendLiteral(" !important");
-        result.append(';');
+        result.append(getPropertyText(propertyID, value, property.isImportant(), numDecls++));
     }
 
-    // FIXME: This is a not-so-nice way to turn x/y positions into single background-position in output.
-    // It is required because background-position-x/y are non-standard properties and WebKit generated output
-    // would not work in Firefox (<rdar://problem/5143183>)
-    // It would be a better solution if background-position was CSS_PAIR.
-    if (positionXPropertyIndex != -1 && positionYPropertyIndex != -1 && m_propertySet.propertyAt(positionXPropertyIndex).isImportant() == m_propertySet.propertyAt(positionYPropertyIndex).isImportant()) {
-        StylePropertySet::PropertyReference positionXProperty = m_propertySet.propertyAt(positionXPropertyIndex);
-        StylePropertySet::PropertyReference positionYProperty = m_propertySet.propertyAt(positionYPropertyIndex);
-
-        if (numDecls++)
-            result.append(' ');
-        result.appendLiteral("background-position: ");
-        if (positionXProperty.value()->isValueList() || positionYProperty.value()->isValueList())
-            result.append(getLayeredShorthandValue(backgroundPositionShorthand()));
-        else {
-            result.append(positionXProperty.value()->cssText());
-            result.append(' ');
-            result.append(positionYProperty.value()->cssText());
-        }
-        if (positionXProperty.isImportant())
-            result.appendLiteral(" !important");
-        result.append(';');
-    } else {
-        if (positionXPropertyIndex != -1) {
-            if (numDecls++)
-                result.append(' ');
-            result.append(m_propertySet.propertyAt(positionXPropertyIndex).cssText());
-        }
-        if (positionYPropertyIndex != -1) {
-            if (numDecls++)
-                result.append(' ');
-            result.append(m_propertySet.propertyAt(positionYPropertyIndex).cssText());
-        }
-    }
-
-    // FIXME: We need to do the same for background-repeat.
-    if (repeatXPropertyIndex != -1 && repeatYPropertyIndex != -1 && m_propertySet.propertyAt(repeatXPropertyIndex).isImportant() == m_propertySet.propertyAt(repeatYPropertyIndex).isImportant()) {
-        StylePropertySet::PropertyReference repeatXProperty = m_propertySet.propertyAt(repeatXPropertyIndex);
-        StylePropertySet::PropertyReference repeatYProperty = m_propertySet.propertyAt(repeatYPropertyIndex);
-
-        if (numDecls++)
-            result.append(' ');
-        result.appendLiteral("background-repeat: ");
-        if (repeatXProperty.value()->isValueList() || repeatYProperty.value()->isValueList())
-            result.append(getLayeredShorthandValue(backgroundRepeatShorthand()));
-        else {
-            result.append(repeatXProperty.value()->cssText());
-            result.append(' ');
-            result.append(repeatYProperty.value()->cssText());
-        }
-        if (repeatXProperty.isImportant())
-            result.appendLiteral(" !important");
-        result.append(';');
-    } else {
-        if (repeatXPropertyIndex != -1) {
-            if (numDecls++)
-                result.append(' ');
-            result.append(m_propertySet.propertyAt(repeatXPropertyIndex).cssText());
-        }
-        if (repeatYPropertyIndex != -1) {
-            if (numDecls++)
-                result.append(' ');
-            result.append(m_propertySet.propertyAt(repeatYPropertyIndex).cssText());
-        }
-    }
+    if (shorthandPropertyAppeared.get(CSSPropertyBackground - firstCSSProperty))
+        appendBackgroundPropertyAsText(result, numDecls);
 
     ASSERT(!numDecls ^ !result.isEmpty());
     return result.toString();
@@ -314,7 +254,7 @@ String StylePropertySerializer::getPropertyValue(CSSPropertyID propertyID) const
     case CSSPropertyBackgroundPosition:
         return getLayeredShorthandValue(backgroundPositionShorthand());
     case CSSPropertyBackgroundRepeat:
-        return getLayeredShorthandValue(backgroundRepeatShorthand());
+        return backgroundRepeatPropertyValue();
     case CSSPropertyBackground:
         return getLayeredShorthandValue(backgroundShorthand());
     case CSSPropertyBorder:
@@ -759,6 +699,153 @@ String StylePropertySerializer::borderPropertyValue(CommonValueMode valueMode) c
     if (isInitialOrInherit(commonValue))
         return commonValue;
     return result.isEmpty() ? String() : result.toString();
+}
+
+String StylePropertySerializer::backgroundRepeatPropertyValue() const
+{
+    RefPtr<CSSValue> repeatX = m_propertySet.getPropertyCSSValue(CSSPropertyBackgroundRepeatX);
+    RefPtr<CSSValue> repeatY = m_propertySet.getPropertyCSSValue(CSSPropertyBackgroundRepeatY);
+    if (!repeatX || !repeatY)
+        return String();
+    if (repeatX->cssValueType() != repeatY->cssValueType())
+        return String();
+    if (m_propertySet.propertyIsImportant(CSSPropertyBackgroundRepeatX) != m_propertySet.propertyIsImportant(CSSPropertyBackgroundRepeatY))
+        return String();
+
+    StringBuilder builder;
+    switch (repeatX->cssValueType()) {
+    case CSSValue::CSS_INHERIT:
+    case CSSValue::CSS_INITIAL:
+        return repeatX->cssText();
+
+    case CSSValue::CSS_PRIMITIVE_VALUE:
+        {
+            CSSValueID repeatXValueId = toCSSPrimitiveValue(repeatX.get())->getValueID();
+            CSSValueID repeatYValueId = toCSSPrimitiveValue(repeatY.get())->getValueID();
+            if (repeatXValueId == repeatYValueId)
+                return repeatX->cssText();
+
+            if (repeatXValueId == CSSValueNoRepeat && repeatYValueId == CSSValueRepeat) {
+                builder.append("repeat-y");
+                break;
+            }
+            if (repeatXValueId == CSSValueRepeat && repeatYValueId == CSSValueNoRepeat) {
+                builder.append("repeat-x");
+                break;
+            }
+            // Fall through intentional.
+        }
+    case CSSValue::CSS_CUSTOM:
+    case CSSValue::CSS_VALUE_LIST:
+    default:
+        builder.append(repeatX->cssText());
+        builder.append(' ');
+        builder.append(repeatY->cssText());
+        break;
+    }
+    return builder.toString();
+}
+
+void StylePropertySerializer::appendBackgroundPropertyAsText(StringBuilder& result, unsigned& numDecls) const
+{
+    if (isPropertyShorthandAvailable(backgroundShorthand())) {
+        String backgroundValue = getPropertyValue(CSSPropertyBackground);
+        bool isImportant = m_propertySet.propertyIsImportant(CSSPropertyBackgroundImage);
+        result.append(getPropertyText(CSSPropertyBackground, backgroundValue, isImportant, numDecls++));
+        return;
+    }
+    if (shorthandHasOnlyInitialOrInheritedValue(backgroundShorthand())) {
+        RefPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(CSSPropertyBackgroundImage);
+        bool isImportant = m_propertySet.propertyIsImportant(CSSPropertyBackgroundImage);
+        result.append(getPropertyText(CSSPropertyBackground, value->cssText(), isImportant, numDecls++));
+        return;
+    }
+
+    // backgroundShorthandProperty without layered shorhand properties
+    const CSSPropertyID backgroundPropertyIds[] = {
+        CSSPropertyBackgroundImage,
+        CSSPropertyBackgroundAttachment,
+        CSSPropertyBackgroundColor,
+        CSSPropertyBackgroundSize,
+        CSSPropertyBackgroundOrigin,
+        CSSPropertyBackgroundClip
+    };
+
+    for (unsigned i = 0; i < WTF_ARRAY_LENGTH(backgroundPropertyIds); ++i) {
+        CSSPropertyID propertyID = backgroundPropertyIds[i];
+        RefPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(propertyID);
+        if (!value)
+            continue;
+        result.append(getPropertyText(propertyID, value->cssText(), m_propertySet.propertyIsImportant(propertyID), numDecls++));
+    }
+
+    // FIXME: This is a not-so-nice way to turn x/y positions into single background-position in output.
+    // It is required because background-position-x/y are non-standard properties and WebKit generated output
+    // would not work in Firefox (<rdar://problem/5143183>)
+    // It would be a better solution if background-position was CSS_PAIR.
+    if (shorthandHasOnlyInitialOrInheritedValue(backgroundPositionShorthand())) {
+        RefPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(CSSPropertyBackgroundPositionX);
+        bool isImportant = m_propertySet.propertyIsImportant(CSSPropertyBackgroundPositionX);
+        result.append(getPropertyText(CSSPropertyBackgroundPosition, value->cssText(), isImportant, numDecls++));
+    } else if (isPropertyShorthandAvailable(backgroundPositionShorthand())) {
+        String positionValue = m_propertySet.getPropertyValue(CSSPropertyBackgroundPosition);
+        bool isImportant = m_propertySet.propertyIsImportant(CSSPropertyBackgroundPositionX);
+        if (!positionValue.isNull())
+            result.append(getPropertyText(CSSPropertyBackgroundPosition, positionValue, isImportant, numDecls++));
+    } else {
+        // should check background-position-x or background-position-y.
+        if (RefPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(CSSPropertyBackgroundPositionX)) {
+            if (!value->isImplicitInitialValue()) {
+                bool isImportant = m_propertySet.propertyIsImportant(CSSPropertyBackgroundPositionX);
+                result.append(getPropertyText(CSSPropertyBackgroundPositionX, value->cssText(), isImportant, numDecls++));
+            }
+        }
+        if (RefPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(CSSPropertyBackgroundPositionY)) {
+            if (!value->isImplicitInitialValue()) {
+                bool isImportant = m_propertySet.propertyIsImportant(CSSPropertyBackgroundPositionY);
+                result.append(getPropertyText(CSSPropertyBackgroundPositionY, value->cssText(), isImportant, numDecls++));
+            }
+        }
+    }
+
+    String repeatValue = m_propertySet.getPropertyValue(CSSPropertyBackgroundRepeat);
+    if (!repeatValue.isNull())
+        result.append(getPropertyText(CSSPropertyBackgroundRepeat, repeatValue, m_propertySet.propertyIsImportant(CSSPropertyBackgroundRepeatX), numDecls++));
+}
+
+bool StylePropertySerializer::isPropertyShorthandAvailable(const StylePropertyShorthand& shorthand) const
+{
+    ASSERT(shorthand.length() > 0);
+
+    bool isImportant = m_propertySet.propertyIsImportant(shorthand.properties()[0]);
+    for (unsigned i = 0; i < shorthand.length(); ++i) {
+        RefPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(shorthand.properties()[i]);
+        if (!value || (value->isInitialValue() && !value->isImplicitInitialValue()) || value->isInheritedValue())
+            return false;
+        if (isImportant != m_propertySet.propertyIsImportant(shorthand.properties()[i]))
+            return false;
+    }
+    return true;
+}
+
+bool StylePropertySerializer::shorthandHasOnlyInitialOrInheritedValue(const StylePropertyShorthand& shorthand) const
+{
+    ASSERT(shorthand.length() > 0);
+    bool isImportant = m_propertySet.propertyIsImportant(shorthand.properties()[0]);
+    bool isInitialValue = true;
+    bool isInheritedValue = true;
+    for (unsigned i = 0; i < shorthand.length(); ++i) {
+        RefPtr<CSSValue> value = m_propertySet.getPropertyCSSValue(shorthand.properties()[i]);
+        if (!value)
+            return false;
+        if (!value->isInitialValue())
+            isInitialValue = false;
+        if (!value->isInheritedValue())
+            isInheritedValue = false;
+        if (isImportant != m_propertySet.propertyIsImportant(shorthand.properties()[i]))
+            return false;
+    }
+    return isInitialValue || isInheritedValue;
 }
 
 }

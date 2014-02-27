@@ -1,0 +1,26 @@
+Test background properties obtained by using cssText when the properties are set by using style element's textContent.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS test('.test { background: none; }') is ".test { background: none; }"
+PASS test('.test { background: none; background-color: black;}') is ".test { background: none black; }"
+PASS test('.test { background: none; background-color: initial !important;}') is ".test { background-image: none; background-attachment: initial; background-color: initial !important; background-size: initial; background-origin: initial; background-clip: initial; background-position: initial; background-repeat: initial; }"
+PASS test('.test { background: initial; }') is ".test { background: initial; }"
+PASS test('.test { background: initial; background-color: black; }') is ".test { background-image: initial; background-attachment: initial; background-color: black; background-size: initial; background-origin: initial; background-clip: initial; background-position: initial; background-repeat: initial; }"
+PASS test('.test { background: inherit; }') is ".test { background: inherit; }"
+PASS test('.test { background: inherit; background-color: black; }') is ".test { background-image: inherit; background-attachment: inherit; background-color: black; background-size: inherit; background-origin: inherit; background-clip: inherit; background-position: inherit; background-repeat: inherit; }"
+PASS test('.test { background: none; background-repeat: repeat-x !important;}') is ".test { background-image: none; background-attachment: initial; background-color: initial; background-size: initial; background-origin: initial; background-clip: initial; background-position: initial; background-repeat: repeat-x !important; }"
+PASS test('.test { background: none; background-repeat: repeat-x;}') is ".test { background: none repeat-x; }"
+PASS test('.test { background: none; background-position-x: 0%;}') is ".test { background: none 0%; }"
+PASS test('.test { background: none; background-position: 20% 80%;}') is ".test { background: none 20% 80%; }"
+PASS test('.test { background-position-x: 5%; }') is ".test { background-position-x: 5%; }"
+PASS test('.test { background-position-y: 5%; }') is ".test { background-position-y: 5%; }"
+PASS test('.test { background-position-x: 5%; background-position-y: 10%; }') is ".test { background-position: 5% 10%; }"
+PASS test('.test { background-position-x: 5%; background-position-y: 10% !important; }') is ".test { background-position-x: 5%; background-position-y: 10% !important; }"
+PASS test('.test { background: url(dummy://test.png); }') is ".test { background: url(dummy://test.png); }"
+PASS test('.test { background: url(dummy://test.png); background-color: black; }') is ".test { background: url(dummy://test.png) black; }"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

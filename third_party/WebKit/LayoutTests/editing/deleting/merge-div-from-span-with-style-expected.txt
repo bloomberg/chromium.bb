@@ -5,5 +5,5 @@ The test passes if "bar" contatins the yellow background and it's underlined.
 | <div>
 |   "foo<#selection-caret>"
 |   <span>
-|     style="background-color: yellow; text-decoration-line: underline;"
+|     style="text-decoration-line: underline; background-color: yellow;"
 |     "bar"
