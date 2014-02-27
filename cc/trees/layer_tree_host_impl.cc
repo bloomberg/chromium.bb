@@ -1501,7 +1501,10 @@ void LayerTreeHostImpl::UpdateInnerViewportContainerSize() {
   if (!container_layer)
     return;
 
-  container_layer->SetTemporaryImplBounds(ComputeInnerViewportContainerSize());
+  // We pass the value returned from UnscaledScrollableViewportSize() here as
+  // it accounts for scrollbar dimensions when
+  // container_layer->masks_to_bounds() is set.
+  container_layer->SetTemporaryImplBounds(UnscaledScrollableViewportSize());
 }
 
 gfx::SizeF LayerTreeHostImpl::UnscaledScrollableViewportSize() const {
