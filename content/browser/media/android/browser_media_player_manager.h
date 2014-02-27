@@ -149,8 +149,10 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
                        const std::vector<uint8>& response);
   void OnReleaseSession(int media_keys_id, uint32 session_id);
   void OnSetMediaKeys(int player_id, int media_keys_id);
+  void OnDestroyCdm(int media_keys_id);
 
-  void OnCancelAllPendingSessionCreations(int media_keys_id);
+  // Cancels all pending session creations associated with |media_keys_id|.
+  void CancelAllPendingSessionCreations(int media_keys_id);
 
 #if defined(VIDEO_HOLE)
   virtual void OnNotifyExternalSurface(

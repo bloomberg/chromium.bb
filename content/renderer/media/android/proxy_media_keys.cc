@@ -32,7 +32,7 @@ ProxyMediaKeys::ProxyMediaKeys(
 }
 
 ProxyMediaKeys::~ProxyMediaKeys() {
-  manager_->CancelAllPendingSessionCreations(media_keys_id_);
+  manager_->DestroyCdm(media_keys_id_);
 }
 
 void ProxyMediaKeys::InitializeCDM(const std::string& key_system,

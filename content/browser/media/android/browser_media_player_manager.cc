@@ -144,8 +144,7 @@ bool BrowserMediaPlayerManager::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(MediaKeysHostMsg_CreateSession, OnCreateSession)
     IPC_MESSAGE_HANDLER(MediaKeysHostMsg_UpdateSession, OnUpdateSession)
     IPC_MESSAGE_HANDLER(MediaKeysHostMsg_ReleaseSession, OnReleaseSession)
-    IPC_MESSAGE_HANDLER(MediaKeysHostMsg_CancelAllPendingSessionCreations,
-                        OnCancelAllPendingSessionCreations)
+    IPC_MESSAGE_HANDLER(MediaKeysHostMsg_DestroyCdm, OnDestroyCdm)
 #if defined(VIDEO_HOLE)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_NotifyExternalSurface,
                         OnNotifyExternalSurface)
@@ -729,11 +728,16 @@ void BrowserMediaPlayerManager::OnReleaseSession(int media_keys_id,
   drm_bridge->ReleaseSession(session_id);
 }
 
-void BrowserMediaPlayerManager::OnCancelAllPendingSessionCreations(
-    int media_keys_id) {
+void BrowserMediaPlayerManager::OnDestroyCdm(int media_keys_id) {
   MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
   if (!drm_bridge) return;
 
+  CancelAllPendingSessionCreations(media_keys_id);
+  RemoveDrmBridge(media_keys_id);
+}
+
+void BrowserMediaPlayerManager::CancelAllPendingSessionCreations(
+    int media_keys_id) {
   BrowserContext* context =
       web_contents()->GetRenderProcessHost()->GetBrowserContext();
   context->CancelProtectedMediaIdentifierPermissionRequests(media_keys_id);

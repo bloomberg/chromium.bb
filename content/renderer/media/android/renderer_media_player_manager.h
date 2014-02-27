@@ -100,7 +100,7 @@ class RendererMediaPlayerManager : public RenderViewObserver {
                      uint32 session_id,
                      const std::vector<uint8>& response);
   void ReleaseSession(int media_keys_id, uint32 session_id);
-  void CancelAllPendingSessionCreations(int media_keys_id);
+  void DestroyCdm(int media_keys_id);
 
   // Registers and unregisters a WebMediaPlayerAndroid object.
   int RegisterMediaPlayer(WebMediaPlayerAndroid* player);
