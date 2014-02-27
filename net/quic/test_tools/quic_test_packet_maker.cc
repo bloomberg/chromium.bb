@@ -63,16 +63,16 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckAndRstPacket(
   QuicAckFrame ack(largest_received, QuicTime::Zero(), least_unacked);
   QuicFrames frames;
   frames.push_back(QuicFrame(&ack));
+  QuicCongestionFeedbackFrame feedback;
   if (send_feedback) {
-    QuicCongestionFeedbackFrame feedback;
     feedback.type = kTCP;
     feedback.tcp.receive_window = 256000;
 
     frames.push_back(QuicFrame(&feedback));
   }
 
+  QuicStopWaitingFrame stop_waiting;
   if (version_ > QUIC_VERSION_15) {
-    QuicStopWaitingFrame stop_waiting;
     stop_waiting.least_unacked = least_unacked;
     frames.push_back(QuicFrame(&stop_waiting));
   }
@@ -133,8 +133,8 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckPacket(
     frames.push_back(QuicFrame(&feedback));
   }
 
+  QuicStopWaitingFrame stop_waiting;
   if (version_ > QUIC_VERSION_15) {
-    QuicStopWaitingFrame stop_waiting;
     stop_waiting.least_unacked = least_unacked;
     frames.push_back(QuicFrame(&stop_waiting));
   }
