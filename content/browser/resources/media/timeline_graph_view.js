@@ -279,8 +279,10 @@ var TimelineGraphView = (function() {
       this.startTime_ = 0;
       this.scale_ = 0;
 
-      // At least the highest value in the displayed range of the graph.
-      // Used for scaling and setting labels.  Set in layoutLabels.
+      // The lowest/highest values adjusted by the vertical label step size
+      // in the displayed range of the graph. Used for scaling and setting
+      // labels.  Set in layoutLabels.
+      this.min_ = 0;
       this.max_ = 0;
 
       // Cached text of equally spaced labels.  Set in layoutLabels.
@@ -332,7 +334,7 @@ var TimelineGraphView = (function() {
         this.scale_ = scale;
 
         // Find largest value.
-        var max = 0;
+        var max = 0, min = 0;
         for (var i = 0; i < this.dataSeries_.length; ++i) {
           var values = this.getValues(this.dataSeries_[i]);
           if (!values)
@@ -340,21 +342,23 @@ var TimelineGraphView = (function() {
           for (var j = 0; j < values.length; ++j) {
             if (values[j] > max)
               max = values[j];
+            else if (values[j] < min)
+              min = values[j];
           }
         }
 
-        this.layoutLabels_(max);
+        this.layoutLabels_(min, max);
       },
 
       /**
-       * Lays out labels and sets |max_|, taking the time units into
+       * Lays out labels and sets |max_|/|min_|, taking the time units into
        * consideration.  |maxValue| is the actual maximum value, and
        * |max_| will be set to the value of the largest label, which
-       * will be at least |maxValue|.
+       * will be at least |maxValue|. Similar for |min_|.
        */
-      layoutLabels_: function(maxValue) {
-        if (maxValue < 1024) {
-          this.layoutLabelsBasic_(maxValue, MAX_DECIMAL_PRECISION);
+      layoutLabels_: function(minValue, maxValue) {
+        if (maxValue - minValue < 1024) {
+          this.layoutLabelsBasic_(minValue, maxValue, MAX_DECIMAL_PRECISION);
           return;
         }
 
@@ -363,20 +367,23 @@ var TimelineGraphView = (function() {
         // Units to use for labels.  0 is '1', 1 is K, etc.
         // We start with 1, and work our way up.
         var unit = 1;
+        minValue /= 1024;
         maxValue /= 1024;
-        while (units[unit + 1] && maxValue >= 1024) {
+        while (units[unit + 1] && maxValue - minValue >= 1024) {
+          minValue /= 1024;
           maxValue /= 1024;
           ++unit;
         }
 
         // Calculate labels.
-        this.layoutLabelsBasic_(maxValue, MAX_DECIMAL_PRECISION);
+        this.layoutLabelsBasic_(minValue, maxValue, MAX_DECIMAL_PRECISION);
 
         // Append units to labels.
         for (var i = 0; i < this.labels_.length; ++i)
           this.labels_[i] += ' ' + units[unit];
 
-        // Convert |max_| back to unit '1'.
+        // Convert |min_|/|max_| back to unit '1'.
+        this.min_ *= Math.pow(1024, unit);
         this.max_ *= Math.pow(1024, unit);
       },
 
@@ -385,11 +392,12 @@ var TimelineGraphView = (function() {
        * maximum number of decimal digits allowed.  The minimum allowed
        * difference between two adjacent labels is 10^-|maxDecimalDigits|.
        */
-      layoutLabelsBasic_: function(maxValue, maxDecimalDigits) {
+      layoutLabelsBasic_: function(minValue, maxValue, maxDecimalDigits) {
         this.labels_ = [];
-        // No labels if |maxValue| is 0.
-        if (maxValue == 0) {
-          this.max_ = maxValue;
+        var range = maxValue - minValue;
+        // No labels if the range is 0.
+        if (range == 0) {
+          this.min_ = this.max_ = maxValue;
           return;
         }
 
@@ -416,21 +424,21 @@ var TimelineGraphView = (function() {
         while (true) {
           // If we use a step size of |stepSize| between labels, we'll need:
           //
-          // Math.ceil(maxValue / stepSize) + 1
+          // Math.ceil(range / stepSize) + 1
           //
           // labels.  The + 1 is because we need labels at both at 0 and at
           // the top of the graph.
 
           // Check if we can use steps of size |stepSize|.
-          if (Math.ceil(maxValue / stepSize) + 1 <= maxLabels)
+          if (Math.ceil(range / stepSize) + 1 <= maxLabels)
             break;
           // Check |stepSize| * 2.
-          if (Math.ceil(maxValue / (stepSize * 2)) + 1 <= maxLabels) {
+          if (Math.ceil(range / (stepSize * 2)) + 1 <= maxLabels) {
             stepSize *= 2;
             break;
           }
           // Check |stepSize| * 5.
-          if (Math.ceil(maxValue / (stepSize * 5)) + 1 <= maxLabels) {
+          if (Math.ceil(range / (stepSize * 5)) + 1 <= maxLabels) {
             stepSize *= 5;
             break;
           }
@@ -439,11 +447,12 @@ var TimelineGraphView = (function() {
             --stepSizeDecimalDigits;
         }
 
-        // Set the max so it's an exact multiple of the chosen step size.
+        // Set the min/max so it's an exact multiple of the chosen step size.
         this.max_ = Math.ceil(maxValue / stepSize) * stepSize;
+        this.min_ = Math.floor(minValue / stepSize) * stepSize;
 
         // Create labels.
-        for (var label = this.max_; label >= 0; label -= stepSize)
+        for (var label = this.max_; label >= this.min_; label -= stepSize)
           this.labels_.push(label.toFixed(stepSizeDecimalDigits));
       },
 
@@ -477,7 +486,7 @@ var TimelineGraphView = (function() {
         var scale = 0;
         var bottom = this.height_ - 1;
         if (this.max_)
-          scale = bottom / this.max_;
+          scale = bottom / (this.max_ - this.min_);
 
         // Draw in reverse order, so earlier data series are drawn on top of
         // subsequent ones.
@@ -490,7 +499,8 @@ var TimelineGraphView = (function() {
           for (var x = 0; x < values.length; ++x) {
             // The rounding is needed to avoid ugly 2-pixel wide anti-aliased
             // horizontal lines.
-            context.lineTo(x, bottom - Math.round(values[x] * scale));
+            context.lineTo(
+                x, bottom - Math.round((values[x] - this.min_) * scale));
           }
           context.stroke();
         }
