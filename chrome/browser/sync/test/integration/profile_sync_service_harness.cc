@@ -32,6 +32,7 @@
 #include "chrome/browser/sync/backend_migrator.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/p2p_invalidation_forwarder.h"
+#include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -59,11 +60,13 @@ namespace {
 
 // Checks if a desired change in the state of the sync engine has taken place by
 // running the callback passed to it.
-class CallbackStatusChecker : public StatusChangeChecker {
+class CallbackStatusChecker : public SingleClientStatusChangeChecker {
  public:
-  CallbackStatusChecker(base::Callback<bool()> callback,
+  CallbackStatusChecker(ProfileSyncService* service,
+                        base::Callback<bool()> callback,
                         const std::string& debug_message)
-      : callback_(callback),
+      : SingleClientStatusChangeChecker(service),
+        callback_(callback),
         debug_message_(debug_message) {
   }
 
@@ -180,10 +183,7 @@ ProfileSyncServiceHarness::ProfileSyncServiceHarness(
       new P2PInvalidationForwarder(service_, p2p_invalidation_service));
 }
 
-ProfileSyncServiceHarness::~ProfileSyncServiceHarness() {
-  if (service()->HasObserver(this))
-    service()->RemoveObserver(this);
-}
+ProfileSyncServiceHarness::~ProfileSyncServiceHarness() { }
 
 void ProfileSyncServiceHarness::SetCredentials(const std::string& username,
                                                const std::string& password) {
@@ -210,10 +210,6 @@ bool ProfileSyncServiceHarness::SetupSync(
     LOG(ERROR) << "SetupSync(): service() is null.";
     return false;
   }
-
-  // Subscribe sync client to notifications from the profile sync service.
-  if (!service()->HasObserver(this))
-    service()->AddObserver(this);
 
   // Tell the sync service that setup is in progress so we don't start syncing
   // until we've finished configuration.
@@ -326,6 +322,7 @@ void ProfileSyncServiceHarness::OnSyncCycleCompleted() {
 bool ProfileSyncServiceHarness::AwaitPassphraseRequired() {
   DVLOG(1) << GetClientInfoString("AwaitPassphraseRequired");
   CallbackStatusChecker passphrase_required_checker(
+      service(),
       base::Bind(&::IsPassphraseRequired, base::Unretained(this)),
       "IsPassphraseRequired");
   return AwaitStatusChange(&passphrase_required_checker);
@@ -333,6 +330,7 @@ bool ProfileSyncServiceHarness::AwaitPassphraseRequired() {
 
 bool ProfileSyncServiceHarness::AwaitPassphraseAccepted() {
   CallbackStatusChecker passphrase_accepted_checker(
+      service(),
       base::Bind(&::IsPassphraseAccepted, base::Unretained(this)),
       "IsPassphraseAccepted");
   bool return_value = AwaitStatusChange(&passphrase_accepted_checker);
@@ -344,6 +342,7 @@ bool ProfileSyncServiceHarness::AwaitPassphraseAccepted() {
 bool ProfileSyncServiceHarness::AwaitBackendInitialized() {
   DVLOG(1) << GetClientInfoString("AwaitBackendInitialized");
   CallbackStatusChecker backend_initialized_checker(
+      service(),
       base::Bind(&DoneWaitingForBackendInitialization,
                  base::Unretained(this)),
       "DoneWaitingForBackendInitialization");
@@ -358,6 +357,7 @@ bool ProfileSyncServiceHarness::AwaitBackendInitialized() {
 bool ProfileSyncServiceHarness::AwaitCommitActivityCompletion() {
   DVLOG(1) << GetClientInfoString("AwaitCommitActivityCompletion");
   CallbackStatusChecker latest_progress_markers_checker(
+      service(),
       base::Bind(&ProfileSyncServiceHarness::HasLatestProgressMarkers,
                  base::Unretained(this)),
       "HasLatestProgressMarkers");
@@ -369,6 +369,7 @@ bool ProfileSyncServiceHarness::AwaitSyncDisabled() {
   DCHECK(service()->HasSyncSetupCompleted());
   DCHECK(!IsSyncDisabled());
   CallbackStatusChecker sync_disabled_checker(
+      service(),
       base::Bind(&ProfileSyncServiceHarness::IsSyncDisabled,
                  base::Unretained(this)),
       "IsSyncDisabled");
@@ -377,6 +378,7 @@ bool ProfileSyncServiceHarness::AwaitSyncDisabled() {
 
 bool ProfileSyncServiceHarness::AwaitSyncSetupCompletion() {
   CallbackStatusChecker sync_setup_complete_checker(
+      service(),
       base::Bind(&DoneWaitingForSyncSetup, base::Unretained(this)),
       "DoneWaitingForSyncSetup");
   return AwaitStatusChange(&sync_setup_complete_checker);
@@ -436,6 +438,7 @@ bool ProfileSyncServiceHarness::WaitUntilProgressMarkersMatch(
   } else {
     partner->service()->AddObserver(this);
     CallbackStatusChecker matches_other_client_checker(
+        service(),
         base::Bind(&ProfileSyncServiceHarness::MatchesPartnerClient,
                    base::Unretained(this)),
         "MatchesPartnerClient");
@@ -464,6 +467,7 @@ bool ProfileSyncServiceHarness::AwaitStatusChange(
 
   DCHECK(status_change_checker_ == NULL);
   status_change_checker_ = checker;
+  status_change_checker_->InitObserver(this);
 
   base::OneShotTimer<ProfileSyncServiceHarness> timer;
   timer.Start(FROM_HERE,
@@ -476,6 +480,7 @@ bool ProfileSyncServiceHarness::AwaitStatusChange(
     loop->Run();
   }
 
+  status_change_checker_->UninitObserver(this);
   status_change_checker_ = NULL;
 
   if (timer.IsRunning()) {
@@ -754,6 +759,7 @@ bool ProfileSyncServiceHarness::WaitForEncryption() {
   }
 
   CallbackStatusChecker encryption_complete_checker(
+      service(),
       base::Bind(&ProfileSyncServiceHarness::IsEncryptionComplete,
                  base::Unretained(this)),
       "IsEncryptionComplete");
@@ -779,16 +785,6 @@ bool ProfileSyncServiceHarness::IsTypeRunning(syncer::ModelType type) {
 
 bool ProfileSyncServiceHarness::IsTypePreferred(syncer::ModelType type) {
   return service()->GetPreferredDataTypes().Has(type);
-}
-
-size_t ProfileSyncServiceHarness::GetNumEntries() const {
-  return GetLastSessionSnapshot().num_entries();
-}
-
-size_t ProfileSyncServiceHarness::GetNumDatatypes() const {
-  browser_sync::DataTypeController::StateMap state_map;
-  service()->GetDataTypeControllerStates(&state_map);
-  return state_map.size();
 }
 
 std::string ProfileSyncServiceHarness::GetServiceStatus() {

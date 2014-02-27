@@ -8,7 +8,7 @@
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
-#include "chrome/browser/sync/test/integration/status_change_checker.h"
+#include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/common/pref_names.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -29,21 +29,20 @@ class SyncErrorTest : public SyncTest {
 };
 
 // Helper class that waits until the sync engine has hit an actionable error.
-class ActionableErrorChecker : public StatusChangeChecker {
+class ActionableErrorChecker : public SingleClientStatusChangeChecker {
  public:
   explicit ActionableErrorChecker(ProfileSyncService* service)
-      : service_(service) {}
+      : SingleClientStatusChangeChecker(service) {}
 
   virtual ~ActionableErrorChecker() {}
 
   // Checks if an actionable error has been hit. Called repeatedly each time PSS
   // notifies observers of a state change.
   virtual bool IsExitConditionSatisfied() OVERRIDE {
-    DCHECK(service_);
     ProfileSyncService::Status status;
-    service_->QueryDetailedSyncStatus(&status);
+    service()->QueryDetailedSyncStatus(&status);
     return (status.sync_protocol_error.action != syncer::UNKNOWN_ACTION &&
-            service_->HasUnrecoverableError());
+            service()->HasUnrecoverableError());
   }
 
   virtual std::string GetDebugMessage() const OVERRIDE {
@@ -51,9 +50,6 @@ class ActionableErrorChecker : public StatusChangeChecker {
   }
 
  private:
-  // The PSS instance that will eventually hit an actionable error.
-  ProfileSyncService* service_;
-
   DISALLOW_COPY_AND_ASSIGN(ActionableErrorChecker);
 };
 

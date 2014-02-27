@@ -224,9 +224,6 @@ class SyncTest : public InProcessBrowserTest {
   // Triggers the creation the Synced Bookmarks folder on the server.
   void TriggerCreateSyncedBookmarks();
 
-  // Returns the number of default items that every client syncs.
-  int NumberOfDefaultSyncItems() const;
-
  protected:
   // Add custom switches needed for running the test.
   virtual void AddTestSwitches(CommandLine* cl);
@@ -386,10 +383,6 @@ class SyncTest : public InProcessBrowserTest {
 
   // The URLFetcherImplFactory instance used to instantiate |fake_factory_|.
   scoped_ptr<net::URLFetcherImplFactory> factory_;
-
-  // Number of default entries (as determined by the existing entries at setup
-  // time on client 0).
-  size_t number_of_default_sync_items_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncTest);
 };

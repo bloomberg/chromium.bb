@@ -111,8 +111,7 @@ SyncTest::SyncTest(TestType test_type)
       num_clients_(-1),
       use_verifier_(true),
       notifications_enabled_(true),
-      test_server_handle_(base::kNullProcessHandle),
-      number_of_default_sync_items_(0) {
+      test_server_handle_(base::kNullProcessHandle) {
   sync_datatype_helper::AssociateWithTest(this);
   switch (test_type_) {
     case SINGLE_CLIENT: {
@@ -366,15 +365,6 @@ bool SyncTest::SetupSync() {
   // session-releated data is rewritten), we need to ensure all startup-based
   // changes have propagated between the clients.
   AwaitQuiescence();
-
-  // The number of default entries is the number of entries existing after
-  // sync startup excluding top level folders and other permanent items.
-  // This value must be updated whenever new permanent items are added (although
-  // this should handle new datatype-specific top level folders).
-  number_of_default_sync_items_ = GetClient(0)->GetNumEntries() -
-                                  GetClient(0)->GetNumDatatypes() - 6;
-  DVLOG(1) << "Setting " << number_of_default_sync_items_ << " as default "
-           << " number of entries.";
 
   return true;
 }
@@ -866,10 +856,6 @@ void SyncTest::TriggerCreateSyncedBookmarks() {
   ASSERT_EQ("Synced Bookmarks",
             UTF16ToASCII(browser()->tab_strip_model()->GetActiveWebContents()->
                 GetTitle()));
-}
-
-int SyncTest::NumberOfDefaultSyncItems() const {
-  return number_of_default_sync_items_;
 }
 
 void SyncTest::SetProxyConfig(net::URLRequestContextGetter* context_getter,

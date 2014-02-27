@@ -168,14 +168,6 @@ class ProfileSyncServiceHarness
   // Check if |type| is being synced.
   bool IsTypePreferred(syncer::ModelType type);
 
-  // Get the number of sync entries this client has. This includes all top
-  // level or permanent items, and can include recently deleted entries.
-  size_t GetNumEntries() const;
-
-  // Get the number of sync datatypes registered (ignoring whatever state
-  // they're in).
-  size_t GetNumDatatypes() const;
-
   // Gets the |auto_start_enabled_| variable from the |service_|.
   bool AutoStartEnabled();
 

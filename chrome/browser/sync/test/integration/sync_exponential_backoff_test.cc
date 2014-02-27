@@ -7,7 +7,7 @@
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/retry_verifier.h"
-#include "chrome/browser/sync/test/integration/status_change_checker.h"
+#include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 
 namespace {
@@ -27,12 +27,11 @@ class SyncExponentialBackoffTest : public SyncTest {
 
 // Helper class that checks if a sync client has successfully gone through
 // exponential backoff after it encounters an error.
-class ExponentialBackoffChecker : public StatusChangeChecker {
+class ExponentialBackoffChecker : public SingleClientStatusChangeChecker {
  public:
-  explicit ExponentialBackoffChecker(const ProfileSyncServiceHarness* harness)
-        : harness_(harness) {
-    DCHECK(harness);
-    const SyncSessionSnapshot& snap = harness_->GetLastSessionSnapshot();
+  explicit ExponentialBackoffChecker(ProfileSyncService* pss)
+        : SingleClientStatusChangeChecker(pss) {
+    const SyncSessionSnapshot& snap = service()->GetLastSessionSnapshot();
     retry_verifier_.Initialize(snap);
   }
 
@@ -41,7 +40,7 @@ class ExponentialBackoffChecker : public StatusChangeChecker {
   // Checks if backoff is complete. Called repeatedly each time PSS notifies
   // observers of a state change.
   virtual bool IsExitConditionSatisfied() OVERRIDE {
-    const SyncSessionSnapshot& snap = harness_->GetLastSessionSnapshot();
+    const SyncSessionSnapshot& snap = service()->GetLastSessionSnapshot();
     retry_verifier_.VerifyRetryInterval(snap);
     return (retry_verifier_.done() && retry_verifier_.Succeeded());
   }
@@ -53,9 +52,6 @@ class ExponentialBackoffChecker : public StatusChangeChecker {
   }
 
  private:
-  // The sync client for which backoff is being verified.
-  const ProfileSyncServiceHarness* harness_;
-
   // Keeps track of the number of attempts at exponential backoff and its
   // related bookkeeping information for verification.
   RetryVerifier retry_verifier_;
@@ -78,7 +74,8 @@ IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, OfflineToOnline) {
 
   // Verify that the client goes into exponential backoff while it is unable to
   // reach the sync server.
-  ExponentialBackoffChecker exponential_backoff_checker(GetClient(0));
+  ExponentialBackoffChecker exponential_backoff_checker(
+      GetClient(0)->service());
   ASSERT_TRUE(GetClient(0)->AwaitStatusChange(&exponential_backoff_checker));
 
   // Recover from the network error.
@@ -104,7 +101,8 @@ IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, TransientErrorTest) {
 
   // Verify that the client goes into exponential backoff while it is unable to
   // reach the sync server.
-  ExponentialBackoffChecker exponential_backoff_checker(GetClient(0));
+  ExponentialBackoffChecker exponential_backoff_checker(
+      GetClient(0)->service());
   ASSERT_TRUE(GetClient(0)->AwaitStatusChange(&exponential_backoff_checker));
 }
 
