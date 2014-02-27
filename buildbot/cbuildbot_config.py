@@ -1497,8 +1497,7 @@ internal_paladin.add_config('lumpy-incremental-paladin',
 internal_paladin.add_config('parrot-paladin',
   boards=['parrot'],
   paladin_builder_name='parrot paladin',
-  # TODO(akeshet): Renable HWTest when parrots are available again in lab
-  # hw_tests=HWTestConfig.DefaultListCQ(),
+  hw_tests=HWTestConfig.DefaultListCQ(),
   upload_hw_test_artifacts=True,
 )
 
