@@ -23,10 +23,6 @@
         '<(grit_out_dir)',
       ],
       'sources': [
-        'app_keep_alive_service.cc',
-        'app_keep_alive_service.h',
-        'app_keep_alive_service_factory.cc',
-        'app_keep_alive_service_factory.h',
         'app_lifetime_monitor.cc',
         'app_lifetime_monitor.h',
         'app_lifetime_monitor_factory.cc',

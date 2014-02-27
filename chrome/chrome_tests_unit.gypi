@@ -524,7 +524,6 @@
         },
       },
       'sources': [
-        '../apps/app_keep_alive_service_unittest.cc',
         '../apps/app_shim/app_shim_host_mac_unittest.cc',
         '../apps/app_shim/extension_app_shim_handler_mac_unittest.cc',
         '../apps/app_window_geometry_cache_unittest.cc',
