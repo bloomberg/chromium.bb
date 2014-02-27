@@ -169,27 +169,27 @@ StaticSocketDataProvider::StaticSocketDataProvider(MockRead* reads,
 StaticSocketDataProvider::~StaticSocketDataProvider() {}
 
 const MockRead& StaticSocketDataProvider::PeekRead() const {
-  DCHECK(!at_read_eof());
+  CHECK(!at_read_eof());
   return reads_[read_index_];
 }
 
 const MockWrite& StaticSocketDataProvider::PeekWrite() const {
-  DCHECK(!at_write_eof());
+  CHECK(!at_write_eof());
   return writes_[write_index_];
 }
 
 const MockRead& StaticSocketDataProvider::PeekRead(size_t index) const {
-  DCHECK_LT(index, read_count_);
+  CHECK_LT(index, read_count_);
   return reads_[index];
 }
 
 const MockWrite& StaticSocketDataProvider::PeekWrite(size_t index) const {
-  DCHECK_LT(index, write_count_);
+  CHECK_LT(index, write_count_);
   return writes_[index];
 }
 
 MockRead StaticSocketDataProvider::GetNextRead() {
-  DCHECK(!at_read_eof());
+  CHECK(!at_read_eof());
   reads_[read_index_].time_stamp = base::Time::Now();
   return reads_[read_index_++];
 }
@@ -199,7 +199,12 @@ MockWriteResult StaticSocketDataProvider::OnWrite(const std::string& data) {
     // Not using mock writes; succeed synchronously.
     return MockWriteResult(SYNCHRONOUS, data.length());
   }
-  DCHECK(!at_write_eof());
+  EXPECT_FALSE(at_write_eof());
+  if (at_write_eof()) {
+    // Show what the extra write actually consists of.
+    EXPECT_EQ("<unexpected write>", data);
+    return MockWriteResult(SYNCHRONOUS, ERR_UNEXPECTED);
+  }
 
   // Check that what we are writing matches the expectation.
   // Then give the mocked return value.
