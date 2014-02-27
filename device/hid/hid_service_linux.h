@@ -1,4 +1,4 @@
-// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,9 @@
 #define DEVICE_HID_HID_SERVICE_LINUX_H_
 
 #include <libudev.h>
+
+#include <map>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -50,7 +53,8 @@ class HidServiceLinux : public HidService,
  public:
   HidServiceLinux();
 
-  virtual scoped_refptr<HidConnection> Connect(std::string device_id) OVERRIDE;
+  virtual scoped_refptr<HidConnection> Connect(const HidDeviceId& device_id)
+      OVERRIDE;
 
   // Implements base::MessagePumpLibevent::Watcher
   virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
@@ -60,8 +64,8 @@ class HidServiceLinux : public HidService,
   virtual ~HidServiceLinux();
 
   void Enumerate();
-  void PlatformDeviceAdd(udev_device* device);
-  void PlatformDeviceRemove(udev_device* raw_dev);
+  void PlatformAddDevice(udev_device* device);
+  void PlatformRemoveDevice(udev_device* raw_dev);
 
   scoped_ptr<udev, UdevDeleter> udev_;
   scoped_ptr<udev_monitor, UdevMonitorDeleter> monitor_;

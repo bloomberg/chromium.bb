@@ -6,13 +6,17 @@
 
 namespace device {
 
-HidConnection::HidConnection(HidDeviceInfo device_info)
+PendingHidReport::PendingHidReport() {}
+
+PendingHidReport::~PendingHidReport() {}
+
+PendingHidRead::PendingHidRead() {}
+
+PendingHidRead::~PendingHidRead() {}
+
+HidConnection::HidConnection(const HidDeviceInfo& device_info)
     : device_info_(device_info) {}
 
 HidConnection::~HidConnection() {}
-
-const HidDeviceInfo& HidConnection::device_info() const {
-  return device_info_;
-}
 
 }  // namespace device

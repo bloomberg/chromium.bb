@@ -1,4 +1,4 @@
-// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,13 @@
 
 namespace device {
 
+#if !defined(OS_MACOSX)
+const char kInvalidHidDeviceId[] = "";
+#endif
+
 HidDeviceInfo::HidDeviceInfo()
-    : bus_type(kHIDBusTypeUSB),
+    : device_id(kInvalidHidDeviceId),
+      bus_type(kHIDBusTypeUSB),
       vendor_id(0),
       product_id(0),
       input_report_size(0),

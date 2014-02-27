@@ -1,13 +1,19 @@
-// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef DEVICE_HID_HID_DEVICE_INFO_H_
 #define DEVICE_HID_HID_DEVICE_INFO_H_
 
+#include <stdint.h>
+
 #include <string>
 
-#include "base/basictypes.h"
+#include "build/build_config.h"
+
+#if defined(OS_MACOSX)
+#include <IOKit/hid/IOHIDDevice.h>
+#endif
 
 namespace device {
 
@@ -16,22 +22,30 @@ enum HidBusType {
   kHIDBusTypeBluetooth = 1,
 };
 
+#if defined(OS_MACOSX)
+typedef IOHIDDeviceRef HidDeviceId;
+const HidDeviceId kInvalidHidDeviceId = NULL;
+#else
+typedef std::string HidDeviceId;
+extern const char kInvalidHidDeviceId[];
+#endif
+
 struct HidDeviceInfo {
   HidDeviceInfo();
   ~HidDeviceInfo();
 
-  std::string device_id;
+  HidDeviceId device_id;
 
   HidBusType bus_type;
-  uint16 vendor_id;
-  uint16 product_id;
+  uint16_t vendor_id;
+  uint16_t product_id;
 
-  size_t input_report_size;
-  size_t output_report_size;
-  size_t feature_report_size;
+  int input_report_size;
+  int output_report_size;
+  int feature_report_size;
 
-  uint16 usage_page;
-  uint16 usage;
+  uint16_t usage_page;
+  uint16_t usage;
   bool has_report_id;
 
   std::string product_name;

@@ -8,17 +8,38 @@
 #include <fcntl.h>
 #include <libudev.h>
 #include <linux/hidraw.h>
+#include <sys/ioctl.h>
+
 #include <string>
 
+#include "base/posix/eintr_wrapper.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/tuple.h"
 #include "device/hid/hid_service.h"
 #include "device/hid/hid_service_linux.h"
 
+// These are already defined in newer versions of linux/hidraw.h.
+#ifndef HIDIOCSFEATURE
+#define HIDIOCSFEATURE(len) _IOC(_IOC_WRITE | _IOC_READ, 'H', 0x06, len)
+#endif
+#ifndef HIDIOCGFEATURE
+#define HIDIOCGFEATURE(len) _IOC(_IOC_WRITE | _IOC_READ, 'H', 0x07, len)
+#endif
 
 namespace device {
 
 namespace {
+
+// Copies a buffer into a new one with a report ID byte inserted at the front.
+scoped_refptr<net::IOBufferWithSize> CopyBufferWithReportId(
+    scoped_refptr<net::IOBufferWithSize> buffer,
+    uint8_t report_id) {
+  scoped_refptr<net::IOBufferWithSize> new_buffer(
+      new net::IOBufferWithSize(buffer->size() + 1));
+  new_buffer->data()[0] = report_id;
+  memcpy(new_buffer->data() + 1, buffer->data(), buffer->size());
+  return new_buffer;
+}
 
 const char kHidrawSubsystem[] = "hidraw";
 
@@ -26,8 +47,7 @@ const char kHidrawSubsystem[] = "hidraw";
 
 HidConnectionLinux::HidConnectionLinux(HidDeviceInfo device_info,
                                        ScopedUdevDevicePtr udev_raw_device)
-    : HidConnection(device_info),
-      initialized_(false) {
+    : HidConnection(device_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   udev_device* dev = udev_raw_device.get();
@@ -61,11 +81,8 @@ HidConnectionLinux::HidConnectionLinux(HidDeviceInfo device_info,
       base::MessageLoopForIO::WATCH_READ_WRITE,
       &device_file_watcher_,
       this)) {
-    LOG(ERROR) << "Cannot start watching file descriptor.";
-    return;
+    LOG(ERROR) << "Failed to start watching device file.";
   }
-
-  initialized_ = true;
 }
 
 HidConnectionLinux::~HidConnectionLinux() {
@@ -76,21 +93,22 @@ HidConnectionLinux::~HidConnectionLinux() {
 void HidConnectionLinux::OnFileCanReadWithoutBlocking(int fd) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(fd, device_file_.GetPlatformFile());
-  DCHECK(initialized_);
 
   uint8 buffer[1024] = {0};
-  int bytes = read(device_file_.GetPlatformFile(), buffer, 1024);
-  if (bytes < 0) {
+  int bytes_read =
+      HANDLE_EINTR(read(device_file_.GetPlatformFile(), buffer, 1024));
+  if (bytes_read < 0) {
     if (errno == EAGAIN) {
       return;
     }
     Disconnect();
     return;
   }
-  scoped_refptr<net::IOBuffer> io_buffer(new net::IOBuffer(bytes));
-  memcpy(io_buffer->data(), buffer, bytes);
-  input_reports_.push(std::make_pair(io_buffer, bytes));
 
+  PendingHidReport report;
+  report.buffer = new net::IOBufferWithSize(bytes_read);
+  memcpy(report.buffer->data(), buffer, bytes_read);
+  pending_reports_.push(report);
   ProcessReadQueue();
 }
 
@@ -98,89 +116,91 @@ void HidConnectionLinux::OnFileCanWriteWithoutBlocking(int fd) {}
 
 void HidConnectionLinux::Disconnect() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!initialized_)
-    return;
-
-  initialized_ = false;
   device_file_watcher_.StopWatchingFileDescriptor();
   device_file_.Close();
-  while (!read_queue_.empty()) {
-    PendingRequest callback = read_queue_.front();
-    read_queue_.pop();
-    callback.c.Run(false, 0);
+  while (!pending_reads_.empty()) {
+    PendingHidRead pending_read = pending_reads_.front();
+    pending_reads_.pop();
+    pending_read.callback.Run(false, 0);
   }
 }
 
-void HidConnectionLinux::Read(scoped_refptr<net::IOBuffer> buffer,
-                              size_t size,
+void HidConnectionLinux::Read(scoped_refptr<net::IOBufferWithSize> buffer,
                               const IOCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!initialized_) {
-    DCHECK(read_queue_.empty());
-    // There might be unread reports.
-    if (!input_reports_.empty()){
-      read_queue_.push(MakeTuple(buffer, size, callback));
-      ProcessReadQueue();
-    }
-    callback.Run(false, 0);
-    return;
-  } else {
-    read_queue_.push(MakeTuple(buffer, size, callback));
-    ProcessReadQueue();
-  }
+  PendingHidRead pending_read;
+  pending_read.buffer = buffer;
+  pending_read.callback = callback;
+  pending_reads_.push(pending_read);
+  ProcessReadQueue();
 }
 
-void HidConnectionLinux::Write(scoped_refptr<net::IOBuffer> buffer,
-                               size_t size,
+void HidConnectionLinux::Write(uint8_t report_id,
+                               scoped_refptr<net::IOBufferWithSize> buffer,
                                const IOCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!initialized_) {
+  // If report ID is non-zero, insert it into a new copy of the buffer.
+  if (report_id != 0)
+    buffer = CopyBufferWithReportId(buffer, report_id);
+  int bytes_written = HANDLE_EINTR(
+      write(device_file_.GetPlatformFile(), buffer->data(), buffer->size()));
+  if (bytes_written < 0) {
+    Disconnect();
     callback.Run(false, 0);
-    return;
   } else {
-    int bytes = write(device_file_.GetPlatformFile(), buffer->data(), size);
-    if (bytes < 0) {
-      Disconnect();
-      callback.Run(false, 0);
-    } else {
-      callback.Run(true, bytes);
-    }
+    callback.Run(true, bytes_written);
   }
 }
 
-void HidConnectionLinux::GetFeatureReport(scoped_refptr<net::IOBuffer> buffer,
-                                          size_t size,
-                                          const IOCallback& callback) {
+void HidConnectionLinux::GetFeatureReport(
+    uint8_t report_id,
+    scoped_refptr<net::IOBufferWithSize> buffer,
+    const IOCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!initialized_) {
+
+  if (buffer->size() == 0) {
     callback.Run(false, 0);
     return;
   }
-  NOTIMPLEMENTED();
+
+  // The first byte of the destination buffer is the report ID being requested.
+  buffer->data()[0] = report_id;
+  int result = ioctl(device_file_.GetPlatformFile(),
+                     HIDIOCGFEATURE(buffer->size()),
+                     buffer->data());
+  if (result < 0)
+    callback.Run(false, 0);
+  else
+    callback.Run(true, result);
 }
 
-void HidConnectionLinux::SendFeatureReport(scoped_refptr<net::IOBuffer> buffer,
-                                           size_t size,
-                                           const IOCallback& callback) {
+void HidConnectionLinux::SendFeatureReport(
+    uint8_t report_id,
+    scoped_refptr<net::IOBufferWithSize> buffer,
+    const IOCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!initialized_) {
+  if (report_id != 0)
+    buffer = CopyBufferWithReportId(buffer, report_id);
+  int result = ioctl(device_file_.GetPlatformFile(),
+                     HIDIOCSFEATURE(buffer->size()),
+                     buffer->data());
+  if (result < 0)
     callback.Run(false, 0);
-    return;
-  }
-  NOTIMPLEMENTED();
+  else
+    callback.Run(true, result);
 }
 
 void HidConnectionLinux::ProcessReadQueue() {
-  while(read_queue_.size() && input_reports_.size()) {
-    PendingRequest request = read_queue_.front();
-    read_queue_.pop();
-    PendingReport report = input_reports_.front();
-    if (report.second > request.b) {
-      request.c.Run(false, report.second);
+  while (pending_reads_.size() && pending_reports_.size()) {
+    PendingHidRead read = pending_reads_.front();
+    pending_reads_.pop();
+    PendingHidReport report = pending_reports_.front();
+    if (report.buffer->size() > read.buffer->size()) {
+      read.callback.Run(false, report.buffer->size());
     } else {
-      memcpy(request.a->data(), report.first->data(), report.second);
-      input_reports_.pop();
-      request.c.Run(true, report.second);
+      memcpy(read.buffer->data(), report.buffer->data(), report.buffer->size());
+      pending_reports_.pop();
+      read.callback.Run(true, report.buffer->size());
     }
   }
 }
@@ -188,31 +208,31 @@ void HidConnectionLinux::ProcessReadQueue() {
 bool HidConnectionLinux::FindHidrawDevNode(udev_device* parent,
                                            std::string* result) {
   udev* udev = udev_device_get_udev(parent);
-  if (!udev)
+  if (!udev) {
       return false;
-
+  }
   ScopedUdevEnumeratePtr enumerate(udev_enumerate_new(udev));
-  if (!enumerate)
+  if (!enumerate) {
     return false;
-
+  }
   if (udev_enumerate_add_match_subsystem(enumerate.get(), kHidrawSubsystem)) {
     return false;
   }
   if (udev_enumerate_scan_devices(enumerate.get())) {
     return false;
   }
-
-  const char* parent_path = udev_device_get_devpath(parent);
+  std::string parent_path(udev_device_get_devpath(parent));
+  if (parent_path.length() == 0 || *parent_path.rbegin() != '/')
+    parent_path += '/';
   udev_list_entry* devices = udev_enumerate_get_list_entry(enumerate.get());
   for (udev_list_entry* i = devices; i != NULL;
-      i = udev_list_entry_get_next(i)) {
+       i = udev_list_entry_get_next(i)) {
     ScopedUdevDevicePtr hid_dev(
         udev_device_new_from_syspath(udev, udev_list_entry_get_name(i)));
     const char* raw_path = udev_device_get_devnode(hid_dev.get());
-    if (strncmp(parent_path,
-                udev_device_get_devpath(hid_dev.get()),
-                strlen(parent_path)) == 0 &&
-        raw_path) {
+    std::string device_path = udev_device_get_devpath(hid_dev.get());
+    if (raw_path &&
+        !device_path.compare(0, parent_path.length(), parent_path)) {
       *result = raw_path;
       return true;
     }

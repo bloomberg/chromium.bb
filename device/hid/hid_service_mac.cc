@@ -1,250 +1,178 @@
-// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "device/hid/hid_service_mac.h"
 
-#include <map>
-#include <set>
-#include <string>
-
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/lazy_instance.h"
-#include "base/logging.h"
-#include "base/mac/foundation_util.h"
-#include "base/memory/scoped_vector.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/threading/thread_restrictions.h"
-#include "device/hid/hid_connection.h"
-#include "device/hid/hid_connection_mac.h"
-#include "device/hid/hid_utils_mac.h"
-#include "net/base/io_buffer.h"
-
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/hid/IOHIDManager.h>
+
+#include <string>
+#include <vector>
+
+#include "base/bind.h"
+#include "base/logging.h"
+#include "base/message_loop/message_loop_proxy.h"
+#include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/threading/thread_restrictions.h"
+#include "device/hid/hid_connection_mac.h"
+#include "device/hid/hid_utils_mac.h"
 
 namespace device {
 
 class HidServiceMac;
 
-HidServiceMac::HidServiceMac() : enumeration_runloop_init_(true, false) {
-  base::ThreadRestrictions::AssertIOAllowed();
+namespace {
 
-  hid_manager_ref_.reset(IOHIDManagerCreate(kCFAllocatorDefault,
-                                            kIOHIDOptionsTypeNone));
-  if (!hid_manager_ref_ ||
-      CFGetTypeID(hid_manager_ref_) != IOHIDManagerGetTypeID()) {
+typedef std::vector<IOHIDDeviceRef> HidDeviceList;
+
+HidServiceMac* HidServiceFromContext(void* context) {
+  return static_cast<HidServiceMac*>(context);
+}
+
+// Callback for CFSetApplyFunction as used by EnumerateHidDevices.
+void HidEnumerationBackInserter(const void* value, void* context) {
+  HidDeviceList* devices = static_cast<HidDeviceList*>(context);
+  const IOHIDDeviceRef device =
+      static_cast<IOHIDDeviceRef>(const_cast<void*>(value));
+  devices->push_back(device);
+}
+
+void EnumerateHidDevices(IOHIDManagerRef hid_manager,
+                         HidDeviceList* device_list) {
+  DCHECK(device_list->size() == 0);
+  // Note that our ownership of each copied device is implied.
+  base::ScopedCFTypeRef<CFSetRef> devices(IOHIDManagerCopyDevices(hid_manager));
+  if (devices)
+    CFSetApplyFunction(devices, HidEnumerationBackInserter, device_list);
+}
+
+}  // namespace
+
+HidServiceMac::HidServiceMac() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  message_loop_ = base::MessageLoopProxy::current();
+  DCHECK(message_loop_);
+  hid_manager_.reset(IOHIDManagerCreate(NULL, 0));
+  if (!hid_manager_) {
     LOG(ERROR) << "Failed to initialize HidManager";
     return;
   }
-  CFRetain(hid_manager_ref_);
+  DCHECK(CFGetTypeID(hid_manager_) == IOHIDManagerGetTypeID());
+  IOHIDManagerOpen(hid_manager_, kIOHIDOptionsTypeNone);
+  IOHIDManagerSetDeviceMatching(hid_manager_, NULL);
 
-  // Register for plug/unplug notifications.
-  IOHIDManagerSetDeviceMatching(hid_manager_ref_.get(), NULL);
-  IOHIDManagerRegisterDeviceMatchingCallback(
-      hid_manager_ref_.get(),
-      &HidServiceMac::AddDeviceCallback,
-      this);
-  IOHIDManagerRegisterDeviceRemovalCallback(
-      hid_manager_ref_.get(),
-      &HidServiceMac::RemoveDeviceCallback,
-      this);
-
-  // Blocking operation to enumerate all the pre-existing devices.
+  // Enumerate all the currently known devices.
   Enumerate();
 
-  // Save the owner message loop.
-  message_loop_ = base::MessageLoopProxy::current();
-
-  // Start a thread to monitor HID device changes.
-  // The reason to create a new thread is that by default the only thread in the
-  // browser process having a CFRunLoop is the UI thread. We do not want to
-  // run potentially blocking routines on it.
-  enumeration_runloop_thread_.reset(
-      new base::Thread("HidService Device Enumeration Thread"));
-
-  base::Thread::Options options;
-  options.message_loop_type = base::MessageLoop::TYPE_UI;
-  enumeration_runloop_thread_->StartWithOptions(options);
-  enumeration_runloop_thread_->message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&HidServiceMac::ScheduleRunLoop, base::Unretained(this)));
-
-  enumeration_runloop_init_.Wait();
-  initialized_ = true;
+  // Register for plug/unplug notifications.
+  StartWatchingDevices();
 }
 
 HidServiceMac::~HidServiceMac() {
-  enumeration_runloop_thread_->message_loop()->PostTask(
-        FROM_HERE,
-        base::Bind(&HidServiceMac::UnscheduleRunLoop, base::Unretained(this)));
-
-  enumeration_runloop_thread_->Stop();
+  StopWatchingDevices();
 }
 
-void HidServiceMac::ScheduleRunLoop() {
-  enumeration_runloop_ = CFRunLoopGetCurrent();
-
+void HidServiceMac::StartWatchingDevices() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  IOHIDManagerRegisterDeviceMatchingCallback(
+      hid_manager_, &AddDeviceCallback, this);
+  IOHIDManagerRegisterDeviceRemovalCallback(
+      hid_manager_, &RemoveDeviceCallback, this);
   IOHIDManagerScheduleWithRunLoop(
-      hid_manager_ref_,
-      enumeration_runloop_,
-      kCFRunLoopDefaultMode);
-
-  IOHIDManagerOpen(hid_manager_ref_, kIOHIDOptionsTypeNone);
-
-  enumeration_runloop_init_.Signal();
+      hid_manager_, CFRunLoopGetMain(), kCFRunLoopDefaultMode);
 }
 
-void HidServiceMac::UnscheduleRunLoop() {
+void HidServiceMac::StopWatchingDevices() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!hid_manager_)
+    return;
   IOHIDManagerUnscheduleFromRunLoop(
-        hid_manager_ref_,
-        enumeration_runloop_,
-        kCFRunLoopDefaultMode);
-
-  IOHIDManagerClose(hid_manager_ref_, kIOHIDOptionsTypeNone);
-
-}
-
-HidServiceMac* HidServiceMac::InstanceFromContext(void* context) {
-  return reinterpret_cast<HidServiceMac*>(context);
+      hid_manager_, CFRunLoopGetMain(), kCFRunLoopDefaultMode);
+  IOHIDManagerClose(hid_manager_, kIOHIDOptionsTypeNone);
 }
 
 void HidServiceMac::AddDeviceCallback(void* context,
                                       IOReturn result,
                                       void* sender,
-                                      IOHIDDeviceRef ref) {
-  HidServiceMac* service = InstanceFromContext(context);
-
-  // Takes ownership of ref. Will be released inside PlatformDeviceAdd.
-  CFRetain(ref);
-  service->message_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&HidServiceMac::PlatformAddDevice,
-                 base::Unretained(service),
-                 base::Unretained(ref)));
+                                      IOHIDDeviceRef hid_device) {
+  DCHECK(CFRunLoopGetMain() == CFRunLoopGetCurrent());
+  // Claim ownership of the device.
+  CFRetain(hid_device);
+  HidServiceMac* service = HidServiceFromContext(context);
+  service->message_loop_->PostTask(FROM_HERE,
+                                   base::Bind(&HidServiceMac::PlatformAddDevice,
+                                              base::Unretained(service),
+                                              base::Unretained(hid_device)));
 }
 
 void HidServiceMac::RemoveDeviceCallback(void* context,
                                          IOReturn result,
                                          void* sender,
-                                         IOHIDDeviceRef ref) {
-  HidServiceMac* service = InstanceFromContext(context);
-
-  // Takes ownership of ref. Will be released inside PlatformDeviceRemove.
-  CFRetain(ref);
+                                         IOHIDDeviceRef hid_device) {
+  DCHECK(CFRunLoopGetMain() == CFRunLoopGetCurrent());
+  HidServiceMac* service = HidServiceFromContext(context);
   service->message_loop_->PostTask(
       FROM_HERE,
       base::Bind(&HidServiceMac::PlatformRemoveDevice,
                  base::Unretained(service),
-                 base::Unretained(ref)));
-}
-
-IOHIDDeviceRef HidServiceMac::FindDevice(std::string id) {
-  base::ScopedCFTypeRef<CFSetRef> devices(
-      IOHIDManagerCopyDevices(hid_manager_ref_));
-  CFIndex count = CFSetGetCount(devices);
-  scoped_ptr<IOHIDDeviceRef[]> device_refs(new IOHIDDeviceRef[count]);
-  CFSetGetValues(devices, (const void **)(device_refs.get()));
-
-  for (CFIndex i = 0; i < count; i++) {
-    int32_t int_property = 0;
-    if (GetHidIntProperty(device_refs[i], CFSTR(kIOHIDLocationIDKey),
-                       &int_property)) {
-      if (id == base::HexEncode(&int_property, sizeof(int_property))) {
-        return device_refs[i];
-      }
-    }
-  }
-
-  return NULL;
+                 base::Unretained(hid_device)));
 }
 
 void HidServiceMac::Enumerate() {
-  base::ScopedCFTypeRef<CFSetRef> devices(
-      IOHIDManagerCopyDevices(hid_manager_ref_));
-  CFIndex count = CFSetGetCount(devices);
-  scoped_ptr<IOHIDDeviceRef[]> device_refs(new IOHIDDeviceRef[count]);
-  CFSetGetValues(devices, (const void **)(device_refs.get()));
-
-  for (CFIndex i = 0; i < count; i++) {
-    // Takes ownership. Will be released inside PlatformDeviceAdd.
-    CFRetain(device_refs[i]);
-    PlatformAddDevice(device_refs[i]);
+  DCHECK(thread_checker_.CalledOnValidThread());
+  HidDeviceList devices;
+  EnumerateHidDevices(hid_manager_, &devices);
+  for (HidDeviceList::const_iterator iter = devices.begin();
+       iter != devices.end();
+       ++iter) {
+    IOHIDDeviceRef hid_device = *iter;
+    PlatformAddDevice(hid_device);
   }
 }
 
-void HidServiceMac::PlatformAddDevice(IOHIDDeviceRef raw_ref) {
-  HidDeviceInfo device;
-  int32_t int_property = 0;
-  std::string str_property;
+void HidServiceMac::PlatformAddDevice(IOHIDDeviceRef hid_device) {
+  // Note that our ownership of hid_device is implied if calling this method.
+  // It is balanced in PlatformRemoveDevice.
+  DCHECK(thread_checker_.CalledOnValidThread());
 
-  // Auto-release.
-  base::ScopedCFTypeRef<IOHIDDeviceRef> ref(raw_ref);
-
-  // Unique identifier for HID device.
-  if (GetHidIntProperty(ref, CFSTR(kIOHIDLocationIDKey), &int_property)) {
-    device.device_id = base::HexEncode(&int_property, sizeof(int_property));
-  } else {
-    // Not an available device.
-    return;
-  }
-
-  if (GetHidIntProperty(ref, CFSTR(kIOHIDVendorIDKey), &int_property)) {
-    device.vendor_id = int_property;
-  }
-  if (GetHidIntProperty(ref, CFSTR(kIOHIDProductIDKey), &int_property)) {
-    device.product_id = int_property;
-  }
-  if (GetHidIntProperty(ref, CFSTR(kIOHIDPrimaryUsageKey), &int_property)) {
-    device.usage = int_property;
-  }
-  if (GetHidIntProperty(ref, CFSTR(kIOHIDPrimaryUsagePageKey), &int_property)) {
-    device.usage_page = int_property;
-  }
-  if (GetHidIntProperty(ref, CFSTR(kIOHIDMaxInputReportSizeKey),
-                        &int_property)) {
-    device.input_report_size = int_property;
-  }
-  if (GetHidIntProperty(ref, CFSTR(kIOHIDMaxOutputReportSizeKey),
-                        &int_property)) {
-    device.output_report_size = int_property;
-  }
-  if (GetHidIntProperty(ref, CFSTR(kIOHIDMaxFeatureReportSizeKey),
-                     &int_property)) {
-    device.feature_report_size = int_property;
-  }
-  if (GetHidStringProperty(ref, CFSTR(kIOHIDProductKey), &str_property)) {
-    device.product_name = str_property;
-  }
-  if (GetHidStringProperty(ref, CFSTR(kIOHIDSerialNumberKey), &str_property)) {
-    device.serial_number = str_property;
-  }
-  HidService::AddDevice(device);
+  HidDeviceInfo device_info;
+  device_info.device_id = hid_device;
+  device_info.vendor_id =
+      GetHidIntProperty(hid_device, CFSTR(kIOHIDVendorIDKey));
+  device_info.product_id =
+      GetHidIntProperty(hid_device, CFSTR(kIOHIDProductIDKey));
+  device_info.usage =
+      GetHidIntProperty(hid_device, CFSTR(kIOHIDPrimaryUsageKey));
+  device_info.usage_page =
+      GetHidIntProperty(hid_device, CFSTR(kIOHIDPrimaryUsagePageKey));
+  device_info.input_report_size =
+      GetHidIntProperty(hid_device, CFSTR(kIOHIDMaxInputReportSizeKey));
+  device_info.output_report_size =
+      GetHidIntProperty(hid_device, CFSTR(kIOHIDMaxOutputReportSizeKey));
+  device_info.feature_report_size =
+      GetHidIntProperty(hid_device, CFSTR(kIOHIDMaxFeatureReportSizeKey));
+  device_info.product_name =
+      GetHidStringProperty(hid_device, CFSTR(kIOHIDProductKey));
+  device_info.serial_number =
+      GetHidStringProperty(hid_device, CFSTR(kIOHIDSerialNumberKey));
+  AddDevice(device_info);
 }
 
-void HidServiceMac::PlatformRemoveDevice(IOHIDDeviceRef raw_ref) {
-  std::string device_id;
-  int32_t int_property = 0;
-  // Auto-release.
-  base::ScopedCFTypeRef<IOHIDDeviceRef> ref(raw_ref);
-  if (!GetHidIntProperty(ref, CFSTR(kIOHIDLocationIDKey), &int_property)) {
-    return;
-  }
-  device_id = base::HexEncode(&int_property, sizeof(int_property));
-  HidService::RemoveDevice(device_id);
+void HidServiceMac::PlatformRemoveDevice(IOHIDDeviceRef hid_device) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  RemoveDevice(hid_device);
+  CFRelease(hid_device);
 }
 
-scoped_refptr<HidConnection>
-HidServiceMac::Connect(std::string device_id) {
-  if (!ContainsKey(devices_, device_id))
+scoped_refptr<HidConnection> HidServiceMac::Connect(
+    const HidDeviceId& device_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  HidDeviceInfo device_info;
+  if (!GetDeviceInfo(device_id, &device_info))
     return NULL;
-
-  IOHIDDeviceRef ref = FindDevice(device_id);
-  if (ref == NULL)
-    return NULL;
-  return scoped_refptr<HidConnection>(
-      new HidConnectionMac(this, devices_[device_id], ref));
+  return scoped_refptr<HidConnection>(new HidConnectionMac(device_info));
 }
 
 }  // namespace device

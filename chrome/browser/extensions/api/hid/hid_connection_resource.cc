@@ -2,20 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/hid/hid_device_resource.h"
+#include "chrome/browser/extensions/api/hid/hid_connection_resource.h"
 
 #include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "device/hid/hid_connection.h"
 
 namespace extensions {
 
-static base::LazyInstance<ProfileKeyedAPIFactory<
-        ApiResourceManager<HidConnectionResource> > >
-            g_factory = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<
+    ProfileKeyedAPIFactory<ApiResourceManager<HidConnectionResource> > >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 template <>

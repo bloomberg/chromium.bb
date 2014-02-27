@@ -1,22 +1,19 @@
-// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <libudev.h>
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/logging.h"
-#include "base/memory/scoped_vector.h"
 #include "base/platform_file.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
-#include "base/threading/thread_restrictions.h"
-#include "device/hid/hid_connection.h"
 #include "device/hid/hid_connection_linux.h"
 #include "device/hid/hid_device_info.h"
 #include "device/hid/hid_service_linux.h"
@@ -79,6 +76,37 @@ HidServiceLinux::HidServiceLinux() {
   Enumerate();
 }
 
+scoped_refptr<HidConnection> HidServiceLinux::Connect(
+    const HidDeviceId& device_id) {
+  HidDeviceInfo device_info;
+  if (!GetDeviceInfo(device_id, &device_info))
+    return NULL;
+
+  ScopedUdevDevicePtr hid_device(
+      udev_device_new_from_syspath(udev_.get(), device_info.device_id.c_str()));
+  if (hid_device) {
+    return new HidConnectionLinux(device_info, hid_device.Pass());
+  }
+  return NULL;
+}
+
+void HidServiceLinux::OnFileCanReadWithoutBlocking(int fd) {
+  DCHECK_EQ(monitor_fd_, fd);
+
+  ScopedUdevDevicePtr dev(udev_monitor_receive_device(monitor_.get()));
+  if (!dev)
+    return;
+
+  std::string action(udev_device_get_action(dev.get()));
+  if (action == kUdevActionAdd) {
+    PlatformAddDevice(dev.get());
+  } else if (action == kUdevActionRemove) {
+    PlatformRemoveDevice(dev.get());
+  }
+}
+
+void HidServiceLinux::OnFileCanWriteWithoutBlocking(int fd) {}
+
 HidServiceLinux::~HidServiceLinux() {
   monitor_watcher_.StopWatchingFileDescriptor();
   close(monitor_fd_);
@@ -110,26 +138,23 @@ void HidServiceLinux::Enumerate() {
     ScopedUdevDevicePtr hid_dev(
         udev_device_new_from_syspath(udev_.get(), udev_list_entry_get_name(i)));
     if (hid_dev) {
-      PlatformDeviceAdd(hid_dev.get());
+      PlatformAddDevice(hid_dev.get());
     }
   }
-
-  initialized_ = true;
 }
 
-void HidServiceLinux::PlatformDeviceAdd(udev_device* device) {
+void HidServiceLinux::PlatformAddDevice(udev_device* device) {
   if (!device)
     return;
 
-  const char* device_id = udev_device_get_syspath(device);
-  if (!device_id)
+  const char* device_path = udev_device_get_syspath(device);
+  if (!device_path)
     return;
 
-
   HidDeviceInfo device_info;
-  device_info.device_id = device_id;
+  device_info.device_id = device_path;
 
-  uint32 int_property = 0;
+  uint32_t int_property = 0;
   const char* str_property = NULL;
 
   const char* hid_id = udev_device_get_property_value(device, kHIDID);
@@ -161,7 +186,7 @@ void HidServiceLinux::PlatformDeviceAdd(udev_device* device) {
   AddDevice(device_info);
 }
 
-void HidServiceLinux::PlatformDeviceRemove(udev_device* raw_dev) {
+void HidServiceLinux::PlatformRemoveDevice(udev_device* raw_dev) {
   // The returned the device is not referenced.
   udev_device* hid_dev =
       udev_device_get_parent_with_subsystem_devtype(raw_dev, "hid", NULL);
@@ -169,43 +194,12 @@ void HidServiceLinux::PlatformDeviceRemove(udev_device* raw_dev) {
   if (!hid_dev)
     return;
 
-  const char* device_id = NULL;
-  device_id = udev_device_get_syspath(hid_dev);
-  if (device_id == NULL)
+  const char* device_path = NULL;
+  device_path = udev_device_get_syspath(hid_dev);
+  if (device_path == NULL)
     return;
 
-  RemoveDevice(device_id);
+  RemoveDevice(device_path);
 }
-
-scoped_refptr<HidConnection> HidServiceLinux::Connect(std::string device_id) {
-  if (!ContainsKey(devices_, device_id))
-    return NULL;
-  ScopedUdevDevicePtr hid_device(
-      udev_device_new_from_syspath(udev_.get(), device_id.c_str()));
-  if (hid_device) {
-    scoped_refptr<HidConnectionLinux> connection =
-        new HidConnectionLinux(devices_[device_id], hid_device.Pass());
-    if (connection->initialized())
-      return connection;
-  }
-  return NULL;
-}
-
-void HidServiceLinux::OnFileCanReadWithoutBlocking(int fd) {
-  DCHECK_EQ(monitor_fd_, fd);
-
-  ScopedUdevDevicePtr dev(udev_monitor_receive_device(monitor_.get()));
-  if (!dev)
-    return;
-
-  std::string action(udev_device_get_action(dev.get()));
-  if (action == kUdevActionAdd) {
-    PlatformDeviceAdd(dev.get());
-  } else if (action == kUdevActionRemove) {
-    PlatformDeviceRemove(dev.get());
-  }
-}
-
-void HidServiceLinux::OnFileCanWriteWithoutBlocking(int fd) {}
 
 } // namespace dev

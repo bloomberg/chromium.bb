@@ -17,7 +17,7 @@ namespace device {
 
 namespace {
 
-using net::IOBuffer;
+using net::IOBufferWithSize;
 
 const int kUSBLUFADemoVID = 0x03eb;
 const int kUSBLUFADemoPID = 0x204f;
@@ -27,7 +27,7 @@ int g_read_times = 0;
 void Read(scoped_refptr<HidConnection> conn);
 
 void OnRead(scoped_refptr<HidConnection> conn,
-            scoped_refptr<net::IOBuffer> buffer,
+            scoped_refptr<IOBufferWithSize> buffer,
             bool success,
             size_t bytes) {
   EXPECT_TRUE(success);
@@ -53,8 +53,8 @@ void OnRead(scoped_refptr<HidConnection> conn,
 }
 
 void Read(scoped_refptr<HidConnection> conn) {
-  scoped_refptr<IOBuffer> buffer(new IOBuffer(8));
-  conn->Read(buffer, 8, base::Bind(OnRead, conn, buffer));
+  scoped_refptr<IOBufferWithSize> buffer(new IOBufferWithSize(8));
+  conn->Read(buffer, base::Bind(OnRead, conn, buffer));
 }
 
 void OnWriteNormal(bool success,
@@ -64,10 +64,10 @@ void OnWriteNormal(bool success,
 }
 
 void WriteNormal(scoped_refptr<HidConnection> conn) {
-  scoped_refptr<IOBuffer> buffer(new IOBuffer(8));
+  scoped_refptr<IOBufferWithSize> buffer(new IOBufferWithSize(8));
   *(int64_t*)buffer->data() = kReport;
 
-  conn->Write(buffer, 8, base::Bind(OnWriteNormal));
+  conn->Write(0, buffer, base::Bind(OnWriteNormal));
 }
 
 }  // namespace
@@ -81,6 +81,7 @@ class HidConnectionTest : public testing::Test {
 
     std::vector<HidDeviceInfo> devices;
     service_->GetDevices(&devices);
+    device_id_ = kInvalidHidDeviceId;
     for (std::vector<HidDeviceInfo>::iterator it = devices.begin();
         it != devices.end();
         ++it) {
@@ -97,21 +98,19 @@ class HidConnectionTest : public testing::Test {
     message_loop_.reset(NULL);
   }
 
-  std::string device_id_;
+  HidDeviceId device_id_;
   scoped_ptr<base::MessageLoopForIO> message_loop_;
   scoped_ptr<HidService> service_;
 };
 
 TEST_F(HidConnectionTest, Create) {
   scoped_refptr<HidConnection> connection = service_->Connect(device_id_);
-  ASSERT_TRUE(connection || device_id_.empty());
+  ASSERT_TRUE(connection || device_id_ == kInvalidHidDeviceId);
 }
 
 TEST_F(HidConnectionTest, Read) {
   scoped_refptr<HidConnection> connection = service_->Connect(device_id_);
-
-  if (!device_id_.empty()) {
-    ASSERT_TRUE(connection);
+  if (connection) {
     message_loop_->PostTask(FROM_HERE, base::Bind(Read, connection));
     message_loop_->Run();
   }
@@ -120,8 +119,7 @@ TEST_F(HidConnectionTest, Read) {
 TEST_F(HidConnectionTest, Write) {
   scoped_refptr<HidConnection> connection = service_->Connect(device_id_);
 
-  if (!device_id_.empty()) {
-    ASSERT_TRUE(connection);
+  if (connection) {
     message_loop_->PostTask(FROM_HERE, base::Bind(WriteNormal, connection));
     message_loop_->Run();
   }

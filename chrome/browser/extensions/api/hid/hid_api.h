@@ -7,17 +7,18 @@
 
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/api_function.h"
 #include "chrome/browser/extensions/api/api_resource_manager.h"
-#include "chrome/browser/extensions/api/hid/hid_device_resource.h"
+#include "chrome/browser/extensions/api/hid/hid_connection_resource.h"
+#include "chrome/browser/extensions/api/hid/hid_device_manager.h"
 #include "chrome/browser/extensions/extension_function_histogram_value.h"
 #include "chrome/common/extensions/api/hid.h"
 
 namespace net {
 
-class IOBuffer;
+class IOBufferWithSize;
 
 }  // namespace net
 
@@ -38,7 +39,8 @@ class HidAsyncApiFunction : public AsyncApiFunction {
 
   void CompleteWithError(const std::string& error);
 
-  ApiResourceManager<HidConnectionResource>* manager_;
+  HidDeviceManager* device_manager_;
+  ApiResourceManager<HidConnectionResource>* connection_manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HidAsyncApiFunction);
@@ -116,7 +118,7 @@ class HidReceiveFunction : public HidAsyncApiFunction {
 
   void OnFinished(bool success, size_t bytes);
 
-  scoped_refptr<net::IOBuffer> buffer_;
+  scoped_refptr<net::IOBufferWithSize> buffer_;
   scoped_ptr<base::ListValue> result_;
   scoped_ptr<extensions::api::hid::Receive::Params> parameters_;
 
@@ -160,7 +162,7 @@ class HidReceiveFeatureReportFunction : public HidAsyncApiFunction {
 
   void OnFinished(bool success, size_t bytes);
 
-  scoped_refptr<net::IOBuffer> buffer_;
+  scoped_refptr<net::IOBufferWithSize> buffer_;
   scoped_ptr<base::ListValue> result_;
   scoped_ptr<extensions::api::hid::ReceiveFeatureReport::Params> parameters_;
 

@@ -1,20 +1,15 @@
-// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "device/hid/hid_service_win.h"
 
 #include <cstdlib>
-#include <string>
 
-#include "base/callback_helpers.h"
-#include "base/lazy_instance.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "device/hid/hid_connection.h"
 #include "device/hid/hid_connection_win.h"
-#include "device/hid/hid_service.h"
+#include "device/hid/hid_device_info.h"
 #include "net/base/io_buffer.h"
 
 #if defined(OS_WIN)
@@ -49,11 +44,12 @@ const char kHIDClass[] = "HIDClass";
 }  // namespace
 
 HidServiceWin::HidServiceWin() {
-  initialized_ = Enumerate();
+  Enumerate();
 }
+
 HidServiceWin::~HidServiceWin() {}
 
-bool HidServiceWin::Enumerate() {
+void HidServiceWin::Enumerate() {
   BOOL res;
   HDEVINFO device_info_set;
   SP_DEVINFO_DATA devinfo_data;
@@ -70,15 +66,15 @@ bool HidServiceWin::Enumerate() {
       DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
 
   if (device_info_set == INVALID_HANDLE_VALUE)
-    return false;
+    return;
 
   for (int device_index = 0;
-      SetupDiEnumDeviceInterfaces(device_info_set,
-                                  NULL,
-                                  &GUID_DEVINTERFACE_HID,
-                                  device_index,
-                                  &device_interface_data);
-      device_index++) {
+       SetupDiEnumDeviceInterfaces(device_info_set,
+                                   NULL,
+                                   &GUID_DEVINTERFACE_HID,
+                                   device_index,
+                                   &device_interface_data);
+       ++device_index) {
     DWORD required_size = 0;
 
     // Determime the required size of detail struct.
@@ -131,7 +127,7 @@ bool HidServiceWin::Enumerate() {
                                                 sizeof(driver_name) - 1,
                                                 NULL);
         if (res) {
-          // Found the drive.
+          // Found the driver.
           break;
         }
       }
@@ -142,11 +138,9 @@ bool HidServiceWin::Enumerate() {
 
     PlatformAddDevice(device_interface_detail_data->DevicePath);
   }
-
-  return true;
 }
 
-void HidServiceWin::PlatformAddDevice(std::string device_path) {
+void HidServiceWin::PlatformAddDevice(const std::string& device_path) {
   HidDeviceInfo device_info;
   device_info.device_id = device_path;
 
@@ -195,6 +189,17 @@ void HidServiceWin::PlatformAddDevice(std::string device_path) {
       if (HidP_GetValueCaps(HidP_Input, &value_caps[0], &value_caps_length,
                             preparsed_data) == HIDP_STATUS_SUCCESS) {
         device_info.has_report_id = (value_caps[0].ReportID != 0);
+        // If report IDs are supported, adjust all the expected report sizes
+        // down by one byte. This is because Windows will always provide sizes
+        // which assume the presence of a report ID.
+        if (device_info.has_report_id) {
+          if (device_info.input_report_size > 0)
+            device_info.input_report_size -= 1;
+          if (device_info.output_report_size > 0)
+            device_info.output_report_size -= 1;
+          if (device_info.feature_report_size > 0)
+            device_info.feature_report_size -= 1;
+        }
       }
     }
     HidD_FreePreparsedData(preparsed_data);
@@ -214,11 +219,11 @@ void HidServiceWin::PlatformAddDevice(std::string device_path) {
     device_info.product_name = base::SysWideToUTF8(str_property);
   }
 
-  HidService::AddDevice(device_info);
+  AddDevice(device_info);
 }
 
-void HidServiceWin::PlatformRemoveDevice(std::string device_path) {
-  HidService::RemoveDevice(device_path);
+void HidServiceWin::PlatformRemoveDevice(const std::string& device_path) {
+  RemoveDevice(device_path);
 }
 
 void HidServiceWin::GetDevices(std::vector<HidDeviceInfo>* devices) {
@@ -226,10 +231,12 @@ void HidServiceWin::GetDevices(std::vector<HidDeviceInfo>* devices) {
   HidService::GetDevices(devices);
 }
 
-scoped_refptr<HidConnection> HidServiceWin::Connect(std::string device_id) {
-  if (!ContainsKey(devices_, device_id)) return NULL;
-  scoped_refptr<HidConnectionWin> connection(
-      new HidConnectionWin(devices_[device_id]));
+scoped_refptr<HidConnection> HidServiceWin::Connect(
+    const HidDeviceId& device_id) {
+  HidDeviceInfo device_info;
+  if (!GetDeviceInfo(device_id, &device_info))
+    return NULL;
+  scoped_refptr<HidConnectionWin> connection(new HidConnectionWin(device_info));
   if (!connection->available()) {
     LOG_GETLASTERROR(ERROR) << "Failed to open device.";
     return NULL;
