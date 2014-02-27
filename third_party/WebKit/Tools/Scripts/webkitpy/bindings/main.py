@@ -42,10 +42,6 @@ please rebaseline them in a separate CL, after checking that tests fail in ToT.
 In CL, please set:
 NOTRY=true
 TBR=(someone in Source/bindings/OWNERS or WATCHLISTS:bindings)
-
-We are currently switching to *Python*!
-Please make sure to update the Python compiler (as well as Perl).
-https://codereview.chromium.org/166333002
 """
 
 DEPENDENCY_IDL_FILES = set([
@@ -109,7 +105,6 @@ class BindingsTests(object):
             self.output_directory = reference_directory
         else:
             self.output_directory = provider.new_temp_dir()
-        self.output_directory_py = provider.new_temp_dir()
         self.event_names_filename = os.path.join(self.output_directory, 'EventInterfaces.in')
 
     def run_command(self, cmd):
@@ -117,31 +112,10 @@ class BindingsTests(object):
         if output:
             print output
 
-    def generate_from_idl_pl(self, idl_file):
-        cmd = ['perl', '-w',
-               '-Ibindings/scripts',
-               '-Ibuild/scripts',
-               '-Icore/scripts',
-               '-I../../JSON/out/lib/perl5',
-               'bindings/scripts/generate_bindings.pl',
-               # idl include directories (path relative to generate-bindings.pl)
-               '--include', '.',
-               '--outputDir', self.output_directory,
-               '--interfaceDependenciesFile', self.interface_dependencies_filename,
-               '--idlAttributesFile', 'bindings/IDLExtendedAttributes.txt',
-               idl_file]
-        try:
-            self.run_command(cmd)
-        except ScriptError, e:
-            print 'ERROR: generate_bindings.pl: ' + os.path.basename(idl_file)
-            print e.output
-            return e.exit_code
-        return 0
-
-    def generate_from_idl_py(self, idl_file):
+    def generate_from_idl(self, idl_file):
         cmd = ['python',
                'bindings/scripts/unstable/idl_compiler.py',
-               '--output-dir', self.output_directory_py,
+               '--output-dir', self.output_directory,
                '--idl-attributes-file', 'bindings/IDLExtendedAttributes.txt',
                '--interfaces-info-file', self.interfaces_info_filename,
                idl_file]
@@ -245,18 +219,18 @@ class BindingsTests(object):
             print 'PASS: %s' % reference_basename
         return True
 
-    def identical_output_files(self, output_directory):
+    def identical_output_files(self):
         file_pairs = [(os.path.join(reference_directory, output_file),
-                       os.path.join(output_directory, output_file))
-                      for output_file in os.listdir(output_directory)
+                       os.path.join(self.output_directory, output_file))
+                      for output_file in os.listdir(self.output_directory)
                       # Skip cache
                       if (output_file != 'parsetab.py' and  # PLY cache
                           not output_file.endswith('.cache'))]  # Jinja cache
         return all([self.identical_file(reference_filename, output_filename)
                     for (reference_filename, output_filename) in file_pairs])
 
-    def no_excess_files(self, check_directory):
-        generated_files = set(os.listdir(check_directory))
+    def no_excess_files(self):
+        generated_files = set(os.listdir(self.output_directory))
         generated_files.add('.svn')  # Subversion working copy directory
         generated_files.add('EventInterfaces.in')  # only in Perl, not Python
         excess_files = [output_file
@@ -284,23 +258,16 @@ class BindingsTests(object):
                 continue
 
             idl_path = os.path.join(test_input_directory, input_filename)
-            if self.generate_from_idl_pl(idl_path):
+            if self.generate_from_idl(idl_path):
                 return False
             if self.reset_results and self.verbose:
                 print 'Reset results: %s' % input_filename
-            if self.generate_from_idl_py(idl_path):
-                return False
 
         # Detect all changes
         passed = self.identical_file(reference_event_names_filename,
                                      self.event_names_filename)
-        passed &= self.identical_output_files(self.output_directory)
-        passed &= self.no_excess_files(self.output_directory)
-        if self.verbose:
-            print
-            print 'Python:'
-        passed &= self.identical_output_files(self.output_directory_py)
-        passed &= self.no_excess_files(self.output_directory_py)
+        passed &= self.identical_output_files()
+        passed &= self.no_excess_files()
         return passed
 
     def main(self):
