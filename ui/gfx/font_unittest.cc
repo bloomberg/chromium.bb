@@ -109,11 +109,23 @@ TEST_F(FontTest, AvgWidths) {
 #if !defined(OS_WIN)
 // On Windows, Font::GetActualFontNameForTesting() doesn't work well for now.
 // http://crbug.com/327287
+//
+// Check that fonts used for testing are installed and enabled. On Mac
+// fonts may be installed but still need enabling in Font Book.app.
+// http://crbug.com/347429
 TEST_F(FontTest, GetActualFontNameForTesting) {
   Font arial("Arial", 16);
-  EXPECT_EQ("arial", StringToLowerASCII(arial.GetActualFontNameForTesting()));
+  EXPECT_EQ("arial", StringToLowerASCII(arial.GetActualFontNameForTesting()))
+      << "********\n"
+      << "Your test environment seems to be missing Arial font, which is "
+      << "needed for unittests.  Check if Arial font is installed.\n"
+      << "********";
   Font symbol("Symbol", 16);
-  EXPECT_EQ("symbol", StringToLowerASCII(symbol.GetActualFontNameForTesting()));
+  EXPECT_EQ("symbol", StringToLowerASCII(symbol.GetActualFontNameForTesting()))
+      << "********\n"
+      << "Your test environment seems to be missing Symbol font, which is "
+      << "needed for unittests.  Check if Symbol font is installed.\n"
+      << "********";
 
   const char* const invalid_font_name = "no_such_font_name";
   Font fallback_font(invalid_font_name, 16);
