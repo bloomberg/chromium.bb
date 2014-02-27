@@ -25,18 +25,27 @@ def add_auth_options(parser):
   parser.auth_group.add_option(
       '--auth-method',
       metavar='METHOD',
-      default='bot' if tools.is_headless() else 'oauth',
+      default=net.get_default_auth_config()[0],
       help='Authentication method to use: %s. [default: %%default]' %
-          ', '.join(net.AUTH_METHODS))
+          ', '.join(name for name, _ in net.AUTH_METHODS))
   parser.add_option_group(parser.auth_group)
   oauth.add_oauth_options(parser)
 
 
 def process_auth_options(parser, options):
   """Configures process-wide authentication parameters based on |options|."""
-  if options.auth_method not in net.AUTH_METHODS:
+  # Validate that authentication method is known.
+  if options.auth_method not in dict(net.AUTH_METHODS):
     parser.error('Invalid --auth-method value: %s' % options.auth_method)
-  net.configure_auth(options.auth_method, oauth_options=options)
+
+  # Process the rest of the flags based on actual method used.
+  # Only oauth is configurable now.
+  config = None
+  if options.auth_method == 'oauth':
+    config = oauth.extract_oauth_config_from_options(options)
+
+  # Now configure 'net' globally to use this for every request.
+  net.configure_auth(options.auth_method, config)
 
 
 class AuthServiceError(Exception):

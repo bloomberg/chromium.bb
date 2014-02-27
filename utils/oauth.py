@@ -7,6 +7,7 @@
 # pylint: disable=W0613
 
 import BaseHTTPServer
+import collections
 import datetime
 import logging
 import optparse
@@ -25,50 +26,95 @@ import httplib2
 from oauth2client import client
 from oauth2client import multistore_file
 
-# keyring_storage depends on 'keyring' module that may not be available.
-try:
-  from oauth2client import keyring_storage
-except ImportError:
-  keyring_storage = None
-
 from third_party import requests
 from utils import tools
 
 
-# Path to a file with cached OAuth2 credentials, used only if keyring is not
-# available.
-OAUTH_STORAGE_FILE = os.path.join(os.path.expanduser('~'), '.isolated_oauth')
+# Path to a file with cached OAuth2 credentials used by default. Can be
+# overridden by command line option or env variable.
+DEFAULT_OAUTH_TOKENS_CACHE = os.path.join(
+    os.path.expanduser('~'), '.isolated_oauth')
+
+
+# OAuth authentication method configuration, used by utils/net.py.
+# See doc string for 'make_oauth_config' for meaning of fields.
+OAuthConfig = collections.namedtuple('OAuthConfig', [
+  'tokens_cache',
+  'no_local_webserver',
+  'webserver_port',
+])
+
+
+def make_oauth_config(
+    tokens_cache=None, no_local_webserver=None, webserver_port=None):
+  """Returns new instance of OAuthConfig.
+
+  If some config option is not provided or None, it will be set to a reasonable
+  default value. This function also acts as an authoritative place for default
+  values of corresponding command line options.
+
+  Args:
+    tokens_cache: path to a file with cached OAuth2 credentials.
+    no_local_webserver: if True, do not try to run local web server that
+        handles redirects. Use copy-pasted verification code instead.
+    webserver_port: port to run local webserver on.
+  """
+  if tokens_cache is None:
+    tokens_cache = os.environ.get(
+        'SWARMING_AUTH_TOKENS_CACHE', DEFAULT_OAUTH_TOKENS_CACHE)
+  if no_local_webserver is None:
+    no_local_webserver = tools.get_bool_env_var(
+        'SWARMING_AUTH_NO_LOCAL_WEBSERVER')
+  # TODO(vadimsh): Add support for "find free port" option.
+  if webserver_port is None:
+    webserver_port = 8090
+  return OAuthConfig(tokens_cache, no_local_webserver, webserver_port)
 
 
 def add_oauth_options(parser):
   """Appends OAuth related options to OptionParser."""
-  # Same options as in tools.argparser, excluding auth_host_name and
-  # logging_level. We should never ever use OAuth client_id with
-  # open-ended request_uri. It should always be 'localhost'.
-  parser.oauth_group = optparse.OptionGroup(parser, 'OAuth options')
+  default_config = make_oauth_config()
+  parser.oauth_group = optparse.OptionGroup(
+      parser, 'OAuth options [used if --auth-method=oauth]')
   parser.oauth_group.add_option(
-      '--auth-no-local-webserver', action='store_true',
-      default=tools.get_bool_env_var('SWARMING_AUTH_NO_LOCAL_WEBSERVER'),
-      help=('Do not run a local web server when performing OAuth2 login flow. '
+      '--auth-tokens-cache',
+      default=default_config.tokens_cache,
+      help='Path to a file to keep OAuth2 tokens cache. It should be a safe '
+          'location accessible only to a current user: knowing content of this '
+          'file is roughly equivalent to knowing account password. Can also be '
+          'set with SWARMING_AUTH_TOKENS_CACHE environment variable. '
+          '[default: %default]')
+  parser.oauth_group.add_option(
+      '--auth-no-local-webserver',
+      action='store_true',
+      default=default_config.no_local_webserver,
+      help='Do not run a local web server when performing OAuth2 login flow. '
           'Can also be set with SWARMING_AUTH_NO_LOCAL_WEBSERVER=1 '
-          'environment variable.'))
+          'environment variable. [default: %default]')
   parser.oauth_group.add_option(
-      '--auth-host-port', action='append', type=int,
-      default=[8080, 8090],
-      help=('Port a local web server should listen on. Used only if '
-          '--auth-no-local-webserver is not set.'))
-  parser.oauth_group.add_option(
-      '--auth-no-keyring', action='store_true',
-      default=tools.get_bool_env_var('SWARMING_AUTH_NO_KEYRING'),
-      help=('Do not use system keyring to store OAuth2 tokens, store them in '
-          'file %s instead. Can also be set with SWARMING_AUTH_NO_KEYRING=1 '
-          'environment variable.' % OAUTH_STORAGE_FILE))
+      '--auth-host-port',
+      type=int,
+      default=default_config.webserver_port,
+      help='Port a local web server should listen on. Used only if '
+          '--auth-no-local-webserver is not set. [default: %default]')
   parser.add_option_group(parser.oauth_group)
 
 
-def load_access_token(urlhost, options):
+def extract_oauth_config_from_options(options):
+  """Given OptionParser with oauth options, extracts OAuthConfig from it.
+
+  OptionParser should be populated with oauth options by 'add_oauth_options'.
+  """
+  return make_oauth_config(
+      tokens_cache=options.auth_tokens_cache,
+      no_local_webserver=options.auth_no_local_webserver,
+      webserver_port=options.auth_host_port)
+
+
+def load_access_token(urlhost, config):
   """Returns cached access token if it is not expired yet."""
-  storage = _get_storage(urlhost, options)
+  assert isinstance(config, OAuthConfig)
+  storage = _get_storage(urlhost, config)
   credentials = storage.get()
   # Missing?
   if not credentials or credentials.invalid:
@@ -79,12 +125,12 @@ def load_access_token(urlhost, options):
   return credentials.access_token
 
 
-def create_access_token(urlhost, options, allow_user_interaction):
+def create_access_token(urlhost, config, allow_user_interaction):
   """Mints and caches new access_token, launching OAuth2 dance if necessary.
 
   Args:
     urlhost: base URL of a host to make OAuth2 token for.
-    options: OptionParser instance with options added by 'add_oauth_options'.
+    config: OAuthConfig instance.
     allow_user_interaction: if False, do not use interactive browser based
         flow (return None instead if it is required).
 
@@ -92,13 +138,14 @@ def create_access_token(urlhost, options, allow_user_interaction):
     access_token on success.
     None on error or if OAuth2 flow was interrupted.
   """
-  storage = _get_storage(urlhost, options)
+  assert isinstance(config, OAuthConfig)
+  storage = _get_storage(urlhost, config)
   credentials = storage.get()
 
   # refresh_token is missing, need to go through full flow.
   if credentials is None or credentials.invalid:
     if allow_user_interaction:
-      return _run_oauth_dance(urlhost, storage, options)
+      return _run_oauth_dance(urlhost, storage, config)
     return None
 
   # refresh_token is ok, use it.
@@ -107,7 +154,7 @@ def create_access_token(urlhost, options, allow_user_interaction):
   except client.Error as err:
     logging.error('OAuth error: %s', err)
     if allow_user_interaction:
-      return _run_oauth_dance(urlhost, storage, options)
+      return _run_oauth_dance(urlhost, storage, config)
     return None
 
   # Success.
@@ -117,21 +164,16 @@ def create_access_token(urlhost, options, allow_user_interaction):
   return credentials.access_token
 
 
-def purge_access_token(urlhost, options):
+def purge_access_token(urlhost, config):
   """Deletes OAuth tokens that can be used to access |urlhost|."""
-  _get_storage(urlhost, options).delete()
+  assert isinstance(config, OAuthConfig)
+  _get_storage(urlhost, config).delete()
 
 
-def _get_storage(urlhost, options):
+def _get_storage(urlhost, config):
   """Returns oauth2client.Storage with tokens to access |urlhost|."""
-  # Normalize urlhost.
-  urlhost = urlhost.rstrip('/')
-  # Use keyring storage if 'keyring' module is present and enabled.
-  if keyring_storage and not options.auth_no_keyring:
-    return keyring_storage.Storage(urlhost, 'oauth2_tokens')
-  # Revert to less secure plain text storage otherwise.
   return multistore_file.get_credential_storage_custom_string_key(
-      OAUTH_STORAGE_FILE, urlhost)
+      config.tokens_cache, urlhost.rstrip('/'))
 
 
 def _fetch_oauth_client_id(urlhost):
@@ -165,7 +207,7 @@ def _fetch_oauth_client_id(urlhost):
 # so it can't be imported directly.
 
 
-def _run_oauth_dance(urlhost, storage, options):
+def _run_oauth_dance(urlhost, storage, config):
   """Perform full OAuth2 dance with the browser."""
   # Fetch client_id and client_secret from service itself.
   client_id, client_not_so_secret = _fetch_oauth_client_id(urlhost)
@@ -180,23 +222,19 @@ def _run_oauth_dance(urlhost, storage, options):
       'https://www.googleapis.com/auth/userinfo.email',
       approval_prompt='force')
 
-  use_local_webserver = not options.auth_no_local_webserver
-  ports = options.auth_host_port
+  use_local_webserver = not config.no_local_webserver
+  port = config.webserver_port
   if use_local_webserver:
     success = False
-    port_number = 0
-    for port in ports:
-      port_number = port
-      try:
-        httpd = ClientRedirectServer(('localhost', port), ClientRedirectHandler)
-      except socket.error:
-        pass
-      else:
-        success = True
-        break
+    try:
+      httpd = ClientRedirectServer(('localhost', port), ClientRedirectHandler)
+    except socket.error:
+      pass
+    else:
+      success = True
     use_local_webserver = success
     if not success:
-      print 'Failed to start a local webserver listening on ports %r.' % ports
+      print 'Failed to start a local webserver listening on port %d.' % port
       print 'Please check your firewall settings and locally'
       print 'running programs that may be blocking or using those ports.'
       print
@@ -205,7 +243,7 @@ def _run_oauth_dance(urlhost, storage, options):
       print
 
   if use_local_webserver:
-    oauth_callback = 'http://localhost:%s/' % port_number
+    oauth_callback = 'http://localhost:%s/' % port
   else:
     oauth_callback = client.OOB_CALLBACK_URN
   flow.redirect_uri = oauth_callback
