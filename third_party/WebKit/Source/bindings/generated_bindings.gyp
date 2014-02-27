@@ -106,24 +106,31 @@
        '<(SHARED_INTERMEDIATE_DIR)/ServiceWorkerGlobalScopeConstructors.idl',
     ],
 
-    'compiler_module_files': [
-      'scripts/unstable/idl_compiler.py',
-      '<(DEPTH)/third_party/ply/lex.py',
-      '<(DEPTH)/third_party/ply/yacc.py',
+    # Python source
+    'jinja_module_files': [
       # jinja2/__init__.py contains version string, so sufficient for package
       '<(DEPTH)/third_party/jinja2/__init__.py',
       '<(DEPTH)/third_party/markupsafe/__init__.py',  # jinja2 dep
+    ],
+    'idl_compiler_files': [
+      'scripts/unstable/idl_compiler.py',
+      # PLY (Python Lex-Yacc)
+      '<(DEPTH)/third_party/ply/lex.py',
+      '<(DEPTH)/third_party/ply/yacc.py',
+      # Web IDL lexer/parser (base parser)
       '<(DEPTH)/tools/idl_parser/idl_lexer.py',
       '<(DEPTH)/tools/idl_parser/idl_node.py',
       '<(DEPTH)/tools/idl_parser/idl_parser.py',
+      # Blink IDL lexer/parser/constructor
       'scripts/unstable/blink_idl_lexer.py',
       'scripts/unstable/blink_idl_parser.py',
-      'scripts/unstable/code_generator_v8.py',
       'scripts/unstable/idl_definitions.py',
       'scripts/unstable/idl_definitions_builder.py',
       'scripts/unstable/idl_reader.py',
       'scripts/unstable/idl_validator.py',
       'scripts/unstable/interface_dependency_resolver.py',
+      # V8 code generator
+      'scripts/unstable/code_generator_v8.py',
       'scripts/unstable/v8_attributes.py',
       'scripts/unstable/v8_callback_interface.py',
       'scripts/unstable/v8_globals.py',
@@ -132,6 +139,8 @@
       'scripts/unstable/v8_types.py',
       'scripts/unstable/v8_utilities.py',
     ],
+
+    # Jinja templates
     'code_generator_template_files': [
       'templates/attributes.cpp',
       'templates/callback_interface.cpp',
@@ -155,16 +164,6 @@
         'write_file_only_if_changed': '--write-file-only-if-changed 1',
       }, {
         'write_file_only_if_changed': '--write-file-only-if-changed 0',
-      }],
-      ['OS!="win"', {
-        # This fails to import on Windows (running native perl) because of a
-        # dependency on JSON::XS (which is a separate module). It's necessary
-        # on Mac and CrOS. It's not generally necessary on standard Linux, but
-        # depending on what the user has locally it could be. So, don't use on
-        # Windows is the simplest solution.
-        'json_perl_module_include_path': '-I<(DEPTH)/third_party/JSON/out/lib/perl5',
-      }, {
-        'json_perl_module_include_path': '',
       }],
     ],
   },
@@ -225,6 +224,31 @@
       }]
     },
     {
+      # A separate pre-caching step is *required* to use bytecode caching in
+      # Jinja (which improves speed significantly), as the bytecode cache is
+      # not concurrency-safe on write; details in code_generator_v8.py.
+      'target_name': 'cached_jinja_templates',
+      'type': 'none',
+      'actions': [{
+        'action_name': 'cache_jinja_templates',
+        'inputs': [
+          '<@(jinja_module_files)',
+          'scripts/unstable/code_generator_v8.py',
+          '<@(code_generator_template_files)',
+        ],
+        'outputs': [
+          '<(bindings_output_dir)/cached_jinja_templates.stamp',  # Dummy to track dependency
+        ],
+        'action': [
+          'python',
+          'scripts/unstable/code_generator_v8.py',
+          '<(bindings_output_dir)',
+          '<(bindings_output_dir)/cached_jinja_templates.stamp',
+        ],
+        'message': 'Caching bytecode of Jinja templates',
+      }],
+    },
+    {
       'target_name': 'individual_generated_bindings',
       'type': 'none',
       # The 'binding' rule generates .h files, so mark as hard_dependency, per:
@@ -232,6 +256,7 @@
       'hard_dependency': 1,
       'dependencies': [
         'interfaces_info',
+        'cached_jinja_templates',
         '../core/core_generated.gyp:generated_testing_idls',
       ],
       'sources': [
@@ -242,17 +267,13 @@
         'extension': 'idl',
         'msvs_external_rule': 1,
         'inputs': [
-          'scripts/generate_bindings.pl',
-          'scripts/code_generator_v8.pm',
-          'scripts/idl_parser.pm',
-          'scripts/idl_serializer.pm',
-          '../build/scripts/preprocessor.pm',
+          '<@(idl_compiler_files)',
+          '<(bindings_output_dir)/cached_jinja_templates.stamp',
           'IDLExtendedAttributes.txt',
           # If the dependency structure or public interface info (e.g.,
           # [ImplementedAs]) changes, we rebuild all files, since we're not
           # computing dependencies file-by-file in the build.
           # This data is generally stable.
-          '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
           '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
           # Further, if any dependency (partial interface or implemented
           # interface) changes, rebuild everything, since every IDL potentially
@@ -266,36 +287,18 @@
           '<(bindings_output_dir)/V8<(RULE_INPUT_ROOT).cpp',
           '<(bindings_output_dir)/V8<(RULE_INPUT_ROOT).h',
         ],
-        'variables': {
-          # IDL include paths. The generator will search recursively for IDL
-          # files under these locations.
-          'generator_include_dirs': [
-            '--include', '../core',
-            '--include', '../modules',
-            '--include', '<(SHARED_INTERMEDIATE_DIR)/blink',
-          ],
-          # Hook for embedders to specify extra directories to find IDL files.
-          'extra_blink_generator_include_dirs%': [],
-        },
         # sanitize-win-build-log.sed uses a regex which matches this command
-        # line (Perl script + .idl file being processed).
+        # line (Python script + .idl file being processed).
         # Update that regex if command line changes (other than changing flags)
         'action': [
-          '<(perl_exe)',
-          '-w',
-          '-Iscripts',
-          '-I../build/scripts',
-          '<@(json_perl_module_include_path)',
-          'scripts/generate_bindings.pl',
-          '--outputDir',
+          'python',
+          'scripts/unstable/idl_compiler.py',
+          '--output-dir',
           '<(bindings_output_dir)',
-          '--idlAttributesFile',
+          '--idl-attributes-file',
           'IDLExtendedAttributes.txt',
-          '<@(generator_include_dirs)',
-          '<@(extra_blink_generator_include_dirs)',
-          '--interfaceDependenciesFile',
-          '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
-          '<@(preprocessor)',
+          '--interfaces-info',
+          '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
           '<@(write_file_only_if_changed)',
           '<(RULE_INPUT_PATH)',
         ],
