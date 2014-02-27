@@ -75,14 +75,14 @@ scoped_refptr<VideoFrame> VideoFramePool::PoolImpl::CreateFrame(
           pool_frame->visible_rect() == visible_rect &&
           pool_frame->natural_size() == natural_size) {
         frame = pool_frame;
-        frame->SetTimestamp(kNoTimestamp());
+        frame->SetTimestamp(timestamp);
         break;
       }
   }
 
   if (!frame) {
     frame = VideoFrame::CreateFrame(
-        format, coded_size, visible_rect, natural_size, kNoTimestamp());
+        format, coded_size, visible_rect, natural_size, timestamp);
   }
 
   return VideoFrame::WrapVideoFrame(

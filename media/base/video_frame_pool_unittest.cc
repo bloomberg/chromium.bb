@@ -16,9 +16,19 @@ class VideoFramePoolTest : public ::testing::Test {
     gfx::Size coded_size(320,240);
     gfx::Rect visible_rect(coded_size);
     gfx::Size natural_size(coded_size);
-    return pool_->CreateFrame(
-        format, coded_size, visible_rect, natural_size,
-        base::TimeDelta::FromMilliseconds(timestamp_ms));
+
+    scoped_refptr<VideoFrame> frame =
+        pool_->CreateFrame(
+            format, coded_size, visible_rect, natural_size,
+            base::TimeDelta::FromMilliseconds(timestamp_ms));
+    EXPECT_EQ(format, frame->format());
+    EXPECT_EQ(base::TimeDelta::FromMilliseconds(timestamp_ms),
+              frame->GetTimestamp());
+    EXPECT_EQ(coded_size, frame->coded_size());
+    EXPECT_EQ(visible_rect, frame->visible_rect());
+    EXPECT_EQ(natural_size, frame->natural_size());
+
+    return frame;
   }
 
   void CheckPoolSize(size_t size) const {
@@ -37,7 +47,7 @@ TEST_F(VideoFramePoolTest, SimpleFrameReuse) {
   frame = NULL;
 
   // Verify that the next frame from the pool uses the same memory.
-  scoped_refptr<VideoFrame> new_frame = CreateFrame(VideoFrame::YV12, 10);
+  scoped_refptr<VideoFrame> new_frame = CreateFrame(VideoFrame::YV12, 20);
   EXPECT_EQ(old_y_data, new_frame->data(VideoFrame::kYPlane));
 }
 
