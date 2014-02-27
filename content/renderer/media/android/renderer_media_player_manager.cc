@@ -64,11 +64,11 @@ bool RendererMediaPlayerManager::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_DidExitFullscreen, OnDidExitFullscreen)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_DidMediaPlayerPlay, OnPlayerPlay)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_DidMediaPlayerPause, OnPlayerPause)
-    IPC_MESSAGE_HANDLER(CdmMsg_SessionCreated, OnSessionCreated)
-    IPC_MESSAGE_HANDLER(CdmMsg_SessionMessage, OnSessionMessage)
-    IPC_MESSAGE_HANDLER(CdmMsg_SessionReady, OnSessionReady)
-    IPC_MESSAGE_HANDLER(CdmMsg_SessionClosed, OnSessionClosed)
-    IPC_MESSAGE_HANDLER(CdmMsg_SessionError, OnSessionError)
+    IPC_MESSAGE_HANDLER(MediaKeysMsg_SessionCreated, OnSessionCreated)
+    IPC_MESSAGE_HANDLER(MediaKeysMsg_SessionMessage, OnSessionMessage)
+    IPC_MESSAGE_HANDLER(MediaKeysMsg_SessionReady, OnSessionReady)
+    IPC_MESSAGE_HANDLER(MediaKeysMsg_SessionClosed, OnSessionClosed)
+    IPC_MESSAGE_HANDLER(MediaKeysMsg_SessionError, OnSessionError)
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -243,16 +243,16 @@ void RendererMediaPlayerManager::InitializeCDM(int media_keys_id,
                                                const std::vector<uint8>& uuid,
                                                const GURL& frame_url) {
   RegisterMediaKeys(media_keys_id, media_keys);
-  Send(new CdmHostMsg_InitializeCDM(
+  Send(new MediaKeysHostMsg_InitializeCDM(
       routing_id(), media_keys_id, uuid, frame_url));
 }
 
 void RendererMediaPlayerManager::CreateSession(
     int media_keys_id,
     uint32 session_id,
-    CdmHostMsg_CreateSession_Type type,
+    MediaKeysHostMsg_CreateSession_Type type,
     const std::vector<uint8>& init_data) {
-  Send(new CdmHostMsg_CreateSession(
+  Send(new MediaKeysHostMsg_CreateSession(
       routing_id(), media_keys_id, session_id, type, init_data));
 }
 
@@ -260,19 +260,20 @@ void RendererMediaPlayerManager::UpdateSession(
     int media_keys_id,
     uint32 session_id,
     const std::vector<uint8>& response) {
-  Send(new CdmHostMsg_UpdateSession(
+  Send(new MediaKeysHostMsg_UpdateSession(
       routing_id(), media_keys_id, session_id, response));
 }
 
 void RendererMediaPlayerManager::ReleaseSession(int media_keys_id,
                                                 uint32 session_id) {
-  Send(new CdmHostMsg_ReleaseSession(routing_id(), media_keys_id, session_id));
+  Send(new MediaKeysHostMsg_ReleaseSession(
+      routing_id(), media_keys_id, session_id));
 }
 
 void RendererMediaPlayerManager::CancelAllPendingSessionCreations(
     int media_keys_id) {
-  Send(new CdmHostMsg_CancelAllPendingSessionCreations(routing_id(),
-                                                       media_keys_id));
+  Send(new MediaKeysHostMsg_CancelAllPendingSessionCreations(
+      routing_id(), media_keys_id));
 }
 
 void RendererMediaPlayerManager::OnSessionCreated(

@@ -142,7 +142,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
                        const GURL& frame_url);
   void OnCreateSession(int media_keys_id,
                        uint32 session_id,
-                       CdmHostMsg_CreateSession_Type content_type,
+                       MediaKeysHostMsg_CreateSession_Type content_type,
                        const std::vector<uint8>& init_data);
   void OnUpdateSession(int media_keys_id,
                        uint32 session_id,
@@ -181,7 +181,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
 
  private:
   // If |permitted| is false, it does nothing but send
-  // |CdmMsg_SessionError| IPC message.
+  // |MediaKeysMsg_SessionError| IPC message.
   // The primary use case is infobar permission callback, i.e., when infobar
   // can decide user's intention either from interacting with the actual info
   // bar or from the saved preference.

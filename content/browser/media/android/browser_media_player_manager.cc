@@ -139,11 +139,12 @@ bool BrowserMediaPlayerManager::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DestroyMediaPlayer, OnDestroyPlayer)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DestroyAllMediaPlayers,
                         DestroyAllMediaPlayers)
-    IPC_MESSAGE_HANDLER(CdmHostMsg_InitializeCDM, OnInitializeCDM)
-    IPC_MESSAGE_HANDLER(CdmHostMsg_CreateSession, OnCreateSession)
-    IPC_MESSAGE_HANDLER(CdmHostMsg_UpdateSession, OnUpdateSession)
-    IPC_MESSAGE_HANDLER(CdmHostMsg_ReleaseSession, OnReleaseSession)
-    IPC_MESSAGE_HANDLER(CdmHostMsg_CancelAllPendingSessionCreations,
+    IPC_MESSAGE_HANDLER(MediaKeysHostMsg_InitializeCDM,
+                        OnInitializeCDM)
+    IPC_MESSAGE_HANDLER(MediaKeysHostMsg_CreateSession, OnCreateSession)
+    IPC_MESSAGE_HANDLER(MediaKeysHostMsg_UpdateSession, OnUpdateSession)
+    IPC_MESSAGE_HANDLER(MediaKeysHostMsg_ReleaseSession, OnReleaseSession)
+    IPC_MESSAGE_HANDLER(MediaKeysHostMsg_CancelAllPendingSessionCreations,
                         OnCancelAllPendingSessionCreations)
 #if defined(VIDEO_HOLE)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_NotifyExternalSurface,
@@ -416,7 +417,7 @@ void BrowserMediaPlayerManager::OnSessionCreated(
     int media_keys_id,
     uint32 session_id,
     const std::string& web_session_id) {
-  Send(new CdmMsg_SessionCreated(
+  Send(new MediaKeysMsg_SessionCreated(
       routing_id(), media_keys_id, session_id, web_session_id));
 }
 
@@ -425,18 +426,18 @@ void BrowserMediaPlayerManager::OnSessionMessage(
     uint32 session_id,
     const std::vector<uint8>& message,
     const GURL& destination_url) {
-  Send(new CdmMsg_SessionMessage(
+  Send(new MediaKeysMsg_SessionMessage(
       routing_id(), media_keys_id, session_id, message, destination_url));
 }
 
 void BrowserMediaPlayerManager::OnSessionReady(int media_keys_id,
                                                uint32 session_id) {
-  Send(new CdmMsg_SessionReady(routing_id(), media_keys_id, session_id));
+  Send(new MediaKeysMsg_SessionReady(routing_id(), media_keys_id, session_id));
 }
 
 void BrowserMediaPlayerManager::OnSessionClosed(int media_keys_id,
                                                 uint32 session_id) {
-  Send(new CdmMsg_SessionClosed(routing_id(), media_keys_id, session_id));
+  Send(new MediaKeysMsg_SessionClosed(routing_id(), media_keys_id, session_id));
 }
 
 void BrowserMediaPlayerManager::OnSessionError(
@@ -444,7 +445,7 @@ void BrowserMediaPlayerManager::OnSessionError(
     uint32 session_id,
     media::MediaKeys::KeyError error_code,
     int system_code) {
-  Send(new CdmMsg_SessionError(
+  Send(new MediaKeysMsg_SessionError(
       routing_id(), media_keys_id, session_id, error_code, system_code));
 }
 
@@ -622,7 +623,7 @@ void BrowserMediaPlayerManager::OnInitializeCDM(
 void BrowserMediaPlayerManager::OnCreateSession(
     int media_keys_id,
     uint32 session_id,
-    CdmHostMsg_CreateSession_Type content_type,
+    MediaKeysHostMsg_CreateSession_Type content_type,
     const std::vector<uint8>& init_data) {
   if (init_data.size() > kEmeInitDataMaximum) {
     LOG(WARNING) << "InitData for ID: " << media_keys_id

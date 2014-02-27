@@ -94,7 +94,7 @@ class RendererMediaPlayerManager : public RenderViewObserver {
                      const GURL& frame_url);
   void CreateSession(int media_keys_id,
                      uint32 session_id,
-                     CdmHostMsg_CreateSession_Type type,
+                     MediaKeysHostMsg_CreateSession_Type type,
                      const std::vector<uint8>& init_data);
   void UpdateSession(int media_keys_id,
                      uint32 session_id,

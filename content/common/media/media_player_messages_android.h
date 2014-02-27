@@ -65,6 +65,7 @@ IPC_STRUCT_TRAITS_BEGIN(media::SubsampleEntry)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS(MediaPlayerHostMsg_Initialize_Type)
+IPC_ENUM_TRAITS(MediaKeysHostMsg_CreateSession_Type)
 
 // Chrome for Android seek message sequence is:
 // 1. Renderer->Browser MediaPlayerHostMsg_Seek
@@ -284,54 +285,50 @@ IPC_MESSAGE_ROUTED3(MediaPlayerHostMsg_NotifyExternalSurface,
 
 // Messages for encrypted media extensions API ------------------------------
 // TODO(xhwang): Move the following messages to a separate file.
-#undef IPC_MESSAGE_START
-#define IPC_MESSAGE_START CdmMsgStart
 
-IPC_ENUM_TRAITS(CdmHostMsg_CreateSession_Type)
-
-IPC_MESSAGE_ROUTED3(CdmHostMsg_InitializeCDM,
+IPC_MESSAGE_ROUTED3(MediaKeysHostMsg_InitializeCDM,
                     int /* media_keys_id */,
                     std::vector<uint8> /* uuid */,
                     GURL /* frame url */)
 
-IPC_MESSAGE_ROUTED4(CdmHostMsg_CreateSession,
+IPC_MESSAGE_ROUTED4(MediaKeysHostMsg_CreateSession,
                     int /* media_keys_id */,
                     uint32_t /* session_id */,
-                    CdmHostMsg_CreateSession_Type /* type */,
+                    MediaKeysHostMsg_CreateSession_Type /* type */,
                     std::vector<uint8> /* init_data */)
 
-IPC_MESSAGE_ROUTED3(CdmHostMsg_UpdateSession,
+IPC_MESSAGE_ROUTED3(MediaKeysHostMsg_UpdateSession,
                     int /* media_keys_id */,
                     uint32_t /* session_id */,
                     std::vector<uint8> /* response */)
 
-IPC_MESSAGE_ROUTED2(CdmHostMsg_ReleaseSession,
+IPC_MESSAGE_ROUTED2(MediaKeysHostMsg_ReleaseSession,
                     int /* media_keys_id */,
                     uint32_t /* session_id */)
 
-IPC_MESSAGE_ROUTED1(CdmHostMsg_CancelAllPendingSessionCreations,
+IPC_MESSAGE_ROUTED1(MediaKeysHostMsg_CancelAllPendingSessionCreations,
                     int /* media_keys_id */)
 
-IPC_MESSAGE_ROUTED3(CdmMsg_SessionCreated,
+IPC_MESSAGE_ROUTED3(MediaKeysMsg_SessionCreated,
                     int /* media_keys_id */,
                     uint32_t /* session_id */,
                     std::string /* web_session_id */)
 
-IPC_MESSAGE_ROUTED4(CdmMsg_SessionMessage,
+IPC_MESSAGE_ROUTED4(MediaKeysMsg_SessionMessage,
                     int /* media_keys_id */,
                     uint32_t /* session_id */,
                     std::vector<uint8> /* message */,
                     GURL /* destination_url */)
 
-IPC_MESSAGE_ROUTED2(CdmMsg_SessionReady,
+IPC_MESSAGE_ROUTED2(MediaKeysMsg_SessionReady,
                     int /* media_keys_id */,
                     uint32_t /* session_id */)
 
-IPC_MESSAGE_ROUTED2(CdmMsg_SessionClosed,
+IPC_MESSAGE_ROUTED2(MediaKeysMsg_SessionClosed,
                     int /* media_keys_id */,
                     uint32_t /* session_id */)
 
-IPC_MESSAGE_ROUTED4(CdmMsg_SessionError,
+IPC_MESSAGE_ROUTED4(MediaKeysMsg_SessionError,
                     int /* media_keys_id */,
                     uint32_t /* session_id */,
                     media::MediaKeys::KeyError /* error_code */,
