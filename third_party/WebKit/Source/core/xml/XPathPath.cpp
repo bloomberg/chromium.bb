@@ -105,7 +105,7 @@ Value LocationPath::evaluate() const
         if (context->inDocument())
             context = context->ownerDocument();
         else
-            context = context->highestAncestor();
+            context = &context->highestAncestor();
     }
 
     NodeSet nodes;

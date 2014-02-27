@@ -123,7 +123,7 @@ HTMLFormElement* HTMLImageElement::formOwner() const
     return m_form.get();
 }
 
-void HTMLImageElement::formRemovedFromTree(const Node* formRoot)
+void HTMLImageElement::formRemovedFromTree(const Node& formRoot)
 {
     ASSERT(m_form);
     if (highestAncestor() != formRoot)

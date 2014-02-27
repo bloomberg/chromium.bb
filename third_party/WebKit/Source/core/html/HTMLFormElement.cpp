@@ -123,7 +123,7 @@ Node::InsertionNotificationRequest HTMLFormElement::insertedInto(ContainerNode* 
 }
 
 template<class T>
-void notifyFormRemovedFromTree(const Vector<T*>& elements, Node* root)
+void notifyFormRemovedFromTree(const Vector<T*>& elements, Node& root)
 {
     size_t size = elements.size();
     for (size_t i = 0; i < size; ++i)
@@ -136,7 +136,7 @@ void HTMLFormElement::removedFrom(ContainerNode* insertionPoint)
     // We don't need to take care of form association by 'form' content
     // attribute becuse IdTargetObserver handles it.
     if (m_hasElementsAssociatedByParser) {
-        Node* root = highestAncestor();
+        Node& root = highestAncestor();
         if (!m_associatedElementsAreDirty) {
             Vector<FormAssociatedElement*> elements(associatedElements());
             notifyFormRemovedFromTree(elements, root);
@@ -574,10 +574,10 @@ PassRefPtr<HTMLCollection> HTMLFormElement::elements()
     return ensureCachedHTMLCollection(FormControls);
 }
 
-void HTMLFormElement::collectAssociatedElements(Node* root, Vector<FormAssociatedElement*>& elements) const
+void HTMLFormElement::collectAssociatedElements(Node& root, Vector<FormAssociatedElement*>& elements) const
 {
     elements.clear();
-    for (Node* node = root; node; node = NodeTraversal::next(*node)) {
+    for (Node* node = &root; node; node = NodeTraversal::next(*node)) {
         if (!node->isHTMLElement())
             continue;
         FormAssociatedElement* element = 0;
@@ -601,18 +601,19 @@ const Vector<FormAssociatedElement*>& HTMLFormElement::associatedElements() cons
     HTMLFormElement* mutableThis = const_cast<HTMLFormElement*>(this);
     Node* scope = mutableThis;
     if (m_hasElementsAssociatedByParser)
-        scope = highestAncestor();
+        scope = &highestAncestor();
     if (inDocument() && treeScope().idTargetObserverRegistry().hasObservers(fastGetAttribute(idAttr)))
         scope = &treeScope().rootNode();
-    collectAssociatedElements(scope, mutableThis->m_associatedElements);
+    ASSERT(scope);
+    collectAssociatedElements(*scope, mutableThis->m_associatedElements);
     mutableThis->m_associatedElementsAreDirty = false;
     return m_associatedElements;
 }
 
-void HTMLFormElement::collectImageElements(Node* root, Vector<HTMLImageElement*>& elements)
+void HTMLFormElement::collectImageElements(Node& root, Vector<HTMLImageElement*>& elements)
 {
     elements.clear();
-    for (Node* node = root; node; node = NodeTraversal::next(*node)) {
+    for (Node* node = &root; node; node = NodeTraversal::next(*node)) {
         if (node->isHTMLElement() && node->hasTagName(imgTag) && toHTMLElement(node)->formOwner() == this)
             elements.append(toHTMLImageElement(node));
     }
@@ -622,7 +623,7 @@ const Vector<HTMLImageElement*>& HTMLFormElement::imageElements()
 {
     if (!m_imageElementsAreDirty)
         return m_imageElements;
-    collectImageElements(m_hasElementsAssociatedByParser ? highestAncestor() : this, m_imageElements);
+    collectImageElements(m_hasElementsAssociatedByParser ? highestAncestor() : *this, m_imageElements);
     m_imageElementsAreDirty = false;
     return m_imageElements;
 }

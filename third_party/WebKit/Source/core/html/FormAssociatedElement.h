@@ -66,7 +66,7 @@ public:
 
     void resetFormOwner();
 
-    void formRemovedFromTree(const Node* formRoot);
+    void formRemovedFromTree(const Node& formRoot);
 
     // ValidityState attribute implementations
     bool customError() const;

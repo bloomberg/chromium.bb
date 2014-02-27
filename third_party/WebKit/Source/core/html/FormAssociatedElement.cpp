@@ -120,7 +120,7 @@ HTMLFormElement* FormAssociatedElement::findAssociatedForm(const HTMLElement* el
     return element->findFormAncestor();
 }
 
-void FormAssociatedElement::formRemovedFromTree(const Node* formRoot)
+void FormAssociatedElement::formRemovedFromTree(const Node& formRoot)
 {
     ASSERT(m_form);
     if (toHTMLElement(this)->highestAncestor() == formRoot)

@@ -82,7 +82,7 @@ public:
     virtual const AtomicString imageSourceURL() const OVERRIDE;
 
     virtual HTMLFormElement* formOwner() const OVERRIDE;
-    void formRemovedFromTree(const Node* formRoot);
+    void formRemovedFromTree(const Node& formRoot);
 
 protected:
     explicit HTMLImageElement(Document&, HTMLFormElement* = 0);

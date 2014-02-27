@@ -75,11 +75,11 @@ void PageConsoleAgent::addInspectedNode(ErrorString* errorString, int nodeId)
         return;
     }
     while (node->isInShadowTree()) {
-        Node* ancestor = node->highestAncestor();
-        if (!ancestor->isShadowRoot() || toShadowRoot(ancestor)->type() == ShadowRoot::AuthorShadowRoot)
+        Node& ancestor = node->highestAncestor();
+        if (!ancestor.isShadowRoot() || toShadowRoot(ancestor).type() == ShadowRoot::AuthorShadowRoot)
             break;
         // User agent shadow root, keep climbing up.
-        node = toShadowRoot(ancestor)->host();
+        node = toShadowRoot(ancestor).host();
     }
     m_injectedScriptManager->injectedScriptHost()->addInspectedObject(adoptPtr(new InspectableNode(node)));
 }

@@ -139,8 +139,8 @@ private:
 
     void scheduleFormSubmission(PassRefPtr<FormSubmission>);
 
-    void collectAssociatedElements(Node* root, Vector<FormAssociatedElement*>&) const;
-    void collectImageElements(Node* root, Vector<HTMLImageElement*>&);
+    void collectAssociatedElements(Node& root, Vector<FormAssociatedElement*>&) const;
+    void collectImageElements(Node& root, Vector<HTMLImageElement*>&);
 
     // Returns true if the submission should proceed.
     bool validateInteractively(Event*);
