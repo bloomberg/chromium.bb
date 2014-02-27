@@ -9,6 +9,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/sys_info.h"
 #include "base/version.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/extension.h"
@@ -190,13 +191,24 @@ void LocalExtensionCache::BackendCheckCacheStatus(
     base::WeakPtr<LocalExtensionCache> local_cache,
     const base::FilePath& cache_dir,
     const base::Closure& callback) {
+  const bool exists =
+      base::PathExists(cache_dir.AppendASCII(kCacheReadyFlagFileName));
+
+  static bool first_check = true;
+  if (first_check && !exists && !base::SysInfo::IsRunningOnChromeOS()) {
+    LOG(WARNING) << "Extensions will not be installed from update URLs until "
+                 << cache_dir.AppendASCII(kCacheReadyFlagFileName).value()
+                 << " exists.";
+  }
+  first_check = false;
+
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,
       base::Bind(&LocalExtensionCache::OnCacheStatusChecked,
-          local_cache,
-          base::PathExists(cache_dir.AppendASCII(kCacheReadyFlagFileName)),
-          callback));
+                 local_cache,
+                 exists,
+                 callback));
 }
 
 void LocalExtensionCache::OnCacheStatusChecked(bool ready,

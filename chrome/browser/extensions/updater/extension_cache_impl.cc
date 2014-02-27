@@ -21,7 +21,7 @@
 namespace extensions {
 namespace {
 
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS)
 const char kLocalCacheDir[] = "/var/cache/external_cache";
 #else
 #error Please define kLocalCacheDir suitable for target OS

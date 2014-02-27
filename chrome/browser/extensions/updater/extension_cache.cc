@@ -6,14 +6,14 @@
 
 #include "base/memory/singleton.h"
 
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS)
 #include "chrome/browser/extensions/updater/extension_cache_impl.h"
 #endif  // OS_CHROMEOS
 
 namespace extensions {
 namespace {
 
-#ifndef OS_CHROMEOS
+#if !defined(OS_CHROMEOS)
 
 // Implementation of ExtensionCache that doesn't cache anything.
 // Real cache is used only on Chrome OS other OSes use this null implementation.
@@ -66,7 +66,7 @@ ExtensionCache* ExtensionCache::GetInstance() {
   if (g_extension_cache_override) {
     return g_extension_cache_override;
   } else {
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS)
     return ExtensionCacheImpl::GetInstance();
 #else
     return ExtensionCacheNullImpl::GetInstance();
