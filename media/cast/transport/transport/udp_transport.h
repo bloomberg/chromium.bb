@@ -50,16 +50,21 @@ class UdpTransport : public PacketSender {
   virtual bool SendPacket(const Packet& packet) OVERRIDE;
 
  private:
-  void ReceiveOnePacket();
-  void OnReceived(int result);
+  // Requests and processes packets from |udp_socket_|.  This method is called
+  // once with |length_or_status| set to net::ERR_IO_PENDING to start receiving
+  // packets.  Thereafter, it is called with some other value as the callback
+  // response from UdpSocket::RecvFrom().
+  void ReceiveNextPacket(int length_or_status);
+
   void OnSent(const scoped_refptr<net::IOBuffer>& buf, int result);
 
-  scoped_refptr<base::SingleThreadTaskRunner> io_thread_proxy_;
-  net::IPEndPoint local_addr_;
+  const scoped_refptr<base::SingleThreadTaskRunner> io_thread_proxy_;
+  const net::IPEndPoint local_addr_;
   net::IPEndPoint remote_addr_;
-  scoped_ptr<net::UDPSocket> udp_socket_;
+  const scoped_ptr<net::UDPSocket> udp_socket_;
   bool send_pending_;
-  scoped_refptr<net::IOBuffer> recv_buf_;
+  scoped_ptr<Packet> next_packet_;
+  scoped_refptr<net::WrappedIOBuffer> recv_buf_;
   net::IPEndPoint recv_addr_;
   PacketReceiverCallback packet_receiver_;
   const CastTransportStatusCallback status_callback_;

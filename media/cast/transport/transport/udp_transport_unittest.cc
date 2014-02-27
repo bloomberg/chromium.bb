@@ -47,6 +47,7 @@ class MockPacketReceiver {
 void SendPacket(UdpTransport* transport, Packet packet) {
   transport->SendPacket(packet);
 }
+
 static void UpdateCastTransportStatus(transport::CastTransportStatus status) {
   NOTREACHED();
 }
