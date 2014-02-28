@@ -20,6 +20,8 @@ class UITestSuite : public ChromeTestSuite {
   virtual void Initialize() OVERRIDE;
   virtual void Shutdown() OVERRIDE;
 
+  virtual bool IsBrowserTestSuite() OVERRIDE;
+
  private:
 #if defined(OS_WIN)
   void LoadCrashService();

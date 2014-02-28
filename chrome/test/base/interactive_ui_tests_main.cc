@@ -46,6 +46,8 @@ class InteractiveUITestSuite : public ChromeTestSuite {
 #endif
 #endif
   }
+
+  virtual bool IsBrowserTestSuite() OVERRIDE { return false; }
 };
 
 class InteractiveUITestSuiteRunner : public ChromeTestSuiteRunner {

@@ -82,7 +82,6 @@
         'test/automation/proxy_launcher.cc',
         'test/automation/proxy_launcher.h',
         'test/ui/javascript_test_util.cc',
-        'test/ui/run_all_unittests.cc',
         'test/ui/ui_perf_test.cc',
         'test/ui/ui_perf_test.h',
         'test/ui/ui_test.cc',

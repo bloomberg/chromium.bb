@@ -14,6 +14,7 @@
         'isolate_dependency_tracked': [
           '../testing/xvfb.py',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
+          '<(PRODUCT_DIR)/libosmesa.so',
           '<(PRODUCT_DIR)/pyproto/google/__init__.py',
           '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
         ],
@@ -56,6 +57,7 @@
       'variables': {
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/ffmpegsumo.so',
+          '<(PRODUCT_DIR)/osmesa.so',
         ],
         'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/<(mac_product_name) Framework.framework/',
@@ -83,6 +85,7 @@
           '<(PRODUCT_DIR)/libEGL.dll',
           '<(PRODUCT_DIR)/libGLESv2.dll',
           '<(PRODUCT_DIR)/ppGoogleNaClPluginChrome.dll',
+          '<(PRODUCT_DIR)/osmesa.dll',
         ],
         'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/plugins/npapi_test_plugin.dll',

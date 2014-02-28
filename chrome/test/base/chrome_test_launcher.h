@@ -13,7 +13,7 @@ class ChromeTestSuite;
 // instance of ChromeTestSuite.
 class ChromeTestSuiteRunner {
  public:
-  virtual int RunTestSuite(int argc, char** argv);
+  virtual int RunTestSuite(int argc, char** argv) = 0;
 };
 
 // Launches Chrome browser tests. |default_jobs| is number of test jobs to be

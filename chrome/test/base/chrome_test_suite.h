@@ -29,6 +29,10 @@ class ChromeTestSuite : public content::ContentTestSuiteBase {
 
   virtual content::ContentClient* CreateClientForInitialization() OVERRIDE;
 
+  // Should return true if the test suite will be running the full chrome
+  // browser, false if the test suite is unit tests.
+  virtual bool IsBrowserTestSuite() = 0;
+
   void SetBrowserDirectory(const base::FilePath& browser_dir) {
     browser_dir_ = browser_dir;
   }

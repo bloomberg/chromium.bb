@@ -19,6 +19,9 @@ class ChromeUnitTestSuite : public ChromeTestSuite {
   // base::TestSuite overrides:
   virtual void Initialize() OVERRIDE;
 
+  // ChromeTestSuite overrides:
+  virtual bool IsBrowserTestSuite() OVERRIDE;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeUnitTestSuite);
 };

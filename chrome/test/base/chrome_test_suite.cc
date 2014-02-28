@@ -44,6 +44,10 @@
 #include "chromeos/chromeos_paths.h"
 #endif
 
+#if !defined(OS_IOS)
+#include "ui/gl/gl_surface.h"
+#endif
+
 #if defined(OS_MACOSX)
 #include "base/mac/bundle_locations.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -184,6 +188,13 @@ void ChromeTestSuite::Initialize() {
   // values for DIR_EXE and DIR_MODULE.
   content::ContentTestSuiteBase::Initialize();
 
+#if !defined(OS_IOS)
+  // For browser tests, a full chrome instance is initialized which will set up
+  // GLSurface itself. For unit tests, we need to set this up for them.
+  if (!IsBrowserTestSuite())
+    gfx::GLSurface::InitializeOneOffForTests(true);
+#endif
+
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   // Look in the framework bundle for resources.
   base::FilePath path;
@@ -232,5 +243,5 @@ void ChromeTestSuite::Shutdown() {
   stats_table_.reset();
   RemoveSharedMemoryFile(stats_filename_);
 
-  base::TestSuite::Shutdown();
+  content::ContentTestSuiteBase::Shutdown();
 }

@@ -44,3 +44,5 @@ void ChromeUnitTestSuite::Initialize() {
 
   ChromeTestSuite::Initialize();
 }
+
+bool ChromeUnitTestSuite::IsBrowserTestSuite() { return false; }

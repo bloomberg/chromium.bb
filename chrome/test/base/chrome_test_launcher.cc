@@ -115,10 +115,6 @@ class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
 
 }  // namespace
 
-int ChromeTestSuiteRunner::RunTestSuite(int argc, char** argv) {
-  return ChromeTestSuite(argc, argv).Run();
-}
-
 int LaunchChromeTests(int default_jobs,
                       ChromeTestSuiteRunner* runner,
                       int argc,
