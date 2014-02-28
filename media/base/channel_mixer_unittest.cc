@@ -21,7 +21,7 @@ enum { kFrames = 16 };
 // Test all possible layout conversions can be constructed and mixed.
 TEST(ChannelMixerTest, ConstructAllPossibleLayouts) {
   for (ChannelLayout input_layout = CHANNEL_LAYOUT_MONO;
-       input_layout < CHANNEL_LAYOUT_MAX;
+       input_layout <= CHANNEL_LAYOUT_MAX;
        input_layout = static_cast<ChannelLayout>(input_layout + 1)) {
     for (ChannelLayout output_layout = CHANNEL_LAYOUT_MONO;
          output_layout < CHANNEL_LAYOUT_STEREO_DOWNMIX;

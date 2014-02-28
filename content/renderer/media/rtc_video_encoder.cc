@@ -658,7 +658,7 @@ void RTCVideoEncoder::RecordInitEncodeUMA(int32_t init_retval) {
   if (init_retval == WEBRTC_VIDEO_CODEC_OK) {
     UMA_HISTOGRAM_ENUMERATION("Media.RTCVideoEncoderProfile",
                               video_codec_profile_,
-                              media::VIDEO_CODEC_PROFILE_MAX);
+                              media::VIDEO_CODEC_PROFILE_MAX + 1);
   }
 }
 

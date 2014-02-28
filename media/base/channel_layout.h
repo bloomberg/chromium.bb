@@ -99,8 +99,8 @@ enum ChannelLayout {
   // Channels are not explicitly mapped to speakers.
   CHANNEL_LAYOUT_DISCRETE = 29,
 
-  // Total number of layouts.
-  CHANNEL_LAYOUT_MAX  // Must always be last!
+  // Max value, must always equal the largest entry ever logged.
+  CHANNEL_LAYOUT_MAX = CHANNEL_LAYOUT_DISCRETE
 };
 
 enum Channels {
@@ -115,7 +115,7 @@ enum Channels {
   BACK_CENTER,
   SIDE_LEFT,
   SIDE_RIGHT,
-  CHANNELS_MAX
+  CHANNELS_MAX = SIDE_RIGHT, // Must always equal the largest value ever logged.
 };
 
 // Returns the expected channel position in an interleaved stream.  Values of -1

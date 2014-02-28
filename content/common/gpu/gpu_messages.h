@@ -54,7 +54,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(gpu::error::ContextLostReason,
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoEncodeAccelerator::Error,
                           media::VideoEncodeAccelerator::kErrorMax)
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoFrame::Format,
-                          media::VideoFrame::HISTOGRAM_MAX)
+                          media::VideoFrame::FORMAT_MAX)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::VideoCodecProfile,
                               media::VIDEO_CODEC_PROFILE_MIN,
                               media::VIDEO_CODEC_PROFILE_MAX)

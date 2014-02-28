@@ -41,8 +41,6 @@ pa_channel_position ChromiumToPAChannelPosition(Channels channel) {
       return PA_CHANNEL_POSITION_SIDE_LEFT;
     case SIDE_RIGHT:
       return PA_CHANNEL_POSITION_SIDE_RIGHT;
-    case CHANNELS_MAX:
-      return PA_CHANNEL_POSITION_INVALID;
     default:
       NOTREACHED() << "Invalid channel: " << channel;
       return PA_CHANNEL_POSITION_INVALID;
@@ -86,7 +84,7 @@ pa_channel_map ChannelLayoutToPAChannelMap(ChannelLayout channel_layout) {
   pa_channel_map_init(&channel_map);
 
   channel_map.channels = ChannelLayoutToChannelCount(channel_layout);
-  for (Channels ch = LEFT; ch < CHANNELS_MAX;
+  for (Channels ch = LEFT; ch <= CHANNELS_MAX;
        ch = static_cast<Channels>(ch + 1)) {
     int channel_index = ChannelOrder(channel_layout, ch);
     if (channel_index < 0)

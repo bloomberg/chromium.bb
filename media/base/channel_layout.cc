@@ -48,7 +48,7 @@ static const int kLayoutToChannels[] = {
 // surround sound channel in FFmpeg's 5.1 layout is in the 5th position (because
 // the order is L, R, C, LFE, LS, RS), so
 // kChannelOrderings[CHANNEL_LAYOUT_5POINT1][SIDE_LEFT] = 4;
-static const int kChannelOrderings[CHANNEL_LAYOUT_MAX][CHANNELS_MAX] = {
+static const int kChannelOrderings[CHANNEL_LAYOUT_MAX + 1][CHANNELS_MAX + 1] = {
     // FL | FR | FC | LFE | BL | BR | FLofC | FRofC | BC | SL | SR
 
     // CHANNEL_LAYOUT_NONE
@@ -246,8 +246,6 @@ const char* ChannelLayoutToString(ChannelLayout layout) {
       return "OCTAGONAL";
     case CHANNEL_LAYOUT_DISCRETE:
       return "DISCRETE";
-    case CHANNEL_LAYOUT_MAX:
-      break;
   }
   NOTREACHED() << "Invalid channel layout provided: " << layout;
   return "";

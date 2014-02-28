@@ -4,23 +4,48 @@
 
 #include "media/audio/sample_rates.h"
 
+#include "base/logging.h"
+
 namespace media {
 
-AudioSampleRate AsAudioSampleRate(int sample_rate) {
+bool ToAudioSampleRate(int sample_rate, AudioSampleRate* asr) {
+  DCHECK(asr);
   switch (sample_rate) {
-    case 8000: return k8000Hz;
-    case 16000: return k16000Hz;
-    case 32000: return k32000Hz;
-    case 48000: return k48000Hz;
-    case 96000: return k96000Hz;
-    case 11025: return k11025Hz;
-    case 22050: return k22050Hz;
-    case 44100: return k44100Hz;
-    case 88200: return k88200Hz;
-    case 176400: return k176400Hz;
-    case 192000: return k192000Hz;
+    case 8000:
+      *asr = k8000Hz;
+      return true;
+    case 16000:
+      *asr = k16000Hz;
+      return true;
+    case 32000:
+      *asr = k32000Hz;
+      return true;
+    case 48000:
+      *asr = k48000Hz;
+      return true;
+    case 96000:
+      *asr = k96000Hz;
+      return true;
+    case 11025:
+      *asr = k11025Hz;
+      return true;
+    case 22050:
+      *asr = k22050Hz;
+      return true;
+    case 44100:
+      *asr = k44100Hz;
+      return true;
+    case 88200:
+      *asr = k88200Hz;
+      return true;
+    case 176400:
+      *asr = k176400Hz;
+      return true;
+    case 192000:
+      *asr = k192000Hz;
+      return true;
   }
-  return kUnexpectedAudioSampleRate;
+  return false;
 }
 
 }  // namespace media

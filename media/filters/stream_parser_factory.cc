@@ -50,7 +50,7 @@ struct CodecInfo {
     HISTOGRAM_EAC3,
     HISTOGRAM_MP3,
     HISTOGRAM_OPUS,
-    HISTOGRAM_MAX  // Must be the last entry.
+    HISTOGRAM_MAX = HISTOGRAM_OPUS  // Must be equal to largest logged entry.
   };
 
   const char* pattern;
@@ -417,12 +417,14 @@ scoped_ptr<StreamParser> StreamParserFactory::Create(
     // Log the number of codecs specified, as well as the details on each one.
     UMA_HISTOGRAM_COUNTS_100("Media.MSE.NumberOfTracks", codecs.size());
     for (size_t i = 0; i < audio_codecs.size(); ++i) {
-      UMA_HISTOGRAM_ENUMERATION(
-          "Media.MSE.AudioCodec", audio_codecs[i], CodecInfo::HISTOGRAM_MAX);
+      UMA_HISTOGRAM_ENUMERATION("Media.MSE.AudioCodec",
+                                audio_codecs[i],
+                                CodecInfo::HISTOGRAM_MAX + 1);
     }
     for (size_t i = 0; i < video_codecs.size(); ++i) {
-      UMA_HISTOGRAM_ENUMERATION(
-          "Media.MSE.VideoCodec", video_codecs[i], CodecInfo::HISTOGRAM_MAX);
+      UMA_HISTOGRAM_ENUMERATION("Media.MSE.VideoCodec",
+                                video_codecs[i],
+                                CodecInfo::HISTOGRAM_MAX + 1);
     }
 
     stream_parser.reset(factory_function(codecs, log_cb));

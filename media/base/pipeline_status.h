@@ -32,7 +32,8 @@ enum PipelineStatus {
   DEMUXER_ERROR_NO_SUPPORTED_STREAMS = 14,
   // Decoder related errors.
   DECODER_ERROR_NOT_SUPPORTED = 15,
-  PIPELINE_STATUS_MAX,  // Must be greater than all other values logged.
+  // Must be equal to the largest value ever logged.
+  PIPELINE_STATUS_MAX = DECODER_ERROR_NOT_SUPPORTED,
 };
 
 typedef base::Callback<void(PipelineStatus)> PipelineStatusCB;

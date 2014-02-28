@@ -389,9 +389,12 @@ void AVStreamToVideoDecoderConfig(
       visible_rect.size(), aspect_ratio.num, aspect_ratio.den);
 
   if (record_stats) {
+    // Note the PRESUBMIT_IGNORE_UMA_MAX below, this silences the PRESUBMIT.py
+    // check for uma enum max usage, since we're abusing
+    // UMA_HISTOGRAM_ENUMERATION to report a discrete value.
     UMA_HISTOGRAM_ENUMERATION("Media.VideoColorRange",
                               stream->codec->color_range,
-                              AVCOL_RANGE_NB);
+                              AVCOL_RANGE_NB);  // PRESUBMIT_IGNORE_UMA_MAX
   }
 
   VideoFrame::Format format = PixelFormatToVideoFormat(stream->codec->pix_fmt);

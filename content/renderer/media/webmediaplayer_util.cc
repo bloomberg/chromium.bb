@@ -71,7 +71,6 @@ blink::WebMediaPlayer::NetworkState PipelineErrorToNetworkState(
       return blink::WebMediaPlayer::NetworkStateDecodeError;
 
     case media::PIPELINE_OK:
-    case media::PIPELINE_STATUS_MAX:
       NOTREACHED() << "Unexpected status! " << error;
   }
   return blink::WebMediaPlayer::NetworkStateFormatError;

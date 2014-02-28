@@ -63,8 +63,6 @@ std::string VideoFrame::FormatToString(VideoFrame::Format format) {
       return "YV12A";
     case VideoFrame::YV12J:
       return "YV12J";
-    case VideoFrame::HISTOGRAM_MAX:
-      return "HISTOGRAM_MAX";
   }
   NOTREACHED() << "Invalid videoframe format provided: " << format;
   return "";
@@ -260,7 +258,6 @@ size_t VideoFrame::NumPlanes(Format format) {
     case VideoFrame::YV12A:
       return 4;
     case VideoFrame::UNKNOWN:
-    case VideoFrame::HISTOGRAM_MAX:
       break;
   }
   NOTREACHED() << "Unsupported video frame format: " << format;
@@ -326,7 +323,6 @@ size_t VideoFrame::PlaneAllocationSize(Format format,
     }
     case VideoFrame::UNKNOWN:
     case VideoFrame::NATIVE_TEXTURE:
-    case VideoFrame::HISTOGRAM_MAX:
 #if defined(VIDEO_HOLE)
     case VideoFrame::HOLE:
 #endif  // defined(VIDEO_HOLE)

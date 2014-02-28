@@ -23,13 +23,13 @@ enum LinuxAudioIO {
   kPulse,
   kAlsa,
   kCras,
-  kAudioIOMax  // Must always be last!
+  kAudioIOMax = kCras  // Must always be equal to largest logged entry.
 };
 
 AudioManager* CreateAudioManager(AudioLogFactory* audio_log_factory) {
 #if defined(USE_CRAS)
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseCras)) {
-    UMA_HISTOGRAM_ENUMERATION("Media.LinuxAudioIO", kCras, kAudioIOMax);
+    UMA_HISTOGRAM_ENUMERATION("Media.LinuxAudioIO", kCras, kAudioIOMax + 1);
     return new AudioManagerCras(audio_log_factory);
   }
 #endif
@@ -37,13 +37,13 @@ AudioManager* CreateAudioManager(AudioLogFactory* audio_log_factory) {
 #if defined(USE_PULSEAUDIO)
   AudioManager* manager = AudioManagerPulse::Create(audio_log_factory);
   if (manager) {
-    UMA_HISTOGRAM_ENUMERATION("Media.LinuxAudioIO", kPulse, kAudioIOMax);
+    UMA_HISTOGRAM_ENUMERATION("Media.LinuxAudioIO", kPulse, kAudioIOMax + 1);
     return manager;
   }
 #endif
 
 #if defined(USE_ALSA)
-  UMA_HISTOGRAM_ENUMERATION("Media.LinuxAudioIO", kAlsa, kAudioIOMax);
+  UMA_HISTOGRAM_ENUMERATION("Media.LinuxAudioIO", kAlsa, kAudioIOMax + 1);
   return new AudioManagerAlsa(audio_log_factory);
 #else
   return new FakeAudioManager(audio_log_factory);

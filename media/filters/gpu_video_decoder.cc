@@ -136,7 +136,7 @@ static void ReportGpuVideoDecoderInitializeStatusToUMAAndRunCB(
     const PipelineStatusCB& cb,
     PipelineStatus status) {
   UMA_HISTOGRAM_ENUMERATION(
-      "Media.GpuVideoDecoderInitializeStatus", status, PIPELINE_STATUS_MAX);
+      "Media.GpuVideoDecoderInitializeStatus", status, PIPELINE_STATUS_MAX + 1);
   cb.Run(status);
 }
 

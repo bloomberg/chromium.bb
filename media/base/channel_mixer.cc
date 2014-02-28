@@ -23,7 +23,7 @@ static const float kEqualPowerScale = static_cast<float>(M_SQRT1_2);
 
 static void ValidateLayout(ChannelLayout layout) {
   CHECK_NE(layout, CHANNEL_LAYOUT_NONE);
-  CHECK_NE(layout, CHANNEL_LAYOUT_MAX);
+  CHECK_LE(layout, CHANNEL_LAYOUT_MAX);
   CHECK_NE(layout, CHANNEL_LAYOUT_UNSUPPORTED);
   CHECK_NE(layout, CHANNEL_LAYOUT_DISCRETE);
 
@@ -170,7 +170,7 @@ bool MatrixBuilder::CreateTransformationMatrix(
   }
 
   // Route matching channels and figure out which ones aren't accounted for.
-  for (Channels ch = LEFT; ch < CHANNELS_MAX;
+  for (Channels ch = LEFT; ch < CHANNELS_MAX + 1;
        ch = static_cast<Channels>(ch + 1)) {
     int input_ch_index = ChannelOrder(input_layout_, ch);
     if (input_ch_index < 0)

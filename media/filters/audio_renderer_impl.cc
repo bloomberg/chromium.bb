@@ -27,11 +27,12 @@ namespace {
 enum AudioRendererEvent {
   INITIALIZED,
   RENDER_ERROR,
-  MAX_EVENTS
+  RENDER_EVENT_MAX = RENDER_ERROR,
 };
 
 void HistogramRendererEvent(AudioRendererEvent event) {
-  UMA_HISTOGRAM_ENUMERATION("Media.AudioRendererEvents", event, MAX_EVENTS);
+  UMA_HISTOGRAM_ENUMERATION(
+      "Media.AudioRendererEvents", event, RENDER_EVENT_MAX + 1);
 }
 
 }  // namespace

@@ -152,7 +152,7 @@ bool WebRtcAudioCapturer::Initialize() {
       device_info_.device.input.channel_layout);
   DVLOG(1) << "Audio input hardware channel layout: " << channel_layout;
   UMA_HISTOGRAM_ENUMERATION("WebRTC.AudioInputChannelLayout",
-                            channel_layout, media::CHANNEL_LAYOUT_MAX);
+                            channel_layout, media::CHANNEL_LAYOUT_MAX + 1);
 
   // Verify that the reported input channel configuration is supported.
   if (channel_layout != media::CHANNEL_LAYOUT_MONO &&
@@ -164,11 +164,10 @@ bool WebRtcAudioCapturer::Initialize() {
 
   DVLOG(1) << "Audio input hardware sample rate: "
            << device_info_.device.input.sample_rate;
-  media::AudioSampleRate asr = media::AsAudioSampleRate(
-      device_info_.device.input.sample_rate);
-  if (asr != media::kUnexpectedAudioSampleRate) {
+  media::AudioSampleRate asr;
+  if (media::ToAudioSampleRate(device_info_.device.input.sample_rate, &asr)) {
     UMA_HISTOGRAM_ENUMERATION(
-        "WebRTC.AudioInputSampleRate", asr, media::kUnexpectedAudioSampleRate);
+        "WebRTC.AudioInputSampleRate", asr, media::kAudioSampleRateMax + 1);
   } else {
     UMA_HISTOGRAM_COUNTS("WebRTC.AudioInputSampleRateUnexpected",
                          device_info_.device.input.sample_rate);

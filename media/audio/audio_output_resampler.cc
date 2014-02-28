@@ -72,20 +72,24 @@ class OnMoreDataConverter
 
 // Record UMA statistics for hardware output configuration.
 static void RecordStats(const AudioParameters& output_params) {
+  // Note the 'PRESUBMIT_IGNORE_UMA_MAX's below, these silence the PRESUBMIT.py
+  // check for uma enum max usage, since we're abusing UMA_HISTOGRAM_ENUMERATION
+  // to report a discrete value.
   UMA_HISTOGRAM_ENUMERATION(
-      "Media.HardwareAudioBitsPerChannel", output_params.bits_per_sample(),
-      limits::kMaxBitsPerSample);
+      "Media.HardwareAudioBitsPerChannel",
+      output_params.bits_per_sample(),
+      limits::kMaxBitsPerSample);  // PRESUBMIT_IGNORE_UMA_MAX
   UMA_HISTOGRAM_ENUMERATION(
       "Media.HardwareAudioChannelLayout", output_params.channel_layout(),
-      CHANNEL_LAYOUT_MAX);
+      CHANNEL_LAYOUT_MAX + 1);
   UMA_HISTOGRAM_ENUMERATION(
       "Media.HardwareAudioChannelCount", output_params.channels(),
-      limits::kMaxChannels);
+      limits::kMaxChannels);  // PRESUBMIT_IGNORE_UMA_MAX
 
-  AudioSampleRate asr = media::AsAudioSampleRate(output_params.sample_rate());
-  if (asr != kUnexpectedAudioSampleRate) {
+  AudioSampleRate asr;
+  if (ToAudioSampleRate(output_params.sample_rate(), &asr)) {
     UMA_HISTOGRAM_ENUMERATION(
-        "Media.HardwareAudioSamplesPerSecond", asr, kUnexpectedAudioSampleRate);
+        "Media.HardwareAudioSamplesPerSecond", asr, kAudioSampleRateMax + 1);
   } else {
     UMA_HISTOGRAM_COUNTS(
         "Media.HardwareAudioSamplesPerSecondUnexpected",
@@ -96,21 +100,25 @@ static void RecordStats(const AudioParameters& output_params) {
 // Record UMA statistics for hardware output configuration after fallback.
 static void RecordFallbackStats(const AudioParameters& output_params) {
   UMA_HISTOGRAM_BOOLEAN("Media.FallbackToHighLatencyAudioPath", true);
+  // Note the 'PRESUBMIT_IGNORE_UMA_MAX's below, these silence the PRESUBMIT.py
+  // check for uma enum max usage, since we're abusing UMA_HISTOGRAM_ENUMERATION
+  // to report a discrete value.
   UMA_HISTOGRAM_ENUMERATION(
       "Media.FallbackHardwareAudioBitsPerChannel",
-      output_params.bits_per_sample(), limits::kMaxBitsPerSample);
+      output_params.bits_per_sample(),
+      limits::kMaxBitsPerSample);  // PRESUBMIT_IGNORE_UMA_MAX
   UMA_HISTOGRAM_ENUMERATION(
       "Media.FallbackHardwareAudioChannelLayout",
-      output_params.channel_layout(), CHANNEL_LAYOUT_MAX);
+      output_params.channel_layout(), CHANNEL_LAYOUT_MAX + 1);
   UMA_HISTOGRAM_ENUMERATION(
-      "Media.FallbackHardwareAudioChannelCount",
-      output_params.channels(), limits::kMaxChannels);
+      "Media.FallbackHardwareAudioChannelCount", output_params.channels(),
+      limits::kMaxChannels);  // PRESUBMIT_IGNORE_UMA_MAX
 
-  AudioSampleRate asr = media::AsAudioSampleRate(output_params.sample_rate());
-  if (asr != kUnexpectedAudioSampleRate) {
+  AudioSampleRate asr;
+  if (ToAudioSampleRate(output_params.sample_rate(), &asr)) {
     UMA_HISTOGRAM_ENUMERATION(
         "Media.FallbackHardwareAudioSamplesPerSecond",
-        asr, kUnexpectedAudioSampleRate);
+        asr, kAudioSampleRateMax + 1);
   } else {
     UMA_HISTOGRAM_COUNTS(
         "Media.FallbackHardwareAudioSamplesPerSecondUnexpected",

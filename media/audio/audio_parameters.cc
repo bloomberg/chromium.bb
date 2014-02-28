@@ -85,7 +85,7 @@ bool AudioParameters::IsValid() const {
          (channels_ > 0) &&
          (channels_ <= media::limits::kMaxChannels) &&
          (channel_layout_ > CHANNEL_LAYOUT_UNSUPPORTED) &&
-         (channel_layout_ < CHANNEL_LAYOUT_MAX) &&
+         (channel_layout_ <= CHANNEL_LAYOUT_MAX) &&
          (input_channels_ >= 0) &&
          (input_channels_ <= media::limits::kMaxChannels) &&
          (sample_rate_ >= media::limits::kMinSampleRate) &&

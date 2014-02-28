@@ -52,7 +52,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 #endif  // defined(VIDEO_HOLE)
     NATIVE_TEXTURE = 6,  // Native texture.  Pixel-format agnostic.
     YV12J = 7,  // JPEG color range version of YV12
-    HISTOGRAM_MAX,  // Must always be greatest.
+    FORMAT_MAX = YV12J,  // Must always be equal to largest entry logged.
   };
 
   // Returns the name of a Format as a string.
