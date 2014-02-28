@@ -44,7 +44,7 @@
     function testEnded()
     {
       if (window.testRunner)
-        testRunner.notifyDone();
+        window.setTimeout(function() { testRunner.notifyDone(); }, 0);
     }
     
     function startTest()

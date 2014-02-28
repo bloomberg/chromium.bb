@@ -3,6 +3,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   <title>Paint neg z-order descendants into the composited scrolling layer</title>
+  <script src="../../resources/run-after-display.js"></script>
   <style>
     .scrollable {
       overflow: scroll;
@@ -35,7 +36,6 @@
       textarea.scrollTop = 40;
       if (window.testRunner)
         window.testRunner.notifyDone();
-      window.testRunner.display();
     }
 
     function doTest()
@@ -43,9 +43,7 @@
       var textarea = document.getElementById('container');
       textarea.focus();
       textarea.selectionStart = textarea.selectionEnd = 0;
-      if (window.testRunner)
-        window.testRunner.display();
-      window.setTimeout(endTest, 100);
+      runAfterDisplay(endTest);
     }
 
     window.addEventListener('load', doTest, false);

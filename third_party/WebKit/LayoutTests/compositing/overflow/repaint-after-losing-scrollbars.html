@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <!-- there should be four green squares and no visible red -->
+<script src="../../resources/run-after-display.js"></script>
 <style>
 .container {
 width: 100px;
@@ -57,12 +58,14 @@ function finishTest() {
     document.getElementById("both").classList.remove("wide"); // third div loses both
     document.getElementById("both").classList.remove("tall"); // vertical and horizontal scrollbars
     document.getElementById("corner").classList.remove("resizeWidget"); // bottom div loses a resize corner but no scrollbars
+  if (window.testRunner)
+      testRunner.notifyDone();
 }
 
 if (window.testRunner) {
     testRunner.dumpAsTextWithPixelResults();
-    testRunner.display(); // Paint once with all overflow controls visible.
-    finishTest();
-} else
-    window.setTimeout(finishTest, 0);
+    testRunner.waitUntilDone();
+}
+
+runAfterDisplay(finishTest);
 </script>

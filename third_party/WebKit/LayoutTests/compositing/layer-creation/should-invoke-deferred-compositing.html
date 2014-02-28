@@ -11,6 +11,7 @@
 
 <html>
 <head>
+<script src="../../resources/run-after-display.js"></script>
 <style>
 
 .composited {
@@ -62,15 +63,18 @@ canvas {
       return;
     }
 
-    testRunner.display();
+    testRunner.waitUntilDone();
 
-    // This should initiate a compositor frame via scheduleAnimation().
-    addCanvasToTree();
+    runAfterDisplay(function() {
+      // This should initiate a compositor frame via scheduleAnimation().
+      addCanvasToTree();
 
-    if (window.internals.isCompositorFramePending(document))
-      document.getElementById("result").innerHTML = "PASS - did schedule animation";
-    else
-      document.getElementById("result").innerHTML = "FAIL - did not schedule animation";
+      if (window.internals.isCompositorFramePending(document))
+        document.getElementById("result").innerHTML = "PASS - did schedule animation";
+      else
+        document.getElementById("result").innerHTML = "FAIL - did not schedule animation";
+      testRunner.notifyDone();
+    });
   }
 
 </script>

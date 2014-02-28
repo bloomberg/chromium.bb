@@ -2,6 +2,7 @@
 <html>
 <head>
 <script src="../../resources/js-test.js"></script>
+<script src="../../resources/run-after-display.js"></script>
 </head>
 <body onload="runTest();" onclick="doNothing();">
 <div style="-webkit-transform: translateZ(0); position: relative; left: 10px; top: 40px">
@@ -26,11 +27,11 @@ function runTest() {
     if (window.eventSender) {
         // Generate valid link highlight.
         eventSender.gestureShowPress(x, y);
-        window.testRunner.display();
-
-        // Generate tap in region with no valid target ... this should cancel the first tap.
-        eventSender.gestureShowPress(150, 150);
-        window.setTimeout(function() { window.testRunner.notifyDone(); }, 0);
+        runAfterDisplay(function() {
+            // Generate tap in region with no valid target ... this should cancel the first tap.
+            eventSender.gestureShowPress(150, 150);
+            testRunner.notifyDone();
+        });
     } else {
         debug("This test requires DumpRenderTree.");
     }

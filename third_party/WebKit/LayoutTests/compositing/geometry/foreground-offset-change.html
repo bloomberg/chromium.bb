@@ -1,5 +1,6 @@
 <html>
 <head>
+  <script src="../../resources/run-after-display.js"></script>
   <style>
     #clipper {
       width: 550px;
@@ -47,15 +48,18 @@
 
   </style>
   <script>
-    if (window.testRunner)
+    if (window.testRunner) {
+      testRunner.waitUntilDone();
       testRunner.dumpAsTextWithPixelResults();
+    }
 
     function doTest()
     {
-      if (window.testRunner)
-        testRunner.display();
-
-      document.getElementById("stretch").style.left = "-100px";
+      runAfterDisplay(function() {
+        document.getElementById("stretch").style.left = "-100px";
+        if (window.testRunner)
+          testRunner.notifyDone();
+      });
     }
 
     window.addEventListener('load', doTest, false);

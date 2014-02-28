@@ -2,6 +2,7 @@
 
 <html>
 <head>
+  <script src="../../resources/run-after-display.js"></script>
   <style type="text/css" media="screen">
     iframe {
         border: 10px solid black;
@@ -33,22 +34,16 @@
 
     function doTest()
     {
-        // For some reason this delay is required for AppKit to not short-circuit the display.
-        window.setTimeout(function() {
-            if (window.testRunner)
-                testRunner.display();
+        var hadLayers = false;
+        if (window.testRunner) {
+            var layers = window.internals.layerTreeAsText(document);
+            hadLayers = layers != "";
+        }
 
-            var hadLayers = false;
-            if (window.testRunner) {
-                var layers = window.internals.layerTreeAsText(document);
-                hadLayers = layers != "";
-            }
-
+        runAfterDisplay(function() {
             document.getElementById('iframe').className = 'collapsed';
 
             if (window.testRunner) {
-
-                testRunner.display();
                 var haveLayers = window.internals.layerTreeAsText(document) != "";
                 var result;
                 if (hadLayers && !haveLayers)
@@ -58,7 +53,7 @@
                 document.getElementById('result').innerHTML = result;
                 testRunner.notifyDone();
             }
-        }, 0);
+        });
     }
 
     window.addEventListener('load', doTest, false);

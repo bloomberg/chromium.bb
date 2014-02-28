@@ -2,6 +2,7 @@
 
 <html>
 <head>
+  <script src="../../resources/run-after-display.js"></script>
   <style type="text/css" media="screen">
     iframe {
         border: 10px solid black;
@@ -33,9 +34,10 @@
     {
       document.getElementById('parent-iframe').contentDocument.body.offsetWidth; // work around bug 41999.
       if (window.testRunner) {
-        testRunner.display();
-        document.getElementById('layers').innerText = window.internals.layerTreeAsText(document);
-        testRunner.notifyDone();
+        runAfterDisplay(function() {
+          document.getElementById('layers').innerText = window.internals.layerTreeAsText(document);
+          testRunner.notifyDone();
+        });
       }
     }
   </script>

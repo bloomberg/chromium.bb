@@ -2,6 +2,7 @@
 <html>
 
 <head>
+<script src="../../resources/run-after-display.js"></script>
 <style>
 
 .compositedBehind {
@@ -33,8 +34,10 @@
 </style>
 
 <script>
-        if (window.testRunner)
+        if (window.testRunner) {
             testRunner.dumpAsText();
+            testRunner.waitUntilDone();
+        }
 
         if (window.internals) {
             /* Note carefully, compositing for fixed position is _disabled_ here */
@@ -44,15 +47,18 @@
 
         function test()
         {
-            testRunner.display()
+            runAfterDisplay(function() {
+                if (window.internals)
+                    window.internals.startTrackingRepaints(document);
 
-            if (window.internals)
-                window.internals.startTrackingRepaints(document);
+                window.scrollTo(0, 100);
 
-            window.scrollTo(0, 100);
+                if (window.internals)
+                    document.getElementById('layers').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
 
-            if (window.internals)
-                document.getElementById('layers').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
+                if (window.testRunner)
+                    testRunner.notifyDone();
+            });
         }
 </script>
 

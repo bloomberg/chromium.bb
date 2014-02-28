@@ -2,6 +2,7 @@
 
 <html>
 <head>
+    <script src="../../resources/run-after-display.js"></script>
     <style>
         .bar {
             width: 200px;
@@ -42,14 +43,11 @@
             var overflow = document.getElementById('overflow');
             overflow.scrollTop = 50;
 
-            if (window.testRunner)
-                testRunner.display();
-            
-            window.setTimeout(function() {
+            runAfterDisplay(function() {
                 overflow.scrollTop = 75;
                 if (window.testRunner)
                     testRunner.notifyDone();
-            }, 0)
+            });
         }
         window.addEventListener('load', doTest, false);
     </script>

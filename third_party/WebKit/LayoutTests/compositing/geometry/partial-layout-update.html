@@ -49,7 +49,7 @@
       var panel = document.getElementById("panel");
       panel.addEventListener('webkitTransitionEnd', function() {
         if (window.testRunner)
-          testRunner.notifyDone();
+          window.setTimeout(function() { testRunner.notifyDone(); }, 0);
       }, false);
       panel.style.left = "0";
     }

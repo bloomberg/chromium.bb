@@ -16,10 +16,9 @@
                         return;
                     }
                     // Make sure we render the first frame.
-                    if (window.testRunner) {
-                        testRunner.display();
-                    }
-                    video.play();
+                    requestAnimationFrame(function() {
+                        video.play();
+                    });
                 };
 
                 // Get the first video to stay on frame zero for comparison purposes.

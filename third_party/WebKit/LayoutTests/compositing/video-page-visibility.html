@@ -1,5 +1,6 @@
 <html>
 <head>
+  <script src="../resources/run-after-display.js"></script>
   <style>
     video {
       width: 400px;
@@ -20,10 +21,10 @@
     video.src = 'resources/video.' + (video.canPlayType('video/ogg') ? 'ogv' : 'mp4');
     video.addEventListener('canplaythrough', function() {
       if (window.testRunner) {
-        testRunner.display();
-        testRunner.setPageVisibility("hidden");
-        testRunner.display();
-        testRunner.notifyDone();
+        runAfterDisplay(function() {
+          testRunner.setPageVisibility("hidden");
+          testRunner.notifyDone();
+        });
       }
     }, false);
   </script>

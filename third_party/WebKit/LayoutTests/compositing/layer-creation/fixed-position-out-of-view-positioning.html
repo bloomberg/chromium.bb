@@ -21,18 +21,17 @@
     function doTest() {
       if (!window.testRunner)
         return;
+
       testRunner.dumpAsText();
+
       document.getElementById("layertree1").innerText = window.internals.layerTreeAsText(document);
       window.scrollTo(0, 10);
-      testRunner.display();
+
       document.getElementById("layertree2").innerText = window.internals.layerTreeAsText(document);
     }
 
     if (window.internals)
       window.internals.settings.setAcceleratedCompositingForFixedPositionEnabled(true);
-
-    if (window.testRunner)
-      testRunner.dumpAsText();
 
     window.onload = doTest;
   </script>

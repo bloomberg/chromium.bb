@@ -54,6 +54,7 @@
 </head>
 
 <script src="../../fast/repaint/resources/repaint.js"></script>
+<script src="../../resources/run-after-display.js"></script>
 
 <script>
     if (window.testRunner) {
@@ -62,17 +63,13 @@
     }
 
     function repaintTest() {
-        if (window.testRunner)
-            testRunner.display();
-
-        document.getElementById('overflow').scrollTop = 30;
-        if (window.testRunner)
-            testRunner.display();
-
-        window.setTimeout(function() {
-            document.getElementById('overflow').scrollTop = 50;
-            testRunner.notifyDone();
-        }, 0);
+        runAfterDisplay(function() {
+            document.getElementById('overflow').scrollTop = 30;
+            runAfterDisplay(function() {
+                document.getElementById('overflow').scrollTop = 50;
+                testRunner.notifyDone();
+            });
+        });
     }
 
 </script>

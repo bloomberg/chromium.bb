@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<script src="../../resources/run-after-display.js"></script>
 <style>
 .container {
 width: 100px;
@@ -49,15 +50,14 @@ function finishTest() {
     document.getElementById("both").classList.remove("tall"); // vertical and horizontal scrollbars
     document.getElementById("corner").classList.remove("resizeWidget"); // bottom div loses a resize corner but no scrollbars
     if (window.testRunner) {
-        testRunner.display(); // Ensure compositor tree is up to date.
         document.getElementById("layerTree").innerText = window.internals.layerTreeAsText(document);
+        testRunner.notifyDone();
     }
 }
 
 if (window.testRunner) {
     testRunner.dumpAsText();
-    testRunner.display(); // Force compositor state to be updated before the container needs any overflow controls
-    finishTest();
-} else
-    window.setTimeout(finishTest, 0);
+    testRunner.waitUntilDone();
+}
+runAfterDisplay(finishTest);
 </script>

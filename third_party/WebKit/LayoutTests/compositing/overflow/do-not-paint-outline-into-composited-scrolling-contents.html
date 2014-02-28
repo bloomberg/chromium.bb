@@ -7,6 +7,7 @@
     If this test succeeds, you should not see the focus ring in the scrolled
     contents.
   -->
+  <script src="../../resources/run-after-display.js"></script>
   <script type="text/javascript" charset="utf-8">
     if (window.testRunner)
       window.testRunner.dumpAsTextWithPixelResults();
@@ -27,9 +28,7 @@
       var textarea = document.getElementById('text');
       textarea.focus();
       textarea.selectionStart = textarea.selectionEnd = 0;
-      if (window.testRunner)
-        window.testRunner.display();
-      window.setTimeout(endTest, 100);
+      runAfterDisplay(endTest);
     }
 
     window.addEventListener('load', doTest, false);

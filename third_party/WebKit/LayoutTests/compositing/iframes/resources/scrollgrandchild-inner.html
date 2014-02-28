@@ -1,5 +1,6 @@
 <html>
 <head>
+  <script src="../../../resources/run-after-display.js"></script>
   <style>
     body {
       height: 1000px;
@@ -31,12 +32,12 @@
 
     function doTest()
     {
-      if (window.testRunner)
-        testRunner.display();
-      // Scroll red box off screen and scroll green box into same place.
-      window.scrollTo(0, 400);
-      if (window.testRunner)
-        testRunner.notifyDone();
+      runAfterDisplay(function() {
+        // Scroll red box off screen and scroll green box into same place.
+        window.scrollTo(0, 400);
+        if (window.testRunner)
+          testRunner.notifyDone();
+      });
     }
 
     window.addEventListener('load', doTest, false);

@@ -2,6 +2,7 @@
 <html>
 <head>
 <script src="../../resources/js-test.js"></script>
+<script src="../../resources/run-after-display.js"></script>
 </head>
 <body onLoad="runTest();">
 <iframe id="nestingFrame" src="resources/1-nested-frame-noncomposited.html" style="position: relative; left: 10px; top: 10px; width: 450px; height: 150px; -webkit-transform: translateZ(0);"></iframe>
@@ -23,13 +24,13 @@ function runTest() {
 
     if (window.eventSender && window.testRunner) {
         eventSender.gestureShowPress(x, y);
-        window.testRunner.display();
-
-        targetFrame.style.webkitTransform = "translateZ(0)";
-        window.testRunner.display();
-
-        targetFrame.contentWindow.scrollTo(0, 20);
-        window.setTimeout(function() { window.testRunner.notifyDone(); }, 0);
+        runAfterDisplay(function() {
+            targetFrame.style.webkitTransform = "translateZ(0)";
+            runAfterDisplay(function() {
+                targetFrame.contentWindow.scrollTo(0, 20);
+                testRunner.notifyDone();
+            });
+        });
     } else {
         debug("This test requires DumpRenderTree.");
     }

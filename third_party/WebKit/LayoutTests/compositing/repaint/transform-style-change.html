@@ -1,17 +1,18 @@
 <!DOCTYPE html>
 <!-- Tests that an element composited with transform-style: preserve-3d still renders when switched to transform-style: flat -->
 <div id="box" style="width:100px; height:100px; background-color: green; -webkit-transform: translateZ(0); -webkit-transform-style: preserve-3d"></div>
+<script src="../../resources/run-after-display.js"></script>
 <script>
-if (window.testRunner)
-    testRunner.dumpAsTextWithPixelResults(); // Only pixel results are useful
-
 function test() {
     document.getElementById("box").style.webkitTransformStyle = "flat";
+    if (window.testRunner)
+        testRunner.notifyDone();
 }
 
 if (window.testRunner) {
-    testRunner.display(); // Force one composite with preserve-3d
-    test();
-} else
-    window.setTimeout(test, 0);
+    testRunner.waitUntilDone();
+    testRunner.dumpAsTextWithPixelResults();
+}
+// Force one composite with preserve-3d
+runAfterDisplay(test);
 </script>

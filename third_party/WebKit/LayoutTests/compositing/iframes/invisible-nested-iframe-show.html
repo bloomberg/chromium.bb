@@ -2,6 +2,7 @@
 
 <html>
 <head>
+  <script src="../../resources/run-after-display.js"></script>
   <style type="text/css" media="screen">
     iframe {
         border: 10px solid black;
@@ -32,15 +33,14 @@
 
     function doTest()
     {
-      window.setTimeout(function() {
+      runAfterDisplay(function() {
         var div = document.getElementById('invisible');
         div.style.cssText = "";
         if (window.testRunner) {
-          testRunner.display();
           document.getElementById('layers').innerHTML = window.internals.layerTreeAsText(document);
           testRunner.notifyDone();
         }
-      }, 0)
+      });
     }
     
     window.addEventListener('load', doTest, false);

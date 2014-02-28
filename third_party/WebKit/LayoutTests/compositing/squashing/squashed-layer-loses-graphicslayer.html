@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<script src="../../resources/run-after-display.js"></script>
 <style>
 div {
   position: absolute;
@@ -52,8 +53,10 @@ div:hover {
 
 </style>
 <script>
-    if (window.testRunner)
+    if (window.testRunner) {
         testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+    }
 
     if (window.internals)
         internals.settings.setLayerSquashingEnabled(true);
@@ -62,9 +65,11 @@ div:hover {
     {
         if (!window.internals)
             return;
+        runAfterDisplay(executeTestCases);
+    }
 
-        testRunner.display();
-
+    function executeTestCases()
+    {
         // Case 1
         document.getElementById('Case1').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
 
@@ -76,6 +81,9 @@ div:hover {
 
         // Display the test results only after test is done so that it does not affect repaint rect results.
         document.getElementById('testResults').style.display = "block";
+
+        if (window.testRunner)
+            testRunner.notifyDone();
     }
 </script>
 </head>

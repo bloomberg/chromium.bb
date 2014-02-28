@@ -2,6 +2,7 @@
 <html>
 <head>
 <script src="../../resources/js-test.js"></script>
+<script src="../../resources/run-after-display.js"></script>
 <link rel="stylesheet" type="text/css" href="resources/link-highlight-style.css">
 </head>
 <body onLoad="runTest();">
@@ -24,13 +25,13 @@ function runTest() {
 
     if (window.eventSender && window.testRunner) {
         eventSender.gestureShowPress(x, y);
-        window.testRunner.display();
-
-        nestingFrame.style.webkitTransform = "translateZ(0)";
-        window.testRunner.display();
-
-        nestingFrame.contentWindow.scrollTo(0, 20);
-        window.setTimeout(function() { window.testRunner.notifyDone(); }, 0);
+        runAfterDisplay(function() {
+            nestingFrame.style.webkitTransform = "translateZ(0)";
+            runAfterDisplay(function() {
+                nestingFrame.contentWindow.scrollTo(0, 20);
+                testRunner.notifyDone();
+            });
+        });
     } else {
         debug("This test requires DumpRenderTree.");
     }

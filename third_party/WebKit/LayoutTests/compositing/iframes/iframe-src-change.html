@@ -2,6 +2,7 @@
 
 <html>
 <head>
+  <script src="../../resources/run-after-display.js"></script>
   <style type="text/css" media="screen">
     iframe {
         border: 10px solid black;
@@ -30,18 +31,18 @@
 
     function doTest()
     {
-        // For some reason this delay is required for AppKit to not short-circuit the display.
-        window.setTimeout(function() {
-            var hadLayersBefore = false;
-            var hadLayersAfter = false;
+        var hadLayersBefore = false;
+        var hadLayersAfter = false;
+
+        // Need to paint for overlap testing.
+        runAfterDisplay(function() {
             if (window.testRunner) {
-                testRunner.display(); // Need to paint for overlap testing.
                 hadLayersBefore = window.internals.layerTreeAsText(document) != "";
             }
 
             document.getElementById('parent-iframe').src = "about:blank";
-            
-            window.setTimeout(function() {
+
+            runAfterDisplay(function() {
                 if (window.testRunner) {
                     hadLayersAfter = window.internals.layerTreeAsText(document) != "";
 
@@ -55,8 +56,8 @@
 
                     testRunner.notifyDone();
                 }
-            }, 0);
-        }, 0);
+            });
+        });
     }
     
     window.addEventListener('load', doTest, false);

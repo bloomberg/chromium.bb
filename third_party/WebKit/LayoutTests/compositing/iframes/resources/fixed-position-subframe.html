@@ -1,5 +1,6 @@
 <html>
 <head>
+<script src="../../../resources/run-after-display.js"></script>
 <style>
     body {
         height: 5000px;
@@ -23,12 +24,16 @@
 </head>
 <script>
     function doTest() {
-        if (window.testRunner)
+        if (window.testRunner) {
             testRunner.dumpAsTextWithPixelResults();
+            testRunner.waitUntilDone();
+        }
         window.scrollTo(0, 2000);
-        if (window.testRunner)
-            testRunner.display();
-        window.scrollTo(0, 1800);
+        runAfterDisplay(function() {
+            window.scrollTo(0, 1800);
+            if (window.testRunner)
+                testRunner.notifyDone();
+        });
     }
     window.addEventListener("load", doTest, false);
 </script>

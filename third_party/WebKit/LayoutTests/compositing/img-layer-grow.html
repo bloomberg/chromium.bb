@@ -1,6 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
+<script src="../resources/run-after-display.js"></script>
 <script src="resources/mock_scrollbars.js"></script>
 <script type="text/javascript" charset="utf-8">
 
@@ -12,13 +13,11 @@
   function doTest()
   {
     div = document.getElementById("div");
-    if (window.testRunner)
-      testRunner.display();
-    window.setTimeout(function() {
+    runAfterDisplay(function() {
       div.style.height = "1600px";
       if (window.testRunner)
         testRunner.notifyDone();
-    }, 0);
+    });
   }
 
   window.addEventListener('load', doTest, false);

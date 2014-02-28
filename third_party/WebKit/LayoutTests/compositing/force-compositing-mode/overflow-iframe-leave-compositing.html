@@ -1,5 +1,6 @@
 <html>
 <head>
+  <script src="../../resources/run-after-display.js"></script>
   <style>
     iframe {
       height: 150px;
@@ -14,15 +15,18 @@
     function doTest()
     {
       if (window.testRunner)
-        testRunner.display();
-      var iframe = document.getElementById("parent-iframe");
-      var box = iframe.contentDocument.getElementById("box");
-      box.setAttribute("style", "height:50px;width:50px;");
-      iframe.contentDocument.body.offsetWidth; // See bug 41999
-      if (window.testRunner) {
-        testRunner.dumpAsText();
-        document.getElementById('layertree').innerText = window.internals.layerTreeAsText(document);
-      }
+        testRunner.waitUntilDone();
+      runAfterDisplay(function() {
+        var iframe = document.getElementById("parent-iframe");
+        var box = iframe.contentDocument.getElementById("box");
+        box.setAttribute("style", "height:50px;width:50px;");
+        iframe.contentDocument.body.offsetWidth; // See bug 41999
+        if (window.testRunner) {
+          testRunner.dumpAsText();
+          document.getElementById('layertree').innerText = window.internals.layerTreeAsText(document);
+          testRunner.notifyDone();
+        }
+      });
     }
     window.addEventListener("load", doTest, false);
   </script>
