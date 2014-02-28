@@ -394,7 +394,10 @@ class ChunkDemuxerTest : public testing::Test {
   void AppendData(const std::string& source_id,
                   const uint8* data, size_t length) {
     EXPECT_CALL(host_, AddBufferedTimeRange(_, _)).Times(AnyNumber());
-    demuxer_->AppendData(source_id, data, length);
+
+    // TODO(wolenetz): Test timestamp offset updating once "sequence" append
+    // mode processing is implemented. See http://crbug.com/249422.
+    demuxer_->AppendData(source_id, data, length, NULL);
   }
 
   void AppendDataInPieces(const uint8* data, size_t length) {
@@ -1216,8 +1219,7 @@ TEST_F(ChunkDemuxerTest, AppendDataBeforeInit) {
   int info_tracks_size = 0;
   CreateInitSegment(HAS_AUDIO | HAS_VIDEO,
                     false, false, &info_tracks, &info_tracks_size);
-
-  demuxer_->AppendData(kSourceId, info_tracks.get(), info_tracks_size);
+  demuxer_->AppendData(kSourceId, info_tracks.get(), info_tracks_size, NULL);
 }
 
 // Make sure Read() callbacks are dispatched with the proper data.
@@ -1250,7 +1252,7 @@ TEST_F(ChunkDemuxerTest, OutOfOrderClusters) {
 
   // Verify that AppendData() can still accept more data.
   scoped_ptr<Cluster> cluster_c(GenerateCluster(45, 2));
-  demuxer_->AppendData(kSourceId, cluster_c->data(), cluster_c->size());
+  demuxer_->AppendData(kSourceId, cluster_c->data(), cluster_c->size(), NULL);
 }
 
 TEST_F(ChunkDemuxerTest, NonMonotonicButAboveClusterTimecode) {
@@ -1272,7 +1274,7 @@ TEST_F(ChunkDemuxerTest, NonMonotonicButAboveClusterTimecode) {
 
   // Verify that AppendData() ignores data after the error.
   scoped_ptr<Cluster> cluster_b(GenerateCluster(20, 2));
-  demuxer_->AppendData(kSourceId, cluster_b->data(), cluster_b->size());
+  demuxer_->AppendData(kSourceId, cluster_b->data(), cluster_b->size(), NULL);
 }
 
 TEST_F(ChunkDemuxerTest, BackwardsAndBeforeClusterTimecode) {
@@ -1294,7 +1296,7 @@ TEST_F(ChunkDemuxerTest, BackwardsAndBeforeClusterTimecode) {
 
   // Verify that AppendData() ignores data after the error.
   scoped_ptr<Cluster> cluster_b(GenerateCluster(6, 2));
-  demuxer_->AppendData(kSourceId, cluster_b->data(), cluster_b->size());
+  demuxer_->AppendData(kSourceId, cluster_b->data(), cluster_b->size(), NULL);
 }
 
 
@@ -1751,7 +1753,7 @@ TEST_F(ChunkDemuxerTest, ParseErrorDuringInit) {
   ASSERT_EQ(AddId(), ChunkDemuxer::kOk);
 
   uint8 tmp = 0;
-  demuxer_->AppendData(kSourceId, &tmp, 1);
+  demuxer_->AppendData(kSourceId, &tmp, 1, NULL);
 }
 
 TEST_F(ChunkDemuxerTest, AVHeadersWithAudioOnlyType) {

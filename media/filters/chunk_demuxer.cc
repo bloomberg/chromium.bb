@@ -108,8 +108,11 @@ class SourceState {
 
   // Appends new data to the StreamParser.
   // Returns true if the data was successfully appended. Returns false if an
-  // error occurred.
-  bool Append(const uint8* data, size_t length);
+  // error occurred.  Appending uses cached |timestamp_offset_| and may update
+  // |*timestamp_offset| if |timestamp_offset| is not NULL.
+  // TODO(wolenetz): Rework so |timestamp_offset_| is only valid during
+  // Append(). See http://crbug.com/347623.
+  bool Append(const uint8* data, size_t length, double* timestamp_offset);
 
   // Aborts the current append sequence and resets the parser.
   void Abort();
@@ -118,17 +121,15 @@ class SourceState {
   // ChunkDemuxerStreams managed by this object.
   void Remove(TimeDelta start, TimeDelta end, TimeDelta duration);
 
-  // Sets |timestamp_offset_| if possible.
-  // Returns if the offset was set. Returns false if the offset could not be
-  // updated at this time.
+  // Sets user-specified |timestamp_offset_| if possible.
+  // Returns true if the offset was set. Returns false if the offset could not
+  // be set at this time.
   bool SetTimestampOffset(TimeDelta timestamp_offset);
 
   // Sets |sequence_mode_| to |sequence_mode| if possible.
   // Returns true if the mode update was allowed. Returns false if the mode
   // could not be updated at this time.
   bool SetSequenceMode(bool sequence_mode);
-
-  TimeDelta timestamp_offset() const { return timestamp_offset_; }
 
   void set_append_window_start(TimeDelta start) {
     append_window_start_ = start;
@@ -223,6 +224,10 @@ class SourceState {
 
   // The offset to apply to media segment timestamps.
   TimeDelta timestamp_offset_;
+
+  // Flag that tracks whether or not the current Append() operation changed
+  // |timestamp_offset_|.
+  bool timestamp_offset_updated_by_append_;
 
   // Tracks the mode by which appended media is processed. If true, then
   // appended media is processed using "sequence" mode. Otherwise, appended
@@ -365,6 +370,7 @@ SourceState::SourceState(scoped_ptr<StreamParser> stream_parser,
                          const IncreaseDurationCB& increase_duration_cb)
     : create_demuxer_stream_cb_(create_demuxer_stream_cb),
       increase_duration_cb_(increase_duration_cb),
+      timestamp_offset_updated_by_append_(false),
       sequence_mode_(false),
       append_window_end_(kInfiniteDuration()),
       new_media_segment_(false),
@@ -424,9 +430,15 @@ bool SourceState::SetSequenceMode(bool sequence_mode) {
   return true;
 }
 
+bool SourceState::Append(const uint8* data, size_t length,
+                         double* timestamp_offset) {
+  timestamp_offset_updated_by_append_ = false;
+  bool err = stream_parser_->Parse(data, length);
 
-bool SourceState::Append(const uint8* data, size_t length) {
-  return stream_parser_->Parse(data, length);
+  if (timestamp_offset_updated_by_append_ && timestamp_offset)
+    *timestamp_offset = timestamp_offset_.InSecondsF();
+
+  return err;
 }
 
 void SourceState::Abort() {
@@ -1408,8 +1420,8 @@ Ranges<TimeDelta> ChunkDemuxer::GetBufferedRanges(const std::string& id) const {
 }
 
 void ChunkDemuxer::AppendData(const std::string& id,
-                              const uint8* data,
-                              size_t length) {
+                              const uint8* data, size_t length,
+                              double* timestamp_offset) {
   DVLOG(1) << "AppendData(" << id << ", " << length << ")";
 
   DCHECK(!id.empty());
@@ -1432,7 +1444,8 @@ void ChunkDemuxer::AppendData(const std::string& id,
     switch (state_) {
       case INITIALIZING:
         DCHECK(IsValidId(id));
-        if (!source_state_map_[id]->Append(data, length)) {
+        if (!source_state_map_[id]->Append(data, length,
+                                           timestamp_offset)) {
           ReportError_Locked(DEMUXER_ERROR_COULD_NOT_OPEN);
           return;
         }
@@ -1440,7 +1453,8 @@ void ChunkDemuxer::AppendData(const std::string& id,
 
       case INITIALIZED: {
         DCHECK(IsValidId(id));
-        if (!source_state_map_[id]->Append(data, length)) {
+        if (!source_state_map_[id]->Append(data, length,
+                                           timestamp_offset)) {
           ReportError_Locked(PIPELINE_ERROR_DECODE);
           return;
         }

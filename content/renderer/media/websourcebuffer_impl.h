@@ -26,6 +26,12 @@ class WebSourceBufferImpl : public blink::WebSourceBuffer {
   virtual bool setMode(AppendMode mode);
   virtual blink::WebTimeRanges buffered();
   virtual void append(const unsigned char* data, unsigned length);
+  // TODO(wolenetz): Remove the append(), above, and its implementation once the
+  // following append() signature is used by Blink. See http://crbug.com/249422.
+  virtual void append(
+      const unsigned char* data,
+      unsigned length,
+      double* timestamp_offset);
   virtual void abort();
   virtual void remove(double start, double end);
   virtual bool setTimestampOffset(double offset);

@@ -297,15 +297,18 @@ class MockMediaSource {
     DCHECK(chunk_demuxer_);
     DCHECK_LT(current_position_, file_data_->data_size());
     DCHECK_LE(current_position_ + size, file_data_->data_size());
+
+    // TODO(wolenetz): Test timestamp offset updating once "sequence" append
+    // mode processing is implemented. See http://crbug.com/249422.
     chunk_demuxer_->AppendData(
-        kSourceId, file_data_->data() + current_position_, size);
+        kSourceId, file_data_->data() + current_position_, size, NULL);
     current_position_ += size;
   }
 
   void AppendAtTime(const base::TimeDelta& timestampOffset,
                     const uint8* pData, int size) {
     CHECK(chunk_demuxer_->SetTimestampOffset(kSourceId, timestampOffset));
-    chunk_demuxer_->AppendData(kSourceId, pData, size);
+    chunk_demuxer_->AppendData(kSourceId, pData, size, NULL);
     CHECK(chunk_demuxer_->SetTimestampOffset(kSourceId, base::TimeDelta()));
   }
 
