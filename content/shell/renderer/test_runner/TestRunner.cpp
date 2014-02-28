@@ -41,11 +41,11 @@
 #include "content/shell/common/test_runner/WebPreferences.h"
 #include "content/shell/renderer/test_runner/MockWebSpeechInputController.h"
 #include "content/shell/renderer/test_runner/MockWebSpeechRecognizer.h"
-#include "content/shell/renderer/test_runner/NotificationPresenter.h"
 #include "content/shell/renderer/test_runner/TestInterfaces.h"
 #include "content/shell/renderer/test_runner/WebPermissions.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "content/shell/renderer/test_runner/WebTestProxy.h"
+#include "content/shell/renderer/test_runner/notification_presenter.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebDeviceMotionData.h"
 #include "third_party/WebKit/public/platform/WebDeviceOrientationData.h"
@@ -179,7 +179,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     , m_webView(0)
     , m_pageOverlay(0)
     , m_webPermissions(new WebPermissions)
-    , m_notificationPresenter(new NotificationPresenter)
+    , notification_presenter_(new content::NotificationPresenter)
 {
     // Initialize the map that associates methods of this class with the names
     // they will use when called by JavaScript. The actual binding of those
@@ -358,7 +358,7 @@ void TestRunner::setDelegate(WebTestDelegate* delegate)
 {
     m_delegate = delegate;
     m_webPermissions->setDelegate(delegate);
-    m_notificationPresenter->setDelegate(delegate);
+    notification_presenter_->set_delegate(delegate);
 }
 
 void TestRunner::setWebView(WebView* webView, WebTestProxyBase* proxy)
@@ -451,7 +451,7 @@ void TestRunner::reset()
 
     m_webPermissions->reset();
 
-    m_notificationPresenter->reset();
+    notification_presenter_->Reset();
     m_useMockTheme = true;
     m_pointerLocked = false;
     m_pointerLockPlannedResult = PointerLockWillSucceed;
@@ -711,9 +711,9 @@ bool TestRunner::shouldDumpResourcePriorities() const
     return m_shouldDumpResourcePriorities;
 }
 
-WebNotificationPresenter* TestRunner::notificationPresenter() const
+WebNotificationPresenter* TestRunner::notification_presenter() const
 {
-    return m_notificationPresenter.get();
+    return notification_presenter_.get();
 }
 
 bool TestRunner::requestPointerLock()
@@ -1825,7 +1825,7 @@ void TestRunner::grantWebNotificationPermission(const CppArgumentList& arguments
         result->set(false);
         return;
     }
-    m_notificationPresenter->grantPermission(WebString::fromUTF8(arguments[0].toString()));
+    notification_presenter_->GrantPermission(arguments[0].toString());
     result->set(true);
 }
 
@@ -1835,12 +1835,12 @@ void TestRunner::simulateLegacyWebNotificationClick(const CppArgumentList& argum
         result->set(false);
         return;
     }
-    result->set(m_notificationPresenter->simulateClick(WebString::fromUTF8(arguments[0].toString())));
+    result->set(notification_presenter_->SimulateClick(arguments[0].toString()));
 }
 
 void TestRunner::cancelAllActiveNotifications(const CppArgumentList& arguments, CppVariant* result)
 {
-    m_notificationPresenter->cancelAllActiveNotifications();
+    notification_presenter_->CancelAllActiveNotifications();
     result->set(true);
 }
 

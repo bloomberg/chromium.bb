@@ -61,9 +61,12 @@ class WebPermissionClient;
 class WebView;
 }
 
+namespace content {
+class NotificationPresenter;
+}
+
 namespace WebTestRunner {
 
-class NotificationPresenter;
 class TestInterfaces;
 class WebPermissions;
 class WebTestDelegate;
@@ -135,7 +138,7 @@ public:
     bool policyDelegateShouldNotifyDone() const;
     bool shouldInterceptPostMessage() const;
     bool shouldDumpResourcePriorities() const;
-    blink::WebNotificationPresenter* notificationPresenter() const;
+    blink::WebNotificationPresenter* notification_presenter() const;
     bool requestPointerLock();
     void requestPointerUnlock();
     bool isPointerLocked();
@@ -717,7 +720,7 @@ private:
     // WebPermissionClient mock object.
     scoped_ptr<WebPermissions> m_webPermissions;
 
-    scoped_ptr<NotificationPresenter> m_notificationPresenter;
+    scoped_ptr<content::NotificationPresenter> notification_presenter_;
 
     bool m_pointerLocked;
     enum {

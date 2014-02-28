@@ -944,7 +944,7 @@ void WebTestProxyBase::printPage(WebFrame* frame)
 
 WebNotificationPresenter* WebTestProxyBase::notificationPresenter()
 {
-    return m_testInterfaces->testRunner()->notificationPresenter();
+    return m_testInterfaces->testRunner()->notification_presenter();
 }
 
 WebMIDIClient* WebTestProxyBase::webMIDIClient()
