@@ -123,13 +123,13 @@ void SVGImage::setContainerSize(const IntSize& size)
     SVGSVGElement* rootElement = toSVGDocument(frame->document())->rootElement();
     if (!rootElement)
         return;
-    RenderSVGRoot* renderer = toRenderSVGRoot(rootElement->renderer());
-    if (!renderer)
-        return;
 
     FrameView* view = frameView();
     view->resize(this->containerSize());
 
+    RenderSVGRoot* renderer = toRenderSVGRoot(rootElement->renderer());
+    if (!renderer)
+        return;
     renderer->setContainerSize(size);
 }
 

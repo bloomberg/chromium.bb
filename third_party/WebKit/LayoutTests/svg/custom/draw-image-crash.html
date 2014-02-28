@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+This test passes if it does not crash and 'PASS' is printed.<br/>
+<img id="crash" src="resources/draw-image-crash.svg"></img>
+<script>
+if (window.testRunner)
+  testRunner.waitUntilDone();
+
+setTimeout(function() {
+  if (location.hash == '#done') {
+    document.write('PASS');
+    if (window.testRunner) {
+      testRunner.notifyDone();
+      testRunner.dumpAsText();
+    }
+  } else {
+    location.hash = 'done';
+    window.location.reload();
+  }
+}, 0);
+</script>
+</html>
+
