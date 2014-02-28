@@ -138,19 +138,22 @@ void AlternateFrameSizeButton::StartSetButtonsToSnapModeTimer(
     const ui::LocatedEvent& event) {
   set_buttons_to_snap_mode_timer_event_location_ = event.location();
   if (set_buttons_to_snap_mode_delay_ms_ == 0) {
-    SetButtonsToSnapMode();
+    AnimateButtonsToSnapMode();
   } else {
     set_buttons_to_snap_mode_timer_.Start(
         FROM_HERE,
         base::TimeDelta::FromMilliseconds(set_buttons_to_snap_mode_delay_ms_),
         this,
-        &AlternateFrameSizeButton::SetButtonsToSnapMode);
+        &AlternateFrameSizeButton::AnimateButtonsToSnapMode);
   }
 }
 
-void AlternateFrameSizeButton::SetButtonsToSnapMode() {
-  if (in_snap_mode_)
-    return;
+void AlternateFrameSizeButton::AnimateButtonsToSnapMode() {
+  SetButtonsToSnapMode(AlternateFrameSizeButtonDelegate::ANIMATE_YES);
+}
+
+void AlternateFrameSizeButton::SetButtonsToSnapMode(
+    AlternateFrameSizeButtonDelegate::Animate animate) {
   in_snap_mode_ = true;
 
   // When using a right-to-left layout the close button is left of the size
@@ -158,11 +161,11 @@ void AlternateFrameSizeButton::SetButtonsToSnapMode() {
   if (base::i18n::IsRTL()) {
     delegate_->SetButtonIcons(CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
                               CAPTION_BUTTON_ICON_LEFT_SNAPPED,
-                              AlternateFrameSizeButtonDelegate::ANIMATE_YES);
+                              animate);
   } else {
     delegate_->SetButtonIcons(CAPTION_BUTTON_ICON_LEFT_SNAPPED,
                               CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
-                              AlternateFrameSizeButtonDelegate::ANIMATE_YES);
+                              animate);
   }
 }
 
@@ -179,7 +182,7 @@ void AlternateFrameSizeButton::UpdateSnapType(const ui::LocatedEvent& event) {
         !views::View::ExceededDragThreshold(delta)) {
       return;
     }
-    SetButtonsToSnapMode();
+    AnimateButtonsToSnapMode();
   }
 
   gfx::Point event_location_in_screen(event.location());
@@ -188,6 +191,13 @@ void AlternateFrameSizeButton::UpdateSnapType(const ui::LocatedEvent& event) {
       GetButtonToHover(event_location_in_screen);
   bool press_size_button =
       to_hover || HitTestButton(this, event_location_in_screen);
+
+  if (to_hover) {
+    // Progress the minimize and close icon morph animations to the end if they
+    // are in progress.
+    SetButtonsToSnapMode(AlternateFrameSizeButtonDelegate::ANIMATE_NO);
+  }
+
   delegate_->SetHoveredAndPressedButtons(
       to_hover, press_size_button ? this : NULL);
 

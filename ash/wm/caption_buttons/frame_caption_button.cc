@@ -159,11 +159,6 @@ void FrameCaptionButton::OnGestureEvent(ui::GestureEvent* event) {
   CustomButton::OnGestureEvent(event);
 }
 
-void FrameCaptionButton::StateChanged() {
-  if (state_ == STATE_HOVERED || state_ == STATE_PRESSED)
-    swap_images_animation_->Reset(1);
-}
-
 const gfx::ImageSkia& FrameCaptionButton::GetIconImageToPaint() const {
   return paint_as_active_ ? icon_image_ : inactive_icon_image_;
 }

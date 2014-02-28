@@ -55,8 +55,13 @@ class ASH_EXPORT AlternateFrameSizeButton : public FrameCaptionButton {
   // Starts |set_buttons_to_snap_mode_timer_|.
   void StartSetButtonsToSnapModeTimer(const ui::LocatedEvent& event);
 
+  // Animates the buttons adjacent to the size button to snap left and right.
+  void AnimateButtonsToSnapMode();
+
   // Sets the buttons adjacent to the size button to snap left and right.
-  void SetButtonsToSnapMode();
+  // Passing in ANIMATE_NO progresses the animation (if any) to the end.
+  void SetButtonsToSnapMode(
+      AlternateFrameSizeButtonDelegate::Animate animate);
 
   // Updates |snap_type_|, whether the size button is pressed and whether any
   // other buttons are hovered.

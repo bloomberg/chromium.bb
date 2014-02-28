@@ -60,9 +60,8 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
   }
 
  protected:
-  // views::CustomButton overrides:
+  // views::CustomButton override:
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
-  virtual void StateChanged() OVERRIDE;
 
  private:
   // Returns the icon image to paint based on |paint_as_active_|.
