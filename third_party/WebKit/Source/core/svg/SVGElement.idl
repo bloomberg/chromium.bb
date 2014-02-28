@@ -30,7 +30,7 @@
     attribute DOMString xmllang;
     attribute DOMString xmlspace;
 
-    readonly attribute SVGAnimatedString className;
+    [MeasureAs=SVGClassName] readonly attribute SVGAnimatedString className;
     readonly attribute CSSStyleDeclaration style;
 
     // CSSValue was deprecated in 2003:
