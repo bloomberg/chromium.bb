@@ -54,7 +54,7 @@ std::string GetPlatformKeybindingKeyForAccelerator(
   // shortcut (1-to-1 relationship). That means two or more extensions can
   // register for the same media key so the extension ID needs to be added to
   // the key to make sure the key is unique.
-  if (extensions::CommandService::IsMediaKey(accelerator))
+  if (extensions::Command::IsMediaKey(accelerator))
     key += ":" + extension_id;
 
   return key;
@@ -90,7 +90,7 @@ bool CanAutoAssign(const ui::Accelerator& accelerator,
                    bool is_named_command,
                    bool is_global) {
   // Media Keys are non-exclusive, so allow auto-assigning them.
-  if (extensions::CommandService::IsMediaKey(accelerator))
+  if (extensions::Command::IsMediaKey(accelerator))
     return true;
 
   if (is_global) {
@@ -166,17 +166,6 @@ ProfileKeyedAPIFactory<CommandService>* CommandService::GetFactoryInstance() {
 // static
 CommandService* CommandService::Get(content::BrowserContext* context) {
   return ProfileKeyedAPIFactory<CommandService>::GetForProfile(context);
-}
-
-// static
-bool CommandService::IsMediaKey(const ui::Accelerator& accelerator) {
-  if (accelerator.modifiers() != 0)
-    return false;
-
-  return (accelerator.key_code() == ui::VKEY_MEDIA_NEXT_TRACK ||
-          accelerator.key_code() == ui::VKEY_MEDIA_PREV_TRACK ||
-          accelerator.key_code() == ui::VKEY_MEDIA_PLAY_PAUSE ||
-          accelerator.key_code() == ui::VKEY_MEDIA_STOP);
 }
 
 // static
@@ -261,7 +250,7 @@ bool CommandService::AddKeybindingPref(
     return false;
 
   // Media Keys are allowed to be used by named command only.
-  DCHECK(!IsMediaKey(accelerator) ||
+  DCHECK(!Command::IsMediaKey(accelerator) ||
          (command_name != manifest_values::kPageActionCommandEvent &&
           command_name != manifest_values::kBrowserActionCommandEvent));
 

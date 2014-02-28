@@ -380,6 +380,17 @@ std::string Command::AcceleratorToString(const ui::Accelerator& accelerator) {
   return shortcut;
 }
 
+// static
+bool Command::IsMediaKey(const ui::Accelerator& accelerator) {
+  if (accelerator.modifiers() != 0)
+    return false;
+
+  return (accelerator.key_code() == ui::VKEY_MEDIA_NEXT_TRACK ||
+          accelerator.key_code() == ui::VKEY_MEDIA_PREV_TRACK ||
+          accelerator.key_code() == ui::VKEY_MEDIA_PLAY_PAUSE ||
+          accelerator.key_code() == ui::VKEY_MEDIA_STOP);
+}
+
 bool Command::Parse(const base::DictionaryValue* command,
                     const std::string& command_name,
                     int index,

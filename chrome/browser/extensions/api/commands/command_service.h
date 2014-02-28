@@ -78,11 +78,6 @@ class CommandService : public ProfileKeyedAPI,
   // Convenience method to get the CommandService for a profile.
   static CommandService* Get(content::BrowserContext* context);
 
-  // Return true if the specified accelerator is one of the following multimedia
-  // keys: Next Track key, Previous Track key, Stop Media key, Play/Pause Media
-  // key, without any modifiers.
-  static bool IsMediaKey(const ui::Accelerator& accelerator);
-
   // Returns true if |extension| is permitted to and does remove the bookmark
   // shortcut key.
   static bool RemovesBookmarkShortcut(const extensions::Extension* extension);

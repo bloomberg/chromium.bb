@@ -7,6 +7,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/common/extensions/command.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
 
@@ -90,7 +91,13 @@ bool CommandsHandler::Parse(Extension* extension, base::string16* error) {
       return false;  // |error| already set.
 
     if (binding->accelerator().key_code() != ui::VKEY_UNKNOWN) {
-      if (++keybindings_found > kMaxCommandsWithKeybindingPerExtension) {
+      // Only media keys are allowed to work without modifiers, and because
+      // media keys aren't registered exclusively they should not count towards
+      // the max of four shortcuts per extension.
+      if (!Command::IsMediaKey(binding->accelerator()))
+        ++keybindings_found;
+
+      if (keybindings_found > kMaxCommandsWithKeybindingPerExtension) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
             manifest_errors::kInvalidKeyBindingTooMany,
             base::IntToString(kMaxCommandsWithKeybindingPerExtension));

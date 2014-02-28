@@ -7,9 +7,9 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
-#include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/command.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
@@ -144,7 +144,7 @@ void ExtensionKeybindingRegistry::AddEventTarget(
       std::make_pair(extension_id, command_name));
   // Shortcuts except media keys have only one target in the list. See comment
   // about |event_targets_|.
-  if (!extensions::CommandService::IsMediaKey(accelerator))
+  if (!extensions::Command::IsMediaKey(accelerator))
     DCHECK_EQ(1u, event_targets_[accelerator].size());
 }
 

@@ -9,7 +9,7 @@
 #include <IOKit/hidsystem/ev_keymap.h>
 
 #import "base/mac/foundation_util.h"
-#include "chrome/browser/extensions/api/commands/command_service.h"
+#include "chrome/common/extensions/command.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/event.h"
@@ -125,7 +125,7 @@ bool GlobalShortcutListenerMac::RegisterAcceleratorImpl(
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(accelerator_ids_.find(accelerator) == accelerator_ids_.end());
 
-  if (CommandService::IsMediaKey(accelerator)) {
+  if (Command::IsMediaKey(accelerator)) {
     if (!IsAnyMediaKeyRegistered()) {
       // If this is the first media key registered, start the event tap.
       StartWatchingMediaKeys();
@@ -153,7 +153,7 @@ void GlobalShortcutListenerMac::UnregisterAcceleratorImpl(
   DCHECK(accelerator_ids_.find(accelerator) != accelerator_ids_.end());
 
   // Unregister the hot_key if it's a keyboard shortcut.
-  if (!CommandService::IsMediaKey(accelerator))
+  if (!Command::IsMediaKey(accelerator))
     UnregisterHotKey(accelerator);
 
   // Remove hot_key from the mappings.
@@ -161,7 +161,7 @@ void GlobalShortcutListenerMac::UnregisterAcceleratorImpl(
   id_accelerators_.erase(key_id);
   accelerator_ids_.erase(accelerator);
 
-  if (CommandService::IsMediaKey(accelerator)) {
+  if (Command::IsMediaKey(accelerator)) {
     // If we unregistered a media key, and now no media keys are registered,
     // stop the media key tap.
     if (!IsAnyMediaKeyRegistered())
@@ -283,7 +283,7 @@ bool GlobalShortcutListenerMac::IsAnyMediaKeyRegistered() {
   // Iterate through registered accelerators, looking for media keys.
   AcceleratorIdMap::iterator it;
   for (it = accelerator_ids_.begin(); it != accelerator_ids_.end(); ++it) {
-    if (CommandService::IsMediaKey(it->first))
+    if (Command::IsMediaKey(it->first))
       return true;
   }
   return false;
@@ -292,7 +292,7 @@ bool GlobalShortcutListenerMac::IsAnyMediaKeyRegistered() {
 bool GlobalShortcutListenerMac::IsAnyHotKeyRegistered() {
   AcceleratorIdMap::iterator it;
   for (it = accelerator_ids_.begin(); it != accelerator_ids_.end(); ++it) {
-    if (!CommandService::IsMediaKey(it->first))
+    if (!Command::IsMediaKey(it->first))
       return true;
   }
   return false;

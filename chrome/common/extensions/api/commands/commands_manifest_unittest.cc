@@ -132,4 +132,9 @@ TEST_F(CommandsManifestTest, ChannelTests) {
   }
 }
 
+TEST_F(CommandsManifestTest, CommandManifestShouldNotCountMediaKeys) {
+  scoped_refptr<Extension> extension =
+      LoadAndExpectSuccess("command_should_not_count_media_keys.json");
+}
+
 }  // namespace extensions
