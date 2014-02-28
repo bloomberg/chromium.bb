@@ -167,10 +167,14 @@ void RenderWidgetHostViewChildFrame::RenderProcessGone(
     int error_code) {
   if (frame_connector_)
     frame_connector_->RenderProcessGone();
+  Destroy();
 }
 
 void RenderWidgetHostViewChildFrame::Destroy() {
-  frame_connector_ = NULL;
+  if (frame_connector_) {
+    frame_connector_->set_view(NULL);
+    frame_connector_ = NULL;
+  }
 
   host_->SetView(NULL);
   host_ = NULL;
