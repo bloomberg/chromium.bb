@@ -208,6 +208,7 @@ NavigationControllerImpl::NavigationControllerImpl(
       ssl_manager_(this),
       needs_reload_(false),
       is_initial_navigation_(true),
+      in_navigate_to_pending_entry_(false),
       pending_reload_(NO_RELOAD),
       get_timestamp_callback_(base::Bind(&base::Time::Now)),
       screenshot_manager_(new NavigationEntryScreenshotManager(this)) {
@@ -1580,7 +1581,13 @@ void NavigationControllerImpl::NavigateToPendingEntry(ReloadType reload_type) {
     pending_entry_ = entries_[pending_entry_index_].get();
   }
 
-  if (!delegate_->NavigateToPendingEntry(reload_type))
+  // This call does not support re-entrancy.  See http://crbug.com/347742.
+  CHECK(!in_navigate_to_pending_entry_);
+  in_navigate_to_pending_entry_ = true;
+  bool success = delegate_->NavigateToPendingEntry(reload_type);
+  in_navigate_to_pending_entry_ = false;
+
+  if (!success)
     DiscardNonCommittedEntries();
 
   // If the entry is being restored and doesn't have a SiteInstance yet, fill
@@ -1664,6 +1671,10 @@ void NavigationControllerImpl::DiscardNonCommittedEntriesInternal() {
 }
 
 void NavigationControllerImpl::DiscardPendingEntry() {
+  // It is not safe to call DiscardPendingEntry while NavigateToEntry is in
+  // progress, since this will cause a use-after-free.  http://crbug.com/347742.
+  CHECK(!in_navigate_to_pending_entry_);
+
   if (pending_entry_index_ == -1)
     delete pending_entry_;
   pending_entry_ = NULL;

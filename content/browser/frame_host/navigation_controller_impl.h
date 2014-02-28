@@ -387,6 +387,9 @@ class CONTENT_EXPORT NavigationControllerImpl
   // Becomes false when initial navigation commits.
   bool is_initial_navigation_;
 
+  // Prevent unsafe re-entrant calls to NavigateToPendingEntry.
+  bool in_navigate_to_pending_entry_;
+
   // Used to find the appropriate SessionStorageNamespace for the storage
   // partition of a NavigationEntry.
   //

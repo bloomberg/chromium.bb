@@ -48,38 +48,25 @@ const struct TabReloadTestCase {
 
 class FakeWebContentsObserver : public content::WebContentsObserver {
  public:
-  FakeWebContentsObserver(BrowserInstantControllerTest* base_test,
-                          content::WebContents* contents)
+  explicit FakeWebContentsObserver(content::WebContents* contents)
       : WebContentsObserver(contents),
         contents_(contents),
-        base_test_(base_test),
         url_(contents->GetURL()),
         num_reloads_(0) {}
 
   virtual void DidStartNavigationToPendingEntry(
       const GURL& url,
       content::NavigationController::ReloadType reload_type) OVERRIDE {
-    // The tab reload event doesn't work with BrowserWithTestWindowTest.
-    // So we capture the DidStartNavigationToPendingEntry, and use the
-    // BrowserWithTestWindowTest::NavigateAndCommit to simulate the complete
-    // reload. Note that this will again trigger
-    // DidStartNavigationToPendingEntry, so we remove this as observer.
-    content::NavigationController* controller =
-        &web_contents()->GetController();
-    Observe(NULL);
-
     if (url_ == url)
       num_reloads_++;
+  }
 
-    base_test_->NavigateAndCommit(controller, url);
+  const GURL url() const {
+    return url_;
   }
 
   int num_reloads() const {
     return num_reloads_;
-  }
-
-  content::WebContents* contents() {
-    return contents_;
   }
 
  protected:
@@ -91,7 +78,6 @@ class FakeWebContentsObserver : public content::WebContentsObserver {
 
  private:
   content::WebContents* contents_;
-  BrowserInstantControllerTest* base_test_;
   const GURL& url_;
   int num_reloads_;
 };
@@ -112,7 +98,7 @@ TEST_F(BrowserInstantControllerTest, DefaultSearchProviderChanged) {
       << test.description;
 
     // Setup an observer to verify reload or absence thereof.
-    observers.push_back(new FakeWebContentsObserver(this, contents));
+    observers.push_back(new FakeWebContentsObserver(contents));
   }
 
   SetDefaultSearchProvider("https://bar.com/");
@@ -120,13 +106,14 @@ TEST_F(BrowserInstantControllerTest, DefaultSearchProviderChanged) {
   for (size_t i = 0; i < num_tests; ++i) {
     FakeWebContentsObserver* observer = observers[i];
     const TabReloadTestCase& test = kTabReloadTestCases[i];
-    content::WebContents* contents = observer->contents();
 
-    // Validate final instant state.
-    EXPECT_EQ(test.end_in_instant_process,
-        instant_service_->IsInstantProcess(
-          contents->GetRenderProcessHost()->GetID()))
-      << test.description;
+    if (test.should_reload) {
+      // Validate final instant state.
+      EXPECT_EQ(
+          test.end_in_instant_process,
+          chrome::ShouldAssignURLToInstantRenderer(observer->url(), profile()))
+        << test.description;
+    }
 
     // Ensure only the expected tabs(contents) reloaded.
     EXPECT_EQ(test.should_reload ? 1 : 0, observer->num_reloads())
@@ -150,7 +137,7 @@ TEST_F(BrowserInstantControllerTest, GoogleBaseURLUpdated) {
       << test.description;
 
     // Setup an observer to verify reload or absence thereof.
-    observers.push_back(new FakeWebContentsObserver(this, contents));
+    observers.push_back(new FakeWebContentsObserver(contents));
   }
 
   NotifyGoogleBaseURLUpdate("https://www.google.es/");
@@ -158,13 +145,14 @@ TEST_F(BrowserInstantControllerTest, GoogleBaseURLUpdated) {
   for (size_t i = 0; i < num_tests; ++i) {
     const TabReloadTestCase& test = kTabReloadTestCases[i];
     FakeWebContentsObserver* observer = observers[i];
-    content::WebContents* contents = observer->contents();
 
-    // Validate final instant state.
-    EXPECT_EQ(test.end_in_instant_process,
-        instant_service_->IsInstantProcess(
-          contents->GetRenderProcessHost()->GetID()))
-      << test.description;
+    if (test.should_reload) {
+      // Validate final instant state.
+      EXPECT_EQ(
+          test.end_in_instant_process,
+          chrome::ShouldAssignURLToInstantRenderer(observer->url(), profile()))
+        << test.description;
+    }
 
     // Ensure only the expected tabs(contents) reloaded.
     EXPECT_EQ(test.should_reload ? 1 : 0, observer->num_reloads())
