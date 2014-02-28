@@ -1101,6 +1101,7 @@ WGC3Dboolean WebGraphicsContext3DInProcessCommandBufferImpl::
 
 GrGLInterface* WebGraphicsContext3DInProcessCommandBufferImpl::
     createGrGLInterface() {
+  makeContextCurrent();
   return skia_bindings::CreateCommandBufferSkiaGLBinding();
 }
 

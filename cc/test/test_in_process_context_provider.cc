@@ -85,14 +85,17 @@ static void BindGrContextCallback(const GrGLInterface* interface) {
   TestInProcessContextProvider* context_provider =
       reinterpret_cast<TestInProcessContextProvider*>(interface->fCallbackData);
 
-  // Make sure the gles2 library is initialized first on exactly one thread.
-  g_gles2_initializer.Get();
   gles2::SetGLContext(context_provider->ContextGL());
 }
 
 class GrContext* TestInProcessContextProvider::GrContext() {
   if (gr_context_)
     return gr_context_.get();
+
+  // The GrGLInterface factory will make GL calls using the C GLES2 interface.
+  // Make sure the gles2 library is initialized first on exactly one thread.
+  g_gles2_initializer.Get();
+  gles2::SetGLContext(ContextGL());
 
   skia::RefPtr<GrGLInterface> interface =
       skia::AdoptRef(skia_bindings::CreateCommandBufferSkiaGLBinding());

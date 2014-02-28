@@ -1341,6 +1341,7 @@ DELEGATE_TO_GL_5(renderbufferStorageMultisampleEXT,
                  WGC3Denum, WGC3Dsizei, WGC3Dsizei)
 
 GrGLInterface* WebGraphicsContext3DCommandBufferImpl::createGrGLInterface() {
+  makeContextCurrent();
   return skia_bindings::CreateCommandBufferSkiaGLBinding();
 }
 
