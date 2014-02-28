@@ -33,7 +33,7 @@ function test()
     WebInspector.domAgent._setDocument(null);
 
     InspectorTest.addBackendResponseSniffer(DOMAgent, "requestChildNodes", function() {
-        WebInspector.settings.lastActivePanel.set("audits");
+        WebInspector.inspectorView._lastActivePanelSetting.set("audits");
         InspectorTest.evaluateInPage("inspectorIsReady()");
     });
     WebInspector.showPanel("elements");
