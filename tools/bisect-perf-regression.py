@@ -1144,6 +1144,10 @@ class BisectPerformanceMetrics(object):
       #  1. trunk revision N has description "Version X.Y.Z"
       #  2. bleeding_edge revision (N-1) has description "Prepare push to
       #     trunk. Now working on X.Y.(Z+1)."
+      #
+      # As of 01/24/2014, V8 trunk descriptions are formatted:
+      # "Version 3.X.Y (based on bleeding_edge revision rZ)"
+      # So we can just try parsing that out first and fall back to the old way.
       v8_dir = self._GetDepotDirectory('v8')
       v8_bleeding_edge_dir = self._GetDepotDirectory('v8_bleeding_edge')
 
@@ -1155,11 +1159,25 @@ class BisectPerformanceMetrics(object):
       regex_results = version_re.search(revision_info['subject'])
 
       if regex_results:
-        version = regex_results.group('values')
+        git_revision = None
 
-        git_revision = self.source_control.ResolveToRevision(
-            int(svn_revision) - 1, 'v8_bleeding_edge', -1,
-            cwd=v8_bleeding_edge_dir)
+        # Look for "based on bleeding_edge" and parse out revision
+        if 'based on bleeding_edge' in revision_info['subject']:
+          try:
+            bleeding_edge_revision = revision_info['subject'].split(
+                'bleeding_edge revision r')[1]
+            bleeding_edge_revision = int(bleeding_edge_revision.split(')')[0])
+            git_revision = self.source_control.ResolveToRevision(
+                bleeding_edge_revision, 'v8_bleeding_edge', 1,
+                cwd=v8_bleeding_edge_dir)
+          except IndexError, ValueError:
+            pass
+
+        if not git_revision:
+          # Wasn't successful, try the old way of looking for "Prepare push to"
+          git_revision = self.source_control.ResolveToRevision(
+              int(svn_revision) - 1, 'v8_bleeding_edge', -1,
+              cwd=v8_bleeding_edge_dir)
 
         if git_revision:
           revision_info = self.source_control.QueryRevisionInfo(git_revision,
