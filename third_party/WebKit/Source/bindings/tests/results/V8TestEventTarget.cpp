@@ -116,7 +116,7 @@ static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo
     RefPtr<Node> result = imp->item(index);
     if (!result)
         return;
-    v8SetReturnValueFast(info, result.release(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(result.release()), imp);
 }
 
 static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -178,7 +178,7 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
     RefPtr<Node> result = imp->namedItem(propertyName);
     if (!result)
         return;
-    v8SetReturnValueFast(info, result.release(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(result.release()), imp);
 }
 
 static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)

@@ -591,8 +591,8 @@ V8_SET_RETURN_VALUE = {
     'ScriptValue': 'v8SetReturnValue(info, {cpp_value})',
     'SerializedScriptValue': 'v8SetReturnValue(info, {cpp_value})',
     # DOMWrapper
-    'DOMWrapperForMainWorld': 'v8SetReturnValueForMainWorld(info, {cpp_value})',
-    'DOMWrapperFast': 'v8SetReturnValueFast(info, {cpp_value}, {script_wrappable})',
+    'DOMWrapperForMainWorld': 'v8SetReturnValueForMainWorld(info, WTF::getPtr({cpp_value}))',
+    'DOMWrapperFast': 'v8SetReturnValueFast(info, WTF::getPtr({cpp_value}), {script_wrappable})',
     'DOMWrapperDefault': 'v8SetReturnValue(info, {cpp_value})',
 }
 

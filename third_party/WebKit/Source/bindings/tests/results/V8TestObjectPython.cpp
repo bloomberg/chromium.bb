@@ -534,7 +534,7 @@ static void unsignedShortAttributeAttributeSetterCallback(v8::Local<v8::String>,
 static void testInterfaceEmptyAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->testInterfaceEmptyAttribute(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->testInterfaceEmptyAttribute()), imp);
 }
 
 static void testInterfaceEmptyAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -561,7 +561,7 @@ static void testInterfaceEmptyAttributeAttributeSetterCallback(v8::Local<v8::Str
 static void testObjectPythonAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->testObjectPythonAttribute(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->testObjectPythonAttribute()), imp);
 }
 
 static void testObjectPythonAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -754,7 +754,7 @@ static void xmlAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local
 static void nodeFilterAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->nodeFilterAttribute(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->nodeFilterAttribute()), imp);
 }
 
 static void nodeFilterAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -862,7 +862,7 @@ static void promiseAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::L
 static void windowAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->windowAttribute(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->windowAttribute()), imp);
 }
 
 static void windowAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -889,7 +889,7 @@ static void windowAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Lo
 static void documentAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->documentAttribute(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->documentAttribute()), imp);
 }
 
 static void documentAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -916,7 +916,7 @@ static void documentAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::
 static void documentFragmentAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->documentFragmentAttribute(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->documentFragmentAttribute()), imp);
 }
 
 static void documentFragmentAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -943,7 +943,7 @@ static void documentFragmentAttributeAttributeSetterCallback(v8::Local<v8::Strin
 static void documentTypeAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->documentTypeAttribute(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->documentTypeAttribute()), imp);
 }
 
 static void documentTypeAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -970,7 +970,7 @@ static void documentTypeAttributeAttributeSetterCallback(v8::Local<v8::String>, 
 static void elementAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->elementAttribute(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->elementAttribute()), imp);
 }
 
 static void elementAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -997,7 +997,7 @@ static void elementAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::L
 static void nodeAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->nodeAttribute(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->nodeAttribute()), imp);
 }
 
 static void nodeAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1024,7 +1024,7 @@ static void nodeAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Loca
 static void shadowRootAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->shadowRootAttribute(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->shadowRootAttribute()), imp);
 }
 
 static void shadowRootAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1051,7 +1051,7 @@ static void shadowRootAttributeAttributeSetterCallback(v8::Local<v8::String>, v8
 static void arrayBufferAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->arrayBufferAttribute(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->arrayBufferAttribute()), imp);
 }
 
 static void arrayBufferAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1078,7 +1078,7 @@ static void arrayBufferAttributeAttributeSetterCallback(v8::Local<v8::String>, v
 static void float32ArrayAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->float32ArrayAttribute(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->float32ArrayAttribute()), imp);
 }
 
 static void float32ArrayAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1105,7 +1105,7 @@ static void float32ArrayAttributeAttributeSetterCallback(v8::Local<v8::String>, 
 static void uint8ArrayAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->uint8ArrayAttribute(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->uint8ArrayAttribute()), imp);
 }
 
 static void uint8ArrayAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1132,7 +1132,7 @@ static void uint8ArrayAttributeAttributeSetterCallback(v8::Local<v8::String>, v8
 static void selfAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->self(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->self()), imp);
 }
 
 static void selfAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1145,7 +1145,7 @@ static void selfAttributeGetterCallback(v8::Local<v8::String>, const v8::Propert
 static void readonlyEventTargetAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->readonlyEventTargetAttribute(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->readonlyEventTargetAttribute()), imp);
 }
 
 static void readonlyEventTargetAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1158,7 +1158,7 @@ static void readonlyEventTargetAttributeAttributeGetterCallback(v8::Local<v8::St
 static void readonlyWindowAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->readonlyWindowAttribute(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->readonlyWindowAttribute()), imp);
 }
 
 static void readonlyWindowAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1171,7 +1171,7 @@ static void readonlyWindowAttributeAttributeGetterCallback(v8::Local<v8::String>
 static void htmlCollectionAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->htmlCollectionAttribute(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->htmlCollectionAttribute()), imp);
 }
 
 static void htmlCollectionAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1184,7 +1184,7 @@ static void htmlCollectionAttributeAttributeGetterCallback(v8::Local<v8::String>
 static void htmlElementAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->htmlElementAttribute(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->htmlElementAttribute()), imp);
 }
 
 static void htmlElementAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1351,7 +1351,7 @@ static void nullableTestInterfaceAttributeAttributeGetter(const v8::PropertyCall
         v8SetReturnValueNull(info);
         return;
     }
-    v8SetReturnValueFast(info, jsValue.release(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(jsValue.release()), imp);
 }
 
 static void nullableTestInterfaceAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1660,7 +1660,7 @@ static void checkSecurityForNodeReadonlyDocumentAttributeAttributeGetter(const v
         exceptionState.throwIfNeeded();
         return;
     }
-    v8SetReturnValueFast(info, imp->checkSecurityForNodeReadonlyDocumentAttribute(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->checkSecurityForNodeReadonlyDocumentAttribute()), imp);
 }
 
 static void checkSecurityForNodeReadonlyDocumentAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -2511,7 +2511,7 @@ static void activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeA
 static void locationAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->location(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->location()), imp);
 }
 
 static void locationAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -2541,7 +2541,7 @@ static void locationAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8:
 static void locationWithExceptionAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->locationWithException(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->locationWithException()), imp);
 }
 
 static void locationWithExceptionAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -2571,7 +2571,7 @@ static void locationWithExceptionAttributeSetterCallback(v8::Local<v8::String>, 
 static void locationWithCallWithAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->locationWithCallWith(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->locationWithCallWith()), imp);
 }
 
 static void locationWithCallWithAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -2601,7 +2601,7 @@ static void locationWithCallWithAttributeSetterCallback(v8::Local<v8::String>, v
 static void locationWithPerWorldBindingsAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->locationWithPerWorldBindings(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->locationWithPerWorldBindings()), imp);
 }
 
 static void locationWithPerWorldBindingsAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -2631,7 +2631,7 @@ static void locationWithPerWorldBindingsAttributeSetterCallback(v8::Local<v8::St
 static void locationWithPerWorldBindingsAttributeGetterForMainWorld(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueForMainWorld(info, imp->locationWithPerWorldBindings());
+    v8SetReturnValueForMainWorld(info, WTF::getPtr(imp->locationWithPerWorldBindings()));
 }
 
 static void locationWithPerWorldBindingsAttributeGetterCallbackForMainWorld(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -2759,7 +2759,7 @@ static void raisesExceptionTestInterfaceEmptyAttributeAttributeGetter(const v8::
     RefPtr<TestInterfaceEmpty> jsValue = imp->raisesExceptionTestInterfaceEmptyAttribute(exceptionState);
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
-    v8SetReturnValueFast(info, jsValue.release(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(jsValue.release()), imp);
 }
 
 static void raisesExceptionTestInterfaceEmptyAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -2831,7 +2831,7 @@ static void cachedAttributeRaisesExceptionGetterAnyAttributeAttributeSetterCallb
 static void reflectTestInterfaceAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->fastGetAttribute(HTMLNames::reflecttestinterfaceattributeAttr), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->fastGetAttribute(HTMLNames::reflecttestinterfaceattributeAttr)), imp);
 }
 
 static void reflectTestInterfaceAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -2860,7 +2860,7 @@ static void reflectTestInterfaceAttributeAttributeSetterCallback(v8::Local<v8::S
 static void reflectReflectedNameAttributeTestAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->fastGetAttribute(HTMLNames::reflectedNameAttributeAttr), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->fastGetAttribute(HTMLNames::reflectedNameAttributeAttr)), imp);
 }
 
 static void reflectReflectedNameAttributeTestAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -3446,7 +3446,7 @@ static void replaceableReadonlyLongAttributeAttributeGetterCallback(v8::Local<v8
 static void locationReplaceableAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->locationReplaceable(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->locationReplaceable()), imp);
 }
 
 static void locationReplaceableAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -3650,7 +3650,7 @@ static void strictTypeCheckingFloatAttributeAttributeSetterCallback(v8::Local<v8
 static void strictTypeCheckingTestInterfaceAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->strictTypeCheckingTestInterfaceAttribute(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->strictTypeCheckingTestInterfaceAttribute()), imp);
 }
 
 static void strictTypeCheckingTestInterfaceAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -3882,7 +3882,7 @@ static void anotherStringAttributeAttributeSetterCallback(v8::Local<v8::String>,
 static void testInterfacePythonAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->testInterfacePythonAttribute(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->testInterfacePythonAttribute()), imp);
 }
 
 static void testInterfacePythonAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -3915,7 +3915,7 @@ static void testInterfaceWillBeGarbageCollectedAttributeAttributeGetter(const v8
         v8SetReturnValueNull(info);
         return;
     }
-    v8SetReturnValueFast(info, jsValue.release(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(jsValue.release()), imp);
 }
 
 static void testInterfaceWillBeGarbageCollectedAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)

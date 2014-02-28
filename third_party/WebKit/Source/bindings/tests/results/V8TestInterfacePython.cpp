@@ -84,7 +84,7 @@ template <typename T> void V8_USE(T) { }
 static void testInterfacePythonAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->testInterfacePythonAttribute(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->testInterfacePythonAttribute()), imp);
 }
 
 static void testInterfacePythonAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -277,7 +277,7 @@ static void implementsNodeAttributeAttributeGetter(const v8::PropertyCallbackInf
 {
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
     ASSERT(imp);
-    v8SetReturnValueFast(info, TestImplements::implementsNodeAttribute(*imp), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(TestImplements::implementsNodeAttribute(*imp)), imp);
 }
 
 static void implementsNodeAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -344,7 +344,7 @@ static void implementsRuntimeEnabledNodeAttributeAttributeGetter(const v8::Prope
 {
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
     ASSERT(imp);
-    v8SetReturnValueFast(info, TestImplements::implementsRuntimeEnabledNodeAttribute(*imp), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(TestImplements::implementsRuntimeEnabledNodeAttribute(*imp)), imp);
 }
 
 static void implementsRuntimeEnabledNodeAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -379,7 +379,7 @@ static void implementsPerContextEnabledNodeAttributeAttributeGetter(const v8::Pr
 {
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
     ASSERT(imp);
-    v8SetReturnValueFast(info, TestImplements::implementsPerContextEnabledNodeAttribute(*imp), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(TestImplements::implementsPerContextEnabledNodeAttribute(*imp)), imp);
 }
 
 static void implementsPerContextEnabledNodeAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)

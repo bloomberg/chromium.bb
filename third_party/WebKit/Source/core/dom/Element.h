@@ -433,9 +433,9 @@ public:
     bool matches(const String& selectors, ExceptionState&);
     virtual bool shouldAppearIndeterminate() const { return false; }
 
-    DOMTokenList* classList();
+    DOMTokenList& classList();
 
-    DOMStringMap* dataset();
+    DOMStringMap& dataset();
 
     virtual bool isMediaElement() const { return false; }
 

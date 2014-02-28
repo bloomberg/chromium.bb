@@ -165,7 +165,7 @@ void MediaControlPanelElement::setPosition(const LayoutPoint& position)
     setInlineStyleProperty(CSSPropertyMarginLeft, 0.0, CSSPrimitiveValue::CSS_PX);
     setInlineStyleProperty(CSSPropertyMarginTop, 0.0, CSSPrimitiveValue::CSS_PX);
 
-    classList()->add("dragged", IGNORE_EXCEPTION);
+    classList().add("dragged", IGNORE_EXCEPTION);
 }
 
 void MediaControlPanelElement::resetPosition()
@@ -175,7 +175,7 @@ void MediaControlPanelElement::resetPosition()
     removeInlineStyleProperty(CSSPropertyMarginLeft);
     removeInlineStyleProperty(CSSPropertyMarginTop);
 
-    classList()->remove("dragged", IGNORE_EXCEPTION);
+    classList().remove("dragged", IGNORE_EXCEPTION);
 
     m_cumulativeDragOffset.setX(0);
     m_cumulativeDragOffset.setY(0);

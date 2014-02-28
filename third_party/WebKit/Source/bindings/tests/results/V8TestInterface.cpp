@@ -164,7 +164,7 @@ static void implementsNodeAttributeAttributeGetter(const v8::PropertyCallbackInf
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     ASSERT(imp);
-    v8SetReturnValueFast(info, TestImplements::implementsNodeAttribute(*imp), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(TestImplements::implementsNodeAttribute(*imp)), imp);
 }
 
 static void implementsNodeAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -225,7 +225,7 @@ static void implementsRuntimeEnabledNodeAttributeAttributeGetter(const v8::Prope
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     ASSERT(imp);
-    v8SetReturnValueFast(info, TestImplements::implementsRuntimeEnabledNodeAttribute(*imp), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(TestImplements::implementsRuntimeEnabledNodeAttribute(*imp)), imp);
 }
 
 static void implementsRuntimeEnabledNodeAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -254,7 +254,7 @@ static void implementsPerContextEnabledNodeAttributeAttributeGetter(const v8::Pr
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     ASSERT(imp);
-    v8SetReturnValueFast(info, TestImplements::implementsPerContextEnabledNodeAttribute(*imp), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(TestImplements::implementsPerContextEnabledNodeAttribute(*imp)), imp);
 }
 
 static void implementsPerContextEnabledNodeAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -388,7 +388,7 @@ static void supplementalNodeAttributeGetter(const v8::PropertyCallbackInfo<v8::V
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     ASSERT(imp);
-    v8SetReturnValueFast(info, TestPartialInterface::supplementalNode(*imp), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(TestPartialInterface::supplementalNode(*imp)), imp);
 }
 #endif // ENABLE(CONDITION_PARTIAL)
 
@@ -425,7 +425,7 @@ static void Node13AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& inf
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
     ASSERT(imp);
-    v8SetReturnValueFast(info, TestPartialInterface::node13(*imp), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(TestPartialInterface::node13(*imp)), imp);
 }
 #endif // ENABLE(CONDITION_PARTIAL)
 
@@ -657,11 +657,11 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
     if (!result0Enabled && !result1Enabled)
         return;
     if (result0Enabled) {
-        v8SetReturnValueFast(info, result0.release(), imp);
+        v8SetReturnValueFast(info, WTF::getPtr(result0.release()), imp);
         return;
     }
     if (result1Enabled) {
-        v8SetReturnValueFast(info, result1.release(), imp);
+        v8SetReturnValueFast(info, WTF::getPtr(result1.release()), imp);
         return;
     }
     v8SetReturnValueNull(info);

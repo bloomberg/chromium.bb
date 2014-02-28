@@ -2767,20 +2767,20 @@ bool Element::matches(const String& selectors, ExceptionState& exceptionState)
     return selectorQuery->matches(*this);
 }
 
-DOMTokenList* Element::classList()
+DOMTokenList& Element::classList()
 {
     ElementRareData& rareData = ensureElementRareData();
     if (!rareData.classList())
         rareData.setClassList(ClassList::create(this));
-    return rareData.classList();
+    return *rareData.classList();
 }
 
-DOMStringMap* Element::dataset()
+DOMStringMap& Element::dataset()
 {
     ElementRareData& rareData = ensureElementRareData();
     if (!rareData.dataset())
         rareData.setDataset(DatasetDOMStringMap::create(this));
-    return rareData.dataset();
+    return *rareData.dataset();
 }
 
 KURL Element::getURLAttribute(const QualifiedName& name) const

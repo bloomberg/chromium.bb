@@ -530,7 +530,7 @@ static void eventHandlerAttrAttributeSetterCallback(v8::Local<v8::String>, v8::L
 static void testObjAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObject* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->testObjAttr(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->testObjAttr()), imp);
 }
 
 static void testObjAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -587,7 +587,7 @@ static void attrWithJSGetterAndSetterAttributeSetterCallback(const v8::FunctionC
 static void XMLObjAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObject* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->xmlObjAttr(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->xmlObjAttr()), imp);
 }
 
 static void XMLObjAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1400,7 +1400,7 @@ static void limitedWithEmptyMissingInvalidAttributeAttributeGetterCallback(v8::L
 static void typedArrayAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObject* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->typedArrayAttr(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->typedArrayAttr()), imp);
 }
 
 static void typedArrayAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1563,7 +1563,7 @@ static void withExecutionContextAttributeAttributeGetter(const v8::PropertyCallb
 {
     TestObject* imp = V8TestObject::toNative(info.Holder());
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    v8SetReturnValueFast(info, imp->withExecutionContextAttribute(scriptContext), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->withExecutionContextAttribute(scriptContext)), imp);
 }
 
 static void withExecutionContextAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1591,7 +1591,7 @@ static void withExecutionContextAttributeAttributeSetterCallback(v8::Local<v8::S
 static void withActiveWindowAndFirstWindowAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObject* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->withActiveWindowAndFirstWindowAttribute(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->withActiveWindowAndFirstWindowAttribute()), imp);
 }
 
 static void withActiveWindowAndFirstWindowAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -1622,7 +1622,7 @@ static void withScriptStateAttributeRaisesAttributeGetter(const v8::PropertyCall
     RefPtr<TestObject> jsValue = imp->withScriptStateAttributeRaises(exceptionState);
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
-    v8SetReturnValueFast(info, jsValue.release(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(jsValue.release()), imp);
 }
 
 static void withScriptStateAttributeRaisesAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -2253,7 +2253,7 @@ static void contentDocumentAttributeGetter(const v8::PropertyCallbackInfo<v8::Va
         exceptionState.throwIfNeeded();
         return;
     }
-    v8SetReturnValueFast(info, imp->contentDocument(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->contentDocument()), imp);
 }
 
 static void contentDocumentAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -2484,7 +2484,7 @@ static void perWorldReadOnlyAttributeAttributeGetterCallbackForMainWorld(v8::Loc
 static void perWorldAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObject* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->perWorldAttribute(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->perWorldAttribute()), imp);
 }
 
 static void perWorldAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -2511,7 +2511,7 @@ static void perWorldAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::
 static void perWorldAttributeAttributeGetterForMainWorld(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObject* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValueForMainWorld(info, imp->perWorldAttribute());
+    v8SetReturnValueForMainWorld(info, WTF::getPtr(imp->perWorldAttribute()));
 }
 
 static void perWorldAttributeAttributeGetterCallbackForMainWorld(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -3107,7 +3107,7 @@ static void deprecatedAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Loc
 static void locationAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObject* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->location(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->location()), imp);
 }
 
 static void locationAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -3137,7 +3137,7 @@ static void locationAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8:
 static void locationWithExceptionAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObject* imp = V8TestObject::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->locationWithException(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->locationWithException()), imp);
 }
 
 static void locationWithExceptionAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -5215,7 +5215,7 @@ static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo
     RefPtr<Node> result = imp->anonymousIndexedGetter(index);
     if (!result)
         return;
-    v8SetReturnValueFast(info, result.release(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(result.release()), imp);
 }
 
 static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)

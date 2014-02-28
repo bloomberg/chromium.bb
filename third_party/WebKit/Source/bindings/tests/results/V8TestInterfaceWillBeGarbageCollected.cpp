@@ -74,7 +74,7 @@ template <typename T> void V8_USE(T) { }
 static void attr1AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterfaceWillBeGarbageCollected* imp = V8TestInterfaceWillBeGarbageCollected::toNative(info.Holder());
-    v8SetReturnValueFast(info, imp->attr1(), imp);
+    v8SetReturnValueFast(info, WTF::getPtr(imp->attr1()), imp);
 }
 
 static void attr1AttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)

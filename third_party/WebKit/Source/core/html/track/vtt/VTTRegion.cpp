@@ -339,7 +339,7 @@ void VTTRegion::willRemoveVTTCueBox(VTTCueBox* box)
 
     double boxHeight = box->getBoundingClientRect()->bottom() - box->getBoundingClientRect()->top();
 
-    m_cueContainer->classList()->remove(textTrackCueContainerScrollingClass(), ASSERT_NO_EXCEPTION);
+    m_cueContainer->classList().remove(textTrackCueContainerScrollingClass(), ASSERT_NO_EXCEPTION);
 
     m_currentTop += boxHeight;
     m_cueContainer->setInlineStyleProperty(CSSPropertyTop, m_currentTop, CSSPrimitiveValue::CSS_PX);
@@ -370,7 +370,7 @@ void VTTRegion::displayLastVTTCueBox()
 
     // If it's a scrolling region, add the scrolling class.
     if (isScrollingRegion())
-        m_cueContainer->classList()->add(textTrackCueContainerScrollingClass(), ASSERT_NO_EXCEPTION);
+        m_cueContainer->classList().add(textTrackCueContainerScrollingClass(), ASSERT_NO_EXCEPTION);
 
     float regionBottom = m_regionDisplayTree->getBoundingClientRect()->bottom();
 
