@@ -17,6 +17,7 @@
 using base::StringPiece;
 using std::string;
 using testing::ElementsAre;
+using testing::ElementsAreArray;
 using testing::Pointwise;
 
 namespace net {
@@ -39,6 +40,10 @@ class HpackHuffmanTablePeer {
   }
   const std::vector<DecodeTable>& decode_tables() const {
     return table_.decode_tables_;
+  }
+  char pad_bits() const {
+    // Cast to match signed-ness of bits8().
+    return static_cast<char>(table_.pad_bits_);
   }
   uint16 failed_symbol_id() const {
     return table_.failed_symbol_id_;
@@ -92,8 +97,8 @@ MATCHER(DecodeEntryEq, "") {
 uint32 bits32(const string& bitstring) {
   return std::bitset<32>(bitstring).to_ulong();
 }
-uint8 bits8(const string& bitstring) {
-  return static_cast<uint8>(std::bitset<8>(bitstring).to_ulong());
+char bits8(const string& bitstring) {
+  return static_cast<char>(std::bitset<8>(bitstring).to_ulong());
 }
 
 TEST(HpackHuffmanTableTest, InitializeRequestCode) {
@@ -101,6 +106,8 @@ TEST(HpackHuffmanTableTest, InitializeRequestCode) {
   std::vector<HpackHuffmanSymbol> code = HpackRequestHuffmanCode();
   EXPECT_TRUE(table.Initialize(&code[0], code.size()));
   EXPECT_TRUE(table.IsInitialized());
+  EXPECT_EQ(HpackHuffmanTablePeer(table).pad_bits(),
+            bits8("11111111"));  // First 8 bits of EOS.
 }
 
 TEST(HpackHuffmanTableTest, InitializeResponseCode) {
@@ -108,6 +115,8 @@ TEST(HpackHuffmanTableTest, InitializeResponseCode) {
   std::vector<HpackHuffmanSymbol> code = HpackResponseHuffmanCode();
   EXPECT_TRUE(table.Initialize(&code[0], code.size()));
   EXPECT_TRUE(table.IsInitialized());
+  EXPECT_EQ(HpackHuffmanTablePeer(table).pad_bits(),
+            bits8("11111111"));  // First 8 bits of EOS.
 }
 
 TEST(HpackHuffmanTableTest, InitializeEdgeCases) {
@@ -121,7 +130,7 @@ TEST(HpackHuffmanTableTest, InitializeEdgeCases) {
       {bits32("10000000000000000000000000000000"), 3, 4},
       {bits32("10100000000000000000000000000000"), 3, 5},
       {bits32("11000000000000000000000000000000"), 3, 6},
-      {bits32("11100000000000000000000000000000"), 3, 7}};
+      {bits32("11100000000000000000000000000000"), 8, 7}};
     HpackHuffmanTable table;
     EXPECT_TRUE(table.Initialize(code, arraysize(code)));
   }
@@ -135,7 +144,7 @@ TEST(HpackHuffmanTableTest, InitializeEdgeCases) {
       {bits32("10100000000000000000000000000000"), 3, 4},
       {bits32("11000000000000000000000000000000"), 3, 5},
       {bits32("11100000000000000000000000000000"), 3, 6},
-      {bits32("00000000000000000000000000000000"), 3, 7}};  // Overflow.
+      {bits32("00000000000000000000000000000000"), 8, 7}};  // Overflow.
     HpackHuffmanTable table;
     EXPECT_FALSE(table.Initialize(code, arraysize(code)));
     EXPECT_EQ(7, HpackHuffmanTablePeer(table).failed_symbol_id());
@@ -146,7 +155,7 @@ TEST(HpackHuffmanTableTest, InitializeEdgeCases) {
       {bits32("00000000000000000000000000000000"), 1, 0},
       {bits32("10000000000000000000000000000000"), 2, 1},
       {bits32("11000000000000000000000000000000"), 3, 2},
-      {bits32("11100000000000000000000000000000"), 4, 3}};
+      {bits32("11100000000000000000000000000000"), 8, 3}};
     HpackHuffmanTable table;
     EXPECT_TRUE(table.Initialize(code, arraysize(code)));
   }
@@ -156,7 +165,7 @@ TEST(HpackHuffmanTableTest, InitializeEdgeCases) {
       {bits32("00000000000000000000000000000000"), 1, 0},
       {bits32("10000000000000000000000000000000"), 2, 1},
       {bits32("11000000000000000000000000000000"), 2, 2},
-      {bits32("00000000000000000000000000000000"), 4, 3}};  // Overflow.
+      {bits32("00000000000000000000000000000000"), 8, 3}};  // Overflow.
     HpackHuffmanTable table;
     EXPECT_FALSE(table.Initialize(code, arraysize(code)));
     EXPECT_EQ(3, HpackHuffmanTablePeer(table).failed_symbol_id());
@@ -167,7 +176,7 @@ TEST(HpackHuffmanTableTest, InitializeEdgeCases) {
       {bits32("00000000000000000000000000000000"), 1, 0},
       {bits32("10000000000000000000000000000000"), 2, 1},
       {bits32("11000000000000000000000000000000"), 3, 1},  // Repeat.
-      {bits32("11100000000000000000000000000000"), 4, 3}};
+      {bits32("11100000000000000000000000000000"), 8, 3}};
     HpackHuffmanTable table;
     EXPECT_FALSE(table.Initialize(code, arraysize(code)));
     EXPECT_EQ(2, HpackHuffmanTablePeer(table).failed_symbol_id());
@@ -178,7 +187,7 @@ TEST(HpackHuffmanTableTest, InitializeEdgeCases) {
       {bits32("10000000000000000000000000000000"), 4, 0},
       {bits32("10010000000000000000000000000000"), 4, 1},
       {bits32("10100000000000000000000000000000"), 4, 2},
-      {bits32("10110000000000000000000000000000"), 4, 3}};
+      {bits32("10110000000000000000000000000000"), 8, 3}};
     HpackHuffmanTable table;
     EXPECT_FALSE(table.Initialize(code, arraysize(code)));
     EXPECT_EQ(0, HpackHuffmanTablePeer(table).failed_symbol_id());
@@ -189,10 +198,20 @@ TEST(HpackHuffmanTableTest, InitializeEdgeCases) {
       {bits32("00000000000000000000000000000000"), 2, 0},
       {bits32("01000000000000000000000000000000"), 2, 1},
       {bits32("11000000000000000000000000000000"), 2, 2},  // Not canonical.
-      {bits32("10000000000000000000000000000000"), 2, 3}};
+      {bits32("10000000000000000000000000000000"), 8, 3}};
     HpackHuffmanTable table;
     EXPECT_FALSE(table.Initialize(code, arraysize(code)));
     EXPECT_EQ(2, HpackHuffmanTablePeer(table).failed_symbol_id());
+  }
+  {
+    // At least one code must have a length of 8 bits (to ensure pad-ability).
+    HpackHuffmanSymbol code[] = {
+      {bits32("00000000000000000000000000000000"), 1, 0},
+      {bits32("10000000000000000000000000000000"), 2, 1},
+      {bits32("11000000000000000000000000000000"), 3, 2},
+      {bits32("11100000000000000000000000000000"), 7, 3}};
+    HpackHuffmanTable table;
+    EXPECT_FALSE(table.Initialize(code, arraysize(code)));
   }
 }
 
@@ -204,7 +223,7 @@ TEST(HpackHuffmanTableTest, ValidateInternalsWithSmallCode) {
     {bits32("01000000000000000000000000000000"), 3, 3},  // 2nd.
     {bits32("10000000000000000000000000000000"), 5, 4},  // 5th.
     {bits32("10001000000000000000000000000000"), 5, 5},  // 6th.
-    {bits32("10011000000000000000000000000000"), 6, 6},  // 8th.
+    {bits32("10011000000000000000000000000000"), 8, 6},  // 8th.
     {bits32("10010000000000000000000000000000"), 5, 7}};  // 7th.
   HpackHuffmanTable table;
   EXPECT_TRUE(table.Initialize(code, arraysize(code)));
@@ -220,7 +239,7 @@ TEST(HpackHuffmanTableTest, ValidateInternalsWithSmallCode) {
       bits32("10011000000000000000000000000000"),
       bits32("10010000000000000000000000000000")));
   EXPECT_THAT(peer.length_by_id(), ElementsAre(
-      4, 4, 2, 3, 5, 5, 6, 5));
+      4, 4, 2, 3, 5, 5, 8, 5));
 
   EXPECT_EQ(peer.decode_tables().size(), 1u);
   {
@@ -232,30 +251,31 @@ TEST(HpackHuffmanTableTest, ValidateInternalsWithSmallCode) {
     expected.resize(272, DecodeEntry(0, 5, 4));  // Fills 16.
     expected.resize(288, DecodeEntry(0, 5, 5));  // Fills 16.
     expected.resize(304, DecodeEntry(0, 5, 7));  // Fills 16.
-    expected.resize(312, DecodeEntry(0, 6, 6));  // Fills 8.
+    expected.resize(306, DecodeEntry(0, 8, 6));  // Fills 2.
     expected.resize(512, DecodeEntry());  // Remainder is empty.
 
     EXPECT_THAT(peer.decode_entries(peer.decode_tables()[0]),
                 Pointwise(DecodeEntryEq(), expected));
   }
+  EXPECT_EQ(peer.pad_bits(), bits8("10011000"));
 
-  char input_storage[] = {2, 3, 2, 6, 7, 0};
+  char input_storage[] = {2, 3, 2, 7, 4};
   StringPiece input(input_storage, arraysize(input_storage));
-  // By symbol: (2) 00 (3) 010 (2) 00 (6) 100110 (7) 10010 (0) 0110 (pad) 11.
+  // By symbol: (2) 00 (3) 010 (2) 00 (7) 10010 (4) 10000 (6 as pad) 1001100.
   char expect_storage[] = {
     bits8("00010001"),
-    bits8("00110100"),
-    bits8("10011011")};
+    bits8("00101000"),
+    bits8("01001100")};
   StringPiece expect(expect_storage, arraysize(expect_storage));
 
-  string buffer_in, buffer_out;
+  string buffer_in, buffer_out(input.size(), '\0');
   HpackOutputStream output_stream(kuint32max);
   table.EncodeString(input, &output_stream);
   output_stream.TakeString(&buffer_in);
   EXPECT_EQ(buffer_in, expect);
 
   HpackInputStream input_stream(kuint32max, buffer_in);
-  table.DecodeString(input.size(), &input_stream, &buffer_out);
+  EXPECT_TRUE(table.DecodeString(&input_stream, &buffer_out));
   EXPECT_EQ(buffer_out, input);
 }
 
@@ -298,10 +318,10 @@ TEST(HpackHuffmanTableTest, ValidateMultiLevelDecodeTables) {
     EXPECT_THAT(peer.decode_entries(decode_table),
                 Pointwise(DecodeEntryEq(), expected));
   }
+  EXPECT_EQ(peer.pad_bits(), bits8("00001000"));
 }
 
 TEST(HpackHuffmanTableTest, DecodeWithBadInput) {
-  // Use the same code as ValidateInternalsWithSmallCode above.
   HpackHuffmanSymbol code[] = {
     {bits32("01100000000000000000000000000000"), 4, 0},
     {bits32("01110000000000000000000000000000"), 4, 1},
@@ -310,38 +330,53 @@ TEST(HpackHuffmanTableTest, DecodeWithBadInput) {
     {bits32("10000000000000000000000000000000"), 5, 4},
     {bits32("10001000000000000000000000000000"), 5, 5},
     {bits32("10011000000000000000000000000000"), 6, 6},
-    {bits32("10010000000000000000000000000000"), 5, 7}};
+    {bits32("10010000000000000000000000000000"), 5, 7},
+    {bits32("10011100000000000000000000000000"), 16, 8}};
   HpackHuffmanTable table;
   EXPECT_TRUE(table.Initialize(code, arraysize(code)));
+
+  string buffer(4, '\0');
   {
-    // This example works: (2) 00 (3) 010 (2) 00 (6) 100110 (pad) 111.
-    char input_storage[] = {bits8("00010001"), bits8("00110111")};
+    // This example works: (2) 00 (3) 010 (2) 00 (6) 100110 (pad) 100.
+    char input_storage[] = {bits8("00010001"), bits8("00110100")};
     StringPiece input(input_storage, arraysize(input_storage));
 
-    string buffer;
     HpackInputStream input_stream(kuint32max, input);
-    EXPECT_TRUE(table.DecodeString(4, &input_stream, &buffer));
+    EXPECT_TRUE(table.DecodeString(&input_stream, &buffer));
     EXPECT_EQ(buffer, "\x02\x03\x02\x06");
   }
   {
-    // (2) 00 (3) 010 (2) 00 (too-large) 101000 (pad) 111.
+    // Expect to fail on an invalid code prefix.
+    // (2) 00 (3) 010 (2) 00 (too-large) 101000 (pad) 100.
     char input_storage[] = {bits8("00010001"), bits8("01000111")};
     StringPiece input(input_storage, arraysize(input_storage));
 
-    string buffer;
     HpackInputStream input_stream(kuint32max, input);
-    EXPECT_FALSE(table.DecodeString(4, &input_stream, &buffer));
+    EXPECT_FALSE(table.DecodeString(&input_stream, &buffer));
     EXPECT_EQ(buffer, "\x02\x03\x02");
   }
   {
-    // Would work, save for insufficient input.
-    char input_storage[] = {bits8("00010001"), bits8("00110111")};
+    // Repeat the shortest 00 code to overflow |buffer|. Expect to fail.
+    size_t capacity = buffer.capacity();
+    std::vector<char> input_storage(1 + capacity / 4, '\0');
+    StringPiece input(&input_storage[0], input_storage.size());
+
+    HpackInputStream input_stream(kuint32max, input);
+    EXPECT_FALSE(table.DecodeString(&input_stream, &buffer));
+
+    std::vector<char> expected(capacity, '\x02');
+    EXPECT_THAT(buffer, ElementsAreArray(expected));
+    EXPECT_EQ(capacity, buffer.capacity());
+  }
+  {
+    // Expect to fail if more than a byte of unconsumed input remains.
+    // (6) 100110 (8 truncated) 1001110000
+    char input_storage[] = {bits8("10011010"), bits8("01110000")};
     StringPiece input(input_storage, arraysize(input_storage));
 
-    string buffer;
     HpackInputStream input_stream(kuint32max, input);
-    EXPECT_FALSE(table.DecodeString(6, &input_stream, &buffer));
-    EXPECT_EQ(buffer, "\x02\x03\x02\x06");
+    EXPECT_FALSE(table.DecodeString(&input_stream, &buffer));
+    EXPECT_EQ(buffer, "\x06");
   }
 }
 
@@ -369,7 +404,8 @@ TEST(HpackHuffmanTableTest, SpecRequestExamples) {
     HpackInputStream input_stream(kuint32max, encodedFixture);
     HpackOutputStream output_stream(kuint32max);
 
-    table.DecodeString(decodedFixture.size(), &input_stream, &buffer);
+    buffer.reserve(decodedFixture.size());
+    EXPECT_TRUE(table.DecodeString(&input_stream, &buffer));
     EXPECT_EQ(decodedFixture, buffer);
     table.EncodeString(decodedFixture, &output_stream);
     output_stream.TakeString(&buffer);
@@ -409,7 +445,8 @@ TEST(HpackHuffmanTableTest, SpecResponseExamples) {
     HpackInputStream input_stream(kuint32max, encodedFixture);
     HpackOutputStream output_stream(kuint32max);
 
-    table.DecodeString(decodedFixture.size(), &input_stream, &buffer);
+    buffer.reserve(decodedFixture.size());
+    EXPECT_TRUE(table.DecodeString(&input_stream, &buffer));
     EXPECT_EQ(decodedFixture, buffer);
     table.EncodeString(decodedFixture, &output_stream);
     output_stream.TakeString(&buffer);
@@ -428,13 +465,13 @@ TEST(HpackHuffmanTableTest, RoundTripIndvidualSymbols) {
     char storage[3] = {c, c, c};
     StringPiece input(storage, arraysize(storage));
 
-    string buffer_in, buffer_out;
+    string buffer_in, buffer_out(input.size(), '\0');
     HpackOutputStream output_stream(kuint32max);
     table.EncodeString(input, &output_stream);
     output_stream.TakeString(&buffer_in);
 
     HpackInputStream input_stream(kuint32max, buffer_in);
-    table.DecodeString(input.size(), &input_stream, &buffer_out);
+    EXPECT_TRUE(table.DecodeString(&input_stream, &buffer_out));
     EXPECT_EQ(input, buffer_out);
   }
 }
@@ -452,13 +489,13 @@ TEST(HpackHuffmanTableTest, RoundTripSymbolSequence) {
   }
   StringPiece input(storage, arraysize(storage));
 
-  string buffer_in, buffer_out;
+  string buffer_in, buffer_out(input.size(), '\0');
   HpackOutputStream output_stream(kuint32max);
   table.EncodeString(input, &output_stream);
   output_stream.TakeString(&buffer_in);
 
   HpackInputStream input_stream(kuint32max, buffer_in);
-  table.DecodeString(input.size(), &input_stream, &buffer_out);
+  EXPECT_TRUE(table.DecodeString(&input_stream, &buffer_out));
   EXPECT_EQ(input, buffer_out);
 }
 

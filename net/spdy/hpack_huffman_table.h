@@ -77,11 +77,12 @@ class NET_EXPORT_PRIVATE HpackHuffmanTable {
   // context.
   void EncodeString(base::StringPiece in, HpackOutputStream* out) const;
 
-  // Decodes a string of |expected_output_size| size into |out|.
-  // Returns false if decoding failed, and true otherwise.
-  bool DecodeString(size_t expected_output_size,
-                    HpackInputStream* in,
-                    std::string* out) const;
+  // Decodes symbols from |in| into |out|. It is the caller's responsibility
+  // to ensure |out| has a reserved a sufficient buffer to hold decoded output.
+  // DecodeString() halts when |in| runs out of input, in which case true is
+  // returned. It also halts (returning false) if an invalid Huffman code
+  // prefix is read, or if |out.capacity()| would otherwise be overflowed.
+  bool DecodeString(HpackInputStream* in, std::string* out) const;
 
  private:
   // Expects symbols ordered on length & ID ascending.
@@ -106,6 +107,9 @@ class NET_EXPORT_PRIVATE HpackHuffmanTable {
   // Codes are stored in the most-significant bits of the word.
   std::vector<uint32> code_by_id_;
   std::vector<uint8> length_by_id_;
+
+  // The first 8 bits of the longest code. Applied when generating padding bits.
+  uint8 pad_bits_;
 
   // If initialization fails, preserve the symbol ID which failed validation
   // for examination in tests.

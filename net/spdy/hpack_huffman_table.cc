@@ -90,6 +90,14 @@ bool HpackHuffmanTable::Initialize(const HpackHuffmanSymbol* input_symbols,
       return false;
     }
   }
+  if (symbols.back().length < 8) {
+    // At least one code (such as an EOS symbol) must be 8 bits or longer.
+    // Without this, some inputs will not be encodable in a whole number
+    // of bytes.
+    return false;
+  }
+  pad_bits_ = static_cast<uint8>(symbols.back().code >> 24);
+
   BuildDecodeTables(symbols);
   // Order on symbol ID ascending.
   std::sort(symbols.begin(), symbols.end(), SymbolIdCompare);
@@ -239,22 +247,19 @@ void HpackHuffmanTable::EncodeString(StringPiece in,
   }
   if (bit_remnant != 0) {
     // Pad current byte as required.
-    out->AppendBits(0xff >> bit_remnant, 8 - bit_remnant);
+    out->AppendBits(pad_bits_ >> bit_remnant, 8 - bit_remnant);
   }
 }
 
-bool HpackHuffmanTable::DecodeString(size_t expected_output_size,
-                                     HpackInputStream* in,
-                                     string* out) const {
+bool HpackHuffmanTable::DecodeString(HpackInputStream* in, string* out) const {
   out->clear();
-  out->reserve(expected_output_size);
 
   // Current input, stored in the high |bits_available| bits of |bits|.
   uint32 bits = 0;
   size_t bits_available = 0;
   bool peeked_success = in->PeekBits(&bits_available, &bits);
 
-  while (out->size() != expected_output_size) {
+  while (true) {
     const DecodeTable* table = &decode_tables_[0];
     uint32 index = bits >> (32 - kDecodeTableRootBits);
 
@@ -270,14 +275,23 @@ bool HpackHuffmanTable::DecodeString(size_t expected_output_size,
 
     if (entry.length > bits_available) {
       if (!peeked_success) {
-        // Unable to read enough input for a match.
-        return false;
+        // Unable to read enough input for a match. If only a portion of
+        // the last byte remains, this is a successful EOF condition.
+        in->ConsumeByteRemainder();
+        return !in->HasMoreData();
       }
     } else if (entry.length == 0) {
       // The input is an invalid prefix, larger than any prefix in the table.
       return false;
     } else {
-      out->push_back(static_cast<char>(entry.symbol_id));
+      if (out->size() == out->capacity()) {
+        // This code would cause us to overflow |out|.
+        return false;
+      }
+      if (entry.symbol_id < 256) {
+        // Assume symbols >= 256 are used for padding.
+        out->push_back(static_cast<char>(entry.symbol_id));
+      }
 
       in->ConsumeBits(entry.length);
       bits = bits << entry.length;
@@ -285,7 +299,8 @@ bool HpackHuffmanTable::DecodeString(size_t expected_output_size,
     }
     peeked_success = in->PeekBits(&bits_available, &bits);
   }
-  return true;
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace net
