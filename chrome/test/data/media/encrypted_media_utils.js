@@ -9,13 +9,12 @@ var useMSE = QueryString.useMSE == 1;
 var forceInvalidResponse = QueryString.forceInvalidResponse == 1;
 var sessionToLoad = QueryString.sessionToLoad;
 var licenseServerURL = QueryString.licenseServerURL;
-// Maximum license request attempts that the media element can make to get a
-// valid license response from the license server.
+// Number of possible retries used to get a license from license server.
 // This is used to avoid server boot up delays since there is no direct way
 // to know if it is ready crbug.com/339289.
-var MAX_LICENSE_REQUEST_ATTEMPTS = 3;
+var requestLicenseTries = 3;
 // Delay in ms between retries to get a license from license server.
-var LICENSE_REQUEST_RETRY_DELAY_MS = 3000;
+var licenseRequestRetryDelayMs = 3000;
 
 // Default key used to encrypt many media files used in browser tests.
 var KEY = new Uint8Array([0xeb, 0xdd, 0x62, 0xf1, 0x68, 0x14, 0xd2, 0x7b,
@@ -230,59 +229,31 @@ function getInitDataFromKeyId(keyID) {
 }
 
 function requestLicense(message) {
-  // Store license request attempts per target <video>.
-  if (message.target.licenseRequestAttempts == undefined)
-    message.target.licenseRequestAttempts = 0;
-
-  if (message.target.licenseRequestAttempts ==  MAX_LICENSE_REQUEST_ATTEMPTS) {
-    failTest('Exceeded maximum license request attempts.');
-    return;
-  }
-  message.target.licenseRequestAttempts++;
   console.log('Requesting license from license server ' + licenseServerURL);
-  if (!URLExists(licenseServerURL)) {
-    console.log('License server is not available, retrying in ' +
-                LICENSE_REQUEST_RETRY_DELAY_MS + ' ms.');
-    setTimeout(requestLicense, LICENSE_REQUEST_RETRY_DELAY_MS, message);
-    return;
-  }
-
-  requestLicenseTry(message);
-}
-
-function requestLicenseTry(message) {
   var xmlhttp = new XMLHttpRequest();
   xmlhttp.responseType = 'arraybuffer';
   xmlhttp.open("POST", licenseServerURL, true);
 
   xmlhttp.onload = function(e) {
+    requestLicenseTries--;
     if (this.status == 200) {
       var response = new Uint8Array(this.response);
       console.log('Adding license response', response);
       message.target.webkitAddKey(keySystem, response, new Uint8Array(1),
-                                  message.sessionId);
-      // Reset license request count so that renewal requests can be sent later.
-      message.target.licenseRequestAttempts = 0;
+                              message.sessionId);
     } else {
       console.log('Bad response: ' + this.response);
       console.log('License response bad status = ' + this.status);
-      console.log('Retrying license request if possible.');
-      setTimeout(requestLicense, LICENSE_REQUEST_RETRY_DELAY_MS, message);
+      // The license request failed. Wait few secs and try again.
+      if (requestLicenseTries > 0) {
+        console.log('License response failed so we will try again in ' +
+                    licenseRequestRetryDelayMs + 'ms.');
+        setTimeout(requestLicense, licenseRequestRetryDelayMs, message);
+      }
+      else
+        failTest('Bad license server response: ' + this.response);
     }
   }
   console.log('license request message', message.message);
   xmlhttp.send(message.message);
-}
-
-function URLExists(url) {
-  if (!url)
-    return false;
-  var http = new XMLHttpRequest();
-  http.open('HEAD', url, false);
-  try {
-    http.send();
-    return http.status != 404;
-  } catch (e) {
-    return false;
-  }
 }

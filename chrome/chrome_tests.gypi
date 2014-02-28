@@ -951,7 +951,6 @@
         # Runtime dependencies
         '../ppapi/ppapi_internal.gyp:ppapi_tests',
         '../third_party/mesa/mesa.gyp:osmesa',
-        '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_test_license_server',
       ],
       'include_dirs': [
         '..',
