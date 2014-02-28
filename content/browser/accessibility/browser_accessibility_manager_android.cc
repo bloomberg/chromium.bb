@@ -123,6 +123,10 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
       Java_BrowserAccessibilityManager_handleCheckStateChanged(
           env, obj.obj(), node->renderer_id());
       break;
+    case ui::AX_EVENT_SCROLL_POSITION_CHANGED:
+      Java_BrowserAccessibilityManager_handleScrollPositionChanged(
+          env, obj.obj(), node->renderer_id());
+      break;
     case ui::AX_EVENT_SCROLLED_TO_ANCHOR:
       Java_BrowserAccessibilityManager_handleScrolledToAnchor(
           env, obj.obj(), node->renderer_id());

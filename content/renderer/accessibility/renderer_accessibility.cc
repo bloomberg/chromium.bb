@@ -84,6 +84,8 @@ const std::string RendererAccessibility::AccessibilityEventToString(
       return "row collapsed";
     case ui::AX_EVENT_ROW_EXPANDED:
       return "row expanded";
+    case ui::AX_EVENT_SCROLL_POSITION_CHANGED:
+      return "scroll position changed";
     case ui::AX_EVENT_SCROLLED_TO_ANCHOR:
       return "scrolled to anchor";
     case ui::AX_EVENT_SELECTED_CHILDREN_CHANGED:

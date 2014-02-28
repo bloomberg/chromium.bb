@@ -155,6 +155,9 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
     case ui::AX_EVENT_SHOW:
       event_id = EVENT_OBJECT_SHOW;
       break;
+    case ui::AX_EVENT_SCROLL_POSITION_CHANGED:
+      event_id = EVENT_SYSTEM_SCROLLINGEND;
+      break;
     case ui::AX_EVENT_SCROLLED_TO_ANCHOR:
       event_id = EVENT_SYSTEM_SCROLLINGSTART;
       break;

@@ -820,6 +820,9 @@ void WebTestProxyBase::postAccessibilityEvent(const blink::WebAXObject& obj, bli
     case blink::WebAXEventRowExpanded:
         eventName = "RowExpanded";
         break;
+    case blink::WebAXEventScrollPositionChanged:
+        eventName = "ScrollPositionChanged";
+        break;
     case blink::WebAXEventScrolledToAnchor:
         eventName = "ScrolledToAnchor";
         break;

@@ -380,6 +380,11 @@ public class BrowserAccessibilityManager {
     }
 
     @CalledByNative
+    private void handleScrollPositionChanged(int id) {
+        sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_SCROLLED);
+    }
+
+    @CalledByNative
     private void handleScrolledToAnchor(int id) {
         if (mAccessibilityFocusId == id) {
             return;

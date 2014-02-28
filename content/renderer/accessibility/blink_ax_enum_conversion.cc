@@ -351,6 +351,8 @@ ui::AXEvent AXEventFromBlink(blink::WebAXEvent event) {
       return ui::AX_EVENT_ROW_COUNT_CHANGED;
     case blink::WebAXEventRowExpanded:
       return ui::AX_EVENT_ROW_EXPANDED;
+    case blink::WebAXEventScrollPositionChanged:
+      return ui::AX_EVENT_SCROLL_POSITION_CHANGED;
     case blink::WebAXEventScrolledToAnchor:
       return ui::AX_EVENT_SCROLLED_TO_ANCHOR;
     case blink::WebAXEventSelectedChildrenChanged:

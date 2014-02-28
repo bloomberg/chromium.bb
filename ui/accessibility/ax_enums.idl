@@ -29,6 +29,7 @@ namespace ui {
     row_collapsed,
     row_count_changed,
     row_expanded,
+    scroll_position_changed,
     scrolled_to_anchor,
     selected_children_changed,
     selected_text_changed,
