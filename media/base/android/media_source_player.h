@@ -41,6 +41,8 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   // the lifetime of this object.
   MediaSourcePlayer(int player_id,
                     MediaPlayerManager* manager,
+                    const RequestMediaResourcesCB& request_media_resources_cb,
+                    const ReleaseMediaResourcesCB& release_media_resources_cb,
                     scoped_ptr<DemuxerAndroid> demuxer);
   virtual ~MediaSourcePlayer();
 

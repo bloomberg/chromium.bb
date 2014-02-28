@@ -25,16 +25,6 @@ class MEDIA_EXPORT MediaPlayerManager {
  public:
   virtual ~MediaPlayerManager() {}
 
-  // Called by a MediaPlayerAndroid object when it is going to decode
-  // media streams. This helps the manager object maintain an array
-  // of active MediaPlayerAndroid objects and release the resources
-  // when needed.
-  virtual void RequestMediaResources(int player_id) = 0;
-
-  // Called when a MediaPlayerAndroid object releases all its decoding
-  // resources.
-  virtual void ReleaseMediaResources(int player_id) = 0;
-
   // Return a pointer to the MediaResourceGetter object.
   virtual MediaResourceGetter* GetMediaResourceGetter() = 0;
 

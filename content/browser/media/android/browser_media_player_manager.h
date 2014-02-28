@@ -86,8 +86,6 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual void OnError(int player_id, int error) OVERRIDE;
   virtual void OnVideoSizeChanged(
       int player_id, int width, int height) OVERRIDE;
-  virtual void RequestMediaResources(int player_id) OVERRIDE;
-  virtual void ReleaseMediaResources(int player_id) OVERRIDE;
   virtual media::MediaResourceGetter* GetMediaResourceGetter() OVERRIDE;
   virtual media::MediaPlayerAndroid* GetFullscreenPlayer() OVERRIDE;
   virtual media::MediaPlayerAndroid* GetPlayer(int player_id) OVERRIDE;
@@ -194,14 +192,8 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
                                 const std::vector<uint8>& init_data,
                                 bool permitted);
 
-  // Constructs a MediaPlayerAndroid object. Declared static to permit embedders
-  // to override functionality.
-  //
-  // Objects must call |manager->RequestMediaResources()| before decoding
-  // and |manager->ReleaseMediaSources()| after finishing. This allows the
-  // manager to track decoding resources across the process and free them as
-  // needed.
-  static media::MediaPlayerAndroid* CreateMediaPlayer(
+  // Constructs a MediaPlayerAndroid object.
+  media::MediaPlayerAndroid* CreateMediaPlayer(
       MediaPlayerHostMsg_Initialize_Type type,
       int player_id,
       const GURL& url,
@@ -210,6 +202,17 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
       bool hide_url_log,
       media::MediaPlayerManager* manager,
       BrowserDemuxerAndroid* demuxer);
+
+  // MediaPlayerAndroid must call this before it is going to decode
+  // media streams. This helps the manager object maintain an array
+  // of active MediaPlayerAndroid objects and release the resources
+  // when needed. Currently we only count video resources as they are
+  // constrained by hardware and memory limits.
+  virtual void OnMediaResourcesRequested(int player_id);
+
+  // Similar to the above call, MediaPlayerAndroid must call this method when
+  // releasing all the decoding resources.
+  virtual void OnMediaResourcesReleased(int player_id);
 
   // An array of managed players.
   ScopedVector<media::MediaPlayerAndroid> players_;

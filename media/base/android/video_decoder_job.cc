@@ -24,16 +24,20 @@ class VideoDecoderThread : public base::Thread {
 base::LazyInstance<VideoDecoderThread>::Leaky
     g_video_decoder_thread = LAZY_INSTANCE_INITIALIZER;
 
-VideoDecoderJob* VideoDecoderJob::Create(const VideoCodec video_codec,
-                                         bool is_secure,
-                                         const gfx::Size& size,
-                                         jobject surface,
-                                         jobject media_crypto,
-                                         const base::Closure& request_data_cb) {
+VideoDecoderJob* VideoDecoderJob::Create(
+    const VideoCodec video_codec,
+    bool is_secure,
+    const gfx::Size& size,
+    jobject surface,
+    jobject media_crypto,
+    const base::Closure& request_data_cb,
+    const base::Closure& request_resources_cb,
+    const base::Closure& release_resources_cb) {
   scoped_ptr<VideoCodecBridge> codec(VideoCodecBridge::CreateDecoder(
       video_codec, is_secure, size, surface, media_crypto));
   if (codec)
-    return new VideoDecoderJob(codec.Pass(), request_data_cb);
+    return new VideoDecoderJob(codec.Pass(), request_data_cb,
+                               request_resources_cb, release_resources_cb);
 
   LOG(ERROR) << "Failed to create VideoDecoderJob.";
   return NULL;
@@ -41,13 +45,18 @@ VideoDecoderJob* VideoDecoderJob::Create(const VideoCodec video_codec,
 
 VideoDecoderJob::VideoDecoderJob(
     scoped_ptr<VideoCodecBridge> video_codec_bridge,
-    const base::Closure& request_data_cb)
+    const base::Closure& request_data_cb,
+    const base::Closure& request_resources_cb,
+    const base::Closure& release_resources_cb)
     : MediaDecoderJob(g_video_decoder_thread.Pointer()->message_loop_proxy(),
                       video_codec_bridge.get(), request_data_cb),
-      video_codec_bridge_(video_codec_bridge.Pass()) {
+      video_codec_bridge_(video_codec_bridge.Pass()),
+      release_resources_cb_(release_resources_cb) {
+  request_resources_cb.Run();
 }
 
 VideoDecoderJob::~VideoDecoderJob() {
+  release_resources_cb_.Run();
 }
 
 void VideoDecoderJob::ReleaseOutputBuffer(

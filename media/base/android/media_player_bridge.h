@@ -47,7 +47,9 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
                     const GURL& first_party_for_cookies,
                     const std::string& user_agent,
                     bool hide_url_log,
-                    MediaPlayerManager* manager);
+                    MediaPlayerManager* manager,
+                    const RequestMediaResourcesCB& request_media_resources_cb,
+                    const ReleaseMediaResourcesCB& release_media_resources_cb);
   virtual ~MediaPlayerBridge();
 
   // Initialize this object and extract the metadata from the media.

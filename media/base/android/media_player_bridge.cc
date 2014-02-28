@@ -31,8 +31,11 @@ MediaPlayerBridge::MediaPlayerBridge(
     const GURL& first_party_for_cookies,
     const std::string& user_agent,
     bool hide_url_log,
-    MediaPlayerManager* manager)
-    : MediaPlayerAndroid(player_id, manager),
+    MediaPlayerManager* manager,
+    const RequestMediaResourcesCB& request_media_resources_cb,
+    const ReleaseMediaResourcesCB& release_media_resources_cb)
+    : MediaPlayerAndroid(player_id, manager, request_media_resources_cb,
+                         release_media_resources_cb),
       prepared_(false),
       pending_play_(false),
       url_(url),
@@ -173,7 +176,7 @@ void MediaPlayerBridge::SetDataSource(const std::string& url) {
     return;
   }
 
-  manager()->RequestMediaResources(player_id());
+  request_media_resources_cb_.Run(player_id());
   if (!Java_MediaPlayerBridge_prepareAsync(env, j_media_player_bridge_.obj()))
     OnMediaError(MEDIA_ERROR_FORMAT);
 }
@@ -185,7 +188,7 @@ void MediaPlayerBridge::OnDidSetDataUriDataSource(JNIEnv* env, jobject obj,
     return;
   }
 
-  manager()->RequestMediaResources(player_id());
+  request_media_resources_cb_.Run(player_id());
   if (!Java_MediaPlayerBridge_prepareAsync(env, j_media_player_bridge_.obj()))
     OnMediaError(MEDIA_ERROR_FORMAT);
 }
@@ -305,7 +308,7 @@ void MediaPlayerBridge::Release() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_MediaPlayerBridge_release(env, j_media_player_bridge_.obj());
   j_media_player_bridge_.Reset();
-  manager()->ReleaseMediaResources(player_id());
+  release_media_resources_cb_.Run(player_id());
   listener_.ReleaseMediaPlayerListenerResources();
 }
 

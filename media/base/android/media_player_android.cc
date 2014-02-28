@@ -12,8 +12,12 @@ namespace media {
 
 MediaPlayerAndroid::MediaPlayerAndroid(
     int player_id,
-    MediaPlayerManager* manager)
-    : player_id_(player_id),
+    MediaPlayerManager* manager,
+    const RequestMediaResourcesCB& request_media_resources_cb,
+    const ReleaseMediaResourcesCB& release_media_resources_cb)
+    : request_media_resources_cb_(request_media_resources_cb),
+      release_media_resources_cb_(release_media_resources_cb),
+      player_id_(player_id),
       manager_(manager) {
 }
 

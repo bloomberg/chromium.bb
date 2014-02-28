@@ -26,16 +26,22 @@ class VideoDecoderJob : public MediaDecoderJob {
   // |media_crypto| - Handle to a Java object responsible for decrypting the
   // video data.
   // |request_data_cb| - Callback used to request more data for the decoder.
+  // |request_resources_cb| - Callback used to request resources.
+  // |release_resources_cb| - Callback used to release resources.
   static VideoDecoderJob* Create(const VideoCodec video_codec,
                                  bool is_secure,
                                  const gfx::Size& size,
                                  jobject surface,
                                  jobject media_crypto,
-                                 const base::Closure& request_data_cb);
+                                 const base::Closure& request_data_cb,
+                                 const base::Closure& request_resources_cb,
+                                 const base::Closure& release_resources_cb);
 
  private:
   VideoDecoderJob(scoped_ptr<VideoCodecBridge> video_codec_bridge,
-                  const base::Closure& request_data_cb);
+                  const base::Closure& request_data_cb,
+                  const base::Closure& request_resources_cb,
+                  const base::Closure& release_resources_cb);
 
   // MediaDecoderJob implementation.
   virtual void ReleaseOutputBuffer(
@@ -47,6 +53,8 @@ class VideoDecoderJob : public MediaDecoderJob {
   virtual bool ComputeTimeToRender() const OVERRIDE;
 
   scoped_ptr<VideoCodecBridge> video_codec_bridge_;
+
+  base::Closure release_resources_cb_;
 };
 
 }  // namespace media

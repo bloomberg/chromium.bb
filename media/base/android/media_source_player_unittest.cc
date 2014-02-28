@@ -45,12 +45,12 @@ class MockMediaPlayerManager : public MediaPlayerManager {
  public:
   explicit MockMediaPlayerManager(base::MessageLoop* message_loop)
       : message_loop_(message_loop),
-        playback_completed_(false) {}
+        playback_completed_(false),
+        num_resources_requested_(0),
+        num_resources_released_(0) {}
   virtual ~MockMediaPlayerManager() {}
 
   // MediaPlayerManager implementation.
-  virtual void RequestMediaResources(int player_id) OVERRIDE {}
-  virtual void ReleaseMediaResources(int player_id) OVERRIDE {}
   virtual MediaResourceGetter* GetMediaResourceGetter() OVERRIDE {
     return NULL;
   }
@@ -94,9 +94,29 @@ class MockMediaPlayerManager : public MediaPlayerManager {
     return playback_completed_;
   }
 
+  int num_resources_requested() const {
+    return num_resources_requested_;
+  }
+
+  int num_resources_released() const {
+    return num_resources_released_;
+  }
+
+  void OnMediaResourcesRequested(int player_id) {
+    num_resources_requested_++;
+  }
+
+  void OnMediaResourcesReleased(int player_id) {
+    num_resources_released_++;
+  }
+
  private:
   base::MessageLoop* message_loop_;
   bool playback_completed_;
+  // The number of resource requests this object has seen.
+  int num_resources_requested_;
+  // The number of released resources.
+  int num_resources_released_;
 
   DISALLOW_COPY_AND_ASSIGN(MockMediaPlayerManager);
 };
@@ -155,7 +175,12 @@ class MediaSourcePlayerTest : public testing::Test {
   MediaSourcePlayerTest()
       : manager_(&message_loop_),
         demuxer_(new MockDemuxerAndroid(&message_loop_)),
-        player_(0, &manager_, scoped_ptr<DemuxerAndroid>(demuxer_)),
+        player_(0, &manager_,
+                base::Bind(&MockMediaPlayerManager::OnMediaResourcesRequested,
+                           base::Unretained(&manager_)),
+                base::Bind(&MockMediaPlayerManager::OnMediaResourcesReleased,
+                           base::Unretained(&manager_)),
+                scoped_ptr<DemuxerAndroid>(demuxer_)),
         decoder_callback_hook_executed_(false),
         surface_texture_a_is_next_(true) {}
   virtual ~MediaSourcePlayerTest() {}
@@ -914,6 +939,31 @@ TEST_F(MediaSourcePlayerTest, SetEmptySurfaceAndStarveWhileDecoding) {
   // Playback resumes once a non-empty surface is passed.
   CreateNextTextureAndSetVideoSurface();
   EXPECT_EQ(1, demuxer_->num_browser_seek_requests());
+}
+
+TEST_F(MediaSourcePlayerTest, ReleaseVideoDecoderResourcesWhileDecoding) {
+  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+
+  // Test that if video decoder is released while decoding, the resources will
+  // not be immediately released.
+  CreateNextTextureAndSetVideoSurface();
+  StartVideoDecoderJob(true);
+  EXPECT_EQ(1, manager_.num_resources_requested());
+  ReleasePlayer();
+  // The resources will be immediately released since the decoder is idle.
+  EXPECT_EQ(1, manager_.num_resources_released());
+
+  // Recreate the video decoder.
+  CreateNextTextureAndSetVideoSurface();
+  player_.Start();
+  EXPECT_EQ(2, manager_.num_resources_requested());
+  player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForVideo());
+  ReleasePlayer();
+  // The resource is still held by the video decoder until it finishes decoding.
+  EXPECT_EQ(1, manager_.num_resources_released());
+  // Wait for the decoder job to finish decoding and be reset.
+  while (manager_.num_resources_released() != 2)
+    message_loop_.RunUntilIdle();
 }
 
 TEST_F(MediaSourcePlayerTest, AudioOnlyStartAfterSeekFinish) {

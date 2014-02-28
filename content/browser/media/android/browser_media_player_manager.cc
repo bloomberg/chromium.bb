@@ -65,7 +65,6 @@ ContentViewCoreImpl* BrowserMediaPlayerManager::GetContentViewCore() const {
   return ContentViewCoreImpl::FromWebContents(web_contents());
 }
 
-// static
 MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
     MediaPlayerHostMsg_Initialize_Type type,
     int player_id,
@@ -84,7 +83,11 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
           first_party_for_cookies,
           user_agent,
           hide_url_log,
-          manager);
+          manager,
+          base::Bind(&BrowserMediaPlayerManager::OnMediaResourcesRequested,
+                     weak_ptr_factory_.GetWeakPtr()),
+          base::Bind(&BrowserMediaPlayerManager::OnMediaResourcesReleased,
+                     weak_ptr_factory_.GetWeakPtr()));
       BrowserMediaPlayerManager* browser_media_player_manager =
           static_cast<BrowserMediaPlayerManager*>(manager);
       ContentViewCoreImpl* content_view_core_impl =
@@ -105,7 +108,13 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
 
     case MEDIA_PLAYER_TYPE_MEDIA_SOURCE: {
       return new MediaSourcePlayer(
-          player_id, manager, demuxer->CreateDemuxer(demuxer_client_id));
+          player_id,
+          manager,
+          base::Bind(&BrowserMediaPlayerManager::OnMediaResourcesRequested,
+                     weak_ptr_factory_.GetWeakPtr()),
+          base::Bind(&BrowserMediaPlayerManager::OnMediaResourcesReleased,
+                     weak_ptr_factory_.GetWeakPtr()),
+          demuxer->CreateDemuxer(demuxer_client_id));
     }
   }
 
@@ -295,43 +304,6 @@ void BrowserMediaPlayerManager::OnVideoSizeChanged(
       width, height));
   if (fullscreen_player_id_ == player_id)
     video_view_->OnVideoSizeChanged(width, height);
-}
-
-void BrowserMediaPlayerManager::RequestMediaResources(int player_id) {
-  int num_active_player = 0;
-  ScopedVector<MediaPlayerAndroid>::iterator it;
-  for (it = players_.begin(); it != players_.end(); ++it) {
-    if (!(*it)->IsPlayerReady())
-      continue;
-
-    // The player is already active, ignore it.
-    if ((*it)->player_id() == player_id)
-      return;
-    else
-      num_active_player++;
-  }
-
-  // Number of active players are less than the threshold, do nothing.
-  if (num_active_player < kMediaPlayerThreshold)
-    return;
-
-  for (it = players_.begin(); it != players_.end(); ++it) {
-    if ((*it)->IsPlayerReady() && !(*it)->IsPlaying() &&
-        fullscreen_player_id_ != (*it)->player_id()) {
-      (*it)->Release();
-      Send(new MediaPlayerMsg_MediaPlayerReleased(
-          routing_id(), (*it)->player_id()));
-    }
-  }
-}
-
-void BrowserMediaPlayerManager::ReleaseMediaResources(int player_id) {
-#if defined(VIDEO_HOLE)
-  ExternalVideoSurfaceContainer* surface_container =
-      ExternalVideoSurfaceContainer::FromWebContents(web_contents_);
-  if (surface_container)
-    surface_container->ReleaseExternalVideoSurface(player_id);
-#endif  // defined(VIDEO_HOLE)
 }
 
 media::MediaResourceGetter*
@@ -871,6 +843,43 @@ void BrowserMediaPlayerManager::CreateSessionIfPermitted(
 void BrowserMediaPlayerManager::ReleaseFullscreenPlayer(
     MediaPlayerAndroid* player) {
     player->Release();
+}
+
+void BrowserMediaPlayerManager::OnMediaResourcesRequested(int player_id) {
+  int num_active_player = 0;
+  ScopedVector<MediaPlayerAndroid>::iterator it;
+  for (it = players_.begin(); it != players_.end(); ++it) {
+    if (!(*it)->IsPlayerReady())
+      continue;
+
+    // The player is already active, ignore it.
+    if ((*it)->player_id() == player_id)
+      return;
+    else
+      num_active_player++;
+  }
+
+  // Number of active players are less than the threshold, do nothing.
+  if (num_active_player < kMediaPlayerThreshold)
+    return;
+
+  for (it = players_.begin(); it != players_.end(); ++it) {
+    if ((*it)->IsPlayerReady() && !(*it)->IsPlaying() &&
+        fullscreen_player_id_ != (*it)->player_id()) {
+      (*it)->Release();
+      Send(new MediaPlayerMsg_MediaPlayerReleased(
+          routing_id(), (*it)->player_id()));
+    }
+  }
+}
+
+void BrowserMediaPlayerManager::OnMediaResourcesReleased(int player_id) {
+#if defined(VIDEO_HOLE)
+  ExternalVideoSurfaceContainer* surface_container =
+      ExternalVideoSurfaceContainer::FromWebContents(web_contents_);
+  if (surface_container)
+    surface_container->ReleaseExternalVideoSurface(player_id);
+#endif  // defined(VIDEO_HOLE)
 }
 
 }  // namespace content

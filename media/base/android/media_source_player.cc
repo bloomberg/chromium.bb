@@ -63,8 +63,11 @@ bool MediaSourcePlayer::IsTypeSupported(
 MediaSourcePlayer::MediaSourcePlayer(
     int player_id,
     MediaPlayerManager* manager,
+    const RequestMediaResourcesCB& request_media_resources_cb,
+    const ReleaseMediaResourcesCB& release_media_resources_cb,
     scoped_ptr<DemuxerAndroid> demuxer)
-    : MediaPlayerAndroid(player_id, manager),
+    : MediaPlayerAndroid(player_id, manager, request_media_resources_cb,
+                         release_media_resources_cb),
       demuxer_(demuxer.Pass()),
       pending_event_(NO_EVENT_PENDING),
       width_(0),
@@ -259,7 +262,6 @@ void MediaSourcePlayer::Release() {
 
   decoder_starvation_callback_.Cancel();
   surface_ = gfx::ScopedJavaSurface();
-  manager()->ReleaseMediaResources(player_id());
   if (process_pending_events) {
     DVLOG(1) << __FUNCTION__ << " : Resuming seek or config change processing";
     ProcessPendingEvents();
@@ -851,14 +853,17 @@ void MediaSourcePlayer::ConfigureVideoDecoderJob() {
   // Create the new VideoDecoderJob.
   bool is_secure = IsProtectedSurfaceRequired();
   video_decoder_job_.reset(
-      VideoDecoderJob::Create(video_codec_,
-                              is_secure,
-                              gfx::Size(width_, height_),
-                              surface_.j_surface().obj(),
-                              media_crypto.obj(),
-                              base::Bind(&DemuxerAndroid::RequestDemuxerData,
-                                         base::Unretained(demuxer_.get()),
-                                         DemuxerStream::VIDEO)));
+      VideoDecoderJob::Create(
+          video_codec_,
+          is_secure,
+          gfx::Size(width_, height_),
+          surface_.j_surface().obj(),
+          media_crypto.obj(),
+          base::Bind(&DemuxerAndroid::RequestDemuxerData,
+                     base::Unretained(demuxer_.get()),
+                     DemuxerStream::VIDEO),
+          base::Bind(request_media_resources_cb_, player_id()),
+          base::Bind(release_media_resources_cb_, player_id())));
   if (!video_decoder_job_)
     return;
 
