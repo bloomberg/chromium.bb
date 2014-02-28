@@ -41,6 +41,8 @@ def JavaScriptDefaultValue(field):
     return "[]";
   if isinstance(field.kind, mojom.Interface):
     return _kind_to_javascript_default_value[mojom.MSGPIPE]
+  if isinstance(field.kind, mojom.Enum):
+    return "0"
 
 
 def JavaScriptPayloadSize(packed):
@@ -82,6 +84,8 @@ def GetJavaScriptType(kind):
     return "new codec.ArrayOf(%s)" % GetJavaScriptType(kind.kind)
   if isinstance(kind, mojom.Interface):
     return GetJavaScriptType(mojom.MSGPIPE)
+  if isinstance(kind, mojom.Enum):
+    return _kind_to_javascript_type[mojom.INT32]
   return kind
 
 
@@ -114,6 +118,8 @@ def JavaScriptDecodeSnippet(kind):
     return "decodeArrayPointer(%s)" % GetJavaScriptType(kind.kind);
   if isinstance(kind, mojom.Interface):
     return JavaScriptDecodeSnippet(mojom.MSGPIPE)
+  if isinstance(kind, mojom.Enum):
+    return _kind_to_javascript_decode_snippet[mojom.INT32]
 
 
 _kind_to_javascript_encode_snippet = {
@@ -145,32 +151,43 @@ def JavaScriptEncodeSnippet(kind):
     return "encodeArrayPointer(%s, " % GetJavaScriptType(kind.kind);
   if isinstance(kind, mojom.Interface):
     return JavaScriptEncodeSnippet(mojom.MSGPIPE)
-
+  if isinstance(kind, mojom.Enum):
+    return _kind_to_javascript_encode_snippet[mojom.INT32]
 
 def GetConstants(module):
   """Returns a generator that enumerates all constants that can be referenced
   from this module."""
   class Constant:
-    pass
+    def __init__(self, module, enum, field, imported_from):
+      self.namespace = \
+          imported_from["namespace"] if imported_from else module.namespace
+      self.is_current_namespace = self.namespace == module.namespace
+      self.imported_from = imported_from
+      self.name = []
+      if imported_from:
+        self.name.append(imported_from["unique_name"])
+      if enum.parent_kind:
+        self.name.append(enum.parent_kind.name)
+      self.name.extend([enum.name, field.name])
 
   for enum in module.enums:
     for field in enum.fields:
-      constant = Constant()
-      constant.namespace = module.namespace
-      constant.is_current_namespace = True
-      constant.import_item = None
-      constant.name = (enum.name, field.name)
-      yield constant
+      yield Constant(module, enum, field, None)
+
+  for struct in module.structs:
+    for enum in struct.enums:
+      for field in enum.fields:
+        yield Constant(module, enum, field, None)
+
+  for interface in module.interfaces:
+    for enum in interface.enums:
+      for field in enum.fields:
+        yield Constant(module, enum, field, None)
 
   for each in module.imports:
     for enum in each["module"].enums:
       for field in enum.fields:
-        constant = Constant()
-        constant.namespace = each["namespace"]
-        constant.is_current_namespace = constant.namespace == module.namespace
-        constant.import_item = each
-        constant.name = (enum.name, field.name)
-        yield constant
+        yield Constant(module, enum, field, each)
 
 
 def TranslateConstants(value, module):
@@ -184,12 +201,8 @@ def TranslateConstants(value, module):
   for constant in GetConstants(module):
     if namespace == constant.namespace or (
         namespace == "" and constant.is_current_namespace):
-      if constant.name[1] == identifier:
-        if constant.import_item:
-          return "%s.%s.%s" % (constant.import_item["unique_name"],
-              constant.name[0], constant.name[1])
-        else:
-          return "%s.%s" % (constant.name[0], constant.name[1])
+      if constant.name[-1] == identifier:
+        return ".".join(constant.name)
   return value
 
 

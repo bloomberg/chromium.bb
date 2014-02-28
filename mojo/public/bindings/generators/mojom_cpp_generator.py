@@ -30,20 +30,33 @@ _kind_to_cpp_type = {
 }
 
 
+def GetNameForKind(kind, internal = False):
+  parts = []
+  if kind.imported_from:
+    parts.append(kind.imported_from["namespace"])
+    if internal:
+      parts.append("internal")
+  if kind.parent_kind:
+    parts.append(kind.parent_kind.name)
+  parts.append(kind.name)
+  return "::".join(parts)
+
 def GetCppType(kind):
   if isinstance(kind, mojom.Struct):
-    return "%s_Data*" % kind.GetFullNameInternal("::")
+    return "%s_Data*" % GetNameForKind(kind, internal=True)
   if isinstance(kind, mojom.Array):
     return "mojo::internal::Array_Data<%s>*" % GetCppType(kind.kind)
   if isinstance(kind, mojom.Interface):
     return "mojo::Interface<%s>::Handle" % kind.name
+  if isinstance(kind, mojom.Enum):
+    return "int32_t"
   if kind.spec == 's':
     return "mojo::internal::String_Data*"
   return _kind_to_cpp_type[kind]
 
 def GetCppArrayArgWrapperType(kind):
-  if isinstance(kind, mojom.Struct):
-    return kind.GetFullName("::")
+  if isinstance(kind, (mojom.Struct, mojom.Enum)):
+    return GetNameForKind(kind)
   if isinstance(kind, mojom.Array):
     return "mojo::Array<%s >" % GetCppArrayArgWrapperType(kind.kind)
   if isinstance(kind, mojom.Interface):
@@ -53,8 +66,8 @@ def GetCppArrayArgWrapperType(kind):
   return _kind_to_cpp_type[kind]
 
 def GetCppWrapperType(kind):
-  if isinstance(kind, mojom.Struct):
-    return kind.GetFullName("::")
+  if isinstance(kind, (mojom.Struct, mojom.Enum)):
+    return GetNameForKind(kind)
   if isinstance(kind, mojom.Array):
     return "mojo::Array<%s >" % GetCppArrayArgWrapperType(kind.kind)
   if isinstance(kind, mojom.Interface):
@@ -67,11 +80,13 @@ def GetCppWrapperType(kind):
 
 def GetCppConstWrapperType(kind):
   if isinstance(kind, mojom.Struct):
-    return "const %s&" % kind.GetFullName("::")
+    return "const %s&" % GetNameForKind(kind)
   if isinstance(kind, mojom.Array):
     return "const mojo::Array<%s >&" % GetCppArrayArgWrapperType(kind.kind)
   if isinstance(kind, mojom.Interface):
     return "mojo::Interface<%s>::ScopedHandle" % kind.name
+  if isinstance(kind, mojom.Enum):
+    return GetNameForKind(kind)
   if kind.spec == 's':
     return "const mojo::String&"
   if kind.spec == 'h':
@@ -82,16 +97,20 @@ def GetCppConstWrapperType(kind):
     return "mojo::ScopedDataPipeProducerHandle"
   if kind.spec == 'h:m':
     return "mojo::ScopedMessagePipeHandle"
+  if not kind in _kind_to_cpp_type:
+    print "missing:", kind.spec
   return _kind_to_cpp_type[kind]
 
 def GetCppFieldType(kind):
   if isinstance(kind, mojom.Struct):
     return ("mojo::internal::StructPointer<%s_Data>" %
-        kind.GetFullNameInternal("::"))
+        GetNameForKind(kind, internal=True))
   if isinstance(kind, mojom.Array):
     return "mojo::internal::ArrayPointer<%s>" % GetCppType(kind.kind)
   if isinstance(kind, mojom.Interface):
     return "mojo::Interface<%s>::Handle" % kind.name
+  if isinstance(kind, mojom.Enum):
+    return GetNameForKind(kind)
   if kind.spec == 's':
     return "mojo::internal::StringPointer"
   return _kind_to_cpp_type[kind]
@@ -126,6 +145,7 @@ class Generator(mojom_generator.Generator):
     "cpp_wrapper_type": GetCppWrapperType,
     "expression_to_text": ExpressionToText,
     "get_pad": mojom_pack.GetPad,
+    "is_enum_kind": mojom_generator.IsEnumKind,
     "is_handle_kind": mojom_generator.IsHandleKind,
     "is_object_kind": mojom_generator.IsObjectKind,
     "is_string_kind": mojom_generator.IsStringKind,

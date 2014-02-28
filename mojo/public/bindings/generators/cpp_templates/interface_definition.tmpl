@@ -66,6 +66,8 @@ void {{proxy_name}}::{{method.name}}({{params_list(method)}}) {
 mojo::internal::Wrap(params->{{param.name}}())
 {%-     elif param.kind|is_handle_kind -%}
 mojo::MakePassable(params->{{param.name}}()).Pass()
+{%-     elif param.kind|is_enum_kind -%}
+static_cast<{{param.kind|cpp_wrapper_type}}>(params->{{param.name}}())
 {%-     else -%}
 params->{{param.name}}()
 {%-     endif -%}

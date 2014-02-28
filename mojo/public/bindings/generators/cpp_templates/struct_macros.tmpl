@@ -31,21 +31,21 @@
   uint8_t {{name}}_ : 1;
 {%-   elif field.kind|is_handle_kind -%}
   mutable {{type}} {{name}}_;
+{%-   elif field.kind|is_enum_kind -%}
+  int32_t {{name}}_;
 {%-   else -%}
   {{type}} {{name}}_;
 {%-   endif %}
 {%- endmacro %}
 
 {%- macro fields(struct) %}
-{%-   set pad_count = 0 %}
 {%-   for packed_field in struct.packed.packed_fields %}
   {{field_line(packed_field.field)}}
 {%-     if not loop.last %}
 {%-       set next_pf = struct.packed.packed_fields[loop.index0 + 1] %}
 {%-       set pad = next_pf.offset - (packed_field.offset + packed_field.size) %}
 {%-       if pad > 0 %}
-  uint8_t _pad{{pad_count}}_[{{pad}}];
-{%-         set pad_count = pad_count + 1 %}
+  uint8_t _pad{{loop.index0}}_[{{pad}}];
 {%-       endif %}
 {%-     endif %}
 {%-   endfor -%}
@@ -56,7 +56,7 @@
 {%-     set offset = last_field.offset + last_field.size %}
 {%-     set pad = offset|get_pad(8) -%}
 {%-     if pad > 0 %}
-  uint8_t _pad{{pad_count}}_[{{pad}}];
+  uint8_t _padfinal_[{{pad}}];
 {%-     endif %}
 {%-   endif %}
 {%- endmacro %}

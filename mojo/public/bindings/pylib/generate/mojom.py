@@ -11,12 +11,11 @@
 # method = interface.AddMethod('Tat', 0)
 # method.AddParameter('baz', 0, mojom.INT32)
 #
-import copy
 
 class Kind(object):
   def __init__(self, spec = None):
     self.spec = spec
-
+    self.parent_kind = None
 
 # Initialize the set of primitive types. These can be accessed by clients.
 BOOL    = Kind('b')
@@ -77,32 +76,10 @@ class Struct(Kind):
     Kind.__init__(self, spec)
     self.fields = []
 
-  @classmethod
-  def CreateFromImport(cls, kind, imported_from):
-    """Used with 'import module' - clones the kind imported from the
-    given module's namespace."""
-    kind = copy.deepcopy(kind)
-    kind.imported_from = imported_from
-    return kind
-
   def AddField(self, name, kind, ordinal = None, default = None):
     field = Field(name, kind, ordinal, default)
     self.fields.append(field)
     return field
-
-  def GetFullName(self, separator):
-    """Returns the fully qualified type name, including namespace prefix."""
-    if self.imported_from:
-      return separator.join([self.imported_from["namespace"], self.name])
-    return self.name
-
-  def GetFullNameInternal(self, separator):
-    """Returns the fully qualified type name for an internal data structure,
-    including namespace prefix."""
-    if self.imported_from:
-      return separator.join(
-          [self.imported_from["namespace"], "internal", self.name])
-    return self.name
 
 
 class Array(Kind):
@@ -157,9 +134,15 @@ class EnumField(object):
     self.value = value
 
 
-class Enum(object):
+class Enum(Kind):
   def __init__(self, name = None):
     self.name = name
+    self.imported_from = None
+    if name != None:
+      spec = 'x:' + name
+    else:
+      spec = None
+    Kind.__init__(self, spec)
     self.fields = []
 
 

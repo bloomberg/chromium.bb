@@ -7,18 +7,17 @@ import "sample_import2.mojom"
 
 module sample {
 
-enum BarType {
-  BAR_VERTICAL = 1 << 0,
-  BAR_HORIZONTAL = (1 << 1) + 0,
-  BAR_BOTH = BAR_VERTICAL | BAR_HORIZONTAL,
-  BAR_INVALID
-};
-
 struct Bar {
+  enum Type {
+    TYPE_VERTICAL = 1 << 0,
+    TYPE_HORIZONTAL = (1 << 1) + 0,
+    TYPE_BOTH = TYPE_VERTICAL | TYPE_HORIZONTAL,
+    TYPE_INVALID
+  };
   uint8 alpha = (0x100 - 1) @0;
   uint8 beta @1;
   uint8 gamma @2;
-  int32 type @3;
+  Type type @3;
 };
 
 [RequiredFields=7]
@@ -61,7 +60,7 @@ interface Service {
     BAZ_REGULAR = 0,
     BAZ_EXTRA
   };
-  Frobinate(Foo foo @0, int32 baz @1, Port port @2) @0;
+  Frobinate(Foo foo @0, BazOptions baz @1, Port port @2) @0;
 };
 
 [Peer=Service]

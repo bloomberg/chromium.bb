@@ -1,8 +1,11 @@
 class {{struct.name}} {
  public:
   typedef internal::{{struct.name}}_Data Data;
-{%- for enum in struct.enums %}
-  typedef internal::{{enum.name}} {{enum.name}};
+
+{#--- Enums #}
+{%- for enum in struct.enums -%}
+{%    macro enum_def() %}{% include "enum_declaration.tmpl" %}{% endmacro %}
+  {{enum_def()|indent(2)}}
 {%- endfor %}
 
   {{struct.name}}() : data_(NULL) {
@@ -41,6 +44,8 @@ class {{struct.name}} {
     #}return mojo::internal::Wrap(data_->{{name}}()); }
 {%-   elif packed_field.field.kind|is_handle_kind %}
   {{type}} {{name}}() const { return mojo::MakePassable(data_->{{name}}()); }
+{%-   elif packed_field.field.kind|is_enum_kind %}
+  {{type}} {{name}}() const { return static_cast<{{type}}>(data_->{{name}}()); }
 {%-   else %}
   {{type}} {{name}}() const { return data_->{{name}}(); }
 {%-   endif %}

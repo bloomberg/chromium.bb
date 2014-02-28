@@ -21,13 +21,13 @@ define([
     bar.alpha = 20;
     bar.beta = 40;
     bar.gamma = 60;
-    bar.type = sample.BarType.BAR_VERTICAL;
+    bar.type = sample.Bar.Type.TYPE_VERTICAL;
 
     var extra_bars = new Array(3);
     for (var i = 0; i < extra_bars.length; ++i) {
       var base = i * 100;
       var type = i % 2 ?
-          sample.BarType.BAR_VERTICAL : sample.BarType.BAR_HORIZONTAL;
+          sample.Bar.Type.TYPE_VERTICAL : sample.Bar.Type.TYPE_HORIZONTAL;
       extra_bars[i] = new sample.Bar();
       extra_bars[i].alpha = base;
       extra_bars[i].beta = base + 20;
@@ -67,13 +67,13 @@ define([
     expect(foo.bar.alpha).toBe(20);
     expect(foo.bar.beta).toBe(40);
     expect(foo.bar.gamma).toBe(60);
-    expect(foo.bar.type).toBe(sample.BarType.BAR_VERTICAL);
+    expect(foo.bar.type).toBe(sample.Bar.Type.TYPE_VERTICAL);
 
     expect(foo.extra_bars.length).toBe(3);
     for (var i = 0; i < foo.extra_bars.length; ++i) {
       var base = i * 100;
       var type = i % 2 ?
-          sample.BarType.BAR_VERTICAL : sample.BarType.BAR_HORIZONTAL;
+          sample.Bar.Type.TYPE_VERTICAL : sample.Bar.Type.TYPE_HORIZONTAL;
       expect(foo.extra_bars[i].alpha).toBe(base);
       expect(foo.extra_bars[i].beta).toBe(base + 20);
       expect(foo.extra_bars[i].gamma).toBe(base + 40);

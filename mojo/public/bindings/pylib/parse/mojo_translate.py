@@ -35,8 +35,6 @@ class MojomBuilder():
       return 'a:' + self.MapKind(kind[0:len(kind)-2])
     if kind in map_to_kind:
       return map_to_kind[kind]
-    if kind.find('.') == -1:
-      return 'x:' + self.mojom['namespace'] + '.' + kind
     return 'x:' + kind
 
 

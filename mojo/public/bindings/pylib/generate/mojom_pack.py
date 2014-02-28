@@ -37,6 +37,11 @@ class PackedField(object):
       return 8
     if isinstance(kind, mojom.Interface):
       kind = mojom.MSGPIPE
+    if isinstance(kind, mojom.Enum):
+      # TODO(mpcomplete): what about big enums?
+      return cls.kind_to_size[mojom.INT32]
+    if not kind in cls.kind_to_size:
+      raise Exception("Invalid kind: %s" % kind.spec)
     return cls.kind_to_size[kind]
 
   def __init__(self, field, ordinal):

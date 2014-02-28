@@ -28,6 +28,9 @@ def GetStructInfo(exported, struct):
 def IsStringKind(kind):
   return kind.spec == 's'
 
+def IsEnumKind(kind):
+  return isinstance(kind, mojom.Enum)
+
 def IsObjectKind(kind):
   return isinstance(kind, (mojom.Struct, mojom.Array)) or IsStringKind(kind)
 

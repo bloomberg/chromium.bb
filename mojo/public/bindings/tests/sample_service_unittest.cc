@@ -42,11 +42,11 @@ Foo MakeFoo() {
   bar.set_alpha(20);
   bar.set_beta(40);
   bar.set_gamma(60);
-  bar.set_type(BAR_VERTICAL);
+  bar.set_type(Bar::TYPE_VERTICAL);
 
   mojo::Array<Bar>::Builder extra_bars(3);
   for (size_t i = 0; i < extra_bars.size(); ++i) {
-    BarType type = i % 2 == 0 ? BAR_VERTICAL : BAR_HORIZONTAL;
+    Bar::Type type = i % 2 == 0 ? Bar::TYPE_VERTICAL : Bar::TYPE_HORIZONTAL;
     Bar::Builder bar;
     uint8_t base = static_cast<uint8_t>(i * 100);
     bar.set_alpha(base);
@@ -116,12 +116,12 @@ void CheckFoo(const Foo& foo) {
   EXPECT_EQ(20, foo.bar().alpha());
   EXPECT_EQ(40, foo.bar().beta());
   EXPECT_EQ(60, foo.bar().gamma());
-  EXPECT_EQ(BAR_VERTICAL, foo.bar().type());
+  EXPECT_EQ(Bar::TYPE_VERTICAL, foo.bar().type());
 
   EXPECT_EQ(3u, foo.extra_bars().size());
   for (size_t i = 0; i < foo.extra_bars().size(); i++) {
     uint8_t base = static_cast<uint8_t>(i * 100);
-    BarType type = i % 2 == 0 ? BAR_VERTICAL : BAR_HORIZONTAL;
+    Bar::Type type = i % 2 == 0 ? Bar::TYPE_VERTICAL : Bar::TYPE_HORIZONTAL;
     EXPECT_EQ(base, foo.extra_bars()[i].alpha()) << i;
     EXPECT_EQ(base + 20, foo.extra_bars()[i].beta()) << i;
     EXPECT_EQ(base + 40, foo.extra_bars()[i].gamma()) << i;
@@ -245,7 +245,7 @@ void DumpHex(const uint8_t* bytes, uint32_t num_bytes) {
 
 class ServiceImpl : public Service {
  public:
-  virtual void Frobinate(const Foo& foo, int32_t baz, ScopedPortHandle port)
+  virtual void Frobinate(const Foo& foo, BazOptions baz, ScopedPortHandle port)
       MOJO_OVERRIDE {
     // Users code goes here to handle the incoming Frobinate message.
 
