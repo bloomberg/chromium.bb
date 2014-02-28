@@ -74,8 +74,7 @@
     ],
     'generated_idl_files': [
       '<@(generated_interface_idl_files)',
-      # FIXME: generate global constructors *before* computing dependencies
-      # '<@(generated_dependency_idl_files)',
+      '<@(generated_dependency_idl_files)',
     ],
 
     # Static IDL files
@@ -99,11 +98,11 @@
     ],
 
     'generated_global_constructors_idl_files': [
-       '<(SHARED_INTERMEDIATE_DIR)/blink/WindowConstructors.idl',
-       '<(SHARED_INTERMEDIATE_DIR)/blink/WorkerGlobalScopeConstructors.idl',
-       '<(SHARED_INTERMEDIATE_DIR)/blink/SharedWorkerGlobalScopeConstructors.idl',
-       '<(SHARED_INTERMEDIATE_DIR)/blink/DedicatedWorkerGlobalScopeConstructors.idl',
-       '<(SHARED_INTERMEDIATE_DIR)/ServiceWorkerGlobalScopeConstructors.idl',
+      '<(SHARED_INTERMEDIATE_DIR)/blink/WindowConstructors.idl',
+      '<(SHARED_INTERMEDIATE_DIR)/blink/WorkerGlobalScopeConstructors.idl',
+      '<(SHARED_INTERMEDIATE_DIR)/blink/SharedWorkerGlobalScopeConstructors.idl',
+      '<(SHARED_INTERMEDIATE_DIR)/blink/DedicatedWorkerGlobalScopeConstructors.idl',
+      '<(SHARED_INTERMEDIATE_DIR)/ServiceWorkerGlobalScopeConstructors.idl',
     ],
 
     # Python source
@@ -169,9 +168,49 @@
   },
 
   'targets': [{
+    'target_name': 'global_constructors_idls',
+    'type': 'none',
+    'actions': [{
+      'action_name': 'generate_global_constructors_idls',
+      'variables': {
+        # Write list of IDL files to a file, so that the command line doesn't
+        # exceed OS length limits.
+        'idl_files_list': '<|(idl_files_list.tmp <@(static_idl_files))',
+      },
+      'inputs': [
+        'scripts/generate_global_constructors.py',
+        'scripts/utilities.py',
+        '<(idl_files_list)',
+        '<@(static_idl_files)',
+      ],
+      'outputs': [
+        '<@(generated_global_constructors_idl_files)',
+      ],
+      'action': [
+        'python',
+        'scripts/generate_global_constructors.py',
+        '--idl-files-list',
+        '<(idl_files_list)',
+        '<@(write_file_only_if_changed)',
+        '--window-constructors-file',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/WindowConstructors.idl',
+        '--workerglobalscope-constructors-file',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/WorkerGlobalScopeConstructors.idl',
+        '--sharedworkerglobalscope-constructors-file',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/SharedWorkerGlobalScopeConstructors.idl',
+        '--dedicatedworkerglobalscope-constructors-file',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/DedicatedWorkerGlobalScopeConstructors.idl',
+        '--serviceworkerglobalscope-constructors-file',
+        '<(SHARED_INTERMEDIATE_DIR)/ServiceWorkerGlobalScopeConstructors.idl',
+       ],
+       'message': 'Generating IDL files for constructors on global objects',
+      }]
+  },
+  {
     'target_name': 'interfaces_info',
     'type': 'none',
     'dependencies': [
+      'global_constructors_idls',
       '../core/core_generated.gyp:generated_testing_idls',
     ],
     'actions': [{
@@ -185,42 +224,32 @@
       },
       'inputs': [
         'scripts/compute_interfaces_info.py',
+        'scripts/utilities.py',
         '<(idl_files_list)',
         '<@(static_idl_files)',
         '<@(generated_idl_files)',
-       ],
-       'outputs': [
-         '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
-         '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
-         '<@(generated_global_constructors_idl_files)',
-         '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
-       ],
-       'action': [
-         'python',
-         'scripts/compute_interfaces_info.py',
-         '--idl-files-list',
-         '<(idl_files_list)',
-         '--interface-dependencies-file',
-         '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
-         '--interfaces-info-file',
-         '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
-         '--window-constructors-file',
-         '<(SHARED_INTERMEDIATE_DIR)/blink/WindowConstructors.idl',
-         '--workerglobalscope-constructors-file',
-         '<(SHARED_INTERMEDIATE_DIR)/blink/WorkerGlobalScopeConstructors.idl',
-         '--sharedworkerglobalscope-constructors-file',
-         '<(SHARED_INTERMEDIATE_DIR)/blink/SharedWorkerGlobalScopeConstructors.idl',
-         '--dedicatedworkerglobalscope-constructors-file',
-         '<(SHARED_INTERMEDIATE_DIR)/blink/DedicatedWorkerGlobalScopeConstructors.idl',
-         '--serviceworkerglobalscope-constructors-file',
-         '<(SHARED_INTERMEDIATE_DIR)/ServiceWorkerGlobalScopeConstructors.idl',
-         '--event-names-file',
-         '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
-         '<@(write_file_only_if_changed)',
-         '--',
-         '<@(generated_idl_files)',
-       ],
-       'message': 'Computing global information about IDL files, and generating global scope constructor IDLs files and list of Event interfaces',
+      ],
+      'outputs': [
+        '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
+      ],
+      'action': [
+        'python',
+        'scripts/compute_interfaces_info.py',
+        '--idl-files-list',
+        '<(idl_files_list)',
+        '--interface-dependencies-file',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
+        '--interfaces-info-file',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
+        '--event-names-file',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
+        '<@(write_file_only_if_changed)',
+        '--',
+        '<@(generated_idl_files)',
+      ],
+      'message': 'Computing global information about IDL files, and generating list of Event interfaces',
       }]
     },
     {

@@ -149,22 +149,11 @@ class BindingsTests(object):
 
         def compute_interfaces_info(idl_files_list_filename,
                                     event_names_filename):
-            # Dummy files, required by compute_interfaces_info but not checked
-            _, window_constructors_file = self.provider.new_temp_file()
-            _, workerglobalscope_constructors_file = self.provider.new_temp_file()
-            _, sharedworkerglobalscope_constructors_file = self.provider.new_temp_file()
-            _, dedicatedworkerglobalscope_constructors_file = self.provider.new_temp_file()
-            _, serviceworkersglobalscope_constructors_file = self.provider.new_temp_file()
             cmd = ['python',
                    'bindings/scripts/compute_interfaces_info.py',
                    '--idl-files-list', idl_files_list_filename,
                    '--interface-dependencies-file', self.interface_dependencies_filename,
                    '--interfaces-info-file', self.interfaces_info_filename,
-                   '--window-constructors-file', window_constructors_file,
-                   '--workerglobalscope-constructors-file', workerglobalscope_constructors_file,
-                   '--sharedworkerglobalscope-constructors-file', sharedworkerglobalscope_constructors_file,
-                   '--dedicatedworkerglobalscope-constructors-file', dedicatedworkerglobalscope_constructors_file,
-                   '--serviceworkerglobalscope-constructors-file', serviceworkersglobalscope_constructors_file,
                    '--event-names-file', event_names_filename,
                    '--write-file-only-if-changed', '0']
             self.run_command(cmd)
