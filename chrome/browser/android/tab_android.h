@@ -44,7 +44,7 @@ class TabAndroid : public CoreTabHelperDelegate,
   // WebContents.  Can return NULL.
   static TabAndroid* FromWebContents(content::WebContents* web_contents);
 
-  // Returns the native TabAndroid stored in the Java TabBase represented by
+  // Returns the native TabAndroid stored in the Java Tab represented by
   // |obj|.
   static TabAndroid* GetNativeTab(JNIEnv* env, jobject obj);
 

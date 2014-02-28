@@ -19,7 +19,7 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
 import org.chromium.chrome.browser.EmptyTabObserver;
-import org.chromium.chrome.browser.TabBase;
+import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.TabObserver;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
@@ -56,7 +56,7 @@ public class TestShellToolbar extends LinearLayout {
 
     /**
      * The toolbar will visually represent the state of {@code tab}.
-     * @param tab The TabBase that should be represented.
+     * @param tab The Tab that should be represented.
      */
     public void showTab(TestShellTab tab) {
         if (mTab != null) mTab.removeObserver(mTabObserver);
@@ -147,12 +147,12 @@ public class TestShellToolbar extends LinearLayout {
 
     private class TabObserverImpl extends EmptyTabObserver {
         @Override
-        public void onLoadProgressChanged(TabBase tab, int progress) {
+        public void onLoadProgressChanged(Tab tab, int progress) {
             if (tab == mTab) TestShellToolbar.this.onLoadProgressChanged(progress);
         }
 
         @Override
-        public void onUpdateUrl(TabBase tab, String url) {
+        public void onUpdateUrl(Tab tab, String url) {
             if (tab == mTab) TestShellToolbar.this.onUpdateUrl(url);
         }
     }

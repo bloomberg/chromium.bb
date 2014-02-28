@@ -40,7 +40,7 @@ public class ShortcutHelper {
      * @param tab Tab to create a shortcut for.
      * @param userRequestedTitle Updated title for the shortcut.
      */
-    public static void addShortcut(Context appContext, TabBase tab, String userRequestedTitle) {
+    public static void addShortcut(Context appContext, Tab tab, String userRequestedTitle) {
         if (TextUtils.isEmpty(sFullScreenAction)) {
             Log.e("ShortcutHelper", "ShortcutHelper is uninitialized.  Aborting.");
             return;

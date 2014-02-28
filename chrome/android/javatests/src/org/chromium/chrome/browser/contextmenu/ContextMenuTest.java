@@ -16,9 +16,9 @@ import junit.framework.Assert;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.TabBase;
-import org.chromium.chrome.test.util.TabBaseTabUtils;
-import org.chromium.chrome.test.util.TabBaseTabUtils.TestCallbackHelperContainerForTab;
+import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.test.util.TabUtils;
+import org.chromium.chrome.test.util.TabUtils.TestCallbackHelperContainerForTab;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
 import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
@@ -46,9 +46,9 @@ public class ContextMenuTest extends ChromiumTestShellTestBase {
     // @LargeTest
     @Feature({"Browser", "Main"})
     public void testCopyLinkURL() throws InterruptedException, TimeoutException {
-        TabBase tab = getActivity().getActiveTab();
+        Tab tab = getActivity().getActiveTab();
         ContextMenuUtils.selectContextMenuItem(this, tab,
-                TabBaseTabUtils.getTestCallbackHelperContainer(tab), "testLink",
+                TabUtils.getTestCallbackHelperContainer(tab), "testLink",
                 R.id.contextmenu_copy_link_address_text);
 
         assertStringContains("test_link.html", getClipboardText());
@@ -59,9 +59,9 @@ public class ContextMenuTest extends ChromiumTestShellTestBase {
     // @LargeTest
     @Feature({"Browser"})
     public void testCopyImageLinkCopiesLinkURL() throws InterruptedException, TimeoutException {
-        TabBase tab = getActivity().getActiveTab();
+        Tab tab = getActivity().getActiveTab();
         ContextMenuUtils.selectContextMenuItem(this, tab,
-                TabBaseTabUtils.getTestCallbackHelperContainer(tab), "testImageLink",
+                TabUtils.getTestCallbackHelperContainer(tab), "testImageLink",
                 R.id.contextmenu_copy_link_address_text);
 
         assertStringContains("test_link.html", getClipboardText());
@@ -72,9 +72,9 @@ public class ContextMenuTest extends ChromiumTestShellTestBase {
     // @LargeTest
     @Feature({"Browser"})
     public void testCopyLinkTextSimple() throws InterruptedException, TimeoutException {
-        TabBase tab = getActivity().getActiveTab();
+        Tab tab = getActivity().getActiveTab();
         ContextMenuUtils.selectContextMenuItem(this, tab,
-                TabBaseTabUtils.getTestCallbackHelperContainer(tab), "testLink",
+                TabUtils.getTestCallbackHelperContainer(tab), "testLink",
                 R.id.contextmenu_copy_link_text);
 
         assertEquals("Clipboard text was not what was expected", "Test Link",
@@ -86,9 +86,9 @@ public class ContextMenuTest extends ChromiumTestShellTestBase {
     // @LargeTest
     @Feature({"Browser"})
     public void testCopyLinkTextComplex() throws InterruptedException, TimeoutException {
-        TabBase tab = getActivity().getActiveTab();
+        Tab tab = getActivity().getActiveTab();
         ContextMenuUtils.selectContextMenuItem(this, tab,
-                TabBaseTabUtils.getTestCallbackHelperContainer(tab), "copyLinkTextComplex",
+                TabUtils.getTestCallbackHelperContainer(tab), "copyLinkTextComplex",
                 R.id.contextmenu_copy_link_text);
 
         assertEquals("Clipboard text was not what was expected",
@@ -102,9 +102,9 @@ public class ContextMenuTest extends ChromiumTestShellTestBase {
     public void testCopyImageToClipboard() throws InterruptedException, TimeoutException {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) return;
 
-        TabBase tab = getActivity().getActiveTab();
+        Tab tab = getActivity().getActiveTab();
         ContextMenuUtils.selectContextMenuItem(this, tab,
-                TabBaseTabUtils.getTestCallbackHelperContainer(tab), "testImage",
+                TabUtils.getTestCallbackHelperContainer(tab), "testImage",
                 R.id.contextmenu_copy_image);
 
         String expectedUrl = TestHttpServerClient.getUrl(
@@ -118,10 +118,10 @@ public class ContextMenuTest extends ChromiumTestShellTestBase {
     // @LargeTest
     @Feature({"Browser"})
     public void testLongPressOnImage() throws InterruptedException, TimeoutException {
-        final TabBase tab = getActivity().getActiveTab();
+        final Tab tab = getActivity().getActiveTab();
 
         TestCallbackHelperContainerForTab helper =
-                TabBaseTabUtils.getTestCallbackHelperContainer(tab);
+                TabUtils.getTestCallbackHelperContainer(tab);
 
         OnPageFinishedHelper callback = helper.getOnPageFinishedHelper();
         int callbackCount = callback.getCallCount();
@@ -150,10 +150,10 @@ public class ContextMenuTest extends ChromiumTestShellTestBase {
     // @LargeTest
     @Feature({"Browser"})
     public void testLongPressOnImageLink() throws InterruptedException, TimeoutException {
-        final TabBase tab = getActivity().getActiveTab();
+        final Tab tab = getActivity().getActiveTab();
 
         TestCallbackHelperContainerForTab helper =
-                TabBaseTabUtils.getTestCallbackHelperContainer(tab);
+                TabUtils.getTestCallbackHelperContainer(tab);
 
         OnPageFinishedHelper callback = helper.getOnPageFinishedHelper();
         int callbackCount = callback.getCallCount();
@@ -179,9 +179,9 @@ public class ContextMenuTest extends ChromiumTestShellTestBase {
     // @LargeTest
     @Feature({"Browser"})
     public void testDismissContextMenuOnBack() throws InterruptedException, TimeoutException {
-        TabBase tab = getActivity().getActiveTab();
+        Tab tab = getActivity().getActiveTab();
         ContextMenu menu = ContextMenuUtils.openContextMenu(this, tab,
-                TabBaseTabUtils.getTestCallbackHelperContainer(tab), "testImage");
+                TabUtils.getTestCallbackHelperContainer(tab), "testImage");
         assertNotNull("Context menu was not properly created", menu);
         assertFalse("Context menu did not have window focus", getActivity().hasWindowFocus());
 
@@ -201,9 +201,9 @@ public class ContextMenuTest extends ChromiumTestShellTestBase {
     // @LargeTest
     @Feature({"Browser"})
     public void testDismissContextMenuOnClick() throws InterruptedException, TimeoutException {
-        TabBase tab = getActivity().getActiveTab();
+        Tab tab = getActivity().getActiveTab();
         ContextMenu menu = ContextMenuUtils.openContextMenu(this, tab,
-                TabBaseTabUtils.getTestCallbackHelperContainer(tab), "testImage");
+                TabUtils.getTestCallbackHelperContainer(tab), "testImage");
         assertNotNull("Context menu was not properly created", menu);
         assertFalse("Context menu did not have window focus", getActivity().hasWindowFocus());
 

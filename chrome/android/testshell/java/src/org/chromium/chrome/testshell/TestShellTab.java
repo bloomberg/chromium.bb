@@ -7,7 +7,7 @@ package org.chromium.chrome.testshell;
 import android.content.Context;
 import android.text.TextUtils;
 
-import org.chromium.chrome.browser.TabBase;
+import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
@@ -19,9 +19,9 @@ import org.chromium.ui.base.WindowAndroid;
 
 /**
  * TestShell's implementation of a tab. This mirrors how Chrome for Android subclasses
- * and extends {@link TabBase}.
+ * and extends {@link Tab}.
  */
-public class TestShellTab extends TabBase {
+public class TestShellTab extends Tab {
     // Tab state
     private boolean mIsLoading;
 
@@ -82,8 +82,8 @@ public class TestShellTab extends TabBase {
     }
 
     @Override
-    protected TabBaseChromeWebContentsDelegateAndroid createWebContentsDelegate() {
-        return new TestShellTabBaseChromeWebContentsDelegateAndroid();
+    protected TabChromeWebContentsDelegateAndroid createWebContentsDelegate() {
+        return new TestShellTabChromeWebContentsDelegateAndroid();
     }
 
     @Override
@@ -100,7 +100,7 @@ public class TestShellTab extends TabBase {
 
     @Override
     protected ContextMenuPopulator createContextMenuPopulator() {
-        return new ChromeContextMenuPopulator(new TabBaseChromeContextMenuItemDelegate() {
+        return new ChromeContextMenuPopulator(new TabChromeContextMenuItemDelegate() {
             @Override
             public void onOpenImageUrl(String url) {
                 loadUrlWithSanitization(url);
@@ -108,8 +108,8 @@ public class TestShellTab extends TabBase {
         });
     }
 
-    private class TestShellTabBaseChromeWebContentsDelegateAndroid
-            extends TabBaseChromeWebContentsDelegateAndroid {
+    private class TestShellTabChromeWebContentsDelegateAndroid
+            extends TabChromeWebContentsDelegateAndroid {
         @Override
         public void onLoadStarted() {
             mIsLoading = true;

@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.omnibox;
 
-import org.chromium.chrome.browser.TabBase;
+import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.profiles.Profile;
 
 /**
@@ -59,7 +59,7 @@ public class OmniboxPrerender {
      * @param tab The tab whose webcontent's to use.
      */
     public void prerenderMaybe(String url, String currentUrl, long nativeAutocompleteResult,
-            Profile profile, TabBase tab) {
+            Profile profile, Tab tab) {
         nativePrerenderMaybe(mNativeOmniboxPrerender, url, currentUrl, nativeAutocompleteResult,
                 profile, tab);
     }
@@ -71,5 +71,5 @@ public class OmniboxPrerender {
             Profile profile);
     private native void nativePrerenderMaybe(long nativeOmniboxPrerender, String url,
             String currentUrl, long nativeAutocompleteResult, Profile profile,
-            TabBase tab);
+            Tab tab);
 }

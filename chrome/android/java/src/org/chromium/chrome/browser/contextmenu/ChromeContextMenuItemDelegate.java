@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.contextmenu;
 
-import org.chromium.chrome.browser.TabBase;
+import org.chromium.chrome.browser.Tab;
 import org.chromium.content.browser.ContentView;
 
 /**
@@ -36,7 +36,7 @@ public interface ChromeContextMenuItemDelegate {
 
     /**
      * Called when the {@code url} should be opened in a new tab with the same incognito state as
-     * the current {@link TabBase}.
+     * the current {@link Tab}.
      * @param url The URL to open.
      */
     void onOpenInNewTab(String url);

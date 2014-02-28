@@ -89,7 +89,7 @@ public class InfoBarContainer extends LinearLayout {
     // True when this container has been emptied and its native counterpart has been destroyed.
     private boolean mDestroyed = false;
 
-    // The id of the tab associated with us. Set to TabBase.INVALID_TAB_ID if no tab is associated.
+    // The id of the tab associated with us. Set to Tab.INVALID_TAB_ID if no tab is associated.
     private int mTabId;
 
     // Parent view that contains us.

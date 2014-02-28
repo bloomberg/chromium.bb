@@ -6,13 +6,13 @@ package org.chromium.chrome.browser.printing;
 
 import android.text.TextUtils;
 
-import org.chromium.chrome.browser.TabBase;
+import org.chromium.chrome.browser.Tab;
 import org.chromium.printing.Printable;
 
 import java.lang.ref.WeakReference;
 
 /**
- * Wraps printing related functionality of a {@link TabBase} object.
+ * Wraps printing related functionality of a {@link Tab} object.
  *
  * This class doesn't have any lifetime expectations with regards to Tab, since we keep a weak
  * reference.
@@ -20,10 +20,10 @@ import java.lang.ref.WeakReference;
 public class TabPrinter implements Printable {
     private static String sDefaultTitle;
 
-    private final WeakReference<TabBase> mTab;
+    private final WeakReference<Tab> mTab;
 
-    public TabPrinter(TabBase tab) {
-        mTab = new WeakReference<TabBase>(tab);
+    public TabPrinter(Tab tab) {
+        mTab = new WeakReference<Tab>(tab);
     }
 
     public static void setDefaultTitle(String defaultTitle) {
@@ -32,13 +32,13 @@ public class TabPrinter implements Printable {
 
     @Override
     public boolean print() {
-        TabBase tab = mTab.get();
+        Tab tab = mTab.get();
         return tab != null && tab.print();
     }
 
     @Override
     public String getTitle() {
-        TabBase tab = mTab.get();
+        Tab tab = mTab.get();
         if (tab == null) return sDefaultTitle;
 
         String title = tab.getTitle();

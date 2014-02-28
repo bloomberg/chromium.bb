@@ -186,7 +186,7 @@ public class ForeignSessionHelper {
      * @param windowOpenDisposition The WindowOpenDisposition flag.
      * @return {@code True} iff the tab is successfully opened.
      */
-    public boolean openForeignSessionTab(TabBase tab, ForeignSession session,
+    public boolean openForeignSessionTab(Tab tab, ForeignSession session,
             ForeignSessionTab foreignTab, int windowOpenDisposition) {
         return nativeOpenForeignSessionTab(mNativeForeignSessionHelper, tab, session.tag,
                 foreignTab.id, windowOpenDisposition);
@@ -211,7 +211,7 @@ public class ForeignSessionHelper {
     private static native boolean nativeGetForeignSessions(long nativeForeignSessionHelper,
             List<ForeignSession> resultSessions);
     private static native boolean nativeOpenForeignSessionTab(
-            long nativeForeignSessionHelper, TabBase tab, String sessionTag, int tabId,
+            long nativeForeignSessionHelper, Tab tab, String sessionTag, int tabId,
             int disposition);
     private static native void nativeDeleteForeignSession(
             long nativeForeignSessionHelper, String sessionTag);

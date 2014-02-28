@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.password_manager;
 
 import org.chromium.base.CalledByNative;
-import org.chromium.chrome.browser.TabBase;
+import org.chromium.chrome.browser.Tab;
 
 /**
  * Allows embedders to authenticate the usage of passwords.
@@ -26,7 +26,7 @@ public class PasswordAuthenticationManager {
          * @param tab The tab containing the protected password.
          * @param callback The callback to be triggered on authentication result.
          */
-        void requestAuthentication(TabBase tab, PasswordAuthenticationCallback callback);
+        void requestAuthentication(Tab tab, PasswordAuthenticationCallback callback);
 
         /**
          * @return The message to be displayed in the save password infobar that will allow
@@ -72,7 +72,7 @@ public class PasswordAuthenticationManager {
         }
 
         @Override
-        public void requestAuthentication(TabBase tab, PasswordAuthenticationCallback callback) {
+        public void requestAuthentication(Tab tab, PasswordAuthenticationCallback callback) {
             callback.onResult(true);
         }
 
@@ -114,7 +114,7 @@ public class PasswordAuthenticationManager {
      */
     @CalledByNative
     public static void requestAuthentication(
-            TabBase tab, PasswordAuthenticationCallback callback) {
+            Tab tab, PasswordAuthenticationCallback callback) {
         getDelegate().requestAuthentication(tab, callback);
     }
 

@@ -17,7 +17,7 @@ import android.util.Log;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.chrome.browser.EmptyTabObserver;
-import org.chromium.chrome.browser.TabBase;
+import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.TabObserver;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content_public.browser.WebContents;
@@ -26,7 +26,7 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.IntentCallback;
 
 /**
- * Manages an AppBannerView for a TabBase and its ContentView.
+ * Manages an AppBannerView for a Tab and its ContentView.
  *
  * The AppBannerManager manages a single AppBannerView, dismissing it when the user navigates to a
  * new page or creating a new one when it detects that the current webpage is requesting a banner
@@ -46,8 +46,8 @@ public class AppBannerManager implements AppBannerView.Observer, InstallerDelega
     /** Pointer to the native side AppBannerManager. */
     private final long mNativePointer;
 
-    /** TabBase that the AppBannerView/AppBannerManager is owned by. */
-    private final TabBase mTabBase;
+    /** Tab that the AppBannerView/AppBannerManager is owned by. */
+    private final Tab mTab;
 
     /** ContentView that the AppBannerView/AppBannerManager is currently attached to. */
     private ContentView mContentView;
@@ -82,33 +82,33 @@ public class AppBannerManager implements AppBannerView.Observer, InstallerDelega
      * Constructs an AppBannerManager for the given tab.
      * @param tab Tab that the AppBannerManager will be attached to.
      */
-    public AppBannerManager(TabBase tab) {
+    public AppBannerManager(Tab tab) {
         mNativePointer = nativeInit();
-        mTabBase = tab;
-        mTabBase.addObserver(createTabObserver());
+        mTab = tab;
+        mTab.addObserver(createTabObserver());
         updatePointers();
     }
 
     /**
-     * Creates a TabObserver for monitoring a TabBase, used to react to changes in the ContentView
+     * Creates a TabObserver for monitoring a Tab, used to react to changes in the ContentView
      * or to trigger its own destruction.
-     * @return TabObserver that can be used to monitor a TabBase.
+     * @return TabObserver that can be used to monitor a Tab.
      */
     private TabObserver createTabObserver() {
         return new EmptyTabObserver() {
             @Override
-            public void onWebContentsSwapped(TabBase tab, boolean didStartLoad,
+            public void onWebContentsSwapped(Tab tab, boolean didStartLoad,
                     boolean didFinishLoad) {
                 updatePointers();
             }
 
             @Override
-            public void onContentChanged(TabBase tab) {
+            public void onContentChanged(Tab tab) {
                 updatePointers();
             }
 
             @Override
-            public void onDestroyed(TabBase tab) {
+            public void onDestroyed(Tab tab) {
                 nativeDestroy(mNativePointer);
                 resetState();
             }
@@ -119,8 +119,8 @@ public class AppBannerManager implements AppBannerView.Observer, InstallerDelega
      * Updates which ContentView and WebContents the AppBannerView is monitoring.
      */
     private void updatePointers() {
-        if (mContentView != mTabBase.getContentView()) mContentView = mTabBase.getContentView();
-        nativeReplaceWebContents(mNativePointer, mTabBase.getWebContents());
+        if (mContentView != mTab.getContentView()) mContentView = mTab.getContentView();
+        nativeReplaceWebContents(mNativePointer, mTab.getWebContents());
     }
 
     /**
@@ -190,7 +190,7 @@ public class AppBannerManager implements AppBannerView.Observer, InstallerDelega
 
         if (mAppData.installState() == AppData.INSTALL_STATE_NOT_INSTALLED) {
             // The user initiated an install.
-            WindowAndroid window = mTabBase.getWindowAndroid();
+            WindowAndroid window = mTab.getWindowAndroid();
             if (window.showIntent(mAppData.installIntent(), this, R.string.low_memory_error)) {
                 // Temporarily hide the banner.
                 mBannerView.createVerticalSnapAnimation(false);

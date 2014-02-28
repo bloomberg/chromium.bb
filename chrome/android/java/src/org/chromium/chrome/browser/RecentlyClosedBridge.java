@@ -97,11 +97,11 @@ public class RecentlyClosedBridge {
     /**
      * Opens a recently closed tab in the current tab.
      *
-     * @param tab The current TabBase.
+     * @param tab The current Tab.
      * @param recentTab The RecentlyClosedTab to open.
      * @return Whether the tab was successfully opened.
      */
-    public boolean openRecentlyClosedTab(TabBase tab, RecentlyClosedTab recentTab) {
+    public boolean openRecentlyClosedTab(Tab tab, RecentlyClosedTab recentTab) {
         return nativeOpenRecentlyClosedTab(mNativeRecentlyClosedTabsBridge, tab, recentTab.id);
     }
 
@@ -119,6 +119,6 @@ public class RecentlyClosedBridge {
     private native boolean nativeGetRecentlyClosedTabs(
             long nativeRecentlyClosedTabsBridge, List<RecentlyClosedTab> tabs, int maxTabCount);
     private native boolean nativeOpenRecentlyClosedTab(
-            long nativeRecentlyClosedTabsBridge, TabBase tab, int recentTabId);
+            long nativeRecentlyClosedTabsBridge, Tab tab, int recentTabId);
     private native void nativeClearRecentlyClosedTabs(long nativeRecentlyClosedTabsBridge);
 }

@@ -9,7 +9,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.EnormousTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.test.util.TabBaseTabUtils;
+import org.chromium.chrome.test.util.TabUtils;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
 import org.chromium.chrome.testshell.TestShellTab;
@@ -31,7 +31,7 @@ public class RepostFormWarningTest extends ChromiumTestShellTestBase {
         super.setUp();
 
         mTab = launchChromiumTestShellWithBlankPage().getActiveTab();
-        mCallbackHelper = TabBaseTabUtils.getTestCallbackHelperContainer(mTab);
+        mCallbackHelper = TabUtils.getTestCallbackHelperContainer(mTab);
 
         // Wait for the initial load of about://blank to finish.
         mCallbackHelper.getOnPageFinishedHelper().waitForCallback(0);

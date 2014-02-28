@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * The basic Java representation of a tab.  Contains and manages a {@link ContentView}.
  *
- * TabBase provides common functionality for ChromiumTestshell's Tab as well as Chrome on Android's
+ * Tab provides common functionality for ChromiumTestshell's Tab as well as Chrome on Android's
  * tab. It is intended to be extended either on Java or both Java and C++, with ownership managed
  * by this base class.
  *
@@ -48,12 +48,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  *  - Just extend the class normally.  Do not override initializeNative().
  * Extending Java and C++:
  *  - Because of the inner-workings of JNI, the subclass is responsible for constructing the native
- *    subclass, which in turn constructs TabAndroid (the native counterpart to TabBase), which in
- *    turn sets the native pointer for TabBase.  For destruction, subclasses in Java must clear
- *    their own native pointer reference, but TabBase#destroy() will handle deleting the native
+ *    subclass, which in turn constructs TabAndroid (the native counterpart to Tab), which in
+ *    turn sets the native pointer for Tab.  For destruction, subclasses in Java must clear
+ *    their own native pointer reference, but Tab#destroy() will handle deleting the native
  *    object.
  */
-public abstract class TabBase implements NavigationClient {
+public abstract class Tab implements NavigationClient {
     public static final int INVALID_TAB_ID = -1;
 
     /** Used for automatically generating tab ids. */
@@ -76,7 +76,7 @@ public abstract class TabBase implements NavigationClient {
      * {@link Activity}. */
     private final Context mContext;
 
-    /** Gives {@link TabBase} a way to interact with the Android window. */
+    /** Gives {@link Tab} a way to interact with the Android window. */
     private final WindowAndroid mWindowAndroid;
 
     /** The current native page (e.g. chrome-native://newtab), or {@code null} if there is none. */
@@ -91,7 +91,7 @@ public abstract class TabBase implements NavigationClient {
     /** Manages app banners shown for this tab. */
     private AppBannerManager mAppBannerManager;
 
-    /** The sync id of the TabBase if session sync is enabled. */
+    /** The sync id of the Tab if session sync is enabled. */
     private int mSyncId;
 
     /**
@@ -102,7 +102,7 @@ public abstract class TabBase implements NavigationClient {
     private ContentViewCore mContentViewCore;
 
     /**
-     * A list of TabBase observers.  These are used to broadcast TabBase events to listeners.
+     * A list of Tab observers.  These are used to broadcast Tab events to listeners.
      */
     private final ObserverList<TabObserver> mObservers = new ObserverList<TabObserver>();
 
@@ -110,20 +110,20 @@ public abstract class TabBase implements NavigationClient {
     private ContentViewClient mContentViewClient;
     private WebContentsObserverAndroid mWebContentsObserver;
     private VoiceSearchTabHelper mVoiceSearchTabHelper;
-    private TabBaseChromeWebContentsDelegateAndroid mWebContentsDelegate;
+    private TabChromeWebContentsDelegateAndroid mWebContentsDelegate;
 
     /**
      * A default {@link ChromeContextMenuItemDelegate} that supports some of the context menu
      * functionality.
      */
-    protected class TabBaseChromeContextMenuItemDelegate
+    protected class TabChromeContextMenuItemDelegate
             extends EmptyChromeContextMenuItemDelegate {
         private final Clipboard mClipboard;
 
         /**
-         * Builds a {@link TabBaseChromeContextMenuItemDelegate} instance.
+         * Builds a {@link TabChromeContextMenuItemDelegate} instance.
          */
-        public TabBaseChromeContextMenuItemDelegate() {
+        public TabChromeContextMenuItemDelegate() {
             mClipboard = new Clipboard(getApplicationContext());
         }
 
@@ -147,18 +147,18 @@ public abstract class TabBase implements NavigationClient {
      * A basic {@link ChromeWebContentsDelegateAndroid} that forwards some calls to the registered
      * {@link TabObserver}s.  Meant to be overridden by subclasses.
      */
-    public class TabBaseChromeWebContentsDelegateAndroid
+    public class TabChromeWebContentsDelegateAndroid
             extends ChromeWebContentsDelegateAndroid {
         @Override
         public void onLoadProgressChanged(int progress) {
             for (TabObserver observer : mObservers) {
-                observer.onLoadProgressChanged(TabBase.this, progress);
+                observer.onLoadProgressChanged(Tab.this, progress);
             }
         }
 
         @Override
         public void onUpdateUrl(String url) {
-            for (TabObserver observer : mObservers) observer.onUpdateUrl(TabBase.this, url);
+            for (TabObserver observer : mObservers) observer.onUpdateUrl(Tab.this, url);
         }
 
         @Override
@@ -182,35 +182,35 @@ public abstract class TabBase implements NavigationClient {
         @Override
         public void toggleFullscreenModeForTab(boolean enableFullscreen) {
             for (TabObserver observer : mObservers) {
-                observer.onToggleFullscreenMode(TabBase.this, enableFullscreen);
+                observer.onToggleFullscreenMode(Tab.this, enableFullscreen);
             }
         }
 
         @Override
         public void navigationStateChanged(int flags) {
             if ((flags & INVALIDATE_TYPE_TITLE) != 0) {
-                for (TabObserver observer : mObservers) observer.onTitleUpdated(TabBase.this);
+                for (TabObserver observer : mObservers) observer.onTitleUpdated(Tab.this);
             }
             if ((flags & INVALIDATE_TYPE_URL) != 0) {
-                for (TabObserver observer : mObservers) observer.onUrlUpdated(TabBase.this);
+                for (TabObserver observer : mObservers) observer.onUrlUpdated(Tab.this);
             }
         }
     }
 
-    private class TabBaseContextMenuPopulator extends ContextMenuPopulatorWrapper {
-        public TabBaseContextMenuPopulator(ContextMenuPopulator populator) {
+    private class TabContextMenuPopulator extends ContextMenuPopulatorWrapper {
+        public TabContextMenuPopulator(ContextMenuPopulator populator) {
             super(populator);
         }
 
         @Override
         public void buildContextMenu(ContextMenu menu, Context context, ContextMenuParams params) {
             super.buildContextMenu(menu, context, params);
-            for (TabObserver observer : mObservers) observer.onContextMenuShown(TabBase.this, menu);
+            for (TabObserver observer : mObservers) observer.onContextMenuShown(Tab.this, menu);
         }
     }
 
-    private class TabBaseWebContentsObserverAndroid extends WebContentsObserverAndroid {
-        public TabBaseWebContentsObserverAndroid(ContentViewCore contentViewCore) {
+    private class TabWebContentsObserverAndroid extends WebContentsObserverAndroid {
+        public TabWebContentsObserverAndroid(ContentViewCore contentViewCore) {
             super(contentViewCore);
         }
 
@@ -225,30 +225,30 @@ public abstract class TabBase implements NavigationClient {
         public void didFailLoad(boolean isProvisionalLoad, boolean isMainFrame, int errorCode,
                 String description, String failingUrl) {
             for (TabObserver observer : mObservers) {
-                observer.onDidFailLoad(TabBase.this, isProvisionalLoad, isMainFrame, errorCode,
+                observer.onDidFailLoad(Tab.this, isProvisionalLoad, isMainFrame, errorCode,
                         description, failingUrl);
             }
         }
     }
 
     /**
-     * Creates an instance of a {@link TabBase} with no id.
+     * Creates an instance of a {@link Tab} with no id.
      * @param incognito Whether or not this tab is incognito.
      * @param context   An instance of a {@link Context}.
      * @param window    An instance of a {@link WindowAndroid}.
      */
-    public TabBase(boolean incognito, Context context, WindowAndroid window) {
+    public Tab(boolean incognito, Context context, WindowAndroid window) {
         this(INVALID_TAB_ID, incognito, context, window);
     }
 
     /**
-     * Creates an instance of a {@link TabBase}.
+     * Creates an instance of a {@link Tab}.
      * @param id        The id this tab should be identified with.
      * @param incognito Whether or not this tab is incognito.
      * @param context   An instance of a {@link Context}.
      * @param window    An instance of a {@link WindowAndroid}.
      */
-    public TabBase(int id, boolean incognito, Context context, WindowAndroid window) {
+    public Tab(int id, boolean incognito, Context context, WindowAndroid window) {
         // We need a valid Activity Context to build the ContentView with.
         assert context == null || context instanceof Activity;
 
@@ -261,7 +261,7 @@ public abstract class TabBase implements NavigationClient {
     }
 
     /**
-     * Adds a {@link TabObserver} to be notified on {@link TabBase} changes.
+     * Adds a {@link TabObserver} to be notified on {@link Tab} changes.
      * @param observer The {@link TabObserver} to add.
      */
     public final void addObserver(TabObserver observer) {
@@ -333,7 +333,7 @@ public abstract class TabBase implements NavigationClient {
     }
 
     /**
-     * @return Whether or not the {@link TabBase} is currently showing an interstitial page, such as
+     * @return Whether or not the {@link Tab} is currently showing an interstitial page, such as
      *         a bad HTTPS page.
      */
     public boolean isShowingInterstitialPage() {
@@ -499,7 +499,7 @@ public abstract class TabBase implements NavigationClient {
     }
 
     /**
-     * @return Whether or not the {@link TabBase} represents a {@link NativePage}.
+     * @return Whether or not the {@link Tab} represents a {@link NativePage}.
      */
     public boolean isNativePage() {
         return mNativePage != null;
@@ -569,7 +569,7 @@ public abstract class TabBase implements NavigationClient {
 
     /**
      * @param client The {@link ContentViewClient} to be bound to any current or new
-     *               {@link ContentViewCore}s associated with this {@link TabBase}.
+     *               {@link ContentViewCore}s associated with this {@link Tab}.
      */
     protected void setContentViewClient(ContentViewClient client) {
         if (mContentViewClient == client) return;
@@ -626,7 +626,7 @@ public abstract class TabBase implements NavigationClient {
     }
 
     /**
-     * Initializes this {@link TabBase}.
+     * Initializes this {@link Tab}.
      */
     public void initialize() {
         initializeNative();
@@ -668,7 +668,7 @@ public abstract class TabBase implements NavigationClient {
 
         mContentViewCore = mContentView.getContentViewCore();
         mWebContentsDelegate = createWebContentsDelegate();
-        mWebContentsObserver = new TabBaseWebContentsObserverAndroid(mContentViewCore);
+        mWebContentsObserver = new TabWebContentsObserverAndroid(mContentViewCore);
         mVoiceSearchTabHelper = new VoiceSearchTabHelper(mContentViewCore);
 
         if (mContentViewClient != null) mContentViewCore.setContentViewClient(mContentViewClient);
@@ -676,7 +676,7 @@ public abstract class TabBase implements NavigationClient {
         assert mNativeTabAndroid != 0;
         nativeInitWebContents(
                 mNativeTabAndroid, mIncognito, mContentViewCore, mWebContentsDelegate,
-                new TabBaseContextMenuPopulator(createContextMenuPopulator()));
+                new TabContextMenuPopulator(createContextMenuPopulator()));
 
         // In the case where restoring a Tab or showing a prerendered one we already have a
         // valid infobar container, no need to recreate one.
@@ -699,9 +699,9 @@ public abstract class TabBase implements NavigationClient {
 
     /**
      * Cleans up all internal state, destroying any {@link NativePage} or {@link ContentView}
-     * currently associated with this {@link TabBase}.  This also destroys the native counterpart
+     * currently associated with this {@link Tab}.  This also destroys the native counterpart
      * to this class, which means that all subclasses should erase their native pointers after
-     * this method is called.  Once this call is made this {@link TabBase} should no longer be used.
+     * this method is called.  Once this call is made this {@link Tab} should no longer be used.
      */
     public void destroy() {
         for (TabObserver observer : mObservers) observer.onDestroyed(this);
@@ -808,10 +808,10 @@ public abstract class TabBase implements NavigationClient {
 
     /**
      * A helper method to allow subclasses to build their own delegate.
-     * @return An instance of a {@link TabBaseChromeWebContentsDelegateAndroid}.
+     * @return An instance of a {@link TabChromeWebContentsDelegateAndroid}.
      */
-    protected TabBaseChromeWebContentsDelegateAndroid createWebContentsDelegate() {
-        return new TabBaseChromeWebContentsDelegateAndroid();
+    protected TabChromeWebContentsDelegateAndroid createWebContentsDelegate() {
+        return new TabChromeWebContentsDelegateAndroid();
     }
 
     /**
@@ -819,20 +819,20 @@ public abstract class TabBase implements NavigationClient {
      * @return An instance of a {@link ContextMenuPopulator}.
      */
     protected ContextMenuPopulator createContextMenuPopulator() {
-        return new ChromeContextMenuPopulator(new TabBaseChromeContextMenuItemDelegate());
+        return new ChromeContextMenuPopulator(new TabChromeContextMenuItemDelegate());
     }
 
     /**
-     * @return The {@link WindowAndroid} associated with this {@link TabBase}.
+     * @return The {@link WindowAndroid} associated with this {@link Tab}.
      */
     public WindowAndroid getWindowAndroid() {
         return mWindowAndroid;
     }
 
     /**
-     * @return The current {@link TabBaseChromeWebContentsDelegateAndroid} instance.
+     * @return The current {@link TabChromeWebContentsDelegateAndroid} instance.
      */
-    protected TabBaseChromeWebContentsDelegateAndroid getChromeWebContentsDelegateAndroid() {
+    protected TabChromeWebContentsDelegateAndroid getChromeWebContentsDelegateAndroid() {
         return mWebContentsDelegate;
     }
 
@@ -853,7 +853,7 @@ public abstract class TabBase implements NavigationClient {
     }
 
     /**
-     * @return The native pointer representing the native side of this {@link TabBase} object.
+     * @return The native pointer representing the native side of this {@link Tab} object.
      */
     @CalledByNative
     protected long getNativePtr() {

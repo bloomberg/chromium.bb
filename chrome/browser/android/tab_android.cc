@@ -29,7 +29,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/TabBase_jni.h"
+#include "jni/Tab_jni.h"
 
 TabAndroid* TabAndroid::FromWebContents(content::WebContents* web_contents) {
   CoreTabHelper* core_tab_helper = CoreTabHelper::FromWebContents(web_contents);
@@ -44,14 +44,14 @@ TabAndroid* TabAndroid::FromWebContents(content::WebContents* web_contents) {
 }
 
 TabAndroid* TabAndroid::GetNativeTab(JNIEnv* env, jobject obj) {
-  return reinterpret_cast<TabAndroid*>(Java_TabBase_getNativePtr(env, obj));
+  return reinterpret_cast<TabAndroid*>(Java_Tab_getNativePtr(env, obj));
 }
 
 TabAndroid::TabAndroid(JNIEnv* env, jobject obj)
     : weak_java_tab_(env, obj),
       session_tab_id_(),
       synced_tab_delegate_(new browser_sync::SyncedTabDelegateAndroid(this)) {
-  Java_TabBase_setNativePtr(env, obj, reinterpret_cast<intptr_t>(this));
+  Java_Tab_setNativePtr(env, obj, reinterpret_cast<intptr_t>(this));
 }
 
 TabAndroid::~TabAndroid() {
@@ -60,7 +60,7 @@ TabAndroid::~TabAndroid() {
   if (obj.is_null())
     return;
 
-  Java_TabBase_clearNativePtr(env, obj.obj());
+  Java_Tab_clearNativePtr(env, obj.obj());
 }
 
 base::android::ScopedJavaLocalRef<jobject> TabAndroid::GetJavaObject() {
@@ -73,7 +73,7 @@ int TabAndroid::GetAndroidId() const {
   ScopedJavaLocalRef<jobject> obj = weak_java_tab_.get(env);
   if (obj.is_null())
     return -1;
-  return Java_TabBase_getId(env, obj.obj());
+  return Java_Tab_getId(env, obj.obj());
 }
 
 int TabAndroid::GetSyncId() const {
@@ -81,7 +81,7 @@ int TabAndroid::GetSyncId() const {
   ScopedJavaLocalRef<jobject> obj = weak_java_tab_.get(env);
   if (obj.is_null())
     return 0;
-  return Java_TabBase_getSyncId(env, obj.obj());
+  return Java_Tab_getSyncId(env, obj.obj());
 }
 
 base::string16 TabAndroid::GetTitle() const {
@@ -90,7 +90,7 @@ base::string16 TabAndroid::GetTitle() const {
   if (obj.is_null())
     return base::string16();
   return base::android::ConvertJavaStringToUTF16(
-      Java_TabBase_getTitle(env, obj.obj()));
+      Java_Tab_getTitle(env, obj.obj()));
 }
 
 GURL TabAndroid::GetURL() const {
@@ -99,7 +99,7 @@ GURL TabAndroid::GetURL() const {
   if (obj.is_null())
     return GURL::EmptyGURL();
   return GURL(base::android::ConvertJavaStringToUTF8(
-      Java_TabBase_getUrl(env, obj.obj())));
+      Java_Tab_getUrl(env, obj.obj())));
 }
 
 bool TabAndroid::RestoreIfNeeded() {
@@ -107,7 +107,7 @@ bool TabAndroid::RestoreIfNeeded() {
   ScopedJavaLocalRef<jobject> obj = weak_java_tab_.get(env);
   if (obj.is_null())
     return false;
-  return Java_TabBase_restoreIfNeeded(env, obj.obj());
+  return Java_Tab_restoreIfNeeded(env, obj.obj());
 }
 
 content::ContentViewCore* TabAndroid::GetContentViewCore() const {
@@ -133,7 +133,7 @@ void TabAndroid::SetSyncId(int sync_id) {
   ScopedJavaLocalRef<jobject> obj = weak_java_tab_.get(env);
   if (obj.is_null())
     return;
-  Java_TabBase_setSyncId(env, obj.obj(), sync_id);
+  Java_Tab_setSyncId(env, obj.obj(), sync_id);
 }
 
 void TabAndroid::HandlePopupNavigation(chrome::NavigateParams* params) {
@@ -180,14 +180,14 @@ void TabAndroid::SwapTabContents(content::WebContents* old_contents,
   // We need to notify the native InfobarContainer so infobars can be swapped.
   InfoBarContainerAndroid* infobar_container =
       reinterpret_cast<InfoBarContainerAndroid*>(
-          Java_TabBase_getNativeInfoBarContainer(
+          Java_Tab_getNativeInfoBarContainer(
               env,
               weak_java_tab_.get(env).obj()));
   InfoBarService* new_infobar_service = new_contents ?
       InfoBarService::FromWebContents(new_contents) : NULL;
   infobar_container->ChangeInfoBarService(new_infobar_service);
 
-  Java_TabBase_swapWebContents(
+  Java_Tab_swapWebContents(
       env,
       weak_java_tab_.get(env).obj(),
       reinterpret_cast<intptr_t>(new_contents),
@@ -221,10 +221,10 @@ void TabAndroid::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_FAVICON_UPDATED:
-      Java_TabBase_onFaviconUpdated(env, weak_java_tab_.get(env).obj());
+      Java_Tab_onFaviconUpdated(env, weak_java_tab_.get(env).obj());
       break;
     case content::NOTIFICATION_NAV_ENTRY_CHANGED:
-      Java_TabBase_onNavEntryChanged(env, weak_java_tab_.get(env).obj());
+      Java_Tab_onNavEntryChanged(env, weak_java_tab_.get(env).obj());
       break;
     default:
       NOTREACHED() << "Unexpected notification " << type;

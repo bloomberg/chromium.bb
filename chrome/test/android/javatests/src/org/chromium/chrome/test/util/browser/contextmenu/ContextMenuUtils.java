@@ -11,9 +11,9 @@ import android.view.MenuItem;
 
 import junit.framework.Assert;
 
-import org.chromium.chrome.browser.TabBase;
-import org.chromium.chrome.test.util.TabBaseTabUtils;
-import org.chromium.chrome.test.util.TabBaseTabUtils.TestCallbackHelperContainerForTab;
+import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.test.util.TabUtils;
+import org.chromium.chrome.test.util.TabUtils.TestCallbackHelperContainerForTab;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
@@ -36,9 +36,9 @@ public class ContextMenuUtils {
      * @throws TimeoutException
      */
     public static ContextMenu openContextMenu(ActivityInstrumentationTestCase2 testCase,
-            TabBase tab, TestCallbackHelperContainerForTab client, String openerDOMNodeId)
+            Tab tab, TestCallbackHelperContainerForTab client, String openerDOMNodeId)
                     throws InterruptedException, TimeoutException {
-        if (client == null) client = TabBaseTabUtils.getTestCallbackHelperContainer(tab);
+        if (client == null) client = TabUtils.getTestCallbackHelperContainer(tab);
 
         TestCallbackHelperContainerForTab.OnContextMenuShownHelper helper =
                 client.getOnContextMenuShownHelper();
@@ -62,7 +62,7 @@ public class ContextMenuUtils {
      * @throws TimeoutException
      */
     public static void selectContextMenuItem(ActivityInstrumentationTestCase2 testCase,
-            TabBase tab, TestCallbackHelperContainerForTab client, String openerDOMNodeId,
+            Tab tab, TestCallbackHelperContainerForTab client, String openerDOMNodeId,
             final int itemId) throws InterruptedException, TimeoutException {
         ContextMenu menu = openContextMenu(testCase, tab, client, openerDOMNodeId);
         Assert.assertNotNull("Failed to open context menu", menu);
@@ -82,7 +82,7 @@ public class ContextMenuUtils {
      * @throws TimeoutException
      */
     public static void selectContextMenuItemByTitle(ActivityInstrumentationTestCase2 testCase,
-            TabBase tab, TestCallbackHelperContainerForTab client, String openerDOMNodeId,
+            Tab tab, TestCallbackHelperContainerForTab client, String openerDOMNodeId,
             String itemTitle) throws InterruptedException, TimeoutException {
 
         ContextMenu menu = openContextMenu(testCase, tab, client, openerDOMNodeId);
