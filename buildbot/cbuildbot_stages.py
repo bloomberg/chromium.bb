@@ -59,6 +59,8 @@ corresponding update directory.
 """
 PRE_CQ = validation_pool.PRE_CQ
 
+CQ_HWTEST_WAS_ABORTED = ('HWTest was aborted, because another commit '
+                         'queue builder failed outside of HWTest.')
 
 class NonHaltingBuilderStage(bs.BuilderStage):
   """Build stage that fails a build but finishes the other steps."""
@@ -2920,7 +2922,14 @@ class HWTestStage(ArchivingStage):
                    isinstance(exception, lab_status.BoardIsDisabledException))
     is_warning_code = (isinstance(exception, cros_build_lib.RunCommandError) and
                        exception.result.returncode in codes_handled_as_warning)
-    if is_lab_down or is_warning_code or self._CheckAborted():
+    if is_lab_down:
+      cros_build_lib.Warning('HWTest was skipped because the lab was down.')
+      return self._HandleExceptionAsWarning(exception)
+    elif is_warning_code:
+      cros_build_lib.Warning('HWTest failed with warning code.')
+      return self._HandleExceptionAsWarning(exception)
+    elif self._CheckAborted():
+      cros_build_lib.Warning(CQ_HWTEST_WAS_ABORTED)
       return self._HandleExceptionAsWarning(exception)
     else:
       return super(HWTestStage, self)._HandleStageException(exception)
@@ -2934,7 +2943,7 @@ class HWTestStage(ArchivingStage):
   def PerformStage(self):
     if self._CheckAborted():
       cros_build_lib.PrintBuildbotStepText('aborted')
-      cros_build_lib.Warning('Skipping HWTests as they have been aborted.')
+      cros_build_lib.Warning(CQ_HWTEST_WAS_ABORTED)
       return
 
     build = '/'.join([self._bot_id, self.version])

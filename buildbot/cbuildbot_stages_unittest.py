@@ -1031,6 +1031,7 @@ class HWTestStageTest(AbstractStageTest):
         cros_build_lib.PrintBuildbotStepFailure()
         cros_build_lib.Error(mox.IgnoreArg())
       else:
+        cros_build_lib.Warning(mox.IgnoreArg())
         cros_build_lib.PrintBuildbotStepWarnings()
         cros_build_lib.Warning(mox.IgnoreArg())
 
@@ -1083,6 +1084,7 @@ class HWTestStageTest(AbstractStageTest):
 
   def testHandleLabDownAsWarning(self):
     """Test that buildbot warn when lab is down."""
+    cros_build_lib.Warning(mox.IgnoreArg())
     check_lab = lab_status.CheckLabStatus(mox.IgnoreArg())
     check_lab.AndRaise(lab_status.LabIsDownException('Lab is not up.'))
     cros_build_lib.PrintBuildbotStepWarnings()
