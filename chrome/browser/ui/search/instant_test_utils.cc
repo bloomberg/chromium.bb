@@ -12,6 +12,8 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
+#include "chrome/browser/ui/search/search_tab_helper.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -92,10 +94,12 @@ void InstantTestBase::Init(const GURL& instant_url,
 }
 
 void InstantTestBase::FocusOmnibox() {
-  // If the omnibox already has focus, just notify Instant.
+  // If the omnibox already has focus, just notify SearchTabHelper.
   if (omnibox()->model()->has_focus()) {
-    instant()->OmniboxFocusChanged(OMNIBOX_FOCUS_VISIBLE,
-                                   OMNIBOX_FOCUS_CHANGE_EXPLICIT, NULL);
+    content::WebContents* active_tab =
+        browser_->tab_strip_model()->GetActiveWebContents();
+    SearchTabHelper::FromWebContents(active_tab)->OmniboxFocusChanged(
+        OMNIBOX_FOCUS_VISIBLE, OMNIBOX_FOCUS_CHANGE_EXPLICIT);
   } else {
     browser_->window()->GetLocationBar()->FocusLocation(false);
   }

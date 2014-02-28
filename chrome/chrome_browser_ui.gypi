@@ -1535,8 +1535,6 @@
         'browser/ui/screen_capture_notification_ui_stub.cc',
         'browser/ui/search/instant_controller.cc',
         'browser/ui/search/instant_controller.h',
-        'browser/ui/search/instant_ipc_sender.cc',
-        'browser/ui/search/instant_ipc_sender.h',
         'browser/ui/search/instant_page.cc',
         'browser/ui/search/instant_page.h',
         'browser/ui/search/instant_search_prerenderer.cc',

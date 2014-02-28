@@ -146,6 +146,7 @@ TEST_F(SearchIPCRouterPolicyTest, DoNotProcessMessagesForInactiveTab) {
   EXPECT_FALSE(router_policy->ShouldProcessFocusOmnibox(false));
   EXPECT_FALSE(router_policy->ShouldProcessNavigateToURL(false));
   EXPECT_FALSE(router_policy->ShouldProcessPasteIntoOmnibox(false));
+  EXPECT_FALSE(router_policy->ShouldSendSetInputInProgress(false));
 }
 
 TEST_F(SearchIPCRouterPolicyTest, SendSetDisplayInstantResults) {
@@ -174,6 +175,8 @@ TEST_F(SearchIPCRouterPolicyTest,
   EXPECT_FALSE(router_policy->ShouldSendSetPromoInformation());
   EXPECT_FALSE(router_policy->ShouldSendThemeBackgroundInfo());
   EXPECT_FALSE(router_policy->ShouldSendMostVisitedItems());
+  EXPECT_FALSE(router_policy->ShouldSendSetInputInProgress(true));
+  EXPECT_FALSE(router_policy->ShouldSendOmniboxFocusChanged());
 }
 
 TEST_F(SearchIPCRouterPolicyTest,

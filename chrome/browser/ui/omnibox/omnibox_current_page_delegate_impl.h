@@ -31,6 +31,8 @@ class OmniboxCurrentPageDelegateImpl : public OmniboxCurrentPageDelegate {
       const AutocompleteMatch& match,
       WindowOpenDisposition disposition) OVERRIDE;
   virtual void OnInputStateChanged() OVERRIDE;
+  virtual void OnFocusChanged(OmniboxFocusState state,
+                              OmniboxFocusChangeReason reason) OVERRIDE;
   virtual void DoPrerender(const AutocompleteMatch& match) OVERRIDE;
 
  private:

@@ -16,7 +16,6 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/search/instant_page.h"
 #include "chrome/common/instant_types.h"
-#include "chrome/common/omnibox_focus_state.h"
 #include "chrome/common/search_types.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -55,13 +54,6 @@ class InstantController : public InstantPage::Delegate {
   // search-term-replacement enabled. If |instant_tab_| can be used to process
   // the search, this does so and returns true. Else, returns false.
   bool SubmitQuery(const base::string16& search_terms);
-
-  // Called to indicate that the omnibox focus state changed with the given
-  // |reason|. If |focus_state| is FOCUS_NONE, |view_gaining_focus| is set to
-  // the view gaining focus.
-  void OmniboxFocusChanged(OmniboxFocusState focus_state,
-                           OmniboxFocusChangeReason reason,
-                           gfx::NativeView view_gaining_focus);
 
   // The search mode in the active tab has changed. Bind |instant_tab_| if the
   // |new_mode| reflects an Instant search results page.
@@ -147,10 +139,6 @@ class InstantController : public InstantPage::Delegate {
   // Sends theme info, omnibox bounds, etc. down to the Instant tab.
   void UpdateInfoForInstantTab();
 
-  // Returns whether input is in progress, i.e. if the omnibox has focus and the
-  // active tab is in mode SEARCH_SUGGESTIONS.
-  bool IsInputInProgress() const;
-
   // Returns the InstantService for the browser profile.
   InstantService* GetInstantService() const;
 
@@ -158,12 +146,6 @@ class InstantController : public InstantPage::Delegate {
 
   // The instance of InstantPage maintained by InstantController.
   scoped_ptr<InstantTab> instant_tab_;
-
-  // Omnibox focus state.
-  OmniboxFocusState omnibox_focus_state_;
-
-  // The reason for the most recent omnibox focus change.
-  OmniboxFocusChangeReason omnibox_focus_change_reason_;
 
   // The search model mode for the active tab.
   SearchMode search_mode_;

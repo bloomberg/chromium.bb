@@ -44,7 +44,6 @@ InstantPage::InstantPage(Delegate* delegate, const std::string& instant_url,
                          Profile* profile, bool is_incognito)
     : profile_(profile),
       delegate_(delegate),
-      ipc_sender_(InstantIPCSender::Create(is_incognito)),
       instant_url_(instant_url),
       is_incognito_(is_incognito) {
 }
@@ -55,7 +54,6 @@ void InstantPage::SetContents(content::WebContents* web_contents) {
   if (!web_contents)
     return;
 
-  sender()->SetContents(web_contents);
   Observe(web_contents);
   SearchModel* model = SearchTabHelper::FromWebContents(contents())->model();
   model->AddObserver(this);
@@ -98,6 +96,5 @@ void InstantPage::ClearContents() {
   if (contents())
     SearchTabHelper::FromWebContents(contents())->model()->RemoveObserver(this);
 
-  sender()->SetContents(NULL);
   Observe(NULL);
 }

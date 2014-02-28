@@ -332,6 +332,10 @@ class OmniboxEditModel {
   // InstantController via OmniboxEditController, because the only valid pointer
   // to InstantController is kept in Browser. We should try to get rid of this,
   // maybe by ensuring InstantController lives as long as Browser.
+  //
+  // TODO(kmadhusu): Remove this function and update the callers.
+  //
+  // This method is deprecated and should not be used in new code.
   InstantController* GetInstantController() const;
 
   // Name of the histogram tracking cut or copy omnibox commands.

@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/ntp_logging_events.h"
+#include "chrome/common/omnibox_focus_state.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/base/window_open_disposition.h"
@@ -54,6 +55,11 @@ class SearchTabHelper : public content::WebContentsObserver,
   // Invoked when the omnibox input state is changed in some way that might
   // affect the search mode.
   void OmniboxInputStateChanged();
+
+  // Called to indicate that the omnibox focus state changed with the given
+  // |reason|.
+  void OmniboxFocusChanged(OmniboxFocusState state,
+                           OmniboxFocusChangeReason reason);
 
   // Invoked when the active navigation entry is updated in some way that might
   // affect the search mode. This is used by Instant when it "fixes up" the
@@ -198,6 +204,10 @@ class SearchTabHelper : public content::WebContentsObserver,
   // Helper function to navigate the given contents to the local fallback
   // Instant URL and trim the history correctly.
   void RedirectToLocalNTP();
+
+  // Returns whether input is in progress, i.e. if the omnibox has focus and the
+  // active tab is in mode SEARCH_SUGGESTIONS.
+  bool IsInputInProgress() const;
 
   const bool is_search_enabled_;
 

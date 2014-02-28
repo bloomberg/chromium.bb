@@ -79,9 +79,7 @@ void EnsureSearchTermsAreSet(content::WebContents* contents,
 }  // namespace
 
 InstantController::InstantController(BrowserInstantController* browser)
-    : browser_(browser),
-      omnibox_focus_state_(OMNIBOX_FOCUS_NONE),
-      omnibox_focus_change_reason_(OMNIBOX_FOCUS_CHANGE_EXPLICIT) {
+    : browser_(browser) {
 }
 
 InstantController::~InstantController() {
@@ -121,31 +119,6 @@ bool InstantController::SubmitQuery(const base::string16& search_terms) {
   return false;
 }
 
-void InstantController::OmniboxFocusChanged(
-    OmniboxFocusState state,
-    OmniboxFocusChangeReason reason,
-    gfx::NativeView view_gaining_focus) {
-  LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
-      "OmniboxFocusChanged: %d to %d for reason %d", omnibox_focus_state_,
-      state, reason));
-
-  omnibox_focus_state_ = state;
-  if (!instant_tab_)
-    return;
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_OMNIBOX_FOCUS_CHANGED,
-      content::Source<InstantController>(this),
-      content::NotificationService::NoDetails());
-
-  instant_tab_->sender()->FocusChanged(omnibox_focus_state_, reason);
-  // Don't send oninputstart/oninputend updates in response to focus changes
-  // if there's a navigation in progress. This prevents Chrome from sending
-  // a spurious oninputend when the user accepts a match in the omnibox.
-  if (instant_tab_->contents()->GetController().GetPendingEntry() == NULL)
-    instant_tab_->sender()->SetInputInProgress(IsInputInProgress());
-}
-
 void InstantController::SearchModeChanged(const SearchMode& old_mode,
                                           const SearchMode& new_mode) {
   LOG_INSTANT_DEBUG_EVENT(this, base::StringPrintf(
@@ -154,9 +127,6 @@ void InstantController::SearchModeChanged(const SearchMode& old_mode,
 
   search_mode_ = new_mode;
   ResetInstantTab();
-
-  if (instant_tab_ && old_mode.is_ntp() != new_mode.is_ntp())
-    instant_tab_->sender()->SetInputInProgress(IsInputInProgress());
 }
 
 void InstantController::ActiveTabChanged() {
@@ -249,16 +219,7 @@ void InstantController::UpdateInfoForInstantTab() {
       instant_service->UpdateThemeInfo();
       instant_service->UpdateMostVisitedItemsInfo();
     }
-
-    instant_tab_->sender()->FocusChanged(omnibox_focus_state_,
-                                         omnibox_focus_change_reason_);
-    instant_tab_->sender()->SetInputInProgress(IsInputInProgress());
   }
-}
-
-bool InstantController::IsInputInProgress() const {
-  return !search_mode_.is_ntp() &&
-      omnibox_focus_state_ == OMNIBOX_FOCUS_VISIBLE;
 }
 
 InstantService* InstantController::GetInstantService() const {

@@ -10,9 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/ui/search/instant_ipc_sender.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/page_transition_types.h"
@@ -61,9 +59,6 @@ class InstantPage : public content::WebContentsObserver,
   // The WebContents corresponding to the page we're talking to. May be NULL.
   content::WebContents* contents() const { return web_contents(); }
 
-  // Used to send IPC messages to the page.
-  InstantIPCSender* sender() const { return ipc_sender_.get(); }
-
   // Returns the Instant URL that was loaded for this page. Returns the empty
   // string if no URL was explicitly loaded as is the case for InstantTab.
   virtual const std::string& instant_url() const;
@@ -105,8 +100,6 @@ class InstantPage : public content::WebContentsObserver,
   FRIEND_TEST_ALL_PREFIXES(InstantPageTest,
                            PageURLDoesntBelongToInstantRenderer);
   FRIEND_TEST_ALL_PREFIXES(InstantPageTest, PageSupportsInstant);
-  FRIEND_TEST_ALL_PREFIXES(InstantPageTest,
-                           AppropriateMessagesSentToIncognitoPages);
 
   // Overridden from content::WebContentsObserver:
   virtual void DidCommitProvisionalLoadForFrame(
@@ -131,7 +124,6 @@ class InstantPage : public content::WebContentsObserver,
   Profile* profile_;
 
   Delegate* const delegate_;
-  scoped_ptr<InstantIPCSender> ipc_sender_;
   const std::string instant_url_;
   const bool is_incognito_;
 

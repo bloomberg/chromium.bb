@@ -50,7 +50,6 @@
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
-#include "chrome/browser/ui/search/instant_controller.h"
 #include "chrome/browser/ui/search/instant_search_prerenderer.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
@@ -934,13 +933,6 @@ void OmniboxEditModel::SetCaretVisibility(bool visible) {
 }
 
 void OmniboxEditModel::OnWillKillFocus(gfx::NativeView view_gaining_focus) {
-  InstantController* instant = GetInstantController();
-  if (instant) {
-    instant->OmniboxFocusChanged(OMNIBOX_FOCUS_NONE,
-                                 OMNIBOX_FOCUS_CHANGE_EXPLICIT,
-                                 view_gaining_focus);
-  }
-
   // TODO(jered): Rip this out along with StartZeroSuggest.
   autocomplete_controller()->StopZeroSuggest();
 
@@ -949,10 +941,7 @@ void OmniboxEditModel::OnWillKillFocus(gfx::NativeView view_gaining_focus) {
 }
 
 void OmniboxEditModel::OnKillFocus() {
-  // TODO(samarth): determine if it is safe to move the call to
-  // OmniboxFocusChanged() from OnWillKillFocus() to here, which would let us
-  // just call SetFocusState() to handle the state change.
-  focus_state_ = OMNIBOX_FOCUS_NONE;
+  SetFocusState(OMNIBOX_FOCUS_NONE, OMNIBOX_FOCUS_CHANGE_EXPLICIT);
   focus_source_ = INVALID;
   control_key_state_ = UP;
   paste_state_ = NONE;
@@ -1436,10 +1425,6 @@ void OmniboxEditModel::SetFocusState(OmniboxFocusState state,
   if (state == focus_state_)
     return;
 
-  InstantController* instant = GetInstantController();
-  if (instant)
-    instant->OmniboxFocusChanged(state, reason, NULL);
-
   // Update state and notify view if the omnibox has focus and the caret
   // visibility changed.
   const bool was_caret_visible = is_caret_visible();
@@ -1447,4 +1432,6 @@ void OmniboxEditModel::SetFocusState(OmniboxFocusState state,
   if (focus_state_ != OMNIBOX_FOCUS_NONE &&
       is_caret_visible() != was_caret_visible)
     view_->ApplyCaretVisibility();
+
+  delegate_->OnFocusChanged(focus_state_, reason);
 }

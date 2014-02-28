@@ -152,18 +152,3 @@ TEST_F(InstantPageTest, PageSupportsInstant) {
   SearchTabHelper::FromWebContents(web_contents())->InstantSupportChanged(true);
   EXPECT_TRUE(page->supports_instant());
 }
-
-TEST_F(InstantPageTest, AppropriateMessagesSentToIncognitoPages) {
-  page.reset(new InstantPage(&delegate, "", NULL, true));
-  page->SetContents(web_contents());
-  NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
-  process()->sink().ClearMessages();
-
-  // Incognito pages should not get any others.
-  page->sender()->FocusChanged(
-      OMNIBOX_FOCUS_NONE, OMNIBOX_FOCUS_CHANGE_EXPLICIT);
-  EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxFocusChanged::ID));
-
-  page->sender()->SetInputInProgress(false);
-  EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxSetInputInProgress::ID));
-}

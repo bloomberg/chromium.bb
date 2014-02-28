@@ -75,6 +75,8 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
   MOCK_METHOD0(ShouldSendSetDisplayInstantResults, bool());
   MOCK_METHOD0(ShouldSendSetSuggestionToPrefetch, bool());
   MOCK_METHOD0(ShouldSendSetOmniboxStartMargin, bool());
+  MOCK_METHOD1(ShouldSendSetInputInProgress, bool(bool));
+  MOCK_METHOD0(ShouldSendOmniboxFocusChanged, bool());
   MOCK_METHOD0(ShouldSendMostVisitedItems, bool());
   MOCK_METHOD0(ShouldSendThemeBackgroundInfo, bool());
   MOCK_METHOD0(ShouldSendToggleVoiceSearch, bool());
@@ -752,6 +754,56 @@ TEST_F(SearchIPCRouterTest, DoNotSendSetOmniboxStartMargin) {
   process()->sink().ClearMessages();
   GetSearchIPCRouter().SetOmniboxStartMargin(92);
   EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxMarginChange::ID));
+}
+
+TEST_F(SearchIPCRouterTest, SendOmniboxFocusChange) {
+  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
+  SetupMockDelegateAndPolicy();
+  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
+  EXPECT_CALL(*policy, ShouldSendOmniboxFocusChanged()).Times(1)
+      .WillOnce(testing::Return(true));
+
+  process()->sink().ClearMessages();
+  GetSearchIPCRouter().OmniboxFocusChanged(OMNIBOX_FOCUS_NONE,
+                                           OMNIBOX_FOCUS_CHANGE_EXPLICIT);
+  EXPECT_TRUE(MessageWasSent(ChromeViewMsg_SearchBoxFocusChanged::ID));
+}
+
+TEST_F(SearchIPCRouterTest, DoNotSendOmniboxFocusChange) {
+  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
+  SetupMockDelegateAndPolicy();
+  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
+  EXPECT_CALL(*policy, ShouldSendOmniboxFocusChanged()).Times(1)
+      .WillOnce(testing::Return(false));
+
+  process()->sink().ClearMessages();
+  GetSearchIPCRouter().OmniboxFocusChanged(OMNIBOX_FOCUS_NONE,
+                                           OMNIBOX_FOCUS_CHANGE_EXPLICIT);
+  EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxFocusChanged::ID));
+}
+
+TEST_F(SearchIPCRouterTest, SendSetInputInProgress) {
+  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
+  SetupMockDelegateAndPolicy();
+  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
+  EXPECT_CALL(*policy, ShouldSendSetInputInProgress(true)).Times(1)
+      .WillOnce(testing::Return(true));
+
+  process()->sink().ClearMessages();
+  GetSearchIPCRouter().SetInputInProgress(true);
+  EXPECT_TRUE(MessageWasSent(ChromeViewMsg_SearchBoxSetInputInProgress::ID));
+}
+
+TEST_F(SearchIPCRouterTest, DoNotSendSetInputInProgress) {
+  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
+  SetupMockDelegateAndPolicy();
+  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
+  EXPECT_CALL(*policy, ShouldSendSetInputInProgress(true)).Times(1)
+      .WillOnce(testing::Return(false));
+
+  process()->sink().ClearMessages();
+  GetSearchIPCRouter().SetInputInProgress(true);
+  EXPECT_FALSE(MessageWasSent(ChromeViewMsg_SearchBoxSetInputInProgress::ID));
 }
 
 TEST_F(SearchIPCRouterTest, SendMostVisitedItemsMsg) {

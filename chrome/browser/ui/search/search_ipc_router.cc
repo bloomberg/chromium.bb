@@ -70,6 +70,22 @@ void SearchIPCRouter::SetOmniboxStartMargin(int start_margin) {
   Send(new ChromeViewMsg_SearchBoxMarginChange(routing_id(), start_margin));
 }
 
+void SearchIPCRouter::SetInputInProgress(bool input_in_progress) {
+  if (!policy_->ShouldSendSetInputInProgress(is_active_tab_))
+    return;
+
+  Send(new ChromeViewMsg_SearchBoxSetInputInProgress(routing_id(),
+                                                     input_in_progress));
+}
+
+void SearchIPCRouter::OmniboxFocusChanged(OmniboxFocusState state,
+                                          OmniboxFocusChangeReason reason) {
+  if (!policy_->ShouldSendOmniboxFocusChanged())
+    return;
+
+  Send(new ChromeViewMsg_SearchBoxFocusChanged(routing_id(), state, reason));
+}
+
 void SearchIPCRouter::SendMostVisitedItems(
     const std::vector<InstantMostVisitedItem>& items) {
   if (!policy_->ShouldSendMostVisitedItems())

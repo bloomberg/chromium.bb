@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/most_visited_tiles_experiment.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
@@ -38,6 +39,8 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_type.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -184,6 +187,23 @@ void SearchTabHelper::OmniboxInputStateChanged() {
     return;
 
   UpdateMode(false, false);
+}
+
+void SearchTabHelper::OmniboxFocusChanged(OmniboxFocusState state,
+                                          OmniboxFocusChangeReason reason) {
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_OMNIBOX_FOCUS_CHANGED,
+      content::Source<SearchTabHelper>(this),
+      content::NotificationService::NoDetails());
+
+  ipc_router_.OmniboxFocusChanged(state, reason);
+
+  // Don't send oninputstart/oninputend updates in response to focus changes
+  // if there's a navigation in progress. This prevents Chrome from sending
+  // a spurious oninputend when the user accepts a match in the omnibox.
+  if (web_contents_->GetController().GetPendingEntry() == NULL) {
+    ipc_router_.SetInputInProgress(IsInputInProgress());
+  }
 }
 
 void SearchTabHelper::NavigationEntryUpdated() {
@@ -575,7 +595,11 @@ void SearchTabHelper::UpdateMode(bool update_origin, bool is_preloaded_ntp) {
   if (omnibox && omnibox->model()->user_input_in_progress())
     type = SearchMode::MODE_SEARCH_SUGGESTIONS;
 
+  SearchMode old_mode(model_.mode());
   model_.SetMode(SearchMode(type, origin));
+  if (old_mode.is_ntp() != model_.mode().is_ntp()) {
+    ipc_router_.SetInputInProgress(IsInputInProgress());
+  }
 }
 
 void SearchTabHelper::DetermineIfPageSupportsInstant() {
@@ -606,4 +630,10 @@ void SearchTabHelper::RedirectToLocalNTP() {
   // Don't push a history entry.
   load_params.should_replace_current_entry = true;
   web_contents_->GetController().LoadURLWithParams(load_params);
+}
+
+bool SearchTabHelper::IsInputInProgress() const {
+  OmniboxView* omnibox = GetOmniboxView(web_contents());
+  return !model_.mode().is_ntp() && omnibox &&
+      omnibox->model()->focus_state() == OMNIBOX_FOCUS_VISIBLE;
 }
