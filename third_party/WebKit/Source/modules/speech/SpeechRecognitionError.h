@@ -64,7 +64,10 @@ public:
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
 
-    virtual void trace(Visitor*) OVERRIDE { }
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        Event::trace(visitor);
+    }
 
 private:
     SpeechRecognitionError(const String&, const String&);
