@@ -19,6 +19,7 @@ namespace device {
 namespace {
 
 const char kInvalidResponseMsg[] = "Invalid Response: ";
+uint32 kMaxChunkSize = 1024*1024;  // D-Bus has message size limits.
 
 // The MediaTransferProtocolDaemonClient implementation.
 class MediaTransferProtocolDaemonClientImpl
@@ -140,6 +141,7 @@ class MediaTransferProtocolDaemonClientImpl
       uint32 bytes_to_read,
       const ReadFileCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE {
+    DCHECK_LE(bytes_to_read, kMaxChunkSize);
     dbus::MethodCall method_call(mtpd::kMtpdInterface,
                                  mtpd::kReadFileChunkByPath);
     dbus::MessageWriter writer(&method_call);
@@ -162,6 +164,7 @@ class MediaTransferProtocolDaemonClientImpl
                                  uint32 bytes_to_read,
                                  const ReadFileCallback& callback,
                                  const ErrorCallback& error_callback) OVERRIDE {
+    DCHECK_LE(bytes_to_read, kMaxChunkSize);
     dbus::MethodCall method_call(mtpd::kMtpdInterface,
                                  mtpd::kReadFileChunkById);
     dbus::MessageWriter writer(&method_call);

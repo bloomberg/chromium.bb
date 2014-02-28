@@ -137,6 +137,12 @@ class MTPDeviceTaskHelper {
       const std::vector<MtpFileEntry>& file_entries,
       bool error) const;
 
+  // Intermediate step to finish a ReadBytes request.
+  void OnGetFileInfoToReadBytes(
+      const MTPDeviceAsyncDelegate::ReadBytesRequest& request,
+      const MtpFileEntry& file_entry,
+      bool error);
+
   // Query callback for ReadBytes();
   //
   // If there is no error, |error| is set to false, the buffer within |request|
@@ -148,6 +154,7 @@ class MTPDeviceTaskHelper {
   // IO thread to notify the caller.
   void OnDidReadBytes(
       const MTPDeviceAsyncDelegate::ReadBytesRequest& request,
+      const base::File::Info& file_info,
       const std::string& data,
       bool error) const;
 

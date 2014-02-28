@@ -44,7 +44,9 @@ class MTPDeviceAsyncDelegate {
            const base::FilePath& local_path)> CreateSnapshotFileSuccessCallback;
 
   // A callback to be called when ReadBytes method call succeeds.
-  typedef base::Callback<void(int)> ReadBytesSuccessCallback;
+  typedef base::Callback<
+      void(const base::File::Info& file_info,
+           int bytes_read)> ReadBytesSuccessCallback;
 
   struct ReadBytesRequest {
     ReadBytesRequest(const std::string& device_file_relative_path,

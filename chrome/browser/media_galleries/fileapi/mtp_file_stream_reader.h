@@ -38,19 +38,15 @@ class MTPFileStreamReader
       const net::Int64CompletionCallback& callback) OVERRIDE;
 
  private:
-  void OnFileInfoForRead(net::IOBuffer* buf, int buf_len,
-                         const net::CompletionCallback& callback,
-                         const base::File::Info& file_info);
-
   void FinishValidateMediaHeader(
       net::IOBuffer* header_buf,
-      const base::File::Info& file_info,
       net::IOBuffer* buf, int buf_len,
       const net::CompletionCallback& callback,
+      const base::File::Info& file_info,
       int header_bytes_read);
 
   void FinishRead(const net::CompletionCallback& callback,
-                  int bytes_read);
+                  const base::File::Info& file_info, int bytes_read);
 
   void FinishGetLength(const net::Int64CompletionCallback& callback,
                        const base::File::Info& file_info);

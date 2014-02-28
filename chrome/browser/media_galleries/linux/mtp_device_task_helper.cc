@@ -33,6 +33,19 @@ device::MediaTransferProtocolManager* GetMediaTransferProtocolManager() {
   return StorageMonitor::GetInstance()->media_transfer_protocol_manager();
 }
 
+base::File::Info FileInfoFromMTPFileEntry(const MtpFileEntry& file_entry) {
+  base::File::Info file_entry_info;
+  file_entry_info.size = file_entry.file_size();
+  file_entry_info.is_directory =
+      file_entry.file_type() == MtpFileEntry::FILE_TYPE_FOLDER;
+  file_entry_info.is_symbolic_link = false;
+  file_entry_info.last_modified =
+      base::Time::FromTimeT(file_entry.modification_time());
+  file_entry_info.last_accessed = file_entry_info.last_modified;
+  file_entry_info.creation_time = base::Time();
+  return file_entry_info;
+}
+
 }  // namespace
 
 MTPDeviceTaskHelper::MTPDeviceTaskHelper()
@@ -116,12 +129,9 @@ void MTPDeviceTaskHelper::ReadBytes(
                              base::File::FILE_ERROR_FAILED);
   }
 
-  GetMediaTransferProtocolManager()->ReadFileChunkByPath(
-      device_handle_,
-      request.device_file_relative_path,
-      base::checked_cast<uint32>(request.offset),
-      base::checked_cast<uint32>(request.buf_len),
-      base::Bind(&MTPDeviceTaskHelper::OnDidReadBytes,
+  GetMediaTransferProtocolManager()->GetFileInfoByPath(
+      device_handle_, request.device_file_relative_path,
+      base::Bind(&MTPDeviceTaskHelper::OnGetFileInfoToReadBytes,
                  weak_ptr_factory_.GetWeakPtr(), request));
 }
 
@@ -155,19 +165,10 @@ void MTPDeviceTaskHelper::OnGetFileInfo(
                              base::File::FILE_ERROR_NOT_FOUND);
   }
 
-  base::File::Info file_entry_info;
-  file_entry_info.size = file_entry.file_size();
-  file_entry_info.is_directory =
-      file_entry.file_type() == MtpFileEntry::FILE_TYPE_FOLDER;
-  file_entry_info.is_symbolic_link = false;
-  file_entry_info.last_modified =
-      base::Time::FromTimeT(file_entry.modification_time());
-  file_entry_info.last_accessed = file_entry_info.last_modified;
-  file_entry_info.creation_time = base::Time();
-  content::BrowserThread::PostTask(content::BrowserThread::IO,
-                                   FROM_HERE,
-                                   base::Bind(success_callback,
-                                              file_entry_info));
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(success_callback, FileInfoFromMTPFileEntry(file_entry)));
 }
 
 void MTPDeviceTaskHelper::OnDidReadDirectoryByPath(
@@ -195,8 +196,45 @@ void MTPDeviceTaskHelper::OnDidReadDirectoryByPath(
                                    base::Bind(success_callback, entries));
 }
 
+void MTPDeviceTaskHelper::OnGetFileInfoToReadBytes(
+    const MTPDeviceAsyncDelegate::ReadBytesRequest& request,
+    const MtpFileEntry& file_entry,
+    bool error) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(request.buf);
+  DCHECK(request.buf_len >= 0);
+  DCHECK_GE(request.offset, 0);
+  if (error) {
+    return HandleDeviceError(request.error_callback,
+                             base::File::FILE_ERROR_FAILED);
+  }
+
+  base::File::Info file_info = FileInfoFromMTPFileEntry(file_entry);
+  if (file_info.is_directory) {
+    return HandleDeviceError(request.error_callback,
+                             base::File::FILE_ERROR_NOT_A_FILE);
+  } else if (file_info.size < 0 || file_info.size > kuint32max ||
+             request.offset >= file_info.size) {
+    return HandleDeviceError(request.error_callback,
+                             base::File::FILE_ERROR_FAILED);
+  }
+
+  uint32 bytes_to_read = std::min(
+      base::checked_cast<uint32>(request.buf_len),
+      base::saturated_cast<uint32>(file_info.size - request.offset));
+
+  GetMediaTransferProtocolManager()->ReadFileChunkByPath(
+      device_handle_,
+      request.device_file_relative_path,
+      base::checked_cast<uint32>(request.offset),
+      bytes_to_read,
+      base::Bind(&MTPDeviceTaskHelper::OnDidReadBytes,
+                 weak_ptr_factory_.GetWeakPtr(), request, file_info));
+}
+
 void MTPDeviceTaskHelper::OnDidReadBytes(
     const MTPDeviceAsyncDelegate::ReadBytesRequest& request,
+    const base::File::Info& file_info,
     const std::string& data,
     bool error) const {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -211,7 +249,7 @@ void MTPDeviceTaskHelper::OnDidReadBytes(
   content::BrowserThread::PostTask(content::BrowserThread::IO,
                                    FROM_HERE,
                                    base::Bind(request.success_callback,
-                                              data.length()));
+                                              file_info, data.length()));
 }
 
 void MTPDeviceTaskHelper::HandleDeviceError(
