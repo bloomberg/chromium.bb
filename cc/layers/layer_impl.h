@@ -111,7 +111,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   const LayerImpl* scroll_parent() const { return scroll_parent_; }
 
   void SetScrollChildren(std::set<LayerImpl*>* children);
-  void RemoveScrollChild(LayerImpl* child);
 
   std::set<LayerImpl*>* scroll_children() { return scroll_children_.get(); }
   const std::set<LayerImpl*>* scroll_children() const {
@@ -128,7 +127,6 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   }
 
   void SetClipChildren(std::set<LayerImpl*>* children);
-  void RemoveClipChild(LayerImpl* child);
 
   std::set<LayerImpl*>* clip_children() { return clip_children_.get(); }
   const std::set<LayerImpl*>* clip_children() const {

@@ -93,24 +93,6 @@ LayerImpl::~LayerImpl() {
     layer_tree_impl()->RemoveLayerWithCopyOutputRequest(this);
   layer_tree_impl_->UnregisterLayer(this);
 
-  if (scroll_children_) {
-    for (std::set<LayerImpl*>::iterator it = scroll_children_->begin();
-        it != scroll_children_->end(); ++it)
-      (*it)->scroll_parent_ = NULL;
-  }
-
-  if (scroll_parent_)
-    scroll_parent_->RemoveScrollChild(this);
-
-  if (clip_children_) {
-    for (std::set<LayerImpl*>::iterator it = clip_children_->begin();
-        it != clip_children_->end(); ++it)
-      (*it)->clip_parent_ = NULL;
-  }
-
-  if (clip_parent_)
-    clip_parent_->RemoveClipChild(this);
-
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("cc.debug"), "cc::LayerImpl", this);
 }
@@ -173,8 +155,8 @@ void LayerImpl::SetScrollParent(LayerImpl* parent) {
   // Having both a scroll parent and a scroll offset delegate is unsupported.
   DCHECK(!scroll_offset_delegate_);
 
-  if (scroll_parent_)
-    scroll_parent_->RemoveScrollChild(this);
+  if (parent)
+    DCHECK_EQ(layer_tree_impl()->LayerById(parent->id()), parent);
 
   scroll_parent_ = parent;
   SetNeedsPushProperties();
@@ -193,20 +175,9 @@ void LayerImpl::SetScrollChildren(std::set<LayerImpl*>* children) {
   SetNeedsPushProperties();
 }
 
-void LayerImpl::RemoveScrollChild(LayerImpl* child) {
-  DCHECK(scroll_children_);
-  scroll_children_->erase(child);
-  if (scroll_children_->empty())
-    scroll_children_.reset();
-  SetNeedsPushProperties();
-}
-
 void LayerImpl::SetClipParent(LayerImpl* ancestor) {
   if (clip_parent_ == ancestor)
     return;
-
-  if (clip_parent_)
-    clip_parent_->RemoveClipChild(this);
 
   clip_parent_ = ancestor;
   SetNeedsPushProperties();
@@ -216,14 +187,6 @@ void LayerImpl::SetClipChildren(std::set<LayerImpl*>* children) {
   if (clip_children_.get() == children)
     return;
   clip_children_.reset(children);
-  SetNeedsPushProperties();
-}
-
-void LayerImpl::RemoveClipChild(LayerImpl* child) {
-  DCHECK(clip_children_);
-  clip_children_->erase(child);
-  if (clip_children_->empty())
-    clip_children_.reset();
   SetNeedsPushProperties();
 }
 
@@ -568,22 +531,33 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetSentScrollDelta(gfx::Vector2d());
 
   LayerImpl* scroll_parent = NULL;
-  if (scroll_parent_)
+  if (scroll_parent_) {
     scroll_parent = layer->layer_tree_impl()->LayerById(scroll_parent_->id());
+    DCHECK(scroll_parent);
+  }
 
   layer->SetScrollParent(scroll_parent);
   if (scroll_children_) {
     std::set<LayerImpl*>* scroll_children = new std::set<LayerImpl*>;
     for (std::set<LayerImpl*>::iterator it = scroll_children_->begin();
-        it != scroll_children_->end(); ++it)
-      scroll_children->insert(layer->layer_tree_impl()->LayerById((*it)->id()));
+         it != scroll_children_->end();
+         ++it) {
+      DCHECK_EQ((*it)->scroll_parent(), this);
+      LayerImpl* scroll_child =
+          layer->layer_tree_impl()->LayerById((*it)->id());
+      DCHECK(scroll_child);
+      scroll_children->insert(scroll_child);
+    }
     layer->SetScrollChildren(scroll_children);
+  } else {
+    layer->SetScrollChildren(NULL);
   }
 
   LayerImpl* clip_parent = NULL;
   if (clip_parent_) {
     clip_parent = layer->layer_tree_impl()->LayerById(
         clip_parent_->id());
+    DCHECK(clip_parent);
   }
 
   layer->SetClipParent(clip_parent);
@@ -593,6 +567,8 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
         it != clip_children_->end(); ++it)
       clip_children->insert(layer->layer_tree_impl()->LayerById((*it)->id()));
     layer->SetClipChildren(clip_children);
+  } else {
+    layer->SetClipChildren(NULL);
   }
 
   layer->PassCopyRequests(&copy_requests_);

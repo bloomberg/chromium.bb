@@ -8,6 +8,8 @@
 #include <set>
 #include <vector>
 
+#include "base/format_macros.h"
+#include "base/strings/stringprintf.h"
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
@@ -110,12 +112,14 @@ void ExpectTreesAreIdentical(Layer* layer,
 
   ASSERT_EQ(!!layer->mask_layer(), !!layer_impl->mask_layer());
   if (layer->mask_layer()) {
+    SCOPED_TRACE("mask_layer");
     ExpectTreesAreIdentical(
         layer->mask_layer(), layer_impl->mask_layer(), tree_impl);
   }
 
   ASSERT_EQ(!!layer->replica_layer(), !!layer_impl->replica_layer());
   if (layer->replica_layer()) {
+    SCOPED_TRACE("replica_layer");
     ExpectTreesAreIdentical(
         layer->replica_layer(), layer_impl->replica_layer(), tree_impl);
   }
@@ -176,6 +180,7 @@ void ExpectTreesAreIdentical(Layer* layer,
   }
 
   for (size_t i = 0; i < layer_children.size(); ++i) {
+    SCOPED_TRACE(base::StringPrintf("child layer %" PRIuS, i).c_str());
     ExpectTreesAreIdentical(
         layer_children[i].get(), layer_impl_children[i], tree_impl);
   }
@@ -605,9 +610,12 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollParent) {
                                          host_impl->active_tree());
   TreeSynchronizer::PushProperties(layer_tree_root.get(),
                                    layer_impl_tree_root.get());
-  ExpectTreesAreIdentical(layer_tree_root.get(),
-                          layer_impl_tree_root.get(),
-                          host_impl->active_tree());
+  {
+    SCOPED_TRACE("case one");
+    ExpectTreesAreIdentical(layer_tree_root.get(),
+                            layer_impl_tree_root.get(),
+                            host_impl->active_tree());
+  }
 
   // Remove the first scroll child.
   layer_tree_root->children()[1]->RemoveFromParent();
@@ -617,9 +625,12 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollParent) {
                                          host_impl->active_tree());
   TreeSynchronizer::PushProperties(layer_tree_root.get(),
                                    layer_impl_tree_root.get());
-  ExpectTreesAreIdentical(layer_tree_root.get(),
-                          layer_impl_tree_root.get(),
-                          host_impl->active_tree());
+  {
+    SCOPED_TRACE("case two");
+    ExpectTreesAreIdentical(layer_tree_root.get(),
+                            layer_impl_tree_root.get(),
+                            host_impl->active_tree());
+  }
 
   // Add an additional scroll layer.
   scoped_refptr<Layer> additional_scroll_child = Layer::Create();
@@ -631,27 +642,12 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollParent) {
                                          host_impl->active_tree());
   TreeSynchronizer::PushProperties(layer_tree_root.get(),
                                    layer_impl_tree_root.get());
-  ExpectTreesAreIdentical(layer_tree_root.get(),
-                          layer_impl_tree_root.get(),
-                          host_impl->active_tree());
-
-  // Remove the scroll parent.
-  scroll_parent->RemoveFromParent();
-  scroll_parent = NULL;
-  layer_impl_tree_root =
-      TreeSynchronizer::SynchronizeTrees(layer_tree_root.get(),
-                                         layer_impl_tree_root.Pass(),
-                                         host_impl->active_tree());
-  TreeSynchronizer::PushProperties(layer_tree_root.get(),
-                                   layer_impl_tree_root.get());
-  ExpectTreesAreIdentical(layer_tree_root.get(),
-                          layer_impl_tree_root.get(),
-                          host_impl->active_tree());
-
-  // The scroll children should have been unhooked.
-  EXPECT_EQ(2u, layer_tree_root->children().size());
-  EXPECT_FALSE(layer_tree_root->children()[0]->scroll_parent());
-  EXPECT_FALSE(layer_tree_root->children()[1]->scroll_parent());
+  {
+    SCOPED_TRACE("case three");
+    ExpectTreesAreIdentical(layer_tree_root.get(),
+                            layer_impl_tree_root.get(),
+                            host_impl->active_tree());
+  }
 }
 
 TEST_F(TreeSynchronizerTest, SynchronizeClipParent) {

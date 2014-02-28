@@ -4,6 +4,8 @@
 
 #include "cc/trees/tree_synchronizer.h"
 
+#include <set>
+
 #include "base/containers/hash_tables.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/debug/trace_event.h"
@@ -234,11 +236,64 @@ void TreeSynchronizer::PushPropertiesInternal(
   *num_dependents_need_push_properties_for_parent += add_self_to_parent ? 1 : 0;
 }
 
+static void CheckScrollAndClipPointersRecursive(Layer* layer,
+                                                LayerImpl* layer_impl) {
+  DCHECK_EQ(!!layer, !!layer_impl);
+  if (!layer)
+    return;
+
+  DCHECK_EQ(!!layer->scroll_parent(), !!layer_impl->scroll_parent());
+  if (layer->scroll_parent())
+    DCHECK_EQ(layer->scroll_parent()->id(), layer_impl->scroll_parent()->id());
+
+  DCHECK_EQ(!!layer->clip_parent(), !!layer_impl->clip_parent());
+  if (layer->clip_parent())
+    DCHECK_EQ(layer->clip_parent()->id(), layer_impl->clip_parent()->id());
+
+  DCHECK_EQ(!!layer->scroll_children(), !!layer_impl->scroll_children());
+  if (layer->scroll_children()) {
+    for (std::set<Layer*>::iterator it = layer->scroll_children()->begin();
+         it != layer->scroll_children()->end();
+         ++it) {
+      DCHECK_EQ((*it)->scroll_parent(), layer);
+    }
+    for (std::set<LayerImpl*>::iterator it =
+             layer_impl->scroll_children()->begin();
+         it != layer_impl->scroll_children()->end();
+         ++it) {
+      DCHECK_EQ((*it)->scroll_parent(), layer_impl);
+    }
+  }
+
+  DCHECK_EQ(!!layer->clip_children(), !!layer_impl->clip_children());
+  if (layer->clip_children()) {
+    for (std::set<Layer*>::iterator it = layer->clip_children()->begin();
+         it != layer->clip_children()->end();
+         ++it) {
+      DCHECK_EQ((*it)->clip_parent(), layer);
+    }
+    for (std::set<LayerImpl*>::iterator it =
+             layer_impl->clip_children()->begin();
+         it != layer_impl->clip_children()->end();
+         ++it) {
+      DCHECK_EQ((*it)->clip_parent(), layer_impl);
+    }
+  }
+
+  for (size_t i = 0u; i < layer->children().size(); ++i) {
+    CheckScrollAndClipPointersRecursive(layer->child_at(i),
+                                        layer_impl->child_at(i));
+  }
+}
+
 void TreeSynchronizer::PushProperties(Layer* layer,
                                       LayerImpl* layer_impl) {
   size_t num_dependents_need_push_properties = 0;
   PushPropertiesInternal(
       layer, layer_impl, &num_dependents_need_push_properties);
+  if (DCHECK_IS_ON()) {
+    CheckScrollAndClipPointersRecursive(layer, layer_impl);
+  }
 }
 
 void TreeSynchronizer::PushProperties(LayerImpl* layer, LayerImpl* layer_impl) {
