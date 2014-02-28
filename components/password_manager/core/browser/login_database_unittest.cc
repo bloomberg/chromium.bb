@@ -701,6 +701,7 @@ TEST_F(LoginDatabaseTest, UpdateIncompleteCredentials) {
   expected_form.password_value.clear();
 #endif  // OS_MACOSX
   EXPECT_EQ(expected_form, *result[0]);
+  ClearResults(&result);
 }
 
 #if defined(OS_POSIX)
