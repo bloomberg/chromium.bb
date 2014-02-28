@@ -32,6 +32,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
@@ -394,6 +395,8 @@ void HTMLAnchorElement::sendPings(const KURL& destinationURL)
 {
     if (!hasAttribute(pingAttr) || !document().settings() || !document().settings()->hyperlinkAuditingEnabled())
         return;
+
+    UseCounter::count(document(), UseCounter::HTMLAnchorElementPingAttribute);
 
     SpaceSplitString pingURLs(getAttribute(pingAttr), false);
     for (unsigned i = 0; i < pingURLs.size(); i++)

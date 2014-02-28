@@ -295,6 +295,7 @@ public:
         PromiseResolve = 273,
         TextAutosizing = 274,
         TextAutosizingLayout = 275,
+        HTMLAnchorElementPingAttribute = 276,
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
         NumberOfFeatures, // This enum value must be last.
