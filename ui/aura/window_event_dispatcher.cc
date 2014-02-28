@@ -412,13 +412,6 @@ void WindowEventDispatcher::OnWindowHidden(Window* invisible,
   if (invisible->Contains(mouse_moved_handler_))
     mouse_moved_handler_ = NULL;
 
-  // If events are being dispatched from a nested message-loop, and the target
-  // of the outer loop is hidden or moved to another dispatcher during
-  // dispatching events in the inner loop, then reset the target for the outer
-  // loop.
-  if (invisible->Contains(old_dispatch_target_))
-    old_dispatch_target_ = NULL;
-
   CleanupGestureState(invisible);
 
   // Do not clear the capture, and the |event_dispatch_target_| if the
@@ -431,6 +424,9 @@ void WindowEventDispatcher::OnWindowHidden(Window* invisible,
 
     if (invisible->Contains(event_dispatch_target_))
       event_dispatch_target_ = NULL;
+
+    if (invisible->Contains(old_dispatch_target_))
+      old_dispatch_target_ = NULL;
 
     // If the ancestor of the capture window is hidden, release the capture.
     // Note that this may delete the window so do not use capture_window
