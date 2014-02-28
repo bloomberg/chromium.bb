@@ -10,6 +10,7 @@ what is used for chromite.bin.*).
 
 import argparse
 import collections
+import datetime
 import functools
 import logging
 import os
@@ -109,6 +110,25 @@ def NormalizeLocalOrGSPath(value):
   return VALID_TYPES[ptype](value)
 
 
+def ParseDate(value):
+  """Parse date argument into a datetime.date object.
+
+  Args:
+    value: String representing a single date in "YYYY-MM-DD" format.
+
+  Returns:
+    A datetime.date object.
+  """
+  try:
+    return datetime.datetime.strptime(value, '%Y-%m-%d').date()
+  except ValueError:
+    # Give a helpful error message about the format expected.  Putting this
+    # message in the exception is useless because argparse ignores the
+    # exception message and just says the value is invalid.
+    cros_build_lib.Error('Date is expected to be in format YYYY-MM-DD.')
+    raise
+
+
 def OptparseWrapCheck(desc, check_f, _option, opt, value):
   """Optparse adapter for type checking functionality."""
   try:
@@ -119,6 +139,7 @@ def OptparseWrapCheck(desc, check_f, _option, opt, value):
 
 
 VALID_TYPES = {
+    'date': ParseDate,
     'path': osutils.ExpandPath,
     'gs_path': NormalizeGSPath,
     'local_or_gs_path': NormalizeLocalOrGSPath,
