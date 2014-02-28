@@ -80,14 +80,6 @@ public:
         SuppressReport
     };
 
-    enum HashAlgorithms {
-        HashAlgorithmsNone = 0,
-        HashAlgorithmsSha1 = 1 << 1,
-        HashAlgorithmsSha256 = 1 << 2,
-        HashAlgorithmsSha384 = 1 << 3,
-        HashAlgorithmsSha512 = 1 << 4
-    };
-
     void didReceiveHeaders(const ContentSecurityPolicyResponseHeaders&);
     void didReceiveHeader(const String&, HeaderType, HeaderSource);
 
@@ -124,8 +116,8 @@ public:
     bool allowScriptHash(const String& source) const;
     bool allowStyleHash(const String& source) const;
 
-    void usesScriptHashAlgorithms(uint8_t HashAlgorithms);
-    void usesStyleHashAlgorithms(uint8_t HashAlgorithms);
+    void usesScriptHashAlgorithms(uint8_t ContentSecurityPolicyHashAlgorithm);
+    void usesStyleHashAlgorithms(uint8_t ContentSecurityPolicyHashAlgorithm);
 
     ReflectedXSSDisposition reflectedXSSDisposition() const;
 
@@ -163,6 +155,8 @@ public:
     bool experimentalFeaturesEnabled() const;
 
     static bool shouldBypassMainWorld(ExecutionContext*);
+
+    static bool isDirectiveName(const String&);
 
     ExecutionContextClient* client() const { return m_client; }
     Document* document() const { return client()->isDocument() ? toDocument(client()) : 0; }

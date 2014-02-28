@@ -15,6 +15,14 @@ static const size_t kMaxDigestSize = 64;
 typedef Vector<uint8_t, kMaxDigestSize> DigestValue;
 typedef std::pair<unsigned, DigestValue> CSPHashValue;
 
+enum ContentSecurityPolicyHashAlgorithm {
+    ContentSecurityPolicyHashAlgorithmNone = 0,
+    ContentSecurityPolicyHashAlgorithmSha1 = 1 << 1,
+    ContentSecurityPolicyHashAlgorithmSha256 = 1 << 2,
+    ContentSecurityPolicyHashAlgorithmSha384 = 1 << 3,
+    ContentSecurityPolicyHashAlgorithmSha512 = 1 << 4
+};
+
 PLATFORM_EXPORT bool isCSPDirectiveNameCharacter(UChar);
 PLATFORM_EXPORT bool isCSPDirectiveValueCharacter(UChar);
 PLATFORM_EXPORT bool isNonceCharacter(UChar);
@@ -30,6 +38,6 @@ PLATFORM_EXPORT bool isMediaTypeCharacter(UChar);
 // positional and may only appear at the end of a Base64 encoded string.
 PLATFORM_EXPORT bool isBase64EncodedCharacter(UChar);
 
-} // namespace
+} // namespace WebCore
 
 #endif

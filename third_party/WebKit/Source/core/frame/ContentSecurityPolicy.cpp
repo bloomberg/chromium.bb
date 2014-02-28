@@ -37,6 +37,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/CSPSource.h"
+#include "core/frame/csp/CSPSourceList.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/DocumentLoader.h"
@@ -57,36 +58,7 @@
 #include "public/platform/WebCryptoAlgorithm.h"
 #include "wtf/HashMap.h"
 #include "wtf/StringHasher.h"
-#include "wtf/text/Base64.h"
 #include "wtf/text/StringBuilder.h"
-
-namespace WTF {
-
-struct DigestValueHash {
-    static unsigned hash(const WebCore::DigestValue& v)
-    {
-        return StringHasher::computeHash(v.data(), v.size());
-    }
-    static bool equal(const WebCore::DigestValue& a, const WebCore::DigestValue& b)
-    {
-        return a == b;
-    };
-    static const bool safeToCompareToEmptyOrDeleted = true;
-};
-template <>
-struct DefaultHash<WebCore::DigestValue> {
-    typedef DigestValueHash Hash;
-};
-
-template <>
-struct DefaultHash<WebCore::ContentSecurityPolicy::HashAlgorithms> {
-    typedef IntHash<WebCore::ContentSecurityPolicy::HashAlgorithms> Hash;
-};
-template <>
-struct HashTraits<WebCore::ContentSecurityPolicy::HashAlgorithms> : UnsignedWithZeroKeyHashTraits<WebCore::ContentSecurityPolicy::HashAlgorithms> {
-};
-
-} // namespace WTF
 
 namespace WebCore {
 
@@ -112,7 +84,7 @@ static const char pluginTypes[] = "plugin-types";
 static const char reflectedXSS[] = "reflected-xss";
 static const char referrer[] = "referrer";
 
-static bool isDirectiveName(const String& name)
+bool ContentSecurityPolicy::isDirectiveName(const String& name)
 {
     return (equalIgnoringCase(name, connectSrc)
         || equalIgnoringCase(name, defaultSrc)
@@ -152,485 +124,6 @@ static ReferrerPolicy mergeReferrerPolicies(ReferrerPolicy a, ReferrerPolicy b)
     if (a != b)
         return ReferrerPolicyNever;
     return a;
-}
-
-static bool isSourceListNone(const UChar* begin, const UChar* end)
-{
-    skipWhile<UChar, isASCIISpace>(begin, end);
-
-    const UChar* position = begin;
-    skipWhile<UChar, isSourceCharacter>(position, end);
-    if (!equalIgnoringCase("'none'", begin, position - begin))
-        return false;
-
-    skipWhile<UChar, isASCIISpace>(position, end);
-    if (position != end)
-        return false;
-
-    return true;
-}
-
-class CSPSourceList {
-public:
-    CSPSourceList(ContentSecurityPolicy*, const String& directiveName);
-
-    void parse(const UChar* begin, const UChar* end);
-
-    bool matches(const KURL&);
-    bool allowInline() const { return m_allowInline; }
-    bool allowEval() const { return m_allowEval; }
-    bool allowNonce(const String& nonce) const { return !nonce.isNull() && m_nonces.contains(nonce); }
-    bool allowHash(const CSPHashValue& hashValue) const { return m_hashes.contains(hashValue); }
-    uint8_t hashAlgorithmsUsed() const { return m_hashAlgorithmsUsed; }
-
-    bool isHashOrNoncePresent() const { return !m_nonces.isEmpty() || m_hashAlgorithmsUsed != ContentSecurityPolicy::HashAlgorithmsNone; }
-
-private:
-    bool parseSource(const UChar* begin, const UChar* end, String& scheme, String& host, int& port, String& path, bool& hostHasWildcard, bool& portHasWildcard);
-    bool parseScheme(const UChar* begin, const UChar* end, String& scheme);
-    bool parseHost(const UChar* begin, const UChar* end, String& host, bool& hostHasWildcard);
-    bool parsePort(const UChar* begin, const UChar* end, int& port, bool& portHasWildcard);
-    bool parsePath(const UChar* begin, const UChar* end, String& path);
-    bool parseNonce(const UChar* begin, const UChar* end, String& nonce);
-    bool parseHash(const UChar* begin, const UChar* end, DigestValue& hash, ContentSecurityPolicy::HashAlgorithms&);
-
-    void addSourceSelf();
-    void addSourceStar();
-    void addSourceUnsafeInline();
-    void addSourceUnsafeEval();
-    void addSourceNonce(const String& nonce);
-    void addSourceHash(const ContentSecurityPolicy::HashAlgorithms&, const DigestValue& hash);
-
-    ContentSecurityPolicy* m_policy;
-    Vector<CSPSource> m_list;
-    String m_directiveName;
-    bool m_allowStar;
-    bool m_allowInline;
-    bool m_allowEval;
-    HashSet<String> m_nonces;
-    HashSet<CSPHashValue> m_hashes;
-    uint8_t m_hashAlgorithmsUsed;
-};
-
-CSPSourceList::CSPSourceList(ContentSecurityPolicy* policy, const String& directiveName)
-    : m_policy(policy)
-    , m_directiveName(directiveName)
-    , m_allowStar(false)
-    , m_allowInline(false)
-    , m_allowEval(false)
-    , m_hashAlgorithmsUsed(0)
-{
-}
-
-bool CSPSourceList::matches(const KURL& url)
-{
-    if (m_allowStar)
-        return true;
-
-    KURL effectiveURL = SecurityOrigin::shouldUseInnerURL(url) ? SecurityOrigin::extractInnerURL(url) : url;
-
-    for (size_t i = 0; i < m_list.size(); ++i) {
-        if (m_list[i].matches(effectiveURL))
-            return true;
-    }
-
-    return false;
-}
-
-// source-list       = *WSP [ source *( 1*WSP source ) *WSP ]
-//                   / *WSP "'none'" *WSP
-//
-void CSPSourceList::parse(const UChar* begin, const UChar* end)
-{
-    // We represent 'none' as an empty m_list.
-    if (isSourceListNone(begin, end))
-        return;
-
-    const UChar* position = begin;
-    while (position < end) {
-        skipWhile<UChar, isASCIISpace>(position, end);
-        if (position == end)
-            return;
-
-        const UChar* beginSource = position;
-        skipWhile<UChar, isSourceCharacter>(position, end);
-
-        String scheme, host, path;
-        int port = 0;
-        bool hostHasWildcard = false;
-        bool portHasWildcard = false;
-
-        if (parseSource(beginSource, position, scheme, host, port, path, hostHasWildcard, portHasWildcard)) {
-            // Wildcard hosts and keyword sources ('self', 'unsafe-inline',
-            // etc.) aren't stored in m_list, but as attributes on the source
-            // list itself.
-            if (scheme.isEmpty() && host.isEmpty())
-                continue;
-            if (isDirectiveName(host))
-                m_policy->reportDirectiveAsSourceExpression(m_directiveName, host);
-            m_list.append(CSPSource(m_policy, scheme, host, port, path, hostHasWildcard, portHasWildcard));
-        } else {
-            m_policy->reportInvalidSourceExpression(m_directiveName, String(beginSource, position - beginSource));
-        }
-
-        ASSERT(position == end || isASCIISpace(*position));
-    }
-}
-
-// source            = scheme ":"
-//                   / ( [ scheme "://" ] host [ port ] [ path ] )
-//                   / "'self'"
-bool CSPSourceList::parseSource(const UChar* begin, const UChar* end, String& scheme, String& host, int& port, String& path, bool& hostHasWildcard, bool& portHasWildcard)
-{
-    if (begin == end)
-        return false;
-
-    if (equalIgnoringCase("'none'", begin, end - begin))
-        return false;
-
-    if (end - begin == 1 && *begin == '*') {
-        addSourceStar();
-        return true;
-    }
-
-    if (equalIgnoringCase("'self'", begin, end - begin)) {
-        addSourceSelf();
-        return true;
-    }
-
-    if (equalIgnoringCase("'unsafe-inline'", begin, end - begin)) {
-        addSourceUnsafeInline();
-        return true;
-    }
-
-    if (equalIgnoringCase("'unsafe-eval'", begin, end - begin)) {
-        addSourceUnsafeEval();
-        return true;
-    }
-
-    if (m_policy->experimentalFeaturesEnabled()) {
-        String nonce;
-        if (!parseNonce(begin, end, nonce))
-            return false;
-
-        if (!nonce.isNull()) {
-            addSourceNonce(nonce);
-            return true;
-        }
-
-        DigestValue hash;
-        ContentSecurityPolicy::HashAlgorithms algorithm = ContentSecurityPolicy::HashAlgorithmsNone;
-        if (!parseHash(begin, end, hash, algorithm))
-            return false;
-
-        if (hash.size() > 0) {
-            addSourceHash(algorithm, hash);
-            return true;
-        }
-    }
-
-    const UChar* position = begin;
-    const UChar* beginHost = begin;
-    const UChar* beginPath = end;
-    const UChar* beginPort = 0;
-
-    skipWhile<UChar, isNotColonOrSlash>(position, end);
-
-    if (position == end) {
-        // host
-        //     ^
-        return parseHost(beginHost, position, host, hostHasWildcard);
-    }
-
-    if (position < end && *position == '/') {
-        // host/path || host/ || /
-        //     ^            ^    ^
-        return parseHost(beginHost, position, host, hostHasWildcard) && parsePath(position, end, path);
-    }
-
-    if (position < end && *position == ':') {
-        if (end - position == 1) {
-            // scheme:
-            //       ^
-            return parseScheme(begin, position, scheme);
-        }
-
-        if (position[1] == '/') {
-            // scheme://host || scheme://
-            //       ^                ^
-            if (!parseScheme(begin, position, scheme)
-                || !skipExactly<UChar>(position, end, ':')
-                || !skipExactly<UChar>(position, end, '/')
-                || !skipExactly<UChar>(position, end, '/'))
-                return false;
-            if (position == end)
-                return true;
-            beginHost = position;
-            skipWhile<UChar, isNotColonOrSlash>(position, end);
-        }
-
-        if (position < end && *position == ':') {
-            // host:port || scheme://host:port
-            //     ^                     ^
-            beginPort = position;
-            skipUntil<UChar>(position, end, '/');
-        }
-    }
-
-    if (position < end && *position == '/') {
-        // scheme://host/path || scheme://host:port/path
-        //              ^                          ^
-        if (position == beginHost)
-            return false;
-        beginPath = position;
-    }
-
-    if (!parseHost(beginHost, beginPort ? beginPort : beginPath, host, hostHasWildcard))
-        return false;
-
-    if (beginPort) {
-        if (!parsePort(beginPort, beginPath, port, portHasWildcard))
-            return false;
-    } else {
-        port = 0;
-    }
-
-    if (beginPath != end) {
-        if (!parsePath(beginPath, end, path))
-            return false;
-    }
-
-    return true;
-}
-
-// nonce-source      = "'nonce-" nonce-value "'"
-// nonce-value        = 1*( ALPHA / DIGIT / "+" / "/" / "=" )
-//
-bool CSPSourceList::parseNonce(const UChar* begin, const UChar* end, String& nonce)
-{
-    DEFINE_STATIC_LOCAL(const String, noncePrefix, ("'nonce-"));
-
-    if (!equalIgnoringCase(noncePrefix.characters8(), begin, noncePrefix.length()))
-        return true;
-
-    const UChar* position = begin + noncePrefix.length();
-    const UChar* nonceBegin = position;
-
-    skipWhile<UChar, isNonceCharacter>(position, end);
-    ASSERT(nonceBegin <= position);
-
-    if ((position + 1) != end || *position != '\'' || !(position - nonceBegin))
-        return false;
-
-    nonce = String(nonceBegin, position - nonceBegin);
-    return true;
-}
-
-// hash-source       = "'" hash-algorithm "-" hash-value "'"
-// hash-algorithm    = "sha1" / "sha256" / "sha384" / "sha512"
-// hash-value        = 1*( ALPHA / DIGIT / "+" / "/" / "=" )
-//
-bool CSPSourceList::parseHash(const UChar* begin, const UChar* end, DigestValue& hash, ContentSecurityPolicy::HashAlgorithms& hashAlgorithm)
-{
-    // Any additions or subtractions from this struct should also modify the
-    // respective entries in the kAlgorithmMap array in checkDigest().
-    static const struct {
-        const char* prefix;
-        ContentSecurityPolicy::HashAlgorithms algorithm;
-    } kSupportedPrefixes[] = {
-        { "'sha1-", ContentSecurityPolicy::HashAlgorithmsSha1 },
-        { "'sha256-", ContentSecurityPolicy::HashAlgorithmsSha256 },
-        { "'sha384-", ContentSecurityPolicy::HashAlgorithmsSha384 },
-        { "'sha512-", ContentSecurityPolicy::HashAlgorithmsSha512 }
-    };
-
-    String prefix;
-    hashAlgorithm = ContentSecurityPolicy::HashAlgorithmsNone;
-
-    // Instead of this sizeof() calculation to get the length of this array,
-    // it would be preferable to use WTF_ARRAY_LENGTH for simplicity and to
-    // guarantee a compile time calculation. Unfortunately, on some
-    // compliers, the call to WTF_ARRAY_LENGTH fails on arrays of anonymous
-    // stucts, so, for now, it is necessary to resort to this sizeof
-    // calculation.
-    for (size_t i = 0; i < (sizeof(kSupportedPrefixes) / sizeof(kSupportedPrefixes[0])); i++) {
-        if (equalIgnoringCase(kSupportedPrefixes[i].prefix, begin, strlen(kSupportedPrefixes[i].prefix))) {
-            prefix = kSupportedPrefixes[i].prefix;
-            hashAlgorithm = kSupportedPrefixes[i].algorithm;
-            break;
-        }
-    }
-
-    if (hashAlgorithm == ContentSecurityPolicy::HashAlgorithmsNone)
-        return true;
-
-    const UChar* position = begin + prefix.length();
-    const UChar* hashBegin = position;
-
-    skipWhile<UChar, isBase64EncodedCharacter>(position, end);
-    ASSERT(hashBegin <= position);
-
-    // Base64 encodings may end with exactly one or two '=' characters
-    skipExactly<UChar>(position, position + 1, '=');
-    skipExactly<UChar>(position, position + 1, '=');
-
-    if ((position + 1) != end || *position != '\'' || !(position - hashBegin))
-        return false;
-
-    Vector<char> hashVector;
-    base64Decode(hashBegin, position - hashBegin, hashVector);
-    if (hashVector.size() > kMaxDigestSize)
-        return false;
-    hash.append(reinterpret_cast<uint8_t*>(hashVector.data()), hashVector.size());
-    return true;
-}
-
-//                     ; <scheme> production from RFC 3986
-// scheme      = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
-//
-bool CSPSourceList::parseScheme(const UChar* begin, const UChar* end, String& scheme)
-{
-    ASSERT(begin <= end);
-    ASSERT(scheme.isEmpty());
-
-    if (begin == end)
-        return false;
-
-    const UChar* position = begin;
-
-    if (!skipExactly<UChar, isASCIIAlpha>(position, end))
-        return false;
-
-    skipWhile<UChar, isSchemeContinuationCharacter>(position, end);
-
-    if (position != end)
-        return false;
-
-    scheme = String(begin, end - begin);
-    return true;
-}
-
-// host              = [ "*." ] 1*host-char *( "." 1*host-char )
-//                   / "*"
-// host-char         = ALPHA / DIGIT / "-"
-//
-bool CSPSourceList::parseHost(const UChar* begin, const UChar* end, String& host, bool& hostHasWildcard)
-{
-    ASSERT(begin <= end);
-    ASSERT(host.isEmpty());
-    ASSERT(!hostHasWildcard);
-
-    if (begin == end)
-        return false;
-
-    const UChar* position = begin;
-
-    if (skipExactly<UChar>(position, end, '*')) {
-        hostHasWildcard = true;
-
-        if (position == end)
-            return true;
-
-        if (!skipExactly<UChar>(position, end, '.'))
-            return false;
-    }
-
-    const UChar* hostBegin = position;
-
-    while (position < end) {
-        if (!skipExactly<UChar, isHostCharacter>(position, end))
-            return false;
-
-        skipWhile<UChar, isHostCharacter>(position, end);
-
-        if (position < end && !skipExactly<UChar>(position, end, '.'))
-            return false;
-    }
-
-    ASSERT(position == end);
-    host = String(hostBegin, end - hostBegin);
-    return true;
-}
-
-bool CSPSourceList::parsePath(const UChar* begin, const UChar* end, String& path)
-{
-    ASSERT(begin <= end);
-    ASSERT(path.isEmpty());
-
-    const UChar* position = begin;
-    skipWhile<UChar, isPathComponentCharacter>(position, end);
-    // path/to/file.js?query=string || path/to/file.js#anchor
-    //                ^                               ^
-    if (position < end)
-        m_policy->reportInvalidPathCharacter(m_directiveName, String(begin, end - begin), *position);
-
-    path = decodeURLEscapeSequences(String(begin, position - begin));
-
-    ASSERT(position <= end);
-    ASSERT(position == end || (*position == '#' || *position == '?'));
-    return true;
-}
-
-// port              = ":" ( 1*DIGIT / "*" )
-//
-bool CSPSourceList::parsePort(const UChar* begin, const UChar* end, int& port, bool& portHasWildcard)
-{
-    ASSERT(begin <= end);
-    ASSERT(!port);
-    ASSERT(!portHasWildcard);
-
-    if (!skipExactly<UChar>(begin, end, ':'))
-        ASSERT_NOT_REACHED();
-
-    if (begin == end)
-        return false;
-
-    if (end - begin == 1 && *begin == '*') {
-        port = 0;
-        portHasWildcard = true;
-        return true;
-    }
-
-    const UChar* position = begin;
-    skipWhile<UChar, isASCIIDigit>(position, end);
-
-    if (position != end)
-        return false;
-
-    bool ok;
-    port = charactersToIntStrict(begin, end - begin, &ok);
-    return ok;
-}
-
-void CSPSourceList::addSourceSelf()
-{
-    m_list.append(CSPSource(m_policy, m_policy->securityOrigin()->protocol(), m_policy->securityOrigin()->host(), m_policy->securityOrigin()->port(), String(), false, false));
-}
-
-void CSPSourceList::addSourceStar()
-{
-    m_allowStar = true;
-}
-
-void CSPSourceList::addSourceUnsafeInline()
-{
-    m_allowInline = true;
-}
-
-void CSPSourceList::addSourceUnsafeEval()
-{
-    m_allowEval = true;
-}
-
-void CSPSourceList::addSourceNonce(const String& nonce)
-{
-    m_nonces.add(nonce);
-}
-
-void CSPSourceList::addSourceHash(const ContentSecurityPolicy::HashAlgorithms& algorithm, const DigestValue& hash)
-{
-    m_hashes.add(CSPHashValue(algorithm, hash));
-    m_hashAlgorithmsUsed |= algorithm;
 }
 
 class CSPDirective {
@@ -1537,8 +1030,8 @@ void CSPDirectiveList::addDirective(const String& name, const String& value)
 ContentSecurityPolicy::ContentSecurityPolicy(ExecutionContextClient* client)
     : m_client(client)
     , m_overrideInlineStyleAllowed(false)
-    , m_scriptHashAlgorithmsUsed(HashAlgorithmsNone)
-    , m_styleHashAlgorithmsUsed(HashAlgorithmsNone)
+    , m_scriptHashAlgorithmsUsed(ContentSecurityPolicyHashAlgorithmNone)
+    , m_styleHashAlgorithmsUsed(ContentSecurityPolicyHashAlgorithmNone)
 {
 }
 
@@ -1722,21 +1215,22 @@ template<bool (CSPDirectiveList::*allowed)(const CSPHashValue&) const>
 bool checkDigest(const String& source, uint8_t hashAlgorithmsUsed, const CSPDirectiveListVector& policies)
 {
     // Any additions or subtractions from this struct should also modify the
-    // respective entries in the kSupportedPrefixes array in parseHash().
+    // respective entries in the kSupportedPrefixes array in
+    // CSPSourceList::parseHash().
     static const struct {
-        ContentSecurityPolicy::HashAlgorithms cspHashAlgorithm;
+        ContentSecurityPolicyHashAlgorithm cspHashAlgorithm;
         blink::WebCryptoAlgorithmId webCryptoAlgorithmId;
     } kAlgorithmMap[] = {
-        { ContentSecurityPolicy::HashAlgorithmsSha1, blink::WebCryptoAlgorithmIdSha1 },
-        { ContentSecurityPolicy::HashAlgorithmsSha256, blink::WebCryptoAlgorithmIdSha256 },
-        { ContentSecurityPolicy::HashAlgorithmsSha384, blink::WebCryptoAlgorithmIdSha384 },
-        { ContentSecurityPolicy::HashAlgorithmsSha512, blink::WebCryptoAlgorithmIdSha512 }
+        { ContentSecurityPolicyHashAlgorithmSha1, blink::WebCryptoAlgorithmIdSha1 },
+        { ContentSecurityPolicyHashAlgorithmSha256, blink::WebCryptoAlgorithmIdSha256 },
+        { ContentSecurityPolicyHashAlgorithmSha384, blink::WebCryptoAlgorithmIdSha384 },
+        { ContentSecurityPolicyHashAlgorithmSha512, blink::WebCryptoAlgorithmIdSha512 }
     };
 
     CString normalizedSource = UTF8Encoding().normalizeAndEncode(source, WTF::EntitiesForUnencodables);
 
-    // See comment in parseHash about why we are using this sizeof calculation
-    // instead of WTF_ARRAY_LENGTH.
+    // See comment in CSPSourceList::parseHash about why we are using this sizeof
+    // calculation instead of WTF_ARRAY_LENGTH.
     for (size_t i = 0; i < (sizeof(kAlgorithmMap) / sizeof(kAlgorithmMap[0])); i++) {
         DigestValue digest;
         if (kAlgorithmMap[i].cspHashAlgorithm & hashAlgorithmsUsed) {
