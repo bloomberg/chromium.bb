@@ -115,7 +115,6 @@ static bool isLegacySupportedJavaScriptLanguage(const String& language)
     DEFINE_STATIC_LOCAL(LanguageSet, languages, ());
     if (languages.isEmpty()) {
         languages.add("javascript");
-        languages.add("javascript");
         languages.add("javascript1.0");
         languages.add("javascript1.1");
         languages.add("javascript1.2");
