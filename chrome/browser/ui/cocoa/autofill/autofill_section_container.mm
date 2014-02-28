@@ -639,8 +639,12 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
       base::scoped_nsobject<AutofillPopUpButton> popup(
           [[AutofillPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:NO]);
       for (int i = 0; i < inputModel->GetItemCount(); ++i) {
-         [popup addItemWithTitle:
-             base::SysUTF16ToNSString(inputModel->GetItemAt(i))];
+        if (inputModel->IsItemSeparatorAt(i)) {
+          [[popup menu] addItem:[NSMenuItem separatorItem]];
+        } else {
+          [popup addItemWithTitle:
+              base::SysUTF16ToNSString(inputModel->GetItemAt(i))];
+        }
       }
       [popup setDefaultValue:base::SysUTF16ToNSString(
           inputModel->GetItemAt(inputModel->GetDefaultIndex()))];
