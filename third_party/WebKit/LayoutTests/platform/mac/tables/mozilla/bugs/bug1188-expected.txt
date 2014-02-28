@@ -19,7 +19,7 @@ layer at (0,0) size 800x600
                       text run at (71,5) width 128: "Search the Web with"
                 RenderText {#text} at (198,3) size 5x18
                   text run at (198,3) width 5: " "
-                RenderMenuList {SELECT} at (204.45,4) size 80x18 [bgcolor=#FFFFFF]
+                RenderMenuList {SELECT} at (204.45,4) size 80x18 [bgcolor=#F8F8F8]
                   RenderBlock (anonymous) at (0,0) size 80x18
                     RenderText at (8,2) size 49x13
                       text run at (8,2) width 49: "Netscape"

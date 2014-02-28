@@ -184,7 +184,7 @@ layer at (0,0) size 785x2589
         RenderBlock {P} at (0,0) size 769x45
           RenderText {#text} at (0,1) size 263x18
             text run at (0,1) width 263: "How does your browser fare on this test? "
-          RenderMenuList {SELECT} at (265,2) size 473x18 [bgcolor=#FFFFFF]
+          RenderMenuList {SELECT} at (265,2) size 473x18 [bgcolor=#F8F8F8]
             RenderBlock (anonymous) at (0,0) size 473x18
               RenderText at (8,2) size 442x13
                 text run at (8,2) width 442: "The tests all render identically, and this browser may or may not grok CSS2 tables."
