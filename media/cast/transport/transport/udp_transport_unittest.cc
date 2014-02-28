@@ -92,6 +92,37 @@ TEST(UdpTransport, SendAndReceive) {
       std::equal(packet.begin(), packet.end(), receiver2.packet().begin()));
 }
 
+static void SaveStatusAndQuit(base::Closure quit_closure,
+                              transport::CastTransportStatus* out_status,
+                              transport::CastTransportStatus status) {
+  *out_status = status;
+  quit_closure.Run();
+}
+
+TEST(UdpTransport, TransportError) {
+  base::MessageLoopForIO message_loop;
+
+  net::IPAddressNumber empty_addr_number;
+  net::ParseIPLiteralToNumber("0.0.0.0", &empty_addr_number);
+  net::IPAddressNumber invalid_addr_number;
+  net::ParseIPLiteralToNumber("0.42.42.42", &invalid_addr_number);
+
+  base::RunLoop run_loop;
+  transport::CastTransportStatus status;
+  UdpTransport send_transport(
+      NULL,
+      message_loop.message_loop_proxy(),
+      net::IPEndPoint(empty_addr_number, 0),
+      net::IPEndPoint(invalid_addr_number, 2345),
+      base::Bind(&SaveStatusAndQuit, run_loop.QuitClosure(), &status));
+
+  MockPacketReceiver receiver(run_loop.QuitClosure());
+  send_transport.StartReceiving(receiver.packet_receiver());
+  run_loop.Run();
+
+  EXPECT_EQ(TRANSPORT_SOCKET_ERROR, status);
+}
+
 }  // namespace transport
 }  // namespace cast
 }  // namespace media
