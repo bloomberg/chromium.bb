@@ -144,17 +144,6 @@ GraphicsContext::~GraphicsContext()
     ASSERT(m_recordingStateStack.isEmpty());
 }
 
-const SkBitmap* GraphicsContext::bitmap() const
-{
-    TRACE_EVENT0("skia", "GraphicsContext::bitmap");
-    return &m_canvas->getDevice()->accessBitmap(false);
-}
-
-const SkBitmap& GraphicsContext::layerBitmap(AccessMode access) const
-{
-    return m_canvas->getTopDevice()->accessBitmap(access == ReadWrite);
-}
-
 void GraphicsContext::save()
 {
     if (paintingDisabled())
@@ -357,11 +346,6 @@ void GraphicsContext::clearDrawLooper()
         return;
 
     mutableState()->m_looper.clear();
-}
-
-bool GraphicsContext::hasShadow() const
-{
-    return !!immutableState()->m_looper;
 }
 
 int GraphicsContext::getNormalizedAlpha() const
@@ -1113,11 +1097,6 @@ void GraphicsContext::drawImage(Image* image, const IntRect& r, CompositeOperato
     drawImage(image, FloatRect(r), FloatRect(FloatPoint(), FloatSize(image->size())), op, shouldRespectImageOrientation, useLowQualityScale);
 }
 
-void GraphicsContext::drawImage(Image* image, const IntPoint& dest, const IntRect& srcRect, CompositeOperator op, RespectImageOrientationEnum shouldRespectImageOrientation)
-{
-    drawImage(image, FloatRect(IntRect(dest, srcRect.size())), FloatRect(srcRect), op, shouldRespectImageOrientation);
-}
-
 void GraphicsContext::drawImage(Image* image, const FloatRect& dest, const FloatRect& src, CompositeOperator op, RespectImageOrientationEnum shouldRespectImageOrientation, bool useLowQualityScale)
 {
     drawImage(image, dest, src, op, blink::WebBlendModeNormal, shouldRespectImageOrientation, useLowQualityScale);
@@ -1818,35 +1797,6 @@ PassOwnPtr<ImageBuffer> GraphicsContext::createCompatibleBuffer(const IntSize& s
         static_cast<float>(scaledSize.height()) / size.height()));
 
     return buffer.release();
-}
-
-void GraphicsContext::addCornerArc(SkPath* path, const SkRect& rect, const IntSize& size, int startAngle)
-{
-    SkIRect ir;
-    int rx = SkMin32(SkScalarRoundToInt(rect.width()), size.width());
-    int ry = SkMin32(SkScalarRoundToInt(rect.height()), size.height());
-
-    ir.set(-rx, -ry, rx, ry);
-    switch (startAngle) {
-    case 0:
-        ir.offset(rect.fRight - ir.fRight, rect.fBottom - ir.fBottom);
-        break;
-    case 90:
-        ir.offset(rect.fLeft - ir.fLeft, rect.fBottom - ir.fBottom);
-        break;
-    case 180:
-        ir.offset(rect.fLeft - ir.fLeft, rect.fTop - ir.fTop);
-        break;
-    case 270:
-        ir.offset(rect.fRight - ir.fRight, rect.fTop - ir.fTop);
-        break;
-    default:
-        ASSERT(0);
-    }
-
-    SkRect r;
-    r.set(ir);
-    path->arcTo(r, SkIntToScalar(startAngle), SkIntToScalar(90), false);
 }
 
 void GraphicsContext::setPathFromConvexPoints(SkPath* path, size_t numPoints, const FloatPoint* points)
