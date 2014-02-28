@@ -89,12 +89,12 @@ BrowserFrameAsh::BrowserFrameAsh(BrowserFrame* browser_frame,
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrameAsh, views::NativeWidgetAura overrides:
 
-void BrowserFrameAsh::OnWindowDestroying() {
+void BrowserFrameAsh::OnWindowDestroying(aura::Window* window) {
   // Destroy any remaining WebContents early on. Doing so may result in
   // calling back to one of the Views/LayoutManagers or supporting classes of
   // BrowserView. By destroying here we ensure all said classes are valid.
   DestroyBrowserWebContents(browser_view_->browser());
-  NativeWidgetAura::OnWindowDestroying();
+  NativeWidgetAura::OnWindowDestroying(window);
 }
 
 void BrowserFrameAsh::OnWindowTargetVisibilityChanged(bool visible) {

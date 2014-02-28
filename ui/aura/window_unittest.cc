@@ -93,13 +93,13 @@ class DestroyTrackingDelegateImpl : public TestWindowDelegate {
 
   bool in_destroying() const { return in_destroying_; }
 
-  virtual void OnWindowDestroying() OVERRIDE {
+  virtual void OnWindowDestroying(Window* window) OVERRIDE {
     EXPECT_FALSE(in_destroying_);
     in_destroying_ = true;
     destroying_count_++;
   }
 
-  virtual void OnWindowDestroyed() OVERRIDE {
+  virtual void OnWindowDestroyed(Window* window) OVERRIDE {
     EXPECT_TRUE(in_destroying_);
     in_destroying_ = false;
     destroyed_count_++;
@@ -122,9 +122,9 @@ class ChildWindowDelegateImpl : public DestroyTrackingDelegateImpl {
       : parent_delegate_(parent_delegate) {
   }
 
-  virtual void OnWindowDestroying() OVERRIDE {
+  virtual void OnWindowDestroying(Window* window) OVERRIDE {
     EXPECT_TRUE(parent_delegate_->in_destroying());
-    DestroyTrackingDelegateImpl::OnWindowDestroying();
+    DestroyTrackingDelegateImpl::OnWindowDestroying(window);
   }
 
  private:
@@ -142,7 +142,7 @@ class DestroyOrphanDelegate : public TestWindowDelegate {
 
   void set_window(Window* window) { window_ = window; }
 
-  virtual void OnWindowDestroyed() OVERRIDE {
+  virtual void OnWindowDestroyed(Window* window) OVERRIDE {
     EXPECT_FALSE(window_->parent());
   }
 
@@ -244,7 +244,7 @@ class DestroyWindowDelegate : public TestWindowDelegate {
   virtual ~DestroyWindowDelegate() {}
 
   // Overridden from WindowDelegate.
-  virtual void OnWindowDestroyed() OVERRIDE {
+  virtual void OnWindowDestroyed(Window* window) OVERRIDE {
     delete this;
   }
 
@@ -2232,7 +2232,7 @@ class OwningWindowDelegate : public TestWindowDelegate {
     owned_window_.reset(window);
   }
 
-  virtual void OnWindowDestroyed() OVERRIDE {
+  virtual void OnWindowDestroyed(Window* window) OVERRIDE {
     owned_window_.reset(NULL);
   }
 

@@ -279,7 +279,7 @@ class DestroyedTrackingDelegate : public aura::test::TestWindowDelegate {
       : name_(name),
         results_(results) {}
 
-  virtual void OnWindowDestroyed() OVERRIDE {
+  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE {
     results_->push_back(name_);
   }
 

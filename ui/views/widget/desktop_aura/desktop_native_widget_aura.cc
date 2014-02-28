@@ -948,11 +948,11 @@ void DesktopNativeWidgetAura::OnDeviceScaleFactorChanged(
     float device_scale_factor) {
 }
 
-void DesktopNativeWidgetAura::OnWindowDestroying() {
+void DesktopNativeWidgetAura::OnWindowDestroying(aura::Window* window) {
   // Cleanup happens in OnHostClosed().
 }
 
-void DesktopNativeWidgetAura::OnWindowDestroyed() {
+void DesktopNativeWidgetAura::OnWindowDestroyed(aura::Window* window) {
   // Cleanup happens in OnHostClosed(). We own |content_window_| (indirectly by
   // way of |dispatcher_|) so there should be no need to do any processing
   // here.

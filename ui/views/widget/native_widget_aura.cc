@@ -784,14 +784,14 @@ void NativeWidgetAura::OnDeviceScaleFactorChanged(float device_scale_factor) {
   // Repainting with new scale factor will paint the content at the right scale.
 }
 
-void NativeWidgetAura::OnWindowDestroying() {
+void NativeWidgetAura::OnWindowDestroying(aura::Window* window) {
   delegate_->OnNativeWidgetDestroying();
 
   // If the aura::Window is destroyed, we can no longer show tooltips.
   tooltip_manager_.reset();
 }
 
-void NativeWidgetAura::OnWindowDestroyed() {
+void NativeWidgetAura::OnWindowDestroyed(aura::Window* window) {
   window_ = NULL;
   delegate_->OnNativeWidgetDestroyed();
   if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)

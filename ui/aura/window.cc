@@ -223,7 +223,7 @@ Window::~Window() {
 
   // Let the delegate know we're in the processing of destroying.
   if (delegate_)
-    delegate_->OnWindowDestroying();
+    delegate_->OnWindowDestroying(this);
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowDestroying(this));
 
   // Let the root know so that it can remove any references to us.
@@ -240,7 +240,7 @@ Window::~Window() {
     parent_->RemoveChild(this);
 
   if (delegate_)
-    delegate_->OnWindowDestroyed();
+    delegate_->OnWindowDestroyed(this);
   ObserverListBase<WindowObserver>::Iterator iter(observers_);
   WindowObserver* observer;
   while ((observer = iter.GetNext())) {

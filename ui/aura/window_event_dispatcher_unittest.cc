@@ -1414,7 +1414,7 @@ class DeleteDispatcherFromHeldMouseEventDelegate
       delete dispatcher_;
     }
   }
-  virtual void OnWindowDestroyed() OVERRIDE {
+  virtual void OnWindowDestroyed(Window* window) OVERRIDE {
     got_destroy_ = true;
   }
 
@@ -1564,8 +1564,8 @@ class CaptureWindowTracker : public test::TestWindowDelegate {
     capture_window_.reset();
   }
 
-  virtual void OnWindowDestroyed() OVERRIDE {
-    TestWindowDelegate::OnWindowDestroyed();
+  virtual void OnWindowDestroyed(Window* window) OVERRIDE {
+    TestWindowDelegate::OnWindowDestroyed(window);
     capture_window_.reset();
   }
 

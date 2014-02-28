@@ -242,8 +242,8 @@ class EmptyWindowDelegate : public aura::WindowDelegate {
   virtual void OnDeviceScaleFactorChanged(
       float device_scale_factor) OVERRIDE {
   }
-  virtual void OnWindowDestroying() OVERRIDE {}
-  virtual void OnWindowDestroyed() OVERRIDE {
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {}
+  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE {
     delete this;
   }
   virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE {

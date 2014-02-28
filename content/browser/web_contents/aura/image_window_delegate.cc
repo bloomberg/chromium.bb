@@ -77,10 +77,10 @@ void ImageWindowDelegate::OnPaint(gfx::Canvas* canvas) {
 void ImageWindowDelegate::OnDeviceScaleFactorChanged(float scale_factor) {
 }
 
-void ImageWindowDelegate::OnWindowDestroying() {
+void ImageWindowDelegate::OnWindowDestroying(aura::Window* window) {
 }
 
-void ImageWindowDelegate::OnWindowDestroyed() {
+void ImageWindowDelegate::OnWindowDestroyed(aura::Window* window) {
   delete this;
 }
 

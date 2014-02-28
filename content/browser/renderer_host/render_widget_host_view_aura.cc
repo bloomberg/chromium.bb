@@ -2654,7 +2654,7 @@ void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
   current_cursor_.SetDisplayInfo(display);
 }
 
-void RenderWidgetHostViewAura::OnWindowDestroying() {
+void RenderWidgetHostViewAura::OnWindowDestroying(aura::Window* window) {
 #if defined(OS_WIN)
   HWND parent = NULL;
   // If the tab was hidden and it's closed, host_->is_hidden would have been
@@ -2676,7 +2676,7 @@ void RenderWidgetHostViewAura::OnWindowDestroying() {
     input_method->DetachTextInputClient(this);
 }
 
-void RenderWidgetHostViewAura::OnWindowDestroyed() {
+void RenderWidgetHostViewAura::OnWindowDestroyed(aura::Window* window) {
   host_->ViewDestroyed();
   delete this;
 }

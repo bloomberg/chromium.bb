@@ -1395,7 +1395,7 @@ void WebContentsViewAura::OnDeviceScaleFactorChanged(
     float device_scale_factor) {
 }
 
-void WebContentsViewAura::OnWindowDestroying() {
+void WebContentsViewAura::OnWindowDestroying(aura::Window* window) {
   // This means the destructor is going to be called soon. If there is an
   // overscroll gesture in progress (i.e. |overscroll_window_| is not NULL),
   // then destroying it in the WebContentsViewAura destructor can trigger other
@@ -1405,7 +1405,7 @@ void WebContentsViewAura::OnWindowDestroying() {
   overscroll_window_.reset();
 }
 
-void WebContentsViewAura::OnWindowDestroyed() {
+void WebContentsViewAura::OnWindowDestroyed(aura::Window* window) {
 }
 
 void WebContentsViewAura::OnWindowTargetVisibilityChanged(bool visible) {
