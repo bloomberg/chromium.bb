@@ -887,6 +887,11 @@ void Shell::Init() {
   lock_state_controller_.reset(new LockStateController);
   power_button_controller_.reset(new PowerButtonController(
       lock_state_controller_.get()));
+#if defined(OS_CHROMEOS) && defined(USE_X11)
+  // Pass the initial display state to PowerButtonController.
+  power_button_controller_->OnDisplayModeChanged(
+      output_configurator_->cached_outputs());
+#endif
   AddShellObserver(lock_state_controller_.get());
 
   drag_drop_controller_.reset(new internal::DragDropController);

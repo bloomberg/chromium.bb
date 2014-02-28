@@ -184,10 +184,6 @@ class CHROMEOS_EXPORT OutputConfigurator
         : configurator_(configurator) {}
     ~TestApi() {}
 
-    const std::vector<OutputSnapshot>& cached_outputs() const {
-      return configurator_->cached_outputs_;
-    }
-
     // If |configure_timer_| is started, stops the timer, runs
     // ConfigureOutputs(), and returns true; returns false otherwise.
     bool TriggerConfigureTimeout();
@@ -231,6 +227,9 @@ class CHROMEOS_EXPORT OutputConfigurator
 
   ui::OutputState output_state() const { return output_state_; }
   DisplayPowerState power_state() const { return power_state_; }
+  const std::vector<OutputSnapshot>& cached_outputs() const {
+    return cached_outputs_;
+  }
 
   void set_state_controller(StateController* controller) {
     state_controller_ = controller;

@@ -20,18 +20,25 @@ PowerButtonController::PowerButtonController(
     LockStateController* controller)
     : power_button_down_(false),
       lock_button_down_(false),
-      screen_is_off_(false),
+      brightness_is_zero_(false),
+      internal_display_off_and_external_display_on_(false),
       has_legacy_power_button_(
           CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kAuraLegacyPowerButton)),
       controller_(controller) {
+#if defined(OS_CHROMEOS) && defined(USE_X11)
+  Shell::GetInstance()->output_configurator()->AddObserver(this);
+#endif
 }
 
 PowerButtonController::~PowerButtonController() {
+#if defined(OS_CHROMEOS) && defined(USE_X11)
+  Shell::GetInstance()->output_configurator()->RemoveObserver(this);
+#endif
 }
 
 void PowerButtonController::OnScreenBrightnessChanged(double percent) {
-  screen_is_off_ = percent <= 0.001;
+  brightness_is_zero_ = percent <= 0.001;
 }
 
 void PowerButtonController::OnPowerButtonEvent(
@@ -42,8 +49,9 @@ void PowerButtonController::OnPowerButtonEvent(
     return;
 
   // Avoid starting the lock/shutdown sequence if the power button is pressed
-  // while the screen is off (http://crbug.com/128451).
-  if (screen_is_off_)
+  // while the screen is off (http://crbug.com/128451), unless an external
+  // display is still on (http://crosbug.com/p/24912).
+  if (brightness_is_zero_ && !internal_display_off_and_external_display_on_)
     return;
 
   const SessionStateDelegate* session_state_delegate =
@@ -106,5 +114,24 @@ void PowerButtonController::OnLockButtonEvent(
   else
     controller_->CancelLockAnimation();
 }
+
+#if defined(OS_CHROMEOS) && defined(USE_X11)
+void PowerButtonController::OnDisplayModeChanged(
+    const std::vector<chromeos::OutputConfigurator::OutputSnapshot>& outputs) {
+  bool internal_display_off = false;
+  bool external_display_on = false;
+  for (size_t i = 0; i < outputs.size(); ++i) {
+    const chromeos::OutputConfigurator::OutputSnapshot& output = outputs[i];
+    if (output.type == ui::OUTPUT_TYPE_INTERNAL) {
+      if (!output.current_mode)
+        internal_display_off = true;
+    } else if (output.current_mode) {
+      external_display_on = true;
+    }
+  }
+  internal_display_off_and_external_display_on_ =
+      internal_display_off && external_display_on;
+}
+#endif
 
 }  // namespace ash

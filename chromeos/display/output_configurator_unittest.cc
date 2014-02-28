@@ -1106,7 +1106,7 @@ TEST_F(OutputConfiguratorTest, GetOutputStateForDisplaysWithId) {
 TEST_F(OutputConfiguratorTest, UpdateCachedOutputsEvenAfterFailure) {
   InitWithSingleOutput();
   const std::vector<OutputConfigurator::OutputSnapshot>* cached =
-      &test_api_.cached_outputs();
+      &configurator_.cached_outputs();
   ASSERT_EQ(static_cast<size_t>(1), cached->size());
   EXPECT_EQ(outputs_[0].current_mode, (*cached)[0].current_mode);
 
@@ -1114,7 +1114,7 @@ TEST_F(OutputConfiguratorTest, UpdateCachedOutputsEvenAfterFailure) {
   // |cached_outputs_| even if an invalid state is requested.
   state_controller_.set_state(ui::OUTPUT_STATE_SINGLE);
   UpdateOutputs(2, true);
-  cached = &test_api_.cached_outputs();
+  cached = &configurator_.cached_outputs();
   ASSERT_EQ(static_cast<size_t>(2), cached->size());
   EXPECT_EQ(outputs_[0].current_mode, (*cached)[0].current_mode);
   EXPECT_EQ(outputs_[1].current_mode, (*cached)[1].current_mode);
