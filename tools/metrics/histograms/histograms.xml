@@ -21467,6 +21467,56 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Sync.AppAssociationTime" units="milliseconds">
+  <summary>
+    Time taken during app association (M18 and earlier were mispelled with this
+    histogram).
+  </summary>
+</histogram>
+
+<histogram name="Sync.AppRunFailures">
+  <obsolete>
+    Deprecated as of m19.
+  </obsolete>
+  <summary>
+    Count of apps run failures, used to compare failure rates between data types
+    for a particular profile (see other Sync*RunFailures histograms).
+  </summary>
+</histogram>
+
+<histogram name="Sync.AppsAssociationTime" units="milliseconds">
+  <summary>Time taken during app association.</summary>
+</histogram>
+
+<histogram name="Sync.AppSettingsAssociationTime" units="milliseconds">
+  <summary>Time taken during app settings association.</summary>
+</histogram>
+
+<histogram name="Sync.AppSettingsStartFailure" enum="SyncStartResult">
+  <summary>Enumeration of types of app settings association failures.</summary>
+</histogram>
+
+<histogram name="Sync.AppsStartFailure" enum="SyncStartResult">
+  <summary>Enumeration of types of app association failures.</summary>
+</histogram>
+
+<histogram name="Sync.AppStartFailures" enum="SyncStartResult">
+  <obsolete>
+    Deprecated as of m19.
+  </obsolete>
+  <summary>
+    Enumeration of types of app association failures (M18 and earlier were
+    mispelled with this histogram).
+  </summary>
+</histogram>
+
+<histogram name="Sync.AttemptNigoriMigration" enum="SyncNigoriMigrationResult">
+  <summary>
+    Enumeration of results from attempting to migrate Sync's nigori node and its
+    encryption keys to support keystore.
+  </summary>
+</histogram>
+
 <histogram name="Sync.AuthInvalidationRejectedTokenAgeLong" units="days">
   <summary>
     Age of all auth tokens rejected by the invalidation server. Measured from
@@ -21480,6 +21530,10 @@ other types of suffix sets.
     Age of auth tokens younger than one hour that were rejected by the
     invalidation server. Measured from the time they were created.
   </summary>
+</histogram>
+
+<histogram name="Sync.AuthorizationTimeInNetwork" units="milliseconds">
+  <summary>Time taken during initial authorization.</summary>
 </histogram>
 
 <histogram name="Sync.AuthServerRejectedTokenAgeLong" units="days">
@@ -21496,12 +21550,667 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Sync.AutofillAssociationTime" units="milliseconds">
+  <summary>Time taken during autofill association.</summary>
+</histogram>
+
+<histogram name="Sync.AutofillProfileAssociationTime" units="milliseconds">
+  <summary>
+    Time taken during autofill profile association (M18 and earlier were
+    mispelled with this histogram).
+  </summary>
+</histogram>
+
+<histogram name="Sync.AutofillProfileRunFailures">
+  <obsolete>
+    Deprecated as of m19.
+  </obsolete>
+  <summary>
+    Count of autofill profiles run failures, used to compare failure rates
+    between data types for a particular profile (see other Sync*RunFailures
+    histograms).
+  </summary>
+</histogram>
+
+<histogram name="Sync.AutofillProfilesAssociationTime" units="milliseconds">
+  <summary>Time taken during autofill profile association.</summary>
+</histogram>
+
+<histogram name="Sync.AutofillProfilesStartFailure" enum="SyncStartResult">
+  <summary>
+    Enumeration of types of autofill profile association failures.
+  </summary>
+</histogram>
+
+<histogram name="Sync.AutofillProfileStartFailures" enum="SyncStartResult">
+  <obsolete>
+    Deprecated as of m19.
+  </obsolete>
+  <summary>
+    Enumeration of types of autofill profile association failures (M18 and
+    earlier were mispelled with this histogram).
+  </summary>
+</histogram>
+
+<histogram name="Sync.AutofillRunFailures">
+  <obsolete>
+    Deprecated as of m19.
+  </obsolete>
+  <summary>
+    Count of autofill (autocomplete) run failures, used to compare failure rates
+    between data types for a particular profile (see other Sync*RunFailures
+    histograms).
+  </summary>
+</histogram>
+
+<histogram name="Sync.AutofillStartFailure" enum="SyncStartResult">
+  <summary>Enumeration of types of autofill association failures.</summary>
+</histogram>
+
+<histogram name="Sync.AutoNigoriOverwrites">
+  <summary>
+    Number of times this client has overwritten the nigori node to update the
+    encryption keys without a user action (during this instantiation of Chrome).
+  </summary>
+</histogram>
+
+<histogram name="Sync.BackendInitializeFirstTime" units="milliseconds">
+  <summary>
+    Tracks sync backend initialization time during initial sync setup.
+  </summary>
+</histogram>
+
+<histogram name="Sync.BackendInitializeFirstTimeSuccess" enum="BooleanSuccess">
+  <summary>
+    Tracks sync backend initialization success rate during initial sync setup.
+  </summary>
+</histogram>
+
 <histogram name="Sync.BackendInitializeRestoreState"
     enum="SyncBackendInitializeRestoreState">
   <summary>
     Compares sync's has_setup_completed pref against the set of types actually
     restored from the sync DB.  Mismatches should be rare.
   </summary>
+</histogram>
+
+<histogram name="Sync.BackendInitializeRestoreSuccess" enum="BooleanSuccess">
+  <summary>
+    Tracks sync backend initialization success rate in cases where sync was
+    previously initialized.
+  </summary>
+</histogram>
+
+<histogram name="Sync.BackendInitializeRestoreTime" units="milliseconds">
+  <summary>
+    Tracks sync backend initialization time in cases where sync was previously
+    initialized.
+  </summary>
+</histogram>
+
+<histogram name="Sync.BadRequestCountOnSignInNeedsUpdateInfoBar">
+  <summary>
+    Number of bad requests since application startup, when the Sync error
+    infobar asking the user to update his account details is displayed.
+  </summary>
+</histogram>
+
+<histogram name="Sync.BookmarkAssociationTime" units="milliseconds">
+  <obsolete>
+    Deprecated as of m18
+  </obsolete>
+  <summary>Time taken during bookmark association.</summary>
+</histogram>
+
+<histogram name="Sync.BookmarkRunFailures">
+  <obsolete>
+    Deprecated as of m19.
+  </obsolete>
+  <summary>
+    Count of bookmark run failures, used to compare failure rates between data
+    types for a particular profile (see other Sync*RunFailures histograms).
+  </summary>
+</histogram>
+
+<histogram name="Sync.BookmarksAssociationTime" units="milliseconds">
+  <summary>Time taken during bookmark association.</summary>
+</histogram>
+
+<histogram name="Sync.BookmarksStartFailure" enum="SyncStartResult">
+  <summary>Enumeration of types of bookmark association failures.</summary>
+</histogram>
+
+<histogram name="Sync.BookmarkStartFailures" enum="SyncStartResult">
+  <obsolete>
+    Deprecated as of m19.
+  </obsolete>
+  <summary>
+    Enumeration of types of bookmark association failures (M18 and earlier were
+    mispelled with this histogram).
+  </summary>
+</histogram>
+
+<histogram name="Sync.ConfigureFailed" enum="SyncModelTypes">
+  <summary>Count of model association failures for each type.</summary>
+</histogram>
+
+<histogram name="Sync.ConfigureTime.ABORTED" units="milliseconds">
+  <obsolete>
+    Replaced by Sync.ConfigureTime_Long.ABORTED in m21.
+  </obsolete>
+  <summary>
+    Time spent configuring data types in the case where configuration is
+    aborted.
+  </summary>
+</histogram>
+
+<histogram name="Sync.ConfigureTime.OK" units="milliseconds">
+  <obsolete>
+    Replaced by Sync.ConfigureTime_Long.OK in m21.
+  </obsolete>
+  <summary>
+    Time spent configuring data types in the case where configuration succeeds.
+  </summary>
+</histogram>
+
+<histogram name="Sync.ConfigureTime.PARTIAL_SUCCESS" units="milliseconds">
+  <obsolete>
+    Replaced by Sync.ConfigureTime_Long.PARTIAL_SUCCESS in m21.
+  </obsolete>
+  <summary>
+    Time spent configuring data types in the case where only some data types
+    succeed.
+  </summary>
+</histogram>
+
+<histogram name="Sync.ConfigureTime.UNRECOVERABLE_ERROR" units="milliseconds">
+  <obsolete>
+    Replaced by Sync.ConfigureTime_Long.UNRECOVERABLE_ERROR in m21.
+  </obsolete>
+  <summary>
+    Time spent configuring data types in the case where configuration encounters
+    an unrecoverable error.
+  </summary>
+</histogram>
+
+<histogram name="Sync.ConfigureTime_Long.ABORTED" units="milliseconds">
+  <summary>
+    Time spent configuring data types in the case where configuration is
+    aborted.
+  </summary>
+</histogram>
+
+<histogram name="Sync.ConfigureTime_Long.OK" units="milliseconds">
+  <summary>
+    Time spent configuring data types in the case where configuration succeeds.
+  </summary>
+</histogram>
+
+<histogram name="Sync.ConfigureTime_Long.PARTIAL_SUCCESS" units="milliseconds">
+  <summary>
+    Time spent configuring data types in the case where only some data types
+    succeed.
+  </summary>
+</histogram>
+
+<histogram name="Sync.ConfigureTime_Long.UNRECOVERABLE_ERROR"
+    units="milliseconds">
+  <summary>
+    Time spent configuring data types in the case where configuration encounters
+    an unrecoverable error.
+  </summary>
+</histogram>
+
+<histogram name="Sync.ConflictFixCircularity">
+  <obsolete>
+    Deprecated 12/2011. No longer tracked. See crbug.com/107816.
+  </obsolete>
+  <summary>
+    Number of times we fix a circularity sync conflict. This is not expected to
+    be hit anymore.
+  </summary>
+</histogram>
+
+<histogram name="Sync.ConflictFixRemovedDirectoriesWithContent">
+  <obsolete>
+    Deprecated 12/2011. No longer tracked. See crbug.com/107816.
+  </obsolete>
+  <summary>
+    Number of times we fix a removed directory with content sync conflict. This
+    is not expected to be hit anymore
+  </summary>
+</histogram>
+
+<histogram name="Sync.CredentialsLost" enum="BooleanCredentialsLost">
+  <summary>
+    Whether or not we detected missing credentials during startup.  This may be
+    related to crbug.com/121755.
+  </summary>
+</histogram>
+
+<histogram name="Sync.CryptographerPendingKeys"
+    enum="SyncCryptographerPendingKeysState">
+  <summary>
+    Breakdown of sync users whose cryptographer has pending keys.
+  </summary>
+</histogram>
+
+<histogram name="Sync.CryptographerReady" enum="SyncCryptographerReadyState">
+  <summary>
+    Breakdown of sync users whose cryptographer is fully ready for encryption
+    and decryption (initialized and no pending keys).
+  </summary>
+</histogram>
+
+<histogram name="Sync.CustomEncryption" enum="SyncCustomEncryptionEvent">
+  <summary>
+    Histogram that keeps track of how users encrypt their sync data. All users
+    start off with default encryption during initial setup, while a subset of
+    users go on to encrypt their sync data with a custom passphrase.
+  </summary>
+</histogram>
+
+<histogram name="Sync.CustomPassphrase">
+  <obsolete>
+    Deprecated as of m26.
+  </obsolete>
+  <summary>
+    Boolean histogram for whether a custom passphrase was entered during sync
+    setup. Samples are taken every time sync is (re)configured, and the unique
+    userid count shows how many users entered a custom passphrase.
+  </summary>
+</histogram>
+
+<histogram name="Sync.CustomSync" enum="UserSelectableSyncType">
+  <summary>
+    Samples are taken every time sync is (re)configured, and the unique userid
+    count shows how many users explicitly chose to sync this data type via the
+    &quot;Advanced Sync Preferences&quot; dialog.
+  </summary>
+</histogram>
+
+<histogram name="Sync.DatatypePrefRecovery">
+  <summary>
+    Number of clients that have fixed themselves up from a datatype preference
+    loss. Clients are not expected to have this happen more than once. This
+    value can be compared to Sync.BackendInitializeRestoreSuccess to determine
+    what percentage of users are still recovering.
+  </summary>
+</histogram>
+
+<histogram name="Sync.DataTypeRunFailures" enum="SyncModelTypes">
+  <summary>
+    Histogram of the run failures for the different sync datatypes. These are
+    failures that occur after startup while the datatype is syncing. Note: Due
+    to an enumeration reordering, pre-M23 labels are inaccurate (see
+    sync/internal_api/public/base/model_type.h).
+  </summary>
+</histogram>
+
+<histogram name="Sync.DataTypeStartFailures" enum="SyncModelTypes">
+  <summary>
+    Histogram of the startup failures for the different sync datatypes. These
+    are failures due to missing top level sync nodes or model association Note:
+    Due to an enumeration reordering, pre-M23 labels are inaccurate (see
+    sync/internal_api/public/base/model_type.h).
+  </summary>
+</histogram>
+
+<histogram name="Sync.DictionaryAssociationTime" units="milliseconds">
+  <summary>Time taken during dictionary association.</summary>
+</histogram>
+
+<histogram name="Sync.DictionaryStartFailure" enum="SyncStartResult">
+  <summary>Enumeration of types of dictionary association failures.</summary>
+</histogram>
+
+<histogram name="Sync.DirectoryOpenFailedMac">
+  <obsolete>
+    Deprecated 11/2011. No longer tracked.
+  </obsolete>
+  <summary>Number of failures trying to open the sync database on mac.</summary>
+</histogram>
+
+<histogram name="Sync.DirectoryOpenFailedNotWinMac">
+  <obsolete>
+    Deprecated 11/2011. No longer tracked.
+  </obsolete>
+  <summary>
+    Number of failures trying to open the sync database on a non-windows non-mac
+    platform.
+  </summary>
+</histogram>
+
+<histogram name="Sync.DirectoryOpenFailedWin">
+  <obsolete>
+    Deprecated 11/2011. No longer tracked.
+  </obsolete>
+  <summary>
+    Number of failures trying to open the sync database on windows.
+  </summary>
+</histogram>
+
+<histogram name="Sync.DirectoryOpenResult" enum="SyncDirectoryOpenResult">
+  <summary>Tracks success of failure of sync directory initialization.</summary>
+</histogram>
+
+<histogram name="Sync.EncryptAllData">
+  <obsolete>
+    Deprecated as of m26.
+  </obsolete>
+  <summary>
+    Boolean histogram for whether the &quot;Encrypt all synced data&quot; radio
+    button was selected during sync setup. Samples are taken every time sync is
+    (re)configured, and the unique userid count shows how many users chose to
+    encrypt their sync data.
+  </summary>
+</histogram>
+
+<histogram name="Sync.EventCodes" enum="SyncEventCode">
+  <summary>A UI event occured.</summary>
+</histogram>
+
+<histogram name="Sync.ExtensionAssociationTime" units="milliseconds">
+  <summary>
+    Time taken during extension association (M18 and earlier were mispelled with
+    this histogram).
+  </summary>
+</histogram>
+
+<histogram name="Sync.ExtensionRunFailures">
+  <obsolete>
+    Deprecated as of m19.
+  </obsolete>
+  <summary>
+    Count of extension run failures, used to compare failure rates between data
+    types for a particular profile (see other Sync*RunFailures histograms).
+  </summary>
+</histogram>
+
+<histogram name="Sync.ExtensionsAssociationTime" units="milliseconds">
+  <summary>Time taken during extension association.</summary>
+</histogram>
+
+<histogram name="Sync.ExtensionSettingsAssociationTime" units="milliseconds">
+  <summary>Time taken during extension settings association.</summary>
+</histogram>
+
+<histogram name="Sync.ExtensionSettingsStartFailure" enum="SyncStartResult">
+  <summary>
+    Enumeration of types of extension settings association failures.
+  </summary>
+</histogram>
+
+<histogram name="Sync.ExtensionsStartFailure" enum="SyncStartResult">
+  <summary>Enumeration of types of extension association failures.</summary>
+</histogram>
+
+<histogram name="Sync.ExtensionStartFailures" enum="SyncStartResult">
+  <obsolete>
+    Deprecated as of m19.
+  </obsolete>
+  <summary>
+    Enumeration of types of extension association failures (M18 and earlier were
+    mispelled with this histogram).
+  </summary>
+</histogram>
+
+<histogram name="Sync.FaviconCacheLookupSucceeded" enum="BooleanSuccess">
+  <summary>Whether a sync favicon cache lookup succeeded or not.</summary>
+</histogram>
+
+<histogram name="Sync.FaviconCount">
+  <summary>Number of synced favicons at initialization time.</summary>
+</histogram>
+
+<histogram name="Sync.FaviconImagesAssociationTime" units="milliseconds">
+  <summary>Time taken during favicon images association.</summary>
+</histogram>
+
+<histogram name="Sync.FaviconImagesStartFailure" enum="SyncStartResult">
+  <summary>
+    Enumeration of types of favicon images association failures.
+  </summary>
+</histogram>
+
+<histogram name="Sync.FaviconsAvailableAtMerge" enum="SyncFaviconsAvailable">
+  <summary>
+    Number of client that have filled their sync favicon cache and must evict
+    old favicons vs those whose cache is not full.
+  </summary>
+</histogram>
+
+<histogram name="Sync.FaviconTrackingAssociationTime" units="milliseconds">
+  <summary>Time taken during favicon tracking association.</summary>
+</histogram>
+
+<histogram name="Sync.FaviconTrackingStartFailure" enum="SyncStartResult">
+  <summary>
+    Enumeration of types of favicon tracking association failures.
+  </summary>
+</histogram>
+
+<histogram name="Sync.FaviconVisitPeriod" units="hours">
+  <summary>Time between updates to a synced favicon's visit time.</summary>
+</histogram>
+
+<histogram name="Sync.FirstBackendInitializeSuccess" enum="BooleanSuccess">
+  <obsolete>
+    Deprecated 11/2011.  Was counted incorrectly.  Replaced by
+    Sync.BackendInitializeFirstTimeSuccess.
+  </obsolete>
+  <summary>
+    Tracks sync backend initialization success rate during initial sync setup.
+  </summary>
+</histogram>
+
+<histogram name="Sync.FreqApps" units="milliseconds">
+  <summary>
+    Time between nudges for apps. Used as estimate of datatype commit frequency.
+  </summary>
+</histogram>
+
+<histogram name="Sync.FreqAutofill" units="milliseconds">
+  <summary>
+    Time between nudges for autofill entries. Used as estimate of datatype
+    commit frequency.
+  </summary>
+</histogram>
+
+<histogram name="Sync.FreqAutofillProfiles" units="milliseconds">
+  <summary>
+    Time between nudges for autofill profiles. Used as estimate of datatype
+    commit frequency.
+  </summary>
+</histogram>
+
+<histogram name="Sync.FreqBookmarks" units="milliseconds">
+  <summary>
+    Time between nudges for bookmarks. Used as estimate of datatype commit
+    frequency.
+  </summary>
+</histogram>
+
+<histogram name="Sync.FreqDictionary" units="milliseconds">
+  <summary>
+    Time between nudges for dictionary. Used as estimate of datatype commit
+    frequency.
+  </summary>
+</histogram>
+
+<histogram name="Sync.FreqExtensions" units="milliseconds">
+  <summary>
+    Time between nudges for extensions. Used as estimate of datatype commit
+    frequency.
+  </summary>
+</histogram>
+
+<histogram name="Sync.FreqFaviconImages" units="milliseconds">
+  <summary>
+    Time between nudges for favicon images. Used as estimate of datatype commit
+    frequency.
+  </summary>
+</histogram>
+
+<histogram name="Sync.FreqFaviconTracking" units="milliseconds">
+  <summary>
+    Time between nudges for favicon tracking. Used as estimate of datatype
+    commit frequency.
+  </summary>
+</histogram>
+
+<histogram name="Sync.FreqNigori" units="milliseconds">
+  <summary>
+    Time between nudges for nigori. Used as estimate of datatype commit
+    frequency.
+  </summary>
+</histogram>
+
+<histogram name="Sync.FreqPasswords" units="milliseconds">
+  <summary>
+    Time between nudges for passwords. Used as estimate of datatype commit
+    frequency.
+  </summary>
+</histogram>
+
+<histogram name="Sync.FreqPreferences" units="milliseconds">
+  <summary>
+    Time between nudges for preferences. Used as estimate of datatype commit
+    frequency.
+  </summary>
+</histogram>
+
+<histogram name="Sync.FreqSearchEngines" units="milliseconds">
+  <summary>
+    Time between nudges for search engines. Used as estimate of datatype commit
+    frequency.
+  </summary>
+</histogram>
+
+<histogram name="Sync.FreqSessions" units="milliseconds">
+  <summary>
+    Time between nudges for sessions. Used as estimate of datatype commit
+    frequency.
+  </summary>
+</histogram>
+
+<histogram name="Sync.FreqSyncedNotifications" units="milliseconds">
+  <summary>
+    Time between nudges for synced notifications. Used as estimate of datatype
+    commit frequency.
+  </summary>
+</histogram>
+
+<histogram name="Sync.FreqThemes" units="milliseconds">
+  <summary>
+    Time between nudges for themes. Used as estimate of datatype commit
+    frequency.
+  </summary>
+</histogram>
+
+<histogram name="Sync.FreqTypedUrls" units="milliseconds">
+  <summary>
+    Time between nudges for typed urls. Used as estimate of datatype commit
+    frequency.
+  </summary>
+</histogram>
+
+<histogram name="Sync.KeystoreDecryptionFailed"
+    enum="SyncKeystoreDecryptionFailure">
+  <summary>
+    The reason for a failure decrypting the keystore decryptor token.
+  </summary>
+</histogram>
+
+<histogram name="Sync.LocalModelOutOfSync" enum="SyncModelTypes">
+  <summary>
+    Counts instances of out of sync local models detected during startup.
+  </summary>
+</histogram>
+
+<histogram name="Sync.NigoriMigrationState" enum="SyncNigoriMigrationState">
+  <summary>Breakdown of sync's nigori node keystore migration state.</summary>
+</histogram>
+
+<histogram name="Sync.PartiallySyncedTypes">
+  <summary>
+    Number of partially synced types (those with a progress marker but no
+    initial sync ended bit) that exist at sync startup.
+  </summary>
+</histogram>
+
+<histogram name="Sync.PasswordAssociationTime" units="milliseconds">
+  <summary>
+    Time taken during password association (M18 and earlier were mispelled with
+    this histogram).
+  </summary>
+</histogram>
+
+<histogram name="Sync.PasswordRunFailures">
+  <obsolete>
+    Deprecated as of m19.
+  </obsolete>
+  <summary>
+    Count of passwords run failures, used to compare failure rates between data
+    types for a particular profile (see other Sync*RunFailures histograms).
+  </summary>
+</histogram>
+
+<histogram name="Sync.PasswordsAssociationTime" units="milliseconds">
+  <summary>Time taken during password association.</summary>
+</histogram>
+
+<histogram name="Sync.PasswordsStartFailure" enum="SyncStartResult">
+  <summary>Enumeration of types of password association failures.</summary>
+</histogram>
+
+<histogram name="Sync.PasswordStartFailures" enum="SyncStartResult">
+  <obsolete>
+    Deprecated as of m19.
+  </obsolete>
+  <summary>
+    Enumeration of types of password association failures (M18 and earlier were
+    mispelled with this histogram).
+  </summary>
+</histogram>
+
+<histogram name="Sync.PreferenceAssociationTime" units="milliseconds">
+  <summary>
+    Time taken during preference association (M18 and earlier were mispelled
+    with this histogram).
+  </summary>
+</histogram>
+
+<histogram name="Sync.PreferenceRunFailures">
+  <obsolete>
+    Deprecated as of m19.
+  </obsolete>
+  <summary>
+    Count of preferences run failures, used to compare failure rates between
+    data types for a particular profile (see other Sync*RunFailures histograms).
+  </summary>
+</histogram>
+
+<histogram name="Sync.PreferencesAssociationTime" units="milliseconds">
+  <summary>Time taken during preference association.</summary>
+</histogram>
+
+<histogram name="Sync.PreferencesStartFailure" enum="SyncStartResult">
+  <summary>Enumeration of types of preference association failures.</summary>
+</histogram>
+
+<histogram name="Sync.PreferenceStartFailures" enum="SyncStartResult">
+  <obsolete>
+    Deprecated as of m19.
+  </obsolete>
+  <summary>
+    Enumeration of types of preference association failures (M18 and earlier
+    were mispelled with this histogram).
+  </summary>
+</histogram>
+
+<histogram name="Sync.ReauthorizationTime" units="milliseconds">
+  <summary>Time taken from startup for the user to reauthorize.</summary>
 </histogram>
 
 <histogram name="Sync.RefreshTokenAvailable" enum="BooleanSuccess">
@@ -21511,11 +22220,268 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Sync.ResolveSimpleConflict"
+    enum="SyncSimpleConflictResolutions">
+  <summary>Enumeration of types of simple conflict resolutions.</summary>
+</histogram>
+
+<histogram name="Sync.RestoreBackendInitializeSucess" enum="BooleanSuccess">
+  <obsolete>
+    Deprecated 11/2011.  Was counted incorrectly.  Replaced by
+    Sync.BackendInitializeRestoreSuccess.
+  </obsolete>
+  <summary>
+    Tracks sync backend initialization success rate in cases where sync was
+    previously initialized.
+  </summary>
+</histogram>
+
+<histogram name="Sync.SearchEngineAssociationTime" units="milliseconds">
+  <summary>
+    Time taken during search engine association (M18 and earlier were mispelled
+    with this histogram).
+  </summary>
+</histogram>
+
+<histogram name="Sync.SearchEngineRunFailures">
+  <obsolete>
+    Deprecated as of m19.
+  </obsolete>
+  <summary>
+    Count of search engine run failures, used to compare failure rates between
+    data types for a particular profile (see other Sync*RunFailures histograms).
+  </summary>
+</histogram>
+
+<histogram name="Sync.SearchEnginesAssociationTime" units="milliseconds">
+  <summary>Time taken during search engine association.</summary>
+</histogram>
+
+<histogram name="Sync.SearchEnginesStartFailure" enum="SyncStartResult">
+  <summary>Enumeration of types of search engine association failures.</summary>
+</histogram>
+
+<histogram name="Sync.SearchEngineStartFailures" enum="SyncStartResult">
+  <obsolete>
+    Deprecated as of m19.
+  </obsolete>
+  <summary>
+    Enumeration of types of search engine association failures (M18 and earlier
+    were mispelled with this histogram).
+  </summary>
+</histogram>
+
+<histogram name="Sync.ServiceInitialConfigureTime" units="milliseconds">
+  <summary>
+    Time spent on first-time configure.  May include time spent on retries.
+  </summary>
+</histogram>
+
+<histogram name="Sync.ServiceSubsequentConfigureTime" units="milliseconds">
+  <summary>
+    Time spent on non-first-time configure.  May include time spent on retries.
+  </summary>
+</histogram>
+
+<histogram name="Sync.SessionAssociationTime" units="milliseconds">
+  <summary>
+    Time taken during session association (M18 and earlier were mispelled with
+    this histogram).
+  </summary>
+</histogram>
+
+<histogram name="Sync.SessionRunFailures">
+  <obsolete>
+    Deprecated as of m19.
+  </obsolete>
+  <summary>
+    Count of sessions run failures, used to compare failure rates between data
+    types for a particular profile (see other Sync*RunFailures histograms).
+  </summary>
+</histogram>
+
+<histogram name="Sync.SessionsAssociationTime" units="milliseconds">
+  <summary>Time taken during session association.</summary>
+</histogram>
+
+<histogram name="Sync.SessionsStartFailure" enum="SyncStartResult">
+  <summary>Enumeration of types of session association failures.</summary>
+</histogram>
+
+<histogram name="Sync.SessionStartFailures" enum="SyncStartResult">
+  <obsolete>
+    Deprecated as of m19.
+  </obsolete>
+  <summary>
+    Enumeration of types of session association failures (M18 and earlier were
+    mispelled with this histogram).
+  </summary>
+</histogram>
+
+<histogram name="Sync.Shutdown.BackendDestroyedTime" units="milliseconds">
+  <summary>
+    Time taken from the start of sync shutdown (in ProfileSyncService) until the
+    backend (SyncBackendHost) is fully destroyed.
+  </summary>
+</histogram>
+
+<histogram name="Sync.Shutdown.StopRegistrarTime" units="milliseconds">
+  <summary>
+    Amount of time the UI thread waits (at shutdown) to stop the
+    SyncBackendRegistrar.
+  </summary>
+</histogram>
+
+<histogram name="Sync.Shutdown.StopSyncThreadTime" units="milliseconds">
+  <summary>
+    Amount of time the UI thread waits (at shutdown) to stop the sync thread.
+  </summary>
+</histogram>
+
 <histogram name="Sync.SyncAuthError" enum="SyncAuthError">
   <summary>
     Counts the number of times sync clients have encountered an auth error and
     number of times auth errors are fixed.
   </summary>
+</histogram>
+
+<histogram name="Sync.SyncedNotificationsAssociationTime" units="milliseconds">
+  <summary>Time taken during synced notifications association.</summary>
+</histogram>
+
+<histogram name="Sync.SyncedNotificationsStartFailure" enum="SyncStartResult">
+  <summary>
+    Enumeration of types of synced notifications association failures.
+  </summary>
+</histogram>
+
+<histogram name="Sync.SyncerConflictStuck">
+  <obsolete>
+    Deprecated 12/2011. No longer tracked. See crbug.com/107816.
+  </obsolete>
+  <summary>
+    Number of times the sync conflict resolver gets stuck. This is not expected
+    to be hit anymore.
+  </summary>
+</histogram>
+
+<histogram name="Sync.SyncErrorInfobarDisplayed" enum="SyncErrorInfobarTypes">
+  <summary>
+    Enumeration of error conditions that displays an infobar to the user.
+  </summary>
+</histogram>
+
+<histogram name="Sync.SyncEverything">
+  <summary>
+    Boolean histogram for whether the &quot;Sync Everything&quot; option was
+    selected during sync setup. Samples are taken every time sync is
+    (re)configured, and the unique userid count shows how many users chose to
+    sync all available data types.
+  </summary>
+</histogram>
+
+<histogram name="Sync.ThemeAssociationTime" units="milliseconds">
+  <obsolete>
+    Deprecated as of m19
+  </obsolete>
+  <summary>
+    Time taken during theme association (M18 and earlier were mispelled with
+    this histogram).
+  </summary>
+</histogram>
+
+<histogram name="Sync.ThemeRunFailures">
+  <obsolete>
+    Deprecated as of m19.
+  </obsolete>
+  <summary>
+    Count of theme run failures, used to compare failure rates between data
+    types for a particular profile (see other Sync*RunFailures histograms).
+  </summary>
+</histogram>
+
+<histogram name="Sync.ThemesAssociationTime" units="milliseconds">
+  <summary>Time taken during theme association.</summary>
+</histogram>
+
+<histogram name="Sync.ThemesStartFailure" enum="SyncStartResult">
+  <summary>Enumeration of types of theme association failures.</summary>
+</histogram>
+
+<histogram name="Sync.ThemeStartFailures" enum="SyncStartResult">
+  <obsolete>
+    Deprecated as of m19.
+  </obsolete>
+  <summary>
+    Enumeration of types of theme association failures (M18 and earlier were
+    mispelled with this histogram).
+  </summary>
+</histogram>
+
+<histogram name="Sync.TypedUrlAssociationTime" units="milliseconds">
+  <summary>
+    Time taken during typed url association (M18 and earlier were mispelled with
+    this histogram).
+  </summary>
+</histogram>
+
+<histogram name="Sync.TypedUrlChangeProcessorErrors" units="%">
+  <summary>
+    The percentage of history DB operations initiated by the typed URL change
+    processor that return an error. The cumulative count for the current sync
+    session is logged after every typed URL change.
+  </summary>
+</histogram>
+
+<histogram name="Sync.TypedUrlModelAssociationErrors" units="%">
+  <summary>
+    The percentage of history DB operations during model association that return
+    an error. This is logged at the end of typed URL model association, which
+    happens once each time sync starts up.
+  </summary>
+</histogram>
+
+<histogram name="Sync.TypedUrlRunFailures">
+  <obsolete>
+    Deprecated as of m19.
+  </obsolete>
+  <summary>
+    Count of typed url run failures, used to compare failure rates between data
+    types for a particular profile (see other Sync*RunFailures histograms).
+  </summary>
+</histogram>
+
+<histogram name="Sync.TypedUrlsAssociationTime" units="milliseconds">
+  <summary>Time taken during typed url association.</summary>
+</histogram>
+
+<histogram name="Sync.TypedUrlsStartFailure" enum="SyncStartResult">
+  <summary>Enumeration of types of typed url association failures.</summary>
+</histogram>
+
+<histogram name="Sync.TypedUrlStartFailures" enum="SyncStartResult">
+  <obsolete>
+    Deprecated as of m19.
+  </obsolete>
+  <summary>
+    Enumeration of types of typed url association failures (M18 and earlier were
+    mispelled with this histogram).
+  </summary>
+</histogram>
+
+<histogram name="Sync.UnrecoverableErrors" enum="SyncUnrecoverableErrorReason">
+  <summary>
+    Enumeration of the different reasons for unrecoverable errors and how often
+    they have occurred.
+  </summary>
+</histogram>
+
+<histogram name="Sync.UserPerceivedAuthorizationTime" units="milliseconds">
+  <summary>Time the user spends looking at the authorization dialog.</summary>
+</histogram>
+
+<histogram name="Sync.UserPerceivedBookmarkAssociation">
+  <summary>Time taken during bookmark association.</summary>
 </histogram>
 
 <histogram name="SyncedNotifications.Actions"
@@ -33093,12 +34059,163 @@ other types of suffix sets.
   <int value="3" label="Did not expect restored types but found some"/>
 </enum>
 
+<enum name="SyncCryptographerPendingKeysState" type="int">
+  <int value="0" label="Does not have pending keys"/>
+  <int value="1" label="Has pending keys"/>
+</enum>
+
+<enum name="SyncCryptographerReadyState" type="int">
+  <int value="0" label="Not Ready"/>
+  <int value="1" label="Ready"/>
+</enum>
+
+<enum name="SyncCustomEncryptionEvent" type="int">
+  <int value="0" label="Default setup with an implicit passphrase"/>
+  <int value="1" label="Advanced setup with a custom passphrase"/>
+</enum>
+
+<enum name="SyncDirectoryOpenResult" type="int">
+  <summary>Possible outcomes of an attempt to load the sync directory.</summary>
+  <int value="0" label="FIRST_TRY_SUCCESS"/>
+  <int value="1" label="SECOND_TRY_SUCCESS"/>
+  <int value="2" label="SECOND_TRY_FAILURE"/>
+</enum>
+
 <enum name="SyncedNotificationActionType" type="int">
   <int value="0" label="Unknown"/>
   <int value="1" label="Notification clicked"/>
   <int value="2" label="Notification button clicked"/>
   <int value="3" label="Notification closed by user"/>
   <int value="4" label="Notification closed by system"/>
+</enum>
+
+<enum name="SyncedSearchEngineDeleteEvent" type="int">
+  <summary>Possible events that delete a synced search engine.</summary>
+  <int value="0" label="USER_INITIATED"/>
+  <int value="1" label="PRE_SYNC_DELETE"/>
+  <int value="2" label="EMPTY_FIELD"/>
+</enum>
+
+<enum name="SyncErrorInfobarTypes" type="int">
+  <summary>Possible errors that can trigger a sync error infobar.</summary>
+  <int value="1" label="Sign in needs update"/>
+  <int value="2" label="Service unavailable"/>
+  <int value="3" label="Needs passphrase"/>
+  <int value="4" label="Unrecoverable error"/>
+</enum>
+
+<enum name="SyncEventCode" type="int">
+  <summary>
+    Sync UI events. The codes are listed in profile_syncer_service.h with more
+    details.
+  </summary>
+  <int value="1" label="START_FROM_NTP"/>
+  <int value="2" label="START_FROM_WRENCH"/>
+  <int value="3" label="START_FROM_OPTIONS"/>
+  <int value="10" label="CANCEL_FROM_SIGNON_WITHOUT_AUTH"/>
+  <int value="11" label="CANCEL_DURING_SIGNON"/>
+  <int value="12" label="CANCEL_DURING_SIGNON_AFTER_MERGE"/>
+  <int value="20" label="STOP_FROM_OPTIONS"/>
+  <int value="21" label="STOP_FROM_ADVANCED_DIALOG"/>
+  <int value="30" label="MERGE_AND_SYNC_NEEDED"/>
+</enum>
+
+<enum name="SyncFaviconsAvailable" type="int">
+  <int value="0" label="Synced favicons full"/>
+  <int value="1" label="Synced favicons not full"/>
+</enum>
+
+<enum name="SyncKeystoreDecryptionFailure" type="int">
+  <int value="0" label="No keystore key"/>
+  <int value="1" label="Unknown reason"/>
+</enum>
+
+<enum name="SyncModelTypes" type="int">
+  <int value="0" label="Unspecified"/>
+  <int value="1" label="Top level folder"/>
+  <int value="2" label="Bookmarks"/>
+  <int value="3" label="Preferences"/>
+  <int value="4" label="Passwords"/>
+  <int value="5" label="Autofill Profile"/>
+  <int value="6" label="Autocomplete"/>
+  <int value="7" label="Themes"/>
+  <int value="8" label="Typed URLs"/>
+  <int value="9" label="Extensions"/>
+  <int value="10" label="Search Engines"/>
+  <int value="11" label="Sessions"/>
+  <int value="12" label="Apps"/>
+  <int value="13" label="App Settings"/>
+  <int value="14" label="Extension Settings"/>
+  <int value="15" label="App Notifications"/>
+  <int value="16" label="History Delete Directives"/>
+  <int value="17" label="Nigori"/>
+  <int value="18" label="Device Information"/>
+  <int value="19" label="Experiments"/>
+  <int value="20" label="Synced Notifications"/>
+  <int value="21" label="Priority Preferences"/>
+  <int value="22" label="Dictionary"/>
+  <int value="23" label="Favicon Images"/>
+  <int value="24" label="Favicon Tracking"/>
+  <int value="25" label="Proxy Tabs"/>
+</enum>
+
+<enum name="SyncNigoriMigrationResult" type="int">
+  <int value="0" label="Failed to set default encryption key"/>
+  <int value="1" label="Failed to set nondefault encryption key"/>
+  <int value="2" label="Failed to extract keystore decryptor"/>
+  <int value="3" label="Failed to extract encryption keybag"/>
+  <int value="4"
+      label="Successfully migrated to non-backwards compatible keystore mode"/>
+  <int value="5"
+      label="Successfully migrated to backwards compatible keystore mode"/>
+  <int value="6" label="Successfully migrated with frozen implicit passphrase"/>
+  <int value="7" label="Successfully migrated with custom passphrase"/>
+</enum>
+
+<enum name="SyncNigoriMigrationState" type="int">
+  <int value="0" label="Fully migrated"/>
+  <int value="1" label="Not migrated due to cryptographer not ready"/>
+  <int value="2" label="Not migrated due to missing keystore key"/>
+  <int value="3" label="Not migrated for an unknown reason"/>
+</enum>
+
+<enum name="SyncSimpleConflictResolutions" type="int">
+  <summary>
+    Sync simple conflict resolutions. The codes are listed in
+    conflict_resolver.h, and correspond to the different methods we have for
+    resolving simple sync conflicts.
+  </summary>
+  <int value="0" label="Overwrite local"/>
+  <int value="1" label="Overwrite server"/>
+  <int value="2" label="Undelete"/>
+  <int value="3" label="Ignore encryption"/>
+  <int value="4" label="Nigori merge"/>
+  <int value="5" label="Changes match"/>
+</enum>
+
+<enum name="SyncStartResult" type="int">
+  <summary>
+    Sync data type start results. The codes are listed in data_type_controller.h
+    with more details.
+  </summary>
+  <int value="0" label="OK"/>
+  <int value="1" label="OK_FIRST_RUN"/>
+  <int value="2" label="BUSY"/>
+  <int value="3" label="NOT_ENABLED"/>
+  <int value="4" label="ASSOCIATION_FAILED"/>
+  <int value="5" label="ABORTED"/>
+  <int value="6" label="UNRECOVERABLE_ERROR"/>
+  <int value="7" label="NEEDS_CRYPTO"/>
+</enum>
+
+<enum name="SyncUnrecoverableErrorReason" type="int">
+  <summary>Reasons for sync unrecoverable errors.</summary>
+  <int value="0" label="No error"/>
+  <int value="1" label="Syncer error"/>
+  <int value="2" label="Backend initialization error"/>
+  <int value="3" label="Configuration retry"/>
+  <int value="4" label="Configuration failure"/>
+  <int value="5" label="Actionable error"/>
 </enum>
 
 <enum name="TabRestoreResult" type="int">
@@ -33410,6 +34527,18 @@ other types of suffix sets.
   <int value="8" label="kBlobURLScheme"/>
   <int value="9" label="kDataURLScheme"/>
   <int value="10" label="kFileSystemScheme"/>
+</enum>
+
+<enum name="UserSelectableSyncType" type="int">
+  <int value="0" label="Bookmarks"/>
+  <int value="1" label="Preferences"/>
+  <int value="2" label="Passwords"/>
+  <int value="3" label="Autofill"/>
+  <int value="4" label="Themes"/>
+  <int value="5" label="Omnibox History"/>
+  <int value="6" label="Extensions"/>
+  <int value="7" label="Open Tabs"/>
+  <int value="8" label="Apps"/>
 </enum>
 
 <enum name="UserType" type="int">
