@@ -535,6 +535,7 @@ class CleanUpStage(bs.BuilderStage):
 
 class PatchChangesStage(bs.BuilderStage):
   """Stage that patches a set of Gerrit changes to the buildroot source tree."""
+
   def __init__(self, builder_run, patch_pool, **kwargs):
     """Construct a PatchChangesStage.
 
@@ -588,8 +589,11 @@ class PatchChangesStage(bs.BuilderStage):
 
     failures = failed_tot + failed_inflight
     if failures:
-      cros_build_lib.Die("Failed applying patches: %s",
-                         "\n".join(map(str, failures)))
+      self.HandleApplyFailures(failures)
+
+  def HandleApplyFailures(self, failures):
+    cros_build_lib.Die("Failed applying patches: %s",
+                       "\n".join(map(str, failures)))
 
   def PerformStage(self):
     class NoisyPatchSeries(validation_pool.PatchSeries):
@@ -651,6 +655,8 @@ class BootstrapStage(PatchChangesStage):
     repository.CloneGitRepo(checkout_dir,
                             self._run.config.manifest_repo_url)
 
+    # TODO(davidjames): This code actually takes external manifest patches and
+    # tries to apply them to the internal manifest. We shouldn't do this.
     patch_series = validation_pool.PatchSeries.WorkOnSingleRepo(
         checkout_dir, deps_filter_fn=trybot_patch_pool.ManifestFilter,
         tracking_branch=self._run.manifest_branch)
@@ -696,6 +702,21 @@ class BootstrapStage(PatchChangesStage):
       args += ['--cache-dir', options.cache_dir]
 
     return args
+
+  def HandleApplyFailures(self, failures):
+    """Handle the case where patches fail to apply."""
+    if self._run.options.pre_cq or self._run.config.pre_cq:
+      # Let the PreCQSync stage handle this failure. The PreCQSync stage will
+      # comment on CLs with the appropriate message when they fail to apply.
+      #
+      # WARNING: For manifest patches, the Pre-CQ attempts to apply external
+      # patches to the internal manifest, and this means we may flag a conflict
+      # here even if the patch applies cleanly. TODO(davidjames): Fix this.
+      cros_build_lib.PrintBuildbotStepWarnings()
+      cros_build_lib.Error('Failed applying patches: %s',
+                           '\n'.join(map(str, failures)))
+    else:
+      PatchChangesStage.HandleApplyFailures(self, failures)
 
   #pylint: disable=E1101
   @osutils.TempDirDecorator
