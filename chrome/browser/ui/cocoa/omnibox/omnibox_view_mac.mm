@@ -775,8 +775,6 @@ void OmniboxViewMac::OnSetFocus(bool control_down) {
   model()->OnSetFocus(control_down);
   controller()->OnSetFocus();
 
-  // TODO(groby): Not entirely correct, since the chip should only be disabled
-  // after mouseDown: was handled, to allow clicking on the origin chip.
   if (chrome::ShouldDisplayOriginChipV2()) {
     controller()->GetToolbarModel()->set_origin_chip_enabled(false);
     controller()->OnChanged();

@@ -165,6 +165,12 @@ size_t CalculatePositionsInFrame(
 
 }  // namespace
 
+@interface AutocompleteTextFieldCell ()
+// Post an OnSetFocus notification to the observer of |controlView|.
+- (void)focusNotificationFor:(NSEvent*)event
+                      ofView:(AutocompleteTextField*)controlView;
+@end
+
 @implementation AutocompleteTextFieldCell
 
 @synthesize isPopupMode = isPopupMode_;
@@ -411,6 +417,15 @@ size_t CalculatePositionsInFrame(
 - (BOOL)mouseDown:(NSEvent*)theEvent
            inRect:(NSRect)cellFrame
            ofView:(AutocompleteTextField*)controlView {
+  // TODO(groby): Factor this into three pieces - find target for event, handle
+  // delayed focus (for any and all events), execute mouseDown for target.
+
+  // Check if this mouseDown was the reason the control became firstResponder.
+  // If not, discard focus event.
+  base::scoped_nsobject<NSEvent> focusEvent(focusEvent_.release());
+  if (![theEvent isEqual:focusEvent])
+    focusEvent.reset();
+
   LocationBarDecoration* decoration =
       [self decorationForEvent:theEvent inRect:cellFrame ofView:controlView];
   if (!decoration || !decoration->AcceptsMousePress())
@@ -480,6 +495,10 @@ size_t CalculatePositionsInFrame(
               inRect:cellFrame
               ofView:controlView
         untilMouseUp:YES];
+
+    // Post delayed focus notification, if necessary.
+    if (focusEvent.get())
+      [self focusNotificationFor:focusEvent ofView:controlView];
 
     // Set the proper state (hover or normal) once the mouse has been released,
     // and call |OnMousePressed| if the button was released while the mouse was
@@ -805,6 +824,33 @@ static NSString* UnusedLegalNameForNewDropFile(NSURL* saveLocation,
 
 - (BOOL)showsFirstResponder {
   return [super showsFirstResponder] && !hideFocusState_;
+}
+
+- (void)focusNotificationFor:(NSEvent*)event
+                      ofView:(AutocompleteTextField*)controlView {
+  if ([controlView observer]) {
+    const bool controlDown = ([event modifierFlags] & NSControlKeyMask) != 0;
+    [controlView observer]->OnSetFocus(controlDown);
+  }
+}
+
+- (void)handleFocusEvent:(NSEvent*)event
+                  ofView:(AutocompleteTextField*)controlView {
+  // Only intercept left button click. All other events cause immediate focus.
+  if ([event type] == NSLeftMouseDown) {
+    LocationBarDecoration* decoration =
+        [self decorationForEvent:event
+                          inRect:[controlView bounds]
+                          ofView:controlView];
+    // Only ButtonDecorations need a delayed focus handling.
+    if (decoration && decoration->AsButtonDecoration()) {
+      focusEvent_.reset([event retain]);
+      return;
+    }
+  }
+
+  // Handle event immediately.
+  [self focusNotificationFor:event ofView:controlView];
 }
 
 @end

@@ -79,6 +79,8 @@
 // a decoration area and get the expected selection behaviour,
 // likewise for multiple clicks in those areas.
 - (void)mouseDown:(NSEvent*)theEvent {
+  // TODO(groby): Figure out if OnMouseDown needs to be postponed/skipped
+  // for button decorations.
   if (observer_)
     observer_->OnMouseDown([theEvent buttonNumber]);
 
@@ -368,11 +370,7 @@
     // because the first responder will be immediately set to the field editor
     // when calling [super becomeFirstResponder], thus we won't receive
     // resignFirstResponder: anymore when losing focus.
-    if (observer_) {
-      NSEvent* theEvent = [NSApp currentEvent];
-      const bool controlDown = ([theEvent modifierFlags]&NSControlKeyMask) != 0;
-      observer_->OnSetFocus(controlDown);
-    }
+    [[self cell] handleFocusEvent:[NSApp currentEvent] ofView:self];
   }
   return doAccept;
 }
