@@ -4,6 +4,7 @@
 
 #include "net/spdy/hpack_input_stream.h"
 
+#include <bitset>
 #include <string>
 #include <vector>
 
@@ -38,6 +39,10 @@ void ExpectDecodeUint32Invalid(uint8 N, StringPiece str) {
   input_stream.SetBitOffsetForTest(8 - N);
   uint32 I;
   EXPECT_FALSE(input_stream.DecodeNextUint32ForTest(&I));
+}
+
+uint32 bits32(const string& bitstring) {
+  return std::bitset<32>(bitstring).to_ulong();
 }
 
 // The {Number}ByteIntegersEightBitPrefix tests below test that
@@ -483,6 +488,84 @@ TEST(HpackInputStreamTest, DecodeNextStringLiteralInvalidSize) {
   EXPECT_TRUE(input_stream.HasMoreData());
   StringPiece string_piece;
   EXPECT_FALSE(input_stream.DecodeNextStringLiteralForTest(&string_piece));
+}
+
+TEST(HpackInputStreamTest, PeekBitsAndConsume) {
+  HpackInputStream input_stream(kuint32max, "\xad\xab\xad\xab\xad");
+
+  uint32 bits = 0;
+  size_t peeked_count = 0;
+
+  // Read 0xad.
+  EXPECT_TRUE(input_stream.PeekBits(&peeked_count, &bits));
+  EXPECT_EQ(bits32("10101101000000000000000000000000"), bits);
+  EXPECT_EQ(8u, peeked_count);
+
+  // Read 0xab.
+  EXPECT_TRUE(input_stream.PeekBits(&peeked_count, &bits));
+  EXPECT_EQ(bits32("10101101101010110000000000000000"), bits);
+  EXPECT_EQ(16u, peeked_count);
+
+  input_stream.ConsumeBits(5);
+  bits = bits << 5;
+  peeked_count -= 5;
+  EXPECT_EQ(bits32("10110101011000000000000000000000"), bits);
+  EXPECT_EQ(11u, peeked_count);
+
+  // Read 0xad.
+  EXPECT_TRUE(input_stream.PeekBits(&peeked_count, &bits));
+  EXPECT_EQ(bits32("10110101011101011010000000000000"), bits);
+  EXPECT_EQ(19u, peeked_count);
+
+  // Read 0xab.
+  EXPECT_TRUE(input_stream.PeekBits(&peeked_count, &bits));
+  EXPECT_EQ(bits32("10110101011101011011010101100000"), bits);
+  EXPECT_EQ(27u, peeked_count);
+
+  // Read 0xa, and 1 bit of 0xd
+  EXPECT_TRUE(input_stream.PeekBits(&peeked_count, &bits));
+  EXPECT_EQ(bits32("10110101011101011011010101110101"), bits);
+  EXPECT_EQ(32u, peeked_count);
+
+  // |bits| is full, and doesn't change.
+  EXPECT_FALSE(input_stream.PeekBits(&peeked_count, &bits));
+  EXPECT_EQ(bits32("10110101011101011011010101110101"), bits);
+  EXPECT_EQ(32u, peeked_count);
+
+  input_stream.ConsumeBits(27);
+  bits = bits << 27;
+  peeked_count -= 27;
+  EXPECT_EQ(bits32("10101000000000000000000000000000"), bits);
+  EXPECT_EQ(5u, peeked_count);
+
+  // Read remaining 3 bits of 0xd.
+  EXPECT_TRUE(input_stream.PeekBits(&peeked_count, &bits));
+  EXPECT_EQ(bits32("10101101000000000000000000000000"), bits);
+  EXPECT_EQ(8u, peeked_count);
+
+  // EOF.
+  EXPECT_FALSE(input_stream.PeekBits(&peeked_count, &bits));
+  EXPECT_EQ(bits32("10101101000000000000000000000000"), bits);
+  EXPECT_EQ(8u, peeked_count);
+
+  input_stream.ConsumeBits(8);
+  EXPECT_FALSE(input_stream.HasMoreData());
+}
+
+TEST(HpackInputStreamTest, ConsumeByteRemainder) {
+  HpackInputStream input_stream(kuint32max, "\xad\xab");
+  // Does nothing.
+  input_stream.ConsumeByteRemainder();
+
+  // Consumes one byte.
+  input_stream.ConsumeBits(3);
+  input_stream.ConsumeByteRemainder();
+  EXPECT_TRUE(input_stream.HasMoreData());
+
+  input_stream.ConsumeBits(6);
+  EXPECT_TRUE(input_stream.HasMoreData());
+  input_stream.ConsumeByteRemainder();
+  EXPECT_FALSE(input_stream.HasMoreData());
 }
 
 }  // namespace

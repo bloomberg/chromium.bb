@@ -114,4 +114,45 @@ bool HpackInputStream::DecodeNextStringLiteral(StringPiece* str) {
   return false;
 }
 
+bool HpackInputStream::PeekBits(size_t* peeked_count, uint32* out) {
+  size_t byte_offset = (bit_offset_ + *peeked_count) / 8;
+  size_t bit_offset = (bit_offset_ + *peeked_count) % 8;
+
+  if (*peeked_count >= 32 || byte_offset >= buffer_.size()) {
+    return false;
+  }
+  // We'll read the minimum of the current byte remainder,
+  // and the remaining unfilled bits of |out|.
+  size_t bits_to_read = std::min(32 - *peeked_count, 8 - bit_offset);
+
+  uint32 new_bits = static_cast<uint32>(buffer_[byte_offset]);
+  // Shift byte remainder to most-signifcant bits of |new_bits|.
+  // This drops the leading |bit_offset| bits of the byte.
+  new_bits = new_bits << (24 + bit_offset);
+  // Shift bits to the most-significant open bits of |out|.
+  new_bits = new_bits >> *peeked_count;
+
+  CHECK_EQ(*out & new_bits, 0u);
+  *out |= new_bits;
+
+  *peeked_count += bits_to_read;
+  return true;
+}
+
+void HpackInputStream::ConsumeBits(size_t bit_count) {
+  size_t byte_count = (bit_offset_ + bit_count) / 8;
+  bit_offset_ = (bit_offset_ + bit_count) % 8;
+  CHECK_GE(buffer_.size(), byte_count);
+  if (bit_offset_ != 0) {
+    CHECK_GT(buffer_.size(), 0u);
+  }
+  buffer_.remove_prefix(byte_count);
+}
+
+void HpackInputStream::ConsumeByteRemainder() {
+  if (bit_offset_ != 0) {
+    ConsumeBits(8 - bit_offset_);
+  }
+}
+
 }  // namespace net

@@ -48,6 +48,20 @@ class NET_EXPORT_PRIVATE HpackInputStream {
   bool DecodeNextUint32(uint32* I);
   bool DecodeNextStringLiteral(base::StringPiece* str);
 
+  // Stores input bits into the most-significant, unfilled bits of |out|.
+  // |peeked_count| is the number of filled bits in |out| which have been
+  // previously peeked. PeekBits() will fill some number of remaining bits,
+  // returning the new total number via |peeked_count|. Returns true if one
+  // or more additional bits could be peeked, and false otherwise.
+  bool PeekBits(size_t* peeked_count, uint32* out);
+
+  // Consumes |count| bits of input. Generally paired with PeekBits().
+  void ConsumeBits(size_t count);
+
+  // If not currently on a byte boundary, consumes and discards
+  // remaining bits in the current byte.
+  void ConsumeByteRemainder();
+
   // Accessors for testing.
 
   void SetBitOffsetForTest(size_t bit_offset) {
