@@ -20,52 +20,51 @@
 #define IPC_MESSAGE_START CdmMsgStart
 
 IPC_ENUM_TRAITS(media::MediaKeys::KeyError)
-IPC_ENUM_TRAITS(CdmHostMsg_CreateSession_Type)
+IPC_ENUM_TRAITS(CdmHostMsg_CreateSession_ContentType)
 
-IPC_MESSAGE_ROUTED3(CdmHostMsg_InitializeCDM,
-                    int /* media_keys_id */,
+IPC_MESSAGE_ROUTED3(CdmHostMsg_InitializeCdm,
+                    int /* cdm_id */,
                     std::vector<uint8> /* uuid */,
                     GURL /* frame url */)
 
 IPC_MESSAGE_ROUTED4(CdmHostMsg_CreateSession,
-                    int /* media_keys_id */,
+                    int /* cdm_id */,
                     uint32_t /* session_id */,
-                    CdmHostMsg_CreateSession_Type /* type */,
+                    CdmHostMsg_CreateSession_ContentType /* content_type */,
                     std::vector<uint8> /* init_data */)
 
 IPC_MESSAGE_ROUTED3(CdmHostMsg_UpdateSession,
-                    int /* media_keys_id */,
+                    int /* cdm_id */,
                     uint32_t /* session_id */,
                     std::vector<uint8> /* response */)
 
 IPC_MESSAGE_ROUTED2(CdmHostMsg_ReleaseSession,
-                    int /* media_keys_id */,
+                    int /* cdm_id */,
                     uint32_t /* session_id */)
 
-IPC_MESSAGE_ROUTED1(CdmHostMsg_DestroyCdm,
-                    int /* media_keys_id */)
+IPC_MESSAGE_ROUTED1(CdmHostMsg_DestroyCdm, int /* cdm_id */)
 
 IPC_MESSAGE_ROUTED3(CdmMsg_SessionCreated,
-                    int /* media_keys_id */,
+                    int /* cdm_id */,
                     uint32_t /* session_id */,
                     std::string /* web_session_id */)
 
 IPC_MESSAGE_ROUTED4(CdmMsg_SessionMessage,
-                    int /* media_keys_id */,
+                    int /* cdm_id */,
                     uint32_t /* session_id */,
                     std::vector<uint8> /* message */,
                     GURL /* destination_url */)
 
 IPC_MESSAGE_ROUTED2(CdmMsg_SessionReady,
-                    int /* media_keys_id */,
+                    int /* cdm_id */,
                     uint32_t /* session_id */)
 
 IPC_MESSAGE_ROUTED2(CdmMsg_SessionClosed,
-                    int /* media_keys_id */,
+                    int /* cdm_id */,
                     uint32_t /* session_id */)
 
 IPC_MESSAGE_ROUTED4(CdmMsg_SessionError,
-                    int /* media_keys_id */,
+                    int /* cdm_id */,
                     uint32_t /* session_id */,
                     media::MediaKeys::KeyError /* error_code */,
                     int /* system_code */)

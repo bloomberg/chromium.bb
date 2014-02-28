@@ -21,7 +21,7 @@ class RendererMediaPlayerManager;
 class ProxyMediaKeys : public media::MediaKeys {
  public:
   ProxyMediaKeys(RendererMediaPlayerManager* proxy,
-                 int media_keys_id,
+                 int cdm_id,
                  const media::SessionCreatedCB& session_created_cb,
                  const media::SessionMessageCB& session_message_cb,
                  const media::SessionReadyCB& session_ready_cb,
@@ -29,7 +29,7 @@ class ProxyMediaKeys : public media::MediaKeys {
                  const media::SessionErrorCB& session_error_cb);
   virtual ~ProxyMediaKeys();
 
-  void InitializeCDM(const std::string& key_system, const GURL& frame_url);
+  void InitializeCdm(const std::string& key_system, const GURL& frame_url);
 
   // MediaKeys implementation.
   virtual bool CreateSession(uint32 session_id,
@@ -56,7 +56,7 @@ class ProxyMediaKeys : public media::MediaKeys {
 
  private:
   RendererMediaPlayerManager* manager_;
-  int media_keys_id_;
+  int cdm_id_;
   media::SessionCreatedCB session_created_cb_;
   media::SessionMessageCB session_message_cb_;
   media::SessionReadyCB session_ready_cb_;

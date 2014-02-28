@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_MEDIA_CDM_MESSAGES_ENUMS_H_
 
 // Dictates the session type when an EME session is created.
-enum CdmHostMsg_CreateSession_Type {
+enum CdmHostMsg_CreateSession_ContentType {
   CREATE_SESSION_TYPE_WEBM,
   CREATE_SESSION_TYPE_MP4
 };

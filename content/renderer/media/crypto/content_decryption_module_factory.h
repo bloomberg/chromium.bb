@@ -30,7 +30,7 @@ class ContentDecryptionModuleFactory {
       const CreatePepperCdmCB& create_pepper_cdm_cb,
 #elif defined(OS_ANDROID)
       RendererMediaPlayerManager* manager,
-      int media_keys_id,
+      int cdm_id,
       const GURL& frame_url,
 #endif  // defined(ENABLE_PEPPER_CDMS)
       const media::SessionCreatedCB& session_created_cb,

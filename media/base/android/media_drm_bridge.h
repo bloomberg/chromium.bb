@@ -54,7 +54,7 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   // Returns a MediaDrmBridge instance if |scheme_uuid| is supported, or a NULL
   // pointer otherwise.
   static scoped_ptr<MediaDrmBridge> Create(
-      int media_keys_id,
+      int cdm_id,
       const std::vector<uint8>& scheme_uuid,
       const GURL& frame_url,
       MediaPlayerManager* manager);
@@ -115,12 +115,12 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   // video playback.
   bool IsProtectedSurfaceRequired();
 
-  int media_keys_id() const { return media_keys_id_; }
+  int cdm_id() const { return cdm_id_; }
 
   GURL frame_url() const { return frame_url_; }
 
  private:
-  MediaDrmBridge(int media_keys_id,
+  MediaDrmBridge(int cdm_id,
                  const std::vector<uint8>& scheme_uuid,
                  const GURL& frame_url,
                  MediaPlayerManager* manager);
@@ -128,8 +128,8 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   // Get the security level of the media.
   SecurityLevel GetSecurityLevel();
 
-  // ID of the MediaKeys object.
-  int media_keys_id_;
+  // ID of the CDM object.
+  int cdm_id_;
 
   // UUID of the key system.
   std::vector<uint8> scheme_uuid_;

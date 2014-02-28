@@ -82,7 +82,7 @@ class MEDIA_EXPORT MediaPlayerManager {
   virtual void DestroyAllMediaPlayers() = 0;
 
   // Get the MediaDrmBridge object for the given media key Id.
-  virtual media::MediaDrmBridge* GetDrmBridge(int media_keys_id) = 0;
+  virtual media::MediaDrmBridge* GetDrmBridge(int cdm_id) = 0;
 
   // Called by the player to get a hardware protected surface.
   virtual void OnProtectedSurfaceRequested(int player_id) = 0;
@@ -93,24 +93,24 @@ class MEDIA_EXPORT MediaPlayerManager {
   // http://crbug.com/315312
 
   // Called when MediaDrmBridge determines a SessionId.
-  virtual void OnSessionCreated(int media_keys_id,
+  virtual void OnSessionCreated(int cdm_id,
                                 uint32 session_id,
                                 const std::string& web_session_id) = 0;
 
   // Called when MediaDrmBridge wants to send a Message event.
-  virtual void OnSessionMessage(int media_keys_id,
+  virtual void OnSessionMessage(int cdm_id,
                                 uint32 session_id,
                                 const std::vector<uint8>& message,
                                 const GURL& destination_url) = 0;
 
   // Called when MediaDrmBridge wants to send a Ready event.
-  virtual void OnSessionReady(int media_keys_id, uint32 session_id) = 0;
+  virtual void OnSessionReady(int cdm_id, uint32 session_id) = 0;
 
   // Called when MediaDrmBridge wants to send a Closed event.
-  virtual void OnSessionClosed(int media_keys_id, uint32 session_id) = 0;
+  virtual void OnSessionClosed(int cdm_id, uint32 session_id) = 0;
 
   // Called when MediaDrmBridge wants to send an Error event.
-  virtual void OnSessionError(int media_keys_id,
+  virtual void OnSessionError(int cdm_id,
                               uint32 session_id,
                               media::MediaKeys::KeyError error_code,
                               int system_code) = 0;

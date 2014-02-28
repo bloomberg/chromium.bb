@@ -91,19 +91,19 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual media::MediaResourceGetter* GetMediaResourceGetter() OVERRIDE;
   virtual media::MediaPlayerAndroid* GetFullscreenPlayer() OVERRIDE;
   virtual media::MediaPlayerAndroid* GetPlayer(int player_id) OVERRIDE;
-  virtual media::MediaDrmBridge* GetDrmBridge(int media_keys_id) OVERRIDE;
+  virtual media::MediaDrmBridge* GetDrmBridge(int cdm_id) OVERRIDE;
   virtual void DestroyAllMediaPlayers() OVERRIDE;
   virtual void OnProtectedSurfaceRequested(int player_id) OVERRIDE;
-  virtual void OnSessionCreated(int media_keys_id,
+  virtual void OnSessionCreated(int cdm_id,
                                 uint32 session_id,
                                 const std::string& web_session_id) OVERRIDE;
-  virtual void OnSessionMessage(int media_keys_id,
+  virtual void OnSessionMessage(int cdm_id,
                                 uint32 session_id,
                                 const std::vector<uint8>& message,
                                 const GURL& destination_url) OVERRIDE;
-  virtual void OnSessionReady(int media_keys_id, uint32 session_id) OVERRIDE;
-  virtual void OnSessionClosed(int media_keys_id, uint32 session_id) OVERRIDE;
-  virtual void OnSessionError(int media_keys_id,
+  virtual void OnSessionReady(int cdm_id, uint32 session_id) OVERRIDE;
+  virtual void OnSessionClosed(int cdm_id, uint32 session_id) OVERRIDE;
+  virtual void OnSessionError(int cdm_id,
                               uint32 session_id,
                               media::MediaKeys::KeyError error_code,
                               int system_code) OVERRIDE;
@@ -138,22 +138,22 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual void OnReleaseResources(int player_id);
   virtual void OnDestroyPlayer(int player_id);
   virtual void ReleaseFullscreenPlayer(media::MediaPlayerAndroid* player);
-  void OnInitializeCDM(int media_keys_id,
+  void OnInitializeCdm(int cdm_id,
                        const std::vector<uint8>& uuid,
                        const GURL& frame_url);
-  void OnCreateSession(int media_keys_id,
+  void OnCreateSession(int cdm_id,
                        uint32 session_id,
-                       CdmHostMsg_CreateSession_Type content_type,
+                       CdmHostMsg_CreateSession_ContentType content_type,
                        const std::vector<uint8>& init_data);
-  void OnUpdateSession(int media_keys_id,
+  void OnUpdateSession(int cdm_id,
                        uint32 session_id,
                        const std::vector<uint8>& response);
-  void OnReleaseSession(int media_keys_id, uint32 session_id);
-  void OnSetMediaKeys(int player_id, int media_keys_id);
-  void OnDestroyCdm(int media_keys_id);
+  void OnReleaseSession(int cdm_id, uint32 session_id);
+  void OnSetMediaKeys(int player_id, int cdm_id);
+  void OnDestroyCdm(int cdm_id);
 
-  // Cancels all pending session creations associated with |media_keys_id|.
-  void CancelAllPendingSessionCreations(int media_keys_id);
+  // Cancels all pending session creations associated with |cdm_id|.
+  void CancelAllPendingSessionCreations(int cdm_id);
 
 #if defined(VIDEO_HOLE)
   virtual void OnNotifyExternalSurface(
@@ -173,14 +173,14 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
       int player_id,
       media::MediaPlayerAndroid* player);
 
-  // Adds a new MediaDrmBridge for the given |uuid|, |media_keys_id|, and
+  // Adds a new MediaDrmBridge for the given |uuid|, |cdm_id|, and
   // |frame_url|.
-  void AddDrmBridge(int media_keys_id,
+  void AddDrmBridge(int cdm_id,
                     const std::vector<uint8>& uuid,
                     const GURL& frame_url);
 
   // Removes the DRM bridge with the specified id.
-  void RemoveDrmBridge(int media_keys_id);
+  void RemoveDrmBridge(int cdm_id);
 
  private:
   // If |permitted| is false, it does nothing but send
@@ -188,7 +188,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   // The primary use case is infobar permission callback, i.e., when infobar
   // can decide user's intention either from interacting with the actual info
   // bar or from the saved preference.
-  void CreateSessionIfPermitted(int media_keys_id,
+  void CreateSessionIfPermitted(int cdm_id,
                                 uint32 session_id,
                                 const std::string& content_type,
                                 const std::vector<uint8>& init_data,
@@ -221,8 +221,8 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   // device DRM credentials.
   // These 2 sets does not cover all the EME videos. If a video only streams
   // clear data, it will not be included in either set.
-  std::set<int> media_keys_ids_pending_approval_;
-  std::set<int> media_keys_ids_approved_;
+  std::set<int> cdm_ids_pending_approval_;
+  std::set<int> cdm_ids_approved_;
 
   // The fullscreen video view object or NULL if video is not played in
   // fullscreen.

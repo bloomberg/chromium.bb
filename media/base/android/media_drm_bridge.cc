@@ -178,7 +178,7 @@ bool MediaDrmBridge::IsSecureDecoderRequired(SecurityLevel security_level) {
 bool MediaDrmBridge::IsSecurityLevelSupported(
     const std::vector<uint8>& scheme_uuid,
     SecurityLevel security_level) {
-  // Pass 0 as |media_keys_id| and NULL as |manager| as they are not used in
+  // Pass 0 as |cdm_id| and NULL as |manager| as they are not used in
   // creation time of MediaDrmBridge.
   scoped_ptr<MediaDrmBridge> media_drm_bridge =
       MediaDrmBridge::Create(0, scheme_uuid, GURL(), NULL);
@@ -204,11 +204,11 @@ bool MediaDrmBridge::RegisterMediaDrmBridge(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-MediaDrmBridge::MediaDrmBridge(int media_keys_id,
+MediaDrmBridge::MediaDrmBridge(int cdm_id,
                                const std::vector<uint8>& scheme_uuid,
                                const GURL& frame_url,
                                MediaPlayerManager* manager)
-    : media_keys_id_(media_keys_id),
+    : cdm_id_(cdm_id),
       scheme_uuid_(scheme_uuid),
       frame_url_(frame_url),
       manager_(manager) {
@@ -229,7 +229,7 @@ MediaDrmBridge::~MediaDrmBridge() {
 
 // static
 scoped_ptr<MediaDrmBridge> MediaDrmBridge::Create(
-    int media_keys_id,
+    int cdm_id,
     const std::vector<uint8>& scheme_uuid,
     const GURL& frame_url,
     MediaPlayerManager* manager) {
@@ -237,8 +237,8 @@ scoped_ptr<MediaDrmBridge> MediaDrmBridge::Create(
 
   if (IsAvailable() && !scheme_uuid.empty()) {
     // TODO(qinmin): check whether the uuid is valid.
-    media_drm_bridge.reset(new MediaDrmBridge(
-        media_keys_id, scheme_uuid, frame_url, manager));
+    media_drm_bridge.reset(
+        new MediaDrmBridge(cdm_id, scheme_uuid, frame_url, manager));
     if (media_drm_bridge->j_media_drm_.is_null())
       media_drm_bridge.reset();
   }
@@ -328,7 +328,7 @@ void MediaDrmBridge::OnSessionCreated(JNIEnv* env,
                                       jstring j_web_session_id) {
   uint32 session_id = j_session_id;
   std::string web_session_id = ConvertJavaStringToUTF8(env, j_web_session_id);
-  manager_->OnSessionCreated(media_keys_id_, session_id, web_session_id);
+  manager_->OnSessionCreated(cdm_id_, session_id, web_session_id);
 }
 
 void MediaDrmBridge::OnSessionMessage(JNIEnv* env,
@@ -347,30 +347,28 @@ void MediaDrmBridge::OnSessionMessage(JNIEnv* env,
     destination_gurl = GURL::EmptyGURL();  // Replace invalid destination_url.
   }
 
-  manager_->OnSessionMessage(
-      media_keys_id_, session_id, message, destination_gurl);
+  manager_->OnSessionMessage(cdm_id_, session_id, message, destination_gurl);
 }
 
 void MediaDrmBridge::OnSessionReady(JNIEnv* env,
                                     jobject j_media_drm,
                                     jint j_session_id) {
   uint32 session_id = j_session_id;
-  manager_->OnSessionReady(media_keys_id_, session_id);
+  manager_->OnSessionReady(cdm_id_, session_id);
 }
 
 void MediaDrmBridge::OnSessionClosed(JNIEnv* env,
                                      jobject j_media_drm,
                                      jint j_session_id) {
   uint32 session_id = j_session_id;
-  manager_->OnSessionClosed(media_keys_id_, session_id);
+  manager_->OnSessionClosed(cdm_id_, session_id);
 }
 
 void MediaDrmBridge::OnSessionError(JNIEnv* env,
                                     jobject j_media_drm,
                                     jint j_session_id) {
   uint32 session_id = j_session_id;
-  manager_->OnSessionError(
-      media_keys_id_, session_id, MediaKeys::kUnknownError, 0);
+  manager_->OnSessionError(cdm_id_, session_id, MediaKeys::kUnknownError, 0);
 }
 
 ScopedJavaLocalRef<jobject> MediaDrmBridge::GetMediaCrypto() {

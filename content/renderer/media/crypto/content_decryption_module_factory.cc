@@ -28,7 +28,7 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
     const CreatePepperCdmCB& create_pepper_cdm_cb,
 #elif defined(OS_ANDROID)
     RendererMediaPlayerManager* manager,
-    int media_keys_id,
+    int cdm_id,
     const GURL& frame_url,
 #endif  // defined(ENABLE_PEPPER_CDMS)
     const media::SessionCreatedCB& session_created_cb,
@@ -57,13 +57,13 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
 #elif defined(OS_ANDROID)
   scoped_ptr<ProxyMediaKeys> proxy_media_keys(
       new ProxyMediaKeys(manager,
-                         media_keys_id,
+                         cdm_id,
                          session_created_cb,
                          session_message_cb,
                          session_ready_cb,
                          session_closed_cb,
                          session_error_cb));
-  proxy_media_keys->InitializeCDM(key_system, frame_url);
+  proxy_media_keys->InitializeCdm(key_system, frame_url);
   return proxy_media_keys.PassAs<media::MediaKeys>();
 #else
   return scoped_ptr<media::MediaKeys>();

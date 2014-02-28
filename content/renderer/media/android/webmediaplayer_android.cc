@@ -1206,7 +1206,7 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
           frame_,
 #else
           manager_,
-          player_id_,  // TODO(xhwang): Use media_keys_id when MediaKeys are
+          player_id_,  // TODO(xhwang): Use cdm_id when MediaKeys are
                        // separated from WebMediaPlayer.
 #endif  // defined(ENABLE_PEPPER_CDMS)
           base::Bind(&WebMediaPlayerAndroid::OnKeyAdded,

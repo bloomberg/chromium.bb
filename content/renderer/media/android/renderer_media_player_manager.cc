@@ -239,92 +239,87 @@ void RendererMediaPlayerManager::ExitFullscreen(int player_id) {
   Send(new MediaPlayerHostMsg_ExitFullscreen(routing_id(), player_id));
 }
 
-void RendererMediaPlayerManager::InitializeCDM(int media_keys_id,
+void RendererMediaPlayerManager::InitializeCdm(int cdm_id,
                                                ProxyMediaKeys* media_keys,
                                                const std::vector<uint8>& uuid,
                                                const GURL& frame_url) {
-  RegisterMediaKeys(media_keys_id, media_keys);
-  Send(new CdmHostMsg_InitializeCDM(
-      routing_id(), media_keys_id, uuid, frame_url));
+  RegisterMediaKeys(cdm_id, media_keys);
+  Send(new CdmHostMsg_InitializeCdm(routing_id(), cdm_id, uuid, frame_url));
 }
 
 void RendererMediaPlayerManager::CreateSession(
-    int media_keys_id,
+    int cdm_id,
     uint32 session_id,
-    CdmHostMsg_CreateSession_Type type,
+    CdmHostMsg_CreateSession_ContentType content_type,
     const std::vector<uint8>& init_data) {
   Send(new CdmHostMsg_CreateSession(
-      routing_id(), media_keys_id, session_id, type, init_data));
+      routing_id(), cdm_id, session_id, content_type, init_data));
 }
 
 void RendererMediaPlayerManager::UpdateSession(
-    int media_keys_id,
+    int cdm_id,
     uint32 session_id,
     const std::vector<uint8>& response) {
-  Send(new CdmHostMsg_UpdateSession(
-      routing_id(), media_keys_id, session_id, response));
+  Send(
+      new CdmHostMsg_UpdateSession(routing_id(), cdm_id, session_id, response));
 }
 
-void RendererMediaPlayerManager::ReleaseSession(int media_keys_id,
-                                                uint32 session_id) {
-  Send(new CdmHostMsg_ReleaseSession(routing_id(), media_keys_id, session_id));
+void RendererMediaPlayerManager::ReleaseSession(int cdm_id, uint32 session_id) {
+  Send(new CdmHostMsg_ReleaseSession(routing_id(), cdm_id, session_id));
 }
 
-void RendererMediaPlayerManager::DestroyCdm(int media_keys_id) {
-  Send(new CdmHostMsg_DestroyCdm(routing_id(), media_keys_id));
+void RendererMediaPlayerManager::DestroyCdm(int cdm_id) {
+  Send(new CdmHostMsg_DestroyCdm(routing_id(), cdm_id));
 }
 
 void RendererMediaPlayerManager::OnSessionCreated(
-    int media_keys_id,
+    int cdm_id,
     uint32 session_id,
     const std::string& web_session_id) {
   if (web_session_id.length() > kEmeWebSessionIdMaximum) {
-    OnSessionError(
-        media_keys_id, session_id, media::MediaKeys::kUnknownError, 0);
+    OnSessionError(cdm_id, session_id, media::MediaKeys::kUnknownError, 0);
     return;
   }
 
-  ProxyMediaKeys* media_keys = GetMediaKeys(media_keys_id);
+  ProxyMediaKeys* media_keys = GetMediaKeys(cdm_id);
   if (media_keys)
     media_keys->OnSessionCreated(session_id, web_session_id);
 }
 
 void RendererMediaPlayerManager::OnSessionMessage(
-    int media_keys_id,
+    int cdm_id,
     uint32 session_id,
     const std::vector<uint8>& message,
     const GURL& destination_url) {
   if (message.size() > kEmeMessageMaximum) {
-    OnSessionError(
-        media_keys_id, session_id, media::MediaKeys::kUnknownError, 0);
+    OnSessionError(cdm_id, session_id, media::MediaKeys::kUnknownError, 0);
     return;
   }
 
-  ProxyMediaKeys* media_keys = GetMediaKeys(media_keys_id);
+  ProxyMediaKeys* media_keys = GetMediaKeys(cdm_id);
   if (media_keys)
     media_keys->OnSessionMessage(session_id, message, destination_url.spec());
 }
 
-void RendererMediaPlayerManager::OnSessionReady(int media_keys_id,
-                                                uint32 session_id) {
-  ProxyMediaKeys* media_keys = GetMediaKeys(media_keys_id);
+void RendererMediaPlayerManager::OnSessionReady(int cdm_id, uint32 session_id) {
+  ProxyMediaKeys* media_keys = GetMediaKeys(cdm_id);
   if (media_keys)
     media_keys->OnSessionReady(session_id);
 }
 
-void RendererMediaPlayerManager::OnSessionClosed(int media_keys_id,
+void RendererMediaPlayerManager::OnSessionClosed(int cdm_id,
                                                  uint32 session_id) {
-  ProxyMediaKeys* media_keys = GetMediaKeys(media_keys_id);
+  ProxyMediaKeys* media_keys = GetMediaKeys(cdm_id);
   if (media_keys)
     media_keys->OnSessionClosed(session_id);
 }
 
 void RendererMediaPlayerManager::OnSessionError(
-    int media_keys_id,
+    int cdm_id,
     uint32 session_id,
     media::MediaKeys::KeyError error_code,
     int system_code) {
-  ProxyMediaKeys* media_keys = GetMediaKeys(media_keys_id);
+  ProxyMediaKeys* media_keys = GetMediaKeys(cdm_id);
   if (media_keys)
     media_keys->OnSessionError(session_id, error_code, system_code);
 }
@@ -340,17 +335,17 @@ void RendererMediaPlayerManager::UnregisterMediaPlayer(int player_id) {
   media_keys_.erase(player_id);
 }
 
-void RendererMediaPlayerManager::RegisterMediaKeys(int media_keys_id,
+void RendererMediaPlayerManager::RegisterMediaKeys(int cdm_id,
                                                    ProxyMediaKeys* media_keys) {
   // WebMediaPlayerAndroid must have already been registered for
-  // |media_keys_id|. For now |media_keys_id| is the same as player_id
+  // |cdm_id|. For now |cdm_id| is the same as player_id
   // used in other methods.
-  DCHECK(media_players_.find(media_keys_id) != media_players_.end());
+  DCHECK(media_players_.find(cdm_id) != media_players_.end());
 
   // Only allowed to register once.
-  DCHECK(media_keys_.find(media_keys_id) == media_keys_.end());
+  DCHECK(media_keys_.find(cdm_id) == media_keys_.end());
 
-  media_keys_[media_keys_id] = media_keys;
+  media_keys_[cdm_id] = media_keys;
 }
 
 void RendererMediaPlayerManager::ReleaseVideoResources() {
@@ -374,9 +369,8 @@ WebMediaPlayerAndroid* RendererMediaPlayerManager::GetMediaPlayer(
   return NULL;
 }
 
-ProxyMediaKeys* RendererMediaPlayerManager::GetMediaKeys(int media_keys_id) {
-  std::map<int, ProxyMediaKeys*>::iterator iter =
-      media_keys_.find(media_keys_id);
+ProxyMediaKeys* RendererMediaPlayerManager::GetMediaKeys(int cdm_id) {
+  std::map<int, ProxyMediaKeys*>::iterator iter = media_keys_.find(cdm_id);
   return (iter != media_keys_.end()) ? iter->second : NULL;
 }
 

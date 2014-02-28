@@ -42,7 +42,7 @@ ProxyDecryptor::ProxyDecryptor(
     const CreatePepperCdmCB& create_pepper_cdm_cb,
 #elif defined(OS_ANDROID)
     RendererMediaPlayerManager* manager,
-    int media_keys_id,
+    int cdm_id,
 #endif  // defined(ENABLE_PEPPER_CDMS)
     const KeyAddedCB& key_added_cb,
     const KeyErrorCB& key_error_cb,
@@ -52,7 +52,7 @@ ProxyDecryptor::ProxyDecryptor(
       create_pepper_cdm_cb_(create_pepper_cdm_cb),
 #elif defined(OS_ANDROID)
       manager_(manager),
-      media_keys_id_(media_keys_id),
+      cdm_id_(cdm_id),
 #endif  // defined(ENABLE_PEPPER_CDMS)
       key_added_cb_(key_added_cb),
       key_error_cb_(key_error_cb),
@@ -190,7 +190,7 @@ scoped_ptr<media::MediaKeys> ProxyDecryptor::CreateMediaKeys(
       create_pepper_cdm_cb_,
 #elif defined(OS_ANDROID)
       manager_,
-      media_keys_id_,
+      cdm_id_,
       frame_url,
 #endif  // defined(ENABLE_PEPPER_CDMS)
       base::Bind(&ProxyDecryptor::OnSessionCreated,

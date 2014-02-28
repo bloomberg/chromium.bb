@@ -59,7 +59,7 @@ class ProxyDecryptor {
       const CreatePepperCdmCB& create_pepper_cdm_cb,
 #elif defined(OS_ANDROID)
       RendererMediaPlayerManager* manager,
-      int media_keys_id,
+      int cdm_id,
 #endif  // defined(ENABLE_PEPPER_CDMS)
       const KeyAddedCB& key_added_cb,
       const KeyErrorCB& key_error_cb,
@@ -116,7 +116,7 @@ class ProxyDecryptor {
   CreatePepperCdmCB create_pepper_cdm_cb_;
 #elif defined(OS_ANDROID)
   RendererMediaPlayerManager* manager_;
-  int media_keys_id_;
+  int cdm_id_;
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
   // The real MediaKeys that manages key operations for the ProxyDecryptor.
