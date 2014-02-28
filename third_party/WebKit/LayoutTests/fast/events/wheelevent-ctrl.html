@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="help" href="http://www.w3.org/TR/DOM-Level-3-Events/#events-WheelEvent">
+<script src="../../resources/js-test.js"></script>
+<script>
+var deltaY = 0;
+var scrollAmount = -2;
+var expectedDeltaY = scrollAmount * -40;
+
+var testDiv;
+function runTest() {
+
+    testDiv = document.getElementById('target');
+    testDiv.addEventListener('wheel', wheelHandler);
+    if (!window.eventSender) {
+        debug("FAIL: This test requires window.eventSender.");
+        return;
+    }
+
+    // Verify that wheel with ctrl modifier is fired property but doesn't scroll.
+    eventSender.mouseMoveTo(testDiv.offsetLeft + 5, testDiv.offsetTop + 5);
+    eventSender.mouseScrollBy(0, scrollAmount, false, true, "ctrlKey");
+    shouldBe("wheelEventCount", "1");
+    shouldEvaluateTo("deltaY", expectedDeltaY);
+    shouldBeTrue("ctrlKey");
+    shouldBe("testDiv.scrollTop", "0");
+
+    // Verify that without the ctrl modifier we scroll as normal.
+    eventSender.mouseMoveTo(testDiv.offsetLeft + 5, testDiv.offsetTop + 5);
+    eventSender.mouseScrollBy(0, scrollAmount, false, true);
+    shouldBe("wheelEventCount", "2");
+    shouldEvaluateTo("deltaY", expectedDeltaY);
+    shouldBeFalse("ctrlKey");
+    shouldBe("testDiv.scrollTop", "deltaY");
+}
+
+var wheelEventCount = 0;
+var ctrlKey = false;
+function wheelHandler(e) {
+    wheelEventCount++;
+    deltaY = e.deltaY;
+    ctrlKey = e.ctrlKey;
+}
+
+</script>
+</head>
+<body>
+<span id="parent">
+    <div id="target" style="border:solid 1px green; width:220px; height:70px; overflow:scroll; white-space:nowrap;">
+        TOP<br/><br/><br/><br/>
+        Scroll mouse wheel over here<br/><br/><br/><br/>
+        END
+    </div>
+</span>
+<div id="console"></div>
+<script>
+description("Tests that wheel events with the ctrl modifier are handled properly");
+
+runTest();
+</script>
+</body>
+</html>

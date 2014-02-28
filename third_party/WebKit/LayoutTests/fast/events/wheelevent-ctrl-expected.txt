@@ -1,0 +1,26 @@
+TOP
+
+
+
+Scroll mouse wheel over here
+
+
+
+END
+Tests that wheel events with the ctrl modifier are handled properly
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS wheelEventCount is 1
+PASS deltaY is 80
+PASS ctrlKey is true
+PASS testDiv.scrollTop is 0
+PASS wheelEventCount is 2
+PASS deltaY is 80
+PASS ctrlKey is false
+PASS testDiv.scrollTop is deltaY
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
