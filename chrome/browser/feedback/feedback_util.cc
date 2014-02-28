@@ -238,12 +238,12 @@ void SendReport(scoped_refptr<FeedbackData> data) {
 
   // This pointer will eventually get deleted by the PostCleanup class, after
   // we've either managed to successfully upload the report or died trying.
-  scoped_ptr<std::string> post_body(new std::string);
-  feedback_data.SerializeToString(post_body.get());
+  std::string post_body;
+  feedback_data.SerializeToString(&post_body);
 
   feedback::FeedbackUploader *uploader =
       feedback::FeedbackUploaderFactory::GetForBrowserContext(data->profile());
-  uploader->QueueReport(post_body.Pass());
+  uploader->QueueReport(post_body);
 }
 
 bool ZipString(const base::FilePath& filename,
