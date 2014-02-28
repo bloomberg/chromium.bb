@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/x509_certificate.h"
 #include "net/quic/crypto/proof_verifier.h"
@@ -133,6 +134,8 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   // This member is used to store the result of an asynchronous disk cache read.
   // It must not be used after STATE_LOAD_QUIC_SERVER_INFO_COMPLETE.
   int disk_cache_load_result_;
+
+  base::WeakPtrFactory<QuicCryptoClientStream> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoClientStream);
 };

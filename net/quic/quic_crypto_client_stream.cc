@@ -76,7 +76,8 @@ QuicCryptoClientStream::QuicCryptoClientStream(
       server_hostname_(server_hostname),
       generation_counter_(0),
       proof_verify_callback_(NULL),
-      disk_cache_load_result_(ERR_UNEXPECTED) {
+      disk_cache_load_result_(ERR_UNEXPECTED),
+      weak_factory_(this) {
 }
 
 QuicCryptoClientStream::~QuicCryptoClientStream() {
@@ -434,7 +435,7 @@ int QuicCryptoClientStream::DoLoadQuicServerInfo(
   // |cached| config from the cached state for a canonical hostname.
   int rv = quic_server_info->WaitForDataReady(
       base::Bind(&QuicCryptoClientStream::OnIOComplete,
-                 base::Unretained(this)));
+                 weak_factory_.GetWeakPtr()));
 
   if (rv != ERR_IO_PENDING) {
     disk_cache_load_result_ = rv;
