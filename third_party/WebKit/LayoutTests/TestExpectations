@@ -1283,7 +1283,6 @@ crbug.com/339373 http/tests/websocket/deflate-frame-invalid-parameter.html [ Ski
 crbug.com/339373 http/tests/websocket/deflate-frame-parameter.html [ Skip ]
 crbug.com/339373 http/tests/websocket/deflate-frame-set-bfinal.html [ Skip ]
 crbug.com/339373 http/tests/websocket/extensions.html [ Skip ]
-crbug.com/339373 http/tests/websocket/fragmented-control-frame.html [ Skip ]
 crbug.com/339373 http/tests/websocket/fragmented-frames.html [ Skip ]
 crbug.com/339373 http/tests/websocket/frame-lengths.html [ Skip ]
 crbug.com/339373 http/tests/websocket/handshake-error.html [ Skip ]
