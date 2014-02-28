@@ -51,10 +51,9 @@ class CONTENT_EXPORT ContentViewCore {
   virtual jint GetCurrentRenderProcessId(JNIEnv* env, jobject obj) = 0;
   virtual void ShowPastePopup(int x, int y) = 0;
 
-  // Request a scaled content readback.  The result is passed through the
-  // callback.  The boolean parameter indicates whether the readback was a
-  // success or not.  The content is passed through the SkBitmap parameter.
-  // |out_size| is returned with the size of the content.
+  // Request a scaled content readback. The result is passed through the
+  // callback. The boolean parameter indicates whether the readback was a
+  // success or not. The content is passed through the SkBitmap parameter.
   virtual void GetScaledContentBitmap(
       float scale,
       jobject bitmap_config,
