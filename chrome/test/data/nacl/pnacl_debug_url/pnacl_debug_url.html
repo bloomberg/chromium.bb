@@ -1,0 +1,56 @@
+<html>
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<head>
+<title>PNaCl Debug URL test</title>
+<script type="text/javascript" src="load_util.js"></script>
+<script type="text/javascript" src="nacltest.js"></script>
+</head>
+<body>
+<h2>PNaCl Debug URL Test</h2>
+</body>
+<script>
+
+var tests_passed = 0;
+var expected_tests;
+
+function create(nmf_url) {
+  var embed = document.createElement("embed");
+
+  embed.src = nmf_url;
+  embed.type = "application/x-pnacl";
+
+  embed.addEventListener("load", function(evt) {
+    tests_passed++;
+    if (tests_passed == expected_tests) {
+      load_util.shutdown(expected_tests + " test passed.", true);
+    }
+  }, true);
+
+  embed.addEventListener("error", function(evt) {
+    load_util.log("Load error: " + embed.lastError);
+    load_util.shutdown("1 test failed.", false);
+  }, true);
+
+  document.body.appendChild(embed);
+}
+
+var debug_on = getTestArguments()['debug_flag'] != '0';
+
+if (debug_on) {
+  // Load an NMF w/ a special debug url. It should pick that and work.
+  // Load an NMF w/ no special debug url. It should fall back to the
+  // non-debug one and succeed.
+  expected_tests = 2;
+  create("pnacl_has_debug.nmf");
+  create("pnacl_no_debug.nmf");
+} else {
+  expected_tests = 1;
+  create("pnacl_has_debug_flag_off.nmf");
+}
+
+</script>
+</html>
