@@ -42,6 +42,7 @@ PassRefPtrWillBeRawPtr<SpeechSynthesis> SpeechSynthesis::create(ExecutionContext
 SpeechSynthesis::SpeechSynthesis(ExecutionContext* context)
     : ContextLifecycleObserver(context)
     , m_platformSpeechSynthesizer(PlatformSpeechSynthesizer::create(this))
+    , m_currentSpeechUtterance(nullptr)
     , m_isPaused(false)
 {
     ScriptWrappable::init(this);
@@ -82,7 +83,7 @@ bool SpeechSynthesis::speaking() const
 {
     // If we have a current speech utterance, then that means we're assumed to be in a speaking state.
     // This state is independent of whether the utterance happens to be paused.
-    return currentSpeechUtterance();
+    return m_currentSpeechUtterance;
 }
 
 bool SpeechSynthesis::pending() const
@@ -97,12 +98,11 @@ bool SpeechSynthesis::paused() const
     return m_isPaused;
 }
 
-void SpeechSynthesis::startSpeakingImmediately()
+void SpeechSynthesis::startSpeakingImmediately(SpeechSynthesisUtterance* utterance)
 {
-    SpeechSynthesisUtterance* utterance = currentSpeechUtterance();
-    ASSERT(utterance);
-
+    ASSERT(!m_currentSpeechUtterance);
     utterance->setStartTime(monotonicallyIncreasingTime());
+    m_currentSpeechUtterance = utterance;
     m_isPaused = false;
     m_platformSpeechSynthesizer->speak(utterance->platformUtterance());
 }
@@ -116,18 +116,22 @@ void SpeechSynthesis::speak(SpeechSynthesisUtterance* utterance, ExceptionState&
 
     m_utteranceQueue.append(utterance);
 
-    // If the queue was empty, speak this immediately.
+    // If the queue was empty, speak this immediately and add it to the queue.
     if (m_utteranceQueue.size() == 1)
-        startSpeakingImmediately();
+        startSpeakingImmediately(utterance);
 }
 
 void SpeechSynthesis::cancel()
 {
-    // Remove all the items from the utterance queue. The platform
-    // may still have references to some of these utterances and may
-    // fire events on them asynchronously.
+    // Remove all the items from the utterance queue.
+    // Hold on to the current utterance so the platform synthesizer can have a chance to clean up.
+    RefPtrWillBeMember<SpeechSynthesisUtterance> current = m_currentSpeechUtterance;
     m_utteranceQueue.clear();
     m_platformSpeechSynthesizer->cancel();
+    current = nullptr;
+
+    // The platform should have called back immediately and cleared the current utterance.
+    ASSERT(!m_currentSpeechUtterance);
 }
 
 void SpeechSynthesis::pause()
@@ -138,7 +142,7 @@ void SpeechSynthesis::pause()
 
 void SpeechSynthesis::resume()
 {
-    if (!currentSpeechUtterance())
+    if (!m_currentSpeechUtterance)
         return;
     m_platformSpeechSynthesizer->resume();
 }
@@ -152,24 +156,21 @@ void SpeechSynthesis::fireEvent(const AtomicString& type, SpeechSynthesisUtteran
 void SpeechSynthesis::handleSpeakingCompleted(SpeechSynthesisUtterance* utterance, bool errorOccurred)
 {
     ASSERT(utterance);
+    ASSERT(m_currentSpeechUtterance);
+    m_currentSpeechUtterance = nullptr;
 
-    bool didJustFinishCurrentUtterance = false;
-    // If the utterance that completed was the one we're currently speaking,
-    // remove it from the queue and start speaking the next one.
-    if (utterance == currentSpeechUtterance()) {
-        m_utteranceQueue.removeFirst();
-        didJustFinishCurrentUtterance = true;
-    }
-
-    // Always fire the event, because the platform may have asynchronously
-    // sent an event on an utterance before it got the message that we
-    // canceled it, and we should always report to the user what actually
-    // happened.
     fireEvent(errorOccurred ? EventTypeNames::error : EventTypeNames::end, utterance, 0, String());
 
-    // Start the next utterance if we just finished one and one was pending.
-    if (didJustFinishCurrentUtterance && !m_utteranceQueue.isEmpty())
-        startSpeakingImmediately();
+    if (m_utteranceQueue.size()) {
+        RefPtrWillBeMember<SpeechSynthesisUtterance> firstUtterance = m_utteranceQueue.first();
+        ASSERT(firstUtterance == utterance);
+        if (firstUtterance == utterance)
+            m_utteranceQueue.removeFirst();
+
+        // Start the next job if there is one pending.
+        if (!m_utteranceQueue.isEmpty())
+            startSpeakingImmediately(m_utteranceQueue.first().get());
+    }
 }
 
 void SpeechSynthesis::boundaryEventOccurred(PassRefPtr<PlatformSpeechSynthesisUtterance> utterance, SpeechBoundary boundary, unsigned charIndex)
@@ -221,13 +222,6 @@ void SpeechSynthesis::speakingErrorOccurred(PassRefPtr<PlatformSpeechSynthesisUt
         handleSpeakingCompleted(static_cast<SpeechSynthesisUtterance*>(utterance->client()), true);
 }
 
-SpeechSynthesisUtterance* SpeechSynthesis::currentSpeechUtterance() const
-{
-    if (!m_utteranceQueue.isEmpty())
-        return m_utteranceQueue.first().get();
-    return nullptr;
-}
-
 const AtomicString& SpeechSynthesis::interfaceName() const
 {
     return EventTargetNames::SpeechSynthesisUtterance;
@@ -236,6 +230,7 @@ const AtomicString& SpeechSynthesis::interfaceName() const
 void SpeechSynthesis::trace(Visitor* visitor)
 {
     visitor->trace(m_voiceList);
+    visitor->trace(m_currentSpeechUtterance);
     visitor->trace(m_utteranceQueue);
 }
 
