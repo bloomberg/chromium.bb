@@ -12,57 +12,47 @@
 #include <map>
 #include <vector>
 
+#include "TracingStatus.h"
+
 #include "clang/AST/AST.h"
 #include "clang/AST/CXXInheritance.h"
 
 class RecordCache;
 
-// Value to track the tracing status of a point in the tracing graph.
-// (Points that might need tracing are fields and base classes.)
-class TracingStatus {
+// A potentially tracable and/or lifetime affecting point in the object graph.
+class GraphPoint {
  public:
-  static TracingStatus Unknown() { return kUnknown; }
-  static TracingStatus Required() { return kRequired; }
-  static TracingStatus Unneeded() { return kUnneeded; }
-  static TracingStatus RequiredWeak() { return TracingStatus(kRequired, true); }
-
-  bool IsTracingUnknown() const { return status_ == kUnknown; }
-  bool IsTracingRequired() const { return status_ == kRequired; }
-  bool IsTracingUnneeded() const { return status_ == kUnneeded; }
-
-  // Updating functions so the status can only become more defined.
-  void MarkTracingRequired() {
-    if (status_ < kRequired)
-      status_ = kRequired;
-  }
-  void MarkTracingUnneeded() {
-    if (status_ < kUnneeded)
-      status_ = kUnneeded;
-  }
-
-  bool is_weak() { return is_weak_; }
-
+  GraphPoint() : traced_(false) {}
+  void MarkTraced() { traced_ = true; }
+  bool IsProperlyTraced() { return traced_ || !NeedsTracing().IsNeeded(); }
+  virtual const TracingStatus NeedsTracing() = 0;
  private:
-  enum Status {
-    kUnknown,   // Point that might need to be traced.
-    kRequired,  // Point that must be traced.
-    kUnneeded   // Point that need not be traced.
-  };
+  bool traced_;
+};
 
-  TracingStatus(Status status) : status_(status), is_weak_(false) {}
+class BasePoint : public GraphPoint {
+ public:
+  explicit BasePoint(const TracingStatus& status) : status_(status) {}
+  const TracingStatus NeedsTracing() { return status_; }
+  // Needed to change the status of bases with a pure-virtual trace.
+  void MarkUnneeded() { status_ = TracingStatus::Unneeded(); }
+ private:
+  TracingStatus status_;
+};
 
-  TracingStatus(Status status, bool is_weak)
-      : status_(status), is_weak_(is_weak) {}
-
-  Status status_;
-  bool is_weak_;
+class FieldPoint : public GraphPoint {
+ public:
+  explicit FieldPoint(const TracingStatus& status) : status_(status) {}
+  const TracingStatus NeedsTracing() { return status_; }
+ private:
+  const TracingStatus status_;
 };
 
 // Wrapper class to lazily collect information about a C++ record.
 class RecordInfo {
  public:
-  typedef std::map<clang::CXXRecordDecl*, TracingStatus> Bases;
-  typedef std::map<clang::FieldDecl*, TracingStatus> Fields;
+  typedef std::map<clang::CXXRecordDecl*, BasePoint> Bases;
+  typedef std::map<clang::FieldDecl*, FieldPoint> Fields;
   typedef std::vector<RecordInfo*> TemplateArgs;
 
   enum NeedsTracingOption { kRecursive, kNonRecursive };
@@ -78,7 +68,7 @@ class RecordInfo {
 
   bool IsTemplate(TemplateArgs* args = 0);
 
-  bool IsHeapAllocatedCollection(bool* is_weak = 0);
+  bool IsHeapAllocatedCollection();
   bool IsGCDerived(clang::CXXBasePaths* paths = 0);
 
   bool IsStackAllocated();
@@ -97,7 +87,7 @@ class RecordInfo {
   RecordCache* cache_;
   clang::CXXRecordDecl* record_;
   const std::string name_;
-  bool requires_trace_method_;
+  TracingStatus fields_need_tracing_;
   Bases* bases_;
   Fields* fields_;
 

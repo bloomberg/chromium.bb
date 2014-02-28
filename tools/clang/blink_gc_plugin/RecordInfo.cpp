@@ -14,7 +14,7 @@ RecordInfo::RecordInfo(CXXRecordDecl* record, RecordCache* cache)
     : cache_(cache),
       record_(record),
       name_(record->getName()),
-      requires_trace_method_(false),
+      fields_need_tracing_(TracingStatus::Unneeded()),
       bases_(0),
       fields_(0),
       determined_trace_methods_(false),
@@ -45,25 +45,15 @@ bool RecordInfo::IsTemplate(TemplateArgs* output_args) {
 }
 
 // Test if a record is a HeapAllocated collection.
-bool RecordInfo::IsHeapAllocatedCollection(bool* is_weak) {
-  if (is_weak)
-    *is_weak = false;
-
+bool RecordInfo::IsHeapAllocatedCollection() {
   if (!Config::IsGCCollection(name_) && !Config::IsWTFCollection(name_))
     return false;
 
   TemplateArgs args;
   if (IsTemplate(&args)) {
     for (TemplateArgs::iterator it = args.begin(); it != args.end(); ++it) {
-      const string& arg = (*it)->name();
-
-      // The allocator is always after members.
-      if (arg == kHeapAllocatorName)
+      if ((*it)->name() == kHeapAllocatorName)
         return true;
-
-      // Check for weak members.
-      if (is_weak && Config::IsWeakMember(arg))
-        *is_weak = true;
     }
   }
 
@@ -112,7 +102,7 @@ bool RecordInfo::IsStackAllocated() {
 // An object requires a tracing method if it has any fields that need tracing.
 bool RecordInfo::RequiresTraceMethod() {
   GetFields();
-  return requires_trace_method_;
+  return fields_need_tracing_.IsNeeded();
 }
 
 // Get the actual tracing method (ie, can be traceAfterDispatch if there is a
@@ -143,7 +133,7 @@ RecordInfo::Bases* RecordInfo::CollectBases() {
     if (CXXRecordDecl* base = it->getType()->getAsCXXRecordDecl()) {
       // Only collect bases that might need to be traced.
       TracingStatus status = cache_->Lookup(base)->NeedsTracing();
-      if (!status.IsTracingUnneeded())
+      if (!status.IsUnneeded())
         bases->insert(std::make_pair(base, status));
     }
   }
@@ -167,10 +157,9 @@ RecordInfo::Fields* RecordInfo::CollectFields() {
       continue;
     // Only collect fields that might need to be traced.
     TracingStatus status = NeedsTracing(*it);
-    if (!status.IsTracingUnneeded()) {
-      fields->insert(std::make_pair(*it, status));
-      if (status.IsTracingRequired())
-        requires_trace_method_ = true;
+    if (!status.IsUnneeded()) {
+      fields->insert(std::make_pair(*it, FieldPoint(status)));
+      fields_need_tracing_ = fields_need_tracing_.LUB(status);
     }
   }
   return fields;
@@ -214,12 +203,10 @@ TracingStatus RecordInfo::NeedsTracing(NeedsTracingOption option) {
     return TracingStatus::Unneeded();
   }
 
-  bool is_weak = false;
-  if (Config::IsMemberHandle(name_) || IsGCDerived() ||
-      IsHeapAllocatedCollection(&is_weak)) {
-    return (is_weak || Config::IsWeakMember(name_))
-               ? TracingStatus::RequiredWeak()
-               : TracingStatus::Required();
+  if (Config::IsMemberHandle(name_) ||
+      IsGCDerived() ||
+      IsHeapAllocatedCollection()) {
+    return TracingStatus::Needed();
   }
 
   if (option == kNonRecursive) {
@@ -238,19 +225,15 @@ TracingStatus RecordInfo::NeedsTracing(NeedsTracingOption option) {
     if (IsTemplate(&args)) {
       for (TemplateArgs::iterator it = args.begin(); it != args.end(); ++it) {
         TracingStatus status = (*it)->NeedsTracing(kNonRecursive);
-        if (status.IsTracingRequired())
+        if (status.IsNeeded())
           return status;
       }
     }
     return TracingStatus::Unknown();
   }
 
-  if (RequiresTraceMethod()) {
-    return TracingStatus::Required();
-  }
-
-  return fields_->empty() ? TracingStatus::Unneeded()
-                          : TracingStatus::Unknown();
+  GetFields();
+  return fields_need_tracing_;
 }
 
 TracingStatus RecordInfo::NeedsTracing(FieldDecl* field) {

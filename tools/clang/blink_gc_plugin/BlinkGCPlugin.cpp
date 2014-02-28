@@ -161,7 +161,7 @@ class CheckTraceVisitor : public RecursiveASTVisitor<CheckTraceVisitor> {
           if (CXXRecordDecl* decl = type->getAsCXXRecordDecl()) {
             RecordInfo::Bases::iterator it = info_->GetBases().find(decl);
             if (it != info_->GetBases().end())
-              it->second.MarkTracingUnneeded();
+              it->second.MarkTraced();
           }
         }
       }
@@ -176,10 +176,8 @@ class CheckTraceVisitor : public RecursiveASTVisitor<CheckTraceVisitor> {
   bool IsWeakCallback() { return !trace_; }
 
   void MarkTraced(RecordInfo::Fields::iterator it) {
-    // In a weak callback we can't mark strong fields as traced.
-    if (IsWeakCallback() && !it->second.is_weak())
-      return;
-    it->second.MarkTracingUnneeded();
+    // TODO: In a weak callback we can't mark strong fields as traced.
+    it->second.MarkTraced();
   }
 
   CXXMethodDecl* trace_;
@@ -318,8 +316,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
       CXXMethodDecl* overridden = const_cast<CXXMethodDecl*>(*it);
       if (overridden->isPure()) {
         CXXRecordDecl* base = overridden->getParent();
-        TracingStatus& status = parent->GetBases().find(base)->second;
-        status.MarkTracingUnneeded();
+        parent->GetBases().find(base)->second.MarkUnneeded();
       }
     }
 
@@ -329,14 +326,14 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     for (RecordInfo::Bases::iterator it = parent->GetBases().begin();
          it != parent->GetBases().end();
          ++it) {
-      if (it->second.IsTracingRequired())
+      if (!it->second.IsProperlyTraced())
         ReportBaseRequiresTracing(parent, trace, it->first);
     }
 
     for (RecordInfo::Fields::iterator it = parent->GetFields().begin();
          it != parent->GetFields().end();
          ++it) {
-      if (it->second.IsTracingRequired()) {
+      if (!it->second.IsProperlyTraced()) {
         // Discontinue once an untraced-field error is found.
         ReportFieldsRequireTracing(parent, trace);
         break;
@@ -414,7 +411,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     for (RecordInfo::Fields::iterator it = info->GetFields().begin();
          it != info->GetFields().end();
          ++it) {
-      if (it->second.IsTracingRequired())
+      if (!it->second.IsProperlyTraced())
         NoteFieldRequiresTracing(info, it->first);
     }
   }
@@ -438,7 +435,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     for (RecordInfo::Fields::iterator it = info->GetFields().begin();
          it != info->GetFields().end();
          ++it) {
-      if (it->second.IsTracingRequired())
+      if (!it->second.IsProperlyTraced())
         NoteFieldRequiresTracing(info, it->first);
     }
   }
