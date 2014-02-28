@@ -175,12 +175,12 @@ public final class SyncTestUtil {
             Map<Pair<String, String>, String> actualStats) {
         for (Map.Entry<Pair<String, String>, String> statEntry : expectedStats.entrySet()) {
             // Make stuff lowercase here, at the site of comparison.
-            String expectedValue = statEntry.getValue().toLowerCase().trim();
+            String expectedValue = statEntry.getValue().toLowerCase(Locale.US).trim();
             String actualValue = actualStats.get(statEntry.getKey());
             if (actualValue == null) {
                 return false;
             }
-            actualValue = actualValue.toLowerCase().trim();
+            actualValue = actualValue.toLowerCase(Locale.US).trim();
             if (!expectedValue.contentEquals(actualValue)) {
                 return false;
             }
