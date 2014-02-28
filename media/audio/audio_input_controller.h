@@ -78,13 +78,37 @@ class MEDIA_EXPORT AudioInputController
     : public base::RefCountedThreadSafe<AudioInputController>,
       public AudioInputStream::AudioInputCallback {
  public:
+
+  // Error codes to make native loggin more clear. These error codes are added
+  // to generic error strings to provide a higher degree of details.
+  // Changing these values can lead to problems when matching native debug
+  // logs with the actual cause of error.
+  enum ErrorCode {
+    // An unspecified error occured.
+    UNKNOWN_ERROR = 0,
+
+    // Failed to create an audio input stream.
+    STREAM_CREATE_ERROR,  // = 1
+
+    // Failed to open an audio input stream.
+    STREAM_OPEN_ERROR,  // = 2
+
+    // Native input stream reports an error. Exact reason differs between
+    // platforms.
+    STREAM_ERROR,  // = 3
+
+    // This can happen if a capture device has been removed or disabled.
+    NO_DATA_ERROR,  // = 4
+  };
+
   // An event handler that receives events from the AudioInputController. The
   // following methods are all called on the audio thread.
   class MEDIA_EXPORT EventHandler {
    public:
     virtual void OnCreated(AudioInputController* controller) = 0;
     virtual void OnRecording(AudioInputController* controller) = 0;
-    virtual void OnError(AudioInputController* controller) = 0;
+    virtual void OnError(AudioInputController* controller,
+                         ErrorCode error_code) = 0;
     virtual void OnData(AudioInputController* controller, const uint8* data,
                         uint32 size) = 0;
 

@@ -129,7 +129,8 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   // AudioInputController::EventHandler methods.
   virtual void OnCreated(media::AudioInputController* controller) OVERRIDE {}
   virtual void OnRecording(media::AudioInputController* controller) OVERRIDE {}
-  virtual void OnError(media::AudioInputController* controller) OVERRIDE;
+  virtual void OnError(media::AudioInputController* controller,
+      media::AudioInputController::ErrorCode error_code) OVERRIDE;
   virtual void OnData(media::AudioInputController* controller,
                       const uint8* data, uint32 size) OVERRIDE;
 

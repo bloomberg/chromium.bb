@@ -187,14 +187,14 @@ void AudioInputController::DoCreateForStream(
   stream_ = stream_to_control;
 
   if (!stream_) {
-    handler_->OnError(this);
+    handler_->OnError(this, STREAM_CREATE_ERROR);
     return;
   }
 
   if (stream_ && !stream_->Open()) {
     stream_->Close();
     stream_ = NULL;
-    handler_->OnError(this);
+    handler_->OnError(this, STREAM_OPEN_ERROR);
     return;
   }
 
@@ -266,7 +266,7 @@ void AudioInputController::DoClose() {
 
 void AudioInputController::DoReportError() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  handler_->OnError(this);
+  handler_->OnError(this, STREAM_ERROR);
 }
 
 void AudioInputController::DoSetVolume(double volume) {
@@ -310,7 +310,7 @@ void AudioInputController::DoCheckForNoData() {
     // The data-is-active marker will be false only if it has been more than
     // one second since a data packet was recorded. This can happen if a
     // capture device has been removed or disabled.
-    handler_->OnError(this);
+    handler_->OnError(this, NO_DATA_ERROR);
     return;
   }
 

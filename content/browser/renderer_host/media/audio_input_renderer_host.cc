@@ -8,6 +8,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/metrics/histogram.h"
 #include "base/process/process.h"
+#include "base/strings/stringprintf.h"
 #include "content/browser/media/capture/web_contents_audio_input_stream.h"
 #include "content/browser/media/capture/web_contents_capture_util.h"
 #include "content/browser/media/media_internals.h"
@@ -97,14 +98,16 @@ void AudioInputRendererHost::OnRecording(
           make_scoped_refptr(controller)));
 }
 
-void AudioInputRendererHost::OnError(media::AudioInputController* controller) {
+void AudioInputRendererHost::OnError(media::AudioInputController* controller,
+    media::AudioInputController::ErrorCode error_code) {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(
           &AudioInputRendererHost::DoHandleError,
           this,
-          make_scoped_refptr(controller)));
+          make_scoped_refptr(controller),
+          error_code));
 }
 
 void AudioInputRendererHost::OnData(media::AudioInputController* controller,
@@ -123,13 +126,13 @@ void AudioInputRendererHost::DoCompleteCreation(
 
   if (!PeerHandle()) {
     NOTREACHED() << "Renderer process handle is invalid.";
-    DeleteEntryOnError(entry);
+    DeleteEntryOnError(entry, INVALID_PEER_HANDLE);
     return;
   }
 
   if (!entry->controller->LowLatencyMode()) {
     NOTREACHED() << "Only low-latency mode is supported.";
-    DeleteEntryOnError(entry);
+    DeleteEntryOnError(entry, INVALID_LATENCY_MODE);
     return;
   }
 
@@ -140,7 +143,7 @@ void AudioInputRendererHost::DoCompleteCreation(
                                            &foreign_memory_handle)) {
     // If we failed to map and share the shared memory then close the audio
     // stream and send an error message.
-    DeleteEntryOnError(entry);
+    DeleteEntryOnError(entry, MEMORY_SHARING_FAILED);
     return;
   }
 
@@ -157,7 +160,7 @@ void AudioInputRendererHost::DoCompleteCreation(
   // the construction of audio input stream.
   if (!writer->PrepareForeignSocketHandle(PeerHandle(),
                                           &foreign_socket_handle)) {
-    DeleteEntryOnError(entry);
+    DeleteEntryOnError(entry, SYNC_SOCKET_ERROR);
     return;
   }
 
@@ -175,17 +178,18 @@ void AudioInputRendererHost::DoSendRecordingMessage(
 }
 
 void AudioInputRendererHost::DoHandleError(
-    media::AudioInputController* controller) {
+    media::AudioInputController* controller,
+    media::AudioInputController::ErrorCode error_code) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   MediaStreamManager::SendMessageToNativeLog(
-      "The AudioInputController signalled an error.");
+      base::StringPrintf("AudioInputController error: %d", error_code));
 
   AudioEntry* entry = LookupByController(controller);
   if (!entry)
     return;
 
   audio_log_->OnError(entry->stream_id);
-  DeleteEntryOnError(entry);
+  DeleteEntryOnError(entry, AUDIO_INPUT_CONTROLLER_ERROR);
 }
 
 bool AudioInputRendererHost::OnMessageReceived(const IPC::Message& message,
@@ -217,7 +221,7 @@ void AudioInputRendererHost::OnCreateStream(
 
   // media::AudioParameters is validated in the deserializer.
   if (LookupById(stream_id) != NULL) {
-    SendErrorMessage(stream_id);
+    SendErrorMessage(stream_id, STREAM_ALREADY_EXISTS);
     return;
   }
 
@@ -237,7 +241,7 @@ void AudioInputRendererHost::OnCreateStream(
     const StreamDeviceInfo* info = media_stream_manager_->
         audio_input_device_manager()->GetOpenedDeviceInfoById(session_id);
     if (!info) {
-      SendErrorMessage(stream_id);
+      SendErrorMessage(stream_id, PERMISSION_DENIED);
       DLOG(WARNING) << "No permission has been granted to input stream with "
                     << "session_id=" << session_id;
       return;
@@ -258,7 +262,7 @@ void AudioInputRendererHost::OnCreateStream(
   if (!entry->shared_memory.CreateAndMapAnonymous(
       segment_size * entry->shared_memory_segment_count)) {
     // If creation of shared memory failed then send an error message.
-    SendErrorMessage(stream_id);
+    SendErrorMessage(stream_id, SHARED_MEMORY_CREATE_FAILED);
     return;
   }
 
@@ -267,7 +271,7 @@ void AudioInputRendererHost::OnCreateStream(
                                entry->shared_memory_segment_count));
 
   if (!writer->Init()) {
-    SendErrorMessage(stream_id);
+    SendErrorMessage(stream_id, SYNC_WRITER_INIT_FAILED);
     return;
   }
 
@@ -299,7 +303,7 @@ void AudioInputRendererHost::OnCreateStream(
   }
 
   if (!entry->controller.get()) {
-    SendErrorMessage(stream_id);
+    SendErrorMessage(stream_id, STREAM_CREATE_ERROR);
     return;
   }
 
@@ -323,7 +327,7 @@ void AudioInputRendererHost::OnRecordStream(int stream_id) {
 
   AudioEntry* entry = LookupById(stream_id);
   if (!entry) {
-    SendErrorMessage(stream_id);
+    SendErrorMessage(stream_id, INVALID_AUDIO_ENTRY);
     return;
   }
 
@@ -345,7 +349,7 @@ void AudioInputRendererHost::OnSetVolume(int stream_id, double volume) {
 
   AudioEntry* entry = LookupById(stream_id);
   if (!entry) {
-    SendErrorMessage(stream_id);
+    SendErrorMessage(stream_id, INVALID_AUDIO_ENTRY);
     return;
   }
 
@@ -353,9 +357,10 @@ void AudioInputRendererHost::OnSetVolume(int stream_id, double volume) {
   audio_log_->OnSetVolume(stream_id, volume);
 }
 
-void AudioInputRendererHost::SendErrorMessage(int stream_id) {
+void AudioInputRendererHost::SendErrorMessage(
+    int stream_id, ErrorCode error_code) {
   MediaStreamManager::SendMessageToNativeLog(
-      "An error occurred in AudioInputRendererHost.");
+      base::StringPrintf("AudioInputRendererHost error: %d", error_code));
   Send(new AudioInputMsg_NotifyStreamStateChanged(
       stream_id, media::AudioInputIPCDelegate::kError));
 }
@@ -390,12 +395,13 @@ void AudioInputRendererHost::DeleteEntry(AudioEntry* entry) {
   audio_entries_.erase(entry->stream_id);
 }
 
-void AudioInputRendererHost::DeleteEntryOnError(AudioEntry* entry) {
+void AudioInputRendererHost::DeleteEntryOnError(AudioEntry* entry,
+    ErrorCode error_code) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // Sends the error message first before we close the stream because
   // |entry| is destroyed in DeleteEntry().
-  SendErrorMessage(entry->stream_id);
+  SendErrorMessage(entry->stream_id, error_code);
   CloseAndDeleteStream(entry);
 }
 

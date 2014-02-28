@@ -56,6 +56,49 @@ class CONTENT_EXPORT AudioInputRendererHost
     : public BrowserMessageFilter,
       public media::AudioInputController::EventHandler {
  public:
+
+  // Error codes to make native loggin more clear. These error codes are added
+  // to generic error strings to provide a higher degree of details.
+  // Changing these values can lead to problems when matching native debug
+  // logs with the actual cause of error.
+  enum ErrorCode {
+    // An unspecified error occured.
+    UNKNOWN_ERROR = 0,
+
+    // Failed to look up audio intry for the provided stream id.
+    INVALID_AUDIO_ENTRY,  // = 1
+
+    // A stream with the specified stream id already exists.
+    STREAM_ALREADY_EXISTS,  // = 2
+
+    // The page does not have permission to open the specified capture device.
+    PERMISSION_DENIED,  // = 3
+
+    // Failed to create shared memory.
+    SHARED_MEMORY_CREATE_FAILED,  // = 4
+
+    // Failed to initialize the AudioInputSyncWriter instance.
+    SYNC_WRITER_INIT_FAILED,  // = 5
+
+    // Failed to create native audio input stream.
+    STREAM_CREATE_ERROR,  // = 6
+
+    // Renderer process handle is invalid.
+    INVALID_PEER_HANDLE,  // = 7
+
+    // Only low-latency mode is supported.
+    INVALID_LATENCY_MODE,  // = 8
+
+    // Failed to map and share the shared memory.
+    MEMORY_SHARING_FAILED,  // = 9
+
+    // Unable to prepare the foreign socket handle.
+    SYNC_SOCKET_ERROR,  // = 10
+
+    // This error message comes from the AudioInputController instance.
+    AUDIO_INPUT_CONTROLLER_ERROR,  // = 11
+  };
+
   // Called from UI thread from the owner of this object.
   // |user_input_monitor| is used for typing detection and can be NULL.
   AudioInputRendererHost(media::AudioManager* audio_manager,
@@ -72,7 +115,8 @@ class CONTENT_EXPORT AudioInputRendererHost
   // AudioInputController::EventHandler implementation.
   virtual void OnCreated(media::AudioInputController* controller) OVERRIDE;
   virtual void OnRecording(media::AudioInputController* controller) OVERRIDE;
-  virtual void OnError(media::AudioInputController* controller) OVERRIDE;
+  virtual void OnError(media::AudioInputController* controller,
+      media::AudioInputController::ErrorCode error_code) OVERRIDE;
   virtual void OnData(media::AudioInputController* controller,
                       const uint8* data,
                       uint32 size) OVERRIDE;
@@ -120,10 +164,11 @@ class CONTENT_EXPORT AudioInputRendererHost
   void DoSendRecordingMessage(media::AudioInputController* controller);
 
   // Handle error coming from audio stream.
-  void DoHandleError(media::AudioInputController* controller);
+  void DoHandleError(media::AudioInputController* controller,
+      media::AudioInputController::ErrorCode error_code);
 
   // Send an error message to the renderer.
-  void SendErrorMessage(int stream_id);
+  void SendErrorMessage(int stream_id, ErrorCode error_code);
 
   // Delete all audio entry and all audio streams
   void DeleteEntries();
@@ -136,7 +181,7 @@ class CONTENT_EXPORT AudioInputRendererHost
   void DeleteEntry(AudioEntry* entry);
 
   // Delete audio entry and close the related audio input stream.
-  void DeleteEntryOnError(AudioEntry* entry);
+  void DeleteEntryOnError(AudioEntry* entry, ErrorCode error_code);
 
   // A helper method to look up a AudioEntry identified by |stream_id|.
   // Returns NULL if not found.

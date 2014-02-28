@@ -262,7 +262,8 @@ SpeechRecognizerImpl::~SpeechRecognizerImpl() {
 }
 
 // Invoked in the audio thread.
-void SpeechRecognizerImpl::OnError(AudioInputController* controller) {
+void SpeechRecognizerImpl::OnError(AudioInputController* controller,
+    media::AudioInputController::ErrorCode error_code) {
   FSMEventArgs event_args(EVENT_AUDIO_ERROR);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&SpeechRecognizerImpl::DispatchEvent,
