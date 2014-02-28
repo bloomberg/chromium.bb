@@ -352,11 +352,11 @@ camera.views.Camera = function(context, router) {
   this.keyBuffer_ = '';
 
   /**
-   * Measures frames per seconds.
-   * @type {camera.util.PerformanceMonitor}
+   * Measures performance.
+   * @type {camera.util.NamedPerformanceMonitor}
    * @private
    */
-  this.performanceMonitor_ = new camera.util.PerformanceMonitor();
+  this.performanceMonitors_ = new camera.util.NamedPerformanceMonitors();
 
   /**
    * Makes the toolbar pullable.
@@ -604,7 +604,9 @@ camera.views.Camera.prototype.initialize = function(callback) {
 camera.views.Camera.prototype.onEnter = function() {
   if (!this.running_ && this.mainCanvas_ && this.mainFastCanvas_)
     this.start_();
-  this.performanceMonitor_.start();
+  this.performanceMonitors_.reset();
+  this.mainProcessor_.performanceMonitors_.reset();
+  this.mainFastProcessor_.performanceMonitors_.reset();
   this.tracker_.start();
   this.onResize();
 };
@@ -614,7 +616,6 @@ camera.views.Camera.prototype.onEnter = function() {
  * @override
  */
 camera.views.Camera.prototype.onLeave = function() {
-  this.performanceMonitor_.stop();
   this.tracker_.stop();
 };
 
@@ -958,6 +959,7 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
 
   if (this.keyBuffer_.indexOf('VER') !== -1) {
     this.showVersion_();
+    this.printPerformanceStats_();
     this.keyBuffer_ = '';
   }
 
@@ -1111,10 +1113,10 @@ camera.views.Camera.prototype.chooseFileStream_ = function() {
 camera.views.Camera.prototype.showVersion_ = function() {
   // No need to localize, since for debugging purpose only.
   var message = 'Version: ' + chrome.runtime.getManifest().version + '\n' +
-      'Resolution: ' + this.video_.videoWidth + 'x' + this.video_.videoHeight +
-          '\n' +
-      'Frames per second: ' + this.performanceMonitor_.fps.toPrecision(2) +
-          '\n' +
+      'Resolution: ' +
+          this.video_.videoWidth + 'x' + this.video_.videoHeight + '\n' +
+      'Frames per second: ' +
+          this.performanceMonitors_.fps('main').toPrecision(2) + '\n' +
       'Head tracking frames per second: ' + this.tracker_.fps.toPrecision(2);
   this.router.navigate(camera.Router.ViewIdentifier.DIALOG, {
     type: camera.views.Dialog.Type.ALERT,
@@ -1138,7 +1140,7 @@ camera.views.Camera.prototype.startPerformanceTest_ = function() {
     this.progressPerformanceTest_(0);
     var perfTestBubble = document.querySelector('#perf-test-bubble');
     this.performanceTestUIInterval_ = setInterval(function() {
-      var fps = this.performanceMonitor_.fps;
+      var fps = this.performanceMonitors_.fps('main');
       var scale = 1 + Math.min(fps / 60, 1);
       // (10..30) -> (0..30)
       var hue = 120 * Math.max(0, Math.min(fps, 30) * 40 / 30 - 10) / 30;
@@ -1186,7 +1188,7 @@ camera.views.Camera.prototype.progressPerformanceTest_ = function(index) {
       ribbon: (index - 1) % 2,
       // TODO(mtomasz): Avoid localization. Use English instead.
       name: this.mainProcessor_.effect.getTitle(),
-      fps: this.performanceMonitor_.fps
+      fps: this.performanceMonitors_.fps('main')
     };
     this.performanceTestResults_.push(result);
   }
@@ -1214,8 +1216,9 @@ camera.views.Camera.prototype.progressPerformanceTest_ = function(index) {
   }
 
   // Run new test.
-  this.performanceMonitor_.stop();
-  this.performanceMonitor_.start();
+  this.performanceMonitors_.reset();
+  this.mainProcessor_.performanceMonitors_.reset();
+  this.mainFastProcessor_.performanceMonitors_.reset();
   this.setCurrentEffect_(Math.floor(index / 2));
   this.setExpanded_(index % 2 == 1);
 
@@ -1653,9 +1656,14 @@ camera.views.Camera.prototype.drawEffectsRibbon_ = function() {
  * @private
  */
 camera.views.Camera.prototype.drawCameraFrame_ = function(mode) {
-  if (this.frame_ % 10 == 0 || mode == camera.views.Camera.DrawMode.OPTIMIZED) {
-    this.mainFastCanvasTexture_.loadContentsOf(this.video_);
-    this.mainFastProcessor_.processFrame();
+  {
+    var finishMeasuring = this.performanceMonitors_.startMeasuring(
+        'main-fast-processor-load-contents-and-process');
+    if (this.frame_ % 10 == 0 || mode == camera.views.Camera.DrawMode.OPTIMIZED) {
+      this.mainFastCanvasTexture_.loadContentsOf(this.video_);
+      this.mainFastProcessor_.processFrame();
+    }
+    finishMeasuring();
   }
 
   switch (mode) {
@@ -1664,12 +1672,35 @@ camera.views.Camera.prototype.drawCameraFrame_ = function(mode) {
       this.mainFastCanvas_.parentNode.hidden = false;
       break;
     case camera.views.Camera.DrawMode.FULL:
-      this.mainCanvasTexture_.loadContentsOf(this.video_);
+      {
+        var finishMeasuring = this.performanceMonitors_.startMeasuring(
+            'main-processor-canvas-to-texture');
+        this.mainCanvasTexture_.loadContentsOf(this.video_);
+        finishMeasuring();
+      }
       this.mainProcessor_.processFrame();
-      this.mainCanvas_.parentNode.hidden = false;
-      this.mainFastCanvas_.parentNode.hidden = true;
+      {
+        var finishMeasuring = this.performanceMonitors_.startMeasuring(
+            'main-processor-dom');
+        this.mainCanvas_.parentNode.hidden = false;
+        this.mainFastCanvas_.parentNode.hidden = true;
+        finishMeasuring();
+      }
       break;
   }
+};
+
+/**
+ * Prints performance stats for named monitors to the console.
+ * @private
+ */
+camera.views.Camera.prototype.printPerformanceStats_ = function() {
+  console.info('Camera view');
+  console.info(this.performanceMonitors_.toDebugString());
+  console.info('Main processor');
+  console.info(this.mainProcessor_.performanceMonitors.toDebugString());
+  console.info('Main fast processor');
+  console.info(this.mainFastProcessor_.performanceMonitors.toDebugString());
 };
 
 /**
@@ -1685,31 +1716,36 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
   if (this.context.resizing)
     return;
 
-  var finishMeasuring = this.performanceMonitor_.startMeasuring();
+  var finishFrameMeasuring = this.performanceMonitors_.startMeasuring('main');
 
   // Copy the video frame to the back buffer. The back buffer is low
   // resolution, since it is only used by the effects' previews.
-  if (this.frame_ % camera.views.Camera.PREVIEW_BUFFER_SKIP_FRAMES == 0) {
-    var context = this.previewInputCanvas_.getContext('2d');
-    // Since the preview input canvas may have a different aspect ratio, cut
-    // the center of it.
-    var ratio =
-        this.previewInputCanvas_.width / this.previewInputCanvas_.height;
-    var scale = this.previewInputCanvas_.height / this.video_.height;
-    var sh = this.video_.height;
-    var sw = Math.round(this.video_.height * ratio);
-    var sy = 0;
-    var sx = Math.round(this.video_.width / 2 - sw / 2);
-    context.drawImage(this.video_,
-                      sx,
-                      sy,
-                      sw,
-                      sh,
-                      0,
-                      0,
-                      this.previewInputCanvas_.width,
-                      this.previewInputCanvas_.height);
-    this.previewCanvasTexture_.loadContentsOf(this.previewInputCanvas_);
+  {
+    var finishMeasuring = this.performanceMonitors_.startMeasuring(
+        'resample-and-upload-preview-texture');
+    if (this.frame_ % camera.views.Camera.PREVIEW_BUFFER_SKIP_FRAMES == 0) {
+      var context = this.previewInputCanvas_.getContext('2d');
+      // Since the preview input canvas may have a different aspect ratio, cut
+      // the center of it.
+      var ratio =
+          this.previewInputCanvas_.width / this.previewInputCanvas_.height;
+      var scale = this.previewInputCanvas_.height / this.video_.height;
+      var sh = this.video_.height;
+      var sw = Math.round(this.video_.height * ratio);
+      var sy = 0;
+      var sx = Math.round(this.video_.width / 2 - sw / 2);
+      context.drawImage(this.video_,
+                        sx,
+                        sy,
+                        sw,
+                        sh,
+                        0,
+                        0,
+                        this.previewInputCanvas_.width,
+                        this.previewInputCanvas_.height);
+      this.previewCanvasTexture_.loadContentsOf(this.previewInputCanvas_);
+    }
+    finishMeasuring();
   }
 
   // Request update of the head tracker always if it is used by the active
@@ -1725,52 +1761,72 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
   // effect does not use head tracking, then use even lower resolution, so we
   // can get higher FPS, when the head tracker is used for tiny effect previews
   // only.
-  if (!this.tracker_.busy && requestHeadTrackerUpdate) {
-    this.setHeadTrackerQuality_(
-        this.mainProcessor_.effect.usesHeadTracker() ?
-            camera.views.Camera.HeadTrackerQuality.NORMAL :
-            camera.views.Camera.HeadTrackerQuality.LOW);
+  {
+    var finishMeasuring = this.performanceMonitors_.startMeasuring(
+        'resample-and-schedule-head-tracking');
+    if (!this.tracker_.busy && requestHeadTrackerUpdate) {
+      this.setHeadTrackerQuality_(
+          this.mainProcessor_.effect.usesHeadTracker() ?
+              camera.views.Camera.HeadTrackerQuality.NORMAL :
+              camera.views.Camera.HeadTrackerQuality.LOW);
 
-    // Aspect ratios are required to be same.
-    var context = this.trackerInputCanvas_.getContext('2d');
-    context.drawImage(this.video_,
-                      0,
-                      0,
-                      this.trackerInputCanvas_.width,
-                      this.trackerInputCanvas_.height);
+      // Aspect ratios are required to be same.
+      var context = this.trackerInputCanvas_.getContext('2d');
+      context.drawImage(this.video_,
+                        0,
+                        0,
+                        this.trackerInputCanvas_.width,
+                        this.trackerInputCanvas_.height);
 
-    this.tracker_.detect();
+      this.tracker_.detect();
+    }
+    finishMeasuring();
   }
 
   // Update internal state of the tracker.
-  this.tracker_.update();
+  {
+    var finishMeasuring =
+        this.performanceMonitors_.startMeasuring('interpolate-head-tracker');
+    this.tracker_.update();
+    finishMeasuring();
+  }
 
   // Draw the camera frame. Decrease the rendering resolution when scrolling, or
   // while performing animations.
-  if (this.taking_ || this.toolbarEffect_.animating ||
-      this.controlsEffect_.animating || this.mainProcessor_.effect.isSlow() ||
-      this.context.isUIAnimating() || this.toastEffect_.animating ||
-      (this.scrollTracker_.scrolling && this.expanded_)) {
-    this.drawCameraFrame_(camera.views.Camera.DrawMode.OPTIMIZED);
-  } else {
-    this.drawCameraFrame_(camera.views.Camera.DrawMode.FULL);
+  {
+    var finishMeasuring =
+        this.performanceMonitors_.startMeasuring('draw-frame');
+    if (this.taking_ || this.toolbarEffect_.animating ||
+        this.controlsEffect_.animating || this.mainProcessor_.effect.isSlow() ||
+        this.context.isUIAnimating() || this.toastEffect_.animating ||
+        (this.scrollTracker_.scrolling && this.expanded_)) {
+      this.drawCameraFrame_(camera.views.Camera.DrawMode.OPTIMIZED);
+    } else {
+      this.drawCameraFrame_(camera.views.Camera.DrawMode.FULL);
+    }
+    finishMeasuring();
   }
 
   // Draw the effects' ribbon.
   // Process effect preview canvases. Ribbon initialization is true before the
   // ribbon is expanded for the first time. This trick is used to fill the
   // ribbon with images as soon as possible.
-  if (this.expanded_ && !this.taking_ && !this.controlsEffect_.animating &&
-      !this.context.isUIAnimating() && !this.scrollTracker_.scrolling &&
-      !this.toastEffect_.animating || this.ribbonInitialization_) {
+  {
+    var finishMeasuring =
+        this.performanceMonitors_.startMeasuring('draw-ribbon');
+    if (this.expanded_ && !this.taking_ && !this.controlsEffect_.animating &&
+        !this.context.isUIAnimating() && !this.scrollTracker_.scrolling &&
+        !this.toastEffect_.animating || this.ribbonInitialization_) {
 
-    // Every third frame draw only the visible effects. Also, other frames
-    // are periodically refreshed, to avoid stale pictures.
-    if (this.frame_ % camera.views.Camera.PREVIEW_BUFFER_SKIP_FRAMES == 0)
-      this.drawEffectsRibbon_();
+      // Every third frame draw only the visible effects. Also, other frames
+      // are periodically refreshed, to avoid stale pictures.
+      if (this.frame_ % camera.views.Camera.PREVIEW_BUFFER_SKIP_FRAMES == 0)
+        this.drawEffectsRibbon_();
+    }
+    finishMeasuring();
   }
 
   this.frame_++;
-  finishMeasuring();
+  finishFrameMeasuring();
 };
 
