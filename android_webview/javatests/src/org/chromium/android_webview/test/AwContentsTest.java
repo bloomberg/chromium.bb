@@ -314,6 +314,7 @@ public class AwContentsTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testGetFavicon() throws Throwable {
+        AwContents.setShouldDownloadFavicons();
         final AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
         final AwContents awContents = testView.getAwContents();
 

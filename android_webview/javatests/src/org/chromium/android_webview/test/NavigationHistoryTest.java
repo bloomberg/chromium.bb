@@ -41,6 +41,7 @@ public class NavigationHistoryTest extends AwTestBase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
+        AwContents.setShouldDownloadFavicons();
         mContentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
             createAwTestContainerViewOnMainSync(mContentsClient);

@@ -306,7 +306,6 @@ public class AwTestBase
         testContainerView.initialize(new AwContents(
                 mBrowserContext, testContainerView, testContainerView.getInternalAccessDelegate(),
                 awContentsClient, awSettings, testDependencyFactory.createLayoutSizer()));
-        AwContents.setShouldDownloadFavicons();
         return testContainerView;
     }
 

@@ -10,7 +10,6 @@ import android.util.Pair;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.InterceptedRequestData;
 import org.chromium.android_webview.test.util.CommonResources;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -40,15 +39,11 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
                 = new ConcurrentHashMap<String, InterceptedRequestData>();
             // This is read from the IO thread, so needs to be marked volatile.
             private volatile InterceptedRequestData mShouldInterceptRequestReturnValue = null;
-            private String mUrlToWaitFor;
             void setReturnValue(InterceptedRequestData value) {
                 mShouldInterceptRequestReturnValue = value;
             }
             void setReturnValueForUrl(String url, InterceptedRequestData value) {
                 mReturnValuesByUrls.put(url, value);
-            }
-            public void setUrlToWaitFor(String url) {
-                mUrlToWaitFor = url;
             }
             public List<String> getUrls() {
                 assert getCallCount() > 0;
@@ -60,10 +55,8 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
                 return mShouldInterceptRequestReturnValue;
             }
             public void notifyCalled(String url) {
-                if (mUrlToWaitFor == null || mUrlToWaitFor.equals(url)) {
-                    mShouldInterceptRequestUrls.add(url);
-                    notifyCalled();
-                }
+                mShouldInterceptRequestUrls.add(url);
+                notifyCalled();
             }
         }
 
@@ -436,12 +429,8 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
         assertEquals(0, mWebServer.getRequestCount("/" + CommonResources.ABOUT_FILENAME));
     }
 
-    /*
-     @SmallTest
-     @Feature({"AndroidWebView"})
-     http://crbug.com/347599
-    */
-    @DisabledTest
+    @SmallTest
+    @Feature({"AndroidWebView"})
     public void testCalledForImage() throws Throwable {
         final String imagePath = "/" + CommonResources.FAVICON_FILENAME;
         mWebServer.setResponseBase64(imagePath,
@@ -495,13 +484,10 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
                     "<iframe src=\"" + aboutPageUrl + "\"/>"));
 
         int callCount = mShouldInterceptRequestHelper.getCallCount();
-        // These callbacks can race with favicon.ico callback.
-        mShouldInterceptRequestHelper.setUrlToWaitFor(aboutPageUrl);
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), pageWithIframe);
-
-        mShouldInterceptRequestHelper.waitForCallback(callCount, 1);
-        assertEquals(1, mShouldInterceptRequestHelper.getUrls().size());
-        assertEquals(aboutPageUrl, mShouldInterceptRequestHelper.getUrls().get(0));
+        mShouldInterceptRequestHelper.waitForCallback(callCount, 2);
+        assertEquals(2, mShouldInterceptRequestHelper.getUrls().size());
+        assertEquals(aboutPageUrl, mShouldInterceptRequestHelper.getUrls().get(1));
     }
 
     private void calledForUrlTemplate(final String url) throws Exception {

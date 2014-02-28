@@ -82,6 +82,7 @@ public class AwContentsClientFaviconTest extends AwTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        AwContents.setShouldDownloadFavicons();
         mWebServer = new TestWebServer(false);
     }
 
