@@ -872,17 +872,31 @@ sonic = _config(
   hw_tests=[],
 )
 
-# Base brillo config don't build tests and they only need the base image.
 brillo = _config(
-  images=['base'],
-  packages=['chromeos-base/chromeos'],
-  build_tests=False,
   sync_chrome=False,
   chrome_sdk=False,
+
+  # TODO(gauravsh): Should be set to True once testing works.
+  build_tests=False,
+  signer_tests=False,
+  vm_tests=[],
   hw_tests=[],
 )
 
-beaglebone = arm.derive(brillo, rootfs_verification=False)
+# Base brillo config don't build tests and they only need the base image.
+brillo_non_testable = brillo.derive(
+  # Literally build the minimal possible.
+  packages=['chromeos-base/chromeos'],
+  images=['base'],
+
+  # Disable all the tests!
+  build_tests=False,
+  signer_tests=False,
+  hw_tests=[],
+  vm_tests=[],
+)
+
+beaglebone = arm.derive(brillo_non_testable, rootfs_verification=False)
 
 # This adds Chrome branding.
 official_chrome = _config(
@@ -1246,14 +1260,10 @@ chromium_info.add_config('amd64-generic-tot-asan-informational',
   description='Build with Address Sanitizer (Clang) on TOT',
 )
 
-incremental_arm = incremental.derive(arm)
-incremental_arm.add_config('beaglebone-incremental',
+incremental_beaglebone = incremental.derive(beaglebone)
+incremental_beaglebone.add_config('beaglebone-incremental',
   boards=['beaglebone'],
-  images=['base'],
-  packages=['chromeos-base/chromeos'],
   trybot_list=True,
-  build_tests=False,
-  rootfs_verification=False,
   description='Incremental Beaglebone Builder',
 )
 
@@ -1551,7 +1561,7 @@ internal_paladin.add_config('panther-paladin',
 internal_paladin.add_config('stout-paladin',
   boards=['stout'],
   paladin_builder_name='stout paladin',
-  vm_tests = [constants.CROS_VM_TEST_TYPE],
+  vm_tests=[constants.CROS_VM_TEST_TYPE],
 )
 
 internal_paladin.add_config('stout32-paladin',
@@ -1579,12 +1589,10 @@ internal_paladin.add_config('x86-zgb-paladin',
 )
 
 internal_paladin.add_config('stumpy_moblab-paladin',
+  brillo_non_testable,
   boards=['stumpy_moblab'],
-  images=['base'],
-  build_tests=False,
   important=False,
   paladin_builder_name='stumpy_moblab paladin',
-  hw_tests=[],
 )
 
 
@@ -1952,8 +1960,7 @@ _arm_release.add_config('nyan_big-release',
 # Brillo devices do not have Chrome or currently need for test or dev images.
 _brillo_release = _release.derive(brillo,
   dev_installer_prebuilts=False,
-  signer_tests=False,
-  vm_tests=[],
+  images=['base', 'test']
 )
 
 _brillo_release.add_config('duck-release',
@@ -1976,18 +1983,15 @@ _config.add_group('beaglebone-release-group',
 # Note this is named full since it doesn't use manifest_versions and uses
 # different scheduling. However, it still pushes releases.
 _arm_brillo_release.add_config('daisy_winter-full',
+  brillo_non_testable,
   boards=['daisy_winter'],
   manifest='lasercats.xml',
   manifest_version=False,
 )
 
 _release.add_config('stumpy_moblab-release',
+  brillo_non_testable,
   boards=['stumpy_moblab'],
-  images=['base'],
-  build_tests=False,
-  signer_tests=False,
-  hw_tests=[],
-  vm_tests=[],
 )
 
 # Factory and Firmware releases much inherit from these classes.  Modifications
