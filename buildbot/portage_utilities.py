@@ -905,12 +905,13 @@ def FindPackageNameMatches(package, sysroot='/'):
   return matches
 
 
-def GetBinaryPackageDir(sysroot='/'):
+def GetBinaryPackageDir(sysroot='/', packages_dir=None):
   """Returns the binary package directory of |sysroot|."""
-  return os.path.join(sysroot, 'packages')
+  dir_name = packages_dir if packages_dir else 'packages'
+  return os.path.join(sysroot, dir_name)
 
 
-def GetBinaryPackagePath(c, p, v, sysroot='/'):
+def GetBinaryPackagePath(c, p, v, sysroot='/', packages_dir=None):
   """Returns the path to the binary package.
 
   Args:
@@ -918,11 +919,12 @@ def GetBinaryPackagePath(c, p, v, sysroot='/'):
     p: package.
     v: version.
     sysroot: The root being inspected.
+    packages_dir: Name of the packages directory in |sysroot|.
 
   Returns:
     The path to the binary package.
   """
-  pkgdir = GetBinaryPackageDir(sysroot=sysroot)
+  pkgdir = GetBinaryPackageDir(sysroot=sysroot, packages_dir=packages_dir)
   path = os.path.join(pkgdir, c, '%s-%s.tbz2' % (p, v))
   if not os.path.exists(path):
     raise ValueError('Cannot find the binary package %s!' % path)

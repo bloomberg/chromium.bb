@@ -39,6 +39,8 @@ For more information of cros build usage:
 """
 
   DEVICE_BASE_DIR = '/usr/local/tmp/cros-deploy'
+  # This is defined in src/platform/dev/builder.py
+  STRIPPED_PACKAGES_DIR = 'stripped-packages'
 
   # Override base class property to enable stats upload.
   upload_stats = True
@@ -47,6 +49,7 @@ For more information of cros build usage:
     """Initializes DeployCommand."""
     cros.CrosCommand.__init__(self, options)
     self.emerge = True
+    self.strip = True
     self.clean_binpkg = True
     self.ssh_hostname = None
     self.ssh_port = None
@@ -67,6 +70,11 @@ For more information of cros build usage:
         '--board', default=None, help='The board to use. By default it is '
         'automatically detected. You can override the detected board with '
         'this option.')
+    parser.add_argument(
+        '--no-strip', dest='strip', action='store_false', default=True,
+        help='Do not run strip_package to filter out preset paths in the '
+        'package. Stripping removes debug symbol files and reduces the size '
+        'of the package significantly. Defaults to always strip.')
     parser.add_argument(
         '--unmerge',  dest='emerge', action='store_false', default=True,
         help='Unmerge requested packages.')
@@ -119,8 +127,20 @@ For more information of cros build usage:
       except cros_build_lib.RunCommandError:
         raise ValueError('Package %s is not installed!' % pkg)
 
+    packages_dir = None
+    if self.strip:
+      try:
+        cros_build_lib.RunCommand(
+            ['strip_package', '--board', board,
+             os.path.join(category, '%s-%s' % (package_name, version))])
+        packages_dir = self.STRIPPED_PACKAGES_DIR
+      except cros_build_lib.RunCommandError:
+        logging.error('Cannot strip package %s', pkg)
+        raise
+
     return portage_utilities.GetBinaryPackagePath(
-        category, package_name, version, sysroot=sysroot)
+        category, package_name, version, sysroot=sysroot,
+        packages_dir=packages_dir)
 
   def _Emerge(self, device, board, pkg, root, extra_args=None):
     """Copies |pkg| to |device| and emerges it.
@@ -219,6 +239,7 @@ For more information of cros build usage:
   def _ReadOptions(self):
     """Processes options and set variables."""
     self.emerge = self.options.emerge
+    self.strip = self.options.strip
     self.clean_binpkg = self.options.clean_binpkg
     self.root = self.options.root
     device = self.options.device
