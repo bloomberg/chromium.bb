@@ -1078,19 +1078,10 @@ TEST_P(SpdyFramerTest, Basic) {
   EXPECT_EQ(1, visitor.headers_frame_count_);
   EXPECT_EQ(24, visitor.data_bytes_);
 
-  // TODO(jgraettinger): We expect to handle but not emit RST payloads.
-  if (false /*!FLAGS_gfe2_restart_flag_allow_spdy_4_rst_stream_opaque_data*/ &&
-      IsSpdy4()) {
-    // Last rst_stream is an INVALID_CONTROL_FRAME.
-    EXPECT_EQ(1, visitor.error_count_);
-    EXPECT_EQ(1, visitor.fin_frame_count_);
-  } else {
-    EXPECT_EQ(0, visitor.error_count_);
-    EXPECT_EQ(2, visitor.fin_frame_count_);
-  }
+  EXPECT_EQ(0, visitor.error_count_);
+  EXPECT_EQ(2, visitor.fin_frame_count_);
 
-  if (true /*FLAGS_gfe2_restart_flag_allow_spdy_4_rst_stream_opaque_data*/ &&
-      IsSpdy4()) {
+  if (IsSpdy4()) {
     base::StringPiece reset_stream = "RESETSTREAM";
     EXPECT_EQ(reset_stream, visitor.fin_opaque_data_);
   } else {
@@ -2154,19 +2145,9 @@ TEST_P(SpdyFramerTest, CreateRstStream) {
       0x00, 0x00, 0x00, 0x01,
       0x52, 0x53, 0x54
     };
-    const unsigned char kV4FrameDataOld[] = {
-      0x00, 0x0c, 0x03, 0x00,
-      0x00, 0x00, 0x00, 0x01,
-      0x00, 0x00, 0x00, 0x01,
-    };
     net::SpdyRstStreamIR rst_stream(1, RST_STREAM_PROTOCOL_ERROR, "RST");
     scoped_ptr<SpdyFrame> frame(framer.SerializeRstStream(rst_stream));
-    // TODO(jgraettinger): We expect to handle but not emit RST payloads.
-    if (IsSpdy4() &&
-        true /*!FLAGS_gfe2_restart_flag_allow_spdy_4_rst_stream_opaque_data*/) {
-      CompareFrame(kDescription, *frame, kV4FrameDataOld,
-                   arraysize(kV4FrameDataOld));
-    } else if (IsSpdy4()) {
+    if (IsSpdy4()) {
       CompareFrame(kDescription, *frame, kV4FrameData, arraysize(kV4FrameData));
     } else {
       CompareFrame(kDescription, *frame, kV3FrameData, arraysize(kV3FrameData));

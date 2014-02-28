@@ -1490,33 +1490,6 @@ size_t SpdyFramer::ProcessControlFramePayload(const char* data, size_t len) {
 
     // Use frame-specific handlers.
     switch (current_frame_type_) {
-      case RST_STREAM:
-        // TODO(jgraettinger): Leaving this here for future, saner patching.
-        // RST_STREAM is separately handled by ProcessRstStreamFramePayload().
-        NOTREACHED();
-        if (false
-            /*!FLAGS_gfe2_restart_flag_allow_spdy_4_rst_stream_opaque_data*/) {
-          bool successful_read = true;
-          if (spdy_version_ < 4) {
-            successful_read = reader.ReadUInt31(&current_frame_stream_id_);
-            DCHECK(successful_read);
-          }
-          SpdyRstStreamStatus status = RST_STREAM_INVALID;
-          uint32 status_raw = status;
-          successful_read = reader.ReadUInt32(&status_raw);
-          DCHECK(successful_read);
-          if (status_raw > RST_STREAM_INVALID &&
-              status_raw < RST_STREAM_NUM_STATUS_CODES) {
-            status = static_cast<SpdyRstStreamStatus>(status_raw);
-          } else {
-            // TODO(hkhalil): Probably best to OnError here, depending on
-            // our interpretation of the spec. Keeping with existing liberal
-            // behavior for now.
-          }
-          DCHECK(reader.IsDoneReading());
-          visitor_->OnRstStream(current_frame_stream_id_, status);
-        }
-        break;
       case PING: {
           SpdyPingId id = 0;
           bool is_ack =
@@ -1916,8 +1889,7 @@ SpdySerializedFrame* SpdyFramer::SerializeRstStream(
   // commented but left in place to simplify future patching.
   // Compute the output buffer size, taking opaque data into account.
   uint16 expected_length = GetRstStreamMinimumSize();
-  if (protocol_version() >= 4 &&
-      false /*FLAGS_gfe2_restart_flag_allow_spdy_4_rst_stream_opaque_data*/) {
+  if (protocol_version() >= 4) {
     expected_length += rst_stream.description().size();
   }
   SpdyFrameBuilder builder(expected_length);
@@ -1933,8 +1905,7 @@ SpdySerializedFrame* SpdyFramer::SerializeRstStream(
   builder.WriteUInt32(rst_stream.status());
 
   // In SPDY4 and up, RST_STREAM frames may also specify opaque data.
-  if (protocol_version() >= 4 && rst_stream.description().size() > 0 &&
-      false /*FLAGS_gfe2_restart_flag_allow_spdy_4_rst_stream_opaque_data*/) {
+  if (protocol_version() >= 4 && rst_stream.description().size() > 0) {
     builder.WriteBytes(rst_stream.description().data(),
                        rst_stream.description().size());
   }
