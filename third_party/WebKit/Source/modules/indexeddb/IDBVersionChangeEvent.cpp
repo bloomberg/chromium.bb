@@ -31,12 +31,19 @@
 
 namespace WebCore {
 
-PassRefPtrWillBeRawPtr<IDBVersionChangeEvent> IDBVersionChangeEvent::create(PassRefPtr<IDBAny> oldVersion, PassRefPtr<IDBAny> newVersion, const AtomicString& eventType, blink::WebIDBDataLoss dataLoss, const String& dataLossMessage)
+
+IDBVersionChangeEventInit::IDBVersionChangeEventInit()
+    : oldVersion(0)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new IDBVersionChangeEvent(oldVersion, newVersion, eventType, dataLoss, dataLossMessage));
 }
 
-IDBVersionChangeEvent::IDBVersionChangeEvent(PassRefPtr<IDBAny> oldVersion, PassRefPtr<IDBAny> newVersion, const AtomicString& eventType, blink::WebIDBDataLoss dataLoss, const String& dataLossMessage)
+IDBVersionChangeEvent::IDBVersionChangeEvent()
+    : m_dataLoss(blink::WebIDBDataLossNone)
+{
+    ScriptWrappable::init(this);
+}
+
+IDBVersionChangeEvent::IDBVersionChangeEvent(const AtomicString& eventType, unsigned long long oldVersion, const Nullable<unsigned long long>& newVersion, blink::WebIDBDataLoss dataLoss, const String& dataLossMessage)
     : Event(eventType, false /*canBubble*/, false /*cancelable*/)
     , m_oldVersion(oldVersion)
     , m_newVersion(newVersion)
@@ -46,20 +53,19 @@ IDBVersionChangeEvent::IDBVersionChangeEvent(PassRefPtr<IDBAny> oldVersion, Pass
     ScriptWrappable::init(this);
 }
 
-IDBVersionChangeEvent::~IDBVersionChangeEvent()
+IDBVersionChangeEvent::IDBVersionChangeEvent(const AtomicString& eventType, const IDBVersionChangeEventInit& initializer)
+    : Event(eventType, false /*canBubble*/, false /*cancelable*/)
+    , m_oldVersion(initializer.oldVersion)
+    , m_newVersion(initializer.newVersion)
+    , m_dataLoss(blink::WebIDBDataLossNone)
 {
+    ScriptWrappable::init(this);
 }
 
-ScriptValue IDBVersionChangeEvent::oldVersion(ExecutionContext* context) const
+unsigned long long IDBVersionChangeEvent::newVersion(bool& isNull) const
 {
-    DOMRequestState requestState(context);
-    return idbAnyToScriptValue(&requestState, m_oldVersion);
-}
-
-ScriptValue IDBVersionChangeEvent::newVersion(ExecutionContext* context) const
-{
-    DOMRequestState requestState(context);
-    return idbAnyToScriptValue(&requestState, m_newVersion);
+    isNull = m_newVersion.isNull();
+    return isNull ? 0 : m_newVersion.get();
 }
 
 const AtomicString& IDBVersionChangeEvent::dataLoss() const

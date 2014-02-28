@@ -33,6 +33,7 @@
             'v8/IDBBindingUtilities.h',
             'v8/NPV8Object.cpp',
             'v8/NPV8Object.h',
+            'v8/Nullable.h',
             'v8/PageScriptDebugServer.cpp',
             'v8/PageScriptDebugServer.h',
             'v8/RetainedDOMInfo.cpp',

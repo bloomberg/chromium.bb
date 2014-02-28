@@ -23,9 +23,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface IDBVersionChangeEvent : Event {
-    [CallWith=ExecutionContext] readonly attribute any oldVersion;
-    [CallWith=ExecutionContext] readonly attribute any newVersion;
+[
+    EventConstructor
+] interface IDBVersionChangeEvent : Event {
+    [InitializedByEventConstructor] readonly attribute unsigned long long oldVersion;
+    [InitializedByEventConstructor] readonly attribute unsigned long long? newVersion;
 
     // FIXME: These are non-standard, see
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=22370

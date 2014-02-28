@@ -28,6 +28,7 @@
 
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/Nullable.h"
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8BindingMacros.h"
@@ -154,6 +155,9 @@ public:
 
     template<typename IntegralType>
     bool convert(ConversionContext&, const String&, IntegralType&) const;
+    template<typename IntegralType>
+    bool convert(ConversionContext&, const String&, Nullable<IntegralType>&) const;
+
     bool convert(ConversionContext&, const String&, MessagePortArray&) const;
     bool convert(ConversionContext&, const String&, HashSet<AtomicString>&) const;
     bool convert(ConversionContext&, const String&, Dictionary&) const;
@@ -299,6 +303,28 @@ template<typename T> bool Dictionary::convert(ConversionContext& context, const 
     if (context.exceptionState().throwIfNeeded())
         return false;
 
+    return true;
+}
+
+template<typename T> bool Dictionary::convert(ConversionContext& context, const String& key, Nullable<T>& value) const
+{
+    ConversionContextScope scope(context);
+
+    v8::Local<v8::Value> v8Value;
+    if (!getKey(key, v8Value))
+        return true;
+
+    if (context.isNullable() && WebCore::isUndefinedOrNull(v8Value)) {
+        value = Nullable<T>();
+        return true;
+    }
+
+    T converted = IntegralTypeTraits<T>::toIntegral(v8Value, NormalConversion, context.exceptionState());
+
+    if (context.exceptionState().throwIfNeeded())
+        return false;
+
+    value = Nullable<T>(converted);
     return true;
 }
 
