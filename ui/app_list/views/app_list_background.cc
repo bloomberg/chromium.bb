@@ -11,6 +11,7 @@
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/views/app_list_main_view.h"
+#include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -22,6 +23,9 @@ namespace {
 
 // Size of top separator between searchbox and grid view.
 const int kTopSeparatorSize = 1;
+
+// Size of bottom separator between contents view and contents switcher.
+const int kBottomSeparatorSize = 1;
 
 }  // namespace
 
@@ -63,11 +67,11 @@ void AppListBackground::Paint(gfx::Canvas* canvas,
     paint.setColor(kSearchBoxBackground);
     canvas->DrawRect(search_box_rect, paint);
 
-    gfx::Rect seperator_rect(search_box_rect);
-    seperator_rect.set_y(seperator_rect.bottom());
-    seperator_rect.set_height(kTopSeparatorSize);
-    canvas->FillRect(seperator_rect, kTopSeparatorColor);
-    contents_top = seperator_rect.bottom();
+    gfx::Rect separator_rect(search_box_rect);
+    separator_rect.set_y(separator_rect.bottom());
+    separator_rect.set_height(kTopSeparatorSize);
+    canvas->FillRect(separator_rect, kTopSeparatorColor);
+    contents_top = separator_rect.bottom();
   }
 
   gfx::Rect contents_rect(bounds.x(),
@@ -78,10 +82,26 @@ void AppListBackground::Paint(gfx::Canvas* canvas,
   paint.setColor(kContentsBackgroundColor);
   canvas->DrawRect(contents_rect, paint);
 
-  // Draw a banner in the corner of the app list if it is the experimental app
-  // list.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          app_list::switches::kEnableExperimentalAppList)) {
+  if (app_list::switches::IsExperimentalAppListEnabled()) {
+    if (main_view_->visible()) {
+      views::View* contents_view = main_view_->contents_view();
+      const gfx::Rect contents_view_view_bounds =
+          contents_view->ConvertRectToWidget(contents_view->GetLocalBounds());
+      gfx::Rect separator_rect(contents_rect);
+      separator_rect.set_y(contents_view_view_bounds.bottom());
+      separator_rect.set_height(kBottomSeparatorSize);
+      canvas->FillRect(separator_rect, kBottomSeparatorColor);
+      int contents_switcher_top = separator_rect.bottom();
+      gfx::Rect contents_switcher_rect(bounds.x(),
+                                       contents_switcher_top,
+                                       bounds.width(),
+                                       bounds.bottom() - contents_switcher_top);
+      paint.setColor(kContentsSwitcherBackgroundColor);
+      canvas->DrawRect(contents_switcher_rect, paint);
+    }
+
+    // Draw a banner in the corner of the app list if it is the experimental app
+    // list.
     const gfx::ImageSkia& experimental_icon =
         *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
              IDR_APP_LIST_EXPERIMENTAL_ICON);

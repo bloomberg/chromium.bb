@@ -36,6 +36,8 @@ class PaginationModel;
 // and animates the transition between show states.
 class ContentsView : public views::View {
  public:
+  enum ShowState { SHOW_APPS, SHOW_SEARCH_RESULTS, };
+
   ContentsView(AppListMainView* app_list_main_view,
                PaginationModel* pagination_model,
                AppListModel* model,
@@ -53,6 +55,9 @@ class ContentsView : public views::View {
   void ShowSearchResults(bool show);
   void ShowFolderContent(AppListFolderItem* folder);
 
+  // Sets show state and animates the subviews to match the show state.
+  void SetShowState(ShowState show_state);
+
   void Prerender();
 
   AppsContainerView* apps_container_view() { return apps_container_view_; }
@@ -64,14 +69,6 @@ class ContentsView : public views::View {
   virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) OVERRIDE;
 
  private:
-  enum ShowState {
-    SHOW_APPS,
-    SHOW_SEARCH_RESULTS,
-  };
-
-  // Sets show state.
-  void SetShowState(ShowState show_state);
-
   // Invoked when show state is changed.
   void ShowStateChanged();
 

@@ -105,6 +105,8 @@
         'views/apps_grid_view_delegate.h',
         'views/cached_label.cc',
         'views/cached_label.h',
+        'views/contents_switcher_view.cc',
+        'views/contents_switcher_view.h',
         'views/contents_view.cc',
         'views/contents_view.h',
         'views/folder_background_view.cc',

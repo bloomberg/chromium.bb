@@ -58,7 +58,7 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
   void SetDragAndDropHostOfCurrentAppList(
       ApplicationDragAndDropHost* drag_and_drop_host);
 
-  ContentsView* contents_view() { return contents_view_; }
+  ContentsView* contents_view() const { return contents_view_; }
 
  private:
   class IconLoader;

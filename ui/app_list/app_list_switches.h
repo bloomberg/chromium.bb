@@ -21,6 +21,8 @@ bool APP_LIST_EXPORT IsVoiceSearchEnabled();
 
 bool APP_LIST_EXPORT IsAppInfoEnabled();
 
+bool APP_LIST_EXPORT IsExperimentalAppListEnabled();
+
 }  // namespace switches
 }  // namespace app_list
 

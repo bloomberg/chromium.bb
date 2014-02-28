@@ -15,10 +15,12 @@
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/views/app_list_item_view.h"
+#include "ui/app_list/views/contents_switcher_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -97,6 +99,8 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate,
   search_box_view_ = new SearchBoxView(this, delegate);
   AddChildView(search_box_view_);
   AddContentsView();
+  if (app_list::switches::IsExperimentalAppListEnabled())
+    AddChildView(new ContentsSwitcherView(contents_view_));
 }
 
 void AppListMainView::AddContentsView() {

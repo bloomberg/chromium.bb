@@ -39,5 +39,10 @@ bool IsAppInfoEnabled() {
   return CommandLine::ForCurrentProcess()->HasSwitch(kEnableAppInfo);
 }
 
-}  // namespcae switches
+bool IsExperimentalAppListEnabled() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      kEnableExperimentalAppList);
+}
+
+}  // namespace switches
 }  // namespace app_list
