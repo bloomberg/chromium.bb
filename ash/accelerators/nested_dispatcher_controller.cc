@@ -6,7 +6,6 @@
 
 #include "ash/accelerators/accelerator_dispatcher.h"
 #include "ash/shell.h"
-#include "base/auto_reset.h"
 #include "base/run_loop.h"
 
 namespace ash {
@@ -28,14 +27,7 @@ void NestedDispatcherController::RunWithDispatcher(
   // TODO(jbates) crbug.com/134753 Find quitters of this RunLoop and have them
   //              use run_loop.QuitClosure().
   base::RunLoop run_loop(&dispatcher);
-  base::AutoReset<base::Closure> reset_closure(&quit_closure_,
-                                               run_loop.QuitClosure());
   run_loop.Run();
-}
-
-void NestedDispatcherController::QuitNestedMessageLoop() {
-  CHECK(!quit_closure_.is_null());
-  quit_closure_.Run();
 }
 
 }  // namespace ash
