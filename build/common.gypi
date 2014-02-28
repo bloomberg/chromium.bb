@@ -2502,13 +2502,6 @@
       ['enable_ipc_fuzzer==1', {
         'defines': ['ENABLE_IPC_FUZZER=1'],
       }],
-      ['OS=="win" and component=="shared_library"', {
-        'dependencies': [
-          # All targets in a component build must depend on chrome_redirects,
-          # to ensure that certain calls go through it.
-          '<(DEPTH)/chrome_elf/chrome_elf.gyp:chrome_redirects',
-         ],
-      }],
       ['video_hole==1', {
         'defines': ['VIDEO_HOLE=1'],
       }],
