@@ -75,7 +75,6 @@ bool GetOpenWithLinksFromDictionaryValue(
 const char kKind[] = "kind";
 const char kId[] = "id";
 const char kETag[] = "etag";
-const char kSelfLink[] = "selfLink";
 const char kItems[] = "items";
 const char kLargestChangeId[] = "largestChangeId";
 
@@ -130,15 +129,11 @@ const char kModifiedDate[] = "modifiedDate";
 const char kModifiedByMeDate[] = "modifiedByMeDate";
 const char kLastViewedByMeDate[] = "lastViewedByMeDate";
 const char kSharedWithMeDate[] = "sharedWithMeDate";
-const char kDownloadUrl[] = "downloadUrl";
 const char kFileExtension[] = "fileExtension";
 const char kMd5Checksum[] = "md5Checksum";
 const char kFileSize[] = "fileSize";
 const char kAlternateLink[] = "alternateLink";
-const char kEmbedLink[] = "embedLink";
 const char kParents[] = "parents";
-const char kThumbnailLink[] = "thumbnailLink";
-const char kWebContentLink[] = "webContentLink";
 const char kOpenWithLinks[] = "openWithLinks";
 const char kLabels[] = "labels";
 const char kImageMediaMetadata[] = "imageMediaMetadata";
@@ -438,9 +433,6 @@ void FileResource::RegisterJSONConverter(
     base::JSONValueConverter<FileResource>* converter) {
   converter->RegisterStringField(kId, &FileResource::file_id_);
   converter->RegisterStringField(kETag, &FileResource::etag_);
-  converter->RegisterCustomField<GURL>(kSelfLink,
-                                       &FileResource::self_link_,
-                                       GetGURLFromString);
   converter->RegisterStringField(kTitle, &FileResource::title_);
   converter->RegisterStringField(kMimeType, &FileResource::mime_type_);
   converter->RegisterNestedField(kLabels, &FileResource::labels_);
@@ -467,9 +459,6 @@ void FileResource::RegisterJSONConverter(
       &FileResource::shared_with_me_date_,
       &util::GetTimeFromString);
   converter->RegisterBoolField(kShared, &FileResource::shared_);
-  converter->RegisterCustomField<GURL>(kDownloadUrl,
-                                       &FileResource::download_url_,
-                                       GetGURLFromString);
   converter->RegisterStringField(kFileExtension,
                                  &FileResource::file_extension_);
   converter->RegisterStringField(kMd5Checksum, &FileResource::md5_checksum_);
@@ -479,17 +468,8 @@ void FileResource::RegisterJSONConverter(
   converter->RegisterCustomField<GURL>(kAlternateLink,
                                        &FileResource::alternate_link_,
                                        GetGURLFromString);
-  converter->RegisterCustomField<GURL>(kEmbedLink,
-                                       &FileResource::embed_link_,
-                                       GetGURLFromString);
   converter->RegisterRepeatedMessage<ParentReference>(kParents,
                                                       &FileResource::parents_);
-  converter->RegisterCustomField<GURL>(kThumbnailLink,
-                                       &FileResource::thumbnail_link_,
-                                       GetGURLFromString);
-  converter->RegisterCustomField<GURL>(kWebContentLink,
-                                       &FileResource::web_content_link_,
-                                       GetGURLFromString);
   converter->RegisterCustomValueField<std::vector<OpenWithLink> >(
       kOpenWithLinks,
       &FileResource::open_with_links_,

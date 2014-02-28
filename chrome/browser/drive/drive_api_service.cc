@@ -103,24 +103,24 @@ const int kMaxNumFilesResourcePerRequestForSearch = 100;
 const char kAboutResourceFields[] =
     "kind,quotaBytesTotal,quotaBytesUsed,largestChangeId,rootFolderId";
 const char kFileResourceFields[] =
-    "kind,id,title,createdDate,sharedWithMeDate,downloadUrl,mimeType,"
+    "kind,id,title,createdDate,sharedWithMeDate,mimeType,"
     "md5Checksum,fileSize,labels/trashed,imageMediaMetadata/width,"
     "imageMediaMetadata/height,imageMediaMetadata/rotation,etag,"
-    "parents/parentLink,selfLink,thumbnailLink,alternateLink,embedLink,"
+    "parents/parentLink,alternateLink,"
     "modifiedDate,lastViewedByMeDate,shared";
 const char kFileResourceOpenWithLinksFields[] =
     "kind,id,openWithLinks/*";
 const char kFileListFields[] =
-    "kind,items(kind,id,title,createdDate,sharedWithMeDate,downloadUrl,"
+    "kind,items(kind,id,title,createdDate,sharedWithMeDate,"
     "mimeType,md5Checksum,fileSize,labels/trashed,imageMediaMetadata/width,"
     "imageMediaMetadata/height,imageMediaMetadata/rotation,etag,"
-    "parents/parentLink,selfLink,thumbnailLink,alternateLink,embedLink,"
+    "parents/parentLink,alternateLink,"
     "modifiedDate,lastViewedByMeDate,shared),nextLink";
 const char kChangeListFields[] =
-    "kind,items(file(kind,id,title,createdDate,sharedWithMeDate,downloadUrl,"
+    "kind,items(file(kind,id,title,createdDate,sharedWithMeDate,"
     "mimeType,md5Checksum,fileSize,labels/trashed,imageMediaMetadata/width,"
     "imageMediaMetadata/height,imageMediaMetadata/rotation,etag,"
-    "parents/parentLink,selfLink,thumbnailLink,alternateLink,embedLink,"
+    "parents/parentLink,alternateLink,"
     "modifiedDate,lastViewedByMeDate,shared),deleted,id,fileId),nextLink,"
     "largestChangeId";
 

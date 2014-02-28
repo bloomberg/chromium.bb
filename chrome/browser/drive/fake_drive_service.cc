@@ -1399,9 +1399,7 @@ const FakeDriveService::EntryInfo* FakeDriveService::AddNewEntry(
 
   std::string escaped_resource_id = net::EscapePath(resource_id);
 
-  // Set download URL and mime type.
-  new_file->set_download_url(
-      GURL("https://xxx/content/" + escaped_resource_id));
+  // Set mime type.
   new_file->set_mime_type(content_type);
 
   // Set parents.
@@ -1415,8 +1413,6 @@ const FakeDriveService::EntryInfo* FakeDriveService::AddNewEntry(
   ScopedVector<ParentReference> parents;
   parents.push_back(parent.release());
   new_file->set_parents(parents.Pass());
-
-  new_file->set_self_link(GURL("https://xxx/edit/" + escaped_resource_id));
 
   new_entry->share_url = net::AppendOrReplaceQueryParameter(
       share_url_base_, "name", title);

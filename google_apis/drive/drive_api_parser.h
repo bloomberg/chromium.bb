@@ -499,9 +499,6 @@ class FileResource {
   // Returns ETag for this file.
   const std::string& etag() const { return etag_; }
 
-  // Returns the link to JSON of this file itself.
-  const GURL& self_link() const { return self_link_; }
-
   // Returns the title of this file.
   const std::string& title() const { return title_; }
 
@@ -538,10 +535,6 @@ class FileResource {
   // Returns the 'shared' attribute of the file.
   bool shared() const { return shared_; }
 
-  // Returns the short-lived download URL for the file.  This field exists
-  // only when the file content is stored in Drive.
-  const GURL& download_url() const { return download_url_; }
-
   // Returns the extension part of the filename.
   const std::string& file_extension() const { return file_extension_; }
 
@@ -555,19 +548,9 @@ class FileResource {
   // E.g. Google Document, Google Spreadsheet.
   const GURL& alternate_link() const { return alternate_link_; }
 
-  // Returns the link for embedding the file.
-  const GURL& embed_link() const { return embed_link_; }
-
   // Returns parent references (directories) of this file.
   const ScopedVector<ParentReference>& parents() const { return parents_; }
   ScopedVector<ParentReference>* mutable_parents() { return &parents_; }
-
-  // Returns the link to the file's thumbnail.
-  const GURL& thumbnail_link() const { return thumbnail_link_; }
-
-  // Returns the link to open its downloadable content, using cookie based
-  // authentication.
-  const GURL& web_content_link() const { return web_content_link_; }
 
   // Returns the list of links to open the resource with a web app.
   const std::vector<OpenWithLink>& open_with_links() const {
@@ -579,9 +562,6 @@ class FileResource {
   }
   void set_etag(const std::string& etag) {
     etag_ = etag;
-  }
-  void set_self_link(const GURL& self_link) {
-    self_link_ = self_link;
   }
   void set_title(const std::string& title) {
     title_ = title;
@@ -613,9 +593,6 @@ class FileResource {
   void set_shared(bool shared) {
     shared_ = shared;
   }
-  void set_download_url(const GURL& download_url) {
-    download_url_ = download_url;
-  }
   void set_file_extension(const std::string& file_extension) {
     file_extension_ = file_extension;
   }
@@ -628,17 +605,8 @@ class FileResource {
   void set_alternate_link(const GURL& alternate_link) {
     alternate_link_ = alternate_link;
   }
-  void set_embed_link(const GURL& embed_link) {
-    embed_link_ = embed_link;
-  }
   void set_parents(ScopedVector<ParentReference> parents) {
     parents_ = parents.Pass();
-  }
-  void set_thumbnail_link(const GURL& thumbnail_link) {
-    thumbnail_link_ = thumbnail_link;
-  }
-  void set_web_content_link(const GURL& web_content_link) {
-    web_content_link_ = web_content_link;
   }
 
  private:
@@ -652,7 +620,6 @@ class FileResource {
 
   std::string file_id_;
   std::string etag_;
-  GURL self_link_;
   std::string title_;
   std::string mime_type_;
   FileLabels labels_;
@@ -663,15 +630,11 @@ class FileResource {
   base::Time last_viewed_by_me_date_;
   base::Time shared_with_me_date_;
   bool shared_;
-  GURL download_url_;
   std::string file_extension_;
   std::string md5_checksum_;
   int64 file_size_;
   GURL alternate_link_;
-  GURL embed_link_;
   ScopedVector<ParentReference> parents_;
-  GURL thumbnail_link_;
-  GURL web_content_link_;
   std::vector<OpenWithLink> open_with_links_;
 
   DISALLOW_COPY_AND_ASSIGN(FileResource);

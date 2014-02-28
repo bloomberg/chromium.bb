@@ -323,7 +323,6 @@ scoped_ptr<google_apis::FileResource> ConvertResourceEntryToFileResource(
   file->set_shared(std::find(entry.labels().begin(), entry.labels().end(),
                              "shared") != entry.labels().end());
 
-  file->set_download_url(entry.download_url());
   if (entry.is_folder()) {
     file->set_mime_type(kDriveFolderMimeType);
   } else {
@@ -362,17 +361,8 @@ scoped_ptr<google_apis::FileResource> ConvertResourceEntryToFileResource(
         parents.push_back(parent.release());
         break;
       }
-      case Link::LINK_EDIT:
-        file->set_self_link(link.href());
-        break;
-      case Link::LINK_THUMBNAIL:
-        file->set_thumbnail_link(link.href());
-        break;
       case Link::LINK_ALTERNATE:
         file->set_alternate_link(link.href());
-        break;
-      case Link::LINK_EMBED:
-        file->set_embed_link(link.href());
         break;
       default:
         break;
@@ -431,7 +421,6 @@ ConvertFileResourceToResourceEntry(
   // This should be the url to download the file_resource.
   {
     google_apis::Content content;
-    content.set_url(file_resource.download_url());
     content.set_mime_type(file_resource.mime_type());
     entry->set_content(content);
   }
@@ -464,28 +453,10 @@ ConvertFileResourceToResourceEntry(
     link->set_href(file_resource.parents()[i]->parent_link());
     links.push_back(link);
   }
-  if (!file_resource.self_link().is_empty()) {
-    google_apis::Link* link = new google_apis::Link;
-    link->set_type(google_apis::Link::LINK_EDIT);
-    link->set_href(file_resource.self_link());
-    links.push_back(link);
-  }
-  if (!file_resource.thumbnail_link().is_empty()) {
-    google_apis::Link* link = new google_apis::Link;
-    link->set_type(google_apis::Link::LINK_THUMBNAIL);
-    link->set_href(file_resource.thumbnail_link());
-    links.push_back(link);
-  }
   if (!file_resource.alternate_link().is_empty()) {
     google_apis::Link* link = new google_apis::Link;
     link->set_type(google_apis::Link::LINK_ALTERNATE);
     link->set_href(file_resource.alternate_link());
-    links.push_back(link);
-  }
-  if (!file_resource.embed_link().is_empty()) {
-    google_apis::Link* link = new google_apis::Link;
-    link->set_type(google_apis::Link::LINK_EMBED);
-    link->set_href(file_resource.embed_link());
     links.push_back(link);
   }
   entry->set_links(links.Pass());
