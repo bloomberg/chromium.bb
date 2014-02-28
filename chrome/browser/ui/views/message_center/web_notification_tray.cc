@@ -133,14 +133,11 @@ WebNotificationTray::WebNotificationTray()
   message_center_tray_.reset(
       new MessageCenterTray(this, g_browser_process->message_center()));
   last_quiet_mode_state_ = message_center()->IsQuietMode();
-  popup_collection_.reset(new message_center::MessagePopupCollection(
-      NULL, message_center(), message_center_tray_.get(), false));
 }
 
 WebNotificationTray::~WebNotificationTray() {
   // Reset this early so that delegated events during destruction don't cause
   // problems.
-  popup_collection_.reset();
   message_center_tray_.reset();
   DestroyStatusIcon();
 }
@@ -150,13 +147,16 @@ message_center::MessageCenter* WebNotificationTray::message_center() {
 }
 
 bool WebNotificationTray::ShowPopups() {
-  popup_collection_->DoUpdateIfPossible();
+  popup_collection_.reset(new message_center::MessagePopupCollection(
+      NULL, message_center(), message_center_tray_.get(), false));
   return true;
 }
 
 void WebNotificationTray::HidePopups() {
   DCHECK(popup_collection_.get());
+
   popup_collection_->MarkAllPopupsShown();
+  popup_collection_.reset();
 }
 
 bool WebNotificationTray::ShowMessageCenter() {

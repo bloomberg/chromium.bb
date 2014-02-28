@@ -65,8 +65,6 @@ MessagePopupCollection::MessagePopupCollection(gfx::NativeView parent,
     : parent_(parent),
       message_center_(message_center),
       tray_(tray),
-      display_id_(gfx::Display::kInvalidDisplayID),
-      screen_(NULL),
       defer_counter_(0),
       latest_toast_entered_(NULL),
       user_is_closing_toasts_by_clicking_(false),
@@ -76,13 +74,34 @@ MessagePopupCollection::MessagePopupCollection(gfx::NativeView parent,
   DCHECK(message_center_);
   defer_timer_.reset(new base::OneShotTimer<MessagePopupCollection>);
   message_center_->AddObserver(this);
+  gfx::Screen* screen = NULL;
+  gfx::Display display;
+  if (!parent_) {
+    // On Win+Aura, we don't have a parent since the popups currently show up
+    // on the Windows desktop, not in the Aura/Ash desktop.  This code will
+    // display the popups on the primary display.
+    screen = gfx::Screen::GetNativeScreen();
+    display = screen->GetPrimaryDisplay();
+  } else {
+    screen = gfx::Screen::GetScreenFor(parent_);
+    display = screen->GetDisplayNearestWindow(parent_);
+  }
+  screen->AddObserver(this);
+
+  display_id_ = display.id();
+  work_area_ = display.work_area();
+  ComputePopupAlignment(work_area_, display.bounds());
+
+  // We should not update before work area and popup alignment are computed.
+  DoUpdateIfPossible();
 }
 
 MessagePopupCollection::~MessagePopupCollection() {
   weak_factory_.InvalidateWeakPtrs();
 
-  if (screen_)
-    screen_->RemoveObserver(this);
+  gfx::Screen* screen = parent_ ?
+      gfx::Screen::GetScreenFor(parent_) : gfx::Screen::GetNativeScreen();
+  screen->RemoveObserver(this);
   message_center_->RemoveObserver(this);
 
   CloseAllWidgets();
@@ -506,25 +525,6 @@ void MessagePopupCollection::DecrementDeferCounter() {
 // deferred tasks are even able to run)
 // Then, see if there is vacant space for new toasts.
 void MessagePopupCollection::DoUpdateIfPossible() {
-  if (!screen_) {
-    gfx::Display display;
-    if (!parent_) {
-      // On Win+Aura, we don't have a parent since the popups currently show up
-      // on the Windows desktop, not in the Aura/Ash desktop.  This code will
-      // display the popups on the primary display.
-      screen_ = gfx::Screen::GetNativeScreen();
-      display = screen_->GetPrimaryDisplay();
-    } else {
-      screen_ = gfx::Screen::GetScreenFor(parent_);
-      display = screen_->GetDisplayNearestWindow(parent_);
-    }
-    screen_->AddObserver(this);
-
-    display_id_ = display.id();
-    work_area_ = display.work_area();
-    ComputePopupAlignment(work_area_, display.bounds());
-  }
-
   if (defer_counter_ > 0)
     return;
 

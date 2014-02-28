@@ -35,10 +35,6 @@ class WebNotificationTrayTest;
 FORWARD_DECLARE_TEST(WebNotificationTrayTest, ManyPopupNotifications);
 }
 
-namespace gfx {
-class Screen;
-}
-
 namespace message_center {
 namespace test {
 class MessagePopupCollectionTest;
@@ -188,7 +184,6 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   Toasts toasts_;
   gfx::Rect work_area_;
   int64 display_id_;
-  gfx::Screen* screen_;
 
   // Specifies which corner of the screen popups should show up. This should
   // ideally be the same corner the notification area (systray) is at.
