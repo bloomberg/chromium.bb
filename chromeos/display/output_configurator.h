@@ -257,10 +257,10 @@ class CHROMEOS_EXPORT OutputConfigurator
   // If |background_color_argb| is non zero and there are multiple displays,
   // OutputConfigurator sets the background color of X's RootWindow to this
   // color.
-  void Start(uint32 background_color_argb);
+  void ForceInitialConfigure(uint32 background_color_argb);
 
   // Stop handling display configuration events/requests.
-  void Stop();
+  void PrepareForExit();
 
   // Called when powerd notifies us that some set of displays should be turned
   // on or off.  This requires enabling or disabling the CRTC associated with

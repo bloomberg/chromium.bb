@@ -259,7 +259,7 @@ void OutputConfigurator::Init(bool is_panel_fitting_enabled) {
     touchscreen_delegate_.reset(new TouchscreenDelegateX11());
 }
 
-void OutputConfigurator::Start(uint32 background_color_argb) {
+void OutputConfigurator::ForceInitialConfigure(uint32 background_color_argb) {
   if (!configure_display_)
     return;
 
@@ -437,15 +437,8 @@ bool OutputConfigurator::EnableOutputProtection(
   return true;
 }
 
-void OutputConfigurator::Stop() {
+void OutputConfigurator::PrepareForExit() {
   configure_display_ = false;
-
-  // Since we need to stop processing configuration updates, we can just destroy
-  // the display delegate.
-  if (native_display_delegate_) {
-    native_display_delegate_->RemoveObserver(this);
-    native_display_delegate_.reset();
-  }
 }
 
 bool OutputConfigurator::SetDisplayPower(DisplayPowerState power_state,
@@ -685,6 +678,9 @@ bool OutputConfigurator::FindMirrorMode(OutputSnapshot* internal_output,
 
 void OutputConfigurator::ConfigureOutputs() {
   configure_timer_.reset();
+
+  if (!configure_display_)
+    return;
 
   native_display_delegate_->GrabServer();
   UpdateCachedOutputs();

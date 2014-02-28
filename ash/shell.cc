@@ -604,8 +604,6 @@ Shell::Shell(ShellDelegate* delegate)
   display_manager_.reset(new internal::DisplayManager);
   display_controller_.reset(new DisplayController);
 #if defined(OS_CHROMEOS) && defined(USE_X11)
-  // TODO: Move this initialization into Shell::Init().
-  output_configurator_->Init(!gpu_support_->IsPanelFittingDisabled());
   user_metrics_recorder_.reset(new UserMetricsRecorder);
 #endif  // defined(OS_CHROMEOS)
 
@@ -766,6 +764,7 @@ void Shell::Init() {
   }
   bool display_initialized = display_manager_->InitFromCommandLine();
 #if defined(OS_CHROMEOS) && defined(USE_X11)
+  output_configurator_->Init(!gpu_support_->IsPanelFittingDisabled());
   output_configurator_animation_.reset(
       new internal::OutputConfiguratorAnimation());
   output_configurator_->AddObserver(output_configurator_animation_.get());
@@ -782,7 +781,7 @@ void Shell::Init() {
     output_configurator_->AddObserver(display_error_observer_.get());
     output_configurator_->set_state_controller(display_change_observer_.get());
     output_configurator_->set_mirroring_controller(display_manager_.get());
-    output_configurator_->Start(
+    output_configurator_->ForceInitialConfigure(
         delegate_->IsFirstRunAfterBoot() ? kChromeOsBootColor : 0);
     display_initialized = true;
   }

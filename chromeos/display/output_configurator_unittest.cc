@@ -463,7 +463,7 @@ class OutputConfiguratorTest : public testing::Test {
     EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
     configurator_.Init(false);
     EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
-    configurator_.Start(0);
+    configurator_.ForceInitialConfigure(0);
     EXPECT_EQ(
         JoinActions(
             kGrab,
@@ -997,7 +997,7 @@ TEST_F(OutputConfiguratorTest, Headless) {
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
   configurator_.Init(false);
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
-  configurator_.Start(0);
+  configurator_.ForceInitialConfigure(0);
   EXPECT_EQ(JoinActions(kGrab, kInitXRandR, kForceDPMS, kUngrab, NULL),
             log_->GetActionsAndClear());
 
@@ -1033,7 +1033,7 @@ TEST_F(OutputConfiguratorTest, StartWithTwoOutputs) {
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 
   state_controller_.set_state(ui::OUTPUT_STATE_DUAL_MIRROR);
-  configurator_.Start(0);
+  configurator_.ForceInitialConfigure(0);
   EXPECT_EQ(
       JoinActions(
           kGrab,
@@ -1056,7 +1056,7 @@ TEST_F(OutputConfiguratorTest, InvalidOutputStates) {
   UpdateOutputs(0, false);
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
   configurator_.Init(false);
-  configurator_.Start(0);
+  configurator_.ForceInitialConfigure(0);
   observer_.Reset();
   EXPECT_TRUE(configurator_.SetDisplayMode(ui::OUTPUT_STATE_HEADLESS));
   EXPECT_FALSE(configurator_.SetDisplayMode(ui::OUTPUT_STATE_SINGLE));
@@ -1090,7 +1090,7 @@ TEST_F(OutputConfiguratorTest, GetOutputStateForDisplaysWithoutId) {
   UpdateOutputs(2, false);
   configurator_.Init(false);
   state_controller_.set_state(ui::OUTPUT_STATE_DUAL_MIRROR);
-  configurator_.Start(0);
+  configurator_.ForceInitialConfigure(0);
   EXPECT_EQ(ui::OUTPUT_STATE_DUAL_EXTENDED, configurator_.output_state());
 }
 
@@ -1099,7 +1099,7 @@ TEST_F(OutputConfiguratorTest, GetOutputStateForDisplaysWithId) {
   UpdateOutputs(2, false);
   configurator_.Init(false);
   state_controller_.set_state(ui::OUTPUT_STATE_DUAL_MIRROR);
-  configurator_.Start(0);
+  configurator_.ForceInitialConfigure(0);
   EXPECT_EQ(ui::OUTPUT_STATE_DUAL_MIRROR, configurator_.output_state());
 }
 
@@ -1140,7 +1140,7 @@ TEST_F(OutputConfiguratorTest, PanelFitting) {
   UpdateOutputs(2, false);
   state_controller_.set_state(ui::OUTPUT_STATE_DUAL_MIRROR);
   configurator_.Init(true /* is_panel_fitting_enabled */);
-  configurator_.Start(0);
+  configurator_.ForceInitialConfigure(0);
   EXPECT_EQ(ui::OUTPUT_STATE_DUAL_MIRROR, configurator_.output_state());
   EXPECT_EQ(
       JoinActions(
@@ -1179,7 +1179,7 @@ TEST_F(OutputConfiguratorTest, PanelFitting) {
 
 TEST_F(OutputConfiguratorTest, OutputProtection) {
   configurator_.Init(false);
-  configurator_.Start(0);
+  configurator_.ForceInitialConfigure(0);
   EXPECT_NE(kNoActions, log_->GetActionsAndClear());
 
   OutputConfigurator::OutputProtectionClientId id =
@@ -1242,7 +1242,7 @@ TEST_F(OutputConfiguratorTest, OutputProtectionTwoClients) {
   EXPECT_NE(client1, client2);
 
   configurator_.Init(false);
-  configurator_.Start(0);
+  configurator_.ForceInitialConfigure(0);
   UpdateOutputs(2, true);
   EXPECT_NE(kNoActions, log_->GetActionsAndClear());
 
@@ -1290,7 +1290,7 @@ TEST_F(OutputConfiguratorTest, CTMForMultiScreens) {
   UpdateOutputs(2, false);
   configurator_.Init(false);
   state_controller_.set_state(ui::OUTPUT_STATE_DUAL_EXTENDED);
-  configurator_.Start(0);
+  configurator_.ForceInitialConfigure(0);
 
   const int kDualHeight =
       kSmallModeHeight + OutputConfigurator::kVerticalGap + kBigModeHeight;
