@@ -324,7 +324,10 @@ class ArchivingStageMixin(object):
         metadata. If None, no such status information will be included. It not
         None, this should be a derivative of MasterSlaveSyncCompletionStage.
     """
-    config = config or self._run.config
+    builder_run = self._run
+    build_root = self._build_root
+    config = config or builder_run.config
+
 
     start_time = results_lib.Results.start_time
     current_time = datetime.datetime.now()
@@ -333,10 +336,10 @@ class ArchivingStageMixin(object):
     duration = '%s' % (current_time - start_time,)
 
     sdk_verinfo = cros_build_lib.LoadKeyValueFile(
-        os.path.join(self._build_root, constants.SDK_VERSION_FILE),
+        os.path.join(build_root, constants.SDK_VERSION_FILE),
         ignore_missing=True)
-    verinfo = self._run.GetVersionInfo(self._build_root)
-    platform_tag = getattr(self._run.attrs, 'release_tag')
+    verinfo = builder_run.GetVersionInfo(build_root)
+    platform_tag = getattr(builder_run.attrs, 'release_tag')
     if not platform_tag:
       platform_tag = verinfo.VersionString()
     metadata = {
@@ -346,7 +349,7 @@ class ArchivingStageMixin(object):
         'bot-config': config['name'],
         'bot-hostname': cros_build_lib.GetHostName(fully_qualified=True),
         'boards': config['boards'],
-        'build-number': self._run.buildnumber,
+        'build-number': builder_run.buildnumber,
         'builder-name': os.environ.get('BUILDBOT_BUILDERNAME', ''),
         'status': {
             'current-time': current_time_stamp,
@@ -359,8 +362,8 @@ class ArchivingStageMixin(object):
             'duration': duration,
         },
         'version': {
-            'chrome': self._run.attrs.chrome_version,
-            'full': self._run.GetVersion(),
+            'chrome': builder_run.attrs.chrome_version,
+            'full': builder_run.GetVersion(),
             'milestone': verinfo.chrome_branch,
             'platform': platform_tag,
         },
@@ -370,7 +373,7 @@ class ArchivingStageMixin(object):
     }
     if len(config['boards']) == 1:
       toolchains = toolchain.GetToolchainsForBoard(config['boards'][0],
-                                                   buildroot=self._build_root)
+                                                   buildroot=build_root)
       metadata['toolchain-tuple'] = (
           toolchain.FilterToolchains(toolchains, 'default', True).keys() +
           toolchain.FilterToolchains(toolchains, 'default', False).keys())
@@ -389,7 +392,7 @@ class ArchivingStageMixin(object):
           'summary': str(entry.result),
           'duration': '%s' % timestr,
           'description': entry.description,
-          'log': self.ConstructDashboardURL(stage=entry.name),
+          'log': builder_run.ConstructDashboardURL(stage=entry.name),
       })
 
     commit_queue_stages = (CommitQueueSyncStage, PreCQSyncStage)
