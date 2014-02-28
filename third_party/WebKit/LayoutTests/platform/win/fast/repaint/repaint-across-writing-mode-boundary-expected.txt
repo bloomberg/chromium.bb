@@ -7,6 +7,6 @@
 第二段落 paragraph 2
 
 (repaint rects
-  (rect 548 191 22 35)
+  (rect 548 191 23 35)
 )
 
