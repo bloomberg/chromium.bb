@@ -25,7 +25,7 @@
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/encryptor/encryptor.h"
+#include "components/encryptor/os_crypt.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -504,10 +504,10 @@ class GCMProfileServiceTest : public testing::Test {
     test_user_manager_.reset(new chromeos::ScopedTestUserManager());
 #endif
 
-    // Encryptor ends up needing access to the keychain on OS X. So use the mock
+    // OSCrypt ends up needing access to the keychain on OS X. So use the mock
     // keychain to prevent prompts.
 #if defined(OS_MACOSX)
-    Encryptor::UseMockKeychain(true);
+    OSCrypt::UseMockKeychain(true);
 #endif
 
     // Create a main profile consumer.

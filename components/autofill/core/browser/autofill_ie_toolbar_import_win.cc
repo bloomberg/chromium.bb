@@ -24,7 +24,7 @@
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/phone_number.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
-#include "components/encryptor/encryptor.h"
+#include "components/encryptor/os_crypt.h"
 
 using base::win::RegKey;
 
@@ -86,7 +86,7 @@ base::string16 ReadAndDecryptValue(const RegKey& key,
   result = key.ReadValue(value_name, &(data[0]), &data_size, &data_type);
   if (result == ERROR_SUCCESS) {
     std::string out_data;
-    if (Encryptor::DecryptString(data, &out_data)) {
+    if (OSCrypt::DecryptString(data, &out_data)) {
       // The actual data is in UTF16 already.
       if (!(out_data.size() & 1) && (out_data.size() > 2) &&
           !out_data[out_data.size() - 1] && !out_data[out_data.size() - 2]) {

@@ -10,7 +10,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
-#include "components/encryptor/encryptor.h"
+#include "components/encryptor/os_crypt.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::win::RegKey;
@@ -92,7 +92,7 @@ void EncryptAndWrite(RegKey* key, const ValueDescription* value) {
   memcpy(&data[0], value->value, data_size);
 
   std::string encrypted_data;
-  Encryptor::EncryptString(data, &encrypted_data);
+  OSCrypt::EncryptString(data, &encrypted_data);
   EXPECT_EQ(ERROR_SUCCESS, key->WriteValue(value->value_name,
       &encrypted_data[0], encrypted_data.size(), REG_BINARY));
 }

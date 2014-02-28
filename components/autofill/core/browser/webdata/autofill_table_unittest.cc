@@ -19,7 +19,7 @@
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/common/form_field_data.h"
-#include "components/encryptor/encryptor.h"
+#include "components/encryptor/os_crypt.h"
 #include "components/webdata/common/web_database.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -118,7 +118,7 @@ class AutofillTableTest : public testing::Test {
  protected:
   virtual void SetUp() {
 #if defined(OS_MACOSX)
-    Encryptor::UseMockKeychain(true);
+    OSCrypt::UseMockKeychain(true);
 #endif
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     file_ = temp_dir_.path().AppendASCII("TestWebDatabase");

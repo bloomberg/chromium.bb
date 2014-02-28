@@ -9,7 +9,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/simple_test_clock.h"
-#include "components/encryptor/encryptor.h"
+#include "components/encryptor/os_crypt.h"
 #include "google_apis/gcm/base/mcs_util.h"
 #include "google_apis/gcm/engine/fake_connection_factory.h"
 #include "google_apis/gcm/engine/fake_connection_handler.h"
@@ -146,7 +146,7 @@ MCSClientTest::MCSClientTest()
 
   // On OSX, prevent the Keychain permissions popup during unit tests.
 #if defined(OS_MACOSX)
-  Encryptor::UseMockKeychain(true);
+  OSCrypt::UseMockKeychain(true);
 #endif
 
   // Advance the clock to a non-zero time.

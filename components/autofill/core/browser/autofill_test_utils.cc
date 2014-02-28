@@ -16,7 +16,7 @@
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
-#include "components/encryptor/encryptor.h"
+#include "components/encryptor/os_crypt.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
@@ -207,7 +207,7 @@ void SetCreditCardInfo(CreditCard* credit_card,
 void DisableSystemServices(content::BrowserContext* browser_context) {
   // Use a mock Keychain rather than the OS one to store credit card data.
 #if defined(OS_MACOSX)
-  Encryptor::UseMockKeychain(true);
+  OSCrypt::UseMockKeychain(true);
 #endif
 
   // Disable auxiliary profiles for unit testing.  These reach out to system

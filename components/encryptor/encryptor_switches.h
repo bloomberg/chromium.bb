@@ -7,7 +7,7 @@
 #ifndef COMPONENTS_ENCRYPTOR__ENCRYPTOR_SWITCHES_H_
 #define COMPONENTS_ENCRYPTOR__ENCRYPTOR_SWITCHES_H_
 
-#include "base/basictypes.h"
+#include "build/build_config.h"
 
 namespace encryptor {
 namespace switches {

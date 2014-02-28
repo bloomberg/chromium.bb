@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/encryptor/encryptor_password_mac.h"
+#include "components/encryptor/keychain_password_mac.h"
 
 #import <Security/Security.h>
 
@@ -47,7 +47,7 @@ std::string AddRandomPasswordToKeychain(const AppleKeychain& keychain,
 
 }  // namespace
 
-std::string EncryptorPassword::GetEncryptorPassword() const {
+std::string KeychainPassword::GetPassword() const {
   // These two strings ARE indeed user facing.  But they are used to access
   // the encryption keyword.  So as to not lose encrypted data when system
   // locale changes we DO NOT LOCALIZE.

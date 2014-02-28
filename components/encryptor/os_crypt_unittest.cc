@@ -2,31 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/encryptor/encryptor.h"
+#include "components/encryptor/os_crypt.h"
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-class EncryptorTest : public testing::Test {
+class OSCryptTest : public testing::Test {
  public:
-  EncryptorTest() {}
+  OSCryptTest() {}
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
 #if defined(OS_MACOSX)
-    Encryptor::UseMockKeychain(true);
+    OSCrypt::UseMockKeychain(true);
 #endif
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(EncryptorTest);
+  DISALLOW_COPY_AND_ASSIGN(OSCryptTest);
 };
 
-TEST_F(EncryptorTest, String16EncryptionDecryption) {
+TEST_F(OSCryptTest, String16EncryptionDecryption) {
   base::string16 plaintext;
   base::string16 result;
   std::string utf8_plaintext;
@@ -34,21 +35,21 @@ TEST_F(EncryptorTest, String16EncryptionDecryption) {
   std::string ciphertext;
 
   // Test borderline cases (empty strings).
-  EXPECT_TRUE(Encryptor::EncryptString16(plaintext, &ciphertext));
-  EXPECT_TRUE(Encryptor::DecryptString16(ciphertext, &result));
+  EXPECT_TRUE(OSCrypt::EncryptString16(plaintext, &ciphertext));
+  EXPECT_TRUE(OSCrypt::DecryptString16(ciphertext, &result));
   EXPECT_EQ(plaintext, result);
 
   // Test a simple string.
   plaintext = base::ASCIIToUTF16("hello");
-  EXPECT_TRUE(Encryptor::EncryptString16(plaintext, &ciphertext));
-  EXPECT_TRUE(Encryptor::DecryptString16(ciphertext, &result));
+  EXPECT_TRUE(OSCrypt::EncryptString16(plaintext, &ciphertext));
+  EXPECT_TRUE(OSCrypt::DecryptString16(ciphertext, &result));
   EXPECT_EQ(plaintext, result);
 
   // Test a 16-byte aligned string.  This previously hit a boundary error in
-  // base::Encryptor::Crypt() on Mac.
+  // base::OSCrypt::Crypt() on Mac.
   plaintext = base::ASCIIToUTF16("1234567890123456");
-  EXPECT_TRUE(Encryptor::EncryptString16(plaintext, &ciphertext));
-  EXPECT_TRUE(Encryptor::DecryptString16(ciphertext, &result));
+  EXPECT_TRUE(OSCrypt::EncryptString16(plaintext, &ciphertext));
+  EXPECT_TRUE(OSCrypt::DecryptString16(ciphertext, &result));
   EXPECT_EQ(plaintext, result);
 
   // Test Unicode.
@@ -61,81 +62,81 @@ TEST_F(EncryptorTest, String16EncryptionDecryption) {
   plaintext = wchars;
   utf8_plaintext = base::UTF16ToUTF8(plaintext);
   EXPECT_EQ(plaintext, base::UTF8ToUTF16(utf8_plaintext));
-  EXPECT_TRUE(Encryptor::EncryptString16(plaintext, &ciphertext));
-  EXPECT_TRUE(Encryptor::DecryptString16(ciphertext, &result));
+  EXPECT_TRUE(OSCrypt::EncryptString16(plaintext, &ciphertext));
+  EXPECT_TRUE(OSCrypt::DecryptString16(ciphertext, &result));
   EXPECT_EQ(plaintext, result);
-  EXPECT_TRUE(Encryptor::DecryptString(ciphertext, &utf8_result));
+  EXPECT_TRUE(OSCrypt::DecryptString(ciphertext, &utf8_result));
   EXPECT_EQ(utf8_plaintext, base::UTF16ToUTF8(result));
 
-  EXPECT_TRUE(Encryptor::EncryptString(utf8_plaintext, &ciphertext));
-  EXPECT_TRUE(Encryptor::DecryptString16(ciphertext, &result));
+  EXPECT_TRUE(OSCrypt::EncryptString(utf8_plaintext, &ciphertext));
+  EXPECT_TRUE(OSCrypt::DecryptString16(ciphertext, &result));
   EXPECT_EQ(plaintext, result);
-  EXPECT_TRUE(Encryptor::DecryptString(ciphertext, &utf8_result));
+  EXPECT_TRUE(OSCrypt::DecryptString(ciphertext, &utf8_result));
   EXPECT_EQ(utf8_plaintext, base::UTF16ToUTF8(result));
 }
 
-TEST_F(EncryptorTest, EncryptionDecryption) {
+TEST_F(OSCryptTest, EncryptionDecryption) {
   std::string plaintext;
   std::string result;
   std::string ciphertext;
 
   // Test borderline cases (empty strings).
-  ASSERT_TRUE(Encryptor::EncryptString(plaintext, &ciphertext));
-  ASSERT_TRUE(Encryptor::DecryptString(ciphertext, &result));
+  ASSERT_TRUE(OSCrypt::EncryptString(plaintext, &ciphertext));
+  ASSERT_TRUE(OSCrypt::DecryptString(ciphertext, &result));
   EXPECT_EQ(plaintext, result);
 
   // Test a simple string.
   plaintext = "hello";
-  ASSERT_TRUE(Encryptor::EncryptString(plaintext, &ciphertext));
-  ASSERT_TRUE(Encryptor::DecryptString(ciphertext, &result));
+  ASSERT_TRUE(OSCrypt::EncryptString(plaintext, &ciphertext));
+  ASSERT_TRUE(OSCrypt::DecryptString(ciphertext, &result));
   EXPECT_EQ(plaintext, result);
 
   // Make sure it null terminates.
   plaintext.assign("hello", 3);
-  ASSERT_TRUE(Encryptor::EncryptString(plaintext, &ciphertext));
-  ASSERT_TRUE(Encryptor::DecryptString(ciphertext, &result));
+  ASSERT_TRUE(OSCrypt::EncryptString(plaintext, &ciphertext));
+  ASSERT_TRUE(OSCrypt::DecryptString(ciphertext, &result));
   EXPECT_EQ(plaintext, "hel");
 }
 
-TEST_F(EncryptorTest, CypherTextDiffers) {
+TEST_F(OSCryptTest, CypherTextDiffers) {
   std::string plaintext;
   std::string result;
   std::string ciphertext;
 
   // Test borderline cases (empty strings).
-  ASSERT_TRUE(Encryptor::EncryptString(plaintext, &ciphertext));
-  ASSERT_TRUE(Encryptor::DecryptString(ciphertext, &result));
+  ASSERT_TRUE(OSCrypt::EncryptString(plaintext, &ciphertext));
+  ASSERT_TRUE(OSCrypt::DecryptString(ciphertext, &result));
   // |cyphertext| is empty on the Mac, different on Windows.
   EXPECT_TRUE(ciphertext.empty() || plaintext != ciphertext);
   EXPECT_EQ(plaintext, result);
 
   // Test a simple string.
   plaintext = "hello";
-  ASSERT_TRUE(Encryptor::EncryptString(plaintext, &ciphertext));
-  ASSERT_TRUE(Encryptor::DecryptString(ciphertext, &result));
+  ASSERT_TRUE(OSCrypt::EncryptString(plaintext, &ciphertext));
+  ASSERT_TRUE(OSCrypt::DecryptString(ciphertext, &result));
   EXPECT_NE(plaintext, ciphertext);
   EXPECT_EQ(plaintext, result);
 
   // Make sure it null terminates.
   plaintext.assign("hello", 3);
-  ASSERT_TRUE(Encryptor::EncryptString(plaintext, &ciphertext));
-  ASSERT_TRUE(Encryptor::DecryptString(ciphertext, &result));
+  ASSERT_TRUE(OSCrypt::EncryptString(plaintext, &ciphertext));
+  ASSERT_TRUE(OSCrypt::DecryptString(ciphertext, &result));
   EXPECT_NE(plaintext, ciphertext);
   EXPECT_EQ(result, "hel");
 }
 
-TEST_F(EncryptorTest, DecryptError) {
+TEST_F(OSCryptTest, DecryptError) {
   std::string plaintext;
   std::string result;
   std::string ciphertext;
 
   // Test a simple string, messing with ciphertext prior to decrypting.
   plaintext = "hello";
-  ASSERT_TRUE(Encryptor::EncryptString(plaintext, &ciphertext));
+  ASSERT_TRUE(OSCrypt::EncryptString(plaintext, &ciphertext));
   EXPECT_NE(plaintext, ciphertext);
   ASSERT_LT(4UL, ciphertext.size());
   ciphertext[3] = ciphertext[3] + 1;
-  EXPECT_FALSE(Encryptor::DecryptString(ciphertext, &result));
+  EXPECT_FALSE(OSCrypt::DecryptString(ciphertext, &result));
   EXPECT_NE(plaintext, result);
   EXPECT_TRUE(result.empty());
 }

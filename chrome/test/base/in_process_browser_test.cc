@@ -41,7 +41,7 @@
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/encryptor/encryptor.h"
+#include "components/encryptor/os_crypt.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/test/browser_test_utils.h"
@@ -188,7 +188,7 @@ void InProcessBrowserTest::SetUp() {
   // Always use the MockKeychain if OS encription is used (which is when
   // anything sensitive gets stored, including Cookies).  Without this,
   // many tests will hang waiting for a user to approve KeyChain access.
-  Encryptor::UseMockKeychain(true);
+  OSCrypt::UseMockKeychain(true);
 #endif
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)

@@ -4,7 +4,7 @@
 
 #include "components/sync_driver/system_encryptor.h"
 
-#include "components/encryptor/encryptor.h"
+#include "components/encryptor/os_crypt.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {
@@ -22,7 +22,7 @@ TEST_F(SystemEncryptorTest, EncryptDecrypt) {
 #if defined(OS_MACOSX)
   // SystemEncryptor ends up needing access to the keychain on OS X,
   // so use the mock keychain to prevent prompts.
-  ::Encryptor::UseMockKeychain(true);
+  ::OSCrypt::UseMockKeychain(true);
 #endif
   std::string ciphertext;
   EXPECT_TRUE(encryptor_.EncryptString(kPlaintext, &ciphertext));

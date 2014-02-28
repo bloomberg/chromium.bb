@@ -86,9 +86,9 @@
             'variations/variations_seed_processor_unittest.cc',
             'variations/variations_seed_simulator_unittest.cc',
             'visitedlink/test/visitedlink_unittest.cc',
-            'encryptor/encryptor_password_mac_unittest.cc',
-            'encryptor/encryptor_unittest.cc',
+            'encryptor/keychain_password_mac_unittest.mm',
             'encryptor/ie7_password_unittest_win.cc',
+            'encryptor/os_crypt_unittest.cc',
             'web_modal/web_contents_modal_dialog_manager_unittest.cc',
           ],
           'include_dirs': [

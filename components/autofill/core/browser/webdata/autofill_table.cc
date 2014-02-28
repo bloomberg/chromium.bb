@@ -26,7 +26,7 @@
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/common/form_field_data.h"
-#include "components/encryptor/encryptor.h"
+#include "components/encryptor/os_crypt.h"
 #include "components/webdata/common/web_database.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
@@ -109,8 +109,8 @@ void BindCreditCardToStatement(const CreditCard& credit_card,
   s->BindString16(index++, GetInfo(credit_card, CREDIT_CARD_EXP_4_DIGIT_YEAR));
 
   std::string encrypted_data;
-  Encryptor::EncryptString16(credit_card.GetRawInfo(CREDIT_CARD_NUMBER),
-                             &encrypted_data);
+  OSCrypt::EncryptString16(credit_card.GetRawInfo(CREDIT_CARD_NUMBER),
+                           &encrypted_data);
   s->BindBlob(index++, encrypted_data.data(),
               static_cast<int>(encrypted_data.length()));
 
@@ -135,7 +135,7 @@ scoped_ptr<CreditCard> CreditCardFromStatement(const sql::Statement& s) {
     std::string encrypted_number;
     encrypted_number.resize(encrypted_number_len);
     memcpy(&encrypted_number[0], s.ColumnBlob(index++), encrypted_number_len);
-    Encryptor::DecryptString16(encrypted_number, &credit_card_number);
+    OSCrypt::DecryptString16(encrypted_number, &credit_card_number);
   } else {
     index++;
   }

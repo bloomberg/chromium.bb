@@ -2,21 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/encryptor/encryptor.h"
+#include "components/encryptor/os_crypt.h"
 
 #include <windows.h>
 #include <wincrypt.h>
+
 #include "base/strings/utf_string_conversions.h"
 
 #pragma comment(lib, "crypt32.lib")
 
-bool Encryptor::EncryptString16(const base::string16& plaintext,
-                                std::string* ciphertext) {
+bool OSCrypt::EncryptString16(const base::string16& plaintext,
+                              std::string* ciphertext) {
   return EncryptString(base::UTF16ToUTF8(plaintext), ciphertext);
 }
 
-bool Encryptor::DecryptString16(const std::string& ciphertext,
-                                base::string16* plaintext) {
+bool OSCrypt::DecryptString16(const std::string& ciphertext,
+                              base::string16* plaintext) {
   std::string utf8;
   if (!DecryptString(ciphertext, &utf8))
     return false;
@@ -25,8 +26,8 @@ bool Encryptor::DecryptString16(const std::string& ciphertext,
   return true;
 }
 
-bool Encryptor::EncryptString(const std::string& plaintext,
-                              std::string* ciphertext) {
+bool OSCrypt::EncryptString(const std::string& plaintext,
+                            std::string* ciphertext) {
   DATA_BLOB input;
   input.pbData = const_cast<BYTE*>(
       reinterpret_cast<const BYTE*>(plaintext.data()));
@@ -46,8 +47,8 @@ bool Encryptor::EncryptString(const std::string& plaintext,
   return true;
 }
 
-bool Encryptor::DecryptString(const std::string& ciphertext,
-                              std::string* plaintext) {
+bool OSCrypt::DecryptString(const std::string& ciphertext,
+                            std::string* plaintext) {
   DATA_BLOB input;
   input.pbData = const_cast<BYTE*>(
       reinterpret_cast<const BYTE*>(ciphertext.data()));

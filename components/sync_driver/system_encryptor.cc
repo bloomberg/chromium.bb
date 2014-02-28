@@ -4,7 +4,7 @@
 
 #include "components/sync_driver/system_encryptor.h"
 
-#include "components/encryptor/encryptor.h"
+#include "components/encryptor/os_crypt.h"
 
 namespace browser_sync {
 
@@ -12,12 +12,12 @@ SystemEncryptor::~SystemEncryptor() {}
 
 bool SystemEncryptor::EncryptString(const std::string& plaintext,
                                     std::string* ciphertext) {
-  return ::Encryptor::EncryptString(plaintext, ciphertext);
+  return ::OSCrypt::EncryptString(plaintext, ciphertext);
 }
 
 bool SystemEncryptor::DecryptString(const std::string& ciphertext,
                                     std::string* plaintext) {
-  return ::Encryptor::DecryptString(ciphertext, plaintext);
+  return ::OSCrypt::DecryptString(ciphertext, plaintext);
 }
 
 }  // namespace browser_sync

@@ -14,7 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
-#include "components/encryptor/encryptor.h"
+#include "components/encryptor/os_crypt.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "crypto/random.h"
 #include "crypto/secure_util.h"
@@ -62,7 +62,7 @@ std::string EncodePasswordHashRecord(const std::string& record,
 
   // Encrypt the hash using the OS account-password protection (if available).
   std::string encoded;
-  const bool success = Encryptor::EncryptString(record, &encoded);
+  const bool success = OSCrypt::EncryptString(record, &encoded);
   DCHECK(success);
 
   // Convert binary record to text for preference database.
@@ -91,7 +91,7 @@ bool DecodePasswordHashRecord(const std::string& encoded,
     return false;
 
   // Decrypt the record using the OS account-password protection (if available).
-  return Encryptor::DecryptString(unbase64, decoded);
+  return OSCrypt::DecryptString(unbase64, decoded);
 }
 
 }  // namespace

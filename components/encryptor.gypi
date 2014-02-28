@@ -15,29 +15,29 @@
         '../crypto/crypto.gyp:crypto',
       ],
       'sources': [
-        'encryptor/encryptor.h',
-        'encryptor/encryptor_mac.mm',
-        'encryptor/encryptor_password_mac.h',
-        'encryptor/encryptor_password_mac.mm',
-        'encryptor/encryptor_posix.cc',
         'encryptor/encryptor_switches.cc',
         'encryptor/encryptor_switches.h',
-        'encryptor/encryptor_win.cc',
         'encryptor/ie7_password_win.cc',
         'encryptor/ie7_password_win.h',
+        'encryptor/keychain_password_mac.h',
+        'encryptor/keychain_password_mac.mm',
+        'encryptor/os_crypt.h',
+        'encryptor/os_crypt_mac.mm',
+        'encryptor/os_crypt_posix.cc',
+        'encryptor/os_crypt_win.cc',
       ],
       'conditions': [
         ['OS=="mac"', {
           'sources!': [
-            'encryptor/encryptor_posix.cc',
+            'encryptor/os_crypt_posix.cc',
           ],
         }],
       ],
       'target_conditions': [
         ['OS=="ios"', {
           'sources/': [
-            ['include', '^encryptor/encryptor_mac\\.mm$'],
-            ['include', '^encryptor/encryptor_password_mac\\.mm$'],
+            ['include', '^encryptor/keychain_password_mac\\.mm$'],
+            ['include', '^encryptor/os_crypt_mac\\.mm$'],
           ],
         }],
       ],

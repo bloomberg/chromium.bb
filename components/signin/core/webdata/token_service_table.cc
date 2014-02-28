@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/logging.h"
-#include "components/encryptor/encryptor.h"
+#include "components/encryptor/os_crypt.h"
 #include "components/webdata/common/web_database.h"
 #include "sql/statement.h"
 
@@ -72,7 +72,7 @@ bool TokenServiceTable::RemoveTokenForService(const std::string& service) {
 bool TokenServiceTable::SetTokenForService(const std::string& service,
                                            const std::string& token) {
   std::string encrypted_token;
-  bool encrypted = Encryptor::EncryptString(token, &encrypted_token);
+  bool encrypted = OSCrypt::EncryptString(token, &encrypted_token);
   if (!encrypted) {
     return false;
   }
@@ -105,7 +105,7 @@ bool TokenServiceTable::GetAllTokens(
     bool entry_ok = !service.empty() &&
                     s.ColumnBlobAsString(1, &encrypted_token);
     if (entry_ok) {
-      Encryptor::DecryptString(encrypted_token, &decrypted_token);
+      OSCrypt::DecryptString(encrypted_token, &decrypted_token);
       (*tokens)[service] = decrypted_token;
     } else {
       NOTREACHED();

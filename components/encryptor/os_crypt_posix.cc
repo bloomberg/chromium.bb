@@ -2,21 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/encryptor/encryptor.h"
+#include "components/encryptor/os_crypt.h"
 
-#include <CommonCrypto/CommonCryptor.h>  // for kCCBlockSizeAES128
-
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/encryptor/encryptor_password_mac.h"
-#include "components/encryptor/encryptor_switches.h"
-#include "crypto/apple_keychain.h"
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
-
-using crypto::AppleKeychain;
 
 namespace {
 
@@ -27,37 +19,25 @@ const char kSalt[] = "saltysalt";
 const size_t kDerivedKeySizeInBits = 128;
 
 // Constant for Symmetic key derivation.
-const size_t kEncryptionIterations = 1003;
+const size_t kEncryptionIterations = 1;
 
-// TODO(dhollowa): Refactor to allow dependency injection of Keychain.
-static bool use_mock_keychain = false;
+// Size of initialization vector for AES 128-bit.
+const size_t kIVBlockSizeAES128 = 16;
 
-// Prefix for cypher text returned by current encryption version.  We prefix
-// the cypher text with this string so that future data migration can detect
-// this and migrate to different encryption without data loss.
-const char kEncryptionVersionPrefix[] = "v10";
+// Prefix for cypher text returned by obfuscation version.  We prefix the
+// cyphertext with this string so that future data migration can detect
+// this and migrate to full encryption without data loss.
+const char kObfuscationPrefix[] = "v10";
 
-// Generates a newly allocated SymmetricKey object based on the password found
-// in the Keychain.  The generated key is for AES encryption.  Ownership of the
-// key is passed to the caller.  Returns NULL key in the case password access
-// is denied or key generation error occurs.
+// Generates a newly allocated SymmetricKey object based a hard-coded password.
+// Ownership of the key is passed to the caller.  Returns NULL key if a key
+// generation error occurs.
 crypto::SymmetricKey* GetEncryptionKey() {
-  static bool mock_keychain_command_line_flag =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          encryptor::switches::kUseMockKeychain);
-
-  std::string password;
-  if (use_mock_keychain || mock_keychain_command_line_flag) {
-    password = "mock_password";
-  } else {
-    AppleKeychain keychain;
-    EncryptorPassword encryptor_password(keychain);
-    password = encryptor_password.GetEncryptorPassword();
-  }
-
-  if (password.empty())
-    return NULL;
-
+  // We currently "obfuscate" by encrypting and decrypting with hard-coded
+  // password.  We need to improve this password situation by moving a secure
+  // password into a system-level key store.
+  // http://crbug.com/25404 and http://crbug.com/49115
+  std::string password = "peanuts";
   std::string salt(kSalt);
 
   // Create an encryption key from our password and salt.
@@ -74,13 +54,13 @@ crypto::SymmetricKey* GetEncryptionKey() {
 
 }  // namespace
 
-bool Encryptor::EncryptString16(const base::string16& plaintext,
-                                std::string* ciphertext) {
+bool OSCrypt::EncryptString16(const base::string16& plaintext,
+                              std::string* ciphertext) {
   return EncryptString(base::UTF16ToUTF8(plaintext), ciphertext);
 }
 
-bool Encryptor::DecryptString16(const std::string& ciphertext,
-                                base::string16* plaintext) {
+bool OSCrypt::DecryptString16(const std::string& ciphertext,
+                              base::string16* plaintext) {
   std::string utf8;
   if (!DecryptString(ciphertext, &utf8))
     return false;
@@ -89,8 +69,13 @@ bool Encryptor::DecryptString16(const std::string& ciphertext,
   return true;
 }
 
-bool Encryptor::EncryptString(const std::string& plaintext,
-                              std::string* ciphertext) {
+bool OSCrypt::EncryptString(const std::string& plaintext,
+                            std::string* ciphertext) {
+  // This currently "obfuscates" by encrypting with hard-coded password.
+  // We need to improve this password situation by moving a secure password
+  // into a system-level key store.
+  // http://crbug.com/25404 and http://crbug.com/49115
+
   if (plaintext.empty()) {
     *ciphertext = std::string();
     return true;
@@ -100,7 +85,7 @@ bool Encryptor::EncryptString(const std::string& plaintext,
   if (!encryption_key.get())
     return false;
 
-  std::string iv(kCCBlockSizeAES128, ' ');
+  std::string iv(kIVBlockSizeAES128, ' ');
   crypto::Encryptor encryptor;
   if (!encryptor.Init(encryption_key.get(), crypto::Encryptor::CBC, iv))
     return false;
@@ -109,12 +94,17 @@ bool Encryptor::EncryptString(const std::string& plaintext,
     return false;
 
   // Prefix the cypher text with version information.
-  ciphertext->insert(0, kEncryptionVersionPrefix);
+  ciphertext->insert(0, kObfuscationPrefix);
   return true;
 }
 
-bool Encryptor::DecryptString(const std::string& ciphertext,
-                              std::string* plaintext) {
+bool OSCrypt::DecryptString(const std::string& ciphertext,
+                            std::string* plaintext) {
+  // This currently "obfuscates" by encrypting with hard-coded password.
+  // We need to improve this password situation by moving a secure password
+  // into a system-level key store.
+  // http://crbug.com/25404 and http://crbug.com/49115
+
   if (ciphertext.empty()) {
     *plaintext = std::string();
     return true;
@@ -125,20 +115,19 @@ bool Encryptor::DecryptString(const std::string& ciphertext,
   // old data saved as clear text and we'll return it directly.
   // Credit card numbers are current legacy data, so false match with prefix
   // won't happen.
-  if (ciphertext.find(kEncryptionVersionPrefix) != 0) {
+  if (ciphertext.find(kObfuscationPrefix) != 0) {
     *plaintext = ciphertext;
     return true;
   }
 
   // Strip off the versioning prefix before decrypting.
-  std::string raw_ciphertext =
-      ciphertext.substr(strlen(kEncryptionVersionPrefix));
+  std::string raw_ciphertext = ciphertext.substr(strlen(kObfuscationPrefix));
 
   scoped_ptr<crypto::SymmetricKey> encryption_key(GetEncryptionKey());
   if (!encryption_key.get())
     return false;
 
-  std::string iv(kCCBlockSizeAES128, ' ');
+  std::string iv(kIVBlockSizeAES128, ' ');
   crypto::Encryptor encryptor;
   if (!encryptor.Init(encryption_key.get(), crypto::Encryptor::CBC, iv))
     return false;
@@ -148,8 +137,3 @@ bool Encryptor::DecryptString(const std::string& ciphertext,
 
   return true;
 }
-
-void Encryptor::UseMockKeychain(bool use_mock) {
-  use_mock_keychain = use_mock;
-}
-

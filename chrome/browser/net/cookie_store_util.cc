@@ -16,7 +16,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/encryptor/encryptor.h"
+#include "components/encryptor/os_crypt.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_crypto_delegate.h"
 #include "content/public/browser/cookie_store_factory.h"
@@ -107,7 +107,7 @@ namespace {
 // because ChromeOS and Android already protect the entire profile contents.
 //
 // TODO(bcwhite): Enable on MACOSX -- requires all Cookie tests to call
-// Encryptor::UseMockKeychain or will hang waiting for user input.
+// OSCrypt::UseMockKeychain or will hang waiting for user input.
 class CookieOSCryptoDelegate : public content::CookieCryptoDelegate {
  public:
   virtual bool EncryptString(const std::string& plaintext,
@@ -118,12 +118,12 @@ class CookieOSCryptoDelegate : public content::CookieCryptoDelegate {
 
 bool CookieOSCryptoDelegate::EncryptString(const std::string& plaintext,
                                            std::string* ciphertext) {
-  return Encryptor::EncryptString(plaintext, ciphertext);
+  return OSCrypt::EncryptString(plaintext, ciphertext);
 }
 
 bool CookieOSCryptoDelegate::DecryptString(const std::string& ciphertext,
                                            std::string* plaintext) {
-  return Encryptor::DecryptString(ciphertext, plaintext);
+  return OSCrypt::DecryptString(ciphertext, plaintext);
 }
 
 // Using a LazyInstance is safe here because this class is stateless and

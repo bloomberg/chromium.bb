@@ -12,7 +12,7 @@
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "components/encryptor/encryptor.h"
+#include "components/encryptor/os_crypt.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,7 +29,7 @@ TEST(LocalAuthTest, SetAndCheckCredentials) {
   EXPECT_EQ("", cache.GetLocalAuthCredentialsOfProfileAtIndex(0));
 
 #if defined(OS_MACOSX)
-    Encryptor::UseMockKeychain(true);
+  OSCrypt::UseMockKeychain(true);
 #endif
 
   std::string password("Some Password");

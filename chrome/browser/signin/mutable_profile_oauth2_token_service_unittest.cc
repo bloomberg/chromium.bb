@@ -18,7 +18,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_MACOSX)
-#include "components/encryptor/encryptor.h"
+#include "components/encryptor/os_crypt.h"
 #endif
 
 // Defining constant here to handle backward compatiblity tests, but this
@@ -40,7 +40,7 @@ class MutableProfileOAuth2TokenServiceTest :
 
   virtual void SetUp() OVERRIDE {
 #if defined(OS_MACOSX)
-    Encryptor::UseMockKeychain(true);
+    OSCrypt::UseMockKeychain(true);
 #endif
 
     profile_.reset(new TestingProfile);

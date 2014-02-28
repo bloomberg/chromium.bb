@@ -2,34 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ENCRYPTOR_ENCRYPTOR_PASSWORD_MAC_H_
-#define COMPONENTS_ENCRYPTOR_ENCRYPTOR_PASSWORD_MAC_H_
+#ifndef COMPONENTS_ENCRYPTOR_KEYCHAIN_PASSWORD_MAC_H_
+#define COMPONENTS_ENCRYPTOR_KEYCHAIN_PASSWORD_MAC_H_
 
 #include <string>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 
 namespace crypto {
 class AppleKeychain;
-}  // namespace crypto
+}
 
-class EncryptorPassword {
+class KeychainPassword {
  public:
-  explicit EncryptorPassword(const crypto::AppleKeychain& keychain)
+  explicit KeychainPassword(const crypto::AppleKeychain& keychain)
       : keychain_(keychain) {
   }
 
-  // Get the Encryptor password for this system.  If no password exists
+  // Get the OSCrypt password for this system.  If no password exists
   // in the Keychain then one is generated, stored in the Mac keychain, and
   // returned.
   // If one exists then it is fetched from the Keychain and returned.
   // If the user disallows access to the Keychain (or an error occurs) then an
   // empty string is returned.
-  std::string GetEncryptorPassword() const;
+  std::string GetPassword() const;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(EncryptorPassword);
   const crypto::AppleKeychain& keychain_;
+
+  DISALLOW_COPY_AND_ASSIGN(KeychainPassword);
 };
 
-#endif  // COMPONENTS_ENCRYPTOR_ENCRYPTOR_PASSWORD_MAC_H_
+#endif  // COMPONENTS_ENCRYPTOR_KEYCHAIN_PASSWORD_MAC_H_
