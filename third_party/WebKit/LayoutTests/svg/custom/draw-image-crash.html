@@ -10,8 +10,8 @@ setTimeout(function() {
   if (location.hash == '#done') {
     document.write('PASS');
     if (window.testRunner) {
-      testRunner.notifyDone();
       testRunner.dumpAsText();
+      testRunner.notifyDone();
     }
   } else {
     location.hash = 'done';
