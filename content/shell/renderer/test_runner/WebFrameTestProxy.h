@@ -92,6 +92,10 @@ public:
     {
         Base::didFinishLoad(frame);
     }
+    virtual void showContextMenu(const blink::WebContextMenuData& contextMenuData) {
+        m_baseProxy->showContextMenu(Base::GetWebFrame(), contextMenuData);
+        Base::showContextMenu(contextMenuData);
+    }
     virtual void didDetectXSS(blink::WebFrame* frame, const blink::WebURL& insecureURL, bool didBlockEntirePage)
     {
         // This is not implemented in RenderFrameImpl, so need to explicitly call
