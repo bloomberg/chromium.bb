@@ -693,7 +693,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
 
   // We are in the help page.
   EXPECT_EQ(
-      "/goodtoknow/online-safety/malware/",
+      "/transparencyreport/safebrowsing/",
        browser()->tab_strip_model()->GetActiveWebContents()->GetURL().path());
 }
 
@@ -921,7 +921,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MAYBE_PhishingLearnMore) {
   LOG(INFO) << "3";
   // We are in the help page.
   EXPECT_EQ(
-      "/goodtoknow/online-safety/phishing/",
+      "/transparencyreport/safebrowsing/",
        browser()->tab_strip_model()->GetActiveWebContents()->GetURL().path());
   LOG(INFO) << "4";
 }

@@ -71,10 +71,12 @@ const char kSbReportPhishingErrorUrl[] =
 const char kLearnMoreMalwareUrl[] =
     "https://www.google.com/support/bin/answer.py?answer=45449&topic=360"
     "&sa=X&oi=malwarewarninglink&resnum=1&ct=help";
+
+// URL for malware and phishing, V2.
 const char kLearnMoreMalwareUrlV2[] =
-    "https://www.google.com/goodtoknow/online-safety/malware/";
+    "https://www.google.com/transparencyreport/safebrowsing/";
 const char kLearnMorePhishingUrlV2[] =
-    "https://www.google.com/goodtoknow/online-safety/phishing/";
+    "https://www.google.com/transparencyreport/safebrowsing/";
 
 // URL for the "Learn more" link on the phishing blocking page.
 const char kLearnMorePhishingUrl[] =
