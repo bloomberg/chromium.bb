@@ -97,6 +97,29 @@ const char kUrlUnescape[128] = {
      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0
 };
 
+// Attempts to unescape the sequence at |index| within |escaped_text|.  If
+// successful, sets |value| to the unescaped value.  Returns whether
+// unescaping succeeded.
+template<typename STR>
+bool UnescapeUnsignedCharAtIndex(const STR& escaped_text,
+                                 size_t index,
+                                 unsigned char* value) {
+  if ((index + 2) >= escaped_text.size())
+    return false;
+  if (escaped_text[index] != '%')
+    return false;
+  const typename STR::value_type most_sig_digit(
+      static_cast<typename STR::value_type>(escaped_text[index + 1]));
+  const typename STR::value_type least_sig_digit(
+      static_cast<typename STR::value_type>(escaped_text[index + 2]));
+  if (IsHexDigit(most_sig_digit) && IsHexDigit(least_sig_digit)) {
+    *value = HexDigitToInt(most_sig_digit) * 16 +
+      HexDigitToInt(least_sig_digit);
+    return true;
+  }
+  return false;
+}
+
 template<typename STR>
 STR UnescapeURLWithOffsetsImpl(const STR& escaped_text,
                                UnescapeRule::Type rules,
@@ -125,37 +148,72 @@ STR UnescapeURLWithOffsetsImpl(const STR& escaped_text,
       continue;
     }
 
-    char current_char = static_cast<char>(escaped_text[i]);
-    if (current_char == '%' && i + 2 < max) {
-      const typename STR::value_type most_sig_digit(
-          static_cast<typename STR::value_type>(escaped_text[i + 1]));
-      const typename STR::value_type least_sig_digit(
-          static_cast<typename STR::value_type>(escaped_text[i + 2]));
-      if (IsHexDigit(most_sig_digit) && IsHexDigit(least_sig_digit)) {
-        unsigned char value = HexDigitToInt(most_sig_digit) * 16 +
-            HexDigitToInt(least_sig_digit);
-        if (value >= 0x80 ||  // Unescape all high-bit characters.
-            // For 7-bit characters, the lookup table tells us all valid chars.
-            (kUrlUnescape[value] ||
-             // ...and we allow some additional unescaping when flags are set.
-             (value == ' ' && (rules & UnescapeRule::SPACES)) ||
-             // Allow any of the prohibited but non-control characters when
-             // we're doing "special" chars.
-             (value > ' ' && (rules & UnescapeRule::URL_SPECIAL_CHARS)) ||
-             // Additionally allow control characters if requested.
-             (value < ' ' && (rules & UnescapeRule::CONTROL_CHARS)))) {
-          // Use the unescaped version of the character.
-          adjustments.push_back(i);
-          result.push_back(value);
-          i += 2;
-        } else {
-          // Keep escaped. Append a percent and we'll get the following two
-          // digits on the next loops through.
-          result.push_back('%');
+    unsigned char first_byte;
+    if (UnescapeUnsignedCharAtIndex(escaped_text, i, &first_byte)) {
+      // Per http://tools.ietf.org/html/rfc3987#section-4.1, the following BiDi
+      // control characters are not allowed to appear unescaped in URLs:
+      //
+      // U+200E LEFT-TO-RIGHT MARK         (%E2%80%8E)
+      // U+200F RIGHT-TO-LEFT MARK         (%E2%80%8F)
+      // U+202A LEFT-TO-RIGHT EMBEDDING    (%E2%80%AA)
+      // U+202B RIGHT-TO-LEFT EMBEDDING    (%E2%80%AB)
+      // U+202C POP DIRECTIONAL FORMATTING (%E2%80%AC)
+      // U+202D LEFT-TO-RIGHT OVERRIDE     (%E2%80%AD)
+      // U+202E RIGHT-TO-LEFT OVERRIDE     (%E2%80%AE)
+      //
+      // Additionally, the Unicode Technical Report (TR9) as referenced by RFC
+      // 3987 above has since added some new BiDi control characters.
+      // http://www.unicode.org/reports/tr9
+      //
+      // U+061C ARABIC LETTER MARK         (%D8%9C)
+      // U+2066 LEFT-TO-RIGHT ISOLATE      (%E2%81%A6)
+      // U+2067 RIGHT-TO-LEFT ISOLATE      (%E2%81%A7)
+      // U+2068 FIRST STRONG ISOLATE       (%E2%81%A8)
+      // U+2069 POP DIRECTIONAL ISOLATE    (%E2%81%A9)
+
+      unsigned char second_byte;
+      // Check for ALM.
+      if ((first_byte == 0xD8) &&
+          UnescapeUnsignedCharAtIndex(escaped_text, i + 3, &second_byte) &&
+          (second_byte == 0x9c)) {
+        result.append(escaped_text, i, 6);
+        i += 5;
+        continue;
+      }
+
+      // Check for other BiDi control characters.
+      if ((first_byte == 0xE2) &&
+          UnescapeUnsignedCharAtIndex(escaped_text, i + 3, &second_byte) &&
+          ((second_byte == 0x80) || (second_byte == 0x81))) {
+        unsigned char third_byte;
+        if (UnescapeUnsignedCharAtIndex(escaped_text, i + 6, &third_byte) &&
+            ((second_byte == 0x80) ?
+             ((third_byte == 0x8E) || (third_byte == 0x8F) ||
+              ((third_byte >= 0xAA) && (third_byte <= 0xAE))) :
+             ((third_byte >= 0xA6) && (third_byte <= 0xA9)))) {
+          result.append(escaped_text, i, 9);
+          i += 8;
+          continue;
         }
+      }
+
+      if (first_byte >= 0x80 ||  // Unescape all high-bit characters.
+          // For 7-bit characters, the lookup table tells us all valid chars.
+          (kUrlUnescape[first_byte] ||
+           // ...and we allow some additional unescaping when flags are set.
+           (first_byte == ' ' && (rules & UnescapeRule::SPACES)) ||
+           // Allow any of the prohibited but non-control characters when
+           // we're doing "special" chars.
+           (first_byte > ' ' && (rules & UnescapeRule::URL_SPECIAL_CHARS)) ||
+           // Additionally allow control characters if requested.
+           (first_byte < ' ' && (rules & UnescapeRule::CONTROL_CHARS)))) {
+        // Use the unescaped version of the character.
+        adjustments.push_back(i);
+        result.push_back(first_byte);
+        i += 2;
       } else {
-        // Invalid escape sequence, just pass the percent through and continue
-        // right after it.
+        // Keep escaped. Append a percent and we'll get the following two
+        // digits on the next loops through.
         result.push_back('%');
       }
     } else if ((rules & UnescapeRule::REPLACE_PLUS_WITH_SPACE) &&
