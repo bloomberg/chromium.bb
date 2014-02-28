@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_SHARED_WORKER_SHARED_WORKER_SERVICE_IMPL_H_
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_vector.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "content/public/browser/notification_observer.h"
@@ -91,13 +91,22 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
   SharedWorkerServiceImpl();
   virtual ~SharedWorkerServiceImpl();
 
+  SharedWorkerHost* FindSharedWorkerHost(
+      SharedWorkerMessageFilter* filter,
+      int worker_route_id);
+
   SharedWorkerInstance* FindSharedWorkerInstance(
       const GURL& url,
       const base::string16& name,
       const WorkerStoragePartition& worker_partition,
       ResourceContext* resource_context);
 
-  ScopedVector<SharedWorkerHost> worker_hosts_;
+  // Pair of render_process_id and worker_route_id.
+  typedef std::pair<int, int> ProcessRouteIdPair;
+  typedef base::ScopedPtrHashMap<ProcessRouteIdPair,
+                                 SharedWorkerHost> WorkerHostMap;
+  WorkerHostMap worker_hosts_;
+
   ObserverList<WorkerServiceObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerServiceImpl);

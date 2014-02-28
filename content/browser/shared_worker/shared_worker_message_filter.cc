@@ -30,7 +30,6 @@ SharedWorkerMessageFilter::SharedWorkerMessageFilter(
       resource_context_(resource_context),
       partition_(partition),
       message_port_message_filter_(message_port_message_filter) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
 SharedWorkerMessageFilter::~SharedWorkerMessageFilter() {

@@ -88,10 +88,12 @@ void SharedWorkerServiceImpl::CreateWorker(
       filter, params.document_id, filter->render_process_id(),
       params.render_frame_route_id);
 
-  scoped_ptr<SharedWorkerHost> worker(new SharedWorkerHost(instance.release()));
-  worker->Init(filter);
-  const int worker_route_id = worker->worker_route_id();
-  worker_hosts_.push_back(worker.release());
+  scoped_ptr<SharedWorkerHost> host(new SharedWorkerHost(instance.release()));
+  host->Init(filter);
+  const int worker_route_id = host->worker_route_id();
+  worker_hosts_.set(std::make_pair(filter->render_process_id(),
+                                   worker_route_id),
+                    host.Pass());
 
   FOR_EACH_OBSERVER(
       WorkerServiceObserver, observers_,
@@ -104,51 +106,66 @@ void SharedWorkerServiceImpl::CreateWorker(
 void SharedWorkerServiceImpl::ForwardToWorker(
     const IPC::Message& message,
     SharedWorkerMessageFilter* filter) {
-  // TODO(horo): implement this.
-  NOTIMPLEMENTED();
+  for (WorkerHostMap::const_iterator iter = worker_hosts_.begin();
+       iter != worker_hosts_.end();
+       ++iter) {
+    if (iter->second->FilterMessage(message, filter))
+      return;
+  }
 }
 
 void SharedWorkerServiceImpl::DocumentDetached(
     unsigned long long document_id,
     SharedWorkerMessageFilter* filter) {
-  // TODO(horo): implement this.
-  NOTIMPLEMENTED();
+  for (WorkerHostMap::const_iterator iter = worker_hosts_.begin();
+       iter != worker_hosts_.end();
+       ++iter) {
+    iter->second->DocumentDetached(filter, document_id);
+  }
 }
 
 void SharedWorkerServiceImpl::WorkerContextClosed(
     int worker_route_id,
     SharedWorkerMessageFilter* filter) {
-  // TODO(horo): implement this.
-  NOTIMPLEMENTED();
+  if (SharedWorkerHost* host = FindSharedWorkerHost(filter, worker_route_id))
+    host->WorkerContextClosed();
 }
 
 void SharedWorkerServiceImpl::WorkerContextDestroyed(
     int worker_route_id,
     SharedWorkerMessageFilter* filter) {
-  // TODO(horo): implement this.
-  NOTIMPLEMENTED();
+  scoped_ptr<SharedWorkerHost> host =
+      worker_hosts_.take_and_erase(std::make_pair(filter->render_process_id(),
+                                                  worker_route_id));
+  if (!host)
+    return;
+  host->WorkerContextDestroyed();
 }
 
 void SharedWorkerServiceImpl::WorkerScriptLoaded(
     int worker_route_id,
     SharedWorkerMessageFilter* filter) {
-  // TODO(horo): implement this.
-  NOTIMPLEMENTED();
+  if (SharedWorkerHost* host = FindSharedWorkerHost(filter, worker_route_id))
+    host->WorkerScriptLoaded();
 }
 
 void SharedWorkerServiceImpl::WorkerScriptLoadFailed(
     int worker_route_id,
     SharedWorkerMessageFilter* filter) {
-  // TODO(horo): implement this.
-  NOTIMPLEMENTED();
+  scoped_ptr<SharedWorkerHost> host =
+      worker_hosts_.take_and_erase(std::make_pair(filter->render_process_id(),
+                                                  worker_route_id));
+  if (!host)
+    return;
+  host->WorkerScriptLoadFailed();
 }
 
 void SharedWorkerServiceImpl::WorkerConnected(
     int message_port_id,
     int worker_route_id,
     SharedWorkerMessageFilter* filter) {
-  // TODO(horo): implement this.
-  NOTIMPLEMENTED();
+  if (SharedWorkerHost* host = FindSharedWorkerHost(filter, worker_route_id))
+    host->WorkerConnected(message_port_id);
 }
 
 void SharedWorkerServiceImpl::AllowDatabase(
@@ -159,8 +176,8 @@ void SharedWorkerServiceImpl::AllowDatabase(
     unsigned long estimated_size,
     bool* result,
     SharedWorkerMessageFilter* filter) {
-  // TODO(horo): implement this.
-  NOTIMPLEMENTED();
+  if (SharedWorkerHost* host = FindSharedWorkerHost(filter, worker_route_id))
+    host->AllowDatabase(url, name, display_name, estimated_size, result);
 }
 
 void SharedWorkerServiceImpl::AllowFileSystem(
@@ -168,8 +185,8 @@ void SharedWorkerServiceImpl::AllowFileSystem(
     const GURL& url,
     bool* result,
     SharedWorkerMessageFilter* filter) {
-  // TODO(horo): implement this.
-  NOTIMPLEMENTED();
+  if (SharedWorkerHost* host = FindSharedWorkerHost(filter, worker_route_id))
+    host->AllowFileSystem(url, result);
 }
 
 void SharedWorkerServiceImpl::AllowIndexedDB(
@@ -178,14 +195,29 @@ void SharedWorkerServiceImpl::AllowIndexedDB(
     const base::string16& name,
     bool* result,
     SharedWorkerMessageFilter* filter) {
-  // TODO(horo): implement this.
-  NOTIMPLEMENTED();
+  if (SharedWorkerHost* host = FindSharedWorkerHost(filter, worker_route_id))
+    host->AllowIndexedDB(url, name, result);
 }
 
 void SharedWorkerServiceImpl::OnSharedWorkerMessageFilterClosing(
     SharedWorkerMessageFilter* filter) {
-  // TODO(horo): implement this.
-  NOTIMPLEMENTED();
+  std::vector<ProcessRouteIdPair> remove_list;
+  for (WorkerHostMap::iterator iter = worker_hosts_.begin();
+       iter != worker_hosts_.end();
+       ++iter) {
+    iter->second->FilterShutdown(filter);
+    if (iter->first.first == filter->render_process_id())
+      remove_list.push_back(iter->first);
+  }
+  for (size_t i = 0; i < remove_list.size(); ++i)
+    worker_hosts_.erase(remove_list[i]);
+}
+
+SharedWorkerHost* SharedWorkerServiceImpl::FindSharedWorkerHost(
+    SharedWorkerMessageFilter* filter,
+    int worker_route_id) {
+  return worker_hosts_.get(std::make_pair(filter->render_process_id(),
+                                          worker_route_id));
 }
 
 SharedWorkerInstance* SharedWorkerServiceImpl::FindSharedWorkerInstance(
@@ -193,13 +225,11 @@ SharedWorkerInstance* SharedWorkerServiceImpl::FindSharedWorkerInstance(
     const base::string16& name,
     const WorkerStoragePartition& partition,
     ResourceContext* resource_context) {
-  for (ScopedVector<SharedWorkerHost>::const_iterator iter =
-           worker_hosts_.begin();
+  for (WorkerHostMap::const_iterator iter = worker_hosts_.begin();
        iter != worker_hosts_.end();
        ++iter) {
-    SharedWorkerInstance* instance = (*iter)->instance();
-    if (instance &&
-        instance->Matches(url, name, partition, resource_context))
+    SharedWorkerInstance* instance = iter->second->instance();
+    if (instance && instance->Matches(url, name, partition, resource_context))
       return instance;
   }
   return NULL;
