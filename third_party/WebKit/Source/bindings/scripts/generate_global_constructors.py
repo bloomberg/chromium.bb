@@ -22,40 +22,25 @@ import os
 import re
 import sys
 
-from utilities import get_file_contents, write_file, get_interface_extended_attributes_from_idl, is_callback_interface_from_idl, get_partial_interface_name_from_idl
+from utilities import get_file_contents, write_file, get_interface_extended_attributes_from_idl, is_callback_interface_from_idl
 
-global_constructors = {}
+global_objects = {}
 
 
 def parse_options():
     parser = optparse.OptionParser()
     parser.add_option('--idl-files-list', help='file listing IDL files')
     parser.add_option('--write-file-only-if-changed', type='int', help='if true, do not write an output file if it would be identical to the existing one, which avoids unnecessary rebuilds in ninja')
-    parser.add_option('--window-constructors-file', help='output file')
-    parser.add_option('--workerglobalscope-constructors-file', help='output file')
-    parser.add_option('--sharedworkerglobalscope-constructors-file', help='output file')
-    parser.add_option('--dedicatedworkerglobalscope-constructors-file', help='output file')
-    parser.add_option('--serviceworkerglobalscope-constructors-file', help='output file')
 
-    options, _ = parser.parse_args()
+    options, args = parser.parse_args()
 
     if options.idl_files_list is None:
         parser.error('Must specify a file listing IDL files using --idl-files-list.')
     if options.write_file_only_if_changed is None:
         parser.error('Must specify whether output files are only written if changed using --write-file-only-if-changed.')
     options.write_file_only_if_changed = bool(options.write_file_only_if_changed)
-    if options.window_constructors_file is None:
-        parser.error('Must specify an output file using --window-constructors-file.')
-    if options.workerglobalscope_constructors_file is None:
-        parser.error('Must specify an output file using --workerglobalscope-constructors-file.')
-    if options.sharedworkerglobalscope_constructors_file is None:
-        parser.error('Must specify an output file using --sharedworkerglobalscope-constructors-file.')
-    if options.dedicatedworkerglobalscope_constructors_file is None:
-        parser.error('Must specify an output file using --dedicatedworkerglobalscope-constructors-file.')
-    if options.serviceworkerglobalscope_constructors_file is None:
-        parser.error('Must specify an output file using --serviceworkerglobalscope-constructors-file.')
 
-    return options
+    return options, args
 
 
 def record_global_constructors(idl_filename):
@@ -70,14 +55,13 @@ def record_global_constructors(idl_filename):
     # but there are none of these in Blink.
     # http://heycam.github.io/webidl/#es-interfaces
     if (is_callback_interface_from_idl(idl_file_contents) or
-        get_partial_interface_name_from_idl(idl_file_contents) or
         'NoInterfaceObject' in extended_attributes):
         return
 
     global_contexts = extended_attributes.get('GlobalContext', 'Window').split('&')
     new_constructors_list = generate_global_constructors_list(interface_name, extended_attributes)
     for interface_name in global_contexts:
-        global_constructors[interface_name].extend(new_constructors_list)
+        global_objects[interface_name]['constructors'].extend(new_constructors_list)
 
 
 def generate_global_constructors_list(interface_name, extended_attributes):
@@ -125,7 +109,7 @@ def write_global_constructors_partial_interface(interface_name, destination_file
 ################################################################################
 
 def main():
-    options = parse_options()
+    options, args = parse_options()
 
     # Input IDL files are passed in a file, due to OS command line length
     # limits. This is generated at GYP time, which is ok b/c files are static.
@@ -135,22 +119,21 @@ def main():
     # Output IDL files (to generate) are passed at the command line, since
     # these are in the build directory, which is determined at build time, not
     # GYP time.
-    global_constructors_filenames = {
-        'Window': options.window_constructors_file,
-        'WorkerGlobalScope': options.workerglobalscope_constructors_file,
-        'SharedWorkerGlobalScope': options.sharedworkerglobalscope_constructors_file,
-        'DedicatedWorkerGlobalScope': options.dedicatedworkerglobalscope_constructors_file,
-        'ServiceWorkerGlobalScope': options.serviceworkerglobalscope_constructors_file,
-        }
-    global_constructors.update(dict([
-        (global_object, [])
-        for global_object in global_constructors_filenames]))
+    # These are passed as pairs of GlobalObjectName, GlobalObject.idl
+    interface_name_filename = [(args[i], args[i + 1])
+                               for i in range(0, len(args), 2)]
+    global_objects.update(
+        (interface_name, {
+            'filename': filename,
+            'constructors': [],
+        })
+        for interface_name, filename in interface_name_filename)
 
     for idl_filename in idl_files:
         record_global_constructors(idl_filename)
 
-    for interface_name, filename in global_constructors_filenames.iteritems():
-        write_global_constructors_partial_interface(interface_name, filename, global_constructors[interface_name], options.write_file_only_if_changed)
+    for interface_name, global_object in global_objects.iteritems():
+        write_global_constructors_partial_interface(interface_name, global_object['filename'], global_object['constructors'], options.write_file_only_if_changed)
 
 
 if __name__ == '__main__':

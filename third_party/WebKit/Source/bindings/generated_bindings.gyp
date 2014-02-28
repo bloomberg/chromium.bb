@@ -28,6 +28,11 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+# Generate IDL bindings, together with auxiliary files
+# (constructors on global objects, aggregate bindings files).
+#
+# Design doc: http://www.chromium.org/developers/design-documents/idl-build
+
 {
   'includes': [
     '../build/scripts/scripts.gypi',
@@ -53,11 +58,8 @@
       '<@(static_dependency_idl_files)',
       '<@(generated_dependency_idl_files)',
     ],
-    # Include in aggregate bindings (exclude testing)
-    # The only differences for testing files are:
-    # * They are not included in aggregate bindings (excluded from below list)
-    # * They do not appear as a property on the global object (Window):
-    #   specify [NoInterfaceObject] on the interface in the .idl file
+    # Main interface IDL files (excluding dependencies and testing)
+    # are included as properties on global objects, and in aggregate bindings
     'main_interface_idl_files': [
       '<@(core_idl_files)',
       '<@(modules_idl_files)',
@@ -175,13 +177,15 @@
       'variables': {
         # Write list of IDL files to a file, so that the command line doesn't
         # exceed OS length limits.
-        'idl_files_list': '<|(idl_files_list.tmp <@(static_idl_files))',
+        # Only includes main IDL files (exclude dependencies and testing,
+        # which should not appear on global objects).
+        'main_interface_idl_files_list': '<|(main_interface_idl_files_list.tmp <@(main_interface_idl_files))',
       },
       'inputs': [
         'scripts/generate_global_constructors.py',
         'scripts/utilities.py',
-        '<(idl_files_list)',
-        '<@(static_idl_files)',
+        '<(main_interface_idl_files_list)',
+        '<@(main_interface_idl_files)',
       ],
       'outputs': [
         '<@(generated_global_constructors_idl_files)',
@@ -190,17 +194,18 @@
         'python',
         'scripts/generate_global_constructors.py',
         '--idl-files-list',
-        '<(idl_files_list)',
+        '<(main_interface_idl_files_list)',
         '<@(write_file_only_if_changed)',
-        '--window-constructors-file',
+        '--',
+        'Window',
         '<(SHARED_INTERMEDIATE_DIR)/blink/WindowConstructors.idl',
-        '--workerglobalscope-constructors-file',
+        'WorkerGlobalScope',
         '<(SHARED_INTERMEDIATE_DIR)/blink/WorkerGlobalScopeConstructors.idl',
-        '--sharedworkerglobalscope-constructors-file',
+        'SharedWorkerGlobalScope',
         '<(SHARED_INTERMEDIATE_DIR)/blink/SharedWorkerGlobalScopeConstructors.idl',
-        '--dedicatedworkerglobalscope-constructors-file',
+        'DedicatedWorkerGlobalScope',
         '<(SHARED_INTERMEDIATE_DIR)/blink/DedicatedWorkerGlobalScopeConstructors.idl',
-        '--serviceworkerglobalscope-constructors-file',
+        'ServiceWorkerGlobalScope',
         '<(SHARED_INTERMEDIATE_DIR)/ServiceWorkerGlobalScopeConstructors.idl',
        ],
        'message': 'Generating IDL files for constructors on global objects',
@@ -309,7 +314,7 @@
           # depends on them, because we're not computing dependencies
           # file-by-file.
           # FIXME: This is too conservative, and causes excess rebuilds:
-          # compute this file-by-file.
+          # compute this file-by-file.  http://crbug.com/341748
           '<@(dependency_idl_files)',
         ],
         'outputs': [

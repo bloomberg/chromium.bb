@@ -28,9 +28,61 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+"""Compute global interface information, including public information, dependencies, and inheritance.
+
+Computed data is stored in a global variable, |interfaces_info|, and written as
+output (concretely, exported as a pickle). This is then used by the IDL compiler
+itself, so it does not need to compute global information itself, and so that
+inter-IDL dependencies are clear, since they are all computed here.
+
+The |interfaces_info| pickle is a *global* dependency: any changes cause a full
+rebuild. This is to avoid having to compute which public data is visible by
+which IDL files on a file-by-file basis, which is very complex for little
+benefit.
+|interfaces_info| should thus only contain data about an interface that
+contains paths or is needed by *other* interfaces, e.g., path data (to abstract
+the compiler from OS-specific file paths) or public data (to avoid having to
+read other interfaces unnecessarily).
+It should *not* contain full information about an interface (e.g., all
+extended attributes), as this would cause unnecessary rebuilds.
+
+|interfaces_info| is a dict, keyed by |interface_name|.
+
+Current keys are:
+* dependencies:
+    'implements_interfaces': targets of 'implements' statements
+    'referenced_interfaces': reference interfaces that are introspected
+                             (currently just targets of [PutForwards])
+
+* inheritance:
+    'ancestors': all ancestor interfaces
+    'inherited_extended_attributes': inherited extended attributes
+                                     (all controlling memory management)
+
+* public:
+    'is_callback_interface': bool, callback interface or not
+    'implemented_as': value of [ImplementedAs=...] on interface (C++ class name)
+
+* paths:
+    'full_path': path to the IDL file, so can lookup an IDL by interface name
+    'include_path': path for use in C++ #include directives
+    'dependencies_full_paths': paths to dependencies (for merging into main)
+    'dependencies_include_paths': paths for use in C++ #include directives
+
+Note that all of these are stable information, unlikely to change without
+moving or deleting files (hence requiring a full rebuild anyway) or significant
+code changes (for inherited extended attributes).
+
+FIXME: also generates EventNames.in; factor out.  http://crbug.com/341748
+FIXME: also generates InterfaceDependencies.txt for Perl.  http://crbug.com/239771
+
+Design doc: http://www.chromium.org/developers/design-documents/idl-build
+"""
+
 import optparse
 import os
 import posixpath
+import sys
 
 from utilities import get_file_contents, write_file, write_pickle_file, get_interface_extended_attributes_from_idl, is_callback_interface_from_idl, get_partial_interface_name_from_idl, get_implemented_interfaces_from_idl, get_parent_interface, get_put_forward_interfaces_from_idl
 
@@ -43,13 +95,7 @@ INHERITED_EXTENDED_ATTRIBUTES = set([
     'WillBeGarbageCollected',
 ])
 
-
-# interfaces_info is *exported* (in a pickle), and should only contain data
-# about an interface that contains paths or is needed by *other* interfaces,
-# i.e., file layout data (to abstract the compiler from file paths) or
-# public data (to avoid having to read other interfaces unnecessarily).
-# It should *not* contain full information about an interface (e.g., all
-# extended attributes), as this would cause unnecessary rebuilds.
+# Main variable (filled in and exported)
 interfaces_info = {}
 
 # Auxiliary variables (not visible to future build steps)
@@ -108,7 +154,7 @@ def write_dependencies_file(dependencies_filename, only_if_changed):
     An IDL that is a dependency of another IDL (e.g. P.idl) does not have its
     own line in the dependency file.
     """
-    # FIXME: remove text format once Perl gone (Python uses pickle)
+    # FIXME: remove this file once Perl is gone http://crbug.com/239771
     dependencies_list = sorted(
         (interface_info['full_path'], sorted(interface_info['dependencies_full_paths']))
         for interface_info in interfaces_info.values())
@@ -120,6 +166,7 @@ def write_dependencies_file(dependencies_filename, only_if_changed):
 def write_event_names_file(destination_filename, only_if_changed):
     # Generate event names for all interfaces that inherit from Event,
     # including Event itself.
+    # FIXME: factor out.  http://crbug.com/341748
     event_names = set(
         interface_name
         for interface_name, interface_info in interfaces_info.iteritems()
@@ -153,7 +200,7 @@ def write_event_names_file(destination_filename, only_if_changed):
 
 
 ################################################################################
-# Dependency resolution
+# Computations
 ################################################################################
 
 def include_path(idl_filename, implemented_as=None):
@@ -181,8 +228,7 @@ def add_paths_to_partials_dict(partial_interface_name, full_path, this_include_p
         paths_dict['include_paths'].append(this_include_path)
 
 
-def generate_dependencies(idl_filename):
-    """Compute dependencies for IDL file, returning True if main (non-partial) interface"""
+def compute_individual_info(idl_filename):
     full_path = os.path.realpath(idl_filename)
     idl_file_contents = get_file_contents(full_path)
 
@@ -218,16 +264,15 @@ def generate_dependencies(idl_filename):
     if implemented_as:
         interfaces_info[interface_name]['implemented_as'] = implemented_as
 
-    # Record extended attributes
+    # Record auxiliary information
     extended_attributes_by_interface[interface_name] = extended_attributes
-
-    # Record parents
     parent = get_parent_interface(idl_file_contents)
     if parent:
         parent_interfaces[interface_name] = parent
 
 
-def generate_ancestors_and_inherited_extended_attributes(interface_name):
+def compute_inheritance_info(interface_name):
+    """Computes inheritance information, namely ancestors and inherited extended attributes."""
     interface_info = interfaces_info[interface_name]
     interface_extended_attributes = extended_attributes_by_interface[interface_name]
     inherited_extended_attributes = dict(
@@ -249,8 +294,8 @@ def generate_ancestors_and_inherited_extended_attributes(interface_name):
     interface_info['ancestors'] = ancestors
     for ancestor in ancestors:
         # Extended attributes are missing if an ancestor is an interface that
-        # we're not processing, notably real IDL files if only processing test
-        # IDL files, or generated support files.
+        # we're not processing, namely real IDL files if only processing test
+        # IDL files.
         ancestor_extended_attributes = extended_attributes_by_interface.get(ancestor, {})
         inherited_extended_attributes.update(dict(
             (key, value)
@@ -260,18 +305,18 @@ def generate_ancestors_and_inherited_extended_attributes(interface_name):
         interface_info['inherited_extended_attributes'] = inherited_extended_attributes
 
 
-def parse_idl_files(idl_files):
+def compute_interfaces_info(idl_files):
     """Compute information about IDL files.
 
-    Primary effect is computing info about main interfaces, stored in global
-    interfaces_info.
+    Information is stored in global interfaces_info.
     """
-    # Generate dependencies.
+    # Compute information for individual files
     for idl_filename in idl_files:
-        generate_dependencies(idl_filename)
+        compute_individual_info(idl_filename)
 
+    # Once all individual files handled, can compute inheritance information
     for interface_name in interfaces_info:
-        generate_ancestors_and_inherited_extended_attributes(interface_name)
+        compute_inheritance_info(interface_name)
 
     # An IDL file's dependencies are partial interface files that extend it,
     # and files for other interfaces that this interfaces implements.
@@ -316,12 +361,11 @@ def main():
     idl_files.extend(args)
 
     only_if_changed = options.write_file_only_if_changed
-
-    parse_idl_files(idl_files)
+    compute_interfaces_info(idl_files)
     write_pickle_file(options.interfaces_info_file, interfaces_info, only_if_changed)
     write_dependencies_file(options.interface_dependencies_file, only_if_changed)
     write_event_names_file(options.event_names_file, only_if_changed)
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
