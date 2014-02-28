@@ -154,56 +154,20 @@ def JavaScriptEncodeSnippet(kind):
   if isinstance(kind, mojom.Enum):
     return _kind_to_javascript_encode_snippet[mojom.INT32]
 
-def GetConstants(module):
-  """Returns a generator that enumerates all constants that can be referenced
-  from this module."""
-  class Constant:
-    def __init__(self, module, enum, field, imported_from):
-      self.namespace = \
-          imported_from["namespace"] if imported_from else module.namespace
-      self.is_current_namespace = self.namespace == module.namespace
-      self.imported_from = imported_from
-      self.name = []
-      if imported_from:
-        self.name.append(imported_from["unique_name"])
-      if enum.parent_kind:
-        self.name.append(enum.parent_kind.name)
-      self.name.extend([enum.name, field.name])
-
-  for enum in module.enums:
-    for field in enum.fields:
-      yield Constant(module, enum, field, None)
-
-  for struct in module.structs:
-    for enum in struct.enums:
-      for field in enum.fields:
-        yield Constant(module, enum, field, None)
-
-  for interface in module.interfaces:
-    for enum in interface.enums:
-      for field in enum.fields:
-        yield Constant(module, enum, field, None)
-
-  for each in module.imports:
-    for enum in each["module"].enums:
-      for field in enum.fields:
-        yield Constant(module, enum, field, each)
-
-
-def TranslateConstants(value, module):
-  # We're assuming we're dealing with an identifier, but that may not be
-  # the case. If we're not, we just won't find any matches.
-  if value.find(".") != -1:
-    namespace, identifier = value.split(".")
-  else:
-    namespace, identifier = "", value
-
-  for constant in GetConstants(module):
-    if namespace == constant.namespace or (
-        namespace == "" and constant.is_current_namespace):
-      if constant.name[-1] == identifier:
-        return ".".join(constant.name)
-  return value
+def TranslateConstants(token, module):
+  if isinstance(token, mojom.Constant):
+    # Enum constants are constructed like:
+    # NamespaceUid.Struct_Enum.FIELD_NAME
+    name = []
+    if token.imported_from:
+      name.append(token.imported_from["unique_name"])
+    if token.parent_kind:
+      name.append(token.parent_kind.name + "_" + token.name[0])
+    else:
+      name.append(token.name[0])
+    name.append(token.name[1])
+    return ".".join(name)
+  return token
 
 
 def ExpressionToText(value, module):

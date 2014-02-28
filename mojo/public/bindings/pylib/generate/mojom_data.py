@@ -28,7 +28,6 @@ import copy
 # }
 # test_module = mojom_data.ModuleFromData(test_dict)
 
-
 # Used to create a subclass of str that supports sorting by index, to make
 # pretty printing maintain the order.
 def istr(index, string):
@@ -52,7 +51,7 @@ def LookupKind(kinds, spec, scope):
   to the location where the type is referenced."""
   if spec.startswith('x:'):
     name = spec[2:]
-    for i in [2, 1, 0]:
+    for i in xrange(len(scope), -1, -1):
       test_spec = 'x:'
       if i > 0:
         test_spec += '.'.join(scope[:i]) + '.'
@@ -62,6 +61,18 @@ def LookupKind(kinds, spec, scope):
         return kind
 
   return kinds.get(spec)
+
+def LookupConstant(constants, name, scope):
+  """Like LookupKind, but for constants."""
+  for i in xrange(len(scope), -1, -1):
+    if i > 0:
+      test_spec = '.'.join(scope[:i]) + '.'
+    test_spec += name
+    constant = constants.get(test_spec)
+    if constant:
+      return constant
+
+  return constants.get(name)
 
 def KindToData(kind):
   return kind.spec
@@ -100,6 +111,13 @@ def ImportFromData(module, data):
         kind.imported_from is None):
       kind = KindFromImport(kind, import_item)
       module.kinds[kind.spec] = kind
+  # Ditto for constants.
+  for constant in import_module.constants.itervalues():
+    if constant.imported_from is None:
+      constant = copy.deepcopy(constant)
+      constant.imported_from = import_item
+      module.constants[constant.GetSpec()] = constant
+
   return import_item
 
 def StructToData(struct):
@@ -130,13 +148,27 @@ def FieldToData(field):
     data[istr(3, 'default')] = field.default
   return data
 
+def FixupExpression(module, value, scope):
+  if isinstance(value, (tuple, list)):
+    for i in xrange(len(value)):
+      if isinstance(value, tuple):
+        FixupExpression(module, value[i], scope)
+      else:
+        value[i] = FixupExpression(module, value[i], scope)
+  elif value:
+    constant = LookupConstant(module.constants, value, scope)
+    if constant:
+      return constant
+  return value
+
 def FieldFromData(module, data, struct):
   field = mojom.Field()
   field.name = data['name']
   field.kind = KindFromData(
       module.kinds, data['kind'], (module.namespace, struct.name))
   field.ordinal = data.get('ordinal')
-  field.default = data.get('default')
+  field.default = FixupExpression(
+      module, data.get('default'), (module.namespace, struct.name))
   return field
 
 def ParameterToData(parameter):
@@ -196,10 +228,17 @@ def InterfaceFromData(module, data):
       MethodFromData(module, method, interface), data['methods'])
   return interface
 
-def EnumFieldFromData(module, data):
+def EnumFieldFromData(module, enum, data, parent_kind):
   field = mojom.EnumField()
   field.name = data['name']
-  field.value = data['value']
+  if parent_kind:
+    field.value = FixupExpression(
+        module, data['value'], (module.namespace, parent_kind.name))
+  else:
+    field.value = FixupExpression(
+        module, data['value'], (module.namespace, ))
+  constant = mojom.Constant(module, enum, field)
+  module.constants[constant.GetSpec()] = constant
   return field
 
 def EnumFromData(module, data, parent_kind):
@@ -212,7 +251,8 @@ def EnumFromData(module, data, parent_kind):
   enum.parent_kind = parent_kind
 
   enum.fields = map(
-      lambda field: EnumFieldFromData(module, field), data['fields'])
+      lambda field: EnumFieldFromData(module, enum, field, parent_kind),
+      data['fields'])
   module.kinds[enum.spec] = enum
   return enum
 
@@ -230,6 +270,8 @@ def ModuleFromData(data):
   for kind in mojom.PRIMITIVES:
     module.kinds[kind.spec] = kind
 
+  module.constants = {}
+
   module.name = data['name']
   module.namespace = data['namespace']
   # Imports must come first, because they add to module.kinds which is used
@@ -244,6 +286,7 @@ def ModuleFromData(data):
   module.interfaces = map(
       lambda interface: InterfaceFromData(module, interface),
       data['interfaces'])
+
   return module
 
 def OrderedModuleFromData(data):

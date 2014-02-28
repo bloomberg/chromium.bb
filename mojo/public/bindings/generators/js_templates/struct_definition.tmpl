@@ -39,8 +39,15 @@ tmp{{depth}}.{{subfield.name}} = {{result}};
 {%-   endif %}
 {%- endmacro %}
 
-
 {#--- Begin #}
+{#--- Enums. We must define these before the constructor because they
+      may be used there. Later, we alias these to be class static variables. #}
+{%- from "enum_definition.tmpl" import enum_def %}
+{%  for enum in struct.enums %}
+  var {{enum_def("%s_%s"|format(struct.name, enum.name), enum, module)}}
+{%  endfor %}
+
+{#--- Constructor #}
   function {{struct.name}}() {
 {%- for packed_field in struct.packed.packed_fields %}
 {%- if packed_field.field.default %}
@@ -55,13 +62,13 @@ this.{{packed_field.field.name}} = {{result}};
 {%- endfor %}
   }
 
-{#--- Enums #}
-{%- from "enum_definition.tmpl" import enum_def %}
+{#--- Alias any Struct_Enum enums to Struct.Enum #}
 {%  for enum in struct.enums %}
-  {{enum_def("%s.%s"|format(struct.name, enum.name), enum, module)}}
-{%  endfor %}
+  {{struct.name}}.{{enum.name}} = {{struct.name}}_{{enum.name}};
+{%- endfor %}
 
 {#--- Encoding and decoding #}
+
   {{struct.name}}.encodedSize = codec.kStructHeaderSize + {{struct.packed|payload_size}};
 
   {{struct.name}}.decode = function(decoder) {

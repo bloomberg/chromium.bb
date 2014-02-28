@@ -155,14 +155,10 @@ class Parser(object):
     p[0] = p[1]
 
   def p_basictypename(self, p):
-    """basictypename : NAME
+    """basictypename : identifier
                      | HANDLE
-                     | NAME DOT NAME
                      | specializedhandle"""
-    if len(p) == 2:
-      p[0] = p[1]
-    else:
-      p[0] = p[1] + '.' + p[3]
+    p[0] = p[1]
 
   def p_specializedhandle(self, p):
     """specializedhandle : HANDLE LT specializedhandlename GT"""
@@ -302,7 +298,7 @@ class Parser(object):
 
   def p_identifier(self, p):
     """identifier : NAME
-                  | NAME DOT NAME"""
+                  | NAME DOT identifier"""
     p[0] = ''.join(p[1:])
 
   def p_constant(self, p):

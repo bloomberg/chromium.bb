@@ -121,17 +121,24 @@ def IsStructWithHandles(struct):
       return True
   return False
 
-def SubstituteNamespace(token, module):
-  for import_item in module.imports:
-    token = token.replace(import_item["namespace"] + ".",
-        import_item["namespace"] + "::")
+def TranslateConstants(token, module):
+  if isinstance(token, mojom.Constant):
+    # Enum constants are constructed like:
+    # Namespace::Struct::FIELD_NAME
+    name = []
+    if token.imported_from:
+      name.append(token.namespace)
+    if token.parent_kind:
+      name.append(token.parent_kind.name)
+    name.append(token.name[1])
+    return "::".join(name)
   return token
 
 def ExpressionToText(value, module):
   if value[0] != "EXPRESSION":
     raise Exception("Expected EXPRESSION, got" + value)
   return "".join(mojom_generator.ExpressionMapper(value,
-      lambda token: SubstituteNamespace(token, module)))
+      lambda token: TranslateConstants(token, module)))
 
 _HEADER_SIZE = 8
 
