@@ -26,19 +26,13 @@
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
-// TODO(hta): Move the following include to WebRTCStatsRequest.h file.
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebRTCConfiguration.h"
 #include "third_party/WebKit/public/platform/WebRTCDataChannelInit.h"
 #include "third_party/WebKit/public/platform/WebRTCICECandidate.h"
-#include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandlerClient.h"
 #include "third_party/WebKit/public/platform/WebRTCSessionDescription.h"
 #include "third_party/WebKit/public/platform/WebRTCSessionDescriptionRequest.h"
-#include "third_party/WebKit/public/platform/WebRTCStatsRequest.h"
 #include "third_party/WebKit/public/platform/WebRTCVoidRequest.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 
 namespace content {
 
