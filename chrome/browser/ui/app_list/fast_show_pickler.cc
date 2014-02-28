@@ -146,7 +146,10 @@ bool UnpickleImage(PickleIterator* it, gfx::ImageSkia* out) {
   return true;
 }
 
-scoped_ptr<AppListItem> UnpickleAppListItem(PickleIterator* it) {
+}  // namespace
+
+scoped_ptr<AppListItem> FastShowPickler::UnpickleAppListItem(
+    PickleIterator* it) {
   std::string id;
   if (!it->ReadString(&id))
     return scoped_ptr<AppListItem>();
@@ -168,7 +171,7 @@ scoped_ptr<AppListItem> UnpickleAppListItem(PickleIterator* it) {
   return result.Pass();
 }
 
-bool PickleAppListItem(Pickle* pickle, AppListItem* item) {
+bool FastShowPickler::PickleAppListItem(Pickle* pickle, AppListItem* item) {
   if (!pickle->WriteString(item->id()))
     return false;
   if (!pickle->WriteString(item->name()))
@@ -182,13 +185,12 @@ bool PickleAppListItem(Pickle* pickle, AppListItem* item) {
   return true;
 }
 
-void CopyOverItem(AppListItem* src_item, AppListItem* dest_item) {
+void FastShowPickler::CopyOverItem(AppListItem* src_item,
+                                   AppListItem* dest_item) {
   dest_item->SetNameAndShortName(src_item->name(), src_item->short_name());
   dest_item->SetIcon(src_item->icon(), src_item->has_shadow());
   // Do not set folder_id, pass that to AppListModel::AddItemToFolder() instead.
 }
-
-}  // namespace
 
 // The version of the pickle format defined here. This needs to be incremented
 // whenever this format is changed so new clients can invalidate old versions.

@@ -449,7 +449,7 @@ TEST_F(AppsGridControllerTest, ModelUpdate) {
 
   // Update the title via the ItemModelObserver.
   app_list::AppListItem* item_model = model()->item_list()->item_at(2);
-  item_model->SetName("UpdatedItem");
+  model()->SetItemName(item_model, "UpdatedItem");
   EXPECT_NSEQ(@"UpdatedItem", [button title]);
 
   // Test icon updates through the model observer by ensuring the icon changes.

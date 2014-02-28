@@ -21,6 +21,10 @@ class FolderHeaderViewDelegate {
   // Gives back the focus to the search box.
   virtual void GiveBackFocusToSearchBox() = 0;
 
+  // Tells the model to set the name of |item|.
+  virtual void SetItemName(AppListFolderItem* item,
+                           const std::string& name) = 0;
+
  protected:
   virtual ~FolderHeaderViewDelegate() {}
 };

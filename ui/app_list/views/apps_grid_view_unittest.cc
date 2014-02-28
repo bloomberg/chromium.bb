@@ -438,7 +438,7 @@ TEST_F(AppsGridViewTest, ItemLabelShortNameOverride) {
   std::string expected_text("xyz");
   std::string expected_tooltip("tooltip");
   AppListItem* item = model_->CreateAndAddItem("Item with short name");
-  item->SetNameAndShortName(expected_tooltip, expected_text);
+  model_->SetItemNameAndShortName(item, expected_tooltip, expected_text);
 
   base::string16 actual_tooltip;
   AppListItemView* item_view = GetItemViewAt(0);
@@ -455,7 +455,7 @@ TEST_F(AppsGridViewTest, ItemLabelNoShortName) {
   // behavior of the label (only show a tooltip if the title is truncated).
   std::string title("a");
   AppListItem* item = model_->CreateAndAddItem(title);
-  item->SetNameAndShortName(title, "");
+  model_->SetItemNameAndShortName(item, title, "");
 
   base::string16 actual_tooltip;
   AppListItemView* item_view = GetItemViewAt(0);

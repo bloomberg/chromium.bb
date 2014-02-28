@@ -643,6 +643,12 @@ void AppListSyncableService::UpdateAppItemFromSyncItem(
     AppListItem* app_item) {
   if (!app_item->position().Equals(sync_item->item_ordinal))
     model_->SetItemPosition(app_item, sync_item->item_ordinal);
+  // Only update the item name if it is a Folder or the name is empty.
+  if (sync_item->item_name != app_item->name() &&
+      (app_item->GetItemType() == AppListFolderItem::kItemType ||
+       app_item->name().empty())) {
+    model_->SetItemName(app_item, sync_item->item_name);
+  }
 }
 
 bool AppListSyncableService::SyncStarted() {

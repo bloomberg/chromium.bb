@@ -26,23 +26,6 @@ void AppListItem::SetIcon(const gfx::ImageSkia& icon, bool has_shadow) {
   FOR_EACH_OBSERVER(AppListItemObserver, observers_, ItemIconChanged());
 }
 
-void AppListItem::SetName(const std::string& name) {
-  if (name_ == name && (short_name_.empty() || short_name_ == name))
-    return;
-  name_ = name;
-  short_name_.clear();
-  FOR_EACH_OBSERVER(AppListItemObserver, observers_, ItemNameChanged());
-}
-
-void AppListItem::SetNameAndShortName(const std::string& name,
-                                      const std::string& short_name) {
-  if (name_ == name && short_name_ == short_name)
-    return;
-  name_ = name;
-  short_name_ = short_name;
-  FOR_EACH_OBSERVER(AppListItemObserver, observers_, ItemNameChanged());
-}
-
 void AppListItem::SetHighlighted(bool highlighted) {
   if (highlighted_ == highlighted)
     return;
@@ -113,6 +96,25 @@ bool AppListItem::CompareForTest(const AppListItem* other) const {
 std::string AppListItem::ToDebugString() const {
   return id_.substr(0, 8) + " '" + name_ + "'"
       + " [" + position_.ToDebugString() + "]";
+}
+
+// Protected methods
+
+void AppListItem::SetName(const std::string& name) {
+  if (name_ == name && (short_name_.empty() || short_name_ == name))
+    return;
+  name_ = name;
+  short_name_.clear();
+  FOR_EACH_OBSERVER(AppListItemObserver, observers_, ItemNameChanged());
+}
+
+void AppListItem::SetNameAndShortName(const std::string& name,
+                                      const std::string& short_name) {
+  if (name_ == name && short_name_ == short_name)
+    return;
+  name_ = name;
+  short_name_ = short_name;
+  FOR_EACH_OBSERVER(AppListItemObserver, observers_, ItemNameChanged());
 }
 
 }  // namespace app_list

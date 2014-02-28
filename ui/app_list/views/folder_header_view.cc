@@ -168,7 +168,7 @@ void FolderHeaderView::ContentsChanged(views::Textfield* sender,
 
   folder_item_->RemoveObserver(this);
   std::string name = base::UTF16ToUTF8(folder_name_view_->text());
-  folder_item_->SetName(name);
+  delegate_->SetItemName(folder_item_, name);
   folder_item_->AddObserver(this);
 }
 

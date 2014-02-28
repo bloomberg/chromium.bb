@@ -77,46 +77,41 @@ TEST_F(AppListModelPicklerUnitTest, EmptyModel) {
 
 TEST_F(AppListModelPicklerUnitTest, OneItem) {
   AppListModel model;
-  scoped_ptr<AppListItem> app1(new AppListItem("abc"));
-  app1->SetNameAndShortName("hello, there", "ht");
-  model.AddItem(app1.Pass());
-
+  model.AddItem(make_scoped_ptr(new AppListItem("abc")).Pass());
   DoConsistencyChecks(&model);
 }
 
 TEST_F(AppListModelPicklerUnitTest, TwoItems) {
   AppListModel model;
-  scoped_ptr<AppListItem> app1(new AppListItem("abc"));
-  app1->SetNameAndShortName("hello, there", "ht");
-  model.AddItem(app1.Pass());
-
-  scoped_ptr<AppListItem> app2(new AppListItem("abc2"));
-  app2->SetNameAndShortName("hello, there 2", "ht2");
-  model.AddItem(app2.Pass());
+  AppListItem* app1 =
+      model.AddItem(make_scoped_ptr(new AppListItem("abc")).Pass());
+  model.SetItemNameAndShortName(app1, "hello, there", "ht");
+  AppListItem* app2 =
+      model.AddItem(make_scoped_ptr(new AppListItem("abc2")).Pass());
+  model.SetItemNameAndShortName(app2, "hello, there 2", "ht2");
 
   DoConsistencyChecks(&model);
 }
 
 TEST_F(AppListModelPicklerUnitTest, Images) {
   AppListModel model;
-  scoped_ptr<AppListItem> app1(new AppListItem("abc"));
-  app1->SetName("hello, there");
+  AppListItem* app1 =
+      model.AddItem(make_scoped_ptr(new AppListItem("abc")).Pass());
+  model.SetItemName(app1, "hello, there");
   app1->SetIcon(MakeImage(), true);
-  model.AddItem(app1.Pass());
-
-  scoped_ptr<AppListItem> app2(new AppListItem("abc2"));
-  app2->SetName("hello, there 2");
-  model.AddItem(app2.Pass());
+  AppListItem* app2 =
+      model.AddItem(make_scoped_ptr(new AppListItem("abc2")).Pass());
+  model.SetItemName(app2, "hello, there 2");
 
   DoConsistencyChecks(&model);
 }
 
 TEST_F(AppListModelPicklerUnitTest, EmptyImage) {
   AppListModel model;
-  scoped_ptr<AppListItem> app1(new AppListItem("abc"));
-  app1->SetName("hello, there");
+  AppListItem* app1 =
+      model.AddItem(make_scoped_ptr(new AppListItem("abc")).Pass());
+  model.SetItemName(app1, "hello, there");
   app1->SetIcon(gfx::ImageSkia(), true);
-  model.AddItem(app1.Pass());
 
   DoConsistencyChecks(&model);
 }

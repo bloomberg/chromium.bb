@@ -27,7 +27,7 @@ class TestObserver : public AppListModelObserver {
       : status_changed_count_(0),
         items_added_(0),
         items_removed_(0),
-        items_moved_(0) {
+        items_updated_(0) {
   }
   virtual ~TestObserver() {
   }
@@ -46,26 +46,26 @@ class TestObserver : public AppListModelObserver {
   }
 
   virtual void OnAppListItemUpdated(AppListItem* item) OVERRIDE {
-    items_moved_++;
+    items_updated_++;
   }
 
   int status_changed_count() const { return status_changed_count_; }
   size_t items_added() { return items_added_; }
   size_t items_removed() { return items_removed_; }
-  size_t items_moved() { return items_moved_; }
+  size_t items_updated() { return items_updated_; }
 
   void ResetCounts() {
     status_changed_count_ = 0;
     items_added_ = 0;
     items_removed_ = 0;
-    items_moved_ = 0;
+    items_updated_ = 0;
   }
 
  private:
   int status_changed_count_;
   size_t items_added_;
   size_t items_removed_;
-  size_t items_moved_;
+  size_t items_updated_;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
@@ -183,8 +183,9 @@ TEST_F(AppListModelTest, ModelMoveItem) {
   model_.CreateAndAddItem("Inserted Item");
   ASSERT_EQ(num_apps + 1, model_.item_list()->item_count());
   // Move it to the position 1.
+  observer_.ResetCounts();
   model_.item_list()->MoveItem(num_apps, 1);
-  EXPECT_EQ(1u, observer_.items_moved());
+  EXPECT_EQ(1u, observer_.items_updated());
   EXPECT_EQ("Item 0,Inserted Item,Item 1,Item 2", GetModelContents());
 }
 

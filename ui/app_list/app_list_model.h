@@ -90,6 +90,14 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
   void SetItemPosition(AppListItem* item,
                        const syncer::StringOrdinal& new_position);
 
+  // Sets the name of |item| and notifies observers.
+  void SetItemName(AppListItem* item, const std::string& name);
+
+  // Sets the name and short name of |item| and notifies observers.
+  void SetItemNameAndShortName(AppListItem* item,
+                               const std::string& name,
+                               const std::string& short_name);
+
   // Deletes the item matching |id| from |item_list_| or from its folder.
   void DeleteItem(const std::string& id);
 

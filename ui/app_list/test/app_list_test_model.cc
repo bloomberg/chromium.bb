@@ -93,7 +93,7 @@ AppListTestModel::AppListTestItem* AppListTestModel::CreateItem(
   else
     position = item_list()->item_at(nitems - 1)->position().CreateAfter();
   item->SetPosition(position);
-  item->SetName(id);
+  SetItemName(item, id);
   return item;
 }
 

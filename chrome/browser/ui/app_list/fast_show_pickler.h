@@ -33,6 +33,14 @@ class FastShowPickler {
   // |src| to |dest|.
   static void CopyOver(
       app_list::AppListModel* src, app_list::AppListModel* dest);
+
+ private:
+  // Private static methods allow friend access to AppListItem methods.
+  static scoped_ptr<app_list::AppListItem> UnpickleAppListItem(
+      PickleIterator* it);
+  static bool PickleAppListItem(Pickle* pickle, app_list::AppListItem* item);
+  static void CopyOverItem(app_list::AppListItem* src_item,
+                           app_list::AppListItem* dest_item);
 };
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_FAST_SHOW_PICKLER_H_

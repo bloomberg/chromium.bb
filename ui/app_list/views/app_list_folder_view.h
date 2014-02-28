@@ -111,6 +111,8 @@ class AppListFolderView : public views::View,
   virtual void NavigateBack(AppListFolderItem* item,
                             const ui::Event& event_flags) OVERRIDE;
   virtual void GiveBackFocusToSearchBox() OVERRIDE;
+  virtual void SetItemName(AppListFolderItem* item,
+                           const std::string& name) OVERRIDE;
 
   AppsContainerView* container_view_;  // Not owned.
   AppListMainView* app_list_main_view_;   // Not Owned.

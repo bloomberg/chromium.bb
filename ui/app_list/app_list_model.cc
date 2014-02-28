@@ -178,6 +178,25 @@ void AppListModel::SetItemPosition(AppListItem* item,
                     OnAppListItemUpdated(item));
 }
 
+void AppListModel::SetItemName(AppListItem* item, const std::string& name) {
+  item->SetName(name);
+  DVLOG(2) << "AppListModel::SetItemName: " << item->ToDebugString();
+  FOR_EACH_OBSERVER(AppListModelObserver,
+                    observers_,
+                    OnAppListItemUpdated(item));
+}
+
+void AppListModel::SetItemNameAndShortName(AppListItem* item,
+                                           const std::string& name,
+                                           const std::string& short_name) {
+  item->SetNameAndShortName(name, short_name);
+  DVLOG(2) << "AppListModel::SetItemNameAndShortName: "
+           << item->ToDebugString();
+  FOR_EACH_OBSERVER(AppListModelObserver,
+                    observers_,
+                    OnAppListItemUpdated(item));
+}
+
 void AppListModel::DeleteItem(const std::string& id) {
   AppListItem* item = FindItem(id);
   if (!item)

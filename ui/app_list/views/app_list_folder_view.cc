@@ -288,4 +288,9 @@ void AppListFolderView::GiveBackFocusToSearchBox() {
   app_list_main_view_->search_box_view()->search_box()->RequestFocus();
 }
 
+void AppListFolderView::SetItemName(AppListFolderItem* item,
+                                    const std::string& name) {
+  model_->SetItemName(item, name);
+}
+
 }  // namespace app_list

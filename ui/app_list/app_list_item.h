@@ -13,6 +13,8 @@
 #include "ui/app_list/app_list_export.h"
 #include "ui/gfx/image/image_skia.h"
 
+class FastShowPickler;
+
 namespace ui {
 class MenuModel;
 }
@@ -34,14 +36,6 @@ class APP_LIST_EXPORT AppListItem {
   void SetIcon(const gfx::ImageSkia& icon, bool has_shadow);
   const gfx::ImageSkia& icon() const { return icon_; }
   bool has_shadow() const { return has_shadow_; }
-
-  // Set the full name of the item. Clears any shortened name.
-  void SetName(const std::string& name);
-
-  // Set the full name and an optional shortened name of the item (e.g. to use
-  // if the full name is too long to fit in a view).
-  void SetNameAndShortName(const std::string& name,
-                           const std::string& short_name);
 
   const std::string& GetDisplayName() const {
     return short_name_.empty() ? name_ : short_name_;
@@ -93,9 +87,21 @@ class APP_LIST_EXPORT AppListItem {
   virtual std::string ToDebugString() const;
 
  protected:
+  friend class ::FastShowPickler;
   friend class AppListItemList;
   friend class AppListItemListTest;
   friend class AppListModel;
+
+  // These should only be called by AppListModel or in tests so that name
+  // changes trigger update notifications.
+
+  // Sets the full name of the item. Clears any shortened name.
+  void SetName(const std::string& name);
+
+  // Sets the full name and an optional shortened name of the item (e.g. to use
+  // if the full name is too long to fit in a view).
+  void SetNameAndShortName(const std::string& name,
+                           const std::string& short_name);
 
   void set_position(const syncer::StringOrdinal& new_position) {
     DCHECK(new_position.IsValid());
