@@ -5,7 +5,9 @@
 #include "content/renderer/p2p/ipc_network_manager.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/sys_byteorder.h"
+#include "content/public/common/content_switches.h"
 #include "net/base/net_util.h"
 
 namespace content {
@@ -72,6 +74,16 @@ void IpcNetworkManager::OnNetworkListChanged(
         networks.push_back(network);
       }
     }
+  }
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAllowLoopbackInPeerConnection)) {
+    std::string name("loopback");
+    talk_base::IPAddress ip_address(in6addr_loopback);
+    talk_base::Network* network = new talk_base::Network(
+        name, name, ip_address, 32);
+    network->AddIP(ip_address);
+    networks.push_back(network);
   }
 
   bool changed = false;

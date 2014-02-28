@@ -21,6 +21,11 @@ void WebRtcContentBrowserTest::SetUpCommandLine(CommandLine* command_line) {
       switches::kUseFakeDeviceForMediaStream));
   ASSERT_TRUE(CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kUseFakeUIForMediaStream));
+
+  // Always include loopback interface in network list, in case the test device
+  // doesn't have other interfaces available.
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowLoopbackInPeerConnection);
 }
 
 void WebRtcContentBrowserTest::SetUp() {

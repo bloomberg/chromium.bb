@@ -665,6 +665,10 @@ const char kIgnoreGpuBlacklist[]            = "ignore-gpu-blacklist";
 // Run the GPU process as a thread in the browser process.
 const char kInProcessGPU[]                  = "in-process-gpu";
 
+// Allows loopback interface to be added in network list for peer connection.
+const char kAllowLoopbackInPeerConnection[] =
+    "allow-loopback-in-peer-connection";
+
 // These mappings only apply to the host resolver, and can insert additional
 // resolutions in front of resolutions that match a pattern.
 const char kIpResolverRules[]               = "ip-resolver-rules";

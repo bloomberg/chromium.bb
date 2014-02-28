@@ -1062,6 +1062,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableWebMIDI,
     switches::kForceDeviceScaleFactor,
     switches::kFullMemoryCrashReport,
+    switches::kAllowLoopbackInPeerConnection,
     switches::kJavaScriptFlags,
     switches::kLoggingLevel,
     switches::kMaxUntiledLayerWidth,
