@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "gin/arguments.h"
 #include "gin/converter.h"
+#include "gin/per_context_data.h"
 #include "gin/per_isolate_data.h"
 #include "gin/public/wrapper_info.h"
 #include "gin/runner.h"
@@ -46,6 +47,13 @@ PendingModule::~PendingModule() {
 }
 
 namespace {
+
+// Key for base::SupportsUserData::Data.
+const char kModuleRegistryKey[] = "ModuleRegistry";
+
+struct ModuleRegistryData : public base::SupportsUserData::Data {
+  scoped_ptr<ModuleRegistry> registry;
+};
 
 void Define(const v8::FunctionCallbackInfo<Value>& info) {
   Arguments args(info);
@@ -87,10 +95,6 @@ Local<FunctionTemplate> GetDefineTemplate(Isolate* isolate) {
   return templ;
 }
 
-v8::Handle<String> GetHiddenValueKey(Isolate* isolate) {
-  return StringToSymbol(isolate, "::gin::ModuleRegistry");
-}
-
 }  // namespace
 
 ModuleRegistry::ModuleRegistry(Isolate* isolate)
@@ -109,20 +113,19 @@ void ModuleRegistry::RegisterGlobals(Isolate* isolate,
 
 // static
 ModuleRegistry* ModuleRegistry::From(v8::Handle<Context> context) {
-  Isolate* isolate = context->GetIsolate();
-  v8::Handle<String> key = GetHiddenValueKey(isolate);
-  v8::Handle<Value> value = context->Global()->GetHiddenValue(key);
-  v8::Handle<External> external;
-  if (value.IsEmpty() || !ConvertFromV8(isolate, value, &external)) {
-    PerContextData* data = PerContextData::From(context);
-    if (!data)
-      return NULL;
-    ModuleRegistry* registry = new ModuleRegistry(isolate);
-    context->Global()->SetHiddenValue(key, External::New(isolate, registry));
-    data->AddSupplement(scoped_ptr<ContextSupplement>(registry));
-    return registry;
+  PerContextData* data = PerContextData::From(context);
+  if (!data)
+    return NULL;
+
+  ModuleRegistryData* registry_data = static_cast<ModuleRegistryData*>(
+      data->GetUserData(kModuleRegistryKey));
+  if (!registry_data) {
+    // PerContextData takes ownership of ModuleRegistryData.
+    registry_data = new ModuleRegistryData;
+    registry_data->registry.reset(new ModuleRegistry(context->GetIsolate()));
+    data->SetUserData(kModuleRegistryKey, registry_data);
   }
-  return static_cast<ModuleRegistry*>(external->Value());
+  return registry_data->registry.get();
 }
 
 void ModuleRegistry::AddBuiltinModule(Isolate* isolate, const std::string& id,
@@ -168,11 +171,6 @@ void ModuleRegistry::RegisterModule(Isolate* isolate,
   waiting_callbacks_.erase(it);
   // Should we call the callback asynchronously?
   callback.Run(module);
-}
-
-void ModuleRegistry::Detach(v8::Handle<Context> context) {
-  context->Global()->SetHiddenValue(GetHiddenValueKey(context->GetIsolate()),
-                                    v8::Handle<Value>());
 }
 
 bool ModuleRegistry::CheckDependencies(PendingModule* pending) {

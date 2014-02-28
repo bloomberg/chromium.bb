@@ -10,12 +10,6 @@
 
 namespace gin {
 
-ContextSupplement::ContextSupplement() {
-}
-
-ContextSupplement::~ContextSupplement() {
-}
-
 PerContextData::PerContextData(v8::Handle<v8::Context> context)
     : runner_(NULL) {
   context->SetAlignedPointerInEmbedderData(
@@ -23,31 +17,12 @@ PerContextData::PerContextData(v8::Handle<v8::Context> context)
 }
 
 PerContextData::~PerContextData() {
-  DCHECK(supplements_.empty());
-}
-
-void PerContextData::Detach(v8::Handle<v8::Context> context) {
-  DCHECK(From(context) == this);
-  context->SetAlignedPointerInEmbedderData(
-      kPerContextDataStartIndex + kEmbedderNativeGin, NULL);
-
-  SuplementVector supplements;
-  supplements.swap(supplements_);
-
-  for (SuplementVector::iterator it = supplements.begin();
-       it != supplements.end(); ++it) {
-    (*it)->Detach(context);
-  }
 }
 
 // static
 PerContextData* PerContextData::From(v8::Handle<v8::Context> context) {
   return static_cast<PerContextData*>(
       context->GetAlignedPointerFromEmbedderData(kEncodedValueIndex));
-}
-
-void PerContextData::AddSupplement(scoped_ptr<ContextSupplement> supplement) {
-  supplements_.push_back(supplement.release());
 }
 
 }  // namespace gin
