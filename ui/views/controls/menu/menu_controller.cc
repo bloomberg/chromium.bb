@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "ui/aura/client/dispatcher_client.h"
 #include "ui/base/dragdrop/drag_utils.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -2302,18 +2303,23 @@ void MenuController::SetExitType(ExitType type) {
   // Exit nested message loops as soon as possible. We do this as
   // MessagePumpDispatcher is only invoked before native events, which means
   // its entirely possible for a Widget::CloseNow() task to be processed before
-  // the next native message. By using QuitNow() we ensures the nested message
-  // loop returns as soon as possible and avoids having deleted views classes
-  // (such as widgets and rootviews) on the stack when the nested message loop
-  // stops.
+  // the next native message. We quite the nested message loop as soon as
+  // possible to avoid having deleted views classes (such as widgets and
+  // rootviews) on the stack when the nested message loop stops.
   //
-  // It's safe to invoke QuitNow multiple times, it only effects the current
-  // loop.
+  // It's safe to invoke QuitNestedMessageLoop() multiple times, it only effects
+  // the current loop.
   bool quit_now = ShouldQuitNow() && exit_type_ != EXIT_NONE &&
       message_loop_depth_;
 
-  if (quit_now)
-    base::MessageLoop::current()->QuitNow();
+  if (quit_now) {
+    if (owner_) {
+      aura::Window* root = owner_->GetNativeWindow()->GetRootWindow();
+      aura::client::GetDispatcherClient(root)->QuitNestedMessageLoop();
+    } else {
+      base::MessageLoop::current()->QuitNow();
+    }
+  }
 }
 
 void MenuController::HandleMouseLocation(SubmenuView* source,
