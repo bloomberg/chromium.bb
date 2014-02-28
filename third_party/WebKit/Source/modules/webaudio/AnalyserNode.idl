@@ -41,5 +41,6 @@
     void getByteFrequencyData(Uint8Array array);
 
     // Real-time waveform data
+    void getFloatTimeDomainData(Float32Array array);
     void getByteTimeDomainData(Uint8Array array);
 };

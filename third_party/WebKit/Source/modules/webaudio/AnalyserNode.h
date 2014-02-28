@@ -62,8 +62,8 @@ public:
 
     void getFloatFrequencyData(Float32Array* array) { m_analyser.getFloatFrequencyData(array); }
     void getByteFrequencyData(Uint8Array* array) { m_analyser.getByteFrequencyData(array); }
+    void getFloatTimeDomainData(Float32Array* array) { m_analyser.getFloatTimeDomainData(array); }
     void getByteTimeDomainData(Uint8Array* array) { m_analyser.getByteTimeDomainData(array); }
-
 private:
     virtual double tailTime() const OVERRIDE { return 0; }
     virtual double latencyTime() const OVERRIDE { return 0; }

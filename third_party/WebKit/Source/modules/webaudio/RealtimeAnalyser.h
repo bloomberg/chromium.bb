@@ -56,6 +56,7 @@ public:
 
     void getFloatFrequencyData(Float32Array*);
     void getByteFrequencyData(Uint8Array*);
+    void getFloatTimeDomainData(Float32Array*);
     void getByteTimeDomainData(Uint8Array*);
 
     // The audio thread writes input data here.
