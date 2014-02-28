@@ -1125,7 +1125,7 @@ Press any key to continue exploring.
     <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> updates automatically so you always have the freshest version. When this download completes, <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> will restart and you'll be on your way.
   </message>
   <message name="IDS_REMORA_CONFIRM_MESSAGE" desc="Remora confirm message on the first OOBE screen">
-    This device is ready to be set up.
+    Chromebox for Meetings device is ready to be set up.
   </message>
   <message name="IDS_WELCOME_SCREEN_GREETING" desc="Greeting message on the OOBE welcome screen">
     Welcome!
@@ -4983,7 +4983,7 @@ All users must sign out to continue.
   <message name="IDS_PORTAL_DETECTION_NOTIFICATION_SIGNIN_BUTTON" desc="Label on the button on the system notification that current network is behind captive portal. When clicked, captive portal login page is opened.">
     Go to login page
   </message>
-  
+
   <!-- Locale Change Notification-->
   <message name="IDS_LOCALE_CHANGE_MESSAGE" desc="Message shown when locale was changed based on profile content.">
     Chrome's language has changed from "<ph name="FROM_LOCALE">$1<ex>Italian</ex></ph>" to "<ph name="TO_LOCALE">$2<ex>English (United States)</ex></ph>" after syncing your settings.
