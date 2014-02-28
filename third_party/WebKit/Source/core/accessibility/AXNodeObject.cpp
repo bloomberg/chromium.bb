@@ -1569,10 +1569,10 @@ void AXNodeObject::childrenChanged()
 
 void AXNodeObject::selectionChanged()
 {
-    // When the selection changes, post the notification on the first ancestor that's an
-    // ARIA text box, or that's marked as contentEditable, otherwise post the notification
-    // on the web area.
-    if (isNonNativeTextControl() || isWebArea())
+    // Post the selected text changed event on the first ancestor that's
+    // focused (to handle form controls, ARIA text boxes and contentEditable),
+    // or the web area if the selection is just in the document somewhere.
+    if (isFocused() || isWebArea())
         axObjectCache()->postNotification(this, document(), AXObjectCache::AXSelectedTextChanged, true);
     else
         AXObject::selectionChanged(); // Calls selectionChanged on parent.
