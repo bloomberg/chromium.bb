@@ -137,6 +137,7 @@ class RenderObject : public ImageResourceClient {
     friend class RenderLayerReflectionInfo; // For setParent
     friend class RenderLayerScrollableArea; // For setParent.
     friend class RenderObjectChildList;
+    WTF_MAKE_NONCOPYABLE(RenderObject);
 public:
     // Anonymous objects should pass the document as their node, and they will then automatically be
     // marked as anonymous in the constructor.
