@@ -52,7 +52,6 @@ class ProcessSingleton : public base::NonThreadSafe {
     PROCESS_NOTIFIED,
     PROFILE_IN_USE,
     LOCK_ERROR,
-    NUM_NOTIFY_RESULTS,
   };
 
   // Implement this callback to handle notifications from other processes. The
