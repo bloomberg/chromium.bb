@@ -96,10 +96,10 @@ bool JSONWriter::BuildJSONString(const Value* const node, size_t depth) {
       // The JSON spec requires that non-integer values in the range (-1,1)
       // have a zero before the decimal point - ".52" is not valid, "0.52" is.
       if (real[0] == '.') {
-        real.insert(0U, 1U, '0');
+        real.insert(static_cast<size_t>(0), static_cast<size_t>(1), '0');
       } else if (real.length() > 1 && real[0] == '-' && real[1] == '.') {
         // "-.1" bad "-0.1" good
-        real.insert(1U, 1U, '0');
+        real.insert(static_cast<size_t>(1), static_cast<size_t>(1), '0');
       }
       json_string_->append(real);
       return result;
