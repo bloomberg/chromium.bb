@@ -20,7 +20,6 @@ class Profile;
 namespace autofill {
 class PasswordGenerationPopupObserver;
 class PasswordGenerationPopupControllerImpl;
-class PasswordGenerator;
 }
 
 namespace content {
@@ -98,9 +97,6 @@ class ChromePasswordManagerClient
 
   // Observer for password generation popup.
   autofill::PasswordGenerationPopupObserver* observer_;
-
-  // Controls how passwords are generated.
-  scoped_ptr<autofill::PasswordGenerator> password_generator_;
 
   // Controls the popup
   base::WeakPtr<

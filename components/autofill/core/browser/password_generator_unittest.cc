@@ -16,11 +16,13 @@ TEST(PasswordGeneratorTest, PasswordLength) {
 
   PasswordGenerator pg2(-1);
   password = pg2.Generate();
-  EXPECT_EQ(password.size(), PasswordGenerator::kDefaultPasswordLength);
+  EXPECT_EQ(password.size(),
+            static_cast<size_t>(PasswordGenerator::kDefaultPasswordLength));
 
   PasswordGenerator pg3(100);
   password = pg3.Generate();
-  EXPECT_EQ(password.size(), PasswordGenerator::kDefaultPasswordLength);
+  EXPECT_EQ(password.size(),
+            static_cast<size_t>(PasswordGenerator::kDefaultPasswordLength));
 }
 
 TEST(PasswordGeneratorTest, PasswordPattern) {

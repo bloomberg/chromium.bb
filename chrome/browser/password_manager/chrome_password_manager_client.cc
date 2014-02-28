@@ -51,6 +51,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       driver_(web_contents, this),
+      observer_(NULL),
       weak_factory_(this) {
   // Avoid checking OS password until later on in browser startup
   // since it calls a few Windows APIs.
@@ -217,14 +218,12 @@ void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
 #if defined(USE_AURA)
   gfx::RectF element_bounds_in_screen_space = GetBoundsInScreenSpace(bounds);
 
-  password_generator_.reset(new autofill::PasswordGenerator(max_length));
-
   popup_controller_ =
       autofill::PasswordGenerationPopupControllerImpl::GetOrCreate(
           popup_controller_,
           element_bounds_in_screen_space,
           form,
-          password_generator_.get(),
+          max_length,
           driver_.GetPasswordManager(),
           observer_,
           web_contents(),
@@ -245,7 +244,7 @@ void ChromePasswordManagerClient::ShowPasswordEditingPopup(
           popup_controller_,
           element_bounds_in_screen_space,
           form,
-          password_generator_.get(),
+          0,  // Unspecified max length.
           driver_.GetPasswordManager(),
           observer_,
           web_contents(),

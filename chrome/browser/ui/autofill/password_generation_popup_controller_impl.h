@@ -42,14 +42,14 @@ class PasswordGenerationPopupControllerImpl
   // |previous| if it is not returned. |bounds| is the bounds of the element
   // that we are showing the dropdown for in screen space. |form| is the
   // identifier for the form that we are filling, and is used to notify
-  // |password_manager| if the password is generated. |generator| is used to
-  // create the password shown. If not NULL, |observer| will be notified of
-  // changes of the popup state.
+  // |password_manager| if the password is generated. |max_length| is used to
+  // determine the length of the password shown. If not NULL, |observer| will
+  // be notified of changes of the popup state.
   static base::WeakPtr<PasswordGenerationPopupControllerImpl> GetOrCreate(
       base::WeakPtr<PasswordGenerationPopupControllerImpl> previous,
       const gfx::RectF& bounds,
       const PasswordForm& form,
-      PasswordGenerator* generator,
+      int max_length,
       PasswordManager* password_manager,
       PasswordGenerationPopupObserver* observer,
       content::WebContents* web_contents,
@@ -77,7 +77,7 @@ class PasswordGenerationPopupControllerImpl
   PasswordGenerationPopupControllerImpl(
       const gfx::RectF& bounds,
       const PasswordForm& form,
-      PasswordGenerator* generator,
+      int max_length,
       PasswordManager* password_manager,
       PasswordGenerationPopupObserver* observer,
       content::WebContents* web_contents,
@@ -126,10 +126,13 @@ class PasswordGenerationPopupControllerImpl
   void CalculateBounds();
 
   PasswordForm form_;
-  PasswordGenerator* generator_;
   PasswordManager* password_manager_;
+
   // May be NULL.
   PasswordGenerationPopupObserver* observer_;
+
+  // Controls how passwords are generated.
+  scoped_ptr<PasswordGenerator> generator_;
 
   // Contains common popup functionality.
   PopupControllerCommon controller_common_;

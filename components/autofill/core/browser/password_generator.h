@@ -19,7 +19,7 @@ namespace autofill {
 class PasswordGenerator {
  public:
   // |max_length| is used as a hint for the generated password's length.
-  explicit PasswordGenerator(size_t max_length);
+  explicit PasswordGenerator(int max_length);
   ~PasswordGenerator();
 
   // Returns a random password such that:
@@ -34,11 +34,11 @@ class PasswordGenerator {
 
  private:
   // Unit test also need to access |kDefaultPasswordLength|.
-  static const size_t kDefaultPasswordLength;
+  static const int kDefaultPasswordLength;
   FRIEND_TEST_ALL_PREFIXES(PasswordGeneratorTest, PasswordLength);
 
   // The length of the generated password.
-  const size_t password_length_;
+  const int password_length_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerator);
 };

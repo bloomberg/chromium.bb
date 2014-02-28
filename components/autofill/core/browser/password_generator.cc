@@ -24,14 +24,14 @@ const char kOtherSymbols[] =
      ')', '*', '+', ',', '-', '.', '/', ':',
      ';', '<', '=', '>', '?', '@', '[', '\\',
      ']', '^', '_', '`', '{', '|', '}', '~'};
-const size_t kMinPasswordLength = 4;
-const size_t kMaxPasswordLength = 15;
+const int kMinPasswordLength = 4;
+const int kMaxPasswordLength = 15;
 
 namespace {
 
 // A helper function to get the length of the generated password from
 // |max_length| retrieved from input password field.
-size_t GetLengthFromHint(size_t max_length, size_t default_length) {
+int GetLengthFromHint(int max_length, int default_length) {
   if (max_length >= kMinPasswordLength && max_length <= kMaxPasswordLength)
     return max_length;
   else
@@ -50,32 +50,32 @@ void InitializeAlphaNumericCharacters(std::vector<char>* characters) {
 // Classic algorithm to randomly select |num_select| elements out of
 // |num_total| elements. One description can be found at:
 // "http://stackoverflow.com/questions/48087/select-a-random-n-elements-from-listt-in-c-sharp/48089#48089"
-void GetRandomSelection(size_t num_to_select,
-                        size_t num_total,
-                        std::vector<size_t>* selections) {
+void GetRandomSelection(int num_to_select,
+                        int num_total,
+                        std::vector<int>* selections) {
   DCHECK_GE(num_total, num_to_select);
-  size_t num_left = num_total;
-  size_t num_needed = num_to_select;
-  for (size_t i = 0; i < num_total && num_needed > 0; ++i) {
+  int num_left = num_total;
+  int num_needed = num_to_select;
+  for (int i = 0; i < num_total && num_needed > 0; ++i) {
     // we have probability = |num_needed| / |num_left| to select
     // this position.
-    size_t probability = base::RandInt(0, num_left - 1);
+    int probability = base::RandInt(0, num_left - 1);
     if (probability < num_needed) {
       selections->push_back(i);
       --num_needed;
     }
     --num_left;
   }
-  DCHECK_EQ(num_to_select, selections->size());
+  DCHECK_EQ(num_to_select, static_cast<int>(selections->size()));
 }
 
 }  // namespace
 
 namespace autofill {
 
-const size_t PasswordGenerator::kDefaultPasswordLength = 12;
+const int PasswordGenerator::kDefaultPasswordLength = 12;
 
-PasswordGenerator::PasswordGenerator(size_t max_length)
+PasswordGenerator::PasswordGenerator(int max_length)
     : password_length_(GetLengthFromHint(max_length, kDefaultPasswordLength)) {}
 PasswordGenerator::~PasswordGenerator() {}
 
@@ -89,15 +89,15 @@ std::string PasswordGenerator::Generate() const {
   // one lower case letter, one digit, and one other symbol respectively,
   // to make sure at least one of each category of characters will be
   // included in the password.
-  std::vector<size_t> positions;
-  GetRandomSelection(4u, password_length_, &positions);
+  std::vector<int> positions;
+  GetRandomSelection(4, password_length_, &positions);
 
   // To enhance the strengh of the password, we random suffle the positions so
   // that the 4 catagories can be put at a random position in it.
   std::random_shuffle(positions.begin(), positions.end());
 
   // Next, generate each character of the password.
-  for (size_t i = 0; i < password_length_; ++i) {
+  for (int i = 0; i < password_length_; ++i) {
     if (i == positions[0]) {
       // Generate random upper case letter.
       ret.push_back(static_cast<char>(base::RandInt(kMinUpper, kMaxUpper)));

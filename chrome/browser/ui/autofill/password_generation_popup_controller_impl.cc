@@ -36,7 +36,7 @@ PasswordGenerationPopupControllerImpl::GetOrCreate(
     base::WeakPtr<PasswordGenerationPopupControllerImpl> previous,
     const gfx::RectF& bounds,
     const PasswordForm& form,
-    PasswordGenerator* generator,
+    int max_length,
     PasswordManager* password_manager,
     PasswordGenerationPopupObserver* observer,
     content::WebContents* web_contents,
@@ -45,7 +45,6 @@ PasswordGenerationPopupControllerImpl::GetOrCreate(
       previous->element_bounds() == bounds &&
       previous->web_contents() == web_contents &&
       previous->container_view() == container_view) {
-    // TODO(gcasto): Any state that we should clear here?
     return previous;
   }
 
@@ -56,7 +55,7 @@ PasswordGenerationPopupControllerImpl::GetOrCreate(
       new PasswordGenerationPopupControllerImpl(
           bounds,
           form,
-          generator,
+          max_length,
           password_manager,
           observer,
           web_contents,
@@ -67,15 +66,15 @@ PasswordGenerationPopupControllerImpl::GetOrCreate(
 PasswordGenerationPopupControllerImpl::PasswordGenerationPopupControllerImpl(
     const gfx::RectF& bounds,
     const PasswordForm& form,
-    PasswordGenerator* generator,
+    int max_length,
     PasswordManager* password_manager,
     PasswordGenerationPopupObserver* observer,
     content::WebContents* web_contents,
     gfx::NativeView container_view)
     : form_(form),
-      generator_(generator),
       password_manager_(password_manager),
       observer_(observer),
+      generator_(new PasswordGenerator(max_length)),
       controller_common_(bounds, container_view, web_contents),
       view_(NULL),
       font_list_(ResourceBundle::GetSharedInstance().GetFontList(
