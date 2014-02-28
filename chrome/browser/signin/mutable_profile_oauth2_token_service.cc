@@ -18,6 +18,10 @@
 #include "chrome/browser/managed_mode/managed_user_constants.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif
+
 namespace {
 
 const char kAccountIdPrefix[] = "AccountId-";
@@ -294,6 +298,10 @@ void MutableProfileOAuth2TokenService::UpdateCredentials(
     // If token present, and different from the new one, cancel its requests,
     // and clear the entries in cache related to that account.
     if (refresh_token_present) {
+      std::string revoke_reason = refresh_token_present ? "token differs" :
+                                                          "token is missing";
+      LOG(WARNING) << "Revoking refresh token on server. "
+                   << "Reason: token update, " << revoke_reason;
       RevokeCredentialsOnServer(refresh_tokens_[account_id]->refresh_token());
       CancelRequestsForAccount(account_id);
       ClearCacheForAccount(account_id);
@@ -347,6 +355,25 @@ void MutableProfileOAuth2TokenService::ClearPersistedCredentials(
 }
 
 void MutableProfileOAuth2TokenService::RevokeAllCredentials() {
+#if defined(OS_CHROMEOS)
+  // UserManager may not exist in unit_tests.
+  if (chromeos::UserManager::IsInitialized() &&
+      chromeos::UserManager::Get()->IsLoggedInAsLocallyManagedUser()) {
+    // Don't allow revoking credentials for Chrome OS supervised users.
+    // See http://crbug.com/332032
+    LOG(ERROR) << "Attempt to revoke supervised user refresh "
+               << "token detected, ignoring.";
+    return;
+  }
+#else
+  // Don't allow revoking credentials for supervised users.
+  // See http://crbug.com/332032
+  if (profile()->IsManaged()) {
+    LOG(ERROR) << "Attempt to revoke supervised user refresh "
+               << "token detected, ignoring.";
+    return;
+  }
+#endif
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   CancelWebTokenFetch();
   CancelAllRequests();

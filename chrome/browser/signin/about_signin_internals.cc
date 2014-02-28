@@ -312,7 +312,7 @@ base::DictionaryValue* AboutSigninInternals::TokenInfo::ToValue() const {
     } else {
       token_info->SetString(
           "status",
-          base::StringPrintf("Failure: %s", error.error_message().c_str()));
+          base::StringPrintf("Failure: %s", error.ToString().c_str()));
     }
   } else {
     token_info->SetString("status", "Waiting for response");

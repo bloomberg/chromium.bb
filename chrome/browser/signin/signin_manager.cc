@@ -368,6 +368,8 @@ void SigninManager::SignOut() {
 
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+  LOG(WARNING) << "Revoking refresh token on server. Reason: sign out, "
+               << "IsSigninAllowed: " << IsSigninAllowed();
   token_service->RevokeAllCredentials();
 }
 
