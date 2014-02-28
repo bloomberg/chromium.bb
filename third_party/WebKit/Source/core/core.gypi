@@ -2853,7 +2853,6 @@
             'svg/SVGAnimatedNumber.cpp',
             'svg/SVGAnimatedNumberOptionalNumber.cpp',
             'svg/SVGAnimatedPath.cpp',
-            'svg/SVGAnimatedType.cpp',
             'svg/SVGAnimatedTypeAnimator.cpp',
             'svg/SVGAnimatedTypeAnimator.h',
             'svg/SVGAnimateElement.cpp',

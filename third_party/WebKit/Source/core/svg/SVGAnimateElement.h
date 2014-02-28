@@ -31,7 +31,6 @@
 namespace WebCore {
 
 class SVGAnimatedProperty;
-class SVGAnimatedType;
 class SVGAnimatedTypeAnimator;
 
 class SVGAnimateElement : public SVGAnimationElement {
@@ -67,10 +66,10 @@ private:
 
     virtual bool hasValidAttributeType() OVERRIDE;
 
-    OwnPtr<SVGAnimatedType> m_fromType;
-    OwnPtr<SVGAnimatedType> m_toType;
-    OwnPtr<SVGAnimatedType> m_toAtEndOfDurationType;
-    OwnPtr<SVGAnimatedType> m_animatedType;
+    RefPtr<NewSVGPropertyBase> m_fromProperty;
+    RefPtr<NewSVGPropertyBase> m_toProperty;
+    RefPtr<NewSVGPropertyBase> m_toAtEndOfDurationProperty;
+    RefPtr<NewSVGPropertyBase> m_animatedProperty;
 
     SVGElementAnimatedPropertyList m_animatedProperties;
     OwnPtr<SVGAnimatedTypeAnimator> m_animator;

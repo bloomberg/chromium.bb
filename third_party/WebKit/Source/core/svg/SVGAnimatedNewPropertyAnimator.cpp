@@ -138,9 +138,9 @@ PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::createPropertyFor
     return nullptr;
 }
 
-PassOwnPtr<SVGAnimatedType> SVGAnimatedNewPropertyAnimator::constructFromString(const String& value)
+PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::constructFromString(const String& value)
 {
-    return SVGAnimatedType::createNewProperty(createPropertyForAnimation(value));
+    return createPropertyForAnimation(value);
 }
 
 namespace {
@@ -183,14 +183,14 @@ PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::resetAnimation(co
     return animatedValue.release();
 }
 
-PassOwnPtr<SVGAnimatedType> SVGAnimatedNewPropertyAnimator::startAnimValAnimation(const SVGElementAnimatedPropertyList& list)
+PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::startAnimValAnimation(const SVGElementAnimatedPropertyList& list)
 {
     ASSERT(isAnimatingSVGDom());
     SVGElementInstance::InstanceUpdateBlocker blocker(m_contextElement);
 
     invokeMethodOnAllTargetProperties(list, m_animatedProperty->attributeName(), &NewSVGAnimatedPropertyBase::animationStarted);
 
-    return SVGAnimatedType::createNewProperty(resetAnimation(list));
+    return resetAnimation(list);
 }
 
 void SVGAnimatedNewPropertyAnimator::stopAnimValAnimation(const SVGElementAnimatedPropertyList& list)
@@ -201,11 +201,11 @@ void SVGAnimatedNewPropertyAnimator::stopAnimValAnimation(const SVGElementAnimat
     invokeMethodOnAllTargetProperties(list, m_animatedProperty->attributeName(), &NewSVGAnimatedPropertyBase::animationEnded);
 }
 
-void SVGAnimatedNewPropertyAnimator::resetAnimValToBaseVal(const SVGElementAnimatedPropertyList& list, SVGAnimatedType* animated)
+PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::resetAnimValToBaseVal(const SVGElementAnimatedPropertyList& list)
 {
     SVGElementInstance::InstanceUpdateBlocker blocker(m_contextElement);
 
-    animated->newProperty() = resetAnimation(list);
+    return resetAnimation(list);
 }
 
 void SVGAnimatedNewPropertyAnimator::animValWillChange(const SVGElementAnimatedPropertyList& list)
@@ -224,11 +224,6 @@ void SVGAnimatedNewPropertyAnimator::animValDidChange(const SVGElementAnimatedPr
     invokeMethodOnAllTargetProperties(list, m_animatedProperty->attributeName(), &NewSVGAnimatedPropertyBase::animValDidChange);
 }
 
-void SVGAnimatedNewPropertyAnimator::addAnimatedTypes(SVGAnimatedType* from, SVGAnimatedType* to)
-{
-    to->newProperty()->add(from->newProperty(), m_contextElement);
-}
-
 class ParsePropertyFromString {
 public:
     explicit ParsePropertyFromString(SVGAnimatedNewPropertyAnimator* animator)
@@ -245,15 +240,15 @@ private:
     SVGAnimatedNewPropertyAnimator* m_animator;
 };
 
-void SVGAnimatedNewPropertyAnimator::calculateAnimatedValue(float percentage, unsigned repeatCount, SVGAnimatedType* from, SVGAnimatedType* to, SVGAnimatedType* toAtEndOfDuration, SVGAnimatedType* animated)
+void SVGAnimatedNewPropertyAnimator::calculateAnimatedValue(float percentage, unsigned repeatCount, NewSVGPropertyBase* from, NewSVGPropertyBase* to, NewSVGPropertyBase* toAtEndOfDuration, NewSVGPropertyBase* animated)
 {
     ASSERT(m_animationElement);
     ASSERT(m_contextElement);
 
-    RefPtr<NewSVGPropertyBase> fromValue = m_animationElement->animationMode() == ToAnimation ? animated->newProperty() : from->newProperty();
-    RefPtr<NewSVGPropertyBase> toValue = to->newProperty();
-    RefPtr<NewSVGPropertyBase> toAtEndOfDurationValue = toAtEndOfDuration->newProperty();
-    RefPtr<NewSVGPropertyBase> animatedValue = animated->newProperty();
+    RefPtr<NewSVGPropertyBase> fromValue = m_animationElement->animationMode() == ToAnimation ? animated : from;
+    RefPtr<NewSVGPropertyBase> toValue = to;
+    RefPtr<NewSVGPropertyBase> toAtEndOfDurationValue = toAtEndOfDuration;
+    RefPtr<NewSVGPropertyBase> animatedValue = animated;
 
     // Apply CSS inheritance rules.
     ParsePropertyFromString parsePropertyFromString(this);

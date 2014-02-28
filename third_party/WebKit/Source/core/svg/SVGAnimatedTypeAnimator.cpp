@@ -48,17 +48,23 @@ SVGAnimatedTypeAnimator::~SVGAnimatedTypeAnimator()
 {
 }
 
-void SVGAnimatedTypeAnimator::calculateFromAndToValues(OwnPtr<SVGAnimatedType>& from, OwnPtr<SVGAnimatedType>& to, const String& fromString, const String& toString)
+void SVGAnimatedTypeAnimator::calculateFromAndToValues(RefPtr<NewSVGPropertyBase>& from, RefPtr<NewSVGPropertyBase>& to, const String& fromString, const String& toString)
 {
     from = constructFromString(fromString);
     to = constructFromString(toString);
 }
 
-void SVGAnimatedTypeAnimator::calculateFromAndByValues(OwnPtr<SVGAnimatedType>& from, OwnPtr<SVGAnimatedType>& to, const String& fromString, const String& byString)
+void SVGAnimatedTypeAnimator::calculateFromAndByValues(RefPtr<NewSVGPropertyBase>& from, RefPtr<NewSVGPropertyBase>& to, const String& fromString, const String& byString)
 {
     from = constructFromString(fromString);
     to = constructFromString(byString);
-    addAnimatedTypes(from.get(), to.get());
+    to->add(from, m_contextElement);
+}
+
+static bool supportsAnimVal(AnimatedPropertyType type)
+{
+    // AnimatedColor is only used for CSS property animations.
+    return type != AnimatedUnknown && type != AnimatedColor;
 }
 
 SVGElementAnimatedPropertyList SVGAnimatedTypeAnimator::findAnimatedPropertiesForAttributeName(SVGElement* targetElement, const QualifiedName& attributeName)
@@ -70,7 +76,7 @@ SVGElementAnimatedPropertyList SVGAnimatedTypeAnimator::findAnimatedPropertiesFo
     Vector<RefPtr<SVGAnimatedProperty> > targetProperties;
     targetElement->localAttributeToPropertyMap().animatedPropertiesForAttribute(targetElement, attributeName, targetProperties);
 
-    if (!SVGAnimatedType::supportsAnimVal(m_type))
+    if (!supportsAnimVal(m_type))
         return SVGElementAnimatedPropertyList();
 
     SVGElementAnimatedProperties propertiesPair(targetElement, targetProperties);

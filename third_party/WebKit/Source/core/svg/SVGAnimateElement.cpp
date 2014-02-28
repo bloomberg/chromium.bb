@@ -28,7 +28,6 @@
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/QualifiedName.h"
-#include "core/svg/SVGAnimatedType.h"
 #include "core/svg/SVGAnimatedTypeAnimator.h"
 #include "core/svg/SVGAnimatorFactory.h"
 #include "core/svg/SVGDocumentExtensions.h"
@@ -100,12 +99,12 @@ void SVGAnimateElement::calculateAnimatedValue(float percentage, unsigned repeat
     ASSERT(m_animatedPropertyType != AnimatedUnknown);
     ASSERT(m_animator);
     ASSERT(m_animator->type() == m_animatedPropertyType);
-    ASSERT(m_fromType);
-    ASSERT(m_fromType->type() == m_animatedPropertyType);
-    ASSERT(m_toType);
+    ASSERT(m_fromProperty);
+    ASSERT(m_fromProperty->type() == m_animatedPropertyType);
+    ASSERT(m_toProperty);
 
     SVGAnimateElement* resultAnimationElement = toSVGAnimateElement(resultElement);
-    ASSERT(resultAnimationElement->m_animatedType);
+    ASSERT(resultAnimationElement->m_animatedProperty);
     ASSERT(resultAnimationElement->m_animatedPropertyType == m_animatedPropertyType);
 
     if (hasTagName(SVGNames::setTag))
@@ -125,15 +124,15 @@ void SVGAnimateElement::calculateAnimatedValue(float percentage, unsigned repeat
         m_animator->animValWillChange(m_animatedProperties);
 
     // Values-animation accumulates using the last values entry corresponding to the end of duration time.
-    SVGAnimatedType* toAtEndOfDurationType = m_toAtEndOfDurationType ? m_toAtEndOfDurationType.get() : m_toType.get();
-    m_animator->calculateAnimatedValue(percentage, repeatCount, m_fromType.get(), m_toType.get(), toAtEndOfDurationType, resultAnimationElement->m_animatedType.get());
+    NewSVGPropertyBase* toAtEndOfDurationProperty = m_toAtEndOfDurationProperty ? m_toAtEndOfDurationProperty.get() : m_toProperty.get();
+    m_animator->calculateAnimatedValue(percentage, repeatCount, m_fromProperty.get(), m_toProperty.get(), toAtEndOfDurationProperty, resultAnimationElement->m_animatedProperty.get());
 }
 
 bool SVGAnimateElement::calculateToAtEndOfDurationValue(const String& toAtEndOfDurationString)
 {
     if (toAtEndOfDurationString.isEmpty())
         return false;
-    m_toAtEndOfDurationType = ensureAnimator()->constructFromString(toAtEndOfDurationString);
+    m_toAtEndOfDurationProperty = ensureAnimator()->constructFromString(toAtEndOfDurationString);
     return true;
 }
 
@@ -144,7 +143,7 @@ bool SVGAnimateElement::calculateFromAndToValues(const String& fromString, const
         return false;
 
     determinePropertyValueTypes(fromString, toString);
-    ensureAnimator()->calculateFromAndToValues(m_fromType, m_toType, fromString, toString);
+    ensureAnimator()->calculateFromAndToValues(m_fromProperty, m_toProperty, fromString, toString);
     ASSERT(m_animatedPropertyType == m_animator->type());
     return true;
 }
@@ -165,7 +164,7 @@ bool SVGAnimateElement::calculateFromAndByValues(const String& fromString, const
     ASSERT(!hasTagName(SVGNames::setTag));
 
     determinePropertyValueTypes(fromString, byString);
-    ensureAnimator()->calculateFromAndByValues(m_fromType, m_toType, fromString, byString);
+    ensureAnimator()->calculateFromAndByValues(m_fromProperty, m_toProperty, fromString, byString);
     ASSERT(m_animatedPropertyType == m_animator->type());
     return true;
 }
@@ -211,10 +210,10 @@ void SVGAnimateElement::resetAnimatedType()
         ASSERT(!m_animatedProperties.isEmpty());
 
         ASSERT(propertyTypesAreConsistent(m_animatedPropertyType, m_animatedProperties));
-        if (!m_animatedType)
-            m_animatedType = animator->startAnimValAnimation(m_animatedProperties);
+        if (!m_animatedProperty)
+            m_animatedProperty = animator->startAnimValAnimation(m_animatedProperties);
         else {
-            animator->resetAnimValToBaseVal(m_animatedProperties, m_animatedType.get());
+            m_animatedProperty = animator->resetAnimValToBaseVal(m_animatedProperties);
             animator->animValDidChange(m_animatedProperties);
         }
         return;
@@ -229,8 +228,8 @@ void SVGAnimateElement::resetAnimatedType()
         computeCSSPropertyValue(targetElement, cssPropertyID(attributeName.localName()), baseValue);
     }
 
-    if (!m_animatedType || !m_animatedType->setValueAsString(attributeName, baseValue))
-        m_animatedType = animator->constructFromString(baseValue);
+    if (!m_animatedProperty)
+        m_animatedProperty = animator->constructFromString(baseValue);
 }
 
 static inline void applyCSSPropertyToTarget(SVGElement* targetElement, CSSPropertyID id, const String& value)
@@ -318,18 +317,18 @@ static inline void notifyTargetAndInstancesAboutAnimValChange(SVGElement* target
 
 void SVGAnimateElement::clearAnimatedType(SVGElement* targetElement)
 {
-    if (!m_animatedType)
+    if (!m_animatedProperty)
         return;
 
     if (!targetElement) {
-        m_animatedType.clear();
+        m_animatedProperty.clear();
         return;
     }
 
     if (m_animatedProperties.isEmpty()) {
         // CSS properties animation code-path.
         removeCSSPropertyFromTargetAndInstances(targetElement, attributeName());
-        m_animatedType.clear();
+        m_animatedProperty.clear();
         return;
     }
 
@@ -340,7 +339,7 @@ void SVGAnimateElement::clearAnimatedType(SVGElement* targetElement)
     }
 
     m_animatedProperties.clear();
-    m_animatedType.clear();
+    m_animatedProperty.clear();
 }
 
 void SVGAnimateElement::applyResultsToTarget()
@@ -350,13 +349,13 @@ void SVGAnimateElement::applyResultsToTarget()
     ASSERT(m_animator);
 
     // Early exit if our animated type got destructed by a previous endedActiveInterval().
-    if (!m_animatedType)
+    if (!m_animatedProperty)
         return;
 
     if (m_animatedProperties.isEmpty()) {
         // CSS properties animation code-path.
         // Convert the result of the animation to a String and apply it as CSS property on the target & all instances.
-        applyCSSPropertyToTargetAndInstances(targetElement(), attributeName(), m_animatedType->valueAsString());
+        applyCSSPropertyToTargetAndInstances(targetElement(), attributeName(), m_animatedProperty->valueAsString());
         return;
     }
 
@@ -415,10 +414,10 @@ void SVGAnimateElement::setAttributeName(const QualifiedName& attributeName)
 
 void SVGAnimateElement::resetAnimatedPropertyType()
 {
-    ASSERT(!m_animatedType);
-    m_fromType.clear();
-    m_toType.clear();
-    m_toAtEndOfDurationType.clear();
+    ASSERT(!m_animatedProperty);
+    m_fromProperty.clear();
+    m_toProperty.clear();
+    m_toAtEndOfDurationProperty.clear();
     m_animator.clear();
     m_animatedPropertyType = targetElement() ? determineAnimatedPropertyType(targetElement()) : AnimatedString;
 }

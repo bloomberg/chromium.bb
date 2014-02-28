@@ -46,16 +46,15 @@ public:
     PassRefPtr<NewSVGPropertyBase> createPropertyForAnimation(const String&);
 
     // SVGAnimatedTypeAnimator:
-    virtual PassOwnPtr<SVGAnimatedType> constructFromString(const String&) OVERRIDE;
+    virtual PassRefPtr<NewSVGPropertyBase> constructFromString(const String&) OVERRIDE;
 
-    virtual PassOwnPtr<SVGAnimatedType> startAnimValAnimation(const SVGElementAnimatedPropertyList&) OVERRIDE;
+    virtual PassRefPtr<NewSVGPropertyBase> startAnimValAnimation(const SVGElementAnimatedPropertyList&) OVERRIDE;
     virtual void stopAnimValAnimation(const SVGElementAnimatedPropertyList&) OVERRIDE;
-    virtual void resetAnimValToBaseVal(const SVGElementAnimatedPropertyList&, SVGAnimatedType*) OVERRIDE;
+    virtual PassRefPtr<NewSVGPropertyBase> resetAnimValToBaseVal(const SVGElementAnimatedPropertyList&) OVERRIDE;
     virtual void animValWillChange(const SVGElementAnimatedPropertyList&) OVERRIDE;
     virtual void animValDidChange(const SVGElementAnimatedPropertyList&) OVERRIDE;
-    virtual void addAnimatedTypes(SVGAnimatedType*, SVGAnimatedType*) OVERRIDE;
 
-    virtual void calculateAnimatedValue(float percentage, unsigned repeatCount, SVGAnimatedType*, SVGAnimatedType*, SVGAnimatedType*, SVGAnimatedType*) OVERRIDE;
+    virtual void calculateAnimatedValue(float percentage, unsigned repeatCount, NewSVGPropertyBase*, NewSVGPropertyBase*, NewSVGPropertyBase*, NewSVGPropertyBase*) OVERRIDE;
     virtual float calculateDistance(const String& fromString, const String& toString) OVERRIDE;
 
 private:
