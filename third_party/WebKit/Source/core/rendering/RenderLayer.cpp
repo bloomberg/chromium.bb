@@ -1157,6 +1157,14 @@ RenderLayer* RenderLayer::enclosingFilterLayer(IncludeSelfOrNot includeSelf) con
     return 0;
 }
 
+void RenderLayer::setCompositingReasons(CompositingReasons reasons)
+{
+    if (m_compositingProperties.compositingReasons == reasons)
+        return;
+    m_compositingProperties.compositingReasons = reasons;
+    m_clipper.setCompositingClipRectsDirty();
+}
+
 bool RenderLayer::hasAncestorWithFilterOutsets() const
 {
     for (const RenderLayer* curr = this; curr; curr = curr->parent()) {

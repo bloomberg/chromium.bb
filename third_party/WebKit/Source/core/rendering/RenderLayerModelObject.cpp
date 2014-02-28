@@ -101,7 +101,7 @@ void RenderLayerModelObject::styleWillChange(StyleDifference diff, const RenderS
             // having an outline to not having an outline.
             if (diff == StyleDifferenceRepaintLayer) {
                 layer()->repainter().repaintIncludingDescendants();
-                if (!(oldStyle->clip() == newStyle->clip()))
+                if (oldStyle->clip() != newStyle->clip())
                     layer()->clipper().clearClipRectsIncludingDescendants();
             } else if (diff == StyleDifferenceRepaint || newStyle->outlineSize() < oldStyle->outlineSize())
                 repaint();

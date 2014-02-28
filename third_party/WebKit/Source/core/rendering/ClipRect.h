@@ -179,6 +179,7 @@ private:
 enum ClipRectsType {
     PaintingClipRects, // Relative to painting ancestor. Used for painting.
     RootRelativeClipRects, // Relative to the ancestor treated as the root (e.g. transformed layer). Used for hit testing.
+    CompositingClipRects, // Relative to the compositing ancestor. Used for updating graphics layer geometry.
     AbsoluteClipRects, // Relative to the RenderView's layer. Used for compositing overlap testing.
     NumCachedClipRectsTypes,
     AllClipRectTypes,

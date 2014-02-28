@@ -683,10 +683,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
     }
 
     if (compAncestor && m_ancestorClippingLayer) {
-        // Call calculateRects to get the backgroundRect which is what is used to clip the contents of this
-        // layer. Note that we call it with temporaryClipRects = true because normally when computing clip rects
-        // for a compositing layer, rootLayer is the layer itself.
-        ClipRectsContext clipRectsContext(compAncestor, TemporaryClipRects, IgnoreOverlayScrollbarSize, IgnoreOverflowClip);
+        ClipRectsContext clipRectsContext(compAncestor, CompositingClipRects, IgnoreOverlayScrollbarSize, IgnoreOverflowClip);
         IntRect parentClipRect = pixelSnappedIntRect(m_owningLayer->clipper().backgroundClipRect(clipRectsContext).rect());
         ASSERT(parentClipRect != PaintInfo::infiniteRect());
         m_ancestorClippingLayer->setPosition(FloatPoint(parentClipRect.location() - graphicsLayerParentLocation));

@@ -616,14 +616,14 @@ private:
     bool lostGroupedMapping() const { return m_compositingProperties.lostGroupedMapping; }
     void setLostGroupedMapping(bool b) { m_compositingProperties.lostGroupedMapping = b; }
 
-    void setCompositingReasons(CompositingReasons reasons) { m_compositingProperties.compositingReasons = reasons; }
+    void setCompositingReasons(CompositingReasons);
     CompositingReasons compositingReasons() const { return m_compositingProperties.compositingReasons; }
 
     friend class CompositedLayerMapping;
     friend class RenderLayerCompositor;
     friend class RenderLayerModelObject;
 
-protected:
+private:
     LayerType m_layerType;
 
     // Self-painting layer is an optimization where we avoid the heavy RenderLayer painting
@@ -744,7 +744,6 @@ protected:
 
     CompositingProperties m_compositingProperties;
 
-private:
     IntRect m_blockSelectionGapsBounds;
 
     OwnPtr<CompositedLayerMapping> m_compositedLayerMapping;
