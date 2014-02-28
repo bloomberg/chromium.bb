@@ -4,20 +4,32 @@
 
 #include "content/public/renderer/video_encode_accelerator.h"
 
+#include "base/task_runner_util.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/filters/gpu_video_accelerator_factories.h"
 
 namespace content {
 
-scoped_ptr<media::VideoEncodeAccelerator> CreateVideoEncodeAccelerator() {
-  scoped_ptr<media::VideoEncodeAccelerator> vea;
+void CreateVideoEncodeAccelerator(
+    const OnCreateVideoEncodeAcceleratorCallback& callback) {
+  DCHECK(!callback.is_null());
 
   scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories =
-      RenderThreadImpl::current()->GetGpuFactories();
-  if (gpu_factories.get())
-    vea = gpu_factories->CreateVideoEncodeAccelerator().Pass();
+        RenderThreadImpl::current()->GetGpuFactories();
+  if (!gpu_factories.get()) {
+    callback.Run(NULL, scoped_ptr<media::VideoEncodeAccelerator>());
+    return;
+  }
 
-  return vea.Pass();
+  scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner =
+      gpu_factories->GetTaskRunner();
+  base::PostTaskAndReplyWithResult(
+      encode_task_runner,
+      FROM_HERE,
+      base::Bind(
+          &media::GpuVideoAcceleratorFactories::CreateVideoEncodeAccelerator,
+          gpu_factories),
+      base::Bind(callback, encode_task_runner));
 }
 
 }  // namespace content
