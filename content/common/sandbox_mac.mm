@@ -277,6 +277,11 @@ void Sandbox::SandboxWarmup(int sandbox_type) {
         CGColorSpaceCreateWithName(kCGColorSpaceGenericCMYK));
   }
 
+  { // [-NSColor colorUsingColorSpaceName] - 10.5.6
+    NSColor* color = [NSColor controlTextColor];
+    [color colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
+  }
+
   { // localtime() - 10.5.6
     time_t tv = {0};
     localtime(&tv);
