@@ -134,17 +134,6 @@ public:
         int argc,
         v8::Handle<v8::Value> argv[]) OVERRIDE;
     virtual v8::Local<v8::Context> mainWorldScriptContext() const OVERRIDE;
-    virtual v8::Handle<v8::Value> createFileSystem(WebFileSystemType,
-        const WebString& name,
-        const WebString& path) OVERRIDE;
-    virtual v8::Handle<v8::Value> createSerializableFileSystem(WebFileSystemType,
-        const WebString& name,
-        const WebString& path) OVERRIDE;
-    virtual v8::Handle<v8::Value> createFileEntry(WebFileSystemType,
-        const WebString& fileSystemName,
-        const WebString& fileSystemPath,
-        const WebString& filePath,
-        bool isDirectory) OVERRIDE;
     virtual void reload(bool ignoreCache) OVERRIDE;
     virtual void reloadWithOverrideURL(const WebURL& overrideUrl, bool ignoreCache) OVERRIDE;
     virtual void loadRequest(const WebURLRequest&) OVERRIDE;

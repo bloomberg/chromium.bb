@@ -80,9 +80,6 @@
 #include "HTMLNames.h"
 #include "PageOverlay.h"
 #include "SharedWorkerRepositoryClientImpl.h"
-#include "V8DOMFileSystem.h"
-#include "V8DirectoryEntry.h"
-#include "V8FileEntry.h"
 #include "WebConsoleMessage.h"
 #include "WebDOMEvent.h"
 #include "WebDOMEventListener.h"
@@ -166,10 +163,6 @@
 #include "core/timing/Performance.h"
 #include "core/xml/DocumentXPathEvaluator.h"
 #include "core/xml/XPathResult.h"
-#include "modules/filesystem/DOMFileSystem.h"
-#include "modules/filesystem/DirectoryEntry.h"
-#include "modules/filesystem/FileEntry.h"
-#include "platform/FileSystemType.h"
 #include "platform/TraceEvent.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/clipboard/ClipboardUtilities.h"
@@ -184,7 +177,6 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebFileSystem.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebLayer.h"
@@ -927,30 +919,6 @@ v8::Handle<v8::Value> WebFrameImpl::callFunctionEvenIfScriptDisabled(v8::Handle<
 v8::Local<v8::Context> WebFrameImpl::mainWorldScriptContext() const
 {
     return toV8Context(V8PerIsolateData::mainThreadIsolate(), frame(), DOMWrapperWorld::mainWorld());
-}
-
-v8::Handle<v8::Value> WebFrameImpl::createFileSystem(WebFileSystemType type, const WebString& name, const WebString& path)
-{
-    ASSERT(frame());
-    return toV8(DOMFileSystem::create(frame()->document(), name, static_cast<WebCore::FileSystemType>(type), KURL(ParsedURLString, path.utf8().data())), v8::Handle<v8::Object>(), toIsolate(frame()));
-}
-
-v8::Handle<v8::Value> WebFrameImpl::createSerializableFileSystem(WebFileSystemType type, const WebString& name, const WebString& path)
-{
-    ASSERT(frame());
-    RefPtr<DOMFileSystem> fileSystem = DOMFileSystem::create(frame()->document(), name, static_cast<WebCore::FileSystemType>(type), KURL(ParsedURLString, path.utf8().data()));
-    fileSystem->makeClonable();
-    return toV8(fileSystem.release(), v8::Handle<v8::Object>(), toIsolate(frame()));
-}
-
-v8::Handle<v8::Value> WebFrameImpl::createFileEntry(WebFileSystemType type, const WebString& fileSystemName, const WebString& fileSystemPath, const WebString& filePath, bool isDirectory)
-{
-    ASSERT(frame());
-
-    RefPtr<DOMFileSystemBase> fileSystem = DOMFileSystem::create(frame()->document(), fileSystemName, static_cast<WebCore::FileSystemType>(type), KURL(ParsedURLString, fileSystemPath.utf8().data()));
-    if (isDirectory)
-        return toV8(DirectoryEntry::create(fileSystem, filePath), v8::Handle<v8::Object>(), toIsolate(frame()));
-    return toV8(FileEntry::create(fileSystem, filePath), v8::Handle<v8::Object>(), toIsolate(frame()));
 }
 
 void WebFrameImpl::reload(bool ignoreCache)
