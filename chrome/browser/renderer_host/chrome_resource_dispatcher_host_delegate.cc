@@ -200,6 +200,15 @@ void SendExecuteMimeTypeHandlerEvent(scoped_ptr<content::StreamHandle> stream,
   if (!web_contents)
     return;
 
+  // If the request was for a prerender, abort the prerender and do not
+  // continue.
+  prerender::PrerenderContents* prerender_contents =
+      prerender::PrerenderContents::FromWebContents(web_contents);
+  if (prerender_contents) {
+    prerender_contents->Destroy(prerender::FINAL_STATUS_DOWNLOAD);
+    return;
+  }
+
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
 

@@ -52,6 +52,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/mime_types_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
@@ -3514,6 +3515,31 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, MAYBE_TabsApi) {
 
   ASSERT_TRUE(IsEmptyPrerenderLinkManager());
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+// Test that prerenders abort when navigating to a stream.
+// See chrome/browser/extensions/api/streams_private/streams_private_apitest.cc
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, StreamsTest) {
+  ASSERT_TRUE(StartSpawnedTestServer());
+
+  const extensions::Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("streams_private/handle_mime_type"));
+  ASSERT_TRUE(extension);
+  EXPECT_EQ(std::string(extension_misc::kStreamsPrivateTestExtensionId),
+            extension->id());
+  MimeTypesHandler* handler = MimeTypesHandler::GetHandler(extension);
+  ASSERT_TRUE(handler);
+  EXPECT_TRUE(handler->CanHandleMIMEType("application/msword"));
+
+  PrerenderTestURL("files/prerender/document.doc", FINAL_STATUS_DOWNLOAD, 0);
+
+  // Sanity-check that the extension would have picked up the stream in a normal
+  // navigation had prerender not intercepted it.
+  // streams_private/handle_mime_type reports success if it has handled the
+  // application/msword type.
+  ResultCatcher catcher;
+  NavigateToDestURL();
+  EXPECT_TRUE(catcher.GetNextResult());
 }
 
 // Checks that non-http/https/chrome-extension subresource cancels the
