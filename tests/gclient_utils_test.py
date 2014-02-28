@@ -24,30 +24,6 @@ class GclientUtilBase(SuperMoxTestBase):
     self.mox.StubOutWithMock(subprocess2, 'communicate')
 
 
-class GclientUtilsUnittest(GclientUtilBase):
-  """General gclient_utils.py tests."""
-  def testMembersChanged(self):
-    members = [
-        'Annotated', 'AutoFlush', 'CheckCallAndFilter', 'CommandToStr',
-        'CheckCallAndFilterAndHeader', 'Error', 'ExecutionQueue', 'FileRead',
-        'FileWrite', 'FindFileUpwards', 'FindGclientRoot',
-        'GetGClientRootAndEntries', 'GetEditor', 'GetExeSuffix',
-        'GetMacWinOrLinux', 'GitFilter', 'IsDateRevision', 'MakeDateRevision',
-        'MakeFileAutoFlush', 'MakeFileAnnotated', 'PathDifference',
-        'ParseCodereviewSettingsContent', 'NumLocalCpus', 'PrintableObject',
-        'RETRY_INITIAL_SLEEP', 'RETRY_MAX', 'RunEditor', 'GCLIENT_CHILDREN',
-        'GCLIENT_CHILDREN_LOCK', 'GClientChildren', 'SplitUrlRevision',
-        'SyntaxErrorToError', 'UpgradeToHttps', 'Wrapper', 'WorkItem',
-        'codecs', 'lockedmethod', 'logging', 'os', 'pipes', 'Queue', 're',
-        'rmtree', 'safe_makedirs', 'safe_rename', 'stat', 'subprocess',
-        'subprocess2', 'sys', 'tempfile', 'threading', 'time', 'urlparse',
-
-    ]
-    # If this test fails, you should add the relevant test.
-    self.compareMembers(gclient_utils, members)
-
-
-
 class CheckCallAndFilterTestCase(GclientUtilBase):
   class ProcessIdMock(object):
     def __init__(self, test_string):

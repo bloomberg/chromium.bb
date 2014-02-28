@@ -5,6 +5,7 @@
 """Generic utils."""
 
 import codecs
+import cStringIO
 import logging
 import os
 import pipes
@@ -428,6 +429,7 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
   """
   assert print_stdout or filter_fn
   stdout = stdout or sys.stdout
+  output = cStringIO.StringIO()
   filter_fn = filter_fn or (lambda x: None)
 
   sleep_interval = RETRY_INITIAL_SLEEP
@@ -453,9 +455,10 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
           filter_fn(None)
         in_line = ''
         while in_byte:
+          output.write(in_byte)
+          if print_stdout:
+            stdout.write(in_byte)
           if in_byte != '\r':
-            if print_stdout:
-              stdout.write(in_byte)
             if in_byte != '\n':
               in_line += in_byte
             else:
@@ -480,7 +483,7 @@ def CheckCallAndFilter(args, stdout=None, filter_fn=None,
       raise
 
     if rv == 0:
-      return 0
+      return output.getvalue()
     if not retry:
       break
     print ("WARNING: subprocess '%s' in %s failed; will retry after a short "

@@ -96,32 +96,6 @@ class SVNWrapperTestCase(BaseTestCase):
     BaseTestCase.setUp(self)
     self.url = self.SvnUrl()
 
-  def testDir(self):
-    members = [
-        'BinaryExists',
-        'FullUrlForRelativeUrl',
-        'GetCheckoutRoot',
-        'GetRevisionDate',
-        'GetUsableRev',
-        'Svnversion',
-        'RunCommand',
-        'cleanup',
-        'diff',
-        'name',
-        'pack',
-        'relpath',
-        'revert',
-        'revinfo',
-        'runhooks',
-        'status',
-        'update',
-        'updatesingle',
-        'url',
-    ]
-
-    # If you add a member, be sure to add the relevant test!
-    self.compareMembers(self._scm_wrapper('svn://a'), members)
-
   def testUnsupportedSCM(self):
     args = ['gopher://foo', self.root_dir, self.relpath]
     exception_msg = 'No SCM found for url gopher://foo'
@@ -831,33 +805,6 @@ from :3
 
 
 class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
-  def testDir(self):
-    members = [
-        'BinaryExists',
-        'FullUrlForRelativeUrl',
-        'GetCheckoutRoot',
-        'GetRevisionDate',
-        'GetUsableRev',
-        'RunCommand',
-        'cache_dir',
-        'cache_locks',
-        'cleanup',
-        'diff',
-        'name',
-        'pack',
-        'UpdateSubmoduleConfig',
-        'relpath',
-        'remote',
-        'revert',
-        'revinfo',
-        'runhooks',
-        'status',
-        'update',
-        'url',
-    ]
-
-    # If you add a member, be sure to add the relevant test!
-    self.compareMembers(gclient_scm.CreateSCM(url=self.url), members)
 
   def testRevertMissing(self):
     if not self.enabled:

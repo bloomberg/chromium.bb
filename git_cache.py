@@ -240,8 +240,9 @@ def CMDunlock(parser, args):
     url = args[0]
     repo_dirs = [os.path.join(options.cache_dir, UrlToCacheDir(url))]
   else:
-    repo_dirs = [path for path in os.listdir(options.cache_dir)
-                 if os.path.isdir(path)]
+    repo_dirs = [os.path.join(options.cache_dir, path)
+                 for path in os.listdir(options.cache_dir)
+                 if os.path.isdir(os.path.join(options.cache_dir, path))]
   lockfiles = [repo_dir + '.lock' for repo_dir in repo_dirs
                if os.path.exists(repo_dir + '.lock')]
 
@@ -255,6 +256,9 @@ def CMDunlock(parser, args):
   for repo_dir in repo_dirs:
     lf = Lockfile(repo_dir)
     if lf.break_lock():
+      config_lock = os.path.join(repo_dir, 'config.lock')
+      if os.path.exists(config_lock):
+        os.remove(config_lock)
       unlocked.append(repo_dir)
     else:
       untouched.append(repo_dir)

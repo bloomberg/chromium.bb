@@ -1829,7 +1829,9 @@ class OptionParser(optparse.OptionParser):
       jobs = max(8, gclient_utils.NumLocalCpus())
     # cmp: 2013/06/19
     # Temporary workaround to lower bot-load on SVN server.
-    if os.environ.get('CHROME_HEADLESS') == '1':
+    # Bypassed if a bot_update flag is detected.
+    if (os.environ.get('CHROME_HEADLESS') == '1' and
+        not os.path.exists('update.flag')):
       jobs = 1
 
     self.add_option(
