@@ -2815,7 +2815,7 @@ void WebContentsImpl::RenderViewCreated(RenderViewHost* render_view_host) {
   // We tell the observers now instead of when the main RenderFrameHostImpl is
   // constructed because otherwise it would be too early (i.e. IPCs sent to the
   // frame would be dropped because it's not created yet).
-  RenderFrameHost* main_frame = GetMainFrame();
+  RenderFrameHost* main_frame = render_view_host->GetMainFrame();
   FOR_EACH_OBSERVER(
       WebContentsObserver, observers_, RenderFrameCreated(main_frame));
 }
