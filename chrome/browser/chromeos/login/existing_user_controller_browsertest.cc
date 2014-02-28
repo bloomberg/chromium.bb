@@ -307,6 +307,10 @@ IN_PROC_BROWSER_TEST_P(ExistingUserControllerTest,
   EXPECT_CALL(*mock_login_utils_, CreateAuthenticator(_))
       .Times(1)
       .WillOnce(WithArg<0>(CreateAuthenticator(kNewUsername, kPassword)));
+  base::Callback<void(void)> add_user_cb =
+      base::Bind(&MockUserManager::AddUser,
+                 base::Unretained(mock_user_manager_),
+                 kNewUsername);
   EXPECT_CALL(*mock_login_utils_,
               PrepareProfile(UserContext(kNewUsername,
                                          kPassword,
@@ -314,8 +318,11 @@ IN_PROC_BROWSER_TEST_P(ExistingUserControllerTest,
                                          kNewUsername),
                              _, _, _, _))
       .Times(1)
-      .WillOnce(InvokeWithoutArgs(&profile_prepared_cb_,
-                                  &base::Callback<void(void)>::Run));
+      .WillOnce(DoAll(
+          InvokeWithoutArgs(&add_user_cb,
+                            &base::Callback<void(void)>::Run),
+          InvokeWithoutArgs(&profile_prepared_cb_,
+                            &base::Callback<void(void)>::Run)));
   EXPECT_CALL(*mock_login_display_, OnLoginSuccess(kNewUsername))
       .Times(1);
   EXPECT_CALL(*mock_login_display_, OnFadeOut())

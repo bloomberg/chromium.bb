@@ -1015,7 +1015,8 @@ void ExistingUserController::InitializeStartUrls() const {
   std::vector<std::string> start_urls;
 
   const base::ListValue *urls;
-  bool can_show_getstarted_guide = true;
+  bool can_show_getstarted_guide =
+      UserManager::Get()->GetActiveUser()->GetType() == User::USER_TYPE_REGULAR;
   if (UserManager::Get()->IsLoggedInAsDemoUser()) {
     if (CrosSettings::Get()->GetList(kStartUpUrls, &urls)) {
       // The retail mode user will get start URLs from a special policy if it is
