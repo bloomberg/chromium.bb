@@ -446,7 +446,6 @@ extern const char kDisableAppShims[];
 extern const char kDisableCoreAnimationLayerSquashing[];
 extern const char kDisableSystemFullscreenForTesting[];
 extern const char kEnableSimplifiedFullscreen[];
-extern const char kKeychainReauthorize[];
 extern const char kRelauncherProcess[];
 #endif
 

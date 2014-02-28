@@ -1593,10 +1593,6 @@ const char kDisableCoreAnimationLayerSquashing[] =
 // Enables a simplified fullscreen UI on Mac.
 const char kEnableSimplifiedFullscreen[]    = "enable-simplified-fullscreen";
 
-// Performs Keychain reauthorization from the command line on behalf of a
-// special Keychain reauthorization stub executable. Used during auto-update.
-const char kKeychainReauthorize[]           = "keychain-reauthorize";
-
 // A process type (switches::kProcessType) that relaunches the browser. See
 // chrome/browser/mac/relauncher.h.
 const char kRelauncherProcess[]             = "relauncher";
