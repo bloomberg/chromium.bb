@@ -72,7 +72,7 @@ def CreateVMImage(image=None, board=None, updatable=True):
   try:
     cros_build_lib.RunCommand(cmd, enter_chroot=True, cwd=constants.SOURCE_ROOT)
   except cros_build_lib.RunCommandError as e:
-    logging.error('%s: %s', msg, str(e))
+    logging.error('%s: %s', msg, e)
     raise VMCreationError(msg)
 
   if not os.path.exists(vm_image_path):
@@ -133,8 +133,10 @@ class VMInstance(object):
            '--kvm_pid', self.kvm_pid_path]
     try:
       self._RunCommand(cmd, capture_output=True)
-    except cros_build_lib.RunCommandError:
-      raise VMStartupError('VM failed to start.')
+    except cros_build_lib.RunCommandError as e:
+      msg = 'VM failed to start'
+      logging.warning('%s: %s', msg, e)
+      raise VMStartupError(msg)
 
   def Connect(self):
     """Returns True if we can connect to VM via SSH."""
@@ -146,15 +148,20 @@ class VMInstance(object):
     return True
 
   def Stop(self, ignore_error=False):
-    """Stops a running VM."""
+    """Stops a running VM.
+
+    Args:
+      ignore_error: If set True, do not raise an exception on error.
+    """
     cmd = [os.path.join(constants.CROSUTILS_DIR, 'bin', 'cros_stop_vm'),
            '--kvm_pid', self.kvm_pid_path]
     result = self._RunCommand(cmd, capture_output=True, error_code_ok=True)
     if result.returncode:
       msg = 'Failed to stop VM'
       if ignore_error:
-        logging.warning(msg)
+        logging.warning('%s: %s', msg, result.error)
       else:
+        logging.error('%s: %s', msg, result.error)
         raise VMStopError(msg)
 
   def Start(self):
