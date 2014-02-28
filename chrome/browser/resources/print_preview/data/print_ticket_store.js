@@ -349,7 +349,7 @@ cr.define('print_preview', function() {
         print: {}
       };
       if (this.collate.isCapabilityAvailable() && this.collate.isUserEdited()) {
-        cjt.print.collate = {collate: this.collate.getValue() == 'true'};
+        cjt.print.collate = {collate: this.collate.getValue()};
       }
       if (this.color.isCapabilityAvailable() && this.color.isUserEdited()) {
         var colorType = this.color.getValue() ?
