@@ -19,8 +19,7 @@ group("metassl") {
 
   if (use_openssl) {
     assert(is_linux)
-    deps = "//third_party/openssl"
-    use_openssl = false
+    deps = [ "//third_party/openssl" ]
   } else {
     deps = [ "//net/third_party/nss:ssl" ]
   }
