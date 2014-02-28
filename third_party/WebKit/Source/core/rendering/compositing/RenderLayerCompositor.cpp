@@ -1595,20 +1595,16 @@ void RenderLayerCompositor::updateCompositingDescendantGeometry(RenderLayerStack
 }
 
 
-void RenderLayerCompositor::repaintCompositedLayers(const IntRect* absRect)
+void RenderLayerCompositor::repaintCompositedLayers()
 {
-    recursiveRepaintLayer(rootRenderLayer(), absRect);
+    recursiveRepaintLayer(rootRenderLayer());
 }
 
-void RenderLayerCompositor::recursiveRepaintLayer(RenderLayer* layer, const IntRect* rect)
+void RenderLayerCompositor::recursiveRepaintLayer(RenderLayer* layer)
 {
     // FIXME: This method does not work correctly with transforms.
-    if (layer->compositingState() == PaintsIntoOwnBacking) {
-        if (rect)
-            layer->repainter().setBackingNeedsRepaintInRect(*rect);
-        else
-            layer->repainter().setBackingNeedsRepaint();
-    }
+    if (layer->compositingState() == PaintsIntoOwnBacking)
+        layer->repainter().setBackingNeedsRepaint();
 
 #if !ASSERT_DISABLED
     LayerListMutationDetector mutationChecker(layer->stackingNode());
@@ -1618,15 +1614,8 @@ void RenderLayerCompositor::recursiveRepaintLayer(RenderLayer* layer, const IntR
     if (layer->hasCompositingDescendant())
         childrenToVisit |= PositiveZOrderChildren | NegativeZOrderChildren;
     RenderLayerStackingNodeIterator iterator(*layer->stackingNode(), childrenToVisit);
-    while (RenderLayerStackingNode* curNode = iterator.next()) {
-        if (rect) {
-            IntRect childRect(*rect);
-            curNode->layer()->convertToPixelSnappedLayerCoords(layer, childRect);
-            recursiveRepaintLayer(curNode->layer(), &childRect);
-        } else {
-            recursiveRepaintLayer(curNode->layer());
-        }
-    }
+    while (RenderLayerStackingNode* curNode = iterator.next())
+        recursiveRepaintLayer(curNode->layer());
 }
 
 RenderLayer* RenderLayerCompositor::rootRenderLayer() const

@@ -467,22 +467,6 @@ void RenderView::repaintViewRectangle(const LayoutRect& ur) const
     }
 }
 
-void RenderView::repaintRectangleInViewAndCompositedLayers(const LayoutRect& ur)
-{
-    if (!shouldRepaint(ur))
-        return;
-
-    repaintViewRectangle(ur);
-
-    // FIXME: We don't actually know how to hit these ASSERTS.
-    DisableCompositingQueryAsserts disabler;
-
-    if (compositor()->inCompositingMode()) {
-        IntRect repaintRect = pixelSnappedIntRect(ur);
-        compositor()->repaintCompositedLayers(&repaintRect);
-    }
-}
-
 void RenderView::repaintViewAndCompositedLayers()
 {
     repaint();
