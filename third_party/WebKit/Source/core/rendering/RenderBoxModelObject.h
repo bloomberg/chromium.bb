@@ -182,8 +182,6 @@ public:
     virtual void mapAbsoluteToLocalPoint(MapCoordinatesFlags, TransformState&) const OVERRIDE;
     virtual const RenderObject* pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const OVERRIDE;
 
-    void highQualityRepaintTimerFired(Timer<RenderBoxModelObject>*);
-
     virtual void setSelectionState(SelectionState) OVERRIDE;
 
     void contentChanged(ContentChangeType);
