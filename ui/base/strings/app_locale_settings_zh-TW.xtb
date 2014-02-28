@@ -8,7 +8,7 @@
   <translation id="IDS_WEB_FONT_FAMILY_XP">Arial,'Microsoft Jhenghei',PMingLiu,sans-serif</translation>
 </if>
 <if expr="is_macosx or is_ios">
-  <translation id="IDS_WEB_FONT_FAMILY">Helvetica,LiHei Pro,sans-serif</translation>
+  <translation id="IDS_WEB_FONT_FAMILY">Helvetica,Heiti TC,sans-serif</translation>
 </if>
 <if expr="chromeos and _google_chrome">
   <translation id="IDS_WEB_FONT_FAMILY">Noto Sans UI, MYingHeiB5HK, MYingHeiGB18030, sans-serif</translation>

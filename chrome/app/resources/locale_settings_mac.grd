@@ -227,7 +227,7 @@
       <!-- The default value for |WebPreference::standard_font_family_map| for
            Traditional Chinese script. -->
       <message name="IDS_STANDARD_FONT_FAMILY_TRADITIONAL_HAN" use_name_for_id="true">
-        LiHei Pro
+        Heiti TC
       </message>
 
       <!-- The default value for |WebPreference::serif_font_family_map| for
@@ -239,7 +239,7 @@
       <!-- The default value for |WebPreference::sans_serif_font_family_map| for
            Traditional Chinese script.  -->
       <message name="IDS_SANS_SERIF_FONT_FAMILY_TRADITIONAL_HAN" use_name_for_id="true">
-        LiHei Pro
+        Heiti TC
       </message>
 
       <!-- The default value for |WebPreference::default_font_size| -->
