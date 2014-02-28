@@ -479,7 +479,6 @@
           'dependencies': [
             '../cc/cc_tests.gyp:cc_perftests',
             '../chrome/chrome.gyp:chrome',
-            '../chrome/chrome.gyp:load_library_perf_tests',
             '../chrome/chrome.gyp:performance_browser_tests',
             '../chrome/chrome.gyp:performance_ui_tests',
             '../chrome/chrome.gyp:sync_performance_tests',

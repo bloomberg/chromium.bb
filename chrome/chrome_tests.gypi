@@ -2833,24 +2833,6 @@
         '../third_party/webrtc/tools/tools.gyp:rgba_to_i420_converter',
       ],
     },  # target 'webrtc_test_tools'
-    {
-      # Executable to measure time to load libraries.
-      'target_name': 'load_library_perf_tests',
-      'type': '<(gtest_target_type)',
-      'dependencies': [
-        '../base/base.gyp:test_support_perf',
-        '../testing/gtest.gyp:gtest',
-        '../testing/perf/perf_test.gyp:*',
-        '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
-      ],
-      'sources': [
-        'browser/load_library_perf_test.cc',
-      ],
-      'include_dirs': [
-        '..',
-        '<(SHARED_INTERMEDIATE_DIR)',
-      ],
-    },  # target 'load_library_perf_tests'
   ],
   'conditions': [
     ['OS=="mac"', {
