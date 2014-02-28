@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<AutoVisualizer
+    xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="WTF::String">
+    <DisplayString Condition="m_impl.m_ptr == 0">(null)</DisplayString>
+    <DisplayString>{*m_impl.m_ptr}</DisplayString>
+    <Expand>
+      <Item Name="Impl">m_impl.m_ptr</Item>
+    </Expand>
+  </Type>
+  <Type Name="WTF::StringImpl">
+    <DisplayString
+        Condition="m_is8Bit">[{m_length}] {(this+1),sb}</DisplayString>
+    <DisplayString>[{m_length}] {(this+1),su}</DisplayString>
+    <Expand>
+      <Item Name="Length">m_length</Item>
+      <Item Name="Hash">m_hash</Item>
+      <Item Name="AsciiText" Condition="m_is8Bit">(this+1),sb</Item>
+      <Item Name="UnicodeText" Condition="!m_is8Bit">(this+1),su</Item>
+    </Expand>
+  </Type>
+  <Type Name="WTF::Vector&lt;*&gt;">
+    <DisplayString Condition="m_size==0">(empty)</DisplayString>
+    <DisplayString Condition="m_size==1">[{m_size}] {m_buffer,1}</DisplayString>
+    <DisplayString Condition="m_size==2">[{m_size}] {m_buffer,2}</DisplayString>
+    <DisplayString Condition="m_size==3">[{m_size}] {m_buffer,3}</DisplayString>
+    <DisplayString Condition="m_size==4">[{m_size}] {m_buffer,4}</DisplayString>
+    <DisplayString
+        Condition="m_size>=5">[{m_size}] {m_buffer,4}...</DisplayString>
+    <Expand>
+      <Item Name="Buffer">m_buffer</Item>
+      <Item Name="Size">m_size</Item>
+      <Item Name="Capacity">m_capacity</Item>
+      <ArrayItems Condition="m_size>0">
+        <Size>m_size</Size>
+        <ValuePointer>m_buffer</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+  <Type Name="WTF::RefPtr&lt;*&gt;">
+    <AlternativeType Name="WTF::PassRefPtr&lt;*&gt;"/>
+    <DisplayString Condition="m_ptr == 0">null</DisplayString>
+    <DisplayString>{*m_ptr}</DisplayString>
+    <Expand>
+      <Item Name="Ptr">m_ptr</Item>
+    </Expand>
+  </Type>
+  <Type Name="WebCore::LayoutUnit">
+    <DisplayString>{(float)m_value / kFixedPointDenominator}</DisplayString>
+    <Expand>
+      <Item Name="FloatVal">(float)m_value / kFixedPointDenominator</Item>
+      <Item Name="RawVal">m_value</Item>
+    </Expand>
+  </Type>
+  <Type Name="WebCore::LayoutSize">
+    <AlternativeType Name="WebCore::IntSize"/>
+    <AlternativeType Name="WebCore::FloatSize"/>
+    <DisplayString>({m_width}, {m_height})</DisplayString>
+    <Expand>
+      <Item Name="Width">m_width</Item>
+      <Item Name="Height">m_height</Item>
+    </Expand>
+  </Type>
+  <Type Name="WebCore::LayoutPoint">
+    <AlternativeType Name="WebCore::IntPoint"/>
+    <AlternativeType Name="WebCore::FloatPoint"/>
+    <DisplayString>({m_x}, {m_y})</DisplayString>
+    <Expand>
+      <Item Name="X">m_x</Item>
+      <Item Name="Y">m_y</Item>
+    </Expand>
+  </Type>
+  <Type Name="WebCore::LayoutRect">
+    <AlternativeType Name="WebCore::IntRect"/>
+    <AlternativeType Name="WebCore::FloatRect"/>
+    <DisplayString>({m_location.m_x}, {m_location.m_y}) x ({m_size.m_width}, {m_size.m_height})</DisplayString>
+    <Expand>
+      <Item Name="Location">m_location</Item>
+      <Item Name="Size">m_size</Item>
+    </Expand>
+  </Type>
+  <Type Name="blink::WebRect">
+    <AlternativeType Name="blink::WebFloatRect"/>
+    <DisplayString>({x}, {y}) x ({width}, {height})</DisplayString>
+    <Expand>
+      <Item Name="x">x</Item>
+      <Item Name="y">x</Item>
+      <Item Name="width">x</Item>
+      <Item Name="height">x</Item>
+      <Synthetic Name="right">
+        <DisplayString>{x + width}</DisplayString>
+      </Synthetic>
+      <Synthetic Name="bottom">
+        <DisplayString>{y + height}</DisplayString>
+      </Synthetic>
+    </Expand>
+  </Type>
+  <Type Name="blink::WebPoint">
+    <AlternativeType Name="blink::WebFloatPoint"/>
+    <DisplayString>({x}, {y})</DisplayString>
+    <Expand>
+      <Item Name="x">x</Item>
+      <Item Name="y">y</Item>
+    </Expand>
+  </Type>
+</AutoVisualizer>
