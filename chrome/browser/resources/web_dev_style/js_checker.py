@@ -174,6 +174,12 @@ class JSChecker(object):
         is_grit_statement = bool(
             self.re.search("</?(include|if)", error.token.line))
 
+        # Ignore missing spaces before "(" until Promise#catch issue is solved.
+        # http://crbug.com/338301
+        if (error.code == errors.MISSING_SPACE and error.token.string == '(' and
+           'catch(' in error.token.line):
+          return False
+
         return not is_grit_statement and error.code not in [
             errors.COMMA_AT_END_OF_LITERAL,
             errors.JSDOC_ILLEGAL_QUESTION_WITH_PIPE,
