@@ -38,8 +38,11 @@ function findUsingRegExp(string, regexp)
 
 function findReviewer(message)
 {
-    var regexp = /R=([^.]+)/;
-    return findUsingRegExp(message, regexp);
+    var regexp = /R=(.+)/;
+    var reviewers = findUsingRegExp(message, regexp);
+    if (!reviewers)
+        return null;
+    return reviewers.replace(/\s*,\s*/, ", ");
 }
 
 function findBugID(message)

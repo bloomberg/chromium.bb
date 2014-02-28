@@ -126,7 +126,7 @@ var kExampleCommitDataXML =
    "<pre>\n" +
    "These were all failures noticed when running check-blink-deps\n" +
    "\n" +
-   "R=abarth@chromium.org, abarth\n" +
+   "R=abarth@chromium.org,abarth\n" +
    "BUG=301947\n" +
    "\n" +
    "Review URL: https://codereview.chromium.org/25275005\n" +
@@ -145,7 +145,7 @@ var kExampleCommitDataList = [{
     "time": "2013-09-30T20:22:01Z",
     "summary": "This matches Gecko's behavior for these types of properties.",
     "author": "mkwst@chromium.org",
-    "reviewer": "jochen@chromium",
+    "reviewer": "jochen@chromium.org",
     "bugID": 17325,
     "revertedRevision": undefined
   },
@@ -155,7 +155,7 @@ var kExampleCommitDataList = [{
     "time": "2013-09-30T19:36:21Z",
     "summary": "core/platform may not depend on core/ even for testing.",
     "author": "eseidel@chromium.org",
-    "reviewer": "abarth@chromium",
+    "reviewer": "abarth@chromium.org, abarth",
     "bugID": 301947,
     "revertedRevision": undefined
   },
@@ -165,7 +165,7 @@ var kExampleCommitDataList = [{
     "time": "2013-09-30T19:28:49Z",
     "summary": "These were all failures noticed when running check-blink-deps",
     "author": "eseidel@chromium.org",
-    "reviewer": "abarth@chromium",
+    "reviewer": "abarth@chromium.org, abarth",
     "bugID": 301947,
     "revertedRevision": undefined
   }
