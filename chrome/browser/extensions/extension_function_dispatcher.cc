@@ -371,7 +371,7 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
     function_ui->SetRenderFrameHost(render_frame_host);
   }
   function_ui->set_dispatcher(AsWeakPtr());
-  function_ui->set_context(browser_context_);
+  function_ui->set_browser_context(browser_context_);
   function->set_include_incognito(
       ExtensionsBrowserClient::Get()->CanExtensionCrossIncognito(
           extension, browser_context_));

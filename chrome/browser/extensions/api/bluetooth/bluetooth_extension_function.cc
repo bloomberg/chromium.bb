@@ -7,7 +7,6 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_event_router.h"
-#include "chrome/browser/profiles/profile.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 
@@ -16,18 +15,18 @@ namespace {
 const char kPlatformNotSupported[] =
     "This operation is not supported on your platform";
 
-extensions::ExtensionBluetoothEventRouter* GetEventRouter(Profile* profile) {
-  return extensions::BluetoothAPI::Get(profile)->bluetooth_event_router();
+extensions::ExtensionBluetoothEventRouter* GetEventRouter(
+    content::BrowserContext* context) {
+  return extensions::BluetoothAPI::Get(context)->bluetooth_event_router();
 }
 
-bool IsBluetoothSupported(Profile* profile) {
-  return GetEventRouter(profile)->IsBluetoothSupported();
+bool IsBluetoothSupported(content::BrowserContext* context) {
+  return GetEventRouter(context)->IsBluetoothSupported();
 }
 
-void GetAdapter(
-    const device::BluetoothAdapterFactory::AdapterCallback callback,
-    Profile* profile) {
-  GetEventRouter(profile)->GetAdapter(callback);
+void GetAdapter(const device::BluetoothAdapterFactory::AdapterCallback callback,
+                content::BrowserContext* context) {
+  GetEventRouter(context)->GetAdapter(callback);
 }
 
 }  // namespace
@@ -43,12 +42,12 @@ BluetoothExtensionFunction::~BluetoothExtensionFunction() {
 }
 
 bool BluetoothExtensionFunction::RunImpl() {
-  if (!IsBluetoothSupported(GetProfile())) {
+  if (!IsBluetoothSupported(browser_context())) {
     SetError(kPlatformNotSupported);
     return false;
   }
   GetAdapter(base::Bind(&BluetoothExtensionFunction::RunOnAdapterReady, this),
-             GetProfile());
+             browser_context());
 
   return true;
 }

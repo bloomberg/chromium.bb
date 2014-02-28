@@ -4,7 +4,6 @@
 
 #include "base/values.h"
 #include "chrome/browser/browser_process_impl.h"
-#include "chrome/browser/extensions/api/api_function.h"
 #include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/browser/extensions/api/socket/socket.h"
 #include "chrome/browser/extensions/api/socket/tcp_socket.h"
@@ -19,13 +18,12 @@
 namespace extensions {
 namespace api {
 
-static
-BrowserContextKeyedService* ApiResourceManagerTestFactory(
-    content::BrowserContext* profile) {
+static BrowserContextKeyedService* ApiResourceManagerTestFactory(
+    content::BrowserContext* context) {
   content::BrowserThread::ID id;
   CHECK(content::BrowserThread::GetCurrentThreadIdentifier(&id));
-  return ApiResourceManager<ResumableTCPSocket>::
-      CreateApiResourceManagerForTest(static_cast<Profile*>(profile), id);
+  return ApiResourceManager<
+      ResumableTCPSocket>::CreateApiResourceManagerForTest(context, id);
 }
 
 class SocketsTcpUnitTest : public ExtensionApiUnittest {

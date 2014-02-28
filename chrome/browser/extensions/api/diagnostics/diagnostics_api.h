@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/api/api_function.h"
 #include "chrome/common/extensions/api/diagnostics.h"
+#include "extensions/browser/api/async_api_function.h"
 
 namespace extensions {
 

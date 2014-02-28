@@ -167,6 +167,8 @@
       'sources': [
         'browser/admin_policy.cc',
         'browser/admin_policy.h',
+        'browser/api/async_api_function.cc',
+        'browser/api/async_api_function.h',
         'browser/api_activity_monitor.h',
         'browser/app_sorting.h',
         'browser/blacklist_state.h',

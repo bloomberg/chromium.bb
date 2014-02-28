@@ -8,9 +8,9 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/extensions/api/api_function.h"
 #include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/common/extensions/api/serial.h"
+#include "extensions/browser/api/async_api_function.h"
 
 namespace extensions {
 
@@ -74,12 +74,12 @@ class SerialConnectFunction : public SerialAsyncApiFunction {
 
   scoped_ptr<serial::Connect::Params> params_;
 
-  // SerialEventDispatcher is owned by a Profile.
+  // SerialEventDispatcher is owned by a BrowserContext.
   SerialEventDispatcher* serial_event_dispatcher_;
 
   // This connection is created within SerialConnectFunction.
   // From there it is either destroyed in OnConnected (upon failure)
-  // or its ownership is transferred to the profile's.
+  // or its ownership is transferred to the
   // ApiResourceManager<SerialConnection>.
   SerialConnection* connection_;
 };

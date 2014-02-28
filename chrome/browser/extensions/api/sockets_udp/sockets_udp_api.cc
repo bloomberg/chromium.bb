@@ -6,7 +6,6 @@
 
 #include "chrome/browser/extensions/api/socket/udp_socket.h"
 #include "chrome/browser/extensions/api/sockets_udp/udp_socket_event_dispatcher.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/sockets/sockets_manifest_data.h"
 #include "content/public/common/socket_permission_request.h"
 #include "net/base/net_errors.h"
@@ -141,7 +140,7 @@ bool SocketsUdpSetPausedFunction::Prepare() {
   params_ = api::sockets_udp::SetPaused::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
-  socket_event_dispatcher_ = UDPSocketEventDispatcher::Get(GetProfile());
+  socket_event_dispatcher_ = UDPSocketEventDispatcher::Get(browser_context());
   DCHECK(socket_event_dispatcher_) << "There is no socket event dispatcher. "
     "If this assertion is failing during a test, then it is likely that "
     "TestExtensionSystem is failing to provide an instance of "
@@ -177,7 +176,7 @@ bool SocketsUdpBindFunction::Prepare() {
   params_ = sockets_udp::Bind::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
-  socket_event_dispatcher_ = UDPSocketEventDispatcher::Get(GetProfile());
+  socket_event_dispatcher_ = UDPSocketEventDispatcher::Get(browser_context());
   DCHECK(socket_event_dispatcher_) << "There is no socket event dispatcher. "
     "If this assertion is failing during a test, then it is likely that "
     "TestExtensionSystem is failing to provide an instance of "

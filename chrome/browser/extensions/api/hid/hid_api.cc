@@ -47,10 +47,10 @@ HidAsyncApiFunction::HidAsyncApiFunction()
 HidAsyncApiFunction::~HidAsyncApiFunction() {}
 
 bool HidAsyncApiFunction::PrePrepare() {
-  device_manager_ = HidDeviceManager::Get(context());
+  device_manager_ = HidDeviceManager::Get(browser_context());
   DCHECK(device_manager_);
   connection_manager_ =
-      ApiResourceManager<HidConnectionResource>::Get(context());
+      ApiResourceManager<HidConnectionResource>::Get(browser_context());
   DCHECK(connection_manager_);
   set_work_thread_id(content::BrowserThread::FILE);
   return true;

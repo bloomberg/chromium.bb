@@ -9,12 +9,17 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/api/api_function.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_extension_function.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_profile.h"
+#include "extensions/browser/api/async_api_function.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_function.h"
+
+namespace content {
+class BrowserContext;
+}
 
 namespace device {
 
@@ -57,7 +62,7 @@ class BluetoothAPI : public ProfileKeyedAPI, public EventRouter::Observer {
   static const bool kServiceRedirectedInIncognito = true;
   static const bool kServiceIsNULLWhileTesting = true;
 
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
 
   // Created lazily on first access.
   scoped_ptr<ExtensionBluetoothEventRouter> bluetooth_event_router_;
@@ -65,7 +70,7 @@ class BluetoothAPI : public ProfileKeyedAPI, public EventRouter::Observer {
 
 namespace api {
 
-class BluetoothAddProfileFunction : public ChromeAsyncExtensionFunction {
+class BluetoothAddProfileFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetooth.addProfile", BLUETOOTH_ADDPROFILE)
 
@@ -85,7 +90,7 @@ class BluetoothAddProfileFunction : public ChromeAsyncExtensionFunction {
   std::string uuid_;
 };
 
-class BluetoothRemoveProfileFunction : public ChromeSyncExtensionFunction {
+class BluetoothRemoveProfileFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetooth.removeProfile",
                              BLUETOOTH_REMOVEPROFILE)
@@ -169,7 +174,7 @@ class BluetoothConnectFunction : public BluetoothExtensionFunction {
   void OnErrorCallback();
 };
 
-class BluetoothDisconnectFunction : public ChromeSyncExtensionFunction {
+class BluetoothDisconnectFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetooth.disconnect", BLUETOOTH_DISCONNECT)
 

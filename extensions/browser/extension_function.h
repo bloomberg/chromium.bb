@@ -302,8 +302,10 @@ class UIThreadExtensionFunction : public ExtensionFunction {
 
   // Set the browser context which contains the extension that has originated
   // this function call.
-  void set_context(content::BrowserContext* context) { context_ = context; }
-  content::BrowserContext* context() const { return context_; }
+  void set_browser_context(content::BrowserContext* context) {
+    context_ = context;
+  }
+  content::BrowserContext* browser_context() const { return context_; }
 
   void SetRenderViewHost(content::RenderViewHost* render_view_host);
   content::RenderViewHost* render_view_host() const {

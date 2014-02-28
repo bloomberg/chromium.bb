@@ -57,7 +57,7 @@ SerialAsyncApiFunction::SerialAsyncApiFunction()
 SerialAsyncApiFunction::~SerialAsyncApiFunction() {}
 
 bool SerialAsyncApiFunction::PrePrepare() {
-  manager_ = ApiResourceManager<SerialConnection>::Get(GetProfile());
+  manager_ = ApiResourceManager<SerialConnection>::Get(browser_context());
   DCHECK(manager_);
   return true;
 }
@@ -135,7 +135,7 @@ bool SerialConnectFunction::Prepare() {
   if (options->stop_bits == serial::STOP_BITS_NONE)
     options->stop_bits = kDefaultStopBits;
 
-  serial_event_dispatcher_ = SerialEventDispatcher::Get(GetProfile());
+  serial_event_dispatcher_ = SerialEventDispatcher::Get(browser_context());
   DCHECK(serial_event_dispatcher_);
 
   return true;
@@ -298,7 +298,7 @@ bool SerialSetPausedFunction::Prepare() {
   params_ = serial::SetPaused::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
-  serial_event_dispatcher_ = SerialEventDispatcher::Get(GetProfile());
+  serial_event_dispatcher_ = SerialEventDispatcher::Get(browser_context());
   DCHECK(serial_event_dispatcher_);
   return true;
 }

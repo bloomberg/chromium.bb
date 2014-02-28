@@ -1,27 +1,18 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_API_FUNCTION_H_
-#define CHROME_BROWSER_EXTENSIONS_API_API_FUNCTION_H_
+#ifndef EXTENSIONS_BROWSER_API_ASYNC_API_FUCTION_H_
+#define EXTENSIONS_BROWSER_API_ASYNC_API_FUCTION_H_
 
-#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/extension_function.h"
 
 namespace extensions {
 
-// Base class for API functions. TODO(miket): there isn't much here anymore
-// since the removal of ApiResourceEventRouter. Should we promote all its
-// subclasses to UIThreadExtensionFunctions?
-class ApiFunction : public ChromeAsyncExtensionFunction {
- protected:
-  ApiFunction();
-  virtual ~ApiFunction();
-};
-
 // AsyncApiFunction provides convenient thread management for APIs that need to
 // do essentially all their work on a thread other than the UI thread.
-class AsyncApiFunction : public ApiFunction {
+class AsyncApiFunction : public UIThreadExtensionFunction {
  protected:
   AsyncApiFunction();
   virtual ~AsyncApiFunction();
@@ -66,4 +57,4 @@ class AsyncApiFunction : public ApiFunction {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_API_FUNCTION_H_
+#endif  // EXTENSIONS_BROWSER_API_ASYNC_API_FUCTION_H_

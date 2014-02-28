@@ -8,6 +8,8 @@
 #include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/browser/extensions/api/sockets_tcp/sockets_tcp_api.h"
 
+class Profile;
+
 namespace extensions {
 struct Event;
 class ResumableTCPSocket;

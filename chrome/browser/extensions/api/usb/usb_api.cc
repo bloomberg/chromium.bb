@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "chrome/browser/extensions/api/usb/usb_device_resource.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/usb/usb_device_handle.h"
 #include "chrome/browser/usb/usb_service.h"
 #include "chrome/common/extensions/api/usb.h"
@@ -396,7 +395,7 @@ UsbAsyncApiFunction::~UsbAsyncApiFunction() {
 }
 
 bool UsbAsyncApiFunction::PrePrepare() {
-  manager_ = ApiResourceManager<UsbDeviceResource>::Get(GetProfile());
+  manager_ = ApiResourceManager<UsbDeviceResource>::Get(browser_context());
   set_work_thread_id(BrowserThread::FILE);
   return manager_ != NULL;
 }

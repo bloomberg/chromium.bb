@@ -9,6 +9,8 @@
 #include "chrome/browser/extensions/api/sockets_tcp/sockets_tcp_api.h"
 #include "chrome/browser/extensions/api/sockets_tcp_server/sockets_tcp_server_api.h"
 
+class Profile;
+
 namespace extensions {
 struct Event;
 class ResumableTCPSocket;

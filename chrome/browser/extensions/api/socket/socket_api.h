@@ -7,9 +7,9 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/extensions/api/api_function.h"
 #include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/common/extensions/api/socket.h"
+#include "extensions/browser/api/async_api_function.h"
 #include "extensions/browser/extension_function.h"
 #include "net/base/address_list.h"
 #include "net/dns/host_resolver.h"
@@ -18,6 +18,10 @@
 #include <string>
 
 class IOThread;
+
+namespace content {
+class BrowserContext;
+}
 
 namespace net {
 class IOBuffer;
@@ -35,7 +39,7 @@ class SocketResourceManagerInterface {
  public:
   virtual ~SocketResourceManagerInterface() {}
 
-  virtual bool SetProfile(Profile* profile) = 0;
+  virtual bool SetBrowserContext(content::BrowserContext* context) = 0;
   virtual int Add(Socket *socket) = 0;
   virtual Socket* Get(const std::string& extension_id,
                       int api_resource_id) = 0;
@@ -54,8 +58,8 @@ class SocketResourceManager : public SocketResourceManagerInterface {
       : manager_(NULL) {
   }
 
-  virtual bool SetProfile(Profile* profile) OVERRIDE {
-    manager_ = ApiResourceManager<T>::Get(profile);
+  virtual bool SetBrowserContext(content::BrowserContext* context) OVERRIDE {
+    manager_ = ApiResourceManager<T>::Get(context);
     DCHECK(manager_) << "There is no socket manager. "
       "If this assertion is failing during a test, then it is likely that "
       "TestExtensionSystem is failing to provide an instance of "

@@ -12,9 +12,10 @@
 namespace extensions {
 
 // static
-scoped_refptr<DialAPI> DialAPIFactory::GetForProfile(Profile* profile) {
+scoped_refptr<DialAPI> DialAPIFactory::GetForBrowserContext(
+    content::BrowserContext* context) {
   return static_cast<DialAPI*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true).get());
+      GetInstance()->GetServiceForBrowserContext(context, true).get());
 }
 
 // static

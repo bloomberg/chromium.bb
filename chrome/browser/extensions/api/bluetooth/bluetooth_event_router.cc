@@ -16,7 +16,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api_utils.h"
 #include "chrome/browser/extensions/event_names.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/bluetooth.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -44,17 +43,19 @@ struct ExtensionBluetoothProfileRecord {
   device::BluetoothProfile* profile;
 };
 
-ExtensionBluetoothEventRouter::ExtensionBluetoothEventRouter(Profile* profile)
+ExtensionBluetoothEventRouter::ExtensionBluetoothEventRouter(
+    content::BrowserContext* context)
     : send_discovery_events_(false),
       responsible_for_discovery_(false),
-      profile_(profile),
+      browser_context_(context),
       adapter_(NULL),
       num_event_listeners_(0),
       next_socket_id_(1),
       weak_ptr_factory_(this) {
-  DCHECK(profile_);
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 content::Source<Profile>(profile_));
+  DCHECK(browser_context_);
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 content::Source<content::BrowserContext>(browser_context_));
 }
 
 ExtensionBluetoothEventRouter::~ExtensionBluetoothEventRouter() {
@@ -189,7 +190,8 @@ void ExtensionBluetoothEventRouter::DispatchDeviceEvent(
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(device.ToValue().release());
   scoped_ptr<Event> event(new Event(event_name, args.Pass()));
-  ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(event.Pass());
+  ExtensionSystem::Get(browser_context_)->event_router()->BroadcastEvent(
+      event.Pass());
 }
 
 void ExtensionBluetoothEventRouter::DispatchConnectionEvent(
@@ -210,8 +212,9 @@ void ExtensionBluetoothEventRouter::DispatchConnectionEvent(
   args->Append(result_socket.ToValue().release());
   scoped_ptr<Event> event(new Event(
       bluetooth::OnConnection::kEventName, args.Pass()));
-  ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
-      extension_id, event.Pass());
+  ExtensionSystem::Get(browser_context_)
+      ->event_router()
+      ->DispatchEventToExtension(extension_id, event.Pass());
 }
 
 void ExtensionBluetoothEventRouter::AdapterPresentChanged(
@@ -300,7 +303,8 @@ void ExtensionBluetoothEventRouter::DispatchAdapterStateEvent() {
   scoped_ptr<Event> event(new Event(
       bluetooth::OnAdapterStateChanged::kEventName,
       args.Pass()));
-  ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(event.Pass());
+  ExtensionSystem::Get(browser_context_)->event_router()->BroadcastEvent(
+      event.Pass());
 }
 
 void ExtensionBluetoothEventRouter::CleanUpForExtension(

@@ -6,11 +6,13 @@
 #define CHROME_BROWSER_EXTENSIONS_API_BRAILLE_DISPLAY_PRIVATE_BRAILLE_DISPLAY_PRIVATE_API_H_
 
 #include "base/scoped_observer.h"
-#include "chrome/browser/extensions/api/api_function.h"
 #include "chrome/browser/extensions/api/braille_display_private/braille_controller.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/common/extensions/api/braille_display_private.h"
+#include "extensions/browser/api/async_api_function.h"
 #include "extensions/browser/event_router.h"
+
+class Profile;
 
 namespace extensions {
 namespace api {

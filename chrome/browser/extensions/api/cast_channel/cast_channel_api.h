@@ -8,12 +8,11 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/extensions/api/api_function.h"
 #include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/browser/extensions/api/cast_channel/cast_socket.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/common/extensions/api/cast_channel.h"
-#include "extensions/browser/extension_function.h"
+#include "extensions/browser/api/async_api_function.h"
 
 class GURL;
 class CastChannelAPITest;

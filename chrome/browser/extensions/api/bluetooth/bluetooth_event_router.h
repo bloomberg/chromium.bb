@@ -17,7 +17,9 @@
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_socket.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace device {
 
@@ -36,7 +38,7 @@ class ExtensionBluetoothEventRouter
     : public device::BluetoothAdapter::Observer,
       public content::NotificationObserver {
  public:
-  explicit ExtensionBluetoothEventRouter(Profile* profile);
+  explicit ExtensionBluetoothEventRouter(content::BrowserContext* context);
   virtual ~ExtensionBluetoothEventRouter();
 
   // Returns true if adapter_ has been initialized for testing or bluetooth
@@ -135,7 +137,7 @@ class ExtensionBluetoothEventRouter
   bool send_discovery_events_;
   bool responsible_for_discovery_;
 
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
   scoped_refptr<device::BluetoothAdapter> adapter_;
 
   int num_event_listeners_;

@@ -46,7 +46,8 @@ IN_PROC_BROWSER_TEST_F(DialAPITest, MAYBE_DeviceListEvents) {
 
   // Send three device list updates.
   scoped_refptr<extensions::DialAPI> api =
-      extensions::DialAPIFactory::GetInstance()->GetForProfile(profile());
+      extensions::DialAPIFactory::GetInstance()->GetForBrowserContext(
+          profile());
   ASSERT_TRUE(api.get());
   extensions::DialRegistry::DeviceList devices;
 

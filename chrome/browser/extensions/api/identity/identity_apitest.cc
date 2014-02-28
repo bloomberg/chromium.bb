@@ -107,7 +107,7 @@ class AsyncExtensionBrowserTest : public ExtensionBrowserTest {
       function->set_extension(empty_extension.get());
     }
 
-    function->set_context(browser()->profile());
+    function->set_browser_context(browser()->profile());
     function->set_has_callback(true);
     function->Run();
   }

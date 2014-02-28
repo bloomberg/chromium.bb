@@ -127,7 +127,7 @@ std::string StripScopeFromIdentifier(const std::string& extension_id,
 
 class NotificationsApiDelegate : public NotificationDelegate {
  public:
-  NotificationsApiDelegate(ApiFunction* api_function,
+  NotificationsApiDelegate(ChromeAsyncExtensionFunction* api_function,
                            Profile* profile,
                            const std::string& extension_id,
                            const std::string& id)
@@ -208,7 +208,7 @@ class NotificationsApiDelegate : public NotificationDelegate {
     return args.Pass();
   }
 
-  scoped_refptr<ApiFunction> api_function_;
+  scoped_refptr<ChromeAsyncExtensionFunction> api_function_;
   Profile* profile_;
   const std::string extension_id_;
   const std::string id_;

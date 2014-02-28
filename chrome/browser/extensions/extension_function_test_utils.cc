@@ -255,7 +255,7 @@ bool RunFunction(UIThreadExtensionFunction* function,
       browser->profile(), &dispatcher_delegate);
   function->set_dispatcher(dispatcher.AsWeakPtr());
 
-  function->set_context(browser->profile());
+  function->set_browser_context(browser->profile());
   function->set_include_incognito(flags & INCLUDE_INCOGNITO);
   function->Run();
 

@@ -9,12 +9,12 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/api/api_function.h"
 #include "chrome/browser/extensions/api/api_resource_manager.h"
 #include "chrome/browser/extensions/api/hid/hid_connection_resource.h"
 #include "chrome/browser/extensions/api/hid/hid_device_manager.h"
 #include "chrome/browser/extensions/extension_function_histogram_value.h"
 #include "chrome/common/extensions/api/hid.h"
+#include "extensions/browser/api/async_api_function.h"
 
 namespace net {
 

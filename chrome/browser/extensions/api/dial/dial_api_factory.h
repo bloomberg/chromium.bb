@@ -8,15 +8,14 @@
 #include "base/memory/singleton.h"
 #include "components/browser_context_keyed_service/refcounted_browser_context_keyed_service_factory.h"
 
-class Profile;
-
 namespace extensions {
 
 class DialAPI;
 
 class DialAPIFactory : public RefcountedBrowserContextKeyedServiceFactory {
  public:
-  static scoped_refptr<DialAPI> GetForProfile(Profile* profile);
+  static scoped_refptr<DialAPI> GetForBrowserContext(
+      content::BrowserContext* context);
 
   static DialAPIFactory* GetInstance();
 
