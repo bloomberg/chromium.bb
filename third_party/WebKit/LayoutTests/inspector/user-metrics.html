@@ -15,11 +15,6 @@ function test()
         InspectorTest.addResult("Panel shown: " + nameOf(WebInspector.UserMetrics._PanelCodes, panelCode));
     }
 
-    InspectorFrontendHost.recordSettingChanged = function(settingCode)
-    {
-        InspectorTest.addResult("Setting changed: " + nameOf(WebInspector.UserMetrics._SettingCodes, settingCode));
-    }
-
     function nameOf(object, code)
     {
         for (var name in object) {
@@ -39,15 +34,6 @@ function test()
     WebInspector.showPanel("profiles");
     WebInspector.showPanel("timeline");
     WebInspector.showPanel("audits");
-
-    InspectorTest.addResult("\nrecordSettingChanged:");
-    InspectorTest.dump(WebInspector.UserMetrics._SettingCodes);
-    WebInspector.settings.monitoringXHREnabled.set(true);
-    WebInspector.settings.monitoringXHREnabled.set(false);
-    WebInspector.settings.preserveConsoleLog.set(true);
-    WebInspector.settings.preserveConsoleLog.set(false);
-    WebInspector.settings.resourcesLargeRows.set(false);
-    WebInspector.settings.resourcesLargeRows.set(true);
 
     InspectorTest.completeTest();
 }

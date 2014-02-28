@@ -50,7 +50,6 @@
 
     [Custom] void recordActionTaken(unsigned long actionCode);
     [Custom] void recordPanelShown(unsigned long panelCode);
-    [Custom] void recordSettingChanged(unsigned long settingChanged);
 
     DOMString getSelectionBackgroundColor();
     DOMString getSelectionForegroundColor();

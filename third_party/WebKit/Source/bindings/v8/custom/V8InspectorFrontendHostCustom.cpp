@@ -143,10 +143,5 @@ void V8InspectorFrontendHost::recordPanelShownMethodCustom(const v8::FunctionCal
     histogramEnumeration("DevTools.PanelShown", info, 20);
 }
 
-void V8InspectorFrontendHost::recordSettingChangedMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    histogramEnumeration("DevTools.SettingChanged", info, 100);
-}
-
 } // namespace WebCore
 
