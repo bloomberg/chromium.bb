@@ -26,7 +26,7 @@ struct ScopedGObject {
     }
   };
 
-  typedef scoped_ptr_malloc<T, GObjectUnrefer<T> > Type;
+  typedef scoped_ptr<T, GObjectUnrefer<T> > Type;
 };
 
 }  // namespace ui

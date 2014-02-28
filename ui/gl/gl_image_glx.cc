@@ -20,10 +20,9 @@ namespace gfx {
 namespace {
 
 // scoped_ptr functor for XFree(). Use as follows:
-//   scoped_ptr_malloc<XVisualInfo, ScopedPtrXFree> foo(...);
+//   scoped_ptr<XVisualInfo, ScopedPtrXFree> foo(...);
 // where "XVisualInfo" is any X type that is freed with XFree.
-class ScopedPtrXFree {
- public:
+struct ScopedPtrXFree {
   void operator()(void* x) const {
     ::XFree(x);
   }
@@ -71,7 +70,7 @@ bool GLImageGLX::Initialize() {
   XVisualInfo templ;
   templ.visualid = XVisualIDFromVisual(attributes.visual);
   int num_visinfo = 0;
-  scoped_ptr_malloc<XVisualInfo, ScopedPtrXFree> visinfo(
+  scoped_ptr<XVisualInfo, ScopedPtrXFree> visinfo(
       XGetVisualInfo(display_,
                      VisualIDMask,
                      &templ,
@@ -95,7 +94,7 @@ bool GLImageGLX::Initialize() {
     0
   };
   int num_elements = 0;
-  scoped_ptr_malloc<GLXFBConfig, ScopedPtrXFree> config(
+  scoped_ptr<GLXFBConfig, ScopedPtrXFree> config(
       glXChooseFBConfig(display_,
                         DefaultScreen(display_),
                         config_attribs,

@@ -19,20 +19,6 @@ extern "C" {
 
 namespace gfx {
 
-namespace {
-
-// scoped_ptr functor for XFree(). Use as follows:
-//   scoped_ptr_malloc<XVisualInfo, ScopedPtrXFree> foo(...);
-// where "XVisualInfo" is any X type that is freed with XFree.
-class ScopedPtrXFree {
- public:
-  void operator()(void* x) const {
-    ::XFree(x);
-  }
-};
-
-}  // namespace
-
 GLContextGLX::GLContextGLX(GLShareGroup* share_group)
   : GLContextReal(share_group),
     context_(NULL),
