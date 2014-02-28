@@ -653,25 +653,20 @@ LogMessage::~LogMessage() {
     str_newline.copy(str_stack, arraysize(str_stack));
     base::debug::Alias(str_stack);
 
-    // display a message or break into the debugger on a fatal error
-    if (base::debug::BeingDebugged()) {
-      base::debug::BreakDebugger();
+    if (log_assert_handler) {
+      // Make a copy of the string for the handler out of paranoia.
+      log_assert_handler(std::string(stream_.str()));
     } else {
-      if (log_assert_handler) {
-        // make a copy of the string for the handler out of paranoia
-        log_assert_handler(std::string(stream_.str()));
-      } else {
-        // Don't use the string with the newline, get a fresh version to send to
-        // the debug message process. We also don't display assertions to the
-        // user in release mode. The enduser can't do anything with this
-        // information, and displaying message boxes when the application is
-        // hosed can cause additional problems.
+      // Don't use the string with the newline, get a fresh version to send to
+      // the debug message process. We also don't display assertions to the
+      // user in release mode. The enduser can't do anything with this
+      // information, and displaying message boxes when the application is
+      // hosed can cause additional problems.
 #ifndef NDEBUG
-        DisplayDebugMessageInDialog(stream_.str());
+      DisplayDebugMessageInDialog(stream_.str());
 #endif
-        // Crash the process to generate a dump.
-        base::debug::BreakDebugger();
-      }
+      // Crash the process to generate a dump.
+      base::debug::BreakDebugger();
     }
   } else if (severity_ == LOG_ERROR_REPORT) {
     // We are here only if the user runs with --enable-dcheck in release mode.
