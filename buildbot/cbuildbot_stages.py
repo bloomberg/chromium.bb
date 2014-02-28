@@ -360,7 +360,7 @@ class ArchivingStageMixin(object):
         },
         'version': {
             'chrome': self._run.attrs.chrome_version,
-            'full': self.archive.version,
+            'full': self._run.GetVersion(),
             'milestone': verinfo.chrome_branch,
             'platform': platform_tag,
         },
