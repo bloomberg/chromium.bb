@@ -80,8 +80,6 @@ crbug.com/331572 http/tests/inspector/elements/styles/selector-line-deprecated.h
 
 crbug.com/86340 fast/filesystem/workers/file-writer-write-overlapped.html [ Failure Pass ]
 
-Bug(hartmanng) svg/transforms/svg-geometry-crash.html [ NeedsRebaseline ]
-
 crbug.com/240374 compositing/overlap-blending/reflection-opacity-huge.html [ ImageOnlyFailure ]
 crbug.com/240374 virtual/softwarecompositing/overlap-blending/reflection-opacity-huge.html [ ImageOnlyFailure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-huge.html [ ImageOnlyFailure ]
