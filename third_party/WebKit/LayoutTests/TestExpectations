@@ -325,15 +325,6 @@ crbug.com/318980 [ Linux ] svg/W3C-SVG-1.1/text-tselect-02-f.svg [ Pass ]
 # Probably just needs new baseline, but image_diff is failing - investigate that.
 crbug.com/318980 [ Linux x86 ] fast/text/international/hindi-spacing.html [ ImageOnlyFailure ]
 
-# Needs new baselines due to changes in the way rounded transparent are painted.
-Bug(alokp) fast/borders/borderRadiusDashed01.html [ ImageOnlyFailure NeedsRebaseline ]
-Bug(alokp) fast/borders/borderRadiusDashed02.html [ ImageOnlyFailure NeedsRebaseline ]
-Bug(alokp) fast/borders/borderRadiusDashed03.html [ ImageOnlyFailure NeedsRebaseline ]
-Bug(alokp) fast/borders/borderRadiusDotted01.html [ ImageOnlyFailure NeedsRebaseline ]
-Bug(alokp) fast/borders/borderRadiusDotted02.html [ ImageOnlyFailure NeedsRebaseline ]
-Bug(alokp) fast/borders/borderRadiusDotted03.html [ ImageOnlyFailure NeedsRebaseline ]
-Bug(alokp) fast/borders/borderRadiusDouble01.html [ ImageOnlyFailure NeedsRebaseline ]
-
 # Untriaged Mavericks failures
 
 crbug.com/314947 [ Mavericks ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
