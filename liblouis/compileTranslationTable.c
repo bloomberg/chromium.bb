@@ -4690,7 +4690,7 @@ defaultTableResolver (const char *tableList, const char *base)
   
   /* Count number of subtables in table list */
   k = 0;
-  for (cp = tableList; *cp != '\0'; cp++)
+  for (cp = (char *)tableList; *cp != '\0'; cp++)
     if (*cp == ',')
       k++;
   tableFiles = (char **) malloc ((k + 2) * sizeof(char *));
