@@ -51,70 +51,6 @@
                 'resources/icon_host.png',
               ],
             },
-            {
-              'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/drawable',
-              'files': [
-                'resources/android/drawable/list_item_selector.xml',
-              ],
-            },
-            {
-              'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/drawable-hdpi',
-              'files': [
-                'resources/android/drawable-hdpi/ic_action_keyboard.png',
-              ],
-            },
-            {
-              'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/drawable-mdpi',
-              'files': [
-                'resources/android/drawable-mdpi/ic_action_keyboard.png',
-              ],
-            },
-            {
-              'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/drawable-xhdpi',
-              'files': [
-                'resources/android/drawable-xhdpi/ic_action_keyboard.png',
-              ],
-            },
-            {
-              'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/drawable-xxhdpi',
-              'files': [
-                'resources/android/drawable-xxhdpi/ic_action_keyboard.png',
-              ],
-            },
-            {
-              'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/layout',
-              'files': [
-                'resources/android/layout/account_dropdown.xml',
-                'resources/android/layout/account_selected.xml',
-                'resources/android/layout/desktop.xml',
-                'resources/android/layout/host.xml',
-                'resources/android/layout/main.xml',
-                'resources/android/layout/pin_dialog.xml',
-              ],
-            },
-            {
-              'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/menu',
-              'files': [
-                'resources/android/menu/chromoting_actionbar.xml',
-                'resources/android/menu/desktop_actionbar.xml',
-                'resources/android/menu/help_actionbar.xml',
-              ],
-            },
-            {
-              'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/values',
-              'files': [
-                'resources/android/values/colors.xml',
-                'resources/android/values/dimens.xml',
-                'resources/android/values/strings.xml',
-                'resources/android/values/styles.xml',
-              ],
-            },
-            {
-              'destination': '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res/values-land',
-              'files': [
-                'resources/android/values-land/dimens.xml',
-              ],
-            },
           ],
         },  # end of target 'remoting_android_resources'
         {
@@ -160,6 +96,7 @@
             'java_in_dir': 'android/java',
             'R_package': 'org.chromium.chromoting',
             'package_name': '<(_target_name)',
+            'resource_dir': 'resources/android',
             'additional_res_dirs': [ '<(SHARED_INTERMEDIATE_DIR)/remoting/android/res' ],
             'additional_input_paths': [
               '<(PRODUCT_DIR)/obj/remoting/remoting_android_resources.actions_rules_copies.stamp',
