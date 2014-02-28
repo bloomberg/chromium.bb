@@ -6,12 +6,12 @@
         <video></video>
         <p>Tests invalid and valid syntaxes.</p>
 
-        <script src=../media-file.js></script>
-        <script src=../video-test.js></script>
+        <script src=../../media-file.js></script>
+        <script src=../../video-test.js></script>
         <script>
             var initData = new Uint8Array([0x51, 0x52, 0x53]);
             var key = initData;
-    
+
             function loadStarted()
             {
                 consoleWrite("Verify valid syntaxes do not throw.");
@@ -33,7 +33,7 @@
 
                 endTest();
             }
-        
+
             consoleWrite("Test calling functions with too few parameters.");
             testException("video.webkitGenerateKeyRequest()", '"TypeError: Failed to execute \'webkitGenerateKeyRequest\' on \'HTMLMediaElement\': 1 argument required, but only 0 present."');
             testException("video.webkitAddKey()", '"TypeError: Failed to execute \'webkitAddKey\' on \'HTMLMediaElement\': 2 arguments required, but only 0 present."');

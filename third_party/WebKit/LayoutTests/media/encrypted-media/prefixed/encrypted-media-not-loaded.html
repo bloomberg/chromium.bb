@@ -6,11 +6,11 @@
         <video></video>
         <p>Test that the methods throw INVALID_STATE_ERR when the media element has not loaded. canPlayType() never throws.</p>
 
-        <script src=../media-file.js></script>
-        <script src=../video-test.js></script>
+        <script src=../../media-file.js></script>
+        <script src=../../video-test.js></script>
         <script>
             var key = new Uint8Array([0x51, 0x52, 0x53]);
-    
+
             function loadStarted()
             {
                 test("video.networkState == video.NETWORK_LOADING || video.networkState == video.NETWORK_IDLE");
@@ -20,10 +20,10 @@
                 run("video.webkitAddKey('webkit-org.w3.clearkey', key)");
                 run("video.webkitCancelKeyRequest('webkit-org.w3.clearkey')");
                 run("video.canPlayType('audio/wav', 'webkit-org.w3.clearkey')");
-                
+
                 endTest();
             }
-        
+
             // Confirms the unloaded state.
             testExpected("video.networkState", video.NETWORK_EMPTY);
             testExpected("video.currentSrc", "");

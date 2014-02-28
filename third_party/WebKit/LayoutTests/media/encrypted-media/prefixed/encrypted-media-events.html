@@ -6,9 +6,9 @@
         <video></video>
         <p>Test all the key-related events.</p>
 
-        <script src="encrypted-media-utils.js"></script>
-        <script src=../media-file.js></script>
-        <script src=../video-test.js></script>
+        <script src="../encrypted-media-utils.js"></script>
+        <script src=../../media-file.js></script>
+        <script src=../../video-test.js></script>
         <script>
             // First, try explicitly creating those events with specific IDL.
             var messageEvent = document.createEvent("MediaKeyMessageEvent");
@@ -186,8 +186,8 @@
                     waitForEvent('webkitkeymessage', keyMessage);
                     waitForEventOnce('webkitneedkey', needKey);
                 }
-    
-                video.src = "../content/test-encrypted.webm";
+
+                video.src = "../../content/test-encrypted.webm";
             }
 
             consoleWrite("");
