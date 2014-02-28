@@ -71,17 +71,21 @@ a {
 }
 
 /* Logos */
+@media only screen {
+  #logo {
+    background-image: url(images/holo_logo_200.png);
+  }
+}
+
 @media only screen and (-webkit-min-device-pixel-ratio: 1.0) {
   #logo {
     -webkit-flex-basis: 152px;
-    background-image: url(images/holo_logo_200.png);
     max-width: 536px;
   }
 }
 @media only screen and (-webkit-min-device-pixel-ratio: 1.3) {
   #logo {
     -webkit-flex-basis: 114px;
-    background-image: url(images/holo_logo_200.png);
     max-width: 402px;
   }
 }
@@ -95,7 +99,6 @@ a {
 @media only screen and (-webkit-min-device-pixel-ratio: 2.0) {
   #logo {
     -webkit-flex-basis: 76px;
-    background-image: url(images/holo_logo_200.png);
     max-width: 268px;
   }
 }

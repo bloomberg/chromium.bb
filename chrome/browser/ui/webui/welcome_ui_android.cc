@@ -65,10 +65,6 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui)
 
   // Add required resources.
   html_source->SetJsonPath("strings.js");
-  html_source->AddResourcePath("about_welcome_android.css",
-      IDR_ABOUT_WELCOME_CSS);
-  html_source->AddResourcePath("about_welcome_android.js",
-      IDR_ABOUT_WELCOME_JS);
   html_source->SetDefaultResource(IDR_ABOUT_WELCOME_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
