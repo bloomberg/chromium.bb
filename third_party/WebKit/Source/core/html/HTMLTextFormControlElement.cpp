@@ -209,6 +209,8 @@ void HTMLTextFormControlElement::setRangeText(const String& replacement, unsigne
         exceptionState.throwDOMException(IndexSizeError, "The provided start value (" + String::number(start) + ") is larger than the provided end value (" + String::number(end) + ").");
         return;
     }
+    if (hasAuthorShadowRoot())
+        return;
 
     String text = innerTextValue();
     unsigned textLength = text.length();
@@ -497,7 +499,8 @@ bool HTMLTextFormControlElement::lastChangeWasUserEdit() const
 
 void HTMLTextFormControlElement::setInnerTextValue(const String& value)
 {
-    if (!isTextFormControl())
+    ASSERT(!hasAuthorShadowRoot());
+    if (!isTextFormControl() || hasAuthorShadowRoot())
         return;
 
     bool textIsChanged = value != innerTextValue();
@@ -526,6 +529,7 @@ static String finishText(StringBuilder& result)
 
 String HTMLTextFormControlElement::innerTextValue() const
 {
+    ASSERT(!hasAuthorShadowRoot());
     HTMLElement* innerText = innerTextElement();
     if (!innerText || !isTextFormControl())
         return emptyString();
