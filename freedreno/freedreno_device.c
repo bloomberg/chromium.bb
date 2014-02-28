@@ -117,7 +117,8 @@ struct fd_device * fd_device_new(int fd)
 struct fd_device * fd_device_new_dup(int fd)
 {
 	struct fd_device *dev = fd_device_new(dup(fd));
-	dev->closefd = 1;
+	if (dev)
+		dev->closefd = 1;
 	return dev;
 }
 
