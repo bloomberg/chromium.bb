@@ -222,13 +222,6 @@ void SpeechSynthesis::speakingErrorOccurred(PassRefPtr<PlatformSpeechSynthesisUt
         handleSpeakingCompleted(static_cast<SpeechSynthesisUtterance*>(utterance->client()), true);
 }
 
-SpeechSynthesisUtterance* SpeechSynthesis::currentSpeechUtterance() const
-{
-    if (!m_utteranceQueue.isEmpty())
-        return m_utteranceQueue.first().get();
-    return 0;
-}
-
 const AtomicString& SpeechSynthesis::interfaceName() const
 {
     return EventTargetNames::SpeechSynthesisUtterance;
