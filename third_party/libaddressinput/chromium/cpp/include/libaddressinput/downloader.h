@@ -38,7 +38,7 @@ namespace addressinput {
 //    };
 class Downloader {
  public:
-  typedef i18n::addressinput::ScopedPtrCallback<std::string, std::string>
+  typedef i18n::addressinput::ScopedPtrCallback<void(std::string, std::string)>
       Callback;
 
   virtual ~Downloader() {}

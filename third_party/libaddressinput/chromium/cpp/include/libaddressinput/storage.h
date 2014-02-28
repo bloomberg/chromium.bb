@@ -42,7 +42,7 @@ namespace addressinput {
 //    };
 class Storage {
  public:
-  typedef i18n::addressinput::Callback<std::string, std::string> Callback;
+  typedef i18n::addressinput::Callback<void(std::string, std::string)> Callback;
 
   virtual ~Storage() {}
 

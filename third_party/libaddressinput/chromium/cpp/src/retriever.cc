@@ -185,14 +185,15 @@ void Retriever::Retrieve(const std::string& key,
 void Retriever::OnDataRetrievedFromStorage(bool success,
                                            const std::string& key,
                                            const std::string& stored_data) {
-  if (success) {
-    scoped_ptr<std::string> unwrapped;
-    double age_in_seconds = 0.0;
-    if (VerifyAndExtractTimestamp(stored_data, &unwrapped, &age_in_seconds)) {
-      if (age_in_seconds < kStaleDataAgeInSeconds) {
-        InvokeCallbackForKey(key, success, *unwrapped);
+  scoped_ptr<std::string> unwrapped;
+  double age_in_seconds = 0.0;
+  if (success &&
+      VerifyAndExtractTimestamp(stored_data, &unwrapped, &age_in_seconds)) {
+    if (age_in_seconds < kStaleDataAgeInSeconds) {
+      if (InvokeCallbackForKey(key, success, *unwrapped)) {
         return;
       }
+    } else {
       stale_data_[key].swap(*unwrapped);
     }
   }
@@ -208,13 +209,21 @@ void Retriever::OnDownloaded(bool success,
   std::map<std::string, std::string>::iterator stale_data_it =
       stale_data_.find(key);
 
+  // This variable tracks whether the client "likes" the data we return. For
+  // example, it could be corrupt --- in this case, we won't place it in
+  // storage.
+  bool data_is_good = false;
   if (success) {
-    InvokeCallbackForKey(key, success, *downloaded_data);
-    AppendTimestamp(downloaded_data.get());
-    storage_->Put(key, downloaded_data.Pass());
+    data_is_good = InvokeCallbackForKey(key, success, *downloaded_data);
+    if (data_is_good) {
+      AppendTimestamp(downloaded_data.get());
+      storage_->Put(key, downloaded_data.Pass());
+    }
   } else if (stale_data_it != stale_data_.end()) {
-    InvokeCallbackForKey(key, true, stale_data_it->second);
-  } else {
+    data_is_good = InvokeCallbackForKey(key, true, stale_data_it->second);
+  }
+
+  if (!success || !data_is_good) {
     std::string fallback;
     success = FallbackDataStore::Get(key, &fallback);
     InvokeCallbackForKey(key, success, fallback);
@@ -241,21 +250,25 @@ bool Retriever::IsValidationDataUrl(const std::string& url) const {
       url.compare(0, validation_data_url_.length(), validation_data_url_) == 0;
 }
 
-void Retriever::InvokeCallbackForKey(const std::string& key,
+bool Retriever::InvokeCallbackForKey(const std::string& key,
                                      bool success,
                                      const std::string& data) {
   std::map<std::string, Callback*>::iterator iter =
       requests_.find(key);
   if (iter == requests_.end()) {
     // An abandoned request.
-    return;
+    return true;
   }
+
   scoped_ptr<Callback> callback(iter->second);
-  requests_.erase(iter);
-  if (callback == NULL) {
-    return;
+  // If the data is no good, put the request back.
+  if (callback != NULL && !(*callback)(success, key, data)) {
+    requests_[key] = callback.release();
+    return false;
   }
-  (*callback)(success, key, data);
+
+  requests_.erase(iter);
+  return true;
 }
 
 }  // namespace addressinput

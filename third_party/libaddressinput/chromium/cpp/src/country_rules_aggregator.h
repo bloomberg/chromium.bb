@@ -58,7 +58,8 @@ class Ruleset;
 //    };
 class CountryRulesAggregator {
  public:
-  typedef i18n::addressinput::ScopedPtrCallback<std::string, Ruleset> Callback;
+  typedef i18n::addressinput::ScopedPtrCallback<void(std::string, Ruleset)>
+      Callback;
 
   explicit CountryRulesAggregator(scoped_ptr<Retriever> retriever);
   ~CountryRulesAggregator();
@@ -72,7 +73,7 @@ class CountryRulesAggregator {
 
  private:
   // Callback for Retriever::Retrieve() method.
-  void OnDataReady(bool success,
+  bool OnDataReady(bool success,
                    const std::string& key,
                    const std::string& data);
 

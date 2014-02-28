@@ -59,18 +59,18 @@ void CountryRulesAggregator::AggregateRules(const std::string& country_code,
       key_, BuildCallback(this, &CountryRulesAggregator::OnDataReady));
 }
 
-void CountryRulesAggregator::OnDataReady(bool success,
+bool CountryRulesAggregator::OnDataReady(bool success,
                                          const std::string& key,
                                          const std::string& data) {
   if (key != key_) {
-    return;  // An abandoned request.
+    return true;  // An abandoned request.
   }
 
   json_ = Json::Build().Pass();
   if (!success || !json_->ParseObject(data)) {
     (*rules_ready_)(false, country_code_, scoped_ptr<Ruleset>());
     Reset();
-    return;
+    return false;
   }
 
   std::map<std::string, std::string> language_keys;
@@ -78,6 +78,7 @@ void CountryRulesAggregator::OnDataReady(bool success,
   const bool parse_success = ruleset != NULL;
   (*rules_ready_)(parse_success, country_code_, ruleset.Pass());
   Reset();
+  return parse_success;
 }
 
 scoped_ptr<Ruleset> CountryRulesAggregator::Build(

@@ -62,6 +62,8 @@ class FakeStorage : public Storage {
   virtual void Get(const std::string& key, scoped_ptr<Callback> data_ready)
       const;
 
+  std::string SynchronousGet(const std::string& key) const;
+
  private:
   std::map<std::string, std::string> data_;
 };

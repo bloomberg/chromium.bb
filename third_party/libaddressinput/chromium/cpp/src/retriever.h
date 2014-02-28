@@ -39,7 +39,9 @@ class Storage;
 //                       BuildCallback(this, &MyClass::OnDataRetrieved));
 class Retriever {
  public:
-  typedef i18n::addressinput::Callback<std::string, std::string> Callback;
+  // The return value indicates whether the data is valid (should be kept) or is
+  // invalid (should be discarded).
+  typedef i18n::addressinput::Callback<bool(std::string, std::string)> Callback;
 
   Retriever(const std::string& validation_data_url,
             scoped_ptr<Downloader> downloader,
@@ -82,7 +84,7 @@ class Retriever {
 
   // Looks up the callback for |key| in |requests_|, removes it from the map and
   // invokes it with |key|, |success|, and |data| parameters.
-  void InvokeCallbackForKey(const std::string& key,
+  bool InvokeCallbackForKey(const std::string& key,
                             bool success,
                             const std::string& data);
 

@@ -61,7 +61,8 @@ class RetrieverTest : public testing::TestWithParam<std::string> {
         retriever_(),
         success_(false),
         key_(),
-        data_() {
+        data_(),
+        reject_empty_data_(false) {
     ResetRetriever(FakeDownloader::kFakeDataUrl);
   }
 
@@ -88,19 +89,21 @@ class RetrieverTest : public testing::TestWithParam<std::string> {
     return retriever_->GetKeyForUrl(url);
   }
 
-  Storage* storage_;  // Owned by |retriever_|.
+  FakeStorage* storage_;  // Owned by |retriever_|.
   scoped_ptr<Retriever> retriever_;
   bool success_;
   std::string key_;
   std::string data_;
+  bool reject_empty_data_;
 
  private:
-  void OnDataReady(bool success,
+  bool OnDataReady(bool success,
                    const std::string& key,
                    const std::string& data) {
     success_ = success;
     key_ = key;
     data_ = data;
+    return !reject_empty_data_ || data_ != kEmptyData;
   }
 };
 
@@ -209,6 +212,49 @@ TEST_F(RetrieverTest, OldTimestampWillRedownload) {
   EXPECT_EQ(kKey, key_);
   EXPECT_FALSE(data_.empty());
   EXPECT_NE(kEmptyData, data_);
+}
+
+TEST_F(RetrieverTest, JunkDataRedownloads) {
+  ResetRetriever(std::string(FakeDownloader::kFakeDataUrl));
+  storage_->Put(kKey,
+                Wrap(kEmptyData, kEmptyDataChecksum, TimeToString(time(NULL))));
+  reject_empty_data_ = true;
+  retriever_->Retrieve(kKey, BuildCallback());
+  EXPECT_TRUE(success_);
+  EXPECT_EQ(kKey, key_);
+  EXPECT_FALSE(data_.empty());
+  EXPECT_NE(kEmptyData, data_);
+
+  // After verifying it's correct, it's saved in storage.
+  EXPECT_EQ(data_, storage_->SynchronousGet(kKey).substr(0, data_.size()));
+}
+
+TEST_F(RetrieverTest, JunkDataIsntStored) {
+  // Data the retriever accepts is stored in |storage_|.
+  ResetRetriever("test:///");
+  const std::string not_a_key("foobar");
+  retriever_->Retrieve(not_a_key, BuildCallback());
+  EXPECT_TRUE(success_);
+  EXPECT_EQ(not_a_key, key_);
+  EXPECT_FALSE(data_.empty());
+  EXPECT_EQ(kEmptyData, data_);
+  EXPECT_EQ(
+      kEmptyData,
+      storage_->SynchronousGet(not_a_key).substr(0, sizeof kEmptyData - 1));
+
+  // Try again, but this time reject the data.
+  reject_empty_data_ = true;
+  ResetRetriever("test:///");
+  EXPECT_EQ("", storage_->SynchronousGet(not_a_key));
+  retriever_->Retrieve(not_a_key, BuildCallback());
+
+  // Falls back to the fallback, which doesn't have data for Canada.
+  EXPECT_FALSE(success_);
+  EXPECT_EQ(not_a_key, key_);
+  EXPECT_TRUE(data_.empty());
+
+  // Since the retriever is rejecting empty data, it shouldn't be stored.
+  EXPECT_EQ("", storage_->SynchronousGet(not_a_key));
 }
 
 TEST_F(RetrieverTest, OldTimestampOkIfDownloadFails) {

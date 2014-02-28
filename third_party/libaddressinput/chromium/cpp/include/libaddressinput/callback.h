@@ -60,32 +60,35 @@ namespace addressinput {
 //        ...
 //      }
 //    };
-template <typename RequestType, typename ResponseType>
-class Callback {
+template <typename Sig> class Callback;
+template <typename ReturnType, typename RequestType, typename ResponseType>
+class Callback<ReturnType(RequestType, ResponseType)> {
  public:
   virtual ~Callback() {}
 
-  virtual void operator()(bool success,
-                          const RequestType& request,
-                          const ResponseType& response) const = 0;
+  virtual ReturnType operator()(bool success,
+                                const RequestType& request,
+                                const ResponseType& response) const = 0;
 };
 
-template <typename RequestType, typename ResponseType>
-class ScopedPtrCallback {
+template <typename Sig> class ScopedPtrCallback;
+template <typename ReturnType, typename RequestType, typename ResponseType>
+class ScopedPtrCallback<ReturnType(RequestType, ResponseType)> {
  public:
   virtual ~ScopedPtrCallback() {}
 
-  virtual void operator()(bool success,
-                          const RequestType& request,
-                          scoped_ptr<ResponseType> response) const = 0;
+  virtual ReturnType operator()(bool success,
+                                const RequestType& request,
+                                scoped_ptr<ResponseType> response) const = 0;
 };
 
 namespace {
 
-template <typename BaseType, typename RequestType, typename ResponseType>
-class CallbackImpl : public Callback<RequestType, ResponseType> {
+template <typename BaseType, typename ReturnType, typename RequestType,
+          typename ResponseType>
+class CallbackImpl : public Callback<ReturnType(RequestType, ResponseType)> {
  public:
-  typedef void (BaseType::*Method)(
+  typedef ReturnType (BaseType::*Method)(
       bool, const RequestType&, const ResponseType&);
 
   CallbackImpl(BaseType* instance, Method method)
@@ -98,10 +101,10 @@ class CallbackImpl : public Callback<RequestType, ResponseType> {
   virtual ~CallbackImpl() {}
 
   // Callback implementation.
-  virtual void operator()(bool success,
-                          const RequestType& request,
-                          const ResponseType& response) const {
-    (instance_->*method_)(success, request, response);
+  virtual ReturnType operator()(bool success,
+                                const RequestType& request,
+                                const ResponseType& response) const {
+    return (instance_->*method_)(success, request, response);
   }
 
  private:
@@ -109,11 +112,12 @@ class CallbackImpl : public Callback<RequestType, ResponseType> {
   Method method_;
 };
 
-template <typename BaseType, typename RequestType, typename ResponseType>
+template <typename BaseType, typename ReturnType, typename RequestType,
+          typename ResponseType>
 class ScopedPtrCallbackImpl :
-    public ScopedPtrCallback<RequestType, ResponseType> {
+    public ScopedPtrCallback<ReturnType(RequestType, ResponseType)> {
  public:
-  typedef void (BaseType::*Method)(
+  typedef ReturnType (BaseType::*Method)(
       bool, const RequestType&, scoped_ptr<ResponseType>);
 
   ScopedPtrCallbackImpl(BaseType* instance, Method method)
@@ -126,10 +130,10 @@ class ScopedPtrCallbackImpl :
   virtual ~ScopedPtrCallbackImpl() {}
 
   // ScopedPtrCallback implementation.
-  virtual void operator()(bool success,
-                          const RequestType& request,
-                          scoped_ptr<ResponseType> response) const {
-    (instance_->*method_)(success, request, response.Pass());
+  virtual ReturnType operator()(bool success,
+                                const RequestType& request,
+                                scoped_ptr<ResponseType> response) const {
+    return (instance_->*method_)(success, request, response.Pass());
   }
 
  private:
@@ -140,23 +144,28 @@ class ScopedPtrCallbackImpl :
 }  // namespace
 
 // Returns a callback to |instance->method| with constant reference to data.
-template <typename BaseType, typename RequestType, typename ResponseType>
-scoped_ptr<Callback<RequestType, ResponseType> > BuildCallback(
+template <typename BaseType, typename ReturnType, typename RequestType,
+          typename ResponseType>
+scoped_ptr<Callback<ReturnType(RequestType, ResponseType)> > BuildCallback(
     BaseType* instance,
-    void (BaseType::*method)(bool, const RequestType&, const ResponseType&)) {
-  return scoped_ptr<Callback<RequestType, ResponseType> >(
-      new CallbackImpl<BaseType, RequestType, ResponseType>(instance, method));
+    ReturnType (BaseType::*method)(
+        bool, const RequestType&, const ResponseType&)) {
+  return scoped_ptr<Callback<ReturnType(RequestType, ResponseType)> >(
+      new CallbackImpl<BaseType, ReturnType, RequestType, ResponseType>(
+          instance, method));
 }
 
 // Returns a callback to |instance->method| with scoped pointer to data.
-template <typename BaseType, typename RequestType, typename ResponseType>
-scoped_ptr<ScopedPtrCallback<RequestType, ResponseType> >
+template <typename BaseType, typename ReturnType, typename RequestType,
+          typename ResponseType>
+scoped_ptr<ScopedPtrCallback<ReturnType(RequestType, ResponseType)> >
 BuildScopedPtrCallback(
     BaseType* instance,
-    void (BaseType::*method)(
+    ReturnType (BaseType::*method)(
         bool, const RequestType&, scoped_ptr<ResponseType>)) {
-  return scoped_ptr<ScopedPtrCallback<RequestType, ResponseType> >(
-      new ScopedPtrCallbackImpl<BaseType, RequestType, ResponseType>(
+  return scoped_ptr<ScopedPtrCallback<ReturnType(RequestType, ResponseType)> >(
+      new ScopedPtrCallbackImpl<BaseType, ReturnType, RequestType,
+                                ResponseType>(
           instance, method));
 }
 

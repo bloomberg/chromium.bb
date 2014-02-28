@@ -36,5 +36,10 @@ void FakeStorage::Get(const std::string& key,
   (*data_ready)(success, key, data);
 }
 
+std::string FakeStorage::SynchronousGet(const std::string& key) const {
+  std::map<std::string, std::string>::const_iterator data_it = data_.find(key);
+  return data_it != data_.end() ? data_it->second : std::string();
+}
+
 }  // namespace addressinput
 }  // namespace i18n
