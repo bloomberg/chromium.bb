@@ -137,6 +137,10 @@ AC_CONFIG_FILES([
         tests/Makefile
         tests/tables/Makefile
         tests/tables/moreTables/Makefile
+        tests/tables/resolve_table/Makefile
+        tests/tables/resolve_table/dir_1/Makefile
+        tests/tables/resolve_table/dir_1/dir_1.1/Makefile
+        tests/tables/resolve_table/dir_2/Makefile
         tests/doctests/Makefile
         tests/harness/Makefile
         tests/harnessSources/Makefile
