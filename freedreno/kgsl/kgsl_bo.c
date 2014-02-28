@@ -174,28 +174,18 @@ struct fd_bo * kgsl_bo_from_handle(struct fd_device *dev,
 struct fd_bo * fd_bo_from_fbdev(struct fd_pipe *pipe,
 		int fbfd, uint32_t size)
 {
-	struct drm_kgsl_gem_create_fd req = {
-			.fd = fbfd,
-	};
 	struct fd_bo *bo;
-	struct kgsl_bo *kgsl_bo;
 
 	if (!is_kgsl_pipe(pipe))
 		return NULL;
 
-	if (drmCommandWriteRead(pipe->dev->fd, DRM_KGSL_GEM_CREATE_FD,
-			&req, sizeof(req))) {
-		return NULL;
-	}
-
-	bo = fd_bo_from_handle(pipe->dev, req.handle, size);
-	kgsl_bo = to_kgsl_bo(bo);
+	bo = fd_bo_new(pipe->dev, 1, 0);
 
 	/* this is fugly, but works around a bug in the kernel..
 	 * priv->memdesc.size never gets set, so getbufinfo ioctl
 	 * thinks the buffer hasn't be allocate and fails
 	 */
-	if (bo && !kgsl_bo_gpuaddr(kgsl_bo, 0)) {
+	if (bo) {
 		void *fbmem = mmap(NULL, size, PROT_READ | PROT_WRITE,
 				MAP_SHARED, fbfd, 0);
 		struct kgsl_map_user_mem req = {
@@ -204,7 +194,9 @@ struct fd_bo * fd_bo_from_fbdev(struct fd_pipe *pipe,
 				.offset  = 0,
 				.hostptr = (unsigned long)fbmem,
 		};
+		struct kgsl_bo *kgsl_bo = to_kgsl_bo(bo);
 		int ret;
+
 		ret = ioctl(to_kgsl_pipe(pipe)->fd, IOCTL_KGSL_MAP_USER_MEM, &req);
 		if (ret) {
 			ERROR_MSG("mapping user mem failed: %s",
