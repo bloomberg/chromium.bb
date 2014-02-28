@@ -131,14 +131,18 @@ OutputFile NinjaHelper::GetTargetOutputFile(const Target* target) const {
     prefix = "";
 
   const char* extension;
-  if (target->output_type() == Target::GROUP ||
-      target->output_type() == Target::SOURCE_SET ||
-      target->output_type() == Target::COPY_FILES ||
-      target->output_type() == Target::CUSTOM) {
-    extension = "stamp";
+  if (target->output_extension().empty()) {
+    if (target->output_type() == Target::GROUP ||
+        target->output_type() == Target::SOURCE_SET ||
+        target->output_type() == Target::COPY_FILES ||
+        target->output_type() == Target::CUSTOM) {
+      extension = "stamp";
+    } else {
+      extension = GetExtensionForOutputType(target->output_type(),
+                                            target->settings()->target_os());
+    }
   } else {
-    extension = GetExtensionForOutputType(target->output_type(),
-                                          target->settings()->target_os());
+    extension = target->output_extension().c_str();
   }
 
   // Everything goes into the toolchain directory (which will be empty for the

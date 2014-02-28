@@ -177,6 +177,7 @@
         'file_template_unittest.cc',
         'filesystem_utils_unittest.cc',
         'function_rebase_path_unittest.cc',
+        'gyp_binary_target_writer_unittest.cc',
         'gyp_script_target_writer_unittest.cc',
         'input_conversion_unittest.cc',
         'label_unittest.cc',

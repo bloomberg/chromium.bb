@@ -671,6 +671,17 @@ const char kLibs_Help[] =
     "  On Linux:\n"
     "    libs = [ \"ld\" ]\n";
 
+const char kOutputExtension[] = "output_extension";
+const char kOutputExtension_HelpShort[] =
+    "output_extension: [string] Value to use for the output's file extension.";
+const char kOutputExtension_Help[] =
+    "output_extension: Value to use for the output's file extension.\n"
+    "\n"
+    "  Normally the file extension for a target is based on the target\n"
+    "  type and the operating system, but in rare cases you will need to\n"
+    "  override the name (for example to use \"libfreetype.so.6\" instead\n"
+    "  of libfreetype.so on Linux).";
+
 const char kOutputName[] = "output_name";
 const char kOutputName_HelpShort[] =
     "output_name: [string] Name for the output file other than the default.";
@@ -834,6 +845,7 @@ const VariableInfoMap& GetTargetVariables() {
     INSERT_VARIABLE(Ldflags)
     INSERT_VARIABLE(Libs)
     INSERT_VARIABLE(LibDirs)
+    INSERT_VARIABLE(OutputExtension)
     INSERT_VARIABLE(OutputName)
     INSERT_VARIABLE(Outputs)
     INSERT_VARIABLE(Script)

@@ -24,6 +24,7 @@ class BinaryTargetGenerator : public TargetGenerator {
 
  private:
   void FillOutputName();
+  void FillOutputExtension();
 
   Target::OutputType output_type_;
 

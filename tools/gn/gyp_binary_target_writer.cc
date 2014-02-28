@@ -208,6 +208,10 @@ void GypBinaryTargetWriter::WriteName(int indent) {
   // targets here.
 
   Indent(indent) << "'product_name': '" << product_name << "',\n";
+
+  std::string product_extension = target_->output_extension();
+  if (!product_extension.empty())
+    Indent(indent) << "'product_extension': '" << product_extension << "',\n";
 }
 
 void GypBinaryTargetWriter::WriteType(int indent) {

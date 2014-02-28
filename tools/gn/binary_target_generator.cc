@@ -29,6 +29,10 @@ void BinaryTargetGenerator::DoRun() {
   if (err_->has_error())
     return;
 
+  FillOutputExtension();
+  if (err_->has_error())
+    return;
+
   FillExternal();
   if (err_->has_error())
     return;
@@ -60,4 +64,13 @@ void BinaryTargetGenerator::FillOutputName() {
   if (!value->VerifyTypeIs(Value::STRING, err_))
     return;
   target_->set_output_name(value->string_value());
+}
+
+void BinaryTargetGenerator::FillOutputExtension() {
+  const Value* value = scope_->GetValue(variables::kOutputExtension, true);
+  if (!value)
+    return;
+  if (!value->VerifyTypeIs(Value::STRING, err_))
+    return;
+  target_->set_output_extension(value->string_value());
 }
