@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/command_line.h"
+#include "base/debug/leak_annotations.h"
 #include "base/environment.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
@@ -1290,7 +1291,12 @@ SkBitmap Gtk2UI::DrawGtkButtonBorder(int gtk_state,
 
   gtk_widget_set_state(button, static_cast<GtkStateType>(gtk_state));
 
-  GdkPixmap* pixmap = gtk_widget_get_snapshot(button, NULL);
+  GdkPixmap* pixmap;
+  {
+    // http://crbug.com/346740
+    ANNOTATE_SCOPED_MEMORY_LEAK;
+    pixmap = gtk_widget_get_snapshot(button, NULL);
+  }
   int w, h;
   gdk_drawable_get_size(GDK_DRAWABLE(pixmap), &w, &h);
   DCHECK_EQ(w, width);
