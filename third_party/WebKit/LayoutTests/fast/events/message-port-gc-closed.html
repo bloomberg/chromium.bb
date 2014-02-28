@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<body>
+<script src="../../resources/js-test.js"></script>
+<script>
+jsTestIsAsync = true;
+description("MessagePorts (and their execution contexts) should be collected by GC once close() has been called on them");
+window.onmessage = function(evt) {
+    iframeDocGC = internals.observeGC(document.querySelector('iframe').contentDocument);
+    document.querySelector('iframe').remove();
+    gc();
+    gc();
+    shouldBeTrue("iframeDocGC.wasCollected");
+    finishJSTest();
+}
+</script>
+<iframe src="resources/message-port-gc-closed-iframe.html"></iframe>
+</body>

@@ -188,9 +188,7 @@ bool MessagePort::hasPendingActivity() const
 {
     // The spec says that entangled message ports should always be treated as if they have a strong reference.
     // We'll also stipulate that the queue needs to be open (if the app drops its reference to the port before start()-ing it, then it's not really entangled as it's unreachable).
-    if (m_started && m_entangledChannel)
-        return true;
-    return isEntangled();
+    return m_started && isEntangled();
 }
 
 PassOwnPtr<MessagePortChannelArray> MessagePort::disentanglePorts(const MessagePortArray* ports, ExceptionState& exceptionState)
