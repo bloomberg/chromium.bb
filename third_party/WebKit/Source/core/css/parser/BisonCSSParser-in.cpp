@@ -3061,7 +3061,10 @@ bool CSSPropertyParser::parseAnimationShorthand(CSSPropertyID propId, bool impor
         if (!parsedProperty[i])
             addAnimationValue(values[i], cssValuePool().createImplicitInitialValue());
 
-        addProperty(animationProperties.properties()[i], values[i].release(), important);
+        if (RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled())
+            addPropertyWithPrefixingVariant(animationProperties.properties()[i], values[i].release(), important);
+        else
+            addProperty(animationProperties.properties()[i], values[i].release(), important);
     }
 
     return true;
