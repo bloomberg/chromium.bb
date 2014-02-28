@@ -926,26 +926,25 @@ void FrameView::layout(bool allowSubtree)
             ScrollbarMode currentHMode = horizontalScrollbarMode();
             ScrollbarMode currentVMode = verticalScrollbarMode();
 
-            if (m_firstLayout || (hMode != currentHMode || vMode != currentVMode)) {
-                if (m_firstLayout) {
-                    setScrollbarsSuppressed(true);
+            if (m_firstLayout) {
+                setScrollbarsSuppressed(true);
 
-                    m_firstLayout = false;
-                    m_firstLayoutCallbackPending = true;
-                    m_lastViewportSize = layoutSize(IncludeScrollbars);
-                    m_lastZoomFactor = rootForThisLayout->style()->zoom();
+                m_firstLayout = false;
+                m_firstLayoutCallbackPending = true;
+                m_lastViewportSize = layoutSize(IncludeScrollbars);
+                m_lastZoomFactor = rootForThisLayout->style()->zoom();
 
-                    // Set the initial vMode to AlwaysOn if we're auto.
-                    if (vMode == ScrollbarAuto)
-                        setVerticalScrollbarMode(ScrollbarAlwaysOn); // This causes a vertical scrollbar to appear.
-                    // Set the initial hMode to AlwaysOff if we're auto.
-                    if (hMode == ScrollbarAuto)
-                        setHorizontalScrollbarMode(ScrollbarAlwaysOff); // This causes a horizontal scrollbar to disappear.
+                // Set the initial vMode to AlwaysOn if we're auto.
+                if (vMode == ScrollbarAuto)
+                    setVerticalScrollbarMode(ScrollbarAlwaysOn); // This causes a vertical scrollbar to appear.
+                // Set the initial hMode to AlwaysOff if we're auto.
+                if (hMode == ScrollbarAuto)
+                    setHorizontalScrollbarMode(ScrollbarAlwaysOff); // This causes a horizontal scrollbar to disappear.
 
-                    setScrollbarModes(hMode, vMode);
-                    setScrollbarsSuppressed(false, true);
-                } else
-                    setScrollbarModes(hMode, vMode);
+                setScrollbarModes(hMode, vMode);
+                setScrollbarsSuppressed(false, true);
+            } else if (hMode != currentHMode || vMode != currentVMode) {
+                setScrollbarModes(hMode, vMode);
             }
 
             LayoutSize oldSize = m_size;
