@@ -38,13 +38,13 @@ class DeviceRotationRate;
 class DeviceMotionEvent FINAL : public Event {
 public:
     virtual ~DeviceMotionEvent();
-    static PassRefPtr<DeviceMotionEvent> create()
+    static PassRefPtrWillBeRawPtr<DeviceMotionEvent> create()
     {
-        return adoptRef(new DeviceMotionEvent);
+        return adoptRefWillBeRefCountedGarbageCollected(new DeviceMotionEvent);
     }
-    static PassRefPtr<DeviceMotionEvent> create(const AtomicString& eventType, DeviceMotionData* deviceMotionData)
+    static PassRefPtrWillBeRawPtr<DeviceMotionEvent> create(const AtomicString& eventType, DeviceMotionData* deviceMotionData)
     {
-        return adoptRef(new DeviceMotionEvent(eventType, deviceMotionData));
+        return adoptRefWillBeRefCountedGarbageCollected(new DeviceMotionEvent(eventType, deviceMotionData));
     }
 
     void initDeviceMotionEvent(const AtomicString& type, bool bubbles, bool cancelable, DeviceMotionData*);

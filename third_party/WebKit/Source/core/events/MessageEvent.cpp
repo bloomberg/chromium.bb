@@ -134,13 +134,13 @@ MessageEvent::~MessageEvent()
 {
 }
 
-PassRefPtr<MessageEvent> MessageEvent::create(const AtomicString& type, const MessageEventInit& initializer, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<MessageEvent> MessageEvent::create(const AtomicString& type, const MessageEventInit& initializer, ExceptionState& exceptionState)
 {
     if (initializer.source.get() && !isValidSource(initializer.source.get())) {
         exceptionState.throwTypeError("The optional 'source' property is neither a Window nor MessagePort.");
         return nullptr;
     }
-    return adoptRef(new MessageEvent(type, initializer));
+    return adoptRefWillBeRefCountedGarbageCollected(new MessageEvent(type, initializer));
 }
 
 void MessageEvent::initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, const String& origin, const String& lastEventId, DOMWindow* source, PassOwnPtr<MessagePortArray> ports)

@@ -46,19 +46,19 @@ struct CSSFontFaceLoadEventInit : public EventInit {
 
 class CSSFontFaceLoadEvent FINAL : public Event {
 public:
-    static PassRefPtr<CSSFontFaceLoadEvent> create()
+    static PassRefPtrWillBeRawPtr<CSSFontFaceLoadEvent> create()
     {
-        return adoptRef<CSSFontFaceLoadEvent>(new CSSFontFaceLoadEvent());
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSFontFaceLoadEvent());
     }
 
-    static PassRefPtr<CSSFontFaceLoadEvent> create(const AtomicString& type, const CSSFontFaceLoadEventInit& initializer)
+    static PassRefPtrWillBeRawPtr<CSSFontFaceLoadEvent> create(const AtomicString& type, const CSSFontFaceLoadEventInit& initializer)
     {
-        return adoptRef<CSSFontFaceLoadEvent>(new CSSFontFaceLoadEvent(type, initializer));
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSFontFaceLoadEvent(type, initializer));
     }
 
     static PassRefPtr<CSSFontFaceLoadEvent> createForFontFaces(const AtomicString& type, const FontFaceArray& fontfaces = FontFaceArray())
     {
-        return adoptRef<CSSFontFaceLoadEvent>(new CSSFontFaceLoadEvent(type, fontfaces));
+        return adoptRefWillBeRefCountedGarbageCollected(new CSSFontFaceLoadEvent(type, fontfaces));
     }
 
     virtual ~CSSFontFaceLoadEvent();

@@ -35,8 +35,8 @@ class RTCDataChannelEvent FINAL : public Event {
 public:
     virtual ~RTCDataChannelEvent();
 
-    static PassRefPtr<RTCDataChannelEvent> create();
-    static PassRefPtr<RTCDataChannelEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<RTCDataChannel>);
+    static PassRefPtrWillBeRawPtr<RTCDataChannelEvent> create();
+    static PassRefPtrWillBeRawPtr<RTCDataChannelEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<RTCDataChannel>);
 
     RTCDataChannel* channel() const;
 

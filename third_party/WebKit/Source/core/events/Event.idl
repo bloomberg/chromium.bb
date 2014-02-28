@@ -20,6 +20,7 @@
 
 // Introduced in DOM Level 2:
 [
+    WillBeGarbageCollected,
     Custom=Wrap,
     EventConstructor,
 ] interface Event {

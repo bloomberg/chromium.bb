@@ -48,19 +48,19 @@ struct MIDIMessageEventInit : public EventInit {
 
 class MIDIMessageEvent FINAL : public Event {
 public:
-    static PassRefPtr<MIDIMessageEvent> create()
+    static PassRefPtrWillBeRawPtr<MIDIMessageEvent> create()
     {
-        return adoptRef(new MIDIMessageEvent());
+        return adoptRefWillBeRefCountedGarbageCollected(new MIDIMessageEvent());
     }
 
-    static PassRefPtr<MIDIMessageEvent> create(double receivedTime, PassRefPtr<Uint8Array> data)
+    static PassRefPtrWillBeRawPtr<MIDIMessageEvent> create(double receivedTime, PassRefPtr<Uint8Array> data)
     {
-        return adoptRef(new MIDIMessageEvent(receivedTime, data));
+        return adoptRefWillBeRefCountedGarbageCollected(new MIDIMessageEvent(receivedTime, data));
     }
 
-    static PassRefPtr<MIDIMessageEvent> create(const AtomicString& type, const MIDIMessageEventInit& initializer)
+    static PassRefPtrWillBeRawPtr<MIDIMessageEvent> create(const AtomicString& type, const MIDIMessageEventInit& initializer)
     {
-        return adoptRef(new MIDIMessageEvent(type, initializer));
+        return adoptRefWillBeRefCountedGarbageCollected(new MIDIMessageEvent(type, initializer));
     }
 
     double receivedTime() { return m_receivedTime; }

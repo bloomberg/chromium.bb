@@ -45,12 +45,12 @@ MouseEventInit::MouseEventInit()
 {
 }
 
-PassRefPtr<MouseEvent> MouseEvent::create(const AtomicString& type, const MouseEventInit& initializer)
+PassRefPtrWillBeRawPtr<MouseEvent> MouseEvent::create(const AtomicString& type, const MouseEventInit& initializer)
 {
-    return adoptRef(new MouseEvent(type, initializer));
+    return adoptRefWillBeRefCountedGarbageCollected(new MouseEvent(type, initializer));
 }
 
-PassRefPtr<MouseEvent> MouseEvent::create(const AtomicString& eventType, PassRefPtr<AbstractView> view, const PlatformMouseEvent& event, int detail, PassRefPtr<Node> relatedTarget)
+PassRefPtrWillBeRawPtr<MouseEvent> MouseEvent::create(const AtomicString& eventType, PassRefPtr<AbstractView> view, const PlatformMouseEvent& event, int detail, PassRefPtr<Node> relatedTarget)
 {
     ASSERT(event.type() == PlatformEvent::MouseMoved || event.button() != NoButton);
 
@@ -58,20 +58,22 @@ PassRefPtr<MouseEvent> MouseEvent::create(const AtomicString& eventType, PassRef
     bool isCancelable = !isMouseEnterOrLeave;
     bool isBubbling = !isMouseEnterOrLeave;
 
-    return MouseEvent::create(eventType, isBubbling, isCancelable, view,
+    return MouseEvent::create(
+        eventType, isBubbling, isCancelable, view,
         detail, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(),
         event.movementDelta().x(), event.movementDelta().y(),
         event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(), event.button(),
         relatedTarget, nullptr, false);
 }
 
-PassRefPtr<MouseEvent> MouseEvent::create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView> view,
+PassRefPtrWillBeRawPtr<MouseEvent> MouseEvent::create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView> view,
     int detail, int screenX, int screenY, int pageX, int pageY,
     int movementX, int movementY,
     bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short button,
     PassRefPtr<EventTarget> relatedTarget, PassRefPtrWillBeRawPtr<Clipboard> clipboard, bool isSimulated)
 {
-    return adoptRef(new MouseEvent(type, canBubble, cancelable, view,
+    return adoptRefWillBeRefCountedGarbageCollected(new MouseEvent(
+        type, canBubble, cancelable, view,
         detail, screenX, screenY, pageX, pageY,
         movementX, movementY,
         ctrlKey, altKey, shiftKey, metaKey, button, relatedTarget, clipboard, isSimulated));
@@ -196,9 +198,9 @@ void MouseEvent::trace(Visitor* visitor)
     MouseRelatedEvent::trace(visitor);
 }
 
-PassRefPtr<SimulatedMouseEvent> SimulatedMouseEvent::create(const AtomicString& eventType, PassRefPtr<AbstractView> view, PassRefPtr<Event> underlyingEvent)
+PassRefPtrWillBeRawPtr<SimulatedMouseEvent> SimulatedMouseEvent::create(const AtomicString& eventType, PassRefPtr<AbstractView> view, PassRefPtr<Event> underlyingEvent)
 {
-    return adoptRef(new SimulatedMouseEvent(eventType, view, underlyingEvent));
+    return adoptRefWillBeRefCountedGarbageCollected(new SimulatedMouseEvent(eventType, view, underlyingEvent));
 }
 
 SimulatedMouseEvent::~SimulatedMouseEvent()

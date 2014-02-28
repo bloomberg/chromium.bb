@@ -34,13 +34,13 @@ namespace WebCore {
 
 class XMLHttpRequestProgressEvent FINAL : public ProgressEvent {
 public:
-    static PassRefPtr<XMLHttpRequestProgressEvent> create()
+    static PassRefPtrWillBeRawPtr<XMLHttpRequestProgressEvent> create()
     {
-        return adoptRef(new XMLHttpRequestProgressEvent);
+        return adoptRefWillBeRefCountedGarbageCollected(new XMLHttpRequestProgressEvent);
     }
-    static PassRefPtr<XMLHttpRequestProgressEvent> create(const AtomicString& type, bool lengthComputable = false, unsigned long long loaded = 0, unsigned long long total = 0)
+    static PassRefPtrWillBeRawPtr<XMLHttpRequestProgressEvent> create(const AtomicString& type, bool lengthComputable = false, unsigned long long loaded = 0, unsigned long long total = 0)
     {
-        return adoptRef(new XMLHttpRequestProgressEvent(type, lengthComputable, loaded, total));
+        return adoptRefWillBeRefCountedGarbageCollected(new XMLHttpRequestProgressEvent(type, lengthComputable, loaded, total));
     }
 
     // Those 2 synonyms are included for compatibility with Firefox.

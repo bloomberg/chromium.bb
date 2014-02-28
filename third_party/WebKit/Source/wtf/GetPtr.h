@@ -21,6 +21,8 @@
 #ifndef WTF_GetPtr_h
 #define WTF_GetPtr_h
 
+#include "wtf/RawPtr.h"
+
 namespace WTF {
 
     template <typename T> inline T* getPtr(T* p)
@@ -31,6 +33,11 @@ namespace WTF {
     template <typename T> inline T* getPtr(T& p)
     {
         return &p;
+    }
+
+    template <typename T> inline T* getPtr(RawPtr<T> p)
+    {
+        return p.get();
     }
 
 } // namespace WTF

@@ -28,14 +28,14 @@
 
 namespace WebCore {
 
-PassRefPtr<SpeechSynthesisEvent> SpeechSynthesisEvent::create()
+PassRefPtrWillBeRawPtr<SpeechSynthesisEvent> SpeechSynthesisEvent::create()
 {
-    return adoptRef(new SpeechSynthesisEvent());
+    return adoptRefWillBeRefCountedGarbageCollected(new SpeechSynthesisEvent());
 }
 
-PassRefPtr<SpeechSynthesisEvent> SpeechSynthesisEvent::create(const AtomicString& type, unsigned long charIndex, float elapsedTime, const String& name)
+PassRefPtrWillBeRawPtr<SpeechSynthesisEvent> SpeechSynthesisEvent::create(const AtomicString& type, unsigned long charIndex, float elapsedTime, const String& name)
 {
-    return adoptRef(new SpeechSynthesisEvent(type, charIndex, elapsedTime, name));
+    return adoptRefWillBeRefCountedGarbageCollected(new SpeechSynthesisEvent(type, charIndex, elapsedTime, name));
 }
 
 SpeechSynthesisEvent::SpeechSynthesisEvent()

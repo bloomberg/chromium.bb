@@ -38,14 +38,14 @@
 
 namespace WebCore {
 
-PassRefPtr<SpeechInputEvent> SpeechInputEvent::create()
+PassRefPtrWillBeRawPtr<SpeechInputEvent> SpeechInputEvent::create()
 {
-    return adoptRef(new SpeechInputEvent);
+    return adoptRefWillBeRefCountedGarbageCollected(new SpeechInputEvent);
 }
 
-PassRefPtr<SpeechInputEvent> SpeechInputEvent::create(const AtomicString& eventType, const SpeechInputResultArray& results)
+PassRefPtrWillBeRawPtr<SpeechInputEvent> SpeechInputEvent::create(const AtomicString& eventType, const SpeechInputResultArray& results)
 {
-    return adoptRef(new SpeechInputEvent(eventType, results));
+    return adoptRefWillBeRefCountedGarbageCollected(new SpeechInputEvent(eventType, results));
 }
 
 SpeechInputEvent::SpeechInputEvent()

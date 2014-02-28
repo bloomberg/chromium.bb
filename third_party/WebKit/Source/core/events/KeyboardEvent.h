@@ -54,26 +54,26 @@ public:
         DOM_KEY_LOCATION_NUMPAD     = 0x03
     };
 
-    static PassRefPtr<KeyboardEvent> create()
+    static PassRefPtrWillBeRawPtr<KeyboardEvent> create()
     {
-        return adoptRef(new KeyboardEvent);
+        return adoptRefWillBeRefCountedGarbageCollected(new KeyboardEvent);
     }
 
-    static PassRefPtr<KeyboardEvent> create(const PlatformKeyboardEvent& platformEvent, AbstractView* view)
+    static PassRefPtrWillBeRawPtr<KeyboardEvent> create(const PlatformKeyboardEvent& platformEvent, AbstractView* view)
     {
-        return adoptRef(new KeyboardEvent(platformEvent, view));
+        return adoptRefWillBeRefCountedGarbageCollected(new KeyboardEvent(platformEvent, view));
     }
 
-    static PassRefPtr<KeyboardEvent> create(const AtomicString& type, const KeyboardEventInit& initializer)
+    static PassRefPtrWillBeRawPtr<KeyboardEvent> create(const AtomicString& type, const KeyboardEventInit& initializer)
     {
-        return adoptRef(new KeyboardEvent(type, initializer));
+        return adoptRefWillBeRefCountedGarbageCollected(new KeyboardEvent(type, initializer));
     }
 
-    static PassRefPtr<KeyboardEvent> create(const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view,
+    static PassRefPtrWillBeRawPtr<KeyboardEvent> create(const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view,
         const String& keyIdentifier, unsigned location,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool altGraphKey)
     {
-        return adoptRef(new KeyboardEvent(type, canBubble, cancelable, view, keyIdentifier, location,
+        return adoptRefWillBeRefCountedGarbageCollected(new KeyboardEvent(type, canBubble, cancelable, view, keyIdentifier, location,
         ctrlKey, altKey, shiftKey, metaKey, altGraphKey));
     }
 

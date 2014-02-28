@@ -54,22 +54,22 @@ public:
         DOM_DELTA_PAGE
     };
 
-    static PassRefPtr<WheelEvent> create()
+    static PassRefPtrWillBeRawPtr<WheelEvent> create()
     {
-        return adoptRef(new WheelEvent);
+        return adoptRefWillBeRefCountedGarbageCollected(new WheelEvent);
     }
 
-    static PassRefPtr<WheelEvent> create(const AtomicString& type, const WheelEventInit& initializer)
+    static PassRefPtrWillBeRawPtr<WheelEvent> create(const AtomicString& type, const WheelEventInit& initializer)
     {
-        return adoptRef(new WheelEvent(type, initializer));
+        return adoptRefWillBeRefCountedGarbageCollected(new WheelEvent(type, initializer));
     }
 
-    static PassRefPtr<WheelEvent> create(const FloatPoint& wheelTicks,
+    static PassRefPtrWillBeRawPtr<WheelEvent> create(const FloatPoint& wheelTicks,
         const FloatPoint& rawDelta, unsigned deltaMode, PassRefPtr<AbstractView> view,
         const IntPoint& screenLocation, const IntPoint& pageLocation,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool directionInvertedFromDevice)
     {
-        return adoptRef(new WheelEvent(wheelTicks, rawDelta, deltaMode, view,
+        return adoptRefWillBeRefCountedGarbageCollected(new WheelEvent(wheelTicks, rawDelta, deltaMode, view,
         screenLocation, pageLocation, ctrlKey, altKey, shiftKey, metaKey, directionInvertedFromDevice));
     }
 

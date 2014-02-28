@@ -31,9 +31,9 @@
 
 namespace WebCore {
 
-PassRefPtr<IDBVersionChangeEvent> IDBVersionChangeEvent::create(PassRefPtr<IDBAny> oldVersion, PassRefPtr<IDBAny> newVersion, const AtomicString& eventType, blink::WebIDBDataLoss dataLoss, const String& dataLossMessage)
+PassRefPtrWillBeRawPtr<IDBVersionChangeEvent> IDBVersionChangeEvent::create(PassRefPtr<IDBAny> oldVersion, PassRefPtr<IDBAny> newVersion, const AtomicString& eventType, blink::WebIDBDataLoss dataLoss, const String& dataLossMessage)
 {
-    return adoptRef(new IDBVersionChangeEvent(oldVersion, newVersion, eventType, dataLoss, dataLossMessage));
+    return adoptRefWillBeRefCountedGarbageCollected(new IDBVersionChangeEvent(oldVersion, newVersion, eventType, dataLoss, dataLossMessage));
 }
 
 IDBVersionChangeEvent::IDBVersionChangeEvent(PassRefPtr<IDBAny> oldVersion, PassRefPtr<IDBAny> newVersion, const AtomicString& eventType, blink::WebIDBDataLoss dataLoss, const String& dataLossMessage)

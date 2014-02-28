@@ -46,17 +46,17 @@ public:
         BOTH       = 2
     };
 
-    static PassRefPtr<OverflowEvent> create()
+    static PassRefPtrWillBeRawPtr<OverflowEvent> create()
     {
-        return adoptRef(new OverflowEvent);
+        return adoptRefWillBeRefCountedGarbageCollected(new OverflowEvent);
     }
-    static PassRefPtr<OverflowEvent> create(bool horizontalOverflowChanged, bool horizontalOverflow, bool verticalOverflowChanged, bool verticalOverflow)
+    static PassRefPtrWillBeRawPtr<OverflowEvent> create(bool horizontalOverflowChanged, bool horizontalOverflow, bool verticalOverflowChanged, bool verticalOverflow)
     {
-        return adoptRef(new OverflowEvent(horizontalOverflowChanged, horizontalOverflow, verticalOverflowChanged, verticalOverflow));
+        return adoptRefWillBeRefCountedGarbageCollected(new OverflowEvent(horizontalOverflowChanged, horizontalOverflow, verticalOverflowChanged, verticalOverflow));
     }
-    static PassRefPtr<OverflowEvent> create(const AtomicString& type, const OverflowEventInit& initializer)
+    static PassRefPtrWillBeRawPtr<OverflowEvent> create(const AtomicString& type, const OverflowEventInit& initializer)
     {
-        return adoptRef(new OverflowEvent(type, initializer));
+        return adoptRefWillBeRefCountedGarbageCollected(new OverflowEvent(type, initializer));
     }
 
     unsigned short orient() const { return m_orient; }

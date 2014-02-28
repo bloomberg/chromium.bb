@@ -30,14 +30,14 @@
 
 namespace WebCore {
 
-PassRefPtr<MediaStreamTrackEvent> MediaStreamTrackEvent::create()
+PassRefPtrWillBeRawPtr<MediaStreamTrackEvent> MediaStreamTrackEvent::create()
 {
-    return adoptRef(new MediaStreamTrackEvent);
+    return adoptRefWillBeRefCountedGarbageCollected(new MediaStreamTrackEvent);
 }
 
-PassRefPtr<MediaStreamTrackEvent> MediaStreamTrackEvent::create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<MediaStreamTrack> track)
+PassRefPtrWillBeRawPtr<MediaStreamTrackEvent> MediaStreamTrackEvent::create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<MediaStreamTrack> track)
 {
-    return adoptRef(new MediaStreamTrackEvent(type, canBubble, cancelable, track));
+    return adoptRefWillBeRefCountedGarbageCollected(new MediaStreamTrackEvent(type, canBubble, cancelable, track));
 }
 
 

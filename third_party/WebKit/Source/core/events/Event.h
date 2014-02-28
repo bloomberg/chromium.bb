@@ -72,17 +72,17 @@ public:
         CHANGE              = 32768
     };
 
-    static PassRefPtr<Event> create()
+    static PassRefPtrWillBeRawPtr<Event> create()
     {
-        return adoptRef(new Event);
+        return adoptRefWillBeRefCountedGarbageCollected(new Event);
     }
 
     // A factory for a simple event. The event doesn't bubble, and isn't
     // cancelable.
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/webappapis.html#fire-a-simple-event
-    static PassRefPtr<Event> create(const AtomicString& type)
+    static PassRefPtrWillBeRawPtr<Event> create(const AtomicString& type)
     {
-        return adoptRef(new Event(type, false, false));
+        return adoptRefWillBeRefCountedGarbageCollected(new Event(type, false, false));
     }
     static PassRefPtr<Event> createCancelable(const AtomicString& type)
     {
@@ -97,9 +97,9 @@ public:
         return adoptRef(new Event(type, true, true));
     }
 
-    static PassRefPtr<Event> create(const AtomicString& type, const EventInit& initializer)
+    static PassRefPtrWillBeRawPtr<Event> create(const AtomicString& type, const EventInit& initializer)
     {
-        return adoptRef(new Event(type, initializer));
+        return adoptRefWillBeRefCountedGarbageCollected(new Event(type, initializer));
     }
 
     virtual ~Event();

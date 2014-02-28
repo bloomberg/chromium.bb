@@ -49,9 +49,9 @@ public:
 
 class StorageEvent FINAL : public Event {
 public:
-    static PassRefPtr<StorageEvent> create();
-    static PassRefPtr<StorageEvent> create(const AtomicString& type, const String& key, const String& oldValue, const String& newValue, const String& url, Storage* storageArea);
-    static PassRefPtr<StorageEvent> create(const AtomicString&, const StorageEventInit&);
+    static PassRefPtrWillBeRawPtr<StorageEvent> create();
+    static PassRefPtrWillBeRawPtr<StorageEvent> create(const AtomicString& type, const String& key, const String& oldValue, const String& newValue, const String& url, Storage* storageArea);
+    static PassRefPtrWillBeRawPtr<StorageEvent> create(const AtomicString&, const StorageEventInit&);
     virtual ~StorageEvent();
 
     const String& key() const { return m_key; }

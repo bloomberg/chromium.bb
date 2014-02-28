@@ -38,7 +38,7 @@ namespace WebCore {
 
 class IDBVersionChangeEvent FINAL : public Event {
 public:
-    static PassRefPtr<IDBVersionChangeEvent> create(PassRefPtr<IDBAny> oldVersion = IDBAny::createNull(), PassRefPtr<IDBAny> newVersion = IDBAny::createNull(), const AtomicString& eventType = AtomicString(), blink::WebIDBDataLoss = blink::WebIDBDataLossNone, const String& dataLossMessage = String());
+    static PassRefPtrWillBeRawPtr<IDBVersionChangeEvent> create(PassRefPtr<IDBAny> oldVersion = IDBAny::createNull(), PassRefPtr<IDBAny> newVersion = IDBAny::createNull(), const AtomicString& eventType = AtomicString(), blink::WebIDBDataLoss = blink::WebIDBDataLossNone, const String& dataLossMessage = String());
     virtual ~IDBVersionChangeEvent();
 
     ScriptValue oldVersion(ExecutionContext*) const;
