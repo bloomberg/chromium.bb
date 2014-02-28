@@ -140,17 +140,29 @@ void DevToolsAgent::clearBrowserCookies() {
   Send(new DevToolsHostMsg_ClearBrowserCookies(routing_id()));
 }
 
-void DevToolsAgent::setTraceEventCallback(TraceEventCallback cb) {
+void DevToolsAgent::resetTraceEventCallback()
+{
+  TraceLog::GetInstance()->SetEventCallbackDisabled();
+  base::subtle::NoBarrier_Store(&event_callback_, 0);
+}
+
+void DevToolsAgent::setTraceEventCallback(const WebString& category_filter,
+                                          TraceEventCallback cb) {
   TraceLog* trace_log = TraceLog::GetInstance();
   base::subtle::NoBarrier_Store(&event_callback_,
                                 reinterpret_cast<base::subtle::AtomicWord>(cb));
   if (!!cb) {
     trace_log->SetEventCallbackEnabled(base::debug::CategoryFilter(
-        base::debug::CategoryFilter::kDefaultCategoryFilterString),
-        TraceEventCallbackWrapper);
+        category_filter.utf8()), TraceEventCallbackWrapper);
   } else {
     trace_log->SetEventCallbackDisabled();
   }
+}
+
+void DevToolsAgent::setTraceEventCallback(TraceEventCallback cb) {
+  WebString category_filter = WebString::fromUTF8(
+      base::debug::CategoryFilter::kDefaultCategoryFilterString);
+  setTraceEventCallback(category_filter, cb);
 }
 
 // static
