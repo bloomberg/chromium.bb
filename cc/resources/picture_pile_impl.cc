@@ -330,12 +330,7 @@ void PicturePileImpl::AnalyzeInRect(
 
   layer_rect.Intersect(gfx::Rect(tiling_.total_size()));
 
-  SkBitmap empty_bitmap;
-  empty_bitmap.setConfig(SkBitmap::kNo_Config,
-                         layer_rect.width(),
-                         layer_rect.height());
-  skia::AnalysisDevice device(empty_bitmap);
-  skia::AnalysisCanvas canvas(&device);
+  skia::AnalysisCanvas canvas(layer_rect.width(), layer_rect.height());
 
   RasterForAnalysis(&canvas, layer_rect, 1.0f, stats_instrumentation);
 
