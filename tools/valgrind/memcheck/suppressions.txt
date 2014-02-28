@@ -175,6 +175,15 @@
    fun:wcscmp
    fun:_ZN7testing8internal6String17WideCStringEqualsEPKwS3_
 }
+{
+   mesa_glsl_compile_shader
+   Memcheck:Leak
+   ...
+   fun:_mesa_glsl_compile_shader
+   fun:compile_shader
+   fun:_mesa_CompileShaderARB
+   fun:shared_dispatch_stub_529
+}
 
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
@@ -1620,15 +1629,6 @@
    fun:_ZN3net18ClientSocketHandle4InitINS_15SSLSocketParamsENS_19SSLClientSocketPoolEEEiRKSsRK13scoped_refptrIT_ENS_15RequestPriorityEP14CallbackRunnerI6Tuple1IiEEPT0_RKNS_11BoundNetLogE
 }
 {
-   Bug_69919
-   Memcheck:Leak
-   fun:calloc
-   ...
-   fun:_ZN3gfx15OSMesaGLContext10InitializeEjPNS_9GLContextE
-   fun:_ZN3gfx9GLContext24CreateOffscreenGLContextEPS0_
-   fun:*InitializeGLContextEv
-}
-{
    Bug_69934_a
    Memcheck:Leak
    fun:_Znw*
@@ -1941,20 +1941,6 @@
    fun:_ZN7WebCore22npCreateV8ScriptObjectEP4_NPPN2v86HandleINS2_6ObjectEEEPNS_9DOMWindowE
    fun:_ZN5blinkL19makeStringArrayImplERKNS_9WebVectorINS_9WebStringEEE
    fun:_ZN5blink11WebBindings15makeStringArrayERKNS_9WebVectorINS_9WebStringEEE
-}
-{
-   bug_80537_a
-   Memcheck:Leak
-   fun:calloc
-   ...
-   fun:_ZN3gfx15GLContextOSMesa11MakeCurrentEv
-}
-{
-   bug_80537_b
-   Memcheck:Leak
-   fun:calloc
-   ...
-   fun:_ZN3gfx15GLContextOSMesa11MakeCurrentEPNS_9GLSurfaceE
 }
 {
    bug_80551
@@ -3261,55 +3247,6 @@
    fun:_ZN8appcache17AppCacheDiskCache10ActiveCall17OnAsyncCompletionEi
 }
 {
-   bug_112278
-   Memcheck:Uninitialized
-   fun:fetch_texel_2d_f_rgba8888
-   fun:sample_2d_linear
-   fun:sample_linear_2d
-   fun:fetch_texel_lod
-   fun:fetch_texel
-   fun:_mesa_execute_program
-   fun:run_program
-   fun:_swrast_exec_fragment_program
-   fun:shade_texture_span
-   fun:_swrast_write_rgba_span
-   fun:general_triangle
-   fun:_swrast_validate_triangle
-   fun:_swrast_Triangle
-   fun:triangle_rgba
-   fun:_tnl_render_triangles_elts
-   fun:run_render
-   fun:_tnl_run_pipeline
-   fun:_tnl_draw_prims
-   fun:_tnl_vbo_draw_prims
-   fun:vbo_validated_drawrangeelements
-   fun:vbo_exec_DrawElements
-   fun:neutral_DrawElements
-}
-{
-   bug_112278b
-   Memcheck:Uninitialized
-   fun:fetch_texel_2d_f_rgba8888
-   fun:sample_2d_nearest
-   fun:sample_nearest_2d
-   fun:fetch_texel_lod
-   fun:fetch_texel
-   fun:_mesa_execute_program
-   fun:run_program
-   fun:_swrast_exec_fragment_program
-   fun:shade_texture_span
-   fun:_swrast_write_rgba_span
-   fun:general_triangle
-   ...
-   fun:_swrast_Triangle
-   fun:triangle_rgba
-   ...
-   fun:run_render
-   fun:_tnl_run_pipeline
-   fun:_tnl_draw_prims
-   fun:_tnl_vbo_draw_prims
-}
-{
    bug_112315
    Memcheck:Leak
    fun:_Znw*
@@ -3431,42 +3368,6 @@
    fun:_Znw*
    ...
    fun:_ZN17AudioRendererHost14OnCreateStreamEiRK15AudioParameters
-}
-{
-   bug_115419_1
-   Memcheck:Uninitialized
-   fun:fetch_texel_2d_f_rgba8888
-   fun:texture_get_row
-   fun:fast_read_rgba_pixels
-   fun:read_rgba_pixels
-   fun:_swrast_ReadPixels
-   fun:_mesa_ReadPixels
-   fun:glReadPixels
-   fun:_ZN3gpu5gles216GLES2DecoderImpl16HandleReadPixelsEjRKNS0_10ReadPixelsE
-   fun:_ZN3gpu5gles216GLES2DecoderImpl9DoCommandEjjPKv
-   fun:_ZN3gpu13CommandParser14ProcessCommandEv
-   fun:_ZN3gpu12GpuScheduler10PutChangedEv
-   fun:_ZN6webkit3gpu18GLInProcessContext12PumpCommandsEv
-}
-{
-   bug_115419_2
-   Memcheck:Uninitialized
-   fun:get_src_arg_mask
-   fun:_mesa_remove_extra_move_use
-   fun:_mesa_optimize_program
-   fun:_Z16get_mesa_programP14__GLcontextRecP17gl_shader_programP9gl_shader
-   fun:_mesa_ir_link_shader
-   fun:_mesa_glsl_link_shader
-   fun:link_program
-   fun:_mesa_LinkProgramARB
-   fun:glLinkProgram
-   ...
-   fun:_ZN3gpu5gles216GLES2DecoderImpl13DoLinkProgram*
-   fun:_ZN3gpu5gles216GLES2DecoderImpl17HandleLinkProgram*
-   fun:_ZN3gpu5gles216GLES2DecoderImpl9DoCommandEjjPKv
-   fun:_ZN3gpu13CommandParser14ProcessCommandEv
-   fun:_ZN3gpu12GpuScheduler10PutChangedEv
-   fun:_ZN6webkit3gpu18GLInProcessContext12PumpCommandsEv
 }
 {
    bug_116475
@@ -3995,25 +3896,6 @@
    fun:_ZN7WebCore6V8Blob19constructorCallbackERKN2v89ArgumentsE
    fun:_ZN2v88internalL19HandleApiCallHelperILb1EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
    fun:_ZN2v88internalL30Builtin_HandleApiCallConstructENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
-}
-{
-   bug_139998
-   Memcheck:Leak
-   fun:*alloc
-   ...
-   fun:_ZL23link_intrastage_shadersP14__GLcontextRecP17gl_shader_programPP9gl_shaderj
-   fun:_Z12link_shadersP14__GLcontextRecP17gl_shader_program
-   fun:_mesa_glsl_link_shader
-   fun:link_program
-   fun:_mesa_LinkProgramARB
-   fun:glLinkProgram
-   ...
-   fun:_ZN3gpu5gles216GLES2DecoderImpl13DoLinkProgramEj
-   fun:_ZN3gpu5gles216GLES2DecoderImpl17HandleLinkProgram*
-   fun:_ZN3gpu5gles216GLES2DecoderImpl9DoCommandEjjPKv
-   fun:_ZN3gpu13CommandParser14ProcessCommandEv
-   fun:_ZN3gpu12GpuScheduler10PutChangedEv
-   fun:_ZN6webkit3gpu18GLInProcessContext12PumpCommandsEv
 }
 {
    bug_140196
@@ -4965,29 +4847,6 @@
    fun:_ZN11dom_storage17DomStorageContext18DeleteLocalStorageERK4GURL
 }
 {
-   bug_181038
-   Memcheck:Leak
-   ...
-   fun:_ZN3gfx9GLApiBase17glCompileShaderFnEj
-   fun:_ZN3gpu5gles214ProgramManager18ForceCompileShaderEPKSsPNS0_6ShaderEPNS0_16ShaderTranslatorEPNS0_11FeatureInfoE
-   fun:_ZN3gpu5gles214ProgramManager15DoCompileShaderEPNS0_6ShaderEPNS0_16ShaderTranslatorEPNS0_11FeatureInfoE
-   fun:_ZN3gpu5gles216GLES2DecoderImpl15DoCompileShaderEj
-}
-{
-   bug_181038_link
-   Memcheck:Leak
-   fun:malloc
-   ...
-   fun:_ZN3gfx9GLApiBase15glLinkProgramFnEj
-   fun:_ZN3gpu5gles27Program4LinkEPNS0_13ShaderManagerEPNS0_16ShaderTranslatorES5_PNS0_11FeatureInfoE
-   fun:_ZN3gpu5gles216GLES2DecoderImpl13DoLinkProgramEj
-   fun:_ZN3gpu5gles216GLES2DecoderImpl17HandleLinkProgramEjRKNS0_4cmds11LinkProgramE
-   fun:_ZN3gpu5gles216GLES2DecoderImpl9DoCommandEjjPKv
-   fun:_ZN3gpu13CommandParser14ProcessCommandEv
-   fun:_ZN3gpu12GpuScheduler10PutChangedEv
-   fun:_ZN6webkit3gpu18GLInProcessContext12PumpCommandsEv
-}
-{
    bug_181082
    Memcheck:Leak
    fun:_Znw*
@@ -5861,21 +5720,6 @@
    fun:_ZN7content20ChildProcessLauncher25GetChildTerminationStatusEbPi
 }
 {
-   bug_274193
-   Memcheck:Leak
-   ...
-   fun:_mesa_glsl_compile_shader
-   fun:compile_shader
-   fun:_mesa_CompileShaderARB
-   fun:shared_dispatch_stub_529
-   fun:_ZN3gfx9GLApiBase17glCompileShaderFnEj
-   fun:_ZN3gpu5gles214ProgramManager15DoCompileShaderEPNS0_6ShaderEPNS0_16ShaderTranslatorEPNS0_11FeatureInfoE
-   fun:_ZN3gpu5gles216GLES2DecoderImpl15DoCompileShaderEj
-   fun:_ZN3gpu5gles216GLES2DecoderImpl19HandleCompileShaderEjRKNS0_4cmds13CompileShaderE
-   fun:_ZN3gpu5gles216GLES2DecoderImpl9DoCommandEjjPKv
-   fun:_ZN3gpu13CommandParser14ProcessCommandEv
-}
-{
    bug_288787
    Memcheck:Leak
    fun:_Znw*
@@ -6420,4 +6264,51 @@
    fun:_Znw*
    fun:_ZNK13LoginDatabase9GetLoginsERKN8autofill12PasswordFormEPSt6vectorIPS1_SaIS5_EE
    fun:_ZN50LoginDatabaseTest_UpdateIncompleteCredentials_Test8TestBodyEv
+}
+{
+   bug_347965
+   Memcheck:Leak
+   ...
+   fun:SECKEY_ConvertToPublicKey
+   fun:_ZN7content9webcrypto8platform12_GLOBAL__N_125CreatePrivateKeyAlgorithmERKN5blink18WebCryptoAlgorithmEP19SECKEYPrivateKeyStrPNS3_21WebCryptoKeyAlgorithmE
+   fun:_ZN7content9webcrypto8platform14ImportKeyPkcs8ERKN5blink18WebCryptoAlgorithmERKNS0_10CryptoDataEbiPNS2_12WebCryptoKeyE
+   fun:_ZN7content9webcrypto9ImportKeyEN5blink18WebCryptoKeyFormatERKNS0_10CryptoDataERKNS1_18WebCryptoAlgorithmEbiPNS1_12WebCryptoKeyE
+}
+{
+   bug_347967_a
+   Memcheck:Uninitialized
+   fun:unpack_RGBA8888
+   fun:_mesa_unpack_rgba_row
+   fun:slow_read_rgba_pixels
+   fun:read_rgba_pixels
+   fun:_mesa_readpixels
+   fun:_mesa_ReadnPixelsARB
+   fun:_mesa_ReadPixels
+   fun:shared_dispatch_stub_256
+   fun:_ZN3gfx9GLApiBase14glReadPixelsFnEiiiijjPv
+   fun:_ZN3gpu5gles216GLES2DecoderImpl16HandleReadPixelsEjRKNS0_4cmds10ReadPixelsE
+   fun:_ZN3gpu5gles216GLES2DecoderImpl9DoCommandEjjPKv
+   fun:_ZN3gpu13CommandParser14ProcessCommandEv
+   fun:_ZN3gpu12GpuScheduler10PutChangedEv
+   fun:_ZN3gpu22InProcessCommandBuffer12PumpCommandsEv
+}
+{
+   bug_347967_b
+   Memcheck:Uninitialized
+   fun:unpack_RGB888
+   fun:_mesa_unpack_rgba_row
+   fun:slow_read_rgba_pixels
+   fun:read_rgba_pixels
+   fun:_mesa_readpixels
+   fun:_mesa_meta_CopyTexSubImage
+   fun:copytexsubimage
+   fun:_mesa_CopyTexSubImage2D
+   fun:shared_dispatch_stub_326
+   fun:_ZN3gfx9GLApiBase21glCopyTexSubImage2DFnEjiiiiiii
+   fun:_ZN3gpu5gles216GLES2DecoderImpl19DoCopyTexSubImage2DEjiiiiiii
+   fun:_ZN3gpu5gles216GLES2DecoderImpl23HandleCopyTexSubImage2DEjRKNS0_4cmds17CopyTexSubImage2DE
+   fun:_ZN3gpu5gles216GLES2DecoderImpl9DoCommandEjjPKv
+   fun:_ZN3gpu13CommandParser14ProcessCommandEv
+   fun:_ZN3gpu12GpuScheduler10PutChangedEv
+   fun:_ZN3gpu22InProcessCommandBuffer12PumpCommandsEv
 }
