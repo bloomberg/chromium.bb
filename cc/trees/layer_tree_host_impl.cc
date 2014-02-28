@@ -762,12 +762,9 @@ DrawSwapReadbackResult::DrawResult LayerTreeHostImpl::CalculateRenderPasses(
         &frame->non_occluding_screen_space_rects);
   }
 
-  // Add quads to the Render passes in FrontToBack order to allow for testing
+  // Add quads to the Render passes in front-to-back order to allow for testing
   // occlusion and performing culling during the tree walk.
-  typedef LayerIterator<LayerImpl,
-                        LayerImplList,
-                        RenderSurfaceImpl,
-                        LayerIteratorActions::FrontToBack> LayerIteratorType;
+  typedef LayerIterator<LayerImpl> LayerIteratorType;
 
   // Typically when we are missing a texture and use a checkerboard quad, we
   // still draw the frame. However when the layer being checkerboarded is moving
