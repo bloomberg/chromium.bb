@@ -204,6 +204,8 @@ void GcmJsEventRouter::OnMessage(
     const gcm::GCMClient::IncomingMessage& message) {
   api::gcm::OnMessage::Message message_arg;
   message_arg.data.additional_properties = message.data;
+  if (!message.collapse_key.empty())
+    message_arg.collapse_key.reset(new std::string(message.collapse_key));
 
   scoped_ptr<Event> event(new Event(
       api::gcm::OnMessage::kEventName,

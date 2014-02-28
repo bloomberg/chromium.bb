@@ -469,6 +469,9 @@ void GCMClientImpl::HandleIncomingMessage(const gcm::MCSMessage& message) {
       incoming_message.data[key] = data_message_stanza.app_data(i).value();
   }
 
+  if (data_message_stanza.has_token())
+    incoming_message.collapse_key = data_message_stanza.token();
+
   DCHECK_EQ(data_message_stanza.device_user_id(), kDefaultUserSerialNumber);
   DCHECK(delegate_);
 

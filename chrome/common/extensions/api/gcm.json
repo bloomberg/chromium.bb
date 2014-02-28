@@ -102,7 +102,7 @@
         "type": "function",
         "description": "Fired when a message is received through GCM.",
         "parameters": [
-          { 
+          {
             "name": "message",
             "type": "object",
             "description": "A message received from another party via GCM.",
@@ -114,6 +114,11 @@
                   "type": "string"
                 },
                 "description": "The message data."
+              },
+              "collapseKey": {
+                "type": "string",
+                "optional": "true",
+                "desctription": "The collapse key of a message."
               }
             }
           }

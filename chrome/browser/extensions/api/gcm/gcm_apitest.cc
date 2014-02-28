@@ -173,6 +173,11 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, OnMessage) {
   gcm::GCMClient::IncomingMessage message;
   message.data["property1"] = "value1";
   message.data["property2"] = "value2";
+  // First message is sent without a collapse key.
+  router.OnMessage(extension->id(), message);
+
+  // Second message carries the same data and a collapse key.
+  message.collapse_key = "collapseKeyValue";
   router.OnMessage(extension->id(), message);
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();

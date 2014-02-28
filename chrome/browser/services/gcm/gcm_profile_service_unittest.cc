@@ -1033,6 +1033,21 @@ TEST_F(GCMProfileServiceSingleProfileTest, MessageReceived) {
             consumer()->gcm_event_router()->received_event());
   EXPECT_EQ(kTestingAppId, consumer()->gcm_event_router()->app_id());
   EXPECT_TRUE(message.data == consumer()->gcm_event_router()->message().data);
+  EXPECT_TRUE(consumer()->gcm_event_router()->message().collapse_key.empty());
+}
+
+TEST_F(GCMProfileServiceSingleProfileTest, MessageWithCollapseKeyReceived) {
+  GCMClient::IncomingMessage message;
+  message.data["key1"] = "value1";
+  message.collapse_key = "collapse_key_value";
+  consumer()->GetGCMClient()->ReceiveMessage(kTestingAppId, message);
+  WaitUntilCompleted();
+  EXPECT_EQ(FakeGCMEventRouter::MESSAGE_EVENT,
+            consumer()->gcm_event_router()->received_event());
+  EXPECT_EQ(kTestingAppId, consumer()->gcm_event_router()->app_id());
+  EXPECT_TRUE(message.data == consumer()->gcm_event_router()->message().data);
+  EXPECT_EQ(message.collapse_key,
+            consumer()->gcm_event_router()->message().collapse_key);
 }
 
 TEST_F(GCMProfileServiceSingleProfileTest, MessagesDeleted) {
