@@ -645,6 +645,8 @@ void WindowEventDispatcher::OnLayerAnimationAborted(
 void WindowEventDispatcher::OnHostCancelMode() {
   ui::CancelModeEvent event;
   Window* focused_window = client::GetFocusClient(window())->GetFocusedWindow();
+  if (focused_window && !window()->Contains(focused_window))
+    focused_window = NULL;
   DispatchDetails details =
       DispatchEvent(focused_window ? focused_window : window(), &event);
   if (details.dispatcher_destroyed)

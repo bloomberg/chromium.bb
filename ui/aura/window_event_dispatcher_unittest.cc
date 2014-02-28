@@ -1804,4 +1804,39 @@ TEST_F(WindowEventDispatcherTest, SynthesizedLocatedEvent) {
             Env::GetInstance()->last_mouse_location().ToString());
 }
 
+class StaticFocusClient : public client::FocusClient {
+ public:
+  explicit StaticFocusClient(Window* focused)
+      : focused_(focused) {}
+  virtual ~StaticFocusClient() {}
+
+ private:
+  // client::FocusClient:
+  virtual void AddObserver(client::FocusChangeObserver* observer) OVERRIDE {}
+  virtual void RemoveObserver(client::FocusChangeObserver* observer) OVERRIDE {}
+  virtual void FocusWindow(Window* window) OVERRIDE {}
+  virtual void ResetFocusWithinActiveWindow(Window* window) OVERRIDE {}
+  virtual Window* GetFocusedWindow() OVERRIDE { return focused_; }
+
+  Window* focused_;
+
+  DISALLOW_COPY_AND_ASSIGN(StaticFocusClient);
+};
+
+// Tests that host-cancel-mode event can be dispatched to a dispatcher safely
+// when the focused window does not live in the dispatcher's tree.
+TEST_F(WindowEventDispatcherTest, HostCancelModeWithFocusedWindowOutside) {
+  test::TestWindowDelegate delegate;
+  scoped_ptr<Window> focused(CreateTestWindowWithDelegate(&delegate, 123,
+      gfx::Rect(20, 30, 100, 50), NULL));
+  StaticFocusClient focus_client(focused.get());
+  client::SetFocusClient(root_window(), &focus_client);
+  EXPECT_FALSE(root_window()->Contains(focused.get()));
+  EXPECT_EQ(focused.get(),
+            client::GetFocusClient(root_window())->GetFocusedWindow());
+  dispatcher()->AsWindowTreeHostDelegate()->OnHostCancelMode();
+  EXPECT_EQ(focused.get(),
+            client::GetFocusClient(root_window())->GetFocusedWindow());
+}
+
 }  // namespace aura
