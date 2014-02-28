@@ -8,16 +8,6 @@
       # Enable -Werror by default, but put it in a variable so it can
       # be optionally disabled.
       'werror%': '-Werror',
-
-      'conditions': [
-        ['"<(target_arch)"=="arm"', {
-          # Settings for the newer GCC versions currently used only on ARM.
-          'NACL_RODATA_FLAG%': '-Trodata-segment',
-        }, {
-          # Settings for the older GCC version used on x86_32 and x86_64.
-          'NACL_RODATA_FLAG%': '--build-id,--section-start,.note.gnu.build-id',
-        }]
-      ],
       # 1 to use goma.
       'use_goma%': 0,
     },
@@ -26,8 +16,6 @@
     'NACL_IRT_DATA_START': '0x3ef00000',
     # Expected address for beginning of code in for the IRT.
     'NACL_IRT_TEXT_START': '0x0fa00000',
-    # Flag to pass to linker to set start of RODATA segment.
-    'NACL_RODATA_FLAG%': '<(NACL_RODATA_FLAG)',
     # Default C compiler defines.
     'nacl_default_defines': [
       '__linux__',
