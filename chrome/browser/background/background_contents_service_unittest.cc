@@ -119,7 +119,7 @@ class MockBackgroundContents : public BackgroundContents {
   Profile* profile_;
 };
 
-#if defined(ENABLE_NOTIFICATIONS)
+#if defined(ENABLE_NOTIFICATIONS) && !defined(TOOLKIT_GTK)
 // Wait for the notification created.
 class NotificationWaiter : public message_center::MessageCenterObserver {
  public:
@@ -346,7 +346,7 @@ TEST_F(BackgroundContentsServiceTest, TestApplicationIDLinkage) {
   EXPECT_EQ(url2.spec(), GetPrefURLForApp(&profile, contents2->appid()));
 }
 
-#if defined(ENABLE_NOTIFICATIONS)
+#if defined(ENABLE_NOTIFICATIONS) && !defined(TOOLKIT_GTK)
 TEST_F(BackgroundContentsServiceNotificationTest, TestShowBalloon) {
   if (!NotificationUIManager::DelegatesToMessageCenter())
     return;
