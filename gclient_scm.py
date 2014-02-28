@@ -685,7 +685,7 @@ class GitWrapper(SCMWrapper):
               ['--shallow', '--cache-dir', self.cache_dir, url],
               options, cwd=self._root_dir, retry=True)
     return self._Run(['cache', 'exists', '--cache-dir', self.cache_dir, url],
-                     options).strip()
+                     options, cwd=self._root_dir, ).strip()
 
   def _Clone(self, revision, url, options):
     """Clone a git repository from the given URL.
