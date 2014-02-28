@@ -167,7 +167,7 @@ class TestResultWriter(object):
 
     def write_crash_log(self, crash_log):
         filename = self.output_filename(self.FILENAME_SUFFIX_CRASH_LOG + ".txt")
-        self._write_file(filename, crash_log)
+        self._write_file(filename, crash_log.encode('utf8', 'replace'))
 
     def copy_sample_file(self, sample_file):
         filename = self.output_filename(self.FILENAME_SUFFIX_SAMPLE + ".txt")
