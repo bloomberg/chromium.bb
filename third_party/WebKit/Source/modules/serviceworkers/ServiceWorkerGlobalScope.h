@@ -57,6 +57,7 @@ public:
 private:
     ServiceWorkerGlobalScope(const KURL&, const String& userAgent, ServiceWorkerThread*, double timeOrigin, PassOwnPtr<WorkerClients>);
 };
-}
+
+} // namespace WebCore
 
 #endif // ServiceWorkerGlobalScope_h

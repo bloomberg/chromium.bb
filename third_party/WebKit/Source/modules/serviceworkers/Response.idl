@@ -1,0 +1,23 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+[
+    Constructor(optional Dictionary responseInitDict),
+    RuntimeEnabled=ServiceWorker,
+    GlobalContext=ServiceWorkerGlobalScope,
+] interface Response {
+    attribute unsigned short statusCode;
+
+    // FIXME: Spec uses ByteString for these. We must perform the DOMString -> ByteString conversion manually (crbug.com/347426).
+    attribute DOMString statusText;
+    attribute DOMString method;
+
+    // FIXME: Implement HeaderMap which uses the MapClass WebIDL attribute (crbug.com/347435).
+    getter Dictionary headers();
+    setter void headers(Dictionary items);
+
+    // FIXME: Implement the following:
+    // attribute DOMString url;
+    // Promise<Blob> toBlob();
+};

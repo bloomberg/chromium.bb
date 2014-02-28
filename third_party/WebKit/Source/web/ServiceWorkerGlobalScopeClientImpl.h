@@ -44,6 +44,7 @@ public:
     virtual ~ServiceWorkerGlobalScopeClientImpl();
 
     virtual void didHandleInstallEvent(int installEventID) OVERRIDE;
+    virtual void didHandleFetchEvent(int fetchEventID, PassRefPtr<WebCore::Response> = nullptr) OVERRIDE;
 
 private:
     ServiceWorkerGlobalScopeClientImpl(PassOwnPtr<WebServiceWorkerContextClient>);
