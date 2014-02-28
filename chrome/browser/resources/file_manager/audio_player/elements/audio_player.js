@@ -106,6 +106,7 @@ Polymer('audio-player', {
     this.audioController.playing = false;
     this.audioElement.pause();
     this.currenttrackurl = '';
+    this.lastAudioUpdateTime_ = null;
   },
 
   /**
@@ -136,8 +137,8 @@ Polymer('audio-player', {
    * @param {number} newValue new time (in ms).
    */
   onControllerTimeChanged: function(oldValue, newValue) {
-    // Ignore periodical updates and small amount change.
-    if (Math.abs(oldValue - newValue) <= 500)
+    // Ignores updates from the audio element.
+    if (this.lastAudioUpdateTime_ === newValue)
       return;
 
     if (this.audioElement.readyState !== 0)
@@ -182,7 +183,8 @@ Polymer('audio-player', {
    * @private
    */
   onAudioStatusUpdate_: function() {
-    this.audioController.time = this.audioElement.currentTime * 1000;
+    this.audioController.time =
+        (this.lastAudioUpdateTime_ = this.audioElement.currentTime * 1000);
     this.audioController.duration = this.audioElement.duration * 1000;
     this.audioController.playing = !this.audioElement.paused;
   },
