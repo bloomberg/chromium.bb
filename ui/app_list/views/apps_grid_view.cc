@@ -652,18 +652,19 @@ void AppsGridView::EndDrag(bool cancel) {
   drag_start_grid_view_ = gfx::Point();
   drag_start_page_ = -1;
   drag_view_offset_ = gfx::Point();
-  if (IsDraggingForReprentInHiddenGridView())
-    dragging_for_reparent_item_ = false;
   AnimateToIdealBounds();
 
   StopPageFlipTimer();
 
   // If user releases mouse inside a folder's grid view, burst the folder
   // container ink bubble.
-  if (!is_root_level_ && !IsDraggingForReprentInHiddenGridView()) {
+  if (!cancel && !is_root_level_ && !IsDraggingForReprentInHiddenGridView()) {
     static_cast<AppListFolderView*>(parent())->
         UpdateFolderViewBackground(false);
   }
+
+  if (IsDraggingForReprentInHiddenGridView())
+    dragging_for_reparent_item_ = false;
 }
 
 void AppsGridView::StopPageFlipTimer() {
