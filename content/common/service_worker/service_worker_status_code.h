@@ -27,6 +27,12 @@ enum ServiceWorkerStatusCode {
   // Could not find a renderer process to run a service worker.
   SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND,
 
+  // Generic error code to indicate the specified item is not found.
+  SERVICE_WORKER_ERROR_NOT_FOUND,
+
+  // Generic error code to indicate the specified item already exists.
+  SERVICE_WORKER_ERROR_EXISTS,
+
   // Install event handling failed.
   SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED,
 

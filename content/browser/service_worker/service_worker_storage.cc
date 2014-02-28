@@ -6,29 +6,29 @@
 
 #include <string>
 
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "content/browser/service_worker/service_worker_registration.h"
-#include "content/public/browser/browser_thread.h"
 #include "webkit/browser/quota/quota_manager_proxy.h"
 
-namespace {
-// This is temporary until we figure out how registration ids will be
-// calculated.
-int64 NextRegistrationId() {
-  static int64 worker_id = 0;
-  return worker_id++;
-}
-}  // namespace
-
 namespace content {
+
+namespace {
+
+void RunSoon(const base::Closure& closure) {
+  base::MessageLoop::current()->PostTask(FROM_HERE, closure);
+}
 
 const base::FilePath::CharType kServiceWorkerDirectory[] =
     FILE_PATH_LITERAL("ServiceWorker");
 
+}
+
 ServiceWorkerStorage::ServiceWorkerStorage(
     const base::FilePath& path,
     quota::QuotaManagerProxy* quota_manager_proxy)
-    : quota_manager_proxy_(quota_manager_proxy) {
+    : last_registration_id_(0),  // TODO(kinuko): this should be read from disk.
+      quota_manager_proxy_(quota_manager_proxy) {
   if (!path.empty())
     path_ = path.Append(kServiceWorkerDirectory);
 }
@@ -46,22 +46,16 @@ ServiceWorkerStorage::~ServiceWorkerStorage() {
 void ServiceWorkerStorage::FindRegistrationForPattern(
     const GURL& pattern,
     const FindRegistrationCallback& callback) {
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_NOT_FOUND;
+  scoped_refptr<ServiceWorkerRegistration> found;
   PatternToRegistrationMap::const_iterator match =
       registration_by_pattern_.find(pattern);
-  if (match == registration_by_pattern_.end()) {
-    BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(callback,
-                   false /* found */,
-                   SERVICE_WORKER_OK,
-                   scoped_refptr<ServiceWorkerRegistration>()));
-    return;
+  if (match != registration_by_pattern_.end()) {
+    status = SERVICE_WORKER_OK;
+    found = match->second;
   }
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(callback, true /* found */, SERVICE_WORKER_OK, match->second));
+  // Always simulate asynchronous call for now.
+  RunSoon(base::Bind(callback, status, found));
 }
 
 void ServiceWorkerStorage::FindRegistrationForDocument(
@@ -70,58 +64,56 @@ void ServiceWorkerStorage::FindRegistrationForDocument(
   // TODO(alecflett): This needs to be synchronous in the fast path,
   // but asynchronous in the slow path (when the patterns have to be
   // loaded from disk). For now it is always pessimistically async.
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_NOT_FOUND;
+  scoped_refptr<ServiceWorkerRegistration> found;
   for (PatternToRegistrationMap::const_iterator it =
            registration_by_pattern_.begin();
        it != registration_by_pattern_.end();
        ++it) {
     if (PatternMatches(it->first, document_url)) {
-      BrowserThread::PostTask(
-          BrowserThread::IO,
-          FROM_HERE,
-          base::Bind(callback,
-                     true /* found */,
-                     SERVICE_WORKER_OK,
-                     scoped_refptr<ServiceWorkerRegistration>(it->second)));
-      return;
+      status = SERVICE_WORKER_OK;
+      found = it->second;
+      break;
     }
   }
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(callback,
-                 false /* found */,
-                 SERVICE_WORKER_OK,
-                 scoped_refptr<ServiceWorkerRegistration>()));
+  // Always simulate asynchronous call for now.
+  RunSoon(base::Bind(callback, status, found));
 }
 
-scoped_refptr<ServiceWorkerRegistration> ServiceWorkerStorage::RegisterInternal(
-    const GURL& pattern,
-    const GURL& script_url) {
+void ServiceWorkerStorage::StoreRegistration(
+    ServiceWorkerRegistration* registration,
+    const StatusCallback& callback) {
+  DCHECK(registration);
 
   PatternToRegistrationMap::const_iterator current(
-      registration_by_pattern_.find(pattern));
-  DCHECK(current == registration_by_pattern_.end() ||
-         current->second->script_url() == script_url);
-
-  if (current == registration_by_pattern_.end()) {
-    scoped_refptr<ServiceWorkerRegistration> registration(
-        new ServiceWorkerRegistration(
-            pattern, script_url, NextRegistrationId()));
-    // TODO(alecflett): version upgrade path.
-    registration_by_pattern_[pattern] = registration;
-    return registration;
+      registration_by_pattern_.find(registration->pattern()));
+  if (current != registration_by_pattern_.end() &&
+      current->second->script_url() != registration->script_url()) {
+    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_EXISTS));
+    return;
   }
 
-  return current->second;
+  // This may update the existing registration information.
+  registration_by_pattern_[registration->pattern()] = registration;
+
+  RunSoon(base::Bind(callback, SERVICE_WORKER_OK));
 }
 
-void ServiceWorkerStorage::UnregisterInternal(const GURL& pattern) {
+void ServiceWorkerStorage::DeleteRegistration(
+    const GURL& pattern,
+    const StatusCallback& callback) {
   PatternToRegistrationMap::iterator match =
       registration_by_pattern_.find(pattern);
-  if (match != registration_by_pattern_.end()) {
-    match->second->Shutdown();
-    registration_by_pattern_.erase(match);
+  if (match == registration_by_pattern_.end()) {
+    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_NOT_FOUND));
+    return;
   }
+  registration_by_pattern_.erase(match);
+  RunSoon(base::Bind(callback, SERVICE_WORKER_OK));
+}
+
+int64 ServiceWorkerStorage::NewRegistrationId() {
+  return ++last_registration_id_;
 }
 
 bool ServiceWorkerStorage::PatternMatches(const GURL& pattern,

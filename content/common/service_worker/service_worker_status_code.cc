@@ -18,6 +18,10 @@ const char* ServiceWorkerStatusToString(ServiceWorkerStatusCode status) {
       return "Operation has been aborted";
     case SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND:
       return "Could not find a renderer process to run a service worker";
+    case SERVICE_WORKER_ERROR_NOT_FOUND:
+      return "Not found";
+    case SERVICE_WORKER_ERROR_EXISTS:
+      return "Already exists";
     case SERVICE_WORKER_ERROR_START_WORKER_FAILED:
       return "ServiceWorker cannot be started";
     case SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED:

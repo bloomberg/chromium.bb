@@ -11,8 +11,8 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_vector.h"
-#include "content/browser/service_worker/service_worker_registration_status.h"
 #include "content/common/content_export.h"
+#include "content/common/service_worker/service_worker_status_code.h"
 #include "url/gurl.h"
 
 namespace quota {
@@ -27,28 +27,38 @@ class ServiceWorkerRegistration;
 // instantiate ServiceWorkerRegistration objects.
 class CONTENT_EXPORT ServiceWorkerStorage {
  public:
+  typedef base::Callback<void(ServiceWorkerStatusCode status)> StatusCallback;
+  typedef base::Callback<void(ServiceWorkerStatusCode status,
+                              const scoped_refptr<ServiceWorkerRegistration>&
+                                  registration)> FindRegistrationCallback;
+
   ServiceWorkerStorage(const base::FilePath& path,
                        quota::QuotaManagerProxy* quota_manager_proxy);
   ~ServiceWorkerStorage();
 
-  // `found` is only valid if status == SERVICE_WORKER_OK.
-  typedef base::Callback<void(bool found,
-                              ServiceWorkerStatusCode status,
-                              const scoped_refptr<ServiceWorkerRegistration>&
-                                  registration)> FindRegistrationCallback;
-
+  // Finds registration for |document_url| or |pattern|.
+  // Returns SERVICE_WORKER_OK with non-null registration if registration
+  // is found, or returns SERVICE_WORKER_ERROR_NOT_FOUND if no matching
+  // registration is found.
   void FindRegistrationForDocument(const GURL& document_url,
                                    const FindRegistrationCallback& callback);
   void FindRegistrationForPattern(const GURL& pattern,
                                   const FindRegistrationCallback& callback);
 
-  // TODO(alecflett): These are temporary internal methods providing
-  // synchronous in-memory registration. Eventually these will be
-  // replaced by asynchronous methods that persist registration to disk.
-  scoped_refptr<ServiceWorkerRegistration> RegisterInternal(
-      const GURL& pattern,
-      const GURL& script_url);
-  void UnregisterInternal(const GURL& pattern);
+  // Stores |registration|. Returns SERVICE_WORKER_ERROR_EXISTS if
+  // conflicting registration (which has different script_url) is
+  // already registered for the |registration|->pattern().
+  void StoreRegistration(ServiceWorkerRegistration* registration,
+                         const StatusCallback& callback);
+
+  // Deletes |registration|. This may return SERVICE_WORKER_ERROR_NOT_FOUND
+  // if no matching registration is found.
+  void DeleteRegistration(const GURL& pattern,
+                          const StatusCallback& callback);
+
+  // Returns new registration ID which is guaranteed to be unique in
+  // the storage.
+  int64 NewRegistrationId();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerStorageTest, PatternMatches);
@@ -61,6 +71,8 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   // This is the in-memory registration. Eventually the registration will be
   // persisted to disk.
   PatternToRegistrationMap registration_by_pattern_;
+
+  int last_registration_id_;
 
   scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
   base::FilePath path_;

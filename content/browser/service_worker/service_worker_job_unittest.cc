@@ -33,14 +33,11 @@ void SaveRegistrationCallback(
 }
 
 void SaveFoundRegistrationCallback(
-    bool expected_found,
     ServiceWorkerStatusCode expected_status,
     bool* called,
     scoped_refptr<ServiceWorkerRegistration>* registration,
-    bool found,
     ServiceWorkerStatusCode status,
     const scoped_refptr<ServiceWorkerRegistration>& result) {
-  EXPECT_EQ(expected_found, found);
   EXPECT_EQ(expected_status, status);
   *called = true;
   *registration = result;
@@ -61,13 +58,11 @@ ServiceWorkerRegisterJob::RegistrationCallback SaveRegistration(
 }
 
 ServiceWorkerStorage::FindRegistrationCallback SaveFoundRegistration(
-    bool expected_found,
     ServiceWorkerStatusCode expected_status,
     bool* called,
     scoped_refptr<ServiceWorkerRegistration>* registration) {
   *called = false;
   return base::Bind(&SaveFoundRegistrationCallback,
-                    expected_found,
                     expected_status,
                     called,
                     registration);
@@ -134,11 +129,11 @@ TEST_F(ServiceWorkerJobTest, SameDocumentSameRegistration) {
   scoped_refptr<ServiceWorkerRegistration> registration1;
   storage()->FindRegistrationForDocument(
       GURL("http://www.example.com/"),
-      SaveFoundRegistration(true, SERVICE_WORKER_OK, &called, &registration1));
+      SaveFoundRegistration(SERVICE_WORKER_OK, &called, &registration1));
   scoped_refptr<ServiceWorkerRegistration> registration2;
   storage()->FindRegistrationForDocument(
       GURL("http://www.example.com/"),
-      SaveFoundRegistration(true, SERVICE_WORKER_OK, &called, &registration2));
+      SaveFoundRegistration(SERVICE_WORKER_OK, &called, &registration2));
 
   ServiceWorkerRegistration* null_registration(NULL);
   ASSERT_EQ(null_registration, registration1);
@@ -169,7 +164,7 @@ TEST_F(ServiceWorkerJobTest, SameMatchSameRegistration) {
   scoped_refptr<ServiceWorkerRegistration> registration1;
   storage()->FindRegistrationForDocument(
       GURL("http://www.example.com/one"),
-      SaveFoundRegistration(true, SERVICE_WORKER_OK, &called, &registration1));
+      SaveFoundRegistration(SERVICE_WORKER_OK, &called, &registration1));
 
   EXPECT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -178,7 +173,7 @@ TEST_F(ServiceWorkerJobTest, SameMatchSameRegistration) {
   scoped_refptr<ServiceWorkerRegistration> registration2;
   storage()->FindRegistrationForDocument(
       GURL("http://www.example.com/two"),
-      SaveFoundRegistration(true, SERVICE_WORKER_OK, &called, &registration2));
+      SaveFoundRegistration(SERVICE_WORKER_OK, &called, &registration2));
   EXPECT_FALSE(called);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
@@ -212,11 +207,11 @@ TEST_F(ServiceWorkerJobTest, DifferentMatchDifferentRegistration) {
   scoped_refptr<ServiceWorkerRegistration> registration1;
   storage()->FindRegistrationForDocument(
       GURL("http://www.example.com/one/"),
-      SaveFoundRegistration(true, SERVICE_WORKER_OK, &called1, &registration1));
+      SaveFoundRegistration(SERVICE_WORKER_OK, &called1, &registration1));
   scoped_refptr<ServiceWorkerRegistration> registration2;
   storage()->FindRegistrationForDocument(
       GURL("http://www.example.com/two/"),
-      SaveFoundRegistration(true, SERVICE_WORKER_OK, &called2, &registration2));
+      SaveFoundRegistration(SERVICE_WORKER_OK, &called2, &registration2));
 
   EXPECT_FALSE(called1);
   EXPECT_FALSE(called2);
@@ -272,7 +267,8 @@ TEST_F(ServiceWorkerJobTest, Unregister) {
 
   storage()->FindRegistrationForPattern(
       pattern,
-      SaveFoundRegistration(false, SERVICE_WORKER_OK, &called, &registration));
+      SaveFoundRegistration(SERVICE_WORKER_ERROR_NOT_FOUND,
+                            &called, &registration));
 
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -302,7 +298,7 @@ TEST_F(ServiceWorkerJobTest, RegisterNewScript) {
   storage()->FindRegistrationForPattern(
       pattern,
       SaveFoundRegistration(
-          true, SERVICE_WORKER_OK, &called, &old_registration_by_pattern));
+          SERVICE_WORKER_OK, &called, &old_registration_by_pattern));
 
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -330,7 +326,7 @@ TEST_F(ServiceWorkerJobTest, RegisterNewScript) {
   storage()->FindRegistrationForPattern(
       pattern,
       SaveFoundRegistration(
-          true, SERVICE_WORKER_OK, &called, &new_registration));
+          SERVICE_WORKER_OK, &called, &new_registration));
 
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -361,7 +357,7 @@ TEST_F(ServiceWorkerJobTest, RegisterDuplicateScript) {
   storage()->FindRegistrationForPattern(
       pattern,
       SaveFoundRegistration(
-          true, SERVICE_WORKER_OK, &called, &old_registration_by_pattern));
+          SERVICE_WORKER_OK, &called, &old_registration_by_pattern));
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(called);
@@ -387,7 +383,7 @@ TEST_F(ServiceWorkerJobTest, RegisterDuplicateScript) {
   storage()->FindRegistrationForPattern(
       pattern,
       SaveFoundRegistration(
-          true, SERVICE_WORKER_OK, &called, &new_registration_by_pattern));
+          SERVICE_WORKER_OK, &called, &new_registration_by_pattern));
 
   ASSERT_FALSE(called);
   base::RunLoop().RunUntilIdle();
@@ -428,7 +424,7 @@ TEST_F(ServiceWorkerJobTest, ParallelRegUnreg) {
   storage()->FindRegistrationForPattern(
       pattern,
       SaveFoundRegistration(
-          false, SERVICE_WORKER_OK, &find_called, &registration));
+          SERVICE_WORKER_ERROR_NOT_FOUND, &find_called, &registration));
 
   base::RunLoop().RunUntilIdle();
 
@@ -472,7 +468,7 @@ TEST_F(ServiceWorkerJobTest, ParallelRegNewScript) {
   storage()->FindRegistrationForPattern(
       pattern,
       SaveFoundRegistration(
-          true, SERVICE_WORKER_OK, &find_called, &registration));
+          SERVICE_WORKER_OK, &find_called, &registration));
 
   base::RunLoop().RunUntilIdle();
 
@@ -519,7 +515,7 @@ TEST_F(ServiceWorkerJobTest, ParallelRegSameScript) {
   storage()->FindRegistrationForPattern(
       pattern,
       SaveFoundRegistration(
-          true, SERVICE_WORKER_OK, &find_called, &registration));
+          SERVICE_WORKER_OK, &find_called, &registration));
 
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(registration, registration1);
@@ -556,7 +552,7 @@ TEST_F(ServiceWorkerJobTest, ParallelUnreg) {
   storage()->FindRegistrationForPattern(
       pattern,
       SaveFoundRegistration(
-          false, SERVICE_WORKER_OK, &find_called, &registration));
+          SERVICE_WORKER_ERROR_NOT_FOUND, &find_called, &registration));
 
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(scoped_refptr<ServiceWorkerRegistration>(), registration);

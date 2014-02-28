@@ -26,15 +26,14 @@ class ServiceWorkerRegisterJob {
     UNREGISTER,
   };
 
-  typedef base::Callback<void(ServiceWorkerStatusCode status,
-                              const scoped_refptr<ServiceWorkerRegistration>&
-                                  registration)> RegistrationCallback;
   typedef base::Callback<void(ServiceWorkerStatusCode status)>
-      UnregistrationCallback;
-  // TODO(alecflett): Unify this with RegistrationCallback
+      StatusCallback;
+
   typedef base::Callback<
-      void(const scoped_refptr<ServiceWorkerRegistration>& registration,
-           ServiceWorkerStatusCode status)> StatusCallback;
+      void(ServiceWorkerStatusCode status,
+           const scoped_refptr<ServiceWorkerRegistration>& registration)>
+      RegistrationCallback;
+  typedef StatusCallback UnregistrationCallback;
 
   // All type of jobs (Register and Unregister) complete through a
   // single call to this callback on the IO thread.
@@ -75,30 +74,21 @@ class ServiceWorkerRegisterJob {
 
   // These are all steps in the registration and unregistration pipeline.
   void RegisterPatternAndContinue(
-      const RegistrationCallback& callback,
+      const StatusCallback& callback,
       ServiceWorkerStatusCode previous_status);
 
   void UnregisterPatternAndContinue(
-      const UnregistrationCallback& callback,
-      bool found,
+      const StatusCallback& callback,
       ServiceWorkerStatusCode previous_status,
       const scoped_refptr<ServiceWorkerRegistration>& previous_registration);
 
   void StartWorkerAndContinue(
       const StatusCallback& callback,
-      ServiceWorkerStatusCode status,
-      const scoped_refptr<ServiceWorkerRegistration>& registration);
+      ServiceWorkerStatusCode previous_status);
 
-  // These methods are the last internal callback in the callback
+  // This method is the last internal callback in the callback
   // chain, and ultimately call callback_.
-  void UnregisterComplete(ServiceWorkerStatusCode status);
-  void RegisterComplete(
-      const scoped_refptr<ServiceWorkerRegistration>& registration,
-      ServiceWorkerStatusCode start_status);
-
-  void RunCallbacks(
-      ServiceWorkerStatusCode status,
-      const scoped_refptr<ServiceWorkerRegistration>& registration);
+  void Complete(ServiceWorkerStatusCode status);
 
   // The ServiceWorkerStorage object should always outlive
   // this.
@@ -110,6 +100,7 @@ class ServiceWorkerRegisterJob {
   ServiceWorkerStorage* storage_;
   EmbeddedWorkerRegistry* worker_registry_;
   ServiceWorkerJobCoordinator* coordinator_;
+  scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> pending_version_;
   const GURL pattern_;
   const GURL script_url_;
