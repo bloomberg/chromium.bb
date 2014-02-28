@@ -426,6 +426,7 @@
               'css/themeChromiumAndroid.css',
               'css/themeChromiumLinux.css',
               'css/themeChromiumSkia.css',
+              'css/themeMac.css',
               'css/themeWin.css',
               'css/themeWinQuirks.css',
               'css/svg.css',

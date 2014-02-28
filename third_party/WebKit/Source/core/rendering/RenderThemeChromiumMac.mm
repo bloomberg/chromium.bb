@@ -1122,112 +1122,12 @@ const int styledPopupPaddingLeft = 8;
 const int styledPopupPaddingTop = 1;
 const int styledPopupPaddingBottom = 2;
 
-static void TopGradientInterpolate(void*, const CGFloat* inData, CGFloat* outData)
-{
-    static float dark[4] = { 1.0f, 1.0f, 1.0f, 0.4f };
-    static float light[4] = { 1.0f, 1.0f, 1.0f, 0.15f };
-    float a = inData[0];
-    int i = 0;
-    for (i = 0; i < 4; i++)
-        outData[i] = (1.0f - a) * dark[i] + a * light[i];
-}
-
-static void BottomGradientInterpolate(void*, const CGFloat* inData, CGFloat* outData)
-{
-    static float dark[4] = { 1.0f, 1.0f, 1.0f, 0.0f };
-    static float light[4] = { 1.0f, 1.0f, 1.0f, 0.3f };
-    float a = inData[0];
-    int i = 0;
-    for (i = 0; i < 4; i++)
-        outData[i] = (1.0f - a) * dark[i] + a * light[i];
-}
-
-static void MainGradientInterpolate(void*, const CGFloat* inData, CGFloat* outData)
-{
-    static float dark[4] = { 0.0f, 0.0f, 0.0f, 0.15f };
-    static float light[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-    float a = inData[0];
-    int i = 0;
-    for (i = 0; i < 4; i++)
-        outData[i] = (1.0f - a) * dark[i] + a * light[i];
-}
-
-void RenderThemeChromiumMac::paintMenuListButtonGradients(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
-{
-    if (r.isEmpty())
-        return;
-
-    ContextContainer cgContextContainer(paintInfo.context);
-    CGContextRef context = cgContextContainer.context();
-
-    GraphicsContextStateSaver stateSaver(*paintInfo.context);
-
-    RoundedRect border = o->style()->getRoundedBorderFor(r);
-    int radius = border.radii().topLeft().width();
-
-    CGColorSpaceRef cspace = deviceRGBColorSpaceRef();
-
-    FloatRect topGradient(r.x(), r.y(), r.width(), r.height() / 2.0f);
-    struct CGFunctionCallbacks topCallbacks = { 0, TopGradientInterpolate, NULL };
-    RetainPtr<CGFunctionRef> topFunction(AdoptCF, CGFunctionCreate(NULL, 1, NULL, 4, NULL, &topCallbacks));
-    RetainPtr<CGShadingRef> topShading(AdoptCF, CGShadingCreateAxial(cspace, CGPointMake(topGradient.x(), topGradient.y()), CGPointMake(topGradient.x(), topGradient.maxY()), topFunction.get(), false, false));
-
-    FloatRect bottomGradient(r.x() + radius, r.y() + r.height() / 2.0f, r.width() - 2.0f * radius, r.height() / 2.0f);
-    struct CGFunctionCallbacks bottomCallbacks = { 0, BottomGradientInterpolate, NULL };
-    RetainPtr<CGFunctionRef> bottomFunction(AdoptCF, CGFunctionCreate(NULL, 1, NULL, 4, NULL, &bottomCallbacks));
-    RetainPtr<CGShadingRef> bottomShading(AdoptCF, CGShadingCreateAxial(cspace, CGPointMake(bottomGradient.x(),  bottomGradient.y()), CGPointMake(bottomGradient.x(), bottomGradient.maxY()), bottomFunction.get(), false, false));
-
-    struct CGFunctionCallbacks mainCallbacks = { 0, MainGradientInterpolate, NULL };
-    RetainPtr<CGFunctionRef> mainFunction(AdoptCF, CGFunctionCreate(NULL, 1, NULL, 4, NULL, &mainCallbacks));
-    RetainPtr<CGShadingRef> mainShading(AdoptCF, CGShadingCreateAxial(cspace, CGPointMake(r.x(),  r.y()), CGPointMake(r.x(), r.maxY()), mainFunction.get(), false, false));
-
-    RetainPtr<CGShadingRef> leftShading(AdoptCF, CGShadingCreateAxial(cspace, CGPointMake(r.x(),  r.y()), CGPointMake(r.x() + radius, r.y()), mainFunction.get(), false, false));
-
-    RetainPtr<CGShadingRef> rightShading(AdoptCF, CGShadingCreateAxial(cspace, CGPointMake(r.maxX(),  r.y()), CGPointMake(r.maxX() - radius, r.y()), mainFunction.get(), false, false));
-
-    {
-        GraphicsContextStateSaver stateSaver(*paintInfo.context);
-        CGContextClipToRect(context, r);
-        paintInfo.context->clipRoundedRect(border);
-        context = cgContextContainer.context();
-        CGContextDrawShading(context, mainShading.get());
-    }
-
-    {
-        GraphicsContextStateSaver stateSaver(*paintInfo.context);
-        CGContextClipToRect(context, topGradient);
-        paintInfo.context->clipRoundedRect(RoundedRect(enclosingIntRect(topGradient), border.radii().topLeft(), border.radii().topRight(), IntSize(), IntSize()));
-        context = cgContextContainer.context();
-        CGContextDrawShading(context, topShading.get());
-    }
-
-    if (!bottomGradient.isEmpty()) {
-        GraphicsContextStateSaver stateSaver(*paintInfo.context);
-        CGContextClipToRect(context, bottomGradient);
-        paintInfo.context->clipRoundedRect(RoundedRect(enclosingIntRect(bottomGradient), IntSize(), IntSize(), border.radii().bottomLeft(), border.radii().bottomRight()));
-        context = cgContextContainer.context();
-        CGContextDrawShading(context, bottomShading.get());
-    }
-
-    {
-        GraphicsContextStateSaver stateSaver(*paintInfo.context);
-        CGContextClipToRect(context, r);
-        paintInfo.context->clipRoundedRect(border);
-        context = cgContextContainer.context();
-        CGContextDrawShading(context, leftShading.get());
-        CGContextDrawShading(context, rightShading.get());
-    }
-}
-
 bool RenderThemeChromiumMac::paintMenuListButton(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
     IntRect bounds = IntRect(r.x() + o->style()->borderLeftWidth(),
                              r.y() + o->style()->borderTopWidth(),
                              r.width() - o->style()->borderLeftWidth() - o->style()->borderRightWidth(),
                              r.height() - o->style()->borderTopWidth() - o->style()->borderBottomWidth());
-    // Draw the gradients to give the styled popup menu a button appearance
-    paintMenuListButtonGradients(o, paintInfo, bounds);
-
     // Since we actually know the size of the control here, we restrict the font scale to make sure the arrows will fit vertically in the bounds
     float fontScale = min(o->style()->fontSize() / baseFontSize, bounds.height() / (baseArrowHeight * 2 + baseSpaceBetweenArrows));
     float centerY = bounds.y() + bounds.height() / 2.0f;
@@ -1259,24 +1159,6 @@ bool RenderThemeChromiumMac::paintMenuListButton(RenderObject* o, const PaintInf
 
     // Draw the bottom arrow
     paintInfo.context->drawConvexPolygon(3, arrow2, true);
-
-    Color leftSeparatorColor(0, 0, 0, 40);
-    Color rightSeparatorColor(255, 255, 255, 40);
-
-    // FIXME: Should the separator thickness and space be scaled up by fontScale?
-    int separatorSpace = 2; // Deliberately ignores zoom since it looks nicer if it stays thin.
-    int leftEdgeOfSeparator = static_cast<int>(leftEdge - arrowPaddingLeft * o->style()->effectiveZoom()); // FIXME: Round?
-
-    // Draw the separator to the left of the arrows
-    paintInfo.context->setStrokeThickness(1.0f); // Deliberately ignores zoom since it looks nicer if it stays thin.
-    paintInfo.context->setStrokeStyle(SolidStroke);
-    paintInfo.context->setStrokeColor(leftSeparatorColor);
-    paintInfo.context->drawLine(IntPoint(leftEdgeOfSeparator, bounds.y()),
-                                IntPoint(leftEdgeOfSeparator, bounds.maxY()));
-
-    paintInfo.context->setStrokeColor(rightSeparatorColor);
-    paintInfo.context->drawLine(IntPoint(leftEdgeOfSeparator + separatorSpace, bounds.y()),
-                                IntPoint(leftEdgeOfSeparator + separatorSpace, bounds.maxY()));
     return false;
 }
 
@@ -1970,7 +1852,8 @@ String RenderThemeChromiumMac::extraFullScreenStyleSheet()
 String RenderThemeChromiumMac::extraDefaultStyleSheet()
 {
     return RenderTheme::extraDefaultStyleSheet() +
-           String(themeChromiumUserAgentStyleSheet, sizeof(themeChromiumUserAgentStyleSheet));
+           String(themeChromiumUserAgentStyleSheet, sizeof(themeChromiumUserAgentStyleSheet)) +
+           String(themeMacUserAgentStyleSheet, sizeof(themeMacUserAgentStyleSheet));
 }
 
 bool RenderThemeChromiumMac::paintMediaVolumeSliderContainer(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)

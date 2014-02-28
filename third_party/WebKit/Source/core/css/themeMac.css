@@ -1,0 +1,16 @@
+/* Copyright 2014 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+select {
+    background-color: #f8f8f8;
+    border-color: #a6a6a6;
+}
+
+select[size],
+select[multiple],
+select[size][multiple] {
+    background: white;
+    border: 1px inset gray;
+}

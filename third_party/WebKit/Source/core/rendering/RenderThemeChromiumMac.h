@@ -150,7 +150,6 @@ private:
     const IntSize* popupButtonSizes() const;
     const int* popupButtonMargins() const;
     const int* popupButtonPadding(NSControlSize) const;
-    void paintMenuListButtonGradients(RenderObject*, const PaintInfo&, const IntRect&);
     const IntSize* menuListSizes() const;
 
     const IntSize* searchFieldSizes() const;
