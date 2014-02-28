@@ -949,13 +949,14 @@ DragOperation DragController::dragOperation(DragData* dragData)
     return dragData->containsURL() && !m_didInitiateDrag ? DragOperationCopy : DragOperationNone;
 }
 
-bool DragController::isCopyKeyDown(DragData*)
+bool DragController::isCopyKeyDown(DragData* dragData)
 {
-    // FIXME: This should not be OS specific.  Delegate to the embedder instead.
-#if OS(WIN)
-    return ::GetAsyncKeyState(VK_CONTROL);
+    int keyState = dragData->modifierKeyState();
+
+#if OS(MACOSX)
+    return keyState & PlatformEvent::AltKey;
 #else
-    return false;
+    return keyState & PlatformEvent::CtrlKey;
 #endif
 }
 
