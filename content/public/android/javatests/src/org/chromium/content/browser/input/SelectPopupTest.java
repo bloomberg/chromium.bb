@@ -4,13 +4,14 @@
 
 package org.chromium.content.browser.input;
 
-import android.test.suitebuilder.annotation.LargeTest;
-
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
+
+import android.test.suitebuilder.annotation.LargeTest;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentView;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
@@ -37,17 +38,21 @@ public class SelectPopupTest extends ContentShellTestBase {
             "</select>" +
             "</body></html>");
 
-    private static class PopupShowingCriteria implements Criteria {
+    private class PopupShowingCriteria implements Criteria {
         @Override
         public boolean isSatisfied() {
-            return SelectPopupDialog.getCurrent() != null;
+            ContentViewCore contentViewCore
+                    = getActivity().getActiveContentView().getContentViewCore();
+            return contentViewCore.getSelectPopupForTest() != null;
         }
     }
 
-    private static class PopupHiddenCriteria implements Criteria {
+    private class PopupHiddenCriteria implements Criteria {
         @Override
         public boolean isSatisfied() {
-            return SelectPopupDialog.getCurrent() == null;
+            ContentViewCore contentViewCore
+                    = getActivity().getActiveContentView().getContentViewCore();
+            return contentViewCore.getSelectPopupForTest() == null;
         }
     }
 

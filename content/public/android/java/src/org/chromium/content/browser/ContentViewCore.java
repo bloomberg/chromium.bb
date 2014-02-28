@@ -323,6 +323,7 @@ public class ContentViewCore
     private ZoomControlsDelegate mZoomControlsDelegate;
 
     private PopupZoomer mPopupZoomer;
+    private SelectPopupDialog mSelectPopupDialog;
 
     private Runnable mFakeMouseMoveRunnable = null;
 
@@ -1500,7 +1501,10 @@ public class ContentViewCore
     }
 
     private void hidePopupDialog() {
-        SelectPopupDialog.hide(this);
+        if (mSelectPopupDialog != null) {
+            mSelectPopupDialog.hide();
+            mSelectPopupDialog = null;
+        }
         hideHandles();
         hideSelectActionBar();
     }
@@ -2069,6 +2073,7 @@ public class ContentViewCore
         if (mNativeContentViewCore != 0) {
             nativeSelectPopupMenuItems(mNativeContentViewCore, indices);
         }
+        mSelectPopupDialog = null;
     }
 
     /**
@@ -2536,12 +2541,28 @@ public class ContentViewCore
     @CalledByNative
     private void showSelectPopup(String[] items, int[] enabled, boolean multiple,
             int[] selectedIndices) {
+        if (mContainerView.getParent() == null || mContainerView.getVisibility() != View.VISIBLE) {
+            selectPopupMenuItems(null);
+            return;
+        }
+
+        if (mSelectPopupDialog != null) {
+            mSelectPopupDialog.hide();
+            mSelectPopupDialog = null;
+        }
         assert items.length == enabled.length;
         List<SelectPopupItem> popupItems = new ArrayList<SelectPopupItem>();
         for (int i = 0; i < items.length; i++) {
             popupItems.add(new SelectPopupItem(items[i], enabled[i]));
         }
-        SelectPopupDialog.show(this, popupItems, multiple, selectedIndices);
+        mSelectPopupDialog = SelectPopupDialog.show(this, popupItems, multiple, selectedIndices);
+    }
+
+    /**
+     * @return The visible select popup dialog being shown.
+     */
+    public SelectPopupDialog getSelectPopupForTest() {
+        return mSelectPopupDialog;
     }
 
     @SuppressWarnings("unused")

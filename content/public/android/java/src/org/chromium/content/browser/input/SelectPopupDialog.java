@@ -23,9 +23,6 @@ import java.util.List;
  * Handles the popup dialog for the <select> HTML tag support.
  */
 public class SelectPopupDialog {
-    // The currently showing popup dialog, null if none is showing.
-    private static SelectPopupDialog sShownDialog;
-
     private static final int[] SELECT_DIALOG_ATTRS = {
         R.attr.select_dialog_multichoice,
         R.attr.select_dialog_singlechoice
@@ -96,13 +93,6 @@ public class SelectPopupDialog {
                 mContentViewCore.selectPopupMenuItems(null);
             }
         });
-        mListBoxPopup.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                mListBoxPopup = null;
-                sShownDialog = null;
-            }
-        });
     }
 
     private int getSelectDialogLayout(boolean isMultiChoice) {
@@ -132,37 +122,26 @@ public class SelectPopupDialog {
     }
 
     /**
+     * Hides the select dialog.
+     */
+    public void hide() {
+        mListBoxPopup.cancel();
+    }
+
+    /**
      * Shows the popup menu triggered by the passed ContentView.
      * Hides any currently shown popup.
      * @param items           Items to show.
      * @param multiple        Whether the popup menu should support multi-select.
      * @param selectedIndices Indices of selected items.
+     * @return                The select dialog created.
      */
-    public static void show(ContentViewCore contentViewCore, List<SelectPopupItem> items,
+    public static SelectPopupDialog show(
+            ContentViewCore contentViewCore, List<SelectPopupItem> items,
             boolean multiple, int[] selectedIndices) {
-        // Hide the popup currently showing if any.  This could happen if the user pressed a select
-        // and pressed it again before the popup was shown.  In that case, the previous popup is
-        // irrelevant and can be hidden.
-        hide(null);
-        sShownDialog = new SelectPopupDialog(contentViewCore, items, multiple, selectedIndices);
-        sShownDialog.mListBoxPopup.show();
-    }
-
-    /**
-     * Hides the showing popup menu if any it was triggered by the passed ContentView. If
-     * contentView is null, hides it regardless of which ContentView triggered it.
-     * @param contentView
-     */
-    public static void hide(ContentViewCore contentView) {
-        if (sShownDialog != null &&
-                (contentView == null || sShownDialog.mContentViewCore == contentView)) {
-            if (contentView != null) contentView.selectPopupMenuItems(null);
-            sShownDialog.mListBoxPopup.dismiss();
-        }
-    }
-
-    // The methods below are used by tests.
-    public static SelectPopupDialog getCurrent() {
-        return sShownDialog;
+        SelectPopupDialog dialog = new SelectPopupDialog(
+                contentViewCore, items, multiple, selectedIndices);
+        dialog.mListBoxPopup.show();
+        return dialog;
     }
 }

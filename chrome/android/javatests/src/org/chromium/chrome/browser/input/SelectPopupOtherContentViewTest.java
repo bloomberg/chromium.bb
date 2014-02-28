@@ -9,7 +9,6 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ContentViewUtil;
 import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
 import org.chromium.content.browser.ContentView;
-import org.chromium.content.browser.input.SelectPopupDialog;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
@@ -33,10 +32,11 @@ public class SelectPopupOtherContentViewTest extends ChromiumTestShellTestBase {
             "</select>" +
             "</body></html>");
 
-    private static class PopupShowingCriteria implements Criteria {
+    private class PopupShowingCriteria implements Criteria {
         @Override
         public boolean isSatisfied() {
-            return SelectPopupDialog.getCurrent() != null;
+            ContentView view = getActivity().getActiveContentView();
+            return view.getContentViewCore().getSelectPopupForTest() != null;
         }
     }
 
@@ -84,6 +84,6 @@ public class SelectPopupOtherContentViewTest extends ChromiumTestShellTestBase {
 
         // The popup should still be shown.
         assertNotNull("The select popup got hidden by destroying of unrelated ContentViewCore.",
-                SelectPopupDialog.getCurrent());
+                view.getContentViewCore().getSelectPopupForTest());
     }
 }
