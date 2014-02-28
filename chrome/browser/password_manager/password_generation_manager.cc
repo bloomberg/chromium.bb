@@ -4,9 +4,6 @@
 
 #include "chrome/browser/password_manager/password_generation_manager.h"
 
-#include "chrome/browser/password_manager/password_manager.h"
-#include "chrome/browser/password_manager/password_manager_client.h"
-#include "chrome/browser/password_manager/password_manager_driver.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -14,6 +11,9 @@
 #include "components/autofill/core/browser/password_generator.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_manager.h"
+#include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/password_manager/core/browser/password_manager_driver.h"
 
 PasswordGenerationManager::PasswordGenerationManager(
     PasswordManagerClient* client)

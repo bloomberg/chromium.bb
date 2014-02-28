@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_CLIENT_H_
-#define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_CLIENT_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_CLIENT_H_
+#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_CLIENT_H_
 
 #include "base/metrics/field_trial.h"
 #include "components/autofill/core/common/password_form.h"
@@ -57,4 +57,4 @@ class PasswordManagerClient {
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerClient);
 };
 
-#endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_CLIENT_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_CLIENT_H_

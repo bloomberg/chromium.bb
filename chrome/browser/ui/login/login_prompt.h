@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/synchronization/lock.h"
-#include "chrome/browser/password_manager/password_manager.h"
+#include "components/password_manager/core/browser/password_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_H_
-#define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_H_
+#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_H_
 
 #include <vector>
 
@@ -13,10 +13,10 @@
 #include "base/observer_list.h"
 #include "base/prefs/pref_member.h"
 #include "base/stl_util.h"
-#include "chrome/browser/password_manager/password_form_manager.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/password_manager/core/browser/login_model.h"
+#include "components/password_manager/core/browser/password_form_manager.h"
 
 class PasswordManagerClient;
 class PasswordManagerDriver;
@@ -176,4 +176,4 @@ class PasswordManager : public LoginModel {
   DISALLOW_COPY_AND_ASSIGN(PasswordManager);
 };
 
-#endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_H_
