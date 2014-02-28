@@ -26,8 +26,6 @@
 
 @implementation CompositingIOSurfaceLayer
 
-@synthesize context = context_;
-
 - (id)initWithRenderWidgetHostViewMac:(content::RenderWidgetHostViewMac*)r {
   if (self = [super init]) {
     renderWidgetHostView_ = r;

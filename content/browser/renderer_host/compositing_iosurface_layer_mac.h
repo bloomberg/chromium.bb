@@ -27,9 +27,6 @@ class RenderWidgetHostViewMac;
   BOOL needsDisplay_;
 }
 
-@property(nonatomic, readonly)
-    scoped_refptr<content::CompositingIOSurfaceContext> context;
-
 - (id)initWithRenderWidgetHostViewMac:(content::RenderWidgetHostViewMac*)r;
 
 // Remove this layer from the layer heirarchy, and mark that
