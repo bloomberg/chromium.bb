@@ -26,6 +26,12 @@ struct POLICY_EXPORT PropertiesNode;
 // the strategy to handle unknown properties or invalid values for dict type.
 // Note that in Schema::Normalize() allowed errors will be dropped and thus
 // ignored.
+// Unknown error indicates that some value in a dictionary (may or may not be
+// the one in root) have unknown property name according to schema.
+// Invalid error indicates a validation failure against the schema. As
+// validation is done recursively, a validation failure of dict properties or
+// list items might be ignored (or dropped in Normalize()) or trigger whole
+// dictionary/list validation failure.
 enum SchemaOnErrorStrategy {
   // No errors will be allowed.
   SCHEMA_STRICT = 0,
@@ -90,11 +96,18 @@ class POLICY_EXPORT Schema {
                 std::string* error_path,
                 std::string* error) const;
 
-  // Same as Validate() but drop values with errors instead of ignoring them.
+  // Similar to Validate() but drop values with errors instead of ignoring them.
+  // |changed| is a pointer to a boolean value, and indicate whether |value|
+  // is changed or not (probably dropped properties or items). Be sure to set
+  // the bool that |changed| pointed to to false before calling Normalize().
+  // |changed| can be NULL and in that case no boolean will be set.
+  // This function will also take the ownership of dropped base::Value and
+  // destroy them.
   bool Normalize(base::Value* value,
                  SchemaOnErrorStrategy strategy,
                  std::string* error_path,
-                 std::string* error) const;
+                 std::string* error,
+                 bool* changed) const;
 
   // Used to iterate over the known properties of TYPE_DICTIONARY schemas.
   class POLICY_EXPORT Iterator {

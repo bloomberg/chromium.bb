@@ -345,7 +345,7 @@ bool SchemaValidatingPolicyHandler::CheckAndGetValue(
   std::string error_path;
   std::string error;
   bool result =
-      schema_.Normalize(output->get(), strategy_, &error_path, &error);
+      schema_.Normalize(output->get(), strategy_, &error_path, &error, NULL);
 
   if (errors && !error.empty()) {
     if (error_path.empty())

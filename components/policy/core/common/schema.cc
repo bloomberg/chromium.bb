@@ -737,7 +737,8 @@ bool Schema::Validate(const base::Value& value,
 bool Schema::Normalize(base::Value* value,
                        SchemaOnErrorStrategy strategy,
                        std::string* error_path,
-                       std::string* error) const {
+                       std::string* error,
+                       bool* changed) const {
   if (!valid()) {
     SchemaErrorFound(error_path, error, "The schema is invalid.");
     return false;
@@ -776,7 +777,8 @@ bool Schema::Normalize(base::Value* value,
         if (!subschema.Normalize(sub_value,
                                  StrategyForNextLevel(strategy),
                                  error_path,
-                                 error)) {
+                                 error,
+                                 changed)) {
           // Invalid property was detected.
           AddDictKeyPrefixToPath(it.key(), error_path);
           if (StrategyAllowInvalidOnTopLevel(strategy))
@@ -786,6 +788,8 @@ bool Schema::Normalize(base::Value* value,
         }
       }
     }
+    if (changed && !drop_list.empty())
+      *changed = true;
     for (std::vector<std::string>::const_iterator it = drop_list.begin();
          it != drop_list.end();
          ++it) {
@@ -797,11 +801,11 @@ bool Schema::Normalize(base::Value* value,
     for (size_t index = 0; index < list->GetSize(); index++) {
       base::Value* sub_value = NULL;
       list->Get(index, &sub_value);
-      if (!sub_value ||
-          !GetItems().Normalize(sub_value,
-                                StrategyForNextLevel(strategy),
-                                error_path,
-                                error)) {
+      if (!sub_value || !GetItems().Normalize(sub_value,
+                                              StrategyForNextLevel(strategy),
+                                              error_path,
+                                              error,
+                                              changed)) {
         // Invalid list item was detected.
         AddListIndexPrefixToPath(index, error_path);
         if (StrategyAllowInvalidOnTopLevel(strategy))
@@ -810,6 +814,8 @@ bool Schema::Normalize(base::Value* value,
           return false;
       }
     }
+    if (changed && !drop_list.empty())
+      *changed = true;
     for (std::vector<size_t>::reverse_iterator it = drop_list.rbegin();
          it != drop_list.rend(); ++it) {
       list->Remove(*it, NULL);

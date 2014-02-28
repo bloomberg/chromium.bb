@@ -128,16 +128,21 @@ void TestSchemaValidation(Schema schema,
   // Schema::Validate().
   error = kNoErrorReturned;
   scoped_ptr<base::Value> cloned_value(value.DeepCopy());
-  returned = schema.Normalize(cloned_value.get(), strategy, NULL, &error);
+  bool touched = false;
+  returned =
+      schema.Normalize(cloned_value.get(), strategy, NULL, &error, &touched);
   EXPECT_EQ(returned, expected_return_value) << error;
+
+  bool strictly_valid = schema.Validate(value, SCHEMA_STRICT, NULL, &error);
+  EXPECT_EQ(!strictly_valid && returned, touched);
 
   // Test that Schema::Normalize() have actually dropped invalid and unknown
   // properties.
   if (expected_return_value) {
     EXPECT_TRUE(
         schema.Validate(*cloned_value.get(), SCHEMA_STRICT, NULL, &error));
-    EXPECT_TRUE(
-        schema.Normalize(cloned_value.get(), SCHEMA_STRICT, NULL, &error));
+    EXPECT_TRUE(schema.Normalize(
+        cloned_value.get(), SCHEMA_STRICT, NULL, &error, NULL));
   }
 }
 
