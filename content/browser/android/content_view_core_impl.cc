@@ -1666,7 +1666,7 @@ bool ContentViewCoreImpl::GetUseDesktopUserAgent(
   return entry && entry->GetIsOverridingUserAgent();
 }
 
-void ContentViewCoreImpl::UpdateImeAdapter(int native_ime_adapter,
+void ContentViewCoreImpl::UpdateImeAdapter(long native_ime_adapter,
                                            int text_input_type,
                                            const std::string& text,
                                            int selection_start,

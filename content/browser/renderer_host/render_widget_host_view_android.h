@@ -220,7 +220,7 @@ class RenderWidgetHostViewAndroid
   void LockResources();
   void UnlockResources();
 
-  int GetNativeImeAdapter();
+  long GetNativeImeAdapter();
 
   void WasResized();
 

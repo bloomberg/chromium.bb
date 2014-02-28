@@ -57,7 +57,7 @@ void ContentViewRenderView::Destroy(JNIEnv* env, jobject obj) {
 }
 
 void ContentViewRenderView::SetCurrentContentView(
-    JNIEnv* env, jobject obj, int native_content_view) {
+    JNIEnv* env, jobject obj, jlong native_content_view) {
   InitCompositor();
   ContentViewCoreImpl* content_view =
       reinterpret_cast<ContentViewCoreImpl*>(native_content_view);

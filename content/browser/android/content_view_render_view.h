@@ -26,7 +26,8 @@ class ContentViewRenderView : public CompositorClient {
 
   // Methods called from Java via JNI -----------------------------------------
   void Destroy(JNIEnv* env, jobject obj);
-  void SetCurrentContentView(JNIEnv* env, jobject obj, int native_content_view);
+  void SetCurrentContentView(JNIEnv* env, jobject obj,
+                             jlong native_content_view);
   void SurfaceCreated(JNIEnv* env, jobject obj);
   void SurfaceDestroyed(JNIEnv* env, jobject obj);
   void SurfaceChanged(JNIEnv* env, jobject obj,

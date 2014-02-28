@@ -2506,7 +2506,7 @@ public class ContentViewCore
     }
 
     @CalledByNative
-    private void updateImeAdapter(int nativeImeAdapterAndroid, int textInputType,
+    private void updateImeAdapter(long nativeImeAdapterAndroid, int textInputType,
             String text, int selectionStart, int selectionEnd,
             int compositionStart, int compositionEnd, boolean showImeIfNeeded, boolean requireAck) {
         TraceEvent.begin();
@@ -3375,7 +3375,7 @@ public class ContentViewCore
     private native void nativeEvaluateJavaScript(long nativeContentViewCoreImpl,
             String script, JavaScriptCallback callback, boolean startRenderer);
 
-    private native int nativeGetNativeImeAdapter(long nativeContentViewCoreImpl);
+    private native long nativeGetNativeImeAdapter(long nativeContentViewCoreImpl);
 
     private native int nativeGetCurrentRenderProcessId(long nativeContentViewCoreImpl);
 

@@ -89,7 +89,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       frame_(frame),
       client_(client),
       delegate_(delegate),
-      buffered_(1u),
+      buffered_(static_cast<size_t>(1)),
       main_loop_(base::MessageLoopProxy::current()),
       media_loop_(media_loop),
       ignore_metadata_duration_change_(false),

@@ -205,12 +205,12 @@ public class ImeAdapter {
         return mInputConnection != null && mInputConnection.isActive();
     }
 
-    private boolean isFor(int nativeImeAdapter, int textInputType) {
+    private boolean isFor(long nativeImeAdapter, int textInputType) {
         return mNativeImeAdapterAndroid == nativeImeAdapter &&
                mTextInputType == textInputType;
     }
 
-    public void attachAndShowIfNeeded(int nativeImeAdapter, int textInputType,
+    public void attachAndShowIfNeeded(long nativeImeAdapter, int textInputType,
             int selectionStart, int selectionEnd, boolean showIfNeeded) {
         mHandler.removeCallbacks(mDismissInput);
 

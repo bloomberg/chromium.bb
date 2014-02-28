@@ -428,8 +428,8 @@ void RenderWidgetHostViewAndroid::TextInputTypeChanged(
   // Unused on Android, which uses OnTextInputChanged instead.
 }
 
-int RenderWidgetHostViewAndroid::GetNativeImeAdapter() {
-  return reinterpret_cast<int>(&ime_adapter_android_);
+long RenderWidgetHostViewAndroid::GetNativeImeAdapter() {
+  return reinterpret_cast<intptr_t>(&ime_adapter_android_);
 }
 
 void RenderWidgetHostViewAndroid::OnTextInputStateChanged(
