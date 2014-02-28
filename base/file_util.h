@@ -416,8 +416,14 @@ typedef scoped_ptr<FILE, ScopedFILEClose> ScopedFILE;
 struct ScopedFDClose {
   inline void operator()(int* x) const {
     if (x && *x >= 0) {
-      if (IGNORE_EINTR(close(*x)) < 0)
-        DPLOG(ERROR) << "close";
+      // It's important to crash here.
+      // There are security implications to not closing a file descriptor
+      // properly. As file descriptors are "capabilities", keeping them open
+      // would make the current process keep access to a resource. Much of
+      // Chrome relies on being able to "drop" such access.
+      // It's especially problematic on Linux with the setuid sandbox, where
+      // a single open directory would bypass the entire security model.
+      PCHECK(0 == IGNORE_EINTR(close(*x)));
     }
   }
 };
@@ -427,6 +433,8 @@ struct ScopedFDClose {
 // need to store the FD separately and keep its memory alive). This should
 // probably be called |ScopedFDCloser| or something like that.
 typedef scoped_ptr<int, ScopedFDClose> ScopedFD;
+// Let new users use ScopedFDCloser already, while ScopedFD is replaced.
+typedef ScopedFD ScopedFDCloser;
 #endif  // OS_POSIX
 
 #if defined(OS_LINUX)
