@@ -4,6 +4,7 @@
 from telemetry import test
 from telemetry.page import page_test
 from telemetry.core.timeline import counter
+from telemetry.core.timeline import model
 
 MEMORY_LIMIT_MB = 256
 SINGLE_TAB_LIMIT_MB = 128
@@ -55,7 +56,8 @@ class MemoryValidator(page_test.PageTest):
     super(MemoryValidator, self).__init__('ValidatePage')
 
   def ValidatePage(self, page, tab, results):
-    timeline_model = tab.browser.StopTracing().AsTimelineModel()
+    timeline_data = tab.browser.StopTracing()
+    timeline_model = model.TimelineModel(timeline_data)
     for process in timeline_model.GetAllProcesses():
       if 'gpu.GpuMemoryUsage' in process.counters:
         counter = process.GetCounter('gpu', 'GpuMemoryUsage')
