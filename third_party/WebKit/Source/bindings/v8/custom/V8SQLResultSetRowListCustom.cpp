@@ -31,20 +31,26 @@
 #include "config.h"
 #include "V8SQLResultSetRowList.h"
 
+#include "bindings/v8/ExceptionMessages.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"
+#include "core/dom/ExceptionCode.h"
 #include "modules/webdatabase/SQLResultSetRowList.h"
 
 namespace WebCore {
 
 void V8SQLResultSetRowList::itemMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "item", "SQLResultSetRowList", info.Holder(), info.GetIsolate());
     if (!info.Length()) {
-        throwError(v8SyntaxError, "Item index is required.", info.GetIsolate());
+        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::notEnoughArguments(1, 0));
+        exceptionState.throwIfNeeded();
         return;
     }
 
     if (!info[0]->IsNumber()) {
-        throwTypeError("Item index must be a number.", info.GetIsolate());
+        exceptionState.throwTypeError("The index provided is not a number.");
+        exceptionState.throwIfNeeded();
         return;
     }
 
@@ -52,7 +58,8 @@ void V8SQLResultSetRowList::itemMethodCustom(const v8::FunctionCallbackInfo<v8::
 
     unsigned long index = info[0]->IntegerValue();
     if (index >= rowList->length()) {
-        throwError(v8RangeError, "Item index is out of range.", info.GetIsolate());
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound<unsigned>("index", index, rowList->length()));
+        exceptionState.throwIfNeeded();
         return;
     }
 
