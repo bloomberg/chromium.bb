@@ -1,0 +1,28 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x154
+  RenderBlock {HTML} at (0,0) size 800x154
+    RenderBody {BODY} at (0,0) size 500x153
+      RenderBlock {DIV} at (0,0) size 600x36
+        RenderText {#text} at (0,0) size 220x14
+          text run at (0,0) width 220: "Table autosizing tests - table-cell-inflation.html"
+        RenderBR {BR} at (220,0) size 0x14
+        RenderText {#text} at (0,14) size 357x14
+          text run at (0,14) width 357: "This test passes if there are no numbers overflowing outside this green box."
+      RenderTable {TABLE} at (1,37) size 498x116 [border: none]
+        RenderTableSection {TBODY} at (0,0) size 497x115
+          RenderTableRow {TR} at (0,0) size 497x115
+            RenderTableCell {TD} at (0,0) size 497x115 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 278x14
+                text run at (2,2) width 278: "The pi approximation below should not overrun this block."
+              RenderBR {BR} at (280,2) size 0x14
+              RenderText {#text} at (2,16) size 459x14
+                text run at (2,16) width 459: "3.141592653589793238462643383279502884197169399375105820974944592307816406286"
+              RenderBR {BR} at (461,16) size 0x14
+              RenderText {#text} at (2,30) size 491x84
+                text run at (2,30) width 491: "hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello"
+                text run at (2,44) width 491: "hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello"
+                text run at (2,58) width 491: "hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello"
+                text run at (2,72) width 491: "hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello"
+                text run at (2,86) width 491: "hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello"
+                text run at (2,100) width 335: "hello hello hello hello hello hello hello hello hello hello hello hello hello"
