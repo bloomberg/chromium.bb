@@ -76,13 +76,35 @@ void VideoCaptureHost::OnBufferDestroyed(
 void VideoCaptureHost::OnBufferReady(
     const VideoCaptureControllerID& controller_id,
     int buffer_id,
-    base::TimeTicks timestamp,
-    const media::VideoCaptureFormat& frame_format) {
+    const media::VideoCaptureFormat& frame_format,
+    base::TimeTicks timestamp) {
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+      BrowserThread::IO,
+      FROM_HERE,
       base::Bind(&VideoCaptureHost::DoSendFilledBufferOnIOThread,
-                 this, controller_id, buffer_id, timestamp,
-                 frame_format));
+                 this,
+                 controller_id,
+                 buffer_id,
+                 frame_format,
+                 timestamp));
+}
+
+void VideoCaptureHost::OnMailboxBufferReady(
+    const VideoCaptureControllerID& controller_id,
+    int buffer_id,
+    const gpu::MailboxHolder& mailbox_holder,
+    const media::VideoCaptureFormat& frame_format,
+    base::TimeTicks timestamp) {
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&VideoCaptureHost::DoSendFilledMailboxBufferOnIOThread,
+                 this,
+                 controller_id,
+                 buffer_id,
+                 mailbox_holder,
+                 frame_format,
+                 timestamp));
 }
 
 void VideoCaptureHost::OnEnded(const VideoCaptureControllerID& controller_id) {
@@ -120,15 +142,30 @@ void VideoCaptureHost::DoSendFreeBufferOnIOThread(
 void VideoCaptureHost::DoSendFilledBufferOnIOThread(
     const VideoCaptureControllerID& controller_id,
     int buffer_id,
-    base::TimeTicks timestamp,
-    const media::VideoCaptureFormat& format) {
+    const media::VideoCaptureFormat& format,
+    base::TimeTicks timestamp) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (entries_.find(controller_id) == entries_.end())
     return;
 
-  Send(new VideoCaptureMsg_BufferReady(controller_id.device_id, buffer_id,
-                                       timestamp, format));
+  Send(new VideoCaptureMsg_BufferReady(
+      controller_id.device_id, buffer_id, format, timestamp));
+}
+
+void VideoCaptureHost::DoSendFilledMailboxBufferOnIOThread(
+    const VideoCaptureControllerID& controller_id,
+    int buffer_id,
+    const gpu::MailboxHolder& mailbox_holder,
+    const media::VideoCaptureFormat& format,
+    base::TimeTicks timestamp) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  if (entries_.find(controller_id) == entries_.end())
+    return;
+
+  Send(new VideoCaptureMsg_MailboxBufferReady(
+      controller_id.device_id, buffer_id, mailbox_holder, format, timestamp));
 }
 
 void VideoCaptureHost::DoHandleErrorOnIOThread(
@@ -258,7 +295,9 @@ void VideoCaptureHost::OnPauseCapture(int device_id) {
   Send(new VideoCaptureMsg_StateChanged(device_id, VIDEO_CAPTURE_STATE_ERROR));
 }
 
-void VideoCaptureHost::OnReceiveEmptyBuffer(int device_id, int buffer_id) {
+void VideoCaptureHost::OnReceiveEmptyBuffer(int device_id,
+                                            int buffer_id,
+                                            uint32 sync_point) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   VideoCaptureControllerID controller_id(device_id);
@@ -266,7 +305,7 @@ void VideoCaptureHost::OnReceiveEmptyBuffer(int device_id, int buffer_id) {
   if (it != entries_.end()) {
     const base::WeakPtr<VideoCaptureController>& controller = it->second;
     if (controller)
-      controller->ReturnBuffer(controller_id, this, buffer_id);
+      controller->ReturnBuffer(controller_id, this, buffer_id, sync_point);
   }
 }
 

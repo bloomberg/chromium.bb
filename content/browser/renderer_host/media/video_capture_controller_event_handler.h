@@ -8,7 +8,14 @@
 #include "base/memory/shared_memory.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "media/video/capture/video_capture_types.h"
+
+namespace gpu {
+struct MailboxHolder;
+}  // namespace gpu
+
+namespace media {
+class VideoCaptureFormat;
+}  // namespace media
 
 namespace content {
 
@@ -43,8 +50,15 @@ class CONTENT_EXPORT VideoCaptureControllerEventHandler {
   // A buffer has been filled with I420 video.
   virtual void OnBufferReady(const VideoCaptureControllerID& id,
                              int buffer_id,
-                             base::TimeTicks timestamp,
-                             const media::VideoCaptureFormat& format) = 0;
+                             const media::VideoCaptureFormat& format,
+                             base::TimeTicks timestamp) = 0;
+
+  // A texture mailbox buffer has been filled with data.
+  virtual void OnMailboxBufferReady(const VideoCaptureControllerID& id,
+                                    int buffer_id,
+                                    const gpu::MailboxHolder& mailbox_holder,
+                                    const media::VideoCaptureFormat& format,
+                                    base::TimeTicks timestamp) = 0;
 
   // The capture session has ended and no more frames will be sent.
   virtual void OnEnded(const VideoCaptureControllerID& id) = 0;

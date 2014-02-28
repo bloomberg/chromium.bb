@@ -139,11 +139,11 @@ class MEDIA_EXPORT VideoCaptureDevice {
 
     // Reserve an output buffer into which contents can be captured directly.
     // The returned Buffer will always be allocated with a memory size suitable
-    // for holding a packed video frame of |format| format, of |dimensions|
-    // dimensions. It is permissible for |dimensions| to be zero; in which
-    // case the returned Buffer does not guarantee memory backing, but functions
-    // as a reservation for external input for the purposes of buffer
-    // throttling.
+    // for holding a packed video frame with pixels of |format| format, of
+    // |dimensions| frame dimensions. It is permissible for |dimensions| to be
+    // zero; in which case the returned Buffer does not guarantee memory
+    // backing, but functions as a reservation for external input for the
+    // purposes of buffer throttling.
     //
     // The output buffer stays reserved for use until the Buffer object is
     // destroyed.
@@ -151,33 +151,28 @@ class MEDIA_EXPORT VideoCaptureDevice {
         media::VideoFrame::Format format,
         const gfx::Size& dimensions) = 0;
 
-    // Captured a new video frame as a raw buffer. The size, color format, and
-    // layout are taken from the parameters specified by an earlier call to
-    // OnFrameInfo(). |data| must be packed, with no padding between rows and/or
-    // color planes.
+    // Captured a new video frame, data for which is pointed to by |data|.
     //
-    // This method will try to reserve an output buffer and copy from |data|
-    // into the output buffer. If no output buffer is available, the frame will
-    // be silently dropped.
-    virtual void OnIncomingCapturedFrame(
-        const uint8* data,
-        int length,
-        base::TimeTicks timestamp,
-        int rotation,  // Clockwise.
-        const VideoCaptureFormat& frame_format) = 0;
+    // The format of the frame is described by |frame_format|, and is assumed to
+    // be tightly packed. This method will try to reserve an output buffer and
+    // copy from |data| into the output buffer. If no output buffer is
+    // available, the frame will be silently dropped.
+    virtual void OnIncomingCapturedData(const uint8* data,
+                                        int length,
+                                        const VideoCaptureFormat& frame_format,
+                                        int rotation,  // Clockwise.
+                                        base::TimeTicks timestamp) = 0;
 
-    // Captured a new video frame, held in |buffer|.
+    // Captured a new video frame, held in |frame|.
     //
     // As the frame is backed by a reservation returned by
     // ReserveOutputBuffer(), delivery is guaranteed and will require no
-    // additional copies in the browser process. |dimensions| indicates the
-    // frame width and height of the buffer contents; this is assumed to be of
-    // |format| format and tightly packed.
-    virtual void OnIncomingCapturedBuffer(const scoped_refptr<Buffer>& buffer,
-                                          media::VideoFrame::Format format,
-                                          const gfx::Size& dimensions,
-                                          base::TimeTicks timestamp,
-                                          int frame_rate) = 0;
+    // additional copies in the browser process.
+    virtual void OnIncomingCapturedVideoFrame(
+        const scoped_refptr<Buffer>& buffer,
+        const VideoCaptureFormat& buffer_format,
+        const scoped_refptr<media::VideoFrame>& frame,
+        base::TimeTicks timestamp) = 0;
 
     // An error has occurred that cannot be handled and VideoCaptureDevice must
     // be StopAndDeAllocate()-ed. |reason| is a text description of the error.

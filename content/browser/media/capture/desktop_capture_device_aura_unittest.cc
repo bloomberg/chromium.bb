@@ -23,6 +23,10 @@ using ::testing::Expectation;
 using ::testing::InvokeWithoutArgs;
 using ::testing::SaveArg;
 
+namespace media {
+class VideoFrame;
+}  // namespace media
+
 namespace content {
 namespace {
 
@@ -34,18 +38,17 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
                scoped_refptr<Buffer>(media::VideoFrame::Format format,
                                      const gfx::Size& dimensions));
   MOCK_METHOD1(OnError, void(const std::string& reason));
-  MOCK_METHOD5(OnIncomingCapturedFrame,
+  MOCK_METHOD5(OnIncomingCapturedData,
                void(const uint8* data,
                     int length,
-                    base::TimeTicks timestamp,
+                    const media::VideoCaptureFormat& frame_format,
                     int rotation,
-                    const media::VideoCaptureFormat& frame_format));
-  MOCK_METHOD5(OnIncomingCapturedBuffer,
+                    base::TimeTicks timestamp));
+  MOCK_METHOD4(OnIncomingCapturedVideoFrame,
                void(const scoped_refptr<Buffer>& buffer,
-                    media::VideoFrame::Format format,
-                    const gfx::Size& dimensions,
-                    base::TimeTicks timestamp,
-                    int frame_rate));
+                    const media::VideoCaptureFormat& buffer_format,
+                    const scoped_refptr<media::VideoFrame>& frame,
+                    base::TimeTicks timestamp));
 };
 
 // Test harness that sets up a minimal environment with necessary stubs.

@@ -73,20 +73,19 @@ class MockClient : public media::VideoCaptureDevice::Client {
     OnErr();
   }
 
-  virtual void OnIncomingCapturedFrame(const uint8* data,
-                                       int length,
-                                       base::TimeTicks timestamp,
-                                       int rotation,
-                                       const VideoCaptureFormat& format)
-      OVERRIDE {
+  virtual void OnIncomingCapturedData(const uint8* data,
+                                      int length,
+                                      const VideoCaptureFormat& format,
+                                      int rotation,
+                                      base::TimeTicks timestamp) OVERRIDE {
     main_thread_->PostTask(FROM_HERE, base::Bind(frame_cb_, format));
   }
 
-  virtual void OnIncomingCapturedBuffer(const scoped_refptr<Buffer>& buffer,
-                                        media::VideoFrame::Format format,
-                                        const gfx::Size& dimensions,
-                                        base::TimeTicks timestamp,
-                                        int frame_rate) OVERRIDE {
+  virtual void OnIncomingCapturedVideoFrame(
+      const scoped_refptr<Buffer>& buffer,
+      const media::VideoCaptureFormat& buffer_format,
+      const scoped_refptr<media::VideoFrame>& frame,
+      base::TimeTicks timestamp) OVERRIDE {
     NOTREACHED();
   }
 

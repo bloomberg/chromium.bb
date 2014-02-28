@@ -248,7 +248,7 @@
     size_t frameSize = bytesPerRow * frameHeight;
 
     // TODO(shess): bytesPerRow may not correspond to frameWidth_*2,
-    // but VideoCaptureController::OnIncomingCapturedFrame() requires
+    // but VideoCaptureController::OnIncomingCapturedData() requires
     // it to do so.  Plumbing things through is intrusive, for now
     // just deliver an adjusted buffer.
     // TODO(nick): This workaround could probably be eliminated by using

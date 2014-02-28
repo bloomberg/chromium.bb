@@ -25,6 +25,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
+#include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "media/base/yuv_convert.h"
 #include "media/video/capture/video_capture_types.h"
@@ -318,8 +319,9 @@ class StubClient : public media::VideoCaptureDevice::Client {
   virtual scoped_refptr<media::VideoCaptureDevice::Client::Buffer>
   ReserveOutputBuffer(media::VideoFrame::Format format,
                       const gfx::Size& dimensions) OVERRIDE {
+    CHECK_EQ(format, media::VideoFrame::I420);
     const size_t frame_bytes =
-        media::VideoFrame::AllocationSize(format, dimensions);
+        media::VideoFrame::AllocationSize(media::VideoFrame::I420, dimensions);
     int buffer_id_to_drop = VideoCaptureBufferPool::kInvalidId;  // Ignored.
     int buffer_id =
         buffer_pool_->ReserveForProducer(frame_bytes, &buffer_id_to_drop);
@@ -332,29 +334,26 @@ class StubClient : public media::VideoCaptureDevice::Client {
         new PoolBuffer(buffer_pool_, buffer_id, data, size));
   }
 
-  virtual void OnIncomingCapturedFrame(
+  virtual void OnIncomingCapturedData(
       const uint8* data,
       int length,
-      base::TimeTicks timestamp,
+      const media::VideoCaptureFormat& frame_format,
       int rotation,
-      const media::VideoCaptureFormat& frame_format) OVERRIDE {
+      base::TimeTicks timestamp) OVERRIDE {
     FAIL();
   }
 
-  virtual void OnIncomingCapturedBuffer(const scoped_refptr<Buffer>& buffer,
-                                        media::VideoFrame::Format format,
-                                        const gfx::Size& dimensions,
-                                        base::TimeTicks timestamp,
-                                        int frame_rate) OVERRIDE {
-    EXPECT_EQ(gfx::Size(kTestWidth, kTestHeight), dimensions);
-    EXPECT_EQ(media::VideoFrame::I420, format);
+  virtual void OnIncomingCapturedVideoFrame(
+      const scoped_refptr<Buffer>& buffer,
+      const media::VideoCaptureFormat& buffer_format,
+      const scoped_refptr<media::VideoFrame>& frame,
+      base::TimeTicks timestamp) OVERRIDE {
+    EXPECT_EQ(gfx::Size(kTestWidth, kTestHeight), buffer_format.frame_size);
+    EXPECT_EQ(media::PIXEL_FORMAT_I420, buffer_format.pixel_format);
+    EXPECT_EQ(media::VideoFrame::I420, frame->format());
     uint8 yuv[3];
-    size_t offset = 0;
-    for (int plane = 0; plane < 3; ++plane) {
-      yuv[plane] = reinterpret_cast<uint8*>(buffer->data())[offset];
-      offset += media::VideoFrame::PlaneAllocationSize(
-          media::VideoFrame::I420, plane, dimensions);
-    }
+    for (int plane = 0; plane < 3; ++plane)
+      yuv[plane] = frame->data(plane)[0];
     // TODO(nick): We just look at the first pixel presently, because if
     // the analysis is too slow, the backlog of frames will grow without bound
     // and trouble erupts. http://crbug.com/174519

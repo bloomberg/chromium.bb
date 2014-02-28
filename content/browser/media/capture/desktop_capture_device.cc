@@ -232,8 +232,8 @@ void DesktopCaptureDevice::Core::OnCaptureCompleted(
     output_data = output_frame_->data();
   }
 
-  client_->OnIncomingCapturedFrame(
-      output_data, output_bytes, base::TimeTicks::Now(), 0, capture_format_);
+  client_->OnIncomingCapturedData(
+      output_data, output_bytes, capture_format_, 0, base::TimeTicks::Now());
 }
 
 void DesktopCaptureDevice::Core::DoAllocateAndStart(

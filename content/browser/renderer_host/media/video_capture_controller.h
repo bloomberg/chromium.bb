@@ -98,11 +98,15 @@ class CONTENT_EXPORT VideoCaptureController {
   // prematurely closed.
   void StopSession(int session_id);
 
-  // Return a buffer previously given in
-  // VideoCaptureControllerEventHandler::OnBufferReady.
+  // Return a buffer with id |buffer_id| previously given in
+  // VideoCaptureControllerEventHandler::OnBufferReady. In the case that the
+  // buffer was backed by a texture, |sync_point| will be waited on before
+  // destroying or recycling the texture, to synchronize with texture users in
+  // the renderer process.
   void ReturnBuffer(const VideoCaptureControllerID& id,
                     VideoCaptureControllerEventHandler* event_handler,
-                    int buffer_id);
+                    int buffer_id,
+                    uint32 sync_point);
 
   const media::VideoCaptureFormat& GetVideoCaptureFormat() const;
 
@@ -113,10 +117,10 @@ class CONTENT_EXPORT VideoCaptureController {
   typedef std::list<ControllerClient*> ControllerClients;
 
   // Worker functions on IO thread. Called by the VideoCaptureDeviceClient.
-  void DoIncomingCapturedI420BufferOnIOThread(
-      scoped_refptr<media::VideoCaptureDevice::Client::Buffer> buffer,
-      const gfx::Size& dimensions,
-      int frame_rate,
+  void DoIncomingCapturedVideoFrameOnIOThread(
+      const scoped_refptr<media::VideoCaptureDevice::Client::Buffer>& buffer,
+      const media::VideoCaptureFormat& format,
+      const scoped_refptr<media::VideoFrame>& frame,
       base::TimeTicks timestamp);
   void DoErrorOnIOThread();
   void DoDeviceStoppedOnIOThread();

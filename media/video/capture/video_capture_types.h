@@ -27,6 +27,7 @@ enum VideoPixelFormat {
   PIXEL_FORMAT_MJPEG,
   PIXEL_FORMAT_NV21,
   PIXEL_FORMAT_YV12,
+  PIXEL_FORMAT_TEXTURE,  // Capture format as a GL texture.
   PIXEL_FORMAT_MAX,
 };
 

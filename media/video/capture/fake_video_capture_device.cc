@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "media/audio/fake_audio_input_stream.h"
+#include "media/base/video_frame.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -214,11 +215,11 @@ void FakeVideoCaptureDevice::OnCaptureTask() {
   frame_count_++;
 
   // Give the captured frame to the client.
-  client_->OnIncomingCapturedFrame(fake_frame_.get(),
-                                   frame_size,
-                                   base::TimeTicks::Now(),
-                                   0,
-                                   capture_format_);
+  client_->OnIncomingCapturedData(fake_frame_.get(),
+                                  frame_size,
+                                  capture_format_,
+                                  0,
+                                  base::TimeTicks::Now());
   if (!(frame_count_ % kFakeCaptureCapabilityChangePeriod) &&
       format_roster_.size() > 0U) {
     Reallocate();

@@ -80,7 +80,9 @@ class VideoCaptureImplTest : public ::testing::Test {
       OnStateChanged(VIDEO_CAPTURE_STATE_STOPPED);
     }
 
-    void DeviceReceiveEmptyBuffer(int device_id, int buffer_id) {}
+    void DeviceReceiveEmptyBuffer(int device_id,
+                                  int buffer_id,
+                                  uint32 sync_point) {}
 
     void DeviceGetSupportedFormats(int device_id,
                                    media::VideoCaptureSessionId session_id) {

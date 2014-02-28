@@ -40,7 +40,11 @@
 
 namespace base {
 class MessageLoopProxy;
-}
+}  // namespace base
+
+namespace gpu {
+struct MailboxHolder;
+}  // namespace gpu
 
 namespace content {
 
@@ -99,10 +103,13 @@ class CONTENT_EXPORT VideoCaptureImpl
                                int length,
                                int buffer_id) OVERRIDE;
   virtual void OnBufferDestroyed(int buffer_id) OVERRIDE;
-  virtual void OnBufferReceived(
-      int buffer_id,
-      base::TimeTicks timestamp,
-      const media::VideoCaptureFormat& format) OVERRIDE;
+  virtual void OnBufferReceived(int buffer_id,
+                                const media::VideoCaptureFormat& format,
+                                base::TimeTicks) OVERRIDE;
+  virtual void OnMailboxBufferReceived(int buffer_id,
+                                       const gpu::MailboxHolder& mailbox_holder,
+                                       const media::VideoCaptureFormat& format,
+                                       base::TimeTicks timestamp) OVERRIDE;
   virtual void OnStateChanged(VideoCaptureState state) OVERRIDE;
   virtual void OnDeviceSupportedFormatsEnumerated(
       const media::VideoCaptureFormats& supported_formats) OVERRIDE;
@@ -112,9 +119,9 @@ class CONTENT_EXPORT VideoCaptureImpl
 
   // Sends an IPC message to browser process when all clients are done with the
   // buffer.
-  void OnClientBufferFinished(
-      int buffer_id,
-      const scoped_refptr<ClientBuffer>& buffer);
+  void OnClientBufferFinished(int buffer_id,
+                              const scoped_refptr<ClientBuffer>& buffer,
+                              scoped_ptr<gpu::MailboxHolder> mailbox_holder);
 
   void StopDevice();
   void RestartCapture();

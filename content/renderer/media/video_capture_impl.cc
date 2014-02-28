@@ -245,14 +245,16 @@ void VideoCaptureImpl::OnBufferDestroyed(int buffer_id) {
   client_buffers_.erase(iter);
 }
 
-void VideoCaptureImpl::OnBufferReceived(
-    int buffer_id,
-    base::TimeTicks timestamp,
-    const media::VideoCaptureFormat& format) {
+void VideoCaptureImpl::OnBufferReceived(int buffer_id,
+                                        const media::VideoCaptureFormat& format,
+                                        base::TimeTicks timestamp) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
+  // The capture pipeline supports only I420 for now.
+  DCHECK_EQ(format.pixel_format, media::PIXEL_FORMAT_I420);
+
   if (state_ != VIDEO_CAPTURE_STATE_STARTED || suspended_) {
-    Send(new VideoCaptureHostMsg_BufferReady(device_id_, buffer_id));
+    Send(new VideoCaptureHostMsg_BufferReady(device_id_, buffer_id, 0));
     return;
   }
 
@@ -273,12 +275,48 @@ void VideoCaptureImpl::OnBufferReceived(
           buffer->buffer_size,
           buffer->buffer->handle(),
           timestamp - first_frame_timestamp_,
-          media::BindToCurrentLoop(
-              base::Bind(
-                  &VideoCaptureImpl::OnClientBufferFinished,
-                  weak_this_factory_.GetWeakPtr(),
-                  buffer_id,
-                  buffer)));
+          media::BindToCurrentLoop(base::Bind(
+              &VideoCaptureImpl::OnClientBufferFinished,
+              weak_this_factory_.GetWeakPtr(),
+              buffer_id,
+              buffer,
+              base::Passed(scoped_ptr<gpu::MailboxHolder>().Pass()))));
+
+  for (ClientInfo::iterator it = clients_.begin(); it != clients_.end(); ++it)
+    it->first->OnFrameReady(this, frame);
+}
+
+static void NullReadPixelsCB(const SkBitmap& bitmap) { NOTIMPLEMENTED(); }
+
+void VideoCaptureImpl::OnMailboxBufferReceived(
+    int buffer_id,
+    const gpu::MailboxHolder& mailbox_holder,
+    const media::VideoCaptureFormat& format,
+    base::TimeTicks timestamp) {
+  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+
+  if (state_ != VIDEO_CAPTURE_STATE_STARTED || suspended_) {
+    Send(new VideoCaptureHostMsg_BufferReady(
+        device_id_, buffer_id, mailbox_holder.sync_point));
+    return;
+  }
+
+  last_frame_format_ = format;
+  if (first_frame_timestamp_.is_null())
+    first_frame_timestamp_ = timestamp;
+
+  scoped_refptr<media::VideoFrame> frame = media::VideoFrame::WrapNativeTexture(
+      make_scoped_ptr(new gpu::MailboxHolder(mailbox_holder)),
+      media::BindToCurrentLoop(
+          base::Bind(&VideoCaptureImpl::OnClientBufferFinished,
+                     weak_this_factory_.GetWeakPtr(),
+                     buffer_id,
+                     scoped_refptr<ClientBuffer>())),
+      last_frame_format_.frame_size,
+      gfx::Rect(last_frame_format_.frame_size),
+      last_frame_format_.frame_size,
+      timestamp - first_frame_timestamp_,
+      base::Bind(&NullReadPixelsCB));
 
   for (ClientInfo::iterator it = clients_.begin(); it != clients_.end(); ++it)
     it->first->OnFrameReady(this, frame);
@@ -286,9 +324,11 @@ void VideoCaptureImpl::OnBufferReceived(
 
 void VideoCaptureImpl::OnClientBufferFinished(
     int buffer_id,
-    const scoped_refptr<ClientBuffer>& buffer) {
+    const scoped_refptr<ClientBuffer>& /* ignored_buffer */,
+    scoped_ptr<gpu::MailboxHolder> mailbox_holder) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
-  Send(new VideoCaptureHostMsg_BufferReady(device_id_, buffer_id));
+  const uint32 sync_point = (mailbox_holder ? mailbox_holder->sync_point : 0);
+  Send(new VideoCaptureHostMsg_BufferReady(device_id_, buffer_id, sync_point));
 }
 
 void VideoCaptureImpl::OnStateChanged(VideoCaptureState state) {

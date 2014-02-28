@@ -6,6 +6,7 @@
 #include "content/common/content_export.h"
 #include "content/common/media/video_capture.h"
 #include "content/public/common/common_param_traits.h"
+#include "gpu/command_buffer/common/mailbox_holder.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/video/capture/video_capture_types.h"
 
@@ -47,8 +48,17 @@ IPC_MESSAGE_CONTROL2(VideoCaptureMsg_FreeBuffer,
 IPC_MESSAGE_CONTROL4(VideoCaptureMsg_BufferReady,
                      int /* device id */,
                      int /* buffer_id */,
-                     base::TimeTicks /* timestamp */,
-                     media::VideoCaptureFormat /* resolution */)
+                     media::VideoCaptureFormat /* format */,
+                     base::TimeTicks /* timestamp */)
+
+// Tell the renderer process that a texture mailbox buffer is available from
+// video capture.
+IPC_MESSAGE_CONTROL5(VideoCaptureMsg_MailboxBufferReady,
+                     int /* device_id */,
+                     int /* buffer_id */,
+                     gpu::MailboxHolder /* mailbox_holder */,
+                     media::VideoCaptureFormat /* format */,
+                     base::TimeTicks /* timestamp */)
 
 // Notify the renderer about a device's supported formats; this is a response
 // to a VideoCaptureHostMsg_GetDeviceSupportedFormats request.
@@ -79,9 +89,10 @@ IPC_MESSAGE_CONTROL1(VideoCaptureHostMsg_Stop,
 
 // Tell the browser process that the renderer has finished reading from
 // a buffer previously delivered by VideoCaptureMsg_BufferReady.
-IPC_MESSAGE_CONTROL2(VideoCaptureHostMsg_BufferReady,
+IPC_MESSAGE_CONTROL3(VideoCaptureHostMsg_BufferReady,
                      int /* device_id */,
-                     int /* buffer_id */)
+                     int /* buffer_id */,
+                     uint32 /* syncpoint */)
 
 // Get the formats supported by a device referenced by |capture_session_id|.
 IPC_MESSAGE_CONTROL2(VideoCaptureHostMsg_GetDeviceSupportedFormats,

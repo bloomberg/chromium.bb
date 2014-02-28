@@ -300,7 +300,7 @@ void VideoCaptureDeviceMac::ReceiveFrame(
       sent_frame_info_ = true;
     } else {
       UpdateCaptureResolution();
-      // OnFrameInfo has not yet been called.  OnIncomingCapturedFrame must
+      // OnFrameInfo has not yet been called.  OnIncomingCapturedData must
       // not be called until after OnFrameInfo, so we return early.
       return;
     }
@@ -311,11 +311,11 @@ void VideoCaptureDeviceMac::ReceiveFrame(
   DCHECK_EQ(capture_format_.frame_size.height(),
             frame_format.frame_size.height());
 
-  client_->OnIncomingCapturedFrame(video_frame,
-                                   video_frame_length,
-                                   base::TimeTicks::Now(),
-                                   0,
-                                   capture_format_);
+  client_->OnIncomingCapturedData(video_frame,
+                                  video_frame_length,
+                                  capture_format_,
+                                  0,
+                                  base::TimeTicks::Now());
 }
 
 void VideoCaptureDeviceMac::ReceiveError(const std::string& reason) {

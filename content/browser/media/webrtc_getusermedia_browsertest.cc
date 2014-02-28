@@ -357,7 +357,7 @@ IN_PROC_BROWSER_TEST_F(
     TraceVideoCaptureControllerPerformanceDuringGetUserMedia) {
   RunGetUserMediaAndCollectMeasures(
       10,
-      "VideoCaptureController::OnIncomingCapturedFrame",
+      "VideoCaptureController::OnIncomingCapturedData",
       "VideoCaptureController");
 }
 

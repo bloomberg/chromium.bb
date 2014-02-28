@@ -18,6 +18,10 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "media/video/capture/video_capture.h"
 
+namespace gpu {
+struct MailboxHolder;
+}  // namespace gpu
+
 namespace content {
 
 class CONTENT_EXPORT VideoCaptureMessageFilter
@@ -34,8 +38,15 @@ class CONTENT_EXPORT VideoCaptureMessageFilter
 
     // Called when a video frame buffer is received from the browser process.
     virtual void OnBufferReceived(int buffer_id,
-                                  base::TimeTicks timestamp,
-                                  const media::VideoCaptureFormat& format) = 0;
+                                  const media::VideoCaptureFormat& format,
+                                  base::TimeTicks timestamp) = 0;
+
+    // Called when a video mailbox buffer is received from the browser process.
+    virtual void OnMailboxBufferReceived(
+        int buffer_id,
+        const gpu::MailboxHolder& mailbox_holder,
+        const media::VideoCaptureFormat& format,
+        base::TimeTicks timestamp) = 0;
 
     // Called when state of a video capture device has changed in the browser
     // process.
@@ -93,8 +104,15 @@ class CONTENT_EXPORT VideoCaptureMessageFilter
   // Receive a filled buffer from browser process.
   void OnBufferReceived(int device_id,
                         int buffer_id,
-                        base::TimeTicks timestamp,
-                        const media::VideoCaptureFormat& format);
+                        const media::VideoCaptureFormat& format,
+                        base::TimeTicks timestamp);
+
+  // Receive a filled texture mailbox buffer from browser process.
+  void OnMailboxBufferReceived(int device_id,
+                               int buffer_id,
+                               const gpu::MailboxHolder& mailbox_holder,
+                               const media::VideoCaptureFormat& format,
+                               base::TimeTicks timestamp);
 
   // State of browser process' video capture device has changed.
   void OnDeviceStateChanged(int device_id, VideoCaptureState state);

@@ -44,18 +44,17 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
                scoped_refptr<Buffer>(media::VideoFrame::Format format,
                                      const gfx::Size& dimensions));
   MOCK_METHOD1(OnError, void(const std::string& reason));
-  MOCK_METHOD5(OnIncomingCapturedFrame,
+  MOCK_METHOD5(OnIncomingCapturedData,
                void(const uint8* data,
                     int length,
-                    base::TimeTicks timestamp,
+                    const media::VideoCaptureFormat& frame_format,
                     int rotation,
-                    const media::VideoCaptureFormat& frame_format));
-  MOCK_METHOD5(OnIncomingCapturedBuffer,
+                    base::TimeTicks timestamp));
+  MOCK_METHOD4(OnIncomingCapturedVideoFrame,
                void(const scoped_refptr<Buffer>& buffer,
-                    media::VideoFrame::Format format,
-                    const gfx::Size& dimensions,
-                    base::TimeTicks timestamp,
-                    int frame_rate));
+                    const media::VideoCaptureFormat& buffer_format,
+                    const scoped_refptr<media::VideoFrame>& frame,
+                    base::TimeTicks timestamp));
 };
 
 // DesktopFrame wrapper that flips wrapped frame upside down by inverting
@@ -165,11 +164,10 @@ TEST_F(DesktopCaptureDeviceTest, MAYBE_Capture) {
 
   scoped_ptr<MockDeviceClient> client(new MockDeviceClient());
   EXPECT_CALL(*client, OnError(_)).Times(0);
-  EXPECT_CALL(*client, OnIncomingCapturedFrame(_, _, _, _, _))
-      .WillRepeatedly(
-           DoAll(SaveArg<1>(&frame_size),
-                 SaveArg<4>(&format),
-                 InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
+  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _)).WillRepeatedly(
+      DoAll(SaveArg<1>(&frame_size),
+            SaveArg<2>(&format),
+            InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
 
   media::VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(640, 480);
@@ -205,11 +203,10 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeConstantResolution) {
 
   scoped_ptr<MockDeviceClient> client(new MockDeviceClient());
   EXPECT_CALL(*client, OnError(_)).Times(0);
-  EXPECT_CALL(*client, OnIncomingCapturedFrame(_, _, _, _, _))
-      .WillRepeatedly(
-           DoAll(SaveArg<1>(&frame_size),
-                 SaveArg<4>(&format),
-                 InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
+  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _)).WillRepeatedly(
+      DoAll(SaveArg<1>(&frame_size),
+            SaveArg<2>(&format),
+            InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
 
   media::VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(kTestFrameWidth1,
@@ -252,10 +249,9 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeVariableResolution) {
 
   scoped_ptr<MockDeviceClient> client(new MockDeviceClient());
   EXPECT_CALL(*client, OnError(_)).Times(0);
-  EXPECT_CALL(*client, OnIncomingCapturedFrame(_, _, _, _, _))
-      .WillRepeatedly(
-           DoAll(SaveArg<4>(&format),
-                 InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
+  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _)).WillRepeatedly(
+      DoAll(SaveArg<2>(&format),
+            InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
 
   media::VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(kTestFrameWidth2,

@@ -15,6 +15,10 @@
 #include "content/common/content_export.h"
 #include "media/video/capture/video_capture_device.h"
 
+namespace media {
+class VideoFrame;
+}  // namespace media
+
 namespace content {
 
 const int kMinFrameWidth = 2;
@@ -82,7 +86,8 @@ class ThreadSafeCaptureOracle
 
   // Callback invoked on completion of all captures.
   void DidCaptureFrame(
-      scoped_refptr<media::VideoCaptureDevice::Client::Buffer> buffer,
+      const scoped_refptr<media::VideoCaptureDevice::Client::Buffer>& buffer,
+      const scoped_refptr<media::VideoFrame>& frame,
       int frame_number,
       base::TimeTicks timestamp,
       bool success);

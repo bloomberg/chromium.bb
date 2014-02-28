@@ -507,12 +507,12 @@ void VideoCaptureDeviceLinux::OnCaptureTask() {
     buffer.memory = V4L2_MEMORY_MMAP;
     // Dequeue a buffer.
     if (HANDLE_EINTR(ioctl(device_fd_, VIDIOC_DQBUF, &buffer)) == 0) {
-      client_->OnIncomingCapturedFrame(
+      client_->OnIncomingCapturedData(
           static_cast<uint8*>(buffer_pool_[buffer.index].start),
           buffer.bytesused,
-          base::TimeTicks::Now(),
+          capture_format_,
           0,
-          capture_format_);
+          base::TimeTicks::Now());
 
       // Enqueue the buffer again.
       if (HANDLE_EINTR(ioctl(device_fd_, VIDIOC_QBUF, &buffer)) == -1) {

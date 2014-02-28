@@ -110,10 +110,6 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
   TRACE_EVENT_ASYNC_BEGIN2("mirroring", "Capture", output_buffer.get(),
                            "frame_number", frame_number,
                            "trigger", event_name);
-  *callback = base::Bind(&ThreadSafeCaptureOracle::DidCaptureFrame,
-                         this,
-                         output_buffer,
-                         frame_number);
   *storage = media::VideoFrame::WrapExternalPackedMemory(
       media::VideoFrame::I420,
       capture_size_,
@@ -124,6 +120,11 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
       base::SharedMemory::NULLHandle(),
       base::TimeDelta(),
       base::Closure());
+  *callback = base::Bind(&ThreadSafeCaptureOracle::DidCaptureFrame,
+                         this,
+                         output_buffer,
+                         *storage,
+                         frame_number);
   return true;
 }
 
@@ -167,7 +168,8 @@ void ThreadSafeCaptureOracle::ReportError(const std::string& reason) {
 }
 
 void ThreadSafeCaptureOracle::DidCaptureFrame(
-    scoped_refptr<media::VideoCaptureDevice::Client::Buffer> buffer,
+    const scoped_refptr<media::VideoCaptureDevice::Client::Buffer>& buffer,
+    const scoped_refptr<media::VideoFrame>& frame,
     int frame_number,
     base::TimeTicks timestamp,
     bool success) {
@@ -181,11 +183,12 @@ void ThreadSafeCaptureOracle::DidCaptureFrame(
 
   if (success) {
     if (oracle_->CompleteCapture(frame_number, timestamp)) {
-      client_->OnIncomingCapturedBuffer(buffer,
-                                        media::VideoFrame::I420,
-                                        capture_size_,
-                                        timestamp,
-                                        frame_rate_);
+      client_->OnIncomingCapturedVideoFrame(
+          buffer,
+          media::VideoCaptureFormat(
+              capture_size_, frame_rate_, media::PIXEL_FORMAT_I420),
+          frame,
+          timestamp);
     }
   }
 }

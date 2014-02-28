@@ -114,15 +114,23 @@ class MockVideoCaptureHost : public VideoCaptureHost {
 
   // A list of mock methods.
   MOCK_METHOD4(OnNewBufferCreated,
-               void(int device_id, base::SharedMemoryHandle handle,
-                    int length, int buffer_id));
+               void(int device_id,
+                    base::SharedMemoryHandle handle,
+                    int length,
+                    int buffer_id));
   MOCK_METHOD2(OnBufferFreed,
                void(int device_id, int buffer_id));
   MOCK_METHOD4(OnBufferFilled,
                void(int device_id,
                     int buffer_id,
-                    base::TimeTicks timestamp,
-                    const media::VideoCaptureFormat& format));
+                    const media::VideoCaptureFormat& format,
+                    base::TimeTicks timestamp));
+  MOCK_METHOD5(OnMailboxBufferFilled,
+               void(int device_id,
+                    int buffer_id,
+                    const gpu::MailboxHolder& mailbox_holder,
+                    const media::VideoCaptureFormat& format,
+                    base::TimeTicks timestamp));
   MOCK_METHOD2(OnStateChanged, void(int device_id, VideoCaptureState state));
 
   // Use class DumpVideo to write I420 video to file.
@@ -138,7 +146,7 @@ class MockVideoCaptureHost : public VideoCaptureHost {
   void ReturnReceivedDibs(int device_id)  {
     int handle = GetReceivedDib();
     while (handle) {
-      this->OnReceiveEmptyBuffer(device_id, handle);
+      this->OnReceiveEmptyBuffer(device_id, handle, 0);
       handle = GetReceivedDib();
     }
   }
@@ -173,6 +181,8 @@ class MockVideoCaptureHost : public VideoCaptureHost {
       IPC_MESSAGE_HANDLER(VideoCaptureMsg_NewBuffer, OnNewBufferCreatedDispatch)
       IPC_MESSAGE_HANDLER(VideoCaptureMsg_FreeBuffer, OnBufferFreedDispatch)
       IPC_MESSAGE_HANDLER(VideoCaptureMsg_BufferReady, OnBufferFilledDispatch)
+      IPC_MESSAGE_HANDLER(VideoCaptureMsg_MailboxBufferReady,
+                          OnMailboxBufferFilledDispatch)
       IPC_MESSAGE_HANDLER(VideoCaptureMsg_StateChanged, OnStateChangedDispatch)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
@@ -205,8 +215,8 @@ class MockVideoCaptureHost : public VideoCaptureHost {
 
   void OnBufferFilledDispatch(int device_id,
                               int buffer_id,
-                              base::TimeTicks timestamp,
-                              const media::VideoCaptureFormat& frame_format) {
+                              const media::VideoCaptureFormat& frame_format,
+                              base::TimeTicks timestamp) {
     base::SharedMemory* dib = filled_dib_[buffer_id];
     ASSERT_TRUE(dib != NULL);
     if (dump_video_) {
@@ -222,9 +232,22 @@ class MockVideoCaptureHost : public VideoCaptureHost {
       dumper_.NewVideoFrame(dib->memory());
     }
 
-    OnBufferFilled(device_id, buffer_id, timestamp, frame_format);
+    OnBufferFilled(device_id, buffer_id, frame_format, timestamp);
     if (return_buffers_) {
-      VideoCaptureHost::OnReceiveEmptyBuffer(device_id, buffer_id);
+      VideoCaptureHost::OnReceiveEmptyBuffer(device_id, buffer_id, 0);
+    }
+  }
+
+  void OnMailboxBufferFilledDispatch(int device_id,
+                                     int buffer_id,
+                                     const gpu::MailboxHolder& mailbox_holder,
+                                     const media::VideoCaptureFormat& format,
+                                     base::TimeTicks timestamp) {
+    OnMailboxBufferFilled(
+        device_id, buffer_id, mailbox_holder, format, timestamp);
+    if (return_buffers_) {
+      VideoCaptureHost::OnReceiveEmptyBuffer(
+          device_id, buffer_id, mailbox_holder.sync_point);
     }
   }
 

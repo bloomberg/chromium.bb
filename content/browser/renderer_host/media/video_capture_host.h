@@ -86,8 +86,13 @@ class CONTENT_EXPORT VideoCaptureHost
                                  int buffer_id) OVERRIDE;
   virtual void OnBufferReady(const VideoCaptureControllerID& id,
                              int buffer_id,
-                             base::TimeTicks timestamp,
-                             const media::VideoCaptureFormat& format) OVERRIDE;
+                             const media::VideoCaptureFormat& format,
+                             base::TimeTicks timestamp) OVERRIDE;
+  virtual void OnMailboxBufferReady(const VideoCaptureControllerID& id,
+                                    int buffer_id,
+                                    const gpu::MailboxHolder& mailbox_holder,
+                                    const media::VideoCaptureFormat& format,
+                                    base::TimeTicks timestamp) OVERRIDE;
   virtual void OnEnded(const VideoCaptureControllerID& id) OVERRIDE;
 
  private:
@@ -120,7 +125,7 @@ class CONTENT_EXPORT VideoCaptureHost
 
   // IPC message: Receive an empty buffer from renderer. Send it to device
   // referenced by |device_id|.
-  void OnReceiveEmptyBuffer(int device_id, int buffer_id);
+  void OnReceiveEmptyBuffer(int device_id, int buffer_id, uint32 sync_point);
 
   // IPC message: Get supported formats referenced by |capture_session_id|.
   // |device_id| is needed for message back-routing purposes.
@@ -150,8 +155,16 @@ class CONTENT_EXPORT VideoCaptureHost
   void DoSendFilledBufferOnIOThread(
       const VideoCaptureControllerID& controller_id,
       int buffer_id,
-      base::TimeTicks timestamp,
-      const media::VideoCaptureFormat& format);
+      const media::VideoCaptureFormat& format,
+      base::TimeTicks timestamp);
+
+  // Send a filled texture mailbox buffer to the VideoCaptureMessageFilter.
+  void DoSendFilledMailboxBufferOnIOThread(
+      const VideoCaptureControllerID& controller_id,
+      int buffer_id,
+      const gpu::MailboxHolder& mailbox_holder,
+      const media::VideoCaptureFormat& format,
+      base::TimeTicks timestamp);
 
   // Handle error coming from VideoCaptureDevice.
   void DoHandleErrorOnIOThread(const VideoCaptureControllerID& controller_id);

@@ -21,7 +21,7 @@ VideoCaptureFormat::VideoCaptureFormat(const gfx::Size& frame_size,
 bool VideoCaptureFormat::IsValid() const {
   return (frame_size.width() < media::limits::kMaxDimension) &&
          (frame_size.height() < media::limits::kMaxDimension) &&
-         (frame_size.GetArea() > 0) &&
+         (frame_size.GetArea() >= 0) &&
          (frame_size.GetArea() < media::limits::kMaxCanvas) &&
          (frame_rate > 0) &&
          (frame_rate < media::limits::kMaxFramesPerSecond) &&

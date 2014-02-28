@@ -207,7 +207,7 @@ class MFReaderCallback
       DWORD stream_flags, LONGLONG time_stamp, IMFSample* sample) {
     base::TimeTicks stamp(base::TimeTicks::Now());
     if (!sample) {
-      observer_->OnIncomingCapturedFrame(NULL, 0, stamp, 0);
+      observer_->OnIncomingCapturedData(NULL, 0, 0, stamp);
       return S_OK;
     }
 
@@ -221,7 +221,7 @@ class MFReaderCallback
         DWORD length = 0, max_length = 0;
         BYTE* data = NULL;
         buffer->Lock(&data, &max_length, &length);
-        observer_->OnIncomingCapturedFrame(data, length, stamp, 0);
+        observer_->OnIncomingCapturedData(data, length, 0, stamp);
         buffer->Unlock();
       }
     }
@@ -459,18 +459,16 @@ void VideoCaptureDeviceMFWin::StopAndDeAllocate() {
     flushed.TimedWait(base::TimeDelta::FromMilliseconds(kFlushTimeOutInMs));
 }
 
-void VideoCaptureDeviceMFWin::OnIncomingCapturedFrame(
+void VideoCaptureDeviceMFWin::OnIncomingCapturedData(
     const uint8* data,
     int length,
-    const base::TimeTicks& time_stamp,
-    int rotation) {
+    int rotation,
+    const base::TimeTicks& time_stamp) {
   base::AutoLock lock(lock_);
-  if (data && client_.get())
-    client_->OnIncomingCapturedFrame(data,
-                                     length,
-                                     time_stamp,
-                                     rotation,
-                                     capture_format_);
+  if (data && client_.get()) {
+    client_->OnIncomingCapturedData(
+        data, length, capture_format_, rotation, time_stamp);
+  }
 
   if (capture_) {
     HRESULT hr = reader_->ReadSample(MF_SOURCE_READER_FIRST_VIDEO_STREAM, 0,

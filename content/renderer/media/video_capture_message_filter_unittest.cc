@@ -31,8 +31,13 @@ class MockVideoCaptureDelegate : public VideoCaptureMessageFilter::Delegate {
   MOCK_METHOD1(OnBufferDestroyed, void(int buffer_id));
   MOCK_METHOD3(OnBufferReceived,
                void(int buffer_id,
-                    base::TimeTicks timestamp,
-                    const media::VideoCaptureFormat& format));
+                    const media::VideoCaptureFormat& format,
+                    base::TimeTicks timestamp));
+  MOCK_METHOD4(OnMailboxBufferReceived,
+               void(int buffer_id,
+                    const gpu::MailboxHolder& mailbox_holder,
+                    const media::VideoCaptureFormat& format,
+                    base::TimeTicks timestamp));
   MOCK_METHOD1(OnStateChanged, void(VideoCaptureState state));
   MOCK_METHOD1(OnDeviceSupportedFormatsEnumerated,
                void(const media::VideoCaptureFormats& formats));
@@ -86,17 +91,47 @@ TEST(VideoCaptureMessageFilterTest, Basic) {
   int buffer_id = 22;
   base::TimeTicks timestamp = base::TimeTicks::FromInternalValue(1);
 
-  media::VideoCaptureFormat format(
+  const media::VideoCaptureFormat shm_format(
       gfx::Size(234, 512), 30, media::PIXEL_FORMAT_I420);
   media::VideoCaptureFormat saved_format;
-  EXPECT_CALL(delegate, OnBufferReceived(buffer_id, timestamp, _))
-      .WillRepeatedly(SaveArg<2>(&saved_format));
+  EXPECT_CALL(delegate, OnBufferReceived(buffer_id, _, timestamp))
+      .WillRepeatedly(SaveArg<1>(&saved_format));
   filter->OnMessageReceived(VideoCaptureMsg_BufferReady(
-      delegate.device_id(), buffer_id, timestamp, format));
+      delegate.device_id(), buffer_id, shm_format, timestamp));
   Mock::VerifyAndClearExpectations(&delegate);
-  EXPECT_EQ(234, saved_format.frame_size.width());
-  EXPECT_EQ(512, saved_format.frame_size.height());
-  EXPECT_EQ(30, saved_format.frame_rate);
+  EXPECT_EQ(shm_format.frame_size, saved_format.frame_size);
+  EXPECT_EQ(shm_format.frame_rate, saved_format.frame_rate);
+  EXPECT_EQ(shm_format.pixel_format, saved_format.pixel_format);
+
+  // VideoCaptureMsg_MailboxBufferReady
+  buffer_id = 33;
+  timestamp = base::TimeTicks::FromInternalValue(2);
+
+  const media::VideoCaptureFormat mailbox_format(
+      gfx::Size(234, 512), 30, media::PIXEL_FORMAT_TEXTURE);
+  gpu::Mailbox mailbox;
+  const int8 mailbox_name[arraysize(mailbox.name)] = "TEST MAILBOX";
+  mailbox.SetName(mailbox_name);
+  unsigned int syncpoint = 44;
+  gpu::MailboxHolder saved_mailbox_holder;
+  EXPECT_CALL(delegate, OnMailboxBufferReceived(buffer_id, _, _, timestamp))
+      .WillRepeatedly(
+           DoAll(SaveArg<1>(&saved_mailbox_holder), SaveArg<2>(&saved_format)));
+  gpu::MailboxHolder mailbox_holder(mailbox, 0, syncpoint);
+  filter->OnMessageReceived(
+      VideoCaptureMsg_MailboxBufferReady(delegate.device_id(),
+                                         buffer_id,
+                                         mailbox_holder,
+                                         mailbox_format,
+                                         timestamp));
+  Mock::VerifyAndClearExpectations(&delegate);
+  EXPECT_EQ(mailbox_format.frame_size, saved_format.frame_size);
+  EXPECT_EQ(mailbox_format.frame_rate, saved_format.frame_rate);
+  EXPECT_EQ(mailbox_format.pixel_format, saved_format.pixel_format);
+  EXPECT_EQ(memcmp(mailbox.name,
+                   saved_mailbox_holder.mailbox.name,
+                   sizeof(mailbox.name)),
+            0);
 
   // VideoCaptureMsg_FreeBuffer
   EXPECT_CALL(delegate, OnBufferDestroyed(buffer_id));

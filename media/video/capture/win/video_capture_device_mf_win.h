@@ -55,11 +55,11 @@ class MEDIA_EXPORT VideoCaptureDeviceMFWin
   static void GetDeviceSupportedFormats(const Name& device,
                                         VideoCaptureFormats* formats);
 
-  // Captured a new video frame.
-  void OnIncomingCapturedFrame(const uint8* data,
-                               int length,
-                               const base::TimeTicks& time_stamp,
-                               int rotation);
+  // Captured new video data.
+  void OnIncomingCapturedData(const uint8* data,
+                              int length,
+                              int rotation,
+                              const base::TimeTicks& time_stamp);
 
  private:
   void OnError(HRESULT hr);
