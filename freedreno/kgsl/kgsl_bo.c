@@ -222,7 +222,6 @@ fail:
 	return NULL;
 }
 
-
 uint32_t kgsl_bo_gpuaddr(struct kgsl_bo *kgsl_bo, uint32_t offset)
 {
 	struct fd_bo *bo = &kgsl_bo->base;

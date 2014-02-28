@@ -34,7 +34,6 @@
 #include "freedreno_priv.h"
 
 static pthread_mutex_t table_lock = PTHREAD_MUTEX_INITIALIZER;
-static void * dev_table;
 
 struct fd_device * kgsl_device_new(int fd);
 struct fd_device * msm_device_new(int fd);
@@ -77,7 +76,7 @@ init_cache_buckets(struct fd_device *dev)
 	}
 }
 
-static struct fd_device * fd_device_new_impl(int fd)
+struct fd_device * fd_device_new(int fd)
 {
 	struct fd_device *dev;
 	drmVersionPtr version;
@@ -112,29 +111,6 @@ static struct fd_device * fd_device_new_impl(int fd)
 	return dev;
 }
 
-struct fd_device * fd_device_new(int fd)
-{
-	struct fd_device *dev = NULL;
-	int key = fd;
-
-	pthread_mutex_lock(&table_lock);
-
-	if (!dev_table)
-		dev_table = drmHashCreate();
-
-	if (drmHashLookup(dev_table, key, (void **)&dev)) {
-		dev = fd_device_new_impl(fd);
-		if (dev)
-			drmHashInsert(dev_table, key, dev);
-	} else {
-		dev = fd_device_ref(dev);
-	}
-
-	pthread_mutex_unlock(&table_lock);
-
-	return dev;
-}
-
 /* like fd_device_new() but creates it's own private dup() of the fd
  * which is close()d when the device is finalized.
  */
@@ -156,7 +132,6 @@ static void fd_device_del_impl(struct fd_device *dev)
 	fd_cleanup_bo_cache(dev, 0);
 	drmHashDestroy(dev->handle_table);
 	drmHashDestroy(dev->name_table);
-	drmHashDelete(dev_table, dev->fd);
 	if (dev->closefd)
 		close(dev->fd);
 	dev->funcs->destroy(dev);
