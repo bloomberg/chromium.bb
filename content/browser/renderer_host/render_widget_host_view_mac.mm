@@ -439,7 +439,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
   // If a caller has set this, then when the caller tries to re-set it sometime
   // in the future, we will crash.
-  DCHECK(!about_to_validate_and_paint_);
+  CHECK(!about_to_validate_and_paint_);
 
   // This is being called from |cocoa_view_|'s destructor, so invalidate the
   // pointer.
@@ -2135,11 +2135,26 @@ void RenderWidgetHostViewMac::SendPendingLatencyInfoToHost() {
 }
 
 void RenderWidgetHostViewMac::TickPendingLatencyInfoDelay() {
-  // Keep calling setNeedsDisplay in a loop until enough display calls come in.
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&RenderWidgetHostViewMac::TickPendingLatencyInfoDelay,
-                 pending_latency_info_delay_weak_ptr_factory_.GetWeakPtr()));
-  [[cocoa_view_ layer] setNeedsDisplay];
+  if (compositing_iosurface_layer_) {
+    // Keep calling gotNewFrame in a loop until enough display calls come in.
+    // Each call will be separated by about a vsync.
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&RenderWidgetHostViewMac::TickPendingLatencyInfoDelay,
+                   pending_latency_info_delay_weak_ptr_factory_.GetWeakPtr()));
+    [compositing_iosurface_layer_ gotNewFrame];
+  }
+  if (software_layer_) {
+    // In software mode, setNeedsDisplay will almost immediately result in the
+    // layer's draw function being called, so manually insert a pretend-vsync
+    // at 60 Hz.
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&RenderWidgetHostViewMac::TickPendingLatencyInfoDelay,
+                   pending_latency_info_delay_weak_ptr_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(1000/60));
+    [software_layer_ setNeedsDisplay];
+  }
 }
 
 void RenderWidgetHostViewMac::AddPendingSwapAck(
@@ -2986,11 +3001,10 @@ void RenderWidgetHostViewMac::SendPendingSwapAck() {
     return;
   }
 
-  DCHECK(!renderWidgetHostView_->about_to_validate_and_paint_);
-
   // GetBackingStore works for both software and accelerated frames. If a
   // SwapBuffers occurs while GetBackingStore is blocking, we will continue to
   // blit the IOSurface below.
+  DCHECK(!renderWidgetHostView_->about_to_validate_and_paint_);
   renderWidgetHostView_->about_to_validate_and_paint_ = true;
   BackingStoreMac* backingStore = static_cast<BackingStoreMac*>(
       renderWidgetHostView_->render_widget_host_->GetBackingStore(true));
@@ -4177,19 +4191,32 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 - (void)drawInContext:(CGContextRef)context {
   TRACE_EVENT0("browser", "SoftwareLayer::drawInContext");
 
+  // Call GetBackingStore to stall until a software frame of the same size as
+  // the window comes in from the renderer.
+  BackingStoreMac* backingStore = NULL;
+  if (renderWidgetHostView_ &&
+      renderWidgetHostView_->render_widget_host_ &&
+      !renderWidgetHostView_->render_widget_host_->is_hidden()) {
+    // GetBackingStore will dispatch some messages from the run loop, so make
+    // sure that this is robust to having disableRendering called, which would
+    // invalidate renderWidgetHostView_.
+    RenderWidgetHostViewMac* cachedView = renderWidgetHostView_;
+    DCHECK(!cachedView->about_to_validate_and_paint_);
+    cachedView->about_to_validate_and_paint_ = true;
+    backingStore = static_cast<BackingStoreMac*>(
+        cachedView->render_widget_host_->GetBackingStore(true));
+    cachedView->about_to_validate_and_paint_ = false;
+  }
+
   CGRect clipRect = CGContextGetClipBoundingBox(context);
-  if (!renderWidgetHostView_) {
-    CGContextSetFillColorWithColor(context,
-                                   CGColorGetConstantColor(kCGColorWhite));
-    CGContextFillRect(context, clipRect);
-  } else {
-    renderWidgetHostView_->about_to_validate_and_paint_ = true;
-    BackingStoreMac* backingStore = static_cast<BackingStoreMac*>(
-        renderWidgetHostView_->render_widget_host_->GetBackingStore(true));
-    renderWidgetHostView_->about_to_validate_and_paint_ = false;
+  if (renderWidgetHostView_) {
     [renderWidgetHostView_->cocoa_view() drawBackingStore:backingStore
                                                 dirtyRect:clipRect
                                                 inContext:context];
+  } else {
+    CGContextSetFillColorWithColor(context,
+                                   CGColorGetConstantColor(kCGColorWhite));
+    CGContextFillRect(context, clipRect);
   }
 }
 

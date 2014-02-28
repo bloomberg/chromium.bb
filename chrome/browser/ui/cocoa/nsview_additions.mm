@@ -89,15 +89,15 @@
 }
 
 - (void)cr_setWantsLayer:(BOOL)wantsLayer {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseCoreAnimation))
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableCoreAnimation))
     return;
   [self setWantsLayer:wantsLayer];
 }
 
 - (void)cr_setWantsSquashedLayer {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseCoreAnimation))
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableCoreAnimation))
     return;
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableCoreAnimationLayerSquashing))

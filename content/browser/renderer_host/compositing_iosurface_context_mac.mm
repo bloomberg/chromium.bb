@@ -20,8 +20,9 @@ namespace content {
 
 CoreAnimationStatus GetCoreAnimationStatus() {
   static CoreAnimationStatus status =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseCoreAnimation) ?
-          CORE_ANIMATION_ENABLED : CORE_ANIMATION_DISABLED;
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableCoreAnimation) ?
+              CORE_ANIMATION_DISABLED : CORE_ANIMATION_ENABLED;
   return status;
 }
 

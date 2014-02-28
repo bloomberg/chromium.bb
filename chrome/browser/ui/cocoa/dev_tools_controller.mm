@@ -26,8 +26,8 @@
 namespace {
 
 bool CoreAnimationIsEnabled() {
-  static bool is_enabled = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseCoreAnimation);
+  static bool is_enabled = !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableCoreAnimation);
   return is_enabled;
 }
 
@@ -80,13 +80,14 @@ using content::WebContents;
 }
 
 - (void)hideDevTools {
-  DCHECK_EQ(2u, [[self subviews] count]);
   if (CoreAnimationIsEnabled()) {
     // Make sure we do not draw any transient arrangements of views.
     gfx::ScopedNSDisableScreenUpdates disabler;
+    DCHECK_EQ(1u, [[self subviews] count]);
     [contentsView_ removeFromSuperview];
     [self replaceSubview:devToolsView_ with:contentsView_];
   } else {
+    DCHECK_EQ(2u, [[self subviews] count]);
     [devToolsView_ removeFromSuperview];
   }
   contentsView_ = nil;
@@ -104,7 +105,12 @@ using content::WebContents;
     return;
   }
 
-  DCHECK_EQ(2u, [[self subviews] count]);
+  if (CoreAnimationIsEnabled()) {
+    DCHECK_EQ(1u, [[self subviews] count]);
+  } else {
+    DCHECK_EQ(2u, [[self subviews] count]);
+  }
+
   gfx::Rect new_devtools_bounds;
   gfx::Rect new_contents_bounds;
   ApplyDevToolsContentsResizingStrategy(
