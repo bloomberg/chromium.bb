@@ -565,67 +565,13 @@ WebPreferences RenderViewHostImpl::GetWebkitPrefs(const GURL& url) {
   return prefs;
 }
 
-void RenderViewHostImpl::Navigate(const ViewMsg_Navigate_Params& params) {
+void RenderViewHostImpl::Navigate(const FrameMsg_Navigate_Params& params) {
   TRACE_EVENT0("renderer_host", "RenderViewHostImpl::Navigate");
-  // Browser plugin guests are not allowed to navigate outside web-safe schemes,
-  // so do not grant them the ability to request additional URLs.
-  if (!GetProcess()->IsGuest()) {
-    ChildProcessSecurityPolicyImpl::GetInstance()->GrantRequestURL(
-        GetProcess()->GetID(), params.url);
-    if (params.url.SchemeIs(kDataScheme) &&
-        params.base_url_for_data_url.SchemeIs(kFileScheme)) {
-      // If 'data:' is used, and we have a 'file:' base url, grant access to
-      // local files.
-      ChildProcessSecurityPolicyImpl::GetInstance()->GrantRequestURL(
-          GetProcess()->GetID(), params.base_url_for_data_url);
-    }
-  }
-
-  // Only send the message if we aren't suspended at the start of a cross-site
-  // request.
-  if (navigations_suspended_) {
-    // Shouldn't be possible to have a second navigation while suspended, since
-    // navigations will only be suspended during a cross-site request.  If a
-    // second navigation occurs, WebContentsImpl will cancel this pending RVH
-    // create a new pending RVH.
-    DCHECK(!suspended_nav_params_.get());
-    suspended_nav_params_.reset(new ViewMsg_Navigate_Params(params));
-  } else {
-    // Get back to a clean state, in case we start a new navigation without
-    // completing a RVH swap or unload handler.
-    SetState(STATE_DEFAULT);
-
-    Send(new ViewMsg_Navigate(GetRoutingID(), params));
-  }
-
-  // Force the throbber to start. We do this because WebKit's "started
-  // loading" message will be received asynchronously from the UI of the
-  // browser. But we want to keep the throbber in sync with what's happening
-  // in the UI. For example, we want to start throbbing immediately when the
-  // user naivgates even if the renderer is delayed. There is also an issue
-  // with the throbber starting because the WebUI (which controls whether the
-  // favicon is displayed) happens synchronously. If the start loading
-  // messages was asynchronous, then the default favicon would flash in.
-  //
-  // WebKit doesn't send throb notifications for JavaScript URLs, so we
-  // don't want to either.
-  if (!params.url.SchemeIs(kJavaScriptScheme)) {
-    RenderFrameHostImpl* rfh =
-        static_cast<RenderFrameHostImpl*>(GetMainFrame());
-    rfh->OnDidStartLoading();
-  }
+  delegate_->GetFrameTree()->GetMainFrame()->Navigate(params);
 }
 
 void RenderViewHostImpl::NavigateToURL(const GURL& url) {
-  ViewMsg_Navigate_Params params;
-  params.page_id = -1;
-  params.pending_history_list_offset = -1;
-  params.current_history_list_offset = -1;
-  params.current_history_list_length = 0;
-  params.url = url;
-  params.transition = PAGE_TRANSITION_LINK;
-  params.navigation_type = ViewMsg_Navigate_Type::NORMAL;
-  Navigate(params);
+  delegate_->GetFrameTree()->GetMainFrame()->NavigateToURL(url);
 }
 
 void RenderViewHostImpl::SetNavigationsSuspended(
@@ -643,7 +589,8 @@ void RenderViewHostImpl::SetNavigationsSuspended(
 
     DCHECK(!proceed_time.is_null());
     suspended_nav_params_->browser_navigation_start = proceed_time;
-    Send(new ViewMsg_Navigate(GetRoutingID(), *suspended_nav_params_.get()));
+    Send(new FrameMsg_Navigate(
+        main_frame_routing_id_, *suspended_nav_params_.get()));
     suspended_nav_params_.reset();
   }
 }

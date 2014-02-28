@@ -324,11 +324,11 @@ void RenderViewTest::ClearHistory() {
 }
 
 void RenderViewTest::Reload(const GURL& url) {
-  ViewMsg_Navigate_Params params;
+  FrameMsg_Navigate_Params params;
   params.url = url;
-  params.navigation_type = ViewMsg_Navigate_Type::RELOAD;
+  params.navigation_type = FrameMsg_Navigate_Type::RELOAD;
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
-  impl->OnNavigate(params);
+  impl->main_render_frame()->OnNavigate(params);
 }
 
 uint32 RenderViewTest::GetNavigationIPCType() {
@@ -378,8 +378,8 @@ void RenderViewTest::GoToOffset(int offset,
                             impl->historyForwardListCount() + 1;
   int pending_offset = offset + impl->history_list_offset();
 
-  ViewMsg_Navigate_Params navigate_params;
-  navigate_params.navigation_type = ViewMsg_Navigate_Type::NORMAL;
+  FrameMsg_Navigate_Params navigate_params;
+  navigate_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
   navigate_params.transition = PAGE_TRANSITION_FORWARD_BACK;
   navigate_params.current_history_list_length = history_list_length;
   navigate_params.current_history_list_offset = impl->history_list_offset();
@@ -388,8 +388,9 @@ void RenderViewTest::GoToOffset(int offset,
   navigate_params.page_state = HistoryItemToPageState(history_item);
   navigate_params.request_time = base::Time::Now();
 
-  ViewMsg_Navigate navigate_message(impl->GetRoutingID(), navigate_params);
-  OnMessageReceived(navigate_message);
+  FrameMsg_Navigate navigate_message(impl->main_render_frame()->GetRoutingID(),
+                                     navigate_params);
+  impl->main_render_frame()->OnMessageReceived(navigate_message);
 
   // The load actually happens asynchronously, so we pump messages to process
   // the pending continuation.

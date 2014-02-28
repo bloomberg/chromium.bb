@@ -3620,10 +3620,10 @@ TEST_F(NavigationControllerTest, HistoryNavigate) {
   contents()->ProceedWithCrossSiteNavigation();
   // Also make sure we told the page to navigate.
   const IPC::Message* message =
-      process()->sink().GetFirstMessageMatching(ViewMsg_Navigate::ID);
+      process()->sink().GetFirstMessageMatching(FrameMsg_Navigate::ID);
   ASSERT_TRUE(message != NULL);
-  Tuple1<ViewMsg_Navigate_Params> nav_params;
-  ViewMsg_Navigate::Read(message, &nav_params);
+  Tuple1<FrameMsg_Navigate_Params> nav_params;
+  FrameMsg_Navigate::Read(message, &nav_params);
   EXPECT_EQ(url1, nav_params.a.url);
   process()->sink().ClearMessages();
 
@@ -3633,16 +3633,16 @@ TEST_F(NavigationControllerTest, HistoryNavigate) {
   // The actual cross-navigation is suspended until the current RVH tells us
   // it unloaded, simulate that.
   contents()->ProceedWithCrossSiteNavigation();
-  message = process()->sink().GetFirstMessageMatching(ViewMsg_Navigate::ID);
+  message = process()->sink().GetFirstMessageMatching(FrameMsg_Navigate::ID);
   ASSERT_TRUE(message != NULL);
-  ViewMsg_Navigate::Read(message, &nav_params);
+  FrameMsg_Navigate::Read(message, &nav_params);
   EXPECT_EQ(url3, nav_params.a.url);
   process()->sink().ClearMessages();
 
   // Make sure an extravagant history.go() doesn't break.
   contents()->OnGoToEntryAtOffset(120);  // Out of bounds.
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
-  message = process()->sink().GetFirstMessageMatching(ViewMsg_Navigate::ID);
+  message = process()->sink().GetFirstMessageMatching(FrameMsg_Navigate::ID);
   EXPECT_TRUE(message == NULL);
 }
 

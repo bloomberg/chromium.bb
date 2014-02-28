@@ -15,6 +15,7 @@
 
 class GURL;
 struct FrameHostMsg_DidFailProvisionalLoadWithError_Params;
+struct FrameMsg_Navigate_Params;
 
 namespace base {
 class FilePath;
@@ -93,6 +94,18 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   // TODO(nasko): This method is public so RenderViewHostImpl::Navigate can
   // call it directly. It should be made private once Navigate moves here.
   void OnDidStartLoading();
+
+  // Sends the given navigation message. Use this rather than sending it
+  // yourself since this does the internal bookkeeping described below. This
+  // function takes ownership of the provided message pointer.
+  //
+  // If a cross-site request is in progress, we may be suspended while waiting
+  // for the onbeforeunload handler, so this function might buffer the message
+  // rather than sending it.
+  void Navigate(const FrameMsg_Navigate_Params& params);
+
+  // Load the specified URL; this is a shortcut for Navigate().
+  void NavigateToURL(const GURL& url);
 
  protected:
   friend class RenderFrameHostFactory;

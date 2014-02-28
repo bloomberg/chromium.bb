@@ -7,6 +7,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/user_metrics_action.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -361,6 +362,67 @@ bool RenderFrameHostImpl::CanCommitURL(const GURL& url) {
 
   // Give the client a chance to disallow URLs from committing.
   return GetContentClient()->browser()->CanCommitURL(GetProcess(), url);
+}
+
+void RenderFrameHostImpl::Navigate(const FrameMsg_Navigate_Params& params) {
+  TRACE_EVENT0("frame_host", "RenderFrameHostImpl::Navigate");
+  // Browser plugin guests are not allowed to navigate outside web-safe schemes,
+  // so do not grant them the ability to request additional URLs.
+  if (!GetProcess()->IsGuest()) {
+    ChildProcessSecurityPolicyImpl::GetInstance()->GrantRequestURL(
+        GetProcess()->GetID(), params.url);
+    if (params.url.SchemeIs(kDataScheme) &&
+        params.base_url_for_data_url.SchemeIs(kFileScheme)) {
+      // If 'data:' is used, and we have a 'file:' base url, grant access to
+      // local files.
+      ChildProcessSecurityPolicyImpl::GetInstance()->GrantRequestURL(
+          GetProcess()->GetID(), params.base_url_for_data_url);
+    }
+  }
+
+  // Only send the message if we aren't suspended at the start of a cross-site
+  // request.
+  if (render_view_host_->navigations_suspended_) {
+    // Shouldn't be possible to have a second navigation while suspended, since
+    // navigations will only be suspended during a cross-site request.  If a
+    // second navigation occurs, RenderFrameHostManager will cancel this pending
+    // RFH and create a new pending RFH.
+    DCHECK(!render_view_host_->suspended_nav_params_.get());
+    render_view_host_->suspended_nav_params_.reset(
+        new FrameMsg_Navigate_Params(params));
+  } else {
+    // Get back to a clean state, in case we start a new navigation without
+    // completing a RVH swap or unload handler.
+    render_view_host_->SetState(RenderViewHostImpl::STATE_DEFAULT);
+
+    Send(new FrameMsg_Navigate(GetRoutingID(), params));
+  }
+
+  // Force the throbber to start. We do this because Blink's "started
+  // loading" message will be received asynchronously from the UI of the
+  // browser. But we want to keep the throbber in sync with what's happening
+  // in the UI. For example, we want to start throbbing immediately when the
+  // user naivgates even if the renderer is delayed. There is also an issue
+  // with the throbber starting because the WebUI (which controls whether the
+  // favicon is displayed) happens synchronously. If the start loading
+  // messages was asynchronous, then the default favicon would flash in.
+  //
+  // Blink doesn't send throb notifications for JavaScript URLs, so we
+  // don't want to either.
+  if (!params.url.SchemeIs(kJavaScriptScheme))
+    delegate_->DidStartLoading(this);
+}
+
+void RenderFrameHostImpl::NavigateToURL(const GURL& url) {
+  FrameMsg_Navigate_Params params;
+  params.page_id = -1;
+  params.pending_history_list_offset = -1;
+  params.current_history_list_offset = -1;
+  params.current_history_list_length = 0;
+  params.url = url;
+  params.transition = PAGE_TRANSITION_LINK;
+  params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
+  Navigate(params);
 }
 
 }  // namespace content
