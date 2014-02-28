@@ -229,6 +229,10 @@ struct AutocompleteMatch {
   // is not shown.
   bool IsVerbatimType() const;
 
+  // Returns whether this match or any duplicate of this match can be deleted.
+  // This is used to decide whether we should call DeleteMatch().
+  bool SupportsDeletion() const;
+
   // The provider of this match, used to remember which provider the user had
   // selected when the input changes. This may be NULL, in which case there is
   // no provider (or memory of the user's selection).
@@ -336,6 +340,10 @@ struct AutocompleteMatch {
   // Information dictionary into which each provider can optionally record a
   // property and associated value and which is presented in chrome://omnibox.
   AdditionalInfo additional_info;
+
+  // A list of matches culled during de-duplication process, retained to
+  // ensure if a match is deleted, the duplicates are deleted as well.
+  std::vector<AutocompleteMatch> duplicate_matches;
 
 #ifndef NDEBUG
   // Does a data integrity check on this match.

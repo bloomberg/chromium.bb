@@ -4,6 +4,8 @@
 
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 
+#include <vector>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
@@ -71,6 +73,9 @@ class AutocompleteResultTest : public testing::Test  {
 
     // Relevance score.
     int relevance;
+
+    // Duplicate matches.
+    std::vector<AutocompleteMatch> duplicate_matches;
   };
 
   AutocompleteResultTest() {
@@ -134,6 +139,7 @@ void AutocompleteResultTest::PopulateAutocompleteMatch(
   match->destination_url = GURL("http://" + url_id);
   match->relevance = data.relevance;
   match->allowed_to_be_default_match = true;
+  match->duplicate_matches = data.duplicate_matches;
 }
 
 // static
@@ -350,6 +356,65 @@ TEST_F(AutocompleteResultTest, SortAndCullDuplicateSearchURLs) {
   EXPECT_EQ("http://www.foo.com/",
             result.match_at(2)->destination_url.spec());
   EXPECT_EQ(900, result.match_at(2)->relevance);
+}
+
+TEST_F(AutocompleteResultTest, SortAndCullWithMatchDups) {
+  // Register a template URL that corresponds to 'foo' search engine.
+  TemplateURLData url_data;
+  url_data.short_name = base::ASCIIToUTF16("unittest");
+  url_data.SetKeyword(base::ASCIIToUTF16("foo"));
+  url_data.SetURL("http://www.foo.com/s?q={searchTerms}");
+  test_util_.model()->Add(new TemplateURL(test_util_.profile(), url_data));
+
+  AutocompleteMatch dup_match;
+  dup_match.destination_url = GURL("http://www.foo.com/s?q=foo&oq=dup");
+  std::vector<AutocompleteMatch> dups;
+  dups.push_back(dup_match);
+
+  TestData data[] = {
+    { 0, 0, 1300, dups },
+    { 1, 0, 1200 },
+    { 2, 0, 1100 },
+    { 3, 0, 1000, dups },
+    { 4, 1, 900 },
+    { 5, 0, 800 },
+  };
+
+  ACMatches matches;
+  PopulateAutocompleteMatches(data, arraysize(data), &matches);
+  matches[0].destination_url = GURL("http://www.foo.com/s?q=foo");
+  matches[1].destination_url = GURL("http://www.foo.com/s?q=foo2");
+  matches[2].destination_url = GURL("http://www.foo.com/s?q=foo&oq=f");
+  matches[3].destination_url = GURL("http://www.foo.com/s?q=foo&aqs=0");
+  matches[4].destination_url = GURL("http://www.foo.com/");
+  matches[5].destination_url = GURL("http://www.foo.com/s?q=foo2&oq=f");
+
+  AutocompleteResult result;
+  result.AppendMatches(matches);
+  AutocompleteInput input(base::string16(), base::string16::npos,
+                          base::string16(), GURL(),
+                          AutocompleteInput::INVALID_SPEC, false, false, false,
+                          AutocompleteInput::ALL_MATCHES);
+  result.SortAndCull(input, test_util_.profile());
+
+  // Expect 3 unique results after SortAndCull().
+  ASSERT_EQ(3U, result.size());
+
+  // Check that 3rd and 4th result got added to the first result as dups
+  // and also duplicates of the 4th match got copied.
+  ASSERT_EQ(4U, result.match_at(0)->duplicate_matches.size());
+  const AutocompleteMatch* first_match = result.match_at(0);
+  EXPECT_EQ(matches[2].destination_url,
+            first_match->duplicate_matches.at(1).destination_url);
+  EXPECT_EQ(dup_match.destination_url,
+            first_match->duplicate_matches.at(2).destination_url);
+  EXPECT_EQ(matches[3].destination_url,
+            first_match->duplicate_matches.at(3).destination_url);
+
+  // Check that 6th result started a new list of dups for the second result.
+  ASSERT_EQ(1U, result.match_at(1)->duplicate_matches.size());
+  EXPECT_EQ(matches[5].destination_url,
+            result.match_at(1)->duplicate_matches.at(0).destination_url);
 }
 
 TEST_F(AutocompleteResultTest, SortAndCullWithDemotionsByType) {

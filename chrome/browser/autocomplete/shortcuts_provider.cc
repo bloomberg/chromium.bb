@@ -113,20 +113,20 @@ void ShortcutsProvider::Start(const AutocompleteInput& input,
 }
 
 void ShortcutsProvider::DeleteMatch(const AutocompleteMatch& match) {
-  // Copy the URL since DeleteMatchesWithURLs() will invalidate |match|.
+  // Copy the URL since deleting from |matches_| will invalidate |match|.
   GURL url(match.destination_url);
 
   // When a user deletes a match, he probably means for the URL to disappear out
   // of history entirely. So nuke all shortcuts that map to this URL.
   scoped_refptr<history::ShortcutsBackend> backend =
       ShortcutsBackendFactory::GetForProfileIfExists(profile_);
-  if (backend)  // Can be NULL in Incognito.
+  if (backend) // Can be NULL in Incognito.
     backend->DeleteShortcutsWithUrl(url);
+
   matches_.erase(std::remove_if(matches_.begin(), matches_.end(),
                                 DestinationURLEqualsURL(url)),
                  matches_.end());
   // NOTE: |match| is now dead!
-  listener_->OnProviderUpdate(true);
 
   // Delete the match from the history DB. This will eventually result in a
   // second call to DeleteShortcutsWithURLs(), which is harmless.

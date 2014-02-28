@@ -4059,3 +4059,46 @@ TEST_F(SearchProviderTest, TestDeleteMatch) {
   EXPECT_TRUE(provider_->deletion_handlers_.empty());
   EXPECT_FALSE(provider_->is_success());
 }
+
+// Verifies that duplicates are preserved in AddMatchToMap().
+TEST_F(SearchProviderTest, CheckDuplicateMatchesSaved) {
+  AddSearchToHistory(default_t_url_, ASCIIToUTF16("a"), 1);
+  AddSearchToHistory(default_t_url_, ASCIIToUTF16("alpha"), 1);
+  AddSearchToHistory(default_t_url_, ASCIIToUTF16("avid"), 1);
+
+  profile_.BlockUntilHistoryProcessesPendingRequests();
+  QueryForInput(ASCIIToUTF16("a"), false, false);
+
+  // Make sure the default provider's suggest service was queried.
+  net::TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
+      SearchProvider::kDefaultProviderURLFetcherID);
+  ASSERT_TRUE(fetcher);
+
+  // Tell the SearchProvider the suggest query is done.
+  fetcher->set_response_code(200);
+  fetcher->SetResponseString(
+      "[\"a\",[\"a\", \"alpha\", \"avid\", \"apricot\"],[],[],"
+      "{\"google:suggestrelevance\":[1450, 1200, 1150, 1100],"
+      "\"google:verbatimrelevance\":1350}]");
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  fetcher = NULL;
+
+  // Run till the history results complete.
+  RunTillProviderDone();
+
+  AutocompleteMatch verbatim, match_alpha, match_apricot, match_avid;
+  EXPECT_TRUE(FindMatchWithContents(ASCIIToUTF16("a"), &verbatim));
+  EXPECT_TRUE(FindMatchWithContents(ASCIIToUTF16("alpha"), &match_alpha));
+  EXPECT_TRUE(FindMatchWithContents(ASCIIToUTF16("apricot"), &match_apricot));
+  EXPECT_TRUE(FindMatchWithContents(ASCIIToUTF16("avid"), &match_avid));
+
+  // Verbatim match duplicates are added such that each one has a higher
+  // relevance than the previous one.
+  EXPECT_EQ(2U, verbatim.duplicate_matches.size());
+
+  // Other match duplicates are added in descending relevance order.
+  EXPECT_EQ(1U, match_alpha.duplicate_matches.size());
+  EXPECT_EQ(1U, match_avid.duplicate_matches.size());
+
+  EXPECT_EQ(0U, match_apricot.duplicate_matches.size());
+}

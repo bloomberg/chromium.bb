@@ -193,7 +193,8 @@ class AutocompleteProvider
   // match should not appear again in this or future queries.  This can only be
   // called for matches the provider marks as deletable.  This should only be
   // called when no query is running.
-  // NOTE: Remember to call OnProviderUpdate() if matches_ is updated.
+  // NOTE: Do NOT call OnProviderUpdate() in this method, it is the
+  // responsibility of the caller to do so after calling us.
   virtual void DeleteMatch(const AutocompleteMatch& match);
 
   // Called when an omnibox event log entry is generated.  This gives

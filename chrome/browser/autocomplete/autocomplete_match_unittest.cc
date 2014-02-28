@@ -103,3 +103,27 @@ TEST(AutocompleteMatchTest, MergeClassifications) {
               AutocompleteMatch::ClassificationsFromString(
                   "0,2," "1,0," "5,7," "6,1," "17,0"))));
 }
+
+TEST(AutocompleteMatchTest, SupportsDeletion) {
+  // A non-deletable match with no duplicates.
+  AutocompleteMatch m(NULL, 0, false,
+                      AutocompleteMatchType::URL_WHAT_YOU_TYPED);
+  EXPECT_FALSE(m.SupportsDeletion());
+
+  // A deletable match with no duplicates.
+  AutocompleteMatch m1(NULL, 0, true,
+                       AutocompleteMatchType::URL_WHAT_YOU_TYPED);
+  EXPECT_TRUE(m1.SupportsDeletion());
+
+  // A non-deletable match, with non-deletable duplicates.
+  m.duplicate_matches.push_back(AutocompleteMatch(
+      NULL, 0, false, AutocompleteMatchType::URL_WHAT_YOU_TYPED));
+  m.duplicate_matches.push_back(AutocompleteMatch(
+      NULL, 0, false, AutocompleteMatchType::URL_WHAT_YOU_TYPED));
+  EXPECT_FALSE(m.SupportsDeletion());
+
+  // A non-deletable match, with at least one deletable duplicate.
+  m.duplicate_matches.push_back(AutocompleteMatch(
+      NULL, 0, true, AutocompleteMatchType::URL_WHAT_YOU_TYPED));
+  EXPECT_TRUE(m.SupportsDeletion());
+}

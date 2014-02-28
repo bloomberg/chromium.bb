@@ -342,12 +342,22 @@ void AutocompleteController::StopZeroSuggest() {
 }
 
 void AutocompleteController::DeleteMatch(const AutocompleteMatch& match) {
-  DCHECK(match.deletable);
-  match.provider->DeleteMatch(match);  // This may synchronously call back to
-                                       // OnProviderUpdate().
-  // If DeleteMatch resulted in a callback to OnProviderUpdate and we're
-  // not done, we might attempt to redisplay the deleted match. Make sure
-  // we aren't displaying it by removing any old entries.
+  DCHECK(match.SupportsDeletion());
+
+  // Delete duplicate matches attached to the main match first.
+  for (ACMatches::const_iterator it(match.duplicate_matches.begin());
+       it != match.duplicate_matches.end(); ++it) {
+    if (it->deletable)
+      it->provider->DeleteMatch(*it);
+  }
+
+  if (match.deletable)
+    match.provider->DeleteMatch(match);
+
+  OnProviderUpdate(true);
+
+  // If we're not done, we might attempt to redisplay the deleted match. Make
+  // sure we aren't displaying it by removing any old entries.
   ExpireCopiedEntries();
 }
 

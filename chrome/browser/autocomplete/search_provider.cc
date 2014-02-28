@@ -534,7 +534,6 @@ void SearchProvider::DeleteMatchFromMatches(const AutocompleteMatch& match) {
       break;
     }
   }
-  listener_->OnProviderUpdate(true);
 }
 
 void SearchProvider::Run() {

@@ -148,6 +148,8 @@ void OmniboxUIHandler::AddResultToDictionary(const std::string& prefix,
     }
     output->SetString(item_prefix + ".keyword", it->keyword);
     output->SetBoolean(item_prefix + ".starred", it->starred);
+    output->SetInteger(item_prefix + ".duplicates",
+                       static_cast<int>(it->duplicate_matches.size()));
     output->SetBoolean(item_prefix + ".from_previous", it->from_previous);
     for (AutocompleteMatch::AdditionalInfo::const_iterator j =
          it->additional_info.begin(); j != it->additional_info.end(); ++j) {

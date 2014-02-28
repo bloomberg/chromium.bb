@@ -59,7 +59,6 @@ void HistoryProvider::DeleteMatchFromMatches(const AutocompleteMatch& match) {
     }
   }
   DCHECK(found) << "Asked to delete a URL that isn't in our set of matches";
-  listener_->OnProviderUpdate(true);
 }
 
 // static

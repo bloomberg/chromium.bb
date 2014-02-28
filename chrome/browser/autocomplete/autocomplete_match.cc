@@ -92,7 +92,8 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       search_terms_args(match.search_terms_args.get() ?
           new TemplateURLRef::SearchTermsArgs(*match.search_terms_args) :
           NULL),
-      additional_info(match.additional_info) {
+      additional_info(match.additional_info),
+      duplicate_matches(match.duplicate_matches) {
 }
 
 AutocompleteMatch::~AutocompleteMatch() {
@@ -127,6 +128,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   search_terms_args.reset(match.search_terms_args.get() ?
       new TemplateURLRef::SearchTermsArgs(*match.search_terms_args) : NULL);
   additional_info = match.additional_info;
+  duplicate_matches = match.duplicate_matches;
   return *this;
 }
 
@@ -457,6 +459,18 @@ bool AutocompleteMatch::IsVerbatimType() const {
   return type == AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED ||
       type == AutocompleteMatchType::URL_WHAT_YOU_TYPED ||
       is_keyword_verbatim_match;
+}
+
+bool AutocompleteMatch::SupportsDeletion() const {
+  if (deletable)
+    return true;
+
+  for (ACMatches::const_iterator it(duplicate_matches.begin());
+       it != duplicate_matches.end(); ++it) {
+    if (it->deletable)
+      return true;
+  }
+  return false;
 }
 
 #ifndef NDEBUG

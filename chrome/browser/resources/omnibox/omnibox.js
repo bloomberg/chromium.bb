@@ -161,6 +161,10 @@ cr.define('omniboxDebug', function() {
         'Keyword', '', 'keyword', false,
         'The keyword of the search engine to be used.'),
     new PresentationInfoRecord(
+        'Duplicates', '', 'duplicates', false,
+        'The number of matches that have been marked as duplicates of this ' +
+        'match.'),
+    new PresentationInfoRecord(
         'Additional Info', '', 'additional_info', false,
         'Provider-specific information about the result.')
   ];

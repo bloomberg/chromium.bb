@@ -167,7 +167,7 @@ void OmniboxPopupModel::TryDeletingCurrentItem() {
   autocomplete_controller()->Stop(false);
 
   const AutocompleteMatch& match = result().match_at(selected_line_);
-  if (match.deletable) {
+  if (match.SupportsDeletion()) {
     const size_t selected_line = selected_line_;
     const bool was_temporary_text = !manually_selected_match_.empty();
 
