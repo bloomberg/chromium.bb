@@ -79,6 +79,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   EGLSurface surface_;
   bool supports_post_sub_buffer_;
   EGLConfig config_;
+  gfx::Size size_;
 
   scoped_ptr<VSyncProvider> vsync_provider_;
 

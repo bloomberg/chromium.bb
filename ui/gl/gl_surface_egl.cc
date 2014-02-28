@@ -43,6 +43,9 @@ extern "C" {
 #define EGL_D3D11_ELSE_D3D9_DISPLAY_ANGLE \
     reinterpret_cast<EGLNativeDisplayType>(-2)
 #endif
+#if !defined(EGL_FIXED_SIZE_ANGLE)
+#define EGL_FIXED_SIZE_ANGLE 0x3201
+#endif
 
 using ui::GetLastEGLErrorString;
 
@@ -57,6 +60,7 @@ EGLNativeDisplayType g_native_display;
 const char* g_egl_extensions = NULL;
 bool g_egl_create_context_robustness_supported = false;
 bool g_egl_sync_control_supported = false;
+bool g_egl_window_fixed_size_supported = false;
 bool g_egl_surfaceless_context_supported = false;
 
 class EGLSyncControlVSyncProvider
@@ -272,6 +276,8 @@ bool GLSurfaceEGL::InitializeOneOff() {
       HasEGLExtension("EGL_EXT_create_context_robustness");
   g_egl_sync_control_supported =
       HasEGLExtension("EGL_CHROMIUM_sync_control");
+  g_egl_window_fixed_size_supported =
+      HasEGLExtension("EGL_ANGLE_window_fixed_size");
 
   // Check if SurfacelessEGL is supported.
   g_egl_surfaceless_context_supported =
@@ -329,7 +335,8 @@ NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(gfx::AcceleratedWidget window)
     : window_(window),
       surface_(NULL),
       supports_post_sub_buffer_(false),
-      config_(NULL) {
+      config_(NULL),
+      size_(1, 1) {
 #if defined(OS_ANDROID)
   if (window)
     ANativeWindow_acquire(window);
@@ -354,19 +361,26 @@ bool NativeViewGLSurfaceEGL::Initialize(
     return false;
   }
 
-  static const EGLint egl_window_attributes_sub_buffer[] = {
-    EGL_POST_SUB_BUFFER_SUPPORTED_NV, EGL_TRUE,
-    EGL_NONE
-  };
+  std::vector<EGLint> egl_window_attributes;
 
+  if (g_egl_window_fixed_size_supported) {
+    egl_window_attributes.push_back(EGL_FIXED_SIZE_ANGLE);
+    egl_window_attributes.push_back(EGL_TRUE);
+    egl_window_attributes.push_back(EGL_WIDTH);
+    egl_window_attributes.push_back(size_.width());
+    egl_window_attributes.push_back(EGL_HEIGHT);
+    egl_window_attributes.push_back(size_.height());
+  }
+
+  if (gfx::g_driver_egl.ext.b_EGL_NV_post_sub_buffer) {
+    egl_window_attributes.push_back(EGL_POST_SUB_BUFFER_SUPPORTED_NV);
+    egl_window_attributes.push_back(EGL_TRUE);
+  }
+
+  egl_window_attributes.push_back(EGL_NONE);
   // Create a surface for the native window.
   surface_ = eglCreateWindowSurface(
-      GetDisplay(),
-      GetConfig(),
-      window_,
-      gfx::g_driver_egl.ext.b_EGL_NV_post_sub_buffer ?
-          egl_window_attributes_sub_buffer :
-          NULL);
+      GetDisplay(), GetConfig(), window_, &egl_window_attributes[0]);
 
   if (!surface_) {
     LOG(ERROR) << "eglCreateWindowSurface failed with error "
@@ -510,6 +524,8 @@ gfx::Size NativeViewGLSurfaceEGL::GetSize() {
 bool NativeViewGLSurfaceEGL::Resize(const gfx::Size& size) {
   if (size == GetSize())
     return true;
+
+  size_ = size;
 
   scoped_ptr<ui::ScopedMakeCurrent> scoped_make_current;
   GLContext* current_context = GLContext::GetCurrent();
