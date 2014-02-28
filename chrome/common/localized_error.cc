@@ -23,7 +23,6 @@
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
-#include "url/gurl.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -486,9 +485,65 @@ const char* GetIconClassForError(const std::string& error_domain,
   return "icon-generic";
 }
 
+// Adds a suggestion to reload the page.  Depending on whether the request was
+// a post or not, either updates |error_strings| to show a reload button or
+// |suggestions| to suggest reloading without a button.
+void AddReloadSuggestion(const GURL& failed_url,
+                         bool is_post,
+                         base::DictionaryValue* error_strings,
+                         base::ListValue* suggestions) {
+  if (!is_post) {
+    base::DictionaryValue* reload_button = new base::DictionaryValue;
+    reload_button->SetString("msg",
+        l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_RELOAD));
+    reload_button->SetString("reloadUrl", failed_url.spec());
+    error_strings->Set("reload", reload_button);
+  } else {
+    // If the page was created by a post, it can't be reloaded in the same
+    // way, so just add a suggestion instead.
+    // TODO(mmenke):  Make the reload button bring up the repost confirmation
+    //                dialog for pages resulting from posts.
+    base::DictionaryValue* suggest_reload_repost = new base::DictionaryValue;
+    suggest_reload_repost->SetString("header",
+        l10n_util::GetStringUTF16(
+            IDS_ERRORPAGES_SUGGESTION_RELOAD_REPOST_HEADER));
+    suggest_reload_repost->SetString("body",
+        l10n_util::GetStringUTF16(
+            IDS_ERRORPAGES_SUGGESTION_RELOAD_REPOST_BODY));
+    // Add at the front, so it appears before other suggestions, in the case
+    // suggestions are being overridden by |params|.
+    suggestions->Insert(0, suggest_reload_repost);
+  }
+}
+
+// Updaes |error_strings| according to the information contained in |params|.
+void ApplyParamsToErrorStrings(
+    const GURL& failed_url,
+    bool is_post,
+    scoped_ptr<LocalizedError::ErrorPageParams> params,
+    base::DictionaryValue* error_strings) {
+  base::ListValue* suggestions = params->override_suggestions.release();
+  if (params->suggest_reload)
+    AddReloadSuggestion(failed_url, is_post, error_strings, suggestions);
+  error_strings->Set("suggestions", suggestions);
+
+  if (params->search_url.is_valid()) {
+    error_strings->SetString("searchHeader",
+        l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_GOOGLE_SEARCH));
+    error_strings->SetString("searchUrl", params->search_url.spec());
+    error_strings->SetString("searchTerms", params->search_terms);
+  }
+}
+
 }  // namespace
 
 const char LocalizedError::kHttpErrorDomain[] = "http";
+
+LocalizedError::ErrorPageParams::ErrorPageParams() : suggest_reload(false) {
+}
+
+LocalizedError::ErrorPageParams::~ErrorPageParams() {
+}
 
 void LocalizedError::GetStrings(int error_code,
                                 const std::string& error_domain,
@@ -497,6 +552,7 @@ void LocalizedError::GetStrings(int error_code,
                                 bool stale_copy_in_cache,
                                 const std::string& locale,
                                 const std::string& accept_languages,
+                                scoped_ptr<ErrorPageParams> params,
                                 base::DictionaryValue* error_strings) {
   bool rtl = LocaleIsRTL();
   error_strings->SetString("textdirection", rtl ? "rtl" : "ltr");
@@ -559,12 +615,6 @@ void LocalizedError::GetStrings(int error_code,
   error_strings->SetString(
       "less", l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_LESS));
   error_strings->Set("summary", summary);
-  error_strings->SetBoolean("staleCopyInCache", stale_copy_in_cache);
-
-#if defined(OS_CHROMEOS)
-  error_strings->SetString(
-      "diagnose", l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_DIAGNOSE));
-#endif  // defined(OS_CHROMEOS)
 
   if (options.details_resource_id != kErrorPagesNoDetails) {
     error_strings->SetString(
@@ -589,9 +639,7 @@ void LocalizedError::GetStrings(int error_code,
   error_strings->SetString("errorCode",
       l10n_util::GetStringFUTF16(IDS_ERRORPAGES_ERROR_CODE, error_string));
 
-  base::ListValue* suggestions = new base::ListValue();
-
-  // Platform specific instructions for diagnosing network issues on OSX and
+  // Platform specific information for diagnosing network issues on OSX and
   // Windows.
 #if defined(OS_MACOSX) || defined(OS_WIN)
   if (error_domain == net::kErrorDomain &&
@@ -621,28 +669,24 @@ void LocalizedError::GetStrings(int error_code,
   }
 #endif  // defined(OS_MACOSX) || defined(OS_WIN)
 
-  if (options.suggestions & SUGGEST_RELOAD) {
-    if (!is_post) {
-      base::DictionaryValue* reload_button = new base::DictionaryValue;
-      reload_button->SetString("msg",
-          l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_RELOAD));
-      reload_button->SetString("reloadUrl", failed_url.spec());
-      error_strings->Set("reload", reload_button);
-    } else {
-      // If the page was created by a post, it can't be reloaded in the same
-      // way, so just add a suggestion instead.
-      // TODO(mmenke):  Make the reload button bring up the repost confirmation
-      //                dialog for pages resulting from posts.
-      base::DictionaryValue* suggest_reload_repost = new base::DictionaryValue;
-      suggest_reload_repost->SetString("header",
-          l10n_util::GetStringUTF16(
-              IDS_ERRORPAGES_SUGGESTION_RELOAD_REPOST_HEADER));
-      suggest_reload_repost->SetString("body",
-          l10n_util::GetStringUTF16(
-              IDS_ERRORPAGES_SUGGESTION_RELOAD_REPOST_BODY));
-      suggestions->Append(suggest_reload_repost);
-    }
+  // If there are |params|, just apply them, and there's nothing else to do.
+  if (params) {
+    ApplyParamsToErrorStrings(failed_url, is_post, params.Pass(),
+                              error_strings);
+    return;
   }
+
+  error_strings->SetBoolean("staleCopyInCache", stale_copy_in_cache);
+
+#if defined(OS_CHROMEOS)
+  error_strings->SetString(
+      "diagnose", l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_DIAGNOSE));
+#endif  // defined(OS_CHROMEOS)
+
+  base::ListValue* suggestions = new base::ListValue();
+
+  if (options.suggestions & SUGGEST_RELOAD)
+    AddReloadSuggestion(failed_url, is_post, error_strings, suggestions);
 
   if (options.suggestions & SUGGEST_CHECK_CONNECTION) {
     base::DictionaryValue* suggest_check_connection = new base::DictionaryValue;
@@ -767,8 +811,6 @@ void LocalizedError::GetStrings(int error_code,
       suggestions->Append(suggest_learn_more);
     }
   }
-
-  error_strings->Set("suggestions", suggestions);
 }
 
 base::string16 LocalizedError::GetErrorDetails(const blink::WebURLError& error,
