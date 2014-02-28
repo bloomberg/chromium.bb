@@ -184,6 +184,9 @@ const char kNaturalScrollDefault[]          = "enable-natural-scroll-default";
 // Skips all other OOBE pages after user login.
 const char kOobeSkipPostLogin[]             = "oobe-skip-postlogin";
 
+// Interval at which we check for total time on OOBE.
+const char kOobeTimerInterval[]             = "oobe-timer-interval";
+
 // Integer flag that sets the DeviceRegistered local state pref.
 const char kDeviceRegistered[]              = "device-registered";
 
