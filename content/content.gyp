@@ -257,11 +257,6 @@
            'content_resources.gyp:content_resources',
           ],
           'conditions': [
-            ['OS=="mac"', {
-              'dependencies': [
-                '<(DEPTH)/third_party/mach_override/mach_override.gyp:mach_override',
-              ],
-            }],
             ['chromium_enable_vtune_jit_for_v8==1', {
               'dependencies': [
                 '../v8/src/third_party/vtune/v8vtune.gyp:v8_vtune',

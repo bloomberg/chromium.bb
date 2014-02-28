@@ -51,8 +51,12 @@ static NSWindow* alwaysInactiveWindow = nil;
 
 - (id)initWithActiveControls:(BOOL)_hasActiveControls
 {
-    self = [super init];
-    hasActiveControls = _hasActiveControls;
+    if ((self = [super initWithContentRect:NSMakeRect(0, 0, 100, 100)
+                                 styleMask:0
+                                   backing:NSBackingStoreBuffered
+                                     defer:YES])) {
+        hasActiveControls = _hasActiveControls;
+    }
     return self;
 }
 
