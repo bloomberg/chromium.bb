@@ -4,17 +4,14 @@
 
 #include "chrome/browser/ui/views/extensions/media_galleries_scan_result_dialog_views.h"
 
+#include "chrome/browser/ui/views/extensions/media_gallery_checkbox_view.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
-#include "grit/theme_resources.h"
-#include "grit/ui_resources.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
@@ -32,10 +29,6 @@ typedef MediaGalleriesScanResultDialogController::OrderedScanResults
     OrderedScanResults;
 
 namespace {
-
-// TODO(vandebo) move this to a common place.
-// Equal to the #969696 color used in spec (note WebUI color is #999).
-const SkColor kDeemphasizedTextColor = SkColorSetRGB(159, 159, 159);
 
 const int kScrollAreaHeight = 192;
 
@@ -56,7 +49,7 @@ void ScrollableView::Layout() {
   int width = pref.width();
   int height = pref.height();
   if (parent()) {
-    width = std::max(parent()->width(), width);
+    width = parent()->width();
     height = std::max(parent()->height(), height);
   }
   SetBounds(x(), y(), width, height);
@@ -171,62 +164,23 @@ bool MediaGalleriesScanResultDialogViews::AddOrUpdateScanResult(
 
   GalleryViewMap::iterator it = gallery_view_map_.find(gallery.pref_id);
   if (it != gallery_view_map_.end()) {
-    views::Checkbox* checkbox = it->second.checkbox;
+    views::Checkbox* checkbox = it->second->checkbox();
     checkbox->SetChecked(selected);
     checkbox->SetText(label);
-    checkbox->SetElideBehavior(views::Label::ELIDE_IN_MIDDLE);
     checkbox->SetTooltipText(tooltip_text);
-    // Replace the details string.
-    it->second.folder_viewer_button->SetVisible(is_attached);
-    it->second.secondary_text->SetText(details);
+    it->second->folder_viewer_button()->SetVisible(is_attached);
+    it->second->secondary_text()->SetText(details);
+    it->second->secondary_text()->SetVisible(details.length() > 0);
     return false;
   }
 
-  views::Checkbox* checkbox = new views::Checkbox(label);
-  checkbox->set_listener(this);
-  checkbox->set_context_menu_controller(this);
-  checkbox->SetTooltipText(tooltip_text);
+  MediaGalleryCheckboxView* gallery_view =
+      new MediaGalleryCheckboxView(label, tooltip_text, details, is_attached,
+                                   trailing_vertical_space, this, this);
+  gallery_view->checkbox()->SetChecked(selected);
+  container->AddChildView(gallery_view);
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  views::ImageButton* folder_viewer_button = new views::ImageButton(this);
-  folder_viewer_button->set_context_menu_controller(this);
-  folder_viewer_button->SetImage(views::ImageButton::STATE_NORMAL,
-                                 rb.GetImageSkiaNamed(IDR_FILE_FOLDER));
-  folder_viewer_button->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                                          views::ImageButton::ALIGN_MIDDLE);
-  folder_viewer_button->SetAccessibleName(l10n_util::GetStringUTF16(
-      IDS_MEDIA_GALLERIES_SCAN_RESULT_OPEN_FOLDER_VIEW_ACCESSIBILITY_NAME));
-  folder_viewer_button->SetFocusable(true);
-  folder_viewer_button->SetVisible(is_attached);
-
-  views::Label* secondary_text = new views::Label(details);
-  secondary_text->set_context_menu_controller(this);
-  secondary_text->SetTooltipText(tooltip_text);
-  secondary_text->SetEnabledColor(kDeemphasizedTextColor);
-  secondary_text->SetTooltipText(tooltip_text);
-  secondary_text->SetBorder(views::Border::CreateEmptyBorder(
-      0,
-      views::kRelatedControlSmallHorizontalSpacing,
-      0,
-      views::kRelatedControlSmallHorizontalSpacing));
-
-  views::View* checkbox_view = new views::View();
-  checkbox_view->SetBorder(views::Border::CreateEmptyBorder(
-      0, views::kPanelHorizMargin, trailing_vertical_space, 0));
-  checkbox_view->set_context_menu_controller(this);
-  checkbox_view->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
-  checkbox_view->AddChildView(checkbox);
-  checkbox_view->AddChildView(folder_viewer_button);
-  checkbox_view->AddChildView(secondary_text);
-
-  container->AddChildView(checkbox_view);
-
-  checkbox->SetChecked(selected);
-  gallery_view_map_[gallery.pref_id].checkbox = checkbox;
-  gallery_view_map_[gallery.pref_id].folder_viewer_button =
-      folder_viewer_button;
-  gallery_view_map_[gallery.pref_id].secondary_text = secondary_text;
+  gallery_view_map_[gallery.pref_id] = gallery_view;
 
   return true;
 }
@@ -283,12 +237,12 @@ void MediaGalleriesScanResultDialogViews::ButtonPressed(
 
   for (GalleryViewMap::const_iterator it = gallery_view_map_.begin();
        it != gallery_view_map_.end(); ++it) {
-    if (sender == it->second.checkbox) {
+    if (sender == it->second->checkbox()) {
       controller_->DidToggleGalleryId(it->first,
-                                      it->second.checkbox->checked());
+                                      it->second->checkbox()->checked());
       return;
     }
-    if (sender == it->second.folder_viewer_button) {
+    if (sender == it->second->folder_viewer_button()) {
       controller_->DidClickOpenFolderViewer(it->first);
       return;
     }
@@ -301,7 +255,7 @@ void MediaGalleriesScanResultDialogViews::ShowContextMenuForView(
     ui::MenuSourceType source_type) {
   for (GalleryViewMap::const_iterator it = gallery_view_map_.begin();
        it != gallery_view_map_.end(); ++it) {
-    if (it->second.checkbox->parent()->Contains(source)) {
+    if (it->second->Contains(source)) {
       ShowContextMenu(point, source_type, it->first);
       return;
     }

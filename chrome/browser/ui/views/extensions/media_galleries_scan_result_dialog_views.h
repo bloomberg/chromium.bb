@@ -21,6 +21,8 @@ class MenuRunner;
 class Widget;
 }
 
+class MediaGalleryCheckboxView;
+
 // The media galleries scan result view for Views. It will immediately show
 // upon construction.
 class MediaGalleriesScanResultDialogViews
@@ -58,12 +60,8 @@ class MediaGalleriesScanResultDialogViews
                                       ui::MenuSourceType source_type) OVERRIDE;
 
  private:
-  struct GalleryEntry {
-    views::Checkbox* checkbox;
-    views::ImageButton* folder_viewer_button;
-    views::Label* secondary_text;
-  };
-  typedef std::map<MediaGalleryPrefId, GalleryEntry> GalleryViewMap;
+  typedef std::map<MediaGalleryPrefId, MediaGalleryCheckboxView*>
+      GalleryViewMap;
 
   void InitChildViews();
 

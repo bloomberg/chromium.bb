@@ -20,6 +20,8 @@ class MenuRunner;
 class Widget;
 }
 
+class MediaGalleryCheckboxView;
+
 // The media galleries configuration view for Views. It will immediately show
 // upon construction.
 class MediaGalleriesDialogViews : public MediaGalleriesDialog,
@@ -63,8 +65,9 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, UpdateAdds);
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogTest, ForgetDeletes);
 
-  typedef std::map<MediaGalleryPrefId, views::Checkbox*> CheckboxMap;
-  typedef std::map<views::Checkbox*, MediaGalleryPrefInfo> NewCheckboxMap;
+  typedef std::map<MediaGalleryPrefId, MediaGalleryCheckboxView*> CheckboxMap;
+  typedef std::map<MediaGalleryCheckboxView*, MediaGalleryPrefInfo>
+      NewCheckboxMap;
 
   void ButtonPressedAction(views::Button* sender);
 

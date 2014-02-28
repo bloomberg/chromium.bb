@@ -1854,6 +1854,8 @@
         'browser/ui/views/extensions/media_galleries_dialog_views.h',
         'browser/ui/views/extensions/media_galleries_scan_result_dialog_views.cc',
         'browser/ui/views/extensions/media_galleries_scan_result_dialog_views.h',
+        'browser/ui/views/extensions/media_gallery_checkbox_view.cc',
+        'browser/ui/views/extensions/media_gallery_checkbox_view.h',
         'browser/ui/views/external_protocol_dialog.cc',
         'browser/ui/views/external_protocol_dialog.h',
         'browser/ui/views/find_bar_host.cc',

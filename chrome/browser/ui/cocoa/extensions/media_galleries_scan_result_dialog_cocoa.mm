@@ -311,7 +311,7 @@ void MediaGalleriesScanResultDialogCocoa::UpdateScanResultCheckbox(
   [details sizeToFit];
   NSRect details_rect = [details bounds];
 
-  // Size the views. If all the elements don't natually fit, the checkbox
+  // Size the views. If all the elements don't naturally fit, the checkbox
   // should get squished and will elide in the middle.  However, it shouldn't
   // squish too much so it gets at least half of the max width and the details
   // text should elide as well in that case.
