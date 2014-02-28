@@ -8,10 +8,10 @@
 // Get rid of a macro from Xlib.h that conflicts with Aura's RootWindow class.
 #undef RootWindow
 
-#include "base/debug/stack_trace.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_x11.h"
 #include "base/run_loop.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -26,6 +26,10 @@
 namespace views {
 
 namespace {
+
+// The minimum alpha before we declare a pixel transparent when searching in
+// our source image.
+const int kMinAlpha = 32;
 
 class ScopedCapturer {
  public:
@@ -108,8 +112,8 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
     XDisplay* display = gfx::GetXDisplay();
 
     grab_input_window_ = CreateDragInputWindow(display);
-    if (!drag_image_.isNull())
-      CreateDragImageWindow();
+    if (!drag_image_.isNull() && CheckIfIconValid())
+        CreateDragImageWindow();
     base::MessagePumpX11::Current()->AddDispatcherForWindow(
         this, grab_input_window_);
     // Releasing ScopedCapturer ensures that any other instance of
@@ -249,11 +253,37 @@ void X11WholeScreenMoveLoop::CreateDragImageWindow() {
   image->SetImage(drag_image_);
   image->SetBounds(0, 0, drag_image_.width(), drag_image_.height());
   widget->SetContentsView(image);
-
   widget->Show();
   widget->GetNativeWindow()->layer()->SetFillsBoundsOpaquely(false);
 
   drag_widget_.reset(widget);
+}
+
+bool X11WholeScreenMoveLoop::CheckIfIconValid() {
+  // TODO(erg): I've tried at least five different strategies for trying to
+  // build a mask based off the alpha channel. While all of them have worked,
+  // none of them have been performant and introduced multiple second
+  // delays. (I spent a day getting a rectangle segmentation algorithm polished
+  // here...and then found that even through I had the rectangle extraction
+  // down to mere milliseconds, SkRegion still fell over on the number of
+  // rectangles.)
+  //
+  // Creating a mask here near instantaneously should be possible, as GTK does
+  // it, but I've blown days on this and I'm punting now.
+
+  const SkBitmap* in_bitmap = drag_image_.bitmap();
+  SkAutoLockPixels in_lock(*in_bitmap);
+  for (int y = 0; y < in_bitmap->height(); ++y) {
+    uint32* in_row = in_bitmap->getAddr32(0, y);
+
+    for (int x = 0; x < in_bitmap->width(); ++x) {
+      char value = SkColorGetA(in_row[x]) > kMinAlpha;
+      if (value)
+        return true;
+    }
+  }
+
+  return false;
 }
 
 }  // namespace views

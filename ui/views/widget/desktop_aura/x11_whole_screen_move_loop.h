@@ -58,6 +58,10 @@ class X11WholeScreenMoveLoop : public base::MessagePumpDispatcher {
   // Creates a window to show the drag image during the drag.
   void CreateDragImageWindow();
 
+  // Checks to see if |in_image| is an image that has any visible regions
+  // (defined as having a pixel with alpha > 32). If so, return true.
+  bool CheckIfIconValid();
+
   X11WholeScreenMoveLoopDelegate* delegate_;
 
   // Are we running a nested message loop from RunMoveLoop()?
