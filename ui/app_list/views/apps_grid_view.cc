@@ -221,6 +221,10 @@ class SynchronousDrag : public ui::DragSourceWin {
 
   void Run() {
     DCHECK(CanRun());
+
+    // Prevent the synchronous dragger being destroyed while the drag is
+    // running.
+    scoped_refptr<SynchronousDrag> this_ref = this;
     running_ = true;
 
     ui::OSExchangeData data;
@@ -236,11 +240,19 @@ class SynchronousDrag : public ui::DragSourceWin {
     DoDragDrop(ui::OSExchangeDataProviderWin::GetIDataObject(data),
                this, DROPEFFECT_MOVE | DROPEFFECT_LINK, &effects);
 
-    // Restore the dragged view to its original size.
-    drag_view_->SetSize(drag_view_size);
-    drag_view_->OnSyncDragEnd();
+    // If |drag_view_| is NULL the drag was ended by some reentrant code.
+    if (drag_view_) {
+      // Restore the dragged view to its original size.
+      drag_view_->SetSize(drag_view_size);
+      drag_view_->OnSyncDragEnd();
 
-    grid_view_->EndDrag(canceled_ || !IsCursorWithinGridView());
+      grid_view_->EndDrag(canceled_ || !IsCursorWithinGridView());
+    }
+  }
+
+  void EndDragExternally() {
+    CancelDrag();
+    drag_view_ = NULL;
   }
 
  private:
@@ -476,11 +488,14 @@ bool AppsGridView::RunSynchronousDrag() {
 
 void AppsGridView::CleanUpSynchronousDrag() {
 #if defined(OS_WIN)
+  if (synchronous_drag_)
+    synchronous_drag_->EndDragExternally();
+
   synchronous_drag_ = NULL;
 #endif
 }
 
-void AppsGridView::UpdateDragFromItem(Pointer pointer,
+bool AppsGridView::UpdateDragFromItem(Pointer pointer,
                                       const ui::LocatedEvent& event) {
   DCHECK(drag_view_);
 
@@ -491,7 +506,7 @@ void AppsGridView::UpdateDragFromItem(Pointer pointer,
   ExtractDragLocation(event, &drag_point_in_grid_view);
   UpdateDrag(pointer, drag_point_in_grid_view);
   if (!dragging())
-    return;
+    return false;
 
   // If a drag and drop host is provided, see if the drag operation needs to be
   // forwarded.
@@ -500,6 +515,7 @@ void AppsGridView::UpdateDragFromItem(Pointer pointer,
   DispatchDragEventToDragAndDropHost(location_in_screen);
   if (drag_and_drop_host_)
     drag_and_drop_host_->UpdateDragIconProxy(location_in_screen);
+  return true;
 }
 
 void AppsGridView::UpdateDrag(Pointer pointer, const gfx::Point& point) {

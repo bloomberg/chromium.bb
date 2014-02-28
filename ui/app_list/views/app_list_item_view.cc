@@ -402,8 +402,14 @@ void AppListItemView::OnMouseCaptureLost() {
 
 bool AppListItemView::OnMouseDragged(const ui::MouseEvent& event) {
   CustomButton::OnMouseDragged(event);
-  if (apps_grid_view_->IsDraggedView(this))
-    apps_grid_view_->UpdateDragFromItem(AppsGridView::MOUSE, event);
+  if (apps_grid_view_->IsDraggedView(this)) {
+    // If the drag is no longer happening, it could be because this item
+    // got removed, in which case this item has been destroyed. So, bail out
+    // now as there will be nothing else to do anyway as
+    // apps_grid_view_->dragging() will be false.
+    if (!apps_grid_view_->UpdateDragFromItem(AppsGridView::MOUSE, event))
+      return true;
+  }
 
   // Shows dragging UI when it's confirmed without waiting for the timer.
   if (ui_state_ != UI_STATE_DRAGGING &&
