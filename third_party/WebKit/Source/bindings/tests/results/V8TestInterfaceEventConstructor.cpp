@@ -284,7 +284,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         if (!initializedByEventConstructorReadonlyAnyAttribute.IsEmpty())
             setHiddenValue(info.GetIsolate(), info.Holder(), "initializedByEventConstructorReadonlyAnyAttribute", initializedByEventConstructorReadonlyAnyAttribute);
     }
-    RefPtr<TestInterfaceEventConstructor> event = TestInterfaceEventConstructor::create(type, eventInit, exceptionState);
+    RefPtrWillBeRawPtr<TestInterfaceEventConstructor> event = TestInterfaceEventConstructor::create(type, eventInit, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     if (DOMWrapperWorld::current(info.GetIsolate())->isIsolatedWorld()) {
