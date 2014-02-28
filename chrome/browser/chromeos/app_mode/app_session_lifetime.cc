@@ -14,6 +14,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_update_service.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_mode_idle_app_name_notification.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
@@ -112,6 +114,12 @@ void InitAppSession(Profile* profile, const std::string& app_id) {
 
   CHECK(browser_window_handler == NULL);
   browser_window_handler.Get();
+
+  // For a demo app, we don't need to either setup the update service or
+  // the idle app name notification.
+  if (DemoAppLauncher::IsDemoAppSession(
+      chromeos::UserManager::Get()->GetActiveUser()->email()))
+    return;
 
   // Set the app_id for the current instance of KioskAppUpdateService.
   KioskAppUpdateService* update_service =
