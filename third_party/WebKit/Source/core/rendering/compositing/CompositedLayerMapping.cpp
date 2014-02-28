@@ -2129,17 +2129,6 @@ void CompositedLayerMapping::finishAccumulatingSquashingLayers(size_t nextSquash
         m_squashedLayers.remove(nextSquashedLayerIndex, m_squashedLayers.size() - nextSquashedLayerIndex);
 }
 
-CompositingLayerType CompositedLayerMapping::compositingLayerType() const
-{
-    if (m_graphicsLayer->hasContentsLayer())
-        return MediaCompositingLayer;
-
-    if (m_graphicsLayer->drawsContent())
-        return NormalCompositingLayer;
-
-    return ContainerCompositingLayer;
-}
-
 String CompositedLayerMapping::debugName(const GraphicsLayer* graphicsLayer)
 {
     String name;

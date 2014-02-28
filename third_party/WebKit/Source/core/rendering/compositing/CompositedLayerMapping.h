@@ -38,13 +38,6 @@ namespace WebCore {
 class KeyframeList;
 class RenderLayerCompositor;
 
-enum CompositingLayerType {
-    NormalCompositingLayer, // non-tiled layer with backing store
-    MediaCompositingLayer, // layer that contains an image, video, webGL or plugin
-    ContainerCompositingLayer // layer with no backing store
-};
-
-
 // A GraphicsLayerPaintInfo contains all the info needed to paint a partial subtree of RenderLayers into a GraphicsLayer.
 struct GraphicsLayerPaintInfo {
     RenderLayer* renderLayer;
@@ -192,9 +185,6 @@ public:
 
     LayoutRect contentsBox() const;
     IntRect backgroundBox() const;
-
-    // For informative purposes only.
-    CompositingLayerType compositingLayerType() const;
 
     GraphicsLayer* layerForHorizontalScrollbar() const { return m_layerForHorizontalScrollbar.get(); }
     GraphicsLayer* layerForVerticalScrollbar() const { return m_layerForVerticalScrollbar.get(); }
