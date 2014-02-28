@@ -658,7 +658,12 @@ ChannelState WebSocketChannel::HandleFrame(
   }
   if (frame->header.reserved1 || frame->header.reserved2 ||
       frame->header.reserved3) {
-    return FailChannel("Received a frame with an invalid reserved bit set.",
+    return FailChannel(base::StringPrintf(
+                           "One or more reserved bits are on: reserved1 = %d, "
+                           "reserved2 = %d, reserved3 = %d",
+                           static_cast<int>(frame->header.reserved1),
+                           static_cast<int>(frame->header.reserved2),
+                           static_cast<int>(frame->header.reserved3)),
                        kWebSocketErrorProtocolError,
                        "Invalid reserved bit");
   }

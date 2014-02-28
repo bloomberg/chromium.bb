@@ -2092,9 +2092,10 @@ TEST_F(WebSocketChannelEventInterfaceTest, ReservedBitsMustNotBeSet) {
   set_stream(stream.Pass());
   EXPECT_CALL(*event_interface_, OnAddChannelResponse(false, _, _));
   EXPECT_CALL(*event_interface_, OnFlowControl(_));
-  EXPECT_CALL(
-      *event_interface_,
-      OnFailChannel("Received a frame with an invalid reserved bit set."));
+  EXPECT_CALL(*event_interface_,
+              OnFailChannel(
+                  "One or more reserved bits are on: reserved1 = 1, "
+                  "reserved2 = 0, reserved3 = 0"));
 
   CreateChannelAndConnectSuccessfully();
 }
