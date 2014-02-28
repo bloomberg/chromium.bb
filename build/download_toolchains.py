@@ -15,8 +15,11 @@ import os
 import re
 import sys
 import tempfile
-import toolchainbinaries
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import pynacl.platform
+
+import toolchainbinaries
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PARENT_DIR = os.path.dirname(SCRIPT_DIR)
@@ -160,10 +163,9 @@ def GetUpdatedDEPS(options, versions):
     options: options from the command line.
   """
   flavors = set()
-  for platform in toolchainbinaries.PLATFORM_MAPPING:
-    pm = toolchainbinaries.PLATFORM_MAPPING[platform]
-    for arch in pm:
-      for flavor in pm[arch]:
+  for pm in toolchainbinaries.PLATFORM_MAPPING.itervalues():
+    for flavorlist in pm.itervalues():
+      for flavor in flavorlist:
         if IsFlavorNeeded(options, flavor):
           flavors.add(flavor)
   new_deps = {}
@@ -390,10 +392,11 @@ def main(args):
     print '-' * 70
     return 0
 
-  platform = download_utils.PlatformName()
-  arch = download_utils.ArchName()
+  os = pynacl.platform.GetOS()
+  arch = pynacl.platform.GetArch()
+  platform_mapping = toolchainbinaries.PLATFORM_MAPPING
   flavors = [flavor
-             for flavor in toolchainbinaries.PLATFORM_MAPPING[platform][arch]
+             for flavor in platform_mapping[os][arch]
              if IsFlavorNeeded(options, flavor)]
 
   for flavor in flavors:

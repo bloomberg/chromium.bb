@@ -18,31 +18,11 @@ import sys
 import time
 import urllib2
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import pynacl.platform
+
 SOURCE_STAMP = 'SOURCE_URL'
 HASH_STAMP = 'SOURCE_SHA1'
-
-
-# Designed to handle more general inputs than sys.platform because the platform
-# name may come from the command line.
-PLATFORM_COLLAPSE = {
-    'windows': 'windows',
-    'win32': 'windows',
-    'cygwin': 'windows',
-    'linux': 'linux',
-    'linux2': 'linux',
-    'linux3': 'linux',
-    'darwin': 'mac',
-    'mac': 'mac',
-}
-
-ARCH_COLLAPSE = {
-    'i386': 'x86',
-    'i686': 'x86',
-    'x86_64': 'x86',
-    'amd64': 'x86',
-    'armv7l': 'arm',
-}
-
 
 class HashError(Exception):
   def __init__(self, download_url, expected_hash, actual_hash):
@@ -53,23 +33,6 @@ class HashError(Exception):
   def __str__(self):
     return 'Got hash "%s" but expected hash "%s" for "%s"' % (
         self.actual_hash, self.expected_hash, self.download_url)
-
-
-def PlatformName(name=None):
-  if name is None:
-    name = sys.platform
-  # Default to linux, so that downloading works on *BSD.
-  return PLATFORM_COLLAPSE.get(name, 'linux')
-
-def ArchName(name=None):
-  if name is None:
-    if PlatformName() == 'windows':
-      # TODO(pdox): Figure out how to auto-detect 32-bit vs 64-bit Windows.
-      name = 'i386'
-    else:
-      import platform
-      name = platform.machine()
-  return ARCH_COLLAPSE[name]
 
 def EnsureFileCanBeWritten(filename):
   directory = os.path.dirname(filename)
@@ -164,7 +127,7 @@ def Retry(op, *args):
   # immediately, etc.
   # Virus checkers can also accidently prevent files from being deleted, but
   # that shouldn't be a problem on the bots.
-  if sys.platform in ('win32', 'cygwin'):
+  if pynacl.platform.IsWindows():
     count = 0
     while True:
       try:

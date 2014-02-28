@@ -7,45 +7,158 @@ import sys
 
 import lib
 
-def IsWindows():
-  return sys.platform == 'win32'
+# Define a list of supported operating systems here. The OS is based on the
+# "sys.platform" variable. The list and variable names need to be kept in sync,
+# it is written so there will be a syntax error if an item was added to 1 list
+# but not the other, although there is no check in place to be sure the order
+# is kept.
+OS_LIST = [
+    'win',
+    'mac',
+    'linux',
+]
 
-def IsMacOS():
-  return sys.platform == 'darwin'
+(
+    OS_WIN,
+    OS_MAC,
+    OS_LINUX,
+) = OS_LIST
 
-def IsLinux():
-  return sys.platform.startswith('linux')
+OS_MAP = {
+    OS_WIN: ('win', 'win32', 'cygwin'),
+    OS_MAC: ('mac', 'darwin'),
+    OS_LINUX: ('linux', 'linux2', 'linux3'),
+}
 
-# On all our supported platforms, platform.architecture()[0] returns the bitness
-# of the python binary, regardless of the OS or hardware. On OSX, a fat binary
-# that supports both will return '64bit' even if it is running in 32-bit mode.
-# On posix, platform.machine() and platform.uname()[4] return the same as
-# the system utility 'uname -m'.
-#  On linux, this is x86_64 for 64-bit distros, and i686 for 32-bit Ubuntu.
-#  Using the 'linux32' command on 64-bit ubuntu will also make it show i686.
-#  Mac OSX 10.8 returns x86_64 for all the machines we care about. On some older
-#  versions it returned i386 even on systems with 64-bit userspace support.
-# On Windows, platform.machine() and platform.uname()[4] return 'x86' if the
-# python binary is 32-bit and 'AMD64' if the python binary is 64-bit. There
-# appears to be no sane way to tell if the host OS is 64-bit (but there are
-# some insane ways). For our purposes we currently don't care.
+OS_DICT = dict([(platform, os_name)
+                for os_name, platforms in OS_MAP.iteritems()
+                for platform in platforms])
 
-# This is only used by the 32-bit linux pnacl toolchain bot, which just
-# tests that a build and run of the 32-bit toolchain works, but we don't ship
-# those binaries! TODO(dschuff): get rid of this bot or make it do something
-# useful.
-def Is64BitLinux():
-  return IsLinux() and lib.platform.machine() == 'x86_64'
+def GetOS(platform=None):
+  if platform is None:
+    platform = sys.platform
 
-def ArchDict():
-  """Returns a dictionary that maps an alias for an architecture into
-  its canonical architecture name.
-  """
-  alias = { 'x86-32': ('x86', 'x86-32', 'x86_32', 'x8632', 'i386', 'i686',
-                       'ia32', '32'),
-            'x86-64': ('x86-64', 'amd64', 'x86_64', 'x8664', '64'),
-            'arm'   : ('arm', 'armv7', 'armv7l'),
-            'mips32': ('mips32', 'mips'),
-            }
+  platform = platform.lower()
+  assert platform in OS_DICT, "Unrecognized OS platform: %s" % platform
+  return OS_DICT[platform]
 
-  return dict([(alt,arch) for arch in alias for alt in alias[arch]])
+
+def IsCygWin(platform=None):
+  if platform is None:
+    platform = sys.platform
+
+  platform = platform.lower()
+  return platform == 'cygwin'
+
+# Define a list of supported architectures here. Our architecture definition
+# comes in 2 flavors, ones that care about 32/64 bit differences, and ones that
+# do not (a flattened list). The architecture is based on the
+# "lib.platform.machine()" variable which can return many variations even on
+# the same architecture (see variations of x86-32). The list and variable names
+# needs to be kept in sync, it is written so there will be a syntax error if
+# an item was added to 1 list but not the other, although there is no check
+# in place to be sure the order is kept.
+ARCH3264_LIST = [
+    'x86-32',
+    'x86-64',
+    'arm',
+    'mips32',
+]
+
+(
+    ARCH3264_X86_32,
+    ARCH3264_X86_64,
+    ARCH3264_ARM,
+    ARCH3264_MIPS32,
+) = ARCH3264_LIST
+
+ARCH64_SET = set([ARCH3264_X86_64])
+
+ARCH3264_MAP = {
+    ARCH3264_X86_32: ('x86', 'x86-32', 'x86_32', 'x8632', 'i386',
+                      'i686', 'ia32', '32'),
+    ARCH3264_X86_64: ('x86-64', 'amd64', 'x86_64', 'x8664', '64'),
+    ARCH3264_ARM: ('arm', 'armv7', 'armv7l'),
+    ARCH3264_MIPS32: ('mips32', 'mips'),
+}
+
+ARCH3264_DICT = dict([(machine, arch_name)
+                      for arch_name, machinelist in ARCH3264_MAP.iteritems()
+                      for machine in machinelist])
+
+ARCH_LIST = [
+    'x86',
+    'arm',
+    'mips'
+]
+
+(
+    ARCH_X86,
+    ARCH_ARM,
+    ARCH_MIPS,
+) = ARCH_LIST
+
+# ARCH_MAP should be a strict flattening of ARCH3264_MAP, use that list to be
+# sure both of them contain all the variations of machine names.
+ARCH_MAP = {
+    ARCH_X86: (ARCH3264_X86_32, ARCH3264_X86_64),
+    ARCH_ARM: (ARCH3264_ARM,),
+    ARCH_MIPS: (ARCH3264_MIPS32,),
+}
+
+ARCH_DICT = dict([(arch3264_name, arch_name)
+                  for arch_name, arch3264_list in ARCH_MAP.iteritems()
+                  for arch3264_name in arch3264_list])
+
+def GetArch3264(machine=None):
+  if machine is None:
+    machine = lib.platform.machine()
+
+  machine = machine.lower()
+  assert machine in ARCH3264_DICT, "Unrecognized arch machine: %s" % machine
+  return ARCH3264_DICT[machine]
+
+def IsArch64Bit(machine=None):
+  return GetArch3264(machine) in ARCH64_SET
+
+def GetArch(machine=None):
+  arch3264 = GetArch3264(machine)
+  return ARCH_DICT[arch3264]
+
+# Here are some helper function for common checks, these should be based
+# on the generic functions above.
+def IsWindows(platform=None):
+  return GetOS(platform) == OS_WIN
+
+def IsMac(platform=None):
+  return GetOS(platform) == OS_MAC
+
+def IsLinux(platform=None):
+  return GetOS(platform) == OS_LINUX
+
+def IsLinux64(platform=None, machine=None):
+  return IsLinux(platform) and IsArch64Bit(machine)
+
+# Some of our tools utilize a unique platform string which is used to
+# distinguish between platform and architectures.
+def PlatformTriple(platform=None, machine=None):
+  os = GetOS(platform)
+  arch3264 = GetArch3264(machine)
+
+  if os == OS_WIN:
+    if IsCygWin(platform):
+      return 'i686-pc-cygwin'
+    else:
+      return 'i686-w64-mingw32'
+  elif os == OS_MAC:
+    return 'x86_64-apple-darwin'
+  elif os == OS_LINUX:
+    if arch3264 == ARCH3264_ARM:
+      # TODO(mcgrathr): How to distinguish gnueabi vs gnueabihf?
+      return 'arm-linux-gnueabihf'
+    elif arch3264 == ARCH3264_X86_32:
+      return 'i686-linux'
+    elif arch3264 == ARCH3264_X86_64:
+      return 'x86_64-linux'
+
+  raise Exception('Unknown platform and machine')

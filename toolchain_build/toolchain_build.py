@@ -19,6 +19,9 @@ import gsd_storage
 import toolchain_main
 import repo_tools
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import pynacl.platform
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NACL_DIR = os.path.dirname(SCRIPT_DIR)
 
@@ -169,11 +172,11 @@ def CollectSources():
 
 
 # Canonical tuples we use for hosts.
-WINDOWS_HOST_TUPLE = 'i686-w64-mingw32'
-MAC_HOST_TUPLE = 'x86_64-apple-darwin'
-ARM_HOST_TUPLE = 'arm-linux-gnueabihf'
-LINUX_X86_32_TUPLE = 'i686-linux'
-LINUX_X86_64_TUPLE = 'x86_64-linux'
+WINDOWS_HOST_TUPLE = pynacl.platform.PlatformTriple('win', 'x86-64')
+MAC_HOST_TUPLE = pynacl.platform.PlatformTriple('darwin', 'x86-64')
+ARM_HOST_TUPLE = pynacl.platform.PlatformTriple('linux', 'arm')
+LINUX_X86_32_TUPLE = pynacl.platform.PlatformTriple('linux', 'x86-32')
+LINUX_X86_64_TUPLE = pynacl.platform.PlatformTriple('linux', 'x86-64')
 
 # Map of native host tuple to extra tuples that it cross-builds for.
 EXTRA_HOSTS_MAP = {
@@ -821,27 +824,8 @@ def TargetLibs(host, target):
       }
   return libs
 
-
-def NativeTuple():
-  if sys.platform.startswith('linux'):
-    machine = platform.machine().lower()
-    if machine.startswith('arm'):
-      # TODO(mcgrathr): How to distinguish gnueabi vs gnueabihf?
-      return ARM_HOST_TUPLE
-    if fnmatch.fnmatch(machine, 'i?86*'):
-      return LINUX_X86_32_TUPLE
-    if any(fnmatch.fnmatch(machine, pattern) for pattern in
-           ['x86_64*', 'amd64*', 'x64*']):
-      return LINUX_X86_64_TUPLE
-    raise Exception('Machine %s not recognized' % machine)
-  elif sys.platform.startswith('win'):
-    return WINDOWS_HOST_TUPLE
-  elif sys.platform.startswith('darwin'):
-    return MAC_HOST_TUPLE
-  raise Exception('Platform %s not recognized' % sys.platform)
-
 # Compute it once.
-NATIVE_TUPLE = NativeTuple()
+NATIVE_TUPLE = pynacl.platform.PlatformTriple()
 
 
 # For our purposes, "cross-compiling" means not literally that we are

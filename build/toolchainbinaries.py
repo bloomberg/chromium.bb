@@ -6,6 +6,11 @@
 """Utility functions and common data for downloading NaCl toolchain binaries.
 """
 
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import pynacl.platform
 
 BASE_DOWNLOAD_URL = (
     'https://storage.googleapis.com/nativeclient-archive2')
@@ -15,41 +20,41 @@ BASE_ONCE_DOWNLOAD_URL = (
 
 # TODO(dschuff): these mappings are now identical for x86 32/64. collapse them.
 PLATFORM_MAPPING = {
-    'windows': {
-        'x86': ['win_x86',
-                'win_x86_newlib',
-                'pnacl_win_x86',
-                'pnacl_translator',
-                ('win_arm_newlib',
-                 'WIN_GCC_ARM',
-                 'WIN_BINUTILS_ARM',
-                 'ALL_NEWLIB_ARM',
-                 'ALL_GCC_LIBS_ARM')],
+    pynacl.platform.OS_WIN: {
+        pynacl.platform.ARCH_X86: ['win_x86',
+                                   'win_x86_newlib',
+                                   'pnacl_win_x86',
+                                   'pnacl_translator',
+                                   ('win_arm_newlib',
+                                    'WIN_GCC_ARM',
+                                    'WIN_BINUTILS_ARM',
+                                    'ALL_NEWLIB_ARM',
+                                    'ALL_GCC_LIBS_ARM')],
     },
-    'linux': {
-        'x86': ['linux_x86',
-                'linux_x86_newlib',
-                'linux_arm_bionic',
-                'pnacl_linux_x86',
-                'linux_arm-trusted',
-                'pnacl_translator',
-                ('linux_arm_newlib',
-                 'LINUX_GCC_ARM',
-                 'LINUX_BINUTILS_ARM',
-                 'ALL_NEWLIB_ARM',
-                 'ALL_GCC_LIBS_ARM')],
-        'arm': ['pnacl_translator'],
+    pynacl.platform.OS_LINUX: {
+        pynacl.platform.ARCH_X86: ['linux_x86',
+                                   'linux_x86_newlib',
+                                   'linux_arm_bionic',
+                                   'pnacl_linux_x86',
+                                   'linux_arm-trusted',
+                                   'pnacl_translator',
+                                   ('linux_arm_newlib',
+                                    'LINUX_GCC_ARM',
+                                    'LINUX_BINUTILS_ARM',
+                                    'ALL_NEWLIB_ARM',
+                                    'ALL_GCC_LIBS_ARM')],
+        pynacl.platform.ARCH_ARM: ['pnacl_translator'],
     },
-    'mac': {
-        'x86': ['mac_x86',
-                'mac_x86_newlib',
-                'pnacl_mac_x86',
-                'pnacl_translator',
-                ('mac_arm_newlib',
-                 'MAC_GCC_ARM',
-                 'MAC_BINUTILS_ARM',
-                 'ALL_NEWLIB_ARM',
-                 'ALL_GCC_LIBS_ARM')],
+    pynacl.platform.OS_MAC: {
+        pynacl.platform.ARCH_X86: ['mac_x86',
+                                   'mac_x86_newlib',
+                                   'pnacl_mac_x86',
+                                   'pnacl_translator',
+                                   ('mac_arm_newlib',
+                                    'MAC_GCC_ARM',
+                                    'MAC_BINUTILS_ARM',
+                                    'ALL_NEWLIB_ARM',
+                                    'ALL_GCC_LIBS_ARM')],
     },
 }
 

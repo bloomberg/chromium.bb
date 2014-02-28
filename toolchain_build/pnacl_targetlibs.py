@@ -167,15 +167,10 @@ def BuildLibgccEhCmd(sourcefile, output, arch):
     flags_naclcc = ['-arch', arch, '--pnacl-bias=' + arch,
                     '--pnacl-allow-translate', '--pnacl-allow-native']
   else:
-    if pynacl.platform.IsWindows():
-      platformdir = 'win_x86_newlib'
-    elif pynacl.platform.IsMacOS():
-      platformdir = 'mac_x86_newlib'
-    elif pynacl.platform.IsLinux():
-      platformdir = 'linux_x86_newlib'
-    else:
-      raise Exception('Unknown OS')
-    nnacl_dir = os.path.join(NACL_DIR, 'toolchain', platformdir, 'bin')
+    platform_dir = '%s_%s_newlib' % (pynacl.platform.GetOS(),
+                                     pynacl.platform.GetArch())
+
+    nnacl_dir = os.path.join(NACL_DIR, 'toolchain', platform_dir, 'bin')
     gcc_binaries = {
         'x86-32': 'i686-nacl-gcc',
         'x86-64': 'x86_64-nacl-gcc',

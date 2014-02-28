@@ -88,23 +88,6 @@ BITCODE_BIASES = tuple(bias for bias in ('portable', ) + ALL_ARCHES
 
 MAKE_DESTDIR_CMD = ['make', 'DESTDIR=%(abs_output)s']
 
-def NativeTriple():
-  if pynacl.platform.IsWindows():
-    if command.Runnable.use_cygwin:
-      return 'i686-pc-cygwin'
-    else:
-      return 'i686-w64-mingw32'
-  elif pynacl.platform.IsMacOS():
-    return 'x86_64-apple-darwin'
-  elif pynacl.platform.IsLinux():
-    if pynacl.platform.Is64BitLinux():
-      return 'x86_64-linux'
-    else:
-      return 'i686-linux'
-  else:
-    raise Exception('Unknown build architecture %s' % sys.platform)
-
-
 def TripleIsWindows(t):
   return fnmatch.fnmatch(t, '*-mingw32*') or fnmatch.fnmatch(t, '*cygwin*')
 
@@ -127,10 +110,10 @@ def ConfigureHostArchFlags(host):
   configure_args = []
   extra_cc_args = []
 
-  native = NativeTriple()
+  native = pynacl.platform.PlatformTriple()
   is_cross = host != native
   if is_cross:
-    if (pynacl.platform.Is64BitLinux() and
+    if (pynacl.platform.IsLinux64() and
         fnmatch.fnmatch(host, '*-linux*')):
       # 64 bit linux can build 32 bit linux binaries while still being a native
       # build for our purposes. But it's not what config.guess will yield, so
@@ -172,7 +155,7 @@ def CmakeHostArchFlags(host, options):
     cc, cxx = CompilersForHost(host)
   cmake_flags.extend(['-DCMAKE_C_COMPILER='+cc, '-DCMAKE_CXX_COMPILER='+cxx])
 
-  if NativeTriple() != host and pynacl.platform.Is64BitLinux():
+  if pynacl.platform.IsLinux64() and pynacl.platform.PlatformTriple() != host:
     # Currently the only supported "cross" build is 64-bit Linux to 32-bit
     # Linux. Enable it, and disable libxml because Ubuntu doesn't have a
     # 32-bit libxml build.
@@ -557,19 +540,18 @@ if __name__ == '__main__':
     SyncPNaClRepos(revisions)
     sys.exit(0)
 
-  if (pynacl.platform.IsWindows() and
-      not command.Runnable.use_cygwin):
+  if pynacl.platform.IsWindows() and not command.Runnable.use_cygwin:
     InstallMinGWHostCompiler()
 
   packages = {}
   packages.update(HostToolsSources(GetGitSyncCmdCallback(revisions)))
 
-  if pynacl.platform.Is64BitLinux():
+  if pynacl.platform.IsLinux64():
     hosts = ['i686-linux']
     if args.build_64bit_host:
-      hosts.append(NativeTriple())
+      hosts.append(pynacl.platform.PlatformTriple())
   else:
-    hosts = [NativeTriple()]
+    hosts = [pynacl.platform.PlatformTriple()]
   if pynacl.platform.IsLinux() and BUILD_CROSS_MINGW:
     hosts.append('i686-w64-mingw32')
   for host in hosts:

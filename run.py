@@ -242,13 +242,14 @@ def RunSelLdr(args, quiet_args=[], collate=False, stdin_string=None):
   # The bootstrap loader args (--r_debug, --reserved_at_zero) need to
   # come before quiet_args.
   bootstrap_loader_args = []
-  if GetBuildArch().find('arm') == -1 and env.arch == 'arm':
+  arch = pynacl.platform.GetArch3264()
+  if arch != pynacl.platform.ARCH3264_ARM and env.arch == 'arm':
     prefix = [ env.qemu_arm, '-cpu', 'cortex-a9']
     if env.trace:
       prefix += ['-d', 'in_asm,op,exec,cpu']
     args = ['-Q'] + args
 
-  if GetBuildArch().find('mips32') == -1 and env.arch == 'mips32':
+  if arch != pynacl.platform.ARCH3264_MIPS32 and env.arch == 'mips32':
     prefix = [env.qemu_mips32]
     if env.trace:
       prefix += ['-d', 'in_asm,op,exec,cpu']
@@ -486,8 +487,7 @@ def ArgSplit(argv):
                       help='Run sel_ldr with debugging enabled.')
   parser.add_argument('-arch', '-m', dest='arch', action='store',
                       choices=sorted(
-                        pynacl.platform.ArchDict().keys() +
-                        ['env']),
+                        pynacl.platform.ARCH3264_LIST + ['env']),
                       help=('Specify architecture for PNaCl translation. ' +
                             '"env" is a special value which obtains the ' +
                             'architecture from the environment ' +
@@ -519,14 +519,9 @@ def ArgSplit(argv):
     # architecture, but for PNaCl we first need to translate and the
     # user didn't tell us which architecture to translate to. Be nice
     # and just translate to the current machine's architecture.
-    env.arch = GetBuildArch()
+    env.arch = pynacl.platform.GetArch()
   # Canonicalize env.arch.
-  aliases = pynacl.platform.ArchDict()
-  if env.arch in aliases:
-    env.arch = aliases[env.arch]
-  elif env.arch:
-    Fatal('Unrecognized arch "%s"!', env.arch)
-
+  env.arch = pynacl.platform.GetArch(env.arch)
   return nexe, args[1:]
 
 def Fatal(msg, *args):
@@ -603,10 +598,6 @@ def GetSconsOS():
   if 'cygwin' in name or 'windows' in name:
     return 'win'
   Fatal('Unsupported platform "%s"' % name)
-
-def GetBuildArch():
-  machine = platform.machine().lower()
-  return pynacl.platform.ArchDict()[machine]
 
 def FindBaseDir():
   '''Crawl backwards, starting from the directory containing this script,

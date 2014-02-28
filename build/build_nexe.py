@@ -20,6 +20,9 @@ import tempfile
 import threading
 import urllib2
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import pynacl.platform
+
 class Error(Exception):
   pass
 
@@ -32,7 +35,7 @@ def FixPath(path):
   # function that still has the path length limit. Instead, we'll cheat and
   # normalize the path lexically.
   path = os.path.normpath(os.path.join(os.getcwd(), path))
-  if sys.platform in ['win32', 'cygwin']:
+  if pynacl.platform.IsWindows():
     if len(path) > 255:
       raise Error('Path "%s" is too long (%d characters), and will fail.' % (
           path, len(path)))
@@ -130,15 +133,7 @@ class Builder(object):
     build_type = options.build.split('_')
     toolname = build_type[0]
     self.outtype = build_type[1]
-
-    if sys.platform.startswith('linux'):
-      self.osname = 'linux'
-    elif sys.platform.startswith('win'):
-      self.osname = 'win'
-    elif sys.platform.startswith('darwin'):
-      self.osname = 'mac'
-    else:
-      raise Error('Toolchain OS %s not supported.' % sys.platform)
+    self.osname = pynacl.platform.GetOS()
 
     # pnacl toolchain can be selected in three different ways
     # 1. by specifying --arch=pnacl directly to generate
@@ -503,7 +498,7 @@ class Builder(object):
     # The dependencies are whitespace delimited following the first ':'
     deps = deps.split(':', 1)[1]
     deps = deps.split()
-    if sys.platform in ['win32', 'cygwin']:
+    if pynacl.platform.IsWindows():
       deps = [self.FixWindowsPath(d) for d in deps]
     # Check if any input has changed.
     for filename in deps:

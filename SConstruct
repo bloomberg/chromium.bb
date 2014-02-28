@@ -445,14 +445,10 @@ def ExpandArguments():
 ExpandArguments()
 
 def GetTargetPlatform():
-  return ARGUMENTS.get('platform', 'x86-32')
+  return pynacl.platform.GetArch3264(ARGUMENTS.get('platform', 'x86-32'))
 
 def GetBuildPlatform():
-  arch_dict = pynacl.platform.ArchDict()
-  machine = platform.machine().lower()
-  if machine not in arch_dict:
-    raise UserError('Unrecognized host architecture: %s', platform.machine())
-  return arch_dict[machine]
+  return pynacl.platform.GetArch3264()
 
 environment_list = []
 
@@ -928,21 +924,6 @@ pre_base_env.AddMethod(Banner)
 # BUILD_ARCH: (arm, mips, x86)
 # BUILD_SUBARCH: (32, 64)
 #
-# This dictionary is used to translate from a platform name to a
-# (arch, subarch) pair
-AVAILABLE_PLATFORMS = {
-    'x86-32'      : { 'arch' : 'x86' , 'subarch' : '32' },
-    'x86-64'      : { 'arch' : 'x86' , 'subarch' : '64' },
-    'mips32'      : { 'arch' : 'mips', 'subarch' : '32' },
-    'arm'         : { 'arch' : 'arm' , 'subarch' : '32' },
-    }
-
-# Decode platform into list [ ARCHITECTURE , EXEC_MODE ].
-def DecodePlatform(platform):
-  if platform in AVAILABLE_PLATFORMS:
-    return AVAILABLE_PLATFORMS[platform]
-  raise UserError('Unrecognized platform: %s' % platform)
-
 
 DeclareBit('build_x86_32', 'Building binaries for the x86-32 architecture',
            exclusive_groups='build_arch')
@@ -973,14 +954,19 @@ def MakeArchSpecificEnv(platform=None):
   env = pre_base_env.Clone()
   if platform is None:
     platform = GetTargetPlatform()
-  info = DecodePlatform(platform)
+
+  arch = pynacl.platform.GetArch(platform)
+  if pynacl.platform.IsArch64Bit(platform):
+    subarch = '64'
+  else:
+    subarch = '32'
 
   env.Replace(BUILD_FULLARCH=platform)
-  env.Replace(BUILD_ARCHITECTURE=info['arch'])
-  env.Replace(BUILD_SUBARCH=info['subarch'])
+  env.Replace(BUILD_ARCHITECTURE=arch)
+  env.Replace(BUILD_SUBARCH=subarch)
   env.Replace(TARGET_FULLARCH=platform)
-  env.Replace(TARGET_ARCHITECTURE=info['arch'])
-  env.Replace(TARGET_SUBARCH=info['subarch'])
+  env.Replace(TARGET_ARCHITECTURE=arch)
+  env.Replace(TARGET_SUBARCH=subarch)
 
   # Example: PlatformBit('build', 'x86-32') -> build_x86_32
   def PlatformBit(prefix, platform):
