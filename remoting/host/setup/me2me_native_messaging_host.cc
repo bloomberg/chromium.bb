@@ -623,7 +623,7 @@ void Me2MeNativeMessagingHost::EnsureElevatedHostCreated() {
   info.lpVerb = L"runas";
   info.lpFile = binary.value().c_str();
   info.lpParameters = parameters.c_str();
-  info.nShow = SW_SHOWNORMAL;
+  info.nShow = SW_HIDE;
 
   if (!ShellExecuteEx(&info)) {
     DWORD error = ::GetLastError();
