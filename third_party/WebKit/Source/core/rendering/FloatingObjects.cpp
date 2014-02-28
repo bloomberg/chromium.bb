@@ -112,22 +112,52 @@ public:
     {
     }
 
+    virtual ~ComputeFloatOffsetAdapter() { }
+
     int lowValue() const { return m_lineTop; }
     int highValue() const { return m_lineBottom; }
     void collectIfNeeded(const IntervalType&);
 
     LayoutUnit offset() const { return m_offset; }
-    LayoutUnit shapeOffset() const;
-    LayoutUnit heightRemaining() const;
 
-private:
-    bool updateOffsetIfNeeded(const FloatingObject*);
+protected:
+    virtual bool updateOffsetIfNeeded(const FloatingObject*) = 0;
 
     const RenderBlockFlow* m_renderer;
     int m_lineTop;
     int m_lineBottom;
     LayoutUnit m_offset;
     const FloatingObject* m_outermostFloat;
+};
+
+template <FloatingObject::Type FloatTypeValue>
+class ComputeFloatOffsetForFloatLayoutAdapter : public ComputeFloatOffsetAdapter<FloatTypeValue> {
+public:
+    ComputeFloatOffsetForFloatLayoutAdapter(const RenderBlockFlow* renderer, LayoutUnit lineTop, LayoutUnit lineBottom, LayoutUnit offset)
+        : ComputeFloatOffsetAdapter<FloatTypeValue>(renderer, lineTop, lineBottom, offset)
+    {
+    }
+
+    virtual ~ComputeFloatOffsetForFloatLayoutAdapter() { }
+
+    LayoutUnit heightRemaining() const;
+
+protected:
+    virtual bool updateOffsetIfNeeded(const FloatingObject*) OVERRIDE FINAL;
+};
+
+template <FloatingObject::Type FloatTypeValue>
+class ComputeFloatOffsetForLineLayoutAdapter : public ComputeFloatOffsetAdapter<FloatTypeValue> {
+public:
+    ComputeFloatOffsetForLineLayoutAdapter(const RenderBlockFlow* renderer, LayoutUnit lineTop, LayoutUnit lineBottom, LayoutUnit offset)
+        : ComputeFloatOffsetAdapter<FloatTypeValue>(renderer, lineTop, lineBottom, offset)
+    {
+    }
+
+    virtual ~ComputeFloatOffsetForLineLayoutAdapter() { }
+
+protected:
+    virtual bool updateOffsetIfNeeded(const FloatingObject*) OVERRIDE FINAL;
 };
 
 
@@ -144,17 +174,6 @@ void FloatingObjects::clearLineBoxTreePointers()
         ASSERT(!((*it)->originatingLine()) || (*it)->originatingLine()->renderer() == m_renderer);
         (*it)->setOriginatingLine(0);
     }
-}
-
-template<>
-inline bool ComputeFloatOffsetAdapter<FloatingObject::FloatLeft>::updateOffsetIfNeeded(const FloatingObject* floatingObject)
-{
-    LayoutUnit logicalRight = m_renderer->logicalRightForFloat(floatingObject);
-    if (logicalRight > m_offset) {
-        m_offset = logicalRight;
-        return true;
-    }
-    return false;
 }
 
 FloatingObjects::FloatingObjects(const RenderBlockFlow* renderer, bool horizontalWritingMode)
@@ -357,40 +376,10 @@ void FloatingObjects::computePlacedFloatsTree()
     }
 }
 
-static inline ShapeOutsideInfo* shapeInfoForFloat(const FloatingObject* floatingObject, const RenderBlockFlow* containingBlock, LayoutUnit lineTop, LayoutUnit lineBottom)
-{
-    if (floatingObject) {
-        if (ShapeOutsideInfo* shapeOutside = floatingObject->renderer()->shapeOutsideInfo()) {
-            shapeOutside->updateDeltasForContainingBlockLine(containingBlock, floatingObject, lineTop, lineBottom - lineTop);
-            return shapeOutside;
-        }
-    }
-
-    return 0;
-}
-
-template<>
-inline LayoutUnit ComputeFloatOffsetAdapter<FloatingObject::FloatLeft>::shapeOffset() const
-{
-    if (ShapeOutsideInfo* shapeOutside = shapeInfoForFloat(m_outermostFloat, m_renderer, m_lineTop, m_lineBottom))
-        return m_offset + shapeOutside->rightMarginBoxDelta();
-
-    return m_offset;
-}
-
-template<>
-inline LayoutUnit ComputeFloatOffsetAdapter<FloatingObject::FloatRight>::shapeOffset() const
-{
-    if (ShapeOutsideInfo* shapeOutside = shapeInfoForFloat(m_outermostFloat, m_renderer, m_lineTop, m_lineBottom))
-        return m_offset + shapeOutside->leftMarginBoxDelta();
-
-    return m_offset;
-}
-
 LayoutUnit FloatingObjects::logicalLeftOffsetForPositioningFloat(LayoutUnit fixedOffset, LayoutUnit logicalTop, LayoutUnit *heightRemaining)
 {
     int logicalTopAsInt = roundToInt(logicalTop);
-    ComputeFloatOffsetAdapter<FloatingObject::FloatLeft> adapter(m_renderer, logicalTopAsInt, logicalTopAsInt, fixedOffset);
+    ComputeFloatOffsetForFloatLayoutAdapter<FloatingObject::FloatLeft> adapter(m_renderer, logicalTopAsInt, logicalTopAsInt, fixedOffset);
     placedFloatsTree().allOverlapsWithAdapter(adapter);
 
     if (heightRemaining)
@@ -402,7 +391,7 @@ LayoutUnit FloatingObjects::logicalLeftOffsetForPositioningFloat(LayoutUnit fixe
 LayoutUnit FloatingObjects::logicalRightOffsetForPositioningFloat(LayoutUnit fixedOffset, LayoutUnit logicalTop, LayoutUnit *heightRemaining)
 {
     int logicalTopAsInt = roundToInt(logicalTop);
-    ComputeFloatOffsetAdapter<FloatingObject::FloatRight> adapter(m_renderer, logicalTopAsInt, logicalTopAsInt, fixedOffset);
+    ComputeFloatOffsetForFloatLayoutAdapter<FloatingObject::FloatRight> adapter(m_renderer, logicalTopAsInt, logicalTopAsInt, fixedOffset);
     placedFloatsTree().allOverlapsWithAdapter(adapter);
 
     if (heightRemaining)
@@ -413,18 +402,18 @@ LayoutUnit FloatingObjects::logicalRightOffsetForPositioningFloat(LayoutUnit fix
 
 LayoutUnit FloatingObjects::logicalLeftOffset(LayoutUnit fixedOffset, LayoutUnit logicalTop, LayoutUnit logicalHeight)
 {
-    ComputeFloatOffsetAdapter<FloatingObject::FloatLeft> adapter(m_renderer, roundToInt(logicalTop), roundToInt(logicalTop + logicalHeight), fixedOffset);
+    ComputeFloatOffsetForLineLayoutAdapter<FloatingObject::FloatLeft> adapter(m_renderer, roundToInt(logicalTop), roundToInt(logicalTop + logicalHeight), fixedOffset);
     placedFloatsTree().allOverlapsWithAdapter(adapter);
 
-    return adapter.shapeOffset();
+    return adapter.offset();
 }
 
 LayoutUnit FloatingObjects::logicalRightOffset(LayoutUnit fixedOffset, LayoutUnit logicalTop, LayoutUnit logicalHeight)
 {
-    ComputeFloatOffsetAdapter<FloatingObject::FloatRight> adapter(m_renderer, roundToInt(logicalTop), roundToInt(logicalTop + logicalHeight), fixedOffset);
+    ComputeFloatOffsetForLineLayoutAdapter<FloatingObject::FloatRight> adapter(m_renderer, roundToInt(logicalTop), roundToInt(logicalTop + logicalHeight), fixedOffset);
     placedFloatsTree().allOverlapsWithAdapter(adapter);
 
-    return min(fixedOffset, adapter.shapeOffset());
+    return min(fixedOffset, adapter.offset());
 }
 
 FloatingObjects::FloatBottomCachedValue::FloatBottomCachedValue()
@@ -454,7 +443,18 @@ inline static bool rangesIntersect(int floatTop, int floatBottom, int objectTop,
 }
 
 template<>
-inline bool ComputeFloatOffsetAdapter<FloatingObject::FloatRight>::updateOffsetIfNeeded(const FloatingObject* floatingObject)
+inline bool ComputeFloatOffsetForFloatLayoutAdapter<FloatingObject::FloatLeft>::updateOffsetIfNeeded(const FloatingObject* floatingObject)
+{
+    LayoutUnit logicalRight = m_renderer->logicalRightForFloat(floatingObject);
+    if (logicalRight > m_offset) {
+        m_offset = logicalRight;
+        return true;
+    }
+    return false;
+}
+
+template<>
+inline bool ComputeFloatOffsetForFloatLayoutAdapter<FloatingObject::FloatRight>::updateOffsetIfNeeded(const FloatingObject* floatingObject)
 {
     LayoutUnit logicalLeft = m_renderer->logicalLeftForFloat(floatingObject);
     if (logicalLeft < m_offset) {
@@ -462,6 +462,12 @@ inline bool ComputeFloatOffsetAdapter<FloatingObject::FloatRight>::updateOffsetI
         return true;
     }
     return false;
+}
+
+template <FloatingObject::Type FloatTypeValue>
+LayoutUnit ComputeFloatOffsetForFloatLayoutAdapter<FloatTypeValue>::heightRemaining() const
+{
+    return this->m_outermostFloat ? this->m_renderer->logicalBottomForFloat(this->m_outermostFloat) - this->m_lineTop : LayoutUnit(1);
 }
 
 template <FloatingObject::Type FloatTypeValue>
@@ -481,10 +487,52 @@ inline void ComputeFloatOffsetAdapter<FloatTypeValue>::collectIfNeeded(const Int
         m_outermostFloat = floatingObject;
 }
 
-template <FloatingObject::Type FloatTypeValue>
-LayoutUnit ComputeFloatOffsetAdapter<FloatTypeValue>::heightRemaining() const
+static inline ShapeOutsideInfo* shapeInfoForFloat(const FloatingObject* floatingObject, const RenderBlockFlow* containingBlock, LayoutUnit lineTop, LayoutUnit lineBottom)
 {
-    return m_outermostFloat ? m_renderer->logicalBottomForFloat(m_outermostFloat) - m_lineTop : LayoutUnit(1);
+    if (floatingObject) {
+        if (ShapeOutsideInfo* shapeOutside = floatingObject->renderer()->shapeOutsideInfo()) {
+            shapeOutside->updateDeltasForContainingBlockLine(containingBlock, floatingObject, lineTop, lineBottom - lineTop);
+            return shapeOutside;
+        }
+    }
+
+    return 0;
+}
+
+template<>
+inline bool ComputeFloatOffsetForLineLayoutAdapter<FloatingObject::FloatLeft>::updateOffsetIfNeeded(const FloatingObject* floatingObject)
+{
+    LayoutUnit logicalRight = m_renderer->logicalRightForFloat(floatingObject);
+    if (ShapeOutsideInfo* shapeOutside = shapeInfoForFloat(floatingObject, m_renderer, m_lineTop, m_lineBottom)) {
+        if (!shapeOutside->lineOverlapsShape())
+            return false;
+
+        logicalRight += shapeOutside->rightMarginBoxDelta();
+    }
+    if (logicalRight > m_offset) {
+        m_offset = logicalRight;
+        return true;
+    }
+
+    return false;
+}
+
+template<>
+inline bool ComputeFloatOffsetForLineLayoutAdapter<FloatingObject::FloatRight>::updateOffsetIfNeeded(const FloatingObject* floatingObject)
+{
+    LayoutUnit logicalLeft = m_renderer->logicalLeftForFloat(floatingObject);
+    if (ShapeOutsideInfo* shapeOutside = shapeInfoForFloat(floatingObject, m_renderer, m_lineTop, m_lineBottom)) {
+        if (!shapeOutside->lineOverlapsShape())
+            return false;
+
+        logicalLeft += shapeOutside->leftMarginBoxDelta();
+    }
+    if (logicalLeft < m_offset) {
+        m_offset = logicalLeft;
+        return true;
+    }
+
+    return false;
 }
 
 #ifndef NDEBUG

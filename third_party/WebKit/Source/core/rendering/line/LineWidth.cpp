@@ -72,47 +72,31 @@ void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(FloatingObject* newFloat
     if (height < m_block.logicalTopForFloat(newFloat) || height >= m_block.logicalBottomForFloat(newFloat))
         return;
 
-    // When floats with shape outside are stacked, the floats are positioned based on the margin box of the float,
-    // not the shape's contour. Since we computed the width based on the shape contour when we added the float,
-    // when we add a subsequent float on the same line, we need to undo the shape delta in order to position
-    // based on the margin box. In order to do this, we need to walk back through the floating object list to find
-    // the first previous float that is on the same side as our newFloat.
-    ShapeOutsideInfo* previousShapeOutsideInfo = 0;
-    const FloatingObjectSet& floatingObjectSet = m_block.m_floatingObjects->set();
-    FloatingObjectSetIterator it = floatingObjectSet.end();
-    FloatingObjectSetIterator begin = floatingObjectSet.begin();
-    LayoutUnit lineHeight = m_block.lineHeight(m_isFirstLine, m_block.isHorizontalWritingMode() ? HorizontalLine : VerticalLine, PositionOfInteriorLineBoxes);
-    for (--it; it != begin; --it) {
-        FloatingObject* previousFloat = *it;
-        if (previousFloat != newFloat && previousFloat->type() == newFloat->type()) {
-            previousShapeOutsideInfo = previousFloat->renderer()->shapeOutsideInfo();
-            if (previousShapeOutsideInfo)
-                previousShapeOutsideInfo->updateDeltasForContainingBlockLine(&m_block, previousFloat, m_block.logicalHeight(), lineHeight);
-            break;
-        }
-    }
-
     ShapeOutsideInfo* shapeOutsideInfo = newFloat->renderer()->shapeOutsideInfo();
-    if (shapeOutsideInfo)
+    if (shapeOutsideInfo) {
+        LayoutUnit lineHeight = m_block.lineHeight(m_isFirstLine, m_block.isHorizontalWritingMode() ? HorizontalLine : VerticalLine, PositionOfInteriorLineBoxes);
         shapeOutsideInfo->updateDeltasForContainingBlockLine(&m_block, newFloat, m_block.logicalHeight(), lineHeight);
+    }
 
     if (newFloat->type() == FloatingObject::FloatLeft) {
         float newLeft = m_block.logicalRightForFloat(newFloat);
-        if (previousShapeOutsideInfo)
-            newLeft -= previousShapeOutsideInfo->rightMarginBoxDelta();
-        if (shapeOutsideInfo)
-            newLeft += shapeOutsideInfo->rightMarginBoxDelta();
-
+        if (shapeOutsideInfo) {
+            if (shapeOutsideInfo->lineOverlapsShape())
+                newLeft += shapeOutsideInfo->rightMarginBoxDelta();
+            else // Per the CSS Shapes spec, If the line doesn't overlap the shape, then ignore this shape for this line.
+                newLeft = m_left;
+        }
         if (shouldIndentText() && m_block.style()->isLeftToRightDirection())
             newLeft += floorToInt(m_block.textIndentOffset());
         m_left = std::max<float>(m_left, newLeft);
     } else {
         float newRight = m_block.logicalLeftForFloat(newFloat);
-        if (previousShapeOutsideInfo)
-            newRight -= previousShapeOutsideInfo->leftMarginBoxDelta();
-        if (shapeOutsideInfo)
-            newRight += shapeOutsideInfo->leftMarginBoxDelta();
-
+        if (shapeOutsideInfo) {
+            if (shapeOutsideInfo->lineOverlapsShape())
+                newRight += shapeOutsideInfo->leftMarginBoxDelta();
+            else // Per the CSS Shapes spec, If the line doesn't overlap the shape, then ignore this shape for this line.
+                newRight = m_right;
+        }
         if (shouldIndentText() && !m_block.style()->isLeftToRightDirection())
             newRight -= floorToInt(m_block.textIndentOffset());
         m_right = std::min<float>(m_right, newRight);
