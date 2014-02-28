@@ -34,11 +34,12 @@ public class LoadUrlParams {
     // Package private so that ContentViewCore.loadUrl can pass them down to
     // native code. Should not be accessed directly anywhere else outside of
     // this class.
-    final String mUrl;
+    String mUrl;
     int mLoadUrlType;
     int mTransitionType;
     int mUaOverrideOption;
     private Map<String, String> mExtraHeaders;
+    private String mVerbatimHeaders;
     byte[] mPostData;
     String mBaseUrlForDataUrl;
     String mVirtualUrlForDataUrl;
@@ -161,6 +162,13 @@ public class LoadUrlParams {
     }
 
     /**
+     * Sets the url.
+     */
+    public void setUrl(String url) {
+        mUrl = url;
+    }
+
+    /**
      * Return the url.
      */
     public String getUrl() {
@@ -215,9 +223,11 @@ public class LoadUrlParams {
     }
 
     /**
-     * Return the extra headers as a single String separated by "\n", or null if no extra header
-     * is set. This form is suitable for passing to native
-     * NavigationController::LoadUrlParams::extra_headers.
+     * Return the extra headers as a single String separated by "\n", or null if no extra header is
+     * set. This form is suitable for passing to native
+     * NavigationController::LoadUrlParams::extra_headers. This will return the headers set in an
+     * exploded form through setExtraHeaders(). Embedders that work with extra headers in opaque
+     * collapsed form can use the setVerbatimHeaders() / getVerbatimHeaders() instead.
      */
     String getExtraHeadersString() {
         return getExtraHeadersString("\n", false);
@@ -251,12 +261,34 @@ public class LoadUrlParams {
     }
 
     /**
+     * Sets the verbatim extra headers string. This is an alternative to storing the headers in
+     * a map (setExtraHeaders()) for the embedders that use collapsed headers strings.
+     */
+    public void setVerbatimHeaders(String headers) {
+        mVerbatimHeaders = headers;
+    }
+
+    /**
+     * @return the verbatim extra headers string
+     */
+    public String getVerbatimHeaders() {
+        return mVerbatimHeaders;
+    }
+
+    /**
      * Set the post data of this load. This field is ignored unless load type is
      * LOAD_TYPE_BROWSER_INITIATED_HTTP_POST.
      * @param postData Post data for this http post load.
      */
     public void setPostData(byte[] postData) {
         mPostData = postData;
+    }
+
+    /**
+     * @return the data to be sent through POST
+     */
+    public byte[] getPostData() {
+        return mPostData;
     }
 
     /**

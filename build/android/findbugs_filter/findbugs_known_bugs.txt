@@ -27,6 +27,7 @@ M V EI2: org.chromium.chrome.browser.ChromeBrowserProvider$BookmarkNode.setThumb
 M V EI2: org.chromium.content.browser.LoadUrlParams.setPostData(byte[]) may expose internal representation by storing an externally mutable object into LoadUrlParams.mPostData  At LoadUrlParams.java
 M V EI: org.chromium.chrome.browser.ChromeBrowserProvider$BookmarkNode.favicon() may expose internal representation by returning ChromeBrowserProvider$BookmarkNode.mFavicon  At ChromeBrowserProvider.java
 M V EI: org.chromium.chrome.browser.ChromeBrowserProvider$BookmarkNode.thumbnail() may expose internal representation by returning ChromeBrowserProvider$BookmarkNode.mThumbnail  At ChromeBrowserProvider.java
+M V EI: org.chromium.content.browser.LoadUrlParams.getPostData() may expose internal representation by returning LoadUrlParams.mPostData  At LoadUrlParams.java
 M V MS: org.chromium.content.browser.LoadUrlParams.LOAD_TYPE_BROWSER_INITIATED_HTTP_POST should be package protected  In LoadUrlParams.java
 M V MS: org.chromium.content.browser.LoadUrlParams.LOAD_TYPE_DATA isn't final and can't be protected from malicious code   In LoadUrlParams.java
 M V MS: org.chromium.content.browser.LoadUrlParams.LOAD_TYPE_DEFAULT should be package protected  In LoadUrlParams.java
