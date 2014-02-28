@@ -37,6 +37,8 @@
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/CSPSource.h"
 #include "core/frame/csp/CSPSourceList.h"
+#include "core/frame/csp/MediaListDirective.h"
+#include "core/frame/csp/SourceListDirective.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/DocumentLoader.h"
@@ -125,131 +127,6 @@ static ReferrerPolicy mergeReferrerPolicies(ReferrerPolicy a, ReferrerPolicy b)
         return ReferrerPolicyNever;
     return a;
 }
-
-class CSPDirective {
-public:
-    CSPDirective(const String& name, const String& value, ContentSecurityPolicy* policy)
-        : m_name(name)
-        , m_text(name + ' ' + value)
-        , m_policy(policy)
-    {
-    }
-
-    const String& text() const { return m_text; }
-
-protected:
-    const ContentSecurityPolicy* policy() const { return m_policy; }
-
-private:
-    String m_name;
-    String m_text;
-    ContentSecurityPolicy* m_policy;
-};
-
-class MediaListDirective : public CSPDirective {
-public:
-    MediaListDirective(const String& name, const String& value, ContentSecurityPolicy* policy)
-        : CSPDirective(name, value, policy)
-    {
-        Vector<UChar> characters;
-        value.appendTo(characters);
-        parse(characters.data(), characters.data() + characters.size());
-    }
-
-    bool allows(const String& type)
-    {
-        return m_pluginTypes.contains(type);
-    }
-
-private:
-    void parse(const UChar* begin, const UChar* end)
-    {
-        const UChar* position = begin;
-
-        // 'plugin-types ____;' OR 'plugin-types;'
-        if (position == end) {
-            policy()->reportInvalidPluginTypes(String());
-            return;
-        }
-
-        while (position < end) {
-            // _____ OR _____mime1/mime1
-            // ^        ^
-            skipWhile<UChar, isASCIISpace>(position, end);
-            if (position == end)
-                return;
-
-            // mime1/mime1 mime2/mime2
-            // ^
-            begin = position;
-            if (!skipExactly<UChar, isMediaTypeCharacter>(position, end)) {
-                skipWhile<UChar, isNotASCIISpace>(position, end);
-                policy()->reportInvalidPluginTypes(String(begin, position - begin));
-                continue;
-            }
-            skipWhile<UChar, isMediaTypeCharacter>(position, end);
-
-            // mime1/mime1 mime2/mime2
-            //      ^
-            if (!skipExactly<UChar>(position, end, '/')) {
-                skipWhile<UChar, isNotASCIISpace>(position, end);
-                policy()->reportInvalidPluginTypes(String(begin, position - begin));
-                continue;
-            }
-
-            // mime1/mime1 mime2/mime2
-            //       ^
-            if (!skipExactly<UChar, isMediaTypeCharacter>(position, end)) {
-                skipWhile<UChar, isNotASCIISpace>(position, end);
-                policy()->reportInvalidPluginTypes(String(begin, position - begin));
-                continue;
-            }
-            skipWhile<UChar, isMediaTypeCharacter>(position, end);
-
-            // mime1/mime1 mime2/mime2 OR mime1/mime1  OR mime1/mime1/error
-            //            ^                          ^               ^
-            if (position < end && isNotASCIISpace(*position)) {
-                skipWhile<UChar, isNotASCIISpace>(position, end);
-                policy()->reportInvalidPluginTypes(String(begin, position - begin));
-                continue;
-            }
-            m_pluginTypes.add(String(begin, position - begin));
-
-            ASSERT(position == end || isASCIISpace(*position));
-        }
-    }
-
-    HashSet<String> m_pluginTypes;
-};
-
-class SourceListDirective : public CSPDirective {
-public:
-    SourceListDirective(const String& name, const String& value, ContentSecurityPolicy* policy)
-        : CSPDirective(name, value, policy)
-        , m_sourceList(policy, name)
-    {
-        Vector<UChar> characters;
-        value.appendTo(characters);
-
-        m_sourceList.parse(characters.data(), characters.data() + characters.size());
-    }
-
-    bool allows(const KURL& url)
-    {
-        return m_sourceList.matches(url.isEmpty() ? policy()->url() : url);
-    }
-
-    bool allowInline() const { return m_sourceList.allowInline(); }
-    bool allowEval() const { return m_sourceList.allowEval(); }
-    bool allowNonce(const String& nonce) const { return m_sourceList.allowNonce(nonce.stripWhiteSpace()); }
-    bool allowHash(const CSPHashValue& hashValue) const { return m_sourceList.allowHash(hashValue); }
-    bool isHashOrNoncePresent() const { return m_sourceList.isHashOrNoncePresent(); }
-
-    uint8_t hashAlgorithmsUsed() const { return m_sourceList.hashAlgorithmsUsed(); }
-
-private:
-    CSPSourceList m_sourceList;
-};
 
 class CSPDirectiveList {
     WTF_MAKE_FAST_ALLOCATED;

@@ -5,6 +5,7 @@
 #ifndef CSPSourceList_h
 #define CSPSourceList_h
 
+#include "core/frame/csp/CSPSource.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/WTFString.h"
@@ -12,7 +13,6 @@
 namespace WebCore {
 
 class ContentSecurityPolicy;
-class CSPSource;
 class KURL;
 
 class CSPSourceList {
@@ -22,7 +22,7 @@ public:
 
     void parse(const UChar* begin, const UChar* end);
 
-    bool matches(const KURL&);
+    bool matches(const KURL&) const;
     bool allowInline() const;
     bool allowEval() const;
     bool allowNonce(const String&) const;

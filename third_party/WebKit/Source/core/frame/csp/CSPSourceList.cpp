@@ -71,7 +71,7 @@ CSPSourceList::CSPSourceList(ContentSecurityPolicy* policy, const String& direct
 {
 }
 
-bool CSPSourceList::matches(const KURL& url)
+bool CSPSourceList::matches(const KURL& url) const
 {
     if (m_allowStar)
         return true;
