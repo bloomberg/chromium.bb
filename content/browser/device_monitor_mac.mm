@@ -7,6 +7,7 @@
 #import <QTKit/QTKit.h>
 
 #include "base/logging.h"
+#include "base/mac/scoped_nsobject.h"
 #import "media/video/capture/mac/avfoundation_glue.h"
 
 namespace {
@@ -203,12 +204,36 @@ void QTKitMonitorImpl::OnDeviceChanged() {
   ConsolidateDevicesListAndNotify(snapshot_devices);
 }
 
+// Forward declaration for use by CrAVFoundationSuspendObserver.
+class AVFoundationMonitorImpl;
+
+}  // namespace
+
+// This class is a Key-Value Observer (KVO) shim.  It is needed because C++
+// classes cannot observe Key-Values directly.
+@interface CrAVFoundationSuspendObserver : NSObject {
+ @private
+  AVFoundationMonitorImpl* receiver_;
+}
+
+- (id)initWithChangeReceiver:(AVFoundationMonitorImpl*)receiver;
+- (void)startObserving:(CrAVCaptureDevice*)device;
+- (void)stopObserving:(CrAVCaptureDevice*)device;
+
+@end
+
+namespace {
+
 class AVFoundationMonitorImpl : public DeviceMonitorMacImpl {
  public:
   explicit AVFoundationMonitorImpl(content::DeviceMonitorMac* monitor);
   virtual ~AVFoundationMonitorImpl();
 
   virtual void OnDeviceChanged() OVERRIDE;
+
+ private:
+  base::scoped_nsobject<CrAVFoundationSuspendObserver> suspend_observer_;
+  DISALLOW_COPY_AND_ASSIGN(AVFoundationMonitorImpl);
 };
 
 AVFoundationMonitorImpl::AVFoundationMonitorImpl(
@@ -229,24 +254,33 @@ AVFoundationMonitorImpl::AVFoundationMonitorImpl(
                        queue:nil
                   usingBlock:^(NSNotification* notification) {
                       OnDeviceChanged();}];
+  suspend_observer_.reset(
+      [[CrAVFoundationSuspendObserver alloc] initWithChangeReceiver:this]);
+  for (CrAVCaptureDevice* device in [AVCaptureDeviceGlue devices])
+    [suspend_observer_ startObserving:device];
 }
 
 AVFoundationMonitorImpl::~AVFoundationMonitorImpl() {
   NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
   [nc removeObserver:device_arrival_];
   [nc removeObserver:device_removal_];
+  for (CrAVCaptureDevice* device in [AVCaptureDeviceGlue devices])
+    [suspend_observer_ stopObserving:device];
 }
 
 void AVFoundationMonitorImpl::OnDeviceChanged() {
   std::vector<DeviceInfo> snapshot_devices;
-
-  NSArray* devices = [AVCaptureDeviceGlue devices];
-  for (CrAVCaptureDevice* device in devices) {
+  for (CrAVCaptureDevice* device in [AVCaptureDeviceGlue devices]) {
+    [suspend_observer_ startObserving:device];
+    BOOL suspended = [device respondsToSelector:@selector(isSuspended)] &&
+        [device isSuspended];
     DeviceInfo::DeviceType device_type = DeviceInfo::kUnknown;
     if ([device hasMediaType:AVFoundationGlue::AVMediaTypeVideo()]) {
+      if (suspended)
+        continue;
       device_type = DeviceInfo::kVideo;
     } else if ([device hasMediaType:AVFoundationGlue::AVMediaTypeMuxed()]) {
-      device_type = DeviceInfo::kMuxed;
+      device_type = suspended ? DeviceInfo::kAudio : DeviceInfo::kMuxed;
     } else if ([device hasMediaType:AVFoundationGlue::AVMediaTypeAudio()]) {
       device_type = DeviceInfo::kAudio;
     }
@@ -257,6 +291,40 @@ void AVFoundationMonitorImpl::OnDeviceChanged() {
 }
 
 }  // namespace
+
+@implementation CrAVFoundationSuspendObserver
+
+- (id)initWithChangeReceiver:(AVFoundationMonitorImpl*)receiver {
+  if ((self = [super init])) {
+    DCHECK(receiver != NULL);
+    receiver_ = receiver;
+  }
+  return self;
+}
+
+- (void)startObserving:(CrAVCaptureDevice*)device {
+  DCHECK(device != nil);
+  [device addObserver:self
+           forKeyPath:@"suspended"
+              options:0
+              context:nil];
+}
+
+- (void)stopObserving:(CrAVCaptureDevice*)device {
+  DCHECK(device != nil);
+  [device removeObserver:self
+              forKeyPath:@"suspended"];
+}
+
+- (void)observeValueForKeyPath:(NSString*)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary*)change
+                       context:(void*)context {
+  if ([keyPath isEqual:@"suspended"])
+    receiver_->OnDeviceChanged();
+}
+
+@end  // @implementation CrAVFoundationSuspendObserver
 
 namespace content {
 

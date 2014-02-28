@@ -63,6 +63,7 @@ MEDIA_EXPORT
 - (BOOL)hasMediaType:(NSString*)mediaType;
 - (NSString*)uniqueID;
 - (NSString*)localizedName;
+- (BOOL)isSuspended;
 - (BOOL)supportsAVCaptureSessionPreset:(NSString*)preset;
 - (NSArray*)formats;
 
