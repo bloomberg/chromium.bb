@@ -461,6 +461,21 @@ void MetadataDatabase::Create(base::SequencedTaskRunner* task_runner,
       database_path, env_override, callback));
 }
 
+// static
+SyncStatusCode MetadataDatabase::CreateForTesting(
+    scoped_ptr<leveldb::DB> db,
+    scoped_ptr<MetadataDatabase>* metadata_database_out) {
+  scoped_ptr<MetadataDatabase> metadata_database(
+      new MetadataDatabase(base::MessageLoopProxy::current(),
+                           base::FilePath(), NULL));
+  metadata_database->db_ = db.Pass();
+  SyncStatusCode status =
+      metadata_database->InitializeOnTaskRunner();
+  if (status == SYNC_STATUS_OK)
+    *metadata_database_out = metadata_database.Pass();
+  return status;
+}
+
 MetadataDatabase::~MetadataDatabase() {
   task_runner_->DeleteSoon(FROM_HERE, db_.release());
 }
@@ -1125,6 +1140,22 @@ bool MetadataDatabase::GetLowPriorityDirtyTracker(
   return true;
 }
 
+bool MetadataDatabase::HasDirtyTracker() const {
+  return CountDirtyTracker() != 0;
+}
+
+size_t MetadataDatabase::CountDirtyTracker() const {
+  return dirty_trackers_.size() + low_priority_dirty_trackers_.size();
+}
+
+size_t MetadataDatabase::CountFileMetadata() const {
+  return metadata_by_id_.size();
+}
+
+size_t MetadataDatabase::CountFileTracker() const {
+  return tracker_by_id_.size();
+}
+
 bool MetadataDatabase::GetMultiParentFileTrackers(std::string* file_id,
                                                   TrackerIDSet* trackers) {
   DCHECK(file_id);
@@ -1198,21 +1229,6 @@ void MetadataDatabase::CreateOnTaskRunner(
 
   callback_runner->PostTask(FROM_HERE, base::Bind(
       callback, status, base::Passed(&metadata_database)));
-}
-
-// static
-SyncStatusCode MetadataDatabase::CreateForTesting(
-    scoped_ptr<leveldb::DB> db,
-    scoped_ptr<MetadataDatabase>* metadata_database_out) {
-  scoped_ptr<MetadataDatabase> metadata_database(
-      new MetadataDatabase(base::MessageLoopProxy::current(),
-                           base::FilePath(), NULL));
-  metadata_database->db_ = db.Pass();
-  SyncStatusCode status =
-      metadata_database->InitializeOnTaskRunner();
-  if (status == SYNC_STATUS_OK)
-    *metadata_database_out = metadata_database.Pass();
-  return status;
 }
 
 SyncStatusCode MetadataDatabase::InitializeOnTaskRunner() {

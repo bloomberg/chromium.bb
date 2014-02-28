@@ -454,11 +454,11 @@ class DriveBackendSyncTest : public testing::Test,
   }
 
   size_t CountMetadata() {
-    return metadata_database()->metadata_by_id_.size();
+    return metadata_database()->CountFileMetadata();
   }
 
   size_t CountTracker() {
-    return metadata_database()->tracker_by_id_.size();
+    return metadata_database()->CountFileTracker();
   }
 
   drive::FakeDriveService* fake_drive_service() {

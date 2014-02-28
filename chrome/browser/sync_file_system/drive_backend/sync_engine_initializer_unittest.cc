@@ -176,12 +176,12 @@ class SyncEngineInitializerTest : public testing::Test {
     return !entry->GetLinkByType(google_apis::Link::LINK_PARENT);
   }
 
-  size_t NumberOfMetadata() {
-    return metadata_database_->metadata_by_id_.size();
+  size_t CountFileMetadata() {
+    return metadata_database_->CountFileMetadata();
   }
 
-  size_t NumberOfTrackers() {
-    return metadata_database_->tracker_by_id_.size();
+  size_t CountFileTracker() {
+    return metadata_database_->CountFileTracker();
   }
 
   google_apis::GDataErrorCode AddParentFolder(
@@ -215,8 +215,8 @@ TEST_F(SyncEngineInitializerTest, EmptyDatabase_NoRemoteSyncRoot) {
 
   EXPECT_TRUE(HasActiveTracker(sync_root_folder_id));
 
-  EXPECT_EQ(1u, NumberOfMetadata());
-  EXPECT_EQ(1u, NumberOfTrackers());
+  EXPECT_EQ(1u, CountFileMetadata());
+  EXPECT_EQ(1u, CountFileTracker());
 }
 
 TEST_F(SyncEngineInitializerTest, EmptyDatabase_RemoteSyncRootExists) {
@@ -237,8 +237,8 @@ TEST_F(SyncEngineInitializerTest, EmptyDatabase_RemoteSyncRootExists) {
   EXPECT_FALSE(HasActiveTracker(app_root_1->file_id()));
   EXPECT_FALSE(HasActiveTracker(app_root_2->file_id()));
 
-  EXPECT_EQ(3u, NumberOfMetadata());
-  EXPECT_EQ(3u, NumberOfTrackers());
+  EXPECT_EQ(3u, CountFileMetadata());
+  EXPECT_EQ(3u, CountFileTracker());
 }
 
 TEST_F(SyncEngineInitializerTest, DatabaseAlreadyInitialized) {
@@ -264,8 +264,8 @@ TEST_F(SyncEngineInitializerTest, DatabaseAlreadyInitialized) {
   EXPECT_FALSE(HasActiveTracker(app_root_1->file_id()));
   EXPECT_FALSE(HasActiveTracker(app_root_2->file_id()));
 
-  EXPECT_EQ(3u, NumberOfMetadata());
-  EXPECT_EQ(3u, NumberOfTrackers());
+  EXPECT_EQ(3u, CountFileMetadata());
+  EXPECT_EQ(3u, CountFileTracker());
 }
 
 TEST_F(SyncEngineInitializerTest, EmptyDatabase_MultiCandidate) {
@@ -280,8 +280,8 @@ TEST_F(SyncEngineInitializerTest, EmptyDatabase_MultiCandidate) {
   EXPECT_TRUE(HasActiveTracker(sync_root_1->file_id()));
   EXPECT_FALSE(HasActiveTracker(sync_root_2->file_id()));
 
-  EXPECT_EQ(1u, NumberOfMetadata());
-  EXPECT_EQ(1u, NumberOfTrackers());
+  EXPECT_EQ(1u, CountFileMetadata());
+  EXPECT_EQ(1u, CountFileTracker());
 }
 
 TEST_F(SyncEngineInitializerTest, EmptyDatabase_UndetachedRemoteSyncRoot) {
@@ -294,8 +294,8 @@ TEST_F(SyncEngineInitializerTest, EmptyDatabase_UndetachedRemoteSyncRoot) {
 
   EXPECT_TRUE(HasNoParent(sync_root->file_id()));
 
-  EXPECT_EQ(1u, NumberOfMetadata());
-  EXPECT_EQ(1u, NumberOfTrackers());
+  EXPECT_EQ(1u, CountFileMetadata());
+  EXPECT_EQ(1u, CountFileTracker());
 }
 
 TEST_F(SyncEngineInitializerTest, EmptyDatabase_MultiparentSyncRoot) {
@@ -312,8 +312,8 @@ TEST_F(SyncEngineInitializerTest, EmptyDatabase_MultiparentSyncRoot) {
 
   EXPECT_TRUE(HasNoParent(sync_root->file_id()));
 
-  EXPECT_EQ(1u, NumberOfMetadata());
-  EXPECT_EQ(1u, NumberOfTrackers());
+  EXPECT_EQ(1u, CountFileMetadata());
+  EXPECT_EQ(1u, CountFileTracker());
 }
 
 TEST_F(SyncEngineInitializerTest, EmptyDatabase_FakeRemoteSyncRoot) {
@@ -327,8 +327,8 @@ TEST_F(SyncEngineInitializerTest, EmptyDatabase_FakeRemoteSyncRoot) {
   EXPECT_EQ(0u, CountTrackersForFile(sync_root->file_id()));
   EXPECT_FALSE(HasNoParent(sync_root->file_id()));
 
-  EXPECT_EQ(1u, NumberOfMetadata());
-  EXPECT_EQ(1u, NumberOfTrackers());
+  EXPECT_EQ(1u, CountFileMetadata());
+  EXPECT_EQ(1u, CountFileTracker());
 }
 
 }  // namespace drive_backend

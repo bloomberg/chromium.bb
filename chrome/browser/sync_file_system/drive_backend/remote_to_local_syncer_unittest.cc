@@ -248,8 +248,7 @@ TEST_F(RemoteToLocalSyncerTest, AddNewFile) {
 
   VerifyConsistency();
 
-  EXPECT_FALSE(GetMetadataDatabase()->GetNormalPriorityDirtyTracker(NULL));
-  EXPECT_FALSE(GetMetadataDatabase()->GetLowPriorityDirtyTracker(NULL));
+  EXPECT_FALSE(GetMetadataDatabase()->HasDirtyTracker());
 }
 
 TEST_F(RemoteToLocalSyncerTest, DeleteFile) {
@@ -286,8 +285,7 @@ TEST_F(RemoteToLocalSyncerTest, DeleteFile) {
   RunSyncerUntilIdle();
   VerifyConsistency();
 
-  EXPECT_FALSE(GetMetadataDatabase()->GetNormalPriorityDirtyTracker(NULL));
-  EXPECT_FALSE(GetMetadataDatabase()->GetLowPriorityDirtyTracker(NULL));
+  EXPECT_FALSE(GetMetadataDatabase()->HasDirtyTracker());
 }
 
 TEST_F(RemoteToLocalSyncerTest, DeleteNestedFiles) {
@@ -329,8 +327,7 @@ TEST_F(RemoteToLocalSyncerTest, DeleteNestedFiles) {
   RunSyncerUntilIdle();
   VerifyConsistency();
 
-  EXPECT_FALSE(GetMetadataDatabase()->GetNormalPriorityDirtyTracker(NULL));
-  EXPECT_FALSE(GetMetadataDatabase()->GetLowPriorityDirtyTracker(NULL));
+  EXPECT_FALSE(GetMetadataDatabase()->HasDirtyTracker());
 }
 
 TEST_F(RemoteToLocalSyncerTest, Conflict_CreateFileOnFolder) {
@@ -376,8 +373,7 @@ TEST_F(RemoteToLocalSyncerTest, Conflict_CreateFolderOnFile) {
   RunSyncerUntilIdle();
   VerifyConsistency();
 
-  EXPECT_FALSE(GetMetadataDatabase()->GetNormalPriorityDirtyTracker(NULL));
-  EXPECT_FALSE(GetMetadataDatabase()->GetLowPriorityDirtyTracker(NULL));
+  EXPECT_FALSE(GetMetadataDatabase()->HasDirtyTracker());
 }
 
 TEST_F(RemoteToLocalSyncerTest, Conflict_CreateFolderOnFolder) {
@@ -396,8 +392,7 @@ TEST_F(RemoteToLocalSyncerTest, Conflict_CreateFolderOnFolder) {
   RunSyncerUntilIdle();
   VerifyConsistency();
 
-  EXPECT_FALSE(GetMetadataDatabase()->GetNormalPriorityDirtyTracker(NULL));
-  EXPECT_FALSE(GetMetadataDatabase()->GetLowPriorityDirtyTracker(NULL));
+  EXPECT_FALSE(GetMetadataDatabase()->HasDirtyTracker());
 }
 
 TEST_F(RemoteToLocalSyncerTest, Conflict_CreateFileOnFile) {

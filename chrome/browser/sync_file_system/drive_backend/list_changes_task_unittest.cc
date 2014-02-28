@@ -92,7 +92,7 @@ class ListChangesTaskTest : public testing::Test,
   }
 
   size_t CountDirtyTracker() {
-    return metadata_database_->dirty_trackers_.size();
+    return metadata_database_->CountDirtyTracker();
   }
 
   FakeDriveServiceHelper* fake_drive_service_helper() {

@@ -201,19 +201,9 @@ class RegisterAppTaskTest : public testing::Test,
   }
 
   size_t CountRegisteredAppRoot() {
-    // TODO(tzik): Add function to MetadataDatabase to list trackers by parent.
-    typedef MetadataDatabase::TrackerIDsByTitle TrackerIDsByTitle;
-    const TrackerIDsByTitle& trackers_by_title =
-        metadata_database_->trackers_by_parent_and_title_[kSyncRootTrackerID];
-
-    size_t count = 0;
-    for (TrackerIDsByTitle::const_iterator itr = trackers_by_title.begin();
-         itr != trackers_by_title.end(); ++itr) {
-      if (itr->second.has_active())
-        ++count;
-    }
-
-    return count;
+    std::vector<std::string> app_ids;
+    metadata_database_->GetRegisteredAppIDs(&app_ids);
+    return app_ids.size();
   }
 
   bool IsAppRegistered(const std::string& app_id) {

@@ -150,6 +150,10 @@ class MetadataDatabase {
                      const base::FilePath& database_path,
                      leveldb::Env* env_override,
                      const CreateCallback& callback);
+  static SyncStatusCode CreateForTesting(
+      scoped_ptr<leveldb::DB> db,
+      scoped_ptr<MetadataDatabase>* metadata_database_out);
+
   ~MetadataDatabase();
 
   static void ClearDatabase(scoped_ptr<MetadataDatabase> metadata_database);
@@ -342,13 +346,10 @@ class MetadataDatabase {
   // Assigns the dirty tracker if exists and |tracker| is non-NULL.
   bool GetLowPriorityDirtyTracker(FileTracker* tracker) const;
 
-  bool HasDirtyTracker() const {
-    return !dirty_trackers_.empty() || !low_priority_dirty_trackers_.empty();
-  }
-
-  size_t GetDirtyTrackerCount() {
-    return dirty_trackers_.size();
-  }
+  bool HasDirtyTracker() const;
+  size_t CountDirtyTracker() const;
+  size_t CountFileMetadata() const;
+  size_t CountFileTracker() const;
 
   bool GetMultiParentFileTrackers(std::string* file_id,
                                   TrackerIDSet* trackers);
@@ -358,11 +359,7 @@ class MetadataDatabase {
   void GetRegisteredAppIDs(std::vector<std::string>* app_ids);
 
  private:
-  friend class ListChangesTaskTest;
   friend class MetadataDatabaseTest;
-  friend class RegisterAppTaskTest;
-  friend class SyncEngineInitializerTest;
-  friend class DriveBackendSyncTest;
 
   struct DirtyTrackerComparator {
     bool operator()(const FileTracker* left,
@@ -379,9 +376,6 @@ class MetadataDatabase {
                                  const base::FilePath& database_path,
                                  leveldb::Env* env_override,
                                  const CreateCallback& callback);
-  static SyncStatusCode CreateForTesting(
-      scoped_ptr<leveldb::DB> db,
-      scoped_ptr<MetadataDatabase>* metadata_database_out);
   SyncStatusCode InitializeOnTaskRunner();
   void BuildIndexes(DatabaseContents* contents);
 

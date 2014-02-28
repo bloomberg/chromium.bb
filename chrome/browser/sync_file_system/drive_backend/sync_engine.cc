@@ -339,7 +339,7 @@ void SyncEngine::NotifyLastOperationStatus(
         Observer,
         service_observers_,
         OnRemoteChangeQueueUpdated(
-            metadata_database_->GetDirtyTrackerCount()));
+            metadata_database_->CountDirtyTracker()));
   }
 }
 

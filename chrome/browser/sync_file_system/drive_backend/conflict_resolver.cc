@@ -38,8 +38,7 @@ void ConflictResolver::Run(const SyncStatusCallback& callback) {
   }
 
   // Conflict resolution should be invoked on clean tree.
-  if (metadata_database()->GetNormalPriorityDirtyTracker(NULL) ||
-      metadata_database()->GetLowPriorityDirtyTracker(NULL)) {
+  if (metadata_database()->HasDirtyTracker()) {
     NOTREACHED();
     callback.Run(SYNC_STATUS_FAILED);
     return;
