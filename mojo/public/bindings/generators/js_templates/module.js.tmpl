@@ -6,7 +6,7 @@ define([
     "mojo/apps/js/bindings/core",
     "mojo/apps/js/bindings/codec",
 {%- for import in imports %}
-    "mojom/{{include_prefix}}{{import.module_name|camel_to_underscores}}",
+    "{{import.module.path}}",
 {%- endfor %}
   ], function(core, codec
 {%- for import in imports -%}

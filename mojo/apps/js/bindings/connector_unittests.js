@@ -49,7 +49,7 @@ define([
     "mojo/apps/js/bindings/support",
     "mojo/apps/js/bindings/core",
     "mojo/apps/js/bindings/connector",
-    "mojom/sample_service",
+    "mojo/public/bindings/tests/sample_service.mojom",
 ], function(expect, mockSupport, core, connector, sample) {
 
   var receivedFrobinate = false;

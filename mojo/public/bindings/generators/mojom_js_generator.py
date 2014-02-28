@@ -209,7 +209,6 @@ def JavascriptType(kind):
 class Generator(mojom_generator.Generator):
 
   js_filters = {
-    "camel_to_underscores": mojom_generator.CamelToUnderscores,
     "default_value": JavaScriptDefaultValue,
     "payload_size": JavaScriptPayloadSize,
     "decode_snippet": JavaScriptDecodeSnippet,
