@@ -510,7 +510,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         void operator delete[](void* p) { Allocator::deleteArray(p); }
         void* operator new(size_t, NotNullTag, void* location)
         {
-            COMPILE_ASSERT(!Allocator::isGarbageCollected, Garbage_collector_must_be_disabled);
             ASSERT(location);
             return location;
         }
@@ -552,7 +551,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         void clearUnusedSlots(T* from, T* to)
         {
-            VectorUnusedSlotClearer<Allocator::isGarbageCollected && (VectorTraits<T>::needsDestruction || VectorTraits<T>::needsTracing || VectorTraits<T>::isWeak), T>::clear(from, to);
+            VectorUnusedSlotClearer<Allocator::isGarbageCollected && (VectorTraits<T>::needsDestruction || ShouldBeTraced<VectorTraits<T> >::value || VectorTraits<T>::isWeak), T>::clear(from, to);
         }
 
         Vector(const Vector&);
@@ -1136,7 +1135,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         COMPILE_ASSERT(Allocator::isGarbageCollected, Garbage_collector_must_be_enabled);
         const T* bufferBegin = buffer();
         const T* bufferEnd = buffer() + size();
-        if (VectorTraits<T>::needsTracing) {
+        if (ShouldBeTraced<VectorTraits<T> >::value) {
             for (const T* bufferEntry = bufferBegin; bufferEntry != bufferEnd; bufferEntry++)
                 Allocator::template trace<T, VectorTraits<T> >(visitor, *const_cast<T*>(bufferEntry));
         }

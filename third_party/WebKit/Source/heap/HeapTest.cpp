@@ -911,6 +911,73 @@ private:
 
 int TransitionRefCounted::s_aliveCount = 0;
 
+class Mixin : public GarbageCollectedMixin {
+public:
+    virtual void trace(Visitor* visitor) { }
+
+    char getPayload(int i) { return m_padding[i]; }
+
+protected:
+    // This is to force ptr diff for SimpleObject, Mixin, and UseMixin.
+    int m_padding[8];
+};
+
+class UseMixin : public SimpleObject, public Mixin {
+    USING_GARBAGE_COLLECTED_MIXIN(UseMixin)
+public:
+    static UseMixin* create()
+    {
+        return new UseMixin();
+    }
+
+    static int s_traceCount;
+    virtual void trace(Visitor* visitor)
+    {
+        SimpleObject::trace(visitor);
+        Mixin::trace(visitor);
+        ++s_traceCount;
+    }
+
+private:
+    UseMixin()
+    {
+        s_traceCount = 0;
+    }
+};
+
+int UseMixin::s_traceCount = 0;
+
+class VectorObject {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+public:
+    VectorObject()
+    {
+        m_value = SimpleFinalizedObject::create();
+    }
+
+    void trace(Visitor* visitor)
+    {
+        visitor->trace(m_value);
+    }
+
+private:
+    Member<SimpleFinalizedObject> m_value;
+};
+
+class VectorObjectInheritedTrace : public VectorObject { };
+
+class VectorObjectNoTrace {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+public:
+    VectorObjectNoTrace()
+    {
+        m_value = SimpleFinalizedObject::create();
+    }
+
+private:
+    Member<SimpleFinalizedObject> m_value;
+};
+
 TEST(HeapTest, Transition)
 {
     {
@@ -2421,6 +2488,8 @@ TEST(HeapTest, PersistentHeapCollectionTypes)
 
 TEST(HeapTest, CollectionNesting)
 {
+    HeapStats initialStats;
+    clearOutOldGarbage(&initialStats);
     void* key = &IntWrapper::s_destructorCalls;
     IntWrapper::s_destructorCalls = 0;
     typedef HeapVector<Member<IntWrapper> > IntVector;
@@ -2440,41 +2509,6 @@ TEST(HeapTest, CollectionNesting)
     EXPECT_EQ(0, IntWrapper::s_destructorCalls);
 }
 
-class Mixin : public GarbageCollectedMixin {
-public:
-    virtual void trace(Visitor* visitor) { }
-
-    char getPayload(int i) { return m_padding[i]; }
-
-protected:
-    // This is to force ptr diff for SimpleObject, Mixin, and UseMixin.
-    int m_padding[8];
-};
-
-class UseMixin : public SimpleObject, public Mixin {
-    USING_GARBAGE_COLLECTED_MIXIN(UseMixin)
-public:
-    static UseMixin* create()
-    {
-        return new UseMixin();
-    }
-
-    static int s_traceCount;
-    virtual void trace(Visitor* visitor)
-    {
-        SimpleObject::trace(visitor);
-        Mixin::trace(visitor);
-        ++s_traceCount;
-    }
-
-private:
-    UseMixin()
-    {
-        s_traceCount = 0;
-    }
-};
-int UseMixin::s_traceCount = 0;
-
 TEST(heap, GarbageCollectedMixin)
 {
     HeapStats initialHeapStats;
@@ -2491,4 +2525,98 @@ TEST(heap, GarbageCollectedMixin)
     ASSERT_EQ(2, UseMixin::s_traceCount);
 }
 
-} // namespace
+TEST(HeapTest, CollectionNesting2)
+{
+    HeapStats initialStats;
+    clearOutOldGarbage(&initialStats);
+    void* key = &IntWrapper::s_destructorCalls;
+    IntWrapper::s_destructorCalls = 0;
+    typedef HeapHashSet<Member<IntWrapper> > IntSet;
+    HeapHashMap<void*, IntSet>* map = new HeapHashMap<void*, IntSet>();
+
+    map->add(key, IntSet());
+
+    HeapHashMap<void*, IntSet>::iterator it = map->find(key);
+    EXPECT_EQ(0u, map->get(key).size());
+
+    it->value.add(IntWrapper::create(42));
+    EXPECT_EQ(1u, map->get(key).size());
+
+    Persistent<HeapHashMap<void*, IntSet> > keepAlive(map);
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(1u, map->get(key).size());
+    EXPECT_EQ(0, IntWrapper::s_destructorCalls);
+}
+
+TEST(HeapTest, CollectionNesting3)
+{
+    HeapStats initialStats;
+    clearOutOldGarbage(&initialStats);
+    IntWrapper::s_destructorCalls = 0;
+    typedef HeapVector<Member<IntWrapper> > IntVector;
+    HeapVector<IntVector>* vector = new HeapVector<IntVector>();
+
+    vector->append(IntVector());
+
+    HeapVector<IntVector>::iterator it = vector->begin();
+    EXPECT_EQ(0u, it->size());
+
+    it->append(IntWrapper::create(42));
+    EXPECT_EQ(1u, it->size());
+
+    Persistent<HeapVector<IntVector> > keepAlive(vector);
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(1u, it->size());
+    EXPECT_EQ(0, IntWrapper::s_destructorCalls);
+}
+
+TEST(HeapTest, EmbeddedInVector)
+{
+    HeapStats initialStats;
+    clearOutOldGarbage(&initialStats);
+    {
+        PersistentHeapVector<VectorObject, 2> inlineVector;
+        PersistentHeapVector<VectorObject> outlineVector;
+        VectorObject i1, i2;
+        inlineVector.append(i1);
+        inlineVector.append(i2);
+
+        VectorObject o1, o2;
+        outlineVector.append(o1);
+        outlineVector.append(o2);
+
+        PersistentHeapVector<VectorObjectInheritedTrace> vectorInheritedTrace;
+        VectorObjectInheritedTrace it1, it2;
+        vectorInheritedTrace.append(it1);
+        vectorInheritedTrace.append(it2);
+
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+        EXPECT_EQ(0, SimpleFinalizedObject::s_destructorCalls);
+
+        // Since VectorObjectNoTrace has no trace method it will
+        // not be traced and hence be collected when doing GC.
+        // We trace items in a collection braced on the item's
+        // having a trace method. This is determined via the
+        // NeedsTracing trait in wtf/TypeTraits.h.
+        PersistentHeapVector<VectorObjectNoTrace> vectorNoTrace;
+        VectorObjectNoTrace n1, n2;
+        vectorNoTrace.append(n1);
+        vectorNoTrace.append(n2);
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+        EXPECT_EQ(2, SimpleFinalizedObject::s_destructorCalls);
+    }
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(8, SimpleFinalizedObject::s_destructorCalls);
+}
+
+} // WebCore namespace
+
+namespace WTF {
+
+// We need the below vector trait specialization for the above HeapVectors to behave correctly wrt. memset, memcmp etc.
+template<> struct VectorTraits<WebCore::VectorObject> : public SimpleClassVectorTraits<WebCore::VectorObject> { };
+template<> struct VectorTraits<WebCore::VectorObjectInheritedTrace> : public SimpleClassVectorTraits<WebCore::VectorObjectInheritedTrace> { };
+template<> struct VectorTraits<WebCore::VectorObjectNoTrace> : public SimpleClassVectorTraits<WebCore::VectorObjectNoTrace> { };
+
+} // WTF namespace
+

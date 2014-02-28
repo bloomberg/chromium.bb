@@ -1218,7 +1218,7 @@ public:
     template<typename T, typename Traits>
     static void trace(Visitor* visitor, T& t)
     {
-        CollectionBackingTraceTrait<Traits::needsTracing, Traits::isWeak, false, T, Traits>::mark(visitor, t);
+        CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::isWeak, false, T, Traits>::mark(visitor, t);
     }
 
     template<typename T>
@@ -1339,10 +1339,10 @@ public:
     }
 
     template<typename U, size_t otherCapacity>
-    void append(const HeapVector<U, otherCapacity>& other)
+    void appendVector(const HeapVector<U, otherCapacity>& other)
     {
         const Vector<U, otherCapacity, HeapAllocator>& otherVector = other;
-        Vector<T, inlineCapacity, HeapAllocator>::append(otherVector);
+        Vector<T, inlineCapacity, HeapAllocator>::appendVector(otherVector);
     }
 };
 
@@ -1495,7 +1495,7 @@ struct BaseVisitVectorBackingTrait {
         // payloadSize call below, since there is nowhere to store the
         // originally allocated memory. This assert ensures that visiting the
         // last bit of memory can't cause trouble.
-        COMPILE_ASSERT(!Traits::needsTracing || sizeof(T) > allocationGranularity || Traits::canInitializeWithMemset, HeapOverallocationCanCauseSpuriousVisits);
+        COMPILE_ASSERT(!WTF::ShouldBeTraced<Traits>::value || sizeof(T) > allocationGranularity || Traits::canInitializeWithMemset, HeapOverallocationCanCauseSpuriousVisits);
 
         T* array = reinterpret_cast<T*>(self);
         WebCore::FinalizedHeapObjectHeader* header = WebCore::FinalizedHeapObjectHeader::fromPayload(self);
@@ -1503,7 +1503,7 @@ struct BaseVisitVectorBackingTrait {
         // elements to mark.
         size_t length = header->payloadSize() / sizeof(T);
         for (size_t i = 0; i < length; i++)
-            CollectionBackingTraceTrait<Traits::needsTracing, Traits::isWeak, markWeakMembersStrongly, T, Traits>::mark(visitor, array[i]);
+            CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::isWeak, markWeakMembersStrongly, T, Traits>::mark(visitor, array[i]);
     }
 };
 
@@ -1516,7 +1516,7 @@ struct BaseVisitHashTableBackingTrait {
         size_t length = header->payloadSize() / sizeof(Value);
         for (size_t i = 0; i < length; i++) {
             if (!WTF::HashTableHelper<Value, Extractor, KeyTraits>::isEmptyOrDeletedBucket(array[i]))
-                CollectionBackingTraceTrait<Traits::needsTracing, Traits::isWeak, markWeakMembersStrongly, Value, Traits>::mark(visitor, array[i]);
+                CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::isWeak, markWeakMembersStrongly, Value, Traits>::mark(visitor, array[i]);
         }
     }
 };
@@ -1525,9 +1525,9 @@ template<bool markWeakMembersStrongly, typename Key, typename Value, typename Tr
 struct BaseVisitKeyValuePairTrait {
     static void mark(WebCore::Visitor* visitor, WTF::KeyValuePair<Key, Value>& self)
     {
-        ASSERT(Traits::needsTracing || (Traits::isWeak && markWeakMembersStrongly));
-        CollectionBackingTraceTrait<Traits::KeyTraits::needsTracing, Traits::KeyTraits::isWeak, markWeakMembersStrongly, Key, typename Traits::KeyTraits>::mark(visitor, self.key);
-        CollectionBackingTraceTrait<Traits::ValueTraits::needsTracing, Traits::ValueTraits::isWeak, markWeakMembersStrongly, Value, typename Traits::ValueTraits>::mark(visitor, self.value);
+        ASSERT(WTF::ShouldBeTraced<Traits>::value || (Traits::isWeak && markWeakMembersStrongly));
+        CollectionBackingTraceTrait<WTF::ShouldBeTraced<typename Traits::KeyTraits>::value, Traits::KeyTraits::isWeak, markWeakMembersStrongly, Key, typename Traits::KeyTraits>::mark(visitor, self.key);
+        CollectionBackingTraceTrait<WTF::ShouldBeTraced<typename Traits::ValueTraits>::value, Traits::ValueTraits::isWeak, markWeakMembersStrongly, Value, typename Traits::ValueTraits>::mark(visitor, self.value);
     }
 };
 
@@ -1621,8 +1621,8 @@ struct TraceTrait<HeapVectorBacking<T, Traits> > {
     static void trace(WebCore::Visitor* visitor, void* self)
     {
         COMPILE_ASSERT(!Traits::isWeak, WeDontSupportWeaknessInHeapVectors);
-        if (Traits::needsTracing)
-            CollectionBackingTraceTrait<Traits::needsTracing, false, false, HeapVectorBacking<T, Traits>, void>::mark(visitor, self);
+        if (WTF::ShouldBeTraced<Traits>::value)
+            CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, false, false, HeapVectorBacking<T, Traits>, void>::mark(visitor, self);
     }
     static void mark(Visitor* visitor, const Backing* backing)
     {
@@ -1645,15 +1645,14 @@ struct TraceTrait<HeapVectorBacking<T, Traits> > {
 template<typename Key, typename Value, typename Extractor, typename Traits, typename KeyTraits>
 struct TraceTrait<HeapHashTableBacking<Key, Value, Extractor, Traits, KeyTraits> > {
     typedef HeapHashTableBacking<Key, Value, Extractor, Traits, KeyTraits> Backing;
-    static const bool needsTracing = (Traits::needsTracing || Traits::isWeak);
     static void trace(WebCore::Visitor* visitor, void* self)
     {
-        if (needsTracing)
-            CollectionBackingTraceTrait<Traits::needsTracing, Traits::isWeak, true, HeapHashTableBacking<Key, Value, Extractor, Traits, KeyTraits>, void>::mark(visitor, self);
+        if (WTF::ShouldBeTraced<Traits>::value || Traits::isWeak)
+            CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::isWeak, true, HeapHashTableBacking<Key, Value, Extractor, Traits, KeyTraits>, void>::mark(visitor, self);
     }
     static void mark(Visitor* visitor, const Backing* backing)
     {
-        if (needsTracing)
+        if (WTF::ShouldBeTraced<Traits>::value || Traits::isWeak)
             visitor->mark(backing, &trace);
         else
             visitor->mark(backing, 0);

@@ -399,9 +399,10 @@ struct OffHeapCollectionTraceTrait<WTF::HashSet<T, HashFunctions, Traits, WTF::D
     {
         if (set.isEmpty())
             return;
-        if (WTF::NeedsTracing<T>::value) {
-            for (typename HashSet::const_iterator it = set.begin(), end = set.end(); it != end; ++it)
-                CollectionBackingTraceTrait<Traits::needsTracing, Traits::isWeak, false, T, Traits>::mark(visitor, *it);
+        if (WTF::ShouldBeTraced<Traits>::value) {
+            HashSet& iterSet = const_cast<HashSet&>(set);
+            for (typename HashSet::iterator it = iterSet.begin(), end = iterSet.end(); it != end; ++it)
+                CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::isWeak, false, T, Traits>::mark(visitor, *it);
         }
         COMPILE_ASSERT(!Traits::isWeak, WeakOffHeapCollectionsConsideredDangerous0);
     }
@@ -415,7 +416,8 @@ struct OffHeapCollectionTraceTrait<WTF::ListHashSet<T, inlineCapacity, HashFunct
     {
         if (set.isEmpty())
             return;
-        for (typename ListHashSet::const_iterator it = set.begin(), end = set.end(); it != end; ++it)
+        ListHashSet& iterSet = const_cast<ListHashSet&>(set);
+        for (typename ListHashSet::iterator it = iterSet.begin(), end = iterSet.end(); it != end; ++it)
             visitor->trace(*it);
     }
 };
@@ -428,10 +430,11 @@ struct OffHeapCollectionTraceTrait<WTF::HashMap<Key, Value, HashFunctions, KeyTr
     {
         if (map.isEmpty())
             return;
-        if (WTF::NeedsTracing<Key>::value || WTF::NeedsTracing<Value>::value) {
-            for (typename HashMap::const_iterator it = map.begin(), end = map.end(); it != end; ++it) {
-                CollectionBackingTraceTrait<KeyTraits::needsTracing, KeyTraits::isWeak, false, Key, KeyTraits>::mark(visitor, it->key);
-                CollectionBackingTraceTrait<ValueTraits::needsTracing, ValueTraits::isWeak, false, Value, ValueTraits>::mark(visitor, it->value);
+        if (WTF::ShouldBeTraced<KeyTraits>::value || WTF::ShouldBeTraced<ValueTraits>::value) {
+            HashMap& iterMap = const_cast<HashMap&>(map);
+            for (typename HashMap::iterator it = iterMap.begin(), end = iterMap.end(); it != end; ++it) {
+                CollectionBackingTraceTrait<WTF::ShouldBeTraced<KeyTraits>::value, KeyTraits::isWeak, false, Key, KeyTraits>::mark(visitor, it->key);
+                CollectionBackingTraceTrait<WTF::ShouldBeTraced<ValueTraits>::value, ValueTraits::isWeak, false, Value, ValueTraits>::mark(visitor, it->value);
             }
         }
         COMPILE_ASSERT(!KeyTraits::isWeak, WeakOffHeapCollectionsConsideredDangerous1);

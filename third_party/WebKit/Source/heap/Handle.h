@@ -803,21 +803,6 @@ struct IsWeak<WebCore::WeakMember<T> > {
     static const bool value = true;
 };
 
-template<typename T, size_t inlineCapacity>
-struct NeedsTracing<WebCore::HeapVector<T, inlineCapacity> > {
-    static const bool value = true;
-};
-
-template<typename T, typename U, typename V>
-struct NeedsTracing<WebCore::HeapHashSet<T, U, V> > {
-    static const bool value = true;
-};
-
-template<typename T, typename U, typename V, typename W, typename X>
-struct NeedsTracing<WebCore::HeapHashMap<T, U, V, W, X> > {
-    static const bool value = true;
-};
-
 template<typename Key, typename Value, typename Extractor, typename Traits, typename KeyTraits>
 struct IsWeak<WebCore::HeapHashTableBacking<Key, Value, Extractor, Traits, KeyTraits> > {
     static const bool value = Traits::isWeak;
@@ -831,6 +816,33 @@ template<typename T> inline T* getPtr(const WebCore::Member<T>& p)
 template<typename T, typename U>
 struct NeedsTracing<std::pair<T, U> > {
     static const bool value = NeedsTracing<T>::value || NeedsTracing<U>::value || IsWeak<T>::value || IsWeak<U>::value;
+};
+
+// We define specialization of the NeedsTracing trait for off heap collections
+// since we don't support tracing them.
+template<typename T>
+struct NeedsTracing<Vector<T> > {
+    static const bool value = false;
+};
+
+template<typename T, size_t N>
+struct NeedsTracing<Deque<T, N> > {
+    static const bool value = false;
+};
+
+template<typename T>
+struct NeedsTracing<HashSet<T> > {
+    static const bool value = false;
+};
+
+template<typename T>
+struct NeedsTracing<ListHashSet<T> > {
+    static const bool value = false;
+};
+
+template<typename T, typename U>
+struct NeedsTracing<HashMap<T, U> > {
+    static const bool value = false;
 };
 
 } // namespace WTF

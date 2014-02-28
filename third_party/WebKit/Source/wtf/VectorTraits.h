@@ -42,7 +42,10 @@ namespace WTF {
         static const bool canCopyWithMemcpy = IsPod<T>::value;
         static const bool canFillWithMemset = IsPod<T>::value && (sizeof(T) == sizeof(char));
         static const bool canCompareWithMemcmp = IsPod<T>::value;
-        static const bool needsTracing = NeedsTracing<T>::value;
+        template<typename U = void>
+        struct NeedsTracingLazily {
+            static const bool value = NeedsTracing<T>::value;
+        };
         static const bool isWeak = IsWeak<T>::value;
     };
 
@@ -79,7 +82,10 @@ namespace WTF {
         static const bool canCopyWithMemcpy = FirstTraits::canCopyWithMemcpy && SecondTraits::canCopyWithMemcpy;
         static const bool canFillWithMemset = false;
         static const bool canCompareWithMemcmp = FirstTraits::canCompareWithMemcmp && SecondTraits::canCompareWithMemcmp;
-        static const bool needsTracing = FirstTraits::needsTracing || SecondTraits::needsTracing;
+        template <typename U = void>
+        struct NeedsTracingLazily {
+            static const bool value = ShouldBeTraced<FirstTraits>::value || ShouldBeTraced<SecondTraits>::value;
+        };
         static const bool isWeak = FirstTraits::isWeak || SecondTraits::isWeak;
     };
 

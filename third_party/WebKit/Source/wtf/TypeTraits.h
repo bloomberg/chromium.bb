@@ -70,7 +70,6 @@ namespace WTF {
 
     template<typename T> struct IsArithmetic        { static const bool value = IsInteger<T>::value || IsFloatingPoint<T>::value; };
 
-    template<typename T> struct NeedsTracing        { static const bool value = false; };
     template<typename T> struct IsWeak              { static const bool value = false; };
 
     // IsPod is misnamed as it doesn't cover all plain old data (pod) types.
@@ -284,7 +283,32 @@ namespace WTF {
         };
     };
 
-} // namespace WTF
+template<typename T>
+class NeedsTracing {
+    typedef char YesType;
+    typedef struct NoType {
+        char padding[8];
+    } NoType;
 
+#if COMPILER(MSVC)
+    template<typename V> static YesType checkHasTraceMethod(char[&V::trace != 0]);
+#else
+    template<size_t> struct HasMethod;
+    template<typename V> static YesType checkHasTraceMethod(HasMethod<sizeof(&V::trace)>*);
+#endif // COMPILER(MSVC)
+    template<typename V> static NoType checkHasTraceMethod(...);
+public:
+    static const bool value = sizeof(YesType) == sizeof(checkHasTraceMethod<T>(0));
+};
+
+// Convenience template wrapping the NeedsTracingLazily template in
+// Collection Traits. It helps make the code more readable.
+template<typename Traits>
+class ShouldBeTraced {
+public:
+    static const bool value = Traits::template NeedsTracingLazily<void>::value;
+};
+
+} // namespace WTF
 
 #endif // TypeTraits_h
