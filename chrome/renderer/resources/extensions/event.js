@@ -260,7 +260,7 @@
     if (!this.eventOptions.supportsListeners)
       throw new Error("This event does not support listeners.");
     if (this.eventOptions.maxListeners &&
-        this.getListenerCount() >= this.eventOptions.maxListeners) {
+        this.getListenerCount_() >= this.eventOptions.maxListeners) {
       throw new Error("Too many listeners for " + this.eventName);
     }
     if (filters) {
@@ -328,11 +328,11 @@
 
   // Test if any callbacks are registered for this event.
   EventImpl.prototype.hasListeners = function() {
-    return this.getListenerCount() > 0;
+    return this.getListenerCount_() > 0;
   };
 
-  // Return the number of listeners on this event.
-  EventImpl.prototype.getListenerCount = function() {
+  // Returns the number of listeners on this event.
+  EventImpl.prototype.getListenerCount_ = function() {
     if (!this.eventOptions.supportsListeners)
       throw new Error("This event does not support listeners.");
     return this.listeners.length;
@@ -511,7 +511,6 @@
     'removeListener',
     'hasListener',
     'hasListeners',
-    'getListenerCount',
     'dispatchToListener',
     'dispatch',
     'addRules',

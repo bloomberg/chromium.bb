@@ -14,8 +14,8 @@ function test() {
     if (windowId != testWindowId)
       return;  // I guess some other window might have closed?
 
-    // If the event hasn't been overridden the count will be 1.
-    chrome.test.assertEq(1, chrome.windows.onRemoved.getListenerCount());
+    // If the event hasn't been overridden there should be a listener.
+    chrome.test.assertTrue(chrome.windows.onRemoved.hasListeners());
 
     // This used to crash since we try to register the event more than once.
     chrome.windows.onRemoved.removeListener(listener);
