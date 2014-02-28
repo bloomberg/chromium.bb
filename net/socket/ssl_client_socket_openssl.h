@@ -27,6 +27,8 @@ typedef struct evp_pkey_st EVP_PKEY;
 typedef struct ssl_st SSL;
 // <openssl/x509.h>
 typedef struct x509_st X509;
+// <openssl/ossl_type.h>
+typedef struct x509_store_ctx_st X509_STORE_CTX;
 
 namespace net {
 
@@ -130,6 +132,11 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   // Callback from the SSL layer that indicates the remote server supports TLS
   // Channel IDs.
   void ChannelIDRequestCallback(SSL* ssl, EVP_PKEY** pkey);
+
+  // CertVerifyCallback is called to verify the server's certificates. We do
+  // verification after the handshake so this function only enforces that the
+  // certificates don't change during renegotiation.
+  int CertVerifyCallback(X509_STORE_CTX *store_ctx);
 
   // Callback from the SSL layer to check which NPN protocol we are supporting
   int SelectNextProtoCallback(unsigned char** out, unsigned char* outlen,
