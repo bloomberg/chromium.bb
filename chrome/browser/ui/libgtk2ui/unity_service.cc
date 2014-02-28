@@ -60,7 +60,12 @@ void EnsureMethodsLoaded() {
   attempted_load = true;
 
   scoped_ptr<base::Environment> env(base::Environment::Create());
-  if (GetDesktopEnvironment(env.get()) != base::nix::DESKTOP_ENVIRONMENT_UNITY)
+  base::nix::DesktopEnvironment desktop_env =
+      GetDesktopEnvironment(env.get());
+
+  // The "icon-tasks" KDE task manager also honors Unity Launcher API.
+  if (desktop_env != base::nix::DESKTOP_ENVIRONMENT_UNITY &&
+      desktop_env != base::nix::DESKTOP_ENVIRONMENT_KDE4)
     return;
 
   // Ubuntu still hasn't given us a nice libunity.so symlink.
