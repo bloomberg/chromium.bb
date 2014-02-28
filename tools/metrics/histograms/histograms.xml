@@ -13095,6 +13095,9 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Omnibox.SearchEngine" enum="OmniboxSearchEngine">
+  <obsolete>
+    Made obsolete around Chrome 32.  Use Omnibox.SearchEngineType instead.
+  </obsolete>
   <summary>
     The id of search engine that was used for search in omnibox. See
     src/chrome/browser/search_engines/template_url_prepopulate_data.cc for more
@@ -18306,6 +18309,10 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Search.DefaultSearchProvider" enum="OmniboxSearchEngine">
+  <obsolete>
+    Made obsolete around Chrome 32.  Use Search.DefaultSearchProviderType
+    instead.
+  </obsolete>
   <summary>
     The id of the default search engine that is loaded after Chrome startup. See
     src/chrome/browser/search_engines/prepopulate_engines.json for more info.

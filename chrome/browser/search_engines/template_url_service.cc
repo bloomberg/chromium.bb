@@ -2668,15 +2668,9 @@ void TemplateURLService::EnsureDefaultSearchProviderExists() {
     }
     // Don't log anything if the user has a NULL default search provider.
     if (default_search_provider_) {
-      // TODO(pkasting): This histogram obsoletes the next one.  Remove the next
-      // one in Chrome 32 or later.
       UMA_HISTOGRAM_ENUMERATION("Search.DefaultSearchProviderType",
           TemplateURLPrepopulateData::GetEngineType(*default_search_provider_),
           SEARCH_ENGINE_MAX);
-      UMA_HISTOGRAM_ENUMERATION(
-          "Search.DefaultSearchProvider",
-          default_search_provider_->prepopulate_id(),
-          TemplateURLPrepopulateData::kMaxPrepopulatedEngineID);
     }
   }
 }

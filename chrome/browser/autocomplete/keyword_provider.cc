@@ -83,8 +83,8 @@ class CompareQuality {
   // A keyword is of higher quality when a greater fraction of it has been
   // typed, that is, when it is shorter.
   //
-  // TODO(pkasting): http://b/740691 Most recent and most frequent keywords are
-  // probably better rankings than the fraction of the keyword typed.  We should
+  // TODO(pkasting): Most recent and most frequent keywords are probably
+  // better rankings than the fraction of the keyword typed.  We should
   // always put any exact matches first no matter what, since the code in
   // Start() assumes this (and it makes sense).
   bool operator()(const TemplateURL* t_url1, const TemplateURL* t_url2) const {
@@ -248,10 +248,10 @@ void KeywordProvider::Start(const AutocompleteInput& input,
   // automatically/manually create keywords will need to be in sync with
   // whatever we do here!
   //
-  // TODO(pkasting): http://b/1112681 If someday we remember usage frequency for
-  // keywords, we might suggest keywords that haven't even been partially typed,
-  // if the user uses them enough and isn't obviously typing something else.  In
-  // this case we'd consider all input here to be query input.
+  // TODO(pkasting): http://crbug/347744 If someday we remember usage frequency
+  // for keywords, we might suggest keywords that haven't even been partially
+  // typed, if the user uses them enough and isn't obviously typing something
+  // else.  In this case we'd consider all input here to be query input.
   base::string16 keyword, remaining_input;
   if (!ExtractKeywordFromInput(input, &keyword, &remaining_input))
     return;
@@ -262,10 +262,6 @@ void KeywordProvider::Start(const AutocompleteInput& input,
   // |minimal_changes| case, but since we'd still have to recalculate their
   // relevances and we can just recreate the results synchronously anyway, we
   // don't bother.
-  //
-  // TODO(pkasting): http://b/893701 We should remember the user's use of a
-  // search query both from the autocomplete popup and from web pages
-  // themselves.
   TemplateURLService::TemplateURLVector matches;
   GetTemplateURLService()->FindMatchingKeywords(
       keyword, !remaining_input.empty(), &matches);
