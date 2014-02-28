@@ -6266,15 +6266,6 @@
    fun:_ZN50LoginDatabaseTest_UpdateIncompleteCredentials_Test8TestBodyEv
 }
 {
-   bug_347965
-   Memcheck:Leak
-   ...
-   fun:SECKEY_ConvertToPublicKey
-   fun:_ZN7content9webcrypto8platform12_GLOBAL__N_125CreatePrivateKeyAlgorithmERKN5blink18WebCryptoAlgorithmEP19SECKEYPrivateKeyStrPNS3_21WebCryptoKeyAlgorithmE
-   fun:_ZN7content9webcrypto8platform14ImportKeyPkcs8ERKN5blink18WebCryptoAlgorithmERKNS0_10CryptoDataEbiPNS2_12WebCryptoKeyE
-   fun:_ZN7content9webcrypto9ImportKeyEN5blink18WebCryptoKeyFormatERKNS0_10CryptoDataERKNS1_18WebCryptoAlgorithmEbiPNS1_12WebCryptoKeyE
-}
-{
    bug_347967_a
    Memcheck:Uninitialized
    fun:unpack_RGBA8888

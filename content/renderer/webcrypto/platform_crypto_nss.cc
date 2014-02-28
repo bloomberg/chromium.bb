@@ -441,8 +441,8 @@ bool CreatePublicKeyAlgorithm(const blink::WebCryptoAlgorithm& algorithm,
 bool CreatePrivateKeyAlgorithm(const blink::WebCryptoAlgorithm& algorithm,
                                SECKEYPrivateKey* key,
                                blink::WebCryptoKeyAlgorithm* key_algorithm) {
-  return CreatePublicKeyAlgorithm(
-      algorithm, SECKEY_ConvertToPublicKey(key), key_algorithm);
+  crypto::ScopedSECKEYPublicKey public_key(SECKEY_ConvertToPublicKey(key));
+  return CreatePublicKeyAlgorithm(algorithm, public_key.get(), key_algorithm);
 }
 
 }  // namespace
