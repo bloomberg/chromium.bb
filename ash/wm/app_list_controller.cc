@@ -205,11 +205,8 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
     SetView(view);
     // By setting us as DnD recipient, the app list knows that we can
     // handle items.
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kAshDisableDragAndDropAppListToLauncher)) {
-      SetDragAndDropHostOfCurrentAppList(
-          Shelf::ForWindow(window)->GetDragAndDropHostForAppList());
-    }
+    SetDragAndDropHostOfCurrentAppList(
+        Shelf::ForWindow(window)->GetDragAndDropHostForAppList());
   }
   // Update applist button status when app list visibility is changed.
   Shelf::ForWindow(window)->GetAppListButtonView()->SchedulePaint();

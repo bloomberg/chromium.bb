@@ -61,10 +61,6 @@ const char kAshDisableAudioDeviceMenu[] =
 // Disable ability to dock windows at the desktop edge.
 const char kAshDisableDockedWindows[] = "ash-disable-docked-windows";
 
-// Disallow items to be dragged from the app launcher list into the launcher.
-const char kAshDisableDragAndDropAppListToLauncher[] =
-    "ash-disable-drag-and-drop-applist-to-launcher";
-
 // Disable dragging items off the shelf to unpin them.
 const char kAshDisableDragOffShelf[] = "ash-disable-drag-off-shelf";
 
