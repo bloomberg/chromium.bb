@@ -86,7 +86,6 @@ class DeviceOAuth2TokenService : public OAuth2TokenService,
   struct PendingRequest;
   friend class DeviceOAuth2TokenServiceFactory;
   friend class DeviceOAuth2TokenServiceTest;
-  friend class TestDeviceOAuth2TokenService;
 
   // Describes the operational state of this object.
   enum State {
@@ -112,6 +111,10 @@ class DeviceOAuth2TokenService : public OAuth2TokenService,
 
   // Handles completion of the system salt input.
   void DidGetSystemSalt(const std::string& system_salt);
+
+  // Checks whether |gaia_robot_id| matches the expected account ID indicated in
+  // device settings.
+  void CheckRobotAccountId(const std::string& gaia_robot_id);
 
   // Encrypts and saves the refresh token. Should only be called when the system
   // salt is available.

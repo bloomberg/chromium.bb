@@ -237,11 +237,6 @@ std::string DeviceCloudPolicyManagerChromeOS::GetMachineModel() {
   return GetMachineStatistic(kMachineInfoSystemHwqual);
 }
 
-std::string DeviceCloudPolicyManagerChromeOS::GetRobotAccountId() {
-  const enterprise_management::PolicyData* policy = device_store_->policy();
-  return policy ? policy->service_account_identity() : std::string();
-}
-
 scoped_ptr<CloudPolicyClient> DeviceCloudPolicyManagerChromeOS::CreateClient() {
   scoped_refptr<net::URLRequestContextGetter> request_context =
       new SystemPolicyRequestContext(

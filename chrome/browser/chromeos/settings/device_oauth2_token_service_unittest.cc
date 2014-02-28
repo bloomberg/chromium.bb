@@ -7,6 +7,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
+#include "chrome/browser/chromeos/policy/device_policy_builder.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/token_encryptor.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -29,31 +33,10 @@ namespace chromeos {
 static const int kOAuthTokenServiceUrlFetcherId = 0;
 static const int kValidatorUrlFetcherId = gaia::GaiaOAuthClient::kUrlFetcherId;
 
-class TestDeviceOAuth2TokenService : public DeviceOAuth2TokenService {
- public:
-  explicit TestDeviceOAuth2TokenService(net::URLRequestContextGetter* getter,
-                                        PrefService* local_state)
-      : DeviceOAuth2TokenService(getter, local_state) {}
-
-  void SetRobotAccountIdPolicyValue(const std::string& id) {
-    robot_account_id_ = id;
-  }
-
-  // Skip calling into the policy subsystem and return our test value.
-  virtual std::string GetRobotAccountId() const OVERRIDE {
-    return robot_account_id_;
-  }
-
- private:
-  std::string robot_account_id_;
-  DISALLOW_COPY_AND_ASSIGN(TestDeviceOAuth2TokenService);
-};
-
 class DeviceOAuth2TokenServiceTest : public testing::Test {
  public:
   DeviceOAuth2TokenServiceTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()),
+      : scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()),
         request_context_getter_(new net::TestURLRequestContextGetter(
             message_loop_.message_loop_proxy())) {}
   virtual ~DeviceOAuth2TokenServiceTest() {}
@@ -62,8 +45,8 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   // Local State (if the value is an empty string, it will be ignored).
   void SetUpDefaultValues() {
     SetDeviceRefreshTokenInLocalState("device_refresh_token_4_test");
+    SetRobotAccountId("service_acct@g.com");
     CreateService();
-    oauth2_service_->SetRobotAccountIdPolicyValue("service_acct@g.com");
     AssertConsumerTokensAndErrors(0, 0);
 
     base::RunLoop().RunUntilIdle();
@@ -72,9 +55,15 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   void SetUpWithPendingSalt() {
     fake_cryptohome_client_->set_system_salt(std::vector<uint8>());
     fake_cryptohome_client_->SetServiceIsAvailable(false);
-    SetDeviceRefreshTokenInLocalState("device_refresh_token_4_test");
-    CreateService();
-    oauth2_service_->SetRobotAccountIdPolicyValue("service_acct@g.com");
+    SetUpDefaultValues();
+  }
+
+  void SetRobotAccountId(const std::string& account_id) {
+    device_policy_.policy_data().set_service_account_identity(account_id);
+    device_policy_.Build();
+    device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+    DeviceSettingsService::Get()->Load();
+    device_settings_test_helper_.Flush();
   }
 
   scoped_ptr<OAuth2TokenService::Request> StartTokenRequest() {
@@ -92,18 +81,32 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
         FakeCryptohomeClient::GetStubSystemSalt());
     fake_dbus_thread_manager->SetCryptohomeClient(
         scoped_ptr<CryptohomeClient>(fake_cryptohome_client_));
+
     DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager.release());
+
     SystemSaltGetter::Initialize();
+
+    DeviceSettingsService::Initialize();
+    scoped_refptr<MockOwnerKeyUtil> owner_key_util_(new MockOwnerKeyUtil());
+    owner_key_util_->SetPublicKeyFromPrivateKey(
+        *device_policy_.GetSigningKey());
+    DeviceSettingsService::Get()->SetSessionManager(
+        &device_settings_test_helper_, owner_key_util_);
+
+    CrosSettings::Initialize();
   }
 
   virtual void TearDown() OVERRIDE {
+    CrosSettings::Shutdown();
+    DeviceSettingsService::Get()->UnsetSessionManager();
+    DeviceSettingsService::Shutdown();
     SystemSaltGetter::Shutdown();
     DBusThreadManager::Shutdown();
     base::RunLoop().RunUntilIdle();
   }
 
   void CreateService() {
-    oauth2_service_.reset(new TestDeviceOAuth2TokenService(
+    oauth2_service_.reset(new DeviceOAuth2TokenService(
         request_context_getter_.get(), scoped_testing_local_state_.Get()));
     oauth2_service_->max_refresh_token_validation_retries_ = 0;
     oauth2_service_->set_max_authorization_token_fetch_retries_for_testing(0);
@@ -164,13 +167,23 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   void AssertConsumerTokensAndErrors(int num_tokens, int num_errors);
 
  protected:
+  // This is here because DeviceOAuth2TokenService's destructor is private;
+  // base::DefaultDeleter therefore doesn't work. However, the test class is
+  // declared friend in DeviceOAuth2TokenService, so this deleter works.
+  struct TokenServiceDeleter {
+    inline void operator()(DeviceOAuth2TokenService* ptr) const {
+      delete ptr;
+    }
+  };
+
   base::MessageLoop message_loop_;
-  content::TestBrowserThread ui_thread_;
   ScopedTestingLocalState scoped_testing_local_state_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   net::TestURLFetcherFactory factory_;
   FakeCryptohomeClient* fake_cryptohome_client_;
-  scoped_ptr<TestDeviceOAuth2TokenService> oauth2_service_;
+  DeviceSettingsTestHelper device_settings_test_helper_;
+  policy::DevicePolicyBuilder device_policy_;
+  scoped_ptr<DeviceOAuth2TokenService, TokenServiceDeleter> oauth2_service_;
   TestingOAuth2TokenServiceConsumer consumer_;
 };
 
@@ -389,7 +402,7 @@ TEST_F(DeviceOAuth2TokenServiceTest, RefreshTokenValidation_Failure_BadOwner) {
   SetUpDefaultValues();
   scoped_ptr<OAuth2TokenService::Request> request = StartTokenRequest();
 
-  oauth2_service_->SetRobotAccountIdPolicyValue("WRONG_service_acct@g.com");
+  SetRobotAccountId("WRONG_service_acct@g.com");
 
   PerformURLFetchesWithResults(
       net::HTTP_OK, GetValidTokenResponse("tokeninfo_access_token", 3600),

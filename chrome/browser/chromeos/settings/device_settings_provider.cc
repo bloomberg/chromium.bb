@@ -66,6 +66,7 @@ const char* kKnownSettings[] = {
   kReportDeviceVersionInfo,
   kScreenSaverExtensionId,
   kScreenSaverTimeout,
+  kServiceAccountIdentity,
   kSignedDataRoamingEnabled,
   kStartUpFlags,
   kStartUpUrls,
@@ -401,6 +402,7 @@ void DeviceSettingsProvider::SetInPolicy() {
     //   kReportDeviceUsers
     //   kScreenSaverExtensionId
     //   kScreenSaverTimeout
+    //   kServiceAccountIdentity
     //   kStartUpUrls
     //   kSystemTimezonePolicy
     //   kVariationsRestrictParameter
@@ -761,6 +763,11 @@ void DeviceSettingsProvider::UpdateValuesCache(
 
   if (policy_data.has_username() && !policy_data.has_request_token())
     new_values_cache.SetString(kDeviceOwner, policy_data.username());
+
+  if (policy_data.has_service_account_identity()) {
+    new_values_cache.SetString(kServiceAccountIdentity,
+                               policy_data.service_account_identity());
+  }
 
   DecodeLoginPolicies(settings, &new_values_cache);
   DecodeKioskPolicies(settings, &new_values_cache);

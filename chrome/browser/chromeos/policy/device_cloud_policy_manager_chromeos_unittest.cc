@@ -195,7 +195,7 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, EnrolledDevice) {
   manager_->Shutdown();
   VerifyPolicyPopulated();
 
-  EXPECT_EQ(manager_->GetRobotAccountId(),
+  EXPECT_EQ(store_->policy()->service_account_identity(),
             PolicyBuilder::kFakeServiceAccountIdentity);
 }
 
