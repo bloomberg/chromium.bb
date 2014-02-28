@@ -60,7 +60,7 @@ public:
     unsigned numberOfChannels();
 
     // Play-state
-    void start(ExceptionState&);
+    void start(ExceptionState& exceptionState) { start(0, exceptionState); }
     void start(double when, ExceptionState&);
     void start(double when, double grainOffset, ExceptionState&);
     void start(double when, double grainOffset, double grainDuration, ExceptionState&);
@@ -94,8 +94,6 @@ public:
 
 private:
     AudioBufferSourceNode(AudioContext*, float sampleRate);
-
-    void startPlaying(bool isGrain, double when, double grainOffset, double grainDuration, ExceptionState&);
 
     // Returns true on success.
     bool renderFromBuffer(AudioBus*, unsigned destinationFrameOffset, size_t numberOfFrames);

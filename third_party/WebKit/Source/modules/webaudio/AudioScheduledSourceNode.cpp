@@ -136,7 +136,6 @@ void AudioScheduledSourceNode::updateSchedulingInfo(size_t quantumFrameSize,
     return;
 }
 
-
 void AudioScheduledSourceNode::start(double when, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
