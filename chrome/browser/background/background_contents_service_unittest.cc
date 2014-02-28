@@ -347,18 +347,7 @@ TEST_F(BackgroundContentsServiceTest, TestApplicationIDLinkage) {
 }
 
 #if defined(ENABLE_NOTIFICATIONS)
-// Test fails because of NOTIMPLEMENTED in fullscreen_aura.cc used by the
-// notification system.
-// TODO(mukai): Fix in notification side.
-#if defined(OS_CHROMEOS) || !defined(OS_LINUX)
-#define MAYBE_TestShowBalloon TestShowBalloon
-#define MAYBE_TestShowBalloonNoIcon TestShowBalloonNoIcon
-#else
-#define MAYBE_TestShowBalloon DISABLED_TestShowBalloon
-#define MAYBE_TestShowBalloonNoIcon DISABLED_TestShowBalloonNoIcon
-#endif
-
-TEST_F(BackgroundContentsServiceNotificationTest, MAYBE_TestShowBalloon) {
+TEST_F(BackgroundContentsServiceNotificationTest, TestShowBalloon) {
   if (!NotificationUIManager::DelegatesToMessageCenter())
     return;
 
@@ -373,7 +362,7 @@ TEST_F(BackgroundContentsServiceNotificationTest, MAYBE_TestShowBalloon) {
 
 // Verify if a test notification can show the default extension icon for
 // a crash notification for an extension without icon.
-TEST_F(BackgroundContentsServiceNotificationTest, MAYBE_TestShowBalloonNoIcon) {
+TEST_F(BackgroundContentsServiceNotificationTest, TestShowBalloonNoIcon) {
   if (!NotificationUIManager::DelegatesToMessageCenter())
     return;
 
