@@ -36,6 +36,7 @@
 #include "WebContextMenuData.h"
 #include "WebDataSourceImpl.h"
 #include "WebFormElement.h"
+#include "WebFrameClient.h"
 #include "WebFrameImpl.h"
 #include "WebMenuItemInfo.h"
 #include "WebPlugin.h"
@@ -365,9 +366,9 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
 
     data.node = r.innerNonSharedNode();
 
-    WebFrame* selected_web_frame = WebFrameImpl::fromFrame(selectedFrame);
-    if (m_webView->client())
-        m_webView->client()->showContextMenu(selected_web_frame, data);
+    WebFrameImpl* selectedWebFrame = WebFrameImpl::fromFrame(selectedFrame);
+    if (selectedWebFrame->client())
+        selectedWebFrame->client()->showContextMenu(data);
 }
 
 void ContextMenuClientImpl::clearContextMenu()

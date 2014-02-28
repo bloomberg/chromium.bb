@@ -81,7 +81,6 @@ class WebView;
 class WebWidget;
 struct WebColorSuggestion;
 struct WebConsoleMessage;
-struct WebContextMenuData;
 struct WebDateTimeChooserParams;
 struct WebPoint;
 struct WebPopupMenuInfo;
@@ -256,10 +255,6 @@ public:
 
     // Called when keyboard focus switches to an anchor with the given URL.
     virtual void setKeyboardFocusURL(const WebURL&) { }
-
-    // Shows a context menu with commands relevant to a specific element on
-    // the given frame. Additional context data is supplied.
-    virtual void showContextMenu(WebFrame*, const WebContextMenuData&) { }
 
     // Called when the data attached to the currently displayed context menu is
     // invalidated. The context menu may be closed if possible.

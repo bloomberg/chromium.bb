@@ -47,6 +47,9 @@
 #include "public/platform/WebURLRequest.h"
 #include <v8.h>
 
+// FIXME(jam): remove after roll
+#define SHOW_CONTEXT_MENU_ON_WEB_FRAME_CLIENT
+
 namespace blink {
 
 class WebApplicationCacheHost;
@@ -73,6 +76,7 @@ class WebURL;
 class WebURLLoader;
 class WebURLResponse;
 class WebWorkerPermissionClientProxy;
+struct WebContextMenuData;
 struct WebPluginParams;
 struct WebRect;
 struct WebSize;
@@ -219,6 +223,13 @@ public:
     // non-navigational events related to the data held by WebHistoryItem.
     // WARNING: This method may be called very frequently.
     virtual void didUpdateCurrentHistoryItem(WebFrame*) { }
+
+
+    // UI ------------------------------------------------------------------
+
+    // Shows a context menu with commands relevant to a specific element on
+    // the given frame. Additional context data is supplied.
+    virtual void showContextMenu(const WebContextMenuData&) { }
 
 
     // Low-level resource notifications ------------------------------------
