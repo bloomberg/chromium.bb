@@ -185,6 +185,18 @@ I am the first commit.
     patch.Fetch(git3)
     self.assertEqual(patch.sha1, self._GetSha1(git3, patch.sha1))
 
+  def testFetchFirstPatchInSeries(self):
+    git1, git2, patch = self._CommonGitSetup()
+    self.CommitFile(git1, 'monkeys', 'foon2')
+    patch.Fetch(git2)
+
+  def testFetchWithoutSha1(self):
+    git1, git2, _ = self._CommonGitSetup()
+    patch2 = self.CommitFile(git1, 'monkeys', 'foon2')
+    sha1, patch2.sha1 = patch2.sha1, None
+    patch2.Fetch(git2)
+    self.assertEqual(sha1, patch2.sha1)
+
   def testAlreadyApplied(self):
     git1 = self._MakeRepo('git1', self.source)
     patch1 = self._MkPatch(git1, self._GetSha1(git1, 'HEAD'))

@@ -608,7 +608,7 @@ class GitRepoPatch(object):
 
     git.RunGit(git_repo, ['fetch', self.project_url, self.ref])
 
-    sha1, subject, msg = _PullData('FETCH_HEAD')
+    sha1, subject, msg = _PullData(self.sha1 or 'FETCH_HEAD')
     sha1 = FormatSha1(sha1, strict=True)
 
     # Even if we know the sha1, still do a sanity check to ensure we
