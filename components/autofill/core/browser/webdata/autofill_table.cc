@@ -5,7 +5,6 @@
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 
 #include <algorithm>
-#include <cmath>
 #include <limits>
 #include <map>
 #include <set>
@@ -15,7 +14,6 @@
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
-#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -40,25 +38,12 @@ using base::Time;
 namespace autofill {
 namespace {
 
+typedef std::vector<Tuple3<int64, base::string16, base::string16> >
+    AutofillElementList;
+
 template<typename T>
 T* address_of(T& v) {
   return &v;
-}
-
-// Helper struct for AutofillTable::RemoveFormElementsAddedBetween().
-// Contains all the necessary fields to update a row in the 'autofill' table.
-struct AutofillUpdate {
-  base::string16 name;
-  base::string16 value;
-  time_t date_created;
-  time_t date_last_used;
-  int count;
-};
-
-// Rounds a positive floating point number to the nearest integer.
-int Round(float f) {
-  DCHECK_GE(f, 0.f);
-  return base::checked_cast<int>(std::floor(f + 0.5f));
 }
 
 // Returns the |data_model|'s value corresponding to the |type|, trimmed to the
@@ -379,9 +364,10 @@ WebDatabaseTable::TypeKey AutofillTable::GetTypeKey() const {
 
 bool AutofillTable::Init(sql::Connection* db, sql::MetaTable* meta_table) {
   WebDatabaseTable::Init(db, meta_table);
-  return (InitMainTable() && InitCreditCardsTable() && InitProfilesTable() &&
-          InitProfileNamesTable() && InitProfileEmailsTable() &&
-          InitProfilePhonesTable() && InitProfileTrashTable());
+  return (InitMainTable() && InitCreditCardsTable() && InitDatesTable() &&
+          InitProfilesTable() && InitProfileNamesTable() &&
+          InitProfileEmailsTable() && InitProfilePhonesTable() &&
+          InitProfileTrashTable());
 }
 
 bool AutofillTable::IsSyncable() {
@@ -393,7 +379,7 @@ bool AutofillTable::MigrateToVersion(int version,
   // Migrate if necessary.
   switch (version) {
     case 22:
-      return MigrateToVersion22ClearAutofillEmptyValueElements();
+      return ClearAutofillEmptyValueElements();
     case 23:
       return MigrateToVersion23AddCardNumberEncryptedColumn();
     case 24:
@@ -437,9 +423,6 @@ bool AutofillTable::MigrateToVersion(int version,
     case 54:
       *update_compatible_version = true;
       return MigrateToVersion54AddI18nFieldsAndRemoveDeprecatedFields();
-    case 55:
-      *update_compatible_version = true;
-      return MigrateToVersion55MergeAutofillDatesTable();
   }
   return true;
 }
@@ -496,7 +479,8 @@ bool AutofillTable::GetFormValuesForElementName(
 }
 
 bool AutofillTable::HasFormElements() {
-  sql::Statement s(db_->GetUniqueStatement("SELECT COUNT(*) FROM autofill"));
+  sql::Statement s(db_->GetUniqueStatement(
+      "SELECT COUNT(*) FROM autofill"));
   if (!s.Step()) {
     NOTREACHED();
     return false;
@@ -508,137 +492,262 @@ bool AutofillTable::RemoveFormElementsAddedBetween(
     const Time& delete_begin,
     const Time& delete_end,
     std::vector<AutofillChange>* changes) {
-  const time_t delete_begin_time_t = delete_begin.ToTimeT();
-  const time_t delete_end_time_t = GetEndTime(delete_end);
-
-  // Query for the name, value, count, and access dates of all form elements
-  // that were used between the given times.
+  DCHECK(changes);
+  // Query for the pair_id, name, and value of all form elements that
+  // were used between the given times.
   sql::Statement s(db_->GetUniqueStatement(
-      "SELECT name, value, count, date_created, date_last_used FROM autofill "
-      "WHERE (date_created >= ? AND date_created < ?) OR "
-      "      (date_last_used >= ? AND date_last_used < ?)"));
-  s.BindInt64(0, delete_begin_time_t);
-  s.BindInt64(1, delete_end_time_t);
-  s.BindInt64(2, delete_begin_time_t);
-  s.BindInt64(3, delete_end_time_t);
+      "SELECT DISTINCT a.pair_id, a.name, a.value "
+      "FROM autofill_dates ad JOIN autofill a ON ad.pair_id = a.pair_id "
+      "WHERE ad.date_created >= ? AND ad.date_created < ?"));
+  s.BindInt64(0, delete_begin.ToTimeT());
+  s.BindInt64(1,
+              (delete_end.is_null() || delete_end == base::Time::Max()) ?
+                  std::numeric_limits<int64>::max() :
+                  delete_end.ToTimeT());
 
-  std::vector<AutofillUpdate> updates;
-  std::vector<AutofillChange> tentative_changes;
+  AutofillElementList elements;
   while (s.Step()) {
-    base::string16 name = s.ColumnString16(0);
-    base::string16 value = s.ColumnString16(1);
-    int count = s.ColumnInt(2);
-    time_t date_created_time_t = s.ColumnInt64(3);
-    time_t date_last_used_time_t = s.ColumnInt64(4);
-
-    // If *all* uses of the element were between |delete_begin| and
-    // |delete_end|, then delete the element.  Otherwise, update the use
-    // timestamps and use count.
-    AutofillChange::Type change_type;
-    if (date_created_time_t >= delete_begin_time_t &&
-        date_last_used_time_t < delete_end_time_t) {
-      change_type = AutofillChange::REMOVE;
-    } else {
-      change_type = AutofillChange::UPDATE;
-
-      // For all updated elements, set either date_created or date_last_used so
-      // that the range [date_created, date_last_used] no longer overlaps with
-      // [delete_begin, delete_end). Update the count by interpolating.
-      // Precisely, compute the average amount of time between increments to the
-      // count in the original range [date_created, date_last_used]:
-      //   avg_delta = (date_last_used_orig - date_created_orig) / (count - 1)
-      // The count can be exressed as
-      //   count = 1 + (date_last_used - date_created) / avg_delta
-      // Hence, update the count to
-      //   count_new = 1 + (date_last_used_new - date_created_new) / avg_delta
-      //             = 1 + ((count - 1) *
-      //                    (date_last_used_new - date_created_new) /
-      //                    (date_last_used_orig - date_created_orig))
-      // Interpolating might not give a result that completely accurately
-      // reflects the user's history, but it's the best that can be done given
-      // the information in the database.
-      AutofillUpdate updated_entry;
-      updated_entry.name = name;
-      updated_entry.value = value;
-      updated_entry.date_created =
-          date_created_time_t < delete_begin_time_t ?
-          date_created_time_t :
-          delete_end_time_t;
-      updated_entry.date_last_used =
-          date_last_used_time_t >= delete_end_time_t ?
-          date_last_used_time_t :
-          delete_begin_time_t - 1;
-      updated_entry.count =
-          1 +
-          Round(1.0 * (count - 1) *
-                (updated_entry.date_last_used - updated_entry.date_created) /
-                (date_last_used_time_t - date_created_time_t));
-      updates.push_back(updated_entry);
-    }
-
-    tentative_changes.push_back(
-        AutofillChange(change_type, AutofillKey(name, value)));
+    elements.push_back(MakeTuple(s.ColumnInt64(0),
+                                 s.ColumnString16(1),
+                                 s.ColumnString16(2)));
   }
   if (!s.Succeeded())
     return false;
 
-  // As a single transaction, remove or update the elements appropriately.
-  sql::Statement s_delete(db_->GetUniqueStatement(
-      "DELETE FROM autofill WHERE date_created >= ? AND date_last_used < ?"));
-  s_delete.BindInt64(0, delete_begin_time_t);
-  s_delete.BindInt64(1, delete_end_time_t);
-  sql::Transaction transaction(db_);
-  if (!transaction.Begin())
-    return false;
-  if (!s_delete.Run())
-    return false;
-  for (size_t i = 0; i < updates.size(); ++i) {
-    sql::Statement s_update(db_->GetUniqueStatement(
-      "UPDATE autofill SET date_created = ?, date_last_used = ?, count = ?"
-      "WHERE name = ? AND value = ?"));
-    s_update.BindInt64(0, updates[i].date_created);
-    s_update.BindInt64(1, updates[i].date_last_used);
-    s_update.BindInt(2, updates[i].count);
-    s_update.BindString16(3, updates[i].name);
-    s_update.BindString16(4, updates[i].value);
-    if (!s_update.Run())
+  for (AutofillElementList::iterator itr = elements.begin();
+       itr != elements.end(); ++itr) {
+    int how_many = 0;
+    if (!RemoveFormElementForTimeRange(itr->a, delete_begin, delete_end,
+                                       &how_many)) {
       return false;
+    }
+    // We store at most 2 time stamps. If we remove both of them we should
+    // delete the corresponding data. If we delete only one it could still be
+    // the last timestamp for the data, so check how many timestamps do remain.
+    bool should_remove = (CountTimestampsData(itr->a) == 0);
+    if (should_remove) {
+      if (!RemoveFormElementForID(itr->a))
+        return false;
+    } else {
+      if (!AddToCountOfFormElement(itr->a, -how_many))
+        return false;
+    }
+    AutofillChange::Type change_type =
+        should_remove ? AutofillChange::REMOVE : AutofillChange::UPDATE;
+    changes->push_back(AutofillChange(change_type,
+                                      AutofillKey(itr->b, itr->c)));
   }
-  if (!transaction.Commit())
-    return false;
 
-  *changes = tentative_changes;
   return true;
 }
 
 bool AutofillTable::RemoveExpiredFormElements(
     std::vector<AutofillChange>* changes) {
-  base::Time expiration_time = AutofillEntry::ExpirationTime();
+  DCHECK(changes);
 
-  // Query for the name and value of all form elements that were last used
-  // before the |expiration_time|.
+  base::Time delete_end = AutofillEntry::ExpirationTime();
+  // Query for the pair_id, name, and value of all form elements that
+  // were last used before the |delete_end|.
   sql::Statement select_for_delete(db_->GetUniqueStatement(
-      "SELECT name, value FROM autofill WHERE date_last_used < ?"));
-  select_for_delete.BindInt64(0, expiration_time.ToTimeT());
-  std::vector<AutofillChange> tentative_changes;
+      "SELECT DISTINCT pair_id, name, value "
+      "FROM autofill WHERE pair_id NOT IN "
+      "(SELECT DISTINCT pair_id "
+      "FROM autofill_dates WHERE date_created >= ?)"));
+  select_for_delete.BindInt64(0, delete_end.ToTimeT());
+  AutofillElementList entries_to_delete;
   while (select_for_delete.Step()) {
-    base::string16 name = select_for_delete.ColumnString16(0);
-    base::string16 value = select_for_delete.ColumnString16(1);
-    tentative_changes.push_back(
-        AutofillChange(AutofillChange::REMOVE, AutofillKey(name, value)));
+    entries_to_delete.push_back(MakeTuple(select_for_delete.ColumnInt64(0),
+                                          select_for_delete.ColumnString16(1),
+                                          select_for_delete.ColumnString16(2)));
   }
 
   if (!select_for_delete.Succeeded())
     return false;
 
   sql::Statement delete_data_statement(db_->GetUniqueStatement(
-      "DELETE FROM autofill WHERE date_last_used < ?"));
-  delete_data_statement.BindInt64(0, expiration_time.ToTimeT());
+      "DELETE FROM autofill WHERE pair_id NOT IN ("
+      "SELECT pair_id FROM autofill_dates WHERE date_created >= ?)"));
+  delete_data_statement.BindInt64(0, delete_end.ToTimeT());
   if (!delete_data_statement.Run())
     return false;
 
-  *changes = tentative_changes;
+  sql::Statement delete_times_statement(db_->GetUniqueStatement(
+      "DELETE FROM autofill_dates WHERE pair_id NOT IN ("
+      "SELECT pair_id FROM autofill_dates WHERE date_created >= ?)"));
+  delete_times_statement.BindInt64(0, delete_end.ToTimeT());
+  if (!delete_times_statement.Run())
+    return false;
+
+  // Cull remaining entries' timestamps.
+  std::vector<AutofillEntry> entries;
+  if (!GetAllAutofillEntries(&entries))
+    return false;
+  sql::Statement cull_date_entry(db_->GetUniqueStatement(
+      "DELETE FROM autofill_dates "
+      "WHERE pair_id == (SELECT pair_id FROM autofill "
+                         "WHERE name = ? and value = ?)"
+      "AND date_created != ? AND date_created != ?"));
+  for (size_t i = 0; i < entries.size(); ++i) {
+    cull_date_entry.BindString16(0, entries[i].key().name());
+    cull_date_entry.BindString16(1, entries[i].key().value());
+    cull_date_entry.BindInt64(2,
+        entries[i].timestamps().empty() ? 0 :
+        entries[i].timestamps().front().ToTimeT());
+    cull_date_entry.BindInt64(3,
+        entries[i].timestamps().empty() ? 0 :
+        entries[i].timestamps().back().ToTimeT());
+    if (!cull_date_entry.Run())
+      return false;
+    cull_date_entry.Reset(true);
+  }
+
+  changes->clear();
+  changes->reserve(entries_to_delete.size());
+
+  for (AutofillElementList::iterator it = entries_to_delete.begin();
+       it != entries_to_delete.end(); ++it) {
+    changes->push_back(AutofillChange(
+        AutofillChange::REMOVE, AutofillKey(it->b, it->c)));
+  }
   return true;
+}
+
+bool AutofillTable::RemoveFormElementForTimeRange(int64 pair_id,
+                                                  const Time& delete_begin,
+                                                  const Time& delete_end,
+                                                  int* how_many) {
+  sql::Statement s(db_->GetUniqueStatement(
+      "DELETE FROM autofill_dates WHERE pair_id = ? AND "
+      "date_created >= ? AND date_created < ?"));
+  s.BindInt64(0, pair_id);
+  s.BindInt64(1, delete_begin.is_null() ? 0 : delete_begin.ToTimeT());
+  s.BindInt64(2, delete_end.is_null() ? std::numeric_limits<int64>::max() :
+                                        delete_end.ToTimeT());
+
+  bool result = s.Run();
+  if (how_many)
+    *how_many = db_->GetLastChangeCount();
+
+  return result;
+}
+
+int AutofillTable::CountTimestampsData(int64 pair_id) {
+  sql::Statement s(db_->GetUniqueStatement(
+      "SELECT COUNT(*) FROM autofill_dates WHERE pair_id = ?"));
+  s.BindInt64(0, pair_id);
+  if (!s.Step()) {
+    NOTREACHED();
+    return 0;
+  } else {
+    return s.ColumnInt(0);
+  }
+}
+
+bool AutofillTable::AddToCountOfFormElement(int64 pair_id,
+                                            int delta) {
+  int count = 0;
+
+  if (!GetCountOfFormElement(pair_id, &count))
+    return false;
+
+  if (count + delta == 0) {
+    // Should remove the element earlier in the code.
+    NOTREACHED();
+    return false;
+  } else {
+    if (!SetCountOfFormElement(pair_id, count + delta))
+      return false;
+  }
+  return true;
+}
+
+bool AutofillTable::GetIDAndCountOfFormElement(
+    const FormFieldData& element,
+    int64* pair_id,
+    int* count) {
+  DCHECK(pair_id);
+  DCHECK(count);
+
+  sql::Statement s(db_->GetUniqueStatement(
+      "SELECT pair_id, count FROM autofill "
+      "WHERE name = ? AND value = ?"));
+  s.BindString16(0, element.name);
+  s.BindString16(1, element.value);
+
+  if (!s.is_valid())
+    return false;
+
+  *pair_id = 0;
+  *count = 0;
+
+  if (s.Step()) {
+    *pair_id = s.ColumnInt64(0);
+    *count = s.ColumnInt(1);
+  }
+
+  return true;
+}
+
+bool AutofillTable::GetCountOfFormElement(int64 pair_id, int* count) {
+  DCHECK(count);
+  sql::Statement s(db_->GetUniqueStatement(
+      "SELECT count FROM autofill WHERE pair_id = ?"));
+  s.BindInt64(0, pair_id);
+
+  if (s.Step()) {
+    *count = s.ColumnInt(0);
+    return true;
+  }
+  return false;
+}
+
+bool AutofillTable::SetCountOfFormElement(int64 pair_id, int count) {
+  sql::Statement s(db_->GetUniqueStatement(
+      "UPDATE autofill SET count = ? WHERE pair_id = ?"));
+  s.BindInt(0, count);
+  s.BindInt64(1, pair_id);
+
+  return s.Run();
+}
+
+bool AutofillTable::InsertFormElement(const FormFieldData& element,
+                                      int64* pair_id) {
+  DCHECK(pair_id);
+  sql::Statement s(db_->GetUniqueStatement(
+      "INSERT INTO autofill (name, value, value_lower) VALUES (?,?,?)"));
+  s.BindString16(0, element.name);
+  s.BindString16(1, element.value);
+  s.BindString16(2, base::i18n::ToLower(element.value));
+
+  if (!s.Run())
+    return false;
+
+  *pair_id = db_->GetLastInsertRowId();
+  return true;
+}
+
+bool AutofillTable::InsertPairIDAndDate(int64 pair_id,
+                                        const Time& date_created) {
+  sql::Statement s(db_->GetUniqueStatement(
+      "INSERT INTO autofill_dates "
+      "(pair_id, date_created) VALUES (?, ?)"));
+  s.BindInt64(0, pair_id);
+  s.BindInt64(1, date_created.ToTimeT());
+
+  return s.Run();
+}
+
+bool AutofillTable::DeleteLastAccess(int64 pair_id) {
+  // Inner SELECT selects the newest |date_created| for a given |pair_id|.
+  // DELETE deletes only that entry.
+  sql::Statement s(db_->GetUniqueStatement(
+      "DELETE FROM autofill_dates WHERE pair_id = ? and date_created IN "
+      "(SELECT date_created FROM autofill_dates WHERE pair_id = ? "
+      "ORDER BY date_created DESC LIMIT 1)"));
+  s.BindInt64(0, pair_id);
+  s.BindInt64(1, pair_id);
+
+  return s.Run();
 }
 
 bool AutofillTable::AddFormFieldValuesTime(
@@ -662,20 +771,75 @@ bool AutofillTable::AddFormFieldValuesTime(
   return result;
 }
 
-bool AutofillTable::GetAllAutofillEntries(std::vector<AutofillEntry>* entries) {
+bool AutofillTable::ClearAutofillEmptyValueElements() {
   sql::Statement s(db_->GetUniqueStatement(
-      "SELECT name, value, date_created, date_last_used FROM autofill"));
+      "SELECT pair_id FROM autofill WHERE TRIM(value)= \"\""));
+  if (!s.is_valid())
+    return false;
 
+  std::set<int64> ids;
+  while (s.Step())
+    ids.insert(s.ColumnInt64(0));
+  if (!s.Succeeded())
+    return false;
+
+  bool success = true;
+  for (std::set<int64>::const_iterator iter = ids.begin(); iter != ids.end();
+       ++iter) {
+    if (!RemoveFormElementForID(*iter))
+      success = false;
+  }
+
+  return success;
+}
+
+bool AutofillTable::GetAllAutofillEntries(std::vector<AutofillEntry>* entries) {
+  DCHECK(entries);
+  sql::Statement s(db_->GetUniqueStatement(
+      "SELECT name, value, date_created FROM autofill a JOIN "
+      "autofill_dates ad ON a.pair_id=ad.pair_id"));
+
+  bool first_entry = true;
+  AutofillKey* current_key_ptr = NULL;
+  std::vector<Time>* timestamps_ptr = NULL;
+  base::string16 name, value;
+  Time time;
   while (s.Step()) {
-    base::string16 name = s.ColumnString16(0);
-    base::string16 value = s.ColumnString16(1);
+    name = s.ColumnString16(0);
+    value = s.ColumnString16(1);
+    time = Time::FromTimeT(s.ColumnInt64(2));
 
-    std::vector<Time> timestamps;
-    timestamps.push_back(Time::FromTimeT(s.ColumnInt64(2)));
-    timestamps.push_back(Time::FromTimeT(s.ColumnInt64(3)));
-    if (timestamps.front() == timestamps.back())
-      timestamps.pop_back();
-    entries->push_back(AutofillEntry(AutofillKey(name, value), timestamps));
+    if (first_entry) {
+      current_key_ptr = new AutofillKey(name, value);
+
+      timestamps_ptr = new std::vector<Time>;
+      timestamps_ptr->push_back(time);
+
+      first_entry = false;
+    } else {
+      // we've encountered the next entry
+      if (current_key_ptr->name().compare(name) != 0 ||
+          current_key_ptr->value().compare(value) != 0) {
+        AutofillEntry entry(*current_key_ptr, *timestamps_ptr);
+        entries->push_back(entry);
+
+        delete current_key_ptr;
+        delete timestamps_ptr;
+
+        current_key_ptr = new AutofillKey(name, value);
+        timestamps_ptr = new std::vector<Time>;
+      }
+      timestamps_ptr->push_back(time);
+    }
+  }
+
+  // If there is at least one result returned, first_entry will be false.
+  // For this case we need to do a final cleanup step.
+  if (!first_entry) {
+    AutofillEntry entry(*current_key_ptr, *timestamps_ptr);
+    entries->push_back(entry);
+    delete current_key_ptr;
+    delete timestamps_ptr;
   }
 
   return s.Succeeded();
@@ -684,22 +848,18 @@ bool AutofillTable::GetAllAutofillEntries(std::vector<AutofillEntry>* entries) {
 bool AutofillTable::GetAutofillTimestamps(const base::string16& name,
                                           const base::string16& value,
                                           std::vector<Time>* timestamps) {
+  DCHECK(timestamps);
   sql::Statement s(db_->GetUniqueStatement(
-      "SELECT date_created, date_last_used FROM autofill "
-      "WHERE name = ? AND value = ?"));
+      "SELECT date_created FROM autofill a JOIN "
+      "autofill_dates ad ON a.pair_id=ad.pair_id "
+      "WHERE a.name = ? AND a.value = ?"));
   s.BindString16(0, name);
   s.BindString16(1, value);
-  if (!s.Step())
-    return false;
 
-  timestamps->clear();
-  timestamps->push_back(Time::FromTimeT(s.ColumnInt64(0)));
-  timestamps->push_back(Time::FromTimeT(s.ColumnInt64(1)));
-  if (timestamps->front() == timestamps->back())
-    timestamps->pop_back();
+  while (s.Step())
+    timestamps->push_back(Time::FromTimeT(s.ColumnInt64(0)));
 
-  DCHECK(!s.Step());
-  return true;
+  return s.Succeeded();
 }
 
 bool AutofillTable::UpdateAutofillEntries(
@@ -708,17 +868,24 @@ bool AutofillTable::UpdateAutofillEntries(
     return true;
 
   // Remove all existing entries.
-  for (size_t i = 0; i < entries.size(); ++i) {
-    sql::Statement s(db_->GetUniqueStatement(
-        "DELETE FROM autofill WHERE name = ? AND value = ?"));
+  for (size_t i = 0; i < entries.size(); i++) {
+    std::string sql = "SELECT pair_id FROM autofill "
+                      "WHERE name = ? AND value = ?";
+    sql::Statement s(db_->GetUniqueStatement(sql.c_str()));
     s.BindString16(0, entries[i].key().name());
     s.BindString16(1, entries[i].key().value());
-    if (!s.Run())
+
+    if (!s.is_valid())
       return false;
+
+    if (s.Step()) {
+      if (!RemoveFormElementForID(s.ColumnInt64(0)))
+        return false;
+    }
   }
 
   // Insert all the supplied autofill entries.
-  for (size_t i = 0; i < entries.size(); ++i) {
+  for (size_t i = 0; i < entries.size(); i++) {
     if (!InsertAutofillEntry(entries[i]))
       return false;
   }
@@ -727,86 +894,69 @@ bool AutofillTable::UpdateAutofillEntries(
 }
 
 bool AutofillTable::InsertAutofillEntry(const AutofillEntry& entry) {
-  if (entry.timestamps().empty())
-    return false;
-
-  Time date_created = entry.timestamps().front();
-  Time date_last_used = date_created;
-  for (size_t i = 1; i < entry.timestamps().size(); ++i) {
-    const Time& timestamp = entry.timestamps()[i];
-    date_created = std::min(date_created, timestamp);
-    date_last_used = std::max(date_last_used, timestamp);
-  }
-
-  std::string sql =
-      "INSERT INTO autofill "
-      "(name, value, value_lower, date_created, date_last_used, count) "
-      "VALUES (?, ?, ?, ?, ?, ?)";
+  std::string sql = "INSERT INTO autofill (name, value, value_lower, count) "
+                    "VALUES (?, ?, ?, ?)";
   sql::Statement s(db_->GetUniqueStatement(sql.c_str()));
   s.BindString16(0, entry.key().name());
   s.BindString16(1, entry.key().value());
   s.BindString16(2, base::i18n::ToLower(entry.key().value()));
-  s.BindInt64(3, date_created.ToTimeT());
-  s.BindInt64(4, date_last_used.ToTimeT());
-  // TODO(isherman): The counts column is currently synced implicitly as the
-  // number of timestamps.  Sync the value explicitly instead, since the DB now
-  // only saves the first and last timestamp, which makes counting timestamps
-  // completely meaningless as a way to track frequency of usage.
-  s.BindInt(5, entry.timestamps().size());
-  return s.Run();
+  s.BindInt(3, entry.timestamps().size());
+
+  if (!s.Run())
+    return false;
+
+  int64 pair_id = db_->GetLastInsertRowId();
+  for (size_t i = 0; i < entry.timestamps().size(); i++) {
+    if (!InsertPairIDAndDate(pair_id, entry.timestamps()[i]))
+      return false;
+  }
+
+  return true;
 }
 
 bool AutofillTable::AddFormFieldValueTime(const FormFieldData& element,
                                           std::vector<AutofillChange>* changes,
                                           Time time) {
-  sql::Statement s_exists(db_->GetUniqueStatement(
-      "SELECT COUNT(*) FROM autofill WHERE name = ? AND value = ?"));
-  s_exists.BindString16(0, element.name);
-  s_exists.BindString16(1, element.value);
-  if (!s_exists.Step())
+  int count = 0;
+  int64 pair_id;
+
+  if (!GetIDAndCountOfFormElement(element, &pair_id, &count))
     return false;
 
-  bool already_exists = s_exists.ColumnInt(0) > 0;
-  if (already_exists) {
-    sql::Statement s(db_->GetUniqueStatement(
-        "UPDATE autofill SET date_last_used = ?, count = count + 1 "
-        "WHERE name = ? AND value = ?"));
-    s.BindInt64(0, time.ToTimeT());
-    s.BindString16(1, element.name);
-    s.BindString16(2, element.value);
-    if (!s.Run())
-      return false;
-  } else {
-    time_t time_as_time_t = time.ToTimeT();
-    sql::Statement s(db_->GetUniqueStatement(
-        "INSERT INTO autofill "
-        "(name, value, value_lower, date_created, date_last_used, count) "
-        "VALUES (?, ?, ?, ?, ?, ?)"));
-    s.BindString16(0, element.name);
-    s.BindString16(1, element.value);
-    s.BindString16(2, base::i18n::ToLower(element.value));
-    s.BindInt64(3, time_as_time_t);
-    s.BindInt64(4, time_as_time_t);
-    s.BindInt(5, 1);
-    if (!s.Run())
-      return false;
-  }
+  if (count == 0 && !InsertFormElement(element, &pair_id))
+    return false;
+
+  if (!SetCountOfFormElement(pair_id, count + 1))
+    return false;
+
+  // If we already have more than 2 times delete last one, before adding new
+  // one.
+  if (count >= 2 && !DeleteLastAccess(pair_id))
+    return false;
+
+  if (!InsertPairIDAndDate(pair_id, time))
+    return false;
 
   AutofillChange::Type change_type =
-      already_exists ? AutofillChange::UPDATE : AutofillChange::ADD;
+      count == 0 ? AutofillChange::ADD : AutofillChange::UPDATE;
   changes->push_back(
-      AutofillChange(change_type, AutofillKey(element.name, element.value)));
+      AutofillChange(change_type,
+                     AutofillKey(element.name, element.value)));
   return true;
 }
 
 
 bool AutofillTable::RemoveFormElement(const base::string16& name,
                                       const base::string16& value) {
+  // Find the id for that pair.
   sql::Statement s(db_->GetUniqueStatement(
-      "DELETE FROM autofill WHERE name = ? AND value= ?"));
+      "SELECT pair_id FROM autofill WHERE  name = ? AND value= ?"));
   s.BindString16(0, name);
   s.BindString16(1, value);
-  return s.Run();
+
+  if (s.Step())
+    return RemoveFormElementForID(s.ColumnInt64(0));
+  return false;
 }
 
 bool AutofillTable::AddAutofillProfile(const AutofillProfile& profile) {
@@ -1205,6 +1355,17 @@ bool AutofillTable::EmptyAutofillProfilesTrash() {
 }
 
 
+bool AutofillTable::RemoveFormElementForID(int64 pair_id) {
+  sql::Statement s(db_->GetUniqueStatement(
+      "DELETE FROM autofill WHERE pair_id = ?"));
+  s.BindInt64(0, pair_id);
+
+  if (s.Run())
+    return RemoveFormElementForTimeRange(pair_id, Time(), Time(), NULL);
+
+  return false;
+}
+
 bool AutofillTable::AddAutofillGUIDToTrash(const std::string& guid) {
   sql::Statement s(db_->GetUniqueStatement(
     "INSERT INTO autofill_profiles_trash"
@@ -1239,12 +1400,16 @@ bool AutofillTable::InitMainTable() {
                       "name VARCHAR, "
                       "value VARCHAR, "
                       "value_lower VARCHAR, "
-                      "date_created INTEGER DEFAULT 0, "
-                      "date_last_used INTEGER DEFAULT 0, "
-                      "count INTEGER DEFAULT 1, "
-                      "PRIMARY KEY (name, value))") ||
-        !db_->Execute("CREATE INDEX autofill_name ON autofill (name)") ||
-        !db_->Execute("CREATE INDEX autofill_name_value_lower ON "
+                      "pair_id INTEGER PRIMARY KEY, "
+                      "count INTEGER DEFAULT 1)")) {
+      NOTREACHED();
+      return false;
+    }
+    if (!db_->Execute("CREATE INDEX autofill_name ON autofill (name)")) {
+       NOTREACHED();
+       return false;
+    }
+    if (!db_->Execute("CREATE INDEX autofill_name_value_lower ON "
                       "autofill (name, value_lower)")) {
        NOTREACHED();
        return false;
@@ -1268,6 +1433,23 @@ bool AutofillTable::InitCreditCardsTable() {
     }
   }
 
+  return true;
+}
+
+bool AutofillTable::InitDatesTable() {
+  if (!db_->DoesTableExist("autofill_dates")) {
+    if (!db_->Execute("CREATE TABLE autofill_dates ( "
+                      "pair_id INTEGER DEFAULT 0, "
+                      "date_created INTEGER DEFAULT 0)")) {
+      NOTREACHED();
+      return false;
+    }
+    if (!db_->Execute("CREATE INDEX autofill_dates_pair_id ON "
+                      "autofill_dates (pair_id)")) {
+      NOTREACHED();
+      return false;
+    }
+  }
   return true;
 }
 
@@ -1338,33 +1520,6 @@ bool AutofillTable::InitProfileTrashTable() {
       return false;
     }
   }
-  return true;
-}
-
-bool AutofillTable::MigrateToVersion22ClearAutofillEmptyValueElements() {
-  sql::Statement s(db_->GetUniqueStatement(
-      "SELECT pair_id FROM autofill WHERE TRIM(value) = \"\""));
-  if (!s.is_valid())
-    return false;
-
-  std::set<int64> ids;
-  while (s.Step())
-    ids.insert(s.ColumnInt64(0));
-  if (!s.Succeeded())
-    return false;
-
-  if (!db_->Execute("DELETE FROM autofill WHERE TRIM(value) = \"\""))
-    return false;
-
-  for (std::set<int64>::const_iterator it = ids.begin(); it != ids.end();
-       ++it) {
-    sql::Statement s(db_->GetUniqueStatement(
-        "DELETE FROM autofill_dates WHERE pair_id = ?"));
-    s.BindInt64(0, *it);
-    if (!s.Run())
-      return false;
-  }
-
   return true;
 }
 
@@ -2132,67 +2287,6 @@ bool AutofillTable::MigrateToVersion54AddI18nFieldsAndRemoveDeprecatedFields() {
       return false;
     }
   }
-
-  return transaction.Commit();
-}
-
-bool AutofillTable::MigrateToVersion55MergeAutofillDatesTable() {
-  sql::Transaction transaction(db_);
-  if (!transaction.Begin())
-    return false;
-
-  if (db_->DoesTableExist("autofill_temp") ||
-      !db_->Execute("CREATE TABLE autofill_temp ("
-                    "name VARCHAR, "
-                    "value VARCHAR, "
-                    "value_lower VARCHAR, "
-                    "date_created INTEGER DEFAULT 0, "
-                    "date_last_used INTEGER DEFAULT 0, "
-                    "count INTEGER DEFAULT 1, "
-                    "PRIMARY KEY (name, value))")) {
-    return false;
-  }
-
-  // Slurp up the data from the existing table and write it to the new table.
-  sql::Statement s(db_->GetUniqueStatement(
-      "SELECT name, value, value_lower, count, MIN(date_created),"
-      " MAX(date_created) "
-      "FROM autofill a JOIN autofill_dates ad ON a.pair_id=ad.pair_id "
-      "GROUP BY name, value, value_lower, count"));
-  while (s.Step()) {
-    sql::Statement s_insert(db_->GetUniqueStatement(
-        "INSERT INTO autofill_temp "
-        "(name, value, value_lower, count, date_created, date_last_used) "
-        "VALUES (?, ?, ?, ?, ?, ?)"));
-    s_insert.BindString16(0, s.ColumnString16(0));
-    s_insert.BindString16(1, s.ColumnString16(1));
-    s_insert.BindString16(2, s.ColumnString16(2));
-    s_insert.BindInt(3, s.ColumnInt(3));
-    s_insert.BindInt64(4, s.ColumnInt64(4));
-    s_insert.BindInt64(5, s.ColumnInt64(5));
-    if (!s_insert.Run())
-      return false;
-  }
-
-  if (!s.Succeeded())
-    return false;
-
-  // Delete the existing (version 54) tables and replace them with the contents
-  // of the temporary table.
-  if (!db_->Execute("DROP TABLE autofill") ||
-      !db_->Execute("DROP TABLE autofill_dates") ||
-      !db_->Execute("ALTER TABLE autofill_temp "
-                    "RENAME TO autofill")) {
-    return false;
-  }
-
-  // Create indices on the new table, for fast lookups.
-  if (!db_->Execute("CREATE INDEX autofill_name ON autofill (name)") ||
-      !db_->Execute("CREATE INDEX autofill_name_value_lower ON "
-                    "autofill (name, value_lower)")) {
-    return false;
-  }
-
 
   return transaction.Commit();
 }

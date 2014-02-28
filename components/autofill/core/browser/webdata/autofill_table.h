@@ -38,12 +38,16 @@ struct FormFieldData;
 //   name               The name of the input as specified in the html.
 //   value              The literal contents of the text field.
 //   value_lower        The contents of the text field made lower_case.
-//   date_created       The date on which the user first entered the string
-//                      |value| into a field of name |name|.
-//   date_last_used     The date on which the user last entered the string
-//                      |value| into a field of name |name|.
+//   pair_id            An ID number unique to the row in the table.
 //   count              How many times the user has entered the string |value|
 //                      in a field of name |name|.
+//
+// autofill_dates       This table associates a row to each separate time the
+//                      user submits a form containing a certain name/value
+//                      pair.  The |pair_id| should match the |pair_id| field
+//                      in the appropriate row of the autofill table.
+//   pair_id
+//   date_created
 //
 // autofill_profiles    This table contains Autofill profile data added by the
 //                      user with the Autofill dialog.  Most of the columns are
@@ -172,6 +176,48 @@ class AutofillTable : public WebDatabaseTable {
   // culling in future versions.
   bool RemoveExpiredFormElements(std::vector<AutofillChange>* changes);
 
+  // Removes from autofill_dates rows with given pair_id where date_created lies
+  // between |delete_begin| and |delete_end|.
+  bool RemoveFormElementForTimeRange(int64 pair_id,
+                                     const base::Time& delete_begin,
+                                     const base::Time& delete_end,
+                                     int* how_many);
+
+  // Increments the count in the row corresponding to |pair_id| by |delta|.
+  bool AddToCountOfFormElement(int64 pair_id, int delta);
+
+  // Counts how many timestamp data rows are in the |autofill_dates| table for
+  // a given |pair_id|. GetCountOfFormElement() on the other hand gives the
+  // |count| property for a given id.
+  int CountTimestampsData(int64 pair_id);
+
+  // Gets the pair_id and count entries from name and value specified in
+  // |element|.  Sets *pair_id and *count to 0 if there is no such row in
+  // the table.
+  bool GetIDAndCountOfFormElement(const FormFieldData& element,
+                                  int64* pair_id,
+                                  int* count);
+
+  // Gets the count only given the pair_id.
+  bool GetCountOfFormElement(int64 pair_id, int* count);
+
+  // Updates the count entry in the row corresponding to |pair_id| to |count|.
+  bool SetCountOfFormElement(int64 pair_id, int count);
+
+  // Adds a new row to the autofill table with name and value given in
+  // |element|.  Sets *pair_id to the pair_id of the new row.
+  bool InsertFormElement(const FormFieldData& element,
+                         int64* pair_id);
+
+  // Adds a new row to the autofill_dates table.
+  bool InsertPairIDAndDate(int64 pair_id, const base::Time& date_created);
+
+  // Deletes last access to the Autofill data from the autofill_dates table.
+  bool DeleteLastAccess(int64 pair_id);
+
+  // Removes row from the autofill tables given |pair_id|.
+  bool RemoveFormElementForID(int64 pair_id);
+
   // Removes row from the autofill tables for the given |name| |value| pair.
   virtual bool RemoveFormElement(const base::string16& name,
                                  const base::string16& value);
@@ -253,6 +299,10 @@ class AutofillTable : public WebDatabaseTable {
   // Empties the Autofill profiles "trash can".
   bool EmptyAutofillProfilesTrash();
 
+  // Removes empty values for autofill that were incorrectly stored in the DB
+  // See bug http://crbug.com/6111
+  bool ClearAutofillEmptyValueElements();
+
   // Retrieves all profiles in the database that have been deleted since last
   // "empty" of the trash.
   bool AddAutofillGUIDToTrash(const std::string& guid);
@@ -261,9 +311,6 @@ class AutofillTable : public WebDatabaseTable {
   bool ClearAutofillProfiles();
 
   // Table migration functions.
-  // Removes empty values for autofill that were incorrectly stored in the DB
-  // See bug http://crbug.com/6111
-  bool MigrateToVersion22ClearAutofillEmptyValueElements();
   bool MigrateToVersion23AddCardNumberEncryptedColumn();
   bool MigrateToVersion24CleanupOversizedStringFields();
   bool MigrateToVersion27UpdateLegacyCreditCards();
@@ -276,7 +323,6 @@ class AutofillTable : public WebDatabaseTable {
   bool MigrateToVersion37MergeAndCullOlderProfiles();
   bool MigrateToVersion51AddOriginColumn();
   bool MigrateToVersion54AddI18nFieldsAndRemoveDeprecatedFields();
-  bool MigrateToVersion55MergeAutofillDatesTable();
 
   // Max data length saved in the table;
   static const size_t kMaxDataLength;
@@ -285,22 +331,8 @@ class AutofillTable : public WebDatabaseTable {
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autofill);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autofill_AddChanges);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autofill_RemoveBetweenChanges);
+
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autofill_UpdateDontReplace);
-  FRIEND_TEST_ALL_PREFIXES(
-      AutofillTableTest,
-      Autofill_RemoveFormElementsAddedBetween_UsedOnlyBefore);
-  FRIEND_TEST_ALL_PREFIXES(
-      AutofillTableTest,
-      Autofill_RemoveFormElementsAddedBetween_UsedOnlyAfter);
-  FRIEND_TEST_ALL_PREFIXES(
-      AutofillTableTest,
-      Autofill_RemoveFormElementsAddedBetween_UsedOnlyDuring);
-  FRIEND_TEST_ALL_PREFIXES(
-      AutofillTableTest,
-      Autofill_RemoveFormElementsAddedBetween_UsedBeforeAndDuring);
-  FRIEND_TEST_ALL_PREFIXES(
-      AutofillTableTest,
-      Autofill_RemoveFormElementsAddedBetween_UsedDuringAndAfter);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autofill_AddFormFieldValues);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, AutofillProfile);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, UpdateAutofillProfile);
