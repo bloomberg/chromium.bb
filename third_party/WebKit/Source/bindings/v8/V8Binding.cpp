@@ -49,6 +49,7 @@
 #include "core/dom/QualifiedName.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/inspector/BindingVisitors.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -589,6 +590,7 @@ bool handleOutOfMemory()
 
     frame->script().clearForOutOfMemory();
     frame->loader().client()->didExhaustMemoryAvailableForScript();
+    UseCounter::count(frame->document(), UseCounter::JavascriptExhaustedMemory);
 
     if (Settings* settings = frame->settings())
         settings->setScriptEnabled(false);
