@@ -8,12 +8,6 @@
 
 namespace content {
 
-bool Navigator::NavigateToEntry(RenderFrameHostImpl* render_frame_host,
-                                const NavigationEntryImpl& entry,
-                                NavigationController::ReloadType reload_type) {
-  return false;
-}
-
 bool Navigator::NavigateToPendingEntry(
     RenderFrameHostImpl* render_frame_host,
     NavigationController::ReloadType reload_type) {

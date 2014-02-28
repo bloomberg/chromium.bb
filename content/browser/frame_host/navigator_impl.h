@@ -47,10 +47,6 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       RenderFrameHostImpl* render_frame_host,
       const FrameHostMsg_DidCommitProvisionalLoad_Params&
           input_params) OVERRIDE;
-  virtual bool NavigateToEntry(
-      RenderFrameHostImpl* render_frame_host,
-      const NavigationEntryImpl& entry,
-      NavigationController::ReloadType reload_type) OVERRIDE;
   virtual bool NavigateToPendingEntry(
       RenderFrameHostImpl* render_frame_host,
       NavigationController::ReloadType reload_type) OVERRIDE;
@@ -58,6 +54,13 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
 
  private:
   virtual ~NavigatorImpl() {}
+
+  // Navigates to the given entry, which must be the pending entry.  Private
+  // because all callers should use NavigateToPendingEntry.
+  bool NavigateToEntry(
+      RenderFrameHostImpl* render_frame_host,
+      const NavigationEntryImpl& entry,
+      NavigationController::ReloadType reload_type);
 
   bool ShouldAssignSiteForURL(const GURL& url);
 

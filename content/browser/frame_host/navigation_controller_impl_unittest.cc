@@ -3598,7 +3598,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPruneMaxEntriesReplaceEntry) {
 }
 
 // Tests that navigations initiated from the page (with the history object)
-// work as expected without navigation entries.
+// work as expected, creating pending entries.
 TEST_F(NavigationControllerTest, HistoryNavigate) {
   NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo/1");
@@ -3611,10 +3611,9 @@ TEST_F(NavigationControllerTest, HistoryNavigate) {
   controller.GoBack();
   contents()->CommitPendingNavigation();
 
-  // Simulate the page calling history.back(), it should not create a pending
-  // entry.
+  // Simulate the page calling history.back(). It should create a pending entry.
   contents()->OnGoToEntryAtOffset(-1);
-  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
+  EXPECT_EQ(0, controller.GetPendingEntryIndex());
   // The actual cross-navigation is suspended until the current RVH tells us
   // it unloaded, simulate that.
   contents()->ProceedWithCrossSiteNavigation();
@@ -3628,8 +3627,8 @@ TEST_F(NavigationControllerTest, HistoryNavigate) {
   process()->sink().ClearMessages();
 
   // Now test history.forward()
-  contents()->OnGoToEntryAtOffset(1);
-  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
+  contents()->OnGoToEntryAtOffset(2);
+  EXPECT_EQ(2, controller.GetPendingEntryIndex());
   // The actual cross-navigation is suspended until the current RVH tells us
   // it unloaded, simulate that.
   contents()->ProceedWithCrossSiteNavigation();
@@ -3638,6 +3637,8 @@ TEST_F(NavigationControllerTest, HistoryNavigate) {
   FrameMsg_Navigate::Read(message, &nav_params);
   EXPECT_EQ(url3, nav_params.a.url);
   process()->sink().ClearMessages();
+
+  controller.DiscardNonCommittedEntries();
 
   // Make sure an extravagant history.go() doesn't break.
   contents()->OnGoToEntryAtOffset(120);  // Out of bounds.

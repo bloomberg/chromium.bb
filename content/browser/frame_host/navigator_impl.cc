@@ -311,6 +311,9 @@ bool NavigatorImpl::NavigateToEntry(
   if (!dest_render_frame_host)
     return false;  // Unable to create the desired RenderFrameHost.
 
+  // Make sure no code called via RFHM::Navigate clears the pending entry.
+  CHECK_EQ(controller_->GetPendingEntry(), &entry);
+
   // For security, we should never send non-Web-UI URLs to a Web UI renderer.
   // Double check that here.
   int enabled_bindings =
@@ -339,6 +342,9 @@ bool NavigatorImpl::NavigateToEntry(
   FrameMsg_Navigate_Params navigate_params;
   MakeNavigateParams(entry, *controller_, reload_type, &navigate_params);
   dest_render_frame_host->Navigate(navigate_params);
+
+  // Make sure no code called via RFH::Navigate clears the pending entry.
+  CHECK_EQ(controller_->GetPendingEntry(), &entry);
 
   if (entry.GetPageID() == -1) {
     // HACK!!  This code suppresses javascript: URLs from being added to

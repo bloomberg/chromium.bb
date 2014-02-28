@@ -2278,31 +2278,8 @@ void WebContentsImpl::OnDidFinishLoad(
 }
 
 void WebContentsImpl::OnGoToEntryAtOffset(int offset) {
-  if (!delegate_ || delegate_->OnGoToEntryOffset(offset)) {
-    NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
-        controller_.GetEntryAtOffset(offset));
-    if (!entry)
-      return;
-    // Note that we don't call NavigationController::GotToOffset() as we don't
-    // want to create a pending navigation entry (it might end up lingering
-    // http://crbug.com/51680).
-    entry->SetTransitionType(
-        PageTransitionFromInt(
-            entry->GetTransitionType() |
-            PAGE_TRANSITION_FORWARD_BACK));
-    frame_tree_.root()->navigator()->NavigateToEntry(
-        frame_tree_.GetMainFrame(),
-        *entry,
-        NavigationControllerImpl::NO_RELOAD);
-
-    // If the entry is being restored and doesn't have a SiteInstance yet, fill
-    // it in now that we know. This allows us to find the entry when it commits.
-    if (!entry->site_instance() &&
-        entry->restore_type() != NavigationEntryImpl::RESTORE_NONE) {
-      entry->set_site_instance(
-          static_cast<SiteInstanceImpl*>(GetPendingSiteInstance()));
-    }
-  }
+  if (!delegate_ || delegate_->OnGoToEntryOffset(offset))
+    controller_.GoToOffset(offset);
 }
 
 void WebContentsImpl::OnUpdateZoomLimits(int minimum_percent,

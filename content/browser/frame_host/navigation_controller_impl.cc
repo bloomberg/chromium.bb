@@ -1585,8 +1585,6 @@ void NavigationControllerImpl::NavigateToPendingEntry(ReloadType reload_type) {
 
   // If the entry is being restored and doesn't have a SiteInstance yet, fill
   // it in now that we know. This allows us to find the entry when it commits.
-  // This works for browser-initiated navigations. We handle renderer-initiated
-  // navigations to restored entries in WebContentsImpl::OnGoToEntryAtOffset.
   if (pending_entry_ && !pending_entry_->site_instance() &&
       pending_entry_->restore_type() != NavigationEntryImpl::RESTORE_NONE) {
     pending_entry_->set_site_instance(static_cast<SiteInstanceImpl*>(

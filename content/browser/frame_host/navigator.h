@@ -68,14 +68,6 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       RenderFrameHostImpl* render_frame_host,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {}
 
-  // Causes the Navigator to navigate in the right render frame to |entry|,
-  // which must be already part of the entries in the navigation controller.
-  // This does not change the NavigationController state.
-  virtual bool NavigateToEntry(
-      RenderFrameHostImpl* render_frame_host,
-      const NavigationEntryImpl& entry,
-      NavigationController::ReloadType reload_type);
-
   // Called by the NavigationController to cause the Navigator to navigate
   // to the current pending entry. The NavigationController should be called
   // back with RendererDidNavigate on success or DiscardPendingEntry on failure.
