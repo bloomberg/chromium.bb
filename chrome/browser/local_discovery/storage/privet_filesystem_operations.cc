@@ -4,22 +4,60 @@
 
 #include "chrome/browser/local_discovery/storage/privet_filesystem_operations.h"
 
+#include "chrome/browser/local_discovery/storage/privet_filesystem_constants.h"
+
 namespace local_discovery {
 
-namespace {
-const char kPrivetListEntries[] = "entries";
-const char kPrivetListKeyName[] = "name";
-const char kPrivetListKeySize[] = "size";
-const char kPrivetListKeyType[] = "type";
-const char kPrivetListTypeDir[] = "dir";
+PrivetFileSystemOperationFactory::PrivetFileSystemOperationFactory(
+    content::BrowserContext* browser_context)
+    : browser_context_(browser_context), weak_factory_(this) {}
+
+PrivetFileSystemOperationFactory::~PrivetFileSystemOperationFactory() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  RemoveAllOperations();
+}
+
+void PrivetFileSystemOperationFactory::GetFileInfo(
+    const fileapi::FileSystemURL& url,
+    const fileapi::AsyncFileUtil::GetFileInfoCallback& callback) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  PrivetFileSystemAsyncOperation* operation =
+      new PrivetFileSystemDetailsOperation(
+          url.path(), browser_context_, this, &attribute_cache_, callback);
+  async_operations_.insert(operation);
+  operation->Start();
+}
+
+void PrivetFileSystemOperationFactory::ReadDirectory(
+    const fileapi::FileSystemURL& url,
+    const fileapi::AsyncFileUtil::ReadDirectoryCallback& callback) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  PrivetFileSystemAsyncOperation* operation = new PrivetFileSystemListOperation(
+      url.path(), browser_context_, this, &attribute_cache_, callback);
+  async_operations_.insert(operation);
+  operation->Start();
+}
+
+void PrivetFileSystemOperationFactory::RemoveOperation(
+    PrivetFileSystemAsyncOperation* operation) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  async_operations_.erase(operation);
+  delete operation;
+}
+
+void PrivetFileSystemOperationFactory::RemoveAllOperations() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  STLDeleteElements(&async_operations_);
 }
 
 PrivetFileSystemAsyncOperationUtil::PrivetFileSystemAsyncOperationUtil(
     const base::FilePath& full_path,
-    net::URLRequestContextGetter* request_context,
+    content::BrowserContext* browser_context,
     Delegate* delegate)
-    : parsed_path_(full_path), request_context_(request_context),
-      delegate_(delegate) {
+    : parsed_path_(full_path),
+      browser_context_(browser_context),
+      delegate_(delegate),
+      weak_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 
@@ -29,6 +67,7 @@ PrivetFileSystemAsyncOperationUtil::~PrivetFileSystemAsyncOperationUtil() {
 
 void PrivetFileSystemAsyncOperationUtil::Start() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  request_context_ = browser_context_->GetRequestContext();
   service_discovery_client_ = ServiceDiscoverySharedClient::GetInstance();
   privet_device_resolver_.reset(new PrivetDeviceResolver(
       service_discovery_client_.get(),
@@ -43,8 +82,7 @@ void PrivetFileSystemAsyncOperationUtil::OnGotDeviceDescription(
     bool success, const DeviceDescription& device_description) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (!success) {
-    delegate_->PrivetFileSystemResolved(NULL,
-                                       parsed_path_.path);
+    delegate_->PrivetFileSystemResolved(NULL, parsed_path_.path);
     return;
   }
 
@@ -67,106 +105,69 @@ void PrivetFileSystemAsyncOperationUtil::OnGotPrivetHTTP(
                                       parsed_path_.path);
 }
 
-
 PrivetFileSystemListOperation::PrivetFileSystemListOperation(
     const base::FilePath& full_path,
     content::BrowserContext* browser_context,
-    PrivetFileSystemAsyncOperationContainer* async_file_util,
+    PrivetFileSystemAsyncOperationContainer* container,
+    PrivetFileSystemAttributeCache* attribute_cache,
     const fileapi::AsyncFileUtil::ReadDirectoryCallback& callback)
-    : full_path_(full_path), browser_context_(browser_context),
-      async_file_util_(async_file_util),
-      callback_(callback), weak_factory_(this) {
+    : core_(full_path, browser_context, this),
+      full_path_(full_path),
+      container_(container),
+      attribute_cache_(attribute_cache),
+      callback_(callback) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 
 PrivetFileSystemListOperation::~PrivetFileSystemListOperation() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 
 void PrivetFileSystemListOperation::Start() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(
-          &PrivetFileSystemListOperation::StartOnUIThread,
-          weak_factory_.GetWeakPtr()));
-}
-
-void PrivetFileSystemListOperation::StartOnUIThread() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  core_.reset(new PrivetFileSystemAsyncOperationUtil(
-      full_path_,
-      browser_context_->GetRequestContext(),
-      this));
-  core_->Start();
+  core_.Start();
 }
 
 void PrivetFileSystemListOperation::PrivetFileSystemResolved(
     PrivetHTTPClient* http_client,
     const std::string& path) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    if (!http_client) {
-      TriggerCallback(base::File::FILE_ERROR_FAILED,
-                      fileapi::AsyncFileUtil::EntryList(), false);
-      return;
-    }
+  if (!http_client) {
+    SignalError();
+    return;
+  }
 
-    list_operation_ = http_client->CreateStorageListOperation(
-        path,
-        base::Bind(&PrivetFileSystemListOperation::OnStorageListResult,
-                   base::Unretained(this)));
+  list_operation_ = http_client->CreateStorageListOperation(
+      path,
+      base::Bind(&PrivetFileSystemListOperation::OnStorageListResult,
+                 base::Unretained(this)));
     list_operation_->Start();
-}
-
-void PrivetFileSystemListOperation::TriggerCallback(
-    base::File::Error result,
-    const fileapi::AsyncFileUtil::EntryList& file_list,
-    bool has_more) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  list_operation_.reset();
-  core_.reset();
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          &PrivetFileSystemListOperation::TriggerCallbackOnIOThread,
-          weak_factory_.GetWeakPtr(),
-          result, file_list, has_more));
-}
-
-void PrivetFileSystemListOperation::TriggerCallbackOnIOThread(
-    base::File::Error result,
-    fileapi::AsyncFileUtil::EntryList file_list,
-    bool has_more) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  fileapi::AsyncFileUtil::ReadDirectoryCallback callback;
-  callback = callback_;
-  async_file_util_->RemoveOperation(this);
-  callback.Run(result, file_list, has_more);
 }
 
 void PrivetFileSystemListOperation::OnStorageListResult(
     const base::DictionaryValue* value) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  list_operation_.reset();
+
+  attribute_cache_->AddFileInfoFromJSON(full_path_, value);
+
   fileapi::AsyncFileUtil::EntryList entry_list;
 
   if (!value) {
-    TriggerCallback(base::File::FILE_ERROR_FAILED,
-                    fileapi::AsyncFileUtil::EntryList(), false);
+    SignalError();
     return;
   }
 
   const base::ListValue* entries;
   if (!value->GetList(kPrivetListEntries, &entries)) {
-    TriggerCallback(base::File::FILE_ERROR_FAILED,
-                    fileapi::AsyncFileUtil::EntryList(), false);
+    SignalError();
     return;
   }
 
   for (size_t i = 0; i < entries->GetSize(); i++) {
     const base::DictionaryValue* entry_value;
     if (!entries->GetDictionary(i, &entry_value)) {
-      TriggerCallback(base::File::FILE_ERROR_FAILED,
-                      fileapi::AsyncFileUtil::EntryList(), false);
+      SignalError();
       return;
     }
 
@@ -188,8 +189,101 @@ void PrivetFileSystemListOperation::OnStorageListResult(
     entry_list.push_back(entry);
   }
 
-  TriggerCallback(base::File::FILE_OK, entry_list, false);
+  TriggerCallbackAndDestroy(base::File::FILE_OK, entry_list, false);
 }
 
+void PrivetFileSystemListOperation::SignalError() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  TriggerCallbackAndDestroy(base::File::FILE_ERROR_FAILED,
+                            fileapi::AsyncFileUtil::EntryList(),
+                            false);
+}
+
+void PrivetFileSystemListOperation::TriggerCallbackAndDestroy(
+    base::File::Error result,
+    const fileapi::AsyncFileUtil::EntryList& file_list,
+    bool has_more) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(callback_, result, file_list, has_more));
+  container_->RemoveOperation(this);
+}
+
+PrivetFileSystemDetailsOperation::PrivetFileSystemDetailsOperation(
+    const base::FilePath& full_path,
+    content::BrowserContext* browser_context,
+    PrivetFileSystemAsyncOperationContainer* container,
+    PrivetFileSystemAttributeCache* attribute_cache,
+    const fileapi::AsyncFileUtil::GetFileInfoCallback& callback)
+    : core_(full_path, browser_context, this),
+      full_path_(full_path),
+      container_(container),
+      attribute_cache_(attribute_cache),
+      callback_(callback) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+}
+
+PrivetFileSystemDetailsOperation::~PrivetFileSystemDetailsOperation() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+}
+
+void PrivetFileSystemDetailsOperation::Start() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  const base::File::Info* info = attribute_cache_->GetFileInfo(full_path_);
+  if (info) {
+    TriggerCallbackAndDestroy(base::File::FILE_OK, *info);
+    return;
+  }
+
+  core_.Start();
+}
+
+void PrivetFileSystemDetailsOperation::PrivetFileSystemResolved(
+    PrivetHTTPClient* http_client,
+    const std::string& path) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  if (!http_client) {
+    SignalError();
+    return;
+  }
+
+  list_operation_ = http_client->CreateStorageListOperation(
+      path,
+      base::Bind(&PrivetFileSystemDetailsOperation::OnStorageListResult,
+                 base::Unretained(this)));
+  list_operation_->Start();
+}
+
+void PrivetFileSystemDetailsOperation::OnStorageListResult(
+    const base::DictionaryValue* value) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  list_operation_.reset();
+
+  attribute_cache_->AddFileInfoFromJSON(full_path_, value);
+  const base::File::Info* info = attribute_cache_->GetFileInfo(full_path_);
+
+  if (info) {
+    TriggerCallbackAndDestroy(base::File::FILE_OK, *info);
+  } else {
+    SignalError();
+  }
+}
+
+void PrivetFileSystemDetailsOperation::SignalError() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  TriggerCallbackAndDestroy(base::File::FILE_ERROR_FAILED, base::File::Info());
+}
+
+void PrivetFileSystemDetailsOperation::TriggerCallbackAndDestroy(
+    base::File::Error result,
+    const base::File::Info& info) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  content::BrowserThread::PostTask(content::BrowserThread::IO,
+                                   FROM_HERE,
+                                   base::Bind(callback_, result, info));
+  container_->RemoveOperation(this);
+}
 
 }  // namespace local_discovery

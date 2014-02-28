@@ -9,4 +9,10 @@ namespace local_discovery {
 const base::FilePath::CharType kPrivetFilePath[] = FILE_PATH_LITERAL("/privet");
 const char kPrivetTypeStorage[] = "storage";
 
+const char kPrivetListEntries[] = "entries";
+const char kPrivetListKeyName[] = "name";
+const char kPrivetListKeySize[] = "size";
+const char kPrivetListKeyType[] = "type";
+const char kPrivetListTypeDir[] = "dir";
+
 }  // namespace local_discovery

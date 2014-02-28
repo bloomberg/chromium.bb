@@ -5,18 +5,22 @@
 #include "chrome/browser/local_discovery/storage/privet_filesystem_async_util.h"
 
 #include "base/platform_file.h"
-#include "base/stl_util.h"
+#include "chrome/browser/local_discovery/storage/path_util.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/common/blob/shareable_file_reference.h"
 
 namespace local_discovery {
 
 PrivetFileSystemAsyncUtil::PrivetFileSystemAsyncUtil(
-    content::BrowserContext* browser_context)
-    : browser_context_(browser_context) {
+    content::BrowserContext* browser_context) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  operation_factory_ = new PrivetFileSystemOperationFactory(browser_context);
 }
 
 PrivetFileSystemAsyncUtil::~PrivetFileSystemAsyncUtil() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  content::BrowserThread::DeleteSoon(
+      content::BrowserThread::UI, FROM_HERE, operation_factory_);
 }
 
 void PrivetFileSystemAsyncUtil::CreateOrOpen(
@@ -52,26 +56,36 @@ void PrivetFileSystemAsyncUtil::GetFileInfo(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const GetFileInfoCallback& callback) {
-  base::File::Info file_info;
+  ParsedPrivetPath parsed_path(url.path());
 
-  file_info.size = 20;
-  file_info.is_directory = true;
-  file_info.is_symbolic_link = false;
+  if (parsed_path.path == "/") {
+    base::File::Info file_info;
+    file_info.is_directory = true;
+    file_info.is_symbolic_link = false;
+    callback.Run(base::File::FILE_OK, file_info);
+    return;
+  }
 
-  callback.Run(base::File::FILE_OK, file_info);
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&PrivetFileSystemOperationFactory::GetFileInfo,
+                 operation_factory_->GetWeakPtr(),
+                 url,
+                 callback));
 }
 
 void PrivetFileSystemAsyncUtil::ReadDirectory(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
-  PrivetFileSystemAsyncOperation* operation = new PrivetFileSystemListOperation(
-      url.path(),
-      browser_context_,
-      this,
-      callback);
-  async_operations_.insert(operation);
-  operation->Start();
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&PrivetFileSystemOperationFactory::ReadDirectory,
+                 operation_factory_->GetWeakPtr(),
+                 url,
+                 callback));
 }
 
 
@@ -157,16 +171,6 @@ void PrivetFileSystemAsyncUtil::CreateSnapshotFile(
                base::File::Info(),
                base::FilePath(),
                scoped_refptr<webkit_blob::ShareableFileReference>());
-}
-
-void PrivetFileSystemAsyncUtil::RemoveOperation(
-    PrivetFileSystemAsyncOperation* operation) {
-  async_operations_.erase(operation);
-  delete operation;
-}
-
-void PrivetFileSystemAsyncUtil::RemoveAllOperations() {
-  STLDeleteElements(&async_operations_);
 }
 
 }  // namespace local_discovery

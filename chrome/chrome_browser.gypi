@@ -3531,6 +3531,8 @@
             'browser/local_discovery/service_discovery_host_client.h',
             'browser/local_discovery/storage/privet_filesystem_async_util.cc',
             'browser/local_discovery/storage/privet_filesystem_async_util.h',
+            'browser/local_discovery/storage/privet_filesystem_attribute_cache.cc',
+            'browser/local_discovery/storage/privet_filesystem_attribute_cache.h',
             'browser/local_discovery/storage/privet_filesystem_backend.cc',
             'browser/local_discovery/storage/privet_filesystem_backend.h',
             'browser/local_discovery/storage/privet_filesystem_constants.cc',

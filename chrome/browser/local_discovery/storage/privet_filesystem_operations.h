@@ -10,10 +10,12 @@
 #include "chrome/browser/local_discovery/privet_http_asynchronous_factory.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 #include "chrome/browser/local_discovery/storage/path_util.h"
+#include "chrome/browser/local_discovery/storage/privet_filesystem_attribute_cache.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context.h"
 #include "webkit/browser/fileapi/async_file_util.h"
+#include "webkit/browser/fileapi/file_system_url.h"
 
 namespace local_discovery {
 
@@ -33,6 +35,36 @@ class PrivetFileSystemAsyncOperationContainer {
   virtual void RemoveAllOperations() = 0;
 };
 
+// This object is a counterpart to PrivetFileSystemAsyncUtil that lives on the
+// UI thread.
+class PrivetFileSystemOperationFactory
+    : public PrivetFileSystemAsyncOperationContainer {
+ public:
+  explicit PrivetFileSystemOperationFactory(
+      content::BrowserContext* browser_context);
+  virtual ~PrivetFileSystemOperationFactory();
+
+  void GetFileInfo(const fileapi::FileSystemURL& url,
+                   const fileapi::AsyncFileUtil::GetFileInfoCallback& callback);
+  void ReadDirectory(
+      const fileapi::FileSystemURL& url,
+      const fileapi::AsyncFileUtil::ReadDirectoryCallback& callback);
+
+  base::WeakPtr<PrivetFileSystemOperationFactory> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
+ private:
+  virtual void RemoveOperation(PrivetFileSystemAsyncOperation* operation)
+      OVERRIDE;
+  virtual void RemoveAllOperations() OVERRIDE;
+
+  PrivetFileSystemAttributeCache attribute_cache_;
+  std::set<PrivetFileSystemAsyncOperation*> async_operations_;
+  content::BrowserContext* browser_context_;
+  base::WeakPtrFactory<PrivetFileSystemOperationFactory> weak_factory_;
+};
+
 class PrivetFileSystemAsyncOperationUtil {
  public:
   class Delegate {
@@ -48,11 +80,9 @@ class PrivetFileSystemAsyncOperationUtil {
         const std::string& path) = 0;
   };
 
-  // full_path
-  PrivetFileSystemAsyncOperationUtil(
-      const base::FilePath& full_path,
-      net::URLRequestContextGetter* request_context,
-      Delegate* delegate);
+  PrivetFileSystemAsyncOperationUtil(const base::FilePath& full_path,
+                                     content::BrowserContext* browser_context,
+                                     Delegate* delegate);
   ~PrivetFileSystemAsyncOperationUtil();
 
   void Start();
@@ -64,6 +94,7 @@ class PrivetFileSystemAsyncOperationUtil {
 
   ParsedPrivetPath parsed_path_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
+  content::BrowserContext* browser_context_;
   Delegate* delegate_;
 
   scoped_refptr<ServiceDiscoverySharedClient> service_discovery_client_;
@@ -71,6 +102,8 @@ class PrivetFileSystemAsyncOperationUtil {
   scoped_ptr<PrivetHTTPAsynchronousFactory> privet_async_factory_;
   scoped_ptr<PrivetHTTPResolution> privet_http_resolution_;
   scoped_ptr<PrivetHTTPClient> privet_client_;
+
+  base::WeakPtrFactory<PrivetFileSystemAsyncOperationUtil> weak_factory_;
 };
 
 class PrivetFileSystemListOperation
@@ -80,7 +113,8 @@ class PrivetFileSystemListOperation
   PrivetFileSystemListOperation(
       const base::FilePath& full_path,
       content::BrowserContext* browser_context,
-      PrivetFileSystemAsyncOperationContainer* async_file_util,
+      PrivetFileSystemAsyncOperationContainer* container,
+      PrivetFileSystemAttributeCache* attribute_cache,
       const fileapi::AsyncFileUtil::ReadDirectoryCallback& callback);
   virtual ~PrivetFileSystemListOperation();
 
@@ -91,25 +125,52 @@ class PrivetFileSystemListOperation
         const std::string& path) OVERRIDE;
 
  private:
-  void StartOnUIThread();
   void OnStorageListResult(const base::DictionaryValue* value);
-  void TriggerCallback(base::File::Error result,
-                       const fileapi::AsyncFileUtil::EntryList& file_list,
-                       bool has_more);
-
-  void TriggerCallbackOnIOThread(
+  void SignalError();
+  void TriggerCallbackAndDestroy(
       base::File::Error result,
-      fileapi::AsyncFileUtil::EntryList file_list,
+      const fileapi::AsyncFileUtil::EntryList& file_list,
       bool has_more);
 
+  PrivetFileSystemAsyncOperationUtil core_;
   base::FilePath full_path_;
-  content::BrowserContext* browser_context_;
-  scoped_ptr<PrivetFileSystemAsyncOperationUtil> core_;
-  PrivetFileSystemAsyncOperationContainer* async_file_util_;
+  PrivetFileSystemAsyncOperationContainer* container_;
+  PrivetFileSystemAttributeCache* attribute_cache_;
   fileapi::AsyncFileUtil::ReadDirectoryCallback callback_;
 
   scoped_ptr<PrivetJSONOperation> list_operation_;
-  base::WeakPtrFactory<PrivetFileSystemListOperation> weak_factory_;
+};
+
+class PrivetFileSystemDetailsOperation
+    : public PrivetFileSystemAsyncOperationUtil::Delegate,
+      public local_discovery::PrivetFileSystemAsyncOperation {
+ public:
+  PrivetFileSystemDetailsOperation(
+      const base::FilePath& full_path,
+      content::BrowserContext* browser_context,
+      PrivetFileSystemAsyncOperationContainer* container,
+      PrivetFileSystemAttributeCache* attribute_cache,
+      const fileapi::AsyncFileUtil::GetFileInfoCallback& callback);
+  virtual ~PrivetFileSystemDetailsOperation();
+
+  virtual void Start() OVERRIDE;
+
+  virtual void PrivetFileSystemResolved(PrivetHTTPClient* http_client,
+                                        const std::string& path) OVERRIDE;
+
+ private:
+  void OnStorageListResult(const base::DictionaryValue* value);
+  void SignalError();
+  void TriggerCallbackAndDestroy(base::File::Error result,
+                                 const base::File::Info& info);
+
+  PrivetFileSystemAsyncOperationUtil core_;
+  base::FilePath full_path_;
+  PrivetFileSystemAsyncOperationContainer* container_;
+  PrivetFileSystemAttributeCache* attribute_cache_;
+  fileapi::AsyncFileUtil::GetFileInfoCallback callback_;
+
+  scoped_ptr<PrivetJSONOperation> list_operation_;
 };
 
 }  // namespace local_discovery

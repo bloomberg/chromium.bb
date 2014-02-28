@@ -9,6 +9,8 @@
 
 namespace local_discovery {
 
+base::FilePath NormalizeFilePath(const base::FilePath& path);
+
 struct ParsedPrivetPath {
   explicit ParsedPrivetPath(const base::FilePath& path);
   ~ParsedPrivetPath();

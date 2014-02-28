@@ -5,17 +5,14 @@
 #ifndef CHROME_BROWSER_LOCAL_DISCOVERY_STORAGE_PRIVET_FILESYSTEM_ASYNC_UTIL_H_
 #define CHROME_BROWSER_LOCAL_DISCOVERY_STORAGE_PRIVET_FILESYSTEM_ASYNC_UTIL_H_
 
-#include <set>
-
+#include "chrome/browser/local_discovery/storage/privet_filesystem_attribute_cache.h"
 #include "chrome/browser/local_discovery/storage/privet_filesystem_operations.h"
 #include "content/public/browser/browser_context.h"
 #include "webkit/browser/fileapi/async_file_util.h"
 
 namespace local_discovery {
 
-class PrivetFileSystemAsyncUtil
-    : public fileapi::AsyncFileUtil,
-      public PrivetFileSystemAsyncOperationContainer {
+class PrivetFileSystemAsyncUtil : public fileapi::AsyncFileUtil {
  public:
   explicit PrivetFileSystemAsyncUtil(content::BrowserContext* browser_context);
   virtual ~PrivetFileSystemAsyncUtil();
@@ -89,15 +86,8 @@ class PrivetFileSystemAsyncUtil
       const fileapi::FileSystemURL& url,
       const CreateSnapshotFileCallback& callback) OVERRIDE;
 
-
-  virtual void RemoveOperation(
-      PrivetFileSystemAsyncOperation* operation) OVERRIDE;
-  virtual void RemoveAllOperations() OVERRIDE;
-
  private:
-
-  std::set<PrivetFileSystemAsyncOperation*> async_operations_;
-  content::BrowserContext* browser_context_;
+  PrivetFileSystemOperationFactory* operation_factory_;
 };
 
 }  // namespace local_discovery

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/local_discovery/storage/path_util.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 
@@ -49,6 +51,20 @@ std::string PathStringToString(const base::FilePath::StringType& string) {
 }
 
 }  // namespace
+
+base::FilePath NormalizeFilePath(const base::FilePath& path) {
+#if defined(OS_WIN)
+  base::FilePath::StringType path_updated_string = path.value();
+
+  std::replace(path_updated_string.begin(),
+               path_updated_string.end(),
+               static_cast<base::FilePath::CharType>('\\'),
+               static_cast<base::FilePath::CharType>('/'));
+  return base::FilePath(path_updated_string);
+#else
+  return path;
+#endif
+}
 
 ParsedPrivetPath::ParsedPrivetPath(const base::FilePath& file_path) {
   std::vector<base::FilePath::StringType> components;

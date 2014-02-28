@@ -12,6 +12,12 @@ namespace local_discovery {
 extern const base::FilePath::CharType kPrivetFilePath[];
 extern const char kPrivetTypeStorage[];
 
+extern const char kPrivetListEntries[];
+extern const char kPrivetListKeyName[];
+extern const char kPrivetListKeySize[];
+extern const char kPrivetListKeyType[];
+extern const char kPrivetListTypeDir[];
+
 }  // namespace local_discovery
 
 #endif  // CHROME_BROWSER_LOCAL_DISCOVERY_STORAGE_PRIVET_FILESYSTEM_CONSTANTS_H_
