@@ -116,41 +116,6 @@ class AppWindow : public content::NotificationObserver,
     FULLSCREEN_TYPE_FORCED = 1 << 3,
   };
 
-  class SizeConstraints {
-   public:
-    // The value SizeConstraints uses to represent an unbounded width or height.
-    // This is an enum so that it can be declared inline here.
-    enum { kUnboundedSize = 0 };
-
-    SizeConstraints();
-    SizeConstraints(const gfx::Size& min_size, const gfx::Size& max_size);
-    ~SizeConstraints();
-
-    // Returns the bounds with its size clamped to the min/max size.
-    gfx::Size ClampSize(gfx::Size size) const;
-
-    // When gfx::Size is used as a min/max size, a zero represents an unbounded
-    // component. This method checks whether either component is specified.
-    // Note we can't use gfx::Size::IsEmpty as it returns true if either width
-    // or height is zero.
-    bool HasMinimumSize() const;
-    bool HasMaximumSize() const;
-
-    // This returns true if all components are specified, and min and max are
-    // equal.
-    bool HasFixedSize() const;
-
-    gfx::Size GetMaximumSize() const;
-    gfx::Size GetMinimumSize() const;
-
-    void set_minimum_size(const gfx::Size& min_size);
-    void set_maximum_size(const gfx::Size& max_size);
-
-   private:
-    gfx::Size minimum_size_;
-    gfx::Size maximum_size_;
-  };
-
   struct CreateParams {
     CreateParams();
     ~CreateParams();
@@ -342,9 +307,6 @@ class AppWindow : public content::NotificationObserver,
     return app_window_contents_.get();
   }
 
-  // Get the size constraints.
-  const SizeConstraints& size_constraints() const { return size_constraints_; }
-
   // Set whether the window should stay above other windows which are not
   // configured to be always-on-top.
   void SetAlwaysOnTop(bool always_on_top);
@@ -528,9 +490,6 @@ class AppWindow : public content::NotificationObserver,
 
   // Bit field of FullscreenType.
   int fullscreen_types_;
-
-  // Size constraints on the window.
-  SizeConstraints size_constraints_;
 
   // Show has been called, so the window should be shown once the first visually
   // non-empty paint occurs.

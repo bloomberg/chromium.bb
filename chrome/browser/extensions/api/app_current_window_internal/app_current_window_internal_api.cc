@@ -6,6 +6,7 @@
 
 #include "apps/app_window.h"
 #include "apps/app_window_registry.h"
+#include "apps/size_constraints.h"
 #include "apps/ui/native_app_window.h"
 #include "base/command_line.h"
 #include "chrome/browser/profiles/profile.h"
@@ -52,7 +53,7 @@ const char kRequiresFramelessWindow[] =
 const char kAlwaysOnTopPermission[] =
     "The \"alwaysOnTopWindows\" permission is required.";
 
-const int kUnboundedSize = apps::AppWindow::SizeConstraints::kUnboundedSize;
+const int kUnboundedSize = apps::SizeConstraints::kUnboundedSize;
 
 }  // namespace
 
@@ -158,7 +159,7 @@ bool AppCurrentWindowInternalSetMinWidthFunction::RunWithWindow(
 
   scoped_ptr<SetMinWidth::Params> params(SetMinWidth::Params::Create(*args_));
   CHECK(params.get());
-  gfx::Size min_size = window->size_constraints().GetMinimumSize();
+  gfx::Size min_size = window->GetBaseWindow()->GetMinimumSize();
   min_size.set_width(params->min_width.get() ?
       *(params->min_width) : kUnboundedSize);
   window->SetMinimumSize(min_size);
@@ -174,7 +175,7 @@ bool AppCurrentWindowInternalSetMinHeightFunction::RunWithWindow(
 
   scoped_ptr<SetMinHeight::Params> params(SetMinHeight::Params::Create(*args_));
   CHECK(params.get());
-  gfx::Size min_size = window->size_constraints().GetMinimumSize();
+  gfx::Size min_size = window->GetBaseWindow()->GetMinimumSize();
   min_size.set_height(params->min_height.get() ?
       *(params->min_height) : kUnboundedSize);
   window->SetMinimumSize(min_size);
@@ -190,7 +191,7 @@ bool AppCurrentWindowInternalSetMaxWidthFunction::RunWithWindow(
 
   scoped_ptr<SetMaxWidth::Params> params(SetMaxWidth::Params::Create(*args_));
   CHECK(params.get());
-  gfx::Size max_size = window->size_constraints().GetMaximumSize();
+  gfx::Size max_size = window->GetBaseWindow()->GetMaximumSize();
   max_size.set_width(params->max_width.get() ?
       *(params->max_width) : kUnboundedSize);
   window->SetMaximumSize(max_size);
@@ -206,7 +207,7 @@ bool AppCurrentWindowInternalSetMaxHeightFunction::RunWithWindow(
 
   scoped_ptr<SetMaxHeight::Params> params(SetMaxHeight::Params::Create(*args_));
   CHECK(params.get());
-  gfx::Size max_size = window->size_constraints().GetMaximumSize();
+  gfx::Size max_size = window->GetBaseWindow()->GetMaximumSize();
   max_size.set_height(params->max_height.get() ?
       *(params->max_height) : kUnboundedSize);
   window->SetMaximumSize(max_size);

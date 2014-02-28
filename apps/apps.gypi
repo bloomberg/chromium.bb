@@ -56,6 +56,8 @@
         'saved_files_service.h',
         'saved_files_service_factory.cc',
         'saved_files_service_factory.h',
+        'size_constraints.cc',
+        'size_constraints.h',
         'switches.cc',
         'switches.h',
         'ui/native_app_window.h',

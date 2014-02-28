@@ -319,11 +319,12 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
     window_class = [ShellFramelessNSWindow class];
   }
 
-  AppWindow::SizeConstraints size_constraints = app_window_->size_constraints();
+  size_constraints_.set_minimum_size(params.minimum_size);
+  size_constraints_.set_maximum_size(params.maximum_size);
   shows_resize_controls_ =
-      params.resizable && !size_constraints.HasFixedSize();
+      params.resizable && !size_constraints_.HasFixedSize();
   shows_fullscreen_controls_ =
-      params.resizable && !size_constraints.HasMaximumSize();
+      params.resizable && !size_constraints_.HasMaximumSize();
   window.reset([[window_class alloc]
       initWithContentRect:cocoa_bounds
                 styleMask:GetWindowStyleMask()
@@ -362,7 +363,10 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
 
   [[window_controller_ window] setDelegate:window_controller_];
   [window_controller_ setAppWindow:this];
-  UpdateWindowMinMaxSize();
+
+  // Update the size constraints of the NSWindow.
+  SetMinimumSize(params.minimum_size);
+  SetMaximumSize(params.maximum_size);
 
   extension_keybinding_registry_.reset(new ExtensionKeybindingRegistryCocoa(
       Profile::FromBrowserContext(app_window_->browser_context()),
@@ -1033,20 +1037,34 @@ void NativeAppWindowCocoa::UpdateRestoredBounds() {
     restored_bounds_ = [window() frame];
 }
 
-void NativeAppWindowCocoa::UpdateWindowMinMaxSize() {
-  gfx::Size min_size = app_window_->size_constraints().GetMinimumSize();
-  [window() setContentMinSize:NSMakeSize(min_size.width(), min_size.height())];
+void NativeAppWindowCocoa::UpdateShelfMenu() {
+  // TODO(tmdiep): To be implemented for Mac.
+  NOTIMPLEMENTED();
+}
 
-  gfx::Size max_size = app_window_->size_constraints().GetMaximumSize();
-  const int kUnboundedSize = AppWindow::SizeConstraints::kUnboundedSize;
+gfx::Size NativeAppWindowCocoa::GetMinimumSize() const {
+  return size_constraints_.GetMinimumSize();
+}
+
+void NativeAppWindowCocoa::SetMinimumSize(const gfx::Size& size) {
+  size_constraints_.set_minimum_size(size);
+
+  gfx::Size min_size = size_constraints_.GetMinimumSize();
+  [window() setContentMinSize:NSMakeSize(min_size.width(), min_size.height())];
+}
+
+gfx::Size NativeAppWindowCocoa::GetMaximumSize() const {
+  return size_constraints_.GetMaximumSize();
+}
+
+void NativeAppWindowCocoa::SetMaximumSize(const gfx::Size& size) {
+  size_constraints_.set_maximum_size(size);
+
+  gfx::Size max_size = size_constraints_.GetMaximumSize();
+  const int kUnboundedSize = apps::SizeConstraints::kUnboundedSize;
   CGFloat max_width = max_size.width() == kUnboundedSize ?
       CGFLOAT_MAX : max_size.width();
   CGFloat max_height = max_size.height() == kUnboundedSize ?
       CGFLOAT_MAX : max_size.height();
   [window() setContentMaxSize:NSMakeSize(max_width, max_height)];
-}
-
-void NativeAppWindowCocoa::UpdateShelfMenu() {
-  // TODO(tmdiep): To be implemented for Mac.
-  NOTIMPLEMENTED();
 }

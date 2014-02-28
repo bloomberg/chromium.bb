@@ -72,13 +72,21 @@ class NativeAppWindow : public ui::BaseWindow,
   virtual void ShowWithApp() = 0;
   virtual void HideWithApp() = 0;
 
-  // Updates the minimum and maximum size of the native window with the current
-  // size constraints.
-  virtual void UpdateWindowMinMaxSize() = 0;
-
   // Updates custom entries for the context menu of the app's taskbar/dock/shelf
   // icon.
   virtual void UpdateShelfMenu() = 0;
+
+  // Returns the minimum size constraints of the content.
+  virtual gfx::Size GetMinimumSize() const = 0;
+
+  // Updates the minimum size constraints of the content.
+  virtual void SetMinimumSize(const gfx::Size& size) = 0;
+
+  // Returns the maximum size constraints of the content.
+  virtual gfx::Size GetMaximumSize() const = 0;
+
+  // Updates the maximum size constraints of the content.
+  virtual void SetMaximumSize(const gfx::Size& size) = 0;
 
   virtual ~NativeAppWindow() {}
 };

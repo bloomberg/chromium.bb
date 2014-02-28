@@ -96,6 +96,8 @@ NativeAppWindowGtk::NativeAppWindowGtk(AppWindow* app_window,
   if (always_on_top_)
     gtk_window_set_keep_above(window_, TRUE);
 
+  size_constraints_.set_minimum_size(params.minimum_size);
+  size_constraints_.set_maximum_size(params.maximum_size);
   UpdateWindowMinMaxSize();
 
   // In some (older) versions of compiz, raising top-level windows when they
@@ -477,6 +479,33 @@ void NativeAppWindowGtk::OnConfigureDebounced() {
   }
 }
 
+void NativeAppWindowGtk::UpdateWindowMinMaxSize() {
+ GdkGeometry hints;
+ int hints_mask = 0;
+ if (size_constraints_.HasMinimumSize()) {
+   gfx::Size min_size = size_constraints_.GetMinimumSize();
+   hints.min_height = min_size.height();
+   hints.min_width = min_size.width();
+   hints_mask |= GDK_HINT_MIN_SIZE;
+ }
+ if (size_constraints_.HasMaximumSize()) {
+   gfx::Size max_size = size_constraints_.GetMaximumSize();
+   const int kUnboundedSize = apps::SizeConstraints::kUnboundedSize;
+   hints.max_height = max_size.height() == kUnboundedSize ?
+       G_MAXINT : max_size.height();
+   hints.max_width = max_size.width() == kUnboundedSize ?
+       G_MAXINT : max_size.width();
+   hints_mask |= GDK_HINT_MAX_SIZE;
+ }
+ if (hints_mask) {
+   gtk_window_set_geometry_hints(
+       window_,
+       GTK_WIDGET(window_),
+       &hints,
+       static_cast<GdkWindowHints>(hints_mask));
+ }
+}
+
 gboolean NativeAppWindowGtk::OnWindowState(GtkWidget* sender,
                                            GdkEventWindowState* event) {
   state_ = event->new_window_state;
@@ -705,34 +734,25 @@ gfx::Insets NativeAppWindowGtk::GetFrameInsets() const {
 void NativeAppWindowGtk::HideWithApp() {}
 void NativeAppWindowGtk::ShowWithApp() {}
 
-void NativeAppWindowGtk::UpdateWindowMinMaxSize() {
-  GdkGeometry hints;
-  int hints_mask = 0;
-  if (app_window_->size_constraints().HasMinimumSize()) {
-    gfx::Size min_size = app_window_->size_constraints().GetMinimumSize();
-    hints.min_height = min_size.height();
-    hints.min_width = min_size.width();
-    hints_mask |= GDK_HINT_MIN_SIZE;
-  }
-  if (app_window_->size_constraints().HasMaximumSize()) {
-    gfx::Size max_size = app_window_->size_constraints().GetMaximumSize();
-    const int kUnboundedSize = AppWindow::SizeConstraints::kUnboundedSize;
-    hints.max_height = max_size.height() == kUnboundedSize ?
-        G_MAXINT : max_size.height();
-    hints.max_width = max_size.width() == kUnboundedSize ?
-        G_MAXINT : max_size.width();
-    hints_mask |= GDK_HINT_MAX_SIZE;
-  }
-  if (hints_mask) {
-    gtk_window_set_geometry_hints(
-        window_,
-        GTK_WIDGET(window_),
-        &hints,
-        static_cast<GdkWindowHints>(hints_mask));
-  }
-}
-
 void NativeAppWindowGtk::UpdateShelfMenu() {
   // TODO(tmdiep): To be implemented for GTK.
   NOTIMPLEMENTED();
+}
+
+gfx::Size NativeAppWindowGtk::GetMinimumSize() const {
+ return size_constraints_.GetMinimumSize();
+}
+
+void NativeAppWindowGtk::SetMinimumSize(const gfx::Size& size) {
+ size_constraints_.set_minimum_size(size);
+ UpdateWindowMinMaxSize();
+}
+
+gfx::Size NativeAppWindowGtk::GetMaximumSize() const {
+ return size_constraints_.GetMaximumSize();
+}
+
+void NativeAppWindowGtk::SetMaximumSize(const gfx::Size& size) {
+ size_constraints_.set_maximum_size(size);
+ UpdateWindowMinMaxSize();
 }

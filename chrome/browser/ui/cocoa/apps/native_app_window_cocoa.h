@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "apps/app_window.h"
+#include "apps/size_constraints.h"
 #include "apps/ui/native_app_window.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
@@ -134,9 +135,11 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow,
   // differentiate the reason a window was hidden.
   virtual void ShowWithApp() OVERRIDE;
   virtual void HideWithApp() OVERRIDE;
-  // Calls setContent[Min|Max]Size with the current size constraints.
-  virtual void UpdateWindowMinMaxSize() OVERRIDE;
   virtual void UpdateShelfMenu() OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
+  virtual void SetMinimumSize(const gfx::Size& size) OVERRIDE;
+  virtual gfx::Size GetMaximumSize() const OVERRIDE;
+  virtual void SetMaximumSize(const gfx::Size& size) OVERRIDE;
 
   // WebContentsObserver implementation.
   virtual void RenderViewCreated(content::RenderViewHost* rvh) OVERRIDE;
@@ -202,6 +205,8 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow,
 
   bool shows_resize_controls_;
   bool shows_fullscreen_controls_;
+
+  apps::SizeConstraints size_constraints_;
 
   base::scoped_nsobject<NativeAppWindowController> window_controller_;
   NSInteger attention_request_id_;  // identifier from requestUserAttention

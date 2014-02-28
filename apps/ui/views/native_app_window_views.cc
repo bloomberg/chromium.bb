@@ -37,6 +37,8 @@ void NativeAppWindowViews::Init(AppWindow* app_window,
   frameless_ = create_params.frame == AppWindow::FRAME_NONE;
   transparent_background_ = create_params.transparent_background;
   resizable_ = create_params.resizable;
+  size_constraints_.set_minimum_size(create_params.minimum_size);
+  size_constraints_.set_maximum_size(create_params.maximum_size);
   Observe(app_window_->web_contents());
 
   window_ = new views::Widget;
@@ -201,11 +203,11 @@ views::View* NativeAppWindowViews::GetInitiallyFocusedView() {
 }
 
 bool NativeAppWindowViews::CanResize() const {
-  return resizable_ && !app_window_->size_constraints().HasFixedSize();
+  return resizable_ && !size_constraints_.HasFixedSize();
 }
 
 bool NativeAppWindowViews::CanMaximize() const {
-  return resizable_ && !app_window_->size_constraints().HasMaximumSize() &&
+  return resizable_ && !size_constraints_.HasMaximumSize() &&
          !app_window_->window_type_is_panel();
 }
 
@@ -314,11 +316,11 @@ void NativeAppWindowViews::ViewHierarchyChanged(
 }
 
 gfx::Size NativeAppWindowViews::GetMinimumSize() {
-  return app_window_->size_constraints().GetMinimumSize();
+  return size_constraints_.GetMinimumSize();
 }
 
 gfx::Size NativeAppWindowViews::GetMaximumSize() {
-  return app_window_->size_constraints().GetMaximumSize();
+  return size_constraints_.GetMaximumSize();
 }
 
 void NativeAppWindowViews::OnFocus() {
@@ -404,8 +406,22 @@ void NativeAppWindowViews::HideWithApp() {}
 
 void NativeAppWindowViews::ShowWithApp() {}
 
-void NativeAppWindowViews::UpdateWindowMinMaxSize() {}
-
 void NativeAppWindowViews::UpdateShelfMenu() {}
+
+gfx::Size NativeAppWindowViews::GetMinimumSize() const {
+  return size_constraints_.GetMinimumSize();
+}
+
+void NativeAppWindowViews::SetMinimumSize(const gfx::Size& size) {
+  size_constraints_.set_minimum_size(size);
+}
+
+gfx::Size NativeAppWindowViews::GetMaximumSize() const {
+  return size_constraints_.GetMaximumSize();
+}
+
+void NativeAppWindowViews::SetMaximumSize(const gfx::Size& size) {
+  size_constraints_.set_maximum_size(size);
+}
 
 }  // namespace apps

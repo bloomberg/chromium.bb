@@ -5,6 +5,7 @@
 #ifndef APPS_UI_VIEWS_NATIVE_APP_WINDOW_VIEWS_H_
 #define APPS_UI_VIEWS_NATIVE_APP_WINDOW_VIEWS_H_
 
+#include "apps/size_constraints.h"
 #include "apps/ui/native_app_window.h"
 #include "base/observer_list.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -148,8 +149,11 @@ class NativeAppWindowViews : public NativeAppWindow,
   virtual gfx::Insets GetFrameInsets() const OVERRIDE;
   virtual void HideWithApp() OVERRIDE;
   virtual void ShowWithApp() OVERRIDE;
-  virtual void UpdateWindowMinMaxSize() OVERRIDE;
   virtual void UpdateShelfMenu() OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
+  virtual void SetMinimumSize(const gfx::Size& size) OVERRIDE;
+  virtual gfx::Size GetMaximumSize() const OVERRIDE;
+  virtual void SetMaximumSize(const gfx::Size& size) OVERRIDE;
 
   // web_modal::WebContentsModalDialogHost implementation.
   virtual gfx::NativeView GetHostView() const OVERRIDE;
@@ -173,6 +177,7 @@ class NativeAppWindowViews : public NativeAppWindow,
   bool frameless_;
   bool transparent_background_;
   bool resizable_;
+  apps::SizeConstraints size_constraints_;
 
   views::UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
 

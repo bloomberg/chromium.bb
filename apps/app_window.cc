@@ -7,6 +7,7 @@
 #include "apps/app_window_geometry_cache.h"
 #include "apps/app_window_registry.h"
 #include "apps/apps_client.h"
+#include "apps/size_constraints.h"
 #include "apps/ui/native_app_window.h"
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
@@ -65,14 +66,15 @@ bool IsFullscreen(int fullscreen_types) {
 void SetConstraintProperty(const std::string& name,
                            int value,
                            base::DictionaryValue* bounds_properties) {
-  if (value != AppWindow::SizeConstraints::kUnboundedSize)
+  if (value != SizeConstraints::kUnboundedSize)
     bounds_properties->SetInteger(name, value);
   else
     bounds_properties->Set(name, base::Value::CreateNullValue());
 }
 
 void SetBoundsProperties(const gfx::Rect& bounds,
-                         const AppWindow::SizeConstraints& constraints,
+                         const gfx::Size& min_size,
+                         const gfx::Size& max_size,
                          const std::string& bounds_name,
                          base::DictionaryValue* window_properties) {
   scoped_ptr<base::DictionaryValue> bounds_properties(
@@ -83,8 +85,6 @@ void SetBoundsProperties(const gfx::Rect& bounds,
   bounds_properties->SetInteger("width", bounds.width());
   bounds_properties->SetInteger("height", bounds.height());
 
-  gfx::Size min_size = constraints.GetMinimumSize();
-  gfx::Size max_size = constraints.GetMaximumSize();
   SetConstraintProperty("minWidth", min_size.width(), bounds_properties.get());
   SetConstraintProperty(
       "minHeight", min_size.height(), bounds_properties.get());
@@ -96,62 +96,6 @@ void SetBoundsProperties(const gfx::Rect& bounds,
 }
 
 }  // namespace
-
-AppWindow::SizeConstraints::SizeConstraints()
-    : maximum_size_(kUnboundedSize, kUnboundedSize) {}
-
-AppWindow::SizeConstraints::SizeConstraints(const gfx::Size& min_size,
-                                            const gfx::Size& max_size)
-    : minimum_size_(min_size), maximum_size_(max_size) {}
-
-AppWindow::SizeConstraints::~SizeConstraints() {}
-
-gfx::Size AppWindow::SizeConstraints::ClampSize(gfx::Size size) const {
-  const gfx::Size max_size = GetMaximumSize();
-  if (max_size.width() != kUnboundedSize)
-    size.set_width(std::min(size.width(), GetMaximumSize().width()));
-  if (max_size.height() != kUnboundedSize)
-    size.set_height(std::min(size.height(), GetMaximumSize().height()));
-  size.SetToMax(GetMinimumSize());
-  return size;
-}
-
-bool AppWindow::SizeConstraints::HasMinimumSize() const {
-  return GetMinimumSize().width() != kUnboundedSize ||
-         GetMinimumSize().height() != kUnboundedSize;
-}
-
-bool AppWindow::SizeConstraints::HasMaximumSize() const {
-  const gfx::Size max_size = GetMaximumSize();
-  return max_size.width() != kUnboundedSize ||
-         max_size.height() != kUnboundedSize;
-}
-
-bool AppWindow::SizeConstraints::HasFixedSize() const {
-  return !GetMinimumSize().IsEmpty() && GetMinimumSize() == GetMaximumSize();
-}
-
-gfx::Size AppWindow::SizeConstraints::GetMinimumSize() const {
-  return minimum_size_;
-}
-
-gfx::Size AppWindow::SizeConstraints::GetMaximumSize() const {
-  return gfx::Size(
-      maximum_size_.width() == kUnboundedSize
-          ? kUnboundedSize
-          : std::max(maximum_size_.width(), minimum_size_.width()),
-      maximum_size_.height() == kUnboundedSize
-          ? kUnboundedSize
-          : std::max(maximum_size_.height(), minimum_size_.height()));
-}
-
-void AppWindow::SizeConstraints::set_minimum_size(const gfx::Size& min_size) {
-  minimum_size_ = min_size;
-}
-
-void AppWindow::SizeConstraints::set_maximum_size(const gfx::Size& max_size) {
-  maximum_size_ = max_size;
-}
 
 AppWindow::CreateParams::CreateParams()
     : window_type(AppWindow::WINDOW_TYPE_DEFAULT),
@@ -213,8 +157,6 @@ void AppWindow::Init(const GURL& url,
   CreateParams new_params = LoadDefaultsAndConstrain(params);
   window_type_ = new_params.window_type;
   window_key_ = new_params.window_key;
-  size_constraints_ =
-      SizeConstraints(new_params.minimum_size, new_params.maximum_size);
 
   // Windows cannot be always-on-top in fullscreen mode for security reasons.
   cached_always_on_top_ = new_params.always_on_top;
@@ -578,12 +520,12 @@ void AppWindow::ForcedFullscreen() {
 }
 
 void AppWindow::SetMinimumSize(const gfx::Size& min_size) {
-  size_constraints_.set_minimum_size(min_size);
+  native_app_window_->SetMinimumSize(min_size);
   OnSizeConstraintsChanged();
 }
 
 void AppWindow::SetMaximumSize(const gfx::Size& max_size) {
-  size_constraints_.set_maximum_size(max_size);
+  native_app_window_->SetMaximumSize(max_size);
   OnSizeConstraintsChanged();
 }
 
@@ -646,14 +588,19 @@ void AppWindow::GetSerializedState(base::DictionaryValue* properties) const {
   properties->SetInteger("frameColor", native_app_window_->FrameColor());
 
   gfx::Rect content_bounds = GetClientBounds();
-  SetBoundsProperties(
-      content_bounds, size_constraints(), "innerBounds", properties);
+  SetBoundsProperties(content_bounds,
+                      native_app_window_->GetMinimumSize(),
+                      native_app_window_->GetMaximumSize(),
+                      "innerBounds",
+                      properties);
 
   // TODO(tmdiep): Frame constraints will be implemented in a future patch.
   gfx::Rect frame_bounds = native_app_window_->GetBounds();
-  SizeConstraints frame_constraints;
-  SetBoundsProperties(
-      frame_bounds, frame_constraints, "outerBounds", properties);
+  SetBoundsProperties(frame_bounds,
+                      gfx::Size(),
+                      gfx::Size(),
+                      "outerBounds",
+                      properties);
 }
 
 //------------------------------------------------------------------------------
@@ -716,9 +663,10 @@ void AppWindow::UpdateExtensionAppIcon() {
 }
 
 void AppWindow::OnSizeConstraintsChanged() {
-  native_app_window_->UpdateWindowMinMaxSize();
+  SizeConstraints size_constraints(native_app_window_->GetMinimumSize(),
+                                   native_app_window_->GetMaximumSize());
   gfx::Rect bounds = GetClientBounds();
-  gfx::Size constrained_size = size_constraints_.ClampSize(bounds.size());
+  gfx::Size constrained_size = size_constraints.ClampSize(bounds.size());
   if (bounds.size() != constrained_size) {
     bounds.set_size(constrained_size);
     native_app_window_->SetBounds(bounds);
