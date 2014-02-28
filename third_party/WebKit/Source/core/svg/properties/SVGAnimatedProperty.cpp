@@ -41,42 +41,12 @@ SVGAnimatedProperty::~SVGAnimatedProperty()
     ASSERT(!m_isAnimating);
 }
 
-void SVGAnimatedProperty::detachAnimatedPropertiesForElement(SVGElement* element)
-{
-    // Remove wrappers from cache.
-    Cache* cache = animatedPropertyCache();
-
-    Vector<SVGAnimatedPropertyDescription> keysToRemove;
-
-    const Cache::const_iterator end = cache->end();
-    for (Cache::const_iterator it = cache->begin(); it != end; ++it) {
-        if (it->key.m_element == element) {
-            it->value->resetContextElement();
-            keysToRemove.append(it->key);
-        }
-    }
-
-    for (Vector<SVGAnimatedPropertyDescription>::const_iterator it = keysToRemove.begin(); it != keysToRemove.end(); ++it) {
-        // http://crbug.com/333156 :
-        // There are cases where detachAnimatedPropertiesForElement is called recursively from ~SVGAnimatedProperty.
-        // This below protect makes this function safe by deferring the recursive call until we finish touching the HashMap.
-        RefPtr<SVGAnimatedProperty> protect = cache->get(*it);
-        cache->remove(*it);
-    }
-}
-
 void SVGAnimatedProperty::commitChange()
 {
     ASSERT(m_contextElement);
     ASSERT_WITH_SECURITY_IMPLICATION(!m_contextElement->m_deletionHasBegun);
     m_contextElement->invalidateSVGAttributes();
     m_contextElement->svgAttributeChanged(m_attributeName);
-}
-
-SVGAnimatedProperty::Cache* SVGAnimatedProperty::animatedPropertyCache()
-{
-    static Cache* s_cache = new Cache;
-    return s_cache;
 }
 
 } // namespace WebCore

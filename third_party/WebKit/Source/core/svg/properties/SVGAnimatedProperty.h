@@ -48,43 +48,10 @@ public:
 
     virtual ~SVGAnimatedProperty();
 
-    template<typename OwnerType, typename TearOffType, typename PropertyType>
-    static PassRefPtr<TearOffType> lookupOrCreateWrapper(OwnerType* element, const SVGPropertyInfo* info, PropertyType& property)
-    {
-        ASSERT(info);
-        SVGAnimatedPropertyDescription key(element, info->propertyIdentifier);
-        RefPtr<SVGAnimatedProperty> wrapper = animatedPropertyCache()->get(key);
-        if (!wrapper) {
-            wrapper = TearOffType::create(element, info->attributeName, info->animatedPropertyType, property);
-            if (info->animatedPropertyState == PropertyIsReadOnly)
-                wrapper->setIsReadOnly();
-            animatedPropertyCache()->set(key, wrapper);
-        }
-        return static_pointer_cast<TearOffType>(wrapper);
-    }
-
-    template<typename OwnerType, typename TearOffType>
-    static TearOffType* lookupWrapper(OwnerType* element, const SVGPropertyInfo* info)
-    {
-        ASSERT(info);
-        SVGAnimatedPropertyDescription key(element, info->propertyIdentifier);
-        return static_cast<TearOffType*>(animatedPropertyCache()->get(key));
-    }
-
-    template<typename OwnerType, typename TearOffType>
-    static TearOffType* lookupWrapper(const OwnerType* element, const SVGPropertyInfo* info)
-    {
-        return lookupWrapper<OwnerType, TearOffType>(const_cast<OwnerType*>(element), info);
-    }
-
-    static void detachAnimatedPropertiesForElement(SVGElement*);
-
 protected:
     SVGAnimatedProperty(SVGElement*, const QualifiedName&, AnimatedPropertyType);
 
 private:
-    static Cache* animatedPropertyCache();
-
     SVGElement* m_contextElement;
     const QualifiedName& m_attributeName;
     AnimatedPropertyType m_animatedPropertyType;

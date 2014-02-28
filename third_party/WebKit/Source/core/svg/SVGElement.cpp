@@ -125,7 +125,6 @@ SVGElement::cleanupAnimatedProperties()
     }
     document().accessSVGExtensions().rebuildAllElementReferencesForTarget(this);
     document().accessSVGExtensions().removeAllElementReferencesForTarget(this);
-    SVGAnimatedProperty::detachAnimatedPropertiesForElement(this);
 }
 
 void SVGElement::willRecalcStyle(StyleRecalcChange change)
