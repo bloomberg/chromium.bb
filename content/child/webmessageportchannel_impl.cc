@@ -89,10 +89,15 @@ void WebMessagePortChannelImpl::postMessage(
     child_thread_loop_->PostTask(
         FROM_HERE,
         base::Bind(
-            &WebMessagePortChannelImpl::postMessage, this, message, channels));
-    return;
+            &WebMessagePortChannelImpl::PostMessage, this, message, channels));
+  } else {
+    PostMessage(message, channels);
   }
+}
 
+void WebMessagePortChannelImpl::PostMessage(
+    const base::string16& message,
+    WebMessagePortChannelArray* channels) {
   std::vector<int> message_port_ids(channels ? channels->size() : 0);
   if (channels) {
     // Extract the port IDs from the source array, then free it.
