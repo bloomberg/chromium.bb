@@ -650,7 +650,8 @@ StyleDifference RenderStyle::repaintOnlyDiff(const RenderStyle* other, unsigned&
             || rareNonInheritedData->m_backfaceVisibility != other->rareNonInheritedData->m_backfaceVisibility
             || rareNonInheritedData->m_perspective != other->rareNonInheritedData->m_perspective
             || rareNonInheritedData->m_perspectiveOriginX != other->rareNonInheritedData->m_perspectiveOriginX
-            || rareNonInheritedData->m_perspectiveOriginY != other->rareNonInheritedData->m_perspectiveOriginY)
+            || rareNonInheritedData->m_perspectiveOriginY != other->rareNonInheritedData->m_perspectiveOriginY
+            || hasWillChangeCompositingHint() != other->hasWillChangeCompositingHint())
             return StyleDifferenceRecompositeLayer;
     }
 
@@ -828,6 +829,25 @@ bool RenderStyle::hasIsolation() const
 {
     if (RuntimeEnabledFeatures::cssCompositingEnabled())
         return rareNonInheritedData->m_isolation != IsolationAuto;
+    return false;
+}
+
+bool RenderStyle::hasWillChangeCompositingHint() const
+{
+    for (size_t i = 0; i < rareNonInheritedData->m_willChange->m_properties.size(); ++i) {
+        switch (rareNonInheritedData->m_willChange->m_properties[i]) {
+        case CSSPropertyOpacity:
+        case CSSPropertyWebkitTransform:
+        case CSSPropertyLeft:
+        case CSSPropertyTop:
+        case CSSPropertyRight:
+        case CSSPropertyBottom:
+        case CSSPropertyWebkitFilter:
+            return true;
+        default:
+            break;
+        }
+    }
     return false;
 }
 

@@ -44,6 +44,7 @@
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "platform/Length.h"
+#include "platform/transforms/TransformOperations.h"
 #include "wtf/Assertions.h"
 
 namespace WebCore {
@@ -156,6 +157,34 @@ static bool isDisplayGridBox(EDisplay display)
 static bool parentStyleForcesZIndexToCreateStackingContext(const RenderStyle* parentStyle)
 {
     return isDisplayFlexibleBox(parentStyle->display()) || isDisplayGridBox(parentStyle->display());
+}
+
+static bool hasWillChangeThatCreatesStackingContext(const RenderStyle* style, Element* e)
+{
+    for (size_t i = 0; i < style->willChangeProperties().size(); ++i) {
+        switch (style->willChangeProperties()[i]) {
+        case CSSPropertyOpacity:
+        case CSSPropertyWebkitTransform:
+        case CSSPropertyWebkitTransformStyle:
+        case CSSPropertyWebkitPerspective:
+        case CSSPropertyWebkitMask:
+        case CSSPropertyWebkitMaskBoxImage:
+        case CSSPropertyWebkitClipPath:
+        case CSSPropertyWebkitBoxReflect:
+        case CSSPropertyWebkitFilter:
+        case CSSPropertyZIndex:
+        case CSSPropertyPosition:
+            return true;
+        case CSSPropertyMixBlendMode:
+        case CSSPropertyIsolation:
+            if (RuntimeEnabledFeatures::cssCompositingEnabled())
+                return true;
+            break;
+        default:
+            break;
+        }
+    }
+    return false;
 }
 
 void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentStyle, Element *e)
@@ -275,8 +304,16 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
         || style->position() == StickyPosition
         || (style->position() == FixedPosition && e && e->document().settings() && e->document().settings()->fixedPositionCreatesStackingContext())
         || isInTopLayer(e, style)
+        || hasWillChangeThatCreatesStackingContext(style, e)
         ))
         style->setZIndex(0);
+
+    // will-change:transform should result in the same rendering behavior as having a transform,
+    // including the creation of a containing block for fixed position descendants.
+    if (!style->hasTransform() && style->willChangeProperties().contains(CSSPropertyWebkitTransform)) {
+        bool makeIdentity = true;
+        style->setTransform(TransformOperations(makeIdentity));
+    }
 
     // Textarea considers overflow visible as auto.
     if (e && e->hasTagName(textareaTag)) {

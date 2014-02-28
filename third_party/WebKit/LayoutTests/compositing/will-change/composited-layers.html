@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    .shouldComposite {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background-color: green;
+    }
+
+    .shouldNotComposite {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background-color: red;
+    }
+
+    #willChangeAuto {
+      will-change: auto;
+      top: 0px;
+      left: 0px;
+    }
+
+    #willChangeOpacity {
+      will-change: opacity;
+      top: 0px;
+      left: 60px;
+    }
+
+    #willChangeTransform {
+      will-change: -webkit-transform;
+      top: 0px;
+      left: 120px;
+    }
+
+    #willChangeLeft {
+      will-change: left;
+      top: 0px;
+      left: 180px;
+    }
+
+    #willChangeRight {
+      will-change: right;
+      top: 0px;
+      left: 240px;
+    }
+
+    #willChangeTop {
+      will-change: right;
+      top: 60px;
+      left: 0px;
+    }
+
+    #willChangeBottom {
+      will-change: bottom;
+      top: 60px;
+      left: 60px;
+    }
+
+    #willChangeFilter {
+      will-change: -webkit-filter;
+      top: 60px;
+      left: 120px;
+    }
+
+    #willChangeCombinationThatComposites {
+      will-change: transition, -webkit-animation, top, z-index;
+      top: 60px;
+      left: 180px;
+    }
+
+    #willChangeZIndex {
+      will-change: z-index;
+      top: 60px;
+      left: 240px
+    }
+  </style>
+
+  <script>
+    if (window.testRunner) {
+      testRunner.dumpAsText();
+      testRunner.waitUntilDone();
+    }
+
+    window.addEventListener('load', function() {
+      if (window.testRunner) {
+        document.getElementById("layertree").innerText = window.internals.layerTreeAsText(document);
+        testRunner.notifyDone();
+      }
+    }, false);
+  </script>
+</head>
+<body>
+  <div id="willChangeAuto" class="shouldNotComposite"></div>
+  <div id="willChangeOpacity" class="shouldComposite"></div>
+  <div id="willChangeTransform" class="shouldComposite"></div>
+  <div id="willChangeLeft" class="shouldComposite"></div>
+  <div id="willChangeRight" class="shouldComposite"></div>
+  <div id="willChangeTop" class="shouldComposite"></div>
+  <div id="willChangeBottom" class="shouldComposite"></div>
+  <div id="willChangeFilter" class="shouldComposite"></div>
+  <div id="willChangeCombinationThatComposites" class="shouldComposite"></div>
+  <div id="willChangeZIndex" class="shouldNotComposite"></div>
+
+  <pre id="layertree"></pre>
+</body>
+</html>

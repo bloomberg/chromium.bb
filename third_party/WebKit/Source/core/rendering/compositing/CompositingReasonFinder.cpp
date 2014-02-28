@@ -101,6 +101,9 @@ CompositingReasons CompositingReasonFinder::directReasons(const RenderLayer* lay
     if (requiresCompositingForOutOfFlowClipping(layer))
         directReasons |= CompositingReasonOutOfFlowClipping;
 
+    if (requiresCompositingForWillChange(renderer))
+        directReasons |= CompositingReasonWillChange;
+
     return directReasons;
 }
 
@@ -256,6 +259,11 @@ bool CompositingReasonFinder::requiresCompositingForOverflowScrollingParent(cons
 bool CompositingReasonFinder::requiresCompositingForOutOfFlowClipping(const RenderLayer* layer) const
 {
     return m_renderView.compositorDrivenAcceleratedScrollingEnabled() && layer->isUnclippedDescendant();
+}
+
+bool CompositingReasonFinder::requiresCompositingForWillChange(const RenderObject* renderer) const
+{
+    return renderer->style()->hasWillChangeCompositingHint();
 }
 
 bool CompositingReasonFinder::isViewportConstrainedFixedOrStickyLayer(const RenderLayer* layer)
