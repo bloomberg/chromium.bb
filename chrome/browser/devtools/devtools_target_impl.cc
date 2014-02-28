@@ -17,6 +17,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_system.h"
@@ -63,6 +64,15 @@ RenderViewHostTarget::RenderViewHostTarget(RenderViewHost* rvh, bool is_tab) {
   WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
   if (!web_contents)
     return;  // Orphan RVH will show up with no title/url/icon in clients.
+
+  content::RenderFrameHost* rfh = rvh->GetMainFrame();
+  if (rfh->IsCrossProcessSubframe()) {
+    url_ = rfh->GetLastCommittedURL();
+    type_ = kTargetTypeOther;
+    // TODO(kaznacheev) Try setting the title when the frame navigation
+    // refactoring is done.
+    return;
+  }
 
   title_ = base::UTF16ToUTF8(web_contents->GetTitle());
   url_ = web_contents->GetURL();

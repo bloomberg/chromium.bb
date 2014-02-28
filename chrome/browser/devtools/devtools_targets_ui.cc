@@ -21,6 +21,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -30,6 +31,7 @@
 #include "net/base/escape.h"
 
 using content::BrowserThread;
+using content::RenderFrameHost;
 using content::WebContents;
 
 namespace {
@@ -139,8 +141,8 @@ void RenderViewHostTargetsUIHandler::Observe(
 void RenderViewHostTargetsUIHandler::UpdateTargets() {
   scoped_ptr<base::ListValue> list_value(new base::ListValue());
 
-  std::map<WebContents*, base::DictionaryValue*> web_contents_to_descriptor_;
-  std::vector<DevToolsTargetImpl*> guest_targets;
+  std::map<RenderFrameHost*, base::DictionaryValue*> rfh_to_descriptor;
+  std::vector<RenderFrameHost*> nested_frames;
 
   DevToolsTargetImpl::List targets =
       DevToolsTargetImpl::EnumerateRenderViewHostTargets();
@@ -152,36 +154,44 @@ void RenderViewHostTargetsUIHandler::UpdateTargets() {
     content::RenderViewHost* rvh = target->GetRenderViewHost();
     if (!rvh)
       continue;
-    WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
-    if (!web_contents)
-      continue;
 
     DevToolsTargetImpl* target_ptr = target.get();
     targets_[target_ptr->GetId()] = target.release();
-    if (rvh->GetProcess()->IsGuest()) {
-      guest_targets.push_back(target_ptr);
+    base::DictionaryValue* descriptor = Serialize(*target_ptr);
+
+    // TODO (kaznacheev): GetMainFrame() call is a temporary hack.
+    // Revisit this when multiple OOP frames are supported.
+    RenderFrameHost* rfh = rvh->GetMainFrame();
+    rfh_to_descriptor[rfh] = descriptor;
+    if (rvh->GetProcess()->IsGuest() || rfh->IsCrossProcessSubframe()) {
+      nested_frames.push_back(rfh);
     } else {
-      base::DictionaryValue* descriptor = Serialize(*target_ptr);
       list_value->Append(descriptor);
-      web_contents_to_descriptor_[web_contents] = descriptor;
     }
   }
 
-  // Add the list of guest-views to each of its embedders.
-  for (std::vector<DevToolsTargetImpl*>::iterator it(guest_targets.begin());
-       it != guest_targets.end(); ++it) {
-    DevToolsTargetImpl* guest = (*it);
-    WebContents* guest_web_contents =
-        WebContents::FromRenderViewHost(guest->GetRenderViewHost());
-    WebContents* embedder = guest_web_contents->GetEmbedderWebContents();
-    if (embedder && web_contents_to_descriptor_.count(embedder) > 0) {
-      base::DictionaryValue* parent = web_contents_to_descriptor_[embedder];
+  // Add the list of nested targets to each of its owners.
+  for (std::vector<RenderFrameHost*>::iterator it(nested_frames.begin());
+       it != nested_frames.end(); ++it) {
+    RenderFrameHost* rfh = (*it);
+    RenderFrameHost* parent_rfh = NULL;
+    content::RenderViewHost* rvh = rfh->GetRenderViewHost();
+    if (rvh->GetProcess()->IsGuest()) {
+      WebContents* nested_web_contents = WebContents::FromRenderViewHost(rvh);
+      WebContents* embedder = nested_web_contents->GetEmbedderWebContents();
+      parent_rfh = embedder->GetRenderViewHost()->GetMainFrame();
+    } else {
+      parent_rfh = rfh->GetParent();
+      DCHECK(parent_rfh);
+    }
+    if (parent_rfh && rfh_to_descriptor.count(parent_rfh) > 0) {
+      base::DictionaryValue* parent = rfh_to_descriptor[parent_rfh];
       base::ListValue* guests = NULL;
       if (!parent->GetList(kGuestList, &guests)) {
         guests = new base::ListValue();
         parent->Set(kGuestList, guests);
       }
-      guests->Append(Serialize(*guest));
+      guests->Append(rfh_to_descriptor[rfh]);
     }
   }
 

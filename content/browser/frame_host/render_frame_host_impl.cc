@@ -93,6 +93,25 @@ int RenderFrameHostImpl::GetRoutingID() {
   return routing_id_;
 }
 
+RenderFrameHost* RenderFrameHostImpl::GetParent() {
+  FrameTreeNode* parent_node = frame_tree_node_->parent();
+  if (!parent_node)
+    return NULL;
+  return parent_node->current_frame_host();
+}
+
+bool RenderFrameHostImpl::IsCrossProcessSubframe() {
+  FrameTreeNode* parent_node = frame_tree_node_->parent();
+  if (!parent_node)
+    return false;
+  return GetSiteInstance() !=
+      parent_node->current_frame_host()->GetSiteInstance();
+}
+
+GURL RenderFrameHostImpl::GetLastCommittedURL() {
+  return frame_tree_node_->current_url();
+}
+
 gfx::NativeView RenderFrameHostImpl::GetNativeView() {
   RenderWidgetHostView* view = render_view_host_->GetView();
   if (!view)

@@ -40,6 +40,9 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   virtual SiteInstance* GetSiteInstance() OVERRIDE;
   virtual RenderProcessHost* GetProcess() OVERRIDE;
   virtual int GetRoutingID() OVERRIDE;
+  virtual RenderFrameHost* GetParent() OVERRIDE;
+  virtual bool IsCrossProcessSubframe() OVERRIDE;
+  virtual GURL GetLastCommittedURL() OVERRIDE;
   virtual gfx::NativeView GetNativeView() OVERRIDE;
   virtual void NotifyContextMenuClosed(
       const CustomContextMenuContext& context) OVERRIDE;

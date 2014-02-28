@@ -9,6 +9,7 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "ui/gfx/native_widget_types.h"
+#include "url/gurl.h"
 
 namespace content {
 class RenderProcessHost;
@@ -33,6 +34,17 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
 
   // Returns the route id for this frame.
   virtual int GetRoutingID() = 0;
+
+  // Returns the current RenderFrameHost of the parent frame, or NULL if there
+  // is no parent. The result may be in a different process than the current
+  // RenderFrameHost.
+  virtual RenderFrameHost* GetParent() = 0;
+
+  // Returns true if the frame is out of process.
+  virtual bool IsCrossProcessSubframe() = 0;
+
+  // Returns the last committed URL of the frame.
+  virtual GURL GetLastCommittedURL() = 0;
 
   // Returns the associated widget's native view.
   virtual gfx::NativeView GetNativeView() = 0;

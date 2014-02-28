@@ -96,10 +96,20 @@ std::vector<RenderViewHost*> DevToolsAgentHost::GetValidRenderViewHosts() {
 
     RenderViewHost* rvh = RenderViewHost::From(widget);
     WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
-    // Don't report a RenderViewHost if it is not the current RenderViewHost
-    // for some WebContents.
-    if (!web_contents || rvh != web_contents->GetRenderViewHost())
+    if (!web_contents)
       continue;
+
+    // Don't report a RenderViewHost if it is not the current RenderViewHost
+    // for some WebContents (this filters out pre-render RVHs and similar).
+    // However report a RenderViewHost created for an out of process iframe.
+    // TODO (kaznacheev): Revisit this when it is clear how OOP iframes
+    // interact with pre-rendering.
+    // TODO (kaznacheev): GetMainFrame() call is a temporary hack. Iterate over
+    // all RenderFrameHost instances when multiple OOP frames are supported.
+    if (rvh != web_contents->GetRenderViewHost() &&
+        !rvh->GetMainFrame()->IsCrossProcessSubframe()) {
+      continue;
+    }
 
     result.push_back(rvh);
   }
