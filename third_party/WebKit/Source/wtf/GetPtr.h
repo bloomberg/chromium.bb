@@ -35,11 +35,6 @@ namespace WTF {
         return &p;
     }
 
-    template <typename T> inline T* getPtr(RawPtr<T> p)
-    {
-        return p.get();
-    }
-
 } // namespace WTF
 
 #endif // WTF_GetPtr_h
