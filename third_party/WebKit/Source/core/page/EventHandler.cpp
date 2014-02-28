@@ -581,16 +581,18 @@ bool EventHandler::handleMousePressEventSingleClick(const MouseEventWithHitTestR
         }
 
         if (!m_frame->editor().behavior().shouldConsiderSelectionAsDirectional()) {
-            // See <rdar://problem/3668157> REGRESSION (Mail): shift-click deselects when selection
-            // was created right-to-left
-            Position start = newSelection.start();
-            Position end = newSelection.end();
-            int distanceToStart = textDistance(start, pos);
-            int distanceToEnd = textDistance(pos, end);
-            if (distanceToStart <= distanceToEnd)
-                newSelection = VisibleSelection(end, pos);
-            else
-                newSelection = VisibleSelection(start, pos);
+            if (pos.isNotNull()) {
+                // See <rdar://problem/3668157> REGRESSION (Mail): shift-click deselects when selection
+                // was created right-to-left
+                Position start = newSelection.start();
+                Position end = newSelection.end();
+                int distanceToStart = textDistance(start, pos);
+                int distanceToEnd = textDistance(pos, end);
+                if (distanceToStart <= distanceToEnd)
+                    newSelection = VisibleSelection(end, pos);
+                else
+                    newSelection = VisibleSelection(start, pos);
+            }
         } else
             newSelection.setExtent(pos);
 
