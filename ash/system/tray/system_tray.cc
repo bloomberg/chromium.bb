@@ -15,7 +15,6 @@
 #include "ash/system/date/tray_date.h"
 #include "ash/system/drive/tray_drive.h"
 #include "ash/system/ime/tray_ime.h"
-#include "ash/system/monitor/tray_monitor.h"
 #include "ash/system/session_length_limit/tray_session_length_limit.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -214,12 +213,6 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(new internal::TrayCapsLock(this));
   AddTrayItem(new internal::TrayUpdate(this));
   AddTrayItem(tray_date_);
-#endif
-
-#if defined(OS_LINUX)
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
-  if (cmd->HasSwitch(ash::switches::kAshEnableMemoryMonitor))
-    AddTrayItem(new internal::TrayMonitor(this));
 #endif
 
   SetVisible(ash::Shell::GetInstance()->system_tray_delegate()->

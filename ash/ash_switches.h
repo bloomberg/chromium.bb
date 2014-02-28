@@ -43,9 +43,6 @@ ASH_EXPORT extern const char kAshEnableAlternateFrameCaptionButtonStyle[];
 ASH_EXPORT extern const char kAshEnableBrightnessControl[];
 ASH_EXPORT extern const char kAshEnableImmersiveFullscreenForAllWindows[];
 ASH_EXPORT extern const char kAshEnableImmersiveFullscreenForBrowserOnly[];
-#if defined(OS_LINUX)
-ASH_EXPORT extern const char kAshEnableMemoryMonitor[];
-#endif
 #if defined(OS_CHROMEOS)
 ASH_EXPORT extern const char kAshEnableMagnifierKeyScroller[];
 ASH_EXPORT extern const char kAshEnableMultiUserTray[];

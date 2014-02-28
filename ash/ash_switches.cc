@@ -105,11 +105,6 @@ const char kAshEnableImmersiveFullscreenForAllWindows[] =
 const char kAshEnableImmersiveFullscreenForBrowserOnly[] =
     "ash-enable-immersive-browser-only";
 
-#if defined(OS_LINUX)
-// Enable memory monitoring.
-const char kAshEnableMemoryMonitor[] = "ash-enable-memory-monitor";
-#endif
-
 #if defined(OS_CHROMEOS)
 // Enables key bindings to scroll magnified screen.
 const char kAshEnableMagnifierKeyScroller[] =

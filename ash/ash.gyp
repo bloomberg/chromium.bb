@@ -370,8 +370,6 @@
         'system/logout_button/logout_button_tray.h',
         'system/logout_button/logout_confirmation_dialog_view.cc',
         'system/logout_button/logout_confirmation_dialog_view.h',
-        'system/monitor/tray_monitor.cc',
-        'system/monitor/tray_monitor.h',
         'system/session_length_limit/session_length_limit_observer.h',
         'system/session_length_limit/tray_session_length_limit.cc',
         'system/session_length_limit/tray_session_length_limit.h',
@@ -649,12 +647,6 @@
           ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
-        }],
-        ['OS!="linux"', {
-          'sources/': [
-            ['exclude', 'system/monitor/tray_monitor.cc'],
-            ['exclude', 'system/monitor/tray_monitor.h'],
-          ],
         }],
         ['use_x11!=1', {
           'sources/': [
