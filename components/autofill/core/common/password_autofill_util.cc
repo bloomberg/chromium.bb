@@ -5,15 +5,33 @@
 #include "components/autofill/core/common/password_autofill_util.h"
 
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "components/autofill/core/common/autofill_switches.h"
 
 namespace autofill {
 
+namespace {
+
+const char kDisableIgnoreAutocompleteOffFieldTrialName[] =
+    "DisableIgnoreAutocompleteOff";
+const char kEnablingGroup[] = "ENABLED";
+
+bool InDisableIgnoreAutocompleteOffGroup() {
+  std::string group_name = base::FieldTrialList::FindFullName(
+      kDisableIgnoreAutocompleteOffFieldTrialName);
+
+  return group_name.compare(kEnablingGroup) == 0;
+}
+
+}  // namespace
+
 // We ignore autocomplete='off' unless the user has specified the command line
-// flag instructing otherwise.
+// flag instructing otherwise or is in the field trial group specifying that
+// ignore autocomplete='off' should be disabled.
 bool ShouldIgnoreAutocompleteOffForPasswordFields() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableIgnoreAutocompleteOff);
+  return !InDisableIgnoreAutocompleteOffGroup() &&
+         !CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kDisableIgnoreAutocompleteOff);
 }
 
 }  // namespace autofill
