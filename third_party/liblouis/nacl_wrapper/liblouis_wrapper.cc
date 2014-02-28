@@ -197,17 +197,39 @@ bool LibLouisWrapper::BackTranslate(const std::string& table_name,
     // Set the high-order bit to prevent liblouis from dropping empty cells.
     inbuf.push_back(*it | 0x8000);
   }
-  int inlen = inbuf.size();
-  int outlen = inlen * 2;  // TODO(jbroman): choose this size more accurately.
-  std::vector<widechar> outbuf(outlen);
+  // To avoid unsigned/signed comparison warnings.
+  int inbufsize = inbuf.size();
+  std::vector<widechar> outbuf;
+  int outlen;
 
-  // Invoke liblouis.
-  int result = lou_backTranslateString(table_name.c_str(),
-      &inbuf[0], &inlen, &outbuf[0], &outlen,
+  // Invoke liblouis.  Do this in a loop since we can't precalculate the
+  // translated size.  We add an extra slot in the output buffer so that
+  // common cases like single digits or capital letters won't always trigger
+  // retranslations (see the comments above the second exit condition inside
+  // the loop).  We also set an arbitrary upper bound for the allocation
+  // to make sure the loop exits without running out of memory.
+  for (int outalloc = (inbufsize + 1) * 2, maxoutalloc = (inbufsize + 1) * 8;
+       outalloc <= maxoutalloc; outalloc *= 2) {
+    int inlen = inbufsize;
+    outlen = outalloc;
+    outbuf.resize(outalloc);
+
+    int result = lou_backTranslateString(
+        table_name.c_str(), &inbuf[0], &inlen, &outbuf[0], &outlen,
       NULL /* typeform */, NULL /* spacing */, dotsIO /* mode */);
-  if (result == 0) {
-    // TODO(njbroman): log this
-    return false;
+    if (result == 0) {
+      // TODO(jbroman): log this
+      return false;
+    }
+
+    // If all of inbuf was not consumed, the output buffer must be too small
+    // and we have to retry with a larger buffer.
+    // In addition, if all of outbuf was exhausted, there's no way to know if
+    // more space was needed, so we'll have to retry the translation in that
+    // corner case as well.
+    if (inlen == inbufsize && outlen < outalloc)
+      break;
+    outbuf.clear();
   }
 
   // Massage the result.

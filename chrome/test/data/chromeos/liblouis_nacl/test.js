@@ -5,6 +5,7 @@
 var pass = chrome.test.callbackPass;
 
 var TABLE_NAME = 'en-us-comp8.ctb';
+var CONTRACTED_TABLE_NAME = 'en-us-g2.ctb';
 var TEXT = 'hello';
 // Translation of the above string as a hexadecimal sequence of cells.
 var CELLS = '1311070715';
@@ -81,7 +82,7 @@ loadLibrary(function() {
   // letter 'T' should be translated to 3 cells in US English grade 2
   // braille (dots 56, 6, 2345).
   function testTranslateGrade2SingleCapital() {
-    rpc('Translate', { 'table_name': 'en-us-g2.ctb', 'text': 'T'},
+    rpc('Translate', { 'table_name': CONTRACTED_TABLE_NAME, 'text': 'T'},
         pass(expectSuccessReply(function(reply) {
           chrome.test.assertEq('30201e', reply['cells']);
         })));
@@ -91,6 +92,16 @@ loadLibrary(function() {
     rpc('BackTranslate', { 'table_name': TABLE_NAME, 'cells': CELLS},
         pass(expectSuccessReply(function(reply) {
           chrome.test.assertEq(TEXT, reply['text']);
+        })));
+  },
+
+  // Backtranslate a one-letter contraction that expands to a much larger
+  // string (k->knowledge).
+  function testBackTranslateContracted() {
+    rpc('BackTranslate', { 'table_name': CONTRACTED_TABLE_NAME,
+                           'cells': '05'},  // dots 1 and 3
+        pass(expectSuccessReply(function(reply) {
+          chrome.test.assertEq('knowledge', reply['text']);
         })));
   },
 ])});
