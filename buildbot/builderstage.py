@@ -100,6 +100,8 @@ class BuilderStage(object):
     """Get a list of the places where this stage has recorded results."""
     return [self.name]
 
+  # TODO(akeshet): Eliminate this method and update the callers to use
+  # builder run directly.
   def ConstructDashboardURL(self, stage=None):
     """Return the dashboard URL
 
@@ -111,10 +113,7 @@ class BuilderStage(object):
     Returns:
       The fully formed URL
     """
-    return validation_pool.ValidationPool.ConstructDashboardURL(
-        self._run.config.overlays, self._run.options.remote_trybot,
-        os.environ.get('BUILDBOT_BUILDERNAME', self._run.config.name),
-        self._run.options.buildnumber, stage=stage)
+    return self._run.ConstructDashboardURL(stage=stage)
 
   def _ExtractOverlays(self):
     """Extracts list of overlays into class."""

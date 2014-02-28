@@ -34,6 +34,7 @@ import types
 
 from chromite.buildbot import cbuildbot_archive
 from chromite.buildbot import manifest_version
+from chromite.buildbot import validation_pool
 
 
 class RunAttributesError(Exception):
@@ -619,6 +620,22 @@ class _BuilderRunBase(object):
   def GetBoardRunAttrs(self, board):
     """Create a BoardRunAttributes object for this run and given |board|."""
     return BoardRunAttributes(self.attrs, board, self.config.name)
+
+  def ConstructDashboardURL(self, stage=None):
+    """Return the dashboard URL
+
+    This is the direct link to buildbot logs as seen in build.chromium.org
+
+    Args:
+      stage: Link to a specific |stage|, otherwise the general buildbot log
+
+    Returns:
+      The fully formed URL
+    """
+    return validation_pool.ValidationPool.ConstructDashboardURL(
+        self.config.overlays, self.options.remote_trybot,
+        os.environ.get('BUILDBOT_BUILDERNAME', self.config.name),
+        self.options.buildnumber, stage=stage)
 
   def ShouldUploadPrebuilts(self):
     """Return True if this run should upload prebuilts."""
