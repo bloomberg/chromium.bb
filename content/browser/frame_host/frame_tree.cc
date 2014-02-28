@@ -168,7 +168,17 @@ RenderViewHostImpl* FrameTree::CreateRenderViewHostForMainFrame(
   DCHECK(main_frame_routing_id != MSG_ROUTING_NONE);
   RenderViewHostMap::iterator iter =
       render_view_host_map_.find(site_instance->GetId());
-  CHECK(iter == render_view_host_map_.end());
+  if (iter != render_view_host_map_.end()) {
+    // If a RenderViewHost is pending shutdown for this |site_instance|, put it
+    // in the map of RenderViewHosts pending shutdown. Otherwise there should
+    // not be a RenderViewHost for the SiteInstance.
+    CHECK_EQ(RenderViewHostImpl::STATE_PENDING_SHUTDOWN,
+             iter->second->rvh_state());
+    render_view_host_pending_shutdown_map_.insert(
+        std::pair<int, RenderViewHostImpl*>(site_instance->GetId(),
+                                            iter->second));
+    render_view_host_map_.erase(iter);
+  }
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       RenderViewHostFactory::Create(site_instance,
                                     render_view_delegate_,
@@ -178,8 +188,7 @@ RenderViewHostImpl* FrameTree::CreateRenderViewHostForMainFrame(
                                     swapped_out,
                                     hidden));
 
-  render_view_host_map_[site_instance->GetId()] =
-      RenderViewHostRefCount(rvh, 0);
+  render_view_host_map_[site_instance->GetId()] = rvh;
   return rvh;
 }
 
@@ -190,8 +199,7 @@ RenderViewHostImpl* FrameTree::GetRenderViewHostForSubFrame(
   // TODO(creis): Mirror the frame tree so this check can't fail.
   if (iter == render_view_host_map_.end())
     return NULL;
-  RenderViewHostRefCount rvh_refcount = iter->second;
-  return rvh_refcount.first;
+  return iter->second;
 }
 
 void FrameTree::RegisterRenderFrameHost(
@@ -202,26 +210,51 @@ void FrameTree::RegisterRenderFrameHost(
       render_view_host_map_.find(site_instance->GetId());
   CHECK(iter != render_view_host_map_.end());
 
-  // Increment the refcount.
-  CHECK_GE(iter->second.second, 0);
-  iter->second.second++;
+  iter->second->increment_ref_count();
 }
 
 void FrameTree::UnregisterRenderFrameHost(
     RenderFrameHostImpl* render_frame_host) {
   SiteInstance* site_instance =
       render_frame_host->render_view_host()->GetSiteInstance();
+  int32 site_instance_id = site_instance->GetId();
   RenderViewHostMap::iterator iter =
-      render_view_host_map_.find(site_instance->GetId());
-  CHECK(iter != render_view_host_map_.end());
-
-  // Decrement the refcount and shutdown the RenderViewHost if no one else is
-  // using it.
-  CHECK_GT(iter->second.second, 0);
-  iter->second.second--;
-  if (iter->second.second == 0) {
-    iter->second.first->Shutdown();
-    render_view_host_map_.erase(iter);
+      render_view_host_map_.find(site_instance_id);
+  if (iter != render_view_host_map_.end() &&
+      iter->second == render_frame_host->render_view_host()) {
+    // Decrement the refcount and shutdown the RenderViewHost if no one else is
+    // using it.
+    CHECK_GT(iter->second->ref_count(), 0);
+    iter->second->decrement_ref_count();
+    if (iter->second->ref_count() == 0) {
+      iter->second->Shutdown();
+      render_view_host_map_.erase(iter);
+    }
+  } else {
+    // The RenderViewHost should be in the list of RenderViewHosts pending
+    // shutdown.
+    bool render_view_host_found = false;
+    std::pair<RenderViewHostMultiMap::iterator,
+              RenderViewHostMultiMap::iterator> result =
+        render_view_host_pending_shutdown_map_.equal_range(site_instance_id);
+    for (RenderViewHostMultiMap::iterator multi_iter = result.first;
+         multi_iter != result.second;
+         ++multi_iter) {
+      if (multi_iter->second != render_frame_host->render_view_host())
+        continue;
+      render_view_host_found = true;
+      RenderViewHostImpl* rvh = multi_iter->second;
+      // Decrement the refcount and shutdown the RenderViewHost if no one else
+      // is using it.
+      CHECK_GT(rvh->ref_count(), 0);
+      rvh->decrement_ref_count();
+      if (rvh->ref_count() == 0) {
+        rvh->Shutdown();
+        render_view_host_pending_shutdown_map_.erase(multi_iter);
+      }
+      break;
+    }
+    CHECK(render_view_host_found);
   }
 }
 

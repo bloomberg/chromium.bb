@@ -72,10 +72,9 @@ TEST_F(RenderViewHostTest, CreateFullscreenWidget) {
   test_rvh()->CreateNewFullscreenWidget(routing_id);
 }
 
-// Makes sure that RenderViewHost::is_waiting_for_unload_ack_ is false when
-// reloading a page. If is_waiting_for_unload_ack_ is not false when reloading
-// the contents may get closed out even though the user pressed the reload
-// button.
+// Makes sure that the RenderViewHost is not waiting for an unload ack when
+// reloading a page. If this is not the case, when reloading, the contents may
+// get closed out even though the user pressed the reload button.
 TEST_F(RenderViewHostTest, ResetUnloadOnReload) {
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");
@@ -85,12 +84,11 @@ TEST_F(RenderViewHostTest, ResetUnloadOnReload) {
   // . go to a page.
   // . go to a new page, preferably one that takes a while to resolve, such
   //   as one on a site that doesn't exist.
-  //   . After this step is_waiting_for_unload_ack_ has been set to true on
-  //     the first RVH.
+  //   . After this step IsWaitingForUnloadACK returns true on the first RVH.
   // . click stop before the page has been commited.
   // . click reload.
-  //   . is_waiting_for_unload_ack_ is still true, and the if the hang monitor
-  //     fires the contents gets closed.
+  //   . IsWaitingForUnloadACK still returns true, and if the hang monitor fires
+  //     the contents gets closed.
 
   NavigateAndCommit(url1);
   controller().LoadURL(
@@ -101,7 +99,7 @@ TEST_F(RenderViewHostTest, ResetUnloadOnReload) {
   test_rvh()->SendShouldCloseACK(true);
   contents()->Stop();
   controller().Reload(false);
-  EXPECT_FALSE(test_rvh()->is_waiting_for_unload_ack());
+  EXPECT_FALSE(test_rvh()->IsWaitingForUnloadACK());
 }
 
 // Ensure we do not grant bindings to a process shared with unprivileged views.

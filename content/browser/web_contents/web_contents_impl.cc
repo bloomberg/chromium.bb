@@ -327,6 +327,11 @@ WebContentsImpl::WebContentsImpl(
 WebContentsImpl::~WebContentsImpl() {
   is_being_destroyed_ = true;
 
+  // Delete all RFH pending shutdown, which will lead the corresponding RVH to
+  // shutdown and be deleted as well.
+  frame_tree_.ForEach(
+      base::Bind(&RenderFrameHostManager::ClearRFHsPendingShutdown));
+
   ClearAllPowerSaveBlockers();
 
   for (std::set<RenderWidgetHostImpl*>::iterator iter =
@@ -2779,7 +2784,7 @@ void WebContentsImpl::RenderViewCreated(RenderViewHost* render_view_host) {
   // Don't send notifications if we are just creating a swapped-out RVH for
   // the opener chain.  These won't be used for view-source or WebUI, so it's
   // ok to return early.
-  if (static_cast<RenderViewHostImpl*>(render_view_host)->is_swapped_out())
+  if (static_cast<RenderViewHostImpl*>(render_view_host)->IsSwappedOut())
     return;
 
   if (delegate_)
@@ -3061,7 +3066,7 @@ void WebContentsImpl::RequestOpenURL(RenderViewHost* rvh,
                                      bool user_gesture) {
   // If this came from a swapped out RenderViewHost, we only allow the request
   // if we are still in the same BrowsingInstance.
-  if (static_cast<RenderViewHostImpl*>(rvh)->is_swapped_out() &&
+  if (static_cast<RenderViewHostImpl*>(rvh)->IsSwappedOut() &&
       !rvh->GetSiteInstance()->IsRelatedSiteInstance(GetSiteInstance())) {
     return;
   }
@@ -3232,7 +3237,7 @@ void WebContentsImpl::RunJavaScriptMessage(
   // showing an interstitial as it's shown over the previous page and we don't
   // want the hidden page's dialogs to interfere with the interstitial.
   bool suppress_this_message =
-      static_cast<RenderViewHostImpl*>(rvh)->is_swapped_out() ||
+      static_cast<RenderViewHostImpl*>(rvh)->IsSwappedOut() ||
       ShowingInterstitialPage() ||
       !delegate_ ||
       delegate_->ShouldSuppressDialogs() ||
@@ -3277,7 +3282,7 @@ void WebContentsImpl::RunBeforeUnloadConfirm(RenderViewHost* rvh,
     delegate_->WillRunBeforeUnloadConfirm();
 
   bool suppress_this_message =
-      rvhi->is_swapped_out() ||
+      rvhi->rvh_state() != RenderViewHostImpl::STATE_DEFAULT ||
       !delegate_ ||
       delegate_->ShouldSuppressDialogs() ||
       !delegate_->GetJavaScriptDialogManager();

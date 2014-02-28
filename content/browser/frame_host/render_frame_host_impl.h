@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
@@ -81,6 +82,10 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   void set_swapped_out(bool is_swapped_out) {
     is_swapped_out_ = is_swapped_out;
   }
+
+  // Sets the RVH for |this| as pending shutdown. |on_swap_out| will be called
+  // when the SwapOutACK is received.
+  void SetPendingShutdown(const base::Closure& on_swap_out);
 
   // TODO(nasko): This method is public so RenderViewHostImpl::Navigate can
   // call it directly. It should be made private once Navigate moves here.

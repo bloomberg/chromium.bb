@@ -29,6 +29,7 @@ class BrowserMessageFilter;
 class RenderProcessHostObserver;
 class RenderWidgetHost;
 class StoragePartition;
+struct GlobalRequestID;
 
 typedef base::Thread* (*RendererMainThreadFactoryFunction)(
     const std::string& id);
@@ -222,6 +223,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void SetWebRtcLogMessageCallback(
       base::Callback<void(const std::string&)> callback) = 0;
 #endif
+
+  // Tells the ResourceDispatcherHost to resume a deferred navigation without
+  // transferring it to a new renderer process.
+  virtual void ResumeDeferredNavigation(const GlobalRequestID& request_id) = 0;
 
   // Static management functions -----------------------------------------------
 

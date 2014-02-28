@@ -57,6 +57,11 @@ RenderFrameHostManager::PendingNavigationParams::PendingNavigationParams(
 
 RenderFrameHostManager::PendingNavigationParams::~PendingNavigationParams() {}
 
+bool RenderFrameHostManager::ClearRFHsPendingShutdown(FrameTreeNode* node) {
+  node->render_manager()->pending_delete_hosts_.clear();
+  return true;
+}
+
 RenderFrameHostManager::RenderFrameHostManager(
     FrameTreeNode* frame_tree_node,
     RenderFrameHostDelegate* render_frame_delegate,
@@ -72,7 +77,8 @@ RenderFrameHostManager::RenderFrameHostManager(
       render_frame_host_(NULL),
       pending_render_frame_host_(NULL),
       interstitial_page_(NULL),
-      cross_process_frame_connector_(NULL) {}
+      cross_process_frame_connector_(NULL),
+      weak_factory_(this) {}
 
 RenderFrameHostManager::~RenderFrameHostManager() {
   if (pending_render_frame_host_)
@@ -243,7 +249,7 @@ bool RenderFrameHostManager::ShouldCloseTabOnUnresponsiveRenderer() {
   // If the tab becomes unresponsive during {before}unload while doing a
   // cross-site navigation, proceed with the navigation.  (This assumes that
   // the pending RenderFrameHost is still responsive.)
-  if (render_frame_host_->render_view_host()->is_waiting_for_unload_ack()) {
+  if (render_frame_host_->render_view_host()->IsWaitingForUnloadACK()) {
     // The request has been started and paused while we're waiting for the
     // unload handler to finish.  We'll pretend that it did.  The pending
     // renderer will then be swapped in as part of the usual DidNavigate logic.
@@ -564,6 +570,15 @@ void RenderFrameHostManager::SwapOutOldPage() {
   }
 }
 
+void RenderFrameHostManager::ClearPendingShutdownRFHForSiteInstance(
+    int32 site_instance_id,
+    RenderFrameHostImpl* rfh) {
+  RFHPendingDeleteMap::iterator iter =
+      pending_delete_hosts_.find(site_instance_id);
+  if (iter != pending_delete_hosts_.end() && iter->second.get() == rfh)
+    pending_delete_hosts_.erase(site_instance_id);
+}
+
 void RenderFrameHostManager::Observe(
     int type,
     const NotificationSource& source,
@@ -585,8 +600,30 @@ bool RenderFrameHostManager::ClearSwappedOutRFHsInSiteInstance(
     FrameTreeNode* node) {
   RenderFrameHostMap::iterator iter =
       node->render_manager()->swapped_out_hosts_.find(site_instance_id);
-  if (iter != node->render_manager()->swapped_out_hosts_.end())
-    delete iter->second;
+  if (iter != node->render_manager()->swapped_out_hosts_.end()) {
+    RenderFrameHostImpl* swapped_out_rfh = iter->second;
+    // If the RVH is pending swap out, it needs to switch state to
+    // pending shutdown. Otherwise it is deleted.
+    if (swapped_out_rfh->render_view_host()->rvh_state() ==
+        RenderViewHostImpl::STATE_PENDING_SWAP_OUT) {
+      swapped_out_rfh->SetPendingShutdown(base::Bind(
+          &RenderFrameHostManager::ClearPendingShutdownRFHForSiteInstance,
+          node->render_manager()->weak_factory_.GetWeakPtr(),
+          site_instance_id,
+          swapped_out_rfh));
+      RFHPendingDeleteMap::iterator pending_delete_iter =
+          node->render_manager()->pending_delete_hosts_.find(site_instance_id);
+      if (pending_delete_iter ==
+              node->render_manager()->pending_delete_hosts_.end() ||
+          pending_delete_iter->second.get() != iter->second) {
+        node->render_manager()->pending_delete_hosts_[site_instance_id] =
+            linked_ptr<RenderFrameHostImpl>(swapped_out_rfh);
+      }
+    } else {
+      delete swapped_out_rfh;
+    }
+    node->render_manager()->swapped_out_hosts_.erase(site_instance_id);
+  }
 
   return true;
 }
@@ -969,7 +1006,7 @@ bool RenderFrameHostManager::InitRenderView(RenderViewHost* render_view_host,
     // process unless it's swapped out.
     RenderViewHostImpl* rvh_impl =
         static_cast<RenderViewHostImpl*>(render_view_host);
-    if (!rvh_impl->is_swapped_out()) {
+    if (!rvh_impl->IsSwappedOut()) {
       CHECK(!ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
                 render_view_host->GetProcess()->GetID()));
     }
@@ -1048,10 +1085,16 @@ void RenderFrameHostManager::CommitPending() {
 
   // If the old view is live and top-level, hide it now that the new one is
   // visible.
+  int32 old_site_instance_id =
+      old_render_frame_host->render_view_host()->GetSiteInstance()->GetId();
   if (old_render_frame_host->render_view_host()->GetView()) {
     if (is_main_frame) {
       old_render_frame_host->render_view_host()->GetView()->Hide();
-      old_render_frame_host->render_view_host()->WasSwappedOut();
+      old_render_frame_host->render_view_host()->WasSwappedOut(base::Bind(
+          &RenderFrameHostManager::ClearPendingShutdownRFHForSiteInstance,
+          weak_factory_.GetWeakPtr(),
+          old_site_instance_id,
+          old_render_frame_host));
     } else {
       // TODO(creis): We'll need to set this back to false if we navigate back.
       old_render_frame_host->set_swapped_out(true);
@@ -1085,18 +1128,17 @@ void RenderFrameHostManager::CommitPending() {
 
   if (old_render_frame_host->render_view_host()->IsRenderViewLive()) {
     // If the old RFH is live, we are swapping it out and should keep track of
-    // it in case we navigate back to it.
+    // it in case we navigate back to it, or it is waiting for the unload event
+    // to execute in the background.
     // TODO(creis): Swap out the subframe in --site-per-process.
     if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess))
       DCHECK(old_render_frame_host->is_swapped_out() ||
-             old_render_frame_host->render_view_host()->is_swapped_out());
-
+             !RenderViewHostImpl::IsRVHStateActive(
+                  old_render_frame_host->render_view_host()->rvh_state()));
     // Temp fix for http://crbug.com/90867 until we do a better cleanup to make
     // sure we don't get different rvh instances for the same site instance
     // in the same rvhmgr.
     // TODO(creis): Clean this up.
-    int32 old_site_instance_id =
-        old_render_frame_host->render_view_host()->GetSiteInstance()->GetId();
     RenderFrameHostMap::iterator iter =
         swapped_out_hosts_.find(old_site_instance_id);
     if (iter != swapped_out_hosts_.end() &&
@@ -1104,7 +1146,23 @@ void RenderFrameHostManager::CommitPending() {
       // Delete the RFH that will be replaced in the map to avoid a leak.
       delete iter->second;
     }
-    swapped_out_hosts_[old_site_instance_id] = old_render_frame_host;
+    // If the RenderViewHost backing the RenderFrameHost is pending shutdown,
+    // the RenderFrameHost should be put in the map of RenderFrameHosts pending
+    // shutdown. Otherwise, it is stored in the map of swapped out
+    // RenderFrameHosts.
+    if (old_render_frame_host->render_view_host()->rvh_state() ==
+            RenderViewHostImpl::STATE_PENDING_SHUTDOWN) {
+      swapped_out_hosts_.erase(old_site_instance_id);
+      RFHPendingDeleteMap::iterator pending_delete_iter =
+          pending_delete_hosts_.find(old_site_instance_id);
+      if (pending_delete_iter == pending_delete_hosts_.end() ||
+          pending_delete_iter->second.get() != old_render_frame_host) {
+        pending_delete_hosts_[old_site_instance_id] =
+            linked_ptr<RenderFrameHostImpl>(old_render_frame_host);
+      }
+    } else {
+      swapped_out_hosts_[old_site_instance_id] = old_render_frame_host;
+    }
 
     // If there are no active views in this SiteInstance, it means that
     // this RFH was the last active one in the SiteInstance. Now that we
@@ -1147,7 +1205,6 @@ void RenderFrameHostManager::ShutdownRenderFrameHostsInSiteInstance(
       tree->ForEach(base::Bind(
           &RenderFrameHostManager::ClearSwappedOutRFHsInSiteInstance,
           site_instance_id));
-      // rvh is now deleted.
     }
   }
 }

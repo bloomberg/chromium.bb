@@ -116,8 +116,8 @@ class CONTENT_EXPORT FrameTree {
   void UnregisterRenderFrameHost(RenderFrameHostImpl* render_frame_host);
 
  private:
-  typedef std::pair<RenderViewHostImpl*, int> RenderViewHostRefCount;
-  typedef base::hash_map<int, RenderViewHostRefCount> RenderViewHostMap;
+  typedef base::hash_map<int, RenderViewHostImpl*> RenderViewHostMap;
+  typedef std::multimap<int, RenderViewHostImpl*> RenderViewHostMultiMap;
 
   // These delegates are installed into all the RenderViewHosts and
   // RenderFrameHosts that we create.
@@ -126,14 +126,22 @@ class CONTENT_EXPORT FrameTree {
   RenderWidgetHostDelegate* render_widget_delegate_;
   RenderFrameHostManager::Delegate* manager_delegate_;
 
-  // Map of SiteInstance ID to a (RenderViewHost, refcount) pair.  This allows
-  // us to look up the RenderViewHost for a given SiteInstance when creating
-  // RenderFrameHosts, and it allows us to call Shutdown on the RenderViewHost
-  // and remove it from the map when no more RenderFrameHosts are using it.
+  // Map of SiteInstance ID to a RenderViewHost.  This allows us to look up the
+  // RenderViewHost for a given SiteInstance when creating RenderFrameHosts.
+  // Combined with the refcount on RenderViewHost, this allows us to call
+  // Shutdown on the RenderViewHost and remove it from the map when no more
+  // RenderFrameHosts are using it.
   //
   // Must be declared before |root_| so that it is deleted afterward.  Otherwise
   // the map will be cleared before we delete the RenderFrameHosts in the tree.
   RenderViewHostMap render_view_host_map_;
+
+  // Map of SiteInstance ID to RenderViewHosts that are pending shutdown. The
+  // renderers of these RVH are currently executing the unload event in
+  // background. When the SwapOutACK is received, they will be deleted. In the
+  // meantime, they are kept in this map, as they should not be reused (part of
+  // their state is already gone away).
+  RenderViewHostMultiMap render_view_host_pending_shutdown_map_;
 
   scoped_ptr<FrameTreeNode> root_;
 

@@ -243,7 +243,7 @@ void RenderFrameHostImpl::OnNavigate(const IPC::Message& msg) {
   // unload request.  It will either respond to the unload request soon or our
   // timer will expire.  Either way, we should ignore this message, because we
   // have already committed to closing this renderer.
-  if (render_view_host_->is_waiting_for_unload_ack_)
+  if (render_view_host_->IsWaitingForUnloadACK())
     return;
 
   RenderProcessHost* process = GetProcess();
@@ -329,6 +329,10 @@ void RenderFrameHostImpl::OnContextMenu(const ContextMenuParams& params) {
   process->FilterURL(true, &validated_params.frame_url);
 
   delegate_->ShowContextMenu(this, validated_params);
+}
+
+void RenderFrameHostImpl::SetPendingShutdown(const base::Closure& on_swap_out) {
+  render_view_host_->SetPendingShutdown(on_swap_out);
 }
 
 bool RenderFrameHostImpl::CanCommitURL(const GURL& url) {

@@ -36,6 +36,7 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/cross_site_transferring_request.h"
 #include "content/browser/renderer_host/dip_util.h"
+#include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -151,6 +152,16 @@ void DismissVirtualKeyboardTask() {
 // RenderViewHost, public:
 
 // static
+bool RenderViewHostImpl::IsRVHStateActive(RenderViewHostImplState rvh_state) {
+  if (rvh_state == STATE_DEFAULT ||
+      rvh_state == STATE_WAITING_FOR_UNLOAD_ACK ||
+      rvh_state == STATE_WAITING_FOR_COMMIT ||
+      rvh_state == STATE_WAITING_FOR_CLOSE)
+    return true;
+  return false;
+}
+
+// static
 RenderViewHost* RenderViewHost::FromID(int render_process_id,
                                        int render_view_id) {
   return RenderViewHostImpl::FromID(render_process_id, render_view_id);
@@ -187,29 +198,32 @@ RenderViewHostImpl::RenderViewHostImpl(
                            instance->GetProcess(),
                            routing_id,
                            hidden),
+      frames_ref_count_(0),
       delegate_(delegate),
       instance_(static_cast<SiteInstanceImpl*>(instance)),
       waiting_for_drag_context_response_(false),
       enabled_bindings_(0),
       navigations_suspended_(false),
       has_accessed_initial_document_(false),
-      is_swapped_out_(swapped_out),
       main_frame_routing_id_(main_frame_routing_id),
       is_waiting_for_beforeunload_ack_(false),
-      is_waiting_for_unload_ack_(false),
-      has_timed_out_on_unload_(false),
       unload_ack_is_for_cross_site_transition_(false),
       are_javascript_messages_suppressed_(false),
       sudden_termination_allowed_(false),
       render_view_termination_status_(base::TERMINATION_STATUS_STILL_RUNNING),
-      virtual_keyboard_requested_(false) {
+      virtual_keyboard_requested_(false),
+      weak_factory_(this) {
   DCHECK(instance_.get());
   CHECK(delegate_);  // http://crbug.com/82827
 
   GetProcess()->EnableSendQueue();
 
-  if (!swapped_out)
+  if (swapped_out) {
+    rvh_state_ = STATE_SWAPPED_OUT;
+  } else {
+    rvh_state_ = STATE_DEFAULT;
     instance_->increment_active_view_count();
+  }
 
   if (ResourceDispatcherHostImpl::Get()) {
     BrowserThread::PostTask(
@@ -222,6 +236,9 @@ RenderViewHostImpl::RenderViewHostImpl(
 #if defined(OS_ANDROID)
   media_player_manager_.reset(BrowserMediaPlayerManager::Create(this));
 #endif
+
+  unload_event_monitor_timeout_.reset(new TimeoutMonitor(base::Bind(
+      &RenderViewHostImpl::OnSwappedOut, weak_factory_.GetWeakPtr(), true)));
 }
 
 RenderViewHostImpl::~RenderViewHostImpl() {
@@ -241,7 +258,7 @@ RenderViewHostImpl::~RenderViewHostImpl() {
 
   // If this was swapped out, it already decremented the active view
   // count of the SiteInstance it belongs to.
-  if (!is_swapped_out_)
+  if (IsRVHStateActive(rvh_state_))
     instance_->decrement_active_view_count();
 }
 
@@ -292,7 +309,7 @@ bool RenderViewHostImpl::CreateRenderView(
   params.frame_name = frame_name;
   // Ensure the RenderView sets its opener correctly.
   params.opener_route_id = opener_route_id;
-  params.swapped_out = is_swapped_out_;
+  params.swapped_out = !IsRVHStateActive(rvh_state_);
   params.hidden = is_hidden();
   params.next_page_id = next_page_id;
   GetWebScreenInfo(&params.screen_info);
@@ -576,7 +593,7 @@ void RenderViewHostImpl::Navigate(const ViewMsg_Navigate_Params& params) {
   } else {
     // Get back to a clean state, in case we start a new navigation without
     // completing a RVH swap or unload handler.
-    SetSwappedOut(false);
+    SetState(STATE_DEFAULT);
 
     Send(new ViewMsg_Navigate(GetRoutingID(), params));
   }
@@ -622,7 +639,7 @@ void RenderViewHostImpl::SetNavigationsSuspended(
     // There's navigation message params waiting to be sent.  Now that we're not
     // suspended anymore, resume navigation by sending them.  If we were swapped
     // out, we should also stop filtering out the IPC messages now.
-    SetSwappedOut(false);
+    SetState(STATE_DEFAULT);
 
     DCHECK(!proceed_time.is_null());
     suspended_nav_params_->browser_navigation_start = proceed_time;
@@ -705,22 +722,14 @@ void RenderViewHostImpl::SuppressDialogsUntilSwapOut() {
 }
 
 void RenderViewHostImpl::SwapOut() {
-  // This will be set back to false in OnSwapOutACK, just before we replace
-  // this RVH with the pending RVH.
-  is_waiting_for_unload_ack_ = true;
-  // Start the hang monitor in case the renderer hangs in the unload handler.
-  // Increment the in-flight event count, to ensure that input events won't
-  // cancel the timeout timer.
-  increment_in_flight_event_count();
-  StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kUnloadTimeoutMS));
+  SetState(STATE_WAITING_FOR_UNLOAD_ACK);
+  unload_event_monitor_timeout_->Start(
+      base::TimeDelta::FromMilliseconds(kUnloadTimeoutMS));
 
   if (IsRenderViewLive()) {
     Send(new ViewMsg_SwapOut(GetRoutingID()));
-  } else {
-    // This RenderViewHost doesn't have a live renderer, so just skip the unload
-    // event.
-    OnSwappedOut(true);
   }
+  delegate_->SwappedOut(this);
 }
 
 void RenderViewHostImpl::OnSwapOutACK() {
@@ -728,36 +737,11 @@ void RenderViewHostImpl::OnSwapOutACK() {
 }
 
 void RenderViewHostImpl::OnSwappedOut(bool timed_out) {
-  // Stop the hang monitor now that the unload handler has finished.
-  decrement_in_flight_event_count();
-  StopHangMonitorTimeout();
-  is_waiting_for_unload_ack_ = false;
-  has_timed_out_on_unload_ = timed_out;
-  delegate_->SwappedOut(this);
-}
-
-void RenderViewHostImpl::WasSwappedOut() {
-  // Don't bother reporting hung state anymore.
-  StopHangMonitorTimeout();
-
-  // If we have timed out on running the unload handler, we consider
-  // the process hung and we should terminate it if there are no other tabs
-  // using the process. If there are other views using this process, the
-  // unresponsive renderer timeout will catch it.
-  bool hung = has_timed_out_on_unload_;
-
-  // Now that we're no longer the active RVH in the tab, start filtering out
-  // most IPC messages.  Usually the renderer will have stopped sending
-  // messages as of OnSwapOutACK.  However, we may have timed out waiting
-  // for that message, and additional IPC messages may keep streaming in.
-  // We filter them out, as long as that won't cause problems (e.g., we
-  // still allow synchronous messages through).
-  SetSwappedOut(true);
-
-  // If we are not running the renderer in process and no other tab is using
-  // the hung process, consider it eligible to be killed, assuming it is a real
-  // process (unit tests don't have real processes).
-  if (hung) {
+  // Ignore spurious swap out ack.
+  if (!IsWaitingForUnloadACK())
+    return;
+  unload_event_monitor_timeout_->Stop();
+  if (timed_out) {
     base::ProcessHandle process_handle = GetProcess()->GetHandle();
     int views = 0;
 
@@ -794,13 +778,49 @@ void RenderViewHostImpl::WasSwappedOut() {
     }
   }
 
-  // Inform the renderer that it can exit if no one else is using it.
+  switch (rvh_state_) {
+    case STATE_WAITING_FOR_UNLOAD_ACK:
+      SetState(STATE_WAITING_FOR_COMMIT);
+      break;
+    case STATE_PENDING_SWAP_OUT:
+      SetState(STATE_SWAPPED_OUT);
+      break;
+    case STATE_PENDING_SHUTDOWN:
+      DCHECK(!pending_shutdown_on_swap_out_.is_null());
+      pending_shutdown_on_swap_out_.Run();
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
+void RenderViewHostImpl::WasSwappedOut(
+    const base::Closure& pending_delete_on_swap_out) {
   Send(new ViewMsg_WasSwappedOut(GetRoutingID()));
+  if (rvh_state_ == STATE_WAITING_FOR_UNLOAD_ACK) {
+    SetState(STATE_PENDING_SWAP_OUT);
+    if (!instance_->active_view_count())
+      SetPendingShutdown(pending_delete_on_swap_out);
+  } else if (rvh_state_ == STATE_WAITING_FOR_COMMIT) {
+    SetState(STATE_SWAPPED_OUT);
+  } else if (rvh_state_ == STATE_DEFAULT) {
+    // When the RenderView is not live, the RenderFrameHostManager will call
+    // CommitPending directly, without calling SwapOut on the old RVH. This will
+    // cause WasSwappedOut to be called directly on the live old RVH.
+    DCHECK(!IsRenderViewLive());
+    SetState(STATE_SWAPPED_OUT);
+  } else {
+    NOTREACHED();
+  }
+}
+
+void RenderViewHostImpl::SetPendingShutdown(const base::Closure& on_swap_out) {
+  pending_shutdown_on_swap_out_ = on_swap_out;
+  SetState(STATE_PENDING_SHUTDOWN);
 }
 
 void RenderViewHostImpl::ClosePage() {
-  // Start the hang monitor in case the renderer hangs in the unload handler.
-  is_waiting_for_unload_ack_ = true;
+  SetState(STATE_WAITING_FOR_CLOSE);
   StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kUnloadTimeoutMS));
 
   if (IsRenderViewLive()) {
@@ -827,7 +847,6 @@ void RenderViewHostImpl::ClosePage() {
 void RenderViewHostImpl::ClosePageIgnoringUnloadEvents() {
   StopHangMonitorTimeout();
   is_waiting_for_beforeunload_ack_ = false;
-  is_waiting_for_unload_ack_ = false;
 
   sudden_termination_allowed_ = true;
   delegate_->Close(this);
@@ -1000,8 +1019,7 @@ void RenderViewHostImpl::JavaScriptDialogClosed(
     bool success,
     const base::string16& user_input) {
   GetProcess()->SetIgnoreInputEvents(false);
-  bool is_waiting =
-      is_waiting_for_beforeunload_ack_ || is_waiting_for_unload_ack_;
+  bool is_waiting = is_waiting_for_beforeunload_ack_ || IsWaitingForUnloadACK();
 
   // If we are executing as part of (before)unload event handling, we don't
   // want to use the regular hung_renderer_delay_ms_ if the user has agreed to
@@ -1024,7 +1042,7 @@ void RenderViewHostImpl::JavaScriptDialogClosed(
   // correctly while waiting for a response.
   if (is_waiting && are_javascript_messages_suppressed_)
     delegate_->RendererUnresponsive(
-        this, is_waiting_for_beforeunload_ack_, is_waiting_for_unload_ack_);
+        this, is_waiting_for_beforeunload_ack_, IsWaitingForUnloadACK());
 }
 
 void RenderViewHostImpl::DragSourceEndedAt(
@@ -1180,7 +1198,7 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
 
   // Filter out most IPC messages if this renderer is swapped out.
   // We still want to handle certain ACKs to keep our state consistent.
-  if (is_swapped_out_) {
+  if (IsSwappedOut()) {
     if (!SwappedOutMessages::CanHandleWhileSwappedOut(msg)) {
       // If this is a synchronous message and we decided not to handle it,
       // we must send an error reply, or else the renderer will be stuck
@@ -1322,7 +1340,7 @@ void RenderViewHostImpl::OnShowView(int route_id,
                                     WindowOpenDisposition disposition,
                                     const gfx::Rect& initial_pos,
                                     bool user_gesture) {
-  if (!is_swapped_out_) {
+  if (IsRVHStateActive(rvh_state_)) {
     delegate_->ShowCreatedWindow(
         route_id, disposition, initial_pos, user_gesture);
   }
@@ -1331,13 +1349,13 @@ void RenderViewHostImpl::OnShowView(int route_id,
 
 void RenderViewHostImpl::OnShowWidget(int route_id,
                                       const gfx::Rect& initial_pos) {
-  if (!is_swapped_out_)
+  if (IsRVHStateActive(rvh_state_))
     delegate_->ShowCreatedWidget(route_id, initial_pos);
   Send(new ViewMsg_Move_ACK(route_id));
 }
 
 void RenderViewHostImpl::OnShowFullscreenWidget(int route_id) {
-  if (!is_swapped_out_)
+  if (IsRVHStateActive(rvh_state_))
     delegate_->ShowCreatedFullscreenWidget(route_id);
   Send(new ViewMsg_Move_ACK(route_id));
 }
@@ -1409,7 +1427,7 @@ void RenderViewHostImpl::OnUpdateEncoding(const std::string& encoding_name) {
 }
 
 void RenderViewHostImpl::OnUpdateTargetURL(int32 page_id, const GURL& url) {
-  if (!is_swapped_out_)
+  if (IsRVHStateActive(rvh_state_))
     delegate_->UpdateTargetURL(page_id, url);
 
   // Send a notification back to the renderer that we are ready to
@@ -1430,7 +1448,7 @@ void RenderViewHostImpl::OnClose() {
 }
 
 void RenderViewHostImpl::OnRequestMove(const gfx::Rect& pos) {
-  if (!is_swapped_out_)
+  if (IsRVHStateActive(rvh_state_))
     delegate_->RequestMove(pos);
   Send(new ViewMsg_Move_ACK(GetRoutingID()));
 }
@@ -1659,7 +1677,7 @@ void RenderViewHostImpl::OnShouldCloseACK(
   // If this renderer navigated while the beforeunload request was in flight, we
   // may have cleared this state in OnNavigate, in which case we can ignore
   // this message.
-  if (!is_waiting_for_beforeunload_ack_ || is_swapped_out_)
+  if (!is_waiting_for_beforeunload_ack_ || rvh_state_ != STATE_DEFAULT)
     return;
 
   is_waiting_for_beforeunload_ack_ = false;
@@ -1702,7 +1720,7 @@ void RenderViewHostImpl::OnClosePageACK() {
 
 void RenderViewHostImpl::NotifyRendererUnresponsive() {
   delegate_->RendererUnresponsive(
-      this, is_waiting_for_beforeunload_ack_, is_waiting_for_unload_ack_);
+      this, is_waiting_for_beforeunload_ack_, IsWaitingForUnloadACK());
 }
 
 void RenderViewHostImpl::NotifyRendererResponsive() {
@@ -1807,6 +1825,13 @@ void RenderViewHostImpl::ToggleSpeechInput() {
   Send(new InputTagSpeechMsg_ToggleSpeechInput(GetRoutingID()));
 }
 
+bool RenderViewHostImpl::IsWaitingForUnloadACK() const {
+  return rvh_state_ == STATE_WAITING_FOR_UNLOAD_ACK ||
+         rvh_state_ == STATE_WAITING_FOR_CLOSE ||
+         rvh_state_ == STATE_PENDING_SHUTDOWN ||
+         rvh_state_ == STATE_PENDING_SWAP_OUT;
+}
+
 void RenderViewHostImpl::ExitFullscreen() {
   RejectMouseLockOrUnlockIfNecessary();
   // Notify delegate_ and renderer of fullscreen state change.
@@ -1819,7 +1844,7 @@ WebPreferences RenderViewHostImpl::GetWebkitPreferences() {
 
 void RenderViewHostImpl::DisownOpener() {
   // This should only be called when swapped out.
-  DCHECK(is_swapped_out_);
+  DCHECK(IsSwappedOut());
 
   Send(new ViewMsg_DisownOpener(GetRoutingID()));
 }
@@ -1901,7 +1926,7 @@ void RenderViewHostImpl::NotifyMoveOrResizeStarted() {
 void RenderViewHostImpl::OnAccessibilityEvents(
     const std::vector<AccessibilityHostMsg_EventParams>& params) {
   if ((accessibility_mode() & AccessibilityModeFlagPlatform) && view_ &&
-      !is_swapped_out_) {
+      IsRVHStateActive(rvh_state_)) {
     view_->CreateBrowserAccessibilityManagerIfNeeded();
     BrowserAccessibilityManager* manager =
         view_->GetBrowserAccessibilityManager();
@@ -1933,7 +1958,7 @@ void RenderViewHostImpl::OnAccessibilityEvents(
 
 void RenderViewHostImpl::OnAccessibilityLocationChanges(
     const std::vector<AccessibilityHostMsg_LocationChangeParams>& params) {
-  if (view_ && !is_swapped_out_) {
+  if (view_ && IsRVHStateActive(rvh_state_)) {
     view_->CreateBrowserAccessibilityManagerIfNeeded();
     BrowserAccessibilityManager* manager =
         view_->GetBrowserAccessibilityManager();
@@ -2029,22 +2054,25 @@ void RenderViewHostImpl::OnShowPopup(
 }
 #endif
 
-void RenderViewHostImpl::SetSwappedOut(bool is_swapped_out) {
+void RenderViewHostImpl::SetState(RenderViewHostImplState rvh_state) {
   // We update the number of RenderViews in a SiteInstance when the
-  // swapped out status of this RenderView gets flipped.
-  if (is_swapped_out_ && !is_swapped_out)
+  // swapped out status of this RenderView gets flipped to/from live.
+  if (!IsRVHStateActive(rvh_state_) && IsRVHStateActive(rvh_state))
     instance_->increment_active_view_count();
-  else if (!is_swapped_out_ && is_swapped_out)
+  else if (IsRVHStateActive(rvh_state_) && !IsRVHStateActive(rvh_state))
     instance_->decrement_active_view_count();
 
-  is_swapped_out_ = is_swapped_out;
+  // Whenever we change the RVH state to and from live or swapped out state, we
+  // should not be waiting for beforeunload or unload acks.  We clear them here
+  // to be safe, since they can cause navigations to be ignored in OnNavigate.
+  if (rvh_state == STATE_DEFAULT ||
+      rvh_state == STATE_SWAPPED_OUT ||
+      rvh_state_ == STATE_DEFAULT ||
+      rvh_state_ == STATE_SWAPPED_OUT) {
+    is_waiting_for_beforeunload_ack_ = false;
+  }
+  rvh_state_ = rvh_state;
 
-  // Whenever we change swap out state, we should not be waiting for
-  // beforeunload or unload acks.  We clear them here to be safe, since they
-  // can cause navigations to be ignored in OnNavigate.
-  is_waiting_for_beforeunload_ack_ = false;
-  is_waiting_for_unload_ack_ = false;
-  has_timed_out_on_unload_ = false;
 }
 
 bool RenderViewHostImpl::CanAccessFilesOfPageState(
