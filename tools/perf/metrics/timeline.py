@@ -5,6 +5,7 @@ import collections
 import itertools
 
 from metrics import Metric
+from telemetry.core.timeline.model import TimelineModel
 from telemetry.core.timeline import bounds
 from telemetry.page import page_measurement
 
@@ -57,8 +58,8 @@ class TimelineMetric(Metric):
 
   def Stop(self, page, tab):
     if self._mode == TRACING_MODE:
-      trace_result = tab.browser.StopTracing()
-      self._model = trace_result.AsTimelineModel()
+      timeline_data = tab.browser.StopTracing()
+      self._model = TimelineModel(timeline_data)
       self._renderer_process = self._model.GetRendererProcessFromTab(tab)
       self._action_ranges = [ action.GetActiveRangeOnTimeline(self._model)
                               for action in self._actions ]
