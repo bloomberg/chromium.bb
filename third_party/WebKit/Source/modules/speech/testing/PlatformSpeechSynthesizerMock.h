@@ -46,8 +46,10 @@ private:
     explicit PlatformSpeechSynthesizerMock(PlatformSpeechSynthesizerClient*);
     virtual void initializeVoiceList() OVERRIDE;
     void speakingFinished(Timer<PlatformSpeechSynthesizerMock>*);
+    void speakingErrorOccurred(Timer<PlatformSpeechSynthesizerMock>*);
 
     Timer<PlatformSpeechSynthesizerMock> m_speakingFinishedTimer;
+    Timer<PlatformSpeechSynthesizerMock> m_speakingErrorOccurredTimer;
     RefPtr<PlatformSpeechSynthesisUtterance> m_utterance;
 };
 
