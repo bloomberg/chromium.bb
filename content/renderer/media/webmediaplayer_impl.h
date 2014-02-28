@@ -2,21 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Delegate calls from WebCore::MediaPlayerPrivate to Chrome's video player.
-// It contains Pipeline which is the actual media player pipeline, it glues
-// the media player pipeline, data source, audio renderer and renderer.
-// Pipeline would creates multiple threads and access some public methods
-// of this class, so we need to be extra careful about concurrent access of
-// methods and members.
-//
-// Other issues:
-// During tear down of the whole browser or a tab, the DOM tree may not be
-// destructed nicely, and there will be some dangling media threads trying to
-// the main thread, so we need this class to listen to destruction event of the
-// main thread and cleanup the media threads when the even is received. Also
-// at destruction of this class we will need to unhook it from destruction event
-// list of the main thread.
-
 #ifndef CONTENT_RENDERER_MEDIA_WEBMEDIAPLAYER_IMPL_H_
 #define CONTENT_RENDERER_MEDIA_WEBMEDIAPLAYER_IMPL_H_
 
@@ -29,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "cc/layers/video_frame_provider.h"
-#include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/media/crypto/proxy_decryptor.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/decryptor.h"
@@ -74,10 +58,12 @@ class WebMediaPlayerDelegate;
 class WebMediaPlayerParams;
 class WebTextTrackImpl;
 
+// The canonical implementation of blink::WebMediaPlayer that's backed by
+// media::Pipeline. Handles normal resource loading, Media Source, and
+// Encrypted Media.
 class WebMediaPlayerImpl
     : public blink::WebMediaPlayer,
       public cc::VideoFrameProvider,
-      public content::RenderFrameObserver,
       public base::SupportsWeakPtr<WebMediaPlayerImpl> {
  public:
   // Constructs a WebMediaPlayer implementation using Chromium's media stack.
@@ -177,9 +163,6 @@ class WebMediaPlayerImpl
   virtual void setContentDecryptionModule(
       blink::WebContentDecryptionModule* cdm);
 
-  // RenderFrameObserver implementation.
-  virtual void OnDestruct() OVERRIDE;
-
   // Notifies blink that the entire media element region has been invalidated.
   // This path is slower than notifying the compositor directly as it performs
   // more work and can trigger layouts. It should only be used in two cases:
@@ -228,16 +211,6 @@ class WebMediaPlayerImpl
   void SetNetworkState(blink::WebMediaPlayer::NetworkState state);
   void SetReadyState(blink::WebMediaPlayer::ReadyState state);
 
-  // Destroy resources held.
-  //
-  // TODO(scherkus): Remove |reason| after tracking down cause for crashes
-  // http://crbug.com/341184 http://crbug.com/341186
-  enum DestroyReason {
-    WEBMEDIAPLAYER_DESTROYED = 1 << 0,
-    RENDERFRAME_DESTROYED = 1 << 1,
-  };
-  void Destroy(DestroyReason reason);
-
   // Lets V8 know that player uses extra resources not managed by V8.
   void IncrementExternallyAllocatedMemory();
 
@@ -285,8 +258,9 @@ class WebMediaPlayerImpl
   // for DCHECKs so methods calls won't execute in the wrong thread.
   const scoped_refptr<base::MessageLoopProxy> main_loop_;
 
-  scoped_ptr<media::Pipeline> pipeline_;
   scoped_refptr<base::MessageLoopProxy> media_loop_;
+  scoped_refptr<media::MediaLog> media_log_;
+  media::Pipeline pipeline_;
 
   // The currently selected key system. Empty string means that no key system
   // has been selected.
@@ -322,8 +296,6 @@ class WebMediaPlayerImpl
   base::WeakPtr<WebMediaPlayerDelegate> delegate_;
 
   base::Callback<void(const base::Closure&)> defer_load_cb_;
-
-  scoped_refptr<media::MediaLog> media_log_;
 
   // Since accelerated compositing status is only known after the first layout,
   // we delay reporting it to UMA until that time.
@@ -380,10 +352,6 @@ class WebMediaPlayerImpl
   WebContentDecryptionModuleImpl* web_cdm_;
 
   media::DecryptorReadyCB decryptor_ready_cb_;
-
-  // TODO(scherkus): Remove after tracking down cause for crashes
-  // http://crbug.com/341184 http://crbug.com/341186
-  uint32 destroy_reason_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };
