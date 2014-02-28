@@ -156,17 +156,15 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
             StreamFramePacketOverhead(
                 framer_->version(), PACKET_8BYTE_CONNECTION_ID, kIncludeVersion,
                 PACKET_6BYTE_SEQUENCE_NUMBER, IN_FEC_GROUP));
-  if (!HasRoomForStreamFrame(id, offset)) {
-    LOG(DFATAL) << "No room for Stream frame, BytesFree: " << BytesFree()
-                << " MinStreamFrameSize: "
-                << QuicFramer::GetMinStreamFrameSize(
-                    framer_->version(), id, offset, true);
-  }
+  LOG_IF(DFATAL, !HasRoomForStreamFrame(id, offset))
+      << "No room for Stream frame, BytesFree: " << BytesFree()
+      << " MinStreamFrameSize: "
+      << QuicFramer::GetMinStreamFrameSize(
+          framer_->version(), id, offset, true);
 
   if (data.Empty()) {
-    if (!fin) {
-      LOG(DFATAL) << "Creating a stream frame with no data or fin.";
-    }
+    LOG_IF(DFATAL, !fin)
+        << "Creating a stream frame with no data or fin.";
     // Create a new packet for the fin, if necessary.
     *frame = QuicFrame(new QuicStreamFrame(id, true, offset, data));
     return 0;
@@ -256,9 +254,8 @@ SerializedPacket QuicPacketCreator::SerializeAllFrames(
   // frames from SendStreamData()[send_stream_should_flush_ == false &&
   // data.empty() == true] and retransmit due to RTO.
   DCHECK_EQ(0u, queued_frames_.size());
-  if (frames.empty()) {
-    LOG(DFATAL) << "Attempt to serialize empty packet";
-  }
+  LOG_IF(DFATAL, frames.empty())
+      << "Attempt to serialize empty packet";
   for (size_t i = 0; i < frames.size(); ++i) {
     bool success = AddFrame(frames[i], false);
     DCHECK(success);
@@ -313,9 +310,8 @@ bool QuicPacketCreator::AddSavedFrame(const QuicFrame& frame) {
 }
 
 SerializedPacket QuicPacketCreator::SerializePacket() {
-  if (queued_frames_.empty()) {
-    LOG(DFATAL) << "Attempt to serialize empty packet";
-  }
+  LOG_IF(DFATAL, queued_frames_.empty())
+      << "Attempt to serialize empty packet";
   QuicPacketHeader header;
   FillPacketHeader(fec_group_number_, false, &header);
 
@@ -334,10 +330,8 @@ SerializedPacket QuicPacketCreator::SerializePacket() {
        queued_frames_.back().type == CONNECTION_CLOSE_FRAME);
   SerializedPacket serialized =
       framer_->BuildDataPacket(header, queued_frames_, packet_size_);
-  if (!serialized.packet) {
-    LOG(DFATAL) << "Failed to serialize " << queued_frames_.size()
-                << " frames.";
-  }
+  LOG_IF(DFATAL, !serialized.packet)
+      << "Failed to serialize " << queued_frames_.size() << " frames.";
   // Because of possible truncation, we can't be confident that our
   // packet size calculation worked correctly.
   if (!possibly_truncated)
@@ -361,10 +355,8 @@ SerializedPacket QuicPacketCreator::SerializeFec() {
   fec_group_.reset(NULL);
   fec_group_number_ = 0;
   packet_size_ = 0;
-  if (!serialized.packet) {
-    LOG(DFATAL) << "Failed to serialize fec packet for group:"
-                << fec_data.fec_group;
-  }
+  LOG_IF(DFATAL, !serialized.packet)
+      << "Failed to serialize fec packet for group:" << fec_data.fec_group;
   DCHECK_GE(options_.max_packet_length, serialized.packet->length());
   return serialized;
 }

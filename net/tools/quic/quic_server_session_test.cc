@@ -60,8 +60,8 @@ class CloseOnDataStream : public QuicDataStream {
 class TestQuicServerSession : public QuicServerSession {
  public:
   TestQuicServerSession(const QuicConfig& config,
-                            QuicConnection* connection,
-                            QuicServerSessionVisitor* owner)
+                        QuicConnection* connection,
+                        QuicServerSessionVisitor* owner)
       : QuicServerSession(config, connection, owner),
         close_stream_on_data_(false) {}
 

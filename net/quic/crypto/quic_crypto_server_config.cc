@@ -90,10 +90,8 @@ class ValidateClientHelloHelper {
   }
 
   ~ValidateClientHelloHelper() {
-    if (done_cb_ != NULL) {
-      LOG(DFATAL) <<
-          "Deleting ValidateClientHelloHelper with a pending callback.";
-    }
+    LOG_IF(DFATAL, done_cb_ != NULL)
+        << "Deleting ValidateClientHelloHelper with a pending callback.";
   }
 
   void ValidationComplete(QuicErrorCode error_code, const char* error_details) {
@@ -109,9 +107,7 @@ class ValidateClientHelloHelper {
 
  private:
   void DetachCallback() {
-    if (done_cb_ == NULL) {
-      LOG(DFATAL) << "Callback already detached.";
-    }
+    LOG_IF(DFATAL, done_cb_ == NULL) << "Callback already detached.";
     done_cb_ = NULL;
   }
 
@@ -807,7 +803,7 @@ void QuicCryptoServerConfig::SelectNewPrimaryConfig(
   }
 
   // All config's primary times are in the past. We should make the most recent
-  // most recent and highest priority candidate primary.
+  // and highest priority candidate primary.
   scoped_refptr<Config> new_primary(best_candidate);
   if (primary_config_.get()) {
     primary_config_->is_primary = false;

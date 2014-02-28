@@ -238,7 +238,7 @@ TEST_P(QuicHeadersStreamTest, ProcessSpdyDataFrame) {
   scoped_ptr<SpdySerializedFrame> frame(framer_.SerializeFrame(data));
   EXPECT_CALL(*connection_,
               SendConnectionCloseWithDetails(QUIC_INVALID_HEADERS_STREAM_DATA,
-                                             "SPDY DATA frame recevied."))
+                                             "SPDY DATA frame received."))
       .WillOnce(InvokeWithoutArgs(this,
                                   &QuicHeadersStreamTest::CloseConnection));
   headers_stream_->ProcessRawData(frame->data(), frame->size());
@@ -250,7 +250,7 @@ TEST_P(QuicHeadersStreamTest, ProcessSpdyRstStreamFrame) {
   EXPECT_CALL(*connection_,
               SendConnectionCloseWithDetails(
                   QUIC_INVALID_HEADERS_STREAM_DATA,
-                  "SPDY RST_STREAM frame recevied."))
+                  "SPDY RST_STREAM frame received."))
       .WillOnce(InvokeWithoutArgs(this,
                                   &QuicHeadersStreamTest::CloseConnection));
   headers_stream_->ProcessRawData(frame->data(), frame->size());
@@ -263,7 +263,7 @@ TEST_P(QuicHeadersStreamTest, ProcessSpdySettingsFrame) {
   EXPECT_CALL(*connection_,
               SendConnectionCloseWithDetails(
                   QUIC_INVALID_HEADERS_STREAM_DATA,
-                  "SPDY SETTINGS frame recevied."))
+                  "SPDY SETTINGS frame received."))
       .WillOnce(InvokeWithoutArgs(this,
                                   &QuicHeadersStreamTest::CloseConnection));
   headers_stream_->ProcessRawData(frame->data(), frame->size());
@@ -274,7 +274,7 @@ TEST_P(QuicHeadersStreamTest, ProcessSpdyPingFrame) {
   scoped_ptr<SpdySerializedFrame> frame(framer_.SerializeFrame(data));
   EXPECT_CALL(*connection_,
               SendConnectionCloseWithDetails(QUIC_INVALID_HEADERS_STREAM_DATA,
-                                             "SPDY PING frame recevied."))
+                                             "SPDY PING frame received."))
       .WillOnce(InvokeWithoutArgs(this,
                                   &QuicHeadersStreamTest::CloseConnection));
   headers_stream_->ProcessRawData(frame->data(), frame->size());
@@ -285,7 +285,7 @@ TEST_P(QuicHeadersStreamTest, ProcessSpdyGoAwayFrame) {
   scoped_ptr<SpdySerializedFrame> frame(framer_.SerializeFrame(data));
   EXPECT_CALL(*connection_,
               SendConnectionCloseWithDetails(QUIC_INVALID_HEADERS_STREAM_DATA,
-                                             "SPDY GOAWAY frame recevied."))
+                                             "SPDY GOAWAY frame received."))
       .WillOnce(InvokeWithoutArgs(this,
                                   &QuicHeadersStreamTest::CloseConnection));
   headers_stream_->ProcessRawData(frame->data(), frame->size());
@@ -296,7 +296,7 @@ TEST_P(QuicHeadersStreamTest, ProcessSpdyHeadersFrame) {
   scoped_ptr<SpdySerializedFrame> frame(framer_.SerializeFrame(data));
   EXPECT_CALL(*connection_,
               SendConnectionCloseWithDetails(QUIC_INVALID_HEADERS_STREAM_DATA,
-                                             "SPDY HEADERS frame recevied."))
+                                             "SPDY HEADERS frame received."))
       .WillOnce(InvokeWithoutArgs(this,
                                   &QuicHeadersStreamTest::CloseConnection));
   headers_stream_->ProcessRawData(frame->data(), frame->size());
@@ -308,7 +308,7 @@ TEST_P(QuicHeadersStreamTest, ProcessSpdyWindowUpdateFrame) {
   EXPECT_CALL(*connection_,
               SendConnectionCloseWithDetails(
                   QUIC_INVALID_HEADERS_STREAM_DATA,
-                  "SPDY WINDOW_UPDATE frame recevied."))
+                  "SPDY WINDOW_UPDATE frame received."))
       .WillOnce(InvokeWithoutArgs(this,
                                   &QuicHeadersStreamTest::CloseConnection));
   headers_stream_->ProcessRawData(frame->data(), frame->size());

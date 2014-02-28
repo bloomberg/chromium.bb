@@ -77,7 +77,7 @@ class QuicHeadersStream::SpdyFramerVisitor
       // that had the fin bit set.
       return;
     }
-    CloseConnection("SPDY DATA frame recevied.");
+    CloseConnection("SPDY DATA frame received.");
   }
 
   virtual void OnError(SpdyFramer* framer) OVERRIDE {
@@ -87,50 +87,50 @@ class QuicHeadersStream::SpdyFramerVisitor
   virtual void OnDataFrameHeader(SpdyStreamId stream_id,
                                  size_t length,
                                  bool fin) OVERRIDE {
-    CloseConnection("SPDY DATA frame recevied.");
+    CloseConnection("SPDY DATA frame received.");
   }
 
   virtual void OnRstStream(SpdyStreamId stream_id,
                            SpdyRstStreamStatus status) OVERRIDE {
-    CloseConnection("SPDY RST_STREAM frame recevied.");
+    CloseConnection("SPDY RST_STREAM frame received.");
   }
 
   virtual void OnSetting(SpdySettingsIds id,
                          uint8 flags,
                          uint32 value) OVERRIDE {
-    CloseConnection("SPDY SETTINGS frame recevied.");
+    CloseConnection("SPDY SETTINGS frame received.");
   }
 
   virtual void OnSettingsAck() OVERRIDE {
-    CloseConnection("SPDY SETTINGS frame recevied.");
+    CloseConnection("SPDY SETTINGS frame received.");
   }
 
   virtual void OnSettingsEnd() OVERRIDE {
-    CloseConnection("SPDY SETTINGS frame recevied.");
+    CloseConnection("SPDY SETTINGS frame received.");
   }
 
   virtual void OnPing(SpdyPingId unique_id, bool is_ack) OVERRIDE {
-    CloseConnection("SPDY PING frame recevied.");
+    CloseConnection("SPDY PING frame received.");
   }
 
   virtual void OnGoAway(SpdyStreamId last_accepted_stream_id,
                         SpdyGoAwayStatus status) OVERRIDE {
-    CloseConnection("SPDY GOAWAY frame recevied.");
+    CloseConnection("SPDY GOAWAY frame received.");
   }
 
   virtual void OnHeaders(SpdyStreamId stream_id, bool fin) OVERRIDE {
-    CloseConnection("SPDY HEADERS frame recevied.");
+    CloseConnection("SPDY HEADERS frame received.");
   }
 
   virtual void OnWindowUpdate(SpdyStreamId stream_id,
                               uint32 delta_window_size) OVERRIDE {
-    CloseConnection("SPDY WINDOW_UPDATE frame recevied.");
+    CloseConnection("SPDY WINDOW_UPDATE frame received.");
   }
 
   virtual void OnPushPromise(SpdyStreamId stream_id,
                              SpdyStreamId promised_stream_id) OVERRIDE {
     LOG(DFATAL) << "PUSH_PROMISE frame received from a SPDY/3 framer";
-    CloseConnection("SPDY PUSH_PROMISE frame recevied.");
+    CloseConnection("SPDY PUSH_PROMISE frame received.");
   }
 
   // SpdyFramerDebugVisitorInterface implementation
@@ -206,7 +206,7 @@ void QuicHeadersStream::OnSynStream(SpdyStreamId stream_id,
   if (!session()->is_server()) {
     CloseConnectionWithDetails(
         QUIC_INVALID_HEADERS_STREAM_DATA,
-        "SPDY SYN_STREAM frame recevied at the client");
+        "SPDY SYN_STREAM frame received at the client");
     return;
   }
   DCHECK_EQ(kInvalidStreamId, stream_id_);
@@ -219,7 +219,7 @@ void QuicHeadersStream::OnSynReply(SpdyStreamId stream_id, bool fin) {
   if (session()->is_server()) {
     CloseConnectionWithDetails(
         QUIC_INVALID_HEADERS_STREAM_DATA,
-        "SPDY SYN_REPLY frame recevied at the server");
+        "SPDY SYN_REPLY frame received at the server");
     return;
   }
   DCHECK_EQ(kInvalidStreamId, stream_id_);

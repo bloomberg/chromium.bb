@@ -117,7 +117,7 @@ bool QuicFecGroup::ProtectsPacketsBefore(QuicPacketSequenceNumber num) const {
   if (max_protected_packet_ != kNoSequenceNumber) {
     return max_protected_packet_ < num;
   }
-  // Since we might not yet have recevied the FEC packet, we must check
+  // Since we might not yet have received the FEC packet, we must check
   // the packets we have received.
   return *received_packets_.begin() < num;
 }

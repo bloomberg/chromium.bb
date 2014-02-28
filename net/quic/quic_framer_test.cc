@@ -421,8 +421,8 @@ class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
         decrypter_->associated_data_) {
       LOG(ERROR) << "Decrypted incorrect associated data.  expected "
                  << QuicFramer::GetAssociatedDataFromEncryptedPacket(
-                        encrypted, PACKET_8BYTE_CONNECTION_ID,
-                        includes_version, PACKET_6BYTE_SEQUENCE_NUMBER)
+                     encrypted, PACKET_8BYTE_CONNECTION_ID,
+                     includes_version, PACKET_6BYTE_SEQUENCE_NUMBER)
                  << " actual: " << decrypter_->associated_data_;
       return false;
     }
