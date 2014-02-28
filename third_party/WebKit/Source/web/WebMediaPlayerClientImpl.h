@@ -52,7 +52,6 @@ class AudioSourceProviderClient;
 
 namespace blink {
 
-class WebHelperPlugin;
 class WebAudioSourceProvider;
 class WebContentDecryptionModule;
 class WebMediaPlayer;
@@ -85,8 +84,6 @@ public:
     virtual void keyError(const WebString& keySystem, const WebString& sessionId, MediaKeyErrorCode, unsigned short systemCode) OVERRIDE;
     virtual void keyMessage(const WebString& keySystem, const WebString& sessionId, const unsigned char* message, unsigned messageLength, const WebURL& defaultURL) OVERRIDE;
     virtual void keyNeeded(const WebString& contentType, const unsigned char* initData, unsigned initDataLength) OVERRIDE;
-    virtual WebPlugin* createHelperPlugin(const WebString& pluginType, WebFrame*) OVERRIDE;
-    virtual void closeHelperPluginSoon(WebFrame*) OVERRIDE;
     virtual bool needsWebLayerForVideo() const OVERRIDE;
     virtual void setWebLayer(WebLayer*) OVERRIDE;
     virtual void addTextTrack(WebInbandTextTrack*) OVERRIDE;
@@ -163,7 +160,6 @@ private:
     WebCore::KURL m_url;
     bool m_delayingLoad;
     WebCore::MediaPlayer::Preload m_preload;
-    OwnPtr<WebHelperPlugin> m_helperPlugin;
     bool m_needsWebLayerForVideo;
     double m_volume;
     bool m_muted;

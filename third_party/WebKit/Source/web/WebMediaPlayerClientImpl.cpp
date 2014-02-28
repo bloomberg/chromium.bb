@@ -8,7 +8,6 @@
 #include "WebDocument.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
-#include "WebHelperPluginImpl.h"
 #include "WebViewImpl.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLMediaElement.h"
@@ -71,9 +70,6 @@ WebMediaPlayerClientImpl::~WebMediaPlayerClientImpl()
 {
     // Explicitly destroy the WebMediaPlayer to allow verification of tear down.
     m_webMediaPlayer.clear();
-
-    // Ensure the m_webMediaPlayer destroyed any WebHelperPlugin used.
-    ASSERT(!m_helperPlugin);
 }
 
 void WebMediaPlayerClientImpl::networkStateChanged()
@@ -144,24 +140,6 @@ void WebMediaPlayerClientImpl::keyMessage(const WebString& keySystem, const WebS
 void WebMediaPlayerClientImpl::keyNeeded(const WebString& contentType, const unsigned char* initData, unsigned initDataLength)
 {
     m_client->mediaPlayerKeyNeeded(contentType, initData, initDataLength);
-}
-
-WebPlugin* WebMediaPlayerClientImpl::createHelperPlugin(const WebString& pluginType, WebFrame* frame)
-{
-    ASSERT(!m_helperPlugin);
-
-    m_helperPlugin = adoptPtr(WebHelperPlugin::create(pluginType, frame));
-    if (!m_helperPlugin)
-        return 0;
-
-    return m_helperPlugin->getPlugin();
-}
-
-// FIXME: |frame| no longer needed.
-void WebMediaPlayerClientImpl::closeHelperPluginSoon(WebFrame* frame)
-{
-    ASSERT(m_helperPlugin);
-    m_helperPlugin.clear();
 }
 
 void WebMediaPlayerClientImpl::setWebLayer(blink::WebLayer* layer)

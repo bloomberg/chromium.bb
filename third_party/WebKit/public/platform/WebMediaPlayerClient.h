@@ -68,10 +68,6 @@ public:
     virtual void keyError(const WebString& keySystem, const WebString& sessionId, MediaKeyErrorCode, unsigned short systemCode) = 0;
     virtual void keyMessage(const WebString& keySystem, const WebString& sessionId, const unsigned char* message, unsigned messageLength, const WebURL& defaultURL) = 0;
     virtual void keyNeeded(const WebString& contentType, const unsigned char* initData, unsigned initDataLength) = 0;
-    // The returned pointer is valid until closeHelperPlugin() is called.
-    // Returns 0 if the plugin could not be instantiated.
-    virtual WebPlugin* createHelperPlugin(const WebString& pluginType, WebFrame*) = 0;
-    virtual void closeHelperPluginSoon(WebFrame*) = 0;
     virtual bool needsWebLayerForVideo() const = 0;
     virtual void setWebLayer(WebLayer*) = 0;
     virtual void addTextTrack(WebInbandTextTrack*) = 0;
