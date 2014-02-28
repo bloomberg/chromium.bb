@@ -458,13 +458,6 @@ void HTMLTreeBuilder::processFakeEndTag(const QualifiedName& tagName)
     processFakeEndTag(tagName.localName());
 }
 
-void HTMLTreeBuilder::processFakeCharacters(const String& characters)
-{
-    ASSERT(!characters.isEmpty());
-    CharacterTokenBuffer buffer(characters);
-    processCharacterBuffer(buffer);
-}
-
 void HTMLTreeBuilder::processFakePEndTagIfPInButtonScope()
 {
     if (!m_tree.openElements()->inButtonScope(pTag.localName()))

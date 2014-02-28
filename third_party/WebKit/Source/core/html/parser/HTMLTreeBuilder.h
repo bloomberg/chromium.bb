@@ -153,7 +153,6 @@ private:
     void processFakeStartTag(const QualifiedName&, const Vector<Attribute>& attributes = Vector<Attribute>());
     void processFakeEndTag(const QualifiedName&);
     void processFakeEndTag(const AtomicString&);
-    void processFakeCharacters(const String&);
     void processFakePEndTagIfPInButtonScope();
 
     void processGenericRCDATAStartTag(AtomicHTMLToken*);
