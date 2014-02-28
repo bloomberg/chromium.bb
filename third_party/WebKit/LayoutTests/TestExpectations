@@ -1272,3 +1272,7 @@ crbug.com/347365 [ Linux ] dom/xhtml/level3/core/canonicalform09.xhtml [ Crash P
 
 # Flaky since being added
 crbug.com/340277 http/tests/navigation/back-to-get-after-post.php [ Failure Pass ]
+
+# Needs rebaseline after r168130 (got tangled in some other auto-rebaselines)
+crbug.com/345609 [ Mac ] editing/pasteboard/4944770-2.html [ NeedsRebaseline ]
+crbug.com/345609 [ Mac ] editing/selection/select-box.html [ NeedsRebaseline ]
