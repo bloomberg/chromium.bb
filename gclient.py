@@ -1661,7 +1661,7 @@ def CMDsync(parser, args):
                          '--force, such dependencies are removed even if they '
                          'have local modifications. When used with --reset, '
                          'all untracked directories are removed from the '
-                         'working copy, exclusing those which are explicitly '
+                         'working copy, excluding those which are explicitly '
                          'ignored in the repository.')
   parser.add_option('-R', '--reset', action='store_true',
                     help='resets any local changes before updating (git only)')
@@ -1835,7 +1835,7 @@ class OptionParser(optparse.OptionParser):
     self.add_option(
         '-j', '--jobs', default=jobs, type='int',
         help='Specify how many SCM commands can run in parallel; defaults to '
-             'number of cpu cores (%default)')
+             '%default on this machine')
     self.add_option(
         '-v', '--verbose', action='count', default=0,
         help='Produces additional output for diagnostics. Can be used up to '
