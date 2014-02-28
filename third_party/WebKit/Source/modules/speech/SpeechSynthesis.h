@@ -81,13 +81,15 @@ private:
     virtual void speakingErrorOccurred(PassRefPtr<PlatformSpeechSynthesisUtterance>) OVERRIDE;
     virtual void boundaryEventOccurred(PassRefPtr<PlatformSpeechSynthesisUtterance>, SpeechBoundary, unsigned charIndex) OVERRIDE;
 
-    void startSpeakingImmediately(SpeechSynthesisUtterance*);
+    void startSpeakingImmediately();
     void handleSpeakingCompleted(SpeechSynthesisUtterance*, bool errorOccurred);
     void fireEvent(const AtomicString& type, SpeechSynthesisUtterance*, unsigned long charIndex, const String& name);
 
+    // Returns the utterance at the front of the queue.
+    SpeechSynthesisUtterance* currentSpeechUtterance() const;
+
     OwnPtr<PlatformSpeechSynthesizer> m_platformSpeechSynthesizer;
     WillBeHeapVector<RefPtrWillBeMember<SpeechSynthesisVoice> > m_voiceList;
-    RawPtrWillBeMember<SpeechSynthesisUtterance> m_currentSpeechUtterance;
     Deque<RefPtrWillBeMember<SpeechSynthesisUtterance> > m_utteranceQueue;
     bool m_isPaused;
 
