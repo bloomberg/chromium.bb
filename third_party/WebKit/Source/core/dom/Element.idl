@@ -96,7 +96,7 @@
 
     [RaisesException, CustomElementCallbacks, MeasureAs=InsertAdjacentElement] Element insertAdjacentElement(DOMString where, Element element);
     [RaisesException, MeasureAs=InsertAdjacentText] void insertAdjacentText(DOMString where, DOMString text);
-    [CustomElementCallbacks, RaisesException] void insertAdjacentHTML(DOMString where, DOMString html);
+    [CustomElementCallbacks, RaisesException, MeasureAs=InsertAdjacentHTML] void insertAdjacentHTML(DOMString where, DOMString html);
 
     [Reflect=class, PerWorldBindings] attribute DOMString className;
     [PerWorldBindings] readonly attribute DOMTokenList classList;
