@@ -100,16 +100,6 @@
       '<(chrome_android_pak_output_folder)/zh-CN.pak',
       '<(chrome_android_pak_output_folder)/zh-TW.pak',
     ],
-    'conditions': [
-      ['icu_use_data_file_flag==1', {
-        'chrome_android_pak_input_resources': [
-          '<(PRODUCT_DIR)/icudtl.dat',
-	],
-        'chrome_android_pak_output_resources': [
-          '<(chrome_android_pak_output_folder)/icudtl.dat',
-	],
-      }],
-    ],
   },
 }
 
