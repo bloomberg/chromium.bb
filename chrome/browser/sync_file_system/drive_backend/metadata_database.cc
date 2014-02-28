@@ -304,102 +304,77 @@ SyncStatusCode InitializeServiceMetadata(DatabaseContents* contents,
 
 SyncStatusCode RemoveUnreachableItems(DatabaseContents* contents,
                                       leveldb::WriteBatch* batch) {
-  typedef std::map<int64, FileTracker*> TrackerByID;
-  typedef std::map<int64, std::set<FileTracker*> > TrackersByParent;
-  TrackerByID unvisited_trackers;
-  TrackersByParent trackers_by_parent;
+  typedef std::map<int64, std::set<int64> > ChildTrackersByParent;
+  ChildTrackersByParent trackers_by_parent;
 
+  // Set up links from parent tracker to child trackers.
   for (size_t i = 0; i < contents->file_trackers.size(); ++i) {
-    FileTracker* tracker = contents->file_trackers[i];
-    DCHECK(!ContainsKey(unvisited_trackers, tracker->tracker_id()));
-    unvisited_trackers[tracker->tracker_id()] = tracker;
-    if (tracker->parent_tracker_id())
-      trackers_by_parent[tracker->parent_tracker_id()].insert(tracker);
+    const FileTracker& tracker = *contents->file_trackers[i];
+    int64 parent_tracker_id = tracker.parent_tracker_id();
+    int64 tracker_id = tracker.tracker_id();
+
+    trackers_by_parent[parent_tracker_id].insert(tracker_id);
   }
 
-  // Traverse synced tracker tree. Take only active items, app-root and their
-  // children. Drop unreachable items.
-  ScopedVector<FileTracker> reachable_trackers;
-  std::stack<int64> pending;
-  if (contents->service_metadata->sync_root_tracker_id())
-    pending.push(contents->service_metadata->sync_root_tracker_id());
+  // Drop links from inactive trackers.
+  for (size_t i = 0; i < contents->file_trackers.size(); ++i) {
+    const FileTracker& tracker = *contents->file_trackers[i];
 
+    if (!tracker.active())
+      trackers_by_parent.erase(tracker.tracker_id());
+  }
+
+  std::vector<int64> pending;
+  if (contents->service_metadata->sync_root_tracker_id() != kInvalidTrackerID)
+    pending.push_back(contents->service_metadata->sync_root_tracker_id());
+
+  // Traverse tracker tree from sync-root.
+  std::set<int64> visited_trackers;
   while (!pending.empty()) {
-    int64 tracker_id = pending.top();
-    pending.pop();
+    int64 tracker_id = pending.back();
+    DCHECK_NE(kInvalidTrackerID, tracker_id);
+    pending.pop_back();
 
-    {
-      TrackerByID::iterator found = unvisited_trackers.find(tracker_id);
-      if (found == unvisited_trackers.end())
-        continue;
-
-      FileTracker* tracker = found->second;
-      unvisited_trackers.erase(found);
-      reachable_trackers.push_back(tracker);
-
-      if (!tracker->active())
-        continue;
+    if (!visited_trackers.insert(tracker_id).second) {
+      NOTREACHED();
+      continue;
     }
 
-    TrackersByParent::iterator found = trackers_by_parent.find(tracker_id);
-    if (found == trackers_by_parent.end())
-      continue;
-
-    for (std::set<FileTracker*>::const_iterator itr =
-             found->second.begin();
-         itr != found->second.end();
-         ++itr)
-      pending.push((*itr)->tracker_id());
+    AppendContents(
+        LookUpMap(trackers_by_parent, tracker_id, std::set<int64>()),
+        &pending);
   }
 
   // Delete all unreachable trackers.
-  for (TrackerByID::iterator itr = unvisited_trackers.begin();
-       itr != unvisited_trackers.end(); ++itr) {
-    FileTracker* tracker = itr->second;
-    PutFileTrackerDeletionToBatch(tracker->tracker_id(), batch);
-    delete tracker;
-  }
-  unvisited_trackers.clear();
-
-  // |reachable_trackers| contains all files/folders reachable from sync-root
-  // folder via active folders and app-root folders.
-  // Update the tracker set in database contents with the reachable tracker set.
-  contents->file_trackers.weak_clear();
-  contents->file_trackers.swap(reachable_trackers);
-
-  // Do the similar traverse for FileMetadata and remove FileMetadata that don't
-  // have reachable trackers.
-  typedef std::map<std::string, FileMetadata*> MetadataPtrByID;
-  MetadataPtrByID unreferred_files;
-  for (ScopedVector<FileMetadata>::const_iterator itr =
-           contents->file_metadata.begin();
-       itr != contents->file_metadata.end();
-       ++itr) {
-    unreferred_files.insert(std::make_pair((*itr)->file_id(), *itr));
-  }
-
-  ScopedVector<FileMetadata> referred_files;
-  for (ScopedVector<FileTracker>::const_iterator itr =
-           contents->file_trackers.begin();
-       itr != contents->file_trackers.end();
-       ++itr) {
-    MetadataPtrByID::iterator found = unreferred_files.find((*itr)->file_id());
-    if (found != unreferred_files.end()) {
-      referred_files.push_back(found->second);
-      unreferred_files.erase(found);
+  ScopedVector<FileTracker> reachable_trackers;
+  for (size_t i = 0; i < contents->file_trackers.size(); ++i) {
+    FileTracker* tracker = contents->file_trackers[i];
+    if (ContainsKey(visited_trackers, tracker->tracker_id())) {
+      reachable_trackers.push_back(tracker);
+      contents->file_trackers[i] = NULL;
+    } else {
+      PutFileTrackerDeletionToBatch(tracker->tracker_id(), batch);
     }
   }
+  contents->file_trackers = reachable_trackers.Pass();
 
-  for (MetadataPtrByID::iterator itr = unreferred_files.begin();
-       itr != unreferred_files.end(); ++itr) {
-    FileMetadata* metadata = itr->second;
-    PutFileMetadataDeletionToBatch(metadata->file_id(), batch);
-    delete metadata;
+  // List all |file_id| referred by a tracker.
+  base::hash_set<std::string> referred_file_ids;
+  for (size_t i = 0; i < contents->file_trackers.size(); ++i)
+    referred_file_ids.insert(contents->file_trackers[i]->file_id());
+
+  // Delete all unreferred metadata.
+  ScopedVector<FileMetadata> referred_file_metadata;
+  for (size_t i = 0; i < contents->file_metadata.size(); ++i) {
+    FileMetadata* metadata = contents->file_metadata[i];
+    if (ContainsKey(referred_file_ids, metadata->file_id())) {
+      referred_file_metadata.push_back(metadata);
+      contents->file_metadata[i] = NULL;
+    } else {
+      PutFileMetadataDeletionToBatch(metadata->file_id(), batch);
+    }
   }
-  unreferred_files.clear();
-
-  contents->file_metadata.weak_clear();
-  contents->file_metadata.swap(referred_files);
+  contents->file_metadata = referred_file_metadata.Pass();
 
   return SYNC_STATUS_OK;
 }

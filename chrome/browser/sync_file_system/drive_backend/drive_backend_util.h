@@ -68,6 +68,22 @@ scoped_ptr<google_apis::ResourceEntry> GetOldestCreatedFolderResource(
 SyncStatusCode GDataErrorCodeToSyncStatusCode(
     google_apis::GDataErrorCode error);
 
+template <typename Src, typename Dest>
+void AppendContents(const Src& src, Dest* dest) {
+  dest->insert(dest->end(), src.begin(), src.end());
+}
+
+template <typename Container>
+const typename Container::mapped_type& LookUpMap(
+    const Container& container,
+    const typename Container::key_type& key,
+    const typename Container::mapped_type& default_value) {
+  typename Container::const_iterator found = container.find(key);
+  if (found == container.end())
+    return default_value;
+  return found->second;
+}
+
 }  // namespace drive_backend
 }  // namespace sync_file_system
 
