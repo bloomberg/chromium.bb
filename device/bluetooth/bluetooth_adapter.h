@@ -7,14 +7,18 @@
 
 #include <list>
 #include <map>
+#include <set>
 #include <string>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_device.h"
 
 namespace device {
+
+class BluetoothDiscoverySession;
 
 struct BluetoothOutOfBandPairingData;
 
@@ -76,7 +80,7 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
 
   // The ErrorCallback is used for methods that can fail in which case it
   // is called, in the success case the callback is simply not called.
-  typedef base::Callback<void()> ErrorCallback;
+  typedef base::Closure ErrorCallback;
 
   // The BluetoothOutOfBandPairingDataCallback is used to return
   // BluetoothOutOfBandPairingData to the caller.
@@ -135,6 +139,18 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
   // Indicates whether the adapter is currently discovering new devices.
   virtual bool IsDiscovering() const = 0;
 
+  // Requests the adapter to start a new discovery session. On success, a new
+  // instance of BluetoothDiscoverySession will be returned to the caller via
+  // |callback| and the adapter will be discovering nearby Bluetooth devices.
+  // The returned BluetoothDiscoverySession is owned by the caller and it's the
+  // owner's responsibility to properly clean it up and stop the session when
+  // device discovery is no longer needed.
+  typedef base::Callback<void(scoped_ptr<BluetoothDiscoverySession>)>
+      DiscoverySessionCallback;
+  virtual void StartDiscoverySession(const DiscoverySessionCallback& callback,
+                                     const ErrorCallback& error_callback);
+
+  // DEPRECATED: Use StartDiscoverySession instead.
   // Requests that the adapter begin discovering new devices, code must
   // always call this method if they require the adapter be in discovery
   // and should not make it conditional on the value of IsDiscovering()
@@ -148,6 +164,7 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
   virtual void StartDiscovering(const base::Closure& callback,
                                 const ErrorCallback& error_callback);
 
+  // DEPRECATED: Use BluetoothDiscoverySession::Stop instead.
   // Requests that an earlier call to StartDiscovering() be cancelled; the
   // adapter may not actually cease discovering devices if other callers
   // have called StartDiscovering() and not yet called this method. On
@@ -204,6 +221,7 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
 
  protected:
   friend class base::RefCounted<BluetoothAdapter>;
+  friend class BluetoothDiscoverySession;
   BluetoothAdapter();
   virtual ~BluetoothAdapter();
 
@@ -248,6 +266,23 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
   virtual void RemovePairingDelegateInternal(
       BluetoothDevice::PairingDelegate* pairing_delegate) = 0;
 
+  // Success callback passed to AddDiscoverySession by StartDiscoverySession.
+  void OnStartDiscoverySession(const DiscoverySessionCallback& callback);
+
+  // Marks all known DiscoverySession instances as inactive. Called by
+  // BluetoothAdapter in the event that the adapter unexpectedly stops
+  // discovering. This should be called by all platform implementations.
+  void MarkDiscoverySessionsAsInactive();
+
+  // Removes |discovery_session| from |discovery_sessions_|, if its in there.
+  // Called by DiscoverySession when an instance is destroyed.
+  void DiscoverySessionDestroyed(BluetoothDiscoverySession* discovery_session);
+
+  // List of all DiscoverySession objects. We keep raw pointers, with the
+  // assumption that a DiscoverySession will remove itself from this list when
+  // it gets destroyed.
+  std::set<BluetoothDiscoverySession*> discovery_sessions_;
+
   // Devices paired with, connected to, discovered by, or visible to the
   // adapter. The key is the Bluetooth address of the device and the value
   // is the BluetoothDevice object whose lifetime is managed by the
@@ -259,6 +294,11 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
   typedef std::pair<BluetoothDevice::PairingDelegate*,
                     PairingDelegatePriority> PairingDelegatePair;
   std::list<PairingDelegatePair> pairing_delegates_;
+
+ private:
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<BluetoothAdapter> weak_ptr_factory_;
 };
 
 }  // namespace device

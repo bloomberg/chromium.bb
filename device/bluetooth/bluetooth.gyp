@@ -39,6 +39,8 @@
         'bluetooth_device_mac.mm',
         'bluetooth_device_win.cc',
         'bluetooth_device_win.h',
+        'bluetooth_discovery_session.cc',
+        'bluetooth_discovery_session.h',
         'bluetooth_gatt_characteristic.cc',
         'bluetooth_gatt_characteristic.h',
         'bluetooth_gatt_descriptor.cc',

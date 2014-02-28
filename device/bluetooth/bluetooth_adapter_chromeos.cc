@@ -628,11 +628,7 @@ void BluetoothAdapterChromeOS::DiscoveringChanged(
   if (!discovering && !discovery_request_pending_
       && num_discovery_sessions_ > 0) {
     num_discovery_sessions_ = 0;
-    // TODO(armansito): When we implement the DiscoverySession API, all
-    // active DiscoverySession instances need to be notified to update
-    // themselves. We want to do this before we notify the other observers
-    // so that any DiscoverySession objects that those observers might own
-    // have been marked as inactive.
+    MarkDiscoverySessionsAsInactive();
   }
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                     AdapterDiscoveringChanged(this, discovering));
@@ -732,11 +728,6 @@ void BluetoothAdapterChromeOS::RemoveDiscoverySession(
   if (discovery_request_pending_) {
     VLOG(1) << "Pending request to initiate device discovery. Queueing request "
             << "to stop discovery session.";
-    // TODO(armansito): We should never hit this case once we have the
-    // DiscoverySession API, as there would be no active DiscoverySession
-    // objects to allow calling this method while a call is pending to either
-    // return the first active or deactivate the last active DiscoverySession
-    // object in the first place. For now, report error.
     error_callback.Run();
     return;
   }
@@ -745,7 +736,7 @@ void BluetoothAdapterChromeOS::RemoveDiscoverySession(
   if (num_discovery_sessions_ == 0) {
     // TODO(armansito): This should never happen once we have the
     // DiscoverySession API. Replace this case with an assert once it's
-    // implemented. (See crbug.com/3445008).
+    // the deprecated methods have been removed. (See crbug.com/3445008).
     VLOG(1) << "No active discovery sessions. Returning error.";
     error_callback.Run();
     return;

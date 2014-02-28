@@ -225,18 +225,6 @@ class BluetoothAdapterChromeOS
   // requested discovery, dropping our count to 0 won't necessarily result in
   // the controller actually stopping discovery if, for example, an application
   // other than Chrome, such as bt_console, was also used to start discovery.
-  //
-  // TODO(armansito): With the new API, it will not be possible to have requests
-  // to remove a discovery session while a call is pending. If the pending
-  // request is to start discovery, |num_discovery_sessions_| is 0. Since no
-  // active instance of DiscoverySession exists, clients can only make calls to
-  // request new sessions. Likewise, if the pending request is to stop
-  // discovery, |num_discovery_sessions_| is 1 and we're currently processing
-  // the request to stop the last active DiscoverySession. We should make sure
-  // that this invariant holds via asserts once we implement DiscoverySession
-  // and have fully removed the deprecated methods. For now, just return an
-  // error in the removal case to support the deprecated methods. (See
-  // crbug.com/3445008).
   DiscoveryCallbackQueue discovery_request_queue_;
 
   // Object path of the adapter we track.

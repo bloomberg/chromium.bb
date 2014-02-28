@@ -4,16 +4,29 @@
 
 #include "device/bluetooth/bluetooth_adapter.h"
 
+#include "base/bind.h"
 #include "base/stl_util.h"
 #include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/bluetooth_discovery_session.h"
 
 namespace device {
 
-BluetoothAdapter::BluetoothAdapter() {
+BluetoothAdapter::BluetoothAdapter()
+    : weak_ptr_factory_(this) {
 }
 
 BluetoothAdapter::~BluetoothAdapter() {
   STLDeleteValues(&devices_);
+}
+
+void BluetoothAdapter::StartDiscoverySession(
+    const DiscoverySessionCallback& callback,
+    const ErrorCallback& error_callback) {
+  AddDiscoverySession(
+      base::Bind(&BluetoothAdapter::OnStartDiscoverySession,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback),
+      error_callback);
 }
 
 void BluetoothAdapter::StartDiscovering(const base::Closure& callback,
@@ -94,6 +107,28 @@ BluetoothDevice::PairingDelegate* BluetoothAdapter::DefaultPairingDelegate() {
     return NULL;
 
   return pairing_delegates_.front().first;
+}
+
+void BluetoothAdapter::OnStartDiscoverySession(
+    const DiscoverySessionCallback& callback) {
+  VLOG(1) << "Discovery session started!";
+  scoped_ptr<BluetoothDiscoverySession> discovery_session(
+      new BluetoothDiscoverySession(this));
+  discovery_sessions_.insert(discovery_session.get());
+  callback.Run(discovery_session.Pass());
+}
+
+void BluetoothAdapter::MarkDiscoverySessionsAsInactive() {
+  for (std::set<BluetoothDiscoverySession*>::iterator
+          iter = discovery_sessions_.begin();
+       iter != discovery_sessions_.end(); ++iter) {
+    (*iter)->MarkAsInactive();
+  }
+}
+
+void BluetoothAdapter::DiscoverySessionDestroyed(
+    BluetoothDiscoverySession* discovery_session) {
+  discovery_sessions_.erase(discovery_session);
 }
 
 }  // namespace device
