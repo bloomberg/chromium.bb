@@ -182,14 +182,14 @@ void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {
       switch_to_advanced ? one_click_signin::HISTOGRAM_WITH_ADVANCED :
                            one_click_signin::HISTOGRAM_WITH_DEFAULTS);
 
-  OneClickSigninHelper::CanOfferFor can_offer =
+  OneClickSigninHelper::CanOfferFor can_offer_for =
       source == signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT ?
       OneClickSigninHelper::CAN_OFFER_FOR_SECONDARY_ACCOUNT :
       OneClickSigninHelper::CAN_OFFER_FOR_ALL;
   std::string error_msg;
-  OneClickSigninHelper::CanOffer(
-      contents, can_offer, email_, &error_msg);
-  if (!error_msg.empty()) {
+  bool can_offer = OneClickSigninHelper::CanOffer(
+      contents, can_offer_for, email_, &error_msg);
+  if (!can_offer) {
     HandleLoginError(error_msg);
     return;
   }
@@ -283,7 +283,7 @@ void InlineLoginHandlerImpl::HandleLoginError(const std::string& error_msg) {
   SyncStarterCallback(OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
 
   Browser* browser = GetDesktopBrowser();
-  if (browser) {
+  if (browser && !error_msg.empty()) {
     VLOG(1) << "InlineLoginHandlerImpl::HandleLoginError shows error message: "
             << error_msg;
     OneClickSigninHelper::ShowSigninErrorBubble(browser, error_msg);
