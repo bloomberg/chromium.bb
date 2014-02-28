@@ -534,7 +534,7 @@ void SourceBuffer::appendBufferAsyncPart()
         // so that it can clear its end of stream state if necessary.
         m_pendingAppendData.resize(1);
     }
-    m_webSourceBuffer->append(m_pendingAppendData.data(), appendSize);
+    m_webSourceBuffer->append(m_pendingAppendData.data(), appendSize, &m_timestampOffset);
 
     // 3. Set the updating attribute to false.
     m_updating = false;
@@ -688,8 +688,7 @@ void SourceBuffer::didReceiveDataForClient(const char* data, unsigned dataLength
     WTF_LOG(Media, "SourceBuffer::didReceiveDataForClient(%d) %p", dataLength, this);
     ASSERT(m_updating);
     ASSERT(m_loader);
-
-    m_webSourceBuffer->append(reinterpret_cast<const unsigned char*>(data), dataLength);
+    m_webSourceBuffer->append(reinterpret_cast<const unsigned char*>(data), dataLength, &m_timestampOffset);
 }
 
 void SourceBuffer::didFinishLoading()

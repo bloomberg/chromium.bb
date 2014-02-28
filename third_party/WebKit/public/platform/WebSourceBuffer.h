@@ -45,7 +45,11 @@ public:
     virtual ~WebSourceBuffer() { }
     virtual bool setMode(AppendMode) = 0;
     virtual WebTimeRanges buffered() = 0;
-    virtual void append(const unsigned char* data, unsigned length) = 0;
+
+    // Appends data and runs the segment parser loop algorithm.
+    // The algorithm may update |*timestampOffset| if |timestampOffset| is not null.
+    virtual void append(const unsigned char* data, unsigned length, double* timestampOffset) = 0;
+
     virtual void abort() = 0;
     virtual void remove(double start, double end) = 0;
     virtual bool setTimestampOffset(double) = 0;

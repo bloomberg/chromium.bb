@@ -37,6 +37,11 @@ EXPECTED (mediaSource.sourceBuffers[0].buffered.length == '2') OK
 EXPECTED (mediaSource.sourceBuffers[0].buffered.start(1) == '5') OK
 EXPECTED (mediaSource.sourceBuffers[0].buffered.end(1) > '5') OK
 
+Round-trip a precise timestampOffset
+EXPECTED (segmentHelper.sourceBuffer.timestampOffset == '5') OK
+RUN(segmentHelper.sourceBuffer.timestampOffset = 5.123456789)
+EXPECTED (segmentHelper.sourceBuffer.timestampOffset == '5.123456789') OK
+
 Remove SourceBuffer
 RUN(mediaSource.removeSourceBuffer(segmentHelper.sourceBuffer))
 EXPECTED (mediaSource.sourceBuffers.length == '0') OK

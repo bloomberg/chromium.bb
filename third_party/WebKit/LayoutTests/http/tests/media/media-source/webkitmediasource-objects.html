@@ -61,6 +61,13 @@
                 testExpected("mediaSource.sourceBuffers[0].buffered.start(1)", 5);
                 testExpected("mediaSource.sourceBuffers[0].buffered.end(1)", 5, '>');
 
+                // Confirm that sub-microsecond granularity timestamps round-trip set/get.
+                consoleWrite("");
+                consoleWrite("Round-trip a precise timestampOffset");
+                testExpected("segmentHelper.sourceBuffer.timestampOffset", 5);
+                run("segmentHelper.sourceBuffer.timestampOffset = 5.123456789");
+                testExpected("segmentHelper.sourceBuffer.timestampOffset", 5.123456789);
+
                 consoleWrite("");
                 consoleWrite("Remove SourceBuffer");
 
