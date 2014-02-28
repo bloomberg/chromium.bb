@@ -114,7 +114,7 @@ ui.notifications.SuspiciousCommit = base.extends(Cause, {
         this._revision = commitData.revision;
         this._description.appendChild(base.createLinkNode(trac.changesetURL(commitData.revision), commitData.revision));
         this._details = this._description.appendChild(document.createElement('span'));
-        this._addDetail('summary', commitData);
+        this._addDetail('title', commitData);
         this._addDetail('author', commitData);
         this._addDetail('reviewer', commitData);
         // FIXME: Add bugID detail.

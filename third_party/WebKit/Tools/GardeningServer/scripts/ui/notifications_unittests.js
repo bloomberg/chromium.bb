@@ -83,13 +83,13 @@ test('FailingTestGroup', 2, function() {
 });
 
 test('SuspiciousCommit', 2, function() {
-    var suspiciousCommit = new ui.notifications.SuspiciousCommit({revision: 1, summary: "summary", author: "author", reviewer: "reviewer"});
+    var suspiciousCommit = new ui.notifications.SuspiciousCommit({revision: 1, title: "title", author: "author", reviewer: "reviewer"});
     equal(suspiciousCommit.tagName, 'LI');
     equal(suspiciousCommit.innerHTML,
         '<div class="description">' +
             '<a href="http://src.chromium.org/viewvc/blink?view=rev&amp;revision=1">1</a>' +
             '<span>' +
-                '<span class="summary">summary</span>' +
+                '<span class="title">title</span>' +
                 '<span class="author">author</span>' +
                 '<span class="reviewer">reviewer</span>' +
             '</span>' +
@@ -165,7 +165,7 @@ test('FailingTestsSummary', 12, function() {
     deepEqual(testFailures.testNameList(), ['test']);
     var time = new Date();
     time.setMinutes(time.getMinutes() - 10);
-    testFailures.addCommitData({revision: 1, time: time, summary: "summary", author: "author", reviewer: "reviewer"});
+    testFailures.addCommitData({revision: 1, time: time, title: "title", author: "author", reviewer: "reviewer"});
     equal(testFailures.index(), time.getTime());
     equal(testFailures.innerHTML,
         '<div class="how">' +
@@ -190,7 +190,7 @@ test('FailingTestsSummary', 12, function() {
                     '<div class="description">' +
                         '<a href="http://src.chromium.org/viewvc/blink?view=rev&amp;revision=1">1</a>' +
                         '<span>' +
-                            '<span class="summary">summary</span>' +
+                            '<span class="title">title</span>' +
                             '<span class="author">author</span>' +
                             '<span class="reviewer">reviewer</span>' +
                         '</span>' +
@@ -231,7 +231,7 @@ test('FailingTestsSummary', 12, function() {
                     '<div class="description">' +
                         '<a href="http://src.chromium.org/viewvc/blink?view=rev&amp;revision=1">1</a>' +
                         '<span>' +
-                            '<span class="summary">summary</span>' +
+                            '<span class="title">title</span>' +
                             '<span class="author">author</span>' +
                             '<span class="reviewer">reviewer</span>' +
                         '</span>' +
@@ -276,7 +276,7 @@ test('FailingTestsSummary', 12, function() {
                     '<div class="description">' +
                         '<a href="http://src.chromium.org/viewvc/blink?view=rev&amp;revision=1">1</a>' +
                         '<span>' +
-                            '<span class="summary">summary</span>' +
+                            '<span class="title">title</span>' +
                             '<span class="author">author</span>' +
                             '<span class="reviewer">reviewer</span>' +
                         '</span>' +
