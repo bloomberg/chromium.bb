@@ -17,7 +17,7 @@ class Transform;
 
 namespace aura {
 class Window;
-class WindowEventDispatcher;
+class WindowTreeHost;
 
 // A minimal, testing Aura implementation of gfx::Screen.
 class TestScreen : public gfx::Screen,
@@ -28,9 +28,7 @@ class TestScreen : public gfx::Screen,
   static TestScreen* CreateFullscreen();
   virtual ~TestScreen();
 
-  // TODO(beng): Rename to CreateHostForPrimaryDisplay() and make it return
-  //             a WTH.
-  WindowEventDispatcher* CreateRootWindowForPrimaryDisplay();
+  WindowTreeHost* CreateHostForPrimaryDisplay();
 
   void SetDeviceScaleFactor(float device_scale_fator);
   void SetDisplayRotation(gfx::Display::Rotation rotation);
@@ -67,7 +65,7 @@ class TestScreen : public gfx::Screen,
  private:
   explicit TestScreen(const gfx::Rect& screen_bounds);
 
-  aura::WindowEventDispatcher* dispatcher_;
+  aura::WindowTreeHost* host_;
 
   gfx::Display display_;
 

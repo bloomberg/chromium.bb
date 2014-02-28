@@ -263,22 +263,21 @@ class EmptyWindowDelegate : public aura::WindowDelegate {
 
 namespace internal {
 
-void RootWindowController::CreateForPrimaryDisplay(
-    aura::WindowEventDispatcher* dispatcher) {
-  RootWindowController* controller = new RootWindowController(dispatcher);
+void RootWindowController::CreateForPrimaryDisplay(aura::WindowTreeHost* host) {
+  RootWindowController* controller = new RootWindowController(host);
   controller->Init(RootWindowController::PRIMARY,
                    Shell::GetInstance()->delegate()->IsFirstRunAfterBoot());
 }
 
 void RootWindowController::CreateForSecondaryDisplay(
-    aura::WindowEventDispatcher* dispatcher) {
-  RootWindowController* controller = new RootWindowController(dispatcher);
+    aura::WindowTreeHost* host) {
+  RootWindowController* controller = new RootWindowController(host);
   controller->Init(RootWindowController::SECONDARY, false /* first run */);
 }
 
 void RootWindowController::CreateForVirtualKeyboardDisplay(
-    aura::WindowEventDispatcher* dispatcher) {
-  RootWindowController* controller = new RootWindowController(dispatcher);
+    aura::WindowTreeHost* host) {
+  RootWindowController* controller = new RootWindowController(host);
   controller->Init(RootWindowController::VIRTUAL_KEYBOARD,
                    false /* first run */);
 }
@@ -310,7 +309,7 @@ aura::Window* RootWindowController::GetContainerForWindow(
 
 RootWindowController::~RootWindowController() {
   Shutdown();
-  dispatcher_.reset();
+  host_.reset();
   // The CaptureClient needs to be around for as long as the RootWindow is
   // valid.
   capture_client_.reset();
@@ -355,7 +354,7 @@ void RootWindowController::Shutdown() {
   internal::GetRootWindowSettings(root_window())->display_id =
       gfx::Display::kInvalidDisplayID;
   // And this root window should no longer process events.
-  dispatcher_->PrepareForShutdown();
+  dispatcher()->PrepareForShutdown();
 
   system_background_.reset();
 }
@@ -386,7 +385,7 @@ aura::Window* RootWindowController::GetContainer(int container_id) {
 }
 
 const aura::Window* RootWindowController::GetContainer(int container_id) const {
-  return dispatcher_->window()->GetChildById(container_id);
+  return host_->window()->GetChildById(container_id);
 }
 
 void RootWindowController::ShowShelf() {
@@ -650,22 +649,20 @@ void RootWindowController::DeactivateKeyboard(
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindowController, private:
 
-RootWindowController::RootWindowController(
-    aura::WindowEventDispatcher* dispatcher)
-    : dispatcher_(dispatcher),
+RootWindowController::RootWindowController(aura::WindowTreeHost* host)
+    : host_(host),
       root_window_layout_(NULL),
       docked_layout_manager_(NULL),
       panel_layout_manager_(NULL),
       touch_hud_debug_(NULL),
       touch_hud_projection_(NULL) {
-  GetRootWindowSettings(dispatcher_->window())->controller = this;
-  screen_dimmer_.reset(new ScreenDimmer(dispatcher_->window()));
+  GetRootWindowSettings(root_window())->controller = this;
+  screen_dimmer_.reset(new ScreenDimmer(root_window()));
 
   stacking_controller_.reset(new StackingController);
-  aura::client::SetWindowTreeClient(dispatcher_->window(),
-                                    stacking_controller_.get());
+  aura::client::SetWindowTreeClient(root_window(), stacking_controller_.get());
   capture_client_.reset(
-      new views::corewm::ScopedCaptureClient(dispatcher_->window()));
+      new views::corewm::ScopedCaptureClient(root_window()));
 }
 
 void RootWindowController::Init(RootWindowType root_window_type,
@@ -673,8 +670,8 @@ void RootWindowController::Init(RootWindowType root_window_type,
   Shell* shell = Shell::GetInstance();
   shell->InitRootWindow(root_window());
 
-  dispatcher_->host()->SetCursor(ui::kCursorPointer);
-  CreateContainersInRootWindow(dispatcher_->window());
+  host_->SetCursor(ui::kCursorPointer);
+  CreateContainersInRootWindow(root_window());
 
   if (root_window_type == VIRTUAL_KEYBOARD) {
     shell->InitKeyboard();
@@ -700,8 +697,8 @@ void RootWindowController::Init(RootWindowType root_window_type,
   } else {
     root_window_layout()->OnWindowResized();
     shell->desktop_background_controller()->OnRootWindowAdded(root_window());
-    shell->high_contrast_controller()->OnRootWindowAdded(dispatcher_->window());
-    dispatcher_->host()->Show();
+    shell->high_contrast_controller()->OnRootWindowAdded(root_window());
+    host_->Show();
 
     // Create a shelf if a user is already logged in.
     if (shell->session_state_delegate()->NumberOfLoggedInUsers())
@@ -793,7 +790,7 @@ void RootWindowController::CreateSystemBackground(
            switches::kAshCopyHostBackgroundAtBoot) ||
        CommandLine::ForCurrentProcess()->HasSwitch(
            switches::kAshAnimateFromBootSplashScreen)))
-    boot_splash_screen_.reset(new BootSplashScreen(dispatcher_.get()));
+    boot_splash_screen_.reset(new BootSplashScreen(dispatcher()));
 #endif
 }
 

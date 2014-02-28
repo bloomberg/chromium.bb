@@ -45,7 +45,6 @@ class ViewProp;
 }
 
 namespace aura {
-class WindowTreeHost;
 class RootWindowObserver;
 class TestScreen;
 class WindowTargeter;
@@ -57,19 +56,7 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
                                           public client::CaptureDelegate,
                                           public WindowTreeHostDelegate {
  public:
-  struct AURA_EXPORT CreateParams {
-    // CreateParams with initial_bounds and default host in pixel.
-    explicit CreateParams(const gfx::Rect& initial_bounds);
-    ~CreateParams() {}
-
-    gfx::Rect initial_bounds;
-
-    // A host to use in place of the default one that RootWindow will create.
-    // NULL by default.
-    WindowTreeHost* host;
-  };
-
-  explicit WindowEventDispatcher(const CreateParams& params);
+  explicit WindowEventDispatcher(WindowTreeHost* host);
   virtual ~WindowEventDispatcher();
 
   // Returns the WindowTreeHost for the specified accelerated widget, or NULL
@@ -86,7 +73,7 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
     return const_cast<WindowTreeHost*>(
         const_cast<const WindowEventDispatcher*>(this)->host());
   }
-  const WindowTreeHost* host() const { return host_.get(); }
+  const WindowTreeHost* host() const { return host_; }
   Window* mouse_pressed_handler() { return mouse_pressed_handler_; }
   Window* mouse_moved_handler() { return mouse_moved_handler_; }
 
@@ -284,10 +271,10 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   void PreDispatchMouseEvent(Window* target, ui::MouseEvent* event);
   void PreDispatchTouchEvent(Window* target, ui::TouchEvent* event);
 
-  // TODO(beng): evaluate the ideal ownership model.
+  // TODO(beng): should be owned by WindowTreeHost.
   scoped_ptr<Window> window_;
 
-  scoped_ptr<WindowTreeHost> host_;
+  WindowTreeHost* host_;
 
   // Touch ids that are currently down.
   uint32 touch_ids_down_;

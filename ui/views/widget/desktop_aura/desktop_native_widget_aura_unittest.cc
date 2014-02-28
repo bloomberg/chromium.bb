@@ -91,9 +91,9 @@ TEST_F(DesktopNativeWidgetAuraTest, GlobalCursorState) {
   widget_b.Init(init_params_b);
 
   aura::client::CursorClient* cursor_client_a = aura::client::GetCursorClient(
-      desktop_native_widget_aura_a->dispatcher()->window());
+      desktop_native_widget_aura_a->host()->window());
   aura::client::CursorClient* cursor_client_b = aura::client::GetCursorClient(
-      desktop_native_widget_aura_b->dispatcher()->window());
+      desktop_native_widget_aura_b->host()->window());
 
   // Verify the cursor can be locked using one client and unlocked using
   // another.

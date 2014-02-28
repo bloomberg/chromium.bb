@@ -45,8 +45,14 @@ class AURA_EXPORT WindowTreeHost {
   void InitCompositor();
 
   // TODO(beng): these will become trivial accessors in a future CL.
-  aura::Window* window();
-  const aura::Window* window() const;
+  Window* window();
+  const Window* window() const;
+
+  WindowEventDispatcher* dispatcher() {
+    return const_cast<WindowEventDispatcher*>(
+        const_cast<const WindowTreeHost*>(this)->dispatcher());
+  }
+  const WindowEventDispatcher* dispatcher() const { return dispatcher_.get(); }
 
   ui::Compositor* compositor() { return compositor_.get(); }
 
@@ -161,6 +167,7 @@ class AURA_EXPORT WindowTreeHost {
 
   WindowTreeHost();
   void DestroyCompositor();
+  void DestroyDispatcher();
 
   void CreateCompositor(gfx::AcceleratedWidget accelerated_widget);
 
@@ -185,6 +192,8 @@ class AURA_EXPORT WindowTreeHost {
   // by MoveCursorTo() and MoveCursorToHostLocation().
   void MoveCursorToInternal(const gfx::Point& root_location,
                             const gfx::Point& host_location);
+
+  scoped_ptr<WindowEventDispatcher> dispatcher_;
 
   scoped_ptr<ui::Compositor> compositor_;
 

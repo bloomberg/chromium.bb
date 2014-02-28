@@ -1321,12 +1321,11 @@ TEST_F(WindowEventDispatcherTest, MAYBE_ValidRootDuringDestruction) {
   ValidRootDuringDestructionWindowObserver observer(&got_destroying,
                                                     &has_valid_root);
   {
-    scoped_ptr<WindowEventDispatcher> dispatcher(
-        new WindowEventDispatcher(
-            WindowEventDispatcher::CreateParams(gfx::Rect(0, 0, 100, 100))));
-    dispatcher->host()->InitHost();
+    scoped_ptr<WindowTreeHost> host(
+        WindowTreeHost::Create(gfx::Rect(0, 0, 100, 100)));
+    host->InitHost();
     // Owned by WindowEventDispatcher.
-    Window* w1 = CreateNormalWindow(1, dispatcher->window(), NULL);
+    Window* w1 = CreateNormalWindow(1, host->window(), NULL);
     w1->AddObserver(&observer);
   }
   EXPECT_TRUE(got_destroying);
@@ -1392,17 +1391,16 @@ TEST_F(WindowEventDispatcherTest, DontResetHeldEvent) {
 
 namespace {
 
-// See description above DeleteDispatcherFromHeldMouseEvent for details.
-class DeleteDispatcherFromHeldMouseEventDelegate
+// See description above DeleteHostFromHeldMouseEvent for details.
+class DeleteHostFromHeldMouseEventDelegate
     : public test::TestWindowDelegate {
  public:
-  explicit DeleteDispatcherFromHeldMouseEventDelegate(
-      WindowEventDispatcher* dispatcher)
-      : dispatcher_(dispatcher),
+  explicit DeleteHostFromHeldMouseEventDelegate(WindowTreeHost* host)
+      : host_(host),
         got_mouse_event_(false),
         got_destroy_(false) {
   }
-  virtual ~DeleteDispatcherFromHeldMouseEventDelegate() {}
+  virtual ~DeleteHostFromHeldMouseEventDelegate() {}
 
   bool got_mouse_event() const { return got_mouse_event_; }
   bool got_destroy() const { return got_destroy_; }
@@ -1411,7 +1409,7 @@ class DeleteDispatcherFromHeldMouseEventDelegate
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
     if ((event->flags() & ui::EF_SHIFT_DOWN) != 0) {
       got_mouse_event_ = true;
-      delete dispatcher_;
+      delete host_;
     }
   }
   virtual void OnWindowDestroyed(Window* window) OVERRIDE {
@@ -1419,37 +1417,36 @@ class DeleteDispatcherFromHeldMouseEventDelegate
   }
 
  private:
-  WindowEventDispatcher* dispatcher_;
+  WindowTreeHost* host_;
   bool got_mouse_event_;
   bool got_destroy_;
 
-  DISALLOW_COPY_AND_ASSIGN(DeleteDispatcherFromHeldMouseEventDelegate);
+  DISALLOW_COPY_AND_ASSIGN(DeleteHostFromHeldMouseEventDelegate);
 };
 
 }  // namespace
 
 #if defined(USE_OZONE)
 // Creating multiple WindowTreeHostOzone instances is broken.
-#define MAYBE_DeleteDispatcherFromHeldMouseEvent DISABLED_DeleteDispatcherFromHeldMouseEvent
+#define MAYBE_DeleteHostFromHeldMouseEvent DISABLED_DeleteHostFromHeldMouseEvent
 #else
-#define MAYBE_DeleteDispatcherFromHeldMouseEvent DeleteDispatcherFromHeldMouseEvent
+#define MAYBE_DeleteHostFromHeldMouseEvent DeleteHostFromHeldMouseEvent
 #endif
 
-// Verifies if a RootWindow is deleted from dispatching a held mouse event we
-// don't crash.
-TEST_F(WindowEventDispatcherTest, MAYBE_DeleteDispatcherFromHeldMouseEvent) {
+// Verifies if a WindowTreeHost is deleted from dispatching a held mouse event
+// we don't crash.
+TEST_F(WindowEventDispatcherTest, MAYBE_DeleteHostFromHeldMouseEvent) {
   // Should be deleted by |delegate|.
-  WindowEventDispatcher* d2 = new WindowEventDispatcher(
-      WindowEventDispatcher::CreateParams(gfx::Rect(0, 0, 100, 100)));
-  d2->host()->InitHost();
-  DeleteDispatcherFromHeldMouseEventDelegate delegate(d2);
-  // Owned by |d2|.
-  Window* w1 = CreateNormalWindow(1, d2->window(), &delegate);
+  WindowTreeHost* h2 = WindowTreeHost::Create(gfx::Rect(0, 0, 100, 100));
+  h2->InitHost();
+  DeleteHostFromHeldMouseEventDelegate delegate(h2);
+  // Owned by |h2|.
+  Window* w1 = CreateNormalWindow(1, h2->window(), &delegate);
   w1->SetBounds(gfx::Rect(0, 0, 40, 40));
   ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED,
                          gfx::Point(10, 10), gfx::Point(10, 10),
                          ui::EF_SHIFT_DOWN, 0);
-  d2->RepostEvent(pressed);
+  h2->dispatcher()->RepostEvent(pressed);
   // RunAllPendingInMessageLoop() to make sure the |pressed| is run.
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(delegate.got_mouse_event());

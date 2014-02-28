@@ -38,29 +38,24 @@ void VirtualKeyboardWindowController::ActivateKeyboard(
 
 void VirtualKeyboardWindowController::UpdateWindow(
     const DisplayInfo& display_info) {
-  static int virtual_keyboard_root_window_count = 0;
+  static int virtual_keyboard_host_count = 0;
   if (!root_window_controller_.get()) {
     const gfx::Rect& bounds_in_native = display_info.bounds_in_native();
-    aura::WindowEventDispatcher::CreateParams params(bounds_in_native);
-    params.host = Shell::GetInstance()->window_tree_host_factory()->
-        CreateWindowTreeHost(bounds_in_native);
-    aura::WindowEventDispatcher* dispatcher =
-        new aura::WindowEventDispatcher(params);
-
-    dispatcher->window()->SetName(
+    aura::WindowTreeHost* host =
+        Shell::GetInstance()->window_tree_host_factory()->CreateWindowTreeHost(
+            bounds_in_native);
+    host->window()->SetName(
         base::StringPrintf("VirtualKeyboardRootWindow-%d",
-                           virtual_keyboard_root_window_count++));
+                           virtual_keyboard_host_count++));
 
     // No need to remove RootWindowObserver because
     // the DisplayController object outlives RootWindow objects.
-    dispatcher->AddRootWindowObserver(
+    host->dispatcher()->AddRootWindowObserver(
         Shell::GetInstance()->display_controller());
-    InitRootWindowSettings(dispatcher->window())->display_id =
-        display_info.id();
-    dispatcher->host()->InitHost();
-    RootWindowController::CreateForVirtualKeyboardDisplay(dispatcher);
-    root_window_controller_.reset(GetRootWindowController(
-        dispatcher->window()));
+    InitRootWindowSettings(host->window())->display_id = display_info.id();
+    host->InitHost();
+    RootWindowController::CreateForVirtualKeyboardDisplay(host);
+    root_window_controller_.reset(GetRootWindowController(host->window()));
     root_window_controller_->dispatcher()->host()->Show();
     root_window_controller_->ActivateKeyboard(
         Shell::GetInstance()->keyboard_controller());

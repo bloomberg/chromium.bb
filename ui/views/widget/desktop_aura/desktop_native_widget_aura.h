@@ -17,7 +17,7 @@
 #include "ui/views/widget/native_widget_private.h"
 
 namespace aura {
-class RootWindow;
+class WindowTreeHost;
 namespace client {
 class DragDropClient;
 class FocusClient;
@@ -70,6 +70,8 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // this is the signal that we should start our shutdown.
   virtual void OnHostClosed();
 
+  // TODO(beng): remove this method and replace with an implementation of
+  //             WindowDestroying() that takes the window being destroyed.
   // Called from ~DesktopWindowTreeHost. This takes the WindowEventDispatcher
   // as by the time we get here |dispatcher_| is NULL.
   virtual void OnDesktopWindowTreeHostDestroyed(
@@ -81,8 +83,8 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   corewm::CompoundEventFilter* root_window_event_filter() {
     return root_window_event_filter_;
   }
-  aura::WindowEventDispatcher* dispatcher() {
-    return dispatcher_.get();
+  aura::WindowTreeHost* host() {
+    return host_.get();
   }
 
   // Overridden from NativeWidget:
@@ -237,6 +239,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
 
  private:
   friend class FocusManagerEventHandler;
+  friend class RootWindowDestructionObserver;
 
   // Installs the input method filter.
   void InstallInputMethodEventFilter();
@@ -245,15 +248,15 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // window is only set as transparent when the glass frame is in use.
   void UpdateWindowTransparency();
 
+  void RootWindowDestroyed();
+
+  scoped_ptr<aura::WindowTreeHost> host_;
+  DesktopWindowTreeHost* desktop_window_tree_host_;
+
   // See class documentation for Widget in widget.h for a note about ownership.
   Widget::InitParams::Ownership ownership_;
 
   scoped_ptr<DesktopCaptureClient> capture_client_;
-
-  // The NativeWidget owns the WindowEventDispatcher. Required because the
-  // WindowEventDispatcher owns its WindowTreeHost, so DesktopWindowTreeHost
-  // can't own it.
-  scoped_ptr<aura::WindowEventDispatcher> dispatcher_;
 
   // The following factory is used for calls to close the NativeWidgetAura
   // instance.
@@ -261,9 +264,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
 
   // Can we be made active?
   bool can_activate_;
-
-  // Ownership passed to RootWindow on Init.
-  DesktopWindowTreeHost* desktop_window_tree_host_;
 
   // Child of the root, contains |content_window_|.
   aura::Window* content_window_container_;

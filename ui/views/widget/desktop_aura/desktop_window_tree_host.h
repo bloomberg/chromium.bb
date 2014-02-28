@@ -54,10 +54,8 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
   static ui::NativeTheme* GetNativeTheme(aura::Window* window);
 
   // Sets up resources needed before the WindowEventDispatcher has been created.
-  virtual void Init(
-      aura::Window* content_window,
-      const Widget::InitParams& params,
-      aura::WindowEventDispatcher::CreateParams* rw_create_params) = 0;
+  virtual void Init(aura::Window* content_window,
+                    const Widget::InitParams& params) = 0;
 
   // Invoked once the WindowEventDispatcher has been created. Caller owns the
   // WindowEventDispatcher.

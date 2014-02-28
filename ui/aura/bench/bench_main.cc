@@ -19,7 +19,7 @@
 #include "ui/aura/test/test_focus_client.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
@@ -300,20 +300,20 @@ int main(int argc, char** argv) {
   scoped_ptr<aura::TestScreen> test_screen(
       aura::TestScreen::CreateFullscreen());
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen.get());
-  scoped_ptr<aura::WindowEventDispatcher> dispatcher(
-      test_screen->CreateRootWindowForPrimaryDisplay());
+  scoped_ptr<aura::WindowTreeHost> host(
+      test_screen->CreateHostForPrimaryDisplay());
   aura::client::SetCaptureClient(
-      dispatcher->window(),
-      new aura::client::DefaultCaptureClient(dispatcher->window()));
+      host->window(),
+      new aura::client::DefaultCaptureClient(host->window()));
 
   scoped_ptr<aura::client::FocusClient> focus_client(
       new aura::test::TestFocusClient);
-  aura::client::SetFocusClient(dispatcher->window(), focus_client.get());
+  aura::client::SetFocusClient(host->window(), focus_client.get());
 
   // add layers
   ColoredLayer background(SK_ColorRED);
-  background.SetBounds(dispatcher->window()->bounds());
-  dispatcher->window()->layer()->Add(&background);
+  background.SetBounds(host->window()->bounds());
+  host->window()->layer()->Add(&background);
 
   ColoredLayer window(SK_ColorBLUE);
   window.SetBounds(gfx::Rect(background.bounds().size()));
@@ -338,22 +338,22 @@ int main(int argc, char** argv) {
 
   if (command_line->HasSwitch("bench-software-scroll")) {
     bench.reset(new SoftwareScrollBench(&page_background,
-                                        dispatcher->host()->compositor(),
+                                        host->compositor(),
                                         frames));
   } else {
     bench.reset(new WebGLBench(&page_background,
-                               dispatcher->host()->compositor(),
+                               host->compositor(),
                                frames));
   }
 
 #ifndef NDEBUG
-  ui::PrintLayerHierarchy(dispatcher->window()->layer(), gfx::Point(100, 100));
+  ui::PrintLayerHierarchy(host->window()->layer(), gfx::Point(100, 100));
 #endif
 
-  dispatcher->host()->Show();
+  host->Show();
   base::MessageLoopForUI::current()->Run();
   focus_client.reset();
-  dispatcher.reset();
+  host.reset();
 
   return 0;
 }

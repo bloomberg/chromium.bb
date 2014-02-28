@@ -23,7 +23,7 @@
 
 namespace aura {
 class Display;
-class WindowEventDispatcher;
+class WindowTreeHost;
 }
 
 namespace base {
@@ -166,9 +166,9 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   friend class internal::DisplayManager;
   friend class internal::MirrorWindowController;
 
-  // Creates a root window for |display| and stores it in the |root_windows_|
+  // Creates a WindowTreeHost for |display| and stores it in the |root_windows_|
   // map.
-  aura::WindowEventDispatcher* AddRootWindowForDisplay(
+  aura::WindowTreeHost* AddWindowTreeHostForDisplay(
       const gfx::Display& display);
 
   void OnFadeOutForSwapDisplayFinished();

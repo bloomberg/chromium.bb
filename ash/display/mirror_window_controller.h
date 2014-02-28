@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/root_window_observer.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
@@ -18,7 +19,6 @@
 namespace aura {
 class RootWindowTransformer;
 class Window;
-class WindowEventDispatcher;
 }
 
 namespace ui {
@@ -56,8 +56,7 @@ class ASH_EXPORT MirrorWindowController : public aura::RootWindowObserver {
   virtual void OnWindowTreeHostResized(
       const aura::WindowEventDispatcher* root) OVERRIDE;
 
-  // Returns the mirror root window.
-  aura::WindowEventDispatcher* dispatcher() const { return dispatcher_.get(); }
+  aura::WindowTreeHost* host() const { return host_.get(); }
 
  private:
   friend class test::MirrorWindowTestApi;
@@ -66,7 +65,7 @@ class ASH_EXPORT MirrorWindowController : public aura::RootWindowObserver {
   // configuration.
   scoped_ptr<aura::RootWindowTransformer> CreateRootWindowTransformer() const;
 
-  scoped_ptr<aura::WindowEventDispatcher> dispatcher_;
+  scoped_ptr<aura::WindowTreeHost> host_;
   gfx::Size mirror_window_host_size_;
   scoped_refptr<ui::Reflector> reflector_;
 

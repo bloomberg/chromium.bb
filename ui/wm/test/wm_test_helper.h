@@ -8,10 +8,12 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/client/window_tree_client.h"
+#include "ui/aura/window_tree_host.h"
 
 namespace aura {
 class Window;
 class WindowEventDispatcher;
+class WindowTreeHost;
 namespace client {
 class DefaultActivationClient;
 class DefaultCaptureClient;
@@ -41,7 +43,7 @@ class WMTestHelper : public aura::client::WindowTreeClient {
   explicit WMTestHelper(const gfx::Size& default_window_size);
   virtual ~WMTestHelper();
 
-  aura::WindowEventDispatcher* dispatcher() { return dispatcher_.get(); }
+  aura::WindowEventDispatcher* dispatcher() { return host_->dispatcher(); }
 
   // Overridden from client::WindowTreeClient:
   virtual aura::Window* GetDefaultParent(aura::Window* context,
@@ -49,7 +51,7 @@ class WMTestHelper : public aura::client::WindowTreeClient {
                                          const gfx::Rect& bounds) OVERRIDE;
 
  private:
-  scoped_ptr<aura::WindowEventDispatcher> dispatcher_;
+  scoped_ptr<aura::WindowTreeHost> host_;
 
   // Owned by the root Window.
   views::corewm::CompoundEventFilter* root_window_event_filter_;

@@ -93,6 +93,7 @@ DesktopWindowTreeHostWin::~DesktopWindowTreeHostWin() {
   // WARNING: |content_window_| has been destroyed by the time we get here.
   desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(
       dispatcher_);
+  DestroyDispatcher();
 }
 
 // static
@@ -122,10 +123,8 @@ ui::NativeTheme* DesktopWindowTreeHost::GetNativeTheme(aura::Window* window) {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostWin, DesktopWindowTreeHost implementation:
 
-void DesktopWindowTreeHostWin::Init(
-    aura::Window* content_window,
-    const Widget::InitParams& params,
-    aura::WindowEventDispatcher::CreateParams* rw_create_params) {
+void DesktopWindowTreeHostWin::Init(aura::Window* content_window,
+                                    const Widget::InitParams& params) {
   // TODO(beng): SetInitParams().
   content_window_ = content_window;
 
@@ -153,8 +152,6 @@ void DesktopWindowTreeHostWin::Init(
               reinterpret_cast<HANDLE>(true));
   }
   CreateCompositor(GetAcceleratedWidget());
-
-  rw_create_params->host = this;
 }
 
 void DesktopWindowTreeHostWin::OnRootWindowCreated(

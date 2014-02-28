@@ -78,7 +78,6 @@ WindowTreeHost::~WindowTreeHost() {
 }
 
 void WindowTreeHost::InitHost() {
-  window()->Init(aura::WINDOW_LAYER_NOT_DRAWN);
   InitCompositor();
   UpdateRootWindowSize(GetBounds().size());
   Env::GetInstance()->NotifyRootWindowInitialized(delegate_->AsDispatcher());
@@ -210,10 +209,19 @@ void WindowTreeHost::DestroyCompositor() {
   compositor_.reset();
 }
 
+void WindowTreeHost::DestroyDispatcher() {
+  dispatcher_.reset();
+}
+
 void WindowTreeHost::CreateCompositor(
     gfx::AcceleratedWidget accelerated_widget) {
   compositor_.reset(new ui::Compositor(GetAcceleratedWidget()));
   DCHECK(compositor_.get());
+  // TODO(beng): I think this setup should probably all move to a "accelerated
+  // widget available" function.
+  if (!dispatcher())
+    dispatcher_.reset(new WindowEventDispatcher(this));
+  delegate_ = dispatcher();
 }
 
 void WindowTreeHost::NotifyHostResized(const gfx::Size& new_size) {

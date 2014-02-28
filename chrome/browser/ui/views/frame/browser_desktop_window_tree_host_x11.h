@@ -35,8 +35,7 @@ class BrowserDesktopWindowTreeHostX11
   // Overridden from views::DesktopWindowTreeHostX11:
   virtual void Init(
       aura::Window* content_window,
-      const views::Widget::InitParams& params,
-      aura::WindowEventDispatcher::CreateParams* rw_create_params) OVERRIDE;
+      const views::Widget::InitParams& params) OVERRIDE;
   virtual void CloseNow() OVERRIDE;
 
   BrowserView* browser_view_;

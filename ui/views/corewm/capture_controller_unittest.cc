@@ -34,13 +34,12 @@ class CaptureControllerTest : public aura::test::AuraTestBase {
     AuraTestBase::SetUp();
     capture_controller_.reset(new corewm::ScopedCaptureClient(root_window()));
 
-    second_root_.reset(new aura::WindowEventDispatcher(
-        aura::WindowEventDispatcher::CreateParams(gfx::Rect(0, 0, 800, 600))));
-    second_root_->host()->InitHost();
-    second_root_->window()->Show();
-    second_root_->host()->SetBounds(gfx::Rect(800, 600));
+    second_host_.reset(aura::WindowTreeHost::Create(gfx::Rect(0, 0, 800, 600)));
+    second_host_->InitHost();
+    second_host_->window()->Show();
+    second_host_->SetBounds(gfx::Rect(800, 600));
     second_capture_controller_.reset(
-        new corewm::ScopedCaptureClient(second_root_->window()));
+        new corewm::ScopedCaptureClient(second_host_->window()));
 
 #if !defined(OS_CHROMEOS)
     desktop_position_client_.reset(new DesktopScreenPositionClient());
@@ -49,7 +48,7 @@ class CaptureControllerTest : public aura::test::AuraTestBase {
 
     second_desktop_position_client_.reset(new DesktopScreenPositionClient());
     aura::client::SetScreenPositionClient(
-        second_root_->window(),
+        second_host_->window(),
         second_desktop_position_client_.get());
 #endif
   }
@@ -63,7 +62,7 @@ class CaptureControllerTest : public aura::test::AuraTestBase {
     second_capture_controller_.reset();
 
     // Kill any active compositors before we hit the compositor shutdown paths.
-    second_root_.reset();
+    second_host_.reset();
 
 #if !defined(OS_CHROMEOS)
     desktop_position_client_.reset();
@@ -82,7 +81,7 @@ class CaptureControllerTest : public aura::test::AuraTestBase {
   }
 
   scoped_ptr<corewm::ScopedCaptureClient> capture_controller_;
-  scoped_ptr<aura::WindowEventDispatcher> second_root_;
+  scoped_ptr<aura::WindowTreeHost> second_host_;
   scoped_ptr<corewm::ScopedCaptureClient> second_capture_controller_;
 #if !defined(OS_CHROMEOS)
   scoped_ptr<aura::client::ScreenPositionClient> desktop_position_client_;
@@ -108,7 +107,7 @@ TEST_F(CaptureControllerTest, ResetMouseEventHandlerOnCapture) {
 
   // Build a window in the second WindowEventDispatcher.
   scoped_ptr<aura::Window> w2(
-      CreateNormalWindow(2, second_root_->window(), NULL));
+      CreateNormalWindow(2, second_host_->window(), NULL));
 
   // The act of having the second window take capture should clear out mouse
   // pressed handler in the first WindowEventDispatcher.
@@ -130,7 +129,7 @@ TEST_F(CaptureControllerTest, ResetOtherWindowCaptureOnCapture) {
   // Build a window in the second WindowEventDispatcher and give it capture.
   // Both capture clients should return the same capture window.
   scoped_ptr<aura::Window> w2(
-      CreateNormalWindow(2, second_root_->window(), NULL));
+      CreateNormalWindow(2, second_host_->window(), NULL));
   w2->SetCapture();
   EXPECT_EQ(w2.get(), GetCaptureWindow());
   EXPECT_EQ(w2.get(), GetSecondCaptureWindow());
@@ -151,7 +150,7 @@ TEST_F(CaptureControllerTest, TouchTargetResetOnCaptureChange) {
   // Build a window in the second WindowEventDispatcher and give it capture.
   // Both capture clients should return the same capture window.
   scoped_ptr<aura::Window> w2(
-      CreateNormalWindow(2, second_root_->window(), NULL));
+      CreateNormalWindow(2, second_host_->window(), NULL));
   w2->SetCapture();
   EXPECT_EQ(w2.get(), GetCaptureWindow());
   EXPECT_EQ(w2.get(), GetSecondCaptureWindow());

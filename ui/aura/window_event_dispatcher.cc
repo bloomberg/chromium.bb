@@ -70,14 +70,6 @@ void SetLastMouseLocation(const Window* root_window,
   }
 }
 
-WindowTreeHost* CreateHost(WindowEventDispatcher* dispatcher,
-                           const WindowEventDispatcher::CreateParams& params) {
-  WindowTreeHost* host = params.host ?
-      params.host : WindowTreeHost::Create(params.initial_bounds);
-  host->set_delegate(dispatcher);
-  return host;
-}
-
 bool IsEventCandidateForHold(const ui::Event& event) {
   if (event.type() == ui::ET_TOUCH_MOVED)
     return true;
@@ -90,18 +82,12 @@ bool IsEventCandidateForHold(const ui::Event& event) {
 
 }  // namespace
 
-WindowEventDispatcher::CreateParams::CreateParams(
-    const gfx::Rect& a_initial_bounds)
-    : initial_bounds(a_initial_bounds),
-      host(NULL) {
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // WindowEventDispatcher, public:
 
-WindowEventDispatcher::WindowEventDispatcher(const CreateParams& params)
+WindowEventDispatcher::WindowEventDispatcher(WindowTreeHost* host)
     : window_(new Window(NULL)),
-      host_(CreateHost(this, params)),
+      host_(host),
       touch_ids_down_(0),
       mouse_pressed_handler_(NULL),
       mouse_moved_handler_(NULL),
@@ -112,6 +98,7 @@ WindowEventDispatcher::WindowEventDispatcher(const CreateParams& params)
       dispatching_held_event_(false),
       repost_event_factory_(this),
       held_event_factory_(this) {
+  window()->Init(WINDOW_LAYER_NOT_DRAWN);
   window()->set_dispatcher(this);
   window()->SetName("RootWindow");
   window()->SetEventTargeter(
@@ -137,11 +124,6 @@ WindowEventDispatcher::~WindowEventDispatcher() {
   // as GetRootWindow()) result in Window's implementation. By destroying here
   // we ensure GetRootWindow() still returns this.
   window()->RemoveOrDestroyChildren();
-
-  // Destroying/removing child windows may try to access |host_| (eg.
-  // GetAcceleratedWidget())
-  host_.reset(NULL);
-
   window()->set_dispatcher(NULL);
 }
 

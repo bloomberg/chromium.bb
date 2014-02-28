@@ -45,10 +45,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
 
  protected:
   // Overridden from DesktopWindowTreeHost:
-  virtual void Init(
-      aura::Window* content_window,
-      const Widget::InitParams& params,
-      aura::WindowEventDispatcher::CreateParams* rw_create_params) OVERRIDE;
+  virtual void Init(aura::Window* content_window,
+                    const Widget::InitParams& params) OVERRIDE;
   virtual void OnRootWindowCreated(aura::WindowEventDispatcher* dispatcher,
                                    const Widget::InitParams& params) OVERRIDE;
   virtual scoped_ptr<corewm::Tooltip> CreateTooltip() OVERRIDE;

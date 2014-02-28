@@ -956,7 +956,7 @@ void Shell::Init() {
   // initialize controller/delegates above when initializing the
   // primary root window controller.
   internal::RootWindowController::CreateForPrimaryDisplay(
-      root_window->GetDispatcher());
+      root_window->GetDispatcher()->host());
 
   display_controller_->InitSecondaryDisplays();
 

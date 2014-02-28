@@ -53,6 +53,7 @@ WindowTreeHostWin::WindowTreeHostWin(const gfx::Rect& bounds)
 
 WindowTreeHostWin::~WindowTreeHostWin() {
   DestroyCompositor();
+  DestroyDispatcher();
   DestroyWindow(hwnd());
 }
 

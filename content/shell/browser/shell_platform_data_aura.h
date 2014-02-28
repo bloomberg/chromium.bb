@@ -6,9 +6,9 @@
 #define CONTENT_SHELL_BROWSER_SHELL_PLATFORM_DATA_AURA_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "ui/aura/window_tree_host.h"
 
 namespace aura {
-class WindowEventDispatcher;
 namespace client {
 class DefaultActivationClient;
 class DefaultCaptureClient;
@@ -35,10 +35,10 @@ class ShellPlatformDataAura {
   void ShowWindow();
   void ResizeWindow(const gfx::Size& size);
 
-  aura::WindowEventDispatcher* dispatcher() { return dispatcher_.get(); }
+  aura::WindowEventDispatcher* dispatcher() { return host_->dispatcher(); }
 
  private:
-  scoped_ptr<aura::WindowEventDispatcher> dispatcher_;
+  scoped_ptr<aura::WindowTreeHost> host_;
   scoped_ptr<aura::client::FocusClient> focus_client_;
   scoped_ptr<aura::client::DefaultActivationClient> activation_client_;
   scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;

@@ -149,6 +149,7 @@ DesktopWindowTreeHostX11::~DesktopWindowTreeHostX11() {
   desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(dispatcher_);
   if (custom_window_shape_)
     XDestroyRegion(custom_window_shape_);
+  DestroyDispatcher();
 }
 
 // static
@@ -212,10 +213,8 @@ void DesktopWindowTreeHostX11::CleanUpWindowList() {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11, DesktopWindowTreeHost implementation:
 
-void DesktopWindowTreeHostX11::Init(
-    aura::Window* content_window,
-    const Widget::InitParams& params,
-    aura::WindowEventDispatcher::CreateParams* rw_create_params) {
+void DesktopWindowTreeHostX11::Init(aura::Window* content_window,
+                                    const Widget::InitParams& params) {
   content_window_ = content_window;
 
   // TODO(erg): Check whether we *should* be building a WindowTreeHost here, or
@@ -230,9 +229,6 @@ void DesktopWindowTreeHostX11::Init(
     sanitized_params.bounds.set_height(100);
 
   InitX11Window(sanitized_params);
-
-  rw_create_params->initial_bounds = bounds_;
-  rw_create_params->host = this;
 }
 
 void DesktopWindowTreeHostX11::OnRootWindowCreated(

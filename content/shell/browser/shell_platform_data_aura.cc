@@ -63,20 +63,20 @@ class FillLayout : public aura::LayoutManager {
 class MinimalInputEventFilter : public ui::internal::InputMethodDelegate,
                                 public ui::EventHandler {
  public:
-  explicit MinimalInputEventFilter(aura::WindowEventDispatcher* dispatcher)
-      : dispatcher_(dispatcher),
+  explicit MinimalInputEventFilter(aura::WindowTreeHost* host)
+      : host_(host),
         input_method_(ui::CreateInputMethod(this,
                                             gfx::kNullAcceleratedWidget)) {
     input_method_->Init(true);
-    dispatcher_->window()->AddPreTargetHandler(this);
-    dispatcher_->window()->SetProperty(aura::client::kRootWindowInputMethodKey,
-                                       input_method_.get());
+    host_->window()->AddPreTargetHandler(this);
+    host_->window()->SetProperty(aura::client::kRootWindowInputMethodKey,
+                                 input_method_.get());
   }
 
   virtual ~MinimalInputEventFilter() {
-    dispatcher_->window()->RemovePreTargetHandler(this);
-    dispatcher_->window()->SetProperty(aura::client::kRootWindowInputMethodKey,
-                                       static_cast<ui::InputMethod*>(NULL));
+    host_->window()->RemovePreTargetHandler(this);
+    host_->window()->SetProperty(aura::client::kRootWindowInputMethodKey,
+                                 static_cast<ui::InputMethod*>(NULL));
   }
 
  private:
@@ -98,11 +98,11 @@ class MinimalInputEventFilter : public ui::internal::InputMethodDelegate,
   virtual bool DispatchKeyEventPostIME(const ui::KeyEvent& event) OVERRIDE {
     ui::TranslatedKeyEvent aura_event(event);
     ui::EventDispatchDetails details =
-        dispatcher_->OnEventFromSource(&aura_event);
+        host_->dispatcher()->OnEventFromSource(&aura_event);
     return aura_event.handled() || details.dispatcher_destroyed;
   }
 
-  aura::WindowEventDispatcher* dispatcher_;
+  aura::WindowTreeHost* host_;
   scoped_ptr<ui::InputMethod> input_method_;
 
   DISALLOW_COPY_AND_ASSIGN(MinimalInputEventFilter);
@@ -114,35 +114,31 @@ ShellPlatformDataAura* Shell::platform_ = NULL;
 
 ShellPlatformDataAura::ShellPlatformDataAura(const gfx::Size& initial_size) {
   aura::Env::CreateInstance();
-  dispatcher_.reset(new aura::WindowEventDispatcher(
-      aura::WindowEventDispatcher::CreateParams(gfx::Rect(initial_size))));
-  dispatcher_->host()->InitHost();
-  dispatcher_->window()->SetLayoutManager(
-      new FillLayout(dispatcher_->window()));
+  host_.reset(aura::WindowTreeHost::Create(gfx::Rect(initial_size)));
+  host_->InitHost();
+  host_->window()->SetLayoutManager(new FillLayout(host_->window()));
 
   focus_client_.reset(new aura::test::TestFocusClient());
-  aura::client::SetFocusClient(dispatcher_->window(), focus_client_.get());
+  aura::client::SetFocusClient(host_->window(), focus_client_.get());
 
   activation_client_.reset(
-      new aura::client::DefaultActivationClient(dispatcher_->window()));
+      new aura::client::DefaultActivationClient(host_->window()));
   capture_client_.reset(
-      new aura::client::DefaultCaptureClient(dispatcher_->window()));
+      new aura::client::DefaultCaptureClient(host_->window()));
   window_tree_client_.reset(
-      new aura::test::TestWindowTreeClient(dispatcher_->window()));
-  ime_filter_.reset(new MinimalInputEventFilter(dispatcher_.get()));
+      new aura::test::TestWindowTreeClient(host_->window()));
+  ime_filter_.reset(new MinimalInputEventFilter(host_.get()));
 }
 
 ShellPlatformDataAura::~ShellPlatformDataAura() {
 }
 
 void ShellPlatformDataAura::ShowWindow() {
-  dispatcher_->host()->Show();
+  host_->Show();
 }
 
 void ShellPlatformDataAura::ResizeWindow(const gfx::Size& size) {
-  dispatcher_->host()->SetBounds(gfx::Rect(size));
+  host_->SetBounds(gfx::Rect(size));
 }
-
-
 
 }  // namespace content

@@ -21,6 +21,7 @@ WindowTreeHostMac::WindowTreeHostMac(const gfx::Rect& bounds) {
 }
 
 WindowTreeHostMac::~WindowTreeHostMac() {
+  DestroyDispatcher();
 }
 
 gfx::AcceleratedWidget WindowTreeHostMac::GetAcceleratedWidget() {

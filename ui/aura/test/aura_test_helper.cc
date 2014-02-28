@@ -35,7 +35,7 @@ namespace test {
 AuraTestHelper::AuraTestHelper(base::MessageLoopForUI* message_loop)
     : setup_called_(false),
       teardown_called_(false),
-      owns_dispatcher_(false) {
+      owns_host_(false) {
   DCHECK(message_loop);
   message_loop_ = message_loop;
   // Disable animations during tests.
@@ -66,7 +66,7 @@ void AuraTestHelper::SetUp() {
 
   test_screen_.reset(TestScreen::Create());
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen_.get());
-  dispatcher_.reset(test_screen_->CreateRootWindowForPrimaryDisplay());
+  host_.reset(test_screen_->CreateHostForPrimaryDisplay());
 
   focus_client_.reset(new TestFocusClient);
   client::SetFocusClient(root_window(), focus_client_.get());
@@ -92,7 +92,7 @@ void AuraTestHelper::TearDown() {
   capture_client_.reset();
   focus_client_.reset();
   client::SetFocusClient(root_window(), NULL);
-  dispatcher_.reset();
+  host_.reset();
   ui::GestureRecognizer::Reset();
   test_screen_.reset();
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, NULL);

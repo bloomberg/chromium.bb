@@ -22,7 +22,6 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/canvas.h"
 
@@ -134,28 +133,24 @@ class AuraDemo : public Application {
 
  private:
   void HostContextCreated() {
-    aura::WindowEventDispatcher::CreateParams params(
-        gfx::Rect(window_tree_host_->bounds().size()));
-    params.host = window_tree_host_.get();
-    dispatcher_.reset(new aura::WindowEventDispatcher(params));
-    window_tree_host_->set_delegate(dispatcher_.get());
-    dispatcher_->host()->InitHost();
+    window_tree_host_->InitHost();
 
-    window_tree_client_.reset(new DemoWindowTreeClient(dispatcher_->window()));
+    window_tree_client_.reset(
+        new DemoWindowTreeClient(window_tree_host_->window()));
 
     delegate1_.reset(new DemoWindowDelegate(SK_ColorBLUE));
     window1_ = new aura::Window(delegate1_.get());
     window1_->Init(aura::WINDOW_LAYER_TEXTURED);
     window1_->SetBounds(gfx::Rect(100, 100, 400, 400));
     window1_->Show();
-    dispatcher_->window()->AddChild(window1_);
+    window_tree_host_->window()->AddChild(window1_);
 
     delegate2_.reset(new DemoWindowDelegate(SK_ColorRED));
     window2_ = new aura::Window(delegate2_.get());
     window2_->Init(aura::WINDOW_LAYER_TEXTURED);
     window2_->SetBounds(gfx::Rect(200, 200, 350, 350));
     window2_->Show();
-    dispatcher_->window()->AddChild(window2_);
+    window_tree_host_->window()->AddChild(window2_);
 
     delegate21_.reset(new DemoWindowDelegate(SK_ColorGREEN));
     window21_ = new aura::Window(delegate21_.get());
@@ -164,7 +159,7 @@ class AuraDemo : public Application {
     window21_->Show();
     window2_->AddChild(window21_);
 
-    dispatcher_->host()->Show();
+    window_tree_host_->Show();
   }
 
   scoped_ptr<DemoScreen> screen_;
@@ -179,8 +174,7 @@ class AuraDemo : public Application {
   aura::Window* window2_;
   aura::Window* window21_;
 
-  scoped_ptr<WindowTreeHostMojo> window_tree_host_;
-  scoped_ptr<aura::WindowEventDispatcher> dispatcher_;
+  scoped_ptr<aura::WindowTreeHost> window_tree_host_;
 };
 
 }  // namespace examples

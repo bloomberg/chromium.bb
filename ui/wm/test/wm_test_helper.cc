@@ -8,7 +8,6 @@
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/test_focus_client.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/views/corewm/compound_event_filter.h"
 #include "ui/views/corewm/input_method_event_filter.h"
 
@@ -16,30 +15,27 @@ namespace wm {
 
 WMTestHelper::WMTestHelper(const gfx::Size& default_window_size) {
   aura::Env::CreateInstance();
-  dispatcher_.reset(new aura::WindowEventDispatcher(
-      aura::WindowEventDispatcher::CreateParams(
-          gfx::Rect(default_window_size))));
-  dispatcher_->host()->InitHost();
-  aura::client::SetWindowTreeClient(dispatcher_->window(), this);
+  host_.reset(aura::WindowTreeHost::Create(gfx::Rect(default_window_size)));
+  host_->InitHost();
+  aura::client::SetWindowTreeClient(host_->window(), this);
 
   focus_client_.reset(new aura::test::TestFocusClient);
-  aura::client::SetFocusClient(dispatcher_->window(), focus_client_.get());
+  aura::client::SetFocusClient(host_->window(), focus_client_.get());
 
   root_window_event_filter_ = new views::corewm::CompoundEventFilter;
   // Pass ownership of the filter to the root_window.
-  dispatcher_->window()->SetEventFilter(root_window_event_filter_);
+  host_->window()->SetEventFilter(root_window_event_filter_);
 
   input_method_filter_.reset(new views::corewm::InputMethodEventFilter(
-      dispatcher_->host()->GetAcceleratedWidget()));
-  input_method_filter_->SetInputMethodPropertyInRootWindow(
-      dispatcher_->window());
+      host_->GetAcceleratedWidget()));
+  input_method_filter_->SetInputMethodPropertyInRootWindow(host_->window());
   root_window_event_filter_->AddHandler(input_method_filter_.get());
 
   activation_client_.reset(
-      new aura::client::DefaultActivationClient(dispatcher_->window()));
+      new aura::client::DefaultActivationClient(host_->window()));
 
   capture_client_.reset(
-      new aura::client::DefaultCaptureClient(dispatcher_->window()));
+      new aura::client::DefaultCaptureClient(host_->window()));
 }
 
 WMTestHelper::~WMTestHelper() {
@@ -49,7 +45,7 @@ WMTestHelper::~WMTestHelper() {
 aura::Window* WMTestHelper::GetDefaultParent(aura::Window* context,
                                              aura::Window* window,
                                              const gfx::Rect& bounds) {
-  return dispatcher_->window();
+  return host_->window();
 }
 
 }  // namespace wm
