@@ -7,6 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
+#include "chrome/browser/extensions/api/webview/webview_api.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/extensions/extension_web_contents_observer.h"
 #include "chrome/browser/extensions/script_executor.h"
@@ -30,8 +31,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/result_codes.h"
+#include "content/public/common/stop_find_action.h"
 #include "extensions/common/constants.h"
 #include "net/base/net_errors.h"
+#include "third_party/WebKit/public/web/WebFindOptions.h"
 
 #if defined(ENABLE_PLUGINS)
 #include "chrome/browser/guestview/webview/plugin_permission_helper.h"
@@ -328,7 +331,19 @@ void WebViewGuest::EmbedderDestroyed() {
           view_instance_id()));
 }
 
+void WebViewGuest::FindReply(int request_id,
+                             int number_of_matches,
+                             const gfx::Rect& selection_rect,
+                             int active_match_ordinal,
+                             bool final_update) {
+  find_helper_.FindReply(request_id, number_of_matches, selection_rect,
+                          active_match_ordinal, final_update);
+}
+
 void WebViewGuest::GuestProcessGone(base::TerminationStatus status) {
+  // Cancel all find sessions in progress.
+  find_helper_.CancelAllFindSessions();
+
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetInteger(webview::kProcessId,
                    guest_web_contents()->GetRenderProcessHost()->GetID());
@@ -500,6 +515,18 @@ double WebViewGuest::GetZoom() {
   return current_zoom_factor_;
 }
 
+void WebViewGuest::Find(
+    const base::string16& search_text,
+    const blink::WebFindOptions& options,
+    scoped_refptr<extensions::WebviewFindFunction> find_function) {
+  find_helper_.Find(guest_web_contents(), search_text, options, find_function);
+}
+
+void WebViewGuest::StopFinding(content::StopFindAction action) {
+  find_helper_.CancelAllFindSessions();
+  guest_web_contents()->StopFinding(action);
+}
+
 void WebViewGuest::Go(int relative_index) {
   guest_web_contents()->GetController().GoToOffset(relative_index);
 }
@@ -590,6 +617,8 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
     const GURL& url,
     content::PageTransition transition_type,
     content::RenderViewHost* render_view_host) {
+  find_helper_.CancelAllFindSessions();
+
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetString(guestview::kUrl, url.spec());
   args->SetBoolean(guestview::kIsTopLevel, is_main_frame);

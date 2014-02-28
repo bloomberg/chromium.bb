@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/webview/webview_api.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/browsing_data/browsing_data_api.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/common/extensions/api/webview.h"
@@ -11,7 +12,9 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/stop_find_action.h"
 #include "extensions/common/error_utils.h"
+#include "third_party/WebKit/public/web/WebFindOptions.h"
 
 using content::WebContents;
 using extensions::api::tabs::InjectDetails;
@@ -258,6 +261,67 @@ bool WebviewGetZoomFunction::RunImplSafe(WebViewGuest* guest) {
   double zoom_factor = guest->GetZoom();
   SetResult(base::Value::CreateDoubleValue(zoom_factor));
   SendResponse(true);
+  return true;
+}
+
+WebviewFindFunction::WebviewFindFunction() {
+}
+
+WebviewFindFunction::~WebviewFindFunction() {
+}
+
+bool WebviewFindFunction::RunImplSafe(WebViewGuest* guest) {
+  scoped_ptr<webview::Find::Params> params(
+      webview::Find::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  // Convert the std::string search_text to string16.
+  base::string16 search_text;
+  base::UTF8ToUTF16(params->search_text.c_str(),
+                    params->search_text.length(),
+                    &search_text);
+
+  // Set the find options to their default values.
+  blink::WebFindOptions options;
+  if (params->options) {
+    options.forward =
+        params->options->backward ? !*params->options->backward : true;
+    options.matchCase =
+        params->options->match_case ? *params->options->match_case : false;
+  }
+
+  guest->Find(search_text, options, this);
+  return true;
+}
+
+WebviewStopFindingFunction::WebviewStopFindingFunction() {
+}
+
+WebviewStopFindingFunction::~WebviewStopFindingFunction() {
+}
+
+bool WebviewStopFindingFunction::RunImplSafe(WebViewGuest* guest) {
+  scoped_ptr<webview::StopFinding::Params> params(
+      webview::StopFinding::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  // Set the StopFindAction.
+  content::StopFindAction action;
+  switch (params->action) {
+    case webview::StopFinding::Params::ACTION_CLEAR:
+      action = content::STOP_FIND_ACTION_CLEAR_SELECTION;
+      break;
+    case webview::StopFinding::Params::ACTION_KEEP:
+      action = content::STOP_FIND_ACTION_KEEP_SELECTION;
+      break;
+    case webview::StopFinding::Params::ACTION_ACTIVATE:
+      action = content::STOP_FIND_ACTION_ACTIVATE_SELECTION;
+      break;
+    default:
+      action = content::STOP_FIND_ACTION_KEEP_SELECTION;
+  }
+
+  guest->StopFinding(action);
   return true;
 }
 

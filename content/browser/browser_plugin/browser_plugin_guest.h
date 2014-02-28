@@ -208,6 +208,12 @@ class CONTENT_EXPORT BrowserPluginGuest
   virtual void HandleKeyboardEvent(
       WebContents* source,
       const NativeWebKeyboardEvent& event) OVERRIDE;
+  virtual void FindReply(WebContents* contents,
+                         int request_id,
+                         int number_of_matches,
+                         const gfx::Rect& selection_rect,
+                         int active_match_ordinal,
+                         bool final_update) OVERRIDE;
   virtual WebContents* OpenURLFromTab(WebContents* source,
                                       const OpenURLParams& params) OVERRIDE;
   virtual void WebContentsCreated(WebContents* source_contents,

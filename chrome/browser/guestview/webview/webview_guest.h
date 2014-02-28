@@ -8,8 +8,10 @@
 #include "base/observer_list.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/guestview/guestview.h"
+#include "chrome/browser/guestview/webview/webview_find_helper.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "third_party/WebKit/public/web/WebFindOptions.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -17,6 +19,7 @@
 
 namespace extensions {
 class ScriptExecutor;
+class WebviewFindFunction;
 }  // namespace extensions
 
 // A WebViewGuest is a WebContentsObserver on the guest WebContents of a
@@ -52,6 +55,11 @@ class WebViewGuest : public GuestView,
   virtual void Close() OVERRIDE;
   virtual void DidAttach() OVERRIDE;
   virtual void EmbedderDestroyed() OVERRIDE;
+  virtual void FindReply(int request_id,
+                         int number_of_matches,
+                         const gfx::Rect& selection_rect,
+                         int active_match_ordinal,
+                         bool final_update) OVERRIDE;
   virtual void GuestProcessGone(base::TerminationStatus status) OVERRIDE;
   virtual bool HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
@@ -81,6 +89,14 @@ class WebViewGuest : public GuestView,
 
   // Returns the current zoom factor.
   double GetZoom();
+
+  // Begin or continue a find request.
+  void Find(const base::string16& search_text,
+            const blink::WebFindOptions& options,
+            scoped_refptr<extensions::WebviewFindFunction> find_function);
+
+  // Conclude a find request to clear highlighting.
+  void StopFinding(content::StopFindAction);
 
   // If possible, navigate the guest to |relative_index| entries away from the
   // current navigation entry.
@@ -228,6 +244,9 @@ class WebViewGuest : public GuestView,
 
   // Stores the current zoom factor.
   double current_zoom_factor_;
+
+  // Handles find requests and replies for the webview find API.
+  WebviewFindHelper find_helper_;
 
 #if defined(OS_CHROMEOS)
   // Subscription to receive notifications on changes to a11y settings.

@@ -189,6 +189,22 @@ WebViewInternal.prototype.captureVisibleRegion = function(spec, callback) {
   WebView.captureVisibleRegion(this.instanceId, spec, callback);
 };
 
+/** @private */
+WebViewInternal.prototype.find = function(search_text, options, callback) {
+  if (!this.instanceId) {
+    return;
+  }
+  WebView.find(this.instanceId, search_text, options, callback);
+};
+
+/** @private */
+WebViewInternal.prototype.stopFinding = function(action) {
+  if (!this.instanceId) {
+    return;
+  }
+  WebView.stopFinding(this.instanceId, action);
+};
+
 WebViewInternal.maybeRegisterExperimentalAPIs = function(proto) {
   proto.clearData = function(var_args) {
     var internal = privates(this).internal;
@@ -205,5 +221,13 @@ WebViewInternal.maybeRegisterExperimentalAPIs = function(proto) {
 
   proto.captureVisibleRegion = function(spec, callback) {
     privates(this).internal.captureVisibleRegion(spec, callback);
+  };
+
+  proto.find = function(search_text, options, callback) {
+    privates(this).internal.find(search_text, options, callback);
+  };
+
+  proto.stopFinding = function(action) {
+    privates(this).internal.stopFinding(action);
   };
 };

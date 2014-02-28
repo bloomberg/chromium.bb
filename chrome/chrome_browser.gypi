@@ -764,6 +764,8 @@
         'browser/guestview/webview/plugin_permission_helper.h',
         'browser/guestview/webview/webview_constants.cc',
         'browser/guestview/webview/webview_constants.h',
+        'browser/guestview/webview/webview_find_helper.cc',
+        'browser/guestview/webview/webview_find_helper.h',
         'browser/guestview/webview/webview_guest.cc',
         'browser/guestview/webview/webview_guest.h',
         'browser/guestview/webview/webview_permission_types.h',

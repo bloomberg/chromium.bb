@@ -1335,7 +1335,83 @@ function testZoomAPI() {
       );
     });
   });
+  document.body.appendChild(webview);
+};
 
+function testFindAPI() {
+  var webview = new WebView();
+  webview.src = 'data:text/html,Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br><br>' +
+      '<a href="about:blank">Click here!</a>';
+
+  var loadstopListener2 = function(e) {
+    embedder.test.assertEq(webview.src, "about:blank");
+    embedder.test.succeed();
+  }
+
+  var loadstopListener1 = function(e) {
+    // Test find results.
+    webview.find("dog", {}, function(results) {
+      callbackTest = true;
+      embedder.test.assertEq(results.numberOfMatches, 100);
+      embedder.test.assertFalse(results.selectionRect.left == -1);
+      embedder.test.assertFalse(results.selectionRect.top == -1);
+      embedder.test.assertTrue(results.selectionRect.width > 0);
+      embedder.test.assertTrue(results.selectionRect.height > 0);
+
+      // Test finding next active matches.
+      webview.find("dog");
+      webview.find("dog");
+      webview.find("dog");
+      webview.find("dog");
+      webview.find("dog", {}, function(results) {
+        embedder.test.assertEq(results.activeMatchOrdinal, 6);
+        webview.find("dog", {backward: true});
+        webview.find("dog", {backward: true}, function(results) {
+          // Test the |backward| find option.
+          embedder.test.assertEq(results.activeMatchOrdinal, 4);
+
+          // Test the |matchCase| find option.
+          webview.find("Dog", {matchCase: true}, function(results) {
+            embedder.test.assertEq(results.numberOfMatches, 40);
+
+            // Test canceling find requests.
+            webview.find("dog");
+            webview.stopFinding();
+            webview.find("dog");
+            webview.find("cat");
+
+            // Test find results when looking for something that isn't there.
+            webview.find("fish", {}, function(results) {
+              embedder.test.assertEq(results.numberOfMatches, 0);
+              embedder.test.assertEq(results.activeMatchOrdinal, 0);
+              embedder.test.assertEq(results.selectionRect.left, 0);
+              embedder.test.assertEq(results.selectionRect.top, 0);
+              embedder.test.assertEq(results.selectionRect.width, 0);
+              embedder.test.assertEq(results.selectionRect.height, 0);
+
+              // Test following a link with stopFinding().
+              webview.removeEventListener('loadstop', loadstopListener1);
+              webview.addEventListener('loadstop', loadstopListener2);
+              webview.find("click here!", {}, function() {
+                webview.stopFinding("activate");
+              });
+            });
+          });
+        });
+      });
+    });
+  };
+
+  webview.addEventListener('loadstop', loadstopListener1);
   document.body.appendChild(webview);
 };
 
@@ -1391,7 +1467,8 @@ embedder.test.testList = {
   'testResizeWebviewResizesContent': testResizeWebviewResizesContent,
   'testPostMessageCommChannel': testPostMessageCommChannel,
   'testScreenshotCapture' : testScreenshotCapture,
-  'testZoomAPI' : testZoomAPI
+  'testZoomAPI' : testZoomAPI,
+  'testFindAPI': testFindAPI
 };
 
 onload = function() {

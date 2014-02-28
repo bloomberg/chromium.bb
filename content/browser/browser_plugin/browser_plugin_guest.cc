@@ -827,6 +827,21 @@ void BrowserPluginGuest::SetZoom(double zoom_factor) {
     delegate_->SetZoom(zoom_factor);
 }
 
+void BrowserPluginGuest::FindReply(WebContents* contents,
+                                   int request_id,
+                                   int number_of_matches,
+                                   const gfx::Rect& selection_rect,
+                                   int active_match_ordinal,
+                                   bool final_update) {
+  if (!delegate_)
+    return;
+
+  // |selection_rect| is updated to incorporate embedder coordinates.
+  delegate_->FindReply(request_id, number_of_matches,
+                       ToGuestRect(selection_rect),
+                       active_match_ordinal, final_update);
+}
+
 WebContents* BrowserPluginGuest::OpenURLFromTab(WebContents* source,
                                                 const OpenURLParams& params) {
   // If the guest wishes to navigate away prior to attachment then we save the

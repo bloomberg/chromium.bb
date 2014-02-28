@@ -219,6 +219,104 @@
         ]
       },
       {
+        "name": "find",
+        "type": "function",
+        "description": "Initiates a find-in-page request.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId",
+            "description": "The instance ID of the guest <webview> process."
+          },
+          {
+            "type": "string",
+            "name": "searchText",
+            "description": "The string to find in the page."
+          },
+          {
+            "type": "object",
+            "name": "options",
+            "optional": true,
+            "properties": {
+              "backward": {
+                "type": "boolean",
+                "description": "Flag to find matches in reverse order.",
+                "optional": true
+              },
+              "matchCase": {
+                "type": "boolean",
+                "description": "Flag to match |searchText| with case-sensitivity.",
+                "optional": true
+              }
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Called after all find results have been returned for this find request.",
+            "optional": true,
+            "parameters": [
+              {
+                "type": "object",
+                "name": "results",
+                "optional": true,
+                "properties": {
+                  "numberOfMatches": {
+                    "type": "integer",
+                    "description": "The number of times |searchText| was matched on the page."
+                  },
+                  "activeMatchOrdinal": {
+                    "type": "integer",
+                    "description": "The ordinal number of the current match."
+                  },
+                  "selectionRect": {
+                    "type": "object",
+                    "description": "Describes a rectangle around the active match.",
+                    "properties": {
+                      "left": {
+                        "type": "integer"
+                      },
+                      "top": {
+                        "type": "integer"
+                      },
+                      "width": {
+                        "type": "integer"
+                      },
+                      "height": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "canceled": {
+                    "type": "boolean",
+                    "description": "Indicates whether this find request was canceled."
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "stopFinding",
+        "type": "function",
+        "description": "Ends the current find session (clearing all highlighting) and cancels all find requests in progress.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId",
+            "description": "The instance ID of the guest <webview> process."
+          },
+          {
+            "type": "string",
+            "name": "action",
+            "description": "Determines what to do with the active match after the find session has ended. 'clear' will clear the highlighting over the active match; 'keep' will keep the active match highlighted; 'activate' will keep the active match highlighted and simulate a user click on that match.",
+            "optional": true,
+            "enum": ["clear", "keep", "activate"]
+          }
+        ]
+      },
+      {
         "name": "go",
         "type": "function",
         "parameters": [

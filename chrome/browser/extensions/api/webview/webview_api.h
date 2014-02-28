@@ -7,6 +7,7 @@
 
 #include "chrome/browser/extensions/api/capture_web_contents_function.h"
 #include "chrome/browser/extensions/api/execute_code_function.h"
+#include "chrome/browser/guestview/webview/webview_find_helper.h"
 #include "chrome/browser/guestview/webview/webview_guest.h"
 
 // WARNING: Webview could be loaded in an unblessed context, thus any new
@@ -164,6 +165,41 @@ class WebviewGetZoomFunction : public WebviewExtensionFunction {
   virtual bool RunImplSafe(WebViewGuest* guest) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(WebviewGetZoomFunction);
+};
+
+class WebviewFindFunction : public WebviewExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webview.find", WEBVIEW_FIND);
+
+  WebviewFindFunction();
+
+  // Exposes SendResponse() for use by WebviewFindHelper.
+  using WebviewExtensionFunction::SendResponse;
+
+ protected:
+  virtual ~WebviewFindFunction();
+
+ private:
+  // WebviewExtensionFunction implementation.
+  virtual bool RunImplSafe(WebViewGuest* guest) OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(WebviewFindFunction);
+};
+
+class WebviewStopFindingFunction : public WebviewExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webview.stopFinding", WEBVIEW_STOPFINDING);
+
+  WebviewStopFindingFunction();
+
+ protected:
+  virtual ~WebviewStopFindingFunction();
+
+ private:
+  // WebviewExtensionFunction implementation.
+  virtual bool RunImplSafe(WebViewGuest* guest) OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(WebviewStopFindingFunction);
 };
 
 class WebviewGoFunction : public WebviewExtensionFunction {

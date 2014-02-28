@@ -15,6 +15,7 @@ extern const char kEventConsoleMessage[];
 extern const char kEventContentLoad[];
 extern const char kEventDialog[];
 extern const char kEventExit[];
+extern const char kEventFindReply[];
 extern const char kEventLoadAbort[];
 extern const char kEventLoadCommit[];
 extern const char kEventLoadProgress[];
@@ -29,6 +30,8 @@ extern const char kEventUnresponsive[];
 extern const char kEventZoomChange[];
 
 // Parameters/properties on events.
+extern const char kFindSearchText[];
+extern const char kFindFinalUpdate[];
 extern const char kLevel[];
 extern const char kLine[];
 extern const char kMessage[];
@@ -58,6 +61,17 @@ extern const char kNewZoomFactor[];
 extern const char kInternalCurrentEntryIndex[];
 extern const char kInternalEntryCount[];
 extern const char kInternalProcessId[];
+
+// Parameters to callback functions.
+extern const char kFindNumberOfMatches[];
+extern const char kFindActiveMatchOrdinal[];
+extern const char kFindSelectionRect[];
+extern const char kFindRectLeft[];
+extern const char kFindRectTop[];
+extern const char kFindRectWidth[];
+extern const char kFindRectHeight[];
+extern const char kFindCanceled[];
+extern const char kFindDone[];
 
 // Initialization parameters.
 extern const char kParameterUserAgentOverride[];

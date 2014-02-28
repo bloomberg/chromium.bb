@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "content/common/content_export.h"
 #include "content/public/common/browser_plugin_permission_type.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/size.h"
 #include "url/gurl.h"
 
@@ -44,6 +45,14 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
 
   // Informs the delegate that the embedder has been destroyed.
   virtual void EmbedderDestroyed() {}
+
+  // Informs the delegate of a reply to the find request specified by
+  // |request_id|.
+  virtual void FindReply(int request_id,
+                         int number_of_matches,
+                         const gfx::Rect& selection_rect,
+                         int active_match_ordinal,
+                         bool final_update) {}
 
   virtual bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 
