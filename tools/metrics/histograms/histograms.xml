@@ -7398,6 +7398,25 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="MediaGalleries.ScanDirectoriesFound">
+  <summary>
+    The number of directories with media files found during a scan.
+  </summary>
+</histogram>
+
+<histogram name="MediaGalleries.ScanGalleriesGranted" units="%">
+  <summary>
+    The percentage of galleries accepted (not deselected) from the scan result
+    dialog.
+  </summary>
+</histogram>
+
+<histogram name="MediaGalleries.ScanGalleriesPopulated">
+  <summary>
+    The number of galleries added or updated in preferences after a scan.
+  </summary>
+</histogram>
+
 <histogram name="MediaGalleries.Usage" enum="MediaGalleriesUsageType">
   <summary>Various usage counts for media galleries.</summary>
 </histogram>
@@ -29057,9 +29076,9 @@ other types of suffix sets.
 </enum>
 
 <enum name="MediaGalleriesUsageType" type="int">
-  <int value="0" label="Gallery added from dialog"/>
-  <int value="1" label="Gallery permission added from dialog"/>
-  <int value="2" label="Gallery permission removed from dialog"/>
+  <int value="0" label="Gallery added from permission dialog"/>
+  <int value="1" label="Gallery permission added from permission dialog"/>
+  <int value="2" label="Gallery permission removed from permission dialog"/>
   <int value="3" label="GetMediaFileSystems API invocations"/>
   <int value="4" label="Profiles With API Usage (corrected in M35)"/>
   <int value="5" label="Dialog shown"/>
@@ -29069,7 +29088,16 @@ other types of suffix sets.
   <int value="9" label="Preferences initialized"/>
   <int value="10" label="Preferences initialization failed"/>
   <int value="11" label="GetAllMediaFileSystemMetadata API invocations"/>
-  <int value="12" label="AddUserSelectedFolder API invocations"/>
+  <int value="12" label="GetMetadata API invocations"/>
+  <int value="13" label="AddUserSelectedFolder API invocations"/>
+  <int value="14" label="StartMediaScan API invocations"/>
+  <int value="15" label="CancelMediaScan API invocations"/>
+  <int value="16" label="AddScanResults API invocations"/>
+  <int value="17" label="A media scan completed"/>
+  <int value="18" label="AddScanResults dialog cancelled"/>
+  <int value="19" label="AddScanResults dialog accepted"/>
+  <int value="20" label="Gallery removed from AddScanResults dialog"/>
+  <int value="21" label="Gallery removed from permission dialog"/>
 </enum>
 
 <enum name="MediaKeyError" type="int">

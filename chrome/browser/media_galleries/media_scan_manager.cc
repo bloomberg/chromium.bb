@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -205,6 +206,8 @@ void AddScanResultsForProfile(
                             gallery.last_attach_time, file_counts.audio_count,
                             file_counts.image_count, file_counts.video_count);
   }
+  UMA_HISTOGRAM_COUNTS_10000("MediaGalleries.ScanGalleriesPopulated",
+                             unique_found_folders.size() + to_update.size());
 }
 
 // A single directory may contain many folders with media in them, without
@@ -461,6 +464,8 @@ void MediaScanManager::OnScanCompleted(
     return;
   }
 
+  UMA_HISTOGRAM_COUNTS_10000("MediaGalleries.ScanDirectoriesFound",
+                             found_folders.size());
   content::BrowserThread::PostTaskAndReplyWithResult(
       content::BrowserThread::FILE, FROM_HERE,
       base::Bind(FindContainerScanResults,

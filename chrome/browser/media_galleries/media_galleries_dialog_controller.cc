@@ -259,6 +259,7 @@ void MediaGalleriesDialogController::DidForgetGallery(
   // TODO(scr): remove from new_galleries_ if it's in there.  Should
   // new_galleries be a set? Why don't new_galleries allow context clicking?
   DCHECK(ContainsKey(known_galleries_, pref_id));
+  media_galleries::UsageCount(media_galleries::DIALOG_FORGET_GALLERY);
   forgotten_gallery_ids_.insert(pref_id);
   dialog_->UpdateGalleries();
 }

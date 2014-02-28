@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -171,6 +172,7 @@ void MediaGalleriesScanResultDialogController::DidClickOpenFolderViewer(
 
 void MediaGalleriesScanResultDialogController::DidForgetGallery(
     MediaGalleryPrefId pref_id) {
+  media_galleries::UsageCount(media_galleries::ADD_SCAN_RESULTS_FORGET_GALLERY);
   results_to_remove_.insert(pref_id);
   scan_results_.erase(pref_id);
   dialog_->UpdateResults();
@@ -185,6 +187,9 @@ void MediaGalleriesScanResultDialogController::DialogFinished(bool accepted) {
 
   if (accepted) {
     DCHECK(preferences_);
+    media_galleries::UsageCount(media_galleries::ADD_SCAN_RESULTS_ACCEPTED);
+    int granted = 0;
+    int total = 0;
     for (ScanResults::const_iterator it = scan_results_.begin();
          it != scan_results_.end();
          ++it) {
@@ -192,13 +197,21 @@ void MediaGalleriesScanResultDialogController::DialogFinished(bool accepted) {
         bool changed = preferences_->SetGalleryPermissionForExtension(
               *extension_, it->first, true);
         DCHECK(changed);
+        granted++;
       }
+      total++;
+    }
+    if (total > 0) {
+      UMA_HISTOGRAM_PERCENTAGE("MediaGalleries.ScanGalleriesGranted",
+                               (granted * 100 / total));
     }
     for (MediaGalleryPrefIdSet::const_iterator it = results_to_remove_.begin();
         it != results_to_remove_.end();
         ++it) {
       preferences_->ForgetGalleryById(*it);
     }
+  } else {
+    media_galleries::UsageCount(media_galleries::ADD_SCAN_RESULTS_CANCELLED);
   }
 
   on_finish_.Run();

@@ -326,6 +326,7 @@ void MediaGalleriesEventRouter::OnScanCancelled(
 void MediaGalleriesEventRouter::OnScanFinished(
     const std::string& extension_id, int gallery_count,
     const MediaGalleryScanResult& file_counts) {
+  media_galleries::UsageCount(media_galleries::SCAN_FINISHED);
   MediaGalleries::ScanProgressDetails details;
   details.type = MediaGalleries::SCAN_PROGRESS_TYPE_FINISH;
   details.gallery_count.reset(new int(gallery_count));
