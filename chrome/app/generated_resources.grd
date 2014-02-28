@@ -8900,29 +8900,29 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </if>
 
       <message name="IDS_ERRORPAGES_SUGGESTION_RELOAD_REPOST_HEADER" desc="When a page fails to load, sometimes we suggest reloading a page.  In the case that reloading the page requires resubmitting data to a website, we use this as a header above a short set of instructions.">
-        Reload this webpage
+        Reload this webpage.
       </message>
       <message name="IDS_ERRORPAGES_SUGGESTION_RELOAD_REPOST_BODY" desc="When a page fails to load, sometimes we suggest reloading a page.  In the case that reloading the page requires resubmitting data to a website, this is displayed below a short header.">
         Press the reload button to resubmit the data needed to load the page.
       </message>
       <message name="IDS_ERRORPAGES_SUGGESTION_DISABLE_EXTENSION_HEADER" desc="When a page fails to load, we provide a suggestion that the user try disabling an extension that's blocking it.">
-        Disable your extensions and then reload this webpage
+        Disable your extensions and then reload this webpage.
       </message>
       <message name="IDS_ERRORPAGES_SUGGESTION_CHECK_CONNECTION_HEADER" desc="When a page fails to load, sometimes we suggest checking the network connections.  This is a header above some details.">
-        Check your Internet connection
+        Check your Internet connection.
       </message>
       <message name="IDS_ERRORPAGES_SUGGESTION_CHECK_CONNECTION_BODY" desc="When a page fails to load, sometimes we suggest checking the network connections.  This contains details below the suggestion.">
         Check any cables and reboot any routers, modems, or other network
         devices you may be using.
       </message>
       <message name="IDS_ERRORPAGES_SUGGESTION_DNS_CONFIG_HEADER" desc="When a page fails to load, sometimes we suggest checking the DNS configuration.  This is a header above above some details.">
-        Check your DNS settings
+        Check your DNS settings.
       </message>
       <message name="IDS_ERRORPAGES_SUGGESTION_DNS_CONFIG_BODY" desc="When a page fails to load, sometimes we suggest checking the DNS configuration.  This contains details below the suggestion.">
         Contact your network administrator if you're not sure what this means.
       </message>
       <message name="IDS_ERRORPAGES_SUGGESTION_NETWORK_PREDICTION_HEADER" desc="When a page fails to load, sometimes we suggest disabling predicting network actions.  This is a header above some details.">
-        Try disabling network prediction
+        Try disabling network prediction.
       </message>
       <message name="IDS_ERRORPAGES_SUGGESTION_FIREWALL_CONFIG_BODY" desc="When a webpage fails to load, in some cases we suggest reconfiguring the firewall.  This contains details below the suggestion.">
         If it is already listed as a program allowed to access the network, try
@@ -8955,7 +8955,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         <ph name="BEGIN_LINK">&lt;a jsvalues="href:learnMoreUrl"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> about this problem.
       </message>
       <message name="IDS_ERRORPAGES_SUGGESTION_VIEW_POLICIES_HEADER" desc="When a webpage fails to load, sometimes we suggest to the user to view the current policies.  This is a header above some instructions.">
-        Check your administrator's policies
+        Check your administrator's policies.
       </message>
       <message name="IDS_ERRORPAGES_SUGGESTION_VIEW_POLICIES_BODY" desc="When a webpage fails to load, sometimes we suggest to the user to view the current policies.  These are instructions below a header.">
         Visit &lt;strong&gt;chrome://policy&lt;/strong&gt; to see the list of blacklisted URLs and other policies enforced by your system administrator.
@@ -8963,18 +8963,7 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_ERRORPAGES_SUGGESTION_CONTACT_ADMINISTRATOR_BODY" desc="When a webpage fails to load, sometimes we suggest to the user to contact his system administrator.">
         Contact your system administrator for more information.
       </message>
-      <message name="IDS_ERRORPAGES_SUGGESTION_VISIT_GOOGLE_CACHE" desc="When a page fails to load, sometimes we viewing a version of the page cached on Google's servers.">
-        Access a <ph name="BEGIN_LINK">&lt;a jsvalues="href:urlCorrection"&gt;</ph>cached copy<ph name="END_LINK">&lt;/a&gt;</ph> of <ph name="URL">&lt;span jscontent="originalUrlForDisplay"&gt;&lt;/span&gt;<ex>www.hats-for-goats.com/shiny</ex></ph>
-      </message>
-      <message name="IDS_ERRORPAGES_SUGGESTION_CORRECTED_URL" desc="When a page fails to load, sometimes we suggest different URL because we think the one the user entered had a typo.">
-        Did you mean <ph name="LINK">&lt;a jsvalues="href:urlCorrection" jscontent="urlCorrectionForDisplay"&gt;&lt;/a&gt;<ex>www.somewhere-spelled-correctly.com</ex></ph>?
-      </message>
-      <message name="IDS_ERRORPAGES_SUGGESTION_ALTERNATE_URL" desc="When a page fails to load, sometimes we suggest different URL (maybe a different page on the same site, or a site with similar content, for example).">
-        Go to <ph name="LINK">&lt;a jsvalues="href:urlCorrection" jscontent="urlCorrectionForDisplay"&gt;&lt;/a&gt;<ex>www.somewhere.com</ex></ph>
-      </message>
-      <message name="IDS_ERRORPAGES_SUGGESTION_GOOGLE_SEARCH" desc="When a page fails to load, sometimes we suggest a specific Google search.  This appears just above a text input control.">
-        Search on Google
-      </message>
+
       <message name="IDS_ERRORPAGES_TITLE_NOT_AVAILABLE" desc="Title of the error page when we can't connect to a site.">
         <ph name="SITE">$1<ex>google.com</ex></ph> is not available
       </message>

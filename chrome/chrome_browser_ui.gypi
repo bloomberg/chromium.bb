@@ -73,6 +73,8 @@
         # All .cc, .h, .m, and .mm files under browser/ui except for:
         # * tests and mocks.
         'browser/ui/accelerator_utils.h',
+        'browser/ui/alternate_error_tab_observer.cc',
+        'browser/ui/alternate_error_tab_observer.h',
         'browser/ui/android/android_about_app_info.cc',
         'browser/ui/android/android_about_app_info.h',
         'browser/ui/android/autofill/autofill_dialog_controller_android.cc',
@@ -1440,8 +1442,6 @@
         'browser/ui/media_utils.h',
         'browser/ui/metro_pin_tab_helper_win.cc',
         'browser/ui/metro_pin_tab_helper_win.h',
-        'browser/ui/navigation_correction_tab_observer.cc',
-        'browser/ui/navigation_correction_tab_observer.h',
         'browser/ui/network_profile_bubble.cc',
         'browser/ui/network_profile_bubble.h',
         'browser/ui/ntp_background_util.cc',
