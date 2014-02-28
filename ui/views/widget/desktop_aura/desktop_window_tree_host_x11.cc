@@ -1065,6 +1065,13 @@ void DesktopWindowTreeHostX11::InitX11Window(
                       std::string(kX11WindowRolePopup) : params.wm_role_name);
   }
 
+  if (params.remove_standard_frame) {
+    // Setting _GTK_HIDE_TITLEBAR_WHEN_MAXIMIZED tells gnome-shell to not force
+    // fullscreen on the window when it matches the desktop size.
+    ui::SetHideTitlebarWhenMaximizedProperty(xwindow_,
+                                             ui::HIDE_TITLEBAR_WHEN_MAXIMIZED);
+  }
+
   // If we have a parent, record the parent/child relationship. We use this
   // data during destruction to make sure that when we try to close a parent
   // window, we also destroy all child windows.
