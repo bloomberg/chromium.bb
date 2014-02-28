@@ -60,7 +60,10 @@ struct Converter<gin::Handle<T> > {
 // without having to write out the type of the object explicitly.
 template<typename T>
 gin::Handle<T> CreateHandle(v8::Isolate* isolate, T* object) {
-  return gin::Handle<T>(object->GetWrapper(isolate), object);
+  v8::Handle<v8::Object> wrapper = object->GetWrapper(isolate);
+  if (wrapper.IsEmpty())
+    return gin::Handle<T>();
+  return gin::Handle<T>(wrapper, object);
 }
 
 }  // namespace gin

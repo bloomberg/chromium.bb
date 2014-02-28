@@ -191,4 +191,26 @@ TEST_F(WrappableTest, WrappableSubclass) {
   EXPECT_EQ("Hello, Lily", object->result);
 }
 
+TEST_F(WrappableTest, ErrorInObjectConstructorProperty) {
+  v8::Isolate* isolate = instance_->isolate();
+  v8::HandleScope handle_scope(isolate);
+
+  v8::Handle<v8::String> source = StringToV8(
+      isolate,
+      "(function() {"
+      "  Object.defineProperty(Object.prototype, 'constructor', {"
+      "    get: function() { throw 'Error'; },"
+      "    set: function() { throw 'Error'; }"
+      "  });"
+      "})();");
+  EXPECT_FALSE(source.IsEmpty());
+  v8::Handle<v8::Script> script = v8::Script::New(source);
+  script->Run();
+
+  gin::TryCatch try_catch;
+  gin::Handle<MyObject> obj = MyObject::Create(isolate);
+  EXPECT_TRUE(obj.IsEmpty());
+  EXPECT_TRUE(try_catch.HasCaught());
+}
+
 }  // namespace gin
