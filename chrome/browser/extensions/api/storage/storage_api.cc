@@ -57,7 +57,7 @@ bool SettingsFunction::RunImpl() {
 
   observers_ = frontend->GetObservers();
   frontend->RunWithStorage(
-      extension_id(),
+      GetExtension(),
       settings_namespace_,
       base::Bind(&SettingsFunction::AsyncRunWithStorage, this));
   return true;

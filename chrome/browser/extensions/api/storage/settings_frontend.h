@@ -49,11 +49,10 @@ class SettingsFrontend : public ProfileKeyedAPI {
   bool IsStorageEnabled(settings_namespace::Namespace settings_namespace) const;
 
   // Runs |callback| with the storage area of the given |settings_namespace|
-  // for the |extension_id|.
-  void RunWithStorage(
-      const std::string& extension_id,
-      settings_namespace::Namespace settings_namespace,
-      const ValueStoreCache::StorageCallback& callback);
+  // for the |extension|.
+  void RunWithStorage(scoped_refptr<const Extension> extension,
+                      settings_namespace::Namespace settings_namespace,
+                      const ValueStoreCache::StorageCallback& callback);
 
   // Deletes the settings for the given |extension_id|.
   void DeleteStorageSoon(const std::string& extension_id);

@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "chrome/browser/extensions/api/storage/settings_frontend.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permissions_data.h"
 
@@ -19,45 +20,30 @@ static void AssignStorage(ValueStore** dst, ValueStore* src) {
   *dst = src;
 }
 
-ValueStore* GetStorage(
-    const std::string& extension_id,
-    settings_namespace::Namespace settings_namespace,
-    SettingsFrontend* frontend) {
+ValueStore* GetStorage(scoped_refptr<const Extension> extension,
+                       settings_namespace::Namespace settings_namespace,
+                       SettingsFrontend* frontend) {
   ValueStore* storage = NULL;
   frontend->RunWithStorage(
-      extension_id,
-      settings_namespace,
-      base::Bind(&AssignStorage, &storage));
+      extension, settings_namespace, base::Bind(&AssignStorage, &storage));
   base::MessageLoop::current()->RunUntilIdle();
   return storage;
 }
 
-ValueStore* GetStorage(
-    const std::string& extension_id, SettingsFrontend* frontend) {
-  return GetStorage(extension_id, settings_namespace::SYNC, frontend);
+ValueStore* GetStorage(scoped_refptr<const Extension> extension,
+                       SettingsFrontend* frontend) {
+  return GetStorage(extension, settings_namespace::SYNC, frontend);
 }
 
-// MockExtensionService
-
-MockExtensionService::MockExtensionService() {}
-
-MockExtensionService::~MockExtensionService() {}
-
-const Extension* MockExtensionService::GetExtensionById(
-    const std::string& id, bool include_disabled) const {
-  std::map<std::string, scoped_refptr<Extension> >::const_iterator
-      maybe_extension = extensions_.find(id);
-  return maybe_extension == extensions_.end() ?
-      NULL : maybe_extension->second.get();
+scoped_refptr<const Extension> AddExtensionWithId(Profile* profile,
+                                                  const std::string& id,
+                                                  Manifest::Type type) {
+  return AddExtensionWithIdAndPermissions(
+      profile, id, type, std::set<std::string>());
 }
 
-void MockExtensionService::AddExtensionWithId(
-    const std::string& id, Manifest::Type type) {
-  std::set<std::string> empty_permissions;
-  AddExtensionWithIdAndPermissions(id, type, empty_permissions);
-}
-
-void MockExtensionService::AddExtensionWithIdAndPermissions(
+scoped_refptr<const Extension> AddExtensionWithIdAndPermissions(
+    Profile* profile,
     const std::string& id,
     Manifest::Type type,
     const std::set<std::string>& permissions_set) {
@@ -90,21 +76,26 @@ void MockExtensionService::AddExtensionWithIdAndPermissions(
   }
 
   std::string error;
-  scoped_refptr<Extension> extension(Extension::Create(
-      base::FilePath(),
-      Manifest::INTERNAL,
-      manifest,
-      Extension::NO_FLAGS,
-      id,
-      &error));
+  scoped_refptr<const Extension> extension(
+      Extension::Create(base::FilePath(),
+                        Manifest::INTERNAL,
+                        manifest,
+                        Extension::NO_FLAGS,
+                        id,
+                        &error));
   DCHECK(extension.get());
   DCHECK(error.empty());
-  extensions_[id] = extension;
+
+  // Ensure lookups via ExtensionRegistry (and ExtensionService) work even if
+  // the test discards the referenced to the returned extension.
+  ExtensionRegistry::Get(profile)->AddEnabled(extension);
 
   for (std::set<std::string>::const_iterator it = permissions_set.begin();
       it != permissions_set.end(); ++it) {
     DCHECK(extension->HasAPIPermission(*it));
   }
+
+  return extension;
 }
 
 // MockExtensionSystem

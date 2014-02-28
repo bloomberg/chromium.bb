@@ -30,39 +30,26 @@ class SettingsFrontend;
 namespace settings_test_util {
 
 // Synchronously gets the storage area for an extension from |frontend|.
-ValueStore* GetStorage(
-    const std::string& extension_id,
-    settings_namespace::Namespace setting_namespace,
-    SettingsFrontend* frontend);
+ValueStore* GetStorage(scoped_refptr<const Extension> extension,
+                       settings_namespace::Namespace setting_namespace,
+                       SettingsFrontend* frontend);
 
 // Synchronously gets the SYNC storage for an extension from |frontend|.
-ValueStore* GetStorage(
-    const std::string& extension_id,
-    SettingsFrontend* frontend);
+ValueStore* GetStorage(scoped_refptr<const Extension> extension,
+                       SettingsFrontend* frontend);
 
-// An ExtensionService which allows extensions to be hand-added to be returned
-// by GetExtensionById.
-class MockExtensionService : public TestExtensionService {
- public:
-  MockExtensionService();
-  virtual ~MockExtensionService();
+// Creates an extension with |id| and adds it to the registry for |profile|.
+scoped_refptr<const Extension> AddExtensionWithId(Profile* profile,
+                                                  const std::string& id,
+                                                  Manifest::Type type);
 
-  // Adds an extension with id |id| to be returned by GetExtensionById.
-  void AddExtensionWithId(const std::string& id, Manifest::Type type);
-
-  // Adds an extension with id |id| to be returned by GetExtensionById, with
-  // a set of permissions.
-  void AddExtensionWithIdAndPermissions(
-      const std::string& id,
-      Manifest::Type type,
-      const std::set<std::string>& permissions);
-
-  virtual const Extension* GetExtensionById(
-      const std::string& id, bool include_disabled) const OVERRIDE;
-
- private:
-  std::map<std::string, scoped_refptr<Extension> > extensions_;
-};
+// Creates an extension with |id| with a set of |permissions| and adds it to
+// the registry for |profile|.
+scoped_refptr<const Extension> AddExtensionWithIdAndPermissions(
+    Profile* profile,
+    const std::string& id,
+    Manifest::Type type,
+    const std::set<std::string>& permissions);
 
 // A mock ExtensionSystem to serve an EventRouter.
 class MockExtensionSystem : public TestExtensionSystem {
@@ -75,7 +62,7 @@ class MockExtensionSystem : public TestExtensionSystem {
 
  private:
   scoped_ptr<EventRouter> event_router_;
-  MockExtensionService extension_service_;
+  TestExtensionService extension_service_;
 
   DISALLOW_COPY_AND_ASSIGN(MockExtensionSystem);
 };

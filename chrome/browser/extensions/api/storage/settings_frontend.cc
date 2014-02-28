@@ -174,22 +174,14 @@ bool SettingsFrontend::IsStorageEnabled(
 }
 
 void SettingsFrontend::RunWithStorage(
-    const std::string& extension_id,
+    scoped_refptr<const Extension> extension,
     settings_namespace::Namespace settings_namespace,
     const ValueStoreCache::StorageCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  CHECK(extension.get());
 
   ValueStoreCache* cache = caches_[settings_namespace];
   CHECK(cache);
-
-  // The |extension| has already been referenced earlier in the stack, so it
-  // can't be gone here.
-  // TODO(kalman): change RunWithStorage() to take a
-  // scoped_refptr<const Extension> instead.
-  scoped_refptr<const Extension> extension =
-      extensions::ExtensionSystem::Get(browser_context_)->extension_service()->
-          GetExtensionById(extension_id, true);
-  CHECK(extension.get());
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,

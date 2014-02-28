@@ -223,11 +223,9 @@ class ExtensionSettingsSyncTest : public testing::Test {
   // its storage area.
   ValueStore* AddExtensionAndGetStorage(
       const std::string& id, Manifest::Type type) {
-    ExtensionServiceInterface* esi =
-        extensions::ExtensionSystem::Get(profile_.get())->extension_service();
-    static_cast<extensions::settings_test_util::MockExtensionService*>(esi)->
-        AddExtensionWithId(id, type);
-    return util::GetStorage(id, frontend_.get());
+    scoped_refptr<const Extension> extension =
+        util::AddExtensionWithId(profile_.get(), id, type);
+    return util::GetStorage(extension, frontend_.get());
   }
 
   // Gets the syncer::SyncableService for the given sync type.

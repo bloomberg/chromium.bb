@@ -11,17 +11,18 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/storage/settings_frontend.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/extensions_helper.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_helper.h"
 #include "chrome/browser/value_store/value_store.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 
 using content::BrowserThread;
+using extensions::ExtensionRegistry;
 using sync_datatype_helper::test;
 
 namespace extension_settings_helper {
@@ -49,7 +50,7 @@ scoped_ptr<base::DictionaryValue> GetAllSettings(
   base::WaitableEvent signal(false, false);
   scoped_ptr<base::DictionaryValue> settings(new base::DictionaryValue());
   extensions::SettingsFrontend::Get(profile)->RunWithStorage(
-      id,
+      ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(id),
       extensions::settings_namespace::SYNC,
       base::Bind(&GetAllSettingsOnFileThread, settings.get(), &signal));
   signal.Wait();
@@ -57,17 +58,18 @@ scoped_ptr<base::DictionaryValue> GetAllSettings(
 }
 
 bool AreSettingsSame(Profile* expected_profile, Profile* actual_profile) {
-  const extensions::ExtensionSet* extensions =
-      expected_profile->GetExtensionService()->extensions();
-  if (extensions->size() !=
-      actual_profile->GetExtensionService()->extensions()->size()) {
+  const extensions::ExtensionSet& extensions =
+      ExtensionRegistry::Get(expected_profile)->enabled_extensions();
+  if (extensions.size() !=
+      ExtensionRegistry::Get(actual_profile)->enabled_extensions().size()) {
     ADD_FAILURE();
     return false;
   }
 
   bool same = true;
-  for (extensions::ExtensionSet::const_iterator it = extensions->begin();
-      it != extensions->end(); ++it) {
+  for (extensions::ExtensionSet::const_iterator it = extensions.begin();
+       it != extensions.end();
+       ++it) {
     const std::string& id = (*it)->id();
     scoped_ptr<base::DictionaryValue> expected(
         GetAllSettings(expected_profile, id));
@@ -99,7 +101,7 @@ void SetExtensionSettings(
     const base::DictionaryValue& settings) {
   base::WaitableEvent signal(false, false);
   extensions::SettingsFrontend::Get(profile)->RunWithStorage(
-      id,
+      ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(id),
       extensions::settings_namespace::SYNC,
       base::Bind(&SetSettingsOnFileThread, &settings, &signal));
   signal.Wait();

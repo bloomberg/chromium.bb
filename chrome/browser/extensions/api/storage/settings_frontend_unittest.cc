@@ -70,6 +70,8 @@ class ExtensionSettingsFrontendTest : public testing::Test {
   }
 
  protected:
+  Profile* profile() { return profile_.get(); }
+
   void ResetFrontend() {
     storage_factory_->Reset(new LeveldbSettingsStorageFactory());
     frontend_.reset(
@@ -93,12 +95,10 @@ class ExtensionSettingsFrontendTest : public testing::Test {
 
 TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
   const std::string id = "ext";
-  ExtensionServiceInterface* esi =
-      extensions::ExtensionSystem::Get(profile_.get())->extension_service();
-  static_cast<extensions::settings_test_util::MockExtensionService*>(esi)->
-      AddExtensionWithId(id, Manifest::TYPE_EXTENSION);
+  scoped_refptr<const Extension> extension =
+      util::AddExtensionWithId(profile(), id, Manifest::TYPE_EXTENSION);
 
-  ValueStore* storage = util::GetStorage(id, frontend_.get());
+  ValueStore* storage = util::GetStorage(extension, frontend_.get());
 
   // The correctness of Get/Set/Remove/Clear is tested elsewhere so no need to
   // be too rigorous.
@@ -115,7 +115,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
   }
 
   ResetFrontend();
-  storage = util::GetStorage(id, frontend_.get());
+  storage = util::GetStorage(extension, frontend_.get());
 
   {
     ValueStore::ReadResult result = storage->Get();
@@ -126,12 +126,10 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
 
 TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
   const std::string id = "ext";
-  ExtensionServiceInterface* esi =
-      extensions::ExtensionSystem::Get(profile_.get())->extension_service();
-  static_cast<extensions::settings_test_util::MockExtensionService*>(esi)->
-      AddExtensionWithId(id, Manifest::TYPE_LEGACY_PACKAGED_APP);
+  scoped_refptr<const Extension> extension = util::AddExtensionWithId(
+      profile(), id, Manifest::TYPE_LEGACY_PACKAGED_APP);
 
-  ValueStore* storage = util::GetStorage(id, frontend_.get());
+  ValueStore* storage = util::GetStorage(extension, frontend_.get());
 
   {
     base::StringValue bar("bar");
@@ -144,7 +142,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
   base::MessageLoop::current()->RunUntilIdle();
 
   // The storage area may no longer be valid post-uninstall, so re-request.
-  storage = util::GetStorage(id, frontend_.get());
+  storage = util::GetStorage(extension, frontend_.get());
   {
     ValueStore::ReadResult result = storage->Get();
     ASSERT_FALSE(result->HasError());
@@ -154,12 +152,10 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
 
 TEST_F(ExtensionSettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
   const std::string id = "ext";
-  ExtensionServiceInterface* esi =
-      extensions::ExtensionSystem::Get(profile_.get())->extension_service();
-  static_cast<extensions::settings_test_util::MockExtensionService*>(esi)->
-      AddExtensionWithId(id, Manifest::TYPE_EXTENSION);
+  scoped_refptr<const Extension> extension =
+      util::AddExtensionWithId(profile(), id, Manifest::TYPE_EXTENSION);
 
-  ValueStore* storage = util::GetStorage(id, frontend_.get());
+  ValueStore* storage = util::GetStorage(extension, frontend_.get());
 
   {
     base::StringValue bar("bar");
@@ -188,15 +184,13 @@ TEST_F(ExtensionSettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
 TEST_F(ExtensionSettingsFrontendTest,
        DISABLED_QuotaLimitsEnforcedCorrectlyForSyncAndLocal) {
   const std::string id = "ext";
-  ExtensionServiceInterface* esi =
-      extensions::ExtensionSystem::Get(profile_.get())->extension_service();
-  static_cast<extensions::settings_test_util::MockExtensionService*>(esi)->
-      AddExtensionWithId(id, Manifest::TYPE_EXTENSION);
+  scoped_refptr<const Extension> extension =
+      util::AddExtensionWithId(profile(), id, Manifest::TYPE_EXTENSION);
 
   ValueStore* sync_storage =
-      util::GetStorage(id, settings::SYNC, frontend_.get());
+      util::GetStorage(extension, settings::SYNC, frontend_.get());
   ValueStore* local_storage =
-      util::GetStorage(id, settings::LOCAL, frontend_.get());
+      util::GetStorage(extension, settings::LOCAL, frontend_.get());
 
   // Sync storage should run out after ~100K.
   scoped_ptr<base::Value> kilobyte = CreateKilobyte();
@@ -272,16 +266,15 @@ TEST_F(ExtensionSettingsFrontendTest,
   const std::string id = "ext";
   std::set<std::string> permissions;
   permissions.insert("unlimitedStorage");
-  ExtensionServiceInterface* esi =
-      extensions::ExtensionSystem::Get(profile_.get())->extension_service();
-  static_cast<extensions::settings_test_util::MockExtensionService*>(esi)->
-      AddExtensionWithIdAndPermissions(id, Manifest::TYPE_EXTENSION,
-          permissions);
+  scoped_refptr<const Extension> extension =
+      util::AddExtensionWithIdAndPermissions(
+          profile(), id, Manifest::TYPE_EXTENSION, permissions);
 
   frontend_->RunWithStorage(
-      id, settings::SYNC, base::Bind(&UnlimitedSyncStorageTestCallback));
-  frontend_->RunWithStorage(
-      id, settings::LOCAL, base::Bind(&UnlimitedLocalStorageTestCallback));
+      extension, settings::SYNC, base::Bind(&UnlimitedSyncStorageTestCallback));
+  frontend_->RunWithStorage(extension,
+                            settings::LOCAL,
+                            base::Bind(&UnlimitedLocalStorageTestCallback));
 
   base::MessageLoop::current()->RunUntilIdle();
 }

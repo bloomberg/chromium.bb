@@ -108,7 +108,7 @@ TEST_F(StorageApiUnittest, RestoreCorruptedStorage) {
   // of the underlying structure, but there's no real good way to corrupt a
   // store other than directly modifying the files.
   ValueStore* store =
-      settings_test_util::GetStorage(extension()->id(),
+      settings_test_util::GetStorage(extension_ref(),
                                      settings_namespace::LOCAL,
                                      SettingsFrontend::Get(profile()));
   ASSERT_TRUE(store);
