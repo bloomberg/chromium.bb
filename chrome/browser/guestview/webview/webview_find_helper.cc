@@ -9,8 +9,9 @@
 #include "chrome/browser/extensions/api/webview/webview_api.h"
 #include "chrome/browser/guestview/webview/webview_constants.h"
 
-WebviewFindHelper::WebviewFindHelper()
-    : current_find_request_id_(0) {
+WebviewFindHelper::WebviewFindHelper(WebViewGuest* webview_guest)
+    : webview_guest_(webview_guest),
+      current_find_request_id_(0) {
 }
 
 WebviewFindHelper::~WebviewFindHelper() {
@@ -22,6 +23,21 @@ void WebviewFindHelper::CancelAllFindSessions() {
     find_info_map_.begin()->second->SendResponse(true /* canceled */);
     find_info_map_.erase(find_info_map_.begin());
   }
+  if (find_update_event_.get())
+    DispatchFindUpdateEvent(true /* canceled */, true /* final_update */);
+  find_update_event_.reset();
+}
+
+void WebviewFindHelper::DispatchFindUpdateEvent(bool canceled,
+                                                bool final_update) {
+  DCHECK(find_update_event_.get());
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+  find_update_event_->PrepareResults(args.get());
+  args->SetBoolean(webview::kFindCanceled, canceled);
+  args->SetBoolean(webview::kFindFinalUpdate, final_update);
+  DCHECK(webview_guest_);
+  webview_guest_->DispatchEvent(new GuestView::Event(webview::kEventFindReply,
+                                                     args.Pass()));
 }
 
 void WebviewFindHelper::EndFindSession(int session_request_id, bool canceled) {
@@ -138,12 +154,22 @@ void WebviewFindHelper::FindReply(int request_id,
       find_info_map_.begin()->first < request_id) {
     DCHECK_NE(current_find_session_->request_id(),
               find_info_map_.begin()->first);
+    DispatchFindUpdateEvent(true /* canceled */, true /* final_update */);
     EndFindSession(find_info_map_.begin()->first, true /* canceled */);
   }
+
+  // Clears the results for |findupdate| for a new find session.
+  if (!find_info->replied() && !find_info->options()->findNext)
+    find_update_event_.reset(new FindUpdateEvent(find_info->search_text()));
 
   // Aggregate the find results.
   find_info->AggregateResults(number_of_matches, selection_rect,
                               active_match_ordinal, final_update);
+  find_update_event_->AggregateResults(number_of_matches, selection_rect,
+                                      active_match_ordinal, final_update);
+
+  // Propagate incremental results to the |findupdate| event.
+  DispatchFindUpdateEvent(false /* canceled */, final_update);
 
   // Call the callback functions of completed find requests.
   if (final_update)
@@ -186,6 +212,28 @@ void WebviewFindHelper::FindResults::PrepareResults(
   rect.SetInteger(webview::kFindRectWidth, selection_rect_.width());
   rect.SetInteger(webview::kFindRectHeight, selection_rect_.height());
   results->Set(webview::kFindSelectionRect, rect.DeepCopy());
+}
+
+WebviewFindHelper::FindUpdateEvent::FindUpdateEvent(
+    const base::string16& search_text) : search_text_(search_text) {
+}
+
+WebviewFindHelper::FindUpdateEvent::~FindUpdateEvent() {
+}
+
+void WebviewFindHelper::FindUpdateEvent::AggregateResults(
+    int number_of_matches,
+    const gfx::Rect& selection_rect,
+    int active_match_ordinal,
+    bool final_update) {
+  find_results_.AggregateResults(number_of_matches, selection_rect,
+                                 active_match_ordinal, final_update);
+}
+
+void WebviewFindHelper::FindUpdateEvent::PrepareResults(
+    base::DictionaryValue* results) {
+  results->SetString(webview::kFindSearchText, search_text_);
+  find_results_.PrepareResults(results);
 }
 
 WebviewFindHelper::FindInfo::FindInfo(

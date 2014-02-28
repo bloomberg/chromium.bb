@@ -17,15 +17,19 @@
 namespace extensions {
 class WebviewFindFunction;
 } // namespace extensions
+class WebViewGuest;
 
 // Helper class for find requests and replies for the webview find API.
 class WebviewFindHelper {
  public:
-  WebviewFindHelper();
+  explicit WebviewFindHelper(WebViewGuest* webview_guest);
   ~WebviewFindHelper();
 
   // Cancels all find requests in progress and calls their callback functions.
   void CancelAllFindSessions();
+
+  // Dispatches the |findupdate| event.
+  void DispatchFindUpdateEvent(bool canceled, bool final_update);
 
   // Ends the find session with id |session_request_id|  and calls the
   // appropriate callbacks.
@@ -71,6 +75,28 @@ class WebviewFindHelper {
     DISALLOW_COPY_AND_ASSIGN(FindResults);
   };
 
+  // Stores and processes the results for the |findupdate| event.
+  class FindUpdateEvent {
+   public:
+    explicit FindUpdateEvent(const base::string16& search_text);
+    ~FindUpdateEvent();
+
+    // Aggregate the find results.
+    void AggregateResults(int number_of_matches,
+                          const gfx::Rect& selection_rect,
+                          int active_match_ordinal,
+                          bool final_update);
+
+    // Stores find results and other event info into a DictionaryValue.
+    void PrepareResults(base::DictionaryValue* results);
+
+   private:
+    const base::string16 search_text_;
+    FindResults find_results_;
+
+    DISALLOW_COPY_AND_ASSIGN(FindUpdateEvent);
+  };
+
   // Handles all information about a find request and its results.
   class FindInfo {
    public:
@@ -95,6 +121,10 @@ class WebviewFindHelper {
 
     blink::WebFindOptions* options() {
       return &options_;
+    }
+
+    bool replied() {
+      return replied_;
     }
 
     int request_id() {
@@ -132,9 +162,15 @@ class WebviewFindHelper {
     DISALLOW_COPY_AND_ASSIGN(FindInfo);
   };
 
+  // Pointer to the webview that is being helped.
+  WebViewGuest* const webview_guest_;
+
   // A counter to generate a unique request id for a find request.
   // We only need the ids to be unique for a given WebViewGuest.
   int current_find_request_id_;
+
+  // Stores aggregated find results and other info for the |findupdate| event.
+  scoped_ptr<FindUpdateEvent> find_update_event_;
 
   // Pointer to the first request of the current find session.
   linked_ptr<FindInfo> current_find_session_;

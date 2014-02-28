@@ -36,6 +36,17 @@ var WEB_VIEW_EXPERIMENTAL_EVENTS = {
     evt: CreateEvent('webview.onDialog'),
     fields: ['defaultPromptText', 'messageText', 'messageType', 'url']
   },
+  'findupdate': {
+    evt: CreateEvent('webview.onFindReply'),
+    fields: [
+      'searchText',
+      'numberOfMatches',
+      'activeMatchOrdinal',
+      'selectionRect',
+      'canceled',
+      'finalUpdate'
+    ]
+  },
   'zoomchange': {
     evt: CreateEvent('webview.onZoomChange'),
     fields: ['oldZoomFactor', 'newZoomFactor']

@@ -132,7 +132,8 @@ WebViewGuest::WebViewGuest(WebContents* guest_web_contents,
       is_overriding_user_agent_(false),
       pending_reload_on_attachment_(false),
       main_frame_id_(0),
-      chromevox_injected_(false) {
+      chromevox_injected_(false),
+      find_helper_(this) {
   notification_registrar_.Add(
       this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
       content::Source<WebContents>(guest_web_contents));
@@ -337,7 +338,7 @@ void WebViewGuest::FindReply(int request_id,
                              int active_match_ordinal,
                              bool final_update) {
   find_helper_.FindReply(request_id, number_of_matches, selection_rect,
-                          active_match_ordinal, final_update);
+                         active_match_ordinal, final_update);
 }
 
 void WebViewGuest::GuestProcessGone(base::TerminationStatus status) {

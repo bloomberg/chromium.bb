@@ -1362,8 +1362,6 @@ function testFindAPI() {
     webview.find("dog", {}, function(results) {
       callbackTest = true;
       embedder.test.assertEq(results.numberOfMatches, 100);
-      embedder.test.assertFalse(results.selectionRect.left == -1);
-      embedder.test.assertFalse(results.selectionRect.top == -1);
       embedder.test.assertTrue(results.selectionRect.width > 0);
       embedder.test.assertTrue(results.selectionRect.height > 0);
 
@@ -1412,6 +1410,50 @@ function testFindAPI() {
   };
 
   webview.addEventListener('loadstop', loadstopListener1);
+  document.body.appendChild(webview);
+};
+
+function testFindAPI_findupdate() {
+  var webview = new WebView();
+  webview.src = 'data:text/html,Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br>' +
+      'Dog dog dog Dog dog dogcatDog dogDogdog.<br><br>' +
+      '<a href="about:blank">Click here!</a>';
+  var canceledTest = false;
+  webview.addEventListener('loadstop', function(e) {
+    // Test the |findupdate| event.
+    webview.addEventListener('findupdate', function(e) {
+      if (e.activeMatchOrdinal > 0) {
+        // embedder.test.assertTrue(e.numberOfMatches >= e.activeMatchOrdinal)
+        // This currently fails because of http://crbug.com/342445 .
+        embedder.test.assertTrue(e.selectionRect.width > 0);
+        embedder.test.assertTrue(e.selectionRect.height > 0);
+      }
+
+      if (e.finalUpdate) {
+        if (e.canceled) {
+          canceledTest = true;
+        } else {
+          embedder.test.assertEq(e.searchText, "dog");
+          embedder.test.assertEq(e.numberOfMatches, 100);
+          embedder.test.assertEq(e.activeMatchOrdinal, 1);
+          embedder.test.assertTrue(canceledTest);
+          embedder.test.succeed();
+        }
+      }
+    });
+    wv.find("dog");
+    wv.find("cat");
+    wv.find("dog");
+  });
+
   document.body.appendChild(webview);
 };
 
@@ -1468,7 +1510,8 @@ embedder.test.testList = {
   'testPostMessageCommChannel': testPostMessageCommChannel,
   'testScreenshotCapture' : testScreenshotCapture,
   'testZoomAPI' : testZoomAPI,
-  'testFindAPI': testFindAPI
+  'testFindAPI': testFindAPI,
+  'testFindAPI_findupdate': testFindAPI
 };
 
 onload = function() {

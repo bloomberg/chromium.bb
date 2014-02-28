@@ -248,6 +248,9 @@ class WebViewGuest : public GuestView,
   // Handles find requests and replies for the webview find API.
   WebviewFindHelper find_helper_;
 
+  friend void WebviewFindHelper::DispatchFindUpdateEvent(bool canceled,
+                                                         bool final_update);
+
 #if defined(OS_CHROMEOS)
   // Subscription to receive notifications on changes to a11y settings.
   scoped_ptr<chromeos::AccessibilityStatusSubscription>
