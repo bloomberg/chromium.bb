@@ -108,5 +108,16 @@
         'files': [ '<@(widevine_cdm_binary_files)' ],
       }],
     },
+    {
+      'target_name': 'widevine_test_license_server',
+      'type': 'none',
+      'conditions': [
+        [ 'branding == "Chrome" and OS == "linux"', {
+          'dependencies': [
+            '<(DEPTH)/third_party/widevine/test/license_server/license_server.gyp:test_license_server',
+          ],
+        }],
+      ],
+    },
   ],
 }

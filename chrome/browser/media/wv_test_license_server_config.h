@@ -15,18 +15,25 @@ class WVTestLicenseServerConfig : public TestLicenseServerConfig {
 
   virtual std::string GetServerURL() OVERRIDE;
 
-  // Retrieves the path for the license server binaries.
-  // WV license server files are located under:
-  // chrome/test/license_server/<platform>/
-  virtual void GetLicenseServerPath(base::FilePath* path) OVERRIDE;
-
-  // Appends necessary Widevine license server command line arguments:
-  // port number, keys file path, policies file path, and profiles file path.
-  virtual void AppendCommandLineArgs(CommandLine* command_line) OVERRIDE;
+  virtual bool GetServerCommandLine(CommandLine* command_line) OVERRIDE;
 
   virtual bool IsPlatformSupported() OVERRIDE;
 
  private:
+  // Server port. The port value should be set by calling SelectServerPort().
+  uint16 port_;
+
+  // Retrieves the path for the WV license server root:
+  // third_party/widevine/test/license_server/
+  void GetLicenseServerRootPath(base::FilePath* path);
+
+  // Retrieves the path for the WV license server:
+  // <license_server_root_path>/<platform>/
+  void GetLicenseServerPath(base::FilePath* path);
+
+  // Sets the server port to a randomly available port within a limited range.
+  bool SelectServerPort();
+
   DISALLOW_COPY_AND_ASSIGN(WVTestLicenseServerConfig);
 };
 
