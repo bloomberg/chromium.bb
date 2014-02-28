@@ -77,6 +77,7 @@ class AwPicture extends Picture {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void writeToStream(OutputStream stream) {
         unsupportedOperation();
     }

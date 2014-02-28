@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ComponentCallbacks2;
 import android.content.Context;
@@ -1557,6 +1558,7 @@ public class AwContents {
     /**
      * @see android.view.View#onDetachedFromWindow()
      */
+    @SuppressLint("MissingSuperCall")
     public void onDetachedFromWindow() {
         mIsAttachedToWindow = false;
         hideAutofillPopup();

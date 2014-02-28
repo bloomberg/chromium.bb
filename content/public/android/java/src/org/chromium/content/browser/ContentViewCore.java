@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.SearchManager;
 import android.content.ContentResolver;
@@ -1541,6 +1542,7 @@ public class ContentViewCore
      * @see View#onDetachedFromWindow()
      */
     @SuppressWarnings("javadoc")
+    @SuppressLint("MissingSuperCall")
     public void onDetachedFromWindow() {
         setInjectedAccessibility(false);
         hidePopupDialog();

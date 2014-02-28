@@ -57,10 +57,6 @@ Still reading?
     <ignore path="ui/android/java/src/org/chromium/ui/base/LocalizationUtils.java"/>
   </issue>
   <issue id="MissingRegistered" severity="ignore"/>
-  <issue id="MissingSuperCall">
-    <ignore path="android_webview/java/src/org/chromium/android_webview/AwContents.java"/>
-    <ignore path="content/public/android/java/src/org/chromium/content/browser/ContentViewCore.java"/>
-  </issue>
   <issue id="MissingVersion">
     <ignore path="AndroidManifest.xml"/>
   </issue>
