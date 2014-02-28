@@ -307,12 +307,15 @@ Browser* InlineLoginHandlerImpl::GetDesktopBrowser() {
 void InlineLoginHandlerImpl::SyncStarterCallback(
     OneClickSigninSyncStarter::SyncSetupResult result) {
   content::WebContents* contents = web_ui()->GetWebContents();
-  const GURL& current_url = contents->GetVisibleURL();
-  if (current_url.GetOrigin().spec() != chrome::kChromeUIChromeSigninURL) {
-    // Do nothing if the current tab has navigated away from inline signin.
+
+  if (contents->GetController().GetPendingEntry()) {
+    // Do nothing if a navigation is pending, since this call can be triggered
+    // from DidStartLoading. This avoids deleting the pending entry while we are
+    // still navigating to it. See crbug/346632.
     return;
   }
 
+  const GURL& current_url = contents->GetLastCommittedURL();
   signin::Source source = signin::GetSourceForPromoURL(current_url);
   DCHECK(source != signin::SOURCE_UNKNOWN);
   bool auto_close = signin::IsAutoCloseEnabledInURL(current_url);
