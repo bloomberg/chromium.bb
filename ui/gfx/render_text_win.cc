@@ -1007,6 +1007,13 @@ void RenderTextWin::LayoutVisualText() {
 
     if (run->glyph_count > 0) {
       run->advance_widths.reset(new int[run->glyph_count]);
+      // TODO(asvitkine): Temporary instrumentation to debug a double-free
+      // crash where we're seeing these two being equal inexplicably. Hitting
+      // this implies that the malloc book-keeping is corrupt and it returned
+      // the same pointer for two different allocs, which we can debug further.
+      // http://crbug.com/348103
+      CHECK_NE(static_cast<void*>(run->logical_clusters.get()),
+               static_cast<void*>(run->advance_widths.get()));
       run->offsets.reset(new GOFFSET[run->glyph_count]);
       hr = ScriptPlace(cached_hdc_,
                        &run->script_cache,
