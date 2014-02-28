@@ -10,8 +10,13 @@
 
 namespace content {
 
-// ScreenOrientationDispatcherHost
-class ScreenOrientationDispatcherHost : public BrowserMessageFilter {
+class ScreenOrientationProvider;
+
+// ScreenOrientationDispatcherHost is a browser filter for Screen Orientation
+// messages and also helps dispatching messages about orientation changes to the
+// renderers.
+class CONTENT_EXPORT ScreenOrientationDispatcherHost
+    : public BrowserMessageFilter {
  public:
   ScreenOrientationDispatcherHost();
 
@@ -20,8 +25,17 @@ class ScreenOrientationDispatcherHost : public BrowserMessageFilter {
 
   void OnOrientationChange(blink::WebScreenOrientation orientation);
 
-private:
-  virtual ~ScreenOrientationDispatcherHost() {}
+  void SetProviderForTests(ScreenOrientationProvider* provider);
+
+ private:
+  virtual ~ScreenOrientationDispatcherHost();
+
+  void OnLockRequest(blink::WebScreenOrientations orientations);
+  void OnUnlockRequest();
+
+  static ScreenOrientationProvider* CreateProvider();
+
+  scoped_ptr<ScreenOrientationProvider> provider_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenOrientationDispatcherHost);
 };

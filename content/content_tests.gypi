@@ -477,6 +477,7 @@
         'browser/renderer_host/input/web_input_event_builders_gtk_unittest.cc',
         'browser/renderer_host/websocket_dispatcher_host_unittest.cc',
         'browser/resolve_proxy_msg_helper_unittest.cc',
+        'browser/screen_orientation/screen_orientation_dispatcher_host_unittest.cc',
         'browser/service_worker/embedded_worker_instance_unittest.cc',
         'browser/service_worker/embedded_worker_test_helper.cc',
         'browser/service_worker/embedded_worker_test_helper.h',

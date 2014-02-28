@@ -159,6 +159,8 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual void cancelVibration();
   virtual void setScreenOrientationListener(
     blink::WebScreenOrientationListener*) OVERRIDE;
+  virtual void lockOrientation(blink::WebScreenOrientations) OVERRIDE;
+  virtual void unlockOrientation() OVERRIDE;
 
   // Disables the WebSandboxSupport implementation for testing.
   // Tests that do not set up a full sandbox environment should call

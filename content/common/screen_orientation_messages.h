@@ -5,6 +5,7 @@
 // IPC messages for screen orientation.
 // Multiply-included message file, hence no include guard.
 
+#include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/platform/WebScreenOrientation.h"
 
@@ -19,3 +20,12 @@ IPC_ENUM_TRAITS(blink::WebScreenOrientation)
 // has changed. |orientation| contains the new screen orientation in degrees.
 IPC_MESSAGE_CONTROL1(ScreenOrientationMsg_OrientationChange,
                      blink::WebScreenOrientation /* orientation */ )
+
+// The renderer process requests the browser process to lock the screen
+// orientation to the specified |orientations|.
+IPC_MESSAGE_CONTROL1(ScreenOrientationHostMsg_Lock,
+                     blink::WebScreenOrientations /* orientations */ )
+
+// The renderer process requests the browser process to unlock the screen
+// orientation.
+IPC_MESSAGE_CONTROL0(ScreenOrientationHostMsg_Unlock)

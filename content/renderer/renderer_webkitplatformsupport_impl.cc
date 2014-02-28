@@ -33,6 +33,7 @@
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/mime_registry_messages.h"
+#include "content/common/screen_orientation_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/webplugininfo.h"
@@ -1118,6 +1119,15 @@ void RendererWebKitPlatformSupportImpl::setScreenOrientationListener(
   }
 
   screen_orientation_dispatcher_->setListener(listener);
+}
+
+void RendererWebKitPlatformSupportImpl::lockOrientation(
+    blink::WebScreenOrientations orientations) {
+  RenderThread::Get()->Send(new ScreenOrientationHostMsg_Lock(orientations));
+}
+
+void RendererWebKitPlatformSupportImpl::unlockOrientation() {
+  RenderThread::Get()->Send(new ScreenOrientationHostMsg_Unlock);
 }
 
 //------------------------------------------------------------------------------
