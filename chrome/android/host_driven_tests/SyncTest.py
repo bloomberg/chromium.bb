@@ -48,8 +48,10 @@ class SyncTest(test_case.HostDrivenTestCase):
     java_tests = ['testGetAboutSyncInfoYieldsValidData']
     return self._RunSyncTests(java_tests)
 
-  @tests_annotations.Feature(['Sync'])
-  @tests_annotations.EnormousTest
+  # http://crbug.com/348117
+  # @tests_annotations.Feature(['Sync'])
+  # @tests_annotations.EnormousTest
+  @tests_annotations.DisabledTest
   def testAboutSyncPageDisplaysCurrentSyncStatus(self):
     java_tests = ['testAboutSyncPageDisplaysCurrentSyncStatus']
     return self._RunSyncTests(java_tests)
