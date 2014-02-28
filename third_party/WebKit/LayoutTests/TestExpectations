@@ -556,18 +556,6 @@ crbug.com/340206 [ Win ] http/tests/security/cross-origin-css.html [ Pass Timeou
 crbug.com/284734 svg/custom/getsvgdocument.html [ Pass ImageOnlyFailure ]
 crbug.com/326881 [ Mac Debug ] svg/carto.net/window.svg [ Pass ImageOnlyFailure ]
 
-# Skia suppressions
-crbug.com/341448 svg/W3C-SVG-1.1/filters-gauss-01-b.svg [ NeedsRebaseline ]
-crbug.com/341448 svg/W3C-SVG-1.1/filters-morph-01-f.svg [ NeedsRebaseline ]
-crbug.com/341448 svg/batik/text/smallFonts.svg [ NeedsRebaseline ]
-crbug.com/341448 svg/batik/text/textFeatures.svg [ NeedsRebaseline ]
-crbug.com/344497 virtual/deferred/fast/images/imagemap-focus-ring-zero-outline-width.html [ NeedsRebaseline ]
-crbug.com/344497 virtual/deferred/fast/images/jpeg-with-color-profile.html [ NeedsRebaseline ]
-crbug.com/344497 virtual/deferred/fast/images/png-with-color-profile.html [ NeedsRebaseline ]
-crbug.com/344497 virtual/deferred/fast/images/rgb-png-with-cmyk-color-profile.html [ NeedsRebaseline ]
-crbug.com/344497 virtual/deferred/fast/images/webp-color-profile-lossy.html [ NeedsRebaseline ]
-crbug.com/344497 virtual/deferred/fast/images/ycbcr-with-cmyk-color-profile.html [ NeedsRebaseline ]
-
 crbug.com/283723 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass Timeout ]
 crbug.com/282634 [ SnowLeopard Debug ] svg/as-object/embedded-svg-size-changes-no-layout-triggers.html [ Pass ImageOnlyFailure ]
 crbug.com/282634 [ SnowLeopard Debug ] svg/as-object/nested-embedded-svg-size-changes-no-layout-triggers-1.html [ Pass ImageOnlyFailure ]
