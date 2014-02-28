@@ -86,6 +86,9 @@ race:webrtc::RTPSender::SendOutgoingData
 race:webrtc::VP8EncoderImpl::GetEncodedPartitions
 race:webrtc::VP8EncoderImpl::Encode
 race:webrtc::ViEEncoder::DeliverFrame
+race:webrtc::vcm::VideoReceiver::Decode
+race:webrtc::VCMReceiver::FrameForDecoding
+race:*trace_event_unique_catstatic*
 
 # http://crbug.com/244856
 race:AutoPulseLock
@@ -104,6 +107,7 @@ race:base::debug::TraceEventTestFixture_TraceSamplingScope_Test::TestBody
 
 # http://crbug.com/258479
 race:SamplingStateScope
+race:g_trace_state
 
 # http://crbug.com/258499
 race:third_party/skia/include/core/SkRefCnt.h
@@ -154,6 +158,10 @@ race:CallbackWasCalled
 # http://crbug.com/327330
 race:PrepareTextureMailbox
 race:cc::LayerTreeHost::PaintLayerContents
+
+# http://crbug.com/328804
+race:v8::internal::Heap::SetStackLimits
+race:ScavengePointer
 
 # http://crbug.com/328826
 race:gLCDOrder
