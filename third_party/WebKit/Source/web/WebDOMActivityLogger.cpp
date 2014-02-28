@@ -31,7 +31,6 @@
 #include "config.h"
 #include "WebDOMActivityLogger.h"
 
-#include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMActivityLogger.h"
 #include "core/dom/Document.h"
@@ -66,13 +65,13 @@ private:
 
 bool hasDOMActivityLogger(int worldId)
 {
-    return DOMWrapperWorld::activityLogger(worldId);
+    return V8DOMActivityLogger::activityLogger(worldId);
 }
 
 void setDOMActivityLogger(int worldId, WebDOMActivityLogger* logger)
 {
     ASSERT(logger);
-    DOMWrapperWorld::setActivityLogger(worldId, adoptPtr(new DOMActivityLoggerContainer(adoptPtr(logger))));
+    V8DOMActivityLogger::setActivityLogger(worldId, adoptPtr(new DOMActivityLoggerContainer(adoptPtr(logger))));
 }
 
 } // namespace blink

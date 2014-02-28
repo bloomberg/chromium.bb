@@ -231,7 +231,7 @@ bool V8WindowShell::initialize()
         disposeContext(DoNotDetachGlobal);
         return false;
     }
-    m_perContextData->setActivityLogger(DOMWrapperWorld::activityLogger(m_world->worldId()));
+    m_perContextData->setActivityLogger(V8DOMActivityLogger::activityLogger(m_world->worldId()));
     if (!installDOMWindow()) {
         disposeContext(DoNotDetachGlobal);
         return false;

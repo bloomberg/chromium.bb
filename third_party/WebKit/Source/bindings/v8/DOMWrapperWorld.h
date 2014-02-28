@@ -31,14 +31,13 @@
 #ifndef DOMWrapperWorld_h
 #define DOMWrapperWorld_h
 
-#include "bindings/v8/V8DOMActivityLogger.h"
 #include "bindings/v8/V8PerContextData.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include <v8.h>
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
+#include <v8.h>
 
 namespace WebCore {
 
@@ -94,11 +93,6 @@ public:
     static void setIsolatedWorldContentSecurityPolicy(int worldID, const String& policy);
     static void clearIsolatedWorldContentSecurityPolicy(int worldID);
     bool isolatedWorldHasContentSecurityPolicy();
-
-    // Associate a logger with the world identified by worldId (worlId may be 0
-    // identifying the main world).
-    static void setActivityLogger(int worldId, PassOwnPtr<V8DOMActivityLogger>);
-    static V8DOMActivityLogger* activityLogger(int worldId);
 
     bool isMainWorld() const { return m_worldId == MainWorldId; }
     bool isWorkerWorld() const { return m_worldId == WorkerWorldId; }

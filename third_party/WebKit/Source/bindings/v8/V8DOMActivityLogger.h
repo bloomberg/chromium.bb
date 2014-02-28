@@ -31,8 +31,9 @@
 #ifndef V8DOMActivityLogger_h
 #define V8DOMActivityLogger_h
 
-#include <v8.h>
+#include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
+#include <v8.h>
 
 namespace WebCore {
 
@@ -41,6 +42,11 @@ public:
     virtual ~V8DOMActivityLogger() { }
 
     virtual void log(const String& apiName, int argc, const v8::Handle<v8::Value>* argv, const String& extraInfo) { }
+
+    // Associates a logger with the world identified by worldId (worlId may be 0
+    // identifying the main world).
+    static void setActivityLogger(int worldId, PassOwnPtr<V8DOMActivityLogger>);
+    static V8DOMActivityLogger* activityLogger(int worldId);
 };
 
 } // namespace WebCore

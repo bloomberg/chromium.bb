@@ -91,6 +91,7 @@
             'v8/V8Callback.h',
             'v8/V8CustomElementLifecycleCallbacks.cpp',
             'v8/V8CustomElementLifecycleCallbacks.h',
+            'v8/V8DOMActivityLogger.cpp',
             'v8/V8DOMActivityLogger.h',
             'v8/V8DOMConfiguration.cpp',
             'v8/V8DOMConfiguration.h',
