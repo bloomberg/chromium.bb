@@ -1084,10 +1084,13 @@ void SchedulerStateMachine::SetNeedsForcedCommitForReadback() {
   // BeginMainFrame behind the readback request. In that case, we can skip
   // READBACK_STATE_NEEDS_BEGIN_MAIN_FRAME and go directly to
   // READBACK_STATE_WAITING_FOR_COMMIT
-  if (commit_state_ == COMMIT_STATE_FRAME_IN_PROGRESS)
+  if (commit_state_ == COMMIT_STATE_FRAME_IN_PROGRESS) {
     readback_state_ = READBACK_STATE_WAITING_FOR_COMMIT;
-  else
+  } else {
+    // Set needs_commit_ to true to trigger scheduling BeginMainFrame().
+    needs_commit_ = true;
     readback_state_ = READBACK_STATE_NEEDS_BEGIN_MAIN_FRAME;
+  }
 }
 
 void SchedulerStateMachine::FinishCommit() {

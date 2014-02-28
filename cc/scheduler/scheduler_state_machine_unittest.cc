@@ -76,6 +76,8 @@ class StateMachine : public SchedulerStateMachine {
     return output_surface_state_;
   }
 
+  SynchronousReadbackState readback_state() const { return readback_state_; }
+
   bool NeedsCommit() const { return needs_commit_; }
 
   void SetNeedsRedraw(bool b) { needs_redraw_ = b; }
@@ -1281,7 +1283,6 @@ TEST(SchedulerStateMachineTest,
   state.UpdateState(state.NextAction());
   state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
   state.SetVisible(false);
-  state.SetNeedsCommit();
   state.SetNeedsForcedCommitForReadback();
   EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME,
             state.NextAction());
@@ -1293,10 +1294,50 @@ TEST(SchedulerStateMachineTest,
   StateMachine state(default_scheduler_settings);
   state.SetVisible(true);
   state.SetCanDraw(true);
-  state.SetNeedsCommit();
   state.SetNeedsForcedCommitForReadback();
   EXPECT_EQ(SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME,
             state.NextAction());
+}
+
+// If new commit is not requested explicitly after starting forced commit,
+// new commit should not scheduled after drawing the replacement commit.
+TEST(SchedulerStateMachineTest, DontMakeNewCommitAfterDrawingReplaceCommit) {
+  SchedulerSettings default_scheduler_settings;
+  StateMachine state(default_scheduler_settings);
+  state.SetCanStart();
+  state.UpdateState(state.NextAction());
+  state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+  state.SetVisible(true);
+  state.SetCanDraw(true);
+
+  // There is a scheduled commit.
+  state.SetCommitState(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS);
+
+  // Request a forced commit.
+  state.SetNeedsForcedCommitForReadback();
+
+  state.FinishCommit();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
+  EXPECT_EQ(SchedulerStateMachine::ACTION_DRAW_AND_READBACK,
+            state.NextAction());
+  state.UpdateState(state.NextAction());
+  EXPECT_EQ(
+      SchedulerStateMachine::READBACK_STATE_WAITING_FOR_REPLACEMENT_COMMIT,
+      state.readback_state());
+  EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS,
+            state.CommitState());
+
+  // Finish the replacement commit.
+  state.FinishCommit();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
+
+  state.OnBeginImplFrame(BeginFrameArgs::CreateForTesting());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
+  EXPECT_EQ(SchedulerStateMachine::READBACK_STATE_IDLE, state.readback_state());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 }
 
 TEST(SchedulerStateMachineTest, TestFinishCommitWhenCommitInProgress) {
@@ -1326,7 +1367,6 @@ TEST(SchedulerStateMachineTest, TestFinishCommitWhenForcedCommitInProgress) {
   state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
   state.SetVisible(false);
   state.SetCommitState(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS);
-  state.SetNeedsCommit();
   state.SetNeedsForcedCommitForReadback();
 
   // The commit for readback interupts the normal commit.
@@ -1393,7 +1433,6 @@ TEST(SchedulerStateMachineTest, TestImmediateFinishCommit) {
   state.SetCanDraw(true);
 
   // Schedule a readback, commit it, draw it.
-  state.SetNeedsCommit();
   state.SetNeedsForcedCommitForReadback();
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
@@ -1464,7 +1503,6 @@ TEST(SchedulerStateMachineTest, ImmediateBeginMainFrameAbortedWhileInvisible) {
   state.SetNeedsCommit();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
-  state.SetNeedsCommit();
   state.SetNeedsForcedCommitForReadback();
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
@@ -1507,7 +1545,6 @@ TEST(SchedulerStateMachineTest, ImmediateFinishCommitWhileCantDraw) {
   state.SetNeedsCommit();
   state.UpdateState(state.NextAction());
 
-  state.SetNeedsCommit();
   state.SetNeedsForcedCommitForReadback();
   state.UpdateState(state.NextAction());
   state.FinishCommit();

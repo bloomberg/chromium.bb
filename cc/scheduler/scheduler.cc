@@ -61,7 +61,6 @@ void Scheduler::SetNeedsCommit() {
 }
 
 void Scheduler::SetNeedsForcedCommitForReadback() {
-  state_machine_.SetNeedsCommit();
   state_machine_.SetNeedsForcedCommitForReadback();
   ProcessScheduledActions();
 }
