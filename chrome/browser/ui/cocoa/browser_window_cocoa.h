@@ -22,6 +22,7 @@ class Browser;
 
 namespace extensions {
 class ActiveTabPermissionGranter;
+class Command;
 class Extension;
 }
 
@@ -153,6 +154,9 @@ class BrowserWindowCocoa :
       const autofill::PasswordForm& form,
       autofill::PasswordGenerator* password_generator) OVERRIDE;
   virtual int GetRenderViewHeightInsetWithDetachedBookmarkBar() OVERRIDE;
+  virtual void ExecuteExtensionCommand(
+      const extensions::Extension* extension,
+      const extensions::Command& command) OVERRIDE;
   virtual void ShowPageActionPopup(
       const extensions::Extension* extension) OVERRIDE;
   virtual void ShowBrowserActionPopup(

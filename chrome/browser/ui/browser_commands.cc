@@ -719,7 +719,7 @@ void BookmarkCurrentPage(Browser* browser) {
                                  &command_type)) {
     switch (command_type) {
       case extensions::CommandService::NAMED:
-        NOTIMPLEMENTED();
+        browser->window()->ExecuteExtensionCommand(extension, command);
         return;
 
       case extensions::CommandService::BROWSER_ACTION:

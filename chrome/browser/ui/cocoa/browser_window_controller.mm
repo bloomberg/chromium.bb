@@ -71,6 +71,7 @@
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/command.h"
 #include "chrome/common/profile_management_switches.h"
 #include "chrome/common/url_constants.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -1997,6 +1998,15 @@ willAnimateFromState:(BookmarkBar::State)oldState
 - (void)onOverlappedViewHidden {
   --overlappedViewCount_;
   [self updateAllowOverlappingViews:[self inPresentationMode]];
+}
+
+- (void)executeExtensionCommand:(const std::string&)extension_id
+                        command:(const extensions::Command&)command {
+  // Global commands are handled by the ExtensionCommandsGlobalRegistry
+  // instance.
+  DCHECK(!command.global());
+  extension_keybinding_registry_->ExecuteCommand(extension_id,
+                                                 command.accelerator());
 }
 
 - (void)activatePageAction:(const std::string&)extension_id {

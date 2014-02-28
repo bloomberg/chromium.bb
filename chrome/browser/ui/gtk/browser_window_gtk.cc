@@ -1255,6 +1255,12 @@ BrowserWindowGtk::GetRenderViewHeightInsetWithDetachedBookmarkBar() {
   return bookmark_bar_->max_height();
 }
 
+void BrowserWindowGtk::ExecuteExtensionCommand(
+    const extensions::Extension* extension,
+    const extensions::Command& command) {
+  NOTIMPLEMENTED();
+}
+
 void BrowserWindowGtk::ShowPageActionPopup(
     const extensions::Extension* extension) {
   NOTIMPLEMENTED();

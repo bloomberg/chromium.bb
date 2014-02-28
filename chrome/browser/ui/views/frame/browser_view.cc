@@ -2503,6 +2503,12 @@ int BrowserView::GetRenderViewHeightInsetWithDetachedBookmarkBar() {
       bookmark_bar_view_->GetFullyDetachedToolbarOverlap();
 }
 
+void BrowserView::ExecuteExtensionCommand(
+    const extensions::Extension* extension,
+    const extensions::Command& command) {
+  toolbar_->ExecuteExtensionCommand(extension, command);
+}
+
 void BrowserView::ShowPageActionPopup(
     const extensions::Extension* extension) {
   toolbar_->ShowPageActionPopup(extension);

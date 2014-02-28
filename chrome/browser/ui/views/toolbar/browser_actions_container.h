@@ -28,6 +28,8 @@ class ExtensionPopup;
 
 namespace extensions {
 class ActiveTabPermissionGranter;
+class Command;
+class Extension;
 }
 
 namespace gfx {
@@ -158,6 +160,10 @@ class BrowserActionsContainer
 
   // Returns how many browser actions are visible.
   size_t VisibleBrowserActions() const;
+
+  // Executes |command| registered by |extension|.
+  void ExecuteExtensionCommand(const extensions::Extension* extension,
+                               const extensions::Command& command);
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;

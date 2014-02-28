@@ -31,6 +31,11 @@ class WrenchMenu;
 class WrenchMenuModel;
 class WrenchToolbarButton;
 
+namespace extensions {
+class Command;
+class Extension;
+}
+
 namespace views {
 class MenuListener;
 }
@@ -81,6 +86,10 @@ class ToolbarView : public views::AccessiblePaneView,
 
   // Returns the view to which the Translate bubble should be anchored.
   views::View* GetTranslateBubbleAnchor();
+
+  // Executes |command| registered by |extension|.
+  void ExecuteExtensionCommand(const extensions::Extension* extension,
+                               const extensions::Command& command);
 
   // Shows the extension's page action, if present.
   void ShowPageActionPopup(const extensions::Extension* extension);

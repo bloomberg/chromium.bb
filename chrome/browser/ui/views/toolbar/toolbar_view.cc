@@ -322,6 +322,12 @@ views::View* ToolbarView::GetTranslateBubbleAnchor() {
       translate_icon_view : app_menu_;
 }
 
+void ToolbarView::ExecuteExtensionCommand(
+    const extensions::Extension* extension,
+    const extensions::Command& command) {
+  browser_actions_->ExecuteExtensionCommand(extension, command);
+}
+
 void ToolbarView::ShowPageActionPopup(const extensions::Extension* extension) {
   extensions::ExtensionActionManager* extension_manager =
       extensions::ExtensionActionManager::Get(browser_->profile());

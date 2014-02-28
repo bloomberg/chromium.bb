@@ -59,6 +59,11 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver {
   // platform-specific ExtensionKeybindingsRegistry* files.
   static void SetShortcutHandlingSuspended(bool suspended);
 
+  // Execute the command bound to |accelerator| and provided by the extension
+  // with |extension_id|, if it exists.
+  void ExecuteCommand(const std::string& extension_id,
+                      const ui::Accelerator& accelerator);
+
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -122,6 +127,13 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver {
  private:
   // Returns true if the |extension| matches our extension filter.
   bool ExtensionMatchesFilter(const extensions::Extension* extension);
+
+  // Execute commands for |accelerator|. If |extension_id| is empty, execute all
+  // commands bound to |accelerator|, otherwise execute only commands bound by
+  // the corresponding extension. Returns true if at least one command was
+  // executed.
+  bool ExecuteCommands(const ui::Accelerator& accelerator,
+                       const std::string& extension_id);
 
   // The content notification registrar for listening to extension events.
   content::NotificationRegistrar registrar_;

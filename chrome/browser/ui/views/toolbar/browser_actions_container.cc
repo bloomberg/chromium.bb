@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/toolbar/browser_action_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/common/extensions/command.h"
 #include "chrome/common/pref_names.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/pref_names.h"
@@ -176,6 +177,16 @@ size_t BrowserActionsContainer::VisibleBrowserActions() const {
       ++visible_actions;
   }
   return visible_actions;
+}
+
+void BrowserActionsContainer::ExecuteExtensionCommand(
+    const extensions::Extension* extension,
+    const extensions::Command& command) {
+  // Global commands are handled by the ExtensionCommandsGlobalRegistry
+  // instance.
+  DCHECK(!command.global());
+  extension_keybinding_registry_->ExecuteCommand(extension->id(),
+                                                 command.accelerator());
 }
 
 gfx::Size BrowserActionsContainer::GetPreferredSize() {

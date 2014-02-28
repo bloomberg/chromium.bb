@@ -48,6 +48,10 @@ namespace content {
 class WebContents;
 }
 
+namespace extensions {
+class Command;
+}
+
 @interface BrowserWindowController :
   TabWindowController<NSUserInterfaceValidations,
                       BookmarkBarControllerDelegate,
@@ -348,6 +352,10 @@ class WebContents;
 // allowOverlappingViews state. Currently used for history overlay and
 // confirm bubble.
 - (void)onOverlappedViewHidden;
+
+// Executes the command registered by the extension that has the given id.
+- (void)executeExtensionCommand:(const std::string&)extension_id
+                        command:(const extensions::Command&)command;
 
 // Activates the page action for the extension that has the given id.
 - (void)activatePageAction:(const std::string&)extension_id;

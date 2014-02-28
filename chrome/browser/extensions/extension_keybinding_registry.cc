@@ -92,15 +92,7 @@ bool ExtensionKeybindingRegistry::ShouldIgnoreCommand(
 
 bool ExtensionKeybindingRegistry::NotifyEventTargets(
     const ui::Accelerator& accelerator) {
-  EventTargets::iterator targets = event_targets_.find(accelerator);
-  if (targets == event_targets_.end() || targets->second.empty())
-    return false;
-
-  for (TargetList::const_iterator it = targets->second.begin();
-       it != targets->second.end(); it++)
-    CommandExecuted(it->first, it->second);
-
-  return true;
+  return ExecuteCommands(accelerator, std::string());
 }
 
 void ExtensionKeybindingRegistry::CommandExecuted(
@@ -167,6 +159,12 @@ bool ExtensionKeybindingRegistry::IsEventTargetsEmpty() const {
   return event_targets_.empty();
 }
 
+void ExtensionKeybindingRegistry::ExecuteCommand(
+    const std::string& extension_id,
+    const ui::Accelerator& accelerator) {
+  ExecuteCommands(accelerator, extension_id);
+}
+
 void ExtensionKeybindingRegistry::Observe(
     int type,
     const content::NotificationSource& source,
@@ -226,6 +224,25 @@ bool ExtensionKeybindingRegistry::ExtensionMatchesFilter(
       NOTREACHED();
   }
   return false;
+}
+
+bool ExtensionKeybindingRegistry::ExecuteCommands(
+    const ui::Accelerator& accelerator,
+    const std::string& extension_id) {
+  EventTargets::iterator targets = event_targets_.find(accelerator);
+  if (targets == event_targets_.end() || targets->second.empty())
+    return false;
+
+  bool executed = false;
+  for (TargetList::const_iterator it = targets->second.begin();
+       it != targets->second.end(); it++) {
+    if (extension_id.empty() || it->first == extension_id) {
+      CommandExecuted(it->first, it->second);
+      executed = true;
+    }
+  }
+
+  return executed;
 }
 
 }  // namespace extensions
