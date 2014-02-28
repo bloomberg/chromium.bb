@@ -58,7 +58,7 @@ class Manifest(object):
   """
   def __init__(
       self, isolate_server, namespace, isolated_hash, task_name, shards, env,
-      dimensions, working_dir, verbose, profile, priority, algo):
+      dimensions, working_dir, verbose, profile, priority):
     """Populates a manifest object.
       Args:
         isolate_server - isolate server url.
@@ -72,7 +72,6 @@ class Manifest(object):
         verbose - if True, have the slave print more details.
         profile - if True, have the slave print more timing data.
         priority - int between 0 and 1000, lower the higher priority.
-        algo - hashing algorithm used.
     """
     self.isolate_server = isolate_server
     self.namespace = namespace
@@ -93,7 +92,6 @@ class Manifest(object):
     self.verbose = bool(verbose)
     self.profile = bool(profile)
     self.priority = priority
-    self._algo = algo
 
     self._isolate_item = None
     self._tasks = []
@@ -146,7 +144,7 @@ class Manifest(object):
     if self._isolate_item:
       request['data'].append(
           [
-            self.storage.get_fetch_url(self._isolate_item.digest),
+            self.storage.get_fetch_url(self._isolate_item),
             'swarm_data.zip',
           ])
     return json.dumps(request, sort_keys=True, separators=(',',':'))
@@ -158,7 +156,7 @@ class Manifest(object):
     """
     if self._isolate_item is None:
       self._isolate_item = isolateserver.BufferItem(
-          self.bundle.zip_into_buffer(), self._algo, is_isolated=True)
+          self.bundle.zip_into_buffer(), high_priority=True)
     return self._isolate_item
 
 
@@ -363,7 +361,7 @@ def archive(isolate_server, namespace, isolated, algo, verbose):
 
 def process_manifest(
     swarming, isolate_server, namespace, isolated_hash, task_name, shards,
-    dimensions, env, working_dir, verbose, profile, priority, algo):
+    dimensions, env, working_dir, verbose, profile, priority):
   """Processes the manifest file and send off the swarming task request."""
   try:
     manifest = Manifest(
@@ -377,8 +375,7 @@ def process_manifest(
         working_dir=working_dir,
         verbose=verbose,
         profile=profile,
-        priority=priority,
-        algo=algo)
+        priority=priority)
   except ValueError as e:
     tools.report_error('Unable to process %s: %s' % (task_name, e))
     return 1
@@ -475,8 +472,7 @@ def trigger(
       working_dir=working_dir,
       verbose=verbose,
       profile=profile,
-      priority=priority,
-      algo=hashlib.sha1)
+      priority=priority)
   return result, task_name
 
 

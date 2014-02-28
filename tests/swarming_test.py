@@ -506,7 +506,7 @@ class MockedStorage(object):
   def upload_items(self, items):
     return [] if self._warm_cache else items
 
-  def get_fetch_url(self, _digest):  # pylint: disable=R0201
+  def get_fetch_url(self, _item):  # pylint: disable=R0201
     return 'http://localhost:8081/fetch_url'
 
 
@@ -528,8 +528,7 @@ class ManifestTest(TestCase):
         working_dir='swarm_tests',
         verbose=False,
         profile=False,
-        priority=101,
-        algo=ALGO)
+        priority=101)
 
     swarming.chromium_setup(manifest)
     manifest_json = json.loads(manifest.to_json())
@@ -559,8 +558,7 @@ class ManifestTest(TestCase):
         working_dir='swarm_tests',
         verbose=False,
         profile=False,
-        priority=101,
-        algo=ALGO)
+        priority=101)
 
     swarming.chromium_setup(manifest)
     manifest_json = json.loads(manifest.to_json())
@@ -587,8 +585,7 @@ class ManifestTest(TestCase):
         working_dir='swarm_tests',
         verbose=False,
         profile=True,
-        priority=101,
-        algo=ALGO)
+        priority=101)
 
     swarming.chromium_setup(manifest)
     manifest_json = json.loads(manifest.to_json())
@@ -619,8 +616,7 @@ class ManifestTest(TestCase):
         working_dir='swarm_tests',
         verbose=False,
         profile=False,
-        priority=101,
-        algo=ALGO)
+        priority=101)
     self.assertEqual(0, result)
 
   def test_process_manifest_success_zip_already_uploaded(self):
@@ -641,8 +637,7 @@ class ManifestTest(TestCase):
         working_dir='swarm_tests',
         verbose=False,
         profile=False,
-        priority=101,
-        algo=ALGO)
+        priority=101)
     self.assertEqual(0, result)
 
   def test_isolated_to_hash(self):

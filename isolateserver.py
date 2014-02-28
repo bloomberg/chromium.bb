@@ -68,9 +68,6 @@ ALREADY_COMPRESSED_TYPES = [
 UNKNOWN_FILE_SIZE = None
 
 
-# The size of each chunk to read when downloading and unzipping files.
-ZIPPED_FILE_CHUNK = 16 * 1024
-
 # Chunk size to use when doing disk I/O.
 DISK_FILE_CHUNK = 1024 * 1024
 
@@ -315,57 +312,89 @@ class WorkerPool(threading_utils.AutoRetryThreadPool):
 class Item(object):
   """An item to push to Storage.
 
-  It starts its life in a main thread, travels to 'contains' thread, then to
-  'push' thread and then finally back to the main thread.
+  Its digest and size may be provided in advance, if known. Otherwise they will
+  be derived from content(). If digest is provided, it MUST correspond to
+  hash algorithm used by Storage.
 
-  It is never used concurrently from multiple threads.
+  When used with Storage, Item starts its life in a main thread, travels
+  to 'contains' thread, then to 'push' thread and then finally back to
+  the main thread. It is never used concurrently from multiple threads.
   """
 
-  def __init__(self, digest, size, is_isolated=False):
+  def __init__(self, digest=None, size=None, high_priority=False):
     self.digest = digest
     self.size = size
-    self.is_isolated = is_isolated
+    self.high_priority = high_priority
     self.compression_level = 6
-    self.push_state = None
 
-  def content(self, chunk_size):
-    """Iterable with content of this item in chunks of given size.
+  def content(self):
+    """Iterable with content of this item as byte string (str) chunks."""
+    raise NotImplementedError()
+
+  def prepare(self, hash_algo):
+    """Ensures self.digest and self.size are set.
+
+    Uses content() as a source of data to calculate them. Does nothing if digest
+    and size is already known.
 
     Arguments:
-      chunk_size: preferred size of the chunk to produce, may be ignored.
+      hash_algo: hash algorithm to use to calculate digest.
     """
-    raise NotImplementedError()
+    if self.digest is None or self.size is None:
+      digest = hash_algo()
+      total = 0
+      for chunk in self.content():
+        digest.update(chunk)
+        total += len(chunk)
+      self.digest = digest.hexdigest()
+      self.size = total
 
 
 class FileItem(Item):
-  """A file to push to Storage."""
+  """A file to push to Storage.
 
-  def __init__(self, path, digest, size, is_isolated):
-    super(FileItem, self).__init__(digest, size, is_isolated)
+  Its digest and size may be provided in advance, if known. Otherwise they will
+  be derived from the file content.
+  """
+
+  def __init__(self, path, digest=None, size=None, high_priority=False):
+    super(FileItem, self).__init__(
+        digest,
+        size if size is not None else os.stat(path).st_size,
+        high_priority)
     self.path = path
     self.compression_level = get_zip_compression_level(path)
 
-  def content(self, chunk_size):
-    return file_read(self.path, chunk_size)
+  def content(self):
+    return file_read(self.path)
 
 
 class BufferItem(Item):
   """A byte buffer to push to Storage."""
 
-  def __init__(self, buf, algo, is_isolated=False):
-    super(BufferItem, self).__init__(
-        algo(buf).hexdigest(), len(buf), is_isolated)
+  def __init__(self, buf, high_priority=False):
+    super(BufferItem, self).__init__(None, len(buf), high_priority)
     self.buffer = buf
 
-  def content(self, _chunk_size):
+  def content(self):
     return [self.buffer]
 
 
 class Storage(object):
-  """Efficiently downloads or uploads large set of files via StorageApi."""
+  """Efficiently downloads or uploads large set of files via StorageApi.
 
-  def __init__(self, storage_api, use_zip):
+  Implements compression support, parallel 'contains' checks, parallel uploads
+  and more.
+
+  Works only within single namespace (and thus hashing algorithm and compression
+  scheme are fixed).
+
+  Spawns multiple internal threads. Thread safe, but not fork safe.
+  """
+
+  def __init__(self, storage_api, use_zip, hash_algo):
     self.use_zip = use_zip
+    self.hash_algo = hash_algo
     self._storage_api = storage_api
     self._cpu_thread_pool = None
     self._net_thread_pool = None
@@ -405,37 +434,10 @@ class Storage(object):
     self.close()
     return False
 
-  def upload_tree(self, indir, infiles):
-    """Uploads the given tree to the isolate server.
-
-    Arguments:
-      indir: root directory the infiles are based in.
-      infiles: dict of files to upload from |indir|.
-
-    Returns:
-      List of items that were uploaded. All other items are already there.
-    """
-    logging.info('upload tree(indir=%s, files=%d)', indir, len(infiles))
-
-    # Convert |indir| + |infiles| into a list of FileItem objects.
-    # Filter out symlinks, since they are not represented by items on isolate
-    # server side.
-    items = [
-        FileItem(
-            path=os.path.join(indir, filepath),
-            digest=metadata['h'],
-            size=metadata['s'],
-            is_isolated=metadata.get('priority') == '0')
-        for filepath, metadata in infiles.iteritems()
-        if 'l' not in metadata
-    ]
-
-    return self.upload_items(items)
-
   def upload_items(self, items):
-    """Uploads bunch of items to the isolate server.
+    """Uploads a bunch of items to the isolate server.
 
-    Will upload only items that are missing.
+    It figures out what items are missing from the server and uploads only them.
 
     Arguments:
       items: list of Item instances that represents data to upload.
@@ -447,6 +449,10 @@ class Storage(object):
     # used by swarming.py. There's no need to spawn multiple threads and try to
     # do stuff in parallel: there's nothing to parallelize. 'contains' check and
     # 'push' should be performed sequentially in the context of current thread.
+
+    # Ensure all digests are calculated.
+    for item in items:
+      item.prepare(self.hash_algo)
 
     # For each digest keep only first Item that matches it. All other items
     # are just indistinguishable copies from the point of view of isolate
@@ -462,15 +468,12 @@ class Storage(object):
 
     # Enqueue all upload tasks.
     missing = set()
-    channel = threading_utils.TaskChannel()
-    for missing_item in self.get_missing_items(items):
-      missing.add(missing_item)
-      self.async_push(
-          channel,
-          WorkerPool.HIGH if missing_item.is_isolated else WorkerPool.MED,
-          missing_item)
-
     uploaded = []
+    channel = threading_utils.TaskChannel()
+    for missing_item, push_state in self.get_missing_items(items):
+      missing.add(missing_item)
+      self.async_push(channel, missing_item, push_state)
+
     # No need to spawn deadlock detector thread if there's nothing to upload.
     if missing:
       with threading_utils.DeadlockDetector(DEADLOCK_TIMEOUT) as detector:
@@ -509,34 +512,49 @@ class Storage(object):
 
     return uploaded
 
-  def get_fetch_url(self, digest):
-    """Returns an URL that can be used to fetch an item with given digest.
+  def get_fetch_url(self, item):
+    """Returns an URL that can be used to fetch given item once it's uploaded.
+
+    Note that if namespace uses compression, data at given URL is compressed.
 
     Arguments:
-      digest: hex digest of item to fetch.
+      item: Item to get fetch URL for.
 
     Returns:
       An URL or None if underlying protocol doesn't support this.
     """
-    return self._storage_api.get_fetch_url(digest)
+    item.prepare(self.hash_algo)
+    return self._storage_api.get_fetch_url(item.digest)
 
-  def async_push(self, channel, priority, item):
+  def async_push(self, channel, item, push_state):
     """Starts asynchronous push to the server in a parallel thread.
+
+    Can be used only after |item| was checked for presence on a server with
+    'get_missing_items' call. 'get_missing_items' returns |push_state| object
+    that contains storage specific information describing how to upload
+    the item (for example in case of cloud storage, it is signed upload URLs).
 
     Arguments:
       channel: TaskChannel that receives back |item| when upload ends.
-      priority: thread pool task priority for the push.
       item: item to upload as instance of Item class.
+      push_state: push state returned by 'get_missing_items' call for |item|.
+
+    Returns:
+      None, but |channel| later receives back |item| when upload ends.
     """
+    # Thread pool task priority.
+    priority = WorkerPool.HIGH if item.high_priority else WorkerPool.MED
+
     def push(content):
-      """Pushes an item and returns its id, to pass as a result to |channel|."""
-      self._storage_api.push(item, content)
+      """Pushes an item and returns it to |channel|."""
+      item.prepare(self.hash_algo)
+      self._storage_api.push(item, push_state, content)
       return item
 
     # If zipping is not required, just start a push task.
     if not self.use_zip:
-      self.net_thread_pool.add_task_with_channel(channel, priority, push,
-          item.content(DISK_FILE_CHUNK))
+      self.net_thread_pool.add_task_with_channel(
+          channel, priority, push, item.content())
       return
 
     # If zipping is enabled, zip in a separate thread.
@@ -544,8 +562,7 @@ class Storage(object):
       # TODO(vadimsh): Implement streaming uploads. Before it's done, assemble
       # content right here. It will block until all file is zipped.
       try:
-        stream = zip_compress(item.content(ZIPPED_FILE_CHUNK),
-            item.compression_level)
+        stream = zip_compress(item.content(), item.compression_level)
         data = ''.join(stream)
       except Exception as exc:
         logging.error('Failed to zip \'%s\': %s', item, exc)
@@ -554,6 +571,26 @@ class Storage(object):
       self.net_thread_pool.add_task_with_channel(
           channel, priority, push, [data])
     self.cpu_thread_pool.add_task(priority, zip_and_push)
+
+  def push(self, item, push_state):
+    """Synchronously pushes a single item to the server.
+
+    If you need to push many items at once, consider using 'upload_items' or
+    'async_push' with instance of TaskChannel.
+
+    Arguments:
+      item: item to upload as instance of Item class.
+      push_state: push state returned by 'get_missing_items' call for |item|.
+
+    Returns:
+      Pushed item (same object as |item|).
+    """
+    channel = threading_utils.TaskChannel()
+    with threading_utils.DeadlockDetector(DEADLOCK_TIMEOUT):
+      self.async_push(channel, item, push_state)
+      pushed = channel.pull()
+      assert pushed is item
+    return item
 
   def async_fetch(self, channel, priority, digest, size, sink):
     """Starts asynchronous fetch from the server in a parallel thread.
@@ -593,47 +630,58 @@ class Storage(object):
       items: a list of Item objects to check.
 
     Yields:
-      Item objects that are missing from the server.
+      For each missing item it yields a pair (item, push_state), where:
+        * item - Item object that is missing (one of |items|).
+        * push_state - opaque object that contains storage specific information
+            describing how to upload the item (for example in case of cloud
+            storage, it is signed upload URLs). It can later be passed to
+            'async_push'.
     """
     channel = threading_utils.TaskChannel()
     pending = 0
+
+    # Ensure all digests are calculated.
+    for item in items:
+      item.prepare(self.hash_algo)
+
     # Enqueue all requests.
-    for batch in self.batch_items_for_check(items):
+    for batch in batch_items_for_check(items):
       self.net_thread_pool.add_task_with_channel(channel, WorkerPool.HIGH,
           self._storage_api.contains, batch)
       pending += 1
+
     # Yield results as they come in.
     for _ in xrange(pending):
-      for missing in channel.pull():
-        yield missing
+      for missing_item, push_state in channel.pull().iteritems():
+        yield missing_item, push_state
 
-  @staticmethod
-  def batch_items_for_check(items):
-    """Splits list of items to check for existence on the server into batches.
 
-    Each batch corresponds to a single 'exists?' query to the server via a call
-    to StorageApi's 'contains' method.
+def batch_items_for_check(items):
+  """Splits list of items to check for existence on the server into batches.
 
-    Arguments:
-      items: a list of Item objects.
+  Each batch corresponds to a single 'exists?' query to the server via a call
+  to StorageApi's 'contains' method.
 
-    Yields:
-      Batches of items to query for existence in a single operation,
-      each batch is a list of Item objects.
-    """
-    batch_count = 0
-    batch_size_limit = ITEMS_PER_CONTAINS_QUERIES[0]
-    next_queries = []
-    for item in sorted(items, key=lambda x: x.size, reverse=True):
-      next_queries.append(item)
-      if len(next_queries) == batch_size_limit:
-        yield next_queries
-        next_queries = []
-        batch_count += 1
-        batch_size_limit = ITEMS_PER_CONTAINS_QUERIES[
-            min(batch_count, len(ITEMS_PER_CONTAINS_QUERIES) - 1)]
-    if next_queries:
+  Arguments:
+    items: a list of Item objects.
+
+  Yields:
+    Batches of items to query for existence in a single operation,
+    each batch is a list of Item objects.
+  """
+  batch_count = 0
+  batch_size_limit = ITEMS_PER_CONTAINS_QUERIES[0]
+  next_queries = []
+  for item in sorted(items, key=lambda x: x.size, reverse=True):
+    next_queries.append(item)
+    if len(next_queries) == batch_size_limit:
       yield next_queries
+      next_queries = []
+      batch_count += 1
+      batch_size_limit = ITEMS_PER_CONTAINS_QUERIES[
+          min(batch_count, len(ITEMS_PER_CONTAINS_QUERIES) - 1)]
+  if next_queries:
+    yield next_queries
 
 
 class FetchQueue(object):
@@ -652,7 +700,7 @@ class FetchQueue(object):
     self._accessed = set()
     self._fetched = cache.cached_set()
 
-  def add(self, priority, digest, size=UNKNOWN_FILE_SIZE):
+  def add(self, digest, size=UNKNOWN_FILE_SIZE, priority=WorkerPool.MED):
     """Starts asynchronous fetch of item |digest|."""
     # Fetching it now?
     if digest in self._pending:
@@ -775,7 +823,14 @@ class FetchStreamVerifier(object):
 
 
 class StorageApi(object):
-  """Interface for classes that implement low-level storage operations."""
+  """Interface for classes that implement low-level storage operations.
+
+  StorageApi is oblivious of compression and hashing scheme used. This details
+  are handled in higher level Storage class.
+
+  Clients should generally not use StorageApi directly. Storage class is
+  preferred since it implements compression and upload optimizations.
+  """
 
   def get_fetch_url(self, digest):
     """Returns an URL that can be used to fetch an item with given digest.
@@ -800,12 +855,27 @@ class StorageApi(object):
     """
     raise NotImplementedError()
 
-  def push(self, item, content):
+  def push(self, item, push_state, content=None):
     """Uploads an |item| with content generated by |content| generator.
+
+    |item| MUST go through 'contains' call to get |push_state| before it can
+    be pushed to the storage.
+
+    To be clear, here is one possible usage:
+      all_items = [... all items to push as Item subclasses ...]
+      for missing_item, push_state in storage_api.contains(all_items).items():
+        storage_api.push(missing_item, push_state)
+
+    When pushing to a namespace with compression, data that should be pushed
+    and data provided by the item is not the same. In that case |content| is
+    not None and it yields chunks of compressed data (using item.content() as
+    a source of original uncompressed data). This is implemented by Storage
+    class.
 
     Arguments:
       item: Item object that holds information about an item being pushed.
-      content: a generator that yields chunks to push.
+      push_state: push state object as returned by 'contains' call.
+      content: a generator that yields chunks to push, item.content() if None.
 
     Returns:
       None.
@@ -813,22 +883,20 @@ class StorageApi(object):
     raise NotImplementedError()
 
   def contains(self, items):
-    """Checks for existence of given |items| on the server.
-
-    Mutates |items| by assigning opaque implement specific object to Item's
-    push_state attribute on missing entries in the datastore.
+    """Checks for |items| on the server, prepares missing ones for upload.
 
     Arguments:
-      items: list of Item objects.
+      items: list of Item objects to check for presence.
 
     Returns:
-      A list of items missing on server as a list of Item objects.
+      A dict missing Item -> opaque push state object to be passed to 'push'.
+      See doc string for 'push'.
     """
     raise NotImplementedError()
 
 
-class _PushState(object):
-  """State needed to call .push(), to be stored in Item.push_state.
+class _IsolateServerPushState(object):
+  """Per-item state passed from IsolateServer.contains to IsolateServer.push.
 
   Note this needs to be a global class to support pickling.
   """
@@ -844,6 +912,7 @@ class IsolateServer(StorageApi):
   """StorageApi implementation that downloads and uploads to Isolate Server.
 
   It uploads and downloads directly from Google Storage whenever appropriate.
+  Works only within single namespace.
   """
 
   def __init__(self, base_url, namespace):
@@ -888,6 +957,9 @@ class IsolateServer(StorageApi):
     """
     # TODO(maruel): Make this request much earlier asynchronously while the
     # files are being enumerated.
+
+    # TODO(vadimsh): Put |namespace| in the URL so that server can apply
+    # namespace-level ACLs to this call.
     with self._lock:
       if self._server_caps is None:
         request_body = json.dumps(
@@ -963,10 +1035,20 @@ class IsolateServer(StorageApi):
 
     return stream_read(connection, NET_IO_FILE_CHUNK)
 
-  def push(self, item, content):
+  def push(self, item, push_state, content=None):
     assert isinstance(item, Item)
-    assert isinstance(item.push_state, _PushState)
-    assert not item.push_state.finalized
+    assert item.digest is not None
+    assert item.size is not None
+    assert isinstance(push_state, _IsolateServerPushState)
+    assert not push_state.finalized
+
+    # Default to item.content().
+    content = item.content() if content is None else content
+
+    # Do not iterate byte by byte over 'str'. Push it all as a single chunk.
+    if isinstance(content, basestring):
+      assert not isinstance(content, unicode), 'Unicode string is not allowed'
+      content = [content]
 
     # TODO(vadimsh): Do not read from |content| generator when retrying push.
     # If |content| is indeed a generator, it can not be re-winded back
@@ -977,7 +1059,7 @@ class IsolateServer(StorageApi):
 
     # This push operation may be a retry after failed finalization call below,
     # no need to reupload contents in that case.
-    if not item.push_state.uploaded:
+    if not push_state.uploaded:
       # A cheezy way to avoid memcpy of (possibly huge) file, until streaming
       # upload support is implemented.
       if isinstance(content, list) and len(content) == 1:
@@ -986,42 +1068,45 @@ class IsolateServer(StorageApi):
         content = ''.join(content)
       # PUT file to |upload_url|.
       response = net.url_read(
-          url=item.push_state.upload_url,
+          url=push_state.upload_url,
           data=content,
           content_type='application/octet-stream',
           method='PUT')
       if response is None:
         raise IOError('Failed to upload a file %s to %s' % (
-            item.digest, item.push_state.upload_url))
-      item.push_state.uploaded = True
+            item.digest, push_state.upload_url))
+      push_state.uploaded = True
     else:
       logging.info(
           'A file %s already uploaded, retrying finalization only', item.digest)
 
     # Optionally notify the server that it's done.
-    if item.push_state.finalize_url:
+    if push_state.finalize_url:
       # TODO(vadimsh): Calculate MD5 or CRC32C sum while uploading a file and
       # send it to isolated server. That way isolate server can verify that
       # the data safely reached Google Storage (GS provides MD5 and CRC32C of
       # stored files).
       response = net.url_read(
-          url=item.push_state.finalize_url,
+          url=push_state.finalize_url,
           data='',
           content_type='application/json',
           method='POST')
       if response is None:
         raise IOError('Failed to finalize an upload of %s' % item.digest)
-    item.push_state.finalized = True
+    push_state.finalized = True
 
   def contains(self, items):
     logging.info('Checking existence of %d files...', len(items))
+
+    # Ensure all items were initialized with 'prepare' call. Storage does that.
+    assert all(i.digest is not None and i.size is not None for i in items)
 
     # Request body is a json encoded list of dicts.
     body = [
         {
           'h': item.digest,
           's': item.size,
-          'i': int(item.is_isolated),
+          'i': int(item.high_priority),
         } for item in items
     ]
 
@@ -1051,14 +1136,12 @@ class IsolateServer(StorageApi):
           'Invalid response from server: %s, body is %s' % (err, response_body))
 
     # Pick Items that are missing, attach _PushState to them.
-    missing_items = []
+    missing_items = {}
     for i, push_urls in enumerate(response):
       if push_urls:
         assert len(push_urls) == 2, str(push_urls)
-        item = items[i]
-        assert item.push_state is None
-        item.push_state = _PushState(push_urls[0], push_urls[1])
-        missing_items.append(item)
+        missing_items[items[i]] = _IsolateServerPushState(
+            push_urls[0], push_urls[1])
     logging.info('Queried %d files, %d cache hit',
         len(items), len(items) - len(missing_items))
     return missing_items
@@ -1071,6 +1154,10 @@ class FileSystem(StorageApi):
   used to fetch the file on a local partition.
   """
 
+  # Used for push_state instead of None. That way caller is forced to
+  # call 'contains' before 'push'. Naively passing None in 'push' will not work.
+  _DUMMY_PUSH_STATE = object()
+
   def __init__(self, base_path):
     super(FileSystem, self).__init__()
     self.base_path = base_path
@@ -1082,15 +1169,23 @@ class FileSystem(StorageApi):
     assert isinstance(digest, basestring)
     return file_read(os.path.join(self.base_path, digest), offset=offset)
 
-  def push(self, item, content):
+  def push(self, item, push_state, content=None):
     assert isinstance(item, Item)
+    assert item.digest is not None
+    assert item.size is not None
+    assert push_state is self._DUMMY_PUSH_STATE
+    content = item.content() if content is None else content
+    if isinstance(content, basestring):
+      assert not isinstance(content, unicode), 'Unicode string is not allowed'
+      content = [content]
     file_write(os.path.join(self.base_path, item.digest), content)
 
   def contains(self, items):
-    return [
-        item for item in items
+    assert all(i.digest is not None and i.size is not None for i in items)
+    return dict(
+        (item, self._DUMMY_PUSH_STATE) for item in items
         if not os.path.exists(os.path.join(self.base_path, item.digest))
-    ]
+    )
 
 
 class LocalCache(object):
@@ -1197,7 +1292,22 @@ def is_namespace_with_compression(namespace):
 
 
 def get_storage_api(file_or_url, namespace):
-  """Returns an object that implements StorageApi interface."""
+  """Returns an object that implements low-level StorageApi interface.
+
+  It is used by Storage to work with single isolate |namespace|. It should
+  rarely be used directly by clients, see 'get_storage' for
+  a better alternative.
+
+  Arguments:
+    file_or_url: a file path to use file system based storage, or URL of isolate
+        service to use shared cloud based storage.
+    namespace: isolate namespace to operate in, also defines hashing and
+        compression scheme used, i.e. namespace names that end with '-gzip'
+        store compressed data.
+
+  Returns:
+    Instance of StorageApi subclass.
+  """
   if file_path.is_url(file_or_url):
     return IsolateServer(file_or_url, namespace)
   else:
@@ -1205,10 +1315,22 @@ def get_storage_api(file_or_url, namespace):
 
 
 def get_storage(file_or_url, namespace):
-  """Returns Storage class configured with appropriate StorageApi instance."""
+  """Returns Storage class that can upload and download from |namespace|.
+
+  Arguments:
+    file_or_url: a file path to use file system based storage, or URL of isolate
+        service to use shared cloud based storage.
+    namespace: isolate namespace to operate in, also defines hashing and
+        compression scheme used, i.e. namespace names that end with '-gzip'
+        store compressed data.
+
+  Returns:
+    Instance of Storage.
+  """
   return Storage(
       get_storage_api(file_or_url, namespace),
-      is_namespace_with_compression(namespace))
+      is_namespace_with_compression(namespace),
+      get_hash_algo(namespace))
 
 
 def expand_symlinks(indir, relfile):
@@ -1471,7 +1593,6 @@ def save_isolated(isolated, data):
   return []
 
 
-
 def upload_tree(base_url, indir, infiles, namespace):
   """Uploads the given tree to the given url.
 
@@ -1483,8 +1604,23 @@ def upload_tree(base_url, indir, infiles, namespace):
     infiles:   dict of files to upload from |indir| to |base_url|.
     namespace: The namespace to use on the server.
   """
+  logging.info('upload_tree(indir=%s, files=%d)', indir, len(infiles))
+
+  # Convert |indir| + |infiles| into a list of FileItem objects.
+  # Filter out symlinks, since they are not represented by items on isolate
+  # server side.
+  items = [
+      FileItem(
+          path=os.path.join(indir, filepath),
+          digest=metadata['h'],
+          size=metadata['s'],
+          high_priority=metadata.get('priority') == '0')
+      for filepath, metadata in infiles.iteritems()
+      if 'l' not in metadata
+  ]
+
   with get_storage(base_url, namespace) as storage:
-    storage.upload_tree(indir, infiles)
+    storage.upload_items(items)
   return 0
 
 
@@ -1687,7 +1823,7 @@ class IsolatedFile(object):
         if 'h' in properties:
           # Preemptively request files.
           logging.debug('fetching %s' % filepath)
-          fetch_queue.add(WorkerPool.MED, properties['h'], properties['s'])
+          fetch_queue.add(properties['h'], properties['s'], WorkerPool.MED)
     self.files_fetched = True
 
 
@@ -1733,7 +1869,7 @@ class Settings(object):
       assert h not in pending
       seen.add(h)
       pending[h] = isolated_file
-      fetch_queue.add(WorkerPool.HIGH, h)
+      fetch_queue.add(h, priority=WorkerPool.HIGH)
 
     retrieve(self.root)
 
@@ -1883,7 +2019,7 @@ def directory_to_metadata(root, algo, blacklist):
           path=os.path.join(root, relpath),
           digest=meta['h'],
           size=meta['s'],
-          is_isolated=relpath.endswith('.isolated'))
+          high_priority=relpath.endswith('.isolated'))
       for relpath, meta in metadata.iteritems() if 'h' in meta
   ]
   return items, metadata
@@ -1934,7 +2070,7 @@ def archive_files_to_storage(storage, algo, files, blacklist):
                   path=isolated,
                   digest=h,
                   size=os.stat(isolated).st_size,
-                  is_isolated=True))
+                  high_priority=True))
           results.append((h, f))
 
         elif os.path.isfile(filepath):
@@ -1944,7 +2080,7 @@ def archive_files_to_storage(storage, algo, files, blacklist):
                 path=filepath,
                 digest=h,
                 size=os.stat(filepath).st_size,
-                is_isolated=f.endswith('.isolated')))
+                high_priority=f.endswith('.isolated')))
           results.append((h, f))
         else:
           raise Error('%s is neither a file or directory.' % f)
