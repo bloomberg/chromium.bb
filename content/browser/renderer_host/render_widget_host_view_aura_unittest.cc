@@ -169,6 +169,15 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
   virtual void RequestCopyOfOutput(scoped_ptr<cc::CopyOutputRequest> request)
       OVERRIDE {
     last_copy_request_ = request.Pass();
+    if (last_copy_request_->has_texture_mailbox()) {
+      // Give the resulting texture a size.
+      GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
+      GLuint texture = gl_helper->ConsumeMailboxToTexture(
+          last_copy_request_->texture_mailbox().mailbox(),
+          last_copy_request_->texture_mailbox().sync_point());
+      gl_helper->ResizeTexture(texture, window()->bounds().size());
+      gl_helper->DeleteTexture(texture);
+    }
   }
 
   void RunOnCompositingDidCommit() {
@@ -1360,9 +1369,10 @@ class RenderWidgetHostViewAuraCopyRequestTest
   RenderWidgetHostViewAuraCopyRequestTest()
       : callback_count_(0), result_(false) {}
 
-  void CallbackMethod(bool result) {
+  void CallbackMethod(const base::Closure& quit_closure, bool result) {
     result_ = result;
     callback_count_++;
+    quit_closure.Run();
   }
 
   int callback_count_;
@@ -1372,9 +1382,9 @@ class RenderWidgetHostViewAuraCopyRequestTest
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAuraCopyRequestTest);
 };
 
-// http://crbug.com/347311 - Disabled due to intermittent failures on Linux.
-TEST_F(RenderWidgetHostViewAuraCopyRequestTest,
-       DISABLED_DestroyedAfterCopyRequest) {
+TEST_F(RenderWidgetHostViewAuraCopyRequestTest, DestroyedAfterCopyRequest) {
+  base::RunLoop run_loop;
+
   gfx::Rect view_rect(100, 100);
   scoped_ptr<cc::CopyOutputRequest> request;
 
@@ -1389,7 +1399,8 @@ TEST_F(RenderWidgetHostViewAuraCopyRequestTest,
   scoped_ptr<FakeFrameSubscriber> frame_subscriber(new FakeFrameSubscriber(
       view_rect.size(),
       base::Bind(&RenderWidgetHostViewAuraCopyRequestTest::CallbackMethod,
-                 base::Unretained(this))));
+                 base::Unretained(this),
+                 run_loop.QuitClosure())));
 
   EXPECT_EQ(0, callback_count_);
   EXPECT_FALSE(view_->last_copy_request_);
@@ -1413,8 +1424,8 @@ TEST_F(RenderWidgetHostViewAuraCopyRequestTest,
                              request->texture_mailbox(),
                              scoped_ptr<cc::SingleReleaseCallback>());
 
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
+  // This runs until the callback happens.
+  run_loop.Run();
 
   // The callback should succeed.
   EXPECT_EQ(0u, view_->active_frame_subscriber_textures_.size());
