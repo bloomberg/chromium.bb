@@ -98,6 +98,7 @@ cr.define('options', function() {
       };
 
       $('import-existing-managed-user-link').onclick = function(event) {
+        self.hideErrorBubble_('create');
         OptionsPage.navigateToPage('managedUserImport');
       };
     },
@@ -335,8 +336,10 @@ cr.define('options', function() {
               break;
             }
           }
+          var self = this;
           function getImportHandler(managedUser, nameIsUnique) {
             return function() {
+              self.hideErrorBubble_('create');
               if (managedUser.needAvatar || !nameIsUnique) {
                 OptionsPage.navigateToPage('managedUserImport');
               } else {
