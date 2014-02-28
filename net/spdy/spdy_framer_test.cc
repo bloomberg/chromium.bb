@@ -2228,16 +2228,6 @@ TEST_P(SpdyFramerTest, CreateSettings) {
   {
     const char kDescription[] = "Network byte order SETTINGS frame";
 
-    uint32 kValue = 0x0a0b0c0d;
-    SpdySettingsFlags kFlags = static_cast<SpdySettingsFlags>(0x01);
-    SpdySettingsIds kId = static_cast<SpdySettingsIds>(0x020304);
-
-    SettingsMap settings;
-    settings[kId] = SettingsFlagsAndValue(kFlags, kValue);
-
-    EXPECT_EQ(kFlags, settings[kId].first);
-    EXPECT_EQ(kValue, settings[kId].second);
-
     const unsigned char kV2FrameData[] = {
       0x80, spdy_version_ch_, 0x00, 0x04,
       0x00, 0x00, 0x00, 0x0c,
@@ -2253,17 +2243,29 @@ TEST_P(SpdyFramerTest, CreateSettings) {
       0x0a, 0x0b, 0x0c, 0x0d,
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x10, 0x04, 0x00,
+      0x00, 0x0d, 0x04, 0x00,
       0x00, 0x00, 0x00, 0x00,
-      0x01, 0x02, 0x03, 0x04,
-      0x0a, 0x0b, 0x0c, 0x0d,
+      0x01, 0x0a, 0x0b, 0x0c,
+      0x0d,
     };
 
+    uint32 kValue = 0x0a0b0c0d;
     SpdySettingsIR settings_ir;
+
+    SpdySettingsFlags kFlags = static_cast<SpdySettingsFlags>(0x01);
+    SpdySettingsIds kId = static_cast<SpdySettingsIds>(0x020304);
+    if (IsSpdy4()) {
+      kId = static_cast<SpdySettingsIds>(0x01);
+    }
+    SettingsMap settings;
+    settings[kId] = SettingsFlagsAndValue(kFlags, kValue);
+    EXPECT_EQ(kFlags, settings[kId].first);
+    EXPECT_EQ(kValue, settings[kId].second);
     settings_ir.AddSetting(kId,
                            kFlags & SETTINGS_FLAG_PLEASE_PERSIST,
                            kFlags & SETTINGS_FLAG_PERSISTED,
                            kValue);
+
     scoped_ptr<SpdyFrame> frame(framer.SerializeSettings(settings_ir));
     if (IsSpdy2()) {
       CompareFrame(kDescription, *frame, kV2FrameData, arraysize(kV2FrameData));
@@ -2301,25 +2303,36 @@ TEST_P(SpdyFramerTest, CreateSettings) {
       0xff, 0x00, 0x00, 0x04,
     };
     const unsigned char kV4FrameData[] = {
-      0x00, 0x28, 0x04, 0x00,
+      0x00, 0x1c, 0x04, 0x00,
       0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00,  // 1st Setting
+      0x01,                    // 1st Setting
       0x00, 0x00, 0x00, 0x01,
-      0x01, 0x00, 0x00, 0x01,  // 2nd Setting
+      0x02,                    // 2nd Setting
       0x00, 0x00, 0x00, 0x02,
-      0x02, 0x00, 0x00, 0x02,  // 3rd Setting
+      0x03,                    // 3rd Setting
       0x00, 0x00, 0x00, 0x03,
-      0x03, 0x00, 0x00, 0x03,  // 4th Setting
+      0x04,                    // 4th Setting
       0xff, 0x00, 0x00, 0x04,
     };
     SpdySettingsIR settings_ir;
-    for (SettingsMap::const_iterator it = settings.begin();
-         it != settings.end();
-         ++it) {
-      settings_ir.AddSetting(it->first,
-                             it->second.first & SETTINGS_FLAG_PLEASE_PERSIST,
-                             it->second.first & SETTINGS_FLAG_PERSISTED,
-                             it->second.second);
+    if (!IsSpdy4()) {
+      for (SettingsMap::const_iterator it = settings.begin();
+           it != settings.end();
+           ++it) {
+        settings_ir.AddSetting(it->first,
+                               it->second.first & SETTINGS_FLAG_PLEASE_PERSIST,
+                               it->second.first & SETTINGS_FLAG_PERSISTED,
+                               it->second.second);
+      }
+    } else {
+      SpdySettingsIds kId = static_cast<SpdySettingsIds>(0x01);
+      settings_ir.AddSetting(kId, 0, 0, 0x00000001);
+      kId = static_cast<SpdySettingsIds>(0x02);
+      settings_ir.AddSetting(kId, 0, 0, 0x00000002);
+      kId = static_cast<SpdySettingsIds>(0x03);
+      settings_ir.AddSetting(kId, 0, 0, 0x00000003);
+      kId = static_cast<SpdySettingsIds>(0x04);
+      settings_ir.AddSetting(kId, 0, 0, 0xff000004);
     }
     scoped_ptr<SpdyFrame> frame(framer.SerializeSettings(settings_ir));
     if (IsSpdy4()) {
@@ -3154,39 +3167,42 @@ TEST_P(SpdyFramerTest, ReadZeroLenSettingsFrame) {
 // Tests handling of SETTINGS frames with invalid length.
 TEST_P(SpdyFramerTest, ReadBogusLenSettingsFrame) {
   SpdyFramer framer(spdy_version_);
-  SettingsMap settings;
+  SpdySettingsIR settings_ir;
+
   // Add a setting to pad the frame so that we don't get a buffer overflow when
   // calling SimulateInFramer() below.
+  SettingsMap settings;
   settings[SETTINGS_UPLOAD_BANDWIDTH] =
       SettingsFlagsAndValue(SETTINGS_FLAG_PLEASE_PERSIST, 0x00000002);
-  SpdySettingsIR settings_ir;
   settings_ir.AddSetting(SETTINGS_UPLOAD_BANDWIDTH,
                          true,  // please persist
                          false,
                          0x00000002);
   scoped_ptr<SpdyFrame> control_frame(framer.SerializeSettings(settings_ir));
-  const size_t kNewLength = 5;
+  const size_t kNewLength = 14;
   SetFrameLength(control_frame.get(), kNewLength, spdy_version_);
   TestSpdyVisitor visitor(spdy_version_);
   visitor.use_compression_ = false;
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame->data()),
       framer.GetControlFrameHeaderSize() + kNewLength);
-  // Should generate an error, since zero-len settings frames are unsupported.
+  // Should generate an error, since its not possible to have a
+  // settings frame of length kNewLength.
   EXPECT_EQ(1, visitor.error_count_);
 }
 
 // Tests handling of SETTINGS frames larger than the frame buffer size.
 TEST_P(SpdyFramerTest, ReadLargeSettingsFrame) {
   SpdyFramer framer(spdy_version_);
+  SpdySettingsIR settings_ir;
   SettingsMap settings;
+
   SpdySettingsFlags flags = SETTINGS_FLAG_PLEASE_PERSIST;
   settings[SETTINGS_UPLOAD_BANDWIDTH] =
-      SettingsFlagsAndValue(flags, 0x00000002);
+    SettingsFlagsAndValue(flags, 0x00000002);
   settings[SETTINGS_DOWNLOAD_BANDWIDTH] =
-      SettingsFlagsAndValue(flags, 0x00000003);
+    SettingsFlagsAndValue(flags, 0x00000003);
   settings[SETTINGS_ROUND_TRIP_TIME] = SettingsFlagsAndValue(flags, 0x00000004);
-  SpdySettingsIR settings_ir;
   for (SettingsMap::const_iterator it = settings.begin();
        it != settings.end();
        ++it) {
@@ -3195,6 +3211,7 @@ TEST_P(SpdyFramerTest, ReadLargeSettingsFrame) {
                            it->second.first & SETTINGS_FLAG_PERSISTED,
                            it->second.second);
   }
+
   scoped_ptr<SpdyFrame> control_frame(framer.SerializeSettings(settings_ir));
   EXPECT_LT(SpdyFramer::kControlFrameBufferSize,
             control_frame->size());
@@ -3206,7 +3223,7 @@ TEST_P(SpdyFramerTest, ReadLargeSettingsFrame) {
       reinterpret_cast<unsigned char*>(control_frame->data()),
       control_frame->size());
   EXPECT_EQ(0, visitor.error_count_);
-  EXPECT_EQ(settings.size(), static_cast<unsigned>(visitor.setting_count_));
+  EXPECT_EQ(3, visitor.setting_count_);
   if (spdy_version_ >= 4) {
     EXPECT_EQ(1, visitor.settings_ack_sent_);
   }
@@ -3224,7 +3241,7 @@ TEST_P(SpdyFramerTest, ReadLargeSettingsFrame) {
     framed_data += to_read;
   }
   EXPECT_EQ(0, visitor.error_count_);
-  EXPECT_EQ(settings.size() * 2, static_cast<unsigned>(visitor.setting_count_));
+  EXPECT_EQ(3 * 2, visitor.setting_count_);
   if (spdy_version_ >= 4) {
     EXPECT_EQ(2, visitor.settings_ack_sent_);
   }
@@ -3257,13 +3274,13 @@ TEST_P(SpdyFramerTest, ReadDuplicateSettings) {
     0x00, 0x00, 0x00, 0x03,
   };
   const unsigned char kV4FrameData[] = {
-    0x00, 0x20, 0x04, 0x00,
+    0x00, 0x17, 0x04, 0x00,
     0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x01,  // 1st Setting
+    0x01,  // 1st Setting
     0x00, 0x00, 0x00, 0x02,
-    0x00, 0x00, 0x00, 0x01,  // 2nd (duplicate) Setting
+    0x01,  // 2nd (duplicate) Setting
     0x00, 0x00, 0x00, 0x03,
-    0x00, 0x00, 0x00, 0x03,  // 3rd (unprocessed) Setting
+    0x03,  // 3rd (unprocessed) Setting
     0x00, 0x00, 0x00, 0x03,
   };
 
@@ -3277,8 +3294,16 @@ TEST_P(SpdyFramerTest, ReadDuplicateSettings) {
     visitor.SimulateInFramer(kV4FrameData, sizeof(kV4FrameData));
   }
 
-  EXPECT_EQ(1, visitor.setting_count_);
-  EXPECT_EQ(1, visitor.error_count_);
+  if (!IsSpdy4()) {
+    EXPECT_EQ(1, visitor.setting_count_);
+    EXPECT_EQ(1, visitor.error_count_);
+  } else {
+    // In SPDY 4+, duplicate settings are allowed;
+    // each setting replaces the previous value for that setting.
+    EXPECT_EQ(3, visitor.setting_count_);
+    EXPECT_EQ(0, visitor.error_count_);
+    EXPECT_EQ(1, visitor.settings_ack_sent_);
+  }
 }
 
 // Tests handling of SETTINGS frame with entries out of order.
@@ -3308,13 +3333,13 @@ TEST_P(SpdyFramerTest, ReadOutOfOrderSettings) {
     0x00, 0x00, 0x00, 0x03,
   };
   const unsigned char kV4FrameData[] = {
-    0x00, 0x20, 0x04, 0x00,
+    0x00, 0x17, 0x04, 0x00,
     0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x02,  // 1st Setting
+    0x02,  // 1st Setting
     0x00, 0x00, 0x00, 0x02,
-    0x00, 0x00, 0x00, 0x01,  // 2nd (out of order) Setting
+    0x01,  // 2nd (out of order) Setting
     0x00, 0x00, 0x00, 0x03,
-    0x00, 0x00, 0x01, 0x03,  // 3rd (unprocessed) Setting
+    0x03,  // 3rd (unprocessed) Setting
     0x00, 0x00, 0x00, 0x03,
   };
 
@@ -3327,8 +3352,16 @@ TEST_P(SpdyFramerTest, ReadOutOfOrderSettings) {
   } else {
     visitor.SimulateInFramer(kV4FrameData, sizeof(kV4FrameData));
   }
-  EXPECT_EQ(1, visitor.error_count_);
-  EXPECT_EQ(1, visitor.setting_count_);
+
+  if (!IsSpdy4()) {
+    EXPECT_EQ(1, visitor.setting_count_);
+    EXPECT_EQ(1, visitor.error_count_);
+  } else {
+    // In SPDY 4+, settings are allowed in any order.
+    EXPECT_EQ(3, visitor.setting_count_);
+    EXPECT_EQ(0, visitor.error_count_);
+    // EXPECT_EQ(1, visitor.settings_ack_count_);
+  }
 }
 
 TEST_P(SpdyFramerTest, ProcessSettingsAckFrame) {
@@ -3830,7 +3863,8 @@ TEST_P(SpdyFramerTest, RstStreamFrameFlags) {
   }
 }
 
-TEST_P(SpdyFramerTest, SettingsFrameFlags) {
+TEST_P(SpdyFramerTest, SettingsFrameFlagsOldFormat) {
+  if (spdy_version_ >= 4) { return; }
   for (int flags = 0; flags < 256; ++flags) {
     SCOPED_TRACE(testing::Message() << "Flags " << flags);
 
@@ -3846,11 +3880,7 @@ TEST_P(SpdyFramerTest, SettingsFrameFlags) {
     scoped_ptr<SpdyFrame> frame(framer.SerializeSettings(settings_ir));
     SetFrameFlags(frame.get(), flags, spdy_version_);
 
-    if ((!IsSpdy4() &&
-         flags & ~SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS) ||
-        (IsSpdy4() && flags & ~SETTINGS_FLAG_ACK)) {
-      EXPECT_CALL(visitor, OnError(_));
-    } else if (IsSpdy4() && flags & SETTINGS_FLAG_ACK) {
+    if (flags & ~SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS) {
       EXPECT_CALL(visitor, OnError(_));
     } else {
       EXPECT_CALL(visitor, OnSettings(
@@ -3861,14 +3891,48 @@ TEST_P(SpdyFramerTest, SettingsFrameFlags) {
     }
 
     framer.ProcessInput(frame->data(), frame->size());
-    if ((!IsSpdy4() &&
-         flags & ~SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS) ||
-        (IsSpdy4() && flags & ~SETTINGS_FLAG_ACK)) {
+    if (flags & ~SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS) {
       EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
       EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS,
                 framer.error_code())
           << SpdyFramer::ErrorCodeToString(framer.error_code());
-    } else if (IsSpdy4() && flags & SETTINGS_FLAG_ACK) {
+    } else {
+      EXPECT_EQ(SpdyFramer::SPDY_RESET, framer.state());
+      EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.error_code())
+          << SpdyFramer::ErrorCodeToString(framer.error_code());
+    }
+  }
+}
+
+TEST_P(SpdyFramerTest, SettingsFrameFlags) {
+  if (spdy_version_ < 4) { return; }
+  for (int flags = 0; flags < 256; ++flags) {
+    SCOPED_TRACE(testing::Message() << "Flags " << flags);
+
+    testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
+    SpdyFramer framer(spdy_version_);
+    framer.set_visitor(&visitor);
+
+    SpdySettingsIR settings_ir;
+    settings_ir.AddSetting(SETTINGS_INITIAL_WINDOW_SIZE, 0, 0, 16);
+    scoped_ptr<SpdyFrame> frame(framer.SerializeSettings(settings_ir));
+    SetFrameFlags(frame.get(), flags, spdy_version_);
+
+    if (flags != 0) {
+      EXPECT_CALL(visitor, OnError(_));
+    } else {
+      EXPECT_CALL(visitor, OnSettings(flags & SETTINGS_FLAG_ACK));
+      EXPECT_CALL(visitor, OnSetting(SETTINGS_INITIAL_WINDOW_SIZE, 0, 16));
+      EXPECT_CALL(visitor, OnSettingsEnd());
+    }
+
+    framer.ProcessInput(frame->data(), frame->size());
+    if (flags & ~SETTINGS_FLAG_ACK) {
+      EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
+      EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS,
+                framer.error_code())
+          << SpdyFramer::ErrorCodeToString(framer.error_code());
+    } else if (flags & SETTINGS_FLAG_ACK) {
       // The frame is invalid because ACK frames should have no payload.
       EXPECT_EQ(SpdyFramer::SPDY_ERROR, framer.state());
       EXPECT_EQ(SpdyFramer::SPDY_INVALID_CONTROL_FRAME,

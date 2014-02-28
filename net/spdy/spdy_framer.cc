@@ -748,9 +748,11 @@ void SpdyFramer::ProcessControlFrameHeader(uint16 control_frame_type_field) {
       // Make sure that we have an integral number of 8-byte key/value pairs,
       // plus a 4-byte length field in SPDY3 and below.
       size_t values_prefix_size = (protocol_version() < 4 ? 4 : 0);
+      // Size of each key/value pair in bytes.
+      size_t setting_size = (protocol_version() < 4 ? 8 : 5);
       if (current_frame_length_ < GetSettingsMinimumSize() ||
-          (current_frame_length_ - GetControlFrameHeaderSize()) % 8 !=
-           values_prefix_size) {
+          (current_frame_length_ - GetControlFrameHeaderSize())
+          % setting_size != values_prefix_size) {
         DLOG(WARNING) << "Invalid length for SETTINGS frame: "
                       << current_frame_length_;
         set_error(SPDY_INVALID_CONTROL_FRAME);
@@ -1367,15 +1369,17 @@ size_t SpdyFramer::ProcessSettingsFramePayload(const char* data,
   size_t unprocessed_bytes = std::min(data_len, remaining_data_length_);
   size_t processed_bytes = 0;
 
+  size_t setting_size = spdy_version_ < 4 ? 8 : 5;
+
   // Loop over our incoming data.
   while (unprocessed_bytes > 0) {
     // Process up to one setting at a time.
     size_t processing = std::min(
         unprocessed_bytes,
-        static_cast<size_t>(8 - settings_scratch_.setting_buf_len));
+        static_cast<size_t>(setting_size - settings_scratch_.setting_buf_len));
 
     // Check if we have a complete setting in our input.
-    if (processing == 8) {
+    if (processing == setting_size) {
       // Parse the setting directly out of the input without buffering.
       if (!ProcessSetting(data + processed_bytes)) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
@@ -1389,7 +1393,7 @@ size_t SpdyFramer::ProcessSettingsFramePayload(const char* data,
       settings_scratch_.setting_buf_len += processing;
 
       // Check if we have a complete setting buffered.
-      if (settings_scratch_.setting_buf_len == 8) {
+      if (settings_scratch_.setting_buf_len == setting_size) {
         if (!ProcessSetting(settings_scratch_.setting_buf)) {
           set_error(SPDY_INVALID_CONTROL_FRAME);
           return processed_bytes;
@@ -1415,16 +1419,26 @@ size_t SpdyFramer::ProcessSettingsFramePayload(const char* data,
 }
 
 bool SpdyFramer::ProcessSetting(const char* data) {
+  SpdySettingsIds id;
+  uint8 flags = 0;
+  uint32 value;
+
   // Extract fields.
   // Maintain behavior of old SPDY 2 bug with byte ordering of flags/id.
-  const uint32 id_and_flags_wire = *(reinterpret_cast<const uint32*>(data));
-  SettingsFlagsAndId id_and_flags =
+  if (spdy_version_ < 4) {
+    const uint32 id_and_flags_wire = *(reinterpret_cast<const uint32*>(data));
+    SettingsFlagsAndId id_and_flags =
       SettingsFlagsAndId::FromWireFormat(spdy_version_, id_and_flags_wire);
-  uint8 flags = id_and_flags.flags();
-  uint32 value = ntohl(*(reinterpret_cast<const uint32*>(data + 4)));
+    id = static_cast<SpdySettingsIds>(id_and_flags.id());
+    flags = id_and_flags.flags();
+    value = ntohl(*(reinterpret_cast<const uint32*>(data + 4)));
+  } else {
+    id = static_cast<SpdySettingsIds>(*(reinterpret_cast<const uint8*>(data)));
+    value = ntohl(*(reinterpret_cast<const uint32*>(data + 1)));
+  }
 
   // Validate id.
-  switch (id_and_flags.id()) {
+  switch (id) {
     case SETTINGS_UPLOAD_BANDWIDTH:
     case SETTINGS_DOWNLOAD_BANDWIDTH:
     case SETTINGS_ROUND_TRIP_TIME:
@@ -1435,27 +1449,28 @@ bool SpdyFramer::ProcessSetting(const char* data) {
       // Valid values.
       break;
     default:
-      DLOG(WARNING) << "Unknown SETTINGS ID: " << id_and_flags.id();
+      DLOG(WARNING) << "Unknown SETTINGS ID: " << id;
       return false;
   }
-  SpdySettingsIds id = static_cast<SpdySettingsIds>(id_and_flags.id());
 
-  // Detect duplicates.
-  if (static_cast<uint32>(id) <= settings_scratch_.last_setting_id) {
-    DLOG(WARNING) << "Duplicate entry or invalid ordering for id " << id
-                  << " in " << display_protocol_ << " SETTINGS frame "
-                  << "(last settikng id was "
-                  << settings_scratch_.last_setting_id << ").";
-    return false;
-  }
-  settings_scratch_.last_setting_id = id;
+  if (spdy_version_ < 4) {
+    // Detect duplicates.
+    if (static_cast<uint32>(id) <= settings_scratch_.last_setting_id) {
+      DLOG(WARNING) << "Duplicate entry or invalid ordering for id " << id
+                    << " in " << display_protocol_ << " SETTINGS frame "
+                    << "(last setting id was "
+                    << settings_scratch_.last_setting_id << ").";
+      return false;
+    }
+    settings_scratch_.last_setting_id = id;
 
-  // Validate flags.
-  uint8 kFlagsMask = SETTINGS_FLAG_PLEASE_PERSIST | SETTINGS_FLAG_PERSISTED;
-  if ((flags & ~(kFlagsMask)) != 0) {
-    DLOG(WARNING) << "Unknown SETTINGS flags provided for id " << id << ": "
-                  << flags;
-    return false;
+    // Validate flags.
+    uint8 kFlagsMask = SETTINGS_FLAG_PLEASE_PERSIST | SETTINGS_FLAG_PERSISTED;
+    if ((flags & ~(kFlagsMask)) != 0) {
+      DLOG(WARNING) << "Unknown SETTINGS flags provided for id " << id << ": "
+                    << flags;
+      return false;
+    }
   }
 
   // Validation succeeded. Pass on to visitor.
@@ -1931,17 +1946,22 @@ SpdySerializedFrame* SpdyFramer::SerializeRstStream(
 SpdySerializedFrame* SpdyFramer::SerializeSettings(
     const SpdySettingsIR& settings) const {
   uint8 flags = 0;
-  if (spdy_version_ < 4 && settings.clear_settings()) {
-    flags |= SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS;
-  }
-  if (spdy_version_ >= 4 && settings.is_ack()) {
-    flags |= SETTINGS_FLAG_ACK;
+
+  if (spdy_version_ < 4) {
+    if (settings.clear_settings()) {
+      flags |= SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS;
+    }
+  } else {
+    if (settings.is_ack()) {
+      flags |= SETTINGS_FLAG_ACK;
+    }
   }
   const SpdySettingsIR::ValueMap* values = &(settings.values());
 
+  size_t setting_size = (protocol_version() < 4 ? 8 : 5);
   // Size, in bytes, of this SETTINGS frame.
-  const size_t size = GetSettingsMinimumSize() + (values->size() * 8);
-
+  const size_t size = GetSettingsMinimumSize() +
+                      (values->size() * setting_size);
   SpdyFrameBuilder builder(size);
   if (spdy_version_ < 4) {
     builder.WriteControlFrameHeader(*this, SETTINGS, flags);
@@ -1961,16 +1981,20 @@ SpdySerializedFrame* SpdyFramer::SerializeSettings(
   for (SpdySettingsIR::ValueMap::const_iterator it = values->begin();
        it != values->end();
        ++it) {
-    uint8 setting_flags = 0;
-    if (it->second.persist_value) {
-      setting_flags |= SETTINGS_FLAG_PLEASE_PERSIST;
+    if (spdy_version_ < 4) {
+      uint8 setting_flags = 0;
+      if (it->second.persist_value) {
+        setting_flags |= SETTINGS_FLAG_PLEASE_PERSIST;
+      }
+      if (it->second.persisted) {
+        setting_flags |= SETTINGS_FLAG_PERSISTED;
+      }
+      SettingsFlagsAndId flags_and_id(setting_flags, it->first);
+      uint32 id_and_flags_wire = flags_and_id.GetWireFormat(protocol_version());
+      builder.WriteBytes(&id_and_flags_wire, 4);
+    } else {
+      builder.WriteUInt8(static_cast<uint8>(it->first));
     }
-    if (it->second.persisted) {
-      setting_flags |= SETTINGS_FLAG_PERSISTED;
-    }
-    SettingsFlagsAndId flags_and_id(setting_flags, it->first);
-    uint32 id_and_flags_wire = flags_and_id.GetWireFormat(protocol_version());
-    builder.WriteBytes(&id_and_flags_wire, 4);
     builder.WriteUInt32(it->second.value);
   }
   DCHECK_EQ(size, builder.length());

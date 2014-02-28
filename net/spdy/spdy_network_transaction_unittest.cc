@@ -4250,6 +4250,11 @@ TEST_P(SpdyNetworkTransactionTest, BufferedCancelled) {
 // Test that if the server requests persistence of settings, that we save
 // the settings in the HttpServerProperties.
 TEST_P(SpdyNetworkTransactionTest, SettingsSaved) {
+  if (spdy_util_.spdy_version() >= SPDY4) {
+    // SPDY4 doesn't support flags on individual settings, and
+    // has no concept of settings persistence.
+    return;
+  }
   static const SpdyHeaderInfo kSynReplyInfo = {
     SYN_REPLY,                              // Syn Reply
     1,                                      // Stream ID

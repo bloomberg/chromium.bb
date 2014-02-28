@@ -367,7 +367,7 @@ enum SpdyGoAwayStatus {
 };
 
 // A SPDY priority is a number between 0 and 7 (inclusive).
-// SPDY priority range is version-dependant. For SPDY 2 and below, priority is a
+// SPDY priority range is version-dependent. For SPDY 2 and below, priority is a
 // number between 0 and 3.
 typedef uint8 SpdyPriority;
 
