@@ -15,7 +15,6 @@
 #include "content/renderer/webcrypto/platform_crypto.h"
 #include "content/renderer/webcrypto/shared_crypto.h"
 #include "content/renderer/webcrypto/webcrypto_util.h"
-#include "third_party/WebKit/public/platform/WebCrypto.h"  // TODO(eroman): delete
 
 namespace content {
 
@@ -142,7 +141,6 @@ class JwkAlgorithmRegistry {
 base::LazyInstance<JwkAlgorithmRegistry> jwk_alg_registry =
     LAZY_INSTANCE_INITIALIZER;
 
-#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
 bool ImportAlgorithmsConsistent(const blink::WebCryptoAlgorithm& alg1,
                                 const blink::WebCryptoAlgorithm& alg2) {
   DCHECK(!alg1.isNull());
@@ -164,39 +162,6 @@ bool ImportAlgorithmsConsistent(const blink::WebCryptoAlgorithm& alg1,
       return false;
   }
 }
-#else
-bool ImportAlgorithmsConsistent(const blink::WebCryptoAlgorithm& alg1,
-                                const blink::WebCryptoAlgorithm& alg2) {
-  DCHECK(!alg1.isNull());
-  DCHECK(!alg2.isNull());
-  if (alg1.id() != alg2.id())
-    return false;
-  switch (alg1.id()) {
-    case blink::WebCryptoAlgorithmIdHmac:
-    case blink::WebCryptoAlgorithmIdRsaOaep:
-    case blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
-      if (ImportAlgorithmsConsistent(GetInnerHashAlgorithm(alg1),
-                                     GetInnerHashAlgorithm(alg2))) {
-        return true;
-      }
-      break;
-    case blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5:
-    case blink::WebCryptoAlgorithmIdSha1:
-    case blink::WebCryptoAlgorithmIdSha224:
-    case blink::WebCryptoAlgorithmIdSha256:
-    case blink::WebCryptoAlgorithmIdSha384:
-    case blink::WebCryptoAlgorithmIdSha512:
-    case blink::WebCryptoAlgorithmIdAesCbc:
-    case blink::WebCryptoAlgorithmIdAesGcm:
-    case blink::WebCryptoAlgorithmIdAesCtr:
-      return true;
-    default:
-      NOTREACHED();  // Not a supported algorithm.
-      break;
-  }
-  return false;
-}
-#endif
 
 // Extracts the required string property with key |path| from |dict| and saves
 // the result to |*result|. If the property does not exist or is not a string,

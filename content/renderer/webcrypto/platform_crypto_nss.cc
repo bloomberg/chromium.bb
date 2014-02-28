@@ -19,9 +19,7 @@
 #include "third_party/WebKit/public/platform/WebArrayBuffer.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
-#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
-#endif
 
 #if defined(USE_NSS)
 #include <dlfcn.h>
@@ -370,11 +368,7 @@ CK_MECHANISM_TYPE WebCryptoAlgorithmToGenMechanism(
     case blink::WebCryptoAlgorithmIdAesKw:
       return CKM_AES_KEY_GEN;
     case blink::WebCryptoAlgorithmIdHmac:
-#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
       return WebCryptoHashToHMACMechanism(algorithm.hmacKeyGenParams()->hash());
-#else
-      return WebCryptoHashToHMACMechanism(algorithm.hmacKeyParams()->hash());
-#endif
     default:
       return CKM_INVALID_MECHANISM;
   }
@@ -408,7 +402,6 @@ bool IsAlgorithmRsa(const blink::WebCryptoAlgorithm& algorithm) {
          algorithm.id() == blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5;
 }
 
-#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
 bool CreatePublicKeyAlgorithm(const blink::WebCryptoAlgorithm& algorithm,
                               SECKEYPublicKey* key,
                               blink::WebCryptoKeyAlgorithm* key_algorithm) {
@@ -451,7 +444,6 @@ bool CreatePrivateKeyAlgorithm(const blink::WebCryptoAlgorithm& algorithm,
   return CreatePublicKeyAlgorithm(
       algorithm, SECKEY_ConvertToPublicKey(key), key_algorithm);
 }
-#endif
 
 }  // namespace
 
@@ -520,14 +512,10 @@ Status ImportKeyRaw(const blink::WebCryptoAlgorithm& algorithm,
   if (!pk11_sym_key.get())
     return Status::Error();
 
-#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
   blink::WebCryptoKeyAlgorithm key_algorithm;
   if (!CreateSecretKeyAlgorithm(
           algorithm, key_data.byte_length(), &key_algorithm))
     return Status::ErrorUnexpected();
-#else
-  const blink::WebCryptoAlgorithm& key_algorithm = algorithm;
-#endif
 
   *key = blink::WebCryptoKey::create(new SymKey(pk11_sym_key.Pass()),
                                      blink::WebCryptoKeyTypeSecret,
@@ -620,14 +608,10 @@ Status ImportKeySpki(const blink::WebCryptoAlgorithm& algorithm_or_null,
   if (algorithm.isNull())
     return Status::Error();
 
-#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
   blink::WebCryptoKeyAlgorithm key_algorithm;
   if (!CreatePublicKeyAlgorithm(
           algorithm, sec_public_key.get(), &key_algorithm))
     return Status::ErrorUnexpected();
-#else
-  const blink::WebCryptoAlgorithm& key_algorithm = algorithm;
-#endif
 
   *key = blink::WebCryptoKey::create(new PublicKey(sec_public_key.Pass()),
                                      blink::WebCryptoKeyTypePublic,
@@ -690,13 +674,9 @@ Status ImportKeyPkcs8(const blink::WebCryptoAlgorithm& algorithm_or_null,
   if (algorithm.isNull())
     return Status::Error();
 
-#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
   blink::WebCryptoKeyAlgorithm key_algorithm;
   if (!CreatePrivateKeyAlgorithm(algorithm, private_key.get(), &key_algorithm))
     return Status::ErrorUnexpected();
-#else
-  const blink::WebCryptoAlgorithm& key_algorithm = algorithm;
-#endif
 
   *key = blink::WebCryptoKey::create(new PrivateKey(private_key.Pass()),
                                      blink::WebCryptoKeyTypePrivate,
@@ -970,13 +950,9 @@ Status GenerateRsaKeyPair(const blink::WebCryptoAlgorithm& algorithm,
   if (!private_key)
     return Status::Error();
 
-#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
   blink::WebCryptoKeyAlgorithm key_algorithm;
   if (!CreatePublicKeyAlgorithm(algorithm, sec_public_key, &key_algorithm))
     return Status::ErrorUnexpected();
-#else
-  const blink::WebCryptoAlgorithm& key_algorithm = algorithm;
-#endif
 
   *public_key = blink::WebCryptoKey::create(
       new PublicKey(crypto::ScopedSECKEYPublicKey(sec_public_key)),
@@ -1049,13 +1025,9 @@ Status GenerateSecretKey(const blink::WebCryptoAlgorithm& algorithm,
   if (!pk11_key)
     return Status::Error();
 
-#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
   blink::WebCryptoKeyAlgorithm key_algorithm;
   if (!CreateSecretKeyAlgorithm(algorithm, keylen_bytes, &key_algorithm))
     return Status::ErrorUnexpected();
-#else
-  const blink::WebCryptoAlgorithm& key_algorithm = algorithm;
-#endif
 
   *key = blink::WebCryptoKey::create(new SymKey(pk11_key.Pass()),
                                      key_type,
@@ -1116,13 +1088,9 @@ Status ImportRsaPublicKey(const blink::WebCryptoAlgorithm& algorithm,
   if (!pubkey)
     return Status::Error();
 
-#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
   blink::WebCryptoKeyAlgorithm key_algorithm;
   if (!CreatePublicKeyAlgorithm(algorithm, pubkey.get(), &key_algorithm))
     return Status::ErrorUnexpected();
-#else
-  const blink::WebCryptoAlgorithm& key_algorithm = algorithm;
-#endif
 
   *key = blink::WebCryptoKey::create(new PublicKey(pubkey.Pass()),
                                      blink::WebCryptoKeyTypePublic,

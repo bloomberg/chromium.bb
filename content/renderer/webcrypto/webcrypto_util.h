@@ -238,15 +238,9 @@ blink::WebCryptoAlgorithm CreateRsaOaepImportAlgorithm(
 // Returns the internal block size for SHA-*
 unsigned int ShaBlockSizeBytes(blink::WebCryptoAlgorithmId hash_id);
 
-#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
 bool CreateSecretKeyAlgorithm(const blink::WebCryptoAlgorithm& algorithm,
                               unsigned keylen_bytes,
                               blink::WebCryptoKeyAlgorithm* key_algorithm);
-#else
-bool CreateSecretKeyAlgorithm(const blink::WebCryptoAlgorithm& algorithm,
-                              unsigned keylen_bytes,
-                              blink::WebCryptoAlgorithm* key_algorithm);
-#endif
 
 }  // namespace webcrypto
 

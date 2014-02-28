@@ -18,9 +18,7 @@
 #include "third_party/WebKit/public/platform/WebArrayBuffer.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
-#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
-#endif
 
 namespace content {
 
@@ -224,13 +222,9 @@ Status GenerateSecretKey(const blink::WebCryptoAlgorithm& algorithm,
   if (!(RAND_bytes(&random_bytes[0], keylen_bytes)))
     return Status::Error();
 
-#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
   blink::WebCryptoKeyAlgorithm key_algorithm;
   if (!CreateSecretKeyAlgorithm(algorithm, keylen_bytes, &key_algorithm))
     return Status::ErrorUnexpected();
-#else
-  const blink::WebCryptoAlgorithm key_algorithm = algorithm;
-#endif
 
   *key = blink::WebCryptoKey::create(new SymKey(CryptoData(random_bytes)),
                                      blink::WebCryptoKeyTypeSecret,
@@ -260,14 +254,10 @@ Status ImportKeyRaw(const blink::WebCryptoAlgorithm& algorithm,
                     blink::WebCryptoKeyUsageMask usage_mask,
                     blink::WebCryptoKey* key) {
 
-#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
   blink::WebCryptoKeyAlgorithm key_algorithm;
   if (!CreateSecretKeyAlgorithm(
           algorithm, key_data.byte_length(), &key_algorithm))
     return Status::ErrorUnexpected();
-#else
-  const blink::WebCryptoAlgorithm key_algorithm = algorithm;
-#endif
 
   *key = blink::WebCryptoKey::create(new SymKey(key_data),
                                      blink::WebCryptoKeyTypeSecret,

@@ -11,9 +11,7 @@
 #include "crypto/secure_util.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
-#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
-#endif
 #include "third_party/WebKit/public/platform/WebCryptoKey.h"
 
 namespace content {
@@ -189,13 +187,8 @@ Status SignRsaSsaPkcs1v1_5(const blink::WebCryptoAlgorithm& algorithm,
   if (status.IsError())
     return status;
 
-#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
   return platform::SignRsaSsaPkcs1v1_5(
       private_key, key.algorithm().rsaHashedParams()->hash(), data, buffer);
-#else
-  return platform::SignRsaSsaPkcs1v1_5(
-      private_key, algorithm.rsaSsaParams()->hash(), data, buffer);
-#endif
 }
 
 Status VerifyRsaSsaPkcs1v1_5(const blink::WebCryptoAlgorithm& algorithm,
@@ -208,20 +201,12 @@ Status VerifyRsaSsaPkcs1v1_5(const blink::WebCryptoAlgorithm& algorithm,
   if (status.IsError())
     return status;
 
-#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
   return platform::VerifyRsaSsaPkcs1v1_5(
       public_key,
       key.algorithm().rsaHashedParams()->hash(),
       signature,
       data,
       signature_match);
-#else
-  return platform::VerifyRsaSsaPkcs1v1_5(public_key,
-                                         algorithm.rsaSsaParams()->hash(),
-                                         signature,
-                                         data,
-                                         signature_match);
-#endif
 }
 
 Status ImportKeyRaw(const CryptoData& key_data,
@@ -327,12 +312,8 @@ Status GenerateSecretKey(const blink::WebCryptoAlgorithm& algorithm,
       break;
     }
     case blink::WebCryptoAlgorithmIdHmac: {
-#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
       const blink::WebCryptoHmacKeyGenParams* params =
           algorithm.hmacKeyGenParams();
-#else
-      const blink::WebCryptoHmacKeyParams* params = algorithm.hmacKeyParams();
-#endif
       DCHECK(params);
       if (params->hasLengthBytes()) {
         keylen_bytes = params->optionalLengthBytes();
@@ -364,7 +345,6 @@ Status GenerateKeyPair(const blink::WebCryptoAlgorithm& algorithm,
                        blink::WebCryptoKey* private_key) {
   // TODO(padolph): Handle other asymmetric algorithm key generation.
   switch (algorithm.paramsType()) {
-#ifdef WEBCRYPTO_HAS_KEY_ALGORITHM
     case blink::WebCryptoAlgorithmParamsTypeRsaHashedKeyGenParams:
     case blink::WebCryptoAlgorithmParamsTypeRsaKeyGenParams: {
       const blink::WebCryptoRsaKeyGenParams* params = NULL;
@@ -376,13 +356,6 @@ Status GenerateKeyPair(const blink::WebCryptoAlgorithm& algorithm,
       } else {
         params = algorithm.rsaKeyGenParams();
       }
-#else
-    case blink::WebCryptoAlgorithmParamsTypeRsaKeyGenParams: {
-      const blink::WebCryptoRsaKeyGenParams* params =
-          algorithm.rsaKeyGenParams();
-      blink::WebCryptoAlgorithm hash_or_null =
-          blink::WebCryptoAlgorithm::createNull();
-#endif
 
       if (!params->modulusLengthBits())
         return Status::ErrorGenerateRsaZeroModulus();
