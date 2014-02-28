@@ -75,9 +75,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // File system API not supported (requires some new API; internal bug 6930981)
   cl->AppendSwitch(switches::kDisableFileSystem);
 
-  // Disable compositor touch hit testing for now to mitigate risk of bugs.
-  cl->AppendSwitch(cc::switches::kDisableCompositorTouchHitTesting);
-
 #if defined(VIDEO_HOLE)
   // Support EME/L1 with hole-punching.
   cl->AppendSwitch(switches::kMediaDrmEnableNonCompositing);
