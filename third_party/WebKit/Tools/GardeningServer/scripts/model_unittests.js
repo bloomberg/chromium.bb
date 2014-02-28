@@ -136,7 +136,7 @@ asyncTest("updateRecentCommits", 2, function() {
             });
             deepEqual(recentCommits, [{
                 "revision": 3,
-                "title": "This matches Gecko's behavior for these types of properties.",
+                "title": "Throw SecurityError when setting 'Replaceable' properties cross-origin.",
                 "time": "2013-09-30T20:22:01Z",
                 "summary": "This matches Gecko's behavior for these types of properties.",
                 "author": "mkwst@chromium.org",
@@ -146,7 +146,7 @@ asyncTest("updateRecentCommits", 2, function() {
               },
               {
                 "revision": 2,
-                "title": "core/platform may not depend on core/ even for testing.",
+                "title": "Fix one more layering violation caught by check-blink-deps",
                 "time": "2013-09-30T19:36:21Z",
                 "summary": "core/platform may not depend on core/ even for testing.",
                 "author": "eseidel@chromium.org",
@@ -156,7 +156,7 @@ asyncTest("updateRecentCommits", 2, function() {
               },
               {
                 "revision": 1,
-                "title": "These were all failures noticed when running check-blink-deps",
+                "title": "Update DEPS include_rules after addition of root-level platform directory",
                 "time": "2013-09-30T19:28:49Z",
                 "summary": "These were all failures noticed when running check-blink-deps",
                 "author": "eseidel@chromium.org",

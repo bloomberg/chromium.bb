@@ -59,7 +59,13 @@ function findRevision(message)
 
 function parseCommitMessage(message) {
     var lines = message.split('\n');
-    var title = lines[1];
+    var title = "";
+    lines.some(function(line) {
+        if (line) {
+            title = line;
+            return true;
+        }
+    });
     var summary = lines.join('\n').trim();
     return {
         title: title,
@@ -76,6 +82,8 @@ function parseCommitData(responseXML)
     var commits = Array.prototype.map.call(responseXML.getElementsByTagName('entry'), function(logentry) {
         var author = $.trim(logentry.getElementsByTagName('author')[0].textContent);
         var time = logentry.getElementsByTagName('published')[0].textContent;
+        var titleElement = logentry.getElementsByTagName('title')[0];
+        var title = titleElement ? titleElement.textContent : null;
 
         // FIXME: This isn't a very high-fidelity reproduction of the commit message,
         // but it's good enough for our purposes.
@@ -83,7 +91,7 @@ function parseCommitData(responseXML)
 
         return {
             'revision': message.revision,
-            'title': message.title,
+            'title': title || message.title,
             'time': time,
             'summary': message.title,
             'author': author,
