@@ -9,11 +9,11 @@
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/infobars/insecure_content_infobar_delegate.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_switches.h"
 
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(InfoBarService);

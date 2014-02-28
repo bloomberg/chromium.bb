@@ -224,9 +224,6 @@ const char kDisableHangMonitor[]            = "disable-hang-monitor";
 // Disable the RenderThread's HistogramCustomizer.
 const char kDisableHistogramCustomizer[]    = "disable-histogram-customizer";
 
-// Prevent infobars from appearing.
-const char kDisableInfoBars[]               = "disable-infobars";
-
 // Prevent Java from running.
 const char kDisableJava[]                   = "disable-java";
 

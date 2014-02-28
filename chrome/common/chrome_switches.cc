@@ -353,6 +353,9 @@ const char kDisableGoogleNowIntegration[] = "disable-google-now-integration";
 const char kDisableImprovedDownloadProtection[] =
     "disable-improved-download-protection";
 
+// Prevent infobars from appearing.
+const char kDisableInfoBars[]               = "disable-infobars";
+
 // Don't resolve hostnames to IPv6 addresses. This can be used when debugging
 // issues relating to IPv6, but shouldn't otherwise be needed. Be sure to file
 // bugs if something isn't working properly in the presence of IPv6. This flag

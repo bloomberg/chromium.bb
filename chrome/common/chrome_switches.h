@@ -106,6 +106,7 @@ extern const char kDisableExtensions[];
 extern const char kDisableFullscreenWithinTab[];
 extern const char kDisableGoogleNowIntegration[];
 extern const char kDisableImprovedDownloadProtection[];
+extern const char kDisableInfoBars[];
 extern const char kDisableIPv6[];
 extern const char kDisableIPPooling[];
 extern const char kDisableMinimizeOnSecondLauncherItemClick[];
