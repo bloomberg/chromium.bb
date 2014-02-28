@@ -36,9 +36,8 @@ public:
 
     static PassRefPtr<SVGTransform> addSVGTransforms(PassRefPtr<SVGTransform>, PassRefPtr<SVGTransform>, unsigned repeatCount = 1);
 
-    bool isZero() const;
-
     float distance() const;
+
 private:
     SVGTransformDistance(SVGTransformType, float angle, float cx, float cy, const AffineTransform&);
 

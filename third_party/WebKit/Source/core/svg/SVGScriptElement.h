@@ -39,9 +39,6 @@ class SVGScriptElement FINAL
 public:
     static PassRefPtr<SVGScriptElement> create(Document&, bool wasInsertedByParser);
 
-    String type() const;
-    void setType(const String&);
-
     ScriptLoader* loader() const { return m_loader.get(); }
 
 #ifndef NDEBUG

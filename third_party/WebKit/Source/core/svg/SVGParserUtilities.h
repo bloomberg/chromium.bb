@@ -39,7 +39,6 @@ template <typename CharType>
 bool parseSVGNumber(CharType* ptr, size_t length, double& number);
 bool parseNumber(const LChar*& ptr, const LChar* end, float& number, bool skip = true);
 bool parseNumber(const UChar*& ptr, const UChar* end, float& number, bool skip = true);
-bool parseNumberFromString(const String&, float& number, bool skip = true);
 bool parseNumberOptionalNumber(const String& s, float& h, float& v);
 bool parseArcFlag(const LChar*& ptr, const LChar* end, bool& flag);
 bool parseArcFlag(const UChar*& ptr, const UChar* end, bool& flag);
@@ -81,7 +80,6 @@ inline bool skipOptionalSVGSpacesOrDelimiter(const CharType*& ptr, const CharTyp
     return ptr < end;
 }
 
-bool pointsListFromSVGData(SVGPointList& pointsList, const String& points);
 Vector<String> parseDelimitedString(const String& input, const char seperator);
 bool parseKerningUnicodeString(const String& input, UnicodeRanges&, HashSet<String>& stringList);
 bool parseGlyphName(const String& input, HashSet<String>& values);
