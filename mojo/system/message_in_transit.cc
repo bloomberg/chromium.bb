@@ -46,14 +46,22 @@ STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::EndpointId
     MessageInTransit::kInvalidEndpointId;
 STATIC_CONST_MEMBER_DEFINITION const size_t MessageInTransit::kMessageAlignment;
 
-MessageInTransit::MessageInTransit(OwnedBuffer,
-                                   Type type,
+
+MessageInTransit::View::View(size_t message_size, const void* buffer)
+    : message_size_(message_size),
+      buffer_(buffer) {
+  size_t next_message_size = 0;
+  DCHECK(MessageInTransit::GetNextMessageSize(buffer_, message_size_,
+                                              &next_message_size));
+  DCHECK_EQ(message_size_, next_message_size);
+}
+
+MessageInTransit::MessageInTransit(Type type,
                                    Subtype subtype,
                                    uint32_t num_bytes,
                                    uint32_t num_handles,
                                    const void* bytes)
-    : owns_buffers_(true),
-      main_buffer_size_(RoundUpMessageAlignment(sizeof(Header) + num_bytes)),
+    : main_buffer_size_(RoundUpMessageAlignment(sizeof(Header) + num_bytes)),
       main_buffer_(base::AlignedAlloc(main_buffer_size_, kMessageAlignment)),
       secondary_buffer_size_(0),
       secondary_buffer_(NULL) {
@@ -67,8 +75,6 @@ MessageInTransit::MessageInTransit(OwnedBuffer,
   header()->destination_id = kInvalidEndpointId;
   header()->num_bytes = num_bytes;
   header()->num_handles = num_handles;
-  header()->reserved0 = 0;
-  header()->reserved1 = 0;
   // Note: If dispatchers are subsequently attached (in particular, if
   // |num_handles| is nonzero), then |total_size| will have to be adjusted.
   UpdateTotalSize();
@@ -82,66 +88,33 @@ MessageInTransit::MessageInTransit(OwnedBuffer,
   }
 }
 
-MessageInTransit::MessageInTransit(OwnedBuffer,
-                                   const MessageInTransit& other)
-    : owns_buffers_(true),
-      main_buffer_size_(other.main_buffer_size()),
+MessageInTransit::MessageInTransit(const View& message_view)
+    : main_buffer_size_(message_view.main_buffer_size()),
       main_buffer_(base::AlignedAlloc(main_buffer_size_, kMessageAlignment)),
-      secondary_buffer_size_(other.secondary_buffer_size()),
+      secondary_buffer_size_(message_view.secondary_buffer_size()),
       secondary_buffer_(secondary_buffer_size_ ?
                             base::AlignedAlloc(secondary_buffer_size_,
                                                kMessageAlignment) : NULL) {
-  DCHECK(!other.dispatchers_.get());
   DCHECK_GE(main_buffer_size_, sizeof(Header));
   DCHECK_EQ(main_buffer_size_ % kMessageAlignment, 0u);
 
-  memcpy(main_buffer_, other.main_buffer(), main_buffer_size_);
-  memcpy(secondary_buffer_, other.secondary_buffer(), secondary_buffer_size_);
+  memcpy(main_buffer_, message_view.main_buffer(), main_buffer_size_);
+  memcpy(secondary_buffer_, message_view.secondary_buffer(),
+         secondary_buffer_size_);
 
   DCHECK_EQ(main_buffer_size_,
             RoundUpMessageAlignment(sizeof(Header) + num_bytes()));
 }
 
-MessageInTransit::MessageInTransit(UnownedBuffer,
-                                   size_t message_size,
-                                   void* buffer)
-    : owns_buffers_(false),
-      main_buffer_size_(0),
-      main_buffer_(NULL),
-      secondary_buffer_size_(0),
-      secondary_buffer_(NULL) {
-  DCHECK_GE(message_size, sizeof(Header));
-  DCHECK_EQ(message_size % kMessageAlignment, 0u);
-  DCHECK(buffer);
-
-  Header* header = static_cast<Header*>(buffer);
-  DCHECK_EQ(header->total_size, message_size);
-
-  main_buffer_size_ =
-      RoundUpMessageAlignment(sizeof(Header) + header->num_bytes);
-  DCHECK_LE(main_buffer_size_, message_size);
-  main_buffer_ = buffer;
-  DCHECK_EQ(reinterpret_cast<uintptr_t>(main_buffer_) % kMessageAlignment, 0u);
-
-  if (message_size > main_buffer_size_) {
-    secondary_buffer_size_ = message_size - main_buffer_size_;
-    secondary_buffer_ = static_cast<char*>(buffer) + main_buffer_size_;
-    DCHECK_EQ(reinterpret_cast<uintptr_t>(secondary_buffer_) %
-                  kMessageAlignment, 0u);
-  }
-}
-
 MessageInTransit::~MessageInTransit() {
-  if (owns_buffers_) {
-    base::AlignedFree(main_buffer_);
-    base::AlignedFree(secondary_buffer_);  // Okay if null.
+  base::AlignedFree(main_buffer_);
+  base::AlignedFree(secondary_buffer_);  // Okay if null.
 #ifndef NDEBUG
-    main_buffer_size_ = 0;
-    main_buffer_ = NULL;
-    secondary_buffer_size_ = 0;
-    secondary_buffer_ = NULL;
+  main_buffer_size_ = 0;
+  main_buffer_ = NULL;
+  secondary_buffer_size_ = 0;
+  secondary_buffer_ = NULL;
 #endif
-  }
 
   if (dispatchers_.get()) {
     for (size_t i = 0; i < dispatchers_->size(); i++) {
@@ -176,7 +149,6 @@ bool MessageInTransit::GetNextMessageSize(const void* buffer,
 void MessageInTransit::SetDispatchers(
     scoped_ptr<std::vector<scoped_refptr<Dispatcher> > > dispatchers) {
   DCHECK(dispatchers.get());
-  DCHECK(owns_buffers_);
   DCHECK(!dispatchers_.get());
 
   dispatchers_ = dispatchers.Pass();
@@ -188,7 +160,6 @@ void MessageInTransit::SetDispatchers(
 
 void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {
   DCHECK(channel);
-  DCHECK(owns_buffers_);
   DCHECK(!secondary_buffer_);
   CHECK_EQ(num_handles(),
            dispatchers_.get() ? dispatchers_->size() : static_cast<size_t>(0));
@@ -201,13 +172,12 @@ void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {
   // table, and add to it as we go along.
   size_t size = handle_table_size;
   for (size_t i = 0; i < dispatchers_->size(); i++) {
-    if (!(*dispatchers_)[i])
-      continue;
-
-    size += RoundUpMessageAlignment(
-        Dispatcher::MessageInTransitAccess::GetMaximumSerializedSize(
-            (*dispatchers_)[i].get(), channel));
-    // TODO(vtl): Check for overflow?
+    if (Dispatcher* dispatcher = (*dispatchers_)[i]) {
+      size += RoundUpMessageAlignment(
+          Dispatcher::MessageInTransitAccess::GetMaximumSerializedSize(
+              dispatcher, channel));
+      // TODO(vtl): Check for overflow?
+    }
   }
 
   secondary_buffer_ = base::AlignedAlloc(size, kMessageAlignment);
@@ -222,19 +192,25 @@ void MessageInTransit::SerializeAndCloseDispatchers(Channel* channel) {
       static_cast<HandleTableEntry*>(secondary_buffer_);
   size_t current_offset = handle_table_size;
   for (size_t i = 0; i < dispatchers_->size(); i++) {
-    if (!(*dispatchers_)[i]) {
-      // The |handle_table[i].size| is already zero, designating this entry as
-      // invalid.
+    Dispatcher* dispatcher = (*dispatchers_)[i];
+    if (!dispatcher) {
+      COMPILE_ASSERT(Dispatcher::kTypeUnknown == 0,
+                     need_Dispatcher_kTypeUnknown_to_be_zero);
       continue;
     }
 
-    handle_table[i].offset = static_cast<uint32_t>(current_offset);
-    handle_table[i].size = static_cast<uint32_t>(
-        Dispatcher::MessageInTransitAccess::SerializeAndClose(
-            (*dispatchers_)[i].get(),
-            static_cast<char*>(secondary_buffer_) + current_offset,
-            channel));
-    current_offset += RoundUpMessageAlignment(handle_table[i].size);
+    size_t actual_size = 0;
+    if (Dispatcher::MessageInTransitAccess::SerializeAndClose(
+            dispatcher, static_cast<char*>(secondary_buffer_) + current_offset,
+            channel, &actual_size)) {
+      handle_table[i].type = static_cast<int32_t>(dispatcher->GetType());
+      handle_table[i].offset = static_cast<uint32_t>(current_offset);
+      handle_table[i].size = static_cast<uint32_t>(actual_size);
+    }
+    // (Nothing to do on failure, since |secondary_buffer_| was cleared, and
+    // |kTypeUnknown| is zero.)
+
+    current_offset += RoundUpMessageAlignment(actual_size);
     DCHECK_LE(current_offset, size);
   }
 

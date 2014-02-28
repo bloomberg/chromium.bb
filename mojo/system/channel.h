@@ -93,12 +93,13 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   virtual ~Channel();
 
   // |RawChannel::Delegate| implementation:
-  virtual void OnReadMessage(const MessageInTransit& message) OVERRIDE;
+  virtual void OnReadMessage(
+      const MessageInTransit::View& message_view) OVERRIDE;
   virtual void OnFatalError(FatalError fatal_error) OVERRIDE;
 
   // Helpers for |OnReadMessage|:
-  void OnReadMessageForDownstream(const MessageInTransit& message);
-  void OnReadMessageForChannel(const MessageInTransit& message);
+  void OnReadMessageForDownstream(const MessageInTransit::View& message_view);
+  void OnReadMessageForChannel(const MessageInTransit::View& message_view);
 
   // Handles errors (e.g., invalid messages) from the remote side.
   void HandleRemoteError(const base::StringPiece& error_message);

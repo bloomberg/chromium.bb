@@ -37,12 +37,23 @@ size_t Dispatcher::MessageInTransitAccess::GetMaximumSerializedSize(
 }
 
 // static
-size_t Dispatcher::MessageInTransitAccess::SerializeAndClose(
+bool Dispatcher::MessageInTransitAccess::SerializeAndClose(
     Dispatcher* dispatcher,
     void* destination,
-    Channel* channel) {
+    Channel* channel,
+    size_t* actual_size) {
   DCHECK(dispatcher);
-  return dispatcher->SerializeAndClose(destination, channel);
+  return dispatcher->SerializeAndClose(destination, channel, actual_size);
+}
+
+// static
+scoped_refptr<Dispatcher> Dispatcher::MessageInTransitAccess::Deserialize(
+    Channel* channel,
+    int32_t type,
+    const void* source,
+    size_t size) {
+  // TODO(vtl)
+  return scoped_refptr<Dispatcher>();
 }
 
 MojoResult Dispatcher::Close() {
@@ -322,8 +333,9 @@ size_t Dispatcher::GetMaximumSerializedSizeImplNoLock(
   return 0;
 }
 
-size_t Dispatcher::SerializeAndCloseImplNoLock(void* /*destination*/,
-                                               Channel* /*channel*/) {
+bool Dispatcher::SerializeAndCloseImplNoLock(void* /*destination*/,
+                                             Channel* /*channel*/,
+                                             size_t* /*actual_size*/) {
   lock_.AssertAcquired();
   DCHECK(is_closed_);
   // By default, serializing isn't supported, so just close.
@@ -367,9 +379,12 @@ size_t Dispatcher::GetMaximumSerializedSize(const Channel* channel) const {
   return GetMaximumSerializedSizeImplNoLock(channel);
 }
 
-size_t Dispatcher::SerializeAndClose(void* destination, Channel* channel) {
+bool Dispatcher::SerializeAndClose(void* destination,
+                                   Channel* channel,
+                                   size_t* actual_size) {
   DCHECK(destination);
   DCHECK(channel);
+  DCHECK(actual_size);
   DCHECK(HasOneRef());
 
   base::AutoLock locker(lock_);
@@ -386,9 +401,11 @@ size_t Dispatcher::SerializeAndClose(void* destination, Channel* channel) {
   // No need to cancel waiters: we shouldn't have any (and shouldn't be in
   // |Core|'s handle table.
 
-  size_t size = SerializeAndCloseImplNoLock(destination, channel);
-  DCHECK_LE(size, max_size);
-  return size;
+  if (!SerializeAndCloseImplNoLock(destination, channel, actual_size))
+    return false;
+
+  DCHECK_LE(*actual_size, max_size);
+  return true;
 }
 
 // DispatcherTransport ---------------------------------------------------------

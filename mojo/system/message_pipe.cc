@@ -68,7 +68,6 @@ MojoResult MessagePipe::WriteMessage(
   return EnqueueMessage(
       GetPeerPort(port),
       make_scoped_ptr(new MessageInTransit(
-          MessageInTransit::OWNED_BUFFER,
           MessageInTransit::kTypeMessagePipeEndpoint,
           MessageInTransit::kSubtypeMessagePipeEndpointData,
           num_bytes, num_handles, bytes)),

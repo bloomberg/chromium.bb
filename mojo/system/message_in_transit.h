@@ -63,35 +63,64 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   // quantity (which must be a power of 2).
   static const size_t kMessageAlignment = 8;
 
-  enum OwnedBuffer { OWNED_BUFFER };
-  // Constructor for a |MessageInTransit| that owns its buffer. |bytes| is
-  // optional; if null, the message data will be zero-initialized.
-  MessageInTransit(OwnedBuffer,
-                   Type type,
+  // Forward-declare |Header| so that |View| can use it:
+ private:
+  struct Header;
+ public:
+  // This represents a view of serialized message data in a raw buffer.
+  class View {
+   public:
+    // Constructs a view from the given buffer of the given size. (The size must
+    // be as provided by |MessageInTransit::GetNextMessageSize()|.) The buffer
+    // must remain alive/unmodified through the lifetime of this object.
+    // |buffer| should be |kMessageAlignment|-byte aligned.
+    View(size_t message_size, const void* buffer);
+
+    // API parallel to that for |MessageInTransit| itself (mostly getters for
+    // header data).
+    const void* main_buffer() const { return buffer_; }
+    size_t main_buffer_size() const {
+      return RoundUpMessageAlignment(sizeof(Header) + header()->num_bytes);
+    }
+    const void* secondary_buffer() const {
+      return (message_size_ > main_buffer_size()) ?
+          static_cast<const char*>(buffer_) + main_buffer_size() : NULL;
+    }
+    size_t secondary_buffer_size() const {
+      return message_size_ - main_buffer_size();
+    }
+    size_t total_size() const { return header()->total_size; }
+    uint32_t num_bytes() const { return header()->num_bytes; }
+    const void* bytes() const {
+      return static_cast<const char*>(buffer_) + sizeof(Header);
+    }
+    uint32_t num_handles() const { return header()->num_handles; }
+    Type type() const { return header()->type; }
+    Subtype subtype() const { return header()->subtype; }
+    EndpointId source_id() const { return header()->source_id; }
+    EndpointId destination_id() const { return header()->destination_id; }
+
+   private:
+    const Header* header() const { return static_cast<const Header*>(buffer_); }
+
+    const size_t message_size_;
+    const void* const buffer_;
+
+    // Though this struct is trivial, disallow copy and assign, since it doesn't
+    // own its data. (If you're copying/assigning this, you're probably doing
+    // something wrong.)
+    DISALLOW_COPY_AND_ASSIGN(View);
+  };
+
+  // |bytes| is optional; if null, the message data will be zero-initialized.
+  MessageInTransit(Type type,
                    Subtype subtype,
                    uint32_t num_bytes,
                    uint32_t num_handles,
                    const void* bytes);
-  // "Copy" constructor. The input |MessageInTransit| may own its buffer or not;
-  // however, it must not have any dispatchers. The constructed
-  // |MessageInTransit| will own its buffer.
-  MessageInTransit(OwnedBuffer,
-                   const MessageInTransit& other);
+  // Constructs a |MessageInTransit| from a |View|.
+  explicit MessageInTransit(const View& message_view);
 
-  enum UnownedBuffer { UNOWNED_BUFFER };
-  // Constructor for a |MessageInTransit| that is a "view" into another buffer.
-  // |buffer| should point to a fully-serialized |MessageInTransit|, and should
-  // be aligned on a |kMessageAlignment|-byte boundary. |message_size| should be
-  // the value provided by |GetNextMessageSize()|, and |buffer| should have at
-  // least that many bytes available. |buffer| should live (without change to
-  // the first |message_size| bytes) at least as long the new |MessageInTransit|
-  // does.
-  //
-  // Note: You probably don't want to heap-allocate this kind of
-  // |MessageInTransit| (and, e.g., put it into a |scoped_ptr|); you definitely
-  // don't want to pass it as a parameter in a |scoped_ptr|. Whenever you use
-  // this, you can probably create it directly on the stack.
-  MessageInTransit(UnownedBuffer, size_t message_size, void* buffer);
   ~MessageInTransit();
 
   // Gets the size of the next message from |buffer|, which has |buffer_size|
@@ -108,13 +137,12 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
   // Makes this message "own" the given set of dispatchers. The dispatchers must
   // not be referenced from anywhere else (in particular, not from the handle
   // table), i.e., each dispatcher must have a reference count of 1. This
-  // message must also own its buffers and not already have dispatchers.
+  // message must not already have dispatchers.
   void SetDispatchers(
       scoped_ptr<std::vector<scoped_refptr<Dispatcher> > > dispatchers);
 
-  // Serializes any dispatchers to the secondary buffer. This message must own
-  // its buffers (in order to have dispatchers in the first place), and the
-  // secondary buffer must not yet exist (so this must only be called once). The
+  // Serializes any dispatchers to the secondary buffer. This message must not
+  // already have a secondary buffer (so this must only be called once). The
   // caller must ensure (e.g., by holding on to a reference) that |channel|
   // stays alive through the call.
   void SerializeAndCloseDispatchers(Channel* channel);
@@ -184,14 +212,13 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
     uint32_t num_bytes;
     // Number of handles "attached".
     uint32_t num_handles;
-    // To be used soon.
-    uint32_t reserved0;
-    uint32_t reserved1;
   };
 
   struct HandleTableEntry {
+    int32_t type;  // From |Dispatcher::Type| (|kTypeUnknown| for "invalid").
     uint32_t offset;
-    uint32_t size;  // (Not including any padding.) A size of 0 means "invalid".
+    uint32_t size;  // (Not including any padding.)
+    uint32_t unused;
   };
 
   const Header* header() const {
@@ -201,21 +228,16 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
 
   void UpdateTotalSize();
 
-  // Whether we own |main_buffer_| and |secondary_buffer_| or not (that is, we
-  // own neither).
-  bool owns_buffers_;
-
   size_t main_buffer_size_;
   void* main_buffer_;
 
   size_t secondary_buffer_size_;
   void* secondary_buffer_;  // May be null.
 
-  // Any dispatchers that may be attached to this message. This is only
-  // supported if this message owns its main buffer. These dispatchers should be
-  // "owned" by this message, i.e., have a ref count of exactly 1. (We allow a
-  // dispatcher entry to be null, in case it couldn't be duplicated for some
-  // reason.)
+  // Any dispatchers that may be attached to this message. These dispatchers
+  // should be "owned" by this message, i.e., have a ref count of exactly 1. (We
+  // allow a dispatcher entry to be null, in case it couldn't be duplicated for
+  // some reason.)
   scoped_ptr<std::vector<scoped_refptr<Dispatcher> > > dispatchers_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageInTransit);

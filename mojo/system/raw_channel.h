@@ -14,6 +14,7 @@
 #include "base/synchronization/lock.h"
 #include "mojo/system/constants.h"
 #include "mojo/system/embedder/scoped_platform_handle.h"
+#include "mojo/system/message_in_transit.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace base {
@@ -22,8 +23,6 @@ class MessageLoopForIO;
 
 namespace mojo {
 namespace system {
-
-class MessageInTransit;
 
 // |RawChannel| is an interface to objects that wrap an OS "pipe". It presents
 // the following interface to users:
@@ -56,7 +55,7 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
 
     // Called when a message is read. This may call |Shutdown()| on the
     // |RawChannel|, but must not destroy it.
-    virtual void OnReadMessage(const MessageInTransit& message) = 0;
+    virtual void OnReadMessage(const MessageInTransit::View& message_view) = 0;
 
     // Called when there's a fatal error, which leads to the channel no longer
     // being viable.

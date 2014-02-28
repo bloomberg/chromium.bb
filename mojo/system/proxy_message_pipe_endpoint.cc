@@ -47,8 +47,7 @@ void ProxyMessagePipeEndpoint::OnPeerClose() {
 
   is_peer_open_ = false;
   EnqueueMessage(make_scoped_ptr(
-      new MessageInTransit(MessageInTransit::OWNED_BUFFER,
-                           MessageInTransit::kTypeMessagePipe,
+      new MessageInTransit(MessageInTransit::kTypeMessagePipe,
                            MessageInTransit::kSubtypeMessagePipePeerClosed,
                            0, 0, NULL)));
 }

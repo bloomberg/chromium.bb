@@ -192,11 +192,11 @@ void RawChannel::OnReadCompleted(bool result, size_t bytes_read) {
 
   IOResult io_result = result ? IO_SUCCEEDED : IO_FAILED;
 
-  // Keep reading data in a loop, and dispatches messages if enough data is
+  // Keep reading data in a loop, and dispatch messages if enough data is
   // received. Exit the loop if any of the following happens:
-  // - one or more messages were dispatched;
-  // - the last read failed, was a partial read or would block;
-  // - |Shutdown()| was called.
+  //   - one or more messages were dispatched;
+  //   - the last read failed, was a partial read or would block;
+  //   - |Shutdown()| was called.
   do {
     if (io_result != IO_SUCCEEDED) {
       read_stopped_ = true;
@@ -219,19 +219,18 @@ void RawChannel::OnReadCompleted(bool result, size_t bytes_read) {
     //   - |message_size| is only valid if |GetNextMessageSize()| returns true.
     // TODO(vtl): Use |message_size| more intelligently (e.g., to request the
     // next read).
+    // TODO(vtl): Validate that |message_size| is sane.
     while (remaining_bytes > 0 &&
            MessageInTransit::GetNextMessageSize(
                &read_buffer_->buffer_[read_buffer_start], remaining_bytes,
                &message_size) &&
            remaining_bytes >= message_size) {
-      // TODO(vtl): FIXME -- replace "unowned buffer" |MessageInTransit|s with
-      // some sort of "view" abstraction.
-      MessageInTransit message(MessageInTransit::UNOWNED_BUFFER, message_size,
-                               &read_buffer_->buffer_[read_buffer_start]);
-      DCHECK_EQ(message.total_size(), message_size);
+      MessageInTransit::View
+          message_view(message_size, &read_buffer_->buffer_[read_buffer_start]);
+      DCHECK_EQ(message_view.total_size(), message_size);
 
       // Dispatch the message.
-      delegate_->OnReadMessage(message);
+      delegate_->OnReadMessage(message_view);
       if (read_stopped_) {
         // |Shutdown()| was called in |OnReadMessage()|.
         // TODO(vtl): Add test for this case.

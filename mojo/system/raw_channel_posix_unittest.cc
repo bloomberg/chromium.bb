@@ -41,8 +41,7 @@ scoped_ptr<MessageInTransit> MakeTestMessage(uint32_t num_bytes) {
   for (size_t i = 0; i < num_bytes; i++)
     bytes[i] = static_cast<unsigned char>(i + num_bytes);
   return make_scoped_ptr(
-      new MessageInTransit(MessageInTransit::OWNED_BUFFER,
-                           MessageInTransit::kTypeMessagePipeEndpoint,
+      new MessageInTransit(MessageInTransit::kTypeMessagePipeEndpoint,
                            MessageInTransit::kSubtypeMessagePipeEndpointData,
                            num_bytes, 0, bytes.data()));
 }
@@ -107,7 +106,8 @@ class WriteOnlyRawChannelDelegate : public RawChannel::Delegate {
   virtual ~WriteOnlyRawChannelDelegate() {}
 
   // |RawChannel::Delegate| implementation:
-  virtual void OnReadMessage(const MessageInTransit& /*message*/) OVERRIDE {
+  virtual void OnReadMessage(
+      const MessageInTransit::View& /*message_view*/) OVERRIDE {
     NOTREACHED();
   }
   virtual void OnFatalError(FatalError /*fatal_error*/) OVERRIDE {
@@ -145,16 +145,15 @@ class TestMessageReaderAndChecker {
         // If we've read the whole message....
         if (bytes_.size() >= message_size) {
           bool rv = true;
-          MessageInTransit message(MessageInTransit::UNOWNED_BUFFER,
-                                   message_size, bytes_.data());
-          CHECK_EQ(message.main_buffer_size(), message_size);
+          MessageInTransit::View message_view(message_size, bytes_.data());
+          CHECK_EQ(message_view.main_buffer_size(), message_size);
 
-          if (message.num_bytes() != expected_size) {
+          if (message_view.num_bytes() != expected_size) {
             LOG(ERROR) << "Wrong size: " << message_size << " instead of "
                        << expected_size << " bytes.";
             rv = false;
-          } else if (!CheckMessageData(message.bytes(),
-                                       message.num_bytes())) {
+          } else if (!CheckMessageData(message_view.bytes(),
+                                       message_view.num_bytes())) {
             LOG(ERROR) << "Incorrect message bytes.";
             rv = false;
           }
@@ -162,7 +161,7 @@ class TestMessageReaderAndChecker {
           // Erase message data.
           bytes_.erase(bytes_.begin(),
                        bytes_.begin() +
-                           message.main_buffer_size());
+                           message_view.main_buffer_size());
           return rv;
         }
       }
@@ -228,7 +227,8 @@ class ReadCheckerRawChannelDelegate : public RawChannel::Delegate {
   virtual ~ReadCheckerRawChannelDelegate() {}
 
   // |RawChannel::Delegate| implementation (called on the I/O thread):
-  virtual void OnReadMessage(const MessageInTransit& message) OVERRIDE {
+  virtual void OnReadMessage(
+      const MessageInTransit::View& message_view) OVERRIDE {
     size_t position;
     size_t expected_size;
     bool should_signal = false;
@@ -242,10 +242,10 @@ class ReadCheckerRawChannelDelegate : public RawChannel::Delegate {
         should_signal = true;
     }
 
-    EXPECT_EQ(expected_size, message.num_bytes()) << position;
-    if (message.num_bytes() == expected_size) {
-      EXPECT_TRUE(CheckMessageData(message.bytes(), message.num_bytes()))
-          << position;
+    EXPECT_EQ(expected_size, message_view.num_bytes()) << position;
+    if (message_view.num_bytes() == expected_size) {
+      EXPECT_TRUE(CheckMessageData(message_view.bytes(),
+                  message_view.num_bytes())) << position;
     }
 
     if (should_signal)
@@ -352,11 +352,13 @@ class ReadCountdownRawChannelDelegate : public RawChannel::Delegate {
   virtual ~ReadCountdownRawChannelDelegate() {}
 
   // |RawChannel::Delegate| implementation (called on the I/O thread):
-  virtual void OnReadMessage(const MessageInTransit& message) OVERRIDE {
+  virtual void OnReadMessage(
+      const MessageInTransit::View& message_view) OVERRIDE {
     EXPECT_LT(count_, expected_count_);
     count_++;
 
-    EXPECT_TRUE(CheckMessageData(message.bytes(), message.num_bytes()));
+    EXPECT_TRUE(CheckMessageData(message_view.bytes(),
+                message_view.num_bytes()));
 
     if (count_ >= expected_count_)
       done_event_.Signal();

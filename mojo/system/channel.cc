@@ -135,19 +135,19 @@ Channel::~Channel() {
       << " endpoints still present";
 }
 
-void Channel::OnReadMessage(const MessageInTransit& message) {
-  switch (message.type()) {
+void Channel::OnReadMessage(const MessageInTransit::View& message_view) {
+  switch (message_view.type()) {
     case MessageInTransit::kTypeMessagePipeEndpoint:
     case MessageInTransit::kTypeMessagePipe:
-      OnReadMessageForDownstream(message);
+      OnReadMessageForDownstream(message_view);
       break;
     case MessageInTransit::kTypeChannel:
-      OnReadMessageForChannel(message);
+      OnReadMessageForChannel(message_view);
       break;
     default:
       HandleRemoteError(base::StringPrintf(
           "Received message of invalid type %u",
-          static_cast<unsigned>(message.type())));
+          static_cast<unsigned>(message_view.type())));
       break;
   }
 }
@@ -157,11 +157,12 @@ void Channel::OnFatalError(FatalError fatal_error) {
   NOTIMPLEMENTED();
 }
 
-void Channel::OnReadMessageForDownstream(const MessageInTransit& message) {
-  DCHECK(message.type() == MessageInTransit::kTypeMessagePipeEndpoint ||
-         message.type() == MessageInTransit::kTypeMessagePipe);
+void Channel::OnReadMessageForDownstream(
+    const MessageInTransit::View& message_view) {
+  DCHECK(message_view.type() == MessageInTransit::kTypeMessagePipeEndpoint ||
+         message_view.type() == MessageInTransit::kTypeMessagePipe);
 
-  MessageInTransit::EndpointId local_id = message.destination_id();
+  MessageInTransit::EndpointId local_id = message_view.destination_id();
   if (local_id == MessageInTransit::kInvalidEndpointId) {
     HandleRemoteError("Received message with no destination ID");
     return;
@@ -195,16 +196,15 @@ void Channel::OnReadMessageForDownstream(const MessageInTransit& message) {
   // We need to duplicate the message, because |EnqueueMessage()| will take
   // ownership of it.
   // TODO(vtl): Need to enforce limits on message size and handle count.
-  scoped_ptr<MessageInTransit> own_message(
-      new MessageInTransit(MessageInTransit::OWNED_BUFFER, message));
-  std::vector<DispatcherTransport> transports(message.num_handles());
+  scoped_ptr<MessageInTransit> message(new MessageInTransit(message_view));
+  std::vector<DispatcherTransport> transports(message->num_handles());
   // TODO(vtl): Create dispatchers for handles.
   // TODO(vtl): It's bad that the current API will create equivalent dispatchers
   // for the freshly-created ones, which is totally redundant. Make a version of
   // |EnqueueMessage()| that passes ownership.
   if (endpoint_info.message_pipe->EnqueueMessage(
-          MessagePipe::GetPeerPort(endpoint_info.port), own_message.Pass(),
-          message.num_handles() ? &transports : NULL) != MOJO_RESULT_OK) {
+          MessagePipe::GetPeerPort(endpoint_info.port), message.Pass(),
+          transports.empty() ? NULL : &transports) != MOJO_RESULT_OK) {
     HandleLocalError(base::StringPrintf(
         "Failed to enqueue message to local destination ID %u",
         static_cast<unsigned>(local_id)));
@@ -212,7 +212,8 @@ void Channel::OnReadMessageForDownstream(const MessageInTransit& message) {
   }
 }
 
-void Channel::OnReadMessageForChannel(const MessageInTransit& message) {
+void Channel::OnReadMessageForChannel(
+    const MessageInTransit::View& message_view) {
   // TODO(vtl): Currently no channel-only messages yet.
   HandleRemoteError("Received invalid channel message");
   NOTREACHED();
