@@ -6,7 +6,6 @@ include_rules = [
   "+media",  # For audio input/output and audio/video decoding.
   "+third_party/hyphen/hyphen.h",
   "+third_party/libjingle",
-  "+third_party/mach_override",
   "+third_party/tcmalloc",
   "+v8/include",
   "+v8/src/third_party/vtune",
