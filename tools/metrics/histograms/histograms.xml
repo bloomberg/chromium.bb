@@ -26711,6 +26711,9 @@ other types of suffix sets.
   <int value="271" label="PromiseCast"/>
   <int value="272" label="PromiseReject"/>
   <int value="273" label="PromiseResolve"/>
+  <int value="274" label="TextAutosizing"/>
+  <int value="275" label="TextAutosizingLayout"/>
+  <int value="276" label="HTMLAnchorElementPingAttribute"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
