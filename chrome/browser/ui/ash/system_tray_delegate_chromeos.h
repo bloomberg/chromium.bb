@@ -127,6 +127,8 @@ class SystemTrayDelegateChromeOS
       OVERRIDE;
   virtual int GetSystemTrayMenuWidth() OVERRIDE;
   virtual void ActiveUserWasChanged() OVERRIDE;
+  virtual bool IsNetworkBehindCaptivePortal(
+      const std::string& service_path) const OVERRIDE;
 
   // browser tests need to call ShouldUse24HourClock().
   bool GetShouldUse24HourClockForTesting() const;

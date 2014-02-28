@@ -139,6 +139,16 @@ void SystemTrayNotifier::RemoveNetworkObserver(NetworkObserver* observer) {
   network_observers_.RemoveObserver(observer);
 }
 
+void SystemTrayNotifier::AddNetworkPortalDetectorObserver(
+    NetworkPortalDetectorObserver* observer) {
+  network_portal_detector_observers_.AddObserver(observer);
+}
+
+void SystemTrayNotifier::RemoveNetworkPortalDetectorObserver(
+    NetworkPortalDetectorObserver* observer) {
+  network_portal_detector_observers_.RemoveObserver(observer);
+}
+
 void SystemTrayNotifier::AddEnterpriseDomainObserver(
     EnterpriseDomainObserver* observer) {
   enterprise_domain_observers_.AddObserver(observer);
@@ -330,6 +340,13 @@ void SystemTrayNotifier::NotifyRequestToggleWifi() {
   FOR_EACH_OBSERVER(NetworkObserver,
                     network_observers_,
                     RequestToggleWifi());
+}
+
+void SystemTrayNotifier::NotifyOnCaptivePortalDetected(
+    const std::string& service_path) {
+  FOR_EACH_OBSERVER(NetworkPortalDetectorObserver,
+                    network_portal_detector_observers_,
+                    OnCaptivePortalDetected(service_path));
 }
 
 void SystemTrayNotifier::NotifyEnterpriseDomainChanged() {

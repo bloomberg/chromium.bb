@@ -4,7 +4,9 @@
 
 #include "chrome/browser/chromeos/net/network_portal_notification_controller.h"
 
+#include "ash/shell.h"
 #include "ash/system/system_notifier.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -64,7 +66,7 @@ class NetworkPortalNotificationControllerDelegate
 
 void NetworkPortalNotificationControllerDelegate::ButtonClick(
     int button_index) {
-  if (!button_index)
+  if (button_index)
     return;
   Profile* profile = ProfileManager::GetActiveUserProfile();
   if (!profile)
@@ -129,6 +131,10 @@ void NetworkPortalNotificationController::OnPortalDetectionCompleted(
       data,
       new NetworkPortalNotificationControllerDelegate()));
   notification->SetSystemPriority();
+
+  ash::Shell::GetInstance()
+      ->system_tray_notifier()
+      ->NotifyOnCaptivePortalDetected(network->path());
 
   message_center::MessageCenter::Get()->AddNotification(notification.Pass());
 }

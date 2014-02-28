@@ -9,6 +9,7 @@
 
 #include "ash/system/chromeos/network/network_icon.h"
 #include "ash/system/chromeos/network/network_observer.h"
+#include "ash/system/chromeos/network/network_portal_detector_observer.h"
 #include "ash/system/chromeos/network/tray_network_state_observer.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "base/memory/scoped_ptr.h"
@@ -29,6 +30,7 @@ class NetworkTrayView;
 
 class TrayNetwork : public SystemTrayItem,
                     public NetworkObserver,
+                    public NetworkPortalDetectorObserver,
                     public TrayNetworkStateObserver::Delegate {
  public:
   explicit TrayNetwork(SystemTray* system_tray);
@@ -49,6 +51,10 @@ class TrayNetwork : public SystemTrayItem,
 
   // NetworkObserver
   virtual void RequestToggleWifi() OVERRIDE;
+
+  // NetworkPortalDetectorObserver
+  virtual void OnCaptivePortalDetected(
+      const std::string& service_path) OVERRIDE;
 
   // TrayNetworkStateObserver::Delegate
   virtual void NetworkStateChanged(bool list_changed) OVERRIDE;
