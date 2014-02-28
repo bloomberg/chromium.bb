@@ -107,7 +107,6 @@ enum WebAXRole {
     WebAXRoleHeading,
     WebAXRoleHelpTag,
     WebAXRoleHorizontalRule,
-    WebAXRoleIframe,
     WebAXRoleIgnored,
     WebAXRoleImageMapLink,
     WebAXRoleImageMap,
