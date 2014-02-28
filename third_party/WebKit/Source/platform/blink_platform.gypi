@@ -692,6 +692,8 @@
       'mhtml/MHTMLParser.h',
       'network/ContentSecurityPolicyParsers.cpp',
       'network/ContentSecurityPolicyParsers.h',
+      'network/ContentSecurityPolicyResponseHeaders.cpp',
+      'network/ContentSecurityPolicyResponseHeaders.h',
       'network/DNS.cpp',
       'network/DNS.h',
       'network/HTTPHeaderMap.cpp',

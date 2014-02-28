@@ -33,11 +33,11 @@
 
 #include "core/dom/Document.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/frame/ContentSecurityPolicyResponseHeaders.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/imports/HTMLImport.h"
 #include "core/html/imports/HTMLImportLoaderClient.h"
 #include "core/loader/DocumentWriter.h"
+#include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 
 
 namespace WebCore {

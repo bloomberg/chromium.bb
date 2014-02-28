@@ -1044,7 +1044,6 @@
             'frame/ConsoleBase.cpp',
             'frame/ConsoleBase.h',
             'frame/ContentSecurityPolicy.cpp',
-            'frame/ContentSecurityPolicyResponseHeaders.cpp',
             'frame/DOMPoint.h',
             'frame/DOMTimer.cpp',
             'frame/DOMTimer.h',

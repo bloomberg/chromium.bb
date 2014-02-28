@@ -23,17 +23,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/frame/ContentSecurityPolicyResponseHeaders.h"
+#ifndef ContentSecurityPolicyResponseHeaders_h
+#define ContentSecurityPolicyResponseHeaders_h
 
-#include "platform/network/ResourceResponse.h"
+#include "platform/PlatformExport.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-ContentSecurityPolicyResponseHeaders::ContentSecurityPolicyResponseHeaders(const ResourceResponse& response)
-    : m_contentSecurityPolicy(response.httpHeaderField("Content-Security-Policy"))
-    , m_contentSecurityPolicyReportOnly(response.httpHeaderField("Content-Security-Policy-Report-Only"))
-{
-}
+class ResourceResponse;
+
+class PLATFORM_EXPORT ContentSecurityPolicyResponseHeaders {
+public:
+    ContentSecurityPolicyResponseHeaders() { }
+    explicit ContentSecurityPolicyResponseHeaders(const ResourceResponse&);
+
+    const String& contentSecurityPolicy() const { return m_contentSecurityPolicy; }
+    const String& contentSecurityPolicyReportOnly() const { return m_contentSecurityPolicyReportOnly; }
+
+private:
+    String m_contentSecurityPolicy;
+    String m_contentSecurityPolicyReportOnly;
+};
 
 }
+
+#endif
