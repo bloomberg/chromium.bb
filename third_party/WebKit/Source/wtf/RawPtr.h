@@ -117,6 +117,11 @@ template<typename T, typename U> inline RawPtr<T> static_pointer_cast(const RawP
     return RawPtr<T>(static_cast<T*>(p.get()));
 }
 
+template<typename T> inline T* getPtr(const RawPtr<T>& p)
+{
+    return p.get();
+}
+
 } // namespace WTF
 
 using WTF::RawPtr;
