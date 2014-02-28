@@ -7398,9 +7398,19 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="MediaGalleries.ScanCancelTime" units="ms">
+  <summary>If a media scan was cancelled, the duration (in ms) it ran.</summary>
+</histogram>
+
 <histogram name="MediaGalleries.ScanDirectoriesFound">
   <summary>
     The number of directories with media files found during a scan.
+  </summary>
+</histogram>
+
+<histogram name="MediaGalleries.ScanFinishedTime" units="ms">
+  <summary>
+    Duration in milliseconds taken to do a media scan that ran to completion.
   </summary>
 </histogram>
 

@@ -390,6 +390,7 @@ void MediaScanManager::StartScan(Profile* profile,
   } else {
     folder_finder_.reset(testing_folder_finder_factory_.Run(callback));
   }
+  scan_start_time_ = base::Time::Now();
   folder_finder_->StartScan();
 }
 
@@ -414,8 +415,13 @@ void MediaScanManager::CancelScan(Profile* profile,
         content::Source<Profile>(profile));
   }
 
-  if (!ScanInProgress())
+  if (!ScanInProgress()) {
     folder_finder_.reset();
+    DCHECK(!scan_start_time_.is_null());
+    UMA_HISTOGRAM_LONG_TIMES("MediaGalleries.ScanCancelTime",
+                             base::Time::Now() - scan_start_time_);
+    scan_start_time_ = base::Time();
+  }
 }
 
 void MediaScanManager::SetMediaFolderFinderFactory(
@@ -466,6 +472,11 @@ void MediaScanManager::OnScanCompleted(
 
   UMA_HISTOGRAM_COUNTS_10000("MediaGalleries.ScanDirectoriesFound",
                              found_folders.size());
+  DCHECK(!scan_start_time_.is_null());
+  UMA_HISTOGRAM_LONG_TIMES("MediaGalleries.ScanFinishedTime",
+                           base::Time::Now() - scan_start_time_);
+  scan_start_time_ = base::Time();
+
   content::BrowserThread::PostTaskAndReplyWithResult(
       content::BrowserThread::FILE, FROM_HERE,
       base::Bind(FindContainerScanResults,

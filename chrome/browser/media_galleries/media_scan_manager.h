@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/media_galleries/media_folder_finder.h"
 #include "chrome/browser/media_galleries/media_scan_types.h"
 #include "content/public/browser/notification_observer.h"
@@ -83,6 +84,8 @@ class MediaScanManager : public content::NotificationObserver {
       const MediaFolderFinder::MediaFolderFinderResults& container_folders);
 
   scoped_ptr<MediaFolderFinder> folder_finder_;
+
+  base::Time scan_start_time_;
 
   // If not NULL, used to create |folder_finder_|. Used for testing.
   MediaFolderFinderFactory testing_folder_finder_factory_;
