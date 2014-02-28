@@ -187,18 +187,10 @@ void HidServiceLinux::PlatformAddDevice(udev_device* device) {
 }
 
 void HidServiceLinux::PlatformRemoveDevice(udev_device* raw_dev) {
-  // The returned the device is not referenced.
-  udev_device* hid_dev =
-      udev_device_get_parent_with_subsystem_devtype(raw_dev, "hid", NULL);
-
-  if (!hid_dev)
-    return;
-
   const char* device_path = NULL;
-  device_path = udev_device_get_syspath(hid_dev);
+  device_path = udev_device_get_syspath(raw_dev);
   if (device_path == NULL)
     return;
-
   RemoveDevice(device_path);
 }
 
