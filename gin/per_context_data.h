@@ -12,6 +12,7 @@
 
 namespace gin {
 
+class ContextHolder;
 class Runner;
 
 // There is one instance of PerContextData per v8::Context managed by Gin. This
@@ -21,7 +22,8 @@ class Runner;
 // the associated v8::Context.
 class GIN_EXPORT PerContextData : public base::SupportsUserData {
  public:
-  explicit PerContextData(v8::Handle<v8::Context> context);
+  PerContextData(ContextHolder* context_holder,
+                 v8::Handle<v8::Context> context);
   virtual ~PerContextData();
 
   // Can return NULL after the ContextHolder has detached from context.
@@ -32,7 +34,10 @@ class GIN_EXPORT PerContextData : public base::SupportsUserData {
   Runner* runner() const { return runner_; }
   void set_runner(Runner* runner) { runner_ = runner; }
 
+  ContextHolder* context_holder() { return context_holder_; }
+
  private:
+  ContextHolder* context_holder_;
   Runner* runner_;
 
   DISALLOW_COPY_AND_ASSIGN(PerContextData);

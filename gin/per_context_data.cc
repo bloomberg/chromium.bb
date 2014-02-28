@@ -10,8 +10,10 @@
 
 namespace gin {
 
-PerContextData::PerContextData(v8::Handle<v8::Context> context)
-    : runner_(NULL) {
+PerContextData::PerContextData(ContextHolder* context_holder,
+                               v8::Handle<v8::Context> context)
+    : context_holder_(context_holder),
+      runner_(NULL) {
   context->SetAlignedPointerInEmbedderData(
       kPerContextDataStartIndex + kEmbedderNativeGin, this);
 }

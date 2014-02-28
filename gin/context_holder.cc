@@ -21,7 +21,7 @@ ContextHolder::~ContextHolder() {
 void ContextHolder::SetContext(v8::Handle<v8::Context> context) {
   DCHECK(context_.IsEmpty());
   context_.Reset(isolate_, context);
-  data_.reset(new PerContextData(context));
+  data_.reset(new PerContextData(this, context));
 }
 
 }  // namespace gin
