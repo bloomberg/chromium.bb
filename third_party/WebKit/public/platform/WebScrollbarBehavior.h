@@ -18,6 +18,7 @@ public:
         ButtonMiddle,
         ButtonRight
     };
+    virtual ~WebScrollbarBehavior() { }
     virtual bool shouldCenterOnThumb(Button, bool shiftKeyPressed, bool altKeyPressed) { return false; }
     virtual bool shouldSnapBackToDragOrigin(const WebPoint& eventPoint, const WebRect& scrollbarRect, bool isHorizontal) { return false; }
 };
