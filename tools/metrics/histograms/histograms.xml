@@ -22338,6 +22338,22 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Sync.Startup.DeferredInitTrigger"
+    enum="SyncDeferredInitTrigger">
+  <summary>The type of event that triggered sync initialization.</summary>
+</histogram>
+
+<histogram name="Sync.Startup.TimeDeferred" units="milliseconds">
+  <summary>
+    Time spent after ProfileSyncService *creation* but before SyncBackendHost
+    initialization.
+  </summary>
+</histogram>
+
+<histogram name="Sync.Startup.TypeTriggeringInit" enum="SyncModelTypes">
+  <summary>Data type that first requests sync initialization.</summary>
+</histogram>
+
 <histogram name="Sync.SyncAuthError" enum="SyncAuthError">
   <summary>
     Counts the number of times sync clients have encountered an auth error and
@@ -34074,6 +34090,11 @@ other types of suffix sets.
   <int value="1" label="Advanced setup with a custom passphrase"/>
 </enum>
 
+<enum name="SyncDeferredInitTrigger" type="int">
+  <int value="0" label="Data type requested init."/>
+  <int value="1" label="Fallback timer triggered init."/>
+</enum>
+
 <enum name="SyncDirectoryOpenResult" type="int">
   <summary>Possible outcomes of an attempt to load the sync directory.</summary>
   <int value="0" label="FIRST_TRY_SUCCESS"/>
@@ -34157,6 +34178,12 @@ other types of suffix sets.
   <int value="23" label="Favicon Images"/>
   <int value="24" label="Favicon Tracking"/>
   <int value="25" label="Proxy Tabs"/>
+  <int value="26" label="Managed User Settings"/>
+  <int value="27" label="Managed Users"/>
+  <int value="28" label="Articles"/>
+  <int value="29" label="App list"/>
+  <int value="30" label="Managed User Shared Settings"/>
+  <int value="31" label="Synced Notification App Info"/>
 </enum>
 
 <enum name="SyncNigoriMigrationResult" type="int">
