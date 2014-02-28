@@ -93,7 +93,8 @@ function clearAttachedFile() {
  * @return {function()} A function to be called to open the window.
  */
 function windowOpener(windowId, url) {
-  return function() {
+  return function(e) {
+    e.preventDefault();
     chrome.app.window.create(url, {id: windowId});
   };
 }
