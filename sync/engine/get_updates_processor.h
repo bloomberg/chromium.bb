@@ -9,9 +9,11 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
+#include "sync/protocol/sync.pb.h"
 #include "sync/sessions/model_type_registry.h"
 
 namespace sync_pb {
@@ -23,6 +25,9 @@ namespace syncer {
 
 namespace sessions {
 class StatusController;
+class SyncSession;
+class SyncSessionContext;
+class DebugInfoGetter;
 }  // namespace sessions
 
 namespace syncable {
@@ -43,9 +48,36 @@ class SYNC_EXPORT_PRIVATE GetUpdatesProcessor {
                                const GetUpdatesDelegate& delegate);
   ~GetUpdatesProcessor();
 
+  // Downloads and processes a batch of updates for the specified types.
+  //
+  // Returns SYNCER_OK if the download succeeds, SERVER_MORE_TO_DOWNLOAD if the
+  // download succeeded but there are still some updates left to fetch on the
+  // server, or an appropriate error value in case of failure.
+  SyncerError DownloadUpdates(
+      ModelTypeSet request_types,
+      sessions::SyncSession* session,
+      bool create_mobile_bookmarks_folder);
+
+  // Applies any downloaded and processed updates.
+  void ApplyUpdates(sessions::StatusController* status_controller);
+
+ private:
   // Populates a GetUpdates request message with per-type information.
-  void PrepareGetUpdates(ModelTypeSet gu_types,
-                         sync_pb::GetUpdatesMessage* get_updates);
+  void PrepareGetUpdates(
+      ModelTypeSet gu_types,
+      sync_pb::ClientToServerMessage* message);
+
+  // Sends the specified message to the server and stores the response in a
+  // member of the |session|'s StatusController.
+  SyncerError ExecuteDownloadUpdates(ModelTypeSet request_types,
+                                     sessions::SyncSession* session,
+                                     sync_pb::ClientToServerMessage* msg);
+
+  // Helper function for processing responses from the server.  Defined here for
+  // testing.
+  SyncerError ProcessResponse(const sync_pb::GetUpdatesResponse& gu_response,
+                              ModelTypeSet proto_request_types,
+                              sessions::StatusController* status);
 
   // Processes a GetUpdates responses for each type.
   bool ProcessGetUpdatesResponse(
@@ -53,10 +85,23 @@ class SYNC_EXPORT_PRIVATE GetUpdatesProcessor {
       const sync_pb::GetUpdatesResponse& gu_response,
       sessions::StatusController* status_controller);
 
-  // Hands off control to the delegate so it can apply updates.
-  void ApplyUpdates(sessions::StatusController* status_controller);
+  static void CopyClientDebugInfo(
+      sessions::DebugInfoGetter* debug_info_getter,
+      sync_pb::DebugInfo* debug_info);
 
- private:
+  FRIEND_TEST_ALL_PREFIXES(GetUpdatesProcessorTest, BookmarkNudge);
+  FRIEND_TEST_ALL_PREFIXES(GetUpdatesProcessorTest, NotifyMany);
+  FRIEND_TEST_ALL_PREFIXES(GetUpdatesProcessorTest, ConfigureTest);
+  FRIEND_TEST_ALL_PREFIXES(GetUpdatesProcessorTest, PollTest);
+  FRIEND_TEST_ALL_PREFIXES(GetUpdatesProcessorTest, RetryTest);
+  FRIEND_TEST_ALL_PREFIXES(GetUpdatesProcessorTest, NudgeWithRetryTest);
+  FRIEND_TEST_ALL_PREFIXES(GetUpdatesProcessorTest, InvalidResponse);
+  FRIEND_TEST_ALL_PREFIXES(GetUpdatesProcessorTest, MoreToDownloadResponse);
+  FRIEND_TEST_ALL_PREFIXES(GetUpdatesProcessorTest, NormalResponseTest);
+  FRIEND_TEST_ALL_PREFIXES(DownloadUpdatesDebugInfoTest,
+                           VerifyCopyClientDebugInfo_Empty);
+  FRIEND_TEST_ALL_PREFIXES(DownloadUpdatesDebugInfoTest, VerifyCopyOverwrites);
+
   // A map of 'update handlers', one for each enabled type.
   // This must be kept in sync with the routing info.  Our temporary solution to
   // that problem is to initialize this map in set_routing_info().

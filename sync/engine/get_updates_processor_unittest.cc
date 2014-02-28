@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/engine/download.h"
+#include "sync/engine/get_updates_processor.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
@@ -23,9 +23,9 @@ namespace syncer {
 using sessions::MockDebugInfoGetter;
 
 // A test fixture for tests exercising download updates functions.
-class DownloadUpdatesTest : public ::testing::Test {
+class GetUpdatesProcessorTest : public ::testing::Test {
  protected:
-  DownloadUpdatesTest() :
+  GetUpdatesProcessorTest() :
     kTestStartTime(base::TimeTicks::Now()),
     update_handler_deleter_(&update_handler_map_) {}
 
@@ -73,20 +73,21 @@ class DownloadUpdatesTest : public ::testing::Test {
   STLValueDeleter<UpdateHandlerMap> update_handler_deleter_;
   scoped_ptr<GetUpdatesProcessor> get_updates_processor_;
 
-  DISALLOW_COPY_AND_ASSIGN(DownloadUpdatesTest);
+  DISALLOW_COPY_AND_ASSIGN(GetUpdatesProcessorTest);
 };
 
 // Basic test to make sure nudges are expressed properly in the request.
-TEST_F(DownloadUpdatesTest, BookmarkNudge) {
+TEST_F(GetUpdatesProcessorTest, BookmarkNudge) {
   sessions::NudgeTracker nudge_tracker;
   nudge_tracker.RecordLocalChange(ModelTypeSet(BOOKMARKS));
 
-  sync_pb::GetUpdatesMessage gu_msg;
+  sync_pb::ClientToServerMessage message;
   NormalGetUpdatesDelegate normal_delegate(nudge_tracker);
   scoped_ptr<GetUpdatesProcessor> processor(
       BuildGetUpdatesProcessor(normal_delegate));
-  processor->PrepareGetUpdates(request_types(), &gu_msg);
+  processor->PrepareGetUpdates(request_types(), &message);
 
+  const sync_pb::GetUpdatesMessage& gu_msg = message.get_updates();
   EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::LOCAL,
             gu_msg.caller_info().source());
   EXPECT_EQ(sync_pb::SyncEnums::GU_TRIGGER, gu_msg.get_updates_origin());
@@ -115,7 +116,7 @@ TEST_F(DownloadUpdatesTest, BookmarkNudge) {
 }
 
 // Basic test to ensure invalidation payloads are expressed in the request.
-TEST_F(DownloadUpdatesTest, NotifyMany) {
+TEST_F(GetUpdatesProcessorTest, NotifyMany) {
   sessions::NudgeTracker nudge_tracker;
   nudge_tracker.RecordRemoteInvalidation(
       BuildInvalidationMap(AUTOFILL, 1, "autofill_payload"));
@@ -128,12 +129,13 @@ TEST_F(DownloadUpdatesTest, NotifyMany) {
   notified_types.Put(BOOKMARKS);
   notified_types.Put(PREFERENCES);
 
-  sync_pb::GetUpdatesMessage gu_msg;
+  sync_pb::ClientToServerMessage message;
   NormalGetUpdatesDelegate normal_delegate(nudge_tracker);
   scoped_ptr<GetUpdatesProcessor> processor(
       BuildGetUpdatesProcessor(normal_delegate));
-  processor->PrepareGetUpdates(request_types(), &gu_msg);
+  processor->PrepareGetUpdates(request_types(), &message);
 
+  const sync_pb::GetUpdatesMessage& gu_msg = message.get_updates();
   EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::NOTIFICATION,
             gu_msg.caller_info().source());
   EXPECT_EQ(sync_pb::SyncEnums::GU_TRIGGER, gu_msg.get_updates_origin());
@@ -159,14 +161,15 @@ TEST_F(DownloadUpdatesTest, NotifyMany) {
   }
 }
 
-TEST_F(DownloadUpdatesTest, ConfigureTest) {
-  sync_pb::GetUpdatesMessage gu_msg;
+TEST_F(GetUpdatesProcessorTest, ConfigureTest) {
+  sync_pb::ClientToServerMessage message;
   ConfigureGetUpdatesDelegate configure_delegate(
       sync_pb::GetUpdatesCallerInfo::RECONFIGURATION);
   scoped_ptr<GetUpdatesProcessor> processor(
       BuildGetUpdatesProcessor(configure_delegate));
-  processor->PrepareGetUpdates(request_types(), &gu_msg);
+  processor->PrepareGetUpdates(request_types(), &message);
 
+  const sync_pb::GetUpdatesMessage& gu_msg = message.get_updates();
   EXPECT_EQ(sync_pb::SyncEnums::RECONFIGURATION, gu_msg.get_updates_origin());
   EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::RECONFIGURATION,
             gu_msg.caller_info().source());
@@ -180,13 +183,14 @@ TEST_F(DownloadUpdatesTest, ConfigureTest) {
   EXPECT_TRUE(request_types().Equals(progress_types));
 }
 
-TEST_F(DownloadUpdatesTest, PollTest) {
-  sync_pb::GetUpdatesMessage gu_msg;
+TEST_F(GetUpdatesProcessorTest, PollTest) {
+  sync_pb::ClientToServerMessage message;
   PollGetUpdatesDelegate poll_delegate;
   scoped_ptr<GetUpdatesProcessor> processor(
       BuildGetUpdatesProcessor(poll_delegate));
-  processor->PrepareGetUpdates(request_types(), &gu_msg);
+  processor->PrepareGetUpdates(request_types(), &message);
 
+  const sync_pb::GetUpdatesMessage& gu_msg = message.get_updates();
   EXPECT_EQ(sync_pb::SyncEnums::PERIODIC, gu_msg.get_updates_origin());
   EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::PERIODIC,
             gu_msg.caller_info().source());
@@ -200,7 +204,7 @@ TEST_F(DownloadUpdatesTest, PollTest) {
   EXPECT_TRUE(request_types().Equals(progress_types));
 }
 
-TEST_F(DownloadUpdatesTest, RetryTest) {
+TEST_F(GetUpdatesProcessorTest, RetryTest) {
   sessions::NudgeTracker nudge_tracker;
 
   // Schedule a retry.
@@ -210,12 +214,13 @@ TEST_F(DownloadUpdatesTest, RetryTest) {
   // Get the nudge tracker to think the retry is due.
   nudge_tracker.SetSyncCycleStartTime(t1 + base::TimeDelta::FromSeconds(1));
 
-  sync_pb::GetUpdatesMessage gu_msg;
+  sync_pb::ClientToServerMessage message;
   RetryGetUpdatesDelegate retry_delegate;
   scoped_ptr<GetUpdatesProcessor> processor(
       BuildGetUpdatesProcessor(retry_delegate));
-  processor->PrepareGetUpdates(request_types(), &gu_msg);
+  processor->PrepareGetUpdates(request_types(), &message);
 
+  const sync_pb::GetUpdatesMessage& gu_msg = message.get_updates();
   EXPECT_EQ(sync_pb::SyncEnums::RETRY, gu_msg.get_updates_origin());
   EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::RETRY,
             gu_msg.caller_info().source());
@@ -230,7 +235,7 @@ TEST_F(DownloadUpdatesTest, RetryTest) {
   EXPECT_TRUE(request_types().Equals(progress_types));
 }
 
-TEST_F(DownloadUpdatesTest, NudgeWithRetryTest) {
+TEST_F(GetUpdatesProcessorTest, NudgeWithRetryTest) {
   sessions::NudgeTracker nudge_tracker;
 
   // Schedule a retry.
@@ -243,12 +248,13 @@ TEST_F(DownloadUpdatesTest, NudgeWithRetryTest) {
   // Record a local change, too.
   nudge_tracker.RecordLocalChange(ModelTypeSet(BOOKMARKS));
 
-  sync_pb::GetUpdatesMessage gu_msg;
+  sync_pb::ClientToServerMessage message;
   NormalGetUpdatesDelegate normal_delegate(nudge_tracker);
   scoped_ptr<GetUpdatesProcessor> processor(
       BuildGetUpdatesProcessor(normal_delegate));
-  processor->PrepareGetUpdates(request_types(), &gu_msg);
+  processor->PrepareGetUpdates(request_types(), &message);
 
+  const sync_pb::GetUpdatesMessage& gu_msg = message.get_updates();
   EXPECT_NE(sync_pb::SyncEnums::RETRY, gu_msg.get_updates_origin());
   EXPECT_NE(sync_pb::GetUpdatesCallerInfo::RETRY,
             gu_msg.caller_info().source());
@@ -257,7 +263,7 @@ TEST_F(DownloadUpdatesTest, NudgeWithRetryTest) {
 }
 
 // Verify that a bogus response message is detected.
-TEST_F(DownloadUpdatesTest, InvalidResponse) {
+TEST_F(GetUpdatesProcessorTest, InvalidResponse) {
   sync_pb::GetUpdatesResponse gu_response;
   InitFakeUpdateResponse(&gu_response);
 
@@ -270,15 +276,14 @@ TEST_F(DownloadUpdatesTest, InvalidResponse) {
   sessions::StatusController status;
   scoped_ptr<GetUpdatesProcessor> processor(
       BuildGetUpdatesProcessor(normal_delegate));
-  SyncerError error = download::ProcessResponse(gu_response,
-                                                request_types(),
-                                                processor.get(),
-                                                &status);
+  SyncerError error = processor->ProcessResponse(gu_response,
+                                                 request_types(),
+                                                 &status);
   EXPECT_EQ(error, SERVER_RESPONSE_VALIDATION_FAILED);
 }
 
 // Verify that we correctly detect when there's more work to be done.
-TEST_F(DownloadUpdatesTest, MoreToDownloadResponse) {
+TEST_F(GetUpdatesProcessorTest, MoreToDownloadResponse) {
   sync_pb::GetUpdatesResponse gu_response;
   InitFakeUpdateResponse(&gu_response);
   gu_response.set_changes_remaining(1);
@@ -288,15 +293,14 @@ TEST_F(DownloadUpdatesTest, MoreToDownloadResponse) {
   sessions::StatusController status;
   scoped_ptr<GetUpdatesProcessor> processor(
       BuildGetUpdatesProcessor(normal_delegate));
-  SyncerError error = download::ProcessResponse(gu_response,
-                                                request_types(),
-                                                processor.get(),
-                                                &status);
+  SyncerError error = processor->ProcessResponse(gu_response,
+                                                 request_types(),
+                                                 &status);
   EXPECT_EQ(error, SERVER_MORE_TO_DOWNLOAD);
 }
 
 // A simple scenario: No updates returned and nothing more to download.
-TEST_F(DownloadUpdatesTest, NormalResponseTest) {
+TEST_F(GetUpdatesProcessorTest, NormalResponseTest) {
   sync_pb::GetUpdatesResponse gu_response;
   InitFakeUpdateResponse(&gu_response);
   gu_response.set_changes_remaining(0);
@@ -306,10 +310,9 @@ TEST_F(DownloadUpdatesTest, NormalResponseTest) {
   sessions::StatusController status;
   scoped_ptr<GetUpdatesProcessor> processor(
       BuildGetUpdatesProcessor(normal_delegate));
-  SyncerError error = download::ProcessResponse(gu_response,
-                                                request_types(),
-                                                processor.get(),
-                                                &status);
+  SyncerError error = processor->ProcessResponse(gu_response,
+                                                 request_types(),
+                                                 &status);
   EXPECT_EQ(error, SYNCER_OK);
 }
 
@@ -339,16 +342,16 @@ class DownloadUpdatesDebugInfoTest : public ::testing::Test {
 // Verify CopyClientDebugInfo when there are no events to upload.
 TEST_F(DownloadUpdatesDebugInfoTest, VerifyCopyClientDebugInfo_Empty) {
   sync_pb::DebugInfo debug_info;
-  download::CopyClientDebugInfo(debug_info_getter(), &debug_info);
+  GetUpdatesProcessor::CopyClientDebugInfo(debug_info_getter(), &debug_info);
   EXPECT_EQ(0, debug_info.events_size());
 }
 
 TEST_F(DownloadUpdatesDebugInfoTest, VerifyCopyOverwrites) {
   sync_pb::DebugInfo debug_info;
   AddDebugEvent();
-  download::CopyClientDebugInfo(debug_info_getter(), &debug_info);
+  GetUpdatesProcessor::CopyClientDebugInfo(debug_info_getter(), &debug_info);
   EXPECT_EQ(1, debug_info.events_size());
-  download::CopyClientDebugInfo(debug_info_getter(), &debug_info);
+  GetUpdatesProcessor::CopyClientDebugInfo(debug_info_getter(), &debug_info);
   EXPECT_EQ(1, debug_info.events_size());
 }
 

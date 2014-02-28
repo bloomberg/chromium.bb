@@ -54,8 +54,6 @@
     'engine/directory_commit_contributor.h',
     'engine/directory_update_handler.cc',
     'engine/directory_update_handler.h',
-    'engine/download.cc',
-    'engine/download.h',
     'engine/get_commit_ids.cc',
     'engine/get_commit_ids.h',
     'engine/get_updates_delegate.cc',

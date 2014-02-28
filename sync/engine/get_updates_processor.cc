@@ -6,9 +6,16 @@
 
 #include <map>
 
+#include "base/debug/trace_event.h"
 #include "sync/engine/get_updates_delegate.h"
+#include "sync/engine/syncer_proto_util.h"
 #include "sync/engine/update_handler.h"
 #include "sync/protocol/sync.pb.h"
+#include "sync/sessions/status_controller.h"
+#include "sync/sessions/sync_session.h"
+#include "sync/syncable/directory.h"
+#include "sync/syncable/nigori_handler.h"
+#include "sync/syncable/syncable_read_transaction.h"
 
 typedef std::vector<const sync_pb::SyncEntity*> SyncEntityList;
 typedef std::map<syncer::ModelType, SyncEntityList> TypeSyncEntityMap;
@@ -18,6 +25,35 @@ namespace syncer {
 typedef std::map<ModelType, size_t> TypeToIndexMap;
 
 namespace {
+
+bool ShouldRequestEncryptionKey(sessions::SyncSessionContext* context) {
+  syncable::Directory* dir = context->directory();
+  syncable::ReadTransaction trans(FROM_HERE, dir);
+  syncable::NigoriHandler* nigori_handler = dir->GetNigoriHandler();
+  return nigori_handler->NeedKeystoreKey(&trans);
+}
+
+
+SyncerError HandleGetEncryptionKeyResponse(
+    const sync_pb::ClientToServerResponse& update_response,
+    syncable::Directory* dir) {
+  bool success = false;
+  if (update_response.get_updates().encryption_keys_size() == 0) {
+    LOG(ERROR) << "Failed to receive encryption key from server.";
+    return SERVER_RESPONSE_VALIDATION_FAILED;
+  }
+  syncable::ReadTransaction trans(FROM_HERE, dir);
+  syncable::NigoriHandler* nigori_handler = dir->GetNigoriHandler();
+  success = nigori_handler->SetKeystoreKeys(
+      update_response.get_updates().encryption_keys(),
+      &trans);
+
+  DVLOG(1) << "GetUpdates returned "
+           << update_response.get_updates().encryption_keys_size()
+           << "encryption keys. Nigori keystore key "
+           << (success ? "" : "not ") << "updated.";
+  return (success ? SYNCER_OK : SERVER_RESPONSE_VALIDATION_FAILED);
+}
 
 // Given a GetUpdates response, iterates over all the returned items and
 // divides them according to their type.  Outputs a map from model types to
@@ -74,6 +110,34 @@ void PartitionProgressMarkersByType(
   }
 }
 
+// Initializes the parts of the GetUpdatesMessage that depend on shared state,
+// like the ShouldRequestEncryptionKey() status.  This is kept separate from the
+// other of the message-building functions to make the rest of the code easier
+// to test.
+void InitDownloadUpdatesContext(
+    sessions::SyncSession* session,
+    bool create_mobile_bookmarks_folder,
+    sync_pb::ClientToServerMessage* message) {
+  message->set_share(session->context()->account_name());
+  message->set_message_contents(sync_pb::ClientToServerMessage::GET_UPDATES);
+
+  sync_pb::GetUpdatesMessage* get_updates = message->mutable_get_updates();
+
+  // We want folders for our associated types, always.  If we were to set
+  // this to false, the server would send just the non-container items
+  // (e.g. Bookmark URLs but not their containing folders).
+  get_updates->set_fetch_folders(true);
+
+  get_updates->set_create_mobile_bookmarks_folder(
+      create_mobile_bookmarks_folder);
+  bool need_encryption_key = ShouldRequestEncryptionKey(session->context());
+  get_updates->set_need_encryption_key(need_encryption_key);
+
+  // Set legacy GetUpdatesMessage.GetUpdatesCallerInfo information.
+  get_updates->mutable_caller_info()->set_notifications_enabled(
+      session->context()->notifications_enabled());
+}
+
 }  // namespace
 
 GetUpdatesProcessor::GetUpdatesProcessor(UpdateHandlerMap* update_handler_map,
@@ -82,9 +146,29 @@ GetUpdatesProcessor::GetUpdatesProcessor(UpdateHandlerMap* update_handler_map,
 
 GetUpdatesProcessor::~GetUpdatesProcessor() {}
 
+SyncerError GetUpdatesProcessor::DownloadUpdates(
+    ModelTypeSet request_types,
+    sessions::SyncSession* session,
+    bool create_mobile_bookmarks_folder) {
+  TRACE_EVENT0("sync", "DownloadUpdates");
+
+  sync_pb::ClientToServerMessage message;
+  InitDownloadUpdatesContext(session,
+                             create_mobile_bookmarks_folder,
+                             &message);
+  PrepareGetUpdates(request_types, &message);
+
+  SyncerError result = ExecuteDownloadUpdates(request_types, session, &message);
+  session->mutable_status_controller()->set_last_download_updates_result(
+      result);
+  return result;
+}
+
 void GetUpdatesProcessor::PrepareGetUpdates(
     ModelTypeSet gu_types,
-    sync_pb::GetUpdatesMessage* get_updates) {
+    sync_pb::ClientToServerMessage* message) {
+  sync_pb::GetUpdatesMessage* get_updates = message->mutable_get_updates();
+
   for (ModelTypeSet::Iterator it = gu_types.First(); it.Good(); it.Inc()) {
     UpdateHandlerMap::iterator handler_it = update_handler_map_->find(it.Get());
     DCHECK(handler_it != update_handler_map_->end());
@@ -93,6 +177,80 @@ void GetUpdatesProcessor::PrepareGetUpdates(
     handler_it->second->GetDownloadProgress(progress_marker);
   }
   delegate_.HelpPopulateGuMessage(get_updates);
+}
+
+SyncerError GetUpdatesProcessor::ExecuteDownloadUpdates(
+    ModelTypeSet request_types,
+    sessions::SyncSession* session,
+    sync_pb::ClientToServerMessage* msg) {
+  sync_pb::ClientToServerResponse update_response;
+  sessions::StatusController* status = session->mutable_status_controller();
+  bool need_encryption_key = ShouldRequestEncryptionKey(session->context());
+
+  if (session->context()->debug_info_getter()) {
+    sync_pb::DebugInfo* debug_info = msg->mutable_debug_info();
+    CopyClientDebugInfo(session->context()->debug_info_getter(), debug_info);
+  }
+
+  SyncerError result = SyncerProtoUtil::PostClientToServerMessage(
+      msg,
+      &update_response,
+      session);
+
+  DVLOG(2) << SyncerProtoUtil::ClientToServerResponseDebugString(
+      update_response);
+
+  if (result != SYNCER_OK) {
+    LOG(ERROR) << "PostClientToServerMessage() failed during GetUpdates";
+    return result;
+  }
+
+  DVLOG(1) << "GetUpdates "
+           << " returned " << update_response.get_updates().entries_size()
+           << " updates and indicated "
+           << update_response.get_updates().changes_remaining()
+           << " updates left on server.";
+
+  if (session->context()->debug_info_getter()) {
+    // Clear debug info now that we have successfully sent it to the server.
+    DVLOG(1) << "Clearing client debug info.";
+    session->context()->debug_info_getter()->ClearDebugInfo();
+  }
+
+  if (need_encryption_key ||
+      update_response.get_updates().encryption_keys_size() > 0) {
+    syncable::Directory* dir = session->context()->directory();
+    status->set_last_get_key_result(
+        HandleGetEncryptionKeyResponse(update_response, dir));
+  }
+
+  return ProcessResponse(update_response.get_updates(),
+                         request_types,
+                         status);
+}
+
+SyncerError GetUpdatesProcessor::ProcessResponse(
+    const sync_pb::GetUpdatesResponse& gu_response,
+    ModelTypeSet request_types,
+    sessions::StatusController* status) {
+  status->increment_num_updates_downloaded_by(gu_response.entries_size());
+
+  // The changes remaining field is used to prevent the client from looping.  If
+  // that field is being set incorrectly, we're in big trouble.
+  if (!gu_response.has_changes_remaining()) {
+    return SERVER_RESPONSE_VALIDATION_FAILED;
+  }
+  status->set_num_server_changes_remaining(gu_response.changes_remaining());
+
+  if (!ProcessGetUpdatesResponse(request_types, gu_response, status)) {
+    return SERVER_RESPONSE_VALIDATION_FAILED;
+  }
+
+  if (gu_response.changes_remaining() == 0) {
+    return SYNCER_OK;
+  } else {
+    return SERVER_MORE_TO_DOWNLOAD;
+  }
 }
 
 bool GetUpdatesProcessor::ProcessGetUpdatesResponse(
@@ -146,6 +304,13 @@ bool GetUpdatesProcessor::ProcessGetUpdatesResponse(
 void GetUpdatesProcessor::ApplyUpdates(
     sessions::StatusController* status_controller) {
   delegate_.ApplyUpdates(status_controller, update_handler_map_);
+}
+
+void GetUpdatesProcessor::CopyClientDebugInfo(
+    sessions::DebugInfoGetter* debug_info_getter,
+    sync_pb::DebugInfo* debug_info) {
+  DVLOG(1) << "Copying client debug info to send.";
+  debug_info_getter->GetDebugInfo(debug_info);
 }
 
 }  // namespace syncer

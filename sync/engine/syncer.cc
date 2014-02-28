@@ -14,7 +14,6 @@
 #include "sync/engine/commit.h"
 #include "sync/engine/commit_processor.h"
 #include "sync/engine/conflict_resolver.h"
-#include "sync/engine/download.h"
 #include "sync/engine/get_updates_delegate.h"
 #include "sync/engine/get_updates_processor.h"
 #include "sync/engine/net/server_connection_manager.h"
@@ -142,20 +141,10 @@ bool Syncer::DownloadAndApplyUpdates(
     bool create_mobile_bookmarks_folder) {
   SyncerError download_result = UNSET;
   do {
-    TRACE_EVENT0("sync", "DownloadUpdates");
-    sync_pb::ClientToServerMessage msg;
-    sync_pb::GetUpdatesMessage* gu_msg = msg.mutable_get_updates();
-
-    download::InitDownloadUpdatesContext(
-        session, create_mobile_bookmarks_folder, &msg);
-    get_updates_processor->PrepareGetUpdates(request_types, gu_msg);
-
-    download_result = download::ExecuteDownloadUpdates(request_types,
-                                                       session,
-                                                       get_updates_processor,
-                                                       &msg);
-    session->mutable_status_controller()->set_last_download_updates_result(
-        download_result);
+    download_result = get_updates_processor->DownloadUpdates(
+        request_types,
+        session,
+        create_mobile_bookmarks_folder);
   } while (download_result == SERVER_MORE_TO_DOWNLOAD);
 
   // Exit without applying if we're shutting down or an error was detected.
