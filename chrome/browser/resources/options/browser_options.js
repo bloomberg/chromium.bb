@@ -638,7 +638,7 @@ cr.define('options', function() {
      * See showSectionWithAnimation_.
      */
     toggleSectionWithAnimation_: function(section, container) {
-      if (section.style.height == '')
+      if (section.style.height == '' || section.style.height == '0px')
         this.showSectionWithAnimation_(section, container);
       else
         this.hideSectionWithAnimation_(section, container);
