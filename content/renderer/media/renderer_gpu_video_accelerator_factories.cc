@@ -19,7 +19,24 @@
 
 namespace content {
 
-RendererGpuVideoAcceleratorFactories::~RendererGpuVideoAcceleratorFactories() {}
+// static
+scoped_refptr<RendererGpuVideoAcceleratorFactories>
+RendererGpuVideoAcceleratorFactories::Create(
+    GpuChannelHost* gpu_channel_host,
+    const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy,
+    const scoped_refptr<ContextProviderCommandBuffer>& context_provider) {
+  scoped_refptr<RendererGpuVideoAcceleratorFactories> factories =
+      new RendererGpuVideoAcceleratorFactories(
+          gpu_channel_host, message_loop_proxy, context_provider);
+  // Post task from outside constructor, since AddRef()/Release() is unsafe from
+  // within.
+  message_loop_proxy->PostTask(
+      FROM_HERE,
+      base::Bind(&RendererGpuVideoAcceleratorFactories::BindContext,
+                 factories));
+  return factories;
+}
+
 RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories(
     GpuChannelHost* gpu_channel_host,
     const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy,
@@ -28,6 +45,14 @@ RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories(
       gpu_channel_host_(gpu_channel_host),
       context_provider_(context_provider),
       thread_safe_sender_(ChildThread::current()->thread_safe_sender()) {}
+
+RendererGpuVideoAcceleratorFactories::~RendererGpuVideoAcceleratorFactories() {}
+
+void RendererGpuVideoAcceleratorFactories::BindContext() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  if (!context_provider_->BindToCurrentThread())
+    context_provider_ = NULL;
+}
 
 WebGraphicsContext3DCommandBufferImpl*
 RendererGpuVideoAcceleratorFactories::GetContext3d() {

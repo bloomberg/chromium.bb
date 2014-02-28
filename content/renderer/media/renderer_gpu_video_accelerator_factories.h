@@ -38,7 +38,7 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
  public:
   // Takes a ref on |gpu_channel_host| and tests |context| for loss before each
   // use.  Safe to call from any thread.
-  RendererGpuVideoAcceleratorFactories(
+  static scoped_refptr<RendererGpuVideoAcceleratorFactories> Create(
       GpuChannelHost* gpu_channel_host,
       const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy,
       const scoped_refptr<ContextProviderCommandBuffer>& context_provider);
@@ -63,11 +63,18 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
   virtual base::SharedMemory* CreateSharedMemory(size_t size) OVERRIDE;
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() OVERRIDE;
 
- protected:
+ private:
   friend class base::RefCountedThreadSafe<RendererGpuVideoAcceleratorFactories>;
+  RendererGpuVideoAcceleratorFactories(
+      GpuChannelHost* gpu_channel_host,
+      const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy,
+      const scoped_refptr<ContextProviderCommandBuffer>& context_provider);
   virtual ~RendererGpuVideoAcceleratorFactories();
 
- private:
+  // Helper to bind |context_provider| to the |task_runner_| thread after
+  // construction.
+  void BindContext();
+
   // Helper to get a pointer to the WebGraphicsContext3DCommandBufferImpl,
   // if it has not been lost yet.
   WebGraphicsContext3DCommandBufferImpl* GetContext3d();
