@@ -54,7 +54,7 @@ class MainDllLoader {
   virtual int OnBeforeExit(int return_code, const base::string16& dll_path) = 0;
 
  private:
-  HMODULE Load(const base::string16& version, base::string16* out_file);
+  HMODULE Load(base::string16* version, base::string16* out_file);
 
  private:
   HMODULE dll_;

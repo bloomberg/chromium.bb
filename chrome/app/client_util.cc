@@ -229,7 +229,7 @@ MainDllLoader::~MainDllLoader() {
 // If that fails then we look at the version resource in the current
 // module. This is the expected path for chrome.exe browser instances in an
 // installed build.
-HMODULE MainDllLoader::Load(const base::string16& version,
+HMODULE MainDllLoader::Load(base::string16* version,
                             base::string16* out_file) {
   const base::string16 executable_dir(GetExecutablePath());
   *out_file = executable_dir;
@@ -246,8 +246,14 @@ HMODULE MainDllLoader::Load(const base::string16& version,
   const bool pre_read = !metro_mode_;
   HMODULE dll = LoadModuleWithDirectory(out_file, dll_name, pre_read);
   if (!dll) {
+    base::string16 version_string(GetCurrentModuleVersion());
+    if (version_string.empty()) {
+      LOG(ERROR) << "No valid Chrome version found";
+      return NULL;
+    }
     *out_file = executable_dir;
-    out_file->append(version).append(1, L'\\');
+    *version = version_string;
+    out_file->append(version_string).append(1, L'\\');
     dll = LoadModuleWithDirectory(out_file, dll_name, pre_read);
     if (!dll) {
       PLOG(ERROR) << "Failed to load Chrome DLL from " << *out_file;
@@ -266,18 +272,11 @@ int MainDllLoader::Launch(HINSTANCE instance) {
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
   process_type_ = cmd_line.GetSwitchValueASCII(switches::kProcessType);
 
-  base::string16 version(GetCurrentModuleVersion());
-  if (version.empty()) {
-    LOG(ERROR) << "No valid Chrome version found";
-    return chrome::RESULT_CODE_MISSING_DATA;
-  }
-
-  scoped_ptr<base::Environment> env(base::Environment::Create());
-  env->SetVar(chrome::kChromeVersionEnvVar, base::WideToUTF8(version));
+  base::string16 version;
   base::string16 file;
 
   if (metro_mode_) {
-    HMODULE metro_dll = Load(version, &file);
+    HMODULE metro_dll = Load(&version, &file);
     if (!metro_dll)
       return chrome::RESULT_CODE_MISSING_DATA;
 
@@ -302,9 +301,12 @@ int MainDllLoader::Launch(HINSTANCE instance) {
   }
   breakpad::InitCrashReporter(process_type_);
 
-  dll_ = Load(version, &file);
+  dll_ = Load(&version, &file);
   if (!dll_)
     return chrome::RESULT_CODE_MISSING_DATA;
+
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  env->SetVar(chrome::kChromeVersionEnvVar, base::WideToUTF8(version));
 
   OnBeforeLaunch(file);
   DLL_MAIN chrome_main =
