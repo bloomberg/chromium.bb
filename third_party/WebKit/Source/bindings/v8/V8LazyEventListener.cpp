@@ -160,7 +160,7 @@ void V8LazyEventListener::prepareListenerObject(ExecutionContext* context)
 
     v8::Handle<v8::String> codeExternalString = v8String(isolate, code);
 
-    v8::Local<v8::Value> result = V8ScriptRunner::compileAndRunInternalScript(codeExternalString, isolate, m_sourceURL, m_position, 0);
+    v8::Local<v8::Value> result = V8ScriptRunner::compileAndRunInternalScript(codeExternalString, isolate, m_sourceURL, m_position);
     if (result.IsEmpty())
         return;
 
