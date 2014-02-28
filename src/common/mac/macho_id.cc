@@ -125,7 +125,7 @@ void MachoID::UpdateCRC(unsigned char *bytes, size_t size) {
 }
 
 void MachoID::UpdateMD5(unsigned char *bytes, size_t size) {
-  MD5Update(&md5_context_, bytes, size);
+  MD5Update(&md5_context_, bytes, static_cast<unsigned>(size));
 }
 
 void MachoID::Update(MachoWalker *walker, off_t offset, size_t size) {

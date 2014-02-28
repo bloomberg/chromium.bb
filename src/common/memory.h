@@ -142,10 +142,10 @@ class PageAllocator {
     size_t num_pages;  // the number of pages in this set.
   };
 
-  const unsigned page_size_;
+  const size_t page_size_;
   PageHeader *last_;
   uint8_t *current_page_;
-  unsigned page_offset_;
+  size_t page_offset_;
 };
 
 // Wrapper to use with STL containers

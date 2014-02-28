@@ -61,7 +61,7 @@ bool FileID::FileIdentifier(unsigned char identifier[16]) {
   unsigned char buffer[4096 * 2];
   size_t buffer_size = sizeof(buffer);
   while ((buffer_size = read(fd, buffer, buffer_size) > 0)) {
-    MD5Update(&md5, buffer, buffer_size);
+    MD5Update(&md5, buffer, static_cast<unsigned>(buffer_size));
   }
 
   close(fd);

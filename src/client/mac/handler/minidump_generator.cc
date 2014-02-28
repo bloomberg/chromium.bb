@@ -1479,13 +1479,13 @@ bool MinidumpGenerator::WriteModuleListStream(
 
   module_list_stream->stream_type = MD_MODULE_LIST_STREAM;
   module_list_stream->location = list.location();
-  list.get()->number_of_modules = image_count;
+  list.get()->number_of_modules = static_cast<uint32_t>(image_count);
 
   // Write out the executable module as the first one
   MDRawModule module;
   uint32_t executableIndex = FindExecutableModule();
 
-  if (!WriteModuleStream(executableIndex, &module)) {
+  if (!WriteModuleStream(static_cast<unsigned>(executableIndex), &module)) {
     return false;
   }
 
@@ -1494,7 +1494,7 @@ bool MinidumpGenerator::WriteModuleListStream(
 
   for (uint32_t i = 0; i < image_count; ++i) {
     if (i != executableIndex) {
-      if (!WriteModuleStream(i, &module)) {
+      if (!WriteModuleStream(static_cast<unsigned>(i), &module)) {
         return false;
       }
 
