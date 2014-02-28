@@ -59,7 +59,7 @@ header {
 .right-column {
   -webkit-padding-end: 20px;
   display: table-cell;
-  width: auto;
+  width: 99%;
 }
 
 .right-column .checkbox,

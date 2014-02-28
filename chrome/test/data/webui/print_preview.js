@@ -226,9 +226,9 @@ function checkElementDisplayed(el, isDisplayed) {
 
 // Test that disabled settings hide the disabled sections.
 TEST_F('PrintPreviewWebUITest', 'TestSectionsDisabled', function() {
-  checkSectionVisible($('layout-settings'), true);
-  checkSectionVisible($('color-settings'), true);
-  checkSectionVisible($('copies-settings'), true);
+  checkSectionVisible($('layout-settings'), false);
+  checkSectionVisible($('color-settings'), false);
+  checkSectionVisible($('copies-settings'), false);
 
   var initialSettingsSetEvent =
       new Event(print_preview.NativeLayer.EventType.INITIAL_SETTINGS_SET);
@@ -247,12 +247,12 @@ TEST_F('PrintPreviewWebUITest', 'TestSectionsDisabled', function() {
     'disableColorOption': true,
     'setColorAsDefault': true,
     'disableCopiesOption': true,
-    'disableLandscapeOption': true,
+    'disableLandscapeOption': false,
     'printerDefaultDuplexValue': 0
   };
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
-  checkSectionVisible($('layout-settings'), false);
+  checkSectionVisible($('layout-settings'), true);
   checkSectionVisible($('color-settings'), false);
   checkSectionVisible($('copies-settings'), false);
 });
@@ -571,8 +571,6 @@ TEST_F('PrintPreviewWebUITest', 'TestColorSettingsTrue', function() {
   localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
   this.nativeLayer_.dispatchEvent(localDestsSetEvent);
 
-  checkSectionVisible($('color-settings'), true);
-
   var capsSetEvent =
       new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
   capsSetEvent.settingsInfo = {
@@ -604,8 +602,6 @@ TEST_F('PrintPreviewWebUITest', 'TestColorSettingsFalse', function() {
       new Event(print_preview.NativeLayer.EventType.LOCAL_DESTINATIONS_SET);
   localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
   this.nativeLayer_.dispatchEvent(localDestsSetEvent);
-
-  checkSectionVisible($('color-settings'), true);
 
   var capsSetEvent =
       new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);

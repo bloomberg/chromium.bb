@@ -90,6 +90,7 @@ cr.define('print_preview', function() {
     /** @override */
     enterDocument: function() {
       print_preview.Component.prototype.enterDocument.call(this);
+      fadeOutOption(this.getElement(), true);
       this.tracker.add(
           this.allRadio_, 'click', this.onAllRadioClick_.bind(this));
       this.tracker.add(

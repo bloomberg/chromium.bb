@@ -35,6 +35,7 @@ cr.define('print_preview', function() {
     /** @override */
     enterDocument: function() {
       print_preview.Component.prototype.enterDocument.call(this);
+      fadeOutOption(this.getElement(), true);
       this.tracker.add(
           this.getChildElement('.color-option'),
           'click',
