@@ -235,14 +235,14 @@ camera.Tracker.prototype = {
  * Starts the tracker. Note, that detect() and update() still need to be called.
  */
 camera.Tracker.prototype.start = function() {
-  this.performanceMonitor_.start();
+  this.performanceMonitor_.reset();
 };
 
 /**
  * Stops the tracker.
  */
 camera.Tracker.prototype.stop = function() {
-  this.performanceMonitor_.stop();
+  // TODO(mtomasz): Implement stopping, by refusing to call detect().
 };
 
 /**

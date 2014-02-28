@@ -58,6 +58,13 @@ camera.Processor = function(tracker, input, output, fxCanvas, opt_mode) {
    */
   this.effect_ = null;
 
+  /**
+   * Performance monitors for the processor.
+   * @type {camera.util.NamedPerformanceMonitors}
+   * @private
+   */
+  this.performanceMonitors_ = new camera.util.NamedPerformanceMonitors();
+
   // End of properties. Seal the object.
   Object.seal(this);
 };
@@ -81,6 +88,9 @@ camera.Processor.prototype = {
   },
   get output() {
     return this.output_;
+  },
+  get performanceMonitors() {
+    return this.performanceMonitors_;
   }
 };
 
@@ -108,25 +118,47 @@ camera.Processor.prototype.processFrame = function() {
       break;
   }
 
-  this.fxCanvas_.draw(this.input_, textureWidth, textureHeight);
-  if (this.effect_) {
-    this.effect_.filterFrame(
-        this.fxCanvas_,
-        this.effect_.usesHeadTracker() ?
-            this.tracker_.getFacesForCanvas(this.fxCanvas_) : null);
+  {
+    var finishMeasuring =
+        this.performanceMonitors_.startMeasuring('draw-to-fx-canvas');
+    this.fxCanvas_.draw(this.input_, textureWidth, textureHeight);
+    finishMeasuring();
   }
-  this.fxCanvas_.update();
+
+  {
+    var finishMeasuring =
+        this.performanceMonitors_.startMeasuring('filter-frame');
+    if (this.effect_) {
+      this.effect_.filterFrame(
+          this.fxCanvas_,
+          this.effect_.usesHeadTracker() ?
+              this.tracker_.getFacesForCanvas(this.fxCanvas_) : null);
+    }
+    finishMeasuring();
+  }
+
+  {
+    var finishMeasuring =
+        this.performanceMonitors_.startMeasuring('update-fx-canvas');
+    this.fxCanvas_.update();
+    finishMeasuring();
+  }
 
   // If the fx canvas does not act as an output, then copy the result from it
   // to the output canvas.
-  if (this.output_ != this.fxCanvas_) {
-    var context = this.output_.getContext('2d');
-    context.drawImage(
-        this.fxCanvas_,
-        0,
-        0,
-        this.fxCanvas_.width,
-        this.fxCanvas_.height);
+  {
+    var finishMeasuring =
+        this.performanceMonitors_.startMeasuring('copy-fx-canvas-to-output');
+    if (this.output_ != this.fxCanvas_) {
+      var context = this.output_.getContext('2d');
+      context.drawImage(
+          this.fxCanvas_,
+          0,
+          0,
+          this.fxCanvas_.width,
+          this.fxCanvas_.height);
+    }
+    finishMeasuring();
   }
 };
 
