@@ -265,15 +265,11 @@ TrayNetwork::TrayNetwork(SystemTray* system_tray)
       detailed_(NULL),
       request_wifi_view_(false) {
   network_state_observer_.reset(new TrayNetworkStateObserver(this));
-  SystemTrayNotifier* notifier = Shell::GetInstance()->system_tray_notifier();
-  notifier->AddNetworkObserver(this);
-  notifier->AddNetworkPortalDetectorObserver(this);
+  Shell::GetInstance()->system_tray_notifier()->AddNetworkObserver(this);
 }
 
 TrayNetwork::~TrayNetwork() {
-  SystemTrayNotifier* notifier = Shell::GetInstance()->system_tray_notifier();
-  notifier->RemoveNetworkObserver(this);
-  notifier->RemoveNetworkPortalDetectorObserver(this);
+  Shell::GetInstance()->system_tray_notifier()->RemoveNetworkObserver(this);
 }
 
 views::View* TrayNetwork::CreateTrayView(user::LoginStatus status) {
@@ -349,11 +345,6 @@ void TrayNetwork::RequestToggleWifi() {
   handler->SetTechnologyEnabled(NetworkTypePattern::WiFi(),
                                 !enabled,
                                 chromeos::network_handler::ErrorCallback());
-}
-
-void TrayNetwork::OnCaptivePortalDetected(
-    const std::string& /* service_path */) {
-  NetworkStateChanged(false);
 }
 
 void TrayNetwork::NetworkStateChanged(bool list_changed) {

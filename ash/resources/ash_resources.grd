@@ -209,8 +209,6 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_LTE_LIGHT" file="cros/network/statusbar_network_lte_light.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_LTE_ADVANCED_DARK" file="cros/network/statusbar_network_lte_advanced_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_LTE_ADVANCED_LIGHT" file="cros/network/statusbar_network_lte_advanced_light.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_PORTAL_DARK" file="cros/network/statusbar_network_active_portal_dark.png" />
-        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_PORTAL_LIGHT" file="cros/network/statusbar_network_active_portal_light.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_ROAMING_DARK" file="cros/network/statusbar_network_roaming_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_ROAMING_LIGHT" file="cros/network/statusbar_network_roaming_light.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_SECURE_DARK" file="cros/network/statusbar_network_secure_dark.png" />
