@@ -125,7 +125,7 @@ class SmoothnessMetric(Metric):
     # Absolute discrepancy of frame time stamps.
     frame_discrepancy = statistics.TimestampsDiscrepancy(
         self._stats.frame_timestamps)
-    results.Add('jank', '', round(frame_discrepancy, 4))
+    results.Add('jank', 'ms', round(frame_discrepancy, 4))
 
     # Are we hitting 60 fps for 95 percent of all frames?
     # We use 19ms as a somewhat looser threshold, instead of 1000.0/60.0.
