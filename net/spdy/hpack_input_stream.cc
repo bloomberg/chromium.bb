@@ -4,6 +4,8 @@
 
 #include "net/spdy/hpack_input_stream.h"
 
+#include <algorithm>
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 
