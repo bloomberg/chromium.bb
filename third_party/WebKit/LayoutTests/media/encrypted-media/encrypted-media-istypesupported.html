@@ -12,20 +12,13 @@
             function test_type_support(types, expectation, description)
             {
                 for (var i = 0; i < types.length; ++i) {
+                    var type = types[i];
                     test(function()
                     {
-                        var type = types[i];
                         assert_true(type.length == 1 || type.length == 2);
-                        if (type.length == 1) {
-                            assert_equals(MediaKeys.isTypeSupported(
-                                type[0]), expectation, 'isTypeSupported');
-                        } else if (type.length == 2) {
-                            assert_equals(MediaKeys.isTypeSupported(type[0],
-                                type[1]), expectation, 'isTypeSupported');
-                        } else {
-                            assert_true(false, 'invalid type to test');
-                        }
-                    },  description + ": '" + types[i].join("', '") + "'");
+                        assert_equals(MediaKeys.isTypeSupported.apply(
+                            this, type), expectation, 'isTypeSupported');
+                    },  description + ": '" + type.join("', '") + "'");
                 }
             };
 
