@@ -75,6 +75,10 @@ public abstract class ContentSwitches {
     public static final String ENABLE_OVERLAY_FULLSCREEN_VIDEO_SUBTITLE =
             "enable-overlay-fullscreen-video-subtitle";
 
+    // Native switch - gfx_switches::kForceDeviceScaleFactor
+    public static final String FORCE_DEVICE_SCALE_FACTOR =
+            "force-device-scale-factor";
+
     // Prevent instantiation.
     private ContentSwitches() {}
 }

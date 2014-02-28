@@ -454,8 +454,13 @@ public class ContentViewCore
         mAdapterInputConnectionFactory = new AdapterInputConnectionFactory();
 
         mRenderCoordinates = new RenderCoordinates();
-        mRenderCoordinates.setDeviceScaleFactor(
-                getContext().getResources().getDisplayMetrics().density);
+        float deviceScaleFactor = getContext().getResources().getDisplayMetrics().density;
+        String forceScaleFactor = CommandLine.getInstance().getSwitchValue(
+                ContentSwitches.FORCE_DEVICE_SCALE_FACTOR);
+        if (forceScaleFactor != null) {
+            deviceScaleFactor = Float.valueOf(forceScaleFactor);
+        }
+        mRenderCoordinates.setDeviceScaleFactor(deviceScaleFactor);
         mStartHandlePoint = mRenderCoordinates.createNormalizedPoint();
         mEndHandlePoint = mRenderCoordinates.createNormalizedPoint();
         mInsertionHandlePoint = mRenderCoordinates.createNormalizedPoint();
