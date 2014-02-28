@@ -28,10 +28,6 @@ class CONTENT_EXPORT SyntheticGestureTarget {
   virtual void DispatchInputEventToPlatform(
       const blink::WebInputEvent& event) = 0;
 
-  // Called by SyntheticGestureController when a gesture has finished.
-  virtual void OnSyntheticGestureCompleted(
-      SyntheticGesture::Result result) = 0;
-
   // Called by SyntheticGestureController to request a flush at a time
   // appropriate for the platform, e.g. aligned with vsync.
   virtual void SetNeedsFlush() = 0;

@@ -33,6 +33,10 @@ enum TouchEventCoordinateSystem {
 // it is possible to create more than one ui::TouchEvents out of a single
 // WebTouchEvent. All the ui::TouchEvent in the list will carry the same
 // LatencyInfo the WebTouchEvent carries.
+// |coordinate_system| specifies which fields to use for the co-ordinates,
+// WebTouchPoint.position or WebTouchPoint.screenPosition.  Is's up to the
+// caller to do any co-ordinate system mapping (typically to get them into
+// the Aura EventDispatcher co-ordinate system).
 CONTENT_EXPORT bool MakeUITouchEventsFromWebTouchEvents(
     const TouchEventWithLatencyInfo& touch,
     ScopedVector<ui::TouchEvent>* list,

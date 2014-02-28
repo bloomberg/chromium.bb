@@ -1106,6 +1106,20 @@ void RenderWidgetHostImpl::ForwardKeyboardEvent(
       is_shortcut);
 }
 
+void RenderWidgetHostImpl::QueueSyntheticGesture(
+    scoped_ptr<SyntheticGesture> synthetic_gesture,
+    const base::Callback<void(SyntheticGesture::Result)>& on_complete) {
+  if (!synthetic_gesture_controller_ && view_) {
+    synthetic_gesture_controller_.reset(
+        new SyntheticGestureController(
+            view_->CreateSyntheticGestureTarget().Pass()));
+  }
+  if (synthetic_gesture_controller_) {
+    synthetic_gesture_controller_->QueueSyntheticGesture(
+        synthetic_gesture.Pass(), on_complete);
+  }
+}
+
 void RenderWidgetHostImpl::SendCursorVisibilityState(bool is_visible) {
   Send(new InputMsg_CursorVisibilityChange(GetRoutingID(), is_visible));
 }
@@ -1725,16 +1739,10 @@ void RenderWidgetHostImpl::DidUpdateBackingStore(
 
 void RenderWidgetHostImpl::OnQueueSyntheticGesture(
     const SyntheticGesturePacket& gesture_packet) {
-  if (!synthetic_gesture_controller_) {
-    if (!view_)
-      return;
-    synthetic_gesture_controller_.reset(
-        new SyntheticGestureController(
-            view_->CreateSyntheticGestureTarget().Pass()));
-  }
-
-  synthetic_gesture_controller_->QueueSyntheticGesture(
-      SyntheticGesture::Create(*gesture_packet.gesture_params()));
+  QueueSyntheticGesture(
+        SyntheticGesture::Create(*gesture_packet.gesture_params()),
+        base::Bind(&RenderWidgetHostImpl::OnSyntheticGestureCompleted,
+                   weak_factory_.GetWeakPtr()));
 }
 
 void RenderWidgetHostImpl::OnFocus() {
@@ -2098,6 +2106,11 @@ void RenderWidgetHostImpl::OnUnexpectedEventAck(UnexpectedEventAckType type) {
   } else if (type == UNEXPECTED_EVENT_TYPE) {
     suppress_next_char_events_ = false;
   }
+}
+
+void RenderWidgetHostImpl::OnSyntheticGestureCompleted(
+    SyntheticGesture::Result result) {
+  Send(new InputMsg_SyntheticGestureCompleted(GetRoutingID()));
 }
 
 const gfx::Vector2d& RenderWidgetHostImpl::GetLastScrollOffset() const {

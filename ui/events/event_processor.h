@@ -20,7 +20,9 @@ class EVENTS_EXPORT EventProcessor : public EventDispatcherDelegate {
   virtual EventTarget* GetRootTarget() = 0;
 
   // Dispatches an event received from the EventSource to the tree of
-  // EventTargets (whose root is returned by GetRootTarget()).
+  // EventTargets (whose root is returned by GetRootTarget()).  The co-ordinate
+  // space of the source must be the same as the root target, except that the
+  // target may have a high-dpi scale applied.
   virtual EventDispatchDetails OnEventFromSource(Event* event)
       WARN_UNUSED_RESULT;
 

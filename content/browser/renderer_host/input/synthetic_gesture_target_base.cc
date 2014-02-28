@@ -93,11 +93,6 @@ void SyntheticGestureTargetBase::DispatchWebMouseEventToPlatform(
   host_->ForwardMouseEventWithLatencyInfo(web_mouse, latency_info);
 }
 
-void SyntheticGestureTargetBase::OnSyntheticGestureCompleted(
-    SyntheticGesture::Result result) {
-  host_->Send(new InputMsg_SyntheticGestureCompleted(host_->GetRoutingID()));
-}
-
 void SyntheticGestureTargetBase::SetNeedsFlush() {
   host_->SetNeedsFlush();
 }

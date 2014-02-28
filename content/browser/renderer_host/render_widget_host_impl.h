@@ -25,6 +25,7 @@
 #include "build/build_config.h"
 #include "content/browser/renderer_host/input/input_ack_handler.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
+#include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/common/input/synthetic_gesture_packet.h"
 #include "content/common/view_message_enums.h"
 #include "content/port/browser/event_with_latency_info.h"
@@ -296,6 +297,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void ForwardWheelEventWithLatencyInfo(
       const blink::WebMouseWheelEvent& wheel_event,
       const ui::LatencyInfo& ui_latency);
+
+  // Queues a synthetic gesture for testing purposes.  Invokes the on_complete
+  // callback when the gesture is finished running.
+  void QueueSyntheticGesture(
+      scoped_ptr<SyntheticGesture> synthetic_gesture,
+      const base::Callback<void(SyntheticGesture::Result)>& on_complete);
 
   void CancelUpdateTextDirection();
 
@@ -749,6 +756,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   virtual void OnGestureEventAck(const GestureEventWithLatencyInfo& event,
                                  InputEventAckState ack_result) OVERRIDE;
   virtual void OnUnexpectedEventAck(UnexpectedEventAckType type) OVERRIDE;
+
+  void OnSyntheticGestureCompleted(SyntheticGesture::Result result);
 
   // Called when there is a new auto resize (using a post to avoid a stack
   // which may get in recursive loops).

@@ -22,6 +22,7 @@ struct CONTENT_EXPORT SyntheticSmoothScrollGestureParams
 
   virtual GestureType GetGestureType() const OVERRIDE;
 
+  // Scroll distance (i.e. positive Y to scroll down).
   gfx::Vector2d distance;
   gfx::Point anchor;
   bool prevent_fling;  // Defaults to true.

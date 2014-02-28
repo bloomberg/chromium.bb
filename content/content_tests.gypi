@@ -1006,6 +1006,7 @@
             'browser/plugin_data_remover_impl_browsertest.cc',
             'browser/plugin_browsertest.cc',
             'browser/plugin_service_impl_browsertest.cc',
+            'browser/renderer_host/input/touch_action_browsertest.cc',
             'browser/renderer_host/input/touch_input_browsertest.cc',
             'browser/renderer_host/render_process_host_browsertest.cc',
             'browser/renderer_host/render_view_host_browsertest.cc',

@@ -132,6 +132,7 @@ WithoutInputHandlerProxy/TouchInputBrowserTest.MultiPointTouchPress/0
 WithoutInputHandlerProxy/TouchInputBrowserTest.TouchHandlerConsume/0
 WithoutInputHandlerProxy/TouchInputBrowserTest.TouchHandlerNoConsume/0
 WithoutInputHandlerProxy/TouchInputBrowserTest.TouchNoHandler/0
+TouchActionBrowserTest.*
 
 # http://crbug.com/338408
 TracingControllerTest.EnableCaptureAndDisableMonitoring

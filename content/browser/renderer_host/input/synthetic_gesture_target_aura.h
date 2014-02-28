@@ -47,8 +47,6 @@ class SyntheticGestureTargetAura : public SyntheticGestureTargetBase {
 
  private:
   aura::Window* GetWindow() const;
-  aura::WindowEventDispatcher* GetWindowEventDispatcher() const;
-  aura::client::ScreenPositionClient* GetScreenPositionClient() const;
 
   DISALLOW_COPY_AND_ASSIGN(SyntheticGestureTargetAura);
 };

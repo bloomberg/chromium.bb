@@ -120,19 +120,12 @@ bool MakeUITouchEventsFromWebTouchEvents(
     const blink::WebTouchPoint& point = touch.touches[i];
     if (WebTouchPointStateToEventType(point.state) != type)
       continue;
-    // In aura, the touch-event needs to be in the screen coordinate, since the
-    // touch-event is routed to RootWindow first. In Windows, on the other hand,
-    // the touch-event is dispatched directly to the gesture-recognizer, so the
-    // location needs to be in the local coordinate space.
-#if defined(USE_AURA)
+    // ui events start in the co-ordinate space of the EventDispatcher.
     gfx::Point location;
     if (coordinate_system == LOCAL_COORDINATES)
       location = gfx::Point(point.position.x, point.position.y);
     else
       location = gfx::Point(point.screenPosition.x, point.screenPosition.y);
-#else
-    gfx::Point location(point.position.x, point.position.y);
-#endif
     ui::TouchEvent* uievent = new ui::TouchEvent(type,
           location,
           flags,
