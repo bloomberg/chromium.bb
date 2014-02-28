@@ -304,10 +304,11 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_WEB_AREA;
     case blink::WebAXRoleWindow:
       return ui::AX_ROLE_WINDOW;
+    default:
+      // We can't add an assertion here, that prevents us
+      // from adding new role enums in Blink.
+      return static_cast<ui::AXRole>(-1);
   }
-
-  NOTREACHED();
-  return static_cast<ui::AXRole>(-1);
 }
 
 ui::AXEvent AXEventFromBlink(blink::WebAXEvent event) {
@@ -367,6 +368,8 @@ ui::AXEvent AXEventFromBlink(blink::WebAXEvent event) {
     case blink::WebAXEventValueChanged:
       return ui::AX_EVENT_VALUE_CHANGED;
     default:
+      // We can't add an assertion here, that prevents us
+      // from adding new event enums in Blink.
       return static_cast<ui::AXEvent>(-1);
   }
 }
