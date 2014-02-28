@@ -30,14 +30,12 @@ class PnaclOptions;
 class JsonManifest : public Manifest {
  public:
   JsonManifest(const pp::URLUtil_Dev* url_util,
-               const nacl::string& manifest_base_url,
-               const nacl::string& sandbox_isa,
-               bool pnacl_debug)
+           const nacl::string& manifest_base_url,
+           const nacl::string& sandbox_isa)
       : url_util_(url_util),
         manifest_base_url_(manifest_base_url),
         sandbox_isa_(sandbox_isa),
-        dictionary_(Json::nullValue),
-        pnacl_debug_(pnacl_debug) { }
+        dictionary_(Json::nullValue) { }
   virtual ~JsonManifest() { }
 
   // Initialize the manifest object for use by later lookups.  The return
@@ -95,7 +93,6 @@ class JsonManifest : public Manifest {
   nacl::string sandbox_isa_;
 
   Json::Value dictionary_;
-  bool pnacl_debug_;  // Search for a pnacl-debug entry.
 };
 
 

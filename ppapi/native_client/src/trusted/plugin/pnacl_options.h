@@ -25,9 +25,6 @@ class PnaclOptions {
   bool translate() const { return translate_; }
   void set_translate(bool t) { translate_ = t; }
 
-  bool is_debug() const { return is_debug_; }
-  void set_debug(bool t) { is_debug_ = t; }
-
   int32_t opt_level() const { return opt_level_; }
   void set_opt_level(int32_t l);
 
@@ -36,7 +33,6 @@ class PnaclOptions {
   // Currently the default copy constructor is good enough, but
   // double-check that it is the case when more fields are added.
   bool translate_;
-  bool is_debug_;
   int32_t opt_level_;
 };
 

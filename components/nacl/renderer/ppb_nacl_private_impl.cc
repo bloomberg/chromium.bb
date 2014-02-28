@@ -13,7 +13,6 @@
 #include "base/rand_util.h"
 #include "components/nacl/common/nacl_host_messages.h"
 #include "components/nacl/common/nacl_messages.h"
-#include "components/nacl/common/nacl_switches.h"
 #include "components/nacl/common/nacl_types.h"
 #include "components/nacl/renderer/pnacl_translation_resource_host.h"
 #include "components/nacl/renderer/trusted_plugin_channel.h"
@@ -541,11 +540,6 @@ void InstanceDestroyed(PP_Instance instance) {
   delete instance_info;
 }
 
-PP_Bool NaClDebugStubEnabled() {
-  return PP_FromBool(CommandLine::ForCurrentProcess()->HasSwitch(
-                         switches::kEnableNaClDebug));
-}
-
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
@@ -561,8 +555,7 @@ const PPB_NaCl_Private nacl_interface = {
   &DispatchEvent,
   &SetReadOnlyProperty,
   &ReportLoadError,
-  &InstanceDestroyed,
-  &NaClDebugStubEnabled
+  &InstanceDestroyed
 };
 
 }  // namespace

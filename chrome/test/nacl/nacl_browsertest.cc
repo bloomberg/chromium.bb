@@ -16,8 +16,6 @@
 #include "base/path_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/nacl/nacl_browsertest_util.h"
-#include "components/nacl/common/nacl_switches.h"
-#include "content/public/common/content_switches.h"
 
 namespace {
 
@@ -187,33 +185,6 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, CORSNoCookie) {
 
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, RelativeManifest) {
   RunLoadTest(FILE_PATH_LITERAL("manifest/relative_manifest.html"));
-}
-
-class NaClBrowserTestPnaclDebugURL : public NaClBrowserTestPnacl {
- public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    NaClBrowserTestPnacl::SetUpCommandLine(command_line);
-    // Turn on debugging to influence the PNaCl URL loaded
-    command_line->AppendSwitch(switches::kEnableNaClDebug);
-    // On windows, the debug stub requires --no-sandbox:
-    // crbug.com/265624
-#if defined(OS_WIN)
-    command_line->AppendSwitch(switches::kNoSandbox);
-#endif
-    // Don't actually debug the app though.
-    command_line->AppendSwitchASCII(switches::kNaClDebugMask,
-                                    "!<all_urls>");
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclDebugURL,
-                       MAYBE_PNACL(PnaclDebugURLFlagOn)) {
-  RunLoadTest(FILE_PATH_LITERAL("pnacl_debug_url.html?debug_flag=1"));
-}
-
-IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
-                       MAYBE_PNACL(PnaclDebugURLFlagOff)) {
-  RunLoadTest(FILE_PATH_LITERAL("pnacl_debug_url.html?debug_flag=0"));
 }
 
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
