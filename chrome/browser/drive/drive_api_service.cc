@@ -96,8 +96,8 @@ const char kFolderMimeType[] = "application/vnd.google-apps.folder";
 // only the total time matters. However, the server seems to have a time limit
 // per single request, which disables us to set the largest value (1000).
 // TODO(kinaba): make it larger when the server gets faster.
-const int kMaxNumFilesResourcePerRequest = 250;
-const int kMaxNumFilesResourcePerRequestForSearch = 50;
+const int kMaxNumFilesResourcePerRequest = 300;
+const int kMaxNumFilesResourcePerRequestForSearch = 100;
 
 // For performance, we declare all fields we use.
 const char kAboutResourceFields[] =

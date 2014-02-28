@@ -47,7 +47,7 @@ const char kInitiateUploadExistingFileURLPrefix[] =
 // server. Be careful not to use something too large because it makes the
 // "fetched N items" UI less responsive.
 const int kMaxDocumentsPerFeed = 500;
-const int kMaxDocumentsPerSearchFeed = 50;
+const int kMaxDocumentsPerSearchFeed = 100;
 
 // URL requesting documents list of changes to documents collections.
 const char kGetChangesListURL[] = "/feeds/default/private/changes";

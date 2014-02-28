@@ -85,7 +85,7 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceListUrl) {
   // and "q" parameter is added.
   EXPECT_EQ("https://docs.google.com/feeds/default/private/full"
             "?v=3&alt=json&showroot=true&showfolders=true&include-shared=true"
-            "&max-results=50&q=foo",
+            "&max-results=100&q=foo",
             url_generator_.GenerateResourceListUrl(
                 GURL(),        // override_url,
                 0,             // start_changestamp,
