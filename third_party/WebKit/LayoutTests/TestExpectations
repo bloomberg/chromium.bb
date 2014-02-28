@@ -177,6 +177,12 @@ crbug.com/310679 [ Mac ] fast/frames/frame-set-scaling-hit.html [ ImageOnlyFailu
 crbug.com/318434 virtual/gpu/compositedscrolling/scrollbars/custom-scrollbar-with-incomplete-style.html [ ImageOnlyFailure ]
 crbug.com/346134 [ Linux ] virtual/gpu/compositedscrolling/overflow/invisible-descendants-should-not-affect-opt-in.html [ Pass Failure ]
 
+Bug(vollick) editing/pasteboard/4631972.html [ NeedsRebaseline ]
+Bug(vollick) editing/pasteboard/copy-standalone-image.html [ NeedsRebaseline ]
+Bug(vollick) css2.1/20110323/float-replaced-height-004.htm [ NeedsRebaseline ]
+Bug(vollick) editing/selection/iframe.html [ NeedsRebaseline ]
+Bug(vollick) css2.1/20110323/float-replaced-height-007.htm [ NeedsRebaseline ]
+
 # Tests failing since applyPageScaleFactorInCompositor enabled
 crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
 

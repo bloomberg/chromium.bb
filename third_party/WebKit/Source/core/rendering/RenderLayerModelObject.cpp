@@ -167,7 +167,7 @@ void RenderLayerModelObject::styleDidChange(StyleDifference diff, const RenderSt
     if (layer()) {
         // FIXME: Ideally we shouldn't need this setter but we can't easily infer an overflow-only layer
         // from the style.
-        layer()->setIsOverflowOnlyLayer(type == OverflowClipLayer);
+        layer()->setLayerType(type);
 
         layer()->styleChanged(diff, oldStyle);
         if (hadLayer && layer()->isSelfPaintingLayer() != layerWasSelfPainting)

@@ -55,10 +55,8 @@ void RenderLayerClipper::updateClipRects(const ClipRectsContext& clipRectsContex
     ASSERT(clipRectsType < NumCachedClipRectsTypes);
     if (m_clipRectsCache && m_clipRectsCache->getClipRects(clipRectsType, clipRectsContext.respectOverflowClip)) {
         // FIXME: these asserts trigger for squashing. Need to update this code to support squashing as appropriate.
-        // These ASSERTs also are triggering ASSERTs on some ChromeOS tests:
-        // https://code.google.com/p/chromium/issues/detail?id=342478
-        // ASSERT(clipRectsContext.rootLayer == m_clipRectsCache->m_clipRectsRoot[clipRectsType]);
-        // ASSERT(m_clipRectsCache->m_scrollbarRelevancy[clipRectsType] == clipRectsContext.overlayScrollbarSizeRelevancy);
+        ASSERT(clipRectsContext.rootLayer == m_clipRectsCache->m_clipRectsRoot[clipRectsType]);
+        ASSERT(m_clipRectsCache->m_scrollbarRelevancy[clipRectsType] == clipRectsContext.overlayScrollbarSizeRelevancy);
 
 #ifdef CHECK_CACHED_CLIP_RECTS
         // This code is useful to check cached clip rects, but is too expensive to leave enabled in debug builds by default.

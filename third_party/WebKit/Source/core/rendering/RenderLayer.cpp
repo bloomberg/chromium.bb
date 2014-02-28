@@ -105,7 +105,7 @@ static CompositingQueryMode gCompositingQueryMode =
 using namespace HTMLNames;
 
 RenderLayer::RenderLayer(RenderLayerModelObject* renderer, LayerType type)
-    : m_isOverflowOnlyLayer(type == OverflowClipLayer)
+    : m_layerType(type)
     , m_hasSelfPaintingLayerDescendant(false)
     , m_hasSelfPaintingLayerDescendantDirty(false)
     , m_hasOutOfFlowPositionedDescendant(false)
@@ -3625,7 +3625,7 @@ void RenderLayer::setParent(RenderLayer* parent)
 
 bool RenderLayer::shouldBeSelfPaintingLayer() const
 {
-    return !m_isOverflowOnlyLayer
+    return m_layerType == NormalLayer
         || (m_scrollableArea && m_scrollableArea->hasOverlayScrollbars())
         || needsCompositedScrolling();
 }

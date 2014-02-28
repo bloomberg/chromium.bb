@@ -34,8 +34,11 @@ class ScrollableArea;
 
 enum LayerType {
     NoLayer,
+    NormalLayer,
+    // A forced or overflow clip layer is required for bookkeeping purposes,
+    // but does not force a layer to be self painting.
     OverflowClipLayer,
-    NormalLayer
+    ForcedLayer
 };
 
 class RenderLayerModelObject : public RenderObject {
