@@ -1710,11 +1710,13 @@ _release = full.derive(official, internal,
   chrome_sdk=True,
 )
 
-_grouped_variant_release = _release.derive(
+_grouped_config = _config(
   chrome_sdk=False,
   unittests=None,
   vm_tests=[],
 )
+
+_grouped_release = _release.derive(_grouped_config)
 
 ### Master release config.
 
@@ -1729,7 +1731,7 @@ _config.add_group('x86-alex-release-group',
   _release.add_config('x86-alex-release',
     boards=['x86-alex'],
   ),
-  _grouped_variant_release.add_config('x86-alex_he-release',
+  _grouped_release.add_config('x86-alex_he-release',
     boards=['x86-alex_he'],
     hw_tests=[],
     upload_hw_test_artifacts=False,
@@ -1741,7 +1743,7 @@ _config.add_group('x86-zgb-release-group',
   _release.add_config('x86-zgb-release',
     boards=['x86-zgb'],
   ),
-  _grouped_variant_release.add_config('x86-zgb_he-release',
+  _grouped_release.add_config('x86-zgb_he-release',
     boards=['x86-zgb_he'],
     hw_tests=[],
     upload_hw_test_artifacts=False,
@@ -1886,7 +1888,7 @@ _release.add_group('parrot-release-group',
   _release.add_config('parrot-release',
     boards=['parrot'],
   ),
-  _grouped_variant_release.add_config('parrot_ivb-release',
+  _grouped_release.add_config('parrot_ivb-release',
     boards=['parrot_ivb'],
   )
 )
@@ -2018,6 +2020,54 @@ _arm_brillo_release.add_config('daisy_winter-full',
 _release.add_config('stumpy_moblab-release',
   brillo_non_testable,
   boards=['stumpy_moblab'],
+)
+
+### Per-chipset release groups
+
+# Atom-based boards
+_config.add_group('atom-release-group',
+  config['x86-mario-release'],
+  config['x86-alex-release'].derive(_grouped_config),
+  config['x86-alex_he-release'].derive(_grouped_config),
+  config['x86-zgb-release'].derive(_grouped_config),
+  config['x86-zgb_he-release'].derive(_grouped_config),
+)
+
+# lumpy-era boards
+_config.add_group('lumpy-release-group',
+  config['lumpy-release'],
+  config['stumpy-release'].derive(_grouped_config),
+  config['parrot-release'].derive(_grouped_config),
+  config['parrot_ivb-release'].derive(_grouped_config),
+  config['butterfly-release'].derive(_grouped_config),
+  config['stout-release'].derive(_grouped_config),
+)
+
+# slippy-based boards
+_config.add_group('slippy-release-group',
+  config['slippy-release'],
+  config['falco-release'].derive(_grouped_config),
+  config['leon-release'].derive(_grouped_config),
+  config['peppy-release'].derive(_grouped_config),
+  config['wolf-release'].derive(_grouped_config),
+)
+
+# rambi-based boards
+_config.add_group('rambi-release-group',
+  config['rambi-release'],
+  config['clapper-release'].derive(_grouped_config),
+  config['glimmer-release'].derive(_grouped_config),
+  config['kip-release'].derive(_grouped_config),
+  config['quawks-release'].derive(_grouped_config),
+  config['squawks-release'].derive(_grouped_config),
+)
+
+# beltino-based boards
+_config.add_group('beltino-release-group',
+  config['beltino-release'],
+  config['monroe-release'].derive(_grouped_config),
+  config['panther-release'].derive(_grouped_config),
+  config['zako-release'].derive(_grouped_config),
 )
 
 # Factory and Firmware releases much inherit from these classes.  Modifications
