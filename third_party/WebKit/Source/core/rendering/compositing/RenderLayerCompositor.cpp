@@ -280,11 +280,11 @@ bool RenderLayerCompositor::canRender3DTransforms() const
     return hasAcceleratedCompositing() && m_compositingReasonFinder.has3DTransformTrigger();
 }
 
-void RenderLayerCompositor::setCompositingLayersNeedRebuild(bool needRebuild)
+void RenderLayerCompositor::setCompositingLayersNeedRebuild()
 {
     // FIXME: crbug,com/332248 ideally this could be merged with setNeedsCompositingUpdate().
     if (inCompositingMode())
-        m_compositingLayersNeedRebuild = needRebuild;
+        m_compositingLayersNeedRebuild = true;
 
     m_renderView->frameView()->scheduleAnimation();
 }

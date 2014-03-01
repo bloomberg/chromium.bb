@@ -84,7 +84,7 @@ public:
 
     // Called when the layer hierarchy needs to be updated (compositing layers have been
     // created, destroyed or re-parented).
-    void setCompositingLayersNeedRebuild(bool needRebuild = true);
+    void setCompositingLayersNeedRebuild();
     bool compositingLayersNeedRebuild() const { return m_compositingLayersNeedRebuild; }
 
     // Updating properties required for determining if compositing is necessary.
