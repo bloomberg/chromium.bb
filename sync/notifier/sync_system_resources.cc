@@ -14,7 +14,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "google/cacheinvalidation/client_gateway.pb.h"
 #include "google/cacheinvalidation/deps/callback.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "jingle/notifier/listener/push_client.h"
@@ -133,19 +132,10 @@ void SyncInvalidationScheduler::RunPostedTask(invalidation::Closure* task) {
 }
 
 SyncNetworkChannel::SyncNetworkChannel()
-    : invalidator_state_(DEFAULT_INVALIDATION_ERROR),
-      scheduling_hash_(0) {
-}
+    : invalidator_state_(DEFAULT_INVALIDATION_ERROR) {}
 
 SyncNetworkChannel::~SyncNetworkChannel() {
   STLDeleteElements(&network_status_receivers_);
-}
-
-void SyncNetworkChannel::SendMessage(const std::string& outgoing_message) {
-  std::string encoded_message;
-  EncodeMessage(&encoded_message, outgoing_message, service_context_,
-      scheduling_hash_);
-  SendEncodedMessage(encoded_message);
 }
 
 void SyncNetworkChannel::SetMessageReceiver(
@@ -187,30 +177,6 @@ scoped_ptr<SyncNetworkChannel> SyncNetworkChannel::CreateGCMNetworkChannel(
       request_context_getter, delegate.Pass()));
 }
 
-const std::string& SyncNetworkChannel::GetServiceContextForTest() const {
-  return service_context_;
-}
-
-int64 SyncNetworkChannel::GetSchedulingHashForTest() const {
-  return scheduling_hash_;
-}
-
-std::string SyncNetworkChannel::EncodeMessageForTest(
-    const std::string& message, const std::string& service_context,
-    int64 scheduling_hash) {
-  std::string encoded_message;
-  EncodeMessage(&encoded_message, message, service_context, scheduling_hash);
-  return encoded_message;
-}
-
-bool SyncNetworkChannel::DecodeMessageForTest(
-    const std::string& data,
-    std::string* message,
-    std::string* service_context,
-    int64* scheduling_hash) {
-  return DecodeMessage(data, message, service_context, scheduling_hash);
-}
-
 void SyncNetworkChannel::NotifyStateChange(InvalidatorState invalidator_state) {
   // Remember state for future NetworkStatusReceivers.
   invalidator_state_ = invalidator_state;
@@ -225,52 +191,12 @@ void SyncNetworkChannel::NotifyStateChange(InvalidatorState invalidator_state) {
                     OnNetworkChannelStateChanged(invalidator_state_));
 }
 
-void SyncNetworkChannel::DeliverIncomingMessage(const std::string& data) {
+bool SyncNetworkChannel::DeliverIncomingMessage(const std::string& message) {
   if (!incoming_receiver_) {
     DLOG(ERROR) << "No receiver for incoming notification";
-    return;
-  }
-  std::string message;
-  if (!DecodeMessage(data,
-                     &message, &service_context_, &scheduling_hash_)) {
-    DLOG(ERROR) << "Could not parse ClientGatewayMessage";
-    return;
-  }
-  incoming_receiver_->Run(message);
-}
-
-void SyncNetworkChannel::EncodeMessage(
-    std::string* encoded_message,
-    const std::string& message,
-    const std::string& service_context,
-    int64 scheduling_hash) {
-  ipc::invalidation::ClientGatewayMessage envelope;
-  envelope.set_is_client_to_server(true);
-  if (!service_context.empty()) {
-    envelope.set_service_context(service_context);
-    envelope.set_rpc_scheduling_hash(scheduling_hash);
-  }
-  envelope.set_network_message(message);
-  envelope.SerializeToString(encoded_message);
-}
-
-
-bool SyncNetworkChannel::DecodeMessage(
-    const std::string& data,
-    std::string* message,
-    std::string* service_context,
-    int64* scheduling_hash) {
-  ipc::invalidation::ClientGatewayMessage envelope;
-  if (!envelope.ParseFromString(data)) {
     return false;
   }
-  *message = envelope.network_message();
-  if (envelope.has_service_context()) {
-    *service_context = envelope.service_context();
-  }
-  if (envelope.has_rpc_scheduling_hash()) {
-    *scheduling_hash = envelope.rpc_scheduling_hash();
-  }
+  incoming_receiver_->Run(message);
   return true;
 }
 

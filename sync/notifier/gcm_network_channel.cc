@@ -80,7 +80,7 @@ void GCMNetworkChannel::OnRegisterComplete(
     DVLOG(2) << "Got registration_id";
     register_backoff_entry_->Reset();
     registration_id_ = registration_id;
-    if (!encoded_message_.empty())
+    if (!cached_message_.empty())
       RequestAccessToken();
   } else {
     DVLOG(2) << "Register failed: " << result;
@@ -104,11 +104,11 @@ void GCMNetworkChannel::OnRegisterComplete(
   }
 }
 
-void GCMNetworkChannel::SendEncodedMessage(const std::string& encoded_message) {
+void GCMNetworkChannel::SendMessage(const std::string& message) {
   DCHECK(CalledOnValidThread());
-  DCHECK(!encoded_message.empty());
-  DVLOG(2) << "SendEncodedMessage";
-  encoded_message_ = encoded_message;
+  DCHECK(!message.empty());
+  DVLOG(2) << "SendMessage";
+  cached_message_ = message;
 
   if (!registration_id_.empty()) {
     RequestAccessToken();
@@ -125,7 +125,7 @@ void GCMNetworkChannel::OnGetTokenComplete(
     const GoogleServiceAuthError& error,
     const std::string& token) {
   DCHECK(CalledOnValidThread());
-  if (encoded_message_.empty()) {
+  if (cached_message_.empty()) {
     // Nothing to do.
     return;
   }
@@ -148,10 +148,10 @@ void GCMNetworkChannel::OnGetTokenComplete(
   fetcher_->SetRequestContext(request_context_getter_);
   const std::string auth_header("Authorization: Bearer " + access_token_);
   fetcher_->AddExtraRequestHeader(auth_header);
-  fetcher_->SetUploadData("application/x-protobuffer", encoded_message_);
+  fetcher_->SetUploadData("application/x-protobuffer", cached_message_);
   fetcher_->Start();
   // Clear message to prevent accidentally resending it in the future.
-  encoded_message_.clear();
+  cached_message_.clear();
 }
 
 void GCMNetworkChannel::OnURLFetchComplete(const net::URLFetcher* source) {

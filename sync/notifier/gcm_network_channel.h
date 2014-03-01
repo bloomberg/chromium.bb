@@ -35,8 +35,10 @@ class SYNC_EXPORT_PRIVATE GCMNetworkChannel
 
   virtual ~GCMNetworkChannel();
 
+  // invalidation::NetworkChannel implementation.
+  virtual void SendMessage(const std::string& message) OVERRIDE;
+
   // SyncNetworkChannel implementation.
-  virtual void SendEncodedMessage(const std::string& encoded_message) OVERRIDE;
   virtual void UpdateCredentials(const std::string& email,
                                  const std::string& token) OVERRIDE;
 
@@ -61,7 +63,7 @@ class SYNC_EXPORT_PRIVATE GCMNetworkChannel
 
   // Message is saved until all conditions are met: there is valid
   // registration_id and access_token.
-  std::string encoded_message_;
+  std::string cached_message_;
 
   // Access token is saved because in case of auth failure from server we need
   // to invalidate it.

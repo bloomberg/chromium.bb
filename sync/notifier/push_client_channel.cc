@@ -5,6 +5,7 @@
 #include "sync/notifier/push_client_channel.h"
 
 #include "base/stl_util.h"
+#include "google/cacheinvalidation/client_gateway.pb.h"
 #include "jingle/notifier/listener/push_client.h"
 
 namespace syncer {
@@ -18,7 +19,7 @@ const char kChannelName[] = "tango_raw";
 
 PushClientChannel::PushClientChannel(
     scoped_ptr<notifier::PushClient> push_client)
-    : push_client_(push_client.Pass()) {
+    : push_client_(push_client.Pass()), scheduling_hash_(0) {
   push_client_->AddObserver(this);
   notifier::Subscription subscription;
   subscription.channel = kChannelName;
@@ -37,7 +38,10 @@ void PushClientChannel::UpdateCredentials(
   push_client_->UpdateCredentials(email, token);
 }
 
-void PushClientChannel::SendEncodedMessage(const std::string& encoded_message) {
+void PushClientChannel::SendMessage(const std::string& message) {
+  std::string encoded_message;
+  EncodeMessage(&encoded_message, message, service_context_, scheduling_hash_);
+
   notifier::Recipient recipient;
   recipient.to = kBotJid;
   notifier::Notification notification;
@@ -58,7 +62,74 @@ void PushClientChannel::OnNotificationsDisabled(
 
 void PushClientChannel::OnIncomingNotification(
     const notifier::Notification& notification) {
-  DeliverIncomingMessage(notification.data);
+  std::string message;
+  std::string service_context;
+  int64 scheduling_hash;
+  if (!DecodeMessage(
+           notification.data, &message, &service_context, &scheduling_hash)) {
+    DLOG(ERROR) << "Could not parse ClientGatewayMessage";
+    return;
+  }
+  if (DeliverIncomingMessage(message)) {
+    service_context_ = service_context;
+    scheduling_hash_ = scheduling_hash;
+  }
+}
+
+const std::string& PushClientChannel::GetServiceContextForTest() const {
+  return service_context_;
+}
+
+int64 PushClientChannel::GetSchedulingHashForTest() const {
+  return scheduling_hash_;
+}
+
+std::string PushClientChannel::EncodeMessageForTest(
+    const std::string& message,
+    const std::string& service_context,
+    int64 scheduling_hash) {
+  std::string encoded_message;
+  EncodeMessage(&encoded_message, message, service_context, scheduling_hash);
+  return encoded_message;
+}
+
+bool PushClientChannel::DecodeMessageForTest(const std::string& data,
+                                             std::string* message,
+                                             std::string* service_context,
+                                             int64* scheduling_hash) {
+  return DecodeMessage(data, message, service_context, scheduling_hash);
+}
+
+void PushClientChannel::EncodeMessage(std::string* encoded_message,
+                                      const std::string& message,
+                                      const std::string& service_context,
+                                      int64 scheduling_hash) {
+  ipc::invalidation::ClientGatewayMessage envelope;
+  envelope.set_is_client_to_server(true);
+  if (!service_context.empty()) {
+    envelope.set_service_context(service_context);
+    envelope.set_rpc_scheduling_hash(scheduling_hash);
+  }
+  envelope.set_network_message(message);
+  envelope.SerializeToString(encoded_message);
+}
+
+bool PushClientChannel::DecodeMessage(const std::string& data,
+                                      std::string* message,
+                                      std::string* service_context,
+                                      int64* scheduling_hash) {
+  ipc::invalidation::ClientGatewayMessage envelope;
+  if (!envelope.ParseFromString(data)) {
+    return false;
+  }
+  *message = envelope.network_message();
+  if (envelope.has_service_context()) {
+    *service_context = envelope.service_context();
+  }
+  if (envelope.has_rpc_scheduling_hash()) {
+    *scheduling_hash = envelope.rpc_scheduling_hash();
+  }
+  return true;
 }
 
 }  // namespace syncer

@@ -184,15 +184,12 @@ class TestSyncNetworkChannel : public SyncNetworkChannel {
   using SyncNetworkChannel::NotifyStateChange;
   using SyncNetworkChannel::DeliverIncomingMessage;
 
-  virtual void SendEncodedMessage(const std::string& encoded_message) OVERRIDE {
-    last_encoded_message_ = encoded_message;
+  virtual void SendMessage(const std::string& message) OVERRIDE {
   }
 
   virtual void UpdateCredentials(const std::string& email,
       const std::string& token) OVERRIDE {
   }
-
-  std::string last_encoded_message_;
 };
 
 class SyncNetworkChannelTest
@@ -203,9 +200,6 @@ class SyncNetworkChannelTest
       : last_invalidator_state_(DEFAULT_INVALIDATION_ERROR),
         connected_(false) {
     network_channel_.AddObserver(this);
-    network_channel_.SetMessageReceiver(
-        invalidation::NewPermanentCallback(
-            this, &SyncNetworkChannelTest::OnIncomingMessage));
     network_channel_.AddNetworkStatusReceiver(
         invalidation::NewPermanentCallback(
             this, &SyncNetworkChannelTest::OnNetworkStatusChange));
@@ -220,83 +214,14 @@ class SyncNetworkChannelTest
     last_invalidator_state_ = invalidator_state;
   }
 
-  void OnIncomingMessage(std::string incoming_message) {
-    last_message_ = incoming_message;
-  }
-
   void OnNetworkStatusChange(bool connected) {
     connected_ = connected;
   }
 
   TestSyncNetworkChannel network_channel_;
   InvalidatorState last_invalidator_state_;
-  std::string last_message_;
   bool connected_;
 };
-
-const char kMessage[] = "message";
-const char kServiceContext[] = "service context";
-const int64 kSchedulingHash = 100;
-
-// Encode a message with some context and then decode it.  The decoded info
-// should match the original info.
-TEST_F(SyncNetworkChannelTest, EncodeDecode) {
-  const std::string& data =
-      SyncNetworkChannel::EncodeMessageForTest(
-          kMessage, kServiceContext, kSchedulingHash);
-  std::string message;
-  std::string service_context;
-  int64 scheduling_hash = 0LL;
-  EXPECT_TRUE(SyncNetworkChannel::DecodeMessageForTest(
-      data, &message, &service_context, &scheduling_hash));
-  EXPECT_EQ(kMessage, message);
-  EXPECT_EQ(kServiceContext, service_context);
-  EXPECT_EQ(kSchedulingHash, scheduling_hash);
-}
-
-// Encode a message with no context and then decode it.  The decoded message
-// should match the original message, but the context and hash should be
-// untouched.
-TEST_F(SyncNetworkChannelTest, EncodeDecodeNoContext) {
-  const std::string& data =
-      SyncNetworkChannel::EncodeMessageForTest(
-          kMessage, std::string(), kSchedulingHash);
-  std::string message;
-  std::string service_context = kServiceContext;
-  int64 scheduling_hash = kSchedulingHash + 1;
-  EXPECT_TRUE(SyncNetworkChannel::DecodeMessageForTest(
-      data, &message, &service_context, &scheduling_hash));
-  EXPECT_EQ(kMessage, message);
-  EXPECT_EQ(kServiceContext, service_context);
-  EXPECT_EQ(kSchedulingHash + 1, scheduling_hash);
-}
-
-// Decode an empty notification. It should result in an empty message
-// but should leave the context and hash untouched.
-TEST_F(SyncNetworkChannelTest, DecodeEmpty) {
-  std::string message = kMessage;
-  std::string service_context = kServiceContext;
-  int64 scheduling_hash = kSchedulingHash;
-  EXPECT_TRUE(SyncNetworkChannel::DecodeMessageForTest(
-      std::string(), &message, &service_context, &scheduling_hash));
-  EXPECT_TRUE(message.empty());
-  EXPECT_EQ(kServiceContext, service_context);
-  EXPECT_EQ(kSchedulingHash, scheduling_hash);
-}
-
-// Try to decode a garbage notification.  It should leave all its
-// arguments untouched and return false.
-TEST_F(SyncNetworkChannelTest, DecodeGarbage) {
-  std::string data = "garbage";
-  std::string message = kMessage;
-  std::string service_context = kServiceContext;
-  int64 scheduling_hash = kSchedulingHash;
-  EXPECT_FALSE(SyncNetworkChannel::DecodeMessageForTest(
-      data, &message, &service_context, &scheduling_hash));
-  EXPECT_EQ(kMessage, message);
-  EXPECT_EQ(kServiceContext, service_context);
-  EXPECT_EQ(kSchedulingHash, scheduling_hash);
-}
 
 // Simulate network channel state change. It should propagate to observer.
 TEST_F(SyncNetworkChannelTest, OnNetworkChannelStateChanged) {
@@ -308,99 +233,6 @@ TEST_F(SyncNetworkChannelTest, OnNetworkChannelStateChanged) {
   network_channel_.NotifyStateChange(INVALIDATION_CREDENTIALS_REJECTED);
   EXPECT_EQ(INVALIDATION_CREDENTIALS_REJECTED, last_invalidator_state_);
   EXPECT_FALSE(connected_);
-}
-
-// Call SendMessage on the channel.  SendEncodedMessage should be called for it.
-TEST_F(SyncNetworkChannelTest, SendMessage) {
-  network_channel_.SendMessage(kMessage);
-  std::string expected_encoded_message =
-      SyncNetworkChannel::EncodeMessageForTest(
-          kMessage,
-          network_channel_.GetServiceContextForTest(),
-          network_channel_.GetSchedulingHashForTest());
-  ASSERT_EQ(expected_encoded_message, network_channel_.last_encoded_message_);
-}
-
-// Simulate an incoming notification. It should be decoded properly
-// by the channel.
-TEST_F(SyncNetworkChannelTest, OnIncomingMessage) {
-  const std::string message =
-      SyncNetworkChannel::EncodeMessageForTest(
-          kMessage, kServiceContext, kSchedulingHash);
-
-  network_channel_.DeliverIncomingMessage(message);
-  EXPECT_EQ(kServiceContext,
-            network_channel_.GetServiceContextForTest());
-  EXPECT_EQ(kSchedulingHash,
-            network_channel_.GetSchedulingHashForTest());
-  EXPECT_EQ(kMessage, last_message_);
-}
-
-// Simulate an incoming notification with no receiver. It should be dropped by
-// the channel.
-TEST_F(SyncNetworkChannelTest, OnIncomingMessageNoReceiver) {
-  const std::string message =
-      SyncNetworkChannel::EncodeMessageForTest(
-          kMessage, kServiceContext, kSchedulingHash);
-
-  network_channel_.SetMessageReceiver(NULL);
-  network_channel_.DeliverIncomingMessage(message);
-  EXPECT_TRUE(network_channel_.GetServiceContextForTest().empty());
-  EXPECT_EQ(static_cast<int64>(0),
-            network_channel_.GetSchedulingHashForTest());
-  EXPECT_TRUE(last_message_.empty());
-}
-
-// Simulate an incoming garbage notification. It should be dropped by
-// the channel.
-TEST_F(SyncNetworkChannelTest, OnIncomingMessageGarbage) {
-  std::string message = "garbage";
-
-  network_channel_.DeliverIncomingMessage(message);
-  EXPECT_TRUE(network_channel_.GetServiceContextForTest().empty());
-  EXPECT_EQ(static_cast<int64>(0),
-            network_channel_.GetSchedulingHashForTest());
-  EXPECT_TRUE(last_message_.empty());
-}
-
-// Send a message, simulate an incoming message with context, and then
-// send the same message again.  The first sent message should not
-// have any context, but the second sent message should have the
-// context from the incoming emssage.
-TEST_F(SyncNetworkChannelTest, PersistedMessageState) {
-  network_channel_.SendMessage(kMessage);
-  ASSERT_FALSE(network_channel_.last_encoded_message_.empty());
-  {
-    std::string message;
-    std::string service_context;
-    int64 scheduling_hash = 0LL;
-    EXPECT_TRUE(SyncNetworkChannel::DecodeMessageForTest(
-        network_channel_.last_encoded_message_,
-        &message, &service_context, &scheduling_hash));
-    EXPECT_EQ(kMessage, message);
-    EXPECT_TRUE(service_context.empty());
-    EXPECT_EQ(0LL, scheduling_hash);
-  }
-
-  const std::string& encoded_message =
-      SyncNetworkChannel::EncodeMessageForTest(
-          kMessage, kServiceContext, kSchedulingHash);
-  network_channel_.DeliverIncomingMessage(encoded_message);
-
-  network_channel_.last_encoded_message_.clear();
-  network_channel_.SendMessage(kMessage);
-  ASSERT_FALSE(network_channel_.last_encoded_message_.empty());
-  {
-    std::string message;
-    std::string service_context;
-    int64 scheduling_hash = 0LL;
-    EXPECT_TRUE(SyncNetworkChannel::DecodeMessageForTest(
-        network_channel_.last_encoded_message_,
-        &message, &service_context, &scheduling_hash));
-    EXPECT_EQ(kMessage, message);
-    EXPECT_EQ(kServiceContext, service_context);
-    EXPECT_EQ(kSchedulingHash, scheduling_hash);
-  }
 }
 
 }  // namespace
