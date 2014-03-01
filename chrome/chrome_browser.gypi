@@ -6,6 +6,14 @@
   'targets': [
     {
       'target_name': 'browser',
+      'type': 'none',
+      'dependencies': [ 'browser_real', ],
+      'export_dependent_settings': [
+        'browser_real',
+      ],
+    },
+    {
+      'target_name': 'browser_real',
       'type': 'static_library',
       'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
@@ -3391,6 +3399,11 @@
             # Exclude all of rlz.
             ['exclude', '^browser/rlz/'],
           ],
+        }],
+        # Temporary fix to break the browser target into smaller chunks so it
+        # will link with goma builds.
+        ['OS=="win" and chromium_win_pch==0', {
+          'msvs_shard': 4,
         }],
         ['OS=="win"', {
           'include_dirs': [
