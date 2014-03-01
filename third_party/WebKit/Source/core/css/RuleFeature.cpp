@@ -208,12 +208,6 @@ void RuleFeatureSet::collectFeaturesFromRuleData(const RuleData& ruleData)
         uncommonAttributeRules.append(RuleFeature(ruleData.rule(), ruleData.selectorIndex(), ruleData.hasDocumentSecurityOrigin()));
 }
 
-bool RuleFeatureSet::classInvalidationRequiresSubtreeRecalc(const AtomicString& className)
-{
-    DescendantInvalidationSet* set = m_classInvalidationSets.get(className);
-    return set && set->wholeSubtreeInvalid();
-}
-
 DescendantInvalidationSet& RuleFeatureSet::ensureClassInvalidationSet(const AtomicString& className)
 {
     InvalidationSetMap::AddResult addResult = m_classInvalidationSets.add(className, nullptr);
@@ -311,37 +305,16 @@ void RuleFeatureSet::clear()
 
 void RuleFeatureSet::scheduleStyleInvalidationForClassChange(const SpaceSplitString& changedClasses, Element* element)
 {
-    if (computeInvalidationSetsForClassChange(changedClasses, element)) {
-        // FIXME: remove eager calls to setNeedsStyleRecalc here, and instead reuse the invalidation tree walk.
-        // This code remains for now out of conservatism about avoiding performance regressions before TargetedStyleRecalc is launched.
-        element->setNeedsStyleRecalc(SubtreeStyleChange);
+    unsigned changedSize = changedClasses.size();
+    for (unsigned i = 0; i < changedSize; ++i) {
+        addClassToInvalidationSet(changedClasses[i], element);
     }
 }
 
 void RuleFeatureSet::scheduleStyleInvalidationForClassChange(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses, Element* element)
 {
-    if (computeInvalidationSetsForClassChange(oldClasses, newClasses, element)) {
-        // FIXME: remove eager calls to setNeedsStyleRecalc here, and instead reuse the invalidation tree walk.
-        // This code remains for now out of conservatism about avoiding performance regressions before TargetedStyleRecalc is launched.
-        element->setNeedsStyleRecalc(SubtreeStyleChange);
-    }
-}
-
-bool RuleFeatureSet::computeInvalidationSetsForClassChange(const SpaceSplitString& changedClasses, Element* element)
-{
-    unsigned changedSize = changedClasses.size();
-    for (unsigned i = 0; i < changedSize; ++i) {
-        if (classInvalidationRequiresSubtreeRecalc(changedClasses[i]))
-            return true;
-        addClassToInvalidationSet(changedClasses[i], element);
-    }
-    return false;
-}
-
-bool RuleFeatureSet::computeInvalidationSetsForClassChange(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses, Element* element)
-{
     if (!oldClasses.size())
-        return computeInvalidationSetsForClassChange(newClasses, element);
+        scheduleStyleInvalidationForClassChange(newClasses, element);
 
     // Class vectors tend to be very short. This is faster than using a hash table.
     BitVector remainingClassBits;
@@ -359,23 +332,16 @@ bool RuleFeatureSet::computeInvalidationSetsForClassChange(const SpaceSplitStrin
             }
         }
         // Class was added.
-        if (!found) {
-            if (classInvalidationRequiresSubtreeRecalc(newClasses[i]))
-                return true;
+        if (!found)
             addClassToInvalidationSet(newClasses[i], element);
-        }
     }
 
     for (unsigned i = 0; i < oldClasses.size(); ++i) {
         if (remainingClassBits.quickGet(i))
             continue;
-
         // Class was removed.
-        if (classInvalidationRequiresSubtreeRecalc(oldClasses[i]))
-            return true;
         addClassToInvalidationSet(oldClasses[i], element);
     }
-    return false;
 }
 
 void RuleFeatureSet::addClassToInvalidationSet(const AtomicString& className, Element* element)
@@ -403,6 +369,7 @@ void RuleFeatureSet::computeStyleInvalidation(Document& document)
         }
     }
     document.clearChildNeedsStyleInvalidation();
+    document.clearNeedsStyleInvalidation();
     m_pendingInvalidationMap.clear();
 }
 
@@ -426,23 +393,22 @@ bool RuleFeatureSet::invalidateStyleForClassChange(Element* element, Vector<Atom
 {
     bool thisElementNeedsStyleRecalc = false;
     int oldSize = invalidationClasses.size();
-
     if (element->needsStyleInvalidation()) {
-        InvalidationList* invalidationList = m_pendingInvalidationMap.get(element);
-        ASSERT(invalidationList);
-        // FIXME: it's really only necessary to clone the render style for this element, not full style recalc.
-        thisElementNeedsStyleRecalc = true;
-        foundInvalidationSet = true;
-        for (InvalidationList::const_iterator it = invalidationList->begin(); it != invalidationList->end(); ++it) {
-            if ((*it)->wholeSubtreeInvalid()) {
-                element->setNeedsStyleRecalc(SubtreeStyleChange);
-                // Even though we have set needsStyleRecalc on the whole subtree, we need to keep walking over the subtree
-                // in order to clear the invalidation dirty bits on all elements.
-                // FIXME: we can optimize this by having a dedicated function that just traverses the tree and removes the dirty bits,
-                // without checking classes etc.
-                break;
+        if (InvalidationList* invalidationList = m_pendingInvalidationMap.get(element)) {
+            // FIXME: it's really only necessary to clone the render style for this element, not full style recalc.
+            thisElementNeedsStyleRecalc = true;
+            foundInvalidationSet = true;
+            for (InvalidationList::const_iterator it = invalidationList->begin(); it != invalidationList->end(); ++it) {
+                if ((*it)->wholeSubtreeInvalid()) {
+                    element->setNeedsStyleRecalc(SubtreeStyleChange);
+                    // Even though we have set needsStyleRecalc on the whole subtree, we need to keep walking over the subtree
+                    // in order to clear the invalidation dirty bits on all elements.
+                    // FIXME: we can optimize this by having a dedicated function that just traverses the tree and removes the dirty bits,
+                    // without checking classes etc.
+                    break;
+                }
+                (*it)->getClasses(invalidationClasses);
             }
-            (*it)->getClasses(invalidationClasses);
         }
     }
 

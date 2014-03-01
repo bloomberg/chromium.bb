@@ -120,10 +120,6 @@ private:
         HashSet<AtomicString> attrsInRules;
     };
 
-    // These return true if setNeedsStyleRecalc() should be run on the Element, as a fallback.
-    bool computeInvalidationSetsForClassChange(const SpaceSplitString& changedClasses, Element*);
-    bool computeInvalidationSetsForClassChange(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses, Element*);
-
     enum SelectorFeatureCollectionMode {
         ProcessClasses,
         DontProcessClasses
@@ -132,7 +128,6 @@ private:
     void collectFeaturesFromSelector(const CSSSelector&, FeatureMetadata&, SelectorFeatureCollectionMode processClasses);
     void collectFeaturesFromSelectorList(const CSSSelectorList*, FeatureMetadata&, SelectorFeatureCollectionMode processClasses);
 
-    bool classInvalidationRequiresSubtreeRecalc(const AtomicString& className);
     DescendantInvalidationSet& ensureClassInvalidationSet(const AtomicString& className);
     bool updateClassInvalidationSets(const CSSSelector&);
 
