@@ -76,6 +76,8 @@
          unbind_fbo_on_context_switch)                       \
   GPU_OP(UNFOLD_SHORT_CIRCUIT_AS_TERNARY_OPERATION,          \
          unfold_short_circuit_as_ternary_operation)          \
+  GPU_OP(UNROLL_FOR_LOOP_WITH_SAMPLER_ARRAY_INDEX,           \
+         unroll_for_loop_with_sampler_array_index)           \
   GPU_OP(USE_CLIENT_SIDE_ARRAYS_FOR_STREAM_BUFFERS,          \
          use_client_side_arrays_for_stream_buffers)          \
   GPU_OP(USE_CURRENT_PROGRAM_AFTER_SUCCESSFUL_LINK,          \

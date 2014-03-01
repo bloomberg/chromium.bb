@@ -2661,6 +2661,8 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
     driver_bug_workarounds |= SH_UNFOLD_SHORT_CIRCUIT;
   if (workarounds().init_varyings_without_static_use)
     driver_bug_workarounds |= SH_INIT_VARYINGS_WITHOUT_STATIC_USE;
+  if (workarounds().unroll_for_loop_with_sampler_array_index)
+    driver_bug_workarounds |= SH_UNROLL_FOR_LOOP_WITH_SAMPLER_ARRAY_INDEX;
 
   ShaderTranslatorCache* cache = ShaderTranslatorCache::GetInstance();
   vertex_translator_ = cache->GetTranslator(

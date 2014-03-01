@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "4.1",
+  "version": "4.2",
   "entries": [
     {
       "id": 1,
@@ -837,6 +837,17 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "vendor_id": "0x1002",
       "features": [
         "disable_multisampling"
+      ]
+    },
+    {
+      "id": 63,
+      "description": "Shaders with sampler arrays indexing for-loop indices cause the GLSL compiler to crash on OS X",
+      "cr_bugs": [348198],
+      "os": {
+        "type": "macosx"
+      },
+      "features": [
+        "unroll_for_loop_with_sampler_array_index"
       ]
     }
   ]
