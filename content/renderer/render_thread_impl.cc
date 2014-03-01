@@ -1318,6 +1318,7 @@ void RenderThreadImpl::OnUpdateScrollbarTheme(
     bool jump_on_track_click,
     blink::ScrollerStyle preferred_scroller_style,
     bool redraw) {
+  EnsureWebKitInitialized();
   static_cast<WebScrollbarBehaviorImpl*>(
       webkit_platform_support_->scrollbarBehavior())->set_jump_on_track_click(
           jump_on_track_click);
