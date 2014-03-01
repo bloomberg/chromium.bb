@@ -1576,6 +1576,8 @@
             'rendering/compositing/CompositingReasonFinder.cpp',
             'rendering/compositing/CompositingReasonFinder.h',
             'rendering/compositing/CompositingState.h',
+            'rendering/compositing/GraphicsLayerUpdater.cpp',
+            'rendering/compositing/GraphicsLayerUpdater.h',
             'rendering/compositing/RenderLayerCompositor.cpp',
             'rendering/compositing/RenderLayerCompositor.h',
             'rendering/line/BreakingContext.cpp',

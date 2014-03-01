@@ -59,6 +59,7 @@
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
+#include "core/rendering/compositing/GraphicsLayerUpdater.h"
 #include "platform/OverscrollTheme.h"
 #include "platform/TraceEvent.h"
 #include "platform/geometry/TransformState.h"
@@ -461,15 +462,16 @@ void RenderLayerCompositor::updateCompositingLayersInternal()
             }
         }
 
-        needHierarchyAndGeometryUpdate |= layersChanged;
+        if (layersChanged)
+            needHierarchyAndGeometryUpdate = true;
     }
 
     if (needHierarchyAndGeometryUpdate) {
         // Update the hierarchy of the compositing layers.
         Vector<GraphicsLayer*> childList;
         {
-            TRACE_EVENT0("blink_rendering", "RenderLayerCompositor::rebuildCompositingLayerTree");
-            rebuildCompositingLayerTree(updateRoot, childList, 0);
+            TRACE_EVENT0("blink_rendering", "GraphicsLayerUpdater::rebuildTree");
+            GraphicsLayerUpdater(*m_renderView).rebuildTree(*updateRoot, childList, 0);
         }
 
         // Host the document layer in the RenderView's root layer.
@@ -488,8 +490,8 @@ void RenderLayerCompositor::updateCompositingLayersInternal()
     } else if (needGeometryUpdate) {
         // We just need to do a geometry update. This is only used for position:fixed scrolling;
         // most of the time, geometry is updated via RenderLayer::styleChanged().
-        TRACE_EVENT0("blink_rendering", "RenderLayerCompositor::updateLayerTreeGeometry");
-        updateLayerTreeGeometry(updateRoot);
+        TRACE_EVENT0("blink_rendering", "GraphicsLayerUpdater::updateRecursive");
+        GraphicsLayerUpdater(*m_renderView).updateRecursive(*updateRoot);
     }
 
     ASSERT(updateRoot || !m_compositingLayersNeedRebuild);
@@ -1235,127 +1237,6 @@ void RenderLayerCompositor::removeCompositedChildren(RenderLayer* layer)
     hostingLayer->removeAllChildren();
 }
 
-void RenderLayerCompositor::updateGraphicsLayersMappedToRenderLayer(RenderLayer* layer)
-{
-    if (!layer->hasCompositedLayerMapping())
-        return;
-
-    CompositedLayerMappingPtr compositedLayerMapping = layer->compositedLayerMapping();
-
-    // Note carefully: here we assume that the compositing state of all descendants have been updated already,
-    // so it is legitimate to compute and cache the composited bounds for this layer.
-    compositedLayerMapping->updateCompositedBounds();
-
-    if (layer->reflectionInfo()) {
-        RenderLayer* reflectionLayer = layer->reflectionInfo()->reflectionLayer();
-        ASSERT(reflectionLayer);
-        if (reflectionLayer->hasCompositedLayerMapping())
-            reflectionLayer->compositedLayerMapping()->updateCompositedBounds();
-    }
-
-    compositedLayerMapping->updateGraphicsLayerConfiguration();
-    compositedLayerMapping->updateGraphicsLayerGeometry();
-
-    if (!layer->parent())
-        updateRootLayerPosition();
-
-    if (compositedLayerMapping->hasUnpositionedOverflowControlsLayers())
-        layer->scrollableArea()->positionOverflowControls();
-}
-
-void RenderLayerCompositor::rebuildCompositingLayerTree(RenderLayer* layer, Vector<GraphicsLayer*>& childLayersOfEnclosingLayer, int depth)
-{
-    // Make the layer compositing if necessary, and set up clipping and content layers.
-    // Note that we can only do work here that is independent of whether the descendant layers
-    // have been processed. computeCompositingRequirements() will already have done the repaint if necessary.
-
-    layer->stackingNode()->updateLayerListsIfNeeded();
-    layer->update3dRenderingContext();
-
-    // Used for gathering UMA data about the effect on memory usage of promoting all layers
-    // that have a webkit-transition on opacity or transform and intersect the viewport.
-    static double pixelsWithoutPromotingAllTransitions = 0.0;
-    static double pixelsAddedByPromotingAllTransitions = 0.0;
-
-    if (!depth) {
-        pixelsWithoutPromotingAllTransitions = 0.0;
-        pixelsAddedByPromotingAllTransitions = 0.0;
-    }
-
-    const bool hasCompositedLayerMapping = layer->hasCompositedLayerMapping();
-    CompositedLayerMappingPtr currentCompositedLayerMapping = layer->compositedLayerMapping();
-
-    updateGraphicsLayersMappedToRenderLayer(layer);
-
-    // Grab some stats for histograms.
-    if (hasCompositedLayerMapping) {
-        pixelsWithoutPromotingAllTransitions += layer->size().height() * layer->size().width();
-    } else {
-        if ((layer->renderer()->style()->transitionForProperty(CSSPropertyOpacity) ||
-             layer->renderer()->style()->transitionForProperty(CSSPropertyWebkitTransform)) &&
-            m_renderView->viewRect().intersects(layer->absoluteBoundingBox()))
-            pixelsAddedByPromotingAllTransitions += layer->size().height() * layer->size().width();
-    }
-
-    // If this layer has a compositedLayerMapping, then that is where we place subsequent children GraphicsLayers.
-    // Otherwise children continue to append to the child list of the enclosing layer.
-    Vector<GraphicsLayer*> layerChildren;
-    Vector<GraphicsLayer*>& childList = hasCompositedLayerMapping ? layerChildren : childLayersOfEnclosingLayer;
-
-#if !ASSERT_DISABLED
-    LayerListMutationDetector mutationChecker(layer->stackingNode());
-#endif
-
-    if (layer->stackingNode()->isStackingContainer()) {
-        RenderLayerStackingNodeIterator iterator(*layer->stackingNode(), NegativeZOrderChildren);
-        while (RenderLayerStackingNode* curNode = iterator.next())
-            rebuildCompositingLayerTree(curNode->layer(), childList, depth + 1);
-
-        // If a negative z-order child is compositing, we get a foreground layer which needs to get parented.
-        if (hasCompositedLayerMapping && currentCompositedLayerMapping->foregroundLayer())
-            childList.append(currentCompositedLayerMapping->foregroundLayer());
-    }
-
-    RenderLayerStackingNodeIterator iterator(*layer->stackingNode(), NormalFlowChildren | PositiveZOrderChildren);
-    while (RenderLayerStackingNode* curNode = iterator.next())
-        rebuildCompositingLayerTree(curNode->layer(), childList, depth + 1);
-
-    if (hasCompositedLayerMapping) {
-        bool parented = false;
-        if (layer->renderer()->isRenderPart())
-            parented = parentFrameContentLayers(toRenderPart(layer->renderer()));
-
-        if (!parented)
-            currentCompositedLayerMapping->parentForSublayers()->setChildren(layerChildren);
-
-        // If the layer has a clipping layer the overflow controls layers will be siblings of the clipping layer.
-        // Otherwise, the overflow control layers are normal children.
-        if (!currentCompositedLayerMapping->hasClippingLayer() && !currentCompositedLayerMapping->hasScrollingLayer()) {
-            if (GraphicsLayer* overflowControlLayer = currentCompositedLayerMapping->layerForHorizontalScrollbar()) {
-                overflowControlLayer->removeFromParent();
-                currentCompositedLayerMapping->parentForSublayers()->addChild(overflowControlLayer);
-            }
-
-            if (GraphicsLayer* overflowControlLayer = currentCompositedLayerMapping->layerForVerticalScrollbar()) {
-                overflowControlLayer->removeFromParent();
-                currentCompositedLayerMapping->parentForSublayers()->addChild(overflowControlLayer);
-            }
-
-            if (GraphicsLayer* overflowControlLayer = currentCompositedLayerMapping->layerForScrollCorner()) {
-                overflowControlLayer->removeFromParent();
-                currentCompositedLayerMapping->parentForSublayers()->addChild(overflowControlLayer);
-            }
-        }
-
-        childLayersOfEnclosingLayer.append(currentCompositedLayerMapping->childForSuperlayers());
-    }
-
-    if (!depth) {
-        int percentageIncreaseInPixels = static_cast<int>(pixelsAddedByPromotingAllTransitions / pixelsWithoutPromotingAllTransitions * 100);
-        blink::Platform::current()->histogramCustomCounts("Renderer.PixelIncreaseFromTransitions", percentageIncreaseInPixels, 0, 1000, 50);
-    }
-}
-
 void RenderLayerCompositor::frameViewDidChangeLocation(const IntPoint& contentsOffset)
 {
     if (m_overflowControlsHostLayer)
@@ -1483,6 +1364,7 @@ RenderLayerCompositor* RenderLayerCompositor::frameContentsCompositor(RenderPart
     return 0;
 }
 
+// FIXME: What does this function do? It needs a clearer name.
 bool RenderLayerCompositor::parentFrameContentLayers(RenderPart* renderer)
 {
     RenderLayerCompositor* innerCompositor = frameContentsCompositor(renderer);
@@ -1501,20 +1383,6 @@ bool RenderLayerCompositor::parentFrameContentLayers(RenderPart* renderer)
         hostingLayer->addChild(rootLayer);
     }
     return true;
-}
-
-// This just updates layer geometry without changing the hierarchy.
-void RenderLayerCompositor::updateLayerTreeGeometry(RenderLayer* layer)
-{
-    updateGraphicsLayersMappedToRenderLayer(layer);
-
-#if !ASSERT_DISABLED
-    LayerListMutationDetector mutationChecker(layer->stackingNode());
-#endif
-
-    RenderLayerStackingNodeIterator iterator(*layer->stackingNode(), AllChildren);
-    while (RenderLayerStackingNode* curNode = iterator.next())
-        updateLayerTreeGeometry(curNode->layer());
 }
 
 // Recurs down the RenderLayer tree until its finds the compositing descendants of compositingAncestor and updates their geometry.

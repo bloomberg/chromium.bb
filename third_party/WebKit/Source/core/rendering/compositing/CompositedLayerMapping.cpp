@@ -49,6 +49,7 @@
 #include "core/rendering/RenderLayerStackingNodeIterator.h"
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/compositing/GraphicsLayerUpdater.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/rendering/style/KeyframeList.h"
 #include "platform/LengthFunctions.h"
