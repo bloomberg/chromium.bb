@@ -78,12 +78,11 @@ void FeedbackReport::DeleteReportOnDisk() {
 
 // static
 void FeedbackReport::LoadReportsAndQueue(
-    content::BrowserContext* context, QueueCallback callback) {
-  base::FilePath reports_path = GetFeedbackReportsPath(context);
-  if (reports_path.empty())
+    const base::FilePath& user_dir, QueueCallback callback) {
+  if (user_dir.empty())
     return;
 
-  base::FileEnumerator enumerator(reports_path,
+  base::FileEnumerator enumerator(user_dir.Append(kFeedbackReportPath),
                                   false,
                                   base::FileEnumerator::FILES,
                                   kFeedbackReportFilenameWildcard);

@@ -45,10 +45,6 @@ class FeedbackUploader : public BrowserContextKeyedService,
   // Dispatches the report to be uploaded.
   void DispatchReport(const std::string& data);
 
-  // Loads any unsent reports from disk and queues them to be uploaded in
-  // the given browser context.
-  void QueueUnsentReports(content::BrowserContext* context);
-
   // Update our timer for uploading the next report.
   void UpdateUploadTimer();
 

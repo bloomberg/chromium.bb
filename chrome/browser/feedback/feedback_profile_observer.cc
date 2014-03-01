@@ -43,7 +43,7 @@ void FeedbackProfileObserver::Observe(
   DCHECK_EQ(chrome::NOTIFICATION_PROFILE_CREATED, type);
 
   Profile* profile = content::Source<Profile>(source).ptr();
-  if (!profile->IsOffTheRecord())
+  if (profile && !profile->IsOffTheRecord())
     QueueUnsentReports(profile);
 }
 
@@ -52,9 +52,10 @@ void FeedbackProfileObserver::QueueUnsentReports(
   feedback::FeedbackUploader* uploader =
       feedback::FeedbackUploaderFactory::GetForBrowserContext(context);
   BrowserThread::PostBlockingPoolTask(FROM_HERE,
-      base::Bind(
-          &FeedbackReport::LoadReportsAndQueue, context, base::Bind(
-              &FeedbackUploader::QueueReport, uploader->AsWeakPtr())));
+      base::Bind(&FeedbackReport::LoadReportsAndQueue,
+                 context->GetPath(),
+                 base::Bind(&FeedbackUploader::QueueReport,
+                            uploader->AsWeakPtr())));
 }
 
 }  // namespace feedback
