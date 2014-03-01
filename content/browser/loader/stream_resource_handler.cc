@@ -15,16 +15,15 @@
 
 namespace content {
 
-StreamResourceHandler::StreamResourceHandler(
-    net::URLRequest* request,
-    StreamRegistry* registry,
-    const GURL& origin)
+StreamResourceHandler::StreamResourceHandler(net::URLRequest* request,
+                                             StreamRegistry* registry,
+                                             const GURL& origin)
     : ResourceHandler(request),
       read_buffer_(NULL) {
   // TODO(tyoshino): Find a way to share this with the blob URL creation in
   // WebKit.
-  GURL url(std::string(chrome::kBlobScheme) + ":" +
-           origin.spec() + base::GenerateGUID());
+  GURL url(std::string(kBlobScheme) + ":" + origin.spec() +
+           base::GenerateGUID());
   stream_ = new Stream(registry, this, url);
 }
 

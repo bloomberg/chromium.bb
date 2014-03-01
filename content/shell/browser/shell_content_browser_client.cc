@@ -179,7 +179,7 @@ bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
   // Keep in sync with ProtocolHandlers added by
   // ShellURLRequestContextGetter::GetURLRequestContext().
   static const char* const kProtocolList[] = {
-      chrome::kBlobScheme,
+      kBlobScheme,
       kFileSystemScheme,
       kChromeUIScheme,
       kChromeDevToolsScheme,

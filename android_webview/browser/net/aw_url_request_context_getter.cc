@@ -102,7 +102,8 @@ scoped_ptr<net::URLRequestJobFactory> CreateJobFactory(
       content::kDataScheme, new net::DataProtocolHandler());
   DCHECK(set_protocol);
   set_protocol = aw_job_factory->SetProtocolHandler(
-      chrome::kBlobScheme, (*protocol_handlers)[chrome::kBlobScheme].release());
+      content::kBlobScheme,
+      (*protocol_handlers)[content::kBlobScheme].release());
   DCHECK(set_protocol);
   set_protocol = aw_job_factory->SetProtocolHandler(
       content::kFileSystemScheme,

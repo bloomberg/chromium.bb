@@ -620,7 +620,7 @@ bool ProfileIOData::IsHandledProtocol(const std::string& scheme) {
 #if !defined(DISABLE_FTP_SUPPORT)
     content::kFtpScheme,
 #endif  // !defined(DISABLE_FTP_SUPPORT)
-    chrome::kBlobScheme,
+    content::kBlobScheme,
     content::kFileSystemScheme,
     chrome::kChromeSearchScheme,
   };

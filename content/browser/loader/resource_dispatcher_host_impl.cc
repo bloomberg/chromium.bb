@@ -539,7 +539,7 @@ DownloadInterruptReason ResourceDispatcherHostImpl::BeginDownload(
       CreateRequestInfo(child_id, route_id, true, context);
   extra_info->AssociateWithRequest(request.get());  // Request takes ownership.
 
-  if (request->url().SchemeIs(chrome::kBlobScheme)) {
+  if (request->url().SchemeIs(kBlobScheme)) {
     ChromeBlobStorageContext* blob_context =
         GetChromeBlobStorageContextForResourceContext(context);
     webkit_blob::BlobProtocolHandler::SetRequestedBlobDataHandle(
@@ -1114,7 +1114,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
   // Request takes ownership.
   extra_info->AssociateWithRequest(new_request.get());
 
-  if (new_request->url().SchemeIs(chrome::kBlobScheme)) {
+  if (new_request->url().SchemeIs(kBlobScheme)) {
     // Hang on to a reference to ensure the blob is not released prior
     // to the job being started.
     webkit_blob::BlobProtocolHandler::SetRequestedBlobDataHandle(

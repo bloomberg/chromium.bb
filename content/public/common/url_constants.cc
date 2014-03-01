@@ -7,11 +7,12 @@
 namespace chrome {
 
 const char kAboutScheme[] = "about";
-const char kBlobScheme[] = "blob";
 
 }  // namespace chrome
 
 namespace content {
+
+const char kBlobScheme[] = "blob";
 
 // Before adding new chrome schemes please check with security@chromium.org.
 // There are security implications associated with introducing new schemes.

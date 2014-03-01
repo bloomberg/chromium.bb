@@ -219,8 +219,8 @@ base::string16 OriginChip::LabelFromURLForProfile(const GURL& provided_url,
   // These internal-ish debugging-style schemes we don't expect users
   // to see. In these cases, the site chip will display the first
   // part of the full URL.
-  if (url.SchemeIs(chrome::kBlobScheme) ||
-      url.SchemeIs(chrome::kChromeNativeScheme) ||
+  if (url.SchemeIs(chrome::kChromeNativeScheme) ||
+      url.SchemeIs(content::kBlobScheme) ||
       url.SchemeIs(content::kChromeDevToolsScheme) ||
       url.SchemeIs(content::kDataScheme) ||
       url.SchemeIs(content::kFileScheme) ||
