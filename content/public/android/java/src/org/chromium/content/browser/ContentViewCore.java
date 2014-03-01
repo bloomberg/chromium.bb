@@ -332,6 +332,7 @@ public class ContentViewCore
     private ImeAdapter mImeAdapter;
     private ImeAdapter.AdapterInputConnectionFactory mAdapterInputConnectionFactory;
     private AdapterInputConnection mInputConnection;
+    private InputMethodManagerWrapper mInputMethodManagerWrapper;
 
     private SelectionHandleController mSelectionHandleController;
     private InsertionHandleController mInsertionHandleController;
@@ -453,6 +454,7 @@ public class ContentViewCore
 
         HeapStatsLogger.init(mContext.getApplicationContext());
         mAdapterInputConnectionFactory = new AdapterInputConnectionFactory();
+        mInputMethodManagerWrapper = new InputMethodManagerWrapper(mContext);
 
         mRenderCoordinates = new RenderCoordinates();
         float deviceScaleFactor = getContext().getResources().getDisplayMetrics().density;
@@ -592,12 +594,17 @@ public class ContentViewCore
     }
 
     @VisibleForTesting
+    public void setInputMethodManagerWrapperForTest(InputMethodManagerWrapper immw) {
+        mInputMethodManagerWrapper = immw;
+    }
+
+    @VisibleForTesting
     public AdapterInputConnection getInputConnectionForTest() {
         return mInputConnection;
     }
 
     private ImeAdapter createImeAdapter(Context context) {
-        return new ImeAdapter(new InputMethodManagerWrapper(context),
+        return new ImeAdapter(mInputMethodManagerWrapper,
                 new ImeAdapter.ImeAdapterDelegate() {
                     @Override
                     public void onImeEvent(boolean isFinish) {
@@ -1597,9 +1604,7 @@ public class ContentViewCore
                     ImeAdapter.getTextInputTypeNone(),
                     AdapterInputConnection.INVALID_SELECTION,
                     AdapterInputConnection.INVALID_SELECTION);
-            InputMethodManager manager = (InputMethodManager)
-                    getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-            manager.restartInput(mContainerView);
+            mInputMethodManagerWrapper.restartInput(mContainerView);
         }
         mContainerViewInternals.super_onConfigurationChanged(newConfig);
         // Make sure the size is up to date in JavaScript's window.onorientationchanged.
@@ -1746,7 +1751,9 @@ public class ContentViewCore
     }
 
     public void onFocusChanged(boolean gainFocus) {
-        if (!gainFocus) getContentViewClient().onImeStateChangeRequested(false);
+        if (!gainFocus) {
+            hideImeIfNeeded();
+        }
         if (mNativeContentViewCore != 0) nativeSetFocus(mNativeContentViewCore, gainFocus);
     }
 
@@ -2430,6 +2437,24 @@ public class ContentViewCore
         if (mNativeContentViewCore != 0) nativeShowImeIfNeeded(mNativeContentViewCore);
     }
 
+    /**
+     * Hides the IME if the containerView is the active view for IME.
+     */
+    public void hideImeIfNeeded() {
+        // Hide input method window from the current view synchronously
+        // because ImeAdapter does so asynchronouly with a delay, and
+        // by the time when ImeAdapter dismisses the input, the
+        // containerView may have lost focus.
+        // We cannot trust ContentViewClient#onImeStateChangeRequested to
+        // hide the input window because it has an empty default implementation.
+        // So we need to explicitly hide the input method window here.
+        if (mInputMethodManagerWrapper.isActive(mContainerView)) {
+            mInputMethodManagerWrapper.hideSoftInputFromWindow(
+                    mContainerView.getWindowToken(), 0, null);
+        }
+        getContentViewClient().onImeStateChangeRequested(false);
+    }
+
     @SuppressWarnings("unused")
     @CalledByNative
     private void updateFrameInfo(
@@ -2639,12 +2664,11 @@ public class ContentViewCore
 
                 getInsertionHandleController().onCursorPositionChanged();
                 updateHandleScreenPositions();
-                InputMethodManager manager = (InputMethodManager)
-                        getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                if (manager.isWatchingCursor(mContainerView)) {
+                if (mInputMethodManagerWrapper.isWatchingCursor(mContainerView)) {
                     final int xPix = (int) mInsertionHandlePoint.getXPix();
                     final int yPix = (int) mInsertionHandlePoint.getYPix();
-                    manager.updateCursor(mContainerView, xPix, yPix, xPix, yPix);
+                    mInputMethodManagerWrapper.updateCursor(
+                            mContainerView, xPix, yPix, xPix, yPix);
                 }
             } else {
                 // Deselection
