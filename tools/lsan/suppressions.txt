@@ -54,8 +54,12 @@ leak:v8::internal::Genesis::Genesis
 # Those should only fire in (browser)tests. If you see one of them in Chrome,
 # then it's a real leak.
 # http://crbug.com/328552
+leak:WTF::StringImpl::createUninitialized
+leak:WTF::StringImpl::create8BitIfPossible
+leak:WebCore::MouseEvent::create
 leak:WebCore::V8WindowShell::initializeIfNeeded
 leak:WebCore::*::*GetterCallback
+leak:WebCore::CSSComputedStyleDeclaration::create
 
 #### Actual bugs in Chromium code ####
 # PLEASE DO NOT ADD SUPPRESSIONS FOR NEW LEAKS.
