@@ -217,7 +217,6 @@ static void appendImagesFromStyle(Vector<ImageResource*>& images, RenderStyle& b
 
 RenderBlock::~RenderBlock()
 {
-    ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->removeRenderObject(this);
     if (hasColumns())
         gColumnInfoMap->take(this);
     if (gPercentHeightDescendantsMap)
