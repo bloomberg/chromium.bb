@@ -575,7 +575,7 @@ class RemoteDevice(object):
         self.CopyToWorkDir(f.name)
         env_file = os.path.join(self.work_dir, os.path.basename(f.name))
         new_cmd = ['source', '%s;' % env_file]
-        if remote_sudo:
+        if remote_sudo and self.username != ROOT_ACCOUNT:
           new_cmd += ['sudo', '-E']
 
         new_cmd += cmd
