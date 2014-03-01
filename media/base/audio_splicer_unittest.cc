@@ -13,7 +13,10 @@
 
 namespace media {
 
+// Do not change this format.  AddInput() and GetValue() only work with float.
 static const SampleFormat kSampleFormat = kSampleFormatF32;
+COMPILE_ASSERT(kSampleFormat == kSampleFormatF32, invalid_splice_format);
+
 static const int kChannels = 1;
 static const int kDefaultSampleRate = 44100;
 static const int kDefaultBufferSize = 100;
@@ -43,15 +46,97 @@ class AudioSplicerTest : public ::testing::Test {
     return buffer;
   }
 
-  bool VerifyData(scoped_refptr<AudioBuffer> buffer, float value) {
+  float GetValue(const scoped_refptr<AudioBuffer>& buffer) {
+    return reinterpret_cast<const float*>(buffer->channel_data()[0])[0];
+  }
+
+  bool VerifyData(const scoped_refptr<AudioBuffer>& buffer, float value) {
     int frames = buffer->frame_count();
     scoped_ptr<AudioBus> bus = AudioBus::Create(kChannels, frames);
     buffer->ReadFrames(frames, 0, 0, bus.get());
-    for (int i = 0; i < frames; ++i) {
-      if (bus->channel(0)[i] != value)
-        return false;
+    for (int ch = 0; ch < buffer->channel_count(); ++ch) {
+      for (int i = 0; i < frames; ++i) {
+        if (bus->channel(ch)[i] != value)
+          return false;
+      }
     }
     return true;
+  }
+
+  void VerifyNextBuffer(const scoped_refptr<AudioBuffer>& input) {
+    ASSERT_TRUE(splicer_.HasNextBuffer());
+    scoped_refptr<AudioBuffer> output = splicer_.GetNextBuffer();
+    EXPECT_EQ(input->timestamp(), output->timestamp());
+    EXPECT_EQ(input->duration(), output->duration());
+    EXPECT_EQ(input->frame_count(), output->frame_count());
+    EXPECT_TRUE(VerifyData(output, GetValue(input)));
+  }
+
+  void VerifyPreSpliceOutput(
+      const scoped_refptr<AudioBuffer>& overlapped_buffer,
+      const scoped_refptr<AudioBuffer>& overlapping_buffer,
+      int expected_pre_splice_size,
+      base::TimeDelta expected_pre_splice_duration) {
+    ASSERT_TRUE(splicer_.HasNextBuffer());
+    scoped_refptr<AudioBuffer> pre_splice_output = splicer_.GetNextBuffer();
+    EXPECT_EQ(overlapped_buffer->timestamp(), pre_splice_output->timestamp());
+    EXPECT_EQ(expected_pre_splice_size, pre_splice_output->frame_count());
+    EXPECT_EQ(expected_pre_splice_duration, pre_splice_output->duration());
+    EXPECT_TRUE(VerifyData(pre_splice_output, GetValue(overlapped_buffer)));
+  }
+
+  void VerifyCrossfadeOutput(
+      const scoped_refptr<AudioBuffer>& overlapped_buffer,
+      const scoped_refptr<AudioBuffer>& overlapping_buffer,
+      int expected_crossfade_size,
+      base::TimeDelta expected_crossfade_duration) {
+    ASSERT_TRUE(splicer_.HasNextBuffer());
+
+    scoped_refptr<AudioBuffer> crossfade_output = splicer_.GetNextBuffer();
+    EXPECT_EQ(expected_crossfade_size, crossfade_output->frame_count());
+    EXPECT_EQ(expected_crossfade_duration, crossfade_output->duration());
+
+    // The splice timestamp may be adjusted by a microsecond.
+    EXPECT_NEAR(overlapping_buffer->timestamp().InMicroseconds(),
+                crossfade_output->timestamp().InMicroseconds(),
+                1);
+
+    // Verify the actual crossfade.
+    const int frames = crossfade_output->frame_count();
+    const float overlapped_value = GetValue(overlapped_buffer);
+    const float overlapping_value = GetValue(overlapping_buffer);
+    scoped_ptr<AudioBus> bus = AudioBus::Create(kChannels, frames);
+    crossfade_output->ReadFrames(frames, 0, 0, bus.get());
+    for (int ch = 0; ch < crossfade_output->channel_count(); ++ch) {
+      float cf_ratio = 0;
+      const float cf_increment = 1.0f / frames;
+      for (int i = 0; i < frames; ++i, cf_ratio += cf_increment) {
+        const float actual = bus->channel(ch)[i];
+        const float expected =
+            (1.0f - cf_ratio) * overlapped_value + cf_ratio * overlapping_value;
+        ASSERT_FLOAT_EQ(expected, actual) << "i=" << i;
+      }
+    }
+  }
+
+  bool AddInput(const scoped_refptr<AudioBuffer>& input) {
+    // Since the splicer doesn't make copies it's working directly on the input
+    // buffers.  We must make a copy before adding to ensure the original buffer
+    // is not modified in unexpected ways.
+    scoped_refptr<AudioBuffer> buffer_copy =
+        input->end_of_stream()
+            ? AudioBuffer::CreateEOSBuffer()
+            : AudioBuffer::CopyFrom(kSampleFormat,
+                                    input->channel_count(),
+                                    input->frame_count(),
+                                    &input->channel_data()[0],
+                                    input->timestamp(),
+                                    input->duration());
+    return splicer_.AddInput(buffer_copy);
+  }
+
+  base::TimeDelta max_crossfade_duration() {
+    return splicer_.max_crossfade_duration_;
   }
 
  protected:
@@ -66,40 +151,24 @@ TEST_F(AudioSplicerTest, PassThru) {
 
   // Test single buffer pass-thru behavior.
   scoped_refptr<AudioBuffer> input_1 = GetNextInputBuffer(0.1f);
-  EXPECT_TRUE(splicer_.AddInput(input_1));
-  EXPECT_TRUE(splicer_.HasNextBuffer());
-
-  scoped_refptr<AudioBuffer> output_1 = splicer_.GetNextBuffer();
+  EXPECT_TRUE(AddInput(input_1));
+  VerifyNextBuffer(input_1);
   EXPECT_FALSE(splicer_.HasNextBuffer());
-  EXPECT_EQ(input_1->timestamp(), output_1->timestamp());
-  EXPECT_EQ(input_1->duration(), output_1->duration());
-  EXPECT_EQ(input_1->frame_count(), output_1->frame_count());
-  EXPECT_TRUE(VerifyData(output_1, 0.1f));
 
   // Test that multiple buffers can be queued in the splicer.
   scoped_refptr<AudioBuffer> input_2 = GetNextInputBuffer(0.2f);
   scoped_refptr<AudioBuffer> input_3 = GetNextInputBuffer(0.3f);
-  EXPECT_TRUE(splicer_.AddInput(input_2));
-  EXPECT_TRUE(splicer_.AddInput(input_3));
-  EXPECT_TRUE(splicer_.HasNextBuffer());
-
-  scoped_refptr<AudioBuffer> output_2 = splicer_.GetNextBuffer();
-  EXPECT_TRUE(splicer_.HasNextBuffer());
-  EXPECT_EQ(input_2->timestamp(), output_2->timestamp());
-  EXPECT_EQ(input_2->duration(), output_2->duration());
-  EXPECT_EQ(input_2->frame_count(), output_2->frame_count());
-
-  scoped_refptr<AudioBuffer> output_3 = splicer_.GetNextBuffer();
+  EXPECT_TRUE(AddInput(input_2));
+  EXPECT_TRUE(AddInput(input_3));
+  VerifyNextBuffer(input_2);
+  VerifyNextBuffer(input_3);
   EXPECT_FALSE(splicer_.HasNextBuffer());
-  EXPECT_EQ(input_3->timestamp(), output_3->timestamp());
-  EXPECT_EQ(input_3->duration(), output_3->duration());
-  EXPECT_EQ(input_3->frame_count(), output_3->frame_count());
 }
 
 TEST_F(AudioSplicerTest, Reset) {
   scoped_refptr<AudioBuffer> input_1 = GetNextInputBuffer(0.1f);
-  EXPECT_TRUE(splicer_.AddInput(input_1));
-  EXPECT_TRUE(splicer_.HasNextBuffer());
+  EXPECT_TRUE(AddInput(input_1));
+  ASSERT_TRUE(splicer_.HasNextBuffer());
 
   splicer_.Reset();
   EXPECT_FALSE(splicer_.HasNextBuffer());
@@ -112,14 +181,10 @@ TEST_F(AudioSplicerTest, Reset) {
 
   // Verify that a new input buffer passes through as expected.
   scoped_refptr<AudioBuffer> input_2 = GetNextInputBuffer(0.2f);
-  EXPECT_TRUE(splicer_.AddInput(input_2));
-  EXPECT_TRUE(splicer_.HasNextBuffer());
-
-  scoped_refptr<AudioBuffer> output_2 = splicer_.GetNextBuffer();
+  EXPECT_TRUE(AddInput(input_2));
+  ASSERT_TRUE(splicer_.HasNextBuffer());
+  VerifyNextBuffer(input_2);
   EXPECT_FALSE(splicer_.HasNextBuffer());
-  EXPECT_EQ(input_2->timestamp(), output_2->timestamp());
-  EXPECT_EQ(input_2->duration(), output_2->duration());
-  EXPECT_EQ(input_2->frame_count(), output_2->frame_count());
 }
 
 TEST_F(AudioSplicerTest, EndOfStream) {
@@ -128,29 +193,21 @@ TEST_F(AudioSplicerTest, EndOfStream) {
   scoped_refptr<AudioBuffer> input_3 = GetNextInputBuffer(0.2f);
   EXPECT_TRUE(input_2->end_of_stream());
 
-  EXPECT_TRUE(splicer_.AddInput(input_1));
-  EXPECT_TRUE(splicer_.AddInput(input_2));
-  EXPECT_TRUE(splicer_.HasNextBuffer());
+  EXPECT_TRUE(AddInput(input_1));
+  EXPECT_TRUE(AddInput(input_2));
 
-  scoped_refptr<AudioBuffer> output_1 = splicer_.GetNextBuffer();
+  VerifyNextBuffer(input_1);
+
   scoped_refptr<AudioBuffer> output_2 = splicer_.GetNextBuffer();
   EXPECT_FALSE(splicer_.HasNextBuffer());
-  EXPECT_EQ(input_1->timestamp(), output_1->timestamp());
-  EXPECT_EQ(input_1->duration(), output_1->duration());
-  EXPECT_EQ(input_1->frame_count(), output_1->frame_count());
-
   EXPECT_TRUE(output_2->end_of_stream());
 
   // Verify that buffers can be added again after Reset().
   splicer_.Reset();
-  EXPECT_TRUE(splicer_.AddInput(input_3));
-  scoped_refptr<AudioBuffer> output_3 = splicer_.GetNextBuffer();
+  EXPECT_TRUE(AddInput(input_3));
+  VerifyNextBuffer(input_3);
   EXPECT_FALSE(splicer_.HasNextBuffer());
-  EXPECT_EQ(input_3->timestamp(), output_3->timestamp());
-  EXPECT_EQ(input_3->duration(), output_3->duration());
-  EXPECT_EQ(input_3->frame_count(), output_3->frame_count());
 }
-
 
 // Test the gap insertion code.
 // +--------------+    +--------------+
@@ -170,23 +227,14 @@ TEST_F(AudioSplicerTest, GapInsertion) {
   input_timestamp_helper_.AddFrames(kGapSize);
   scoped_refptr<AudioBuffer> input_2 = GetNextInputBuffer(0.2f);
 
-  EXPECT_TRUE(splicer_.AddInput(input_1));
-  EXPECT_TRUE(splicer_.AddInput(input_2));
-
-  // Verify that a gap buffer is generated.
-  EXPECT_TRUE(splicer_.HasNextBuffer());
-  scoped_refptr<AudioBuffer> output_1 = splicer_.GetNextBuffer();
-  scoped_refptr<AudioBuffer> output_2 = splicer_.GetNextBuffer();
-  scoped_refptr<AudioBuffer> output_3 = splicer_.GetNextBuffer();
-  EXPECT_FALSE(splicer_.HasNextBuffer());
+  EXPECT_TRUE(AddInput(input_1));
+  EXPECT_TRUE(AddInput(input_2));
 
   // Verify that the first input buffer passed through unmodified.
-  EXPECT_EQ(input_1->timestamp(), output_1->timestamp());
-  EXPECT_EQ(input_1->duration(), output_1->duration());
-  EXPECT_EQ(input_1->frame_count(), output_1->frame_count());
-  EXPECT_TRUE(VerifyData(output_1, 0.1f));
+  VerifyNextBuffer(input_1);
 
   // Verify the contents of the gap buffer.
+  scoped_refptr<AudioBuffer> output_2 = splicer_.GetNextBuffer();
   base::TimeDelta gap_timestamp =
       input_1->timestamp() + input_1->duration();
   base::TimeDelta gap_duration = input_2->timestamp() - gap_timestamp;
@@ -197,12 +245,9 @@ TEST_F(AudioSplicerTest, GapInsertion) {
   EXPECT_TRUE(VerifyData(output_2, 0.0f));
 
   // Verify that the second input buffer passed through unmodified.
-  EXPECT_EQ(input_2->timestamp(), output_3->timestamp());
-  EXPECT_EQ(input_2->duration(), output_3->duration());
-  EXPECT_EQ(input_2->frame_count(), output_3->frame_count());
-  EXPECT_TRUE(VerifyData(output_3, 0.2f));
+  VerifyNextBuffer(input_2);
+  EXPECT_FALSE(splicer_.HasNextBuffer());
 }
-
 
 // Test that an error is signalled when the gap between input buffers is
 // too large.
@@ -215,17 +260,10 @@ TEST_F(AudioSplicerTest, GapTooLarge) {
   input_timestamp_helper_.AddFrames(kGapSize);
   scoped_refptr<AudioBuffer> input_2 = GetNextInputBuffer(0.2f);
 
-  EXPECT_TRUE(splicer_.AddInput(input_1));
-  EXPECT_FALSE(splicer_.AddInput(input_2));
+  EXPECT_TRUE(AddInput(input_1));
+  EXPECT_FALSE(AddInput(input_2));
 
-  EXPECT_TRUE(splicer_.HasNextBuffer());
-  scoped_refptr<AudioBuffer> output_1 = splicer_.GetNextBuffer();
-
-  // Verify that the first input buffer passed through unmodified.
-  EXPECT_EQ(input_1->timestamp(), output_1->timestamp());
-  EXPECT_EQ(input_1->duration(), output_1->duration());
-  EXPECT_EQ(input_1->frame_count(), output_1->frame_count());
-  EXPECT_TRUE(VerifyData(output_1, 0.1f));
+  VerifyNextBuffer(input_1);
 
   // Verify that the second buffer is not available.
   EXPECT_FALSE(splicer_.HasNextBuffer());
@@ -237,16 +275,10 @@ TEST_F(AudioSplicerTest, GapTooLarge) {
 
   // Verify that valid buffers are still accepted.
   scoped_refptr<AudioBuffer> input_3 = GetNextInputBuffer(0.3f);
-  EXPECT_TRUE(splicer_.AddInput(input_3));
-  EXPECT_TRUE(splicer_.HasNextBuffer());
-  scoped_refptr<AudioBuffer> output_2 = splicer_.GetNextBuffer();
+  EXPECT_TRUE(AddInput(input_3));
+  VerifyNextBuffer(input_3);
   EXPECT_FALSE(splicer_.HasNextBuffer());
-  EXPECT_EQ(input_3->timestamp(), output_2->timestamp());
-  EXPECT_EQ(input_3->duration(), output_2->duration());
-  EXPECT_EQ(input_3->frame_count(), output_2->frame_count());
-  EXPECT_TRUE(VerifyData(output_2, 0.3f));
 }
-
 
 // Verifies that an error is signalled if AddInput() is called
 // with a timestamp that is earlier than the first buffer added.
@@ -261,10 +293,9 @@ TEST_F(AudioSplicerTest, BufferAddedBeforeBase) {
   scoped_refptr<AudioBuffer> input_2 = GetNextInputBuffer(0.1f);
 
   EXPECT_GT(input_1->timestamp(), input_2->timestamp());
-  EXPECT_TRUE(splicer_.AddInput(input_1));
-  EXPECT_FALSE(splicer_.AddInput(input_2));
+  EXPECT_TRUE(AddInput(input_1));
+  EXPECT_FALSE(AddInput(input_2));
 }
-
 
 // Test when one buffer partially overlaps another.
 // +--------------+
@@ -288,32 +319,26 @@ TEST_F(AudioSplicerTest, PartialOverlap) {
 
   scoped_refptr<AudioBuffer> input_2 = GetNextInputBuffer(0.2f);
 
-  EXPECT_TRUE(splicer_.AddInput(input_1));
-  EXPECT_TRUE(splicer_.AddInput(input_2));
+  EXPECT_TRUE(AddInput(input_1));
+  EXPECT_TRUE(AddInput(input_2));
 
-  EXPECT_TRUE(splicer_.HasNextBuffer());
-  scoped_refptr<AudioBuffer> output_1 = splicer_.GetNextBuffer();
+  // Verify that the first input buffer passed through unmodified.
+  VerifyNextBuffer(input_1);
+  ASSERT_TRUE(splicer_.HasNextBuffer());
+
   scoped_refptr<AudioBuffer> output_2 = splicer_.GetNextBuffer();
   EXPECT_FALSE(splicer_.HasNextBuffer());
 
-  // Verify that the first input buffer passed through unmodified.
-  EXPECT_EQ(input_1->timestamp(), output_1->timestamp());
-  EXPECT_EQ(input_1->duration(), output_1->duration());
-  EXPECT_EQ(input_1->frame_count(), output_1->frame_count());
-  EXPECT_TRUE(VerifyData(output_1, 0.1f));
-
   // Verify that the second input buffer was truncated to only contain
-  // the samples that are after the end of |input_1|. Note that data is not
-  // copied, so |input_2|'s values are modified.
+  // the samples that are after the end of |input_1|.
   base::TimeDelta expected_timestamp =
       input_1->timestamp() + input_1->duration();
   base::TimeDelta expected_duration =
       (input_2->timestamp() + input_2->duration()) - expected_timestamp;
   EXPECT_EQ(expected_timestamp, output_2->timestamp());
   EXPECT_EQ(expected_duration, output_2->duration());
-  EXPECT_TRUE(VerifyData(output_2, 0.2f));
+  EXPECT_TRUE(VerifyData(output_2, GetValue(input_2)));
 }
-
 
 // Test that an input buffer that is completely overlapped by a buffer
 // that was already added is dropped.
@@ -348,27 +373,218 @@ TEST_F(AudioSplicerTest, DropBuffer) {
   input_timestamp_helper_.AddFrames(input_1->frame_count());
   scoped_refptr<AudioBuffer> input_3 = GetNextInputBuffer(0.3f);
 
-  EXPECT_TRUE(splicer_.AddInput(input_1));
-  EXPECT_TRUE(splicer_.AddInput(input_2));
-  EXPECT_TRUE(splicer_.AddInput(input_3));
+  EXPECT_TRUE(AddInput(input_1));
+  EXPECT_TRUE(AddInput(input_2));
+  EXPECT_TRUE(AddInput(input_3));
 
-  EXPECT_TRUE(splicer_.HasNextBuffer());
-  scoped_refptr<AudioBuffer> output_1 = splicer_.GetNextBuffer();
-  scoped_refptr<AudioBuffer> output_2 = splicer_.GetNextBuffer();
+  VerifyNextBuffer(input_1);
+  VerifyNextBuffer(input_3);
+  EXPECT_FALSE(splicer_.HasNextBuffer());
+}
+
+// Test crossfade when one buffer partially overlaps another.
+// +--------------+
+// |11111111111111|
+// +--------------+
+//            +--------------+
+//            |22222222222222|
+//            +--------------+
+// Results in:
+// +----------+----+----------+
+// |1111111111|xxxx|2222222222|
+// +----------+----+----------+
+// Where "xxxx" represents the crossfaded portion of the signal.
+TEST_F(AudioSplicerTest, PartialOverlapCrossfade) {
+  const int kCrossfadeSize =
+      input_timestamp_helper_.GetFramesToTarget(max_crossfade_duration());
+  const int kBufferSize = kCrossfadeSize * 2;
+
+  scoped_refptr<AudioBuffer> extra_pre_splice_buffer =
+      GetNextInputBuffer(0.2f, kBufferSize);
+  scoped_refptr<AudioBuffer> overlapped_buffer =
+      GetNextInputBuffer(1.0f, kBufferSize);
+
+  // Reset timestamp helper so that the next buffer will have a timestamp that
+  // starts in the middle of |overlapped_buffer|.
+  input_timestamp_helper_.SetBaseTimestamp(overlapped_buffer->timestamp());
+  input_timestamp_helper_.AddFrames(overlapped_buffer->frame_count() -
+                                    kCrossfadeSize);
+  splicer_.SetSpliceTimestamp(input_timestamp_helper_.GetTimestamp());
+  scoped_refptr<AudioBuffer> overlapping_buffer =
+      GetNextInputBuffer(0.0f, kBufferSize);
+
+  // |extra_pre_splice_buffer| is entirely before the splice and should be ready
+  // for output.
+  EXPECT_TRUE(AddInput(extra_pre_splice_buffer));
+  VerifyNextBuffer(extra_pre_splice_buffer);
+
+  // The splicer should be internally queuing input since |overlapped_buffer| is
+  // part of the splice.
+  EXPECT_TRUE(AddInput(overlapped_buffer));
   EXPECT_FALSE(splicer_.HasNextBuffer());
 
-  // Verify that the first input buffer passed through unmodified.
-  EXPECT_EQ(input_1->timestamp(), output_1->timestamp());
-  EXPECT_EQ(input_1->duration(), output_1->duration());
-  EXPECT_EQ(input_1->frame_count(), output_1->frame_count());
-  EXPECT_TRUE(VerifyData(output_1, 0.1f));
+  // |overlapping_buffer| should complete the splice, so ensure output is now
+  // available.
+  EXPECT_TRUE(AddInput(overlapping_buffer));
+  ASSERT_TRUE(splicer_.HasNextBuffer());
 
-  // Verify that the second output buffer only contains
-  // the samples that are in |input_3|.
-  EXPECT_EQ(input_3->timestamp(), output_2->timestamp());
-  EXPECT_EQ(input_3->duration(), output_2->duration());
-  EXPECT_EQ(input_3->frame_count(), output_2->frame_count());
-  EXPECT_TRUE(VerifyData(output_2, 0.3f));
+  // Add one more buffer to make sure it's passed through untouched.
+  scoped_refptr<AudioBuffer> extra_post_splice_buffer =
+      GetNextInputBuffer(0.5f, kBufferSize);
+  EXPECT_TRUE(AddInput(extra_post_splice_buffer));
+
+  VerifyPreSpliceOutput(overlapped_buffer,
+                        overlapping_buffer,
+                        221,
+                        base::TimeDelta::FromMicroseconds(5012));
+
+  // Due to rounding the crossfade size may vary by up to a frame.
+  const int kExpectedCrossfadeSize = 220;
+  EXPECT_NEAR(kExpectedCrossfadeSize, kCrossfadeSize, 1);
+
+  VerifyCrossfadeOutput(overlapped_buffer,
+                        overlapping_buffer,
+                        kExpectedCrossfadeSize,
+                        base::TimeDelta::FromMicroseconds(4988));
+
+  // Retrieve the remaining portion after crossfade.
+  ASSERT_TRUE(splicer_.HasNextBuffer());
+  scoped_refptr<AudioBuffer> post_splice_output = splicer_.GetNextBuffer();
+  EXPECT_EQ(base::TimeDelta::FromMicroseconds(20022),
+            post_splice_output->timestamp());
+  EXPECT_EQ(overlapping_buffer->frame_count() - kExpectedCrossfadeSize,
+            post_splice_output->frame_count());
+  EXPECT_EQ(base::TimeDelta::FromMicroseconds(5034),
+            post_splice_output->duration());
+
+  EXPECT_TRUE(VerifyData(post_splice_output, GetValue(overlapping_buffer)));
+
+  VerifyNextBuffer(extra_post_splice_buffer);
+  EXPECT_FALSE(splicer_.HasNextBuffer());
+}
+
+// Test crossfade when one buffer partially overlaps another, but an end of
+// stream buffer is received before the crossfade duration is reached.
+// +--------------+
+// |11111111111111|
+// +--------------+
+//            +---------++---+
+//            |222222222||EOS|
+//            +---------++---+
+// Results in:
+// +----------+----+----++---+
+// |1111111111|xxxx|2222||EOS|
+// +----------+----+----++---+
+// Where "x" represents the crossfaded portion of the signal.
+TEST_F(AudioSplicerTest, PartialOverlapCrossfadeEndOfStream) {
+  const int kCrossfadeSize =
+      input_timestamp_helper_.GetFramesToTarget(max_crossfade_duration());
+
+  scoped_refptr<AudioBuffer> overlapped_buffer =
+      GetNextInputBuffer(1.0f, kCrossfadeSize * 2);
+
+  // Reset timestamp helper so that the next buffer will have a timestamp that
+  // starts 3/4 of the way into |overlapped_buffer|.
+  input_timestamp_helper_.SetBaseTimestamp(overlapped_buffer->timestamp());
+  input_timestamp_helper_.AddFrames(3 * overlapped_buffer->frame_count() / 4);
+  splicer_.SetSpliceTimestamp(input_timestamp_helper_.GetTimestamp());
+  scoped_refptr<AudioBuffer> overlapping_buffer =
+      GetNextInputBuffer(0.0f, kCrossfadeSize / 3);
+
+  // The splicer should be internally queuing input since |overlapped_buffer| is
+  // part of the splice.
+  EXPECT_TRUE(AddInput(overlapped_buffer));
+  EXPECT_FALSE(splicer_.HasNextBuffer());
+
+  // |overlapping_buffer| should not have enough data to complete the splice, so
+  // ensure output is not available.
+  EXPECT_TRUE(AddInput(overlapping_buffer));
+  EXPECT_FALSE(splicer_.HasNextBuffer());
+
+  // Now add an EOS buffer which should complete the splice.
+  EXPECT_TRUE(AddInput(AudioBuffer::CreateEOSBuffer()));
+  ASSERT_TRUE(splicer_.HasNextBuffer());
+
+  VerifyPreSpliceOutput(overlapped_buffer,
+                        overlapping_buffer,
+                        331,
+                        base::TimeDelta::FromMicroseconds(7505));
+  VerifyCrossfadeOutput(overlapped_buffer,
+                        overlapping_buffer,
+                        overlapping_buffer->frame_count(),
+                        overlapping_buffer->duration());
+
+  // Ensure the last buffer is an EOS buffer.
+  ASSERT_TRUE(splicer_.HasNextBuffer());
+  scoped_refptr<AudioBuffer> post_splice_output = splicer_.GetNextBuffer();
+  EXPECT_TRUE(post_splice_output->end_of_stream());
+
+  EXPECT_FALSE(splicer_.HasNextBuffer());
+}
+
+// Test crossfade when one buffer partially overlaps another, but the amount of
+// overlapped data is less than the crossfade duration.
+// +------------+
+// |111111111111|
+// +------------+
+//            +--------------+
+//            |22222222222222|
+//            +--------------+
+// Results in:
+// +----------+-+------------+
+// |1111111111|x|222222222222|
+// +----------+-+------------+
+// Where "x" represents the crossfaded portion of the signal.
+TEST_F(AudioSplicerTest, PartialOverlapCrossfadeShortPreSplice) {
+  const int kCrossfadeSize =
+      input_timestamp_helper_.GetFramesToTarget(max_crossfade_duration());
+
+  scoped_refptr<AudioBuffer> overlapped_buffer =
+      GetNextInputBuffer(1.0f, kCrossfadeSize / 2);
+
+  // Reset timestamp helper so that the next buffer will have a timestamp that
+  // starts in the middle of |overlapped_buffer|.
+  input_timestamp_helper_.SetBaseTimestamp(overlapped_buffer->timestamp());
+  input_timestamp_helper_.AddFrames(overlapped_buffer->frame_count() / 2);
+  splicer_.SetSpliceTimestamp(input_timestamp_helper_.GetTimestamp());
+  scoped_refptr<AudioBuffer> overlapping_buffer =
+      GetNextInputBuffer(0.0f, kCrossfadeSize * 2);
+
+  // The splicer should be internally queuing input since |overlapped_buffer| is
+  // part of the splice.
+  EXPECT_TRUE(AddInput(overlapped_buffer));
+  EXPECT_FALSE(splicer_.HasNextBuffer());
+
+  // |overlapping_buffer| should complete the splice, so ensure output is now
+  // available.
+  EXPECT_TRUE(AddInput(overlapping_buffer));
+  ASSERT_TRUE(splicer_.HasNextBuffer());
+
+  const int kExpectedPreSpliceSize = 55;
+  const base::TimeDelta kExpectedPreSpliceDuration =
+      base::TimeDelta::FromMicroseconds(1247);
+  VerifyPreSpliceOutput(overlapped_buffer,
+                        overlapping_buffer,
+                        kExpectedPreSpliceSize,
+                        kExpectedPreSpliceDuration);
+  VerifyCrossfadeOutput(overlapped_buffer,
+                        overlapping_buffer,
+                        kExpectedPreSpliceSize,
+                        kExpectedPreSpliceDuration);
+
+  // Retrieve the remaining portion after crossfade.
+  ASSERT_TRUE(splicer_.HasNextBuffer());
+  scoped_refptr<AudioBuffer> post_splice_output = splicer_.GetNextBuffer();
+  EXPECT_EQ(overlapping_buffer->timestamp() + kExpectedPreSpliceDuration,
+            post_splice_output->timestamp());
+  EXPECT_EQ(overlapping_buffer->frame_count() - kExpectedPreSpliceSize,
+            post_splice_output->frame_count());
+  EXPECT_EQ(overlapping_buffer->duration() - kExpectedPreSpliceDuration,
+            post_splice_output->duration());
+
+  EXPECT_TRUE(VerifyData(post_splice_output, GetValue(overlapping_buffer)));
+
+  EXPECT_FALSE(splicer_.HasNextBuffer());
 }
 
 }  // namespace media

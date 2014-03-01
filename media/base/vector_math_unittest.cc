@@ -44,12 +44,12 @@ class VectorMathTest : public testing::Test {
 
   void VerifyOutput(float value) {
     for (int i = 0; i < kVectorSize; ++i)
-      ASSERT_FLOAT_EQ(output_vector_.get()[i], value);
+      ASSERT_FLOAT_EQ(output_vector_[i], value);
   }
 
  protected:
-  scoped_ptr<float, base::AlignedFreeDeleter> input_vector_;
-  scoped_ptr<float, base::AlignedFreeDeleter> output_vector_;
+  scoped_ptr<float[], base::AlignedFreeDeleter> input_vector_;
+  scoped_ptr<float[], base::AlignedFreeDeleter> output_vector_;
 
   DISALLOW_COPY_AND_ASSIGN(VectorMathTest);
 };
@@ -138,7 +138,15 @@ TEST_F(VectorMathTest, FMUL) {
 #endif
 }
 
-namespace {
+TEST_F(VectorMathTest, Crossfade) {
+  FillTestVectors(0, 1);
+  vector_math::Crossfade(
+      input_vector_.get(), kVectorSize, output_vector_.get());
+  for (int i = 0; i < kVectorSize; ++i) {
+    ASSERT_FLOAT_EQ(i / static_cast<float>(kVectorSize), output_vector_[i])
+        << "i=" << i;
+  }
+}
 
 class EWMATestScenario {
  public:
@@ -247,8 +255,6 @@ class EWMATestScenario {
   float expected_final_avg_;
   float expected_max_;
 };
-
-}  // namespace
 
 typedef testing::TestWithParam<EWMATestScenario> VectorMathEWMAAndMaxPowerTest;
 

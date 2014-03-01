@@ -38,6 +38,8 @@ MEDIA_EXPORT void FMUL(const float src[], float scale, int len, float dest[]);
 MEDIA_EXPORT std::pair<float, float> EWMAAndMaxPower(
     float initial_value, const float src[], int len, float smoothing_factor);
 
+MEDIA_EXPORT void Crossfade(const float src[], int len, float dest[]);
+
 }  // namespace vector_math
 }  // namespace media
 

@@ -27,12 +27,13 @@ namespace media {
 // accumulated frames to reach a target timestamp.
 class MEDIA_EXPORT AudioTimestampHelper {
  public:
-  AudioTimestampHelper(int samples_per_second);
+  explicit AudioTimestampHelper(int samples_per_second);
 
   // Sets the base timestamp to |base_timestamp| and the sets count to 0.
   void SetBaseTimestamp(base::TimeDelta base_timestamp);
 
   base::TimeDelta base_timestamp() const;
+  int64 frame_count() const { return frame_count_; }
 
   // Adds |frame_count| to the frame counter.
   // Note: SetBaseTimestamp() must be called with a value other than
