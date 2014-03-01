@@ -46,21 +46,11 @@ public:
     // Updates the scrollbar appearance and behavior.
     // |initialButtonDelay| is the current value of NSScrollerButtonDelay from NSUserDefaults.
     // |autoscrollButtonDelay| is the current value of NSScrollerButtonPeriod from NSUserDefaults.
-    // |jumpOnTrackClick| is the current value of AppleScrollerPagingBehavior from NSUserDefaults.
     // |preferredScrollerStyle| is the current value of +[NSScroller preferredScrollerStyle].
     // |redraw| is true if the update requires a redraw to include the change.
     BLINK_EXPORT static void updateScrollbars(
         float initialButtonDelay, float autoscrollButtonDelay,
-        bool jumpOnTrackClick, ScrollerStyle preferredScrollerStyle, bool redraw);
-
-    // The above function is temporary; once Chrome code calls this version,
-    // we'll implement it directly and remove the above.
-    BLINK_EXPORT static void updateScrollbars(
-        float initialButtonDelay, float autoscrollButtonDelay,
-        ScrollerStyle preferredScrollerStyle, bool redraw)
-    {
-        updateScrollbars(initialButtonDelay, autoscrollButtonDelay, false, preferredScrollerStyle, redraw);
-    }
+        ScrollerStyle preferredScrollerStyle, bool redraw);
 };
 
 } // namespace blink

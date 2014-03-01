@@ -43,7 +43,6 @@ protected:
     virtual void paintTrackPiece(GraphicsContext*, ScrollbarThemeClient*, const IntRect&, ScrollbarPart) OVERRIDE;
     virtual void paintButton(GraphicsContext*, ScrollbarThemeClient*, const IntRect&, ScrollbarPart) OVERRIDE;
     virtual void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
-    virtual bool shouldCenterOnThumb(ScrollbarThemeClient*, const PlatformMouseEvent&) OVERRIDE;
     virtual IntSize buttonSize(ScrollbarThemeClient*) OVERRIDE;
     virtual int minimumThumbLength(ScrollbarThemeClient*) OVERRIDE;
 };

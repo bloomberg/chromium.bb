@@ -37,7 +37,7 @@ public:
 
     virtual void registerScrollbar(ScrollbarThemeClient*) OVERRIDE;
     virtual void unregisterScrollbar(ScrollbarThemeClient*) OVERRIDE;
-    void preferencesChanged(float initialButtonDelay, float autoscrollButtonDelay, bool jumpOnTrackClick, NSScrollerStyle preferredScrollerStyle, bool redraw);
+    void preferencesChanged(float initialButtonDelay, float autoscrollButtonDelay, NSScrollerStyle preferredScrollerStyle, bool redraw);
 
     virtual bool supportsControlTints() const OVERRIDE { return true; }
 
@@ -55,7 +55,6 @@ public:
 protected:
     virtual int maxOverlapBetweenPages() OVERRIDE { return 40; }
 
-    virtual bool shouldCenterOnThumb(ScrollbarThemeClient*, const PlatformMouseEvent&) OVERRIDE;
     virtual bool shouldDragDocumentInsteadOfThumb(ScrollbarThemeClient*, const PlatformMouseEvent&) OVERRIDE;
     int scrollbarPartToHIPressedState(ScrollbarPart);
 

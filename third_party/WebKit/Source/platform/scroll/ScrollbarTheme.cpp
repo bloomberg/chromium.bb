@@ -27,43 +27,22 @@
 #include "platform/scroll/ScrollbarTheme.h"
 
 #include "RuntimeEnabledFeatures.h"
+#include "platform/PlatformMouseEvent.h"
 #include "platform/scroll/ScrollbarThemeClient.h"
 #include "platform/scroll/ScrollbarThemeMock.h"
 #include "platform/scroll/ScrollbarThemeOverlayMock.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebPoint.h"
+#include "public/platform/WebScrollbarBehavior.h"
 
 #if !OS(MACOSX)
-#include "public/platform/Platform.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebThemeEngine.h"
 #endif
 
 namespace WebCore {
 
-ScrollbarTheme* ScrollbarTheme::theme()
-{
-    if (ScrollbarTheme::mockScrollbarsEnabled()) {
-        if (RuntimeEnabledFeatures::overlayScrollbarsEnabled()) {
-            DEFINE_STATIC_LOCAL(ScrollbarThemeOverlayMock, overlayMockTheme, ());
-            return &overlayMockTheme;
-        }
-
-        DEFINE_STATIC_LOCAL(ScrollbarThemeMock, mockTheme, ());
-        return &mockTheme;
-    }
-    return nativeTheme();
-}
-
 bool ScrollbarTheme::gMockScrollbarsEnabled = false;
-
-void ScrollbarTheme::setMockScrollbarsEnabled(bool flag)
-{
-    gMockScrollbarsEnabled = flag;
-}
-
-bool ScrollbarTheme::mockScrollbarsEnabled()
-{
-    return gMockScrollbarsEnabled;
-}
 
 bool ScrollbarTheme::paint(ScrollbarThemeClient* scrollbar, GraphicsContext* graphicsContext, const IntRect& damageRect)
 {
@@ -220,21 +199,37 @@ void ScrollbarTheme::invalidatePart(ScrollbarThemeClient* scrollbar, ScrollbarPa
     scrollbar->invalidateRect(result);
 }
 
-void ScrollbarTheme::splitTrack(ScrollbarThemeClient* scrollbar, const IntRect& unconstrainedTrackRect, IntRect& beforeThumbRect, IntRect& thumbRect, IntRect& afterThumbRect)
+void ScrollbarTheme::paintScrollCorner(GraphicsContext* context, const IntRect& cornerRect)
 {
-    // This function won't even get called unless we're big enough to have some combination of these three rects where at least
-    // one of them is non-empty.
-    IntRect trackRect = constrainTrackRectToTrackPieces(scrollbar, unconstrainedTrackRect);
-    int thumbPos = thumbPosition(scrollbar);
-    if (scrollbar->orientation() == HorizontalScrollbar) {
-        thumbRect = IntRect(trackRect.x() + thumbPos, trackRect.y(), thumbLength(scrollbar), scrollbar->height());
-        beforeThumbRect = IntRect(trackRect.x(), trackRect.y(), thumbPos + thumbRect.width() / 2, trackRect.height());
-        afterThumbRect = IntRect(trackRect.x() + beforeThumbRect.width(), trackRect.y(), trackRect.maxX() - beforeThumbRect.maxX(), trackRect.height());
-    } else {
-        thumbRect = IntRect(trackRect.x(), trackRect.y() + thumbPos, scrollbar->width(), thumbLength(scrollbar));
-        beforeThumbRect = IntRect(trackRect.x(), trackRect.y(), trackRect.width(), thumbPos + thumbRect.height() / 2);
-        afterThumbRect = IntRect(trackRect.x(), trackRect.y() + beforeThumbRect.height(), trackRect.width(), trackRect.maxY() - beforeThumbRect.maxY());
-    }
+    if (cornerRect.isEmpty())
+        return;
+
+#if OS(MACOSX)
+    context->fillRect(cornerRect, Color::white);
+#else
+    blink::Platform::current()->themeEngine()->paint(context->canvas(), blink::WebThemeEngine::PartScrollbarCorner, blink::WebThemeEngine::StateNormal, blink::WebRect(cornerRect), 0);
+#endif
+}
+
+void ScrollbarTheme::paintOverhangBackground(GraphicsContext* context, const IntRect& horizontalOverhangRect, const IntRect& verticalOverhangRect, const IntRect& dirtyRect)
+{
+    context->setFillColor(Color::white);
+    if (!horizontalOverhangRect.isEmpty())
+        context->fillRect(intersection(horizontalOverhangRect, dirtyRect));
+    if (!verticalOverhangRect.isEmpty())
+        context->fillRect(intersection(verticalOverhangRect, dirtyRect));
+}
+
+bool ScrollbarTheme::shouldCenterOnThumb(ScrollbarThemeClient* scrollbar, const PlatformMouseEvent& evt)
+{
+    return blink::Platform::current()->scrollbarBehavior()->shouldCenterOnThumb(static_cast<blink::WebScrollbarBehavior::Button>(evt.button()), evt.shiftKey(), evt.altKey());
+}
+
+bool ScrollbarTheme::shouldSnapBackToDragOrigin(ScrollbarThemeClient* scrollbar, const PlatformMouseEvent& evt)
+{
+    IntPoint mousePosition = scrollbar->convertFromContainingWindow(evt.position());
+    mousePosition.move(scrollbar->x(), scrollbar->y());
+    return blink::Platform::current()->scrollbarBehavior()->shouldSnapBackToDragOrigin(mousePosition, trackRect(scrollbar), scrollbar->orientation() == HorizontalScrollbar);
 }
 
 // Returns the size represented by track taking into account scrolling past
@@ -279,11 +274,6 @@ int ScrollbarTheme::thumbLength(ScrollbarThemeClient* scrollbar)
     return length;
 }
 
-int ScrollbarTheme::minimumThumbLength(ScrollbarThemeClient* scrollbar)
-{
-    return scrollbarThickness(scrollbar->controlSize());
-}
-
 int ScrollbarTheme::trackPosition(ScrollbarThemeClient* scrollbar)
 {
     IntRect constrainedTrackRect = constrainTrackRectToTrackPieces(scrollbar, trackRect(scrollbar));
@@ -294,18 +284,6 @@ int ScrollbarTheme::trackLength(ScrollbarThemeClient* scrollbar)
 {
     IntRect constrainedTrackRect = constrainTrackRectToTrackPieces(scrollbar, trackRect(scrollbar));
     return (scrollbar->orientation() == HorizontalScrollbar) ? constrainedTrackRect.width() : constrainedTrackRect.height();
-}
-
-void ScrollbarTheme::paintScrollCorner(GraphicsContext* context, const IntRect& cornerRect)
-{
-    if (cornerRect.isEmpty())
-        return;
-
-#if OS(MACOSX)
-    context->fillRect(cornerRect, Color::white);
-#else
-    blink::Platform::current()->themeEngine()->paint(context->canvas(), blink::WebThemeEngine::PartScrollbarCorner, blink::WebThemeEngine::StateNormal, blink::WebRect(cornerRect), 0);
-#endif
 }
 
 IntRect ScrollbarTheme::thumbRect(ScrollbarThemeClient* scrollbar)
@@ -328,13 +306,50 @@ int ScrollbarTheme::thumbThickness(ScrollbarThemeClient* scrollbar)
     return scrollbar->orientation() == HorizontalScrollbar ? track.height() : track.width();
 }
 
-void ScrollbarTheme::paintOverhangBackground(GraphicsContext* context, const IntRect& horizontalOverhangRect, const IntRect& verticalOverhangRect, const IntRect& dirtyRect)
+int ScrollbarTheme::minimumThumbLength(ScrollbarThemeClient* scrollbar)
 {
-    context->setFillColor(Color::white);
-    if (!horizontalOverhangRect.isEmpty())
-        context->fillRect(intersection(horizontalOverhangRect, dirtyRect));
-    if (!verticalOverhangRect.isEmpty())
-        context->fillRect(intersection(verticalOverhangRect, dirtyRect));
+    return scrollbarThickness(scrollbar->controlSize());
+}
+
+void ScrollbarTheme::splitTrack(ScrollbarThemeClient* scrollbar, const IntRect& unconstrainedTrackRect, IntRect& beforeThumbRect, IntRect& thumbRect, IntRect& afterThumbRect)
+{
+    // This function won't even get called unless we're big enough to have some combination of these three rects where at least
+    // one of them is non-empty.
+    IntRect trackRect = constrainTrackRectToTrackPieces(scrollbar, unconstrainedTrackRect);
+    int thumbPos = thumbPosition(scrollbar);
+    if (scrollbar->orientation() == HorizontalScrollbar) {
+        thumbRect = IntRect(trackRect.x() + thumbPos, trackRect.y(), thumbLength(scrollbar), scrollbar->height());
+        beforeThumbRect = IntRect(trackRect.x(), trackRect.y(), thumbPos + thumbRect.width() / 2, trackRect.height());
+        afterThumbRect = IntRect(trackRect.x() + beforeThumbRect.width(), trackRect.y(), trackRect.maxX() - beforeThumbRect.maxX(), trackRect.height());
+    } else {
+        thumbRect = IntRect(trackRect.x(), trackRect.y() + thumbPos, scrollbar->width(), thumbLength(scrollbar));
+        beforeThumbRect = IntRect(trackRect.x(), trackRect.y(), trackRect.width(), thumbPos + thumbRect.height() / 2);
+        afterThumbRect = IntRect(trackRect.x(), trackRect.y() + beforeThumbRect.height(), trackRect.width(), trackRect.maxY() - beforeThumbRect.maxY());
+    }
+}
+
+ScrollbarTheme* ScrollbarTheme::theme()
+{
+    if (ScrollbarTheme::mockScrollbarsEnabled()) {
+        if (RuntimeEnabledFeatures::overlayScrollbarsEnabled()) {
+            DEFINE_STATIC_LOCAL(ScrollbarThemeOverlayMock, overlayMockTheme, ());
+            return &overlayMockTheme;
+        }
+
+        DEFINE_STATIC_LOCAL(ScrollbarThemeMock, mockTheme, ());
+        return &mockTheme;
+    }
+    return nativeTheme();
+}
+
+void ScrollbarTheme::setMockScrollbarsEnabled(bool flag)
+{
+    gMockScrollbarsEnabled = flag;
+}
+
+bool ScrollbarTheme::mockScrollbarsEnabled()
+{
+    return gMockScrollbarsEnabled;
 }
 
 }

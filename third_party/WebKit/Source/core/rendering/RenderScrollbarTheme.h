@@ -44,6 +44,7 @@ public:
     virtual void paintScrollCorner(GraphicsContext*, const IntRect& cornerRect) OVERRIDE;
 
     virtual bool shouldCenterOnThumb(ScrollbarThemeClient* scrollbar, const PlatformMouseEvent& event) OVERRIDE { return ScrollbarTheme::theme()->shouldCenterOnThumb(scrollbar, event); }
+    virtual bool shouldSnapBackToDragOrigin(ScrollbarThemeClient* scrollbar, const PlatformMouseEvent& event) OVERRIDE { return ScrollbarTheme::theme()->shouldSnapBackToDragOrigin(scrollbar, event); }
 
     virtual double initialAutoscrollTimerDelay() OVERRIDE { return ScrollbarTheme::theme()->initialAutoscrollTimerDelay(); }
     virtual double autoscrollTimerDelay() OVERRIDE { return ScrollbarTheme::theme()->autoscrollTimerDelay(); }

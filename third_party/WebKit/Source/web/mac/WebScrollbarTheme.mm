@@ -45,14 +45,14 @@ COMPILE_ASSERT(ScrollerStyleOverlay == NSScrollerStyleOverlay, ScrollerStyle_Ove
 
 void WebScrollbarTheme::updateScrollbars(
     float initialButtonDelay, float autoscrollButtonDelay,
-    bool jumpOnTrackClick, ScrollerStyle preferredScrollerStyle, bool redraw)
+    ScrollerStyle preferredScrollerStyle, bool redraw)
 {
     ScrollbarTheme* theme = ScrollbarTheme::theme();
     if (theme->isMockTheme())
         return;
 
     static_cast<ScrollbarThemeMacCommon*>(ScrollbarTheme::theme())->preferencesChanged(
-        initialButtonDelay, autoscrollButtonDelay, jumpOnTrackClick, preferredScrollerStyle, redraw);
+        initialButtonDelay, autoscrollButtonDelay, preferredScrollerStyle, redraw);
 }
 
 } // namespace blink

@@ -74,7 +74,6 @@ namespace WebCore {
 
 static float gInitialButtonDelay = 0.5f;
 static float gAutoscrollButtonDelay = 0.05f;
-static bool gJumpOnTrackClick = false;
 static NSScrollerStyle gPreferredScrollerStyle = NSScrollerStyleLegacy;
 
 ScrollbarTheme* ScrollbarTheme::nativeTheme()
@@ -293,12 +292,11 @@ ScrollbarThemeMacCommon::~ScrollbarThemeMacCommon()
 {
 }
 
-void ScrollbarThemeMacCommon::preferencesChanged(float initialButtonDelay, float autoscrollButtonDelay, bool jumpOnTrackClick, NSScrollerStyle preferredScrollerStyle, bool redraw)
+void ScrollbarThemeMacCommon::preferencesChanged(float initialButtonDelay, float autoscrollButtonDelay, NSScrollerStyle preferredScrollerStyle, bool redraw)
 {
     updateButtonPlacement();
     gInitialButtonDelay = initialButtonDelay;
     gAutoscrollButtonDelay = autoscrollButtonDelay;
-    gJumpOnTrackClick = jumpOnTrackClick;
     bool sendScrollerStyleNotification = gPreferredScrollerStyle != preferredScrollerStyle;
     gPreferredScrollerStyle = preferredScrollerStyle;
     if (redraw && !scrollbarSet().isEmpty()) {
@@ -324,15 +322,6 @@ double ScrollbarThemeMacCommon::initialAutoscrollTimerDelay()
 double ScrollbarThemeMacCommon::autoscrollTimerDelay()
 {
     return gAutoscrollButtonDelay;
-}
-
-bool ScrollbarThemeMacCommon::shouldCenterOnThumb(ScrollbarThemeClient*, const PlatformMouseEvent& evt)
-{
-    if (evt.button() != LeftButton)
-        return false;
-    if (gJumpOnTrackClick)
-        return !evt.altKey();
-    return evt.altKey();
 }
 
 bool ScrollbarThemeMacCommon::shouldDragDocumentInsteadOfThumb(ScrollbarThemeClient*, const PlatformMouseEvent& event)

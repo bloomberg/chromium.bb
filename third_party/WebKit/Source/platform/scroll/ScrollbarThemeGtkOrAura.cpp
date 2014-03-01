@@ -143,11 +143,6 @@ void ScrollbarThemeGtkOrAura::paintThumb(GraphicsContext* gc, ScrollbarThemeClie
     blink::Platform::current()->themeEngine()->paint(canvas, scrollbar->orientation() == HorizontalScrollbar ? blink::WebThemeEngine::PartScrollbarHorizontalThumb : blink::WebThemeEngine::PartScrollbarVerticalThumb, state, blink::WebRect(rect), 0);
 }
 
-bool ScrollbarThemeGtkOrAura::shouldCenterOnThumb(ScrollbarThemeClient*, const PlatformMouseEvent& evt)
-{
-    return (evt.shiftKey() && evt.button() == LeftButton) || (evt.button() == MiddleButton);
-}
-
 IntSize ScrollbarThemeGtkOrAura::buttonSize(ScrollbarThemeClient* scrollbar)
 {
     if (scrollbar->orientation() == VerticalScrollbar) {
