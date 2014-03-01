@@ -807,7 +807,6 @@
             'css/RuntimeCSSEnabled.cpp',
             'css/RuntimeCSSEnabled.h',
             'css/SVGCSSComputedStyleDeclaration.cpp',
-            'css/SVGCSSParser.cpp',
             'css/SelectorChecker.cpp',
             'css/SelectorChecker.h',
             'css/SelectorCheckerFastPath.cpp',

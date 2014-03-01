@@ -76,6 +76,8 @@ public:
 
     bool parseValue(CSSPropertyID, bool important);
 
+    static bool isSystemColor(int id);
+
 private:
     bool inShorthand() const { return m_inParseShorthand; }
     bool inQuirksMode() const { return isQuirksModeBehavior(m_context.mode()); }
