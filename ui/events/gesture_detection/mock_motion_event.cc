@@ -4,12 +4,20 @@
 
 #include "ui/events/gesture_detection/mock_motion_event.h"
 
+#include "base/logging.h"
+
 using base::TimeTicks;
 
 namespace ui {
 namespace {
 const float kTouchMajor = 10.f;
 }  // namespace
+
+MockMotionEvent::MockMotionEvent()
+    : action(ACTION_CANCEL), pointer_count(1) {}
+
+MockMotionEvent::MockMotionEvent(Action action)
+    : action(action), pointer_count(1) {}
 
 MockMotionEvent::MockMotionEvent(Action action,
                                  TimeTicks time,
@@ -96,6 +104,40 @@ scoped_ptr<MotionEvent> MockMotionEvent::Cancel() const {
   scoped_ptr<MockMotionEvent> cancel_event(new MockMotionEvent(*this));
   cancel_event->action = MotionEvent::ACTION_CANCEL;
   return cancel_event.PassAs<MotionEvent>();
+}
+
+void MockMotionEvent::PressPoint(float x, float y) {
+  // Reset the pointer count if the previously released and/or cancelled pointer
+  // was the last pointer in the event.
+  if (pointer_count == 1 && (action == ACTION_UP || action == ACTION_CANCEL))
+    pointer_count = 0;
+
+  DCHECK_LT(pointer_count + 1, static_cast<size_t>(MAX_POINTERS));
+  points[pointer_count++] = gfx::PointF(x, y);
+  action = pointer_count > 1 ? ACTION_POINTER_DOWN : ACTION_DOWN;
+}
+
+void MockMotionEvent::MovePoint(size_t index, float x, float y) {
+  DCHECK_LT(index, pointer_count);
+  points[index] = gfx::PointF(x, y);
+  action = ACTION_MOVE;
+}
+
+void MockMotionEvent::ReleasePoint() {
+  DCHECK_GT(pointer_count, 0U);
+  if (pointer_count > 1) {
+    --pointer_count;
+    action = ACTION_POINTER_UP;
+  } else {
+    action = ACTION_UP;
+  }
+}
+
+void MockMotionEvent::CancelPoint() {
+  DCHECK_GT(pointer_count, 0U);
+  if (pointer_count > 1)
+    --pointer_count;
+  action = ACTION_CANCEL;
 }
 
 }  // namespace ui

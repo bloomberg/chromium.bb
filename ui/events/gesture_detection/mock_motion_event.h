@@ -10,6 +10,10 @@
 namespace ui {
 
 struct MockMotionEvent : public MotionEvent {
+  enum { MAX_POINTERS = 3 };
+
+  MockMotionEvent();
+  explicit MockMotionEvent(Action action);
   MockMotionEvent(Action action, base::TimeTicks time, float x, float y);
   MockMotionEvent(Action action,
                   base::TimeTicks time,
@@ -20,6 +24,7 @@ struct MockMotionEvent : public MotionEvent {
   MockMotionEvent(const MockMotionEvent& other);
   virtual ~MockMotionEvent();
 
+  // MotionEvent methods.
   virtual Action GetAction() const OVERRIDE;
   virtual int GetActionIndex() const OVERRIDE;
   virtual size_t GetPointerCount() const OVERRIDE;
@@ -41,13 +46,16 @@ struct MockMotionEvent : public MotionEvent {
   virtual scoped_ptr<MotionEvent> Clone() const OVERRIDE;
   virtual scoped_ptr<MotionEvent> Cancel() const OVERRIDE;
 
+  // Utility methods.
+  void PressPoint(float x, float y);
+  void MovePoint(size_t index, float x, float y);
+  void ReleasePoint();
+  void CancelPoint();
+
   MotionEvent::Action action;
   size_t pointer_count;
-  gfx::PointF points[2];
+  gfx::PointF points[MAX_POINTERS];
   base::TimeTicks time;
-
- private:
-  MockMotionEvent();
 };
 
 }  // namespace ui

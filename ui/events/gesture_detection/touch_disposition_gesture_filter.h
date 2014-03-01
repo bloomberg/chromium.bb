@@ -2,29 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCH_DISPOSITION_GESTURE_FILTER_H_
-#define CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCH_DISPOSITION_GESTURE_FILTER_H_
+#ifndef UI_EVENTS_GESTURE_DETECTION_TOUCH_DISPOSITION_GESTURE_FILTER_H_
+#define UI_EVENTS_GESTURE_DETECTION_TOUCH_DISPOSITION_GESTURE_FILTER_H_
 
 #include <queue>
-#include <set>
 
-#include "content/browser/renderer_host/input/gesture_event_packet.h"
-#include "content/common/content_export.h"
-#include "content/port/common/input_event_ack_state.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/events/gesture_detection/bitset_32.h"
+#include "ui/events/gesture_detection/gesture_detection_export.h"
+#include "ui/events/gesture_detection/gesture_event_data_packet.h"
 
-namespace content {
+namespace ui {
 
 // Interface with which the |TouchDispositionGestureFilter| forwards gestures
 // for a given touch event.
-class CONTENT_EXPORT TouchDispositionGestureFilterClient {
+class GESTURE_DETECTION_EXPORT TouchDispositionGestureFilterClient {
  public:
-  virtual void ForwardGestureEvent(const blink::WebGestureEvent&) = 0;
+  virtual void ForwardGestureEvent(const GestureEventData&) = 0;
 };
 
 // Given a stream of touch-derived gesture packets, produces a refined gesture
 // sequence based on the ack dispositions of the generating touch events.
-class CONTENT_EXPORT TouchDispositionGestureFilter {
+class GESTURE_DETECTION_EXPORT TouchDispositionGestureFilter {
  public:
   explicit TouchDispositionGestureFilter(
       TouchDispositionGestureFilterClient* client);
@@ -41,10 +39,16 @@ class CONTENT_EXPORT TouchDispositionGestureFilter {
                           // TOUCH_BEGIN should always precede other packets.
     INVALID_PACKET_TYPE,  // Packet had an invalid type.
   };
-  PacketResult OnGestureEventPacket(const GestureEventPacket& packet);
+  PacketResult OnGesturePacket(const GestureEventDataPacket& packet);
 
+  // TODO(jdduke): Consider adoption of ui::EventResult.
+  enum TouchEventAck {
+    CONSUMED,
+    NOT_CONSUMED,
+    NO_CONSUMER_EXISTS
+  };
   // To be called upon receipt of *all* touch event acks.
-  void OnTouchEventAck(InputEventAckState ack_state);
+  void OnTouchEventAck(TouchEventAck ack_result);
 
   // Whether there are any active gesture sequences still queued in the filter.
   bool IsEmpty() const;
@@ -70,34 +74,35 @@ class CONTENT_EXPORT TouchDispositionGestureFilter {
     GestureSequence();
     ~GestureSequence();
 
-    void Push(const GestureEventPacket& packet);
+    void Push(const GestureEventDataPacket& packet);
     void Pop();
-    const GestureEventPacket& Front() const;
-    void UpdateState(GestureEventPacket::GestureSource gesture_source,
-                     InputEventAckState ack_state);
+    const GestureEventDataPacket& Front() const;
+    void UpdateState(GestureEventDataPacket::GestureSource gesture_source,
+                     TouchEventAck ack_state);
     bool IsEmpty() const;
     const GestureHandlingState& state() const { return state_; };
 
    private:
-    std::queue<GestureEventPacket> packets_;
+    std::queue<GestureEventDataPacket> packets_;
     GestureHandlingState state_;
   };
-  bool IsGesturePrevented(blink::WebInputEvent::Type type,
-                          InputEventAckState current,
+  bool IsGesturePrevented(GestureEventType type,
+                          TouchEventAck current,
                           const GestureSequence::GestureHandlingState& state)
       const;
 
   void UpdateAndDispatchPackets(GestureSequence* sequence,
-                                InputEventAckState ack_result);
+                                TouchEventAck ack_result);
 
   void FilterAndSendPacket(
-      const GestureEventPacket& packet,
+      const GestureEventDataPacket& packet,
       const GestureSequence::GestureHandlingState& sequence_state,
-      InputEventAckState ack_state);
+      TouchEventAck ack_state);
 
-  void SendGesture(const blink::WebGestureEvent& gesture);
+  void SendGesture(const GestureEventData& gesture);
   void CancelTapIfNecessary();
   void CancelFlingIfNecessary();
+  void EndScrollIfNecessary();
   GestureSequence& Head();
   GestureSequence& Tail();
 
@@ -107,17 +112,18 @@ class CONTENT_EXPORT TouchDispositionGestureFilter {
   // If the previous gesture of a given type was dropped instead of being
   // dispatched, its type will occur in this set. Cleared when a new touch
   // sequence begins to be acked.
-  std::set<blink::WebInputEvent::Type> last_event_of_type_dropped_;
+  BitSet32 last_event_of_type_dropped_;
 
   // Bookkeeping for inserting synthetic Gesture{Tap,Fling}Cancel events
   // when necessary, e.g., GestureTapCancel when scrolling begins, or
   // GestureFlingCancel when a user taps following a GestureFlingStart.
   bool needs_tap_ending_event_;
   bool needs_fling_ending_event_;
+  bool needs_scroll_ending_event_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchDispositionGestureFilter);
 };
 
-}  // namespace content
+}  // namespace ui
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_TOUCH_DISPOSITION_GESTURE_FILTER_H_
+#endif  // UI_EVENTS_GESTURE_DETECTION_TOUCH_DISPOSITION_GESTURE_FILTER_H_

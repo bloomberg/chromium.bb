@@ -5,9 +5,8 @@
 // This file intentionally does not have header guards because this file
 // is meant to be included inside a macro to generate enum values.
 
-// This file contains a list of GestureEventType's that are created by
-// ContentViewGestureHandler and dispatched from ContentViewCore.
-// They can be directly mapped to and from their corresponding
+// This file contains a list of GestureEventType's usable by ContentViewCore,
+// providing a direct mapping to and from their corresponding
 // blink::WebGestureEvent types.
 
 #ifndef DEFINE_GESTURE_EVENT_TYPE

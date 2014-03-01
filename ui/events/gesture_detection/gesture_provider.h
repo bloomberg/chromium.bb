@@ -14,12 +14,12 @@
 
 namespace ui {
 
-struct GestureEventParams;
+struct GestureEventData;
 
 class GESTURE_DETECTION_EXPORT GestureProviderClient {
  public:
   virtual ~GestureProviderClient() {}
-  virtual void OnGestureEvent(const GestureEventParams& gesture) = 0;
+  virtual void OnGestureEvent(const GestureEventData& gesture) = 0;
 };
 
 // Given a stream of |MotionEvent|'s, provides gesture detection and gesture
@@ -52,18 +52,18 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
   void CancelActiveTouchSequence();
 
   // Update whether multi-touch gestures are supported.
-  void UpdateMultiTouchSupport(bool support_multi_touch_zoom);
+  void SetMultiTouchSupportEnabled(bool enabled);
 
   // Update whether double-tap gestures are supported. This allows
   // double-tap gesture suppression independent of whether or not the page's
   // viewport and scale would normally prevent double-tap.
   // Note: This should not be called while a double-tap gesture is in progress.
-  void UpdateDoubleTapSupportForPlatform(bool support_double_tap);
+  void SetDoubleTapSupportForPlatformEnabled(bool enabled);
 
   // Update whether double-tap gesture detection should be suppressed due to
   // the viewport or scale of the current page. Suppressing double-tap gesture
   // detection allows for rapid and responsive single-tap gestures.
-  void UpdateDoubleTapSupportForPage(bool support_double_tap);
+  void SetDoubleTapSupportForPageEnabled(bool enabled);
 
   // Whether a scroll gesture is in-progress.
   bool IsScrollInProgress() const;
@@ -75,6 +75,10 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
   // Whether a double tap-gesture is in-progress.
   bool IsDoubleTapInProgress() const;
 
+  // Whether the tap gesture delay is explicitly disabled (independent of
+  // whether double-tap is supported), see |Config.disable_click_delay|.
+  bool IsClickDelayDisabled() const;
+
  private:
   void InitGestureDetectors(const Config& config);
 
@@ -85,7 +89,7 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
              float y,
              float velocity_x,
              float velocity_y);
-  void Send(const GestureEventParams& gesture);
+  void Send(const GestureEventData& gesture);
   void SendTapCancelIfNecessary(const MotionEvent& event);
   bool SendLongTapIfNecessary(const MotionEvent& event);
   void EndTouchScrollIfNecessary(base::TimeTicks time,
@@ -104,13 +108,12 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
   scoped_ptr<MotionEvent> current_down_event_;
 
   // Whether a GESTURE_SHOW_PRESS was sent for the current touch sequence.
-  // Sending a GESTURE_SINGLE_TAP* event will forward a GESTURE_SHOW_PRESS if
-  // one has not yet been sent.
+  // Sending a GESTURE_TAP event will forward a GESTURE_SHOW_PRESS if one has
+  // not yet been sent.
   bool needs_show_press_event_;
 
   // Whether a sent GESTURE_TAP_DOWN event has yet to be accompanied by a
-  // corresponding GESTURE_SINGLE_TAP_CONFIRMED, GESTURE_TAP_CANCEL or
-  // GESTURE_DOUBLE_TAP.
+  // corresponding GESTURE_TAP, GESTURE_TAP_CANCEL or GESTURE_DOUBLE_TAP.
   bool needs_tap_ending_event_;
 
   // Whether the respective {SCROLL,PINCH}_BEGIN gestures have been terminated

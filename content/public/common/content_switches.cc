@@ -1007,6 +1007,9 @@ const char kDisableGestureRequirementForMediaPlayback[] =
 // Disable history logging for media elements.
 const char kDisableMediaHistoryLogging[]    = "disable-media-history";
 
+// Disable the click delay by sending click events during double tap.
+const char kDisableClickDelay[]             = "disable-click-delay";
+
 // Disable overscroll edge effects like those found in Android views.
 const char kDisableOverscrollEdgeEffect[]   = "disable-overscroll-edge-effect";
 

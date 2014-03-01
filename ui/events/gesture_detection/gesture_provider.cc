@@ -8,7 +8,7 @@
 
 #include "base/auto_reset.h"
 #include "base/debug/trace_event.h"
-#include "ui/events/gesture_detection/gesture_event_params.h"
+#include "ui/events/gesture_detection/gesture_event_data.h"
 #include "ui/events/gesture_detection/motion_event.h"
 
 namespace ui {
@@ -29,31 +29,31 @@ const char* GetMotionEventActionName(MotionEvent::Action action) {
   return "";
 }
 
-GestureEventParams CreateGesture(GestureEventType type,
-                                 base::TimeTicks time,
-                                 float x,
-                                 float y,
-                                 const GestureEventParams::Data& extra_data) {
-  return GestureEventParams(type, time, x, y, extra_data);
+GestureEventData CreateGesture(GestureEventType type,
+                               base::TimeTicks time,
+                               float x,
+                               float y,
+                               const GestureEventData::Details& details) {
+  return GestureEventData(type, time, x, y, details);
 }
 
-GestureEventParams CreateGesture(GestureEventType type,
-                                 base::TimeTicks time,
-                                 float x,
-                                 float y) {
-  return CreateGesture(type, time, x, y, GestureEventParams::Data());
+GestureEventData CreateGesture(GestureEventType type,
+                               base::TimeTicks time,
+                               float x,
+                               float y) {
+  return CreateGesture(type, time, x, y, GestureEventData::Details());
 }
 
-GestureEventParams CreateGesture(GestureEventType type,
-                                 const MotionEvent& event,
-                                 const GestureEventParams::Data& extra_data) {
+GestureEventData CreateGesture(GestureEventType type,
+                               const MotionEvent& event,
+                               const GestureEventData::Details& details) {
   return CreateGesture(
-      type, event.GetEventTime(), event.GetX(), event.GetY(), extra_data);
+      type, event.GetEventTime(), event.GetX(), event.GetY(), details);
 }
 
-GestureEventParams CreateGesture(GestureEventType type,
-                                 const MotionEvent& event) {
-  return CreateGesture(type, event, GestureEventParams::Data());
+GestureEventData CreateGesture(GestureEventType type,
+                               const MotionEvent& event) {
+  return CreateGesture(type, event, GestureEventData::Details());
 }
 
 float Round(float f) {
@@ -118,13 +118,13 @@ class GestureProvider::ScaleGestureListenerImpl
                                     detector.GetFocusX(),
                                     detector.GetFocusY()));
     }
-    GestureEventParams::Data pinch_data;
-    pinch_data.pinch_update.scale = detector.GetScaleFactor();
+    GestureEventData::Details pinch_details;
+    pinch_details.pinch_update.scale = detector.GetScaleFactor();
     provider_->Send(CreateGesture(GESTURE_PINCH_UPDATE,
                                   detector.GetEventTime(),
                                   detector.GetFocusX(),
                                   detector.GetFocusY(),
-                                  pinch_data));
+                                  pinch_details));
     return true;
   }
 
@@ -178,7 +178,7 @@ class GestureProvider::GestureListenerImpl
         seen_first_scroll_event_(false),
         double_tap_mode_(DOUBLE_TAP_MODE_NONE),
         double_tap_y_(0),
-        support_double_tap_(true),
+        double_tap_support_enabled_(true),
         double_tap_drag_zoom_anchor_x_(0),
         double_tap_drag_zoom_anchor_y_(0),
         last_raw_x_(0),
@@ -218,9 +218,9 @@ class GestureProvider::GestureListenerImpl
     accumulated_scroll_error_x_ = 0;
     accumulated_scroll_error_y_ = 0;
 
-    GestureEventParams::Data tap_down_data;
-    tap_down_data.tap.width = tap_down_data.tap.height = e.GetTouchMajor();
-    provider_->Send(CreateGesture(GESTURE_TAP_DOWN, e, tap_down_data));
+    GestureEventData::Details tap_details;
+    tap_details.tap.width = tap_details.tap.height = e.GetTouchMajor();
+    provider_->Send(CreateGesture(GESTURE_TAP_DOWN, e, tap_details));
 
     // Return true to indicate that we want to handle touch.
     return true;
@@ -259,14 +259,14 @@ class GestureProvider::GestureListenerImpl
     if (!provider_->IsScrollInProgress()) {
       // Note that scroll start hints are in distance traveled, where
       // scroll deltas are in the opposite direction.
-      GestureEventParams::Data scroll_data;
-      scroll_data.scroll_begin.delta_x_hint = -raw_distance_x;
-      scroll_data.scroll_begin.delta_y_hint = -raw_distance_y;
+      GestureEventData::Details scroll_details;
+      scroll_details.scroll_begin.delta_x_hint = -raw_distance_x;
+      scroll_details.scroll_begin.delta_y_hint = -raw_distance_y;
       provider_->Send(CreateGesture(GESTURE_SCROLL_BEGIN,
                                     e2.GetEventTime(),
                                     e1.GetX(),
                                     e1.GetY(),
-                                    scroll_data));
+                                    scroll_details));
     }
 
     // distance_x and distance_y is the scrolling offset since last OnScroll.
@@ -282,10 +282,10 @@ class GestureProvider::GestureListenerImpl
     accumulated_scroll_error_y_ += (distance_y - dy);
 
     if (dx || dy) {
-      GestureEventParams::Data scroll_data;
-      scroll_data.scroll_update.delta_x = -dx;
-      scroll_data.scroll_update.delta_y = -dy;
-      provider_->Send(CreateGesture(GESTURE_SCROLL_UPDATE, e2, scroll_data));
+      GestureEventData::Details scroll_details;
+      scroll_details.scroll_update.delta_x = -dx;
+      scroll_details.scroll_update.delta_y = -dy;
+      provider_->Send(CreateGesture(GESTURE_SCROLL_UPDATE, e2, scroll_details));
     }
 
     return true;
@@ -309,11 +309,11 @@ class GestureProvider::GestureListenerImpl
   }
 
   virtual void OnShowPress(const MotionEvent& e) OVERRIDE {
-    GestureEventParams::Data show_press_data;
+    GestureEventData::Details show_press_details;
     // TODO(jdduke): Expose minor axis length and rotation in |MotionEvent|.
-    show_press_data.show_press.width = e.GetTouchMajor();
-    show_press_data.show_press.height = show_press_data.show_press.width;
-    provider_->Send(CreateGesture(GESTURE_SHOW_PRESS, e, show_press_data));
+    show_press_details.show_press.width = e.GetTouchMajor();
+    show_press_details.show_press.height = show_press_details.show_press.width;
+    provider_->Send(CreateGesture(GESTURE_SHOW_PRESS, e, show_press_details));
   }
 
   virtual bool OnSingleTapUp(const MotionEvent& e) OVERRIDE {
@@ -338,7 +338,7 @@ class GestureProvider::GestureListenerImpl
       } else {
         // Notify Blink about this tapUp event anyway,
         // when none of the above conditions applied.
-        provider_->Send(CreateGesture(GESTURE_SINGLE_TAP_UNCONFIRMED, e));
+        provider_->Send(CreateGesture(GESTURE_TAP_UNCONFIRMED, e));
       }
     }
 
@@ -356,10 +356,10 @@ class GestureProvider::GestureListenerImpl
 
     ignore_single_tap_ = true;
 
-    GestureEventParams::Data tap_data;
-    tap_data.tap.tap_count = 1;
-    tap_data.tap.width = tap_data.tap.height = e.GetTouchMajor();
-    provider_->Send(CreateGesture(GESTURE_SINGLE_TAP_CONFIRMED, e, tap_data));
+    GestureEventData::Details tap_details;
+    tap_details.tap.tap_count = 1;
+    tap_details.tap.width = tap_details.tap.height = e.GetTouchMajor();
+    provider_->Send(CreateGesture(GESTURE_TAP, e, tap_details));
     return true;
   }
 
@@ -388,11 +388,11 @@ class GestureProvider::GestureListenerImpl
           // Begin double-tap drag zoom mode if the move distance is
           // further than the threshold.
           if (IsDistanceGreaterThanTouchSlop(distance_x, distance_y)) {
-            GestureEventParams::Data scroll_data;
-            scroll_data.scroll_begin.delta_x_hint = -distance_x;
-            scroll_data.scroll_begin.delta_y_hint = -distance_y;
+            GestureEventData::Details scroll_details;
+            scroll_details.scroll_begin.delta_x_hint = -distance_x;
+            scroll_details.scroll_begin.delta_y_hint = -distance_y;
             provider_->Send(
-                CreateGesture(GESTURE_SCROLL_BEGIN, e, scroll_data));
+                CreateGesture(GESTURE_SCROLL_BEGIN, e, scroll_details));
             provider_->Send(
                 CreateGesture(GESTURE_PINCH_BEGIN,
                               e.GetEventTime(),
@@ -404,8 +404,8 @@ class GestureProvider::GestureListenerImpl
           provider_->Send(CreateGesture(GESTURE_SCROLL_UPDATE, e));
 
           float dy = double_tap_y_ - e.GetY();
-          GestureEventParams::Data pinch_data;
-          pinch_data.pinch_update.scale =
+          GestureEventData::Details pinch_details;
+          pinch_details.pinch_update.scale =
               std::pow(dy > 0 ? 1.0f - kDoubleTapDragZoomSpeed
                               : 1.0f + kDoubleTapDragZoomSpeed,
                        std::abs(dy * px_to_dp_));
@@ -413,7 +413,7 @@ class GestureProvider::GestureListenerImpl
                                         e.GetEventTime(),
                                         Round(double_tap_drag_zoom_anchor_x_),
                                         Round(double_tap_drag_zoom_anchor_y_),
-                                        pinch_data));
+                                        pinch_details));
         }
         break;
       case MotionEvent::ACTION_UP:
@@ -438,10 +438,10 @@ class GestureProvider::GestureListenerImpl
     DCHECK(!IsDoubleTapInProgress());
     SetIgnoreSingleTap(true);
 
-    GestureEventParams::Data long_press_data;
-    long_press_data.long_press.width = e.GetTouchMajor();
-    long_press_data.long_press.height = long_press_data.long_press.width;
-    provider_->Send(CreateGesture(GESTURE_LONG_PRESS, e, long_press_data));
+    GestureEventData::Details long_press_details;
+    long_press_details.long_press.width = e.GetTouchMajor();
+    long_press_details.long_press.height = long_press_details.long_press.width;
+    provider_->Send(CreateGesture(GESTURE_LONG_PRESS, e, long_press_details));
 
     // Returning true puts the GestureDetector in "longpress" mode, disabling
     // further scrolling.  This is undesirable, as it is quite common for a
@@ -449,25 +449,26 @@ class GestureProvider::GestureListenerImpl
     return false;
   }
 
-  void UpdateDoubleTapSupportForPlatform(bool support_double_tap) {
+  void SetDoubleTapSupportForPlatformEnabled(bool enabled) {
     DCHECK(!IsDoubleTapInProgress());
     DoubleTapMode double_tap_mode =
-        support_double_tap ? DOUBLE_TAP_MODE_NONE : DOUBLE_TAP_MODE_DISABLED;
+        enabled ? DOUBLE_TAP_MODE_NONE : DOUBLE_TAP_MODE_DISABLED;
     if (double_tap_mode_ == double_tap_mode)
       return;
     double_tap_mode_ = double_tap_mode;
     UpdateDoubleTapListener();
   }
 
-  void UpdateDoubleTapSupportForPage(bool support_double_tap) {
-    if (support_double_tap_ == support_double_tap)
+  void SetDoubleTapSupportForPageEnabled(bool enabled) {
+    if (double_tap_support_enabled_ == enabled)
       return;
-    support_double_tap_ = support_double_tap;
+    double_tap_support_enabled_ = enabled;
     UpdateDoubleTapListener();
   }
 
   bool IsDoubleTapDisabled() const {
-    return double_tap_mode_ == DOUBLE_TAP_MODE_DISABLED || !support_double_tap_;
+    return double_tap_mode_ == DOUBLE_TAP_MODE_DISABLED ||
+           !double_tap_support_enabled_;
   }
 
   bool IsClickDelayDisabled() const { return disable_click_delay_; }
@@ -559,7 +560,7 @@ class GestureProvider::GestureListenerImpl
   // The page's viewport and scale sometimes allow us to disable double-tap
   // gesture detection,
   // according to the logic in ContentViewCore.onRenderCoordinatesUpdated().
-  bool support_double_tap_;
+  bool double_tap_support_enabled_;
 
   // x, y coordinates for an Anchor on double-tap drag zoom.
   float double_tap_drag_zoom_anchor_x_;
@@ -624,7 +625,7 @@ bool GestureProvider::OnTouchEvent(const MotionEvent& event) {
       EndTouchScrollIfNecessary(event.GetEventTime(), true);
 
     // We shouldn't necessarily cancel a tap on ACTION_UP, as the double-tap
-    // timeout may yet trigger a SINGLE_TAP_CONFIRMED.
+    // timeout may yet trigger a SINGLE_TAP.
     if (event.GetAction() == MotionEvent::ACTION_CANCEL)
       SendTapCancelIfNecessary(event);
 
@@ -649,18 +650,16 @@ void GestureProvider::CancelActiveTouchSequence() {
   current_down_event_.reset();
 }
 
-void GestureProvider::UpdateMultiTouchSupport(bool support_multi_touch_zoom) {
-  scale_gesture_listener_->set_ignore_detector_events(
-      !support_multi_touch_zoom);
+void GestureProvider::SetMultiTouchSupportEnabled(bool enabled) {
+  scale_gesture_listener_->set_ignore_detector_events(!enabled);
 }
 
-void GestureProvider::UpdateDoubleTapSupportForPlatform(
-    bool support_double_tap) {
-  gesture_listener_->UpdateDoubleTapSupportForPlatform(support_double_tap);
+void GestureProvider::SetDoubleTapSupportForPlatformEnabled(bool enabled) {
+  gesture_listener_->SetDoubleTapSupportForPlatformEnabled(enabled);
 }
 
-void GestureProvider::UpdateDoubleTapSupportForPage(bool support_double_tap) {
-  gesture_listener_->UpdateDoubleTapSupportForPage(support_double_tap);
+void GestureProvider::SetDoubleTapSupportForPageEnabled(bool enabled) {
+  gesture_listener_->SetDoubleTapSupportForPageEnabled(enabled);
 }
 
 bool GestureProvider::IsScrollInProgress() const {
@@ -673,6 +672,10 @@ bool GestureProvider::IsPinchInProgress() const { return pinch_in_progress_; }
 
 bool GestureProvider::IsDoubleTapInProgress() const {
   return gesture_listener_->IsDoubleTapInProgress();
+}
+
+bool GestureProvider::IsClickDelayDisabled() const {
+  return gesture_listener_->IsClickDelayDisabled();
 }
 
 void GestureProvider::InitGestureDetectors(const Config& config) {
@@ -705,35 +708,35 @@ void GestureProvider::Fling(base::TimeTicks time,
     // The native side needs a GESTURE_SCROLL_BEGIN before GESTURE_FLING_START
     // to send the fling to the correct target. Send if it has not sent.
     // The distance traveled in one second is a reasonable scroll start hint.
-    GestureEventParams::Data scroll_data;
-    scroll_data.scroll_begin.delta_x_hint = velocity_x;
-    scroll_data.scroll_begin.delta_y_hint = velocity_y;
-    Send(CreateGesture(GESTURE_SCROLL_BEGIN, time, x, y, scroll_data));
+    GestureEventData::Details scroll_details;
+    scroll_details.scroll_begin.delta_x_hint = velocity_x;
+    scroll_details.scroll_begin.delta_y_hint = velocity_y;
+    Send(CreateGesture(GESTURE_SCROLL_BEGIN, time, x, y, scroll_details));
   }
   EndTouchScrollIfNecessary(time, false);
 
-  GestureEventParams::Data fling_data;
-  fling_data.fling_start.velocity_x = velocity_x;
-  fling_data.fling_start.velocity_y = velocity_y;
-  Send(CreateGesture(GESTURE_FLING_START, time, x, y, fling_data));
+  GestureEventData::Details fling_details;
+  fling_details.fling_start.velocity_x = velocity_x;
+  fling_details.fling_start.velocity_y = velocity_y;
+  Send(CreateGesture(GESTURE_FLING_START, time, x, y, fling_details));
 }
 
-void GestureProvider::Send(const GestureEventParams& gesture) {
+void GestureProvider::Send(const GestureEventData& gesture) {
   DCHECK(!gesture.time.is_null());
   // The only valid events that should be sent without an active touch sequence
-  // are SHOW_PRESS and TAP_CONFIRMED, potentially triggered by the double-tap
+  // are SHOW_PRESS and TAP, potentially triggered by the double-tap
   // delay timing out.
-  DCHECK(current_down_event_ || gesture.type == GESTURE_SINGLE_TAP_CONFIRMED ||
+  DCHECK(current_down_event_ || gesture.type == GESTURE_TAP ||
          gesture.type == GESTURE_SHOW_PRESS);
 
   switch (gesture.type) {
     case GESTURE_TAP_DOWN:
       needs_tap_ending_event_ = true;
       break;
-    case GESTURE_SINGLE_TAP_UNCONFIRMED:
+    case GESTURE_TAP_UNCONFIRMED:
       needs_show_press_event_ = false;
       break;
-    case GESTURE_SINGLE_TAP_CONFIRMED:
+    case GESTURE_TAP:
       if (needs_show_press_event_)
         Send(CreateGesture(
             GESTURE_SHOW_PRESS, gesture.time, gesture.x, gesture.y));
@@ -750,19 +753,13 @@ void GestureProvider::Send(const GestureEventParams& gesture) {
     case GESTURE_SHOW_PRESS:
       needs_show_press_event_ = false;
       break;
-    case GESTURE_LONG_TAP:
-      needs_tap_ending_event_ = false;
-      current_longpress_time_ = base::TimeTicks();
-      break;
     case GESTURE_LONG_PRESS:
       DCHECK(!scale_gesture_listener_->IsScaleGestureDetectionInProgress());
       current_longpress_time_ = gesture.time;
       break;
-    case GESTURE_PINCH_UPDATE:
-      pinch_in_progress_ = true;
-      break;
-    case GESTURE_PINCH_END:
-      pinch_in_progress_ = false;
+    case GESTURE_LONG_TAP:
+      needs_tap_ending_event_ = false;
+      current_longpress_time_ = base::TimeTicks();
       break;
     case GESTURE_SCROLL_BEGIN:
       touch_scroll_in_progress_ = true;
@@ -770,6 +767,12 @@ void GestureProvider::Send(const GestureEventParams& gesture) {
       break;
     case GESTURE_SCROLL_END:
       touch_scroll_in_progress_ = false;
+      break;
+    case GESTURE_PINCH_BEGIN:
+      pinch_in_progress_ = true;
+      break;
+    case GESTURE_PINCH_END:
+      pinch_in_progress_ = false;
       break;
     default:
       break;
@@ -790,10 +793,10 @@ bool GestureProvider::SendLongTapIfNecessary(const MotionEvent& event) {
       !current_longpress_time_.is_null() &&
       !scale_gesture_listener_->IsScaleGestureDetectionInProgress()) {
     SendTapCancelIfNecessary(event);
-    GestureEventParams::Data long_tap_data;
-    long_tap_data.long_press.width = event.GetTouchMajor();
-    long_tap_data.long_press.height = long_tap_data.long_press.width;
-    Send(CreateGesture(GESTURE_LONG_TAP, event, long_tap_data));
+    GestureEventData::Details long_tap_details;
+    long_tap_details.long_press.width = event.GetTouchMajor();
+    long_tap_details.long_press.height = long_tap_details.long_press.width;
+    Send(CreateGesture(GESTURE_LONG_TAP, event, long_tap_details));
     return true;
   }
   return false;

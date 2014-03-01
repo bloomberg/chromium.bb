@@ -68,20 +68,21 @@ WebTouchPoint::State ToWebTouchPointState(MotionEventAndroid::Action action,
 
 WebTouchPoint BuildWebTouchPoint(const MotionEventAndroid& event,
                                  size_t pointer_index,
-                                 float dpi_scale) {
+                                 float px_to_dp) {
   WebTouchPoint touch;
   touch.id = event.GetPointerId(pointer_index);
-  touch.state = ToWebTouchPointState(event.GetActionMasked(),
-                                     pointer_index == event.GetActionIndex());
-  touch.position.x = event.GetX(pointer_index) / dpi_scale;
-  touch.position.y = event.GetY(pointer_index) / dpi_scale;
+  touch.state = ToWebTouchPointState(
+      event.GetAction(),
+      static_cast<int>(pointer_index) == event.GetActionIndex());
+  touch.position.x = event.GetX(pointer_index) * px_to_dp;
+  touch.position.y = event.GetY(pointer_index) * px_to_dp;
   // TODO(joth): Raw event co-ordinates.
   touch.screenPosition = touch.position;
 
   const int radius_major =
-      static_cast<int>(event.GetTouchMajor(pointer_index) * 0.5f / dpi_scale);
+      static_cast<int>(event.GetTouchMajor(pointer_index) * 0.5f * px_to_dp);
   const int radius_minor =
-      static_cast<int>(event.GetTouchMinor(pointer_index) * 0.5f / dpi_scale);
+      static_cast<int>(event.GetTouchMinor(pointer_index) * 0.5f * px_to_dp);
   const float major_angle_in_radians_clockwise_from_vertical =
       event.GetOrientation();
 
@@ -226,14 +227,12 @@ WebGestureEvent WebGestureEventBuilder::Build(WebInputEvent::Type type,
   return result;
 }
 
-blink::WebTouchEvent WebTouchEventBuilder::Build(jobject motion_event,
-                                                 float dpi_scale) {
-  DCHECK(motion_event);
-  MotionEventAndroid event(motion_event);
-
+blink::WebTouchEvent WebTouchEventBuilder::Build(
+    const MotionEventAndroid& event,
+    float device_scale_factor) {
   blink::WebTouchEvent result;
 
-  result.type = ToWebInputEventType(event.GetActionMasked());
+  result.type = ToWebInputEventType(event.GetAction());
   DCHECK(WebInputEvent::isTouchEventType(result.type));
 
   result.timeStampSeconds =
@@ -244,8 +243,9 @@ blink::WebTouchEvent WebTouchEventBuilder::Build(jobject motion_event,
                static_cast<size_t>(WebTouchEvent::touchesLengthCap));
   DCHECK_GT(result.touchesLength, 0U);
 
+  const float px_to_dp = 1.f / device_scale_factor;
   for (size_t i = 0; i < result.touchesLength; ++i)
-    result.touches[i] = BuildWebTouchPoint(event, i, dpi_scale);
+    result.touches[i] = BuildWebTouchPoint(event, i, px_to_dp);
 
   return result;
 }

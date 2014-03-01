@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_GESTURE_EVENT_PACKET_H_
-#define CONTENT_BROWSER_RENDERER_HOST_INPUT_GESTURE_EVENT_PACKET_H_
+#ifndef UI_EVENTS_GESTURE_DETECTION_GESTURE_EVENT_DATA_PACKET_H_
+#define UI_EVENTS_GESTURE_DETECTION_GESTURE_EVENT_DATA_PACKET_H_
 
-#include "content/common/content_export.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/events/gesture_detection/gesture_detection_export.h"
+#include "ui/events/gesture_detection/gesture_event_data.h"
 
-namespace content {
+namespace ui {
+
+class MotionEvent;
 
 // Acts as a transport container for gestures created (directly or indirectly)
 // by a touch event.
-class CONTENT_EXPORT GestureEventPacket {
+class GESTURE_DETECTION_EXPORT GestureEventDataPacket {
  public:
   enum GestureSource {
     UNDEFINED = -1,        // Used only for a default-constructed packet.
@@ -25,31 +27,31 @@ class CONTENT_EXPORT GestureEventPacket {
     TOUCH_TIMEOUT,         // Timeout from an existing gesture sequence.
   };
 
-  GestureEventPacket();
-  GestureEventPacket(const GestureEventPacket& other);
-  ~GestureEventPacket();
-  GestureEventPacket& operator=(const GestureEventPacket& other);
+  GestureEventDataPacket();
+  GestureEventDataPacket(const GestureEventDataPacket& other);
+  ~GestureEventDataPacket();
+  GestureEventDataPacket& operator=(const GestureEventDataPacket& other);
 
   // Factory methods for creating a packet from a particular event.
-  static GestureEventPacket FromTouch(const blink::WebTouchEvent& event);
-  static GestureEventPacket FromTouchTimeout(
-      const blink::WebGestureEvent& event);
+  static GestureEventDataPacket FromTouch(const ui::MotionEvent& touch);
+  static GestureEventDataPacket FromTouchTimeout(
+      const GestureEventData& gesture);
 
-  void Push(const blink::WebGestureEvent& gesture);
+  void Push(const GestureEventData& gesture);
 
-  const blink::WebGestureEvent& gesture(size_t i) const { return gestures_[i]; }
+  const GestureEventData& gesture(size_t i) const { return gestures_[i]; }
   size_t gesture_count() const { return gesture_count_; }
   GestureSource gesture_source() const { return gesture_source_; }
 
-private:
-  explicit GestureEventPacket(GestureSource source);
+ private:
+  explicit GestureEventDataPacket(GestureSource source);
 
   enum { kMaxGesturesPerTouch = 5 };
-  blink::WebGestureEvent gestures_[kMaxGesturesPerTouch];
+  GestureEventData gestures_[kMaxGesturesPerTouch];
   size_t gesture_count_;
   GestureSource gesture_source_;
 };
 
-}  // namespace content
+}  // namespace ui
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_GESTURE_EVENT_PACKET_H_
+#endif  // UI_EVENTS_GESTURE_DETECTION_GESTURE_EVENT_DATA_PACKET_H_

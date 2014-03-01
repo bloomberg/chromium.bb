@@ -11,6 +11,8 @@
 
 namespace content {
 
+class MotionEventAndroid;
+
 class WebMouseEventBuilder {
  public:
   static blink::WebMouseEvent Build(blink::WebInputEvent::Type type,
@@ -57,7 +59,8 @@ class WebGestureEventBuilder {
 
 class WebTouchEventBuilder {
  public:
-  static blink::WebTouchEvent Build(jobject motion_event, float dpi_scale);
+  static blink::WebTouchEvent Build(const MotionEventAndroid& event,
+                                    float device_scale_factor);
 };
 
 }  // namespace content

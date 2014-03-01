@@ -54,7 +54,7 @@ SnapScrollController::Config DefaultSnapScrollControllerConfig() {
   return config;
 }
 
-GestureProvider::Config DefaultGestureHandlerConfig() {
+GestureProvider::Config DefaultGestureProviderConfig() {
   GestureProvider::Config config;
   config.gesture_detector_config = DefaultGestureDetectorConfig();
   config.scale_gesture_detector_config = DefaultScaleGestureDetectorConfig();

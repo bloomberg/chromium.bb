@@ -2,19 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_GESTURE_DETECTION_GESTURE_EVENT_PARAMS_H_
-#define UI_EVENTS_GESTURE_DETECTION_GESTURE_EVENT_PARAMS_H_
+#ifndef UI_EVENTS_GESTURE_DETECTION_GESTURE_EVENT_DATA_H_
+#define UI_EVENTS_GESTURE_DETECTION_GESTURE_EVENT_DATA_H_
 
 #include "base/time/time.h"
 #include "ui/events/gesture_detection/gesture_detection_export.h"
 
 namespace ui {
 
+// TODO(jdduke): Consider adoption of ui::EventType.
 enum GestureEventType {
-  GESTURE_SHOW_PRESS,
+  GESTURE_TYPE_INVALID = -1,
+  GESTURE_TYPE_FIRST = 0,
+  GESTURE_TAP_DOWN = GESTURE_TYPE_FIRST,
+  GESTURE_TAP_UNCONFIRMED,
+  GESTURE_TAP,
   GESTURE_DOUBLE_TAP,
-  GESTURE_SINGLE_TAP_CONFIRMED,
-  GESTURE_SINGLE_TAP_UNCONFIRMED,
+  GESTURE_TAP_CANCEL,
+  GESTURE_SHOW_PRESS,
+  GESTURE_LONG_TAP,
   GESTURE_LONG_PRESS,
   GESTURE_SCROLL_BEGIN,
   GESTURE_SCROLL_UPDATE,
@@ -24,20 +30,20 @@ enum GestureEventType {
   GESTURE_PINCH_BEGIN,
   GESTURE_PINCH_UPDATE,
   GESTURE_PINCH_END,
-  GESTURE_TAP_CANCEL,
-  GESTURE_LONG_TAP,
-  GESTURE_TAP_DOWN
+  GESTURE_TYPE_LAST = GESTURE_PINCH_END,
 };
 
-// TODO(jdduke): Convert all (x,y) and (width,height) pairs to their
-// corresponding gfx:: geometry types.
-struct GESTURE_DETECTION_EXPORT GestureEventParams {
-  struct Data;
-  GestureEventParams(GestureEventType type,
-                     base::TimeTicks time,
-                     float x,
-                     float y,
-                     const Data& data);
+class GestureEventDataPacket;
+
+// Simple transport construct for gesture-related event data.
+// TODO(jdduke): Merge this class with ui::GestureEventDetails.
+struct GESTURE_DETECTION_EXPORT GestureEventData {
+  struct Details;
+  GestureEventData(GestureEventType type,
+                   base::TimeTicks time,
+                   float x,
+                   float y,
+                   const Details& details);
 
   GestureEventType type;
   base::TimeTicks time;
@@ -46,8 +52,8 @@ struct GESTURE_DETECTION_EXPORT GestureEventParams {
 
   // TODO(jdduke): Determine if we can simply re-use blink::WebGestureEvent, as
   // this is more or less straight up duplication.
-  struct Data {
-    Data();
+  struct GESTURE_DETECTION_EXPORT Details {
+    Details();
     union {
       struct {
         int tap_count;
@@ -72,7 +78,7 @@ struct GESTURE_DETECTION_EXPORT GestureEventParams {
 
       struct {
         // Initial motion that triggered the scroll.
-        // May be redundant with deltaX/deltaY in the first scrollUpdate.
+        // May be redundant with delta_x/delta_y in the first scroll_update.
         float delta_x_hint;
         float delta_y_hint;
       } scroll_begin;
@@ -93,12 +99,15 @@ struct GESTURE_DETECTION_EXPORT GestureEventParams {
         float scale;
       } pinch_update;
     };
-  } data;
+  } details;
 
  private:
-  GestureEventParams();
+  friend class GestureEventDataPacket;
+
+  // Initializes type to GESTURE_TYPE_INVALID.
+  GestureEventData();
 };
 
 }  //  namespace ui
 
-#endif  // UI_EVENTS_GESTURE_DETECTION_GESTURE_EVENT_PARAMS_H_
+#endif  // UI_EVENTS_GESTURE_DETECTION_GESTURE_EVENT_DATA_H_

@@ -16,12 +16,12 @@ namespace ui {
 class GESTURE_DETECTION_EXPORT MotionEvent {
  public:
   enum Action {
-    ACTION_POINTER_DOWN,
-    ACTION_POINTER_UP,
     ACTION_DOWN,
     ACTION_UP,
+    ACTION_MOVE,
     ACTION_CANCEL,
-    ACTION_MOVE
+    ACTION_POINTER_DOWN,
+    ACTION_POINTER_UP,
   };
 
   // The implementer promises that |GetPointerId()| will never exceed this.
