@@ -75,6 +75,7 @@ class ContextMenuContentType {
 
  private:
   friend class ContextMenuContentTypeFactory;
+  friend class ContextMenuContentTypeTest;
 
   bool HasCustomItems(const std::vector<content::MenuItem>& items) const;
   void Initialize();

@@ -1186,6 +1186,7 @@
         'browser/profiles/profile_list_desktop_unittest.cc',
         'browser/profiles/profile_manager_unittest.cc',
         'browser/profiles/profile_shortcut_manager_unittest_win.cc',
+        'browser/renderer_context_menu/context_menu_content_type_unittest.cc',
         'browser/renderer_context_menu/render_view_context_menu_test_util.cc',
         'browser/renderer_context_menu/render_view_context_menu_test_util.h',
         'browser/renderer_context_menu/render_view_context_menu_unittest.cc',
