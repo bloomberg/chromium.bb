@@ -4019,6 +4019,8 @@ void RenderLayer::computeSelfHitTestRects(LayerHitTestRects& rects) const
 DisableCompositingQueryAsserts::DisableCompositingQueryAsserts()
     : m_disabler(gCompositingQueryMode, CompositingQueriesAreAllowed) { }
 
+COMPILE_ASSERT(1 << RenderLayer::ViewportConstrainedNotCompositedReasonBits >= RenderLayer::NumNotCompositedReasons, too_many_viewport_constrained_not_compositing_reasons);
+
 } // namespace WebCore
 
 #ifndef NDEBUG

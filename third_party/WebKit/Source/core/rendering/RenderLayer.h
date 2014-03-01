@@ -425,11 +425,17 @@ public:
     bool isInTopLayerSubtree() const;
 
     enum ViewportConstrainedNotCompositedReason {
-        NoNotCompositedReason,
+        NoNotCompositedReason = 0,
         NotCompositedForBoundsOutOfView,
         NotCompositedForNonViewContainer,
         NotCompositedForNoVisibleContent,
         NotCompositedForUnscrollableAncestors,
+        NumNotCompositedReasons,
+
+        // This is the number of bits used to store the viewport constrained not composited
+        // reasons. We define this constant since sizeof won't return the number of bits, and we
+        // shouldn't duplicate the constant.
+        ViewportConstrainedNotCompositedReasonBits = 3
     };
 
     void setViewportConstrainedNotCompositedReason(ViewportConstrainedNotCompositedReason reason) { m_compositingProperties.viewportConstrainedNotCompositedReason = reason; }
@@ -733,7 +739,7 @@ private:
         bool lostGroupedMapping : 1;
 
         // The reason, if any exists, that a fixed-position layer is chosen not to be composited.
-        unsigned viewportConstrainedNotCompositedReason : 2;
+        unsigned viewportConstrainedNotCompositedReason : ViewportConstrainedNotCompositedReasonBits;
 
         // Once computed, indicates all that a layer needs to become composited using the CompositingReasons enum bitfield.
         CompositingReasons compositingReasons;
