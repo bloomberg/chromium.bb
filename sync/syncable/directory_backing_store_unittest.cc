@@ -2980,10 +2980,6 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion85To86) {
   EXPECT_TRUE(connection.DoesColumnExist("metas", "server_unique_position"));
   EXPECT_TRUE(connection.DoesColumnExist("metas", "unique_bookmark_tag"));
   ASSERT_TRUE(dbs->needs_column_refresh_);
-  ASSERT_TRUE(dbs->RefreshColumns());
-  EXPECT_FALSE(connection.DoesColumnExist("metas", "next_id"));
-  EXPECT_FALSE(connection.DoesColumnExist("metas", "prev_id"));
-  EXPECT_FALSE(connection.DoesColumnExist("metas", "server_ordinal_in_parent"));
 
   {
     Directory::MetahandlesMap handles_map;
@@ -3235,6 +3231,11 @@ TEST_P(MigrationTest, ToCurrentVersion) {
 
   // Column removed in version 85.
   ASSERT_FALSE(connection.DoesColumnExist("models", "initial_sync_ended"));
+
+  // Columns removed in version 86.
+  ASSERT_FALSE(connection.DoesColumnExist("metas", "next_id"));
+  ASSERT_FALSE(connection.DoesColumnExist("metas", "prev_id"));
+  ASSERT_FALSE(connection.DoesColumnExist("metas", "server_ordinal_in_parent"));
 
   // Check download_progress state (v75 migration)
   ASSERT_EQ(694,
