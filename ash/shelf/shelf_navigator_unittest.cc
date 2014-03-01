@@ -69,21 +69,6 @@ class ShelfNavigatorTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ShelfNavigatorTest);
 };
 
-class ShelfNavigatorLegacyShelfLayoutTest : public ShelfNavigatorTest {
- public:
-  ShelfNavigatorLegacyShelfLayoutTest() : ShelfNavigatorTest() {}
-
- protected:
-  virtual void SetUp() OVERRIDE {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAshDisableAlternateShelfLayout);
-    ShelfNavigatorTest::SetUp();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShelfNavigatorLegacyShelfLayoutTest);
-};
-
 }  // namespace
 
 TEST_F(ShelfNavigatorTest, BasicCycle) {
@@ -102,22 +87,6 @@ TEST_F(ShelfNavigatorTest, BasicCycle) {
   EXPECT_EQ(5, GetNextActivatedItemIndex(model(), CYCLE_BACKWARD));
 }
 
-TEST_F(ShelfNavigatorLegacyShelfLayoutTest, BasicCycle) {
-  // An app shortcut and three platform apps.
-  ShelfItemType types[] = {
-    TYPE_APP_SHORTCUT, TYPE_PLATFORM_APP, TYPE_PLATFORM_APP, TYPE_PLATFORM_APP,
-  };
-  // ShelfModel automatically adds BROWSER_SHORTCUT item at the
-  // beginning, so '2' refers the first TYPE_PLATFORM_APP item.
-  SetupMockShelfModel(types, arraysize(types), 2);
-
-  EXPECT_EQ(3, GetNextActivatedItemIndex(model(), CYCLE_FORWARD));
-
-  // Fourth one.  It will skip the APP_SHORTCUT at the beginning of the list and
-  // the APP_LIST item which is automatically added at the end of items.
-  EXPECT_EQ(4, GetNextActivatedItemIndex(model(), CYCLE_BACKWARD));
-}
-
 TEST_F(ShelfNavigatorTest, WrapToBeginning) {
   ShelfItemType types[] = {
     TYPE_APP_SHORTCUT, TYPE_PLATFORM_APP, TYPE_PLATFORM_APP, TYPE_PLATFORM_APP,
@@ -128,18 +97,6 @@ TEST_F(ShelfNavigatorTest, WrapToBeginning) {
   // wraps to the beginning, and skips BROWSER_SHORTCUT and APP_SHORTCUT
   // at the beginning of the list.
   EXPECT_EQ(3, GetNextActivatedItemIndex(model(), CYCLE_FORWARD));
-}
-
-TEST_F(ShelfNavigatorLegacyShelfLayoutTest, WrapToBeginning) {
-  ShelfItemType types[] = {
-    TYPE_APP_SHORTCUT, TYPE_PLATFORM_APP, TYPE_PLATFORM_APP, TYPE_PLATFORM_APP,
-  };
-  SetupMockShelfModel(types, arraysize(types), 4);
-
-  // Second one.  It skips the APP_LIST item at the end of the list,
-  // wraps to the beginning, and skips BROWSER_SHORTCUT and APP_SHORTCUT
-  // at the beginning of the list.
-  EXPECT_EQ(2, GetNextActivatedItemIndex(model(), CYCLE_FORWARD));
 }
 
 TEST_F(ShelfNavigatorTest, Empty) {
@@ -158,16 +115,6 @@ TEST_F(ShelfNavigatorTest, SingleEntry) {
   EXPECT_EQ(-1, GetNextActivatedItemIndex(model(), CYCLE_BACKWARD));
 }
 
-TEST_F(ShelfNavigatorLegacyShelfLayoutTest, SingleEntry) {
-  ShelfItemType type = TYPE_PLATFORM_APP;
-  SetupMockShelfModel(&type, 1, 1);
-
-  // If there's only one item there and it is already active, there's no item
-  // to be activated next.
-  EXPECT_EQ(-1, GetNextActivatedItemIndex(model(), CYCLE_FORWARD));
-  EXPECT_EQ(-1, GetNextActivatedItemIndex(model(), CYCLE_BACKWARD));
-}
-
 TEST_F(ShelfNavigatorTest, NoActive) {
   ShelfItemType types[] = {
     TYPE_PLATFORM_APP, TYPE_PLATFORM_APP,
@@ -178,18 +125,6 @@ TEST_F(ShelfNavigatorTest, NoActive) {
   // If there are no active status, pick the first running item as a fallback.
   EXPECT_EQ(2, GetNextActivatedItemIndex(model(), CYCLE_FORWARD));
   EXPECT_EQ(2, GetNextActivatedItemIndex(model(), CYCLE_BACKWARD));
-}
-
-TEST_F(ShelfNavigatorLegacyShelfLayoutTest, NoActive) {
-  ShelfItemType types[] = {
-    TYPE_PLATFORM_APP, TYPE_PLATFORM_APP,
-  };
-  // Special case: no items are 'STATUS_ACTIVE'.
-  SetupMockShelfModel(types, arraysize(types), -1);
-
-  // If there are no active status, pick the first running item as a fallback.
-  EXPECT_EQ(1, GetNextActivatedItemIndex(model(), CYCLE_FORWARD));
-  EXPECT_EQ(1, GetNextActivatedItemIndex(model(), CYCLE_BACKWARD));
 }
 
 }  // namespace ash

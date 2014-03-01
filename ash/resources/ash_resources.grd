@@ -53,11 +53,8 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_LIST_BROWSER" file="common/launcher/window_switcher_icon_normal.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_LIST_INCOGNITO_BROWSER" file="common/launcher/window_switcher_icon_incognito.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_OVERFLOW" file="common/launcher/launcher_overflow.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE" file="common/launcher/launcher_underline_bottom_active.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE_ALTERNATE" file="common/alt_launcher/launcher_underline_active.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_UNDERLINE_HOVER" file="common/launcher/launcher_underline_bottom_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_UNDERLINE_RUNNING" file="common/launcher/launcher_underline_bottom_running.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_UNDERLINE_RUNNING_ALTERNATE" file="common/alt_launcher/launcher_underline_running.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE" file="common/alt_launcher/launcher_underline_active.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_UNDERLINE_RUNNING" file="common/alt_launcher/launcher_underline_running.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_LAUNCHER_ICON_TASK_MANAGER" file="common/launcher/task_manager.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_MULTI_WINDOW_RESIZE_H" file="common/multi_window_resize_horizontal.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_MULTI_WINDOW_RESIZE_V" file="common/multi_window_resize_vertical.png" />

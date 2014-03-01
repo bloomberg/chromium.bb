@@ -15,10 +15,10 @@ extern const int kPaddingFromOuterEdgeOfLauncherVerticalAlignment;
 extern const int kPaddingFromInnerEdgeOfLauncherVerticalAlignment;
 extern const int kPaddingFromBottomOfScreenVerticalAlignment;
 
-extern const int kAlternateLayoutBubblePaddingHorizontalBottom;
-extern const int kAlternateLayoutBubblePaddingHorizontalSide;
-extern const int kAlternateLayoutBubblePaddingVerticalBottom;
-extern const int kAlternateLayoutBubblePaddingVerticalSide;
+extern const int kBubblePaddingHorizontalBottom;
+extern const int kBubblePaddingHorizontalSide;
+extern const int kBubblePaddingVerticalBottom;
+extern const int kBubblePaddingVerticalSide;
 
 extern const int kPaddingFromEdgeOfShelf;
 extern const int kTrayBubbleAnchorTopInsetBottomAnchor;

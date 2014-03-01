@@ -302,89 +302,6 @@ TEST_F(ShelfModelTest, FirstRunningAppIndexUsingPlatformAppFirst) {
   EXPECT_EQ(running_app_index, model_->FirstRunningAppIndex());
 }
 
-// Assertions around where items are added.
-TEST_F(ShelfModelTest, AddIndicesForLegacyShelfLayout) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      ash::switches::kAshDisableAlternateShelfLayout);
-
-  // Insert browser short cut at index 0.
-  ShelfItem browser_shortcut;
-  browser_shortcut.type = TYPE_BROWSER_SHORTCUT;
-  int browser_shortcut_index = model_->Add(browser_shortcut);
-  EXPECT_EQ(0, browser_shortcut_index);
-
-  // platform app items should be after browser shortcut.
-  ShelfItem item;
-  item.type = TYPE_PLATFORM_APP;
-  int platform_app_index1 = model_->Add(item);
-  EXPECT_EQ(1, platform_app_index1);
-
-  // Add another platform app item, it should follow first.
-  int platform_app_index2 = model_->Add(item);
-  EXPECT_EQ(2, platform_app_index2);
-
-  // APP_SHORTCUT priority is higher than PLATFORM_APP but same as
-  // BROWSER_SHORTCUT. So APP_SHORTCUT is located after BROWSER_SHORCUT.
-  item.type = TYPE_APP_SHORTCUT;
-  int app_shortcut_index1 = model_->Add(item);
-  EXPECT_EQ(1, app_shortcut_index1);
-
-  item.type = TYPE_APP_SHORTCUT;
-  int app_shortcut_index2 = model_->Add(item);
-  EXPECT_EQ(2, app_shortcut_index2);
-
-  // Check that AddAt() figures out the correct indexes for app shortcuts.
-  // APP_SHORTCUT and BROWSER_SHORTCUT has the same weight.
-  // So APP_SHORTCUT is located at index 0. And, BROWSER_SHORTCUT is located at
-  // index 1.
-  item.type = TYPE_APP_SHORTCUT;
-  int app_shortcut_index3 = model_->AddAt(0, item);
-  EXPECT_EQ(0, app_shortcut_index3);
-
-  item.type = TYPE_APP_SHORTCUT;
-  int app_shortcut_index4 = model_->AddAt(5, item);
-  EXPECT_EQ(4, app_shortcut_index4);
-
-  item.type = TYPE_APP_SHORTCUT;
-  int app_shortcut_index5 = model_->AddAt(2, item);
-  EXPECT_EQ(2, app_shortcut_index5);
-
-  // Before there are any panels, no icons should be right aligned.
-  EXPECT_EQ(model_->item_count(), model_->FirstPanelIndex());
-
-  // Check that AddAt() figures out the correct indexes for platform apps and
-  // panels.
-  item.type = TYPE_PLATFORM_APP;
-  int platform_app_index3 = model_->AddAt(2, item);
-  EXPECT_EQ(6, platform_app_index3);
-
-  item.type = TYPE_APP_PANEL;
-  int app_panel_index1 = model_->AddAt(2, item);
-  EXPECT_EQ(10, app_panel_index1);
-
-  item.type = TYPE_PLATFORM_APP;
-  int platform_app_index4 = model_->AddAt(11, item);
-  EXPECT_EQ(9, platform_app_index4);
-
-  item.type = TYPE_APP_PANEL;
-  int app_panel_index2 = model_->AddAt(12, item);
-  EXPECT_EQ(12, app_panel_index2);
-
-  item.type = TYPE_PLATFORM_APP;
-  int platform_app_index5 = model_->AddAt(7, item);
-  EXPECT_EQ(7, platform_app_index5);
-
-  item.type = TYPE_APP_PANEL;
-  int app_panel_index3 = model_->AddAt(13, item);
-  EXPECT_EQ(13, app_panel_index3);
-
-  // Right aligned index should be the first app panel index.
-  EXPECT_EQ(12, model_->FirstPanelIndex());
-
-  EXPECT_EQ(TYPE_BROWSER_SHORTCUT, model_->items()[1].type);
-  EXPECT_EQ(TYPE_APP_LIST, model_->items()[model_->FirstPanelIndex() - 1].type);
-}
-
 // Assertions around id generation and usage.
 TEST_F(ShelfModelTest, ShelfIDTests) {
   // Get the next to use ID counter.
@@ -436,36 +353,6 @@ TEST_F(ShelfModelTest, CorrectMoveItemsWhenStateChange) {
 
   // The item should have moved in front of the app launcher.
   EXPECT_EQ(TYPE_PLATFORM_APP, model_->items()[4].type);
-}
-
-TEST_F(ShelfModelTest, CorrectMoveItemsWhenStateChangeForLegacyShelfLayout) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      ash::switches::kAshDisableAlternateShelfLayout);
-
-  // The first item is the browser and the second item is app list.
-  ShelfItem browser_shortcut;
-  browser_shortcut.type = TYPE_BROWSER_SHORTCUT;
-  int browser_shortcut_index = model_->Add(browser_shortcut);
-  EXPECT_EQ(0, browser_shortcut_index);
-  EXPECT_EQ(TYPE_APP_LIST, model_->items()[1].type);
-
-  // Add three shortcuts. They should all be moved between the two.
-  ShelfItem item;
-  item.type = TYPE_APP_SHORTCUT;
-  int app1_index = model_->Add(item);
-  EXPECT_EQ(1, app1_index);
-  int app2_index = model_->Add(item);
-  EXPECT_EQ(2, app2_index);
-  int app3_index = model_->Add(item);
-  EXPECT_EQ(3, app3_index);
-
-  // Now change the type of the second item and make sure that it is moving
-  // behind the shortcuts.
-  item.type = TYPE_PLATFORM_APP;
-  model_->Set(app2_index, item);
-
-  // The item should have moved in front of the app launcher.
-  EXPECT_EQ(TYPE_PLATFORM_APP, model_->items()[3].type);
 }
 
 }  // namespace ash
